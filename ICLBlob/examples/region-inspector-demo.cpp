@@ -35,6 +35,7 @@
 #include <ICLQuick/Common.h>
 #include <ICLBlob/RegionDetector.h>
 #include <ICLUtils/Time.h>
+#include <ICLFilter/MedianOp.h>
 
 GUI gui("hsplit");
 RegionDetector rd;
@@ -55,7 +56,8 @@ void init(){
   gui << "draw[@minsize=32x24@label=image@handle=image]";
   
   GUI labels("vbox[@label=Region information]");
-  labels << ( GUI("hbox")
+  labels << "label()[@label=Total Region Count@minsize=6x2@handle=total]"
+         << ( GUI("hbox")
               << "label()[@label=Region Size@handle=size-handle@minsize=6x2]"
               << "label()[@label=Region COG@handle=cog-handle@minsize=6x2]"
               )
@@ -92,6 +94,7 @@ void init(){
               << "button(grab next)[@handle=grab-next-handle@minsize=3x2]"
               );
   labels << "slider(2,256,10)[@out=levels@label=reduce levels]";
+  labels << "slider(1,10,0)[@out=medianSize@label=preprocessing median mask size]";
   labels << "label(---)[@label=time for region detection@handle=timeRD]";
   labels << "label(---)[@label=time for neighbour detection@handle=timeNB]";
   labels << "label(---)[@label=time for sub region detection@handle=timeSR]";
@@ -128,6 +131,9 @@ void run(){
   
   gui_LabelHandle(nSub);
   gui_LabelHandle(nAllSub);
+  gui_LabelHandle(total);
+  
+  gui_int(medianSize);
   
   static LabelHandle &valHandle = gui.getValue<LabelHandle>("val-handle");
   static LabelHandle &cogHandle = gui.getValue<LabelHandle>("cog-handle");
@@ -140,12 +146,15 @@ void run(){
   int &levels = gui.getValue<int>("levels");
 
   static int lastLevels = levels;
+  static int lastMedianSize = medianSize;
   static const Img8u *grabbedImage;
   static Img8u reducedLevels;  
 
   const Img8u *useImage = 0;
   const std::vector<ImageRegion> *rs = 0;
+  static SmartPtr<MedianOp> mo;
   while(1){
+    int ms = medianSize;
     mutex.lock();
     bool rdUpdated = false;
     if(grabNextHandle.wasTriggered() || !useImage || grabButtonDown){
@@ -156,24 +165,52 @@ void run(){
         reducedLevels = cvt8u(icl::levels(cvt(grabbedImage),levels));
         useImage = &reducedLevels;
       }
+
+      if(ms){
+        mo = SmartPtr<MedianOp>(new MedianOp(Size(ms,ms)));
+        useImage = mo->apply(useImage)->asImg<icl8u>();
+      }
       
       d.setImage(useImage);
-      
-       Time t = Time::now();
-      rd.setCreateGraph(showSubRegions || showNeighbours || showSurRegions);
+
+      rd.setCreateGraph(showSubRegions || showNeighbours || showSurRegions);      
+      Time t = Time::now();
       rs = &rd.detect(useImage);
-      timeRD = str((Time::now()-t).toMilliSeconds())+"ms";
+      Time dt = (Time::now()-t);
+      if(dt.toMilliSeconds() > 5){
+        timeRD = str(dt.toMilliSeconds())+ "ms";
+      }else{
+        timeRD = dt.toStringFormated("%#ms %-usec ");
+      }
+      total = (int)rs->size();
       rdUpdated = true;
-    }else if(lastLevels != levels){
+    }else if(lastLevels != levels || ms != lastMedianSize){
       if(levels != 256){
         reducedLevels = cvt8u(icl::levels(cvt(grabbedImage),levels));
         useImage = &reducedLevels;
+        if(ms){
+          mo = SmartPtr<MedianOp>(new MedianOp(Size(ms,ms)));
+          useImage = mo->apply(useImage)->asImg<icl8u>();
+        }
+      }else if(ms != lastMedianSize){
+        if(ms){
+          mo = SmartPtr<MedianOp>(new MedianOp(Size(ms,ms)));
+          useImage = mo->apply(useImage)->asImg<icl8u>();
+        }
       }else{
         useImage = grabbedImage;
       }
       if(!rdUpdated){
         rd.setCreateGraph(showSubRegions || showNeighbours || showSurRegions );
+        Time t = Time::now();
         rs = &rd.detect(useImage);
+        Time dt = (Time::now()-t);
+        if(dt.toMilliSeconds() > 5){
+          timeRD = str(dt.toMilliSeconds())+ "ms";
+        }else{
+          timeRD = dt.toStringFormated("%#ms %-usec");
+        }
+        total = (int)rs->size();
         rdUpdated = true;
       }
       d.setImage(useImage);
