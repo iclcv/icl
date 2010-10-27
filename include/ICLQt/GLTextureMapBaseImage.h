@@ -38,6 +38,7 @@
 
 #include <ICLUtils/Size.h>
 #include <ICLUtils/Rect.h>
+#include <ICLUtils/Time.h>
 #include <ICLCore/Types.h>
 #include <ICLQt/GLTextureMapImage.h>
 #include <ICLUtils/Mutex.h>
@@ -136,6 +137,9 @@ namespace icl{
     
     /// returns current image format
     format getFormat() const;
+    
+    /// returns the images time stamp
+    Time getTime() const;
     
     /// returns current image roi
     Rect getROI() const;

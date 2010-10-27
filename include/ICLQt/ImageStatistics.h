@@ -39,6 +39,7 @@
 #include <ICLCore/Types.h>
 #include <ICLCore/ImgParams.h>
 #include <ICLUtils/Range.h>
+#include <ICLUtils/Time.h>
 
 namespace icl{
   
@@ -48,6 +49,7 @@ namespace icl{
     std::vector<Range64f> ranges;
     std::vector<std::vector<int> > histos;
     bool isNull;
+    Time time;
   };
 }
 

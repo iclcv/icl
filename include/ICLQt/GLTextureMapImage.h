@@ -194,6 +194,11 @@ namespace icl{
 
     /// returns the current grid color
     const float *getGridColor() const;
+
+    /// returns the current images time stamp
+    inline Time getTime() const {
+      return m_time;
+    }
     private:
 
     /// internally used for debugging (TODO remove and make glabal function)
@@ -252,6 +257,9 @@ namespace icl{
     
     /// holds the current grid color
     float m_gridColor[4];
+    
+    /// hold images timestamp
+    Time m_time;
     
   };
 }

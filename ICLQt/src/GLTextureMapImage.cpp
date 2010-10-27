@@ -220,6 +220,8 @@ namespace icl{
     ICLASSERT( m_iChannels == image->getChannels() );
     ICLASSERT( m_iImageW == image->getWidth());
     ICLASSERT( m_iImageH == image->getHeight());
+    
+    m_time = image->getTime();
 
     if(m_bUseSingleBuffer){ // this is not allowed, because openGL cannot be accessed thread-safe
       setPackAlignment(getDepth<T>(),image->getWidth());
@@ -416,6 +418,7 @@ namespace icl{
       }
     }
     image->setFullROI();
+    image->setTime(m_time);
     return image;
   }
   
@@ -763,6 +766,8 @@ namespace icl{
   const ImageStatistics &GLTextureMapImage<T>::updateStatistics(ImageStatistics &s){
     s.isNull = false;
     s.d = getDepth<T>();
+    
+    s.time = m_time;
     
     std::vector<Range<T> > rangesT = getMinMax();
     s.ranges.resize(rangesT.size());

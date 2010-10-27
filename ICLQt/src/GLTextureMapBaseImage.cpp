@@ -184,6 +184,15 @@ namespace icl{
     ERROR_LOG("getDepth() must not be called before an image was set!");
     return depth64f; //
   }
+
+  Time GLTextureMapBaseImage::getTime() const{
+    if(m_po8u)return m_po8u->getTime();
+    if(m_po16s)return m_po16s->getTime();
+    if(m_po32s)return m_po32s->getTime();
+    if(m_po32f)return m_po32f->getTime();
+    return Time();
+  }
+  
   
   int GLTextureMapBaseImage::getChannels() const{
     return m_oCurrentImageParams.getChannels();

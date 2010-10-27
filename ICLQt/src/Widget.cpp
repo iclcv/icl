@@ -2401,6 +2401,8 @@ namespace icl{
       info.push_back(str("channel "+str(a)+":"));
       info.push_back(str("   ")+str(ranges[a]));
     }
+
+    info.push_back(string("time:  ")+str(i->getTime()));
     return info;
   }
 
@@ -2513,9 +2515,9 @@ namespace icl{
     if(m_data->image){
       return m_data->image->getStatistics();
     }else{
-      static ImageStatistics xxx;
-      xxx.isNull = true;
-      return xxx;
+      static ImageStatistics s;
+      s.isNull = true;
+      return s;
     }
   }
   // }}}
