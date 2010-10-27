@@ -1098,7 +1098,7 @@ namespace icl{
     QMutexLocker locker(&data->menuMutex);
 
     // OK, we need to extract default values for all gui elements if gui is already defined!
-    data->menu = GUI("tab(bci,scale,channel,capture,extra,info,license)[@handle=root@minsize=5x7]",widget);
+    data->menu = GUI("tab(bci,scale,channel,capture,extra,info,license,help)[@handle=root@minsize=5x7]",widget);
 
     GUI bciGUI("vbox");
 
@@ -1196,8 +1196,10 @@ namespace icl{
                 );
 
     GUI licGUI("vbox[@handle=lic]");
+
+    GUI helpGUI("vbox[@handle=help]");
     
-    data->menu << bciGUI << scaleGUI << channelGUI << captureGUI << extraGUI << infoGUI << licGUI;
+    data->menu << bciGUI << scaleGUI << channelGUI << captureGUI << extraGUI << infoGUI << licGUI << helpGUI;
     
     data->menu.create();
 
@@ -1332,14 +1334,26 @@ namespace icl{
     QObject::connect(*data->menu.getValue<ButtonHandle>("bg-gray"),SIGNAL(clicked()),widget,SLOT(setBackgroundGray()));
                  
             
-    
-    // license widget
-    BoxHandle &h = data->menu.getValue<BoxHandle>("lic");
-    QTextEdit *lic = new QTextEdit(*h);
-    lic->setReadOnly(true);
-    lic->setWordWrapMode(QTextOption::QTextOption::NoWrap);
-    lic->setText(pagetlic().c_str());
-    h.add(lic,"License Information");
+    { //ugly :-)    
+      // license widget
+      BoxHandle &h = data->menu.getValue<BoxHandle>("lic");
+      QTextEdit *lic = new QTextEdit(*h);
+      lic->setReadOnly(true);
+      lic->setWordWrapMode(QTextOption::QTextOption::NoWrap);
+      lic->setText(pagetlic().c_str());
+      h.add(lic,"License Information");
+    }{
+      BoxHandle &h = data->menu.getValue<BoxHandle>("help");
+      QTextEdit *help = new QTextEdit(*h);
+      help->setReadOnly(true);
+      help->setWordWrapMode(QTextOption::QTextOption::NoWrap);
+      std::string text = pagethelp();
+      help->setText(text.length() ? text.c_str() : 
+                   "no help information available\n"
+                   "applications can set a help text\n"
+                   "using pasethelp(text)");
+      h.add(help,"Help Information");
+    }
   }
 
   // }}}
