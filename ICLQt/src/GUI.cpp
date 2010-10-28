@@ -103,7 +103,9 @@
 
 #include <ICLQt/Widget.h>
 #include <ICLQt/DrawWidget.h>
+#ifdef HAVE_OPENGL
 #include <ICLQt/DrawWidget3D.h>
+#endif
 #include <ICLQt/ThreadedUpdatableSlider.h>
 #include <ICLQt/ThreadedUpdatableTextView.h>
 
@@ -1146,7 +1148,7 @@ public:
 
   // }}}
 
-
+#ifdef HAVE_OPENGL
   struct DrawGUIWidget3D : public GUIWidget{
     // {{{ open
     DrawGUIWidget3D(const GUIDefinition &def):GUIWidget(def,0){
@@ -1167,6 +1169,7 @@ public:
   private:
     ICLDrawWidget3D *m_poWidget3D;
   };
+#endif
 
   // }}}
   struct ComboGUIWidget : public GUIWidget{
@@ -1384,7 +1387,9 @@ public:
       MAP_CREATOR_FUNCS["image"] = create_widget_template<ImageGUIWidget>;
       MAP_CREATOR_FUNCS["state"] = create_widget_template<StateGUIWidget>;
       MAP_CREATOR_FUNCS["draw"] = create_widget_template<DrawGUIWidget>;
+#ifdef HAVE_OPENGL
       MAP_CREATOR_FUNCS["draw3D"] = create_widget_template<DrawGUIWidget3D>;
+#endif
       MAP_CREATOR_FUNCS["combo"] = create_widget_template<ComboGUIWidget>;
       MAP_CREATOR_FUNCS["spinner"] = create_widget_template<SpinnerGUIWidget>;
       MAP_CREATOR_FUNCS["fps"] = create_widget_template<FPSGUIWidget>;

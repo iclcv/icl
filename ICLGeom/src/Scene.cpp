@@ -121,6 +121,7 @@ namespace icl{
     }
   };
 #ifdef HAVE_QT
+#ifdef HAVE_OPENGL
   struct Scene::GLCallback : public ICLDrawWidget3D::GLCallback{
     int cameraIndex;
     Scene *parent;
@@ -131,7 +132,7 @@ namespace icl{
       parent->render(cameraIndex, widget);
     }
   };
-
+#endif
 #endif
 
   struct Scene::RenderPlugin{
@@ -303,6 +304,7 @@ namespace icl{
       m_cameras.clear();
     }
 #ifdef HAVE_QT
+#ifdef HAVE_OPENGL
     for(unsigned int i=0;i<m_mouseHandlers.size();++i){
       delete m_mouseHandlers[i];
     }
@@ -312,6 +314,7 @@ namespace icl{
       delete m_glCallbacks[i];
     }
     m_glCallbacks.clear();
+#endif
 #endif
 
   }

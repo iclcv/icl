@@ -41,7 +41,9 @@
 
 #ifdef HAVE_QT
 #include <ICLQt/MouseHandler.h>
+#ifdef HAVE_OPENGL
 #include <ICLQt/DrawWidget3D.h>
+#endif
 #include <ICLGeom/SceneMouseHandler.h>
 #endif
 
@@ -58,8 +60,9 @@ namespace icl{
   class Scene : public Lockable{
     public:
     struct RenderPlugin;
+#ifdef HAVE_OPENGL
     struct GLCallback;
-
+#endif
     Scene();
     ~Scene();
     Scene(const Scene &scene);
@@ -125,10 +128,11 @@ namespace icl{
 #ifdef HAVE_QT
 #ifdef HAVE_OPENGL
     std::vector<SceneMouseHandler*> m_mouseHandlers;
+	std::vector<GLCallback*> m_glCallbacks;
 #endif
 #endif
 
-    std::vector<GLCallback*> m_glCallbacks;
+    
 
     bool m_lightSimulationEnabled;
     bool m_drawCamerasEnabled;

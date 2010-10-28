@@ -54,7 +54,9 @@
 #include <ICLQt/LabelHandle.h>
 #include <ICLQt/ButtonHandle.h>
 #include <ICLQt/DrawHandle.h>
+#ifdef HAVE_OPENGL
 #include <ICLQt/DrawHandle3D.h>
+#endif
 #include <ICLQt/StringHandle.h>
 #include <ICLQt/CheckBoxHandle.h>
 
@@ -68,8 +70,9 @@
 #include <QtGui/QPushButton>
 #include <ICLQt/Widget.h>
 #include <ICLQt/DrawWidget.h>
+#ifdef HAVE_OPENGL
 #include <ICLQt/DrawWidget3D.h>
-
+#endif
 #include <ICLUtils/StringUtils.h>
 
 using namespace icl;
@@ -311,7 +314,7 @@ INST_OTHER_TYPES
               (*dst)->install((MouseHandler*)src.data);
             });
     //FROM_TO(DataStore::Data::Event,DrawHandle,if(src.message=="update")dst.update());
-
+#ifdef HAVE_OPENGL
     // DrawHandle3D
     FROM_IMG(DrawHandle3D,(*dst)->setImage(&src));
     FROM_IMG_PTR(DrawHandle3D,dst=src);
@@ -323,7 +326,7 @@ INST_OTHER_TYPES
             else if(src.message=="install"){
               (*dst)->install((MouseHandler*)src.data);
             });
-
+#endif
     
     // FPSHandle
     FROM_TO(DataStore::Data::Event,FPSHandle,if(src.message=="update")dst.update());
@@ -514,11 +517,13 @@ namespace icl{
     FROM_IMG_PTR_ADD(DrawHandle);
     ADD(DataStore::Data::Event,DrawHandle);
 
+#ifdef HAVE_OPENGL
     // DrawHandle3D
     FROM_IMG_ADD(DrawHandle3D);
     FROM_IMG_PTR_ADD(DrawHandle3D);
     ADD(DataStore::Data::Event,DrawHandle3D);
-    
+#endif
+
     // FPSHandle
     ADD(DataStore::Data::Event,FPSHandle);
     
