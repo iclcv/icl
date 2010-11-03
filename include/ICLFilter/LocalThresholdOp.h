@@ -223,7 +223,7 @@ namespace icl{
     float getGammaSlope() const; 
     
     /// returns currently used algorithm type
-    algorithm getAlgorithms() const ;
+    algorithm getAlgorithm() const ;
     
     /// sets internally used algorithm
     void setAlgorithm(algorithm a);
@@ -235,13 +235,13 @@ namespace icl{
     void apply_a(const ImgBase *src, ImgBase **dst);
     
     /// mask size 
-    unsigned int m_maskSize;
+    // property unsigned int m_maskSize;
 
     /// global threshold
-    float m_globalThreshold;
+    // property float m_globalThreshold;
 
     /// gamma slope
-    float m_gammaSlope;
+    // property float m_gammaSlope;
     
     /// input ROI buffer image for ROI support
     ImgBase *m_roiBufSrc;
@@ -253,7 +253,7 @@ namespace icl{
     IntegralImgOp *m_iiOp;
 
     /// currently used algorithm
-    algorithm m_algorithm;
+    /// property algorithm m_algorithm;
 
     /// BinaryCompareOp for tiledXXX algorithms
     BinaryCompareOp *m_cmp;

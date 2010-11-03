@@ -36,6 +36,7 @@
 #define ICL_REGION_DETECTOR_H
 
 #include <ICLUtils/Uncopyable.h>
+#include <ICLUtils/Configurable.h>
 #include <ICLCore/ImgBase.h>
 #include <ICLBlob/ImageRegion.h>
 
@@ -178,17 +179,19 @@ namespace icl{
       Lastly, all ImageRegionData structures are filtered w.r.t. the given size and
       value constraints.
   */
-  class RegionDetector : public Uncopyable{
+  class RegionDetector : public Uncopyable, public Configurable{
     struct Data;  //!< internal data structure
     Data *m_data; //!< internal data pointer
     
     public:
+
     /// first constructor with given flag for creation of the region graph
     /** Note: at default, the region graph is not created */
-    RegionDetector(bool createRegionGraph);
+    RegionDetector(bool createRegionGraph, const std::string &configurableID=Configurable::create_default_ID("region-detector-"));
 
     /// 2nd constructor with given constraints and region-graph creation flag
-    RegionDetector(int minSize=1, int maxSize=2<<28, int minVal=0, int maxVal=255, bool createRegionGraph=false);
+    RegionDetector(int minSize=1, int maxSize=2<<28, int minVal=0, int maxVal=255, bool createRegionGraph=false,
+                   const std::string &configurableID=Configurable::create_default_ID("region-detector-"));
 
     /// Destructor
     ~RegionDetector();
@@ -207,7 +210,15 @@ namespace icl{
     /** click always refers to the last detect call. If no region contains the given point (e.g. because
         it is outside the image rectangle), a null-region is returned. */
     const ImageRegion click(const Point &pos);
-    
+
+    /// sets a property
+    virtual void setPropertyValue(const std::string &propertyName, const std::string &value) throw (ICLException);
+    virtual std::vector<std::string> getPropertyList();
+    virtual std::string getPropertyType(const std::string &propertyName);
+    virtual std::string getPropertyInfo(const std::string &propertyName);
+    virtual std::string getPropertyValue(const std::string &propertyName);
+    virtual int getPropertyVolatileness(const std::string &propertyName);
+       
     private:
     
     /// Internally used utility function that extracts the input images ROI if necessary

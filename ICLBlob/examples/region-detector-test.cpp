@@ -50,6 +50,7 @@ int main(){
   a = filter(a,"median");
 
   a.setROI(Rect(20,20,100,300));
+  
   vector<vector<Point> > px = pixels(a,0,2<<20,255,255);
   vector<RegionPCAInfo> pcas = pca(a,0,2<<20,255,255);
   

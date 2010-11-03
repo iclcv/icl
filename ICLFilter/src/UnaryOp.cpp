@@ -56,14 +56,27 @@
 
 namespace icl{
 
-  UnaryOp::UnaryOp():m_poMT(0),m_buf(0){};
+  void UnaryOp::initConfigurable(){
+    addProperty("UnaryOp.clip to ROI","menu","on,off",m_oROIHandler.getClipToROI() ? "on" : "off");
+    addProperty("UnaryOp.check only","menu","on,off",m_oROIHandler.getCheckOnly() ? "on" : "off");
+  }
+
+  UnaryOp::UnaryOp():m_poMT(0),m_buf(0){
+    initConfigurable();
+  }
   
   UnaryOp::UnaryOp(const UnaryOp &other):
-    m_poMT(0),m_oROIHandler(other.m_oROIHandler),m_buf(0){}
+    m_poMT(0),m_oROIHandler(other.m_oROIHandler),m_buf(0){
+    initConfigurable();
+  }
   
   UnaryOp &UnaryOp::operator=(const UnaryOp &other){
     m_oROIHandler = other.m_oROIHandler;
     ICL_DELETE( m_poMT );
+    
+    prop("UnaryOp.clip to ROI").value = other.prop("UnaryOp.clip to ROI").value;
+    prop("UnaryOp.check only").value = other.prop("UnaryOp.check only").value;
+    
     return *this;
   }
   UnaryOp::~UnaryOp(){
@@ -396,4 +409,11 @@ namespace icl{
     op->apply(src,dst);
     delete op;
   }
+
+  void UnaryOp::setPropertyValue(const std::string &propertyName, const std::string &value) throw (ICLException){
+    if(propertyName == "UnaryOp.clip to ROI") setClipToROI(value == "on");
+    else if(propertyName == "UnaryOp.check only") setCheckOnly(value == "on");
+    Configurable::setPropertyValue(propertyName,value);
+  }
+
 }

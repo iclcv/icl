@@ -38,27 +38,42 @@
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/StackTimer.h>
 #include <ICLFilter/IntegralImgOp.h>
+#include <ICLUtils/StringUtils.h>
 
 namespace icl{
 
   LocalThresholdOp::LocalThresholdOp(unsigned int maskSize, float globalThreshold, float gammaSlope): 
     // {{{ open
-    m_maskSize(maskSize),m_globalThreshold(globalThreshold),
-    m_gammaSlope(gammaSlope),m_roiBufSrc(0), m_roiBufDst(0),
-    m_iiOp(new IntegralImgOp),m_algorithm(regionMean),
+    m_roiBufSrc(0), m_roiBufDst(0),
+    m_iiOp(new IntegralImgOp),
     m_cmp(new BinaryCompareOp(BinaryCompareOp::gt)),
     m_tiledBuf1(0),m_tiledBuf2(0){
+    
+    /*
+        - mask size (range:spinbox)
+        - global threshold (range:slider -100000,100000)
+        - gamma slope (range:slider(-10,10)
+        - algorithm (menu, region mean, tiled lin, tiled NN)
+        */
+    addProperty("mask size","range:spinbox","[1,500]",str(maskSize));
+    addProperty("global threshold","range:slider","[-100,100]",str(globalThreshold));
+    addProperty("gamma slope","range:slider","[-10,10]",str(gammaSlope));
+    addProperty("algorithm","menu","region mean,tiled linear,tiled NN","region mean");
   }
 
   // }}}
 
   LocalThresholdOp::LocalThresholdOp(LocalThresholdOp::algorithm a, int maskSize, float globalThreshold, float gammaSlope):
     // {{{ open
-    m_maskSize(maskSize),m_globalThreshold(globalThreshold),
-    m_gammaSlope(gammaSlope),m_roiBufSrc(0), m_roiBufDst(0),
-    m_iiOp(new IntegralImgOp),m_algorithm(a),
+    m_roiBufSrc(0), m_roiBufDst(0),
+    m_iiOp(new IntegralImgOp),
     m_cmp(new BinaryCompareOp(BinaryCompareOp::gt)),
     m_tiledBuf1(0),m_tiledBuf2(0){
+
+    addProperty("mask size","range:spinbox","[1,500]",str(maskSize));
+    addProperty("global threshold","range:slider","[-100,100]",str(globalThreshold));
+    addProperty("gamma slope","range:slider","[-10,10]",str(gammaSlope));
+    addProperty("algorithm","menu","region mean,tiled linear,tiled NN",a==regionMean?"region mean":a==tiledNN?"tiled NN":"tiled linear");
   }
     // }}}
 
@@ -77,48 +92,45 @@ namespace icl{
 
   void LocalThresholdOp::setMaskSize(unsigned int maskSize){
     // {{{ open
-
-    m_maskSize = maskSize;    
+    prop("mask size").value = str(maskSize);
+    call_callbacks("mask size");
   }
 
   // }}}
 
   void LocalThresholdOp::setGlobalThreshold(float globalThreshold){
     // {{{ open
-
-    m_globalThreshold = globalThreshold;
+    prop("global threshold").value = str(globalThreshold);
+    call_callbacks("global threshold");
   }
 
   // }}}
 
   void LocalThresholdOp::setGammaSlope(float gammaSlope){
     // {{{ open
-
-    this->m_gammaSlope = gammaSlope;
+    prop("gamma slope").value = str(gammaSlope);
+    call_callbacks("gamma slope");
   }
 
   // }}}
 
   unsigned int LocalThresholdOp::getMaskSize() const{
     // {{{ open
-
-    return m_maskSize;
+    return parse<int>(prop("mask size").value);
   }
 
   // }}}
 
   float LocalThresholdOp::getGlobalThreshold() const{
     // {{{ open
-
-      return m_globalThreshold;
+    return parse<float>(prop("global threshold").value);
   }
 
   // }}}
 
   float LocalThresholdOp::getGammaSlope() const{
     // {{{ open
-
-      return m_gammaSlope;
+    return parse<float>(prop("gamma slope").value);
   }
 
   // }}}
@@ -135,10 +147,10 @@ namespace icl{
   // }}}
 
   /// returns currently used algorithm type
-  LocalThresholdOp::algorithm LocalThresholdOp::getAlgorithms() const{
+  LocalThresholdOp::algorithm LocalThresholdOp::getAlgorithm() const{
     // {{{ open
-
-    return m_algorithm;
+    const std::string &a = prop("algorithm").value;
+    return a == "region mean" ? regionMean : a =="tiled NN" ? tiledNN : tiledLIN;
   }
 
   // }}}
@@ -146,8 +158,8 @@ namespace icl{
   /// sets internally used algorithm
   void LocalThresholdOp::setAlgorithm(algorithm a){
     // {{{ open
-
-    m_algorithm = a;
+    prop("algorithm").value = (a==regionMean?"region mean":a==tiledNN?"tiledNN":"tiled linear");
+    call_callbacks("algorithm");
   }
 
   // }}}
@@ -405,7 +417,9 @@ namespace icl{
   template<> void LocalThresholdOp::apply_a<LocalThresholdOp::tiledNN>(const ImgBase *src, ImgBase **dst){
     // {{{ open
     
-    int ts = 2*m_maskSize;
+    int ts = 2*getMaskSize();
+    
+    
     ICLASSERT_RETURN(ts>1);
     Size size = src->getSize();
     ensureCompatible(&m_tiledBuf1,src->getDepth(),size/ts, 1, formatMatrix);
@@ -418,8 +432,8 @@ namespace icl{
                             *(*dst)->asImg<icl8u>(),       \
                             *m_tiledBuf1->asImg<icl##D>(), \
                             *m_tiledBuf2->asImg<icl##D>(), \
-                            ts, m_globalThreshold, m_cmp,  \
-                            m_algorithm == tiledLIN);      \
+                            ts, getGlobalThreshold(), m_cmp,  \
+                            getAlgorithm() == tiledLIN);  \
       break;
       ICL_INSTANTIATE_ALL_DEPTHS
 #undef ICL_INSTANTIATE_DEPTH
@@ -440,8 +454,12 @@ namespace icl{
     m_iiOp->setIntegralImageDepth((src->getDepth() == depth8u || src->getDepth() == depth16s) ? depth32s : src->getDepth());
     const ImgBase *ii = m_iiOp->apply(src);
     
+    float t = getGlobalThreshold();
+    int s = getMaskSize();
+    float gs = getGammaSlope();
+    
     switch(src->getDepth()){
-#define ICL_INSTANTIATE_DEPTH(D) case depth##D: apply_local_threshold_sxx<icl##D>(*src->asImg<icl##D>(), ii, *dst, m_globalThreshold, m_maskSize, m_gammaSlope); break;
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: apply_local_threshold_sxx<icl##D>(*src->asImg<icl##D>(), ii, *dst, t, s, gs); break;
       ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
     }
@@ -457,6 +475,10 @@ namespace icl{
     ICLASSERT_RETURN( dst );
     ICLASSERT_RETURN( src != *dst );
 
+    SHOW(getMaskSize());
+    SHOW(getGlobalThreshold());
+
+
     const ImgBase *srcOrig = src;
     bool roi = false;
     // cut the roi of src if set
@@ -466,18 +488,18 @@ namespace icl{
       src = m_roiBufSrc;
       roi = true;
     }
-    ICLASSERT_RETURN(src->getWidth() > 2*(int)m_maskSize);
-    ICLASSERT_RETURN(src->getHeight() > 2*(int)m_maskSize);
+    ICLASSERT_RETURN(src->getWidth() > 2*(int)getMaskSize());
+    ICLASSERT_RETURN(src->getHeight() > 2*(int)getMaskSize());
 
     // prepare the destination image
-    depth dstDepth = m_algorithm == regionMean ? (m_gammaSlope ? depth32f : depth8u) : depth8u;
+    depth dstDepth = getAlgorithm() == regionMean ? (getGammaSlope() ? depth32f : depth8u) : depth8u;
     ImgBase **useDst = roi ? &m_roiBufDst : dst;
     if(!prepare(useDst, dstDepth, src->getSize(), formatMatrix, src->getChannels(), Rect::null)){
       ERROR_LOG("prepare failure [code 1]");
       return;
     }
 
-    switch(m_algorithm){
+    switch(getAlgorithm()){
       case regionMean: apply_a<regionMean>(src,useDst); break;
       case tiledNN: apply_a<tiledNN>(src,useDst); break;
       case tiledLIN: apply_a<tiledLIN>(src,useDst); break;

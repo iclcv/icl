@@ -36,6 +36,7 @@
 #define UNARY_OP_H
 
 #include <ICLFilter/OpROIHandler.h>
+#include <ICLUtils/Configurable.h>
 
 namespace icl{
   
@@ -47,7 +48,9 @@ namespace icl{
   /** A list of unary operators can be found here:\n
       \ref UNARY
   **/
-  class UnaryOp{
+  class UnaryOp : public Configurable{
+    void initConfigurable();
+    
     public:
 
     /// Explicit empty constructor
@@ -79,13 +82,21 @@ namespace icl{
     /**
       @param bClipToROI true=yes, false=no
     */    
-    void setClipToROI (bool bClipToROI) { m_oROIHandler.setClipToROI(bClipToROI); }
+    void setClipToROI (bool bClipToROI) { 
+      m_oROIHandler.setClipToROI(bClipToROI); 
+      prop("UnaryOp.clip to ROI").value = bClipToROI ? "on" : "off";
+      call_callbacks("UnaryOp.clip to ROI");
+    }
     
     /// sets if the destination image should be adapted to the source, or if it is only checked if it can be adapted.
     /**
       @param bCheckOnly true = destination image is only checked, false = destination image will be checked and adapted.
     */
-    void setCheckOnly (bool bCheckOnly) { m_oROIHandler.setCheckOnly(bCheckOnly); }
+    void setCheckOnly (bool bCheckOnly) { 
+      m_oROIHandler.setCheckOnly(bCheckOnly); 
+      prop("UnaryOp.check only").value = bCheckOnly ? "on" : "off";
+      call_callbacks("UnaryOp.check only");
+    }
     
     /// returns the ClipToROI status
     /**
@@ -99,6 +110,9 @@ namespace icl{
     */
     bool getCheckOnly() const { return m_oROIHandler.getCheckOnly(); }
     
+    
+    /// sets value of a property (always call call_callbacks(propertyName) or Configurable::setPropertyValue)
+    virtual void setPropertyValue(const std::string &propertyName, const std::string &value) throw (ICLException);
 
     /// Creates a UnaryOp instance from given string definition
     /** Supported definitions have the followin syntax:

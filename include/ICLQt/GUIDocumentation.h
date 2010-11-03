@@ -196,6 +196,7 @@
       - <b>multidraw</b> tabbed widget of draw widget components accessible via string index
       - <b>camcfg</b> single button that pops up a camera configuration widget (see CamCfgWiget) if clicked
       - <b>config</b> single button or embedded tree-view that enables 
+      - <b>prop</b> complex embedded component containing GUI compoments to configure an ICLUtils::Configurable at runtime
         runtime adaption of configuration file parameters
 
       \subsection CONTROL Special Control Sequences
@@ -308,6 +309,7 @@
         will be embedded directly where the component was put into the layout. Otherwise - if param is
         popup - only a single button labled 'config' is embedded. This button can be triggered to show
         an extra widget of type ConfigFileGUI
+      - <b>prop(CONFIGURABLE_ID)</b> CONFIGURABLE_ID refers to an ICLUtils::Configurables ID
 
       \subsection GP General Parameters
       The 3rd part of the GUI definition string is a list of so called general params. "General" means here,
@@ -412,6 +414,7 @@
       <TR> <TD>multidraw</TD>    <TD>MultiDrawHandle</TD>   <TD>0</TD>                  <TD>-</TD>                                                   </TR>
       <TR> <TD>camcfg</TD>       <TD>no handle</TD>         <TD>0</TD>                  <TD>-</TD>                                                   </TR>
       <TR> <TD>config</TD>       <TD>no handle</TD>         <TD>0</TD>                  <TD>-</TD>                                                   </TR>
+      <TR> <TD>prop</TD>         <TD>no handle</TD>         <TD>0</TD>                  <TD>-</TD>                                                   </TR>
       </TABLE>
       
       \section HVV Handles vs. Values

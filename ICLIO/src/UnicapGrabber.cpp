@@ -194,7 +194,7 @@ namespace icl{
   
   void UnicapGrabberImpl::setProperty(const std::string &property, const std::string &value){
     // {{{ open
-    
+
     //    bool verbose = true;
     string p = force_lower_case(property);
 

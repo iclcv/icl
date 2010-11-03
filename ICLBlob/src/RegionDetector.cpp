@@ -43,6 +43,7 @@
 #include <ICLBlob/ImageRegionPart.h>
 
 #include <ICLUtils/Range.h>
+#include <ICLUtils/StringUtils.h>
 
 #include <algorithm>
 
@@ -93,20 +94,61 @@ namespace icl{
     }
   };
 
-  RegionDetector::RegionDetector(bool createRegionGraph){
+  void RegionDetector::setPropertyValue(const std::string &propertyName, const std::string &value) throw (ICLException){
+    if(propertyName == "minimum region size") m_data->minSize = parse<int>(value);
+    else if(propertyName == "maximum region size") m_data->maxSize = parse<int>(value);
+    else if(propertyName == "minimum value") m_data->minVal = parse<int>(value);
+    else if(propertyName == "maximum value") m_data->maxVal = parse<int>(value);
+    else m_data->createRegionGraph = (value == "on");
+
+    call_callbacks(propertyName);
+  }
+  
+  std::vector<std::string> RegionDetector::getPropertyList(){
+    return tok("minimum region size,maximum region size,minimum value, maximum value,create region graph",",");
+  }
+
+  std::string RegionDetector::getPropertyType(const std::string &propertyName){
+    if(propertyName == "create region graph") return "menu";
+    return "range:spinbox";
+  }
+
+  std::string RegionDetector::getPropertyInfo(const std::string &propertyName){
+    if(propertyName == "create region graph") return "on,off";
+    return "[0,10000000]";
+  }
+
+  std::string RegionDetector::getPropertyValue(const std::string &propertyName){
+    if(propertyName == "minimum region size") return str(m_data->minSize);
+    if(propertyName == "maximum region size") return str(m_data->maxSize);
+    if(propertyName == "minimum value") return str(m_data->minVal);
+    if(propertyName == "maximum value") return str(m_data->maxVal);
+    else return m_data->createRegionGraph ? "on" : "off";
+  }
+
+  int RegionDetector::getPropertyVolatileness(const std::string &propertyName){
+    return 0;
+  }
+
+
+  RegionDetector::RegionDetector(bool createRegionGraph, const std::string &configurableID):Configurable(configurableID){
     m_data = new Data;
     m_data->createRegionGraph = createRegionGraph;
     static const int m = Range<int>::limits().maxVal;
     setConstraints(0,m,0,m);
   }
 
-  RegionDetector::RegionDetector(int minSize, int maxSize, int minVal, int maxVal, bool createRegionGraph){
+  RegionDetector::RegionDetector(int minSize, int maxSize, int minVal, int maxVal, bool createRegionGraph,
+                                 const std::string &configurableID):Configurable(configurableID){
     m_data = new Data;
     m_data->createRegionGraph = createRegionGraph;
     setConstraints(minSize,maxSize,minVal,maxVal);
   }
+
   void RegionDetector::setCreateGraph(bool on){
-    m_data->createRegionGraph = on;
+    if(m_data->createRegionGraph != on){
+      m_data->createRegionGraph = on;
+    }
   }  
 
   RegionDetector::~RegionDetector(){

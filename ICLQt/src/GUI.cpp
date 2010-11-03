@@ -33,6 +33,7 @@
 *********************************************************************/
 
 #include <ICLUtils/StrTok.h>
+#include <ICLUtils/SteppingRange.h>
 #include <ICLUtils/Size.h>
 #include <ICLCore/CoreFunctions.h>
 
@@ -95,6 +96,9 @@
 #include <ICLQt/SplitterHandle.h>
 #include <QtGui/QCheckBox>
 #include <QtGui/QCleanlooksStyle>
+#include <QtCore/QTimer>
+
+#include <QtGui/QFileDialog>
 
 #include <ICLQt/ConfigFileGUI.h>
 #include <ICLQt/CamCfgWidget.h>
@@ -108,14 +112,35 @@
 #endif
 #include <ICLQt/ThreadedUpdatableSlider.h>
 #include <ICLQt/ThreadedUpdatableTextView.h>
+#include <ICLUtils/Configurable.h>
 
 #include <map>
+#include <set>
 
 using namespace std;
 using namespace icl;
 
 namespace icl{
-
+  namespace{
+    struct VolatileUpdater : public QTimer{
+      std::string prop;
+      GUI &gui;
+      Configurable &conf;
+      LabelHandle *l;
+      VolatileUpdater(int msec, const std::string &prop, GUI &gui, Configurable &conf):
+        prop(prop),gui(gui),conf(conf),l(0){
+        setInterval(msec);
+      }
+      virtual void timerEvent(QTimerEvent * e){
+        if(!l){
+          l = &gui.getValue<LabelHandle>("#i#"+prop);
+        }
+        (***l).setText(conf.getPropertyValue(prop).c_str());
+        (***l).update(); 
+        QApplication::processEvents();
+      }
+    };
+  }
   
   static const std::string &gen_params(){
     // {{{ open
@@ -134,6 +159,192 @@ namespace icl{
   }
 
   // }}}
+
+  // quite complex component for embedded property component 'prop'
+  struct ConfigurableGUIWidget : public GUIWidget, public GUI::Callback,public Configurable::PropertyChangedCallback{
+
+    std::vector<SmartPtr<VolatileUpdater> > timers;
+    Configurable *conf;
+    GUI gui;
+    bool deactivateExec;
+
+    struct StSt{
+      std::string full,half;
+      StSt(const std::string &full, const std::string &half):full(full),half(half){}
+    };
+    
+    void update_all_components(){
+      std::vector<std::string> props = conf->getPropertyList();
+      for(unsigned int i=0;i<props.size();++i){
+        const std::string &p = props[i];
+        std::string t = conf->getPropertyType(p);
+        if(t == "range" || t == "range:slider"){
+          gui.getValue<FSliderHandle>("#r#"+p).setValue( parse<icl32f>(conf->getPropertyValue(p)) );
+        }else if( t == "range:spinbox"){
+          gui.getValue<SpinnerHandle>("#R#"+p).setValue( parse<icl32s>(conf->getPropertyValue(p)) );
+        }else if( t == "menu" || t == "value-list" || t == "valueList"){
+          std::string handle = (t == "menu" ? "#m#" : "#v#")+p;
+          gui.getValue<ComboHandle>(handle).setSelectedItem(conf->getPropertyValue(p));
+        }else if( t == "info"){
+          gui["#i#"+p] = conf->getPropertyValue(p);
+        }
+      }
+    }
+
+
+    
+    void add_component(GUI &gui,const StSt &p, std::ostringstream &ostr, GUI &timerGUI){
+      std::string t = conf->getPropertyType(p.full);
+      if(t == "range" || t == "range:slider"){
+        // todo check stepping ...
+        std::string handle="#r#"+p.full;
+        SteppingRange<float> r = parse<SteppingRange<float> >(conf->getPropertyInfo(p.full));
+        std::string c = conf->getPropertyValue(p.full);
+        gui << "fslider("+str(r.minVal)+","+str(r.maxVal)+","+c+")[@handle="+handle+"@minsize=12x2@label="+p.half+"]";
+        ostr << '\1' << handle;
+      }else if( t == "range:spinbox"){
+        std::string handle="#R#"+p.full;
+        Range32s r = parse<Range32s>(conf->getPropertyInfo(p.full));
+        std::string c = conf->getPropertyValue(p.full);
+        gui << "spinner("+str(r.minVal)+","+str(r.maxVal)+","+c+")[@handle="+handle+"@minsize=12x2@label="+p.half+"]";
+        ostr << '\1' << handle;
+      }else if(t == "menu" || t == "value-list" || t == "valueList"){
+        std::string handle = (t == "menu" ? "#m#" : "#v#")+p.full;
+        gui << "combo("+conf->getPropertyInfo(p.full)+")[@handle="+handle+"@minsize=12x2@label="+p.half+"]";
+        ostr << '\1' << handle;
+      }else if(t == "command"){
+        std::string handle = "#c#"+p.full;
+        ostr << '\1' << handle;
+        gui << "button("+p.half+")[@handle="+handle+"@minsize=12x2]";
+      }else if(t == "info"){
+        std::string handle = "#i#"+p.full;
+        ostr << '\1' << handle;
+        gui << "label("+conf->getPropertyValue(p.full)+")[@handle="+handle+"@minsize=12x2@label="+p.half+"]";
+        int volatileness = conf->getPropertyVolatileness(p.full);
+        if(volatileness){
+          timers.push_back(new VolatileUpdater(volatileness,p.full,timerGUI,*conf));
+        } 
+      }else{
+        ERROR_LOG("unable to create GUI-component for property \"" << p.full << "\" (unsupported property type: \"" + t+ "\")");
+      }
+     }
+
+    ConfigurableGUIWidget(const GUIDefinition &def):GUIWidget(def,1,1),deactivateExec(false){
+      conf = Configurable::get(def.param(0));
+      if(!conf) throw GUISyntaxErrorException(def.defString(),"No Configurable with ID "+def.param(0)+" registered");
+      
+      std::vector<std::string> props = conf->getPropertyList();
+      std::map<std::string,std::vector<StSt> > sections;
+
+      for(unsigned int i=0;i<props.size();++i){
+        const std::string &p = props[i];
+        unsigned int pos = p.find('.');
+        if(pos == std::string::npos){
+          sections["general"].push_back(StSt(p,p));
+        }else{
+          sections[p.substr(0,pos)].push_back(StSt(p,p.substr(pos+1))); //
+        }
+      }
+      std::string tablist;
+      
+      int generalIdx = 0;
+      int i=0;
+      for(std::map<std::string,std::vector<StSt> >::iterator it=sections.begin();it != sections.end();++it){
+        if(it->first == "general") {
+          generalIdx = i;
+        }
+        tablist += (tablist.length()?",":"")+it->first;
+        ++i;
+      }
+      
+      gui = GUI("tab("+tablist+")[@handle=__the_tab__]",this);
+
+      std::ostringstream ostr;
+      for(std::map<std::string,std::vector<StSt> >::iterator it=sections.begin();it != sections.end();++it){
+        GUI tab("vscroll");
+        for(unsigned int i=0;i<it->second.size();++i){
+          add_component(tab,it->second[i],ostr,gui);          
+        }
+        if(it->first == "general"){
+          tab << ( GUI("hbox")
+                    << "button(load)[@handle=#X#load]"
+                    << "button(save)[@handle=#X#save]"
+                 );
+          ostr <<  '\1' << "#X#load";
+          ostr <<  '\1' << "#X#save";
+        }
+        gui << tab;
+      }
+      
+      gui.create();
+      
+      (**gui.getValue<TabHandle>("__the_tab__")).setCurrentIndex(generalIdx);
+      
+      std::string cblist = ostr.str();
+      if(cblist.size() > 1){
+        gui.registerCallback(SmartPtr<GUI::Callback>(this,false),cblist.substr(1),'\1');
+      }
+      for(unsigned int i=0;i<timers.size();++i){
+        timers[i]->start();
+      }
+      
+      conf->registerCallback(Configurable::PropertyChangedCallbackPtr(this,false));
+    }
+
+    /// Called if a property is changed from somewhere else
+    virtual void propertyChanged(const std::string &name, const std::string &type, const std::string &value){
+      deactivateExec = true;
+      if(type == "range" || type == "range:slider"){
+        gui.getValue<FSliderHandle>("#r#"+name).setValue( parse<icl32f>(conf->getPropertyValue(name)) );
+      }else if (type == "range:spinbox"){
+        gui.getValue<SpinnerHandle>("#R#"+name).setValue( parse<icl32s>(conf->getPropertyValue(name)) );
+      }else if( type == "menu" || type == "value-list" || type == "valueList"){
+        std::string handle = (type == "menu" ? "#m#" : "#v#")+name;
+        gui.getValue<ComboHandle>(handle).setSelectedItem(conf->getPropertyValue(name));
+      }else if( type == "info"){
+        gui["#i#"+name] = conf->getPropertyValue(name);
+      }
+      deactivateExec = false;
+    }
+    
+    virtual void exec(const std::string &handle){
+      if(deactivateExec) return;
+      if(handle.length()<3 || handle[0] != '#') throw ICLException("invalid callback (this should not happen)");
+      std::string prop = handle.substr(3);
+      switch(handle[1]){
+        case 'r': 
+        case 'R': 
+        case 'm': 
+        case 'v': 
+          conf->setPropertyValue(prop,gui[handle]);
+        break;
+        case 'c': 
+          conf->setPropertyValue(prop,"");
+          break;
+        case 'X':
+          if(prop == "load"){
+            QString filename = QFileDialog::getOpenFileName(this,"load property file","","XML-Files (*.xml)");
+            if(!filename.isNull() && filename != ""){
+              conf->loadProperties(filename.toLatin1().data());
+              //update_all_components();
+            }
+          }else if(prop == "save"){
+            QString filename = QFileDialog::getSaveFileName(this,"save properties to file","","XML-Files (*.xml)");
+            if(!filename.isNull() && filename != ""){
+              conf->saveProperties(filename.toLatin1().data());
+            }
+          }
+          break;
+        default:
+          ERROR_LOG("invalid callback ID " << handle);
+      }
+    }
+
+    static string getSyntax(){
+      return string("prop(ConfigurableID)[general params]\n")+gen_params();
+    }
+
+  };
 
   struct CamCfgGUIWidget : public GUIWidget{
     // {{{ open
@@ -1399,6 +1610,7 @@ public:
       MAP_CREATOR_FUNCS["vsplit"] = create_widget_template<VSplitterGUIWidget>;
       MAP_CREATOR_FUNCS["camcfg"] = create_widget_template<CamCfgGUIWidget>;
       MAP_CREATOR_FUNCS["config"] = create_widget_template<ConfigFileGUIWidget>;
+      MAP_CREATOR_FUNCS["prop"] = create_widget_template<ConfigurableGUIWidget>;
 
       //      MAP_CREATOR_FUNCS["hcontainer"] = create_widget_template<HContainerGUIWidget>;
       //      MAP_CREATOR_FUNCS["vcontainer"] = create_widget_template<VContainerGUIWidget>;
