@@ -1,6 +1,7 @@
 #!/bin/bash
 
 RESOURCE_DIR=@RESOURCE_DIR_PLACEHOLDER@
+PGK_CFG_NAME=@ICL_PGK_CFG_PLACEHOLDER@
 
 if [ $# -ne 1 ] ; then
   echo -e "usage:\n\ticl-create-project PROJECT_FOLDER_NAME"
@@ -48,6 +49,8 @@ if [ "$1" = "--update" ] ; then
         echo "svn export https://opensource.cit-ec.de/svn/icl/trunk/scripts/icl-create-project-data/Makefile.custom.template"
 	echo "cp Makefile.custom Makefile.custom.old"
 	echo "mv Makefile.custom.template Makefile.custom"
+        AT="@"
+        echo "sed -i \"s|${AT}ICL_PGK_CFG_PLACEHOLDER${AT}|${PGK_CFG_NAME}|g\" Makefile.custom"
         echo '#please transfer your custom changes from Makefile.custom.old to the new Makefile.custom'
     else
         echo "make update-from-svn"
