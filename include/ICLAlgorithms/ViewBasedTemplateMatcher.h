@@ -84,7 +84,7 @@ namespace icl{
     float m_fSignificance;          ///< significance level
     mode m_eMode;                   ///< matching mode
     bool m_bClipBuffersToROI;       ///< buffer clipping mode
-    RegionDetector m_oRD;           ///< internally recycled RegionDetector instance
+    UncopiedInstance<RegionDetector> m_oRD;           ///< internally recycled RegionDetector instance
     UncopiedInstance<Img8u> m_aoBuffers[3];           ///< interanlly used buffers
     std::vector<Rect> m_vecResults; ///< internal result buffer
   };
