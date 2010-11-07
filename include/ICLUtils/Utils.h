@@ -35,7 +35,7 @@
 #ifndef ICL_UTILS_H
 #define ICL_UTILS_H
 
-#include <ICLUtils/FixedMatrixUtils.h>
+#include <ICLUtils/FixedMatrix.h>
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/ConfigFile.h>
 #include <ICLUtils/ConsoleProgress.h>

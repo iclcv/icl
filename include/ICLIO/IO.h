@@ -112,22 +112,22 @@
 #include <ICLQuick/Common.h>
 
 GUI gui("vbox");
-GenericGrabber gg;
-std::string params[] = {"","0","0","*","*.ppm",""};
+GenericGrabber grabber;
 Mutex mutex;
 
 void change_dev(){
   Mutex::Locker lock(mutex);
-  gui_ComboHandle(dev);
   try{
-    gg.init(dev,((std::string)dev)+'='+params[dev]);
+    static std::string params[] = {"","lena","0","0","*","*.ppm"};
+    std::string dev = gui["dev"];
+    grabber.init(dev,dev+"="+params[(int)gui["dev"]]);
   }catch(...){}
 }
 
 void init(){
   gui << "image[@minsize=32x24@handle=image]" 
-      << "combo(null,pwc,dc,unicap,file,!demo)"
-         "[@label=device@out=_@handle=dev]";
+      << "combo(!demo,create,pwc,dc,unicap,file)"
+               "[@label=device@handle=dev]";
   gui.show();
   gui.registerCallback(change_dev,"dev");
   change_dev();
@@ -135,12 +135,10 @@ void init(){
 
 void run(){
   Mutex::Locker lock(mutex);
-  if(gg){
-    gui["image"] = gg.grab();
-    gui["image"].update();
-  }else{
-    Thread::msleep(20);
+  if(grabber){
+    gui["image"] = grabber.grab();
   }
+  gui["image"].update();
 }
 
 int main(int n, char **ppc){
@@ -166,6 +164,9 @@ int main(int n, char **ppc){
     - <b>icl::MatrixVisionGrabber</b> Grabber using Matrix Vision's GIG-E library for Gigabit Ethernet cameras <b>not yet included</b>
     - <b>icl::SwissRangerGrabber</b> Grabber for SwissRanger camera from Mesa-Imaging company. (nees libmesasr)
     - <b>icl::VideoGrabber</b> Xine based video grabber (grabbing videos frame by frame) (needs libxine)    
+    - <b>icl::OpenCVVideoGrabber</b> OpenCV based video grabber (needs opencv 2)    
+    - <b>icl::SharedMemoryGrabber</b> Uses QSharedMemory to grab images that were send via icl::SharedMemoryPublisher (needs Qt)
+    - <b>icl::OpenCVCamGrabber</b> OpenCV based camera grab that grabs image using an opencv backend (needs OpenCV)
 */
 
 
