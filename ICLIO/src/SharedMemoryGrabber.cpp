@@ -189,7 +189,6 @@ namespace icl{
       Thread::msleep(10);
       
       ImgBase *ret = ppoDst ? *ppoDst : m_data->image;
-      SHOW(*ret);
       
       return ppoDst ? *ppoDst : m_data->image;
     }

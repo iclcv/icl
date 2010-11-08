@@ -475,10 +475,6 @@ namespace icl{
     ICLASSERT_RETURN( dst );
     ICLASSERT_RETURN( src != *dst );
 
-    SHOW(getMaskSize());
-    SHOW(getGlobalThreshold());
-
-
     const ImgBase *srcOrig = src;
     bool roi = false;
     // cut the roi of src if set
