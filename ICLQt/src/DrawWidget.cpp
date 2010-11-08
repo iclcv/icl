@@ -73,15 +73,15 @@ namespace icl{
   class IntelligentDrawCommand : public ICLDrawWidget::DrawCommand{
     // {{{ open
   protected:
-    Point32f tP(float x, float y, ICLDrawWidget::State *s){
-      return Point32f(tX(x,s),tY(y,s));
+    Point32f tP(float x, float y, ICLDrawWidget::State *s, bool forRect=false){
+      return Point32f(tX(x,s,forRect),tY(y,s,forRect));
     } 
-    Point32f tP(const Point32f &p, ICLDrawWidget::State *s){
-      return Point32f(tX(p.x,s),tY(p.y,s));
+    Point32f tP(const Point32f &p, ICLDrawWidget::State *s,bool forRect=false){
+      return Point32f(tX(p.x,s,forRect),tY(p.y,s,forRect));
     }  
     Rect32f tR(float x, float y, float w, float h, ICLDrawWidget::State *s){
-      Point32f a = tP(x,y,s);
-      Point32f b = tP(x+w,y+h,s);
+      Point32f a = tP(x,y,s,true);
+      Point32f b = tP(x+w,y+h,s,true);
       return Rect32f(a,Size32f(b.x-a.x,b.y-a.y));
     }
     Size32f tS(float w, float h, ICLDrawWidget::State *s){
@@ -91,27 +91,19 @@ namespace icl{
         return Size32f((w*s->rect.width)/s->imsize.width,
                        (h*s->rect.height)/s->imsize.height);
     }
-    float tX(float x, ICLDrawWidget::State *s){
-      return tXF(x,s);
-    }
-    float tY(float x, ICLDrawWidget::State *s){
-      return tYF(x,s);
-    }
-    
-    float tXF(float x, ICLDrawWidget::State *s){
-
+    float tX(float x, ICLDrawWidget::State *s, bool forRect=false){
       if(s->rel){
         return tmb(x,s->rect.width,s->rect.x);
       }else{
-        x+=0.5;
+        if(!forRect) x+=0.5;
         return t(x, s->imsize.width, s->rect.width, 0, s->rect.x);
       }
     }
-    float tYF(float y, ICLDrawWidget::State *s){
+    float tY(float y, ICLDrawWidget::State *s, bool forRect=false){
       if(s->rel){
         return tmb(y,s->rect.height,s->rect.y);
       } else {
-        y+=0.5;
+        if(!forRect) y+=0.5;
         return t(y, s->imsize.height, s->rect.height, 0, s->rect.y);
       }
     }
