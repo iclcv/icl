@@ -56,7 +56,7 @@
 #include <ICLIO/MyrmexGrabber.h>
 
 
-#define AMOUNT_BUFFERS 10	//number of videobuffers we want to reserve from driver
+#define AMOUNT_BUFFERS 2	//number of videobuffers we want to reserve from driver
 #define WEST 0
 #define EAST 1
 #define SOUTH 2
@@ -84,16 +84,17 @@ namespace icl {
   // seems not to be in use ??
   //int bigtargetBook[16*16];
 
-  struct MyrmexGrabber::Data{
+  struct MyrmexGrabberImpl::Data{
     std::vector<unsigned int> flat;
     int bigtarget[16*16];
     
     int fd;						//filepointer to videodevice
     void *mem[AMOUNT_BUFFERS];	//maps to the buffers the driver gives us	
+    int bufferSizes[AMOUNT_BUFFERS]; // needed for munmap 
     bool showDebug;	//flag for showing debug info
     unsigned int connections_size; //amount of connections between modules
     unsigned int image_width; //store converted width
-    unsigned int image_height; //store converted height
+   unsigned int image_height; //store converted height
     char attachedPosition; //store position of central unit
     Img16s outputImage;
 
@@ -101,31 +102,84 @@ namespace icl {
     bool isNull;
     
     int device;
-    MyrmexGrabber::Viewpoint viewpoint;
+    MyrmexGrabberImpl::Viewpoint viewpoint;
     int compression;
     int speedFactor;
+
+    bool substractNoiseImage;
+    int recordNoiseImageFrames;
+    Img16s noiseImage;
+    
+    Data(){
+      substractNoiseImage = false;
+      recordNoiseImageFrames = -1;
+    }
+    
+    void updateNoiseImage(){
+      if(recordNoiseImageFrames == -1){
+        if(!substractNoiseImage) return;
+        noiseImage.setSize(outputImage.getSize());
+        noiseImage.setChannels(1);
+              
+        icl16s *o = outputImage.begin(0);
+        const icl16s *n = noiseImage.begin(0);
+        const int dim = outputImage.getDim();
+
+        for(int i=0;i<dim;++i){
+          o[i] = iclMax(0,o[i]-n[i]);
+        }
+        return;
+      }
+      noiseImage.setSize(outputImage.getSize());
+      noiseImage.setChannels(1);
+      
+      const icl16s *o = outputImage.begin(0);
+      icl16s *n = noiseImage.begin(0);
+      const int dim = outputImage.getDim();
+      
+      for(int i=0;i<dim;++i){
+        if(o[i] > n[i]) n[i] = o[i];
+      }
+      
+      --recordNoiseImageFrames;
+    }
+    
+    
   };
 
-  MyrmexGrabber::MyrmexGrabber():m_data(new Data){
+  MyrmexGrabberImpl::MyrmexGrabberImpl():m_data(new Data){
     m_data->isNull = true;
     m_data->showDebug = false;
   }
+
   
-  MyrmexGrabber::MyrmexGrabber(int device, MyrmexGrabber::Viewpoint viewpoint, int compression, int speedFactor) throw (ICLException) :
+  MyrmexGrabberImpl::MyrmexGrabberImpl(int device, MyrmexGrabberImpl::Viewpoint viewpoint, int compression, int speedFactor) throw (ICLException) :
     m_data(new Data){
     m_data->isNull = true;
     m_data->showDebug = false;
     init(device,viewpoint,compression,speedFactor);
   }
 
-  // Init function: Opens the video device, requests buffers and tests them, sends streamon command
-  void MyrmexGrabber::init(int device, MyrmexGrabber::Viewpoint viewpoint, int compression, int speedFactor) throw (ICLException){
-    if(!m_data->isNull) throw ICLException("MyrmexGrabber device was tryed to initialize twice");
+  const std::vector<GrabberDeviceDescription> &MyrmexGrabberImpl::getDeviceList(bool rescan){
+    static std::vector<GrabberDeviceDescription> deviceList;
+    if(rescan){
+      deviceList.clear();
+      for(int i=0;i<6;i++){
+        try{
+          MyrmexGrabberImpl g;
+          g.initDevice(i,VIEW_W);
+          deviceList.push_back(GrabberDeviceDescription("myr",str(i),"Myrmex Device at /dev/video"+str(i)));
+        }catch(...){}
+      }
+    }
+    return deviceList;
+  }
+
+  void MyrmexGrabberImpl::initDevice(int device, MyrmexGrabberImpl::Viewpoint viewpoint) throw (ICLException){
+    if(!m_data->isNull) throw ICLException("MyrmexGrabberImpl device was tryed to initialize twice");
     
     m_data->device = device;
     m_data->viewpoint = viewpoint;
-    m_data->compression = compression;
-    m_data->speedFactor = speedFactor;
     m_data->showDebug = false;
     m_data->isNull = false;
     
@@ -134,6 +188,7 @@ namespace icl {
     int type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     struct v4l2_requestbuffers requestbuffers;
     struct v4l2_buffer v4l2buffer;
+    struct video_capability vcap;
 
     //Init requestbuffer structure to request buffers
     requestbuffers.count = AMOUNT_BUFFERS;
@@ -145,6 +200,16 @@ namespace icl {
     if ((m_data->fd = open(videodevice.c_str(), O_RDWR)) == -1) {
       throw ICLException("V4L2 Error: Error opening videodevice for read/write");
     }
+
+    if(ioctl(m_data->fd, VIDIOCGCAP, &vcap) == -1){
+      throw ICLException("V4L2 Error: Error extracting vcap");
+    }
+    
+    if(std::string("Myrmex") != vcap.name){
+      throw ICLException("Device index " + str(device) + " does not reference a Myrmex device (found device name '"
+                         + vcap.name + "' expected 'Mymrex')");
+    }
+
     //send IO control to request buffers
     if ( (ret=ioctl(m_data->fd, VIDIOC_REQBUFS, &requestbuffers) < 0) ) {
       printf("Code: %i ", ret);
@@ -165,6 +230,7 @@ namespace icl {
       m_data->mem[i] = mmap(0,
                             v4l2buffer.length, PROT_READ, MAP_SHARED, m_data->fd,
                             v4l2buffer.m.offset);
+      m_data->bufferSizes[i] = v4l2buffer.length;
       if (m_data->mem[i] == MAP_FAILED) {
         throw ICLException("V4L2 Error: Unable to map buffer");
       }
@@ -265,20 +331,44 @@ namespace icl {
       }	
 
     }
+  }
 
+  // Init function: Opens the video device, requests buffers and tests them, sends streamon command
+  void MyrmexGrabberImpl::init(int device, MyrmexGrabberImpl::Viewpoint viewpoint, int compression, int speedFactor) throw (ICLException){
+
+    initDevice(device,viewpoint);
+    
     //it is required to configure the compression and Speed divider, otherwise the system will not begin to stream data
+    m_data->compression = compression;
+    m_data->speedFactor = speedFactor;
+
     setSpeedDevider(speedFactor);
     setCompression(compression);
-    
 
     // This cannot happen since setSpeed would have thrown an exception ...
     //if( (getCompression()!=compression) || (getSpeed()!=speedFactor)){
-    //  ERROR_LOG("MyrmexGrabber: Compression and Speed setting can only be configured after startup.");
+    //  ERROR_LOG("MyrmexGrabberImpl: Compression and Speed setting can only be configured after startup.");
     //}
   }
 
   //Destructor
-  MyrmexGrabber::~MyrmexGrabber(){
+  MyrmexGrabberImpl::~MyrmexGrabberImpl(){
+    int type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    ioctl(m_data->fd, VIDIOC_STREAMOFF, &type); // this is not initialized since capturing might not have been started yet
+    close(m_data->fd);
+    /*
+        usbvflg_buf[m_iDevice]=(icl8u *)mmap(0,usbvflg_vmbuf[m_iDevice].size, 
+					   PROT_READ|PROT_WRITE,
+					   MAP_SHARED, usbvflg_fd[m_iDevice],0);
+
+        here:
+        m_data->mem[i] = mmap(0,
+                              v4l2buffer.length, PROT_READ, MAP_SHARED, m_data->fd,
+                               v4l2buffer.m.offset);
+        */
+    for(int i=0;i<AMOUNT_BUFFERS;++i){
+      munmap(m_data->mem[i],m_data->bufferSizes[i]);
+    }
     delete m_data;
   }
 
@@ -290,54 +380,59 @@ namespace icl {
   //so DONT place anything on the modules during startup while using auto threshold, or you will get wrong thresholds..
   //
   //i=0=no compression, 1=compression with auto threshold, i>1 compression with threshold i  (i=0..255)
-  void MyrmexGrabber::setCompression(unsigned int i) throw (ICLException){
+  void MyrmexGrabberImpl::setCompression(unsigned int i) throw (ICLException){
     struct v4l2_control control_s;
     control_s.id =V4L2_CID_BRIGHTNESS;
     control_s.value = i;
 
     if (( ioctl(m_data->fd, VIDIOC_S_CTRL, &control_s)) < 0) {
-      throw ICLException("MyrmexGrabber: Compression was already set. It can only be configured after startup.");
+      WARNING_LOG("MyrmexGrabberImpl: Compression was already set. It can only be configured after startup.");
+    }else{
+      m_data->compression = i;
     }
   }
 
   //Setting of ADC sampling speed,  higher value means slower speed and more accuracy,
   //actually is used as divider for PIC32 SPI Clock, which is dervied from 80Mhz base clock, so 80/6 (default) = 13.3MHZ. Theo. max is 20 Mhz = div 4, div 6 is stable
   //80mhz/i = spi ADC clock,  i=4..255
-  void MyrmexGrabber::setSpeedDevider(unsigned int i) throw (ICLException){
+  void MyrmexGrabberImpl::setSpeedDevider(unsigned int i) throw (ICLException){
+    
     struct v4l2_control control_s;
     control_s.id =V4L2_CID_CONTRAST;
     if (i<6) i=6; //0 or 1 wont work...	
     control_s.value = i;
 	
     if (( ioctl(m_data->fd, VIDIOC_S_CTRL, &control_s)) < 0) {
-      throw ICLException("MyrmexGrabber: Speed was already set. It can only be configured after startup.");
+      WARNING_LOG("MyrmexGrabberImpl: Speed was already set. It can only be configured after startup.");
+    }else{
+      m_data->speedFactor = i;
     }
   }
 
   //return compression setting
-  int MyrmexGrabber::getCompression() throw (ICLException){
+  int MyrmexGrabberImpl::getCompression() throw (ICLException){
     struct v4l2_control control_s;
     control_s.id =V4L2_CID_BRIGHTNESS;
     control_s.value = 0;
 
     if (( ioctl(m_data->fd, VIDIOC_G_CTRL, &control_s)) < 0) {
-      throw ICLException("MyrmexGrabber V4L2: ioctl got control Compression error");
+      throw ICLException("MyrmexGrabberImpl V4L2: ioctl got control Compression error");
     }
     return control_s.value;
   }
   //return speed setting
-  int MyrmexGrabber::getSpeed() throw (ICLException){
+  int MyrmexGrabberImpl::getSpeed() throw (ICLException){
     struct v4l2_control control_s;
     control_s.id =V4L2_CID_CONTRAST;
     control_s.value = 0;
     if (( ioctl(m_data->fd, VIDIOC_G_CTRL, &control_s)) < 0) {
-      throw ICLException("MyrmexGrabber V4L2: ioctl get control Speed error");
+      throw ICLException("MyrmexGrabberImpl V4L2: ioctl get control Speed error");
     }
     return control_s.value;
   }
 
   //get m_data->connections between modules
-  std::vector<char> MyrmexGrabber::getConnections(){
+  std::vector<char> MyrmexGrabberImpl::getConnections(){
     struct v4l2_frmsizeenum fsize;
     struct v4l2_fmtdesc fmt;
     int length=0;
@@ -394,7 +489,7 @@ namespace icl {
   //parseconnections:
   // find out at which corner the avr is attached (attached)
   // find out width & height of the module array (widthX / heightX) (rounded up if incomplete row)
-  void MyrmexGrabber::parseConnections(const std::vector<char> &connections, char* attached, int* widthX, int* heightX ){
+  void MyrmexGrabberImpl::parseConnections(const std::vector<char> &connections, char* attached, int* widthX, int* heightX ){
 
 
     char smart_dir=0;// = corner attached, 0 = upper left, 1 = lower left side, 2 = lower left bottom, 3 = lower right bottom
@@ -525,7 +620,7 @@ namespace icl {
   //startpoint for m_data->connections is determined by attachment point
   //
   // bigtarget array is to reorderthe pixels inside a module to a new rotated position
-  std::vector<char> MyrmexGrabber::createConversiontable( int width, int height,const std::vector<char> &connections, 
+  std::vector<char> MyrmexGrabberImpl::createConversiontable( int width, int height,const std::vector<char> &connections, 
                                                           char attached, Viewpoint viewpoint ){
 
     char actual[width][height];
@@ -704,7 +799,7 @@ namespace icl {
 
 
   //GetSize: Gets the imagesize after conversion done
-  Size MyrmexGrabber::getSize() const{
+  Size MyrmexGrabberImpl::getSize() const{
     return Size(m_data->image_width,m_data->image_height);
   }
 
@@ -715,7 +810,7 @@ namespace icl {
   //GetSizeDevice: Gets the imagesize from the usb video device
   //
   // unsigned int *x, unsigned int *y : pointers to variables which will hold the sizes
-  Size MyrmexGrabber::getSizeDevice() const{
+  Size MyrmexGrabberImpl::getSizeDevice() const{
     struct v4l2_frmsizeenum fsize;
     struct v4l2_fmtdesc fmt;
     //first get the pixelformat, from frame format
@@ -739,17 +834,18 @@ namespace icl {
   }
 
 
-  const ImgBase* MyrmexGrabber::grabUD(ImgBase **ppoDst){
+  const ImgBase* MyrmexGrabberImpl::grabUD(ImgBase **ppoDst){
     Img16s &outputImage = m_data->outputImage;
     outputImage.setChannels(1);
     Size s(m_data->image_width,m_data->image_height);	
     outputImage.setSize(s);	
 
     if(!grabFrame(outputImage.begin(0))){
-      ERROR_LOG("MyrmexGrabber Modules: Error while reading data from module");
+      ERROR_LOG("MyrmexGrabberImpl Modules: Error while reading data from module");
     }
 
-    outputImage.setTime(Time::now()	);
+    outputImage.setTime(Time::now());
+    m_data->updateNoiseImage();
     return &outputImage;
   }
 
@@ -758,7 +854,7 @@ namespace icl {
   //int* inbuffer : pointer to buffer where the framedata will be stored
   //unsigned int bufflength : length of the buffer in words
 
-  int MyrmexGrabber::grabFrame(short* inbuffer) throw (ICLException) {
+  int MyrmexGrabberImpl::grabFrame(short* inbuffer) throw (ICLException) {
     static const unsigned int correctionLUT[] = {
       3, 7, 11, 15, 67, 71, 75, 79, 131, 135, 139, 143, 195, 199, 203, 207, 
       18, 22, 26, 30, 82, 86, 90, 94, 146, 150, 154, 158, 210, 214, 218, 222, 
@@ -794,7 +890,7 @@ namespace icl {
 
     //ask to dequeue a filled buffer   
     if (ioctl(m_data->fd, VIDIOC_DQBUF, &v4l2buffer) < 0) {
-      throw ICLException("MyrmexGrabber V4L2: Unable to dequeue buffer" );
+      throw ICLException("MyrmexGrabberImpl V4L2: Unable to dequeue buffer" );
       return false;
     }
 
@@ -839,7 +935,7 @@ namespace icl {
 			
     //requeue the buffer to be used again
     if (ioctl(m_data->fd, VIDIOC_QBUF, &v4l2buffer)< 0) {
-      throw ICLException("MyrmexGrabber V4L2: Unable to requeue buffer " );
+      throw ICLException("MyrmexGrabberImpl V4L2: Unable to requeue buffer " );
     }
 
 	
@@ -850,14 +946,55 @@ namespace icl {
     return result;
   }
 
-  int MyrmexGrabber::getConnectionCount() const{
+  int MyrmexGrabberImpl::getConnectionCount() const{
     return m_data->connections_size;
 
   }
-  char MyrmexGrabber::getAttachedPosition() const{
+  char MyrmexGrabberImpl::getAttachedPosition() const{
     return m_data->attachedPosition;
   }
  
+  
+  void MyrmexGrabberImpl::setProperty(const std::string &property, const std::string &value){
+    if(property == "substract-noise-image"){
+      m_data->substractNoiseImage = (value == "on");
+    }else if(property == "record-noise-image"){
+      m_data->recordNoiseImageFrames = 10;
+    }
+  }
+
+  std::vector<std::string> MyrmexGrabberImpl::getPropertyList(){
+    return tok("record-noise-image,substract-noise-image,connection-count,format,size",",");
+  }
+  
+  std::string MyrmexGrabberImpl::getType(const std::string &name){
+    if(name == "record-noise-image") return "command";
+    else if(name == "substract-noise-image" || name == "format" || name == "size") return "menu";
+    else if(name == "connection-count") return "info";
+    else return "undefined";
+  }
+  
+  std::string MyrmexGrabberImpl::getInfo(const std::string &name){
+    if(name == "record-noise-image") return "";
+    else if(name == "substract-noise-image") return "{\"off\",\"on\"}";
+    else if(name == "format") return "{\"16Bit Grayscale\"}";
+    else if(name == "size") return "{\""+str(getSize())+"\"}";
+    else return "undefined";
+  }
+  
+  std::string MyrmexGrabberImpl::getValue(const std::string &name){
+     if(name == "substract-noise-image") return m_data->substractNoiseImage ? "on": "off";
+     else if(name == "connection-count") return str(m_data->connections_size);
+     else if(name == "format") return "16Bit Grayscale";
+     else if(name == "size") return str(getSize());
+     else return "";
+  }
+  int MyrmexGrabberImpl::isVolatile(const std::string &propertyName){
+    if(propertyName == "connection-count") return 1000000;
+    return 0;
+  }
+
+
 
 }
 

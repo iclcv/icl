@@ -41,6 +41,7 @@
 #ifdef SYSTEM_LINUX
 #ifdef HAVE_VIDEODEV
 #include <ICLIO/PWCGrabber.h>
+#include <ICLIO/MyrmexGrabber.h>
 #endif
 #endif
 
@@ -100,13 +101,12 @@ namespace icl{
 
   
   static std::map<std::string,std::string> create_param_map(const std::string &filter){
-#if 1
     std::vector<std::string> ts = tok(filter,",");
     std::map<std::string,std::string> pmap;
 
     static const char *plugins[] = { "pwc","dc","dc800","unicap","file","demo","create",
                                      "xcfp","xcfs","xcfm","mv","sr","video","cvvideo", 
-                                     "cvcam","sm"};
+                                     "cvcam","sm","myr"};
     static const int NUM_PLUGINS=sizeof(plugins)/sizeof(char*);
 
     for(unsigned int i=0;i<ts.size();++i){
@@ -125,39 +125,6 @@ namespace icl{
       }
     }
     return pmap;
-                                                      
-#else         
-    // older version: not only more complex and complicated, but also with some errors
-    std::vector<std::string> lP = tok(filter,",");
-    
-    std::map<std::string,std::string> pmap;
-    static const int NUM_PLUGINS = 16;
-    static const std::string plugins[NUM_PLUGINS] = { "pwc","dc","dc800","unicap","file","demo","create",
-                                                      "xcfp","xcfs","xcfm","mv","sr","video","cvvideo", 
-                                                      "cvcam","sm" };
-    for(unsigned int i=0;i<lP.size();++i){
-      bool foundI = false;
-      for(int j=0;j<NUM_PLUGINS;++j){
-        const std::string &D = plugins[j];
-        if(lP[i].length() >= D.length() && lP[i].substr(0,D.length()) == D){
-          pmap[D] = "";
-          if(lP[i].length() > D.length()){
-            if(lP[i][D.length()] != '='){
-              ERROR_LOG("GenericGrabber: unable to process token '" << lP[i] << "' (expected '=' at position " << D.length() << ")");
-            }else if(lP[i].length() > D.length()+1){
-              pmap[D] = lP[i].substr(D.length()+1);     
-            }
-          }
-          foundI = true;
-          break;
-        }  
-      }
-      if(!foundI){
-        ERROR_LOG("GenericGrabber: unable to process token '" << lP[i] << "' (unsupported device specifier)");
-      }
-    }
-    return pmap;
-#endif
   }
   
   static bool is_int(const std::string &x){
@@ -196,6 +163,19 @@ namespace icl{
           continue;
         }
       }
+
+      if(l[i] == "myr"){
+        try{
+          MyrmexGrabber *myr = new MyrmexGrabber(parse<int>(pmap["myr"]));
+          m_poGrabber = myr;
+          m_sType = "myr";
+          break;
+        }catch(ICLException &ex){
+          ADD_ERR("myr [error message:" + str(ex.what()) + "]");
+          continue;
+        }
+      }
+
 #endif
 #endif
       
@@ -503,6 +483,7 @@ namespace icl{
 #ifdef SYSTEM_LINUX
 #ifdef HAVE_VIDEODEV
       add_devices<PWCGrabber>(deviceList,"pwc",useFilter,pmap);
+      add_devices<MyrmexGrabber>(deviceList,"myr",useFilter,pmap);
 #endif
 #endif
       

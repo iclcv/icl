@@ -49,10 +49,11 @@ int main(int n, char **ppc){
   ("d","scan for dc devices")
   ("s","scan for SwissRanger devices")
   ("m","scan for Shared Memory devices ")
+  ("y","scan for Myrmex Devices ")
   ("c","scan for OpenCV-based devices ")
   ("-demo","add a DemoGrabber device")
   ("-i","ICL's default device specification");
-  painit(n,ppc,"-dc|d -dc800|8 -demo -unicap|u -pwc|p -sr|s -cvcam|c -sm|m"
+  painit(n,ppc,"-dc|d -dc800|8 -demo -unicap|u -mry|y -pwc|p -sr|s -cvcam|c -sm|m"
          " -reset-bus|-r|r -input|-i(device-type,device-ID)");
   QApplication a(n,ppc);
   
@@ -65,6 +66,7 @@ int main(int n, char **ppc){
   if(pa("c"))str << ",cvcam";
   if(pa("s"))str << ",sr";
   if(pa("m"))str << ",sm";
+  if(pa("y"))str << ",myr";
   if(pa("-i")) str << "," << pa("-i",0) << "=" << pa("-i",1);
   
   std::string devlist = str.str();

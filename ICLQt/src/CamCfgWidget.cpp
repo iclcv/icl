@@ -401,6 +401,9 @@ namespace icl{
         if(data->complex || data->foundDevices.size() > 1){
           if(!data->loadParamsScope){
             data->grabber.init(data->foundDevices.at((int)data->gui["device"]));
+            if(data->grabber.isNull()){
+              ERROR_LOG("unable to initialize grabber");
+            }
           }
           if(data->complex){
             data->grabber.setUseDesiredParams(data->gui.getValue<CheckBoxHandle>("desired-use").isChecked());

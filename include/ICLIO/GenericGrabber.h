@@ -92,6 +92,7 @@ namespace icl {
                                   - <b>cvcam</b> OpenCV based camera grabber (supporting video 4 linux devices)
                                   - <b>cvvideo</b> OpenCV based video grabber 
                                   - <b>sm</b> Qt-based Shared-Memory grabber (using QSharedMemoryInstance)
+                                  - <b>myr</b> Uses Myrmex tactile input device as image source
         
         @param params comma separated device depend parameter list: e.g.
                                   "pwc=0,file=images//image*.ppm,dc=0" with self-explaining syntax\n
@@ -124,6 +125,7 @@ namespace icl {
                                     (e.g. device ID 301 selects the 2nd firewire device)
                                   - cvvideo=video-filename (string)
                                   - sm=Shared-memory-segment-id (string)
+                                  - myrmex=deviceIndex (int) (the device index is used to create the /dev/videoX device)
 
         @param notifiyErrors if set to false, no exception is thrown if no suitable device was found
     **/
