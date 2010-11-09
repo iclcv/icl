@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLQt/examples/gui-test.cpp                            **
+** File   : include/ICLQt/ColorLabel.h                             **
 ** Module : ICLQt                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -32,67 +32,69 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
+#ifndef ICL_COLOR_LABEL_H
+#define ICL_COLOR_LABEL_H
+
+#include <ICLQt/ThreadedUpdatableWidget.h>
+#include <QtCore/QMutex>
 #include <ICLCC/Color.h>
 
-GUI gui;
-
-void init(){
-  gui = GUI("hscroll");
-  gui << "image[@handle=image1@label=image1@minsize=10x10]"
-      << "image[@handle=image2@label=image2@minsize=10x10]"
-      << "image[@handle=image3@label=image3@minsize=10x10]"
-      << (GUI("vbox")
-          << "color(255,0,0)[@handle=firstColor@label=RGB color]"
-          << "color(255,0,0,128)[@handle=secondColor@label=RGBA color]"
-          << "button(show Colors)[@handle=showColors]"
-          << "button(set Colors)[@handle=setColors]"
-          );
+namespace icl{
   
-  GUI v("vbox[@maxsize=10x1000]");
-  v << "slider(-1000,1000,0)[@out=the-int1@maxsize=35x1@label=slider1@minsize=1x2]"
-    << "slider(-1000,1000,0)[@out=the-int2@maxsize=35x1@label=slider2@minsize=1x2]"
-    << "slider(-1000,1000,0)[@out=the-int3@maxsize=35x1@label=slider3@minsize=1x2]"
-    << "combo(entry1,entry2,entry3)[@out=combo@label=the-combobox]"
-    << "spinner(-50,100,20)[@out=the-spinner@label=a spin-box]"
-    << "button(click me)[@handle=click]"
-    << "checkbox(hello,off)[@out=cb]";
-  gui << v << "!show";
+  /// Utility class to avoid Qt warning when accesing QLabels from differnt Threads
+  /** QLabels can not be used from different Threads. So if a QLabel is created in 
+      in the main thread, it might not be set up to show another text/number from
+      the working thread.
+      As a workaround, the "label" component of the ICL GUI API uses not the 
+      original QLabel but this thread-save reimplementation called
+      CompabilityLabel.
+  */
+  class ColorLabel : public ThreadedUpdatableWidget{
+    public:
+    /// Create a new label with given text and given parent widget
+    ColorLabel(Color4D &color, bool useAlpha, QWidget *parent=0);
 
-}
+    /// reimplemented drawin function (draw the current text centered)
+    virtual void paintEvent(QPaintEvent *evt);
 
-void run(){
-  Img8u image = cvt8u(scale(create("parrot"),0.2));
-  ImageHandle *ws[3] = {
-    &gui.getValue<ImageHandle>("image1"),
-    &gui.getValue<ImageHandle>("image2"),
-    &gui.getValue<ImageHandle>("image3")
+    /// sets new color rgb
+    void setColor(const Color &color);
+
+    /// sets new color rgba
+    void setColor(const Color4D &color);
+
+    /// returns current color
+    Color getRGB() const;
+    
+    /// returns current rgba color
+    Color4D getRGBA() const;
+    
+    /// returns current red value
+    int getRed() const;
+
+    /// returns current green value
+    int getGreen() const;
+
+    /// returns current blue value
+    int getBlue() const;
+
+    /// return current alpha value
+    int getAlhpa() const;
+    
+    /// returns wheter internal color uses alpha value
+    bool hasAlpha() const;
+
+    private:
+
+    /// shallowly wrapped color
+    Color4D &m_color; 
+
+    /// indicator wheter alpha is used
+    bool m_hasAlpha; 
+    
+    /// Thread-safety mutex
+    mutable QMutex m_oMutex;
   };
-  gui_ButtonHandle(click);
-  gui_ButtonHandle(showColors);
-  gui_ButtonHandle(setColors);
-  while(1){
-    for(int i=0;i<3;++i){
-      *ws[i] = image;
-      ws[i]->update();
-    }
-    if(click.wasTriggered()){
-      std::cout << "button 'click' was triggered!" << std::endl;
-    }
-    if(showColors.wasTriggered()){
-      SHOW(gui["firstColor"].as<Color>());
-      SHOW(gui["secondColor"].as<Color4D>());
-    }
-    if(setColors.wasTriggered()){
-      gui["firstColor"] = Color(0,100,255);
-      gui["secondColor"] = Color4D(100,100,255,128);
-    }
-    Thread::msleep(50);
-  }
-  
-
 }
 
-int main(int n, char **ppc){
-  return ICLApp(n,ppc,"",init,run).exec();
-}
+#endif

@@ -59,6 +59,7 @@
 #endif
 #include <ICLQt/StringHandle.h>
 #include <ICLQt/CheckBoxHandle.h>
+#include <ICLQt/ColorHandle.h>
 
 #include <QtGui/QCheckBox>
 #include <QtGui/QComboBox>
@@ -256,6 +257,20 @@ INST_OTHER_TYPES
     // ImageHandle
     FROM_IMG(ImageHandle,dst=src);
     FROM_IMG_PTR(ImageHandle,dst=src);
+
+    // Color Handle and Color
+    FROM_TO(ColorHandle,Color,dst=src.getRGB());
+    FROM_TO(ColorHandle,Color4D,dst=src.getRGBA());
+
+    FROM_TO(Color,ColorHandle,dst=src);
+    FROM_TO(Color4D,ColorHandle,dst=src);
+
+    FROM_TO(ColorHandle,std::string,dst=str(src.getRGBA()));
+    FROM_TO(std::string,ColorHandle,dst=(parse<Color4D>(src))); // ? what if source is an rgb and not rgba-string??
+    
+    FROM_TO(Color,Color4D,dst=Color4D(src[0],src[1],src[2],0));
+    FROM_TO(Color4D,Color,dst=Color(src[0],src[1],src[2]));
+
     /*
         template<> struct AssignSpecial<DataStore::Data::Event,ImageHandle> : public Assign{
       bool apply(DataStore::Data::Event &src, ImageHandle &dst){     
@@ -579,7 +594,20 @@ namespace icl{
 
     // ComboHandle
     ADD(DataStore::Data::Event,ComboHandle);
+    
+    // ColorHandle
 
+    ADD(ColorHandle,Color);
+    ADD(ColorHandle,Color4D);
+
+    ADD(Color,ColorHandle);
+    ADD(Color4D,ColorHandle);
+
+    ADD(ColorHandle,std::string);
+    ADD(std::string,ColorHandle);
+    
+    ADD(Color,Color4D);
+    ADD(Color4D,Color);
     return &m;
   }
   

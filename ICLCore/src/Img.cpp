@@ -596,9 +596,58 @@ namespace icl {
 
   // }}} channel management...
 
-  // {{{  inplace operations: scale, mirror
+  // {{{  inplace operations: scale, mirror and lut
 
   //----------------------------------------------------------------------------
+
+  template<class Type>
+  Img<Type> *Img<Type>::lut(const Type *lut,Img<Type> *dst, int bits) const{
+    if(!dst){
+      dst = new Img<Type>(getSize(),getChannels(),getFormat());
+      dst->setROI(getROI());
+    }else{
+      dst->setSize(getSize());
+      dst->setChannels(getChannels());
+      dst->setFormat(getFormat());
+      if(dst->getROISize() != getROISize()) throw ICLException("Img<T>::lut source and destination ROI sizes differ");
+    }
+    dst->setTime(getTime());
+    const int shift = 8-bits;
+    
+    for(int c=getChannels()-1; c >= 0; --c) {
+      const ImgIterator<Type> itSrc = beginROI(c);
+      const ImgIterator<Type> itSrcEnd = endROI(c);
+      ImgIterator<Type> itDst = dst->beginROI(c);
+      for(;itSrc != itSrcEnd ; ++itSrc, ++itDst){
+        *itDst = lut[ ((int)(*itSrc)) >> shift];
+      }
+    }    
+    return dst;
+  }
+
+#ifdef HAVE_IPP  
+  template<>
+  Img<icl8u> *Img<icl8u>::lut(const icl8u *lut, Img<icl8u> *dst, int bits) const{
+    if(!dst){
+      dst = new Img<icl8u>(getSize(),getChannels(),getFormat());
+      dst->setROI(getROI());
+    }else{
+      dst->setSize(getSize());
+      dst->setChannels(getChannels());
+      dst->setFormat(getFormat());
+      if(dst->getROISize() != getROISize()) throw ICLException("Img<T>::lut source and destination ROI sizes differ");
+    }
+    dst->setTime(getTime());
+    
+    for(int c=getChannels()-1; c >= 0; --c) {
+      ippiLUTPalette_8u_C1R(getROIData(c),getLineStep(),
+                            dst->getROIData(c),dst->getLineStep(),
+                            getROISize(),lut,bits);
+    }    
+    return dst;
+  }
+#endif
+
   template<class Type> void
   Img<Type>::scale(const Size &size, scalemode eScaleMode){  
     // {{{ open

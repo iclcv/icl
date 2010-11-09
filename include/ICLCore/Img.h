@@ -1250,6 +1250,12 @@ namespace icl {
       }
     }
     
+    ///applys a lookup function using the given lookup table
+    /** The lookup table has 2^bits entries. Source values are assumed
+        to be in range [0,255]. If the given destination image is 0,
+        a new image is created and returned IPP-accellerated for icl8u */
+    Img<Type> *lut(const Type *lut, Img<Type> *dst = 0,int bits=8) const;
+    
     /// perform an in-place resize of the image (keeping the data) 
     /** \copydoc icl::ImgBase::scale(const icl::Size&,icl::scalemode)*/
     virtual void scale(const Size &s, scalemode eScaleMode=interpolateNN);

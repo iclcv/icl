@@ -103,14 +103,7 @@ namespace icl{
     ICLASSERT_RETURN( src->getChannels() == dst->getChannels() );
     ICLASSERT_RETURN( lut.size() >= 256 );
     
-    for(int c=src->getChannels()-1; c >= 0; --c) {
-      const ImgIterator<icl8u> itSrc = src->beginROI(c);
-      const ImgIterator<icl8u> itSrcEnd = src->endROI(c);
-      ImgIterator<icl8u> itDst = dst->beginROI(c);
-      for(;itSrc != itSrcEnd ; ++itSrc, ++itDst){
-        *itDst = lut[*itSrc];
-      }
-    }    
+    src->lut(lut.data(),dst,8);
   }
 
   void LUTOp::reduceBits(const Img8u *src, Img8u *dst, icl8u n){

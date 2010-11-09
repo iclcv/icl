@@ -105,6 +105,7 @@ add_libsource (${PROJECT_NAME} "src/Application.cpp" "${CONDITIONLIST}" LIB_SOUR
 add_libsource (${PROJECT_NAME} "src/IconFactory.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/ThreadedUpdatableTextView.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/DataStore.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/ColorLabel.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
 set(CONDITIONLIST HAVE_OPENGL_COND)
 add_libsource (${PROJECT_NAME} "src/DrawWidget3D.cpp" "${CONDITIONLIST}" LIB_SOURCES)

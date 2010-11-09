@@ -46,6 +46,7 @@
 #include <ICLQt/Widget.h>
 #include <ICLIO/File.h>
 
+#include <QtGui/QColorDialog>
 #include <QtGui/QHBoxLayout>
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QGroupBox>
@@ -94,6 +95,7 @@
 #include <ICLQt/CheckBoxHandle.h>
 #include <ICLQt/MultiDrawHandle.h>
 #include <ICLQt/SplitterHandle.h>
+#include <ICLQt/ColorHandle.h>
 #include <QtGui/QCheckBox>
 #include <QtGui/QCleanlooksStyle>
 #include <QtCore/QTimer>
@@ -112,7 +114,9 @@
 #endif
 #include <ICLQt/ThreadedUpdatableSlider.h>
 #include <ICLQt/ThreadedUpdatableTextView.h>
+#include <ICLQt/ColorLabel.h>
 #include <ICLUtils/Configurable.h>
+#include <ICLCC/Color.h>
 
 #include <map>
 #include <set>
@@ -633,6 +637,62 @@ namespace icl{
   };
 
   // }}}
+
+
+  struct ColorGUIWidget : public GUIWidget{
+    ColorGUIWidget(const GUIDefinition &def):GUIWidget(def,3,4,GUIWidget::gridLayout,Size(6,2)){
+      QPushButton *b = new QPushButton("select",def.parentWidget());
+      addToGrid(b);
+      connect(b,SIGNAL(clicked()),this,SLOT(ioSlot()));
+      
+      m_haveAlpha = (def.numParams() == 4);
+
+      
+      if(m_haveAlpha) m_color = new Color4D(def.intParam(0),def.intParam(1),def.intParam(2),0);
+      else m_color = new Color4D();
+
+      Color4D col(def.intParam(0),def.intParam(1),def.intParam(2),m_haveAlpha ?def.intParam(3):0);
+      
+      getGUI()->lockData();
+      m_color = &getGUI()->allocValue<Color4D>(def.output(0),col);
+      getGUI()->unlockData();
+
+      colorLabel = new ColorLabel(*m_color,m_haveAlpha,def.parentWidget());
+
+      addToGrid(colorLabel,1,0,1,1);
+      
+      if(def.handle() != ""){
+        getGUI()->lockData();
+        handle = &getGUI()->allocValue<ColorHandle>(def.handle(),ColorHandle(colorLabel,this));
+        getGUI()->unlockData();
+      }else{
+        handle = 0;
+      }
+    }
+
+    virtual void processIO(){
+      QColor c = !m_haveAlpha ? 
+                 QColor((*m_color)[0],(*m_color)[1],(*m_color)[2]) : 
+                 QColor((*m_color)[0],(*m_color)[1],(*m_color)[2],(*m_color)[3]);
+      
+      QColor color = QColorDialog::getColor(c,this,"choose color...", 
+                                            m_haveAlpha ? QColorDialog::ShowAlphaChannel : 
+                                            (QColorDialog::ColorDialogOption)0);
+      
+      colorLabel->setColor(Color4D(color.red(),color.green(),color.blue(),color.alpha()));
+    }
+    
+    static string getSyntax(){
+      return string("color(R,G,B[,A])[general params] \n")+
+      string("\tgiven initial Red, Green and Blue values (Alpha is optional)\n")+
+      gen_params();
+    }
+    ColorLabel *colorLabel;
+    ColorHandle *handle;
+    Color4D *m_color;
+    bool m_haveAlpha;
+  };
+
   struct ButtonGUIWidget : public GUIWidget{
     // {{{ open
     ButtonGUIWidget(const GUIDefinition &def):GUIWidget(def,1,1,GUIWidget::gridLayout,Size(4,1)){
@@ -1611,6 +1671,7 @@ public:
       MAP_CREATOR_FUNCS["camcfg"] = create_widget_template<CamCfgGUIWidget>;
       MAP_CREATOR_FUNCS["config"] = create_widget_template<ConfigFileGUIWidget>;
       MAP_CREATOR_FUNCS["prop"] = create_widget_template<ConfigurableGUIWidget>;
+      MAP_CREATOR_FUNCS["color"] = create_widget_template<ColorGUIWidget>;
 
       //      MAP_CREATOR_FUNCS["hcontainer"] = create_widget_template<HContainerGUIWidget>;
       //      MAP_CREATOR_FUNCS["vcontainer"] = create_widget_template<VContainerGUIWidget>;

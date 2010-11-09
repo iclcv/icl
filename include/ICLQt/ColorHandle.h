@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLQt/examples/gui-test.cpp                            **
+** File   : include/ICLQt/ColorHandle.h                            **
 ** Module : ICLQt                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -32,67 +32,57 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
-#include <ICLCC/Color.h>
+#ifndef ICL_COLOR_HANDLE_H
+#define ICL_COLOR_HANDLE_H
 
-GUI gui;
+#include <ICLQt/GUIHandle.h>
+#include <ICLQt/ColorLabel.h>
 
-void init(){
-  gui = GUI("hscroll");
-  gui << "image[@handle=image1@label=image1@minsize=10x10]"
-      << "image[@handle=image2@label=image2@minsize=10x10]"
-      << "image[@handle=image3@label=image3@minsize=10x10]"
-      << (GUI("vbox")
-          << "color(255,0,0)[@handle=firstColor@label=RGB color]"
-          << "color(255,0,0,128)[@handle=secondColor@label=RGBA color]"
-          << "button(show Colors)[@handle=showColors]"
-          << "button(set Colors)[@handle=setColors]"
-          );
-  
-  GUI v("vbox[@maxsize=10x1000]");
-  v << "slider(-1000,1000,0)[@out=the-int1@maxsize=35x1@label=slider1@minsize=1x2]"
-    << "slider(-1000,1000,0)[@out=the-int2@maxsize=35x1@label=slider2@minsize=1x2]"
-    << "slider(-1000,1000,0)[@out=the-int3@maxsize=35x1@label=slider3@minsize=1x2]"
-    << "combo(entry1,entry2,entry3)[@out=combo@label=the-combobox]"
-    << "spinner(-50,100,20)[@out=the-spinner@label=a spin-box]"
-    << "button(click me)[@handle=click]"
-    << "checkbox(hello,off)[@out=cb]";
-  gui << v << "!show";
+namespace icl{
 
-}
+  /// Class wrapping ColorLabel GUI compoenent handling \ingroup HANDLES
+  class ColorHandle : public GUIHandle<ColorLabel>{
+    public:
+    
+    /// Create an empty handle
+    ColorHandle(){}
+    
+    /// Create a new LabelHandle
+    ColorHandle(ColorLabel *l, GUIWidget *w):GUIHandle<ColorLabel>(l,w){}
+    
+    /// sets new rgb color
+    inline void operator=(const Color &rgb){
+      lab()->setColor(rgb);
+    }
 
-void run(){
-  Img8u image = cvt8u(scale(create("parrot"),0.2));
-  ImageHandle *ws[3] = {
-    &gui.getValue<ImageHandle>("image1"),
-    &gui.getValue<ImageHandle>("image2"),
-    &gui.getValue<ImageHandle>("image3")
+    /// sets new rgba color (alpha is only used if alpha is enabled for the gui component)
+    void operator=(const Color4D &rgba){
+      lab()->setColor(rgba);
+    }
+    
+    /// returns current rgb color
+    inline Color getRGB() const { return lab()->getRGB(); }
+
+    /// convenienc function that is the same as getRGBA()
+    inline Color4D getColor() const { return lab()->getRGBA(); }
+    
+    /// returns current rgba color
+    inline Color4D getRGBA() const { return lab()->getRGBA(); }
+    
+    /// return whether wrapped ColorLabel supports alpha
+    inline bool hasAlpha() const { return lab()->hasAlpha(); }
+    
+    private:
+    /// utitlity function
+    ColorLabel *lab() { return **this; }
+
+    /// utitlity function
+    const ColorLabel *lab() const { return **this; }
   };
-  gui_ButtonHandle(click);
-  gui_ButtonHandle(showColors);
-  gui_ButtonHandle(setColors);
-  while(1){
-    for(int i=0;i<3;++i){
-      *ws[i] = image;
-      ws[i]->update();
-    }
-    if(click.wasTriggered()){
-      std::cout << "button 'click' was triggered!" << std::endl;
-    }
-    if(showColors.wasTriggered()){
-      SHOW(gui["firstColor"].as<Color>());
-      SHOW(gui["secondColor"].as<Color4D>());
-    }
-    if(setColors.wasTriggered()){
-      gui["firstColor"] = Color(0,100,255);
-      gui["secondColor"] = Color4D(100,100,255,128);
-    }
-    Thread::msleep(50);
-  }
+
+ 
   
+ 
+}                               
 
-}
-
-int main(int n, char **ppc){
-  return ICLApp(n,ppc,"",init,run).exec();
-}
+#endif

@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLQt/examples/gui-test.cpp                            **
+** File   : ICLQt/src/ColorLabel.cpp                               **
 ** Module : ICLQt                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -32,67 +32,90 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
-#include <ICLCC/Color.h>
+#include <ICLQt/ColorLabel.h>
+#include <QtGui/QPainter>
 
-GUI gui;
+namespace icl{
 
-void init(){
-  gui = GUI("hscroll");
-  gui << "image[@handle=image1@label=image1@minsize=10x10]"
-      << "image[@handle=image2@label=image2@minsize=10x10]"
-      << "image[@handle=image3@label=image3@minsize=10x10]"
-      << (GUI("vbox")
-          << "color(255,0,0)[@handle=firstColor@label=RGB color]"
-          << "color(255,0,0,128)[@handle=secondColor@label=RGBA color]"
-          << "button(show Colors)[@handle=showColors]"
-          << "button(set Colors)[@handle=setColors]"
-          );
-  
-  GUI v("vbox[@maxsize=10x1000]");
-  v << "slider(-1000,1000,0)[@out=the-int1@maxsize=35x1@label=slider1@minsize=1x2]"
-    << "slider(-1000,1000,0)[@out=the-int2@maxsize=35x1@label=slider2@minsize=1x2]"
-    << "slider(-1000,1000,0)[@out=the-int3@maxsize=35x1@label=slider3@minsize=1x2]"
-    << "combo(entry1,entry2,entry3)[@out=combo@label=the-combobox]"
-    << "spinner(-50,100,20)[@out=the-spinner@label=a spin-box]"
-    << "button(click me)[@handle=click]"
-    << "checkbox(hello,off)[@out=cb]";
-  gui << v << "!show";
+  ColorLabel::ColorLabel(Color4D &color, bool useAlpha, QWidget *parent):
+    ThreadedUpdatableWidget(parent),m_color(color),m_hasAlpha(useAlpha){}
+    
 
-}
+    /// reimplemented drawin function (draw the current text centered)
+  void ColorLabel::paintEvent(QPaintEvent *evt){
+    m_oMutex.lock();
+    QColor c(m_color[0],m_color[1],m_color[2]);
+    m_oMutex.unlock();
 
-void run(){
-  Img8u image = cvt8u(scale(create("parrot"),0.2));
-  ImageHandle *ws[3] = {
-    &gui.getValue<ImageHandle>("image1"),
-    &gui.getValue<ImageHandle>("image2"),
-    &gui.getValue<ImageHandle>("image3")
-  };
-  gui_ButtonHandle(click);
-  gui_ButtonHandle(showColors);
-  gui_ButtonHandle(setColors);
-  while(1){
-    for(int i=0;i<3;++i){
-      *ws[i] = image;
-      ws[i]->update();
+    float a = m_color[3];
+    
+    QPainter p(this);
+    p.setBrush(c);
+    p.setPen(QColor(255,255,255,128));
+    
+    p.drawRect(QRect(2,2,width()-4,height()-4));
+    
+    if(m_hasAlpha && (a != 255) ){
+      if((m_color[0]+m_color[1]+m_color[2]) > 1.5 * 255){
+        p.setPen(QColor(0,0,0));
+      }else{
+        p.setPen(QColor(255,255,255));
+      }
+      
+      p.drawText(QRect(2,2,width()-4,height()-4),Qt::AlignCenter|Qt::Horizontal,QString::number((int)(a*100./256.)) + "%");;
     }
-    if(click.wasTriggered()){
-      std::cout << "button 'click' was triggered!" << std::endl;
-    }
-    if(showColors.wasTriggered()){
-      SHOW(gui["firstColor"].as<Color>());
-      SHOW(gui["secondColor"].as<Color4D>());
-    }
-    if(setColors.wasTriggered()){
-      gui["firstColor"] = Color(0,100,255);
-      gui["secondColor"] = Color4D(100,100,255,128);
-    }
-    Thread::msleep(50);
   }
-  
 
+    /// sets new color rgb
+  void ColorLabel::setColor(const Color &color){
+    m_oMutex.lock();
+    m_color = Color4D(color[0],color[1],color[2],0);
+    m_oMutex.unlock();
+    updateFromOtherThread();
+  }
+
+  /// sets new color rgba
+  void ColorLabel::setColor(const Color4D &color){
+    m_oMutex.lock();
+    m_color = Color4D(color[0],color[1],color[2],color[3]);
+    m_oMutex.unlock();
+    updateFromOtherThread();
+  }
+
+    /// returns current color
+  Color ColorLabel::getRGB() const{
+    return Color(m_color[0],m_color[1],m_color[2]);
+  }
+    
+    /// returns current rgba color
+  Color4D ColorLabel::getRGBA() const{
+    return m_color;
+  }
+    
+    /// returns current red value
+  int ColorLabel::getRed() const{
+    return m_color[0];
+  }
+
+    /// returns current green value
+  int ColorLabel::getGreen() const{
+    return m_color[1];
+  }
+
+    /// returns current blue value
+  int ColorLabel::getBlue() const{
+    return m_color[2];
+  }
+
+    /// return current alpha value
+  int ColorLabel::getAlhpa() const{
+    return m_color[3];
+  }
+    
+    /// returns wheter internal color uses alpha value
+  bool ColorLabel::hasAlpha() const{
+    return m_hasAlpha;
+  }
 }
 
-int main(int n, char **ppc){
-  return ICLApp(n,ppc,"",init,run).exec();
-}
+
