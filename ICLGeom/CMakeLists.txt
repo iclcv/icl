@@ -47,6 +47,7 @@ add_libsource (${PROJECT_NAME} "src/PoseEstimator.cpp" "${CONDITIONLIST}" LIB_SO
 add_libsource (${PROJECT_NAME} "src/Posit.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/SoftPosit.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/CoplanarPointPoseEstimator.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/ICP.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQt)
 add_example (${PROJECT_NAME} "softposit-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)

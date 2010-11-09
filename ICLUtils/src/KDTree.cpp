@@ -34,13 +34,14 @@
 #include <ICLUtils/KDTree.h>
 
 namespace icl{
-KDTree::KDTree(std::vector<DynMatrix<double> > &list){
+
+KDTree::KDTree(std::vector<DynMatrix<icl64f> > &list){
 	if(list.size()>0){
 		buildTree(list, 0, &root);
 	}
 }
 
-KDTree::KDTree(std::vector<DynMatrix<double> *> &list){
+KDTree::KDTree(std::vector<DynMatrix<icl64f> *> &list){
 	if(list.size()>0){
 		buildTree(list, 0, &root);
 	}
@@ -51,15 +52,15 @@ KDTree::~KDTree(){}
 struct sort_by_axis{
 	unsigned int axis;
 	sort_by_axis(unsigned int axis):axis(axis){}
-	bool operator()(const DynMatrix<double> &a, const DynMatrix<double> &b) const{
+	bool operator()(const DynMatrix<icl64f> &a, const DynMatrix<icl64f> &b) const{
 		return a[axis] < b[axis];
 	}
-	bool operator()(const DynMatrix<double> *a, const DynMatrix<double> *b) const{
+	bool operator()(const DynMatrix<icl64f> *a, const DynMatrix<icl64f> *b) const{
 		return (*a)[axis] < (*b)[axis];
 	}
 };
 
-void KDTree::buildTree(std::vector<DynMatrix<double> > &list, unsigned int depth, Node *node){
+void KDTree::buildTree(std::vector<DynMatrix<icl64f> > &list, unsigned int depth, Node *node){
 	if(list.size() == 1){
 		node->point = &(list.at(0));
 		return;
@@ -73,7 +74,7 @@ void KDTree::buildTree(std::vector<DynMatrix<double> > &list, unsigned int depth
 
 	node->left = new Node();
 	node->median = double((list.at(median)).at(0,axis));
-	std::vector<DynMatrix<double> > sublist;
+	std::vector<DynMatrix<icl64f> > sublist;
 	for(unsigned int i=0;i<median;++i){
 		sublist.push_back(list.at(i));
 	}
@@ -87,7 +88,7 @@ void KDTree::buildTree(std::vector<DynMatrix<double> > &list, unsigned int depth
 	buildTree(sublist,depth+1,node->right);
 }
 
-void KDTree::buildTree(std::vector<DynMatrix<double> *> &list,unsigned int depth, Node *node){
+void KDTree::buildTree(std::vector<DynMatrix<icl64f> *> &list,unsigned int depth, Node *node){
 	if(list.size() <= 1){
 		node->point = list.at(0);
 		return;
@@ -101,7 +102,7 @@ void KDTree::buildTree(std::vector<DynMatrix<double> *> &list,unsigned int depth
 
 	node->left = new Node();
 	node->median = double((list.at(median))->at(0,axis));
-	std::vector<DynMatrix<double>* > sublist;
+	std::vector<DynMatrix<icl64f>* > sublist;
 	for(unsigned int i=0;i<median;++i){
 		sublist.push_back(list.at(i));
 	}
@@ -115,8 +116,8 @@ void KDTree::buildTree(std::vector<DynMatrix<double> *> &list,unsigned int depth
 	buildTree(sublist,depth+1,node->right);
 }
 
-void KDTree::sortList(std::vector<DynMatrix<double> > &list, unsigned int dim){
-	DynMatrix<double> temp;
+void KDTree::sortList(std::vector<DynMatrix<icl64f> > &list, unsigned int dim){
+	DynMatrix<icl64f> temp;
 	unsigned int minIndex = 0;
 	for(unsigned int i=0;i<list.size()-1;++i){
 		minIndex = i;
@@ -133,8 +134,8 @@ void KDTree::sortList(std::vector<DynMatrix<double> > &list, unsigned int dim){
 	}
 }
 
-void KDTree::sortList(std::vector<DynMatrix<double>* > &list, unsigned int dim){
-	DynMatrix<double> *temp=0;
+void KDTree::sortList(std::vector<DynMatrix<icl64f>* > &list, unsigned int dim){
+	DynMatrix<icl64f> *temp=0;
 	unsigned int minIndex = 0;
 	for(unsigned int i=0;i<list.size()-1;++i){
 		minIndex = i;
@@ -158,7 +159,7 @@ void KDTree::releaseTree(){
 		delete root.left;
 }
 
-DynMatrix<double>* KDTree::nearestNeighbour(DynMatrix<double> &point){
+DynMatrix<icl64f>* KDTree::nearestNeighbour(const DynMatrix<icl64f> &point){
 	unsigned int k = point.rows();
 	unsigned int depth = 0;
 	unsigned int axis = depth % k;
@@ -180,22 +181,24 @@ DynMatrix<double>* KDTree::nearestNeighbour(DynMatrix<double> &point){
 	}
 }
 
-DynMatrix<double>* KDTree::nearestNeighbour(DynMatrix<double> *point){
+DynMatrix<icl64f>* KDTree::nearestNeighbour(const DynMatrix<icl64f> *point){
 	unsigned int k = point->rows();
 	unsigned int depth = 0;
 	unsigned int axis = depth % k;
 	Node *n = &root;
 	while(1){
-		if((*point)[axis]<n->median){
-			if(n->left)
+		if(((*point)[axis]) < (n->median)){
+			if(n->left != 0){
 				n = n->left;
-			else
+			}else{
 				return n->point;
+			}
 		} else {
-			if(n->right)
+			if(n->right != 0){
 				n = n->right;
-			else
+			}else{
 				return n->point;
+			}
 		}
 		depth += 1;
 		axis = depth % k;
@@ -219,3 +222,4 @@ void KDTree::print(Node *n){
 	}
 }
 }
+
