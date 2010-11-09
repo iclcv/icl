@@ -342,7 +342,7 @@ install: all ${PC} create-install-dirs custom-install-hook
 	done
 	${AT}for T in ${APPS_NO_PATH} ; do \
 		${ECHO_NO_AT} ${PROGRESS} ${FBLA}${BYEL}[relink]${DEF} $$T ; \
-		${CXX} ${LIB_LNK_INSTALL} ${PWD}/app/obj/$$T.o -o ${BIN_INSTALL_PREFIX}/$$T ; 	\
+		${CXX} ${LIB_LNK_INSTALL} ${PWD}/app/obj/$$T.o  ${LDFLAGS} -o ${BIN_INSTALL_PREFIX}/$$T ; \
 		chmod 775 ${BIN_INSTALL_PREFIX}/$$T ; \
 	done
 	${ECHO} ${PROGRESS} ${BYEL}[install]${DEF} ${LIB_FILE}
