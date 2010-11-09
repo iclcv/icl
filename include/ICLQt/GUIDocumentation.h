@@ -197,6 +197,7 @@
       - <b>camcfg</b> single button that pops up a camera configuration widget (see CamCfgWiget) if clicked
       - <b>config</b> single button or embedded tree-view that enables 
       - <b>prop</b> complex embedded component containing GUI compoments to configure an ICLUtils::Configurable at runtime
+      - <b>color</b> component to choose a color using an pop-up QColorChooser
         runtime adaption of configuration file parameters
 
       \subsection CONTROL Special Control Sequences
@@ -310,6 +311,10 @@
         popup - only a single button labled 'config' is embedded. This button can be triggered to show
         an extra widget of type ConfigFileGUI
       - <b>prop(CONFIGURABLE_ID)</b> CONFIGURABLE_ID refers to an ICLUtils::Configurables ID
+      - <b>color(R,G,B[,A])</b> create a color cooser-component with initially given RGB color. Optionally an 
+        initial alpha value can be provided as 4th parameter. In this case, the internal component is set up
+        with alpha support and the popuped QColorChooser also contains an alpha-spin-box. Note, R,G,B and alpha
+        are integers in range {0,255}. 
 
       \subsection GP General Parameters
       The 3rd part of the GUI definition string is a list of so called general params. "General" means here,
@@ -415,6 +420,7 @@
       <TR> <TD>camcfg</TD>       <TD>no handle</TD>         <TD>0</TD>                  <TD>-</TD>                                                   </TR>
       <TR> <TD>config</TD>       <TD>no handle</TD>         <TD>0</TD>                  <TD>-</TD>                                                   </TR>
       <TR> <TD>prop</TD>         <TD>no handle</TD>         <TD>0</TD>                  <TD>-</TD>                                                   </TR>
+      <TR> <TD>color</TD>        <TD>ColorHandle</TD>       <TD>1 type Color4D</TD>     <TD>currently selected color</TD>                            </TR>
       </TABLE>
       
       \section HVV Handles vs. Values
