@@ -6,6 +6,8 @@ LD=g++
 DEP=g++
 WL_RP=-Wl,-rpath=
 
+PWD=`pwd`
+
 # files
 SOURCES=$(wildcard src/*.cpp)
 SOURCES:=$(filter-out $(wildcard src/*_moc.cpp),${SOURCES})
