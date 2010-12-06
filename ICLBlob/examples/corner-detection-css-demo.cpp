@@ -68,7 +68,7 @@ void init(){
 
   GUI controls("vbox");
   controls << ( GUI("hbox") 
-           << "camcfg(pwc,dc)"
+           << "camcfg()"
            <<  "combo(color image,binary image)[@out=vis]"
           );
   controls << "fslider(0,1,0.03)[@out=t@label=threshold]";
