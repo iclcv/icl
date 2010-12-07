@@ -33,6 +33,22 @@ PC_DEPS=@ICL_PGK_CFG_PLACEHOLDER@ gtest
 # LDFLAGS=
 
 ##################################################
+# extra files to install #########################
+##################################################
+
+# these extra files are also installed to 
+# ${INSTALL_PREFIX}/bin/${PROJECT_NAME}
+# e.g. useful scripts. In most cases, this is simpler
+# than implementing the custom-install-hook rule
+# EXTRA_INSTALL_TO_BIN=
+
+# these extra resource files are installted to 
+# ${INSTALL_PREFIX}/etc/${PROJECT_NAME}
+# e.g. configuration files
+# EXTRA_INSTALL_TO_ETC=
+
+
+##################################################
 # configuration ##################################
 ##################################################
 

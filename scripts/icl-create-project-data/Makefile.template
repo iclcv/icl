@@ -86,6 +86,7 @@ LIB_INSTALL_PREFIX=${INSTALL_PREFIX}/lib
 INC_INSTALL_PREFIX=${INSTALL_PREFIX}/include/${PROJECT_NAME}
 DOC_INSTALL_PREFIX=${INSTALL_PREFIX}/doc/${PROJECT_NAME}
 BIN_INSTALL_PREFIX=${INSTALL_PREFIX}/bin/${PROJECT_NAME}
+ETC_INSTALL_PREFIX=${INSTALL_PREFIX}/etc/${PROJECT_NAME}
 REL_BIN_INSTALL_PREFIX=bin/${PROJECT_NAME}
 
 REL_INC_INSTALL_PREFIX=$(patsubst ${INSTALL_PREFIX}/%,%,${INC_INSTALL_PREFIX})
@@ -304,6 +305,7 @@ create-install-dirs:
 	${AT}for D in ${INSTALL_PREFIX} \
 		      ${INC_INSTALL_PREFIX} \
 		      ${DOC_INSTALL_PREFIX} \
+		      ${ETC_INSTALL_PREFIX} \
 		      ${LIB_INSTALL_PREFIX}/pkgconfig \
 	              ${BIN_INSTALL_PREFIX} \
 		      ${INSTALL_PREFIX}/doc \
@@ -323,6 +325,10 @@ installlink: all ${PC} uninstall create-install-dirs custom-install-hook
 		${ECHO_NO_AT} ${PROGRESS} ${BBLU}[link]${DEF} $$T ; \
 		ln -s ${PWD}/$$T ${BIN_INSTALL_PREFIX} ; 	\
 	done
+	${AT}for T in ${EXTRA_INSTALL_TO_BIN} ; do \
+		${ECHO_NO_AT} ${PROGRESS} ${BBLU}[extra link]${DEF} $$T ; \
+		ln -s ${PWD}/$$T ${BIN_INSTALL_PREFIX} ; 	\
+	done
 	${ECHO} ${PROGRESS} ${BBLU}[link]${DEF} ${LIB_FILE}
 	${AT}ln -s ${PWD}/lib/${LIB_FILE} ${LIB_INSTALL_PREFIX}
 	${ECHO} ${PROGRESS} ${BBLU}[link]${DEF} ${PC} 
@@ -336,8 +342,12 @@ installlink: all ${PC} uninstall create-install-dirs custom-install-hook
 	else \
 		${ECHO_NO_AT} ${PROGRESS} ${BBLU}[skip]${DEF} documentation ;	\
 	fi
+	${AT}for T in ${EXTRA_INSTALL_TO_ETC} ; do \
+		${ECHO_NO_AT} ${PROGRESS} ${BBLU}[extra link]${DEF} $$T ; \
+		ln -s ${PWD}/$$T ${ETC_INSTALL_PREFIX} ; 	\
+	done
 
-install: all ${PC} create-install-dirs custom-install-hook
+install: all ${PC} uninstall create-install-dirs custom-install-hook
 	${AT}for T in `find src/ -name *.h` ; do \
 		${ECHO_NO_AT} ${PROGRESS} ${BYEL}[install]${DEF} $$T ; \
 		install -D -p -m 664 ${PWD}/$$T ${INC_INSTALL_PREFIX}/ ; \
@@ -345,6 +355,11 @@ install: all ${PC} create-install-dirs custom-install-hook
 	${AT}for T in ${APPS_NO_PATH} ; do \
 		${ECHO_NO_AT} ${PROGRESS} ${FBLA}${BYEL}[relink]${DEF} $$T ; \
 		${CXX} ${LIB_LNK_INSTALL} ${PWD}/app/obj/$$T.o  ${LDFLAGS} -o ${BIN_INSTALL_PREFIX}/$$T ; \
+		chmod 775 ${BIN_INSTALL_PREFIX}/$$T ; \
+	done
+	${AT}for T in ${EXTRA_INSTALL_TO_BIN} ; do \
+		${ECHO_NO_AT} ${PROGRESS} ${FBLA}${BRED}[extra bin]${DEF} $$T ; \
+		cp $$T ${BIN_INSTALL_PREFIX}/ ; \
 		chmod 775 ${BIN_INSTALL_PREFIX}/$$T ; \
 	done
 	${ECHO} ${PROGRESS} ${BYEL}[install]${DEF} ${LIB_FILE}
@@ -360,11 +375,16 @@ install: all ${PC} create-install-dirs custom-install-hook
 	else \
 		${ECHO_NO_AT} ${PROGRESS} ${BYEL}[skip]${DEF} documentation ;	\
 	fi
+	${AT}for T in ${EXTRA_INSTALL_TO_ETC} ; do \
+		${ECHO_NO_AT} ${PROGRESS} ${FBLA}${BRED}[extra etc]${DEF} $$T ; \
+		install -p -m 664 $$T ${ETC_INSTALL_PREFIX}/ ; \
+	done
 
 uninstall:
 	${ECHO} ${PROGRESS} ${BRED}[uninstall]${DEF} ${PFX}
 	${AT}rm -rf ${INC_INSTALL_PREFIX}
 	${AT}rm -rf ${BIN_INSTALL_PREFIX}
+	${AT}rm -rf ${ETC_INSTALL_PREFIX}
 	${AT}rm -rf ${LIB_INSTALL_PREFIX}/${LIB_FILE}
 	${AT}rm -rf ${LIB_INSTALL_PREFIX}/pkgconfig/${PC}
 	${AT}rm -rf ${DOC_INSTALL_PREFIX}
