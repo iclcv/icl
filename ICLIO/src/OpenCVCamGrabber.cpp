@@ -97,7 +97,8 @@ namespace icl{
           ensureCompatible(&scalebuffer,m_eDesiredDepth,iplSize,formatRGB);
           icl::ipl_to_img(img,&scalebuffer,PREFERE_DST_DEPTH);
           ensureCompatible(ppoDst,getDesiredDepth(),getDesiredParams());
-          scalebuffer->scaledCopy(ppoDst,interpolateLIN);
+          m_oConverter.apply(scalebuffer,*ppoDst);
+          //scalebuffer->scaledCopy(ppoDst,interpolateLIN);
         }
       } else {
         //this function takes care if ppoDst is NULL
