@@ -60,12 +60,13 @@ void init(){
 	boardSize = cvSize(width, height);
 	corners = new CvPoint2D32f[width*height];
 
-	cg = new GenericGrabber();//FROM_PROGARG("-input"));
+	cg = new GenericGrabber(FROM_PROGARG("-input"));
 
+	/*
 	static std::string params[] = {"*.png"};
 	std::string dev = "file";
 	cg->init(dev,dev+"="+params[0]);
-
+	*/
 	cg->setIgnoreDesiredParams(true);
 	gui << (GUI("hbox")
 			<< "draw[@handle=calib_object@minsize=20x20@label=calib]"
