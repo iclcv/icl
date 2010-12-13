@@ -51,7 +51,7 @@ namespace icl {
       finite focal length. It is very general and can be applied to most cameras,
       e.g. CCD cameras. Because it assumes a linear projection, any distortion in
       the camera image should be corrected before using it in this class.
-      
+
       The projection which describes the camera can be characterized by the
       following parameters.
       - External Parameters (position of camera in world space)
@@ -75,11 +75,11 @@ namespace icl {
         - <b>skew</b> this parameter is zero, when the x- and y-axis of the
           image plane are perpendicular to each other. This should normally be
           the case.
-          
+
       These parameters can also be estimated by using a number of point references
       between points with known position in the world coord. sys. and their
       corresponding projections on the image plane.
-          
+
       Additionally to calculating the projection of points in the world coord. sys.
       onto the image plane and the back-projection of image points onto view rays
       in the world coord. sys., the camera class can also be used to render scenes
@@ -98,18 +98,19 @@ namespace icl {
     public:
 
     struct RenderParams {
-      Size chipSize;  //!< chip size in [mm] for transformation to clip coordinates
-      float clipZFar; //!< position of the far clipping plane in [mm]
-      Rect viewport;  //!< in [pixel]
+      Size chipSize;    //!< chip size in [mm] for transformation to clip coordinates
+      float clipZNear;  //!< position of the near clipping plane in [mm]
+      float clipZFar;   //!< position of the far clipping plane in [mm]
+      Rect viewport;    //!< in [pixel]
       float viewportZMin, viewportZMax; //!< interval for the z coordinates in viewport
-      
-      RenderParams(const Size &chipSize=Size::VGA, float clipZFar=10000.,
+
+      RenderParams(const Size &chipSize=Size::VGA, float clipZNear=0., float clipZFar=10000.,
         const Rect &viewport=Rect(0,0,640,480), float viewportZMin=0.,
         float viewportZMax=1.):
-        chipSize(chipSize), clipZFar(clipZFar), viewport(viewport),
+        chipSize(chipSize), clipZNear(clipZNear), clipZFar(clipZFar), viewport(viewport),
         viewportZMin(viewportZMin), viewportZMax(viewportZMax) {}
     };
-    
+
     /// We need at least 6 Data points in general positions
     struct NotEnoughDataPointsException  : public ICLException{
       NotEnoughDataPointsException():ICLException(__FUNCTION__){}
@@ -119,12 +120,12 @@ namespace icl {
     typedef FixedMatrix<icl32f,3,3> Mat3x3;
 
     /** @{ @name constructors */
-    
+
     /// basic constructor that gets all possible parameters
     Camera(const Vec &pos=Vec(0,0,10,1),
-             const Vec &norm=Vec(0,0,-1,1), 
+             const Vec &norm=Vec(0,0,-1,1),
              const Vec &up=Vec(1,0,0,1),
-             float f=3, 
+             float f=3,
              const Point32f &principalPointOffset=Point32f(320,240),
              float sampling_res_x = 200,
              float sampling_res_y = 200,
@@ -135,13 +136,13 @@ namespace icl {
 
     /// loads a camera from given file
     /** @param filename file name of valid configuration file (in ICL's ConfigFile format)
-        @param prefix valid prefix that determines wheret to find the camera within the 
+        @param prefix valid prefix that determines wheret to find the camera within the
                given config file (note, that this prefix must end with '.')
         */
     Camera(const std::string &filename, const std::string &prefix="config.")  throw (ParseException);
     /// loads a camera from given input stream
     /** @param filename file name of valid configuration file (in ICL's ConfigFile format)
-        @param prefix valid prefix that determines wheret to find the camera within the 
+        @param prefix valid prefix that determines wheret to find the camera within the
                given config file (note, that this prefix must end with '.')
         */
     Camera(std::istream &configDataStream, const std::string &prefix="config.")  throw (ParseException);
@@ -157,7 +158,7 @@ namespace icl {
         defining the projection). Therefore an arbitrary value for f != 0 may be passed to the
         function.
         The method minimizes the algebraic error with the direct linear transform algorithm in
-        which a SVD is used. 
+        which a SVD is used.
         If IPP is not available, this function uses calibrate_pinv(std::vector<Vec>,std::vector<Point32f>,float)
     */
     static Camera calibrate(std::vector<Vec> Xws, std::vector<Point32f> xis, float focalLength=1)
@@ -168,9 +169,9 @@ namespace icl {
         This method is less stable and less exact. */
     static Camera calibrate_pinv(std::vector<Vec> Xws, std::vector<Point32f> xis, float focalLength=1)
       throw (NotEnoughDataPointsException);
-  
+
     /** @} @{ @name projection functions */
-  
+
     // projections normal
     /// Project a world point onto the image plane. Caution: Set last component of world points to 1.
     Point32f project(const Vec &Xw) const;
@@ -178,9 +179,9 @@ namespace icl {
     void project(const std::vector<Vec> &Xws, std::vector<Point32f> &dst) const;
     /// Project a vector of world points onto the image plane. Caution: Set last component of world points to 1.
     const std::vector<Point32f> project(const std::vector<Vec> &Xws) const;
-    
-    
-    
+
+
+
     // projections OpenGL
     /// Project a world point onto the image plane.
     Vec projectGL(const Vec &Xw) const;
@@ -188,8 +189,8 @@ namespace icl {
     void projectGL(const std::vector<Vec> &Xws, std::vector<Vec> &dst) const;
     /// Project a vector of world points onto the image plane.
     const std::vector<Vec> projectGL(const std::vector<Vec> &Xws) const;
-  
-    
+
+
     // projection magic
     /// Returns a view-ray equation of given pixel location
     ViewRay getViewRay(const Point32f &pixel) const;
@@ -198,21 +199,21 @@ namespace icl {
     /// returns estimated 3D point for given pixel and plane equation
     Vec estimate3DPosition(const Point32f &pixel, const PlaneEquation &plane) const throw (ICLException);
     /// calculates the intersection point between this view ray and a given plane
-    /** Throws an ICLException in case of parallel plane and line 
+    /** Throws an ICLException in case of parallel plane and line
         A ViewRay is defined by  \f$V: \mbox{offset} + \lambda \cdot \mbox{direction} \f$
-        A Plane is given by \f$ P: < (X - \mbox{planeOffset}), \mbox{planeNormal}> = 0 \f$        
-        Intersection is described by 
+        A Plane is given by \f$ P: < (X - \mbox{planeOffset}), \mbox{planeNormal}> = 0 \f$
+        Intersection is described by
         \f$<(\mbox{offset} + \lambda \cdot \mbox{direction}) - \mbox{planeOffset},planeNormal> = 0\f$
-        which yields: 
+        which yields:
         \f[ \lambda = - \frac{<\mbox{offset}-\mbox{planeOffset},\mbox{planeNormal}>}{<\mbox{direction},\mbox{planeNormal}>} \f]
         and .. obviously, we get no intersection if direction is parallel to planeNormal
     */
-    static Vec getIntersection(const ViewRay &v, 
+    static Vec getIntersection(const ViewRay &v,
                                const PlaneEquation &plane) throw (ICLException);
-  
+
     /** @} @{ @name complex setter and getter functions */
 
-    // setters and getters 
+    // setters and getters
     /// set the norm and up vectors according to the passed rotation matrix
     void setRotation(const Mat3x3 &rot);
     /// set norm and up vectors according to the passed yaw, pitch and roll
@@ -230,14 +231,14 @@ namespace icl {
 
     /// returns the common 4x3 camera matrix
     FixedMatrix<icl32f,4,3>  getQMatrix() const;
-    
+
     /// translates the current position vector
     inline void translate(const Vec &d) { m_pos += d; }
-    
+
     std::string toString() const;
-    
+
     /** @} @{ @name simple getter functions */
-    
+
     const std::string &getName() const { return m_name; }
     const Vec &getPosition() const { return m_pos; }
     const Vec &getNorm() const { return m_norm; }
@@ -273,8 +274,8 @@ namespace icl {
 
     /// Changes the camera resolution and adapts dependent values
     /** Internally, this function also adapts the render parameters chipSize and viewport
-        Furthermore, the prinizipal-point-offset is automatically set to the center of 
-        the new screen 
+        Furthermore, the prinizipal-point-offset is automatically set to the center of
+        the new screen
     */
     void setResolution(const Size &newScreenSize);
 
@@ -286,15 +287,15 @@ namespace icl {
 
     /** @} @{ @name 3D-position estimation */
 
-    /// computes the 3D position of a n view from n cameras 
-    /** @param cams list of cameras 
+    /// computes the 3D position of a n view from n cameras
+    /** @param cams list of cameras
         @param UVs list of image points (in image coordinates)
         @param removeInvalidPoints if this flag is set to true,
                all given points are checked to be within the cameras
                viewport. If not, these points are removed internally.
-        
+
         <h3> Method: </h3>
-        
+
         This function uses a standard linear approach using a pseudo-inverse to
         solve the problem in a "least-square"-manner:
 
@@ -306,32 +307,32 @@ namespace icl {
         Q = [R|t] = | -- y --  ty |
                     | -- z --  tz |
         </pre>
-        
+
         The camera projection is trivial now. For a given projected point [u,v]'
         (in image coordinates) and a position in the world Pw (homogeneous):
 
         <pre>
-        [u,v,1*]' = hom( Q Pw )      
+        [u,v,1*]' = hom( Q Pw )
         </pre>
 
-        Where '1*' becomes a real 1.0 just because of the homogenization step 
+        Where '1*' becomes a real 1.0 just because of the homogenization step
         using hom(). Component-wise, this can be re-written as:
-        
+
         <pre>
         u  = x Pw + tx
         v  = y Pw + ty
         1* = z Pw + tz
         </pre>
-        
+
         In order to ensure, '1*' becomes a real 1.0, the upper two equations
         have to be devided by (z Pw + tz), which provides us the following two
         equations:
-        
+
         <pre>
         u = (x Pw + tx) / (z Pw + tz)
         v = (y Pw + ty) / (z Pw + tz)
         </pre>
-        
+
         These equations have to be reorganized so that Pw can be factored out:
 
         <pre>
@@ -340,76 +341,76 @@ namespace icl {
         </pre>
 
         Now we can write this in matrix notation again:
-        
+
         <pre>
         A Pw = B      ,where
-    
-        
+
+
         A = | u z - x |
             | v z - y |
 
         B = | tx - u tz |
             | ty - v tz |
-        
+
         </pre>
 
         The obviously under-determined equation-system above uses only a single camera. If
         we put the results from several views together into a single equation system, it
         becomes unambigoulsly solvable using a pseudo-inverse approach:
-        
+
         <pre>
         | A1 |      | B1 |             | A1 |+ | B1 |
         | A2 | Pw = | B2 |    => Pw =  | A2 |  | B2 |
         |....|      |....|             |....|  |....|
         </pre>
-        
+
         where 'A+' means the pseudo-inverse of A
     */
-    static Vec estimate_3D(const std::vector<Camera*> cams, 
+    static Vec estimate_3D(const std::vector<Camera*> cams,
                            const std::vector<Point32f> &UVs,
                            bool removeInvalidPoints=false) throw (ICLException);
 
     /// multiview 3D point estimation using svd-based linear optimization (should not be used)
     /** This functions seems to provide false results for more than 2 views:
         use estimate_3D instead*/
-    static Vec estimate_3D_svd(const std::vector<Camera*> cams, 
+    static Vec estimate_3D_svd(const std::vector<Camera*> cams,
                                const std::vector<Point32f> &UVs);
-    
+
     /** @}*/
 
     protected:
     static Mat createTransformationMatrix(const Vec &norm, const Vec &up, const Vec &pos);
-    
+
     private:
     // General Parameters
     std::string m_name;   //!< name of the camera (visualized in the scene if set)
-    
+
     // External Parameters
     Vec m_pos;        //!< center position vector
     Vec m_norm;       //!< normal vector of image plane
     Vec m_up;         //!< vector pointing to pos. y axis on image plane
-    
+
     // Internal Parameters
     float m_f;        //!< focal length
     float m_px, m_py; //!< principal point offset
     float m_mx, m_my; //!< sampling resolution
     float m_skew;     //!< skew parameter in the camera projection, should be zero
-    
+
     // Rendering Parameters
     RenderParams m_renderParams;
-    
+
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    
-    /// internally used utility function 
+
+    /// internally used utility function
     static void checkAndFixPoints(std::vector<Vec> &worldPoints, std::vector<Point32f> &imagePoints)
       throw (NotEnoughDataPointsException);
     /// intenal helper function
-    static void load_camera_from_stream(std::istream &is, 
+    static void load_camera_from_stream(std::istream &is,
                                         const std::string &prefix,
                                         Camera &cam);
   };
-  
+
   /// ostream operator (writes camera in XML format)
   std::ostream &operator<<(std::ostream &os, const Camera &cam);
 

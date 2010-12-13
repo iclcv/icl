@@ -56,7 +56,7 @@ namespace icl {
             0, 0, 1);
     setRotation(R_x*R_y*R_z);
   }
-  
+
   Mat Camera::createTransformationMatrix(const Vec &norm, const Vec &up, const Vec &pos) {
     // see http://en.wikipedia.org/wiki/Cross_product#Cross_product_and_handedness
     /* [ --- hh --- | -hh.p ]
@@ -65,7 +65,7 @@ namespace icl {
        [ 0   0   0  |   1   ]
     */
     // double cross product to ensure that they are all orthogonal
-    Vec hh = cross(up,norm); 
+    Vec hh = cross(up,norm);
     Vec uu = cross(norm,hh);
 
     Mat T;
@@ -74,33 +74,33 @@ namespace icl {
     T.row(2) = norm;
     T.row(3) = Vec(0.0);
     T.col(3) = Vec(0.0);
-    
+
     T.col(3) = -(T*pos);
     T(3,3) = 1;
-    
+
     return T;
   }
-    
+
   Mat Camera::getCSTransformationMatrix() const {
     return createTransformationMatrix(m_norm, m_up, m_pos);
   }
-  
+
   Mat Camera::getCSTransformationMatrixGL() const {
     // for OpenGL, the camera looks in negative z direction
     return createTransformationMatrix(-m_norm, m_up, m_pos);
   }
-  
+
   FixedMatrix<icl32f,4,3> Camera::getQMatrix() const {
     Mat K = getProjectionMatrix();
     Mat CS = getCSTransformationMatrix();
-    
+
     FixedMatrix<icl32f,4,3> cs(CS.begin());
     FixedMatrix<icl32f,3,3> k( K(0,0), K(1,0), K(2,0),
                                K(0,1), K(1,1), K(2,1),
                                K(0,3), K(1,3), K(2,3) );
     return k*cs;
   }
-  
+
 
   Mat Camera::getProjectionMatrix() const {
     return Mat(m_f * m_mx,   m_skew, m_px, 0,
@@ -110,9 +110,8 @@ namespace icl {
   }
 
   Mat Camera::getProjectionMatrixGL() const {
-    float clip_near = m_f;
-    float A = (m_renderParams.clipZFar + clip_near)/(clip_near - m_renderParams.clipZFar);
-    float B = (2*m_renderParams.clipZFar*clip_near)/(clip_near - m_renderParams.clipZFar);
+    float A = (m_renderParams.clipZFar + m_renderParams.clipZNear)/(m_renderParams.clipZNear - m_renderParams.clipZFar);
+    float B = (2*m_renderParams.clipZFar*m_renderParams.clipZNear)/(m_renderParams.clipZNear - m_renderParams.clipZFar);
     float w2 = m_renderParams.chipSize.width/2;
     float h2 = m_renderParams.chipSize.height/2;
     // Because OpenGL will automatically flip the y-coordinates in the end,
@@ -134,7 +133,7 @@ namespace icl {
                 0,  0, (zFar-zNear)/2, (zFar+zNear)/2,
                 0,  0, 0,    1);
   }
-  
+
   // Projects a world point to the screen
   Point32f Camera::project(const Vec &Xw) const {
     Mat T = getCSTransformationMatrix();
@@ -142,12 +141,12 @@ namespace icl {
 
     //#warning "testing project fix here!"
     //P(1,0) *= -1; P(2,1) *= -1;
-    
+
     Vec xi = homogenize(P*T*Xw);
 
     return Point32f(xi[0],xi[1]);
   }
-  
+
   // Projects a set of points
   void Camera::project(const std::vector<Vec> &Xws, std::vector<Point32f> &dst) const{
     dst.resize(Xws.size());
@@ -202,7 +201,7 @@ namespace icl {
     projectGL(Xws, dst);
     return dst;
   }
-  
+
   void Camera::setRotation(const Mat3x3 &rot) {
     m_norm = Vec(rot(0,2), rot(1,2), rot(2,2), 0).normalized();
     m_norm[3] = 1;
@@ -221,16 +220,16 @@ namespace icl {
       m_up *= -1; m_up[3] = 1;
     }
   }
-  
+
   Camera Camera::createFromProjectionMatrix(const FixedMatrix<icl32f,4,3> &Q,
                                                 float focalLength) {
     FixedMatrix<float,3,3> M = Q.part<0,0,3,3>();
     FixedMatrix<float,1,3> c4 = Q.col(3);
-    
+
     FixedMatrix<float,3,3> K; // intrinsic parameters
     FixedMatrix<float,3,3> R; // extrinsic (rotation matrix)
     FixedMatrix<float,1,3> T; // extrinsic (tranlation vector)
-    
+
     M.decompose_RQ(K,R);
     K = K/K(2,2); // normalize K
     T = -M.inv() * c4;
@@ -243,7 +242,7 @@ namespace icl {
     cam.setSkew(K(1,0));
     return cam;
   }
-  
+
   Camera Camera::calibrate_pinv(std::vector<Vec> Xws,
                                     std::vector<Point32f> xis,
                                     float focalLength)
@@ -252,19 +251,19 @@ namespace icl {
     checkAndFixPoints(Xws,xis);
 
     int N = (int)Xws.size();
-    
+
     DynMatrix<float> U(1,2*N);
     for(int i=0;i<N;++i){
       U[2*i] = xis[i].x;
       U[2*i+1] = xis[i].y;
     }
-    
+
     DynMatrix<float> B(11,2*N);
     for(int i=0;i<N;++i){
       float x=Xws[i][0], y=Xws[i][1],z=Xws[i][2], u=-xis[i].x,v=-xis[i].y;
       float r1[11] = {x,y,z,1,0,0,0,0,u*x,u*y,u*z};
       float r2[11] = {0,0,0,0,x,y,z,1,v*x,v*y,v*z};
-      
+
       std::copy(r1,r1+11,B.row_begin(2*i));
       std::copy(r2,r2+11,B.row_begin(2*i+1));
     }
@@ -276,22 +275,22 @@ namespace icl {
 
     return Camera::createFromProjectionMatrix(Q, focalLength);
   }
-  
+
   Camera Camera::calibrate(std::vector<Vec> Xws,
                                std::vector<Point32f> xis,
                                float focalLength)
          throw (NotEnoughDataPointsException) {
-         
+
 #ifndef HAVE_MKL
 	return calibrate_pinv(Xws,xis,focalLength);
 #else
     // TODO: normalize points
     // TODO: check whether we have svd (IPP) available
     checkAndFixPoints(Xws,xis);
-    
+
     unsigned int n = Xws.size();
     DynMatrix<icl32f> A(12,2*n);
-    
+
     for (unsigned int k=0; k<n; ++k) {
       int i = 2*k;
       float x = xis[k].x; float y = xis[k].y;
@@ -304,18 +303,18 @@ namespace icl {
       A(4,i) = 0; A(5,i) = 0; A(6,i) = 0; A(7,i) = 0;
       A(8,i) = -x*X; A(9,i) = -x*Y; A(10,i) = -x*Z; A(11,i) = -x*W;
     }
-    
+
     DynMatrix<icl32f> U,s,V;
     svd_dyn(A,U,s,V);
-   
+
     FixedMatrix<float,4,3> Q;
     for (int i=0; i<4; i++) for (int j=0; j<3; j++) {
       Q(i,j) = V(11,j*4+i);
     }
-    return Camera::createFromProjectionMatrix(Q, focalLength);       
+    return Camera::createFromProjectionMatrix(Q, focalLength);
 #endif
   }
-  
+
   void Camera::checkAndFixPoints(std::vector<Vec> &Xws, std::vector<Point32f> &xis) throw (NotEnoughDataPointsException) {
     if(Xws.size() > xis.size()){
       ERROR_LOG("got more world points than image points (erasing additional world points)");
@@ -331,7 +330,7 @@ namespace icl {
       Xws[i][3]=1;
     }
   }
-  
+
   void Camera::load_camera_from_stream(std::istream &is, const std::string &prefix,
                                          Camera &cam){
     cam = Camera(); // load default values
@@ -351,19 +350,20 @@ namespace icl {
     LOAD_FROM_STREAM(sampling-resolution-y,SamplingResolutionY);
     LOAD_FROM_STREAM(skew,Skew);
     #undef LOAD_FROM_STREAM
-    
+
     f.setPrefix(prefix+"camera.render-params.");
     #define LOAD_FROM_STREAM(KEY,ATTR) \
     if (f.contains(#KEY)) cam.getRenderParams().ATTR = f[#KEY]; \
     else WARNING_LOG("No " #KEY " found in configuration (using default: '" << cam.getRenderParams().ATTR << "')");
     LOAD_FROM_STREAM(chip-size, chipSize);
+    LOAD_FROM_STREAM(clip-z-near, clipZNear);
     LOAD_FROM_STREAM(clip-z-far, clipZFar);
     LOAD_FROM_STREAM(viewport, viewport);
     LOAD_FROM_STREAM(viewport-z-min, viewportZMin);
     LOAD_FROM_STREAM(viewport-z-max, viewportZMax);
     #undef LOAD_FROM_STREAM
   }
- 
+
   std::string Camera::toString() const {
     std::ostringstream os;
     os << "Position: " << getPosition().transp() << std::endl;
@@ -376,7 +376,7 @@ namespace icl {
     os << "Skew: " << getSkew() << std::endl;
     return os.str();
   }
-  
+
   /// ostream operator
   std::ostream &operator<<(std::ostream &os, const Camera &cam){
     ConfigFile f;
@@ -396,20 +396,21 @@ namespace icl {
     #undef WRITE_TO_STREAM
 
     f["render-params.chip-size"] = cam.getRenderParams().chipSize;
+    f["render-params.clip-z-near"] = cam.getRenderParams().clipZNear;
     f["render-params.clip-z-far"] = cam.getRenderParams().clipZFar;
     f["render-params.viewport"] = cam.getRenderParams().viewport;
     f["render-params.viewport-z-min"] = cam.getRenderParams().viewportZMin;
     f["render-params.viewport-z-max"] = cam.getRenderParams().viewportZMax;
-    
+
     return os << f;
   }
 
   /// istream operator parses a camera from an XML-string
   std::istream &operator>>(std::istream &is, Camera &cam) throw (ParseException) {
     cam = Camera(is,"config.");
-    return is; 
+    return is;
   }
-  
+
   Camera::Camera(const std::string &filename, const std::string &prefix) throw (ParseException){
     std::ifstream is(filename.c_str());
     load_camera_from_stream(is,prefix,*this);
@@ -418,7 +419,7 @@ namespace icl {
   Camera::Camera(std::istream &is, const std::string &prefix) throw (ParseException){
     load_camera_from_stream(is,prefix,*this);
   }
-  
+
   ViewRay Camera::getViewRay(const Point32f &pixel) const {
     Mat T = getCSTransformationMatrix();
     Mat P = getProjectionMatrix();
@@ -434,22 +435,22 @@ namespace icl {
     dir[3] = 0; dir.normalize(); dir[3] = 1;
     return ViewRay(m_pos,dir);
   }
-  
+
   ViewRay Camera::getViewRay(const Vec &Xw) const{
     return ViewRay(m_pos, Xw-m_pos);
   }
-  
+
   static inline float sprod_3(const Vec &a, const Vec &b){
     return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
   }
-  
+
   Vec Camera::getIntersection(const ViewRay &v, const PlaneEquation &plane) throw (ICLException) {
     float denom = sprod_3(v.direction, plane.normal);
     if(!denom) throw ICLException("no intersection -> plane normal is perdendicular to view-ray direction");
     float lambda = - sprod_3(v.offset-plane.offset,plane.normal) / denom;
     return v(lambda);
   }
-  
+
   Vec Camera::estimate3DPosition(const Point32f &pixel, const PlaneEquation &plane) const throw (ICLException) {
     return getIntersection(getViewRay(pixel),plane);
   }
@@ -465,14 +466,14 @@ namespace icl {
       }
   */
 
-  static Vec estimate_3D_internal(const std::vector<Camera*> cams, 
+  static Vec estimate_3D_internal(const std::vector<Camera*> cams,
                                   const std::vector<Point32f> &ps) throw (ICLException){
     // {{{ open
     int K = (int)cams.size();
     ICLASSERT_THROW(K > 1,ICLException("Camera::estimate_3D_internal: 3D point estimation needs at least 2 views"));
 
     DynMatrix<float> A(3,2*K), B(1,2*K);
-    
+
     for(int i=0;i<K;++i){
       const float &u = ps[i].x;
       const float &v = ps[i].y;
@@ -481,30 +482,30 @@ namespace icl {
       FixedRowVector<float,3> y = Q.part<0,1,3,1>();
       FixedRowVector<float,3> z = Q.part<0,2,3,1>();
       FixedColVector<float,3> t = Q.part<3,0,1,3>();
-      
+
       FixedRowVector<float,3> a1 = z*u - x;
       FixedRowVector<float,3> a2 = z*v - y;
-      
-      std::copy(a1.begin(),a1.end(),A.row_begin(2*i)); 
-      std::copy(a2.begin(),a2.end(),A.row_begin(2*i+1)); 
-      
+
+      std::copy(a1.begin(),a1.end(),A.row_begin(2*i));
+      std::copy(a2.begin(),a2.end(),A.row_begin(2*i+1));
+
       B[2*i]   = t[0]-u*t[2];
       B[2*i+1] = t[1]-v*t[2];
     }
-    
+
     try{
       DynMatrix<float> pEst = A.pinv() * B;
       return Vec(pEst[0],pEst[1],pEst[2],1);
     }catch(const ICLException &ex){
       throw ICLException(str("Camera::estimate_3D_internal: unable to solve linear equation (")+ex.what()+")");
     }
-    
+
     return Vec(0,0,0,1);
   }
 
   // }}}
 
-  Vec Camera::estimate_3D(const std::vector<Camera*> cams, 
+  Vec Camera::estimate_3D(const std::vector<Camera*> cams,
                           const std::vector<Point32f> &UVs,
                           bool removeInvalidPoints) throw (ICLException){
     // {{{ open
@@ -532,7 +533,7 @@ namespace icl {
                                    -v[2], 0, v[0],
                                    v[1], -v[0], 0);
   }
-  
+
   template<class ForwardIterator>
   static bool all_negative(ForwardIterator begin, ForwardIterator end){
     while(begin != end){
@@ -548,22 +549,22 @@ namespace icl {
     return true;
   }
 
-  /// multiview 3D point estimation using svd-based linear optimization 
-  Vec Camera::estimate_3D_svd(const std::vector<Camera*> cams, 
+  /// multiview 3D point estimation using svd-based linear optimization
+  Vec Camera::estimate_3D_svd(const std::vector<Camera*> cams,
                                 const std::vector<Point32f> &UVs){
     int K = (int)cams.size();
     ICLASSERT_THROW(K>1,ICLException("estimate_3D_svd needs at least 2 views"));
     ICLASSERT_THROW((int)UVs.size() == (int)cams.size(),
                     ICLException("estimate_3D_svd got more or less cameras than points"));
-    
+
     std::vector<FixedMatrix<icl32f,4,3> > P(K);
     std::vector<FixedMatrix<icl32f,1,2> > u(K);
 
-    for(int i=0;i<K;++i) { 
+    for(int i=0;i<K;++i) {
       P[i] = cams[i]->getQMatrix();
-      u[i] = FixedMatrix<icl32f,1,2>(UVs[i].x,UVs[i].y); 
+      u[i] = FixedMatrix<icl32f,1,2>(UVs[i].x,UVs[i].y);
     }
-    
+
 #if 0
     // this does not work for some reason!, however it works without!
     for(int k=0;k<K;++k){
@@ -574,7 +575,7 @@ namespace icl {
       u[k] = Mat22(H.part<0,0,2,2>()) * u[k] + Vec2(H.part<2,2,1,2>());
     }
 #endif
-    
+
     DynMatrix<float> A(4,K*3);
     for(int k=0;k<K;++k){
       FixedMatrix<icl32f,4,3> m = contr_eps(FixedMatrix<icl32f,1,3>(u[k][0],u[k][1],1))*P[k];
@@ -584,27 +585,27 @@ namespace icl {
         }
       }
     }
-    
+
     DynMatrix<float> _U,_s,V;
     svd_dyn(A,_U,_s,V);
-    
+
     // search eigenvector to lowest eigenvalue
-    DynMatrix<float> X(1,V.rows()); 
+    DynMatrix<float> X(1,V.rows());
     X = V.col(V.cols()-1);
-    
+
     // create matrix with all 3rd rows of the camera matrices
     DynMatrix<float> M(4,K);
     for(int k=0;k<K;++k){
       std::copy(P[k].row_begin(2),P[k].row_end(2),M.row_begin(k));
     }
-    
+
     DynMatrix<float> s = M*X;
     if(all_negative(s.begin(),s.end())){
       return homogenize(-Vec(X.begin()));
     }else if(all_positive(s.begin(),s.end())){
       return homogenize(Vec(X.begin()));
     }else{
-      throw ICLException("estimate_3D_svd: Inconsistent orientation of point match"); 
+      throw ICLException("estimate_3D_svd: Inconsistent orientation of point match");
       return Vec(0,0,0,1);
     }
   }
@@ -614,7 +615,7 @@ namespace icl {
     getRenderParams().viewport = Rect(Point::null,newScreenSize);
     setPrincipalPointOffset(newScreenSize.width/2,newScreenSize.height/2);
   }
-  
+
   void Camera::setResolution(const Size &newScreenSize, const Point &newPrincipalPointOffset){
     getRenderParams().chipSize = newScreenSize;
     getRenderParams().viewport = Rect(Point::null,newScreenSize);
