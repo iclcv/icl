@@ -325,6 +325,13 @@ namespace icl{
       operator T() const throw (InvalidTypeException,EntryNotFoundException){
         return cf.get<T>(id);
       }
+      
+      /// explicit cast into given type
+      /** Sometimes, the implicit automatic cast is not allowed due to ambiguities */
+      template<class T>
+      T as() const throw (InvalidTypeException,EntryNotFoundException){
+        return cf.get<T>(id);
+      }
 
       /// mutlti class assignment operator
       /** assigns a string representation of given T instance to the according ConfigFile Entry

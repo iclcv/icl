@@ -1,6 +1,7 @@
 #include <ICLCC/PseudoColorConverter.h>
 #include <ICLFilter/LUTOp.h>
 #include <ICLUtils/StringUtils.h>
+#include <ICLUtils/ConfigFile.h>
 
 namespace icl{
   
@@ -69,6 +70,7 @@ namespace icl{
     
     void custom(const std::vector<Stop> &stopsIn) throw (ICLException){
       if(!stopsIn.size()) throw ICLException("PseudoColorConverter: no stops found");
+      mode = PseudoColorConverter::Custom;
       stops = stopsIn;
       if(stops.size() == 1){
         std::fill(luts[0].begin(),luts[0].end(),stops[0].color[0]);
@@ -84,7 +86,7 @@ namespace icl{
          
       for(unsigned int i=0;i<3;++i){
         for(unsigned int s=0;s<stops.size()-1;++s){
-          fill_lin(luts[0].data(),256*stops[s].relPos,256*stops[s+1].relPos,stops[s].color[i],stops[s+1].color[i]);
+          fill_lin(luts[i].data(),256*stops[s].relPos,256*stops[s+1].relPos,stops[s].color[i],stops[s+1].color[i]);
         }
       }
     }
@@ -130,7 +132,7 @@ namespace icl{
     Img8u ci;
     for(int i=0;i<3;++i){
       dst.selectChannel(i,&ci);
-      src.lut(m_data->luts[i].data(),&dst,8);
+      src.lut(m_data->luts[i].data(),&ci,8);
     }
   }
 
@@ -140,5 +142,36 @@ namespace icl{
     return m_data->outputBuffer;
   }
 
+
+  void PseudoColorConverter::save(const std::string &filename){
+    ConfigFile f;
+    f.setPrefix("config.pseudo-color-converter.");
+    f["mode"] = std::string(m_data->mode == Default ? "default" : "custom");
+    if(m_data->mode == Custom){
+      f["stop-count"] = (int) m_data->stops.size();
+      for(unsigned int i=0;i<m_data->stops.size();++i){
+        f["stop-"+str(i)+".color"] = str(m_data->stops[i].color[0]) +  " " 
+                                   + str(m_data->stops[i].color[1]) +  " " 
+                                   +   str(m_data->stops[i].color[2]); 
+        f["stop-"+str(i)+".relative-position"] = m_data->stops[i].relPos;
+      }
+    }
+    f.save(filename);
+  }
+  
+  void PseudoColorConverter::load(const std::string &filename){
+    ConfigFile f(filename);
+    f.setPrefix("config.pseudo-color-converter.");
+    if(f["mode"].as<std::string>() == "default"){
+      m_data->def();
+    }else{
+      int n = f["stop-count"];
+      std::vector<Stop> stops(n);
+      for(int i=0;i<n;++i){
+        stops[i] = Stop(f["stop-"+str(i)+".relative-position"],parse<Color>(f["stop-"+str(i)+".color"]));
+      }
+      m_data->custom(stops);
+    }
+  }
 
 }

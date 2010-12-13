@@ -56,6 +56,12 @@ namespace icl{
     /// create a speudo color image from given source image (using an internal buffer)
     const Img8u &apply(const Img8u &src);
     
+    /// writes current stop configuration to xml-configuration file with given name
+    void save(const std::string &filename);
+
+    /// loads new stop configuration from given xml-configuration file 
+    void load(const std::string &filename);
+    
     private:
 
     /// Internal data structure

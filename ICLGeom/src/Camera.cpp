@@ -110,8 +110,9 @@ namespace icl {
   }
 
   Mat Camera::getProjectionMatrixGL() const {
-    float A = (m_renderParams.clipZFar + m_renderParams.clipZNear)/(m_renderParams.clipZNear - m_renderParams.clipZFar);
-    float B = (2*m_renderParams.clipZFar*m_renderParams.clipZNear)/(m_renderParams.clipZNear - m_renderParams.clipZFar);
+    float clipZNear = m_renderParams.clipZNear == 0 ? m_f : m_renderParams.clipZNear;
+    float A = (m_renderParams.clipZFar + clipZNear)/(clipZNear - m_renderParams.clipZFar);
+    float B = (2*m_renderParams.clipZFar*clipZNear)/(clipZNear - m_renderParams.clipZFar);
     float w2 = m_renderParams.chipSize.width/2;
     float h2 = m_renderParams.chipSize.height/2;
     // Because OpenGL will automatically flip the y-coordinates in the end,

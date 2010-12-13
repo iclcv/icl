@@ -61,6 +61,7 @@
 #include <QtGui/QImage>
 #include <QtGui/QFont>
 #include <QtGui/QApplication>
+#include <QtGui/QFileDialog>
 #endif
 
 #include <ICLCore/Line.h>
@@ -69,7 +70,27 @@
 
 
 
+
 namespace icl{
+#ifdef HAVE_QT
+  std::string openFileDialog(const std::string &filter,const std::string &caption, 
+                             const std::string &initialDirectory, void *parentWidget) throw (ICLException){
+    QString f = QFileDialog::getOpenFileName((QWidget*)parentWidget, caption.c_str(), initialDirectory.c_str(),
+                                filter.c_str() );
+    if(f.isNull() || !f.length()) throw ICLException("no file selected in openFileDialog or cancel was pressed. This exception must be caught explicitly!");
+    return f.toLatin1().data();
+  }
+  std::string saveFileDialog(const std::string &filter,const std::string &caption, 
+                             const std::string &initialDirectory,void *parentWidget) throw (ICLException){
+    QString f = QFileDialog::getSaveFileName((QWidget*)parentWidget, caption.c_str(), initialDirectory.c_str(),
+                                filter.c_str() );
+    if(f.isNull() || !f.length()) throw ICLException("no file selected or saveFileDialog or cancel was pressed.This exception must be caught explicitly!");
+    return f.toLatin1().data();
+    
+  }
+#endif
+
+
   namespace {
 
 

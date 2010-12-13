@@ -37,6 +37,7 @@
 
 #include <ICLCore/Img.h>
 #include <ICLUtils/StringUtils.h>
+#include <ICLUtils/Exception.h>
 
 using namespace icl;
 
@@ -45,6 +46,22 @@ using namespace std;
 
 /// all ICLQuick functions are placed here
 namespace icl{
+
+#ifdef HAVE_QT
+  /// uses Qt to spawn an open-file dialog with given filter
+  /** throws an exception if cancel was pressed */
+  std::string openFileDialog(const std::string &filter="", 
+                             const std::string &caption="open file",
+                             const std::string &initialDirectory="", 
+                             void *parentWidget=0) throw (ICLException);
+
+  /// uses Qt to spawn a save-file dialog with given filter
+  /** throws an exception if cancel was pressed */
+  std::string saveFileDialog(const std::string &filter="", 
+                             const std::string &caption="save file",
+                             const std::string &initialDirectory="", 
+                             void *parentWidget=0) throw (ICLException);
+#endif
 
 #define ICL_QUICK_DEPTH depth32f
 #define ICL_QUICK_TYPE icl32f

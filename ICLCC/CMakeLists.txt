@@ -53,6 +53,7 @@ add_example (${PROJECT_NAME} "converter-test" "${CONDITIONLIST}" ICLLibsToLinkAg
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_OPENGL_COND)
 add_example (${PROJECT_NAME} "colorspace-online-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "pseudo-color-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST HAVE_GTEST_COND)
 set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}")
