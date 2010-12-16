@@ -137,7 +137,7 @@ namespace icl{
                               const std::string &value,
                               const ConfigFile::KeyRestriction *restr){
     
-    DEBUG_LOG("adding name:" << name << "  type:" << type << "  value:" << value);
+    //    DEBUG_LOG("adding name:" << name << "  type:" << type << "  value:" << value);
 
     std::vector<std::string> t = tok(name,".");
     ICLASSERT_RETURN(t.size()>1);
@@ -159,17 +159,17 @@ namespace icl{
     XMLNode data = n.find_child_by_attribute("data","id",t.back().c_str());
     if(!data){
       data = n.append_child("data");
-      XMLAttribute id = n.append_attribute("id");
+      XMLAttribute id = data.append_attribute("id");
       id.set_value(t.back().c_str());
     }
     
     XMLAttribute typeAtt = data.attribute("type");
     if(!typeAtt){
-      typeAtt = n.append_attribute("type");
+      typeAtt = data.append_attribute("type");
     }
     typeAtt.set_value(type.c_str());
     
-    data.set_value(value.c_str());
+    data.append_child(pugi::node_pcdata).set_value(value.c_str());
 
     if(restr){
       XMLAttribute rangeAtt = data.attribute("range");
@@ -285,14 +285,14 @@ namespace icl{
 
       const std::string key = pfx+get_id_path(n);
 
-      DEBUG_LOG("adding key " << key);
+      //      DEBUG_LOG("adding key " << key);
       
       if(contains(key)) throw InvalidFileFormatException("Key: '" + key + "' was found at least twice!");
       
       Entry &e = m_entries[key];
       e.parent = this;
       e.id = key;
-      e.value = n.value();
+      e.value = n.first_child().value();
       std::map<std::string,std::string>::const_iterator it = s_typeMapReverse.find(n.attribute("type").value());
       if(it == s_typeMapReverse.end()) throw UnregisteredTypeException(n.attribute("type").value());
       e.rttiType = it->second;
@@ -529,7 +529,8 @@ namespace icl{
 
 
   std::ostream &operator<<(ostream &s, const ConfigFile &cf){
-    return s << *cf.m_doc;
+    cf.m_doc->save(s);
+    return s;
   }
 
   /// Singelton object
