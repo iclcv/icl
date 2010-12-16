@@ -35,7 +35,7 @@
 #include <ICLUtils/ConfigFile.h>
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/StringUtils.h>
-#include <ICLUtils/PugiXML.h>
+#include <ICLUtils/XML.h>
 
 #include <fstream>
 #include <list>
@@ -63,7 +63,7 @@ namespace icl{
   std::map<std::string,std::string> ConfigFile::s_typeMap;
   std::map<std::string,std::string> ConfigFile::s_typeMapReverse;
   
-  void XMLDocumentDelOp::delete_func(pugi::xml_document *h){
+  void XMLDocumentDelOp::delete_func(XMLDocument *h){
     ICL_DELETE(h);
   }
 
@@ -131,7 +131,7 @@ namespace icl{
     }
   }
   
-  void ConfigFile::add_to_doc(pugi::xml_document &doc, 
+  void ConfigFile::add_to_doc(XMLDocument &doc, 
                               const std::string &name, 
                               const std::string &type, 
                               const std::string &value,
@@ -143,27 +143,27 @@ namespace icl{
     ICLASSERT_RETURN(t.size()>1);
     ICLASSERT_RETURN(t[0]=="config");
     
-    pugi::xml_node n = doc.document_element();
+    XMLNode n = doc.document_element();
 
     for(unsigned int i=1;i<t.size()-1;++i){
-      pugi::xml_node sn = n.find_child_by_attribute("section","id",t[i].c_str());
+      XMLNode sn = n.find_child_by_attribute("section","id",t[i].c_str());
       if(!sn){
         n = n.append_child("section");
-        pugi::xml_attribute id = n.append_attribute("id");
+        XMLAttribute id = n.append_attribute("id");
         id.set_value(t[i].c_str());
       }else{
         n = sn;
       }
     }
 
-    pugi::xml_node data = n.find_child_by_attribute("data","id",t.back().c_str());
+    XMLNode data = n.find_child_by_attribute("data","id",t.back().c_str());
     if(!data){
       data = n.append_child("data");
-      pugi::xml_attribute id = n.append_attribute("id");
+      XMLAttribute id = n.append_attribute("id");
       id.set_value(t.back().c_str());
     }
     
-    pugi::xml_attribute typeAtt = data.attribute("type");
+    XMLAttribute typeAtt = data.attribute("type");
     if(!typeAtt){
       typeAtt = n.append_attribute("type");
     }
@@ -172,8 +172,8 @@ namespace icl{
     data.set_value(value.c_str());
 
     if(restr){
-      pugi::xml_attribute rangeAtt = data.attribute("range");
-      pugi::xml_attribute valuesAtt = data.attribute("values");
+      XMLAttribute rangeAtt = data.attribute("range");
+      XMLAttribute valuesAtt = data.attribute("values");
       if(restr->hasRange){
         if(valuesAtt){
           data.remove_attribute(valuesAtt);
@@ -253,7 +253,7 @@ namespace icl{
         */
   }
   
-  static std::string get_id_path(pugi::xml_node n){
+  static std::string get_id_path(XMLNode n){
     std::list<std::string> l;
 
     while(n.parent()){
@@ -273,14 +273,14 @@ namespace icl{
     m_entries.clear();
     
     
-    static const pugi::xpath_query query("//data[@id and @type]");
-    pugi::xpath_node_set ds = m_doc->document_element().select_nodes(query);
+    static const XPathQuery query("//data[@id and @type]");
+    XPathNodeSet ds = m_doc->document_element().select_nodes(query);
     
     std::string pfx = m_sDefaultPrefix;
     if(pfx.length() && pfx[pfx.length()-1] != '.') pfx+='.';
 
-    for(pugi::xpath_node_set::const_iterator it = ds.begin(); it != ds.end(); ++it){
-      pugi::xml_node n = it->node();
+    for(XPathNodeSet::const_iterator it = ds.begin(); it != ds.end(); ++it){
+      XMLNode n = it->node();
       if(!n) throw ICLException("XML node expected, but attribute found??");
 
       const std::string key = pfx+get_id_path(n);
@@ -297,7 +297,7 @@ namespace icl{
       if(it == s_typeMapReverse.end()) throw UnregisteredTypeException(n.attribute("type").value());
       e.rttiType = it->second;
       
-      pugi::xml_attribute rangeAtt = n.attribute("range");
+      XMLAttribute rangeAtt = n.attribute("range");
       
       if(rangeAtt){
         std::string mm = rangeAtt.value();
@@ -312,7 +312,7 @@ namespace icl{
         continue;
       }
       
-      pugi::xml_attribute valuesAtt = n.attribute("values");
+      XMLAttribute valuesAtt = n.attribute("values");
       if(valuesAtt){
         std::string vl = valuesAtt.value();
         setRestriction(key,vl.substr(1,vl.size()-2));
@@ -362,7 +362,7 @@ namespace icl{
     // {{{ open
 
     ICLASSERT_RETURN(filename != "");
-    m_doc = SmartPtrBase<pugi::xml_document,XMLDocumentDelOp>(new pugi::xml_document);
+    m_doc = SmartPtrBase<XMLDocument,XMLDocumentDelOp>(new XMLDocument);
     m_doc->load_file(filename.c_str());
     
     load_internal();
@@ -374,7 +374,7 @@ namespace icl{
   ConfigFile::ConfigFile(){
     // {{{ open
 
-    m_doc = SmartPtrBase<pugi::xml_document,XMLDocumentDelOp>(new pugi::xml_document);
+    m_doc = SmartPtrBase<XMLDocument,XMLDocumentDelOp>(new XMLDocument);
     
     m_doc->load("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
                 "<config>\n"
@@ -403,7 +403,7 @@ namespace icl{
 
   ConfigFile::ConfigFile(const std::string &filename)throw(FileNotFoundException,InvalidFileFormatException,UnregisteredTypeException){
     // {{{ open
-    m_doc = SmartPtrBase<pugi::xml_document,XMLDocumentDelOp>(new pugi::xml_document);
+    m_doc = SmartPtrBase<XMLDocument,XMLDocumentDelOp>(new XMLDocument);
     
     m_doc->load_file(filename.c_str());
     load_internal();
@@ -411,7 +411,7 @@ namespace icl{
 
   // }}}
   
-  ConfigFile::ConfigFile(pugi::xml_document *handle) throw (UnregisteredTypeException):
+  ConfigFile::ConfigFile(XMLDocument *handle) throw (UnregisteredTypeException):
     m_doc(handle){
     load_internal();
   }

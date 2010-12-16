@@ -33,8 +33,8 @@
 *********************************************************************/
 
 #include <ICLUtils/ConfigFile.h>
-#include <ICLUtils/XMLDocument.h>
 #include <ICLUtils/DynMatrixUtils.h>
+#include <ICLUtils/XML.h>
 #include <ICLGeom/Camera.h>
 #include <fstream>
 
@@ -335,7 +335,10 @@ namespace icl {
   void Camera::load_camera_from_stream(std::istream &is, const std::string &prefix,
                                          Camera &cam){
     cam = Camera(); // load default values
-    ConfigFile f(new XMLDocument(is));
+    XMLDocument *doc = new XMLDocument;
+    doc->loadNext(is);
+    
+    ConfigFile f(doc);
     f.setPrefix(prefix);
 
     #define LOAD_FROM_STREAM(KEY,FNAME) \

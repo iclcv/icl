@@ -16,4 +16,4 @@ if [ "`pkg-config --exists ${ICL_PC} && echo yes || echo no`" == "no" ] ; then
     exit -1 ;
 fi
 
-CXXFLAGS="$CXXFLAGS $(pkg-config --cflags ${ICL_PC}) -I." LDFLAGS="$LDFLAGS $(pkg-config --libs ${ICL_PC})" make $1
+CXXFLAGS="$CXXFLAGS $(pkg-config --cflags ${ICL_PC}) -I." LDFLAGS="$LDFLAGS $(pkg-config --libs ${ICL_PC}  | sed 's|-Wl,-rpath\\|-Wl,-rpath|g')" make $1

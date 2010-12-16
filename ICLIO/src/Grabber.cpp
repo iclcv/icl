@@ -39,8 +39,6 @@
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/ConfigFile.h>
 
-#include <ICLUtils/XMLNode.h>
-#include <ICLUtils/XMLDocument.h>
 using namespace std;
 
 namespace icl{
@@ -357,30 +355,26 @@ namespace icl{
   void Grabber::loadProperties(const std::string &filename, bool loadDesiredParams, bool skipUnstable){
     ConfigFile f(filename);
     std::vector<std::string> psSupported = get_io_property_list();
-
     if(skipUnstable){
       psSupported = filter_unstable_params(psSupported);
     }
+    f.setPrefix("config.properties");
+    for(unsigned int i=0;i<psSupported.size();++i){
+      std::string &prop = psSupported[i];
+      std::string type = getType(prop);
+      if(type == "info") continue;
+      if(type == "command") continue;
 
-    if(f.contains("config.property-list")){
-      ERROR_LOG("the config.property-list tag is deprecated and no longer used");
+      if(type == "range" || type == "value-list"){
+        try{
+          setProperty(prop,str((icl32f)f[prop]));
+        }catch(...){}
+      }else if(type == "menu"){
+        try{
+          setProperty(prop,f[prop]); 
+        }catch(...){}
+      }
     }
-
-    // new version
-    const XMLNodePtr doc = f.getHandle()->getRootNode();
-    ICLASSERT_THROW(doc,ICLException("configuration file's root node was not found"));
-    const std::vector<XMLNode*> propRoot = doc->getAllChildNodes(XMLNodeFilterByTag("section") 
-                                                                 & XMLNodeFilterByAttrib("id","properties"));
-    ICLASSERT_THROW(propRoot.size(),ICLException("no property section found"));
-    const XMLNode &props = *propRoot[0];
-    const std::vector<XMLNode*> propNodes = props.getAllChildNodes(XMLNodeFilterByTag("data") & XMLNodeFilterByAttrib("id") & XMLNodeFilterByAttrib("type"));
-    std::vector<std::string> ps(propNodes.size());
-    for(unsigned int i=0;i<ps.size();++i){
-      ps[i] = (*propNodes[i])("id");
-    }
-    
-    // old version
-    //std::vector<std::string> ps = tok(f["config.property-list"],","); // old
 
     if(loadDesiredParams){
       f.setPrefix("config.desired-params.");
@@ -394,24 +388,7 @@ namespace icl{
         std::cerr << "Warning: no desired params were found in given property file" << std::endl;
       }
     }
-
     f.setPrefix("config.properties.");
-    
-    for(unsigned int i=0;i<ps.size();++i){
-      if(find(psSupported.begin(),psSupported.end(),ps[i]) == psSupported.end()){
-        std::cerr << "Warning:  property \"" << ps[i] << "\" found in config file but it's not supported by this grabber!\n";
-        continue;
-      }
-      string &prop = ps[i];
-      string type = getType(prop); 
-
-      if(type == "range" || type == "value-list"){
-        setProperty(prop,str(static_cast<float>(f[prop])));
-      }else if(type == "menu"){
-        setProperty(prop,f[prop]);
-      }// type command is skipped!
-    }
-    
   }
   
 

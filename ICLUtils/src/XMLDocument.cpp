@@ -40,6 +40,8 @@
 #include <list>
 #include <string.h>
 
+#include <ICLUtils/StackTimer.h>
+
 namespace icl{
 # if 0
   static std::string get_next_tag(std::istream &is, std::ostringstream &rest){
@@ -156,6 +158,7 @@ namespace icl{
 
   
   SimpleNode::Type remove_tag_braces_and_get_type(std::string &tag_text){
+    BENCHMARK_THIS_FUNCTION;
     if(front(tag_text) != '<') throw ParseException(__FUNCTION__,str(__LINE__),"(missing '<' at beginning of tag '" + tag_text + "')"); 
     if(back(tag_text) != '>') throw ParseException(__FUNCTION__,str(__LINE__),"(missing '>' at end of tag '" + tag_text + "')"); 
     if(tag_text.length() < 3) throw ParseException(__FUNCTION__,str(__LINE__),"(tag empty '<>')");
@@ -194,6 +197,7 @@ namespace icl{
   }
   
   static XMLAttMapPtr split_tag_name_and_attribs(const std::string &tag_text, std::string &tag_name){
+    BENCHMARK_THIS_FUNCTION;
     XMLAttMapPtr att = new std::map<std::string,std::string>;
 
     std::istringstream is(tag_text);
@@ -283,7 +287,7 @@ namespace icl{
   }
   
   static void parse_intermediate_it(std::istream &is, std::list<SimpleNode> &L){
-
+    BENCHMARK_THIS_FUNCTION;
     std::string tag;
     SimpleNode::Type t;
     bool first = true;
@@ -371,6 +375,7 @@ namespace icl{
  
   
   void XMLDocument::parse_it(XMLNode *root, std::istream &src, void *state){
+    BENCHMARK_THIS_FUNCTION;
     std::list<SimpleNode> &L = *reinterpret_cast<std::list<SimpleNode>*>(state); 
 
     XMLNode *parent = root;
@@ -422,6 +427,7 @@ namespace icl{
   void XMLDocument::parse(XMLNode *instance, std::istream &src,
                           std::vector<std::string> &headerComments,
                           std::string &xmlVersionDescription){
+    BENCHMARK_THIS_FUNCTION;
     xmlVersionDescription = "";
     std::list<SimpleNode> L;
     icl::parse_intermediate_it(src,L);
