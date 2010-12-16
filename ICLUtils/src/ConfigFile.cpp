@@ -35,7 +35,7 @@
 #include <ICLUtils/ConfigFile.h>
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/StringUtils.h>
-#include <ICLUtils/XMLDocument.h>
+#include <ICLUtils/PugiXML.h>
 
 #include <fstream>
 #include <list>
@@ -63,7 +63,7 @@ namespace icl{
   std::map<std::string,std::string> ConfigFile::s_typeMap;
   std::map<std::string,std::string> ConfigFile::s_typeMapReverse;
   
-  void XMLDocumentDelOp::delete_func(XMLDocument *h){
+  void XMLDocumentDelOp::delete_func(pugi::xml_document *h){
     ICL_DELETE(h);
   }
 
@@ -121,20 +121,81 @@ namespace icl{
     } StaticConfigFileTypeRegisteringIntance;
   }
     
+  std::string ConfigFile::KeyRestriction::toString() const{
+    if(hasRange){
+      return str(Range32f(min,max));
+    }else if (hasValues){
+      return "["+values+"]";
+    }else{
+      return "invalid key restriction";
+    }
+  }
   
-  void ConfigFile::add_to_doc(XMLDocument &doc, 
+  void ConfigFile::add_to_doc(pugi::xml_document &doc, 
                               const std::string &name, 
                               const std::string &type, 
-                              const std::string &value){
+                              const std::string &value,
+                              const ConfigFile::KeyRestriction *restr){
     
+    DEBUG_LOG("adding name:" << name << "  type:" << type << "  value:" << value);
+
     std::vector<std::string> t = tok(name,".");
     ICLASSERT_RETURN(t.size()>1);
     ICLASSERT_RETURN(t[0]=="config");
-    XMLNode* n = doc.getRootNode().get();
+    
+    pugi::xml_node n = doc.document_element();
+
     for(unsigned int i=1;i<t.size()-1;++i){
-      std::vector<XMLNode*> sn = n->getAllChildNodes(XMLNodeFilterByType(XMLNode::NODE) & 
-                                                     XMLNodeFilterByTag("section") &
-                                                     XMLNodeFilterByAttrib("id",t[i]));
+      pugi::xml_node sn = n.find_child_by_attribute("section","id",t[i].c_str());
+      if(!sn){
+        n = n.append_child("section");
+        pugi::xml_attribute id = n.append_attribute("id");
+        id.set_value(t[i].c_str());
+      }else{
+        n = sn;
+      }
+    }
+
+    pugi::xml_node data = n.find_child_by_attribute("data","id",t.back().c_str());
+    if(!data){
+      data = n.append_child("data");
+      pugi::xml_attribute id = n.append_attribute("id");
+      id.set_value(t.back().c_str());
+    }
+    
+    pugi::xml_attribute typeAtt = data.attribute("type");
+    if(!typeAtt){
+      typeAtt = n.append_attribute("type");
+    }
+    typeAtt.set_value(type.c_str());
+    
+    data.set_value(value.c_str());
+
+    if(restr){
+      pugi::xml_attribute rangeAtt = data.attribute("range");
+      pugi::xml_attribute valuesAtt = data.attribute("values");
+      if(restr->hasRange){
+        if(valuesAtt){
+          data.remove_attribute(valuesAtt);
+        }
+        if(!rangeAtt) rangeAtt = data.append_attribute("range");
+        rangeAtt.set_value(restr->toString().c_str());
+      }else if(restr->hasValues){
+        if(rangeAtt){
+          data.remove_attribute(rangeAtt);
+        }
+        if(!valuesAtt) valuesAtt = data.append_attribute("values");
+        valuesAtt.set_value(restr->toString().c_str());
+      }else{
+        WARNING_LOG("NULL KeyRestriction detected (this is ignored)");
+      }
+    }
+    
+   /*
+       std::vector<XMLNode*> sn = n->getAllChildNodes(XMLNodeFilterByType(XMLNode::NODE) & 
+                                                      XMLNodeFilterByTag("section") &
+                                                      XMLNodeFilterByAttrib("id",t[i]));
+     
       switch(sn.size()){
         case 0:
           n->addNode("section");
@@ -149,9 +210,8 @@ namespace icl{
           n = sn[0];
           break;
       }
-    }
 
-    std::vector<XMLNode*> sn = n->getAllChildNodes(XMLNodeFilterByType(XMLNode::NODE) &
+       std::vector<XMLNode*> sn = n->getAllChildNodes(XMLNodeFilterByType(XMLNode::NODE) &
                                                    XMLNodeFilterByTag("data") &
                                                    XMLNodeFilterByAttrib("id",t.back()));
     XMLNode *data = 0;
@@ -190,29 +250,76 @@ namespace icl{
           break;
       }
     }
-    
+        */
   }
   
-  static std::string get_id_path(const XMLNode *n){
+  static std::string get_id_path(pugi::xml_node n){
     std::list<std::string> l;
-    try{
-      while(n->getParent()){
-        l.push_front((*n)("id"));
-        n = n->getParent();
-      }
-    }catch(XMLException &ex){
-      ERROR_LOG("unable to estimate ID path: (found subnode without id attribute)" << ex.what());
+
+    while(n.parent()){
+      l.push_front(n.attribute("id").value());
+      n = n.parent();
     }
+
     std::ostringstream str;
-    str << "config.";
+    str << "config";
     std::copy(l.begin(),--l.end(),std::ostream_iterator<std::string>(str,"."));
     str << l.back();
     return str.str();
   }
 
   void ConfigFile::load_internal(){
-    m_doc->removeAllComments();
+    //m_doc->removeAllComments();
     m_entries.clear();
+    
+    
+    static const pugi::xpath_query query("//data[@id and @type]");
+    pugi::xpath_node_set ds = m_doc->document_element().select_nodes(query);
+    
+    std::string pfx = m_sDefaultPrefix;
+    if(pfx.length() && pfx[pfx.length()-1] != '.') pfx+='.';
+
+    for(pugi::xpath_node_set::const_iterator it = ds.begin(); it != ds.end(); ++it){
+      pugi::xml_node n = it->node();
+      if(!n) throw ICLException("XML node expected, but attribute found??");
+
+      const std::string key = pfx+get_id_path(n);
+
+      DEBUG_LOG("adding key " << key);
+      
+      if(contains(key)) throw InvalidFileFormatException("Key: '" + key + "' was found at least twice!");
+      
+      Entry &e = m_entries[key];
+      e.parent = this;
+      e.id = key;
+      e.value = n.value();
+      std::map<std::string,std::string>::const_iterator it = s_typeMapReverse.find(n.attribute("type").value());
+      if(it == s_typeMapReverse.end()) throw UnregisteredTypeException(n.attribute("type").value());
+      e.rttiType = it->second;
+      
+      pugi::xml_attribute rangeAtt = n.attribute("range");
+      
+      if(rangeAtt){
+        std::string mm = rangeAtt.value();
+        if(mm.size()<5 || mm[0]!='[' || mm[mm.length()-1] != ']'){
+          throw InvalidFileFormatException("unable to parse range attribute: syntax [min,max]");
+        }
+        std::vector<double> mmv = parseVecStr<double>(mm.substr(1,mm.size()-2),",");
+        if(mmv.size() != 2){
+          throw InvalidFileFormatException("unable to parse range attribute: syntax [min,max]");
+        }
+        setRestriction(key,KeyRestriction(mmv[0],mmv[1])); 
+        continue;
+      }
+      
+      pugi::xml_attribute valuesAtt = n.attribute("values");
+      if(valuesAtt){
+        std::string vl = valuesAtt.value();
+        setRestriction(key,vl.substr(1,vl.size()-2));
+      }
+    }
+
+    /*
     const std::vector<XMLNode*> ns = m_doc->getRootNode()->getAllChildNodes( XMLNodeFilterByTag("data") &
                                                                              XMLNodeFilterByType(XMLNode::NODE) &
                                                                              XMLNodeFilterByAttrib("id") &
@@ -248,13 +355,15 @@ namespace icl{
         setRestriction(key,vl.substr(1,vl.size()-2));
       }
     }
+    */
   }
   
   void ConfigFile::load(const std::string &filename) throw(FileNotFoundException,InvalidFileFormatException,UnregisteredTypeException){
     // {{{ open
 
     ICLASSERT_RETURN(filename != "");
-    *m_doc = XMLDocument::load(filename);
+    m_doc = SmartPtrBase<pugi::xml_document,XMLDocumentDelOp>(new pugi::xml_document);
+    m_doc->load_file(filename.c_str());
     
     load_internal();
   }
@@ -262,22 +371,24 @@ namespace icl{
   // }}}
   
   
-  ConfigFile::ConfigFile():
+  ConfigFile::ConfigFile(){
     // {{{ open
+
+    m_doc = SmartPtrBase<pugi::xml_document,XMLDocumentDelOp>(new pugi::xml_document);
     
-  
-    m_doc(new XMLDocument("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
-                          "<config>\n"
-                          "   <data id=\"title\" type=\"string\">no title defined</data>\n"
-                          "</config>\n")){
+    m_doc->load("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
+                "<config>\n"
+                "   <data id=\"title\" type=\"string\">no title defined</data>\n"
+                "</config>\n");
   }
   
   // }}}
 
   void ConfigFile::setRestriction(const std::string &id, const ConfigFile::KeyRestriction &r) throw (EntryNotFoundException){
     // {{{ open
-    // we need to add this restriction to the file ??
     get_entry_internal(m_sDefaultPrefix+id).restr = SmartPtr<KeyRestriction>(new KeyRestriction(r));
+    
+    // Search the corresponding node ...
   }
 
   // }}}
@@ -290,16 +401,17 @@ namespace icl{
   // }}}
 
 
-  ConfigFile::ConfigFile(const std::string &filename)throw(FileNotFoundException,InvalidFileFormatException,UnregisteredTypeException):
+  ConfigFile::ConfigFile(const std::string &filename)throw(FileNotFoundException,InvalidFileFormatException,UnregisteredTypeException){
     // {{{ open
-    m_doc(new XMLDocument){
+    m_doc = SmartPtrBase<pugi::xml_document,XMLDocumentDelOp>(new pugi::xml_document);
     
-    load(filename);    
+    m_doc->load_file(filename.c_str());
+    load_internal();
   }
 
   // }}}
   
-  ConfigFile::ConfigFile(XMLDocument *handle) throw (UnregisteredTypeException):
+  ConfigFile::ConfigFile(pugi::xml_document *handle) throw (UnregisteredTypeException):
     m_doc(handle){
     load_internal();
   }
@@ -325,7 +437,8 @@ namespace icl{
   void ConfigFile::save(const std::string &filename) const{
     // {{{ open
     try{
-      XMLDocument::save(*m_doc,filename);
+      m_doc->save_file(filename.c_str());
+      //      XMLDocument::save(*m_doc,filename);
     }catch(const ICLException &e){
       ERROR_LOG(e.what());
     }
@@ -377,7 +490,7 @@ namespace icl{
     for(std::map<std::string,Entry>::const_iterator it = m_entries.begin();
         it != m_entries.end(); ++it){
       std::cout << (it->second.id) << "\t" << (it->second.value) << "\t" << (it->second.rttiType) << "\t";
-      if(it->second.restr) std::cout << "(with restriction)" << std::endl;
+      if(it->second.restr) std::cout << "(restriction: " << it->second.restr->toString() << ")" <<  std::endl;
       else std::cout << "(no restriction)" << std::endl;
     }
   }

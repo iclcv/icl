@@ -32,8 +32,9 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLUtils/XMLDocument.h>
-
+#include <ICLUtils/PugiXML.h>
+#include <iostream>
+#include <cstdlib>
 
 int main(int n, char **ppc){
   if(n!=2){
@@ -41,8 +42,11 @@ int main(int n, char **ppc){
     exit(-1);
   }
 
-  icl::XMLDocument doc = icl::XMLDocument::load(ppc[1]);
+  pugi::xml_document doc;
+  doc.load_file(ppc[1]);
   
-  
-  std::cout << "this is the parsed document:\n" << doc << "\n";
+  std::cout << "this is the parsed document:\n";
+  doc.save(std::cout);
+  std::cout << "\n";
+
 }

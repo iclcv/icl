@@ -42,11 +42,16 @@
 #include <map>
 #include <typeinfo>
 
-namespace icl{
+/** \cond */
+namespace pugi{
+  class xml_document;
+}
+/** \endcond */
 
+
+namespace icl{
   /** \cond */
-  class XMLDocument;
-  struct XMLDocumentDelOp{ static void delete_func(XMLDocument *h); };
+  struct XMLDocumentDelOp{ static void delete_func(pugi::xml_document *h); };
   /** \endcond */
 
   /// Utility class for creating and reading XML-based hierarchical configuration files 
@@ -288,7 +293,7 @@ namespace icl{
     
     /// Creates a ConfigFile from given handle instance
     /** Note: Ownership is passed to this ConfigFile instance here */
-    ConfigFile(XMLDocument *handle) throw (UnregisteredTypeException);
+    ConfigFile(pugi::xml_document *handle) throw (UnregisteredTypeException);
 
     /// loads the ConfigFile from given filename and updates internal filename variable
     /** Warning: old data content is lost! */
@@ -455,6 +460,7 @@ namespace icl{
         min(min),max(max),hasRange(true),hasValues(false){}
       inline KeyRestriction(const std::string &values):
         values(values),hasRange(false),hasValues(true){}
+      std::string toString() const;
 
       double min,max;
       std::string values;
@@ -516,7 +522,7 @@ namespace icl{
     /** this function is not available in un-const manner, to avoid that users
         change the document structure somehow, what would cause inconsistencies 
         between the internal XMLDocument structure and the ConfigFile data-base */
-    const XMLDocument *getHandle() const { return m_doc.get(); }
+    const pugi::xml_document *getHandle() const { return m_doc.get(); }
     
     private:
     
@@ -533,10 +539,11 @@ namespace icl{
     void set_internal(const std::string &id, const std::string &val, const std::string &type) throw (UnregisteredTypeException);
 
     /// internally synchronized an add- or a set call
-    static void add_to_doc(XMLDocument &h,const std::string &id,const std::string &type, const std::string &value);
+    static void add_to_doc(pugi::xml_document &h,const std::string &id,const std::string &type, 
+                           const std::string &value,const KeyRestriction *restr=0);
      
     /// shallow copyable smart pointer of the document handle
-    mutable SmartPtrBase<XMLDocument,XMLDocumentDelOp> m_doc;
+    mutable SmartPtrBase<pugi::xml_document,XMLDocumentDelOp> m_doc;
     
     /// global ConfigFile instance 
     static ConfigFile s_oConfig;
