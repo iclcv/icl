@@ -50,7 +50,7 @@ void run(){
 			252.6934,  -72.3310,
 			25.7430,  -28.9218,
 			35.9377,  149.1948};
-	DynMatrix<double> imagePts = DynMatrix<double>(2,7,imagePtsData);
+	DynMatrix<icl64f> imagePts = DynMatrix<icl64f>(2,7,imagePtsData);
 
 	double imageAdjData[] = { 1,     1,     0,     1,     0,     0,     0,
 			1,     1,     1,     0,     1,     0,     0,
@@ -59,8 +59,8 @@ void run(){
 			0,     1,     0,     1,     1,     1,     0,
 			0,     0,     1,     0,     1,     1,     1,
 			0,     0,     0,     1,     0,     1,     1};
-	//DynMatrix<double> imageAdj(7,7);
-	DynMatrix<double> imageAdj = DynMatrix<double>(7,7,imageAdjData);
+	//DynMatrix<icl64f> imageAdj(7,7);
+	DynMatrix<icl64f> imageAdj = DynMatrix<icl64f>(7,7,imageAdjData);
 	double worldPtsData[] = { -0.5000,   -0.5000,   -0.5000,
 			0.5000,   -0.5000,   -0.5000,
 			0.5000,    0.5000,   -0.5000,
@@ -69,7 +69,7 @@ void run(){
 			0.5000,   -0.5000,    0.5000,
 			0.5000,    0.5000,    0.5000,
 			-0.5000,    0.5000,    0.5000};
-	DynMatrix<double> worldPts = DynMatrix<double>(3,8,worldPtsData);
+	DynMatrix<icl64f> worldPts = DynMatrix<icl64f>(3,8,worldPtsData);
 	double worldAdjData[] = { 1,     1,     0,     1,     1,     0,     0,     0,
 			1,     1,     1,     0,     0,     1,     0,     0,
 			0,     1,     1,     1,     0,     0,     1,     0,
@@ -79,19 +79,19 @@ void run(){
 			0,     0,     1,     0,     0,     1,     1,     1,
 			0,     0,     0,    1,     1,     0,    1,     1};
 
-	//DynMatrix<double> worldAdj(8,8);
-	DynMatrix<double> worldAdj = DynMatrix<double>(8,8,worldAdjData);
+	//DynMatrix<icl64f> worldAdj(8,8);
+	DynMatrix<icl64f> worldAdj = DynMatrix<icl64f>(8,8,worldAdjData);
 	double beta0 = 2.0e-04;
 	double noiseStd = 0;
 	double initRotData[] = { 0.9149,    0.1910,   -0.3558,
 			-0.2254,    0.9726,   -0.0577,
 			0.3350,    0.1330,    0.9328};
-	DynMatrix<double> initRot(3,3,initRotData);
+	DynMatrix<icl64f> initRot(3,3,initRotData);
 	double initTransData[] = {0, 0, 50};
-	DynMatrix<double> initTrans(1,3,initTransData);
+	DynMatrix<icl64f> initTrans(1,3,initTransData);
 	double focalLength = 1500;
 	double centerData[] = {0, 0};
-	DynMatrix<double> center(2,1,centerData);
+	DynMatrix<icl64f> center(2,1,centerData);
 
 	SoftPosit softposit;
 	softposit.init();

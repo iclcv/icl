@@ -76,8 +76,8 @@ void SoftPosit::init(){
 	alpha = 1.0; //9.21*noiseStd*noiseStd + 1;
 }
 
-void SoftPosit::softPosit(DynMatrix<double> imagePts, DynMatrix<double> worldPts, double beta0, int noiseStd,	DynMatrix<double> initRot,
-		DynMatrix<double> initTrans, double focalLength, DynMatrix<double> center, bool draw){
+void SoftPosit::softPosit(DynMatrix<icl64f> imagePts, DynMatrix<icl64f> worldPts, double beta0, int noiseStd,	DynMatrix<icl64f> initRot,
+		DynMatrix<icl64f> initTrans, double focalLength, DynMatrix<icl64f> center, bool draw){
 	col1.setBounds(1,imagePts.rows());
 	col2.setBounds(1,imagePts.rows());
 	betaFinal=0.5;
@@ -91,7 +91,7 @@ void SoftPosit::softPosit(DynMatrix<double> imagePts, DynMatrix<double> worldPts
 
 	nbImagePts = imagePts.rows();
 	nbWorldPts = worldPts.rows();
-	distMat=DynMatrix<double>(nbWorldPts,nbImagePts);
+	distMat=DynMatrix<icl64f>(nbWorldPts,nbImagePts);
 	//das ist dann gamma
 	double max = iclMax(nbImagePts,nbWorldPts);
 	double scale = 1.0/(max + 1);
@@ -101,8 +101,8 @@ void SoftPosit::softPosit(DynMatrix<double> imagePts, DynMatrix<double> worldPts
 		centeredImage.at(0,i) =(imagePts.at(0,i)-center.at(0,0))/focalLength;
 		centeredImage.at(1,i) =(imagePts.at(1,i)-center.at(1,0))/focalLength;
 	}
-	DynMatrix<double> imageOnes(1,nbImagePts,1);
-	DynMatrix<double> homogeneousWorldPts(4,nbWorldPts) ;
+	DynMatrix<icl64f> imageOnes(1,nbImagePts,1);
+	DynMatrix<icl64f> homogeneousWorldPts(4,nbWorldPts) ;
 	for(unsigned int i=0;i<nbWorldPts;++i){
 		for(unsigned int j=0;j<3;++j){
 			homogeneousWorldPts.at(j,i) = worldPts.at(j,i);
@@ -115,14 +115,14 @@ void SoftPosit::softPosit(DynMatrix<double> imagePts, DynMatrix<double> worldPts
 
 	//Initialize the depths of all world points based on initial pose.
 
-	DynMatrix<double> temp(1,4,1);
+	DynMatrix<icl64f> temp(1,4,1);
 	for(unsigned int i=0;i<3;++i){
 		temp.at(0,i)=ROT.at(i,2)/T.at(0,2);
 	}
-	DynMatrix<double> wk = homogeneousWorldPts * temp;
+	DynMatrix<icl64f> wk = homogeneousWorldPts * temp;
 
 #ifdef HAVE_QT
-	//DynMatrix<double> projWorldPts = proj3dto2d(worldPts, rot, trans, focalLength, 1, center);
+	//DynMatrix<icl64f> projWorldPts = proj3dto2d(worldPts, rot, trans, focalLength, 1, center);
 	if(draw){
 		proj3dto2d(worldPts, ROT, T, focalLength,1,center,pts2d);
 		//visualize(w,imagePts, imageAdj,	pts2d, worldAdj);
@@ -133,16 +133,16 @@ void SoftPosit::softPosit(DynMatrix<double> imagePts, DynMatrix<double> worldPts
 	//the scale factor is s = f/Tz = 1/Tz since f = 1.  These are column 4-vectors.
 	double t1[] = {ROT(0,0)/T.at(0,2),ROT(1,0)/T.at(0,2),ROT(2,0)/T.at(0,2), T.at(0,0)/T.at(0,2)};
 	double t2[] = {ROT(0,1)/T.at(0,2),ROT(1,1)/T.at(0,2),ROT(2,1)/T.at(0,2), T.at(0,1)/T.at(0,2)};
-	r1T = DynMatrix<double>(1,4,t1);
-	r2T = DynMatrix<double>(1,4,t2);
+	r1T = DynMatrix<icl64f>(1,4,t1);
+	r2T = DynMatrix<icl64f>(1,4,t2);
 	r3T.setBounds(1,4);
 	int betaCount = 0;
 	int poseConverged = 0;
 	int assignConverged = 0;
 	int foundPose = 0;
 	beta = beta0;
-	DynMatrix<double> r1Tr2T(2,3);
-	assignMat = DynMatrix<double>(nbWorldPts+1,nbImagePts+1,1+epsilon0);
+	DynMatrix<icl64f> r1Tr2T(2,3);
+	assignMat = DynMatrix<icl64f>(nbWorldPts+1,nbImagePts+1,1+epsilon0);
 
 	while ((beta < betaFinal) && !assignConverged){
 		projectedU = homogeneousWorldPts * r1T;
@@ -155,8 +155,8 @@ void SoftPosit::softPosit(DynMatrix<double> imagePts, DynMatrix<double> worldPts
 		wkyj = col2 * wk.transp();
 
 		//TODO optimize
-		DynMatrix<double> temp1 = replicatedProjectedU - wkxj;
-		DynMatrix<double> temp2 = replicatedProjectedV - wkyj;
+		DynMatrix<icl64f> temp1 = replicatedProjectedU - wkxj;
+		DynMatrix<icl64f> temp2 = replicatedProjectedV - wkyj;
 		for(unsigned int i=0;i<nbWorldPts;++i){
 			for(unsigned j=0;j<nbImagePts;++j){
 				distMat.at(i,j) = focalLength*focalLength*(temp1(i,j)*temp1(i,j)+temp2(i,j)*temp2(i,j));
@@ -187,7 +187,7 @@ void SoftPosit::softPosit(DynMatrix<double> imagePts, DynMatrix<double> worldPts
 			}
 		}
 		//summedByColAssign = sum(assignMat(1:nbImagePts, 1:nbWorldPts), 1);
-		summedByColAssign = DynMatrix<double>(nbWorldPts,1);
+		summedByColAssign = DynMatrix<icl64f>(nbWorldPts,1);
 		for(unsigned int i=0;i<nbWorldPts;++i){
 			for(unsigned int j=0;j<nbImagePts;++j){
 				summedByColAssign.at(i,0) += assignMat(i,j);
@@ -195,11 +195,11 @@ void SoftPosit::softPosit(DynMatrix<double> imagePts, DynMatrix<double> worldPts
 		}
 
 		//TODO optimize
-		L = DynMatrix<double>(4,4);
-		DynMatrix<double> temp11(1,4);
-		DynMatrix<double> temp22(4,1);
-		DynMatrix<double> temp33(4,4);
-		DynMatrix<double> temp44(4,4);
+		L = DynMatrix<icl64f>(4,4);
+		DynMatrix<icl64f> temp11(1,4);
+		DynMatrix<icl64f> temp22(4,1);
+		DynMatrix<icl64f> temp33(4,4);
+		DynMatrix<icl64f> temp44(4,4);
 		for (unsigned int k = 0;k<nbWorldPts;k++){
 			for(int i=0;i<4;++i){
 				temp11.at(0,i) = homogeneousWorldPts.at(i,k);
@@ -218,11 +218,11 @@ void SoftPosit::softPosit(DynMatrix<double> imagePts, DynMatrix<double> worldPts
 
 		//poseConverged = 0;
 		//TODO optimize
-		weightedUi = DynMatrix<double>(1,4);
-		weightedVi = DynMatrix<double>(1,4);
+		weightedUi = DynMatrix<icl64f>(1,4);
+		weightedVi = DynMatrix<icl64f>(1,4);
 
-		DynMatrix<double>  temp55(1,4);
-		DynMatrix<double>  temp66(1,4);
+		DynMatrix<icl64f>  temp55(1,4);
+		DynMatrix<icl64f>  temp66(1,4);
 		for(unsigned int j = 0;j<nbImagePts;++j){
 			for(unsigned int k = 0;k<nbWorldPts;++k){
 				for(int i=0;i<4;++i){
@@ -285,7 +285,7 @@ void SoftPosit::softPosit(DynMatrix<double> imagePts, DynMatrix<double> worldPts
 		r2T.at(0,2) = R2.at(0,2)/Tz;
 		r2T.at(0,3) = Ty/Tz;
 		//TODO
-		DynMatrix<double> temp001(1,3);
+		DynMatrix<icl64f> temp001(1,3);
 		r3T.mult(1/Tz,temp001);
 		wk = homogeneousWorldPts * temp001;
 		//delta = sqrt(sum(sum(assignMat(1:nbImagePts,1:nbWorldPts) .* distMat))/nbWorldPts);
@@ -339,10 +339,10 @@ void SoftPosit::softPosit(DynMatrix<double> imagePts, DynMatrix<double> worldPts
 	//SHOW(T);
 }
 #ifdef HAVE_QT
-void SoftPosit::softPosit(DynMatrix<double> imagePts, DynMatrix<double> imageAdj, DynMatrix<double> worldPts,
-		DynMatrix<double> worldAdj, double beta0, int noiseStd,	DynMatrix<double> initRot,
-		DynMatrix<double> initTrans, double focalLength, ICLDrawWidget &w,
-		DynMatrix<double> center, bool draw){
+void SoftPosit::softPosit(DynMatrix<icl64f> imagePts, DynMatrix<icl64f> imageAdj, DynMatrix<icl64f> worldPts,
+		DynMatrix<icl64f> worldAdj, double beta0, int noiseStd,	DynMatrix<icl64f> initRot,
+		DynMatrix<icl64f> initTrans, double focalLength, ICLDrawWidget &w,
+		DynMatrix<icl64f> center, bool draw){
 	dw = &w;
 	iAdj = imageAdj;
 	wAdj = worldAdj;
@@ -350,14 +350,14 @@ void SoftPosit::softPosit(DynMatrix<double> imagePts, DynMatrix<double> imageAdj
 }
 #endif
 void SoftPosit::softPosit(std::vector<Point32f> imagePts, std::vector<FixedColVector<double,3> > worldPts,
-		double beta0, int noiseStd,	DynMatrix<double> initRot, DynMatrix<double> initTrans,
-		double focalLength, DynMatrix<double> center){
-	DynMatrix<double> imagePt(2,imagePts.size());
+		double beta0, int noiseStd,	DynMatrix<icl64f> initRot, DynMatrix<icl64f> initTrans,
+		double focalLength, DynMatrix<icl64f> center){
+	DynMatrix<icl64f> imagePt(2,imagePts.size());
 	for(unsigned int i=0; i<imagePts.size();++i){
 		imagePt.at(0,i) = imagePts.at(i).x;
 		imagePt.at(1,i) = imagePts.at(i).y;
 	}
-	DynMatrix<double> worldPt(3,worldPts.size());
+	DynMatrix<icl64f> worldPt(3,worldPts.size());
 	for(unsigned int i=0; i<worldPts.size();++i){
 		worldPt.at(0,i) = worldPts.at(i).at(0,0);
 		worldPt.at(1,i) = worldPts.at(i).at(0,1);
@@ -367,16 +367,16 @@ void SoftPosit::softPosit(std::vector<Point32f> imagePts, std::vector<FixedColVe
 	softPosit(imagePt, worldPt, beta0, noiseStd, initRot, initTrans, focalLength, center, draw);
 }
 #ifdef HAVE_QT
-void SoftPosit::softPosit(std::vector<Point32f> imagePts, DynMatrix<double> imageAdj, std::vector<FixedColVector<double,3> > worldPts,
-		DynMatrix<double> worldAdj, double beta0, int noiseStd,	DynMatrix<double> initRot,
-		DynMatrix<double> initTrans, double focalLength, ICLDrawWidget &w, DynMatrix<double> center,bool draw){
+void SoftPosit::softPosit(std::vector<Point32f> imagePts, DynMatrix<icl64f> imageAdj, std::vector<FixedColVector<double,3> > worldPts,
+		DynMatrix<icl64f> worldAdj, double beta0, int noiseStd,	DynMatrix<icl64f> initRot,
+		DynMatrix<icl64f> initTrans, double focalLength, ICLDrawWidget &w, DynMatrix<icl64f> center,bool draw){
 
-	DynMatrix<double> imagePt(2,imagePts.size());
+	DynMatrix<icl64f> imagePt(2,imagePts.size());
 	for(unsigned int i=0; i<imagePts.size();++i){
 		imagePt.at(0,i) = imagePts.at(i).x;
 		imagePt.at(1,i) = imagePts.at(i).y;
 	}
-	DynMatrix<double> worldPt(3,worldPts.size());
+	DynMatrix<icl64f> worldPt(3,worldPts.size());
 	for(unsigned int i=0; i<worldPts.size();++i){
 		worldPt.at(0,i) = worldPts.at(i).at(0,0);
 		worldPt.at(1,i) = worldPts.at(i).at(0,1);
@@ -387,7 +387,7 @@ void SoftPosit::softPosit(std::vector<Point32f> imagePts, DynMatrix<double> imag
 }
 #endif
 
-DynMatrix<double>& SoftPosit::cross(DynMatrix<double> &x, DynMatrix<double> &y, DynMatrix<double> &r){
+DynMatrix<icl64f>& SoftPosit::cross(DynMatrix<icl64f> &x, DynMatrix<icl64f> &y, DynMatrix<icl64f> &r){
 	if(x.cols()==1 && y.cols()==1 && x.rows()==3 && y.rows()==3){
 		r.at(0,0) = x.at(0,1)*y.at(0,2)-x.at(0,2)*y.at(0,1);
 		r.at(0,1) = x.at(0,2)*y.at(0,0)-x.at(0,0)*y.at(0,2);
@@ -396,21 +396,21 @@ DynMatrix<double>& SoftPosit::cross(DynMatrix<double> &x, DynMatrix<double> &y, 
 	return r;
 }
 
-void SoftPosit::proj3dto2d(DynMatrix<double> pts3d, DynMatrix<double> &rot, DynMatrix<double> &trans,
-		double flength, int objdim, DynMatrix<double> &center, DynMatrix<double> &pts2d){
+void SoftPosit::proj3dto2d(DynMatrix<icl64f> pts3d, DynMatrix<icl64f> &rot, DynMatrix<icl64f> &trans,
+		double flength, int objdim, DynMatrix<icl64f> &center, DynMatrix<icl64f> &pts2d){
 	//3D point matrix must be 3xN.
 	if (objdim == 1){
 		pts3d = pts3d.transp();
 	}
 	//number of 3D points.
 	unsigned int numpts = pts3d.cols();
-	DynMatrix<double> newtrans(numpts,3);
+	DynMatrix<icl64f> newtrans(numpts,3);
 	for(unsigned int i=0;i<numpts;++i){
 		newtrans.at(i,0) = trans.at(0,0);
 		newtrans.at(i,1) = trans.at(0,1);
 		newtrans.at(i,2) = trans.at(0,2);
 	}
-	DynMatrix<double> campts = rot*pts3d+newtrans;
+	DynMatrix<icl64f> campts = rot*pts3d+newtrans;
 	for(unsigned int i=0;i<campts.cols();++i){
 		if(campts.at(i,2)<1e-20){
 			campts.at(i,2) = 1e-20;
@@ -421,7 +421,7 @@ void SoftPosit::proj3dto2d(DynMatrix<double> pts3d, DynMatrix<double> &rot, DynM
 		pts2d.at(i,0) = flength * campts.at(i,0)*(1/campts.at(i,2));
 		pts2d.at(i,1) = flength * campts.at(i,1)*(1/campts.at(i,2));
 	}
-	DynMatrix<double> cent(numpts,2);
+	DynMatrix<icl64f> cent(numpts,2);
 	for(unsigned int i=0;i<numpts;++i){
 		cent.at(i,0) = center.at(0,0);
 		cent.at(i,1) = center.at(1,0);
@@ -432,7 +432,7 @@ void SoftPosit::proj3dto2d(DynMatrix<double> pts3d, DynMatrix<double> &rot, DynM
 	}
 }
 
-void SoftPosit::maxPosRatio(DynMatrix<double> &assignMat, DynMatrix<double> &pos, DynMatrix<double> &ratios){
+void SoftPosit::maxPosRatio(DynMatrix<icl64f> &assignMat, DynMatrix<icl64f> &pos, DynMatrix<icl64f> &ratios){
 	unsigned int nrows = assignMat.rows()-1;
 	double vmax =0.0;
 	unsigned int imax=0;
@@ -469,25 +469,25 @@ void SoftPosit::maxPosRatio(DynMatrix<double> &assignMat, DynMatrix<double> &pos
 }
 
 //TODO maybe implement normal/standard sinkhorn
-DynMatrix<double> &SoftPosit::sinkhornImp(DynMatrix<double> &M){
+DynMatrix<icl64f> &SoftPosit::sinkhornImp(DynMatrix<icl64f> &M){
 	int iMaxIterSinkhorn=60;
 	double fEpsilon2 = 0.001;
 	int iNumSinkIter = 0;
 	unsigned int nbRows = M.rows();
 	unsigned int nbCols = M.cols();
 	double fMdiffSum = fEpsilon2 + 1;
-	DynMatrix<double> ratios;
-	DynMatrix<double> posmax;
+	DynMatrix<icl64f> ratios;
+	DynMatrix<icl64f> posmax;
 	maxPosRatio(M,posmax,ratios);
-	DynMatrix<double> Mprev;
-	DynMatrix<double> McolSums;
-	DynMatrix<double> MrowSums;
-	DynMatrix<double> ones(1,M.cols(),1.0);
-	DynMatrix<double> MrowSumsRep;
-	DynMatrix<double> McolSumsRep;
+	DynMatrix<icl64f> Mprev;
+	DynMatrix<icl64f> McolSums;
+	DynMatrix<icl64f> MrowSums;
+	DynMatrix<icl64f> ones(1,M.cols(),1.0);
+	DynMatrix<icl64f> MrowSumsRep;
+	DynMatrix<icl64f> McolSumsRep;
 	while(std::abs(fMdiffSum) > fEpsilon2 && iNumSinkIter < iMaxIterSinkhorn){
-		McolSums = DynMatrix<double>(M.cols(),1);
-		MrowSums = DynMatrix<double>(1,M.rows());
+		McolSums = DynMatrix<icl64f>(M.cols(),1);
+		MrowSums = DynMatrix<icl64f>(1,M.rows());
 		Mprev = M;
 		for(unsigned int j=0;j<M.cols();++j)
 			for(unsigned int i=0;i<M.rows();++i){
@@ -531,7 +531,7 @@ DynMatrix<double> &SoftPosit::sinkhornImp(DynMatrix<double> &M){
 	return M;
 }
 
-int SoftPosit::numMatches(DynMatrix<double> &assignMat){
+int SoftPosit::numMatches(DynMatrix<icl64f> &assignMat){
 		int num = 0;
 		int nrows = assignMat.rows();
 		double vmax = 0.0;
@@ -561,10 +561,10 @@ int SoftPosit::numMatches(DynMatrix<double> &assignMat){
 		return num;
 	}
 
-double SoftPosit::cond(DynMatrix<double> &A){
-	DynMatrix<double> U;
-	DynMatrix<double> V;
-	DynMatrix<double> s;
+double SoftPosit::cond(DynMatrix<icl64f> &A){
+	DynMatrix<icl64f> U;
+	DynMatrix<icl64f> V;
+	DynMatrix<icl64f> s;
 	A.svd(U,s,V);
 	double n1 = max(s);
 	(A.inv()).svd(U,s,V);
@@ -572,7 +572,7 @@ double SoftPosit::cond(DynMatrix<double> &A){
 	return n1 * n2;
 }
 
-double SoftPosit::max(DynMatrix<double> s){
+double SoftPosit::max(DynMatrix<icl64f> s){
 		double max = s.at(0,0);
 		for(unsigned int i=0;i<s.rows();++i){
 			if(max < s.at(0,i))
@@ -583,7 +583,7 @@ double SoftPosit::max(DynMatrix<double> s){
 
 #ifdef HAVE_QT
 
-void SoftPosit::visualize(const DynMatrix<double> & imagePts, const DynMatrix<double> &projWorldPts, unsigned int delay){
+void SoftPosit::visualize(const DynMatrix<icl64f> & imagePts, const DynMatrix<icl64f> &projWorldPts, unsigned int delay){
 	dw->color(255,0,0,1);
 	dw->linewidth(2);
 	dw->lock();
@@ -612,8 +612,8 @@ void SoftPosit::visualize(const DynMatrix<double> & imagePts, const DynMatrix<do
 	Thread::msleep(delay);
 }
 
-void SoftPosit::visualize(ICLDrawWidget &w,const DynMatrix<double> & imagePts, const DynMatrix<double> &imageAdj,
-		const DynMatrix<double> &projWorldPts, const DynMatrix<double> &worldAdj, unsigned int delay){
+void SoftPosit::visualize(ICLDrawWidget &w,const DynMatrix<icl64f> & imagePts, const DynMatrix<icl64f> &imageAdj,
+		const DynMatrix<icl64f> &projWorldPts, const DynMatrix<icl64f> &worldAdj, unsigned int delay){
 	w.color(255,0,0,1);
 	w.linewidth(2);
 	w.lock();

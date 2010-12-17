@@ -54,11 +54,11 @@ private:
 	//N
 	unsigned int nbImagePts;
 
-	DynMatrix<double> centeredImage;
+	DynMatrix<icl64f> centeredImage;
 
-	DynMatrix<double> distMat;
+	DynMatrix<icl64f> distMat;
 
-	DynMatrix<double> assignMat;
+	DynMatrix<icl64f> assignMat;
 
 	double gamma;
 
@@ -72,61 +72,61 @@ private:
 #ifdef HAVE_QT
 	ICLDrawWidget *dw;
 #endif
-	DynMatrix<double> iAdj;
-	DynMatrix<double> wAdj;
+	DynMatrix<icl64f> iAdj;
+	DynMatrix<icl64f> wAdj;
 
 	//expected or random pose
-	//DynMatrix<double> Q1;
+	//DynMatrix<icl64f> Q1;
 	//expected or random pose
-	//DynMatrix<double> Q2;
+	//DynMatrix<icl64f> Q2;
 	//squared distances
-	DynMatrix<double> d;
+	DynMatrix<icl64f> d;
 
-	DynMatrix<double> w;
+	DynMatrix<icl64f> w;
 	//object points
-	std::vector<DynMatrix<double> > P;
+	std::vector<DynMatrix<icl64f> > P;
 	//image points
-	std::vector<DynMatrix<double> > p;
+	std::vector<DynMatrix<icl64f> > p;
 
-	DynMatrix<double> L;
-	DynMatrix<double> invL;
+	DynMatrix<icl64f> L;
+	DynMatrix<icl64f> invL;
 
-	DynMatrix<double> U;
-	DynMatrix<double> s;
-	DynMatrix<double> V;
-	DynMatrix<double> svdResult;
+	DynMatrix<icl64f> U;
+	DynMatrix<icl64f> s;
+	DynMatrix<icl64f> V;
+	DynMatrix<icl64f> svdResult;
 
-	DynMatrix<double> eye2_2;
+	DynMatrix<icl64f> eye2_2;
 
-	DynMatrix<double> r1T;
-	DynMatrix<double> r2T;
-	DynMatrix<double> r3T;
+	DynMatrix<icl64f> r1T;
+	DynMatrix<icl64f> r2T;
+	DynMatrix<icl64f> r3T;
 
-	DynMatrix<double> projectedU;
-	DynMatrix<double> projectedV;
-	DynMatrix<double> replicatedProjectedU;
-	DynMatrix<double> replicatedProjectedV;
+	DynMatrix<icl64f> projectedU;
+	DynMatrix<icl64f> projectedV;
+	DynMatrix<icl64f> replicatedProjectedU;
+	DynMatrix<icl64f> replicatedProjectedV;
 
-	DynMatrix<double> col1;
-	DynMatrix<double> wkxj;
-	DynMatrix<double> col2;
-	DynMatrix<double> wkyj;
+	DynMatrix<icl64f> col1;
+	DynMatrix<icl64f> wkxj;
+	DynMatrix<icl64f> col2;
+	DynMatrix<icl64f> wkyj;
 
-	DynMatrix<double> pts2d;
+	DynMatrix<icl64f> pts2d;
 
-	DynMatrix<double> summedByColAssign;
+	DynMatrix<icl64f> summedByColAssign;
 
 
-	DynMatrix<double>  weightedUi;
-	DynMatrix<double>  weightedVi;
+	DynMatrix<icl64f>  weightedUi;
+	DynMatrix<icl64f>  weightedVi;
 
-	DynMatrix<double> R1;
-	DynMatrix<double> R2;
-	DynMatrix<double> R3;
+	DynMatrix<icl64f> R1;
+	DynMatrix<icl64f> R2;
+	DynMatrix<icl64f> R3;
 
-	DynMatrix<double> ROT;
+	DynMatrix<icl64f> ROT;
 
-	DynMatrix<double> T;
+	DynMatrix<icl64f> T;
 	double Tz;
 	double Tx;
 	double Ty;
@@ -141,15 +141,15 @@ private:
 
 	bool draw;
 
-	DynMatrix<double>& cross(DynMatrix<double> &x, DynMatrix<double> &y, DynMatrix<double> &r);
+	DynMatrix<icl64f>& cross(DynMatrix<icl64f> &x, DynMatrix<icl64f> &y, DynMatrix<icl64f> &r);
 
-	void maxPosRatio(DynMatrix<double> &assignMat, DynMatrix<double> &pos, DynMatrix<double> &ratios);
+	void maxPosRatio(DynMatrix<icl64f> &assignMat, DynMatrix<icl64f> &pos, DynMatrix<icl64f> &ratios);
 
-	DynMatrix<double> &sinkhornImp(DynMatrix<double> &M);
+	DynMatrix<icl64f> &sinkhornImp(DynMatrix<icl64f> &M);
 
-	double cond(DynMatrix<double> &A);
+	double cond(DynMatrix<icl64f> &A);
 
-	double max(DynMatrix<double> s);
+	double max(DynMatrix<icl64f> s);
 
 
 public:
@@ -159,38 +159,38 @@ public:
 
 	void init();
 
-	DynMatrix<double> getRotationMat(){
+	DynMatrix<icl64f> getRotationMat(){
 		return ROT;
 	}
 
-	DynMatrix<double> getTranslation(){
+	DynMatrix<icl64f> getTranslation(){
 		return T;
 	}
 
 	//unused
-	int numMatches(DynMatrix<double> &assignMat);
+	int numMatches(DynMatrix<icl64f> &assignMat);
 
-	void softPosit(DynMatrix<double> imagePts, DynMatrix<double> worldPts, double beta0, int noiseStd,	DynMatrix<double> initRot,
-				DynMatrix<double> initTrans, double focalLength, DynMatrix<double> center = DynMatrix<double>(2,0), bool draw = true);
+	void softPosit(DynMatrix<icl64f> imagePts, DynMatrix<icl64f> worldPts, double beta0, int noiseStd,	DynMatrix<icl64f> initRot,
+				DynMatrix<icl64f> initTrans, double focalLength, DynMatrix<icl64f> center = DynMatrix<icl64f>(2,0), bool draw = true);
 #ifdef HAVE_QT
-	void softPosit(DynMatrix<double> imagePts, DynMatrix<double> imageAdj, DynMatrix<double> worldPts,
-			DynMatrix<double> worldAdj, double beta0, int noiseStd,	DynMatrix<double> initRot,
-			DynMatrix<double> initTrans, double focalLength, ICLDrawWidget &w,
-			DynMatrix<double> center = DynMatrix<double>(2,0), bool draw = true);
+	void softPosit(DynMatrix<icl64f> imagePts, DynMatrix<icl64f> imageAdj, DynMatrix<icl64f> worldPts,
+			DynMatrix<icl64f> worldAdj, double beta0, int noiseStd,	DynMatrix<icl64f> initRot,
+			DynMatrix<icl64f> initTrans, double focalLength, ICLDrawWidget &w,
+			DynMatrix<icl64f> center = DynMatrix<icl64f>(2,0), bool draw = true);
 #endif
 	void softPosit(std::vector<Point32f> imagePts, std::vector<FixedColVector<double,3> > worldPts,
-					double beta0, int noiseStd,	DynMatrix<double> initRot, DynMatrix<double> initTrans,
-					double focalLength, DynMatrix<double> center = DynMatrix<double>(2,0));
+					double beta0, int noiseStd,	DynMatrix<icl64f> initRot, DynMatrix<icl64f> initTrans,
+					double focalLength, DynMatrix<icl64f> center = DynMatrix<icl64f>(2,0));
 #ifdef HAVE_QT
-	void softPosit(std::vector<Point32f> imagePts, DynMatrix<double> imageAdj, std::vector<FixedColVector<double,3> > worldPts,
-				DynMatrix<double> worldAdj, double beta0, int noiseStd,	DynMatrix<double> initRot,
-				DynMatrix<double> initTrans, double focalLength, ICLDrawWidget &w,
-				DynMatrix<double> center = DynMatrix<double>(2,0), bool draw=true);
+	void softPosit(std::vector<Point32f> imagePts, DynMatrix<icl64f> imageAdj, std::vector<FixedColVector<double,3> > worldPts,
+				DynMatrix<icl64f> worldAdj, double beta0, int noiseStd,	DynMatrix<icl64f> initRot,
+				DynMatrix<icl64f> initTrans, double focalLength, ICLDrawWidget &w,
+				DynMatrix<icl64f> center = DynMatrix<icl64f>(2,0), bool draw=true);
 #endif
-	void proj3dto2d(DynMatrix<double> pts3d, DynMatrix<double> &rot, DynMatrix<double> &trans,
-				double flength, int objdim, DynMatrix<double> &center, DynMatrix<double> &pts2d);
+	void proj3dto2d(DynMatrix<icl64f> pts3d, DynMatrix<icl64f> &rot, DynMatrix<icl64f> &trans,
+				double flength, int objdim, DynMatrix<icl64f> &center, DynMatrix<icl64f> &pts2d);
 
-	bool isNullMatrix(const DynMatrix<double> &M){
+	bool isNullMatrix(const DynMatrix<icl64f> &M){
 		bool isNull = true;
 		for(unsigned int i=0;i<M.cols();++i){
 			for(unsigned int j=0;j<M.rows();++j){
@@ -204,10 +204,10 @@ public:
 	}
 
 #ifdef HAVE_QT
-	void visualize(const DynMatrix<double> & imagePts, const DynMatrix<double> &projWorldPts, unsigned int delay=200);
+	void visualize(const DynMatrix<icl64f> & imagePts, const DynMatrix<icl64f> &projWorldPts, unsigned int delay=200);
 
-	void visualize(ICLDrawWidget &w,const DynMatrix<double> & imagePts, const DynMatrix<double> &imageAdj,
-			const DynMatrix<double> &projWorldPts, const DynMatrix<double> &worldAdj, unsigned int delay=200);
+	void visualize(ICLDrawWidget &w,const DynMatrix<icl64f> & imagePts, const DynMatrix<icl64f> &imageAdj,
+			const DynMatrix<icl64f> &projWorldPts, const DynMatrix<icl64f> &worldAdj, unsigned int delay=200);
 #endif
 };
 
