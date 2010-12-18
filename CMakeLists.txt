@@ -230,6 +230,8 @@ if(ICL_VAR_USE_PKG_CONFIG)
 	endif()
 endif()
 if(NOT OPENCV_PKG_FOUND)
+    #temporary variable for checking opencv2.1.1 if other checks fail
+	set(ICL_XDEP_OPENCV_ON_TMP ${ICL_XDEP_OPENCV_ON})
   #check for opencv <= 2.1.0
   if(WIN32)
   icl_check_external_package(OPENCV "cv.h;cvaux.h;cxcore.h;highgui.h" "cvaux200.dll.a;cxcore200.dll.a;highgui200.dll.a;cv200.dll.a;ml200.dll.a" lib include/opencv "C:/Programme/OpenCV2.0" HAVE_OPENCV_COND)
@@ -261,15 +263,21 @@ if(NOT OPENCV_PKG_FOUND)
 	endif()
   else()
     #check for opencv 2.1.1
-	icl_check_external_package(OPENCV "cv.h;cvaux.h;cxcore.h;highgui.h;ml.h" "opencv_core;opencv_highgui;opencv_ml;opencv_features2d;opencv_imgproc" lib include/opencv /opt/OpenCV2.1.1 HAVE_OPENCV_COND)
+	if(ICL_XDEP_OPENCV_ON_TMP)
+    set(ICL_XDEP_OPENCV_ON ${ICL_XDEP_OPENCV_ON_TMP})
+    endif()
+	message(STATUS "checking for v2.1.1 ${ICL_XDEP_OPENCV_ON}")
+	#TODO change headernames for check cv.h;cvaux.h;cxcore.h;highgui.h;ml.h
+	icl_check_external_package(OPENCV "" "opencv_core;opencv_highgui;opencv_ml;opencv_features2d;opencv_imgproc;opencv_calib3d" lib include/ /opt/OpenCV2.1.1 HAVE_OPENCV_COND)
     if(HAVE_OPENCV_COND)
 	  set(HAVE_OPENCV2_COND TRUE)
+      set(HAVE_OPENCV211_COND TRUE)
 	  include_directories(${ICL_XDEP_OPENCV_PATH}/include)
 	  set(OPENCV_INCLUDE_PATH "${OPENCV_INCLUDE_PATH};${ICL_XDEP_OPENCV_PATH}/include")
 	  message(STATUS "inc ${OPENCV_INCLUDE_PATH}")
 	  add_definitions( -DHAVE_OPENCV2)
 	  add_definitions( -DHAVE_OPENCV211)	
-	  set(OPENCV_LIBS_l opencv_core opencv_highgui opencv_ml opencv_features2d opencv_imgproc)
+	  set(OPENCV_LIBS_l opencv_core opencv_highgui opencv_ml opencv_features2d opencv_imgproc opencv_calib3d)
   	endif()
   endif()
 endif()
@@ -298,9 +306,8 @@ if(HAVE_LIBMESASR_COND)
 	else()
 	set(LIBMESASR_LIBS_l mesasr)
 	endif()
-	
-	
 endif()
+
 if(WIN32)
 icl_check_external_package(LIBJPEG jpeglib.h jpeg.lib lib include C:/Programme/libjpeg HAVE_LIBJPEG_COND)
 else()
@@ -440,12 +447,17 @@ if(ICL_VAR_USE_PKG_CONFIG)
 	icl_check_external_package_from_pkg_conf(OPENSURF surf HAVE_OPENSURF_COND)
 endif()
 if(NOT OPENSURF_PKG_FOUND)
+  if(NOT HAVE_OPENCV211_COND)
   icl_check_external_package(OPENSURF "opensurf/fasthessian.h;opensurf/integral.h;opensurf/surf.h;opensurf/surflib.h;opensurf/utils.h" surf lib include /vol/nivision HAVE_OPENSURF_COND)
+  else()
+  message(STATUS "opensurf is not compatible to OpenCV2.1.1")
+  endif()
   if(HAVE_OPENSURF_COND)
 	set(OPENSURF_LIBS_l surf)
    endif()
 endif()
 #message(STATUS "surflibs: ${OPENSURF_LIBS_l}")
+
 icl_check_external_package(GTEST gtest/gtest.h gtest lib include /vol/nivision/gtest HAVE_GTEST_COND)
 if(HAVE_GTEST_COND)
 	set(GTEST_LIBS_l gtest)
@@ -686,6 +698,17 @@ endif()
   configure_file(pkg.in ${CMAKE_CURRENT_BINARY_DIR}/${PC_FILE_NAME} @ONLY)
   install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PC_FILE_NAME}" DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig/ COMPONENT filess)
 endif()
+
+add_custom_target(postinstall chmod g+w ${CMAKE_INSTALL_PREFIX}/${LIBRARY_OUTPUT_PATH}
+					COMMAND chmod g+w ${CMAKE_INSTALL_PREFIX}/${EXECUTABLE_OUTPUT_PATH}
+					COMMAND chmod g+w ${CMAKE_INSTALL_PREFIX}/${DOC_DIR}
+					COMMAND chmod g+w ${CMAKE_INSTALL_PREFIX}/${ETC_DIR})
+
+#set(LIBRARY_OUTPUT_PATH "${CMAKE_INSTALL_PREFIX}/lib/icl-${VERSION}${DEBUG_POSTFIX}")
+#set(EXECUTABLE_OUTPUT_PATH "${CMAKE_INSTALL_PREFIX}/bin/icl-${VERSION}${DEBUG_POSTFIX}")
+#set(DOC_DIR "${CMAKE_INSTALL_PREFIX}/doc/icl-${VERSION}${DEBUG_POSTFIX}")
+#set(ETC_DIR "${CMAKE_INSTALL_PREFIX}/etc/icl-${VERSION}${DEBUG_POSTFIX}")
+
 #include(tp2.cmake)
 #############################################
 #in shell type: cpack

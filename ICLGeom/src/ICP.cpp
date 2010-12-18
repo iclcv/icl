@@ -72,7 +72,7 @@ void ICP::icp(std::vector<DynMatrix<icl64f>* > &pointlist){
 		np.clear();
 		m_error=cerror;
 		for(unsigned int i=0;i<lpointlist.size();++i){
-			DynMatrix<double> *p = kdt.nearestNeighbour(lpointlist.at(i));
+			DynMatrix<icl64f> *p = kdt.nearestNeighbour(lpointlist.at(i));
 			np.push_back(p);
 		}
 		for(unsigned int i=0;i<lpointlist.size();++i){
@@ -122,9 +122,9 @@ void ICP::icp(std::vector<DynMatrix<icl64f>* > &pointlist){
 }
 
 //TODO another way to compute rotation and translation
-DynMatrix<double> *ICP::compute(const std::vector<DynMatrix<double>* > &data,const std::vector<DynMatrix<double>* > &model){
-	DynMatrix<double> mean_data(1,3);
-	DynMatrix<double> mean_model(1,3);
+DynMatrix<icl64f> *ICP::compute(const std::vector<DynMatrix<icl64f>* > &data,const std::vector<DynMatrix<icl64f>* > &model){
+	DynMatrix<icl64f> mean_data(1,3);
+	DynMatrix<icl64f> mean_model(1,3);
 	for(unsigned int i=0;i<model.size();++i){
 		mean_data += (*(data[i]));
 		mean_model += (*(model[i]));
@@ -136,6 +136,7 @@ DynMatrix<double> *ICP::compute(const std::vector<DynMatrix<double>* > &data,con
 	for(unsigned int i=0;i<data.size();++i){
 
 	}
+	return 0;
 }
 
 double ICP::error(const std::vector<DynMatrix<icl64f>* > &dat, const std::vector<DynMatrix<icl64f>* > &mod){

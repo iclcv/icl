@@ -50,7 +50,7 @@ class ICP : public Uncopyable{
 	KDTree kdt;
 	double m_error;
 
-	DynMatrix<double> *compute(const std::vector<DynMatrix<double>* > &data,const std::vector<DynMatrix<double>* > &model);
+	DynMatrix<icl64f> *compute(const std::vector<DynMatrix<icl64f>* > &data,const std::vector<DynMatrix<icl64f>* > &model);
 public:
 
 	ICP(std::vector<DynMatrix<icl64f> > &model);

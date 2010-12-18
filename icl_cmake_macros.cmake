@@ -71,7 +71,6 @@ if(${ALL_INCS_CHECK_${ID}} AND ${ALL_LIBS_CHECK_${ID}})#EXISTS ${ICL_XDEP_${ID}_
 		#message(STATUS "found: ${ICL_XDEP_${ID}_PATH}/${REL_INC_DIR}/${FFILE}")
 		message(STATUS "${ID} detected: TRUE")
 		if(${ICL_XDEP_${ID}_ON} OR ${ICL_XDEP_ALL_ON})
-			
         	set(${ID}_LIB_PATH "${ICL_XDEP_${ID}_PATH}/${REL_LIB_DIR}")
         	set(${ID}_INCLUDE_PATH "${ICL_XDEP_${ID}_PATH}/${REL_INC_DIR}")		
 			set(ICL_XDEP_${ID}_ON ON CACHE BOOL "Use ${ID} when available" FORCE)

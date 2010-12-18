@@ -37,8 +37,13 @@
 #include <ICLIO/GrabberHandle.h>
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Mutex.h>
+#ifdef HAVE_OPENCV211
+#include <opencv2/highgui/highgui_c.h>
+#include <opencv2/core/core_c.h>
+#else
 #include <highgui.h>
 #include <cxcore.h>
+#endif
 namespace icl{
 
   /// Grabber Implementation for using an OpenCV based camera source
