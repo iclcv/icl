@@ -188,7 +188,7 @@ namespace icl{
       m_data->mem.unlock();
       Thread::msleep(10);
       
-      ImgBase *ret = ppoDst ? *ppoDst : m_data->image;
+      //      ImgBase *ret = ppoDst ? *ppoDst : m_data->image;
       
       return ppoDst ? *ppoDst : m_data->image;
     }

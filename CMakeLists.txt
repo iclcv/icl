@@ -162,6 +162,7 @@ set(ICL_XDEP_LIBMESASR_ON OFF CACHE BOOL "Use LIBMESASR when available")
 set(ICL_XDEP_LIBJPEG_ON OFF CACHE BOOL "Use LIBJPEG when available")
 set(ICL_XDEP_IMAGEMAGICK_ON OFF CACHE BOOL "Use IMAGEMAGICK when available")
 set(ICL_XDEP_LIBDC_ON OFF CACHE BOOL "Use LIBDC when available")
+set(ICL_XDEP_LIBFREENECT_ON OFF CACHE BOOL "Use libfreenect when available")
 set(ICL_XDEP_UNICAP_ON OFF CACHE BOOL "Use UNICAP when available")
 set(ICL_XDEP_XINE_ON OFF CACHE BOOL "Use XINE when available")
 set(ICL_XDEP_XCF_ON OFF CACHE BOOL "Use XCF when available")
@@ -170,6 +171,7 @@ set(ICL_XDEP_OPENGL_ON OFF CACHE BOOL "Use OPENGL when available")
 #set(ICL_XDEP_SVS_ON OFF CACHE BOOL "Use SVS when available")
 set(ICL_XDEP_OPENSURF_ON OFF CACHE BOOL "Use OPENSURF when available")
 set(ICL_XDEP_GTEST_ON OFF CACHE BOOL "Use GTest when available")
+
 
 FIND_PACKAGE(PkgConfig)
 
@@ -294,6 +296,17 @@ if(HAVE_LIBZ_COND)
 	set(LIBZ_LIBS_l z)
 	endif()
 endif()
+
+
+if(NOT WIN32)
+  icl_check_external_package(LIBFREENECT libfreenect.h freenect lib include /usr HAVE_LIBFREENECT_COND)
+endif()
+if(HAVE_LIBFREENECT_COND)
+  if(NOT WIN32)
+    set(LIBFREENECT_LIBS_l freenect)
+  endif()
+endif()
+
 
 if(WIN32)
 icl_check_external_package(LIBMESASR libMesaSR.h libMesaSR.lib libMesaSR libMesaSR C:/PProgramme/MesaImaging/Swissranger HAVE_LIBMESASR_COND)
@@ -494,7 +507,7 @@ else()
     set(ICLAlgorithms_internal_dependencies ICLQuick ICLGeom)
 endif()
 
-set(ICLIO_external_dependencies LIBZ LIBJPEG LIBMESASR LIBDC XINE UNICAP IMAGEMAGICK XCF VIDEODEV QT)
+set(ICLIO_external_dependencies LIBZ LIBJPEG LIBMESASR LIBDC XINE UNICAP IMAGEMAGICK XCF VIDEODEV QT LIBFREENECT)
 set(ICLQt_internal_dependencies ICLFilter ICLIO)
 set(ICLQt_external_dependencies QT OPENGL)
 if(${HAVE_QT_COND})

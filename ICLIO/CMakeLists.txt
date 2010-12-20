@@ -106,6 +106,8 @@ add_libsource (${PROJECT_NAME} "src/OpenCVVideoGrabber.cpp" "${CONDITIONLIST}" L
 set(CONDITIONLIST HAVE_QT_COND)
 add_libsource (${PROJECT_NAME} "src/SharedMemoryGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/SharedMemoryPublisher.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+set(CONDITIONLIST HAVE_LIBFREENECT_COND)
+add_libsource (${PROJECT_NAME} "src/KinectGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)

@@ -83,6 +83,9 @@
 #include <ICLIO/SharedMemoryGrabber.h>
 #endif
 
+#ifdef HAVE_LIBFREENECT
+#include <ICLIO/KinectGrabber.h>
+#endif
 
 #include <ICLIO/DemoGrabber.h>
 #include <ICLUtils/Exception.h>
@@ -106,7 +109,7 @@ namespace icl{
 
     static const char *plugins[] = { "pwc","dc","dc800","unicap","file","demo","create",
                                      "xcfp","xcfs","xcfm","mv","sr","video","cvvideo", 
-                                     "cvcam","sm","myr"};
+                                     "cvcam","sm","myr","kinectd","kinectc"};
     static const int NUM_PLUGINS=sizeof(plugins)/sizeof(char*);
 
     for(unsigned int i=0;i<ts.size();++i){
@@ -149,6 +152,31 @@ namespace icl{
     std::vector<std::string> l = tok(desiredAPIOrder,",");
     
     for(unsigned int i=0;i<l.size();++i){
+#if 0
+#ifdef HAVE_LIBFREENECT
+      if(l[i] == "kinectd" || l[i] == "kinectc"){
+        KinectGrabber::Mode mode = l[i][6] == "c" ? KinectGrabber::GRAB_COLOR_IMAGE : KinectGrabber::GRAB_DEPTH_IMAGE;
+        try{
+          KinectGrabber *kin = new KinectGrabber(mode,to32s(pmap[l[i]]));
+        }catch(...){
+          ...
+        }
+        if(pwc->init(Size(640,480),24,to32s(pmap["pwc"]),true)){
+          m_poGrabber = pwc;
+          m_sType = "pwc";
+          break;
+        }else{
+          ADD_ERR("pwc");
+          delete pwc;
+          continue;
+        }
+      }
+
+#endif
+#endif
+
+
+      
 #ifdef SYSTEM_LINUX
 #ifdef HAVE_VIDEODEV
       if(l[i] == "pwc"){
