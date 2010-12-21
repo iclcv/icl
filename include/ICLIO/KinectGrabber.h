@@ -81,7 +81,6 @@ namespace icl{
     protected:
     struct Impl; //!< internal hidden implementation class
     Impl *m_impl;//!< hidden internal data
-    const ImgBase *adaptGrabResult(const ImgBase *src, ImgBase **dst); //!< utility method (todo: move to Grabber base class)
   };
 }
 

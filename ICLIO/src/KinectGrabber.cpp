@@ -369,39 +369,6 @@ namespace icl{
     static std::string props[] = {"format","size","LED","Desired-Tilt-Angle","Current-Tilt-Angle","Accelerometers"};
     return std::vector<std::string>(props,props+6);
   }
-  
-  const ImgBase *KinectGrabber::adaptGrabResult(const ImgBase *src, ImgBase **dst){
-    if(!getIgnoreDesiredParams()){ // use desired parameters
-      if(src->getDepth() == getDesiredDepth() && src->getSize() == getDesiredSize() && src->getFormat() == getDesiredFormat()){
-        // by chance: desired parameters are correctly
-        if(dst){
-          src->deepCopy(dst);
-          return *dst;
-        }else{
-          return src;
-        }
-      }else{
-        if(dst){
-          ensureCompatible(dst,getDesiredDepth(),getDesiredParams());
-          m_oConverter.apply(src,*dst);
-          return *dst;
-        }else{
-          m_poImage = imgNew(getDesiredDepth(), getDesiredParams());
-          SHOW(*m_poImage);
-
-          m_oConverter.apply(src,m_poImage);
-          return m_poImage;
-        }
-      }
-    }else{ // no desired parameters ...
-      if(dst){
-        src->deepCopy(dst);
-        return *dst;
-      }else{
-        return src;
-      }
-    }
-  }
 
   /// returns a list of attached kinect devices
   const std::vector<GrabberDeviceDescription> &KinectGrabber::getDeviceList(bool rescan){

@@ -274,7 +274,7 @@ namespace icl{
     Channel32f cs[2];
     image.extractChannels(cs);
     
-    DEBUG_LOG("creating warp map with params: " << params[0] << ","<< params[1] << ","<< params[2] << ","<< params[3] );
+    //    DEBUG_LOG("creating warp map with params: " << params[0] << ","<< params[1] << ","<< params[2] << ","<< params[3] );
     
     for(float xi=0;xi<size.width;++xi){
       for(float yi=0;yi<size.height; ++yi){
@@ -391,6 +391,36 @@ namespace icl{
     f.setPrefix("config.properties.");
   }
   
+  const ImgBase *Grabber::adaptGrabResult(const ImgBase *src, ImgBase **dst){
+    if(!getIgnoreDesiredParams()){ // use desired parameters
+      if(src->getDepth() == getDesiredDepth() && src->getSize() == getDesiredSize() && src->getFormat() == getDesiredFormat()){
+        // by chance: desired parameters are correctly
+        if(dst){
+          src->deepCopy(dst);
+          return *dst;
+        }else{
+          return src;
+        }
+      }else{
+        if(dst){
+          ensureCompatible(dst,getDesiredDepth(),getDesiredParams());
+          m_oConverter.apply(src,*dst);
+          return *dst;
+        }else{
+          ensureCompatible(&m_poImage,getDesiredDepth(),getDesiredParams());
+          m_oConverter.apply(src,m_poImage);
+          return m_poImage;
+        }
+      }
+    }else{ // no desired parameters ...
+      if(dst){
+        src->deepCopy(dst);
+        return *dst;
+      }else{
+        return src;
+      }
+    }
+  }
 
 
 

@@ -71,43 +71,37 @@ namespace icl {
     /// Destructor
     virtual ~Grabber();
 
-    /// **NEW** grab function grabs an image (destination image is adapted on demand)
+    /// grab function grabs an image (destination image is adapted on demand)
     /** This new grab function is one of the main parts of the ICL Grabber interface. Its 
         underlying philosophy is as follows:
         - if ppoDst is NULL, a constant image (owned by the grabber) is returned. 
-        The returned image will have the desired depth and image params, which is ensured
+        If the desired parameters are used, the returned image will have the 
+        desired depth and image params, which is ensured
         by an appropriate conversion from the originally grabbed image if neccessary.
         - if ppoDst is valid, but it points to a NULL-Pointer (ppoDst!=NULL but *ppoDst==NULL),
         a new image is created exacly at (*ppoDst). This image is owned by the calling 
         aplication and not by the Grabber.
         - if ppoDst is valid, and it points to a valid ImgBase*, this ImgBase* is exploited
-        as possible. If its depth differs from the currently "desired" depth value, it is 
+        as possible. If it's depth differs from the currently "desired" depth value, it is 
         released, and a new image with the "desired" params and depth is created at (*ppoDst).
         Otherwise, the ImgBase* at *poDst is adapted in format, channel count and size
-        to the "desired" params, before it is filled with data and returned
+        to the "desired" params or to the depth and parameters of the image that was 'produced'
+        by the Grabber, before it is filled with data and returned
+        <b>Note:</b> Most of the time you'll simply used ppoDst's default value NULL. In this
+        case you only have read-access to the returned ImgBase, which is most of the time
+        completely sufficient.
+        <b>Note also:</b> For an easy handling of ppoDst and the grabber optionally used
+        desired paremeters, you can simple call the Grabbers adaptGrabResult method.
+
+        @see Grabber::adaptGrabResult
         @param ppoDst destination image (pointer-to-pointer)
         @return grabbed image (if ppoDst != 0 and depth matches) equal to *ppoDst
      **/
      virtual const ImgBase* grabUD(ImgBase **ppoDst=0) = 0;
 
 
-    /// **NEW** grab function grabs an image (destination image is adapted on demand)
-    /** This new grab function is one of the main parts of the ICL Grabber interface. Its 
-        underlying philosophy is as follows:
-        - if ppoDst is NULL, a constant image (owned by the grabber) is retuned. 
-        The returned image will have the desired depth and image params, which is ensured
-        by an appropriate conversion from the originally grabbed image if neccessary.
-        - if ppoDst is valid, but it points to a NULL-Pointer (ppoDst!=NULL but *ppoDst==NULL),
-        a new image is created exacly at (*ppoDst). This image is owned by the calling 
-        aplication and not by the Grabber.
-        - if ppoDst is valid, and it points to a valid ImgBase*, this ImgBase* is exploited
-        as possible. If its depth differs from the currently "desired" depth value, it is 
-        released, and a new image with the "desired" params and depth is created at (*ppoDst).
-        Otherwise, the the ImgBase* at *poDst is adapted in format, channel count and size
-        to the "desired" params, before it is filled with data and returned
-        @param ppoDst destination image (pointer-to-pointer)
-        @return grabbed image (if ppoDst != 0 and depth matches) equal to *ppoDst
-     **/
+    /// grab function calls the Grabber-specific grabUD function and applies distortion if necessary
+    /** @see grabUD **/
      const ImgBase *grab(ImgBase **ppoDst=0);
 
      /// @{ @name get/set properties  
@@ -120,6 +114,9 @@ namespace icl {
          Yet, the following properties are compulsory for grabbers:
          - size (syntax for value: e.g. "320x240")
          - format (value depends on the underlying devices formats specifications) 
+         (If your grabber does only provided one format, e.g. RGB24 or one specifiy size, you
+         should create a menu property for format and for size, where each menu has only one 
+         valid entry.
 
          Other parameters, implemented for most video devices are: 
          - "frame rate"
@@ -346,6 +343,61 @@ namespace icl {
      /// @}
 
     protected:
+     /// *NEW* Utility function that allows for much easier implementation of grabUD
+     /** Most of the time, grab/grabUD is called without a given destination ImgBase**.
+         Furthermore, most grabbers do only provide one specific image format/size-
+         combination natively. Most other combinations of desired depth, -format and -size
+         have to be converted using the Grabbers protected m_oConverter and m_oImage instances.
+         Since it turned out, that this functionality had to be implemeneted in almost each
+         Grabber implementation, ICL's Grabber does now provide this convenience function 
+         which implements the following functionality:
+         <pre>
+         // pseudocode:
+         const ImgBase *Grabber::adaptGrabResult(const ImgBase *src, ImgBase **dst){
+           if( desired parameters are used ){
+             if( src has by chance the desired depth, -size and -format ){
+               if ( dst is not NULL ){
+                  copy src to dst by adapting dst apropriately and return *dst
+               } else {
+                  return src directly
+               }
+             } else { // src has to be converted 
+               if (dst is not NULL ){
+                  adapt dst to the desired parameters, convert src to *dst and return *dst
+               } else { // dst was not given at all
+                  adapt m_poImage to the desired parameters, convert src into it and return it 
+               }
+             }
+           } else { // desired parameters are not used
+             if ( dst is not NULL ) {
+                copy src deeply to dst by adapting dst and return *dst
+             } else {
+                return src directly
+             }
+           }
+         }
+         </pre>
+         
+         adaptGrabResult can be used very easily within your Grabber implementations
+         grabUD method.
+         \code
+         struct MyGrabber{
+            Img8u buffer;
+            const ImgBase* grabUD(ImgBase **dst){
+               // first, you have to create your image
+               buffer.setSize(Size::VGA);
+               buffer.setFormat(formatRGB);
+               buffer.fill(URandI(255));
+              
+               // adaptGrabResult will do the rest for you!
+               return adaptGrabResult(&buffer,dst);
+            }
+         };
+         \endcode
+         
+         
+     */
+     const ImgBase *adaptGrabResult(const ImgBase *src, ImgBase **dst); //!< utility method (todo: move to Grabber base class)
 
      /// internally used by the load- and saveProperties
      /** If any property shall not be save or loaded from configuration file, it must be filtered out by this f*/

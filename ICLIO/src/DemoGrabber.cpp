@@ -141,15 +141,7 @@ namespace icl{
     m_drawBuffer->setTime(now);
     m_lastTime = now;
 
-    if(!getIgnoreDesiredParams()){
-      ImgBase *image = prepareOutput(ppoDst);
-      m_oConverter.apply(m_drawBuffer,image);
-      return image;
-    }else{
-      if(!ppoDst) return m_drawBuffer;
-      m_drawBuffer->deepCopy(ppoDst);
-      return *ppoDst;
-    }   
+    return adaptGrabResult(m_drawBuffer,ppoDst);
   }
 
 
