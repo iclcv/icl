@@ -152,27 +152,21 @@ namespace icl{
     std::vector<std::string> l = tok(desiredAPIOrder,",");
     
     for(unsigned int i=0;i<l.size();++i){
-#if 0
+
 #ifdef HAVE_LIBFREENECT
       if(l[i] == "kinectd" || l[i] == "kinectc"){
-        KinectGrabber::Mode mode = l[i][6] == "c" ? KinectGrabber::GRAB_COLOR_IMAGE : KinectGrabber::GRAB_DEPTH_IMAGE;
+        KinectGrabber::Mode mode = l[i][6] == 'c' ? KinectGrabber::GRAB_RGB_IMAGE : KinectGrabber::GRAB_DEPTH_IMAGE;
         try{
           KinectGrabber *kin = new KinectGrabber(mode,to32s(pmap[l[i]]));
-        }catch(...){
-          ...
-        }
-        if(pwc->init(Size(640,480),24,to32s(pmap["pwc"]),true)){
-          m_poGrabber = pwc;
-          m_sType = "pwc";
+          m_poGrabber = kin;
+          m_sType = l[i];
           break;
-        }else{
-          ADD_ERR("pwc");
-          delete pwc;
+        }catch(...){
+          ADD_ERR(l[i]);
           continue;
         }
       }
 
-#endif
 #endif
 
 
@@ -536,6 +530,11 @@ namespace icl{
       
 #ifdef HAVE_QT
       add_devices<SharedMemoryGrabber>(deviceList,"sm",useFilter,pmap);
+#endif
+
+#ifdef HAVE_LIBFREENECT
+      add_devices<KinectGrabber>(deviceList,"kinectc",useFilter,pmap);
+      add_devices<KinectGrabber>(deviceList,"kinectd",useFilter,pmap);
 #endif
     }
     return deviceList;

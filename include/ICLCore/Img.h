@@ -1271,6 +1271,52 @@ namespace icl {
         **/
     void clear(int iChannel = -1, Type tValue = 0, bool bROIOnly=true);
   
+    /// fills the whole image with given source type value
+    /** In contrast to icl::Img::clear, which is highly optimized, this methods use
+        std::fill. By this means, the given source value is really assigned
+        to each value. This can e.g. be used to fill an image with random 
+        values 
+        \code
+        #include <ICLCore/Img.h>
+        #include <ICLCore/Random.h>
+        #include <ICLQuick/Quick.h>
+        void foo(){
+           Img8u image(Size::QQVGA,3);
+           image.fill(URandI(255));
+           show(image);
+        }
+        \endcode
+        \image html img-fill.jpg "result if Img::fill example"
+     */
+    template<class T>
+    inline void fill(const T &value){
+      for(int i=0;i<getChannels();++i){
+        std::fill(begin(i),end(i),value);
+      }
+    }
+
+    /// fills the given channel with given source type value
+    template<class T>
+    inline void fillChannel(int channel, const T &value){
+      std::fill(begin(channel),end(channel),value);
+    }
+    
+
+    /// fills the whole image with given source type value
+    template<class T>
+    inline void fillROI(const T &value){
+      for(int i=0;i<getChannels();++i){
+        std::fill(beginROI(i),endROI(i),value);
+      }
+    }
+
+    /// fills the given channel's with given source type value
+    template<class T>
+    inline void fillChannelROI(int channel, const T &value){
+      std::fill(beginROI(channel),endROI(channel),value);
+    }
+
+
     /// Normalize the channel min/ max range to the new min, max range.
     /** The min/ max range from the source channels are automatically detected,
         <b>separately</b> for each channel.

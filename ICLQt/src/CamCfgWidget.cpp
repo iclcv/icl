@@ -331,7 +331,7 @@ namespace icl{
       }else if(pt == "info"){
         std::string handle = "#i#"+p;
         ostr << '\1' << handle;
-        gui << "label("+grabber.getValue(p)+")[@handle="+handle+"@minsize=12x2@label="+p+"]";
+        gui << "label(unknown)[@handle="+handle+"@minsize=12x2@label="+p+"]";
         int volatileness = grabber.isVolatile(p);
         if(volatileness){
           timers.push_back(new VolatileUpdater(volatileness,p,gui,grabber));

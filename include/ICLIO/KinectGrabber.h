@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLQt/examples/camcfg.cpp                              **
-** Module : ICLQt                                                  **
+** File   : include/ICLIO/KinectGrabber.h                          **
+** Module : ICLIO                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -32,59 +32,57 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQt/CamCfgWidget.h>
-#include <QtGui/QApplication>
-#include <ICLUtils/ProgArg.h>
-#include <ICLIO/GenericGrabber.h>
+#include <ICLIO/Grabber.h>
+#include <ICLUtils/Exception.h>
 
-using namespace icl;
-using namespace std;
+#ifdef HAVE_LIBFREENECT
 
-int main(int n, char **ppc){
-  
-  paex
-  ("r","resets the dc bus on startup")
-  ("8","scan for dc800 devices")
-  ("u","scan for unicap devices")
-  ("d","scan for dc devices")
-  ("s","scan for SwissRanger devices")
-  ("m","scan for Shared Memory devices ")
-  ("kc","scan for Kinect Devices (Depth Image)")
-  ("kd","scan for Kinect Devices (Color Image)")
-  ("y","scan for Myrmex Devices ")
-  ("c","scan for OpenCV-based devices ")
-  ("-demo","add a DemoGrabber device")
-  ("-i","ICL's default device specification");
-  painit(n,ppc,"-dc|d -dc800|8 -demo -unicap|u -mry|y -pwc|p -sr|s -cvcam|c -sm|m"
-         " -reset-bus|-r|r -kinect-depth|kd -kinect-color|kc -input|-i(device-type,device-ID)");
-  QApplication a(n,ppc);
-  
-  std::ostringstream str;
-  if(pa("d")) str << ",dc";
-  if(pa("8")) str << ",dc800";
-  if(pa("-demo")) str << ",demo";
-  if(pa("u")) str << ",unicap";
-  if(pa("p"))str << ",pwc";
-  if(pa("c"))str << ",cvcam";
-  if(pa("s"))str << ",sr";
-  if(pa("kd"))str << ",kinectd";
-  if(pa("kc"))str << ",kinectc";
-  if(pa("m"))str << ",sm";
-  if(pa("y"))str << ",myr";
-  if(pa("-i")) str << "," << pa("-i",0) << "=" << pa("-i",1);
-  
-  std::string devlist = str.str();
-  if(!devlist.length()){
-    pausage("no devices selected!");
-    exit(-1);
-  }
-  devlist = devlist.substr(1); // removes the trailing comma!
-  
-  if(pa("r")) GenericGrabber::resetBus(devlist);
-  
-  CamCfgWidget w(devlist,0);
-  w.setGeometry(50,50,700,700);
-  w.setWindowTitle("icl-camcfg (ICL' Camera Configuration Tool)");
-  w.show();
-  return a.exec();
+namespace icl{
+  /// Special Grabber implementation for Microsoft's Kinect Device
+  /** This class implements ICL's Grabber interface for Microsofts Kinect
+      Device. Internally, it uses libfreenect to access the device. */
+  struct KinectGrabber : public Grabber{
+    enum Mode{
+      GRAB_RGB_IMAGE,   //!< grabs rgb images form the kinects rgb camera
+      GRAB_BAYER_IMAGE, //!< not supported yet
+      GRAB_DEPTH_IMAGE, //!< grabs the depth image from kinect
+      GRAB_IR_IMAGE,    //!< grabs the kinects IR-image (not supported)
+    };
+    
+    /// returns a list of attached kinect devices
+    static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
+
+    KinectGrabber(Mode mode = GRAB_DEPTH_IMAGE, int deviceID=0) throw (ICLException);
+
+    /// Destructor
+    ~KinectGrabber();
+    
+    /// grabs a new image
+    virtual const ImgBase* grabUD(ImgBase **ppoDst=0);
+
+    /// get type of property 
+    virtual std::string getType(const std::string &name);
+    
+    /// get information of a properties valid values
+    virtual std::string getInfo(const std::string &name);
+    
+    /// returns the current value of a property or a parameter
+    virtual std::string getValue(const std::string &name);
+
+    /// Returns whether this property may be changed internally
+    virtual int isVolatile(const std::string &propertyName);
+
+    /// Sets a specific property value
+    virtual void setProperty(const std::string &property, const std::string &value);
+    
+    /// returns a list of properties, that can be set using setProperty
+    virtual std::vector<std::string> getPropertyList();
+
+    protected:
+    struct Impl; //!< internal hidden implementation class
+    Impl *m_impl;//!< hidden internal data
+    const ImgBase *adaptGrabResult(const ImgBase *src, ImgBase **dst); //!< utility method (todo: move to Grabber base class)
+  };
 }
+
+#endif
