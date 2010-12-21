@@ -33,7 +33,7 @@
 #*********************************************************************
 project(ICLOpenCV)
 
-set(CONDITIONLIST "")
+set(CONDITIONLIST HAVE_OPENCV_COND)
 #sources for lib
 set(LIB_SOURCES "")
 add_libsource (${PROJECT_NAME} "src/OpenCV.cpp" "${CONDITIONLIST}" LIB_SOURCES)

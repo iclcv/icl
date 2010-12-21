@@ -38,11 +38,12 @@
 #ifdef HAVE_OPENCV211
 #include <opencv2/core/types_c.h>
 #include <opencv2/core/core_c.h>
-//TODO case: no opencv available
 #else
+#ifdef HAVE_OPENCV
 #include <cxcore.h>
 #endif
-#ifdef HAVE_OPENCV
+#endif
+
 #include <ICLCC/CCFunctions.h>
 #include <ICLCore/Img.h>
 #include <ICLCore/ImgBase.h>
@@ -155,6 +156,5 @@ Be careful when releasig (data)pointers.
 CvMat *img_to_cvmat_shallow(const ImgBase *src,CvMat *dst=0) throw (ICLException);
 
 }
-#endif
 #endif
 
