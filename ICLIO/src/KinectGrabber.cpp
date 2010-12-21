@@ -293,11 +293,17 @@ namespace icl{
     }else if(name == "Desired-Tilt-Angle"){
       return str(m_impl->desiredTiltDegrees);
     }else if(name == "Current-Tilt-Angle"){
-      //      m_impl->device->updateState();
-      return str(m_impl->device->getState().getTiltDegs());
+      try{
+        m_impl->device->updateState();
+      }catch(...){}
+      double degs = m_impl->device->getState().getTiltDegs();
+      if(degs == -64) return "moving";
+      return str(degs);
     }else if( name == "Accelerometers"){
+      try{
+        m_impl->device->updateState();
+      }catch(...){}
       double a[3]={0,0,0};
-      //m_impl->device->updateState();
       m_impl->device->getState().getAccelerometers(a,a+1,a+2);
       return str(a[0]) + "," + str(a[1]) + "," + str(a[2]);
     }else{
@@ -309,7 +315,7 @@ namespace icl{
   /// Returns whether this property may be changed internally
   int KinectGrabber::isVolatile(const std::string &name){
     Mutex::Locker lock(m_impl->mutex);
-    return (name == "Desired-Tilt-Angle" || name == "Accelerometers") * 50;
+    return (name == "Current-Tilt-Angle" || name == "Accelerometers")  ? 200 : 0;
   }
   
   /// Sets a specific property value
@@ -381,6 +387,8 @@ namespace icl{
           return *dst;
         }else{
           m_poImage = imgNew(getDesiredDepth(), getDesiredParams());
+          SHOW(*m_poImage);
+
           m_oConverter.apply(src,m_poImage);
           return m_poImage;
         }
