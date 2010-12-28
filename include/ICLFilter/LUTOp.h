@@ -69,7 +69,7 @@ namespace icl {
       Yet, only the reduceBits function and therewith the according LUT-objects
       mode with given count of quantization levels is IPP optimized.
   */
-   class LUTOp : public UnaryOp, public Uncopyable {
+  class LUTOp : public UnaryOp, public Uncopyable{
    public:
      /// creates a LUT object with given lut (LUT-mode)
      /** @param lut LUT-vector to use */

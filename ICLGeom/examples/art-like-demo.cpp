@@ -27,6 +27,9 @@ struct Cube : public SceneObject{
 } cube;
 
 void init(){
+  lt.setConfigurableID("lt");
+  rd.setConfigurableID("rd");
+  
   if(pa("-create-marker-image")){
     const icl8u X=0;
     const icl8u O=255;
@@ -50,17 +53,10 @@ void init(){
     exit(0);
   }
   gui << "draw3D()[@handle=draw@minsize=32x24]" 
-      << ( GUI("vbox[@minsize=10x1@maxsize=10x100]")
+      << ( GUI("vbox[@minsize=14x1@maxsize=10x100]")
            << "combo(gray,thresh,median)[@handle=vis@label=visualization]"
-           << "slider(1,80,40)[@label=mask size@out=masksize]"
-           << "slider(-30,30,-9)[@label=threshold@out=thresh]"
-           << ( GUI("vbox[@label=CSS Params]")
-                << "fslider(1,180,150)[@out=angleThresh]"
-                << "fslider(0.5,5,1.5)[@out=rcCoeff]"
-                << "fslider(1,5,3)[@out=sigma]"
-                << "fslider(10,300,100)[@out=curvCutoff]"
-                << "fslider(0.01,0.5,0.1)[@out=straighLineThresh]"
-              )
+           << "prop(lt)[@label=local threshold]"
+           << "prop(rd)[@label=region detector]"
            << "checkbox(use corners only,checked)[@out=useCornersOnly]"
            << "togglebutton(stopped,!running)[@out=cap]"
          )
@@ -126,8 +122,6 @@ Point32f find_point_furthest_from(const Point32f &p, const std::vector<Point32f>
 
 void run(){
   gui_DrawHandle3D(draw);
-  gui_int(masksize);
-  gui_int(thresh);
   gui_ComboHandle(vis);
   gui_bool(cap);
   
@@ -135,7 +129,7 @@ void run(){
     Thread::msleep(10);
   }
 
-  lt.setup(masksize,thresh);
+  //  lt.setup(masksize,thresh);
   static MedianOp mo(Size(3,3));
   
   const ImgBase * imgs[] = {
@@ -197,11 +191,8 @@ void run(){
   draw->reset();
 
   if(r){
-    const std::vector<Point32f> bs = r.getBoundaryCorners(gui["angleThresh"],
-                                                          gui["rcCoeff"],
-                                                          gui["sigma"],
-                                                          gui["curvCutoff"],
-                                                          gui["straighLineThresh"]);
+    const std::vector<Point32f> bs = r.getBoundaryCorners();
+
     if(bs.size() == 4){
 
       static CoplanarPointPoseEstimator pe(CoplanarPointPoseEstimator::worldFrame);

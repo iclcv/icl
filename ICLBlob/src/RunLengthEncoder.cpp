@@ -86,6 +86,7 @@ namespace icl{
 
 
     }else{
+      
       // ROI-version (slighly slower due to some overhead for roi-handling 
       // and shifting of scanlines)
       const Rect &roi = image.getROI();

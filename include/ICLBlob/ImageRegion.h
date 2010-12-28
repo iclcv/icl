@@ -175,12 +175,11 @@ namespace icl{
 
     /// Approximate the region boundary by polygon structure
     /** @see ICLCore :: CornerDetectorCSS for a detailed description of function argmuments
+        *NEW* parameters can now be adjusted by the configurable interface of the
+        parent RegionDetector instance
     */
-    const std::vector<Point32f> &getBoundaryCorners(float angle_thresh=162.,
-                                                    float rc_coeff=1.5, 
-                                                    float sigma=3., 
-                                                    float curvature_cutoff=100., 
-                                                    float straight_line_thresh=0.1) const;
+    const std::vector<Point32f> &getBoundaryCorners() const;
+
     
     /// returns the Form-Factor of the Region (Boundary²/4PI*Size)
     /** Please note that the formfactor for smaller regions is 

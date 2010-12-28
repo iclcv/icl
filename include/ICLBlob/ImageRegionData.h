@@ -96,7 +96,7 @@ namespace icl{
     // structure for representing simple region information
     struct SimpleInformation{
       inline SimpleInformation():
-        boundingBox(0),cog(0),pcainfo(0),css(0),
+        boundingBox(0),cog(0),pcainfo(0),
         boundaryLength(0),boundary(0),
         thinned_boundary(0),pixels(0){}
       inline ~SimpleInformation(){
@@ -110,7 +110,6 @@ namespace icl{
       Rect *boundingBox;      //!< bounding rectangle
       Point32f *cog;          //!< center of gravity
       RegionPCAInfo *pcainfo; //!< spacial PCA information
-      CornerDetectorCSS *css; //!< for corner detection
       int boundaryLength;     //!< length of the region boundary
 
       std::vector<Point> *boundary;         //!< all boundary pixels
@@ -119,33 +118,62 @@ namespace icl{
 
     } *simple; //!< simple image region information
 
+    struct CSSParams{
+      float angle_thresh;
+      float rc_coeff;
+      float sigma;
+      float curvature_cutoff;
+      float straight_line_thresh;
+      std::vector<Point32f> resultBuffer;
+
+      bool isOk(CornerDetectorCSS *css) const{
+        return css->getAngleThreshold() == angle_thresh &&
+        css->getRCCoeff() == rc_coeff &&
+        css->getSigma() == sigma &&
+        css->getCurvatureCutoff() == curvature_cutoff &&
+        css->getStraightLineThreshold() == straight_line_thresh;
+      }
+
+      void setFrom(CornerDetectorCSS *css){
+        angle_thresh = css->getAngleThreshold();
+        rc_coeff = css->getRCCoeff();
+        sigma = css->getSigma();
+        curvature_cutoff = css->getCurvatureCutoff();
+        straight_line_thresh = css->getStraightLineThreshold();
+      }
+    };
+
     /// contains complex information, 
     struct ComplexInformation{
       inline ComplexInformation():
         directSubRegions(0),allSubRegions(0),parent(0),
-        parentTree(0),publicNeighbours(0){}
+        parentTree(0),publicNeighbours(0),cssParams(0){}
       inline ~ComplexInformation(){
         if(directSubRegions) delete directSubRegions;
         if(allSubRegions) delete allSubRegions;
         if(parent) delete parent;
         if(parentTree) delete parentTree;
         if(publicNeighbours) delete publicNeighbours;
+        if(cssParams) delete cssParams;
       }
       std::vector<ImageRegion> *directSubRegions;         //!< directly contained regions   
       std::vector<ImageRegion> *allSubRegions;            //!< (even indirectly) contained regions   
       ImageRegion *parent;                                //!< adjacent surrounding region
       std::vector<ImageRegion> *parentTree;               //!< surround regions
       std::vector<ImageRegion> *publicNeighbours;         //!< adjacent regions
+      CSSParams *cssParams;
     } *complex; //!< more complex image region information
 
+    
+    CornerDetectorCSS *css; //!< for corner detection
 
     /// Utility factory function
-    static ImageRegionData *createInstance(ImageRegionPart *topRegionPart, int id, bool createGraphInfo, const ImgBase *image);
+    static ImageRegionData *createInstance(CornerDetectorCSS *css, ImageRegionPart *topRegionPart, int id, bool createGraphInfo, const ImgBase *image);
 
     /// Constructor
-    inline ImageRegionData(int value, int id, unsigned int segmentSize, bool createGraph,const ImgBase *image):
+    inline ImageRegionData(CornerDetectorCSS *css, int value, int id, unsigned int segmentSize, bool createGraph,const ImgBase *image):
       value(value),id(id),size(0),image(image),segments(segmentSize),graph(createGraph ? new RegionGraphInfo : 0),
-      simple(0),complex(0){}
+    simple(0),complex(0),css(css){}
     
     /// Destructor
     inline ~ImageRegionData(){

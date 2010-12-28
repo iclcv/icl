@@ -55,7 +55,7 @@ namespace icl{
         - gamma slope (range:slider(-10,10)
         - algorithm (menu, region mean, tiled lin, tiled NN)
         */
-    addProperty("mask size","range:spinbox","[1,500]",str(maskSize));
+    addProperty("mask size","range:slider","[1,100]",str(maskSize));
     addProperty("global threshold","range:slider","[-100,100]",str(globalThreshold));
     addProperty("gamma slope","range:slider","[-10,10]",str(gammaSlope));
     addProperty("algorithm","menu","region mean,tiled linear,tiled NN","region mean");
@@ -70,7 +70,7 @@ namespace icl{
     m_cmp(new BinaryCompareOp(BinaryCompareOp::gt)),
     m_tiledBuf1(0),m_tiledBuf2(0){
 
-    addProperty("mask size","range:spinbox","[1,500]",str(maskSize));
+    addProperty("mask size","range:slider","[1,100]",str(maskSize));
     addProperty("global threshold","range:slider","[-100,100]",str(globalThreshold));
     addProperty("gamma slope","range:slider","[-10,10]",str(gammaSlope));
     addProperty("algorithm","menu","region mean,tiled linear,tiled NN",a==regionMean?"region mean":a==tiledNN?"tiled NN":"tiled linear");
@@ -510,6 +510,7 @@ namespace icl{
       }
       (*useDst)->deepCopyROI(dst);
     }
+    (*dst)->setTime(src->getTime());
   }  
 
   // }}}

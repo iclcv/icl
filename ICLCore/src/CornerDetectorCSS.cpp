@@ -34,6 +34,7 @@
 
 #include <ICLCore/CornerDetectorCSS.h>
 #include <ICLCore/Mathematics.h>
+#include <ICLUtils/StringUtils.h>
 
 using namespace std;
 
@@ -350,4 +351,49 @@ namespace icl{
     }
     return corners;
   }
+
+  void CornerDetectorCSS::setPropertyValue(const std::string &propertyName, const Any &value) throw (ICLException){
+    if(propertyName == "angle-threshold") angle_thresh = parse<float>(value);
+    else if(propertyName == "rc-coefficient") rc_coeff = parse<float>(value);
+    else if(propertyName == "sigma") sigma = parse<float>(value);
+    else if(propertyName == "curvature-cutoff") curvature_cutoff = parse<float>(value);
+    else if(propertyName == "straight-line-threshold") straight_line_thresh = parse<float>(value);
+    else if(propertyName == "debug-mode") debug_mode = value == "on";
+    else {
+      ERROR_LOG("invalid property name " << propertyName);
+    }
+  }
+    
+  std::vector<std::string> CornerDetectorCSS::getPropertyList(){
+    static const std::vector<std::string> l = tok("angle-threshold,rc-coefficient,sigma,"
+                                                  "curvature-cutoff,straight-line-threshold,"
+                                                  "debug-mode",",");
+    return l;
+  }
+  
+  std::string CornerDetectorCSS::getPropertyType(const std::string &propertyName){
+    if(propertyName == "debug-mode") return "menu";
+    return "range";
+  }
+  
+  std::string CornerDetectorCSS::getPropertyInfo(const std::string &propertyName){
+    if(propertyName == "angle-threshold") return "[0,180]";
+    else if(propertyName == "rc-coefficient") return "[0,10]";
+    else if(propertyName == "sigma") return "[1,20]";
+    else if(propertyName == "curvature-cutoff") return "[0,1000]";
+    else if(propertyName == "straight-line-threshold") return "[0,180]";
+    else if(propertyName == "debug-mode") return "off,on";
+    else return "undefined";
+  }
+    
+  Any CornerDetectorCSS::getPropertyValue(const std::string &propertyName){
+    if(propertyName == "angle-threshold") return str(angle_thresh);
+    else if(propertyName == "rc-coefficient") return str(rc_coeff);
+    else if(propertyName == "sigma") return str(sigma);
+    else if(propertyName == "curvature-cutoff") return str(curvature_cutoff);
+    else if(propertyName == "straight-line-threshold") return str(straight_line_thresh);
+    else if(propertyName == "debug-mode") return debug_mode ? "on" : "off";
+    else return "undefined";
+  }
+  
 }

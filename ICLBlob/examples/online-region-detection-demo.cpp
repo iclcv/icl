@@ -38,9 +38,11 @@
 #include <ICLQuick/QuickRegions.h>
 
 // global data (GUI and reference color)
-GUI gui("draw[@handle=draw@minsize=16x12]");
+GUI gui("hsplit");
 std::vector<double> refcol(3);
 GenericGrabber grabber;
+RegionDetector rd(100,1<<20,255,255);
+
 // reference color callback (ref. color is
 // updated by mouse-click/drag)
 void click_color(const MouseEvent &evt){
@@ -51,6 +53,9 @@ void click_color(const MouseEvent &evt){
 
 // initialization (create gui and install callback)
 void init(){
+  rd.setConfigurableID("rd");
+  gui << "draw[@handle=draw@minsize=16x12]"
+      << "prop(rd)";
   gui.show();
   gui["draw"].install(new MouseHandler(click_color));
   grabber.init(FROM_PROGARG("-input"));
@@ -67,7 +72,7 @@ void run(){
   Img8u im8u = cvt8u(bi);
   
   // create a region detector
-  static RegionDetector rd(100,1<<20,255,255);
+
   const std::vector<ImageRegion> &rs = rd.detect(&im8u);
 
   gui_DrawHandle(draw);

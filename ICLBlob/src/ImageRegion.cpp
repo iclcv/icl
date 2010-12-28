@@ -482,34 +482,25 @@ namespace icl{
 
   // }}}
 
-  const std::vector<Point32f> &ImageRegion::getBoundaryCorners(float angle_thresh, float rc_coeff, float sigma, 
-                                                               float curvature_cutoff, float straight_line_thresh) const{
-    ImageRegionData::SimpleInformation *simple = m_data->ensureSimple();
+  const std::vector<Point32f> &ImageRegion::getBoundaryCorners() const{
+    ImageRegionData::ComplexInformation *complex = m_data->ensureComplex();
+
     bool needReDetection = false;
     
-    if(!simple->css){
-      simple->css = new CornerDetectorCSS(angle_thresh,rc_coeff,sigma,
-                                          curvature_cutoff,straight_line_thresh);
+    if(!complex->cssParams){
+      complex->cssParams = new ImageRegionData::CSSParams;
+      complex->cssParams->setFrom(m_data->css);
       needReDetection = true;
     }else{
-#define ONE_PARAM(Y,P)                              \
-      if(simple->css->get##Y() != P){    \
-        needReDetection = true;                     \
-        simple->css->set##Y(P);          \
+      if(!complex->cssParams->isOk(m_data->css)){
+        complex->cssParams->setFrom(m_data->css);
+        needReDetection = true;
       }
-      ONE_PARAM(AngleThreshold,angle_thresh);
-      ONE_PARAM(RCCoeff,rc_coeff);
-      ONE_PARAM(Sigma,sigma);
-      ONE_PARAM(CurvatureCutoff,curvature_cutoff);
-      ONE_PARAM(StraightLineThreshold,straight_line_thresh);
-#undef ONE_PARAM
     }
     if(needReDetection){
-      return simple->css->detectCorners(getBoundary());
-    }else{
-      return simple->css->getLastCorners();
+      complex->cssParams->resultBuffer = m_data->css->detectCorners(getBoundary());
     }
-    
+    return complex->cssParams->resultBuffer;
   }
 
 

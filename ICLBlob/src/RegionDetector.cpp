@@ -72,83 +72,56 @@ namespace icl{
   struct RegionDetector::Data{
     const ImgBase *image;
     Point roiOffset;
-    int minVal,maxVal,minSize,maxSize;
-    bool createRegionGraph;
     Rect roi;
     RunLengthEncoder rle;
     
     std::vector<ImageRegionPart> parts;
     int nUsedParts;
     
-    
     std::vector<ImageRegion> regions;
     std::vector<ImageRegion> filteredRegions;
 
     std::vector<ImageRegionData*> regionData;
     
+    
     Data():image(0){}
+
     ~Data(){
       for(unsigned int i=0;i<regionData.size();++i){
         delete regionData[i];
       }
     }
+    CornerDetectorCSS css;
   };
-
-  void RegionDetector::setPropertyValue(const std::string &propertyName, const std::string &value) throw (ICLException){
-    if(propertyName == "minimum region size") m_data->minSize = parse<int>(value);
-    else if(propertyName == "maximum region size") m_data->maxSize = parse<int>(value);
-    else if(propertyName == "minimum value") m_data->minVal = parse<int>(value);
-    else if(propertyName == "maximum value") m_data->maxVal = parse<int>(value);
-    else m_data->createRegionGraph = (value == "on");
-
-    call_callbacks(propertyName);
-  }
-  
-  std::vector<std::string> RegionDetector::getPropertyList(){
-    return tok("minimum region size,maximum region size,minimum value, maximum value,create region graph",",");
-  }
-
-  std::string RegionDetector::getPropertyType(const std::string &propertyName){
-    if(propertyName == "create region graph") return "menu";
-    return "range:spinbox";
-  }
-
-  std::string RegionDetector::getPropertyInfo(const std::string &propertyName){
-    if(propertyName == "create region graph") return "on,off";
-    return "[0,10000000]";
-  }
-
-  std::string RegionDetector::getPropertyValue(const std::string &propertyName){
-    if(propertyName == "minimum region size") return str(m_data->minSize);
-    if(propertyName == "maximum region size") return str(m_data->maxSize);
-    if(propertyName == "minimum value") return str(m_data->minVal);
-    if(propertyName == "maximum value") return str(m_data->maxVal);
-    else return m_data->createRegionGraph ? "on" : "off";
-  }
-
-  int RegionDetector::getPropertyVolatileness(const std::string &propertyName){
-    return 0;
-  }
 
 
   RegionDetector::RegionDetector(bool createRegionGraph, const std::string &configurableID):Configurable(configurableID){
     m_data = new Data;
-    m_data->createRegionGraph = createRegionGraph;
-    static const int m = Range<int>::limits().maxVal;
-    setConstraints(0,m,0,m);
+
+    addProperty("minimum region size","range:spinbox","[0,100000]","0");
+    addProperty("maximum region size","range:spinbox","[0,100000]","1000000");
+    addProperty("minimum value","range:slider","[0,255]","0");
+    addProperty("maximum value","range:slider","[0,255]","255");
+    addProperty("create region graph","menu","off,on",createRegionGraph ? "on" : "off");
+
+    addChildConfigurable(&m_data->css,"CSS");
   }
 
   RegionDetector::RegionDetector(int minSize, int maxSize, int minVal, int maxVal, bool createRegionGraph,
                                  const std::string &configurableID):Configurable(configurableID){
     m_data = new Data;
-    m_data->createRegionGraph = createRegionGraph;
-    setConstraints(minSize,maxSize,minVal,maxVal);
+
+    addProperty("minimum region size","range:spinbox","[0,100000]",str(minSize));
+    addProperty("maximum region size","range:spinbox","[0,100000]",str(maxSize));
+    addProperty("minimum value","range:slider","[0,255]",str(minVal));
+    addProperty("maximum value","range:slider","[0,255]",str(maxVal));
+    addProperty("create region graph","menu","off,on",createRegionGraph ? "on" : "off");
+
+    addChildConfigurable(&m_data->css,"CSS");
   }
 
   void RegionDetector::setCreateGraph(bool on){
-    if(m_data->createRegionGraph != on){
-      m_data->createRegionGraph = on;
-    }
+    setPropertyValue("create region graph", on ? "on" : "off");
   }  
 
   RegionDetector::~RegionDetector(){
@@ -166,11 +139,24 @@ namespace icl{
   }
 
   void RegionDetector::setConstraints(int minSize, int maxSize, int minVal, int maxVal){
-    m_data->minSize = minSize;
-    m_data->maxSize = maxSize;
-    m_data->minVal = minVal;
-    m_data->maxVal = maxVal;
+    setPropertyValue("minimum region size",str(minSize));
+    setPropertyValue("maximum region size",str(maxSize));
+    setPropertyValue("minimum value",str(minVal));
+    setPropertyValue("maximum value",str(maxVal));
   }
+  
+  void RegionDetector::setCSSParams(float angle_thresh,
+                                    float rc_coeff, 
+                                    float sigma, 
+                                    float curvature_cutoff, 
+                                    float straight_line_thresh){
+    m_data->css.setAngleThreshold(angle_thresh);
+    m_data->css.setRCCoeff(rc_coeff);
+    m_data->css.setSigma(sigma);
+    m_data->css.setCurvatureCutoff(curvature_cutoff);
+    m_data->css.setStraightLineThreshold(straight_line_thresh);
+  }                                             
+
 
   void RegionDetector::useImage(const ImgBase *image) throw (ICLException){
     ICLASSERT_THROW(image->getDepth() != depth32f && image->getDepth() != depth64f, 
@@ -237,12 +223,14 @@ namespace icl{
     }
     m_data->regionData.clear();
     
+    bool crg = getPropertyValue("create region graph") == "on";
+    
     int nextID = -1;
     ImageRegionPart *parts = m_data->parts.data();
     ImageRegionPart *partsEnd = parts + m_data->nUsedParts;
     for(ImageRegionPart *p=parts; p != partsEnd; ++p){
       if(p->is_top()){
-        m_data->regionData.push_back(ImageRegionData::createInstance(p,++nextID, m_data->createRegionGraph, m_data->image));
+        m_data->regionData.push_back(ImageRegionData::createInstance(&m_data->css,p,++nextID, crg, m_data->image));
         m_data->regions.push_back(ImageRegion(m_data->regionData.back()));
       }
     }
@@ -328,7 +316,11 @@ namespace icl{
     m_data->filteredRegions.clear();
     copy_if(m_data->regions.begin(),m_data->regions.end(),
             std::back_inserter(m_data->filteredRegions),
-            SimpleRegionFilter(m_data->minVal,m_data->maxVal,m_data->minSize,m_data->maxSize));
+            SimpleRegionFilter(parse<int>(getPropertyValue("minimum value")),
+                               parse<int>(getPropertyValue("maximum value")),
+                               parse<int>(getPropertyValue("minimum region size")),
+                               parse<int>(getPropertyValue("maximum region size"))
+                               ));
   }
   
   const std::vector<ImageRegion> &RegionDetector::detect(const ImgBase *image){
@@ -344,7 +336,7 @@ namespace icl{
     // join parts and create image regions
     joinRegions();
 
-    if(m_data->createRegionGraph){
+    if(getPropertyValue("create region graph") == "on"){
       // create connectivity graph
       linkRegions();
 

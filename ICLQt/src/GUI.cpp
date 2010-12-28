@@ -178,7 +178,7 @@ namespace icl{
     };
     
     void update_all_components(){
-      std::vector<std::string> props = conf->getPropertyList();
+      std::vector<std::string> props = conf->getPropertyListWithoutDeactivated();
       for(unsigned int i=0;i<props.size();++i){
         const std::string &p = props[i];
         std::string t = conf->getPropertyType(p);
@@ -237,7 +237,7 @@ namespace icl{
       conf = Configurable::get(def.param(0));
       if(!conf) throw GUISyntaxErrorException(def.defString(),"No Configurable with ID "+def.param(0)+" registered");
       
-      std::vector<std::string> props = conf->getPropertyList();
+      std::vector<std::string> props = conf->getPropertyListWithoutDeactivated();
       std::map<std::string,std::vector<StSt> > sections;
 
       for(unsigned int i=0;i<props.size();++i){
@@ -320,7 +320,7 @@ namespace icl{
         case 'R': 
         case 'm': 
         case 'v': 
-          conf->setPropertyValue(prop,gui[handle]);
+          conf->setPropertyValue(prop,gui[handle].as<Any>());
         break;
         case 'c': 
           conf->setPropertyValue(prop,"");

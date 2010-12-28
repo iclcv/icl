@@ -41,7 +41,7 @@
 #include <ICLCore/Line.h>
 #include <ICLCore/CornerDetectorCSS.h>
 
-GUI gui("vsplit[@handle=B]");
+GUI gui("hbox");
 
 Mutex mutex;
 Color refColor = Color(255,255,255);
@@ -65,20 +65,18 @@ void init(){
   if(pa("-r")){
     GenericGrabber::resetBus();
   }
-
+  
+  css.setConfigurableID("css");
+  css.setPropertyValue("debug-mode","on");
+  GUI gui2("vsplit[@handle=B]");
   GUI controls("vbox");
   controls << ( GUI("hbox") 
-           << "camcfg()"
-           <<  "combo(color image,binary image)[@out=vis]"
-          );
-  controls << "fslider(0,1,0.03)[@out=t@label=threshold]";
-  controls << "fslider(1,20,3)[@out=sigma@label=gaussian sigma]";
-  controls << "fslider(0,10,1.5)[@out=rc_coeff@handle=rc_coeff_handle@label=round corner coefficient]";
-  controls << "fslider(0,1000,100)[@out=k_cutoff@label=curvature cutoff]";
-  controls << "fslider(0,180,162)[@out=max_angle@label=maximum corner angle]";
-  controls << "fslider(0,180,10)[@out=straight_line_thresh@label=straight line threshold]";
+                << "camcfg()"
+                <<  "combo(color image,binary image)[@out=vis]"
+              )
+           << "fslider(0,1,0.03)[@out=t@label=threshold]";
   
-  gui << ( GUI("vsplit")
+  gui2 << ( GUI("vsplit")
            << ( GUI("hbox")
                 << "draw[@handle=img_in@minsize=16x12]"
                 << "draw[@handle=img1@minsize=16x12]"
@@ -86,10 +84,11 @@ void init(){
               )
            << "draw[@handle=img3@minsize=16x12]"
          )
-      << controls;
+       << controls;
 
+  gui << gui2 << "prop(css)[@label=CSS Params@minsize=14x12]";
+  
   gui.show();
-  gui.getValue<FSliderHandle>("rc_coeff_handle").setValue(1.5);
   (*gui.getValue<DrawHandle>("img_in"))->install(&mouse);
   
   // grabber
@@ -126,14 +125,6 @@ inline std::string to_string (const T& t)
 }
 
 
-void setCSSParameters() {
-	css.setAngleThreshold(gui.getValue<float>("max_angle"));
-  css.setRCCoeff(gui.getValue<float>("rc_coeff"));
-  css.setSigma(gui.getValue<float>("sigma"));
-  css.setCurvatureCutoff(gui.getValue<float>("k_cutoff"));
-  css.setStraightLineThreshold(gui.getValue<float>("straight_line_thresh"));
-  css.setDebugMode(true);
-}
 
 void drawInput(ICLDrawWidget *w, const CornerDetectorCSS::DebugInformation &css_inf) {
 	w->color(255,0,0,255); w->fill(255,0,0,255);
@@ -145,7 +136,7 @@ void drawInput(ICLDrawWidget *w, const CornerDetectorCSS::DebugInformation &css_
 }
 
 void drawStep1(ICLDrawWidget *w, const CornerDetectorCSS::DebugInformation &css_inf) {
-	w->color(255,0,0);
+  w->color(255,0,0);
   w->linestrip(css_inf.boundary,true);
 	// draw smoothed boundary.
 	float x,y,lx=-1,ly=-1;
@@ -242,7 +233,7 @@ void run(){
 	// detect regions
   static RegionDetector d(100,200000,255,255);
   const std::vector<ImageRegion> &rs = d.detect(&threshedImage);
-  setCSSParameters();
+
   // iterate over all regions and draw information onto the DrawWidgets
   for(unsigned int i=0;i<rs.size();++i) {
     const vector<Point> &boundary = rs[i].getBoundary();

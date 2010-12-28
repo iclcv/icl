@@ -202,6 +202,16 @@ namespace icl{
     /// set up the region-graph creation flag
     void setCreateGraph(bool on);
 
+    /// sets the internally used parameters for CSS-based corner detection
+    /** The internal corner detector is used if ImageRegion::getBoundaryCorners is
+        called on detected regions. Note, this can also be adjusted by the
+        Configurable interface*/
+    void setCSSParams(float angle_thresh=162.,
+                      float rc_coeff=1.5, 
+                      float sigma=3., 
+                      float curvature_cutoff=100., 
+                      float straight_line_thresh=0.1);
+
     /// main apply function that is used to detect an images image-regions
     /** As explained in \ref DEPTHS, this function is only valid for icl8u, icl16s and icl32s images */
     const std::vector<ImageRegion> &detect(const ImgBase *image);
@@ -211,14 +221,6 @@ namespace icl{
         it is outside the image rectangle), a null-region is returned. */
     const ImageRegion click(const Point &pos);
 
-    /// sets a property
-    virtual void setPropertyValue(const std::string &propertyName, const std::string &value) throw (ICLException);
-    virtual std::vector<std::string> getPropertyList();
-    virtual std::string getPropertyType(const std::string &propertyName);
-    virtual std::string getPropertyInfo(const std::string &propertyName);
-    virtual std::string getPropertyValue(const std::string &propertyName);
-    virtual int getPropertyVolatileness(const std::string &propertyName);
-       
     private:
     
     /// Internally used utility function that extracts the input images ROI if necessary

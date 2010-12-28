@@ -858,12 +858,15 @@ namespace icl{
     ICLASSERT_RETURN( src );
     ICLASSERT_RETURN( dst );
     
+    dst->setTime(src->getTime());
+
     if(roiOnly){
       /// check for equal roi sizes
       ICLASSERT_RETURN(src->getROISize() == dst->getROISize());
     }else{
       /// adapt the size of the destination image
       dst->setSize(src->getSize());
+      dst->setROI(src->getROI());
     }
     /// ensure, that the roiOnly - flag is necessary
     if(roiOnly && src->hasFullROI() && dst->hasFullROI()){

@@ -76,8 +76,8 @@ namespace icl{
     return n;
   }
   
-  ImageRegionData * ImageRegionData::createInstance(ImageRegionPart *topRegionPart, int id, bool createGraphInfo, const ImgBase *image){
-    ImageRegionData *data = new ImageRegionData(topRegionPart->val,id,count(topRegionPart), createGraphInfo, image);
+  ImageRegionData * ImageRegionData::createInstance(CornerDetectorCSS *css, ImageRegionPart *topRegionPart, int id, bool createGraphInfo, const ImgBase *image){
+    ImageRegionData *data = new ImageRegionData(css,topRegionPart->val,id,count(topRegionPart), createGraphInfo, image);
     collect(topRegionPart, data->segments.data(),data);
     return data;
   }
