@@ -99,10 +99,10 @@ namespace icl{
       Locker(Mutex &m);
 
       /// Locks given lockable unti destruction
-      Locker(Lockable *l);
+      Locker(const Lockable *l);
 
       /// Locks given lockable unti destruction
-      Locker(Lockable &l);
+      Locker(const Lockable &l);
 
       /// unlocks the given mutex (automatically called for objects on the stack)
       ~Locker();

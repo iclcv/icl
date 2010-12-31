@@ -8,7 +8,7 @@
  **                                                                 **
  ** File   : include/ICLGeom/ICP.h                                  **
  ** Module : ICLGeom                                                **
- ** Authors: Christian Groszewski                                   **
+ ** Authors: Christian Groszewski, Christof Elbrechter              **
  **                                                                 **
  **                                                                 **
  ** Commercial License                                              **
@@ -42,42 +42,74 @@
 
 namespace icl{
 
+  /// Implementaiton of the Iterator Closest Point (ICP) Algorithm
+  /** TODO: Add Documentation 
+      What about a fixed 3D-Version that uses 3D-Fixed Matrix data?
+  */
+  class ICP : public Uncopyable{
+    public:
+    /// Simple result structure
+    struct Result{
+      Result();
+      DynMatrix<icl64f> rotation;    //!< Model rotation matrix
+      DynMatrix<icl64f> translation; //!< Model translation matrix
+      double error;                  //!< Error value
+    };
 
-class ICP : public Uncopyable{
+    private:
+    /// rotation, translation and error value    Result m_result;
+    Result m_result;
+    
+    /// internal data structure for efficient search
+    KDTree kdt;
+    
+    /// internally used utility function
+    DynMatrix<icl64f> *compute(const std::vector<DynMatrix<icl64f>* > &data,
+                               const std::vector<DynMatrix<icl64f>* > &model);
+    public:
+    
+  
+    
+    /// constructor with given model data
+    /** TODO is the data passed shallowly or deeply */ 
+    ICP(std::vector<DynMatrix<icl64f> > &model);
+    
+    /// constructor with given model data
+    /** TODO is the data passed shallowly or deeply */ 
+    ICP(std::vector<DynMatrix<icl64f>* > &model);
+    
+    /// Empty constructor without given model data
+    ICP();
+    
+    /// Destructor
+    ~ICP();
+    
+    
+    /// applies the ICP on given point cloude
+    const Result &apply(const std::vector<DynMatrix<icl64f>* > &pointlist);
+    
+    /// computes th error between given model and data cloude
+    static double error(const std::vector<DynMatrix<icl64f>* > &dat,
+                        const std::vector<DynMatrix<icl64f>* > &mod);
 
-	DynMatrix<icl64f> rotation;
-	DynMatrix<icl64f> translation;
-	KDTree kdt;
-	double m_error;
-
-	DynMatrix<icl64f> *compute(const std::vector<DynMatrix<icl64f>* > &data,const std::vector<DynMatrix<icl64f>* > &model);
-public:
-
-	ICP(std::vector<DynMatrix<icl64f> > &model);
-
-	ICP(std::vector<DynMatrix<icl64f>* > &model);
-
-	ICP();
-
-	~ICP();
-
-	inline double getError(){
-		return m_error;
-	}
-
-	void icp(std::vector<DynMatrix<icl64f>* > &pointlist);
-
-	double error(const std::vector<DynMatrix<icl64f>* > &dat,
-			const std::vector<DynMatrix<icl64f>* > &mod);
-
-	inline DynMatrix<icl64f>& getRotation(){
-		return rotation;
-	}
-
-	inline DynMatrix<icl64f>& getTranslation(){
-		return translation;
-	}
-};
+#if 0
+    // hope we dont need that anymore ...
+    /// Returns the error from last icp(..) call
+    inline double getError(){
+      return m_result.error;
+    }
+    
+    /// returns the resulting rotation matrix from the last icp(..) call
+    inline const DynMatrix<icl64f>& getRotation() const{
+      return m_result.rotation;
+    }
+    
+    /// returns the resulting translation matrix from the last icp(..) call
+    inline const DynMatrix<icl64f>& getTranslation() const{
+      return m_result.translation;
+    }
+#endif
+  };
 }
 
 #endif /* ICL_ICP_H_ */

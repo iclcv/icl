@@ -96,6 +96,12 @@ namespace icl{
   void SceneObject::addTexture(int a, int b, int c, int d, const Img8u &texture,bool deepCopy){
     m_primitives.push_back(Primitive(a,b,c,d,texture,deepCopy));
   }
+  
+  void SceneObject::addTextTexture(int a, int b, int c, int d, const std::string &text,
+                                   const GeomColor &color,int textSize, bool holdTextAR){
+#warning holdTextAR is not supported yet
+    m_primitives.push_back(Primitive(a,b,c,d,text,color,textSize));
+  }
 
   SceneObject *SceneObject::copy() const{
     return new SceneObject(*this);

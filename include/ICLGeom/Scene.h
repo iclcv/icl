@@ -72,12 +72,13 @@ namespace icl{
     /** @param camera which is copied into the scene
         @param visSize this parameter determines the size of the
                3D visualized cameras in the scene. If visSize is
-               1.0, cameras are visualized with size w=6, h=5 and l=10.
+               1.0, The camera coordinate system is visualized with size
+               50x50x50.
                Actually, the visSize you need depends on the unit
                you use for your scene in your application.
                The default visSize is quite appropriate if you work
-               with cm. If you e.g. use mm instead, visSize should
-               be set to 10.
+               with mm. If you e.g. use cm instead, visSize should
+               be set to 0.1.
         */
     void addCamera(const Camera &cam, float visSize=1.0);
     void removeCamera(int index);

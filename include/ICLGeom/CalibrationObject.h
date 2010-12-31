@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLGeom/Primitive.h                            **
+** File   : include/ICLGeom/CalibrationObject.h                    **
 ** Module : ICLGeom                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -32,61 +32,66 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_PRIMITIVE_H
-#define ICL_PRIMITIVE_H
+#ifndef ICL_CALIBRATION_OBJECT_H
+#define ICL_CALIBRATION_OBJECT_H
 
-#include <ICLGeom/GeomDefs.h>
-#include <ICLCore/Img.h>
+#include <ICLUtils/Uncopyable.h>
+#include <ICLCore/ImgBase.h>
+#include <ICLUtils/Configurable.h>
+#include <ICLGeom/CalibrationGrid.h>
 
 namespace icl{
   
-  struct Primitive{
-    enum Type{
-      vertex,line,triangle,quad,polygon,texture,nothing,PRIMITIVE_TYPE_COUNT
+  /// Utility class for Camera calibration 
+  /** \section GEN General information 
+      TODO !!
+
+  */
+  class CalibrationObject : public Uncopyable, public SceneObject, public Configurable{
+    class Data; //!< internal data class
+    Data *data; //!< internal data storage
+
+    protected:
+    /// this method allows to set the calibration objects internal images
+    /** The internal images are used for visualization. The currently used
+        image is determined by the Configurable interface. Currently 
+        image names 'input','gray','threhold' and 'dilated' can be used
+        by the Configurable's 'visualized image'-property */
+    void setImage(const std::string &name, const ImgBase *image);
+    
+    public:
+    /// The ownership of the calibration grid is NOT passed
+    CalibrationObject(CalibrationGrid *grid,
+                      const std::string &configurableID);
+    
+    /// Simple result struct
+    struct CalibrationResult{
+      const Camera &cam; //!< Calibration Result
+      float error;       //!< Calibration Error
+      
+      /// Shortcut implicit cast to bool to check whether calibration was successful
+      operator bool() const { return error >= 0; }
     };
 
-    Primitive():
-      type(nothing){
-    }
-    Primitive(int a, int b, const GeomColor &color=GeomColor()):
-      a(a),b(b),color(color),type(line){
-    }
-    Primitive(int a, int b, int c, const GeomColor &color=GeomColor()):
-      a(a),b(b),c(c),color(color),type(triangle){
-    }
-    Primitive(int a, int b, int c, int d,const GeomColor &color=GeomColor()):
-      a(a),b(b),c(c),d(d),color(color),type(quad){
-    }
-    Primitive(int a, int b, int c, int d,const Img8u &tex, bool deepCopy=false):
-      a(a),b(b),c(c),d(d),tex(tex),type(texture){
-        if(deepCopy) this->tex.detach();
-    }
+    /// return calibration error (or -1 if object was not found)
+    CalibrationResult find(const ImgBase *sourceImage);
     
-    /// Special constructor to create a texture primitive that contains 3D text
-    /** There is not special TEXT-type: type remains 'texture' */
-    Primitive(int a, int b, int c, int d, const std::string &text, const GeomColor &color, int textSize=30):
-      a(a),b(b),c(c),d(d),tex(create_text_texture(text,color,textSize)),type(texture){}
+    /// visualizes current detection result and image
+    /** this also sets the given DrawWidget's image */
+    void visualize2D(ICLDrawWidget &d, bool unlockWidget=true);
+    
+    /// This functions gets an arbitrary input image and returns the currently detected image points
+    virtual const ImgBase *findPoints(const ImgBase *sourceImage,
+                                      std::vector<Point32f> &cogs,
+                                      std::vector<Rect> &bbs);
 
-    Primitive(const std::vector<int> &polyData, const GeomColor &color=GeomColor()):
-      polyData(polyData),type(polygon){}
-
-    /// not reverse ordering
-    bool operator<(const Primitive &other) const{
-      return z < other.z;
-    }
+    /// provides access to the currently used calibration grid
+    CalibrationGrid *getCalibrationGrid();
     
-    static Img8u create_text_texture(const std::string &text,const GeomColor &color, int textSize=30);
-    
-    int a,b,c,d;
-    std::vector<int> polyData;
-    GeomColor color;
-    Img8u tex;
-    Type type;
-
-    
-    float z;
+    /// provides access to the currently used calibration grid (const)
+    const CalibrationGrid *getCalibrationGrid() const;
   };
-  
 }
+
 
 #endif

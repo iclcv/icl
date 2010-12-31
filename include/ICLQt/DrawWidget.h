@@ -39,6 +39,7 @@
 #include <QtCore/QMutex>
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/Rect32f.h>
+#include <ICLUtils/FixedMatrix.h>
 
 namespace icl{
   /** \cond */
@@ -360,6 +361,30 @@ int main(int n, char **ppc){
     */    
     void fill(float r, float g, float b, float alpha = 255);
 
+    /// utility template method that allows to pass 3D vectors as colors
+    template<class T, unsigned int COLS>
+    inline void color(const FixedMatrix<T,COLS,3/COLS> &v){
+      color((float)v[0],(float)v[1],(float)v[2]);
+    }
+
+    /// utility template method that allows to pass 4D vectors as colors
+    template<class T, unsigned int COLS>
+    inline void color(const FixedMatrix<T,COLS,4/COLS> &v){
+      color((float)v[0],(float)v[1],(float)v[2],(float)v[3]);
+    }
+
+    /// utility template method that allows to pass 3D vectors as fill color
+    template<class T, unsigned int COLS>
+    inline void fill(const FixedMatrix<T,COLS,3/COLS> &v){
+      fill((float)v[0],(float)v[1],(float)v[2]);
+    }
+
+    /// utility template method that allows to pass 4D vectors as fill color
+    template<class T, unsigned int COLS>
+    inline void fill(const FixedMatrix<T,COLS,4/COLS> &v){
+      fill((float)v[0],(float)v[1],(float)v[2],(float)v[3]);
+    }
+    
     /// disables drawing edges
     void nocolor();
     

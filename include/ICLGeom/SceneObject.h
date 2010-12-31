@@ -102,6 +102,13 @@ namespace icl{
     
     /// adds a textured quad to this object
     void addTexture(int a, int b, int c, int d, const Img8u &texture, bool deepCopy=false);
+
+    /// adds text-texture quad -primitive to this object
+    /** Please note, that the text aspect ratio might not be preserved 
+        @param holdTextAR not supported yet! */
+    void addTextTexture(int a, int b, int c, int d, const std::string &text,
+                        const GeomColor &color=GeomColor(255,255,255,255), 
+                        int textSize=30, bool holdTextAR=true);
     
     /// tints all Primitives with given type in given color
     void setColor(Primitive::Type t,const GeomColor &color);

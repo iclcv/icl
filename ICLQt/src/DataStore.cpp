@@ -75,6 +75,7 @@
 #include <ICLQt/DrawWidget3D.h>
 #endif
 #include <ICLUtils/StringUtils.h>
+#include <ICLUtils/Any.h>
 
 using namespace icl;
 
@@ -119,7 +120,8 @@ namespace{
   INST_TYPE(Img32s)                              \
   INST_TYPE(Img32f)                              \
   INST_TYPE(Img64f)                              \
-  INST_TYPE(std::string)                              
+  INST_TYPE(std::string)                         \
+  INST_TYPE(Any)                              
   
 
   // X = X for other types
@@ -233,7 +235,9 @@ INST_OTHER_TYPES
     
 #define FROM_TO_STR(S,HOW_FROM,HOW_TO)    \
     FROM_TO(S,std::string,HOW_FROM)       \
-    FROM_TO(std::string,S,HOW_TO)       
+    FROM_TO(std::string,S,HOW_TO)         \
+    FROM_TO(S,Any,HOW_FROM)               \
+    FROM_TO(Any,S,HOW_TO)       
 
 #define FROM_TO(S,D,HOW)                                                         \
     template<> struct AssignSpecial<S,D> : public Assign{                        \
@@ -489,7 +493,10 @@ namespace icl{
     
 #define FROM_TO_STR_ADD(X)  \
     ADD(X,std::string)      \
-    ADD(std::string,X)
+    ADD(std::string,X)      \
+    ADD(X,Any)              \
+    ADD(Any,X)
+    
     
 #define FROM_IMG_ADD(X) \
     ADD(Img8u,X)        \

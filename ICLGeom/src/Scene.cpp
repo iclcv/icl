@@ -120,6 +120,104 @@ namespace icl{
       }
     }
   };
+  struct CameraObject2 : public SceneObject{
+    Scene *scene;
+    int cameraIndex;
+    std::vector<Vec> origVertices;
+    float S;
+    bool haveName;
+    Mutex mutex;
+    std::string lastName;
+
+    CameraObject2(Scene *parent, int cameraIndex, float camSize):
+      scene(parent),cameraIndex(cameraIndex){
+
+      S = camSize*50;
+
+      addVertex(Vec(0,0,0,1),geom_white());
+      addVertex(Vec(S,0,0,1),geom_red());
+      addVertex(Vec(0,S,0,1),geom_green());
+      for(int i=0;i<4;++i){ // indices 3,4,5 and 6
+        /// these depend on the camera's parameters
+        addVertex(Vec(0,0,0,1),geom_blue());
+      }
+      
+      addLine(0,1,geom_red());
+      addLine(0,2,geom_green());
+     
+      for(int i=0;i<4;++i){
+        addLine(0,i+3,geom_white());
+      }
+      
+      addLine(3,4,geom_white());
+      addLine(3,5,geom_white());
+      addLine(5,6,geom_white());
+      addLine(4,6,geom_white());
+      
+      addTriangle(0,3,4,geom_blue(100));
+      addTriangle(0,4,6,geom_blue(100));
+      addTriangle(0,6,5,geom_blue(100));
+      addTriangle(0,5,3,geom_blue(100));
+
+
+      for(int i=0;i<4;++i){ // 7,8,9,10
+        addVertex(Vec(0,0,0,1),geom_invisible());
+      }
+
+      addTexture(7,8,10,9,Img8u(Size(10,10),4));
+
+      origVertices = m_vertices;
+    }
+
+    virtual void prepareForRendering() {
+      const Camera &cam = scene->getCamera(cameraIndex);
+
+      Mat T = cam.getCSTransformationMatrix().inv();
+      int w = cam.getRenderParams().viewport.width;
+      int h = cam.getRenderParams().viewport.height;
+
+      PlaneEquation p(T*Vec(0,0,S,1),T*Vec(0,0,1,1)-cam.getPosition());
+      m_vertices[3] = cam.getViewRay(Point32f(w-1,0)).getIntersection(p);
+      m_vertices[4] = cam.getViewRay(Point32f(0,0)).getIntersection(p);
+      m_vertices[5] = cam.getViewRay(Point32f(w-1,h-1)).getIntersection(p);
+      m_vertices[6] = cam.getViewRay(Point32f(0,h-1)).getIntersection(p);
+
+      std::string name = cam.getName();
+      
+      if(name != lastName){
+        if(name != ""){
+          lock();
+          m_primitives.back().tex = Primitive::create_text_texture(name,GeomColor(255,255,255,255),30);
+          unlock();
+        }else{
+          m_primitives.back().tex.fill((icl8u)0);
+        }
+        lastName = name;
+      }
+      
+      if(lastName != ""){
+        float h = S/5;
+        float w = name.length()*h*0.6;
+        origVertices[7] = Vec(0,0,0,1);
+        origVertices[8] = Vec(w,0,0,1);
+        origVertices[9] = Vec(0,h,0,1);
+        origVertices[10] = Vec(w,h,0,1);
+      }
+      
+      for(unsigned int i=0;i<3;++i){
+        m_vertices[i] = T * origVertices[i];
+      }
+      for(unsigned int i=7;i<11;++i){
+        m_vertices[i] = T * origVertices[i];
+      }
+    }
+
+    virtual void lock(){ mutex.lock(); }
+    virtual void unlock(){ mutex.unlock(); }
+
+  };
+
+
 #ifdef HAVE_QT
 #ifdef HAVE_OPENGL
   struct Scene::GLCallback : public ICLDrawWidget3D::GLCallback{
@@ -245,7 +343,7 @@ namespace icl{
 
   void Scene::addCamera(const Camera &cam, float visSize){
     m_cameras.push_back(cam);
-    m_cameraObjects.push_back(new CameraObject(this,m_cameraObjects.size(), visSize));
+    m_cameraObjects.push_back(new CameraObject2(this,m_cameraObjects.size(), visSize));
   }
   void Scene::removeCamera(int index){
     ICLASSERT_RETURN(index > 0 && index <(int) m_cameras.size());

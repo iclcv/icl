@@ -37,10 +37,10 @@
 
 namespace icl{
 
-  Mutex::Locker::Locker(Lockable *l):m(&l->getMutex()){
+  Mutex::Locker::Locker(const Lockable *l):m(&l->getMutex()){
     m->lock();
   }
-  Mutex::Locker::Locker(Lockable &l):m(&l.getMutex()){
+  Mutex::Locker::Locker(const Lockable &l):m(&l.getMutex()){
     m->lock();
   }
   

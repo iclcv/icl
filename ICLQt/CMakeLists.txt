@@ -90,6 +90,7 @@ add_libsource (${PROJECT_NAME} "src/ImgParamWidget.cpp" "${CONDITIONLIST}" LIB_S
 add_libsource (${PROJECT_NAME} "src/IntHandle.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/LabelHandle.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/MouseHandler.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/DragRectangleMouseHandler.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/MouseEvent.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/MultiDrawHandle.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/QImageConverter.cpp" "${CONDITIONLIST}" LIB_SOURCES)
