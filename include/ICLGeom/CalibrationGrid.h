@@ -92,8 +92,26 @@ namespace icl{
     /** The default implementation uses Half A and B's img-points */
     virtual void visualize2D(ICLDrawWidget &w);
 
+    /// adaptable method to find two marked points 
+    /** The two marked points (equipped with an extra inner white marker) are
+        detected by vision per default. This method can be adpated if there are
+        other -- maybe simpler or more robust -- ways to find these two points 
+        @param cogs input centers of gravity
+        @param bbs input bounding boxes (these are used in the default implementation)
+        @param maskedImage (this is the image that is returned by the parent
+                           CalibrationObject::findPoints-method. If an adapted
+                           CalibrationObject implementation does not return a
+                           thresholded image, the default implementation for
+                           findMarkedPoints will fail and has to be adapted.
+    */
+    virtual std::pair<int,int> findMarkedPoints(const std::vector<Point32f> &cogs, 
+                                                const std::vector<Rect> &bbs, 
+                                                const Img8u *hintImage);
+
     /// updates the calibration objects Half's A and B from given centers of gravity
-    virtual void update(const std::vector<Point32f> &cogs, const std::vector<Rect> &bbs, const Img8u &maskedImage);
+    /** maskedImage is only passed to findMarkedPoints, so it can be null, if it is not used
+        by an adapted implementation of findMarkedPoints */
+    virtual void update(const std::vector<Point32f> &cogs, const std::vector<Rect> &bbs, const Img8u *hintImage);
     
     /// finally applies calibration return error and initializing given Camera
     virtual float applyCalib(const Size &imageSize, Camera &cam);
@@ -104,6 +122,8 @@ namespace icl{
     /// creates an empty configuration file
     static void create_empty_configuration_file(const std::string &filename="/dev/stdout");
 
+    /// return the dimension of one Half (e.g. 4x3 blobs)
+    Size getDimension() const;
   };
 
 }

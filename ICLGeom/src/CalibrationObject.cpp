@@ -63,7 +63,8 @@ namespace icl{
     CalibrationGrid *grid;
     Camera cam;
     
-    std::map<std::string,const ImgBase*> images;
+    std::map<IntermediateImageType,const ImgBase*> images;
+    
     Data():gray8u(0),lt(35,-10,0),rd(90,1800,0,0),mo(MorphologicalOp::dilate3x3){
       mo.setClipToROI(false);
       lt.setClipToROI(false);
@@ -82,7 +83,7 @@ namespace icl{
 
     addProperty("morph thresholded image","menu","off,on","on");
     addProperty("min formfactor","range","[0.5,8]","2.5"); 
-    addProperty("visualized image","menu","input,gray,threshold,dilated","input"); 
+    //addProperty("visualized image","menu","input,gray,threshold,dilated","input"); 
     
     data->grid = grid;
     grid->initializeSceneObject(*this);
@@ -95,39 +96,49 @@ namespace icl{
     deactivateProperty("^region detector\\.CSS\\..*");
   }  
   
-  void CalibrationObject::setImage(const std::string &name, const ImgBase *image){
-    data->images[name] = image;
+
+  const ImgBase *CalibrationObject::getIntermediateImage(IntermediateImageType t) const{
+    std::map<IntermediateImageType,const ImgBase*>::const_iterator it = data->images.find(t);
+    if(it != data->images.end()) return it->second;
+    else return 0;
   }
+  const ImgBase *CalibrationObject::storeInputImage(const ImgBase *inputImage){
+    return (data->images[InputImage] = inputImage);
+  }
+  const ImgBase *CalibrationObject::computeAndStoreGrayImage(const ImgBase *colorImage){
+    if(colorImage->getDepth() != depth8u || colorImage->getChannels() != 1){
+      ensureCompatible(&data->gray8u,depth8u,colorImage->getSize(),formatGray);
+      icl::cc(colorImage,data->gray8u);
+      return data->images[GrayImage] = data->gray8u;
+    }else{
+      return (data->images[GrayImage] = colorImage);
+    }
+  }
+  const ImgBase *CalibrationObject::computeAndStoreThresholdImage(const ImgBase *grayImage){
+    return (data->images[ThresholdImage] = data->lt.apply(grayImage));
+  }
+  const ImgBase *CalibrationObject::computeAndStoreDilatedImage(const ImgBase *thresholdedImage){
+    if(getPropertyValue("morph thresholded image") == "on"){
+      return (data->images[DilatedImage] = data->mo.apply(thresholdedImage) );
+    }else{
+      return (data->images[DilatedImage] = thresholdedImage);
+    }
+  }
+
 
   const ImgBase * CalibrationObject::findPoints(const ImgBase *sourceImage,
                                                 std::vector<Point32f> &cogs,
                                                 std::vector<Rect> &bbs){
-    data->images["input"] = sourceImage;
-    const ImgBase *image = sourceImage;
-    if(!image) throw ICLException("CalibrationObject::find: source image is null");
-    if(!image->getChannels()) throw ICLException("CalibrationObject::find: source image has zero channels");
-    if(!image->getDim()) throw ICLException("CalibrationObject::find: source image has null dimension");
-    
-    if(image->getDepth() != depth8u || image->getChannels() != 1){
-      ensureCompatible(&data->gray8u,depth8u,image->getSize(),formatGray);
-      icl::cc(image,data->gray8u);
-      image = data->gray8u;
-    }
+    if(!sourceImage) throw ICLException("CalibrationObject::find: source image is null");
+    if(!sourceImage->getChannels()) throw ICLException("CalibrationObject::find: source image has zero channels");
+    if(!sourceImage->getDim()) throw ICLException("CalibrationObject::find: source image has null dimension");
 
-    data->images["gray"] = image;
+    const ImgBase *im = storeInputImage(sourceImage);
+    im = computeAndStoreGrayImage(im);
+    im = computeAndStoreThresholdImage(im);
+    im = computeAndStoreDilatedImage(im);
     
-    image = data->lt.apply(image);
-    data->images["threshold"] = image;
-
-    if(getPropertyValue("morph thresholded image") == "on"){
-      image = data->mo.apply(image);
-      data->images["dilated"] = image;
-    }else{
-      data->images["dilated"] = 0;
-    }
-
-    
-    const std::vector<ImageRegion> &rsd = data->rd.detect(image);
+    const std::vector<ImageRegion> &rsd = data->rd.detect(im);
     const float minFF = parse<float>(getPropertyValue("min formfactor"));
     for(unsigned int i=0;i<rsd.size();++i){
       if(rsd[i].getFormFactor() <= minFF){
@@ -136,8 +147,9 @@ namespace icl{
       }
     }
     
-    return image;
+    return im;
   }
+
   
   CalibrationObject::CalibrationResult CalibrationObject::find(const ImgBase *sourceImage){
     std::vector<Point32f> cogs;
@@ -145,19 +157,14 @@ namespace icl{
     
     const ImgBase *image = findPoints(sourceImage,cogs,bbs);
     
-    data->grid->update(cogs,bbs,*image->asImg<icl8u>());
+    data->grid->update(cogs,bbs,image->asImg<icl8u>());
     float err = data->grid->applyCalib(image->getSize(),data->cam);
     CalibrationResult result = { data->cam, err };
     return result;
   }
 
-  void CalibrationObject::visualize2D(ICLDrawWidget &d, bool unlockWidget){
-    std::string visImage = getPropertyValue("visualized image");
-    d.setImage(data->images[visImage]);
-    d.lock();
-    d.reset();
+  void CalibrationObject::visualizeGrid2D(ICLDrawWidget &d){
     data->grid->visualize2D(d);
-    if(unlockWidget) d.unlock();
   }
 
   

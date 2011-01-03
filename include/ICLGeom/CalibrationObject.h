@@ -46,20 +46,54 @@ namespace icl{
   /** \section GEN General information 
       TODO !!
 
+      \section IIL Internal Image List
+      Internally, the calibration object uses an image list that stores intermediate image
+      processing results. Currently the following images are available and accessible using
+      the getImage(const std::string&) method:
+      - input (last given input image)
+      - gray (gray converted image, or same as input if input was already in format gray and depth8u)
+      - threshold (locally thresholded image)
+      - dilated (result of dilation applied on the threshold image, or same as threshold if dilation 
+        is deactivated using the Configurable interface)
   */
   class CalibrationObject : public Uncopyable, public SceneObject, public Configurable{
     class Data; //!< internal data class
     Data *data; //!< internal data storage
 
     protected:
-    /// this method allows to set the calibration objects internal images
-    /** The internal images are used for visualization. The currently used
-        image is determined by the Configurable interface. Currently 
-        image names 'input','gray','threhold' and 'dilated' can be used
-        by the Configurable's 'visualized image'-property */
-    void setImage(const std::string &name, const ImgBase *image);
+    /// utility method that is used internally to store a given input image in the internal image list
+    /** The given input image is stored at key 'input' */
+    const ImgBase *storeInputImage(const ImgBase *inputImage);
+
+    /// converts the given 'color'-input image into gray format if neccessary
+    /** the result image is automatically stored in the internal image list
+        at key 'gray' */
+    const ImgBase *computeAndStoreGrayImage(const ImgBase *colorImage);
     
+    /// applies a local threshold on the given 'gray'-image into color'-input image into gray format if neccessary
+    /** the result image is automatically stored in the internal image list
+        at key 'threshold' */
+    const ImgBase *computeAndStoreThresholdImage(const ImgBase *grayImage);
+    
+    /// applies a dilation filter on the given thresholded image
+    /** If the dilation-mode is deactivated, this returns the thresholded image pointer
+        directly. The result of this method (either dilation result of thresholdedImage)
+        is automatically stored in the internal image list at key 'dilated' */
+    const ImgBase *computeAndStoreDilatedImage(const ImgBase *thresholdedImage);
+
     public:
+
+    /// enumeration of intermediate image processing result images (for debuggin and visualization only)
+    enum IntermediateImageType{
+      InputImage,     //!< last given input image (maybe color)
+      GrayImage,      //!< gray image (if input image was gray, then this is identical to InputImage)
+      ThresholdImage, //!< result of local threshold operation
+      DilatedImage    //!< result of image dilation (if dilation is disabled, this is identical to ThresholdImage)
+    };
+    
+    /// returns the intermediate image processing result of null if not available
+    const ImgBase *getIntermediateImage(IntermediateImageType t) const;
+    
     /// The ownership of the calibration grid is NOT passed
     CalibrationObject(CalibrationGrid *grid,
                       const std::string &configurableID);
@@ -76,9 +110,10 @@ namespace icl{
     /// return calibration error (or -1 if object was not found)
     CalibrationResult find(const ImgBase *sourceImage);
     
-    /// visualizes current detection result and image
-    /** this also sets the given DrawWidget's image */
-    void visualize2D(ICLDrawWidget &d, bool unlockWidget=true);
+    /// visualizes current detection result
+    /** Note: the widge must be prepared before (image must be set, widget must
+        be locked and reset) */
+    void visualizeGrid2D(ICLDrawWidget &d);
     
     /// This functions gets an arbitrary input image and returns the currently detected image points
     virtual const ImgBase *findPoints(const ImgBase *sourceImage,

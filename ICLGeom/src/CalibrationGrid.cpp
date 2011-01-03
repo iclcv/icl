@@ -68,18 +68,18 @@ namespace icl{
     struct IdxPoint32f{
       IdxPoint32f(){}
       IdxPoint32f(const std::vector<Point32f> *cogs,int idx, 
-                  const StraightLine2D *line, float centerBrightness):
-        cogs(cogs),idx(idx),centerBrightness(centerBrightness){
+                  const StraightLine2D *line/*, float centerBrightness*/):
+        cogs(cogs),idx(idx)/*,centerBrightness(centerBrightness)*/{
         distToLine = line->signedDistance(StraightLine2D::Pos(p().x,p().y));
       }
       IdxPoint32f(const IdxPoint32f &ip,const StraightLine2D *otherLine):
-        cogs(ip.cogs),idx(ip.idx),centerBrightness(ip.centerBrightness){
+        cogs(ip.cogs),idx(ip.idx)/*,centerBrightness(ip.centerBrightness)*/{
         distToLine = otherLine->signedDistance(StraightLine2D::Pos(p().x,p().y));
       }
       const std::vector<Point32f> *cogs;
       int idx;
       float distToLine;
-      float centerBrightness;
+      /*float centerBrightness;*/
       const Point32f &p() const { 
         return cogs->at(idx); 
       }
@@ -132,7 +132,7 @@ namespace icl{
   
   void CalibrationGrid::visualize2D(ICLDrawWidget &w){
     w.color(0,255,0,200);
-    w.fill(0,255,0,100);
+    w.fill(0,0,0,0);//255,0,100);
     for(unsigned int i=0;i<lastBoundingBoxes.size();++i){
       w.rect(lastBoundingBoxes[i]);
     }
@@ -245,20 +245,31 @@ namespace icl{
     return sqrt(result/is.size());
   }
 
+  std::pair<int,int> CalibrationGrid::findMarkedPoints(const std::vector<Point32f> &cogs, 
+                                                       const std::vector<Rect> &bbs, 
+                                                       const Img8u *hintImage){
+    if(!hintImage) throw ICLException("CalibrationGrid::findMarkedPoints: given hintImage is null");
+    if(hintImage->getChannels() != 1) throw ICLException("CalibrationGrid::findMarkedPoints: given hintImages channel count is not 1");
+    std::vector<float> cbs = compute_center_brightness(cogs,bbs,*hintImage);
+    int s1 = int(std::max_element(cbs.begin(),cbs.end()) - cbs.begin());
+    float cbs_1 = cbs[s1];
+    cbs[s1] = 0;
+    int s2 = int(std::max_element(cbs.begin(),cbs.end()) - cbs.begin());
+    cbs[s1] = cbs_1;
+    return std::pair<int,int>(s1,s2);
+  }
+  
 
-  void CalibrationGrid::update(const std::vector<Point32f> &cogs, const std::vector<Rect> &bbs, const Img8u &maskedImage){
+  void CalibrationGrid::update(const std::vector<Point32f> &cogs, const std::vector<Rect> &bbs, const Img8u *hintImage){
     lastBoundingBoxes = bbs;
     
     if((int)cogs.size() != 2*nx*ny || (int)bbs.size() != 2*nx*ny){
       inputDataReady = false;
       return;
     }
-    std::vector<float> cbs = compute_center_brightness(cogs,bbs,maskedImage);
-    int s1 = int(std::max_element(cbs.begin(),cbs.end()) - cbs.begin());
-    float cbs_1 = cbs[s1];
-    cbs[s1] = 0;
-    int s2 = int(std::max_element(cbs.begin(),cbs.end()) - cbs.begin());
-    cbs[s1] = cbs_1;
+    const std::pair<int,int> si = findMarkedPoints(cogs,bbs,hintImage);
+    const int &s1 = si.first;
+    const int &s2 = si.second;
     
     StraightLine2D line(StraightLine2D::Pos(cogs[s1].x,cogs[s1].y),
                         StraightLine2D::Pos(cogs[s2].x,cogs[s2].y)-
@@ -266,7 +277,7 @@ namespace icl{
     
     std::vector<IdxPoint32f> cogsi(cogs.size());
     for(unsigned int i=0;i<cogs.size();++i){
-      cogsi[i] = IdxPoint32f(&cogs,i,&line, cbs[i]);
+      cogsi[i] = IdxPoint32f(&cogs,i,&line/*, cbs[i]*/);
     }
     std::sort(cogsi.begin(),cogsi.end());
     std::pair<int,int> ds = count_distance_signs(cogsi);
@@ -366,6 +377,9 @@ namespace icl{
 #undef LINE
   }
 
+  Size CalibrationGrid::getDimension() const{
+    return Size(nx,ny);
+  }
   
   
 }
