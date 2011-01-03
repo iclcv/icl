@@ -102,6 +102,13 @@ namespace icl{
     if(it != data->images.end()) return it->second;
     else return 0;
   }
+
+  /// returns the intermediate image processing result of null if not available
+  void CalibrationObject::setIntermediateImage(IntermediateImageType t, const ImgBase *image){
+    data->images[t] = image;
+  }
+
+
   const ImgBase *CalibrationObject::storeInputImage(const ImgBase *inputImage){
     return (data->images[InputImage] = inputImage);
   }
@@ -157,7 +164,7 @@ namespace icl{
     
     const ImgBase *image = findPoints(sourceImage,cogs,bbs);
     
-    data->grid->update(cogs,bbs,image->asImg<icl8u>());
+    data->grid->update(cogs,bbs,image ? image->asImg<icl8u>() : 0);
     float err = data->grid->applyCalib(image->getSize(),data->cam);
     CalibrationResult result = { data->cam, err };
     return result;

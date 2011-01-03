@@ -39,19 +39,89 @@
 #include <ICLQt/DefineRectanglesMouseHandler.h>
 #include <ICLCC/CCFunctions.h>
 
-DefineRectanglesMouseHandler mouse(1,10);
+#include <QtGui/QPushButton>
 
-struct ManualCalibrationObject : public CalibrationObject{
+struct Mouse : public DefineRectanglesMouseHandler {
+  bool defineSpecialMode;
+
+  int highlightRect;
+  int markedRects[2];
+  
+  Mouse():DefineRectanglesMouseHandler(1,10),defineSpecialMode(false){
+    markedRects[0] = markedRects[1] = -1;
+    highlightRect = -1;
+  }
+  
+  
+  void switchMode(){
+    defineSpecialMode = !defineSpecialMode;
+    if(!defineSpecialMode) highlightRect = -1;
+  }
+  
+  int getIdxOfRectAt(int x, int y){
+    for(unsigned int i=0;i<rects.size();++i){
+      if(rects[i].contains(x,y)) return i;
+    }
+    return -1;
+  }
+
+  void process(const MouseEvent &e){
+    if(defineSpecialMode){
+      Mutex::Locker l(this);
+      highlightRect = getIdxOfRectAt(e.getX(),e.getY());
+      if(highlightRect >= 0 && e.isPressEvent()){
+        markedRects[0]=markedRects[1];
+        markedRects[1] = highlightRect;
+      }
+    }else{
+      DefineRectanglesMouseHandler::process(e);
+    }
+  }
+  
+  /// automatic visualiziation
+  /** The given ICLDrawWidget must be locked and reset before */
+  void visualize(ICLDrawWidget &w){
+    DefineRectanglesMouseHandler::visualize(w);
+    
+    Mutex::Locker l(this);
+    if(highlightRect != -1 && highlightRect < (int)rects.size()){
+      w.color(255,100,0,255);
+      w.fill(255,100,0,100);
+      w.rect(rects[highlightRect]);
+    }
+    w.color(255,0,0,255);
+    w.fill(255,0,0,100);
+    if( markedRects[0] != -1 && markedRects[0] < (int)rects.size()){
+      w.rect(rects[markedRects[0]]);
+    }
+    if( markedRects[1] != -1 && markedRects[1] < (int)rects.size()){
+      w.rect(rects[markedRects[1]]);
+    }
+  }
+  
+} mouse; 
+
+struct ManualCalibrationObject :  public CalibrationGrid, public CalibrationObject{
   bool useManualData;
   std::vector<Rect> lastAutomaticBBs;
   Mutex mutex;
   Img8u grayImage;
   
-  ManualCalibrationObject(CalibrationGrid *grid, 
-                          const std::string &configurableID):
-    CalibrationObject(grid,configurableID),useManualData(false),grayImage(Size(1,1),formatGray){
+  ManualCalibrationObject():
+    CalibrationGrid(*pa("-c")),CalibrationObject(this,"co"),
+    useManualData(false),grayImage(Size(1,1),formatGray){
 
     mouse.getOptions().fillColor[3] = 0;
+  }
+  
+  virtual std::pair<int,int> findMarkedPoints(const std::vector<Point32f> &cogs, 
+                                              const std::vector<Rect> &bbs, 
+                                              const Img8u *hintImage){
+    if(useManualData){
+      return std::pair<int,int>(mouse.markedRects[0],mouse.markedRects[1]);
+    }else{
+      return CalibrationGrid::findMarkedPoints(cogs,bbs,hintImage);
+    }
   }
 
   virtual const ImgBase *findPoints (const ImgBase *sourceImage, 
@@ -65,11 +135,12 @@ struct ManualCalibrationObject : public CalibrationObject{
       for(unsigned int i=0;i<bbs.size();++i){
         cogs[i] = bbs[i].center();
       }
-      const ImgBase *im = storeInputImage(sourceImage);
-      im = computeAndStoreGrayImage(im);
-      im = computeAndStoreThresholdImage(im);
-      im = computeAndStoreDilatedImage(im);
-      return im;
+      setIntermediateImage(InputImage,sourceImage);
+      setIntermediateImage(GrayImage,sourceImage);
+      setIntermediateImage(ThresholdImage,sourceImage);
+      setIntermediateImage(DilatedImage,sourceImage);
+
+      return sourceImage;
     }else{
       const ImgBase *retImage = CalibrationObject::findPoints(sourceImage,cogs,bbs);
       lastAutomaticBBs = bbs;
@@ -98,8 +169,10 @@ struct ManualCalibrationObject : public CalibrationObject{
       mouse.getOptions().visualizeCenter = false;
     }
   }
-  
 };
+
+
+
 
 GUI gui("hsplit");
 Scene scene;
@@ -110,6 +183,13 @@ static const int VIEW_CAM = 0, CALIB_CAM = 1;
 
 void change_detection_mode(){
   obj->switchMode();
+  (**gui.getValue<ButtonHandle>("defineMode")).setEnabled(obj->useManualData);
+  (**gui.getValue<ButtonHandle>("defineMode")).setChecked(false);
+  mouse.defineSpecialMode = false;
+  mouse.highlightRect = mouse.markedRects[0] = mouse.markedRects[1] = -1;
+}
+void change_define_mode(){
+  mouse.switchMode();
 }
 
 void init(){
@@ -122,7 +202,7 @@ void init(){
   }
   
   
-  obj = new ManualCalibrationObject(new CalibrationGrid(*pa("-c")),"co");
+  obj = new ManualCalibrationObject;
   grabber.init(FROM_PROGARG("-i"));
   grabber.setIgnoreDesiredParams(true);
   if(pa("-dist")){
@@ -147,7 +227,7 @@ void init(){
                 << "draw3D[@handle=sceneview@minsize=16x12]"
                 << ( GUI("hbox[@maxsize=100x2]")
                      << "button(sync)[@handle=syncCams]"
-                     << "checkbox(visualize cams,off)[@out=visCams]"
+                     << "checkbox(visualize cams,checked)[@out=visCams]"
                    )
               )
          )
@@ -155,12 +235,14 @@ void init(){
            <<  (GUI("hbox") 
                 << "checkbox(3D overlay,unchecked)[@out=3D]"
                 << "checkbox(2D overlay,checked)[@out=2D]"
-                << "checkbox(no ROI,checked)[@out=mouseROI]"
                 << "combo(color,gray,thresh,dilated)[@handle=vis@label=vis. image]"
                )
            <<  (GUI("hbox") 
-                << "togglebutton(stopped,!grabbing)[@out=grab@label=grab-loop]"
                 << "togglebutton(autom,manual)[@handle=manualMode@label=detection]"
+                << "togglebutton(bounding boxes,marked)[@handle=defineMode@label=what]"
+               )
+           <<  (GUI("hbox") 
+                << "togglebutton(stopped,!grabbing)[@out=grab@label=grab-loop]"
                 << "label()[@label=current error: @handle=currError]" 
                 << "camcfg()"
                )
@@ -174,9 +256,10 @@ void init(){
 
   (*gui.getValue<DrawHandle3D>("sceneview"))->setImageInfoIndicatorEnabled(false);
   gui.registerCallback(new GUI::Callback(change_detection_mode),"manualMode");
+  gui.registerCallback(new GUI::Callback(change_define_mode),"defineMode");
   gui["mainview"].install(&mouse);
   gui["sceneview"].install(scene.getMouseHandler(0));
-
+  (**gui.getValue<ButtonHandle>("defineMode")).setEnabled(false);
 }
 
 
@@ -265,11 +348,7 @@ void run(){
   static SmartPtr<const ImgBase> image;
   if(grab || !image){
     const ImgBase *grabbed = grabber.grab();
-    if(obj->useManualData){
-      image = SmartPtr<const ImgBase>(grabbed,false);
-    }else{
-      image = SmartPtr<const ImgBase>(grabbed->shallowCopy(mouse.getRectAtIndex(0) & grabbed->getImageRect()));
-    }
+    image = SmartPtr<const ImgBase>(grabbed->shallowCopy(mouse.getRectAtIndex(0) & grabbed->getImageRect()));
   }
 
   CalibrationObject::CalibrationResult result = obj->find(image.get());
@@ -285,7 +364,12 @@ void run(){
   // ------------ main view --------------------------
   // -------------------------------------------------
 
-  const ImgBase *visim = obj->getIntermediateImage((CalibrationObject::IntermediateImageType)(int)gui["vis"]);
+  const ImgBase *visim = 0;
+  if(obj->useManualData){
+    visim = image.get();
+  }else{
+    visim = obj->getIntermediateImage((CalibrationObject::IntermediateImageType)(int)gui["vis"]);
+  }
   mainview = visim ? visim : image.get();
   mainview->lock();
   mainview->reset();

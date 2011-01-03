@@ -271,6 +271,9 @@ namespace icl{
     const int &s1 = si.first;
     const int &s2 = si.second;
     
+    // check for wrongly detected marked points 
+    if( (s1 < 0) || (s1 >= (int)cogs.size()) || (s2 < 0) || (s2 >= (int)cogs.size()) || (s1 == s2)) return;
+    
     StraightLine2D line(StraightLine2D::Pos(cogs[s1].x,cogs[s1].y),
                         StraightLine2D::Pos(cogs[s2].x,cogs[s2].y)-
                         StraightLine2D::Pos(cogs[s1].x,cogs[s1].y));

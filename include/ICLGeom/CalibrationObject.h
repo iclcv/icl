@@ -57,6 +57,17 @@ namespace icl{
         is deactivated using the Configurable interface)
   */
   class CalibrationObject : public Uncopyable, public SceneObject, public Configurable{
+    public:
+
+    /// enumeration of intermediate image processing result images (for debuggin and visualization only)
+    enum IntermediateImageType{
+      InputImage,     //!< last given input image (maybe color)
+      GrayImage,      //!< gray image (if input image was gray, then this is identical to InputImage)
+      ThresholdImage, //!< result of local threshold operation
+      DilatedImage    //!< result of image dilation (if dilation is disabled, this is identical to ThresholdImage)
+    };
+    private:
+    
     class Data; //!< internal data class
     Data *data; //!< internal data storage
 
@@ -80,16 +91,11 @@ namespace icl{
         directly. The result of this method (either dilation result of thresholdedImage)
         is automatically stored in the internal image list at key 'dilated' */
     const ImgBase *computeAndStoreDilatedImage(const ImgBase *thresholdedImage);
+    
+    /// sets an intermediate iamge
+    void setIntermediateImage(IntermediateImageType t, const ImgBase *image);
 
     public:
-
-    /// enumeration of intermediate image processing result images (for debuggin and visualization only)
-    enum IntermediateImageType{
-      InputImage,     //!< last given input image (maybe color)
-      GrayImage,      //!< gray image (if input image was gray, then this is identical to InputImage)
-      ThresholdImage, //!< result of local threshold operation
-      DilatedImage    //!< result of image dilation (if dilation is disabled, this is identical to ThresholdImage)
-    };
     
     /// returns the intermediate image processing result of null if not available
     const ImgBase *getIntermediateImage(IntermediateImageType t) const;
@@ -116,6 +122,22 @@ namespace icl{
     void visualizeGrid2D(ICLDrawWidget &d);
     
     /// This functions gets an arbitrary input image and returns the currently detected image points
+    /** <b>Note:</b> If you overwrite this method, you should set intermediate images
+        that do no longer exist to null or to the input image 
+        \code
+        setIntermediateImage(InputImage,0);
+        setIntermediateImage(GrayImage,0);
+        setIntermediateImage(ThresholdImage,0);
+        setIntermediateImage(DilatedImage,0);
+        \endcode
+        or
+        \code
+        setIntermediateImage(InputImage,sourceImage);
+        setIntermediateImage(GrayImage,sourceImage);
+        setIntermediateImage(ThresholdImage,sourceImage);
+        setIntermediateImage(DilatedImage,sourceImage);
+        \endcode
+    */
     virtual const ImgBase *findPoints(const ImgBase *sourceImage,
                                       std::vector<Point32f> &cogs,
                                       std::vector<Rect> &bbs);
