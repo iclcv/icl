@@ -135,10 +135,11 @@ set(ICLLibsToLinkAgainst ${PROJECT_NAME})
 add_example (${PROJECT_NAME} "xcf-grabber-benchmark" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "memory-listener" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND)
+#set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND) should be possible even without GUI
+# Christian: How to make icl-pipe not be built but not link against Qt if this is not available
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick ICLUtils ICLFilter)
 add_example (${PROJECT_NAME} "pipe" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-# Christian: How to make icl-pipe not be built but not link against Qt if this is not available
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_UNICAP_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME})
