@@ -50,7 +50,7 @@ namespace icl{
   */
   struct ViewRay{
     /// Constructor with given offset and direction vector
-    explicit ViewRay(const Vec &offset=Vec(), const Vec &direction=Vec());
+    explicit ViewRay(const Vec &offset=Vec(), const Vec &direction=Vec(), bool autoNormalizeDirection=false);
     
     /// line offset
     Vec offset;
@@ -62,7 +62,32 @@ namespace icl{
     /** @see static Camera::getIntersection function */
     Vec getIntersection(const PlaneEquation &plane) const throw (ICLException);
     
+    /// calculates the closest distance to the given 3D-Point
+    /** for following formula is used:
+        <pre>
+        ViewRay: o + lambda * v;
+        3D-Point: p
+        
+        distance = sqrt( |p-o|^2 - |(p-o).v|^2 )
+        </pre>
+    */
+    float closestDistanceTo(const Vec &p) const;
+    
+    /// calculates the closes distance to the given other ViewRay
+    /** Here, we use the following formula:
+        <pre>
+        this ViewRay:  o + lambda * v
+        other ViewRay: k + beta * m
+        
+        distance = | (k-o).(v x m) | 
+                   -----------------
+                       | v x m |
+        </pre>
+    */
+    float closestDistanceTo(const ViewRay &other) const;
+    
     /// evaluates ViewRay' line equation at given lambda
+    /** formula : offset + lambda * direction */
     Vec operator()(float lambda) const;
   };
 

@@ -38,6 +38,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <iostream>
 #include <stdlib.h>
+#include <math.h>
 namespace icl {
 
 /* {{{ Debug Level */
@@ -201,6 +202,27 @@ namespace icl {
 #ifndef iclMax
 #define iclMax(A,B) ((A)>(B)?(A):(B))
 #endif
+
+
+namespace icl{
+  /// square template (faster than pow(x,2)
+  template<class T> static inline T sqr(const T &x) { return x*x; }
+  
+  /// power template
+  template<class T,unsigned int N> static inline T power(const T&x){
+    switch(N){
+      case 0: return 1;
+      case 1: return x;
+      case 2: return sqr(x);
+      case 3: return sqr(x)*x;
+      case 4: return sqr(sqr(x));
+      case 5: return sqr(sqr(x))*x;
+      default:
+        return ::pow(x,N);
+    }
+  }
+}
+
 
 // template <typename T,t>
 // inline const T &iclMin(const T &a, const T &b) {if (a < b) return a; return b;}

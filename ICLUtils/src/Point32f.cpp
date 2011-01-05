@@ -34,7 +34,7 @@
 
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/FixedMatrix.h>
-#include <math.h>
+
 namespace icl{
   const Point32f Point32f::null(0.0,0.0);
 

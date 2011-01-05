@@ -109,6 +109,22 @@ namespace icl{
     return n;
   }
 
+  /// 3D scalar (aka dot-) product for 4D homogeneous vectors (ignoring the homegeneous component)
+  inline float sprod3(const Vec &a, const Vec &b){
+    return a[0]*b[0] + a[1]*b[1]+ a[2]*b[2];
+  }
+  
+  /// sqared norm for 4D homogeneous vectors (ignoring the homegeneous component)
+  inline float sqrnorm3(const Vec &a){
+    return sprod3(a,a);
+  }
+    
+  /// 3D- euclidian norm for 4D homogeneous vectors (ignoring the homegeneous component)
+  inline float norm3(const Vec &a){
+    return ::sqrt(sqrnorm3(a));
+  }
+
+
   /// homogenize a vector be normalizing 4th component to 1
   template<class T>
   inline FixedColVector<T,4> homogenize(const FixedMatrix<T,1,4> &v){
@@ -135,8 +151,11 @@ namespace icl{
                                1 );
   }
 
+  /// typedef for vector of Vec instances
   typedef std::vector<Vec> VecArray;
 
+  
+  /// rotates a vector around a given axis
   inline Vec rotate_vector(const Vec &axis, float angle, const Vec &vec){
     return create_rot_4x4(axis[0],axis[1],axis[2],angle)*vec;
     /*

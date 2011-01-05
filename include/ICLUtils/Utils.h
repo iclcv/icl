@@ -74,7 +74,7 @@
     \defgroup PA Programm Argument Evaluation Functions
     \defgroup XML XML Pasing and Creation Environment
     \defgroup STRUTILS String Manipuation Functions
-    
+    \defgroup FUNCTION ICL's Function Class and Creation Functions
     
     \mainpage ICLUtils package
     
@@ -92,6 +92,7 @@
     -# \ref PA
     -# \ref XML
     -# \ref STRUTILS
+    -# \ref FUNCTION
     
     \section SUPPORT Support classes
     
@@ -202,6 +203,13 @@
 
     @see THREAD
     @see TIME
+    
+
+    \section FUNCTION_SECTION Function Class Creation
+    
+    TODO
+    
+    @see FUNCTION
     
     */
 

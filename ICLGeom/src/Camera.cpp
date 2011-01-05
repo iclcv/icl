@@ -436,7 +436,7 @@ namespace icl {
       // 'dir' is about zero, so homogenize could fail. We can just skip this
       // step, because we normalize 'dir' later, anyway.
     } else dir = m_pos - homogenize(dir);
-    dir[3] = 0; dir.normalize(); dir[3] = 1;
+    dir[3] = 0; dir.normalize(); dir *= -1; dir[3] = 1;
     return ViewRay(m_pos,dir);
   }
 
