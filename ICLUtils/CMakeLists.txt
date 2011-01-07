@@ -81,6 +81,7 @@ add_example (${PROJECT_NAME} "matrix-stream-operator-test" "${CONDITIONLIST}" IC
 add_example (${PROJECT_NAME} "regular-expression-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "xml-parser-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "config-file-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "function-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST HAVE_GTEST_COND)
 set(ICLLibsToLinkAgainst ICLUtils)

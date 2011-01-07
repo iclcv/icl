@@ -36,6 +36,7 @@
 #define ICL_FUNCTION_H
 
 #include <ICLUtils/SmartPtr.h>
+#include <functional>
 
 namespace icl{
   /////////////////////////////////////////////////////////
@@ -236,7 +237,8 @@ namespace icl{
       function-operator() also has less parameters.
       
       @see \ref FUNCTION_SECTION */
-  template<class R=void, class A=void, class B=void> struct Function{
+  template<class R=void, class A=void, class B=void> 
+  struct Function : public std::binary_function<A,B,R>{
     /// Empty constructor (implementation will become null)
     Function(){}
     
@@ -266,14 +268,10 @@ namespace icl{
     operator bool() const { return impl; }
 
     operator Function<void,A,B> () const { return (*(const Function<void,A,B>*)(this)); }
-
-    //#define ICL_FUNCTION_ALLOW_IMPLICIT_CAST_TO(R,A,B) operator Function<R,A,B> () const { return (*(Function<R,A,B>*)(this)); }
-    //ICL_FUNCTION_ALLOW_IMPLICIT_CAST_TO(void,A,B)
-    //#undef ICL_FUNCTION_ALLOW_IMPLICIT_CAST_TO
   };
   
   /** \cond */
-  template<class R, class A> struct Function<R,A,void>{
+  template<class R, class A> struct Function<R,A,void> : public std::unary_function<A,R>{
     Function(){}
     Function(FunctionImpl<R,A> *impl):impl(impl){}
     Function(icl::SmartPtr<FunctionImpl<R,A> >impl):impl(impl){}
@@ -285,12 +283,9 @@ namespace icl{
     operator bool() const { return impl; }
     
     operator Function<void,A> () const { return (*(const Function<void,A>*)(this)); }
-    
-    //#define ICL_FUNCTION_ALLOW_IMPLICIT_CAST_TO(R,A) operator Function<R,A> () const { return (*(Function<R,A>*)(this)); }
-    //ICL_FUNCTION_ALLOW_IMPLICIT_CAST_TO(void,A)
-    //#undef ICL_FUNCTION_ALLOW_IMPLICIT_CAST_TO
   };
   template<class R> struct Function<R,void,void>{
+    typedef R result_type;
     Function(){}
     Function(FunctionImpl<R> *impl):impl(impl){}
     Function(icl::SmartPtr<FunctionImpl<R> >impl):impl(impl){}
@@ -303,10 +298,6 @@ namespace icl{
     operator bool() const { return impl; }
 
     operator Function<void> () const { return (*(const Function<void>*)(this)); }
-    
-    //#define ICL_FUNCTION_ALLOW_IMPLICIT_CAST_TO(R) operator Function<R> () const { return (*(Function<R>*)(this)); }
-    //ICL_FUNCTION_ALLOW_IMPLICIT_CAST_TO(void)
-    //#undef ICL_FUNCTION_ALLOW_IMPLICIT_CAST_TO
   };
   /** \endcond */
       
