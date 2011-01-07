@@ -245,6 +245,14 @@ namespace icl{
 
     /// Constructor with given SmartPtr<Impl>
     Function(icl::SmartPtr<FunctionImpl<R,A,B> >impl):impl(impl){}
+
+    /// Constructor from given global function (for implicit conversion)
+    /** This constructor can be used for implicit conversion. Where
+        a Function<R,A,B> is expected, you can simply pass a global
+        function of type R(*function)(A,B)*/
+    Function(R (*global_function)(A,B)):impl(new GlobalFunctionImpl<R,A,B>){
+      ((GlobalFunctionImpl<R,A,B>*)(impl.get()))->global_function = global_function;
+    }
     
     /// Implementation
     icl::SmartPtr<FunctionImpl<R,A,B> >impl;
@@ -256,6 +264,12 @@ namespace icl{
     
     /// checks wheter the implemnetation is not null
     operator bool() const { return impl; }
+
+    operator Function<void,A,B> () const { return (*(const Function<void,A,B>*)(this)); }
+
+    //#define ICL_FUNCTION_ALLOW_IMPLICIT_CAST_TO(R,A,B) operator Function<R,A,B> () const { return (*(Function<R,A,B>*)(this)); }
+    //ICL_FUNCTION_ALLOW_IMPLICIT_CAST_TO(void,A,B)
+    //#undef ICL_FUNCTION_ALLOW_IMPLICIT_CAST_TO
   };
   
   /** \cond */
@@ -263,19 +277,40 @@ namespace icl{
     Function(){}
     Function(FunctionImpl<R,A> *impl):impl(impl){}
     Function(icl::SmartPtr<FunctionImpl<R,A> >impl):impl(impl){}
+    Function(R (*global_function)(A)):impl(new GlobalFunctionImpl<R,A>){
+      ((GlobalFunctionImpl<R,A>*)(impl.get()))->global_function = global_function;
+    }
     icl::SmartPtr<FunctionImpl<R,A> >impl;
     R operator()(A a) const { return (*impl)(a); }
     operator bool() const { return impl; }
+    
+    operator Function<void,A> () const { return (*(const Function<void,A>*)(this)); }
+    
+    //#define ICL_FUNCTION_ALLOW_IMPLICIT_CAST_TO(R,A) operator Function<R,A> () const { return (*(Function<R,A>*)(this)); }
+    //ICL_FUNCTION_ALLOW_IMPLICIT_CAST_TO(void,A)
+    //#undef ICL_FUNCTION_ALLOW_IMPLICIT_CAST_TO
   };
   template<class R> struct Function<R,void,void>{
     Function(){}
     Function(FunctionImpl<R> *impl):impl(impl){}
     Function(icl::SmartPtr<FunctionImpl<R> >impl):impl(impl){}
+    Function(R (*global_function)()):impl(new GlobalFunctionImpl<R>){
+      ((GlobalFunctionImpl<R>*)(impl.get()))->global_function = global_function;
+    }
     icl::SmartPtr<FunctionImpl<R> >impl;
     R operator()() const { return (*impl)(); }
+
     operator bool() const { return impl; }
+
+    operator Function<void> () const { return (*(const Function<void>*)(this)); }
+    
+    //#define ICL_FUNCTION_ALLOW_IMPLICIT_CAST_TO(R) operator Function<R> () const { return (*(Function<R>*)(this)); }
+    //ICL_FUNCTION_ALLOW_IMPLICIT_CAST_TO(void)
+    //#undef ICL_FUNCTION_ALLOW_IMPLICIT_CAST_TO
   };
   /** \endcond */
+      
+
 
 
   //////////////////////////////////////////////////////////
@@ -462,33 +497,39 @@ namespace icl{
   template<class Object,class R, class A, class B>
   Function<R,A,B> function(const Object *obj,SelectFunctor<R,A,B> selector){ return function<Object,R,A,B>(*obj,selector); }
   
-  /// shortcut create Function to wrap an objects parameter-less function operator \ingroup FUNCTION
-  /** @see \ref FUNCTION_SECTION */
-  template<class Object>
-  Function<> function(Object *obj){ 
-    return function(*obj);
-  } 
-  
-  /// shortcut create Function to wrap a const objects parameter-less function operator \ingroup FUNCTION
-  /** @see \ref FUNCTION_SECTION */
-  template<class Object>
-  Function<> function(const Object *obj){ 
-    return function(*obj);
-  } 
-  
   
   //////////////////////////////////////////////////////////
   // Function creator functions (from global functions) ////
   //////////////////////////////////////////////////////////
   
-  /// Function creator function from given global function \ingroup FUNCTION
-  /** @see \ref FUNCTION_SECTION */
+  /// Function creator function from given binary global function \ingroup FUNCTION
+  /** In contrast to the constructor, this method can automatically
+      detect the parameter types (like std::make_pair)
+      @see \ref FUNCTION_SECTION */
   template<class R, class A, class B>
   Function<R,A,B> function(R (*global_function)(A a, B b)){
-    GlobalFunctionImpl<R,A,B> *impl = new GlobalFunctionImpl<R,A,B>;
-    impl->global_function = global_function;
-    return Function<R,A,B>(impl);
+    return Function<R,A,B>(global_function);
   } 
+
+  
+  /// Function creator function from given unary global function \ingroup FUNCTION
+  /** In contrast to the constructor, this method can automatically
+      detect the parameter types (like std::make_pair)
+      @see \ref FUNCTION_SECTION */
+  template<class R, class A>
+  Function<R,A> function(R (*global_function)(A a)){
+    return Function<R,A>(global_function);
+  } 
+
+  /// Function creator function from given parameter less global function \ingroup FUNCTION
+  /** In contrast to the constructor, this method can automatically
+      detect the parameter types (like std::make_pair)
+      @see \ref FUNCTION_SECTION */
+  template<class R>
+  Function<R> function(R (*global_function)()){
+    return Function<R>(global_function);
+  } 
+
 
   /// Function creator function from given FunctionImpl instance \ingroup FUNCTION
   /** @see \ref FUNCTION_SECTION */
