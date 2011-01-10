@@ -126,7 +126,6 @@ namespace icl{
     Point32f a = col.front().p(), b = col.back().p();
     StraightLine2D line(StraightLine2D::Pos(a.x,a.y),StraightLine2D::Pos(b.x-a.x,b.y-a.y));
     for(unsigned int i=1;i<col.size()-1;++i){
-      SHOW(col[i]);
       if(line.distance(StraightLine2D::Pos(col[i].p().x,col[i].p().y) ) > 5){
         return false;
       }

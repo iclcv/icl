@@ -42,6 +42,7 @@
 #include <ICLQt/MouseHandler.h>
 #include <ICLQt/WidgetCaptureMode.h>
 #include <ICLQt/GUI.h>
+#include <ICLUtils/Function.h>
 
 namespace icl{
 
@@ -49,7 +50,6 @@ namespace icl{
   class PaintEngine;
   class OSDGLButton;
   /** \endcond */
-  
  
   /// Class for openGL-based image visualization components \ingroup COMMON
   /** The ICLWidget class provide basic abilities for displaying ICL images (ImgBase) on embedded 

@@ -348,7 +348,17 @@ void run(){
   static SmartPtr<const ImgBase> image;
   if(grab || !image){
     const ImgBase *grabbed = grabber.grab();
+    if(pa("-s")){
+      static ImgBase *scaled = 0;
+      static Size size = pa("-s");
+      ensureCompatible(&scaled, grabbed->getDepth(),size,grabbed->getFormat());
+      scaled->setTime(grabbed->getTime());
+      grabbed->scaledCopy(&scaled);
+      grabbed = scaled;
+    }
+
     image = SmartPtr<const ImgBase>(grabbed->shallowCopy(mouse.getRectAtIndex(0) & grabbed->getImageRect()));
+    
   }
 
   CalibrationObject::CalibrationResult result = obj->find(image.get());
@@ -488,10 +498,12 @@ int main(int n, char **ppc){
   ("-o","define output config xml file name (./extracted-camera-cfg.xml)")
   ("-config","define input marker config file (calib-config.xml by default)")
   ("-dist","give 4 distortion parameters")
+  ("-s","forced image size that is used (even if the grabber device provides another size)")
   ("-create-empty-config-file","if this flag is given, an empty config file is created as ./new-calib-config.xml");
   return ICLApp(n,ppc,"[m]-input|-i(device,device-params) "
                 "-config|-c(config-xml-file-name=calib-config.xml) "
                 "-dist|d(float,float,float,float) "
                 "-create-empty-config-file|-cc "
+                "-size|-s(WxH) "
                 "-output|-o(output-xml-file-name=extracted-cam-cfg.xml)",init,run).exec();
 }
