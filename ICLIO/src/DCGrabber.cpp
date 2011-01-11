@@ -216,6 +216,13 @@ namespace icl{
         dc::set_iso_speed(m_oDev.getCam(),400);
         m_oOptions.isoMBits = 400;
       }
+    }else if(property == "all manual"){
+      std::vector<std::string> l = getPropertyList();
+      for(unsigned int i=0;i<l.size();++i){
+        if(getType(l[i]) == "menu" && getInfo(l[i]) == "{\"manual\",\"auto\"}"){
+          setProperty(l[i],"manual");
+        }
+      }
     }else if(property == "enable-image-labeling"){
       if(value == "on"){
         m_oOptions.enable_image_labeling = true;
@@ -257,6 +264,7 @@ namespace icl{
       v.push_back("bayer-layout");
       v.push_back("bayer-quality");
     }
+    v.push_back("all manual");
     
     std::vector<std::string> v3 = m_oDeviceFeatures.getPropertyList();
     std::copy(v3.begin(),v3.end(),back_inserter(v));
@@ -270,6 +278,8 @@ namespace icl{
        name == "omit-doubled-frames" || name == "iso-speed" || 
        name == "enable-image-labeling" || name == "bayer-layout"){
       return "menu";
+    }else if(name == "all manual"){
+      return "command";
     }else if(m_oDeviceFeatures.supportsProperty(name)){
       return m_oDeviceFeatures.getType(name);
     }
