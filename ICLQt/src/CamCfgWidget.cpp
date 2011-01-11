@@ -281,10 +281,13 @@ namespace icl{
   }
 
   std::string get_combo_content_str(const std::string &p, Grabber &grabber){
+    std::string currVal = grabber.getValue(p);
     std::ostringstream s;
     std::vector<std::string> ts = tok(strip(grabber.getInfo(p),'{','}'),",");
     for(unsigned int i=0;i<ts.size();++i){
-      s << strip(ts[i],'"','"');
+      std::string stripped = strip(ts[i],'"','"');
+      if(currVal == stripped) s << "!";
+      s << stripped;
       if(i < ts.size()-1) s << ',';
     }
     return s.str();
@@ -427,6 +430,9 @@ namespace icl{
           for(unsigned int i=0;i<sizes.size();++i){
             siz.add(strip(sizes[i],'"','"'));
           }
+          
+          fmt.setSelectedItem(data->grabber.getValue("format"));
+          siz.setSelectedItem(data->grabber.getValue("size"));
         }
         
       }catch(const std::exception &x){
