@@ -207,6 +207,8 @@ namespace icl{
           restartGrabberThread();
         }
       }
+    }else if(property == "size"){
+      // this is adjusted with the format
     }else if(property == "iso-speed"){
       if(value == "800"){
         dc::set_iso_speed(m_oDev.getCam(),800);

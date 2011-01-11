@@ -358,21 +358,31 @@ namespace icl{
     if(skipUnstable){
       psSupported = filter_unstable_params(psSupported);
     }
-    f.setPrefix("config.properties");
+    f.setPrefix("config.properties.");
     for(unsigned int i=0;i<psSupported.size();++i){
       std::string &prop = psSupported[i];
       std::string type = getType(prop);
+      
       if(type == "info") continue;
       if(type == "command") continue;
 
       if(type == "range" || type == "value-list"){
         try{
           setProperty(prop,str((icl32f)f[prop]));
-        }catch(...){}
+        }catch(...){
+          std::cout << "Grabber::loadProperties: property '"  << prop << "' was not set" << std::endl;
+          std::cout << "(it was either not not found in the given property file or it or it's value is not"
+                    << " supported by the current grabber type)" << std::endl;
+        }
       }else if(type == "menu"){
         try{
+          std::string val = f[prop];
           setProperty(prop,f[prop]); 
-        }catch(...){}
+        }catch(...){
+          std::cout << "Grabber::loadProperties: property '"  << prop << "' was not set" << std::endl;
+          std::cout << "(it was either not not found in the given property file or it or it's value is not"
+                    << " supported by the current grabber type)" << std::endl;
+        }
       }
     }
 
@@ -388,7 +398,6 @@ namespace icl{
         std::cerr << "Warning: no desired params were found in given property file" << std::endl;
       }
     }
-    f.setPrefix("config.properties.");
   }
   
   const ImgBase *Grabber::adaptGrabResult(const ImgBase *src, ImgBase **dst){
