@@ -48,7 +48,7 @@ namespace icl{
       initialize_dc_cam(c,nDMABuffers, options);
       
       /// dequeu all frames once 
-#ifdef SYSTEM_APPLE
+#ifdef ICL_SYSTEM_APPLE
       for(int i=0;i<m_iBuffers-1;i++){
 #else
       for(int i=0;i<m_iBuffers;i++){

@@ -45,7 +45,7 @@
 
 #ifdef HAVE_OPENGL
 
-#ifdef SYSTEM_APPLE
+#ifdef ICL_SYSTEM_APPLE
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
 #else

@@ -35,15 +35,16 @@
 #include <ICLIO/FileWriterPluginImageMagick.h>
 
 #ifdef HAVE_IMAGEMAGICK
-#ifndef ICL_SYSTEM_WINDOWS
-#include <GraphicsMagick/Magick++.h>
-#else
+#ifndef ICL_SYSTEM_LINUX
 #include <Magick++.h>
+#else
+#include <GraphicsMagick/Magick++.h>
 #endif
+#endif
+
 #include <ICLCC/CCFunctions.h>
 #include <ICLCC/Converter.h>
 #include <ICLUtils/Exception.h>
-#endif
 
 namespace icl{
   

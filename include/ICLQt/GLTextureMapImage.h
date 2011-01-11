@@ -35,7 +35,7 @@
 #ifndef ICL_GL_TEXTUREMAP_IMAGE
 #define ICL_GL_TEXTUREMAP_IMAGE
 
-#ifdef SYSTEM_APPLE
+#ifdef ICL_SYSTEM_APPLE
 #include <OpenGL/gl.h>
 #else
 #include <GL/gl.h>

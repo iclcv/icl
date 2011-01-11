@@ -33,13 +33,14 @@
 *********************************************************************/
 
 #include <ICLIO/FileList.h>
-#ifndef ICL_SYSTEM_WINDOWS
-#ifndef ICL_SYSTEM_APPLE
+
+#ifdef ICL_SYSTEM_LINUX
 #include <wordexp.h>
-#else // wordexp not supported on osx
+#endif
+#ifdef ICL_SYSTEM_APPLE // wordexp not supported on osx
 #include <glob.h>
 #endif
-#endif
+
 #include <ICLIO/File.h>
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/Exception.h>

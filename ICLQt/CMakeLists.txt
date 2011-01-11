@@ -79,10 +79,7 @@ add_libsource (${PROJECT_NAME} "src/StateHandle.cpp" "${CONDITIONLIST}" LIB_SOUR
 add_libsource (${PROJECT_NAME} "src/DrawWidget.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/FloatHandle.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/FSliderHandle.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-add_libsource (${PROJECT_NAME} "src/GLPaintEngine.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-add_libsource (${PROJECT_NAME} "src/GLTextureMapBaseImage.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-add_libsource (${PROJECT_NAME} "src/GLTextureMapImage.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-add_libsource (${PROJECT_NAME} "src/GLTextureMapPaintEngine.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+
 add_libsource (${PROJECT_NAME} "src/GUI.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/GUIDefinition.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/GUIWidget.cpp" "${CONDITIONLIST}" LIB_SOURCES)
@@ -111,6 +108,10 @@ add_libsource (${PROJECT_NAME} "src/DataStore.cpp" "${CONDITIONLIST}" LIB_SOURCE
 add_libsource (${PROJECT_NAME} "src/ColorLabel.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
 set(CONDITIONLIST HAVE_OPENGL_COND)
+add_libsource (${PROJECT_NAME} "src/GLPaintEngine.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/GLTextureMapPaintEngine.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/GLTextureMapBaseImage.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/GLTextureMapImage.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/DrawWidget3D.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/DrawHandle3D.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
@@ -128,6 +129,14 @@ SET(HWQ_Qt4_SRC
 	"../include/ICLQt/ConfigFileGUI.h"
 )
 
+
+#elseif(APPLE)
+
+#old code
+#QT4_WRAP_CPP(HWQ_MOC_CPP ${HWQ_Qt4_SRC})
+#SET( HWQ_SRC ${LIB_SOURCES} ${HWQ_MOC_CPP})
+
+#else()
 #pkg-config --variable moc_location QtCore /usr/bin/moc-qt4
 set(moc_found "")
 set(moc_path_ex "")
@@ -137,12 +146,16 @@ execute_process(
    OUTPUT_VARIABLE QT_MOC_EXECUTABLE
    RESULT_VARIABLE moc_found)
 string(STRIP "${QT_MOC_EXECUTABLE}" QT_MOC_EXECUTABLE)
-#message(STATUS "moc_exe:${QT_MOC_EXECUTABLE}")
-
-#set(HWQ_SRC ${LIB_SOURCES})
+if(APPLE)
+set(QT_MOC_EXECUTABLE "/usr/bin/moc")
+endif()
 if(WIN32)
 set(QT_MOC_EXECUTABLE "${ICL_XDEP_QT_PATH}/bin/moc.exe")
 endif()
+#message(STATUS "moc_exe:${QT_MOC_EXECUTABLE}")
+
+#set(HWQ_SRC ${LIB_SOURCES})
+
 
 if(NOT ${QT_MOC_EXECUTABLE} STREQUAL "")
 message(STATUS "moc_exe:${QT_MOC_EXECUTABLE}")
@@ -181,12 +194,9 @@ foreach(it ${moc_files})
   set(outfiles ${outfiles} ${outfile})	
 endforeach()
 endif()
-
-#old code
-#QT4_WRAP_CPP(HWQ_MOC_CPP ${HWQ_Qt4_SRC})
-#SET( HWQ_SRC ${LIB_SOURCES} ${HWQ_MOC_CPP})
-
 set(HWQ_SRC ${LIB_SOURCES} ${outfiles})
+#endif()
+
 set(CONDITIONLIST "HAVE_GTEST_COND")
 set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}")
 #add_gtest (${PROJECT_NAME} "test-image.cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)

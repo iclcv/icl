@@ -183,17 +183,12 @@ namespace icl {
 /** Utility macros and defines */
 
 // ?? why not as macro? -> no type problems
-#ifdef SYSTEM_WINDOWS
-#define iclMin(A,B) ((A)<(B)?(A):(B))
-#define iclMax(A,B) ((A)>(B)?(A):(B))
-#endif
-#ifdef SYSTEM_APPLE
-#define iclMin(A,B) ((A)<(B)?(A):(B))
-#define iclMax(A,B) ((A)>(B)?(A):(B))
-#endif
-#ifdef SYSTEM_LINUX
+#ifdef ICL_SYSTEM_LINUX
 #define iclMin(A,B) std::min(A,B)
 #define iclMax(A,B) std::max(A,B)
+#else
+#define iclMin(A,B) ((A)<(B)?(A):(B))
+#define iclMax(A,B) ((A)>(B)?(A):(B))
 #endif
 
 #ifndef iclMin

@@ -42,7 +42,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#ifdef SYSTEM_APPLE
+#ifdef ICL_SYSTEM_APPLE
 #define SIGPOLL SIGIO
 #endif
 
