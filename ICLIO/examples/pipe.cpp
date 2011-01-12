@@ -186,8 +186,11 @@ void send_app(){
     output.send(normImage);
 #ifdef HAVE_QT
     if(!pa("-no-gui")){
-      IH = normImage;
-      IH.update();
+      gui_bool(updateImages);
+      if(updateImages){
+        IH = normImage;
+        IH.update();
+      }
       FPS.update();
     }
 #endif
@@ -206,22 +209,34 @@ void send_app(){
 
 #ifdef HAVE_QT
 void init_gui(){
+  std::string idu = pa("-idu") ? "" : "!";
+  
   if(pa("-pp")){
     gui << "image[@handle=image@minsize=12x8]" 
-        << ( GUI("hbox[@maxsize=100x4]") 
-             << "camcfg()[@maxsize=5x2]"
-             << ("spinner(1,100,"+*pa("-fps")+")[@out=fpsLimit@label=max fps]")
-             << "fps(10)[@handle=fps]"
-             << "togglebutton(off,!on)[@handle=_@out=pp-on@label=preprocessing@minsize=5x2]"
+        << ( GUI("vbox[@maxsize=100x8]") 
+             <<  ( GUI("hbox") 
+                   << "camcfg()[@maxsize=5x2]"
+                   << ("spinner(1,100,"+*pa("-fps")+")[@out=fpsLimit@label=max fps]")
+                   << "fps(10)[@handle=fps]"
+                 )
+             <<  ( GUI("hbox") 
+                   << "togglebutton(off,"+idu+"on)[@out=updateImages@label=update images]"
+                   << "togglebutton(off,!on)[@handle=_@out=pp-on@label=preprocessing@minsize=5x2]"
+                 )
              );
     gui.show();
     ppEnabled = &gui.getValue<bool>("pp-on");
   }else{
     gui << "image[@handle=image@minsize=12x8]" 
-        << ( GUI("hbox[@maxsize=100x4]") 
-             << "camcfg()[@maxsize=5x2]"
-             << ("spinner(1,100,"+*pa("-fps")+")[@out=fpsLimit@label=max fps]")
-             << "fps(10)[@handle=fps]"
+        << ( GUI("vbox[@maxsize=100x8]") 
+             <<  ( GUI("hbox") 
+                   << "camcfg()[@maxsize=5x2]"
+                   << ("spinner(1,100,"+*pa("-fps")+")[@out=fpsLimit@label=max fps]")
+                   )
+             <<  ( GUI("hbox") 
+                   << "fps(10)[@handle=fps]"
+                   << "togglebutton(off,"+idu+"on)[@out=updateImages@label=update images]"
+                 )
              );
     gui.show();
     ppEnabled = new bool(false);
@@ -254,16 +269,20 @@ int main(int n, char **ppc){
    "\tThis parameters can be obtained using ICL application\n"
    "\ticl-calib-radial-distortion")
   ("-reset","reset bus on startup")
+  ("-idu","if this is given, image updates are initally switched off which means, that no"
+   "image is visualized in the preview widget. This helps to reduce network traffic!")
   ("-normalize","normalize resulting image to [0,255]")
   ("-camera-config","if a valid xml-camera configuration file was given here, the grabber is set up "
    "with this parameters internally. Valid parameter files can be created with icl-camera-param-io or with "
    "the icl-camcfg tool. Please note: some grabber parameters might cause an internal grabber crash, "
    "so e.g. trigger setup parameters or the isospeed parameters must be removed from this file");
+  
   painit(n,ppc,"-output|-o(output-type-string,output-parameters) "
          "-flip|-f(string) -single-shot -input|-i(device,device-params) "
          "-size|(Size) -no-gui -pp(1) -dist|-d(float,float,float,float) -reset|-r "
          "-fps(float=15.0) -clip|-c(Rect) -camera-config(filename) -depth(depth) -normalize|-n "
-         "-perserve-preprocessing-roi|-ppp");
+         "-perserve-preprocessing-roi|-ppp "
+         "-initially-disable-image-updates|-idu");
 
   if(pa("-reset")){
     GenericGrabber::resetBus();
