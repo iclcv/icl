@@ -52,8 +52,13 @@ namespace icl{
     return m_primitives; 
   }
   
-  void SceneObject::setVisible(Primitive::Type t, bool visible) {
+  void SceneObject::setVisible(Primitive::Type t, bool visible, bool recursive) {
     m_visible[t] = visible;
+    if(recursive){
+      for(unsigned int i=0;i<m_children.size();++i){
+        m_children[i]->setVisible(t,visible);
+      }
+    }
   }
     
   bool SceneObject::isVisible(Primitive::Type t) const {
@@ -120,10 +125,15 @@ namespace icl{
     }
   }
 
-  void SceneObject::setColor(Primitive::Type t,const GeomColor &color){
+  void SceneObject::setColor(Primitive::Type t,const GeomColor &color, bool recursive){
     for(unsigned int i=0;i<m_primitives.size();++i){
       if(m_primitives[i].type == t){
         m_primitives[i].color = color;
+      }
+    }
+    if(recursive){
+      for(unsigned int i=0;i<m_children.size();++i){
+        m_children[i]->setColor(t,color);
       }
     }
   }
@@ -280,8 +290,13 @@ namespace icl{
     return m_useSmoothShading;
   }
 
-  void  SceneObject::setSmoothShading(bool on){
+  void  SceneObject::setSmoothShading(bool on, bool recursive){
     m_useSmoothShading = on;
+    if(recursive){
+      for(unsigned int i=0;i<m_children.size();++i){
+        m_children[i]->setSmoothShading(on);
+      }
+    }
   }
   
   SceneObject::SceneObject(const std::string &objFileName) throw (ICLException):
@@ -414,7 +429,7 @@ namespace icl{
     setVisible(Primitive::polygon,true);
   }
 
-  void SceneObject::setColorsFromVertices(Primitive::Type t, bool on){
+  void SceneObject::setColorsFromVertices(Primitive::Type t, bool on, bool recursive){
     switch(t){
       case Primitive::line:
         m_lineColorsFromVertices = on;
@@ -432,6 +447,12 @@ namespace icl{
         ERROR_LOG("this operations is only supported for line, triangle and quad primitive types");
         break;
     }
+    if(recursive){
+      for(unsigned int i=0;i<m_children.size();++i){
+        m_children[i]->setColorsFromVertices(t,on);
+      }
+    }
+      
   }
 
   void SceneObject::setTransformation(const Mat &m){
@@ -523,4 +544,35 @@ namespace icl{
   const std::vector<Vec> &SceneObject::getVerticesForRendering() const{
     return hasTransformation() ? m_transformedVertexBuffer : m_vertices;
   }
+
+  int SceneObject::getChildCount() const{
+    return (int)m_children.size();
+  }
+  
+
+  SceneObject *SceneObject::getChild(int index){
+    if(index < 0 || index >= (int)m_children.size()) return 0;
+    return m_children[index].get();
+  }
+
+  void SceneObject::setPointSize(float pointSize, bool recursive){
+    m_pointSize = pointSize;
+    if(recursive){
+      for(unsigned int i=0;i<m_children.size();++i){
+        m_children[i]->setPointSize(pointSize);
+      }
+    }
+  }
+  
+  void SceneObject::setLineWidth(float lineWidth, bool recursive){
+    m_lineWidth = lineWidth;
+    if(recursive){
+      for(unsigned int i=0;i<m_children.size();++i){
+        m_children[i]->setLineWidth(lineWidth);
+      }
+    }
+  
+  }
+
+
 }
