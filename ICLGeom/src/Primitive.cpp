@@ -18,7 +18,10 @@ namespace icl{
     QFont font("Arial",textSize);
     QFontMetrics m(font);
     QRectF br = m.boundingRect(text.c_str());
-    QImage img(br.width()+2,br.height()+2,QImage::Format_ARGB32);
+    //    QImage img(br.width()+2,br.height()+2,QImage::Format_ARGB32);
+    // sometimes some of the right-most letters where cropped, so 
+    // we add 10-extra pixels to the right hand side of the texture image
+    QImage img(br.width()+12,br.height()+2,QImage::Format_ARGB32); 
     img.fill(0);
     QPainter painter(&img);
     painter.setFont(font);
@@ -34,4 +37,18 @@ namespace icl{
     return Img8u();
 #endif
   }
+
+  Primitive &Primitive::operator=(const Primitive &other){
+    a = other.a;      
+    b = other.b;
+    c = other.c;
+    d = other.d;
+    polyData = other.polyData;
+    color = other.color;
+    tex = other.tex.detached();
+    type = other.type;
+    z = other.z;
+    return *this;
+  }
+
 }

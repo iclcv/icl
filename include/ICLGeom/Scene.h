@@ -116,9 +116,14 @@ namespace icl{
 #ifdef HAVE_QT
 #ifdef HAVE_OPENGL
     void render(int camIndex, ICLDrawWidget3D *widget);
+    void renderSceneObjectRecursive(SceneObject *o);
 #endif
 #endif
     float getMaxSceneDim() const;
+    void extendMaxSceneDimRecursive(float &minX, float &maxX, 
+                               float &minY, float &maxY, 
+                               float &minZ, float &maxZ,
+                               SceneObject *o) const;
 
     void render(RenderPlugin &p, int camIndex);
     std::vector<Camera> m_cameras;

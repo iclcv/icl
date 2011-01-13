@@ -65,7 +65,10 @@ namespace icl{
     m_triangleColorsFromVertices(false),
     m_quadColorsFromVertices(false),
     m_pointSize(1),
-    m_lineWidth(1)
+    m_lineWidth(1),
+    m_transformation(Mat::id()),
+    m_hasTransformation(false),
+    m_parent(0)
   {
 
     std::fill(m_visible,m_visible+Primitive::PRIMITIVE_TYPE_COUNT,true);
@@ -131,7 +134,10 @@ namespace icl{
     m_quadColorsFromVertices(false),
     m_polyColorsFromVertices(false),
     m_pointSize(1),
-    m_lineWidth(1)
+    m_lineWidth(1),
+    m_transformation(Mat::id()),
+    m_hasTransformation(false),
+    m_parent(0)
   {
     std::fill(m_visible,m_visible+5,true);
     if(type == "cube"){
@@ -284,7 +290,10 @@ namespace icl{
     m_quadColorsFromVertices(false),
     m_polyColorsFromVertices(false),
     m_pointSize(1),
-    m_lineWidth(1)
+    m_lineWidth(1),
+    m_transformation(Mat::id()),
+    m_hasTransformation(false),
+    m_parent(0)
   {
     File file(objFileName,File::readText);
     if(!file.exists()) throw ICLException("Error in SceneObject(objFilename): unable to open file " + objFileName);
@@ -423,5 +432,95 @@ namespace icl{
         ERROR_LOG("this operations is only supported for line, triangle and quad primitive types");
         break;
     }
+  }
+
+  void SceneObject::setTransformation(const Mat &m){
+    m_transformation = m;
+    m_hasTransformation = true;
+  }
+    
+  void SceneObject::removeTransformation(){
+    m_transformation = Mat::id();
+    m_hasTransformation = false;
+  }
+  
+  void SceneObject::transform(const Mat &m){
+    m_transformation = m*m_transformation;
+    m_hasTransformation = true;
+  }
+  
+  void SceneObject::rotate(float rx, float ry, float rz){
+    transform(create_hom_4x4<float>(rx,ry,rz));
+  }
+  
+  void SceneObject::translate(float dx, float dy, float dz){
+    transform(create_hom_4x4<float>(0,0,0,dx,dy,dz));
+  }
+
+  void SceneObject::scale(float sx, float sy, float sz){
+    transform(Mat(sx,0,0,0,
+                  0,sy,0,0,
+                  0,0,sz,0,
+                  0,0,0,1));
+  }
+  
+  Mat SceneObject::getTransformation(bool relative) const{
+    if(relative || !getParent()) return m_transformation;
+    return getParent()->getTransformation() * m_transformation;
+  }
+    
+  /// returns whether the SceneObject has currently a non-ID-transformation
+  bool SceneObject::hasTransformation(bool relative) const{
+    if(relative || !getParent()) return m_hasTransformation;
+    return m_hasTransformation || getParent()->hasTransformation();
+  }
+    
+  /// returns the parent scene object
+  SceneObject *SceneObject::getParent(){
+    return m_parent;
+  }
+
+  const SceneObject *SceneObject::getParent() const{
+    return m_parent;
+  }
+
+    
+  void SceneObject::addChild(SceneObject *child, bool passOwnerShip){
+    m_children.push_back(SmartPtr<SceneObject>(child,passOwnerShip));
+    child->m_parent = this;
+  }
+    
+  void SceneObject::removeChild(SceneObject *child){
+    for(unsigned int i=0;i<m_children.size();++i){
+      if(m_children[i].get() == child){
+        m_children[i]->m_parent = 0;
+        m_children.erase(m_children.begin()+i);
+        return;
+      }
+    }
+  }
+  
+  void SceneObject::removeAllChildren(){
+    m_children.clear();
+  }
+  
+  bool SceneObject::hasChildren() const{
+    return m_children.size();
+  }
+  
+  void SceneObject::prepareForRenderingAndTransform(){
+    prepareForRendering();
+    if(hasTransformation()){
+      m_transformedVertexBuffer.resize(m_vertices.size());
+      Mat T = getTransformation();
+      for(unsigned int i=0;i<m_vertices.size();++i){
+        T.mult(m_vertices[i],m_transformedVertexBuffer[i]);
+      }
+    }else{
+      // if no transformation is given, the renderer has to use the un-transformed vertices
+    }
+  }
+  const std::vector<Vec> &SceneObject::getVerticesForRendering() const{
+    return hasTransformation() ? m_transformedVertexBuffer : m_vertices;
   }
 }

@@ -709,6 +709,20 @@ namespace icl {
     /// Makes the image channels inside the Img independent from other Img.
     /** \copydoc icl::ImgBase::detach(int) */
     virtual void detach(int iIndex = -1);
+    
+    /// Utility method, that returns a detached version of this image
+    /** This method can be seen as a deep-copy method. With this method, you can copy
+        an image deeply be calling 
+        \code 
+        Img8u sourceImage(Size::VGA,formatRGB)
+        Img8u deeplyCopiedInstance = sourceImage.detached();
+        \endcode
+    */
+    inline Img<Type> detached() const {
+      Img<Type> detachedCopy = *this;
+      detachedCopy.detach();
+      return detachedCopy;
+    }
   
     /// Removes a specified channel.
     /** \copydoc icl::ImgBase::removeChannel(int) */

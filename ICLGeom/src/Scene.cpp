@@ -596,6 +596,113 @@ namespace icl{
   }
 #ifdef HAVE_QT
 #ifdef HAVE_OPENGL
+
+  void Scene::renderSceneObjectRecursive(SceneObject *o){
+    if(o->getSmoothShading()){
+        glShadeModel(GL_SMOOTH);
+    }else{
+      glShadeModel(GL_FLAT);
+    }
+    
+    glPointSize(o->m_pointSize);
+    glLineWidth(o->m_lineWidth);
+    
+    o->prepareForRenderingAndTransform();
+    const std::vector<Vec> &ps = o->getVerticesForRendering();
+    for(unsigned int j=0;j<o->m_primitives.size();++j){
+      Primitive &p = o->m_primitives[j];
+      if(!o->isVisible(p.type)) continue;
+      glColor4fv(((p.color)/255.0).begin());
+      switch(p.type){
+        case Primitive::line:
+          glBegin(GL_LINES);
+          if(o->m_lineColorsFromVertices) glColor3fv((o->m_vertexColors[p.a]/255).data());
+          glVertex3fv(ps[p.a].data());
+          if(o->m_lineColorsFromVertices) glColor3fv((o->m_vertexColors[p.b]/255).data());
+          glVertex3fv(ps[p.b].data());
+          glEnd();
+          
+          break;
+        case Primitive::triangle:{
+          glBegin(GL_TRIANGLES);
+          const Vec &a = ps[p.a];
+          const Vec &b = ps[p.b];
+          const Vec &c = ps[p.c];
+          
+          glNormal3fv(normalize(cross(a-c,b-c)).data());
+          
+          if(o->m_triangleColorsFromVertices) glColor3fv((o->m_vertexColors[p.a]/255).data());
+          glVertex3fv(a.data());
+          if(o->m_triangleColorsFromVertices) glColor3fv((o->m_vertexColors[p.b]/255).data());
+          glVertex3fv(b.data());
+          if(o->m_triangleColorsFromVertices) glColor3fv((o->m_vertexColors[p.c]/255).data());
+          glVertex3fv(c.data());
+          glEnd();
+          break;
+        }case Primitive::quad:{
+           glBegin(GL_QUADS);
+           const Vec &a = ps[p.a];
+           const Vec &b = ps[p.b];
+           const Vec &c = ps[p.c];
+           const Vec &d = ps[p.d];
+           
+           glNormal3fv(normalize(cross(d-c,b-c)).data());
+           
+           if(o->m_quadColorsFromVertices) glColor3fv((o->m_vertexColors[p.a]/255).data());
+           glVertex3fv(a.data());
+           if(o->m_quadColorsFromVertices) glColor3fv((o->m_vertexColors[p.b]/255).data());
+           glVertex3fv(b.data());
+           if(o->m_quadColorsFromVertices) glColor3fv((o->m_vertexColors[p.c]/255).data());
+           glVertex3fv(c.data());
+           if(o->m_quadColorsFromVertices) glColor3fv((o->m_vertexColors[p.d]/255).data());
+           glVertex3fv(d.data());
+           glEnd();
+           
+           break;
+         }
+        case Primitive::polygon:{
+          glBegin(GL_POLYGON);
+          for(unsigned int k=0;k<p.polyData.size();++k){
+            const Vec &v = ps[p.polyData[k]];
+            // how to generate a normal here
+            // glNormal3fv(normalize(cross(d-c,b-c)).data());
+            if(o->m_polyColorsFromVertices) glColor3fv((o->m_vertexColors[p.a]/255).data());
+            glVertex3fv(v.data());
+          }
+          glEnd();
+          break;
+        }
+        case Primitive::texture:{
+          glColor4f(1,1,1,1);
+          const Vec &a = ps[p.a];
+          const Vec &b = ps[p.b];
+          const Vec &c = ps[p.c];
+          const Vec &d = ps[p.d];
+          // left hand normal ?!
+          glNormal3fv(normalize(cross(b-c,d-c)).data());
+          GLTextureMapBaseImage tim(&p.tex);
+          tim.drawTo3D(a.begin(),b.begin(),d.begin());
+          break;
+        }
+        default:
+          ERROR_LOG("unsupported primitive type");
+      }
+      }
+    glBegin(GL_POINTS);
+    if(o->isVisible(Primitive::vertex)){
+      for(unsigned int j=0;j<ps.size();++j){
+        glColor3fv(((o->m_vertexColors[j])/255.0).data());
+        glVertex3fv(ps[j].data());
+      }
+    }
+    glEnd();
+    
+    
+    for(unsigned int i=0;i<o->m_children.size();++i){
+      renderSceneObjectRecursive(o->m_children[i].get());
+    }
+  }
+
   void Scene::render(int camIndex, ICLDrawWidget3D *widget){
 
     Mutex::Locker l(this);
@@ -637,106 +744,7 @@ namespace icl{
     }
 
     for(unsigned int i=0;i<allObjects.size();++i){
-      SceneObject *o = allObjects[i];
-      if(o->getSmoothShading()){
-        glShadeModel(GL_SMOOTH);
-      }else{
-        glShadeModel(GL_FLAT);
-      }
-
-      glPointSize(o->m_pointSize);
-      glLineWidth(o->m_lineWidth);
-
-      o->prepareForRendering();
-      std::vector<Vec> &ps = o->m_vertices;
-      for(unsigned int j=0;j<o->m_primitives.size();++j){
-        Primitive &p = o->m_primitives[j];
-        if(!o->isVisible(p.type)) continue;
-        glColor4fv(((p.color)/255.0).begin());
-        switch(p.type){
-          case Primitive::line:
-            glBegin(GL_LINES);
-            if(o->m_lineColorsFromVertices) glColor3fv((o->m_vertexColors[p.a]/255).data());
-            glVertex3fv(ps[p.a].data());
-            if(o->m_lineColorsFromVertices) glColor3fv((o->m_vertexColors[p.b]/255).data());
-            glVertex3fv(ps[p.b].data());
-            glEnd();
-
-            break;
-          case Primitive::triangle:{
-            glBegin(GL_TRIANGLES);
-            Vec &a = ps[p.a];
-            Vec &b = ps[p.b];
-            Vec &c = ps[p.c];
-
-            glNormal3fv(normalize(cross(a-c,b-c)).data());
-
-            if(o->m_triangleColorsFromVertices) glColor3fv((o->m_vertexColors[p.a]/255).data());
-            glVertex3fv(a.data());
-            if(o->m_triangleColorsFromVertices) glColor3fv((o->m_vertexColors[p.b]/255).data());
-            glVertex3fv(b.data());
-            if(o->m_triangleColorsFromVertices) glColor3fv((o->m_vertexColors[p.c]/255).data());
-            glVertex3fv(c.data());
-            glEnd();
-            break;
-          }case Primitive::quad:{
-            glBegin(GL_QUADS);
-            Vec &a = ps[p.a];
-            Vec &b = ps[p.b];
-            Vec &c = ps[p.c];
-            Vec &d = ps[p.d];
-
-            glNormal3fv(normalize(cross(d-c,b-c)).data());
-
-            if(o->m_quadColorsFromVertices) glColor3fv((o->m_vertexColors[p.a]/255).data());
-            glVertex3fv(a.data());
-            if(o->m_quadColorsFromVertices) glColor3fv((o->m_vertexColors[p.b]/255).data());
-            glVertex3fv(b.data());
-            if(o->m_quadColorsFromVertices) glColor3fv((o->m_vertexColors[p.c]/255).data());
-            glVertex3fv(c.data());
-            if(o->m_quadColorsFromVertices) glColor3fv((o->m_vertexColors[p.d]/255).data());
-            glVertex3fv(d.data());
-            glEnd();
-
-            break;
-          }
-          case Primitive::polygon:{
-            glBegin(GL_POLYGON);
-            for(unsigned int k=0;k<p.polyData.size();++k){
-              Vec &v = ps[p.polyData[k]];
-              // how to generate a normal here
-              // glNormal3fv(normalize(cross(d-c,b-c)).data());
-              if(o->m_polyColorsFromVertices) glColor3fv((o->m_vertexColors[p.a]/255).data());
-              glVertex3fv(v.data());
-            }
-            glEnd();
-            break;
-          }
-          case Primitive::texture:{
-              glColor4f(1,1,1,1);
-              Vec &a = ps[p.a];
-              Vec &b = ps[p.b];
-              Vec &c = ps[p.c];
-              Vec &d = ps[p.d];
-              // left hand normal ?!
-              glNormal3fv(normalize(cross(b-c,d-c)).data());
-              GLTextureMapBaseImage tim(&p.tex);
-              tim.drawTo3D(a.begin(),b.begin(),d.begin());
-              break;
-          }
-          default:
-            ERROR_LOG("unsupported primitive type");
-        }
-      }
-      glBegin(GL_POINTS);
-      if(o->isVisible(Primitive::vertex)){
-        for(unsigned int j=0;j<ps.size();++j){
-          glColor3fv(((o->m_vertexColors[j])/255.0).data());
-          glVertex3fv(ps[j].data());
-        }
-      }
-      glEnd();
-
+      renderSceneObjectRecursive(allObjects[i]);
     }
 
     for(int i=0;i<4;++i){
@@ -823,6 +831,26 @@ namespace icl{
     return m_drawCamerasEnabled;
   }
 
+  void Scene::extendMaxSceneDimRecursive(float &minX, float &maxX, 
+                                         float &minY, float &maxY, 
+                                         float &minZ, float &maxZ,
+                                         SceneObject *o) const{
+    std::vector<Vec> &ps = o->m_vertices;
+    for(unsigned int j=0;j<ps.size();++j){
+      if(ps[j][0] < minX) minX = ps[j][0];
+      if(ps[j][0] > maxX) maxX = ps[j][0];
+      if(ps[j][1] < minY) minY = ps[j][1];
+      if(ps[j][1] > maxY) maxY = ps[j][1];
+      if(ps[j][2] < minZ) minZ = ps[j][2];
+      if(ps[j][2] > maxZ) maxZ = ps[j][2];
+    }
+    
+    for(unsigned int i=0;i<o->m_children.size();++i){
+      extendMaxSceneDimRecursive(minX,maxX,minY,maxY,minZ,maxZ,o->m_children[i].get());
+    }
+  }
+
+
 
   float Scene::getMaxSceneDim() const{
     Range32f rangeXYZ[3]={Range32f::limits(),Range32f::limits(),Range32f::limits()};
@@ -830,14 +858,10 @@ namespace icl{
       std::swap(rangeXYZ[i].minVal,rangeXYZ[i].maxVal);
     }
     for(unsigned int i=0;i<m_objects.size();++i){
-      SceneObject *o = m_objects[i];
-      std::vector<Vec> &ps = o->m_vertices;
-      for(unsigned int j=0;j<ps.size();++j){
-        for(int k=0;k<3;++k){
-          if(ps[j][k] < rangeXYZ[k].minVal) rangeXYZ[k].minVal = ps[j][k];
-          if(ps[j][k] > rangeXYZ[k].maxVal) rangeXYZ[k].maxVal = ps[j][k];
-        }
-      }
+      extendMaxSceneDimRecursive(rangeXYZ[0].minVal,rangeXYZ[0].maxVal, 
+                                 rangeXYZ[1].minVal,rangeXYZ[1].maxVal, 
+                                 rangeXYZ[2].minVal,rangeXYZ[2].maxVal,
+                                 m_objects[i]);
     }
     return iclMax(iclMax(rangeXYZ[1].getLength(),rangeXYZ[2].getLength()),rangeXYZ[0].getLength());
   }

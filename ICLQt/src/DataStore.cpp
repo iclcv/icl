@@ -321,6 +321,8 @@ INST_OTHER_TYPES
             else if(src.message=="install"){
               (*dst)->install((MouseHandler*)src.data);
             });
+    FROM_TO(ImageHandle,ICLWidget*,dst = *src);
+
 
     // DrawHandle
     FROM_IMG(DrawHandle,dst=src);
@@ -332,6 +334,9 @@ INST_OTHER_TYPES
             else if(src.message=="install"){
               (*dst)->install((MouseHandler*)src.data);
             });
+    FROM_TO(DrawHandle,ICLDrawWidget*,dst = *src);
+    FROM_TO(DrawHandle,ICLWidget*,dst = *src);
+
     //FROM_TO(DataStore::Data::Event,DrawHandle,if(src.message=="update")dst.update());
 #ifdef HAVE_OPENGL
     // DrawHandle3D
@@ -345,6 +350,9 @@ INST_OTHER_TYPES
             else if(src.message=="install"){
               (*dst)->install((MouseHandler*)src.data);
             });
+    FROM_TO(DrawHandle3D,ICLDrawWidget3D*,dst = *src);
+    FROM_TO(DrawHandle3D,ICLDrawWidget*,dst = *src);
+    FROM_TO(DrawHandle3D,ICLWidget*,dst = *src);
 #endif
     
     // FPSHandle
@@ -459,7 +467,7 @@ namespace icl{
 #undef INST_TYPE
 
     /// Other supported types ...
-
+#define ADD_T_TO_T(D) ADD(D,D)
 
 #define FROM_NUM_ADD(D)  \
     ADD(bool,D)          \
@@ -524,31 +532,45 @@ namespace icl{
     // ComboHandle
     FROM_TO_NUM_ADD(ComboHandle);
     FROM_TO_STR_ADD(ComboHandle);
+    ADD(DataStore::Data::Event,ComboHandle);
+    ADD_T_TO_T(ComboHandle);
     
     // FloatHandle
     FROM_TO_NUM_ADD(FloatHandle);
     FROM_TO_STR_ADD(FloatHandle);
+    ADD_T_TO_T(FloatHandle);
     
     // ImageHandle
     FROM_IMG_ADD(ImageHandle);
     FROM_IMG_PTR_ADD(ImageHandle);
     ADD(DataStore::Data::Event,ImageHandle);
+    ADD_T_TO_T(ImageHandle);
+    ADD(ImageHandle,ICLWidget*);
 
     // DrawHandle
     FROM_IMG_ADD(DrawHandle);
     FROM_IMG_PTR_ADD(DrawHandle);
     ADD(DataStore::Data::Event,DrawHandle);
+    ADD_T_TO_T(DrawHandle);
+    ADD(DrawHandle,ICLDrawWidget*);
+    ADD(DrawHandle,ICLWidget*);
+
 
 #ifdef HAVE_OPENGL
     // DrawHandle3D
     FROM_IMG_ADD(DrawHandle3D);
     FROM_IMG_PTR_ADD(DrawHandle3D);
     ADD(DataStore::Data::Event,DrawHandle3D);
+    ADD_T_TO_T(DrawHandle3D);
+    ADD(DrawHandle3D,ICLDrawWidget3D*);
+    ADD(DrawHandle3D,ICLDrawWidget*);
+    ADD(DrawHandle3D,ICLWidget*);
 #endif
 
     // FPSHandle
     ADD(DataStore::Data::Event,FPSHandle);
-    
+    ADD_T_TO_T(FPSHandle);
+
     
     // SliderHandle
     FROM_TO_NUM_ADD(SliderHandle);
@@ -557,10 +579,14 @@ namespace icl{
     ADD(Range32s,SliderHandle);
     ADD(Range32f,SliderHandle);
     ADD(DataStore::Data::Event,SliderHandle);
+    ADD_T_TO_T(SliderHandle);
+    
 
     // IntHandle
     FROM_TO_NUM_ADD(IntHandle);
     FROM_TO_STR_ADD(IntHandle);
+    ADD_T_TO_T(IntHandle);
+
     
     // SpinnerHandle
     FROM_TO_NUM_ADD(SpinnerHandle);
@@ -569,13 +595,15 @@ namespace icl{
     ADD(Range32s,SpinnerHandle);
     ADD(Range32f,SpinnerHandle);
     ADD(DataStore::Data::Event,SpinnerHandle);
+    ADD_T_TO_T(SpinnerHandle);
+    
     
     // ButtonGroup
     TO_NUM_ADD(ButtonGroupHandle);
     ADD(ButtonGroupHandle,std::string);
     ADD(DataStore::Data::Event,ButtonGroupHandle);
-
-
+    ADD_T_TO_T(ButtonGroupHandle);
+    
     // FSliderHandle
     FROM_TO_NUM_ADD(FSliderHandle);
     FROM_TO_STR_ADD(FSliderHandle);
@@ -583,27 +611,28 @@ namespace icl{
     ADD(Range32s,FSliderHandle);
     ADD(Range32f,FSliderHandle);
     ADD(DataStore::Data::Event,FSliderHandle);
-
+    ADD_T_TO_T(FSliderHandle);
     
     // LabelHandle
     FROM_NUM_ADD(LabelHandle);
     ADD(std::string,LabelHandle);
     FROM_IMG_ADD(LabelHandle);
     FROM_IMG_PTR_ADD(LabelHandle);
+    ADD_T_TO_T(LabelHandle);
+    
 
     // ButtonHandle
     TO_NUM_ADD(ButtonHandle);
     ADD(DataStore::Data::Event,ButtonHandle);
+    ADD_T_TO_T(ButtonHandle);
+    
     
     // StringHandle
     FROM_TO_NUM_ADD(StringHandle);
     FROM_TO_STR_ADD(StringHandle);
-
-    // ComboHandle
-    ADD(DataStore::Data::Event,ComboHandle);
+    ADD_T_TO_T(StringHandle);
     
     // ColorHandle
-
     ADD(ColorHandle,Color);
     ADD(ColorHandle,Color4D);
 
@@ -615,6 +644,9 @@ namespace icl{
     
     ADD(Color,Color4D);
     ADD(Color4D,Color);
+    ADD_T_TO_T(ColorHandle);
+    
+
     return &m;
   }
   

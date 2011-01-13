@@ -626,7 +626,7 @@ namespace icl{
   }
 
   template<class T>
-  void GLTextureMapImage<T>::drawTo3D(float *pCenter, float *pFirstAxis, float *pSecondAxis){
+  void GLTextureMapImage<T>::drawTo3D(const float *pCenter,const float *pFirstAxis,const float *pSecondAxis){
     if(!m_bUseSingleBuffer){
       
       glGenTextures(m_iXCells*m_iYCells,m_matTextureNames.data()); 

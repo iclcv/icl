@@ -274,7 +274,7 @@ namespace icl{
       return;
     }
   }
-  void GLTextureMapBaseImage::drawTo3D(float *pCenter, float *pFirstAxis, float *pSecondAxis){
+  void GLTextureMapBaseImage::drawTo3D(const float *pCenter,const float *pFirstAxis,const float *pSecondAxis){
     if(m_po8u){
       m_po8u->drawTo3D(pCenter,pFirstAxis,pSecondAxis);
       return;

@@ -150,7 +150,9 @@ namespace icl{
         SecondAxis
         </pre>
     **/
-    void drawTo3D(float *pCenter, float *pFirstAxis, float *pSecondAxis);
+    void drawTo3D(const float *pCenter,
+                  const float *pFirstAxis,
+                  const float *pSecondAxis);
     
     /// returns current image height
     int getImageWidth() const { return m_iImageW; }
