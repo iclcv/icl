@@ -124,6 +124,16 @@ namespace icl{
       void registerCallback(void *cb){
         *this = Event("register",cb);
       }
+      
+      /// possible for all handle-types
+      void enable(){
+        *this = Event("enable");
+      }
+      
+      /// possible for all handle types
+      void disable(){
+        *this = Event("disable");
+      }
     };
     
 

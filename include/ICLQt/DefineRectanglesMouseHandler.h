@@ -38,6 +38,7 @@
 #include <ICLQt/MouseHandler.h>
 #include <ICLUtils/Lockable.h>
 #include <ICLCC/Color.h>
+#include <ICLUtils/Any.h>
 
 namespace icl{
 
@@ -108,17 +109,26 @@ namespace icl{
       /// Constructor showing default options
       Options(const Color4D &edgeColor=Color4D(0,255,0,255), 
               const Color4D &fillColor=Color4D(0,255,0,50), 
+              const Color4D &centerColor=Color4D(0,255,0,255),
+              const Color4D &metaColor=Color4D(0,255,0,255),
               int handleWidth=3, bool visualizeCenter=false,
+              bool visualizeHovering=true,
               bool showOffsetText=false, 
-              bool showSizeText=false, bool showCenterText=false);
+              bool showSizeText=false, 
+              bool showCenterText=false,
+              bool showMetaData=false);
       public:
-      Color4D edgeColor; //!< edge color for rect visualization
-      Color4D fillColor; //!< fill color for rect visualization (set alpha to 0 to have no fill)
-      int handleWidth;   //!< handle width (amount of pixels, you can be of an edge and still drag it)
+      Color4D edgeColor;     //!< edge color for rect visualization
+      Color4D fillColor;     //!< fill color for rect visualization (set alpha to 0 to have no fill)
+      Color4D centerColor;   //!< edge color used for the center visualization
+      Color4D metaColor;     //!< text color for visualization of meta-data
+      int handleWidth;       //!< handle width (amount of pixels, you can be of an edge and still drag it)
       bool visualizeCenter;  //!< if true, the center of each rectangle is visualized
+      bool visualizeHovering;//!< if true, the rects boundary are drawn thicker if they are hovered
       bool showOffsetText;   //!< if true, the rects upper left pixel's coordinates are shown (as text)
       bool showSizeText;     //!< if true, the rects size is shown (as text)
       bool showCenterText;   //!< if true, the rects center is shown (as text)
+      bool showMetaData;     //!< if true, the meta data is shown as (as text)
     };
 
     protected:
@@ -174,6 +184,9 @@ namespace icl{
       
       /// visualization 
       void visualize(ICLDrawWidget &w);
+
+      /// this can be used to attach meta data to rectangles
+      Any meta;
     };
   
     
@@ -249,6 +262,19 @@ namespace icl{
     
     /// returns the curren maximum rectangle count
     int getMaxRects() const;
+    
+    /// gets the meta data associated with rect at given index
+    const Any &getMetaData(int index) const;
+    
+    /// gets the meta data associated with rect at given index
+    const Any &getMetaDataAt(int x, int y) const;
+    
+    /// associates some meta data with rect at given index
+    void setMetaData(int index, const Any &data);
+
+    /// sets the meta data at the rect at given x,y-position
+    void setMetaDataAt(int x, int y, const Any &data);
+
   };
 }
 

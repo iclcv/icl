@@ -56,6 +56,8 @@
 #include <ICLUtils/FixedMatrix.h>
 #include <ICLUtils/FixedVector.h>
 
+#include <ICLUtils/Any.h>
+
 using namespace std;
 
 namespace icl{
@@ -82,6 +84,7 @@ namespace icl{
         REGISTER_CONFIG_FILE_TYPE(float);
         REGISTER_CONFIG_FILE_TYPE(double);
         REGISTER_CONFIG_FILE_TYPE(string);
+        REGISTER_CONFIG_FILE_TYPE(Any);
         REGISTER_CONFIG_FILE_TYPE(long int);
         REGISTER_CONFIG_FILE_TYPE(bool);
 

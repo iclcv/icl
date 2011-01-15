@@ -80,7 +80,7 @@ namespace icl{
     const std::vector<Primitive> &getPrimitives() const;
 
     /// changes visibility of given primitive type
-    void setVisible(Primitive::Type t, bool visible);
+    void setVisible(Primitive::Type t, bool visible, bool recursive=true);
     
     /// returns visibility of given primitive type
     bool isVisible(Primitive::Type t) const;
@@ -111,13 +111,13 @@ namespace icl{
                         int textSize=30, bool holdTextAR=true);
     
     /// tints all Primitives with given type in given color
-    void setColor(Primitive::Type t,const GeomColor &color);
+    void setColor(Primitive::Type t,const GeomColor &color,bool recursive=true);
     
     /// sets point size
-    void setPointSize(float pointSize) { m_pointSize = pointSize; }
+    void setPointSize(float pointSize, bool recursive=true);
 
     /// sets point size
-    void setLineWidth(float lineWidth) { m_lineWidth = lineWidth; }
+    void setLineWidth(float lineWidth, bool recursive=true);
 
     /// this function can be implemented by subclasses that need an eplicit locking
     /** E.g. if an objects data is updated from another thread, you can sub-class 
@@ -152,13 +152,13 @@ namespace icl{
     virtual void prepareForRenderingAndTransform();
     
     /// sets how 2D-geom colors are set 
-    void setColorsFromVertices(Primitive::Type t, bool on);
+    void setColorsFromVertices(Primitive::Type t, bool on, bool recursive=true);
     
     /// returns wheather smooth shading is activated
     bool getSmoothShading() const;
     
     /// sets whether to use smoothshading (default is false)
-    void setSmoothShading(bool on);
+    void setSmoothShading(bool on, bool recursive=true);
 
 
     /** @{ @name methods for creation of a scene graph **/
@@ -237,9 +237,15 @@ namespace icl{
     /// removes all children
     void removeAllChildren();
     
-    /// returnes whether the SceneObject has children at all
+    /// returns whether the SceneObject has children at all
     bool hasChildren() const;
-        
+    
+    /// returns the number of children
+    int getChildCount() const;
+    
+    /// returns child at given index
+    SceneObject *getChild(int index);
+    
     /** @} **/
     
     protected:

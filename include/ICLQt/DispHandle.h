@@ -74,7 +74,26 @@ namespace icl{
 
     /// returns the number of matrix elements w*h
     inline int dim() const { return (***this).dim(); }
-  
+
+    /// enables all components
+    inline void enable(){
+      for(int i=0;i<w();++i){
+        for(int j=0;j<h();++j){
+          (*this)[i][j].enable();
+        }
+      }
+    }
+    
+    /// disables all components
+    inline void disable(){
+      for(int i=0;i<w();++i){
+        for(int j=0;j<h();++j){
+          (*this)[i][j].disable();
+        }
+      }
+    }
+
+
   };
 
 }

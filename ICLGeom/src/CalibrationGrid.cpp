@@ -415,16 +415,15 @@ namespace icl{
     w.arrow(B.p1,B.p3);
     w.linewidth(1);
     
-    w.color(255,0,0,255);
-    for(int h=0;h<2;++h){
-      const Point32f *ps = h?B.img.data():A.img.data();
-      for(int y=0;y<ny;++y){
-        for(int x=0;x<nx;++x){
-          w.text(str(Point(x,y)),ps[x+nx*y].x, ps[x+nx*y].y, 9);
-        }
-      }
-    }
-  
+    //w.color(255,0,0,255);
+    //    for(int h=0;h<2;++h){
+    //  const Point32f *ps = h?B.img.data():A.img.data();
+    //  for(int y=0;y<ny;++y){
+    //    for(int x=0;x<nx;++x){
+    //      w.text(str(Point(x,y)),ps[x+nx*y].x, ps[x+nx*y].y, 9);
+    //    }
+    //  }
+    //}
   }
 
   CalibrationGrid::CalibrationGrid(const std::string &configFileName) : inputDataReady(false){

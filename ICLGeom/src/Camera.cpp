@@ -247,7 +247,7 @@ namespace icl {
   Camera Camera::calibrate_pinv(std::vector<Vec> Xws,
                                     std::vector<Point32f> xis,
                                     float focalLength)
-         throw (NotEnoughDataPointsException) {
+    throw (NotEnoughDataPointsException,SingularMatrixException) {
     // TODO: normalize points
     checkAndFixPoints(Xws,xis);
 
@@ -280,7 +280,7 @@ namespace icl {
   Camera Camera::calibrate(std::vector<Vec> Xws,
                                std::vector<Point32f> xis,
                                float focalLength)
-         throw (NotEnoughDataPointsException) {
+    throw (NotEnoughDataPointsException,SingularMatrixException) {
 
 #ifndef HAVE_MKL
 	return calibrate_pinv(Xws,xis,focalLength);

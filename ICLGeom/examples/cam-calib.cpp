@@ -38,24 +38,139 @@
 #include <fstream>
 #include <ICLQt/DefineRectanglesMouseHandler.h>
 #include <ICLCC/CCFunctions.h>
+#include <ICLUtils/ConfigFile.h>
 
 #include <QtGui/QPushButton>
+#include <QtGui/QMenu>
+#include <QtGui/QInputDialog>
+#include <QtGui/QCheckBox>
 
-struct Mouse : public DefineRectanglesMouseHandler {
-  bool defineSpecialMode;
+GUI gui("hsplit");
+Scene scene;
+GenericGrabber grabber;
+static const int VIEW_CAM = 0, CALIB_CAM = 1;
+QMenu *menu = 0;
 
+struct CoordinateFrame : public SceneObject{
+  CoordinateFrame(int dim=100, int t=4){
+    float px[] = {dim/2,0,0,dim,t,t};
+    SceneObject *xaxis = new SceneObject("cuboid",px);
+    xaxis->setColor(Primitive::quad,geom_red());
+    xaxis->setVisible(Primitive::line,false);
+    xaxis->setVisible(Primitive::vertex,false);
+    addChild(xaxis);
+
+    float py[] = {0,dim/2,0,t,dim,t};
+    SceneObject *yaxis = new SceneObject("cuboid",py);
+    yaxis->setColor(Primitive::quad,geom_green());
+    yaxis->setVisible(Primitive::line,false);
+    yaxis->setVisible(Primitive::vertex,false);
+    addChild(yaxis);
+
+
+    float pz[] = {0,0,dim/2,t,t,dim};
+    SceneObject *zaxis = new SceneObject("cuboid",pz);
+    zaxis->setColor(Primitive::quad,geom_blue());
+    zaxis->setVisible(Primitive::line,false);
+    zaxis->setVisible(Primitive::vertex,false);
+    addChild(zaxis);
+  }
+} cs;
+
+struct ManuallyDefinedPoints : public SceneObject{
+  ManuallyDefinedPoints(){
+    setPointSize(6);
+  }
+  Mutex mutex;
+  void lock() { mutex.lock(); }
+  void unlock() { mutex.unlock(); }
+  void setVertices(const std::vector<Vec> &vs){
+    m_vertices = vs;
+    m_vertexColors.resize(vs.size());
+    std::fill(m_vertexColors.begin(),m_vertexColors.end(),GeomColor(255,100,100,255));
+  }
+} manualPoints;
+
+
+struct CalibTool : public DefineRectanglesMouseHandler, 
+                   public CalibrationGrid, 
+                   public CalibrationObject {
   int highlightRect;
   int markedRects[2];
+  std::vector<Rect> lastAutomaticBBs;
+  Mutex mutex;
+  Img8u grayImage;
+  Rect lastSelectedROI;
+  DefineRectanglesMouseHandler extra;
   
-  Mouse():DefineRectanglesMouseHandler(1,10),defineSpecialMode(false){
+  enum Mode{
+    AutoDetection,
+    ManualRects,
+    ManualSpecial,
+    AddExtraPoints
+  } mode; 
+  
+  CalibTool():
+    DefineRectanglesMouseHandler(1,10),
+    CalibrationGrid(*pa("-c")),
+    CalibrationObject(this,"co"),
+    grayImage(Size(1,1),formatGray),
+    mode(AutoDetection)
+  {
+    getOptions().fillColor[3] = 0;
     markedRects[0] = markedRects[1] = -1;
     highlightRect = -1;
+    initExtra();
   }
   
+  CalibTool(bool):
+    DefineRectanglesMouseHandler(1,10),
+    grayImage(Size(1,1),formatGray),
+    mode(AddExtraPoints)
+    
+  {
+    getOptions().fillColor[3] = 0;
+    markedRects[0] = markedRects[1] = -1;
+    highlightRect = -1;
+    initExtra();
+  }
   
-  void switchMode(){
-    defineSpecialMode = !defineSpecialMode;
-    if(!defineSpecialMode) highlightRect = -1;
+  void initExtra(){
+    DefineRectanglesMouseHandler::Options &o = extra.getOptions();
+    o.edgeColor[3] = 0;
+    o.fillColor[3] = 0;
+    o.centerColor = Color4D(255,0,0,255);
+    o.showMetaData = true;
+    o.handleWidth=0;
+    o.visualizeCenter = true;
+    o.visualizeHovering = false;
+    o.metaColor = o.centerColor;
+  }
+  
+  void changeModeTo(Mode mode){
+    Mutex::Locker l(mutex);
+    if(mode == AutoDetection){
+      this->mode = mode;
+      highlightRect = -1;
+      clearAllRects();
+      setMaxRects(1);
+      addRect(lastSelectedROI);
+      getOptions().fillColor[3] = 0;
+      getOptions().visualizeCenter = false;
+      highlightRect = markedRects[0] = markedRects[1] = -1;
+    }else{
+      if(this->mode == AutoDetection){
+        lastSelectedROI = getRectAtIndex(0);
+        clearAllRects();
+        setMaxRects(isNull() ? 0 : getCalibrationGrid()->getDimension().getDim()*2+10);
+        for(unsigned int i=0;i<lastAutomaticBBs.size();++i){
+          addRect(lastAutomaticBBs[i]);
+        }
+      }
+      this->mode = mode;
+      getOptions().fillColor[3] = 0;
+      getOptions().visualizeCenter = true;
+    }
   }
   
   int getIdxOfRectAt(int x, int y){
@@ -66,15 +181,64 @@ struct Mouse : public DefineRectanglesMouseHandler {
   }
 
   void process(const MouseEvent &e){
-    if(defineSpecialMode){
+    if(mode == ManualSpecial){
       Mutex::Locker l(this);
       highlightRect = getIdxOfRectAt(e.getX(),e.getY());
       if(highlightRect >= 0 && e.isPressEvent()){
         markedRects[0]=markedRects[1];
         markedRects[1] = highlightRect;
       }
-    }else{
+    }else if(mode == ManualRects || mode == AutoDetection){
       DefineRectanglesMouseHandler::process(e);
+    }else{
+      if( (e.isRight()) && (e.isPressEvent()) && (extra.getRectAt(e.getX(),e.getY()) != Rect::null)){
+        QAction *action = menu->exec(QCursor::pos()+QPoint(-2,-2));
+        if(!action) return;
+        std::string selectedText = action->text().toLatin1().data();
+        if(selectedText == "delete"){
+          extra.clearRectAt(e.getX(),e.getY());
+        }else if(selectedText == "set world pos"){
+          QString text=QInputDialog::getText(*gui.getValue<DrawHandle3D>("mainview"),
+                                             "define world position",
+                                             "Please define the x y z\nworld position of this pixel",
+                                             QLineEdit::Normal,
+                                             extra.getMetaDataAt(e.getX(),e.getY()).c_str());
+          if(!text.isNull() && text!=""){
+            FixedRowVector<float,3> v = Any(text.toLatin1().data());
+            extra.setMetaDataAt(e.getX(),e.getY(),v);
+          }
+        }else if(selectedText == "save..."){
+          try{
+            std::string filename = saveFileDialog("XML-Files (*.xml)");
+            ConfigFile f;
+            f.setPrefix("config.");
+            std::vector<Rect> rs = extra.getRects();
+            f["num points"] = (int)rs.size();
+            for(unsigned int i=0;i<rs.size();++i){
+              f["rect-"+str(i)+".rectangle"] = str(rs[i]);
+              f["rect-"+str(i)+".world-pos"] = str(extra.getMetaData(i));
+            }
+            f.save(filename);
+          }catch(...){}
+        }else if(selectedText == "load..."){
+          try{
+            std::string filename = openFileDialog("XML-Files (*.xml)");
+            ConfigFile f(filename);
+            f.setPrefix("config.");
+            extra.clearAllRects();
+            int numPoints = f["num points"];
+            for(int i=0;i<numPoints;++i){
+              extra.addRect(parse<Rect>(f["rect-"+str(i)+".rectangle"]));
+              Any meta = f["rect-"+str(i)+".world-pos"].as<std::string>();
+              extra.setMetaData(i,meta);
+            }
+          }catch(ICLException &ex){
+            SHOW(ex.what());
+          }catch(...){}
+        }
+      }else{
+        extra.process(e);
+      }
     }
   }
   
@@ -97,30 +261,16 @@ struct Mouse : public DefineRectanglesMouseHandler {
     if( markedRects[1] != -1 && markedRects[1] < (int)rects.size()){
       w.rect(rects[markedRects[1]]);
     }
+    
+    extra.visualize(w);
   }
-  
-} mouse; 
-
-struct ManualCalibrationObject :  public CalibrationGrid, public CalibrationObject{
-  bool useManualData;
-  std::vector<Rect> lastAutomaticBBs;
-  Mutex mutex;
-  Img8u grayImage;
-  
-  ManualCalibrationObject():
-    CalibrationGrid(*pa("-c")),CalibrationObject(this,"co"),
-    useManualData(false),grayImage(Size(1,1),formatGray){
-
-    mouse.getOptions().fillColor[3] = 0;
-  }
-  
   virtual std::pair<int,int> findMarkedPoints(const std::vector<Point32f> &cogs, 
                                               const std::vector<Rect> &bbs, 
                                               const Img8u *hintImage){
-    if(useManualData){
-      return std::pair<int,int>(mouse.markedRects[0],mouse.markedRects[1]);
-    }else{
+    if(mode == AutoDetection){
       return CalibrationGrid::findMarkedPoints(cogs,bbs,hintImage);
+    }else{
+      return std::pair<int,int>(markedRects[0],markedRects[1]);
     }
   }
 
@@ -129,8 +279,12 @@ struct ManualCalibrationObject :  public CalibrationGrid, public CalibrationObje
                                      std::vector< Rect > &bbs){
     
     Mutex::Locker l(mutex);
-    if(useManualData){
-      bbs = mouse.getRects();
+    if(mode == AutoDetection){
+      const ImgBase *retImage = CalibrationObject::findPoints(sourceImage,cogs,bbs);
+      lastAutomaticBBs = bbs;
+      return retImage;
+    }else{
+      bbs = getRects();
       cogs.resize(bbs.size());
       for(unsigned int i=0;i<bbs.size();++i){
         cogs[i] = bbs[i].center();
@@ -141,68 +295,83 @@ struct ManualCalibrationObject :  public CalibrationGrid, public CalibrationObje
       setIntermediateImage(DilatedImage,sourceImage);
 
       return sourceImage;
-    }else{
-      const ImgBase *retImage = CalibrationObject::findPoints(sourceImage,cogs,bbs);
-      lastAutomaticBBs = bbs;
-      return retImage;
     }
   }
-  Rect lastSelectedROI;
-  
-  void switchMode(){
+  void updateSceneObjectFromManualData(ManuallyDefinedPoints *obj){
+    obj->lock();
+    std::vector<Rect> rs = extra.getRects();
+    std::vector<Vec> worldPoints(rs.size());
+    for(unsigned int i=0;i<rs.size();++i){
+      worldPoints[i] = extra.getMetaData(i);
+      worldPoints[i][3] = 1;
+    }
+    obj->setVertices(worldPoints);
+    obj->unlock();
+  }
+  Camera applyCalibrationOnManualData(float &err){
     Mutex::Locker l(mutex);
-    useManualData = !useManualData;
-    if(useManualData){
-      lastSelectedROI = mouse.getRectAtIndex(0);
-      mouse.clearAllRects();
-      mouse.setMaxRects(getCalibrationGrid()->getDimension().getDim()*2);
-      for(unsigned int i=0;i<lastAutomaticBBs.size();++i){
-        mouse.addRect(lastAutomaticBBs[i]);
-      }
-      mouse.getOptions().fillColor[3] = 0;
-      mouse.getOptions().visualizeCenter = true;
-    }else{
-      mouse.clearAllRects();
-      mouse.setMaxRects(1);
-      mouse.addRect(lastSelectedROI);
-      mouse.getOptions().fillColor[3] = 0;
-      mouse.getOptions().visualizeCenter = false;
+    std::vector<Rect> rs = extra.getRects();
+    std::vector<Vec> worldPoints(rs.size());
+    std::vector<Point32f> imagePoints(rs.size());
+    for(unsigned int i=0;i<rs.size();++i){
+      worldPoints[i] = extra.getMetaData(i);
+      worldPoints[i][3] = 1;
+      imagePoints[i] = rs[i].center();
+    }
+    Camera cam = Camera::calibrate(worldPoints,imagePoints);
+    err = CalibrationGrid::get_RMSE_on_image(worldPoints,imagePoints,cam);
+    return cam;
+  }
+
+} *tool = 0;
+
+
+
+
+void change_mode(const std::string &what){
+  static ButtonGroupHandle special = gui["special"];
+  if(what == "mode"){
+    int mode = (int)gui["mode"];
+    switch(mode){
+      case 0:
+        tool->changeModeTo(CalibTool::AutoDetection);
+        special.disable();
+        break;
+      case 1:
+        tool->changeModeTo(CalibTool::ManualRects);
+        special.enable(0);
+        special.enable(1);
+        special.select(0);
+        break;
+    }
+  }else{
+    switch(special.getSelected()){
+      case 0:
+        tool->changeModeTo(CalibTool::ManualRects);
+        break;
+      case 1:
+        tool->changeModeTo(CalibTool::ManualSpecial);
+        break;
+      case 2:
+        tool->changeModeTo(CalibTool::AddExtraPoints);
+        break;
     }
   }
-};
-
-
-
-
-GUI gui("hsplit");
-Scene scene;
-GenericGrabber grabber;
-ManualCalibrationObject *obj = 0;
-
-static const int VIEW_CAM = 0, CALIB_CAM = 1;
-
-void change_detection_mode(){
-  obj->switchMode();
-  (**gui.getValue<ButtonHandle>("defineMode")).setEnabled(obj->useManualData);
-  (**gui.getValue<ButtonHandle>("defineMode")).setChecked(false);
-  mouse.defineSpecialMode = false;
-  mouse.highlightRect = mouse.markedRects[0] = mouse.markedRects[1] = -1;
-}
-void change_define_mode(){
-  mouse.switchMode();
 }
 
 void init(){
-  mouse.getOptions().fillColor[3]=0;
-  
   if(pa("-cc")){
     CalibrationGrid::create_empty_configuration_file("/dev/stdout");
     CalibrationGrid::create_empty_configuration_file("new-calib-config.xml");
     ::exit(0);
   }
   
+  if(pa("-c")){
+    tool = new CalibTool;
+  }else{
+    tool = new CalibTool(true);
+  }
   
-  obj = new ManualCalibrationObject;
   grabber.init(FROM_PROGARG("-i"));
   grabber.setIgnoreDesiredParams(true);
   if(pa("-dist")){
@@ -217,8 +386,11 @@ void init(){
   scene.addCamera(Camera());
   scene.getCamera(VIEW_CAM).setName("View");
   scene.getCamera(CALIB_CAM).setName("Calibrated");
-  scene.addObject(obj);
-
+  if(!tool->isNull()){
+    scene.addObject(tool);
+  }
+  scene.addObject(&cs);
+  scene.addObject(&manualPoints);
   
   /// main GUI
   gui << ( GUI("tab(camera view,scene view)[@minsize=16x12]")
@@ -233,20 +405,20 @@ void init(){
          )
       << ( GUI("vbox")
            <<  (GUI("hbox") 
-                << "checkbox(3D overlay,unchecked)[@out=3D]"
-                << "checkbox(2D overlay,checked)[@out=2D]"
+                << "checkbox(3D overlay,unchecked)[@out=3D@handle=h3D]"
+                << "checkbox(2D overlay,checked)[@out=2D@handle=h2D]"
                 << "combo(color,gray,thresh,dilated)[@handle=vis@label=vis. image]"
                )
            <<  (GUI("hbox") 
-                << "togglebutton(autom,manual)[@handle=manualMode@label=detection]"
-                << "togglebutton(bounding boxes,marked)[@handle=defineMode@label=what]"
+                << "buttongroup(automatic detection,manual definition)[@handle=mode@label=detection]"
+                << "buttongroup(bounding boxes,mark 2 bounding boxes,add extra ref. points)[@handle=special@label=manual options]"
                )
            <<  (GUI("hbox") 
                 << "togglebutton(stopped,!grabbing)[@out=grab@label=grab-loop]"
                 << "label()[@label=current error: @handle=currError]" 
                 << "camcfg()"
                )
-           << "prop(co)"
+           << (!tool->isNull() ? "prop(co)" : "label(no calibration object file given)")
            <<  (GUI("hbox") 
                 << "button(show and print camera)[@handle=printCam]"
                 << "button(save best of 10)[@handle=saveBest10]"
@@ -255,11 +427,36 @@ void init(){
       << "!show";
 
   (*gui.getValue<DrawHandle3D>("sceneview"))->setImageInfoIndicatorEnabled(false);
-  gui.registerCallback(new GUI::Callback(change_detection_mode),"manualMode");
-  gui.registerCallback(new GUI::Callback(change_define_mode),"defineMode");
-  gui["mainview"].install(&mouse);
+  gui.registerCallback(new GUI::Callback(change_mode),"mode,special");
+  gui["mainview"].install(tool);
   gui["sceneview"].install(scene.getMouseHandler(0));
-  (**gui.getValue<ButtonHandle>("defineMode")).setEnabled(false);
+
+
+  ButtonGroupHandle mode = gui["mode"];
+  ButtonGroupHandle special = gui["special"];
+  if(tool->isNull()){
+    mode.disable();
+    mode.select(1);
+    special.disable(0);
+    special.disable(1);
+    special.select(2);
+    CheckBoxHandle h2D = gui["h2D"];
+    CheckBoxHandle h3D = gui["h3D"];
+    h2D.disable();
+    h2D->setChecked(false);
+    h3D->setChecked(true);
+    h3D.disable();
+  }else{
+    gui["special"].disable();
+  }
+  
+  menu = new QMenu;
+  menu->addAction("set world pos");
+  menu->addAction("delete");
+  menu->addAction("cancel");
+  menu->addSeparator();
+  menu->addAction("save...");
+  menu->addAction("load...");
 }
 
 
@@ -357,41 +554,74 @@ void run(){
       grabbed = scaled;
     }
 
-    image = SmartPtr<const ImgBase>(grabbed->shallowCopy(mouse.getRectAtIndex(0) & grabbed->getImageRect()));
+    image = SmartPtr<const ImgBase>(grabbed->shallowCopy(tool->getRectAtIndex(0) & grabbed->getImageRect()));
     
   }
 
-  CalibrationObject::CalibrationResult result = obj->find(image.get());
-  if(result){
-    currError = result.error;
-    scene.getCamera(CALIB_CAM) = result.cam;
-    scene.getCamera(CALIB_CAM).setName("Calibrated");
-  }else{
-    currError = "no found";
-  }
-
-  // -------------------------------------------------
-  // ------------ main view --------------------------
-  // -------------------------------------------------
-
   const ImgBase *visim = 0;
-  if(obj->useManualData){
-    visim = image.get();
+
+  struct CalibrationResult{
+    Camera cam; 
+    float error;    
+    operator bool() const { return error >= 0; }
+  } result = {Camera(),0.0f};
+
+  if(!tool->isNull()){
+    CalibrationObject::CalibrationResult r = tool->find(image.get());
+    result.cam = r.cam;
+    result.error = r.error;
+    
+
+    // -------------------------------------------------
+    // ------------ main view --------------------------
+    // -------------------------------------------------
+
+    if(tool->mode == CalibTool::AutoDetection){
+      visim = tool->getIntermediateImage((CalibrationObject::IntermediateImageType)(int)gui["vis"]);
+    }else{
+      visim = image.get();
+    }
+    if(result){
+      currError = result.error;
+      scene.getCamera(CALIB_CAM) = result.cam;
+      scene.getCamera(CALIB_CAM).setName("Calibrated");
+    }else{
+      currError = "no found";
+    }
   }else{
-    visim = obj->getIntermediateImage((CalibrationObject::IntermediateImageType)(int)gui["vis"]);
+    try{
+      tool->updateSceneObjectFromManualData(&manualPoints);
+      result.cam = tool->applyCalibrationOnManualData(result.error);
+    }catch(Camera::NotEnoughDataPointsException &ex){
+      currError = "need at least\n6 data points";
+      result.error = -1;
+    }catch(ICLException &ex){
+      currError = ex.what();
+      result.error = -1;
+    }catch(...){
+      currError = "need at least\n6 data points";
+      result.error = -1;
+    }
+    if(result){
+      currError = result.error;
+      scene.getCamera(CALIB_CAM) = result.cam;
+      scene.getCamera(CALIB_CAM).setName("Calibrated");
+    }
   }
+
+  
   mainview = visim ? visim : image.get();
   mainview->lock();
   mainview->reset();
   mainview->reset3D();
   
-  if(gui["2D"]){
-    obj->visualizeGrid2D(**mainview);
+  if((bool)gui["2D"] && !tool->isNull()){
+    tool->visualizeGrid2D(**mainview); // grid
   }
-  if(gui["3D"]){
+  if((bool)gui["3D"] && result.error >= 0){
     mainview->callback(scene.getGLCallback(CALIB_CAM));
   }
-  mouse.visualize(**mainview);
+  tool->visualize(**mainview); // mouse-rects
   mainview->unlock();
   mainview.update();
 
@@ -496,14 +726,16 @@ int main(int n, char **ppc){
   paex
   ("-input","define input device e.g. '-input dc 0' or '-input file *.ppm'")
   ("-o","define output config xml file name (./extracted-camera-cfg.xml)")
-  ("-config","define input marker config file (calib-config.xml by default)")
+  ("-config","define input marker config file (calib-config.xml by default), if no config-file is given, only the "
+             "completely manual mode is enabled. Here you can define reference points manually.")
   ("-dist","give 4 distortion parameters")
   ("-s","forced image size that is used (even if the grabber device provides another size)")
   ("-create-empty-config-file","if this flag is given, an empty config file is created as ./new-calib-config.xml");
   return ICLApp(n,ppc,"[m]-input|-i(device,device-params) "
-                "-config|-c(config-xml-file-name=calib-config.xml) "
+                "-config|-c(config-xml-file-name) "
                 "-dist|d(float,float,float,float) "
                 "-create-empty-config-file|-cc "
                 "-size|-s(WxH) "
-                "-output|-o(output-xml-file-name=extracted-cam-cfg.xml)",init,run).exec();
+                "-output|-o(output-xml-file-name=extracted-cam-cfg.xml) "
+                ,init,run).exec();
 }

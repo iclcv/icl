@@ -162,13 +162,13 @@ namespace icl {
         If IPP is not available, this function uses calibrate_pinv(std::vector<Vec>,std::vector<Point32f>,float)
     */
     static Camera calibrate(std::vector<Vec> Xws, std::vector<Point32f> xis, float focalLength=1)
-      throw (NotEnoughDataPointsException);
+    throw (NotEnoughDataPointsException,SingularMatrixException);
 
     /// Uses the passed world point -- image point references to estimate the projection parameters.
     /** Same as the method calibrate, but using a pseudoinvers instead of the SVD for the estimation.
         This method is less stable and less exact. */
     static Camera calibrate_pinv(std::vector<Vec> Xws, std::vector<Point32f> xis, float focalLength=1)
-      throw (NotEnoughDataPointsException);
+    throw (NotEnoughDataPointsException,SingularMatrixException);
 
     /** @} @{ @name projection functions */
 

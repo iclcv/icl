@@ -100,9 +100,23 @@ namespace icl{
     /// returns the intermediate image processing result of null if not available
     const ImgBase *getIntermediateImage(IntermediateImageType t) const;
     
+    
+    /// creates an empty calibration object 
+    CalibrationObject();
+    
+    /// Destructor
+    ~CalibrationObject();
+    
     /// The ownership of the calibration grid is NOT passed
     CalibrationObject(CalibrationGrid *grid,
                       const std::string &configurableID);
+    
+    /// for deferred initialization (can only be called once
+    void init(CalibrationGrid *grid,
+              const std::string &configurableID) throw (ICLException);
+    
+    /// returns whether the CalibrationObject is already inited
+    bool isNull() const;
     
     /// Simple result struct
     struct CalibrationResult{

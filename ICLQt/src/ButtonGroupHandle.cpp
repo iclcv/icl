@@ -66,4 +66,27 @@ namespace icl{
     vec()[id]->setText(t.c_str());
     
   }
+
+  void ButtonGroupHandle::disable(){
+    for(int i=0;i<n();i++){
+      vec()[i]->setEnabled(false);
+    }
+  }
+  
+  void ButtonGroupHandle::enable(){
+    for(int i=0;i<n();i++){
+      vec()[i]->setEnabled(true);
+    }
+  }
+
+  void ButtonGroupHandle::enable(int index){
+    ICLASSERT_RETURN(index >= 0 && index < (int)vec().size());
+    vec()[index]->setEnabled(true);
+  }
+  void ButtonGroupHandle::disable(int index){
+    ICLASSERT_RETURN(index >= 0 && index < (int)vec().size());
+    vec()[index]->setEnabled(false);
+  }
+
+  
 }

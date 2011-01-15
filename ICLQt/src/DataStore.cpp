@@ -42,6 +42,11 @@
 #include <ICLUtils/Range.h>
 #include <ICLCore/Img.h>
 
+#include <ICLQt/TabHandle.h>
+#include <ICLQt/StateHandle.h>
+#include <ICLQt/SplitterHandle.h>
+#include <ICLQt/MultiDrawHandle.h>
+#include <ICLQt/DispHandle.h>
 #include <ICLQt/ComboHandle.h>
 #include <ICLQt/FloatHandle.h>
 #include <ICLQt/ImageHandle.h>
@@ -60,6 +65,7 @@
 #include <ICLQt/StringHandle.h>
 #include <ICLQt/CheckBoxHandle.h>
 #include <ICLQt/ColorHandle.h>
+#include <ICLQt/BoxHandle.h>
 
 #include <QtGui/QCheckBox>
 #include <QtGui/QComboBox>
@@ -76,6 +82,9 @@
 #endif
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Any.h>
+
+#include <ICLQt/ThreadedUpdatableSlider.h>
+#include <ICLQt/ThreadedUpdatableTextView.h>
 
 using namespace icl;
 
@@ -299,18 +308,42 @@ INST_OTHER_TYPES
     FROM_TO(DataStore::Data::Event,T##Handle,                           \
             if(src.message=="register"){                                \
               dst.registerCallback((GUI::Callback*)src.data);           \
+            }else if(src.message == "enable"){                          \
+              dst.enable();                                             \
+            }else if(src.message == "disable"){                         \
+              dst.disable();                                            \
             }else{                                                      \
               ERROR_LOG("unable to apply function'" << src.message      \
                         << "' on " #T "Handle instances");              \
             });
 
-    INST_REGISTER_EVENT_FOR_HANDLE(Button);
+    //    INST_REGISTER_EVENT_FOR_HANDLE(Button);
+    //INST_REGISTER_EVENT_FOR_HANDLE(ButtonGroup);
+    //INST_REGISTER_EVENT_FOR_HANDLE(Slider);
+    //INST_REGISTER_EVENT_FOR_HANDLE(FSlider);
+    //INST_REGISTER_EVENT_FOR_HANDLE(Combo);
+    //INST_REGISTER_EVENT_FOR_HANDLE(Spinner);
+    //INST_REGISTER_EVENT_FOR_HANDLE(CheckBox);
+
+    
+    INST_REGISTER_EVENT_FOR_HANDLE(Box);
     INST_REGISTER_EVENT_FOR_HANDLE(ButtonGroup);
-    INST_REGISTER_EVENT_FOR_HANDLE(Slider);
-    INST_REGISTER_EVENT_FOR_HANDLE(FSlider);
-    INST_REGISTER_EVENT_FOR_HANDLE(Combo);
-    INST_REGISTER_EVENT_FOR_HANDLE(Spinner);
+    INST_REGISTER_EVENT_FOR_HANDLE(Button);
     INST_REGISTER_EVENT_FOR_HANDLE(CheckBox);
+    INST_REGISTER_EVENT_FOR_HANDLE(Color);
+    INST_REGISTER_EVENT_FOR_HANDLE(Combo);
+    INST_REGISTER_EVENT_FOR_HANDLE(Disp);
+    INST_REGISTER_EVENT_FOR_HANDLE(Float);
+    INST_REGISTER_EVENT_FOR_HANDLE(FSlider);
+    INST_REGISTER_EVENT_FOR_HANDLE(Int);
+    INST_REGISTER_EVENT_FOR_HANDLE(Label);
+    INST_REGISTER_EVENT_FOR_HANDLE(Slider);
+    INST_REGISTER_EVENT_FOR_HANDLE(Spinner);
+    INST_REGISTER_EVENT_FOR_HANDLE(Splitter);
+    INST_REGISTER_EVENT_FOR_HANDLE(State);
+    INST_REGISTER_EVENT_FOR_HANDLE(String);
+    INST_REGISTER_EVENT_FOR_HANDLE(Tab);
+    /*        */
     // maybe more ...
 
 
@@ -397,7 +430,8 @@ INST_OTHER_TYPES
     TO_NUM(ButtonHandle,dst=(*src)->isChecked());
 
     // CheckBoxHandle
-    TO_NUM(CheckBoxHandle,dst=(*src)->isChecked());
+    FROM_TO_NUM(CheckBoxHandle,dst->setChecked(src),dst=(*src)->isChecked());
+
     
     // StringHandle
     FROM_TO_NUM(StringHandle,dst=str(src),dst=parse<double>(src.getCurrentText()));
@@ -533,6 +567,11 @@ namespace icl{
     FROM_TO_NUM_ADD(ComboHandle);
     FROM_TO_STR_ADD(ComboHandle);
     ADD(DataStore::Data::Event,ComboHandle);
+    ADD_T_TO_T(CheckBoxHandle);
+
+    // CheckBox
+    FROM_TO_NUM_ADD(CheckBoxHandle);
+    ADD(DataStore::Data::Event,CheckBoxHandle);
     ADD_T_TO_T(ComboHandle);
     
     // FloatHandle

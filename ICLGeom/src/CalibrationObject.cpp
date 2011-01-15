@@ -50,8 +50,6 @@
 #include <ICLCC/CCFunctions.h>
 #include <ICLCore/Mathematics.h>
 
-
-
 namespace icl{
   typedef FixedColVector<float,3> Vec3;
   
@@ -73,10 +71,13 @@ namespace icl{
       ICL_DELETE(gray8u);
     }
   };
-
-  CalibrationObject::CalibrationObject(CalibrationGrid *grid,
-                                       const std::string &configurableID):data(new Data){
-    
+  
+  CalibrationObject::CalibrationObject():data(0){}
+  
+  void CalibrationObject::init(CalibrationGrid *grid,
+                               const std::string &configurableID) throw(ICLException){
+    if(data) throw ICLException("CalibrationObject::init must not be called twice");
+    data = new Data;
     setConfigurableID(configurableID);
     addChildConfigurable(&data->rd,"region detector");
     addChildConfigurable(&data->lt,"local threshold");
@@ -94,9 +95,21 @@ namespace icl{
     deactivateProperty("^region detector.create region graph");
     deactivateProperty("^region detector\\..* value");
     deactivateProperty("^region detector\\.CSS\\..*");
+  }
+
+  CalibrationObject::CalibrationObject(CalibrationGrid *grid,
+                                       const std::string &configurableID):data(0){
+    init(grid,configurableID);
   }  
   
+  CalibrationObject::~CalibrationObject(){
+    ICL_DELETE(data);
+  }
 
+  bool CalibrationObject::isNull() const{
+    return !data;
+  }
+  
   const ImgBase *CalibrationObject::getIntermediateImage(IntermediateImageType t) const{
     std::map<IntermediateImageType,const ImgBase*>::const_iterator it = data->images.find(t);
     if(it != data->images.end()) return it->second;

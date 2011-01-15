@@ -39,13 +39,19 @@ namespace icl{
   
   DefineRectanglesMouseHandler::Options::Options(const Color4D &edgeColor,
                                                  const Color4D &fillColor,
+                                                 const Color4D &centerColor,
+                                                 const Color4D &metaColor,
                                                  int handleWidth, 
                                                  bool visualizeCenter,
+                                                 bool visualizeHovering,
                                                  bool showOffsetText,
                                                  bool showSizeText, 
-                                                 bool showCenterText):
-    edgeColor(edgeColor),fillColor(fillColor),handleWidth(handleWidth),visualizeCenter(visualizeCenter),
-    showOffsetText(showOffsetText),showSizeText(showSizeText),showCenterText(showCenterText){
+                                                 bool showCenterText,
+                                                 bool showMetaData):
+    edgeColor(edgeColor),fillColor(fillColor),centerColor(centerColor),metaColor(metaColor),
+    handleWidth(handleWidth),visualizeCenter(visualizeCenter),visualizeHovering(visualizeHovering),
+    showOffsetText(showOffsetText),showSizeText(showSizeText),
+    showCenterText(showCenterText),showMetaData(showMetaData){
   }
 
   DefineRectanglesMouseHandler::DefinedRect::DefinedRect(const Rect &r, 
@@ -139,34 +145,37 @@ namespace icl{
     w.fill(options->fillColor);
     w.rect((Rect&)*this);
     w.color(0,0,0,0);
-    for(int i=0;i<4;++i){
-      switch(states[i]){
-        case hovered:{
-          Color4D c = options->edgeColor; c[3] = 40;
-          w.fill(c);
-          w.rect(edgei(i));
-          w.rect(edgei(i).enlarged(-1));
-          w.rect(edgei(i).enlarged(-2));
-          break;
+    
+    if(options->visualizeHovering){
+      for(int i=0;i<4;++i){
+        switch(states[i]){
+          case hovered:{
+            Color4D c = options->edgeColor; c[3] = 40;
+            w.fill(c);
+            w.rect(edgei(i));
+            w.rect(edgei(i).enlarged(-1));
+            w.rect(edgei(i).enlarged(-2));
+            break;
+          }
+          case dragged:{
+            Color4D c = options->edgeColor; c[3] = 80;
+            w.fill(c);
+            w.rect(edgei(i));
+            w.rect(edgei(i).enlarged(-1));
+            w.rect(edgei(i).enlarged(-2));
+            break;
+          }
+          default:
+            break;
         }
-        case dragged:{
-          Color4D c = options->edgeColor; c[3] = 80;
-          w.fill(c);
-          w.rect(edgei(i));
-          w.rect(edgei(i).enlarged(-1));
-          w.rect(edgei(i).enlarged(-2));
-          break;
-        }
-        default:
-          break;
       }
     }
     if(options->visualizeCenter){
       w.symsize(4);
-      w.color(options->edgeColor);
+      w.color(options->centerColor);
       w.fill(0,0,0,0);
-      w.sym(x+width/2.0,y+height/2.0,'o');
-      Color4D c = options->edgeColor; c[3] = 100;
+      w.sym(x+width/2.0,y+height/2.0,'+');
+      Color4D c = options->centerColor; c[3] = 100;
       w.color(c);
       w.line(ul(),lr());
       w.line(ur(),ll());
@@ -185,6 +194,10 @@ namespace icl{
       if(options->showCenterText){
         w.text("center: " + str(center()),x+1,y,7);
       }
+    }
+    if(options->showMetaData){
+      w.color(options->metaColor);
+      w.text(meta,center().x,center().y,7);
     }
   }
 
@@ -273,6 +286,11 @@ namespace icl{
       w.fill(options.fillColor);
       Rect r(currBegin, Size(currCurr.x-currBegin.x,currCurr.y-currBegin.y ));
       w.rect(r.normalized());
+      if(options.visualizeCenter){
+        w.color(options.centerColor);
+        w.line(r.ul(),r.lr());
+        w.line(r.ll(),r.ur());
+      }
     }
   }
 
@@ -361,5 +379,39 @@ namespace icl{
     return rects[index];
   }
     
+  const Any &DefineRectanglesMouseHandler::getMetaData(int index) const{
+    Mutex::Locker l(this);
+    static Any null;
+    if(index < 0 || index >= (int)rects.size()) return null;
+    return rects[index].meta;
+  }
+  
+  void DefineRectanglesMouseHandler::setMetaData(int index, const Any &data){
+    Mutex::Locker l(this);
+    ICLASSERT_RETURN(index >= 0 && index < (int)rects.size());
+    rects[index].meta = data;
+  }
+
+  const Any &DefineRectanglesMouseHandler::getMetaDataAt(int x, int y) const{
+    Mutex::Locker l(this);
+    for(unsigned int i=0;i<rects.size();++i){
+      if(rects[i].contains(x,y)){
+        return rects[i].meta;
+      }
+    }
+    static Any null;
+    return null;
+  }
+
+  void DefineRectanglesMouseHandler::setMetaDataAt(int x, int y, const Any &meta){
+    Mutex::Locker l(this);
+    for(unsigned int i=0;i<rects.size();++i){
+      if(rects[i].contains(x,y)){
+        rects[i].meta = meta;
+        return;
+      }
+    }
+  }
+
 
 }

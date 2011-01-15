@@ -71,6 +71,18 @@ namespace icl{
     /// sets the text of a button with index ot a given text
     void setText(int id, const std::string &text);
     
+    /// disables all radio buttons
+    void disable();
+    
+    /// enables all radio buttons
+    void enable();
+    
+    /// disables button at index
+    void disable(int index);
+    
+    /// enables button at index
+    void enable(int index);
+    
     private:
     /// utility function (number of elements)
     int n() const{ return (int)vec().size(); }

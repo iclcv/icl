@@ -2059,7 +2059,6 @@ namespace icl{
       case Qt::RightButton: m_data->downMask[2]=false; m_data->lastMouseReleaseButton = 2; break;
       default: m_data->downMask[1] = false; m_data->lastMouseReleaseButton = 1; break;
     }
-
     emit mouseEvent(createMouseEvent(MouseReleaseEvent));
     update();
   }
@@ -2131,6 +2130,8 @@ namespace icl{
     if(m_data->imageInfoIndicatorEnabled){
       m_data->imageInfoIndicator->hide();
     }
+
+    m_data->downMask[0] = m_data->downMask[1] = m_data->downMask[2] = false;
     emit mouseEvent(createMouseEvent(MouseLeaveEvent));
     update();
   }

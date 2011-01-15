@@ -67,6 +67,12 @@ namespace icl{
 
     /// returns whether wrapped pointer is null or not
     bool isNull() const { return m_poContent; }
+    
+    /// enables the wrapped GUI component
+    void enable() { m_poContent->setEnabled(true); }
+    
+    /// disables the wrapped GUI component
+    void disable() { m_poContent->setEnabled(false); }
     private:
     /// wrapped component
     T *m_poContent;
