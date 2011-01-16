@@ -66,11 +66,13 @@ namespace icl{
   }
   
   SceneObject::SceneObject():
+    m_normalMode(AutoNormals),
     m_lineColorsFromVertices(false),
     m_triangleColorsFromVertices(false),
     m_quadColorsFromVertices(false),
     m_pointSize(1),
     m_lineWidth(1),
+    m_useSmoothShading(true),
     m_transformation(Mat::id()),
     m_hasTransformation(false),
     m_parent(0)
@@ -79,26 +81,33 @@ namespace icl{
     std::fill(m_visible,m_visible+Primitive::PRIMITIVE_TYPE_COUNT,true);
   }
   
-  void SceneObject::addVertex(const Vec &p, const GeomColor &color){
+  void SceneObject::addVertex(const Vec &p, const GeomColor &color, const Vec &normal){
     m_vertices.push_back(p);
     m_vertexColors.push_back(color);
+    if(m_normalMode == NormalsPerVertex){
+      m_normals.push_back(normal);
+    }
   }
   
-  void SceneObject::addLine(int a, int b, const GeomColor &color){
+  void SceneObject::addLine(int a, int b, const GeomColor &color, const Vec &normal){
     m_primitives.push_back(Primitive(a,b,color));
+    if(m_normalMode == NormalsPerFace) m_normals.push_back(normal);
   }
     
-  void SceneObject::addTriangle(int a, int b, int c, const GeomColor &color){
+  void SceneObject::addTriangle(int a, int b, int c, const GeomColor &color, const Vec &normal){
     m_primitives.push_back(Primitive(a,b,c,color));
+    if(m_normalMode == NormalsPerFace) m_normals.push_back(normal);
   }
   
-  void SceneObject::addQuad(int a, int b, int c, int d, const GeomColor &color){
+  void SceneObject::addQuad(int a, int b, int c, int d, const GeomColor &color, const Vec &normal){
     m_primitives.push_back(Primitive(a,b,c,d,color));
+    if(m_normalMode == NormalsPerFace) m_normals.push_back(normal);
   }
 
   void SceneObject::addPolygon(const std::vector<int> &vertexIndices, 
-                               const GeomColor &color){
+                               const GeomColor &color, const Vec &normal){
     m_primitives.push_back(Primitive(vertexIndices,color));
+    if(m_normalMode == NormalsPerFace) m_normals.push_back(normal);
   }
 
   void SceneObject::addTexture(int a, int b, int c, int d, const Img8u &texture,bool deepCopy){
@@ -113,16 +122,6 @@ namespace icl{
 
   SceneObject *SceneObject::copy() const{
     return new SceneObject(*this);
-  }
-
-  void SceneObject::updateZFromPrimitives(){
-    m_z = 0;
-    if(m_primitives.size()){
-      for(unsigned int i=0;i<m_primitives.size();++i){
-        m_z += m_primitives[i].z;
-      }
-      m_z /= m_primitives.size();
-    }
   }
 
   void SceneObject::setColor(Primitive::Type t,const GeomColor &color, bool recursive){
@@ -145,6 +144,7 @@ namespace icl{
     m_polyColorsFromVertices(false),
     m_pointSize(1),
     m_lineWidth(1),
+    m_useSmoothShading(true),
     m_transformation(Mat::id()),
     m_hasTransformation(false),
     m_parent(0)
@@ -152,6 +152,8 @@ namespace icl{
     std::fill(m_visible,m_visible+5,true);
 
     if(type == "cuboid" || type == "cube"){
+      m_normalMode = NormalsPerFace;
+
       float x = *params++;
       float y = *params++;
       float z = *params++;
@@ -190,14 +192,15 @@ namespace icl{
       addLine(3,7);
       
       // Vertex order: alwas counter clock-wise
-      addQuad(0,1,2,3,GeomColor(0,100,120,155));//
-      addQuad(7,6,5,4,GeomColor(0,100,140,155)); // ?
-      addQuad(0,3,7,4,GeomColor(0,100,160,155));//
-      addQuad(5,6,2,1,GeomColor(0,100,180,155)); // ?
-      addQuad(4,5,1,0,GeomColor(0,100,200,155));
-      addQuad(3,2,6,7,GeomColor(0,100,220,155));
+      addQuad(0,1,2,3,GeomColor(0,100,255,200),Vec(0,0,1,1));//
+      addQuad(7,6,5,4,GeomColor(0,100,255,200),Vec(0,0,-1,1)); // ?
+      addQuad(0,3,7,4,GeomColor(0,100,255,200),Vec(0,-1,0,1));//
+      addQuad(5,6,2,1,GeomColor(0,100,255,200),Vec(0,1,0,1)); // ?
+      addQuad(4,5,1,0,GeomColor(0,100,255,200),Vec(1,0,0,1));
+      addQuad(3,2,6,7,GeomColor(0,100,255,200),Vec(-1,0,0,1));
       
     }else if(type == "sphere" || type == "spheroid"){
+      m_normalMode = NormalsPerVertex;
       float x = *params++;
       float y = *params++;
       float z = *params++;
@@ -219,8 +222,11 @@ namespace icl{
           
           addVertex(Vec(x+rx*cos(alpha)*sin(beta),
                         y+ry*sin(alpha)*sin(beta),
-                        z+rz*cos(beta),1));
-          
+                        z+rz*cos(beta),1),
+                    geom_blue(200),
+                    normalize3(Vec(cos(alpha)*sin(beta),
+                                   sin(alpha)*sin(beta),
+                                   cos(beta))));
           if(j){
             if( j != (nb-1)){
               addLine(i+na*j, i ? (i+na*j-1) : (na-1)+na*j);
@@ -287,6 +293,7 @@ namespace icl{
   }
   
   SceneObject::SceneObject(const std::string &objFileName) throw (ICLException):
+    m_normalMode(AutoNormals),
     m_lineColorsFromVertices(false),
     m_triangleColorsFromVertices(false),
     m_quadColorsFromVertices(false),
@@ -549,9 +556,9 @@ namespace icl{
 #define DEEP_COPY(X) X = other.X
 #define DEEP_COPY_2(X,Y) DEEP_COPY(X); DEEP_COPY(Y)
 #define DEEP_COPY_4(X,Y,A,B) DEEP_COPY_2(X,Y); DEEP_COPY_2(A,B)
+    DEEP_COPY(m_normalMode);
     DEEP_COPY_2(m_vertices,m_vertexColors);
-    DEEP_COPY(m_primitives);
-    DEEP_COPY_4(m_z,m_lineColorsFromVertices,m_triangleColorsFromVertices,m_quadColorsFromVertices);
+    DEEP_COPY_4(m_primitives,m_lineColorsFromVertices,m_triangleColorsFromVertices,m_quadColorsFromVertices);
     DEEP_COPY_4(m_polyColorsFromVertices,m_pointSize,m_lineWidth,m_useSmoothShading);
     DEEP_COPY_2(m_transformation,m_hasTransformation);
 #undef DEEP_COPY
@@ -578,6 +585,13 @@ namespace icl{
     SceneObject *o = new SceneObject("spheroid",params);
     addChild(o);
     return o;
+  }
+
+  SceneObject::NormalMode SceneObject::getNormalMode() const{
+    return m_normalMode;
+  }
+  void SceneObject::setNormalMode(NormalMode mode){
+    m_normalMode = mode;
   }
 
 

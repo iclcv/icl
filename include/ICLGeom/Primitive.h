@@ -103,11 +103,6 @@ namespace icl{
     /// Creates a deep copy in assignment
     Primitive &operator=(const Primitive &other);
     
-    /// z-based ordering
-    bool operator<(const Primitive &other) const{
-      return z < other.z;
-    }
-    
     /// static utility method that allows for simple creation of text-textures
     static Img8u create_text_texture(const std::string &text,const GeomColor &color, int textSize=30);
     
@@ -128,9 +123,6 @@ namespace icl{
     
     /// primitve type
     Type type;
-
-    /// internally used for z-ordering (z-is set internally automatically)
-    float z;
   };
   
 }

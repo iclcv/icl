@@ -45,8 +45,12 @@ namespace icl{
  
   class SceneObject{
     public:
-    
-    /// scene2 is able to work directly with object's data
+    enum NormalMode{
+      AutoNormals,
+      NormalsPerVertex,
+      NormalsPerFace
+    };
+    /// provides direct access for the Scene class
     friend class Scene;
     
     /// create an object
@@ -100,19 +104,24 @@ namespace icl{
     bool isVisible(Primitive::Type t) const;
     
     /// adds a new vertex to this object
-    void addVertex(const Vec &p, const GeomColor &color=GeomColor(255,0,0,255));
+    /** The given normal is only used if the normal mode is set to NormalsPerVertex */
+    void addVertex(const Vec &p, const GeomColor &color=GeomColor(255,0,0,255), const Vec &normal=Vec(0.0f));
     
     /// adds a new line to this object
-    void addLine(int x, int y, const GeomColor &color=GeomColor(100,100,100,255));
+    /** The given normal is only used if the normal mode is set to NormalsPerFace */
+    void addLine(int x, int y, const GeomColor &color=GeomColor(100,100,100,255), const Vec &normal=Vec(0.0f));
     
     /// adds a new triangle to this onject
-    void addTriangle(int a, int b, int c, const GeomColor &color=GeomColor(0,100,250,255));
+    /** The given normal is only used if the normal mode is set to NormalsPerFace */
+    void addTriangle(int a, int b, int c, const GeomColor &color=GeomColor(0,100,250,255),const Vec &normal=Vec(0.0f));
 
     /// adds a new triangle to this onject
-    void addQuad(int a, int b, int c, int d, const GeomColor &color=GeomColor(0,100,250,255)); 
+    /** The given normal is only used if the normal mode is set to NormalsPerFace */
+    void addQuad(int a, int b, int c, int d, const GeomColor &color=GeomColor(0,100,250,255), const Vec &normal=Vec(0.0f)); 
 
     /// add a polygon to this object (note triangles and quads are slower here)
-    void addPolygon(const std::vector<int> &vertexIndices, const GeomColor &color=GeomColor(0,100,250,255)); 
+    /** The given normal is only used if the normal mode is set to NormalsPerFace */
+    void addPolygon(const std::vector<int> &vertexIndices, const GeomColor &color=GeomColor(0,100,250,255), const Vec &normal=Vec(0.0f)); 
     
     /// adds a textured quad to this object
     void addTexture(int a, int b, int c, int d, const Img8u &texture, bool deepCopy=false);
@@ -170,12 +179,6 @@ namespace icl{
     /// performs a deep copy of this object
     virtual SceneObject *copy() const;
 
-    /// returns current z value estimation
-    float getZ() const { return m_z; }
-
-    /// calculates mean z of all primitives
-    void updateZFromPrimitives();
-    
     /// called by the renderer before the object is rendered
     /** here, dynamic object types can adapt e.g. their vertices or colors*/
     virtual void prepareForRendering() {}
@@ -277,12 +280,20 @@ namespace icl{
     
     /** @} **/
     
+    NormalMode getNormalMode() const;
+    
     protected:
+    
+    void setNormalMode(NormalMode mode);
+    
     std::vector<Vec> m_vertices;
+
+    NormalMode m_normalMode;
+    std::vector<Vec> m_normals;
+    
     std::vector<GeomColor> m_vertexColors;
     std::vector<Primitive> m_primitives;
     bool m_visible[Primitive::PRIMITIVE_TYPE_COUNT];
-    float m_z;
 
     bool m_lineColorsFromVertices;
     bool m_triangleColorsFromVertices;
@@ -294,7 +305,6 @@ namespace icl{
     
     bool m_useSmoothShading;
     
-    private:
     /// for the scene graph implementation
     Mat m_transformation;
     bool m_hasTransformation;

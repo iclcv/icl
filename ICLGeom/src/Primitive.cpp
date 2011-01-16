@@ -47,7 +47,6 @@ namespace icl{
     color = other.color;
     tex = other.tex.detached();
     type = other.type;
-    z = other.z;
     return *this;
   }
 
