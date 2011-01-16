@@ -1,5 +1,6 @@
 #include <ICLQuick/Common.h>
 #include <ICLGeom/Geom.h>
+#include <ICLUtils/FPSLimiter.h>
 
 GUI gui;
 Scene scene;
@@ -57,13 +58,16 @@ void init(){
 
 void run(){
   ICLDrawWidget3D *d = gui["view"];
+  static FPSLimiter fps(100,10);
+  std::string fpsString = fps.getFPSString();
   d->lock();
   d->reset3D();
+  d->reset();
   d->callback(scene.getGLCallback(0));
+  d->color(255,0,0,255);
+  d->text(fpsString,550,10,8);
   d->unlock();
-  
   d->updateFromOtherThread();
-  
 }
 
 int main(int n, char **argv){

@@ -180,15 +180,6 @@ namespace icl{
     /** here, dynamic object types can adapt e.g. their vertices or colors*/
     virtual void prepareForRendering() {}
 
-    /// actually, this method is called by the renderer before the object is rendered
-    /** The default implementation of this method calls prepareForRendering and
-        then transformes all vertices if a transformation matrix is given.
-        <b>Please note:</b> If you reimplement this method, you have to
-        transform all vertices by the current transformation matrix yourself,
-        or your object implementation will not work properly if it is used within
-        a SceneGraph */
-    virtual void prepareForRenderingAndTransform();
-    
     /// sets how 2D-geom colors are set 
     void setColorsFromVertices(Primitive::Type t, bool on, bool recursive=true);
     
@@ -308,12 +299,7 @@ namespace icl{
     Mat m_transformation;
     bool m_hasTransformation;
     SceneObject *m_parent;
-    typedef std::vector<SmartPtr<SceneObject> > ChildList;
-    ChildList m_children;
-    std::vector<Vec> m_transformedVertexBuffer;
-    
-    const std::vector<Vec> &getVerticesForRendering() const;
-    
+    std::vector<SmartPtr<SceneObject> > m_children;
   };
 }
 

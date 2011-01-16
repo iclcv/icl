@@ -516,22 +516,6 @@ namespace icl{
     return m_children.size();
   }
   
-  void SceneObject::prepareForRenderingAndTransform(){
-    prepareForRendering();
-    if(hasTransformation()){
-      m_transformedVertexBuffer.resize(m_vertices.size());
-      Mat T = getTransformation();
-      for(unsigned int i=0;i<m_vertices.size();++i){
-        T.mult(m_vertices[i],m_transformedVertexBuffer[i]);
-      }
-    }else{
-      // if no transformation is given, the renderer has to use the un-transformed vertices
-    }
-  }
-  const std::vector<Vec> &SceneObject::getVerticesForRendering() const{
-    return hasTransformation() ? m_transformedVertexBuffer : m_vertices;
-  }
-
   int SceneObject::getChildCount() const{
     return (int)m_children.size();
   }

@@ -59,13 +59,21 @@ namespace icl{
   /// *NEW* Scene Implementation
   class Scene : public Lockable{
     public:
-    struct RenderPlugin;
+
 #ifdef HAVE_OPENGL
     struct GLCallback;
 #endif
+    
+    /// Base constructor (creates an empty scene)
     Scene();
+    
+    /// Destructor
     ~Scene();
+    
+    /// Explicitly implemented deep copy (performs complete deep copy of all cameras and objects)
     Scene(const Scene &scene);
+    
+    /// Assignment operator (complete deep copy)
     Scene &operator=(const Scene &scene);
 
     /// Adds a new Camera to the scene
@@ -81,19 +89,18 @@ namespace icl{
                be set to 0.1.
         */
     void addCamera(const Camera &cam, float visSize=1.0);
+    
+    /// removed the camera at given index
     void removeCamera(int index);
+    
+    /// 
     Camera &getCamera(int camIndex = 0);
     const Camera &getCamera(int camIndex =0) const;
     inline int getCameraCount() const { return (int)m_cameras.size(); }
 
-    void render(Img32f &image, int camIndex = 0);
-    void render(ICLDrawWidget &widget, int camIndex = 0);
-
-
-
-    void addObject(SceneObject *object);
-    void removeObject(int idx, bool deleteObject = true);
-    void removeObjects(int startIndex, int endIndex=-1, bool deleteObjects=true);
+    void addObject(SceneObject *object, bool passOwnerShip=false);
+    void removeObject(int idx);
+    void removeObjects(int startIndex, int endIndex=-1);
     int getObjectCount() const { return m_objects.size(); }
 
     void clear(bool camerasToo=false);
@@ -101,16 +108,21 @@ namespace icl{
 #ifdef HAVE_QT
 #ifdef HAVE_OPENGL
     MouseHandler *getMouseHandler(int camIndex=0);
-    void setMouseHandler(SceneMouseHandler* sceneMouseHandler, int camIndex=0, bool deleteExistingMouseHandler=true);
+    void setMouseHandler(SceneMouseHandler* sceneMouseHandler, int camIndex=0);
     ICLDrawWidget3D::GLCallback *getGLCallback(int camIndex);
 #endif
 #endif
 
-    void setLightSimulationEnabled(bool enabled);
-    bool getLightSimulationEnabled() const;
     void setDrawCamerasEnabled(bool enabled);
     bool getDrawCamerasEnabled() const;
-
+    
+    /// sets wheter a coordinate frame is automatically inserted into the scene
+    void setDrawCoordinateFrameEnabled(bool enabled, float axisLength=100, float axisThickness=5);
+    
+    /// returns wheter a coordinate frame is automatically shown in the scene
+    /** Optionally, destination pointers can be given to query the current coordinate frames parameters */
+    bool getDrawCoordinateFrameEnabled(float *axisLength=0,float *axisThickness=0) const;
+    
     private:
     /// renders the scene into current OpenGL context
 #ifdef HAVE_QT
@@ -125,23 +137,21 @@ namespace icl{
                                float &minZ, float &maxZ,
                                SceneObject *o) const;
 
-    void render(RenderPlugin &p, int camIndex);
     std::vector<Camera> m_cameras;
-    std::vector<SceneObject*> m_objects;
-    std::vector<SceneObject*> m_cameraObjects;
-    std::vector<std::vector<std::vector<Vec> > >m_projections;//[cam][obj][vertex]
+    std::vector<SmartPtr<SceneObject> > m_objects;
+    std::vector<SmartPtr<SceneObject> > m_cameraObjects;
+    //std::vector<std::vector<std::vector<Vec> > >m_projections;//[cam][obj][vertex]
 
 #ifdef HAVE_QT
 #ifdef HAVE_OPENGL
-    std::vector<SceneMouseHandler*> m_mouseHandlers;
-	std::vector<GLCallback*> m_glCallbacks;
+    std::vector<SmartPtr<SceneMouseHandler> > m_mouseHandlers;
+    std::vector<SmartPtr<GLCallback> > m_glCallbacks;
 #endif
 #endif
 
-    
-
-    bool m_lightSimulationEnabled;
     bool m_drawCamerasEnabled;
+    bool m_drawCoordinateFrameEnabled;
+    SmartPtr<SceneObject> m_coordinateFrameObject;
   };
 }
 
