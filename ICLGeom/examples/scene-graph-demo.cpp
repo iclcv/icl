@@ -7,25 +7,11 @@ Scene scene;
 float p_cube[] = {0,0,0,1};
 
 struct SphereSceneObject : public SceneObject{
-  SphereSceneObject(float radius, float cubeRadius, const GeomColor &color, int na=30, int nb=20):
-    SceneObject("cube",p_cube){
-    for(float i=0;i<na;++i){
-      for(float j=0;j<nb;++j){
-        float alpha = i/na * 2 * M_PI;
-        float beta = j/nb * M_PI;
-        const float p[4] = { 
-          radius*cos(alpha)*sin(beta),
-          radius*sin(alpha)*sin(beta),
-          radius*cos(beta),
-          cubeRadius 
-        };
-        SceneObject *c = new SceneObject("cube",p);
-        c->setVisible(Primitive::vertex,false);
-        c->setVisible(Primitive::line,false);
-        c->setColor(Primitive::quad,color);
-        addChild(c);
-      }
-    }
+  SphereSceneObject(float radius, const GeomColor &color, int na=50, int nb=40){
+    SceneObject *s = addSphere(0,0,0,radius,na,nb);
+    s->setVisible(Primitive::vertex,false);
+    s->setVisible(Primitive::line,false);
+    s->setColor(Primitive::quad,color);
   } 
 };
 
@@ -35,7 +21,7 @@ struct Planet : public SphereSceneObject{
   float speed;
   Time startTime;
   Planet(float radius, const GeomColor &color, float orbit, float speed):
-    SphereSceneObject(radius,radius/10,color),orbit(orbit),speed(speed),startTime(Time::now()){
+    SphereSceneObject(radius,color),orbit(orbit),speed(speed),startTime(Time::now()){
   }
   void prepareForRendering(){
     float dt = (Time::now()-startTime).toSecondsDouble();
@@ -48,7 +34,7 @@ struct Planet : public SphereSceneObject{
 void init(){
   gui << "draw3D()[@minsize=32x24@handle=view]" << "!show";
   
-  scene.addCamera(Camera(Vec(0,0,1000,1)));
+  scene.addCamera(Camera(Vec(0,0,600,1)));
   scene.addObject(new Planet(40,GeomColor(255,255,100,255),0,0.5));
   scene.addObject(new Planet(20,GeomColor(255,200,200,255),300,1));
   scene.addObject(new Planet(22,GeomColor(255,200,200,255),240,1.23));
@@ -65,6 +51,8 @@ void init(){
   d->setProperty("light-1","on");
   d->setProperty("light-1-pos","{100,100,100,1}");
   d->setProperty("light-1-diffuse","{0,0.5,0.9,1.0}");
+  Img8u bg(Size::VGA,1);
+  d->setImage(&bg);
 }
 
 void run(){

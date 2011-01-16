@@ -47,11 +47,13 @@ namespace icl{
                                                  bool showOffsetText,
                                                  bool showSizeText, 
                                                  bool showCenterText,
-                                                 bool showMetaData):
+                                                 bool showMetaData,
+                                                 int lineWidth):
     edgeColor(edgeColor),fillColor(fillColor),centerColor(centerColor),metaColor(metaColor),
     handleWidth(handleWidth),visualizeCenter(visualizeCenter),visualizeHovering(visualizeHovering),
     showOffsetText(showOffsetText),showSizeText(showSizeText),
-    showCenterText(showCenterText),showMetaData(showMetaData){
+    showCenterText(showCenterText),showMetaData(showMetaData),
+    lineWidth(lineWidth){
   }
 
   DefineRectanglesMouseHandler::DefinedRect::DefinedRect(const Rect &r, 
@@ -141,6 +143,7 @@ namespace icl{
   }
   
   void DefineRectanglesMouseHandler::DefinedRect::visualize(ICLDrawWidget &w){
+    w.linewidth(options->lineWidth);
     w.color(options->edgeColor);
     w.fill(options->fillColor);
     w.rect((Rect&)*this);
@@ -171,12 +174,7 @@ namespace icl{
       }
     }
     if(options->visualizeCenter){
-      w.symsize(4);
       w.color(options->centerColor);
-      w.fill(0,0,0,0);
-      w.sym(x+width/2.0,y+height/2.0,'+');
-      Color4D c = options->centerColor; c[3] = 100;
-      w.color(c);
       w.line(ul(),lr());
       w.line(ur(),ll());
     }

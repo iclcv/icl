@@ -150,51 +150,19 @@ namespace icl{
     m_parent(0)
   {
     std::fill(m_visible,m_visible+5,true);
-    if(type == "cube"){
-      float x = *params++;
-      float y = *params++;
-      float z = *params++;
-      float k = *params/2.0;
 
-      addVertex(Vec(x+k,y-k,z+k,1));
-      addVertex(Vec(x+k,y+k,z+k,1));
-      addVertex(Vec(x-k,y+k,z+k,1));
-      addVertex(Vec(x-k,y-k,z+k,1));
-      
-      addVertex(Vec(x+k,y-k,z-k,1));
-      addVertex(Vec(x+k,y+k,z-k,1));
-      addVertex(Vec(x-k,y+k,z-k,1));
-      addVertex(Vec(x-k,y-k,z-k,1));
-    
-      addLine(0,1);
-      addLine(1,2);
-      addLine(2,3);
-      addLine(3,0);
-      
-      addLine(4,5);
-      addLine(5,6);
-      addLine(6,7);
-      addLine(7,4);
-      
-      addLine(0,4);
-      addLine(1,5);    
-      addLine(2,6);
-      addLine(3,7);
-      
-      addQuad(0,1,2,3,GeomColor(0,100,120,155));//
-      addQuad(7,6,5,4,GeomColor(0,100,140,155)); // ?
-      addQuad(0,3,7,4,GeomColor(0,100,160,155));//
-      addQuad(5,6,2,1,GeomColor(0,100,180,155)); // ?
-      addQuad(4,5,1,0,GeomColor(0,100,200,155));
-      addQuad(3,2,6,7,GeomColor(0,100,220,155));
-
-    }else if(type == "cuboid"){
+    if(type == "cuboid" || type == "cube"){
       float x = *params++;
       float y = *params++;
       float z = *params++;
       float dx = *params++/2.0;
-      float dy = *params++/2.0;
-      float dz = *params++/2.0;
+      float dy = dx;
+      float dz = dx;
+
+      if(type == "cuboid"){
+        dy = *params++/2.0;
+        dz = *params++/2.0;
+      }
 
       addVertex(Vec(x+dx,y-dy,z+dz,1));
       addVertex(Vec(x+dx,y+dy,z+dz,1));
@@ -229,29 +197,48 @@ namespace icl{
       addQuad(4,5,1,0,GeomColor(0,100,200,155));
       addQuad(3,2,6,7,GeomColor(0,100,220,155));
       
-    }else if(type == "sphere"){
+    }else if(type == "sphere" || type == "spheroid"){
       float x = *params++;
       float y = *params++;
       float z = *params++;
-      float r = *params++/2.0;
-      int slices = (int)*params++;
-      int steps = (int)*params;
-      
-      float dA = (2*M_PI)/slices;
-      float dB = (2*M_PI)/steps;
+      float rx = *params++;
+      float ry=rx,rz=rx;
+      if(type == "spheroid"){
+        ry = *params++;
+        rz = *params++;
+      }
+      int na = *params++;
+      int nb = *params++;
 
-      Vec v(r,0,0,1),offs(x,y,z),zAxis(0,0,1),yAxis(0,1,0);
-      int idx = 0;
-      
-      for(int i=0;i<slices;++i){
-        //float a = i*dA/2.0;//-M_PI/2.0;
-        Vec v2 = rotate_vector(zAxis,i*dA,v);
-        for(int j=0;j<steps;++j,++idx){
-          addVertex(offs+rotate_vector(yAxis,j*dB,v2));
-          if(i>0 && j>0){
-            addLine(idx,idx-1);
-            addLine(idx,idx-slices);
+      const float dAlpha = 2*M_PI/na;
+      const float dBeta = M_PI/(nb-1);
+      for(int j=0;j<nb;++j){
+        for(int i=0;i<na;++i){
+          float alpha = i*dAlpha; //float(i)/na * 2 * M_PI;
+          float beta = j*dBeta; //float(j)/nb * M_PI;
+          
+          addVertex(Vec(x+rx*cos(alpha)*sin(beta),
+                        y+ry*sin(alpha)*sin(beta),
+                        z+rz*cos(beta),1));
+          
+          if(j){
+            if( j != (nb-1)){
+              addLine(i+na*j, i ? (i+na*j-1) : (na-1)+na*j);
+            }            
+            if(j){
+              int a = i+na*j;
+              int b = i ? (i+na*j-1) : (na-1)+na*j;
+              int c = i ? (i+na*(j-1)-1) : (na-1)+na*(j-1);
+              int d = i+na*(j-1);
+              if(j == nb-1){
+                addQuad(a,d,c,b);
+              }else{
+                addQuad(d,c,b,a);
+              }
+            }
+
           }
+          if(j) addLine(i+na*j, i+na*(j-1));
         }
       }
     }else{
@@ -572,6 +559,41 @@ namespace icl{
       }
     }
   
+  }
+  SceneObject &SceneObject::operator=(const SceneObject &other){
+    if(this == &other) return *this;
+#define DEEP_COPY(X) X = other.X
+#define DEEP_COPY_2(X,Y) DEEP_COPY(X); DEEP_COPY(Y)
+#define DEEP_COPY_4(X,Y,A,B) DEEP_COPY_2(X,Y); DEEP_COPY_2(A,B)
+    DEEP_COPY_2(m_vertices,m_vertexColors);
+    DEEP_COPY(m_primitives);
+    DEEP_COPY_4(m_z,m_lineColorsFromVertices,m_triangleColorsFromVertices,m_quadColorsFromVertices);
+    DEEP_COPY_4(m_polyColorsFromVertices,m_pointSize,m_lineWidth,m_useSmoothShading);
+    DEEP_COPY_2(m_transformation,m_hasTransformation);
+#undef DEEP_COPY
+#undef DEEP_COPY_2
+#undef DEEP_COPY_4
+    std::copy(other.m_visible,other.m_visible+(int)Primitive::PRIMITIVE_TYPE_COUNT,m_visible);
+    m_children.clear();
+    m_children.resize(other.m_children.size());
+    for(unsigned int i=0;i<other.m_children.size();++i){
+      m_children[i] = SmartPtr<SceneObject>(other.m_children[i]->copy());
+    }
+    return *this;
+  }
+
+  SceneObject *SceneObject::addCuboid(float x, float y, float z, float dx, float dy, float dz){
+    float params[] = {x,y,z,dx,dy,dz};
+    SceneObject *o = new SceneObject("cuboid",params);
+    addChild(o);
+    return o;
+  }
+
+  SceneObject *SceneObject::addSpheroid(float x, float y, float z, float rx, float ry, float rz, int rzSteps, int xySlices){
+    float params[] = {x,y,z,rx,ry,rz,rzSteps,xySlices};
+    SceneObject *o = new SceneObject("spheroid",params);
+    addChild(o);
+    return o;
   }
 
 

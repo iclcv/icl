@@ -56,13 +56,27 @@ namespace icl{
     /** currently allowed:
         "cube" params: [x,y,z,radius];
         "cuboid" params: [x,y,z,dx,dy,dz]
-        "sphere" params: [x,y,z,radius,slices,steps]
+        "sphere" params: [x,y,z,radius,rzSteps,xySlices]
+        "spheroid" params: [x,y,z,rx,ry,rz,rzSteps,xySlices]
     */
     SceneObject(const std::string &type,const float *params);
 
 
     /// creates a scene object from given .obj file
     SceneObject(const std::string &objFileName) throw (ICLException);
+
+    /// deep copy of SceneObject instance
+    /** The new instance's parent is set to null, i.e. it must
+        be added to other's parent explicitly if this is necessary. */
+    SceneObject(const SceneObject &other) { 
+      *this = other; 
+      m_parent = 0;
+    }
+
+    /// assignment operator for deep copy
+    /** This instances parent is not changed. I.e. it must
+        be added to other's parent explicitly if this is necessary. */
+    SceneObject &operator=(const SceneObject &other);
     
     /// Empty destructor (but virtual)
     virtual ~SceneObject(){}
@@ -109,6 +123,30 @@ namespace icl{
     void addTextTexture(int a, int b, int c, int d, const std::string &text,
                         const GeomColor &color=GeomColor(255,255,255,255), 
                         int textSize=30, bool holdTextAR=true);
+
+    /// adds a cube child-object with given parameters
+    /** returns a pointer to the cube added. This can be used to adapt
+        further properties of that object */
+    SceneObject *addCube(float x, float y, float z, float d){
+      return addCuboid(x,y,z,d,d,d);
+    }
+
+    /// adds a cuboid child-object with given parameters
+    /** returns a pointer to the cube added. This can be used to adapt
+        further properties of that object */
+    SceneObject *addCuboid(float x, float y, float z, float dx, float dy, float dz);
+
+    /// adds a cuboid child-object with given parameters
+    /** returns a pointer to the cube added. This can be used to adapt
+        further properties of that object */
+    SceneObject *addSphere(float x, float y, float z, float r,int rzSteps, int xySlices){
+      return addSpheroid(x,y,z,r,r,r,rzSteps,xySlices);
+    }
+
+    /// adds a cuboid child-object with given parameters
+    /** returns a pointer to the cube added. This can be used to adapt
+        further properties of that object */
+    SceneObject *addSpheroid(float x, float y, float z, float rx, float ry, float rz, int rzSteps, int xySlices);
     
     /// tints all Primitives with given type in given color
     void setColor(Primitive::Type t,const GeomColor &color,bool recursive=true);
