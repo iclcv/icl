@@ -145,6 +145,7 @@ struct CalibTool : public DefineRectanglesMouseHandler,
     o.visualizeCenter = true;
     o.visualizeHovering = false;
     o.metaColor = o.centerColor;
+    extra.setMaxRects(500);
   }
   
   void changeModeTo(Mode mode){
@@ -308,7 +309,7 @@ struct CalibTool : public DefineRectanglesMouseHandler,
     obj->setVertices(worldPoints);
     obj->unlock();
   }
-  Camera applyCalibrationOnManualData(float &err){
+  Camera applyCalibrationOnManualData(float &err, const Size &imageSize){
     Mutex::Locker l(mutex);
     std::vector<Rect> rs = extra.getRects();
     std::vector<Vec> worldPoints(rs.size());
@@ -319,6 +320,9 @@ struct CalibTool : public DefineRectanglesMouseHandler,
       imagePoints[i] = rs[i].center();
     }
     Camera cam = Camera::calibrate(worldPoints,imagePoints);
+    cam.getRenderParams().viewport = Rect(Point::null,imageSize);
+    cam.getRenderParams().chipSize = imageSize;
+
     err = CalibrationGrid::get_RMSE_on_image(worldPoints,imagePoints,cam);
     return cam;
   }
@@ -591,7 +595,7 @@ void run(){
   }else{
     try{
       tool->updateSceneObjectFromManualData(&manualPoints);
-      result.cam = tool->applyCalibrationOnManualData(result.error);
+      result.cam = tool->applyCalibrationOnManualData(result.error,image->getSize());
     }catch(Camera::NotEnoughDataPointsException &ex){
       currError = "need at least\n6 data points";
       result.error = -1;

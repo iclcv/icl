@@ -391,6 +391,11 @@ namespace icl{
 
   CalibrationGrid::CalibrationGrid():inputDataReady(false){}
   
+  
+  static inline float round1(float x){
+    return float((int)round(x*10))/10.;
+  }
+  
   void CalibrationGrid::visualize2D(ICLDrawWidget &w){
     w.color(0,255,0,200);
     w.fill(0,0,0,0);//255,0,100);
@@ -415,15 +420,23 @@ namespace icl{
     w.arrow(B.p1,B.p3);
     w.linewidth(1);
     
-    //w.color(255,0,0,255);
-    //    for(int h=0;h<2;++h){
-    //  const Point32f *ps = h?B.img.data():A.img.data();
-    //  for(int y=0;y<ny;++y){
-    //    for(int x=0;x<nx;++x){
-    //      w.text(str(Point(x,y)),ps[x+nx*y].x, ps[x+nx*y].y, 9);
-    //    }
-    //  }
-    //}
+
+    for(int h=0;h<2;++h){
+      const Point32f *ps = (h?B:A).img.data();
+      const FixedColVector<float,3> *vs = (h?B:A).world.data();
+      for(int y=0;y<ny;++y){
+        for(int x=0;x<nx;++x){
+          float vx = round1(vs[x+nx*y][0]);
+          float vy = round1(vs[x+nx*y][1]);
+          float vz = round1(vs[x+nx*y][2]);
+          w.color(255,255,255,255);
+          w.text(str("(")+str(vx)+", "+str(vy)+", "+str(vz)+str(")"),ps[x+nx*y].x+1, ps[x+nx*y].y+1, 9);
+          w.color(0,0,0,255);
+          w.text(str("(")+str(vx)+", "+str(vy)+", "+str(vz)+str(")"),ps[x+nx*y].x, ps[x+nx*y].y, 9);
+
+        }
+      }
+    }
   }
 
   CalibrationGrid::CalibrationGrid(const std::string &configFileName) : inputDataReady(false){
