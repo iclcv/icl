@@ -36,7 +36,7 @@
 #include <ICLGeom/Geom.h>
 #include <ICLUtils/FPSLimiter.h>
 
-
+// global data
 GUI gui;
 Scene scene;
 
@@ -47,8 +47,7 @@ void init(){
          "@label=focal length@maxsize=100x3]";
   gui.show();
   
-  // create scene background
-  //  gui["draw"] = zeros(640,480,0);
+  // defines the scene's viewport
   (**gui.getValue<DrawHandle3D>("draw")).setDefaultImageSize(Size(640,480));
 
   // create camera and add to scene instance
@@ -57,36 +56,38 @@ void init(){
              Vec(1,0,0));   // up-direction
   scene.addCamera(cam);
 
-  if(pa("-o")){
+  
+  if(pa("-o")){ // either load an .obj file
     scene.addObject(new SceneObject(*pa("-o")));
-    // add an object to the scene
-  }else{
+  }else{ // or create a simple cube
     float data[] = {0,0,0,7,3,2};
     scene.addObject(new SceneObject("cuboid",data));
   }
 
-  // use mouse events for camera movement
+  // link the scene's first camera with mouse gestures in the draw-GUI-component
   gui["draw"].install(scene.getMouseHandler(0));
 }
 
 
 void run(){
+  DrawHandle3D draw = gui["draw"]; // get the draw-GUI compoment
+  scene.getCamera(0).setFocalLength(gui["f"]); // update the camera's focal length
+
+  // now simply copy and past this block ...
+  draw->lock();    // lock the internal drawing queue
+  draw->reset3D(); // remove former drawing commands
+  draw->callback(scene.getGLCallback(0)); // render the whole scene
+  draw->unlock();  // unlock the internal drawin queue
+  draw.update();   // post an update-event (don't use draw->update() !!)
+
   /// limit drawing speed to 25 fps
   static FPSLimiter limiter(25);
-  gui_DrawHandle3D(draw);
-  scene.getCamera(0).setFocalLength(gui.getValue<float>("f"));
-
-  draw->lock();
-  draw->reset3D();
-  draw->callback(scene.getGLCallback(0));
-  draw->unlock();
-  draw.update();
-
   limiter.wait();
 }
 
 
 int main(int n, char**ppc){
+  /// create a whole application 
   return ICLApplication(n,ppc,"-obj|-o(.obj-filename)",init,run).exec();
 }
 

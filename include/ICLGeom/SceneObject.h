@@ -43,12 +43,79 @@ namespace icl{
   class Scene;
   /** \endcond */
  
+  
+  /// The SceneObject class defines visible objects in scenes or scene graph nodes
+  /** SceneObject instances are used in combination with the icl::Scene class. You
+      can add SceneObjects into a Scene and then render these as an image overlay.
+      
+      A scene object is defined by
+      - a list of 3D-homogeneous vertices
+      - a list of primitives that use indices to the vertex list 
+      - a transformation matrix
+      - a list of children that are rendered relatively to their parent object 
+      
+      SceneGraph objects can also have no vertices. In this case they are invisible
+      nodes within a scene graph.
+      
+      \section CREATION Creation of SceneObjects
+      Usually special SceneObject instances are created by subclassing the SceneObject
+      class. Subclasses can either simply add other SceneObjects e.g. using the
+      utility methods SceneObject::addCube or SceneObject::addSphere or they can also
+      define a custom geometry by adding vertices and primitives using 
+      SceneObject::addVertex and e.g. SceneObject::addLine or SceneObject::addQuad
+      
+
+      \section NORMALS Normals 
+      Normals are used for realistic lighting. Therefore, it is recommended to use one
+      of the provided NormalMode-modes. <b>Please note:</b> In you custom extension 
+      of the SceneObject class you have to set the normal mode appropriately <b>before</b>
+      you add vertices and primitives. The normal-mode can only be set in a SceneObject's
+      implementation using the protected method SceneObject::setNormalMode.
+      
+      \subsection AN AutoNormals
+      If the AutoNormals mode is activated (which is also be used by default), the normals
+      passed to SceneObject::addVertex and the other primitive methods like
+      SceneObject::addTriangle or SceneObject::addQuad are not stored internally. In this
+      mode normals are created by the following method:
+      
+      - lines: no auto normals
+      - triangles (vertices a,b,c) -> (a-c) x (b-c)
+      - quads (vertices a,b,c,d) -> (d-c) x (b-c)
+      - polygons: no auto normals supported
+      - textures: here we always use auto-normals
+      
+      \section DYN Dynamic SceneObjects
+      Custome extensions of the SceneObject-interface can implement the SceneObject's 
+      virtual method SceneObject::prepareForRendering which is calle every time before
+      the object is acutally rendered. Here, the custom SceneObject can be adapted 
+      dynamically. \n
+      <b>Please note:</b> When then you want to change the vertex-, primitive- or 
+      children count at runtime, you have to implement the virtual methods 
+      SceneObject::lock() and SceneObject::unlock() appropriately. Usually this will
+      look like this:
+      \code
+      class MySceneObject : public SceneObject{
+        Mutex mutex;
+        public:
+        void lock() { mutex.lock(); }
+        void unlock() { mutex.unlock(); }
+        ...
+      };
+      \endcode
+
+      \section CFV Colors From Vertices
+      Sometimes, you might want to draw primtives that use different colors 
+      for different corners and interpolate between these. This can be achieved
+      by using SceneObject::setColorsFromVertices(true). 
+  */
   class SceneObject{
     public:
+    
+    /// Enermeration for normal creation modes
     enum NormalMode{
-      AutoNormals,
-      NormalsPerVertex,
-      NormalsPerFace
+      AutoNormals,      //!< normals are generated automatically using cross-product
+      NormalsPerVertex, //!< normals are defined per vertex
+      NormalsPerFace    //!< normals are defined per face
     };
     /// provides direct access for the Scene class
     friend class Scene;
@@ -280,6 +347,7 @@ namespace icl{
     
     /** @} **/
     
+    /// returns the Objects normal mode
     NormalMode getNormalMode() const;
     
     protected:
