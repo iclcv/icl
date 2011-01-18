@@ -533,6 +533,11 @@ namespace icl{
     return m_children[index].get();
   }
 
+  const SceneObject *SceneObject::getChild(int index) const{
+    return const_cast<SceneObject*>(this)->getChild(index);
+  }
+
+
   void SceneObject::setPointSize(float pointSize, bool recursive){
     m_pointSize = pointSize;
     if(recursive){

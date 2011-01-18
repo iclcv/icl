@@ -57,15 +57,15 @@ void init(){
   gui["view"].install(scene.getMouseHandler(0));
   
   ICLDrawWidget3D *d = gui["view"];
-  d->setProperty("light-1","on");
-  d->setProperty("light-1-pos","{100,100,100,1}");
-  d->setProperty("light-1-diffuse","{0,0.5,0.9,0.3}");
-
-  d->setProperty("light-2","on");
-  d->setProperty("light-2-pos","{-100,-100,-100,1}");
-  d->setProperty("light-2-diffuse","{1.0,0.2,0.1,0.2}");
   Img8u bg(Size::VGA,1);
   d->setImage(&bg);
+  
+  scene.getLight(0).setDiffuse(GeomColor(10,10,255,100));
+
+  scene.getLight(1).setOn(true);
+  scene.getLight(1).setDiffuse(GeomColor(255,100,100,255));
+  scene.getLight(1).setPosition(Vec(0,0,0,1));
+  scene.getLight(1).setAnchor(p);
 }
 
 void run(){
@@ -81,7 +81,7 @@ void run(){
   d->unlock();
   d->updateFromOtherThread();
   
-  SHOW(scene.getCamera(0));
+  //SHOW(scene.getCamera(0));
 }
 
 int main(int n, char **argv){

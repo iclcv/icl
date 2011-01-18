@@ -174,8 +174,10 @@ namespace icl{
 
  
   Scene::Scene():m_drawCamerasEnabled(true),
-                 m_drawCoordinateFrameEnabled(false){
+                 m_drawCoordinateFrameEnabled(false),
+                 m_lightingEnabled(true){
     m_coordinateFrameObject = SmartPtr<SceneObject>(new CoordinateFrameSceneObject(100,5));
+    m_lights[0] = SmartPtr<SceneLight>(new SceneLight(0));
   }
   Scene::~Scene(){
     
@@ -207,6 +209,18 @@ namespace icl{
     m_drawCamerasEnabled = scene.m_drawCamerasEnabled;
     m_drawCoordinateFrameEnabled = scene.m_drawCoordinateFrameEnabled;
     m_coordinateFrameObject = scene.m_coordinateFrameObject->copy();
+    
+    for(unsigned int i=0;i<8;++i){
+      if(scene.m_lights[i]){
+        m_lights[i] = SmartPtr<SceneLight>(new SceneLight(*scene.m_lights[i]));
+        if(m_lights[i]->anchor == SceneLight::ObjectAnchor){
+          m_lights[i]->setAnchor(getObject(scene.findPath(m_lights[i]->objectAnchor)));
+        }
+      }else{
+        m_lights[i] = SmartPtr<SceneLight>();
+      }
+    }
+    
     
     return *this;
   }
@@ -436,12 +450,27 @@ namespace icl{
 
     Camera cam = m_cameras[camIndex];
     cam.getRenderParams().viewport = currentImageRect;
-
+    
+  
+    
     glMatrixMode(GL_MODELVIEW);
     glLoadMatrixf(GLMatrix(cam.getCSTransformationMatrixGL()));
 
     glMatrixMode(GL_PROJECTION);
     glLoadMatrixf(GLMatrix(cam.getProjectionMatrixGL()));
+
+    if(m_lightingEnabled){
+      glEnable(GL_LIGHTING);
+      for(int i=0;i<8;++i){
+        if(m_lights[i]) {
+          m_lights[i]->setupGL(*this,getCamera(camIndex));
+        }else{
+          glDisable(GL_LIGHT0+i);
+        }
+      }
+    }else{
+      glDisable(GL_LIGHTING);
+    }
 
     if (widget->getFitMode() == ICLWidget::fmZoom) {
       // transforms y in case of having zoom activated
@@ -599,6 +628,81 @@ namespace icl{
     }
 
     return iclMax(iclMax(rangeXYZ[1].getLength(),rangeXYZ[2].getLength()),rangeXYZ[0].getLength());
+  }
+
+  SceneLight &Scene::getLight(int index) throw (ICLException){
+    if(index < 0 || index > 7) throw ICLException("invalid light index");
+    if(!m_lights[index]){
+      m_lights[index] = SmartPtr<SceneLight>(new SceneLight(index));
+    }
+    return *m_lights[index];
+  }
+
+  const SceneLight &Scene::getLight(int index) const throw (ICLException){
+    return const_cast<Scene*>(this)->getLight(index);
+  }
+
+    
+  void Scene::setLightingEnabled(bool flag){
+    m_lightingEnabled = flag;
+  }
+
+  inline SceneObject *Scene::getObject(int index) throw (ICLException){
+    if(index < 0 || index >= (int)m_objects.size()) throw ICLException("Scene::getObject: invalid index");
+    return m_objects[index].get();
+  }
+
+  inline const SceneObject *Scene::getObject(int index) const throw (ICLException){
+    return const_cast<Scene*>(this)->getObject(index);
+  }
+  
+  SceneObject *find_object_recursive(SceneObject *o, int idx, const std::vector<int> &indices){
+    if(idx == (int)indices.size()-1) return o->getChild(indices[idx]);
+    else return find_object_recursive(o->getChild(indices[idx]),idx+1,indices);
+  }  
+  
+  SceneObject *Scene::getObject(const std::vector<int> recursiveIndices) throw (ICLException){
+    if(!recursiveIndices.size()) throw ICLException("Scene::getObject: recursiveIndices's size was 0");
+    if(recursiveIndices.size() == 1) return getObject(recursiveIndices.front());
+    SceneObject *found = 0;
+    try{
+      found = find_object_recursive(getObject(recursiveIndices.front()),1, recursiveIndices);
+    }catch(...){
+      throw ICLException("Scene::getObject: recursive object index was invalid (object not found)");
+    }
+    return found;
+  }
+  
+  SceneObject *Scene::getObject(const std::vector<int> recursiveIndices) const throw (ICLException){
+    return const_cast<Scene*>(this)->getObject(recursiveIndices);
+  }
+  
+
+  bool find_path_recursive(const SceneObject *o, std::vector<int> &path, const SceneObject *x){
+    for(int i=0;i<o->getChildCount();++i){
+      path.push_back(i);
+      if(o->getChild(i) == x || find_path_recursive(o->getChild(i),path,x)) return true;
+      else path.pop_back();
+    }
+    return false;
+  }
+
+  std::vector<int> Scene::findPath(const SceneObject *o) const throw (ICLException){
+    std::vector<int> path;
+    for(unsigned int i=0;i<m_objects.size();++i){
+      path.push_back(i); 
+      if(m_objects[i].get() == o) {
+        return path;
+      }else{
+        if(find_path_recursive(m_objects[i].get(),path,o)){
+          return path;
+        }else{
+          path.pop_back();
+        }
+      }
+    }
+    throw ICLException("Scene::findPath: given object not found!");
+    return path;
   }
 
 

@@ -345,6 +345,9 @@ namespace icl{
     /// returns child at given index
     SceneObject *getChild(int index);
     
+    /// returns child at given index (const)
+    const SceneObject *getChild(int index) const;
+    
     /** @} **/
     
     /// returns the Objects normal mode

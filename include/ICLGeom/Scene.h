@@ -37,6 +37,7 @@
 
 #include <ICLGeom/SceneObject.h>
 #include <ICLGeom/Camera.h>
+#include <ICLGeom/SceneLight.h>
 #include <ICLCore/Img.h>
 
 #ifdef HAVE_QT
@@ -196,8 +197,37 @@ int main(int n, char**ppc){
     void removeObjects(int startIndex, int endIndex=-1);
     
     /// returns the number of top-level objects
-    int getObjectCount() const { return m_objects.size(); }
+    inline int getObjectCount() const { return m_objects.size(); }
+    
+    /// returns contained object at given index
+    /** If the index is not valid, an exception is thrown */
+    SceneObject *getObject(int index) throw (ICLException);
 
+    /// returns contained object at given index (const)
+    /** If the index is not valid, an exception is thrown */
+    const SceneObject *getObject(int index) const throw (ICLException);
+    
+    /// returns a child that is deeper in the scene graph
+    /** e.g. if recursiveIndices is [1,2,3], then first, the Scene's object at 
+        index 1 is used. Then this objects child at index 2. And finally that
+        objects child at index 3 is returned. 
+        An exception is thrown if one of the indices is wrong.
+    */
+    SceneObject *getObject(const std::vector<int> recursiveIndices) throw (ICLException);
+
+    /// returns a child that is deeper in the scene graph (const)
+    /** e.g. if recursiveIndices is [1,2,3], then first, the Scene's object at 
+        index 1 is used. Then this objects child at index 2. And finally that
+        objects child at index 3 is returned. 
+        An exception is thrown if one of the indices is wrong.
+    */
+    SceneObject *getObject(const std::vector<int> recursiveIndices) const throw (ICLException);
+    
+    /// finds the recursive indices for a given object. 
+    /** If no exceptions are thrown, getObject(findPath(o)) is always o.
+        throws ans exception if the given object cannot be found. */
+    std::vector<int> findPath(const SceneObject *o) const throw (ICLException);
+    
     /// deletes and removes all objects, handlers and callbacks
     /** If camerasToo is set to true, also all cameras are removed */
     void clear(bool camerasToo=false);
@@ -230,6 +260,22 @@ int main(int n, char**ppc){
     /// returns wheter a coordinate frame is automatically shown in the scene
     /** Optionally, destination pointers can be given to query the current coordinate frames parameters */
     bool getDrawCoordinateFrameEnabled(float *axisLength=0,float *axisThickness=0) const;
+
+    /// returns a reference to a light with given index
+    /** The returned reference cam be used to set lighting parameters.
+        Since OpenGL does only support 8 lights, allowed indices are 0-7.
+        If another index is passed, an exception is thrown. */
+    SceneLight &getLight(int index) throw (ICLException);
+
+    /// returns a const reference to a light with given index
+    /** Since OpenGL does only support 8 lights, allowed indices are 0-7.
+        If another index is passed, an exception is thrown. */
+    const SceneLight &getLight(int index) const throw (ICLException);
+
+    
+    /// sets whether OpenGL's lighting is globally activated
+    /** by default, lighting is activated */
+    void setLightingEnabled(bool flag);
     
     private:
 #ifdef HAVE_QT
@@ -280,6 +326,12 @@ int main(int n, char**ppc){
 
     /// internally used scene object
     SmartPtr<SceneObject> m_coordinateFrameObject;
+
+    /// internally used flag that indicates whether lighting is globally activated or not
+    bool m_lightingEnabled;
+    
+    /// internal list of lights
+    SmartPtr<SceneLight> m_lights[8];
   };
 }
 

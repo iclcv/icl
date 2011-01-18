@@ -42,7 +42,15 @@
 namespace icl{
 
   /// Extended ICLDrawWidget, able to draw 2D and 3D primitives using OpenGL
-  /** TODO: Document*/
+  /** Even though, it is possible to use the ICLDrawWidget3D for rendering
+      3D stuff on top of an image directly, it is strongly recommended to use
+      an instance of ICLGeom::Scene to manage camera, scene objects and lights.
+      A scene instance provides a single ICLDrawWidget3D::GLCallback instance 
+      that can be passed to the DrawWidget3D instace using the 
+      DrawWidget3D::callback method.
+      
+      still todo: more documentation and examples 
+  */
   class ICLDrawWidget3D : public ICLDrawWidget {
     /// Internal structure for hidden data
     struct Properties;
@@ -175,8 +183,12 @@ namespace icl{
     /// forward declaration of the internally used DrawCommandClass
     class DrawCommand3D;
 
-    /// sets internal openGL rendering properties
-    /** Currently available: 
+    /// sets internal openGL rendering properties (important: please use the ICLGeom::Scene instead)
+    /** <b>Please note:</b> These light properties are just used if
+        you use the DrawWidget3D with out an instance of ICLGeom::Scene.
+        The Scene has it's own much more sophisticated light handling.
+        
+        Currently available: 
         - property "diffuse" value "on|off" (default is on)
         - property "ambient" value "on|off" (default is off)
         - property "specular" value "on|off" (default is off) 
