@@ -78,16 +78,18 @@ struct CoordinateFrame : public SceneObject{
 } cs;
 
 struct ManuallyDefinedPoints : public SceneObject{
-  ManuallyDefinedPoints(){
-    setPointSize(6);
-  }
   Mutex mutex;
   void lock() { mutex.lock(); }
   void unlock() { mutex.unlock(); }
   void setVertices(const std::vector<Vec> &vs){
-    m_vertices = vs;
-    m_vertexColors.resize(vs.size());
-    std::fill(m_vertexColors.begin(),m_vertexColors.end(),GeomColor(255,100,100,255));
+    m_children.clear();
+    for(unsigned int i=0;i<vs.size();++i){
+      SceneObject *p = addSphere(0,0,0,4,10,10);
+      p->setColor(Primitive::quad,geom_red(255));
+      p->setVisible(Primitive::vertex,false);
+      p->setVisible(Primitive::line,false);
+      p->translate(vs[i]);
+    }
   }
 } manualPoints;
 
@@ -198,6 +200,14 @@ struct CalibTool : public DefineRectanglesMouseHandler,
         std::string selectedText = action->text().toLatin1().data();
         if(selectedText == "delete"){
           extra.clearRectAt(e.getX(),e.getY());
+        }else if(selectedText == "dublicate"){
+          Rect r = extra.getRectAt(e.getX(),e.getY());
+          r.x += 5;
+          r.y += 5;
+          Any meta = extra.getMetaDataAt(e.getX(),e.getY());
+          extra.addRect(r);
+          extra.setMetaData(extra.getNumRects()-1,meta);
+          extra.bringToFront(extra.getNumRects()-1);
         }else if(selectedText == "set world pos"){
           QString text=QInputDialog::getText(*gui.getValue<DrawHandle3D>("mainview"),
                                              "define world position",
@@ -222,25 +232,29 @@ struct CalibTool : public DefineRectanglesMouseHandler,
             f.save(filename);
           }catch(...){}
         }else if(selectedText == "load..."){
-          try{
-            std::string filename = openFileDialog("XML-Files (*.xml)");
-            ConfigFile f(filename);
-            f.setPrefix("config.");
-            extra.clearAllRects();
-            int numPoints = f["num points"];
-            for(int i=0;i<numPoints;++i){
-              extra.addRect(parse<Rect>(f["rect-"+str(i)+".rectangle"]));
-              Any meta = f["rect-"+str(i)+".world-pos"].as<std::string>();
-              extra.setMetaData(i,meta);
-            }
-          }catch(ICLException &ex){
-            SHOW(ex.what());
-          }catch(...){}
+          load();
         }
       }else{
         extra.process(e);
       }
     }
+  }
+  
+  void load(){
+    try{
+      std::string filename = openFileDialog("XML-Files (*.xml)");
+      ConfigFile f(filename);
+      f.setPrefix("config.");
+      extra.clearAllRects();
+      int numPoints = f["num points"];
+      for(int i=0;i<numPoints;++i){
+        extra.addRect(parse<Rect>(f["rect-"+str(i)+".rectangle"]));
+        Any meta = f["rect-"+str(i)+".world-pos"].as<std::string>();
+        extra.setMetaData(i,meta);
+      }
+    }catch(ICLException &ex){
+      SHOW(ex.what());
+    }catch(...){}
   }
   
   /// automatic visualiziation
@@ -315,9 +329,11 @@ struct CalibTool : public DefineRectanglesMouseHandler,
     std::vector<Vec> worldPoints(rs.size());
     std::vector<Point32f> imagePoints(rs.size());
     for(unsigned int i=0;i<rs.size();++i){
-      worldPoints[i] = extra.getMetaData(i);
-      worldPoints[i][3] = 1;
-      imagePoints[i] = rs[i].center();
+      if(extra.getMetaData(i) != ""){
+        worldPoints[i] = extra.getMetaData(i);
+        worldPoints[i][3] = 1;
+        imagePoints[i] = rs[i].center();
+      }
     }
     Camera cam = Camera::calibrate(worldPoints,imagePoints);
     cam.getRenderParams().viewport = Rect(Point::null,imageSize);
@@ -330,7 +346,9 @@ struct CalibTool : public DefineRectanglesMouseHandler,
 } *tool = 0;
 
 
-
+void load_points(){
+  tool->load();
+}
 
 void change_mode(const std::string &what){
   static ButtonGroupHandle special = gui["special"];
@@ -402,12 +420,13 @@ void init(){
            << ( GUI("vbox")  
                 << "draw3D[@handle=sceneview@minsize=16x12]"
                 << ( GUI("hbox[@maxsize=100x2]")
-                     << "button(sync)[@handle=syncCams]"
+                     << "button(real view)[@handle=syncCams]"
+                     << "button(reset view)[@handle=resetCam]"
                      << "checkbox(visualize cams,checked)[@out=visCams]"
                    )
               )
          )
-      << ( GUI("vbox")
+      << ( GUI("vbox[@maxsize=16x100]")
            <<  (GUI("hbox") 
                 << "checkbox(3D overlay,unchecked)[@out=3D@handle=h3D]"
                 << "checkbox(2D overlay,checked)[@out=2D@handle=h2D]"
@@ -424,7 +443,8 @@ void init(){
                )
            << (!tool->isNull() ? "prop(co)" : "label(no calibration object file given)")
            <<  (GUI("hbox") 
-                << "button(show and print camera)[@handle=printCam]"
+                << "button(load points)[@handle=loadPoints]"
+                << "button(show camera)[@handle=printCam]"
                 << "button(save best of 10)[@handle=saveBest10]"
                )
            )
@@ -434,8 +454,8 @@ void init(){
   gui.registerCallback(new GUI::Callback(change_mode),"mode,special");
   gui["mainview"].install(tool);
   gui["sceneview"].install(scene.getMouseHandler(0));
-
-
+  gui["loadPoints"].registerCallback(new GUI::Callback(load_points));
+  
   ButtonGroupHandle mode = gui["mode"];
   ButtonGroupHandle special = gui["special"];
   if(tool->isNull()){
@@ -449,13 +469,14 @@ void init(){
     h2D.disable();
     h2D->setChecked(false);
     h3D->setChecked(true);
-    h3D.disable();
+    //h3D.disable();
   }else{
     gui["special"].disable();
   }
   
   menu = new QMenu;
   menu->addAction("set world pos");
+  menu->addAction("dublicate");
   menu->addAction("delete");
   menu->addAction("cancel");
   menu->addSeparator();
@@ -542,6 +563,7 @@ void run(){
   gui_ButtonHandle(printCam);
   gui_ButtonHandle(saveBest10);
   gui_ButtonHandle(syncCams);
+  gui_ButtonHandle(resetCam);
   gui_LabelHandle(currError);
   gui_bool(grab);
 
@@ -635,6 +657,9 @@ void run(){
 
   if(syncCams.wasTriggered()){
     scene.getCamera(VIEW_CAM) = scene.getCamera(CALIB_CAM);
+  }
+  if(resetCam.wasTriggered()){
+    scene.getCamera(VIEW_CAM) = Camera();
   }
   
   scene.setDrawCamerasEnabled(gui["visCams"]);

@@ -195,7 +195,7 @@ namespace icl{
     }
     if(options->showMetaData){
       w.color(options->metaColor);
-      w.text(meta,center().x,center().y,7);
+      w.text(meta,center().x,center().y,9);
     }
   }
 
@@ -410,6 +410,23 @@ namespace icl{
       }
     }
   }
+
+  void DefineRectanglesMouseHandler::bringToFront(int idx){
+    Mutex::Locker l(this);
+    ICLASSERT_RETURN(idx >= 0 && idx < (int)rects.size());
+    DefinedRect r = rects[idx];
+    rects.erase(rects.begin()+idx);
+    rects.insert(rects.begin(),1,r);
+  }
+    
+  void DefineRectanglesMouseHandler::bringToBack(int idx){
+    Mutex::Locker l(this);
+    ICLASSERT_RETURN(idx >= 0 && idx < (int)rects.size());
+    DefinedRect r = rects[idx];
+    rects.erase(rects.begin()+idx);
+    rects.push_back(r);
+  }
+  
 
 
 }

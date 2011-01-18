@@ -277,6 +277,11 @@ namespace icl{
     /// sets the meta data at the rect at given x,y-position
     void setMetaDataAt(int x, int y, const Any &data);
 
+    /// brings one rectangle to the front internally
+    void bringToFront(int idx);
+    
+    /// brings one rectangle to the back internally
+    void bringToBack(int idx);
   };
 }
 

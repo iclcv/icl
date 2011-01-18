@@ -305,6 +305,8 @@ namespace icl{
     // Nontheless, prepareForRenderingAndTransform is still used for
     // the non-opengl based redering pipeline ...
     o->prepareForRendering();
+
+    o->lock();
     
     const std::vector<Vec> &ps = o->m_vertices;
     glMatrixMode(GL_MODELVIEW);
@@ -437,6 +439,7 @@ namespace icl{
     }
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
+    o->unlock();
   }
 
   void Scene::render(int camIndex, ICLDrawWidget3D *widget){
