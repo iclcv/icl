@@ -417,7 +417,7 @@ namespace icl{
           // left hand normal ?!
           glNormal3fv(normalize(cross(b-c,d-c)).data());
           GLTextureMapBaseImage tim(&p.tex);
-          tim.drawTo3D(a.begin(),b.begin(),d.begin());
+          tim.drawTo3D(a.begin(),b.begin(),d.begin(),p.mode);
           break;
         }
         default:

@@ -137,6 +137,15 @@ namespace icl{
     }
   }
 
+  void SceneObject::setTextureInterpolation(scalemode mode) throw (ICLException){
+    if(mode != interpolateLIN && mode != interpolateNN){
+      throw ICLException("SceneObject::setTextureInterpolation invalid interpolation mode");
+    }
+    for(unsigned int i=0;i<m_primitives.size();++i){
+      m_primitives[i].mode = mode;
+    }
+  }
+
   SceneObject::SceneObject(const std::string &type,const float *params):
     m_lineColorsFromVertices(false),
     m_triangleColorsFromVertices(false),

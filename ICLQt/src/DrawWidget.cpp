@@ -906,9 +906,6 @@ namespace icl{
   void ICLDrawWidget::nofill(){
     m_vecCommands.push_back(new NoFillCommand());
   }
-  void ICLDrawWidget::setPseudoImage(Size s){
-    m_vecCommands.push_back(new SetImageSizeCommand(s));
-  }
   void ICLDrawWidget::clear(float r, float g, float b, float alpha){
     m_vecCommands.push_back(new ClearCommand(r,g,b,alpha));
   }

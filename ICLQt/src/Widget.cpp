@@ -456,9 +456,11 @@ namespace icl{
     ImgParams p;
     icl::depth d;
     Point mousePos;
+    Size viewPort;
+    bool haveImage;
     
     ImageInfoIndicator(QWidget *parent):
-      ThreadedUpdatableWidget(parent){
+      ThreadedUpdatableWidget(parent),haveImage(false){
       d = (icl::depth)(-2);
       setBackgroundRole(QPalette::Window);
       //#if (QT_VERSION >= QT_VERSION_CHECK(4, 5, 0))
@@ -469,6 +471,13 @@ namespace icl{
     void update(const ImgParams p, icl::depth d){
       this->p = p;
       this->d = d;
+      haveImage = true;
+      updateFromOtherThread();
+    }
+    
+    void update(const Size &viewPortSize){
+      haveImage = false;
+      viewPort = viewPortSize;
       updateFromOtherThread();
     }
     
@@ -512,8 +521,13 @@ namespace icl{
      pa.drawRect(QRectF(0,0,width(),height()));
      static const char D[] = "-";
      
-     std::string info = posstr()+" "+dstr()+D+str(p.getSize())+D+rstr()+D+fstr();
-     pa.drawText(QRectF(0,0,width(),height()),Qt::AlignCenter,info.c_str());
+     if(!haveImage){
+       std::string info = "no image, viewport:"+str(viewPort);
+       pa.drawText(QRectF(0,0,width(),height()),Qt::AlignCenter,info.c_str());
+     }else{
+       std::string info = posstr()+" "+dstr()+D+str(p.getSize())+D+rstr()+D+fstr();
+       pa.drawText(QRectF(0,0,width(),height()),Qt::AlignCenter,info.c_str());
+     }
    }
   };
 
@@ -532,7 +546,8 @@ namespace icl{
       imageInfoIndicatorEnabled(true),infoTabVisible(false),
       selectedTabIndex(0),embeddedZoomMode(false),
       embeddedZoomModeJustEnabled(false),embeddedZoomRect(0),
-      useLinInterpolation(false),nextButtonX(2),lastMouseReleaseButton(0)
+      useLinInterpolation(false),nextButtonX(2),lastMouseReleaseButton(0),
+      defaultViewPort(Size::VGA)
     {
       for(int i=0;i<3;++i){
         bci[i] = 0;
@@ -599,7 +614,7 @@ namespace icl{
     float gridColor[4];
     float backgroundColor[3];
     Point wheelDelta;
-    Size defaultImageSize;
+    Size defaultViewPort;
     
     bool event(int x, int y, OSDGLButton::Event evt){
       bool any = false;
@@ -1407,6 +1422,7 @@ namespace icl{
     x+=GL_BUTTON_X_INC;
 
     m_data->imageInfoIndicator = new ImageInfoIndicator(this);
+    m_data->imageInfoIndicator->update(m_data->defaultViewPort);
   }
 
   // }}}
@@ -1559,9 +1575,13 @@ namespace icl{
 
   // }}}
   
-  void ICLWidget::setDefaultImageSize(const Size &size){
+  void ICLWidget::setViewPort(const Size &size){
     // {{{ open
-    m_data->defaultImageSize = size;
+    m_data->defaultViewPort = size;
+    if(!m_data->image->hasImage()){
+      m_data->imageInfoIndicator->update(m_data->defaultViewPort);
+    }
+      
   }
   // }}}
 
@@ -1928,6 +1948,7 @@ namespace icl{
     LOCK_SECTION;
     if(!image){
       m_data->image->updateTextures(0); // in this case [null will be drawn]
+      m_data->imageInfoIndicator->update(m_data->defaultViewPort);
       return;
     }
 
@@ -2415,10 +2436,10 @@ namespace icl{
       m_data->mutex.lock();
     }
     Size s;
-    if(m_data->image){
+    if(m_data->image->hasImage()){
       s = m_data->image->getSize(); 
     }else{
-      s = Size(width(),height());
+      s = m_data->defaultViewPort;
     }
     if(fromGUIThread){
       m_data->mutex.unlock();
@@ -2438,9 +2459,9 @@ namespace icl{
     Rect r;
     if(m_data->fm == fmZoom){
       QMutexLocker locker(&m_data->menuMutex);
-      r = computeRect(m_data->image->hasImage() ? m_data->image->getSize() : m_data->defaultImageSize, getSize(),fmZoom,m_data->zoomRect);
+      r = computeRect(m_data->image->hasImage() ? m_data->image->getSize() : m_data->defaultViewPort, getSize(),fmZoom,m_data->zoomRect);
     }else{
-      r = computeRect(m_data->image->hasImage() ? m_data->image->getSize() : m_data->defaultImageSize, getSize(),m_data->fm);
+      r = computeRect(m_data->image->hasImage() ? m_data->image->getSize() : m_data->defaultViewPort, getSize(),m_data->fm);
     }
     if(fromGUIThread){
       m_data->mutex.unlock();

@@ -57,13 +57,13 @@ void init(){
   gui["view"].install(scene.getMouseHandler(0));
   
   ICLDrawWidget3D *d = gui["view"];
-  Img8u bg(Size::VGA,1);
-  d->setImage(&bg);
   
   scene.getLight(0).setDiffuse(GeomColor(10,10,255,100));
 
   scene.getLight(1).setOn(true);
   scene.getLight(1).setDiffuse(GeomColor(255,100,100,255));
+  scene.getLight(1).setDiffuseEnabled(true);
+  scene.getLight(1).setSpecular(GeomColor(255,100,100,255));
   scene.getLight(1).setPosition(Vec(0,0,0,1));
   scene.getLight(1).setAnchor(p);
 }

@@ -81,15 +81,17 @@ namespace icl{
     }
     
     /// texture constructor
-    Primitive(int a, int b, int c, int d,const Img8u &tex, bool deepCopy=false):
-      a(a),b(b),c(c),d(d),tex(tex),type(texture){
-        if(deepCopy) this->tex.detach();
+    Primitive(int a, int b, int c, int d,const Img8u &tex, bool deepCopy=false, scalemode mode=interpolateNN):
+      a(a),b(b),c(c),d(d),tex(tex),type(texture),mode(mode){
+      if(deepCopy) this->tex.detach();
     }
     
     /// Special constructor to create a texture primitive that contains 3D text
     /** There is not special TEXT-type: type remains 'texture' */
-    Primitive(int a, int b, int c, int d, const std::string &text, const GeomColor &color, int textSize=30):
-      a(a),b(b),c(c),d(d),tex(create_text_texture(text,color,textSize)),type(texture){}
+     Primitive(int a, int b, int c, int d, const std::string &text, const GeomColor &color, 
+               int textSize=30, scalemode mode=interpolateNN):
+      a(a),b(b),c(c),d(d),tex(create_text_texture(text,color,textSize)),type(texture),
+      mode(mode){}
 
     /// Creates a polygon primitive
     Primitive(const std::vector<int> &polyData, const GeomColor &color=GeomColor()):
@@ -123,6 +125,9 @@ namespace icl{
     
     /// primitve type
     Type type;
+    
+    /// interpolation state for textures
+    scalemode mode;
   };
   
 }

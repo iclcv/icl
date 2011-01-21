@@ -118,7 +118,7 @@ namespace icl{
         SecondAxis
         </pre>
     **/
-    void drawTo3D(const float *pCenter,const float *pFirstAxis,const float *pSecondAxis);
+    void drawTo3D(const float *pCenter,const float *pFirstAxis,const float *pSecondAxis, scalemode smode=interpolateNN);
     
     
     /// if the GLTextureMapBase image has no Image, it cannot be drawn

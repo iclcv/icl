@@ -400,12 +400,6 @@ int main(int n, char **ppc){
     */
     void reset();
     
-    /// if no real image is available
-    /** This function will use a black image of size s to be
-        drawed in the background */
-    void setPseudoImage(Size s);
-    
-    
     /// this function can be reimplemented in derived classes to perform some custom drawing operations
     virtual void customPaintEvent(PaintEngine *e);
 

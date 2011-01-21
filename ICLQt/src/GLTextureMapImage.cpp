@@ -626,7 +626,8 @@ namespace icl{
   }
 
   template<class T>
-  void GLTextureMapImage<T>::drawTo3D(const float *pCenter,const float *pFirstAxis,const float *pSecondAxis){
+  void GLTextureMapImage<T>::drawTo3D(const float *pCenter,const float *pFirstAxis,
+                                      const float *pSecondAxis, scalemode mode){
     if(!m_bUseSingleBuffer){
       
       glGenTextures(m_iXCells*m_iYCells,m_matTextureNames.data()); 
@@ -643,8 +644,8 @@ namespace icl{
           
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,mode == interpolateLIN ? GL_LINEAR : GL_NEAREST);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,mode == interpolateLIN ? GL_LINEAR : GL_NEAREST);
           
           if(m_iChannels == 1){
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_LUMINANCE, glType, m_matCellData[x][y]);

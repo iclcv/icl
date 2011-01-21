@@ -295,10 +295,10 @@ int main(int nArgs, char **ppcArg){
     /// sets wheather to notify, that no image was set
     void setShowNoImageWarnings(bool showWarnings);
     
-    /// set a default image size, which is used of setting up the viewport, if no image was set
+    /// Sets a viewport size that is used if no image was set
     /** if no image was set, then the OpenGL viewport is adapted as if there was an image with this size.
-        If the given size is Size::null (which it is by default), then the viewport is not adated */
-    void setDefaultImageSize(const Size &size);
+        If the given size is Size::null  the viewport is not adated */
+    void setViewPort(const Size &size);
 
     /// Adds a new toggle-button to the OSD-button bar on the upper widget edge
     /** Special buttons can directly be attached to specific ICLWidget slots, 

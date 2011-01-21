@@ -274,21 +274,22 @@ namespace icl{
       return;
     }
   }
-  void GLTextureMapBaseImage::drawTo3D(const float *pCenter,const float *pFirstAxis,const float *pSecondAxis){
+  void GLTextureMapBaseImage::drawTo3D(const float *pCenter,const float *pFirstAxis,
+                                       const float *pSecondAxis, scalemode mode){
     if(m_po8u){
-      m_po8u->drawTo3D(pCenter,pFirstAxis,pSecondAxis);
+      m_po8u->drawTo3D(pCenter,pFirstAxis,pSecondAxis,mode);
       return;
     }
     if(m_po16s){
-      m_po16s->drawTo3D(pCenter,pFirstAxis,pSecondAxis);
+      m_po16s->drawTo3D(pCenter,pFirstAxis,pSecondAxis,mode);
       return;
     }
     if(m_po32s){
-      m_po32s->drawTo3D(pCenter,pFirstAxis,pSecondAxis);
+      m_po32s->drawTo3D(pCenter,pFirstAxis,pSecondAxis,mode);
       return;
     }
     if(m_po32f){
-      m_po32f->drawTo3D(pCenter,pFirstAxis,pSecondAxis);
+      m_po32f->drawTo3D(pCenter,pFirstAxis,pSecondAxis,mode);
       return;
     }
   }

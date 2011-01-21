@@ -275,10 +275,14 @@
         label of this matrix can later on be accessed to display integers, floats and strings.
       - <b>image</b>\n
         No parameters here!
-      - <b>draw</b>\n
-        No parameters here!
-      - <b>draw3D</b>\n
-        No parameters here!
+      - <b>draw(VIEW_PORT_SIZE=VGA)</b>\n
+        The given viewport size is only used, if no background image was set. In this case, 
+        the draw-coordinate frame is set as if a black background image with this size was given. The
+        view-port size can later be adapted using DrawWidget::setViewPort(Size)
+      - <b>draw3D(VIEW_PORT_SIZE=VGA)</b>\n
+        As for the draw-component, also here the given viewport size is only used if no image was set.
+        The viewport is used to hold the 3D-context's aspect ratio and for zooming. Usually the default
+        sizf of VGA is ok.
       - <b>combo(string ENTRY1,string ENTRY2,...)</b>\n
         Creates a combox with given entries. The entry list is comma separated and must have at least on
         element.

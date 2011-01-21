@@ -233,6 +233,10 @@ namespace icl{
     /// sets point size
     void setLineWidth(float lineWidth, bool recursive=true);
 
+    /// sets the interpolation mode for textures
+    /** allowed values are interpolateNN and interpolateLIN*/
+    void setTextureInterpolation(scalemode mode) throw (ICLException);
+    
     /// this function can be implemented by subclasses that need an eplicit locking
     /** E.g. if an objects data is updated from another thread, you can sub-class 
         this class and implement a locking mechanism for it*/

@@ -152,7 +152,8 @@ namespace icl{
     **/
     void drawTo3D(const float *pCenter,
                   const float *pFirstAxis,
-                  const float *pSecondAxis);
+                  const float *pSecondAxis,
+                  scalemode mode=interpolateNN);
     
     /// returns current image height
     int getImageWidth() const { return m_iImageW; }

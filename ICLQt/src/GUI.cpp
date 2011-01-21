@@ -1327,8 +1327,11 @@ public:
   // }}}
   struct DrawGUIWidget : public GUIWidget{
     // {{{ open
-    DrawGUIWidget(const GUIDefinition &def):GUIWidget(def,0){
+    DrawGUIWidget(const GUIDefinition &def):GUIWidget(def,0,1){
       m_poWidget = new ICLDrawWidget(def.parentWidget());
+      if(def.numParams() == 1) {
+        m_poWidget->setViewPort(parse<Size>(def.param(0)));
+      }
       addToGrid(m_poWidget);
       
       if(def.handle() != ""){
@@ -1422,8 +1425,13 @@ public:
 #ifdef HAVE_OPENGL
   struct DrawGUIWidget3D : public GUIWidget{
     // {{{ open
-    DrawGUIWidget3D(const GUIDefinition &def):GUIWidget(def,0){
+    DrawGUIWidget3D(const GUIDefinition &def):GUIWidget(def,0,1){
       m_poWidget3D = new ICLDrawWidget3D(def.parentWidget());
+      if(def.numParams() == 1) {
+        m_poWidget3D->setViewPort(parse<Size>(def.param(0)));
+      }
+
+
       addToGrid(m_poWidget3D);
       
       if(def.handle() != ""){

@@ -47,9 +47,6 @@ void init(){
          "@label=focal length@maxsize=100x3]";
   gui.show();
   
-  // defines the scene's viewport
-  (**gui.getValue<DrawHandle3D>("draw")).setDefaultImageSize(Size(640,480));
-
   // create camera and add to scene instance
   Camera cam(Vec(0,0,-10), // position
              Vec(0,0,1),   // view-direction
