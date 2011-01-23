@@ -45,8 +45,10 @@
 #ifdef HAVE_OPENCV211
 #include <opencv2/highgui/highgui_c.h>
 #include <opencv2/calib3d/calib3d.hpp>
-#include <opencv2/core/core_c.h>
-#include <opencv2/core/types_c.h>
+#include <opencv2/imgproc/types_c.h>
+#include <opencv2/imgproc/imgproc_c.h>
+//#include <opencv2/core/core_c.h>
+//#include <opencv2/core/types_c.h>
 #else
 #include <cv.h>
 #endif
