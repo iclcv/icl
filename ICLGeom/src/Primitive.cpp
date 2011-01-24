@@ -39,15 +39,144 @@ namespace icl{
   }
 
   Primitive &Primitive::operator=(const Primitive &other){
-    a = other.a;      
-    b = other.b;
-    c = other.c;
-    d = other.d;
-    polyData = other.polyData;
+    vertexIndices = other.vertexIndices;
+    normalIndices = other.normalIndices;
     color = other.color;
     tex = other.tex.detached();
     type = other.type;
+    hasNormals = other.hasNormals;
     return *this;
   }
+
+
+  Primitive::Primitive():
+    type(nothing){
+  }
+    
+  /// Line-Constructor
+  Primitive::Primitive(int a, int b, const GeomColor &color):
+    vertexIndices(2),color(color),type(line),hasNormals(false){
+    vertexIndices[0] = a;
+    vertexIndices[1] = b;
+  }
+  /// Line-Constructor
+  Primitive::Primitive(int a, int b, const GeomColor &color, int na, int nb):
+    vertexIndices(2),normalIndices(2),color(color),type(line),hasNormals(true){
+    vertexIndices[0] = a;
+    vertexIndices[1] = b;
+    normalIndices[0] = na;
+    normalIndices[1] = nb;
+  }
+
+  /// Triangle constructor
+  Primitive::Primitive(int a, int b, int c, const GeomColor &color):
+    vertexIndices(3),color(color),type(triangle),hasNormals(false){
+    vertexIndices[0] = a;
+    vertexIndices[1] = b;
+    vertexIndices[2] = c;
+  }
+    
+  /// Triangle constructor
+  Primitive::Primitive(int a, int b, int c, const GeomColor &color,int na, int nb, int nc):
+    vertexIndices(3),normalIndices(3),color(color),type(triangle),hasNormals(true){
+    vertexIndices[0] = a;
+    vertexIndices[1] = b;
+    vertexIndices[2] = c;
+    normalIndices[0] = na;
+    normalIndices[1] = nb;
+    normalIndices[2] = nc;
+  }
+    
+  /// Quad constructor
+  Primitive::Primitive(int a, int b, int c, int d,const GeomColor &color):
+    vertexIndices(4),color(color),type(quad),hasNormals(false){
+    vertexIndices[0] = a;
+    vertexIndices[1] = b;
+    vertexIndices[2] = c;
+    vertexIndices[3] = d;
+  }
+
+  /// Quad constructor
+  Primitive::Primitive(int a, int b, int c, int d,const GeomColor &color, int na, int nb, int nc, int nd):
+    vertexIndices(4),normalIndices(4),color(color),type(quad),hasNormals(true){
+    vertexIndices[0] = a;
+    vertexIndices[1] = b;
+    vertexIndices[2] = c;
+    vertexIndices[3] = d;
+    normalIndices[0] = na;
+    normalIndices[1] = nb;
+    normalIndices[2] = nc;
+    normalIndices[3] = nd;
+  }
+    
+  /// texture constructor
+  Primitive::Primitive(int a, int b, int c, int d,const Img8u &tex, bool deepCopy, scalemode mode):
+    vertexIndices(4),tex(tex),type(texture),mode(mode),hasNormals(false){
+    vertexIndices[0] = a;
+    vertexIndices[1] = b;
+    vertexIndices[2] = c;
+    vertexIndices[3] = d;
+    if(deepCopy) this->tex.detach();
+  }
+
+  /// texture constructor
+  Primitive::Primitive(int a, int b, int c, int d,const Img8u &tex, bool deepCopy, scalemode mode, 
+                       int na, int nb, int nc, int nd):
+    vertexIndices(4),normalIndices(4),tex(tex),type(texture),mode(mode),hasNormals(true){
+    vertexIndices[0] = a;
+    vertexIndices[1] = b;
+    vertexIndices[2] = c;
+    vertexIndices[3] = d;
+    normalIndices[0] = na;
+    normalIndices[1] = nb;
+    normalIndices[2] = nc;
+    normalIndices[3] = nd;
+    if(deepCopy) this->tex.detach();
+  }
+    
+  /// Special constructor to create a texture primitive that contains 3D text
+  /** There is not special TEXT-type: type remains 'texture' */
+  Primitive::Primitive(int a, int b, int c, int d, const std::string &text, const GeomColor &color, 
+                       int textSize, scalemode mode):
+    vertexIndices(4),tex(create_text_texture(text,color,textSize)),type(texture),
+    mode(mode),hasNormals(false){
+    vertexIndices[0] = a;
+    vertexIndices[1] = b;
+    vertexIndices[2] = c;
+    vertexIndices[3] = d;
+  }
+
+  /// Special constructor to create a texture primitive that contains 3D text
+  /** There is not special TEXT-type: type remains 'texture' */
+  Primitive::Primitive(int a, int b, int c, int d, const std::string &text, const GeomColor &color, 
+                       int textSize, scalemode mode, int na, int nb, int nc, int nd):
+    vertexIndices(4),normalIndices(4),tex(create_text_texture(text,color,textSize)),type(texture),
+    mode(mode),hasNormals(true){
+    vertexIndices[0] = a;
+    vertexIndices[1] = b;
+    vertexIndices[2] = c;
+    vertexIndices[3] = d;
+    normalIndices[0] = na;
+    normalIndices[1] = nb;
+    normalIndices[2] = nc;
+    normalIndices[3] = nd;
+  }
+
+
+  /// Creates a polygon primitive
+  Primitive::Primitive(const std::vector<int> &polyData, const GeomColor &color):
+    vertexIndices(polyData),type(polygon),hasNormals(false){
+  }
+
+  /// Creates a polygon primitive
+  Primitive::Primitive(const std::vector<int> &polyData, const GeomColor &color, const std::vector<int> &normalIndices):
+    vertexIndices(polyData),normalIndices(normalIndices),type(polygon),hasNormals(true){
+  }
+
+  /// Creates a deep copy (in particular deep copy of the texture image)
+  Primitive::Primitive(const Primitive &other){
+    *this = other;
+  }
+
 
 }

@@ -61,46 +61,52 @@ namespace icl{
     };
 
     /// Base constructor creating an empty primitive
-    Primitive():
-      type(nothing){
-    }
+    Primitive();
     
     /// Line-Constructor
-    Primitive(int a, int b, const GeomColor &color=GeomColor()):
-      a(a),b(b),color(color),type(line){
-    }
+    Primitive(int a, int b, const GeomColor &color=GeomColor());
+
+    /// Line-Constructor
+    Primitive(int a, int b, const GeomColor &color, int na, int nb);
+
+    /// Triangle constructor
+    Primitive(int a, int b, int c, const GeomColor &color=GeomColor());
     
     /// Triangle constructor
-    Primitive(int a, int b, int c, const GeomColor &color=GeomColor()):
-      a(a),b(b),c(c),color(color),type(triangle){
-    }
+    Primitive(int a, int b, int c, const GeomColor &color,int na, int nb, int nc);
     
     /// Quad constructor
-    Primitive(int a, int b, int c, int d,const GeomColor &color=GeomColor()):
-      a(a),b(b),c(c),d(d),color(color),type(quad){
-    }
+    Primitive(int a, int b, int c, int d,const GeomColor &color=GeomColor());
+
+    /// Quad constructor
+    Primitive(int a, int b, int c, int d,const GeomColor &color, int na, int nb, int nc, int nd);
     
     /// texture constructor
-    Primitive(int a, int b, int c, int d,const Img8u &tex, bool deepCopy=false, scalemode mode=interpolateNN):
-      a(a),b(b),c(c),d(d),tex(tex),type(texture),mode(mode){
-      if(deepCopy) this->tex.detach();
-    }
+    Primitive(int a, int b, int c, int d,const Img8u &tex, bool deepCopy=false, scalemode mode=interpolateNN);
+
+    /// texture constructor
+    Primitive(int a, int b, int c, int d,const Img8u &tex, bool deepCopy, scalemode mode,
+              int na, int nb, int nc, int nd);
     
     /// Special constructor to create a texture primitive that contains 3D text
     /** There is not special TEXT-type: type remains 'texture' */
-     Primitive(int a, int b, int c, int d, const std::string &text, const GeomColor &color, 
-               int textSize=30, scalemode mode=interpolateNN):
-      a(a),b(b),c(c),d(d),tex(create_text_texture(text,color,textSize)),type(texture),
-      mode(mode){}
+    Primitive(int a, int b, int c, int d, const std::string &text, const GeomColor &color, 
+              int textSize=30, scalemode mode=interpolateNN);
+    
+    /// Special constructor to create a texture primitive that contains 3D text
+    /** There is not special TEXT-type: type remains 'texture' */
+    Primitive(int a, int b, int c, int d, const std::string &text, const GeomColor &color, 
+              int textSize, scalemode mode, int na, int nb, int nc, int nd);
+    
 
     /// Creates a polygon primitive
-    Primitive(const std::vector<int> &polyData, const GeomColor &color=GeomColor()):
-      polyData(polyData),type(polygon){}
+    Primitive(const std::vector<int> &polyData, const GeomColor &color=GeomColor());
+
+    /// Creates a polygon primitive
+    Primitive(const std::vector<int> &polyData, const GeomColor &color, const std::vector<int> &normalIndices);
 
     /// Creates a deep copy (in particular deep copy of the texture image)
-    Primitive(const Primitive &other){
-      *this = other;
-    }
+    Primitive(const Primitive &other);
 
     /// Creates a deep copy in assignment
     Primitive &operator=(const Primitive &other);
@@ -109,13 +115,21 @@ namespace icl{
     static Img8u create_text_texture(const std::string &text,const GeomColor &color, int textSize=30);
     
     /// 4 vertex references for lines, quads triangles and textures
-    int a;
-    int b;
-    int c;
-    int d;
+    int a() const { return vertexIndices[0]; }
+    int b() const { return vertexIndices[1]; }
+    int c() const { return vertexIndices[2]; }
+    int d() const { return vertexIndices[3]; }
 
-    /// 3-n vertex references for polygons
-    std::vector<int> polyData;
+    int na() const { return normalIndices[0]; }
+    int nb() const { return normalIndices[1]; }
+    int nc() const { return normalIndices[2]; }
+    int nd() const { return normalIndices[3]; }
+    
+    /// vertex indices
+    std::vector<int> vertexIndices;
+    
+    /// vertex normal indices -> if size is 0, auto-normals are created using cross-product
+    std::vector<int> normalIndices;
     
     /// primitve color
     GeomColor color;
@@ -128,6 +142,9 @@ namespace icl{
     
     /// interpolation state for textures
     scalemode mode;
+    
+    /// flag that indicates whether a normal was defined
+    bool hasNormals;
   };
   
 }

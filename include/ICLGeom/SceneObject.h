@@ -66,17 +66,13 @@ namespace icl{
       
 
       \section NORMALS Normals 
-      Normals are used for realistic lighting. Therefore, it is recommended to use one
-      of the provided NormalMode-modes. <b>Please note:</b> In you custom extension 
-      of the SceneObject class you have to set the normal mode appropriately <b>before</b>
-      you add vertices and primitives. The normal-mode can only be set in a SceneObject's
-      implementation using the protected method SceneObject::setNormalMode.
+      Normals are used for realistic lighting. Therefore, it is recommended to use 
+      normals when objects are defined. Normals are also stored in a list. Each face-vertex
+      references one of the normals of this list.
       
       \subsection AN AutoNormals
-      If the AutoNormals mode is activated (which is also be used by default), the normals
-      passed to SceneObject::addVertex and the other primitive methods like
-      SceneObject::addTriangle or SceneObject::addQuad are not stored internally. In this
-      mode normals are created by the following method:
+      If no normals are provided, the normals are computed automatically at run-time using
+      cross-product:
       
       - lines: no auto normals
       - triangles (vertices a,b,c) -> (a-c) x (b-c)
@@ -111,12 +107,6 @@ namespace icl{
   class SceneObject{
     public:
     
-    /// Enermeration for normal creation modes
-    enum NormalMode{
-      AutoNormals,      //!< normals are generated automatically using cross-product
-      NormalsPerVertex, //!< normals are defined per vertex
-      NormalsPerFace    //!< normals are defined per face
-    };
     /// provides direct access for the Scene class
     friend class Scene;
     
@@ -171,34 +161,82 @@ namespace icl{
     bool isVisible(Primitive::Type t) const;
     
     /// adds a new vertex to this object
-    /** The given normal is only used if the normal mode is set to NormalsPerVertex */
-    void addVertex(const Vec &p, const GeomColor &color=GeomColor(255,0,0,255), const Vec &normal=Vec(0.0f));
+    void addVertex(const Vec &p, const GeomColor &color=GeomColor(255,0,0,255));
+    
+    /// adds a new normal to this object
+    void addNormal(const Vec &n);
     
     /// adds a new line to this object
-    /** The given normal is only used if the normal mode is set to NormalsPerFace */
-    void addLine(int x, int y, const GeomColor &color=GeomColor(100,100,100,255), const Vec &normal=Vec(0.0f));
+    /** If the given normal indices (na and nb) are -1, no normals are used for this primitives */
+    void addLine(int x, int y, int na, int nb, const GeomColor &color=GeomColor(100,100,100,255));
+
+    /// convenience method for creation of a line with auto-normals
+    inline void addLine(int x, int y, const GeomColor &color=GeomColor(100,100,100,255)){
+      addLine(x,y,-1,-1,color);
+    }
     
     /// adds a new triangle to this onject
-    /** The given normal is only used if the normal mode is set to NormalsPerFace */
-    void addTriangle(int a, int b, int c, const GeomColor &color=GeomColor(0,100,250,255),const Vec &normal=Vec(0.0f));
+    /** If the given normal indices (na,nb and nc) are -1, auto-normal are computed using cross-product */
+    void addTriangle(int a, int b, int c, int na, int nb, int nc,
+                     const GeomColor &color=GeomColor(0,100,250,255));
+    
+    /// convenience method for creation of a triangle with auto-normals
+    inline void addTriangle(int a, int b, int c, const GeomColor &color=GeomColor(0,100,250,255)){
+      addTriangle(a,b,c,-1,-1,-1,color);
+    }
+
 
     /// adds a new triangle to this onject
-    /** The given normal is only used if the normal mode is set to NormalsPerFace */
-    void addQuad(int a, int b, int c, int d, const GeomColor &color=GeomColor(0,100,250,255), const Vec &normal=Vec(0.0f)); 
+    /** If the given normal indices (na,nb,nc and nd) are -1, auto-normal are computed using cross-product */
+    void addQuad(int a, int b, int c, int d, int na, int nb, int nc, int nd, 
+                 const GeomColor &color=GeomColor(0,100,250,255)); 
+
+    /// convenience method for creation of a quad with auto-normals
+    inline void addQuad(int a, int b, int c, int d, const GeomColor &color=GeomColor(0,100,250,255)){
+      addQuad(a,b,c,d,-1,-1,-1,-1,color);
+    }
 
     /// add a polygon to this object (note triangles and quads are slower here)
-    /** The given normal is only used if the normal mode is set to NormalsPerFace */
-    void addPolygon(const std::vector<int> &vertexIndices, const GeomColor &color=GeomColor(0,100,250,255), const Vec &normal=Vec(0.0f)); 
+    /** If the given normal indices's size is 0, auto-normal are computed using cross-product */
+    void addPolygon(const std::vector<int> &vertexIndices, 
+                    const std::vector<int> &normalIndices,
+                    const GeomColor &color=GeomColor(0,100,250,255)); 
     
-    /// adds a textured quad to this object
-    void addTexture(int a, int b, int c, int d, const Img8u &texture, bool deepCopy=false);
+    /// convenience method for creation of a polygon with auto-normals
+    inline void addPolygon(const std::vector<int> &vertexIndices, 
+                           const GeomColor &color=GeomColor(0,100,250,255)){
+      addPolygon(vertexIndices,std::vector<int>(),color);
+    }
+
+    
+    /** If the given normal indices (na,nb,nc and nd) are -1, auto-normal are computed using cross-product */
+    void addTexture(int a, int b, int c, int d, 
+                    const Img8u &texture, 
+                    int na, int nb, int nc, int nd,
+                    bool deepCopy=false);
+
+    /// convenience method for creation of a texture with auto-normals
+    inline void addTexture(int a, int b, int c, int d, 
+                           const Img8u &texture, 
+                           bool deepCopy=false){
+      addTexture(a,b,c,d,texture,-1,-1,-1,-1,deepCopy);
+    }
 
     /// adds text-texture quad -primitive to this object
-    /** Please note, that the text aspect ratio might not be preserved 
+    /** If the given normal indices (na,nb,nc and nd) are -1, auto-normal are computed using cross-product.
+        Please note, that the text aspect ratio might not be preserved 
         @param holdTextAR not supported yet! */
     void addTextTexture(int a, int b, int c, int d, const std::string &text,
+                        const GeomColor &color, 
+                        int na, int nb, int nc, int nd,
+                        int textSize, bool holdTextAR);
+
+    /// convenience method for creation of a text-texture with auto-normals
+    inline void addTextTexture(int a, int b, int c, int d, const std::string &text,
                         const GeomColor &color=GeomColor(255,255,255,255), 
-                        int textSize=30, bool holdTextAR=true);
+                        int textSize=30, bool holdTextAR=true){
+      addTextTexture(a,b,c,d,text,color,-1,-1,-1,-1,textSize,holdTextAR);
+    }
 
     /// adds a cube child-object with given parameters
     /** returns a pointer to the cube added. This can be used to adapt
@@ -235,7 +273,7 @@ namespace icl{
 
     /// sets the interpolation mode for textures
     /** allowed values are interpolateNN and interpolateLIN*/
-    void setTextureInterpolation(scalemode mode) throw (ICLException);
+    void setTextureInterpolation(scalemode mode, bool recursive=true) throw (ICLException);
     
     /// this function can be implemented by subclasses that need an eplicit locking
     /** E.g. if an objects data is updated from another thread, you can sub-class 
@@ -354,16 +392,10 @@ namespace icl{
     
     /** @} **/
     
-    /// returns the Objects normal mode
-    NormalMode getNormalMode() const;
     
     protected:
     
-    void setNormalMode(NormalMode mode);
-    
     std::vector<Vec> m_vertices;
-
-    NormalMode m_normalMode;
     std::vector<Vec> m_normals;
     
     std::vector<GeomColor> m_vertexColors;

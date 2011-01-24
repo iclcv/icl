@@ -66,7 +66,6 @@ namespace icl{
   }
   
   SceneObject::SceneObject():
-    m_normalMode(AutoNormals),
     m_lineColorsFromVertices(false),
     m_triangleColorsFromVertices(false),
     m_quadColorsFromVertices(false),
@@ -81,43 +80,69 @@ namespace icl{
     std::fill(m_visible,m_visible+Primitive::PRIMITIVE_TYPE_COUNT,true);
   }
   
-  void SceneObject::addVertex(const Vec &p, const GeomColor &color, const Vec &normal){
+  void SceneObject::addVertex(const Vec &p, const GeomColor &color){
     m_vertices.push_back(p);
     m_vertexColors.push_back(color);
-    if(m_normalMode == NormalsPerVertex){
-      m_normals.push_back(normal);
+  }
+  
+  /// adds a new normal to this object
+  void SceneObject::addNormal(const Vec &n){
+    m_normals.push_back(n);
+  }
+
+  void SceneObject::addLine(int a, int b, int na, int nb, const GeomColor &color){
+    if(na>=0 && nb>=0){
+      m_primitives.push_back(Primitive(a,b,color,na,nb));
+    }else{
+      m_primitives.push_back(Primitive(a,b,color));
+    }
+  }
+    
+  void SceneObject::addTriangle(int a, int b, int c, int na, int nb, int nc, const GeomColor &color){
+    if(na>=0 && nb>=0 && nc>=0){
+      m_primitives.push_back(Primitive(a,b,c,color,na,nb,nc));
+    }else{
+      m_primitives.push_back(Primitive(a,b,c,color));    
     }
   }
   
-  void SceneObject::addLine(int a, int b, const GeomColor &color, const Vec &normal){
-    m_primitives.push_back(Primitive(a,b,color));
-    if(m_normalMode == NormalsPerFace) m_normals.push_back(normal);
-  }
-    
-  void SceneObject::addTriangle(int a, int b, int c, const GeomColor &color, const Vec &normal){
-    m_primitives.push_back(Primitive(a,b,c,color));
-    if(m_normalMode == NormalsPerFace) m_normals.push_back(normal);
-  }
-  
-  void SceneObject::addQuad(int a, int b, int c, int d, const GeomColor &color, const Vec &normal){
-    m_primitives.push_back(Primitive(a,b,c,d,color));
-    if(m_normalMode == NormalsPerFace) m_normals.push_back(normal);
+  void SceneObject::addQuad(int a, int b, int c, int d, int na, int nb, int nc, int nd, const GeomColor &color){
+    if(na>=0 && nb>=0 && nc>=0 && nd>=0){
+      m_primitives.push_back(Primitive(a,b,c,d,color,na,nb,nc,nd));
+    }else{
+      m_primitives.push_back(Primitive(a,b,c,d,color));
+    }
   }
 
   void SceneObject::addPolygon(const std::vector<int> &vertexIndices, 
-                               const GeomColor &color, const Vec &normal){
-    m_primitives.push_back(Primitive(vertexIndices,color));
-    if(m_normalMode == NormalsPerFace) m_normals.push_back(normal);
+                               const std::vector<int> &normalIndices, 
+                               const GeomColor &color){
+    ICLASSERT_RETURN(!normalIndices.size() || (vertexIndices.size() == normalIndices.size()));
+    if(normalIndices.size()){
+      m_primitives.push_back(Primitive(vertexIndices,color,normalIndices));
+    }else{
+      m_primitives.push_back(Primitive(vertexIndices,color));
+    }
   }
 
-  void SceneObject::addTexture(int a, int b, int c, int d, const Img8u &texture,bool deepCopy){
-    m_primitives.push_back(Primitive(a,b,c,d,texture,deepCopy));
+  void SceneObject::addTexture(int a, int b, int c, int d,const Img8u &texture, int na, int nb, int nc, int nd, bool deepCopy){
+    if(na>=0 && nb>=0 && nc>=0 && nd>=0){
+      m_primitives.push_back(Primitive(a,b,c,d,texture,deepCopy,interpolateLIN,na,nb,nc,nd));
+    }else{
+      m_primitives.push_back(Primitive(a,b,c,d,texture,deepCopy,interpolateLIN));
+    }
   }
   
   void SceneObject::addTextTexture(int a, int b, int c, int d, const std::string &text,
-                                   const GeomColor &color,int textSize, bool holdTextAR){
+                                   const GeomColor &color,
+                                   int na, int nb, int nc, int nd,
+                                   int textSize, bool holdTextAR){
 #warning holdTextAR is not supported yet
-    m_primitives.push_back(Primitive(a,b,c,d,text,color,textSize));
+    if(na>=0 && nb>=0 && nc>=0 && nd>=0){
+      m_primitives.push_back(Primitive(a,b,c,d,text,color,textSize,interpolateLIN,na,nb,nc,nd));
+    }else{
+      m_primitives.push_back(Primitive(a,b,c,d,text,color,textSize,interpolateLIN));
+    }
   }
 
   SceneObject *SceneObject::copy() const{
@@ -137,12 +162,17 @@ namespace icl{
     }
   }
 
-  void SceneObject::setTextureInterpolation(scalemode mode) throw (ICLException){
+  void SceneObject::setTextureInterpolation(scalemode mode, bool recursive) throw (ICLException){
     if(mode != interpolateLIN && mode != interpolateNN){
       throw ICLException("SceneObject::setTextureInterpolation invalid interpolation mode");
     }
     for(unsigned int i=0;i<m_primitives.size();++i){
       m_primitives[i].mode = mode;
+    }
+    if(recursive){
+      for(unsigned i=0;i<m_children.size();++i){
+        m_children[i]->setTextureInterpolation(mode);
+      }
     }
   }
 
@@ -161,8 +191,6 @@ namespace icl{
     std::fill(m_visible,m_visible+5,true);
 
     if(type == "cuboid" || type == "cube"){
-      m_normalMode = NormalsPerFace;
-
       float x = *params++;
       float y = *params++;
       float z = *params++;
@@ -185,6 +213,13 @@ namespace icl{
       addVertex(Vec(x-dx,y+dy,z-dz,1));
       addVertex(Vec(x-dx,y-dy,z-dz,1));
     
+      addNormal(Vec(0,0,1,1));
+      addNormal(Vec(0,0,-1,1));
+      addNormal(Vec(0,-1,0,1));
+      addNormal(Vec(0,1,0,1));
+      addNormal(Vec(1,0,0,1));
+      addNormal(Vec(-1,0,0,1));
+      
       addLine(0,1);
       addLine(1,2);
       addLine(2,3);
@@ -201,15 +236,14 @@ namespace icl{
       addLine(3,7);
       
       // Vertex order: alwas counter clock-wise
-      addQuad(0,1,2,3,GeomColor(0,100,255,200),Vec(0,0,1,1));//
-      addQuad(7,6,5,4,GeomColor(0,100,255,200),Vec(0,0,-1,1)); // ?
-      addQuad(0,3,7,4,GeomColor(0,100,255,200),Vec(0,-1,0,1));//
-      addQuad(5,6,2,1,GeomColor(0,100,255,200),Vec(0,1,0,1)); // ?
-      addQuad(4,5,1,0,GeomColor(0,100,255,200),Vec(1,0,0,1));
-      addQuad(3,2,6,7,GeomColor(0,100,255,200),Vec(-1,0,0,1));
+      addQuad(0,1,2,3,0,0,0,0,GeomColor(0,100,255,200));//
+      addQuad(7,6,5,4,1,1,1,1,GeomColor(0,100,255,200)); // ?
+      addQuad(0,3,7,4,2,2,2,2,GeomColor(0,100,255,200));//
+      addQuad(5,6,2,1,3,3,3,3,GeomColor(0,100,255,200)); // ?
+      addQuad(4,5,1,0,4,4,4,4,GeomColor(0,100,255,200));
+      addQuad(3,2,6,7,5,5,5,5,GeomColor(0,100,255,200));
       
     }else if(type == "sphere" || type == "spheroid"){
-      m_normalMode = NormalsPerVertex;
       float x = *params++;
       float y = *params++;
       float z = *params++;
@@ -232,8 +266,8 @@ namespace icl{
           addVertex(Vec(x+rx*cos(alpha)*sin(beta),
                         y+ry*sin(alpha)*sin(beta),
                         z+rz*cos(beta),1),
-                    geom_blue(200),
-                    normalize3(Vec(cos(alpha)*sin(beta),
+                    geom_blue(200));
+          addNormal(normalize3(Vec(cos(alpha)*sin(beta),
                                    sin(alpha)*sin(beta),
                                    cos(beta))));
           if(j){
@@ -246,9 +280,11 @@ namespace icl{
               int c = i ? (i+na*(j-1)-1) : (na-1)+na*(j-1);
               int d = i+na*(j-1);
               if(j == nb-1){
-                addQuad(a,d,c,b);
+                addQuad(a,d,c,b,
+                        a,d,c,b);
               }else{
-                addQuad(d,c,b,a);
+                addQuad(d,c,b,a,
+                        d,c,b,a);
               }
             }
 
@@ -302,7 +338,6 @@ namespace icl{
   }
   
   SceneObject::SceneObject(const std::string &objFileName) throw (ICLException):
-    m_normalMode(AutoNormals),
     m_lineColorsFromVertices(false),
     m_triangleColorsFromVertices(false),
     m_quadColorsFromVertices(false),
@@ -322,7 +357,7 @@ namespace icl{
     typedef FixedColVector<int,3> I3;
     
     int nSkippedVT = 0;
-    int nSkippedVN = 0;
+    //int nSkippedVN = 0;
     int nSkippedO = 0;
     int nSkippedG = 0;
     int nSkippedS = 0;
@@ -340,13 +375,13 @@ namespace icl{
         switch(line[1]){
           case ' ':
             m_vertices.push_back(parse<F3>(line.substr(2)).resize<1,4>(1));
-
+            m_vertexColors.push_back(GeomColor(200,200,200,255));
             break;
-          case 't': // texture coordinates u,v,[w] (w is optional)
+          case 't': // texture coordinates u,v,[w] (w is optional) (this is skipped)
             ++nSkippedVT;
             break;
           case 'n': // normal for vertex x,y,z (might not be unit!)
-            ++nSkippedVN;
+            m_normals.push_back(parse<F3>(line.substr(2)).resize<1,4>(1));
             break;
           default:
             ERROR_LOG("skipping line " + str(lineNr) + ":\"" + line + "\" [unknown format]");
@@ -385,20 +420,34 @@ namespace icl{
           case 'B': // for now, this is simple, we simple dont use the 2nd and 3rd token;
           case 'C':
           case 'D':{
-            std::vector<int> is(n);
+            std::vector<int> is(n),ns(n);
             for(int i=0;i<n;++i){
-              is[i] = parseVecStr<int>(x[i],"/").at(0);
+              std::vector<int> t = parseVecStr<int>(x[i],"/");
+              is[i] = t.at(0)-1;
+              if(C == 'C'){
+                ns[i] = t.at(2)-1;
+              }else if(C == 'D'){
+                ns[i] = t.at(1)-1;
+              }
             }
             if(n == 3){
-              addTriangle(is[0]-1,is[1]-1,is[2]-1);
-            }else if (n == 4){
-              addQuad(is[0]-1,is[1]-1,is[2]-1,is[3]-1);
-            }else{
-              std::vector<int> xx(x.size());
-              for(unsigned int i=0;i<x.size();++i){
-                xx[i] = parse<int>(x[i])-1;
+              if(C == 'B'){
+                addTriangle(is[0],is[1],is[2]);
+              }else{
+                addTriangle(is[0],is[1],is[2],ns[0],ns[1],ns[2]);
               }
-              addPolygon(xx);
+            }else if (n == 4){
+              if( C == 'B'){
+                addQuad(is[0],is[1],is[2],is[3]);
+              }else{
+                addQuad(is[0],is[1],is[2],is[3],ns[0],ns[1],ns[2],ns[3]);
+              }
+            }else{
+              if( C == 'B'){
+                addPolygon(is);
+              }else{
+                addPolygon(is,ns);
+              }
             }
           }
         }
@@ -426,10 +475,28 @@ namespace icl{
         continue;
       }
     }
-    setVisible(Primitive::line,true);
+    setVisible(Primitive::line,false);
+    setVisible(Primitive::vertex,false);
     setVisible(Primitive::triangle,true);
     setVisible(Primitive::quad,true);
     setVisible(Primitive::polygon,true);
+
+    
+    for(unsigned int i=0;i<m_primitives.size();++i){
+      const Primitive &p = m_primitives[i];
+      for(unsigned int j=0;j<p.normalIndices.size();++j){
+        if(p.normalIndices[j] >= (int)m_normals.size()){
+          throw ICLException("found normal error in " + str(i) + "th primitive: (normal-index is "
+                             + str(p.normalIndices[j]) + " normal count is " + str(m_normals.size()));
+        }
+      }
+      for(unsigned int j=0;j<p.vertexIndices.size();++j){
+        if(p.vertexIndices[j] >= (int)m_vertices.size()){
+          throw ICLException("found vertex error in " + str(i) + "th primitive: (vertex-index is "
+                             + str(p.vertexIndices[j]) + " vertex count is " + str(m_vertices.size()));
+        }
+      }
+    }
   }
 
   void SceneObject::setColorsFromVertices(Primitive::Type t, bool on, bool recursive){
@@ -570,7 +637,6 @@ namespace icl{
 #define DEEP_COPY(X) X = other.X
 #define DEEP_COPY_2(X,Y) DEEP_COPY(X); DEEP_COPY(Y)
 #define DEEP_COPY_4(X,Y,A,B) DEEP_COPY_2(X,Y); DEEP_COPY_2(A,B)
-    DEEP_COPY(m_normalMode);
     DEEP_COPY_2(m_vertices,m_vertexColors);
     DEEP_COPY_4(m_primitives,m_lineColorsFromVertices,m_triangleColorsFromVertices,m_quadColorsFromVertices);
     DEEP_COPY_4(m_polyColorsFromVertices,m_pointSize,m_lineWidth,m_useSmoothShading);
@@ -600,13 +666,4 @@ namespace icl{
     addChild(o);
     return o;
   }
-
-  SceneObject::NormalMode SceneObject::getNormalMode() const{
-    return m_normalMode;
-  }
-  void SceneObject::setNormalMode(NormalMode mode){
-    m_normalMode = mode;
-  }
-
-
 }

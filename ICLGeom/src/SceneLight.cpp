@@ -59,6 +59,8 @@ namespace icl{
       return;
     }else{
       static const GLfloat off[] = {0,0,0,0};
+      // note: specular light is not working -> needs to be enabled explicitly
+      // since 100% realistic visualization is not our focus, we skip this for now
       glEnable(l);
       glLightfv(l,GL_SPECULAR,specularOn ? specular.begin() : off);
       glLightfv(l,GL_AMBIENT,ambientOn ? ambient.begin() : off);
@@ -84,7 +86,7 @@ namespace icl{
       }
           
       glLightfv(l,GL_POSITION,position.begin());
-
+      
       glLightfv(l,GL_SPOT_DIRECTION,spotDirection.begin());
       glLightf(l,GL_SPOT_EXPONENT,spotExponent);
       glLightf(l,GL_SPOT_CUTOFF,spotCutoff);

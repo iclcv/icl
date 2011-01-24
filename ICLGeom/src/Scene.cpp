@@ -316,93 +316,85 @@ namespace icl{
     
 
     for(unsigned int j=0;j<o->m_primitives.size();++j){
-      Primitive &p = o->m_primitives[j];
+      const Primitive &p = o->m_primitives[j];
       if(!o->isVisible(p.type)) continue;
       glColor4fv(((p.color)/255.0).begin());
       switch(p.type){
         case Primitive::line:
           glBegin(GL_LINES);
 
-          if(o->m_normalMode == SceneObject::NormalsPerFace){
-            glNormal3fv(o->m_normals[j].data());
-          }
-
-          if(o->m_normalMode == SceneObject::NormalsPerVertex) glNormal3fv(o->m_normals[p.a].data());
-          if(o->m_lineColorsFromVertices) glColor3fv((o->m_vertexColors[p.a]/255).data());
-          glVertex3fv(ps[p.a].data());
-          if(o->m_normalMode == SceneObject::NormalsPerVertex) glNormal3fv(o->m_normals[p.b].data());
-          if(o->m_lineColorsFromVertices) glColor3fv((o->m_vertexColors[p.b]/255).data());
-          glVertex3fv(ps[p.b].data());
+          if(p.hasNormals) glNormal3fv(o->m_normals[p.na()].data());
+          if(o->m_lineColorsFromVertices) glColor3fv((o->m_vertexColors[p.a()]/255).data());
+          glVertex3fv(ps[p.a()].data());
+          if(p.hasNormals) glNormal3fv(o->m_normals[p.nb()].data());
+          if(o->m_lineColorsFromVertices) glColor3fv((o->m_vertexColors[p.b()]/255).data());
+          glVertex3fv(ps[p.b()].data());
           glEnd();
           
           break;
         case Primitive::triangle:{
           glBegin(GL_TRIANGLES);
-          const Vec &a = ps[p.a];
-          const Vec &b = ps[p.b];
-          const Vec &c = ps[p.c];
+          const Vec &a = ps[p.a()];
+          const Vec &b = ps[p.b()];
+          const Vec &c = ps[p.c()];
           
-          if(o->m_normalMode == SceneObject::AutoNormals){
+          if(!p.hasNormals){
             glNormal3fv(normalize(cross(a-c,b-c)).data());
-          }else if(o->m_normalMode == SceneObject::NormalsPerFace){
-            glNormal3fv(o->m_normals[j].data());
           }
           
-          if(o->m_normalMode == SceneObject::NormalsPerVertex) glNormal3fv(o->m_normals[p.a].data());
-          if(o->m_triangleColorsFromVertices) glColor3fv((o->m_vertexColors[p.a]/255).data());
+          if(p.hasNormals) glNormal3fv(o->m_normals[p.na()].data());
+          if(o->m_triangleColorsFromVertices) glColor3fv((o->m_vertexColors[p.a()]/255).data());
           glVertex3fv(a.data());
-          if(o->m_normalMode == SceneObject::NormalsPerVertex) glNormal3fv(o->m_normals[p.b].data());
-          if(o->m_triangleColorsFromVertices) glColor3fv((o->m_vertexColors[p.b]/255).data());
+
+          if(p.hasNormals) glNormal3fv(o->m_normals[p.nb()].data());
+          if(o->m_triangleColorsFromVertices) glColor3fv((o->m_vertexColors[p.b()]/255).data());
           glVertex3fv(b.data());
-          if(o->m_normalMode == SceneObject::NormalsPerVertex) glNormal3fv(o->m_normals[p.c].data());
-          if(o->m_triangleColorsFromVertices) glColor3fv((o->m_vertexColors[p.c]/255).data());
+
+          if(p.hasNormals) glNormal3fv(o->m_normals[p.nc()].data());
+          if(o->m_triangleColorsFromVertices) glColor3fv((o->m_vertexColors[p.c()]/255).data());
           glVertex3fv(c.data());
+
           glEnd();
           break;
         }case Primitive::quad:{
            glBegin(GL_QUADS);
-           const Vec &a = ps[p.a];
-           const Vec &b = ps[p.b];
-           const Vec &c = ps[p.c];
-           const Vec &d = ps[p.d];
-           
-           if(o->m_normalMode == SceneObject::AutoNormals){
-             glNormal3fv(normalize(cross(d-c,b-c)).data());
-           }else if(o->m_normalMode == SceneObject::NormalsPerFace){
-             glNormal3fv(o->m_normals[j].data());
-           }
-           
-           if(o->m_normalMode == SceneObject::NormalsPerVertex) glNormal3fv(o->m_normals[p.a].data());
-           if(o->m_quadColorsFromVertices) glColor3fv((o->m_vertexColors[p.a]/255).data());
-           glVertex3fv(a.data());
-           if(o->m_normalMode == SceneObject::NormalsPerVertex) glNormal3fv(o->m_normals[p.b].data());
-           if(o->m_quadColorsFromVertices) glColor3fv((o->m_vertexColors[p.b]/255).data());
-           glVertex3fv(b.data());
-           if(o->m_normalMode == SceneObject::NormalsPerVertex) glNormal3fv(o->m_normals[p.c].data());
-           if(o->m_quadColorsFromVertices) glColor3fv((o->m_vertexColors[p.c]/255).data());
-           glVertex3fv(c.data());
-           if(o->m_normalMode == SceneObject::NormalsPerVertex) glNormal3fv(o->m_normals[p.d].data());
-           if(o->m_quadColorsFromVertices) glColor3fv((o->m_vertexColors[p.d]/255).data());
-           glVertex3fv(d.data());
-           glEnd();
-           
-           break;
+           const Vec &a = ps[p.a()];
+           const Vec &b = ps[p.b()];
+           const Vec &c = ps[p.c()];
+           const Vec &d = ps[p.d()];
+
+          if(!p.hasNormals){
+            glNormal3fv(normalize(cross(d-c,b-c)).data());
+          }
+          
+          if(p.hasNormals) glNormal3fv(o->m_normals[p.na()].data());
+          if(o->m_triangleColorsFromVertices) glColor3fv((o->m_vertexColors[p.a()]/255).data());
+          glVertex3fv(a.data());
+
+          if(p.hasNormals) glNormal3fv(o->m_normals[p.nb()].data());
+          if(o->m_triangleColorsFromVertices) glColor3fv((o->m_vertexColors[p.b()]/255).data());
+          glVertex3fv(b.data());
+
+          if(p.hasNormals) glNormal3fv(o->m_normals[p.nc()].data());
+          if(o->m_triangleColorsFromVertices) glColor3fv((o->m_vertexColors[p.c()]/255).data());
+          glVertex3fv(c.data());
+
+          if(p.hasNormals) glNormal3fv(o->m_normals[p.nd()].data());
+          if(o->m_triangleColorsFromVertices) glColor3fv((o->m_vertexColors[p.d()]/255).data());
+          glVertex3fv(d.data());
+          
+          glEnd();
+          break;
          }
         case Primitive::polygon:{
           glBegin(GL_POLYGON);
-          if(o->m_normalMode == SceneObject::AutoNormals){
-            // currently there are not autonormals for polygonal primitives
-            //glNormal3fv(normalize(cross(d-c,b-c)).data());
-          }else if(o->m_normalMode == SceneObject::NormalsPerFace){
-            glNormal3fv(o->m_normals[j].data());
-          }
-
-          for(unsigned int k=0;k<p.polyData.size();++k){
-            const Vec &v = ps[p.polyData[k]];
-            // how to generate a normal here
-            // glNormal3fv(normalize(cross(d-c,b-c)).data());
-            if(o->m_normalMode == SceneObject::NormalsPerVertex) glNormal3fv(o->m_normals[p.polyData[k]].data());
-            if(o->m_polyColorsFromVertices) glColor3fv((o->m_vertexColors[p.polyData[k]]/255).data());
+          
+          // no autonormals possible
+          
+          for(unsigned int k=0;k<p.vertexIndices.size();++k){
+            const Vec &v = ps[p.vertexIndices[k]];
+            if(o->m_polyColorsFromVertices) glColor3fv((o->m_vertexColors[p.vertexIndices[k]]/255).data());
+            if(p.hasNormals) glNormal3fv(o->m_normals[p.normalIndices[k]].data());
             glVertex3fv(v.data());
           }
           glEnd();
@@ -410,10 +402,10 @@ namespace icl{
         }
         case Primitive::texture:{
           glColor4f(1,1,1,1);
-          const Vec &a = ps[p.a];
-          const Vec &b = ps[p.b];
-          const Vec &c = ps[p.c];
-          const Vec &d = ps[p.d];
+          const Vec &a = ps[p.a()];
+          const Vec &b = ps[p.b()];
+          const Vec &c = ps[p.c()];
+          const Vec &d = ps[p.d()];
           // left hand normal ?!
           glNormal3fv(normalize(cross(b-c,d-c)).data());
           GLTextureMapBaseImage tim(&p.tex);
@@ -454,13 +446,17 @@ namespace icl{
     Camera cam = m_cameras[camIndex];
     cam.getRenderParams().viewport = currentImageRect;
     
-  
-    
     glMatrixMode(GL_MODELVIEW);
     glLoadMatrixf(GLMatrix(cam.getCSTransformationMatrixGL()));
 
     glMatrixMode(GL_PROJECTION);
     glLoadMatrixf(GLMatrix(cam.getProjectionMatrixGL()));
+
+    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE,GL_TRUE);
+    // specular lighting is still not working ..
+    //glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER,GL_TRUE);
+    //static GLfloat full_specular_reflectance[]={0.4,0.4,0.4,1};
+    //glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR, full_specular_reflectance);
 
     if(m_lightingEnabled){
       glEnable(GL_LIGHTING);
