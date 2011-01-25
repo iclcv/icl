@@ -120,7 +120,12 @@ namespace icl{
     Point32f normalized() const{
       return Point32f(*this).normalize();
     }
-    
+
+    /// index based interface (returns i?y:x)
+    float &operator[](int i) { return i?y:x; }
+
+    /// index based interface, const (returns i?y:x)
+    float operator[](int i) const { return i?y:x; }
   };
 
   /// ostream operator (x,y)

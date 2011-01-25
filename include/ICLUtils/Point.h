@@ -106,6 +106,12 @@ namespace icl{
     
     /// returns the euclidian distance to another point
     float distanceTo(const Point &p) const;
+    
+    /// index based interface (returns i?y:x)
+    int &operator[](int i) { return i?y:x; }
+
+    /// index based interface, const (returns i?y:x)
+    int operator[](int i) const { return i?y:x; }
   };
   
   /// ostream operator (x,y)

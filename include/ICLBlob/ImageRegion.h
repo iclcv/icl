@@ -40,6 +40,7 @@
 #include <ICLCore/Img.h>
 #include <ICLBlob/RegionPCAInfo.h>
 #include <ICLBlob/LineSegment.h>
+#include <ICLUtils/Any.h>
 
 namespace icl{
   /** \cond */
@@ -238,6 +239,19 @@ namespace icl{
     
     /// shows the region tree and neighbours (for debugging)
     void showTree() const;
+    
+    /// associates meta data with this region (also const)
+    /** Note, this method is explicitly const since an un-const version
+        would make the users simply copy the region before setting the
+        meta data value. As all other properties, also the meta data is
+        stored in the internal ImageRegionData structure. Therefore,
+        also the meta-data is hold in the internally managed and shallowly
+        copied data structure.
+    */
+    void setMetaData(const Any &any) const;
+    
+    /// returns the meta data associated with this region
+    const Any &getMetaData() const;
  };
   
 }

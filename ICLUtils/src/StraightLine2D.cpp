@@ -50,6 +50,16 @@ namespace icl{
     }
   }
 
+  /// creates a straight line from given point32f
+  StraightLine2D::StraightLine2D(const Point32f &o, const Point32f &v):
+    o(o.x,o.y),v(v.x,v.y){
+    float l = this->v.length();
+    if(l){
+      this->v = this->v/l;
+    }
+  }
+
+
   StraightLine2D::PointPolar StraightLine2D::getAngleAndDistance() const{
     Pos p(v[1],-v[0]);
     return PointPolar(distance(Pos(0,0)),atan2(-v[0],v[1]));

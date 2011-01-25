@@ -211,6 +211,26 @@ namespace icl{
       return m_data[idx]; 
     }
 
+    /// index operator with linear interpolation
+    /** The given source type must provide an index operator (so does e.g.
+        icl::Point, icl::Point32f, icl::FixedMatrix and icl::FixedVector).
+        There is no internal check so take care yourself that the given
+        position is within the image rectangle
+    */
+    template<class Vec2D>
+    inline T operator()(const Vec2D &p) const{
+      float fX0 = p[0] - floor(p[0]), fX1 = 1.0 - fX0;
+      float fY0 = p[1] - floor(p[1]), fY1 = 1.0 - fY0;
+      const T* pLL = &operator()((int)p[0],(int)p[1]);
+      float a = *pLL;        //  a b
+      float b = *(++pLL);    //  c d
+      pLL += getWidth();
+      float d = *pLL;
+      float c = *(--pLL);
+      return fX1 * (fY1*a + fY0*c) + fX0 * (fY1*b + fY0*d);
+    }
+
+    /// typedef for a normal iterator (just a pointer)
     typedef T* iterator;
 
     /// const iterator type (just a const pointer)
@@ -221,10 +241,7 @@ namespace icl{
 
     /// type definition for a const ROI iterator
     typedef const ImgIterator<T> const_roi_iterator;
-    // old    typedef constConstImgIterator<Type> const_iterator;
     
-
-
     /// returns the image iterator (equal to getData(channel))
     iterator begin(){
       return m_data;

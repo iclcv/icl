@@ -762,4 +762,13 @@ namespace icl{
     ICLASSERT_THROW(m_data->graph, ICLException("ImageRegion::showTree: no region graph information available"));
     show_tree_recursive(*this,0);
   }
+
+  void ImageRegion::setMetaData(const Any &any) const{
+    m_data->meta = any;
+  }
+  
+  const Any &ImageRegion::getMetaData() const{
+    return m_data->meta;
+  }
+
 }

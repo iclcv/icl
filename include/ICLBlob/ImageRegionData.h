@@ -36,6 +36,7 @@
 #define ICL_IMAGE_REGION_DATA_H
 
 #include <ICLCore/Img.h>
+#include <ICLUtils/Any.h>
 #include <ICLBlob/ImageRegionPart.h>
 #include <ICLBlob/ImageRegion.h>
 #include <ICLUtils/StackTimer.h>
@@ -74,6 +75,9 @@ namespace icl{
 
     /// list of line segments
     std::vector<LineSegment> segments;
+    
+    /// meta data, that can be associated with a region structure
+    Any meta;
 
     /// structure for representing region-graph information
     struct RegionGraphInfo{
