@@ -162,7 +162,7 @@ void run(){
 		DynMatrix<icl64f> *intr = camc->getIntrinsics();
 		SHOW(*intr);
 		delete intr;
-		DynMatrix<icl64f> *dist = camc->getIntrinsics();
+		DynMatrix<icl64f> *dist = camc->getDistortion();
 		SHOW(*dist);
 		delete dist;
 	} else if(successes > minSuccesses){
