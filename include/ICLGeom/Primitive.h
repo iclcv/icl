@@ -124,6 +124,16 @@ namespace icl{
     int nb() const { return normalIndices[1]; }
     int nc() const { return normalIndices[2]; }
     int nd() const { return normalIndices[3]; }
+
+    int &a() { return vertexIndices[0]; }
+    int &b() { return vertexIndices[1]; }
+    int &c() { return vertexIndices[2]; }
+    int &d() { return vertexIndices[3]; }
+
+    int &na() { return normalIndices[0]; }
+    int &nb() { return normalIndices[1]; }
+    int &nc() { return normalIndices[2]; }
+    int &nd() { return normalIndices[3]; }
     
     /// vertex indices
     std::vector<int> vertexIndices;
