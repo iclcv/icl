@@ -376,6 +376,14 @@ namespace icl{
   }
 
   // }}}
+  
+  static std::string replace_spaces(std::string s, const char x='_'){
+    for(unsigned int i=0;i<s.length();++i){
+      if(s[i] == ' ') s[i] = x;
+    }
+    return s;
+  }
+  
   std::string DCDevice::getUniqueStringIdentifier() const{
     // {{{ open
 
@@ -386,7 +394,7 @@ namespace icl{
     } guid;
     guid.t64 = getGUID();
 
-    return getModelID()+"-"+str(guid.t32[0])+"."+str(guid.t32[1]);
+    return replace_spaces(getModelID()+"-"+str(guid.t32[0])+"."+str(guid.t32[1]));
     
   }
 
