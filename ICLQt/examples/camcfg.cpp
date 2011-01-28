@@ -37,6 +37,8 @@
 #include <ICLUtils/ProgArg.h>
 #include <ICLIO/GenericGrabber.h>
 
+#include <sstream>
+
 using namespace icl;
 using namespace std;
 
@@ -54,9 +56,12 @@ int main(int n, char **ppc){
   ("y","scan for Myrmex Devices ")
   ("c","scan for OpenCV-based devices ")
   ("-demo","add a DemoGrabber device")
-  ("-i","ICL's default device specification");
+  ("-i","ICL's default device specification")
+  ("-l","if this flag is passed, no GUI is created, "
+   "but all available devices are listed on stdout");
   painit(n,ppc,"-dc|d -dc800|8 -demo -unicap|u -mry|y -pwc|p -sr|s -cvcam|c -sm|m"
-         " -reset-bus|-r|r -kinect-depth|kd -kinect-color|kc -input|-i(device-type,device-ID)");
+         " -reset-bus|-r|r -kinect-depth|kd -kinect-color|kc "
+         "-input|-i(device-type,device-ID) -list-devices-only|-l");
   QApplication a(n,ppc);
   
   std::ostringstream str;
@@ -82,9 +87,38 @@ int main(int n, char **ppc){
   
   if(pa("r")) GenericGrabber::resetBus(devlist);
   
-  CamCfgWidget w(devlist,0);
-  w.setGeometry(50,50,700,700);
-  w.setWindowTitle("icl-camcfg (ICL' Camera Configuration Tool)");
-  w.show();
-  return a.exec();
+  if(pa("-l")){
+    std::vector<GrabberDeviceDescription> gds = GenericGrabber::getDeviceList(devlist);
+    std::string lastType = "";
+    for(unsigned int i=0;i<gds.size();++i){
+      if(gds[i].type != lastType){
+        lastType = gds[i].type;
+        std::cout << "\n" << lastType << " devices:" << std::endl;
+      }
+      std::ostringstream line;
+      line << i << (i<10?" ":"") << "  ID aliases: ";
+      std::string lineStr = line.str();
+      std::cout << lineStr;
+      std::vector<std::string> idAliases = tok(gds[i].id,"|||",false);
+      for(unsigned int j=0;j<idAliases.size();++j){
+        if(j){
+          for(int k=0;k<lineStr.size();++k) {
+            std::cout << " ";
+          }
+        }
+        if(idAliases[i].find(' ') != std::string::npos){
+          std::cout << "'" << idAliases[j] << "'" << std::endl;
+        }else{
+          std::cout << idAliases[j] <<  std::endl;
+        }
+      }
+      std::cout << " " << (i<10?" ":"") << " description: " << gds[i].description << "\n\n";
+    }
+  }else{
+    CamCfgWidget w(devlist,0);
+    w.setGeometry(50,50,700,700);
+    w.setWindowTitle("icl-camcfg (ICL' Camera Configuration Tool)");
+    w.show();
+    return a.exec();
+  }
 }

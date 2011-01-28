@@ -223,7 +223,7 @@ namespace icl{
         deviceList.clear();
         std::vector<DCDevice> devs = getDCDeviceList(false);
         for(unsigned int i=0;i<devs.size();++i){
-          deviceList.push_back(GrabberDeviceDescription("dc",str(i),devs[i].getUniqueStringIdentifier()));
+          deviceList.push_back(GrabberDeviceDescription("dc",str(i)+"|||"+devs[i].getUniqueStringIdentifier(),devs[i].getUniqueStringIdentifier()));
         }
       }
       return deviceList;

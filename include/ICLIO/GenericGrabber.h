@@ -100,7 +100,8 @@ namespace icl {
                                   "pwc=0,file=images//image*.ppm,dc=0" with self-explaining syntax\n
                                   Semantics:\n
                                   - pwc=device-index (int)
-                                  - dc=device-index (int)
+                                  - dc=device-index (int) or dc=UniqueID (string) 
+                                    (the unique ID can be found with 'icl-cam-cfg d -list-devices-only')
                                   - dc800=device-index (int)
                                   - file=pattern (string)
                                   - unicap=device pattern (string) or device index (int)

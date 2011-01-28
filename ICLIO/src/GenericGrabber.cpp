@@ -204,22 +204,50 @@ namespace icl{
 #ifdef HAVE_LIBDC
       if(l[i] == "dc" || l[i] == "dc800"){
         std::vector<DCDevice> devs = DCGrabber::getDCDeviceList(false);
-        int idx = (l[i]=="dc") ? to32s(pmap["dc"]) : to32s(pmap["dc800"]);
-
-        //printf("index is %d devs size is %d \n",idx,devs.size());
-        if(idx < 0) idx = 0;
-        if(idx >= (int)devs.size()){
-          if(l[i]=="dc"){
-            ADD_ERR("dc");
-          }else{
-            ADD_ERR("dc800");
-          }
-          continue;
+        
+        
+        //        int idx = (l[i]=="dc") ? to32s(pmap["dc"]) : to32s(pmap["dc800"]);
+        std::string d =  (l[i]=="dc") ? pmap["dc"] : pmap["dc800"];
+        int index = -1;
+        std::string uniqueID;
+        if(d.size() < 4){
+          //"0-999" -> very short string -> this is an index then
+          index = to32s(d);
         }else{
-          m_poGrabber = new DCGrabber(devs[idx], l[i]=="dc"?400:800);
-          m_sType = l[i];
-          break;
-        }        
+          //"something very long" -> this is a unique ID then
+          uniqueID = d;
+        }
+
+        if(index < 0){
+          for(unsigned int j=0;j<devs.size();++j){
+            if(devs[j].getUniqueStringIdentifier() == uniqueID){
+              m_poGrabber = new DCGrabber(devs[j],l[i]=="dc"?400:800);
+              m_sType = l[i];
+              break;
+            }
+          }
+          if(!m_poGrabber){
+            if(l[i]=="dc"){
+              ADD_ERR("dc");
+            }else{
+              ADD_ERR("dc800");
+            }
+            continue;
+          }
+        }else{
+          if(index >= (int)devs.size()){
+            if(l[i]=="dc"){
+              ADD_ERR("dc");
+            }else{
+              ADD_ERR("dc800");
+            }
+            continue;
+          }else{
+            m_poGrabber = new DCGrabber(devs[index], l[i]=="dc"?400:800);
+            m_sType = l[i];
+            break;
+          }        
+        }
       }
 #endif
 
@@ -459,7 +487,10 @@ namespace icl{
 
   static const GrabberDeviceDescription *find_desciption(const std::vector<GrabberDeviceDescription> &ds, const std::string &id){
     for(unsigned int i=0;i<ds.size();++i){
-      if(ds[i].id == id) return &ds[i];
+      std::vector<std::string> ts = tok(ds[i].id,"|||",false);
+      if(std::find(ts.begin(),ts.end(),id) != ts.end()){
+        return &ds[i];
+      }
     }
     return 0;
   }
