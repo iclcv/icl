@@ -106,7 +106,7 @@ int main(int n, char **ppc){
             std::cout << " ";
           }
         }
-        if(idAliases[i].find(' ') != std::string::npos){
+        if(idAliases[j].find(' ') != std::string::npos){
           std::cout << "'" << idAliases[j] << "'" << std::endl;
         }else{
           std::cout << idAliases[j] <<  std::endl;
