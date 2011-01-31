@@ -410,6 +410,13 @@ namespace icl{
       return const_cast<SceneObject*>(this)->hit(v,contactPos,recursive);
     }
     
+    /// returns all vertices in their final world coordinates
+    std::vector<Vec> getTransformedVertices() const;
+    
+    /// returns the vertex, that is closest to the given point in wold coordinates
+    /** If relative is true, the vertex is returned in object-coordinates, otherwise
+        it is returned in world coordinates */
+    Vec getClosestVertex(const Vec &pWorld, bool relative=false) throw (ICLException);
     
     protected:
     

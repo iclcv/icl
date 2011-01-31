@@ -667,6 +667,30 @@ namespace icl{
     return o;
   }
 
+  
+  std::vector<Vec> SceneObject::getTransformedVertices() const{
+    std::vector<Vec> ts(m_vertices.size());
+    Mat T = getTransformation();
+    for(unsigned int i=0;i<ts.size();++i){
+      ts[i] = T * m_vertices[i];
+    }
+    return ts;
+  }
+
+  Vec SceneObject::getClosestVertex(const Vec &pWorld, bool relative) throw (ICLException){
+    std::vector<Vec> ts = getTransformedVertices();
+    if(!ts.size()) throw ICLException("getClosestVertex called on an object that has not vertices");
+    std::vector<float> distances(ts.size());
+    for(unsigned int i=0;i<ts.size();++i){
+      distances[i] = (icl::sqr(pWorld[0]-ts[i][0]) + 
+                      icl::sqr(pWorld[1]-ts[i][1]) + 
+                      icl::sqr(pWorld[2]-ts[i][2]) ); // no sqrt(..) neccessary since we need to find the max. only
+    }
+    int idx = (int)(std::min_element(distances.begin(),distances.end()) - distances.begin());
+    if(relative) return m_vertices[idx];
+    else return ts[idx];
+  }
+  
 
   //Input:  a ray R, and a triangle T
   //    Output: *I = intersection point (when it exists)
@@ -695,16 +719,16 @@ namespace icl{
     //Vector    u, v, n;             // triangle vectors
     //Vector    dir, w0, w;          // ray vectors
     //float     r, a, b;             // params to calc ray-plane intersect
-    static const float EPSILON = 0.0000000001;
+    static const float EPSILON = 0.00000001;
     // get triangle edge vectors and plane normal
     Vec u = t.b - t.a;
     Vec v = t.c - t.a;
-    Vec n = cross(u,v);
-    if (n[0] < EPSILON && n[1] < EPSILON && n[2] < EPSILON){
+    Vec n = cross(u,v);  // TEST maybe v,u ??
+    if (fabs(n[0]) < EPSILON && fabs(n[1]) < EPSILON && fabs(n[2]) < EPSILON){
       return degenerateTriangle;
     }
 
-    const Vec dir = r.direction;  // dir = R.P1 - R.P0;
+    const Vec dir = r.direction;  // dir = R.P1 - R.P0; // points from 0->1
     Vec w0 = r.offset - t.a;      //R.P0 - T.V0;   
     float a = -dot(n,w0);
     float b = dot(n,dir);
@@ -717,7 +741,8 @@ namespace icl{
     if (rr < 0) {
       return noIntersection;
     }
-    // for a segment, also test if (r > 1.0) => no intersect ??
+    // for a segment, also test if (r > 1.0) => no intersect 
+    // a segment meaning a line-segment between a and b
 
     intersection = r.offset + dir * rr;
     //*I = R.P0 + r * dir;           // intersect point of ray and plane
@@ -752,121 +777,128 @@ namespace icl{
                                            const ViewRay &v, std::vector<Vec> &hits,
                                            std::vector<SceneObject*> &objects,
                                            bool recursive){
-    Range32f aabb[3];
-    for(int i=0;i<3;++i){
-      aabb[i] = Range32f::limits();
-      std::swap(aabb[i].minVal,aabb[i].maxVal);
-    }      
-    for(unsigned int i=0;i<obj->m_vertices.size();++i){
-      const Vec &v = obj->m_vertices[i];
-      if(v[0] < aabb[0].minVal) aabb[0].minVal = v[0];
-      if(v[1] < aabb[1].minVal) aabb[1].minVal = v[1];
-      if(v[2] < aabb[2].minVal) aabb[2].minVal = v[2];
-      if(v[0] > aabb[0].maxVal) aabb[0].maxVal = v[0];
-      if(v[1] > aabb[1].maxVal) aabb[1].maxVal = v[1];
-      if(v[2] > aabb[2].maxVal) aabb[2].maxVal = v[2];
-    }
-
-    // 1st: apply check aabb for possible hit
-    /**
-        0-----1   ---> x
-        |4----+5
-        ||    ||
-        2+----3|
-         6-----7
-        |
-        V
-        y
-    */
+    std::vector<Vec> vs = obj->getTransformedVertices();
     
-    Vec v0(aabb[0].minVal,aabb[1].minVal,aabb[2].minVal);
-    Vec v1(aabb[0].maxVal,aabb[1].minVal,aabb[2].minVal);
-    Vec v2(aabb[0].minVal,aabb[1].maxVal,aabb[2].minVal);
-    Vec v3(aabb[0].maxVal,aabb[1].maxVal,aabb[2].minVal);
-    Vec v4(aabb[0].minVal,aabb[1].minVal,aabb[2].maxVal);
-    Vec v5(aabb[0].maxVal,aabb[1].minVal,aabb[2].maxVal);
-    Vec v6(aabb[0].minVal,aabb[1].maxVal,aabb[2].maxVal);
-    Vec v7(aabb[0].maxVal,aabb[1].maxVal,aabb[2].maxVal);
-
-    Vec __;
-    
-    if(compute_intersection(v,Triangle(v0,v1,v2),__) == foundIntersection ||
-       compute_intersection(v,Triangle(v1,v3,v2),__) == foundIntersection ||
-       compute_intersection(v,Triangle(v4,v5,v6),__) == foundIntersection ||
-       compute_intersection(v,Triangle(v5,v6,v7),__) == foundIntersection ||
-       compute_intersection(v,Triangle(v0,v1,v4),__) == foundIntersection ||
-       compute_intersection(v,Triangle(v1,v4,v5),__) == foundIntersection ||
-       compute_intersection(v,Triangle(v2,v3,v6),__) == foundIntersection ||
-       compute_intersection(v,Triangle(v3,v6,v7),__) == foundIntersection ||
-       compute_intersection(v,Triangle(v0,v4,v2),__) == foundIntersection ||
-       compute_intersection(v,Triangle(v2,v4,v6),__) == foundIntersection ||
-       compute_intersection(v,Triangle(v1,v5,v3),__) == foundIntersection ||
-       compute_intersection(v,Triangle(v3,v5,v7),__) == foundIntersection ){
-    
-      DEBUG_LOG("aabb hit for object " << obj);
+    if(vs.size()){
+      // prepare for aabb (aka 3D-bounding box) check
+      // check for intersections with the 3D bounding box-faces first
+      Range32f aabb[3];
+      for(int i=0;i<3;++i){
+        aabb[i] = Range32f::limits();
+        std::swap(aabb[i].minVal,aabb[i].maxVal);
+      }      
+      for(unsigned int i=0;i<vs.size();++i){
+        const Vec &v = vs[i];
+        if(v[0] < aabb[0].minVal) aabb[0].minVal = v[0];
+        if(v[1] < aabb[1].minVal) aabb[1].minVal = v[1];
+        if(v[2] < aabb[2].minVal) aabb[2].minVal = v[2];
+        if(v[0] > aabb[0].maxVal) aabb[0].maxVal = v[0];
+        if(v[1] > aabb[1].maxVal) aabb[1].maxVal = v[1];
+        if(v[2] > aabb[2].maxVal) aabb[2].maxVal = v[2];
+      }
       
-      for(unsigned int i=0;i<obj->m_primitives.size();++i){
-        const Primitive &p = obj->m_primitives[i];
-        switch(p.type){
-          case Primitive::triangle:{
-            Triangle t(obj->m_vertices[p.a()],
-                       obj->m_vertices[p.b()],
-                       obj->m_vertices[p.c()] );
-            Vec pos;
-            if(compute_intersection(v,t,pos) == foundIntersection){
-              hits.push_back(pos);
-              objects.push_back(obj);
-            }
-            break;
-          }
-          case Primitive::quad:{
-            Triangle t1(obj->m_vertices[p.a()],
-                        obj->m_vertices[p.b()],
-                        obj->m_vertices[p.c()] );
-            Triangle t2( obj->m_vertices[p.c()],
-                         obj->m_vertices[p.d()],
-                         obj->m_vertices[p.a()] );
-            
-            Vec pos;
-            if(compute_intersection(v,t1,pos) == foundIntersection){
-              hits.push_back(pos);
-              objects.push_back(obj);
-            }else if(compute_intersection(v,t2,pos) == foundIntersection){
-              hits.push_back(pos);
-              objects.push_back(obj);
-            }
-            break;
-          }
-          case Primitive::polygon:{
-            int n = p.vertexIndices.size();
-            // use easy algorithm: choose center and triangularize
-            std::vector<Vec> vertices(n);
-            Vec mean(0,0,0,0);
-            for(int i=0;i<n;++i){
-              vertices[i] = obj->m_vertices[p.vertexIndices[i]];
-              mean += vertices.back();
-            }
-            mean *= (1.0/vertices.size());
-            
-            for(int i=0;i<n-1;++i){
-              Triangle t( obj->m_vertices[p.vertexIndices[i]],
-                          obj->m_vertices[p.vertexIndices[i+1]],
-                          mean );
+      // 1st: apply check aabb for possible hit
+      /**
+          0-----1   ---> x
+          |4----+5
+          ||    ||
+          2+----3|
+           6-----7
+          |
+          V
+          y
+      */
+      
+      Vec v0(aabb[0].minVal,aabb[1].minVal,aabb[2].minVal);
+      Vec v1(aabb[0].maxVal,aabb[1].minVal,aabb[2].minVal);
+      Vec v2(aabb[0].minVal,aabb[1].maxVal,aabb[2].minVal);
+      Vec v3(aabb[0].maxVal,aabb[1].maxVal,aabb[2].minVal);
+      Vec v4(aabb[0].minVal,aabb[1].minVal,aabb[2].maxVal);
+      Vec v5(aabb[0].maxVal,aabb[1].minVal,aabb[2].maxVal);
+      Vec v6(aabb[0].minVal,aabb[1].maxVal,aabb[2].maxVal);
+      Vec v7(aabb[0].maxVal,aabb[1].maxVal,aabb[2].maxVal);
+      
+      Vec __;
+      
+      // important optimization check the 3D-bounding box for intersection with the
+      // given ray first -> this is in particular very important for e.g. spheres
+      // that have a lot of faces ..
+      if(compute_intersection(v,Triangle(v0,v1,v2),__) == foundIntersection ||
+         compute_intersection(v,Triangle(v1,v3,v2),__) == foundIntersection ||
+         compute_intersection(v,Triangle(v4,v5,v6),__) == foundIntersection ||
+         compute_intersection(v,Triangle(v5,v6,v7),__) == foundIntersection ||
+         compute_intersection(v,Triangle(v0,v1,v4),__) == foundIntersection ||
+         compute_intersection(v,Triangle(v1,v4,v5),__) == foundIntersection ||
+         compute_intersection(v,Triangle(v2,v3,v6),__) == foundIntersection ||
+         compute_intersection(v,Triangle(v3,v6,v7),__) == foundIntersection ||
+         compute_intersection(v,Triangle(v0,v4,v2),__) == foundIntersection ||
+         compute_intersection(v,Triangle(v2,v4,v6),__) == foundIntersection ||
+         compute_intersection(v,Triangle(v1,v5,v3),__) == foundIntersection ||
+         compute_intersection(v,Triangle(v3,v5,v7),__) == foundIntersection ){
+        
+        for(unsigned int i=0;i<obj->m_primitives.size();++i){
+          const Primitive &p = obj->m_primitives[i];
+          switch(p.type){
+            case Primitive::triangle:{
+              Triangle t(vs[p.a()],
+                         vs[p.b()],
+                         vs[p.c()] );
               Vec pos;
               if(compute_intersection(v,t,pos) == foundIntersection){
                 hits.push_back(pos);
                 objects.push_back(obj);
-                break;
               }
+              break;
             }
-            break;
+            case Primitive::quad:{
+              Triangle t1(vs[p.a()],
+                          vs[p.b()],
+                          vs[p.c()] );
+              Triangle t2( vs[p.c()],
+                           vs[p.d()],
+                           vs[p.a()] );
+              
+              Vec pos;
+              if(compute_intersection(v,t1,pos) == foundIntersection){
+                hits.push_back(pos);
+                objects.push_back(obj);
+              }else if(compute_intersection(v,t2,pos) == foundIntersection){
+                hits.push_back(pos);
+                objects.push_back(obj);
+              }
+              break;
+            }
+            case Primitive::polygon:{
+              int n = p.vertexIndices.size();
+              // use easy algorithm: choose center and triangularize
+              std::vector<Vec> vertices(n);
+              Vec mean(0,0,0,0);
+              for(int i=0;i<n;++i){
+                vertices[i] = vs[p.vertexIndices[i]];
+                mean += vertices.back();
+              }
+              mean *= (1.0/vertices.size());
+              
+              for(int i=0;i<n-1;++i){
+                Triangle t( vs[p.vertexIndices[i]],
+                            vs[p.vertexIndices[i+1]],
+                            mean );
+                Vec pos;
+                if(compute_intersection(v,t,pos) == foundIntersection){
+                  hits.push_back(pos);
+                  objects.push_back(obj);
+                  break;
+                }
+              }
+              break;
+            }
+            default:
+              // no checks for other types
+              break;
           }
-          default:
-            // no checks for other types
-            break;
-        }
-      }
-    }
+        } // switch
+      } // if( aabb.wasHit...)
+    } // if(m_vertices.size()
 
     if(recursive){
       /// recursion step
