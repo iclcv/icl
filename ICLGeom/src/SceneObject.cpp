@@ -666,4 +666,242 @@ namespace icl{
     addChild(o);
     return o;
   }
+
+
+  //Input:  a ray R, and a triangle T
+  //    Output: *I = intersection point (when it exists)
+  //    Return: -1 = triangle is degenerate (a segment or point)
+  //             0 = disjoint (no intersect)
+  //             1 = intersect in unique point I1
+  //             2 = are in the same plane
+  enum RayTriangleIntersection{
+    noIntersection,
+    foundIntersection,
+    degenerateTriangle,
+    rayIsCollinearWithTriangle
+  };
+  
+  struct Triangle{
+    Triangle(const Vec &a, const Vec &b, const Vec &c):a(a),b(b),c(c){}
+    Vec a,b,c;
+  };
+  
+  static inline float dot(const Vec &a, const Vec &b){
+    return a[0]*b[0] +a[1]*b[1] +a[2]*b[2]; 
+  }
+  
+  // inspired from http://softsurfer.com/Archive/algorithm_0105/algorithm_0105.htm#intersect_RayTriangle()
+  RayTriangleIntersection compute_intersection(const ViewRay &r, const Triangle &t, Vec &intersection){
+    //Vector    u, v, n;             // triangle vectors
+    //Vector    dir, w0, w;          // ray vectors
+    //float     r, a, b;             // params to calc ray-plane intersect
+    static const float EPSILON = 0.0000000001;
+    // get triangle edge vectors and plane normal
+    Vec u = t.b - t.a;
+    Vec v = t.c - t.a;
+    Vec n = cross(u,v);
+    if (n[0] < EPSILON && n[1] < EPSILON && n[2] < EPSILON){
+      return degenerateTriangle;
+    }
+
+    const Vec dir = r.direction;  // dir = R.P1 - R.P0;
+    Vec w0 = r.offset - t.a;      //R.P0 - T.V0;   
+    float a = -dot(n,w0);
+    float b = dot(n,dir);
+    if (fabs(b) < EPSILON) {     // ray is parallel to triangle plane
+      return a<EPSILON ? rayIsCollinearWithTriangle : noIntersection;
+    }
+    
+    // get intersect point of ray with triangle plane
+    float rr = a / b;
+    if (rr < 0) {
+      return noIntersection;
+    }
+    // for a segment, also test if (r > 1.0) => no intersect ??
+
+    intersection = r.offset + dir * rr;
+    //*I = R.P0 + r * dir;           // intersect point of ray and plane
+
+    // is I inside T?
+    //    float    uu, uv, vv, wu, wv, D;
+    float uu = dot(u,u);
+    float uv = dot(u,v);
+    float vv = dot(v,v);
+    Vec w = intersection - t.a; //T.V0;
+    float wu = dot(w,u);
+    float wv = dot(w,v);
+    float D = uv * uv - uu * vv;
+
+    // get and test parametric coords
+    //float s, t;
+    float s = (uv * wv - vv * wu) / D;
+    if (s < 0.0 || s > 1.0){
+      // I is outside T
+      return noIntersection;
+    }
+    float tt = (uv * wu - uu * wv) / D;
+    if (tt < 0.0 || (s + tt) > 1.0){
+      // I is outside T
+      return noIntersection;
+    }
+
+    return foundIntersection; // I is in T
+  }
+  
+  void SceneObject::collect_hits_recursive(SceneObject *obj, 
+                                           const ViewRay &v, std::vector<Vec> &hits,
+                                           std::vector<SceneObject*> &objects,
+                                           bool recursive){
+    Range32f aabb[3];
+    for(int i=0;i<3;++i){
+      aabb[i] = Range32f::limits();
+      std::swap(aabb[i].minVal,aabb[i].maxVal);
+    }      
+    for(unsigned int i=0;i<obj->m_vertices.size();++i){
+      const Vec &v = obj->m_vertices[i];
+      if(v[0] < aabb[0].minVal) aabb[0].minVal = v[0];
+      if(v[1] < aabb[1].minVal) aabb[1].minVal = v[1];
+      if(v[2] < aabb[2].minVal) aabb[2].minVal = v[2];
+      if(v[0] > aabb[0].maxVal) aabb[0].maxVal = v[0];
+      if(v[1] > aabb[1].maxVal) aabb[1].maxVal = v[1];
+      if(v[2] > aabb[2].maxVal) aabb[2].maxVal = v[2];
+    }
+
+    // 1st: apply check aabb for possible hit
+    /**
+        0-----1   ---> x
+        |4----+5
+        ||    ||
+        2+----3|
+         6-----7
+        |
+        V
+        y
+    */
+    
+    Vec v0(aabb[0].minVal,aabb[1].minVal,aabb[2].minVal);
+    Vec v1(aabb[0].maxVal,aabb[1].minVal,aabb[2].minVal);
+    Vec v2(aabb[0].minVal,aabb[1].maxVal,aabb[2].minVal);
+    Vec v3(aabb[0].maxVal,aabb[1].maxVal,aabb[2].minVal);
+    Vec v4(aabb[0].minVal,aabb[1].minVal,aabb[2].maxVal);
+    Vec v5(aabb[0].maxVal,aabb[1].minVal,aabb[2].maxVal);
+    Vec v6(aabb[0].minVal,aabb[1].maxVal,aabb[2].maxVal);
+    Vec v7(aabb[0].maxVal,aabb[1].maxVal,aabb[2].maxVal);
+
+    Vec __;
+    
+    if(compute_intersection(v,Triangle(v0,v1,v2),__) == foundIntersection ||
+       compute_intersection(v,Triangle(v1,v3,v2),__) == foundIntersection ||
+       compute_intersection(v,Triangle(v4,v5,v6),__) == foundIntersection ||
+       compute_intersection(v,Triangle(v5,v6,v7),__) == foundIntersection ||
+       compute_intersection(v,Triangle(v0,v1,v4),__) == foundIntersection ||
+       compute_intersection(v,Triangle(v1,v4,v5),__) == foundIntersection ||
+       compute_intersection(v,Triangle(v2,v3,v6),__) == foundIntersection ||
+       compute_intersection(v,Triangle(v3,v6,v7),__) == foundIntersection ||
+       compute_intersection(v,Triangle(v0,v4,v2),__) == foundIntersection ||
+       compute_intersection(v,Triangle(v2,v4,v6),__) == foundIntersection ||
+       compute_intersection(v,Triangle(v1,v5,v3),__) == foundIntersection ||
+       compute_intersection(v,Triangle(v3,v5,v7),__) == foundIntersection ){
+    
+      DEBUG_LOG("aabb hit for object " << obj);
+      
+      for(unsigned int i=0;i<obj->m_primitives.size();++i){
+        const Primitive &p = obj->m_primitives[i];
+        switch(p.type){
+          case Primitive::triangle:{
+            Triangle t(obj->m_vertices[p.a()],
+                       obj->m_vertices[p.b()],
+                       obj->m_vertices[p.c()] );
+            Vec pos;
+            if(compute_intersection(v,t,pos) == foundIntersection){
+              hits.push_back(pos);
+              objects.push_back(obj);
+            }
+            break;
+          }
+          case Primitive::quad:{
+            Triangle t1(obj->m_vertices[p.a()],
+                        obj->m_vertices[p.b()],
+                        obj->m_vertices[p.c()] );
+            Triangle t2( obj->m_vertices[p.c()],
+                         obj->m_vertices[p.d()],
+                         obj->m_vertices[p.a()] );
+            
+            Vec pos;
+            if(compute_intersection(v,t1,pos) == foundIntersection){
+              hits.push_back(pos);
+              objects.push_back(obj);
+            }else if(compute_intersection(v,t2,pos) == foundIntersection){
+              hits.push_back(pos);
+              objects.push_back(obj);
+            }
+            break;
+          }
+          case Primitive::polygon:{
+            int n = p.vertexIndices.size();
+            // use easy algorithm: choose center and triangularize
+            std::vector<Vec> vertices(n);
+            Vec mean(0,0,0,0);
+            for(int i=0;i<n;++i){
+              vertices[i] = obj->m_vertices[p.vertexIndices[i]];
+              mean += vertices.back();
+            }
+            mean *= (1.0/vertices.size());
+            
+            for(int i=0;i<n-1;++i){
+              Triangle t( obj->m_vertices[p.vertexIndices[i]],
+                          obj->m_vertices[p.vertexIndices[i+1]],
+                          mean );
+              Vec pos;
+              if(compute_intersection(v,t,pos) == foundIntersection){
+                hits.push_back(pos);
+                objects.push_back(obj);
+                break;
+              }
+            }
+            break;
+          }
+          default:
+            // no checks for other types
+            break;
+        }
+      }
+    }
+
+    if(recursive){
+      /// recursion step
+      for(unsigned int i=0;i<obj->m_children.size();++i){
+        collect_hits_recursive(obj->m_children[i].get(),v,hits,objects,recursive);
+      }
+    }
+  }
+  
+  struct VecAndObject{
+    SceneObject *obj;
+    Vec *v;
+    float dist;
+    bool operator<(const VecAndObject &other) const {
+      return dist < other.dist;
+    }
+  };
+
+  SceneObject *SceneObject::hit(const ViewRay &v, Vec *contactPos, bool recursive) {
+    std::vector<Vec> hits;
+    std::vector<SceneObject*> objects;
+    collect_hits_recursive(this,v,hits,objects,recursive);
+    if(!hits.size()) return false;
+
+    std::vector<VecAndObject> all(hits.size());
+    for(unsigned int i=0;i<all.size();++i){
+      all[i].obj = objects[i];
+      all[i].v = &hits[i];
+      all[i].dist = (v.offset-hits[i]).length();
+    }
+    std::sort(all.begin(),all.end());
+
+    if(contactPos){
+      *contactPos = *all.front().v;
+    }
+    return all.front().obj;
+  }
 }

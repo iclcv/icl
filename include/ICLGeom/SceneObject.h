@@ -36,6 +36,7 @@
 #define ICL_SCENE_OBJECT_H
 
 #include <ICLGeom/Primitive.h>
+#include <ICLGeom/ViewRay.h>
 
 namespace icl{
 
@@ -391,9 +392,32 @@ namespace icl{
     const SceneObject *getChild(int index) const;
     
     /** @} **/
+
+    /// returns whether this object is hit by the given viewray
+    /** If contactPos is not 0, it is set to the actual contact 
+        pos with the given primitive 
+        Please note: only faces (i.e. quads, triangles and polygons
+        are checked)
+        The method returns the hit scene object or null, if it was not hit.
+        If recursive is true, the scene-graph is traversed from this
+        object on and the actually hit child (or child of child etc.) 
+        might also be returned.
+    */
+    SceneObject *hit(const ViewRay &v, Vec *contactPos=0, bool recursive=true);
+    
+    /// returns whether this object is hit by the given viewray (const)
+    const SceneObject *hit(const ViewRay &v, Vec *contactPos=0, bool recursive=true) const{
+      return const_cast<SceneObject*>(this)->hit(v,contactPos,recursive);
+    }
     
     
     protected:
+    
+    /// recursive picking method
+    static void collect_hits_recursive(SceneObject *obj, const ViewRay &v, 
+                                       std::vector<Vec> &hits, 
+                                       std::vector<SceneObject*> &objects,
+                                       bool recursive);
     
     std::vector<Vec> m_vertices;
     std::vector<Vec> m_normals;

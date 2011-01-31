@@ -704,7 +704,30 @@ namespace icl{
     return path;
   }
 
-
+  struct FoundObj{
+    SceneObject *obj;
+    Vec pos;
+    int dist;
+    bool operator<(const FoundObj &o)const{
+      return dist < o.dist;
+    }
+  };
+  
+  SceneObject *Scene::findObject(const ViewRay &v, Vec *contactPos){
+    std::vector<FoundObj> hit;
+    for(unsigned int i=0;i<m_objects.size();++i){
+      FoundObj obj;
+      obj.obj=m_objects[i]->hit(v,&obj.pos);
+      if(obj.obj){
+        obj.dist = (v.offset-obj.pos).length();
+        hit.push_back(obj);
+      }
+    }
+    if(!hit.size()) return 0;
+    std::sort(hit.begin(),hit.end());
+    if(contactPos) *contactPos = hit.front().pos;
+    return hit.front().obj;
+  }
 
 }
 

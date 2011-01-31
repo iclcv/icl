@@ -2215,7 +2215,7 @@ namespace icl{
     
     newZR.x = relImageX - zoom *(relImageX-zr.x);
     newZR.y = relImageY - zoom *(relImageY-zr.y);
-    SHOW(newZR);
+//    SHOW(newZR);
     zr = newZR;
     if(zr.width >=1 && zr.height >=1){
       DEBUG_LOG("resetting fitmode");
@@ -2484,6 +2484,7 @@ namespace icl{
       m_data->downMask[m_data->lastMouseReleaseButton] = true;
     }
 
+#if 0
     if(!m_data->image || !m_data->image->hasImage()){
       const Point &wheelDelta = (type == MouseWheelEvent) ? m_data->wheelDelta : Point::null;
       evt = MouseEvent(Point(m_data->mouseX,m_data->mouseY),
@@ -2499,17 +2500,21 @@ namespace icl{
       return evt;
     
     }else{
+#endif
+      
       Rect r = getImageRect();
+      int iw = m_data->image->hasImage() ? m_data->image->getSize().width : m_data->defaultViewPort.width;
+      int ih = m_data->image->hasImage() ? m_data->image->getSize().height : m_data->defaultViewPort.height;
       float boxX = m_data->mouseX - r.x;
       float boxY = m_data->mouseY - r.y;
-      int imageX = (int) rint(-0.5+(boxX*(m_data->image->getSize().width))/r.width);
-      int imageY = (int) rint(-0.5+(boxY*(m_data->image->getSize().height))/r.height);
+      int imageX = (int) rint(-0.5+(boxX*(iw))/r.width);
+      int imageY = (int) rint(-0.5+(boxY*(ih))/r.height);
 
-      float relImageX = float(imageX)/m_data->image->getSize().width;
-      float relImageY = float(imageY)/m_data->image->getSize().height;
+      float relImageX = float(imageX)/iw;
+      float relImageY = float(imageY)/ih;
 
       std::vector<double> color;
-      if(r.contains(m_data->mouseX,m_data->mouseY)){
+      if(m_data->image && m_data->image->hasImage() && r.contains(m_data->mouseX,m_data->mouseY)){
         color = m_data->image->getColor(imageX,imageY);
       }
       
@@ -2525,8 +2530,9 @@ namespace icl{
         m_data->downMask[m_data->lastMouseReleaseButton] = false;
       }
       return evt;
-
+#if 0
     }
+#endif
   }
 
   // }}}

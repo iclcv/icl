@@ -277,7 +277,20 @@ int main(int n, char**ppc){
     /** by default, lighting is activated */
     void setLightingEnabled(bool flag);
     
-    private:
+    /// picks the closest contained scene-object clicked at given ScreenPosition
+    /** returns 0 if no object was hit, if contactPos is not 0, the 3D-contact position
+        is stored there. */
+    inline SceneObject *findObject(int camIndex, int xScreen, int yScreen, Vec *contactPos=0){
+      return findObject(getCamera(camIndex).getViewRay(Point(xScreen,yScreen)),contactPos);
+    }
+    
+    /// picks the first object that is hit by the given viewray
+    /** The first object that is returned has the smallest distance to the
+        given viewRay's offset. If contactPos is not 0, the contact point is stored there. */
+    SceneObject *findObject(const ViewRay &v, Vec *contactPos=0);
+    
+    
+    protected:
 #ifdef HAVE_QT
 #ifdef HAVE_OPENGL
     /// internally used rendering method
