@@ -208,6 +208,13 @@ namespace icl{
         
         //        int idx = (l[i]=="dc") ? to32s(pmap["dc"]) : to32s(pmap["dc800"]);
         std::string d =  (l[i]=="dc") ? pmap["dc"] : pmap["dc800"];
+        if(!d.length()) throw ICLException("GenericGrabber::init: got dc[800] with empty sub-arg!");
+        std::vector<std::string> ts = tok(d,"|||",false);
+        if(ts.size() > 1){
+          // we take the first one here, because usually no one defines both ...
+          d = ts[0];
+        }
+        
         int index = -1;
         std::string uniqueID;
         if(d.size() < 4){
