@@ -650,6 +650,11 @@ namespace icl{
     for(unsigned int i=0;i<other.m_children.size();++i){
       m_children[i] = SmartPtr<SceneObject>(other.m_children[i]->copy());
     }
+    
+    for(unsigned int i=0;i<m_primitives.size();++i){
+      m_primitives[i].detachTextureIfDeepCopied();
+    }
+
     return *this;
   }
 

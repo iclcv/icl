@@ -105,11 +105,14 @@ namespace icl{
     /// Creates a polygon primitive
     Primitive(const std::vector<int> &polyData, const GeomColor &color, const std::vector<int> &normalIndices);
 
+    /// detaches deep copied textures
+    void detachTextureIfDeepCopied();
+    
     /// Creates a deep copy (in particular deep copy of the texture image)
-    Primitive(const Primitive &other);
+    //Primitive(const Primitive &other);
 
     /// Creates a deep copy in assignment
-    Primitive &operator=(const Primitive &other);
+    //Primitive &operator=(const Primitive &other);
     
     /// static utility method that allows for simple creation of text-textures
     static Img8u create_text_texture(const std::string &text,const GeomColor &color, int textSize=30);
@@ -146,6 +149,9 @@ namespace icl{
     
     /// optional texture
     Img8u tex;
+    
+    /// is the texture referenced or was is copied deeply
+    bool texDeepCopied;
     
     /// primitve type
     Type type;

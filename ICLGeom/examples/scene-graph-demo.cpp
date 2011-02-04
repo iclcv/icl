@@ -2,7 +2,7 @@
 #include <ICLGeom/Geom.h>
 #include <ICLUtils/FPSLimiter.h>
 
-GUI gui;
+GUI gui("vbox");
 Scene scene;
 struct Orbit : public SceneObject{
   Orbit(float orbit, const GeomColor &c){
@@ -31,9 +31,20 @@ struct Planet : public SceneObject{
   }
 };
 
+//void capture(){
+//  static ImgQ bg = create("parrot");
+//  show(scene.render(0,&bg));
+//}
+
 void init(){
-  gui << "draw3D()[@minsize=32x24@handle=view]" << "!show";
+  gui << "draw3D()[@minsize=32x24@handle=view]" 
+      << (GUI("hbox") 
+          << "button(capture framebuffer)[@handle=capture]"
+         )
+      << "!show";
   
+  //gui["capture"].registerCallback(new GUI::Callback(capture));
+
   scene.addCamera(Camera(Vec(567,12,215,1),
                          Vec(-0.937548,-0.0012938,-0.347854,1),
                          Vec(0.333029,0.286923, -0.898202,1)));
@@ -69,6 +80,8 @@ void init(){
   scene.getLight(2).setDiffuseEnabled();
   scene.getLight(2).setPosition(Vec(0,0,-60,1));
   scene.getLight(2).setAnchor(p);
+
+  scene.setDrawCoordinateFrameEnabled(true,400,10);
 }
 
 void run(){
@@ -84,6 +97,10 @@ void run(){
   d->unlock();
   d->updateFromOtherThread();
   
+  gui_ButtonHandle(capture);
+  if(capture.wasTriggered()){
+    show(scene.render(0));
+  }
   //SHOW(scene.getCamera(0));
 }
 

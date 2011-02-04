@@ -53,7 +53,7 @@ namespace icl{
     /// called by the scene 
     /** This method is called by the scene and sets up the
         light in OpenGL by using the instances parameters */
-    void setupGL(const Scene &scene, const Camera &cam);
+    void setupGL(const Scene &scene, const Camera &cam) const;
     
     /// wrapped opengl light index
     const int index;

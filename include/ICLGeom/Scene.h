@@ -244,6 +244,19 @@ int main(int n, char**ppc){
     /// returns a callback that is used to render the scene into a GL-context
     /** please see ICLQt::ICLDrawWidget3D::callback */
     ICLDrawWidget3D::GLCallback *getGLCallback(int camIndex);
+    
+#ifdef HAVE_GLX
+    /// renders the current scene using an instance of glx pbuffer
+    /** This method is currently only supported on linux systems, since
+        the used pbuffer (OpenGL offscreen framebuffer object) 
+        
+        The method trys to create a default r8 g8 b8 pbuffer
+        with 24Bit depthbuffer. If this is not supported, an exception will
+        be thrown
+    */
+    const Img8u &render(int camIndx, const ImgBase *background=0) const throw (ICLException);
+#endif
+
 #endif
 #endif
 
@@ -294,10 +307,10 @@ int main(int n, char**ppc){
 #ifdef HAVE_QT
 #ifdef HAVE_OPENGL
     /// internally used rendering method
-    void render(int camIndex, ICLDrawWidget3D *widget);
+    void renderScene(int camIndex, ICLDrawWidget3D *widget=0) const;
 
     /// internally used rendering method for recursive rendering of the scene graph
-    void renderSceneObjectRecursive(SceneObject *o);
+    void renderSceneObjectRecursive(SceneObject *o) const;
 #endif
 #endif
     /// internally used utility method that computes the extend of the Scene content
@@ -328,6 +341,23 @@ int main(int n, char**ppc){
 
     /// internally used list of callbacks
     std::vector<SmartPtr<GLCallback> > m_glCallbacks;
+
+    /// internal class for offscreen rendering
+    struct PBuffer;
+    
+    /// Utility structure for comparing size-instances
+    struct CmpSize{ 
+      bool operator()(const Size &a, const Size &b) const{
+        return (a.width == b.width) ? (a.height < b.height) : (a.width < b.width);
+      }
+    };
+    
+    /// intenal list of of offscreen rendering buffers
+    mutable std::map<Size,PBuffer*,CmpSize> m_pbuffers;
+
+    /// utility method
+    void freeAllPBuffers();
+    
 #endif
 #endif
     
@@ -345,6 +375,7 @@ int main(int n, char**ppc){
     
     /// internal list of lights
     SmartPtr<SceneLight> m_lights[8];
+    
   };
 }
 

@@ -38,14 +38,21 @@ namespace icl{
 #endif
   }
 
-  Primitive &Primitive::operator=(const Primitive &other){
-    vertexIndices = other.vertexIndices;
-    normalIndices = other.normalIndices;
-    color = other.color;
-    tex = other.tex.detached();
-    type = other.type;
-    hasNormals = other.hasNormals;
-    return *this;
+  /*
+      Primitive &Primitive::operator=(const Primitive &other){
+      vertexIndices = other.vertexIndices;
+      normalIndices = other.normalIndices;
+      color = other.color;
+      tex = other.tex.detached();
+      type = other.type;
+      hasNormals = other.hasNormals;
+      return *this;
+      }
+  */
+  void Primitive::detachTextureIfDeepCopied(){
+    if(type == texture && texDeepCopied){
+      tex.detach();
+    }
   }
 
 
@@ -111,7 +118,7 @@ namespace icl{
     
   /// texture constructor
   Primitive::Primitive(int a, int b, int c, int d,const Img8u &tex, bool deepCopy, scalemode mode):
-    vertexIndices(4),tex(tex),type(texture),mode(mode),hasNormals(false){
+    vertexIndices(4),tex(tex),texDeepCopied(deepCopy),type(texture),mode(mode),hasNormals(false){
     vertexIndices[0] = a;
     vertexIndices[1] = b;
     vertexIndices[2] = c;
@@ -122,7 +129,7 @@ namespace icl{
   /// texture constructor
   Primitive::Primitive(int a, int b, int c, int d,const Img8u &tex, bool deepCopy, scalemode mode, 
                        int na, int nb, int nc, int nd):
-    vertexIndices(4),normalIndices(4),tex(tex),type(texture),mode(mode),hasNormals(true){
+    vertexIndices(4),normalIndices(4),tex(tex),texDeepCopied(deepCopy),type(texture),mode(mode),hasNormals(true){
     vertexIndices[0] = a;
     vertexIndices[1] = b;
     vertexIndices[2] = c;
@@ -138,7 +145,7 @@ namespace icl{
   /** There is not special TEXT-type: type remains 'texture' */
   Primitive::Primitive(int a, int b, int c, int d, const std::string &text, const GeomColor &color, 
                        int textSize, scalemode mode):
-    vertexIndices(4),tex(create_text_texture(text,color,textSize)),type(texture),
+    vertexIndices(4),tex(create_text_texture(text,color,textSize)),texDeepCopied(true),type(texture),
     mode(mode),hasNormals(false){
     vertexIndices[0] = a;
     vertexIndices[1] = b;
@@ -150,7 +157,7 @@ namespace icl{
   /** There is not special TEXT-type: type remains 'texture' */
   Primitive::Primitive(int a, int b, int c, int d, const std::string &text, const GeomColor &color, 
                        int textSize, scalemode mode, int na, int nb, int nc, int nd):
-    vertexIndices(4),normalIndices(4),tex(create_text_texture(text,color,textSize)),type(texture),
+    vertexIndices(4),normalIndices(4),tex(create_text_texture(text,color,textSize)),texDeepCopied(true),type(texture),
     mode(mode),hasNormals(true){
     vertexIndices[0] = a;
     vertexIndices[1] = b;
@@ -174,9 +181,9 @@ namespace icl{
   }
 
   /// Creates a deep copy (in particular deep copy of the texture image)
-  Primitive::Primitive(const Primitive &other){
-    *this = other;
-  }
+  //Primitive::Primitive(const Primitive &other){
+  //  *this = other;
+  //}
 
 
 }

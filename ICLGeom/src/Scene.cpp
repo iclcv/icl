@@ -32,12 +32,19 @@
 **                                                                 **
 *********************************************************************/
 
+
 #include <ICLGeom/Scene.h>
 #include <ICLGeom/CoordinateFrameSceneObject.h>
 #ifdef HAVE_QT
 #include <ICLQt/DrawWidget.h>
 #include <ICLQt/GLTextureMapBaseImage.h>
 #endif
+
+#ifdef HAVE_GLX
+#include <GL/glx.h>
+#include <ICLCC/CCFunctions.h>
+#endif
+
 
 #include <ICLQuick/Quick.h>
 #include <ICLGeom/GeomDefs.h>
@@ -53,11 +60,14 @@
 #include <GL/glu.h>
 #endif
 
+
 #endif
 
 #include <set>
+#include <ICLUtils/Time.h>
 
 namespace icl{
+  
 
   struct CameraObject : public SceneObject{
     Scene *scene;
@@ -166,7 +176,7 @@ namespace icl{
       cameraIndex(cameraIndex),parent(parent){}
     virtual void draw(){}
     virtual void drawSpecial(ICLDrawWidget3D *widget){
-      parent->render(cameraIndex, widget);
+      parent->renderScene(cameraIndex, widget);
     }
   };
 #endif
@@ -180,11 +190,14 @@ namespace icl{
     m_lights[0] = SmartPtr<SceneLight>(new SceneLight(0));
   }
   Scene::~Scene(){
-    
+    freeAllPBuffers();
   }
   Scene::Scene(const Scene &scene){
-    *this = scene;
+#ifdef HAVE_GLX
+    freeAllPBuffers();
+#endif
   }
+  
   Scene &Scene::operator=(const Scene &scene){
     m_cameras = scene.m_cameras;
     m_objects.resize(scene.m_objects.size());
@@ -203,6 +216,10 @@ namespace icl{
     for(unsigned int i=0;i<m_glCallbacks.size();++i){
       m_glCallbacks[i] = SmartPtr<GLCallback>(new GLCallback(scene.m_glCallbacks[i]->cameraIndex,this));
     }
+#ifdef HAVE_GLX
+    freeAllPBuffers();
+#endif
+    
 #endif
 #endif
 
@@ -289,7 +306,7 @@ namespace icl{
 #ifdef HAVE_QT
 #ifdef HAVE_OPENGL
 
-  void Scene::renderSceneObjectRecursive(SceneObject *o){
+  void Scene::renderSceneObjectRecursive(SceneObject *o) const{
     if(o->getSmoothShading()){
       glShadeModel(GL_SMOOTH);
     }else{
@@ -434,17 +451,19 @@ namespace icl{
     o->unlock();
   }
 
-  void Scene::render(int camIndex, ICLDrawWidget3D *widget){
+  void Scene::renderScene(int camIndex, ICLDrawWidget3D *widget) const{
 
     Mutex::Locker l(this);
     ICLASSERT_RETURN(camIndex >= 0 && camIndex < (int)m_cameras.size());
 
-    Rect currentImageRect = widget->getImageRect(true);
-    Size currentImageSize = widget->getImageSize(true);
-    Size widgetSize = widget->getSize();
+    Rect currentImageRect = widget ? widget->getImageRect(true) : Rect::null;
+    Size currentImageSize = widget ? widget->getImageSize(true) : Size::null;
+    Size widgetSize = widget ? widget->getSize() : Size::null;
 
     Camera cam = m_cameras[camIndex];
-    cam.getRenderParams().viewport = currentImageRect;
+    if(widget){
+      cam.getRenderParams().viewport = currentImageRect;
+    }
     
     glMatrixMode(GL_MODELVIEW);
     glLoadMatrixf(GLMatrix(cam.getCSTransformationMatrixGL()));
@@ -470,14 +489,20 @@ namespace icl{
     }else{
       glDisable(GL_LIGHTING);
     }
-
-    if (widget->getFitMode() == ICLWidget::fmZoom) {
-      // transforms y in case of having zoom activated
-      float dy = (currentImageRect.height-widgetSize.height);
-      glViewport(currentImageRect.x,-dy-currentImageRect.y,currentImageRect.width,currentImageRect.height);
-    } else {
-      glViewport(currentImageRect.x,currentImageRect.y,currentImageRect.width,currentImageRect.height);
+    
+    if(widget){
+      if (widget->getFitMode() == ICLWidget::fmZoom) {
+        // transforms y in case of having zoom activated
+        float dy = (currentImageRect.height-widgetSize.height);
+        glViewport(currentImageRect.x,-dy-currentImageRect.y,currentImageRect.width,currentImageRect.height);
+      } else {
+        glViewport(currentImageRect.x,currentImageRect.y,currentImageRect.width,currentImageRect.height);
+      }
+    }else{
+      const Size &s = cam.getRenderParams().chipSize;
+      glViewport(0,0,s.width,s.height);
     }
+    
     GLboolean on[4] = {0,0,0,0};
     GLenum flags[4] = {GL_DEPTH_TEST,GL_LINE_SMOOTH,GL_POINT_SMOOTH,GL_POLYGON_SMOOTH};
     for(int i=0;i<4;++i){
@@ -728,6 +753,182 @@ namespace icl{
     if(contactPos) *contactPos = hit.front().pos;
     return hit.front().obj;
   }
+
+
+#ifdef HAVE_GLX
+
+  struct Scene::PBuffer{
+    static Display *getDisplay(){
+      static Display *d = XOpenDisplay(getenv("DISPLAY"));
+      // this leads to errors due to missing x-server connection
+      // obviously the connect is cut before the static context is free'd 
+      // static struct F{ ~F(){ XCloseDisplay(d); }} freeDisplay;
+      return d;
+    }
+    static GLXFBConfig &findGLXConfig() throw (ICLException){
+      static int n = 0;
+      static const int att[] = {GLX_RED_SIZE,8,GLX_GREEN_SIZE,8,GLX_BLUE_SIZE,8,GLX_DEPTH_SIZE,24,0};
+      static GLXFBConfig *configs = glXChooseFBConfig(getDisplay(), DefaultScreen(getDisplay()),att,&n);
+      if(!configs) throw ICLException("Scene::render pbuffer based rendering is not supported on you machine");
+      return *configs;
+    }
+    
+    PBuffer(){}
+    PBuffer(const Size s):size(s){
+      const int S[] = { GLX_PBUFFER_WIDTH,size.width, GLX_PBUFFER_HEIGHT, size.height, 0 };
+      pbuffer = glXCreatePbuffer(getDisplay(), findGLXConfig(), S);
+
+      // note: setting this to false makes rendering 50% slower
+      static const bool useDirectHardwareAccess = true;
+
+      context = glXCreateNewContext(getDisplay(), findGLXConfig(), GLX_RGBA_BIT, 0, useDirectHardwareAccess);
+      buf = Img8u(s,formatRGB);
+      rgbbuf.resize(size.width*size.height*3);
+    }
+    ~PBuffer(){
+      glXDestroyContext(getDisplay(), context);
+      glXDestroyPbuffer(getDisplay(), pbuffer);
+    }
+    void makeCurrent(){
+      glXMakeCurrent(getDisplay(),pbuffer,context);
+    }
+    
+    GLXContext context;    /* OpenGL context */
+    GLXPbuffer pbuffer;    /* Pbuffer */
+    SmartPtr<GLTextureMapBaseImage> background; // optionally used background image
+    Size size;
+    std::vector<icl8u> rgbbuf;
+    Img8u buf;
+  };
+  
+  
+  // std::vector<PBuffer*> m_pbuffers;
+  
+  /** Benchmark results:
+      
+      Hardware:     using dell xt2 laptop (intel integrated graphics adapter)
+      ViewPortSize: VGA
+      Scene:        ICL's scene graph demo (including the parrot background image)
+      
+      context creation/
+      buffer allocation   : 11ms (first time, then 0.06ms)
+      
+      rendering the scene : 85ms
+      
+      pbuffer read-out    : 31ms
+      
+      interlavedToPlanar  : 0.8ms
+
+      flip vertically     : 0.6ms
+    -------------------------------------
+      total               : 117ms (first time: 128ms)
+      
+  */
+  const Img8u &Scene::render(int camIndex, const ImgBase *background) const throw (ICLException){
+    //#define DO_BENCH
+
+#ifdef DO_BENCH
+    Time t = Time::now();
+#endif
+    ICLASSERT_THROW(camIndex < (int)m_cameras.size(),ICLException("Scene::render: invalid camera index"));
+    const Camera &cam = getCamera(camIndex);
+    int w = cam.getRenderParams().viewport.width;
+    int h = cam.getRenderParams().viewport.height;
+    Size s(w,h);
+
+    std::map<Size,PBuffer*,CmpSize>::iterator it = m_pbuffers.find(s);
+    PBuffer &p = (it==m_pbuffers.end())?(*(m_pbuffers[s] = new PBuffer(s))):(*it->second);
+    
+    /*
+        if(!m_pbuffers[camIndex]){
+        PBuffer &p = *(m_pbuffers[camIndex] = new PBuffer);
+        
+        p.pbuffer = glXCreatePbuffer(display, configs[0], size);
+        p.context = glXCreateNewContext(display, configs[0], GLX_RGBA_BIT, 0, True);
+        p.size = Size(w,h);
+        }else if(m_pbuffers[camIndex]->size != Size(w,h)){
+        PBuffer &p = *m_pbuffers[camIndex];
+        glXDestroyContext(display, p.context);
+        glXDestroyPbuffer(display, p.pbuffer);
+        p.pbuffer = glXCreatePbuffer(display, configs[0], size);
+        p.context = glXCreateNewContext(display, configs[0], GLX_RGBA_BIT, 0, True);
+        p.size = Size(w,h);
+        }
+    */
+    
+    p.makeCurrent();
+    //glXMakeCurrent(display, m_pbuffers[camIndex]->pbuffer, m_pbuffers[camIndex]->context);
+#ifdef DO_BENCH
+    std::cout << "context creation took:" << std::endl;
+    SHOW((Time::now()-t).toMilliSecondsDouble());
+    t = Time::now();
+#endif
+
+    glClearColor(0,0,0,0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );    
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_COLOR_MATERIAL);
+
+    if(background){
+      glOrtho(0, w, h, 0, -999999, 999999);
+      glMatrixMode(GL_PROJECTION);
+      glLoadIdentity();
+      glMatrixMode(GL_MODELVIEW);
+      glLoadIdentity();
+      glDisable(GL_LIGHTING);
+      SmartPtr<GLTextureMapBaseImage> &bg = p.background;
+      if(!bg) bg = SmartPtr<GLTextureMapBaseImage>(new GLTextureMapBaseImage);
+      bg->updateTextures(background);
+      bg->drawTo(Rect(0,0,w,h),s);
+      glEnable(GL_LIGHTING);
+    }
+
+    renderScene(camIndex);
+
+#ifdef DO_BENCH
+    std::cout << "rendering the scene took:" << std::endl;
+    SHOW((Time::now()-t).toMilliSecondsDouble());
+    t = Time::now();
+#endif
+
+
+    glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, p.rgbbuf.data());
+
+#ifdef DO_BENCH
+    std::cout << "glReadPixles took:" << std::endl;
+    SHOW((Time::now()-t).toMilliSecondsDouble());
+    t = Time::now();
+#endif
+
+    interleavedToPlanar(p.rgbbuf.data(),&p.buf);
+
+#ifdef DO_BENCH
+    std::cout << "interleaved To planar took:" << std::endl;
+    SHOW((Time::now()-t).toMilliSecondsDouble());
+    t = Time::now();
+#endif
+
+    p.buf.mirror(axisHorz); // software mirroring takes only about 1ms (with ipp)
+
+#ifdef DO_BENCH
+    std::cout << "mirror took" << std::endl;
+    SHOW((Time::now()-t).toMilliSecondsDouble());
+#endif
+    return p.buf;
+  }
+
+  void Scene::freeAllPBuffers(){
+    typedef std::map<Size,PBuffer*,CmpSize>::iterator It;
+    for(It it = m_pbuffers.begin();it != m_pbuffers.end();++it){
+      delete it->second;
+    }
+    m_pbuffers.clear();
+  }
+
+#endif
+
 
 }
 

@@ -69,6 +69,9 @@ add_example (${PROJECT_NAME} "geom-property-demo" "${CONDITIONLIST}" ICLLibsToLi
 add_example (${PROJECT_NAME} "swiss-ranger-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "scene-graph-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_OPENGL_COND HAVE_GLX_COND)
+add_example (${PROJECT_NAME} "offscreen-rendering-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_IPP_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLAlgorithms ICLQuick  ICLBlob ICLFilter ICLCC ICLCore ICLUtils ${QT_LIBS_l})
 add_example_mult(${PROJECT_NAME} "intrinsic-camera-calibration" "examples/intrinsic-camera-calibration.cpp;examples/intrinsic-camera-calibration-tools.cpp;examples/intrinsic-camera-calibration-tools.h" "${CONDITIONLIST}" ICLLibsToLinkAgainst)

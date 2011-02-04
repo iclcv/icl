@@ -51,7 +51,7 @@
 namespace icl{
   
   /// Cam is the Camera that is acutally used for rendering ...
-  void SceneLight::setupGL(const Scene &scene, const Camera &cam){
+  void SceneLight::setupGL(const Scene &scene, const Camera &cam) const{
 #ifdef HAVE_OPENGL
     GLenum l = GL_LIGHT0 + index;
     if(!on){
