@@ -36,6 +36,7 @@
 #include <fstream>
 #include <ICLIO/File.h>
 #include <ICLUtils/StringUtils.h>
+#include <ICLGeom/PlaneEquation.h>
 
 namespace icl{
   const std::vector<Vec> &SceneObject::getVertices() const { 
@@ -749,7 +750,11 @@ namespace icl{
     // for a segment, also test if (r > 1.0) => no intersect 
     // a segment meaning a line-segment between a and b
 
+#if 1
     intersection = r.offset + dir * rr;
+#else
+    intersection = r.getIntersection(PlaneEquation(t.a,n));
+#endif
     //*I = R.P0 + r * dir;           // intersect point of ray and plane
 
     // is I inside T?
@@ -856,13 +861,21 @@ namespace icl{
               break;
             }
             case Primitive::quad:{
+              /*
               Triangle t1(vs[p.a()],
                           vs[p.b()],
                           vs[p.c()] );
               Triangle t2( vs[p.c()],
                            vs[p.d()],
                            vs[p.a()] );
-              
+                  */
+              Triangle t1(vs[p.a()],
+                          vs[p.b()],
+                          vs[p.c()] );
+              Triangle t2( vs[p.c()],
+                           vs[p.d()],
+                           vs[p.b()] );
+
               Vec pos;
               if(compute_intersection(v,t1,pos) == foundIntersection){
                 hits.push_back(pos);
