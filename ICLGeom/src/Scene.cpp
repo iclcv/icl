@@ -385,19 +385,19 @@ namespace icl{
           }
           
           if(p.hasNormals) glNormal3fv(o->m_normals[p.na()].data());
-          if(o->m_triangleColorsFromVertices) glColor3fv((o->m_vertexColors[p.a()]/255).data());
+          if(o->m_quadColorsFromVertices) glColor3fv((o->m_vertexColors[p.a()]/255).data());
           glVertex3fv(a.data());
 
           if(p.hasNormals) glNormal3fv(o->m_normals[p.nb()].data());
-          if(o->m_triangleColorsFromVertices) glColor3fv((o->m_vertexColors[p.b()]/255).data());
+          if(o->m_quadColorsFromVertices) glColor3fv((o->m_vertexColors[p.b()]/255).data());
           glVertex3fv(b.data());
 
           if(p.hasNormals) glNormal3fv(o->m_normals[p.nc()].data());
-          if(o->m_triangleColorsFromVertices) glColor3fv((o->m_vertexColors[p.c()]/255).data());
+          if(o->m_quadColorsFromVertices) glColor3fv((o->m_vertexColors[p.c()]/255).data());
           glVertex3fv(c.data());
 
           if(p.hasNormals) glNormal3fv(o->m_normals[p.nd()].data());
-          if(o->m_triangleColorsFromVertices) glColor3fv((o->m_vertexColors[p.d()]/255).data());
+          if(o->m_quadColorsFromVertices) glColor3fv((o->m_vertexColors[p.d()]/255).data());
           glVertex3fv(d.data());
           
           glEnd();
