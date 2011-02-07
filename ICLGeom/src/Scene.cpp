@@ -767,9 +767,18 @@ namespace icl{
     }
     static GLXFBConfig &findGLXConfig() throw (ICLException){
       static int n = 0;
-      static const int att[] = {GLX_RED_SIZE,8,GLX_GREEN_SIZE,8,GLX_BLUE_SIZE,8,GLX_DEPTH_SIZE,24,0};
+      static const int att[] = {GLX_RED_SIZE,8,GLX_GREEN_SIZE,8,GLX_BLUE_SIZE,8,GLX_DEPTH_SIZE,24,
+                                GLX_DRAWABLE_TYPE, GLX_PBUFFER_BIT, 0};
       static GLXFBConfig *configs = glXChooseFBConfig(getDisplay(), DefaultScreen(getDisplay()),att,&n);
-      if(!configs) throw ICLException("Scene::render pbuffer based rendering is not supported on you machine");
+      if(!configs){
+        // We choose a less restrictive configuration
+        static const int att2[] = {GLX_RED_SIZE,4,GLX_GREEN_SIZE,4,GLX_BLUE_SIZE,4,GLX_DEPTH_SIZE,16,
+                                  GLX_DRAWABLE_TYPE, GLX_PBUFFER_BIT, 0};
+        configs = glXChooseFBConfig(getDisplay(), DefaultScreen(getDisplay()),att2,&n);
+        if(!configs){
+          throw ICLException("Scene::render pbuffer based rendering is not supported on you machine");
+        }
+      } 
       return *configs;
     }
     
