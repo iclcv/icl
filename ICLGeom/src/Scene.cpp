@@ -788,9 +788,13 @@ namespace icl{
       pbuffer = glXCreatePbuffer(getDisplay(), findGLXConfig(), S);
 
       // note: setting this to false makes rendering 50% slower
-      static const bool useDirectHardwareAccess = true;
-
-      context = glXCreateNewContext(getDisplay(), findGLXConfig(), GLX_RGBA_BIT, 0, useDirectHardwareAccess);
+      context = glXCreateNewContext(getDisplay(), findGLXConfig(), GLX_RGBA_TYPE, 0, true /* try direct rendering context first*/);
+      if(!context){
+        context = glXCreateNewContext(getDisplay(), findGLXConfig(), GLX_RGBA_TYPE, 0, false);
+        if(!context){
+          throw ICLException("glXCreateNewContext failed: unable to create pbuffer rendering context");
+        }
+      }
       buf = Img8u(s,formatRGB);
       rgbbuf.resize(size.width*size.height*3);
     }
@@ -902,7 +906,6 @@ namespace icl{
     t = Time::now();
 #endif
 
-
     glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, p.rgbbuf.data());
 
 #ifdef DO_BENCH
@@ -935,6 +938,16 @@ namespace icl{
     }
     m_pbuffers.clear();
   }
+
+  void Scene::freePBuffer(const Size &size){
+    typedef std::map<Size,PBuffer*,CmpSize>::iterator It;
+    It it = m_pbuffers.find(size);
+    if(it != m_pbuffers.end()){
+      delete it->second;
+      m_pbuffers.erase(it);
+    }
+  }
+  
 
 #endif
 

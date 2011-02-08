@@ -251,10 +251,27 @@ int main(int n, char**ppc){
         the used pbuffer (OpenGL offscreen framebuffer object) 
         
         The method trys to create a default r8 g8 b8 pbuffer
-        with 24Bit depthbuffer. If this is not supported, an exception will
-        be thrown
+        with 24Bit depthbuffer. If this is not supported, 
+        an at least 4 4 4 16 context is tryed to be created. If this does also fail,
+        an exception will be thrown.
+        
+        <b>Please note:</b> The rendering pbuffer is allocated on you graphics card. Per definition,
+        pbuffers are located in the screenbuffer memory segment with might be much smaller than the
+        actual memory of your graphics card. Therefore, it is strongly recommended to free all pbuffers
+        when they are no longer used.
+        The pbuffer that is created to render the image in this method is stored internally and it
+        will remain allocated for later use. If you need to render images of different sizes
+        (the output image is rendered to the image size that the camera at given index has), you should
+        free the pbuffers from time to time using 
+        Scene::freeAllPBuffers and Scene::freePBuffer(const Size&).
     */
     const Img8u &render(int camIndx, const ImgBase *background=0) const throw (ICLException);
+    
+    /// frees all pbuffers allocated before
+    void freeAllPBuffers();
+    
+    /// frees the pbffer associated with given size (if there is one)
+    void freePBuffer(const Size &size);
 #endif
 
 #endif
@@ -355,9 +372,6 @@ int main(int n, char**ppc){
     /// intenal list of of offscreen rendering buffers
     mutable std::map<Size,PBuffer*,CmpSize> m_pbuffers;
 
-    /// utility method
-    void freeAllPBuffers();
-    
 #endif
 #endif
     
