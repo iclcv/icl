@@ -294,6 +294,24 @@ namespace icl{
     }
   }
 
+  void GLTextureMapBaseImage::drawToQuad(const float *a, const float *b, const float *c, const float *d,
+                                         scalemode smode,const float *na,const float *nb,
+                                         const float *nc, const float *nd){
+    if(m_po8u){
+      m_po8u->drawToQuad(a,b,c,d,smode,na,nb,nc,nd);
+    }
+    if(m_po16s){
+      m_po16s->drawToQuad(a,b,c,d,smode,na,nb,nc,nd);
+    }
+    if(m_po32s){
+      m_po32s->drawToQuad(a,b,c,d,smode,na,nb,nc,nd);
+    }
+    if(m_po32f){
+      m_po32f->drawToQuad(a,b,c,d,smode,na,nb,nc,nd);
+    }
+  }
+
+
   void GLTextureMapBaseImage::setDrawGrid(bool enabled, float *color){
     if(m_po8u){ m_po8u->setDrawGrid(enabled,color);  return;  }
     if(m_po16s){ m_po16s->setDrawGrid(enabled,color);  return;  }

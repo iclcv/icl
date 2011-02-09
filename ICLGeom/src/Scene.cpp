@@ -424,9 +424,21 @@ namespace icl{
           const Vec &c = ps[p.c()];
           const Vec &d = ps[p.d()];
           // left hand normal ?!
-          glNormal3fv(normalize(cross(b-c,d-c)).data());
+          if(!p.hasNormals){
+            glNormal3fv(normalize(cross(b-c,d-c)).data());
+          }
+          
           GLTextureMapBaseImage tim(&p.tex);
-          tim.drawTo3D(a.begin(),b.begin(),d.begin(),p.mode);
+          //          tim.drawTo3D(a.begin(),b.begin(),d.begin(),p.mode);
+          if(p.hasNormals){
+            tim.drawToQuad(a.begin(),b.begin(),d.begin(),c.begin(),p.mode,
+                           o->m_normals[p.na()].data(),
+                           o->m_normals[p.nb()].data(),
+                           o->m_normals[p.nd()].data(),
+                           o->m_normals[p.nc()].data());
+          }else{
+            tim.drawToQuad(a.begin(),b.begin(),c.begin(),d.begin(),p.mode);
+          }
           break;
         }
         default:

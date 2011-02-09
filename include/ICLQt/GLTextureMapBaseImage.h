@@ -118,8 +118,22 @@ namespace icl{
         SecondAxis
         </pre>
     **/
-    void drawTo3D(const float *pCenter,const float *pFirstAxis,const float *pSecondAxis, scalemode smode=interpolateNN);
+    void drawTo3D(const float *pCenter,const float *pFirstAxis,const float *pSecondAxis, 
+                  scalemode smode=interpolateNN);
     
+    /// draws the texture to given gl-quad
+    /** Example
+        <pre>
+        a---------b
+        |         |
+        |         |
+        c---------d
+        </pre>
+        Optionally, normals (na,nb,nc,nd) can be passed
+    */
+    void drawToQuad(const float *a, const float *b, const float *c, const float *d,
+                    scalemode smode=interpolateNN,const float *na=0,const float *nb=0,
+                    const float *nc=0, const float *nd=0);
     
     /// if the GLTextureMapBase image has no Image, it cannot be drawn
     bool hasImage(){

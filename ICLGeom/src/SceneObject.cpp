@@ -860,6 +860,7 @@ namespace icl{
               }
               break;
             }
+            case Primitive::texture:
             case Primitive::quad:{
               /*
               Triangle t1(vs[p.a()],

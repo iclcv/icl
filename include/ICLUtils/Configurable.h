@@ -55,7 +55,7 @@ namespace icl{
       Configurables virtual configuration functions
       \code
       /// sets value of a property (always call call_callbacks(propertyName) or Configurable::setPropertyValue)
-      virtual void setPropertyValue(const std::string &propertyName, const std::string &value) throw (ICLException);
+      virtual void setPropertyValue(const std::string &propertyName, const Any &value) throw (ICLException);
       
       /// returns Configurable property list
       virtual std::vector<std::string> getPropertyList();
@@ -67,7 +67,7 @@ namespace icl{
       virtual std::string getPropertyInfo(const std::string &propertyName);
       
       /// returns value for given property
-      virtual std::string getPropertyValue(const std::string &propertyName);
+      virtual Any getPropertyValue(const std::string &propertyName);
       
       /// returns volatileness for given property
       virtual int getPropertyVolatileness(const std::string &propertyName);

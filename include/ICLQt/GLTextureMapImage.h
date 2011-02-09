@@ -154,6 +154,22 @@ namespace icl{
                   const float *pFirstAxis,
                   const float *pSecondAxis,
                   scalemode mode=interpolateNN);
+
+    
+        /// draws the texture to given gl-quad
+    /** Example
+        <pre>
+        a---------b
+        |         |
+        |         |
+        c---------d
+        </pre>
+        Optionally, normals (na,nb,nc,nd) can be passed
+    */
+    void drawToQuad(const float *a, const float *b, const float *c, const float *d,
+                    scalemode smode=interpolateNN,const float *na=0,const float *nb=0,
+                    const float *nc=0, const float *nd=0);
+
     
     /// returns current image height
     int getImageWidth() const { return m_iImageW; }
