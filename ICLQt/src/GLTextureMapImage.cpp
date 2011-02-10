@@ -629,14 +629,30 @@ namespace icl{
   /**
 layout a--b
        |  |
-       c--d
+       d--c
 
       */
   static void interpolate_billinear(const float *a, const float *b, const float *c, const float *d, 
                                     float relx,float rely, float *dst){
-    float &x = relx, &y=rely;
+    float &x = relx, &y=rely, x1=1-x, y1=1-y;
     for(int i=0;i<3;++i){
-      dst[i] = a[i]*(1-x)*(1-y) + b[i]*x*(1-y) + c[i]*y*(1-x) + d[i]*x*y;  
+      dst[i] = a[i]*x1*y1 + b[i]*x*y1 + d[i]*y*x1 + c[i]*x*y;  
+    }
+  }
+  static inline float vec_len(const float *f){
+    return ::sqrt (f[0]*f[0] + f[1]*f[1] + f[2]*f[2] );
+  }
+  
+  // for some reason we have to invert the normals for texture mapping ??
+  static void interpolate_billinear_and_normalize_and_invert(const float *a, const float *b, const float *c, const float *d, 
+                                    float relx,float rely, float *dst){
+    interpolate_billinear(a,b,c,d,relx,rely,dst);
+    float len = vec_len(dst);
+    if(len > 1.E-6){
+      float ilen = -1.0/len;
+      dst[0] *= ilen;
+      dst[1] *= ilen;
+      dst[2] *= ilen;
     }
   }
   
@@ -678,37 +694,23 @@ layout a--b
       resetPixelTransfer();
     }
     
-    // --------------------------------------------------------------------------------------------
-    // --------------------------------------------------------------------------------------------
-    // --------------------------------------------------------------------------------------------
-    
-  
-    float fracXForLastPart = 1-float(m_iCellSize-m_iRestX)/m_iCellSize;    
-    float fracYForLastPart = 1-float(m_iCellSize-m_iRestY)/m_iCellSize;
-
-    /*
-        float S[3] = {pCenter[0],pCenter[1],pCenter[2]};
-        
-        float A[3] = {pFirstAxis[0]-S[0],pFirstAxis[1]-S[1],pFirstAxis[2]-S[2]};
-        float B[3] = {pSecondAxis[0]-S[0],pSecondAxis[1]-S[1],pSecondAxis[2]-S[2]};
-        
-        float LA = ::sqrt( A[0]*A[0] + A[1]*A[1] + A[2]*A[2] );     
-        float LB = ::sqrt( B[0]*B[0] + B[1]*B[1] + B[2]*B[2] );
-        for(int i=0;i<3;i++){
-        A[i] /= LA;
-        B[i] /= LB;
-        }
-        
-        float DA = fracXForLastPart ? LA/(m_iXCells-1+fracXForLastPart) : LA/m_iXCells;
-        float DB = fracYForLastPart ? LB/(m_iYCells-1+fracYForLastPart) : LB/m_iYCells;
-    */
-    float DA = fracXForLastPart ? 1.0/(m_iXCells-1+fracXForLastPart) : 1.0/m_iXCells;
-    float DB = fracYForLastPart ? 1.0/(m_iYCells-1+fracYForLastPart) : 1.0/m_iYCells;
-
-    float V[3];
-    bool haveNormals = na && nb && nc && nd;
-    
-    for(int y=0;y<m_iYCells;++y){
+   // --------------------------------------------------------------------------------------------
+   
+   float fracXForLastPart = 1.0-float(m_iCellSize-m_iRestX)/m_iCellSize;    
+   float fracYForLastPart = 1.0-float(m_iCellSize-m_iRestY)/m_iCellSize;
+   
+   float DA = fracXForLastPart ? 1.0/(m_iXCells-1+fracXForLastPart) : 1.0/m_iXCells;
+   float DB = fracYForLastPart ? 1.0/(m_iYCells-1+fracYForLastPart) : 1.0/m_iYCells;
+   
+   //glDisable(GL_LIGHTING);
+   
+   float v0[3],v1[3],v2[3],v3[3];
+   float n0[3],n1[3],n2[3],n3[3];
+   bool haveNormals = na && nb && nc && nd;
+   
+   glColor4f(1,1,1,1);
+   
+   for(int y=0;y<m_iYCells;++y){
       for(int x=0;x<m_iXCells;++x){
         glBindTexture(GL_TEXTURE_2D, m_matTextureNames[x][y]);
         
@@ -727,50 +729,57 @@ layout a--b
         
         if(fracXForLastPart != 0 && x==m_iXCells-1){
           texCoordsXMax =  fracXForLastPart;
-          X1 = 1;
+          X1 = (x+fracXForLastPart)*DA;
         }
         if(fracYForLastPart != 0 && y==m_iYCells-1){
           texCoordsYMax = fracYForLastPart;
-          Y1 = 1;
+          Y1 = (y+fracYForLastPart)*DB;
         }
         
         glTexCoord2f(texCoordsXMin, texCoordsYMin ); 
         if(haveNormals){
-          interpolate_billinear(na,nb,nc,nd,X,Y,V);
-          glNormal3fv(V);
+          interpolate_billinear_and_normalize_and_invert(na,nb,nc,nd,X,Y,n0);
+          glNormal3fv(n0);
         }
-        interpolate_billinear(a,b,c,d,X,Y,V);
-        glVertex3fv(V);
-        //-
+        interpolate_billinear(a,b,c,d,X,Y,v0);
+        glVertex3fv(v0);
+
+        //---------------------------------------
+
         glTexCoord2f(texCoordsXMin, texCoordsYMax ); 
         if(haveNormals){
-          interpolate_billinear(na,nb,nc,nd,X,Y1,V);
-          glNormal3fv(V);
+          interpolate_billinear_and_normalize_and_invert(na,nb,nc,nd,X,Y1,n1);
+          glNormal3fv(n1);
         }
-        interpolate_billinear(a,b,c,d,X,Y1,V);
-        glVertex3fv(V);
-        //-
+        interpolate_billinear(a,b,c,d,X,Y1,v1);
+        glVertex3fv(v1);
+
+        //---------------------------------------
+
         glTexCoord2f(texCoordsXMax, texCoordsYMax ); 
         if(haveNormals){
-          interpolate_billinear(na,nb,nc,nd,X1,Y1,V);
-          glNormal3fv(V);
+          interpolate_billinear_and_normalize_and_invert(na,nb,nc,nd,X1,Y1,n2);
+          glNormal3fv(n2);
         }
-        interpolate_billinear(a,b,c,d,X1,Y1,V);
-        glVertex3fv(V);
-        //-
+        interpolate_billinear(a,b,c,d,X1,Y1,v2);
+        glVertex3fv(v2);
+       
+        //---------------------------------------
+        
         glTexCoord2f(texCoordsXMax, texCoordsYMin ); 
         if(haveNormals){
-          interpolate_billinear(na,nb,nc,nd,X1,Y,V);
-          glNormal3fv(V);
+          interpolate_billinear_and_normalize_and_invert(na,nb,nc,nd,X1,Y,n3);
+          glNormal3fv(n3);
         }
-        interpolate_billinear(a,b,c,d,X1,Y,V);
-        glVertex3fv(V);
+        interpolate_billinear(a,b,c,d,X1,Y,v3);
+        glVertex3fv(v3);
         glEnd();
       }
     }
     if(!m_bUseSingleBuffer){
       glDeleteTextures(m_iXCells*m_iYCells,m_matTextureNames.data());  
     }
+    //glEnable(GL_LIGHTING);
   }
   
   template<class T>

@@ -204,6 +204,22 @@ namespace icl{
         dz = *params++/2.0;
       }
 
+      /** cube scheme ...
+
+      +z__
+       |\      0         
+         \     |
+          +----+----> +x
+          | 3----0
+          | |7---+4
+        0-+ ||   ||
+          | ||   ||
+          | 2+---1|
+          |  6----5
+          V
+          +y
+      */
+
       addVertex(Vec(x+dx,y-dy,z+dz,1));
       addVertex(Vec(x+dx,y+dy,z+dz,1));
       addVertex(Vec(x-dx,y+dy,z+dz,1));

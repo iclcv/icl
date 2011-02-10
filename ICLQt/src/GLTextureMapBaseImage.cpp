@@ -50,7 +50,6 @@ namespace icl{
       if(imageSize == Size(16,16)) return 16;
       if(imageSize == Size(32,32)) return 32;
       if(imageSize.getDim() < 100) return 16;
-      if(imageSize.getDim() < 100) return 16;
       if(imageSize.getDim() < 2500) return 32;
       if(imageSize.getDim() < 10000) return 64;
       if(imageSize.getDim() < 3000000) return 128;
