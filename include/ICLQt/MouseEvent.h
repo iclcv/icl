@@ -93,6 +93,9 @@ namespace icl{
     /// event location in image coordinates (common)
     Point m_imagePos;
     
+    /// event location in image coordinates in float
+    Point32f m_imagePos32f;
+    
     /// relative image coordinates
     Point32f m_relImagePos;
     
@@ -118,6 +121,7 @@ namespace icl{
     /// private constructor, mouse events are created by the ICLWidget only
     MouseEvent(const Point &widgetPos,
                const Point &imagePos,
+               const Point32f &imagePos32f,
                const Point32f &relImagePos,
                const bool downMask[3],
                const std::vector<double> &color,
@@ -149,6 +153,15 @@ namespace icl{
 
     /// returns event's location wrt. image frame
     inline const Point &getPos() const { return m_imagePos; }
+
+    /// returns event's x coordinate wrt. image frame
+    inline float getX32f() const { return m_imagePos32f.x; }
+
+    /// returns event's y coordinate wrt. image frame
+    inline float getY32f() const { return m_imagePos32f.y; }
+
+    /// returns event's location wrt. image frame
+    inline const Point32f &getPos32f() const { return m_imagePos32f; }
     
     /// wheel delta (x: horizontal wheel, y: vertical wheel (common))
     /** We use the unit of Qt's QWheelEvent's delta:

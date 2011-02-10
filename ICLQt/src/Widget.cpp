@@ -2489,6 +2489,7 @@ namespace icl{
       const Point &wheelDelta = (type == MouseWheelEvent) ? m_data->wheelDelta : Point::null;
       evt = MouseEvent(Point(m_data->mouseX,m_data->mouseY),
                        Point(-1,-1),
+                       Point32f(-1,-1),
                        Point32f((float)m_data->mouseX/float(width()),(float)m_data->mouseY/float(height())),
                        m_data->downMask,
                        std::vector<double>(),
@@ -2507,8 +2508,10 @@ namespace icl{
       int ih = m_data->image->hasImage() ? m_data->image->getSize().height : m_data->defaultViewPort.height;
       float boxX = m_data->mouseX - r.x;
       float boxY = m_data->mouseY - r.y;
-      int imageX = (int) rint(-0.5+(boxX*(iw))/r.width);
-      int imageY = (int) rint(-0.5+(boxY*(ih))/r.height);
+      float imageX32f = (boxX*iw)/float(r.width);
+      float imageY32f = (boxY*ih)/float(r.height);
+      int imageX = (int) rint(-0.5+(boxX*iw)/r.width);
+      int imageY = (int) rint(-0.5+(boxY*ih)/r.height);
 
       float relImageX = float(imageX)/iw;
       float relImageY = float(imageY)/ih;
@@ -2521,6 +2524,7 @@ namespace icl{
       const Point &wheelDelta = (type == MouseWheelEvent) ? m_data->wheelDelta : Point::null;
       evt = MouseEvent(Point(m_data->mouseX,m_data->mouseY),
                        Point(imageX,imageY),
+                       Point32f(imageX32f,imageY32f),
                        Point32f(relImageX,relImageY),
                        m_data->downMask,
                        color,

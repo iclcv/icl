@@ -212,11 +212,19 @@ int main(int n, char **ppc){
     }
     
     /// draws a string into the given rect
-    /** if w=-1 and h=-1, fontsize is used to determine the bitmap size */
-    void text(std::string text, float x, float y, float w, float h, int fontsize=15);
+    /** if w=-1 and h=-1, fontsize is used to determine the bitmap size.
+        The given fontsize paramter defines the font-size in screen pixels.
+        <b>Important: if the given fontsize is negative, its absolute value is used
+        but the font size unit is image pixels instead of screen-pixels </b>
+        */
+    void text(std::string text, float x, float y, float w, float h, float fontsize=15);
 
     /// draws text at given x, y location with given fontsize
-    void text(const std::string &text, float x, float y, int fontsize=15){
+    /*    The given fontsize paramter defines the font-size in screen pixels.
+        <b>Important: if the given fontsize is negative, its absolute value is used
+        but the font size unit is image pixels instead of screen-pixels </b>
+    */
+    void text(const std::string &text, float x, float y, float fontsize=15){
       this->text(text,x,y,-1,-1,fontsize);
     }
 

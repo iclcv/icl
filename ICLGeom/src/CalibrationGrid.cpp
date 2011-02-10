@@ -430,10 +430,13 @@ namespace icl{
           float vy = round1(vs[x+nx*y][1]);
           float vz = round1(vs[x+nx*y][2]);
           w.color(255,255,255,255);
-          w.text(str("(")+str(vx)+", "+str(vy)+", "+str(vz)+str(")"),ps[x+nx*y].x+1, ps[x+nx*y].y+1, 9);
+          w.text(str(vx),ps[x+nx*y].x+1, ps[x+nx*y].y+1,-8);
+          w.text(str(vy),ps[x+nx*y].x+1, ps[x+nx*y].y+11,-8);
+          w.text(str(vz),ps[x+nx*y].x+1, ps[x+nx*y].y+21,-8);
           w.color(0,0,0,255);
-          w.text(str("(")+str(vx)+", "+str(vy)+", "+str(vz)+str(")"),ps[x+nx*y].x, ps[x+nx*y].y, 9);
-
+          w.text(str(vx),ps[x+nx*y].x, ps[x+nx*y].y+1,-8);
+          w.text(str(vy),ps[x+nx*y].x, ps[x+nx*y].y+11,-8);
+          w.text(str(vz),ps[x+nx*y].x, ps[x+nx*y].y+21,-8);
         }
       }
     }

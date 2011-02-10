@@ -593,7 +593,7 @@ namespace icl{
     virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
       int oldFontSize = e->getFontSize();
 
-      e->fontsize(fontsize);
+      e->fontsize(fontsize < 0 ? (-fontsize * float(s->rect.height)/float(s->imsize.height)) : fontsize);
       if(m_fC == -1 || m_fD == -1){
         e->text(Rect(tP(m_fA,m_fB,s),tS(m_fC, m_fD,s)),text,PaintEngine::NoAlign);
       }else{
@@ -795,7 +795,7 @@ namespace icl{
     m_vecCommands.push_back(new ImageCommand(image,x,y,w,h));
   }
  
-  void ICLDrawWidget::text(string text, float x, float y, float w, float h, int fontsize){
+  void ICLDrawWidget::text(string text, float x, float y, float w, float h, float fontsize){
     m_vecCommands.push_back(new TextCommand(text,x,y,w,h,fontsize));
   } 
 
