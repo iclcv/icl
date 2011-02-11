@@ -133,6 +133,10 @@ namespace icl{
       return "invalid key restriction";
     }
   }
+
+  static inline bool is_text_node(const XMLNode &node){
+    return node && node.type() == pugi::node_pcdata;
+  }
   
   void ConfigFile::add_to_doc(XMLDocument &doc, 
                               const std::string &name, 
@@ -172,7 +176,12 @@ namespace icl{
     }
     typeAtt.set_value(type.c_str());
     
-    data.append_child(pugi::node_pcdata).set_value(value.c_str());
+    XMLNode text;
+    if( (text = data.find_child(is_text_node)) ){
+      text.set_value(value.c_str());
+    }else{
+      data.append_child(pugi::node_pcdata).set_value(value.c_str());
+    }
 
     if(restr){
       XMLAttribute rangeAtt = data.attribute("range");
