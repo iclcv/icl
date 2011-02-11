@@ -117,7 +117,8 @@ namespace icl{
               bool showSizeText=false, 
               bool showCenterText=false,
               bool showMetaData=false,
-              int lineWidth=1);
+              int lineWidth=1,
+              float textSize=9);
       public:
       Color4D edgeColor;     //!< edge color for rect visualization
       Color4D fillColor;     //!< fill color for rect visualization (set alpha to 0 to have no fill)
@@ -131,6 +132,7 @@ namespace icl{
       bool showCenterText;   //!< if true, the rects center is shown (as text)
       bool showMetaData;     //!< if true, the meta data is shown as (as text)
       int lineWidth;         //!< linewidth for visualization
+      float textSize;        //!< text size used for all texts (note: if this is negative, it's defined in image pixels)
     };
 
     protected:

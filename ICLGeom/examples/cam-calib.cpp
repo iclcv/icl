@@ -149,6 +149,8 @@ struct CalibTool : public DefineRectanglesMouseHandler,
     o.metaColor = o.centerColor;
     extra.setMaxRects(500);
   }
+
+ 
   
   void changeModeTo(Mode mode){
     Mutex::Locker l(mutex);
@@ -240,9 +242,9 @@ struct CalibTool : public DefineRectanglesMouseHandler,
     }
   }
   
-  void load(){
+  void load(const std::string &inputFileName=""){
     try{
-      std::string filename = openFileDialog("XML-Files (*.xml)");
+      std::string filename = inputFileName.length() ? inputFileName : openFileDialog("XML-Files (*.xml)");
       ConfigFile f(filename);
       f.setPrefix("config.");
       extra.clearAllRects();
@@ -260,6 +262,9 @@ struct CalibTool : public DefineRectanglesMouseHandler,
   /// automatic visualiziation
   /** The given ICLDrawWidget must be locked and reset before */
   void visualize(ICLDrawWidget &w){
+    DefineRectanglesMouseHandler::Options &o = extra.getOptions();
+    o.textSize = -(gui["textSize"].as<float>());
+
     DefineRectanglesMouseHandler::visualize(w);
     
     Mutex::Locker l(this);
@@ -394,6 +399,10 @@ void init(){
     tool = new CalibTool(true);
   }
   
+  if(pa("-l")){
+    tool->load(*pa("-l"));
+  }
+  
   grabber.init(FROM_PROGARG("-i"));
   grabber.setIgnoreDesiredParams(true);
   if(pa("-dist")){
@@ -447,7 +456,9 @@ void init(){
                 << "button(show camera)[@handle=printCam]"
                 << "button(save best of 10)[@handle=saveBest10]"
                )
+           << "fslider(2,30,12)[@out=textSize@label=text size]"
            )
+
       << "!show";
 
   (*gui.getValue<DrawHandle3D>("sceneview"))->setImageInfoIndicatorEnabled(false);
@@ -766,5 +777,6 @@ int main(int n, char **ppc){
                 "-create-empty-config-file|-cc "
                 "-size|-s(WxH) "
                 "-output|-o(output-xml-file-name=extracted-cam-cfg.xml) "
+                "-load-points|-l(defined-points-xml-file)"
                 ,init,run).exec();
 }
