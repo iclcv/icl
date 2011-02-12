@@ -306,18 +306,28 @@ int main(int n, char**ppc){
     /// sets whether OpenGL's lighting is globally activated
     /** by default, lighting is activated */
     void setLightingEnabled(bool flag);
-    
+
     /// picks the closest contained scene-object clicked at given ScreenPosition
     /** returns 0 if no object was hit, if contactPos is not 0, the 3D-contact position
         is stored there. */
-    inline SceneObject *findObject(int camIndex, int xScreen, int yScreen, Vec *contactPos=0){
-      return findObject(getCamera(camIndex).getViewRay(Point(xScreen,yScreen)),contactPos);
+    inline Hit findObject(int camIndex, int xScreen, int yScreen){
+      return findObject(getCamera(camIndex).getViewRay(Point(xScreen,yScreen)));
     }
     
     /// picks the first object that is hit by the given viewray
     /** The first object that is returned has the smallest distance to the
         given viewRay's offset. If contactPos is not 0, the contact point is stored there. */
-    SceneObject *findObject(const ViewRay &v, Vec *contactPos=0);
+    Hit findObject(const ViewRay &v);
+    
+    
+    /// retunrs all objects intersected by the given viewray
+    std::vector<Hit> findObjects(const ViewRay &v);
+    
+    /// retunrs all objects on that are intersected by the defined cameras viewray through given x and y
+    inline std::vector<Hit> findObjects(int camIndex, int xScreen, int ySceen){
+      return findObjects(getCamera(camIndex).getViewRay(Point(xScreen,ySceen)));
+    }
+    
     
     
     protected:

@@ -723,6 +723,7 @@ namespace icl{
   enum RayTriangleIntersection{
     noIntersection,
     foundIntersection,
+    wrongDirection,
     degenerateTriangle,
     rayIsCollinearWithTriangle
   };
@@ -771,6 +772,9 @@ namespace icl{
 #else
     intersection = r.getIntersection(PlaneEquation(t.a,n));
 #endif
+
+    if(dot(v,intersection)<0) return wrongDirection;
+
     //*I = R.P0 + r * dir;           // intersect point of ray and plane
 
     // is I inside T?
@@ -799,69 +803,81 @@ namespace icl{
     return foundIntersection; // I is in T
   }
   
-  void SceneObject::collect_hits_recursive(SceneObject *obj, 
-                                           const ViewRay &v, std::vector<Vec> &hits,
-                                           std::vector<SceneObject*> &objects,
-                                           bool recursive){
+  void SceneObject::collect_hits_recursive(SceneObject *obj, const ViewRay &v, 
+                                           std::vector<Hit> &hits, bool recursive){
     std::vector<Vec> vs = obj->getTransformedVertices();
     
+    int nFaces = 0;
+    for(unsigned int i=0;i<obj->m_primitives.size();++i){
+      Primitive::Type t = obj->m_primitives[i].type;
+      nFaces += (t == Primitive::quad ||
+                 t == Primitive::texture ||
+                 t == Primitive::triangle ||
+                 t == Primitive::polygon);
+    }
+    
     if(vs.size()){
-      // prepare for aabb (aka 3D-bounding box) check
-      // check for intersections with the 3D bounding box-faces first
-      Range32f aabb[3];
-      for(int i=0;i<3;++i){
-        aabb[i] = Range32f::limits();
-        std::swap(aabb[i].minVal,aabb[i].maxVal);
-      }      
-      for(unsigned int i=0;i<vs.size();++i){
-        const Vec &v = vs[i];
-        if(v[0] < aabb[0].minVal) aabb[0].minVal = v[0];
-        if(v[1] < aabb[1].minVal) aabb[1].minVal = v[1];
-        if(v[2] < aabb[2].minVal) aabb[2].minVal = v[2];
-        if(v[0] > aabb[0].maxVal) aabb[0].maxVal = v[0];
-        if(v[1] > aabb[1].maxVal) aabb[1].maxVal = v[1];
-        if(v[2] > aabb[2].maxVal) aabb[2].maxVal = v[2];
-      }
-      
-      // 1st: apply check aabb for possible hit
-      /**
-          0-----1   ---> x
-          |4----+5
-          ||    ||
-          2+----3|
-           6-----7
-          |
-          V
-          y
-      */
-      
-      Vec v0(aabb[0].minVal,aabb[1].minVal,aabb[2].minVal);
-      Vec v1(aabb[0].maxVal,aabb[1].minVal,aabb[2].minVal);
-      Vec v2(aabb[0].minVal,aabb[1].maxVal,aabb[2].minVal);
-      Vec v3(aabb[0].maxVal,aabb[1].maxVal,aabb[2].minVal);
-      Vec v4(aabb[0].minVal,aabb[1].minVal,aabb[2].maxVal);
-      Vec v5(aabb[0].maxVal,aabb[1].minVal,aabb[2].maxVal);
-      Vec v6(aabb[0].minVal,aabb[1].maxVal,aabb[2].maxVal);
-      Vec v7(aabb[0].maxVal,aabb[1].maxVal,aabb[2].maxVal);
-      
-      Vec __;
-      
-      // important optimization check the 3D-bounding box for intersection with the
-      // given ray first -> this is in particular very important for e.g. spheres
-      // that have a lot of faces ..
-      if(compute_intersection(v,Triangle(v0,v1,v2),__) == foundIntersection ||
-         compute_intersection(v,Triangle(v1,v3,v2),__) == foundIntersection ||
-         compute_intersection(v,Triangle(v4,v5,v6),__) == foundIntersection ||
-         compute_intersection(v,Triangle(v5,v6,v7),__) == foundIntersection ||
-         compute_intersection(v,Triangle(v0,v1,v4),__) == foundIntersection ||
-         compute_intersection(v,Triangle(v1,v4,v5),__) == foundIntersection ||
-         compute_intersection(v,Triangle(v2,v3,v6),__) == foundIntersection ||
-         compute_intersection(v,Triangle(v3,v6,v7),__) == foundIntersection ||
-         compute_intersection(v,Triangle(v0,v4,v2),__) == foundIntersection ||
-         compute_intersection(v,Triangle(v2,v4,v6),__) == foundIntersection ||
-         compute_intersection(v,Triangle(v1,v5,v3),__) == foundIntersection ||
-         compute_intersection(v,Triangle(v3,v5,v7),__) == foundIntersection ){
+      bool aabbCheckOK = false;
+      if(nFaces < 10){
+        aabbCheckOK = true;
+      }else{
+        // prepare for aabb (aka 3D-bounding box) check
+        // check for intersections with the 3D bounding box-faces first
+        Range32f aabb[3];
+        for(int i=0;i<3;++i){
+          aabb[i] = Range32f::limits();
+          std::swap(aabb[i].minVal,aabb[i].maxVal);
+        }      
+        for(unsigned int i=0;i<vs.size();++i){
+          const Vec &v = vs[i];
+          if(v[0] < aabb[0].minVal) aabb[0].minVal = v[0];
+          if(v[1] < aabb[1].minVal) aabb[1].minVal = v[1];
+          if(v[2] < aabb[2].minVal) aabb[2].minVal = v[2];
+          if(v[0] > aabb[0].maxVal) aabb[0].maxVal = v[0];
+          if(v[1] > aabb[1].maxVal) aabb[1].maxVal = v[1];
+          if(v[2] > aabb[2].maxVal) aabb[2].maxVal = v[2];
+        }
         
+        // 1st: apply check aabb for possible hit
+        /**
+            0-----1   ---> x
+            |4----+5
+            ||    ||
+            2+----3|
+            6-----7
+            |
+            V
+            y
+            */
+        
+        Vec v0(aabb[0].minVal,aabb[1].minVal,aabb[2].minVal);
+        Vec v1(aabb[0].maxVal,aabb[1].minVal,aabb[2].minVal);
+        Vec v2(aabb[0].minVal,aabb[1].maxVal,aabb[2].minVal);
+        Vec v3(aabb[0].maxVal,aabb[1].maxVal,aabb[2].minVal);
+        Vec v4(aabb[0].minVal,aabb[1].minVal,aabb[2].maxVal);
+        Vec v5(aabb[0].maxVal,aabb[1].minVal,aabb[2].maxVal);
+        Vec v6(aabb[0].minVal,aabb[1].maxVal,aabb[2].maxVal);
+        Vec v7(aabb[0].maxVal,aabb[1].maxVal,aabb[2].maxVal);
+        
+        Vec __;
+        
+        // important optimization check the 3D-bounding box for intersection with the
+        // given ray first -> this is in particular very important for e.g. spheres
+        // that have a lot of faces ..
+        aabbCheckOK = (compute_intersection(v,Triangle(v0,v1,v2),__) == foundIntersection ||
+                       compute_intersection(v,Triangle(v1,v3,v2),__) == foundIntersection ||
+                       compute_intersection(v,Triangle(v4,v5,v6),__) == foundIntersection ||
+                       compute_intersection(v,Triangle(v5,v6,v7),__) == foundIntersection ||
+                       compute_intersection(v,Triangle(v0,v1,v4),__) == foundIntersection ||
+                       compute_intersection(v,Triangle(v1,v4,v5),__) == foundIntersection ||
+                       compute_intersection(v,Triangle(v2,v3,v6),__) == foundIntersection ||
+                       compute_intersection(v,Triangle(v3,v6,v7),__) == foundIntersection ||
+                       compute_intersection(v,Triangle(v0,v4,v2),__) == foundIntersection ||
+                       compute_intersection(v,Triangle(v2,v4,v6),__) == foundIntersection ||
+                       compute_intersection(v,Triangle(v1,v5,v3),__) == foundIntersection ||
+                       compute_intersection(v,Triangle(v3,v5,v7),__) == foundIntersection );
+      }
+      if(aabbCheckOK){
         for(unsigned int i=0;i<obj->m_primitives.size();++i){
           const Primitive &p = obj->m_primitives[i];
           switch(p.type){
@@ -869,37 +885,36 @@ namespace icl{
               Triangle t(vs[p.a()],
                          vs[p.b()],
                          vs[p.c()] );
-              Vec pos;
-              if(compute_intersection(v,t,pos) == foundIntersection){
-                hits.push_back(pos);
-                objects.push_back(obj);
+              Hit h;
+              if(compute_intersection(v,t,h.pos) == foundIntersection){
+                h.obj = obj;
+                h.dist = (v.offset-h.pos).length();
+                hits.push_back(h);
               }
               break;
             }
             case Primitive::texture:
             case Primitive::quad:{
-              /*
+              /** a--b
+                  |  |
+                  d--c
+              */
               Triangle t1(vs[p.a()],
                           vs[p.b()],
                           vs[p.c()] );
-              Triangle t2( vs[p.c()],
-                           vs[p.d()],
-                           vs[p.a()] );
-                  */
-              Triangle t1(vs[p.a()],
-                          vs[p.b()],
-                          vs[p.c()] );
-              Triangle t2( vs[p.c()],
-                           vs[p.d()],
-                           vs[p.b()] );
-
-              Vec pos;
-              if(compute_intersection(v,t1,pos) == foundIntersection){
-                hits.push_back(pos);
-                objects.push_back(obj);
-              }else if(compute_intersection(v,t2,pos) == foundIntersection){
-                hits.push_back(pos);
-                objects.push_back(obj);
+              Triangle t2( vs[p.a()],
+                           vs[p.c()],
+                           vs[p.d()] );
+              
+              Hit h;
+              if(compute_intersection(v,t1,h.pos) == foundIntersection){
+                h.obj = obj;
+                h.dist = (v.offset-h.pos).length();
+                hits.push_back(h);
+              }else if(compute_intersection(v,t2,h.pos) == foundIntersection){
+                h.obj = obj;
+                h.dist = (v.offset-h.pos).length();
+                hits.push_back(h);
               }
               break;
             }
@@ -918,10 +933,11 @@ namespace icl{
                 Triangle t( vs[p.vertexIndices[i]],
                             vs[p.vertexIndices[i+1]],
                             mean );
-                Vec pos;
-                if(compute_intersection(v,t,pos) == foundIntersection){
-                  hits.push_back(pos);
-                  objects.push_back(obj);
+                Hit h;
+                if(compute_intersection(v,t,h.pos) == foundIntersection){
+                  h.obj = obj;
+                  h.dist = (v.offset-h.pos).length();
+                  hits.push_back(h);
                   break;
                 }
               }
@@ -938,37 +954,22 @@ namespace icl{
     if(recursive){
       /// recursion step
       for(unsigned int i=0;i<obj->m_children.size();++i){
-        collect_hits_recursive(obj->m_children[i].get(),v,hits,objects,recursive);
+        collect_hits_recursive(obj->m_children[i].get(),v,hits,true);
       }
     }
   }
-  
-  struct VecAndObject{
-    SceneObject *obj;
-    Vec *v;
-    float dist;
-    bool operator<(const VecAndObject &other) const {
-      return dist < other.dist;
-    }
-  };
 
-  SceneObject *SceneObject::hit(const ViewRay &v, Vec *contactPos, bool recursive) {
-    std::vector<Vec> hits;
-    std::vector<SceneObject*> objects;
-    collect_hits_recursive(this,v,hits,objects,recursive);
-    if(!hits.size()) return false;
-
-    std::vector<VecAndObject> all(hits.size());
-    for(unsigned int i=0;i<all.size();++i){
-      all[i].obj = objects[i];
-      all[i].v = &hits[i];
-      all[i].dist = (v.offset-hits[i]).length();
-    }
-    std::sort(all.begin(),all.end());
-
-    if(contactPos){
-      *contactPos = *all.front().v;
-    }
-    return all.front().obj;
+  Hit SceneObject::hit(const ViewRay &v, bool recursive) {
+    std::vector<Hit> hits;
+    collect_hits_recursive(this,v,hits,recursive);
+    return hits.size() ? *std::min_element(hits.begin(),hits.end()) : Hit();
   }
+
+  std::vector<Hit> SceneObject::hits(const ViewRay &v, bool recursive){
+    std::vector<Hit> hits;
+    collect_hits_recursive(this,v,hits,recursive);
+    std::sort(hits.begin(),hits.end());
+    return hits;
+  }
+
 }

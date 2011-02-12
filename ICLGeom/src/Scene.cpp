@@ -741,30 +741,41 @@ namespace icl{
     return path;
   }
 
-  struct FoundObj{
-    SceneObject *obj;
-    Vec pos;
-    int dist;
-    bool operator<(const FoundObj &o)const{
-      return dist < o.dist;
-    }
-  };
   
-  SceneObject *Scene::findObject(const ViewRay &v, Vec *contactPos){
-    std::vector<FoundObj> hit;
+  Hit Scene::findObject(const ViewRay &v){
+    std::vector<Hit> hits;
     for(unsigned int i=0;i<m_objects.size();++i){
-      FoundObj obj;
-      obj.obj=m_objects[i]->hit(v,&obj.pos);
-      if(obj.obj){
-        obj.dist = (v.offset-obj.pos).length();
-        hit.push_back(obj);
+      Hit h = m_objects[i]->hit(v);
+      if(h){
+        hits.push_back(h);
       }
+      /*
+          h.obj=m_objects[i]->hit(v,&c.pos);
+          if(c.obj){
+          c.dist = (v.offset-obj.pos).length();
+          hit.push_back(c);
+          }
+      */
     }
-    if(!hit.size()) return 0;
-    std::sort(hit.begin(),hit.end());
-    if(contactPos) *contactPos = hit.front().pos;
-    return hit.front().obj;
+    return hits.size() ? *std::min_element(hits.begin(),hits.end()) : Hit();
+    /*
+        std::sort(hits.begin(),hits.end());
+        if(contactPos) *contactPos = hit.front().pos;
+        return hit.front().obj;
+   */
   }
+
+  /// retunrs all objects intersected by the given viewray
+  std::vector<Hit> Scene::findObjects(const ViewRay &v){
+    std::vector<Hit> hits;
+    for(unsigned int i=0;i<m_objects.size();++i){
+      std::vector<Hit> ohits = m_objects[i]->hits(v);
+      std::copy(ohits.begin(),ohits.end(),std::back_inserter(hits));
+    }
+    std::sort(hits.begin(),hits.end());
+    return hits;
+  }
+
 
 
 #ifdef HAVE_GLX

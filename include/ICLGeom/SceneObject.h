@@ -37,6 +37,8 @@
 
 #include <ICLGeom/Primitive.h>
 #include <ICLGeom/ViewRay.h>
+#include <ICLGeom/Hit.h>
+
 
 namespace icl{
 
@@ -394,22 +396,24 @@ namespace icl{
     /** @} **/
 
     /// returns whether this object is hit by the given viewray
-    /** If contactPos is not 0, it is set to the actual contact 
-        pos with the given primitive 
-        Please note: only faces (i.e. quads, triangles and polygons
+    /** Please note: only faces (i.e. quads, triangles and polygons
         are checked)
-        The method returns the hit scene object or null, if it was not hit.
+        The method returns the hit scene object that was closest to
+        the given view-rays origin or null, if it was not hit.
         If recursive is true, the scene-graph is traversed from this
         object on and the actually hit child (or child of child etc.) 
         might also be returned.
     */
-    SceneObject *hit(const ViewRay &v, Vec *contactPos=0, bool recursive=true);
+    Hit hit(const ViewRay &v, bool recursive=true);
     
     /// returns whether this object is hit by the given viewray (const)
-    const SceneObject *hit(const ViewRay &v, Vec *contactPos=0, bool recursive=true) const{
-      return const_cast<SceneObject*>(this)->hit(v,contactPos,recursive);
+    const Hit hit(const ViewRay &v, bool recursive=true) const{
+      return const_cast<SceneObject*>(this)->hit(v,recursive);
     }
     
+    /// returns all hits with SceneObjects form the given viewray
+    std::vector<Hit> hits(const ViewRay &v, bool recursive=true);
+
     /// returns all vertices in their final world coordinates
     std::vector<Vec> getTransformedVertices() const;
     
@@ -422,8 +426,7 @@ namespace icl{
     
     /// recursive picking method
     static void collect_hits_recursive(SceneObject *obj, const ViewRay &v, 
-                                       std::vector<Vec> &hits, 
-                                       std::vector<SceneObject*> &objects,
+                                       std::vector<Hit> &hits, 
                                        bool recursive);
     
     std::vector<Vec> m_vertices;
