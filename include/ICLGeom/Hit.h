@@ -2,6 +2,7 @@
 #define ICL_HIT_H
 
 #include <ICLGeom/GeomDefs.h>
+#include <iostream>
 
 namespace icl{
   
@@ -28,7 +29,17 @@ namespace icl{
 
     /// can be used to check wheter there was a hit at all
     operator bool() const { return obj; }
+
+    /// friendly implemented ostream operator ...
+    friend std::ostream &operator<<(std::ostream &str, const Hit &h){
+      return (h ? (str << "Hit(obj=" << (void*) h.obj << ", dist=" << h.dist 
+                   << ", pos=" << h.pos.transp() << ")" ) 
+              : (str << "Hit(NULL)"));
+    }
   };
+
+
+
 }
 
 #endif

@@ -737,6 +737,61 @@ namespace icl{
     return a[0]*b[0] +a[1]*b[1] +a[2]*b[2]; 
   }
   
+
+  // inspired from http://softsurfer.com/Archive/algorithm_0105/algorithm_0105.htm#intersect_RayTriangle()
+#if 1
+  RayTriangleIntersection compute_intersection(const ViewRay &r, const Triangle &t, Vec &intersection){
+    //Vector    u, v, n;             // triangle vectors
+    //Vector    dir, w0, w;          // ray vectors
+    //float     r, a, b;             // params to calc ray-plane intersect
+    static const float EPSILON = 0.00000001;
+    // get triangle edge vectors and plane normal
+    Vec u = t.b - t.a;
+    Vec v = t.c - t.a;
+    Vec n = cross(v,u);  // TEST maybe v,u ??
+    if (fabs(n[0]) < EPSILON && fabs(n[1]) < EPSILON && fabs(n[2]) < EPSILON){
+      return degenerateTriangle;
+    }
+
+    const Vec dir = r.direction;  
+    Vec w0 =  r.offset - t.a;  
+
+    float a = -dot(n,w0);
+    float b = dot(n,dir);
+    if (fabs(b) < EPSILON) {     // ray is parallel to triangle plane
+      return a<EPSILON ? rayIsCollinearWithTriangle : noIntersection;
+    }
+    
+    // get intersect point of ray with triangle plane
+    float rr = a / b;
+    if (rr < 0) {
+      return wrongDirection;
+    }
+    
+    intersection = r.offset + dir * rr;
+
+    // is I inside T?
+    float uu = dot(u,u);
+    float uv = dot(u,v);
+    float vv = dot(v,v);
+    Vec w = intersection - t.a;
+    float wu = dot(w,u);
+    float wv = dot(w,v);
+    float D = uv * uv - uu * vv;
+
+    // get and test parametric coords
+    float s = (uv * wv - vv * wu) / D;
+    if (s < 0.0 || s > 1.0){
+      return noIntersection;
+    }
+    float tt = (uv * wu - uu * wv) / D;
+    if (tt < 0.0 || (s + tt) > 1.0){
+      return noIntersection;
+    }
+    return foundIntersection;
+  }
+#else
+  // almost the same as above ...
   // inspired from http://softsurfer.com/Archive/algorithm_0105/algorithm_0105.htm#intersect_RayTriangle()
   RayTriangleIntersection compute_intersection(const ViewRay &r, const Triangle &t, Vec &intersection){
     //Vector    u, v, n;             // triangle vectors
@@ -758,6 +813,7 @@ namespace icl{
     if (fabs(b) < EPSILON) {     // ray is parallel to triangle plane
       return a<EPSILON ? rayIsCollinearWithTriangle : noIntersection;
     }
+ 
     
     // get intersect point of ray with triangle plane
     float rr = a / b;
@@ -767,13 +823,11 @@ namespace icl{
     // for a segment, also test if (r > 1.0) => no intersect 
     // a segment meaning a line-segment between a and b
 
-#if 1
-    intersection = r.offset + dir * rr;
-#else
-    intersection = r.getIntersection(PlaneEquation(t.a,n));
-#endif
 
-    if(dot(v,intersection)<0) return wrongDirection;
+    intersection = r.offset + dir * rr;
+
+    // todo comment in again!! (oh noo! this was wrong)
+    //if(dot(dir,intersection-r.offset)<0) return wrongDirection;
 
     //*I = R.P0 + r * dir;           // intersect point of ray and plane
 
@@ -799,8 +853,14 @@ namespace icl{
       // I is outside T
       return noIntersection;
     }
-
     return foundIntersection; // I is in T
+  }
+#endif
+  
+  static float l3(const Vec &a, const Vec &b){
+    float l = sqrt( sqr(a[0]-b[0]) + sqr(a[1]-b[1]) + sqr(a[2]-b[2]) ); 
+    //    DEBUG_LOG("a:" << a.transp() << " b:" << b.transp() << " |a-b|:" << l);
+    return l;
   }
   
   void SceneObject::collect_hits_recursive(SceneObject *obj, const ViewRay &v, 
@@ -809,16 +869,23 @@ namespace icl{
     
     int nFaces = 0;
     for(unsigned int i=0;i<obj->m_primitives.size();++i){
-      Primitive::Type t = obj->m_primitives[i].type;
-      nFaces += (t == Primitive::quad ||
-                 t == Primitive::texture ||
-                 t == Primitive::triangle ||
-                 t == Primitive::polygon);
+      const Primitive &p = obj->m_primitives[i];
+      switch(p.type){
+        case Primitive::triangle:
+          nFaces++; break;
+        case Primitive::quad:
+        case Primitive::texture:
+          nFaces+=2; break;
+        case Primitive::polygon:
+          nFaces+=p.vertexIndices.size()-2; break;
+        default:
+          break;
+      }
+      
     }
-    
     if(vs.size()){
       bool aabbCheckOK = false;
-      if(nFaces < 10){
+      if(nFaces < 20){
         aabbCheckOK = true;
       }else{
         // prepare for aabb (aka 3D-bounding box) check
@@ -882,43 +949,34 @@ namespace icl{
           const Primitive &p = obj->m_primitives[i];
           switch(p.type){
             case Primitive::triangle:{
-              Triangle t(vs[p.a()],
-                         vs[p.b()],
-                         vs[p.c()] );
               Hit h;
-              if(compute_intersection(v,t,h.pos) == foundIntersection){
+              if(compute_intersection(v,Triangle(vs[p.a()],vs[p.b()],vs[p.c()] ),h.pos) == foundIntersection){
                 h.obj = obj;
-                h.dist = (v.offset-h.pos).length();
+                h.dist = l3(v.offset,h.pos);
                 hits.push_back(h);
               }
               break;
             }
             case Primitive::texture:
             case Primitive::quad:{
-              /** a--b
+              /** a--b xxx
                   |  |
                   d--c
               */
-              Triangle t1(vs[p.a()],
-                          vs[p.b()],
-                          vs[p.c()] );
-              Triangle t2( vs[p.a()],
-                           vs[p.c()],
-                           vs[p.d()] );
-              
               Hit h;
-              if(compute_intersection(v,t1,h.pos) == foundIntersection){
+              if(compute_intersection(v, Triangle(vs[p.a()],vs[p.b()],vs[p.c()] ),h.pos) == foundIntersection){
                 h.obj = obj;
-                h.dist = (v.offset-h.pos).length();
+                h.dist = l3(v.offset,h.pos);
                 hits.push_back(h);
-              }else if(compute_intersection(v,t2,h.pos) == foundIntersection){
+              }else if(compute_intersection(v,Triangle(vs[p.a()],vs[p.c()],vs[p.d()]),h.pos) == foundIntersection){
                 h.obj = obj;
-                h.dist = (v.offset-h.pos).length();
+                h.dist = l3(v.offset,h.pos);
                 hits.push_back(h);
               }
               break;
             }
             case Primitive::polygon:{
+              DEBUG_LOG("checking polygon");
               int n = p.vertexIndices.size();
               // use easy algorithm: choose center and triangularize
               std::vector<Vec> vertices(n);
@@ -930,13 +988,11 @@ namespace icl{
               mean *= (1.0/vertices.size());
               
               for(int i=0;i<n-1;++i){
-                Triangle t( vs[p.vertexIndices[i]],
-                            vs[p.vertexIndices[i+1]],
-                            mean );
                 Hit h;
+                Triangle t(vs[p.vertexIndices[i]],vs[p.vertexIndices[i+1]],mean);
                 if(compute_intersection(v,t,h.pos) == foundIntersection){
                   h.obj = obj;
-                  h.dist = (v.offset-h.pos).length();
+                  h.dist = l3(v.offset,h.pos);
                   hits.push_back(h);
                   break;
                 }
@@ -950,7 +1006,6 @@ namespace icl{
         } // switch
       } // if( aabb.wasHit...)
     } // if(m_vertices.size()
-
     if(recursive){
       /// recursion step
       for(unsigned int i=0;i<obj->m_children.size();++i){

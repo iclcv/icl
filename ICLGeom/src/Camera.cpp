@@ -434,12 +434,16 @@ namespace icl {
     FixedMatrix<icl32f,4,3> Q;
     Q.row(0) = M.row(0); Q.row(1) = M.row(1); Q.row(2) = M.row(3);
     Vec dir = Q.pinv(true)*FixedColVector<icl32f,3>(pixel.x, pixel.y, 1);
+    
+    // we keep the sign, in order to remember the actual direction of the viewray
+    // if we use -1 instead in every case, viewrays will always point more towards (0,0,0)
+    float sign = dir[3] > 0 ? -1 : 1; 
     if ((m_pos[0]*m_pos[0] + m_pos[1]*m_pos[1] + m_pos[2]*m_pos[2]) < 1e-20) {
       // Special case: the camera is very close to origin. The last component of
       // 'dir' is about zero, so homogenize could fail. We can just skip this
       // step, because we normalize 'dir' later, anyway.
     } else dir = m_pos - homogenize(dir);
-    dir[3] = 0; dir.normalize(); dir *= -1; dir[3] = 1;
+    dir[3] = 0; dir.normalize(); dir *= sign; dir[3] = 1;
     return ViewRay(m_pos,dir);
 #endif
   }

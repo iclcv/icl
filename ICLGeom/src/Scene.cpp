@@ -744,25 +744,13 @@ namespace icl{
   
   Hit Scene::findObject(const ViewRay &v){
     std::vector<Hit> hits;
+    Hit h;
     for(unsigned int i=0;i<m_objects.size();++i){
-      Hit h = m_objects[i]->hit(v);
-      if(h){
+      if( (h=m_objects[i]->hit(v) ) ){
         hits.push_back(h);
       }
-      /*
-          h.obj=m_objects[i]->hit(v,&c.pos);
-          if(c.obj){
-          c.dist = (v.offset-obj.pos).length();
-          hit.push_back(c);
-          }
-      */
     }
     return hits.size() ? *std::min_element(hits.begin(),hits.end()) : Hit();
-    /*
-        std::sort(hits.begin(),hits.end());
-        if(contactPos) *contactPos = hit.front().pos;
-        return hit.front().obj;
-   */
   }
 
   /// retunrs all objects intersected by the given viewray
