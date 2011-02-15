@@ -190,12 +190,12 @@ namespace icl{
     m_lights[0] = SmartPtr<SceneLight>(new SceneLight(0));
   }
   Scene::~Scene(){
-    freeAllPBuffers();
-  }
-  Scene::Scene(const Scene &scene){
 #ifdef HAVE_GLX
     freeAllPBuffers();
 #endif
+  }
+  Scene::Scene(const Scene &scene){
+    *this = scene;
   }
   
   Scene &Scene::operator=(const Scene &scene){
