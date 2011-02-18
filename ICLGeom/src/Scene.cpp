@@ -261,10 +261,30 @@ namespace icl{
   void Scene::addObject(SceneObject *object, bool passOwnerShip){
     m_objects.push_back(SmartPtr<SceneObject>(object,passOwnerShip));
   }
+
   void Scene::removeObject(int idx){
     ICLASSERT_RETURN(idx >= 0 && idx < (int)m_objects.size());
     m_objects.erase(m_objects.begin()+idx);
   }
+  
+  namespace{ struct is_obj{
+    const SceneObject *o;
+    is_obj(const SceneObject *o):o(o){}
+    bool operator()(const SmartPtr<SceneObject> &p) const{
+      return p.get() == o;
+    }
+  }; } // ending anonymos namespace
+
+  void Scene::removeObject(const SceneObject *obj){
+    std::vector<SmartPtr<SceneObject> >::iterator it = std::find_if(m_objects.begin(),m_objects.end(),is_obj(obj));
+    if(it == m_objects.end()){
+      WARNING_LOG("unable to remove given object " << (void*) obj << " from scene: Object not found!");
+    }
+    m_objects.erase(it);
+  }
+  
+
+
   void Scene::removeObjects(int startIndex, int endIndex){
     if(endIndex < 0) endIndex = m_objects.size();
     ICLASSERT_RETURN(startIndex >= 0 && startIndex < (int)m_objects.size());
@@ -337,7 +357,12 @@ namespace icl{
       if(!o->isVisible(p.type)) continue;
       glColor4fv(((p.color)/255.0).begin());
       switch(p.type){
-        case Primitive::line:
+        case Primitive::line:{
+          GLboolean lightWasOn = true;
+          glGetBooleanv(GL_LIGHTING,&lightWasOn);
+          
+          glDisable(GL_LIGHTING);
+          
           glBegin(GL_LINES);
 
           if(p.hasNormals) glNormal3fv(o->m_normals[p.na()].data());
@@ -347,8 +372,12 @@ namespace icl{
           if(o->m_lineColorsFromVertices) glColor3fv((o->m_vertexColors[p.b()]/255).data());
           glVertex3fv(ps[p.b()].data());
           glEnd();
-          
+
+          if(lightWasOn){
+            glEnable(GL_LIGHTING);
+          }          
           break;
+        }
         case Primitive::triangle:{
           glBegin(GL_TRIANGLES);
           const Vec &a = ps[p.a()];

@@ -191,6 +191,10 @@ int main(int n, char**ppc){
     /// removed object at given index
     /** The object is deleted if it's ownwership was passed */
     void removeObject(int idx);
+    
+    /// removes given top-level object from scene (not recursive)
+    /** The object is deleted if it's ownwership was passed */
+    void removeObject(const SceneObject *obj);
 
     /// removed object at given indices
     /** The object's are deleted if their ownwership was passed */

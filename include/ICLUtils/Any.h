@@ -9,7 +9,7 @@
 ** File   : include/ICLUtils/Any.h                                 **
 ** Module : ICLUtils                                               **
 ** Authors: Christof Elbrechter                                    **
-**                                                                 **
+**                       q                                          **
 **                                                                 **
 ** Commercial License                                              **
 ** ICL can be used commercially, please refer to our website       **
@@ -53,6 +53,41 @@ namespace icl{
       the string representation of the serialized type. Since
       Any inherits the std::string class, the string-serialized
       version is also available.
+      
+      \section PTR Representing Pointers
+      The Any class can also be used to represent pointers. 
+      though the default machanism (i.e. operators >> and <<) 
+      could be overloaded to work with ascii-encoded pointers 
+      as well. The Any class provides a more efficient implementation
+      for this.
+      The static template functions Any::ptr can be used
+      to create a binary encoded pointer representation.\n
+      If you want to use any instance of Any to pass a pointer, it is
+      strongly recommended to use the binary representation instead of
+      using ascii encoded pointers. The only drawback for the binary
+      encoded pointers is that they cannot be used as std::string
+      anymore.
+      \subsection BENCH Benchmarks:
+      
+      Times were taken on an Intel 1.6GHz Core2Duo (ULV) laptop on 32Bit ubuntu. 
+      The times are given per million calls, and we did not use
+      gcc optimizations because most operations were optimized out
+      in this case. However the speed advatange seemed to less then
+      about 30%.
+      
+      * ASCII Encoded Pointers\n
+        <tt>int *p = new int[5]; Any a(int)p; int *p2 = (int*)a.as<int>(); </tt>\n
+        <b>Time: ~ 1/250 ms</b>\n
+      
+      * Binary Encoded Pointers\n
+        <tt>int *p = new int[5]; Any a = Any::ptr(p); int *p2 = Any::ptr<int>(a); </tt>\n
+        <b>Time: ~ 1/3000 ms</b>\n
+        Here, we also benchmarked the steps separatly and we found out, that the creation of
+        the any instance took more than 99.9% of the time. Therefore, we can conclude that
+        parsing a binary endocded Any instance is close the using a raw-pointer instead:
+
+      * C++ Pointers: \n
+        <b>Time: ~ 1/10000 ms</b>\n
   */
   struct Any : public std::string{
     /// Empty constructor
@@ -104,6 +139,29 @@ namespace icl{
     friend inline std::istream& operator>>(std::istream &s, Any &any){
       return s >> (std::string&)any;
     }
+
+    private:
+    /// for direct creation of the parent string (used in the static ptr methods)
+    Any(size_t n, char c):std::string(n,c){}
+
+    public:
+
+    /// this method can be used to extract a pointer that was encoded as Any
+    /** @see \ref PTR */
+    template<class T>
+    static T* ptr(const Any &any){
+      return *(T**)(&any[0]);
+    }
+
+    /// this method can be used to create an any that contains a binary encoded pointer
+    /** @see \ref PTR */
+    template<class T>
+    static Any ptr(const T *p){
+      Any any(std::string(sizeof(void*),'\0'));
+      *((const void**)&any[0]) = p;
+      return any;
+    }
+    
   };
       
     
