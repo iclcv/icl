@@ -160,6 +160,11 @@ namespace icl{
           return *this;
         }
 
+      /// allows for direct assignment of pointers to a SmartPtr object
+      SmartPtrBase<T,delOp> &operator=(T *p){
+        return this->operator=(SmartPtrBase<T,delOp>(p));
+      }
+
       /// decreases the reference counter (cleanup on demand)
       ~SmartPtrBase() { dec(); }
         
