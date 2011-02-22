@@ -69,6 +69,10 @@ void init_grabber(){
     grabber->setDesiredDepth(pa("-depth"));
     grabber->setIgnoreDesiredParams(false);
   }
+  if(pa("-format")){
+    grabber->setDesiredFormat(pa("-format"));
+    grabber->setIgnoreDesiredParams(false);
+  }
   
   if(pa("-dist")){
     if(pa("-size")){
@@ -250,8 +254,15 @@ int main(int n, char **ppc){
   ("-input","for sender application only allowed ICL default\n"
    " input specification e.g. -input pwc 0 or -input file bla/*.ppm")
   ("-single-shot","no loop application")
-  ("-size","output image size (sending only, default: VGA)")
-  ("-depth","output image size (sending only, default: depth8u)")
+  ("-size","output image size (sending only, default: VGA)"
+   "[please note that -format, -size and -depth use the grabbers desired params."
+   " I.e. usually none or all of these three parameters have to be given]")
+  ("-depth","output image size (sending only, default: depth8u)"
+   "[please note that -format, -size and -depth use the grabbers desired params."
+   " I.e. usually none or all of these three parameters have to be given]")
+  ("-format","if given the source image is converted into this format"
+   "[please note that -format, -size and -depth use the grabbers desired params."
+   " I.e. usually none or all of these three parameters have to be given]")
   ("-o","analog to -input , this can be used to specify the output device and parameters\n"
    " output specification e.g. -output file image_###.ppm or -o sm MySharedMem")
   ("-fps","initial max FPS count, further adjustable in the GUI")
@@ -280,7 +291,7 @@ int main(int n, char **ppc){
   painit(n,ppc,"-output|-o(output-type-string,output-parameters) "
          "-flip|-f(string) -single-shot -input|-i(device,device-params) "
          "-size|(Size) -no-gui -pp(1) -dist|-d(float,float,float,float) -reset|-r "
-         "-fps(float=15.0) -clip|-c(Rect) -camera-config(filename) -depth(depth) -normalize|-n "
+         "-fps(float=15.0) -clip|-c(Rect) -camera-config(filename) -depth(depth) -format(format) -normalize|-n "
          "-perserve-preprocessing-roi|-ppp "
          "-initially-disable-image-updates|-idu");
 

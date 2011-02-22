@@ -85,9 +85,9 @@ namespace icl {
         If you already have computed the derivations, use the other Constructor, due to performance reasons.
         @param lowThresh lower threshold
         @param highThresh upper threshold
-        @param preBlur value for the preBlur flag
+        @param preBlurRadius if r> 0, gaussian kernel with masksize r*2+1 is applied to the input image first
       */
-    CannyOp(icl32f lowThresh=0, icl32f highThresh=255, bool preBlur=false);
+    CannyOp(icl32f lowThresh=0, icl32f highThresh=255, int preBlurRadius=0);
       /// Constructor
       /**
         @param dxOp the x derivation of the src
@@ -95,9 +95,9 @@ namespace icl {
         @param lowThresh lower threshold
         @param highThresh upper threshold
         @param deleteOps should the internaly created derivations be deleted?
-        @param preBlur value for the preBlur flag
+        @param preBlurRadius if r> 0, gaussian kernel with masksize r*2+1 is applied to the input image first
       */
-    CannyOp(UnaryOp *dxOp, UnaryOp *dyOp, icl32f lowThresh=0, icl32f highThresh=255, bool deleteOps=true, bool preBlur=false);
+    CannyOp(UnaryOp *dxOp, UnaryOp *dyOp, icl32f lowThresh=0, icl32f highThresh=255, bool deleteOps=true, int preBlurRadius=0);
 
       /// Destructor
     virtual ~CannyOp();
@@ -131,27 +131,32 @@ namespace icl {
     /// Import unaryOps apply function without destination image
     UnaryOp::apply;
     
-    /// sets pre-blur feature enabled or disabled
-    void setPreBlur(bool enabled){
-      m_preBlur = enabled;
+    /// sets the pre-blur-radius
+    /** if r> 0, gaussian kernel with masksize r*2+1 is applied to the input image first */
+    void setPreBlurRadius(int preBlurRadius){
+      m_preBlurRadius = preBlurRadius;
+      ICL_DELETE(m_preBlurOp);
+      setUpPreBlurOp();
     }
 
     /// returns current pre-blur feature state
-    bool getPreBlur() const {
-      return m_preBlur;
+    bool getPreBlurRadius() const {
+      return m_preBlurRadius;
     }
-
+    
     private:
+
+    void setUpPreBlurOp();
+    
     /// buffer for ippiCanny
     std::vector<icl8u> m_cannyBuf;
     ImgBase *m_derivatives[2];
     UnaryOp *m_ops[2];
+    UnaryOp *m_preBlurOp;
     icl32f m_lowT,m_highT;
     bool m_ownOps;
     Img32f m_buffer;
-    bool m_preBlur;
-    ImgBase *m_preBlurBuffer;
-
+    int m_preBlurRadius;
   };
 } // namespace icl
 

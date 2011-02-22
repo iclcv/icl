@@ -40,25 +40,30 @@ namespace icl {
 
 #ifdef HAVE_IPP
   // without ipp non of the function is implemented
-  CannyOp::CannyOp(icl32f lowThresh, icl32f highThresh,bool preBlur):
+  CannyOp::CannyOp(icl32f lowThresh, icl32f highThresh,int preBlurRadius):
     // {{{ open
-    m_lowT(lowThresh),m_highT(highThresh),m_ownOps(true),m_preBlur(preBlur),m_preBlurBuffer(0){
+    m_lowT(lowThresh),m_highT(highThresh),m_ownOps(true),m_preBlurRadius(preBlurRadius){
     FUNCTION_LOG("");
-    m_ops[0] = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::sobelX3x3));
-    m_ops[1] = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::sobelY3x3));
+    m_ops[0] = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::sobelY3x3));
+    m_ops[1] = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::sobelX3x3));
     m_derivatives[0]=m_derivatives[1]=0;
+    m_preBlurOp = 0;
+    setUpPreBlurOp();
   }
 
   // }}}
   
-  CannyOp::CannyOp(UnaryOp *dxOp, UnaryOp *dyOp,icl32f lowThresh, icl32f highThresh, bool deleteOps, bool preBlur):
+  CannyOp::CannyOp(UnaryOp *dxOp, UnaryOp *dyOp,icl32f lowThresh, icl32f highThresh, bool deleteOps, int preBlurRadius):
     // {{{ open
-    m_lowT(lowThresh),m_highT(highThresh),m_ownOps(deleteOps),m_preBlur(preBlur),m_preBlurBuffer(0){
+    m_lowT(lowThresh),m_highT(highThresh),m_ownOps(deleteOps),m_preBlurRadius(preBlurRadius){
     FUNCTION_LOG("");
     m_ops[0] = dxOp;
     m_ops[1] = dyOp;
 
     m_derivatives[0]=m_derivatives[1]=0;
+
+    m_preBlurOp = 0;
+    setUpPreBlurOp();
   }
 
   // }}}
@@ -74,27 +79,44 @@ namespace icl {
       }
       ICL_DELETE(m_derivatives[i]);
     }
-    ICL_DELETE(m_preBlurBuffer);
+    ICL_DELETE(m_preBlurOp);
   }
   
   // }}}
 
+  void CannyOp::setUpPreBlurOp(){
+    int r = m_preBlurRadius;
+    if(r <=0) return;
+    switch(r){
+      case 1: m_preBlurOp = new ConvolutionOp(ConvolutionKernel::gauss3x3); break;
+      case 2: m_preBlurOp = new ConvolutionOp(ConvolutionKernel::gauss5x5); break;
+      default:
+        WARNING_LOG("higher pre blur radii than 2 are not yet supported correctly ...");
+        Size s(2*r+1,2*r+1);
+        Img32s k(s,1);
+        Channel32s kc = k[0];
+        int sum;
+        for(int y=-r;y<=r;++y){
+          for(int x=-r;x<=r;++x){
+            kc(x+r,y+r) = 10000/(2*M_PI*r) * exp (float(x*x+y*y)/float(2*r*r));
+            sum += kc(x+r,y+r);
+          }
+        }
+        m_preBlurOp = new ConvolutionOp(ConvolutionKernel(k.begin(0),s,10000));
+    }
+  }
+
   /// no CannyOp::apply without ipp
 
-  void CannyOp::apply (const ImgBase *poSrc, ImgBase **ppoDst)
+  void CannyOp::apply (const ImgBase *poSrc, ImgBase **ppoDst){
       // {{{ open
-  {
-
     FUNCTION_LOG("");
     ICLASSERT_RETURN( poSrc );
     ICLASSERT_RETURN( ppoDst );
     ICLASSERT_RETURN( poSrc != *ppoDst);
 
-    if(m_preBlur){
-      ConvolutionOp con(ConvolutionKernel(ConvolutionKernel::gauss3x3));
-      con.setClipToROI(false);
-      con.apply(poSrc,&m_preBlurBuffer);
-      poSrc = m_preBlurBuffer;
+    if(m_preBlurRadius>0){
+      poSrc = m_preBlurOp->apply(poSrc);
     }
 
 

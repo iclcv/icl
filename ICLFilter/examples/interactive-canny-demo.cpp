@@ -49,7 +49,7 @@ void init(){
   gui2 << "fslider(0,2000,10)[@out=low@label=low@maxsize=100x2@handle=low-handle]";
   gui2 << "fslider(0,2000,100)[@out=high@label=high@maxsize=100x2@handle=high-handle]";
   gui2 <<  ( GUI("hbox")  
-           << "togglebutton(off,on)[@out=preGauss@handle=pre-gauss-handle@label=gaussian]"
+           << "slider(0,10,0)[@out=preGaussRadius@handle=pre-gauss-handle@label=pre gaussian radius]"
            << "label(time)[@handle=dt@label=filter time in ms]"
            << "togglebutton(stopped,running)[@out=running@label=capture]"
            << "camcfg()" );
@@ -76,9 +76,9 @@ void update(){
   gui_LabelHandle(dt);
   gui_float(low);
   gui_float(high);
-  gui_bool(preGauss);
+  gui_int(preGaussRadius);
   
-  CannyOp canny(low,high,preGauss);
+  CannyOp canny(low,high,preGaussRadius);
   static ImgBase *dst = 0;
 
   Time t = Time::now();
@@ -100,7 +100,7 @@ void run(){
 }
 
 int main(int n, char **ppc){
-  return ICLApplication(n,ppc,"-input(2)",init,run).exec();
+  return ICLApplication(n,ppc,"-input|-i(2)",init,run).exec();
  
   
 }
