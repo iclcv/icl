@@ -715,7 +715,7 @@ namespace icl{
     }
     virtual void processIO(){
       if(m_poClickedEvent){      
-        m_poClickedEvent->m_bTriggered = true;
+        m_poClickedEvent->trigger(false);
       }
     }
   private:
@@ -828,7 +828,7 @@ namespace icl{
     }
     virtual void processIO(){
       if(m_poHandle){
-        m_poHandle->m_bTriggered = true;
+        m_poHandle->trigger(false);
       }
     }
   private:

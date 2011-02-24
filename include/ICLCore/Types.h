@@ -48,7 +48,7 @@ namespace icl {
   /// typedef for 8bit integer images \ingroup TYPES
   typedef Img<icl8u> Img8u;
 
-  /// typedef for 32bit float images \ingroup TYPES
+  /// typedef for 16bit integer images \ingroup TYPES
   typedef Img<icl16s> Img16s;
 
   /// typedef for 8bit integer images \ingroup TYPES

@@ -128,7 +128,7 @@ namespace icl {
                                     (e.g. device ID 301 selects the 2nd firewire device)
                                   - cvvideo=video-filename (string)
                                   - sm=Shared-memory-segment-id (string)
-                                  - myrmex=deviceIndex (int) (the device index is used to create the /dev/videoX device)
+                                  - myr=deviceIndex (int) (the device index is used to create the /dev/videoX device)
                                   - kinectd=device-index (int) 
                                   - kinectc=device-index (int) 
 
