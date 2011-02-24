@@ -151,9 +151,13 @@ namespace icl{
   }
 
   void SceneObject::setColor(Primitive::Type t,const GeomColor &color, bool recursive){
-    for(unsigned int i=0;i<m_primitives.size();++i){
-      if(m_primitives[i].type == t){
-        m_primitives[i].color = color;
+    if(t == Primitive::vertex){
+      std::fill(m_vertexColors.begin(),m_vertexColors.end(),color);
+    }else{
+      for(unsigned int i=0;i<m_primitives.size();++i){
+        if(m_primitives[i].type == t){
+          m_primitives[i].color = color;
+        }
       }
     }
     if(recursive){
