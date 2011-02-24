@@ -351,138 +351,136 @@ namespace icl{
     const Mat &T = o->getTransformation(true);
     glMultMatrixf(T.transp().data());
     
-
-    for(unsigned int j=0;j<o->m_primitives.size();++j){
-      const Primitive &p = o->m_primitives[j];
-      if(!o->isVisible(p.type)) continue;
-      glColor4fv(((p.color)/255.0).begin());
-      switch(p.type){
-        case Primitive::line:{
-          GLboolean lightWasOn = true;
-          glGetBooleanv(GL_LIGHTING,&lightWasOn);
-          
-          glDisable(GL_LIGHTING);
-          
-          glBegin(GL_LINES);
-
-          if(p.hasNormals) glNormal3fv(o->m_normals[p.na()].data());
-          if(o->m_lineColorsFromVertices) glColor4fv((o->m_vertexColors[p.a()]/255).data());
-          glVertex3fv(ps[p.a()].data());
-          if(p.hasNormals) glNormal3fv(o->m_normals[p.nb()].data());
-          if(o->m_lineColorsFromVertices) glColor4fv((o->m_vertexColors[p.b()]/255).data());
-          glVertex3fv(ps[p.b()].data());
-          glEnd();
-
-          if(lightWasOn){
-            glEnable(GL_LIGHTING);
-          }          
-          break;
-        }
-        case Primitive::triangle:{
-          glBegin(GL_TRIANGLES);
-          const Vec &a = ps[p.a()];
-          const Vec &b = ps[p.b()];
-          const Vec &c = ps[p.c()];
-          
-          if(!p.hasNormals){
-            glNormal3fv(normalize(cross(a-c,b-c)).data());
+    if(o->isVisible()){
+      for(unsigned int j=0;j<o->m_primitives.size();++j){
+        const Primitive &p = o->m_primitives[j];
+        if(!o->isVisible(p.type)) continue;
+        glColor4fv(((p.color)/255.0).begin());
+        switch(p.type){
+          case Primitive::line:{
+            GLboolean lightWasOn = true;
+            glGetBooleanv(GL_LIGHTING,&lightWasOn);
+            glDisable(GL_LIGHTING);
+            glBegin(GL_LINES);
+            
+            if(p.hasNormals) glNormal3fv(o->m_normals[p.na()].data());
+            if(o->m_lineColorsFromVertices) glColor4fv((o->m_vertexColors[p.a()]/255).data());
+            glVertex3fv(ps[p.a()].data());
+            if(p.hasNormals) glNormal3fv(o->m_normals[p.nb()].data());
+            if(o->m_lineColorsFromVertices) glColor4fv((o->m_vertexColors[p.b()]/255).data());
+            glVertex3fv(ps[p.b()].data());
+            glEnd();
+            
+            if(lightWasOn){
+              glEnable(GL_LIGHTING);
+            }          
+            break;
           }
-          
-          if(p.hasNormals) glNormal3fv(o->m_normals[p.na()].data());
-          if(o->m_triangleColorsFromVertices) glColor4fv((o->m_vertexColors[p.a()]/255).data());
-          glVertex3fv(a.data());
-
-          if(p.hasNormals) glNormal3fv(o->m_normals[p.nb()].data());
-          if(o->m_triangleColorsFromVertices) glColor4fv((o->m_vertexColors[p.b()]/255).data());
-          glVertex3fv(b.data());
-
-          if(p.hasNormals) glNormal3fv(o->m_normals[p.nc()].data());
-          if(o->m_triangleColorsFromVertices) glColor4fv((o->m_vertexColors[p.c()]/255).data());
-          glVertex3fv(c.data());
-
-          glEnd();
-          break;
-        }case Primitive::quad:{
-           glBegin(GL_QUADS);
-           const Vec &a = ps[p.a()];
-           const Vec &b = ps[p.b()];
-           const Vec &c = ps[p.c()];
-           const Vec &d = ps[p.d()];
-
-          if(!p.hasNormals){
-            glNormal3fv(normalize(cross(d-c,b-c)).data());
+          case Primitive::triangle:{
+            glBegin(GL_TRIANGLES);
+            const Vec &a = ps[p.a()];
+            const Vec &b = ps[p.b()];
+            const Vec &c = ps[p.c()];
+            
+            if(!p.hasNormals){
+              glNormal3fv(normalize(cross(a-c,b-c)).data());
+            }
+            
+            if(p.hasNormals) glNormal3fv(o->m_normals[p.na()].data());
+            if(o->m_triangleColorsFromVertices) glColor4fv((o->m_vertexColors[p.a()]/255).data());
+            glVertex3fv(a.data());
+            
+            if(p.hasNormals) glNormal3fv(o->m_normals[p.nb()].data());
+            if(o->m_triangleColorsFromVertices) glColor4fv((o->m_vertexColors[p.b()]/255).data());
+            glVertex3fv(b.data());
+            
+            if(p.hasNormals) glNormal3fv(o->m_normals[p.nc()].data());
+            if(o->m_triangleColorsFromVertices) glColor4fv((o->m_vertexColors[p.c()]/255).data());
+            glVertex3fv(c.data());
+            
+            glEnd();
+            break;
+          }case Primitive::quad:{
+             glBegin(GL_QUADS);
+             const Vec &a = ps[p.a()];
+             const Vec &b = ps[p.b()];
+             const Vec &c = ps[p.c()];
+             const Vec &d = ps[p.d()];
+             
+             if(!p.hasNormals){
+               glNormal3fv(normalize(cross(d-c,b-c)).data());
+             }
+             
+             if(p.hasNormals) glNormal3fv(o->m_normals[p.na()].data());
+             if(o->m_quadColorsFromVertices) glColor4fv((o->m_vertexColors[p.a()]/255).data());
+             glVertex3fv(a.data());
+             
+             if(p.hasNormals) glNormal3fv(o->m_normals[p.nb()].data());
+             if(o->m_quadColorsFromVertices) glColor4fv((o->m_vertexColors[p.b()]/255).data());
+             glVertex3fv(b.data());
+             
+             if(p.hasNormals) glNormal3fv(o->m_normals[p.nc()].data());
+             if(o->m_quadColorsFromVertices) glColor4fv((o->m_vertexColors[p.c()]/255).data());
+             glVertex3fv(c.data());
+             
+             if(p.hasNormals) glNormal3fv(o->m_normals[p.nd()].data());
+             if(o->m_quadColorsFromVertices) glColor4fv((o->m_vertexColors[p.d()]/255).data());
+             glVertex3fv(d.data());
+             
+             glEnd();
+             break;
+           }
+          case Primitive::polygon:{
+            glBegin(GL_POLYGON);
+            
+            // no autonormals possible
+            
+            for(unsigned int k=0;k<p.vertexIndices.size();++k){
+              const Vec &v = ps[p.vertexIndices[k]];
+              if(o->m_polyColorsFromVertices) glColor4fv((o->m_vertexColors[p.vertexIndices[k]]/255).data());
+              if(p.hasNormals) glNormal3fv(o->m_normals[p.normalIndices[k]].data());
+              glVertex3fv(v.data());
+            }
+            glEnd();
+            break;
           }
+          case Primitive::texture:{
+            glColor4f(1,1,1,1);
+            const Vec &a = ps[p.a()];
+            const Vec &b = ps[p.b()];
+            const Vec &c = ps[p.c()]; // order: swapped
+            const Vec &d = ps[p.d()];
+            // left hand normal ?!
+            if(!p.hasNormals){
+              glNormal3fv(normalize(cross(b-c,d-c)).data());
+            }
           
-          if(p.hasNormals) glNormal3fv(o->m_normals[p.na()].data());
-          if(o->m_quadColorsFromVertices) glColor4fv((o->m_vertexColors[p.a()]/255).data());
-          glVertex3fv(a.data());
-
-          if(p.hasNormals) glNormal3fv(o->m_normals[p.nb()].data());
-          if(o->m_quadColorsFromVertices) glColor4fv((o->m_vertexColors[p.b()]/255).data());
-          glVertex3fv(b.data());
-
-          if(p.hasNormals) glNormal3fv(o->m_normals[p.nc()].data());
-          if(o->m_quadColorsFromVertices) glColor4fv((o->m_vertexColors[p.c()]/255).data());
-          glVertex3fv(c.data());
-
-          if(p.hasNormals) glNormal3fv(o->m_normals[p.nd()].data());
-          if(o->m_quadColorsFromVertices) glColor4fv((o->m_vertexColors[p.d()]/255).data());
-          glVertex3fv(d.data());
-          
-          glEnd();
-          break;
-         }
-        case Primitive::polygon:{
-          glBegin(GL_POLYGON);
-          
-          // no autonormals possible
-          
-          for(unsigned int k=0;k<p.vertexIndices.size();++k){
-            const Vec &v = ps[p.vertexIndices[k]];
-            if(o->m_polyColorsFromVertices) glColor4fv((o->m_vertexColors[p.vertexIndices[k]]/255).data());
-            if(p.hasNormals) glNormal3fv(o->m_normals[p.normalIndices[k]].data());
-            glVertex3fv(v.data());
-          }
-          glEnd();
-          break;
-        }
-        case Primitive::texture:{
-          glColor4f(1,1,1,1);
-          const Vec &a = ps[p.a()];
-          const Vec &b = ps[p.b()];
-          const Vec &c = ps[p.c()]; // order: swapped
-          const Vec &d = ps[p.d()];
-          // left hand normal ?!
-          if(!p.hasNormals){
-            glNormal3fv(normalize(cross(b-c,d-c)).data());
-          }
-          
-          GLTextureMapBaseImage tim(&p.tex);
-          //          tim.drawTo3D(a.begin(),b.begin(),d.begin(),p.mode);
-          if(p.hasNormals){
-            tim.drawToQuad(a.begin(),b.begin(),c.begin(),d.begin(),p.mode,
+            GLTextureMapBaseImage tim(&p.tex);
+            //          tim.drawTo3D(a.begin(),b.begin(),d.begin(),p.mode);
+            if(p.hasNormals){
+              tim.drawToQuad(a.begin(),b.begin(),c.begin(),d.begin(),p.mode,
                            o->m_normals[p.na()].data(),
-                           o->m_normals[p.nb()].data(),
-                           o->m_normals[p.nc()].data(),
-                           o->m_normals[p.nd()].data());
-          }else{
-            tim.drawToQuad(a.begin(),b.begin(),c.begin(),d.begin(),p.mode);
+                             o->m_normals[p.nb()].data(),
+                             o->m_normals[p.nc()].data(),
+                             o->m_normals[p.nd()].data());
+            }else{
+              tim.drawToQuad(a.begin(),b.begin(),c.begin(),d.begin(),p.mode);
+            }
+            break;
           }
-          break;
+          default:
+            ERROR_LOG("unsupported primitive type");
         }
-        default:
-          ERROR_LOG("unsupported primitive type");
       }
-      }
-    glBegin(GL_POINTS);
-    if(o->isVisible(Primitive::vertex)){
-      for(unsigned int j=0;j<ps.size();++j){
+      glBegin(GL_POINTS);
+      if(o->isVisible(Primitive::vertex)){
+        for(unsigned int j=0;j<ps.size();++j){
         glColor4fv(((o->m_vertexColors[j])/255.0).data());
         glVertex3fv(ps[j].data());
+        }
       }
-    }
-    glEnd();
-    
+      glEnd();
+    } // is visible
     
     for(unsigned int i=0;i<o->m_children.size();++i){
       renderSceneObjectRecursive(o->m_children[i].get());

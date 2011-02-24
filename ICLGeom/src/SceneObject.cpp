@@ -73,6 +73,7 @@ namespace icl{
     m_pointSize(1),
     m_lineWidth(1),
     m_useSmoothShading(true),
+    m_isVisible(true),
     m_transformation(Mat::id()),
     m_hasTransformation(false),
     m_parent(0)
@@ -189,6 +190,7 @@ namespace icl{
     m_pointSize(1),
     m_lineWidth(1),
     m_useSmoothShading(true),
+    m_isVisible(true),
     m_transformation(Mat::id()),
     m_hasTransformation(false),
     m_parent(0)
@@ -365,6 +367,8 @@ namespace icl{
     m_polyColorsFromVertices(false),
     m_pointSize(1),
     m_lineWidth(1),
+    m_useSmoothShading(true),
+    m_isVisible(true),
     m_transformation(Mat::id()),
     m_hasTransformation(false),
     m_parent(0)
@@ -1031,4 +1035,13 @@ namespace icl{
     return hits;
   }
 
+  void SceneObject::setVisible(bool visible, bool recursive){
+    m_isVisible = visible;
+    if(recursive){
+      for(unsigned int i=0;i<m_children.size();++i){
+        m_children[i]->setVisible(visible,true);
+      }
+    }
+  }
+  
 }

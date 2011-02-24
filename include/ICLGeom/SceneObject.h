@@ -422,6 +422,18 @@ namespace icl{
         it is returned in world coordinates */
     Vec getClosestVertex(const Vec &pWorld, bool relative=false) throw (ICLException);
     
+    /// sets the visibility of this object
+    void setVisible(bool visible, bool recursive=true);
+    
+    /// returns whether this object is currently visible
+    bool isVisible() const { return m_isVisible; }
+
+    /// calls setVisible(false)
+    void hide(bool recursive=true){ setVisible(false); }
+
+    /// calls setVisible(true)
+    void show(bool recursive=true){ setVisible(true); }
+    
     protected:
     
     /// recursive picking method
@@ -445,6 +457,7 @@ namespace icl{
     float m_lineWidth;
     
     bool m_useSmoothShading;
+    bool m_isVisible;
     
     /// for the scene graph implementation
     Mat m_transformation;
