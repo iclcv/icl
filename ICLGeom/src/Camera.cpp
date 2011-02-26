@@ -102,6 +102,16 @@ namespace icl {
   }
 
 
+  FixedMatrix<icl32f,3,4> Camera::getInvQMatrix() const{
+    Mat T = getCSTransformationMatrix();
+    Mat P = getProjectionMatrix();
+    Mat M = P*T;
+    return FixedMatrix<icl32f,4,3>(M(0,0),M(1,0),M(2,0),M(3,0),
+                                   M(0,1),M(1,1),M(2,1),M(3,1),
+                                   M(0,3),M(1,3),M(2,3),M(3,3)).pinv(true);
+  }
+
+
   Mat Camera::getProjectionMatrix() const {
     return Mat(m_f * m_mx,   m_skew, m_px, 0,
                         0, m_f*m_my, m_py, 0,
@@ -424,29 +434,46 @@ namespace icl {
     load_camera_from_stream(is,prefix,*this);
   }
 
-  ViewRay Camera::getViewRay(const Point32f &pixel) const {
-#if 0
-    TODO: find a more efficient way for this ...
-#else
-    Mat T = getCSTransformationMatrix();
-    Mat P = getProjectionMatrix();
-    Mat M = P*T;
-    FixedMatrix<icl32f,4,3> Q;
-    Q.row(0) = M.row(0); Q.row(1) = M.row(1); Q.row(2) = M.row(3);
-    Vec dir = Q.pinv(true)*FixedColVector<icl32f,3>(pixel.x, pixel.y, 1);
-    
+  /// utility function called from all getViewRay methods
+  static ViewRay create_view_ray(const FixedMatrix<icl32f,3,4> &Qi, float x, float y, const Vec &p){
+    Vec dir = Qi*FixedColVector<icl32f,3>(x, y, 1);
     // we keep the sign, in order to remember the actual direction of the viewray
     // if we use -1 instead in every case, viewrays will always point more towards (0,0,0)
     float sign = dir[3] > 0 ? -1 : 1; 
-    if ((m_pos[0]*m_pos[0] + m_pos[1]*m_pos[1] + m_pos[2]*m_pos[2]) < 1e-20) {
+    if ((p[0]*p[0] + p[1]*p[1] + p[2]*p[2]) < 1e-12) {
       // Special case: the camera is very close to origin. The last component of
       // 'dir' is about zero, so homogenize could fail. We can just skip this
       // step, because we normalize 'dir' later, anyway.
-    } else dir = m_pos - homogenize(dir);
+    } else dir = p - homogenize(dir);
     dir[3] = 0; dir.normalize(); dir *= sign; dir[3] = 1;
-    return ViewRay(m_pos,dir);
-#endif
+    return ViewRay(p,dir);
   }
+
+  ViewRay Camera::getViewRay(const Point32f &pixel) const {
+    return create_view_ray(getInvQMatrix(),pixel.x,pixel.y,m_pos);
+  }
+
+
+  std::vector<ViewRay> Camera::getViewRays(const std::vector<Point32f> &pixels) const{
+    std::vector<ViewRay> vs(pixels.size());
+    FixedMatrix<icl32f,3,4> Qi = getInvQMatrix();
+    for(unsigned int i=0;i<pixels.size();++i){
+      vs[i] = create_view_ray(Qi,pixels[i].x,pixels[i].y,m_pos);
+    }
+    return vs;
+  }
+  
+  Array2D<ViewRay> Camera::getAllViewRays() const{
+    Array2D<ViewRay> m(getRenderParams().chipSize);
+    FixedMatrix<icl32f,3,4> Qi = getInvQMatrix();
+    for(int y=0;y<m.getHeight();++y){
+      for(int x=0;x<m.getWidth();++x){
+        m(x,y) = create_view_ray(Qi,x,y,m_pos);
+      }
+    }
+    return m;
+  }
+
 
   ViewRay Camera::getViewRay(const Vec &Xw) const{
     return ViewRay(m_pos, Xw-m_pos);

@@ -42,7 +42,7 @@
 #include <ICLQt/GUIDefinition.h>
 #include <ICLQt/GUISyntaxErrorException.h>
 #include <ICLUtils/Exception.h>
-#include <ICLUtils/SimpleMatrix.h>
+#include <ICLUtils/Array2D.h>
 #include <ICLQt/Widget.h>
 #include <ICLIO/File.h>
 
@@ -1282,7 +1282,7 @@ public:
       for(int x=0;x<nW;x++){
         for(int y=0;y<nH;y++){
           CompabilityLabel *l = new CompabilityLabel("",def.parentWidget());
-          (*m_poLabelMatrix)[x][y] = LabelHandle(l,this);
+          (*m_poLabelMatrix)(x,y) = LabelHandle(l,this);
           addToGrid(l,x,y);
         }
       }

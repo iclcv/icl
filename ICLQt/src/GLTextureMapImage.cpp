@@ -65,7 +65,7 @@ namespace icl{
     
     m_iCellDataSize = m_iCellSize*m_iCellSize*m_iChannels;
 
-    m_matTextureNames = SimpleMatrix<GLuint>(m_iXCells,m_iYCells);
+    m_matTextureNames = Array2D<GLuint>(m_iXCells,m_iYCells,GLuint(0));
 
     if(m_bUseSingleBuffer){
       m_ptCellData = new T[m_iCellDataSize];
@@ -74,16 +74,16 @@ namespace icl{
       glGenTextures(m_iXCells*m_iYCells,m_matTextureNames.data()); 
     }else{
       m_ptCellData = 0;
-      m_matCellData = SimpleMatrix<T*>(m_iXCells,m_iYCells);
+      m_matCellData = Array2D<T*>(m_iXCells,m_iYCells,(T*)(0));
     }
-    m_matROISizes = SimpleMatrix<Size,SimpleMatrixAllocSize>(m_iXCells,m_iYCells);
+    m_matROISizes = Array2D<Size>(m_iXCells,m_iYCells);
 
     for(int y=0;y<m_iYCells;++y){
       for(int x=0;x<m_iXCells;++x){
-        m_matROISizes[x][y].width  = m_iRestX ? (x==m_iXCells-1 ? m_iRestX : m_iCellSize) : m_iCellSize;
-        m_matROISizes[x][y].height = m_iRestY ? (y==m_iYCells-1 ? m_iRestY : m_iCellSize) : m_iCellSize;
+        m_matROISizes(x,y).width  = m_iRestX ? (x==m_iXCells-1 ? m_iRestX : m_iCellSize) : m_iCellSize;
+        m_matROISizes(x,y).height = m_iRestY ? (y==m_iYCells-1 ? m_iRestY : m_iCellSize) : m_iCellSize;
        if(!m_bUseSingleBuffer){
-          m_matCellData[x][y] = new T[m_iCellDataSize];
+         m_matCellData(x,y) = new T[m_iCellDataSize];
         }
       }
     }
@@ -105,10 +105,10 @@ namespace icl{
       glDeleteTextures(m_iXCells*m_iYCells,m_matTextureNames.data());
       delete [] m_ptCellData;
     }else{
-      if(m_matCellData.dim()){
+      if(m_matCellData.getDim()){
         for(int y=0;y<m_iYCells;++y){
           for(int x=0;x<m_iXCells;++x){
-            delete [] m_matCellData[x][y];
+            delete [] m_matCellData(x,y);
           }
         }
       }
@@ -185,7 +185,7 @@ namespace icl{
     
     for(int y=0;y<m_iYCells;++y){
       for(int x=0;x<m_iXCells;++x){
-        calculate_minmax_interleaved(m_matCellData[x][y],m_matROISizes[x][y],m_iCellSize,m_iChannels,mm);
+        calculate_minmax_interleaved(m_matCellData(x,y),m_matROISizes(x,y),m_iCellSize,m_iChannels,mm);
       }
     }
     return mm;
@@ -202,7 +202,7 @@ namespace icl{
       int yCell = y/m_iCellSize;
       int xOffs = x%m_iCellSize;
       int yOffs = y%m_iCellSize;
-      T *data = m_matCellData[xCell][yCell] + m_iChannels * (xOffs + yOffs*m_iCellSize);
+      T *data = m_matCellData(xCell,yCell) + m_iChannels * (xOffs + yOffs*m_iCellSize);
       vector<icl64f> color;
       for(int c=0;c<m_iChannels;c++){
         color.push_back(data[c]);
@@ -232,14 +232,14 @@ namespace icl{
       
       for(int y=0;y<m_iYCells;++y){
         for(int x=0;x<m_iXCells;++x){
-          glBindTexture(GL_TEXTURE_2D, m_matTextureNames[x][y]);
+          glBindTexture(GL_TEXTURE_2D, m_matTextureNames(x,y));
           
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST);
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_NEAREST);
           
-          const Img<T> *src = image->shallowCopy(Rect(Point(x*m_iCellSize,y*m_iCellSize),m_matROISizes[x][y]));
+          const Img<T> *src = image->shallowCopy(Rect(Point(x*m_iCellSize,y*m_iCellSize),m_matROISizes(x,y)));
           
           
           if(x==m_iXCells -1 || y == m_iYCells-1){
@@ -264,8 +264,8 @@ namespace icl{
     }else{ // multiTextureBuffer
       for(int y=0;y<m_iYCells;++y){
         for(int x=0;x<m_iXCells;++x){
-          const Img<T> *src = image->shallowCopy(Rect(Point(x*m_iCellSize,y*m_iCellSize),m_matROISizes[x][y]));
-          planarToInterleaved(src,m_matCellData[x][y],m_iCellSize*m_iChannels*sizeof(T));
+          const Img<T> *src = image->shallowCopy(Rect(Point(x*m_iCellSize,y*m_iCellSize),m_matROISizes(x,y)));
+          planarToInterleaved(src,m_matCellData(x,y),m_iCellSize*m_iChannels*sizeof(T));
           delete src;
         }
       }
@@ -413,8 +413,8 @@ namespace icl{
     Img<T> *image = new Img<T>(Size(m_iImageW,m_iImageH), m_iChannels);
     for(int y=0;y<m_iYCells;++y){
       for(int x=0;x<m_iXCells;++x){
-        image->setROI(Rect(Point(x*m_iCellSize,y*m_iCellSize),m_matROISizes[x][y]));
-        interleavedToPlanar(m_matCellData[x][y],image,m_iCellSize*m_iChannels*sizeof(T));
+        image->setROI(Rect(Point(x*m_iCellSize,y*m_iCellSize),m_matROISizes(x,y)));
+        interleavedToPlanar(m_matCellData(x,y),image,m_iCellSize*m_iChannels*sizeof(T));
       }
     }
     image->setFullROI();
@@ -446,7 +446,7 @@ namespace icl{
 
       for(int y=0;y<m_iYCells;++y){
         for(int x=0;x<m_iXCells;++x){
-          glBindTexture(GL_TEXTURE_2D, m_matTextureNames[x][y]);
+          glBindTexture(GL_TEXTURE_2D, m_matTextureNames(x,y));
           
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
@@ -454,11 +454,11 @@ namespace icl{
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,mode == interpolateLIN ? GL_LINEAR : GL_NEAREST);
           
           if(m_iChannels == 1){
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_LUMINANCE, glType, m_matCellData[x][y]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_LUMINANCE, glType, m_matCellData(x,y));
           }else if (m_iChannels == 3){
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_RGB, glType, m_matCellData[x][y]);   
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_RGB, glType, m_matCellData(x,y));   
           }else if (m_iChannels == 4){
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_iCellSize, m_iCellSize,0, GL_RGBA, glType, m_matCellData[x][y]);   
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_iCellSize, m_iCellSize,0, GL_RGBA, glType, m_matCellData(x,y));   
           }else{
             ERROR_LOG("invalid channel count: \"" << m_iChannels << "\"");
           }
@@ -505,7 +505,7 @@ namespace icl{
     for(int y=0;y<m_iYCells;++y){
       for(int x=0;x<m_iXCells;++x){
 
-        glBindTexture(GL_TEXTURE_2D, m_matTextureNames[x][y]);
+        glBindTexture(GL_TEXTURE_2D, m_matTextureNames(x,y));
 
 
         glBegin(GL_QUADS);
@@ -672,7 +672,7 @@ layout a--b
       
       for(int y=0;y<m_iYCells;++y){
         for(int x=0;x<m_iXCells;++x){
-          glBindTexture(GL_TEXTURE_2D, m_matTextureNames[x][y]);
+          glBindTexture(GL_TEXTURE_2D, m_matTextureNames(x,y));
           
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
@@ -680,11 +680,11 @@ layout a--b
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,smode == interpolateLIN ? GL_LINEAR : GL_NEAREST);
           
           if(m_iChannels == 1){
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_LUMINANCE, glType, m_matCellData[x][y]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_LUMINANCE, glType, m_matCellData(x,y));
           }else if (m_iChannels == 3){
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_RGB, glType, m_matCellData[x][y]);   
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_RGB, glType, m_matCellData(x,y));   
           }else if (m_iChannels == 4){
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_iCellSize, m_iCellSize,0, GL_RGBA, glType, m_matCellData[x][y]);   
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_iCellSize, m_iCellSize,0, GL_RGBA, glType, m_matCellData(x,y));   
           }else{
             ERROR_LOG("invalid channel count: \"" << m_iChannels << "\"");
           }
@@ -712,7 +712,7 @@ layout a--b
    
    for(int y=0;y<m_iYCells;++y){
       for(int x=0;x<m_iXCells;++x){
-        glBindTexture(GL_TEXTURE_2D, m_matTextureNames[x][y]);
+        glBindTexture(GL_TEXTURE_2D, m_matTextureNames(x,y));
         
         glBegin(GL_QUADS);
 
@@ -797,7 +797,7 @@ layout a--b
       
       for(int y=0;y<m_iYCells;++y){
         for(int x=0;x<m_iXCells;++x){
-          glBindTexture(GL_TEXTURE_2D, m_matTextureNames[x][y]);
+          glBindTexture(GL_TEXTURE_2D, m_matTextureNames(x,y));
           
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
@@ -805,11 +805,11 @@ layout a--b
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,mode == interpolateLIN ? GL_LINEAR : GL_NEAREST);
           
           if(m_iChannels == 1){
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_LUMINANCE, glType, m_matCellData[x][y]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_LUMINANCE, glType, m_matCellData(x,y));
           }else if (m_iChannels == 3){
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_RGB, glType, m_matCellData[x][y]);   
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_RGB, glType, m_matCellData(x,y));   
           }else if (m_iChannels == 4){
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_iCellSize, m_iCellSize,0, GL_RGBA, glType, m_matCellData[x][y]);   
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_iCellSize, m_iCellSize,0, GL_RGBA, glType, m_matCellData(x,y));   
           }else{
             ERROR_LOG("invalid channel count: \"" << m_iChannels << "\"");
           }
@@ -846,7 +846,7 @@ layout a--b
     
     for(int y=0;y<m_iYCells;++y){
       for(int x=0;x<m_iXCells;++x){
-        glBindTexture(GL_TEXTURE_2D, m_matTextureNames[x][y]);
+        glBindTexture(GL_TEXTURE_2D, m_matTextureNames(x,y));
         
         glBegin(GL_QUADS);
 
@@ -947,8 +947,8 @@ layout a--b
 
     for(int y=0;y<m_iYCells;++y){
       for(int x=0;x<m_iXCells;++x){
-        calculate_histo_interleaved(m_matCellData[x][y],
-                                    m_matROISizes[x][y],
+        calculate_histo_interleaved(m_matCellData(x,y),
+                                    m_matROISizes(x,y),
                                     m_iCellSize,
                                     m_iChannels,
                                     useRanges,

@@ -42,7 +42,7 @@
 #endif
 
 #include <ICLUtils/Size.h>
-#include <ICLUtils/SimpleMatrix.h>
+#include <ICLUtils/Array2D.h>
 #include <ICLQt/ImageStatistics.h>
 #include <ICLCore/Types.h>
 #include <ICLCore/Img.h>
@@ -120,10 +120,6 @@ namespace icl{
   template<class T>
   class GLTextureMapImage{
     
-    /// internal used allocations class for creation of a SimpleMatrix<Size>
-    struct SimpleMatrixAllocSize {
-      static Size create() { return Size::null; }
-    };
     public:
     
     /// constructor
@@ -252,18 +248,18 @@ namespace icl{
     
     /// internal used size of cell data 
     int m_iCellDataSize;
-    
+
     /// matrix containing gl texture handles
-    SimpleMatrix<GLuint> m_matTextureNames;
+    Array2D<GLuint> m_matTextureNames;
     
     /// matrix containing ROI sizes for the cells
-    SimpleMatrix<Size,SimpleMatrixAllocSize> m_matROISizes;
+    Array2D<Size> m_matROISizes;
     
     /// indicates whether to use a single buffer or one buffer per texture
     bool m_bUseSingleBuffer;
     
     /// if mode is multiTextureBuffer, the data is stored here
-    SimpleMatrix<T*> m_matCellData;
+    Array2D<T*> m_matCellData;
     
     /// buffer for cell data (only one cell needs to be buffered at one time)
     T *m_ptCellData;

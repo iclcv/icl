@@ -40,6 +40,7 @@
 #include <ICLUtils/Rect.h>
 #include <ICLUtils/Rect32f.h>
 #include <ICLUtils/Exception.h>
+#include <ICLUtils/Array2D.h>
 #include <ICLGeom/PlaneEquation.h>
 #include <ICLGeom/ViewRay.h>
 
@@ -194,6 +195,17 @@ namespace icl {
     // projection magic
     /// Returns a view-ray equation of given pixel location
     ViewRay getViewRay(const Point32f &pixel) const;
+
+    /// returns a list of viewrays corresponding to a given set of pixels
+    /** This method is much faster than using getViewRay several times since the
+        projection matrix inversion that is necessary must only be done once */
+    std::vector<ViewRay> getViewRays(const std::vector<Point32f> &pixels) const;
+
+    /// returns a 2D array of all viewrays
+    /** This method is much faster than using getViewRay several times since the
+        projection matrix inversion that is necessary must only be done once */
+    Array2D<ViewRay> getAllViewRays() const;
+    
     /// Returns a view-ray equation of given point in the world
     ViewRay getViewRay(const Vec &Xw) const;
     /// returns estimated 3D point for given pixel and plane equation
@@ -230,7 +242,10 @@ namespace icl {
     Mat getViewportMatrixGL() const;
 
     /// returns the common 4x3 camera matrix
-    FixedMatrix<icl32f,4,3>  getQMatrix() const;
+    FixedMatrix<icl32f,4,3> getQMatrix() const;
+    
+    /// returns the inverse QMatrix
+    FixedMatrix<icl32f,3,4> getInvQMatrix() const;
 
     /// translates the current position vector
     inline void translate(const Vec &d) { m_pos += d; }

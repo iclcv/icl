@@ -36,7 +36,6 @@
 #define ICL_GABOR_OP
 
 #include <ICLFilter/UnaryOp.h>
-#include <ICLUtils/SimpleMatrix.h>
 #include <ICLCore/Img.h>
 #include <ICLUtils/Point.h>
 #include <vector>

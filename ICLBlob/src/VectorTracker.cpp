@@ -176,7 +176,7 @@ namespace icl{
 #define SHOW_VEC(x) showVec(x,#x)
     
     template<class DistanceFunc>
-    SimpleMatrix<float> createDistanceMatrix(const std::vector<Vec> &newData, DistanceFunc dist_func, float largeVal){
+    Array2D<float> createDistanceMatrix(const std::vector<Vec> &newData, DistanceFunc dist_func, float largeVal){
       // DEBUG_LOG("creating distance matrix:");
       // SHOW_VEC(newData);
       // SHOW_VEC(*cols[3]);
@@ -184,11 +184,11 @@ namespace icl{
       int w = (int)newData.size();
       int h = height;
       int maxWH = iclMax(w,h);
-      SimpleMatrix<float> distMat(maxWH,maxWH);
-      std::fill(distMat.data(),distMat.data()+distMat.dim(),largeVal);
+      Array2D<float> distMat(maxWH,maxWH,largeVal);
+
       for(unsigned int x=0;x<newData.size();++x){
         for(int y=0;y<height;++y){
-          distMat[x][y] = dist_func(newData[x],pred(y));
+          distMat(x,y) = dist_func(newData[x],pred(y));
         }
       }
       return distMat;
@@ -417,7 +417,7 @@ namespace icl{
     }
     
     m_data->predict(m_data->extrapolationMask);
-    SimpleMatrix<float> distMat;
+    Array2D<float> distMat;
     if((int)m_data->normFactors.size() == m_data->dim){
       distMat = m_data->createDistanceMatrix(newData,PearsonDist(m_data->normFactors),m_data->largeVal);
     }else{
@@ -471,7 +471,7 @@ namespace icl{
           std::fill(m_data->ass.begin(),m_data->ass.end(),-1);
           for(int n=0;n<newNum;++n){
             for(int o=0;o<oldNum;++o){
-              if(distMat[n][o] < m_data->thresh){
+              if(distMat(n,o) < m_data->thresh){
                 if(m_data->ass[n]!=-1){
                   throw 1;
                 }

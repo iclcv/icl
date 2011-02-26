@@ -35,21 +35,16 @@
 #ifndef ICL_DISP_HANDLE_H
 #define ICL_DISP_HANDLE_H
 
-#include <ICLUtils/SimpleMatrix.h>
+#include <ICLUtils/Array2D.h>
 #include <ICLQt/LabelHandle.h>
 #include <ICLQt/GUIHandle.h>
 
 namespace icl{
   
-  /** \cond */
-  struct LabelHandleAlloc{
-    static LabelHandle create() { return LabelHandle(); }
-  };
-  /** \endcond */
   
   /// Type definition for handling GUI-"disp" components \ingroup HANDLES
-  /** @see GUI, SimpleMatrix template class of the ICLUtils package */
-  typedef SimpleMatrix<LabelHandle,LabelHandleAlloc>  LabelMatrix;
+  /** @see GUI, Array2D template class of the ICLUtils package */
+  typedef Array2D<LabelHandle>  LabelMatrix;
 
   /// Handle class for disp components \ingroup HANDLE
   class DispHandle : public GUIHandle<LabelMatrix>{
@@ -60,35 +55,36 @@ namespace icl{
     /// Create a new DispHandle with given 
     DispHandle(LabelMatrix *lm, GUIWidget *w) : GUIHandle<LabelMatrix>(lm,w){}
     
-    /// column access operator (use h[x][y] to access elements)
-    inline LabelHandle *operator[](int x){ return (***this)[x]; }
+    /// index access operator
+    inline LabelHandle &operator()(int x,int y){ return (***this)(x,y); }
 
-    /// column access operator (use h[x][y] to access elements)
-    inline const LabelHandle *operator[](int x) const{ return (***this)[x]; }
+    /// index access operator (const)
+    inline const LabelHandle &operator()(int x,int y) const { return (***this)(x,y); }
+
 
     /// width of the matrix (max x index is w()-1
-    inline int w() const { return (***this).w(); }
+    inline int getWidth() const { return (***this).getWidth(); }
 
     /// height of the matrix (max y index is h()-1
-    inline int h() const { return (***this).h(); }
+    inline int getHeight() const { return (***this).getHeight(); }
 
     /// returns the number of matrix elements w*h
-    inline int dim() const { return (***this).dim(); }
+    inline int getDim() const { return (***this).getDim(); }
 
     /// enables all components
     inline void enable(){
-      for(int i=0;i<w();++i){
-        for(int j=0;j<h();++j){
-          (*this)[i][j].enable();
+      for(int i=0;i<getWidth();++i){
+        for(int j=0;j<getHeight();++j){
+          (*this)(i,j).enable();
         }
       }
     }
     
     /// disables all components
     inline void disable(){
-      for(int i=0;i<w();++i){
-        for(int j=0;j<h();++j){
-          (*this)[i][j].disable();
+      for(int i=0;i<getWidth();++i){
+        for(int j=0;j<getHeight();++j){
+          (*this)(i,j).disable();
         }
       }
     }

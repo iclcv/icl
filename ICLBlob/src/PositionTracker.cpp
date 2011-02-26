@@ -181,19 +181,19 @@ namespace icl{
 
 
   template<class valueType>
-  SimpleMatrix<valueType> createDistMat(const vector<valueType> a[2], const vector<valueType> b[2]){
+  Array2D<valueType> createDistMat(const vector<valueType> a[2], const vector<valueType> b[2]){
     // {{{ open
 
     ICLASSERT( a[X].size() == b[X].size() );
     // DEBUG if( a[X].size() != b[X].size() ) printf("error: %d != %d \n",a[X].size(),b[X].size());
     int dim = (int)a[X].size();
-    SimpleMatrix<valueType> m(dim);
+    Array2D<valueType> m(dim,dim);
     for(int i=0;i<dim;++i){
       for(int j=0;j<dim;++j){
         double dx = a[X][j] - b[X][i];
         double dy = a[Y][j] - b[Y][i];
         // !! use sqrt of the euclidian distance to stabilize the association procedure (..)
-        m[i][j] = (int)round (sqrt(sqrt( dx*dx + dy*dy )) );
+        m(i,j) = (int)round (sqrt(sqrt( dx*dx + dy*dy )) );
         // m[i][j] = (valueType)sqrt(sqrt (pow((double) (a[X][j] - b[X][i]), 2) +
         // pow((double) (a[Y][j] - b[Y][i]), 2) ));
       }
@@ -284,7 +284,7 @@ namespace icl{
 
     vector<valueType> pred[2] = { predict(dim,data[X],good), predict(dim,data[Y],good) };
     
-    SimpleMatrix<valueType> distMat = createDistMat( pred , newData );
+    Array2D<valueType> distMat = createDistMat( pred , newData );
     
     assignment = HungarianAlgorithm<valueType>::apply(distMat);
     
@@ -386,7 +386,7 @@ namespace icl{
     int dim = data[X][0].size();
     vector<valueType> pred[2] = { predict(dim,data[X],good), predict(dim,data[Y],good) };
     
-    SimpleMatrix<valueType> distMat = createDistMat( pred , newData );
+    Array2D<valueType> distMat = createDistMat( pred , newData );
     
     assignment = HungarianAlgorithm<valueType>::apply(distMat);
 
@@ -439,7 +439,7 @@ namespace icl{
     /// restore good
     good.resize(good.size()-DIFF);
     
-    SimpleMatrix<valueType> distMat = createDistMat( pred , newData );
+    Array2D<valueType> distMat = createDistMat( pred , newData );
     
     assignment = HungarianAlgorithm<valueType>::apply(distMat);
     
@@ -577,7 +577,7 @@ namespace icl{
     vecPrediction[X].push_back( Extrapolator<valueType,int>::predict( m_matData[X][0][y], m_matData[X][1][y], m_matData[X][2][y] ) );
     vecPrediction[Y].push_back( Extrapolator<valueType,int>::predict( m_matData[Y][0][y], m_matData[Y][1][y], m_matData[Y][2][y] ) );
     }
-    SimpleMatrix<valueType> distMat(DATA_AND_MATRIX_DIM,DATA_AND_MATRIX_DIM);
+    Array2D<valueType> distMat(DATA_AND_MATRIX_DIM,DATA_AND_MATRIX_DIM);
     for(int x=0;x<DATA_AND_MATRIX_DIM;++x){
     for(int y=0;y<DATA_AND_MATRIX_DIM;++y){
     distMat[x][y] = (valueType)sqrt (pow( vecPrediction[X][y] - newData[X][x], 2) + pow( vecPrediction[Y][y] - newData[Y][x], 2) );

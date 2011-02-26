@@ -40,7 +40,7 @@
 #include <list>
 
 namespace icl{
-  typedef SimpleMatrix<int> imat;
+  typedef Array2D<int> imat;
   typedef std::vector<int> vec;
  
 
@@ -60,20 +60,20 @@ namespace icl{
   // }}}
   
   template<class real>
-  int hg_step1(int step, SimpleMatrix<real> &cost){
+  int hg_step1(int step, Array2D<real> &cost){
     // {{{ open
 
     //What STEP 1 does:
     //For each row of the cost matrix, find the smallest element
     //and subtract it from from every other element in its row. 
     real minval;
-    for(int i=0; i<cost.h(); i++){									
-      minval=cost[i][0];
-      for(int j=0; j<cost.w(); j++){
-        minval = iclMin(minval,cost[i][j]);
+    for(int i=0; i<cost.getHeight(); i++){									
+      minval=cost(i,0);
+      for(int j=0; j<cost.getWidth(); j++){
+        minval = iclMin(minval,cost(i,j));
       }
-      for (int j=0; j<cost.h(); j++){
-        cost[i][j]-=minval;
+      for (int j=0; j<cost.getHeight(); j++){
+        cost(i,j)-=minval;
       }
     }
     step=2;
@@ -83,15 +83,15 @@ namespace icl{
   // }}}
   
   template<class real>
-  int hg_step2(int step, SimpleMatrix<real> &cost, imat &mask, vec &rowCover, vec &colCover){
+  int hg_step2(int step, Array2D<real> &cost, imat &mask, vec &rowCover, vec &colCover){
     // {{{ open
 
     //What STEP 2 does:
     //Marks uncovered zeros as starred and covers their row and column.
-    for (int i=0; i<cost.w(); i++){
-      for (int j=0; j<cost.h(); j++){
-        if ((cost[i][j]==0) && (colCover[j]==0) && (rowCover[i]==0)) {
-          mask[i][j]=1;
+    for (int i=0; i<cost.getWidth(); i++){
+      for (int j=0; j<cost.getHeight(); j++){
+        if ((cost(i,j)==0) && (colCover[j]==0) && (rowCover[i]==0)) {
+          mask(i,j)=1;
           colCover[j]=1;
           rowCover[i]=1;
         }
@@ -110,9 +110,9 @@ namespace icl{
     //What STEP 3 does:
     //Cover columns of starred zeros. Check if all columns are covered.
 		
-    for (int i=0; i<mask.w(); i++){	//Cover columns of starred zeros.
-      for (int j=0; j<mask.h(); j++){
-        if (mask[i][j] == 1){
+    for (int i=0; i<mask.getWidth(); i++){	//Cover columns of starred zeros.
+      for (int j=0; j<mask.getHeight(); j++){
+        if (mask(i,j) == 1){
           colCover[j]=1;
         }
       }
@@ -121,7 +121,7 @@ namespace icl{
     for (unsigned int j=0; j<colCover.size(); j++){//Check if all columns are covered.
       count+=colCover[j];
     }
-    if (count>=mask.w()){//Should be cost.length but ok, because mask has same dimensions.	
+    if (count>=mask.getWidth()){//Should be cost.length but ok, because mask has same dimensions.	
       step=7;
     }else {
       step=4;
@@ -133,7 +133,7 @@ namespace icl{
 
   /* orig:: working, but slow !!!
   template<class real>
-  int hg_step4(int step, SimpleMatrix<real> &cost, imat &mask, vec &rowCover, vec &colCover, vec &zero_RC){
+  int hg_step4(int step, Array2D<real> &cost, imat &mask, vec &rowCover, vec &colCover, vec &zero_RC){
     BEGIN_METHOD(hg_step4);
     // {{{ open
 
@@ -151,7 +151,7 @@ namespace icl{
       }else{
         mask[row_col[0]][row_col[1]] = 2;	//Prime the found uncovered zero.
         bool starInRow = false;
-        for (int j=0; j<mask.h(); j++){ 
+        for (int j=0; j<mask.getHeight(); j++){ 
           if (mask[row_col[0]][j]==1){ //If there is a star in the same row...
             starInRow = true;
             row_col[1] = j;//remember its column.
@@ -175,12 +175,12 @@ namespace icl{
   */
  
   template<class real>
-  void findZeroPositions(std::vector<Point> &dst, SimpleMatrix<real> &cost){
+  void findZeroPositions(std::vector<Point> &dst, Array2D<real> &cost){
      // {{{ open
 
-    for(int i=0;i<cost.w();++i){
-      for(int j=0;j<cost.h();++j){
-        if(!cost[i][j]){
+    for(int i=0;i<cost.getWidth();++i){
+      for(int j=0;j<cost.getHeight();++j){
+        if(!cost(i,j)){
           dst.push_back(Point(i,j));
         }
       }
@@ -195,10 +195,10 @@ namespace icl{
   original function, 5x slower than ***Lite
   */
   template<class real>
-  vec findUncoveredZero(vec &row_col, SimpleMatrix<real> &cost, vec &rowCover, vec &colCover){
+  vec findUncoveredZero(vec &row_col, Array2D<real> &cost, vec &rowCover, vec &colCover){
     // {{{ open
-    for(int i=0;i<cost.w();++i){
-      for(int j=0;j<cost.h();++j){
+    for(int i=0;i<cost.getWidth();++i){
+      for(int j=0;j<cost.getHeight();++j){
         if(!cost[i][j] && !rowCover[i] && !colCover[j]){
           row_col[0] = i;
           row_col[1] = j;
@@ -215,7 +215,7 @@ namespace icl{
     bool done = false;
     while (!done){
       int j = 0;
-      while (j < cost.h()){
+      while (j < cost.getHeight()){
         if (cost[i][j]==0 && rowCover[i]==0 && colCover[j]==0){
           row_col[0] = i;
           row_col[1] = j;
@@ -224,7 +224,7 @@ namespace icl{
         j++;
       }//end inner while
       i++;
-      if ((int)i >= cost.w()){
+      if ((int)i >= cost.getWidth()){
         done = true;
       }
     }//end outer while
@@ -256,7 +256,7 @@ namespace icl{
 
 
   template<class real>
-  int hg_step4(int step, SimpleMatrix<real> &cost, imat &mask, vec &rowCover, vec &colCover, vec &zero_RC){
+  int hg_step4(int step, Array2D<real> &cost, imat &mask, vec &rowCover, vec &colCover, vec &zero_RC){
     // {{{ open
     //What STEP 4 does:
     //Find an uncovered zero in cost and prime it (if none go to step 6). Check for star in same row:
@@ -278,10 +278,10 @@ namespace icl{
         done = true;
         step = 6;
       }else{
-        mask[row_col[0]][row_col[1]] = 2;	//Prime the found uncovered zero.
+        mask(row_col[0],row_col[1]) = 2;	//Prime the found uncovered zero.
         bool starInRow = false;
-        for (int j=0; j<mask.h(); j++){ 
-          if (mask[row_col[0]][j]==1){ //If there is a star in the same row...
+        for (int j=0; j<mask.getHeight(); j++){ 
+          if (mask(row_col[0],j)==1){ //If there is a star in the same row...
             starInRow = true;
             row_col[1] = j;//remember its column.
           }
@@ -305,8 +305,8 @@ namespace icl{
   int findStarInCol(imat &mask, int col){
     // {{{ open
     // int r=-1;	//Again this is a check value.
-    for (int i=0; i<mask.w(); i++){
-        if (mask[i][col]==1){
+    for (int i=0; i<mask.getWidth(); i++){
+      if (mask(i,col)==1){
           return i;
           //          r = i;
         }
@@ -321,8 +321,8 @@ namespace icl{
     // {{{ open
     //    int c = -1;
    
-    for (int j=0; j<mask.h(); j++){
-      if (mask[row][j]==2){
+    for (int j=0; j<mask.getHeight(); j++){
+      if (mask(row,j)==2){
         return j;
         //        c = j;
       }
@@ -336,10 +336,11 @@ namespace icl{
     // {{{ open
 
     for (int i=0; i<=count; i++){
-      if (mask[(int)path[i][0]][(int)path[i][1]]==1){
-        mask[(int)path[i][0]][(int)path[i][1]] = 0;
+      int &m = mask((int)path(i,0),(int)path(i,1));
+      if (m  == 1){
+        m = 0;
       }else{
-        mask[(int)path[i][0]][(int)path[i][1]] = 1;
+        m = 1;
       }
     }
   }
@@ -348,10 +349,10 @@ namespace icl{
   void erasePrimes(imat &mask){
     // {{{ open
 
-    for (int i=0; i<mask.w(); i++){
-      for (int j=0; j<mask.h(); j++){
-        if (mask[i][j]==2){
-          mask[i][j] = 0;
+    for (int i=0; i<mask.getWidth(); i++){
+      for (int j=0; j<mask.getHeight(); j++){
+        if (mask(i,j)==2){
+          mask(i,j)= 0;
         }
       }
     }
@@ -370,10 +371,10 @@ namespace icl{
     
     int count = 0; //Counts rows of the path matrix.
     // printf("use the new representation as it scaled better with dynamic size here \n");
-    // printf("The correct formula for the hg_step5 was ... path(mask.h()*2,2) todo: \n");
+    // printf("The correct formula for the hg_step5 was ... path(mask.getHeight()*2,2) todo: \n");
     // printf("TEST TEST TEST .. HungarianAlgorithm.cppp hg_step5  line 228 ........ \n");
     // orig, unstable, as first index becomes too large sometimes ???:
-    // imat path(mask.h()+2,2);
+    // imat path(mask.getHeight()+2,2);
 
     std::vector<Point> vecPath;
     
@@ -408,14 +409,14 @@ namespace icl{
 		
     imat path((int)vecPath.size(),2);
     for(unsigned int i=0;i<vecPath.size();i++){
-      path[i][0] = vecPath[i].x;
-      path[i][1] = vecPath[i].y;
+      path(i,0) = vecPath[i].x;
+      path(i,1) = vecPath[i].y;
     }
     convertPath(mask, path, count);
     clearCovers(rowCover, colCover);
     erasePrimes(mask);
 	
-    // printf("need %d more lines at dim %d  2xOK=%s\n", mask.h()-vecPath.size(),mask.h(),(int)((int)mask.h()-(int)vecPath.size())<2*mask.h() ? "OK" : "ERROR" );
+    // printf("need %d more lines at dim %d  2xOK=%s\n", mask.getHeight()-vecPath.size(),mask.getHeight(),(int)((int)mask.getHeight()-(int)vecPath.size())<2*mask.getHeight() ? "OK" : "ERROR" );
     
     step = 3;
     return step;
@@ -424,7 +425,7 @@ namespace icl{
   // }}}
   
   template<class real>
-  int hg_step6(int step, SimpleMatrix<real> &cost, vec &rowCover, vec &colCover, real maxCost){
+  int hg_step6(int step, Array2D<real> &cost, vec &rowCover, vec &colCover, real maxCost){
     // {{{ open
 
     //What STEP 6 does:
@@ -435,10 +436,10 @@ namespace icl{
     for (unsigned int i=0; i<rowCover.size(); i++){
       for (unsigned int j=0; j<colCover.size(); j++){
         if (rowCover[i]==1){
-          cost[i][j] = cost[i][j] + minval;
+          cost(i,j) += minval;
         }
         if (colCover[j]==0){
-          cost[i][j] = cost[i][j] - minval;
+          cost(i,j) -= minval;
         }
       }
     }
@@ -448,14 +449,14 @@ namespace icl{
 
   // }}}
   template<class real>
-  real findSmallest(SimpleMatrix<real> &cost, vec &rowCover, vec &colCover, real maxCost){
+  real findSmallest(Array2D<real> &cost, vec &rowCover, vec &colCover, real maxCost){
     // {{{ open
 
     real minval = maxCost;	   //There cannot be a larger cost than this.
-    for (int i=0; i<cost.w(); i++){ //Now find the smallest uncovered value.
-      for (int j=0; j<cost.h(); j++){
-        if (rowCover[i]==0 && colCover[j]==0 && (minval > cost[i][j])){
-          minval = cost[i][j];
+    for (int i=0; i<cost.getWidth(); i++){ //Now find the smallest uncovered value.
+      for (int j=0; j<cost.getHeight(); j++){
+        if (rowCover[i]==0 && colCover[j]==0 && (minval > cost(i,j))){
+          minval = cost(i,j);
         }
       }
     }
@@ -465,24 +466,24 @@ namespace icl{
   // }}}
    
   template<class real>
-  vec HungarianAlgorithm<real>::apply(const SimpleMatrix<real> &m, bool isCostMatrix){
+  vec HungarianAlgorithm<real>::apply(const Array2D<real> &m, bool isCostMatrix){
     // {{{ open
 
     mat cost;
     if(isCostMatrix){
       cost = m.deepCopy();
     }else{
-      real maxWeight = cost.max();
-      for(int i=0;i<cost.w(); i++){
-        for(int j=0;j<cost.h(); j++){
-          cost[i][j] = maxWeight - cost[i][j];
+      real maxWeight = cost.maxElem();
+      for(int i=0;i<cost.getWidth(); i++){
+        for(int j=0;j<cost.getHeight(); j++){
+          cost(i,j) = maxWeight - cost(i,j);
         }
       }
     }
-    real maxCost = cost.max();
-    imat mask(m.w(),m.h());
-    vec rowCover(m.h());
-    vec colCover(m.w());
+    real maxCost = cost.maxElem();
+    imat mask(m.getWidth(),m.getHeight(),(int)0);
+    vec rowCover(m.getHeight());
+    vec colCover(m.getWidth());
     vec zero_RC(2);
     int step = 1;
     bool done = false;
@@ -498,10 +499,10 @@ namespace icl{
       }
     }
     
-    vec assignment; //(m.w(),2);
-    for(int i=0;i<mask.w();i++){
-      for(int j=0;j<mask.h();j++){
-        if(mask[i][j] == 1){
+    vec assignment; //(m.getWidth(),2);
+    for(int i=0;i<mask.getWidth();i++){
+      for(int j=0;j<mask.getHeight();j++){
+        if(mask(i,j) == 1){
           assignment.push_back(j);
           // assignment[i][0] = i;
           // assignment[i][1] = j;
@@ -514,17 +515,17 @@ namespace icl{
   // }}}
 
   template<class real>
-  void HungarianAlgorithm<real>::visualizeAssignment(const SimpleMatrix<real> &cost, const vec &a){
+  void HungarianAlgorithm<real>::visualizeAssignment(const Array2D<real> &cost, const vec &a){
     // {{{ open
-    mat v(cost.w(),cost.h());
+    mat v(cost.getWidth(),cost.getHeight());
     
     for(unsigned int i=0;i<a.size();i++){
-      v[i][a[i]] = 1;
+      v(i,a[i]) = 1;
     }
     
-    for(int j=0;j<cost.w();j++){
-      for(int i=0;i<cost.h();i++){
-        printf("%3.3f%s ",(float)cost[i][j], v[i][j] ?  "* " : "  ");
+    for(int j=0;j<cost.getWidth();j++){
+      for(int i=0;i<cost.getHeight();i++){
+        printf("%3.3f%s ",(float)cost(i,j), v(i,j) ?  "* " : "  ");
       }
       printf("\n");
     }

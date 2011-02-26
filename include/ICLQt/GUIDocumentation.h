@@ -531,14 +531,15 @@
       
       The disp component implements a 2D-Array of label components (e.g. to visualize
       a matrix). It makes use of the LabelHandle class to provide an interface
-      of type DispHandle which wraps a matrix of LabelHandles using the ICLUtils/
-      SimpleMatrix template class. \n
+      of type DispHandle which wraps a Array2D of LabelHandles using the ICLUtils/
+      Array2D template class. \n
       Matrix elements - of type "LabelHandle&" - can be addressed using the 
-      [][]-operator (see SimpleMatrix).
+      (x,y)-operator (see Array2D).
       
       \code
       #include <ICLQt/GUI.h>
-      
+      #include <ICLQt/DispHandle.h>
+
       using namespace icl;
       
       int main(int n, char**ppc){
@@ -560,20 +561,20 @@
         DispHandle &m = gui.getValue<DispHandle>("mydisp");
       
         // assign the first row with string
-        m[0][0] = "";
-        m[1][0] = "column 1";
-        m[2][0] = "column 2";
-        m[3][0] = "column 3";
+        m(0,0) = "";
+        m(1,0) = "column 1";
+        m(2,0) = "column 2";
+        m(3,0) = "column 3";
       
         // assign the first column with strings
-        m[0][1] = "row 1";
-        m[0][2] = "row 2";
-        m[0][3] = "row 3";
+        m(0,1) = "row 1";
+        m(0,2) = "row 2";
+        m(0,3) = "row 3";
       
         // assign the rest with integers
         for(int x=1;x<4;x++){
           for(int y=1;y<4;y++){
-            m[x][y] = 10*x+y;
+            m(x,y) = 10*x+y;
           }
         }
         // enter Qt's event loop
