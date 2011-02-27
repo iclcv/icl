@@ -34,6 +34,7 @@
 
 // {{{ includes
 
+
 #include <ICLQt/Widget.h>
 #include <ICLCore/Img.h>
 #include <ICLQt/GLTextureMapBaseImage.h>
@@ -44,6 +45,7 @@
 #include <ICLUtils/Time.h>
 #include <ICLUtils/ProgArg.h>
 #include <ICLQt/QImageConverter.h>
+#include <ICLCC/FixedConverter.h>
 #include <QtGui/QImage>
 
 #include <ICLQt/IconFactory.h>
@@ -80,14 +82,16 @@
 #include <ICLQt/SpinnerHandle.h>
 #include <ICLQt/SliderHandle.h>
 #include <ICLUtils/StringUtils.h>
-#include <ICLQt/ThreadedUpdatableWidget.h>
+
 
 #include <ICLUtils/Rect32f.h>
 #include <ICLIO/File.h>
 #include <ICLIO/FileWriter.h>
 #include <ICLUtils/Range.h>
 #include <ICLCore/Types.h>
+
 #include <ICLQt/ThreadedUpdatableSlider.h>
+#include <ICLQt/HistogrammWidget.h>
 
 // }}}
 
@@ -97,212 +101,6 @@ namespace icl{
 #define LOCK_SECTION QMutexLocker SECTION_LOCKER(&m_data->mutex)
 
   class ZoomAdjustmentWidgetParent;
-  
-  struct HistogrammWidget : public ThreadedUpdatableWidget{
-    // {{{ open
-
-    static inline int median_of_3(int a, int b, int c){
-      if( a > b){
-        if(a > c) return c;
-        else return a;
-      }else{
-        if(b > c) return c;
-        else return b;
-      }
-    }
-    static inline int median_of_5(int *p){
-      int a[5]= {p[0],p[1],p[2],p[3],p[4]};
-      std::sort(a,a+5);
-      return a[2];
-    }
-
-    static inline int mean_of_3(int a, int b, int c){
-      return (a+b+b+c)/4;
-    }
-    
-    static inline int mean_of_5(int *p){
-      return (p[0]+3*p[1]+5*p[2]+3*p[3]+p[4])/13;
-    }
-    struct Entry{
-      float color[3];
-      std::vector<int> histo;
-    };
-    std::vector<Entry> entries;
-
-    bool logOn,meanOn,medianOn,fillOn,accuMode;
-    int selChannel;
-    Mutex mutex;
-
-    /*
-        virtual QSize sizeHint(){
-        return QSize(1000,1000);
-        }
-    */
-    HistogrammWidget(QWidget *parent):
-      ThreadedUpdatableWidget(parent),logOn(false),meanOn(false),medianOn(false),
-      fillOn(false),accuMode(false),selChannel(-1){
-      
-      /*
-          setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
-          if(parent){
-          parent->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
-          }
-      */
-    }
-    
-    void setFeatures(bool logOn, bool meanOn, bool medianOn, bool fillOn, int selChannel, bool accuMode=false){
-      this->logOn = logOn;
-      this->meanOn = meanOn;
-      this->medianOn = medianOn;
-      this->fillOn = fillOn;
-      this->selChannel = selChannel;
-      this->accuMode = accuMode;
-    }
-    void fillColor(int i,float color[3]){
-      switch(i){
-        case 0: color[0]=255;color[1]=0;color[2]=0; break;
-        case 1: color[0]=0;color[1]=255;color[2]=0; break;
-        case 2: color[0]=0;color[1]=0;color[2]=255; break;
-        default: color[0]=255;color[1]=255;color[2]=255; break;
-      }
-    }
-    virtual void update(){
-      QWidget::update();
-    }
-    void update(const ImageStatistics &s){
-      Mutex::Locker l(mutex);
-      if(s.isNull){
-        entries.clear();
-        return;
-      }
-      
-      // xxx todo process somewhere else 
-      /** ImgParams params;
-          depth d;
-          std::vector<Range64f> ranges;
-      ***/
-      entries.resize(s.histos.size());
-      for(unsigned int i=0;i<s.histos.size();++i){
-        entries[i].histo = s.histos[i];
-        fillColor(i,entries[i].color);
-      }
-      updateFromOtherThread();
-    }
-    
-    virtual void paintEvent(QPaintEvent *e){
-      Mutex::Locker l(mutex);
-      QWidget::paintEvent(e);
-      QPainter p(this);
-
-      p.setRenderHint(QPainter::Antialiasing);
-      p.setBrush(Qt::NoBrush);
-      p.setPen(QColor(50,50,50));
-      p.drawRect(QRectF(0,0,width(),height()));
-
-
-      static const int BORDER = 2;
-      static float GAP = 0;
-      Rect32f r = Rect32f(0,0,width(),height()).enlarged(-BORDER);
-      
-      std::vector<QPolygonF> polys(entries.size());
-      if(fillOn){
-        for(unsigned int e=0;e<entries.size();++e){
-          polys[e] << QPointF(width(),height());
-          polys[e] << QPointF(0,height());
-        }
-      }
-      // TODO fix accuMode
-      // TODO use overAll max elem to be able to compare bins
-      float maxElem = 0;
-      if(accuMode){
-        for(unsigned int e=1;e<entries.size();++e){
-          ICLASSERT_RETURN(entries[0].histo.size() == entries[e].histo.size());
-        }
-        for(unsigned int i=0;i<entries[0].histo.size();++i){
-          int accu = 0;
-          for(unsigned int e=1;e<entries.size();++e){
-            accu += entries[e].histo[i];
-          }
-          if(accu > maxElem) maxElem = accu;
-        }
-      }
-
-      std::vector<std::vector<int> > oldHistos(entries.size());
-      for(unsigned int e=0;e<entries.size();++e){
-        if(!(selChannel == -1 || selChannel == (int)e)) continue;
-        std::vector<int> histo = entries[e].histo;
-        if(!histo.size()) continue;
-        int n = (int)histo.size();
-        
-        if(medianOn){
-          histo[1] =  median_of_3(entries[e].histo[0],entries[e].histo[1],entries[e].histo[2]);
-          for(int i=2;i<n-2;++i){
-            histo[i] = median_of_5(&entries[e].histo[i-2]);
-          }
-          histo[n-2] =  median_of_3(entries[e].histo[n-3],entries[e].histo[n-2],entries[e].histo[n-1]);
-        }else if(meanOn){
-          histo[1] =  mean_of_3(entries[e].histo[0],entries[e].histo[1],entries[e].histo[2]);
-          for(int i=2;i<n-2;++i){
-            histo[i] = mean_of_5(&entries[e].histo[i-2]);
-          }      
-          histo[n-2] =  mean_of_3(entries[e].histo[n-3],entries[e].histo[n-2],entries[e].histo[n-1]);
-        }
-      
-        p.setPen(QColor(entries[e].color[0],entries[e].color[1],entries[e].color[2]));
-
-        
-        if(!accuMode){
-          maxElem = *max_element(histo.begin(),histo.end());
-        }
-        if(logOn) maxElem = ::log(maxElem);
-        
-        if(maxElem){
-          float binDistance = r.width/n;
-          float binWidth = binDistance-GAP;
-          
-          float lastX = 0,lastY=0;
-          for(int i=0;i<n;i++){
-            float val = histo[i];
-            float valUnder = 0;
-            if(accuMode){
-              for(unsigned int j=0;j<e;++j){
-                valUnder += oldHistos[j][i];
-              }
-              val += valUnder;
-            }
-            
-            if(logOn && val) val=(::log(val));
-            
-            float h = (r.height/maxElem)*val;
-            if(accuMode){
-              h -= (r.height/maxElem)*valUnder;
-            }
-            float y = r.y+r.height-h;
-            float x = r.x+(int)(i*binDistance);
-            if(fillOn){
-              // old xxx p.drawRect(QRectF(x,y,binWidth,h));
-              polys[e] << QPointF(lastX+binWidth/2,lastY);
-              if(i==n-1){
-                polys[e] << QPointF(x+binWidth/2,y);
-              }
-            }else if(i>0){
-              p.drawLine(QPointF(x+binWidth/2,y),QPointF(lastX+binWidth/2,lastY));
-            }
-            lastX = x;
-            lastY = y;
-          }
-        }
-        if(fillOn){
-          p.setPen(QColor(entries[e].color[0],entries[e].color[1],entries[e].color[2],255));
-          p.setBrush(QColor(entries[e].color[0],entries[e].color[1],entries[e].color[2],100));
-          p.drawPolygon(polys[e]);
-        }
-        oldHistos[e]=histo;
-      }
-    }
-  };
-
-  // }}}
   
   struct OSDGLButton{
     // {{{ open
@@ -678,12 +476,17 @@ namespace icl{
     std::string deviceInfo;
     int frameSkip;
     int frameIdx;
+    FixedConverter *converter;
+    ImgBase *convertedBuffer;
+
   public:
     OutputBufferCapturer(ICLWidget *parent, ICLWidget::Data *data):
       parent(parent),data(data),target(SET_IMAGES),
-      frameSkip(0),frameIdx(0){}
+      frameSkip(0),frameIdx(0),converter(0),convertedBuffer(0){}
     
     ~OutputBufferCapturer(){
+      ICL_DELETE(converter);
+      ICL_DELETE(convertedBuffer);
     }
 
     void ensureDirExists(const QString &dirName){
@@ -696,25 +499,50 @@ namespace icl{
         QDir("./").mkpath(dirName);
       }
     }
-    bool startRecording(CaptureTarget t, const std::string &device, const std::string &params, int frameSkip){
+    bool startRecording(CaptureTarget t, const std::string &device, const std::string &params, int frameSkip,
+                        bool forceParams, const Size &dstSize, icl::format dstFmt,  icl::depth dstDepth){
       Mutex::Locker l(mutex);
-      target = t;
-      this->frameSkip = frameSkip;
-      imageOutput.init(device,params);
-      if(imageOutput.isNull()){
-        QMessageBox::critical(0,"error","Unable to create image output device");
-        return false;
+    
+      ICL_DELETE(converter);
+      if(forceParams){
+        converter = new FixedConverter(ImgParams(dstSize,dstFmt),dstDepth);
       }
-      deviceType = deviceType;
-      deviceInfo = params;
 
       if(device == "file"){
         ensureDirExists(File(params).getDir().c_str());        
       }else if(device == "video"){
         std::vector<std::string> ts = tok(params,",");
         if(!ts.size()) throw ICLException(str(__FUNCTION__)+": Error 12345 (this should not happen)");
+        File f(ts.front());
+        if(f.exists()){
+          QMessageBox::StandardButton b = QMessageBox::question(0,"file exists",QString("given input file\n")+
+                                                                ts.front().c_str()+"\nexits! overwrite?",
+                                                                QMessageBox::Yes | QMessageBox::No);
+          if(b == QMessageBox::Yes){
+            f.erase();
+          }else{
+            return false;
+          }
+        }
         ensureDirExists(File(ts.front()).getDir().c_str());
       }
+      target = t;
+      this->frameSkip = frameSkip;
+      std::string initError;
+      
+      try{
+        imageOutput.init(device,params);
+      }catch(std::exception &ex){
+        initError = ex.what();
+      }
+      if(initError.length() || imageOutput.isNull()){
+        std::string err = initError.length() ? initError : "unknown error";
+        QMessageBox::critical(0,"error",("Unable to create image output device: (" + initError + ")").c_str());
+        return false;
+      }
+      deviceType = deviceType;
+      deviceInfo = params;
+
       recording = true;
       paused = false;
       return true;
@@ -741,9 +569,13 @@ namespace icl{
         frameIdx = 0;
       }
       try{
-        ImgBase *image = data->image->deepCopy();
-        imageOutput.send(image);
-        delete image;
+        SmartPtr<ImgBase> image(data->image->deepCopy());
+        
+        if(converter){
+          converter->apply(image.get(),&convertedBuffer);
+          image = SmartPtr<ImgBase>(convertedBuffer,false);
+        }
+        imageOutput.send(image.get());
       }catch(ICLException &ex){
         ERROR_LOG("unable to capture current image:" << ex.what());
       }
@@ -762,8 +594,12 @@ namespace icl{
         frameIdx = 0;
       }
       try{
-        const Img8u &fb = parent->grabFrameBufferICL();
-        imageOutput.send(&fb);
+        const ImgBase *fb = &parent->grabFrameBufferICL();
+        if(converter){
+          converter->apply(fb,&convertedBuffer);
+          fb = convertedBuffer;
+        }
+        imageOutput.send(fb);
       }catch(ICLException &ex){
         ERROR_LOG("unable to capture frame buffer:" << ex.what());
       }
@@ -1113,7 +949,7 @@ namespace icl{
     QMutexLocker locker(&data->menuMutex);
 
     // OK, we need to extract default values for all gui elements if gui is already defined!
-    data->menu = GUI("tab(bci,scale,channel,capture,extra,info,license,help)[@handle=root@minsize=5x7]",widget);
+    data->menu = GUI("tab(bci,scale,channel,capture,grid,info,license,help)[@handle=root@minsize=5x7]",widget);
 
     GUI bciGUI("vbox");
 
@@ -1172,6 +1008,13 @@ namespace icl{
                     << str("spinner(0,100,")+str(autoCapFS)+")[@label=frame skip@handle=auto-cap-frameskip@out=_10]"
                     << str("combo(")+FILE+","+VIDEO+","+XCFP+","+SM+")[@label=dest.@handle=auto-cap-device]"
                     << str("string(")+autoCapFP+",200)[@label=output params@handle=auto-cap-filepattern@out=_7]"
+                  )
+               << ( GUI("hbox")
+                    << "checkbox(force params,unchecked)[@out=auto-cap-force]"
+                    << "combo(160x120,320x240,!640x480,800x600,1024x768,1200x800,1600x1200,1280x7200,1920x1080)"
+                       "[@label=size@handle=auto-cap-size]"
+                    << "combo(gray,!rgb,hls,yuv,lab)[@label=color@handle=auto-cap-format]"
+                    << "combo(depth8u,depth16s,depth32s,depth32f,depth64f)[@label=depth@handle=auto-cap-depth]"
                   )
                << ( GUI("hbox")
                     << str("togglebutton(record,")+(autoCapRec?"!":"")+"record)[@handle=auto-cap-record@out=_8]"
@@ -1577,12 +1420,14 @@ namespace icl{
   
   void ICLWidget::setViewPort(const Size &size){
     // {{{ open
+
     m_data->defaultViewPort = size;
     if(!m_data->image->hasImage()){
       m_data->imageInfoIndicator->update(m_data->defaultViewPort);
     }
       
   }
+
   // }}}
 
   void ICLWidget::showHideMenu(){
@@ -1643,7 +1488,13 @@ namespace icl{
       const std::string params = m_data->menu.getValue<StringHandle>("auto-cap-filepattern").getCurrentText();
       const std::string device = m_data->menu.getValue<ComboHandle>("auto-cap-device").getSelectedItem();
       int frameSkip = m_data->menu.getValue<SpinnerHandle>("auto-cap-frameskip").getValue();
-      bool ok = m_data->outputCap->startRecording(t,device,params,frameSkip);
+      
+      bool forceParams = m_data->menu.getValue<bool>("auto-cap-force");
+      Size dstSize = parse<Size>(m_data->menu.getValue<ComboHandle>("auto-cap-size").getSelectedItem());
+      icl::format dstFmt = parse<icl::format>(m_data->menu.getValue<ComboHandle>("auto-cap-format").getSelectedItem());
+      icl::depth dstDepth = parse<icl::depth>(m_data->menu.getValue<ComboHandle>("auto-cap-depth").getSelectedItem());
+
+      bool ok = m_data->outputCap->startRecording(t,device,params,frameSkip,forceParams,dstSize,dstFmt,dstDepth);
       if(!ok){
         (*m_data->menu.getValue<ButtonHandle>("auto-cap-record"))->setChecked(false);
       }else{

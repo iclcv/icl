@@ -5,26 +5,44 @@ body, table, div, p, dl {
 	font-size: 12px; /* 12px*/
         color: #444444;
 }
+div.tabs a{
+    color: #444444;
+    font-weight: bold;
+/*    text-shadow: 0 1px 1px #000000; */
+}
+div.tabs a:hover{
+    color: #FFFFFF;
+    font-weight: bold;
+/*    text-shadow: 0 1px 1px #000000; */
+}
 
 /* normal */
 div.tabs a:link span{
     /*color:#1A419D;*/
-    color: #444444;
+    color: #548097;
+    text-shadow: 0 1px 1px #000000; 
 }
 
 
-div.tabs a:link:hover span:hover{
+div.tabs a:link:hover span:hover a:link:visited a:link:hover{
     /*color:#1A419D;*/
     color: #548097;
+/*    text-shadow: 0 1px 1px #000000;  */
+    text-shadow: none;
 }
 
-/* hover */
+/*div.tabs a {
+    font-size: 80%;
+}
+
 div.tabs a:hover {
     color: #548097;
     font-size: 80%;
 }
-
-
+*/
+div.tabs a{
+    font-size: 80%;
+}
 
 div.tabs a:visited{
     color: #444444;
@@ -32,7 +50,7 @@ div.tabs a:visited{
 }
 
 div.tabs a:visited:hover{
-    color: #548097;
+    color: #FFFFFF;
     font-size: 80%;
 }
 

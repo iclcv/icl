@@ -98,6 +98,7 @@ add_libsource (${PROJECT_NAME} "src/SpinnerHandle.cpp" "${CONDITIONLIST}" LIB_SO
 add_libsource (${PROJECT_NAME} "src/StringHandle.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/StringSignalButton.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/Widget.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/HistogrammWidget.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/CamCfgWidget.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/ToggleButton.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/ConfigFileGUI.cpp" "${CONDITIONLIST}" LIB_SOURCES)
