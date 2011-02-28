@@ -1,5 +1,10 @@
 /* The standard CSS for doxygen */
 
+#MSearchBox {
+    right: 1.5em;
+    margin-top: 9px;
+}
+
 body, table, div, p, dl {
 	font-family: Lucida Grande, Verdana, Geneva, Arial, sans-serif;
 	font-size: 12px; /* 12px*/
@@ -55,9 +60,10 @@ div.tabs a:visited:hover{
 }
 
 
-div.tabs a:active{
+/*div.tabs a:active{
     font-size: 100%;
 }
+*/
 
 a {
     color: #548097;
