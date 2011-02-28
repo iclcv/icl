@@ -65,7 +65,7 @@ namespace icl{
 
   // }}}
   
-  void progress(int curr, int max){
+  void progress(int curr, int max, const std::string &t){
     // {{{ open
 
     printf("%s%s:",BACK_LINE,PROGRESS_STR.c_str());
@@ -82,7 +82,11 @@ namespace icl{
     for(int i=0;i<N2;i++){
       printf("=");
     }
-    printf("]\n");
+    if(t.length()){
+      printf("] %s\n",t.c_str());
+    }else{
+      printf("]\n");
+    }
     
   }
 }

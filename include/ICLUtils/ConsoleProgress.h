@@ -46,7 +46,8 @@ namespace icl{
   void progress_finish();
 
   /// static utility function for displaying some progress information in console
-  void progress(int curr, int max);
+  /** Extra text is show behind the progress bar */
+  void progress(int curr, int max, const std::string &extraText="");
 
 }
 
