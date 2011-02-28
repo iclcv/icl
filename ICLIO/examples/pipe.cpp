@@ -201,13 +201,20 @@ void send_app(){
     first = false;
     
 #ifdef HAVE_QT
-    gui_int(fpsLimit);
+    int fpsLimit = 0;
+    if(!pa("-no-gui")){
+      fpsLimit = gui.getValue<int>("fpsLimit");
+    }else{
+      fpsLimit = pa("-fps").as<int>();
+    }
 #else
-    int fpsLimit = pa("fps");
+    int fpsLimit = pa("-fps");
 #endif
+
     static FPSLimiter limiter(15,10);
     if(limiter.getMaxFPS() != fpsLimit) limiter.setMaxFPS(fpsLimit);
     limiter.wait();
+
   }
 }
 
