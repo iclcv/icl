@@ -77,13 +77,13 @@ namespace icl{
         - at least one column (however you'll need 3 columns for 6D mapping */
     template<class T>
     static FixedMatrix<T,4,4> map(const DynMatrix<T> &Xs, const DynMatrix<T> &Ys, MapMode mode=RigidBody) 
-      throw (IncompatibleMatrixDimensionException);
+    throw (IncompatibleMatrixDimensionException,SingularMatrixException);
 
     /// Convenienc template that uses FixedMatrix inputs (available for T=icl32f and T=icl64f)
     /** The inputs's data points are passes to the main map-function using a shallow DynMatrix<T> wrappter*/
     template<class T, unsigned int NUM_POINTS>
     static FixedMatrix<T,4,4> map(const FixedMatrix<T,NUM_POINTS,3> &Xs, const FixedMatrix<T,NUM_POINTS,3> &Ys, MapMode mode=RigidBody)
-      throw (IncompatibleMatrixDimensionException){
+      throw (IncompatibleMatrixDimensionException,SingularMatrixException){
       return map(Xs.dyn(),Ys.dyn(), mode);
     }
 
@@ -91,13 +91,13 @@ namespace icl{
     /** The inputs's data points are passes to the main map-function using a shallow DynMatrix<T> wrappter*/
     template<class T, unsigned int NUM_POINTS>
     static FixedMatrix<T,4,4> map(const FixedMatrix<T,NUM_POINTS,4> &Xs, const FixedMatrix<T,NUM_POINTS,4> &Ys, MapMode mode=RigidBody) 
-      throw (IncompatibleMatrixDimensionException){
+      throw (IncompatibleMatrixDimensionException,SingularMatrixException){
       return map(Xs.dyn(),Ys.dyn(), mode);
     }
 
     /// Convenience function that passes std::vector<Vec> data as DynMatrix<T> to other map function
     static Mat map(const std::vector<Vec> &Xs, const std::vector<Vec> &Ys, MapMode mode=RigidBody) 
-      throw (ICLException){
+    throw (ICLException,SingularMatrixException,IncompatibleMatrixDimensionException){
       ICLASSERT_THROW(Xs.size() == Ys.size(), ICLException("PoseEstimator::map: need same number of input- and output-points"));
       DynMatrix<float> XsD(Xs.size(),3),YsD(Ys.size(),3);
       for(unsigned int i=0;i<Xs.size();++i){
