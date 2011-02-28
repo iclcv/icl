@@ -36,6 +36,7 @@
 #include <ICLQuick/Common.h>
 #include <ICLUtils/FPSEstimator.h>
 #include <ICLUtils/FPSLimiter.h>
+#include <ICLUtils/ConsoleProgress.h>
 #include <ICLIO/IOFunctions.h>
 
 #include <ICLFilter/MedianOp.h>
@@ -200,19 +201,38 @@ void send_app(){
 #endif
     first = false;
     
+    bool useGUI = false;
 #ifdef HAVE_QT
     int fpsLimit = 0;
     if(!pa("-no-gui")){
       fpsLimit = gui.getValue<int>("fpsLimit");
+      useGUI = true;
     }else{
       fpsLimit = pa("-fps").as<int>();
     }
 #else
     int fpsLimit = pa("-fps");
 #endif
+    
+    if(!useGUI){
+      if(pa("-progress")){
+          static int curr = 0;
+          static bool first = true;
+          if(first){
+            progress_init("icl-pipe sending next 100 images");
+            first = false;
+          }
+          static FPSEstimator fpsEst(10);
+          progress(curr++,99,"(" + fpsEst.getFPSString() + ")");
+          if(curr == 100){
+            curr = 0;
+          }
+        }
+    }
 
     static FPSLimiter limiter(15,10);
     if(limiter.getMaxFPS() != fpsLimit) limiter.setMaxFPS(fpsLimit);
+    
     limiter.wait();
 
   }
@@ -287,6 +307,7 @@ int main(int n, char **ppc){
    "\tThis parameters can be obtained using ICL application\n"
    "\ticl-calib-radial-distortion")
   ("-reset","reset bus on startup")
+  ("-progress","show progress bar (only used in -no-gui mode)")
   ("-idu","if this is given, image updates are initally switched off which means, that no"
    "image is visualized in the preview widget. This helps to reduce network traffic!")
   ("-normalize","normalize resulting image to [0,255]")
@@ -299,7 +320,7 @@ int main(int n, char **ppc){
          "-flip|-f(string) -single-shot -input|-i(device,device-params) "
          "-size|(Size) -no-gui -pp(1) -dist|-d(float,float,float,float) -reset|-r "
          "-fps(float=15.0) -clip|-c(Rect) -camera-config(filename) -depth(depth) -format(format) -normalize|-n "
-         "-perserve-preprocessing-roi|-ppp "
+         "-perserve-preprocessing-roi|-ppp -progress "
          "-initially-disable-image-updates|-idu");
 
   if(pa("-reset")){
