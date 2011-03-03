@@ -37,6 +37,7 @@
 #include <ICLCC/FixedConverter.h>
 #include <ICLQuick/Common.h>
 #include <ICLUtils/Size32f.h>
+#include <ICLFilter/RotateOp.h>
 
 int main(int n, char **ppc){
   paex("-i","specify input file (type by filename extension)\n\t[also as 1st unspecified arg]")
@@ -44,9 +45,10 @@ int main(int n, char **ppc){
       ("-depth","define output file depth")
       ("-format","define output file format")
       ("-size","define output file size")
+      ("-rotate","rotate angle by given angle (clock-wise in deg)")
       ("-scale","define size scaling factor")
       ("-scalemode", "defines scalemode to use (one of NN, LIN, or RA)");
-  painit(n,ppc,"-input|-i(filename) -output|-o(filename) -depth|-d(depth) -format|-f(format) -size|-s(Size) -scale(factor) -scalemode(scalemode)",true);
+  painit(n,ppc,"-input|-i(filename) -output|-o(filename) -depth|-d(depth) -format|-f(format) -size|-s(Size) -scale(factor) -scalemode(scalemode) -rotate(angle)",true);
   
   std::string inFileName,outFileName;
 
@@ -106,22 +108,33 @@ int main(int n, char **ppc){
   depth d = pa("-depth") ? parse<depth>(pa("-depth")) : image->getDepth();
               
   FixedConverter conv(p,d);
+  scalemode sm = interpolateLIN;
+  
   if(pa("-scalemode")){
     std::string sm = pa("-scalemode");
     if(sm == "NN"){
-      conv.setScaleMode(interpolateNN);
+      sm = interpolateNN;
     }else if(sm == "LIN"){
-      conv.setScaleMode(interpolateLIN);
+      sm = interpolateLIN;
     }else if(sm == "RA"){
-      conv.setScaleMode(interpolateRA);
+      sm = interpolateRA;
     }else{
       ERROR_LOG("unknown scale mode (allowed modes are NN, LIN and RA)");
       return -1;
     }
   }
+  conv.setScaleMode(sm);
   
   ImgBase *dst = 0;
   conv.apply(image,&dst);
+  
+  if(pa("-rotate")){
+    float angle = pa("-rotate");
+    static RotateOp rot(angle,sm);
+    static ImgBase *dst2 = 0;
+    rot.apply(dst,&dst2);
+    dst = dst2;
+  }
   
   FileWriter fw(outFileName);
   fw.write(dst);

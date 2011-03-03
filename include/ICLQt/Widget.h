@@ -32,8 +32,8 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICLWIDGET_H
-#define ICLWIDGET_H
+#ifndef ICL_WIDGET_H
+#define ICL_WIDGET_H
 
 #include <QtOpenGL/QGLWidget>
 #include <ICLCore/ImgBase.h>
@@ -73,52 +73,29 @@ namespace icl{
       The following code (also available in <em>ICLQt/examples/camviewer_lite.cpp</em> demonstrates how
       simple an ICLWidget can be used to create a simple USB Webcam viewer:
       \code
-      
-\#include <ICLQt/Widget.h>
-\#include <ICLQt/DrawWidget.h>
-\#include <ICLIO/PWCGrabber.h>
-\#include <QApplication>
-\#include <QThread>
-\#include <ICLIO/TestImages.h>
-using namespace icl;
-using namespace std;
+#include <ICLQuick/Common.h>
 
+ICLWidget *widget = 0;
+GenericGrabber grabber;
 
-// we need a working thread, which allows us to grab images
-// from the webcam asynchronously to Qts event loop
-
-class MyThread : public QThread{               
-public:
-  MyThread(){
-    widget = new ICLWidget(0);                // create the widget
-    widget->setGeometry(200,200,640,480);     // set up its geometry
-    widget->show();                           // show it
-    start();                                  // start the working loop (this will call the
-  }                                           //           run() function in an own thread)   
-  ~MyThread(){
-    exit();                                   // this will destroy the working thread
-    msleep(250);                              // wait till it is destroyed   
-    delete widget;
-  }
-  
-  virtual void run(){
-    PWCGrabber g(Size(320,240));              // create a grabber instance
-    while(1){                                 // enter the working loop
-      widget->setImage(g.grab());             // grab a new image from the grabber an give it to the widget
-      widget->update();                       // force qt to update the widgets user interface
-    }
-  }
-  private:
-  ICLWidget *widget;                          // internal widget object
-};
-
-
-int main(int nArgs, char **ppcArg){
-  QApplication a(nArgs,ppcArg);           // create a QApplication
-  MyThread x;                             // create the widget and thread
-  return a.exec();                        // start the QAppliations event loop
+// initialization method (called in the main thread)
+void init(){
+  grabber.init(FROM_PROGARG("-i"));
+  widget = new ICLWidget;
+  widget->setGeometry(200,200,640,480);   
+  widget->show();         
 }
-      
+
+// working method (running looped in the working thread)
+void run(){
+  widget->setImage(grabber.grab());
+  // don't use update() which is not thread-safe!
+  widget->updateFromOtherThread();
+}
+
+int main(int n, char **args){
+  return ICLApp(n,args,"[m]-input|-i(2)",init,run).exec();
+}
       \endcode
 
       When other things, like annotations should be drawn to the widget, you can either
@@ -134,38 +111,38 @@ int main(int nArgs, char **ppcArg){
       \section ICLWIDGET_OSM ICLWidget's On-Screen-Menu
 
     <TABLE border=0><TR><TD>
-    Bla bla bla
+    TODO ...
     </TD><TD>
     \image html osm-0.png "On-screen-menu's sub-tabs"
     </TD></TR></TABLE>
 
     <TABLE border=0><TR><TD>
-    Bla bla bla
+    TODO ...
     </TD><TD>
     \image html osm-2.png "On-screen-menu's 'bci'-tab. Here, brightness and contrast adaption mode can be set up here."
     </TD></TR></TABLE>
 
 
     <TABLE border=0><TR><TD>
-    Bla bla bla
+    TODO ...
     </TD><TD>
     \image html osm-3.png "On-screen-menu's 'scale'-tab. This tab can be used to adapt how the image is set into the widget."
     </TD></TR></TABLE>
 
     <TABLE border=0><TR><TD>
-    Bla bla bla
+    TODO ...
     </TD><TD>
     \image html osm-4.png "On-screen-menu's 'channel'-tab. Here the widget can be set up to visualize a single image channel only."
     </TD></TR></TABLE>
 
     <TABLE border=0><TR><TD>
-    Bla bla bla
+    TODO ...
     </TD><TD>
     \image html osm-5.png "On-screen-menu's 'capture'-tab. This most complex tab is provided to capture the current image or the current frame-buffer. Furthermore, automatic capturing can be activated here."
     </TD></TR></TABLE>
 
     <TABLE border=0><TR><TD>
-    Bla bla bla
+      TODO ...
     </TD><TD>
     \image html osm-6.png "On-screen-menu's 'histo'-tab. Here, an online image histogram is shown."
     </TD></TR></TABLE>
