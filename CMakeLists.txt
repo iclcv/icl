@@ -267,7 +267,7 @@ if(NOT OPENCV_PKG_FOUND)
   if(WIN32)
   icl_check_external_package(OPENCV "cv.h;cvaux.h;cxcore.h;highgui.h" "cvaux200.dll.a;cxcore200.dll.a;highgui200.dll.a;cv200.dll.a;ml200.dll.a" lib include/opencv "C:/Programme/OpenCV2.0" HAVE_OPENCV_COND)
   elseif(APPLE)
-    icl_check_external_package(OPENCV ""  "libopencv_core.dylib;libopencv_highgui.dylib;libopencv_ml.dylib;libopencv_features2d.dylib;libopencv_imgproc.dylib;libopencv_calib3d.dylib" lib include /usr/local HAVE_OPENCV_COND)
+    icl_check_external_package(OPENCV ""  "libopencv_core.dylib;libopencv_highgui.dylib;libopencv_ml.dylib;libopencv_features2d.dylib;libopencv_imgproc.dylib;libopencv_calib3d.dylib" lib include /vol/nivision/share/opencv HAVE_OPENCV_COND)
   else()
   icl_check_external_package(OPENCV "cv.h;cvaux.h;cxcore.h;highgui.h" "cvaux;cxcore;highgui;cv" lib include/opencv /opt/OpenCV2.1.1 HAVE_OPENCV_COND)
   endif()
@@ -487,17 +487,23 @@ if(NOT QT_PKG_FOUND)
   if(WIN32)
   icl_check_external_package(QT "QtCore/QtCore;QtGui/QtGui;QtOpenGL/QtOpenGL" "QtCore4.a;QtGui4.a;QtOpenGL4.a" lib include C:/Qt/2010.02.1/qt HAVE_QT_COND)
   elseif(APPLE)
-	icl_check_external_package(QT "QtCore/QtCore;QtGui/QtGui;QtOpenGL/QtOpenGL" "" lib include /opt/local/libexec/qt4-mac HAVE_QT_COND)
-   # icl_check_external_package(QT "QtCore.framework/Headers/QtCore;QtGui.framework/Headers/QtGui;QtOpenGL.framework/Headers/QtOpenGL" "QtCore.framework/QtCore;QtGui.framework/QtGui;QtOpenGL.framework/QtOpenGL" . . /Library/Frameworks/ HAVE_QT_COND)
-#special definition on OS X
-add_definitions( -DQT_SHARED)
-#special linker falgs on OS X
-set(CMAKE_EXE_LINKER_FLAGS "-F/opt/local/libexec/qt4-mac/lib -framework QtCore -F/opt/local/libexec/qt4-mac/lib -framework QtGui -F/opt/local/libexec/qt4-mac/lib -framework QtOpenGL")
-set(CMAKE_SHARED_LINKER_FLAGS "-F/opt/local/libexec/qt4-mac/lib -framework QtCore -F/opt/local/libexec/qt4-mac/lib -framework QtGui -F/opt/local/libexec/qt4-mac/lib -framework QtOpenGL")
-			#link_directories(/Library/Frameworks/QtCore.framework/Versions/4)
-#TODO is this really needed
-link_directories(/opt/local/libexec/qt4-mac/lib)
- #       	link_directories(/Library/Frameworks/QtOpenGL.framework/Versions/4)
+	#icl_check_external_package(QT "QtCore/QtCore;QtGui/QtGui;QtOpenGL/QtOpenGL" "" lib include /opt/local/libexec/qt4-mac HAVE_QT_COND)
+   	 icl_check_external_package(QT "QtCore.framework/Headers/QtCore;QtGui.framework/Headers/QtGui;QtOpenGL.framework/Headers/QtOpenGL" "QtCore.framework/QtCore;QtGui.framework/QtGui;QtOpenGL.framework/QtOpenGL" . . /Library/Frameworks/ HAVE_QT_COND)
+if(HAVE_QT_COND)
+	#special definition on OS X
+	add_definitions( -DQT_SHARED)
+	#special linker falgs on OS X
+set(CMAKE_EXE_LINKER_FLAGS "-F/Library/Frameworks -framework QtCore -F/Library/Frameworks -framework QtGui -F/Library/Frameworks -framework QtOpenGL")
+set(CMAKE_SHARED_LINKER_FLAGS "-F/Library/Frameworks -framework QtCore -F/Library/Frameworks -framework QtGui -F/Library/Frameworks -framework QtOpenGL")
+#"-F/Library/Frameworks/QtCore.framework -framework QtCore -F/Library/Frameworks/QtGui.framework -framework QtGui -F/Library/Frameworks/QtOpenGL.framework -framework QtOpenGL")
+#set(CMAKE_EXE_LINKER_FLAGS "-F/opt/local/libexec/qt4-mac/lib -framework QtCore -F/opt/local/libexec/qt4-mac/lib -framework QtGui -F/opt/local/libexec/qt4-mac/lib -framework QtOpenGL")
+#set(CMAKE_SHARED_LINKER_FLAGS "-F/opt/local/libexec/qt4-mac/lib -framework QtCore -F/opt/local/libexec/qt4-mac/lib -framework QtGui -F/opt/local/libexec/qt4-mac/lib -framework QtOpenGL")
+
+	#TODO is this really needed
+	#link_directories(/opt/local/libexec/qt4-mac/lib)
+	link_directories(/Library/Frameworks/QtOpenGL.framework/Versions/4)
+	link_directories(/Library/Frameworks/QtCore.framework/Versions/4)
+endif()
   else()
     #temporary var
     set(temp ${ICL_XDEP_QT_ON})
@@ -823,7 +829,11 @@ set(INPUT_PATH "${INPUT_PATHS}")
 configure_file(doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/alldoc/doxyfile @ONLY)
 
 #adds custom target alldoc to  makefile
+#if(APPLE)
+#add_custom_target(alldoc /Applications/Doxygen.app/Contents/Resources/doxygen alldoc/doxyfile)
+#else()
 add_custom_target(alldoc doxygen alldoc/doxyfile)
+#endif()
 #installs content of alldoc/html on make install
 #excludes .svn dir and doxyfile from installation
 
@@ -844,7 +854,11 @@ set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES alldoc/html/.
 
 get_target_property(DOC_TARGET doc TYPE)
 if(NOT DOC_TARGET)
+	#if(APPLE)
+	#add_custom_target(doc /Applications/Doxygen.app/Contents/Resources/doxygen doxyfile)
+	#else()
 	add_custom_target(doc)
+	#endif()
 endif()
 endif()
 
