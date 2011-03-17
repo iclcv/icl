@@ -182,6 +182,15 @@ namespace icl{
     }
   }
 
+  static inline float cos_sq(float n, float e){
+    const float cn = cos(n);
+    return (cn<0?-1:1)*pow(fabs(cn),e);
+  }
+  static inline float sin_sq(float n, float e){
+    const float sn = sin(n);
+    return (sn<0?-1:1)*pow(fabs(sn),e);
+  }
+  
   SceneObject::SceneObject(const std::string &type,const float *params):
     m_lineColorsFromVertices(false),
     m_triangleColorsFromVertices(false),
@@ -315,6 +324,60 @@ namespace icl{
           if(j) addLine(i+na*j, i+na*(j-1));
         }
       }
+    }else if(type == "superquadric"){
+      float x = *params++;
+      float y = *params++;
+      float z = *params++;
+      float rotx = *params++;
+      float roty = *params++;
+      float rotz = *params++;
+      float dx = *params++;
+      float dy = *params++;
+      float dz = *params++;
+
+      float e1 = *params++;
+      float e2 = *params++;
+
+      int na = *params++;
+      int nb = *params++;
+
+      const float dAlpha = M_PI/(na-1);
+      const float dBeta = 2*M_PI/nb;
+      Mat T = create_hom_4x4<float>(rotx,roty,rotz,x,y,z);
+
+      for(int i=0;i<na;++i){      
+        for(int j=0;j<nb;++j){
+          float eta = i*dAlpha - (M_PI/2);
+          float omega = j*dBeta - (M_PI);
+          
+          float X = cos_sq(eta,e1)*cos_sq(omega,e2);
+          float Y = cos_sq(eta,e1)*sin_sq(omega,e2);
+          float Z = sin_sq(eta,e1);
+          addVertex(T * Vec(dx*X,dy*Y,dz*Z,1), geom_blue(200));
+          addNormal(T * normalize3(-Vec(X,Y,Z)));
+
+          if(i){
+            if( i != (na-1)){
+              addLine(j+nb*i, j ? (j+nb*i-1) : (nb-1)+nb*i);
+            }            
+            
+            int a = j+nb*i;
+            int b = j ? (j+nb*i-1) : (nb-1)+nb*i;
+            int c = j ? (j+nb*(i-1)-1) : (nb-1)+nb*(i-1);
+            int d = j+nb*(i-1);
+            if(i == na-1){
+              addQuad(a,d,c,b,
+                      a,d,c,b);
+            }else{
+              addQuad(d,c,b,a,
+                      d,c,b,a);
+            }
+            addLine(j+nb*i, j+nb*(i-1));
+          }
+
+        }
+      }
+
     }else{
       ERROR_LOG("unknown type:" << type);
     }

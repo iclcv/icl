@@ -118,10 +118,16 @@ namespace icl{
     
     /// create by string:
     /** currently allowed:
-        "cube" params: [x,y,z,radius];
-        "cuboid" params: [x,y,z,dx,dy,dz]
-        "sphere" params: [x,y,z,radius,rzSteps,xySlices]
-        "spheroid" params: [x,y,z,rx,ry,rz,rzSteps,xySlices]
+        - "cube" params: [x,y,z,radius];
+        - "cuboid" params: [x,y,z,dx,dy,dz]
+        - "sphere" params: [x,y,z,radius,rzSteps,xySlices]
+        - "spheroid" params: [x,y,z,rx,ry,rz,rzSteps,xySlices]
+        - "superquadric" params: [x,y,z,rx,ry,rz,dx,dy,dz,e1,e2,rzSteps,xySlices] where \n
+           - (x,y,z)^T is the center position
+           - (rx,ry,rz)^T are the rotation euler angles
+           - (dx,dy,dz)^T are the diameters into x-, y- and z-direction
+           - (e1,and e2) are the roundness parameters
+           - (rzSlices,rxSlices) is used for the number of steps the create nodes
     */
     SceneObject(const std::string &type,const float *params);
 
