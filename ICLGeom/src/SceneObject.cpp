@@ -190,6 +190,23 @@ namespace icl{
     const float sn = sin(n);
     return (sn<0?-1:1)*pow(fabs(sn),e);
   }
+
+
+  Mat create_hom_4x4_superquadric(float rx, float ry, float rz, 
+				  float x, float y, float z){
+    float a  = cos(rx);
+    float b  = sin(rx);
+    float c  = cos(ry);
+    float d  = sin(ry);
+    float e  = cos(rz);
+    float f  = sin(rz);
+    float ad = a*d;
+    float bd = b*d;
+    return Mat(c*e, -c*f, -d, x,
+	       -bd*e+a*f, bd*f+a*e, -b*c,y,
+	       ad*e+b*f,-ad*f+b*e,a*c,z,
+	       0,0,0,1);
+  }
   
   SceneObject::SceneObject(const std::string &type,const float *params):
     m_lineColorsFromVertices(false),
@@ -343,7 +360,7 @@ namespace icl{
 
       const float dAlpha = M_PI/(na-1);
       const float dBeta = 2*M_PI/nb;
-      Mat T = create_hom_4x4<float>(rotx,roty,rotz,x,y,z);
+      Mat T = create_hom_4x4_superquadric(rotx,roty,rotz,x,y,z);
 
       for(int i=0;i<na;++i){      
         for(int j=0;j<nb;++j){
