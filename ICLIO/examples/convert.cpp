@@ -76,7 +76,6 @@ int main(int n, char **ppc){
 
 
   FileGrabber fg(inFileName);
-  fg.setIgnoreDesiredParams(true);
 
   const ImgBase *image = 0;
   try{

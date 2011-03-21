@@ -69,8 +69,7 @@ void update(){
   static Mutex mutex;
   Mutex::Locker l(mutex);
 
-  static GenericGrabber grabber(FROM_PROGARG("-input"));
-  grabber.setIgnoreDesiredParams(true);
+  static GenericGrabber grabber(pa("-i"));
   
   gui_ImageHandle(image);
   gui_LabelHandle(dt);
@@ -100,7 +99,7 @@ void run(){
 }
 
 int main(int n, char **ppc){
-  return ICLApplication(n,ppc,"-input|-i(2)",init,run).exec();
+  return ICLApplication(n,ppc,"[m]-input|-i(2)",init,run).exec();
  
   
 }

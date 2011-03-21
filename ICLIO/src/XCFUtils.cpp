@@ -232,6 +232,8 @@ namespace icl{
     return d;
   }
   
+
+#if 0
   void XCFUtils::createOutputImage(const xmltio::Location& l, 
                                    ImgBase *poSrc, 
                                    ImgBase *poOutput, 
@@ -255,6 +257,7 @@ namespace icl{
       poConv->apply (poSrc, poOutput);
     }
   }
+#endif
 
   void XCFUtils::ImageDescription::show(){
     std::cout << "URI:" << uri << " Size:" << size << " Depth:" << imagedepth << 

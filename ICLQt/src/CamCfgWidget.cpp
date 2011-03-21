@@ -134,10 +134,9 @@ namespace icl{
                               
                              )
                          <<  ( GUI("hbox[@label=desired params]")
-                               << "checkbox(use,off)[@handle=desired-use]"
-                               << "combo(QQVGA,!QVGA,VGA,SVGA,XGA,XGAP,UXGA)[@handle=desired-size@label=size]"
-                               << "combo(!depth8u,depth16s,depth32s,depth32f,depth64f)[@handle=desired-depth@label=depth]"
-                               << "combo(formatGray,!formatRGB,formatHLS,formatYUV,formatLAB,formatChroma,formatMatrix)"
+                               << "combo(default,QQVGA,QVGA,VGA,SVGA,XGA,XGAP,UXGA)[@handle=desired-size@label=size]"
+                               << "combo(default,depth8u,depth16s,depth32s,depth32f,depth64f)[@handle=desired-depth@label=depth]"
+                               << "combo(default,formatGray,formatRGB,formatHLS,formatYUV,formatLAB,formatChroma,formatMatrix)"
                                   "[@handle=desired-format@label=format]"
                              )
                        )
@@ -157,7 +156,7 @@ namespace icl{
     layout()->addWidget(data->gui.getRootWidget());
 
     data->gui.registerCallback(SmartPtr<GUI::Callback>(this,false),"device,scan,format,size,capture,fps,load,save,"
-                               "desired-use,desired-size,desired-depth,desired-format,hz");
+                               "desired-size,desired-depth,desired-format,hz");
     
     QWidget *w = (*data->gui.getValue<BoxHandle>("props"));
     w->layout()->setContentsMargins(0,0,0,0);
@@ -408,8 +407,11 @@ namespace icl{
               ERROR_LOG("unable to initialize grabber");
             }
           }
+          //if(data->complex){
+          //  data->grabber.setUseDesiredParams(data->gui.getValue<CheckBoxHandle>("desired-use").isChecked());
+          //}
           if(data->complex){
-            data->grabber.setUseDesiredParams(data->gui.getValue<CheckBoxHandle>("desired-use").isChecked());
+            
           }
         }
         
@@ -447,7 +449,7 @@ namespace icl{
       data->settingUpDevice = false;
       
       if(data->complex){
-        exec("desired-params");
+        //exec("desired-params");
         exec("desired-format");
         exec("desired-size");
         exec("desired-depth");
@@ -468,18 +470,31 @@ namespace icl{
     }else if(source == "format" || source == "size"){
       if(data->grabber.isNull()) return;
       data->grabber.setProperty(source,data->gui[source]);
-    }else if(source == "desired-use"){
-      if(data->grabber.isNull()) return;
-      data->grabber.setUseDesiredParams(data->gui.getValue<CheckBoxHandle>(source).isChecked());
+      //}else if(source == "desired-use"){
+     // if(data->grabber.isNull()) return;
+     // data->grabber.setUseDesiredParams(data->gui.getValue<CheckBoxHandle>(source).isChecked());
     }else if(source == "desired-format"){
       if(data->grabber.isNull()) return;
-      data->grabber.setDesiredFormat(parse<format>(data->gui[source]));
+      std::string fmt = data->gui["source"];
+      if(fmt == "default"){
+        data->grabber.ignoreDesired<format>();
+      }else{
+        data->grabber.useDesired(parse<format>(fmt));
+      }
     }else if(source == "desired-size"){
-      if(data->grabber.isNull()) return;
-      data->grabber.setDesiredSize(parse<Size>(data->gui[source]));
+      std::string size = data->gui["source"];
+      if(size == "default"){
+        data->grabber.ignoreDesired<Size>();
+      }else{
+        data->grabber.useDesired(parse<Size>(size));
+      }
     }else if(source == "desired-depth"){
-      if(data->grabber.isNull()) return;
-      data->grabber.setDesiredDepth(parse<icl::depth>(data->gui[source]));    
+      std::string d = data->gui["source"];
+      if(d == "default"){
+        data->grabber.ignoreDesired<icl::depth>();
+      }else{
+        data->grabber.useDesired(icl::parse<icl::depth>(d));
+      }
     }else if(source == "save"){
       if(data->grabber.isNull()){
         QMessageBox::information(this,"No device selected!","You can only save properties if a device is selected");

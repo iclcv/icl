@@ -39,6 +39,7 @@
 #include <xine.h>
 #include <xine/xineutils.h>
 #include <ICLIO/File.h>
+#include <ICLCore/Img.h>
 #include <vector>
 #include <ICLCC/CCFunctions.h>
 #include <ICLUtils/StringUtils.h>
@@ -205,8 +206,6 @@ namespace icl{
     m_xine = new XineHandle(filename);
     m_data = new Data(filename,m_xine);
     m_params = new Params(m_data->fps);
-    
-    setIgnoreDesiredParams(true);
   }
 
   VideoGrabber::~VideoGrabber(){
@@ -243,7 +242,7 @@ namespace icl{
   }
 
 
-  const ImgBase *VideoGrabber::grabUD(ImgBase **ppoDst){
+  const ImgBase *VideoGrabber::acquireImage(){
     Mutex::Locker lock(m_data->mutex);
     /**
         typedef struct {
@@ -282,40 +281,10 @@ namespace icl{
     m_params->currPos = f.pos_stream;
     Size size(f.width,f.height);    
 
-    Img8u *image = 0;
-    bool needConversion = false;
-    if(ppoDst){
-      if(getIgnoreDesiredParams()){
-        ensureCompatible(ppoDst,depth8u,size,formatRGB);
-        image = (*ppoDst)->asImg<icl8u>();
-      }else{
-        prepareOutput(ppoDst);
-        if(getDesiredDepth() == depth8u){
-          image = (*ppoDst)->asImg<icl8u>();
-        }else{
-          image = &m_data->imageBuffer;
-          image->setSize(size);
-          needConversion = true;
-        }
-      }
-    }else{
-      image = &m_data->imageBuffer;
-      image->setSize(size);
-      if(!getIgnoreDesiredParams()){
-        needConversion = true;
-      }
-    }
-    
-    convert_frame(f.data,size,image,m_xine->get_4cc());
+    ensureCompatible(&m_data->outputBuffer,depth8u,size,formatRGB);
+    convert_frame(f.data,size,m_data->outputBuffer->asImg<icl8u>(),m_xine->get_4cc());
     xine_free_video_frame (m_xine->vo_port,&f);
-
-    if(needConversion){
-      ensureCompatible(&m_data->outputBuffer,getDesiredDepth(),getDesiredParams());
-      m_oConverter.apply(image,m_data->outputBuffer);
-      return m_data->outputBuffer;
-    }else{
-      return image;
-    }
+    return m_data->outputBuffer;
   }
   
   std::vector<std::string> VideoGrabber::getPropertyList(){

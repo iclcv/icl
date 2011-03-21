@@ -98,7 +98,6 @@ void init(){
   }else{
     cg = new OpenCVCamGrabber(0);
   }
-  cg->setIgnoreDesiredParams(true);
   gui << (GUI("vbox")
           <<	"image[@handle=image@minsize=20x20]"
           << "fps(10)[@handle=fps@maxsize=100x2@minsize=8x2]"

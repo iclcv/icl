@@ -64,7 +64,7 @@ void init(){
   gui.show();
   
   gui["draw"].install(new MouseHandler(mouse));
-  grabber = new GenericGrabber(FROM_PROGARG("-input"));
+  grabber = new GenericGrabber(pa("-i"));
   
   S.add(Color(255,0,0),100,Range32s(100,100));
   S.add(Color(0,255,0),100,Range32s(100,100));
@@ -95,5 +95,5 @@ void run(){
 
 int main(int n, char **ppc){
   paex("-i","defines input device to use");
-  return ICLApplication(n,ppc,"-input(device,device-params)",init,run).exec();
+  return ICLApplication(n,ppc,"[m]-input|-i(device,device-params)",init,run).exec();
 }

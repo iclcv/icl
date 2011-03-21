@@ -403,10 +403,9 @@ void init(){
     tool->load(*pa("-l"));
   }
   
-  grabber.init(FROM_PROGARG("-i"));
-  grabber.setIgnoreDesiredParams(true);
+  grabber.init(pa("-i"));
   if(pa("-dist")){
-    grabber.enableDistortion(DIST_FROM_PROGARG("-dist"),grabber.grab()->getSize());
+    grabber.enableDistortion(pa("-dist"),grabber.grab()->getSize());
   }
 
   // view camera

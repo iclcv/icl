@@ -181,18 +181,15 @@ void init(){
   
   gui.show();
   
-  grabber.init(FROM_PROGARG("-input"));
-  if(grabber.getType() == "file"){
-    grabber.setIgnoreDesiredParams(true);
-  }else{
-    grabber.setIgnoreDesiredParams(false);
-    grabber.setDesiredSize(pa("-s"));
+  grabber.init(pa("-i"));
+  if(grabber.getType() != "file"){
+    grabber.useDesired<Size>(pa("-s"));
     if(!pa("-color")){
-      grabber.setDesiredFormat(formatGray);
+      grabber.useDesired(formatGray);
     }else{
-      grabber.setDesiredFormat(formatRGB);
+      grabber.useDesired(formatRGB);
     }
-    grabber.setDesiredDepth(depth8u);
+    grabber.useDesired(depth8u);
   }
   
   gui.registerCallback(new GUI::Callback(step),"a,b,c,d,e,next,algorithm");
@@ -213,14 +210,13 @@ void batch_mode(){
       return;
     }
   
-    static GenericGrabber g(FROM_PROGARG("-input"));
+    static GenericGrabber g(pa("-i"));
     FileList fl;
     int maxSteps = -1;
     if(g.getType() == "file"){
       fl = FileList(*pa("-input",1));
       maxSteps = fl.size();
     }
-    g.setIgnoreDesiredParams(true);
 
     static FileWriter w(*pa("-output"));
     static LocalThresholdOp t;

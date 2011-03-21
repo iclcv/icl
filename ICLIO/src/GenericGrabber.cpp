@@ -102,6 +102,13 @@ namespace icl{
     init(desiredAPIOrder,params,notifyErrors);
   }
 
+  GenericGrabber::GenericGrabber(const ProgArg &pa) throw (ICLException):m_poGrabber(0){
+    init(pa);
+  }
+  
+  void GenericGrabber::init(const ProgArg &pa) throw (ICLException){
+    init(*pa,(*pa) + "=" + *icl::pa(pa.getID(),1));
+  }
   
   static std::map<std::string,std::string> create_param_map(const std::string &filter){
     std::vector<std::string> ts = tok(filter,",");

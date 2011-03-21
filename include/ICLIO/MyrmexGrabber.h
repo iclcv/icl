@@ -81,9 +81,7 @@ namespace icl{
 
 
     /// grabs the next image
-    /** \copydoc icl::Grabber::grab(ImgBase**)  **/    
-    virtual const ImgBase* grabUD(ImgBase **ppoDst=0);	
-
+    virtual const ImgBase* acquireImage();
 
     /// returns the current output image size
     Size getSize() const;	

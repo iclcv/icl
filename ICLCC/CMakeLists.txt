@@ -36,7 +36,7 @@ project(ICLCC)
 set(CONDITIONLIST "")
 #sources for lib
 set(LIB_SOURCES "")
-add_libsource (${PROJECT_NAME} "src/Bayer.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/BayerConverter.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/CCFunctions.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/CCLUT.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/Color.cpp" "${CONDITIONLIST}" LIB_SOURCES)

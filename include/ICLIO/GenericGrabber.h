@@ -40,7 +40,7 @@
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Lockable.h>
-
+#include <ICLUtils/ProgArg.h>
 
 namespace icl {
 
@@ -64,6 +64,10 @@ namespace icl {
     /** null instances of grabbers can be adapted using the init-function*/
     GenericGrabber():m_poGrabber(0){}
     
+    /// Initialized the grabber from given prog-arg 
+    /** The progarg needs two sub-parameters */
+    GenericGrabber(const ProgArg &pa) throw (ICLException);
+
     /// Create a generic grabber instance with given device priority list
     /** internally this function calls the init function immediately*/
     GenericGrabber(const std::string &devicePriorityList,
@@ -138,6 +142,9 @@ namespace icl {
               const std::string &params,
               bool notifyErrors = true) throw (ICLException);
 
+    /// this method works just like the other init method
+    void init(const ProgArg &pa) throw (ICLException);
+
     /// resets resource on given devices (e.g. firewire bus)
     static void resetBus(const std::string &deviceList="dc", bool verbose=false);
    
@@ -160,10 +167,10 @@ namespace icl {
     }
     
     /// grabbing function
-    virtual const ImgBase* grabUD(ImgBase **ppoDst=0){
+    virtual const ImgBase* acquireImage(){
       Mutex::Locker __lock(m_mutex);
       ICLASSERT_RETURN_VAL(!isNull(),0);
-      return m_poGrabber->grabUD(ppoDst);
+      return m_poGrabber->acquireImage();
     }
 
     /// returns a list of all properties, that can be set
@@ -221,75 +228,48 @@ namespace icl {
     /// simpler interface for isNull() (returns !isNull()
     operator bool() const { return !isNull(); }
 
-    virtual const ImgParams &getDesiredParams()const{
-      Mutex::Locker __lock(m_mutex);
-      static ImgParams nullParams;
-      ICLASSERT_RETURN_VAL(!isNull(),nullParams);
-      return m_poGrabber->getDesiredParams();
+
+  /// internally set a desired format
+    virtual void setDesiredFormatInternal(format fmt){
+      ICLASSERT_RETURN(!isNull());
+      Mutex::Locker l(m_mutex);
+      m_poGrabber->setDesiredFormatInternal(fmt);
     }
-     
-    /// returns current desired image size (default is "320x240"
-    virtual const Size &getDesiredSize()const{
-      Mutex::Locker __lock(m_mutex);
-      static Size nullSize;
-      ICLASSERT_RETURN_VAL(!isNull(),nullSize);
-      return m_poGrabber->getDesiredSize();
-     }
-     
-     /// returns current desired image format (default is formatRGB)
-     virtual format getDesiredFormat() const{
-       Mutex::Locker __lock(m_mutex);
-       ICLASSERT_RETURN_VAL(!isNull(),formatMatrix);
-       return m_poGrabber->getDesiredFormat();
-     }
 
-     /// returns current desired image depth (default is depth8u)
-     virtual depth getDesiredDepth() const{
-       Mutex::Locker __lock(m_mutex);
-       ICLASSERT_RETURN_VAL(!isNull(),depth8u);
-       return m_poGrabber->getDesiredDepth();
-     }
-     
-     /// sets current desired image parameters
-     virtual void setDesiredParams(const ImgParams &p){
-       Mutex::Locker __lock(m_mutex);
-       ICLASSERT_RETURN(!isNull());
-       m_poGrabber->setDesiredParams(p);
-     }
+    /// internally set a desired format
+    virtual void setDesiredSizeInternal(const Size &size){
+      ICLASSERT_RETURN(!isNull());
+      Mutex::Locker l(m_mutex);
+      m_poGrabber->setDesiredSizeInternal(size);
+    }
 
-     /// sets current desired image size
-     virtual void setDesiredSize(const Size &s){
-      Mutex::Locker __lock(m_mutex);
-       ICLASSERT_RETURN(!isNull());
-       m_poGrabber->setDesiredSize(s);
-     }
-     
-     /// sets current desired image format
-     virtual void setDesiredFormat(format f){
-       Mutex::Locker __lock(m_mutex);
-       ICLASSERT_RETURN(!isNull());
-       m_poGrabber->setDesiredFormat(f);
-     }
-     
-     /// returns current desired image depth
-     virtual void setDesiredDepth(depth d){
-       Mutex::Locker __lock(m_mutex);
-       ICLASSERT_RETURN(!isNull());
-       m_poGrabber->setDesiredDepth(d);
-     }
-     
-     virtual void setIgnoreDesiredParams(bool flag){
-       Mutex::Locker __lock(m_mutex);
-       ICLASSERT_RETURN(!isNull());
-       m_poGrabber->setIgnoreDesiredParams(flag);
-     }
-     virtual bool getIgnoreDesiredParams() const{
-       Mutex::Locker __lock(m_mutex);
-       ICLASSERT_RETURN_VAL(!isNull(),false);
-       return m_poGrabber->getIgnoreDesiredParams();
-     }
-     
-    
+    /// internally set a desired format
+    virtual void setDesiredDepthInternal(depth d){
+      ICLASSERT_RETURN(!isNull());
+      Mutex::Locker l(m_mutex);
+      m_poGrabber->setDesiredDepthInternal(d);
+    }
+
+    /// returns the desired format
+    virtual format getDesiredFormatInternal() const{
+      ICLASSERT_RETURN_VAL(!isNull(),(format)-1);
+      Mutex::Locker l(m_mutex);
+      return m_poGrabber->getDesiredFormatInternal();
+    }
+
+    /// returns the desired format
+    virtual depth getDesiredDepthInternal() const{
+      ICLASSERT_RETURN_VAL(!isNull(),(depth)-1);
+      Mutex::Locker l(m_mutex);
+      return m_poGrabber->getDesiredDepthInternal();
+    }
+
+    /// returns the desired format
+    virtual Size getDesiredSizeInternal() const{
+      ICLASSERT_RETURN_VAL(!isNull(),Size::null);
+      Mutex::Locker l(m_mutex);
+      return m_poGrabber->getDesiredSizeInternal();
+    }
 
      /// returns a list of all currently available devices (according to the filter-string)
      /** The filter-string is a comma separated list of single filters like

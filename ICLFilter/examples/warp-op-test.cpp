@@ -53,14 +53,14 @@ void run(){
   static ImageHandle &H = gui.getValue<ImageHandle>("image");
   static bool &warp = gui.getValue<bool>("warp");
   static bool &lin = gui.getValue<bool>("interpolation");
-  static GenericGrabber grabber(FROM_PROGARG("-input"));
+  static GenericGrabber grabber(pa("-i"));
   static std::string &d = gui.getValue<std::string>("depth");
   static FPSHandle &fps = gui.getValue<FPSHandle>("fps");
   static LabelHandle &l = gui.getValue<LabelHandle>("apply-time");
 
-  grabber.setDesiredSize(Size::VGA);
-  grabber.setDesiredFormat(formatRGB);
-  grabber.setDesiredDepth(parse<depth>(d));
+  grabber.useDesired(Size::VGA);
+  grabber.useDesired(formatRGB);
+  grabber.useDesired(parse<depth>(d));
 
   if(warp){
     static WarpOp op(icl::load(pa("-w")));

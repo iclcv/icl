@@ -58,7 +58,7 @@ namespace icl{
     ~KinectGrabber();
     
     /// grabs a new image
-    virtual const ImgBase* grabUD(ImgBase **ppoDst=0);
+    virtual const ImgBase* acquireImage();
 
     /// get type of property 
     virtual std::string getType(const std::string &name);

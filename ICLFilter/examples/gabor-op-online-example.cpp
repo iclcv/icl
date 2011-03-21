@@ -86,10 +86,10 @@ void run(){
   ImageHandle &mask = gui.getValue<ImageHandle>("mask");
   LabelHandle &fps = gui.getValue<LabelHandle>("fps");
   
-  Grabber *grabber = new GenericGrabber(FROM_PROGARG("-input"));
-  grabber->setDesiredDepth(depth32f);
-  grabber->setDesiredSize(Size(640,480));
-  grabber->setDesiredFormat(formatRGB);
+  Grabber *grabber = new GenericGrabber(pa("-i"));
+  grabber->useDesired(depth32f);
+  grabber->useDesired(Size::VGA);
+  grabber->useDesired(formatRGB);
   ImgBase *resultImage = 0;
   
   GaborOp *g = 0;
@@ -127,5 +127,5 @@ void run(){
 
 
 int main(int n, char **ppc){
-  return ICLApp(n,ppc,"-input|-i(device,device-params)",init,run).exec();
+  return ICLApp(n,ppc,"[m]-input|-i(device,device-params)",init,run).exec();
 }

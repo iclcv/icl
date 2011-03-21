@@ -58,7 +58,6 @@ add_libsource (${PROJECT_NAME} "src/IOFunctions.cpp" "${CONDITIONLIST}" LIB_SOUR
 add_libsource (${PROJECT_NAME} "src/IOUtils.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/TestImages.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/DemoGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-add_libsource (${PROJECT_NAME} "src/DistFromProgArgUtil.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/GenericImageOutput.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 set(CONDITIONLIST HAVE_LIBMESASR_COND)
 add_libsource (${PROJECT_NAME} "src/SwissRangerGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
@@ -132,7 +131,6 @@ add_example (${PROJECT_NAME} "multi-cam-example" "${CONDITIONLIST}" ICLLibsToLin
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_XCF_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME})
-add_example (${PROJECT_NAME} "xcf-grabber-benchmark" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "memory-listener" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 #set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND) should be possible even without GUI
@@ -140,10 +138,6 @@ add_example (${PROJECT_NAME} "memory-listener" "${CONDITIONLIST}" ICLLibsToLinkA
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick ICLUtils ICLFilter)
 add_example (${PROJECT_NAME} "pipe" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-
-set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_UNICAP_COND)
-set(ICLLibsToLinkAgainst ${PROJECT_NAME})
-add_example (${PROJECT_NAME} "unicap-grab-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick)

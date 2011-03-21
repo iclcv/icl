@@ -53,7 +53,6 @@ void openFile(){
 		filename = fnNew.toStdString();
 		g = new OpenCVVideoGrabber(filename.c_str());
 		g->setProperty("use_video_fps","");
-		g->setIgnoreDesiredParams(true);
 		framecount = parse<double>(g->getValue("frame_count"));
 	}
 }
@@ -66,7 +65,6 @@ void startplaying(){
 		}else{
 			g = new OpenCVVideoGrabber(filename.c_str());
 			g->setProperty("use_video_fps","");
-			g->setIgnoreDesiredParams(true);
 			framecount = parse<double>(g->getValue("frame_count"));
 		}
 	}else{
@@ -97,8 +95,7 @@ void stop(){
 void set_size(){
 	Mutex::Locker lock(mutex);
 	int f = gui["size"];
-	g->setIgnoreDesiredParams(false);
-	g->setDesiredSize(Size(f,int(0.75*f)));
+	g->useDesired(Size(f,int(0.75*f)));
 }
 
 void set_fps(){
@@ -172,6 +169,6 @@ void init(){
 }
 
 int main(int n, char **args){
-	return ICLApp(n,args,"-file|-f(file_to_play)",init,run).exec();
+	return ICLApp(n,args,"[m]-file|-f(file_to_play)",init,run).exec();
 }
 

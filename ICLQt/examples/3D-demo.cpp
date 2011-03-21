@@ -36,7 +36,13 @@
 #include <ICLQt/DrawWidget3D.h>
 #include <ICLUtils/FPSEstimator.h>
 
-Size size(320,240);
+
+/** Please note:
+
+    Using ICL for 3D visualization is usually not recommended
+    like this. In General, it's easier to use ICLGeom's
+    classes Scene, SceneObject and Camera instead
+*/
 ICLDrawWidget3D *widget = 0;
 
 void init(){
@@ -45,8 +51,8 @@ void init(){
   widget->show();
 }
 void run(){
-  GenericGrabber g(FROM_PROGARG("-input"));
-  g.setDesiredSize(size);
+  GenericGrabber g(pa("-i"));
+  g.useDesired(Size::QVGA);
   
   static float rz = 2;    
   static float ry = 1;
@@ -67,10 +73,6 @@ void run(){
     
     widget->imagecube3D(0,0,0,0.5,image);
     widget->supercube3D(0.2,0,0,0.5);
-    // widget->scale3D(0.3,0.3,0.3);
-    // widget->translate3D(-0.5,-0.5,0);
-    //widget->image3D(0,0,0,640.0/480.0,0,0,0,1,0,image);
-    
     
     // 2D Stuff
     widget->reset();
@@ -86,8 +88,6 @@ void run(){
     
     widget->unlock();
     
-    
-    
     widget->update();
     Thread::msleep(1);
   }
@@ -96,5 +96,5 @@ void run(){
 
 
 int main(int n, char **ppc){
-  return ICLApp(n,ppc,"[m]-input(device,device-params)",init,run).exec();
+  return ICLApp(n,ppc,"[m]-input|-i(device,device-params)",init,run).exec();
 }

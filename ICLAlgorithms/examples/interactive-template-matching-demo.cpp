@@ -129,10 +129,8 @@ void vis_roi(ICLDrawWidget *w){
 
 
 void run(){
-  static GenericGrabber g(FROM_PROGARG("-input"));
-  g.setDesiredSize(imageSize);
-
-
+  static GenericGrabber g(pa("-input"));
+  g.useDesired(imageSize);
     
   while(1){
     mutex.lock();
@@ -209,6 +207,6 @@ void run(){
 }
 
 int main(int n, char **ppc){
-  return ICLApp(n,ppc,"-input(device,device-params)",init,run).exec();
+  return ICLApp(n,ppc,"[m]-input|-i(device,device-params)",init,run).exec();
 }
 

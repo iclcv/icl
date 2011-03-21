@@ -104,28 +104,20 @@ namespace icl{
       ICL_DELETE(m_buffer);
     }
     
-    const ImgBase *grabUD(ImgBase **ppoDst){
+    const ImgBase *acquireImage(){
       Event e;
       while (m_evtSrc->next(e)) { // this call locks!
         xmltio::LocationPtr loc = xmltio::find (e.getDocument(),m_xpath);
         if (!loc) break;
 
-        ImgBase *poOutput = 0;
         XCFUtils::ImageDescription d = XCFUtils::getImageDescription(*loc);
-          
-        ImgBase **usedDstImage = m_ignoreDesired ? ppoDst : &m_buffer;
-        poOutput->setTime (d.time);
-          
         m_memInterface->getAttachments(e.getDocument().getRootLocation().getDocumentText(),
                                        m_attachments);
         
-        XCFUtils::unserialize(m_attachments[d.uri],d,usedDstImage);
+        XCFUtils::unserialize(m_attachments[d.uri],d,&m_buffer);
+        m_buffer->setTime(d.time);
         
-        if(!m_ignoreDesired){
-          *ppoDst = prepareOutput (ppoDst); 
-          m_converter.apply(*usedDstImage,*ppoDst);
-        }
-        return *ppoDst;
+        return m_buffer;
       }
 
       // if we arrive here, something went wrong
@@ -148,8 +140,8 @@ namespace icl{
     
   }
 
-  const ImgBase *XCFMemoryGrabber::grabUD(ImgBase **ppoDst){
-    return impl->grab(ppoDst);
+  const ImgBase *XCFMemoryGrabber::acquireImage(){
+    return impl->acquireImage();
   }
 
 }

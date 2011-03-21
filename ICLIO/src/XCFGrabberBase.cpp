@@ -44,20 +44,30 @@ using namespace xmltio;
 namespace icl {
 
 
-  XCFGrabberBase::XCFGrabberBase(): m_result(0), m_poSource(0), m_poBayerBuffer(0),m_poDesiredParamsBuffer(0){
+  XCFGrabberBase::XCFGrabberBase(): m_result(0), m_poSource(0)
+#if 0
+                                  ,m_poBayerBuffer(0),m_poDesiredParamsBuffer(0)
+#endif                               
+  {
     
+#if 0
     m_poBayerConverter = new BayerConverter(BayerConverter::simple,
-                                            BayerConverter::bayerPattern_RGGB, 
-                                            m_oDesiredParams.getSize());
+                                            BayerConverter::bayerPattern_RGGB);
+#endif
   }
   
   XCFGrabberBase::~XCFGrabberBase(){
-    ICL_DELETE(m_poBayerConverter);
     ICL_DELETE(m_poSource);
+
+#if 0
+    ICL_DELETE(m_poBayerConverter);
     ICL_DELETE(m_poBayerBuffer);
     ICL_DELETE(m_poDesiredParamsBuffer);
+#endif
+
   }
   
+#if 0
   void XCFGrabberBase::makeOutput (const xmltio::Location& l, ImgBase *poOutput) {
     xmltio::LocationPtr locBayer = xmltio::find (l, "PROPERTIES/@bayerPattern");
 
@@ -67,8 +77,6 @@ namespace icl {
       p.setFormat (formatRGB);
       m_poBayerBuffer = icl::ensureCompatible (&m_poBayerBuffer, m_poSource->getDepth(), p);
       
-      m_poBayerConverter->setBayerImgSize(m_poSource->getSize());
-      //poBC->setConverterMethod(BayerConverter::nearestNeighbor);
       m_poBayerConverter->setBayerPattern(BayerConverter::translateBayerPattern(bayerPattern));
       
       m_poBayerConverter->apply(m_poSource->asImg<icl8u>(), &m_poBayerBuffer);
@@ -77,33 +85,27 @@ namespace icl {
       m_oConverter.apply (m_poSource, poOutput);
     }
   }
+#endif
 
-   const ImgBase* XCFGrabberBase::grabUD (ImgBase **ppoDst) {
+  const ImgBase* XCFGrabberBase::acquireImage(){
      receive (m_result);
      
      LocationPtr loc = xmltio::find(xmltio::Location(m_result->getXML()), 
                                     "//IMAGE[@uri]");
      
      if(loc){
-       if(!getIgnoreDesiredParams()){
-         ImgBase *poOutput = prepareOutput (ppoDst);
-         XCFUtils::CTUtoImage(m_result, *loc, &m_poSource);
-         makeOutput (*loc, poOutput);
-         return poOutput;
-       }else if(!ppoDst){
-         XCFUtils::CTUtoImage(m_result, *loc, &m_poSource);
-         //makeOutput (*loc, poOutput); bayer pattern is not yet supported here
-         return m_poSource;
-       }else{
-         XCFUtils::CTUtoImage(m_result, *loc, ppoDst);
-         return *ppoDst;
+       if(!xmltio::find (*loc, "PROPERTIES/@bayerPattern")){
+         WARNING_LOG("bayer support is not yet implemented for this class");
        }
+       XCFUtils::CTUtoImage(m_result, *loc, &m_poSource);
+       return m_poSource;
      }else{
        ERROR_LOG("unable to find XPath: \"//IMAGE[@uri]\"");
        return 0;
      }
    }
 
+#if 0
    void XCFGrabberBase::grab (std::vector<ImgBase*>& vGrabbedImages) {
       receive (m_result);
       static bool first = true;
@@ -135,6 +137,7 @@ namespace icl {
       // shrink vGrabbedImages to number of actually grabbed images
       vGrabbedImages.resize (nCount);
    }
+#endif
    
 }
 #endif

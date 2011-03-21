@@ -70,10 +70,10 @@ class Mouse : public MouseHandler{
 
 
 void init(){
-  grabber = new GenericGrabber(FROM_PROGARG("-input"));
-  grabber->setDesiredDepth(depth32f);
-  grabber->setDesiredFormat(formatRGB);
-  grabber->setDesiredSize(pa("-size"));
+  grabber = new GenericGrabber(pa("-i"));
+  grabber->useDesired(depth32f);
+  grabber->useDesired(formatRGB);
+  grabber->useDesired<Size>(pa("-size"));
   
   GUI controls;
   controls << "image[@handle=kernel@minsize=8x6@label=kernel image]"

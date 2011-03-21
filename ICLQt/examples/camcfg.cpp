@@ -102,7 +102,7 @@ int main(int n, char **ppc){
       std::vector<std::string> idAliases = tok(gds[i].id,"|||",false);
       for(unsigned int j=0;j<idAliases.size();++j){
         if(j){
-          for(int k=0;k<lineStr.size();++k) {
+          for(unsigned int k=0;k<lineStr.size();++k) {
             std::cout << " ";
           }
         }

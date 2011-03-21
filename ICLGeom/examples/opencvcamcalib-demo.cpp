@@ -60,14 +60,13 @@ void init(){
 	boardSize = cvSize(width, height);
 	corners = new CvPoint2D32f[width*height];
 
-	cg = new GenericGrabber(FROM_PROGARG("-input"));
+	cg = new GenericGrabber(pa("-i"));
 
 	/*
 	static std::string params[] = {"*.png"};
 	std::string dev = "file";
 	cg->init(dev,dev+"="+params[0]);
 	*/
-	cg->setIgnoreDesiredParams(true);
 	gui << (GUI("hbox")
 			<< "draw[@handle=calib_object@minsize=20x20@label=calib]"
 			<< "draw[@handle=draw_object@minsize=20x20@label=plot]");
@@ -191,8 +190,7 @@ int main(int n, char **args){
 	("-i","defines input device and parameters")
 	("-s","defines image size to use")
 	("-m","minimal count of pics of success");
-	ICLApp app =
-			ICLApp(n,args,"-input|-i(device,device-params) -size|-s(Size=6x9) -minImg|-m(int)",init,run);
+	ICLApp app(n,args,"[m]-input|-i(device,device-params) -size|-s(Size=6x9) -minImg|-m(int)",init,run);
 	app.addFinalization(finalize);
 	return app.exec();
 	//return ICLApp(n,args,"-size|-s(Size=256x256) -minImg|-m",init,run).exec();

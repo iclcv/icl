@@ -73,7 +73,6 @@ int main (int n, char **ppc){
 
     try{
       static FileGrabber w(imageName);
-      w.setIgnoreDesiredParams(true);
       image = w.grab();
       if(pa("-delete")){
         if(imageName.length()){

@@ -36,81 +36,169 @@
 #define ICLGRABBER_H
 
 #include <string>
-#include <ICLCore/ImgParams.h>
-#include <ICLCore/Types.h>
-#include <ICLCC/Converter.h>
 #include <vector>
+
+#include <ICLCore/ImgBase.h>
 #include <ICLUtils/SteppingRange.h>
 #include <ICLUtils/Uncopyable.h>
-#include <ICLIO/DistFromProgArgUtil.h>
+#include <ICLUtils/ProgArg.h>
 #include <ICLIO/GrabberDeviceDescription.h>
 
 namespace icl {
+
   /** \cond */
-  class ImgBase;
-  class WarpOp;
+  namespace{
+    template <class T> inline T grabber_get_null(){ return 0; }
+    template <> inline icl::format grabber_get_null<icl::format>(){ return (icl::format)-1; }
+    template <> inline icl::depth grabber_get_null<icl::depth>(){ return (icl::depth)-1; }
+    template <> inline icl::Size grabber_get_null<icl::Size>(){ return icl::Size::null; }
+  }
+  template <class T> class GrabberHandle;
+  class GenericGrabber;
   /** \endcond */
   
-  /// Common interface class for all grabbers \ingroup GRABBER_G
+ /// Common interface class for all grabbers \ingroup GRABBER_G
+  /** The Grabber is ICL's common interface for image acquisition
+      tools. A large set of Grabbers is available and wrapped
+      by the GenericGrabber class. We strongly recommend to 
+      use the GenericGrabber class for image acquisition within
+      applications.
+      
+      The Grabber itself has a very short interface for the user:
+      usually, a grabber is instantiated and its grab() method is
+      called to aquire the next available image.
+      
+      
+      \section DES Desired parameters
+
+      In addition, the Grabber supports a set of so called 
+      'desired-parameters'. These can be set to overwrite the
+      image parameters that are used by the underlying implementation.
+      A FileGrabber e.g. will by default return images that have
+      the same parameter that the grabbed image file provides. However,
+      in some situations, the user might want to adapt these parameters
+      E.g. if the image parameters that are provided by the grabber
+      are not suitable for an algorithm. If this is the case, the
+      Grabber's desired parameters can be set using the
+      Grabber::setDesired-template.\n
+      Currently, the image parameters 'depth', 'size' and 'format'
+      can be adapted seperately by setting desired parameters. Once
+      desired parameters are set, the can be reset to the grabber's
+      default by calling grabber::ignoreDesired<T> where one of the
+      types icl::depth, icl::format or icl::Size is used as type T.
+      
+      
+      \section UND Image Undistortion
+      
+      The Grabber does also provide an interface to set up 
+      image undistortion parameters. The can be estimated
+      with ICL's distortion calibration tool. The undistortion
+      operation is accelerated using an internal warp-table.
+      By these means, image undistion is directly applied on the
+      grabbed images, which lets the user then work with 
+      undistored images.
+
+      
+      \section IM Implementing Grabbers
+      
+      In order to implement a new Grabber class, some steps are necessary.
+      First, the new Grabber needs to be implemented. This must
+      implement the Grabber::acquireImage method, that uses an underlying
+      image source to acquire a single new image. This can have any
+      parameters and depth (usually, the image parameters are somehow
+      related to the output of the underlying image source).
+      If the grabber is available, one should think about adapting
+      the grabber to inherit the icl::GrabberHandle class that adds
+      the ability of instantiating one Grabber several times without
+      having to handle double device accesses explicitly.
+      
+      
+      \section PROP Properties
+      
+      The Grabber implements the Configurable interface that is used
+      to implement dynamically settable properties. Each Grabber
+      must have at least the two properties 'format' and 'size'. These
+      are handled in a special way by the automatically created Grabber-
+      property-GUIs available in the ICLQt package.
+  */
   class Grabber : public Uncopyable{
+    /// internal data class
+    struct Data;
+    
+    /// hidden data
+    Data *data;
+
+    protected:
+    /// internally set a desired format
+    virtual void setDesiredFormatInternal(format fmt);
+
+    /// internally set a desired format
+    virtual void setDesiredSizeInternal(const Size &size);
+
+    /// internally set a desired format
+    virtual void setDesiredDepthInternal(depth d);
+
+    /// returns the desired format
+    virtual format getDesiredFormatInternal() const;
+
+    /// returns the desired format
+    virtual depth getDesiredDepthInternal() const;
+
+    /// returns the desired format
+    virtual Size getDesiredSizeInternal() const;
+
     public:
-    /// Basic Grabber constructor
-    /** sets desired params to:
-        - depth = depth8u
-        - size = 320x240
-        - foramt = formatRGB 
-    **/
-    Grabber() : 
-    m_oDesiredParams (Size(320,240), formatRGB),
-    m_eDesiredDepth (depth8u), 
-    m_poImage (0),
-    m_bIgnoreDesiredParams(false),m_warp(0),m_distortionBuffer(0){}
 
+    /// grant private method access to the grabber handle template
+    template<class X> friend class GrabberHandle;
 
+    /// grant private method access to the GenericGrabber class
+    friend class GenericGrabber;
+    
+    ///
+    Grabber();
     
     /// Destructor
     virtual ~Grabber();
 
-    /// grab function grabs an image (destination image is adapted on demand)
-    /** This new grab function is one of the main parts of the ICL Grabber interface. Its 
-        underlying philosophy is as follows:
-        - if ppoDst is NULL, a constant image (owned by the grabber) is returned. 
-        If the desired parameters are used, the returned image will have the 
-        desired depth and image params, which is ensured
-        by an appropriate conversion from the originally grabbed image if neccessary.
-        - if ppoDst is valid, but it points to a NULL-Pointer (ppoDst!=NULL but *ppoDst==NULL),
-        a new image is created exacly at (*ppoDst). This image is owned by the calling 
-        aplication and not by the Grabber.
-        - if ppoDst is valid, and it points to a valid ImgBase*, this ImgBase* is exploited
-        as possible. If it's depth differs from the currently "desired" depth value, it is 
-        released, and a new image with the "desired" params and depth is created at (*ppoDst).
-        Otherwise, the ImgBase* at *poDst is adapted in format, channel count and size
-        to the "desired" params or to the depth and parameters of the image that was 'produced'
-        by the Grabber, before it is filled with data and returned
-        <b>Note:</b> Most of the time you'll simply used ppoDst's default value NULL. In this
-        case you only have read-access to the returned ImgBase, which is most of the time
-        completely sufficient.
-        <b>Note also:</b> For an easy handling of ppoDst and the grabber optionally used
-        desired paremeters, you can simple call the Grabbers adaptGrabResult method.
+    /// grab function calls the Grabber-specific acquireImage-method and applies distortion if necessary
+    /** If dst is not NULL, it is exploited and filled with image data **/
+    const ImgBase *grab(ImgBase **dst=0);
+    
+    /// returns whether the desired parameter for the given type is used
+    /** This method is only available for the type icl::depth,icl::Size and icl::format*/
+    template<class T>
+    bool desiredUsed() const{ return false; }
 
-        @see Grabber::adaptGrabResult
-        @param ppoDst destination image (pointer-to-pointer)
-        @return grabbed image (if ppoDst != 0 and depth matches) equal to *ppoDst
-     **/
-     virtual const ImgBase* grabUD(ImgBase **ppoDst=0) = 0;
+    /// sets desired parameters (only available for depth,Size and format)
+    template<class T>
+    void useDesired(const T &t){ (void)t;}
+    
+    /// sets up the grabber to use all given desired parameters
+    void useDesired(depth d, const Size &size, format fmt);
+    
+    /// set the grabber to ignore the desired param of type T
+    /** This method is only available for depth,Size and format */
+    template<class T>
+    void ignoreDesired() { 
+      useDesired<T>(grabber_get_null<T>());
+    }
 
+    /// sets up the grabber to ignore all desired parameters
+    void ignoreDesired();
 
-    /// grab function calls the Grabber-specific grabUD function and applies distortion if necessary
-    /** @see grabUD **/
-     const ImgBase *grab(ImgBase **ppoDst=0);
-
-     /// @{ @name get/set properties  
-
-     /// interface for the setter function for video device properties 
-     /** All video device properties can be set using this function. As different video devices  
-         have different property sets, there are no specialized functions to set special parameters.
-         To get a list of all possible properties and their corresponding data ranges or value lists,
-         call \code getPropertyList()  and getInfo() \endcode
+    /// returns the desired value for the given type T
+    /** This method is only available for depth,Size and format */
+    template<class T>
+    T getDesired() const { return T(); }
+     
+    /// @{ @name get/set properties  
+    
+    /// interface for the setter function for video device properties 
+    /** All video device properties can be set using this function. As different video devices  
+        have different property sets, there are no specialized functions to set special parameters.
+        To get a list of all possible properties and their corresponding data ranges or value lists,
+        call \code getPropertyList()  and getInfo() \endcode
          Yet, the following properties are compulsory for grabbers:
          - size (syntax for value: e.g. "320x240")
          - format (value depends on the underlying devices formats specifications) 
@@ -239,72 +327,7 @@ namespace icl {
      /// creates a vector of strins out of a single string representation
      static std::vector<std::string> translateStringVec(const std::string &stringVecStr);
 
-
      /// @} 
-     /// @{ @name functions for get/set desired params
-
-     /// returns current desired image params (size and format)
-     virtual const ImgParams &getDesiredParams()const{
-       return m_oDesiredParams;
-     }
-     
-     /// returns current desired image size (default is "320x240"
-     virtual const Size &getDesiredSize()const{
-       return m_oDesiredParams.getSize();
-     }
-     
-     /// returns current desired image format (default is formatRGB)
-     virtual format getDesiredFormat() const{
-       return m_oDesiredParams.getFormat();
-     }
-
-     /// returns current desired image depth (default is depth8u)
-     virtual depth getDesiredDepth() const{
-       return m_eDesiredDepth;
-     }
-
-     /// sets current desired image parameters
-     virtual void setDesiredParams(const ImgParams &p){
-       m_oDesiredParams = p;
-     }
-
-     /// sets current desired image size
-     virtual void setDesiredSize(const Size &s){
-       m_oDesiredParams.setSize(s);
-     }
-     
-     /// sets current desired image format
-     virtual void setDesiredFormat(format f){
-       m_oDesiredParams.setFormat(f);
-     }
-     
-     /// returns current desired image depth
-     virtual void setDesiredDepth(depth d){
-       m_eDesiredDepth = d;
-     }
-     
-     /// set up ignore-desired params flag
-     virtual void setIgnoreDesiredParams(bool flag){
-       m_bIgnoreDesiredParams = flag;
-     }
-     
-     /// @see setIgnoreDesiredParams
-     virtual void setUseDesiredParams(bool flag){
-       setIgnoreDesiredParams(!flag);
-     }
-
-     /// returns wheterh desired params are ignored or used
-     virtual bool getIgnoreDesiredParams() const {
-       return m_bIgnoreDesiredParams;
-     }
-
-     /// returns wheterh desired params are used or ignored
-     virtual bool getUseDesiredParams() const {
-       return !m_bIgnoreDesiredParams;
-     }
-     
-     /// @}
-
      
      /// @{ @name distortion functions
      
@@ -331,6 +354,10 @@ namespace icl {
      */
      void enableDistortion(double params[4],const Size &size, scalemode m=interpolateLIN);
 
+     /// enables distortion from given programm argument. 
+     /** Needs a progarg with 4 sub-args */
+     void enableDistortion(const ProgArg &pa, const Size &size, scalemode m=interpolateLIN);
+     
      /// enables distortion for given warp map
      void enableDistortion(const Img32f &warpMap, scalemode m=interpolateLIN);
      
@@ -338,103 +365,40 @@ namespace icl {
      void disableDistortion();
      
      /// returns whether distortion is currently enabled
-     bool isDistortionEnabled() const { return !!m_warp; }
-     
+     bool isDistortionEnabled() const;
      /// @}
 
     protected:
-     /// *NEW* Utility function that allows for much easier implementation of grabUD
-     /** Most of the time, grab/grabUD is called without a given destination ImgBase**.
-         Furthermore, most grabbers do only provide one specific image format/size-
-         combination natively. Most other combinations of desired depth, -format and -size
-         have to be converted using the Grabbers protected m_oConverter and m_oImage instances.
-         Since it turned out, that this functionality had to be implemeneted in almost each
-         Grabber implementation, ICL's Grabber does now provide this convenience function 
-         which implements the following functionality:
-         <pre>
-         // pseudocode:
-         const ImgBase *Grabber::adaptGrabResult(const ImgBase *src, ImgBase **dst){
-           if( desired parameters are used ){
-             if( src has by chance the desired depth, -size and -format ){
-               if ( dst is not NULL ){
-                  copy src to dst by adapting dst apropriately and return *dst
-               } else {
-                  return src directly
-               }
-             } else { // src has to be converted 
-               if (dst is not NULL ){
-                  adapt dst to the desired parameters, convert src to *dst and return *dst
-               } else { // dst was not given at all
-                  adapt m_poImage to the desired parameters, convert src into it and return it 
-               }
-             }
-           } else { // desired parameters are not used
-             if ( dst is not NULL ) {
-                copy src deeply to dst by adapting dst and return *dst
-             } else {
-                return src directly
-             }
-           }
-         }
-         </pre>
-         
-         adaptGrabResult can be used very easily within your Grabber implementations
-         grabUD method.
-         \code
-         struct MyGrabber{
-            Img8u buffer;
-            const ImgBase* grabUD(ImgBase **dst){
-               // first, you have to create your image
-               buffer.setSize(Size::VGA);
-               buffer.setFormat(formatRGB);
-               buffer.fill(URandI(255));
-              
-               // adaptGrabResult will do the rest for you!
-               return adaptGrabResult(&buffer,dst);
-            }
-         };
-         \endcode
-         
-         
-     */
-     const ImgBase *adaptGrabResult(const ImgBase *src, ImgBase **dst); //!< utility method (todo: move to Grabber base class)
+
+
+     /// main interface method, that is implemented by the actual grabber instances
+     /** This method is defined in the grabber implementation. It acquires a new image
+         using the grabbers specific image acquisition back-end */
+     virtual const ImgBase *acquireImage() = 0;
+
+     /// Utility function that allows for much easier implementation of grabUD
+     /** called by the grabbers grab() method **/
+     const ImgBase *adaptGrabResult(const ImgBase *src, ImgBase **dst); 
 
      /// internally used by the load- and saveProperties
      /** If any property shall not be save or loaded from configuration file, it must be filtered out by this f*/
      virtual std::vector<std::string> get_io_property_list() { return getPropertyList(); }
-     
-     /// prepare depth and params of output image according to desired settings
-     ImgBase* prepareOutput (ImgBase **ppoDst);
-
-     /// internal storage of desired image parameters
-     ImgParams m_oDesiredParams;
-     
-     /// internal storage of desired image depth
-     depth m_eDesiredDepth;
-
-     /// converter used for conversion to desired output depth/params 
-     /** This instance of the Converter class can be used in derived classes
-         to adapt a grabbed image the desired params 
-     */
-     Converter m_oConverter;
-
-     /// interal output image instance used if ppoDst is zero in grab()
-     /** This image can be used in derived classes if the ImgBase** that
-         was passed to the grab(..) function was NULL. In this case, this
-         ImgBase should be used and returned. This will help to avoide
-         runtime memory allocation and deallocations. 
-     */
-     ImgBase  *m_poImage;
-
-     /// Flag to indicate whether desired parametes should be ignored
-     bool m_bIgnoreDesiredParams;
-
-     /// for distortion
-     WarpOp *m_warp;
-     
-     /// for distortion
-     ImgBase *m_distortionBuffer;
   }; 
+  
+  /** \cond */
+  template<> inline void Grabber::useDesired<format>(const format &t) { setDesiredFormatInternal(t); }
+  template<> inline void Grabber::useDesired<depth>(const depth &t) { setDesiredDepthInternal(t); }
+  template<> inline void Grabber::useDesired<Size>(const Size &t) { setDesiredSizeInternal(t); }
+
+  template<> inline depth Grabber::getDesired<depth>() const { return getDesiredDepthInternal(); }
+  template<> inline Size Grabber::getDesired<Size>() const { return getDesiredSizeInternal(); }
+  template<> inline format Grabber::getDesired<format>() const { return getDesiredFormatInternal(); }
+
+  template<> inline bool Grabber::desiredUsed<format>() const{ return (int)getDesired<format>() != -1; }
+  template<> inline bool Grabber::desiredUsed<depth>() const{ return (int)getDesired<depth>() != -1; }
+  template<> inline bool Grabber::desiredUsed<Size>() const{ return getDesired<Size>() != Size::null; }
+
+  /** \endcond */
  
 
 

@@ -302,12 +302,12 @@ namespace icl{
     delete m_impl;
   }
   
-  const ImgBase* KinectGrabber::grabUD(ImgBase **dst){
+  const ImgBase* KinectGrabber::acquireImage(){
     Mutex::Locker lock(m_impl->mutex);
     if(m_impl->device->mode == GRAB_RGB_IMAGE){
-      return adaptGrabResult(&m_impl->getLastColorImage(),dst);
+      return &m_impl->getLastColorImage();
     }else{
-      return adaptGrabResult(&m_impl->getLastDepthImage(),dst);
+      return &m_impl->getLastDepthImage();
     }
   }
   

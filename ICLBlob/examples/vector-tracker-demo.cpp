@@ -132,8 +132,8 @@ struct InputGrabber : public Grabber, public Lockable , public MouseHandler{
   
   InputGrabber(unsigned int nBlobs=10){
     randomSeed();
-    setDesiredSize(Size(640,480));
-    image.setSize(getDesiredSize());
+    useDesired(Size::VGA);
+    image.setSize(Size::VGA);
 
     mingap = pa("-mingap");
     minr = pa("-minr");
@@ -277,13 +277,12 @@ struct InputGrabber : public Grabber, public Lockable , public MouseHandler{
     }
   }
   
-  virtual const ImgBase *grabUD(ImgBase **dst=0){
+  virtual const ImgBase *acquireImage(){
     Mutex::Locker l(this);
-    ICLASSERT_RETURN_VAL(!dst,0);
-    ICLASSERT_RETURN_VAL(getDesiredDepth() == depth8u,0);
+    ICLASSERT_RETURN_VAL(getDesired<depth>() == depth8u,0);
 
-    image.setSize(getDesiredSize());
-    image.setFormat(getDesiredFormat());
+    image.setSize(getDesired<Size>());
+    image.setFormat(getDesired<format>());
     
     image.clear();
     
@@ -359,8 +358,8 @@ static std::vector<std::vector<float> > getCentersAndSizes(const Img8u &image){
 
 void init(){
   grabber = new InputGrabber(pa("-n").as<int>());
-    grabber->setDesiredSize(Size(640,480));
-    grabber->setDesiredFormat(formatGray);
+  grabber->useDesired(Size::VGA);
+  grabber->useDesired(formatGray);
     gui << "draw[@handle=image@minsize=32x24]";
     gui << ( GUI("hbox") 
              << string("slider(0,100,")+ *pa("-sleeptime") + ")[@handle=Hsl@out=Vsl@label=sleeptime]"

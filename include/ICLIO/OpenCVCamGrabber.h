@@ -54,9 +54,9 @@ namespace icl{
     ///number of device
     int device;
     ///
-    Mutex m_Mutex;
+    Mutex m_mutex;
     ///Buffer for imagescaling
-    ImgBase *scalebuffer;
+    ImgBase *m_buffer;
     public:
     
     /// returns a list of properties, that can be set using setProperty
@@ -86,7 +86,7 @@ namespace icl{
     
     /// grab function grabs an image (destination image is adapted on demand)
     /** @copydoc icl::Grabber::grab(ImgBase**) **/
-    virtual const ImgBase *grabUD (ImgBase **ppoDst=0);
+    virtual const ImgBase *acquireImage();
     
     /// Sets a property to a new value
     /** call getPropertyList() to see which properties are supported

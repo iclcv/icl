@@ -60,26 +60,22 @@ std::vector<string> remove_size(const vector<string> &v){
 }  
 
 void init_grabber(){
-  grabber = new GenericGrabber(FROM_PROGARG("-input"));
-  grabber->setIgnoreDesiredParams(true);
+  grabber = new GenericGrabber(pa("-i"));
   if(pa("-size")){
-    grabber->setDesiredSize(pa("-size"));
-    grabber->setIgnoreDesiredParams(false);
+    grabber->useDesired<Size>(pa("-size"));
   }
   if(pa("-depth")){
-    grabber->setDesiredDepth(pa("-depth"));
-    grabber->setIgnoreDesiredParams(false);
+    grabber->useDesired<depth>(pa("-depth"));
   }
   if(pa("-format")){
-    grabber->setDesiredFormat(pa("-format"));
-    grabber->setIgnoreDesiredParams(false);
+    grabber->useDesired<format>(pa("-format"));
   }
   
   if(pa("-dist")){
     if(pa("-size")){
-      grabber->enableDistortion(DIST_FROM_PROGARG("-dist"),pa("-size"));
+      grabber->enableDistortion(pa("-dist"),pa("-size"));
     }else{
-      grabber->enableDistortion(DIST_FROM_PROGARG("-dist"),grabber->grab()->getSize());
+      grabber->enableDistortion(pa("-dist"),grabber->grab()->getSize());
     }
   }
   if(pa("-camera-config")){
@@ -138,7 +134,7 @@ const ImgBase *grab_image(){
 }
 
 void send_app(){
-  static GenericImageOutput output(FROM_PROGARG("-o"));
+  static GenericImageOutput output(pa("-o"));
 #ifdef HAVE_QT
   ImageHandle IH;
   FPSHandle FPS;
@@ -316,8 +312,8 @@ int main(int n, char **ppc){
    "the icl-camcfg tool. Please note: some grabber parameters might cause an internal grabber crash, "
    "so e.g. trigger setup parameters or the isospeed parameters must be removed from this file");
   
-  painit(n,ppc,"-output|-o(output-type-string,output-parameters) "
-         "-flip|-f(string) -single-shot -input|-i(device,device-params) "
+  painit(n,ppc,"[m]-output|-o(output-type-string,output-parameters) "
+         "-flip|-f(string) -single-shot [m]-input|-i(device,device-params) "
          "-size|(Size) -no-gui -pp(1) -dist|-d(float,float,float,float) -reset|-r "
          "-fps(float=15.0) -clip|-c(Rect) -camera-config(filename) -depth(depth) -format(format) -normalize|-n "
          "-perserve-preprocessing-roi|-ppp -progress "

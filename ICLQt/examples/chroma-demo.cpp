@@ -43,7 +43,7 @@ ChromaGUI  *cg;
 
 void run(){
   Size size = Size(320,240);
-  GenericGrabber grabber(FROM_PROGARG("-input"));
+  GenericGrabber grabber(pa("-i"));
 
   Img8u segImage(size,1);
   Img8u *image = new Img8u(size,formatRGB);

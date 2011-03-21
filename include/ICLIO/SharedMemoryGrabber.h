@@ -76,7 +76,7 @@ namespace icl{
 
     /// grabbing function  
     /** \copydoc icl::Grabber::grab(ImgBase**)  **/    
-    virtual const ImgBase* grabUD(ImgBase **ppoDst=0);
+    virtual const ImgBase* acquireImage();
 
     /** @{ @name properties and parameters */
     

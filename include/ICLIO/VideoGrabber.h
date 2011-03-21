@@ -61,7 +61,7 @@ namespace icl{
     ~VideoGrabber();
 
     /// grab function
-    virtual const ImgBase *grabUD(ImgBase **dst=0);
+    virtual const ImgBase *acquireImage();
     
     /// direct access to pause video playback (grab will block then)
     void pause();
@@ -120,7 +120,6 @@ namespace icl{
     XineHandle *m_xine; //!< internal data belonging to the xine library
     Data *m_data;       //!< internal data
     Params *m_params;   //!< property values 
-    
   };
 
 }

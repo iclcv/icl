@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : include/ICLCC/Bayer.h                                  **
 ** Module : ICLCC                                                  **
-** Authors: Michael Götting, Felix Reinhard                        **
+** Authors: Michael Götting, Felix Reinhard, Christof Elbrechter   **
 **                                                                 **
 **                                                                 **
 ** Commercial License                                              **
@@ -32,77 +32,82 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef iclBayer_H
-#define iclBayer_H
+#ifndef ICL_BAYER_CONVERTER_H
+#define ICL_BAYER_CONVERTER_H
 
 #include <ICLCore/Img.h>
 #include <ICLUtils/Uncopyable.h>
 
 namespace icl {
 
-  class BayerConverter : public Uncopyable
-  {
+  /// Utiltity class for bayer pattern conversion
+  /** The internal implementation was basically taken from
+      the libdc files */
+  class BayerConverter : public Uncopyable{
     public:
     
-  enum bayerConverterMethod {
-    nearestNeighbor = 0,
-    simple,
-    bilinear,
-    hqLinear,
-    edgeSense,
-    vng
-  };
-  
-  enum bayerPattern {
-    bayerPattern_RGGB = 512,
-    bayerPattern_GBRG,
-    bayerPattern_GRBG,
-    bayerPattern_BGGR
-  };
-  
-  BayerConverter(bayerConverterMethod eConvMethod, 
-                 bayerPattern eBayerPattern, 
-                 Size s);
-  ~BayerConverter();
-  
-  void apply(const Img8u *src, ImgBase **dst);
-  
-  void setBayerPattern(bayerPattern eBayerPattern) { 
-    m_eBayerPattern = eBayerPattern; }
-  void setConverterMethod(bayerConverterMethod eConvMethod) { 
-    m_eConvMethod = eConvMethod; }
-  void setBayerImgSize(Size s) {
-     m_vRGBInterImg.resize(s.width * s.height * 3);
-  }
+    enum bayerConverterMethod {
+      nearestNeighbor = 0,
+      simple,
+      bilinear,
+      hqLinear,
+      edgeSense,
+      vng
+    };
+    
+    enum bayerPattern {
+      bayerPattern_RGGB = 512,
+      bayerPattern_GBRG,
+      bayerPattern_GRBG,
+      bayerPattern_BGGR
+    };
+    
+    /// creates a new BayerConverter instances
+    /** The given size hint can be used to accellerate the first apply call, where
+        the internal working buffer's size is adapted on demand */
+    BayerConverter(bayerConverterMethod eConvMethod, 
+                   bayerPattern eBayerPattern, 
+                   Size sizeHint = Size::null);
+    ~BayerConverter();
+    
+    /// converts the source image with bayer pattern into the
+    /** given destination image. Dst will become an Img8u */
+    void apply(const Img8u *src, ImgBase **dst);
+    
+    inline void setBayerPattern(bayerPattern eBayerPattern) { 
+      m_eBayerPattern = eBayerPattern; 
+    }
+    
+    inline void setConverterMethod(bayerConverterMethod eConvMethod) { 
+      m_eConvMethod = eConvMethod; 
+    }
+    
+    static std::string translateBayerConverterMethod(bayerConverterMethod ebcm);
+    static bayerConverterMethod translateBayerConverterMethod(std::string sbcm);
+    
+    static std::string translateBayerPattern(bayerPattern ebp);
+    static bayerPattern translateBayerPattern(std::string sbp);
+    
+    private:
+    /// internal buffer;
+    std::vector<icl8u> m_buffer;
 
-  static std::string translateBayerConverterMethod(bayerConverterMethod ebcm);
-  static bayerConverterMethod translateBayerConverterMethod(std::string sbcm);
-
-  static std::string translateBayerPattern(bayerPattern ebp);
-  static bayerPattern translateBayerPattern(std::string sbp);
-  
- private:
-  std::vector<unsigned char> m_vRGBInterImg;
-  bayerConverterMethod m_eConvMethod;
-  bayerPattern m_eBayerPattern;
-  
-  // Interpolation methods
-  void nnInterpolation(const Img8u *poBayerImg);
-  void bilinearInterpolation(const Img<icl8u> *poBayerImg);
-  void hqLinearInterpolation(const Img<icl8u> *poBayerImg);
-  void edgeSenseInterpolation(const Img<icl8u> *poBayerImg);
-  void simpleInterpolation(const Img<icl8u> *poBayerImg);
-  
-  // Utility functions
-  void clearBorders(icl8u *rgb, int sx, int sy, int w);
-  void clip(int *iIn, icl8u *iOut) {
-    *iOut = *iIn = *iIn < 0 ? 0 : *iIn > 255 ? 255 : 0;
-    // slower !
-    // *iIn = *iIn < 0 ? 0 : *iIn; 
-    // *iIn = *iIn > 255 ? 255 : *iIn; 
-    //*iOut = *iIn;
-  }
-};
+    bayerConverterMethod m_eConvMethod;
+    bayerPattern m_eBayerPattern;
+    
+    // Interpolation methods
+    void nnInterpolation(const Img8u *poBayerImg);
+    void bilinearInterpolation(const Img8u *poBayerImg);
+    void hqLinearInterpolation(const Img8u *poBayerImg);
+    void edgeSenseInterpolation(const Img8u *poBayerImg);
+    void simpleInterpolation(const Img8u *poBayerImg);
+    
+    // Utility functions
+    void clearBorders(icl8u *rgb, int sx, int sy, int w);
+    inline void clip(int *iIn, icl8u *iOut) {
+      *iOut = *iIn = *iIn < 0 ? 0 : *iIn > 255 ? 255 : 0;
+    }
+  };
  
 } // namespace icl
 

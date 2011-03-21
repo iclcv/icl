@@ -61,31 +61,6 @@ using namespace std;
 #define PWC_DEBUG_CALL_LIGHT(X,S) if(X<0){printf("pwc-debug-call:[%s]\n",S); return; }
 #define PWC_DEBUG_CALL_STR(X,S) if(X<0){printf("pwc-debug-call:[%s]\n",S); return ""; }
 #define PWC_DEBUG_CALL_2(ECHO,X,S) if(X<0){ if(ECHO){printf("pwc-debug-call:[%s]\n",S);}m_iDevice = -1; return false; }
-namespace pwc_ext{
-  template<class T>
-  inline void pwc_yuv2yuv(icl::ImgBase *&poOutput,
-                          icl::Converter &converter, 
-                          icl::Converter &converterHalfSize,
-                          icl::Img8u &oTmpSrc_Y,
-                          icl::Img8u &oTmpSrc_U,
-                          icl::Img8u &oTmpSrc_V){
-    // {{{ open
-  
-    T *pfTmpY = poOutput->asImg<T>()->getData(0);
-    T *pfTmpU = poOutput->asImg<T>()->getData(1);
-    T *pfTmpV = poOutput->asImg<T>()->getData(2);
-    
-    icl::Img<T> oTmpDst_Y(poOutput->getSize(),1,std::vector<T*>(1, pfTmpY));
-    icl::Img<T> oTmpDst_U(poOutput->getSize(),1,std::vector<T*>(1, pfTmpU));
-    icl::Img<T> oTmpDst_V(poOutput->getSize(),1,std::vector<T*>(1, pfTmpV));
-    
-    converter.apply(&oTmpSrc_Y,&oTmpDst_Y);
-    converterHalfSize.apply(&oTmpSrc_U,&oTmpDst_U);
-    converterHalfSize.apply(&oTmpSrc_V,&oTmpDst_V);
-  }
-  
-  // }}}
-}
 
 namespace icl {
 
@@ -841,84 +816,19 @@ void save_setparams(int device){
   
   
   
-  const ImgBase* PWCGrabberImpl::grabUD(ImgBase **ppoDst){
+  const ImgBase* PWCGrabberImpl::acquireImage(){
     // {{{ open 
-
-  ImgBase *poOutput = prepareOutput (ppoDst);
-
-  pthread_mutex_lock(&usb_semph_mutex[m_iDevice]);
-  
-  sem_wait(&usb_new_pictures[m_iDevice]); 
-  
-  pthread_mutex_unlock(&usb_semph_mutex[m_iDevice]);
-  
-  pthread_mutex_lock(&usb_frame_mutex[m_iDevice]);
-
-  int use_frame=usbvflg_useframe[m_iDevice];
-
-  icl8u *pucPwcData = usbvflg_buf[m_iDevice] + usbvflg_vmbuf[m_iDevice].offsets[use_frame];
-  
-  icl8u *pY = pucPwcData;
-  icl8u *pU = pY+m_iWidth*m_iHeight;
-  icl8u *pV = pY+(int)(1.25*m_iWidth*m_iHeight);
-
-  
-  if(poOutput->getFormat() == formatRGB &&
-     poOutput->getDepth() == depth8u &&
-     poOutput->getWidth() == m_iWidth &&
-     poOutput->getHeight() == m_iHeight ){
-    convertYUV420ToRGB8(pY,Size(m_iWidth,m_iHeight),poOutput->asImg<icl8u>());
     
-  }else if(poOutput->getFormat() == formatYUV){ // not yet tested
-    
-    Img8u oTmpSrc_Y(Size(m_iWidth,m_iHeight),    1,std::vector<icl8u*>(1, pY));
-    Img8u oTmpSrc_U(Size(m_iWidth/2,m_iHeight/2),1,std::vector<icl8u*>(1, pU));
-    Img8u oTmpSrc_V(Size(m_iWidth/2,m_iHeight/2),1,std::vector<icl8u*>(1, pV));
-    
-    switch (poOutput->getDepth()){
-      case depth8u:{
-        icl8u *pucTmpY = poOutput->asImg<icl8u>()->getData(0);
-        icl8u *pucTmpU = poOutput->asImg<icl8u>()->getData(1);
-        icl8u *pucTmpV = poOutput->asImg<icl8u>()->getData(2);
-        
-        Img8u oTmpDst_Y(poOutput->getSize(),1,std::vector<icl8u*>(1, pucTmpY));
-        Img8u oTmpDst_U(poOutput->getSize(),1,std::vector<icl8u*>(1, pucTmpU));
-        Img8u oTmpDst_V(poOutput->getSize(),1,std::vector<icl8u*>(1, pucTmpV));
-        
-        oTmpSrc_Y.scaledCopy(&oTmpDst_Y);
-        oTmpSrc_U.scaledCopy(&oTmpDst_U);
-        oTmpSrc_V.scaledCopy(&oTmpDst_V);      
-        break;
-      }
-      case depth32f:{
-         pwc_ext::pwc_yuv2yuv<icl32f>(poOutput,m_oConverter,m_oConverterHalfSize,oTmpSrc_Y,oTmpSrc_U,oTmpSrc_V);
-        break;
-      }
-      case depth32s:{
-        pwc_ext::pwc_yuv2yuv<icl32s>(poOutput,m_oConverter,m_oConverterHalfSize,oTmpSrc_Y,oTmpSrc_U,oTmpSrc_V);
-        break;
-      }
-      case depth16s:{
-         pwc_ext::pwc_yuv2yuv<icl16s>(poOutput,m_oConverter,m_oConverterHalfSize,oTmpSrc_Y,oTmpSrc_U,oTmpSrc_V);
-        break;
-      }
-      case depth64f:{
-        pwc_ext::pwc_yuv2yuv<icl64f>(poOutput,m_oConverter,m_oConverterHalfSize, oTmpSrc_Y,oTmpSrc_U,oTmpSrc_V);
-        break;
-      }
-      default:
-        ICL_INVALID_FORMAT;
-        break;
-    }
-  }else{
-    convertYUV420ToRGB8(pY,Size(m_iWidth,m_iHeight),m_poRGB8Image);
-    m_oConverter.apply(m_poRGB8Image,poOutput);
-  }
-  poOutput->setTime(g_Time[m_iDevice]);
-  //  std::cout << "creating this timestammmp" << poOutput->getTime().toString() << std::endl;
-
-  pthread_mutex_unlock(&usb_frame_mutex[m_iDevice]);
-  return poOutput;
+    pthread_mutex_lock(&usb_semph_mutex[m_iDevice]);
+    sem_wait(&usb_new_pictures[m_iDevice]); 
+    pthread_mutex_unlock(&usb_semph_mutex[m_iDevice]);
+    pthread_mutex_lock(&usb_frame_mutex[m_iDevice]);
+    int use_frame=usbvflg_useframe[m_iDevice];
+    icl8u *p = usbvflg_buf[m_iDevice] + usbvflg_vmbuf[m_iDevice].offsets[use_frame];
+    convertYUV420ToRGB8(p,Size(m_iWidth,m_iHeight),m_poRGB8Image);
+    m_poRGB8Image->setTime(g_Time[m_iDevice]);
+    pthread_mutex_unlock(&usb_frame_mutex[m_iDevice]);
+    return m_poRGB8Image;
 }
 
 // }}}

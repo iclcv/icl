@@ -58,7 +58,7 @@ namespace icl{
   UnicapGrabberImpl::UnicapGrabberImpl(const UnicapDevice &device):
     // {{{ open
 
-    m_oDevice(device),m_poConversionBuffer(0),
+    m_oDevice(device),m_poImage(0),
     m_poGrabEngine(0),m_poConvertEngine(0), m_bUseDMA(false),
     m_bProgressiveGrabMode(true){
 
@@ -70,7 +70,7 @@ namespace icl{
   UnicapGrabberImpl::UnicapGrabberImpl(const std::string &deviceFilter, unsigned int useIndex):
     // {{{ open
 
-    m_poConversionBuffer(0),m_poGrabEngine(0),
+    m_poImage(0),m_poGrabEngine(0),
     m_poConvertEngine(0), m_bUseDMA(false),
     m_bProgressiveGrabMode(true){
     const std::vector<UnicapDevice> &ds = getUnicapDeviceList(deviceFilter);
@@ -91,7 +91,6 @@ namespace icl{
     ICL_DELETE(m_poGrabEngine);
     ICL_DELETE(m_poConvertEngine);
     ICL_DELETE(m_poImage);
-    ICL_DELETE(m_poConversionBuffer);
     m_oMutex.unlock();
   }
 
@@ -595,73 +594,25 @@ namespace icl{
 
   // }}}
 
-  const ImgBase* UnicapGrabberImpl::grabUD(ImgBase **ppoDst){
+  const ImgBase* UnicapGrabberImpl::acquireImage(){
     // {{{ open
 
     ICLASSERT_RETURN_VAL(m_poGrabEngine , 0);
 
-    if(!ppoDst) ppoDst = &m_poImage;  
-
-
-    if(getIgnoreDesiredParams()){
-      m_oMutex.lock();
-      m_poGrabEngine->lockGrabber();
-
-      // ---
-      if(m_poGrabEngine->needsConversion()){
-        const icl8u *rawData = m_poGrabEngine->getCurrentFrameUnconverted();
-        m_poConvertEngine->cvtNative(rawData,ppoDst);
-      }else{
-        ERROR_LOG("unable to estimate hardware image parameters!\n"
-                  "returning empty image with desired params");
-        ensureCompatible(ppoDst,getDesiredDepth(),getDesiredParams());
-        return *ppoDst;
-      }
-
-    
-      // ---
-      
-      m_poGrabEngine->unlockGrabber();
-      m_oMutex.unlock();
-      updateFps();
-      return *ppoDst;
+    m_oMutex.lock();
+    m_poGrabEngine->lockGrabber();
+    if(m_poGrabEngine->needsConversion()){
+      const icl8u *rawData = m_poGrabEngine->getCurrentFrameUnconverted();
+      m_poConvertEngine->cvtNative(rawData,&m_poImage);
     }else{
-      ensureCompatible(ppoDst,getDesiredDepth(),getDesiredParams());
-      
-      // indicates whether a conversion to the desired parameters will be needed
-      bool needFinalConversion = false; // assume, that no conversion is needed
-      
-      // get the image from the grabber
-      m_oMutex.lock();
-      m_poGrabEngine->lockGrabber();
-      if(m_poGrabEngine->needsConversion()){
-        const icl8u *rawData = m_poGrabEngine->getCurrentFrameUnconverted();
-        if(m_poConvertEngine->isAbleToProvideParams(m_oDesiredParams,m_eDesiredDepth)){
-          m_poConvertEngine->cvt(rawData,m_oDesiredParams,m_eDesiredDepth,ppoDst);
-        }else{
-          m_poConvertEngine->cvt(rawData,m_oDesiredParams,m_eDesiredDepth,&m_poConversionBuffer);
-          needFinalConversion = true;
-        }
-      }else{
-        if(m_poGrabEngine->isAbleToProvideParams(m_oDesiredParams,m_eDesiredDepth)){
-          m_poGrabEngine->getCurrentFrameConverted(m_oDesiredParams,m_eDesiredDepth,ppoDst);
-        }else{
-          m_poGrabEngine->getCurrentFrameConverted(m_oDesiredParams,m_eDesiredDepth,&m_poConversionBuffer);
-          needFinalConversion = true;
-        }
-      }
-      m_poGrabEngine->unlockGrabber();
-      
-      
-      /// 3rd step: the image, got by the Grab/Convert-Engine must not have the desired
-      /// parameters, so: check and convert on demand
-      if(needFinalConversion){
-        m_oConverter.apply(m_poConversionBuffer,*ppoDst);
-      }
-      m_oMutex.unlock();
-      updateFps();
-      return *ppoDst;
+      ERROR_LOG("unable to estimate hardware image parameters!\n"
+                "returning NULL");
+      return 0;
     }
+    m_poGrabEngine->unlockGrabber();
+    m_oMutex.unlock();
+    updateFps();
+    return m_poImage;
   }
 
   // }}}

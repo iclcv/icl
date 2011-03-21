@@ -46,16 +46,14 @@ void init(){
 
 void run(){
   gui_string(cs);
-  static GenericGrabber g(FROM_PROGARG("-input"));
-  g.setIgnoreDesiredParams(true);
-  g.setDesiredSize(g.grab()->getSize());
-  g.setDesiredFormat(parse<format>(cs));
-  g.setIgnoreDesiredParams(false);
+  static GenericGrabber g(pa("-i"));
+  g.useDesired(g.grab()->getSize());
+  g.useDesired(parse<format>(cs));
   
   gui["image"] = g.grab();
   gui["image"].update();
 }
 
 int main(int n, char **args){
-  return ICLApplication(n,args,"-input(2)",init,run).exec();
+  return ICLApplication(n,args,"[m]-i|-input(2)",init,run).exec();
 }

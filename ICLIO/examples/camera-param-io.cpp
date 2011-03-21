@@ -63,7 +63,7 @@ int main(int n, char **ppc){
     exit(-1);
   }
   
-  GenericGrabber grabber(FROM_PROGARG("-d"));
+  GenericGrabber grabber(pa("-d"));
 
   if(s){
     grabber.setProperty(pa("-s",0),pa("-s",1));

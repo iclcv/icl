@@ -36,6 +36,7 @@
 #define ICL_GENERIC_IMAGE_OUTPUT_H
 
 #include <ICLCore/ImgBase.h>
+#include <ICLUtils/ProgArg.h>
 #include <ICLIO/ImageOutput.h>
 #include <ICLUtils/SmartPtr.h>
 
@@ -56,6 +57,9 @@ namespace icl{
     /** @see init */
     GenericImageOutput(const std::string &type, const std::string &description);
     
+    /// Create from given program argument
+    GenericImageOutput(const ProgArg &pa);
+    
     /// initialize this instance
     /** Like the GenericGrabber, this 'generic tool' can also be set up by
         two string specifiers 
@@ -66,6 +70,10 @@ namespace icl{
         - "xcfp" (XCF Publisher output, description=stream-name)
     */
     void init(const std::string &type, const std::string &description);
+
+    /// initialization method (from given progarg)
+    void init(const ProgArg &pa);
+
     
     /// sends a new image
     virtual void send(const ImgBase *image){

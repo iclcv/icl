@@ -40,7 +40,7 @@
 #include <string>
 #include <xcf/RemoteServer.hpp>
 #include <xmltio/Location.hpp>
-#include <ICLCC/Bayer.h>
+#include <ICLCC/BayerConverter.h>
 
 namespace icl {
   

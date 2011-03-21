@@ -61,11 +61,11 @@ void init(){
 }
 
 void run(){
-  static GenericGrabber grabber(FROM_PROGARG("-input"));
+  static GenericGrabber grabber(pa("-i"));
   gui["image"] = grabber.grab();
   gui["image"].update();
 }
 
 int main(int n, char **ppc){
-  return ICLApplication(n,ppc,"-input(2)",init,run).exec();
+  return ICLApplication(n,ppc,"[m]-input|-i(2)",init,run).exec();
 }

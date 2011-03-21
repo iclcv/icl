@@ -36,7 +36,7 @@
 #include <ICLCore/Img.h>
 #include <ICLIO/FileGrabber.h>
 #include <ICLIO/FileWriter.h>
-#include <ICLCC/Bayer.h>
+#include <ICLCC/BayerConverter.h>
 #include <ICLUtils/Timer.h>
 
 using namespace icl;

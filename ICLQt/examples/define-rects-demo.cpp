@@ -8,8 +8,8 @@ GenericGrabber grabber;
 DefineRectanglesMouseHandler mouse;
 
 void init(){
-  grabber.init(FROM_PROGARG("-i"));
-  grabber.setDesiredSize(Size::VGA);
+  grabber.init(pa("-i"));
+  grabber.useDesired(Size::VGA);
   
   gui << "draw[@minsize=32x24@handle=draw]" << "!show";
   gui["draw"].install(&mouse);
@@ -31,5 +31,5 @@ void run(){
 }
 
 int main(int n, char **ppc){
-  return ICLApp(n,ppc,"-input|-i(2)",init,run).exec();
+  return ICLApp(n,ppc,"[m]-input|-i(2)",init,run).exec();
 }

@@ -81,7 +81,7 @@ namespace icl{
     
     /// grab function grabs an image (destination image is adapted on demand)
     /** @copydoc icl::Grabber::grab(ImgBase**) **/
-    virtual const ImgBase* grabUD(ImgBase **ppoDst=0);
+    virtual const ImgBase* acquireImage();
 
     /** @{ @name properties and params */
     
@@ -181,7 +181,7 @@ namespace icl{
     UnicapDevice m_oDevice;
     
     /// buffer image if conversion is neccesary
-    ImgBase *m_poConversionBuffer;
+    ImgBase *m_poImage;
 
     /// internal used grab engine
     UnicapGrabEngine *m_poGrabEngine;

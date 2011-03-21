@@ -332,7 +332,6 @@ namespace icl{
   template<class T>
   Img<T> load(const string &filename){
     FileGrabber g(filename);
-    g.setIgnoreDesiredParams(true);
     const ImgBase *grabbedImage = 0;
     try{
       grabbedImage = g.grab();
@@ -354,7 +353,6 @@ namespace icl{
     // {{{ open
 
     FileGrabber g(filename);
-    g.setIgnoreDesiredParams(true);
     const ImgBase *gi  = 0;
     try{
       gi = g.grab();
@@ -538,13 +536,11 @@ namespace icl{
     }
     Img<T> back;
     if(size != Size::null){
-      g->setDesiredSize(size);
-      g->setIgnoreDesiredParams(false);
-      g->setDesiredFormat(fmt);
-      g->setDesiredDepth(getDepth<T>());
+      g->useDesired(size);
+      g->useDesired(fmt);
+      g->useDesired(getDepth<T>());
       back = *g->grab()->asImg<T>();
     }else{
-      g->setIgnoreDesiredParams(true);
       const ImgBase *image = g->grab();
       back.setSize(image->getSize());
       back.setFormat(fmt);

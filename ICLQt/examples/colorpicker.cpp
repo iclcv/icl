@@ -140,7 +140,7 @@ void calc_mean(){
 }
 
 void init(){
-  grabber = new GenericGrabber(FROM_PROGARG("-input"));
+  grabber = new GenericGrabber(pa("-i"));
   
   gui = new GUI;
   (*gui) << "draw[@label=image@handle=image@size=32x24]";

@@ -40,7 +40,7 @@
 GUI gui("hsplit");
 Scene scene;
 float sq[] = {0,0,0,0,0,0,1,1,1,1,1,30,30};
-
+SceneObject *o = 0;
 bool is_different(const float a[13],const float b[13]){
   for(unsigned int i=0;i<13;++i){
     if(fabs(a[i]-b[i]) > 0.0001){
@@ -71,9 +71,10 @@ void init(){
 
           << "slider(5,100,30)[@out=step1@label=x-Steps]"
           << "slider(5,100,30)[@out=step2@label=y-Steps]"
+          << "checkbox(grid,unchecked)[@out=grid]"
           ) << "!show";
   scene.addCamera(Camera(Vec(0,0,-10),Vec(0,0,1), Vec(1,0,0)));
-  SceneObject *o = new SceneObject("superquadric",sq);
+  o = new SceneObject("superquadric",sq);
   o->setVisible(Primitive::vertex,false);
   o->setVisible(Primitive::line,false);
   scene.addObject(o,true);
@@ -84,12 +85,20 @@ void init(){
   draw->reset3D();
   draw->callback(scene.getGLCallback(0));
   draw->unlock();
+  
+  SceneLight &l = scene.getLight(1);
+  l.setOn();
+  l.setDiffuseEnabled();
+  l.setDiffuse(GeomColor(0,255,0,100));
+  l.setPosition(Vec(10,10,10,1));
+  l.setAnchorToWorld();
+
 }
 
 
 void run(){
   float sq_curr[] = { gui["x"], gui["y"], gui["z"],
-                      gui["rx"], gui["rx"], gui["rz"],
+                      gui["rx"], gui["ry"], gui["rz"],
                       gui["dx"], gui["dy"], gui["dz"],
                       gui["e1"], gui["e2"],
                       gui["step1"], gui["step2"] };
@@ -100,11 +109,18 @@ void run(){
     std::copy(sq_curr,sq_curr+13,sq);
     scene.lock();
     scene.removeObject(0);
-    SceneObject *o = new SceneObject("superquadric",sq);
-    o->setVisible(Primitive::vertex,false);
-    o->setVisible(Primitive::line,false);
+    o = new SceneObject("superquadric",sq);
     scene.addObject(o,true);
     scene.unlock();
+  }
+  if(gui["grid"]){
+    o->setVisible(Primitive::vertex,false);
+    o->setVisible(Primitive::line,true);
+    o->setVisible(Primitive::quad,false);
+  }else{
+    o->setVisible(Primitive::vertex,false);
+    o->setVisible(Primitive::line,false);
+    o->setVisible(Primitive::quad,true);
   }
 
   gui["draw"].update();

@@ -39,7 +39,7 @@
 #include <string>
 #include <xmltio/xmltio.hpp>
 #include <ICLCore/ImgBase.h>
-#include <ICLCC/Bayer.h>
+#include <ICLCC/BayerConverter.h>
 #include <ICLCC/Converter.h>
 #include <xcf/RemoteServer.hpp>
 #include <xmltio/Location.hpp>
@@ -62,12 +62,14 @@ namespace icl{
 
     static  XCF::Binary::TransportUnitPtr ImageToCTU(const ImgBase* image, XCF::Binary::TransportUnitPtr btu);
 
+#if 0
     static void createOutputImage(const xmltio::Location& l, 
                                   ImgBase *poSrc, 
                                   ImgBase *poOutput, 
                                   ImgBase **poBayerBuffer, 
                                   BayerConverter *poBC, 
                                   Converter *poConv);
+#endif
     
     static void getImage(memory::interface::MemoryPtr &mem, 
                          const std::string &xmlDoc,

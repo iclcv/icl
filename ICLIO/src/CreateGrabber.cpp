@@ -37,17 +37,8 @@
 
 namespace icl{
 
-  const ImgBase* CreateGrabberImpl::grabUD(ImgBase **ppoDst){
-    if(getIgnoreDesiredParams()){
-      if(!ppoDst) return m_image;
-      if(!*ppoDst) *ppoDst = m_image->deepCopy();
-      else m_image->deepCopy(ppoDst);
-    }else{
-      ImgBase *image = prepareOutput(ppoDst);
-      m_oConverter.apply(m_image,image);
-      return image;
-    }
-    return 0;
+  const ImgBase* CreateGrabberImpl::acquireImage(){
+    return m_image;
   }
 
   CreateGrabberImpl::CreateGrabberImpl(const std::string &what){

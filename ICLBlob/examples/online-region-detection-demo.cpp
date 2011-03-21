@@ -58,8 +58,7 @@ void init(){
       << "prop(rd)";
   gui.show();
   gui["draw"].install(new MouseHandler(click_color));
-  grabber.init(FROM_PROGARG("-input"));
-  grabber.setIgnoreDesiredParams(true);
+  grabber.init(pa("-i"));
 }
 
 
@@ -92,5 +91,5 @@ void run(){
 
 // default main function
 int main(int n, char **ppc){
-  return ICLApp(n,ppc,"-input(2)",init,run).exec();
+  return ICLApp(n,ppc,"[m]-input|-i(2)",init,run).exec();
 }

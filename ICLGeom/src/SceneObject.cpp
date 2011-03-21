@@ -361,6 +361,7 @@ namespace icl{
       const float dAlpha = M_PI/(na-1);
       const float dBeta = 2*M_PI/nb;
       Mat T = create_hom_4x4_superquadric(rotx,roty,rotz,x,y,z);
+      Mat R = create_hom_4x4<float>(rotx,roty,rotz);
 
       for(int i=0;i<na;++i){      
         for(int j=0;j<nb;++j){
@@ -371,7 +372,7 @@ namespace icl{
           float Y = cos_sq(eta,e1)*sin_sq(omega,e2);
           float Z = sin_sq(eta,e1);
           addVertex(T * Vec(dx*X,dy*Y,dz*Z,1), geom_blue(200));
-          addNormal(T * normalize3(-Vec(X,Y,Z)));
+          addNormal(R *normalize3(-Vec(X,Y,Z)));
 
           if(i){
             if( i != (na-1)){

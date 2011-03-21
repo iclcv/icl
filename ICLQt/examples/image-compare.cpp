@@ -42,11 +42,8 @@ int main(int n, char **ppc){
          "-seclect-channel-a|-ca(int) "
          "-select-channel-b|-cb(int)");
   
-  GenericGrabber ga(FROM_PROGARG("-a"));
-  GenericGrabber gb(FROM_PROGARG("-b"));
-
-  ga.setIgnoreDesiredParams(true);
-  gb.setIgnoreDesiredParams(true);
+  GenericGrabber ga(pa("-a"));
+  GenericGrabber gb(pa("-b"));
 
   const ImgBase *a = ga.grab();
   const ImgBase *b = gb.grab();

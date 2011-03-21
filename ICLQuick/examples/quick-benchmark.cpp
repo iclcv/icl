@@ -57,8 +57,8 @@ void init(){
   
   
 
-  grabber = new GenericGrabber(FROM_PROGARG("-input"));
-  grabber->setDesiredSize(Size::VGA);
+  grabber = new GenericGrabber(pa("-i"));
+  grabber->useDesired(Size::VGA);
 }
 
 
@@ -100,5 +100,5 @@ void run(){
 
 
 int main(int n,char **ppc){
-  return ICLApp(n,ppc,"-input|-i(device,device-params)",init,run).exec();
+  return ICLApp(n,ppc,"[m]-input|-i(device,device-params)",init,run).exec();
 }

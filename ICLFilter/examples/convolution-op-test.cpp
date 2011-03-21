@@ -101,15 +101,12 @@ void run(){
   static FPSHandle fps = gui.getValue<FPSHandle>("fps");
   static LabelHandle applyTime = gui.getValue<LabelHandle>("apply-time");
   
-  static GenericGrabber grabber(FROM_PROGARG("-input"));  
-  grabber.setIgnoreDesiredParams(false);
+  static GenericGrabber grabber(pa("-i"));
 
   static ImgBase *dstImage = 0;
-
-
   
-  grabber.setDesiredSize(parse<Size>(srcSize.getSelectedItem()));
-  grabber.setDesiredDepth(parse<depth>(srcDepth.getSelectedItem()));
+  grabber.useDesired(parse<Size>(srcSize.getSelectedItem()));
+  grabber.useDesired(parse<depth>(srcDepth.getSelectedItem()));
   
   const ImgBase *grabbedImage = grabber.grab();
   Rect roi = get_roi(srcROI.getSelectedItem(),grabbedImage->getImageRect());
@@ -148,7 +145,7 @@ void run(){
 }
 
 int main(int n, char **ppc){
-  return ICLApp(n,ppc,"-input|-i(device,device-params)",init,run).exec();
+  return ICLApp(n,ppc,"[m]-input|-i(device,device-params)",init,run).exec();
 }
 
 /// there is an error when getting info from 16 bit image ???

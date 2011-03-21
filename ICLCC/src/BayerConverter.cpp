@@ -32,9 +32,9 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLCC/Bayer.h>
-#include <ICLCore/Img.h>
+#include <ICLCC/BayerConverter.h>
 #include <ICLCC/CCFunctions.h>
+#include <ICLUtils/Exception.h>
 
 namespace icl {
   
@@ -44,7 +44,7 @@ namespace icl {
      // Initialize variables
      m_eBayerPattern = eBayerPattern;
      m_eConvMethod = eConvMethod;
-     m_vRGBInterImg.resize(s.width * s.height * 3); 
+     m_buffer.resize(s.getDim()*3);
   }
   
   
@@ -52,9 +52,10 @@ namespace icl {
 
   void BayerConverter::apply(const Img8u *src, ImgBase **dst) {
     // {{{ open
-    
+    ICLASSERT_THROW(src,ICLException("BayerConvert::apply: source image was NULL"));
     // Check bayer and dst image compatibility
     ensureCompatible(dst, depth8u, src->getSize(), 3, formatRGB);
+    m_buffer.resize(src->getDim()*3);
     
     // Select interpolation method
     switch (m_eConvMethod) {
@@ -88,7 +89,7 @@ namespace icl {
     }
 
     // convert data order from interleaved to planar
-    interleavedToPlanar(&m_vRGBInterImg[0], (*dst)->asImg<icl8u>());
+    interleavedToPlanar(m_buffer.data(), (*dst)->asImg<icl8u>());
   }
 
 // }}}
@@ -103,7 +104,7 @@ namespace icl {
     const int iBayerStep = iWidth;
     const int iRGBStep = 3 * iWidth;
     const icl8u *bayer = poBayerImg->getData(0);
-    icl8u *pucRGBInterImg = &m_vRGBInterImg[0];
+    icl8u *pucRGBInterImg = m_buffer.data();
     
     int blue = m_eBayerPattern == bayerPattern_BGGR
       || m_eBayerPattern == bayerPattern_GBRG ? -1 : 1;
@@ -185,7 +186,7 @@ namespace icl {
     const int iBayerStep = iWidth;
     const int iRGBStep = 3 * iWidth;
     const icl8u *bayer = poBayerImg->getData(0);
-    icl8u *pucRGBInterImg = &m_vRGBInterImg[0];
+    icl8u *pucRGBInterImg = m_buffer.data();
 
     int blue = m_eBayerPattern == bayerPattern_BGGR
       || m_eBayerPattern == bayerPattern_GBRG ? -1 : 1;
@@ -283,7 +284,7 @@ namespace icl {
     const int iBayerStep = iWidth;
     const int iRGBStep = 3 * iWidth;
     const icl8u *bayer = poBayerImg->getData(0);
-    icl8u *pucRGBInterImg = &m_vRGBInterImg[0];
+    icl8u *pucRGBInterImg = m_buffer.data();
       
     int blue = m_eBayerPattern == bayerPattern_BGGR
       || m_eBayerPattern == bayerPattern_GBRG ? -1 : 1;
@@ -479,7 +480,7 @@ namespace icl {
     int iWidth = poBayerImg->getWidth();
     int iHeight = poBayerImg->getHeight();
     const icl8u *bayer = poBayerImg->getData(0);
-    icl8u *pucRGBInterImg = &m_vRGBInterImg[0];
+    icl8u *pucRGBInterImg = m_buffer.data();
     register int i3, j3, base;
     int i, j, dh, dv, tmp;
     int iWidth3 = iWidth*3;
@@ -767,7 +768,7 @@ namespace icl {
     const int iBayerStep = iWidth;
     const int iRGBStep = 3 * iWidth;
     const icl8u *bayer = poBayerImg->getData(0);
-    icl8u *pucRGBInterImg = &m_vRGBInterImg[0];
+    icl8u *pucRGBInterImg = m_buffer.data();
     
     int blue = m_eBayerPattern == bayerPattern_BGGR
       || m_eBayerPattern == bayerPattern_GBRG ? -1 : 1;

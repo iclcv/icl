@@ -79,10 +79,10 @@ void init(){
 }
 
 void run(){
-  static GenericGrabber g(FROM_PROGARG("-input"));
-  g.setDesiredDepth(parse<depth>(gui["ddepth"].as<std::string>()));
-  g.setDesiredSize(parse<Size>(gui["dsize"].as<std::string>()));
-  g.setDesiredFormat(parse<format>(gui["dformat"].as<std::string>()));
+  static GenericGrabber g(pa("-i"));
+  g.useDesired<depth>(gui["ddepth"]);
+  g.useDesired<Size>(gui["dsize"]);
+  g.useDesired<format>(gui["dformat"]);
   
   const ImgBase *image = g.grab();
   gui["input"] = image;
@@ -124,6 +124,6 @@ int main(int n, char **ppc){
   paex("-input","image source definition like -input dc 0")
       ("-n","number of filter instances in a row (3 by default)");
   
-  return ICLApplication(n,ppc,"-input|-i(2) -num-filters|-n(int=3)",init,run).exec();
+  return ICLApplication(n,ppc,"[m]-input|-i(2) -num-filters|-n(int=3)",init,run).exec();
 }
 

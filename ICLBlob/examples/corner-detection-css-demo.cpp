@@ -92,10 +92,9 @@ void init(){
   (*gui.getValue<DrawHandle>("img_in"))->install(&mouse);
   
   // grabber
-  grabber = new GenericGrabber(FROM_PROGARG("-input"));
-  grabber->setIgnoreDesiredParams(true);
-  grabber->setDesiredSize(pa("-size"));
-  grabber->setDesiredDepth(depth8u);
+  grabber = new GenericGrabber(pa("-i"));
+  grabber->useDesired<Size>(pa("-size"));
+  grabber->useDesired(depth8u);
 }
 
 template<class T>

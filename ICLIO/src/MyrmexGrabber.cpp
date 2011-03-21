@@ -834,7 +834,7 @@ namespace icl {
   }
 
 
-  const ImgBase* MyrmexGrabberImpl::grabUD(ImgBase **ppoDst){
+  const ImgBase* MyrmexGrabberImpl::acquireImage(){
     Img16s &outputImage = m_data->outputImage;
     outputImage.setChannels(1);
     Size s(m_data->image_width,m_data->image_height);	
@@ -843,7 +843,6 @@ namespace icl {
     if(!grabFrame(outputImage.begin(0))){
       ERROR_LOG("MyrmexGrabberImpl Modules: Error while reading data from module");
     }
-
     outputImage.setTime(Time::now());
     m_data->updateNoiseImage();
     return &outputImage;

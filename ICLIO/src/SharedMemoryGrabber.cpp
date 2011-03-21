@@ -91,8 +91,6 @@ namespace icl{
         throw ICLException(str(__FUNCTION__)+": unable to connect to shared memory segment \"" + sharedMemorySegmentID + "\"");
       }
     }
-    
-    setUseDesiredParams(false);
   }
 
   void SharedMemoryGrabberImpl::init(const std::string &sharedMemorySegmentID) throw (ICLException){
@@ -148,53 +146,21 @@ namespace icl{
     return (i.getDepth() == d) && (i.getSize() == s) && (i.getFormat() == f);
   }
   
-  const ImgBase* SharedMemoryGrabberImpl::grabUD(ImgBase **ppoDst){
+  const ImgBase* SharedMemoryGrabberImpl::acquireImage(){
     if(!m_data->mem.isAttached()) throw ICLException(str(__FUNCTION__)+": grabber is currently not attached to shared memory segment");
-    if(getUseDesiredParams()){
-      ImgBase **dst = &m_data->image;
+   
+    m_data->mem.lock();
+    while(m_data->omitDoubledFrames && // WAIT FOR NEW IMAGE LOOP
+          !m_data->isNew(ImageSerializer::deserializeTimeStamp((const icl8u*)m_data->mem.constData()),*this)){
       
-      m_data->mem.lock();
-      while(m_data->omitDoubledFrames && // WAIT FOR NEW IMAGE LOOP
-            !m_data->isNew(ImageSerializer::deserializeTimeStamp((const icl8u*)m_data->mem.constData()),*this)){
-        m_data->mem.unlock();
-        Thread::msleep(1);
-        m_data->mem.lock();
-      }
-      ImageSerializer::deserialize((const icl8u*)m_data->mem.constData(),dst);
       m_data->mem.unlock();
-      
-      if(has_params(**dst,getDesiredDepth(),getDesiredSize(),getDesiredFormat())){
-        return *dst;
-      }else{
-        if(ppoDst){
-          ensureCompatible(ppoDst,getDesiredDepth(),getDesiredSize(),getDesiredFormat());
-          m_oConverter.apply(*dst,*ppoDst);
-          return *ppoDst;
-        }else{
-          ensureCompatible(&m_data->converted_image,getDesiredDepth(),getDesiredSize(),getDesiredFormat());
-          m_oConverter.apply(*dst,m_data->converted_image);
-          return m_data->converted_image;
-        }
-      }
-    }else{
+      Thread::msleep(1);
       m_data->mem.lock();
-      while(m_data->omitDoubledFrames && // WAIT FOR NEW IMAGE LOOP
-            !m_data->isNew(ImageSerializer::deserializeTimeStamp((const icl8u*)m_data->mem.constData()),*this)){
-
-        m_data->mem.unlock();
-        Thread::msleep(1);
-        m_data->mem.lock();
-      }
-      // TODO extend deserialize to check for deserialized timestamp first
-      ImageSerializer::deserialize((const icl8u*)m_data->mem.constData(),ppoDst ? ppoDst : &m_data->image);
-      m_data->mem.unlock();
-      Thread::msleep(10);
-      
-      //      ImgBase *ret = ppoDst ? *ppoDst : m_data->image;
-      
-      return ppoDst ? *ppoDst : m_data->image;
     }
-    return 0;
+    ImageSerializer::deserialize((const icl8u*)m_data->mem.constData(),&m_data->image);
+    m_data->mem.unlock();
+    return m_data->image;
+
   }
 
   void SharedMemoryGrabber::resetBus(){

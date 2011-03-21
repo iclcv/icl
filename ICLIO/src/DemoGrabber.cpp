@@ -85,7 +85,7 @@ namespace icl{
     t.transform(std::bind2nd(std::multiplies<float>(),0.99),t);
   }
   
-  const ImgBase* DemoGrabberImpl::grabUD(ImgBase **ppoDst){
+  const ImgBase* DemoGrabberImpl::acquireImage(){
     Mutex::Locker __lock(m_mutex);
     ensureCompatible(&m_drawBuffer,m_drawDepth,m_drawSize,m_drawFormat);
 
@@ -141,7 +141,7 @@ namespace icl{
     m_drawBuffer->setTime(now);
     m_lastTime = now;
 
-    return adaptGrabResult(m_drawBuffer,ppoDst);
+    return m_drawBuffer;
   }
 
 

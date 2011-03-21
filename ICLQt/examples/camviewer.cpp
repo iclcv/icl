@@ -55,14 +55,12 @@ void init(){
            << "camcfg()"
           )
       << "!show";
-  grabber.init(FROM_PROGARG("-input"));
-  grabber.setIgnoreDesiredParams(true);
+  grabber.init(pa("-i"));
   if(pa("-size")){
-    grabber.setDesiredSize(pa("-size"));
-    grabber.setIgnoreDesiredParams(false);
+    grabber.useDesired<Size>(pa("-size"));
   }
   if(pa("-dist")){
-    grabber.enableDistortion(DIST_FROM_PROGARG("-dist"),grabber.grab()->getSize());
+    grabber.enableDistortion(pa("-dist"),grabber.grab()->getSize());
   }
 }
 

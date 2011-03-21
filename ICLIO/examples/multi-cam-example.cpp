@@ -44,8 +44,8 @@ void init(){
     std::string arg=str("-input")+str(i);
     if(pa(arg)){
       try{
-        gs.push_back(SmartPtr<GenericGrabber>(new GenericGrabber(FROM_PROGARG(arg))));
-        gs.back()->setDesiredSize(pa("-size"));
+        gs.push_back(SmartPtr<GenericGrabber>(new GenericGrabber(pa(arg))));
+        gs.back()->useDesired<Size>(pa("-size"));
         if(pa("-t")){
           gs.back()->setProperty("trigger-power","on"); // or off?
         }

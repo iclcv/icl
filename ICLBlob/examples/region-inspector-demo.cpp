@@ -107,10 +107,9 @@ void init(){
 }
 
 void run(){
-  static GenericGrabber g(FROM_PROGARG("-input"));
-  g.setDesiredSize(pa("-s"));
-  g.setIgnoreDesiredParams(false);
-  g.setDesiredFormat(formatGray);
+  static GenericGrabber g(pa("-i"));
+  g.useDesired<Size>(pa("-s"));
+  g.useDesired(formatGray);
 
   static ICLDrawWidget &d = **gui.getValue<DrawHandle>("image");
   d.install(&mouseIO);
@@ -312,6 +311,6 @@ void run(){
 
 int main(int n, char **ppc){
   paex("-input","define device parameters (e.g. -d dc 0 or -d file image/*.ppm)");
-  return ICLApp(n,ppc,"-size|-s(size=VGA) -input|-i(device,device-params)",
+  return ICLApp(n,ppc,"-size|-s(size=VGA) [m]-input|-i(device,device-params)",
                 init,run).exec();
 }

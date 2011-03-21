@@ -127,6 +127,11 @@ namespace icl{
     inline std::string operator*() const throw (ProgArgException){
       return pasubarg_internal(*this);
     }
+    
+    /// returns the prog-arg id
+    inline const std::string &getID() const {
+      return id;
+    }
   };
 
   /// just puts the referenced argument value as string into the lvalue-stream

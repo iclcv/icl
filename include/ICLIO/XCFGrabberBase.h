@@ -40,7 +40,10 @@
 #include <string>
 #include <xmltio/Location.hpp>
 #include <xcf/CTU.hpp>
-#include <ICLCC/Bayer.h>
+
+#if 0
+#include <ICLCC/BayerConverter.h>
+#endif
 
 namespace icl {
 
@@ -65,8 +68,10 @@ namespace icl {
     
     /// grabbing function  
     /** \copydoc icl::Grabber::grab(ImgBase**)*/
-    virtual const ImgBase* grabUD(ImgBase **ppoDst=0);
-      
+    virtual const ImgBase* acquireImage();
+
+#if 0 
+    /** \cond */
     /// grabbing a whole image set, e.g. from a stereo camera
     /** The vector of images is resized to match the number of grabbed
           images. Existing images in the vector are adapted to the desired
@@ -74,33 +79,27 @@ namespace icl {
         to the caller! 
      */
     void grab (std::vector<ImgBase*>& vGrabbedImages);
-
-    /// just imported from parent class
-    Grabber::grab;
+    /** \endcond */
+#endif
   
-    /// TODO: use internally
-    void setIgnoreDesiredParams(bool flag){
-      m_bIgnoreDesired = flag;
-    }
-    
-    /// TODO: use internally
-    bool getIgnoreDesiredParams() const { 
-      return m_bIgnoreDesired; 
-    }
-    
     protected:   
     /// retrieve most current image set in provided composite transport unit
     virtual void receive (XCF::CTUPtr& result) = 0;
     
     private:
-    void makeOutput (const xmltio::Location& l, ImgBase* poOutput);
       
     XCF::CTUPtr          m_result;
     ImgBase*             m_poSource;
+
+#if 0
+    void makeOutput (const xmltio::Location& l, ImgBase* poOutput);
+
     BayerConverter*	 m_poBayerConverter;
     ImgBase*             m_poBayerBuffer;
     ImgBase*             m_poDesiredParamsBuffer;
     bool                 m_bIgnoreDesired;
+#endif
+
   };
   
 }

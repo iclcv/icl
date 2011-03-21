@@ -224,12 +224,11 @@ void init(){
   
   gui["draw"].install(new MouseHandler(mouse));
   
-  grabber = new GenericGrabber(FROM_PROGARG("-input"));
-  grabber->setIgnoreDesiredParams(true);
+  grabber = new GenericGrabber(pa("-i"));
   
   if(pa("-dist")){
     const ImgBase *image = grabber->grab();
-    grabber->enableDistortion(DIST_FROM_PROGARG("-dist"),image->getSize());
+    grabber->enableDistortion(pa("-dist"),image->getSize());
   }
   if(pa("-props")){
     grabber->loadProperties(pa("-props"));

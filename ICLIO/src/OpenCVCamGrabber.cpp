@@ -34,6 +34,19 @@
 #include <ICLIO/OpenCVCamGrabber.h>
 namespace icl{
 
+  OpenCVCamGrabberImpl::OpenCVCamGrabberImpl(int dev)  throw (ICLException) :device(dev),m_buffer(0){
+    cvc = cvCaptureFromCAM(dev);
+    if(!cvc){
+      throw ICLException("unable to create OpenCVCamGrabberImpl with device index " + str(dev) + ": invalid device ID");
+    }
+  }
+  
+  OpenCVCamGrabberImpl::~OpenCVCamGrabberImpl(){
+    cvReleaseCapture(&cvc);
+    ICL_DELETE(m_buffer);
+  }
+
+
   std::vector<std::string> OpenCVCamGrabberImpl::getPropertyList(){
     static const std::string ps="size brightness contrast saturation hue format";
     return tok(ps," ");
@@ -80,59 +93,30 @@ namespace icl{
     return "undefined";
   }
 
-  const ImgBase *OpenCVCamGrabberImpl::grabUD (ImgBase **ppoDst){
+  const ImgBase *OpenCVCamGrabberImpl::acquireImage(){
     ICLASSERT_RETURN_VAL( !(cvc==0), 0);
-    if(!ppoDst){
-      ppoDst = &m_poImage;
-    }
-    {
-      Mutex::Locker lock(m_Mutex);
-      IplImage *img = cvQueryFrame(cvc);
-      if(!m_bIgnoreDesiredParams){
-        Size iplSize(img->width,img->height);
-        if(getDesiredSize() == iplSize && getDesiredFormat() == formatRGB){
-          ensureCompatible(ppoDst,getDesiredDepth(),getDesiredParams());
-          icl::ipl_to_img(img,ppoDst,PREFERE_DST_DEPTH);
-        }else{
-          ensureCompatible(&scalebuffer,m_eDesiredDepth,iplSize,formatRGB);
-          icl::ipl_to_img(img,&scalebuffer,PREFERE_DST_DEPTH);
-          ensureCompatible(ppoDst,getDesiredDepth(),getDesiredParams());
-          m_oConverter.apply(scalebuffer,*ppoDst);
-          //scalebuffer->scaledCopy(ppoDst,interpolateLIN);
-        }
-      } else {
-        //this function takes care if ppoDst is NULL
-        icl::ipl_to_img(img,ppoDst);
-      }
-      return *ppoDst;
-    }
+    Mutex::Locker lock(m_mutex);
+    icl::ipl_to_img(cvQueryFrame(cvc),&m_buffer);
+    return m_buffer;
   }
 
-  OpenCVCamGrabberImpl::OpenCVCamGrabberImpl(int dev)  throw (ICLException) :device(dev),scalebuffer(0){
-    cvc = cvCaptureFromCAM(dev);
-    if(!cvc){
-      throw ICLException("unable to create OpenCVCamGrabberImpl with device index " + str(dev) + ": invalid device ID");
-    }
-  }
-  
-  OpenCVCamGrabberImpl::~OpenCVCamGrabberImpl(){
-    cvReleaseCapture(&cvc);
-    ICL_DELETE(scalebuffer);
-  }
 
   void OpenCVCamGrabberImpl::setProperty(const std::string &name, const std::string &value){
     int i = 0;
     int j = 0;
-    Mutex::Locker lock(m_Mutex);
+    Mutex::Locker lock(m_mutex);
     if(name == "size"){
       cvReleaseCapture(&cvc);
       cvc = cvCaptureFromCAM(device);
       Size s(value);
       i = cvSetCaptureProperty(cvc,CV_CAP_PROP_FRAME_WIDTH,double(s.width));
       j = cvSetCaptureProperty(cvc,CV_CAP_PROP_FRAME_HEIGHT,double(s.height));
-      m_bIgnoreDesiredParams = false;
-      if(i==0 || j==0)
-	setDesiredSize(s);
+
+      /* TODO: acatually, the resulting image sizes are not used ??
+          m_bIgnoreDesiredParams = false;
+          if(i==0 || j==0)
+          setDesiredSize(s);
+      */
     }else if(name == "brightness"){
       i = cvSetCaptureProperty(cvc,CV_CAP_PROP_BRIGHTNESS,parse<double>(value));
     }else if(name == "contrast"){

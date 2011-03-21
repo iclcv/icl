@@ -120,8 +120,7 @@ void run(){
 
 
 void init(){
-  grabber = new GenericGrabber(FROM_PROGARG("-input"));
-  grabber->setIgnoreDesiredParams(true);
+  grabber = new GenericGrabber(pa("-i"));
   grabber->resetBus();
 
   gui << "draw[@handle=draw@minsize=16x12]";
@@ -133,6 +132,6 @@ void init(){
 
 
 int main(int n, char **ppc){
-  ICLApplication app(n,ppc,"-input|-i(device,device-info)",init,run);
+  ICLApplication app(n,ppc,"[m]-input|-i(device,device-info)",init,run);
   return app.exec();
 }

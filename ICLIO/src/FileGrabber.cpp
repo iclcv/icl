@@ -140,8 +140,6 @@ namespace icl{
     if(!m_oFileList.size()){
       throw FileNotFoundException(pattern);
     }
-
-    setIgnoreDesiredParams(ignoreDesired);
     
     if(buffer){
       bufferImages(false);
@@ -234,26 +232,18 @@ namespace icl{
 
   // }}}
   
-  const ImgBase *FileGrabberImpl::grabUD(ImgBase **ppoDst){
+  const ImgBase *FileGrabberImpl::acquireImage(){
     // {{{ open
 
     if(m_bBufferImages){
       ICLASSERT_RETURN_VAL(m_vecImageBuffer.size(),NULL);
-      if(!m_bIgnoreDesiredParams){
-        ImgBase* useDestImage = prepareOutput(ppoDst);
-        m_oConverter.apply(m_vecImageBuffer[m_iCurrIdx],useDestImage);
-        if(m_bAutoNext) ++m_iCurrIdx;
-        if(m_iCurrIdx >= (int)m_vecImageBuffer.size()) m_iCurrIdx = 0;
-        return useDestImage;
-      }else{
-        ImgBase *p = m_vecImageBuffer[m_iCurrIdx];
-        if(m_bAutoNext) ++m_iCurrIdx;
-        if(m_iCurrIdx >= (int)m_vecImageBuffer.size()) m_iCurrIdx = 0;
-        return p;
-      }
+      ImgBase *p = m_vecImageBuffer[m_iCurrIdx];
+      if(m_bAutoNext) ++m_iCurrIdx;
+      if(m_iCurrIdx >= (int)m_vecImageBuffer.size()) m_iCurrIdx = 0;
+      return p;
     }
+
     ICLASSERT_RETURN_VAL(!m_oFileList.isNull(),NULL);
-    
     File f(m_oFileList[m_iCurrIdx]);
     if(m_bAutoNext) ++m_iCurrIdx;
     if(!f.exists()) throw FileNotFoundException(f.getName());
@@ -269,43 +259,14 @@ namespace icl{
       throw InvalidFileException(string("file type (filename was \"")+f.getName()+"\")");
       return 0;
     }
-    if(m_bIgnoreDesiredParams){
-      ImgBase** useDestImage = ppoDst ? ppoDst : &m_poBufferImage;
-      try{
-        it->second->grab(f,useDestImage);
-      }catch(ICLException &ex){
-        if(f.isOpen()) f.close();
-        throw ex;
-      }
-      if(f.isOpen()) f.close();
-
-      if(!useDestImage){
-        throw InvalidFileException(f.getName());
-        return 0;
-      }
-      return *useDestImage;
-    }else{
-      try{
-        it->second->grab(f,&m_poBufferImage);
-      }catch(ICLException &ex){
-        if(f.isOpen()) f.close();
-        throw ex;
-      }
-      if(f.isOpen()) f.close();
-      
-      if(!m_poBufferImage){
-        throw InvalidFileException(f.getName());
-        return 0;
-      }
-
-      ImgBase* useDestImage = prepareOutput(ppoDst);
-
-      m_oConverter.apply(m_poBufferImage,useDestImage);  
-      
-      return useDestImage;        
-    }
     
-
+    try{
+      it->second->grab(f,&m_poBufferImage);
+    }catch(ICLException&){
+      if(f.isOpen()) f.close();
+      throw;
+    }
+    return m_poBufferImage;
   }
 
   // }}}

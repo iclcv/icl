@@ -476,8 +476,7 @@ void init(){
   CALIB_DATA.nx = pa("-nx",0);
   CALIB_DATA.ny = pa("-ny",0);
 
-  grabber = new GenericGrabber(FROM_PROGARG("-input"));
-  grabber->setIgnoreDesiredParams(true);
+  grabber = new GenericGrabber(pa("-input"));
   grabber->grab()->convert(&IMAGE);
 
   create_empty_warp_map(WARP_MAP);

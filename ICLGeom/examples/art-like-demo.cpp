@@ -63,9 +63,9 @@ void init(){
       << "!show";
   
   grabber.resetBus();
-  grabber.init(FROM_PROGARG("-i"));
-  grabber.setDesiredSize(Size(1280,960));
-  grabber.setDesiredFormat(formatGray);
+  grabber.init(pa("-i"));
+  grabber.useDesired(Size(1280,960));
+  grabber.useDesired(formatGray);
   
   Camera cam;
   if(pa("-cam")){

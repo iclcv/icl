@@ -69,23 +69,14 @@ namespace icl{
 
   // }}}
   
-  const ImgBase *DCGrabberImpl::grabUD (ImgBase **ppoDst){
+  const ImgBase *DCGrabberImpl::acquireImage(){
     // {{{ open
-
-    /*
-        if(ppoDst){
-        ERROR_LOG("Giving DCGrabber a destination image != NULL is currently not supported");
-        return 0;
-        }
-     */
 
     ICLASSERT_RETURN_VAL( !m_oDev.isNull(), 0);
 
     if(!m_poGT){
       restartGrabberThread();
     }
-    
-    ppoDst = ppoDst ? ppoDst : &m_poImage;
 
     dc1394color_filter_t bayerLayout = m_oDev.getBayerFilterLayout();
     if((int)bayerLayout == 1){
@@ -98,27 +89,12 @@ namespace icl{
       else bayerLayout = (dc1394color_filter_t)0;
     }
     
-    if(getIgnoreDesiredParams()){
-      m_poGT->getCurrentImage(ppoDst,bayerLayout,bayermethod_from_string(getValue("bayer-quality")));
-    }else{
-      // Somethings goes wrong here!
-      ImgBase **ppoDstTmp = &m_poImageTmp;
-      bool desiredParamsFullfilled = false;
-      
-      m_poGT->getCurrentImage(ppoDst,ppoDstTmp,desiredParamsFullfilled,
-                              getDesiredSize(),getDesiredFormat(), getDesiredDepth(),
-                              bayerLayout,
-                              bayermethod_from_string(getValue("bayer-quality")) );
-      
-      if(!desiredParamsFullfilled){
-        ensureCompatible(ppoDst,getDesiredDepth(),getDesiredParams());
-        m_oConverter.apply(*ppoDstTmp,*ppoDst);
-      }
-    }
+    m_poGT->getCurrentImage(&m_poImage,bayerLayout,bayermethod_from_string(getValue("bayer-quality")));
+
     if(m_oOptions.enable_image_labeling){
-      labelImage(*ppoDst,m_oDev.getModelID());
+      labelImage(m_poImage,m_oDev.getModelID());
     }
-    return *ppoDst;
+    return m_poImage;
   }
 
   // }}}

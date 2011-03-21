@@ -82,9 +82,9 @@ void stop_chooser(GUI &dst, int idx,float pos, float r, float g, float b){
 }
 
 void init(){
-  grabber.init(FROM_PROGARG("-i"));
-  grabber.setUseDesiredParams(true);
-  grabber.setDesiredFormat(formatGray);
+  grabber.init(pa("-i"));
+  grabber.useDesired(formatGray);
+  grabber.useDesired(depth8u);
   
   ::color = Img8u(Size(256,50),1);
   ::image = *grabber.grab()->asImg<icl8u>();

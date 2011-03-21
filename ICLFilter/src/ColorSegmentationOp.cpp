@@ -85,7 +85,7 @@ namespace icl{
     
     void load(const std::string &filename){
       FileGrabber g(filename);
-      g.setIgnoreDesiredParams(true);
+      g.ignoreDesired();
       const Img8u &image = *g.grab()->asImg<icl8u>();
       ICLASSERT_THROW(image.getWidth() == w &&
                       image.getHeight() == h &&

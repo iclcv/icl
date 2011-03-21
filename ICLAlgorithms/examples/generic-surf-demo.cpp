@@ -122,8 +122,7 @@ void select_object(const MouseEvent &m){
 }
 
 void init(){
-  grabber.init(FROM_PROGARG("-i"));
-  grabber.setIgnoreDesiredParams(true);
+  grabber.init(pa("-i"));
 
   if(pa("-f")){
     Img8u obj = load<icl8u>(pa("-f"));
@@ -270,5 +269,5 @@ void run(){
 
 
 int main(int n, char **args){
-  return ICLApp(n,args,"-input|-i(devicetype,device) -file|-f(objectfile)",init,run).exec();
+  return ICLApp(n,args,"[m]-input|-i(devicetype,device) -file|-f(objectfile)",init,run).exec();
 }

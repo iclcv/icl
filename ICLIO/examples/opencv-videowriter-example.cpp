@@ -182,7 +182,6 @@ void init(){
   }else{
     cg = new OpenCVCamGrabber(0);
   }
-  cg->setIgnoreDesiredParams(true);
 
   if(pa("-f")){
     filename = parse<std::string>(pa("-f"));

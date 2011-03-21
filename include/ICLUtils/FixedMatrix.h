@@ -996,6 +996,7 @@ namespace icl{
     m(2,1)=dy;
     return m;
   }
+  
 
   /// create 3D rotation matrix that rotates about given axis by given angle (float and double only)
   template<class T>

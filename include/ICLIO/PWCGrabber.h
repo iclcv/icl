@@ -36,14 +36,12 @@
 #define ICLPWCGRABBER_H
 
 #include <ICLIO/GrabberHandle.h>
-#include <ICLCC/Converter.h>
 #include <string>
 
 namespace icl{
   
   /// Camera Grabber for Phillips Webcams \ingroup GRABBER_G
-  /**
-  The PWCGrabber provides basic abilities for grabbing images from Phillips
+  /** The PWCGrabber provides basic abilities for grabbing images from Phillips
   USB Webcams (that are using the PWC Kernel module). The Grabber will create
   an internal grabber thread, that grabs continously images into an internal 
   ring-buffer. This will not slow down the processor performance much, as the
@@ -122,8 +120,7 @@ namespace icl{
     bool init(const Size &s,float fFps=30, int iDevice = 0, bool echoOff=false);
     
     /// grabbing function  
-    /** \copydoc icl::Grabber::grab(ImgBase**)  **/    
-    virtual const ImgBase* grabUD(ImgBase **ppoDst=0);
+    virtual const ImgBase* acquireImage();
 
     /** @{ @name properties and parameters */
     
@@ -233,9 +230,6 @@ namespace icl{
 
     /// current Img8u image buffer
     Img8u *m_poRGB8Image;
-
-    /// converter used for output formatYUV conversion
-    Converter m_oConverterHalfSize;
   };
 
 

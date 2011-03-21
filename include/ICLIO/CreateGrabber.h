@@ -50,7 +50,7 @@ namespace icl{
     friend class CreateGrabber;
 
     /// default grab function
-    virtual const ImgBase* grabUD(ImgBase **ppoDst=0);
+    virtual const ImgBase* acquireImage();
 
     /// Destructor
     ~CreateGrabberImpl();
