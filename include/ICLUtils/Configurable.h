@@ -43,6 +43,8 @@
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/SmartPtr.h>
 #include <ICLUtils/Any.h>
+#include <ICLUtils/Function.h>
+
 namespace icl{
 
   /// Interface for classes that can be configured from configuration-files and GUI-Components
@@ -98,13 +100,13 @@ namespace icl{
       TODO example for both approaches:
       */
   class Configurable{
-    private:
-    /// Internal Property structure (storing all information of a property)
+    public:
+    /// Represents a single property
     struct Property{
-    Property():configurable(0),volatileness(0){}
-    Property(Configurable *parent,
-             const std::string &name, const std::string &type, const std::string &info, const std::string &value,
-             int volatileness):configurable(parent),name(name),type(type),info(info),value(value),
+      Property():configurable(0),volatileness(0){}
+      Property(Configurable *parent,
+               const std::string &name, const std::string &type, const std::string &info, const std::string &value,
+               int volatileness):configurable(parent),name(name),type(type),info(info),value(value),
         volatileness(volatileness){}
       Configurable *configurable; //!< corresponding Configurable
       std::string name;  //!< property-ID
@@ -116,6 +118,8 @@ namespace icl{
       /// for more efficient find
       bool operator==(const std::string &name) const { return this->name == name; }
     };
+
+    private:
     
     /// by default internally use property list
     typedef std::map<std::string,Property> PropertyMap;
@@ -227,25 +231,21 @@ namespace icl{
         an integer value 0,1,... */
     static std::string create_default_ID(const std::string &prefix);
 
-    /// Callback type for registering callbacks for changing properties
-    struct PropertyChangedCallback{
-      virtual void propertyChanged(const std::string &name, const std::string &type, const std::string &value)=0;
-    };
-    
-    /// Managed Callback Pointer
-    typedef SmartPtr<PropertyChangedCallback> PropertyChangedCallbackPtr;
+
+    /// Function type for changed properties
+    typedef Function<void,const Property&> Callback;
     
     /// add a callback for changed properties
-    void registerCallback(const PropertyChangedCallbackPtr &cb){
+    void registerCallback(const Callback &cb){
       callbacks.push_back(cb);
     }
     
     /// removes a callback that was registered before 
-    void removedCallback(const PropertyChangedCallback *cb);
+    void removedCallback(const Callback &cb);
     
     protected:
     /// internally managed list of callbacks
-    std::vector<PropertyChangedCallbackPtr> callbacks;
+    std::vector<Callback> callbacks;
 
     /// calls all registered callbacks
     void call_callbacks(const std::string &propertyName);

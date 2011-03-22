@@ -122,12 +122,8 @@ namespace icl{
 
     GLTextureMapBaseImage tmImage;
 
-    typedef void (ICLWidget::*VoidCallback)();
-    typedef void (ICLWidget::*BoolCallback)(bool);
-
-    VoidCallback vcb;
-    BoolCallback bcb;
-                  
+    Function<void> vcb;
+    Function<void,bool> bcb;                
                   
     static inline const Img8u &get_icon(IconType icon){
       switch(icon){
@@ -147,9 +143,9 @@ namespace icl{
       return undef;
     }
     
-    OSDGLButton(const std::string &id, int x, int y, int w, int h,const ImgBase *icon, VoidCallback vcb=0):
+    OSDGLButton(const std::string &id, int x, int y, int w, int h,const ImgBase *icon, const Function<void> &cb=Function<void>()):
       id(id),bounds(x,y,w,h),toggable(false),over(false),down(false),
-      toggled(false),visible(false),vcb(vcb),bcb(0){
+      toggled(false),visible(false),vcb(vcb){
       if(icon){
         icon->convert(&this->icon);
       }else{
@@ -158,24 +154,24 @@ namespace icl{
     }
   
     
-    OSDGLButton(const std::string &id, int x, int y, int w, int h, IconType icon, VoidCallback vcb=0):
+    OSDGLButton(const std::string &id, int x, int y, int w, int h, IconType icon, const Function<void> &cb=Function<void>()):
       id(id),bounds(x,y,w,h),toggable(false),over(false),down(false),
-      toggled(false),visible(false),vcb(vcb),bcb(0){
+      toggled(false),visible(false),vcb(vcb){
       this->icon = get_icon(icon);
     }
     OSDGLButton(const std::string &id, int x, int y, int w, int h, IconType icon, 
-                IconType downIcon, BoolCallback bcb=0, bool toggled = false):
+                IconType downIcon, const Function<void,bool> &cb=Function<void,bool>(), bool toggled = false):
       id(id),bounds(x,y,w,h),toggable(true),over(false),down(false),
-      toggled(toggled),visible(false),vcb(0),bcb(bcb){
+      toggled(toggled),visible(false),bcb(bcb){
       this->icon = get_icon(icon);
       this->downIcon = get_icon(downIcon);
     }
 
     OSDGLButton(const std::string &id, int x, int y, int w, int h, 
                 const ImgBase *untoggledIcon, const ImgBase *toggledIcon, 
-                BoolCallback bcb=0, bool toggled = false):
+                const Function<void,bool> &cb=Function<void,bool>(), bool toggled = false):
       id(id),bounds(x,y,w,h),toggable(true),over(false),down(false),
-      toggled(toggled),visible(false),vcb(0),bcb(bcb){
+      toggled(toggled),visible(false),bcb(bcb){
       if(untoggledIcon){
         untoggledIcon->convert(&icon);
       }else{
@@ -1284,7 +1280,7 @@ namespace icl{
                                          const ImgBase* untoggledIcon, 
                                          const ImgBase *toggledIcon, 
                                          bool initiallyToggled, 
-                                         ICLWidget::BoolCallback cb){
+                                         const Function<void,bool> &cb){
     // {{{ open
 
     static const int y = GL_BUTTON_Y, w = GL_BUTTON_W, h = GL_BUTTON_H;
@@ -1299,7 +1295,7 @@ namespace icl{
   // }}}
   void ICLWidget::addSpecialButton(const std::string &id, 
                                    const ImgBase* icon, 
-                                   ICLWidget::VoidCallback cb){
+                                   const Function<void> &cb){
     // {{{ open
 
     static const int y = GL_BUTTON_Y, w = GL_BUTTON_W, h = GL_BUTTON_H;

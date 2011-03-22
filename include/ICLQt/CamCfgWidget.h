@@ -88,7 +88,7 @@ namespace icl{
           even sometimes mess up already existent devices.
       \image html camcfg.png "The CamCfgWiget used for the icl-camcfg application"
   */
-  class CamCfgWidget : public QWidget, public GUI::Callback, public Thread{
+  class CamCfgWidget : public QWidget, public Thread{
     class Data;  //!< internal data class
     Data * data; //!< internal data storage
 
@@ -108,8 +108,8 @@ namespace icl{
     /// reimplemented
     virtual void setVisible (bool visible);
     
-    /// from GUI::Callback for processing GUI events
-    virtual void exec(const std::string &handle);
+    /// used as GUI::Callback for processing GUI events
+    void callback(const std::string &handle);
     
     /// from Thread
     virtual void run();

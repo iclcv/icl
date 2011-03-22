@@ -1,3 +1,4 @@
+
 #include <ICLUtils/Configurable.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/ConfigFile.h>
@@ -127,16 +128,15 @@ namespace icl{
 
   void Configurable::call_callbacks(const std::string &propertyName){
     if(!callbacks.size()) return;
-    std::string type = getPropertyType(propertyName);
-    std::string value = getPropertyValue(propertyName);
-    for(std::vector<PropertyChangedCallbackPtr>::iterator it=callbacks.begin();it!=callbacks.end();++it){
-      (*it)->propertyChanged(propertyName,type,value);
+    const Property &p = prop(propertyName);
+    for(std::vector<Callback>::iterator it=callbacks.begin();it!=callbacks.end();++it){
+      (*it)(p);
     }
   }
 
-  void Configurable::removedCallback(const PropertyChangedCallback *cb){
-    for(std::vector<PropertyChangedCallbackPtr>::iterator it=callbacks.begin();it!=callbacks.end();++it){
-      if( it->get() == cb ){
+  void Configurable::removedCallback(const Callback &cb){
+    for(std::vector<Callback>::iterator it=callbacks.begin();it!=callbacks.end();++it){
+      if( *it == cb ){
         callbacks.erase(it);
         break;
       }

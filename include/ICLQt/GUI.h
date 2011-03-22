@@ -38,6 +38,7 @@
 #include <string>
 #include <vector>
 #include <ICLUtils/SmartPtr.h>
+#include <ICLUtils/Function.h>
 #include <ICLQt/DataStore.h>
 
 #include <QtGui/QLayout>
@@ -151,49 +152,16 @@ namespace icl{
     /// returns the GUI internal dataStore
     const DataStore &getDataStore() const { return m_oDataStore; }
     
+    /// simple callback, that can be registered at GUI components
+    /** Simple callback methods don't get any information about the source */
+    typedef Function<void> Callback;
     
-    /// Callback helper class: Default implementation calls a callback function 
-    struct Callback{
-      /// typedef to wrapped function (only for default implementation)
-      typedef void (*callback_function)(void);
-
-      /// typedef to wrapped function (only used if exec(const std::string&) is not overloaded!)
-      typedef void (*complex_callback_function)(const std::string&);
-      
-    private:
-      /// internally used default callback function
-      callback_function m_func;
-      
-      /// internally used complex  callback function
-      /** complex callback functions do always get the event-sources handle
-          name as argument*/
-      complex_callback_function m_cfunc;
-      
-      protected:
-      /// create a new callback object
-      Callback():m_func(0),m_cfunc(0){}
-      
-      public:
-      /// Default implementations constructor with given callback function
-      Callback(callback_function func):m_func(func),m_cfunc(0){}
-
-      /// Default implementations constructor with given complex callback function
-      Callback(complex_callback_function cfunc):m_func(0),m_cfunc(cfunc){}
-      
-      /// vitual execution function
-      virtual void exec(){
-        if(m_func) m_func();
-      }
-      
-      /// virtual complex execution function
-      /** the complex function is called with given component's handle name, 
-          so it can be used to handle events of different components */
-      virtual void exec(const std::string &handle){
-        if(m_cfunc) m_cfunc(handle);
-      }
-
-    };
-    typedef SmartPtr<Callback> CallbackPtr;
+    /// complex callback type that can be registered at GUI components
+    /** Complex callback methods get the GUI components handle name as
+        parameters. By these means, single callbacks can be registered
+        to several components and still be able to handle events differently */
+    typedef Function<void,const std::string&> ComplexCallback;
+    
     
     /// registers a callback function on each component 
     /** @param cb callback to execute 
@@ -202,24 +170,11 @@ namespace icl{
         ownership is passed to the childrens; deletion is performed by
         the smart pointers that are used...
     */
-    void registerCallback(CallbackPtr cb, const std::string &handleNamesList, char listDelim=',');
+    void registerCallback(const Callback &cb, const std::string &handleNamesList, char listDelim=',');
     
-    /// convenience wrapper for registration of callback functions
-    /** internally this function creates and appropriate CallbackPtr 
-        in order to pass the given callback_function f 
-        to registerCallback(CallbackPtr,const std::string&)*/
-    void registerCallback(GUI::Callback::callback_function f, const std::string &handleNamesList, char listDelim=','){
-      registerCallback(new Callback(f),handleNamesList);
-    }
-
-    /// convenience wrapper for registration of complex callback functions
-    /** internally this function creates and appropriate CallbackPtr 
-        in order to pass the given complex_callback_function f 
-        to registerCallback(CallbackPtr,const std::string&)*/
-    void registerCallback(GUI::Callback::complex_callback_function f, const std::string &handleNamesList){
-      registerCallback(new Callback(f),handleNamesList);
-    }
-
+    /// registeres a complex callback at a given GUI component
+    /** complex callbacks are called with the actual GUI components handle name as parameter */
+    void registerCallback(const ComplexCallback &cb, const std::string &handleNamesList, char listDelim=',');
 
     /// removes all callbacks from components
     void removeCallbacks(const std::string &handleNamesList, char listDelim=',');

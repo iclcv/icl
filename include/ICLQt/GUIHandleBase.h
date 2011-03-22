@@ -70,7 +70,17 @@ namespace icl{
                currently only the ImageHandle DrawHandle and DrawHandle3D re-implement this 
                functionality. At default, events is not regarded at all 
     */
-    virtual void registerCallback(GUI::CallbackPtr cb, const std::string &events="all"){
+    virtual void registerCallback(const GUI::Callback &cb, const std::string &events="all"){
+      (void)events;
+      if(m_poGUIWidget){
+        m_poGUIWidget->registerCallback(cb);
+      }else{
+        ERROR_LOG("unable to register a callback function on a null handle");
+      }
+    }
+
+    /// registers a complex callback on this gui component
+    virtual void registerCallback(const GUI::ComplexCallback &cb, const std::string &events="all"){
       (void)events;
       if(m_poGUIWidget){
         m_poGUIWidget->registerCallback(cb);

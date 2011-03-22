@@ -43,10 +43,10 @@ namespace icl{
     (**this)->updateFromOtherThread();
   }
 
-  void ImageHandle::registerCallback(GUI::CallbackPtr cb, const std::string &events){
+  void ImageHandle::registerCallback(const GUI::Callback &cb, const std::string &events){
     (**this)->registerCallback(cb,events);
   }
-  
+
   void ImageHandle::removeCallbacks(){
     (**this)->removeCallbacks();
   }

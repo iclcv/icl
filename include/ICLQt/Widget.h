@@ -154,12 +154,6 @@ int main(int n, char **args){
     /// just used internally 
     friend class OSDGLButton;
 
-    /// member function callback type for void foo(void) members
-    typedef void (ICLWidget::*VoidCallback)();
-
-    /// member function callback type for void foo(bool) members
-    typedef void (ICLWidget::*BoolCallback)(bool);
-
     class Data;   
     class OutputBufferCapturer;
     
@@ -249,7 +243,7 @@ int main(int n, char **args){
                - enter  (mouse cursor enters the widget)
                - leave  (mouse cursor leaved the widget)
     */
-    void registerCallback(GUI::CallbackPtr cb, const std::string &eventList="drag,press");
+    void registerCallback(const GUI::Callback &cb, const std::string &eventList="drag,press");
 
     /// removes all callbacks registered using registerCallback
     void removeCallbacks();
@@ -299,13 +293,13 @@ int main(int n, char **args){
                                 const ImgBase* untoggledIcon = 0, 
                                 const ImgBase *toggledIcon = 0, 
                                 bool initiallyToggled = 0, 
-                                BoolCallback cb = 0);
+                                const Function<void,bool> &cb=Function<void,bool>());
 
     /// Adds a new toggle-button to the OSD-button bar on the upper widget edge
     /** @see addSpecialToggleButton */
     void addSpecialButton(const std::string &id, 
                           const ImgBase* icon = 0, 
-                          VoidCallback = 0);
+                          const Function<void> &cb=Function<void>());
 
     
     /// removes special button with given ID

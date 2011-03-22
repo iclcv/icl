@@ -40,6 +40,7 @@
 //#include <libusbSR.h>
 #include <libMesaSR.h>
 #include <ICLUtils/StringUtils.h>
+#include <ICLCore/Img.h>
 #include <map>
 #include <string>
 
@@ -224,8 +225,6 @@ namespace icl{
 
     SR_SetCallback(swiss_ranger_debug_callback);
 
-    setIgnoreDesiredParams(true);
-    
     m_sr = new SwissRanger;
 
     if(serialNumber < 0){
@@ -279,7 +278,7 @@ namespace icl{
     return unitFactor * maxRange;
   }
   
-  const ImgBase *SwissRangerGrabberImpl::grabUD(ImgBase **dst){
+  const ImgBase *SwissRangerGrabberImpl::acquireImage(){
     Mutex::Locker l(m_mutex);
     SR_Acquire(m_sr->cam);
     Time captureTime = Time::now();
@@ -334,12 +333,6 @@ namespace icl{
       }
     }
 
-    /// desired parameters cannot be supported!
-    if(getIgnoreDesiredParams() != true){
-      ERROR_LOG("desired params are not used by the SwissRanger grabbing device");
-      setIgnoreDesiredParams(true);
-    }
-
     if(m_sr->iim != iimUnknownPixelsUnchanged){
       if(im_CONF_MAP && im_AMPLITUDE){
         if( (m_sr->pickChannel == -1) || (m_sr->pickChannel == AMPLITUDE_idx) ){
@@ -366,17 +359,8 @@ namespace icl{
       }
     }
     
-    if(dst){
-      if(!*dst) *dst = result.deepCopy();
-      else result.deepCopy(dst);
-
-      (*dst)->setTime(captureTime);
-      return *dst;
-    }else{
-      result.setTime(captureTime);
-      return &result;
-    }
-
+    result.setTime(captureTime);
+    return &result;
   }
 
   const std::vector<GrabberDeviceDescription> &SwissRangerGrabberImpl::getDeviceList(bool rescan){

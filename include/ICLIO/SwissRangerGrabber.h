@@ -63,7 +63,7 @@ namespace icl{
     static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
     
     /// grab an undistorted image 
-    const ImgBase *grabUD(ImgBase **dst=0);
+    const ImgBase *acquireImage();
 
     /** Sets a property */
     virtual void setProperty(const std::string &property, const std::string &value);

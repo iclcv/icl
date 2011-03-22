@@ -66,7 +66,6 @@ set(LIB_SOURCES "")
 add_libsource (${PROJECT_NAME} "src/BorderHandle.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/ButtonGroupHandle.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/ButtonHandle.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-add_libsource (${PROJECT_NAME} "src/CamThread.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/ChromaGUI.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/ChromaClassifierIO.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/ComboHandle.cpp" "${CONDITIONLIST}" LIB_SOURCES)
@@ -122,7 +121,6 @@ SET(HWQ_Qt4_SRC
 	"../include/ICLQt/DoubleSlider.h"
 	"../include/ICLQt/ImgParamWidget.h"
 	"../include/ICLQt/StringSignalButton.h"
-	"../include/ICLQt/CamThread.h"
 	"../include/ICLQt/GUIWidget.h"
 	"../include/ICLQt/ChromaGUI.h"
 	"../include/ICLQt/MultiDrawHandle.h"

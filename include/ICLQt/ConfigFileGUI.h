@@ -71,7 +71,7 @@ namespace icl{
       In addition, ConfigFile float- and int-entries can be set up with a range-property to 
       enable the ConfigFileGUI to create a slider for this entry (@see ConfigFile for more details)
   */
-  class ConfigFileGUI : public QObject, public GUI, public GUI::Callback{
+  class ConfigFileGUI : public QObject, public GUI{
     Q_OBJECT;
     ConfigFile *m_config;
     bool m_own;
@@ -91,10 +91,10 @@ namespace icl{
     QWidget *getWidget();
     
     /// for GUI::Callback
-    virtual void exec();
+    void operator()();
 
     /// for GUI::Callback
-    virtual void exec(const std::string &handle);
+    void operator()(const std::string &handle);
     
     private slots:
     void itemDoubleClicked(QTreeWidgetItem *item, int column);

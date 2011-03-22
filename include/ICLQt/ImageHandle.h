@@ -32,11 +32,12 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_IMAGE_HANDLE
-#define ICL_IMAGE_HANDLE
+#ifndef ICL_IMAGE_HANDLE_H
+#define ICL_IMAGE_HANDLE_H
 
 
 #include <ICLQt/GUIHandle.h>
+#include <ICLUtils/Exception.h>
 
 namespace icl{
   
@@ -67,7 +68,13 @@ namespace icl{
     void update();
 
     /// passes callback registration to wrapped ICLWidget instance)
-    virtual void registerCallback(GUI::CallbackPtr cb, const std::string &events="all");
+    virtual void registerCallback(const GUI::Callback &cb, const std::string &events="all");
+
+    /// complex callbacks are not allowed for image-components (this method will throw an exception)
+    virtual void registerCallback(const GUI::ComplexCallback&, const std::string &){
+      throw ICLException("ImageHandle::registerCallback: you cannot register "
+                         "GUI::ComplexCallback instances to an image GUI component");
+    }
     
     /// passes callback registration to wrapped ICLWidget instance)
     virtual void removeCallbacks();

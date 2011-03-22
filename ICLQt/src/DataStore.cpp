@@ -307,7 +307,9 @@ INST_OTHER_TYPES
 #define INST_REGISTER_EVENT_FOR_HANDLE(T)                               \
     FROM_TO(DataStore::Data::Event,T##Handle,                           \
             if(src.message=="register"){                                \
-              dst.registerCallback((GUI::Callback*)src.data);           \
+              dst.registerCallback(*(GUI::Callback*)src.data);          \
+            }else if(src.message=="register-complex"){                  \
+              dst.registerCallback(*(GUI::ComplexCallback*)src.data);   \
             }else if(src.message == "enable"){                          \
               dst.enable();                                             \
             }else if(src.message == "disable"){                         \

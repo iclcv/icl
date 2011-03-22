@@ -104,12 +104,17 @@ namespace icl{
     GUI *getGUI(){ return m_poGUI; }
 
     /// registers a callback on this gui widget
-    void registerCallback(GUI::CallbackPtr cb){
+    void registerCallback(const GUI::Callback &cb){
       m_vecCallbacks.push_back(cb);
+    }
+    /// registers a callback on this gui widget
+    void registerCallback(const GUI::ComplexCallback &cb){
+      m_vecComplexCallbacks.push_back(cb);
     }
     /// remove all callbacks from this widget
     void removeCallbacks(){
       m_vecCallbacks.clear();
+      m_vecComplexCallbacks.clear();
     }
 
     /// Callback execution 
@@ -127,7 +132,8 @@ namespace icl{
     QLayout *m_poOtherLayout;
     GUI *m_poGUI;
     std::string *m_handle;
-    std::vector<GUI::CallbackPtr> m_vecCallbacks;
+    std::vector<GUI::Callback> m_vecCallbacks;
+    std::vector<GUI::ComplexCallback> m_vecComplexCallbacks;
     Size m_preferredSize;
   };
 }

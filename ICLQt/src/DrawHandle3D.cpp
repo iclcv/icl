@@ -42,7 +42,7 @@ namespace icl{
   void DrawHandle3D::update(){
     (**this)->updateFromOtherThread();
   }
-  void DrawHandle3D::registerCallback(GUI::CallbackPtr cb, const std::string &events){
+  void DrawHandle3D::registerCallback(const GUI::Callback &cb, const std::string &events){
     (**this)->registerCallback(cb,events);
   }
   

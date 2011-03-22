@@ -155,7 +155,7 @@ namespace icl{
     layout()->setContentsMargins(2,2,2,2);
     layout()->addWidget(data->gui.getRootWidget());
 
-    data->gui.registerCallback(SmartPtr<GUI::Callback>(this,false),"device,scan,format,size,capture,fps,load,save,"
+    data->gui.registerCallback(function(this,&icl::CamCfgWidget::callback),"device,scan,format,size,capture,fps,load,save,"
                                "desired-size,desired-depth,desired-format,hz");
     
     QWidget *w = (*data->gui.getValue<BoxHandle>("props"));
@@ -223,16 +223,16 @@ namespace icl{
     layout()->addWidget(data->gui.getRootWidget());
 
     if(needDeviceCombo){
-      data->gui.registerCallback(SmartPtr<GUI::Callback>(this,false),"load,save,device");
+      data->gui.registerCallback(function(this,&icl::CamCfgWidget::callback),"load,save,device");
     }else{
-      data->gui.registerCallback(SmartPtr<GUI::Callback>(this,false),"load,save");
+      data->gui.registerCallback(function(this,&icl::CamCfgWidget::callback),"load,save");
     }
     
     QWidget *w = (*data->gui.getValue<BoxHandle>("props"));
     w->layout()->setContentsMargins(0,0,0,0);
     w->layout()->addWidget(data->scroll = new QScrollArea(w));
 
-    exec("device");
+    callback("device");
   }
 
   const ImgBase *CamCfgWidget::getCurrentImage(){
@@ -299,7 +299,7 @@ namespace icl{
     return s;
   }
   
-  static void create_property_gui(GUI &gui,GenericGrabber &grabber, GUI::CallbackPtr cb,  
+  static void create_property_gui(GUI &gui,GenericGrabber &grabber,const GUI::ComplexCallback &cb,  
                                   std::vector<SmartPtr<VolatileUpdater> > &timers){
     gui = GUI("vbox");
     std::ostringstream ostr;
@@ -369,7 +369,7 @@ namespace icl{
     }
   }
   
-  void CamCfgWidget::exec(const std::string &source){
+  void CamCfgWidget::callback(const std::string &source){
     QMutexLocker __lock(&data->mutex);
 
     if(source.length()>3 && source[0] == '#'){
@@ -415,7 +415,7 @@ namespace icl{
           }
         }
         
-        create_property_gui(data->propGUI,data->grabber,SmartPtr<GUI::Callback>(this,false), data->timers);
+        create_property_gui(data->propGUI,data->grabber,function(this,&icl::CamCfgWidget::callback), data->timers);
         data->scroll->setWidget(data->propGUI.getRootWidget());
 
         if(data->complex){
@@ -449,10 +449,9 @@ namespace icl{
       data->settingUpDevice = false;
       
       if(data->complex){
-        //exec("desired-params");
-        exec("desired-format");
-        exec("desired-size");
-        exec("desired-depth");
+        callback("desired-format");
+        callback("desired-size");
+        callback("desired-depth");
       }
     }else if(source == "hz"){
       std::string v = data->gui["hz"];
@@ -516,7 +515,7 @@ namespace icl{
       if(s.isNull() || s == "") return;
       data->grabber.loadProperties(s.toLatin1().data(),false);
       data->loadParamsScope = true;
-      exec("device");
+      callback("device");
       data->loadParamsScope = false;
     }
   }
@@ -535,7 +534,7 @@ namespace icl{
       devices.add("no devices found");
     }
     data->scanScope = false;
-    exec("device");
+    callback("device");
   }
 
   void CamCfgWidget::run(){

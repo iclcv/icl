@@ -165,7 +165,7 @@ namespace icl{
   // }}}
 
   // quite complex component for embedded property component 'prop'
-  struct ConfigurableGUIWidget : public GUIWidget, public GUI::Callback,public Configurable::PropertyChangedCallback{
+  struct ConfigurableGUIWidget : public GUIWidget, public GUI::Callback{
 
     std::vector<SmartPtr<VolatileUpdater> > timers;
     Configurable *conf;
@@ -296,7 +296,10 @@ namespace icl{
     }
 
     /// Called if a property is changed from somewhere else
-    virtual void propertyChanged(const std::string &name, const std::string &type, const std::string &value){
+    virtual void propertyChanged(const Configurable::Property &p){
+      const std::string &name = p.name;
+      const std::string &type = p.type;
+      const std::string &value = p.value;
       deactivateExec = true;
       if(type == "range" || type == "range:slider"){
         gui.getValue<FSliderHandle>("#r#"+name).setValue( parse<icl32f>(conf->getPropertyValue(name)) );
@@ -1973,7 +1976,7 @@ public:
     }
   }
   
-  void GUI::registerCallback(CallbackPtr cb, const std::string &handleNamesList, char delim){
+  void GUI::registerCallback(const Callback &cb, const std::string &handleNamesList, char delim){
     std::string delims; delims+=delim;
 
     StrTok tok(handleNamesList,delims);
@@ -1981,6 +1984,16 @@ public:
       getValue<GUIHandleBase>(tok.nextToken(),false).registerCallback(cb);
     }
   }
+
+  void GUI::registerCallback(const ComplexCallback &cb, const std::string &handleNamesList, char delim){
+    std::string delims; delims+=delim;
+
+    StrTok tok(handleNamesList,delims);
+    while(tok.hasMoreTokens()){
+      getValue<GUIHandleBase>(tok.nextToken(),false).registerCallback(cb);
+    }
+  }
+
   void GUI::removeCallbacks(const std::string &handleNamesList, char delim){
     std::string delims; delims+=delim;
 
