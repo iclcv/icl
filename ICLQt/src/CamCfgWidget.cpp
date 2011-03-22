@@ -475,21 +475,21 @@ namespace icl{
      // data->grabber.setUseDesiredParams(data->gui.getValue<CheckBoxHandle>(source).isChecked());
     }else if(source == "desired-format"){
       if(data->grabber.isNull()) return;
-      std::string fmt = data->gui["source"];
+      std::string fmt = data->gui[source];
       if(fmt == "default"){
         data->grabber.ignoreDesired<format>();
       }else{
         data->grabber.useDesired(parse<format>(fmt));
       }
     }else if(source == "desired-size"){
-      std::string size = data->gui["source"];
+      std::string size = data->gui[source];
       if(size == "default"){
         data->grabber.ignoreDesired<Size>();
       }else{
         data->grabber.useDesired(parse<Size>(size));
       }
     }else if(source == "desired-depth"){
-      std::string d = data->gui["source"];
+      std::string d = data->gui[source];
       if(d == "default"){
         data->grabber.ignoreDesired<icl::depth>();
       }else{
