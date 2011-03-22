@@ -93,8 +93,8 @@ void init(){
   
   image = cvt8u(scale(create("parrot"),0.4));
 
-  gui.registerCallback(new GUI::Callback(step),"a,b,c,d");
-  gui.registerCallback(new GUI::Callback(bench),"bench");
+  gui.registerCallback(function(step),"a,b,c,d");
+  gui.registerCallback(function(bench),"bench");
   gui["draw"] = image;
   gui["draw"].update();
 }

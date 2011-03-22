@@ -46,7 +46,7 @@ void init(){
       << "button(click me)[@handle=button@label=a button]";
   gui.show();
   
-  gui.registerCallback(new GUI::Callback(handle_event),"slider,button,togglebutton");
+  gui.registerCallback(function(handle_event),"slider,button,togglebutton");
 }
 
 int main(int n, char **ppc){

@@ -165,7 +165,7 @@ namespace icl{
   // }}}
 
   // quite complex component for embedded property component 'prop'
-  struct ConfigurableGUIWidget : public GUIWidget, public GUI::Callback{
+  struct ConfigurableGUIWidget : public GUIWidget{
 
     std::vector<SmartPtr<VolatileUpdater> > timers;
     Configurable *conf;
@@ -286,20 +286,20 @@ namespace icl{
       
       std::string cblist = ostr.str();
       if(cblist.size() > 1){
-        gui.registerCallback(SmartPtr<GUI::Callback>(this,false),cblist.substr(1),'\1');
+        gui.registerCallback(function(this,&icl::ConfigurableGUIWidget::exec),cblist.substr(1),'\1');
       }
       for(unsigned int i=0;i<timers.size();++i){
         timers[i]->start();
       }
       
-      conf->registerCallback(Configurable::PropertyChangedCallbackPtr(this,false));
+      conf->registerCallback(function(this,&icl::ConfigurableGUIWidget::propertyChanged));
     }
 
     /// Called if a property is changed from somewhere else
-    virtual void propertyChanged(const Configurable::Property &p){
+    void propertyChanged(const Configurable::Property &p){
       const std::string &name = p.name;
       const std::string &type = p.type;
-      const std::string &value = p.value;
+      //const std::string &value = p.value;
       deactivateExec = true;
       if(type == "range" || type == "range:slider"){
         gui.getValue<FSliderHandle>("#r#"+name).setValue( parse<icl32f>(conf->getPropertyValue(name)) );
@@ -314,7 +314,7 @@ namespace icl{
       deactivateExec = false;
     }
     
-    virtual void exec(const std::string &handle){
+    void exec(const std::string &handle){
       if(deactivateExec) return;
       if(handle.length()<3 || handle[0] != '#') throw ICLException("invalid callback (this should not happen)");
       std::string prop = handle.substr(3);

@@ -37,7 +37,9 @@
 
 #include <ICLUtils/MultiTypeMap.h>
 #include <ICLUtils/Exception.h>
+#include <ICLUtils/Function.h>
 #include <ICLUtils/StringUtils.h>
+
 namespace icl{
   
   /// Extension of the associative container MultiTypeMap \ingroup UNCOMMON
@@ -76,8 +78,12 @@ namespace icl{
       /// Internally used Data- Structure
       struct Event{
         Event(const std::string &msg="", void *data=0):message(msg),data(data){}
+        Event(const std::string &msg, const Function<void> &cb): message(msg),data(0),cb(cb){}
+        Event(const std::string &msg, const Function<void,const std::string&> &cb2): message(msg),data(0),cb2(cb2){}
         std::string message;
-        void  *data;
+        void *data;
+        Function<void> cb;
+        Function<void,const std::string&> cb2;
       };
       
       friend class DataStore;
@@ -120,9 +126,14 @@ namespace icl{
         *this  = Event("install",data);
       }
       
-      /// cb must be a GUI::Callback*
-      void registerCallback(void *cb){
+      /// register simple callback type
+      void registerCallback(const Function<void> &cb){
         *this = Event("register",cb);
+      }
+
+      /// register simple callback type
+      void registerCallback(const Function<void,const std::string&> &cb){
+        *this = Event("register-complex",cb);
       }
       
       /// possible for all handle-types

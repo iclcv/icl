@@ -111,9 +111,9 @@ void init(){
          ) << colors << "!show";
 
   
-  gui.registerCallback(new GUI::Callback(step),"customH,load,save");
+  gui.registerCallback(icl::function(step),"customH,load,save");
   for(int i=0;i<6;++i){
-    gui.registerCallback(new GUI::Callback(step),str(i)+",c"+str(i)+",p"+str(i));
+    gui.registerCallback(icl::function(step),str(i)+",c"+str(i)+",p"+str(i));
   }
   
   step("");

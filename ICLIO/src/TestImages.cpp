@@ -568,6 +568,7 @@ namespace icl{
     // {{{ open
 
     Img8u *src = internalCreate(name);
+    src->setFullROI();
     if(!src) return 0;
 
     if(src->getDepth() != d || src->getFormat() != f || src->getSize() != size ){

@@ -157,7 +157,7 @@ void init(){
   
   gui.show();
   
-  gui.registerCallback(new GUI::Callback(gui_cb),"os_handle,ri_handle,snap_handle,oct_handle,intervals_handle,sample_handle,thresh_handle");
+  gui.registerCallback(gui_cb,"os_handle,ri_handle,snap_handle,oct_handle,intervals_handle,sample_handle,thresh_handle");
   gui["draw_object"] =  surf->getObjectImg().get();
   gui["draw_image"].install(new MouseHandler(select_object));
 }

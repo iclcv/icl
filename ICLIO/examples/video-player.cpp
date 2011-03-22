@@ -66,7 +66,7 @@ void init(){
 
   gui.show();
   g = new VideoGrabber(fileName);
-  gui.registerCallback(new GUI::Callback(set_stream_pos),"pos");
+  gui.registerCallback(set_stream_pos,"pos");
 }
 
 void run(){

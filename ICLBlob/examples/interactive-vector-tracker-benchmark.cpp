@@ -70,7 +70,7 @@ void init(){
   
   gui.show();
   
-  gui.registerCallback(new GUI::Callback(updateVT),"dim,ff,norm,trivial");
+  gui.registerCallback(updateVT,"dim,ff,norm,trivial");
   
   updateVT();
 }

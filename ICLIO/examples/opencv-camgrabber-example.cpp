@@ -113,12 +113,12 @@ void init(){
           );
   gui.show();
 
-  gui["hbright"].registerCallback(new GUI::Callback(set_brightness));
-  gui["hcont"].registerCallback(new GUI::Callback(set_contrast));
-  gui["hsat"].registerCallback(new GUI::Callback(set_saturation));
-  gui["hhue"].registerCallback(new GUI::Callback(set_hue));
-  gui["hsize"].registerCallback(new GUI::Callback(set_size));
-  gui["camprops"].registerCallback(new GUI::Callback(printAllProperties));
+  gui["hbright"].registerCallback(set_brightness);
+  gui["hcont"].registerCallback(set_contrast);
+  gui["hsat"].registerCallback(set_saturation);
+  gui["hhue"].registerCallback(set_hue);
+  gui["hsize"].registerCallback(set_size);
+  gui["camprops"].registerCallback(printAllProperties);
 }
 
 int main(int n, char **args){

@@ -525,8 +525,8 @@ void init(){
   gui << ( GUI("tab(auto,manual)[@handle=tab]") << controls << manCont );
   gui.show();
 
-  gui.registerCallback(new GUI::Callback(manual_adjust_cb),"manDistH,manScaleH");
-  gui.registerCallback(new GUI::Callback(man_show_cb),"manWriteH");
+  gui.registerCallback(manual_adjust_cb,"manDistH,manScaleH");
+  gui.registerCallback(man_show_cb,"manWriteH");
   gui["image"].install(new MouseHandler(mouse));
   
   
@@ -540,8 +540,8 @@ void init(){
 
   CALIB_DATA.data.reserve(10);
 
-  gui.getValue<ButtonHandle>("add").registerCallback(new GUI::Callback(add));
-  gui.getValue<ButtonHandle>("save").registerCallback(new GUI::Callback(save_warp_map));
+  gui["add"].registerCallback(add);
+  gui["save"].registerCallback(save_warp_map);
   
 }
 

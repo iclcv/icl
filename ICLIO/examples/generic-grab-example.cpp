@@ -63,7 +63,7 @@ void init(){
   
   gui.show();
   
-  gui.registerCallback(new GUI::Callback(change_grabber),"source");
+  gui.registerCallback(change_grabber,"source");
 
   if(pa("-input")){
     grabber = new GenericGrabber(pa("-i"));

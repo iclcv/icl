@@ -158,8 +158,8 @@ void init(){
   running = &gui->getValue<bool>("run");
   sleeptime = &gui->getValue<int>("sleep");
   colormode = &gui->getValue<string>("colormode");
-  gui->getValue<ButtonHandle>("reset").registerCallback(new GUI::Callback(reset_list));
-  gui->getValue<ButtonHandle>("calc").registerCallback(new GUI::Callback(calc_mean));
+  (*gui)["reset"].registerCallback(function(reset_list));
+  (*gui)["calc"].registerCallback(function(calc_mean));
   
   widget->install(new MouseHandler(mouse));
 }

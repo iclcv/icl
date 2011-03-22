@@ -59,7 +59,7 @@ void init(){
   gui.show();
 
 
-  gui.registerCallback(new GUI::Callback(update),"low-handle,high-handle,pre-gauss-handle");
+  gui.registerCallback(function(update),"low-handle,high-handle,pre-gauss-handle");
   
   update();
 }

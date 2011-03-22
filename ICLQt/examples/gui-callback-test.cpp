@@ -62,7 +62,7 @@ void click_callback(){
 // In contrast to simple functions, this callbacks are able to have 'own data'
 struct MyCallback : public GUI::Callback{
   Time m_lastTime;
-  virtual void exec(){
+  void foo(){
     Time now = Time::now();
     Time dt = now-m_lastTime;
 
@@ -70,7 +70,7 @@ struct MyCallback : public GUI::Callback{
     gui.getValue<LabelHandle>("timeDiffLabel") = str(dt.toSecondsDouble())+" sec";
     m_lastTime = now;
   }
-};
+} myCallback;
 
 void init(){
   // create some nice components
@@ -88,11 +88,11 @@ void init(){
   gui["currentTimeLabel"] = Time::now().toString();
   
   // register callbacks (on the specific handles)
-  gui.getValue<ButtonHandle>("exit").registerCallback(new GUI::Callback(exit_callback));
-  gui.getValue<ButtonHandle>("click").registerCallback(new GUI::Callback(click_callback));
+  gui["exit"].registerCallback(function(exit_callback));
+  gui.getValue<ButtonHandle>("click").registerCallback(function(click_callback));
 
   // or let gui find the corresponding components internally
-  gui.registerCallback(new MyCallback,"click-2");
+  gui.registerCallback(function(myCallback,&MyCallback::foo),"click-2");
   
 }
 

@@ -207,15 +207,15 @@ void init(){
           );
   gui.show();
 
-  gui["hbright"].registerCallback(new GUI::Callback(set_brightness));
-  gui["hcont"].registerCallback(new GUI::Callback(set_contrast));
-  gui["hsat"].registerCallback(new GUI::Callback(set_saturation));
-  gui["hhue"].registerCallback(new GUI::Callback(set_hue));
-  gui["hsize"].registerCallback(new GUI::Callback(set_size));
-  gui["startc_"].registerCallback(new GUI::Callback(startcap));
-  gui["stopc_"].registerCallback(new GUI::Callback(stopcap));
-  gui["info_"].registerCallback(new GUI::Callback(printAllProperties));
-  gui["snapshot"].registerCallback(new GUI::Callback(takeSnapshot));
+  gui["hbright"].registerCallback(set_brightness);
+  gui["hcont"].registerCallback(set_contrast);
+  gui["hsat"].registerCallback(set_saturation);
+  gui["hhue"].registerCallback(set_hue);
+  gui["hsize"].registerCallback(set_size);
+  gui["startc_"].registerCallback(startcap);
+  gui["stopc_"].registerCallback(stopcap);
+  gui["info_"].registerCallback(printAllProperties);
+  gui["snapshot"].registerCallback(takeSnapshot);
 }
 
 int main(int n, char **args){

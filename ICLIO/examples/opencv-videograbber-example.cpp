@@ -158,13 +158,13 @@ void init(){
 	);
 	gui.show();
 
-	gui["hsize"].registerCallback(new GUI::Callback(set_size));
-	gui["hfps_"].registerCallback(new GUI::Callback(set_fps));
-	gui["info_"].registerCallback(new GUI::Callback(printAllProperties));
-	gui["play_"].registerCallback(new GUI::Callback(startplaying));
-	gui["stop_"].registerCallback(new GUI::Callback(stop));
-	gui["pause_"].registerCallback(new GUI::Callback(wait));
-	gui["open_"].registerCallback(new GUI::Callback(openFile));
+	gui["hsize"].registerCallback(set_size);
+	gui["hfps_"].registerCallback(set_fps);
+	gui["info_"].registerCallback(printAllProperties);
+	gui["play_"].registerCallback(startplaying);
+	gui["stop_"].registerCallback(stop);
+	gui["pause_"].registerCallback(wait);
+	gui["open_"].registerCallback(openFile);
 
 }
 

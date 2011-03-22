@@ -98,7 +98,7 @@ void step(){
   gui_int(masksize);
   gui_float(threshold);
   gui_float(gamma);
-  gui["save"].registerCallback(new GUI::Callback(save));
+  gui["save"].registerCallback(save);
 
   ltop.setClipToROI(clipToROI);
   ltop.setup(masksize, threshold, (LocalThresholdOp::algorithm)(int)algorithm, gamma);
@@ -192,7 +192,7 @@ void init(){
     grabber.useDesired(depth8u);
   }
   
-  gui.registerCallback(new GUI::Callback(step),"a,b,c,d,e,next,algorithm");
+  gui.registerCallback(step,"a,b,c,d,e,next,algorithm");
   gui["orig"].install(new MouseHandler(mouse));
   
   step();

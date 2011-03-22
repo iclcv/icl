@@ -461,10 +461,10 @@ void init(){
       << "!show";
 
   (*gui.getValue<DrawHandle3D>("sceneview"))->setImageInfoIndicatorEnabled(false);
-  gui.registerCallback(new GUI::Callback(change_mode),"mode,special");
+  gui.registerCallback(change_mode,"mode,special");
   gui["mainview"].install(tool);
   gui["sceneview"].install(scene.getMouseHandler(0));
-  gui["loadPoints"].registerCallback(new GUI::Callback(load_points));
+  gui["loadPoints"].registerCallback(load_points);
   
   ButtonGroupHandle mode = gui["mode"];
   ButtonGroupHandle special = gui["special"];

@@ -38,49 +38,43 @@
 using namespace icl;
 using namespace std;
 
-GUI *gui;
-ChromaGUI  *cg;
+GUI gui("hbox");
+ChromaGUI *cg;
+GenericGrabber grabber;
 
 void run(){
-  Size size = Size(320,240);
-  GenericGrabber grabber(pa("-i"));
-
-  Img8u segImage(size,1);
-  Img8u *image = new Img8u(size,formatRGB);
-  ImgBase *imageBase = image;
+  const Img8u &image = *grabber.grab()->asImg<icl8u>();
+  static Img8u segImage(image.getSize(),1);
+    
+  Channel8u c[3] = {image[0],image[1],image[2] };
+  Channel8u s = segImage[0];
   
-  while(1){
-    grabber.grab(&imageBase);
-    gui->getValue<ImageHandle>("image") = image;
-    gui->getValue<ImageHandle>("image").update();
-    
-    Channel8u c[3]; image->asImg<icl8u>()->extractChannels(c);
-    Channel8u s = segImage[0];
-    
-    ChromaAndRGBClassifier classi = cg->getChromaAndRGBClassifier();
-    
-    for(int x=0;x<size.width;x++){
-      for(int y=0;y<size.height;y++){
-        s(x,y) = 255 * classi(c[0](x,y),c[1](x,y),c[2](x,y));
-      }
-    }
-    
-    gui->getValue<ImageHandle>("segimage") = &segImage;     
-    gui->getValue<ImageHandle>("segimage").update();
-    Thread::msleep(40);
+  ChromaAndRGBClassifier classi = cg->getChromaAndRGBClassifier();
+  
+  const int dim = image.getDim();
+  for(int i=0;i<dim;++i){
+    s[i] = 255 * classi(c[0][i],c[1][i],c[2][i]);
   }
+
+  gui["image"] = &image;
+  gui["image"].update();
+  gui["segimage"] = &segImage;
+  gui["segimage"].update();
+  Thread::msleep(10);
 }
 
 void init(){
-  gui = new GUI("hbox");
-  (*gui) << ( GUI("vbox")  
-              << "image[@minsize=16x12@handle=image@label=Camera Image]" 
-              << "image[@minsize=16x12@handle=segimage@label=Semented Image]" );
-  (*gui) << "hbox[@handle=box]";
+  grabber.init(pa("-i"));
+  grabber.useDesired(depth8u);
+
+  gui << ( GUI("vbox")  
+           << "image[@minsize=16x12@handle=image@label=Camera Image]" 
+           << "image[@minsize=16x12@handle=segimage@label=Semented Image]" 
+         )
+      << "hbox[@handle=box]"  
+      << "!show";
   
-  gui->show();
-  
-  cg = new ChromaGUI(*gui->getValue<BoxHandle>("box"));
+  cg = new ChromaGUI(*gui.getValue<BoxHandle>("box"));
 
 }
 

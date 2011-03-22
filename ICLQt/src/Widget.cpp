@@ -145,7 +145,7 @@ namespace icl{
     
     OSDGLButton(const std::string &id, int x, int y, int w, int h,const ImgBase *icon, const Function<void> &cb=Function<void>()):
       id(id),bounds(x,y,w,h),toggable(false),over(false),down(false),
-      toggled(false),visible(false),vcb(vcb){
+      toggled(false),visible(false),vcb(cb){
       if(icon){
         icon->convert(&this->icon);
       }else{
@@ -156,13 +156,13 @@ namespace icl{
     
     OSDGLButton(const std::string &id, int x, int y, int w, int h, IconType icon, const Function<void> &cb=Function<void>()):
       id(id),bounds(x,y,w,h),toggable(false),over(false),down(false),
-      toggled(false),visible(false),vcb(vcb){
+      toggled(false),visible(false),vcb(cb){
       this->icon = get_icon(icon);
     }
     OSDGLButton(const std::string &id, int x, int y, int w, int h, IconType icon, 
                 IconType downIcon, const Function<void,bool> &cb=Function<void,bool>(), bool toggled = false):
       id(id),bounds(x,y,w,h),toggable(true),over(false),down(false),
-      toggled(toggled),visible(false),bcb(bcb){
+      toggled(toggled),visible(false),bcb(cb){
       this->icon = get_icon(icon);
       this->downIcon = get_icon(downIcon);
     }
@@ -171,7 +171,7 @@ namespace icl{
                 const ImgBase *untoggledIcon, const ImgBase *toggledIcon, 
                 const Function<void,bool> &cb=Function<void,bool>(), bool toggled = false):
       id(id),bounds(x,y,w,h),toggable(true),over(false),down(false),
-      toggled(toggled),visible(false),bcb(bcb){
+      toggled(toggled),visible(false),bcb(cb){
       if(untoggledIcon){
         untoggledIcon->convert(&icon);
       }else{
@@ -207,10 +207,10 @@ namespace icl{
         down = true;
         if(toggable){
           toggled = !toggled;
-          if(bcb) (parent->*bcb)(toggled);
+          if(bcb) bcb(toggled);//(parent->*bcb)(toggled);
           if(id != "") emit parent->specialButtonToggled(id,toggled);
         }else{
-          if(vcb) (parent->*vcb)();
+          if(vcb) vcb(); // (parent->*vcb)();
           if(id != "") emit parent->specialButtonClicked(id);
         }
         return true;
@@ -1247,17 +1247,23 @@ namespace icl{
     
     static const int y = GL_BUTTON_Y, w = GL_BUTTON_W, h = GL_BUTTON_H;
     int &x = m_data->nextButtonX;
-    m_data->glbuttons.push_back(new OSDGLButton("",x,y,w,h,OSDGLButton::Tool,&ICLWidget::showHideMenu));
+    m_data->glbuttons.push_back(new OSDGLButton("",x,y,w,h,OSDGLButton::Tool,
+                                                icl::function(this,&ICLWidget::showHideMenu)));
     x+=GL_BUTTON_X_INC;
-    m_data->glbuttons.push_back(new OSDGLButton("",x,y,w,h,OSDGLButton::Unlock,OSDGLButton::Lock,&ICLWidget::setMenuEmbedded,true));
+    m_data->glbuttons.push_back(new OSDGLButton("",x,y,w,h,OSDGLButton::Unlock,OSDGLButton::Lock,
+                                                icl::function(this,&ICLWidget::setMenuEmbedded),true));
     x+=GL_BUTTON_X_INC;
-    m_data->glbuttons.push_back(new OSDGLButton("",x,y,w,h,OSDGLButton::NNInter,OSDGLButton::LINInter,&ICLWidget::setLinInterpolationEnabled,false));
+    m_data->glbuttons.push_back(new OSDGLButton("",x,y,w,h,OSDGLButton::NNInter,OSDGLButton::LINInter,
+                                                icl::function(this,&ICLWidget::setLinInterpolationEnabled),false));
     x+=GL_BUTTON_X_INC;
-    m_data->glbuttons.push_back(new OSDGLButton("",x,y,w,h,OSDGLButton::Zoom,OSDGLButton::RedZoom,&ICLWidget::setEmbeddedZoomModeEnabled,false));
+    m_data->glbuttons.push_back(new OSDGLButton("",x,y,w,h,OSDGLButton::Zoom,OSDGLButton::RedZoom,
+                                                icl::function(this,&ICLWidget::setEmbeddedZoomModeEnabled),false));
     x+=GL_BUTTON_X_INC;
-    m_data->glbuttons.push_back(new OSDGLButton("",x,y,w,h,OSDGLButton::RangeNormal,OSDGLButton::RangeScaled,&ICLWidget::setRangeModeNormalOrScaled,false));
+    m_data->glbuttons.push_back(new OSDGLButton("",x,y,w,h,OSDGLButton::RangeNormal,OSDGLButton::RangeScaled,
+                                                icl::function(this,&ICLWidget::setRangeModeNormalOrScaled),false));
     x+=GL_BUTTON_X_INC;
-    m_data->glbuttons.push_back(new OSDGLButton("",x,y,w,h,OSDGLButton::RedCam,&ICLWidget::stopButtonClicked));
+    m_data->glbuttons.push_back(new OSDGLButton("",x,y,w,h,OSDGLButton::RedCam,
+                                                icl::function(this,&ICLWidget::stopButtonClicked)));
     x+=GL_BUTTON_X_INC;
 
     m_data->imageInfoIndicator = new ImageInfoIndicator(this);
@@ -2433,14 +2439,14 @@ namespace icl{
 
   // }}}
 
-  void ICLWidget::registerCallback(GUI::CallbackPtr cb, const std::string &eventList){
+  void ICLWidget::registerCallback(const GUI::Callback &cb, const std::string &eventList){
     // {{{ open
 
     struct CallbackHandler : public MouseHandler{
-      GUI::CallbackPtr cb;
+      GUI::Callback cb;
       std::vector<MouseEventType> evts;
       bool m_all;
-      CallbackHandler(GUI::CallbackPtr cb ,const std::string &eventList):
+      CallbackHandler(const GUI::Callback &cb ,const std::string &eventList):
         cb(cb),m_all(false){
         std::vector<std::string> eventVec = icl::tok(eventList,",");
         for(unsigned int i=0;i<eventVec.size();++i){
@@ -2465,13 +2471,13 @@ namespace icl{
       }
       virtual void process(const MouseEvent &evt){
         if(m_all){
-          cb->exec();
+          cb();
           return;
         }
         MouseEventType t = evt.getType();
         for(unsigned int i=0;i<evts.size();++i){
           if(evts[i] == t){
-            cb->exec();
+            cb();
             return;
           }
         }

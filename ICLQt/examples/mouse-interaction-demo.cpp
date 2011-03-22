@@ -64,7 +64,7 @@ void init(){
   widget = new ICLWidget(0);
   widget->setGeometry(200,200,640,480);
   widget->show();
-  grabber = new GenericGrabber;
+  grabber = new GenericGrabber(pa("-i"));
   widget->install(&mouse);
 }  
 void run(){
@@ -73,5 +73,5 @@ void run(){
 }
 
 int main(int n, char **ppc){
-  return ICLApplication(n,ppc,"",init,run).exec();
+  return ICLApplication(n,ppc,"[m]-input|-i(2)",init,run).exec();
 }
