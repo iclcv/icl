@@ -79,7 +79,7 @@
     \defgroup UNICAP_G Unicap based IEEE-1394 Camera Grabber and Control API
     \defgroup UTILS_G Common File-I/O Utility Functions and Classes
     \defgroup FILEIO_G Plugin-based File-Writer and File-Grabber implementation
-    \defgroup GRABBER_G List of all provides Grabber implementations
+    \defgroup GRABBER_G List of all provided Grabber implementations
     
     \mainpage ICLIO (Input/Ouput) package
     \section Overview
