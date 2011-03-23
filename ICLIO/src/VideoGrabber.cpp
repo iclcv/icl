@@ -101,14 +101,16 @@ namespace icl{
     Mutex mutex;
     std::string fileName;
     Size imageSize;
-    Img8u imageBuffer;
+
     ImgBase *outputBuffer;
 
     double frameDuration;
     double fps;
     
-    double streamLength;
+    int streamLengthMS;
     bool isSeekable;
+    
+    float ar;
     
     Data(const std::string &filename, VideoGrabber::XineHandle* xine){
       fileName = filename;
@@ -120,17 +122,29 @@ namespace icl{
       frameDuration = double(fd)/90000;
       fps = 1.0/frameDuration;
       
-      imageSize = Size(w,h);
+      int xar = xine_get_stream_info(xine->stream,XINE_PARAM_VO_ASPECT_RATIO);
+      switch(xar){
+        case XINE_VO_ASPECT_SQUARE: ar = 1.0; break;
+        case XINE_VO_ASPECT_4_3:    ar = 4./3; break;
+        case XINE_VO_ASPECT_ANAMORPHIC: ar = 16./9; break;
+        case XINE_VO_ASPECT_DVB: ar = 2.11/1; break;
+        default: ar = -1;
+      }
 
-      imageBuffer.setFormat(formatRGB);
+      imageSize = Size(w,h);
       
+      if(w%8){
+        WARNING_LOG("the xine base video grabber plugin might not be able to"
+                    " grab frames correctly (frame width needs to be a multiple of 8)");
+      }
+
       int p=0,t=0,l=0;
       int success = xine_get_pos_length(xine->stream,&p,&t,&l);
       if(!success){
         ERROR_LOG("unable to acquire stream length");
-        streamLength = 0;
+        streamLengthMS = 0;
       }else{
-        streamLength = l/1000.0;
+        streamLengthMS = l;
       }
 
       isSeekable = xine_get_stream_info (xine->stream, XINE_STREAM_INFO_SEEKABLE);
@@ -160,7 +174,7 @@ namespace icl{
     FPSLimiter fpsl;
     FPSLimiter fpslAuto;
     
-    int currPos;
+    int streamOffs;
 
     Params(double streamFPS):
       streamFPS(streamFPS),
@@ -168,7 +182,7 @@ namespace icl{
       fpslAuto(streamFPS,5){
       speedMode = "auto";
       speed = 50;
-      currPos = 0;
+      streamOffs = 0;
     }
     
     
@@ -215,17 +229,14 @@ namespace icl{
   }  
   
   static void convert_frame(icl8u *data, const Size &size,Img8u *image, const std::string &cc4){
-    if(cc4 == "DX50" || cc4 == ""){
-      int dim4 = size.getDim()/4;
-      icl8u *u = data+dim4*4;
-      icl8u *v = u+dim4;
-      for(int i=0;i<dim4;++i){
-        std::swap(u[i],v[i]);
-      }
-      convertYUV420ToRGB8(data,size,image);
-    }else{
-      convertYUV420ToRGB8(data,size,image);
+    // u and v channels are swapped -> bug in xine?
+    int dim4 = size.getDim()/4;
+    icl8u *u = data+dim4*4;
+    icl8u *v = u+dim4;
+    for(int i=0;i<dim4;++i){
+      std::swap(u[i],v[i]);
     }
+    convertYUV420ToRGB8(data,size,image);
   }
 
   void VideoGrabber::pause(){
@@ -244,24 +255,7 @@ namespace icl{
 
   const ImgBase *VideoGrabber::acquireImage(){
     Mutex::Locker lock(m_data->mutex);
-    /**
-        typedef struct {
-        
-        int64_t  vpts;
-        int64_t  duration;
-        int      width, height;
-        int      colorspace;
-        double   aspect_ratio;
-        
-        int      pos_stream;
-        int      pos_time;
   
-        uint8_t *data;
-        void    *xine_frame;
-    
-        int      frame_number;
-        } xine_video_frame_t;
-        */
     m_params->wait(m_data->fps);
 
     xine_video_frame_t f={0,0,0,0,0,0,0,0,0,0,0};
@@ -278,17 +272,18 @@ namespace icl{
       throw ICLException("invalid xine colorspace (currently only XINE_IMGFMT_YV12 is allowed) ["+str(__FUNCTION__)+"]");
     }
     
-    m_params->currPos = f.pos_stream;
+    m_params->streamOffs = f.pos_time;
     Size size(f.width,f.height);    
 
     ensureCompatible(&m_data->outputBuffer,depth8u,size,formatRGB);
     convert_frame(f.data,size,m_data->outputBuffer->asImg<icl8u>(),m_xine->get_4cc());
     xine_free_video_frame (m_xine->vo_port,&f);
+    
     return m_data->outputBuffer;
   }
   
   std::vector<std::string> VideoGrabber::getPropertyList(){
-    static const std::string ps="speed-mode speed stream-pos stream-length volume";
+    static const std::string ps="speed-mode speed stream-pos stream-length volume is-seekable";
     return tok(ps," ");
   }
 
@@ -297,7 +292,7 @@ namespace icl{
       return "menu";
     }else if(name == "speed" || name == "stream-pos" || name == "volume"){
       return "range";
-    }else if(name == "stream-length"){
+    }else if(name == "stream-length" || name == "is-seekable"){
       return "info";
     }
     return "undefined";
@@ -309,9 +304,9 @@ namespace icl{
     }else if(name == "speed"){
       return "[0,100]:1";
     }else if(name == "stream-pos"){
-      return "[0,65535]:1";
+      return "[0,"+getValue("stream-length")+"]:1";
     }else if(name == "stream-length"){
-      return "something ...";
+      return "";
     }else if(name == "volume"){
       return "[0,100]:1";
     }
@@ -324,9 +319,11 @@ namespace icl{
     }else if(name == "speed"){
       return str(m_params->speed);
     }else if(name == "stream-pos"){
-      return str(m_params->currPos);
+      return str(m_params->streamOffs);
     }else if(name == "stream-length"){
-      return str(m_data->streamLength)+" seconds";
+      return str(m_data->streamLengthMS)+" ms";
+    }else if(name == "is-seekable"){
+      return m_data->isSeekable ? "yes" : "no";
     }else if(name == "volume"){
       return str(xine_get_param(m_xine->stream,XINE_PARAM_AUDIO_VOLUME));
     }
@@ -341,11 +338,8 @@ namespace icl{
       m_params->setUserSpeed(parse<int>(value));
     }else if(name == "stream-pos"){
       int streamPos = parse<int>(value);
-      // DEBUG_LOG("setting new stream pos to xine:" << streamPos);
-      ICLASSERT_RETURN(streamPos >= 0);
-      ICLASSERT_RETURN(streamPos <= 65535);
-      //xine_stop(m_xine->stream);
-      int success = xine_play(m_xine->stream,streamPos,0);
+      xine_stop(m_xine->stream);
+      int success = xine_play(m_xine->stream,0,streamPos);
       if(!success){
         int err = xine_get_error (m_xine->stream);
         /*

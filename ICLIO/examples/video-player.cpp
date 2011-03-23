@@ -51,9 +51,9 @@ void set_stream_pos(){
 
 void init(){
   GUI con("vbox[@maxsize=1000x5]");
+  g = new VideoGrabber(fileName);
 
-
-  con << "slider(0,65535,0)[@label=stream position@out=posVal@handle=pos@maxsize=1000x2]"
+  con << "slider(0,"+g->getValue("stream-length")+",0)[@label=stream position in ms@out=posVal@handle=pos@maxsize=1000x2]"
       << ( GUI("hbox[@maxsize=1000x3]") 
            << "slider(0,100,50)[@out=speed@label=playback speed]"
            << "slider(0,100,50)[@out=volume@label=audio volume]"
@@ -65,7 +65,7 @@ void init(){
       << con;
 
   gui.show();
-  g = new VideoGrabber(fileName);
+ 
   gui.registerCallback(set_stream_pos,"pos");
 }
 

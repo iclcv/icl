@@ -50,6 +50,20 @@ namespace icl{
       
       Currently, drop-frames are not allowed/possible, so if the grabber is too slow to reach the
       desired Video-framerate, playback speed is decreased implicitly 
+      
+      \section KI Known Issues
+      The video grabber does not really work very stable. 
+      * In particular when linked against
+        the default xine build shipped with ubuntu, you will most likely get some seg-faults due
+        to a known xine bug.
+      * Video streams that have a stream-size whose width is not a multiple of 8, will not be
+        displayed correctly due to some undocumented data allignment issues.
+      * Some formats just cause seg-faults within 3rd party libs.
+      * seeking using setProperty("stream-pos") does not work robustly, however 
+        it does work in the icl-video-player application
+      
+      \section ALT Alternative
+      Please note, that the OpenCVVideoGrabber might be an alternative for you
    */
   class VideoGrabber : public Grabber{
     public:
