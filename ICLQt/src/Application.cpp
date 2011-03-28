@@ -33,6 +33,7 @@
 *********************************************************************/
 
 #include <ICLQt/Application.h>
+#include <QtCore/QLocale>
 #include <ICLUtils/ThreadUtils.h>
 #include <ICLUtils/ProgArg.h>
 
@@ -80,6 +81,24 @@ namespace icl{
     static int static_n = 1;
     static char *static_ppc[] = { ppc[0], NULL };
     app = new QApplication(static_n, static_ppc);
+#endif
+
+    QLocale::setDefault(QLocale::C);
+
+#ifdef ICL_SYSTEM_LINUX
+    /* From the Qt 4.7 documentation:
+        Locale Settings:
+        On Unix/Linux Qt is configured to use the system
+        locale settings by default. This can cause a conflict
+        when using POSIX functions, for instance, when
+        converting between data types such as floats and
+        trings, since the notation may differ between locales.
+        To get around this problem, call the POSIX function
+        setlocale(LC_NUMERIC,"C") right after initializing
+        QApplication or QCoreApplication to reset the locale
+        that is used for number formatting to "C"-locale.    
+    */
+    setlocale(LC_NUMERIC,"C");
 #endif
 
     s_app = this;
