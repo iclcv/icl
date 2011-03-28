@@ -104,6 +104,7 @@ add_libsource (${PROJECT_NAME} "src/ConfigFileGUI.cpp" "${CONDITIONLIST}" LIB_SO
 add_libsource (${PROJECT_NAME} "src/Application.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/IconFactory.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/ThreadedUpdatableTextView.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/ThreadedUpdatableSlider.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/DataStore.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/ColorLabel.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
@@ -123,6 +124,7 @@ SET(HWQ_Qt4_SRC
 	"../include/ICLQt/StringSignalButton.h"
 	"../include/ICLQt/GUIWidget.h"
 	"../include/ICLQt/ChromaGUI.h"
+	"../include/ICLQt/ThreadedUpdatableSlider.h"
 	"../include/ICLQt/MultiDrawHandle.h"
 	"../include/ICLQt/ToggleButton.h"
 	"../include/ICLQt/ConfigFileGUI.h"

@@ -72,10 +72,25 @@ struct MyCallback : public GUI::Callback{
   }
 } myCallback;
 
+void normal_slider_callback(){
+  std::cout << "normal slider callback called (slider value is " << gui["slider"].as<int>() << ")" << std::endl;
+}
+
+template<int n>
+void slider_cb(){
+  static const std::string names[] = {"move","press","release","value","all"};
+  std::cout << __FUNCTION__ << "(" << names[n] << "): " <<  gui["slider"].as<int>() << std::endl;
+}
+
+void slider_complex_cb(const std::string &handle){
+  std::cout << __FUNCTION__ << " (handle-name:" << handle << ")" << std::endl;
+}
+
 void init(){
   // create some nice components
   gui << "label(something)[@handle=currentTimeLabel@label=current time]"
       << "label(something)[@handle=timeDiffLabel@label=time since last call]"
+      << "slider(0,100,50)[@handle=slider@label=a slider]"
       << "button(Click me!)[@handle=click]"
       << "button(Click me too!)[@handle=click-2]"
       << "button(Exit!)[@handle=exit]";
@@ -93,6 +108,20 @@ void init(){
 
   // or let gui find the corresponding components internally
   gui.registerCallback(function(myCallback,&MyCallback::foo),"click-2");
+
+  // register a 'normal' value changed callback to the slider
+  gui["slider"].registerCallback(normal_slider_callback);
+
+  // .. or extract the slider-handle that provides an interface
+  // for registering callbacks to specific slider events
+  gui_SliderHandle(slider);
+  slider.registerCallback(slider_cb<0>,"move");
+  slider.registerCallback(slider_cb<1>,"press");
+  slider.registerCallback(slider_cb<2>,"release");
+  slider.registerCallback(slider_cb<3>,"value");
+  slider.registerCallback(slider_cb<4>,"all");
+
+  slider.registerCallback(slider_complex_cb);
   
 }
 

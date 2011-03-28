@@ -1062,9 +1062,9 @@ namespace icl{
       m_fB = m_fMinVal;
       
       if(iVerticalFlag){
-        m_poSlider = new QSlider(Qt::Vertical,def.parentWidget());
+        m_poSlider = new ThreadedUpdatableSlider(Qt::Vertical,def.parentWidget());
       }else{
-        m_poSlider = new QSlider(Qt::Horizontal,def.parentWidget());
+        m_poSlider = new ThreadedUpdatableSlider(Qt::Horizontal,def.parentWidget());
       }
       addToGrid(m_poSlider);
 
@@ -1104,7 +1104,7 @@ namespace icl{
       *m_pfValue = value;
     }
   private:
-    QSlider *m_poSlider;
+    ThreadedUpdatableSlider *m_poSlider;
     QLCDNumber *m_poLCD;
     float *m_pfValue;
     float m_fM,m_fB;

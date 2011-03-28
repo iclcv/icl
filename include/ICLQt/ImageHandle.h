@@ -68,6 +68,7 @@ namespace icl{
     void update();
 
     /// passes callback registration to wrapped ICLWidget instance)
+    /** allowed event names are all,move,drag,press,release,enter,leave */
     virtual void registerCallback(const GUI::Callback &cb, const std::string &events="all");
 
     /// complex callbacks are not allowed for image-components (this method will throw an exception)

@@ -143,11 +143,13 @@ namespace icl{
       if(!success){
         ERROR_LOG("unable to acquire stream length");
         streamLengthMS = 0;
+        isSeekable = false;
       }else{
         streamLengthMS = l;
+        isSeekable = xine_get_stream_info (xine->stream, XINE_STREAM_INFO_SEEKABLE);
       }
+      
 
-      isSeekable = xine_get_stream_info (xine->stream, XINE_STREAM_INFO_SEEKABLE);
 
       outputBuffer = 0;
     }
@@ -337,6 +339,7 @@ namespace icl{
     }else if(name == "speed"){
       m_params->setUserSpeed(parse<int>(value));
     }else if(name == "stream-pos"){
+      DEBUG_LOG("here: new streap pos is " << value);
       int streamPos = parse<int>(value);
       xine_stop(m_xine->stream);
       int success = xine_play(m_xine->stream,0,streamPos);

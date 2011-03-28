@@ -68,7 +68,7 @@ namespace icl{
         @param events comma separated list of event types to register on.
                This list is handled internally by each special GUIHandlerBase implementation
                currently only the ImageHandle DrawHandle and DrawHandle3D re-implement this 
-               functionality. At default, events is not regarded at all 
+               functionality. By default, the paremter 'events' is not regarded at all 
     */
     virtual void registerCallback(const GUI::Callback &cb, const std::string &events="all"){
       (void)events;

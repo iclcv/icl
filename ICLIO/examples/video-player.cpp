@@ -33,32 +33,57 @@
 *********************************************************************/
 
 #include <ICLQuick/Common.h>
-#include <ICLIO/VideoGrabber.h>
 
 GUI gui("vsplit");
-std::string fileName;
-VideoGrabber *g = 0;
+std::string filename;
+GenericGrabber grabber;
 bool disableNextUpdate = false;
 bool mouseInWindow = false;
+Mutex mutex;
+bool paused=false;
 
-void set_stream_pos(){
-  if(!disableNextUpdate){
-    gui_int(posVal);
-    g->setProperty("stream-pos",str(posVal));
+#ifdef HAVE_OPENCV
+std::string type = "cvvideo";
+std::string len = "frame_count";
+std::string pos = "pos_frames";
+std::string unit = "frames";
+#else
+std::string type = "video";
+std::string len = "stream-length";
+std::string pos = "stream-pos";
+std::string unit = "ms";
+#endif  
+
+enum SliderEventType { press,release };
+  
+template<SliderEventType t>
+void stream_pos(){
+  Mutex::Locker lock(mutex);
+  gui_int(posVal);
+  switch(t){
+    case press: paused = true; break;
+    case release:{
+      paused = false; 
+      grabber.setProperty(pos,str(posVal));
+      break;
+    }
   }
-  disableNextUpdate = false;
 }
 
 void init(){
   GUI con("vbox[@maxsize=1000x5]");
-  g = new VideoGrabber(fileName);
+  
+  grabber.init(type,type+"="+filename);
 
-  con << "slider(0,"+g->getValue("stream-length")+",0)[@label=stream position in ms@out=posVal@handle=pos@maxsize=1000x2]"
+  con << "slider(0,"+grabber.getValue(len)+",0)[@label=stream position in "+unit+"@out=posVal@handle=pos@maxsize=1000x2]"
       << ( GUI("hbox[@maxsize=1000x3]") 
+#ifndef HAVE_OPENCV
            << "slider(0,100,50)[@out=speed@label=playback speed]"
            << "slider(0,100,50)[@out=volume@label=audio volume]"
+#endif
            << "fps(100)[@handle=fps@maxsize=5x2@minsize=5x2]" 
            << "togglebutton(play,pause)[@out=pause@maxsize=4x2]"
+           << "camcfg()"
          );
   
   gui << "draw[@minsize=32x24@handle=image]" 
@@ -66,39 +91,51 @@ void init(){
 
   gui.show();
  
-  gui.registerCallback(set_stream_pos,"pos");
+  
+  gui_SliderHandle(pos);
+  pos.registerCallback(stream_pos<press>,"press");
+  pos.registerCallback(stream_pos<release>,"release");
 }
 
 void run(){
   gui_SliderHandle(pos);
-  gui_int(speed);
   gui_DrawHandle(image);
   gui_bool(pause);
+#ifndef HAVE_OPENCV
+  gui_int(speed);
   gui_int(volume);
+#endif
+
+
+  Mutex::Locker lock(mutex);
   
-  while(pause){
+  while(paused || pause){
+    mutex.unlock();
     Thread::msleep(100);
+    mutex.lock();
   }
   
-  image = g->grab();
+  image = grabber.grab();
   image.update();
 
   gui["fps"].update();
 
-  int p = parse<int>(g->getValue("stream-pos"));
+  int p = parse<int>(grabber.getValue(::pos));
   disableNextUpdate = true;
   if(pos.getValue() != p) pos.setValue(p);
-  if(parse<int>(g->getValue("speed")) != speed){
+#ifndef HAVE_OPENCV
+  if(parse<int>(grabber.getValue("speed")) != speed){
     if(speed == 50){
-      g->setProperty("speed-mode","auto");
+      grabber.setProperty("speed-mode","auto");
     }else{
-      g->setProperty("speed-mode","manual");
-      g->setProperty("speed",str(speed));
+      grabber.setProperty("speed-mode","manual");
+      grabber.setProperty("speed",str(speed));
     }
   } 
-  if(volume != parse<int>(g->getValue("volume"))){
-    g->setProperty("volume",str(volume));
+  if(volume != parse<int>(grabber.getValue("volume"))){
+    grabber.setProperty("volume",str(volume));
   }
+#endif
   
   Thread::msleep(1);
   
@@ -109,6 +146,6 @@ int main(int n,char **ppc){
     std::cerr << "usage: icl-video-player <Input File Name>" << std::endl;
     return -1;
   }
-  fileName = ppc[1];
+  filename = ppc[1];
   return ICLApplication(n,ppc,"",init,run).exec();
 }

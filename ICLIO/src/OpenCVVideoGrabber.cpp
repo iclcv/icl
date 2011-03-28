@@ -35,14 +35,30 @@
 
 namespace icl{
 
+  struct OpenCVVideoGrabber::Data{
+    /// Device struct
+    CvCapture *cvc;
+    ///Filename of the file
+    std::string filename;
+    ///Ensures the desired framerate
+    FPSLimiter *fpslimiter;
+    ///Buffer for scaling if necessary
+    ImgBase *m_buffer;
+    ///
+    bool use_video_fps;
+    
+    Size size;
+  };
+
+
   std::vector<std::string> OpenCVVideoGrabber::getPropertyList(){
-    static const std::string ps="pos_msec pos_frames pos_avi_ratio size format fps fourcc frame_count use_video_fps";
+    static const std::string ps="pos_msec pos_frames pos_avi_ratio size format fourcc frame_count use_video_fps video_fps";
     return tok(ps," ");
   }
 
   std::string OpenCVVideoGrabber::getType(const std::string &name){
     if( name == "pos_avi_ratio" || name == "fps" || name == "size"
-        || name == "fourcc"|| name == "frame_count"){
+        || name == "fourcc"|| name == "frame_count" || name == "video_fps"){
       return "info";
     } else if(name == "format" || name == "use_video_fps"){
       return "menu";
@@ -54,74 +70,76 @@ namespace icl{
 
   std::string OpenCVVideoGrabber::getInfo(const std::string &name){
     if(name == "pos_msec"){
-      return "[0,"+ str( 1000*((cvGetCaptureProperty(cvc,CV_CAP_PROP_FRAME_COUNT)/cvGetCaptureProperty(cvc,CV_CAP_PROP_FPS))) )+"]:0.1";
+      return "[0,"+ str( 1000*((cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FRAME_COUNT)/
+                                cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FPS))) )+"]:0.1";
     }else if(name == "pos_frames"){
-      return "[0,"+str(cvGetCaptureProperty(cvc,CV_CAP_PROP_FRAME_COUNT))+"]:1";
+      return "[0,"+str(cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FRAME_COUNT))+"]:1";
     }else if(name == "pos_avi_ratio"){
-      return "[0,1]:"+str(cvGetCaptureProperty(cvc,CV_CAP_PROP_FRAME_COUNT)/cvGetCaptureProperty(cvc,CV_CAP_PROP_FPS));
+      return "[0,1]:"+str(cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FRAME_COUNT)/
+                          cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FPS));
     }else if(name == "use_video_fps"){
-      return "{\""+str(cvGetCaptureProperty(cvc,CV_CAP_PROP_FPS))+"\"}";
-    }else if(name == "size"){
-      return "something ...";
-    }else if(name == "fps"){
-      return "something ...";
-    }else if(name == "fourcc"){
-      return "something ...";
-    }else if(name == "frame_count"){
-      return "something ...";
+      return "{\"on\",\"off\"}";
     }else if(name == "format"){
-      return "something ...";
+      return "{\"RGB\"}";
+    }else if(name == "size"){
+      return "{\"" + str(data->size) + "\"}";
     }
     return "undefined";
   }
 
   std::string OpenCVVideoGrabber::getValue(const std::string &name){
     if(name == "pos_msec"){
-      return str(cvGetCaptureProperty(cvc,CV_CAP_PROP_POS_MSEC));
+      return str(cvGetCaptureProperty(data->cvc,CV_CAP_PROP_POS_MSEC));
     }else if(name == "pos_frames"){
-      return str(cvGetCaptureProperty(cvc,CV_CAP_PROP_POS_FRAMES));
+      return str(cvGetCaptureProperty(data->cvc,CV_CAP_PROP_POS_FRAMES));
     }else if(name == "pos_avi_ratio"){
-      return str(cvGetCaptureProperty(cvc,CV_CAP_PROP_POS_AVI_RATIO));
+      return str(cvGetCaptureProperty(data->cvc,CV_CAP_PROP_POS_AVI_RATIO));
     }else if(name == "size"){
-      std::ostringstream s;
-      s << cvGetCaptureProperty(cvc,CV_CAP_PROP_FRAME_WIDTH)
-        << "x" << cvGetCaptureProperty(cvc,CV_CAP_PROP_FRAME_HEIGHT);
-      return s.str();
-    }else if(name == "fps"){
-      return str(cvGetCaptureProperty(cvc,CV_CAP_PROP_FPS));
+      return str(data->size);
+    }else if(name == "video_fps"){
+      return str(cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FPS));
     }else if(name == "fourcc"){
-      return str(cvGetCaptureProperty(cvc,CV_CAP_PROP_FOURCC));
+      return str(cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FOURCC));
     }else if(name == "frame_count"){
-      return str(cvGetCaptureProperty(cvc,CV_CAP_PROP_FRAME_COUNT));
+      return str(cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FRAME_COUNT));
     } else if(name == "format"){
-      return "{\"RGB\"}";
+      return "RGB";
     }
     return "undefined";
   }
 
   const ImgBase *OpenCVVideoGrabber::acquireImage(){
-    ICLASSERT_RETURN_VAL( !(cvc==0), 0);
-    icl::ipl_to_img(cvQueryFrame(cvc),&m_buffer);
-    if(use_video_fps){
-      fpslimiter->wait();
+    ICLASSERT_RETURN_VAL( !(data->cvc==0), 0);
+    icl::ipl_to_img(cvQueryFrame(data->cvc),&data->m_buffer);
+    if(data->use_video_fps){
+      data->fpslimiter->wait();
     }
-    return m_buffer;
+    return data->m_buffer;
   }
 
   OpenCVVideoGrabber::OpenCVVideoGrabber(const std::string &fileName)
-    throw (FileNotFoundException):m_buffer(0),use_video_fps(false){
+    throw (FileNotFoundException):data(new Data){
+    data->m_buffer = 0;
+    data->use_video_fps = true;
+    data->filename = fileName;
+    
     if(!File(fileName).exists()){
-      throw FileNotFoundException(filename);
+      throw FileNotFoundException(fileName);
     }
-    filename = fileName;
-    cvc = cvCaptureFromFile(filename.c_str());
-    fpslimiter = new FPSLimiter(cvGetCaptureProperty(cvc,CV_CAP_PROP_FPS));
+
+    data->cvc = cvCaptureFromFile(fileName.c_str());
+    int fps = cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FPS);
+    data->fpslimiter = new FPSLimiter(fps);
+
+    data->size.width = cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FRAME_WIDTH);
+    data->size.height = cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FRAME_HEIGHT);
   }
 
   OpenCVVideoGrabber::~OpenCVVideoGrabber(){
-    cvReleaseCapture(&cvc);
-    delete fpslimiter;
-    ICL_DELETE(m_buffer);
+    cvReleaseCapture(&data->cvc);
+    delete data->fpslimiter;
+    ICL_DELETE(data->m_buffer);
+    delete data;
   }
 
   int OpenCVVideoGrabber::isVolatile(const std::string &propertyName){
@@ -139,16 +157,13 @@ namespace icl{
   void OpenCVVideoGrabber::setProperty(const std::string &name, const std::string &value){
     int i = 0;
     if(name == "pos_msec"){
-      i = cvSetCaptureProperty(cvc,CV_CAP_PROP_POS_MSEC,parse<double>(value));
+      i = cvSetCaptureProperty(data->cvc,CV_CAP_PROP_POS_MSEC,parse<double>(value));
     }else if(name == "pos_frames"){
-      i = cvSetCaptureProperty(cvc,CV_CAP_PROP_POS_FRAMES,parse<double>(value));
+      i = cvSetCaptureProperty(data->cvc,CV_CAP_PROP_POS_FRAMES,parse<double>(value));
     }else if(name == "pos_avi_ratio"){
-      //depends on file
-      i = cvSetCaptureProperty(cvc,CV_CAP_PROP_POS_AVI_RATIO,parse<double>(value));
-    }else if(name == "use_video_fps"){
-      use_video_fps = true;
-      float f = cvGetCaptureProperty(cvc,CV_CAP_PROP_FPS);
-      fpslimiter->setMaxFPS(f);//parse<float>(value));
+      i = cvSetCaptureProperty(data->cvc,CV_CAP_PROP_POS_AVI_RATIO,parse<double>(value));
+    }else if(name  == "use_video_fps"){
+      data->use_video_fps = (value == "on");
     }
   }
 }

@@ -232,7 +232,7 @@ int main(int n, char **args){
     /** Ownership was not passed -> h is not deleted  */
     void uninstall(MouseHandler *h);
 
-    /// registeres a simple callback 
+    /// registers a simple callback 
     /** @param cb callback functor to use
         @param eventList comma-separated list of events. Supported types are:
                - all (for all events)

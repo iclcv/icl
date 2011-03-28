@@ -39,6 +39,7 @@
 #include <QtGui/QApplication>
 #include <ICLQt/SliderUpdateEvent.h>
 #include <ICLUtils/Macros.h>
+#include <ICLUtils/Function.h>
 
 namespace icl{
   
@@ -52,12 +53,24 @@ namespace icl{
       QEvent to this object, which is caught in the overloaded event() function
   */
   class ThreadedUpdatableSlider : public QSlider{
+    Q_OBJECT;
+    
+    /// internally callback type
+    struct CB{
+      /// associated event 
+      enum Event{ press,release,move,value,all } event;
+      Function<void> f; //!< associated 'void f()' -function
+    };
+    
+    /// internal list of callbacks
+    std::vector<CB> callbacks;
+    
     public:
     
     /// Base constructor
-    ThreadedUpdatableSlider(QWidget *parent = 0): QSlider(parent){}
+    ThreadedUpdatableSlider(QWidget *parent = 0);
 
-    ThreadedUpdatableSlider(Qt::Orientation o, QWidget *parent = 0): QSlider(o, parent){}
+    ThreadedUpdatableSlider(Qt::Orientation o, QWidget *parent = 0);
     
     /// call this function to update a widget's UI from an external thread
     void setValueFromOtherThread(int value){
@@ -74,6 +87,33 @@ namespace icl{
         return QSlider::event(event);
       }
     } 
+    
+    /// registers a void-callback function to the given event names
+    /** allowed event names are
+        - press (when the slider is pressed)
+        - release (when the slider is released)
+        - move (when the slider is moved)
+        - value (when the value is changed)
+        - all (for all events)
+    */
+    void registerCallback(const Function<void> &cb, const std::string &events="value");
+
+    /// removes all callbacks associated to this slider component
+    void removeCallbacks();
+
+    protected slots:
+    /// for collecting slider singnals
+    void collectValueChanged(int);
+
+    /// for collecting slider singnals
+    void collectSliderPressed();
+
+    /// for collecting slider singnals
+    void collectSliderMoved(int);
+
+    /// for collecting slider singnals
+    void collectSliderReleased();
+    
   };
 
 }

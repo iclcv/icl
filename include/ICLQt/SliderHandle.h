@@ -36,6 +36,7 @@
 #define ICL_SLIDER_HANDLE_H
 
 #include <ICLQt/GUIHandle.h>
+#include <ICLQt/ThreadedUpdatableSlider.h>
 
 
 namespace icl{
@@ -79,6 +80,33 @@ namespace icl{
     
     /// assigns a new value to the slider (equal to setValue)
     void operator=(int val) { setValue(val); }
+
+    /// overloaded method for registering callbacks to specific slider events
+    /** <b>Please note:</b> Only this callback mechanism is overloaded for the slider class
+        Simple GUI callbacks are stored within the ThreadedUpdatableSlider class, while
+        complex callbacks (those that get the GUI components handle name as parameters) are
+        stored and handled within the GUIHandleBase class.
+        Allowed values for the event parameter are comma-separated lists that consist of 
+        the following tokes:
+        - press (slider is pressed)
+        - release (slider is released)
+        - move (slider is moved)
+        - value (the slider value is changed)
+        - all (all event types)
+    */
+    virtual void registerCallback(const GUI::Callback &cb, const std::string &events="value"){
+      (***this).registerCallback(cb,events);
+    }
+
+    /// import the other register callback method
+    GUIHandleBase::registerCallback;
+    
+    /// empties both callback locations (GUIHandleBase and ThreadedUpdatableSlider)
+    virtual void removeCallbacks(){
+      GUIHandleBase::removeCallbacks();
+      (***this).removeCallbacks();
+    }
+
   };
   
 }

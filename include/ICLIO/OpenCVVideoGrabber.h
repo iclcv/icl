@@ -48,17 +48,8 @@
 namespace icl{
 
 class OpenCVVideoGrabber : public Grabber{
-    private:
-    /// Device struct
-    CvCapture *cvc;
-    ///Filename of the file
-    std::string filename;
-    ///Ensures the desired framerate
-    FPSLimiter *fpslimiter;
-    ///Buffer for scaling if necessary
-    ImgBase *m_buffer;
-    ///
-    bool use_video_fps;
+    struct Data;
+    Data *data;
     public:
     
     /// returns a list of properties, that can be set using setProperty
