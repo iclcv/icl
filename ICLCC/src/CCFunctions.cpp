@@ -474,7 +474,6 @@ namespace icl{
         v[i] = clipped_cast<icl32s,D>(reg_v);
       }
     }
-    
   };
 
   // }}}
@@ -797,6 +796,55 @@ namespace icl{
   };
 
   // }}}
+
+#ifdef HAVE_IPP
+  template<class IppFunc>
+  static void convert_color_with_ipp(const Img8u *src, Img8u *dst, bool roiOnly, IppFunc ipp_func){
+    if(roiOnly){
+      const icl8u *s[3]={src->getROIData(0),src->getROIData(1),src->getROIData(2)};
+      icl8u *d[3] = {dst->getROIData(0),dst->getROIData(1),dst->getROIData(2)};
+      ipp_func(s,src->getLineStep(),d,dst->getLineStep(),src->getROISize());
+    }else{
+      const icl8u *s[3]={src->getData(0),src->getData(1),src->getData(2)};
+      icl8u *d[3] = {dst->getData(0),dst->getData(1),dst->getData(2)};
+      ipp_func(s,src->getLineStep(),d,dst->getLineStep(),src->getSize());
+    }
+  }
+#define USE_IPP_CONVERT(SRC_FMT,DST_FMT,FUNC)                                  \
+  template<> struct CCFunc<icl8u,icl8u,format##SRC_FMT,format##DST_FMT>{       \
+    static void convert(const Img<icl8u> *src, Img<icl8u> *dst, bool roiOnly){ \
+      convert_color_with_ipp(src,dst,roiOnly,ippi##FUNC);                      \
+    }                                                                          \
+  };
+
+#define USE_IPP_CONVERT_SWAP_SRC_RG(SRC_FMT,DST_FMT,FUNC)                        \
+  template<> struct CCFunc<icl8u,icl8u,format##SRC_FMT,format##DST_FMT>{         \
+    static void convert(const Img<icl8u> *srcIn, Img<icl8u> *dst, bool roiOnly){ \
+      static const int bgr[] = {2,1,0};                                          \
+      SmartPtr<const Img8u> src = srcIn->selectChannels(std::vector<int>(bgr,bgr+3)); \
+      convert_color_with_ipp(src.get(),dst,roiOnly,ippi##FUNC);                  \
+    }                                                                            \
+  };
+#define USE_IPP_CONVERT_SWAP_DST_RG(SRC_FMT,DST_FMT,FUNC)                        \
+  template<> struct CCFunc<icl8u,icl8u,format##SRC_FMT,format##DST_FMT>{         \
+    static void convert(const Img<icl8u> *src, Img<icl8u> *dst, bool roiOnly){   \
+      convert_color_with_ipp(src,dst,roiOnly,ippi##FUNC);                        \
+      dst->swapChannels(0,2);                                                    \
+    }                                                                            \
+  };
+
+
+  USE_IPP_CONVERT(RGB,YUV,RGBToYUV_8u_P3R);
+  USE_IPP_CONVERT(YUV,RGB,YUVToRGB_8u_P3R);
+  
+  USE_IPP_CONVERT_SWAP_SRC_RG(RGB,HLS,BGRToHLS_8u_P3R);
+  USE_IPP_CONVERT_SWAP_DST_RG(HLS,RGB,HLSToBGR_8u_P3R);
+
+  /// lab conversion in IPP is only available for planar images
+  //USE_IPP_CONVERT_SWAP_RB(RGB,LAB,BGRToLAB);
+  //USE_IPP_CONVERT_SWAP_RB(LAB,BGR,LABToBGR);
+#endif
+
 
   template<class S, class D> void cc_sd(const Img<S> *src, Img<D> *dst, bool roiOnly){
   // {{{ open

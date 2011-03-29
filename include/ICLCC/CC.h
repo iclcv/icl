@@ -385,6 +385,20 @@ that the source images ROI has the same size as the destination images ROI. If t
 error occurs and the function returns immediately.\n
 <b>Note:</b> internally all functions are optimized for running without ROI support (in this case, the
 images data arrays are 1D). Thus, the ROI-Support mode (roiOnly = true) runs approx. 20% (2%-50%) slower 
-depended on the specific source and destination format. */
+depended on the specific source and destination format. 
+
+
+\section IPP IPP Acceleration
+Most functions are not IPP accelerated even if IPP support is available because IPP supports most conversions
+for interleaved formats only. However a few very common conversions make use of available IPP acceleration:
+- RGB -> YUV
+- YUV -> RGB
+- RGB -> HLS
+- HLS -> RGB
+
+The IPP accelerated times are not part of the benchmark above. Usually, as a rule of thumb, IPP is supposed to
+be at least twice as fast as the C++-fallback implementation.
+
+*/
 
 #endif
