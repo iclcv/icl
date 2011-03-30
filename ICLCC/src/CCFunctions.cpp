@@ -840,6 +840,86 @@ namespace icl{
   USE_IPP_CONVERT_SWAP_SRC_RG(RGB,HLS,BGRToHLS_8u_P3R);
   USE_IPP_CONVERT_SWAP_DST_RG(HLS,RGB,HLSToBGR_8u_P3R);
 
+  template<> struct CCFunc<icl8u,icl8u,formatRGB,formatLAB>{
+    static void convert(const Img<icl8u> *src, Img<icl8u> *dst, bool roiOnly){
+      if(roiOnly){
+        const Rect roi = src->getROI();
+        const int w = src->getWidth();
+        const int rw = roi.width, rh= roi.height;
+        const Size line(rw,1);
+        std::vector<icl8u> sbuf(rw*3),dbuf(rw*3);
+        const icl8u* bgrSrc[] = {src->getROIData(2),src->getROIData(1),src->getROIData(0)};
+        icl8u* bgrDst[] ={dst->getROIData(2),dst->getROIData(1),dst->getROIData(0)};
+        
+        for(int y=0;y<rh;++y){
+          ippiCopy_8u_P3C3R(bgrSrc, w, sbuf.data(), rw, line);
+          ippiBGRToLab_8u_C3R(sbuf.data(),rw,dbuf.data(), rw, line);
+          ippiCopy_8u_C3P3R(dbuf.data(),rw, bgrDst, w, line);
+          for(int i=0;i<3;++i){
+            bgrSrc[i]+=w;
+            bgrDst[i]+=w;
+          }
+        }
+      }else{
+        const int w = src->getWidth(), h = src->getHeight();
+        const Size line(w,1);
+        std::vector<icl8u> sbuf(w*3),dbuf(w*3);
+        const icl8u* bgrSrc[] = {src->getData(2),src->getData(1),src->getData(0)};
+        icl8u* bgrDst[] ={dst->getData(2),dst->getData(1),dst->getData(0)};
+        
+        for(int y=0;y<h;++y){
+          ippiCopy_8u_P3C3R(bgrSrc, w, sbuf.data(), w, line);
+          ippiBGRToLab_8u_C3R(sbuf.data(),w,dbuf.data(), w, line);
+          ippiCopy_8u_C3P3R(dbuf.data(),w, bgrDst, w, line);
+          for(int i=0;i<3;++i){
+            bgrSrc[i]+=w;
+            bgrDst[i]+=w;
+          }
+        }
+      }
+    }
+  };
+
+ template<> struct CCFunc<icl8u,icl8u,formatLAB ,formatRGB>{
+    static void convert(const Img<icl8u> *src, Img<icl8u> *dst, bool roiOnly){
+      if(roiOnly){
+        const Rect roi = src->getROI();
+        const int w = src->getWidth();
+        const int rw = roi.width, rh= roi.height;
+        const Size line(rw,1);
+        std::vector<icl8u> sbuf(rw*3),dbuf(rw*3);
+        const icl8u* bgrSrc[] = {src->getROIData(2),src->getROIData(1),src->getROIData(0)};
+        icl8u* bgrDst[] ={dst->getROIData(2),dst->getROIData(1),dst->getROIData(0)};
+        
+        for(int y=0;y<rh;++y){
+          ippiCopy_8u_P3C3R(bgrSrc, w, sbuf.data(), rw, line);
+          ippiLabToBGR_8u_C3R(sbuf.data(),rw,dbuf.data(), rw, line);
+          ippiCopy_8u_C3P3R(dbuf.data(),rw, bgrDst, w, line);
+          for(int i=0;i<3;++i){
+            bgrSrc[i]+=w;
+            bgrDst[i]+=w;
+          }
+        }
+      }else{
+        const int w = src->getWidth(), h = src->getHeight();
+        const Size line(w,1);
+        std::vector<icl8u> sbuf(w*3),dbuf(w*3);
+        const icl8u* bgrSrc[] = {src->getData(2),src->getData(1),src->getData(0)};
+        icl8u* bgrDst[] ={dst->getData(2),dst->getData(1),dst->getData(0)};
+        
+        for(int y=0;y<h;++y){
+          ippiCopy_8u_P3C3R(bgrSrc, w, sbuf.data(), w, line);
+          ippiLabToBGR_8u_C3R(sbuf.data(),w,dbuf.data(), w, line);
+          ippiCopy_8u_C3P3R(dbuf.data(),w, bgrDst, w, line);
+          for(int i=0;i<3;++i){
+            bgrSrc[i]+=w;
+            bgrDst[i]+=w;
+          }
+        }
+      }
+    }
+  };
+
   /// lab conversion in IPP is only available for planar images
   //USE_IPP_CONVERT_SWAP_RB(RGB,LAB,BGRToLAB);
   //USE_IPP_CONVERT_SWAP_RB(LAB,BGR,LABToBGR);

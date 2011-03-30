@@ -348,7 +348,7 @@ namespace icl{
   /// normalize an images range to [0,255]
   /** @param image source image **/
   template<class T>
-  ImgQ norm(const ImgQ &image);
+  Img<T> norm(const Img<T> &image);
   
   /// horizontal flip of an image
   /** @param image source image **/
