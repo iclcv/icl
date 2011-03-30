@@ -183,6 +183,11 @@ namespace icl{
     */
     const Img8u &getLUTPreview(int xDim, int yDim, icl8u zValue);
 
+    /// this also creates a colored preview for the current segmentation LUT
+    /** the method behaves like getLUTPreview, except, it tints the resulting
+        lut-slice with mean colors of that class */
+    const Img8u &getColoredLUTPreview(int xDim, int yDim, icl8u zValue);
+
   };
 
 }

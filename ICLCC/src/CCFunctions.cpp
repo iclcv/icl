@@ -157,21 +157,43 @@ namespace icl{
   
   void cc_util_rgb_to_yuv(const icl32s r, const icl32s g, const icl32s b, icl32s &y, icl32s &u, icl32s &v){
     // {{{ integer open
-  
+#ifdef USE_RGB_TO_YUV_FULL_RANGE_UV
     /// fixed point approximation of the the rgb2yuv version :
+    /** we no longer use this version due to compatibility issues with IPP based code */
     y = ( 1254097*r + 2462056*g + 478151*b ) >> 22;  
     u = ( 2366989*(b-y) + 534773760        ) >> 22;
     v = ( 2991658*(r-y) + 534773760        ) >> 22;
+#else
+    /// this is the way Intel IPP does rgb-to-yuv conversion
+    y = ( 1254097*r + 2462056*g + 478151*b ) >> 22;  
+    u = (2063598*(b-y) >> 22) + 128;
+    v = (3678405*(r-y) >> 22) + 128; 
+    if(v<0) v=0;
+    else if(v > 255) v = 255;
+#endif
   }
   // }}}
   void cc_util_yuv_to_rgb(const icl32s y,const icl32s u,const icl32s v, icl32s &r, icl32s &g, icl32s &b){
     // {{{ open
+#ifdef USE_RGB_TO_YUV_FULL_RANGE_UV
     icl32s u2 = 14343*u - 1828717; 
     icl32s v2 = 20231*v - 2579497; 
     
     r = y +  ( ( 290 * v2 ) >> 22 );
     g = y -  ( ( 100  * u2 + 148 * v2) >> 22 );
     b = y +  ( ( 518 * u2 ) >> 22 );
+#else
+    // ipp compatible version (please note, due to the clipping process of 'v' in rgb_to_yuv,
+    // this method cannot restore an original rgb value completetly. Since we lost some information
+    // in v, the resulting r and g values are differ as follows: r-r' in [-32,35], and g-g' in [-17,18]
+    icl32s u2 = u-128;
+    icl32s v2 = v-128;
+    icl32s y2 = y<<22;
+    
+    r = (y2 + 4781506 * v2 ) >> 22;
+    g = (y2 - 1652556 * u2 - 2436891 *v2 ) >> 22;
+    b = (y2 + 8522826 * u2 ) >> 22;
+#endif
   } 
   // }}}
   void cc_util_rgb_to_hls(const icl32f r255,const icl32f g255,const icl32f b255, icl32f &h, icl32f &l, icl32f &s){

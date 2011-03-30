@@ -159,6 +159,38 @@ B = Y +  ( ( 518 * U2 ) >> 22 );             and  V2 = 20231*v - 2579497;
 This approximation produces errors less 3/255, and runs up to 20% faster.
 A further optimization can be implemented using lookup tables.
 
+\subsection IPPCOMPA_XYZ IPP Compatibility
+In order to achieve compatibility with the yuv color conversion provided by
+intel IPP (which is used if IPP is available), also ICL's color conversion 
+methods were slightly adapted. We again used fixed point approximations for
+the algorithms described in the IPP manual:
+
+<pre>
+rgb-to-yuv:
+
+y = ( 1254097*r + 2462056*g + 478151*b ) >> 22;  
+u = (2063598*(b-y) >> 22) + 128;
+v = (3678405*(r-y) >> 22) + 128; 
+
+if(v<0) v=0;
+else if(v > 255) v = 255;
+</pre>
+
+<pre>
+yuv-to-rgb:
+
+icl32s u2 = u-128;
+icl32s v2 = v-128;
+icl32s y2 = y<<22;
+    
+r = (y2 + 4781506 * v2 ) >> 22;
+g = (y2 - 1652556 * u2 - 2436891 *v2 ) >> 22;
+b = (y2 + 8522826 * u2 ) >> 22;
+</pre>
+<b>please note</b>
+Due to the clipping process of 'v' in rgb_to_yuv,
+this method cannot restore an original rgb value completetly. Since we lost some information
+in v, the resulting r and g values are differ as follows: r-r' in [-32,35], and g-g' in [-17,18]
 
 \section secHLS HLS Color Space Conversion
 The HLS color space, also known as the HSI color space with another channel
@@ -398,6 +430,10 @@ for interleaved formats only. However a few very common conversions make use of 
 
 The IPP accelerated times are not part of the benchmark above. Usually, as a rule of thumb, IPP is supposed to
 be at least twice as fast as the C++-fallback implementation.
+\section IPPComp Important note regarding IPP compatibility</b>
+Currently, IPP and C++ fallback version are not 100% compatible as IPP uses
+additional optimizations that causes, that the U- and V- channel range are not full 8bit range [0-255].
+We aim to fix that in future    
 
 */
 

@@ -38,6 +38,7 @@
 #include <ICLIO/FileWriter.h>
 #include <ICLIO/FileGrabber.h>
 #include <ICLFilter/ColorSegmentationOp.h>
+#include <ICLCC/Color.h>
 
 namespace icl{
 
@@ -45,8 +46,10 @@ namespace icl{
     int dim, w, h,t, wh;
     icl8u *data;
     mutable Img8u image;
+    mutable Img8u colorImage;
     LUT3D(int w, int h, int t):
       dim(w*h*t),w(w),h(h),t(t),wh(w*h),data(dim ? new icl8u[dim] : 0){
+      
     }
     ~LUT3D(){
       ICL_DELETE_ARRAY(data);
@@ -132,6 +135,86 @@ namespace icl{
       }
       return image;
     }
+
+    const Img8u &getColoredImage(int xDim, int yDim, int zSlice,
+                                 int xShift,int yShift,int zShift, 
+                                 format srcfmt){
+      int shifts[]={xShift,yShift,zShift};
+      xShift = shifts[xDim];
+      yShift = shifts[yDim];
+      zShift = shifts[3-(xDim+yDim)];
+
+      const Channel8u c = getImage(xDim,yDim,zSlice)[0];
+      FixedColVector<int,4> colors[256];  // r,g,b,#
+      std::fill(colors,colors+256,FixedColVector<int,4>(0,0,0,0));
+      int nAll = 0;
+      for(int z=0;z<(0xFF>>zShift)+1;++z){
+        for(int y=0;y<(0xFF>>yShift)+1;++y){
+          for(int x=0;x<(0xFF>>xShift)+1;++x){
+            //            SHOW(w);
+            //SHOW(h);
+            //SHOW(wh);
+            //SHOW(x+w*y+wh*z);
+            //SHOW(Color(x,y,z).transp());
+            icl8u classIdx = (*this)(x,y,z);
+            if(!classIdx) continue; // no background ...
+            nAll++;
+            int r=0,g=0,b=0;
+            switch(srcfmt){
+              case formatRGB:{
+                r = x<<xShift;
+                g = y<<yShift;
+                b = z<<zShift; 
+                break;
+              }
+              case formatYUV:{
+                cc_util_yuv_to_rgb(x<<xShift,y<<yShift,z<<zShift,r,g,b);
+                break;
+              }
+              case formatHLS:{
+                float R=0,G=0,B=0;
+                cc_util_hls_to_rgb(x<<xShift,y<<yShift,z<<zShift,R,G,B);
+                r=R; g=G; b=B;
+                break;
+              }
+              default:
+                throw ICLException("getColoredImage:: supported formats are rgb, yuv, and hls");
+            }
+
+            colors[classIdx][0] += r;
+            colors[classIdx][1] += g;
+            colors[classIdx][2] += b;
+            ++colors[classIdx][3];
+            SHOW(Color(r,g,b).transp());
+            SHOW(colors[classIdx].transp());
+          }
+        }
+      }
+      std::cout << "found " << nAll << " used colors" << std::endl;
+      for(int i=0;i<256;++i){
+        FixedColVector<int,4> &c = colors[i];
+        if(c[3]){
+          c[0] /= c[3];
+          c[1] /= c[3];
+          c[2] /= c[3];
+          std::cout << "mean color for class " << i << ": " << c.transp() << std::endl;
+        }
+      }
+      
+      colorImage.setSize(c.getSize());
+      colorImage.setFormat(formatRGB);
+      icl8u *pr=colorImage.begin(0);
+      icl8u *pg=colorImage.begin(1);
+      icl8u *pb=colorImage.begin(2);
+      const int dim = colorImage.getDim();
+      for(int i=0;i<dim;++i){
+        const icl8u &classIdx = c[i];
+        pr[i] = colors[classIdx][0];
+        pg[i] = colors[classIdx][1];
+        pb[i] = colors[classIdx][2];
+      }
+      return colorImage;
+    }
   };
 
   template<icl8u xShift, icl8u yShift, icl8u zShift>
@@ -181,6 +264,8 @@ namespace icl{
     m_segFormat(fmt),m_lut(new LUT3D(0,0,0)){
     ICLASSERT_THROW(getChannelsOfFormat(fmt) == 3,ICLException("Construktor ColorSegmentationOp: format must be a 3-channel format"));
     setSegmentationShifts(c0shift,c1shift,c2shift);
+    
+    m_lut->clear(0);
   }
 
   ColorSegmentationOp::~ColorSegmentationOp(){
@@ -304,8 +389,6 @@ namespace icl{
     Img8u src(Size(1,1),fmt),dst(Size(1,1),m_segFormat);
     src(0,0).set(a,b,c);
     cc(&src,&dst);
-    
-    //DEBUG_LOG("adding color: Y:" << (int)dst(0,0,0) << " U:" << (int)dst(0,0,1) << " V:" << (int)dst(0,0,2));
     lutEntry(dst(0,0,0),dst(0,0,1),dst(0,0,2),rA,rB,rC,value);
   }
 
@@ -314,9 +397,20 @@ namespace icl{
   }
 
   const Img8u &ColorSegmentationOp::getLUTPreview(int xDim, int yDim, icl8u zValue){
-    return m_lut->getImage(xDim,yDim,zValue>>m_bitShifts[2]);
+    ICLASSERT_THROW(xDim>=0 && yDim>=0 && xDim<3 && yDim<3 && xDim!=yDim,
+                    ICLException("ColorSegmentationOp::getLUTPreview invalid for x-dim or y-dim"));
+    return m_lut->getImage(xDim,yDim,zValue>>m_bitShifts[3-(xDim+yDim)]);
   }
 
+  const Img8u &ColorSegmentationOp::getColoredLUTPreview(int xDim, int yDim, icl8u zValue){
+    ICLASSERT_THROW(xDim>=0 && yDim>=0 && xDim<3 && yDim<3 && xDim!=yDim,
+                    ICLException("ColorSegmentationOp::getColoredLUTPreview invalid for x-dim or y-dim"));
+    return m_lut->getColoredImage(xDim,yDim,zValue>>m_bitShifts[3-(xDim+yDim)],
+                                  m_bitShifts[xDim],m_bitShifts[yDim],m_bitShifts[3-(xDim+yDim)],
+                                  m_segFormat);
+  }
+  
+  
   void ColorSegmentationOp::load(const std::string &filename){
     try{
       m_lut->load(filename);

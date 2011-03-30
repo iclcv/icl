@@ -63,8 +63,7 @@ if [ "$IP_PREFIX" = "129.70" ] ; then
 #   ICL_XDEP_OPENCV_PATH=/vol/nivision
    ICL_XDEP_GTEST_PATH=/vol/nivision/share
    ICL_XDEP_LIBFREENECT_PATH=/vol/nivision
-   ICL_XDEP_XINE_PATH=/usr
-
+   #ICL_XDEP_XINE_PATH=/usr
 fi
 
 
