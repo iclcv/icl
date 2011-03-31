@@ -47,9 +47,11 @@ namespace icl{
     icl8u *data;
     mutable Img8u image;
     mutable Img8u colorImage;
+    mutable std::vector<Color> classmeans;
     LUT3D(int w, int h, int t):
       dim(w*h*t),w(w),h(h),t(t),wh(w*h),data(dim ? new icl8u[dim] : 0){
-      
+      clear(0);
+      classmeans.resize(256);
     }
     ~LUT3D(){
       ICL_DELETE_ARRAY(data);
@@ -71,6 +73,7 @@ namespace icl{
         this->t = t;
         data = dim ? new icl8u[dim] : 0;
       }
+      clear(0);
     }
     
     void clear(icl8u value) {
@@ -99,7 +102,7 @@ namespace icl{
     }
     
     const Img8u &getImage(int xDim, int yDim, int zSlice) const{
-      ICLASSERT_THROW(zSlice >= 0 && zSlice < t,ICLException("invalid zSlice value"));
+      zSlice = clip(zSlice,0,t-1);
       const int dims[3]={w,h,t};
       int w = dims[xDim];
       int h = dims[yDim];
@@ -136,84 +139,121 @@ namespace icl{
       return image;
     }
 
-    const Img8u &getColoredImage(int xDim, int yDim, int zSlice,
-                                 int xShift,int yShift,int zShift, 
-                                 format srcfmt){
-      int shifts[]={xShift,yShift,zShift};
-      xShift = shifts[xDim];
-      yShift = shifts[yDim];
-      zShift = shifts[3-(xDim+yDim)];
+    icl8u &getEntry(int xDim, int yDim, int x, int y, int z){
+      const int dims[3]={xDim,yDim,3-(xDim+yDim)};
+      const int xyz[3] = {x,y,z};
+      return operator()(xyz[dims[0]],xyz[dims[1]],xyz[dims[2]]);
+    }
 
-      const Channel8u c = getImage(xDim,yDim,zSlice)[0];
-      FixedColVector<int,4> colors[256];  // r,g,b,#
-      std::fill(colors,colors+256,FixedColVector<int,4>(0,0,0,0));
-      int nAll = 0;
-      for(int z=0;z<(0xFF>>zShift)+1;++z){
-        for(int y=0;y<(0xFF>>yShift)+1;++y){
-          for(int x=0;x<(0xFF>>xShift)+1;++x){
-            //            SHOW(w);
-            //SHOW(h);
-            //SHOW(wh);
-            //SHOW(x+w*y+wh*z);
-            //SHOW(Color(x,y,z).transp());
-            icl8u classIdx = (*this)(x,y,z);
-            if(!classIdx) continue; // no background ...
-            nAll++;
-            int r=0,g=0,b=0;
+    const std::vector<Color> &getClassMeanColors(format srcfmt){
+      WARNING_LOG("this method is still buggy");
+      std::fill(classmeans.begin(),classmeans.end(),Color(0,0,0));
+      int nums[256]={0};
+      for(int z=0;z<t;++z){
+        for(int y=0;y<h;++y){
+          for(int x=0;x<w;++x){
+            int c = operator()(x,y,z);
+            if(!c) continue;
+            int xs = x*(256/w), ys = y*(256/h), zs = z*(256/t);
+
+            int r,g,b;
+            float fr, fg, fb;
             switch(srcfmt){
-              case formatRGB:{
-                r = x<<xShift;
-                g = y<<yShift;
-                b = z<<zShift; 
-                break;
-              }
-              case formatYUV:{
-                cc_util_yuv_to_rgb(x<<xShift,y<<yShift,z<<zShift,r,g,b);
-                break;
-              }
+              case formatYUV:
+                cc_util_yuv_to_rgb(xs,ys,zs,r,g,b); break;
               case formatHLS:{
-                float R=0,G=0,B=0;
-                cc_util_hls_to_rgb(x<<xShift,y<<yShift,z<<zShift,R,G,B);
-                r=R; g=G; b=B;
+                cc_util_hls_to_rgb(xs,ys,zs,fr,fg,fb);
+                r=fr; g=fg; b=fb;
                 break;
-              }
+              }case formatRGB:
+                r=xs; g=ys; b=zs;
+                break;
               default:
-                throw ICLException("getColoredImage:: supported formats are rgb, yuv, and hls");
+                throw ICLException("ColorSegmetationOp::getColoredLUTPreview: supported formats are yuv,rgb and hls");
             }
-
-            colors[classIdx][0] += r;
-            colors[classIdx][1] += g;
-            colors[classIdx][2] += b;
-            ++colors[classIdx][3];
-            SHOW(Color(r,g,b).transp());
-            SHOW(colors[classIdx].transp());
+            if(c == 3){
+              SHOW( Color(r,g,b).transp() );
+            }
+            classmeans[c] += Color(r,g,b);
+            nums[c]++;
           }
         }
       }
-      std::cout << "found " << nAll << " used colors" << std::endl;
-      for(int i=0;i<256;++i){
-        FixedColVector<int,4> &c = colors[i];
-        if(c[3]){
-          c[0] /= c[3];
-          c[1] /= c[3];
-          c[2] /= c[3];
-          std::cout << "mean color for class " << i << ": " << c.transp() << std::endl;
+      for(int i=1;i<256;++i){
+        if(!nums[i]) continue;
+        for(int o=0;o<3;++o){
+          classmeans[i][o] = float(classmeans[i][o])/nums[i];
         }
       }
-      
-      colorImage.setSize(c.getSize());
+      return classmeans;
+    }
+    
+
+    const Img8u &getColoredImage(int xDim, int yDim, int zSlice,
+                                 int xShift,int yShift,int zShift, 
+                                 format srcfmt){
+#if 0
+      getClassMeanColors(srcfmt);
+      colorImage.fill(0);
+
+      const Channel8u c = getImage(xDim,yDim,zSlice)[0];
       colorImage.setFormat(formatRGB);
-      icl8u *pr=colorImage.begin(0);
-      icl8u *pg=colorImage.begin(1);
-      icl8u *pb=colorImage.begin(2);
-      const int dim = colorImage.getDim();
-      for(int i=0;i<dim;++i){
-        const icl8u &classIdx = c[i];
-        pr[i] = colors[classIdx][0];
-        pg[i] = colors[classIdx][1];
-        pb[i] = colors[classIdx][2];
+      colorImage.setSize(c.getSize());
+      for(int y=0;y<c.getHeight();++y){
+        for(int x=0;x<c.getWidth();++x){
+          if(!c(x,y)) continue;
+          colorImage(x,y) = classmeans[c(x,y)];
+        }
       }
       return colorImage;
+#else
+      colorImage.fill(0);
+
+      const Channel8u c = getImage(xDim,yDim,zSlice)[0];
+      colorImage.setFormat(formatRGB);
+      colorImage.setSize(c.getSize());
+      Channel8u r=colorImage[0],g=colorImage[1],b=colorImage[2];
+      for(int y=0;y<c.getHeight();++y){
+        for(int x=0;x<c.getWidth();++x){
+          if(!c(x,y)) continue;
+          int sfmt[3];
+          int xs = x<<xShift, ys = y<<yShift, zs = zSlice<<zShift;
+          switch(xDim){
+            case 0:
+              sfmt[0] = xs; sfmt[1] = ys; sfmt[2] = zs;
+              if(yDim==2) std::swap(sfmt[1],sfmt[2]);
+              break;
+            case 1: // x=1, y=2, z=0
+              sfmt[1] = xs; sfmt[0] = ys; sfmt[2] = zs;
+              if(yDim==2) std::swap(sfmt[0],sfmt[2]);
+              break;
+            case 2:
+              sfmt[2] = xs; sfmt[0] = ys; sfmt[1] = zs;
+              if(yDim==1) std::swap(sfmt[0],sfmt[1]);
+              break;
+          }
+          int rgb[3];
+          float frgb[3];
+          switch(srcfmt){
+            case formatYUV:
+              cc_util_yuv_to_rgb(sfmt[0],sfmt[1],sfmt[2],rgb[0],rgb[1],rgb[2]); break;
+            case formatHLS:{
+              cc_util_hls_to_rgb(sfmt[0],sfmt[1],sfmt[2],frgb[0],frgb[1],frgb[2]); break;
+              std::copy(frgb,frgb+3,rgb);
+              break;
+            }case formatRGB:
+              std::copy(sfmt,sfmt+3,rgb);
+              break;
+            default:
+              throw ICLException("ColorSegmetationOp::getColoredLUTPreview: supported formats are yuv,rgb and hls");
+          }
+          r(x,y) = rgb[0];
+          g(x,y) = rgb[1];
+          b(x,y) = rgb[2];
+        }
+      }
+      return colorImage;
+#endif
     }
   };
 
@@ -264,8 +304,6 @@ namespace icl{
     m_segFormat(fmt),m_lut(new LUT3D(0,0,0)){
     ICLASSERT_THROW(getChannelsOfFormat(fmt) == 3,ICLException("Construktor ColorSegmentationOp: format must be a 3-channel format"));
     setSegmentationShifts(c0shift,c1shift,c2shift);
-    
-    m_lut->clear(0);
   }
 
   ColorSegmentationOp::~ColorSegmentationOp(){
@@ -421,4 +459,10 @@ namespace icl{
   void  ColorSegmentationOp::save(const std::string &filename) {
     m_lut->save(filename);
   }
+
+
+  const std::vector<Color> &ColorSegmentationOp::getClassMeanColors(){
+    return m_lut->getClassMeanColors(m_segFormat);
+  }
+  
 }

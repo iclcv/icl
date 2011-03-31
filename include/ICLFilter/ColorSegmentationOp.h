@@ -36,6 +36,7 @@
 
 #include <ICLFilter/UnaryOp.h>
 #include <ICLCore/Img.h>
+#include <ICLCC/Color.h>
 
 namespace icl{
   /// Class for fast LUT-based color segmentation
@@ -187,6 +188,9 @@ namespace icl{
     /** the method behaves like getLUTPreview, except, it tints the resulting
         lut-slice with mean colors of that class */
     const Img8u &getColoredLUTPreview(int xDim, int yDim, icl8u zValue);
+    
+    /// returns a mean color for all used class labels (in rgb format)
+    const std::vector<Color> &getClassMeanColors();
 
   };
 
