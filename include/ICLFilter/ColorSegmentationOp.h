@@ -145,6 +145,9 @@ namespace icl{
     /// Imported apply from parent UnaryOp class
     UnaryOp::apply;
     
+    /// classifies a pixel in given rgb format
+    icl8u classifyPixel(icl8u r, icl8u g, icl8u b);
+        
     /// clears the whole segmentation LUT
     void clearLUT(icl8u value=0);
     

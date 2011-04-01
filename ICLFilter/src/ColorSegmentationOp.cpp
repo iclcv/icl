@@ -80,25 +80,58 @@ namespace icl{
       std::fill(data,data+dim,value);
     }
     
-    void save(const std::string &filename){
-      std::vector<icl8u*> datas(t);
-      for(int i=0;i<t;++i){
-        datas[i] = data + wh*i;
+    void save(const std::string &filename, format fmt){
+      ICLASSERT_THROW(filename.length(),ICLException("ColorSegmentationOp::save: emtpy filename"));
+      std::string fn = filename;
+      int len = (int)fn.length();
+
+      bool isPGM = (len >= 4) && (fn.substr(len-4,4)==".pgm");
+      bool isGZ = (len >= 7) && (fn.substr(len-7,7)==".pgm.gz");
+      
+      if( (!isPGM) && (!isGZ) ){
+        WARNING_LOG("invalid file type attaching suffix '.pgm.gz'");
+        fn += ".pgm.gz";
       }
-      Img8u tmp(Size(w,h),t,formatMatrix,datas,false);
-      FileWriter(filename).write(&tmp);
+      
+      File f(fn,File::writeText);
+      f << str("P5") << "\n" << w << str(" ") << str(h*t) << "\n";
+      f << str("255") << "\n";
+      f << str("# ColorSegmentationOp dims ") << w << str(" ") << h << str(" ") << t << "\n";
+      f << str("# ColorSegmentationOp format ") << str(fmt) << "\n";
+      DEBUG_LOG("writing " << dim << " bytes of data");
+      f.write(data,dim);
+      f.close();
     }
     
-    void load(const std::string &filename){
-      FileGrabber g(filename);
-      g.ignoreDesired();
-      const Img8u &image = *g.grab()->asImg<icl8u>();
-      ICLASSERT_THROW(image.getWidth() == w &&
-                      image.getHeight() == h &&
-                      image.getChannels() == t, ICLException("invalid lut dimensions"));
-      for(int i=0;i<t;++i){
-        std::copy(image.begin(i),image.end(i),data+wh*i);
+    format load(const std::string &filename){
+      static const std::string err="ColorSegmentationOp:load invalid file format ";
+      File f(filename,File::readBinary);
+      if(f.readLine() != "P5") throw ICLException(err+"('P5' expected)");
+      std::vector<int> whpgm = parseVecStr<int>(f.readLine()," ");
+      if(parse<int>(f.readLine()) != 255) throw ICLException(err+"('255' expected)");
+      std::vector<std::string> opt1 = tok(f.readLine()," ");
+      std::vector<std::string> opt2 = tok(f.readLine()," ");
+      if(opt1.size() != 6) throw ICLException(err+"('# ColorSegmentationOp dims w h t' expected)");
+      if(opt1[0] != "#" || opt1[1] != "ColorSegmentationOp" || opt1[2] != "dims"){
+        throw ICLException(err+"('# ColorSegmentationOp dims w h t' expected)");
       }
+      int w = parse<int>(opt1[3]);
+      int h = parse<int>(opt1[4]);
+      int t = parse<int>(opt1[5]);
+      if(opt2.size() != 4) throw ICLException(err+"('# ColorSegmentationOp format f' expected)");
+      if(opt2[0] != "#" || opt2[1] != "ColorSegmentationOp" || opt2[2] != "format"){
+        throw ICLException(err+"('# ColorSegmentationOp format f' expected)");
+      }
+      format fmt = parse<format>(opt2[3]);
+      int n = f.bytesAvailable();
+      if(n < w*h*t) throw ICLException(err+"('not enough remaining bytes available', "
+                                       "bytes left:" + str(n) +" needed:" + str(w*h*t) + ")");
+
+      resize(w,h,t);
+
+      std::copy(f.getCurrentDataPointer(),f.getCurrentDataPointer()+dim,data);
+      
+      return fmt;
     }
     
     const Img8u &getImage(int xDim, int yDim, int zSlice) const{
@@ -448,21 +481,59 @@ namespace icl{
                                   m_segFormat);
   }
   
+  static int compute_shift(int len){
+    switch(len){
+      case 256: return 0;
+      case 128: return 1;
+      case 64: return 2;
+      case 32: return 3;
+      case 16: return 4;
+      case 8: return 5;
+      case 4: return 6;
+      case 2: return 7;
+      default: return 8;
+    }
+  }
   
   void ColorSegmentationOp::load(const std::string &filename){
     try{
-      m_lut->load(filename);
+      m_segFormat = m_lut->load(filename);
+      m_bitShifts[0] = compute_shift(m_lut->w);
+      m_bitShifts[1] = compute_shift(m_lut->h);
+      m_bitShifts[2] = compute_shift(m_lut->t);
     }catch(ICLException &ex){
       ERROR_LOG(ex.what());
     }
   }
   void  ColorSegmentationOp::save(const std::string &filename) {
-    m_lut->save(filename);
+    m_lut->save(filename,m_segFormat);
   }
 
 
   const std::vector<Color> &ColorSegmentationOp::getClassMeanColors(){
     return m_lut->getClassMeanColors(m_segFormat);
   }
+
+  icl8u ColorSegmentationOp::classifyPixel(icl8u R, icl8u G, icl8u B){
+    int a=-1,b=-1,c=-1;
+    switch(m_segFormat){
+      case formatYUV:
+        cc_util_rgb_to_yuv(R,G,B,a,b,c); 
+        break;
+      case formatHLS:
+        float H,L,S;
+        cc_util_rgb_to_hls(R,G,B,H,L,S); 
+        a = H; b = L; c = S;
+        break;
+      case formatRGB:
+        a = R; b = G; c = B; 
+        break;
+      default:
+        throw ICLException("ColorSegmentationOp::classifyPixel invalid seg-format (allowed is yuv, hls and rgb)");
+    }
+    ShiftedLUT3D lut(m_bitShifts,*m_lut);
+    return lut(a,b,c);
+  }
+  
   
 }
