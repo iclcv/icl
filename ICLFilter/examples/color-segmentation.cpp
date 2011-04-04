@@ -9,20 +9,36 @@ GenericGrabber grabber;
 SmartPtr<ColorSegmentationOp> segmenter;
 Mutex mutex;
 
-bool overImage = false;
-bool overLUT = false;
-bool overSeg = false;
-void clear_over(){ overImage = overLUT = overSeg = false; }
+Img8u currLUT,currLUTColor,segImage;
 
-Img8u currLUT,currLUTColor;
-const std::vector<ImageRegion> *lutRegions=0;
-const std::vector<ImageRegion> *segRegions=0;
-std::vector<std::vector<Point> > rsA;
+std::vector<ImageRegion> drawIM_AND_SEG;
+std::vector<ImageRegion> drawLUT;
 int hoveredClassID = -1;
+
+
+
+void highlight_regions(int classID){
+  hoveredClassID = classID;
+  drawIM_AND_SEG.clear();
+  drawLUT.clear();
+  if(classID < 1) return;
+    
+  static RegionDetector rdLUT(1,1<<22,1,255);
+  static RegionDetector rdSEG(1,1<<22,1,255);
+  
+  drawLUT = rdLUT.detect(&currLUT);
+  const std::vector<ImageRegion> &rseg = rdSEG.detect(&segImage);
+
+  for(unsigned int i=0;i<rseg.size();++i){
+    if(rseg[i].getVal() == classID){
+      drawIM_AND_SEG.push_back(rseg[i]);
+    }
+  }
+}
 
 void mouse(const MouseEvent &e){
   Mutex::Locker lock(mutex);
-  if(!currLUT.getDim() || !segRegions) return;
+  if(!currLUT.getDim()) return;
   
   static const ICLWidget *wIM = *gui.getValue<DrawHandle>("image");
   static const ICLWidget *wLUT = *gui.getValue<DrawHandle>("lut");
@@ -31,48 +47,34 @@ void mouse(const MouseEvent &e){
   Point p = e.getPos();
   
   if(e.isLeaveEvent()){
-    rsA.clear();
-    clear_over();
-    hoveredClassID = -1;
+    highlight_regions(-1);
     return;
   }
   
   if(e.getWidget() == wLUT){
-    clear_over();
-    overLUT=true;
-    rsA.clear();
-    if(currLUT.getImageRect().contains(p.x,p.y)){
-      int classID = currLUT(p.x,p.y,0);
-      if(classID > 0){
-        for(unsigned int i=0;i<segRegions->size();++i){
-          if((*segRegions)[i].getVal() == classID){
-            rsA.push_back((*segRegions)[i].getBoundary(false));
-          }
-        }
-        if(e.isPressEvent()){
-          gui["currClass"] = (classID-1);
-        }
-      }
+    highlight_regions(currLUT.getImageRect().contains(p.x,p.y) ?
+                      currLUT(p.x,p.y,0) :
+                      0 );
+    if(e.isPressEvent()){
+      gui["currClass"] = (hoveredClassID-1);
     }
   }else if (e.getWidget() == wIM){
-    clear_over();
-    overImage = true;
-    
     int cc = gui["currClass"]; 
     int r = gui["radius"];
     std::vector<double> c = e.getColor();
-    if(c.size() != 3) return;
-    if(e.isLeft() || e.isRight()){
-      segmenter->lutEntry(formatRGB,(int)c[0],(int)c[1],(int)c[2],r,r,r, e.isLeft() * (cc+1) );
-    }else if(e.isMoveEvent()){
-      hoveredClassID = segmenter->classifyPixel(c[0],c[1],c[2]);
-      SHOW(hoveredClassID);
+    if(c.size() == 3){
+      if(e.isLeft() || e.isRight()){
+        segmenter->lutEntry(formatRGB,(int)c[0],(int)c[1],(int)c[2],r,r,r, e.isLeft() * (cc+1) );
+      }
+      highlight_regions(segmenter->classifyPixel(c[0],c[1],c[2]));
     }
   }else if(e.getWidget() == wSEG){
-    clear_over();
-    overSeg = true;
-    
-    
+    highlight_regions(segImage.getImageRect().contains(p.x,p.y) ?
+                      segImage(p.x,p.y,0) :
+                      0);
+    if(e.isPressEvent()){
+      gui["currClass"] = (hoveredClassID-1);
+    }
   }
 }
 
@@ -158,86 +160,56 @@ void run(){
   
   image = grabbedImage;
   Time t = Time::now();
-  const ImgBase *segImage = segmenter->apply(grabbedImage);
-  seg = segImage;
+  segImage = *segmenter->apply(grabbedImage)->asImg<icl8u>();
+  seg = &segImage;
   time = str(t.age().toMilliSecondsDouble())+"ms";
 
   
   Mutex::Locker lock(mutex);
   currLUT = segmenter->getLUTPreview(xys[zAxis].x,xys[zAxis].y,z);
   currLUTColor = segmenter->getColoredLUTPreview(xys[zAxis].x,xys[zAxis].y,z);
+ 
+  highlight_regions(hoveredClassID);
   
   //--lut--
   lut = &currLUTColor;
   lut->lock();
   lut->reset();
   lut->linewidth(2);
-  static RegionDetector rdLUT(1,1<<22,1,255);
-  static RegionDetector rdSEG(1,1<<22,1,255);
-
-  lutRegions = &rdLUT.detect(&currLUT);
-  segRegions = &rdSEG.detect(segImage);
   
-  const std::vector<ImageRegion> &rs = *lutRegions;
-  for(unsigned int i=0;i<rs.size();++i){
+  for(unsigned int i=0;i<drawLUT.size();++i){
+    float x = drawLUT[i].getCOG().x, y=drawLUT[i].getCOG().y;
     lut->color(255,255,255,255);
-    lut->linestrip(rs[i].getBoundary(false));
+    lut->linestrip(drawLUT[i].getBoundary(false));
     lut->color(0,0,0,255);
-    lut->text(str(rs[i].getVal()),rs[i].getCOG().x+0.1, rs[i].getCOG().y+0.1, -2);
+    lut->text(str(drawLUT[i].getVal()),x+0.1, y+0.1, -2);
     lut->color(255,255,255,255);
-    lut->text(str(rs[i].getVal()),rs[i].getCOG().x, rs[i].getCOG().y, -2);
-    if(rs[i].getVal() == hoveredClassID){
+    lut->text(str(drawLUT[i].getVal()),x, y, -2);
+    if(drawLUT[i].getVal() == hoveredClassID){
       lut->color(0,100,255,255);
       lut->fill(0,100,255,40);
-      lut->rect(rs[i].getBoundingBox().enlarged(1));
+      lut->rect(drawLUT[i].getBoundingBox().enlarged(1));
     }
   }
-    
   lut->unlock();
-
-  //--image--
-  image->lock();
-  image->reset();
-  image->linewidth(2);
-  image->color(255,255,255,255);
-  for(unsigned int i=0;i<rsA.size();++i){
-    image->linestrip(rsA[i]);
-  }
-  image->unlock();
-
-
-  //--seg--
-  seg->lock();
-  seg->reset();
-  seg->linewidth(2);
-  seg->color(255,0,0,255);
-  for(unsigned int i=0;i<rsA.size();++i){
-    seg->linestrip(rsA[i]);
-  }
-  seg->unlock();
-  
-
-  //--update-- all
   lut.update();
-  image.update();
-  seg.update();
-
+  
+  //--image and seg--
+  ICLDrawWidget *ws[2] = {*image,*seg};
+  for(int i=0;i<2;++i){
+    ws[i]->lock();
+    ws[i]->reset();
+    ws[i]->linewidth(2);
+    ws[i]->color(255,255-i*255,255-i*255,255);
+    for(unsigned int j=0;j<drawIM_AND_SEG.size();++j){
+      ws[i]->linestrip(drawIM_AND_SEG[j].getBoundary());
+    }
+    ws[i]->unlock();
+    ws[i]->updateFromOtherThread();
+  }
 }
 
 int main(int n,char **args){
-  /*
-      Img32s a(Size(256,256),formatRGB);
-      for(int u=0;u<256;++u){
-        for(int v=0;v<256;++v){
-        cc_util_yuv_to_rgb(128,u,v,a(u,v,0),a(u,v,1),a(u,v,2));
-      }
-      }
-      show(a);
-
-      a.print();
-      return 0;
-  */
-  
   return ICLApp(n,args,"-shifts|-s(int=8,int=0,int=0) "
                 "-seg-format|-f(format=YUV) "
                 "[m]-input|-i(2) "
