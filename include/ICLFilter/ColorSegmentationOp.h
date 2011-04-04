@@ -194,6 +194,15 @@ namespace icl{
     
     /// returns a mean color for all used class labels (in rgb format)
     const std::vector<Color> &getClassMeanColors();
+    
+    /// returs the internal lut data
+    /** The data order is depth-major row-major
+        i.e. an index(x,y,z) is estimated by (x + w*y + w*h * z) */
+    const icl8u *getLUT() const;
+
+    /// returns the lut-sizes
+    /** w = 1+(0xff >> bitShift[0]) etc. */
+    void getLUTDims(int &w, int &h, int &t) const;
 
   };
 

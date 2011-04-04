@@ -6,7 +6,11 @@
 #include <ICLCC/Color.h>
 #include <ICLBlob/RegionDetector.h>
 
+#include <ICLGeom/Scene.h>
 GUI gui("vsplit");
+
+#define MAX_LUT_3D_DIM 10000
+
 GenericGrabber grabber;
 SmartPtr<ColorSegmentationOp> segmenter;
 Mutex mutex;
@@ -17,7 +21,61 @@ std::vector<ImageRegion> drawIM_AND_SEG;
 std::vector<ImageRegion> drawLUT;
 int hoveredClassID = -1;
 
+void cc_util_hls_to_rgb_i(int h, int l, int s, int &r, int &g, int &b){
+  float R,G,B;
+  return cc_util_hls_to_rgb(h,l,s,R,G,B);
+  r = R;
+  g = G;
+  b = B;
+}
+void rgb_id(int r, int g, int b, int &r2, int &g2, int &b2){
+  r2=r; g2=g; b2=b;
+}
 
+Scene scene;
+struct LUT3DSceneObject : public SceneObject {
+  int w,h,t,dx,dy,dz,dim;
+  LUT3DSceneObject(){
+  
+    segmenter->getLUTDims(w,h,t);
+    dim = w*h*t;
+    format f = segmenter->getSegmentationFormat();
+    void (*cc_func)(int,int,int,int&,int&,int&) = ( f == formatYUV ? cc_util_yuv_to_rgb :
+                                                    f == formatHLS ? cc_util_hls_to_rgb_i :
+                                                    rgb_id );
+    float cx = float(w)/2;
+    float cy = float(h)/2;
+    float cz = float(t)/2;
+    dx = 256/w;
+    dy = 256/h;
+    dz = 256/t;
+    for(int z=0;z<t;++z){
+      for(int y=0;y<h;++y){
+        for(int x=0;x<w;++x){
+          int r,g,b; 
+          cc_func(x*dx,y*dy,z*dz,r,g,b);
+          SceneObject *o = addCube(x-cx,y-cy,z-cz,1);
+          o->setColor(Primitive::quad, GeomColor(r,g,b,255));
+          o->setVisible(Primitive::line,false);
+          o->setVisible(Primitive::vertex,false);
+        }
+      }
+    }
+  }
+  
+  void update(bool alpha){
+    const icl8u *lut = segmenter->getLUT();
+    for(int i=0;i<dim;++i){
+      m_children[i]->setVisible( lut[i] );
+    }
+  }
+  
+} *lut3D=0;
+
+void init_3D_LUT(){
+  lut3D = new LUT3DSceneObject;
+  scene.addObject(lut3D);
+}
 
 void highlight_regions(int classID){
   hoveredClassID = classID;
@@ -125,6 +183,7 @@ void init(){
   
   segmenter = new ColorSegmentationOp(pa("-s",0),pa("-s",1),pa("-s",2),pa("-f"));
   
+ 
   
   if(pa("-l")){
     segmenter->load(pa("-l"));
@@ -136,13 +195,16 @@ void init(){
            << "draw[@handle=seg@minsize=16x12@label=segmentation result]"
          )
       << ( GUI("hsplit")  
-           << ( GUI("hbox") 
-                << "draw[@handle=lut@minsize=16x12@label=lut]"
-                << ( GUI("vbox[@maxsize=3x100@minsize=4x1]")
-                     << "combo(x,y,z)[@handle=zAxis]" 
-                     << "slider(0,255,0,vertical)[@out=z@label=vis. plane]"
-                   )
-              )
+           << (GUI("tab(2D,3D)[@handle=tab]")
+               << ( GUI("hbox") 
+                    << "draw[@handle=lut@minsize=16x12@label=lut]"
+                    << ( GUI("vbox[@maxsize=3x100@minsize=4x1]")
+                         << "combo(x,y,z)[@handle=zAxis]" 
+                         << "slider(0,255,0,vertical)[@out=z@label=vis. plane]"
+                         )
+                    )
+               << "draw3D(VGA)[@handle=lut3D]"
+               )
            << ( GUI("vbox")
                 << ( GUI("hbox") 
                      << "combo(" + classes.str() + ")[@handle=currClass@label=current class]"
@@ -182,6 +244,20 @@ void init(){
   gui["load"].registerCallback(load_dialog);
   gui["save"].registerCallback(save_dialog);
   gui["clear"].registerCallback(clear_lut);
+
+  int dim =  ( (1+(0xff >> pa("-s",0).as<int>())) 
+               *(1+(0xff >> pa("-s",1).as<int>())) 
+               *(1+(0xff >> pa("-s",2).as<int>())) );
+  if(dim <= MAX_LUT_3D_DIM){
+    init_3D_LUT();
+    scene.addCamera(Camera());
+    gui_DrawHandle3D(lut3D);
+    lut3D->lock();
+    lut3D->callback(scene.getGLCallback(0));
+    lut3D->unlock();
+    
+    lut3D->install(scene.getMouseHandler(0));
+  }
 }
 
 void run(){
@@ -273,6 +349,11 @@ void run(){
   }
   
   gui["fps"].update();
+  
+  if(lut3D){
+    lut3D->update(255);
+    gui["lut3D"].update();
+  }
 }
 
 int main(int n,char **args){

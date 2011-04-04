@@ -535,5 +535,13 @@ namespace icl{
     return lut(a,b,c);
   }
   
+  const icl8u *ColorSegmentationOp::getLUT() const{
+    return m_lut->data;
+  }
   
+  void ColorSegmentationOp::getLUTDims(int &w, int &h, int &t) const{
+    w = m_lut->w;
+    h = m_lut->h;    
+    t = m_lut->t;
+  }
 }

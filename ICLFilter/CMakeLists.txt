@@ -97,7 +97,6 @@ set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_IPP_COND HAVE_QT_COND)
 add_example (${PROJECT_NAME} "interactive-canny-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND)
-add_example (${PROJECT_NAME} "color-segmentation" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "local-threshold-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "gabor-op-online-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "convolution-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
@@ -105,6 +104,9 @@ add_example (${PROJECT_NAME} "warp-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgai
 add_example (${PROJECT_NAME} "interactive-affine-op-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "filter-array" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "fft-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick ICLGeom)
+add_example (${PROJECT_NAME} "color-segmentation" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST HAVE_GTEST_COND)
 set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}")
