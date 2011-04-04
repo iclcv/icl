@@ -110,7 +110,7 @@ namespace icl {
                                   - file=pattern (string)
                                   - unicap=device pattern (string) or device index (int)
                                   - demo=anything (not regarded)
-                                  - create=image name (@see icl::TestImages::create)
+                                  - create=image name (see also icl::TestImages::create)
                                   - xcfp=publisher's-stream-name (string)
                                   - xcfs=server-name (string) (currently method name is always "retreiveImage")
                                   - xcfm=memory-name (string) (currently image-xpath is always "//IMAGE")
