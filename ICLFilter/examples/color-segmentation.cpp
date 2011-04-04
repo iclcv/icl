@@ -1,5 +1,7 @@
 #include <ICLQuick/Common.h>
 #include <ICLFilter/ColorSegmentationOp.h>
+#include <ICLFilter/MedianOp.h>
+#include <ICLFilter/MorphologicalOp.h>
 #include <ICLCC/CCFunctions.h>
 #include <ICLCC/Color.h>
 #include <ICLBlob/RegionDetector.h>
@@ -21,12 +23,14 @@ void highlight_regions(int classID){
   hoveredClassID = classID;
   drawIM_AND_SEG.clear();
   drawLUT.clear();
-  if(classID < 1) return;
+
     
   static RegionDetector rdLUT(1,1<<22,1,255);
   static RegionDetector rdSEG(1,1<<22,1,255);
   
   drawLUT = rdLUT.detect(&currLUT);
+
+  if(classID < 1) return;
   const std::vector<ImageRegion> &rseg = rdSEG.detect(&segImage);
 
   for(unsigned int i=0;i<rseg.size();++i){
@@ -63,10 +67,15 @@ void mouse(const MouseEvent &e){
     int r = gui["radius"];
     std::vector<double> c = e.getColor();
     if(c.size() == 3){
-      if(e.isLeft() || e.isRight()){
-        segmenter->lutEntry(formatRGB,(int)c[0],(int)c[1],(int)c[2],r,r,r, e.isLeft() * (cc+1) );
+      if(e.isLeft()){
+        segmenter->lutEntry(formatRGB,(int)c[0],(int)c[1],(int)c[2],r,r,r, (!gui["lb"].as<bool>()) * (cc+1) );
       }
+        
       highlight_regions(segmenter->classifyPixel(c[0],c[1],c[2]));
+      
+      if(e.isRight()){
+        gui["currClass"] = (hoveredClassID-1);
+      }
     }
   }else if(e.getWidget() == wSEG){
     highlight_regions(segImage.getImageRect().contains(p.x,p.y) ?
@@ -90,11 +99,20 @@ void save_dialog(){
   }catch(...){}
 }
 
+void clear_lut(){
+  Mutex::Locker lock(mutex);
+  segmenter->clearLUT(0);
+}
+
 void init(){
   std::ostringstream classes;
   int n = pa("-n");
   for(int i=1;i<=n;++i){
     classes << "class " << i << ',';
+  }
+  
+  if(pa("-r")){
+    GenericGrabber::resetBus();
   }
   
   grabber.init(pa("-i"));
@@ -120,17 +138,34 @@ void init(){
       << ( GUI("hsplit")  
            << ( GUI("hbox") 
                 << "draw[@handle=lut@minsize=16x12@label=lut]"
-                << ( GUI("vbox[@maxsize=3x100@minsize=4x1]") 
+                << ( GUI("vbox[@maxsize=3x100@minsize=4x1]")
                      << "combo(x,y,z)[@handle=zAxis]" 
                      << "slider(0,255,0,vertical)[@out=z@label=vis. plane]"
                    )
               )
            << ( GUI("vbox")
-                << "combo(" + classes.str() + ")[@handle=currClass@label=current class]"
+                << ( GUI("hbox") 
+                     << "combo(" + classes.str() + ")[@handle=currClass@label=current class]"
+                     << "togglebutton(current class,background)[@label=left button@handle=lb]"
+                   )
                 << "slider(0,255,4)[@out=radius@label=color radius]"
-                << "button(load)[@handle=load]"
-                << "button(save)[@handle=save]"
-                << "label(?)[@handle=time@label=time for segm.]"
+                << ( GUI("hbox") 
+                     <<"button(load)[@handle=load]"
+                     << "button(save)[@handle=save]"
+                   )
+                << ( GUI("hbox") 
+                     << "checkbox(pre median,unchecked)[@out=preMedian]"
+                     << "checkbox(post median,unchecked)[@out=postMedian]"
+                   )
+                << ( GUI("hbox") 
+                     << "checkbox(post dilation,unchecked)[@out=postDilatation]"
+                     << "checkbox(post erosion,unchecked)[@out=postErosion]"
+                   )
+                << ( GUI("hbox") 
+                     << "label(?)[@handle=time@label=time for segm.]"
+                     << "fps(10)[@handle=fps@label=system fps]"
+                   )
+                << ( GUI("hbox") << "camcfg()" << "button(clear)[@handle=clear]" )
                 )
            )
       << "!show";
@@ -146,6 +181,7 @@ void init(){
 
   gui["load"].registerCallback(load_dialog);
   gui["save"].registerCallback(save_dialog);
+  gui["clear"].registerCallback(clear_lut);
 }
 
 void run(){
@@ -154,18 +190,46 @@ void run(){
   gui_DrawHandle(lut);
   gui_DrawHandle(seg);
   gui_LabelHandle(time);
+  gui_bool(preMedian);
+  gui_bool(postMedian);
+
+  gui_bool(postErosion);
+  gui_bool(postDilatation);
+
   int zAxis = gui["zAxis"];
   gui_int(z);
   const Img8u *grabbedImage = grabber.grab()->asImg<icl8u>();
+
+  Mutex::Locker lock(mutex);
+  
+  if(preMedian){
+    static MedianOp m(Size(3,3));
+    grabbedImage = m.apply(grabbedImage)->asImg<icl8u>();
+  }
   
   image = grabbedImage;
   Time t = Time::now();
   segImage = *segmenter->apply(grabbedImage)->asImg<icl8u>();
+
+  if(postMedian){
+    static MedianOp m(Size(3,3));
+    segImage = *m.apply(&segImage)->asImg<icl8u>();
+  }
+
+  if(postErosion){
+    static MorphologicalOp m(MorphologicalOp::erode3x3);
+    segImage = *m.apply(&segImage)->asImg<icl8u>();
+  }
+  if(postDilatation){
+    static MorphologicalOp m(MorphologicalOp::dilate3x3);
+    segImage = *m.apply(&segImage)->asImg<icl8u>();
+  }
+
   seg = &segImage;
   time = str(t.age().toMilliSecondsDouble())+"ms";
 
   
-  Mutex::Locker lock(mutex);
+
   currLUT = segmenter->getLUTPreview(xys[zAxis].x,xys[zAxis].y,z);
   currLUTColor = segmenter->getColoredLUTPreview(xys[zAxis].x,xys[zAxis].y,z);
  
@@ -207,6 +271,8 @@ void run(){
     ws[i]->unlock();
     ws[i]->updateFromOtherThread();
   }
+  
+  gui["fps"].update();
 }
 
 int main(int n,char **args){
@@ -214,6 +280,7 @@ int main(int n,char **args){
                 "-seg-format|-f(format=YUV) "
                 "[m]-input|-i(2) "
                 "-num-classes|-n(int=12) "
-                "-load|-l(filename) ",
+                "-load|-l(filename) "
+                "-reset-bus|-r",
                 init,run).exec();
 }
