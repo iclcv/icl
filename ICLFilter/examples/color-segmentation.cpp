@@ -9,7 +9,7 @@
 #include <ICLGeom/Scene.h>
 GUI gui("vsplit");
 
-#define MAX_LUT_3D_DIM 10000
+#define MAX_LUT_3D_DIM 1000000
 
 GenericGrabber grabber;
 SmartPtr<ColorSegmentationOp> segmenter;
@@ -35,10 +35,14 @@ void rgb_id(int r, int g, int b, int &r2, int &g2, int &b2){
 Scene scene;
 struct LUT3DSceneObject : public SceneObject {
   int w,h,t,dx,dy,dz,dim;
+  std::vector<int> rs,gs,bs;
   LUT3DSceneObject(){
   
     segmenter->getLUTDims(w,h,t);
     dim = w*h*t;
+    rs.resize(dim);
+    gs.resize(dim);
+    bs.resize(dim);
     format f = segmenter->getSegmentationFormat();
     void (*cc_func)(int,int,int,int&,int&,int&) = ( f == formatYUV ? cc_util_yuv_to_rgb :
                                                     f == formatHLS ? cc_util_hls_to_rgb_i :
@@ -49,24 +53,30 @@ struct LUT3DSceneObject : public SceneObject {
     dx = 256/w;
     dy = 256/h;
     dz = 256/t;
+    int i=0;
     for(int z=0;z<t;++z){
       for(int y=0;y<h;++y){
-        for(int x=0;x<w;++x){
-          int r,g,b; 
-          cc_func(x*dx,y*dy,z*dz,r,g,b);
+        for(int x=0;x<w;++x,++i){
+          cc_func(x*dx,y*dy,z*dz,rs[i],gs[i],bs[i]);
           SceneObject *o = addCube(x-cx,y-cy,z-cz,1);
-          o->setColor(Primitive::quad, GeomColor(r,g,b,255));
+          o->setColor(Primitive::quad, GeomColor(rs[i],gs[i],bs[i],255));
           o->setVisible(Primitive::line,false);
           o->setVisible(Primitive::vertex,false);
         }
       }
     }
+    SceneObject *o = addCuboid(0,0,0,w,h,t);
+    o->setVisible(Primitive::line,true);
+    o->setVisible(Primitive::quad,false);
+    o->setVisible(Primitive::vertex,false);
+    o->setColor(Primitive::line,GeomColor(255,255,255,255));
   }
   
-  void update(bool alpha){
+  void update(float alpha){
     const icl8u *lut = segmenter->getLUT();
     for(int i=0;i<dim;++i){
       m_children[i]->setVisible( lut[i] );
+      m_children[i]->setColor(Primitive::quad,GeomColor(rs[i],gs[i],bs[i],alpha));
     }
   }
   
@@ -203,7 +213,10 @@ void init(){
                          << "slider(0,255,0,vertical)[@out=z@label=vis. plane]"
                          )
                     )
-               << "draw3D(VGA)[@handle=lut3D]"
+               << ( GUI("hbox") 
+                    << "draw3D(VGA)[@handle=lut3D]"
+                    << "slider(0,255,200,vertical)[@out=alpha@label=alpha]"
+                  )
                )
            << ( GUI("vbox")
                 << ( GUI("hbox") 
@@ -250,7 +263,7 @@ void init(){
                *(1+(0xff >> pa("-s",2).as<int>())) );
   if(dim <= MAX_LUT_3D_DIM){
     init_3D_LUT();
-    scene.addCamera(Camera());
+    scene.addCamera(Camera(Vec(0,0,100,1),Vec(0,0,-1,1),Vec(1,0,0,1)));
     gui_DrawHandle3D(lut3D);
     lut3D->lock();
     lut3D->callback(scene.getGLCallback(0));
@@ -351,7 +364,7 @@ void run(){
   gui["fps"].update();
   
   if(lut3D){
-    lut3D->update(255);
+    lut3D->update(gui["alpha"]);
     gui["lut3D"].update();
   }
 }
