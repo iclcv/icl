@@ -97,7 +97,11 @@ namespace icl{
     /** There is not special TEXT-type: type remains 'texture' */
     Primitive(int a, int b, int c, int d, const std::string &text, const GeomColor &color, 
               int textSize, scalemode mode, int na, int nb, int nc, int nd);
-    
+
+    /// Special constructor to create a billboard texture primitive
+    /** There is not special TEXT-type: type remains 'texture' */
+    Primitive(int a, const std::string &text, const GeomColor &color, 
+              int textSize, int billboardHeight, scalemode mode=interpolateLIN);
 
     /// Creates a polygon primitive
     Primitive(const std::vector<int> &polyData, const GeomColor &color=GeomColor());
@@ -161,6 +165,12 @@ namespace icl{
     
     /// flag that indicates whether a normal was defined
     bool hasNormals;
+
+    /// this flag is only used for text-texture primitives
+    /** if the value is > 0, the text-texture will always be oriented towards the camera.
+        the billboardHeight value is used as text-height (in scene units) */
+    int billboardHeight;
+
   };
   
 }

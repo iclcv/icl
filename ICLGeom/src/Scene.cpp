@@ -446,25 +446,57 @@ namespace icl{
           }
           case Primitive::texture:{
             glColor4f(1,1,1,1);
-            const Vec &a = ps[p.a()];
-            const Vec &b = ps[p.b()];
-            const Vec &c = ps[p.c()]; // order: swapped
-            const Vec &d = ps[p.d()];
-            // left hand normal ?!
-            if(!p.hasNormals){
-              glNormal3fv(normalize(cross(b-c,d-c)).data());
-            }
           
             GLTextureMapBaseImage tim(&p.tex);
-            //          tim.drawTo3D(a.begin(),b.begin(),d.begin(),p.mode);
-            if(p.hasNormals){
-              tim.drawToQuad(a.begin(),b.begin(),c.begin(),d.begin(),p.mode,
-                           o->m_normals[p.na()].data(),
-                             o->m_normals[p.nb()].data(),
-                             o->m_normals[p.nc()].data(),
-                             o->m_normals[p.nd()].data());
+            if(!p.billboardHeight){
+              const Vec &a = ps[p.a()];
+              const Vec &b = ps[p.b()];
+              const Vec &c = ps[p.c()];
+              const Vec &d = ps[p.d()];
+              // left hand normal ?!
+              if(!p.hasNormals){
+                glNormal3fv(normalize(cross(b-c,d-c)).data());
+              }
+              
+              if(p.hasNormals){
+                tim.drawToQuad(a.begin(),b.begin(),c.begin(),d.begin(),p.mode,
+                               o->m_normals[p.na()].data(),
+                               o->m_normals[p.nb()].data(),
+                               o->m_normals[p.nc()].data(),
+                               o->m_normals[p.nd()].data());
+              }else{
+                tim.drawToQuad(a.begin(),b.begin(),c.begin(),d.begin(),p.mode);
+              }
             }else{
-              tim.drawToQuad(a.begin(),b.begin(),c.begin(),d.begin(),p.mode);
+              const Vec &a = ps[p.a()];
+#if 0
+              glMatrixMode(GL_MODELVIEW);
+              glPushMatrix();
+              float modelview[16];
+              glGetFloatv(GL_MODELVIEW_MATRIX, modelview);
+              Mat T = Mat(modelview).transp();
+              T(3,0) = T(3,1) = T(3,1) = 0;
+              T(0,0) *= -1;
+              T(1,0) *= -1;
+              T(2,0) *= -1;
+
+              
+              glMultMatrixf(T.data());
+#endif
+              //glTranslatef(T(3,0),T(3,1),T(3,2));
+              float ry = p.billboardHeight/2;
+              float rx = ry * (float(p.tex.getWidth())/float(p.tex.getHeight()));
+              
+              Vec p1 = a + Vec(-rx,-ry,0);
+              Vec p2 = a + Vec(rx,-ry,0);
+              Vec p3 = a + Vec(rx,ry,0);
+              Vec p4 = a + Vec(-rx,ry,0);
+              
+              glNormal3fv(normalize((cross(p2-p3,p4-p3))).data());
+              tim.drawToQuad(p1.begin(),p2.begin(),p3.begin(),p4.begin(),p.mode);
+#if 0
+              glPopMatrix();
+#endif
             }
             break;
           }

@@ -8,6 +8,9 @@
 #include <QtGui/QFont>
 #include <ICLCC/CCFunctions.h>
 #endif
+
+#include <ICLIO/FileWriter.h>
+
 namespace icl{
   Img8u Primitive::create_text_texture(const std::string &text,const GeomColor &color, int textSize){
 #ifdef HAVE_QT
@@ -25,12 +28,13 @@ namespace icl{
     img.fill(0);
     QPainter painter(&img);
     painter.setFont(font);
-    painter.setPen(QColor( r,g,b,iclMin(254,a)));
+    painter.setPen(QColor( b,g,r,iclMin(254,a)));
     painter.drawText(QPointF(1,img.height()-m.descent()-1),text.c_str());
     painter.end();
-    
+
     Img8u buf(Size(img.width(),img.height()),4);   
     interleavedToPlanar(img.bits(),&buf);
+
     return buf;
 #else
     // think of an ugly fallback implementation (maybe with this funky label image function from the IO package)
@@ -57,18 +61,18 @@ namespace icl{
 
 
   Primitive::Primitive():
-    type(nothing){
+    type(nothing),billboardHeight(0){
   }
     
   /// Line-Constructor
   Primitive::Primitive(int a, int b, const GeomColor &color):
-    vertexIndices(2),color(color),type(line),hasNormals(false){
+    vertexIndices(2),color(color),type(line),hasNormals(false),billboardHeight(0){
     vertexIndices[0] = a;
     vertexIndices[1] = b;
   }
   /// Line-Constructor
   Primitive::Primitive(int a, int b, const GeomColor &color, int na, int nb):
-    vertexIndices(2),normalIndices(2),color(color),type(line),hasNormals(true){
+    vertexIndices(2),normalIndices(2),color(color),type(line),hasNormals(true),billboardHeight(0){
     vertexIndices[0] = a;
     vertexIndices[1] = b;
     normalIndices[0] = na;
@@ -77,7 +81,7 @@ namespace icl{
 
   /// Triangle constructor
   Primitive::Primitive(int a, int b, int c, const GeomColor &color):
-    vertexIndices(3),color(color),type(triangle),hasNormals(false){
+    vertexIndices(3),color(color),type(triangle),hasNormals(false),billboardHeight(0){
     vertexIndices[0] = a;
     vertexIndices[1] = b;
     vertexIndices[2] = c;
@@ -85,7 +89,7 @@ namespace icl{
     
   /// Triangle constructor
   Primitive::Primitive(int a, int b, int c, const GeomColor &color,int na, int nb, int nc):
-    vertexIndices(3),normalIndices(3),color(color),type(triangle),hasNormals(true){
+    vertexIndices(3),normalIndices(3),color(color),type(triangle),hasNormals(true),billboardHeight(0){
     vertexIndices[0] = a;
     vertexIndices[1] = b;
     vertexIndices[2] = c;
@@ -96,7 +100,7 @@ namespace icl{
     
   /// Quad constructor
   Primitive::Primitive(int a, int b, int c, int d,const GeomColor &color):
-    vertexIndices(4),color(color),type(quad),hasNormals(false){
+    vertexIndices(4),color(color),type(quad),hasNormals(false),billboardHeight(0){
     vertexIndices[0] = a;
     vertexIndices[1] = b;
     vertexIndices[2] = c;
@@ -105,7 +109,7 @@ namespace icl{
 
   /// Quad constructor
   Primitive::Primitive(int a, int b, int c, int d,const GeomColor &color, int na, int nb, int nc, int nd):
-    vertexIndices(4),normalIndices(4),color(color),type(quad),hasNormals(true){
+    vertexIndices(4),normalIndices(4),color(color),type(quad),hasNormals(true),billboardHeight(0){
     vertexIndices[0] = a;
     vertexIndices[1] = b;
     vertexIndices[2] = c;
@@ -118,7 +122,7 @@ namespace icl{
     
   /// texture constructor
   Primitive::Primitive(int a, int b, int c, int d,const Img8u &tex, bool deepCopy, scalemode mode):
-    vertexIndices(4),tex(tex),texDeepCopied(deepCopy),type(texture),mode(mode),hasNormals(false){
+    vertexIndices(4),tex(tex),texDeepCopied(deepCopy),type(texture),mode(mode),hasNormals(false),billboardHeight(0){
     vertexIndices[0] = a;
     vertexIndices[1] = b;
     vertexIndices[2] = c;
@@ -129,7 +133,7 @@ namespace icl{
   /// texture constructor
   Primitive::Primitive(int a, int b, int c, int d,const Img8u &tex, bool deepCopy, scalemode mode, 
                        int na, int nb, int nc, int nd):
-    vertexIndices(4),normalIndices(4),tex(tex),texDeepCopied(deepCopy),type(texture),mode(mode),hasNormals(true){
+    vertexIndices(4),normalIndices(4),tex(tex),texDeepCopied(deepCopy),type(texture),mode(mode),hasNormals(true),billboardHeight(0){
     vertexIndices[0] = a;
     vertexIndices[1] = b;
     vertexIndices[2] = c;
@@ -146,7 +150,7 @@ namespace icl{
   Primitive::Primitive(int a, int b, int c, int d, const std::string &text, const GeomColor &color, 
                        int textSize, scalemode mode):
     vertexIndices(4),tex(create_text_texture(text,color,textSize)),texDeepCopied(true),type(texture),
-    mode(mode),hasNormals(false){
+    mode(mode),hasNormals(false),billboardHeight(0){
     vertexIndices[0] = a;
     vertexIndices[1] = b;
     vertexIndices[2] = c;
@@ -158,7 +162,7 @@ namespace icl{
   Primitive::Primitive(int a, int b, int c, int d, const std::string &text, const GeomColor &color, 
                        int textSize, scalemode mode, int na, int nb, int nc, int nd):
     vertexIndices(4),normalIndices(4),tex(create_text_texture(text,color,textSize)),texDeepCopied(true),type(texture),
-    mode(mode),hasNormals(true){
+    mode(mode),hasNormals(true),billboardHeight(0){
     vertexIndices[0] = a;
     vertexIndices[1] = b;
     vertexIndices[2] = c;
@@ -172,14 +176,25 @@ namespace icl{
 
   /// Creates a polygon primitive
   Primitive::Primitive(const std::vector<int> &polyData, const GeomColor &color):
-    vertexIndices(polyData),type(polygon),hasNormals(false){
+    vertexIndices(polyData),type(polygon),hasNormals(false),billboardHeight(0){
   }
 
   /// Creates a polygon primitive
   Primitive::Primitive(const std::vector<int> &polyData, const GeomColor &color, const std::vector<int> &normalIndices):
-    vertexIndices(polyData),normalIndices(normalIndices),type(polygon),hasNormals(true){
+    vertexIndices(polyData),normalIndices(normalIndices),type(polygon),hasNormals(true),billboardHeight(0){
   }
 
+  Primitive::Primitive(int a, const std::string &text, const GeomColor &color, 
+                      int textSize, int billboardHeight, scalemode mode):
+    vertexIndices(1),tex(create_text_texture(text,color,textSize)),texDeepCopied(true),type(texture),
+    mode(mode), hasNormals(false), billboardHeight(billboardHeight){
+    vertexIndices[0] = a;
+    
+    //SHOW(color);
+    //tex.mirror(axisVert);
+    //tex.print();
+    
+  }
   /// Creates a deep copy (in particular deep copy of the texture image)
   //Primitive::Primitive(const Primitive &other){
   //  *this = other;

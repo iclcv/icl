@@ -70,6 +70,24 @@ struct LUT3DSceneObject : public SceneObject {
     o->setVisible(Primitive::quad,false);
     o->setVisible(Primitive::vertex,false);
     o->setColor(Primitive::line,GeomColor(255,255,255,255));
+    
+#if 0
+    {
+      float ww = 30;
+      float hh = 60;
+      int o = m_primitives.size();
+      addVertex(Vec(0,0,0,1));
+      addVertex(Vec(ww,0,0,1));
+      addVertex(Vec(0,hh,0,1));
+      addVertex(Vec(ww,hh,0,1));
+      addTexture(o,o+1,o+2,o+3,Img8u(Size(10,10),4));
+      m_primitives.back().tex = Primitive::create_text_texture("TEST TEST",GeomColor(255,255,255,255),30);
+    }
+#endif
+    //addText(m_vertices.size()-1, "TEST",GeomColor(0,100,255,255));
+    
+    
+    
   }
   
   void update(float alpha){

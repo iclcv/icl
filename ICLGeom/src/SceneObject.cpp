@@ -147,6 +147,12 @@ namespace icl{
     }
   }
 
+  void SceneObject::addText(int a, const std::string &text, const GeomColor &color,
+                            int textSize, int billboardHeight){
+    m_primitives.push_back(Primitive(a,text,color,textSize,billboardHeight,interpolateLIN));
+  }
+
+
   SceneObject *SceneObject::copy() const{
     return new SceneObject(*this);
   }

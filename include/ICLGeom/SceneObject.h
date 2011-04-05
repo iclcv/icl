@@ -246,6 +246,10 @@ namespace icl{
                         int textSize=30, bool holdTextAR=true){
       addTextTexture(a,b,c,d,text,color,-1,-1,-1,-1,textSize,holdTextAR);
     }
+    
+    /// adds a billboard text-texture
+    void addText(int a, const std::string &text, const GeomColor &color=GeomColor(255,255,255,255),
+                 int textSize=30, int billboardHeight=10);
 
     /// adds a cube child-object with given parameters
     /** returns a pointer to the cube added. This can be used to adapt
