@@ -34,7 +34,6 @@
 
 // {{{ includes
 
-
 #include <ICLQt/Widget.h>
 #include <ICLCore/Img.h>
 #include <ICLQt/GLTextureMapBaseImage.h>
@@ -1714,7 +1713,9 @@ namespace icl{
     glEnable(GL_TEXTURE_2D);
     //glDisable(GL_DEPTH_TEST);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     glEnable(GL_BLEND);
+
     glOrtho(0, width(), height(), 0, -999999, 999999);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();

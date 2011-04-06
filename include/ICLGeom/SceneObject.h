@@ -247,9 +247,15 @@ namespace icl{
       addTextTexture(a,b,c,d,text,color,-1,-1,-1,-1,textSize,holdTextAR);
     }
     
-    /// adds a billboard text-texture
-    void addText(int a, const std::string &text, const GeomColor &color=GeomColor(255,255,255,255),
-                 int textSize=30, int billboardHeight=10);
+    /// adds a billboard text-texture attached to given node index a
+    /** the billboardHeight parameters defines the actual height in world
+        units. The text is always centered at m_vertices[a] and it will
+        always be oriented towards the camera. The textRenderSize parameter
+        defines the pixel resolution of the text
+    */
+    void addText(int a, const std::string &text, float billboardHeight=10, 
+                 const GeomColor &color=GeomColor(255,255,255,255),
+                 int textRenderSize=30);
 
     /// adds a cube child-object with given parameters
     /** returns a pointer to the cube added. This can be used to adapt

@@ -55,7 +55,8 @@ namespace icl{
       triangle, //<! triange primitive (adressing three vertices)
       quad,     //<! quad primitve (adressing four vertices)
       polygon,  //<! polygon primitive (adressing at least 3 vertices)
-      texture,  //<! texture primitive (using 4 vertices like a quad as textured rectangle, note: text has also type texture)
+      texture,  //<! texture primitive (using 4 vertices like a quad as textured rectangle)
+      text,     //<! text primitive (internally implmented as texture or as billboard)
       nothing,  //<! intenally used type
       PRIMITIVE_TYPE_COUNT //<! also for internal use only
     };
@@ -101,7 +102,7 @@ namespace icl{
     /// Special constructor to create a billboard texture primitive
     /** There is not special TEXT-type: type remains 'texture' */
     Primitive(int a, const std::string &text, const GeomColor &color, 
-              int textSize, int billboardHeight, scalemode mode=interpolateLIN);
+              int textSize, float billboardHeight, scalemode mode=interpolateLIN);
 
     /// Creates a polygon primitive
     Primitive(const std::vector<int> &polyData, const GeomColor &color=GeomColor());
@@ -169,7 +170,7 @@ namespace icl{
     /// this flag is only used for text-texture primitives
     /** if the value is > 0, the text-texture will always be oriented towards the camera.
         the billboardHeight value is used as text-height (in scene units) */
-    int billboardHeight;
+    float billboardHeight;
 
   };
   

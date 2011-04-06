@@ -147,9 +147,9 @@ namespace icl{
     }
   }
 
-  void SceneObject::addText(int a, const std::string &text, const GeomColor &color,
-                            int textSize, int billboardHeight){
-    m_primitives.push_back(Primitive(a,text,color,textSize,billboardHeight,interpolateLIN));
+  void SceneObject::addText(int a, const std::string &text, float billboardHeight,
+                            const GeomColor &color, int textRenderSize){
+    m_primitives.push_back(Primitive(a,text,color,textRenderSize,billboardHeight,interpolateLIN));
   }
 
 

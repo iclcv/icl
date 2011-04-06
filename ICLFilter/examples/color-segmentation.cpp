@@ -7,6 +7,7 @@
 #include <ICLBlob/RegionDetector.h>
 
 #include <ICLGeom/Scene.h>
+#include <ICLGeom/GeomDefs.h>
 GUI gui("vsplit");
 
 #define MAX_LUT_3D_DIM 1000000
@@ -33,11 +34,16 @@ void rgb_id(int r, int g, int b, int &r2, int &g2, int &b2){
 }
 
 Scene scene;
+
 struct LUT3DSceneObject : public SceneObject {
   int w,h,t,dx,dy,dz,dim;
   std::vector<int> rs,gs,bs;
-  LUT3DSceneObject(){
+  Mutex mutex;
+  virtual void lock(){ mutex.lock(); }
+  virtual void unlock(){ mutex.unlock(); }
   
+  LUT3DSceneObject(){
+
     segmenter->getLUTDims(w,h,t);
     dim = w*h*t;
     rs.resize(dim);
@@ -70,22 +76,35 @@ struct LUT3DSceneObject : public SceneObject {
     o->setVisible(Primitive::quad,false);
     o->setVisible(Primitive::vertex,false);
     o->setColor(Primitive::line,GeomColor(255,255,255,255));
+
     
-#if 0
-    {
-      float ww = 30;
-      float hh = 60;
-      int o = m_primitives.size();
-      addVertex(Vec(0,0,0,1));
-      addVertex(Vec(ww,0,0,1));
-      addVertex(Vec(0,hh,0,1));
-      addVertex(Vec(ww,hh,0,1));
-      addTexture(o,o+1,o+2,o+3,Img8u(Size(10,10),4));
-      m_primitives.back().tex = Primitive::create_text_texture("TEST TEST",GeomColor(255,255,255,255),30);
+    float wl = 1.3*(w/2);
+    float hl = 1.3*(h/2);
+    float tl = 1.3*(t/2);
+
+    addVertex(Vec(-wl,0,0,1),geom_invisible());
+    addVertex(Vec(wl,0,0,1),geom_invisible());
+    addVertex(Vec(0,-hl,0,1),geom_invisible());
+    addVertex(Vec(0,hl,0,1),geom_invisible());
+    addVertex(Vec(0,0,-tl,1),geom_invisible());
+    addVertex(Vec(0,0,tl,1),geom_invisible());
+    
+    addLine(0,1,geom_red(255));
+    addLine(2,3,geom_green(255));
+    addLine(4,5,geom_blue(255));
+    
+    
+    for(int i=0;i<6;++i){
+      std::string s = (i&1)? "" : "-";
+      switch(segmenter->getSegmentationFormat()){
+        case formatYUV: s += "yuv"[i/2]; break;
+        case formatRGB: s += "rgb"[i/2]; break;
+        case formatHLS: s += "hls"[i/2]; break;
+        default:
+          throw ICLException("invalid segmentation format");
+      }
+      addText(i,s,2);
     }
-#endif
-    //addText(m_vertices.size()-1, "TEST",GeomColor(0,100,255,255));
-    
     
     
   }
@@ -233,7 +252,7 @@ void init(){
                     )
                << ( GUI("hbox") 
                     << "draw3D(VGA)[@handle=lut3D]"
-                    << "slider(0,255,200,vertical)[@out=alpha@label=alpha]"
+                    << "slider(0,255,200,vertical)[@maxsize=2x100@out=alpha@label=alpha]"
                   )
                )
            << ( GUI("vbox")

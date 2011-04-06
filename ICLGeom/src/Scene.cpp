@@ -250,6 +250,9 @@ namespace icl{
     ICLASSERT_RETURN(index > 0 && index <(int) m_cameras.size());
     m_cameras.erase(m_cameras.begin()+index);
     m_cameraObjects.erase(m_cameraObjects.begin()+index);
+    /**
+        TODO: cameras objects with higher indices must be adapted
+    */
   }
   Camera &Scene::getCamera(int camIndex){
     return m_cameras[camIndex];
@@ -444,7 +447,29 @@ namespace icl{
             glEnd();
             break;
           }
+          case Primitive::text:
           case Primitive::texture:{
+
+            /// right now, the alternative does not work!
+#define ICL_TEXT_ALPHA_COVERAGE_WITH_ALPHA_TEST
+
+
+            if(p.type == Primitive::text){
+#ifdef ICL_TEXT_ALPHA_COVERAGE_WITH_ALPHA_TEST              
+              // fast-hack for semitransparent textures 
+              // without this step, event fully transparent pixels
+              // are drawn into the zBuffer. Therefore,
+              // we avoid filling the zBuffer for pixles whose
+              // alpha value is less then 30%, i.e., that are
+              // too transparent
+              glEnable(GL_ALPHA_TEST);
+              glAlphaFunc(GL_GREATER,0.3); 
+#else
+              glDisable(GL_BLEND);
+              glEnable(GL_MULTISAMPLE_ARB);
+              glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE_ARB);
+#endif
+            }
             glColor4f(1,1,1,1);
           
             GLTextureMapBaseImage tim(&p.tex);
@@ -468,34 +493,61 @@ namespace icl{
                 tim.drawToQuad(a.begin(),b.begin(),c.begin(),d.begin(),p.mode);
               }
             }else{
+             
               const Vec &a = ps[p.a()];
-#if 0
-              glMatrixMode(GL_MODELVIEW);
-              glPushMatrix();
-              float modelview[16];
-              glGetFloatv(GL_MODELVIEW_MATRIX, modelview);
-              Mat T = Mat(modelview).transp();
-              T(3,0) = T(3,1) = T(3,1) = 0;
-              T(0,0) *= -1;
-              T(1,0) *= -1;
-              T(2,0) *= -1;
 
+              glMatrixMode(GL_MODELVIEW);
+              float m[16];
+              glGetFloatv(GL_MODELVIEW_MATRIX, m);
+             
+              /// interted rotation matrix
+              Mat R(m[0],m[1],m[2],0,
+                    m[4],m[5],m[6],0,
+                    m[8],m[9],m[10],0,
+                    0,0,0,1);
               
-              glMultMatrixf(T.data());
-#endif
-              //glTranslatef(T(3,0),T(3,1),T(3,2));
               float ry = p.billboardHeight/2;
               float rx = ry * (float(p.tex.getWidth())/float(p.tex.getHeight()));
               
-              Vec p1 = a + Vec(-rx,-ry,0);
-              Vec p2 = a + Vec(rx,-ry,0);
-              Vec p3 = a + Vec(rx,ry,0);
-              Vec p4 = a + Vec(-rx,ry,0);
+              Vec p1 = a + R*Vec(-rx,-ry,0,1);
+              Vec p2 = a + R*Vec(rx,-ry,0,1);
+              Vec p3 = a + R*Vec(rx,ry,0,1);
+              Vec p4 = a + R*Vec(-rx,ry,0,1);
               
-              glNormal3fv(normalize((cross(p2-p3,p4-p3))).data());
-              tim.drawToQuad(p1.begin(),p2.begin(),p3.begin(),p4.begin(),p.mode);
+              /// -normal as we draw the backface
+              glNormal3fv(normalize(-(cross(p2-p3,p4-p3))).data());
+              
+              /// draw the backface to flip x direction
+              tim.drawToQuad(p2.begin(),p1.begin(),p4.begin(),p3.begin(),p.mode);
+
 #if 0
-              glPopMatrix();
+              float ry = p.billboardHeight/2;
+              float rx = ry * (float(p.tex.getWidth())/float(p.tex.getHeight()));
+              
+              Mat R (T(0,0),T(1,0),T(2,0),0,
+                     T(0,1),T(1,1),T(2,1),0,
+                     T(0,2),T(1,2),T(2,2),0,
+                     0,0,0,1);
+              R=R.inv();
+              
+              Vec p1 = a + R*Vec(-rx,-ry,0,1);
+              Vec p2 = a + R*Vec(rx,-ry,0,1);
+              Vec p3 = a + R*Vec(rx,ry,0,1);
+              Vec p4 = a + R*Vec(-rx,ry,0,1);
+              glBegin(GL_LINES);
+              glColor3f(1,0,0); glVertex3fv(p1.data()); glVertex3fv(p2.data());
+              glColor3f(0,1,0); glVertex3fv(p1.data()); glVertex3fv(p3.data());
+              glColor3f(0,0,1); glVertex3fv(p1.data()); glVertex3fv(p4.data());
+              glEnd();
+#endif
+            }
+            if(p.type == Primitive::text){
+#ifdef ICL_TEXT_ALPHA_COVERAGE_WITH_ALPHA_TEST
+              glDisable(GL_ALPHA_TEST);
+#else
+              glEnable(GL_BLEND);
+              glDisable(GL_MULTISAMPLE_ARB);
+              glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE_ARB);
 #endif
             }
             break;

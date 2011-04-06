@@ -149,7 +149,7 @@ namespace icl{
   /** There is not special TEXT-type: type remains 'texture' */
   Primitive::Primitive(int a, int b, int c, int d, const std::string &text, const GeomColor &color, 
                        int textSize, scalemode mode):
-    vertexIndices(4),tex(create_text_texture(text,color,textSize)),texDeepCopied(true),type(texture),
+    vertexIndices(4),tex(create_text_texture(text,color,textSize)),texDeepCopied(true),type(Primitive::text),
     mode(mode),hasNormals(false),billboardHeight(0){
     vertexIndices[0] = a;
     vertexIndices[1] = b;
@@ -161,7 +161,8 @@ namespace icl{
   /** There is not special TEXT-type: type remains 'texture' */
   Primitive::Primitive(int a, int b, int c, int d, const std::string &text, const GeomColor &color, 
                        int textSize, scalemode mode, int na, int nb, int nc, int nd):
-    vertexIndices(4),normalIndices(4),tex(create_text_texture(text,color,textSize)),texDeepCopied(true),type(texture),
+    vertexIndices(4),normalIndices(4),tex(create_text_texture(text,color,textSize)),
+    texDeepCopied(true),type(Primitive::text),
     mode(mode),hasNormals(true),billboardHeight(0){
     vertexIndices[0] = a;
     vertexIndices[1] = b;
@@ -185,8 +186,8 @@ namespace icl{
   }
 
   Primitive::Primitive(int a, const std::string &text, const GeomColor &color, 
-                      int textSize, int billboardHeight, scalemode mode):
-    vertexIndices(1),tex(create_text_texture(text,color,textSize)),texDeepCopied(true),type(texture),
+                      int textSize, float billboardHeight, scalemode mode):
+    vertexIndices(1),tex(create_text_texture(text,color,textSize)),texDeepCopied(true),type(Primitive::text),
     mode(mode), hasNormals(false), billboardHeight(billboardHeight){
     vertexIndices[0] = a;
     
