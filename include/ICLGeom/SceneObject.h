@@ -149,7 +149,7 @@ namespace icl{
     SceneObject &operator=(const SceneObject &other);
     
     /// Empty destructor (but virtual)
-    virtual ~SceneObject(){}
+    virtual ~SceneObject();
     
     /// returns object vertices
     std::vector<Vec> &getVertices();
@@ -280,6 +280,17 @@ namespace icl{
     /** returns a pointer to the cube added. This can be used to adapt
         further properties of that object */
     SceneObject *addSpheroid(float x, float y, float z, float rx, float ry, float rz, int rzSteps, int xySlices);
+    
+    /// adds a cylindical child object with given parameters
+    /** returns a pointer to the cylinder added. This can be used to adapt
+        further properties of that object */
+    SceneObject *addCylinder(float x, float y, float z, float rx, float ry, float h, int steps);
+
+    /// adds a conical child object with given parameters
+    /** returns a pointer to the cone added. This can be used to adapt
+        further properties of that object */
+    SceneObject *addCone(float x, float y, float z, float rx, float ry, float h, int steps);
+
     
     /// tints all Primitives with given type in given color
     void setColor(Primitive::Type t,const GeomColor &color,bool recursive=true);
@@ -450,8 +461,25 @@ namespace icl{
     /// calls setVisible(true)
     void show(bool recursive=true){ setVisible(true); }
     
-    protected:
+    /// (not yet implemented) sets a flag, so that the next time, the object is rendered, an OpenGL display list is created
+    /** Creating a display list for a static objects increases the rendering performance
+        The display list is always created recursively, i.e. also for all subobjects.
+        Once, a display list for a SceneObject instance is created, parameter updates
+        are not visible. You can call also this method again, to update the internal display list.
+        <b>Note:</b> an objects transformation is not part of the display list, so changing
+        an objects transformation is still possible without updating an objects display list
+    */
+    void createDisplayList();
     
+    
+    /// (not yet implemented) frees the OpenGL display list, that is associated with this SceneObject instance
+    /** The method does nothing, if no display list is associated. If you want to update
+        an object's properties you have to call createDisplayList after changing the 
+        properties. This will free the old display list automatically before creating
+        an updated version of it */
+    void freeDisplayList();
+    
+    protected:
     /// recursive picking method
     static void collect_hits_recursive(SceneObject *obj, const ViewRay &v, 
                                        std::vector<Hit> &hits, 
@@ -480,6 +508,8 @@ namespace icl{
     bool m_hasTransformation;
     SceneObject *m_parent;
     std::vector<SmartPtr<SceneObject> > m_children;
+
+ 
   };
 }
 

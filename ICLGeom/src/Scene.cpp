@@ -384,7 +384,7 @@ namespace icl{
             const Vec &a = ps[p.a()];
             const Vec &b = ps[p.b()];
             const Vec &c = ps[p.c()];
-            
+
             if(!p.hasNormals){
               glNormal3fv(normalize(cross(a-c,b-c)).data());
             }
@@ -435,9 +435,7 @@ namespace icl{
            }
           case Primitive::polygon:{
             glBegin(GL_POLYGON);
-            
             // no autonormals possible
-            
             for(unsigned int k=0;k<p.vertexIndices.size();++k){
               const Vec &v = ps[p.vertexIndices[k]];
               if(o->m_polyColorsFromVertices) glColor4fv((o->m_vertexColors[p.vertexIndices[k]]/255).data());
@@ -558,10 +556,17 @@ namespace icl{
       }
       glBegin(GL_POINTS);
       if(o->isVisible(Primitive::vertex)){
+        GLboolean lightWasOn = true;
+        glGetBooleanv(GL_LIGHTING,&lightWasOn);
+        glDisable(GL_LIGHTING);
+
         for(unsigned int j=0;j<ps.size();++j){
-        glColor4fv(((o->m_vertexColors[j])/255.0).data());
-        glVertex3fv(ps[j].data());
+          glColor4fv(((o->m_vertexColors[j])/255.0).data());
+          glVertex3fv(ps[j].data());
         }
+        if(lightWasOn){
+          glEnable(GL_LIGHTING);
+        }   
       }
       glEnd();
     } // is visible

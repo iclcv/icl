@@ -57,8 +57,14 @@ void init(){
   if(pa("-o")){ // either load an .obj file
     scene.addObject(new SceneObject(*pa("-o")));
   }else{ // or create a simple cube
-    float data[] = {0,0,0,7,3,2};
-    scene.addObject(new SceneObject("cuboid",data));
+    std::string shape=pa("-s");
+    const float data[] = {0,0,0,7,3,2, 30, 30};
+    if(shape == "cylinder" || shape == "cone" || shape == "spheroid" || shape == "cuboid"){
+      scene.addObject(new SceneObject(shape,data));
+    }else{
+      pausage("invalid shape arg for -s");
+      ::exit(-1);
+    }
   }
 
   // link the scene's first camera with mouse gestures in the draw-GUI-component
@@ -84,7 +90,9 @@ void run(){
 
 
 int main(int n, char**ppc){
+  paex("-o","loads a given opengl .obj file  (if -o and -s is given, -o is used)");
+  paex("-s","visualizes one of the shape types (cyliner,spheroid, cuboid, cone)");
   /// create a whole application 
-  return ICLApplication(n,ppc,"-obj|-o(.obj-filename)",init,run).exec();
+  return ICLApplication(n,ppc,"-obj|-o(.obj-filename) -shape|-s(shape=cuboid)",init,run).exec();
 }
 

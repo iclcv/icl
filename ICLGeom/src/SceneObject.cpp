@@ -39,6 +39,7 @@
 #include <ICLGeom/PlaneEquation.h>
 
 namespace icl{
+
   const std::vector<Vec> &SceneObject::getVertices() const { 
     return m_vertices; 
   }
@@ -401,7 +402,72 @@ namespace icl{
 
         }
       }
+    }else if(type == "cone"){
+      // args: x,y,z, dx, dy, dz, steps
+      float x = *params++;
+      float y = *params++;
+      float z = *params++;
+      float rx = *params++/2;
+      float ry = *params++/2;
+      float h = *params++/2;
+      int steps = *params;
+      
+      float da = (2*M_PI)/steps;
+      
+      addVertex(Vec(x,y,z+h,1));
+      addNormal(Vec(0,0,1,1));
+      std::vector<int> bottom;
+      for(int i=0;i<steps;++i){
+        float a = i*da;
+        float ca = cos(a), sa = sin(a);
+        addVertex(Vec(x+rx*ca, y+ry*sa, z-h, 1));
+        addLine(0,i+1);
+        if(i){
+          addLine(i,i+1);
+          addTriangle(0,i+1,i);
+        }else{
+          addLine(steps-1,1);
+          addTriangle(0,steps,1);
+        }
 
+        bottom.push_back(i+1);
+      }
+      addPolygon(bottom,std::vector<int>(steps,0));
+    }else if(type == "cylinder"){
+      // args: x,y,z, dx, dy, dz, steps
+      float x = *params++;
+      float y = *params++;
+      float z = *params++;
+      float rx = *params++/2;
+      float ry = *params++/2;
+      float h = *params++/2;
+      int steps = *params;
+      
+      float da = (2*M_PI)/steps;
+      addNormal(Vec(0,0,1,1));
+      
+      std::vector<int> bottom,top;
+      for(int i=0;i<steps;++i){
+        float a = i*da;
+        float cx = x+rx*cos(a), cy=y+ry*sin(a);
+        addVertex(Vec(cx,cy,z-h,1));
+        addVertex(Vec(cx,cy,z+h,1));
+
+        addLine(2*i, 2*i+1);        
+        if(i){
+          addLine(2*i, 2*(i-1));
+          addLine(2*i+1, 2*(i-1)+1);
+          addQuad(2*(i-1), 2*i, 2*i+1, 2*(i-1)+1); 
+        }else{
+          addLine(0, 2*(steps-1));
+          addLine(1, 2*(steps-1)+1);
+          addQuad(0, 2*(steps-1), 2*(steps-1)+1, 1);
+        }
+        bottom.push_back(2*i);
+        top.push_back(2*i+1);
+      }
+      addPolygon(top,std::vector<int>(steps,0));
+      addPolygon(bottom,std::vector<int>(steps,0));
     }else{
       ERROR_LOG("unknown type:" << type);
     }
@@ -445,6 +511,9 @@ namespace icl{
         m_children[i]->setSmoothShading(on);
       }
     }
+  }
+
+  SceneObject::~SceneObject(){
   }
   
   SceneObject::SceneObject(const std::string &objFileName) throw (ICLException):
@@ -766,7 +835,7 @@ namespace icl{
     for(unsigned int i=0;i<m_primitives.size();++i){
       m_primitives[i].detachTextureIfDeepCopied();
     }
-
+    
     return *this;
   }
 
@@ -783,7 +852,20 @@ namespace icl{
     addChild(o);
     return o;
   }
-
+  
+  SceneObject *SceneObject::addCylinder(float x, float y, float z, float rx, float ry, float h, int steps){
+    float params[] = {x,y,z,rx,ry,h,steps};
+    SceneObject *o = new SceneObject("cylinder",params);
+    addChild(o);
+    return o;
+  }
+  
+  SceneObject *SceneObject::addCone(float x, float y, float z, float rx, float ry, float h, int steps){
+    float params[] = {x,y,z,rx,ry,h,steps};
+    SceneObject *o = new SceneObject("cone",params);
+    addChild(o);
+    return o;
+  }
   
   std::vector<Vec> SceneObject::getTransformedVertices() const{
     std::vector<Vec> ts(m_vertices.size());
@@ -1130,5 +1212,15 @@ namespace icl{
       }
     }
   }
+  
+  void SceneObject::createDisplayList(){
+    /// todo
+  }
+  
+  void SceneObject::freeDisplayList(){
+    /// todo
+  }
+              
+
   
 }

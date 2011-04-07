@@ -177,12 +177,12 @@ namespace icl{
 
   /// Creates a polygon primitive
   Primitive::Primitive(const std::vector<int> &polyData, const GeomColor &color):
-    vertexIndices(polyData),type(polygon),hasNormals(false),billboardHeight(0){
+    vertexIndices(polyData),color(color),type(polygon),hasNormals(false),billboardHeight(0){
   }
 
   /// Creates a polygon primitive
   Primitive::Primitive(const std::vector<int> &polyData, const GeomColor &color, const std::vector<int> &normalIndices):
-    vertexIndices(polyData),normalIndices(normalIndices),type(polygon),hasNormals(true),billboardHeight(0){
+    vertexIndices(polyData),normalIndices(normalIndices),color(color),type(polygon),hasNormals(true),billboardHeight(0){
   }
 
   Primitive::Primitive(int a, const std::string &text, const GeomColor &color, 
