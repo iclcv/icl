@@ -61,7 +61,8 @@ std::vector<string> remove_size(const vector<string> &v){
 
 void init_grabber(){
   grabber = new GenericGrabber(pa("-i"));
-  if(pa("-size")){
+  //grabber->setIgnoreDesiredParams(true);
+   if(pa("-size")){
     grabber->useDesired<Size>(pa("-size"));
   }
   if(pa("-depth")){
@@ -70,12 +71,17 @@ void init_grabber(){
   if(pa("-format")){
     grabber->useDesired<format>(pa("-format"));
   }
+
   
   if(pa("-dist")){
+    string fn = pa("-dist");
+    ImageUndistortion udist(fn);
     if(pa("-size")){
-      grabber->enableDistortion(pa("-dist"),pa("-size"));
+      //grabber->enableUndistortion(pa("-dist"),pa("-size"));
+      grabber->enableUndistortion(udist,pa("-size"));
     }else{
-      grabber->enableDistortion(pa("-dist"),grabber->grab()->getSize());
+      //grabber->enableUndistortion(pa("-dist"),grabber->grab()->getSize());
+    grabber->enableUndistortion(udist,grabber->grab()->getSize());
     }
   }
   if(pa("-camera-config")){
@@ -299,9 +305,10 @@ int main(int n, char **ppc){
    "\t- median 3x3 median filter\n"
    "\t- median5 5x5 median filter\n")
   ("-ppp","if this flag is set, the image ROI, that results form preprocessing is actually sent")
-  ("-dist","give 4 parameters for radial lens distortion.\n"
-   "\tThis parameters can be obtained using ICL application\n"
-   "\ticl-calib-radial-distortion")
+  //("-dist","give 4 parameters for radial lens distortion.\n"
+  // "\tThis parameters can be obtained using ICL application\n"
+  //"\ticl-calib-radial-distortion")
+  ("-dist","give filename for xml file with parameters for radial lens distortion and intrinsics.\n")
   ("-reset","reset bus on startup")
   ("-progress","show progress bar (only used in -no-gui mode)")
   ("-idu","if this is given, image updates are initally switched off which means, that no"
@@ -311,10 +318,12 @@ int main(int n, char **ppc){
    "with this parameters internally. Valid parameter files can be created with icl-camera-param-io or with "
    "the icl-camcfg tool. Please note: some grabber parameters might cause an internal grabber crash, "
    "so e.g. trigger setup parameters or the isospeed parameters must be removed from this file");
-  
+
   painit(n,ppc,"[m]-output|-o(output-type-string,output-parameters) "
          "-flip|-f(string) -single-shot [m]-input|-i(device,device-params) "
-         "-size|(Size) -no-gui -pp(1) -dist|-d(float,float,float,float) -reset|-r "
+         "-size|(Size) -no-gui -pp(1) "
+	 //-dist|-d(float,float,float,float) -reset|-r "
+	 "-dist|-d(fn) -reset|-r "
          "-fps(float=15.0) -clip|-c(Rect) -camera-config(filename) -depth(depth) -format(format) -normalize|-n "
          "-perserve-preprocessing-roi|-ppp -progress "
          "-initially-disable-image-updates|-idu");

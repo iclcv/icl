@@ -243,7 +243,7 @@ namespace icl{
     inline DynMatrix &elementwise_mult(const DynMatrix &m, DynMatrix &dst) const throw (IncompatibleMatrixDimensionException){
       if((m.cols() != cols()) || (m.rows() != rows())) throw IncompatibleMatrixDimensionException("A.*B dimension mismatch");
       dst.setBounds(cols(),rows());
-      for(int i=0;i<dim();++i){
+      for(unsigned int i=0;i<dim();++i){
 	dst[i] = m_data[i] * m[i];
       }
       return dst;
@@ -955,12 +955,42 @@ namespace icl{
     T trace() const{
       ICLASSERT_RETURN_VAL(cols()==rows(),0);
       double accu = 0;
-      for(int i=0;i<dim();i+=cols()+1){
+      for(unsigned int i=0;i<dim();i+=cols()+1){
         accu += m_data[i];
       }
       return accu;
     }
     
+    /// computes the cross product
+    static DynMatrix<T> cross(const DynMatrix<T> &X, const DynMatrix<T> &Y) throw(InvalidMatrixDimensionException){
+	if(X.cols()==1 && Y.cols()==1 && X.rows()==3 && Y.rows()==3){
+	    DynMatrix<T> r(1,X.rows());
+	    r(0,0) = X(0,1)*Y(0,2)-X(0,2)*Y(0,1);
+	    r(0,1) = X(0,2)*Y(0,0)-X(0,0)*Y(0,2);
+	    r(0,2) = X(0,0)*Y(0,1)-X(0,1)*Y(0,0);
+	    return r;
+	}else{
+	    ICLASSERT_RETURN_VAL(X.rows() == 3 && Y.rows() == 3,DynMatrix<T>());
+	    return DynMatrix<T>();	
+	}
+    }
+
+    /// computes the condition of a matrix
+    T cond(const double p=2) const {
+	if(cols() == 3 && rows() == 3){
+	    DynMatrix<T> M_inv = (*this).inv();
+	    return (*this).norm(p) * M_inv.norm(p);
+	} else {
+	    DynMatrix<T> U,S,V;
+	    (*this).svd(U,S,V);
+	    if(S[S.rows()-1]){
+		return S[0]/S[S.rows()-1];
+	    } else {
+		return S[0];
+	    }
+	}
+    }
+
     /// sets new data internally and returns old data pointer (for experts only!)
     inline T *set_data(T *newData){
       T *old_data = m_data;

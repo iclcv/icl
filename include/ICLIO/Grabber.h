@@ -43,6 +43,7 @@
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/ProgArg.h>
 #include <ICLIO/GrabberDeviceDescription.h>
+#include <ICLIO/ImageUndistortion.h>
 
 namespace icl {
 
@@ -352,14 +353,18 @@ namespace icl {
            'icl-calib-radial-distortion'
 
      */
-     void enableDistortion(double params[4],const Size &size, scalemode m=interpolateLIN);
+     void enableUndistortion(double params[4],const Size &size, scalemode m=interpolateLIN);
 
-     /// enables distortion from given programm argument. 
+     void enableUndistortion(const ImageUndistortion &udist, const Size &size, scalemode m=interpolateLIN);
+
+     /// enables undistortion from given programm argument. 
      /** Needs a progarg with 4 sub-args */
-     void enableDistortion(const ProgArg &pa, const Size &size, scalemode m=interpolateLIN);
+     void enableUndistortion(const ProgArg &pa, const Size &size, scalemode m=interpolateLIN);
      
-     /// enables distortion for given warp map
-     void enableDistortion(const Img32f &warpMap, scalemode m=interpolateLIN);
+     void enableUndistortion(const ProgArg &pa, scalemode m=interpolateLIN);
+
+     /// enables undistortion for given warp map
+     void enableUndistortion(const Img32f &warpMap, scalemode m=interpolateLIN);
      
      /// disables distortion
      void disableDistortion();

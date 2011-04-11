@@ -760,6 +760,12 @@ namespace icl{
       return this->transp() * M;
     }
     
+    /// computes the condition of a fixed matrix
+    double cond(const double p=2) const {
+	DynMatrix<T> mat = this->dyn();
+	return mat.cond();
+    }
+
     /// computes the sum of all diagonal elements
     T trace() const{
       ICLASSERT_RETURN_VAL(COLS==ROWS,0);

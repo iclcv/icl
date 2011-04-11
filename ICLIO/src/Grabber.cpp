@@ -143,7 +143,7 @@ namespace icl{
     }
   }
 
-  static inline void distort_point(const double params[4], int xi, int yi,float &xd, float &yd){
+  static inline void undistort_point(const double params[4], int xi, int yi,float &xd, float &yd){
     const double &x0 = params[0];
     const double &y0 = params[1];
     const double &f = params[2]/100000000.0;
@@ -156,31 +156,55 @@ namespace icl{
     yd = (p*y + y0);
   }
   
-  void Grabber::enableDistortion(double params[4],const Size &size, scalemode m){
+  void Grabber::enableUndistortion(double params[4],const Size &size, scalemode m){
     Img32f image(size,2);
     Channel32f cs[2] = { image[0], image[1] };
     for(float xi=0;xi<size.width;++xi){
       for(float yi=0;yi<size.height; ++yi){
-        distort_point(params,xi,yi,cs[0](xi,yi),cs[1](xi,yi));
+        undistort_point(params,xi,yi,cs[0](xi,yi),cs[1](xi,yi));
       }
     }
-    enableDistortion(image,m);
+    enableUndistortion(image,m);
   }
   
-  void Grabber::enableDistortion(const ProgArg &pa, const Size &size, scalemode m){
+ void Grabber::enableUndistortion(const ImageUndistortion &udist, const Size &size, scalemode m){
+    Img32f warpMap(size,2);
+    Channel32f cs[2];
+    warpMap.extractChannels(cs);
+ 
+    for(float xi=0;xi<size.width;++xi){
+      for(float yi=0;yi<size.height; ++yi){
+        Point32f point(xi,yi);
+        Point32f p = udist.undistort(point);
+        cs[0](xi,yi) = p.x;
+        cs[1](xi,yi) = p.y; 
+      }
+    }
+    enableUndistortion(warpMap, m);
+  }
+
+  void Grabber::enableUndistortion(const ProgArg &pa, const Size &size, scalemode m){
     double p[4] = { 
       icl::pa(pa.getID(),0),
       icl::pa(pa.getID(),1),
       icl::pa(pa.getID(),2),
       icl::pa(pa.getID(),3) };
-    enableDistortion(p,size,m);
+    enableUndistortion(p,size,m);
   }
   
+  void Grabber::enableUndistortion(const ProgArg &pa, scalemode m){
+    std::string fn =  icl::pa(pa.getID(),0);
+    ImageUndistortion udist(fn);
+    std::string sz = icl::pa(pa.getID(),1);
+    Size size(sz);
+    enableUndistortion(udist,size,m);
+  }
+
   bool Grabber::isDistortionEnabled() const{
     return data->warp;
   }
   
-  void Grabber::enableDistortion(const Img32f &warpMap, scalemode m){
+  void Grabber::enableUndistortion(const Img32f &warpMap, scalemode m){
     if(!data->warp){
       data->warp = new WarpOp;
     }
