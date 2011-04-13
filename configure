@@ -3,12 +3,33 @@ ARCH=
 PREFIX=
 BUILD=
 
+function usage () {
+    echo "usage: configure <CFG-FILE-NAME>"
+    echo "    a sample config file can be found in scripts/configure-sample-config.cfg"
+    exit -1
+}
+
+if [ "$1"  = "" ] ; then
+    usage ;
+fi 
+if [ "$1"  = "-help" ] ; then
+    usage ;
+fi 
+if [ "$1"  = "--help" ] ; then
+    usage ;
+fi 
+if [ "$1"  = "-h" ] ; then
+    usage ;
+fi 
+
 
 DEPS="ipp mkl opencv libz libfreenect libmesasr libjpeg unicap xine qt opengl glx opensurf gtest xcf imagemagick libdc"
 
 for T in $DEPS ; do 
     eval "path_$T=_" ; 
 done
+
+
 
 for T in "$@" ; do
     if [ ! -e "$T" ] ; then 
