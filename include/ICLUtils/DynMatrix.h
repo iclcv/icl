@@ -962,15 +962,15 @@ namespace icl{
     }
     
     /// computes the cross product
-    static DynMatrix<T> cross(const DynMatrix<T> &X, const DynMatrix<T> &Y) throw(InvalidMatrixDimensionException){
-	if(X.cols()==1 && Y.cols()==1 && X.rows()==3 && Y.rows()==3){
-	    DynMatrix<T> r(1,X.rows());
-	    r(0,0) = X(0,1)*Y(0,2)-X(0,2)*Y(0,1);
-	    r(0,1) = X(0,2)*Y(0,0)-X(0,0)*Y(0,2);
-	    r(0,2) = X(0,0)*Y(0,1)-X(0,1)*Y(0,0);
+    static DynMatrix<T> cross(const DynMatrix<T> &x, const DynMatrix<T> &y) throw(InvalidMatrixDimensionException){
+	if(x.cols()==1 && y.cols()==1 && x.rows()==3 && y.rows()==3){
+	    DynMatrix<T> r(1,x.rows());
+	    r(0,0) = x(0,1)*y(0,2)-x(0,2)*y(0,1);
+	    r(0,1) = x(0,2)*y(0,0)-x(0,0)*y(0,2);
+	    r(0,2) = x(0,0)*y(0,1)-x(0,1)*y(0,0);
 	    return r;
 	}else{
-	    ICLASSERT_RETURN_VAL(X.rows() == 3 && Y.rows() == 3,DynMatrix<T>());
+	    ICLASSERT_RETURN_VAL(x.rows() == 3 && y.rows() == 3,DynMatrix<T>());
 	    return DynMatrix<T>();	
 	}
     }
