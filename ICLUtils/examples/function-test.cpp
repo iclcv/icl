@@ -1,6 +1,7 @@
 #include <ICLUtils/Function.h>
 #include <iostream>
 #include <algorithm>
+#include <vector>
 
 using namespace icl;
 void global_foo(){

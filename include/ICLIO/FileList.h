@@ -37,6 +37,7 @@
 
 #include <ICLUtils/ShallowCopyable.h>
 #include <string>
+#include <vector>
 
 namespace icl{
   

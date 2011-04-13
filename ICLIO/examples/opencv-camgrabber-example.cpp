@@ -36,7 +36,7 @@
 
 GUI gui("hsplit");
 Mutex mutex;
-SmartPtr<OpenCVCamGrabber> cg = 0;
+SmartPtr<OpenCVCamGrabber> cg;
 
 void set_brightness(){
   float f = gui.getValue<float>("bright");

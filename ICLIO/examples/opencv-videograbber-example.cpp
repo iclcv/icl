@@ -37,7 +37,7 @@
 
 GUI gui("hsplit");
 Mutex mutex;
-SmartPtr<OpenCVVideoGrabber> g=0;
+SmartPtr<OpenCVVideoGrabber> g;
 std::string filename;
 bool play = false;
 

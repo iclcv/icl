@@ -35,7 +35,7 @@
 #ifndef ICL_ARRAY_2D_H
 #define ICL_ARRAY_2D_H
 
-#include <ICLUtils/SmartPtr.h>
+#include <ICLUtils/SmartArray.h>
 #include <ICLUtils/Size.h>
 #include <ICLUtils/Point.h>
 #include <algorithm>

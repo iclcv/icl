@@ -36,7 +36,7 @@
 #define ICL_PIXEL_REF_H
 
 #include <ICLCore/Types.h>
-#include <ICLUtils/SmartPtr.h>
+#include <ICLUtils/SmartArray.h>
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/FixedMatrix.h>

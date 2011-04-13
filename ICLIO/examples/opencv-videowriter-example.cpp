@@ -41,8 +41,8 @@ GUI gui("hsplit");
 
 ImgBase *image=0;
 Mutex mutex;
-SmartPtr<OpenCVCamGrabber> cg=0;
-SmartPtr<OpenCVVideoWriter> vw = 0;
+SmartPtr<OpenCVCamGrabber> cg;
+SmartPtr<OpenCVVideoWriter> vw;
 
 std::string filename = "";
 
@@ -144,7 +144,7 @@ void stopcap(){
   Mutex::Locker lock(mutex);
   cap = false;
   filename = "";
-  vw = 0;
+  vw.setNull();
 }
 
 ///takes a snapshot of device and writes it to a file

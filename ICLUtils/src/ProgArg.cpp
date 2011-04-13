@@ -31,6 +31,7 @@
 ** Excellence Initiative.                                          **
 **                                                                 **
 *********************************************************************/
+#define ICL_SMART_PTR_DEBUG
 
 #include <ICLUtils/ProgArg.h>
 #include <ICLUtils/SmartPtr.h>

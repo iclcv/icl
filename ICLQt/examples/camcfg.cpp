@@ -50,17 +50,16 @@ int main(int n, char **ppc){
   ("u","scan for unicap devices")
   ("d","scan for dc devices")
   ("s","scan for SwissRanger devices")
-  ("m","scan for Shared Memory devices ")
-  ("kc","scan for Kinect Devices (Depth Image)")
-  ("kd","scan for Kinect Devices (Color Image)")
-  ("y","scan for Myrmex Devices ")
-  ("c","scan for OpenCV-based devices ")
+  ("m","scan for Shared Memory devices")
+  ("k","scan for Kinect Devices")
+  ("y","scan for Myrmex Devices")
+  ("c","scan for OpenCV-based devices")
   ("-demo","add a DemoGrabber device")
   ("-i","ICL's default device specification")
   ("-l","if this flag is passed, no GUI is created, "
    "but all available devices are listed on stdout");
   painit(n,ppc,"-dc|d -dc800|8 -demo -unicap|u -mry|y -pwc|p -sr|s -cvcam|c -sm|m"
-         " -reset-bus|-r|r -kinect-depth|kd -kinect-color|kc "
+         " -reset-bus|-r|r -kinect|k "
          "-input|-i(device-type,device-ID) -list-devices-only|-l");
   QApplication a(n,ppc);
   
@@ -72,8 +71,7 @@ int main(int n, char **ppc){
   if(pa("p"))str << ",pwc";
   if(pa("c"))str << ",cvcam";
   if(pa("s"))str << ",sr";
-  if(pa("kd"))str << ",kinectd";
-  if(pa("kc"))str << ",kinectc";
+  if(pa("k"))str << ",kinectd";
   if(pa("m"))str << ",sm";
   if(pa("y"))str << ",myr";
   if(pa("-i")) str << "," << pa("-i",0) << "=" << pa("-i",1);

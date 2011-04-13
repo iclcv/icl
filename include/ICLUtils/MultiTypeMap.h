@@ -39,6 +39,7 @@
 #include <map>
 #include <typeinfo>
 #include <cstdio>
+#include <vector>
 
 #include <ICLUtils/Mutex.h>
 #include <ICLUtils/SmartPtr.h>
