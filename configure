@@ -4,7 +4,7 @@ PREFIX=
 BUILD=
 
 
-DEPS="ipp mkl opencv libz libfreenect libmesasr libjpeg unicap xine qt opengl glx opensurf gtest"
+DEPS="ipp mkl opencv libz libfreenect libmesasr libjpeg unicap xine qt opengl glx opensurf gtest xcf"
 
 for T in $DEPS ; do 
     eval "path_$T=_" ; 
@@ -99,8 +99,22 @@ cd $BUILD
 
 CMD="$CMD $PREVDIR"
 
-echo "CMAKE command is"
-echo "-----------------------------------------------------"
-echo $CMD
-echo "-----------------------------------------------------"
-#$CMD
+#echo "CMAKE command is"
+#echo "-----------------------------------------------------"
+#echo $CMD
+#echo "-----------------------------------------------------"
+
+echo -n "run cmake now ? [yes|no] (default: yes): "
+read x
+if [ "$x" = "" ] ; then 
+    $CMD ;
+elif [ "$x" = "yes" ] ; then
+    $CMD ;
+elif [ "$x" = "y" ] ; then
+    $CMD ;
+elif [ "$x" = "YES" ] ; then
+    $CMD ;
+elif [ "$x" = "Yes" ] ; then
+    $CMD ;
+fi
+
