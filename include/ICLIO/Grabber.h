@@ -331,46 +331,22 @@ namespace icl {
      /// @} 
      
      /// @{ @name distortion functions
-     
-     /// enabled the distortion plugin for the grabber using radial distortion parameters
-     /** distortion is calculated as follows: 
-         \code    
-         Point32f distort(int xi, int yi){
-           const double &x0 = params[0];
-           const double &y0 = params[1];
-           const double &f = params[2]/100000000.0;
-           const double &s = params[3];
-         
-           float x = s*(xi-x0);
-           float y = s*(yi-y0);
-           float p = 1 - f * (x*x + y*y);
-           return Point32f(p*x + x0,p*y + y0);
-         }
-         \endcode
-         
-         - Good params for pwc camera are { 354.5, 185, 25.7, 1.00904}
-         - optimal parameters can be found using the ICL-application
-           'icl-calib-radial-distortion'
 
-     */
-     void enableUndistortion(double params[4],const Size &size, scalemode m=interpolateLIN);
-
+     ///enabled the distortion plugin for the grabber using radial distortion parameters
      void enableUndistortion(const ImageUndistortion &udist, const Size &size, scalemode m=interpolateLIN);
 
      /// enables undistortion from given programm argument. 
-     /** Needs a progarg with 4 sub-args */
-     void enableUndistortion(const ProgArg &pa, const Size &size, scalemode m=interpolateLIN);
-     
+     /** where first argument is the filename of the xml file and second is the size of picture*/
      void enableUndistortion(const ProgArg &pa, scalemode m=interpolateLIN);
 
      /// enables undistortion for given warp map
      void enableUndistortion(const Img32f &warpMap, scalemode m=interpolateLIN);
      
      /// disables distortion
-     void disableDistortion();
+     void disableUndistortion();
      
      /// returns whether distortion is currently enabled
-     bool isDistortionEnabled() const;
+     bool isUndistortionEnabled() const;
      /// @}
 
     protected:

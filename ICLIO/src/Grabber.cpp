@@ -156,17 +156,6 @@ namespace icl{
     yd = (p*y + y0);
   }
   
-  void Grabber::enableUndistortion(double params[4],const Size &size, scalemode m){
-    Img32f image(size,2);
-    Channel32f cs[2] = { image[0], image[1] };
-    for(float xi=0;xi<size.width;++xi){
-      for(float yi=0;yi<size.height; ++yi){
-        undistort_point(params,xi,yi,cs[0](xi,yi),cs[1](xi,yi));
-      }
-    }
-    enableUndistortion(image,m);
-  }
-  
  void Grabber::enableUndistortion(const ImageUndistortion &udist, const Size &size, scalemode m){
     Img32f warpMap(size,2);
     Channel32f cs[2];
@@ -182,15 +171,6 @@ namespace icl{
     }
     enableUndistortion(warpMap, m);
   }
-
-  void Grabber::enableUndistortion(const ProgArg &pa, const Size &size, scalemode m){
-    double p[4] = { 
-      icl::pa(pa.getID(),0),
-      icl::pa(pa.getID(),1),
-      icl::pa(pa.getID(),2),
-      icl::pa(pa.getID(),3) };
-    enableUndistortion(p,size,m);
-  }
   
   void Grabber::enableUndistortion(const ProgArg &pa, scalemode m){
     std::string fn =  icl::pa(pa.getID(),0);
@@ -200,7 +180,7 @@ namespace icl{
     enableUndistortion(udist,size,m);
   }
 
-  bool Grabber::isDistortionEnabled() const{
+  bool Grabber::isUndistortionEnabled() const{
     return data->warp;
   }
   
@@ -212,7 +192,7 @@ namespace icl{
     data->warp->setScaleMode(m);
   }
   
-  void Grabber::disableDistortion(){
+  void Grabber::disableUndistortion(){
     ICL_DELETE(data->warp);
   }
   
