@@ -36,7 +36,7 @@
 #define ICL_CC_H 
 
 #include <ICLCC/CCFunctions.h>
-#include <ICLCC/Bayer.h>
+#include <ICLCC/BayerConverter.h>
 #include <ICLCC/CCLUT.h>  
 #include <ICLCC/ChromaAndRGBClassifier.h>
 #include <ICLCC/Color.h>
