@@ -350,6 +350,9 @@ namespace icl {
      
      /// returns whether distortion is currently enabled
      bool isUndistortionEnabled() const;
+     
+     /// returns the internal warp map or NULL if undistortion is not enabled
+     const Img32f *getUndistortionWarpMap() const;
      /// @}
 
     protected:

@@ -6,9 +6,9 @@
  ** Website: www.iclcv.org and                                      **
  **          http://opensource.cit-ec.de/projects/icl               **
  **                                                                 **
- ** File   : ICLIO/examples/undistort-picture.cpp                   **
+ ** File   : ICLIO/examples/undistortion-demo.cpp                   **
  ** Module : ICLIO                                                  **
- ** Authors: Christian Groszewski                                   **
+ ** Authors: Christian Groszewski, Christof Elbrechter              **
  **                                                                 **
  **                                                                 **
  ** Commercial License                                              **
@@ -31,79 +31,52 @@
  ** Excellence Initiative.                                          **
  **                                                                 **
  *********************************************************************/
-#include <ICLCore/Channel.h>
-#include <ICLQt/GUI.h>
-#include <ICLQt/Application.h>
-#include <ICLIO/GenericGrabber.h>
-#include <ICLCore/Types.h>
-#include <ICLCore/Img.h>
+
+#include <ICLQuick/Common.h>
 
 /**
  * Simple example how to undistort a picture given xml-file with undistortion parameters.
  */
-using namespace icl;
 
 GUI gui("hsplit");
 GenericGrabber grabber;
-
-Img32f warpMap;
-ImageUndistortion *udist = 0;
 void init(){
+  
+  gui << (GUI("hbox")
+          << "draw[@handle=image@minsize=20x20@label=undistorted image]");
+  if(pa("-wm")){
+    gui << ("draw[@handle=warp@minsize=20x20@label=warp map]");
+  }
+  gui.show();
+  grabber.init(pa("-i"));
 
-	gui << (GUI("hbox")
-			<< "draw[@handle=calib_object@minsize=20x20@label=calib]");
-	if(pa("-wm")){
-		gui << ("draw[@handle=draw_object@minsize=20x20@label=plot]");
-	}
-	gui.show();
-	static std::string params[] = {"*.jpg"};
-	std::string dev = "file";
-	grabber.init(dev,dev+"="+params[0]);
+  ImageUndistortion u(*pa("-d"));
+  const Size &size  = pa("-s");
+  grabber.enableUndistortion(u,size,interpolateLIN);
 
-
-	gui.show();
-	std::string fn = pa("-d");
-
-	udist = new ImageUndistortion(fn);
-	const Size &size  = pa("-s");
-	warpMap.setSize(size);
-	warpMap.setChannels(2);
-        //this is only for showing the warpmap
-	if(pa("-wm")){
-		Channel32f cs[2];
-		warpMap.extractChannels(cs);
-		for(float xi=0;xi<size.width;++xi){
-			for(float yi=0;yi<size.height; ++yi){
-				Point32f point(xi,yi);
-				Point32f p = udist->undistort(point,ImageUndistortion::MatlabModel5Params);
-				cs[0](xi,yi) = p.x;
-				cs[1](xi,yi) = p.y;
-			}
-		}
-	}
-	if(pa("-wm")){
-		gui["draw_object"] = &warpMap;
-		gui["draw_object"].update();
-	}
-	grabber.enableUndistortion(*udist,size,interpolateLIN);
+  //this is only for showing the warpmap
+  if(pa("-wm")){
+    gui["warp"] = grabber.getUndistortionWarpMap();
+    gui["warp"].update();
+  }
 }
 
 void run(){
-	const ImgBase *img = grabber.grab();
-	gui["calib_object"] = img;
-	gui["calib_object"].update();
-
+  const ImgBase *img = grabber.grab();
+  gui["image"] = img;
+  gui["image"].update();
+  
 }
 
 /**
-  * Useage: icl-undistort-pic -d camconfig.xml -s 640x480 -wm
+  * Usage: icl-undistort-pic -d camconfig.xml -s 640x480 -wm
   * or icl-undistort-pic -d camconfig.xml -s 640x480
   */
 int main(int argc, char** argv){
-	paex("-d","given xml file with distortion and intrinsic parameters computed with")
-					("-s","size for warpmap")
-					("-wm","show warpmap");
-
-	ICLApp app = ICLApp(argc,argv,"-d(fn) -s(warpMapSize) -wm()",init,run);
-	return app.exec();
+  paex("-d","given xml file with distortion and "
+       "intrinsic parameters computed with")
+  ("-s","undistortion image size")
+  ("-wm","show warpmap as well")
+  ("-i","input devide and parameters");
+  return ICLApp(argc,argv,"-input|-i(2) -d(fn) -s(warpMapSize) -wm()",init,run).exec();
 }

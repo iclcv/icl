@@ -336,5 +336,9 @@ namespace icl{
       }
     }
   }
+  const Img32f *Grabber::getUndistortionWarpMap() const{
+    return data->warp ? &data->warp->getWarpMap() : 0;
+  }
+  
 
 }
