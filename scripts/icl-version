@@ -1,1 +1,1 @@
-echo @icl-@VERSION@@DEBUG_POSTFIX@
+echo VERSION@
