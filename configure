@@ -4,7 +4,7 @@ PREFIX=
 BUILD=
 
 
-DEPS="ipp mkl opencv libz libfreenect libmesasr libjpeg unicap xine qt opengl glx opensurf gtest xcf"
+DEPS="ipp mkl opencv libz libfreenect libmesasr libjpeg unicap xine qt opengl glx opensurf gtest xcf imagemagick libdc"
 
 for T in $DEPS ; do 
     eval "path_$T=_" ; 
@@ -104,17 +104,36 @@ CMD="$CMD $PREVDIR"
 #echo $CMD
 #echo "-----------------------------------------------------"
 
+CMD="$CMD"
+TMPFILE="./.configure-out"
 echo -n "run cmake now ? [yes|no] (default: yes): "
 read x
 if [ "$x" = "" ] ; then 
-    $CMD ;
+    $CMD > $TMPFILE;
 elif [ "$x" = "yes" ] ; then
-    $CMD ;
+    $CMD > $TMPFILE;
 elif [ "$x" = "y" ] ; then
-    $CMD ;
+    $CMD > $TMPFILE;
 elif [ "$x" = "YES" ] ; then
-    $CMD ;
+    $CMD > $TMPFILE;
 elif [ "$x" = "Yes" ] ; then
-    $CMD ;
+    $CMD > $TMPFILE;
 fi
 
+CMAKE_DETECTED=""
+while read line ; do
+    if [ "$(echo $line | grep detected)" != "" ] ; then
+        echo -n $(tput bold) ;
+        CMAKE_DETECTED="$CMAKE_DETECTED\n$line"
+    fi ;
+    echo $line ;
+    echo -n $(tput sgr0)
+done < $TMPFILE
+rm -rf $TMPFILE
+
+echo ""
+echo "cmake detected TRUE:"
+echo -e $CMAKE_DETECTED | grep TRUE
+echo ""
+echo "cmake detected FALSE:"
+echo -e $CMAKE_DETECTED | grep FALSE
