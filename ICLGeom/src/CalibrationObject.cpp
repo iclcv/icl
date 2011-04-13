@@ -41,7 +41,6 @@
 
 #include <ICLCore/Img.h>
 #include <ICLCC/CCFunctions.h>
-#include <ICLQt/DrawWidget.h>
 
 #include <ICLFilter/LocalThresholdOp.h>
 #include <ICLFilter/MorphologicalOp.h>
@@ -183,9 +182,11 @@ namespace icl{
     return result;
   }
 
+#ifdef HAVE_QT
   void CalibrationObject::visualizeGrid2D(ICLDrawWidget &d){
     data->grid->visualize2D(d);
   }
+#endif
 
   
   CalibrationGrid *CalibrationObject::getCalibrationGrid(){

@@ -391,11 +391,12 @@ namespace icl{
 
   CalibrationGrid::CalibrationGrid():inputDataReady(false){}
   
-  
+#ifdef HAVE_QT  
   static inline float round1(float x){
     return float((int)round(x*10))/10.;
   }
   
+
   void CalibrationGrid::visualize2D(ICLDrawWidget &w){
     w.color(0,255,0,200);
     w.fill(0,0,0,0);//255,0,100);
@@ -441,6 +442,7 @@ namespace icl{
       }
     }
   }
+#endif
 
   CalibrationGrid::CalibrationGrid(const std::string &configFileName) : inputDataReady(false){
     loadFromFile(configFileName);

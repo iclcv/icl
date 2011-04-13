@@ -130,11 +130,12 @@ namespace icl{
     /// return calibration error (or -1 if object was not found)
     CalibrationResult find(const ImgBase *sourceImage);
     
+#ifdef HAVE_QT
     /// visualizes current detection result
     /** Note: the widge must be prepared before (image must be set, widget must
         be locked and reset) */
     void visualizeGrid2D(ICLDrawWidget &d);
-    
+#endif
     /// This functions gets an arbitrary input image and returns the currently detected image points
     /** <b>Note:</b> If you overwrite this method, you should set intermediate images
         that do no longer exist to null or to the input image 

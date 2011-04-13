@@ -40,6 +40,8 @@
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/Point32f.h>
+#include <ICLUtils/BasicTypes.h>
+
 #ifdef HAVE_QT
 #include<ICLQt/DrawWidget.h>
 #endif

@@ -38,8 +38,10 @@
 #include <ICLUtils/Rect.h>
 #include <ICLGeom/SceneObject.h>
 #include <ICLGeom/Camera.h>
+
+#ifdef HAVE_QT
 #include <ICLQt/DrawWidget.h>
-#include <ICLCore/ImgBase.h>
+#endif
 
 namespace icl{
   
@@ -88,9 +90,11 @@ namespace icl{
         to represent this CalibrationGrid in an icl::Scene */
     void initializeSceneObject(SceneObject &so);
 
+#ifdef HAVE_QT
     /// 2D visualization method
     /** The default implementation uses Half A and B's img-points */
     virtual void visualize2D(ICLDrawWidget &w);
+#endif
 
     /// adaptable method to find two marked points 
     /** The two marked points (equipped with an extra inner white marker) are

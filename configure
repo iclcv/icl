@@ -109,15 +109,22 @@ TMPFILE="./.configure-out"
 echo -n "run cmake now ? [yes|no] (default: yes): "
 read x
 if [ "$x" = "" ] ; then 
+    echo "precaching cmake output ..."
     $CMD > $TMPFILE;
 elif [ "$x" = "yes" ] ; then
+    echo "precaching cmake output ..."
     $CMD > $TMPFILE;
 elif [ "$x" = "y" ] ; then
+    echo "precaching cmake output ..."
     $CMD > $TMPFILE;
 elif [ "$x" = "YES" ] ; then
+    echo "precaching cmake output ..."
     $CMD > $TMPFILE;
 elif [ "$x" = "Yes" ] ; then
+    echo "precaching cmake output ..."
     $CMD > $TMPFILE;
+else
+    exit -1;
 fi
 
 CMAKE_DETECTED=""
