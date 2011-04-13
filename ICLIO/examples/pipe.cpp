@@ -78,7 +78,9 @@ void init_grabber(){
     ImageUndistortion udist(fn);
     if(pa("-size")){
       //grabber->enableUndistortion(pa("-dist"),pa("-size"));
-      grabber->enableUndistortion(udist,pa("-size"));
+      std::string sz =pa("-size");
+      Size size(sz);
+      grabber->enableUndistortion(udist,size);
     }else{
       //grabber->enableUndistortion(pa("-dist"),grabber->grab()->getSize());
     grabber->enableUndistortion(udist,grabber->grab()->getSize());

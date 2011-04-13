@@ -156,6 +156,11 @@ namespace icl{
     yd = (p*y + y0);
   }
   
+ void Grabber::enableUndistortion(const ImageUndistortion &udist, scalemode m){
+    const Size size = udist.getSize();
+    enableUndistortion(udist, size, m);
+  }
+
  void Grabber::enableUndistortion(const ImageUndistortion &udist, const Size &size, scalemode m){
     Img32f warpMap(size,2);
     Channel32f cs[2];

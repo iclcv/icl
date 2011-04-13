@@ -294,8 +294,9 @@ public:
 	///saves computed/current intrinsics to xml-file
 	/**
 	 * @param filename name of xml-file for saving
+	 * @param size picturesize
 	 */
-	void saveIntrinsics(const char* filename);
+	void saveIntrinsics(const char* filename, const Size &size=Size(0,0));
 
 	///loads intrincs from xml-file
 	/**

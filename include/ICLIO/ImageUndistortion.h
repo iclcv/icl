@@ -38,12 +38,15 @@
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/XML.h>
 #include <ICLUtils/FixedMatrix.h>
+#include <ICLUtils/Size.h>
 #include <fstream>
 #include <string>
 #include <vector>
 namespace icl{
 
 class ImageUndistortion{
+
+	Size imgsize;
 
 	const Point32f undistortSimple(const Point32f &point) const {
 		const double &x0 = params[0];
@@ -78,6 +81,18 @@ public:
 		case SimpleARTBasedUndistortion: return undistortSimple(point);
 		case MatlabModel5Params: return undistort5Param(point);
 		}
+	}
+
+	void setSize(int width,int height){
+		imgsize = Size(width,height);
+	}
+
+	const Size getSize() {
+	    return imgsize;
+	}
+
+ 	const Size getSize() const {
+	    return imgsize;
 	}
 
 };

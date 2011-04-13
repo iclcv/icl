@@ -1433,8 +1433,12 @@ void IntrinsicCalibrator::optimize(const DynMatrix<icl64f> &impoints, const DynM
 		m_calres.params.push_back(param[i]);
 }
 
-void IntrinsicCalibrator::saveIntrinsics(const char *filename){
+void IntrinsicCalibrator::saveIntrinsics(const char *filename, const Size &size){
 	ConfigFile a;
+	if(size.width > 0 && size.height >0){
+	    a["config.size.x"] = size.width;
+	    a["config.size.y"] = size.height;
+	}
 	a["config.intrin.fx"] = (m_data->intrinsic_matrix)->at(0,0);
 	a["config.intrin.fy"] = (m_data->intrinsic_matrix)->at(1,1);
 	a["config.intrin.ix"] = (m_data->intrinsic_matrix)->at(2,0);
@@ -1450,6 +1454,10 @@ void IntrinsicCalibrator::saveIntrinsics(const char *filename){
 
 void IntrinsicCalibrator::loadIntrinsics(const char *filename){
 	ConfigFile a(filename);
+	//not necessary to load the size
+	//a["config.size.x"];
+	//a["config.size.y"];
+
 	(m_data->intrinsic_matrix)->at(0,0) = a["config.intrin.fx"];
 	(m_data->intrinsic_matrix)->at(1,1) = a["config.intrin.fy"];
 	(m_data->intrinsic_matrix)->at(2,0) = a["config.intrin.ix"];

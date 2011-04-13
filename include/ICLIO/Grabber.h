@@ -332,8 +332,11 @@ namespace icl {
      
      /// @{ @name distortion functions
 
-     ///enabled the distortion plugin for the grabber using radial distortion parameters
+     ///enabled the distortion plugin for the grabber using radial and tangential distortion parameters
      void enableUndistortion(const ImageUndistortion &udist, const Size &size, scalemode m=interpolateLIN);
+
+     ///enabled the distortion plugin for the grabber using radial and tangential distortion parameters
+     void enableUndistortion(const ImageUndistortion &udist, scalemode m=interpolateLIN);
 
      /// enables undistortion from given programm argument. 
      /** where first argument is the filename of the xml file and second is the size of picture*/

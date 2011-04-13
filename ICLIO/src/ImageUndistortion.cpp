@@ -72,17 +72,12 @@ std::istream &operator>>(std::istream &is, ImageUndistortion &udist){
     LOAD_FROM_STREAM(dist.k4);
 	LOAD_FROM_STREAM(dist.k5);
     #undef LOAD_FROM_STREAM
-
-	/*udist.params.push_back(f["config.intrin.fx"]);
-	udist.params.push_back(f["config.intrin.fy"]);
-	udist.params.push_back(f["config.intrin.ix"]);
-	udist.params.push_back(f["config.intrin.iy"]);
-	udist.params.push_back(f["config.intrin.skew"]);
-	udist.params.push_back(f["config.dist.k1"]);
-	udist.params.push_back(f["config.dist.k2"]);
-	udist.params.push_back(f["config.dist.k3"]);
-	udist.params.push_back(f["config.dist.k4"]);
-	udist.params.push_back(f["config.dist.k5"]);*/
+	int width = 0;
+	int height = 0;
+        if (f.contains("config.size.x")) width = f["config.size.x"];
+        if (f.contains("config.size.y")) height = f["config.size.y"];
+	
+        udist.setSize(width,height);
 	FixedMatrix<icl64f,3,3> KK_new;
 	KK_new[0] = udist.params[0]; KK_new[1] = udist.params[0]*udist.params[4]; KK_new[2] = udist.params[2];
 	KK_new[3] = 0.0; KK_new[4] = udist.params[1]; KK_new[5] = udist.params[3];
@@ -93,6 +88,8 @@ std::istream &operator>>(std::istream &is, ImageUndistortion &udist){
 
 std::ostream &operator<<(std::ostream &s, ImageUndistortion &udist){
 	ConfigFile f;
+	f["config.size.x"] = udist.getSize().width;
+	f["config.size.y"] = udist.getSize().height;
 	f["config.intrin.fx"] = udist.params[0];
 	f["config.intrin.fy"] = udist.params[1];
 	f["config.intrin.ix"] = udist.params[2];
