@@ -2,6 +2,7 @@ VERSION=
 ARCH=
 PREFIX=
 BUILD=
+PKGCFG=
 
 function usage () {
     echo "usage: configure <CFG-FILE-NAME>"
@@ -49,6 +50,7 @@ for T in "$@" ; do
                         "prefix") PREFIX="$TR" ;;
                         "build") BUILD="$TR" ;;
                         "arch") ARCH="$TR" ;;
+                        "pkgcfg") PKGCFG="$TR" ;;
                         *) eval "path_$T1=$TR" ;;
                     esac
                 fi
@@ -57,7 +59,9 @@ for T in "$@" ; do
     done < "$T"
 done
 
-
+if [ -z $PKGCFG ] ; then
+    PKGCFG=false
+fi
 
 if [ -z $VERSION ] ; then 
     VERSION=release
@@ -82,6 +86,7 @@ done
 CMD="cmake -D ICL_XDEP_ALL_ON:BOOL=FALSE -D ICL_VAR_INSTALL_PREFIX:STRING=$PREFIX "
 CMD="$CMD -D ICL_VAR_DEBUG_MODE:BOOL=$(echo $VERSION | tr '[:lower:]' '[:upper:]')"
 CMD="$CMD -D ICL_VAR_ARCHITECTURE_DEPENDENT_BUILD_ON:BOOL=$(echo $ARCH | tr '[:lower:]' '[:upper:]')"
+CMD="$CMD -D ICL_VAR_USE_PKG_CONFIG:BOOL=$(echo $PKGCFG | tr '[:lower:]' '[:upper:]')"
 
 echo "extracting configuration"
 echo "-----------------------------------------------------"
@@ -106,6 +111,7 @@ echo "version (debug/release): $VERSION"
 echo "build directory:         $BUILD"
 echo "arch dependent build:    $ARCH"
 echo "installation prefix:     $PREFIX"
+echo "use pkg-config:          $PKGCFG"
 echo "-----------------------------------------------------"
 
 
