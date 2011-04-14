@@ -1,4 +1,4 @@
-DEPS="ipp mkl opencv libz libfreenect libmesasr libjpeg unicap xine qt opengl glx opensurf gtest xcf imagemagick libdc"
+DEPS="ipp mkl opencv libz libfreenect libmesasr libjpeg unicap xine qt opengl glx opensurf gtest xcf imagemagick libdc videodev"
 
 function usage {
     echo "usage: config-generator.sh <full-config-file> <build-dir>"

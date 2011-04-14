@@ -166,38 +166,46 @@ set(DOC_DIR "doc/icl-${VERSION}${DEBUG_POSTFIX}")
 set(ETC_DIR "etc/icl-${VERSION}${DEBUG_POSTFIX}")
 
 #checkboxes to indicate a third party lib will be used
-set(ICL_XDEP_IPP_ON OFF CACHE BOOL "Use IPP when available")
-set(ICL_XDEP_MKL_ON OFF CACHE BOOL "Use MKL when available")
-set(ICL_XDEP_OPENCV_ON OFF CACHE BOOL "Use OPENCV when available")
-set(ICL_XDEP_LIBZ_ON OFF CACHE BOOL "Use LIBZ when available")
-set(ICL_XDEP_LIBMESASR_ON OFF CACHE BOOL "Use LIBMESASR when available")
-set(ICL_XDEP_LIBJPEG_ON OFF CACHE BOOL "Use LIBJPEG when available")
-set(ICL_XDEP_IMAGEMAGICK_ON OFF CACHE BOOL "Use IMAGEMAGICK when available")
-set(ICL_XDEP_LIBDC_ON OFF CACHE BOOL "Use LIBDC when available")
-set(ICL_XDEP_LIBFREENECT_ON OFF CACHE BOOL "Use libfreenect when available")
-set(ICL_XDEP_UNICAP_ON OFF CACHE BOOL "Use UNICAP when available")
-set(ICL_XDEP_XINE_ON OFF CACHE BOOL "Use XINE when available")
-set(ICL_XDEP_XCF_ON OFF CACHE BOOL "Use XCF when available")
-set(ICL_XDEP_QT_ON OFF CACHE BOOL "Use QT when available")
-set(ICL_XDEP_OPENGL_ON OFF CACHE BOOL "Use OPENGL when available")
-set(ICL_XDEP_GLX_ON OFF CACHE BOOL "Use GLX when available")
-#set(ICL_XDEP_SVS_ON OFF CACHE BOOL "Use SVS when available")
-set(ICL_XDEP_OPENSURF_ON OFF CACHE BOOL "Use OPENSURF when available")
-set(ICL_XDEP_GTEST_ON OFF CACHE BOOL "Use GTest when available")
-
+set(ICL_XDEP_IPP_ON OFF CACHE BOOL "Use IPP if available")
+set(ICL_XDEP_MKL_ON OFF CACHE BOOL "Use MKL if available")
+set(ICL_XDEP_OPENCV_ON OFF CACHE BOOL "Use OPENCV if available")
+set(ICL_XDEP_LIBZ_ON OFF CACHE BOOL "Use LIBZ if available")
+set(ICL_XDEP_LIBMESASR_ON OFF CACHE BOOL "Use LIBMESASR if available")
+set(ICL_XDEP_LIBJPEG_ON OFF CACHE BOOL "Use LIBJPEG if available")
+set(ICL_XDEP_IMAGEMAGICK_ON OFF CACHE BOOL "Use IMAGEMAGICK if available")
+set(ICL_XDEP_LIBDC_ON OFF CACHE BOOL "Use LIBDC if available")
+set(ICL_XDEP_LIBFREENECT_ON OFF CACHE BOOL "Use libfreenect if available")
+set(ICL_XDEP_UNICAP_ON OFF CACHE BOOL "Use UNICAP if available")
+set(ICL_XDEP_XINE_ON OFF CACHE BOOL "Use XINE if available")
+set(ICL_XDEP_XCF_ON OFF CACHE BOOL "Use XCF if available")
+set(ICL_XDEP_QT_ON OFF CACHE BOOL "Use QT if available")
+set(ICL_XDEP_OPENGL_ON OFF CACHE BOOL "Use OPENGL if available")
+set(ICL_XDEP_GLX_ON OFF CACHE BOOL "Use GLX if available")
+#set(ICL_XDEP_SVS_ON OFF CACHE BOOL "Use SVS if available")
+set(ICL_XDEP_OPENSURF_ON OFF CACHE BOOL "Use OPENSURF if available")
+set(ICL_XDEP_GTEST_ON OFF CACHE BOOL "Use GTest if available")
+set(ICL_XDEP_VIDEODEV_ON OFF CACHE BOOL "Use videodev headers if available")
 
 FIND_PACKAGE(PkgConfig)
 
-#TODO special check for videodev
-if(EXISTS /usr/include/linux/videodev.h 
-   AND EXISTS /usr/include/sys/ioctl.h 
-   AND EXISTS /usr/include/sys/mman.h 
-   AND EXISTS /usr/include/fcntl.h)
-message(STATUS "found videodev")
-set(HAVE_VIDEODEV_COND TRUE)
-add_definitions( -DHAVE_VIDEODEV)
-elseif()
-set(HAVE_VIDEODEV_COND FALSE)
+#####VIDEODEV#######
+if(UNIX)
+  if(${ICL_XDEP_VIDEODEV_ON} OR ${ICL_XDEP_ALL_ON})
+    #TODO special check for videodev
+    if(EXISTS /usr/include/linux/videodev.h 
+        AND EXISTS /usr/include/sys/ioctl.h 
+        AND EXISTS /usr/include/sys/mman.h 
+        AND EXISTS /usr/include/fcntl.h)
+      message(STATUS "VIDEODEV detected: TRUE")
+      set(HAVE_VIDEODEV_COND TRUE)
+      add_definitions( -DHAVE_VIDEODEV)
+    elseif()
+      set(HAVE_VIDEODEV_COND FALSE)
+      message(STATUS "VIDEODEV detected: FALSE")
+    endif()
+  else()
+    message(STATUS "VIDEODEV detected: FALSE")
+  endif()
 endif()
 
 #check if and what external third party libs are available
