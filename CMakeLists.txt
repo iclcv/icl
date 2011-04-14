@@ -477,9 +477,34 @@ if(NOT XCF_PKG_FOUND)
    endif()
 endif()
 
+####OPENGL####
+if(WIN32)
+icl_check_external_package(OPENGL "gl.h;glu.h" "glu32.a" lib include/GL C:/Qt/2010.02.1/mingw HAVE_OPENGL_COND)
+elseif(APPLE)
+icl_check_external_package(OPENGL "gl.h;glu.h" "libGL.dylib;libGLU.dylib" Libraries Headers /Developer/SDKs/MacOSX10.6.sdk/System/Library/Frameworks/OpenGL.framework HAVE_OPENGL_COND)
+else()
+icl_check_external_package(OPENGL "gl.h;glu.h" "GL;GLU" lib include/GL /usr HAVE_OPENGL_COND)
+icl_check_external_package(GLX "glx.h" "GL" lib include/GL /usr HAVE_GLX_COND)
+endif()
+if(${HAVE_OPENGL_COND})
+	if(WIN32)
+	set(OPENGL_LIBS_l glu32 opengl32)
+	elseif(APPLE)
+	#special linker flags on OS X
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -F/Developer/SDKs/MacOSX10.6.sdk/System/Library/Frameworks/ -framework OpenGL")
+	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -F/Developer/SDKs/MacOSX10.6.sdk/System/Library/Frameworks/ -framework OpenGL")	
+	else()
+	set(OPENGL_LIBS_l GL GLU)
+	endif()
+endif()
+
 
 ####Qt####
 #first check if pkg-config shall be used
+if(NOT HAVE_OPENGL_COND)
+  message(STATUS "QT package is deactivated because OpenGL dev package is not available")
+  message(STATUS "QT detected: FALSE (due to missing dependency OPENGL)")
+else() # OPENGL is available, so qt can be used
 if(ICL_VAR_USE_PKG_CONFIG)
 	icl_check_external_package_from_pkg_conf_mult(QT HAVE_QT_COND QtCore QtGui QtOpenGL)
 endif()
@@ -530,42 +555,8 @@ if(HAVE_QT_COND)
 endif()
 endif()
 
-####OPENGL####
-if(WIN32)
-icl_check_external_package(OPENGL "gl.h;glu.h" "glu32.a" lib include/GL C:/Qt/2010.02.1/mingw HAVE_OPENGL_COND)
-elseif(APPLE)
-icl_check_external_package(OPENGL "gl.h;glu.h" "libGL.dylib;libGLU.dylib" Libraries Headers /Developer/SDKs/MacOSX10.6.sdk/System/Library/Frameworks/OpenGL.framework HAVE_OPENGL_COND)
-else()
-icl_check_external_package(OPENGL "gl.h;glu.h" "GL;GLU" lib include/GL /usr HAVE_OPENGL_COND)
-icl_check_external_package(GLX "glx.h" "GL" lib include/GL /usr HAVE_GLX_COND)
-endif()
-if(${HAVE_OPENGL_COND})
-	if(WIN32)
-	set(OPENGL_LIBS_l glu32 opengl32)
-	elseif(APPLE)
-	#special linker flags on OS X
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -F/Developer/SDKs/MacOSX10.6.sdk/System/Library/Frameworks/ -framework OpenGL")
-	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -F/Developer/SDKs/MacOSX10.6.sdk/System/Library/Frameworks/ -framework OpenGL")	
-	else()
-	set(OPENGL_LIBS_l GL GLU)
-	endif()
-endif()
+endif() # NOT HAVE_OPENGL_COND
 
-##### GLX ##### (actually an open-GL extension)
-#if(NOT APPLE)
-#if(NOT WIN32)
-#if(HAVE_OPENGL_COND)
-#icl_check_external_package(GLX "glx.h" "GL" lib include/GL /usr HAVE_GLX_COND)
-#endif()
-#endif()
-#endif()
-
-#stopped support
-#####SVS########
-#icl_check_external_package(SVS svs.h "svs;svscalc" bin src /vol/nivision/share/SVS/4.2 HAVE_SVS_COND)
-#if(HAVE_SVS_COND)
-#	set(SVS_LIBS_l svs svscalc)
-#endif()
 
 ####OPENSURF####
 if(ICL_VAR_USE_PKG_CONFIG)

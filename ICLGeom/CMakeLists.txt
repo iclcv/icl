@@ -68,13 +68,14 @@ add_example (${PROJECT_NAME} "geom-demo-simple" "${CONDITIONLIST}" ICLLibsToLink
 add_example (${PROJECT_NAME} "superquadric-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "geom-property-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "swiss-ranger-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-if(NOT APPLE)
-add_example (${PROJECT_NAME} "scene-graph-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-endif()
 add_example (${PROJECT_NAME} "texture-cube-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_OPENGL_COND HAVE_GLX_COND)
 add_example (${PROJECT_NAME} "offscreen-rendering-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+if(NOT APPLE)
+add_example (${PROJECT_NAME} "scene-graph-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+endif()
+
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_IPP_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLAlgorithms ICLQuick  ICLBlob ICLFilter ICLCC ICLCore ICLUtils ${QT_LIBS_l})
