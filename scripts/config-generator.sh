@@ -28,6 +28,7 @@ fi
 rm -rf $BUILD_DIR/run.sh
 
 NUM=$(echo "$DEPS" | wc -w)
+NUM=$(echo "$NUM*2" | bc -l)
 NUM=$(echo "$NUM+2" | bc -l)
 CUR=3
 
