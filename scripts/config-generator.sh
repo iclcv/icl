@@ -42,7 +42,7 @@ yes | ./configure $BUILD_DIR/full.cfg > $BUILD_DIR/full-config.log
 echo "make VERBOSE=1 all &> $BUILD_DIR/full-build.log" > $BUILD_DIR/full-build.sh
 chmod +x $BUILD_DIR/full-build.sh
 echo "cd $PWD/$BUILD_DIR/full" >> $BUILD_DIR/run.sh
-echo "../build-full.sh&" >> $BUILD_DIR/run.sh
+echo "../full-build.sh&" >> $BUILD_DIR/run.sh
 
 echo build $BUILD_DIR/empty > $BUILD_DIR/empty.cfg
 echo "# always have a new line at the end of file" >> $BUILD_DIR/empty.cfg
@@ -51,7 +51,7 @@ yes | ./configure $BUILD_DIR/empty.cfg > $BUILD_DIR/empty-config.log
 echo "make VERBOSE=1 all &> $BUILD_DIR/empty-build.log" > $BUILD_DIR/empty-build.sh
 chmod +x $BUILD_DIR/empty-build.sh
 echo "cd $PWD/$BUILD_DIR/empty" >> $BUILD_DIR/run.sh
-echo "../build-empty.sh&" >> $BUILD_DIR/run.sh
+echo "../empty-build.sh&" >> $BUILD_DIR/run.sh
 
 
 
@@ -79,9 +79,9 @@ echo "make VERBOSE=1 all &> $PWD/$BUILD_DIR/no_$D-build.log" > $BUILD_DIR/no_$D-
 chmod +x $BUILD_DIR/no_$D-build.sh
 
 echo "cd $PWD/$BUILD_DIR/only_$D" >> $BUILD_DIR/run.sh
-echo "../build-only_$D.sh&" >> $BUILD_DIR/run.sh
+echo "../only_$D-build.sh&" >> $BUILD_DIR/run.sh
 echo "cd $PWD/$BUILD_DIR/no_$D" >> $BUILD_DIR/run.sh
-echo "../build-on_$D.sh&" >> $BUILD_DIR/run.sh
+echo "../no_$D-build.sh&" >> $BUILD_DIR/run.sh
 done
 
 
