@@ -12,6 +12,13 @@ fi
 FULL_CFG=$1
 BUILD_DIR=$2
 
+# ensure absolute build dir
+case $BUILD_DIR in
+     /*) ;;
+     *) BUILD_DIR=$PWD/$BUILD_DIR ;;
+esac
+
+
 if [ ! -e $FULL_CFG ] ; then 
     echo "unable to find given config file $FULL_CFG" ;
     usage ;
@@ -38,19 +45,19 @@ echo build $BUILD_DIR/full > $BUILD_DIR/full.cfg
 cat $FULL_CFG | grep -v "^build" >> $BUILD_DIR/full.cfg
 echo "# always have a new line at the end of file" >> $BUILD_DIR/full.cfg
 echo "configuring full build (1/$NUM)"
-yes | ./configure $BUILD_DIR/full.cfg > $BUILD_DIR/full-config.log
+yes | ./configure $BUILD_DIR/full.cfg > $BUILD_DIR/full-config.log &
 echo "make VERBOSE=1 all &> $BUILD_DIR/full-build.log" > $BUILD_DIR/full-build.sh
 chmod +x $BUILD_DIR/full-build.sh
-echo "cd $PWD/$BUILD_DIR/full" >> $BUILD_DIR/run.sh
+echo "cd $BUILD_DIR/full" >> $BUILD_DIR/run.sh
 echo "../full-build.sh&" >> $BUILD_DIR/run.sh
 
 echo build $BUILD_DIR/empty > $BUILD_DIR/empty.cfg
 echo "# always have a new line at the end of file" >> $BUILD_DIR/empty.cfg
 echo "configuring empty build (2/$NUM)"
-yes | ./configure $BUILD_DIR/empty.cfg > $BUILD_DIR/empty-config.log
+yes | ./configure $BUILD_DIR/empty.cfg > $BUILD_DIR/empty-config.log &
 echo "make VERBOSE=1 all &> $BUILD_DIR/empty-build.log" > $BUILD_DIR/empty-build.sh
 chmod +x $BUILD_DIR/empty-build.sh
-echo "cd $PWD/$BUILD_DIR/empty" >> $BUILD_DIR/run.sh
+echo "cd $BUILD_DIR/empty" >> $BUILD_DIR/run.sh
 echo "../empty-build.sh&" >> $BUILD_DIR/run.sh
 
 
@@ -67,20 +74,20 @@ echo "# always have a new line at the end of file" >> $BUILD_DIR/only_$D.cfg
 
 echo "configuring only $D build ($CUR/$NUM)"
 CUR=$(echo "$CUR+1" | bc -l)
-yes | ./configure $BUILD_DIR/only_$D.cfg > $BUILD_DIR/only_$D-config.log
+yes | ./configure $BUILD_DIR/only_$D.cfg > $BUILD_DIR/only_$D-config.log &
 
 echo "configuring no $D build ($CUR/$NUM)"
 CUR=$(echo "$CUR+1" | bc -l)
 
-yes | ./configure $BUILD_DIR/no_$D.cfg > $BUILD_DIR/no_$D-config.log
-echo "make VERBOSE=1 all &> $PWD/$BUILD_DIR/only_$D-build.log" > $BUILD_DIR/only_$D-build.sh
+yes | ./configure $BUILD_DIR/no_$D.cfg > $BUILD_DIR/no_$D-config.log &
+echo "make VERBOSE=1 all &> $BUILD_DIR/only_$D-build.log" > $BUILD_DIR/only_$D-build.sh
 chmod +x $BUILD_DIR/only_$D-build.sh
-echo "make VERBOSE=1 all &> $PWD/$BUILD_DIR/no_$D-build.log" > $BUILD_DIR/no_$D-build.sh
+echo "make VERBOSE=1 all &> $BUILD_DIR/no_$D-build.log" > $BUILD_DIR/no_$D-build.sh
 chmod +x $BUILD_DIR/no_$D-build.sh
 
-echo "cd $PWD/$BUILD_DIR/only_$D" >> $BUILD_DIR/run.sh
+echo "cd $BUILD_DIR/only_$D" >> $BUILD_DIR/run.sh
 echo "../only_$D-build.sh&" >> $BUILD_DIR/run.sh
-echo "cd $PWD/$BUILD_DIR/no_$D" >> $BUILD_DIR/run.sh
+echo "cd $BUILD_DIR/no_$D" >> $BUILD_DIR/run.sh
 echo "../no_$D-build.sh&" >> $BUILD_DIR/run.sh
 done
 
