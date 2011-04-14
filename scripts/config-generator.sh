@@ -26,6 +26,8 @@ if [ ! -d $BUILD_DIR ] ; then
 fi
 
 rm -rf $BUILD_DIR/run.sh
+touch $BUILD_DIR/run.sh
+chmod +x $BUILD_DIR/run.sh
 
 NUM=$(echo "$DEPS" | wc -w)
 NUM=$(echo "$NUM*2" | bc -l)
