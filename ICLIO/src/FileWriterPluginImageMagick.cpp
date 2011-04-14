@@ -49,6 +49,9 @@
 namespace icl{
   
 #ifdef HAVE_IMAGEMAGICK
+
+  
+
   class FileWriterPluginImageMagick::InternalData{
   public:
     InternalData(){
@@ -62,7 +65,9 @@ namespace icl{
     std::vector<icl8u> interleavedBuffer;
     
   };
-  FileWriterPluginImageMagick::FileWriterPluginImageMagick():m_data(new FileWriterPluginImageMagick::InternalData){}
+  FileWriterPluginImageMagick::FileWriterPluginImageMagick():m_data(new FileWriterPluginImageMagick::InternalData){
+    icl_initialize_image_magick_context();
+  }
   FileWriterPluginImageMagick::~FileWriterPluginImageMagick(){
     ICL_DELETE(m_data);
   }
@@ -185,8 +190,16 @@ namespace icl{
     }
 
   }
+  void icl_initialize_image_magick_context(){
+    static bool first = true;
+    if(first){
+      first = false;
+      Magick::InitializeMagick( NULL );
+    }
+  }
 
 #else
+  void icl_initialize_image_magick_context(){}
   class FileWriterPluginImageMagick::InternalData{};
   FileWriterPluginImageMagick::FileWriterPluginImageMagick():m_data(0){}
   FileWriterPluginImageMagick::~FileWriterPluginImageMagick(){}

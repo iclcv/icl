@@ -34,6 +34,7 @@
 
 #include <ICLIO/FileGrabberPluginImageMagick.h>
 #include <ICLCC/CCFunctions.h>
+#include <ICLIO/FileWriterPluginImageMagick.h>
 
 #ifdef HAVE_IMAGEMAGICK  
 #ifndef ICL_SYSTEM_LINUX
@@ -42,6 +43,7 @@
 #include <GraphicsMagick/Magick++.h>
 #endif
 #endif
+
 
 namespace icl{
 
@@ -54,7 +56,11 @@ namespace icl{
   };
   
   FileGrabberPluginImageMagick::FileGrabberPluginImageMagick():
-    m_data(new FileGrabberPluginImageMagick::InternalData){}
+    m_data(new FileGrabberPluginImageMagick::InternalData){
+
+    // from FileWriterPluginImageMagick.h
+    icl_initialize_image_magick_context();
+  }
   
   FileGrabberPluginImageMagick::~FileGrabberPluginImageMagick(){
     delete m_data;

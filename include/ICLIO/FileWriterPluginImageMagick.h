@@ -81,5 +81,11 @@ namespace icl{
     /// Pointer to internal data storage
     InternalData *m_data;
   };
+  
+  /** \cond */
+  // this is called automatically
+  void icl_initialize_image_magick_context();
+  /** \endcond */
+
 }
 #endif

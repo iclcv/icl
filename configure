@@ -83,8 +83,15 @@ for D in $DEPS ; do
     fi
 done
 
+VERSION_UPPER=$(echo $VERSION | tr '[:lower:]' '[:upper:]')
+if [ "$VERSION_UPPER" = "DEBUG" ] ; then
+    DEBUG_VAL=TRUE
+else
+    DEBUG_VAL=FALSE
+fi
+
 CMD="cmake -D ICL_XDEP_ALL_ON:BOOL=FALSE -D ICL_VAR_INSTALL_PREFIX:STRING=$PREFIX "
-CMD="$CMD -D ICL_VAR_DEBUG_MODE:BOOL=$(echo $VERSION | tr '[:lower:]' '[:upper:]')"
+CMD="$CMD -D ICL_VAR_DEBUG_MODE:BOOL=$DEBUG_VAL"
 CMD="$CMD -D ICL_VAR_ARCHITECTURE_DEPENDENT_BUILD_ON:BOOL=$(echo $ARCH | tr '[:lower:]' '[:upper:]')"
 CMD="$CMD -D ICL_VAR_USE_PKG_CONFIG:BOOL=$(echo $PKGCFG | tr '[:lower:]' '[:upper:]')"
 
