@@ -191,7 +191,11 @@ namespace icl{
   }
   Scene::~Scene(){
 #ifdef HAVE_GLX
+#ifdef HAVE_OPENGL
+#ifdef HAVE_QT
     freeAllPBuffers();
+#endif
+#endif
 #endif
   }
   Scene::Scene(const Scene &scene){
@@ -881,7 +885,8 @@ namespace icl{
   }
 
 
-
+#ifdef HAVE_OPENGL
+#ifdef HAVE_QT
 #ifdef HAVE_GLX
 
   struct Scene::PBuffer{
@@ -1076,6 +1081,8 @@ namespace icl{
   }
   
 
+#endif
+#endif
 #endif
 
 

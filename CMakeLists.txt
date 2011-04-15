@@ -633,6 +633,13 @@ endif()
 set(ICLIO_external_dependencies LIBZ LIBJPEG LIBMESASR LIBDC XINE UNICAP IMAGEMAGICK XCF VIDEODEV QT LIBFREENECT)
 set(ICLQt_internal_dependencies ICLFilter ICLIO)
 set(ICLQt_external_dependencies QT OPENGL GLX)
+
+if(NOT ${HAVE_QT_COND})
+  if(${HAVE_OPENGL_COND})
+    set(ICLGeom_external_dependencies OPENGL)
+  endif()
+endif()
+
 if(${HAVE_QT_COND})
     set(ICLQuick_internal_dependencies ICLQt ICLFilter ICLIO ICLBlob)
 else()
@@ -656,6 +663,7 @@ add_external_dependencies(ICLUtils_external_dependencies ICLUtils_dependencies)
 add_external_dependencies(ICLOpenCV_external_dependencies ICLOpenCV_dependencies)
 add_external_dependencies(ICLIO_external_dependencies ICLIO_dependencies)
 add_external_dependencies(ICLQt_external_dependencies ICLQt_dependencies)
+add_external_dependencies(ICLGeom_external_dependencies ICLGeom_dependencies)
 add_external_dependencies(ICLAlgorithms_external_dependencies ICLAlgorithms_dependencies)
 
 #add subdirs
