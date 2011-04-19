@@ -307,7 +307,6 @@ namespace icl{
       const std::string &type = p.type;
       //const std::string &value = p.value;
       
-      DEBUG_LOG("name: " << name << "  type:" << type);
       deactivateExec = true;
       if(type == "range" || type == "range:slider"){
         gui.getValue<FSliderHandle>("#r#"+name).setValue( parse<icl32f>(conf->getPropertyValue(name)) );
