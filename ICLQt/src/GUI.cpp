@@ -191,6 +191,8 @@ namespace icl{
           gui.getValue<ComboHandle>(handle).setSelectedItem(conf->getPropertyValue(p));
         }else if( t == "info"){
           gui["#i#"+p] = conf->getPropertyValue(p);
+        }else if( t == "flag"){
+          gui["#f#"+p] = conf->getPropertyValue(p).as<bool>();
         }
       }
     }
@@ -228,6 +230,10 @@ namespace icl{
         if(volatileness){
           timers.push_back(new VolatileUpdater(volatileness,p.full,timerGUI,*conf));
         } 
+      }else if(t == "flag"){
+        std::string handle = "#f#"+p.full;
+        ostr << '\1' << handle;
+        gui << "checkbox("+p.half+","+(conf->getPropertyValue(p.full).as<bool>() ? "checked" : "unchecked") +")[@handle="+handle+"@minsize=12x1]";
       }else{
         ERROR_LOG("unable to create GUI-component for property \"" << p.full << "\" (unsupported property type: \"" + t+ "\")");
       }
@@ -300,6 +306,8 @@ namespace icl{
       const std::string &name = p.name;
       const std::string &type = p.type;
       //const std::string &value = p.value;
+      
+      DEBUG_LOG("name: " << name << "  type:" << type);
       deactivateExec = true;
       if(type == "range" || type == "range:slider"){
         gui.getValue<FSliderHandle>("#r#"+name).setValue( parse<icl32f>(conf->getPropertyValue(name)) );
@@ -310,7 +318,10 @@ namespace icl{
         gui.getValue<ComboHandle>(handle).setSelectedItem(conf->getPropertyValue(name));
       }else if( type == "info"){
         gui["#i#"+name] = conf->getPropertyValue(name);
+      }else if( type == "flag"){
+        gui["#f#"+name] = conf->getPropertyValue(name).as<bool>();
       }
+      
       deactivateExec = false;
     }
     
@@ -323,6 +334,7 @@ namespace icl{
         case 'R': 
         case 'm': 
         case 'v': 
+        case 'f':
           conf->setPropertyValue(prop,gui[handle].as<Any>());
         break;
         case 'c': 

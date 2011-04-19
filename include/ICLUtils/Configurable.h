@@ -302,7 +302,8 @@ namespace icl{
         - "range:slider" the property is a double value in a given range
         - "range:spinbox" the property is an int-value in given range with stepping 1
         - "value-list" the property is a double value in a list of possible values
-        - "menu" the property  is a string value in a list of possible values
+        - "menu" the property is a string value in a list of possible values
+        - "flag" the property is a boolean flag that can be set to "on" and "off"
         - "command" property param has no additional parameters (this feature is 
         used e.g. for triggered abilities of grabbing devices, like 
         "save user settings" for the PWCGrabber 
@@ -322,6 +323,7 @@ namespace icl{
         - ",A,B,C,..." for a value-list and A,B,C are ascii doubles (real commas can be escaped using \)
         - ",A,B,C,..." for a menu and A,B,C are strings (real commas can be escaped using \)
         - nothing for "info"-typed properties
+        - flag-properties always have the possible values "on|1|true" or "off|0|false"
         <b>Note:</b> The received string can be translated into C++ data
         with some static utility function in this Grabber class.
         */

@@ -209,6 +209,8 @@ namespace icl{
         f[prop] = parse<icl32f>(val);
       }else if(type == "menu"){
         f[prop] = val;
+      }else if(type == "flag"){
+        f[prop] = parse<bool>(val) ? (bool)1 : (bool)0; 
       }
     }
     f.save(filename);
@@ -238,6 +240,10 @@ namespace icl{
       }else if(type == "menu"){
         try{
           setPropertyValue(prop,f[prop].as<Any>());
+        }catch(...){}
+      }else if(type == "flag"){
+        try{
+          setPropertyValue(prop,f[prop].as<bool>());
         }catch(...){}
       }
     }

@@ -187,8 +187,8 @@ namespace icl{
 
   bool parse_bool(const std::string &s){
     std::string s2=toLower(s);
-    if(s == "true" || s == "yes" || s == "1") return true;
-    if(s == "false" || s == "no" || s == "0") return false;
+    if(s == "true" || s == "yes" || s == "on" || s == "1") return true;
+    if(s == "false" || s == "no" || s == "off" || s == "0") return false;
     return (bool)parse_icl8u(s);
   }
 

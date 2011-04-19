@@ -433,6 +433,7 @@ INST_OTHER_TYPES
 
     // CheckBoxHandle
     FROM_TO_NUM(CheckBoxHandle,dst->setChecked(src),dst=(*src)->isChecked());
+    FROM_TO_STR(CheckBoxHandle,dst=str((*src)->isChecked()),dst->setChecked(parse<bool>(src)));
 
     
     // StringHandle
@@ -569,12 +570,14 @@ namespace icl{
     FROM_TO_NUM_ADD(ComboHandle);
     FROM_TO_STR_ADD(ComboHandle);
     ADD(DataStore::Data::Event,ComboHandle);
-    ADD_T_TO_T(CheckBoxHandle);
+    ADD_T_TO_T(ComboHandle);
 
     // CheckBox
+    FROM_TO_STR_ADD(CheckBoxHandle);
     FROM_TO_NUM_ADD(CheckBoxHandle);
     ADD(DataStore::Data::Event,CheckBoxHandle);
-    ADD_T_TO_T(ComboHandle);
+    ADD_T_TO_T(CheckBoxHandle);
+
     
     // FloatHandle
     FROM_TO_NUM_ADD(FloatHandle);
