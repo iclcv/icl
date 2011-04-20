@@ -36,7 +36,8 @@
 #include <ICLCC/CCFunctions.h>
 #include <ICLIO/FileWriterPluginImageMagick.h>
 
-#ifdef HAVE_IMAGEMAGICK  
+#ifdef HAVE_IMAGEMAGICK 
+#define OMP_NUM_THREADS 1 
 #ifndef ICL_SYSTEM_LINUX
 #include <Magick++.h>
 #else
@@ -57,9 +58,7 @@ namespace icl{
   
   FileGrabberPluginImageMagick::FileGrabberPluginImageMagick():
     m_data(new FileGrabberPluginImageMagick::InternalData){
-
     // from FileWriterPluginImageMagick.h
-    icl_initialize_image_magick_context();
   }
   
   FileGrabberPluginImageMagick::~FileGrabberPluginImageMagick(){
@@ -67,6 +66,8 @@ namespace icl{
   }
   
   void FileGrabberPluginImageMagick::grab(File &file, ImgBase **dest){
+    icl_initialize_image_magick_context();
+
     Magick::Image *image = 0;    
     try{
       image = new  Magick::Image(file.getName());

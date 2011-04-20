@@ -35,6 +35,7 @@
 #include <ICLIO/FileWriterPluginImageMagick.h>
 
 #ifdef HAVE_IMAGEMAGICK
+#define OMP_NUM_THREADS 1
 #ifndef ICL_SYSTEM_LINUX
 #include <Magick++.h>
 #else
@@ -66,7 +67,6 @@ namespace icl{
     
   };
   FileWriterPluginImageMagick::FileWriterPluginImageMagick():m_data(new FileWriterPluginImageMagick::InternalData){
-    icl_initialize_image_magick_context();
   }
   FileWriterPluginImageMagick::~FileWriterPluginImageMagick(){
     ICL_DELETE(m_data);
@@ -87,6 +87,8 @@ namespace icl{
   }
 #endif  
   void FileWriterPluginImageMagick::write(File &file, const ImgBase *image){
+    icl_initialize_image_magick_context();
+    
     switch(image->getChannels()){
       case 1:{
         const ImgBase *useImage = image;
