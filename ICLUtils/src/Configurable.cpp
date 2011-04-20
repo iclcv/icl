@@ -31,7 +31,7 @@ namespace icl{
     if(pfx.length() && pfx[pfx.length()-1] != '.'){
       pfx += '.';
     }
-    const std::vector<std::string> ps = configurable->getPropertyList();
+    const std::vector<std::string> ps = configurable->getPropertyListWithoutDeactivated();//getPropertyList();
     for(unsigned int i=0;i<ps.size();++i){
       Property p = Property(configurable, pfx+ps[i],configurable->getPropertyType(ps[i]),
                             configurable->getPropertyInfo(ps[i]),configurable->getPropertyValue(ps[i]),
