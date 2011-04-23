@@ -24,7 +24,7 @@ if [ "$1"  = "-h" ] ; then
 fi 
 
 
-DEPS="ipp mkl opencv libz libfreenect libmesasr libjpeg unicap xine qt opengl glx opensurf gtest xcf imagemagick libdc videodev"
+DEPS="ipp mkl opencv libz libfreenect libmesasr libjpeg libpng unicap xine qt opengl glx opensurf gtest xcf imagemagick libdc videodev"
 
 for T in $DEPS ; do 
     eval "path_$T=_" ; 

@@ -48,6 +48,10 @@
 #include <ICLIO/FileGrabberPluginJPEG.h>
 #endif
 
+#ifdef HAVE_LIBPNG
+#include <ICLIO/FileGrabberPluginPNG.h>
+#endif
+
 #ifdef HAVE_IMAGEMAGICK
 #include <ICLIO/FileGrabberPluginImageMagick.h>
 #endif
@@ -83,9 +87,16 @@ namespace icl{
       FileGrabberImpl::s_mapPlugins[".csv.gz"] = new FileGrabberPluginCSV;       
 #endif
 
+#ifdef HAVE_LIBPNG
+      FileGrabberImpl::s_mapPlugins[".png"] = new FileGrabberPluginPNG;
+#endif
+
 #ifdef HAVE_IMAGEMAGICK
       static const char *imageMagickFormats[] = {
-        "png","gif","pdf","ps","avs","bmp","cgm","cin","cur","cut","dcx",
+#ifndef HAVE_LIBPNG
+        "png",
+#endif
+        "gif","pdf","ps","avs","bmp","cgm","cin","cur","cut","dcx",
         "dib","dng","dot","dpx","emf","epdf","epi","eps","eps2","eps3",
         "epsf","epsi","ept","fax","gplt","gray","hpgl","html","ico","info",
         "jbig","jng","jp2","jpc","man","mat","miff","mono","mng","mpeg","m2v",

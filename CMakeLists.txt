@@ -173,6 +173,7 @@ set(ICL_XDEP_LIBZ_ON OFF CACHE BOOL "Use LIBZ if available")
 set(ICL_XDEP_LIBMESASR_ON OFF CACHE BOOL "Use LIBMESASR if available")
 set(ICL_XDEP_LIBJPEG_ON OFF CACHE BOOL "Use LIBJPEG if available")
 set(ICL_XDEP_IMAGEMAGICK_ON OFF CACHE BOOL "Use IMAGEMAGICK if available")
+set(ICL_XDEP_LIBPNG_ON OFF CACHE BOOL "Use LIBPNG if available")
 set(ICL_XDEP_LIBDC_ON OFF CACHE BOOL "Use LIBDC if available")
 set(ICL_XDEP_LIBFREENECT_ON OFF CACHE BOOL "Use libfreenect if available")
 set(ICL_XDEP_UNICAP_ON OFF CACHE BOOL "Use UNICAP if available")
@@ -345,6 +346,17 @@ if(HAVE_LIBZ_COND)
 	set(LIBZ_LIBS_l z)
 	endif()
 endif()
+
+######### LIBPNG ##################################################
+if(UNIX)
+  icl_check_external_package(LIBPNG png.h png lib include /usr HAVE_LIBPNG_COND)
+  if(HAVE_LIBPNG_COND)
+    set(LIBPNG_LIBS_l png)
+  endif()
+else()
+set(HAVE_LIBPNG_COND FALSE)
+endif()
+
 
 #TODO APPLE
 #########KINECT Drivers (libfreenect)##############################
@@ -630,7 +642,7 @@ else()
     set(ICLAlgorithms_internal_dependencies ICLQuick ICLGeom)
 endif()
 
-set(ICLIO_external_dependencies LIBZ LIBJPEG LIBMESASR LIBDC XINE UNICAP IMAGEMAGICK XCF VIDEODEV QT LIBFREENECT)
+set(ICLIO_external_dependencies LIBZ LIBJPEG LIBMESASR LIBDC XINE UNICAP IMAGEMAGICK XCF VIDEODEV QT LIBFREENECT LIBPNG)
 set(ICLQt_internal_dependencies ICLFilter ICLIO)
 set(ICLQt_external_dependencies QT OPENGL GLX)
 
