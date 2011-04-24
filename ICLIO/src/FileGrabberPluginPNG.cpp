@@ -42,6 +42,7 @@
 namespace icl{
 
   void FileGrabberPluginPNG::grab(File &file, ImgBase **dest){
+    Mutex::Locker lock(mutex);
     png_byte header[8];
     
     FILE *cfile = fopen(file.getName().c_str(), "rb");

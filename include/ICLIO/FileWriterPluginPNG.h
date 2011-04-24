@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLIO/FileGrabberPluginPNG.h                   **
+** File   : include/ICLIO/FileWriterPluginPNG.h                    **
 ** Module : ICLIO                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -32,28 +32,23 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FILE_READER_PLUGIN_PNG_H
-#define ICL_FILE_READER_PLUGIN_PNG_H
+#ifndef ICL_FILE_WRITER_PLUGIN_PNG_H
+#define ICL_FILE_WRITER_PLUGIN_PNG_H
 
-#include <ICLIO/FileGrabberPlugin.h>
-#include <vector>
+#include <ICLIO/FileWriterPlugin.h>
 #include <ICLUtils/Mutex.h>
 
 namespace icl{
   
-
-  /// Plugin class to read "png" images \ingroup FILEIO_G
-  class FileGrabberPluginPNG : public FileGrabberPlugin {
+  /// A Writer Plugin for writing ".png" images \ingroup FILEIO_G
+  class FileWriterPluginPNG : public FileWriterPlugin{
+    icl::Mutex mutex;
     std::vector<unsigned char> data;
     std::vector<unsigned char*> rows;
-
-    /// ensures, that data and rows is not used from several threads
-    Mutex mutex; 
     
     public:
-    /// grab implementation
-    virtual void grab(File &file, ImgBase **dest); 
-  };  
+    /// write implementation
+    virtual void write(File &file, const ImgBase *image);
+  };
 }
-
 #endif

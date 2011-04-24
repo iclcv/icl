@@ -70,6 +70,7 @@ add_libsource (${PROJECT_NAME} "src/FileWriterPluginJPEG.cpp" "${CONDITIONLIST}"
 add_libsource (${PROJECT_NAME} "src/JPEGDecoder.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 set(CONDITIONLIST HAVE_LIBPNG_COND)
 add_libsource (${PROJECT_NAME} "src/FileGrabberPluginPNG.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/FileWriterPluginPNG.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 set(CONDITIONLIST HAVE_IMAGEMAGICK_COND)
 add_libsource (${PROJECT_NAME} "src/FileWriterPluginImageMagick.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/FileGrabberPluginImageMagick.cpp" "${CONDITIONLIST}" LIB_SOURCES)

@@ -46,6 +46,10 @@
 #ifdef HAVE_IMAGEMAGICK
 #include <ICLIO/FileWriterPluginImageMagick.h>
 #endif
+
+#ifdef HAVE_LIBPNG
+#include <ICLIO/FileWriterPluginPNG.h>
+#endif
 using namespace std;
 using namespace icl::ioutils;
 
@@ -78,11 +82,18 @@ namespace icl{
       FileWriter::s_mapPlugins[".icl.gz"] = new FileWriterPluginPNM;
       FileWriter::s_mapPlugins[".csv.gz"] = new FileWriterPluginCSV;
 #endif
+
+#ifdef HAVE_LIBPNG
+      FileWriter::s_mapPlugins[".png"] = new FileWriterPluginPNG;
+#endif
       
 #ifdef HAVE_IMAGEMAGICK
       
       static const char *imageMagickFormats[] = {
-        "png","gif","pdf","ps","avs","bmp","cgm","cin","cur","cut","dcx",
+#ifndef HAVE_LIBPNG
+        "png",
+#endif
+        "gif","pdf","ps","avs","bmp","cgm","cin","cur","cut","dcx",
         "dib","dng","dot","dpx","emf","epdf","epi","eps","eps2","eps3",
         "epsf","epsi","ept","fax","gplt","gray","hpgl","html","ico","info",
         "jbig","jng","jp2","jpc","man","mat","miff","mono","mng","mpeg","m2v",
