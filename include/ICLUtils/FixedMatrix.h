@@ -1031,6 +1031,21 @@ namespace icl{
     return m;
   }
 
+  /// extracts the euler angles from the given rotation matrix
+  /** Even though the function interface suggests, that m can have arbitrary dimensions, 
+      it must have at least 3 rows and 3 colums. We chose this very generic interface
+      in order to avoid having several functions for 3x3, 4x4, ... matrices. To avoid
+      seg-faults, an exception is thrown in case of too small matrices m. */
+  template<class T,unsigned int COLS, unsigned int ROWS>
+  FixedMatrix<T,1,3> extract_euler_angles(const FixedMatrix<T,COLS,ROWS> &m) throw (InvalidMatrixDimensionException){
+    ICLASSERT_THROW(COLS>2 && ROWS>2,InvalidMatrixDimensionException("extract_euler_angles needs a matrix that has at least 3 rows and columns"));
+    if( m(1,2) > -0.999999 && m(1,2) < 0.999999){ //avoid Gimbal lock
+      return FixedMatrix<T,1,3>(asin(m(1,2)),atan2(m(0,2),m(2,2)),atan2(m(1,0),m(1,1)));
+    }else{
+      return FixedMatrix<T,1,3>(-M_PI/2,0,-atan2(m(0,1),m(0,0)));
+    }
+  }
+
   
   /** \cond  declared and documented above */
   template<class T,unsigned int N, class Iterator> template<unsigned int COLS>
