@@ -38,6 +38,7 @@ set(CONDITIONLIST "")
 set(LIB_SOURCES "")
 add_libsource (${PROJECT_NAME} "src/SOM.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/HoughLine.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/LMA.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
 set(CONDITIONLIST HAVE_IPP_COND)
 add_libsource (${PROJECT_NAME} "src/UsefulFunctions.cpp" "${CONDITIONLIST}" LIB_SOURCES)
@@ -53,8 +54,11 @@ add_libsource (${PROJECT_NAME} "src/GenericSurfDetector.cpp" "${CONDITIONLIST}" 
 set(CONDITIONLIST HAVE_OPENSURF_COND HAVE_OPENCV_COND)
 add_libsource (${PROJECT_NAME} "src/OpenSurfDetector.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
-set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_IPP_COND)
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME})
+add_example (${PROJECT_NAME} "lma-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_IPP_COND)
 add_example (${PROJECT_NAME} "template-matching-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_IPP_COND HAVE_QT_COND)

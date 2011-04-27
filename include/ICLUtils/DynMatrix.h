@@ -137,7 +137,7 @@ namespace icl{
     /// Assignment operator (using deep-copy)
     inline DynMatrix &operator=(const DynMatrix &other){
       if(dim() != other.dim()){
-        delete m_data;
+        delete[] m_data;
         m_data = new T[other.dim()];
       }
       m_cols = other.m_cols;
