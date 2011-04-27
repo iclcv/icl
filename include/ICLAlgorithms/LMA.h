@@ -6,8 +6,8 @@
  ** Website: www.iclcv.org and                                      **
  **          http://opensource.cit-ec.de/projects/icl               **
  **                                                                 **
- ** File   : include/ICLUtils/LMA.h                                 **
- ** Module : ICLUtils                                               **
+ ** File   : include/ICLAlgorithms/LMA.h                            **
+ ** Module : ICLAlgorithms                                          **
  ** Authors: Christian Groszewski                                   **
  **                                                                 **
  **                                                                 **
