@@ -162,7 +162,7 @@ namespace icl {
     
     /// Destructor
     virtual ~GenericGrabber(){
-      Mutex::Locker __lock(m_mutex);
+      //Mutex::Locker __lock(m_mutex);
       ICL_DELETE(m_poGrabber);
     }
     
