@@ -777,7 +777,7 @@ int main(int n, char **ppc){
   return ICLApp(n,ppc,"[m]-input|-i(device,device-params) "
                 "-config|-c(config-xml-file-name) "
                 //"-dist|d(float,float,float,float) "
-		"-dist|d(fn) "
+		"-dist|-d(fn) "
                 "-create-empty-config-file|-cc "
                 "-size|-s(WxH) "
                 "-output|-o(output-xml-file-name=extracted-cam-cfg.xml) "

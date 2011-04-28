@@ -61,6 +61,9 @@ add_example (${PROJECT_NAME} "lma-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_IPP_COND)
 add_example (${PROJECT_NAME} "template-matching-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND)
+add_example (${PROJECT_NAME} "sq-fitting-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_IPP_COND HAVE_QT_COND)
 add_example (${PROJECT_NAME} "interactive-template-matching-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "interactive-hough-line-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
