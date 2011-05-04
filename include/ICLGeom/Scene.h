@@ -289,7 +289,7 @@ int main(int n, char**ppc){
     bool getDrawCamerasEnabled() const;
     
     /// sets wheter a coordinate frame is automatically inserted into the scene
-    void setDrawCoordinateFrameEnabled(bool enabled, float axisLength=100, float axisThickness=5);
+    void setDrawCoordinateFrameEnabled(bool enabled, float axisLength=100, float axisThickness=5, bool simpleGeometry=false);
     
     /// returns wheter a coordinate frame is automatically shown in the scene
     /** Optionally, destination pointers can be given to query the current coordinate frames parameters */

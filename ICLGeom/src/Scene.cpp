@@ -35,6 +35,7 @@
 
 #include <ICLGeom/Scene.h>
 #include <ICLGeom/CoordinateFrameSceneObject.h>
+#include <ICLGeom/ComplexCoordinateFrameSceneObject.h>
 #ifdef HAVE_QT
 #include <ICLQt/DrawWidget.h>
 #include <ICLQt/GLTextureMapBaseImage.h>
@@ -186,7 +187,6 @@ namespace icl{
   Scene::Scene():m_drawCamerasEnabled(true),
                  m_drawCoordinateFrameEnabled(false),
                  m_lightingEnabled(true){
-    m_coordinateFrameObject = SmartPtr<SceneObject>(new CoordinateFrameSceneObject(100,5));
     m_lights[0] = SmartPtr<SceneLight>(new SceneLight(0));
   }
   Scene::~Scene(){
@@ -726,9 +726,32 @@ namespace icl{
     m_drawCamerasEnabled = enabled;
   }
 
-  void Scene::setDrawCoordinateFrameEnabled(bool enabled, float axisLength, float axisThickness){
+  void Scene::setDrawCoordinateFrameEnabled(bool enabled, float axisLength, float axisThickness, bool simpleGeometry){
     m_drawCoordinateFrameEnabled = enabled;
-    ((CoordinateFrameSceneObject*)m_coordinateFrameObject.get())->setParams(axisLength,axisThickness);
+    if(enabled){
+      SceneObject *cs = m_coordinateFrameObject.get();
+      if(dynamic_cast<ComplexCoordinateFrameSceneObject*>(cs)){
+        if(simpleGeometry){
+          m_coordinateFrameObject = SmartPtr<SceneObject>(new CoordinateFrameSceneObject(axisLength,axisThickness));
+        }else{
+          if(cs){
+            ((ComplexCoordinateFrameSceneObject*)cs)->setParams(axisLength,axisThickness);
+          }else{
+            m_coordinateFrameObject = SmartPtr<SceneObject>(new ComplexCoordinateFrameSceneObject(axisLength,axisThickness));
+          }
+        }
+      }else{
+        if(!simpleGeometry){
+          m_coordinateFrameObject = SmartPtr<SceneObject>(new ComplexCoordinateFrameSceneObject(axisLength,axisThickness));
+        }else{
+          if(cs){
+            ((CoordinateFrameSceneObject*)cs)->setParams(axisLength,axisThickness);
+          }else{
+            m_coordinateFrameObject = SmartPtr<SceneObject>(new CoordinateFrameSceneObject(axisLength,axisThickness));
+          }
+        }
+      }
+    }
   }
 
   bool Scene::getDrawCamerasEnabled() const{
