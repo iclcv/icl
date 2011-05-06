@@ -40,14 +40,14 @@ using namespace std;
 
 namespace icl{
   
-  bool operator <(const Point &a, const Point &p){
+  static bool operator <(const Point &a, const Point &p){
     return a.x < p.x || (a.x == p.x && a.y < p.y);
   }
   // Implementation was found here: http://www.algorithmist.com/index.php/Monotone_Chain_Convex_Hull.cpp
   // 2D cross product.
   // Return a positive value, if OAB makes a counter-clockwise turn,
   // negative for clockwise turn, and zero if the points are collinear.
-  int cross(const Point &O, const Point &A, const Point &B){
+  static int cross(const Point &O, const Point &A, const Point &B){
     return (A.x - O.x) * (B.y - O.y) - (A.y - O.y) * (B.x - O.x);
   }
   
