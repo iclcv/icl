@@ -66,6 +66,7 @@ struct LUT3DSceneObject : public SceneObject {
           cc_func(x*dx,y*dy,z*dz,rs[i],gs[i],bs[i]);
           SceneObject *o = addCube(x-cx,y-cy,z-cz,1);
           o->setColor(Primitive::quad, GeomColor(rs[i],gs[i],bs[i],255));
+          o->setColor(Primitive::line, GeomColor(255,255,255,255));
           o->setVisible(Primitive::line,false);
           o->setVisible(Primitive::vertex,false);
         }
@@ -114,6 +115,7 @@ struct LUT3DSceneObject : public SceneObject {
     for(int i=0;i<dim;++i){
       m_children[i]->setVisible( lut[i] );
       m_children[i]->setColor(Primitive::quad,GeomColor(rs[i],gs[i],bs[i],alpha));
+      m_children[i]->setVisible(Primitive::line,hoveredClassID == lut[i]);
     }
   }
   
@@ -261,6 +263,11 @@ void init(){
                      << "togglebutton(current class,background)[@label=left button@handle=lb]"
                    )
                 << "slider(0,255,4)[@out=radius@label=color radius]"
+                
+                << (GUI("hbox[@label=smooth LUT]")
+                    << "slider(0,27,10)[@out=smoothThresh@label=threshold]"
+                    << "button(do it)[@handle=smooth]"
+                    )
                 << ( GUI("hbox") 
                      <<"button(load)[@handle=load]"
                      << "button(save)[@handle=save]"
@@ -311,6 +318,47 @@ void init(){
 }
 
 void run(){
+  gui_ButtonHandle(smooth);
+  gui_int(smoothThresh);
+  if(smooth.wasTriggered()){
+    icl8u *lut = segmenter->getLUT();
+    int w, h, t;
+    segmenter->getLUTDims(w,h,t);
+    std::vector<icl8u> buf(w*h*t);
+
+    std::vector<icl8u*> data;
+    for(int i=0;i<t;++i){
+      data.push_back(lut+w*h*i);
+    }
+    Img8u l(Size(w,h), t, data);
+    int hs[256]={0}; 
+    int n = pa("-n");
+    for(int z=1;z<t-1;++z){
+      for(int y=1;y<h-1;++y){
+        for(int x=1;x<w-1;++x){
+          std::fill(hs,hs+n+1,0);
+          
+          for(int zz=-1;zz<2;++zz){
+            for(int yy=-1;yy<2;++yy){
+              for(int xx=-1;xx<2;++xx){
+                hs[ l(x+xx,y+yy,z+zz) ]++;
+              }
+            }
+          }
+          int imax = (int)(std::max_element(hs+1,hs+n+1) - hs);
+          if(hs[imax] < smoothThresh) {
+            buf[x + w*y + w*h * z] = 0;
+          }else{
+            buf[x + w*y + w*h * z] = imax;
+          }
+        }
+      }
+    }
+    std::copy(buf.begin(),buf.end(),lut);
+
+
+  }
+  
   static const Point xys[3]={Point(1,2),Point(0,2),Point(0,1)};
   gui_DrawHandle(image);
   gui_DrawHandle(lut);

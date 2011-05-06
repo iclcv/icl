@@ -200,6 +200,10 @@ namespace icl{
         i.e. an index(x,y,z) is estimated by (x + w*y + w*h * z) */
     const icl8u *getLUT() const;
 
+    /// returns the internal lut data
+    /** Please be careful with this method :-)*/
+    icl8u *getLUT();
+
     /// returns the lut-sizes
     /** w = 1+(0xff >> bitShift[0]) etc. */
     void getLUTDims(int &w, int &h, int &t) const;
