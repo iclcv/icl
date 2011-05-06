@@ -89,7 +89,13 @@ void mouse(const MouseEvent &e){
   }
 }
 
+GenericGrabber g;
+
+
 void init(){
+  g.init(pa("-input"));
+  g.useDesired(depth8u);
+  
   gui << "draw()[@label=image@minsize=32x24@handle=image]";
   gui << ( GUI("vbox") 
            << "draw()[@label=template@minsize=10x6@handle=templ]"
@@ -129,12 +135,11 @@ void vis_roi(ICLDrawWidget *w){
 
 
 void run(){
-  static GenericGrabber g(pa("-input"));
   g.useDesired(imageSize);
     
   while(1){
     mutex.lock();
-    g.grab()->convert(&currImage);
+    g.grab(bpp(currImage));
     if(!dragging){
       currImage.setROI(currROI.normalized() & currImage.getImageRect());
     }

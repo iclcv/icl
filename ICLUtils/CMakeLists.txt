@@ -40,6 +40,7 @@ add_libsource (${PROJECT_NAME} "src/DynMatrix.cpp" "${CONDITIONLIST}" LIB_SOURCE
 add_libsource (${PROJECT_NAME} "src/Point32f.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/Point.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/Range.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/SteppingRange.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/Rect32f.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/Rect.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/Size32f.cpp" "${CONDITIONLIST}" LIB_SOURCES)

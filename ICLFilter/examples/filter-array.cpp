@@ -80,9 +80,9 @@ void init(){
 
 void run(){
   static GenericGrabber g(pa("-i"));
-  g.useDesired<depth>(gui["ddepth"]);
-  g.useDesired<Size>(gui["dsize"]);
-  g.useDesired<format>(gui["dformat"]);
+  g.useDesired(parse<depth>(gui["ddepth"]));
+  g.useDesired(parse<Size>(gui["dsize"]));
+  g.useDesired(parse<format>(gui["dformat"]));
   
   const ImgBase *image = g.grab();
   gui["input"] = image;

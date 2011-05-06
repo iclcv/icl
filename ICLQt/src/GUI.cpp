@@ -171,6 +171,7 @@ namespace icl{
     Configurable *conf;
     GUI gui;
     bool deactivateExec;
+    
 
     struct StSt{
       std::string full,half;
@@ -183,7 +184,12 @@ namespace icl{
         const std::string &p = props[i];
         std::string t = conf->getPropertyType(p);
         if(t == "range" || t == "range:slider"){
-          gui.getValue<FSliderHandle>("#r#"+p).setValue( parse<icl32f>(conf->getPropertyValue(p)) );
+          SteppingRange<float> r = parse<SteppingRange<float> >(conf->getPropertyInfo(p));
+          if(r.stepping == 1){
+            gui.getValue<SliderHandle>("#r#"+p).setValue( parse<icl32s>(conf->getPropertyValue(p)) );
+          }else{
+            gui.getValue<FSliderHandle>("#r#"+p).setValue( parse<icl32f>(conf->getPropertyValue(p)) );
+          }
         }else if( t == "range:spinbox"){
           gui.getValue<SpinnerHandle>("#R#"+p).setValue( parse<icl32s>(conf->getPropertyValue(p)) );
         }else if( t == "menu" || t == "value-list" || t == "valueList"){
@@ -206,7 +212,15 @@ namespace icl{
         std::string handle="#r#"+p.full;
         SteppingRange<float> r = parse<SteppingRange<float> >(conf->getPropertyInfo(p.full));
         std::string c = conf->getPropertyValue(p.full);
-        gui << "fslider("+str(r.minVal)+","+str(r.maxVal)+","+c+")[@handle="+handle+"@minsize=12x2@label="+p.half+"]";
+        if(r.stepping == 1){
+          gui << "fslider("+str(r.minVal)+","+str(r.maxVal)+","+c+")[@handle="+handle+"@minsize=12x2@label="+p.half+"]";
+        }else{
+          if(r.stepping){
+            WARNING_LOG("the prop-GUI compoment is not able to adjust a slider stepping that is not 1");
+            WARNING_LOG("component was " << p.full);
+          }
+          gui << "slider("+str(r.minVal)+","+str(r.maxVal)+","+c+")[@handle="+handle+"@minsize=12x2@label="+p.half+"]";
+        }
         ostr << '\1' << handle;
       }else if( t == "range:spinbox"){
         std::string handle="#R#"+p.full;
