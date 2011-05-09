@@ -152,6 +152,7 @@ namespace icl{
           case 16: interleavedToPlanar(data.data(), (*dest)->asImg<icl16s>()); break; 
           default: throw ICLException("error reading png image unexpected bit depth for 4 channel image");
         }
+        break;
       default: throw ICLException("error reading png image unexpected channel count");
     }
   }
