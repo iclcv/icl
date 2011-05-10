@@ -69,7 +69,8 @@ namespace icl{
     // {{{ open
 
     s_oRD.setConstraints(minSize,maxSize,minVal,maxVal);
-    const vector<ImageRegion> & bd = s_oRD.detect(&image);
+    Img8u tmp = cvt8u(image);
+    const vector<ImageRegion> & bd = s_oRD.detect(&tmp);
     vector<Point> result;
     for(unsigned int i=0;i<bd.size();++i){
       Point32f cog = bd[i].getCOG();
@@ -83,7 +84,8 @@ namespace icl{
     // {{{ open
 
     s_oRD.setConstraints(minSize,maxSize,minVal,maxVal);
-    const vector<ImageRegion> & bd = s_oRD.detect(&image);
+    Img8u tmp = cvt8u(image);
+    const vector<ImageRegion> & bd = s_oRD.detect(&tmp);
     vector<Rect> result;
     for(unsigned int i=0;i<bd.size();++i){
        result.push_back(bd[i].getBoundingBox());
@@ -96,7 +98,8 @@ namespace icl{
     // {{{ open
 
     s_oRD.setConstraints(minSize,maxSize,minVal,maxVal);
-    const vector<ImageRegion> & bd = s_oRD.detect(&image);
+    Img8u tmp = cvt8u(image);
+    const vector<ImageRegion> & bd = s_oRD.detect(&tmp);
     vector<vector<Point> > result;
     for(unsigned int i=0;i<bd.size();++i){
       result.push_back(bd[i].getBoundary());
@@ -109,7 +112,8 @@ namespace icl{
     // {{{ open
 
     s_oRD.setConstraints(minSize,maxSize,minVal,maxVal);
-    const vector<ImageRegion> & bd = s_oRD.detect(&image);
+    Img8u tmp = cvt8u(image);
+    const vector<ImageRegion> & bd = s_oRD.detect(&tmp);
     vector<int> result;
     for(unsigned int i=0;i<bd.size();++i){
       result.push_back(bd[i].getBoundaryLength());
@@ -122,7 +126,8 @@ namespace icl{
     // {{{ open
 
     s_oRD.setConstraints(minSize,maxSize,minVal,maxVal);
-    const vector<ImageRegion> & bd = s_oRD.detect(&image);
+    Img8u tmp = cvt8u(image);
+    const vector<ImageRegion> & bd = s_oRD.detect(&tmp);
     vector<RegionPCAInfo> result;
     for(unsigned int i=0;i<bd.size();++i){
       result.push_back(bd[i].getPCAInfo());
@@ -136,7 +141,8 @@ namespace icl{
     // {{{ open
 
     s_oRD.setConstraints(minSize,maxSize,minVal,maxVal);
-    const vector<ImageRegion> & bd = s_oRD.detect(&image);
+    Img8u tmp = cvt8u(image);
+    const vector<ImageRegion> & bd = s_oRD.detect(&tmp);
     vector<float> result;
     for(unsigned int i=0;i<bd.size();++i){
       result.push_back(bd[i].getFormFactor());
@@ -149,7 +155,8 @@ namespace icl{
     // {{{ open
 
     s_oRD.setConstraints(minSize,maxSize,minVal,maxVal);
-    const vector<ImageRegion> & bd = s_oRD.detect(&image);
+    Img8u tmp = cvt8u(image);
+    const vector<ImageRegion> & bd = s_oRD.detect(&tmp);
     vector<vector<Point> >result;
     for(unsigned int i=0;i<bd.size();++i){
       result.push_back(bd[i].getPixels());
@@ -159,11 +166,12 @@ namespace icl{
   }
 
   // }}}
-  vector<vector<LineSegment> > linesegments(const ImgQ &image, int minSize, int maxSize, int minVal, int maxVal){
+  vector<vector<LineSegment> > linesegments(const ImgQ image, int minSize, int maxSize, int minVal, int maxVal){
     // {{{ open
 
     s_oRD.setConstraints(minSize,maxSize,minVal,maxVal);
-    const vector<ImageRegion> & bd = s_oRD.detect(&image);
+    Img8u tmp = cvt8u(image);
+    const vector<ImageRegion> & bd = s_oRD.detect(&tmp);
     vector<vector<LineSegment> > result;
     for(unsigned int i=0;i<bd.size();++i){
       result.push_back(bd[i].getLineSegments());
