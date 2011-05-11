@@ -32,7 +32,6 @@
 **                                                                 **
 *********************************************************************/
 
-
 #include <ICLBlob/RegionDetector.h>
 #include <ICLBlob/RegionDetectorTools.h>
 #include <ICLBlob/ImageRegionData.h>

@@ -12,7 +12,7 @@ completely. However this combined documentation is unsuitable for exploration of
   <TABLE border=0><TR><TD>
     ICL consists of currently 11 packages that are listed in the main menu at the left.
 
-    - <b>ICLUtils</b> Contains general purpose functions and classes that are currently not part of the C++-STL (e.g. threads or matrices).
+    - <b>ICLUtils</b> Contains general purpose functions and classes that are currently not part of the C++-STL (e.g. threads and linear algebra classes).
     - <b>ICLCore</b> basically provides class definitions for ICL's image classes Img and ImgBase and related global functions.
     - <b>ICLCC</b> provides functions and classes for color conversion.
     - <b>ICLIO</b> extends the range of functions by input and output classes. Camera grabbers different camera 
@@ -23,6 +23,7 @@ completely. However this combined documentation is unsuitable for exploration of
     - <b>ICLGeom</b> contains classes for 3D-modelling and camera calibration. 
     - <b>ICLQt*</b> contains a Qt-4 based GUI-API that facilitates creation of simple and complex GUI 
       applications significantly. And of course a powerful image visualisation widget called ICLWidget is provided.
+    - <b>ICLMarkers</b> contains a general marker detection framework that allows for detection of several common marker types such as ARToolkit markers, BCH-encoded binary markers and Amoeba-Fiducial markers
     - <b>ICLAlgorithms</b> contains high level classes like a hough-transformation-based line detector or generic self organizing map (SOM) implementation. 
     - <b>ICLOpenCV*</b> offers functions for shallow and deep copies from ICL-images types into OpenCV's images types and v.v.
     
