@@ -37,6 +37,8 @@
 
 #include <ICLGeom/GeomDefs.h>
 #include <ICLUtils/Point.h>
+#include <ICLUtils/Point32f.h>
+
 namespace icl{
   
   /// Utility Structure used for the Convex-Hull Algorithm
@@ -91,6 +93,14 @@ namespace icl{
       to the last point in this list!
   */
   std::vector<Point> convexHull(std::vector<Point> P);
+
+  /// New implementation of convex hull monotone chain algorithm! (for floats)
+  /** @param P list of Point (input) call-by-value, as we need an inplace-sort
+               internally
+      @return list of points of the convex hull first point is identical 
+      to the last point in this list!
+  */
+  std::vector<Point32f> convexHull(std::vector<Point32f> P);
 
 
   
