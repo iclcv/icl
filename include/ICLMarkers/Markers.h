@@ -48,6 +48,9 @@
     - icl::Fiduical (a list of instances of this type is returned by the fiducial
       detection step
     
+    <b>Note:</b> We use the words "fiducial" and "marker" or "image marker" as
+    synonyms.
+    
     The FiducialDetector implements a plugin-based system which can be configured
     at instantiation type in order to use a certain marker detection backend.
     Dependent on the selected backend, the detection markers (of type icl::Fiducial)
@@ -64,20 +67,33 @@
 
     \section SUPPORTED_MARKER_TYPES Supported Marker Types
     
-    - "art"
+    <TABLE border=0>
+    <TR>
+    <TD>\image html art.png</TD>
+    <TD>\image html bch.png</TD>
+    <TD>\image html amoeba.png</TD>
+    </TR>
+    <TR>
+    <TD>"art" marker</TD>
+    <TD>"bch" marker</TD>
+    <TD>"amoeba" marker</TD>
+    </TR>
+    </TABLE>
+    
+    - "art"\n
       for ARToolkit markers (visit the 
       <a href="http://www.hitl.washington.edu/artoolkit/">ARToolkit Webpage</a>
       for more details)
       ART Fiducials can provide the full set of information including the 3D pose
       from a single marker
-    - "bch" 
+    - "bch"\n
       for ARToolkit+/Studierstube-Tracker like bch-code based binary markers
       (visit the <a href="http://studierstube.icg.tugraz.at/handheld_ar/stbtracker.php">
       Studierstube Tracker Homepage</a> for more details)
       BCH Fiducials can provide the full set of information including the 3D pose
       from a single marker. Usually, the detection rate is faster and more accurate
       in comparison to artoolkit markers. 
-    - "amoeba"
+    - "amoeba" }\n
       for The amoeba style hierarchical markers provided by the
       <a href="http://reactivision.sourceforge.net/">reactivision software</a>
       Amoeba fiducials cannot be detected in 3D. They do only provide 2D center and
@@ -87,8 +103,13 @@
     
     \section BENCH Benchmarks
     
-    Note: we did not use multithreading because this would make multiple parallel
-    trackers very slow (...)
+    \subsection MT Multithreading
+
+    We did not speed up the algorithms using multithreading techniques since usually
+    the provided methods are fast enough using a single thread. "Fast enough" means, the
+    detection is faster than the amount of data, that is usually provided by ...
+    TODO !!
+
     
     TODO...
     
