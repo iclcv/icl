@@ -53,7 +53,8 @@ add_libsource (${PROJECT_NAME} "src/TwoLevelRegionStructure.cpp" "${CONDITIONLIS
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick ICLGeom)
 add_example (${PROJECT_NAME} "marker-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-
+add_example (${PROJECT_NAME} "simple-marker-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "create-bch-marker" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 set(CONDITIONLIST HAVE_GTEST_COND)
 set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}")
 #add_gtest (${PROJECT_NAME} "test-image.cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)

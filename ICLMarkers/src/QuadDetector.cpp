@@ -41,12 +41,11 @@
 #include <ICLCore/CornerDetectorCSS.h>
 #include <ICLUtils/StraightLine2D.h>
 
-#include <ICLUtils/StackTimer.h>
 #include <ICLIO/FileWriter.h>
 
 namespace icl{
 
-  void optimize_edges(std::vector<Point32f> &e4, const std::vector<Point> &boundary) throw (int);
+  static void optimize_edges(std::vector<Point32f> &e4, const std::vector<Point> &boundary) throw (int);
 
   struct QuadDetector::Data{
     std::vector<TiltedQuad> quads;
@@ -104,8 +103,6 @@ namespace icl{
 
 
   const std::vector<TiltedQuad> &QuadDetector::detect(const ImgBase *image){
-    BENCHMARK_THIS_FUNCTION;
-    
     ICLASSERT_THROW(image,ICLException("QuadDetector::detect: input image was NULL"));
     if(data->dynamicQuadColor){
       QuadColor c = getPropertyValue("quad value");
@@ -149,10 +146,8 @@ namespace icl{
     }
     
     if(data->pp){
-      BENCHMARK_THIS_SECTION("pp and lt");
       data->pp->apply(data->lt->apply(image),&data->lastBinImage);
     }else{
-      BENCHMARK_THIS_SECTION("lt");
       data->lt->apply(image,&data->lastBinImage);
     }
     
@@ -164,24 +159,9 @@ namespace icl{
       
     const bool dynCSSSigma = getPropertyValue("css.dynamic sigma");
     const bool optEdges = getPropertyValue("optimize edges");
-    { BENCHMARK_THIS_SECTION("detect and create quads from regions")
     for(unsigned int i=0;i<rs.size();++i){
-      { BENCHMARK_THIS_SECTION("boundary"); rs[i].getBoundary(); }
       const std::vector<Point> &boundary = rs[i].getBoundary();
       
-#if 0
-      //-- boundary statistics ...
-      static int NNN = 0;
-      static int SUM = 0;
-      SUM += boundary.size();
-      ++NNN;
-      static struct FFF{ ~FFF(){
-        DEBUG_LOG("calls : " << NNN);
-        DEBUG_LOG("sum of lenghts : " << SUM);
-        DEBUG_LOG("average length : " << float(SUM)/NNN);
-      }} fff;
-      //--
-#endif 
       if(dynCSSSigma){
         data->css.setSigma(iclMin(7.,boundary.size() * (3.2/60) - 0.5));
       }
@@ -190,7 +170,6 @@ namespace icl{
         if(optEdges){
           std::vector<Point32f> cornersCopy = corners;
           try{
-            BENCHMARK_THIS_SECTION("optimize edges with boundary");
             optimize_edges(cornersCopy,boundary); // todo optimize !!
             data->quads.push_back(TiltedQuad(cornersCopy.data(),rs[i]));
           }catch(int code){ (void)code; }
@@ -199,8 +178,6 @@ namespace icl{
         }
       }
     }
-    }
-    
     return data->quads;
   }
 
@@ -230,8 +207,8 @@ namespace icl{
   }
 
 
-
-  StraightLine2D approx_line(const std::vector<Point32f> &ps) throw (int){
+#if 0
+  static StraightLine2D approx_line(const std::vector<Point32f> &ps) throw (int){
     int nPts = ps.size();
     if(nPts < 2) throw 2;
     float avgX = 0;
@@ -264,10 +241,10 @@ namespace icl{
     
     float angle = ::atan2(fA-fSxx,fSxy);  
     return StraightLine2D(Point32f(avgX,avgY),Point32f(cos(angle),sin(angle)));
-    //RegionPCAInfo pca(2*::sqrt(fP + fD),2*::sqrt(fP - fD),angle,avgX,avgY);
   }
+#endif
 
-  StraightLine2D fit_line(float x, float y, float xx, float xy, float yy) throw (int){
+  static StraightLine2D fit_line(float x, float y, float xx, float xy, float yy) throw (int){
     float sxx = xx - x*x;
     float syy = yy - y*y;
     float sxy = xy - x*y;
@@ -280,13 +257,11 @@ namespace icl{
   }
 
   
-  float line_sprod(const StraightLine2D &a, const StraightLine2D &b){
+  static float line_sprod(const StraightLine2D &a, const StraightLine2D &b){
     return fabs(a.v[0] * b.v[0] + a.v[1] * b.v[1]);
   }
   
   void optimize_edges(std::vector<Point32f> &e4, const std::vector<Point> &boundary) throw (int){
-    //BENCHMARK_THIS_FUNCTION;
-    
     int num = boundary.size();
     int i0 = (int)(std::find(boundary.begin(),boundary.end(),Point(e4[0]))-boundary.begin());
     ICLASSERT_THROW(i0 < num,ICLException("edge point was not found in the boundary"));
@@ -366,65 +341,5 @@ namespace icl{
       }
     }catch(...){ throw 3;}
   }
-
-
-#if 0
-  // older version, 10 times slower than the new version
-  void optimize_edges_2(std::vector<Point32f> &e4, const std::vector<Point> &boundary) throw (int){
-    BENCHMARK_THIS_FUNCTION;
-    StraightLine2D a(e4[0],e4[1]-e4[0]);  
-    StraightLine2D b(e4[1],e4[2]-e4[1]);  
-    StraightLine2D c(e4[2],e4[3]-e4[2]);  
-    StraightLine2D d(e4[3],e4[0]-e4[3]);
-    
-    std::vector<Point32f> pa,pb,pc,pd;
-    for(unsigned int i=0;i<boundary.size();++i){
-      const float ds[] = {
-        a.distance(boundary[i]),
-        b.distance(boundary[i]),
-        c.distance(boundary[i]),
-        d.distance(boundary[i]) 
-      };
-      switch((int)(std::min_element(ds,ds+4)-ds)){
-        case 0: pa.push_back(boundary[i]); break;
-        case 1: pb.push_back(boundary[i]); break;
-        case 2: pc.push_back(boundary[i]); break;
-        default: pd.push_back(boundary[i]); break;
-      }
-    }
-    
-    
-    a = approx_line(pa);   
-    b = approx_line(pb);
-    c = approx_line(pc);
-    d = approx_line(pd);
-    
-    /*          a
-        +----------------+
-        |                |
-        |                |
-      d |                | b
-        |                |      
-        |                |
-        +----------------+
-                c
-    */
-  
-    if(line_sprod(a,c) < 0.90 || 
-       line_sprod(d,b) < 0.90 ) throw 1;
-    
-    try{  
-      StraightLine2D::Pos intersections[] = {
-        a.intersect(d), a.intersect(b),
-        c.intersect(b), c.intersect(d)
-      };
-      
-      for(int i=0;i<4;++i){
-        e4[i].x = intersections[i][0];
-        e4[i].y = intersections[i][1];
-      }
-    }catch(...){ throw 3;}
-  }
-#endif
   
 }

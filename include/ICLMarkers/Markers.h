@@ -107,12 +107,8 @@
 
     We did not speed up the algorithms using multithreading techniques since usually
     the provided methods are fast enough using a single thread. "Fast enough" means, the
-    detection is faster than the amount of data, that is usually provided by ...
-    TODO !!
-
-    
-    TODO...
-    
+    detection is faster than the amount of data, that is usually provided by common cameras.
+    Perhaps, multithreading will added later as a 'Configurable' property.
 
     \section TODO Todo ...
     More Documentation including examples will be added soon!

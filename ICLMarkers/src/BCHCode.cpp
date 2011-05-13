@@ -37,7 +37,6 @@
 
 #include <ICLUtils/SmartPtr.h>
 #include <ICLUtils/Exception.h>
-#include <ICLUtils/StackTimer.h>
 #include <ICLUtils/FixedVector.h>
 
 #include <ICLMarkers/BCHCode.h>
@@ -514,8 +513,6 @@ namespace icl {
   
   DecodedBCHCode decode_bch(const BCHCode &code){
     // {{{ open
-    BENCHMARK_THIS_FUNCTION;
-    
     int64_t c=0,o=1;
     for(int i=0;i<36;++i){
       if(code[35-i]){
@@ -622,4 +619,21 @@ namespace icl {
                  "??? Degree");
   }
 
+
+  Img8u create_bch_marker_image(int idx, int border, const Size &resultSize){
+    if(border < 0) throw ICLException("create_bch_marker_image: border must be >= 0");
+    BCHCode c = encode_bch(idx);
+    Img8u im(Size(6+2*border,6+2*border),1);
+    Channel8u ch=im[0];
+    im.fill(0);
+    for(int y=0;y<6;++y){
+      for(int x=0;x<6;++x){
+        ch(border+x,border+y) = 255 * (c[x+6*y]);
+      }
+    }
+    if(resultSize != Size::null){
+      im.scale(resultSize,interpolateNN);
+    }
+    return im;
+  }
 } 

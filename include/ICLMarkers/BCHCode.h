@@ -76,6 +76,16 @@ namespace icl{
 
   /// encodes a given index in range [0,4095] to a BCHBinary code
   BCHCode encode_bch(int idx);
+  
+  /// creates an image that show a given bch marker
+  /** @param idx which marker
+      @param border amount of border pixels (here, we use the unit of marker pixels,
+                    the maker code is always 6x6 marker pixels)
+      @param resultSize first a (2*border+6)x(2*border+6) image of the marker is created.
+                        Then it is upscaled to the given Size using nearest neighbour interpolation.
+                        If resultSize is null, the (2*border+6)x(2*border+6) image is returned
+                        directly without upscaling */
+  Img8u create_bch_marker_image(int idx, int border=2, const Size &resultSize=Size::null);
 
   /// decodes given binary code
   /** We use an error correcting 36Bit BCH code that carries
