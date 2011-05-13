@@ -46,11 +46,7 @@ namespace icl{
 
   void FileWriterPluginPNG::write(File &file, const ImgBase *image){
     Mutex::Locker lock(mutex);
-
-    DEBUG_LOG("writing png file " << file.getName());
-    
     ICLASSERT_RETURN(image);
-
     FILE *cfile = fopen(file.getName().c_str(), "wb");
     if (!cfile){
       ERROR_LOG("error opening png file " << file.getName());

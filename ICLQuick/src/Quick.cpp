@@ -649,7 +649,6 @@ namespace icl{
   void show(const Img<T> &image){
     // {{{ open
     
-    SHOW(image);
     if(image.hasFullROI()){
       if(image.getFormat()==formatMatrix && image.getChannels()==1){
         Img<T> tmp = image;

@@ -99,9 +99,11 @@
       Amoeba fiducials cannot be detected in 3D. They do only provide 2D center and
       rotation and the 2D boundary. 
     - "icl1" 
-          for ICL's former 'paper' markers <b>not yet supported, but comming soon :-)</a>
+      for ICL's former 'paper' markers <b>not yet supported, but comming soon :-)</b>
     
     \section BENCH Benchmarks
+    
+    TODO
     
     \subsection MT Multithreading
 
@@ -110,11 +112,76 @@
     detection is faster than the amount of data, that is usually provided by common cameras.
     Perhaps, multithreading will added later as a 'Configurable' property.
 
-    \section TODO Todo ...
-    More Documentation including examples will be added soon!
+    \section EX Example
+
+    \code
+#include <ICLQuick/Common.h>
+#include <ICLMarkers/FiducialDetector.h>
+
+// static application data
+GUI gui("hsplit");  
+GenericGrabber grabber;
+
+// the global detector class
+// here, using the first 100 "bch"-markers
+icl::FiducialDetector fid("bch","[0-100]",ParamList("size",Size(30,30)));
+
+// initialization function (called once after start)
+void init(){
+  // the the configurable ID
+  fid.setConfigurableID("fid");
+
+  // create the GUI
+  gui << "draw[@handle=draw@minsize=16x12]" // create drawing component
+      << "prop(fid)[@maxsize=18x100]"       // create the propery widged for 'fid'
+      << "!show";                           // show the main widget
+
+  // initialize the grabber from given program argument
+  grabber.init(pa("-input")); 
+}
+
+
+// working loop (automatically looped in the working thread)
+void run(){
+  // get a handle to the "draw" component
+  static DrawHandle draw = gui["draw"];
+
+  // grab the next image
+  const ImgBase *image = grabber.grab();
     
+  // detect markers
+  const std::vector<Fiducial> &fids = fid.detect(image);
+
+  // visualize the image
+  draw = image;
+  
+  // draw marker detection results
+  draw->lock();
+  draw->reset();
+  draw->linewidth(2);
+  for(unsigned int i=0;i<fids.size();++i){
+    Point32f c = fids[i].getCenter2D();
+    float rot = fids[i].getRotation2D();
+    
+    draw->color(0,100,255,255);
+    draw->text(fids[i].getName(),c.x,c.y,10);
+    draw->color(0,255,0,255);
+    draw->line(c,c+Point32f( cos(rot), sin(rot))*100 );
+
+    draw->color(255,0,0,255);
+    draw->linestrip(fids[i].getCorners2D());
+
+  }
+  draw->unlock();
+
+  // update the visualization
+  draw.update();
+}
+
+// main method 
+int main(int n, char **ppc){
+  return ICLApp(n,ppc,"[m]-input|-i(2)",init,run).exec();
+}
+\endcode
 */
-
-
-
 #endif
