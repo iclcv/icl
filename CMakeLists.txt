@@ -732,8 +732,8 @@ install (DIRECTORY ${CMAKE_SOURCE_DIR}/include/
 	REGEX .svn* EXCLUDE
 )
 
-set(RESOURCE_DIR_PLACEHOLDER "${CMAKE_INSTALL_PREFIX}/etc/icl-${VERSION}${DEBUG_POSTFIX}")
-set(ICL_PGK_CFG_PLACEHOLDER "icl-${VERSION}${DEBUG_POSTFIX}")
+set(ICL_RESOURCE_DIR_PLACEHOLDER "${CMAKE_INSTALL_PREFIX}/etc/icl-${VERSION}${DEBUG_POSTFIX}")
+set(ICL_PKG_CFG_PLACEHOLDER "icl-${VERSION}${DEBUG_POSTFIX}")
 #prepare files from scripts dir for installation
 configure_file(${CMAKE_SOURCE_DIR}/scripts/icl-create-project ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/scripts/icl-create-project-data/Makefile.custom.template ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project-data/Makefile.custom.template @ONLY)
@@ -760,7 +760,7 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/scripts/icl-create-project-data/
 	FILES_MATCHING PATTERN "*.template"
 	REGEX .svn* EXCLUDE
 )
-# this will overwrite the Makefile.custom.template with the configured one (where ICL_PGK_CFG_PLACEHOLDER is substituted)
+# this will overwrite the Makefile.custom.template with the configured one (where ICL_PKG_CFG_PLACEHOLDER is substituted)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project-data/Makefile.custom.template 
         PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${ETC_DIR}/

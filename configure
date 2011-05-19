@@ -185,5 +185,10 @@ echo "cmake detected TRUE:"
 echo -e $CMAKE_DETECTED | grep TRUE
 echo ""
 echo "cmake detected FALSE:"
-echo -e $CMAKE_DETECTED | grep FALSE
+
+if [ "$(echo -e $CMAKE_DETECTED | grep TRUE | grep OPENCV)" != "" ] ; then
+   echo -e $CMAKE_DETECTED | grep FALSE | grep -v OPENCV
+else
+   echo -e $CMAKE_DETECTED | grep FALSE
+fi
 

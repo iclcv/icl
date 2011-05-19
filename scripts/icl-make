@@ -1,4 +1,4 @@
-ICL_PC=@ICL_PGK_CFG_PLACEHOLDER@
+ICL_PC=@ICL_PKG_CFG_PLACEHOLDER@
 
 if [ ! "$1" ] ; then
     echo "$1 is the compilation target e.g. test for compiling test.cpp" ;

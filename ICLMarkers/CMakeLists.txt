@@ -50,6 +50,10 @@ add_libsource (${PROJECT_NAME} "src/ImageRectification.cpp" "${CONDITIONLIST}" L
 add_libsource (${PROJECT_NAME} "src/QuadDetector.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/TwoLevelRegionStructure.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
+add_libsource (${PROJECT_NAME} "src/MarkerCodeICL1.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/MarkerMetricsICL1.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/FiducialDetectorPluginICL1.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick ICLGeom)
 add_example (${PROJECT_NAME} "marker-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
