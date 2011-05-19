@@ -152,6 +152,11 @@ namespace icl{
       throw ICLException("FiducialDetectorPlugin: no intermediate image is associated with givne name '" + name + "'");
       return 0;
     }
+    
+    /// parses an any instance that is either an int-value, or a range or a list of int-values
+    /** The format is "int" | or "{int,int,int}" etc. or "[min,max]" */
+    static std::vector<int> parse_list_str(const Any &s);
+
   };
   
 }

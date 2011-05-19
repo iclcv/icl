@@ -32,6 +32,7 @@
 **                                                                 **
 *********************************************************************/
 #include <ICLMarkers/FiducialDetectorPlugin.h>
+#include <ICLUtils/Range.h>
 
 namespace icl{
   void FiducialDetectorPlugin::getCenter2D(Point32f &dst, FiducialImpl &impl){
@@ -77,4 +78,26 @@ namespace icl{
   std::string FiducialDetectorPlugin::getName(const FiducialImpl *impl){
     return str(impl->id);
   }
+
+  std::vector<int> FiducialDetectorPlugin::parse_list_str(const Any &s){
+    if(!s.length()) throw ICLException("FiducialDetectorPlugin::parse_list_str: got empty string");
+    std::vector<int> back;
+    switch(s[0]){
+      case '{':
+        back = parseVecStr<int>(s.substr(1,s.length()-2),",");
+        break;
+      case '[':{
+        Range32s r = s;
+        for(int i=r.minVal;i<r.maxVal;++i){
+          back.push_back(i);
+        }
+        break;
+      }
+      default:
+        int s = s;
+        back.push_back(s);
+    }
+    return back;
+  }
+
 }

@@ -21,11 +21,34 @@ namespace icl{
       The extra property rootColor can be used to store the information
       about the root regions color. This can be used to create an
       extra set of makers of identical type (one with root color 0, and one
-      with root color 255).      
+      with root color 255). 
+      
+      \section ID ID computation
+      The marker ID is directly computed from the set of the \f$n_i\f$.
+      Since the maximum number of child child regions is 5, the base for
+      ID computation is 6. We use negative marker ID's to indicate, that
+      the marker structure is inverse: i.e. the markers root region is 
+      white
+      \f[
+      id(n_1,n_2,n_3,n_4) = (+1 or -1)(n_1 + 6 n_2 + 36 n_3 + 216 n_4)
+      \f]
+      The inverse calculation is implemented iteratively (note: the operator "/" uses integer division here)
+      \f[ compute\_ni(id) = \f]
+      \f[ id = abs(id) \f]
+      \f[ n_4 = min(5,id/216) \f]
+      \f[ id -= n_4*216 \f]
+      \f[ n_3 = min(5,id/36) \f]
+      \f[ id -= n_3*36; \f]
+      \f[ n_2 = min(5,id/6) \f]
+      \f[ id -= n_2*6 \f]
+      \f[ n_1 = id; \f]
+      
   */
   struct MarkerCodeICL1{
     /// maximum amount of child-child-regions
     static const int P = 5;
+    /// related to maximum child-child-region count base for ID computation
+    static const int P1 = P+1;
     
     /// computed or given marker ID
     int id;
@@ -33,17 +56,14 @@ namespace icl{
     /// computed or given set of child-child-regions
     int n[4];
     
-    /// root regions color
-    icl8u rootColor;
-    
-    /// create instance with optionally given root color
-    MarkerCodeICL1(icl8u rootColor=0);
+      /// create instance with optionally given root color
+    MarkerCodeICL1();
     
     /// create instance from given ID
-    MarkerCodeICL1(int id, icl8u rootColor=0);
+    MarkerCodeICL1(int id);
     
     /// create instance from given set of child-child regions counts
-    MarkerCodeICL1(const int ns[4], icl8u rootColor=0);
+    MarkerCodeICL1(const int ns[4], bool rootRegionColorIsBlack=true);
     
     /// get child-child region count of child-region idx
     inline int &operator[](int idx) { 

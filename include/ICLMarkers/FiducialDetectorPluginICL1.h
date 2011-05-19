@@ -81,6 +81,13 @@ namespace icl{
         TwoLevelRegionStructure codes. The ParamList params is not used here.
     */
     virtual void addOrRemoveMarkers(bool add, const Any &which, const ParamList &params);
+
+    /// returns how to compute a list of image-position/marker-position correspondences
+    /** The 2D-keypoints are the most common information that is use to compute a markers
+        3D information. Each keypoint defines a 2D marker location in [mm] and a corresponding
+        image location */
+    virtual void getKeyPoints2D(std::vector<Fiducial::KeyPoint> &dst, FiducialImpl &impl);
+
   };
 }
 

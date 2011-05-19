@@ -42,6 +42,7 @@
 #include <ICLMarkers/FiducialDetectorPluginBCH.h>
 #include <ICLMarkers/FiducialDetectorPluginART.h>
 #include <ICLMarkers/FiducialDetectorPluginAmoeba.h>
+#include <ICLMarkers/FiducialDetectorPluginICL1.h>
 
 
 namespace icl{
@@ -105,6 +106,8 @@ namespace icl{
       data->plugin = new FiducialDetectorPluginART;
     }else if(plugin == "amoeba"){
       data->plugin = new FiducialDetectorPluginAmoeba;
+    }else if(plugin == "icl1"){
+      data->plugin = new FiducialDetectorPluginICL1;
     }else{
       throw ICLException("FiducialDetector: invalid plugin type: " + plugin);
     }

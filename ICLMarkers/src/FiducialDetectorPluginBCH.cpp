@@ -68,10 +68,14 @@ namespace icl{
   void FiducialDetectorPluginBCH::addOrRemoveMarkers(bool add, const Any &which, const ParamList &l){
     Size s = l["size"];
 
-    if(!which.length()){
-      throw ICLException("FiducialDetectorPluginBCH::addOrRemoveMarkers: invalid marker definition");
+    std::vector<int> ids = parse_list_str(which);
+    for(unsigned int i=0;i<ids.size();++i){
+      int x = ids[i];
+      if(x<0 || x>= 4096) continue;
+      data->loaded[x] = add;
+      if(add) data->sizes[x] = s;
     }
-    
+#if 0
     switch(which[0]){
       case '[':{
         Range32s r = which;
@@ -97,6 +101,7 @@ namespace icl{
         if(add) data->sizes[i] = s;
         break;
     }
+#endif
     
     data->maxLoaded=-1;
     for(int i=4095;i>=0;--i){

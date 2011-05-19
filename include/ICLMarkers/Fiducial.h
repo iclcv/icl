@@ -91,6 +91,13 @@ namespace icl{
         multi-view marker pose detection.
     */
     struct KeyPoint{
+      /// Default constructor (does nothing)
+      inline KeyPoint(){}
+      
+      /// Special constructor with given params
+      inline KeyPoint(const Point32f &imagePos, const Point32f &markerPos, int ID):
+      imagePos(imagePos),markerPos(markerPos),ID(ID){}
+
       Point32f imagePos;  //!< key point in image space
       Point32f markerPos; //!< key point in marker space
       int ID;             //!< key point ID
