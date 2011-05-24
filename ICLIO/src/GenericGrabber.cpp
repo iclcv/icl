@@ -162,9 +162,9 @@ namespace icl{
 
 #ifdef HAVE_LIBFREENECT
       if(l[i] == "kinectd" || l[i] == "kinectc"){
-        KinectGrabber::Mode mode = l[i][6] == 'c' ? KinectGrabber::GRAB_RGB_IMAGE : KinectGrabber::GRAB_DEPTH_IMAGE;
+        KinectGrabber::Format format = l[i][6] == 'c' ? KinectGrabber::GRAB_RGB_IMAGE : KinectGrabber::GRAB_DEPTH_IMAGE;
         try{
-          KinectGrabber *kin = new KinectGrabber(mode,to32s(pmap[l[i]]));
+          KinectGrabber *kin = new KinectGrabber(format,to32s(pmap[l[i]]));
           m_poGrabber = kin;
           m_sType = l[i];
           break;

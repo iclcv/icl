@@ -34,7 +34,7 @@ fi
 
 ICLVER=$(./VERSION.sh)
 
-ICL_VAR_INSTALL_PREFIX=/vol/nivision
+ICL_VAR_INSTALL_PREFIX=/vol/nivision/share/icl-kinect-branch
 #ICL/${ICLVER}${VERSION_POSTFIX}
 ICL_XDEP_IPP_PATH=/vol/nivision/share/IPP/6.0
 ICL_XDEP_MKL_PATH=/vol/nivision/share/MKL/10.2-ia32
@@ -47,7 +47,6 @@ ICL_XDEP_OPENCV_PATH=/usr
 ICL_XDEP_OPENCV_ON=TRUE
 ICL_XDEP_XCF_ON=TRUE
 ICL_XDEP_GTEST_PATH=/usr
-ICL_XDEP_LIBFREENECT_PATH=/usr
 ICL_XDEP_LIBFREENECT_PATH=/usr
 ICL_XDEP_XINE_PATH=/vol/nivision
 
@@ -62,8 +61,10 @@ if [ "$IP_PREFIX" = "129.70" ] ; then
 #   ICL_XDEP_LIBDC_PATH=/vol/nivision
 #   ICL_XDEP_OPENCV_PATH=/vol/nivision
    ICL_XDEP_GTEST_PATH=/vol/nivision/share
-   ICL_XDEP_LIBFREENECT_PATH=/vol/nivision
-   #ICL_XDEP_XINE_PATH=/usr
+#   ICL_XDEP_LIBFREENECT_PATH=/vol/nivision
+   ICL_XDEP_LIBFREENECT_PATH=/vol/nivision/share/libfreenect-unstable
+   ICL_XDEP_XINE_PATH=/usr
+
 fi
 
 

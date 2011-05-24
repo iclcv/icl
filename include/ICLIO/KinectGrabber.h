@@ -34,25 +34,61 @@
 
 #include <ICLIO/Grabber.h>
 #include <ICLUtils/Exception.h>
+#include <ICLUtils/Size.h>
+
+#include <utility>
+#include <map>
 
 #ifdef HAVE_LIBFREENECT
 
-namespace icl{
+namespace icl {
   /// Special Grabber implementation for Microsoft's Kinect Device
   /** This class implements ICL's Grabber interface for Microsofts Kinect
-      Device. Internally, it uses libfreenect to access the device. */
-  struct KinectGrabber : public Grabber{
-    enum Mode{
-      GRAB_RGB_IMAGE,   //!< grabs rgb images form the kinects rgb camera
-      GRAB_BAYER_IMAGE, //!< not supported yet
+      Device. Internally, it uses libfreenect to access the device. 
+      
+      \section GRA Which grabbers can be instantiated simultaneously
+      
+      The Kinect grabber class implements a abstraction layer around the
+      wrapped libfreenect. However, libfreenect does not allow for grabbing
+      color and IR images simultaneously from one device (even though
+      the IR image is actually grabbed from the depth camera). Therefore,
+      the <em>logical</em> source of the IR images is the color camera.
+      
+      \section DEVEL Developers notes
+      Raw Depth Value should be interpreted as integers between 0 and 2047,
+      anything above 2047 equals a distance of 0.
+  */
+  struct KinectGrabber : public Grabber {
+
+    /// Capturing format
+    enum Format {
+      GRAB_RGB_IMAGE, //!< grabs rgb images form the kinects rgb camera
+      GRAB_BAYER_IMAGE,
+      GRAB_IR_IMAGE, //!< grabs the kinects IR-image
+      GRAB_YUV_IMAGE,
       GRAB_DEPTH_IMAGE, //!< grabs the depth image from kinect
-      GRAB_IR_IMAGE,    //!< grabs the kinects IR-image (not supported)
+      GRAB_DEPTH_MM_IMAGE, //!< grabs the depth image from kinect
+      GRAB_DEPTH_CM_IMAGE, //!< grabs the depth image from kinect
+      GRAB_DEPTH_M_IMAGE, //!< grabs the depth image from kinect
+   };
+
+    /// capturing resolution
+    enum Resolution {
+      RESOLUTION_LOW,    //!< QVGA resolution (doesn't work)
+      RESOLUTION_MEDIUM, //!< VGA (only for IR-Grabber 640x488 is used)
+      RESOLUTION_HIGH    //!< SXGA resolution (not for the depth camera)
     };
+
+    /// combination of a Format and Resolution
+    typedef std::pair<Format, Resolution> Mode;
     
     /// returns a list of attached kinect devices
     static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
-
-    KinectGrabber(Mode mode = GRAB_DEPTH_IMAGE, int deviceID=0) throw (ICLException);
+    
+    
+    /// Creates a new grabber instance with given format and device ID
+    /** By default, the */
+    KinectGrabber(Format format = GRAB_DEPTH_IMAGE, int deviceID=0) throw (ICLException);
 
     /// Destructor
     ~KinectGrabber();
