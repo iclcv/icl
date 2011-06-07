@@ -2,6 +2,8 @@
 #include <ICLMarkers/MarkerMetricsICL1.h>
 #include <ICLUtils/Range.h>
 
+#include <ICLQuick/Quick.h>
+
 namespace icl{
 
   struct FiducialImplICL1 : public FiducialImpl{
@@ -216,6 +218,47 @@ namespace icl{
     }
     
     data->loaded &= data->valid;
+  }
+
+
+  /// marker is 13x17 cells
+  Img8u FiducialDetectorPluginICL1::createMarker(const Any &whichOne,const Size &size, const ParamList &params){
+    Size size2 = size * 2;
+    
+    MarkerCodeICL1 code(whichOne.as<int>());
+    MarkerMetricsICL1 metrics(code,size2); // we use mm-pixels here
+
+    float dx = size2.width/13.0f;
+    float dy = size2.height/17.0f;
+    
+    ImgQ image(size2,1);
+    image.fill(255);
+    color(0,0,0,0);
+
+    fill(0,0,0,255);
+    rect(image,round(dx),round(dy),round(11*dx),round(15*dy),round(dx/2));
+    for(int i=0;i<4;++i){
+      fill(255,255,255,255);
+      rect(image,
+           round(metrics.crs[i].x),
+           round(metrics.crs[i].y),
+           round(metrics.crs[i].width),
+           round(metrics.crs[i].height),
+           round(dx/2));
+      fill(0,0,0,255);
+      for(unsigned int j=0;j<metrics.crs[i].ccrs.size();++i){
+        rect(image,
+             round(metrics.crs[i].ccrs[j].x),
+             round(metrics.crs[i].ccrs[j].y),
+             round(metrics.crs[i].ccrs[j].width), 
+             round(metrics.crs[i].ccrs[j].height),
+             round(dx/2));
+      }
+    }
+    
+    image.scale(size,interpolateRA);
+    return cvt8u(image);
+    
   }
 
   

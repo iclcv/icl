@@ -362,5 +362,18 @@ namespace icl{
     markerSizeWithBorder = Size((1+r)*d, (1+r)*d);
     markerSizeWithoutBorder = Size(d,d);
   }  
-  
+
+  Img8u FiducialDetectorPluginART::createMarker(const Any &whichOne,const Size &size, const ParamList &params){  
+    FileGrabber g(whichOne);
+    g.useDesired(formatGray);
+    g.useDesired(depth8u);
+    const Img8u &l = *g.grab()->asImg<icl8u>();
+    float b = params["border ratio"];
+    Size s(l.getWidth()*(1+b), l.getHeight()*(1+b));
+    Img8u r(s,1);
+    r.setROI(Rect(l.getWidth()*b*.5, l.getHeight()*b*.5,l.getWidth(),l.getHeight()));
+    l.deepCopyROI(&r);
+    r.scale(size);
+    return r;
+  }
 }

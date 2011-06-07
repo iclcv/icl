@@ -149,4 +149,9 @@ namespace icl{
     markerSizeWithoutBorder = Size(f*6,f*6);
   }
 
+  Img8u FiducialDetectorPluginBCH::createMarker(const Any &whichOne,const Size &size, const ParamList &params){
+    return create_bch_marker_image(whichOne,params["border width"],size);
+  }
+
+
 }

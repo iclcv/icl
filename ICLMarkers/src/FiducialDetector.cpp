@@ -200,6 +200,10 @@ namespace icl{
     return data->plugin->getIntermediateImage(name);
   }
 
+  Img8u FiducialDetector::createMarker(const Any &whichOne,const Size &size, const ParamList &params){
+    return data->plugin->createMarker(whichOne,size,params);
+  }
+
 
 }
 
