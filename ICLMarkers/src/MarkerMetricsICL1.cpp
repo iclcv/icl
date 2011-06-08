@@ -1,5 +1,6 @@
 #include <ICLMarkers/MarkerMetricsICL1.h>
 #include <ICLUtils/Exception.h>
+#include <ICLUtils/StringUtils.h>
 
 namespace icl{
   
@@ -17,7 +18,7 @@ namespace icl{
       cr.height = 3*v;
       cr.ccrs.resize(c[i]);
 
-      float ccry = (i*4+2);
+      float ccry = (i*4+2)*v;
       for(int j=0;j<c[i];++j){
         Rect32f &ccr = cr.ccrs[j];
 
@@ -28,7 +29,7 @@ namespace icl{
           case 4: ccr.x = (j<2?(2+j*2):(4+j*2))*u; break;
           case 5: ccr.x = (2+j*2)*u; break;
           default:
-            throw ICLException(":MarkerMetricsICL1: invalid code found!");
+            throw ICLException(":MarkerMetricsICL1: invalid code found! " + str(c));
         }
         ccr.y = ccry;
         ccr.width = u;

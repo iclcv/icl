@@ -33,12 +33,12 @@ namespace icl{
     data->loaded.reset();
     data->valid.reset();
     const std::vector<MarkerCodeICL1> &existing = MarkerCodeICL1::generate();
-    std::cout << "existing.size(): " << existing.size() << std::endl;
+    //std::cout << "existing.size(): " << existing.size() << std::endl;
     for(unsigned int i=0;i<existing.size();++i){
       data->valid[existing[i].id] = true;
-      std::cout << existing[i].id << "  ";
+      //std::cout << existing[i].id << "  ";
     }
-    std::cout << "\n\n";
+    //std::cout << "\n\n";
   }
 
   FiducialDetectorPluginICL1::~FiducialDetectorPluginICL1(){
@@ -223,30 +223,31 @@ namespace icl{
 
   /// marker is 13x17 cells
   Img8u FiducialDetectorPluginICL1::createMarker(const Any &whichOne,const Size &size, const ParamList &params){
-    Size size2 = size * 2;
+    Size size2 = size * 2; // simulate anti-aliasing by rendering the marker in double size before downscaling
+    int which = whichOne;
+    const int white = which > 0 ? 255 :  0;
+    const int black = 255-white;
     
-    MarkerCodeICL1 code(whichOne.as<int>());
+    MarkerCodeICL1 code(which);
     MarkerMetricsICL1 metrics(code,size2); // we use mm-pixels here
-
     float dx = size2.width/13.0f;
-    float dy = size2.height/17.0f;
     
     ImgQ image(size2,1);
-    image.fill(255);
+    image.fill(white);
     color(0,0,0,0);
-
-    fill(0,0,0,255);
-    rect(image,round(dx),round(dy),round(11*dx),round(15*dy),round(dx/2));
+    fill(black,0,0,255);
+    rect(image,0,0,size2.width,size2.height,round(dx/2));
     for(int i=0;i<4;++i){
-      fill(255,255,255,255);
+      fill(white,0,0,255);
+
       rect(image,
            round(metrics.crs[i].x),
            round(metrics.crs[i].y),
            round(metrics.crs[i].width),
            round(metrics.crs[i].height),
            round(dx/2));
-      fill(0,0,0,255);
-      for(unsigned int j=0;j<metrics.crs[i].ccrs.size();++i){
+      fill(black,0,0,255);
+      for(unsigned int j=0;j<metrics.crs[i].ccrs.size();++j){
         rect(image,
              round(metrics.crs[i].ccrs[j].x),
              round(metrics.crs[i].ccrs[j].y),

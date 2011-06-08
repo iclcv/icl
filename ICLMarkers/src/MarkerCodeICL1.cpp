@@ -25,7 +25,7 @@ namespace icl{
     n[3] = iclMin(P,id/(P1*P1*P1));
     id -= n[3]*(P1*P1*P1);
     n[2] = iclMin(P,id/(P1*P1));
-    id -= n[2]*(P*P);
+    id -= n[2]*(P1*P1);
     n[1] = iclMin(P,id/(P1));
     id -= n[1]*(P1);
     n[0] = id;
@@ -56,10 +56,10 @@ namespace icl{
     static std::vector<MarkerCodeICL1> ps;
     if(ps.size()) return ps;
     
-    for(int i=0;i<=P;++i){
-      for(int j=0;j<=P;++j){
-        for(int k=0;k<=P;++k){
-          for(int l=0;l<=P;++l){
+    for(int i=1;i<=P;++i){
+      for(int j=1;j<=P;++j){
+        for(int k=1;k<=P;++k){
+          for(int l=1;l<=P;++l){
             if(i<=j && j<=k && k<=l && i<l){
               int ns[]={i,j,k,l};
               MarkerCodeICL1 t(ns);

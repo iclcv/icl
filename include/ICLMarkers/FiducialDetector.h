@@ -80,7 +80,11 @@ namespace icl{
           Amoeba fiducials cannot be detected in 3D. They do only provide 2D center and
           rotation and the 2D boundary. 
         - "icl1" 
-          for ICL's former 'paper' markers <b>not yet supported</a>
+          for ICL's own markers, that were also used for the former version of 
+          deformable paper tracking. Here, 32 hierarchical markers are provided. These markers
+          do also provide key-point association and 3D pose estimation. all allowed marker IDs
+          can be used twice: positive IDs indicate 'normal' markers (with a black root region)
+          while negative marker IDs indicate 'inverted' markers (with white root regions)
         
         <b>other parameters</b>\n
         For extraction of 3D marker information, usually a camera
@@ -134,6 +138,13 @@ namespace icl{
           or a single code or a comma- or space separated list of codes. Please note
           that the "amoeba" markers are only free to use in combination with the
           <a href="http://reactivision.sourceforge.net">reacTIVision</a> software.
+        - "icl1"\n
+          These are the 32 allowed icl1 marker IDs: 1294  1252  1287  1035  1245  993  1292
+          1250  1280  1028  1208  776  1238  986  1166  734  1285  1033  1243  991  1273
+          1021  1201  769  949  517  1231  979  1159  727  907  475. Other ID's will not be detected,
+          but can be added in a more genereal list. E.g. by adding which ="[450-1300]", you can
+          add all markers. Actually if you load a marker ID x, also the inverted marker
+          (that has a white root-region) with ID -x is added.
     */
     void loadMarkers(const Any &which, const ParamList &params=ParamList()) throw (ICLException);
     
@@ -173,7 +184,8 @@ namespace icl{
                         this is simply the marker ID. If the plugin type is art, whichOne needs to 
                         be an image filename. Amoeba markers cannot be created automatically
                         because the marker layout is not free.
-        @param size Resulting image size
+        @param size resulting image size (please note, that the recommended image size aspect ratio
+                    for icl1-typed markers is 13:17 (e.g. 230:300)
         @param params this list contains additional parameters that are neccessary for marker
                       creation. 
         
