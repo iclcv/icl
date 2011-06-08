@@ -39,6 +39,8 @@
 #include <ICLUtils/Configurable.h>
 #include <ICLUtils/ParamList.h>
 
+#include <ICLCore/Img.h>
+
 #include <ICLGeom/Camera.h>
 #include <ICLGeom/CoplanarPointPoseEstimator.h>
 
@@ -156,6 +158,12 @@ namespace icl{
     /// parses an any instance that is either an int-value, or a range or a list of int-values
     /** The format is "int" | or "{int,int,int}" etc. or "[min,max]" */
     static std::vector<int> parse_list_str(const Any &s);
+    
+    /// interface for creating an image of a specific marker
+    virtual Img8u createMarker(const Any&,const Size &, const ParamList &){
+      throw ICLException("FiducialDetectorPlugin::createMarker seems to be not implemented for this marker type");
+      return Img8u();
+    }
 
   };
   

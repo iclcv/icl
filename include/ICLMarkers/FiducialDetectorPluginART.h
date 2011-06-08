@@ -90,6 +90,9 @@ namespace icl{
     /// describes the special marker image rectificatio parameters
     virtual void getQuadRectificationParameters(Size &markerSizeWithBorder,
                                                 Size &markerSizeWithoutBorder);
+
+    /// creates marker image from given parameters (see FiducialDetector for more details)
+    virtual Img8u createMarker(const Any &whichOne,const Size &size, const ParamList &params);
   };
 }
 

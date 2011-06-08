@@ -88,6 +88,10 @@ namespace icl{
         image location */
     virtual void getKeyPoints2D(std::vector<Fiducial::KeyPoint> &dst, FiducialImpl &impl);
 
+    /// creates an image of a given marker
+    virtual Img8u createMarker(const Any &whichOne,const Size &size, const ParamList &params);
+    
+
   };
 }
 

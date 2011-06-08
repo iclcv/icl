@@ -166,6 +166,29 @@ namespace icl{
     const ImgBase *getIntermediateImage(const std::string &name) const throw (ICLException);
     
     
+    /// creates an image of a given markers
+    /** sice this function call is directly passed to the underlying FiducialDetectorPlugin 
+        instance, its implemention depends on this implementation. 
+        @param whichOne specifies the marker to create in case of plugin type 'icl1' or 'bch',
+                        this is simply the marker ID. If the plugin type is art, whichOne needs to 
+                        be an image filename. Amoeba markers cannot be created automatically
+                        because the marker layout is not free.
+        @param size Resulting image size
+        @param params this list contains additional parameters that are neccessary for marker
+                      creation. 
+        
+        \section PARAMS params for different plugin types
+        * <b>bch</b> needs an integer valued "border-width" parameter, which is used as border width.
+          Please note that the bch-code center always consists of 6x6 pixels. The resulting image of size
+          2*border-width + 6 is finally scaled up to 'size' before it is returned.
+        * <b>art</b> needs a float valued 'border ratio' parameter. This is used to compute the border size
+          for a given marker image. If the marker image (without border) has size A^2, then
+          whole marker image (whith borders) has size (1+'border ratio')*A. Only finally, the image is scaled
+          to it's destination size.
+        * <b>icl1</b> does not need extra parameters
+        * <b>amoeba</b> is not supported
+    */
+    Img8u createMarker(const Any &whichOne,const Size &size, const ParamList &params);
   };
   
 }

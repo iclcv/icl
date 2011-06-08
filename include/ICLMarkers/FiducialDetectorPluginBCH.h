@@ -79,6 +79,10 @@ namespace icl{
     /// describes the marker rectification parameters
     virtual void getQuadRectificationParameters(Size &markerSizeWithBorder,
                                                 Size &markerSizeWithoutBorder);        
+
+    /// creates bch marker image
+    virtual Img8u createMarker(const Any &whichOne,const Size &size, const ParamList &params);
+
   };
 }
 
