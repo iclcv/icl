@@ -87,7 +87,6 @@ namespace icl {
     
     
     /// Creates a new grabber instance with given format and device ID
-    /** By default, the */
     KinectGrabber(Format format = GRAB_DEPTH_IMAGE, int deviceID=0) throw (ICLException);
 
     /// Destructor
