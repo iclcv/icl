@@ -469,6 +469,37 @@ namespace icl {
         return reinterpret_cast<const Img<T>*>(this);
       }
 
+      /// convenience shortcut version for asImg<icl8u>()
+      inline Img<icl8u> *as8u() { return asImg<icl8u>(); }
+
+      /// convenience shortcut version for asImg<icl16s>()
+      inline Img<icl16s> *as16s() { return asImg<icl16s>(); }
+
+      /// convenience shortcut version for asImg<icl32s>()
+      inline Img<icl32s> *as32s() { return asImg<icl32s>(); }
+
+      /// convenience shortcut version for asImg<icl32f>()
+      inline Img<icl32f> *as32f() { return asImg<icl32f>(); }
+
+      /// convenience shortcut version for asImg<icl64f>()
+      inline Img<icl64f> *as64f() { return asImg<icl64f>(); }
+
+
+      /// convenience shortcut version for asImg<icl8u>()
+      inline const Img<icl8u> *as8u() const { return asImg<icl8u>(); }
+
+      /// convenience shortcut version for asImg<icl16s>()
+      inline const Img<icl16s> *as16s() const { return asImg<icl16s>(); }
+
+      /// convenience shortcut version for asImg<icl32s>()
+      inline const Img<icl32s> *as32s() const { return asImg<icl32s>(); }
+
+      /// convenience shortcut version for asImg<icl32f>()
+      inline const Img<icl32f> *as32f() const { return asImg<icl32f>(); }
+
+      /// convenience shortcut version for asImg<icl64f>()
+      inline const Img<icl64f> *as64f() const { return asImg<icl64f>(); }
+
       /// @}
     
       /* }}} */
