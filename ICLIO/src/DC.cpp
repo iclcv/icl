@@ -805,6 +805,11 @@ namespace icl{
       STATIC_DC_CONTEXT.release();
     }
 
+    bool is_dc800_capable(dc1394camera_t* c){
+      ICLASSERT_RETURN_VAL(c,false);
+      return c->bmode_capable == DC1394_TRUE;
+    }
+
     void set_iso_speed(dc1394camera_t* c, int mbits){
       ICLASSERT_RETURN(c);
       if(!mbits) return; // this is the default value for "do nothing"

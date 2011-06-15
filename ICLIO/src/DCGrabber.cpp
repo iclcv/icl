@@ -158,6 +158,7 @@ namespace icl{
   // }}}
   
   void DCGrabberImpl::restartGrabberThread(){
+    DEBUG_LOG("starting DC grabber thread for DCDevice: " << m_oDev.getUniqueStringIdentifier());
     if(m_poGT){
       m_poGT->stop();
       //      m_poGT->waitFor();
@@ -344,6 +345,27 @@ namespace icl{
     }
     return r;
   }
+
+  const std::vector<GrabberDeviceDescription> &DCGrabber::getDeviceList(bool rescan){
+    static std::vector<GrabberDeviceDescription> deviceList;
+    if(rescan){
+      deviceList.clear();
+      std::vector<DCDevice> devs = getDCDeviceList(false);
+      for(unsigned int i=0;i<devs.size();++i){
+        deviceList.push_back(GrabberDeviceDescription("dc",
+                                                      str(i)+"|||"+devs[i].getUniqueStringIdentifier(),
+                                                      devs[i].getUniqueStringIdentifier()));
+        if(devs[i].supportsDC800()){
+          deviceList.push_back(GrabberDeviceDescription("dc800",
+                                                        str(i)+"|||"+devs[i].getUniqueStringIdentifier(),
+                                                        devs[i].getUniqueStringIdentifier()));
+        
+        }
+      }
+    }
+    return deviceList;
+  }
+
 
   
   

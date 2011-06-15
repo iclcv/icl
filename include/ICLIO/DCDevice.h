@@ -157,6 +157,9 @@ namespace icl{
     /** @see icl::dc::set_iso_speed(int) */
     void setISOSpeed(int mbits);
     
+    /// returns whether the device supports Firewire B mode
+    bool supportsDC800();
+    
     private:    
     /// Creates a new device (pivate; called by DCGrabber::getDeviceList())
     DCDevice(dc1394camera_t *cam):

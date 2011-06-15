@@ -217,17 +217,7 @@ namespace icl{
     }
 
     /// Returns a list of all detected dc devices
-    static inline const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan){
-      static std::vector<GrabberDeviceDescription> deviceList;
-      if(rescan){
-        deviceList.clear();
-        std::vector<DCDevice> devs = getDCDeviceList(false);
-        for(unsigned int i=0;i<devs.size();++i){
-          deviceList.push_back(GrabberDeviceDescription("dc",str(i)+"|||"+devs[i].getUniqueStringIdentifier(),devs[i].getUniqueStringIdentifier()));
-        }
-      }
-      return deviceList;
-    }
+    static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
 
     /// calls dc1394_reset_bus functions (see DCDevice)
     /** @see DCGrabberImpl for more details */

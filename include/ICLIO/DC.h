@@ -149,6 +149,9 @@ namespace icl{
     **/
     void free_static_context();
 
+    /// returns whether the given camera supports firewire B
+    /** the results depends on the camera and the PC's firewire card */
+    bool is_dc800_capable(dc1394camera_t *cam);
     
     /// sets iso transmission speed for the wrapped dc1394 context
     /** @param mbits mbits value (usefull might be 800 whereby 400 is default)

@@ -501,4 +501,8 @@ namespace icl{
   }
   // }}}
     
+
+  bool DCDevice::supportsDC800(){
+    return is_dc800_capable(getCam());
+  }
 }

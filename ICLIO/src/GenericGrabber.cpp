@@ -516,14 +516,19 @@ namespace icl{
                           std::map<std::string,std::string> &pmap){
     
     if(!useFilter || contains(pmap,dev)){
-      
-      //DEBUG_LOG("searching for device type:" << dev);
-      const std::vector<GrabberDeviceDescription> &ds = T::getDeviceList(true);
+      std::vector<GrabberDeviceDescription> ds = T::getDeviceList(true);
+      if(dev.length() >= 2 && dev[0] == 'd' && dev[1] == 'c'){ // dirty hack for dc devices
+        bool kick800 = dev.length()==2;
+        std::vector<GrabberDeviceDescription> newds;
+        for(unsigned int i=0;i<ds.size();++i){
+          if(kick800 && ds[i].type != "dc800") newds.push_back(ds[i]);
+          if(!kick800 && ds[i].type != "dc") newds.push_back(ds[i]);
+        }
+        ds = newds;
+      }
 
-      //DEBUG_LOG("dev:" << dev << "  found " << ds.size() << " devices" << "[" << pmap[dev] << "]");
       if(useFilter && pmap[dev].length()){
         const GrabberDeviceDescription *d = find_desciption(ds,pmap[dev]);
-        //std::cout << "here" << std::endl;
         if(d){
           all.push_back(*d);
         }    
