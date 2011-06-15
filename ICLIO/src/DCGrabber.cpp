@@ -158,7 +158,6 @@ namespace icl{
   // }}}
   
   void DCGrabberImpl::restartGrabberThread(){
-    DEBUG_LOG("starting DC grabber thread for DCDevice: " << m_oDev.getUniqueStringIdentifier());
     if(m_poGT){
       m_poGT->stop();
       //      m_poGT->waitFor();
