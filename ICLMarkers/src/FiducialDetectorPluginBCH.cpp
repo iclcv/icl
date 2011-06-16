@@ -58,6 +58,7 @@ namespace icl{
     addProperty("max bch errors","range","[0,4]:1",3);
     addProperty("match factor","range","[1,10]:1",2);
     addProperty("border width","range","[1,10]:1",2);
+    addProperty("pattern binarization threshold","range","[1,254]",127);
   }
 
   FiducialDetectorPluginBCH::~FiducialDetectorPluginBCH(){
@@ -118,11 +119,12 @@ namespace icl{
   }
   
   
-  FiducialImpl *FiducialDetectorPluginBCH::classifyPatch(const Img8u &image, int *rot){
+  FiducialImpl *FiducialDetectorPluginBCH::classifyPatch(const Img8u &image, int *rot, bool returnRejectedQuads){
     int maxErr = getPropertyValue("max bch errors");
+    int thresh = getPropertyValue("pattern binarization threshold");
 
     image.scaledCopyROI(&data->buffer, interpolateRA);
-    thresh_inplace(data->buffer.begin(0),36, 127);
+    thresh_inplace(data->buffer.begin(0),36, thresh);
 
     DecodedBCHCode2D p = decode_bch_2D(data->buffer,data->maxLoaded,false);
 
@@ -131,12 +133,15 @@ namespace icl{
                                              Fiducial::Rotation2D |
                                              Fiducial::Corners2D );
     
-    if(p && p.errors <= maxErr ){
+    if(p && p.errors <= maxErr){
       FiducialImpl *impl = new FiducialImpl(this,supported,computed,
                                             p.id, -1,data->sizes[p.id]);
       *rot = (int)p.rot;
       return impl;
-    }else {
+    }else if (returnRejectedQuads){
+      *rot = 0;
+      return new FiducialImpl(this,supported,computed, 999999, -1,Size(1,1)); // dummy ID
+    }else{
       return 0;
     }
   }

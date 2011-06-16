@@ -92,7 +92,7 @@ namespace icl{
     const ImgBase *getIntermediateImage(const std::string &name) const throw (ICLException);
 
     /// this method must be called in the subclasses
-    virtual FiducialImpl *classifyPatch(const Img8u &image, int *rot) = 0;
+    virtual FiducialImpl *classifyPatch(const Img8u &image, int *rot, bool returnRejectedQuads) = 0;
     
     /// this method is also implemented in the subclasses
     /** The method describes the parameters for the marker rectification */

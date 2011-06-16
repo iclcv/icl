@@ -60,6 +60,7 @@ namespace icl{
     
     deactivateProperty("quads.create region graph");
     addProperty("max tilt","range","[1,50]",10);
+    addProperty("return rejected quads","flag","",false);
 
   }
 
@@ -149,6 +150,7 @@ namespace icl{
     data->impls.clear();
 
     int m = getPropertyValue("max tilt");
+    bool returnRejected = getPropertyValue("return rejected quads");
     data->quads = &data->quadd.detect(&image);
 
 
@@ -189,7 +191,7 @@ namespace icl{
       }
 
       int rot = 0;
-      FiducialImpl *impl = classifyPatch(rect, &rot);
+      FiducialImpl *impl = classifyPatch(rect, &rot,returnRejected);
       
       if(impl){
         impl->index = data->impls.size();

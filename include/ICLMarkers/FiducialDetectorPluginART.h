@@ -82,7 +82,7 @@ namespace icl{
     virtual void addOrRemoveMarkers(bool add, const Any &which, const ParamList &params);
 
     /// Identifies the given image patch using bch decoding
-    virtual FiducialImpl *classifyPatch(const Img8u &image, int *rot);
+    virtual FiducialImpl *classifyPatch(const Img8u &image, int *rot, bool returnRejectedQuads);
     
     /// this method is reimplemented here; it returns the impl's file-basename
     std::string getName(const FiducialImpl *impl);

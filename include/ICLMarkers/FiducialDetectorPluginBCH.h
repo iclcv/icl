@@ -74,7 +74,7 @@ namespace icl{
     virtual void addOrRemoveMarkers(bool add, const Any &which, const ParamList &params);
 
     /// Identifies the given image patch using bch decoding
-    virtual FiducialImpl *classifyPatch(const Img8u &image, int *rot);
+    virtual FiducialImpl *classifyPatch(const Img8u &image, int *rot, bool returnRejectedQuads);
 
     /// describes the marker rectification parameters
     virtual void getQuadRectificationParameters(Size &markerSizeWithBorder,

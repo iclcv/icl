@@ -327,7 +327,7 @@ namespace icl{
   
   
   
-  FiducialImpl *FiducialDetectorPluginART::classifyPatch(const Img8u &image, int *rot){
+  FiducialImpl *FiducialDetectorPluginART::classifyPatch(const Img8u &image, int *rot, bool returnRejectedQuads){
     std::string a = getPropertyValue("matching algorithm");
     int matchDim = getPropertyValue("matching dim");
     Size matchSize(matchDim,matchDim);
@@ -338,14 +338,16 @@ namespace icl{
 
     float err;
     NamedImage *n = data->matching->match(image, rot, &err) ;
+    static Fiducial::FeatureSet supported = Fiducial::AllFeatures;
+    static Fiducial::FeatureSet computed = ( Fiducial::Center2D | 
+                                             Fiducial::Rotation2D |
+                                             Fiducial::Corners2D );
     if(n && err < e){
-      static Fiducial::FeatureSet supported = Fiducial::AllFeatures;
-      static Fiducial::FeatureSet computed = ( Fiducial::Center2D | 
-                                               Fiducial::Rotation2D |
-                                               Fiducial::Corners2D );
-
       return new FiducialImpl(this,supported,computed,
                               n->id, -1, n->size);
+    }else if (returnRejectedQuads){
+      *rot = 0;
+      return new FiducialImpl(this,supported,computed, 999999, -1, Size(1,1)); // dummy ID
     }else{
       return 0;
     }
