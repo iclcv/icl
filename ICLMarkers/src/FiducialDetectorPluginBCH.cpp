@@ -36,14 +36,47 @@
 #include <ICLMarkers/BCHCode.h>
 #include <ICLMarkers/Fiducial.h>
 
-
 namespace icl{
+  
+  namespace{
+    struct PatternBinarization{  virtual void apply(icl8u *p) = 0;  };
+    
+    struct PatternBinarizationThresh : public PatternBinarization{
+      int t;
+      PatternBinarizationThresh(int t=0):t(t){}
+      virtual void apply(icl8u *p){
+        for(int i=0;i<36;++i) p[i] = 255*(p[i]>t);
+      }
+    };
+    
+    struct PatternBinarizationKMeans : public PatternBinarizationThresh{
+      int maxIterations;
+      PatternBinarizationKMeans(int maxIterations):
+        maxIterations(maxIterations){}
+
+      virtual void apply(icl8u *p){
+        float mean = std::accumulate(p,p+36,0.0f)/36.0f;
+        for(int j=0;j<maxIterations;++j){
+          Point l,r;
+          for(int i=0;i<36;++i){
+            (p[i] < mean ? l : r) += Point(p[i],1);
+          }
+          mean = round( (float(l[0])/l[1] + float(r[0])/r[1]) / 2  );
+        }
+        PatternBinarizationThresh::t = mean;
+        PatternBinarizationThresh::apply(p);
+      }
+    };
+  }
 
   struct FiducialDetectorPluginBCH::Data{
     Img8u buffer;
     std::bitset<4096> loaded;
     int maxLoaded;
     std::vector<Size32f> sizes;
+
+    SmartPtr<PatternBinarization> bin;
+    int maxBCHErr;
   };
   
   FiducialDetectorPluginBCH::FiducialDetectorPluginBCH():
@@ -58,7 +91,9 @@ namespace icl{
     addProperty("max bch errors","range","[0,4]:1",3);
     addProperty("match factor","range","[1,10]:1",2);
     addProperty("border width","range","[1,10]:1",2);
-    addProperty("pattern binarization threshold","range","[1,254]",127);
+    addProperty("binarize.threshold","range","[1,254]:1",127);
+    addProperty("binarize.k-means steps","range","[1:5]:1",1);
+    addProperty("binarize.mode","menu","k-means,threshold","k-means");
   }
 
   FiducialDetectorPluginBCH::~FiducialDetectorPluginBCH(){
@@ -114,18 +149,23 @@ namespace icl{
   }
 
 
-  static inline void thresh_inplace(icl8u *p, int len, int t){
-    for(int i=0;i<len;++i) p[i] = 255*(p[i]>t);
+ 
+  
+  void FiducialDetectorPluginBCH::prepareForPatchClassification(){
+    data->maxBCHErr = getPropertyValue("max bch errors");
+    std::string mode = getPropertyValue("binarize.mode");
+    if(mode == "threshold"){
+      data->bin = new PatternBinarizationThresh(getPropertyValue("binarize.threshold").as<int>());
+    }else{
+      data->bin = new PatternBinarizationKMeans(getPropertyValue("binarize.k-means steps").as<int>());
+    }
   }
   
-  
   FiducialImpl *FiducialDetectorPluginBCH::classifyPatch(const Img8u &image, int *rot, bool returnRejectedQuads){
-    int maxErr = getPropertyValue("max bch errors");
-    int thresh = getPropertyValue("pattern binarization threshold");
-
     image.scaledCopyROI(&data->buffer, interpolateRA);
-    thresh_inplace(data->buffer.begin(0),36, thresh);
-
+    
+    data->bin->apply(data->buffer.begin(0));
+    
     DecodedBCHCode2D p = decode_bch_2D(data->buffer,data->maxLoaded,false);
 
     static Fiducial::FeatureSet supported = Fiducial::AllFeatures;
@@ -133,7 +173,7 @@ namespace icl{
                                              Fiducial::Rotation2D |
                                              Fiducial::Corners2D );
     
-    if(p && p.errors <= maxErr){
+    if(p && p.errors <= data->maxBCHErr){
       FiducialImpl *impl = new FiducialImpl(this,supported,computed,
                                             p.id, -1,data->sizes[p.id]);
       *rot = (int)p.rot;

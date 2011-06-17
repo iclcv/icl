@@ -170,6 +170,9 @@ namespace icl{
     
 
     FixedMatrix<float,3,3> HOM;
+
+    prepareForPatchClassification();
+ 
     for(unsigned int i=0;i<data->quads->size();++i){
       const TiltedQuad &q = data->quads->operator[](i);
       /// !! add some heuristics that skip detection of too tilted quads

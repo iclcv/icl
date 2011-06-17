@@ -91,6 +91,12 @@ namespace icl{
     /** @see getIntermediateImageNames for more details */
     const ImgBase *getIntermediateImage(const std::string &name) const throw (ICLException);
 
+    /// this method is called before the patch classification loop is started
+    /** this function can be used to avoid property extraction at runtime. Usually,
+        a certain implementation can read out and store all property values that are used
+        in classify patch once in a whole image processing cylce */
+    virtual void prepareForPatchClassification(){}
+
     /// this method must be called in the subclasses
     virtual FiducialImpl *classifyPatch(const Img8u &image, int *rot, bool returnRejectedQuads) = 0;
     

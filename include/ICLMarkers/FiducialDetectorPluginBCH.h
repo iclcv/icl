@@ -73,6 +73,9 @@ namespace icl{
     */
     virtual void addOrRemoveMarkers(bool add, const Any &which, const ParamList &params);
 
+    /// extracts and stores some properties locally to speed up classifyPatch 
+    void prepareForPatchClassification();
+
     /// Identifies the given image patch using bch decoding
     virtual FiducialImpl *classifyPatch(const Img8u &image, int *rot, bool returnRejectedQuads);
 
