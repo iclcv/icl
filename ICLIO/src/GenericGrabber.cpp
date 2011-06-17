@@ -282,6 +282,7 @@ namespace icl{
           m_poGrabber = new SwissRangerGrabber(device,depth32f,channel);
         }catch(ICLException &e){
           ADD_ERR("sr");
+          errStr += "[error message: " + str(e.what()) + "]";
           continue;
         }
         break;

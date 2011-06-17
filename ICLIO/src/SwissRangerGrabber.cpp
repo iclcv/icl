@@ -37,12 +37,35 @@
 /** why this is now defined */
 //typedef uint32_t DWORD;
 
-//#include <libusbSR.h>
+
+
 #include <libMesaSR.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLCore/Img.h>
 #include <map>
 #include <string>
+
+
+#include <termios.h>
+#include <stdio.h>
+#include <unistd.h>
+
+#include <stdlib.h>
+#include <linux/sockios.h>
+#include <asm/ioctls.h>
+#include <sys/select.h>
+
+inline int set_canon(int flag){
+  struct termios t;
+  tcgetattr( fileno(stdin), &t);
+  if( flag)
+    t.c_lflag |= (ICANON|ECHO);
+  else
+    t.c_lflag &= ~(ICANON|ECHO);
+  tcsetattr( fileno(stdin), TCSANOW, &t); 
+  
+  return 1;
+}
 
 namespace icl{
 
@@ -89,13 +112,59 @@ namespace icl{
 
   
 
-  static int swiss_ranger_debug_callback(SRCAM srCam, unsigned int msg, unsigned int param, void* data){
-    (void)srCam;
-    (void)msg;
-    (void)param;
-    (void)data;
-    return 1;
-    DEBUG_LOG("callback called ");
+  /// crazy debug output method (taken from the libmesasr sample application)
+  static int swiss_ranger_debug_callback(SRCAM srCam,
+                                         unsigned int msg,
+                                         unsigned int param,
+                                         void* data){
+    switch(msg)
+      {
+        case CM_MSG_DISPLAY: // redirects all output to console
+          {
+            if (param==MC_ETH)
+              return 0;
+            char*p=(char*)data,*q;
+            while( (q=strchr(p,'\n')) )
+              {
+                fputs(">>>>   >>>> ",stdout);
+                fwrite(p,q-p+1,1,stdout);
+                p=&q[1];
+              }
+            fputs(">>>>   >>>> ",stdout);
+            puts((char*)p);
+            return 0;
+          }
+        case CM_PROGRESS:
+          {
+#ifndef HIWORD
+# define HIWORD(X) ((unsigned short)((unsigned long)(X)>>16))
+# define LOWORD(X) ((unsigned short)((unsigned long)(X)&0xFFFF))
+#endif
+            int state   =LOWORD(param);
+            int progress=HIWORD(param);
+            switch(state)
+              {
+                case CP_FLASH_ERASE:
+                  printf("Erasing flash (%d%%)...\n",progress);break;
+                case CP_FLASH_WRITE:
+                  printf("Writing flash (%d%%)...\n",progress);break;
+                case CP_FLASH_READ:
+                  printf("Reading flash (%d%%)...\n",progress);break;
+                case CP_FPGA_BOOT:
+                  printf("Boot FPGA (%d%%)...\n",progress);break;
+                case CP_CAM_REBOOT:
+                  printf("Reboot camera (%d%%)...\n",progress);break;
+                case CP_DONE:
+                  puts("\ndone.");
+              }
+            return 0;
+          }
+        default:
+          {
+            //default handling
+            return SR_GetDefaultCallback()(0,msg,param,data);
+          }
+      }
   }
 
   static std::map<std::string,int> g_props;
@@ -221,23 +290,34 @@ namespace icl{
     bool createXYZ;
   };
   
+  static int g_swissranger_instance_count = 0;
+
+
   SwissRangerGrabberImpl::SwissRangerGrabberImpl(int serialNumber, depth bufferDepth, int pickChannel) throw (ICLException):Grabber(){
+
+    g_swissranger_instance_count++;
+
+    if(g_swissranger_instance_count == 1){
+      set_canon(0);
+    }
 
     SR_SetCallback(swiss_ranger_debug_callback);
 
     m_sr = new SwissRanger;
-
+    unsigned short version[4];
+    SR_GetVersion(version);
+   
     if(serialNumber < 0){
-      m_sr->id = SR_OpenDlg(&m_sr->cam,2,0);
+      m_sr->id = SR_OpenDlg(&m_sr->cam,3,0);
       if(m_sr->id <= 0){
         ICL_DELETE(m_sr);
-        throw ICLException("unable to open SwissRanger device with serialNumber " + str(serialNumber));
+        throw ICLException("unable to open SwissRanger (SR_OpenDlg) device with serialNumber " + str(serialNumber));
       }      
     }else{
       m_sr->id = SR_OpenUSB(&m_sr->cam,serialNumber);
       if(m_sr->id <= 0){
         ICL_DELETE(m_sr);
-        throw ICLException("unable to open SwissRanger device with serialNumber " + str(serialNumber));
+        throw ICLException("unable to open SwissRanger (SR_OpenUSB) device with serialNumber " + str(serialNumber));
       }   
     }
     m_sr->iim = iimUnknownPixelsMinusOne;
@@ -262,6 +342,12 @@ namespace icl{
     ICL_DELETE(m_sr->image);
     SR_Close(m_sr->cam);
     ICL_DELETE(m_sr);
+
+    --g_swissranger_instance_count;
+    if(!g_swissranger_instance_count){
+      SR_SetCallback(SR_GetDefaultCallback());//set default global callback
+      set_canon(1);
+    }
   }
 
 

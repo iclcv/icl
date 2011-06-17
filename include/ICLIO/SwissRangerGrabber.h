@@ -50,7 +50,7 @@ namespace icl{
     
     /// Create interface to device with given serial number:
     /** @param if 0 -> automatic select\n
-               if < 0 open selection dialog (windows)
+               if < 0 open selection dialog (windows: gui, linux: shell input)
                if > 0 specify serial number of device
     */
     SwissRangerGrabberImpl(int serialNumber=0, depth bufferDepth=depth32f, int pickChannel=-1) 
