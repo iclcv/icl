@@ -55,46 +55,46 @@ namespace icl{
 
     /// internal data type (64Bit integer)
     typedef int64_t value_type;
-    
+
     // undefined time: 0
     static const Time null;
-    
+
     Time();
-    
+
     Time(value_type);
-    
+
     // No copy constructor and assignment operator necessary. The
       // automatically generated copy constructor and assignment
       // operator do the right thing.
-    
+
       static Time now();
       static Time seconds(value_type);
       static Time milliSeconds(value_type);
       static Time microSeconds(value_type);
-    
+
       value_type toSeconds() const;
       value_type toMilliSeconds() const;
       value_type toMicroSeconds() const;
-         
+
       double toSecondsDouble() const;
       double toMilliSecondsDouble() const;
       double toMicroSecondsDouble() const;
 
       std::string toString() const;
-      
+
       /// allows to create a formated string using strftime system-functions
       /** Please refer to your system dependent strftime reference:
           <b>please note, that strftime is does not support milli and micro-second accuracy,
           </b>. So this feature is implemented here.
           Please use
           - %* for the remaining usecs less then the last second
-          - %# for the remaining millisecond less then the last second
+          - %# for the remaining milliseconds less then the last second
           - %- for the remaining usecs less then the last millisecond
 
           For example, the default toString() functions uses this time patterns: "%x %H:%M:%S:%#"
-          
+
       */
-      std::string toStringFormated(const std::string &fmt,unsigned int bufferSize=32) const;
+      std::string toStringFormated(const std::string &pattern, unsigned int bufferSize=32, bool zeropadded = false) const;
 
       //xcf4cis stuff
       Time age() const {
@@ -263,14 +263,14 @@ namespace icl{
          }
 
       friend std::ostream& operator<<(std::ostream&, const Time&);
-      
+
       friend std::istream& operator>>(std::istream&, Time&);
 
    private:
 
       value_type m_usec;
    };
-  
+
    /// writes Time instances value type into the stream
    std::ostream& operator<<(std::ostream&, const Time&);
 
