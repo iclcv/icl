@@ -35,6 +35,7 @@
 #include <ICLUtils/ConfigFile.h>
 #include <ICLUtils/DynMatrixUtils.h>
 #include <ICLUtils/XML.h>
+#include <ICLIO/File.h>
 #include <ICLGeom/Camera.h>
 #include <fstream>
 
@@ -426,6 +427,7 @@ namespace icl {
   }
 
   Camera::Camera(const std::string &filename, const std::string &prefix) throw (ParseException){
+    if(!File(filename).exists()) throw ParseException("Camera(filename) given file '" + filename + "' does not exist!");
     std::ifstream is(filename.c_str());
     load_camera_from_stream(is,prefix,*this);
   }

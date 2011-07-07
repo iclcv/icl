@@ -82,7 +82,7 @@ namespace icl {
       extra computation steps (e.g. shifting of line segments by roi offset).
       If an input image is used, that has a non-full ROI, the internal WorkingLineSegment
       buffer is optimized for that ROI size. Furthermore, the buffer containing the
-      line end pointers will also be resizes to the inpute images ROI-height. Therefore
+      line end pointers will also be resized to the input images ROI-height. Therefore
       the given row-indices for the RunLengthEncoder::begin(int) and RunLengthEncoder::end(int)
       functions is always relative to the input images roi-offset.
 
