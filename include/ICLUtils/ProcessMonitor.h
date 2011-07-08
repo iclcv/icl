@@ -56,7 +56,8 @@ namespace icl{
         takes some time, all the information is collected in a dedicated 
         thread. 
       * numCPUs is queried once at construction time by parsing /proc/processor
-      
+      * allCPU usage is also queried by parsing the piped 'ps' output
+
       \section CB Callbacks
       Since sometimes, an application wants to do something, when new information
       is available, a callback mechanism is provided as well. Simply register
@@ -76,13 +77,20 @@ namespace icl{
     struct Info{
       int pid;            // current process ID
       int numThreads;     // number of threads of the current process
-      float cpuUsage;     // percent
+      float cpuUsage;     // percent 0-numCPUs*100
+      float allCpuUsage;  // percent 0-100
       float memoryUsage;  // used memory in MB
-      int numCPUs;        // somethimes, this helps for visualization
+      int numCPUs;        // sometimes, this helps for visualization
     };
     
+    protected:
     /// Create a new instance
     ProcessMonitor();
+    
+    public:
+    
+    /// returns the singelton instance
+    static ProcessMonitor *getInstance();
     
     /// Destructor
     ~ProcessMonitor();
@@ -97,7 +105,11 @@ namespace icl{
     typedef Function<void,const Info&> Callback;
 
     /// registers a callback instance that is automatically called when new data is available
-    void registerCallback(Callback cb);
+    /** returns a callback ID */
+    int registerCallback(Callback cb);
+    
+    /// removes a callback registered before
+    void removeCallback(int id);
     
     /// removes all registered callbacks
     void removeAllCallbacks();

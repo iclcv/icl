@@ -44,12 +44,15 @@
 //#include <unistd.h>
 
 namespace icl{
-  
+
   struct ProcessMonitor::Data{
     Mutex mutex;
     ProcessMonitor::Info info;
     FILE *pipe;
-    std::vector<ProcessMonitor::Callback> callbacks;
+    std::vector<std::pair<int,ProcessMonitor::Callback> > callbacks;
+    int nextCallbackID;
+    
+    Data():pipe(0),nextCallbackID(0){}
     
     void evaluate_proc(){
       std::ifstream proc("/proc/self/status");
@@ -68,10 +71,17 @@ namespace icl{
         info.cpuUsage = parse<float>(ts.at(8));
       }catch(...){}
     }
+
+    void parse_top_line_cpus(const std::string &top){
+      std::vector<std::string> ts = tok(top," \t");
+      try{
+        info.allCpuUsage = 100.0 - parse<float>(ts.at(4));
+      }catch(...){}
+    }
     
     void call_callbacks(){
       for(unsigned int i=0;i<callbacks.size();++i){
-        callbacks[i](info);
+        callbacks[i].second(info);
       }
     }
     
@@ -86,8 +96,7 @@ namespace icl{
     fp = popen("/bin/cat /proc/cpuinfo |grep -c '^processor'","r");
     fread(res, 1, sizeof(res)-1, fp);
     fclose(fp);
-    std::cout << "number of cores: " << res[0] << std::endl;
-    std::cout << "number of cores: " << res << std::endl;
+    m_data->info.numCPUs = parse<int>(res);
 #endif
     start();
   }
@@ -113,6 +122,10 @@ namespace icl{
       char c = getc(m_data->pipe);
       line += c;
       if (c == '\n'){
+        if(line.substr(0,7) == "Cpu(s):"){
+          Mutex::Locker l(m_data->mutex);
+          m_data->parse_top_line_cpus(line);
+        }
         if(line.substr(0,pid.length()) == pid){
           Mutex::Locker l(m_data->mutex);
           m_data->parse_top_line(line);
@@ -134,9 +147,21 @@ namespace icl{
     return m_data->info;
   }
 
-  void ProcessMonitor::registerCallback(ProcessMonitor::Callback cb){
+  int ProcessMonitor::registerCallback(ProcessMonitor::Callback cb){
     Mutex::Locker l(m_data->mutex);
-    m_data->callbacks.push_back(cb);
+    m_data->callbacks.push_back(std::make_pair(m_data->nextCallbackID++,cb));
+    return m_data->callbacks.back().first;
+  }
+  
+  void ProcessMonitor::removeCallback(int id){
+    Mutex::Locker l(m_data->mutex);
+    for(unsigned int i=0;i<m_data->callbacks.size();++i){
+      if(m_data->callbacks[i].first == id){
+        m_data->callbacks.erase(m_data->callbacks.begin()+i);
+        return;
+      }
+    }
+    WARNING_LOG("tryed to removed callback with id " << id << " which was not registered before!");
   }
   
   void ProcessMonitor::removeAllCallbacks(){
@@ -153,5 +178,10 @@ namespace icl{
              << "cpu usage    : " << info.cpuUsage << " %" << std::endl
              << "memory usage : " << info.memoryUsage << " MB" << std::endl;
 #endif
+  }
+  
+  ProcessMonitor *ProcessMonitor::getInstance(){
+    static ProcessMonitor pm;
+    return &pm;
   }
 }

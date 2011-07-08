@@ -39,7 +39,8 @@ GUI gui;
 
 void init(){
   gui = GUI("hscroll");
-  gui << "image[@handle=image1@label=image1@minsize=10x10]"
+  gui << "ps()[]"
+      << "image[@handle=image1@label=image1@minsize=10x10]"
       << "image[@handle=image2@label=image2@minsize=10x10]"
       << "image[@handle=image3@label=image3@minsize=10x10]"
       << (GUI("vbox")

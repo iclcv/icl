@@ -34,6 +34,7 @@
 
 #include <ICLUtils/StrTok.h>
 #include <ICLUtils/SteppingRange.h>
+#include <ICLUtils/ProcessMonitor.h>
 #include <ICLUtils/Size.h>
 #include <ICLCore/CoreFunctions.h>
 
@@ -164,6 +165,65 @@ namespace icl{
 
   // }}}
 
+  struct ProcessMonitorGUIWidget : public GUIWidget{
+    QTimer updater;
+    ProcessMonitor *pm;
+    ProcessMonitor::Info info;
+    
+    ProcessMonitorGUIWidget(const GUIDefinition &def):GUIWidget(def,0,1,GUIWidget::gridLayout,Size(8,5)){
+      if(def.numParams() > 1) throw GUISyntaxErrorException(def.defString(),"0 or 1 parameters are allowed here");
+      float fps = def.numParams() ? parse<float>(def.param(0)) : 10;
+      if(fps <= 0 || fps > 10) throw GUISyntaxErrorException(def.defString(),"fps must be in range ]0,10]");
+      
+      updater.setInterval(1000.0f/fps);
+
+      pm = ProcessMonitor::getInstance();      
+      connect(&updater,SIGNAL(timeout()),this,SLOT(ioSlot()));
+      
+      updater.start();
+    }
+    
+    
+    static string getSyntax(){
+      return string("ps(fps in ]0...10] = 10)[general params]\n")+gen_params();
+    }
+
+    virtual void processIO(){
+      info = pm->getInfo();
+      update();
+    }
+    
+    virtual void paintEvent(QPaintEvent *e){
+      SHOW(width());
+      SHOW(height());
+
+      QWidget::paintEvent(e);
+      QPainter pa(this);
+      pa.setRenderHint(QPainter::Antialiasing);
+      pa.setBrush(QColor(255,255,255));
+      pa.fillRect(0,0,width(),height(),QColor(255,255,255,255));
+
+      pa.setBrush(Qt::NoBrush);
+      pa.setPen(QColor(0,0,0,255));
+      
+      pa.drawRect(QRectF(1,1,width()-1,height()-1));
+
+
+      pa.setPen(QColor(0,0,0,255));
+      //      pa.setFont(QFont("Arial",10));
+      
+      int line = 2;
+      pa.drawText(5,++line*12, ("pid          : "+str(info.pid)).c_str());
+      pa.drawText(5,++line*12, ("num cpus     : "+str(info.numCPUs)).c_str());
+      pa.drawText(5,++line*12, ("num threads  : "+str(info.numThreads)).c_str());
+      pa.drawText(5,++line*12, ("cpu usage    : "+str(info.cpuUsage) + " %").c_str());
+      pa.drawText(5,++line*12, ("all cpu usage: "+str(info.allCpuUsage) +" %").c_str());
+      pa.drawText(5,++line*12, ("memory usage : "+str(info.allCpuUsage) + " MB").c_str());
+    }
+
+      
+  };
+  
   // quite complex component for embedded property component 'prop'
   struct ConfigurableGUIWidget : public GUIWidget{
 
@@ -1711,6 +1771,7 @@ public:
       MAP_CREATOR_FUNCS["config"] = create_widget_template<ConfigFileGUIWidget>;
       MAP_CREATOR_FUNCS["prop"] = create_widget_template<ConfigurableGUIWidget>;
       MAP_CREATOR_FUNCS["color"] = create_widget_template<ColorGUIWidget>;
+      MAP_CREATOR_FUNCS["ps"] = create_widget_template<ProcessMonitorGUIWidget>;
 
       //      MAP_CREATOR_FUNCS["hcontainer"] = create_widget_template<HContainerGUIWidget>;
       //      MAP_CREATOR_FUNCS["vcontainer"] = create_widget_template<VContainerGUIWidget>;
