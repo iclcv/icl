@@ -198,6 +198,8 @@
       - <b>config</b> single button or embedded tree-view that enables 
       - <b>prop</b> complex embedded component containing GUI compoments to configure an ICLUtils::Configurable at runtime
       - <b>color</b> component to choose a color using an pop-up QColorChooser
+      - <b>ps</b>process-statistics component (showing the current  processes thread-count, memory and processor usage)
+
         runtime adaption of configuration file parameters
 
       \subsection CONTROL Special Control Sequences
@@ -319,6 +321,9 @@
         initial alpha value can be provided as 4th parameter. In this case, the internal component is set up
         with alpha support and the popuped QColorChooser also contains an alpha-spin-box. Note, R,G,B and alpha
         are integers in range {0,255}. 
+      -<b>ps(UPDATE_FPS=10)</b> creates a process statistics compoment that is synchronously updated automatically
+        with the given framerate. The framerate must be > 0 and < 10. 10 Is the upper limit since process information
+        are not queried faster. This component shows nothing on windows.
 
       \subsection GP General Parameters
       The 3rd part of the GUI definition string is a list of so called general params. "General" means here,
@@ -425,6 +430,7 @@
       <TR> <TD>config</TD>       <TD>no handle</TD>         <TD>0</TD>                  <TD>-</TD>                                                   </TR>
       <TR> <TD>prop</TD>         <TD>no handle</TD>         <TD>0</TD>                  <TD>-</TD>                                                   </TR>
       <TR> <TD>color</TD>        <TD>ColorHandle</TD>       <TD>1 type Color4D</TD>     <TD>currently selected color</TD>                            </TR>
+      <TR> <TD>ps</TD>           <TD>no handle</TD>         <TD>0</TD>                  <TD>-</TD>                                                   </TR>
       </TABLE>
       
       \section HVV Handles vs. Values

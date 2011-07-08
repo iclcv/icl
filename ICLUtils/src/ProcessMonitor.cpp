@@ -107,6 +107,12 @@ namespace icl{
     delete m_data;
   }
   
+  static std::string strip_line(const std::string &s){
+    int i=0;
+    for(;s.length() && s[i]==' '; ++i);
+    return s.substr(i);
+  }
+  
   void ProcessMonitor::run(){
 #ifndef ICL_SYSTEM_WINDOWS
     const static std::string pid = str(getpid());
@@ -126,7 +132,7 @@ namespace icl{
           Mutex::Locker l(m_data->mutex);
           m_data->parse_top_line_cpus(line);
         }
-        if(line.substr(0,pid.length()) == pid){
+        if(strip_line(line).substr(0,pid.length()) == pid){
           Mutex::Locker l(m_data->mutex);
           m_data->parse_top_line(line);
           m_data->evaluate_proc();

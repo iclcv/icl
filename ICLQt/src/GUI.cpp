@@ -118,6 +118,7 @@
 #include <ICLQt/ColorLabel.h>
 #include <ICLUtils/Configurable.h>
 #include <ICLCC/Color.h>
+#include <QtGui/QProgressBar>
 
 #include <map>
 #include <set>
@@ -165,12 +166,16 @@ namespace icl{
 
   // }}}
 
+  /// special gui component for visualizing process information
   struct ProcessMonitorGUIWidget : public GUIWidget{
     QTimer updater;
     ProcessMonitor *pm;
     ProcessMonitor::Info info;
     
-    ProcessMonitorGUIWidget(const GUIDefinition &def):GUIWidget(def,0,1,GUIWidget::gridLayout,Size(8,5)){
+    QLabel *threadCountLabel,*memoryUsageLabel;
+    QProgressBar *cpuBar, *cpuBarThis;
+    
+    ProcessMonitorGUIWidget(const GUIDefinition &def):GUIWidget(def,0,1,GUIWidget::gridLayout,Size(6,3)){
       if(def.numParams() > 1) throw GUISyntaxErrorException(def.defString(),"0 or 1 parameters are allowed here");
       float fps = def.numParams() ? parse<float>(def.param(0)) : 10;
       if(fps <= 0 || fps > 10) throw GUISyntaxErrorException(def.defString(),"fps must be in range ]0,10]");
@@ -181,6 +186,42 @@ namespace icl{
       connect(&updater,SIGNAL(timeout()),this,SLOT(ioSlot()));
       
       updater.start();
+      
+      QLabel *p ;
+      addToGrid(p=new QLabel("thread count  :",this),0,0,5,1);
+      p->setToolTip("current number of threads\n"
+                    "of this process");
+
+      addToGrid(p=new QLabel("memory used :",this),0,1,5,1);
+      p->setToolTip("amount of memory that is\n"
+                    "currently used by this process");
+      
+      addToGrid(p=new QLabel("cpu used :",this),0,2,4,1);
+      p->setToolTip("current overall cpu usage\n"
+                    "(100% means all cores are\n"
+                    "fully used)");
+      
+      addToGrid(new QLabel("cpu this :",this),0,3,4,1);
+      p->setToolTip("current cpu usage of this process \n"
+                    "(100% means one core is fully used).\n"
+                    "Scales up to numCores x 100 %))");
+
+      threadCountLabel = new QLabel("1",this);
+      memoryUsageLabel = new QLabel("0 MB",this);
+      
+      addToGrid(threadCountLabel,5,0,3,1);
+      addToGrid(memoryUsageLabel,5,1,3,1);
+
+      cpuBar = new QProgressBar(this);
+      cpuBar->setRange(0,100);
+      cpuBar->setValue(50);
+      addToGrid(cpuBar,4,2,4,1);
+
+
+      cpuBarThis = new QProgressBar(this);
+      cpuBarThis->setRange(0,100);
+      cpuBarThis->setValue(77);
+      addToGrid(cpuBarThis,4,3,4,1);
     }
     
     
@@ -190,38 +231,17 @@ namespace icl{
 
     virtual void processIO(){
       info = pm->getInfo();
+      cpuBar->setValue((int)info.allCpuUsage);
+      cpuBarThis->setRange(0,info.numCPUs * 100);
+      cpuBarThis->setValue((int)info.cpuUsage);
+      
+      std::ostringstream s;
+      s << info.numThreads << " (" << info.numCPUs << " cores) ";
+      threadCountLabel->setText(s.str().c_str());
+
+      memoryUsageLabel->setText((str(info.memoryUsage)+" MB").c_str());
       update();
     }
-    
-    virtual void paintEvent(QPaintEvent *e){
-      SHOW(width());
-      SHOW(height());
-
-      QWidget::paintEvent(e);
-      QPainter pa(this);
-      pa.setRenderHint(QPainter::Antialiasing);
-      pa.setBrush(QColor(255,255,255));
-      pa.fillRect(0,0,width(),height(),QColor(255,255,255,255));
-
-      pa.setBrush(Qt::NoBrush);
-      pa.setPen(QColor(0,0,0,255));
-      
-      pa.drawRect(QRectF(1,1,width()-1,height()-1));
-
-
-      pa.setPen(QColor(0,0,0,255));
-      //      pa.setFont(QFont("Arial",10));
-      
-      int line = 2;
-      pa.drawText(5,++line*12, ("pid          : "+str(info.pid)).c_str());
-      pa.drawText(5,++line*12, ("num cpus     : "+str(info.numCPUs)).c_str());
-      pa.drawText(5,++line*12, ("num threads  : "+str(info.numThreads)).c_str());
-      pa.drawText(5,++line*12, ("cpu usage    : "+str(info.cpuUsage) + " %").c_str());
-      pa.drawText(5,++line*12, ("all cpu usage: "+str(info.allCpuUsage) +" %").c_str());
-      pa.drawText(5,++line*12, ("memory usage : "+str(info.allCpuUsage) + " MB").c_str());
-    }
-
-      
   };
   
   // quite complex component for embedded property component 'prop'
