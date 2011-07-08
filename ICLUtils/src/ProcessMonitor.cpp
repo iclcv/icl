@@ -181,7 +181,9 @@ namespace icl{
 #else
     return s << "Current Process Information (pid: " << info.pid << ")\n"
              << "thread count : " << info.numThreads << std::endl
+             << "num cores    : " << info.numCPUs << std::endl
              << "cpu usage    : " << info.cpuUsage << " %" << std::endl
+             << "all cpu usage: " << info.allCpuUsage << " %" << std::endl
              << "memory usage : " << info.memoryUsage << " MB" << std::endl;
 #endif
   }

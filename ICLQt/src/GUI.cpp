@@ -174,8 +174,11 @@ namespace icl{
     
     QLabel *threadCountLabel,*memoryUsageLabel;
     QProgressBar *cpuBar, *cpuBarThis;
+    bool rangeSet;
+    QCheckBox *disabled;
     
     ProcessMonitorGUIWidget(const GUIDefinition &def):GUIWidget(def,0,1,GUIWidget::gridLayout,Size(6,3)){
+      rangeSet = false;
       if(def.numParams() > 1) throw GUISyntaxErrorException(def.defString(),"0 or 1 parameters are allowed here");
       float fps = def.numParams() ? parse<float>(def.param(0)) : 10;
       if(fps <= 0 || fps > 10) throw GUISyntaxErrorException(def.defString(),"fps must be in range ]0,10]");
@@ -188,20 +191,23 @@ namespace icl{
       updater.start();
       
       QLabel *p ;
-      addToGrid(p=new QLabel("thread count  :",this),0,0,5,1);
+      addToGrid(p=new QLabel("thread count :",this),0,0,5,1);
       p->setToolTip("current number of threads\n"
-                    "of this process");
+                    "of this process. The number of cores\n"
+                    "is used to estimate the maximum value\n"
+                    "of processor usage percent, which is\n"
+                    "#cores x 100%.");
 
       addToGrid(p=new QLabel("memory used :",this),0,1,5,1);
       p->setToolTip("amount of memory that is\n"
                     "currently used by this process");
       
-      addToGrid(p=new QLabel("cpu used :",this),0,2,4,1);
+      addToGrid(p=new QLabel("overall cpu used :",this),0,2,5,1);
       p->setToolTip("current overall cpu usage\n"
                     "(100% means all cores are\n"
                     "fully used)");
       
-      addToGrid(new QLabel("cpu this :",this),0,3,4,1);
+      addToGrid(new QLabel("cpu this process :",this),0,3,5,1);
       p->setToolTip("current cpu usage of this process \n"
                     "(100% means one core is fully used).\n"
                     "Scales up to numCores x 100 %))");
@@ -215,13 +221,17 @@ namespace icl{
       cpuBar = new QProgressBar(this);
       cpuBar->setRange(0,100);
       cpuBar->setValue(50);
-      addToGrid(cpuBar,4,2,4,1);
+      addToGrid(cpuBar,5,2,4,1);
 
 
       cpuBarThis = new QProgressBar(this);
-      cpuBarThis->setRange(0,100);
       cpuBarThis->setValue(77);
-      addToGrid(cpuBarThis,4,3,4,1);
+      cpuBarThis->setFormat("%v%");
+      addToGrid(cpuBarThis,5,3,4,1);
+      
+      disabled= new QCheckBox("disable updates",this);
+      disabled->setChecked(false);
+      addToGrid(disabled,0,4,8,1);
     }
     
     
@@ -230,9 +240,14 @@ namespace icl{
     }
 
     virtual void processIO(){
+      if(disabled->checkState() == Qt::Checked) return;
+      
       info = pm->getInfo();
       cpuBar->setValue((int)info.allCpuUsage);
-      cpuBarThis->setRange(0,info.numCPUs * 100);
+      if(!rangeSet){
+        rangeSet = true;
+        cpuBarThis->setRange(0,info.numCPUs * 100);
+      }
       cpuBarThis->setValue((int)info.cpuUsage);
       
       std::ostringstream s;
