@@ -77,6 +77,7 @@ namespace icl{
 
     SmartPtr<PatternBinarization> bin;
     int maxBCHErr;
+    BCHCoder bch;
   };
   
   FiducialDetectorPluginBCH::FiducialDetectorPluginBCH():
@@ -146,6 +147,7 @@ namespace icl{
         break;
       }
     }
+
   }
 
 
@@ -166,7 +168,7 @@ namespace icl{
     
     data->bin->apply(data->buffer.begin(0));
     
-    DecodedBCHCode2D p = decode_bch_2D(data->buffer,data->maxLoaded,false);
+    DecodedBCHCode2D p = data->bch.decode2D(data->buffer,data->maxLoaded,false);
 
     static Fiducial::FeatureSet supported = Fiducial::AllFeatures;
     static Fiducial::FeatureSet computed = ( Fiducial::Center2D | 
@@ -195,7 +197,7 @@ namespace icl{
   }
 
   Img8u FiducialDetectorPluginBCH::createMarker(const Any &whichOne,const Size &size, const ParamList &params){
-    return create_bch_marker_image(whichOne,params["border width"],size);
+    return BCHCoder::createMarkerImage(whichOne,params["border width"],size);
   }
 
 

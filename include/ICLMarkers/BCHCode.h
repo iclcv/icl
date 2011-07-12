@@ -37,6 +37,7 @@
 
 #include <bitset>
 #include <ICLUtils/BasicTypes.h>
+#include <ICLUtils/Uncopyable.h>
 #include <ICLCore/Img.h>
 
 namespace icl{
@@ -73,72 +74,86 @@ namespace icl{
   /// ostream-operator for DecodedBCHCode2D::Rotation
   std::ostream &operator<<(std::ostream &s, const DecodedBCHCode2D::Rotation &r);
 
+  /// Main class for BCH encoding/decoding
+  /** Due to some internal buffers, this must be implemented as a class */
+  class BCHCoder : public Uncopyable{
+    class Impl; //!< internal implementation structure
+    Impl *impl; //!< implementation pointer
+    
+    public:
+    /// Default constructor
+    BCHCoder();
 
-  /// encodes a given index in range [0,4095] to a BCHBinary code
-  BCHCode encode_bch(int idx);
+    /// Destructor
+    ~BCHCoder();
+                
+    /// encodes a given index in range [0,4095] to a BCHBinary code
+    static BCHCode encode(int idx);
   
-  /// creates an image that show a given bch marker
-  /** @param idx which marker
-      @param border amount of border pixels (here, we use the unit of marker pixels,
-                    the maker code is always 6x6 marker pixels)
-      @param resultSize first a (2*border+6)x(2*border+6) image of the marker is created.
-                        Then it is upscaled to the given Size using nearest neighbour interpolation.
-                        If resultSize is null, the (2*border+6)x(2*border+6) image is returned
-                        directly without upscaling */
-  Img8u create_bch_marker_image(int idx, int border=2, const Size &resultSize=Size::null);
+    /// creates an image that show a given bch marker
+    /** @param idx which marker
+        @param border amount of border pixels (here, we use the unit of marker pixels,
+        the maker code is always 6x6 marker pixels)
+        @param resultSize first a (2*border+6)x(2*border+6) image of the marker is created.
+        Then it is upscaled to the given Size using nearest neighbour interpolation.
+        If resultSize is null, the (2*border+6)x(2*border+6) image is returned
+        directly without upscaling */
+    static Img8u createMarkerImage(int idx, int border=2, const Size &resultSize=Size::null);
 
-  /// decodes given binary code
-  /** We use an error correcting 36Bit BCH code that carries
-      12 bit of information (i.e. each possible code is associated
-      with a unique index (0 <= index <= 4095). 
-      The code provides automatic error correction for inputs that
-      have not more than 4 errors. Its minimal hammin distance is 8.
-      The higher the code indices, the lower their hamming distance:
-      - min hamming distance > 8 : all
-      - min hamming distance > 9 : IDs 0-63
-      - min hamming distance > 10 : IDs 0-15
-      - min hamming distance > 13 : IDs 0-3
-      - min hamming distance > 16 : IDs 0-1 
+    /// interpretes the given 36Bit as 6x6 image and rotates it by clock wise by 90 degree
+    static BCHCode rotateCode(const BCHCode &in);
 
-      \section BENCH benchmark
-      Decoding works quite fast, however the decoder works slightly slower
-      if errors have to be corrected. We benchmarked the BCHDecoder on an
-      Intel(R) Xeon(R) CPU E5530 running at 2.40GHz, on 32Bit Ubuntu Linux.
-      * Decoding without errors (2ns)
-      * Decoding with 1,2 and 3 errors (3ns)
-      * Decoding with 4 errors (4ns)
-      
-      \section IMPL Encoder/Decoder Implementation
-      We used the code implemented by Robert Morelos-Zaragoza. You can
-      find his copyright note in the corresponding .cpp file
-  */
-  DecodedBCHCode decode_bch(const BCHCode &code);
-  
-  /// decodes given (correctly oriented) byte image patch
-  DecodedBCHCode decode_bch(const icl8u data[36]);
-
-  /// decodes given (correctly oriented) Img8u (optionally using its ROI or not)
-  DecodedBCHCode decode_bch(const Img8u &image, bool useROI=true) throw (ICLException);
-
-  /// decodes given Img8u (optionally using its ROI or not)
-  /** Internally, this methods checks for all 4 possible image rotations and returns
-      the most plausible result.
-
-      \section ROT Rotated Hamming Distances
-      If we allow rotations, the expected inter-marker hamming distances gets smaller.
-      - min hamming distance > 1:  all
-      - min hamming distance > 2:  3080
-      - min hamming distance > 4:  2492
-      - min hamming distance > 5:  482
-      - min hamming distance > 8:  18
-      - min hamming distance > 10: 10
-      - min hamming distance > 11: 4
-      
-      <b>please note</b> that it's best to use the first N IDs if you want to use N markers
-  */
-  DecodedBCHCode2D decode_bch_2D(const Img8u &image, int maxID=4095, bool useROI=true) throw (ICLException);
-
-  /// interpretes the given 36Bit as 6x6 image and rotates it by clock wise by 90 degree
-  BCHCode rotate_code(const BCHCode &in);
+    
+    /** We use an error correcting 36Bit BCH code that carries
+        12 bit of information (i.e. each possible code is associated
+        with a unique index (0 <= index <= 4095). 
+        The code provides automatic error correction for inputs that
+        have not more than 4 errors. Its minimal hammin distance is 8.
+        The higher the code indices, the lower their hamming distance:
+        - min hamming distance > 8 : all
+        - min hamming distance > 9 : IDs 0-63
+        - min hamming distance > 10 : IDs 0-15
+        - min hamming distance > 13 : IDs 0-3
+        - min hamming distance > 16 : IDs 0-1 
+        
+        \section BENCH benchmark
+        Decoding works quite fast, however the decoder works slightly slower
+        if errors have to be corrected. We benchmarked the BCHDecoder on an
+        Intel(R) Xeon(R) CPU E5530 running at 2.40GHz, on 32Bit Ubuntu Linux.
+        * Decoding without errors (2ns)
+        * Decoding with 1,2 and 3 errors (3ns)
+        * Decoding with 4 errors (4ns)
+        
+        \section IMPL Encoder/Decoder Implementation
+        We used the code implemented by Robert Morelos-Zaragoza. You can
+        find his copyright note in the corresponding .cpp file
+        */
+    DecodedBCHCode decode(const BCHCode &code);
+    
+    /// decodes given (correctly oriented) byte image patch
+    DecodedBCHCode decode(const icl8u data[36]);
+    
+    /// decodes given (correctly oriented) Img8u (optionally using its ROI or not)
+    DecodedBCHCode decode(const Img8u &image, bool useROI=true) throw (ICLException);
+    
+    /// decodes given Img8u (optionally using its ROI or not)
+    /** Internally, this methods checks for all 4 possible image rotations and returns
+        the most plausible result.
+        
+        \section ROT Rotated Hamming Distances
+        If we allow rotations, the expected inter-marker hamming distances gets smaller.
+        - min hamming distance > 1:  all
+        - min hamming distance > 2:  3080
+        - min hamming distance > 4:  2492
+        - min hamming distance > 5:  482
+        - min hamming distance > 8:  18
+        - min hamming distance > 10: 10
+        - min hamming distance > 11: 4
+        
+        <b>please note</b> that it's best to use the first N IDs if you want to use N markers
+        */
+    DecodedBCHCode2D decode2D(const Img8u &image, int maxID=4095, bool useROI=true) throw (ICLException);
+    
+  };
 } 
 #endif

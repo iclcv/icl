@@ -38,8 +38,11 @@
 #include <ICLUtils/SmartPtr.h>
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/FixedVector.h>
+#include <ICLUtils/Mutex.h>
 
 #include <ICLMarkers/BCHCode.h>
+
+
 
 namespace icl {
   
@@ -63,362 +66,14 @@ namespace icl {
       ARToolkitPlus can also be used under the terms of the GNU public license
   */
 
-  /// this class implements a (36-bit binary BCH en/decoder)
-  /** the code can carry 12 bits of information and it can be
-      extracted event if 4 errors occur */
-  namespace {
-    struct BCHCoder{
-      enum Constants{
-        BCH_DEFAULT_M      = 6,
-        BCH_DEFAULT_LENGTH = 36,
-        BCH_DEFAULT_T      = 4,
-        BCH_DEFAULT_K      = 12,
-        BCH_MAX_M          = 6,
-        BCH_MAX_P          = 7,   // MAX_M+1
-        BCH_MAX_LUT        = 64,  // 2^MAX_M
-        BCH_MAX_SQ         = 8    // SQRT(MAX_LUT) -- (?)
-      };
-      int t, m, n, length, k, d;
-      FixedMatrix<int,BCH_MAX_LUT,BCH_MAX_LUT> m_elp; 
-      FixedColVector<int,BCH_MAX_P> p;
-      FixedColVector<int,BCH_MAX_LUT> alpha_to,index_of,g,m_d,m_l,m_ulu,m_s,m_root,m_loc,m_reg;
-      
-      typedef int64_t _64bits;
 
-      private:
-      BCHCoder(){
-        // {{{ open
-        m = BCH_DEFAULT_M;
-        length = BCH_DEFAULT_LENGTH;
-        t = BCH_DEFAULT_T;
-        std::fill(p.begin(),p.begin()+m+1,0);
-        p[0] = p[1] = 1;
-        n = (1 << m) - 1;
-
-        // generate galois field GF(2**m)
-        int mask = 1;
-        alpha_to[m] = 0;
-        for (int i = 0; i < m; i++) {
-          alpha_to[i] = mask;
-          index_of[alpha_to[i]] = i;
-          if (p[i] != 0){
-            alpha_to[m] ^= mask;
-          }
-          mask <<= 1;
-        }
-        index_of[alpha_to[m]] = m;
-        mask >>= 1;
-        for (int i = m + 1; i < n; i++) {
-          if (alpha_to[i - 1] >= mask){
-            alpha_to[i] = alpha_to[m] ^ ((alpha_to[i - 1] ^ mask) << 1);
-          }else{
-            alpha_to[i] = alpha_to[i - 1] << 1;
-          }
-          index_of[alpha_to[i]] = i;
-        }
-        index_of[0] = -1;
-          
-        gen_poly();      
-      }
-      // }}}
-
-      bool gen_poly(){
-        // {{{ open
-        int ii, jj, ll, kaux;
-        int test, aux, nocycles, root, noterms, rdncy;
-        int cycle[1024][21], size[1024], min[1024], zeros[1024];
-        
-        /* Generate cycle sets modulo n, n = 2**m - 1 */
-        cycle[0][0] = 0;
-        size[0] = 1;
-        cycle[1][0] = 1;
-        size[1] = 1;
-        jj = 1;			/* cycle set index */
-        
-        
-        do {
-          /* Generate the jj-th cycle set */
-          ii = 0;
-          do {
-            ii++;
-            cycle[jj][ii] = (cycle[jj][ii - 1] * 2) % n;
-            size[jj]++;
-            aux = (cycle[jj][ii] * 2) % n;
-          } while (aux != cycle[jj][0]);
-          /* Next cycle set representative */
-          ll = 0;
-          do {
-            ll++;
-            test = 0;
-            for (ii = 1; ((ii <= jj) && (!test)); ii++)	
-              /* Examine previous cycle sets */
-              for (kaux = 0; ((kaux < size[ii]) && (!test)); kaux++)
-                if (ll == cycle[ii][kaux])
-                  test = 1;
-          } while ((test) && (ll < (n - 1)));
-          if (!(test)) {
-            jj++;	/* next cycle set index */
-            cycle[jj][0] = ll;
-            size[jj] = 1;
-          }
-        } while (ll < (n - 1));
-        nocycles = jj;		/* number of cycle sets modulo n */
-        d = 2 * t + 1;
-        
-        /* Search for roots 1, 2, ..., d-1 in cycle sets */
-        kaux = 0;
-        rdncy = 0;
-        for (ii = 1; ii <= nocycles; ii++) {
-          min[kaux] = 0;
-          test = 0;
-          for (jj = 0; ((jj < size[ii]) && (!test)); jj++)
-            for (root = 1; ((root < d) && (!test)); root++)
-              if (root == cycle[ii][jj])  {
-                test = 1;
-                min[kaux] = ii;
-              }
-          if (min[kaux]) {
-            rdncy += size[min[kaux]];
-            kaux++;
-          }
-        }
-        noterms = kaux;
-        kaux = 1;
-        for (ii = 0; ii < noterms; ii++)
-          for (jj = 0; jj < size[min[ii]]; jj++) {
-            zeros[kaux] = cycle[min[ii]][jj];
-            kaux++;
-          }
-        
-        k = length - rdncy;
-        
-        if (k<0){
-          return false;
-        }
-        
-        /* Compute the generator polynomial */
-        g[0] = alpha_to[zeros[1]];
-        g[1] = 1;		/* g(x) = (X + zeros[1]) initially */
-        for (ii = 2; ii <= rdncy; ii++) {
-          g[ii] = 1;
-          for (jj = ii - 1; jj > 0; jj--)
-            if (g[jj] != 0)
-              g[jj] = g[jj - 1] ^ alpha_to[(index_of[g[jj]] + zeros[ii]) % n];
-            else
-              g[jj] = g[jj - 1];
-          g[0] = alpha_to[(index_of[g[0]] + zeros[ii]) % n];
-        }
-        return true;
-      }
-      // }}}
-
-      public:
-      
-      static BCHCoder *getInstance(){
-        // {{{ open
-        static SmartPtr<BCHCoder> instance(new BCHCoder);
-        return instance.get();
-      }
-      // }}}
-
-      /// not used because, we pre-encoded the whole data-set
-      void encode_bch(int *bb, const int *data){
-        // {{{ open
-        int    i, j;
-        int    feedback;
-        
-        for (i = 0; i < length - k; i++)
-          bb[i] = 0;
-        for (i = k - 1; i >= 0; i--) {
-          feedback = data[i] ^ bb[length - k - 1];
-          if (feedback != 0) {
-            for (j = length - k - 1; j > 0; j--)
-              if (g[j] != 0)
-                bb[j] = bb[j - 1] ^ feedback;
-              else
-                bb[j] = bb[j - 1];
-            bb[0] = g[0] && feedback;
-          } else {
-            for (j = length - k - 1; j > 0; j--)
-              bb[j] = bb[j - 1];
-            bb[0] = 0;
-          }
-        }
-      }
-      // }}}
-
-      // adapted version that works on an encoded int64_t,
-      // the original version got an int[]
-      int decode_bch_2(int64_t &code){
-        // {{{ open
-        int i, j, u, q, t2, count = 0, syn_error = 0;
-        bool too_many_errors = false;
-        int64_t one = 1;
-        t2 = 2 * t;
-        
-        /* first form the syndromes */
-        for (i = 1; i <= t2; i++) {
-          m_s[i] = 0;
-          for (j = 0; j < length; j++)
-            if ((code&(one<<j)))  //TODO check
-              m_s[i] ^= alpha_to[(i * j) % n];
-          if (m_s[i] != 0)
-            syn_error = 1; /* set error flag if non-zero syndrome */
-          /*
-              * Note:    If the code is used only for ERROR DETECTION, then
-              *          exit program here indicating the presence of errors.
-              */
-          /* convert syndrome from polynomial form to index form  */
-          m_s[i] = index_of[m_s[i]];
-        }
-        
-        
-        if (syn_error) {	/* if there are errors, try to correct them */
-          /*
-              * Compute the error location polynomial via the Berlekamp
-              * iterative algorithm. Following the terminology of Lin and
-              * Costello's book :   d[u] is the 'mu'th discrepancy, where
-              * u='mu'+1 and 'mu' (the Greek letter!) is the step number
-              * ranging from -1 to 2*t (see L&C),  l[u] is the degree of
-              * the elp at that step, and u_l[u] is the difference between
-              * the step number and the degree of the elp. 
-              */
-          /* initialise table entries */
-          m_d[0] = 0;			/* index form */
-          m_d[1] = m_s[1];		/* index form */
-          m_elp(0,0) = 0;//[0][0] = 0;		/* index form */
-          m_elp(1,0) = 1;		/* polynomial form */
-          for (i = 1; i < t2; i++) {
-            m_elp(0,i) = -1;	/* index form */
-            m_elp(1,i) = 0;	/* polynomial form */
-          }
-          m_l[0] = 0;
-          m_l[1] = 0;
-          m_ulu[0] = -1;
-          m_ulu[1] = 0;
-          u = 0;
-          
-          do {
-            u++;
-            if (m_d[u] == -1) {
-              m_l[u + 1] = m_l[u];
-              for (i = 0; i <= m_l[u]; i++) {
-                m_elp(u + 1,i) = m_elp(u,i);
-                m_elp(u,i) = index_of[m_elp(u,i)];
-              }
-            } else
-              /*
-                  * search for words with greatest m_ulu[q] for
-                  * which m_d[q]!=0 
-                  */
-              {
-                q = u - 1;
-                while ((m_d[q] == -1) && (q > 0))
-                  q--;
-                /* have found first non-zero m_d[q]  */
-                if (q > 0) {
-                  j = q;
-                  do {
-                    j--;
-                    if ((m_d[j] != -1) && (m_ulu[q] < m_ulu[j]))
-                      q = j;
-                  } while (j > 0);
-                }
-            
-                /*
-                    * have now found q such that m_d[u]!=0 and
-                    * m_ulu[q] is maximum 
-                    */
-                /* store degree of new elp polynomial */
-                if (m_l[u] > m_l[q] + u - q)
-                  m_l[u + 1] = m_l[u];
-                else
-                  m_l[u + 1] = m_l[q] + u - q;
-            
-                /* form new elp(x) */
-                for (i = 0; i < t2; i++)
-                  m_elp(u + 1,i) = 0;
-                for (i = 0; i <= m_l[q]; i++)
-                  if (m_elp(q,i) != -1)
-                    m_elp(u + 1,i + u - q) = 
-                    alpha_to[(m_d[u] + n - m_d[q] + m_elp(q,i)) % n];
-                for (i = 0; i <= m_l[u]; i++) {
-                  m_elp(u + 1,i) ^= m_elp(u,i);
-                  m_elp(u,i) = index_of[m_elp(u,i)];
-                }
-              }
-            m_ulu[u + 1] = u - m_l[u + 1];
-        
-            /* form (u+1)th discrepancy */
-            if (u < t2) {	
-              /* no discrepancy computed on last iteration */
-              if (m_s[u + 1] != -1)
-                m_d[u + 1] = alpha_to[m_s[u + 1]];
-              else
-                m_d[u + 1] = 0;
-              for (i = 1; i <= m_l[u + 1]; i++)
-                if ((m_s[u + 1 - i] != -1) && (m_elp(u + 1,i) != 0))
-                  m_d[u + 1] ^= alpha_to[(m_s[u + 1 - i] 
-                                          + index_of[m_elp(u + 1,i)]) % n];
-              /* put m_d[u+1] into index form */
-              m_d[u + 1] = index_of[m_d[u + 1]];	
-            }
-          } while ((u < t2) && (m_l[u + 1] <= t));
-      
-          u++;
-          if (m_l[u] <= t) {/* Can correct errors */
-            /* put elp into index form */
-            for (i = 0; i <= m_l[u]; i++)
-              m_elp(u,i) = index_of[m_elp(u,i)];
-        
-            /* Chien search: find roots of the error location polynomial */
-            for (i = 1; i <= m_l[u]; i++)
-              m_reg[i] = m_elp(u,i);
-            count = 0;
-            for (i = 1; i <= n; i++) {
-              q = 1;
-              for (j = 1; j <= m_l[u]; j++)
-                if (m_reg[j] != -1) {
-                  m_reg[j] = (m_reg[j] + j) % n;
-                  q ^= alpha_to[m_reg[j]];
-                }
-              if (!q) {	/* store root and error
-                            * location number indices */
-                m_root[count] = i;
-                m_loc[count] = n - i;
-                count++;
-              }
-            }
-            if (count == m_l[u])	
-              {
-                /* no. roots = degree of elp hence <= t errors */
-                for (i = 0; i < m_l[u]; i++)
-                  {
-                    int li = m_loc[i];
-                    if(li<BCH_DEFAULT_LENGTH){
-                      //code[m_loc[i]].flip(); //^= 1;
-                      code ^= (one << li);
-                    }
-                    else too_many_errors = true;
-                  }
-              }
-            else	/* elp has degree >t hence cannot solve */
-              {
-                return(m_l[u]); // number of errors
-            
-              }
-          }
-        }
-        if(too_many_errors) return(BCH_DEFAULT_T+1);
-        else return(syn_error == 0 ? 0 : m_l[u]); // number of errors
-      }
-      // }}}
-    };
-  }
+  static SmartPtr<icl8u> static_indices;
+  static const char **static_bch_codes=0;
   
-  BCHCode encode_bch(int idx){
-    // {{{ open
-    static const char *bch_codes[4096]={
+  static void init_static_data(){
+    if(static_indices) return;
+    
+    static const char *all_codes[4096]={
       "XhqhUc","XNlua5","XxMD3K","X39ozF","XplQIr","XVq5mQ","XF9W73","X-MJvm","XdMcMW","XJ9ril","Xtqy-w","XZllrT","Xl9VQJ","XRM8ey","XBl1Zf","X7qMD+","XfRfQB","XLWweG","XvDFZ9","X1gmDg","XnWOMi","XTR7iZ","XDgY-U","X9DHrv","XbDaIP","XHgtms","XrRA7p","XXWjv0","XjgTU6","XPD+ab","XzW33C","X5RKzN","XgwvI1","XMngmo","XwGp7t","X27CvO","Xon4UM","XUwRaD","XE7I3a","X+GXz7","XcGqQh","XI7de8","XswkZH","XYnzDA","Xk79Mu","XQGUiV","XAnN-Y","X6w0rj","XeTxMS","XK2eix","XuBn-k","X0aErX","Xm26Q-","XSTPee","XCaGZz","X8BZDI","XaBsUE","XGabaL","XqTi34","XW2Bzd","Xia-In","XOBSm2","Xy2L7R","X4T2vq",
       "rhtoiz","rNiDMI","rxLur-","r3+h-e","rpiJek","rVtWQX","rF+5DS","r-LQZx","rdLlaR","rJ+yUq","rttrzn","rZic32","rl+Mm4","rRL1Id","rBi8vE","r7tV7L","rfOmma","rLZFI7","rvEwvM","r1ff7D","rnZHat","rTOYUO","rDf7z1","r9EO3o","rbEjeY","rHfAQj","rrOtDu","rXZaZV","rjfKiH","rPE3MA","rzZ+rh","r5OT-8","rgvCeU","rMopQv","rwJgDi","r24vZZ","rooXi9","rUvIMg","rE4RrB","r+J4-G","rcJzmC","rI4kIN","rsvdv6","rYoq7b","rk40ap","rQJNU0","rAoUzP","r6v93s","reUEa3","rK1nUm","ruyezr","r0dx3Q","rm1ZmK","rSUGIF","rCdPvc","r8y675","rayBif","rGdiM+","rqUbrJ","rW1s-y","rid2ew","rOyLQT","ry1SDW","r4U-Zl",
       "HhQqZ0","HNXdDp","HxCkQs","H3hzeP","HpX9-N","HVQUrC","HFhNMb","H-C0i6","HdCv7g","HJhgv9","HtQpIG","HZXCmB","Hlh43v","HRCRzU","HBXIUZ","H7QXai","Hfrs3T","HLkbzw","HvNiUl","H18BaW","Hnk-7+","HTrSvf","HD8LIy","H9N2mJ","HbNx-F","HH8erK","HrrnM5","HXkEic","Hj86Zm","HPNPD3","HzkGQQ","H5rZer","HgSc-d","HM3rr4","HwAyML","H2bliE","Ho3VZq","HUS8DR","HEb1Q2","H+AMen","HcAh3X","HIbuzk","HsSDUx","HY3oaS","HkbQ7I","HQA5vz","HA3WIe","H6SJm-","Hexa7A","HKmtvH","HuHAI8","H06jmh","HmmT3j","HSx+zY","HC63UV","H8HKau","HaHfZO","HG6wDt","HqxFQo","HWmme1","Hi6O-7","HOH7ra","HymYMD","H4xHiM",
@@ -484,34 +139,388 @@ namespace icl {
       "UhKgLs","UN-vlP","UxsC80","U3jpsp","Up-RPb","UVK4h6","UFjXWN","U-sIEC","UdsdTG","UJjqdB","UtKz0g","UZ-kA9","UljUHZ","URs9pi","UB-04v","U7KNwU","UfFeHl","ULexpW","UvPE4T","U1Ynww","UnePTy","UTF6dJ","UDYZ0+","U9PGAf","UbPbP5","UHYshc","UrFBWF","UXeiEK","UjYSLQ","UPP-lr","Uze28m","U5FLs3","UgIuPL","UM5hhE","UwuoWd","U2pDE4","Uo55L2","UUIQln","UEpJ8q","U+uWsR","UcurHx","UIpcpS","UsIl4X","UY5ywk","Ukp8Te","UQuVd-","UA5M0I","U6I1Az","UezwT8","UKcfdh","UuVm0A","U00FAH","Umc7HV","USzOpu","UC0H4j","U8VYwY","UaVtLo","UG0al1","Uqzj8O","UWcAst","Ui0+PD","UOVThM","UycKW7","U4z3Ea",
       "ohNpdj","oN8CTY","oxrvAV","o3kg0u","op8IpA","oVNXHH","oFk4w8","o-rR4h","odrkl7","oJkzLa","otNqsD","oZ8d8M","olkNhO","oRr0Pt","oB89Eo","o7NUW1","ofCnhq","oLhEPR","ovQxE2","o1XeWn","onhGld","oTCZL4","oDX6sL","o9QP8E","obQipI","oHXBHz","orCswe","oXhb4-","ojXLdX","oPQ2Tk","ozh-Ax","o5CS0S","ogHDp+","oM6oHf","owxhwy","o2mu4J","oo6WdT","oUHJTw","oEmQAl","o+x50W","ocxyhm","oImlP3","osHcEQ","oY6rWr","okm1lF","oQxMLK","oA6Vs5","o6H88c","oeAFlN","oKbmLC","ouSfsb","o03w86","ombYh0","oSAHPp","oC3OEs","o8S7WP","oaSAdv","oG3jTU","oqAaAZ","oWbt0i","oi33pg","oOSKH9","oybTwG","o4A+4B"
     };
+    
+    static_bch_codes = all_codes;
+    const char *lut = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+-\0";
+    static_indices = new icl8u[256];
+    for(const char *p=lut;*p;++p){
+      static_indices.get()[(int)*p] = (icl8u)(p-lut);
+    }
+  }
 
-    static SmartPtr<icl8u> indices;
-    if(!indices){
-      const char *lut = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+-\0";
-      indices = new icl8u[256];
-      for(const char *p=lut;*p;++p){
-        indices.get()[(int)*p] = (icl8u)(p-lut);
+  /// this class implements a (36-bit binary BCH en/decoder)
+  /** the code can carry 12 bits of information and it can be
+      extracted event if 4 errors occur */
+  struct BCHCoder::Impl{
+    enum Constants{
+      BCH_DEFAULT_M      = 6,
+      BCH_DEFAULT_LENGTH = 36,
+      BCH_DEFAULT_T      = 4,
+      BCH_DEFAULT_K      = 12,
+      BCH_MAX_M          = 6,
+      BCH_MAX_P          = 7,   // MAX_M+1
+      BCH_MAX_LUT        = 64,  // 2^MAX_M
+      BCH_MAX_SQ         = 8    // SQRT(MAX_LUT) -- (?)
+    };
+    int t, m, n, length, k, d;
+    FixedMatrix<int,BCH_MAX_LUT,BCH_MAX_LUT> m_elp; 
+    FixedColVector<int,BCH_MAX_P> p;
+    FixedColVector<int,BCH_MAX_LUT> alpha_to,index_of,g,m_d,m_l,m_ulu,m_s,m_root,m_loc,m_reg;
+    
+    typedef int64_t _64bits;
+
+    Impl(){
+      init_static_data();
+
+      // {{{ open
+      m = BCH_DEFAULT_M;
+      length = BCH_DEFAULT_LENGTH;
+      t = BCH_DEFAULT_T;
+      std::fill(p.begin(),p.begin()+m+1,0);
+      p[0] = p[1] = 1;
+      n = (1 << m) - 1;
+      
+      // generate galois field GF(2**m)
+        int mask = 1;
+        alpha_to[m] = 0;
+        for (int i = 0; i < m; i++) {
+          alpha_to[i] = mask;
+          index_of[alpha_to[i]] = i;
+          if (p[i] != 0){
+            alpha_to[m] ^= mask;
+          }
+          mask <<= 1;
+        }
+        index_of[alpha_to[m]] = m;
+        mask >>= 1;
+        for (int i = m + 1; i < n; i++) {
+          if (alpha_to[i - 1] >= mask){
+            alpha_to[i] = alpha_to[m] ^ ((alpha_to[i - 1] ^ mask) << 1);
+          }else{
+            alpha_to[i] = alpha_to[i - 1] << 1;
+          }
+          index_of[alpha_to[i]] = i;
+        }
+        index_of[0] = -1;
+        
+        gen_poly();   
+        
+        std::fill(m_elp.begin(),m_elp.end(),0);
+    }
+    // }}}
+    
+    bool gen_poly(){
+      // {{{ open
+      int ii, jj, ll, kaux;
+      int test, aux, nocycles, root, noterms, rdncy;
+      int cycle[1024][21], size[1024], min[1024], zeros[1024];
+      
+      /* Generate cycle sets modulo n, n = 2**m - 1 */
+      cycle[0][0] = 0;
+      size[0] = 1;
+      cycle[1][0] = 1;
+      size[1] = 1;
+      jj = 1;			/* cycle set index */
+      
+      
+      do {
+        /* Generate the jj-th cycle set */
+        ii = 0;
+        do {
+          ii++;
+          cycle[jj][ii] = (cycle[jj][ii - 1] * 2) % n;
+          size[jj]++;
+          aux = (cycle[jj][ii] * 2) % n;
+        } while (aux != cycle[jj][0]);
+        /* Next cycle set representative */
+        ll = 0;
+        do {
+          ll++;
+          test = 0;
+          for (ii = 1; ((ii <= jj) && (!test)); ii++)	
+            /* Examine previous cycle sets */
+            for (kaux = 0; ((kaux < size[ii]) && (!test)); kaux++)
+              if (ll == cycle[ii][kaux])
+                test = 1;
+        } while ((test) && (ll < (n - 1)));
+        if (!(test)) {
+          jj++;	/* next cycle set index */
+          cycle[jj][0] = ll;
+          size[jj] = 1;
+        }
+      } while (ll < (n - 1));
+      nocycles = jj;		/* number of cycle sets modulo n */
+      d = 2 * t + 1;
+        
+      /* Search for roots 1, 2, ..., d-1 in cycle sets */
+      kaux = 0;
+      rdncy = 0;
+      for (ii = 1; ii <= nocycles; ii++) {
+        min[kaux] = 0;
+        test = 0;
+        for (jj = 0; ((jj < size[ii]) && (!test)); jj++)
+          for (root = 1; ((root < d) && (!test)); root++)
+            if (root == cycle[ii][jj])  {
+              test = 1;
+              min[kaux] = ii;
+            }
+        if (min[kaux]) {
+          rdncy += size[min[kaux]];
+          kaux++;
+        }
+      }
+      noterms = kaux;
+      kaux = 1;
+      for (ii = 0; ii < noterms; ii++)
+        for (jj = 0; jj < size[min[ii]]; jj++) {
+          zeros[kaux] = cycle[min[ii]][jj];
+          kaux++;
+        }
+        
+      k = length - rdncy;
+        
+      if (k<0){
+        return false;
+      }
+        
+      /* Compute the generator polynomial */
+      g[0] = alpha_to[zeros[1]];
+      g[1] = 1;		/* g(x) = (X + zeros[1]) initially */
+      for (ii = 2; ii <= rdncy; ii++) {
+        g[ii] = 1;
+        for (jj = ii - 1; jj > 0; jj--)
+          if (g[jj] != 0)
+            g[jj] = g[jj - 1] ^ alpha_to[(index_of[g[jj]] + zeros[ii]) % n];
+          else
+            g[jj] = g[jj - 1];
+        g[0] = alpha_to[(index_of[g[0]] + zeros[ii]) % n];
+      }
+      return true;
+    }
+    // }}}
+
+    
+    /// not used because, we pre-encoded the whole data-set
+    void encode_bch(int *bb, const int *data){
+      // {{{ open
+      int    i, j;
+      int    feedback;
+      
+      for (i = 0; i < length - k; i++)
+        bb[i] = 0;
+      for (i = k - 1; i >= 0; i--) {
+        feedback = data[i] ^ bb[length - k - 1];
+        if (feedback != 0) {
+          for (j = length - k - 1; j > 0; j--)
+            if (g[j] != 0)
+              bb[j] = bb[j - 1] ^ feedback;
+            else
+              bb[j] = bb[j - 1];
+          bb[0] = g[0] && feedback;
+        } else {
+          for (j = length - k - 1; j > 0; j--)
+            bb[j] = bb[j - 1];
+          bb[0] = 0;
+        }
       }
     }
+    // }}}
+    
+    // adapted version that works on an encoded int64_t,
+    // the original version got an int[]
+    int decode_bch_2(int64_t &code){
+      // {{{ open
+      
+      int i, j, u, q, t2, count = 0, syn_error = 0;
+      bool too_many_errors = false;
+      int64_t one = 1;
+      t2 = 2 * t;
+      
+      /* first form the syndromes */
+      for (i = 1; i <= t2; i++) {
+        m_s[i] = 0;
+        for (j = 0; j < length; j++)
+          if ((code&(one<<j)))  //TODO check
+            m_s[i] ^= alpha_to[(i * j) % n];
+        if (m_s[i] != 0)
+          syn_error = 1; /* set error flag if non-zero syndrome */
+        /*
+            * Note:    If the code is used only for ERROR DETECTION, then
+            *          exit program here indicating the presence of errors.
+            */
+        /* convert syndrome from polynomial form to index form  */
+        m_s[i] = index_of[m_s[i]];
+      }
+      
+      
+      if (syn_error) {	/* if there are errors, try to correct them */
+        /*
+            * Compute the error location polynomial via the Berlekamp
+            * iterative algorithm. Following the terminology of Lin and
+            * Costello's book :   d[u] is the 'mu'th discrepancy, where
+            * u='mu'+1 and 'mu' (the Greek letter!) is the step number
+            * ranging from -1 to 2*t (see L&C),  l[u] is the degree of
+            * the elp at that step, and u_l[u] is the difference between
+            * the step number and the degree of the elp. 
+            */
+        /* initialise table entries */
+        m_d[0] = 0;			/* index form */
+        m_d[1] = m_s[1];		/* index form */
+        m_elp(0,0) = 0;//[0][0] = 0;		/* index form */
+        m_elp(1,0) = 1;		/* polynomial form */
+        for (i = 1; i < t2; i++) {
+          m_elp(0,i) = -1;	/* index form */
+          m_elp(1,i) = 0;	/* polynomial form */
+        }
+        m_l[0] = 0;
+        m_l[1] = 0;
+        m_ulu[0] = -1;
+        m_ulu[1] = 0;
+        u = 0;
+          
+        do {
+          u++;
+          if (m_d[u] == -1) {
+            m_l[u + 1] = m_l[u];
+            for (i = 0; i <= m_l[u]; i++) {
+              m_elp(u + 1,i) = m_elp(u,i);
+              m_elp(u,i) = index_of[m_elp(u,i)];
+            }
+          } else
+            /*
+                * search for words with greatest m_ulu[q] for
+                * which m_d[q]!=0 
+                */
+            {
+              q = u - 1;
+              while ((m_d[q] == -1) && (q > 0))
+                q--;
+              /* have found first non-zero m_d[q]  */
+              if (q > 0) {
+                j = q;
+                do {
+                  j--;
+                  if ((m_d[j] != -1) && (m_ulu[q] < m_ulu[j]))
+                    q = j;
+                } while (j > 0);
+              }
+            
+              /*
+                  * have now found q such that m_d[u]!=0 and
+                  * m_ulu[q] is maximum 
+                  */
+              /* store degree of new elp polynomial */
+              if (m_l[u] > m_l[q] + u - q)
+                m_l[u + 1] = m_l[u];
+              else
+                m_l[u + 1] = m_l[q] + u - q;
+            
+              /* form new elp(x) */
+              for (i = 0; i < t2; i++)
+                m_elp(u + 1,i) = 0;
+              for (i = 0; i <= m_l[q]; i++)
+                if (m_elp(q,i) != -1)
+                  m_elp(u + 1,i + u - q) = 
+                  alpha_to[(m_d[u] + n - m_d[q] + m_elp(q,i)) % n];
+              for (i = 0; i <= m_l[u]; i++) {
+                m_elp(u + 1,i) ^= m_elp(u,i);
+                m_elp(u,i) = index_of[m_elp(u,i)];
+              }
+            }
+          m_ulu[u + 1] = u - m_l[u + 1];
+        
+          /* form (u+1)th discrepancy */
+          if (u < t2) {	
+            /* no discrepancy computed on last iteration */
+            if (m_s[u + 1] != -1)
+              m_d[u + 1] = alpha_to[m_s[u + 1]];
+            else
+              m_d[u + 1] = 0;
+            for (i = 1; i <= m_l[u + 1]; i++)
+              if ((m_s[u + 1 - i] != -1) && (m_elp(u + 1,i) != 0))
+                m_d[u + 1] ^= alpha_to[(m_s[u + 1 - i] 
+                                        + index_of[m_elp(u + 1,i)]) % n];
+            /* put m_d[u+1] into index form */
+            m_d[u + 1] = index_of[m_d[u + 1]];	
+          }
+        } while ((u < t2) && (m_l[u + 1] <= t));
+      
+        u++;
+        if (m_l[u] <= t) {/* Can correct errors */
+          /* put elp into index form */
+          for (i = 0; i <= m_l[u]; i++)
+            m_elp(u,i) = index_of[m_elp(u,i)];
+        
+          /* Chien search: find roots of the error location polynomial */
+          for (i = 1; i <= m_l[u]; i++)
+            m_reg[i] = m_elp(u,i);
+          count = 0;
+          for (i = 1; i <= n; i++) {
+            q = 1;
+            for (j = 1; j <= m_l[u]; j++)
+              if (m_reg[j] != -1) {
+                m_reg[j] = (m_reg[j] + j) % n;
+                q ^= alpha_to[m_reg[j]];
+              }
+            if (!q) {	/* store root and error
+                            * location number indices */
+              m_root[count] = i;
+              m_loc[count] = n - i;
+              count++;
+            }
+          }
+          if (count == m_l[u])	
+            {
+              /* no. roots = degree of elp hence <= t errors */
+              for (i = 0; i < m_l[u]; i++)
+                {
+                  int li = m_loc[i];
+                  if(li<BCH_DEFAULT_LENGTH){
+                    //code[m_loc[i]].flip(); //^= 1;
+                    code ^= (one << li);
+                  }
+                  else too_many_errors = true;
+                }
+            }
+          else	/* elp has degree >t hence cannot solve */
+            {
+              return(m_l[u]); // number of errors
+            
+            }
+        }
+      }
+      if(too_many_errors) return(BCH_DEFAULT_T+1);
+      else return(syn_error == 0 ? 0 : m_l[u]); // number of errors
+    }
+    // }}}
+  };
+  
+  BCHCoder::BCHCoder():impl(new Impl){ }
+
+  BCHCoder::~BCHCoder(){ delete impl; }
+
+  
+  BCHCode BCHCoder::encode(int idx){
+    // {{{ open
+    init_static_data();
     
     if(idx < 0 || idx > 4095) throw ICLException("invalid bch code ID (allowed: 0 <= index <= 4095)");
     
-    const char *pc = bch_codes[idx];
+    const char *pc = static_bch_codes[idx];
     
     BCHCode c;
     for(int i=0;i<6;++i){
-      //int idx = (int)(std::find(lut,lut+64,pc[i]) - lut);
-      int idx = indices.get()[(int)pc[i]];
+      int idx = static_indices.get()[(int)pc[i]];
       for(int j=0;j<6;++j){
         c[i*6+j] = idx & (1<<j);
       }
-      // next 6 bits of c are used from
+      // next 6 bits of c are used from ?? 
     }
     return c;
   }
   // }}}
   
-  DecodedBCHCode decode_bch(const BCHCode &code){
+  DecodedBCHCode BCHCoder::decode(const BCHCode &code){
     // {{{ open
     int64_t c=0,o=1;
     for(int i=0;i<36;++i){
@@ -520,12 +529,12 @@ namespace icl {
       }
     }
     c ^= 0x8f80b8750ll;
-    int err = BCHCoder::getInstance()->decode_bch_2(c);
+    int err = impl->decode_bch_2(c);// BCHCoder::getInstance()->decode_bch_2(c);
 
     DecodedBCHCode ret;
     ret.origCode = code;
     
-    if(err > BCHCoder::BCH_DEFAULT_T){
+    if(err > BCHCoder::Impl::BCH_DEFAULT_T){
       ret.errors = 36;
       ret.id = -1;
     }else{
@@ -536,7 +545,7 @@ namespace icl {
           ret.id |= (1 << j);
         }
       }
-      ret.correctedCode = err ? encode_bch(ret.id) : ret.origCode;
+      ret.correctedCode = err ? encode(ret.id) : ret.origCode;
     }
     return ret;
   }
@@ -545,12 +554,12 @@ namespace icl {
 
 
   
-  DecodedBCHCode decode_bch(const icl8u data[36]){
+  DecodedBCHCode BCHCoder::decode(const icl8u data[36]){
     BCHCode code(0);
     for(unsigned int i=0;i<36;++i){
       code[i] = data[i];
     }
-    return decode_bch(code);
+    return decode(code);
   }
   
   
@@ -573,12 +582,12 @@ namespace icl {
     return code;
   }
   
-  DecodedBCHCode decode_bch(const Img8u &image, bool useROI) throw (ICLException){
-    return decode_bch(code_from_image(image,useROI));
+  DecodedBCHCode BCHCoder::decode(const Img8u &image, bool useROI) throw (ICLException){
+    return decode(code_from_image(image,useROI));
   }
   
   
-  BCHCode rotate_code(const BCHCode &in){
+  BCHCode BCHCoder::rotateCode(const BCHCode &in){
     BCHCode out(0);
     for(int y=0;y<6;++y){
       for(int x=0;x<6;++x){
@@ -588,9 +597,9 @@ namespace icl {
     return out;
   }
 
-  DecodedBCHCode2D decode_bch_2D(const Img8u &image, int maxID, bool useROI) throw (ICLException){
+  DecodedBCHCode2D BCHCoder::decode2D(const Img8u &image, int maxID, bool useROI) throw (ICLException){
     BCHCode last = code_from_image(image,useROI);
-    DecodedBCHCode2D best = decode_bch(last);
+    DecodedBCHCode2D best = decode(last);
     if(best.id > maxID){
       best.errors = 36;
       best.id = -1;
@@ -599,8 +608,8 @@ namespace icl {
     if(!best.errors) return best;
 
     for(int i=1;i<4;++i){
-      last = rotate_code(last);
-      DecodedBCHCode2D curr = decode_bch(last);
+      last = rotateCode(last);
+      DecodedBCHCode2D curr = decode(last);
       if(curr.id > maxID) continue; //curr.errors = 36;
       curr.rot = (DecodedBCHCode2D::Rotation)i;
       if(!curr.errors) return curr;
@@ -620,9 +629,9 @@ namespace icl {
   }
 
 
-  Img8u create_bch_marker_image(int idx, int border, const Size &resultSize){
+  Img8u BCHCoder::createMarkerImage(int idx, int border, const Size &resultSize){
     if(border < 0) throw ICLException("create_bch_marker_image: border must be >= 0");
-    BCHCode c = encode_bch(idx);
+    BCHCode c = encode(idx);
     Img8u im(Size(6+2*border,6+2*border),1);
     Channel8u ch=im[0];
     im.fill(0);
