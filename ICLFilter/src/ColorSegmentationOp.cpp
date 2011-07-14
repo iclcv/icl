@@ -64,13 +64,14 @@ namespace icl{
     }
 
     void resize(int w, int h, int t){
+      wh = w*h;
+      this->w = w;
+      this->h = h;
+      this->t = t;     
+      
       if(w*h*t != dim){
         ICL_DELETE_ARRAY(data);
         dim = w*h*t;
-        wh = w*h;
-        this->w = w;
-        this->h = h;
-        this->t = t;
         data = dim ? new icl8u[dim] : 0;
       }
       clear(0);
@@ -98,7 +99,7 @@ namespace icl{
       f << str("255") << "\n";
       f << str("# ColorSegmentationOp dims ") << w << str(" ") << h << str(" ") << t << "\n";
       f << str("# ColorSegmentationOp format ") << str(fmt) << "\n";
-      DEBUG_LOG("writing " << dim << " bytes of data");
+
       f.write(data,dim);
       f.close();
     }
@@ -118,6 +119,7 @@ namespace icl{
       int w = parse<int>(opt1[3]);
       int h = parse<int>(opt1[4]);
       int t = parse<int>(opt1[5]);
+      
       if(opt2.size() != 4) throw ICLException(err+"('# ColorSegmentationOp format f' expected)");
       if(opt2[0] != "#" || opt2[1] != "ColorSegmentationOp" || opt2[2] != "format"){
         throw ICLException(err+"('# ColorSegmentationOp format f' expected)");
@@ -498,6 +500,7 @@ namespace icl{
   void ColorSegmentationOp::load(const std::string &filename){
     try{
       m_segFormat = m_lut->load(filename);
+
       m_bitShifts[0] = compute_shift(m_lut->w);
       m_bitShifts[1] = compute_shift(m_lut->h);
       m_bitShifts[2] = compute_shift(m_lut->t);
