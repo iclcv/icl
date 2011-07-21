@@ -229,7 +229,7 @@ namespace icl{
 
     /// Matrix multiplication (in source destination fashion) [IPP-Supported]
     inline DynMatrix &mult(const DynMatrix &m, DynMatrix &dst) const throw (IncompatibleMatrixDimensionException){
-      if(m.rows() != cols()) throw IncompatibleMatrixDimensionException("A*B : rows(A) must be cols(B)");
+      if( cols() != m.rows() ) throw IncompatibleMatrixDimensionException("A*B : cols(A) must be rows(B)");
       dst.setBounds(m.cols(),rows());
       for(unsigned int c=0;c<dst.cols();++c){
         for(unsigned int r=0;r<dst.rows();++r){
@@ -1063,7 +1063,7 @@ namespace icl{
     inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::mult(                                            \
       const DynMatrix<Ipp##IPPT> &m, DynMatrix<Ipp##IPPT> &dst) const	                                \
     throw (IncompatibleMatrixDimensionException){			                                \
-    if(m.rows() != cols()) throw IncompatibleMatrixDimensionException("A*B : rows(A) must be cols(B)");	\
+    if(cols() != m.rows() ) throw IncompatibleMatrixDimensionException("A*B : cols(A) must be row(B)");	\
     dst.setBounds(m.cols(),rows());					                                \
     ippmMul_mm_##IPPT(data(),sizeof(Ipp##IPPT)*cols(),sizeof(Ipp##IPPT),cols(),rows(),                  \
 		      m.data(),sizeof(Ipp##IPPT)*m.cols(),sizeof(Ipp##IPPT),m.cols(),m.rows(),          \
