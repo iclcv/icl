@@ -182,6 +182,12 @@ int main(int n, char**ppc){
     /// returns the count of contained cameras
     inline int getCameraCount() const { return (int)m_cameras.size(); }
 
+    /// returns a vector with pointers to all cameras in given range
+    /** Please note, that the results become invalid if addCamera() or
+        removeCamera() was called. If 'num' selects more cameras than
+        possible, is it just increased appropriately automatically. */
+    std::vector<Camera*> getAllCameras(int firstIndex=0, int num=-1);
+    
     /// adds a new top-level object to the Scene instance 
     /** By default, the object's memory is managed externally. If you want
         to pass the ownership to the Scene instance, you have to set

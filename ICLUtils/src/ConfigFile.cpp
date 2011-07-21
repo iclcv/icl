@@ -373,9 +373,16 @@ namespace icl{
   void ConfigFile::load(const std::string &filename) throw(FileNotFoundException,InvalidFileFormatException,UnregisteredTypeException){
     // {{{ open
 
-    ICLASSERT_RETURN(filename != "");
     m_doc = SmartPtrBase<XMLDocument,XMLDocumentDelOp>(new XMLDocument);
-    m_doc->load_file(filename.c_str());
+    pugi::xml_parse_result res = m_doc->load_file(filename.c_str());
+    if(res.status != pugi::status_ok){
+      if(res.status == pugi::status_file_not_found){
+        throw FileNotFoundException(filename);
+      }else{
+        throw InvalidFileFormatException(res.description());
+      }
+    }
+       
     
     load_internal();
   }
@@ -415,10 +422,7 @@ namespace icl{
 
   ConfigFile::ConfigFile(const std::string &filename)throw(FileNotFoundException,InvalidFileFormatException,UnregisteredTypeException){
     // {{{ open
-    m_doc = SmartPtrBase<XMLDocument,XMLDocumentDelOp>(new XMLDocument);
-    
-    m_doc->load_file(filename.c_str());
-    load_internal();
+    load(filename);
   }
 
   // }}}

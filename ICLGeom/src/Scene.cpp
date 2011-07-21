@@ -265,6 +265,14 @@ namespace icl{
     return m_cameras[camIndex];
   }
 
+  std::vector<Camera*> Scene::getAllCameras(int firstIndex, int num){
+    std::vector<Camera*> cams;
+    for(int i=firstIndex,j=0; ( i<getCameraCount() ) && ( (num<0) || (j<num) ); ++i,++j){
+      cams.push_back(&m_cameras[i]);
+    }
+    return cams;
+  }
+
   void Scene::addObject(SceneObject *object, bool passOwnerShip){
     m_objects.push_back(SmartPtr<SceneObject>(object,passOwnerShip));
   }
