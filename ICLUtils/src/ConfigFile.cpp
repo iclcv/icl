@@ -520,7 +520,7 @@ namespace icl{
   }
 
   ConfigFile::Data::Data(const std::string &id, ConfigFile &cf):
-    id(id),cf(cf){}
+    id(id),cf(&cf){}
   
 
   void ConfigFile::setPrefix(const std::string &defaultPrefix) const{ 
@@ -551,6 +551,16 @@ namespace icl{
 
   /// Singelton object
   ConfigFile ConfigFile::s_oConfig;
-
   
+  
+  std::vector<ConfigFile::Data> ConfigFile::find(const std::string &regex){
+    std::vector<Data> ret;
+    for(std::map<std::string,Entry>::const_iterator it = m_entries.begin();
+        it != m_entries.end(); ++it){
+      if(match(it->first, regex)){ 
+        ret.push_back(Data(it->first,*this));
+      }
+    }
+    return ret;
+  }
 }

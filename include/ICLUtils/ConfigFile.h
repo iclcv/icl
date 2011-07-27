@@ -314,7 +314,7 @@ namespace icl{
     /** @see Data ConfigFile::operator[](const std::string &id) */
     class Data{
       std::string id; //!< internal id (config.foo.bar)
-      ConfigFile &cf; //!< parent config file
+      ConfigFile *cf; //!< parent config file
       
       /// private constructor
       Data(const std::string &id, ConfigFile &cf);
@@ -328,16 +328,24 @@ namespace icl{
           appropiate parse<T> function */
       template<class T> 
       operator T() const throw (InvalidTypeException,EntryNotFoundException){
-        return cf.get<T>(id);
+        return cf->get<T>(id);
       }
       
       /// explicit cast into given type
       /** Sometimes, the implicit automatic cast is not allowed due to ambiguities */
       template<class T>
       T as() const throw (InvalidTypeException,EntryNotFoundException){
-        return cf.get<T>(id);
+        return cf->get<T>(id);
       }
 
+      /// special assignment for data instances
+      /** This does just copy the data-reference, not it's referenced value */
+      Data &operator=(const Data &d){
+        cf = d.cf;
+        id = d.id;
+        return *this;
+      }
+      
       /// mutlti class assignment operator
       /** assigns a string representation of given T instance to the according ConfigFile Entry
           T to string conversion is performed using std::string utils str- function, which
@@ -346,7 +354,7 @@ namespace icl{
       */
       template<class T>
       Data &operator=(const T &t) throw (UnregisteredTypeException){
-        cf.set(id,t);
+        cf->set(id,t);
         return *this;
       }
     };
@@ -362,7 +370,16 @@ namespace icl{
     /** As above, but only for reading ... */
     const Data operator[](const std::string &id) const throw (EntryNotFoundException);
       
+    /// returns all data entries, that match the given regex
+    /** note, the current default prefix is <b>not</b> used here */
+    std::vector<Data> find(const std::string &regex);
     
+    /// returns all data entries, that match the given regex (const);
+    /** note, the current default prefix is <b>not</b> used here.\n
+        note2: const-concept not implemented properly */
+    const std::vector<Data> find(const std::string &regex) const{
+      return const_cast<ConfigFile*>(this)->find(regex);
+    }
     
     /// sets or updates a new data element to the ConfigFile
     /** Warning: if not unique decidable, an explicit information about the
