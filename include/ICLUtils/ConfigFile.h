@@ -308,8 +308,6 @@ namespace icl{
     /// Returns given default prefix
     const std::string &getPrefix() const;
 
-
-
     /// Data- type used for the []-operator of ConfigFile instances
     /** @see Data ConfigFile::operator[](const std::string &id) */
     class Data{
@@ -359,6 +357,7 @@ namespace icl{
       }
     };
 
+   
     /// main access function to datastore entries (unconst)
     /* This function can be used for reading as well as for writing ConfigFile entries
        the returned utitlity structure of type Data defers creation of a new
