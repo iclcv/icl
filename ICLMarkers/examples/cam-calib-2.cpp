@@ -35,16 +35,19 @@
 #include <ICLQuick/Common.h>
 #include <ICLGeom/Scene.h>
 #include <ICLMarkers/FiducialDetector.h>
+#include <ICLGeom/GridSceneObject.h>
 
 GUI gui("hsplit");
 Scene scene;
 GenericGrabber grabber;
 
 
+
 typedef FixedColVector<float,3> Vec3;
 
 std::map<std::string,SmartPtr<FiducialDetector> > fds;
 std::map<std::string,std::map<int,Vec> > posLUT;
+FiducialDetector *lastFD = 0; // used for visualization
 
 std::string sample= ("<config>\n"
                      "  <section id=\"grid-0\">\n"
@@ -69,6 +72,17 @@ std::string sample= ("<config>\n"
                      "   <data id=\"world-transform\" type=\"string\">4x4-matrix</data>      <!-- optional -->\n"
                      "</config>\n");
 
+void create_new_fd(const std::string &t, std::vector<std::string> &cfgs, std::string &iin){
+  fds[t] = new FiducialDetector(t);
+  fds[t]->setConfigurableID(t);
+  cfgs.push_back(t);
+  iin = fds[t]->getIntermediateImageNames();
+  lastFD = fds[t].get();
+  lastFD->setPropertyValue("css.angle-threshold",180);
+  lastFD->setPropertyValue("css.curvature-cutoff",30);
+  lastFD->setPropertyValue("css.rc-coefficient",1);
+}
+                   
 
 void init(){
  
@@ -80,6 +94,9 @@ void init(){
     T = parse<Mat>(cfg["config.world-transform"]);
   }catch(...){}
 
+  std::vector<std::string> configurables;
+  std::string iin;
+  
   for(int i=0;true;++i){
     cfg.setPrefix("config.grid-"+str(i)+".");  
     try{
@@ -93,7 +110,7 @@ void init(){
                                                                   + ": given size " +str(s) + " is not compatible to "
                                                                   + "given marker ID range " +str(r) ));
       if(fds.find(t) == fds.end()){
-        fds[t] = new FiducialDetector(t);
+        create_new_fd(t,configurables,iin);
       }
       FiducialDetector &fd = *fds[t];
       fd.loadMarkers(r,t == "bch" ? ParamList("size",Size(50,50)) : ParamList());
@@ -101,6 +118,7 @@ void init(){
 
       int id = r.minVal;
       std::map<int, Vec> &lut = posLUT[t];
+      std::vector<Vec> vertices;
       for(int y=0;y<s.height;++y){
 
         for(int x=0;x<s.width;++x){
@@ -108,8 +126,12 @@ void init(){
           if(lut.find(id) != lut.end()) throw ICLException("error loading configuration file at given grid " + str(i)
                                                            +" : the marker ID " + str(id) + " was already used before");
           lut[id++] = T*Vec(v[0],v[1],v[2],1);
+          vertices.push_back(T*Vec(v[0],v[1],v[2],1));
         }
       }
+      GridSceneObject *go = new GridSceneObject(s.width,s.height,vertices,true,false);
+      go->setColor(Primitive::line,GeomColor(255,0,0,180));
+      scene.addObject(go);
     }catch(...){ break; }
   }
   
@@ -120,7 +142,7 @@ void init(){
       Vec3 p = parse<Vec3>(cfg["pos"]);
       int id = cfg["marker-id"];
       if(fds.find(t) == fds.end()){
-        fds[t] = new FiducialDetector(t);
+        create_new_fd(t,configurables,iin);
       }
       fds[t]->loadMarkers(str(id), t == "bch" ? ParamList("size",Size(50,50)) : ParamList());
 
@@ -136,10 +158,24 @@ void init(){
   
   grabber.init(pa("-i"));
   
-  gui << "draw3D()[@handle=draw@minsize=32x24]" << "!show";
+  gui << "draw3D()[@handle=draw@minsize=32x24]";
+  
+  std::string tabstr = "tab(";
+  for(unsigned int i=0;i<configurables.size();++i){
+    tabstr += configurables[i]+',';
+  }
+  tabstr[tabstr.length()-1] = ')';
+  GUI tab(tabstr);
+  for(unsigned int i=0;i<configurables.size();++i){
+    tab << "prop(" + configurables[i] + ")";
+  }
+  gui << ( GUI("vbox[@minsize=16x1@maxsize=16x100]") 
+           << "combo(" +iin + ")[@handle=iin@label=vis]"
+           << tab 
+         )
+      << "!show";
   
   scene.addCamera(Camera());
-  scene.setDrawCoordinateFrameEnabled(true);
   scene.getCamera(0).setResolution(grabber.grab()->getSize());
   
   DrawHandle3D draw = gui["draw"];
@@ -184,13 +220,15 @@ void run(){
     scene.getCamera(0) = Camera::calibrate_pinv(xws, xis);
     scene.getCamera(0).getRenderParams().viewport = Rect(Point::null,image->getSize());
     scene.getCamera(0).getRenderParams().chipSize = image->getSize();
+    scene.setDrawCoordinateFrameEnabled(true);
   }catch(...){}
   
   static DrawHandle3D draw = gui["draw"];
   
-  draw = image;
+  draw = lastFD->getIntermediateImage(gui["iin"].as<std::string>());
   draw->lock();
   draw->reset();
+  draw->symsize(5);
   for(unsigned int i=0;i<markers.size();++i){
     CalibrationMarker &m = markers[i];
     draw->linewidth(2);
