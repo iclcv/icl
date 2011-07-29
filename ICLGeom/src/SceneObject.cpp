@@ -568,6 +568,12 @@ namespace icl{
             ERROR_LOG("skipping line " + str(lineNr) + ":\"" + line + "\" [unknown format]");
             break;
         }
+      }else if(line[0] == 'l'){ // line
+        // f v1 v2 v3 v4 ... -> line strip
+        std::vector<int> linestrip = parseVecStr<int>(line.substr(2)," ");
+        for(unsigned int l=1;l<linestrip.size();++l){
+          addLine(linestrip[l-1]-1,linestrip[l]-1);
+        }
       }else if(line[0] == 'f'){ 
         // A: f v1 v2 v3 .. 
         // B: f v1/vt1 v2/vt2 v3/vt3 .. with texture coordinate

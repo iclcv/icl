@@ -38,6 +38,7 @@
 #include <ICLGeom/GridSceneObject.h>
 
 GUI gui("hsplit");
+GUI relTransGUI;
 Scene scene;
 GenericGrabber grabber;
 
@@ -96,6 +97,26 @@ void init(){
 
   std::vector<std::string> configurables;
   std::string iin;
+  
+  try{
+    std::string s = cfg["config.obj-file"];
+    {
+      std::ofstream obj("/tmp/tmp-obj-file.obj");
+      obj << s << std::endl;
+    }
+    SceneObject *obj = new SceneObject("/tmp/tmp-obj-file.obj");
+    obj->setColor(Primitive::quad,GeomColor(0,100,255,100));
+    obj->setColor(Primitive::line,GeomColor(255,0,0,255));
+    obj->setVisible(Primitive::line,true);
+    obj->setLineWidth(2);
+    obj->setTransformation(T);
+    scene.addObject(obj);
+
+  }catch(ICLException &e){
+    SHOW(e.what());
+  }
+  system("rm -rf /tmp/tmp-obj-file.obj");
+
   
   for(int i=0;true;++i){
     cfg.setPrefix("config.grid-"+str(i)+".");  
@@ -170,11 +191,28 @@ void init(){
     tab << "prop(" + configurables[i] + ")";
   }
   gui << ( GUI("vbox[@minsize=16x1@maxsize=16x100]") 
-           << "combo(" +iin + ")[@handle=iin@label=vis]"
+           << "combo(" +iin + ")[@handle=iin@label=visualized image]"
            << tab 
-         )
+           << "button(chage relative tranformation)[@handle=showRelTransGUI]"
+           )
       << "!show";
   
+  relTransGUI << ( GUI("vbox[@label=rel-transformation]") 
+                   << ( GUI("hbox")
+                        << "spinner(0,8,0)[@label=x-rotation *pi/4@out=rx]"
+                        << "spinner(0,8,0)[@label=y-rotation *pi/4@out=ry]"
+                        << "spinner(0,8,0)[@label=z-rotation *pi/4@out=rz]"
+                        )
+                   << ( GUI("hbox")
+                        << "float(-100000,100000,0)[@label=x-offset@out=tx]"
+                        << "float(-100000,100000,0)[@label=y-offset@out=ty]"
+                        << "float(-100000,100000,0)[@label=z-offset@out=tz]"
+                        )
+                   )
+              << "button(show transformation matrix)[@handle=showRelTrans]" << "!create";
+           
+
+
   scene.addCamera(Camera());
   scene.getCamera(0).setResolution(grabber.grab()->getSize());
   
@@ -182,6 +220,8 @@ void init(){
   draw->lock();
   draw->callback(scene.getGLCallback(0));
   draw->unlock();
+  
+  gui["showRelTransGUI"].registerCallback(function(&relTransGUI,&GUI::switchVisibility));
 }
 
 struct CalibrationMarker{
@@ -191,6 +231,8 @@ struct CalibrationMarker{
 };
 
 void run(){
+  ButtonHandle showRelTrans = relTransGUI["showRelTrans"];
+
   const ImgBase *image = grabber.grab();
   
   std::vector<CalibrationMarker> markers;
@@ -210,10 +252,18 @@ void run(){
     }
   }
   
+  Mat T = create_hom_4x4<float>(relTransGUI["rx"].as<float>()*M_PI/4,
+                                relTransGUI["ry"].as<float>()*M_PI/4,
+                                relTransGUI["rz"].as<float>()*M_PI/4,
+                                relTransGUI["tx"],relTransGUI["ty"],relTransGUI["tz"]);
+  if(showRelTrans.wasTriggered()){
+    std::cout << "current relative transformation is " << std::endl << T << std::endl << std::endl;
+  }
+  
   std::vector<Vec> xws(markers.size());
   std::vector<Point32f> xis(markers.size());
   for(unsigned int i=0;i<xws.size();++i){
-    xws[i] = markers[i].worldPos;
+    xws[i] = T * markers[i].worldPos;
     xis[i] = markers[i].imagePos;
   }
   try{
