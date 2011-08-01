@@ -604,7 +604,7 @@ namespace icl{
               addPolygon(xx);
             }
             break;
-          case 'B': // for now, this is simple, we simple dont use the 2nd and 3rd token;
+          case 'B': // for now, this is simple, we simply dont use the 2nd and 3rd token;
           case 'C':
           case 'D':{
             std::vector<int> is(n),ns(n);
