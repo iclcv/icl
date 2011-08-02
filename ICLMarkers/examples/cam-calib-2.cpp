@@ -49,6 +49,7 @@ typedef FixedColVector<float,3> Vec3;
 std::map<std::string,SmartPtr<FiducialDetector> > fds;
 std::map<std::string,std::map<int,Vec> > posLUT;
 FiducialDetector *lastFD = 0; // used for visualization
+SceneObject *calibObj = 0;
 
 std::string sample= ("<config>\n"
                      "  <section id=\"grid-0\">\n"
@@ -83,7 +84,22 @@ void create_new_fd(const std::string &t, std::vector<std::string> &cfgs, std::st
   lastFD->setPropertyValue("css.curvature-cutoff",30);
   lastFD->setPropertyValue("css.rc-coefficient",1);
 }
-                   
+
+void save(){
+  std::string filename;
+  if(pa("-o")){
+    filename = pa("-o").as<std::string>();
+  }else{ 
+    try{
+      filename = saveFileDialog("*.xml","save current camera","./");
+    }catch(...){}
+  }
+  if(filename.length()){
+    std::ofstream s(filename.c_str());
+    s << scene.getCamera(0);
+    std::cout << "current camera is " << scene.getCamera(0) << std::endl;
+  }
+}                   
 
 void init(){
  
@@ -104,13 +120,13 @@ void init(){
       std::ofstream obj("/tmp/tmp-obj-file.obj");
       obj << s << std::endl;
     }
-    SceneObject *obj = new SceneObject("/tmp/tmp-obj-file.obj");
-    obj->setColor(Primitive::quad,GeomColor(0,100,255,100));
-    obj->setColor(Primitive::line,GeomColor(255,0,0,255));
-    obj->setVisible(Primitive::line,true);
-    obj->setLineWidth(2);
-    obj->setTransformation(T);
-    scene.addObject(obj);
+    calibObj = new SceneObject("/tmp/tmp-obj-file.obj");
+    calibObj->setColor(Primitive::quad,GeomColor(0,100,255,100));
+    calibObj->setColor(Primitive::line,GeomColor(255,0,0,255));
+    calibObj->setVisible(Primitive::line,true);
+    calibObj->setLineWidth(2);
+    calibObj->setTransformation(T);
+    scene.addObject(calibObj);
 
   }catch(ICLException &e){
     SHOW(e.what());
@@ -150,9 +166,9 @@ void init(){
           vertices.push_back(T*Vec(v[0],v[1],v[2],1));
         }
       }
-      GridSceneObject *go = new GridSceneObject(s.width,s.height,vertices,true,false);
-      go->setColor(Primitive::line,GeomColor(255,0,0,180));
-      scene.addObject(go);
+      SceneObject *so = new GridSceneObject(s.width,s.height,vertices,true,false);
+      so->setColor(Primitive::line,GeomColor(255,0,0,180));
+      scene.addObject(so);
     }catch(...){ break; }
   }
   
@@ -191,9 +207,15 @@ void init(){
     tab << "prop(" + configurables[i] + ")";
   }
   gui << ( GUI("vbox[@minsize=16x1@maxsize=16x100]") 
-           << "combo(" +iin + ")[@handle=iin@label=visualized image]"
+           << ( GUI("hbox") 
+                << "combo(" +iin + ")[@handle=iin@label=visualized image]"
+                << "slider(0,255,128)[@out=objAlpha@label=object-alpha]"
+               )
            << tab 
-           << "button(chage relative tranformation)[@handle=showRelTransGUI]"
+           << ( GUI("hbox") 
+                << "button(chage relative tranformation)[@handle=showRelTransGUI]"
+                << "button(save camera)[handle=save]"
+                )
            )
       << "!show";
   
@@ -210,8 +232,10 @@ void init(){
                         )
                    )
               << "button(show transformation matrix)[@handle=showRelTrans]" << "!create";
+  
            
 
+  gui["save"].registerCallback(save);
 
   scene.addCamera(Camera());
   scene.getCamera(0).setResolution(grabber.grab()->getSize());
@@ -231,6 +255,22 @@ struct CalibrationMarker{
 };
 
 void run(){
+  if(calibObj){
+    const int calibObjAlpha = gui["objAlpha"];
+    if(calibObjAlpha){
+      calibObj->setVisible(Primitive::quad,true);
+      calibObj->setVisible(Primitive::triangle,true);
+      calibObj->setVisible(Primitive::polygon,true);
+      calibObj->setColor(Primitive::quad,GeomColor(0,100,255,calibObjAlpha));
+      calibObj->setColor(Primitive::triangle,GeomColor(0,100,255,calibObjAlpha));
+      calibObj->setColor(Primitive::polygon,GeomColor(0,100,255,calibObjAlpha));
+    }else{
+      calibObj->setVisible(Primitive::quad,false);
+      calibObj->setVisible(Primitive::triangle,false);
+      calibObj->setVisible(Primitive::polygon,false);
+    }
+  } 
+
   ButtonHandle showRelTrans = relTransGUI["showRelTrans"];
 
   const ImgBase *image = grabber.grab();
@@ -271,7 +311,10 @@ void run(){
     scene.getCamera(0).getRenderParams().viewport = Rect(Point::null,image->getSize());
     scene.getCamera(0).getRenderParams().chipSize = image->getSize();
     scene.setDrawCoordinateFrameEnabled(true);
+
   }catch(...){}
+
+
   
   static DrawHandle3D draw = gui["draw"];
   
@@ -310,7 +353,7 @@ int main(int n, char **ppc){
                 "[m]-config|-c(config-xml-file-name) "
                 "-create-empty-config-file|-cc "
                 "-force-size|-s(WxH) "
-                "[m]-output|-o(output-xml-file-name) "
+                "-output|-o(output-xml-file-name) "
                 ,init,run).exec();
 }
 

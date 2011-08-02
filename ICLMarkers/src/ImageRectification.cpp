@@ -60,7 +60,7 @@ namespace icl{
   }
   
   template<class T> 
-  static const Homography2D create_and_check_homography(const Point32f psin[4], const Img<T> &src,
+  static const Homography2D create_and_check_homography(bool validateAndSortPoints,const Point32f psin[4], const Img<T> &src,
                                                         const Size &resultSize, FixedMatrix<float,3,3> *hom,
                                                         FixedMatrix<float,2,2> *Q, FixedMatrix<float,2,2> *R,float maxTilt,
                                                         Img<T> &buffer, bool advanedAlgorithm) throw(ICLException){
@@ -68,7 +68,9 @@ namespace icl{
     // we need this check, because otherwise, we cannot check whether
     // the image boarders are intersected by checking the four corners only
     // the check based on the convex hull seems to be both, fast and accurate
-    convexity_check_and_sorting(ps);
+    if(validateAndSortPoints){
+      convexity_check_and_sorting(ps);
+    }
     
     buffer.setChannels(src.getChannels());
     buffer.setSize(resultSize);
@@ -114,7 +116,7 @@ namespace icl{
                                              float maxTilt, bool advanedAlgorithm,
                                              const Rect *resultROI){
     int W=resultSize.width,H=resultSize.height;
-    const Homography2D HOM = create_and_check_homography(ps,src,resultSize,hom,Q,R,maxTilt,buffer, advanedAlgorithm);
+    const Homography2D HOM = create_and_check_homography(validateAndSortPoints,ps,src,resultSize,hom,Q,R,maxTilt,buffer, advanedAlgorithm);
     
     for(int c=0;c<src.getChannels();++c){
       Channel<T> r = buffer[c];
@@ -141,11 +143,12 @@ namespace icl{
 #ifdef HAVE_IPP
   
   template<class T, class IppFunc> 
-  static const Img<T> &apply_image_rectificaion_ipp(const Rect *resultROI, bool advanedAlgorithm, const Point32f ps[4], const Img<T> &src,
+  static const Img<T> &apply_image_rectificaion_ipp(bool validateAndSortPoints,const Rect *resultROI, bool advanedAlgorithm, 
+                                                    const Point32f ps[4], const Img<T> &src,
                                                     const Size &resultSize, FixedMatrix<float,3,3> *hom,
                                                     FixedMatrix<float,2,2> *Q, FixedMatrix<float,2,2> *R,float maxTilt,
                                                     Img<T> &buffer, IppFunc ippFunc){
-    const Homography2D HOM = create_and_check_homography(ps,src,resultSize,hom,Q,R,maxTilt,buffer,advanedAlgorithm);
+    const Homography2D HOM = create_and_check_homography(validateAndSortPoints,ps,src,resultSize,hom,Q,R,maxTilt,buffer,advanedAlgorithm);
     
     const double coeffs[3][3]={ {HOM(0,0),HOM(1,0),HOM(2,0)},
                                 {HOM(0,1),HOM(1,1),HOM(2,1)},
@@ -167,7 +170,7 @@ namespace icl{
                                                            FixedMatrix<float,2,2> *Q, FixedMatrix<float,2,2> *R,
                                                            float maxTilt, bool advanedAlgorithm,
                                                            const Rect *resultROI){
-    return apply_image_rectificaion_ipp(resultROI,advanedAlgorithm,ps,src,resultSize,hom,Q,R,maxTilt,buffer,ippiWarpPerspectiveBack_8u_C1R);
+    return apply_image_rectificaion_ipp(validateAndSortPoints,resultROI,advanedAlgorithm,ps,src,resultSize,hom,Q,R,maxTilt,buffer,ippiWarpPerspectiveBack_8u_C1R);
   }
   
   template<> const Img32f &ImageRectification<icl32f>::apply(const Point32f ps[4], const Img32f &src,
@@ -175,7 +178,7 @@ namespace icl{
                                                              FixedMatrix<float,2,2> *Q, FixedMatrix<float,2,2> *R,
                                                              float maxTilt, bool advanedAlgorithm,
                                                              const Rect *resultROI){
-    return apply_image_rectificaion_ipp(resultROI,advanedAlgorithm,ps,src,resultSize,hom,Q,R,maxTilt,buffer,ippiWarpPerspectiveBack_32f_C1R);
+    return apply_image_rectificaion_ipp(validateAndSortPoints,resultROI,advanedAlgorithm,ps,src,resultSize,hom,Q,R,maxTilt,buffer,ippiWarpPerspectiveBack_32f_C1R);
   }
 #endif
 

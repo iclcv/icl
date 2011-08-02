@@ -41,11 +41,18 @@
 namespace icl{
 
   /// The ImageRectification class can be use to rectify an image quadrangle (IPP accellerated)
+  /** The ImageRectification can be set up for automatic sorting of the given points (which is default).
+      If this behaviour is disabled, the given points are not checked for their correct order. */
   template<class T>
   class ImageRectification{
-    Img<T> buffer;
+    Img<T> buffer; //!< internal image buffer
+    bool validateAndSortPoints; //!< internal flag
     
     public:
+    
+    /// create an ImageRectification instance with given value for validateAndSortPoints
+    ImageRectification(bool validateAndSortPoints=true):validateAndSortPoints(validateAndSortPoints){}
+    
     /** \cond  this method is not implemented yet!*/
     const Img<T> &apply(const FixedMatrix<float,3,3> &transform, const Img<T> &src, const Size &resultSize);
     /** \endcond */
