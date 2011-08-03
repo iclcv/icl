@@ -53,7 +53,8 @@ namespace icl{
       be accessed by string identifiers. Each property has one of ... TODO
 
       \section IMPL Implementing the Configurable Interface
-      There are two ways to implement the Configurable interface. You can either reimplement the
+      It is not recommended to re-implement the configurables virtual interface. But
+      there are two ways to implement the Configurable interface. You can either reimplement the
       Configurables virtual configuration functions
       \code
       /// sets value of a property (always call call_callbacks(propertyName) or Configurable::setPropertyValue)
@@ -305,6 +306,9 @@ namespace icl{
         - "menu" the property is a string value in a list of possible values
         - "flag" the property is a boolean flag that can be set to "on" and "off"
         - "command" property param has no additional parameters (this feature is 
+        - "float" the property value can be any valid float value within a given range
+        - "int" the property value can be any valid int value within a given range
+        - "string" the property is a string value with a given maximum length
         used e.g. for triggered abilities of grabbing devices, like 
         "save user settings" for the PWCGrabber 
         - "info" the property is an unchangable internal value (it cannot be set actively)
@@ -320,9 +324,11 @@ namespace icl{
         possible to get the corresponding range, value-list or menu with this
         funcitons. The Syntax of the returned strings are:
         - "[A,B]:C"  for a range with min=A, max=B and stepping = C or [A,B] with no stepping
+        - "[A,B]" for float- and int-properties with min=A and max=B 
         - ",A,B,C,..." for a value-list and A,B,C are ascii doubles (real commas can be escaped using \)
         - ",A,B,C,..." for a menu and A,B,C are strings (real commas can be escaped using \)
         - nothing for "info"-typed properties
+        - MAX_LENGTH for string typed properties
         - flag-properties always have the possible values "on|1|true" or "off|0|false"
         <b>Note:</b> The received string can be translated into C++ data
         with some static utility function in this Grabber class.

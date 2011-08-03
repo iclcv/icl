@@ -205,8 +205,12 @@ namespace icl{
 
       std::string val = getPropertyValue(prop);
       
-      if(type == "range" || type == "value-list" || type == "range:slider" || type == "range:spinbox"){
+      if(type == "range" || type == "value-list" || type == "range:slider" || type == "range:spinbox" || type == "float"){
         f[prop] = parse<icl32f>(val);
+      }else if(type == "int"){
+        f[prop] = parse<int>(val);
+      }else if(type == "string"){
+        f[prop] = val;
       }else if(type == "menu"){
         f[prop] = val;
       }else if(type == "flag"){
@@ -233,9 +237,17 @@ namespace icl{
       if(type == "info") continue;
       if(type == "command") continue;
 
-      if(type == "range" || type == "value-list" || type == "range:slider" || type == "range:spinbox"){
+      if(type == "range" || type == "value-list" || type == "range:slider" || type == "range:spinbox" || type == "float"){
         try{
-          setPropertyValue(prop,str((icl32f)f[prop]));
+          setPropertyValue(prop,str(f[prop].as<float>()));
+        }catch(...){}
+      }else if(type == "int"){
+        try{
+          setPropertyValue(prop,str(f[prop].as<int>()));
+        }catch(...){}
+      }else if(type == "string"){
+        try{
+          setPropertyValue(prop,f[prop].as<std::string>());
         }catch(...){}
       }else if(type == "menu"){
         try{

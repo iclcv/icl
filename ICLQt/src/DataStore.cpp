@@ -424,7 +424,8 @@ INST_OTHER_TYPES
     
     // LabelHandle
     FROM_NUM(LabelHandle,dst=(double)src);
-    FROM_TO(std::string,LabelHandle,dst=src);
+    // FROM_TO(std::string,LabelHandle,dst=src);
+    FROM_TO_STR(LabelHandle,dst=src->text().toLatin1().data(),dst = src);
     FROM_IMG(LabelHandle,dst=str(src));
     FROM_IMG_PTR(LabelHandle,dst=str(*src));
 
@@ -659,7 +660,8 @@ namespace icl{
     
     // LabelHandle
     FROM_NUM_ADD(LabelHandle);
-    ADD(std::string,LabelHandle);
+    //    ADD(std::string,LabelHandle);
+    FROM_TO_STR_ADD(LabelHandle);
     FROM_IMG_ADD(LabelHandle);
     FROM_IMG_PTR_ADD(LabelHandle);
     ADD_T_TO_T(LabelHandle);

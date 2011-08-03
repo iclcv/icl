@@ -294,7 +294,14 @@ namespace icl{
           gui["#i#"+p] = conf->getPropertyValue(p);
         }else if( t == "flag"){
           gui["#f#"+p] = conf->getPropertyValue(p).as<bool>();
+        }else if( t == "int"){
+          gui["#I#"+p] = parse<int>(conf->getPropertyValue(p));
+        }else if( t == "float"){
+          gui["#F#"+p] = parse<float>(conf->getPropertyValue(p));
+        }else if( t == "string"){
+          gui["#S#"+p] = conf->getPropertyValue(p);
         }
+
       }
     }
 
@@ -343,7 +350,27 @@ namespace icl{
         std::string handle = "#f#"+p.full;
         ostr << '\1' << handle;
         gui << "checkbox("+p.half+","+(conf->getPropertyValue(p.full).as<bool>() ? "checked" : "unchecked") +")[@handle="+handle+"@minsize=12x1]";
-      }else{
+      }else if(t == "float"){
+        std::string handle = "#F#"+p.full;
+        ostr << '\1' << handle;
+        Range32f mm = parse<Range32f>(conf->getPropertyInfo(p.full));
+        float v = conf->getPropertyValue(p.full);
+        gui << "float(" + str(mm.minVal) + "," + str(mm.maxVal) + "," + str(v) + ")[@handle="+handle+"@minsize=12x2@label="+p.half+"]";
+        
+      }else if(t == "int"){
+        std::string handle = "#I#"+p.full;
+        ostr << '\1' << handle;
+        Range32s mm = parse<Range32s>(conf->getPropertyInfo(p.full));
+        int v = conf->getPropertyValue(p.full);
+        gui << "int(" + str(mm.minVal) + "," + str(mm.maxVal) + "," + str(v) + ")[@handle="+handle+"@minsize=12x2@label="+p.half+"]";
+      }else if(t == "string"){
+        std::string handle = "#S#"+p.full;
+        ostr << '\1' << handle;
+        int max_len = parse<int>(conf->getPropertyInfo(p.full));
+        gui << "string(" + str(max_len) + ")[@handle=" + handle + "@minsize=12x2@label="+p.half+"]";
+      }
+      
+      else{
         ERROR_LOG("unable to create GUI-component for property \"" << p.full << "\" (unsupported property type: \"" + t+ "\")");
       }
      }
@@ -433,6 +460,12 @@ namespace icl{
         gui["#i#"+name] = conf->getPropertyValue(name);
       }else if( type == "flag"){
         gui["#f#"+name] = conf->getPropertyValue(name).as<bool>();
+      }else if(type == "int"){
+        gui["#I#"+name] = conf->getPropertyValue(name).as<int>();
+      }else if(type == "float"){
+        gui["#F#"+name] = conf->getPropertyValue(name).as<float>();
+      }else if(type == "string"){
+        gui["#S#"+name] = conf->getPropertyValue(name).as<std::string>();
       }
       
       deactivateExec = false;
@@ -448,6 +481,9 @@ namespace icl{
         case 'm': 
         case 'v': 
         case 'f':
+        case 'I':
+        case 'F':
+        case 'S':
           conf->setPropertyValue(prop,gui[handle].as<Any>());
         break;
         case 'c': 
