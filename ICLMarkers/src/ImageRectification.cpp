@@ -36,6 +36,7 @@
 #include <ICLUtils/Homography2D.h>
 #include <ICLGeom/ConvexHullMonotoneChain.h>
 
+#include <deque>
 
 namespace icl{
   
@@ -45,7 +46,7 @@ namespace icl{
     return buffer;
   }
 
-  void convexity_check_and_sorting(Point32f ps[4]) throw (ICLException){
+  static void convexity_check_and_sorting(Point32f ps[4]) throw (ICLException){
     std::vector<Point32f> hull = convexHull(std::vector<Point32f>(ps,ps+4));
     // first and last points are doubled
     if(hull.size() != 5) throw ICLException("ImageRectification<T>::apply: given points do not define a convex quadrangle");
@@ -55,8 +56,30 @@ namespace icl{
     ps[3] = hull[3];
   }
 
-  void check_whether_points_are_ordered(const Point32f ps[4]){
-    
+  static void convexity_check(const Point32f ps[4]){
+    std::vector<Point32f> hull = convexHull(std::vector<Point32f>(ps,ps+4));
+    if(hull.size() != 5) {
+      throw ICLException("ImageRectification<T>::apply: given points do"
+                         " not define a convex quadrangle");
+    }    
+    // check whether the hull re-arranged ps
+    hull.resize(4);
+    std::deque<Point32f> hulld(hull.begin(),hull.end());
+    for(int i=0;i<4;++i){
+      if(hulld[0] == ps[0] && hulld[1] == ps[1] && 
+         hulld[2] == ps[2] && hulld[3] == ps[3]) return; 
+      hulld.push_front(hulld.back());
+      hulld.pop_back();
+    }
+    std::reverse(hulld.begin(),hulld.end());
+    for(int i=0;i<4;++i){
+      if(hulld[0] == ps[0] && hulld[1] == ps[1] && 
+         hulld[2] == ps[2] && hulld[3] == ps[3]) return; 
+      hulld.push_front(hulld.back());
+      hulld.pop_back();
+    }
+
+    throw ICLException("ImageRectification<T>::apply: given points define a crossed quadrangle");
   }
   
   template<class T> 
@@ -70,6 +93,8 @@ namespace icl{
     // the check based on the convex hull seems to be both, fast and accurate
     if(validateAndSortPoints){
       convexity_check_and_sorting(ps);
+    }else{
+      convexity_check(ps);
     }
     
     buffer.setChannels(src.getChannels());
