@@ -73,6 +73,9 @@ std::string sample= ("<config>\n"
                      "   <!-- more markers -->\n"
                      "   <!-- more markers -->\n"
                      "   <data id=\"world-transform\" type=\"string\">4x4-matrix</data>      <!-- optional -->\n"
+                     "   <data id=\"obj-file\" type=\"string\">\n"
+                     "      <!-- optional .obj file content that describes the visual shape of the calibration object -->\n"
+                     "   </data>\n"
                      "</config>\n");
 
 void create_new_fd(const std::string &t, std::vector<std::string> &cfgs, std::string &iin){
@@ -111,6 +114,7 @@ void init(){
 
   for(int c = 0; c <pa("-c").n(); ++c){
     ConfigFile cfg(*pa("-c",c));
+    std::cout << "* parsing given configuration file '" << *pa("-c",c) << "'" << std::endl;
     
     Mat T = Mat::id();
     try{
@@ -119,7 +123,13 @@ void init(){
     
     
     try{
-      std::string s = cfg["config.obj-file"];
+      std::string s;
+      try{
+        std::string s2 = cfg["config.obj-file"];
+        s = s2;
+      }catch(...){
+        throw 1;
+      }
       {
         std::ofstream obj("/tmp/tmp-obj-file.obj");
         obj << s << std::endl;
@@ -135,11 +145,16 @@ void init(){
       calibObjs.push_back(std::make_pair(o,T));
     }catch(ICLException &e){
       SHOW(e.what());
-    }
+    }catch(int){}
+    
     system("rm -rf /tmp/tmp-obj-file.obj");
     
     for(int i=0;true;++i){
       cfg.setPrefix("config.grid-"+str(i)+".");  
+      try{
+        Size s = parse<Size>(cfg["dim"]);
+      }catch(...){ break; }
+
       try{
         Size s = parse<Size>(cfg["dim"]);
         Vec3 o = parse<Vec3>(cfg["offset"]);
@@ -155,7 +170,7 @@ void init(){
         }
         FiducialDetector &fd = *fds[t];
         fd.loadMarkers(r,t == "bch" ? ParamList("size",Size(50,50)) : ParamList());
-        std::cout << "registering " << t << " marker range " << r << std::endl; 
+        std::cout << "** registering grid with " << t << " marker range " << r << std::endl; 
         
         int id = r.minVal;
         std::map<int, Vec> &lut = posLUT[t];
@@ -174,11 +189,17 @@ void init(){
         grids.push_back(so);
         so->setColor(Primitive::line,GeomColor(255,0,0,180));
         scene.addObject(so);
-      }catch(...){ break; }
+      }catch(ICLException &e){
+        ERROR_LOG("Error parsing xml configuration file: '" << *pa("-c",c) << "': " << e.what());
+        continue;
+      }
     }
   
     for(int i=0;true;++i){
-      cfg.setPrefix("config.marker-"+str(i)+".");  
+      cfg.setPrefix("config.marker-"+str(i)+".");
+      try{
+        std::string t = cfg["marker-type"];
+      }catch(...){ break; }
       try{
         std::string t = cfg["marker-type"];
         Vec3 p = parse<Vec3>(cfg["pos"]);
@@ -186,9 +207,10 @@ void init(){
         if(fds.find(t) == fds.end()){
           create_new_fd(t,configurables,iin);
         }
+       
         fds[t]->loadMarkers(str(id), t == "bch" ? ParamList("size",Size(50,50)) : ParamList());
         
-        std::cout << "registering single " << t << " marker " << id << std::endl; 
+        std::cout << "** registering single " << t << " marker " << id << std::endl; 
         
         std::map<int, Vec> &lut = posLUT[t];
         if(lut.find(id) != lut.end()) throw ICLException("error loading configuration file at given grid " + str(i)
@@ -356,6 +378,10 @@ void run(){
     
     draw->text(str(m.worldPos[0]) + " " + str(m.worldPos[1]) + " " + str(m.worldPos[2]), 
                m.imagePos.x, m.imagePos.y, -10);
+
+    draw->color(0,255,0,255);
+    draw->text(str(m.fid.getID()),m.imagePos.x, m.imagePos.y+12, -10);
+
   }
   draw->unlock();
   draw.update();

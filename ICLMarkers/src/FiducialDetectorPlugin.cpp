@@ -88,14 +88,13 @@ namespace icl{
         break;
       case '[':{
         Range32s r = s;
-        for(int i=r.minVal;i<r.maxVal;++i){
+        for(int i=r.minVal;i<=r.maxVal;++i){
           back.push_back(i);
         }
         break;
       }
       default:
-        int s = s;
-        back.push_back(s);
+        back.push_back(s.as<int>());
     }
     return back;
   }
