@@ -49,7 +49,8 @@ typedef FixedColVector<float,3> Vec3;
 std::map<std::string,SmartPtr<FiducialDetector> > fds;
 std::map<std::string,std::map<int,Vec> > posLUT;
 FiducialDetector *lastFD = 0; // used for visualization
-SceneObject *calibObj = 0;
+std::vector<std::pair<SceneObject*,Mat> > calibObjs;
+std::vector<SceneObject*> grids;
 
 std::string sample= ("<config>\n"
                      "  <section id=\"grid-0\">\n"
@@ -103,94 +104,100 @@ void save(){
 
 void init(){
  
-  ConfigFile cfg(*pa("-c"));
-  cfg.listContents();
-  
-  Mat T = Mat::id();
-  try{
-    T = parse<Mat>(cfg["config.world-transform"]);
-  }catch(...){}
+  if(!pa("-c")) { pausage("-c is mandatory!"); ::exit(0); } 
 
   std::vector<std::string> configurables;
   std::string iin;
-  
-  try{
-    std::string s = cfg["config.obj-file"];
-    {
-      std::ofstream obj("/tmp/tmp-obj-file.obj");
-      obj << s << std::endl;
+
+  for(int c = 0; c <pa("-c").n(); ++c){
+    ConfigFile cfg(*pa("-c",c));
+    
+    Mat T = Mat::id();
+    try{
+      T = parse<Mat>(cfg["config.world-transform"]);
+    }catch(...){}
+    
+    
+    try{
+      std::string s = cfg["config.obj-file"];
+      {
+        std::ofstream obj("/tmp/tmp-obj-file.obj");
+        obj << s << std::endl;
+      }
+
+      SceneObject *o = new SceneObject("/tmp/tmp-obj-file.obj");
+      o->setColor(Primitive::quad,GeomColor(0,100,255,100));
+      o->setColor(Primitive::line,GeomColor(255,0,0,255));
+      o->setVisible(Primitive::line,true);
+      o->setLineWidth(2);
+      o->setTransformation(T);
+      scene.addObject(o);
+      calibObjs.push_back(std::make_pair(o,T));
+    }catch(ICLException &e){
+      SHOW(e.what());
     }
-    calibObj = new SceneObject("/tmp/tmp-obj-file.obj");
-    calibObj->setColor(Primitive::quad,GeomColor(0,100,255,100));
-    calibObj->setColor(Primitive::line,GeomColor(255,0,0,255));
-    calibObj->setVisible(Primitive::line,true);
-    calibObj->setLineWidth(2);
-    calibObj->setTransformation(T);
-    scene.addObject(calibObj);
-
-  }catch(ICLException &e){
-    SHOW(e.what());
-  }
-  system("rm -rf /tmp/tmp-obj-file.obj");
-
-  
-  for(int i=0;true;++i){
-    cfg.setPrefix("config.grid-"+str(i)+".");  
-    try{
-      Size s = parse<Size>(cfg["dim"]);
-      Vec3 o = parse<Vec3>(cfg["offset"]);
-      Vec3 dx = parse<Vec3>(cfg["x-direction"]);
-      Vec3 dy = parse<Vec3>(cfg["y-direction"]);
-      std::string t = cfg["marker-type"];
-      Range32s r = parse<Range32s>(cfg["marker-ids"]);
-      ICLASSERT_THROW(r.getLength()+1 == s.getDim(), ICLException("error loading configuration file at given grid " + str(i)
+    system("rm -rf /tmp/tmp-obj-file.obj");
+    
+    for(int i=0;true;++i){
+      cfg.setPrefix("config.grid-"+str(i)+".");  
+      try{
+        Size s = parse<Size>(cfg["dim"]);
+        Vec3 o = parse<Vec3>(cfg["offset"]);
+        Vec3 dx = parse<Vec3>(cfg["x-direction"]);
+        Vec3 dy = parse<Vec3>(cfg["y-direction"]);
+        std::string t = cfg["marker-type"];
+        Range32s r = parse<Range32s>(cfg["marker-ids"]);
+        ICLASSERT_THROW(r.getLength()+1 == s.getDim(), ICLException("error loading configuration file at given grid " + str(i)
                                                                   + ": given size " +str(s) + " is not compatible to "
-                                                                  + "given marker ID range " +str(r) ));
-      if(fds.find(t) == fds.end()){
-        create_new_fd(t,configurables,iin);
-      }
-      FiducialDetector &fd = *fds[t];
-      fd.loadMarkers(r,t == "bch" ? ParamList("size",Size(50,50)) : ParamList());
-      std::cout << "registering " << t << " marker range " << r << std::endl; 
-
-      int id = r.minVal;
-      std::map<int, Vec> &lut = posLUT[t];
-      std::vector<Vec> vertices;
-      for(int y=0;y<s.height;++y){
-
-        for(int x=0;x<s.width;++x){
-          Vec3 v = o+dx*x +dy*y;
-          if(lut.find(id) != lut.end()) throw ICLException("error loading configuration file at given grid " + str(i)
-                                                           +" : the marker ID " + str(id) + " was already used before");
-          lut[id++] = T*Vec(v[0],v[1],v[2],1);
-          vertices.push_back(T*Vec(v[0],v[1],v[2],1));
+                                                                    + "given marker ID range " +str(r) ));
+        if(fds.find(t) == fds.end()){
+          create_new_fd(t,configurables,iin);
         }
-      }
-      SceneObject *so = new GridSceneObject(s.width,s.height,vertices,true,false);
-      so->setColor(Primitive::line,GeomColor(255,0,0,180));
-      scene.addObject(so);
-    }catch(...){ break; }
-  }
+        FiducialDetector &fd = *fds[t];
+        fd.loadMarkers(r,t == "bch" ? ParamList("size",Size(50,50)) : ParamList());
+        std::cout << "registering " << t << " marker range " << r << std::endl; 
+        
+        int id = r.minVal;
+        std::map<int, Vec> &lut = posLUT[t];
+        std::vector<Vec> vertices;
+        for(int y=0;y<s.height;++y){
+          
+          for(int x=0;x<s.width;++x){
+            Vec3 v = o+dx*x +dy*y;
+            if(lut.find(id) != lut.end()) throw ICLException("error loading configuration file at given grid " + str(i)
+                                                             +" : the marker ID " + str(id) + " was already used before");
+            lut[id++] = T*Vec(v[0],v[1],v[2],1);
+            vertices.push_back(T*Vec(v[0],v[1],v[2],1));
+          }
+        }
+        SceneObject *so = new GridSceneObject(s.width,s.height,vertices,true,false);
+        grids.push_back(so);
+        so->setColor(Primitive::line,GeomColor(255,0,0,180));
+        scene.addObject(so);
+      }catch(...){ break; }
+    }
   
-  for(int i=0;true;++i){
-    cfg.setPrefix("config.marker-"+str(i)+".");  
-    try{
-      std::string t = cfg["marker-type"];
-      Vec3 p = parse<Vec3>(cfg["pos"]);
-      int id = cfg["marker-id"];
-      if(fds.find(t) == fds.end()){
-        create_new_fd(t,configurables,iin);
-      }
-      fds[t]->loadMarkers(str(id), t == "bch" ? ParamList("size",Size(50,50)) : ParamList());
-
-      std::cout << "registering single " << t << " marker " << id << std::endl; 
-      
-      std::map<int, Vec> &lut = posLUT[t];
-      if(lut.find(id) != lut.end()) throw ICLException("error loading configuration file at given grid " + str(i)
-                                                       +" : the marker ID " + str(id) + " was already used before");
-      
-      lut[id] = T * Vec(p[0],p[1],p[2], 1);
-    }catch(ICLException &e) { SHOW(e.what());  break; }
+    for(int i=0;true;++i){
+      cfg.setPrefix("config.marker-"+str(i)+".");  
+      try{
+        std::string t = cfg["marker-type"];
+        Vec3 p = parse<Vec3>(cfg["pos"]);
+        int id = cfg["marker-id"];
+        if(fds.find(t) == fds.end()){
+          create_new_fd(t,configurables,iin);
+        }
+        fds[t]->loadMarkers(str(id), t == "bch" ? ParamList("size",Size(50,50)) : ParamList());
+        
+        std::cout << "registering single " << t << " marker " << id << std::endl; 
+        
+        std::map<int, Vec> &lut = posLUT[t];
+        if(lut.find(id) != lut.end()) throw ICLException("error loading configuration file at given grid " + str(i)
+                                                         +" : the marker ID " + str(id) + " was already used before");
+        
+        lut[id] = T * Vec(p[0],p[1],p[2], 1);
+      }catch(ICLException &e) { SHOW(e.what());  break; }
+    }
+  
   }
   
   grabber.init(pa("-i"));
@@ -255,7 +262,8 @@ struct CalibrationMarker{
 };
 
 void run(){
-  if(calibObj){
+  for(unsigned int i=0;i<calibObjs.size();++i){
+    SceneObject *calibObj = calibObjs[i].first;
     const int calibObjAlpha = gui["objAlpha"];
     if(calibObjAlpha){
       calibObj->setVisible(Primitive::quad,true);
@@ -296,8 +304,21 @@ void run(){
                                 relTransGUI["ry"].as<float>()*M_PI/4,
                                 relTransGUI["rz"].as<float>()*M_PI/4,
                                 relTransGUI["tx"],relTransGUI["ty"],relTransGUI["tz"]);
+  
+  for(unsigned int i=0;i<calibObjs.size();++i){
+    calibObjs[i].first->setTransformation(T * calibObjs[i].second);
+  }
+  for(unsigned int i=0;i<grids.size();++i){
+    grids[i]->setTransformation(T);
+  }
+  
+  
   if(showRelTrans.wasTriggered()){
-    std::cout << "current relative transformation is " << std::endl << T << std::endl << std::endl;
+    std::cout << "current relative transformation is:" << std::endl << T << std::endl;
+    for(unsigned int i=0;i<calibObjs.size();++i){
+      std::cout << "combined transformation matrix for calibration object '" << pa("-c",i) 
+                << "' is:" << std::endl << (T * calibObjs[i].second) << std::endl;
+    }
   }
   
   std::vector<Vec> xws(markers.size());
@@ -350,7 +371,7 @@ int main(int n, char **ppc){
     return 0;
   }
   return ICLApp(n,ppc,"[m]-input|-i(device,device-params) "
-                "[m]-config|-c(config-xml-file-name) "
+                "[m]-config|-c(...) "
                 "-create-empty-config-file|-cc "
                 "-force-size|-s(WxH) "
                 "-output|-o(output-xml-file-name) "
