@@ -42,16 +42,13 @@ GUI relTransGUI;
 Scene scene;
 GenericGrabber grabber;
 
-
-
 typedef FixedColVector<float,3> Vec3;
-
 
 struct PossibleMarker{
   PossibleMarker():loaded(false){}
   PossibleMarker(const Vec &v):loaded(true),center(v),hasCorners(false){}
   PossibleMarker(const Vec &v, const Vec &a, const Vec &b, const Vec &c, const Vec &d):
-    loaded(false),center(v){
+    loaded(true),center(v),hasCorners(true){
     corners[0] = a;
     corners[1] = b;   
     corners[2] = c;
@@ -98,7 +95,7 @@ std::string sample= ("<config>\n"
                      "    <!-- more grids -->\n"
                      "   <section id=\"marker-0\">\n"
                      "      <data id=\"marker-type\" type=\"string\">amoeba|bch</data>\n"
-                     "      <data id=\"pos\" type=\"string\">x,y,z</data>\n"
+                     "      <data id=\"offset\" type=\"string\">x,y,z</data>\n"
                      "      <data id=\"marker-id\" type=\"int\">id</data>\n"
                      "   </section>\n"
                      "   <!-- more markers -->\n"
@@ -190,17 +187,20 @@ void init(){
     } mode = ExtractGrids;
 
     for(int i=0;mode != ExtractionDone ;++i){
-      cfg.setPrefix("config.grid-"+str(i)+".");  
-      if(!cfg.contains("dim")) {
+      
+      cfg.setPrefix(str("config.") + ((mode == ExtractGrids) ? "grid-" : "marker-")+str(i)+".");  
+      if(!cfg.contains("offset")) {
         mode = (Mode)(mode+1);
+        i = -1;
         continue;
       }
 
-      Vec3 o,dx,dy;
+      Vec3 o,dx,dy,dx1,dy1;
       Size s(1,1);
       Size32f ms;
       Range32s r;
       MarkerType t;
+      bool haveCorners;
       try{
         t = (MarkerType)(cfg["marker-type"].as<std::string>() == "amoeba");
         o = parse<Vec3>(cfg["offset"]);
@@ -208,33 +208,53 @@ void init(){
           s = parse<Size>(cfg["dim"]);
           dx = parse<Vec3>(cfg["x-direction"]);
           dy = parse<Vec3>(cfg["y-direction"]);
+          dx1 = dx.normalized();
+          dy1 = dy.normalized();
           r = parse<Range32s>(cfg["marker-ids"]);
           ICLASSERT_THROW(r.getLength()+1 == s.getDim(), ICLException("error loading configuration file at given grid " + str(i)
                                                                       + ": given size " +str(s) + " is not compatible to "
                                                                       + "given marker ID range " +str(r) ));
         }else{
-          r.minVal = r.maxVal = parse<int>(cfg["marker-id"]);
+          r.minVal = r.maxVal = cfg["marker-id"].as<int>();
         }
+
         if(!fds[t]) fds[t] = create_new_fd(t,configurables,iin);
-        try{ ms = parse<Size32f>(cfg["marker-size"]); } catch(...){}
+        try{ 
+          ms = parse<Size32f>(cfg["marker-size"]); 
+        } catch(...){}
 
         fds[t]->loadMarkers(r,t==AMOEBA ? ParamList() : ParamList("size",ms));
         if(mode == ExtractGrids){
-          std::cout << "** registering grid with " << t << " marker range " << r << std::endl; 
+          std::cout << "** registering grid with " << (t?"amoeba":"bch") << " marker range " << r << std::endl; 
         }else{
-          std::cout << "** registering single " << t << " marker with id " << r.minVal << std::endl; 
+          std::cout << "** registering single " << (t?"amoeba":"bch") << " marker with id " << r.minVal << std::endl; 
         }
         
         int id = r.minVal;
         std::vector<PossibleMarker> &lut = possible[t];
         std::vector<Vec> vertices;
         
+        haveCorners = (mode==ExtractGrids) && (ms != Size32f::null) && (t==BCH);
+        
         for(int y=0;y<s.height;++y){
           for(int x=0;x<s.width;++x){
             Vec3 v = o+dx*x +dy*y;
             if(lut[i].loaded) throw ICLException("error loading configuration file at given grid " + str(i)
                                                  +" : the marker ID " + str(id) + " was already used before");
-            lut[id++] = T*Vec(v[0],v[1],v[2],1);
+            if(haveCorners){
+              Vec3 ul = v - dx1*ms.width - dy1*ms.height;
+              Vec3 ur = v + dx1*ms.width - dy1*ms.height;
+              Vec3 ll = v - dx1*ms.width + dy1*ms.height;
+              Vec3 lr = v + dx1*ms.width + dy1*ms.height;
+              
+              lut[id++] = PossibleMarker(T*v.resize<1,4>(1),
+                                         T*ul.resize<1,4>(1),
+                                         T*ur.resize<1,4>(1),
+                                         T*ll.resize<1,4>(1),
+                                         T*lr.resize<1,4>(1));
+            }else{
+              lut[id++] = PossibleMarker(T*Vec(v[0],v[1],v[2],1));
+            }
             vertices.push_back(T*Vec(v[0],v[1],v[2],1));
           }
         }
@@ -345,6 +365,8 @@ void run(){
         m.imagePos = fids[i].getCenter2D();
         m.worldPos = p.center;
         markers.push_back(m);
+      }else{
+        ERROR_LOG("the fiducial detector detected a marker with ID " << fids[i].getID() << " which was not registered in this tool (this should actually not happen)");
       }
     }
   }
