@@ -46,8 +46,40 @@ GenericGrabber grabber;
 
 typedef FixedColVector<float,3> Vec3;
 
-std::map<std::string,SmartPtr<FiducialDetector> > fds;
-std::map<std::string,std::map<int,Vec> > posLUT;
+
+struct PossibleMarker{
+  PossibleMarker():loaded(false){}
+  PossibleMarker(const Vec &v):loaded(true),center(v),hasCorners(false){}
+  PossibleMarker(const Vec &v, const Vec &a, const Vec &b, const Vec &c, const Vec &d):
+    loaded(false),center(v){
+    corners[0] = a;
+    corners[1] = b;   
+    corners[2] = c;
+    corners[3] = d;
+  }
+  PossibleMarker &operator=(const Vec &v){
+    center = v;
+    loaded = true;
+    hasCorners = false;
+    return *this;
+  }
+  bool loaded;
+  Vec center;
+  bool hasCorners;
+  Vec corners[4];
+};
+
+enum MarkerType {
+  BCH,
+  AMOEBA
+};
+
+SmartPtr<FiducialDetector> fds[2];
+std::vector<PossibleMarker> possible[2] = {
+  std::vector<PossibleMarker>(4096), 
+  std::vector<PossibleMarker>(4096)
+};
+
 FiducialDetector *lastFD = 0; // used for visualization
 std::vector<std::pair<SceneObject*,Mat> > calibObjs;
 std::vector<SceneObject*> grids;
@@ -78,15 +110,17 @@ std::string sample= ("<config>\n"
                      "   </data>\n"
                      "</config>\n");
 
-void create_new_fd(const std::string &t, std::vector<std::string> &cfgs, std::string &iin){
-  fds[t] = new FiducialDetector(t);
-  fds[t]->setConfigurableID(t);
-  cfgs.push_back(t);
-  iin = fds[t]->getIntermediateImageNames();
-  lastFD = fds[t].get();
-  lastFD->setPropertyValue("css.angle-threshold",180);
-  lastFD->setPropertyValue("css.curvature-cutoff",30);
-  lastFD->setPropertyValue("css.rc-coefficient",1);
+FiducialDetector *create_new_fd(MarkerType t, std::vector<std::string> &configurables, std::string &iin){
+  static const std::string ts[2] = {"bch","amoeba"};
+  FiducialDetector *fd = new FiducialDetector(ts[t]);
+  fd->setConfigurableID(ts[t]);
+  configurables.push_back(ts[t]);
+  iin = fd->getIntermediateImageNames();
+  fd->setPropertyValue("css.angle-threshold",180);
+  fd->setPropertyValue("css.curvature-cutoff",30);
+  fd->setPropertyValue("css.rc-coefficient",1);
+  lastFD = fd;
+  return fd;
 }
 
 void save(){
@@ -149,77 +183,72 @@ void init(){
     
     system("rm -rf /tmp/tmp-obj-file.obj");
     
-    for(int i=0;true;++i){
-      cfg.setPrefix("config.grid-"+str(i)+".");  
-      try{
-        Size s = parse<Size>(cfg["dim"]);
-      }catch(...){ break; }
+    enum Mode{
+      ExtractGrids,
+      ExtractSingleMarkers,
+      ExtractionDone
+    } mode = ExtractGrids;
 
+    for(int i=0;mode != ExtractionDone ;++i){
+      cfg.setPrefix("config.grid-"+str(i)+".");  
+      if(!cfg.contains("dim")) {
+        mode = (Mode)(mode+1);
+        continue;
+      }
+
+      Vec3 o,dx,dy;
+      Size s(1,1);
+      Size32f ms;
+      Range32s r;
+      MarkerType t;
       try{
-        Size s = parse<Size>(cfg["dim"]);
-        Vec3 o = parse<Vec3>(cfg["offset"]);
-        Vec3 dx = parse<Vec3>(cfg["x-direction"]);
-        Vec3 dy = parse<Vec3>(cfg["y-direction"]);
-        std::string t = cfg["marker-type"];
-        Range32s r = parse<Range32s>(cfg["marker-ids"]);
-        ICLASSERT_THROW(r.getLength()+1 == s.getDim(), ICLException("error loading configuration file at given grid " + str(i)
-                                                                  + ": given size " +str(s) + " is not compatible to "
-                                                                    + "given marker ID range " +str(r) ));
-        if(fds.find(t) == fds.end()){
-          create_new_fd(t,configurables,iin);
+        t = (MarkerType)(cfg["marker-type"].as<std::string>() == "amoeba");
+        o = parse<Vec3>(cfg["offset"]);
+        if(mode == ExtractGrids){
+          s = parse<Size>(cfg["dim"]);
+          dx = parse<Vec3>(cfg["x-direction"]);
+          dy = parse<Vec3>(cfg["y-direction"]);
+          r = parse<Range32s>(cfg["marker-ids"]);
+          ICLASSERT_THROW(r.getLength()+1 == s.getDim(), ICLException("error loading configuration file at given grid " + str(i)
+                                                                      + ": given size " +str(s) + " is not compatible to "
+                                                                      + "given marker ID range " +str(r) ));
+        }else{
+          r.minVal = r.maxVal = parse<int>(cfg["marker-id"]);
         }
-        FiducialDetector &fd = *fds[t];
-        fd.loadMarkers(r,t == "bch" ? ParamList("size",Size(50,50)) : ParamList());
-        std::cout << "** registering grid with " << t << " marker range " << r << std::endl; 
+        if(!fds[t]) fds[t] = create_new_fd(t,configurables,iin);
+        try{ ms = parse<Size32f>(cfg["marker-size"]); } catch(...){}
+
+        fds[t]->loadMarkers(r,t==AMOEBA ? ParamList() : ParamList("size",ms));
+        if(mode == ExtractGrids){
+          std::cout << "** registering grid with " << t << " marker range " << r << std::endl; 
+        }else{
+          std::cout << "** registering single " << t << " marker with id " << r.minVal << std::endl; 
+        }
         
         int id = r.minVal;
-        std::map<int, Vec> &lut = posLUT[t];
+        std::vector<PossibleMarker> &lut = possible[t];
         std::vector<Vec> vertices;
+        
         for(int y=0;y<s.height;++y){
-          
           for(int x=0;x<s.width;++x){
             Vec3 v = o+dx*x +dy*y;
-            if(lut.find(id) != lut.end()) throw ICLException("error loading configuration file at given grid " + str(i)
-                                                             +" : the marker ID " + str(id) + " was already used before");
+            if(lut[i].loaded) throw ICLException("error loading configuration file at given grid " + str(i)
+                                                 +" : the marker ID " + str(id) + " was already used before");
             lut[id++] = T*Vec(v[0],v[1],v[2],1);
             vertices.push_back(T*Vec(v[0],v[1],v[2],1));
           }
         }
-        SceneObject *so = new GridSceneObject(s.width,s.height,vertices,true,false);
-        grids.push_back(so);
-        so->setColor(Primitive::line,GeomColor(255,0,0,180));
-        scene.addObject(so);
+        if(mode == ExtractGrids){
+          SceneObject *so = new GridSceneObject(s.width,s.height,vertices,true,false);
+          grids.push_back(so);
+          so->setColor(Primitive::line,GeomColor(255,0,0,180));
+          scene.addObject(so);
+        }
       }catch(ICLException &e){
         ERROR_LOG("Error parsing xml configuration file: '" << *pa("-c",c) << "': " << e.what());
         continue;
       }
     }
-  
-    for(int i=0;true;++i){
-      cfg.setPrefix("config.marker-"+str(i)+".");
-      try{
-        std::string t = cfg["marker-type"];
-      }catch(...){ break; }
-      try{
-        std::string t = cfg["marker-type"];
-        Vec3 p = parse<Vec3>(cfg["pos"]);
-        int id = cfg["marker-id"];
-        if(fds.find(t) == fds.end()){
-          create_new_fd(t,configurables,iin);
-        }
-       
-        fds[t]->loadMarkers(str(id), t == "bch" ? ParamList("size",Size(50,50)) : ParamList());
-        
-        std::cout << "** registering single " << t << " marker " << id << std::endl; 
-        
-        std::map<int, Vec> &lut = posLUT[t];
-        if(lut.find(id) != lut.end()) throw ICLException("error loading configuration file at given grid " + str(i)
-                                                         +" : the marker ID " + str(id) + " was already used before");
-        
-        lut[id] = T * Vec(p[0],p[1],p[2], 1);
-      }catch(ICLException &e) { SHOW(e.what());  break; }
-    }
-  
   }
   
   grabber.init(pa("-i"));
@@ -306,17 +335,15 @@ void run(){
   const ImgBase *image = grabber.grab();
   
   std::vector<CalibrationMarker> markers;
-  for(std::map<std::string,SmartPtr<FiducialDetector> >::iterator it = fds.begin();
-      it != fds.end();++it){
-    const std::vector<Fiducial> &fids = it->second->detect(image);
+  for(int x=0;x<2;++x){
+    if(!fds[x]) continue;
+    const std::vector<Fiducial> &fids = fds[x]->detect(image);
     for(unsigned int i=0;i<fids.size();++i){
-      
       CalibrationMarker m = { fids[i], Point32f::null, Vec() };
-      std::map<int,Vec> &lut = posLUT[it->first];
-      std::map<int,Vec>::iterator jt = lut.find(m.fid.getID());
-      if(jt != lut.end()){
-        m.imagePos = m.fid.getCenter2D();
-        m.worldPos = jt->second;
+      const PossibleMarker &p = possible[x][fids[i].getID()];
+      if(p.loaded){
+        m.imagePos = fids[i].getCenter2D();
+        m.worldPos = p.center;
         markers.push_back(m);
       }
     }
