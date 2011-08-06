@@ -242,10 +242,10 @@ void init(){
             if(lut[i].loaded) throw ICLException("error loading configuration file at given grid " + str(i)
                                                  +" : the marker ID " + str(id) + " was already used before");
             if(haveCorners){
-              Vec3 ul = v - dx1*ms.width - dy1*ms.height;
-              Vec3 ur = v + dx1*ms.width - dy1*ms.height;
-              Vec3 ll = v - dx1*ms.width + dy1*ms.height;
-              Vec3 lr = v + dx1*ms.width + dy1*ms.height;
+              Vec3 ul = v + dx1*(ms.width/2) - dy1*(ms.height/2);
+              Vec3 ur = v + dx1*(ms.width/2) + dy1*(ms.height/2);
+              Vec3 ll = v - dx1*(ms.width/2) + dy1*(ms.height/2);
+              Vec3 lr = v - dx1*(ms.width/2) - dy1*(ms.height/2);
               
               lut[id++] = PossibleMarker(T*v.resize<1,4>(1),
                                          T*ul.resize<1,4>(1),
@@ -288,7 +288,11 @@ void init(){
            << ( GUI("hbox") 
                 << "combo(" +iin + ")[@handle=iin@label=visualized image]"
                 << "slider(0,255,128)[@out=objAlpha@label=object-alpha]"
-               )
+                )
+           << ( GUI("hbox") 
+                << "checkbox(use corners,checked)[@out=useCorners]"
+                << "label( )[@handle=error@label=error]"
+                )
            << tab 
            << ( GUI("hbox") 
                 << "button(chage relative tranformation)[@handle=showRelTransGUI]"
@@ -326,10 +330,24 @@ void init(){
   gui["showRelTransGUI"].registerCallback(function(&relTransGUI,&GUI::switchVisibility));
 }
 
-struct CalibrationMarker{
+struct FoundMarker{
+  FoundMarker(){}
+  FoundMarker(Fiducial fid, const Point32f &imagePos, const Vec &worldPos):
+    fid(fid),imagePos(imagePos),worldPos(worldPos),hasCorners(false){}
+  FoundMarker(Fiducial fid, const Point32f &imagePos, const Vec &worldPos,
+              const Point32f imageCornerPositions[4],
+              const Vec worldCornerPositions[4]):
+    fid(fid),imagePos(imagePos),worldPos(worldPos),hasCorners(true){
+    std::copy(imageCornerPositions,imageCornerPositions+4,this->imageCornerPositions);
+    std::copy(worldCornerPositions,worldCornerPositions+4,this->worldCornerPositions);
+  }
+  
   Fiducial fid;
   Point32f imagePos;
   Vec worldPos;
+  bool hasCorners;
+  Point32f imageCornerPositions[4];  
+  Vec worldCornerPositions[4];  
 };
 
 void run(){
@@ -354,19 +372,32 @@ void run(){
 
   const ImgBase *image = grabber.grab();
   
-  std::vector<CalibrationMarker> markers;
+  std::vector<FoundMarker> markers;
   for(int x=0;x<2;++x){
     if(!fds[x]) continue;
     const std::vector<Fiducial> &fids = fds[x]->detect(image);
     for(unsigned int i=0;i<fids.size();++i){
-      CalibrationMarker m = { fids[i], Point32f::null, Vec() };
+      //FoundMarker m = { fids[i], Point32f::null, Vec() };
       const PossibleMarker &p = possible[x][fids[i].getID()];
       if(p.loaded){
-        m.imagePos = fids[i].getCenter2D();
-        m.worldPos = p.center;
-        markers.push_back(m);
+        if(p.hasCorners && fids[i].getKeyPoints2D().size() == 4){
+         const std::vector<Fiducial::KeyPoint> &kps = fids[i].getKeyPoints2D();
+          Point32f imagePositions[4] = { 
+            kps[0].imagePos, 
+            kps[1].imagePos, 
+            kps[2].imagePos,
+            kps[3].imagePos 
+          };
+          
+          markers.push_back(FoundMarker(fids[i],fids[i].getCenter2D(),p.center,
+                                        imagePositions,p.corners));
+        }else{
+          markers.push_back(FoundMarker(fids[i],fids[i].getCenter2D(),p.center));
+        }
       }else{
-        ERROR_LOG("the fiducial detector detected a marker with ID " << fids[i].getID() << " which was not registered in this tool (this should actually not happen)");
+        ERROR_LOG("the fiducial detector detected a marker with ID " 
+                  << fids[i].getID() << " which was not registered "
+                  << "in this tool (this should actually not happen)");
       }
     }
   }
@@ -392,19 +423,40 @@ void run(){
     }
   }
   
-  std::vector<Vec> xws(markers.size());
-  std::vector<Point32f> xis(markers.size());
-  for(unsigned int i=0;i<xws.size();++i){
-    xws[i] = T * markers[i].worldPos;
-    xis[i] = markers[i].imagePos;
+  std::vector<Vec> xws;
+  std::vector<Point32f> xis;
+  bool useCorners = gui["useCorners"];
+  for(unsigned int i=0;i<markers.size();++i){
+    xws.push_back(T * markers[i].worldPos);
+    xis.push_back(markers[i].imagePos);
+
+
+    if(useCorners && markers[i].hasCorners){
+      for(int j=0;j<4;++j){
+        xws.push_back(T*markers[i].worldCornerPositions[j]);
+        xis.push_back(markers[i].imageCornerPositions[j]);
+      }
+    }
+
+
   }
   try{
-    scene.getCamera(0) = Camera::calibrate_pinv(xws, xis);
-    scene.getCamera(0).getRenderParams().viewport = Rect(Point::null,image->getSize());
-    scene.getCamera(0).getRenderParams().chipSize = image->getSize();
+    Camera &cam = scene.getCamera(0);
+    cam = Camera::calibrate_pinv(xws, xis);
+    cam.getRenderParams().viewport = Rect(Point::null,image->getSize());
+    cam.getRenderParams().chipSize = image->getSize();
     scene.setDrawCoordinateFrameEnabled(true);
+    
+    float error = 0;
+    
+    for(unsigned int i=0;i<xws.size();++i){
+      error += xis[i].distanceTo(cam.project(xws[i]));
+    }
+    gui["error"] = error/xws.size();
 
-  }catch(...){}
+  }catch(ICLException &e){
+    SHOW(e.what());
+  }
 
 
   
@@ -415,7 +467,7 @@ void run(){
   draw->reset();
   draw->symsize(5);
   for(unsigned int i=0;i<markers.size();++i){
-    CalibrationMarker &m = markers[i];
+    FoundMarker &m = markers[i];
     draw->linewidth(2);
     draw->color(0,100,255,255);
     draw->fill(0,100,255,100);
