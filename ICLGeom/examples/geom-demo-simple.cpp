@@ -40,12 +40,23 @@
 GUI gui;
 Scene scene;
 
+void reload_obj(){
+  scene.removeObject(0);
+  SceneObject *o = new SceneObject(*pa("-o")); 
+  o->setColor(Primitive::line,GeomColor(255,0,0,255));
+  o->setVisible(Primitive::line,true);
+  scene.addObject(o);
+}
+
 void init(){
   // create graphical user interface
-  gui << "draw3D[@minsize=16x12@handle=draw@label=scene view]"
-      << "fslider(0.5,20,3)[@out=f@handle=focal"
-         "@label=focal length@maxsize=100x3]";
-  gui.show();
+  GUI ctrl("hbox[@maxsize=100x3]");
+  ctrl << "fslider(0.5,20,3)[@out=f@handle=focal@label=focal length@maxsize=100x3]";
+  if(pa("-o")){
+    ctrl << "button(reload)[@handle=reload]";
+  }
+  
+  gui << "draw3D[@minsize=16x12@handle=draw@label=scene view]" << ctrl << "!show";
   
   // create camera and add to scene instance
   Camera cam(Vec(0,0,-10), // position
@@ -55,7 +66,11 @@ void init(){
 
   
   if(pa("-o")){ // either load an .obj file
-    scene.addObject(new SceneObject(*pa("-o")));
+    SceneObject *o = new SceneObject(*pa("-o")); 
+    o->setColor(Primitive::line,GeomColor(255,0,0,255));
+    o->setVisible(Primitive::line,true);
+
+    scene.addObject(o);
   }else{ // or create a simple cube
     std::string shape=pa("-s");
     const float data[] = {0,0,0,7,3,2, 30, 30};
@@ -69,6 +84,7 @@ void init(){
 
   // link the scene's first camera with mouse gestures in the draw-GUI-component
   gui["draw"].install(scene.getMouseHandler(0));
+  gui["reload"].registerCallback(reload_obj);
 }
 
 
