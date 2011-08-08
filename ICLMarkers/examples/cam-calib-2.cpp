@@ -42,6 +42,13 @@ GUI relTransGUI;
 Scene scene;
 GenericGrabber grabber;
 
+Point32f currentMousePos;
+bool havePlane = false;
+
+void mouse(const MouseEvent &e){
+  currentMousePos = e.getPos();
+}
+
 typedef FixedColVector<float,3> Vec3;
 
 struct PossibleMarker{
@@ -79,7 +86,7 @@ std::vector<PossibleMarker> possible[2] = {
 
 FiducialDetector *lastFD = 0; // used for visualization
 std::vector<std::pair<SceneObject*,Mat> > calibObjs;
-std::vector<SceneObject*> grids;
+//std::vector<SceneObject*> grids;
 
 std::string sample= ("<config>\n"
                      "  <section id=\"grid-0\">\n"
@@ -116,6 +123,8 @@ FiducialDetector *create_new_fd(MarkerType t, std::vector<std::string> &configur
   fd->setPropertyValue("css.angle-threshold",180);
   fd->setPropertyValue("css.curvature-cutoff",30);
   fd->setPropertyValue("css.rc-coefficient",1);
+  fd->setPropertyValue("thresh.global threshold",-10);
+  fd->setPropertyValue("thresh.mask size",30);
   lastFD = fd;
   return fd;
 }
@@ -135,6 +144,83 @@ void save(){
     std::cout << "current camera is " << scene.getCamera(0) << std::endl;
   }
 }                   
+
+SceneObject *planeObj = 0;
+
+Vec set_3_to_1(Vec a){
+  a[2] += 1;
+  a[3] = 1;
+  return a;
+}
+
+void change_plane(const std::string &handle){
+  if(handle == "planeDim"){
+    if(gui["planeDim"].as<std::string>() == "none"){
+      gui["planeOffset"].disable();
+      gui["planeRadius"].disable();
+      gui["planeTicDist"].disable();
+      gui["planeColor"].disable();
+      gui["planeStatus"] = str("removed");
+      scene.removeObject(planeObj);
+      planeObj = 0;
+      havePlane = false;
+      return;
+    }else{
+      havePlane = true;
+      gui["planeOffset"].enable();
+      gui["planeRadius"].enable();
+      gui["planeTicDist"].enable();
+      gui["planeColor"].enable();
+    }
+  }
+  if(planeObj){
+    scene.removeObject(planeObj);
+    ICL_DELETE(planeObj);
+  }
+  
+  const std::string t = gui["planeDim"];
+  const float offset = gui["planeOffset"];
+  const float radius = parse<float>(gui["planeRadius"]);
+  const float ticDist = gui["planeTicDist"];
+  const Color4D c = gui["planeColor"];
+
+  int n = (2*radius) / ticDist;
+  if(n * n > 1000000){
+    gui["planeStatus"] = str("too many nodes");
+    return;
+  }else{
+    gui["planeStatus"] = str("ok (") + str(n*n) + " nodes)";
+  }
+  Vec o(offset*(t=="x"),offset*(t=="y"),offset*(t=="z"),1);
+  Vec dx,dy;
+  if(t == "x"){
+    dx = Vec(0,ticDist,0,1);
+    dy = Vec(0,0,ticDist,1);
+  }else if(t == "y"){
+    dx = Vec(ticDist,0,0,1);
+    dy = Vec(0,0,ticDist,1);
+  }else{
+    dx = Vec(ticDist,0,0,1);
+    dy = Vec(0,ticDist,0,1);
+  }
+  int n2 = n/2;
+
+  planeObj = new GridSceneObject(n,n,o -dx*(n2) - dy*(n2) ,dx,dy,true,false);
+  planeObj->setColor(Primitive::line,GeomColor(c[0],c[1],c[2],c[3]));
+  planeObj->setVisible(Primitive::vertex,false);
+
+  planeObj->addVertex(set_3_to_1(o-dx*n2));
+  planeObj->addVertex(set_3_to_1(o+dx*n2));
+
+  planeObj->addVertex(set_3_to_1(o-dy*n2));
+  planeObj->addVertex(set_3_to_1(o+dy*n2));
+  
+  planeObj->addLine(n*n,n*n+1,GeomColor(255,0,0,255));
+  planeObj->addLine(n*n+2,n*n+3,GeomColor(0,255,0,255));
+
+
+  scene.addObject(planeObj);
+}
 
 void init(){
  
@@ -178,7 +264,8 @@ void init(){
       SHOW(e.what());
     }catch(int){}
     
-    system("rm -rf /tmp/tmp-obj-file.obj");
+    int systemResult = system("rm -rf /tmp/tmp-obj-file.obj");
+    (void)systemResult;
     
     enum Mode{
       ExtractGrids,
@@ -258,12 +345,14 @@ void init(){
             vertices.push_back(T*Vec(v[0],v[1],v[2],1));
           }
         }
-        if(mode == ExtractGrids){
-          SceneObject *so = new GridSceneObject(s.width,s.height,vertices,true,false);
-          grids.push_back(so);
-          so->setColor(Primitive::line,GeomColor(255,0,0,180));
-          scene.addObject(so);
-        }
+        /*
+            if(mode == ExtractGrids){
+            SceneObject *so = new GridSceneObject(s.width,s.height,vertices,true,false);
+            grids.push_back(so);
+            so->setColor(Primitive::line,GeomColor(255,0,0,180));
+            scene.addObject(so);
+            }
+        */
       }catch(ICLException &e){
         ERROR_LOG("Error parsing xml configuration file: '" << *pa("-c",c) << "': " << e.what());
         continue;
@@ -285,16 +374,33 @@ void init(){
     tab << "prop(" + configurables[i] + ")";
   }
   gui << ( GUI("vbox[@minsize=16x1@maxsize=16x100]") 
-           << ( GUI("hbox") 
+           << ( GUI("hbox[@maxsize=100x3]") 
                 << "combo(" +iin + ")[@handle=iin@label=visualized image]"
                 << "slider(0,255,128)[@out=objAlpha@label=object-alpha]"
                 )
-           << ( GUI("hbox") 
+           << ( GUI("hbox[@maxsize=100x3]") 
                 << "checkbox(use corners,checked)[@out=useCorners]"
+                << "checkbox(show CS,checked)[@out=showCS]"
                 << "label( )[@handle=error@label=error]"
                 )
+           << ( GUI("vbox[@label=plane@maxsize=100x10]")
+                << ( GUI("hbox")
+                     << "combo(none,x,y,z)[@label=normal@handle=planeDim]"
+                     << "float(-10000,10000,0)[@label=offset mm@handle=planeOffset]"
+                     )
+                << ( GUI("hbox")
+                     << "combo(100,200,500,!1000,2000,3000,5000,10000)"
+                        "[@label=radius mm@handle=planeRadius]"
+                     << "float(1,1000,10)[@label=tic distance mm@handle=planeTicDist]"
+                     )
+                << ( GUI("hbox")
+                     << "label( )[@handle=planeStatus@label=status]"
+                     << "color(40,40,40,255)[@handle=planeColor@label=color]"
+                    )
+                )
+
            << tab 
-           << ( GUI("hbox") 
+           << ( GUI("hbox[@maxsize=100x3]") 
                 << "button(chage relative tranformation)[@handle=showRelTransGUI]"
                 << "button(save camera)[handle=save]"
                 )
@@ -328,6 +434,14 @@ void init(){
   draw->unlock();
   
   gui["showRelTransGUI"].registerCallback(function(&relTransGUI,&GUI::switchVisibility));
+  
+  gui["planeOffset"].disable();
+  gui["planeRadius"].disable();
+  gui["planeTicDist"].disable();
+  gui["planeColor"].disable();
+  gui.registerCallback(change_plane,"planeOffset,planeRadius,planeTicDist,planeDim,planeColor");
+  
+  gui["draw"].install(new MouseHandler(mouse));
 }
 
 struct FoundMarker{
@@ -351,6 +465,10 @@ struct FoundMarker{
 };
 
 void run(){
+  scene.lock();
+  scene.setDrawCoordinateFrameEnabled(gui["showCS"]);
+  scene.unlock();
+
   for(unsigned int i=0;i<calibObjs.size();++i){
     SceneObject *calibObj = calibObjs[i].first;
     const int calibObjAlpha = gui["objAlpha"];
@@ -410,9 +528,9 @@ void run(){
   for(unsigned int i=0;i<calibObjs.size();++i){
     calibObjs[i].first->setTransformation(T * calibObjs[i].second);
   }
-  for(unsigned int i=0;i<grids.size();++i){
-    grids[i]->setTransformation(T);
-  }
+  //  for(unsigned int i=0;i<grids.size();++i){
+  //  grids[i]->setTransformation(T);
+  //}
   
   
   if(showRelTrans.wasTriggered()){
@@ -458,32 +576,59 @@ void run(){
     SHOW(e.what());
   }
 
-
+  
   
   static DrawHandle3D draw = gui["draw"];
   
   draw = lastFD->getIntermediateImage(gui["iin"].as<std::string>());
   draw->lock();
   draw->reset();
-  draw->symsize(5);
+  draw->symsize(7);
   for(unsigned int i=0;i<markers.size();++i){
     FoundMarker &m = markers[i];
     draw->linewidth(2);
     draw->color(0,100,255,255);
     draw->fill(0,100,255,100);
     draw->polygon(m.fid.getCorners2D());
-
     draw->color(255,0,0,255);
 
-    draw->sym(m.imagePos,'*');
-    
-    draw->text(str(m.worldPos[0]) + " " + str(m.worldPos[1]) + " " + str(m.worldPos[2]), 
-               m.imagePos.x, m.imagePos.y, -10);
-
+    draw->linewidth(1);
+    draw->sym(m.imagePos,'x');
+    if(m.hasCorners){
+      draw->sym(m.imageCornerPositions[0],'x');
+      draw->sym(m.imageCornerPositions[1],'x');
+      draw->sym(m.imageCornerPositions[2],'x');
+      draw->sym(m.imageCornerPositions[3],'x');
+    }
     draw->color(0,255,0,255);
     draw->text(str(m.fid.getID()),m.imagePos.x, m.imagePos.y+12, -10);
-
   }
+
+  if(havePlane){
+    draw->linewidth(1);
+    const Point32f p = currentMousePos;
+    const std::string t = gui["planeDim"];
+    const float o = gui["planeOffset"];
+    const float x=t=="x",y=t=="y",z=t=="z";
+    PlaneEquation pe(Vec(o*x,o*y,o*z,1),Vec(x,y,z,1));
+
+    const Vec w = scene.getCamera(0).getViewRay(p).getIntersection(pe);
+    const Vec wx = x ? Vec(w[0],o,w[2],1) : Vec(o,w[1],w[2],1);
+    const Vec wy = y ? Vec(w[0],w[1],o,1) : Vec(w[0],o,w[2],1);
+    
+    draw->color(0,100,255,255);
+    draw->line(p,scene.getCamera(0).project(wx));
+    draw->line(p,scene.getCamera(0).project(wy));
+    
+    const std::string tx = str("(")+str(w[0])+","+str(w[1])+","+str(w[2])+")";
+    draw->color(0,0,0,255);
+    draw->text(tx,p.x+1,p.y-11,8);
+    draw->text(tx,p.x,p.y-12,8);
+    draw->color(255,255,255,255);
+    draw->text(tx,p.x-1,p.y-13,8);
+  }
+
+
   draw->unlock();
   draw.update();
 }

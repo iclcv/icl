@@ -107,38 +107,13 @@ namespace icl{
 
     std::vector<int> ids = parse_list_str(which);
     for(unsigned int i=0;i<ids.size();++i){
+
       int x = ids[i];
+      DEBUG_LOG("loading marker ID " << x);
       if(x<0 || x>= 4096) continue;
       data->loaded[x] = add;
       if(add) data->sizes[x] = s;
     }
-#if 0
-    switch(which[0]){
-      case '[':{
-        Range32s r = which;
-        for(int i=r.minVal;i<=r.maxVal;++i){
-          if(i<0 || i >= 4096) continue;
-          data->loaded[i] = add;
-          if(add) data->sizes[i] = s;
-        }
-        break;
-      }
-      case '{':{
-        std::vector<int> ids = parseVecStr<int>(which.substr(1,which.length()-2));
-        for(unsigned int i=0;i<ids.size();++i){
-          if(i<0 || i >= 4096) continue;
-          data->loaded[ids[i]] = add;
-          if(add) data->sizes[i] = s;
-        }
-        break;
-      }default:
-        int i = which.as<int>();
-        if(i<0 || i >= 4096) break;
-        data->loaded[i] = add;
-        if(add) data->sizes[i] = s;
-        break;
-    }
-#endif
     
     data->maxLoaded=-1;
     for(int i=4095;i>=0;--i){
@@ -175,7 +150,7 @@ namespace icl{
                                              Fiducial::Rotation2D |
                                              Fiducial::Corners2D );
     
-    if(p && p.errors <= data->maxBCHErr){
+    if(p && (p.id >=0) && (p.id < 4096) && (data->loaded[p.id]) && p.errors <= data->maxBCHErr){
       FiducialImpl *impl = new FiducialImpl(this,supported,computed,
                                             p.id, -1,data->sizes[p.id]);
       *rot = (int)p.rot;

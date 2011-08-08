@@ -581,6 +581,7 @@ namespace icl{
 
     
     // FloatHandle
+    ADD(DataStore::Data::Event,FloatHandle);
     FROM_TO_NUM_ADD(FloatHandle);
     FROM_TO_STR_ADD(FloatHandle);
     ADD_T_TO_T(FloatHandle);
@@ -628,6 +629,7 @@ namespace icl{
     
 
     // IntHandle
+    ADD(DataStore::Data::Event,IntHandle);
     FROM_TO_NUM_ADD(IntHandle);
     FROM_TO_STR_ADD(IntHandle);
     ADD_T_TO_T(IntHandle);
@@ -691,6 +693,7 @@ namespace icl{
     ADD(Color,Color4D);
     ADD(Color4D,Color);
     ADD_T_TO_T(ColorHandle);
+    ADD(DataStore::Data::Event,ColorHandle);
     
 
     return &m;

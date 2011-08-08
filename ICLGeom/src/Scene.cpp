@@ -765,6 +765,27 @@ namespace icl{
   bool Scene::getDrawCamerasEnabled() const{
     return m_drawCamerasEnabled;
   }
+  
+  bool Scene::getDrawCoordinateFrameEnabled(float *axisLength,float *axisThickness) const{
+    if(!m_drawCoordinateFrameEnabled){
+      return false;
+    }else{
+      const SceneObject *cs = m_coordinateFrameObject.get();    
+      const CoordinateFrameSceneObject *csSimple = dynamic_cast<const CoordinateFrameSceneObject*>(cs);
+      const ComplexCoordinateFrameSceneObject *csComplex = dynamic_cast<const ComplexCoordinateFrameSceneObject*>(cs);
+      if(csSimple){
+        if(axisLength) *axisLength = csSimple->getAxisLength();
+        if(axisThickness) *axisThickness = csSimple->getAxisThickness();
+      }else if(csComplex){
+        if(axisLength) *axisLength = csComplex->getAxisLength();
+        if(axisThickness) *axisThickness = csComplex->getAxisThickness();
+      }else{
+        ERROR_LOG("drawing the coordinate frame is enabled, but no SceneObject could be found (this should not happen)");
+        return false;
+      }
+      return true;
+    }
+  }
 
   void Scene::extendMaxSceneDimRecursive(float &minX, float &maxX, 
                                          float &minY, float &maxY, 
