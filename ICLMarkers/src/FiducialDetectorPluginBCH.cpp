@@ -107,9 +107,7 @@ namespace icl{
 
     std::vector<int> ids = parse_list_str(which);
     for(unsigned int i=0;i<ids.size();++i){
-
       int x = ids[i];
-      DEBUG_LOG("loading marker ID " << x);
       if(x<0 || x>= 4096) continue;
       data->loaded[x] = add;
       if(add) data->sizes[x] = s;

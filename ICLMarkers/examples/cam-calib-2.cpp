@@ -61,12 +61,6 @@ struct PossibleMarker{
     corners[2] = c;
     corners[3] = d;
   }
-  PossibleMarker &operator=(const Vec &v){
-    center = v;
-    loaded = true;
-    hasCorners = false;
-    return *this;
-  }
   bool loaded;
   Vec center;
   bool hasCorners;
@@ -273,6 +267,7 @@ void init(){
       ExtractionDone
     } mode = ExtractGrids;
 
+    
     for(int i=0;mode != ExtractionDone ;++i){
       
       cfg.setPrefix(str("config.") + ((mode == ExtractGrids) ? "grid-" : "marker-")+str(i)+".");  
@@ -311,6 +306,7 @@ void init(){
         } catch(...){}
 
         fds[t]->loadMarkers(r,t==AMOEBA ? ParamList() : ParamList("size",ms));
+
         if(mode == ExtractGrids){
           std::cout << "** registering grid with " << (t?"amoeba":"bch") << " marker range " << r << std::endl; 
         }else{
@@ -322,11 +318,11 @@ void init(){
         std::vector<Vec> vertices;
         
         haveCorners = (mode==ExtractGrids) && (ms != Size32f::null) && (t==BCH);
-        
+
         for(int y=0;y<s.height;++y){
           for(int x=0;x<s.width;++x){
             Vec3 v = o+dx*x +dy*y;
-            if(lut[i].loaded) throw ICLException("error loading configuration file at given grid " + str(i)
+            if(lut[id].loaded) throw ICLException("error loading configuration file at given grid " + str(i)
                                                  +" : the marker ID " + str(id) + " was already used before");
             if(haveCorners){
               Vec3 ul = v + dx1*(ms.width/2) - dy1*(ms.height/2);
@@ -512,10 +508,6 @@ void run(){
         }else{
           markers.push_back(FoundMarker(fids[i],fids[i].getCenter2D(),p.center));
         }
-      }else{
-        ERROR_LOG("the fiducial detector detected a marker with ID " 
-                  << fids[i].getID() << " which was not registered "
-                  << "in this tool (this should actually not happen)");
       }
     }
   }
@@ -543,7 +535,7 @@ void run(){
   
   std::vector<Vec> xws;
   std::vector<Point32f> xis;
-  bool useCorners = gui["useCorners"];
+  const bool useCorners = gui["useCorners"];
   for(unsigned int i=0;i<markers.size();++i){
     xws.push_back(T * markers[i].worldPos);
     xis.push_back(markers[i].imagePos);
@@ -594,7 +586,7 @@ void run(){
 
     draw->linewidth(1);
     draw->sym(m.imagePos,'x');
-    if(m.hasCorners){
+    if(useCorners && m.hasCorners){
       draw->sym(m.imageCornerPositions[0],'x');
       draw->sym(m.imageCornerPositions[1],'x');
       draw->sym(m.imageCornerPositions[2],'x');

@@ -640,7 +640,10 @@ namespace icl{
         }
       }else if(line[0] == '#') { 
         continue;
-      }else if(line[0] == 's') { 
+      }else if(line[0] == ' ') { 
+        continue;
+      }
+      else if(line[0] == 's') { 
         ++nSkippedS;
         continue;
       }else if(line[0] == 'o'){
