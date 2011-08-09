@@ -37,6 +37,7 @@
 #include <ICLMarkers/FiducialDetector.h>
 #include <ICLGeom/GridSceneObject.h>
 
+#include <QtGui/QMessageBox>
 
 typedef FixedColVector<float,3> Vec3;
 
@@ -61,10 +62,6 @@ enum MarkerType {
   AMOEBA
 };
 
-enum OperationMode {
-  CALIBRATE_FROM_CALIB_OBJECT,
-  SHOW_GIVEN_CAMERA
-} opmode;
 
 GUI gui("hsplit");
 GUI relTransGUI;
@@ -132,21 +129,103 @@ FiducialDetector *create_new_fd(MarkerType t, std::vector<std::string> &configur
   return fd;
 }
 
-void save(){
-  std::string filename;
+
+Mutex save_lock;
+
+static std::string get_save_filename(){
   if(pa("-o")){
-    filename = pa("-o").as<std::string>();
+    return *pa("-o");
   }else{ 
     try{
-      filename = saveFileDialog("*.xml","save current camera","./");
+      return saveFileDialog("*.xml","save current camera","./");
     }catch(...){}
   }
+  return "";
+}
+
+static void save_cam(const Camera &cam, const std::string &filename){
   if(filename.length()){
     std::ofstream s(filename.c_str());
-    s << scene.getCamera(0);
-    std::cout << "current camera is " << scene.getCamera(0) << std::endl;
+    s << cam;
   }
+}
+
+void save(){
+  save_lock.lock();
+  Camera cam = scene.getCamera(0);
+  save_lock.unlock();
+
+  std::string filename = get_save_filename();
+  save_cam(cam,filename);
 }                   
+
+struct BestOf10Saver : public QObject{
+  std::vector<Camera> cams;
+  std::vector<float> errors;
+  int n;
+  bool inited;
+  std::string filename;
+  
+  float lastBestError;
+  std::string lastFileName;
+    
+  BestOf10Saver():
+    inited(false)
+  {}
+
+  virtual bool event ( QEvent * event ){
+    ICLASSERT_RETURN_VAL(event,false);
+    if(event->type() == QEvent::User){
+      QMessageBox::information(0,"saved",("camera file has been saved to\n"+lastFileName+"\n"+"error was:"+str(lastBestError)).c_str());
+      return true;
+    }else{
+      return QObject::event(event);
+    }
+  } 
+  
+  void init(){
+    Mutex::Locker l(save_lock);
+    if(inited) return;
+    filename = get_save_filename();
+    if(filename != ""){
+      cams.resize(0); cams.reserve(10);
+      errors.resize(0); errors.reserve(10);
+      n = 0;
+      inited = true;
+    }
+  }
+  
+  void next_hook(const Camera &cam, float error){
+    Mutex::Locker l(save_lock);
+    if(!inited) return;
+
+    if(error > 0){
+      cams.push_back(cam);
+      errors.push_back(error);
+    }
+    ++n;
+    if(n == 10){
+      if(!cams.size()){
+        QMessageBox::critical(0,"error","unable to save the best of 10 calibration results:\n"
+                              "all 10 calibration runs failed!");
+      }
+      else{
+        int best = (int)(std::min_element(errors.begin(),errors.end())-errors.begin());
+        int worst = (int)(std::max_element(errors.begin(),errors.end())-errors.begin());
+        
+        std::cout << "best error:" << errors[best] << std::endl;
+        std::cout << "worst error:" << errors[worst] << std::endl;
+        
+        save_cam(cams[best],filename);
+        lastBestError = errors[best];
+        lastFileName = filename;
+        QApplication::postEvent(this,new QEvent(QEvent::User),Qt::HighEventPriority);
+      }
+      inited = false;
+    }
+  }
+  
+} *bestOf10Saver = 0;
 
 
 static inline Vec set_3_to_1(Vec a){
@@ -225,13 +304,12 @@ void change_plane(const std::string &handle){
 }
 
 void init(){
-  const bool haveC = pa("-c");
-  const bool haveCam = pa("-cam");
-  if( (haveC && haveCam) || (!(haveC || haveCam)) ) { 
-    pausage("either program argument -c or -cam must be given, but not both!"); 
+  bestOf10Saver = new BestOf10Saver;
+
+  if( !pa("-c") || !pa("-c").n() ){
+    pausage("program argument -c must be given with at least one sub-argument");
     ::exit(0); 
   }
-  opmode = haveC ? CALIBRATE_FROM_CALIB_OBJECT : SHOW_GIVEN_CAMERA;
 
   std::vector<std::string> configurables;
   std::string iin;
@@ -401,10 +479,12 @@ void init(){
                 )
 
            << tab 
-           << ( GUI("hbox[@maxsize=100x3]") 
-                << "button(chage relative tranformation)[@handle=showRelTransGUI]"
+           << "label(ready..)[@minsize=1x3@maxsize=100x3@label=status@handle=status]"
+           << "button(chage relative tranformation)[@maxsize=100x2@handle=showRelTransGUI]"
+           << ( GUI("hbox[@maxsize=100x3@minsize=1x3]") 
                 << "button(save camera)[handle=save]"
-                )
+                << "button(save best of 10)[handle=save10]"
+               )
            )
       << "!show";
   
@@ -425,6 +505,7 @@ void init(){
            
 
   gui["save"].registerCallback(save);
+  gui["save10"].registerCallback(function(bestOf10Saver,&BestOf10Saver::init));
 
   scene.addCamera(Camera());
   scene.getCamera(0).setResolution(grabber.grab()->getSize());
@@ -464,6 +545,7 @@ struct FoundMarker{
   Point32f imageCornerPositions[4];  
   Vec worldCornerPositions[4];  
 };
+
 
 void run(){
   scene.lock();
@@ -538,13 +620,16 @@ void run(){
     }
   }
   
-  std::vector<Vec> xws;
-  std::vector<Point32f> xis;
+  std::vector<Vec> xws,xwsCentersOnly;
+  std::vector<Point32f> xis,xisCentersOnly;
+ 
   const bool useCorners = gui["useCorners"];
   for(unsigned int i=0;i<markers.size();++i){
     xws.push_back(T * markers[i].worldPos);
     xis.push_back(markers[i].imagePos);
 
+    xwsCentersOnly.push_back(xws.back());
+    xisCentersOnly.push_back(xis.back());
 
     if(useCorners && markers[i].hasCorners){
       for(int j=0;j<4;++j){
@@ -552,25 +637,47 @@ void run(){
         xis.push_back(markers[i].imageCornerPositions[j]);
       }
     }
-
-
   }
-  try{
-    Camera &cam = scene.getCamera(0);
-    cam = Camera::calibrate_pinv(xws, xis);
-    cam.getRenderParams().viewport = Rect(Point::null,image->getSize());
-    cam.getRenderParams().chipSize = image->getSize();
-    scene.setDrawCoordinateFrameEnabled(true);
-    
-    float error = 0;
-    
-    for(unsigned int i=0;i<xws.size();++i){
-      error += xis[i].distanceTo(cam.project(xws[i]));
-    }
-    gui["error"] = error/xws.size();
+  
+  std::vector<Vec> *W[2] = { &xws, &xwsCentersOnly };
+  std::vector<Point32f> *I[2] = { &xis, &xisCentersOnly };
+  int idx = 0;
+  bool deactivatedCenters = false;
+  while(true){
+    try{
+      Camera &cam = scene.getCamera(0);
 
-  }catch(ICLException &e){
-    SHOW(e.what());
+      {
+        Mutex::Locker lock(save_lock);
+        cam = Camera::calibrate_pinv(*W[idx], *I[idx]);
+        cam.getRenderParams().viewport = Rect(Point::null,image->getSize());
+        cam.getRenderParams().chipSize = image->getSize();
+      }
+
+      scene.setDrawCoordinateFrameEnabled(true);
+      
+      float error = 0;
+      
+      for(unsigned int i=0;i<W[idx]->size();++i){
+        error += I[idx]->operator[](i).distanceTo(cam.project(W[idx]->operator[](i)));
+      }
+      error /= W[idx]->size();
+
+      gui["error"] = error;
+      gui["status"] = str("ok") + ((idx&&useCorners) ? "(used centers only)" : "");
+      if(idx) deactivatedCenters = true;
+      
+      bestOf10Saver->next_hook(cam,error);
+      
+      break;
+    }catch(ICLException &e){
+      if(idx == 0){
+        ++idx;
+      }else{
+        gui["status"] = str(e.what());
+        bestOf10Saver->next_hook(Camera(),-1);
+      }
+    }
   }
 
   
@@ -592,6 +699,7 @@ void run(){
     draw->linewidth(1);
     draw->sym(m.imagePos,'x');
     if(useCorners && m.hasCorners){
+      if(deactivatedCenters) draw->color(255,0,0,100);
       draw->sym(m.imageCornerPositions[0],'x');
       draw->sym(m.imageCornerPositions[1],'x');
       draw->sym(m.imageCornerPositions[2],'x');

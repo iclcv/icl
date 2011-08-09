@@ -74,9 +74,11 @@ namespace icl{
     virtual ~GUI();
     
     /// stream operator to add new widgets
+    /** if the given definition is "" or "dummy", this operator does nothing */
     virtual GUI &operator<<(const std::string &definition);
     
     /// stream operator to add new other GUIs
+    /** if the given GUI is a dummy GUI, this operator does nothing */
     virtual GUI &operator<<(const GUI &g);
     
     /// wraps the data-stores allocValue function
@@ -178,6 +180,13 @@ namespace icl{
 
     /// removes all callbacks from components
     void removeCallbacks(const std::string &handleNamesList, char listDelim=',');
+
+    /// returns whether this GUI is a dummy GUI
+    /** Please note: dummy GUIs
+        * cannot be created
+        * are not added by the stream operator
+    */
+    inline bool isDummy() const { return m_sDefinition == "" || m_sDefinition == "dummy"; }
 
     private:
     void create(QLayout *parentLayout,ProxyLayout *proxy, QWidget *parentWidget, DataStore *ds);

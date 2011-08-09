@@ -1978,6 +1978,9 @@ public:
     if(definition.length() > 100000) {
       throw GUISyntaxErrorException("-- long text --","definition string was too large! (>100000 characters)");
     }
+    if(!definition.length() || definition == "dummy"){
+      return *this;
+    }
 
     if(definition.size() && definition[0] == '!'){
       if(definition == "!show"){
@@ -2022,6 +2025,11 @@ public:
     // {{{ open
 
     if(m_poWidget) { ERROR_LOG("this GUI is already visible"); return *this; }
+    
+    if(g.isDummy()){
+      return *this;
+    }
+    
     string label = extract_label(g.m_sDefinition);
     string minsize = extract_minsize(g.m_sDefinition);
     string maxsize = extract_maxsize(g.m_sDefinition);
@@ -2056,6 +2064,10 @@ public:
     // {{{ open
     if(ds) m_oDataStore = *ds;
     try{
+      if(isDummy()){
+        throw ICLException("cannot create a \"dummy\"-GUI. (Dummy GUI's are GUI-instances\n"
+                           "that are created from an empty string or from the string \"dummy\") ");
+      }
       GUIDefinition def(m_sDefinition,this,parentLayout,proxy,parentWidget);
       
       m_poWidget = create_widget(def);
