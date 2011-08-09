@@ -37,17 +37,6 @@
 #include <ICLMarkers/FiducialDetector.h>
 #include <ICLGeom/GridSceneObject.h>
 
-GUI gui("hsplit");
-GUI relTransGUI;
-Scene scene;
-GenericGrabber grabber;
-
-Point32f currentMousePos;
-bool havePlane = false;
-
-void mouse(const MouseEvent &e){
-  currentMousePos = e.getPos();
-}
 
 typedef FixedColVector<float,3> Vec3;
 
@@ -72,15 +61,31 @@ enum MarkerType {
   AMOEBA
 };
 
+enum OperationMode {
+  CALIBRATE_FROM_CALIB_OBJECT,
+  SHOW_GIVEN_CAMERA
+} opmode;
+
+GUI gui("hsplit");
+GUI relTransGUI;
+Scene scene;
+GenericGrabber grabber;
+
+Point32f currentMousePos;
+bool havePlane = false;
+
+
 SmartPtr<FiducialDetector> fds[2];
+
 std::vector<PossibleMarker> possible[2] = {
   std::vector<PossibleMarker>(4096), 
   std::vector<PossibleMarker>(4096)
 };
 
 FiducialDetector *lastFD = 0; // used for visualization
+SceneObject *planeObj = 0;
+
 std::vector<std::pair<SceneObject*,Mat> > calibObjs;
-//std::vector<SceneObject*> grids;
 
 std::string sample= ("<config>\n"
                      "  <section id=\"grid-0\">\n"
@@ -107,6 +112,10 @@ std::string sample= ("<config>\n"
                      "      <!-- optional .obj file content that describes the visual shape of the calibration object -->\n"
                      "   </data>\n"
                      "</config>\n");
+
+void mouse(const MouseEvent &e){
+  currentMousePos = e.getPos();
+}
 
 FiducialDetector *create_new_fd(MarkerType t, std::vector<std::string> &configurables, std::string &iin){
   static const std::string ts[2] = {"bch","amoeba"};
@@ -139,9 +148,8 @@ void save(){
   }
 }                   
 
-SceneObject *planeObj = 0;
 
-Vec set_3_to_1(Vec a){
+static inline Vec set_3_to_1(Vec a){
   a[2] += 1;
   a[3] = 1;
   return a;
@@ -217,8 +225,13 @@ void change_plane(const std::string &handle){
 }
 
 void init(){
- 
-  if(!pa("-c")) { pausage("-c is mandatory!"); ::exit(0); } 
+  const bool haveC = pa("-c");
+  const bool haveCam = pa("-cam");
+  if( (haveC && haveCam) || (!(haveC || haveCam)) ) { 
+    pausage("either program argument -c or -cam must be given, but not both!"); 
+    ::exit(0); 
+  }
+  opmode = haveC ? CALIBRATE_FROM_CALIB_OBJECT : SHOW_GIVEN_CAMERA;
 
   std::vector<std::string> configurables;
   std::string iin;
@@ -341,14 +354,6 @@ void init(){
             vertices.push_back(T*Vec(v[0],v[1],v[2],1));
           }
         }
-        /*
-            if(mode == ExtractGrids){
-            SceneObject *so = new GridSceneObject(s.width,s.height,vertices,true,false);
-            grids.push_back(so);
-            so->setColor(Primitive::line,GeomColor(255,0,0,180));
-            scene.addObject(so);
-            }
-        */
       }catch(ICLException &e){
         ERROR_LOG("Error parsing xml configuration file: '" << *pa("-c",c) << "': " << e.what());
         continue;
@@ -634,8 +639,10 @@ int main(int n, char **ppc){
     std::cout << sample << std::endl;
     return 0;
   }
+  
   return ICLApp(n,ppc,"[m]-input|-i(device,device-params) "
-                "[m]-config|-c(...) "
+                "-config|-c(...) "
+                "-camera|-cam(camera_file_to_load) "
                 "-create-empty-config-file|-cc "
                 "-force-size|-s(WxH) "
                 "-output|-o(output-xml-file-name) "
