@@ -251,7 +251,7 @@ namespace icl{
         }catch(...){}
       }else if(type == "menu"){
         try{
-          setPropertyValue(prop,f[prop].as<Any>());
+          setPropertyValue(prop,f[prop].as<std::string>());
         }catch(...){}
       }else if(type == "flag"){
         try{

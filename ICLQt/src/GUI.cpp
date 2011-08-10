@@ -305,7 +305,14 @@ namespace icl{
       }
     }
 
-
+    std::string get_combo_list(const std::string &pfull){
+      std::vector<std::string> l = tok(conf->getPropertyInfo(pfull),",");
+      const std::string c = conf->getPropertyValue(pfull);
+      for(unsigned int i=0;i<l.size();++i){
+        if(l[i] == c) l[i] = '!'+l[i];
+      }
+      return cat(l,",");
+    }
     
     void add_component(GUI &gui,const StSt &p, std::ostringstream &ostr, GUI &timerGUI){
       std::string t = conf->getPropertyType(p.full);
@@ -332,7 +339,8 @@ namespace icl{
         ostr << '\1' << handle;
       }else if(t == "menu" || t == "value-list" || t == "valueList"){
         std::string handle = (t == "menu" ? "#m#" : "#v#")+p.full;
-        gui << "combo("+conf->getPropertyInfo(p.full)+")[@handle="+handle+"@minsize=12x2@label="+p.half+"]";
+        //gui << "combo("+conf->getPropertyInfo(p.full)+")[@handle="+handle+"@minsize=12x2@label="+p.half+"]";
+        gui << "combo("+get_combo_list(p.full)+")[@handle="+handle+"@minsize=12x2@label="+p.half+"]";
         ostr << '\1' << handle;
       }else if(t == "command"){
         std::string handle = "#c#"+p.full;
@@ -444,6 +452,7 @@ namespace icl{
       //const std::string &value = p.value;
       
       deactivateExec = true;
+
       if(type == "range" || type == "range:slider"){
         SteppingRange<float> r = parse<SteppingRange<float> >(conf->getPropertyInfo(name));
         if(r.stepping == 1){
@@ -455,6 +464,7 @@ namespace icl{
         gui.getValue<SpinnerHandle>("#R#"+name).setValue( parse<icl32s>(conf->getPropertyValue(name)) );
       }else if( type == "menu" || type == "value-list" || type == "valueList"){
         std::string handle = (type == "menu" ? "#m#" : "#v#")+name;
+        DEBUG_LOG("handle is " << handle << " value is " << conf->getPropertyValue(name));
         gui.getValue<ComboHandle>(handle).setSelectedItem(conf->getPropertyValue(name));
       }else if( type == "info"){
         gui["#i#"+name] = conf->getPropertyValue(name);
