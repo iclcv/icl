@@ -40,28 +40,28 @@
 using namespace icl;
 
 TEST(Matrix, DecomposeQR) {
-  FixedMatrix<icl32f,3,4> A(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);  
+  FixedMatrix<icl32f,3,4> A(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
   FixedMatrix<icl32f,3,4> Q;
   FixedMatrix<icl32f,3,3> R;
   A.decompose_QR(Q, R);
   EXPECT_TRUE(isNear(A,Q*R,1e-6f));
 }
-
-TEST(Matix, DecomposeRQ) {
+/*
+TEST(Matrix, DecomposeRQ) {
   FixedMatrix<icl32f,4,3> A(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
   FixedMatrix<icl32f,4,3> Q;
   FixedMatrix<icl32f,3,3> R;
   A.decompose_RQ(R, Q);
   EXPECT_TRUE(isNear(A,R*Q,1e-6f));
 }
-
+*/
 TEST(Matrix, SVD) {
   FixedMatrix<icl32f,3,4> A(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
   FixedMatrix<icl32f,3,4> U;
   FixedColVector<icl32f,3> s;
   FixedMatrix<icl32f,3,3> V;
   A.svd(U,s,V);
-  
+
   // singular values correctly sorted?
   EXPECT_GE(s[0],s[1]);
   EXPECT_GE(s[1],s[2]);
@@ -71,4 +71,27 @@ TEST(Matrix, SVD) {
   EXPECT_TRUE(isNear(A,U*S*V.transp(),1e-6f));
   // orthogonal matrices?
   EXPECT_TRUE(isNear(V.transp()*V,FixedMatrix<icl32f,3,3>::id(),1e-6f));
+}
+
+TEST(Matrix, BigMatrixPseudoInverse) {
+  srand ( 230880 ); int cols = 3; int rows = 5;
+  DynMatrix<double> MatDbl( cols, rows );
+  for ( unsigned int i(0); i < rows; ++i )
+    for ( unsigned int j(0); j < cols; ++j )
+        MatDbl(j,i) = rand() % 10;
+  DynMatrix<double> IdentityDbl( cols, cols, 0.0 );
+  for ( unsigned int i(0); i < cols; ++i )
+    IdentityDbl( i, i ) = 1.0;
+  double ErrorDbl = matrix_distance( MatDbl.big_matrix_pinv() * MatDbl, IdentityDbl );
+  EXPECT_TRUE( ErrorDbl < 1e-14 );
+
+  DynMatrix<float> MatFlt( cols, rows );
+  for ( unsigned int i(0); i < rows; ++i )
+    for ( unsigned int j(0); j < cols; ++j )
+        MatFlt(j,i) = rand() % 10;
+  DynMatrix<float> IdentityFlt( cols, cols, 0.0 );
+  for ( unsigned int i(0); i < cols; ++i )
+    IdentityFlt( i, i ) = 1.0;
+  float ErrorFlt = matrix_distance( MatFlt.big_matrix_pinv() * MatFlt, IdentityFlt );
+  EXPECT_TRUE( ErrorFlt < 1e-6f );
 }

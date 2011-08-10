@@ -36,6 +36,13 @@
 #include <ICLUtils/Macros.h>
 #include <stdint.h>
 #include <complex>
+#include <algorithm>
+
+// Intel Math Kernel Library
+#ifdef HAVE_MKL
+#include "mkl_types.h"
+#include "mkl_lapack.h"
+#endif
 
 #include <ICLUtils/DynMatrixUtils.h>
 
@@ -379,6 +386,94 @@ namespace icl{
     }
   }
 
+
+  // fallback
+  template<class T>
+  DynMatrix<T> DynMatrix<T>::big_matrix_pinv(T zeroThreshold) const
+    throw (InvalidMatrixDimensionException,SingularMatrixException, ICLException){
+    return pinv( true, zeroThreshold );
+  }
+
+#ifdef HAVE_MKL
+  template<class T>
+    DynMatrix<T> DynMatrix<T>::big_matrix_pinv(T zeroThreshold, GESDD gesdd, CBLAS_GEMM cblas_gemm) const
+    throw (InvalidMatrixDimensionException,SingularMatrixException, ICLException){
+
+    // create a copy of source matrix, because GESDD is destroying the input matrix
+    DynMatrix<T> matrixCopy( *this );
+
+    // matrix dimensions
+    int r = rows();
+    int c = cols();
+
+    // calculate SVD
+    DynMatrix<T> Vt, s, U;
+    Vt.setBounds( c, c );
+    s.setBounds( 1, c );
+    U.setBounds( c, r );
+    char jobz = 'S';
+
+    // success message
+    int info;
+
+    // work buffer of size 1 to retrieve correct buffer size from first run of GESDD
+    T* work = (T*) malloc( sizeof( T ) );
+    ICLASSERT_THROW( work != 0, ICLException("Insufficient memory to allocate work buffer!") );
+
+    // integer work buffer
+    int* iwork = (int*) malloc( sizeof( int ) * std::max( 1, 8 * std::min( c, r ) ) );
+    ICLASSERT_THROW( iwork != 0, 0 );
+
+    // first run of GESDD to retrieve correct size of work buffer
+    int lwork  = -1;
+    gesdd( &jobz, &c, &r, matrixCopy.begin(), &c, s.begin(), Vt.begin(),
+           &c, U.begin(), &c, work, &lwork, iwork, &info );
+    ICLASSERT_THROW( info == 0, ICLException("GESDD failed!") );
+    lwork = work[0];
+
+    // free old work buffer and allocate a new one
+    free( work );
+    work = (T*) malloc( sizeof( T ) * lwork );
+    ICLASSERT_THROW( work != 0, ICLException("Insufficient memory to allocate work buffer!") );
+
+    // compute singular value decomposition of a general rectangular matrix
+    // using a divide and conquer method.
+    gesdd( &jobz, &c, &r, matrixCopy.begin(), &c, s.begin(), Vt.begin(),
+           &c, U.begin(), &c, work, &lwork, iwork, &info );
+    ICLASSERT_THROW( info == 0, ICLException("GESDD failed!") );
+
+    // free buffers
+    free( iwork );
+    free( work );
+
+    // prepare matrix S and check if singular values are below zero threshold
+    DynMatrix<T> S( c, c, 0.0 );
+    for ( int i(0); i < c; ++i )
+        S( i, i ) = ( fabs( s[i] ) > zeroThreshold ) ? 1.0 / s[i] : 0.0;
+
+    // dst = Vt.transp() * S * U.transp();
+    DynMatrix<T> temp( c, c );
+    cblas_gemm( CblasRowMajor, CblasTrans, CblasNoTrans, c, c, c, 1.0, Vt.begin(), c,
+                S.begin(), c, 0.0, temp.begin(), c );
+
+    DynMatrix<T> pseudoInverse( r, c );
+    cblas_gemm( CblasRowMajor, CblasNoTrans, CblasTrans, c, r, c, 1.0, temp.begin(), c,
+                U.begin(), c, 0.0, pseudoInverse.begin(), r );
+
+    return pseudoInverse;
+  }
+
+  template<>
+  DynMatrix<float> DynMatrix<float>::big_matrix_pinv(float zeroThreshold) const
+    throw (InvalidMatrixDimensionException,SingularMatrixException,ICLException){
+    return big_matrix_pinv(zeroThreshold,sgesdd,cblas_sgemm);
+  }
+  template<>
+  DynMatrix<double> DynMatrix<double>::big_matrix_pinv(double zeroThreshold) const
+    throw (InvalidMatrixDimensionException,SingularMatrixException,ICLException){
+    return big_matrix_pinv(zeroThreshold,dgesdd,cblas_dgemm);
+  }
+#endif
 
 
   // This function was taken from VTK Version 5.6.0

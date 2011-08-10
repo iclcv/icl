@@ -49,6 +49,11 @@
 #include <ipp.h>
 #endif
 
+// Intel Math Kernel Library
+#ifdef HAVE_MKL
+#include "mkl_cblas.h"
+#endif
+
 
 namespace icl{
 
@@ -83,15 +88,15 @@ namespace icl{
     /** \cond */
     class DynMatrixColumn;
     /** \endcond*/
-    
+
     /// creates a column matrix from given column of other matrix
     DynMatrix(const DynMatrixColumn &column);
-    
+
     /// Default empty constructor creates a null-matrix
     inline DynMatrix():m_rows(0),m_cols(0),m_data(0),m_ownData(true){}
-    
+
     /// Create a dyn matrix with given dimensions (and optional initialValue)
-    inline DynMatrix(unsigned int cols,unsigned int rows,const  T &initValue=0) throw (InvalidMatrixDimensionException) : 
+    inline DynMatrix(unsigned int cols,unsigned int rows,const  T &initValue=0) throw (InvalidMatrixDimensionException) :
     m_rows(rows),m_cols(cols),m_ownData(true){
       if(!dim()) throw InvalidMatrixDimensionException("matrix dimensions must be > 0");
       m_data = new T[cols*rows];
@@ -101,7 +106,7 @@ namespace icl{
     /// Create a matrix with given data
     /** Data can be wrapped deeply or shallowly. If the latter is true, given data pointer
         will not be released in the destructor*/
-    inline DynMatrix(unsigned int cols,unsigned int rows, T *data, bool deepCopy=true) throw (InvalidMatrixDimensionException) : 
+    inline DynMatrix(unsigned int cols,unsigned int rows, T *data, bool deepCopy=true) throw (InvalidMatrixDimensionException) :
       m_rows(rows),m_cols(cols),m_ownData(deepCopy){
       if(!dim()) throw InvalidMatrixDimensionException("matrix dimensions must be > 0");
       if(deepCopy){
@@ -113,7 +118,7 @@ namespace icl{
     }
 
     /// Create a matrix with given data (const version: deepCopy only)
-    inline DynMatrix(unsigned int cols,unsigned int rows,const T *data) throw (InvalidMatrixDimensionException) : 
+    inline DynMatrix(unsigned int cols,unsigned int rows,const T *data) throw (InvalidMatrixDimensionException) :
       m_rows(rows),m_cols(cols),m_ownData(true){
       if(!dim()) throw InvalidMatrixDimensionException("matrix dimensions must be > 0");
       m_data = new T[dim()];
@@ -125,7 +130,7 @@ namespace icl{
     m_rows(other.m_rows),m_cols(other.m_cols),m_data(new T[dim()]),m_ownData(true){
       std::copy(other.begin(),other.end(),begin());
     }
-    
+
     /// returns with this matrix has a valid data pointer
     inline bool isNull() const { return !m_data; }
 
@@ -147,7 +152,7 @@ namespace icl{
       return *this;
     }
 
-    /// resets matrix dimensions  
+    /// resets matrix dimensions
     inline void setBounds(unsigned int cols, unsigned int rows, bool holdContent=false, const T &initializer=0) throw (InvalidMatrixDimensionException){
       if((int)cols == m_cols && (int)rows==m_rows) return;
       if(!(cols*rows)) throw InvalidMatrixDimensionException("matrix dimensions must be > 0");
@@ -168,7 +173,7 @@ namespace icl{
       m_ownData = true;
       M.set_data(0);
     }
-  
+
     /// tests weather a matrix is enough similar to another matrix
     inline bool isSimilar(const DynMatrix &other, T tollerance=0.0001) const{
       if(other.cols() != cols() || other.rows() != rows()) return false;
@@ -178,7 +183,7 @@ namespace icl{
       }
       return true;
     }
-    
+
     /// elementwise comparison (==)
     inline bool operator==(const DynMatrix &other) const{
       if(other.cols() != cols() || other.rows() != rows()) return false;
@@ -208,7 +213,7 @@ namespace icl{
     inline DynMatrix &mult(T f, DynMatrix &dst) const{
       dst.setBounds(cols(),rows());
       std::transform(begin(),end(),dst.begin(),std::bind2nd(std::multiplies<T>(),f));
-      return dst;      
+      return dst;
     }
 
     /// Multiply elements with scalar (inplace)
@@ -271,22 +276,22 @@ namespace icl{
       return elementwise_div(m,dst);
     }
 
-    
-    
-    
+
+
+
     /// Essential matrix multiplication [IPP-Supported]
     inline DynMatrix operator*(const DynMatrix &m) const throw (IncompatibleMatrixDimensionException){
       DynMatrix d(m.cols(),rows());
       return mult(m,d);
     }
-    
+
     /// inplace matrix multiplication applying this = this*m [IPP-Supported]
     inline DynMatrix &operator*=(const DynMatrix &m) throw (IncompatibleMatrixDimensionException){
       return *this=((*this)*m);
     }
-    
+
     /// inplace matrix devision (calling this/m.inv()) [IPP-Supported]
-    inline DynMatrix operator/(const DynMatrix &m) const 
+    inline DynMatrix operator/(const DynMatrix &m) const
       throw (IncompatibleMatrixDimensionException,
              InvalidMatrixDimensionException,
              SingularMatrixException){
@@ -294,7 +299,7 @@ namespace icl{
     }
 
     /// inplace matrix devision (calling this/m.inv()) (inplace)
-    inline DynMatrix &operator/=(const DynMatrix &m) const 
+    inline DynMatrix &operator/=(const DynMatrix &m) const
       throw (IncompatibleMatrixDimensionException,
              InvalidMatrixDimensionException,
              SingularMatrixException){
@@ -356,7 +361,7 @@ namespace icl{
       std::transform(begin(),end(),m.begin(),begin(),std::minus<T>());
       return *this;
     }
-  
+
     /// element access operator (x,y)-access index begin 0!
     inline T &operator()(unsigned int col,unsigned int row){
 #ifdef DYN_MATRIX_INDEX_CHECK
@@ -383,25 +388,25 @@ namespace icl{
     inline const T &at(unsigned int col,unsigned int row) const throw (InvalidIndexException){
       return const_cast<DynMatrix*>(this)->at(col,row);
     }
-    
 
-    
+
+
     /// linear access to actual data array
-    inline T &operator[](unsigned int idx) { 
+    inline T &operator[](unsigned int idx) {
       idx_check(idx);
       if(idx >= dim()) ERROR_LOG("access to "<<m_cols<<'x'<<m_rows<<"-matrix index [" << idx<< "]");
 
-      return m_data[idx]; 
-      
+      return m_data[idx];
+
     }
-    
+
 
     /// linear access to actual data array (const)
-    inline const T &operator[](unsigned int idx) const { 
+    inline const T &operator[](unsigned int idx) const {
       idx_check(idx);
-      return m_data[idx]; 
+      return m_data[idx];
     }
-    
+
     /// applies an L_l norm on the matrix elements (all elements are treated as vector)
     inline T norm(double l=2) const{
       double accu = 0;
@@ -411,23 +416,23 @@ namespace icl{
       return ::pow(double(accu),1.0/l);
     }
 
-    
 
-    /// default iterator type (just a data-pointer) 
+
+    /// default iterator type (just a data-pointer)
     typedef T* iterator;
-    
+
     /// dafault const_iterator type (just a data-pointer)
     typedef const T* const_iterator;
 
     /// comples row_iterator type
     typedef T* row_iterator;
-    
+
     /// complex const_row_iterator type
     typedef const T* const_row_iterator;
 
     /// height of the matrix (number of rows)
     unsigned int rows() const { return m_rows; }
-  
+
     /// width of the matrix (number of columns)
     unsigned int cols() const { return m_cols; }
 
@@ -442,13 +447,13 @@ namespace icl{
 
     /// returns sizeof (T)*dim()
     int stride0() const { return sizeof(T) * dim(); }
-    
+
     /// returns sizeof(T)*cols()
     int stride1() const { return sizeof(T) * cols(); }
 
     /// returns sizeof (T)
     int stride2() const { return sizeof(T); }
-  
+
     /// Internal column iterator struct (using height-stride) \ingroup LINALG
     struct col_iterator : public std::iterator<std::random_access_iterator_tag,T>{
       typedef unsigned int difference_type;
@@ -564,7 +569,7 @@ namespace icl{
         return (p-other.p)/stride;
       }
 
-      
+
       /// Dereference operator
       inline T &operator*(){
         return *p;
@@ -593,7 +598,7 @@ namespace icl{
       /// comparison operator >
       inline bool operator>(const col_iterator &i) const{ return p > i.p; }
     };
-    
+
     /// const column iterator typedef
     typedef const col_iterator const_col_iterator;
 
@@ -606,16 +611,16 @@ namespace icl{
 #endif
       /// Matrix reference
       DynMatrix<T> *matrix;
-      
+
       /// referenced column in matrix
       unsigned int column;
-      
+
       /// create from source matrix and column index
       inline DynMatrixColumn(const DynMatrix<T> *matrix, unsigned int column):
       matrix(const_cast<DynMatrix<T>*>(matrix)),column(column){
         DYN_MATRIX_COLUMN_CHECK(column >= matrix->cols(),"invalid column index");
       }
-      
+
       /// Create from source matrix (only works if matrix has only single column = column-vector)
       inline DynMatrixColumn(const DynMatrix<T> &matrix):
       matrix(const_cast<DynMatrix<T>*>(&matrix)),column(0){
@@ -624,10 +629,10 @@ namespace icl{
       /// Shallow copy from another matrix column reference
       inline DynMatrixColumn(const DynMatrixColumn &c):
       matrix(c.matrix),column(c.column){}
-      
+
       /// returns column begin
       inline col_iterator begin() { return matrix->col_begin(column); }
-      
+
       /// returns column end
       inline col_iterator end() { return matrix->col_end(column); }
 
@@ -639,48 +644,48 @@ namespace icl{
 
       /// returns column length (matrix->rows())
       inline unsigned int dim() const { return matrix->rows(); }
-      
+
       /// assignment by another column
       inline DynMatrixColumn &operator=(const DynMatrixColumn &c){
         DYN_MATRIX_COLUMN_CHECK(dim() != c.dim(),"dimension missmatch");
         std::copy(c.begin(),c.end(),begin());
         return *this;
       }
-        
+
       /// assigne dyn matrix to matrix columns
       inline DynMatrixColumn &operator=(const DynMatrix &src){
         DYN_MATRIX_COLUMN_CHECK(dim() != src.dim(),"dimension missmatch");
         std::copy(src.begin(),src.end(),begin());
         return *this;
-      }   
+      }
 
       /// operator += for other columns
       inline DynMatrixColumn &operator+=(const DynMatrixColumn &c){
         DYN_MATRIX_COLUMN_CHECK(dim() != c.dim(),"dimension missmatch");
         std::transform(c.begin(),c.end(),begin(),begin(),std::plus<T>());
         return *this;
-      }   
-      
+      }
+
       /// operator += for other columns
       inline DynMatrixColumn &operator-=(const DynMatrixColumn &c){
         DYN_MATRIX_COLUMN_CHECK(dim() != c.dim(),"dimension missmatch");
         std::transform(c.begin(),c.end(),begin(),begin(),std::minus<T>());
         return *this;
-      }   
+      }
 
       /// operator += for DynMatrices
       inline DynMatrixColumn &operator+=(const DynMatrix &m){
         DYN_MATRIX_COLUMN_CHECK(dim() != m.dim(),"dimension missmatch");
         std::transform(m.begin(),m.end(),begin(),begin(),std::plus<T>());
         return *this;
-      }   
+      }
       /// operator -= for DynMatrices
       inline DynMatrixColumn &operator-=(const DynMatrix &m){
         DYN_MATRIX_COLUMN_CHECK(dim() != m.dim(),"dimension missmatch");
         std::transform(m.begin(),m.end(),begin(),begin(),std::minus<T>());
         return *this;
-      }   
-      
+      }
+
       /// operator *= for scalars
       inline DynMatrixColumn &operator*=(const T&val){
         std::for_each(begin(),end(),std::bind2nd(std::multiplies<T>(),val));
@@ -691,7 +696,7 @@ namespace icl{
         std::for_each(begin(),end(),std::bind2nd(std::divides<T>(),val));
         return *this;
       }
-      
+
     };
 
     inline DynMatrix &operator=(const DynMatrixColumn &col){
@@ -701,69 +706,69 @@ namespace icl{
     }
 
 #undef DYN_MATRIX_COLUMN_CHECK
-    
-    
+
+
 
     /// returns an iterator to the begin of internal data array
     inline iterator begin() { return m_data; }
 
     /// returns an iterator to the end of internal data array
     inline iterator end() { return m_data+dim(); }
-  
+
     /// returns an iterator to the begin of internal data array (const)
     inline const_iterator begin() const { return m_data; }
 
     /// returns an iterator to the end of internal data array (const)
     inline const_iterator end() const { return m_data+dim(); }
-  
-    /// returns an iterator running through a certain matrix column 
-    inline col_iterator col_begin(unsigned int col) {       
+
+    /// returns an iterator running through a certain matrix column
+    inline col_iterator col_begin(unsigned int col) {
       col_check(col);
-      return col_iterator(m_data+col,cols()); 
+      return col_iterator(m_data+col,cols());
     }
 
-    /// returns an iterator end of a certain matrix column 
+    /// returns an iterator end of a certain matrix column
     inline col_iterator col_end(unsigned int col) {
       col_check(col);
-      return col_iterator(m_data+col+dim(),cols()); 
+      return col_iterator(m_data+col+dim(),cols());
     }
-  
+
     /// returns an iterator running through a certain matrix column (const)
-    inline const_col_iterator col_begin(unsigned int col) const { 
+    inline const_col_iterator col_begin(unsigned int col) const {
       col_check(col);
-      return col_iterator(m_data+col,cols()); 
+      return col_iterator(m_data+col,cols());
     }
 
     /// returns an iterator end of a certain matrix column (const)
-    inline const_col_iterator col_end(unsigned int col) const { 
+    inline const_col_iterator col_end(unsigned int col) const {
       col_check(col);
-      return col_iterator(m_data+col+dim(),cols()); 
+      return col_iterator(m_data+col+dim(),cols());
     }
 
-    /// returns an iterator running through a certain matrix row 
-    inline row_iterator row_begin(unsigned int row) { 
+    /// returns an iterator running through a certain matrix row
+    inline row_iterator row_begin(unsigned int row) {
       row_check(row);
-      return m_data+row*cols(); 
+      return m_data+row*cols();
     }
 
     /// returns an iterator of a certains row's end
-    inline row_iterator row_end(unsigned int row) { 
+    inline row_iterator row_end(unsigned int row) {
       row_check(row);
-      return m_data+(row+1)*cols(); 
+      return m_data+(row+1)*cols();
     }
 
     /// returns an iterator running through a certain matrix row  (const)
-    inline const_row_iterator row_begin(unsigned int row) const { 
+    inline const_row_iterator row_begin(unsigned int row) const {
       row_check(row);
-      return m_data+row*cols(); 
+      return m_data+row*cols();
     }
 
     /// returns an iterator of a certains row's end (const)
     inline const_row_iterator row_end(unsigned int row) const {
       row_check(row);
-      return m_data+(row+1)*cols(); 
+      return m_data+(row+1)*cols();
     }
-    
+
     /// Extracts a shallow copied matrix row
     inline DynMatrix row(int row){
       row_check(row);
@@ -787,58 +792,58 @@ namespace icl{
 
     /// applies QR-decomposition using stabilized Gram-Schmidt orthonormalization (only for icl32f and icl64f)
     void decompose_QR(DynMatrix &Q, DynMatrix &R) const;
-    
+
     /// applies RQ-decomposition (by exploiting implemnetation of QR-decomposition) (only for icl32f, and icl64f)
     void decompose_RQ(DynMatrix &R, DynMatrix &Q) const;
-    
+
     /// applies LU-decomposition (without using partial pivoting) (only for icl32f and icl64f)
     /** Even though, implementation also works for non-sqared matrices, it's not recommended to
         apply this function on non-sqared matrices */
     void decompose_LU(DynMatrix &L, DynMatrix &U, T zeroThreshold=1E-16) const;
-    
+
     /// solves Mx=b for M=*this (only if M is a squared upper triangular matrix) (only for icl32f and icl64f)
     DynMatrix solve_upper_triangular(const DynMatrix &b) const throw(InvalidMatrixDimensionException);
 
     /// solves Mx=b for M=*this (only if M is a squared lower triangular matrix) (only for icl32f and icl64f)
     DynMatrix solve_lower_triangular(const DynMatrix &b) const throw(InvalidMatrixDimensionException);
-    
+
     /// solves Mx=b for M=*this (only for icl32f and icl64f)
     /** solves Mx=b using one of the following algorithms
         @param method "lu" (default) using LU-decomposition
                       "svd" (using svd-based pseudo-inverse)
                       "qr" (using QR-decomposition based pseudo-inverse)
                       "inv" (using matrix inverse)
-        
+
         \section BENCHM Benchmarks
         While LU decomposition based solving provides the worst results, it is also
         the fastest method in general. Only in case of having very small matrices (e.g. 4x4),
-        other methods are faster. A double precision random N by N system is solved up to 
+        other methods are faster. A double precision random N by N system is solved up to
         an accuracy of about 10e-5 if LU decomposition is used. All other methods provide
         accuracies of about 10e-14 in case of double precision.
-        
+
         Here are some benchmarks for double precision:
         * 10.000 times 4x4 matrix:
-          * inv 16.2 ms 
+          * inv 16.2 ms
           * lu 26.7 ms
           * qr 105 ms
           * svd 142 ms
         * 10.000 times 5x5 matrix:
-          * inv 20.2 ms 
+          * inv 20.2 ms
           * lu 30.2 ms
           * qr 148 ms
           * svd 131 ms
         * 10.000 times 6x6 matrix:
-          * inv 26.9 ms 
+          * inv 26.9 ms
           * lu 35.6 ms
           * qr 206 ms
           * svd 192 ms
         * 10.000 times 4x4 matrix:
-          * inv 448 ms 
+          * inv 448 ms
           * lu 42 ms
           * qr 642 ms
           * svd 237 ms
         * 10.000 times 10x10 matrix:
-          * inv 2200 ms 
+          * inv 2200 ms
           * lu 75 ms
           * qr 3000 ms
           * svd 495 ms
@@ -848,42 +853,42 @@ namespace icl{
           * qr 4.6 s
           * svd 23.4 ms
     */
-    DynMatrix solve(const DynMatrix &b, const std::string &method="lu",T zeroThreshold=1E-16) 
+    DynMatrix solve(const DynMatrix &b, const std::string &method="lu",T zeroThreshold=1E-16)
       throw(InvalidMatrixDimensionException,  ICLException, SingularMatrixException);
-    
+
 
     /// invert the matrix (only for icl32f and icl64f)
     DynMatrix inv() const throw (InvalidMatrixDimensionException,SingularMatrixException);
-    
+
     /// Extracts the matrix's eigenvalues and eigenvectors
-    /** This function only works on squared symmetric matrices. 
+    /** This function only works on squared symmetric matrices.
         Resulting eigenvalues are ordered in descending order. The destination matrices' sizes are adapted automatically.
 
         The function is only available for icl32f and icl64f and it is IPP-accelerated in case of having Intel-IPP-Support.
         The Fallback implementation was basically taken from the Visualization Toolkit VTK (Version 5.6.0)
 
-        Note: There is no internal check if the matrix is really symmetric. If it is not symmetric, the behaviour of 
+        Note: There is no internal check if the matrix is really symmetric. If it is not symmetric, the behaviour of
               this function is not predictable
-        
+
         @param eigenvectors contains the resulting eigenvectors in it's columns
         @param eigenvalues becomes a N-dimensional column vector which ith element is the eigenvalue that corresponds
-                           to the ith column of eigenvectors 
+                           to the ith column of eigenvectors
     */
     void eigen(DynMatrix &eigenvectors, DynMatrix &eigenvalues) const throw(InvalidMatrixDimensionException, ICLException);
-    
+
     /// Computes Singular Value Decomposition of a matrix - decomposes A into USV'
-    /** Internaly, this function will always use double values. Other types are converted internally. 
-        This funciton is only instantiated for icl32f and icl64f. 
+    /** Internaly, this function will always use double values. Other types are converted internally.
+        This funciton is only instantiated for icl32f and icl64f.
         @param U is filled column-wise with the eigenvectors of AA'
         @param S is filled with the singular values of A (s is a ColumnVector and not diagonal matrix)
         @param V is filled column-wise with the eigenvectors of A'A (in V, V is stored not V')
-        @see icl::svd_dyn 
+        @see icl::svd_dyn
     */
     void svd(DynMatrix &U, DynMatrix &s,  DynMatrix &V) const throw (ICLException);
 
     /// calculates the Moore-Penrose pseudo-inverse (only implemented for icl32f and icl64f)
     /** Internally, this functions can use either a QR-decomposition based approach, or it can use
-        SVD. 
+        SVD.
         QR-Decomposition is already much more stable than
         the naiv approach pinv(X) = X*(X*X')^(-1)
         \code
@@ -892,24 +897,39 @@ namespace icl{
         return R.inv() * Q.transp();
         \endcode
         The QR-decomposition based approach does not use the zeroThreshold variable.
-        
+
         If useSVD is set to true, internally an SVD based approach is used:
 
         <code>
         DynMatrix S,v,D;
         svd_dyn(*this,U,s,V);
-        
+
         DynMatrix S(s.rows(),s.rows(),0.0f);
         for(unsigned int i=0;i<s.rows();++i){
-          S(i,i) = (fabs(s[i]) > zeroThreshold) ? 1.0/s[i] : 0; 
+          S(i,i) = (fabs(s[i]) > zeroThreshold) ? 1.0/s[i] : 0;
         }
         return V * S * U.transp();
         </code>
-        
     */
-    DynMatrix pinv(bool useSVD=false, T zeroThreshold=1E-16) const 
+    DynMatrix pinv(bool useSVD=false, T zeroThreshold=1E-16) const
       throw (InvalidMatrixDimensionException,SingularMatrixException,ICLException);
 
+    /// calculates the Moore-Penrose pseudo-inverse (specialized for big matrices)
+    /**
+    * Calculate pseudo inverse of given matrix using Intel MKL if possible.
+    * Based on singular value decomposition (SVD) and divide & conquer.
+    * @param zeroThreshold singular values below threshold are set to zero
+    * @return pseudo inverse
+    */
+    DynMatrix big_matrix_pinv(T zeroThreshold=1E-16) const
+      throw (InvalidMatrixDimensionException,SingularMatrixException,ICLException);
+
+#ifdef HAVE_MKL
+    typedef void(*GESDD)(char*,int*,int*,T*,int*,T*,T*,int*,T*,int*,T*,int*,int*,int*);
+    typedef void(*CBLAS_GEMM)(CBLAS_ORDER,CBLAS_TRANSPOSE,CBLAS_TRANSPOSE,int,int,int,T,const T*,int,const T*,int,T,T*,int);
+    DynMatrix big_matrix_pinv(T zeroThreshold, GESDD gesdd, CBLAS_GEMM cblas_gemm) const
+      throw (InvalidMatrixDimensionException,SingularMatrixException,ICLException);
+#endif
 
     /// matrix determinant (only for icl32f and icl64f)
     T det() const throw (InvalidMatrixDimensionException);
@@ -933,14 +953,14 @@ namespace icl{
 
 
     /// returns the inner product of two matrices (i.e. dot-product)
-    /** A.dot(B) is equivalent to A.transp() * B 
+    /** A.dot(B) is equivalent to A.transp() * B
         TODO: optimize implementation (current implementation _is_ A.transp() * B)
     */
     DynMatrix<T> dot(const DynMatrix<T> &M) const throw(InvalidMatrixDimensionException){
       return this->transp() * M;
     }
-    
-    
+
+
     /// returns diagonal-elements as column-vector
     DynMatrix<T> diag() const{
       ICLASSERT_RETURN_VAL(cols()==rows(),DynMatrix<T>());
@@ -950,7 +970,7 @@ namespace icl{
       }
       return d;
     }
-    
+
     /// computes the sum of all diagonal elements
     T trace() const{
       ICLASSERT_RETURN_VAL(cols()==rows(),0);
@@ -960,7 +980,7 @@ namespace icl{
       }
       return accu;
     }
-    
+
     /// computes the cross product
     static DynMatrix<T> cross(const DynMatrix<T> &x, const DynMatrix<T> &y) throw(InvalidMatrixDimensionException){
 	if(x.cols()==1 && y.cols()==1 && x.rows()==3 && y.rows()==3){
@@ -971,7 +991,7 @@ namespace icl{
 	    return r;
 	}else{
 	    ICLASSERT_RETURN_VAL(x.rows() == 3 && y.rows() == 3,DynMatrix<T>());
-	    return DynMatrix<T>();	
+	    return DynMatrix<T>();
 	}
     }
 
@@ -997,14 +1017,14 @@ namespace icl{
       m_data = newData;
       return old_data;
     }
-    
+
     /// creates a dim-D identity Matrix
     static inline DynMatrix id(unsigned int dim) {
       DynMatrix M(dim,dim);
       for(unsigned int i=0;i<dim;++i) M(i,i) = 1;
       return M;
     }
-    
+
   private:
     inline void row_check(unsigned int row) const{
 #ifdef DYN_MATRIX_INDEX_CHECK
@@ -1024,7 +1044,7 @@ namespace icl{
       col_check(col);
       row_check(row);
     }
-    
+
     inline void idx_check(unsigned int idx) const{
 #ifdef DYN_MATRIX_INDEX_CHECK
       if(idx >= dim()) ERROR_LOG("access to linear index " << idx << " on a "<<m_cols<<'x'<<m_rows<<"-matrix");
@@ -1057,7 +1077,7 @@ namespace icl{
 
 #ifdef HAVE_IPP
   /** \cond */
-  
+
 #define DYN_MATRIX_MULT_SPECIALIZE(IPPT)                                                                \
   template<>	    							                                \
     inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::mult(                                            \
@@ -1112,7 +1132,7 @@ DYN_MATRIX_MULT_BY_CONSTANT(32f)
 DYN_MATRIX_MULT_BY_CONSTANT(64f)
 
 #undef DYN_MATRIX_MULT_BY_CONSTANT
- 
+
 #define DYN_MATRIX_NORM_SPECIALZE(T,IPPT)                  \
   template<>                                               \
   inline T DynMatrix<T> ::norm(double l) const{            \
@@ -1131,10 +1151,10 @@ DYN_MATRIX_MULT_BY_CONSTANT(64f)
     }                                                      \
     return ::pow(accu,1.0/l);                              \
   }
- 
+
  DYN_MATRIX_NORM_SPECIALZE(float,32f)
  // DYN_MATRIX_NORM_SPECIALZE(double,64f)
- 
+
 #undef DYN_MATRIX_NORM_SPECIALZE
 
  /** \endcond */
