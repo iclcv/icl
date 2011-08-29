@@ -57,8 +57,9 @@ add_libsource (${PROJECT_NAME} "src/MarkerCodeICL1.cpp" "${CONDITIONLIST}" LIB_S
 add_libsource (${PROJECT_NAME} "src/MarkerMetricsICL1.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/FiducialDetectorPluginICL1.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
-set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)
+set(CONDITIONLIST HAVE_QT_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick ICLGeom ICLQt)
+message(STATUS "Conditionlist: " ${CONDITIONLIST})
 add_example (${PROJECT_NAME} "marker-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "simple-marker-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "create-marker" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
