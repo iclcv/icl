@@ -5,7 +5,7 @@ BUILD=
 PKGCFG=
 INTELOMP=
 
-function usage () {
+function usage() {
     echo "usage: configure <CFG-FILE-NAME>"
     echo "    a sample config file can be found in scripts/*.cfg"
     exit -1
@@ -141,10 +141,10 @@ cd $BUILD
 
 CMD="$CMD $PREVDIR"
 
-#echo "CMAKE command is"
-#echo "-----------------------------------------------------"
-#echo $CMD
-#echo "-----------------------------------------------------"
+echo "CMAKE command is"
+echo "-----------------------------------------------------"
+echo $CMD
+echo "-----------------------------------------------------"
 
 CMD="$CMD"
 TMPFILE="./.configure-out"
