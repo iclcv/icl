@@ -82,7 +82,9 @@ std::vector<PossibleMarker> possible[2] = {
 FiducialDetector *lastFD = 0; // used for visualization
 SceneObject *planeObj = 0;
 
-std::vector<std::pair<SceneObject*,Mat> > calibObjs;
+
+
+//std::vector<std::pair<SceneObject*,Mat> > calibObjs;
 
 std::string sample= ("<config>\n"
                      "  <section id=\"grid-0\">\n"
@@ -303,6 +305,22 @@ void change_plane(const std::string &handle){
   scene.addObject(planeObj);
 }
 
+struct NamedTransform{
+  NamedTransform(){}
+  NamedTransform(const std::string &name,const Mat &t):
+    name(name),transform(t){}
+  std::string name;
+  Mat transform;
+};
+
+struct CalibFile{
+  std::string filename;
+  std::vector<NamedTransform> transforms;
+  SceneObject* obj;
+};
+
+std::vector<CalibFile> loadedFiles;
+
 void init(){
   bestOf10Saver = new BestOf10Saver;
 
@@ -313,16 +331,34 @@ void init(){
 
   std::vector<std::string> configurables;
   std::string iin;
+  GUI objGUI("vbox");
 
   for(int c = 0; c <pa("-c").n(); ++c){
-    ConfigFile cfg(*pa("-c",c));
-    std::cout << "* parsing given configuration file '" << *pa("-c",c) << "'" << std::endl;
+    CalibFile cf;
+    cf.filename = *pa("-c",c);
+    cf.obj = 0;
+    ConfigFile cfg(cf.filename);
     
-    Mat T = Mat::id();
-    try{
-      T = parse<Mat>(cfg["config.world-transform"]);
-    }catch(...){}
+    std::cout << "* parsing given configuration file '" << cf.filename << "'" << std::endl;
     
+    cf.transforms.push_back(NamedTransform("identity",Mat::id()));
+
+    std::ostringstream transformNameList;    
+    for(int t=0;true;++t){
+      try{
+        std::string name = cfg["config.world-transform-"+str(t)+".name"];
+        transformNameList << (t?",":"") << name;
+        Mat transform = parse<Mat>(cfg["config.world-transform-"+str(t)+".transform"]);
+        cf.transforms.push_back(NamedTransform(name,transform));
+      }catch(...){
+        break;
+      }
+    }
+    objGUI << ( GUI("vbox[@label="+cf.filename+"]")
+                << "checkbox(enable,checked)[@handle=enable-obj-"+str(c)+"]"
+                << "combo(" + transformNameList.str() + ")[@handle=transform-obj-"+str(c)+"]"
+                );
+
     
     try{
       std::string s;
@@ -342,9 +378,9 @@ void init(){
       o->setColor(Primitive::line,GeomColor(255,0,0,255));
       o->setVisible(Primitive::line,true);
       o->setLineWidth(2);
-      o->setTransformation(T);
+      o->setTransformation(cf.transforms[0].transform);
       scene.addObject(o);
-      calibObjs.push_back(std::make_pair(o,T));
+      cf.obj = o;
     }catch(ICLException &e){
       SHOW(e.what());
     }catch(int){}
@@ -358,7 +394,6 @@ void init(){
       ExtractionDone
     } mode = ExtractGrids;
 
-    
     for(int i=0;mode != ExtractionDone ;++i){
       
       cfg.setPrefix(str("config.") + ((mode == ExtractGrids) ? "grid-" : "marker-")+str(i)+".");  
@@ -421,15 +456,15 @@ void init(){
               Vec3 ll = v - dx1*(ms.width/2) + dy1*(ms.height/2);
               Vec3 lr = v - dx1*(ms.width/2) - dy1*(ms.height/2);
               
-              lut[id++] = PossibleMarker(T*v.resize<1,4>(1),
-                                         T*ul.resize<1,4>(1),
-                                         T*ur.resize<1,4>(1),
-                                         T*ll.resize<1,4>(1),
-                                         T*lr.resize<1,4>(1));
+              lut[id++] = PossibleMarker(cf.transforms[0].transform*v.resize<1,4>(1),
+                                         cf.transforms[0].transform*ul.resize<1,4>(1),
+                                         cf.transforms[0].transform*ur.resize<1,4>(1),
+                                         cf.transforms[0].transform*ll.resize<1,4>(1),
+                                         cf.transforms[0].transform*lr.resize<1,4>(1));
             }else{
-              lut[id++] = PossibleMarker(T*Vec(v[0],v[1],v[2],1));
+              lut[id++] = PossibleMarker(cf.transforms[0].transform*Vec(v[0],v[1],v[2],1));
             }
-            vertices.push_back(T*Vec(v[0],v[1],v[2],1));
+            vertices.push_back(cf.transforms[0].transform*Vec(v[0],v[1],v[2],1));
           }
         }
       }catch(ICLException &e){
@@ -479,6 +514,7 @@ void init(){
                 )
 
            << tab 
+           << objGUI
            << "label(ready..)[@minsize=1x3@maxsize=100x3@label=status@handle=status]"
            << "button(chage relative tranformation)[@maxsize=100x2@handle=showRelTransGUI]"
            << ( GUI("hbox[@maxsize=100x3@minsize=1x3]") 
@@ -552,8 +588,9 @@ void run(){
   scene.setDrawCoordinateFrameEnabled(gui["showCS"]);
   scene.unlock();
 
-  for(unsigned int i=0;i<calibObjs.size();++i){
-    SceneObject *calibObj = calibObjs[i].first;
+  for(unsigned int i=0;i<loadedFiles.size();++i){
+    SceneObject *calibObj = loadedFiles[i].obj;
+    if(!calibObj) continue;
     const int calibObjAlpha = gui["objAlpha"];
     if(calibObjAlpha){
       calibObj->setVisible(Primitive::quad,true);
@@ -599,17 +636,16 @@ void run(){
     }
   }
   
-  Mat T = create_hom_4x4<float>(relTransGUI["rx"].as<float>()*M_PI/4,
-                                relTransGUI["ry"].as<float>()*M_PI/4,
-                                relTransGUI["rz"].as<float>()*M_PI/4,
-                                relTransGUI["tx"],relTransGUI["ty"],relTransGUI["tz"]);
-  
-  for(unsigned int i=0;i<calibObjs.size();++i){
-    calibObjs[i].first->setTransformation(T * calibObjs[i].second);
-  }
-  //  for(unsigned int i=0;i<grids.size();++i){
-  //  grids[i]->setTransformation(T);
-  //}
+  /* TODO use selected transformation here
+      Mat T = create_hom_4x4<float>(relTransGUI["rx"].as<float>()*M_PI/4,
+      relTransGUI["ry"].as<float>()*M_PI/4,
+      relTransGUI["rz"].as<float>()*M_PI/4,
+      relTransGUI["tx"],relTransGUI["ty"],relTransGUI["tz"]);
+      
+      for(unsigned int i=0;i<calibObjs.size();++i){
+      calibObjs[i].first->setTransformation(T * calibObjs[i].second);
+      }
+
   
   
   if(showRelTrans.wasTriggered()){
@@ -619,13 +655,16 @@ void run(){
                 << "' is:" << std::endl << (T * calibObjs[i].second) << std::endl;
     }
   }
+  */
+
   
   std::vector<Vec> xws,xwsCentersOnly;
   std::vector<Point32f> xis,xisCentersOnly;
  
   const bool useCorners = gui["useCorners"];
   for(unsigned int i=0;i<markers.size();++i){
-    xws.push_back(T * markers[i].worldPos);
+    //    xws.push_back(T * markers[i].worldPos); TODO: needs to be transformed by the selected transform
+    xws.push_back(markers[i].worldPos);
     xis.push_back(markers[i].imagePos);
 
     xwsCentersOnly.push_back(xws.back());
@@ -633,7 +672,9 @@ void run(){
 
     if(useCorners && markers[i].hasCorners){
       for(int j=0;j<4;++j){
-        xws.push_back(T*markers[i].worldCornerPositions[j]);
+        //        xws.push_back(T*markers[i].worldCornerPositions[j]);
+        // TODO: needsa to be transformed by the selected transform
+        xws.push_back(markers[i].worldCornerPositions[j]);
         xis.push_back(markers[i].imageCornerPositions[j]);
       }
     }
