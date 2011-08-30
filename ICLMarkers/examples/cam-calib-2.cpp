@@ -43,9 +43,9 @@ typedef FixedColVector<float,3> Vec3;
 
 struct PossibleMarker{
   PossibleMarker():loaded(false){}
-  PossibleMarker(const Vec &v):loaded(true),center(v),hasCorners(false){}
-  PossibleMarker(const Vec &v, const Vec &a, const Vec &b, const Vec &c, const Vec &d):
-    loaded(true),center(v),hasCorners(true){
+  PossibleMarker(int cfgFileIndex,const Vec &v):loaded(true),center(v),hasCorners(false),cfgFileIndex(cfgFileIndex){}
+  PossibleMarker(int cfgFileIndex,const Vec &v, const Vec &a, const Vec &b, const Vec &c, const Vec &d):
+    loaded(true),center(v),hasCorners(true),cfgFileIndex(cfgFileIndex){
     corners[0] = a;
     corners[1] = b;   
     corners[2] = c;
@@ -55,6 +55,7 @@ struct PossibleMarker{
   Vec center;
   bool hasCorners;
   Vec corners[4];
+  int cfgFileIndex;
 };
 
 enum MarkerType {
@@ -65,6 +66,9 @@ enum MarkerType {
 
 GUI gui("hsplit");
 GUI relTransGUI;
+GUI markerDetectionOptionGUI;
+GUI planeOptionGUI("vbox");
+
 Scene scene;
 GenericGrabber grabber;
 
@@ -87,6 +91,16 @@ SceneObject *planeObj = 0;
 //std::vector<std::pair<SceneObject*,Mat> > calibObjs;
 
 std::string sample= ("<config>\n"
+                     "  <!-- A grid is a regular 1D or 2D grid of markers in 3D space.\n"
+                     "       Each grid is defined by the (x,y,z)-offset of the upper left marker,\n"
+                     "       and by two direction vectors 'x-direction' and 'y-direction'. \n"
+                     "       A grid marker at grid position (i,j) is located at \n"
+                     "       offset + x-direction*i + y-direction*j\n"
+                     "       The grid markers are assumed to be in the defined marker-range;\n"
+                     "       the markers are distributed in row-major order. Possible marker\n"
+                     "       types are 'bch' and 'amoeba'. If the marker type is bch, not only\n"
+                     "       the marker centers, but also the markers corners are used as\n"
+                     "       reference points. -->\n"
                      "  <section id=\"grid-0\">\n"
                      "      <data id=\"dim\" type=\"string\">(NumXCells)x(NumYCells)</data>\n"
                      "      <data id=\"offset\" type=\"string\">x,y,z</data>\n"
@@ -95,18 +109,34 @@ std::string sample= ("<config>\n"
                      "      <data id=\"marker-type\" type=\"string\">amoeba|bch</data>\n"
                      "      <data id=\"marker-ids\" type=\"string\">[minID,maxID]</data>\n"
                      "   </section>\n"
-                     "    <!-- more grids -->\n"
-                     "    <!-- more grids -->\n"
-                     "    <!-- more grids -->\n"
+                     "    <!-- more grids with raising indices (also index 0 is optional)-->\n"
+                     "\n"
+                     "  <!-- For simplicity, 1 by 1 grids (i.e. single markers) can be defined\n"
+                     "       in a simpler way. Here, less information needs to be given, however\n"
+                     "       it is important to mention, that the marker corners can only be used\n"
+                     "       for grids. -->\n"
                      "   <section id=\"marker-0\">\n"
                      "      <data id=\"marker-type\" type=\"string\">amoeba|bch</data>\n"
                      "      <data id=\"offset\" type=\"string\">x,y,z</data>\n"
                      "      <data id=\"marker-id\" type=\"int\">id</data>\n"
                      "   </section>\n"
-                     "   <!-- more markers -->\n"
-                     "   <!-- more markers -->\n"
-                     "   <!-- more markers -->\n"
-                     "   <data id=\"world-transform\" type=\"string\">4x4-matrix</data>      <!-- optional -->\n"
+                     "   <!-- more markers with raising indices (also index 0 is optional)-->\n"
+                     "\n"
+                     "  <!-- If the calibration object can be placed in the scene in different distinct\n"
+                     "       ways (i.e. with differnt relative transformations), several world-tranforms can\n"
+                     "       can be defined. All defined world transforms can be chosen interactively at runtime.\n"
+                     "       By default, the first world transform is used. If no world transform is given, a dummy\n"
+                     "       transform called 'identity' is added automatically -->\n"
+                     "   <section id=\"world-transform-0\" type=\"string\">    <!-- also optional -->\n"
+                     "      <data id=\"name\" type=\"string\">example with z-offset of 100mm</data>\n"
+                     "      <data id=\"transform\" type=\"string\">\n"
+                     "          1 0 0 0\n"
+                     "          0 1 0 0\n"
+                     "          0 0 1 100\n"
+                     "          0 0 0 1\n"
+                     "      </data>\n"
+                     "   </section>\n"
+                     "   <!-- more possible world transforms (if none is given, an identity transform is added automatically -->\n"
                      "   <data id=\"obj-file\" type=\"string\">\n"
                      "      <!-- optional .obj file content that describes the visual shape of the calibration object -->\n"
                      "   </data>\n"
@@ -238,22 +268,22 @@ static inline Vec set_3_to_1(Vec a){
 
 void change_plane(const std::string &handle){
   if(handle == "planeDim"){
-    if(gui["planeDim"].as<std::string>() == "none"){
-      gui["planeOffset"].disable();
-      gui["planeRadius"].disable();
-      gui["planeTicDist"].disable();
-      gui["planeColor"].disable();
-      gui["planeStatus"] = str("removed");
+    if(planeOptionGUI["planeDim"].as<std::string>() == "none"){
+      planeOptionGUI["planeOffset"].disable();
+      planeOptionGUI["planeRadius"].disable();
+      planeOptionGUI["planeTicDist"].disable();
+      planeOptionGUI["planeColor"].disable();
+      planeOptionGUI["planeStatus"] = str("removed");
       scene.removeObject(planeObj);
       planeObj = 0;
       havePlane = false;
       return;
     }else{
       havePlane = true;
-      gui["planeOffset"].enable();
-      gui["planeRadius"].enable();
-      gui["planeTicDist"].enable();
-      gui["planeColor"].enable();
+      planeOptionGUI["planeOffset"].enable();
+      planeOptionGUI["planeRadius"].enable();
+      planeOptionGUI["planeTicDist"].enable();
+      planeOptionGUI["planeColor"].enable();
     }
   }
   if(planeObj){
@@ -261,18 +291,18 @@ void change_plane(const std::string &handle){
     ICL_DELETE(planeObj);
   }
   
-  const std::string t = gui["planeDim"];
-  const float offset = gui["planeOffset"];
-  const float radius = parse<float>(gui["planeRadius"]);
-  const float ticDist = gui["planeTicDist"];
-  const Color4D c = gui["planeColor"];
+  const std::string t = planeOptionGUI["planeDim"];
+  const float offset = planeOptionGUI["planeOffset"];
+  const float radius = parse<float>(planeOptionGUI["planeRadius"]);
+  const float ticDist = planeOptionGUI["planeTicDist"];
+  const Color4D c = planeOptionGUI["planeColor"];
 
   int n = (2*radius) / ticDist;
   if(n * n > 1000000){
-    gui["planeStatus"] = str("too many nodes");
+    planeOptionGUI["planeStatus"] = str("too many nodes");
     return;
   }else{
-    gui["planeStatus"] = str("ok (") + str(n*n) + " nodes)";
+    planeOptionGUI["planeStatus"] = str("ok (") + str(n*n) + " nodes)";
   }
   Vec o(offset*(t=="x"),offset*(t=="y"),offset*(t=="z"),1);
   Vec dx,dy;
@@ -341,29 +371,35 @@ void init(){
     
     std::cout << "* parsing given configuration file '" << cf.filename << "'" << std::endl;
     
-    cf.transforms.push_back(NamedTransform("identity",Mat::id()));
+
 
     std::ostringstream transformNameList;    
     for(int t=0;true;++t){
       try{
-        std::string name = cfg["config.world-transform-"+str(t)+".name"];
+        const std::string name = cfg["config.world-transform-"+str(t)+".name"];
         transformNameList << (t?",":"") << name;
-        Mat transform = parse<Mat>(cfg["config.world-transform-"+str(t)+".transform"]);
+        const Mat transform = parse<Mat>(cfg["config.world-transform-"+str(t)+".transform"]);
         cf.transforms.push_back(NamedTransform(name,transform));
       }catch(...){
         break;
       }
     }
-    objGUI << ( GUI("vbox[@label="+cf.filename+"]")
-                << "checkbox(enable,checked)[@handle=enable-obj-"+str(c)+"]"
-                << "combo(" + transformNameList.str() + ")[@handle=transform-obj-"+str(c)+"]"
+
+    const bool transformGiven = cf.transforms.size();
+    if(!transformGiven){
+      cf.transforms.push_back(NamedTransform("identity",Mat::id()));
+    }
+
+    objGUI << ( GUI("hbox[@label="+cf.filename+"@minsize=1x3@maxsize=100x3]")
+                << "checkbox(enable,checked)[@out=enable-obj-"+str(c)+"]"
+                << "combo("+transformNameList.str() + (transformGiven?"":",id")+")[@handle=transform-obj-"+str(c)+"]"
                 );
 
     
     try{
       std::string s;
       try{
-        std::string s2 = cfg["config.obj-file"];
+        const std::string s2 = cfg["config.obj-file"];
         s = s2;
       }catch(...){
         throw 1;
@@ -441,7 +477,7 @@ void init(){
         
         int id = r.minVal;
         std::vector<PossibleMarker> &lut = possible[t];
-        std::vector<Vec> vertices;
+        //  std::vector<Vec> vertices;
         
         haveCorners = (mode==ExtractGrids) && (ms != Size32f::null) && (t==BCH);
 
@@ -456,15 +492,16 @@ void init(){
               Vec3 ll = v - dx1*(ms.width/2) + dy1*(ms.height/2);
               Vec3 lr = v - dx1*(ms.width/2) - dy1*(ms.height/2);
               
-              lut[id++] = PossibleMarker(cf.transforms[0].transform*v.resize<1,4>(1),
-                                         cf.transforms[0].transform*ul.resize<1,4>(1),
-                                         cf.transforms[0].transform*ur.resize<1,4>(1),
-                                         cf.transforms[0].transform*ll.resize<1,4>(1),
-                                         cf.transforms[0].transform*lr.resize<1,4>(1));
+              lut[id++] = PossibleMarker(c,
+                                         v.resize<1,4>(1),
+                                         ul.resize<1,4>(1),
+                                         ur.resize<1,4>(1),
+                                         ll.resize<1,4>(1),
+                                         lr.resize<1,4>(1));
             }else{
-              lut[id++] = PossibleMarker(cf.transforms[0].transform*Vec(v[0],v[1],v[2],1));
+              lut[id++] = PossibleMarker(c,Vec(v[0],v[1],v[2],1));
             }
-            vertices.push_back(cf.transforms[0].transform*Vec(v[0],v[1],v[2],1));
+            //            vertices.push_back(cf.transforms[0].transform*Vec(v[0],v[1],v[2],1));
           }
         }
       }catch(ICLException &e){
@@ -472,6 +509,7 @@ void init(){
         continue;
       }
     }
+    loadedFiles.push_back(cf);
   }
   
   grabber.init(pa("-i"));
@@ -483,12 +521,12 @@ void init(){
     tabstr += configurables[i]+',';
   }
   tabstr[tabstr.length()-1] = ')';
-  GUI tab(tabstr);
+  markerDetectionOptionGUI = GUI(tabstr);
   for(unsigned int i=0;i<configurables.size();++i){
-    tab << "prop(" + configurables[i] + ")";
+    markerDetectionOptionGUI << "prop(" + configurables[i] + ")";
   }
   gui << ( GUI("vbox[@minsize=16x1@maxsize=16x100]") 
-           << ( GUI("hbox[@maxsize=100x3]") 
+           << ( GUI("hbox[@maxsize=100x3@minsize=1x3]") 
                 << "combo(" +iin + ")[@handle=iin@label=visualized image]"
                 << "slider(0,255,128)[@out=objAlpha@label=object-alpha]"
                 )
@@ -497,8 +535,21 @@ void init(){
                 << "checkbox(show CS,checked)[@out=showCS]"
                 << "label( )[@handle=error@label=error]"
                 )
-           << ( GUI("vbox[@label=plane@maxsize=100x10]")
-                << ( GUI("hbox")
+           << ( GUI("hbox[@label=more options@minsize=1x3@maxsize=100x3]")
+                << "button(plane)[@handle=show-plane-options]" 
+                << "button(markers)[@handle=show-marker-detection-options]" 
+                << "button(rel. Transf.)[@handle=showRelTransGUI]"
+              )
+           << (GUI("vscroll[@label=calibration objects]") << objGUI)
+           << "label(ready..)[@minsize=1x3@maxsize=100x3@label=detection status@handle=status]"
+           << ( GUI("hbox[@maxsize=100x3@minsize=1x3]") 
+                << "button(save camera)[handle=save]"
+                << "button(save best of 10)[handle=save10]"
+               )
+           )
+      << "!show";
+  
+  planeOptionGUI << ( GUI("hbox")
                      << "combo(none,x,y,z)[@label=normal@handle=planeDim]"
                      << "float(-10000,10000,0)[@label=offset mm@handle=planeOffset]"
                      )
@@ -510,20 +561,10 @@ void init(){
                 << ( GUI("hbox")
                      << "label( )[@handle=planeStatus@label=status]"
                      << "color(40,40,40,255)[@handle=planeColor@label=color]"
-                    )
-                )
+                     )
+                 << "!create";
 
-           << tab 
-           << objGUI
-           << "label(ready..)[@minsize=1x3@maxsize=100x3@label=status@handle=status]"
-           << "button(chage relative tranformation)[@maxsize=100x2@handle=showRelTransGUI]"
-           << ( GUI("hbox[@maxsize=100x3@minsize=1x3]") 
-                << "button(save camera)[handle=save]"
-                << "button(save best of 10)[handle=save10]"
-               )
-           )
-      << "!show";
-  
+
   relTransGUI << ( GUI("vbox[@label=rel-transformation]") 
                    << ( GUI("hbox")
                         << "spinner(0,8,0)[@label=x-rotation *pi/4@out=rx]"
@@ -538,6 +579,9 @@ void init(){
                    )
               << "button(show transformation matrix)[@handle=showRelTrans]" << "!create";
   
+  markerDetectionOptionGUI.create();
+  gui["show-marker-detection-options"].registerCallback(function(&markerDetectionOptionGUI,&GUI::switchVisibility));
+  gui["show-plane-options"].registerCallback(function(&planeOptionGUI,&GUI::switchVisibility));
            
 
   gui["save"].registerCallback(save);
@@ -553,23 +597,24 @@ void init(){
   
   gui["showRelTransGUI"].registerCallback(function(&relTransGUI,&GUI::switchVisibility));
   
-  gui["planeOffset"].disable();
-  gui["planeRadius"].disable();
-  gui["planeTicDist"].disable();
-  gui["planeColor"].disable();
-  gui.registerCallback(change_plane,"planeOffset,planeRadius,planeTicDist,planeDim,planeColor");
+  planeOptionGUI["planeOffset"].disable();
+  planeOptionGUI["planeRadius"].disable();
+  planeOptionGUI["planeTicDist"].disable();
+  planeOptionGUI["planeColor"].disable();
+  planeOptionGUI.registerCallback(change_plane,"planeOffset,planeRadius,planeTicDist,planeDim,planeColor");
   
   gui["draw"].install(new MouseHandler(mouse));
 }
 
 struct FoundMarker{
   FoundMarker(){}
-  FoundMarker(Fiducial fid, const Point32f &imagePos, const Vec &worldPos):
-    fid(fid),imagePos(imagePos),worldPos(worldPos),hasCorners(false){}
+  FoundMarker(Fiducial fid, const Point32f &imagePos, const Vec &worldPos, int cfgFileIndex):
+    fid(fid),imagePos(imagePos),worldPos(worldPos),hasCorners(false),cfgFileIndex(cfgFileIndex){}
   FoundMarker(Fiducial fid, const Point32f &imagePos, const Vec &worldPos,
               const Point32f imageCornerPositions[4],
-              const Vec worldCornerPositions[4]):
-    fid(fid),imagePos(imagePos),worldPos(worldPos),hasCorners(true){
+              const Vec worldCornerPositions[4],
+              int cfgFileIndex):
+    fid(fid),imagePos(imagePos),worldPos(worldPos),hasCorners(true),cfgFileIndex(cfgFileIndex){
     std::copy(imageCornerPositions,imageCornerPositions+4,this->imageCornerPositions);
     std::copy(worldCornerPositions,worldCornerPositions+4,this->worldCornerPositions);
   }
@@ -579,7 +624,8 @@ struct FoundMarker{
   Vec worldPos;
   bool hasCorners;
   Point32f imageCornerPositions[4];  
-  Vec worldCornerPositions[4];  
+  Vec worldCornerPositions[4];
+  int cfgFileIndex;
 };
 
 
@@ -588,21 +634,40 @@ void run(){
   scene.setDrawCoordinateFrameEnabled(gui["showCS"]);
   scene.unlock();
 
+  const Mat Trel = create_hom_4x4<float>(relTransGUI["rx"].as<float>()*M_PI/4,
+                                         relTransGUI["ry"].as<float>()*M_PI/4,
+                                         relTransGUI["rz"].as<float>()*M_PI/4,
+                                         relTransGUI["tx"],relTransGUI["ty"],relTransGUI["tz"]);
+
+  std::vector<Mat> Ts(loadedFiles.size());
+  std::vector<bool> enabled(Ts.size());
+
   for(unsigned int i=0;i<loadedFiles.size();++i){
+    int tidx = gui.getValue<ComboHandle>("transform-obj-"+str(i)).getSelectedIndex();
+    Ts[i] = loadedFiles[i].transforms[tidx].transform;
+    enabled[i] = gui.getValue<bool>("enable-obj-"+str(i));
+
     SceneObject *calibObj = loadedFiles[i].obj;
     if(!calibObj) continue;
-    const int calibObjAlpha = gui["objAlpha"];
-    if(calibObjAlpha){
+    calibObj->setTransformation(Trel * Ts[i]);
+    const int a = gui["objAlpha"];
+    if(a){
+      const int r = enabled[i] ? 0 : 100, g = 100, b = enabled[i] ? 255 : 100;
       calibObj->setVisible(Primitive::quad,true);
       calibObj->setVisible(Primitive::triangle,true);
       calibObj->setVisible(Primitive::polygon,true);
-      calibObj->setColor(Primitive::quad,GeomColor(0,100,255,calibObjAlpha));
-      calibObj->setColor(Primitive::triangle,GeomColor(0,100,255,calibObjAlpha));
-      calibObj->setColor(Primitive::polygon,GeomColor(0,100,255,calibObjAlpha));
+      calibObj->setColor(Primitive::quad,GeomColor(r,g,b,a));
+      calibObj->setColor(Primitive::triangle,GeomColor(r,g,b,a));
+      calibObj->setColor(Primitive::polygon,GeomColor(r,g,b,a));
     }else{
       calibObj->setVisible(Primitive::quad,false);
       calibObj->setVisible(Primitive::triangle,false);
       calibObj->setVisible(Primitive::polygon,false);
+    }
+    if(!enabled[i]){
+      calibObj->setColor(Primitive::line,GeomColor(200,200,200,a));
+    }else{
+      calibObj->setColor(Primitive::line,GeomColor(255,0,0,a));
     }
   } 
 
@@ -615,7 +680,7 @@ void run(){
     if(!fds[x]) continue;
     const std::vector<Fiducial> &fids = fds[x]->detect(image);
     for(unsigned int i=0;i<fids.size();++i){
-      //FoundMarker m = { fids[i], Point32f::null, Vec() };
+
       const PossibleMarker &p = possible[x][fids[i].getID()];
       if(p.loaded){
         if(p.hasCorners && fids[i].getKeyPoints2D().size() == 4){
@@ -628,34 +693,22 @@ void run(){
           };
           
           markers.push_back(FoundMarker(fids[i],fids[i].getCenter2D(),p.center,
-                                        imagePositions,p.corners));
+                                        imagePositions,p.corners,p.cfgFileIndex));
         }else{
-          markers.push_back(FoundMarker(fids[i],fids[i].getCenter2D(),p.center));
+          markers.push_back(FoundMarker(fids[i],fids[i].getCenter2D(),p.center,p.cfgFileIndex));
         }
       }
     }
   }
-  
-  /* TODO use selected transformation here
-      Mat T = create_hom_4x4<float>(relTransGUI["rx"].as<float>()*M_PI/4,
-      relTransGUI["ry"].as<float>()*M_PI/4,
-      relTransGUI["rz"].as<float>()*M_PI/4,
-      relTransGUI["tx"],relTransGUI["ty"],relTransGUI["tz"]);
-      
-      for(unsigned int i=0;i<calibObjs.size();++i){
-      calibObjs[i].first->setTransformation(T * calibObjs[i].second);
-      }
 
-  
-  
+
   if(showRelTrans.wasTriggered()){
-    std::cout << "current relative transformation is:" << std::endl << T << std::endl;
-    for(unsigned int i=0;i<calibObjs.size();++i){
-      std::cout << "combined transformation matrix for calibration object '" << pa("-c",i) 
-                << "' is:" << std::endl << (T * calibObjs[i].second) << std::endl;
+    std::cout << "current relative transformation is:" << std::endl << Trel << std::endl;
+    for(unsigned int i=0;i<loadedFiles.size();++i){
+      std::cout << " * combined transformation matrix for calibration object '" << pa("-c",i) 
+                << "' is:" << std::endl << (Trel * Ts[i]) << std::endl;
     }
   }
-  */
 
   
   std::vector<Vec> xws,xwsCentersOnly;
@@ -663,8 +716,10 @@ void run(){
  
   const bool useCorners = gui["useCorners"];
   for(unsigned int i=0;i<markers.size();++i){
-    //    xws.push_back(T * markers[i].worldPos); TODO: needs to be transformed by the selected transform
-    xws.push_back(markers[i].worldPos);
+    const int idx = markers[i].cfgFileIndex;
+    if(!enabled[idx]) continue;
+    Mat T = Trel * Ts[idx];
+    xws.push_back(T *markers[i].worldPos);
     xis.push_back(markers[i].imagePos);
 
     xwsCentersOnly.push_back(xws.back());
@@ -672,9 +727,7 @@ void run(){
 
     if(useCorners && markers[i].hasCorners){
       for(int j=0;j<4;++j){
-        //        xws.push_back(T*markers[i].worldCornerPositions[j]);
-        // TODO: needsa to be transformed by the selected transform
-        xws.push_back(markers[i].worldCornerPositions[j]);
+        xws.push_back(T * markers[i].worldCornerPositions[j]);
         xis.push_back(markers[i].imageCornerPositions[j]);
       }
     }
@@ -717,6 +770,7 @@ void run(){
       }else{
         gui["status"] = str(e.what());
         bestOf10Saver->next_hook(Camera(),-1);
+        break;
       }
     }
   }
@@ -732,10 +786,22 @@ void run(){
   for(unsigned int i=0;i<markers.size();++i){
     FoundMarker &m = markers[i];
     draw->linewidth(2);
-    draw->color(0,100,255,255);
-    draw->fill(0,100,255,100);
+
+    const int idx = markers[i].cfgFileIndex;
+    if(enabled[idx]){
+      draw->color(0,100,255,255);
+      draw->fill(0,100,255,100);
+    }else{
+      draw->color(200,200,200,255);
+      draw->fill(100,100,100,100);
+    
+    }
     draw->polygon(m.fid.getCorners2D());
-    draw->color(255,0,0,255);
+    if(enabled[idx]){
+      draw->color(255,0,0,255);
+    }else{
+      draw->color(200,200,200,255);
+    }
 
     draw->linewidth(1);
     draw->sym(m.imagePos,'x');
@@ -746,15 +812,19 @@ void run(){
       draw->sym(m.imageCornerPositions[2],'x');
       draw->sym(m.imageCornerPositions[3],'x');
     }
-    draw->color(0,255,0,255);
+    if(enabled[idx]){
+      draw->color(0,255,0,255);
+    }else{
+      draw->color(200,200,200,255);
+    }
     draw->text(str(m.fid.getID()),m.imagePos.x, m.imagePos.y+12, -10);
   }
 
   if(havePlane){
     draw->linewidth(1);
     const Point32f p = currentMousePos;
-    const std::string t = gui["planeDim"];
-    const float o = gui["planeOffset"];
+    const std::string t = planeOptionGUI["planeDim"];
+    const float o = planeOptionGUI["planeOffset"];
     const float x=t=="x",y=t=="y",z=t=="z";
     PlaneEquation pe(Vec(o*x,o*y,o*z,1),Vec(x,y,z,1));
 
