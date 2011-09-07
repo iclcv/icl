@@ -53,7 +53,6 @@ void init(){
   std::ostringstream comboList;
   for(int i=0;i<pa("-c").n();++i,++nCams){
     std::string c = *pa("-c",i);
-    SHOW(c);
     Camera cam (c);
     std::string n = cam.getName();
     comboList << (i?",":"") << ( (n == "no title defined" || n == "") ? c : cam.getName()) ; 
