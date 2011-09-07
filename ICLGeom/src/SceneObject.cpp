@@ -641,7 +641,6 @@ namespace icl{
       }else if(line[0] == '#') { 
         if(line.substr(1,4) == "!icl"){
           std::string rest = line.substr(5);
-          SHOW(rest);
           std::vector<std::string> ts = tok(rest," ");
           if(ts.size() < 2){
             WARNING_LOG("parsing object file " << objFileName << " (line: " 
