@@ -639,6 +639,20 @@ namespace icl{
           }
         }
       }else if(line[0] == '#') { 
+        if(line.substr(1,4) == "!icl"){
+          std::string rest = line.substr(5);
+          SHOW(rest);
+          std::vector<std::string> ts = tok(rest," ");
+          if(ts.size() < 2){
+            WARNING_LOG("parsing object file " << objFileName << " (line: " 
+                        << line  << "): #!icl - line does not contain enough tokens!");
+          }else if(ts[0] == "transformation"){
+            setTransformation(parse<Mat>(cat(std::vector<std::string>(ts.begin()+1,ts.end())," ")));
+          }else{
+            WARNING_LOG("parsing object file " << objFileName << " (line: " 
+                        << line  << "): #!icl - line cannot be parsed!");
+          }
+        }
         continue;
       }else if(line[0] == ' ') { 
         continue;

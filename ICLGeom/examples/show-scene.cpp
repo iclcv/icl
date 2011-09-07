@@ -37,38 +37,82 @@
 #include <ICLUtils/FPSLimiter.h>
 
 // global data
-GUI gui;
+GUI gui("hsplit");
 Scene scene;
 GenericGrabber grabber;
+int nCams = 0;
 
-void reload_obj(){
-  scene.removeObject(0);
-  SceneObject *o = new SceneObject(*pa("-o")); 
-  o->setColor(Primitive::line,GeomColor(255,0,0,255));
-  o->setVisible(Primitive::line,true);
-  scene.addObject(o);
+
+void change_camera(){
+  static ComboHandle cams = gui["cams"];
+  scene.getCamera(nCams) = scene.getCamera(cams.getSelectedIndex());
 }
 
 void init(){
   std::ostringstream comboList;
-  for(int i=0;i<pa("-c").n();++i){
+  for(int i=0;i<pa("-c").n();++i,++nCams){
     std::string c = *pa("-c",i);
+    std::cout << "adding camera " << c << std::endl;
     comboList << (i?",":"") << c; 
     scene.addCamera(Camera(c));
   }
   for(int i=0;i<pa("-o").n();++i){
-    scene.addObject(new SceneObject(*pa("-o",i)));
+    std::cout << "adding object " << *pa("-o",i) << std::endl;
+    SceneObject *o = new SceneObject(*pa("-o",i));
+    SHOW(o->getTransformation());
+    o->setVisible(Primitive::line,true);
+    scene.addObject(o);
   }
 
   if(pa("-i")){
-    //TODO
+    ++nCams;
+    grabber.init(pa("-i"));
+    std::string c = *pa("-i",2);
+    scene.addCamera(Camera(c));
+    comboList << (nCams ?  "," : "") << c;
   }
   
+  if(!nCams){
+    pausage("no cameras were specified! (use either -i or -c)");
+  }
+  
+  scene.addCamera(scene.getCamera(nCams-1));
+
+  gui << "draw3D[@handle=draw@minsize=32x24]"
+      << ( GUI("vbox[@maxsize=10x100]")
+           << "combo("+comboList.str()+")[@handle=cams@label=cameras]"
+           << (pa("-i") ? "checkbox(background image,checked)[@handle=grab]" : "dummy")
+           )
+      << "!show";
+
+  gui["cams"].registerCallback(change_camera);
+  gui["draw"].install(scene.getMouseHandler(nCams));
+                 
+  
+  scene.setDrawCamerasEnabled(true);
+  scene.setDrawCoordinateFrameEnabled(true);
+  
+  static DrawHandle3D draw = gui["draw"]; 
+  draw->lock();
+  draw->callback(scene.getGLCallback(nCams));
+  draw->unlock();
 }
 
 
 void run(){
-  DrawHandle3D draw = gui["draw"]; // get the draw-GUI compoment
+  static DrawHandle3D draw = gui["draw"]; 
+
+  if(grabber){
+    const ImgBase *image = grabber.grab();
+    static Img8u black(image->getSize(),1);
+    if(gui["grab"]){
+      draw = image;
+    }else{
+      draw = &black;
+    }
+    draw.update();    
+  }
+
 }
 
 
