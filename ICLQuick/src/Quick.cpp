@@ -68,10 +68,27 @@
 #include <ICLUtils/Point32f.h>
 #include <ICLQuick/ImgBuffer.h>
 
+#include <fstream>
+#include <cstdio>
 
 
 
 namespace icl{
+
+  std::string execute_process(const std::string &command){
+    char buf[128];
+    FILE *f = popen(command.c_str(),"r");
+    std::ostringstream out;
+    while( !feof(f) ){
+      memset(buf,0,128);
+      fread(buf,1,127,f);
+      out << buf;
+    }
+    fclose(f);
+    return out.str();
+  }
+
+
 #ifdef HAVE_QT
   std::string openFileDialog(const std::string &filter,const std::string &caption, 
                              const std::string &initialDirectory, void *parentWidget) throw (ICLException){

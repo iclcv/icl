@@ -61,6 +61,10 @@ namespace icl{
                              const std::string &caption="save file",
                              const std::string &initialDirectory="", 
                              void *parentWidget=0) throw (ICLException);
+
+  /// executes the given command as a child process and returns it output
+  /** Internally, popen is used */
+  std::string execute_process(const std::string &command);
 #endif
 
 #define ICL_QUICK_DEPTH depth32f
