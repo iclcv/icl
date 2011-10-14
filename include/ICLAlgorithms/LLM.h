@@ -37,6 +37,7 @@
 
 #include <vector>
 #include <ICLUtils/Range.h>
+#include <ICLUtils/Configurable.h>
 
 namespace icl{
   /// Local Linear Map implementation (LLM)
@@ -106,7 +107,7 @@ namespace icl{
       - provide an interface for Batch based VQ using (EM-Algorithm or something like that)
       - \f[ f_X(x_1, \dots, x_N) = \frac {1} {(2\pi)^{N/2}|\Sigma|^{1/2}} \exp \left( -\frac{1}{2} ( x - \mu)^\top \Sigma^{-1} (x - \mu) \right) \f]
   **/
-  class LLM{
+  class LLM : public Configurable{
     public:
     /// Internally used Kernel structure
     struct Kernel{
@@ -146,12 +147,13 @@ namespace icl{
       void show(unsigned int idx=0) const;
     };
     
+
     static const int TRAIN_CENTERS = 1; /*!< training flag for updating input weights/prototype vectors */
     static const int TRAIN_SIGMAS = 2;  /*!< training flag for updating input sigmas */
     static const int TRAIN_OUTPUTS = 4; /*!< training flag for updating output weights */
     static const int TRAIN_MATRICES = 8;/*!< training flag for updating output matrices */
     static const int TRAIN_ALL = TRAIN_CENTERS | TRAIN_SIGMAS | TRAIN_OUTPUTS | TRAIN_MATRICES; /*!< training flag for updating all*/
-    
+
     private:
     void init_private(unsigned int inputDim,unsigned int outputDim);
 
@@ -219,17 +221,17 @@ namespace icl{
     
 
     /// sets up learning rate for input weights to a new value (about 0..1)
-    void setEpsilonIn(float val) { m_epsilonIn = val; }
+    void setEpsilonIn(float val) { setPropertyValue("epsilon In",val); }
 
     /// sets up learning rate for output weights to a new value (about 0..1)
-    void setEpsilonOut(float val) { m_epsilonOut = val; } 
+    void setEpsilonOut(float val) { setPropertyValue("epsilon Out",val); }
 
     /// sets up learning rate for slope matrices to a new value (about 0..1)
-    void setEpsilonA(float val) { m_epsilonA = val; }
+    void setEpsilonA(float val) { setPropertyValue("epsilon A",val); }
     
     /// sets up learning rate for sigmas to a new value (about 0..1)
     /** <b>Note</b> Update of the sigmas does not run very good! */
-    void setEpsilonSigma(float val) { m_epsilonSigma = val; }
+    void setEpsilonSigma(float val) { setPropertyValue("epsilon Sigma",val); }
     
     /// Shows all current kernels to std::out
     void showKernels() const;
@@ -241,10 +243,10 @@ namespace icl{
     const Kernel &operator[](unsigned int i) const { return m_kernels[i]; }
     
     /// returns whether the softmax function for calculation for g_i[x] is used
-    bool isSoftMaxUsed() const { return m_bUseSoftMax; }
+    bool isSoftMaxUsed() const { return const_cast<Configurable*>(static_cast<const Configurable*>(this))->getPropertyValue("soft max enabled").as<bool>(); }
     
     /// sets whether the softmax function for calculation for g_i[x] is used
-    void setSoftMaxEnabled(bool enabled) { m_bUseSoftMax = enabled; }
+    void setSoftMaxEnabled(bool enabled) { setPropertyValue("soft max enabled",enabled); }
 
     private:
 
@@ -271,7 +273,8 @@ namespace icl{
 
     /// output dimension
     unsigned int m_outputDim;
-    
+
+#if 0    
     /// learning rate for the input weigts
     float m_epsilonIn;
     
@@ -283,7 +286,7 @@ namespace icl{
     
     /// learning rate for the sigmas
     float m_epsilonSigma;
-    
+#endif
     /// internal storage for the kernels
     std::vector<Kernel> m_kernels;
 
@@ -296,8 +299,10 @@ namespace icl{
     /// internal buffer for the current error vector
     std::vector<float> m_errorBuf;
 
+#if 0
     /// internal flag whether soft max is used or not
     bool m_bUseSoftMax;
+#endif
   };
 
 }

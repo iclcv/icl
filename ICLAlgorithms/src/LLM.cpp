@@ -212,23 +212,30 @@ namespace icl{
   void LLM::init_private(unsigned int inputDim, unsigned int outputDim){
     m_inputDim = inputDim;
     m_outputDim = outputDim;
-    m_bUseSoftMax = true;
+    // m_bUseSoftMax = true;
 
     m_outBuf.resize(outputDim);
     m_gBuf.resize(outputDim);
     m_errorBuf.resize(outputDim);
 
-    m_epsilonIn = 0.01;
-    m_epsilonOut = 0.01;
-    m_epsilonA = 0;//0.000001;
-    m_epsilonSigma = 0.001;
+    /*
+        m_epsilonIn = 0.01;
+        m_epsilonOut = 0.01;
+        m_epsilonA = 0;//0.000001;
+        m_epsilonSigma = 0.001;
+    */
 
+    addProperty("epsilon In","range","[0,0.1]",0.01);
+    addProperty("epsilon Out","range","[0,0.5]",0.01);
+    addProperty("epsilon A","range","[0,0.1]",0.001);
+    addProperty("epsilon Sigma","range","[0,0.1]",0.0);
+    addProperty("soft max enabled","flag","",true);
   }
   
   LLM::LLM(unsigned int inputDim, unsigned int outputDim){
     // {{{ open
     init_private(inputDim,outputDim);
-
+    
   }
 
   // }}}
@@ -335,11 +342,12 @@ namespace icl{
     if( (trainflags >> 1) & 1){
       trainSigmasIntern(x,g);
     }
+    const float eIn = getPropertyValue("epsilon In");
 
     const float *dy = 0;
     if( (trainflags >> 2) & 1){
       dy = getErrorVecIntern(y,applyIntern(x, g));
-      trainOutputsIntern(x,y,g,dy,((trainflags&1)&&m_epsilonIn)?true:false);
+      trainOutputsIntern(x,y,g,dy,((trainflags&1)&&eIn)?true:false);
     }
     if( (trainflags >> 3) & 1){
       if(!dy) dy = getErrorVecIntern(y,applyIntern(x, g));
@@ -381,7 +389,7 @@ namespace icl{
     // {{{ open
 
     float *g = m_gBuf.data();
-    if(m_bUseSoftMax){
+    if(getPropertyValue("soft max enabled")){
       //e/ calculate g_i(x) = (exp(-beta*|x-w_i^in|)) / (sum_j exp(-beta*|x-w_j^in|))
       float sum_gi = 0;
       for(unsigned int i=0;i<m_kernels.size();++i){
@@ -423,13 +431,13 @@ namespace icl{
   // }}}
   void LLM::trainCentersIntern(const float *x,const float *g){
     // {{{ open
-
-    if(!m_epsilonIn) return;
+    const float eIn = getPropertyValue("epsilon In"); 
+    if(!eIn) return;
     //    printf("training of centers g=%s \n",vecToStr(g,m_kernels.size()).c_str());
     for(unsigned int i=0;i<m_kernels.size();++i){
       for(unsigned int d=0;d<m_inputDim;++d){
         Kernel &k = m_kernels[i];
-        k.dw_in[d] = m_epsilonIn*(x[d]-k.w_in[d])*g[i];
+        k.dw_in[d] = eIn*(x[d]-k.w_in[d])*g[i];
         k.w_in[d] += k.dw_in[d];
       } 
     }
@@ -438,13 +446,13 @@ namespace icl{
   // }}}
   void LLM::trainSigmasIntern(const float *x,const float *g){
     // {{{ open
-
-    if(!m_epsilonSigma) return;
+    const float eS = getPropertyValue("epsilon Sigma");
+    if(!eS) return;
     for(unsigned int i=0;i<m_kernels.size();++i){
       Kernel &k = m_kernels[i];
-      //      m_kernels[i].var += m_epsilonSigma * square_vec(x,m_kernels[i].w_in,m_inputDim) - m_kernels[i].var*g[i];
+      //      m_kernels[i].var += eS * square_vec(x,m_kernels[i].w_in,m_inputDim) - m_kernels[i].var*g[i];
       for(unsigned int j=0;j<m_inputDim;++j){
-        k.var[j] += m_epsilonSigma * pow(x[j]-k.w_in[j],2) - k.var[j]*g[i]; 
+        k.var[j] += eS * pow(x[j]-k.w_in[j],2) - k.var[j]*g[i]; 
       }
     }
   }
@@ -452,17 +460,18 @@ namespace icl{
   // }}}
   void LLM::trainOutputsIntern(const float *x,const float *y, const float *g, const float *dy, bool useDeltaWin){
     // {{{ open
-    if(!m_epsilonOut) return;
+    const float eO = getPropertyValue("epsilon Out");
+    if(!eO) return;
     if(useDeltaWin){
       for(unsigned int i=0;i<m_kernels.size();++i){
         for(unsigned int d=0;d<m_outputDim;++d){
-          m_kernels[i].w_out[d] += m_epsilonOut * g[i] * dy[d] + mult_mat_row(m_kernels[i].A,m_inputDim,d,m_kernels[i].dw_in);
+          m_kernels[i].w_out[d] += eO * g[i] * dy[d] + mult_mat_row(m_kernels[i].A,m_inputDim,d,m_kernels[i].dw_in);
         } 
       }    
     }else{
       for(unsigned int i=0;i<m_kernels.size();++i){
         for(unsigned int d=0;d<m_outputDim;++d){
-          m_kernels[i].w_out[d] += m_epsilonOut * g[i] * dy[d];
+          m_kernels[i].w_out[d] += eO * g[i] * dy[d];
         } 
       }       
     }
@@ -471,7 +480,8 @@ namespace icl{
   // }}}
   void LLM::trainMatricesIntern(const float *x,const float *y, const float *g, const float *dy){
     // {{{ open
-    if(!m_epsilonA) return;
+    const float eA = getPropertyValue("epsilon A");
+    if(!eA) return;
     for(unsigned int i=0;i<m_kernels.size();++i){
       //float fNorm = square_vec(x,m_kernels[i].w_in,m_inputDim);
       float fNorm = sqrt(square_vec(x,m_kernels[i].w_in,m_inputDim)); /// hack!!
@@ -480,7 +490,7 @@ namespace icl{
       for(unsigned int xx=0;xx<m_inputDim;++xx){
         for(unsigned int yy=0;yy<m_outputDim;++yy){
           float &a = m_kernels[i].A[yy*m_inputDim+xx];
-          a += m_epsilonA * g[i] * dy[yy] * (x[xx]-m_kernels[i].w_in[xx])/fNorm;
+          a += eA * g[i] * dy[yy] * (x[xx]-m_kernels[i].w_in[xx])/fNorm;
         }
       } 
     }   
