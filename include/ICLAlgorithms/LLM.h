@@ -107,6 +107,7 @@ namespace icl{
       - \f[ f_X(x_1, \dots, x_N) = \frac {1} {(2\pi)^{N/2}|\Sigma|^{1/2}} \exp \left( -\frac{1}{2} ( x - \mu)^\top \Sigma^{-1} (x - \mu) \right) \f]
   **/
   class LLM{
+    public:
     /// Internally used Kernel structure
     struct Kernel{
       /// Empty base constructor
@@ -145,24 +146,23 @@ namespace icl{
       void show(unsigned int idx=0) const;
     };
     
-    public:
     static const int TRAIN_CENTERS = 1; /*!< training flag for updating input weights/prototype vectors */
     static const int TRAIN_SIGMAS = 2;  /*!< training flag for updating input sigmas */
     static const int TRAIN_OUTPUTS = 4; /*!< training flag for updating output weights */
     static const int TRAIN_MATRICES = 8;/*!< training flag for updating output matrices */
     static const int TRAIN_ALL = TRAIN_CENTERS | TRAIN_SIGMAS | TRAIN_OUTPUTS | TRAIN_MATRICES; /*!< training flag for updating all*/
     
+    private:
+    void init_private(unsigned int inputDim,unsigned int outputDim);
+
+    public:
+
     /// Creates a new llm with given input and output dimensions
     LLM(unsigned int inputDim, unsigned int outputDim);
 
-    /// Deep copy constructor
-    LLM(const LLM &llm);
-
-    /// Assignment operator (deep copy)
-    LLM &operator=(const LLM &llm);
-    
-    /// Destructor
-    ~LLM();
+    LLM(unsigned int inputDim, unsigned int outputDim, unsigned int numCenters, 
+        const std::vector<Range<icl32f> > &ranges, 
+        const std::vector<float> &var=std::vector<float>(1,1));
 
     /// initializes the LLM prototypes with given kernel count
     /** Internally creates numCenters kernels for this LLM. Each kernel is initialized as follows:
@@ -219,26 +219,26 @@ namespace icl{
     
 
     /// sets up learning rate for input weights to a new value (about 0..1)
-    void setEpsilonIn(float val) { m_fEpsilonIn = val; }
+    void setEpsilonIn(float val) { m_epsilonIn = val; }
 
     /// sets up learning rate for output weights to a new value (about 0..1)
-    void setEpsilonOut(float val) { m_fEpsilonOut = val; } 
+    void setEpsilonOut(float val) { m_epsilonOut = val; } 
 
     /// sets up learning rate for slope matrices to a new value (about 0..1)
-    void setEpsilonA(float val) { m_fEpsilonA = val; }
+    void setEpsilonA(float val) { m_epsilonA = val; }
     
     /// sets up learning rate for sigmas to a new value (about 0..1)
     /** <b>Note</b> Update of the sigmas does not run very good! */
-    void setEpsilonSigma(float val) { m_fEpsilonSigma = val; }
+    void setEpsilonSigma(float val) { m_epsilonSigma = val; }
     
     /// Shows all current kernels to std::out
     void showKernels() const;
     
     /// returns the current internal kernel count
-    unsigned int numKernels() const { return m_vecKernels.size(); }
+    unsigned int numKernels() const { return m_kernels.size(); }
     
     /// returns a specifice kernel at given index
-    const Kernel &operator[](unsigned int i) const { return m_vecKernels[i]; }
+    const Kernel &operator[](unsigned int i) const { return m_kernels[i]; }
     
     /// returns whether the softmax function for calculation for g_i[x] is used
     bool isSoftMaxUsed() const { return m_bUseSoftMax; }
@@ -267,34 +267,34 @@ namespace icl{
     const float *getErrorVecIntern(const float *y, const float *ynet);
 
     /// input dimension
-    unsigned int m_uiInputDim;
+    unsigned int m_inputDim;
 
     /// output dimension
-    unsigned int m_uiOutputDim;
+    unsigned int m_outputDim;
     
     /// learning rate for the input weigts
-    float m_fEpsilonIn;
+    float m_epsilonIn;
     
     /// learning rate for the output weigts
-    float m_fEpsilonOut;
+    float m_epsilonOut;
     
     /// learning reate tor the slope matrices
-    float m_fEpsilonA;
+    float m_epsilonA;
     
     /// learning rate for the sigmas
-    float m_fEpsilonSigma;
+    float m_epsilonSigma;
     
     /// internal storage for the kernels
-    std::vector<Kernel> m_vecKernels;
+    std::vector<Kernel> m_kernels;
 
     /// internal output value buffer
-    float *m_pfOut;
+    std::vector<float> m_outBuf;
     
     /// internal buffer for the g_i[x]
-    float *m_pfGs;
+    std::vector<float> m_gBuf;
 
     /// internal buffer for the current error vector
-    float *m_pfDy;
+    std::vector<float> m_errorBuf;
 
     /// internal flag whether soft max is used or not
     bool m_bUseSoftMax;

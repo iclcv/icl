@@ -97,6 +97,9 @@ namespace icl{
   }
 
   // }}}
+
+  
+  
   LLM::Kernel::Kernel(unsigned int inputDim, unsigned int outputDim):
     // {{{ open
 
@@ -204,91 +207,48 @@ namespace icl{
   }
 
   // }}}
+
+
+  void LLM::init_private(unsigned int inputDim, unsigned int outputDim){
+    m_inputDim = inputDim;
+    m_outputDim = outputDim;
+    m_bUseSoftMax = true;
+
+    m_outBuf.resize(outputDim);
+    m_gBuf.resize(outputDim);
+    m_errorBuf.resize(outputDim);
+
+    m_epsilonIn = 0.01;
+    m_epsilonOut = 0.01;
+    m_epsilonA = 0;//0.000001;
+    m_epsilonSigma = 0.001;
+
+  }
   
-  LLM::LLM(unsigned int inputDim, unsigned int outputDim):
+  LLM::LLM(unsigned int inputDim, unsigned int outputDim){
     // {{{ open
+    init_private(inputDim,outputDim);
 
-    m_uiInputDim(inputDim),m_uiOutputDim(outputDim),m_bUseSoftMax(true){
-    m_pfOut = new float[outputDim];
-    m_pfGs = 0;
-    m_pfDy = new float[outputDim];
-
-
-    m_fEpsilonIn = 0.01;
-    m_fEpsilonOut = 0.01;
-    m_fEpsilonA = 0;//0.000001;
-    m_fEpsilonSigma = 0.001;
   }
 
   // }}}
 
-  LLM::LLM(const LLM &llm):
-    // {{{ open
-
-    m_uiInputDim(llm.m_uiInputDim),m_uiOutputDim(llm.m_uiOutputDim),m_bUseSoftMax(llm.m_bUseSoftMax){
-
-    m_vecKernels = llm.m_vecKernels;
-    
-    m_pfOut = new float[m_uiOutputDim];
-    m_pfGs = llm.m_pfGs ? new float[llm.m_vecKernels.size()] : 0;
-    m_pfDy = new float[m_uiOutputDim];
-    
-    std::copy(llm.m_pfOut,llm.m_pfOut+m_uiOutputDim,m_pfOut);
-    std::copy(llm.m_pfDy,llm.m_pfDy+m_uiOutputDim,m_pfDy);
-    if(m_pfGs){
-      std::copy(llm.m_pfGs,llm.m_pfGs+m_vecKernels.size(),m_pfGs);
-    }
-
-    m_fEpsilonIn = llm.m_fEpsilonIn;
-    m_fEpsilonOut = llm.m_fEpsilonOut;
-    m_fEpsilonA = llm.m_fEpsilonA;
-    m_fEpsilonSigma = llm.m_fEpsilonSigma;
-    
+  LLM::LLM(unsigned int inputDim, unsigned int outputDim, unsigned int numCenters, 
+           const std::vector<Range<icl32f> > &ranges, 
+           const std::vector<float> &var){
+    init_private(inputDim,outputDim);
+    init(numCenters, ranges, var);
   }
-
-  // }}}
-  LLM &LLM::operator=(const LLM &llm){
-    // {{{ open
-
-    m_uiInputDim = llm.m_uiInputDim;
-    m_uiOutputDim = llm.m_uiOutputDim;
-    m_bUseSoftMax = llm.m_bUseSoftMax;
- 
-    if(m_pfOut) delete [] m_pfOut;
-    if(m_pfGs) delete [] m_pfGs;
-    if(m_pfDy) delete [] m_pfDy;
-
-    m_vecKernels = llm.m_vecKernels;
-    
-    m_pfOut = new float[m_uiOutputDim];
-    m_pfGs = llm.m_pfGs ? new float[llm.m_vecKernels.size()] : 0;
-    m_pfDy = new float[m_uiOutputDim];
-    
-    std::copy(llm.m_pfOut,llm.m_pfOut+m_uiOutputDim,m_pfOut);
-    std::copy(llm.m_pfDy,llm.m_pfDy+m_uiOutputDim,m_pfDy);
-    if(m_pfGs){
-      std::copy(llm.m_pfGs,llm.m_pfGs+m_vecKernels.size(),m_pfGs);
-    }
-
-    m_fEpsilonIn = llm.m_fEpsilonIn;
-    m_fEpsilonOut = llm.m_fEpsilonOut;
-    m_fEpsilonA = llm.m_fEpsilonA;
-    m_fEpsilonSigma = llm.m_fEpsilonSigma;
-    
-    return *this;
-  }
-
-  // }}}
   
 
   void LLM::init(unsigned int numCenters, const std::vector<Range<icl32f> > &ranges,const std::vector<float> &var){
     // {{{ open
-    ICLASSERT_RETURN(ranges.size() == m_uiInputDim);
+    ICLASSERT_RETURN(ranges.size() == m_inputDim);
     
     std::vector<float*> centers(numCenters);
     for(unsigned int i=0;i<numCenters;++i){
-      centers[i] = new float[m_uiInputDim];
-      for(unsigned int j=0;j<m_uiInputDim;++j){
+      centers[i] = new float[m_inputDim];
+      for(unsigned int j=0;j<m_inputDim;++j){
         centers[i][j] = icl::random((double)ranges[j].minVal, (double)ranges[j].maxVal);
       }
     }    
@@ -303,39 +263,28 @@ namespace icl{
   void LLM::init(const std::vector<float*> &centers,const std::vector<float> &var){
     // {{{ open
 
-    if(m_pfGs){
-      delete [] m_pfGs;
-    }
-    m_pfGs = new float[centers.size()];
-    m_vecKernels.resize(centers.size());
+    m_gBuf.resize(centers.size());
+    m_kernels.resize(centers.size());
     
     for(unsigned int i=0;i<centers.size();++i){
-      m_vecKernels[i] = Kernel(m_uiInputDim, m_uiOutputDim);
-      Kernel &k = m_vecKernels[i];
-      std::fill(k.w_out, k.w_out+m_uiOutputDim,0);
-      std::copy(centers[i],centers[i]+m_uiInputDim,k.w_in);
-      std::fill(k.A, k.A+m_uiInputDim*m_uiOutputDim,0); // of course: A=0 --> no "steigung?"
-      std::fill(k.dw_in,k.dw_in+m_uiInputDim,0);
+      m_kernels[i] = Kernel(m_inputDim, m_outputDim);
+      Kernel &k = m_kernels[i];
+      std::fill(k.w_out, k.w_out+m_outputDim,0);
+      std::copy(centers[i],centers[i]+m_inputDim,k.w_in);
+      std::fill(k.A, k.A+m_inputDim*m_outputDim,0); // of course: A=0 --> no "steigung?"
+      std::fill(k.dw_in,k.dw_in+m_inputDim,0);
       std::copy(var.begin(),var.end(), k.var);
     }
   }
 
   // }}}
-  LLM::~LLM(){
-    // {{{ open
 
-    if(m_pfOut) delete [] m_pfOut;
-    if(m_pfGs) delete [] m_pfGs;
-    if(m_pfDy) delete [] m_pfDy;
-  }
-
-  // }}}
   void LLM::showKernels() const{
     // {{{ open
 
     printf("llm kernels: \n");
-    for(unsigned int i=0;i<m_vecKernels.size();++i){
-      m_vecKernels[i].show(i);
+    for(unsigned int i=0;i<m_kernels.size();++i){
+      m_kernels[i].show(i);
     }
     printf("------------\n");
   }
@@ -353,17 +302,17 @@ namespace icl{
     // {{{ open
 
     // y_net(x) = sum_i  (w_i^out + Ai*(x-w_i^in))*g_i(x)  
-    unsigned int N = m_vecKernels.size();
-    unsigned int ID = m_uiInputDim;
-    unsigned int OD = m_uiOutputDim;
-    float *out = m_pfOut;
+    unsigned int N = m_kernels.size();
+    unsigned int ID = m_inputDim;
+    unsigned int OD = m_outputDim;
+    float *out = m_outBuf.data();
     float *inbuf = new float[ID];
     float *outbuf = new float [OD];
 
     for(unsigned int d=0;d<OD;++d){
       out[d]=0;
       for(unsigned int i=0;i<N;++i){
-        Kernel &k = m_vecKernels[i];
+        Kernel &k = m_kernels[i];
         for(unsigned int j=0;j<ID;++j){
           inbuf[j] = x[j] - k.w_in[j];
         }
@@ -390,7 +339,7 @@ namespace icl{
     const float *dy = 0;
     if( (trainflags >> 2) & 1){
       dy = getErrorVecIntern(y,applyIntern(x, g));
-      trainOutputsIntern(x,y,g,dy,((trainflags&1)&&m_fEpsilonIn)?true:false);
+      trainOutputsIntern(x,y,g,dy,((trainflags&1)&&m_epsilonIn)?true:false);
     }
     if( (trainflags >> 3) & 1){
       if(!dy) dy = getErrorVecIntern(y,applyIntern(x, g));
@@ -431,23 +380,23 @@ namespace icl{
   const float *LLM::updateGs(const float *x){
     // {{{ open
 
-    float *g = m_pfGs;
+    float *g = m_gBuf.data();
     if(m_bUseSoftMax){
       //e/ calculate g_i(x) = (exp(-beta*|x-w_i^in|)) / (sum_j exp(-beta*|x-w_j^in|))
       float sum_gi = 0;
-      for(unsigned int i=0;i<m_vecKernels.size();++i){
-        g[i] = exp(-squared_pearson_dist(x,m_vecKernels[i].w_in,m_vecKernels[i].var,m_uiInputDim));
+      for(unsigned int i=0;i<m_kernels.size();++i){
+        g[i] = exp(-squared_pearson_dist(x,m_kernels[i].w_in,m_kernels[i].var,m_inputDim));
         sum_gi += g[i];
       }
       if(sum_gi){ // if softmax is off do this not!
-        for(unsigned int i=0;i<m_vecKernels.size();++i){
+        for(unsigned int i=0;i<m_kernels.size();++i){
           g[i] /= sum_gi;
         }
       }
     }else{
-      for(unsigned int i=0;i<m_vecKernels.size();++i){
+      for(unsigned int i=0;i<m_kernels.size();++i){
         
-        g[i] = exp(-squared_pearson_dist(x,m_vecKernels[i].w_in,m_vecKernels[i].var,m_uiInputDim));
+        g[i] = exp(-squared_pearson_dist(x,m_kernels[i].w_in,m_kernels[i].var,m_inputDim));
       }
       
     }
@@ -465,22 +414,22 @@ namespace icl{
   const float *LLM::getErrorVecIntern(const float *y, const float *ynet){
     // {{{ open
 
-    for(unsigned int i=0;i<m_uiOutputDim;++i){
-      m_pfDy[i] = y[i]-ynet[i];
+    for(unsigned int i=0;i<m_outputDim;++i){
+      m_errorBuf[i] = y[i]-ynet[i];
     }
-    return m_pfDy;
+    return m_errorBuf.data();
   }
 
   // }}}
   void LLM::trainCentersIntern(const float *x,const float *g){
     // {{{ open
 
-    if(!m_fEpsilonIn) return;
-    //    printf("training of centers g=%s \n",vecToStr(g,m_vecKernels.size()).c_str());
-    for(unsigned int i=0;i<m_vecKernels.size();++i){
-      for(unsigned int d=0;d<m_uiInputDim;++d){
-        Kernel &k = m_vecKernels[i];
-        k.dw_in[d] = m_fEpsilonIn*(x[d]-k.w_in[d])*g[i];
+    if(!m_epsilonIn) return;
+    //    printf("training of centers g=%s \n",vecToStr(g,m_kernels.size()).c_str());
+    for(unsigned int i=0;i<m_kernels.size();++i){
+      for(unsigned int d=0;d<m_inputDim;++d){
+        Kernel &k = m_kernels[i];
+        k.dw_in[d] = m_epsilonIn*(x[d]-k.w_in[d])*g[i];
         k.w_in[d] += k.dw_in[d];
       } 
     }
@@ -490,12 +439,12 @@ namespace icl{
   void LLM::trainSigmasIntern(const float *x,const float *g){
     // {{{ open
 
-    if(!m_fEpsilonSigma) return;
-    for(unsigned int i=0;i<m_vecKernels.size();++i){
-      Kernel &k = m_vecKernels[i];
-      //      m_vecKernels[i].var += m_fEpsilonSigma * square_vec(x,m_vecKernels[i].w_in,m_uiInputDim) - m_vecKernels[i].var*g[i];
-      for(unsigned int j=0;j<m_uiInputDim;++j){
-        k.var[j] += m_fEpsilonSigma * pow(x[j]-k.w_in[j],2) - k.var[j]*g[i]; 
+    if(!m_epsilonSigma) return;
+    for(unsigned int i=0;i<m_kernels.size();++i){
+      Kernel &k = m_kernels[i];
+      //      m_kernels[i].var += m_epsilonSigma * square_vec(x,m_kernels[i].w_in,m_inputDim) - m_kernels[i].var*g[i];
+      for(unsigned int j=0;j<m_inputDim;++j){
+        k.var[j] += m_epsilonSigma * pow(x[j]-k.w_in[j],2) - k.var[j]*g[i]; 
       }
     }
   }
@@ -503,17 +452,17 @@ namespace icl{
   // }}}
   void LLM::trainOutputsIntern(const float *x,const float *y, const float *g, const float *dy, bool useDeltaWin){
     // {{{ open
-    if(!m_fEpsilonOut) return;
+    if(!m_epsilonOut) return;
     if(useDeltaWin){
-      for(unsigned int i=0;i<m_vecKernels.size();++i){
-        for(unsigned int d=0;d<m_uiOutputDim;++d){
-          m_vecKernels[i].w_out[d] += m_fEpsilonOut * g[i] * dy[d] + mult_mat_row(m_vecKernels[i].A,m_uiInputDim,d,m_vecKernels[i].dw_in);
+      for(unsigned int i=0;i<m_kernels.size();++i){
+        for(unsigned int d=0;d<m_outputDim;++d){
+          m_kernels[i].w_out[d] += m_epsilonOut * g[i] * dy[d] + mult_mat_row(m_kernels[i].A,m_inputDim,d,m_kernels[i].dw_in);
         } 
       }    
     }else{
-      for(unsigned int i=0;i<m_vecKernels.size();++i){
-        for(unsigned int d=0;d<m_uiOutputDim;++d){
-          m_vecKernels[i].w_out[d] += m_fEpsilonOut * g[i] * dy[d];
+      for(unsigned int i=0;i<m_kernels.size();++i){
+        for(unsigned int d=0;d<m_outputDim;++d){
+          m_kernels[i].w_out[d] += m_epsilonOut * g[i] * dy[d];
         } 
       }       
     }
@@ -522,16 +471,16 @@ namespace icl{
   // }}}
   void LLM::trainMatricesIntern(const float *x,const float *y, const float *g, const float *dy){
     // {{{ open
-    if(!m_fEpsilonA) return;
-    for(unsigned int i=0;i<m_vecKernels.size();++i){
-      //float fNorm = square_vec(x,m_vecKernels[i].w_in,m_uiInputDim);
-      float fNorm = sqrt(square_vec(x,m_vecKernels[i].w_in,m_uiInputDim)); /// hack!!
+    if(!m_epsilonA) return;
+    for(unsigned int i=0;i<m_kernels.size();++i){
+      //float fNorm = square_vec(x,m_kernels[i].w_in,m_inputDim);
+      float fNorm = sqrt(square_vec(x,m_kernels[i].w_in,m_inputDim)); /// hack!!
       
       if(!fNorm) continue;
-      for(unsigned int xx=0;xx<m_uiInputDim;++xx){
-        for(unsigned int yy=0;yy<m_uiOutputDim;++yy){
-          float &a = m_vecKernels[i].A[yy*m_uiInputDim+xx];
-          a += m_fEpsilonA * g[i] * dy[yy] * (x[xx]-m_vecKernels[i].w_in[xx])/fNorm;
+      for(unsigned int xx=0;xx<m_inputDim;++xx){
+        for(unsigned int yy=0;yy<m_outputDim;++yy){
+          float &a = m_kernels[i].A[yy*m_inputDim+xx];
+          a += m_epsilonA * g[i] * dy[yy] * (x[xx]-m_kernels[i].w_in[xx])/fNorm;
         }
       } 
     }   
