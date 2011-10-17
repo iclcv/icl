@@ -464,7 +464,7 @@ namespace icl{
         gui.getValue<SpinnerHandle>("#R#"+name).setValue( parse<icl32s>(conf->getPropertyValue(name)) );
       }else if( type == "menu" || type == "value-list" || type == "valueList"){
         std::string handle = (type == "menu" ? "#m#" : "#v#")+name;
-        DEBUG_LOG("handle is " << handle << " value is " << conf->getPropertyValue(name));
+        //     DEBUG_LOG("handle is " << handle << " value is " << conf->getPropertyValue(name));
         gui.getValue<ComboHandle>(handle).setSelectedItem(conf->getPropertyValue(name));
       }else if( type == "info"){
         gui["#i#"+name] = conf->getPropertyValue(name);
