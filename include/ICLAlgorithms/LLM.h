@@ -109,6 +109,7 @@ namespace icl{
   **/
   class LLM : public Configurable{
     public:
+    public:
     /// Internally used Kernel structure
     struct Kernel{
       /// Empty base constructor
