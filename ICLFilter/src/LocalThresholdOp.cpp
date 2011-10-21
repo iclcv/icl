@@ -356,10 +356,10 @@ namespace icl{
 
   template<class T, class B>
   struct CountPix{
-    mutable volatile B &t;
-    CountPix(volatile B &t):t(t){}
+    mutable volatile B *t;
+    CountPix(volatile B &t):t(&t){}
     inline void operator()(const T &v) const{
-      t += v;
+      *t += v;
     }
   };
   
