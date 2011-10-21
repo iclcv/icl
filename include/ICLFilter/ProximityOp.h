@@ -39,6 +39,7 @@
 #include <ICLFilter/NeighborhoodOp.h>
 #include <ICLCore/Img.h>
 #include <ICLUtils/Uncopyable.h>
+#include <ICLUtils/Configurable.h>
 
 namespace icl {
   
@@ -114,7 +115,7 @@ namespace icl {
      
       
   */
-  class ProximityOp : public BinaryOp, public Uncopyable{
+  class ProximityOp : public BinaryOp, public Uncopyable, public Configurable{
     public:
     
     /// enum to specify the current apply mode of a ProximityOp
@@ -137,8 +138,7 @@ namespace icl {
     /** @param ot optype for the ProximityOp 
         @param am apply mode for the ProximityOp (default = "valid")
     **/
-    ProximityOp(optype ot, applymode am=valid):
-    m_eOpType(ot),m_eApplyMode(am),m_poImageBuffer(0),m_poTemplateBuffer(0){}
+    ProximityOp(optype ot, applymode am=valid);
 
     /// Destructor
     virtual ~ProximityOp(){
@@ -161,27 +161,21 @@ namespace icl {
 
     /// sets the current optype
     /** @param ot new optype **/
-    void setOpType(optype ot){ m_eOpType = ot; }
+    void setOpType(optype ot);
     
     /// sets the current applymode
     /** @param am new applymode value **/
-    void setApplyMode(applymode am) { m_eApplyMode = am; }
+    void setApplyMode(applymode am);
     
     /// returns the current optype
     /** @return current optype **/
-    optype getOpType() const { return m_eOpType; }
+    optype getOpType() const;
 
     /// returns the current applymode
     /** @return current applymode **/
-    applymode getApplyMode() const { return m_eApplyMode; }
+    applymode getApplyMode() const;
 
     private:
-    
-    /// internal storage for the current optype
-    optype m_eOpType;
-    
-    /// internal storage for the current applymode
-    applymode m_eApplyMode;   
     
     /// internal used buffer for handling unsupported formats
     Img32f *m_poImageBuffer;

@@ -34,9 +34,59 @@
 
 #include <ICLFilter/ProximityOp.h>
 #include <ICLCore/Img.h>
+#include <ICLUtils/StringUtils.h>
 
 namespace icl {
 #ifdef HAVE_IPP
+
+    
+  template<> inline std::string str(const ProximityOp::optype &t){
+    return (t == ProximityOp::sqrDistance ? "sqrDistance" :
+            t == ProximityOp::crossCorr ? "crossCorr" :
+            "crossCorrCoeff");
+  }
+  
+  template<> inline ProximityOp::optype parse(const std::string &s){
+      return (s == "sqrDistance" ? ProximityOp::sqrDistance :
+              s == "crossCorr" ? ProximityOp::crossCorr :
+              ProximityOp::crossCorrCoeff);
+  }
+  template<> std::string str(const ProximityOp::applymode &t){
+    return (t == ProximityOp::full ? "full" :
+            t == ProximityOp::valid ? "valid" :
+            "same");
+  }
+  
+  template<> ProximityOp::applymode parse(const std::string &s){
+    return (s == "full" ? ProximityOp::full :
+            s == "valid" ? ProximityOp::valid :
+            ProximityOp::same);
+  }
+    
+
+
+    ProximityOp::ProximityOp(optype ot, applymode am):
+      m_poImageBuffer(0),m_poTemplateBuffer(0){
+      addProperty("operation type","menu","sqrDistance,crossCorr,crossCorrCoeff",ot);
+      addProperty("apply mode","menu","full,valid,same",am);
+    }
+
+    void ProximityOp::setOpType(optype ot){
+      setPropertyValue("operation type",ot);
+    }
+    
+    void ProximityOp::setApplyMode(applymode am){
+      setPropertyValue("apply mode",am);
+    }
+    
+    ProximityOp::optype ProximityOp::getOpType() const{
+      return const_cast<ProximityOp*>(this)->getPropertyValue("operation type");
+    }
+    
+    ProximityOp::applymode ProximityOp::getApplyMode() const{
+      return const_cast<ProximityOp*>(this)->getPropertyValue("apply mode");
+    }
+
   namespace{
 
     template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, IppiSize, const T*, int, IppiSize, icl32f*, int)>
@@ -186,7 +236,9 @@ namespace icl {
 
     (*ppoDst)->setChannels(poSrc1->getChannels());
     
-    switch(m_eApplyMode){
+    applymode am = getPropertyValue("apply mode");
+    optype ot = getPropertyValue("operation type");
+    switch(am){
       case full: (*ppoDst)->setSize(poSrc1->getSize()+poSrc2->getSize()-Size(1,1)); break;
       case same: (*ppoDst)->setSize(poSrc1->getSize()); break;
       case valid:(*ppoDst)->setSize(poSrc1->getSize()-poSrc2->getSize()+Size(1,1)); break;
@@ -194,10 +246,10 @@ namespace icl {
 
     switch(poSrc1->getDepth()){
       case depth8u:
-        proximity_apply(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl32f>(), m_eOpType, m_eApplyMode); 
+        proximity_apply(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl32f>(), ot, am); 
         break;
       case depth32f:
-        proximity_apply(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>(), m_eOpType, m_eApplyMode); 
+        proximity_apply(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>(), ot, am); 
         break;
       default:
         ICL_INVALID_DEPTH;

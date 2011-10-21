@@ -602,11 +602,46 @@ namespace icl{
     u->apply(&image,bpp(buf));
     return buf;
   } 
-
-
-
-
   // }}}
+
+  
+  template<class T>
+  Img<T> blur(const Img<T> &image, int maskRadius){
+    if(maskRadius == 1) return filter(image,"gauss");
+    std::vector<int> k(maskRadius*2+1);
+    const float sigma2 = 2*(maskRadius/2*maskRadius/2);
+    int sum = 0;
+    for(unsigned int i=0;i<k.size();++i){
+      float d = ((int)i)-maskRadius;
+      k[i] = 255.0 * ::exp( - d*d / sigma2);
+      sum += k[i];
+    }
+    ConvolutionOp c_horz(ConvolutionKernel(k.data(),Size(k.size(),1),iclMax(1,sum),false));
+    ConvolutionOp c_vert(ConvolutionKernel(k.data(),Size(1,k.size()),iclMax(1,sum),false));
+
+    const ImgBase *result = c_horz.apply(c_vert.apply(&image));
+    if(result->getDepth() == getDepth<T>()){
+      switch(getDepth<T>()){
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: return *result->asImg<T>();
+        ICL_INSTANTIATE_ALL_DEPTHS
+        default:
+        ICL_INVALID_DEPTH;
+      }
+#undef ICL_INSTANTIATE_DEPTH
+    }else{
+      Img<T> resultT;
+      switch(getDepth<T>()){
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: result->convert(&resultT); break;
+        ICL_INSTANTIATE_ALL_DEPTHS
+        default:
+        ICL_INVALID_DEPTH;
+      }
+#undef ICL_INSTANTIATE_DEPTH
+      return resultT;
+    }
+    return Img<T>(); // just to avoid complains by the compiler
+  }
+
 
   template<class T>
   Img<T> copy(const Img<T> &image){
@@ -721,6 +756,7 @@ namespace icl{
                             const Size&,format,bool);              \
   template Img<icl##D> filter(const Img<icl##D>&,                  \
                               const std::string&);                 \
+  template Img<icl##D> blur(const Img<icl##D>&,int);               \
   template Img<icl##D> copy(const Img<icl##D>&);                   \
   template Img<icl##D> copyroi(const Img<icl##D>&);                \
   template void show(const Img<icl##D>&);                          \

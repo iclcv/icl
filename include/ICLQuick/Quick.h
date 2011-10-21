@@ -282,6 +282,17 @@ namespace icl{
     return icl::filter<float>(image,filter);
   }
   /** \endcond */
+
+  /// applies gaussian blur to a given image (using a maskRadius*2+1-sized gaussian filter)
+  /** affinity for floats (see @ref AFFINITY)*/
+  template<class T>
+  Img<T> blur(const Img<T> &image, int maskRadius=1);
+  
+  /** \cond */
+  inline ImgQ blur(const ImgQ &image, int maskRadius=1){
+    return icl::blur<float>(image,maskRadius);
+  }
+  /** \endcond */
   
   /// applies a color conversion
   /** @param image source image*
