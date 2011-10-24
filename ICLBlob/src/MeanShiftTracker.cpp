@@ -116,7 +116,7 @@ namespace icl {
     if (maxCycles < 0) {
       maxCycles = 10000;
     }
-    if(converged) converged = false;
+    if(converged) *converged = false;
     Point32f lastPos = initialPoint;
     while(maxCycles--){
       Point32f newPos = applyMeanShiftStep(weigthImage,lastPos);
