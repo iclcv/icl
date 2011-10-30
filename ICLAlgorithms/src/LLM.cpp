@@ -123,6 +123,14 @@ namespace icl{
   }
 
   // }}}
+  
+  void LLM::Kernel::set(const float *w_in, const float *w_out, const float *A){
+    std::copy(w_in, w_in+this->inputDim, this->w_in );
+    std::copy(w_out, w_out+this->outputDim,this->w_out);
+    std::copy(w_in, w_in+this->inputDim*this->outputDim, this->A);
+  }
+
+
   LLM::Kernel &LLM::Kernel::operator=(const LLM::Kernel &k){
     // {{{ open
 

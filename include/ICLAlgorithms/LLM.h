@@ -146,6 +146,17 @@ namespace icl{
 
       /// shows a kernel to std::out
       void show(unsigned int idx=0) const;
+
+      /// updates the kernels internal values
+      /** the given data is copied deeply into the kernel, i.e. the kernel's
+          internal data pointers remain untouched. Only the given data is 
+          is copied to where the data pointers point.
+          @param w_in input weight vector (needs to be of size inputDim)
+          @param w_out output weight vector (needs to be of size outputDim)
+          @param A slope matrix (needs to be of size inputDim * outputDim)
+                   the data layout is rowmajor
+          */
+      void set(const float *w_in, const float *w_out, const float *A);
     };
     
 
@@ -240,8 +251,15 @@ namespace icl{
     /// returns the current internal kernel count
     unsigned int numKernels() const { return m_kernels.size(); }
     
-    /// returns a specifice kernel at given index
+    /// returns a specifice kernel at given index (const)
     const Kernel &operator[](unsigned int i) const { return m_kernels[i]; }
+
+    /// returns a specifice kernel (unconst version)
+    /** <b>please note:</b> it is not safe to change the obtained Kernel's
+        value by hand unless you really know what you are doing. For setting
+        the kernel weights manually, it is strongly recommended to use the 
+        Kernel::set-method, which does only allow to change the weight values */
+    Kernel &operator[](unsigned int i) { return m_kernels[i]; }
     
     /// returns whether the softmax function for calculation for g_i[x] is used
     bool isSoftMaxUsed() const { return const_cast<Configurable*>(static_cast<const Configurable*>(this))->getPropertyValue("soft max enabled").as<bool>(); }
