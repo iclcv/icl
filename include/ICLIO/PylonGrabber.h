@@ -230,10 +230,10 @@ namespace icl {
       AcquisitionInterruptor(PylonGrabberImpl* i) : m_Locker(i -> m_CamMutex){
         m_Impl = i;
         m_Impl -> acquisitionStop();
-        DEBUG_LOG("after stop")
+        //DEBUG_LOG("after stop")
       }
       ~AcquisitionInterruptor(){
-        DEBUG_LOG("before start")
+        //DEBUG_LOG("before start")
         m_Impl -> acquisitionStart();
       }
   };

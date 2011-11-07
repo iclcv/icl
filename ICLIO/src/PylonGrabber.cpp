@@ -43,7 +43,7 @@
 #include <pylon/PylonIncludes.h>
 #include <pylon/TransportLayer.h>
 
-#define USE_SMALL_PICTURES
+//#define USE_SMALL_PICTURES
 
 using namespace icl;
 
@@ -139,7 +139,6 @@ void PylonGrabberImpl::prepareGrabbing(){
     // Put the grab buffer object into the buffer list
     m_BufferList.push_back(pGrabBuffer);
   }
-
   for (std::vector<PylonGrabberBuffer*>::const_iterator it = m_BufferList.begin(); it != m_BufferList.end(); ++it){
     // Put buffer into the grab queue for grabbing
     m_Grabber -> QueueBuffer((*it) -> getBufferHandle(), NULL);
@@ -162,7 +161,8 @@ void PylonGrabberImpl::finishGrabbing(){
     delete *it;
     *it = NULL;
   }
-  std::cout << "deregistered buffers" << std::endl;
+  m_BufferList.clear();
+
   // Free all resources used for grabbing
   m_Grabber -> FinishGrab();
 }
@@ -332,11 +332,6 @@ void PylonGrabberImpl::cameraDefaultSettings(){
 }
 
 const icl::ImgBase* PylonGrabberImpl::acquireImage(){
-  if(m_Error == 5){
-    DEBUG_LOG("setting size")
-    setProperty("size", "600x400");
-    DEBUG_LOG("size set")
-  }
   // getting camera mutex so camera will not be stopped
   icl::Mutex::Locker l(m_CamMutex);
   // Wait for the grabbed image with timeout of 3 seconds
@@ -431,8 +426,7 @@ void PylonGrabberImpl::setProperty(const std::string &property, const std::strin
   bool stopped = false;
 
   if (!GenApi::IsWritable(node)){
-    std::cerr << "The parameter '" << property << "' is not writable" << std::endl;
-    std::cerr << "Stopping acquisition" << std::endl;
+    std::cerr << "Stopping acquisition to set '" << property << "' parameter" << std::endl;
     finishGrabbing();
     stopped = true;
     if(!GenApi::IsWritable(node)){
@@ -458,10 +452,10 @@ std::vector<std::string> PylonGrabberImpl::getPropertyList(){
   GenApi::INode* rootNode = m_Camera -> GetNodeMap() -> GetNode("Root");
   addToPropertyList(ps, rootNode);
   std::cout << "properties: " << ps.size() << std::endl;
+  ps.resize(35);
   for (int i = 0 ; i < ps.size(); ++i){
     std::cout << ps.at(i) << ", ";
   }
-  ps.resize(35);
   return ps;
 }
 
@@ -519,7 +513,7 @@ bool PylonGrabberImpl::supportsProperty(const std::string &property){
   if(!GenApi::IsImplemented(node)) return false;
   
   // Check whether property is writable
-  if(!GenApi::IsWritable(node)) return false;
+  //if(!GenApi::IsWritable(node)) return false;
 
   // check type
   GenApi::EInterfaceType type = node -> GetPrincipalInterfaceType();
