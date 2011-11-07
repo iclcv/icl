@@ -1,4 +1,4 @@
-#*********************************************************************
+#********************************************************************
 #**                Image Component Library (ICL)                    **
 #**                                                                 **
 #** Copyright (C) 2006-2010 CITEC, University of Bielefeld          **
@@ -189,6 +189,8 @@ set(ICL_XDEP_GLX_ON OFF CACHE BOOL "Use GLX if available")
 set(ICL_XDEP_OPENSURF_ON OFF CACHE BOOL "Use OPENSURF if available")
 set(ICL_XDEP_GTEST_ON OFF CACHE BOOL "Use GTest if available")
 set(ICL_XDEP_VIDEODEV_ON OFF CACHE BOOL "Use videodev headers if available")
+set(ICL_XDEP_PYLON_ON ON CACHE BOOL "Use Pylon if available")
+set(ICL_XDEP_GENICAM_ON ON CACHE BOOL "Use GenICam if available")
 
 FIND_PACKAGE(PkgConfig)
 
@@ -613,6 +615,45 @@ if(NOT OPENSURF_PKG_FOUND)
    endif()
 endif()
 
+####GENICAM####
+if(APPLE)
+  #TODO: APPLE
+elseif(WIN32)
+  #TODO: WIN32
+else()
+  if(ICL_64BIT)
+    icl_check_external_package(GENICAM "GenICam.h;GenApi/GenApi.h" GenApi_gcc40_v2_1 bin/Linux64_x64 library/CPP/include /opt/pylon/genicam HAVE_GENICAM_COND)
+  else() 
+    icl_check_external_package(GENICAM "GenICam.h;GenApi/GenApi.h" GenApi_gcc40_v2_1 bin/Linux32_i86 library/CPP/include /opt/pylon/genicam HAVE_GENICAM_COND)
+  endif()
+  if(HAVE_GENICAM_COND)
+    set (GENICAM_LIBS_l ) #TODO:genicam libs)
+  endif()
+endif()
+
+
+####PYLON####
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
+if(APPLE)
+  #TODO: APPLE
+elseif(WIN32)
+  #TODO: WIN32
+else()
+  if(ICL_64BIT)
+    icl_check_external_package(PYLON "pylon/PylonIncludes.h;pylon/TransportLayer.h" pylonbase lib64 include /opt/pylon HAVE_PYLON_COND)
+  else() 
+    icl_check_external_package(PYLON "pylon/PylonIncludes.h" pylonbase lib include /opt/pylon HAVE_PYLON_COND)
+  endif()
+  if(HAVE_PYLON_COND)
+    if(HAVE_GENICAM_COND)
+      set (PYLON_LIBS_l pylonbase)
+    else()
+      set(HAVE_PYLON_COND false)
+      message(STATUS "AttentionPylon will not work without GenICam")
+    endif()
+  endif()
+endif()
+
 #####GOOGLE TEST##########
 if(APPLE)
 icl_check_external_package(GTEST gtest/gtest.h libgtest.dylib lib include /usr/local HAVE_GTEST_COND)
@@ -661,7 +702,7 @@ else()
     set(ICLAlgorithms_internal_dependencies ICLQuick ICLGeom)
 endif()
 
-set(ICLIO_external_dependencies LIBZ LIBJPEG LIBMESASR LIBDC XINE UNICAP IMAGEMAGICK XCF VIDEODEV QT LIBFREENECT LIBPNG)
+set(ICLIO_external_dependencies LIBZ LIBJPEG LIBMESASR LIBDC XINE UNICAP IMAGEMAGICK XCF VIDEODEV QT LIBFREENECT LIBPNG PYLON GENICAM)
 set(ICLQt_internal_dependencies ICLFilter ICLIO)
 set(ICLQt_external_dependencies QT OPENGL GLX)
 

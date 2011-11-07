@@ -87,6 +87,10 @@
 #include <ICLIO/KinectGrabber.h>
 #endif
 
+#ifdef HAVE_PYLON
+#include <ICLIO/PylonGrabber.h>
+#endif
+
 #include <ICLIO/DemoGrabber.h>
 #include <ICLUtils/Exception.h>
 
@@ -410,6 +414,7 @@ namespace icl{
         }
       }
 #endif
+
 #ifdef HAVE_OPENCV
       if(l[i] == "cvcam") {
         try{
@@ -436,6 +441,18 @@ namespace icl{
       }
 #endif
 
+#ifdef HAVE_PYLON
+      if(l[i] == "pylon"){
+      Pylon::DeviceInfoList_t dlist = PylonGrabber::getPylonDeviceList();
+      if(dlist.size() == 0){
+        ADD_ERR("pylon");
+        continue;
+      }
+      m_poGrabber = new PylonGrabber(&(dlist.front()));
+        m_sType = "pylon";
+        break;
+      }
+#endif
       
       if(l[i] == "file"){
         try{
@@ -591,6 +608,10 @@ namespace icl{
 #ifdef HAVE_LIBFREENECT
       add_devices<KinectGrabber>(deviceList,"kinectc",useFilter,pmap);
       add_devices<KinectGrabber>(deviceList,"kinectd",useFilter,pmap);
+#endif
+
+#ifdef HAVE_PYLON
+      add_devices<PylonGrabber>(deviceList,"pylon",useFilter,pmap);
 #endif
     }
     return deviceList;

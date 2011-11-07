@@ -112,7 +112,10 @@ add_libsource (${PROJECT_NAME} "src/SharedMemoryGrabber.cpp" "${CONDITIONLIST}" 
 add_libsource (${PROJECT_NAME} "src/SharedMemoryPublisher.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 set(CONDITIONLIST HAVE_LIBFREENECT_COND)
 add_libsource (${PROJECT_NAME} "src/KinectGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-
+set(CONDITIONLIST HAVE_PYLON_COND)
+add_libsource (${PROJECT_NAME} "src/PylonGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+message(STATUS "Have pylon?")
+message(STATUS ${HAVE_PYLON_COND})
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME})
