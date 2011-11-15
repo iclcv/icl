@@ -33,20 +33,107 @@
 *********************************************************************/
 
 #include <ICLUtils/TextTable.h>
-
+#include <ICLUtils/Macros.h>
 namespace icl{
 
   void TextTable::ensureSize(int width, int height){
+    width = iclMax(getSize().width,width);     //2
+    height = iclMax(getSize().height,height);  //1
+    Size oldSize = getSize();                  //1x1
+
+    //    SHOW(oldSize);
+
+    bool wider = width > oldSize.width;        // true
+    bool higher = height > oldSize.height;     // false
+    if(!wider && !higher) return;
     
+    TextTable save = *this;
+    m_texts.resize(width*height);              // 2
+
+    std::fill(m_texts.begin(),m_texts.end(),"");
+
+    m_size = Size(width,height);               // 2x1
+    
+
+    for(int x=0;x<oldSize.width;++x){
+      for(int y=0;y<oldSize.height;++y){
+        m_texts[x+width*y] = save.m_texts[x+oldSize.width*y];
+        //        (*this)(x,y) = save(x,y);
+      }
+    }
+  }
+  
+  static inline std::string save_substr_justified(const std::string &s, int a, int l, int ll){
+    int sl = (int)s.length();
+    if(a>=sl) return std::string(ll,' ');
+    if(a+l > sl) l=sl-a;
+    std::string tmp = s.substr(a,l);
+    sl = tmp.length();
+    if(sl == ll) return tmp;
+    int difL = (ll-sl)/2;
+    tmp = std::string(difL,' ') + tmp + std::string(ll-(difL+sl),' ');
+    //    SHOW( (ll-tmp.length()));
+    return tmp;
   }
   
   std::string TextTable::toString() const{
-    return std::string("");
+    std::vector<int> rowHeights(getSize().height,0);
+    std::vector<int> columnWidths(getSize().width,0);
+    
+    for(int x=0;x<getSize().width;++x){
+      for(int y=0;y<getSize().height;++y){
+        const std::string &s = m_texts[x + getSize().width*y ];
+        int l = (int)s.length();
+        int cellWidth = iclMin(l,m_maxCellWidth);
+        int cellHeight = iclMax(1,l / m_maxCellWidth);
+
+        if(cellWidth > columnWidths[x]) columnWidths[x] = cellWidth;
+        if(cellHeight > rowHeights[y]) rowHeights[y] = cellHeight;
+      }
+    }
+#if 0
+    std::cout << "rowHeights:";
+    for(unsigned int i=0;i<rowHeights.size();++i) std::cout << rowHeights[i] << " ";
+    std::cout << std::endl;
+
+    std::cout << "columnWidths:";
+    for(unsigned int i=0;i<columnWidths.size();++i) std::cout << columnWidths[i] << " ";
+    std::cout << std::endl;
+#endif
+
+    /*
+     a  |  b   |    c    |
+    ----+------+---------+
+      e |  f   |     g   |
+     e2 |      |         |
+    ----+------+---------+
+    */
+    
+    std::ostringstream stream;
+    for(int y=0;y<getSize().height;++y){
+      for(int h=0;h<rowHeights[y];++h){
+        stream << ' ';
+        for(int x=0;x<getSize().width;++x){
+          const std::string &s = m_texts[x + getSize().width*y ];
+          stream << save_substr_justified(s,h*m_maxCellWidth,m_maxCellWidth,columnWidths[x]);
+          stream << ' ' << '|' << ' ';          
+        }
+        stream << std::endl;
+      }
+      
+      for(int x=0;x<getSize().width;++x){
+        for(int i=0;i<columnWidths[x]+2;++i) stream << '-';
+        stream << '+';
+      }
+      stream << std::endl;
+    }
+    
+    return stream.str();
   }
     
   
   void TextTable::clear(){
-  
+    std::fill(m_texts.begin(),m_texts.end(),"");
   }
 
 
