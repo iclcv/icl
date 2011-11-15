@@ -99,6 +99,7 @@ namespace icl {
                                   - <b>myr</b> Uses Myrmex tactile input device as image source
                                   - <b>kinectd</b> Uses libfreenect to grab Microsoft-Kinect's depth images
                                   - <b>kinectc</b> Uses libfreenect to grab Microsoft-Kinect's rgb color images
+                                  - <b>kinecti</b> Uses libfreenect to grab Microsoft-Kinect's IR images
         
         @param params comma separated device depend parameter list: e.g.
                                   "pwc=0,file=images//image*.ppm,dc=0" with self-explaining syntax\n
@@ -135,6 +136,7 @@ namespace icl {
                                   - myr=deviceIndex (int) (the device index is used to create the /dev/videoX device)
                                   - kinectd=device-index (int) 
                                   - kinectc=device-index (int) 
+                                  - kinecti=device-index (int) 
 
         @param notifiyErrors if set to false, no exception is thrown if no suitable device was found
     **/

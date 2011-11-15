@@ -94,7 +94,7 @@
 #include <ICLIO/DemoGrabber.h>
 #include <ICLUtils/Exception.h>
 
-
+#include <ICLUtils/TextTable.h>
 
 namespace icl{
   static std::vector<GrabberDeviceDescription> deviceList;
@@ -120,9 +120,8 @@ namespace icl{
 
     static const char *plugins[] = { "pwc","dc","dc800","unicap","file","demo","create",
                                      "xcfp","xcfs","xcfm","mv","sr","video","cvvideo", 
-                                     "cvcam","sm","myr","kinectd","kinectc"};
+                                     "cvcam","sm","myr","kinectd","kinectc","kinecti"};
     static const int NUM_PLUGINS=sizeof(plugins)/sizeof(char*);
-
     for(unsigned int i=0;i<ts.size();++i){
       std::vector<std::string> ab = tok(ts[i],"=");
       unsigned int S = ab.size();
@@ -162,15 +161,35 @@ namespace icl{
 
     std::vector<std::string> l = tok(desiredAPIOrder,",");
     
+    std::vector<std::pair<std::string,std::string> > propsToSet;
+    
     for(unsigned int i=0;i<l.size();++i){
 
-
-
+      // splitting extra camera properties icl-camviewer -input dc@brightness=100@format=RGB 0
+      std::vector<std::string> props = tok(l[i],"@");
+      propsToSet.clear();
+      if(props.size() > 1){
+        l[i] = props[0];
+        propsToSet.resize(props.size()-1);
+        for(unsigned int i=1;i<props.size();++i){
+          std::vector<std::string> propAndValue = tok(props[i],"=");
+          if(propAndValue.size() != 2 && propAndValue.size() != 1){
+            throw ICLException("GenericGrabber:invalid device property parameter \"" + props[i] + "\"");
+          }
+          propsToSet[i-1].first = propAndValue[0];
+          if(propAndValue.size() == 2) propsToSet[i-1].second = propAndValue[1];
+        }
+      }
 
 #ifdef HAVE_LIBFREENECT
-      if(l[i] == "kinectd" || l[i] == "kinectc"){
-        // new: KinectGrabber::Format format = l[i][6] == 'c' ? KinectGrabber::GRAB_RGB_IMAGE : KinectGrabber::GRAB_DEPTH_IMAGE;
-        KinectGrabber::Mode mode = l[i][6] == 'c' ? KinectGrabber::GRAB_RGB_IMAGE : KinectGrabber::GRAB_DEPTH_IMAGE;
+      if(l[i] == "kinectd" || l[i] == "kinectc" || l[i] == "kinecti"){
+        KinectGrabber::Mode mode;        
+        switch(l[i][6]){
+          case 'd': mode = KinectGrabber::GRAB_DEPTH_IMAGE; break;
+          case 'c': mode = KinectGrabber::GRAB_RGB_IMAGE; break;
+          case 'i': mode = KinectGrabber::GRAB_IR_IMAGE_8BIT; break;
+          default: break;
+        }            
         try{
           // new KinectGrabber *kin = new KinectGrabber(format,to32s(pmap[l[i]]));
           KinectGrabber *kin = new KinectGrabber(mode,to32s(pmap[l[i]]));
@@ -489,11 +508,27 @@ namespace icl{
       for(unsigned int i=0;i<deviceList.size();++i){
         if(deviceList[i].type == d.type && deviceList[i].id == d.id) return;
       }
-
-      //      std::cout << "added device " << d << " to global device list" << std::endl;
-
-
       deviceList.push_back(d);
+      
+      /// setting extra properties ...
+      for(unsigned int i=0;i<propsToSet.size();++i){
+        const std::pair<std::string,std::string> &p = propsToSet[i];
+        if(p.first == "load"){
+          m_poGrabber->loadProperties(p.second);
+        }else if(p.first == "help"){
+          std::vector<std::string> ps = getPropertyList();
+          TextTable t(4,ps.size());
+          for(unsigned int j=0;j<ps.size();++j){
+            const std::string &p = ps[j];
+            t(0,j) = p;
+            t(1,j) = getType(p);
+            t(2,j) = getInfo(p);
+            t(3,j) = getValue(p);
+          }
+          std::cout << t << std::endl;
+          std::terminate();
+        }
+      }
     }
   }  
   
@@ -522,8 +557,19 @@ namespace icl{
       return m.find(t) != m.end();
   }
 
-  static const GrabberDeviceDescription *find_desciption(const std::vector<GrabberDeviceDescription> &ds, const std::string &id){
+  static const GrabberDeviceDescription *find_description(const std::vector<GrabberDeviceDescription> &ds, const std::string &id){
     for(unsigned int i=0;i<ds.size();++i){
+      std::vector<std::string> ts = tok(ds[i].id,"|||",false);
+      if(std::find(ts.begin(),ts.end(),id) != ts.end()){
+        return &ds[i];
+      }
+    }
+    return 0;
+  }
+  static const GrabberDeviceDescription *find_description_2(const std::vector<GrabberDeviceDescription> &ds, const std::string &id,
+                                                            const std::string &type){
+    for(unsigned int i=0;i<ds.size();++i){
+      if(ds[i].type != type) continue; // in case of kinect[i|c|d], we have several fitting devices here
       std::vector<std::string> ts = tok(ds[i].id,"|||",false);
       if(std::find(ts.begin(),ts.end(),id) != ts.end()){
         return &ds[i];
@@ -551,7 +597,7 @@ namespace icl{
       }
 
       if(useFilter && pmap[dev].length()){
-        const GrabberDeviceDescription *d = find_desciption(ds,pmap[dev]);
+        const GrabberDeviceDescription *d = find_description(ds,pmap[dev]);
         if(d){
           all.push_back(*d);
         }    
@@ -560,6 +606,40 @@ namespace icl{
       }
     }
   }
+  
+  template<>
+  void add_devices<KinectGrabber>(std::vector<GrabberDeviceDescription> &all,
+                                  const std::string &dev, 
+                                  bool useFilter, 
+                                  std::map<std::string,std::string> &pmap){
+    if(!useFilter || contains(pmap,"kinectd") || contains(pmap,"kinectc") || contains(pmap,"kinecti")){
+      std::vector<GrabberDeviceDescription> ds = KinectGrabber::getDeviceList(true);    
+      if(useFilter && (pmap["kinectd"].length() || pmap["kinectc"].length() || pmap["kinecti"].length())){
+        if(pmap["kinectd"].length()){
+          const GrabberDeviceDescription *d = find_description_2(ds,pmap["kinectd"],"kinectd");
+          if(d){
+            all.push_back(*d);
+          } 
+        }
+        if(pmap["kinectc"].length()){
+
+          const GrabberDeviceDescription *d = find_description_2(ds,pmap["kinectc"],"kinectc");
+          if(d){
+            all.push_back(*d);
+          } 
+        }
+        if(pmap["kinecti"].length()){
+          const GrabberDeviceDescription *d = find_description_2(ds,pmap["kinecti"],"kinecti");
+          if(d){
+            all.push_back(*d);
+          } 
+        }        
+      }else{
+        std::copy(ds.begin(),ds.end(),std::back_inserter(all));
+      }
+    }
+  }
+
   
   const std::vector<GrabberDeviceDescription> &GenericGrabber::getDeviceList(const std::string &filter, bool rescan){
 
@@ -606,8 +686,7 @@ namespace icl{
 #endif
 
 #ifdef HAVE_LIBFREENECT
-      add_devices<KinectGrabber>(deviceList,"kinectc",useFilter,pmap);
-      add_devices<KinectGrabber>(deviceList,"kinectd",useFilter,pmap);
+      add_devices<KinectGrabber>(deviceList,"",useFilter,pmap);
 #endif
 
 #ifdef HAVE_PYLON

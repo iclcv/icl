@@ -97,8 +97,13 @@ namespace icl{
       int numDepthUsers;
       Mutex colorMutex,depthMutex;
       Img8u colorImage,colorImageOut;
+      Img16s irImage16s,irImage16sOut;
+      Img8u irImage,irImageOut;
       Img32f depthImage,depthImageOut;  
       Time lastColorTime, lastDepthTime;
+      Size size;
+      KinectGrabber::Mode currentMode;
+      
       
       void depth_cb(void *data, uint32_t timestamp){
         Mutex::Locker lock(depthMutex);
@@ -107,8 +112,31 @@ namespace icl{
       }
       void color_cb(void *data, uint32_t timestamp){
         Mutex::Locker lock(colorMutex);
-        colorImage.setTime(Time::now());
-        interleavedToPlanar((const icl8u*)data,&colorImage);
+        switch(currentMode){
+          case KinectGrabber::GRAB_RGB_IMAGE:
+            colorImage.setTime(Time::now());
+            interleavedToPlanar((const icl8u*)data,&colorImage);
+            break;
+          case KinectGrabber::GRAB_IR_IMAGE_8BIT:{
+            irImage.setTime(Time::now());
+            /*const icl8u *p = (const icl8u*)data;
+            for(int i=0;i<1280;i+=2){
+              for(int j=0;j<960;j+=2){
+                irImage(i/2,j/2,0) = p[i+640*j] ;
+              }
+                }
+*/
+            
+            std::copy((const icl8u*)data,(const icl8u*)data +  (size==Size::VGA ? 640*480 : 320*240), irImage.begin(0));
+            break;}
+          case KinectGrabber::GRAB_IR_IMAGE_10BIT:
+            irImage16s.setTime(Time::now());
+            std::copy((const icl16s*)data,(const icl16s*)data +  (size==Size::VGA ? 640*480 : 320*240), irImage16s.begin(0));
+            break;
+          default:
+            throw ICLException("processed color callback for depth grabber (this should not happen)");
+        }
+
       }
       const Img32f &getLastDepthImage(bool avoidDoubleFrames){
         Mutex::Locker lock(depthMutex);
@@ -123,18 +151,29 @@ namespace icl{
         depthImage.deepCopy(&depthImageOut);
         return depthImageOut;
       }
-      const Img8u &getLastColorImage(bool avoidDoubleFrames){
+      const ImgBase &getLastColorImage(bool avoidDoubleFrames){
         Mutex::Locker lock(colorMutex);
+        ImgBase &src = ( currentMode == KinectGrabber::GRAB_RGB_IMAGE ? (ImgBase&)colorImage :
+                         currentMode == KinectGrabber::GRAB_IR_IMAGE_8BIT ? (ImgBase&)irImage :
+                         (ImgBase&)irImage16s);
+        ImgBase &dst = ( currentMode == KinectGrabber::GRAB_RGB_IMAGE ? (ImgBase&)colorImageOut :
+                         currentMode == KinectGrabber::GRAB_IR_IMAGE_8BIT ? (ImgBase&)irImageOut :
+                         (ImgBase&)irImage16sOut);
+                              
         if(avoidDoubleFrames){
-          while(lastColorTime == colorImage.getTime()){
+          while(lastColorTime == src.getTime()){
+            //            DEBUG_LOG("here!");
             colorMutex.unlock();
             Thread::msleep(1);
             colorMutex.lock();
           }
         }
-        lastColorTime = colorImage.getTime();
-        colorImage.deepCopy(&colorImageOut);
-        return colorImageOut;
+
+        lastColorTime = src.getTime();
+
+        ImgBase *pDst = &dst;
+        src.deepCopy(&pDst);
+        return dst;
       }
       void setTiltDegrees(double angle) {
         if(freenect_set_tilt_degs(device, angle) < 0){
@@ -160,12 +199,41 @@ namespace icl{
     Used *used;
     KinectGrabber::Mode mode;
     int index;
+
+    void setMode(KinectGrabber::Mode mode, Used *used, const Size &size){
+      freenect_device *device = used->device;
+      freenect_frame_mode m;
+      const bool isVideo = (mode != KinectGrabber::GRAB_DEPTH_IMAGE);
+      static const freenect_video_format fvf[5] = { FREENECT_VIDEO_RGB, 
+                                                    FREENECT_VIDEO_BAYER, 
+                                                    FREENECT_VIDEO_DUMMY, 
+                                                    FREENECT_VIDEO_IR_8BIT, 
+                                                    FREENECT_VIDEO_IR_10BIT }; 
+      freenect_resolution res = ( size == Size::VGA ? 
+                                  FREENECT_RESOLUTION_MEDIUM : 
+                                  FREENECT_RESOLUTION_LOW);
+      if(isVideo){
+        m = freenect_find_video_mode(res, fvf[(int)mode]);
+      }else{
+        m = freenect_find_depth_mode(res, FREENECT_DEPTH_11BIT);
+      }
+      
+      if (!m.is_valid) throw ICLException("Cannot set video/depth format: invalid mode");
+      
+      if(isVideo){
+        if(freenect_set_video_mode(device, m) < 0) throw ICLException("Cannot set video format");
+      }else{
+        if(freenect_set_depth_mode(device, m) < 0) throw ICLException("Cannot set depth format");
+      }
+      used->size = size;
+    }
     
-    FreenectDevice(FreenectContext &ctx, int index, KinectGrabber::Mode mode):mode(mode),index(index){
+    FreenectDevice(FreenectContext &ctx, int index, KinectGrabber::Mode mode, Size size):mode(mode),index(index){
       std::map<int,Used*>::iterator it = devices.find(index);
       if(it == devices.end()){
         //        DEBUG_LOG("device " << index << " was not used before: creating new one");
         used = devices[index] = new Used;
+        used->currentMode = mode;
 
         if(freenect_open_device(ctx.ctx, &used->device, index) < 0){
           throw ICLException("FreenectDevice:: unable to open kinect device for device " + str(index));
@@ -173,30 +241,62 @@ namespace icl{
         used->numColorUsers = used->numDepthUsers = 0;
         freenect_set_user(used->device, used);
         
-        if(mode == KinectGrabber::GRAB_RGB_IMAGE){
+        if(mode != KinectGrabber::GRAB_DEPTH_IMAGE){
           used->numColorUsers++;
-          freenect_set_video_format(used->device, FREENECT_VIDEO_RGB);
-          used->colorImage = Img8u(Size::VGA,formatRGB);
+          
+          setMode(mode, used, size);
+
+          if(mode == KinectGrabber::GRAB_RGB_IMAGE){
+            used->colorImage = Img8u(size,formatRGB);
+          }else if(mode == KinectGrabber::GRAB_IR_IMAGE_8BIT){
+            used->irImage = Img8u(size,1);
+          }else if(mode == KinectGrabber::GRAB_IR_IMAGE_10BIT){
+            used->irImage16s = Img16s(size,1);
+          }else{
+            throw ICLException("FreenectDevice:: invalid color mode detected");
+          }
+
           freenect_set_video_callback(used->device,freenect_video_callback);
           if(freenect_start_video(used->device) < 0){
             throw ICLException("FreenectDevice:: unable to start video for device" + str(index));
           }
         }else{
           used->numDepthUsers++;
-          freenect_set_depth_format(used->device, FREENECT_DEPTH_11BIT);
-          used->depthImage = Img32f(Size::VGA,formatMatrix);
+          
+          setMode(mode, used, size);
+          
+          used->depthImage = Img32f(size,formatMatrix);
           freenect_set_depth_callback(used->device,freenect_depth_callback);
           if(freenect_start_depth(used->device) < 0){
             throw ICLException("FreenectDevice:: unable to start depth for device" + str(index));
           }
         }
-      }else{
+      }else{ // reuse old device
         // DEBUG_LOG("device " << index << " was used before: using old one");
         used = it->second;
-        if(mode == KinectGrabber::GRAB_RGB_IMAGE){
+        
+        if(used->size != size){
+          size = used->size;
+          WARNING_LOG("unable to switch kinect device property \"size\":"
+                      << " another device with another size is already instantiated");
+        }
+
+        if(mode != KinectGrabber::GRAB_DEPTH_IMAGE){
           if(!used->numColorUsers){
-            freenect_set_video_format(used->device, FREENECT_VIDEO_RGB);
-            used->colorImage = Img8u(Size::VGA,formatRGB);
+            
+            freenect_stop_video(used->device);
+            setMode(mode, used, size);
+            
+            if(mode == KinectGrabber::GRAB_RGB_IMAGE){
+              used->colorImage = Img8u(size,formatRGB);
+            }else if(mode == KinectGrabber::GRAB_IR_IMAGE_8BIT){
+              used->irImage = Img8u(size,1);
+            }else if(mode == KinectGrabber::GRAB_IR_IMAGE_10BIT){
+              used->irImage16s = Img16s(size,1);
+            }else{
+              throw ICLException("FreenectDevice:: invalid color mode detected");
+            }
+
             freenect_set_video_callback(used->device,freenect_video_callback);
             if(freenect_start_video(used->device) < 0){
               throw ICLException("FreenectDevice:: unable to start video for device" + str(index));
@@ -205,8 +305,11 @@ namespace icl{
           used->numColorUsers++;
         }else{
           if(!used->numDepthUsers){
-            freenect_set_depth_format(used->device, FREENECT_DEPTH_11BIT);
-            used->depthImage = Img32f(Size::VGA,formatMatrix);
+
+            freenect_stop_depth(used->device);
+            setMode(mode, used, size);
+
+            used->depthImage = Img32f(size,formatMatrix);
             freenect_set_depth_callback(used->device,freenect_depth_callback);
             if(freenect_start_depth(used->device) < 0){
               throw ICLException("FreenectDevice:: unable to start depth for device" + str(index));
@@ -216,7 +319,7 @@ namespace icl{
       }
     }
     ~FreenectDevice(){
-      if(mode == KinectGrabber::GRAB_RGB_IMAGE){
+      if(mode != KinectGrabber::GRAB_DEPTH_IMAGE){
         used->numColorUsers--;
         if(!used->numColorUsers){
           if(freenect_stop_video(used->device) < 0){
@@ -260,29 +363,31 @@ namespace icl{
     bool avoidDoubleFrames;
     Mutex mutex;
     
-    Impl(KinectGrabber::Mode mode, int index){
+    Impl(KinectGrabber::Mode mode, int index, const Size &size){
       Mutex::Locker lock(mutex);
       bool createdContextHere = false;
       if(!context){
         createdContextHere = true;
         context = SmartPtr<FreenectContext>(new FreenectContext);
       }
-      device = SmartPtr<FreenectDevice>(new FreenectDevice(*context,index,mode));
+      device = SmartPtr<FreenectDevice>(new FreenectDevice(*context,index,mode, size));
       if(createdContextHere){
         context->start();
       }
     }
 
-    void switchMode(KinectGrabber::Mode mode){
-      if(device->mode != mode){
-        device = SmartPtr<FreenectDevice>(new FreenectDevice(*context,device->index,mode));
+    void switchMode(KinectGrabber::Mode mode, const Size &size){
+      if(device->mode != mode || device->used->size != size){
+        int idx = device->index;
+        device = SmartPtr<FreenectDevice>();
+        device = SmartPtr<FreenectDevice>(new FreenectDevice(*context,idx,mode,size));
       }
     }
     
     inline const Img32f &getLastDepthImage(){
       return device->used->getLastDepthImage(avoidDoubleFrames);
     }
-    inline const Img8u &getLastColorImage(){
+    inline const ImgBase &getLastColorImage(){
       return device->used->getLastColorImage(avoidDoubleFrames);
     }
   };
@@ -291,8 +396,8 @@ namespace icl{
   std::map<int,FreenectDevice::Used*> FreenectDevice::devices; 
   SmartPtr<FreenectContext> KinectGrabber::Impl::context;
 
-  KinectGrabber::KinectGrabber(KinectGrabber::Mode mode, int deviceID) throw (ICLException):
-    m_impl(new Impl(mode,deviceID)){
+  KinectGrabber::KinectGrabber(KinectGrabber::Mode mode, int deviceID, const Size &size) throw (ICLException):
+    m_impl(new Impl(mode,deviceID,size)){
     m_impl->ledColor = 0;
     m_impl->desiredTiltDegrees = 0;
     m_impl->avoidDoubleFrames  = true;
@@ -304,7 +409,7 @@ namespace icl{
   
   const ImgBase* KinectGrabber::acquireImage(){
     Mutex::Locker lock(m_impl->mutex);
-    if(m_impl->device->mode == GRAB_RGB_IMAGE){
+    if(m_impl->device->mode != GRAB_DEPTH_IMAGE){
       return &m_impl->getLastColorImage();
     }else{
       return &m_impl->getLastDepthImage();
@@ -328,9 +433,11 @@ namespace icl{
   std::string KinectGrabber::getInfo(const std::string &name){
     Mutex::Locker lock(m_impl->mutex);
     if(name == "format"){
-      return "{\"Color Image (24Bit RGB)\",\"Depth Image (float)\"}";
+      //return "{\"Color Image (24Bit RGB)\",\"Depth Image (float)\",\"Bayer Image (8Bit)\",\"IR Image (8Bit)\",\"IR Image (10Bit)\"}";
+      return "{\"Color Image (24Bit RGB)\",\"Depth Image (float)\",\"IR Image (8Bit)\",\"IR Image (10Bit)\"}";
     }else if(name == "size"){
-      return "{\"VGA (640x480)\"}";
+      //return "{\"QVGA (320x240)\",\"VGA (640x480)\"}"; // todo
+      return "{\"VGA (640x480)\"}"; // todo
     }else if(name == "LED"){
       return "{\"off\",\"green\",\"red\",\"yellow\",\"blink yellow\",\"blink green\",\"blink red/yellow\"}";
     }else if(name == "Desired-Tilt-Angle"){
@@ -346,9 +453,16 @@ namespace icl{
   std::string KinectGrabber::getValue(const std::string &name){
     Mutex::Locker lock(m_impl->mutex);
     if(name == "format"){
-      return m_impl->device->mode == GRAB_RGB_IMAGE ? "Color Image (24Bit RGB)" : "Depth Image (float)";
+      static const std::string formats[] = {
+        "Color Image (24Bit RGB)",
+        "Bayer Image (8Bit)",
+        "Depth Image (float)",
+        "IR Image (8Bit)",
+        "IR Image (10Bit)" 
+      };
+      return formats[m_impl->device->mode];
     }else if(name == "size"){
-      return "VGA (640x480)";
+      return m_impl->device->used->size == Size::VGA ? "VGA (640x480)" : "QVGA (320x240)"; // todo
     }else if(name == "LED"){
       return str(m_impl->ledColor);
     }else if(name == "Desired-Tilt-Angle"){
@@ -382,18 +496,33 @@ namespace icl{
   /// Sets a specific property value
   void KinectGrabber::setProperty(const std::string &name, const std::string &value){
     Mutex::Locker lock(m_impl->mutex);
+    
+    
     if(name == "format"){
-      if(value != "Color Image (24Bit RGB)" && value != "Depth Image (float)"){
+      static const std::string formats[] = {
+        "Color Image (24Bit RGB)",
+        "Bayer Image (8Bit)",
+        "Depth Image (float)",
+        "IR Image (8Bit)",
+        "IR Image (10Bit)" 
+      };
+      
+      int idx = (int)(std::find(formats, formats+5, value) - formats);
+      if(idx == 5){
         ERROR_LOG("invalid property value for property 'format'");
         return;
       }
-      Mode newMode = value == "Color Image (24Bit RGB)" ? GRAB_RGB_IMAGE : GRAB_DEPTH_IMAGE;
-      m_impl->switchMode(newMode);
+      m_impl->switchMode((Mode)idx, m_impl->device->used->size);
         
     }else if(name == "size"){
-      if(value != "VGA (640x480)"){
+      /*
+          if(value != "VGA (640x480)" && value != "QVGA (320x240)"){
         ERROR_LOG("invalid property value for property 'size'");
-      }
+          }else{
+          m_impl->switchMode(m_impl->device->mode,value == "VGA (640x480)" ?
+          Size::VGA : Size::QVGA);
+          }
+      */
     }else if(name == "LED"){
       if(value == "off"){
         m_impl->device->used->setLed((freenect_led_options)0);
@@ -436,7 +565,9 @@ namespace icl{
       for(int i=0;i<8;++i){
         try{
           KinectGrabber g(GRAB_RGB_IMAGE,i);
-          devices.push_back(GrabberDeviceDescription("Kinect",str(i),"Kinect Device (ID "+str(i)+")"));
+          devices.push_back(GrabberDeviceDescription("kinectd",str(i),"Kinect Depth Camera (ID "+str(i)+")"));
+          devices.push_back(GrabberDeviceDescription("kinectc",str(i),"Kinect Color Camera RGB (ID "+str(i)+")"));
+          devices.push_back(GrabberDeviceDescription("kinecti",str(i),"Kinect Color Camera IR (ID "+str(i)+")"));
         }catch(ICLException &e){
           (void)e;//SHOW(e.what());
           break;

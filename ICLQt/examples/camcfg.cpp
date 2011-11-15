@@ -71,7 +71,7 @@ int main(int n, char **ppc){
   if(pa("p"))str << ",pwc";
   if(pa("c"))str << ",cvcam";
   if(pa("s"))str << ",sr";
-  if(pa("k"))str << ",kinectd";
+  if(pa("k"))str << ",kinectd,kinectc,kinecti";
   if(pa("m"))str << ",sm";
   if(pa("y"))str << ",myr";
   if(pa("-i")) str << "," << pa("-i",0) << "=" << pa("-i",1);
