@@ -113,22 +113,49 @@ namespace icl{
   void GenericGrabber::init(const ProgArg &pa) throw (ICLException){
     init(*pa,(*pa) + "=" + *icl::pa(pa.getID(),1));
   }
+
+  struct SpecifiedDevice{
+    std::string type;
+    std::string id;
+    std::vector<std::string> options;
+  };
+
+  static std::pair<std::string,std::string> split_at_first(char c, const std::string &s){
+    size_t pAt = s.find(c);
+    if(pAt != std::string::npos){
+      return std::pair<std::string,std::string>(s.substr(0,pAt), s.substr(pAt));
+    }else{
+      return std::pair<std::string,std::string>(s,"");
+    }
+  }
+
+  typedef std::map<std::string,SpecifiedDevice> ParamMap;
   
-  static std::map<std::string,std::string> create_param_map(const std::string &filter){
+  static ParamMap create_param_map(const std::string &filter){
     std::vector<std::string> ts = tok(filter,",");
-    std::map<std::string,std::string> pmap;
+
+    ParamMap pmap;
 
     static const char *plugins[] = { "pwc","dc","dc800","unicap","file","demo","create",
                                      "xcfp","xcfs","xcfm","mv","sr","video","cvvideo", 
                                      "cvcam","sm","myr","kinectd","kinectc","kinecti"};
     static const int NUM_PLUGINS=sizeof(plugins)/sizeof(char*);
+
     for(unsigned int i=0;i<ts.size();++i){
-      std::vector<std::string> ab = tok(ts[i],"=");
+      std::pair<std::string,std::string> tsi = split_at_first('@',ts[i]); 
+
+      std::vector<std::string> ab = tok(tsi.first,"=");
+      //SHOW(ab[0]);
+      //if(ab.size() > 1) SHOW(ab[1]);
+
       unsigned int S = ab.size();
       switch(S){
         case 1: case 2:
           if(std::find(plugins, plugins+NUM_PLUGINS, ab[0])){
-            pmap[ab[0]] = S==2 ? ab[1] : std::string("");
+            //std::pair<std::string,std::string> p = S==2 ? split_options(ab[1]) : std::pair<std::string,std::string>("","");
+            SpecifiedDevice s = { ab[0], (S==2 ? ab[1] : std::string("")), tok(tsi.second,"@") };
+            pmap[ab[0]] = s;
+            //DEBUG_LOG("setting pmap[" << ab[0] << "] to '" << (pmap[ab[0]])<< '\'');
           }else{
             ERROR_LOG("GenericGrabber: unsupported device: ["<< ab[0] << "] (skipping)");
           }
@@ -152,34 +179,15 @@ namespace icl{
     ICL_DELETE(m_poGrabber);
     m_sType = "";
 
-    std::map<std::string,std::string> pmap = create_param_map(params);
+    ParamMap pmap = create_param_map(params);
     
     std::string errStr;
 
 #define ADD_ERR(P) errStr += errStr.size() ? std::string(",") : ""; \
-                   errStr += std::string(P)+"("+pmap[P]+")" 
+                   errStr += std::string(P)+"("+pmap[P].id+")" 
 
     std::vector<std::string> l = tok(desiredAPIOrder,",");
-    
-    std::vector<std::pair<std::string,std::string> > propsToSet;
-    
     for(unsigned int i=0;i<l.size();++i){
-
-      // splitting extra camera properties icl-camviewer -input dc@brightness=100@format=RGB 0
-      std::vector<std::string> props = tok(l[i],"@");
-      propsToSet.clear();
-      if(props.size() > 1){
-        l[i] = props[0];
-        propsToSet.resize(props.size()-1);
-        for(unsigned int i=1;i<props.size();++i){
-          std::vector<std::string> propAndValue = tok(props[i],"=");
-          if(propAndValue.size() != 2 && propAndValue.size() != 1){
-            throw ICLException("GenericGrabber:invalid device property parameter \"" + props[i] + "\"");
-          }
-          propsToSet[i-1].first = propAndValue[0];
-          if(propAndValue.size() == 2) propsToSet[i-1].second = propAndValue[1];
-        }
-      }
 
 #ifdef HAVE_LIBFREENECT
       if(l[i] == "kinectd" || l[i] == "kinectc" || l[i] == "kinecti"){
@@ -192,9 +200,10 @@ namespace icl{
         }            
         try{
           // new KinectGrabber *kin = new KinectGrabber(format,to32s(pmap[l[i]]));
-          KinectGrabber *kin = new KinectGrabber(mode,to32s(pmap[l[i]]));
+          KinectGrabber *kin = new KinectGrabber(mode,to32s(pmap[l[i]].id));
           m_poGrabber = kin;
           m_sType = l[i];
+          DEBUG_LOG("grabber instantiated!");
           break;
         }catch(...){
           ADD_ERR(l[i]);
@@ -210,7 +219,7 @@ namespace icl{
 #ifdef HAVE_VIDEODEV
       if(l[i] == "pwc"){
         PWCGrabber *pwc = new PWCGrabber;
-        if(pwc->init(Size(640,480),24,to32s(pmap["pwc"]),true)){
+        if(pwc->init(Size(640,480),24,to32s(pmap["pwc"].id),true)){
           m_poGrabber = pwc;
           m_sType = "pwc";
           break;
@@ -223,7 +232,7 @@ namespace icl{
 
       if(l[i] == "myr"){
         try{
-          MyrmexGrabber *myr = new MyrmexGrabber(parse<int>(pmap["myr"]));
+          MyrmexGrabber *myr = new MyrmexGrabber(parse<int>(pmap["myr"].id));
           m_poGrabber = myr;
           m_sType = "myr";
           break;
@@ -242,7 +251,7 @@ namespace icl{
         
         
         //        int idx = (l[i]=="dc") ? to32s(pmap["dc"]) : to32s(pmap["dc800"]);
-        std::string d =  (l[i]=="dc") ? pmap["dc"] : pmap["dc800"];
+        std::string d =  (l[i]=="dc") ? pmap["dc"].id : pmap["dc800"].id;
         if(!d.length()) throw ICLException("GenericGrabber::init: got dc[800] with empty sub-arg!");
         std::vector<std::string> ts = tok(d,"|||",false);
         if(ts.size() > 1){
@@ -295,7 +304,7 @@ namespace icl{
 
 #ifdef HAVE_LIBMESASR
       if(l[i] == "sr"){
-        std::vector<std::string> srts = tok(pmap["sr"],"c");
+        std::vector<std::string> srts = tok(pmap["sr"].id,"c");
         int device = 0;
         int channel = -1;
         m_sType = "sr";
@@ -320,7 +329,7 @@ namespace icl{
 #ifdef HAVE_XINE
       if(l[i] == "video"){
         try{
-          m_poGrabber = new VideoGrabber(pmap["video"]);
+          m_poGrabber = new VideoGrabber(pmap["video"].id);
           m_sType = "video";
         }catch(ICLException &e){
           ADD_ERR("video");
@@ -333,9 +342,9 @@ namespace icl{
 #ifdef HAVE_UNICAP
       if(l[i] == "unicap"){
         std::vector<UnicapDevice> devs;
-        if(is_int(pmap["unicap"])){
+        if(is_int(pmap["unicap"].id)){
           devs = UnicapGrabber::getUnicapDeviceList("");
-          int idx = parse<int>(pmap["unicap"]);
+          int idx = parse<int>(pmap["unicap"].id);
           if((int)devs.size() > idx){
             m_poGrabber = new UnicapGrabber(devs[idx]);
             m_sType = "unicap";
@@ -345,7 +354,7 @@ namespace icl{
             continue;
           }
         }else{
-          devs = UnicapGrabber::getUnicapDeviceList(pmap["unicap"]);
+          devs = UnicapGrabber::getUnicapDeviceList(pmap["unicap"].id);
           if(!devs.size()){
             ADD_ERR("unicap");
             continue;
@@ -364,7 +373,7 @@ namespace icl{
         switch(l[i][3]){
           case 's':
             try{
-              m_poGrabber = new XCFServerGrabber(pmap["xcfs"]);
+              m_poGrabber = new XCFServerGrabber(pmap["xcfs"].id);
             }catch(...){
               if(notifyErrors){
                 m_poGrabber = 0;
@@ -374,7 +383,7 @@ namespace icl{
             break;
           case 'p':
             try{
-              m_poGrabber = new XCFPublisherGrabber(pmap["xcfp"]);
+              m_poGrabber = new XCFPublisherGrabber(pmap["xcfp"].id);
             }catch(...){
               if(notifyErrors){
                 m_poGrabber = 0;
@@ -384,7 +393,7 @@ namespace icl{
             break;
           case 'm':
             try{
-              m_poGrabber = new XCFMemoryGrabber(pmap["xcfm"]);
+              m_poGrabber = new XCFMemoryGrabber(pmap["xcfm"].id);
             }catch(...){
               if(notifyErrors){
                 m_poGrabber = 0;
@@ -413,7 +422,7 @@ namespace icl{
           ADD_ERR("mv");
           continue;
         } else {
-          m_poGrabber = new MVGrabber(pmap["mv"]);
+          m_poGrabber = new MVGrabber(pmap["mv"].id);
           m_sType = "mv";
           break;
         }
@@ -424,7 +433,7 @@ namespace icl{
 #ifdef HAVE_OPENCV2
       if(l[i] == "cvvideo") {
         try{
-          m_poGrabber = new OpenCVVideoGrabber(pmap["cvvideo"]);
+          m_poGrabber = new OpenCVVideoGrabber(pmap["cvvideo"].id);
           m_sType = "cvvideo";
           break;
         }catch(ICLException &e){
@@ -437,7 +446,7 @@ namespace icl{
 #ifdef HAVE_OPENCV
       if(l[i] == "cvcam") {
         try{
-          m_poGrabber = new OpenCVCamGrabber(to32s(pmap["cvcam"]));
+          m_poGrabber = new OpenCVCamGrabber(to32s(pmap["cvcam"].id));
           m_sType = "cvcam";
           break;
         }catch(ICLException &e){
@@ -450,7 +459,7 @@ namespace icl{
 #ifdef HAVE_QT
       if(l[i] == "sm") {
         try{
-          m_poGrabber = new SharedMemoryGrabber(pmap["sm"]);
+          m_poGrabber = new SharedMemoryGrabber(pmap["sm"].id);
           m_sType = "sm";
           break;
         }catch(ICLException &e){
@@ -475,9 +484,9 @@ namespace icl{
       
       if(l[i] == "file"){
         try{
-          if(FileList(pmap["file"]).size()){
+          if(FileList(pmap["file"].id).size()){
             m_sType = "file";
-            m_poGrabber = new FileGrabber(pmap["file"]);
+            m_poGrabber = new FileGrabber(pmap["file"].id);
             break;
           }else{
             ADD_ERR("file");
@@ -489,12 +498,12 @@ namespace icl{
         }
       }
       if(l[i] == "demo"){
-        m_poGrabber = new DemoGrabber(to32f(pmap["demo"]));
+        m_poGrabber = new DemoGrabber(to32f(pmap["demo"].id));
         m_sType = "demo";
       }
 
       if(l[i] == "create"){
-        m_poGrabber = new CreateGrabber(pmap["create"]);
+        m_poGrabber = new CreateGrabber(pmap["create"].id);
         m_sType = "create";
       }
 
@@ -503,30 +512,35 @@ namespace icl{
       std::string errMsg("generic grabber was not able to find any suitable device\ntried:");
       throw ICLException(errMsg+errStr);
     }else{
-      GrabberDeviceDescription d(m_sType,pmap[m_sType],"any device");
+      GrabberDeviceDescription d(m_sType,pmap[m_sType].id,"any device");
 
       for(unsigned int i=0;i<deviceList.size();++i){
         if(deviceList[i].type == d.type && deviceList[i].id == d.id) return;
       }
       deviceList.push_back(d);
       
+
+      const std::vector<std::string> &options = pmap[m_sType].options;
       /// setting extra properties ...
-      for(unsigned int i=0;i<propsToSet.size();++i){
-        const std::pair<std::string,std::string> &p = propsToSet[i];
+      for(unsigned int i=0;i<options.size();++i){
+        const std::pair<std::string,std::string> p = split_at_first('=',options[i]);
         if(p.first == "load"){
           m_poGrabber->loadProperties(p.second);
-        }else if(p.first == "help"){
-          std::vector<std::string> ps = getPropertyList();
+        }else if(p.first == "info"){
+
+          std::vector<std::string> ps = m_poGrabber->getPropertyList();
           TextTable t(4,ps.size());
           for(unsigned int j=0;j<ps.size();++j){
-            const std::string &p = ps[j];
-            t(0,j) = p;
-            t(1,j) = getType(p);
-            t(2,j) = getInfo(p);
-            t(3,j) = getValue(p);
+            const std::string &p2 = ps[j];
+            t(0,j) = p2;
+            t(1,j) = m_poGrabber->getType(p2);
+            t(2,j) = m_poGrabber->getInfo(p2);
+            t(3,j) = m_poGrabber->getValue(p2);
           }
           std::cout << t << std::endl;
           std::terminate();
+        }else{
+          m_poGrabber->setProperty(p.first,p.second);
         }
       }
     }
@@ -553,7 +567,8 @@ namespace icl{
   
   }
 
-  static inline bool contains(const std::map<std::string,std::string> &m,const std::string &t){
+  template<class T>
+  static inline bool contains(const std::map<std::string,T> &m,const std::string &t){
       return m.find(t) != m.end();
   }
 
@@ -582,7 +597,7 @@ namespace icl{
   static void add_devices(std::vector<GrabberDeviceDescription> &all,
                           const std::string &dev, 
                           bool useFilter, 
-                          std::map<std::string,std::string> &pmap){
+                          ParamMap &pmap){
     
     if(!useFilter || contains(pmap,dev)){
       std::vector<GrabberDeviceDescription> ds = T::getDeviceList(true);
@@ -596,8 +611,8 @@ namespace icl{
         ds = newds;
       }
 
-      if(useFilter && pmap[dev].length()){
-        const GrabberDeviceDescription *d = find_description(ds,pmap[dev]);
+      if(useFilter && pmap[dev].id.length()){
+        const GrabberDeviceDescription *d = find_description(ds,pmap[dev].id);
         if(d){
           all.push_back(*d);
         }    
@@ -611,25 +626,25 @@ namespace icl{
   void add_devices<KinectGrabber>(std::vector<GrabberDeviceDescription> &all,
                                   const std::string &dev, 
                                   bool useFilter, 
-                                  std::map<std::string,std::string> &pmap){
+                                  ParamMap &pmap){
     if(!useFilter || contains(pmap,"kinectd") || contains(pmap,"kinectc") || contains(pmap,"kinecti")){
       std::vector<GrabberDeviceDescription> ds = KinectGrabber::getDeviceList(true);    
-      if(useFilter && (pmap["kinectd"].length() || pmap["kinectc"].length() || pmap["kinecti"].length())){
-        if(pmap["kinectd"].length()){
-          const GrabberDeviceDescription *d = find_description_2(ds,pmap["kinectd"],"kinectd");
+      if(useFilter && (pmap["kinectd"].id.length() || pmap["kinectc"].id.length() || pmap["kinecti"].id.length())){
+        if(pmap["kinectd"].id.length()){
+          const GrabberDeviceDescription *d = find_description_2(ds,pmap["kinectd"].id,"kinectd");
           if(d){
             all.push_back(*d);
           } 
         }
-        if(pmap["kinectc"].length()){
+        if(pmap["kinectc"].id.length()){
 
-          const GrabberDeviceDescription *d = find_description_2(ds,pmap["kinectc"],"kinectc");
+          const GrabberDeviceDescription *d = find_description_2(ds,pmap["kinectc"].id,"kinectc");
           if(d){
             all.push_back(*d);
           } 
         }
-        if(pmap["kinecti"].length()){
-          const GrabberDeviceDescription *d = find_description_2(ds,pmap["kinecti"],"kinecti");
+        if(pmap["kinecti"].id.length()){
+          const GrabberDeviceDescription *d = find_description_2(ds,pmap["kinecti"].id,"kinecti");
           if(d){
             all.push_back(*d);
           } 
@@ -646,7 +661,7 @@ namespace icl{
     if(rescan){
       deviceList.clear();
       bool useFilter = filter.length();
-      std::map<std::string,std::string> pmap;
+      ParamMap pmap;
       if(useFilter){
         pmap = create_param_map(filter);
       }
