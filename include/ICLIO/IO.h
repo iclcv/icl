@@ -95,59 +95,128 @@
 
     \section GRABBERS Grabbers
     
-    However, a large set of Grabber implementations is available, we recommend to use
-    instances of the icl::GenericGrabber class. Instances of the GenericGrabber class can
+    However, a large set of Grabber implementations is available, <b>we recommend to use
+    instances of the icl::GenericGrabber class</b>. Instances of the GenericGrabber class can
     wrap all other supported Grabber implementations internally. At construction time, 
-    the GenericGrabber is set up with a pair of string parameters that specify which
-    device has to be used internally. By this
+    the GenericGrabber is set up with a pair of string parameters (usually specified on the 
+    application's command line) that specify which device has to be used internally. By these
     means, you can simply write applications that are able to acquire images from
     all available sources without having to check which of all possible back-ends manually.
     furthermore, your application will also benefit from ICL-updates, which provide further
     grabber-implementations automatically.
 
-    Here is a small example for a dynamic-source video grabber application
+    Here is a small example for a dynamic-source grab example
 
     <TABLE border=0><TR><TD>
-    \code
-#include <ICLQuick/Common.h>
+        \code
+    #include <ICLQuick/Common.h>
 
-GUI gui("vbox");
-GenericGrabber grabber;
-Mutex mutex;
+    GUI gui;
+    GenericGrabber grabber;
 
-void change_dev(){
-  Mutex::Locker lock(mutex);
-  try{
-    static std::string params[] = {"","lena","0","0","*","*.ppm"};
-    std::string dev = gui["dev"];
-    grabber.init(dev,dev+"="+params[(int)gui["dev"]]);
-  }catch(...){}
-}
+    void init(){
+      gui << "image[@handle=image@minsize=16x12]" << "!show";
+      grabber.init(pa("-i"));
+    }
 
-void init(){
-  gui << "image[@minsize=32x24@handle=image]" 
-      << "combo(!demo,create,pwc,dc,unicap,file)"
-               "[@label=device@handle=dev]";
-  gui.show();
-  gui.registerCallback(change_dev,"dev");
-  change_dev();
-}
+    void run(){
+      gui["image"] = grabber.grab();
+      gui["image"].update();
+    }
 
-void run(){
-  Mutex::Locker lock(mutex);
-  if(grabber){
-    gui["image"] = grabber.grab();
-  }
-  gui["image"].update();
-}
-
-int main(int n, char **ppc){
-  return ICLApplication(n,ppc,"",init,run).exec();
-}
-   \endcode
+    int main(int n, char **args){
+      return ICLApp(n,args,"-input|-i(2)",init,run).exec();
+    }
+    \endcode
     </TD><TD>
-    \image html generic-grabber.png "icl-generic-grab-example source code"
+    \image html viewer.jpg "most simple image displaying example"
     </TD></TR></TABLE>
+    
+    A slightly adapted version of this application is available as an example application
+    called 'icl-camviewer' (ICL/ICLQt/examples/camviewer.cpp). Here, you can check to power
+    of the combination of ICL's program argument evaluation toolbox and the icl::GenericGrabber.
+    Here are some examples:
+    
+    <pre>
+    # grab from the first fire-wire device available
+    icl-camviewer -input dc 0
+
+    # grab from a file
+    icl-camviewer -input file my-image.png
+    
+    # grab from a list of files (note, the pattern has be be set in single tics)
+    icl-camviewer -input file 'images/*.jpg'
+
+    # create the famous 'lena' demo image (also possible: 'parrot', 'cameraman' and others)
+    icl-camviewer -input create lena
+
+    # create an animated demo image (a moving red square)
+    icl-camviewer -input demo 0
+    
+    # grab from a standad webcam using opencv
+    icl-camviewer -input cvcam 0
+
+    </pre>    
+
+
+    In addition to the simple device selection, also camera device properties can be set from 
+    command line
+
+    <pre>
+    # force VGA size (this must be supported by the device)
+    icl-camviewer -input dc 0\@size=VGA
+    
+    # list all possible properties and their allowed values and ranges
+    icl-camviewer -input dc 0\@info
+    
+    # instantiate a grabber and directly load a property configuration file
+    # note: these files can be created interactively with the camera-configuration tool icl-camcfg
+    # or by reading a devices properties using e.g. 'icl-camera-param-io -d dc 0 -o my-file.xml'
+    icl-camviewer -input dc 0\@load=my-file.xml
+    
+    # set several options at once
+    icl-camviewer -input kinectc '0\@LED=green\@format=IR Image (10Bit)'
+    </pre>    
+   
+    Furthermore, since almost all ICL-applications use the icl::GenericGrabber in combination
+    with ICL's programm argument evaluation toolbox, nearly all ICL applications can be set up
+    to grab the source images from an arbitrary image source. In this context, the example-
+    application 'icl-pipe' might be very useful: icl-pipe does not only have a generic image 
+    souce, but is does also use the icl::GenericImageOutput to stream the grabber images
+    somewhere else. Here are some examples:
+    
+    <pre>
+    # grab images an pipe the results into files (#### is replaced by the image index, here 0000, 0001, ...
+    # for more ore less trailing zeros, just add more or less hashes #)
+    icl-pipe -input dc 0 -o file images/image-####.ppm
+    
+    # grab images and pipe them to a shared memory segment which can directly be accessed by other
+    # icl-applications
+    icl-pipe -input dc 0 -o sm my-segment
+    
+    # now, the images can be read online from the shared memory
+    icl-camviewer -input sm my-segment
+    
+    # grab images and pipe them via XCF-based network interface (here, an XCF-publisher is used)
+    # please note, that an XCF-dispatcher must be running and the XCF_Initial_Host 
+    # environment variable must be set correctly 
+    icl-pipe -input dc 0 -o xcfp my-publisher-name
+    
+    # grab images and pipe then via XCF-Server (here also, the XCF dispatcher must be running)
+    icl-pipe -input dc 0 -o xcfs my-server-name
+
+    # capture a video using an opencv based video writer (here, with DIVX code, VGA-resolution
+    # and playback speed of 24 frames per second (note, not all combinations of codecs, resolutions
+    # and sizes are possible (actually, most are not :-)
+    icl-pipe -input dc 0 -o video my-video.avi,DIVX,VGA,24
+    
+    # re-encode a video using a xine-based grabber
+    icl-pipe -input video some-file.mpg -o some-file-converted,DIVX,SVGA,30
+    </pre>
+    
+    For further details and a complete list of possible Grabber-backends, 
+    please refer to the icl::GenericGrabber and icl::GenericImageOutput documentation.
+
 
     \subsection GRABBER_BACKENDS Grabber Backends and Corresponding 3rd Party Libraries
 
@@ -155,18 +224,22 @@ int main(int n, char **ppc){
     - <b>icl::DCGrabber</b> Grabber for FireWire 400 and 800 Cameras (using libdc1394_2)
     - <b>icl::UnicapGrabber</b> Grabber for FireWire and video 4 linux based cameras (needs libunicap)
     - <b>icl::FileGrabber</b> Grabber for image file sources (.pgm, .ppm and .pnm .icl formats are supported natively,
-      .jpeg files needs libjpeg, zipped file like e.g. .pgm.gz needs libz, and all other formats needs
+      .jpeg files needs libjpeg, .png-files needs libpng, zipped file like e.g. .pgm.gz needs libz, and all other formats needs
       libMagick++)
+    - <b>icl::CreateGrabber</b> Creates one of 8 demo images (e.g. the famous 'lena' or the 'camera man'-image)
     - <b>icl::DemoGrabber</b> Creates images with a moving red rectangle (no dependencies)
     - <b>icl::XCFPublisherGrabber</b> Grabber for XCFPublishers (publisher-subscriber-communication)(needs libxcf)
     - <b>icl::XCFServerGrabber</b> Grabber for XCFServers (rmi-communication) (needs libxcf)
     - <b>icl::XCFMemoryGrabber</b> Grabber to extract images from XCF based Active memory (needs xcf)
-    - <b>icl::MatrixVisionGrabber</b> Grabber using Matrix Vision's GIG-E library for Gigabit Ethernet cameras <b>not yet included</b>
+    - <b>icl::PylonGrabber</b> Grabber using Baslers Pylon-Libraries for grabbing from Gigabit Ethernet (GIG-E) cameras
     - <b>icl::SwissRangerGrabber</b> Grabber for SwissRanger camera from Mesa-Imaging company. (nees libmesasr)
     - <b>icl::VideoGrabber</b> Xine based video grabber (grabbing videos frame by frame) (needs libxine)    
     - <b>icl::OpenCVVideoGrabber</b> OpenCV based video grabber (needs opencv 2)    
     - <b>icl::SharedMemoryGrabber</b> Uses QSharedMemory to grab images that were send via icl::SharedMemoryPublisher (needs Qt)
     - <b>icl::OpenCVCamGrabber</b> OpenCV based camera grab that grabs image using an opencv backend (needs OpenCV)
+    - <b>icl::KinectGrabber</b> libfreenect based Grabber for Microsoft's Kinect Camera (supports color-, depth and IR-camera)
+    - <b>icl::MyrmexGrabber</b> v4l2-based grabber for the Myrmex tactile device developed by Carsten Schürman
+    
 */
 
 

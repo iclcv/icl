@@ -80,7 +80,7 @@
     }
 
     void run(){
-      static GenericGrabber g(FROM_PROGARG("-i"));
+      static GenericGrabber g(pa("-i"));
       gui["image"] = g.grab();
       gui["image"].update();
     }

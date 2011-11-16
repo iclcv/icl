@@ -103,6 +103,20 @@ namespace icl {
         
         @param params comma separated device depend parameter list: e.g.
                                   "pwc=0,file=images//image*.ppm,dc=0" with self-explaining syntax\n
+                                  Additionally, each token a=b can be extended by device property that are directly
+                                  set after device instantiation. E.g. demo=0@size=QVGA@blob-red=128, instantiates
+                                  a demo-grabber, where the two additionally given properties (size and blob-red) 
+                                  are set immediately after grabber instantiation. By these means particularly a 
+                                  grabber's format can be set in the grabber instantiation call. Furthermore, two
+                                  special \@-tokens are possible: \@info (e.g. dc=0\@info) lists the 0th dc device's
+                                  available properties. \@load=filename loads a given property filename directly.
+                                  On the C++-level, this is only a minor advantage, since all these things can 
+                                  also be achieved via function calls, however if you use the most recommended way
+                                  for ICL-Grabber instantiation using ICL's program-argument evaluation framework,
+                                  The GenericGrabber is instantiated using grabber.init(pa("-i")) which then allows
+                                  the application user to set grabber parameters via addiation \@-options on the 
+                                  command line: e.g.: "icl-camviewer -input dc 0\@size=VGA"
+  
                                   Semantics:\n
                                   - pwc=device-index (int)
                                   - dc=device-index (int) or dc=UniqueID (string) 

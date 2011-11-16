@@ -203,7 +203,6 @@ namespace icl{
           KinectGrabber *kin = new KinectGrabber(mode,to32s(pmap[l[i]].id));
           m_poGrabber = kin;
           m_sType = l[i];
-          DEBUG_LOG("grabber instantiated!");
           break;
         }catch(...){
           ADD_ERR(l[i]);
@@ -523,23 +522,26 @@ namespace icl{
       const std::vector<std::string> &options = pmap[m_sType].options;
       /// setting extra properties ...
       for(unsigned int i=0;i<options.size();++i){
-        const std::pair<std::string,std::string> p = split_at_first('=',options[i]);
+        std::pair<std::string,std::string> p = split_at_first('=',options[i]);
+        if(p.second.length()) p.second = p.second.substr(1);
         if(p.first == "load"){
           m_poGrabber->loadProperties(p.second);
         }else if(p.first == "info"){
-
+          std::cout << "Property list for " << d << std::endl;
           std::vector<std::string> ps = m_poGrabber->getPropertyList();
-          TextTable t(4,ps.size());
+          TextTable t(4,ps.size()+1,35);
+          t[0] = tok("property,type,allowed values,current value",",");
           for(unsigned int j=0;j<ps.size();++j){
             const std::string &p2 = ps[j];
-            t(0,j) = p2;
-            t(1,j) = m_poGrabber->getType(p2);
-            t(2,j) = m_poGrabber->getInfo(p2);
-            t(3,j) = m_poGrabber->getValue(p2);
+            t(0,j+1) = p2;
+            t(1,j+1) = m_poGrabber->getType(p2);
+            t(2,j+1) = m_poGrabber->getInfo(p2);
+            t(3,j+1) = m_poGrabber->getValue(p2);
           }
           std::cout << t << std::endl;
           std::terminate();
         }else{
+          //  DEBUG_LOG("setting property -" << p.first << "- to value -" << p.second << "-");
           m_poGrabber->setProperty(p.first,p.second);
         }
       }

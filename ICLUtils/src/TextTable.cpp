@@ -85,7 +85,8 @@ namespace icl{
         const std::string &s = m_texts[x + getSize().width*y ];
         int l = (int)s.length();
         int cellWidth = iclMin(l,m_maxCellWidth);
-        int cellHeight = iclMax(1,l / m_maxCellWidth);
+        int cellHeight = iclMax(1,(int)ceil(float(l) / m_maxCellWidth));
+        //        std::cout << "s: -"<< s << "- l:" << l << " cellH:" << cellHeight <<  " y:"<<  y << std::endl;
 
         if(cellWidth > columnWidths[x]) columnWidths[x] = cellWidth;
         if(cellHeight > rowHeights[y]) rowHeights[y] = cellHeight;
@@ -110,9 +111,16 @@ namespace icl{
     */
     
     std::ostringstream stream;
+    stream << '+';
+    for(int x=0;x<getSize().width;++x){
+      for(int i=0;i<columnWidths[x]+2;++i) stream << '-';
+      stream << '+';
+    }
+    stream << std::endl;
+
     for(int y=0;y<getSize().height;++y){
       for(int h=0;h<rowHeights[y];++h){
-        stream << ' ';
+        stream << '|' << ' ';
         for(int x=0;x<getSize().width;++x){
           const std::string &s = m_texts[x + getSize().width*y ];
           stream << save_substr_justified(s,h*m_maxCellWidth,m_maxCellWidth,columnWidths[x]);
@@ -120,7 +128,7 @@ namespace icl{
         }
         stream << std::endl;
       }
-      
+      stream << '+';
       for(int x=0;x<getSize().width;++x){
         for(int i=0;i<columnWidths[x]+2;++i) stream << '-';
         stream << '+';
