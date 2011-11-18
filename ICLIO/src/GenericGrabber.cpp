@@ -624,6 +624,7 @@ namespace icl{
     }
   }
   
+#ifdef HAVE_LIBFREENECT
   template<>
   void add_devices<KinectGrabber>(std::vector<GrabberDeviceDescription> &all,
                                   const std::string &dev, 
@@ -656,7 +657,7 @@ namespace icl{
       }
     }
   }
-
+#endif
   
   const std::vector<GrabberDeviceDescription> &GenericGrabber::getDeviceList(const std::string &filter, bool rescan){
 

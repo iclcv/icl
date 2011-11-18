@@ -35,7 +35,12 @@
 #ifndef ICL_PYLON_GRABBER_H
 #define ICL_PYLON_GRABBER_H
 
+#define ICL_PYLON_GRABBER_ONLY_GIGE
+
 #include <pylon/PylonIncludes.h>
+#ifdef ICL_PYLON_GRABBER_ONLY_GIGE
+  #include <pylon/gige/BaslerGigECamera.h>
+#endif
 
 #include <ICLIO/GrabberHandle.h>
 
@@ -104,12 +109,19 @@ namespace icl {
     int m_Offsety;
     /// image format
     std::string m_Format;
-    /// the camera.
+  #ifdef ICL_PYLON_GRABBER_ONLY_GIGE
+    /// the gige camera.
+    Pylon::CBaslerGigECamera* m_GigECamera;
+ #endif
+    /// the camera interface.
     Pylon::IPylonDevice* m_Camera;
+
     /// the streamGrabber of the camera.
     Pylon::IStreamGrabber* m_Grabber;
     /// a list of used buffers.
     std::vector<PylonGrabberBuffer*> m_BufferList;
+    /// an IclImageBase
+    icl::Img8u* m_Image;
     /// a variable to count aquired picture.
     unsigned long m_Aquired;
     /// a variable to count aquiring-errors.
@@ -133,8 +145,12 @@ namespace icl {
     void addToPropertyList(std::vector<std::string> &ps, const GenApi::CNodePtr& node);
     /// helper function that makes default settings for the camera.
     void cameraDefaultSettings();
+    /// creates a new ImgBase is not already there.
+    void initImgBase();
     /// returns the expected image size. used to get the needed size of buffers.
     long getNeededBufferSize();
+    /// returns the expected pixel size. used by getNeededBufferSize().
+    int getBitsPerPixel();
     /// returns a string representation of the value of a parameter of the camera.
     std::string getParameterValueString(std::string parameter);
     /// used for getting a value of a parameter of a specific type from a specific source (camera/grabber)
