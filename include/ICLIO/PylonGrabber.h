@@ -38,6 +38,7 @@
 #define ICL_PYLON_GRABBER_ONLY_GIGE
 
 #include <pylon/PylonIncludes.h>
+#include <pylon/PixelFormatConverterBayer.h>
 #ifdef ICL_PYLON_GRABBER_ONLY_GIGE
   #include <pylon/gige/BaslerGigECamera.h>
 #endif
@@ -122,6 +123,11 @@ namespace icl {
     std::vector<PylonGrabberBuffer*> m_BufferList;
     /// an IclImageBase
     icl::Img8u* m_Image;
+    /// Pylon color format converter
+    //Pylon::CPixelFormatConverterBayer m_ColorConv;
+    Pylon::SImageFormat m_InputFormat;
+    Pylon::SOutputImageFormat m_OutputFormat;
+
     /// a variable to count aquired picture.
     unsigned long m_Aquired;
     /// a variable to count aquiring-errors.
