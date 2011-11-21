@@ -44,7 +44,7 @@
 #include <pylon/TransportLayer.h>
 #include <pylon/PixelType.h>
 
-#define USE_SMALL_PICTURES
+//#define USE_SMALL_PICTURES
 
 using namespace icl;
 
