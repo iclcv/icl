@@ -44,6 +44,7 @@
 #endif
 
 #include <ICLIO/GrabberHandle.h>
+#include <ICLCC/BayerConverter.h>
 
 namespace icl {
 
@@ -122,11 +123,13 @@ namespace icl {
     /// a list of used buffers.
     std::vector<PylonGrabberBuffer*> m_BufferList;
     /// an IclImageBase
-    icl::Img8u* m_Image;
-    /// Pylon color format converter
+    icl::Img8u* m_Image2;
+    icl::ImgBase* m_Image;
+    /// Pylon color format converte
+    icl::BayerConverter* m_BayerConverter;
     //Pylon::CPixelFormatConverterBayer m_ColorConv;
-    Pylon::SImageFormat m_InputFormat;
-    Pylon::SOutputImageFormat m_OutputFormat;
+    //Pylon::SImageFormat m_InputFormat;
+    //Pylon::SOutputImageFormat m_OutputFormat;
 
     /// a variable to count aquired picture.
     unsigned long m_Aquired;

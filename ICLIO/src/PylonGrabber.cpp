@@ -90,10 +90,12 @@ PylonGrabberBuffer::~PylonGrabberBuffer()
 }
 
 // Constructor of PylonGrabberImpl
-PylonGrabberImpl::PylonGrabberImpl(const Pylon::CDeviceInfo &dev) : m_CamMutex(), m_Aquired(0), m_Error(0){
+PylonGrabberImpl::PylonGrabberImpl(const Pylon::CDeviceInfo &dev) : m_CamMutex(), m_Aquired(0), m_Error(0) {
   // getting camera mutex to exclude race-conditions
   icl::Mutex::Locker l(m_CamMutex);
   m_Image = NULL;
+  m_Image2 = NULL;
+  m_BayerConverter = new BayerConverter(BayerConverter::bilinear, BayerConverter::bayerPattern_GBRG, Size(m_Width, m_Height));
   // Initialization of the pylon Runtime Library
   initPylonEnv();
   Pylon::CTlFactory& tlFactory = Pylon::CTlFactory::GetInstance();
@@ -227,6 +229,7 @@ PylonGrabberImpl::~PylonGrabberImpl(){
 #ifdef ICL_PYLON_GRABBER_ONLY_GIGE
   delete m_GigECamera;
 #endif
+  delete m_BayerConverter;
   termPylonEnv();
 }
 
@@ -359,13 +362,13 @@ void PylonGrabberImpl::cameraDefaultSettings(){
   m_Offsety = 300;
   m_Format = "BayerGB8";
 #endif
-
+  m_Format = "BayerGB8";
   DEBUG_LOG("setting camera to " << m_Format)
   // default camera settings: image format, AOI, acquisition mode and exposure
   setParameterValueOf<Pylon::IPylonDevice, GenApi::IEnumeration, std::string>
     (m_Camera, "PixelFormat", m_Format);
-  setParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>(m_Camera, "OffsetX", 0);
-  setParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>(m_Camera, "OffsetY", 0);
+  setParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>(m_Camera, "OffsetX", m_Offsetx);
+  setParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>(m_Camera, "OffsetY", m_Offsety);
   setParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>(m_Camera, "Width", m_Width);
   setParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>(m_Camera, "Height", m_Height);
   setParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>(m_Camera, "GevSCPSPacketSize", 1500);
@@ -382,13 +385,13 @@ void PylonGrabberImpl::cameraDefaultSettings(){
     (m_Camera, "AcquisitionMode", "Continuous");
 
   // create color format converter
-  m_InputFormat.Width = m_Width;
-  m_InputFormat.Height = m_Height;
-  m_InputFormat.LinePitch = m_Width;
-  m_InputFormat.PixelFormat = Pylon::PixelType_BayerBG8;
+  //m_InputFormat.Width = m_Width;
+  //m_InputFormat.Height = m_Height;
+  //m_InputFormat.LinePitch = m_Width;
+  //m_InputFormat.PixelFormat = Pylon::PixelType_BayerBG8;
   //m_ColorConv.Init(m_InputFormat);
-  m_OutputFormat.LinePitch = m_Width;
-  m_OutputFormat.PixelFormat = Pylon::PixelType_RGB8planar;
+  //m_OutputFormat.LinePitch = m_Width;
+  //m_OutputFormat.PixelFormat = Pylon::PixelType_RGB8planar;
 }
 
 const icl::ImgBase* PylonGrabberImpl::acquireImage(){
@@ -414,7 +417,7 @@ const icl::ImgBase* PylonGrabberImpl::acquireImage(){
     initImgBase();
     //DEBUG_LOG("imgbase_")
 
-    //DEBUG_LOG("w = " << m_Width << " h = " << m_Height << "o = " << m_Offsetx << "x" << m_Offsety)
+    // DEBUG_LOG("w = " << m_Width << " h = " << m_Height << "o = " << m_Offsetx << "x" << m_Offsety)
     //DEBUG_LOG("channels: " << m_Image -> getChannels())
     //DEBUG_LOG("width: " << m_Image -> getWidth())
     //DEBUG_LOG("height: " << m_Image -> getHeight())
@@ -423,17 +426,18 @@ const icl::ImgBase* PylonGrabberImpl::acquireImage(){
     //DEBUG_LOG("buffer pixtype: " << result.GetPixelType())
     //DEBUG_LOG("buffer size x: " << result.GetSizeX())
     //DEBUG_LOG("buffer size y: " << result.GetSizeY())
-    //for(int c=0;c<m_Image -> getChannels();++c){
-    //  for(int x=0;x<m_Image -> getWidth();++x){
-    //    for(int y=0;y<m_Image -> getHeight();++y){
-    //       (*m_Image)(x,y,c) = pImageBuffer[m_Width*y + x];
-    //    }
-    //  }
-    //}
+    for(int c=0;c<m_Image2 -> getChannels();++c){
+      for(int x=0;x<m_Image2 -> getWidth();++x){
+        for(int y=0;y<m_Image2 -> getHeight();++y){
+           (*m_Image2)(x,y,c) = pImageBuffer[m_Width*y + x];
+        }
+      }
+    }
     //DEBUG_LOG("loop_")
-    DEBUG_LOG("conv")
+    m_BayerConverter -> apply(m_Image2, &m_Image);
+    //DEBUG_LOG("conv")
     //m_ColorConv.Convert(m_Image, m_Width*m_Height*3, pImageBuffer, m_Width*m_Height, m_InputFormat, m_OutputFormat);
-    DEBUG_LOG("conv_")
+    //DEBUG_LOG("conv_")
 
     // Reuse the buffer for grabbing the next image
     m_Grabber -> QueueBuffer(result.Handle(), NULL);
@@ -443,7 +447,7 @@ const icl::ImgBase* PylonGrabberImpl::acquireImage(){
   } else {
     ++m_Error;
     // Error handling
-    //DEBUG_LOG("No image acquired!" << "Error description : " << result.GetErrorDescription())
+    DEBUG_LOG("No image acquired!" << "Error description : " << result.GetErrorDescription())
 
     // Reuse the buffer for grabbing the next image
     m_Grabber -> QueueBuffer(result.Handle(), NULL);
@@ -452,7 +456,7 @@ const icl::ImgBase* PylonGrabberImpl::acquireImage(){
 }
 
 void PylonGrabberImpl::initImgBase(){
-  DEBUG_LOG("initImgBase")
+  //DEBUG_LOG("initImgBase")
   if(!m_Image){
     DEBUG_LOG("creating image")
     int bpp = getBitsPerPixel();
@@ -478,6 +482,7 @@ void PylonGrabberImpl::initImgBase(){
         //break;
       default:
       m_Image = new icl::Img8u(icl::Size(m_Width, m_Height), icl::formatRGB);
+      m_Image2 = new icl::Img8u(icl::Size(m_Width, m_Height), icl::formatRGB);
       break;
     }
   }
