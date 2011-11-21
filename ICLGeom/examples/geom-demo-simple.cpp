@@ -84,7 +84,9 @@ void init(){
 
   // link the scene's first camera with mouse gestures in the draw-GUI-component
   gui["draw"].install(scene.getMouseHandler(0));
-  gui["reload"].registerCallback(reload_obj);
+  if(pa("-o")){
+    gui["reload"].registerCallback(reload_obj);
+  }
 }
 
 
