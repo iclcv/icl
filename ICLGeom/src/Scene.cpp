@@ -367,6 +367,9 @@ namespace icl{
     glMultMatrixf(T.transp().data());
     
     if(o->isVisible()){
+
+      o->customRender();
+      
       for(unsigned int j=0;j<o->m_primitives.size();++j){
         const Primitive &p = o->m_primitives[j];
         if(!o->isVisible(p.type)) continue;

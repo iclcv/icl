@@ -322,6 +322,13 @@ namespace icl{
     /** here, dynamic object types can adapt e.g. their vertices or colors*/
     virtual void prepareForRendering() {}
 
+    /// this function is called when an object is rendered
+    /** The function can be used to draw something in Object coordinates using
+        OpenGL commands directly. When customRender is called, the OpenGL matrices is 
+        already prepared correctly. Custom render is always called <b>before</b> 
+        the SceneObject's primitives are rendered */
+    virtual void customRender() {}
+
     /// sets how 2D-geom colors are set 
     void setColorsFromVertices(Primitive::Type t, bool on, bool recursive=true);
     
