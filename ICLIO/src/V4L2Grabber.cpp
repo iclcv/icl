@@ -142,7 +142,8 @@ namespace icl{
       if(!S_ISCHR(st.st_mode)){
         errno_exception("no device:");
       }
-      file = open(deviceName.c_str(), O_RDWR | O_NONBLOCK, 0);
+      //      file = open(deviceName.c_str(), O_RDWR | O_NONBLOCK, 0);
+      file = open(deviceName.c_str(), O_RDWR, 0);
 
       if(file==-1){
         errno_exception("cannot open device in RDWR mode");
