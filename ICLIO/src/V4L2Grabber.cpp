@@ -321,6 +321,7 @@ namespace icl{
       req.memory              = V4L2_MEMORY_MMAP;
 
       if (-1 == xioctl (VIDIOC_REQBUFS, &req)) {
+        WARNING_LOG("if VIDIOC_REQBUFS fails, it usually helps to try to access the device using unicap or cvcam once");
         errno_exception(EINVAL==errno ? "device does not support memory mapping (mmap)" : "VIDIOC_REQBUFS failed" );
       }
       
