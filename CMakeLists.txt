@@ -188,7 +188,8 @@ set(ICL_XDEP_GLX_ON OFF CACHE BOOL "Use GLX if available")
 #set(ICL_XDEP_SVS_ON OFF CACHE BOOL "Use SVS if available")
 set(ICL_XDEP_OPENSURF_ON OFF CACHE BOOL "Use OPENSURF if available")
 set(ICL_XDEP_GTEST_ON OFF CACHE BOOL "Use GTest if available")
-set(ICL_XDEP_VIDEODEV_ON OFF CACHE BOOL "Use videodev headers if available")
+set(ICL_XDEP_VIDEODEV_ON OFF CACHE BOOL "Use videodev (v4l) headers if available")
+set(ICL_XDEP_VIDEODEV2_ON OFF CACHE BOOL "Use videodev2 (v4l2) headers if available")
 set(ICL_XDEP_PYLON_ON ON CACHE BOOL "Use Pylon if available")
 set(ICL_XDEP_GENICAM_ON ON CACHE BOOL "Use GenICam if available")
 
@@ -205,7 +206,7 @@ if(UNIX)
       message(STATUS "VIDEODEV detected: TRUE")
       set(HAVE_VIDEODEV_COND TRUE)
       add_definitions( -DHAVE_VIDEODEV)
-    elseif()
+    else()
       set(HAVE_VIDEODEV_COND FALSE)
       message(STATUS "VIDEODEV detected: FALSE")
     endif()
@@ -213,6 +214,28 @@ if(UNIX)
     message(STATUS "VIDEODEV detected: FALSE")
   endif()
 endif()
+
+
+if(UNIX)
+  if(${ICL_XDEP_VIDEODEV2_ON} OR ${ICL_XDEP_ALL_ON})
+    #TODO special check for videodev
+    if(EXISTS /usr/include/linux/videodev2.h 
+        AND EXISTS /usr/include/sys/ioctl.h 
+        AND EXISTS /usr/include/sys/mman.h 
+        AND EXISTS /usr/include/fcntl.h)
+      message(STATUS "VIDEODEV2 detected: TRUE")
+      set(HAVE_VIDEODEV2_COND TRUE)
+      add_definitions( -DHAVE_VIDEODEV2)
+    else()
+      set(HAVE_VIDEODEV2_COND FALSE)
+      message(STATUS "VIDEODEV2 detected: FALSE")
+    endif()
+  else()
+    message(STATUS "VIDEODEV2 detected: FALSE")
+  endif()
+endif()
+
+
 
 #check if and what external third party libs are available
 #####IPP######
@@ -702,7 +725,7 @@ else()
     set(ICLAlgorithms_internal_dependencies ICLQuick ICLGeom)
 endif()
 
-set(ICLIO_external_dependencies LIBZ LIBJPEG LIBMESASR LIBDC XINE UNICAP IMAGEMAGICK XCF VIDEODEV QT LIBFREENECT LIBPNG PYLON GENICAM)
+set(ICLIO_external_dependencies LIBZ LIBJPEG LIBMESASR LIBDC XINE UNICAP IMAGEMAGICK XCF VIDEODEV VIDEODEV2 QT LIBFREENECT LIBPNG PYLON GENICAM)
 set(ICLQt_internal_dependencies ICLFilter ICLIO)
 set(ICLQt_external_dependencies QT OPENGL GLX)
 

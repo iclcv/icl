@@ -330,7 +330,7 @@ namespace icl{
     // {{{ open
 
     Data(ICLWidget *parent):
-      parent(parent),channelSelBuf(0),image(new GLTextureMapBaseImage(0,false)),
+      parent(parent),channelSelBuf(0),image(new GLTextureMapBaseImage(0)),
       qimageConv(0),qimage(0),mutex(QMutex::Recursive),fm(fmHoldAR),fmSave(fmHoldAR),
       rm(rmOff),bciUpdateAuto(false),channelUpdateAuto(false),
       mouseX(-1),mouseY(-1),selChannel(-1),showNoImageWarnings(true),

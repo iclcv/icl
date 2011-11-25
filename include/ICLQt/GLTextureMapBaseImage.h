@@ -33,8 +33,8 @@
 *********************************************************************/
 
 
-#ifndef ICLGLTEXTUREMAPBASEIMAGE_H
-#define ICLGLTEXTUREMAPBASEIMAGE_H
+#ifndef ICL_GLTEXTUREMAPBASEIMAGE_H
+#define ICL_GLTEXTUREMAPBASEIMAGE_H
 
 #include <ICLUtils/Size.h>
 #include <ICLUtils/Rect.h>
@@ -73,24 +73,13 @@ namespace icl{
     /// Constructor with optionally given image
     /** @param image if not NULL, the constructor calls updateTexture(image) 
                      immediately after initialization 
-        @param useSingleBuffer decides whether to instantiate wrapped 
-                               GLTextureMap images in single or multi buffer mode
-                               <b>WARNING:</b> Settin use single buffer to true
-                               may cause conflicts on some graphic cards.
     **/
-    GLTextureMapBaseImage(const ImgBase* image = 0, bool useSingleBuffer = false): 
+    GLTextureMapBaseImage(const ImgBase* image = 0): 
     m_po8u(0),m_po16s(0),m_po32s(0),m_po32f(0), m_poChannelBuf(0),
-    m_bUseSingleBuffer(useSingleBuffer),m_oImStatMutex(QMutex::Recursive),
+    m_oImStatMutex(QMutex::Recursive),
     m_bBufferForUnsupportedTypesIsUsed(false){
       m_oCurrentImageParams = ImgParams(Size::null,0);
       m_aiBCI[0]=m_aiBCI[1]=m_aiBCI[2]=0; 
-      if(useSingleBuffer){
-        static bool first = true;
-        if(first) {
-          first = false;
-          WARNING_LOG("Single Buffer mode may cause serious problems with some graphic cards...");
-        }
-      }
       if(image) updateTextures(image);
     }
     
@@ -169,9 +158,6 @@ namespace icl{
     /** if b=c=i, then brightness and contrast is adpated automatically */
     void bci(int b=-1, int c=-1, int i=-1);
 
-    /// sets if the wrapped images are created with single or multi buffer 
-    void setSingleBufferMode(bool useSingleBuffer);
-    
     /// creates a snapshot of the current buffered image (multi buffer mode only)
     ImgBase *deepCopy() const;
 
@@ -214,9 +200,6 @@ namespace icl{
     /// brightness contrast and intensity buffer
     int m_aiBCI[3];
 
-    /// flag that decides of the wrapped GLTMIs are created with single or mult buffer
-    bool m_bUseSingleBuffer;
-    
     /// stores the current images params
     ImgParams m_oCurrentImageParams;
     

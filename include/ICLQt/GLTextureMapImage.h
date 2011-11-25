@@ -66,46 +66,16 @@ namespace icl{
       device to be able to draw these parts as simple textures. The given cellSize 
       defines how large theses cells are an therewith, how many cells are needed. \n
 
-      In addition, it knows two modes
-      - single buffer mode
-      - multi buffer mode
-      
-      which have different initialization and drawing procedures for different use cases.
-      The <em>single buffer mode</em> is used, when the image should just be drawn now. This mode
-      has to be used, when the GLTextureMapImage instance is created just inside of OpenGL's
-      drawing function (not outside or in another Thread!). In this case, the image drawing
-      procedure is optimized to use as less dynamic memory as possible. If the image 
-      is created outside of OpenGL's drawing function, the singleBuffer flag has to be
-      set to false. In this case, no GL commands are used except in the drawTo(..) function.
-      
-      Disregarding the mode, there are 3 steps that must be performed to draw
+      There are 2 steps that must be performed to draw
       an image into the screen. 
-      -# creation
-        - <b>single buffer mode</b>: in this case, some OpenGL commands are already   
-          used in the constructor. A data for a single image cell (size = channel count *
-          cellSize * cellSize) is allocated and glTexture handles are reserved.
-        - <b>multi buffer mode</b>: here, no OpenGL commands must be called, but 
-          instead of this, data buffers are created for all image cells.
 
       -# updating the textures (by given image)
-        - <b>single buffer mode</b>: This step will transfer the image data into the
-          video memory. As in OpenGL all data of one texture must be transferred by a 
-          single TexImage2D call, the data is temporarily transformed into interleaved data
-          order by calling ICLCC's planarToInterleaved method. Here, the cell data buffer,
-          which was created in the constructor is exploited, to avoid redundant data 
-          allocation during run-time. 
-        - <b>multi buffer mode</b>: In this case, however no GL commands may be used. So the
-          data is not transferred into the video memory, be it is pre-buffered in interleaved
+        - Here, no OpenGL commands are used.
+          The data is not transferred into the video memory, but it is pre-buffered in interleaved
           order into the array of cell data buffers, that have been reserved in the 
           constructor.
       -# drawing step
-        - <b>single buffer mode</b>: In this mode, all image data is available in the
-          video devices memory, so it can be drawn directly cell by cell. The drawing
-          function supports implicit scaling and transforming of GL's matrices to draw
-          the image into a given rectangle in the window.
-        - <b>multi buffer mode</b>: In this case, the interleaved image data, available
-          in the cell data buffer matrix must be transferred into the video memory, before
-          it can be drawn exactly as if single buffer mode was enabled here.
+        - Here, the texture data is uploaded to the graphics memory
 
       
       \section DET detail
@@ -123,7 +93,7 @@ namespace icl{
     public:
     
     /// constructor
-    GLTextureMapImage(const Size &imageSize, bool useSingleBuffer, int channels=3, int cellSize=128);
+    GLTextureMapImage(const Size &imageSize, int channels=3, int cellSize=128);
     
     /// destructor
     ~GLTextureMapImage();
@@ -179,9 +149,6 @@ namespace icl{
     /// returns whether this GLTextureMapImage is compatible to a given image
     bool compatible(const Img<T> *image) const;
 
-    /// returns whether this image is in single buffer mode or not2
-    bool hasSingleBuffer() const { return m_bUseSingleBuffer; }
-    
     /// sets up current brightness contrast and intensity
     /** if b=c=i=-1 then, brightness is adapted automatically */
     void bci(int b=-1, int c=-1, int i=-1);
@@ -254,9 +221,6 @@ namespace icl{
     
     /// matrix containing ROI sizes for the cells
     Array2D<Size> m_matROISizes;
-    
-    /// indicates whether to use a single buffer or one buffer per texture
-    bool m_bUseSingleBuffer;
     
     /// if mode is multiTextureBuffer, the data is stored here
     Array2D<T*> m_matCellData;

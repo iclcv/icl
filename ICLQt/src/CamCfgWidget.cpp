@@ -282,7 +282,7 @@ namespace icl{
   std::string get_combo_content_str(const std::string &p, Grabber &grabber){
     std::string currVal = grabber.getValue(p);
     std::ostringstream s;
-    std::vector<std::string> ts = tok(strip(grabber.getInfo(p),'{','}'),",");
+    std::vector<std::string> ts = tok(strip(grabber.getInfo(p),'{','}'),"\",\"");
     for(unsigned int i=0;i<ts.size();++i){
       std::string stripped = strip(ts[i],'"','"');
       if(currVal == stripped) s << "!";
@@ -422,7 +422,7 @@ namespace icl{
           ComboHandle &fmt = data->gui.getValue<ComboHandle>("format");
           ComboHandle &siz = data->gui.getValue<ComboHandle>("size");
         
-          std::vector<std::string> fmts = tok(strip(data->grabber.getInfo("format"),'{','}'),",");
+          std::vector<std::string> fmts = tok(strip(data->grabber.getInfo("format"),'{','}'),"\",",false);
           std::vector<std::string> sizes = tok(strip(data->grabber.getInfo("size"),'{','}'),",");
           
           for(unsigned int i=0;i<fmts.size();++i){
