@@ -34,6 +34,7 @@
 #include <ICLCC/CCFunctions.h>
 #include <ICLIO/ColorFormatDecoder.h>
 #include <ICLIO/JPEGDecoder.h>
+#include <ICLUtils/StringUtils.h>
 
 namespace icl{
 
@@ -111,6 +112,8 @@ namespace icl{
         ICLASSERT_THROW(*p++ == 0xFF,1); // SOI Marker
         ICLASSERT_THROW(*p++ == 0xD8,2);
         JPEGDecoder::decode(data,4*size.getDim(),bpp(image));
+      }catch(std::exception &ex){
+        WARNING_LOG("error decoding motion JPEG : " + str(ex.what()) );
       }catch(...){
         WARNING_LOG("error decoding motion JPEG");
       }

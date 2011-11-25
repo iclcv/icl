@@ -119,7 +119,7 @@ namespace icl{
       for(FMap::const_iterator it = supportedFormats.begin(); it != supportedFormats.end(); ++it){
         const SupportedFormatPtr &f = it->second;
         for(unsigned int i=0;i<f->sizes.size();++i){
-          stream << "\"" << f->description << "@" << f->sizes[i] << "\"";
+          stream << "\"" << f->description << "~" << f->sizes[i] << "\"";
           stream << ',';        
         }
       }
@@ -172,7 +172,7 @@ namespace icl{
       
       for(FMap::const_iterator it = supportedFormats.begin(); it != supportedFormats.end(); ++it){
         if(it->second->fourcc == fourcc){
-          return it->second->description + "@" + str(Size(w,h));
+          return it->second->description + "~" + str(Size(w,h));
         }
       }
       normal_exception("current camera format does not seem to be supported [?]");
@@ -222,19 +222,19 @@ namespace icl{
       }
     }
     
-    /// id is v4l2_format.description@size  
+    /// id is v4l2_format.description~size  
     void change_format(const std::string &id, bool apply_ioctl=true){
       std::string description, size;
-      std::vector<std::string> ts = tok(id,"@");
+      std::vector<std::string> ts = tok(id,"~");
       if(ts.size() == 2){
         description = ts[0];
         size = ts[1];
       }else if(ts.size() > 2){
         size = ts.back();
         ts.pop_back();
-        description = cat(ts,"@");
+        description = cat(ts,"~");
       }else{
-        normal_exception("unable to parse combined 'format@size' description " + id);
+        normal_exception("unable to parse combined 'format~size' description " + id);
       }
       Size s = parse<Size>(size);
       
@@ -306,7 +306,7 @@ namespace icl{
       
       if(initialFormat == ""){
         std::string f = get_current_format();
-        change_format(f,false); // this is just used as a check 
+        change_format(f,true); // this is just used as a check 
       }else{
         change_format(initialFormat,true);
       }
