@@ -35,13 +35,13 @@
 #ifndef ICL_PYLON_GRABBER_H
 #define ICL_PYLON_GRABBER_H
 
-#define ICL_PYLON_GRABBER_ONLY_GIGE
+//#define PYLON_COLOR_CONVERSION
+#define ICL_COLOR_CONVERSION
 
 #include <pylon/PylonIncludes.h>
 #include <pylon/PixelFormatConverterBayer.h>
-#ifdef ICL_PYLON_GRABBER_ONLY_GIGE
-  #include <pylon/gige/BaslerGigECamera.h>
-#endif
+#include <pylon/TransportLayer.h>
+#include <pylon/PixelType.h>
 
 #include <ICLIO/GrabberHandle.h>
 #include <ICLCC/BayerConverter.h>
@@ -111,10 +111,6 @@ namespace icl {
     int m_Offsety;
     /// image format
     std::string m_Format;
-  #ifdef ICL_PYLON_GRABBER_ONLY_GIGE
-    /// the gige camera.
-    Pylon::CBaslerGigECamera* m_GigECamera;
- #endif
     /// the camera interface.
     Pylon::IPylonDevice* m_Camera;
 
@@ -122,11 +118,16 @@ namespace icl {
     Pylon::IStreamGrabber* m_Grabber;
     /// a list of used buffers.
     std::vector<PylonGrabberBuffer*> m_BufferList;
+    /**
+    * indicates whether m_Image and m_ColorConverter should
+    * be reinitialized in the next acquireImage call.
+    */
+    bool m_ResetImage;
     /// an IclImageBase
     icl::Img8u* m_Image2;
     icl::ImgBase* m_Image;
-    /// Pylon color format converte
-    icl::BayerConverter* m_BayerConverter;
+    /// Pylon color format converter
+    icl::BayerConverter* m_ColorConverter;
     //Pylon::CPixelFormatConverterBayer m_ColorConv;
     //Pylon::SImageFormat m_InputFormat;
     //Pylon::SOutputImageFormat m_OutputFormat;
@@ -249,17 +250,32 @@ namespace icl {
   struct AcquisitionInterruptor{
     private: 
       PylonGrabberImpl* m_Impl;
-      icl::Mutex::Locker m_Locker;
+      icl::Mutex::Locker* m_Locker;
 
     public:
-      AcquisitionInterruptor(PylonGrabberImpl* i) : m_Locker(i -> m_CamMutex){
-        m_Impl = i;
-        m_Impl -> acquisitionStop();
-        //DEBUG_LOG("after stop")
+      /// gets the mutex lock and stops the acquisiton
+      AcquisitionInterruptor(PylonGrabberImpl* i, bool mock=false){
+        DEBUG_LOG("before stop")
+        if(!mock){
+          m_Impl = i;
+          DEBUG_LOG("Locking camMutex")
+          m_Locker = new icl::Mutex::Locker(i -> m_CamMutex);
+          m_Impl -> acquisitionStop();
+        } else {
+          m_Impl = NULL;
+          m_Locker = NULL;
+        }
+        DEBUG_LOG("after stop")
+
       }
       ~AcquisitionInterruptor(){
-        //DEBUG_LOG("before start")
-        m_Impl -> acquisitionStart();
+        DEBUG_LOG("before start")
+        if((m_Locker != NULL) && (m_Impl != NULL)){
+          m_Impl -> acquisitionStart();
+          delete m_Locker;
+          DEBUG_LOG("Releasing camMutex")
+        }
+        DEBUG_LOG("after start")
       }
   };
   

@@ -81,6 +81,7 @@ namespace icl {
                                   also give only a single desired device type e.g. "pwc".
                                   The following device types are supported:
                                   - <b>pwc</b> pwc grabber 
+                                  - <b>v4l2</b> Video for Linux 2 based grabber
                                   - <b>dc</b> dc grabber 
                                   - <b>dc800</b> dc grabber but with 800MBit iso-speed 
                                   - <b>unicap</b> unicap grabber 
@@ -101,6 +102,7 @@ namespace icl {
                                   - <b>kinectc</b> Uses libfreenect to grab Microsoft-Kinect's rgb color images
                                   - <b>kinecti</b> Uses libfreenect to grab Microsoft-Kinect's IR images
         
+        
         @param params comma separated device depend parameter list: e.g.
                                   "pwc=0,file=images//image*.ppm,dc=0" with self-explaining syntax\n
                                   Additionally, each token a=b can be extended by device property that are directly
@@ -119,6 +121,7 @@ namespace icl {
   
                                   Semantics:\n
                                   - pwc=device-index (int)
+                                  - v4l2=device-name (e.g. "/dev/video0")
                                   - dc=device-index (int) or dc=UniqueID (string) 
                                     (the unique ID can be found with 'icl-cam-cfg d -list-devices-only')
                                   - dc800=device-index (int)

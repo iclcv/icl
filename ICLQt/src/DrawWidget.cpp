@@ -567,7 +567,7 @@ namespace icl{
   public:
     ImageCommand(ImgBase *image, float x, float y, float w, float h):
       DrawCommand4F(x,y,w,h){
-      m_poImage = new GLTextureMapBaseImage(image,false);
+      m_poImage = new GLTextureMapBaseImage(image);
     }
     virtual ~ImageCommand(){
       if(m_poImage)delete m_poImage;

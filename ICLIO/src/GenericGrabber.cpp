@@ -43,6 +43,10 @@
 #include <ICLIO/PWCGrabber.h>
 #include <ICLIO/MyrmexGrabber.h>
 #endif
+#ifdef HAVE_VIDEODEV2
+#include <ICLIO/V4L2Grabber.h>
+#endif
+
 #endif
 
 #ifdef HAVE_LIBDC
@@ -242,6 +246,20 @@ namespace icl{
       }
 
 #endif
+#ifdef HAVE_VIDEODEV2
+      if(l[i] == "v4l2"){
+        try{
+          V4L2Grabber *g = new V4L2Grabber(pmap["v4l2"].id);
+          m_poGrabber = g;
+          m_sType = "v4l2";
+          break;
+        }catch(ICLException &ex){
+          ADD_ERR("v4l2 [error message:" + str(ex.what()) + "]");
+          continue;
+        }
+      }
+#endif
+
 #endif
       
 #ifdef HAVE_LIBDC
@@ -677,6 +695,9 @@ namespace icl{
 #ifdef HAVE_VIDEODEV
       add_devices<PWCGrabber>(deviceList,"pwc",useFilter,pmap);
       add_devices<MyrmexGrabber>(deviceList,"myr",useFilter,pmap);
+#endif
+#ifdef HAVE_VIDEODEV2
+      add_devices<V4L2Grabber>(deviceList,"v4l2",useFilter,pmap);
 #endif
 #endif
       

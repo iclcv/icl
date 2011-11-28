@@ -43,7 +43,7 @@ namespace icl{
   using namespace std;
 
   template<class T>
-  GLTextureMapImage<T>::GLTextureMapImage(const Size &imageSize, bool useSingleBuffer,  int channels,int cellSize){
+  GLTextureMapImage<T>::GLTextureMapImage(const Size &imageSize, int channels,int cellSize){
     // {{{ open
     
     ICLASSERT( channels == 3 || channels == 1 || channels == 4);
@@ -56,8 +56,6 @@ namespace icl{
     m_iXCells = m_iImageW/m_iCellSize;
     m_iYCells = m_iImageH/m_iCellSize;
     
-    m_bUseSingleBuffer = useSingleBuffer;
-    
     m_iRestX = m_iImageW % m_iCellSize;
     m_iRestY = m_iImageH % m_iCellSize;
     if(m_iRestX) m_iXCells++;
@@ -67,24 +65,15 @@ namespace icl{
 
     m_matTextureNames = Array2D<GLuint>(m_iXCells,m_iYCells,GLuint(0));
 
-    if(m_bUseSingleBuffer){
-      m_ptCellData = new T[m_iCellDataSize];
-      // This is an asyncronous gl call an may cause problems ..
-      // -> set useSingleBuffer to false to avoid this
-      glGenTextures(m_iXCells*m_iYCells,m_matTextureNames.data()); 
-    }else{
-      m_ptCellData = 0;
-      m_matCellData = Array2D<T*>(m_iXCells,m_iYCells,(T*)(0));
-    }
+    m_ptCellData = 0;
+    m_matCellData = Array2D<T*>(m_iXCells,m_iYCells,(T*)(0));
     m_matROISizes = Array2D<Size>(m_iXCells,m_iYCells);
 
     for(int y=0;y<m_iYCells;++y){
       for(int x=0;x<m_iXCells;++x){
         m_matROISizes(x,y).width  = m_iRestX ? (x==m_iXCells-1 ? m_iRestX : m_iCellSize) : m_iCellSize;
         m_matROISizes(x,y).height = m_iRestY ? (y==m_iYCells-1 ? m_iRestY : m_iCellSize) : m_iCellSize;
-       if(!m_bUseSingleBuffer){
-         m_matCellData(x,y) = new T[m_iCellDataSize];
-        }
+        m_matCellData(x,y) = new T[m_iCellDataSize];
       }
     }
     memset(m_aiBCI,0,3*sizeof(int));
@@ -101,15 +90,10 @@ namespace icl{
   template<class T>
   GLTextureMapImage<T>::~GLTextureMapImage(){
     // {{{ open
-    if(m_bUseSingleBuffer){
-      glDeleteTextures(m_iXCells*m_iYCells,m_matTextureNames.data());
-      delete [] m_ptCellData;
-    }else{
-      if(m_matCellData.getDim()){
-        for(int y=0;y<m_iYCells;++y){
-          for(int x=0;x<m_iXCells;++x){
-            delete [] m_matCellData(x,y);
-          }
+    if(m_matCellData.getDim()){
+      for(int y=0;y<m_iYCells;++y){
+        for(int x=0;x<m_iXCells;++x){
+          delete [] m_matCellData(x,y);
         }
       }
     }
@@ -176,11 +160,6 @@ namespace icl{
 
   template<class T>
   std::vector<Range<T> > GLTextureMapImage<T>::getMinMax() const{
-    if(m_bUseSingleBuffer){
-      ERROR_LOG("image range cannot be extracted in singleBufferMode");
-      return std::vector<Range<T> >();
-    }
-    
     std::vector<Range<T> > mm(m_iChannels,Range<T>(std::numeric_limits<T>::max(),std::numeric_limits<T>::min()));
     
     for(int y=0;y<m_iYCells;++y){
@@ -193,10 +172,6 @@ namespace icl{
  
   template<class T>
   vector<icl64f> GLTextureMapImage<T>::getColor(int x, int y) const{
-    if(m_bUseSingleBuffer){
-      ERROR_LOG("getting image colors is not supported in single buffer mode");
-      return vector<icl64f>();
-    }
     if(x>=0 && y>=0 && x<m_iImageW && y<m_iImageH){
       int xCell = x/m_iCellSize;
       int yCell = y/m_iCellSize;
@@ -223,51 +198,11 @@ namespace icl{
     
     m_time = image->getTime();
 
-    if(m_bUseSingleBuffer){ // this is not allowed, because openGL cannot be accessed thread-safe
-      setPackAlignment(getDepth<T>(),image->getWidth());
-      setUpPixelTransfer(getDepth<T>(),m_aiBCI[0],m_aiBCI[1],m_aiBCI[2], image);
-      
-      static GLenum aeGLTypes[] = { GL_UNSIGNED_BYTE, GL_SHORT, GL_INT, GL_FLOAT, GL_FLOAT };
-      GLenum glType = aeGLTypes[getDepth<T>()];
-      
-      for(int y=0;y<m_iYCells;++y){
-        for(int x=0;x<m_iXCells;++x){
-          glBindTexture(GL_TEXTURE_2D, m_matTextureNames(x,y));
-          
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-          
-          const Img<T> *src = image->shallowCopy(Rect(Point(x*m_iCellSize,y*m_iCellSize),m_matROISizes(x,y)));
-          
-          
-          if(x==m_iXCells -1 || y == m_iYCells-1){
-            fill(m_ptCellData,m_ptCellData+m_iCellDataSize,0);
-          }
-          
-          planarToInterleaved(src,m_ptCellData,m_iCellSize*m_iChannels*sizeof(T));
-          
-          delete src;
-          if(m_iChannels == 1){
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_LUMINANCE, glType, m_ptCellData);
-          }else if (m_iChannels == 3){
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_RGB, glType, m_ptCellData);   
-          }else if (m_iChannels == 4){
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_iCellSize, m_iCellSize,0, GL_RGBA, glType, m_ptCellData);   
-          }else{
-            ERROR_LOG("invalid channel count: \"" << m_iChannels << "\"");
-          }
-        }
-      }
-      resetPixelTransfer();
-    }else{ // multiTextureBuffer
-      for(int y=0;y<m_iYCells;++y){
-        for(int x=0;x<m_iXCells;++x){
-          const Img<T> *src = image->shallowCopy(Rect(Point(x*m_iCellSize,y*m_iCellSize),m_matROISizes(x,y)));
-          planarToInterleaved(src,m_matCellData(x,y),m_iCellSize*m_iChannels*sizeof(T));
-          delete src;
-        }
+    for(int y=0;y<m_iYCells;++y){
+      for(int x=0;x<m_iXCells;++x){
+        const Img<T> *src = image->shallowCopy(Rect(Point(x*m_iCellSize,y*m_iCellSize),m_matROISizes(x,y)));
+        planarToInterleaved(src,m_matCellData(x,y),m_iCellSize*m_iChannels*sizeof(T));
+        delete src;
       }
     }
   }
@@ -295,8 +230,6 @@ namespace icl{
     
     icl32f fScaleRGB(0),fBiasRGB(0);
     if( (brightness < 0)  && (contrast < 0) && (intensity < 0)){
-      // image is null, because SingleBufferMode does not work!
-      
       
       icl64f dScaleRGB,dBiasRGB;
       
@@ -407,9 +340,6 @@ namespace icl{
 
   template<class T>
   Img<T> *GLTextureMapImage<T>::deepCopy() const{
-    if(m_bUseSingleBuffer){
-      return 0;
-    }
     Img<T> *image = new Img<T>(Size(m_iImageW,m_iImageH), m_iChannels);
     for(int y=0;y<m_iYCells;++y){
       for(int x=0;x<m_iXCells;++x){
@@ -430,45 +360,37 @@ namespace icl{
   template<class T>
   void GLTextureMapImage<T>::drawTo(const Rect &rect, const Size &windowSize, scalemode mode){
     // {{{ open
-    if(!m_bUseSingleBuffer){
       
-      glGenTextures(m_iXCells*m_iYCells,m_matTextureNames.data()); 
-      
-      //depth d = getDepth<T>();
-      //int depthIdx = (int)d;
-      
-      setPackAlignment(getDepth<T>(),m_iImageW);
-      
-      setUpPixelTransfer(getDepth<T>(),m_aiBCI[0],m_aiBCI[1],m_aiBCI[2], 0);
-      
-      static GLenum aeGLTypes[] = { GL_UNSIGNED_BYTE, GL_SHORT, GL_FLOAT, GL_FLOAT, GL_FLOAT };
-      GLenum glType = aeGLTypes[getDepth<T>()];
-
-      for(int y=0;y<m_iYCells;++y){
-        for(int x=0;x<m_iXCells;++x){
-          glBindTexture(GL_TEXTURE_2D, m_matTextureNames(x,y));
-          
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,mode == interpolateLIN ? GL_LINEAR : GL_NEAREST);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,mode == interpolateLIN ? GL_LINEAR : GL_NEAREST);
-          
-          if(m_iChannels == 1){
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_LUMINANCE, glType, m_matCellData(x,y));
-          }else if (m_iChannels == 3){
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_RGB, glType, m_matCellData(x,y));   
-          }else if (m_iChannels == 4){
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_iCellSize, m_iCellSize,0, GL_RGBA, glType, m_matCellData(x,y));   
-          }else{
-            ERROR_LOG("invalid channel count: \"" << m_iChannels << "\"");
-          }
+    glGenTextures(m_iXCells*m_iYCells,m_matTextureNames.data()); 
+    setPackAlignment(getDepth<T>(),m_iImageW);
+    setUpPixelTransfer(getDepth<T>(),m_aiBCI[0],m_aiBCI[1],m_aiBCI[2], 0);
+    
+    static GLenum aeGLTypes[] = { GL_UNSIGNED_BYTE, GL_SHORT, GL_FLOAT, GL_FLOAT, GL_FLOAT };
+    GLenum glType = aeGLTypes[getDepth<T>()];
+    
+    for(int y=0;y<m_iYCells;++y){
+      for(int x=0;x<m_iXCells;++x){
+        glBindTexture(GL_TEXTURE_2D, m_matTextureNames(x,y));
+        
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,mode == interpolateLIN ? GL_LINEAR : GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,mode == interpolateLIN ? GL_LINEAR : GL_NEAREST);
+        
+        if(m_iChannels == 1){
+          glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_LUMINANCE, glType, m_matCellData(x,y));
+        }else if (m_iChannels == 3){
+          glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_RGB, glType, m_matCellData(x,y));   
+        }else if (m_iChannels == 4){
+          glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_iCellSize, m_iCellSize,0, GL_RGBA, glType, m_matCellData(x,y));   
+        }else{
+          ERROR_LOG("invalid channel count: \"" << m_iChannels << "\"");
         }
       }
-
-      resetPixelTransfer();
     }
     
-
+    resetPixelTransfer();
+    
     
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
@@ -540,9 +462,8 @@ namespace icl{
       }
     }    
     
-    if(!m_bUseSingleBuffer){
-      glDeleteTextures(m_iXCells*m_iYCells,m_matTextureNames.data());  
-    }
+    glDeleteTextures(m_iXCells*m_iYCells,m_matTextureNames.data());  
+
     if(m_drawGrid){
       glColor4fv(m_gridColor);
 
@@ -660,47 +581,45 @@ layout a--b
   void GLTextureMapImage<T>::drawToQuad(const float *a, const float *b, const float *c, const float *d,
                                         scalemode smode,const float *na,const float *nb,
                                         const float *nc, const float *nd){
-   if(!m_bUseSingleBuffer){
-      
-      glGenTextures(m_iXCells*m_iYCells,m_matTextureNames.data()); 
-      
-      setPackAlignment(getDepth<T>(),m_iImageW);
-      setUpPixelTransfer(getDepth<T>(),m_aiBCI[0],m_aiBCI[1],m_aiBCI[2], 0);
-      
-      static GLenum aeGLTypes[] = { GL_UNSIGNED_BYTE, GL_SHORT, GL_INT, GL_FLOAT, GL_FLOAT };
-      GLenum glType = aeGLTypes[getDepth<T>()];
-      
-      for(int y=0;y<m_iYCells;++y){
-        for(int x=0;x<m_iXCells;++x){
-          glBindTexture(GL_TEXTURE_2D, m_matTextureNames(x,y));
-          
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,smode == interpolateLIN ? GL_LINEAR : GL_NEAREST);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,smode == interpolateLIN ? GL_LINEAR : GL_NEAREST);
-          
-          if(m_iChannels == 1){
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_LUMINANCE, glType, m_matCellData(x,y));
-          }else if (m_iChannels == 3){
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_RGB, glType, m_matCellData(x,y));   
-          }else if (m_iChannels == 4){
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_iCellSize, m_iCellSize,0, GL_RGBA, glType, m_matCellData(x,y));   
-          }else{
-            ERROR_LOG("invalid channel count: \"" << m_iChannels << "\"");
-          }
+    glGenTextures(m_iXCells*m_iYCells,m_matTextureNames.data()); 
+    
+    setPackAlignment(getDepth<T>(),m_iImageW);
+    setUpPixelTransfer(getDepth<T>(),m_aiBCI[0],m_aiBCI[1],m_aiBCI[2], 0);
+    
+    static GLenum aeGLTypes[] = { GL_UNSIGNED_BYTE, GL_SHORT, GL_INT, GL_FLOAT, GL_FLOAT };
+    GLenum glType = aeGLTypes[getDepth<T>()];
+    
+    for(int y=0;y<m_iYCells;++y){
+      for(int x=0;x<m_iXCells;++x){
+        glBindTexture(GL_TEXTURE_2D, m_matTextureNames(x,y));
+        
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,smode == interpolateLIN ? GL_LINEAR : GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,smode == interpolateLIN ? GL_LINEAR : GL_NEAREST);
+        
+        if(m_iChannels == 1){
+          glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_LUMINANCE, glType, m_matCellData(x,y));
+        }else if (m_iChannels == 3){
+          glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_RGB, glType, m_matCellData(x,y));   
+        }else if (m_iChannels == 4){
+          glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_iCellSize, m_iCellSize,0, GL_RGBA, glType, m_matCellData(x,y));   
+        }else{
+          ERROR_LOG("invalid channel count: \"" << m_iChannels << "\"");
         }
       }
-
-      resetPixelTransfer();
     }
     
-   // --------------------------------------------------------------------------------------------
-   
-   float fracXForLastPart = 1.0-float(m_iCellSize-m_iRestX)/m_iCellSize;    
-   float fracYForLastPart = 1.0-float(m_iCellSize-m_iRestY)/m_iCellSize;
-   
-   float DA = fracXForLastPart ? 1.0/(m_iXCells-1+fracXForLastPart) : 1.0/m_iXCells;
-   float DB = fracYForLastPart ? 1.0/(m_iYCells-1+fracYForLastPart) : 1.0/m_iYCells;
+    resetPixelTransfer();
+    
+    
+    // --------------------------------------------------------------------------------------------
+    
+    float fracXForLastPart = 1.0-float(m_iCellSize-m_iRestX)/m_iCellSize;    
+    float fracYForLastPart = 1.0-float(m_iCellSize-m_iRestY)/m_iCellSize;
+    
+    float DA = fracXForLastPart ? 1.0/(m_iXCells-1+fracXForLastPart) : 1.0/m_iXCells;
+    float DB = fracYForLastPart ? 1.0/(m_iYCells-1+fracYForLastPart) : 1.0/m_iYCells;
    
    //glDisable(GL_LIGHTING);
    
@@ -711,122 +630,118 @@ layout a--b
    glColor4f(1,1,1,1);
    
    for(int y=0;y<m_iYCells;++y){
-      for(int x=0;x<m_iXCells;++x){
-        glBindTexture(GL_TEXTURE_2D, m_matTextureNames(x,y));
-        
-        glBegin(GL_QUADS);
-
-        float texCoordsXMin = 0;
-        float texCoordsYMin = 0;
-        float texCoordsXMax = 1;
-        float texCoordsYMax = 1;
-        
-        float X = x*DA;
-        float Y = y*DB;
-        float X1 = (x+1)*DA;
-        float Y1 = (y+1)*DB;
-        
-        
-        if(fracXForLastPart != 0 && x==m_iXCells-1){
-          texCoordsXMax =  fracXForLastPart;
-          X1 = (x+fracXForLastPart)*DA;
-        }
-        if(fracYForLastPart != 0 && y==m_iYCells-1){
-          texCoordsYMax = fracYForLastPart;
-          Y1 = (y+fracYForLastPart)*DB;
-        }
-        
-        glTexCoord2f(texCoordsXMin, texCoordsYMin ); 
-        if(haveNormals){
-          interpolate_billinear_and_normalize_and_invert(na,nb,nc,nd,X,Y,n0);
-          glNormal3fv(n0);
-        }
-        interpolate_billinear(a,b,c,d,X,Y,v0);
-        glVertex3fv(v0);
-
-        //---------------------------------------
-
-        glTexCoord2f(texCoordsXMin, texCoordsYMax ); 
-        if(haveNormals){
-          interpolate_billinear_and_normalize_and_invert(na,nb,nc,nd,X,Y1,n1);
-          glNormal3fv(n1);
-        }
-        interpolate_billinear(a,b,c,d,X,Y1,v1);
-        glVertex3fv(v1);
-
-        //---------------------------------------
-
-        glTexCoord2f(texCoordsXMax, texCoordsYMax ); 
-        if(haveNormals){
-          interpolate_billinear_and_normalize_and_invert(na,nb,nc,nd,X1,Y1,n2);
-          glNormal3fv(n2);
-        }
-        interpolate_billinear(a,b,c,d,X1,Y1,v2);
-        glVertex3fv(v2);
+     for(int x=0;x<m_iXCells;++x){
+       glBindTexture(GL_TEXTURE_2D, m_matTextureNames(x,y));
        
-        //---------------------------------------
+       glBegin(GL_QUADS);
+       
+       float texCoordsXMin = 0;
+       float texCoordsYMin = 0;
+       float texCoordsXMax = 1;
+       float texCoordsYMax = 1;
+       
+       float X = x*DA;
+       float Y = y*DB;
+       float X1 = (x+1)*DA;
+       float Y1 = (y+1)*DB;
         
-        glTexCoord2f(texCoordsXMax, texCoordsYMin ); 
-        if(haveNormals){
-          interpolate_billinear_and_normalize_and_invert(na,nb,nc,nd,X1,Y,n3);
-          glNormal3fv(n3);
-        }
-        interpolate_billinear(a,b,c,d,X1,Y,v3);
-        glVertex3fv(v3);
-        glEnd();
-      }
-    }
-    if(!m_bUseSingleBuffer){
-      glDeleteTextures(m_iXCells*m_iYCells,m_matTextureNames.data());  
-    }
-    //glEnable(GL_LIGHTING);
+        
+       if(fracXForLastPart != 0 && x==m_iXCells-1){
+         texCoordsXMax =  fracXForLastPart;
+         X1 = (x+fracXForLastPart)*DA;
+       }
+       if(fracYForLastPart != 0 && y==m_iYCells-1){
+         texCoordsYMax = fracYForLastPart;
+         Y1 = (y+fracYForLastPart)*DB;
+       }
+        
+       glTexCoord2f(texCoordsXMin, texCoordsYMin ); 
+       if(haveNormals){
+         interpolate_billinear_and_normalize_and_invert(na,nb,nc,nd,X,Y,n0);
+         glNormal3fv(n0);
+       }
+       interpolate_billinear(a,b,c,d,X,Y,v0);
+       glVertex3fv(v0);
+
+       //---------------------------------------
+
+       glTexCoord2f(texCoordsXMin, texCoordsYMax ); 
+       if(haveNormals){
+         interpolate_billinear_and_normalize_and_invert(na,nb,nc,nd,X,Y1,n1);
+         glNormal3fv(n1);
+       }
+       interpolate_billinear(a,b,c,d,X,Y1,v1);
+       glVertex3fv(v1);
+
+       //---------------------------------------
+
+       glTexCoord2f(texCoordsXMax, texCoordsYMax ); 
+       if(haveNormals){
+         interpolate_billinear_and_normalize_and_invert(na,nb,nc,nd,X1,Y1,n2);
+         glNormal3fv(n2);
+       }
+       interpolate_billinear(a,b,c,d,X1,Y1,v2);
+       glVertex3fv(v2);
+       
+       //---------------------------------------
+        
+       glTexCoord2f(texCoordsXMax, texCoordsYMin ); 
+       if(haveNormals){
+         interpolate_billinear_and_normalize_and_invert(na,nb,nc,nd,X1,Y,n3);
+         glNormal3fv(n3);
+       }
+       interpolate_billinear(a,b,c,d,X1,Y,v3);
+       glVertex3fv(v3);
+       glEnd();
+     }
+   }
+   
+   glDeleteTextures(m_iXCells*m_iYCells,m_matTextureNames.data());  
+
   }
   
   template<class T>
   void GLTextureMapImage<T>::drawTo3D(const float *pCenter,const float *pFirstAxis,
                                       const float *pSecondAxis, scalemode mode){
-    if(!m_bUseSingleBuffer){
-      
-      glGenTextures(m_iXCells*m_iYCells,m_matTextureNames.data()); 
-      
-      setPackAlignment(getDepth<T>(),m_iImageW);
-      setUpPixelTransfer(getDepth<T>(),m_aiBCI[0],m_aiBCI[1],m_aiBCI[2], 0);
-      
-      static GLenum aeGLTypes[] = { GL_UNSIGNED_BYTE, GL_SHORT, GL_INT, GL_FLOAT, GL_FLOAT };
-      GLenum glType = aeGLTypes[getDepth<T>()];
-      
-      for(int y=0;y<m_iYCells;++y){
-        for(int x=0;x<m_iXCells;++x){
-          glBindTexture(GL_TEXTURE_2D, m_matTextureNames(x,y));
-          
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,mode == interpolateLIN ? GL_LINEAR : GL_NEAREST);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,mode == interpolateLIN ? GL_LINEAR : GL_NEAREST);
-          
-          if(m_iChannels == 1){
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_LUMINANCE, glType, m_matCellData(x,y));
-          }else if (m_iChannels == 3){
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_RGB, glType, m_matCellData(x,y));   
-          }else if (m_iChannels == 4){
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_iCellSize, m_iCellSize,0, GL_RGBA, glType, m_matCellData(x,y));   
-          }else{
-            ERROR_LOG("invalid channel count: \"" << m_iChannels << "\"");
-          }
+    glGenTextures(m_iXCells*m_iYCells,m_matTextureNames.data()); 
+    
+    setPackAlignment(getDepth<T>(),m_iImageW);
+    setUpPixelTransfer(getDepth<T>(),m_aiBCI[0],m_aiBCI[1],m_aiBCI[2], 0);
+    
+    static GLenum aeGLTypes[] = { GL_UNSIGNED_BYTE, GL_SHORT, GL_INT, GL_FLOAT, GL_FLOAT };
+    GLenum glType = aeGLTypes[getDepth<T>()];
+    
+    for(int y=0;y<m_iYCells;++y){
+      for(int x=0;x<m_iXCells;++x){
+        glBindTexture(GL_TEXTURE_2D, m_matTextureNames(x,y));
+        
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,mode == interpolateLIN ? GL_LINEAR : GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,mode == interpolateLIN ? GL_LINEAR : GL_NEAREST);
+        
+        if(m_iChannels == 1){
+          glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_LUMINANCE, glType, m_matCellData(x,y));
+        }else if (m_iChannels == 3){
+          glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_iCellSize, m_iCellSize,0, GL_RGB, glType, m_matCellData(x,y));   
+        }else if (m_iChannels == 4){
+          glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_iCellSize, m_iCellSize,0, GL_RGBA, glType, m_matCellData(x,y));   
+        }else{
+          ERROR_LOG("invalid channel count: \"" << m_iChannels << "\"");
         }
       }
-
-      resetPixelTransfer();
     }
     
+    resetPixelTransfer();
+    
     // --------------------------------------------------------------------------------------------
     // --------------------------------------------------------------------------------------------
     // --------------------------------------------------------------------------------------------
     
-  
+    
     float fracXForLastPart = 1-float(m_iCellSize-m_iRestX)/m_iCellSize;    
     float fracYForLastPart = 1-float(m_iCellSize-m_iRestY)/m_iCellSize;
-
+    
     float S[3] = {pCenter[0],pCenter[1],pCenter[2]};
     
     float A[3] = {pFirstAxis[0]-S[0],pFirstAxis[1]-S[1],pFirstAxis[2]-S[2]};
@@ -888,9 +803,7 @@ layout a--b
         glEnd();
       }
     }
-    if(!m_bUseSingleBuffer){
-      glDeleteTextures(m_iXCells*m_iYCells,m_matTextureNames.data());  
-    }
+    glDeleteTextures(m_iXCells*m_iYCells,m_matTextureNames.data());  
   }
 
 

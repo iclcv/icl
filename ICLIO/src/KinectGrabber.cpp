@@ -44,6 +44,14 @@
 #include <libfreenect.h>
 #include <map>
 namespace icl{
+
+  static std::ostream &operator<<(std::ostream &s, const KinectGrabber::Mode &m){
+    static std::string names[] = { "GRAB_RGB_IMAGE", "GRAB_BAYER_IMAGE", "GRAB_DEPTH_IMAGE", 
+                                   "GRAB_IR_IMAGE_8BIT", "GRAB_IR_IMAGE_10BIT"};
+    if((int)m >= 0 && (int)m < 5) return s << names[(int)m];
+    else return s << "UNDEFINED MODE";
+  }
+
   struct FreenectContext : public Thread{
     freenect_context *ctx;
     int errors;
@@ -102,7 +110,7 @@ namespace icl{
       Img32f depthImage,depthImageOut;  
       Time lastColorTime, lastDepthTime;
       Size size;
-      KinectGrabber::Mode currentMode;
+      KinectGrabber::Mode currentColorMode; // this must not be reset as long as the device is used somewhere else
       
       
       void depth_cb(void *data, uint32_t timestamp){
@@ -112,21 +120,13 @@ namespace icl{
       }
       void color_cb(void *data, uint32_t timestamp){
         Mutex::Locker lock(colorMutex);
-        switch(currentMode){
+        switch(currentColorMode){
           case KinectGrabber::GRAB_RGB_IMAGE:
             colorImage.setTime(Time::now());
             interleavedToPlanar((const icl8u*)data,&colorImage);
             break;
           case KinectGrabber::GRAB_IR_IMAGE_8BIT:{
             irImage.setTime(Time::now());
-            /*const icl8u *p = (const icl8u*)data;
-            for(int i=0;i<1280;i+=2){
-              for(int j=0;j<960;j+=2){
-                irImage(i/2,j/2,0) = p[i+640*j] ;
-              }
-                }
-*/
-            
             std::copy((const icl8u*)data,(const icl8u*)data +  (size==Size::VGA ? 640*480 : 320*240), irImage.begin(0));
             break;}
           case KinectGrabber::GRAB_IR_IMAGE_10BIT:
@@ -153,11 +153,11 @@ namespace icl{
       }
       const ImgBase &getLastColorImage(bool avoidDoubleFrames){
         Mutex::Locker lock(colorMutex);
-        ImgBase &src = ( currentMode == KinectGrabber::GRAB_RGB_IMAGE ? (ImgBase&)colorImage :
-                         currentMode == KinectGrabber::GRAB_IR_IMAGE_8BIT ? (ImgBase&)irImage :
+        ImgBase &src = ( currentColorMode == KinectGrabber::GRAB_RGB_IMAGE ? (ImgBase&)colorImage :
+                         currentColorMode == KinectGrabber::GRAB_IR_IMAGE_8BIT ? (ImgBase&)irImage :
                          (ImgBase&)irImage16s);
-        ImgBase &dst = ( currentMode == KinectGrabber::GRAB_RGB_IMAGE ? (ImgBase&)colorImageOut :
-                         currentMode == KinectGrabber::GRAB_IR_IMAGE_8BIT ? (ImgBase&)irImageOut :
+        ImgBase &dst = ( currentColorMode == KinectGrabber::GRAB_RGB_IMAGE ? (ImgBase&)colorImageOut :
+                         currentColorMode == KinectGrabber::GRAB_IR_IMAGE_8BIT ? (ImgBase&)irImageOut :
                          (ImgBase&)irImage16sOut);
                               
         if(avoidDoubleFrames){
@@ -201,6 +201,17 @@ namespace icl{
     int index;
 
     void setMode(KinectGrabber::Mode mode, Used *used, const Size &size){
+      if(mode != KinectGrabber::GRAB_DEPTH_IMAGE){
+        if(used->currentColorMode != KinectGrabber::GRAB_DEPTH_IMAGE
+           && used->currentColorMode != mode){
+          WARNING_LOG("the color camera mode was changed even though another device with a different mode does still exist");
+          used->currentColorMode = mode;
+        }else if(used->currentColorMode == KinectGrabber::GRAB_DEPTH_IMAGE){
+          used->currentColorMode = mode;
+        }
+      }
+      
+
       freenect_device *device = used->device;
       freenect_frame_mode m;
       const bool isVideo = (mode != KinectGrabber::GRAB_DEPTH_IMAGE);
@@ -233,7 +244,7 @@ namespace icl{
       if(it == devices.end()){
         //        DEBUG_LOG("device " << index << " was not used before: creating new one");
         used = devices[index] = new Used;
-        used->currentMode = mode;
+        used->currentColorMode = mode;
 
         if(freenect_open_device(ctx.ctx, &used->device, index) < 0){
           throw ICLException("FreenectDevice:: unable to open kinect device for device " + str(index));
@@ -301,12 +312,19 @@ namespace icl{
             if(freenect_start_video(used->device) < 0){
               throw ICLException("FreenectDevice:: unable to start video for device" + str(index));
             }
+          }else{
+            if(used->currentColorMode != mode){
+              WARNING_LOG("the mode cannot be changed to " << mode 
+                          << " because another grabber instance with mode "
+                          << used->currentColorMode << " does already exist");
+            }
           }
           used->numColorUsers++;
         }else{
           if(!used->numDepthUsers){
 
             freenect_stop_depth(used->device);
+
             setMode(mode, used, size);
 
             used->depthImage = Img32f(size,formatMatrix);
@@ -322,6 +340,7 @@ namespace icl{
       if(mode != KinectGrabber::GRAB_DEPTH_IMAGE){
         used->numColorUsers--;
         if(!used->numColorUsers){
+          used->currentColorMode = KinectGrabber::GRAB_DEPTH_IMAGE;
           if(freenect_stop_video(used->device) < 0){
             throw ICLException("FreenectDevice:: unable to stop color for device "+ str(index));
           }

@@ -50,6 +50,7 @@ int main(int n, char **ppc){
   ("u","scan for unicap devices")
   ("d","scan for dc devices")
   ("s","scan for SwissRanger devices")
+  ("v","scan for V4L2 devices")
   ("m","scan for Shared Memory devices")
   ("k","scan for Kinect Devices")
   ("y","scan for Myrmex Devices")
@@ -58,7 +59,7 @@ int main(int n, char **ppc){
   ("-i","ICL's default device specification")
   ("-l","if this flag is passed, no GUI is created, "
    "but all available devices are listed on stdout");
-  painit(n,ppc,"-dc|d -dc800|8 -demo -unicap|u -mry|y -pwc|p -sr|s -cvcam|c -sm|m"
+  painit(n,ppc,"-dc|d -dc800|8 -demo -unicap|u -mry|y -pwc|p -sr|s -cvcam|c -sm|m -v4l2|v"
          " -reset-bus|-r|r -kinect|k "
          "-input|-i(device-type,device-ID) -list-devices-only|-l");
   QApplication a(n,ppc);
@@ -73,6 +74,7 @@ int main(int n, char **ppc){
   if(pa("s"))str << ",sr";
   if(pa("k"))str << ",kinectd,kinectc,kinecti";
   if(pa("m"))str << ",sm";
+  if(pa("v"))str << ",v4l2";
   if(pa("y"))str << ",myr";
   if(pa("-i")) str << "," << pa("-i",0) << "=" << pa("-i",1);
   

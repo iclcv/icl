@@ -73,15 +73,6 @@ namespace icl{
     SAVE_DEL(m_poChannelBuf);    
   }
 
-  void GLTextureMapBaseImage::setSingleBufferMode(bool useSingleBuffer){
-    if(useSingleBuffer!=m_bUseSingleBuffer){
-      m_bUseSingleBuffer  = useSingleBuffer;
-      SAVE_DEL(m_po8u);
-      SAVE_DEL(m_po16s);
-      SAVE_DEL(m_po32s);
-      SAVE_DEL(m_po32f);
-    }
-  }
   
   const ImgBase *GLTextureMapBaseImage::adaptChannels(const ImgBase *image){
     ICLASSERT_RETURN_VAL(image && image->getChannels(), 0);
@@ -126,7 +117,7 @@ namespace icl{
       SAVE_DEL(m_po##D);                                                \
     }                                                                   \
     if(!m_po##D){                                                       \
-      m_po##D = new GLTextureMapImage<icl##D>(s,m_bUseSingleBuffer,image->getChannels(),getCellSize(s)); \
+      m_po##D = new GLTextureMapImage<icl##D>(s,image->getChannels(),getCellSize(s)); \
       m_po##D->bci(m_aiBCI[0],m_aiBCI[1],m_aiBCI[2]);                   \
     }                                                                   \
     m_po##D->updateTextures(image->asImg<icl##D>());                    \
