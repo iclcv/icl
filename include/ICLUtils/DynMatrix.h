@@ -307,14 +307,14 @@ namespace icl{
     }
 
     /// adds a scalar to each element
-    inline DynMatrix operator+(const T &t){
+    inline DynMatrix operator+(const T &t) const{
       DynMatrix d(cols(),rows());
       std::transform(begin(),end(),d.begin(),std::bind2nd(std::plus<T>(),t));
       return d;
     }
 
     /// substacts a scalar from each element
-    inline DynMatrix operator-(const T &t){
+    inline DynMatrix operator-(const T &t) const{
       DynMatrix d(cols(),rows());
       std::transform(begin(),end(),d.begin(),std::bind2nd(std::minus<T>(),t));
       return d;
@@ -333,7 +333,7 @@ namespace icl{
     }
 
     /// Matrix addition
-    inline DynMatrix operator+(const DynMatrix &m) throw (IncompatibleMatrixDimensionException){
+    inline DynMatrix operator+(const DynMatrix &m) const throw (IncompatibleMatrixDimensionException){
       if(cols() != m.cols() || rows() != m.rows()) throw IncompatibleMatrixDimensionException("A+B size(A) must be size(B)");
       DynMatrix d(cols(),rows());
       std::transform(begin(),end(),m.begin(),d.begin(),std::plus<T>());
@@ -341,7 +341,7 @@ namespace icl{
     }
 
     /// Matrix substraction
-    inline DynMatrix operator-(const DynMatrix &m) throw (IncompatibleMatrixDimensionException){
+    inline DynMatrix operator-(const DynMatrix &m) const throw (IncompatibleMatrixDimensionException){
       if(cols() != m.cols() || rows() != m.rows()) throw IncompatibleMatrixDimensionException("A+B size(A) must be size(B)");
       DynMatrix d(cols(),rows());
       std::transform(begin(),end(),m.begin(),d.begin(),std::minus<T>());
@@ -415,7 +415,28 @@ namespace icl{
       }
       return ::pow(double(accu),1.0/l);
     }
-
+    
+    /** \cond */
+  private:
+    static T diff_power_two(const T&a, const T&b){
+      T d = a-b;
+      return d*d;
+    }
+  public:
+    /** \endcond */
+    
+    /// returns the distance of the inner data vectors (linearly interpreted) (todo: speed up using IPP)
+    inline T distanceTo(const DynMatrix &other) throw (InvalidMatrixDimensionException){
+      ICLASSERT_THROW(dim() == other.dim(), InvalidMatrixDimensionException("DynMatrix::distanceTo: dimension missmatch"));
+      return ::sqrt( std::inner_product(begin(),end(),other.begin(),T(0), std::plus<T>(), diff_power_two) );
+      /*
+          for(unsigned int i=0;i<dim();++i){
+          T d = m_data[i] - other.m_data[i];
+          accu += d*d;
+          }
+          return ::sqrt(accu);
+      */
+    }
 
 
     /// default iterator type (just a data-pointer)

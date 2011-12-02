@@ -1864,6 +1864,7 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
         }
       }
     }
+    if(setFullROI) this->setFullROI();
   }
 
   template<class Type>
@@ -1884,7 +1885,8 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
       // right
       clearChannelROI<Type>(this,c,val, roi.ur(),
                          Size(s.width-roi.right(),roi.height) );
-    }    
+    }   
+    if(setFullROI) this->setFullROI(); 
   }
 
   template<class Type>
@@ -1907,6 +1909,7 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
       clearChannelROI<Type>(this,c,vals[c], roi.ur(),
                          Size(s.width-roi.right(),roi.height) );
     }    
+    if(setFullROI) this->setFullROI();
   }
 
   template<class Type>
@@ -1948,6 +1951,8 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
 ICL_INSTANTIATE_ALL_DEPTHS
 #undef ICL_INSTANTIATE_DEPTH
     }
+    
+    if(setFullROI) this->setFullROI();
   }
 
 

@@ -36,6 +36,7 @@
 #include <ICLUtils/FPSEstimator.h>
 #include <ICLFilter/GaborOp.h>
 GUI gui;
+GenericGrabber grabber;
 
 inline bool is_equal(const float *a, const float *b, unsigned int n){
   for(unsigned int i=0;i<n;i++){
@@ -60,7 +61,7 @@ void init(){
   
   GUI maskNfps("hbox");
   maskNfps << "image[@minsize=15x15@label=Gabor Mask@handle=mask]"
-           << "label(...)[@label=FPS@minsize=4x2@handle=fps]"; 
+           << "fps(10)[handle=fps]"; 
   
   GUI sidebar("vbox");
   sidebar << maskNfps << params;
@@ -68,6 +69,12 @@ void init(){
   gui << "image[@minsize=32x24@label=Result Image@handle=image]" << sidebar;
   
   gui.show();
+
+  grabber.init(pa("-i"));
+  grabber.useDesired(parse<Size>(pa("-size")));
+  grabber.useDesired(parse<format>(*pa("-format")));
+  grabber.useDesired(parse<depth>(*pa("-depth")));
+
 }
 
 void run(){
@@ -82,50 +89,37 @@ void run(){
   float saveParams[] = {0,0,0,0,0};
   Size saveSize = Size::null;
   
-  ImageHandle &image = gui.getValue<ImageHandle>("image");
-  ImageHandle &mask = gui.getValue<ImageHandle>("mask");
-  LabelHandle &fps = gui.getValue<LabelHandle>("fps");
-  
-  Grabber *grabber = new GenericGrabber(pa("-i"));
-  grabber->useDesired(depth32f);
-  grabber->useDesired(Size::VGA);
-  grabber->useDesired(formatRGB);
   ImgBase *resultImage = 0;
   
-  GaborOp *g = 0;
-  
-  FPSEstimator fpsEst(5);
+  SmartPtr<GaborOp> g;
   
   while(1){
-    fps = fpsEst.getFPSString();
-    
     float params[] = {lambda,theta,psi,gamma,sigma};
     Size size = Size(width,height);
     
     
     if(!is_equal(params,saveParams,5) || size != saveSize || !g){
-      if(g) delete g;
       g = new GaborOp(size,vec1(lambda),vec1(theta),vec1(psi),vec1(sigma),vec1(gamma));
-      Img32f m = g->getKernels()[0];
-      m.detach();
+      Img32f m = g->getKernels()[0].detached();
       m.normalizeAllChannels(Range<float>(0,255));
-      mask = &m;
-      mask.update();
+      gui["mask"] = m;
+      gui["mask"].update();
     }
     saveSize = size;
     memcpy(saveParams,params,5*sizeof(float));
     
-    g->apply(grabber->grab(),&resultImage);
+    g->apply(grabber.grab(),&resultImage);
     resultImage->normalizeAllChannels(Range<icl64f>(0,255));
     
-    image = resultImage;
-    image.update();
-    Thread::msleep(10);
+    gui["image"] = resultImage;
+    gui["image"].update();
+    
+    gui["fps"].update();
   }
 }
 
 
 
 int main(int n, char **ppc){
-  return ICLApp(n,ppc,"[m]-input|-i(device,device-params)",init,run).exec();
+  return ICLApp(n,ppc,"[m]-input|-i(device,device-params) -format(format=rgb) -depth(depth=depth32f) -size(size=VGA)",init,run).exec();
 }

@@ -78,6 +78,16 @@ namespace icl{
                       InvalidMatrixDimensionException("DynColVector = DynMatrix: source matrix has more than one column"));
       return *this;
     }
+    /// adapts the vector dimension 
+    /** overwrites setBounds from the parent matrix class to prevent the vector from being resized to matrix bounds */
+    inline void setBounds(unsigned int dim, bool holdContent=false, const T &initializer=0) throw (InvalidMatrixDimensionException){
+      DynMatrix<T>::setBounds(1,dim,holdContent,initializer);
+    }
+
+    /// adapts the vector dimension 
+    inline void setDim(unsigned int dim, bool holdContent= false, const T &initializer=0) throw (InvalidMatrixDimensionException){
+      setBounds(dim,holdContent,initializer);
+    }
   };
 
   template<class T>
@@ -114,6 +124,18 @@ namespace icl{
                       InvalidMatrixDimensionException("DynRowVector = DynMatrix: source matrix has more than one rows"));
       return *this;
     }
+
+    /// adapts the vector dimension 
+    /** overwrites setBounds from the parent matrix class to prevent the vector from being resized to matrix bounds */
+    inline void setBounds(unsigned int dim, bool holdContent=false, const T &initializer=0) throw (InvalidMatrixDimensionException){
+      DynMatrix<T>::setBounds(dim,1,holdContent,initializer);
+    }
+
+    /// adapts the vector dimension 
+    inline void setDim(unsigned int dim, bool holdContent= false, const T &initializer=0) throw (InvalidMatrixDimensionException){
+      setBounds(dim,holdContent,initializer);
+    }
+
   };
 }
 
