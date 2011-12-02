@@ -35,52 +35,86 @@
 #ifndef ICL_DYN_VECTOR_H
 #define ICL_DYN_VECTOR_H
 
-#include <valarray>
+#include <ICLUtils/DynMatrix.h>
 
 namespace icl{
+  
+  /// Extension class for the DynMatrix<T> template, that restricts the the matrix column count to 'one'
   template<class T>
-  struct DynVector : public std::valarray<T>{
-    DynVector():std::valarray<T>(){}
-    explicit DynVector(size_t dim):std::valarray<T>(dim){};
-    DynVector(const T &val, int dim):std::valarray<T>(val,dim){}
-    DynVector(const T *data, int dim):std::valarray<T>(data,dim){}
-    DynVector(const DynVector &v):std::valarray<T>(v){}
-    
-    
-    DynVector(const std::slice_array< T> &a):std::valarray<T>(a){}
-    DynVector(const std::gslice_array< T> &a):std::valarray<T>(a){}
-    DynVector(const std::mask_array< T> &a):std::valarray<T>(a){}
-    DynVector(const std::indirect_array< T> &a):std::valarray<T>(a){}
-    
-    void ensureSize(size_t dim){
-      if(std::valarray<T>::size() != dim) std::valarray<T>::resize(dim);    
+  struct DynColVector : public DynMatrix<T>{
+    /// creates a column vector from given matrix column
+    DynColVector(const typename DynMatrix<T>::DynMatrixColumn &column):
+      DynMatrix<T>(column){}
+
+    /// Default empty constructor creates a null-vector
+    inline DynColVector():DynMatrix<T>(){};
+
+    /// Creates a column vector with given dimension (and optional initialValue)
+    inline DynColVector(unsigned int dim,const T &initValue=0) throw (InvalidMatrixDimensionException) :
+      DynMatrix<T> (1,dim,initValue){}
+
+    /// Create a column vector with given data
+    /** Data can be wrapped deeply or shallowly. If the latter is true, given data pointer
+        will not be released in the destructor, i.e. the data ownership is not passed to the 
+        DynColumnVector instance*/
+    inline DynColVector(unsigned int dim, T *data, bool deepCopy=true) throw (InvalidMatrixDimensionException) :
+      DynMatrix<T>(1,dim,data,deepCopy){}
+
+
+    /// Creates column vector with given data pointer and dimsion (const version: deepCopy only)
+    inline DynColVector(unsigned int dim,const T *data) throw (InvalidMatrixDimensionException) :
+      DynMatrix<T>(1,dim,data){}
+
+    /// Default copy constructor (the source matrix column count must be 'one')
+    inline DynColVector(const DynMatrix<T> &other) throw (InvalidMatrixDimensionException):
+      DynMatrix<T>(other){
+      ICLASSERT_THROW(DynMatrix<T>::cols() == 1, 
+                      InvalidMatrixDimensionException("DynColVector(DynMatrix): source matrix has more than one column"));
     }
-    
-    DynVector<T> &operator=(const DynVector<T> &v){
-      ensureSize(v.size());
-      return std::valarray<T>::operator=(v);
-    }
-    DynVector<T> &operator=(const T &t){
-      return std::valarray<T>::operator=(t); 
-    }
-    DynVector<T> &operator=(const std::slice_array<T> &a){
-      ensureSize(a.size());
-      return std::valarray<T>::operator=(a);
-    }
-    DynVector<T> &operator=(const std::gslice_array<T> &a){ 
-      ensureSize(a.size());
-      return std::valarray<T>::operator=(a); 
-    }
-    DynVector<T> &operator=(const std::mask_array<T> &a){
-      ensureSize(a.size());
-      return std::valarray<T>::operator=(a); 
-    }
-    DynVector<T> &operator=(const std::indirect_array<T> &a){
-      ensureSize(a.size());
-      return std::valarray<T>::operator=(a); 
+    /// assignment operator (the rvalue's column count must be one)
+    inline DynColVector<T> &operator=(const DynMatrix<T> &other) throw (InvalidMatrixDimensionException){
+      DynMatrix<T>::operator=(other);
+      ICLASSERT_THROW(DynMatrix<T>::cols() == 1, 
+                      InvalidMatrixDimensionException("DynColVector = DynMatrix: source matrix has more than one column"));
+      return *this;
     }
   };
-  
+
+  template<class T>
+  struct DynRowVector : public DynMatrix<T>{
+    /// Default empty constructor creates a null-vector
+    inline DynRowVector():DynMatrix<T>(){}
+
+    /// Creates a row vector with given dimension (and optional initialValue)
+    inline DynRowVector(unsigned int dim,const T &initValue=0) throw (InvalidMatrixDimensionException) :
+      DynMatrix<T> (dim,1,initValue){}
+
+    /// Create a row vector with given data
+    /** Data can be wrapped deeply or shallowly. If the latter is true, given data pointer
+        will not be released in the destructor, i.e. the data ownership is not passed to the 
+        DynColumnVector instance*/
+    inline DynRowVector(unsigned int dim, T *data, bool deepCopy=true) throw (InvalidMatrixDimensionException) :
+      DynMatrix<T>(dim,1,data,deepCopy){}
+
+
+    /// Creates column vector with given data pointer and dimsion (const version: deepCopy only)
+    inline DynRowVector(unsigned int dim,const T *data) throw (InvalidMatrixDimensionException) :
+      DynMatrix<T>(dim,1,data){}
+
+    /// Default copy constructor (the source matrix row count must be 'one')
+    inline DynRowVector(const DynMatrix<T> &other) throw (InvalidMatrixDimensionException):
+      DynMatrix<T>(other){
+      ICLASSERT_THROW(DynMatrix<T>::rows() == 1,
+                      InvalidMatrixDimensionException("DynRowVector(DynMatrix): source matrix has more than one rows"));
+    }
+    /// assignment operator (the rvalue's column count must be one)
+    inline DynRowVector<T> &operator=(const DynMatrix<T> &other) throw (InvalidMatrixDimensionException){
+      DynMatrix<T>::operator=(other);
+      ICLASSERT_THROW(DynMatrix<T>::rows() == 1,
+                      InvalidMatrixDimensionException("DynRowVector = DynMatrix: source matrix has more than one rows"));
+      return *this;
+    }
+  };
 }
 
 #endif
