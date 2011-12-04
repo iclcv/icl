@@ -44,7 +44,9 @@ namespace icl{
   /// internally used classes
   struct ICLDrawWidget::State{
     // {{{  struct
-    State(){}
+    State(){
+      
+    }
     bool aa;             // antializing on
     bool rel;            // relative or absolut coords
     Rect32f rect;           // current image rect
@@ -52,6 +54,8 @@ namespace icl{
     Size32f imsize;         // current image size
     //    unsigned char bg[4]; // background color
     QSizeF symsize;    
+    
+    //    float transform[6]; not implemented yet!
   };
 
   // }}}
@@ -940,6 +944,9 @@ namespace icl{
     m_poState->size = Size32f(width(),height());
     m_poState->imsize = getImageSize(true);
     m_poState->symsize = QSizeF(5,5);
+    //static float id[] = { 1, 0, 0,
+    //                          0, 1, 0 };
+    //    std::copy(id,id+6,m_poState->transform);
     //    memset(m_poState->bg,0,4*sizeof(unsigned char));
     e->font("Arial",8,PaintEngine::DemiBold);
     e->color(255,255,255);

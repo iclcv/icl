@@ -44,6 +44,8 @@
 #include <ICLUtils/SmartPtr.h>
 #include <ICLUtils/Any.h>
 #include <ICLUtils/Function.h>
+#include <ICLUtils/UncopiedInstance.h>
+#include <ICLUtils/Mutex.h>
 
 namespace icl{
 
@@ -141,6 +143,10 @@ namespace icl{
     std::vector<std::string> m_deactivated;
     
     protected:
+
+    /// locks all accesses to propertie values
+    /** adding and adapting properties is not thread safe! */
+    UncopiedInstance<Mutex> m_mutex;
     
     /// This can be used by derived classes to store supported properties in the internal list
     /** Throws an exception if the property name is already defined.

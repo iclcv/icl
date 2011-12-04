@@ -147,6 +147,7 @@ namespace icl{
     if(p.configurable != this){
       return p.configurable->getPropertyValue(propertyName.substr(p.childPrefix.length()));
     }else{
+      Mutex::Locker lock(m_mutex);
       return p.value;
     }
   }
@@ -161,6 +162,7 @@ namespace icl{
     if(p.configurable != this){
       p.configurable->setPropertyValue(propertyName.substr(p.childPrefix.length()),value);
     }else{
+      Mutex::Locker lock(m_mutex);
       p.value = value;
     }
     call_callbacks(propertyName);
