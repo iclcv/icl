@@ -1533,7 +1533,7 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
     CHECK_VALUES_NO_SIZE(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
 
 #if 0
-    NOTE: this function has become deprecated
+    //NOTE: this function has become deprecated
     // attention: for source image IPP wants indeed the *image* origin
     ippiResize_8u_C1R(src->getData(srcC),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
                       dst->getROIData(dstC,dstOffs),dst->getLineStep(),dstSize,
@@ -1541,13 +1541,25 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
                       (float)dstSize.height/(float)srcSize.height,(int)eScaleMode);
 #else
     int bufSize=0;
-    ippiResizeGetBufSize(Rect(srcOffs,srcSize), Rect(dstOffs, dstSize), 1, (int)eScaleMode, &bufSize);
-    std::vector<icl8u> buf(bufSize);
+    IppStatus s2 = ippiResizeGetBufSize(Rect(srcOffs,srcSize), Rect(dstOffs, dstSize), 1, (int)eScaleMode, &bufSize);
+    
+    if(s2 != ippStsNoErr){
+      throw ICLException("error in scaledCopyChannelROI<icl8u>: " + str(ippGetStatusString(s2)));
+    }
+    
+
+    std::vector<icl8u> buf(bufSize*100);
+    
+    float fx = (float)dstSize.width/(float)srcSize.width, fy = (float)dstSize.height/(float)srcSize.height;
+    float tx = -fx*srcOffs.x, ty = -fy*srcOffs.y;
+    
     // attention: for source image IPP wants indeed the *image* origin
-    ippiResizeSqrPixel_8u_C1R(src->getData(srcC),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
-                              dst->getROIData(dstC,dstOffs),dst->getLineStep(), Rect(dstOffs, dstSize),
-                              (float)dstSize.width/(float)srcSize.width,
-                              (float)dstSize.height/(float)srcSize.height,0,0,(int)eScaleMode,buf.data());
+    IppStatus s = ippiResizeSqrPixel_8u_C1R(src->getData(srcC),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
+                                            dst->getROIData(dstC,dstOffs),dst->getLineStep(), Rect(dstOffs, dstSize),
+                                            fx,fy,tx,ty,(int)eScaleMode,buf.data());
+    if(s != ippStsNoErr){
+      throw ICLException("error in scaledCopyChannelROI<icl8u>: " + str(ippGetStatusString(s)));
+    }
 #endif
   }
 
@@ -1565,7 +1577,7 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
     CHECK_VALUES_NO_SIZE(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
     
 #if 0
-    NOTE: this function has become deprecated
+    //NOTE: this function has become deprecated
     // attention: for source image IPP wants indeed the *image* origin
     ippiResize_32f_C1R(src->getData(srcC),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
                       dst->getROIData(dstC,dstOffs),dst->getLineStep(),dstSize,
@@ -1573,13 +1585,26 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
                       (float)dstSize.height/(float)srcSize.height,(int)eScaleMode);
 #else
     int bufSize=0;
-    ippiResizeGetBufSize(Rect(srcOffs,srcSize), Rect(dstOffs, dstSize), 1, (int)eScaleMode, &bufSize);
+    IppStatus s2 = ippiResizeGetBufSize(Rect(srcOffs,srcSize), Rect(dstOffs, dstSize), 1, (int)eScaleMode, &bufSize);
+
+    if(s2 != ippStsNoErr){
+      throw ICLException("error in scaledCopyChannelROI: " + str(ippGetStatusString(s2)));
+    }
+    
     std::vector<icl8u> buf(bufSize);
+
+ 
+    float fx = (float)dstSize.width/(float)srcSize.width, fy = (float)dstSize.height/(float)srcSize.height;
+    float tx = -fx*srcOffs.x, ty = -fy*srcOffs.y;
+    
     // attention: for source image IPP wants indeed the *image* origin
-    ippiResizeSqrPixel_32f_C1R(src->getData(srcC),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
-                              dst->getROIData(dstC,dstOffs),dst->getLineStep(), Rect(dstOffs, dstSize),
-                              (float)dstSize.width/(float)srcSize.width,
-                              (float)dstSize.height/(float)srcSize.height,0,0,(int)eScaleMode,buf.data());
+    IppStatus s = ippiResizeSqrPixel_32f_C1R(src->getData(srcC),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
+                                             dst->getROIData(dstC,dstOffs),dst->getLineStep(), Rect(dstOffs, dstSize),
+                                             fx,fy,tx,ty,(int)eScaleMode ,buf.data());
+    if(s != ippStsNoErr){
+      throw ICLException("error in scaledCopyChannelROI: " + str(ippGetStatusString(s)));
+    }
+
 #endif
   }
 

@@ -136,6 +136,7 @@ namespace icl{
     }
   }
   
+
   FiducialImpl *FiducialDetectorPluginBCH::classifyPatch(const Img8u &image, int *rot, bool returnRejectedQuads){
     image.scaledCopyROI(&data->buffer, interpolateRA);
     
