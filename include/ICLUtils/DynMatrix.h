@@ -131,6 +131,23 @@ namespace icl{
       std::copy(other.begin(),other.end(),begin());
     }
 
+    /// creates a new DynMatrix from given csv filename
+    /** @see DynMatrix<T>::loadCSV */
+    inline DynMatrix(const std::string &filename):m_rows(0),m_cols(0),m_data(0),m_ownData(true){
+      *this = loadCSV(filename);
+    }
+    
+    /// loads a dynmatrix from given CSV file
+    /** supported types T are all icl8u, icl16s, icl32s, icl32f, icl64f.
+        Each row of the CSV file becomes a matrix row. The column delimiter is ','
+        Rows, that begin with '#' or with ' ' or that have no length are ignored
+    */
+    static DynMatrix<T> loadCSV(const std::string &filename) throw (ICLException);
+    
+    /// writes the current matrix to a csv file
+    /** supported types T are all icl8u, icl16s, icl32s, icl32f, icl64f */
+    void saveCSV(const std::string &filename) throw (ICLException);
+
     /// returns with this matrix has a valid data pointer
     inline bool isNull() const { return !m_data; }
 

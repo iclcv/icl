@@ -235,8 +235,8 @@ namespace icl {
     // {{{ open
 
     switch(eScaleMode) {
-      case 0: return clipped_cast<float, Type>(subPixelNN (fX, fY, iChannel));
-      case 1: return clipped_cast<float, Type>(subPixelLIN (fX, fY, iChannel));
+      case interpolateNN: return clipped_cast<float, Type>(subPixelNN (fX, fY, iChannel));
+      case interpolateLIN: return clipped_cast<float, Type>(subPixelLIN (fX, fY, iChannel));
       default: 
         ERROR_LOG ("interpolation method not yet implemented!");
         return clipped_cast<float, Type>(subPixelLIN (fX, fY, iChannel));
@@ -1532,11 +1532,23 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
   {
     CHECK_VALUES_NO_SIZE(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
 
+#if 0
+    NOTE: this function has become deprecated
     // attention: for source image IPP wants indeed the *image* origin
     ippiResize_8u_C1R(src->getData(srcC),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
                       dst->getROIData(dstC,dstOffs),dst->getLineStep(),dstSize,
                       (float)dstSize.width/(float)srcSize.width,
                       (float)dstSize.height/(float)srcSize.height,(int)eScaleMode);
+#else
+    int bufSize=0;
+    ippiResizeGetBufSize(Rect(srcOffs,srcSize), Rect(dstOffs, dstSize), 1, (int)eScaleMode, &bufSize);
+    std::vector<icl8u> buf(bufSize);
+    // attention: for source image IPP wants indeed the *image* origin
+    ippiResizeSqrPixel_8u_C1R(src->getData(srcC),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
+                              dst->getROIData(dstC,dstOffs),dst->getLineStep(), Rect(dstOffs, dstSize),
+                              (float)dstSize.width/(float)srcSize.width,
+                              (float)dstSize.height/(float)srcSize.height,0,0,(int)eScaleMode,buf.data());
+#endif
   }
 
   // }}}
@@ -1552,11 +1564,23 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
     FUNCTION_LOG("");
     CHECK_VALUES_NO_SIZE(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
     
+#if 0
+    NOTE: this function has become deprecated
     // attention: for source image IPP wants indeed the *image* origin
     ippiResize_32f_C1R(src->getData(srcC),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
-                       dst->getROIData(dstC,dstOffs),dst->getLineStep(),dstSize,
-                       (float)dstSize.width/(float)srcSize.width,
-                       (float)dstSize.height/(float)srcSize.height,(int)eScaleMode);
+                      dst->getROIData(dstC,dstOffs),dst->getLineStep(),dstSize,
+                      (float)dstSize.width/(float)srcSize.width,
+                      (float)dstSize.height/(float)srcSize.height,(int)eScaleMode);
+#else
+    int bufSize=0;
+    ippiResizeGetBufSize(Rect(srcOffs,srcSize), Rect(dstOffs, dstSize), 1, (int)eScaleMode, &bufSize);
+    std::vector<icl8u> buf(bufSize);
+    // attention: for source image IPP wants indeed the *image* origin
+    ippiResizeSqrPixel_32f_C1R(src->getData(srcC),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
+                              dst->getROIData(dstC,dstOffs),dst->getLineStep(), Rect(dstOffs, dstSize),
+                              (float)dstSize.width/(float)srcSize.width,
+                              (float)dstSize.height/(float)srcSize.height,0,0,(int)eScaleMode,buf.data());
+#endif
   }
 
   // }}}

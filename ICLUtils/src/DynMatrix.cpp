@@ -37,6 +37,7 @@
 #include <stdint.h>
 #include <complex>
 #include <algorithm>
+#include <fstream>
 
 // Intel Math Kernel Library
 #ifdef HAVE_MKL
@@ -45,6 +46,7 @@
 #endif
 
 #include <ICLUtils/DynMatrixUtils.h>
+#include <ICLUtils/StringUtils.h>
 
 namespace icl{
 
@@ -765,7 +767,8 @@ namespace icl{
   template DynMatrix<double> DynMatrix<double>::pinv(bool,double) const
     throw (InvalidMatrixDimensionException,SingularMatrixException,ICLException);
 
-
+#if 0
+  // this is already defined in string-utils
   template<class T>
   static inline std::ostream &icl_to_stream(std::ostream &s, T t){
     return s << t;
@@ -786,7 +789,7 @@ namespace icl{
     t = (uint8_t)tmp;
     return s;
   }
-
+#endif
 
   template<class T>
   std::ostream &operator<<(std::ostream &s,const DynMatrix<T> &m){
@@ -836,5 +839,54 @@ namespace icl{
 
   X(std::complex<float>);
   X(std::complex<double>);
+
+#undef X
+  
+  template<class T>
+  DynMatrix<T> DynMatrix<T>::loadCSV(const std::string &filename) throw (ICLException){
+    std::ifstream s(filename.c_str());
+    if(!s.good()) throw ICLException("DynMatrix::loadCSV: invalid filename ' "+ filename +'\'');
+    
+    std::vector<T> data;
+    data.reserve(256);
+    int lineLen = -1;
+    
+    std::string line;
+    while(!s.eof()){
+      std::getline(s,line);
+      if(!line.length() || line[0] == '#' || line[0] == ' ') continue;
+      std::vector<T> v = icl::parseVecStr<T>(line,","); 
+      int cLen = (int)v.size();
+      if(lineLen == -1) lineLen = cLen;
+      else if(lineLen != cLen){
+        throw ICLException("DynMatrix::loadCSV: row lengths differ");
+      }
+      std::copy(v.begin(),v.end(),std::back_inserter(data));
+    }
+    if(!lineLen) throw ICLException("DynMatrix::loadCSV: no data found in file ' " + filename + '\'');
+    DynMatrix<T> M(lineLen,data.size()/lineLen, data.data());
+    return M;
+  }
+    
+  /// writes the current matrix to a csv file
+  /** supported types T are all icl8u, icl16s, icl32s, icl32f, icl64f */
+  template<class T>
+  void DynMatrix<T>::saveCSV(const std::string &filename) throw (ICLException){
+    std::ofstream s(filename.c_str());
+    if(!s.good()) throw ICLException("DynMatrix::saveCSV:");
+    for(unsigned int y=0;y<rows();++y){
+      for(unsigned int x=0;x<cols();++x){
+        icl_to_stream(s, (*this)(x,y)) << ',';
+      }
+      s << std::endl;
+    }
+  }
+
+  
+#define ICL_INSTANTIATE_DEPTH(D)                                        \
+  template DynMatrix<icl##D> DynMatrix<icl##D>::loadCSV(const std::string &filename) throw (ICLException); \
+  template void DynMatrix<icl##D>::saveCSV(const std::string&) throw (ICLException);
+  ICL_INSTANTIATE_ALL_DEPTHS;
+#undef ICL_INSTANTIATE_DEPTH
 }
 
