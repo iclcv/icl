@@ -44,8 +44,44 @@
 
 /** \mainpage ICLGeom Package for Handling 3D Geometry
 
+    <H1> Please note that this page is under construction!</H1>
+
     The ICLGeom package provides functions and classes for handling 3D-geometry related problems. 
-    This includes for example 3D camera calibration and 3D position estimation from multiple camera views. 
+    This includes
+    - camera calibration
+    - 3D/6D pose estimation
+    - 3D visualization
+
+    <h2>Camera Calibration</h2>
+
+    ICL provides different tools for camera calibration. Basically, we distinguish between 
+    -# Estimation of distortion parameters
+    -# Camera calibration (i.e. finding a camera's intrinsic and extrinsic parameters)
+    
+
+    
+    <h2>Pose Estimation</h2>
+    
+    ICL Provides different standard algorithms for 3D pose/position estimation.
+    -# Triangolization (icl::Camera::estimate_3D)
+    -# Posit (icl::Posit)
+    -# SoftPosit (icl::SoftPosit)
+    -# Pose estimation for coplanar points (icl::CoplanarPointPoseEstimator)
+    -# ICP (Iterative Closest Point) (icl:ICP)
+    
+    
+    <h2>3D Visualization</h2>
+    
+    3D Visualization is also a very important part for interactive applications. ICL provides a simple to use
+    scene (icl::Scene) class that allows to define 3D objects and to render these objects as an image overlay.
+    The icl::Scene class is fully integrated with ICL's Qt package:
+    - The scene is rendered by adding the scene's render callback to an ICLDrawWidget3D's rendering queue
+    - Objects are rendered very efficiently using OpenGL
+    - a Scene does also provide MouseHandlers, that can be linked to ICLDrawWidgets for 3D scene navigation.
+    
+    <H1> OLD ... </H1>
+    
+    - for example 3D camera calibration and 3D position estimation from multiple camera views. 
     ICLGeom's fundamental component is the icl::Camera class. Another important part of the ICLGeom package
     is the lightweight scene API which essentially consists of the icl::Scene2 and the icl::Object2 classes. 
     The icl::Scene2 class is linked to the icl::Camera class which helps to visualize simple 3D scenes and
