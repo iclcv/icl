@@ -57,6 +57,10 @@ namespace icl{
   const FiducialDetectorPlugin *Fiducial::getDetector() const{
     return impl->parent;
   }
+
+  const ImageRegion Fiducial::getImageRegion() const{
+    return impl->imageRegion;
+  }
   
 #define FORWARD_CALL_TO_IMPL(T,DIM,X)                \
   const T &Fiducial::get##X##DIM##D() const{         \

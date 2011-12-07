@@ -105,7 +105,8 @@ namespace icl{
 
     static const Fiducial::FeatureSet supported = ( Fiducial::Center2D | 
                                                     Fiducial::Rotation2D |
-                                                    Fiducial::Corners2D );
+                                                    Fiducial::Corners2D |
+                                                    Fiducial::ImageRegion );
 
     static Fiducial::FeatureSet computed = ( 1<<Fiducial::Center2D ); 
 
@@ -117,6 +118,7 @@ namespace icl{
       for(unsigned int j=0;j<data->rs.size();++j){
         if(data->rs[j].match(regions[i])){
           FiducialImpl* fids = new FiducialImpl(this, supported, computed, j, data->matchingRegions.size(), Size::null);
+          fids->imageRegion = regions[i];
           dst.push_back(fids);
           dst.back()->ensure2D()->infoCenter = regions[i].getCOG();
           dst.back()->info2D->infoRotation = 0;  // TODO how to define the orientation ??

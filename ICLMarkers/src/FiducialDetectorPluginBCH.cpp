@@ -137,7 +137,8 @@ namespace icl{
   }
   
 
-  FiducialImpl *FiducialDetectorPluginBCH::classifyPatch(const Img8u &image, int *rot, bool returnRejectedQuads){
+  FiducialImpl *FiducialDetectorPluginBCH::classifyPatch(const Img8u &image, int *rot, 
+                                                         bool returnRejectedQuads, ImageRegion r){
     image.scaledCopyROI(&data->buffer, interpolateRA);
     
     data->bin->apply(data->buffer.begin(0));
@@ -152,11 +153,14 @@ namespace icl{
     if(p && (p.id >=0) && (p.id < 4096) && (data->loaded[p.id]) && p.errors <= data->maxBCHErr){
       FiducialImpl *impl = new FiducialImpl(this,supported,computed,
                                             p.id, -1,data->sizes[p.id]);
+      impl->imageRegion = r;
       *rot = (int)p.rot;
       return impl;
     }else if (returnRejectedQuads){
       *rot = 0;
-      return new FiducialImpl(this,supported,computed, 999999, -1,Size(1,1)); // dummy ID
+      FiducialImpl *impl = new FiducialImpl(this,supported,computed, 999999, -1,Size(1,1)); // dummy ID
+      impl->imageRegion = r;
+      return impl;
     }else{
       return 0;
     }

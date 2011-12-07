@@ -39,6 +39,7 @@
 
 #include <ICLUtils/Point32f.h>
 #include <ICLGeom/GeomDefs.h>
+#include <ICLBlob/ImageRegion.h>
 
 namespace icl{
   
@@ -69,6 +70,7 @@ namespace icl{
       Rotation2D,   //!< rotation in the image plain
       Corners2D,    //!< list of corners
       KeyPoints2D,  //!< list of 2D points with corresponding marker coordinates
+      ImageRegion,  //!< associated image region
       Center3D,     //!< 3D center information
       Rotation3D,   //!< 3D orientation information
       Pose3D,       //!< 3D orientation information
@@ -127,6 +129,9 @@ namespace icl{
     /// returns key points in the marker
     const std::vector<KeyPoint> &getKeyPoints2D() const;
 
+    /// returns the associated image region
+    const icl::ImageRegion getImageRegion() const;
+
     /// returns the markers
     const Vec &getCenter3D() const;
     
@@ -134,7 +139,7 @@ namespace icl{
     const Vec &getRotation3D() const;
     
     /// returns the markers
-    const Mat &getPose3D() const;
+    const Mat &getPose3D() const;    
 
     /// returns whether is marker has been initialized
     inline operator bool() const { return impl; }

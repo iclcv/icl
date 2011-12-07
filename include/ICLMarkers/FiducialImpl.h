@@ -100,6 +100,9 @@ namespace icl{
     /** This information is neccessary for creation of feature points and
         for most 3D pose detection stuff */
     Size32f realSizeMM;
+
+    /// most plugins can provide an image region
+    ImageRegion imageRegion;
     
     /// set of 2D features
     /* this pointer and its members <b>can</b> be instantiated by 

@@ -281,8 +281,6 @@ namespace icl{
       for(unsigned int i=0;i<mv.size();i++){
         v.push_back(mv[i].toString());
       }
-      DEBUG_LOG(Grabber::translateStringVec(v));
-      
       return Grabber::translateStringVec(v);
     }else if(name == "enable-image-labeling" || name == "omit-doubled-frames"){
       return "{\"on\",\"off\"}";
