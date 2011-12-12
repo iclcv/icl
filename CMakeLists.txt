@@ -35,8 +35,8 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0)
 PROJECT(ICL)
 #ubuntu version
 set(ICL_MAJOR "6")
-set(ICL_MINOR "3")
-set(ICL_PATCH "2")
+set(ICL_MINOR "4")
+set(ICL_PATCH "0")
 set(VERSION "${ICL_MAJOR}.${ICL_MINOR}.${ICL_PATCH}")
 cmake_policy(SET CMP0002 OLD)
 if(NOT ${CMAKE_PATCH_VERSION} STREQUAL "0")
@@ -192,6 +192,7 @@ set(ICL_XDEP_VIDEODEV_ON OFF CACHE BOOL "Use videodev (v4l) headers if available
 set(ICL_XDEP_VIDEODEV2_ON OFF CACHE BOOL "Use videodev2 (v4l2) headers if available")
 set(ICL_XDEP_PYLON_ON ON CACHE BOOL "Use Pylon if available")
 set(ICL_XDEP_GENICAM_ON ON CACHE BOOL "Use GenICam if available")
+set(ICL_XDEP_OPENCL_ON ON CACHE BOOL "Use OpenCL if available")
 
 FIND_PACKAGE(PkgConfig)
 
@@ -541,6 +542,14 @@ if(NOT XCF_PKG_FOUND)
    endif()
 endif()
 
+####OPENCL####
+if(UNIX)
+  icl_check_external_package(OPENCL "cl.h;cl.hpp" "OpenCL" lib include/CL /usr HAVE_OPENCL_COND)
+ if(HAVE_OPENCL_COND)
+   set(OPENCL_LIBS_l OpenCL)
+ endif()
+endif()
+
 ####OPENGL####
 if(WIN32)
 icl_check_external_package(OPENGL "gl.h;glu.h" "glu32.a" lib include/GL C:/Qt/2010.02.1/mingw HAVE_OPENGL_COND)
@@ -703,7 +712,7 @@ configure_file(${PROJECT_SOURCE_DIR}/include/ICLUtils/config.h.cmake ${PROJECT_S
 
 #set the internal and external deps of the ICL
 #if an entry is not available, it will be empty
-set(ICLUtils_external_dependencies IPP MKL)
+set(ICLUtils_external_dependencies IPP MKL OPENCL)
 set(ICLCore_internal_dependencies ICLUtils)
 set(ICLCC_internal_dependencies ICLCore)
 set(ICLFilter_internal_dependencies ICLCC)
@@ -740,7 +749,7 @@ if(${HAVE_QT_COND})
 else()
     set(ICLQuick_internal_dependencies ICLFilter ICLIO ICLBlob)
 endif()
-set(ICLGeom_internal_dependencies ICLQuick)
+set(ICLGeom_internal_dependencies ICLQuick )
 set(ICLAlgorithms_external_dependencies OPENSURF)
 
 set(ICLMarkers_internal_dependencies ICLGeom ICLFilter ICLQuick)

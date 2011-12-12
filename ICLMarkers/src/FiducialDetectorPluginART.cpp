@@ -347,6 +347,7 @@ namespace icl{
       FiducialImpl *impl = new FiducialImpl(this,supported,computed,
                                             n->id, -1, n->size);
       impl->imageRegion = r;
+      return impl;
     }else if (returnRejectedQuads){
       *rot = 0;
       FiducialImpl *impl = new FiducialImpl(this,supported,computed, 999999, -1, Size(1,1)); // dummy ID
