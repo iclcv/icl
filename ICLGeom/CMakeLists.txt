@@ -55,6 +55,7 @@ add_libsource (${PROJECT_NAME} "src/CalibrationGrid.cpp" "${CONDITIONLIST}" LIB_
 add_libsource (${PROJECT_NAME} "src/GridSceneObject.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/CalibrationObject.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/SuperQuadric.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/PointNormalEstimation.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
 set(CONDITIONLIST HAVE_OPENCV2_COND)
 add_libsource (${PROJECT_NAME} "src/OpenCVCamCalib.cpp" "${CONDITIONLIST}" LIB_SOURCES)
@@ -74,6 +75,7 @@ add_example (${PROJECT_NAME} "geom-property-demo" "${CONDITIONLIST}" ICLLibsToLi
 add_example (${PROJECT_NAME} "swiss-ranger-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "texture-cube-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "show-scene" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "kinect-normals-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_OPENGL_COND HAVE_GLX_COND)
 add_example (${PROJECT_NAME} "offscreen-rendering-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)

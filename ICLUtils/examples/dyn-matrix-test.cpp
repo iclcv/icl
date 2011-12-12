@@ -234,11 +234,27 @@ void fixed_benchmark(const FixedMatrix<double,W,H> &M){
 
 
 int main(int n, char **ppc){
-  painit(n,ppc,"-no-pinv -no-bench -no-inv");
-  for(int i=0;i<36;++i) iB[i]/=10.0;
+  painit(n,ppc,"-no-pinv -no-bench -no-inv -io(tmp-filename)");
 
-  std::cout << "All matrices must be 0!" << std::endl;
+
   
+  if(pa("-io")){
+    DynMatrix<float> saved(10,20,0.f);
+    for(int x=0;x<10;++x){
+      for(int y=0;y<20;++y){
+        saved(x,y) = x + 100*y;
+      }
+    }
+    saved.saveCSV(*pa("-io"));
+    
+    DynMatrix<float> loaded(*pa("-io"));
+    SHOW(loaded - saved);
+    return EXIT_SUCCESS;
+  }
+
+  for(int i=0;i<36;++i) iB[i]/=10.0;
+  std::cout << "All matrices must be 0!" << std::endl;
+
   
   if(!pa("-no-inv")){
 #define IT(A)                                                           \

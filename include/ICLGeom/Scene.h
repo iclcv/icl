@@ -58,8 +58,8 @@ namespace icl{
 
   /// Scene Implementation that is used to handle a list of objects and cameras
   /** The scene combines visual objects (icl::SceneObject) which define nodes of a <b>scene graph</b>
-      and cameras. You can use ICL's camera calibration tool icl-cam-calib to calibrate
-      you camera in your scene. Later, you can define a scene (including SceneObject-instances) and
+      and cameras. You can use ICL's camera calibration tool icl-cam-calib (and icl-cam-calib-2) to calibrate
+      cameras in your scene. Later, you can define a scene (including SceneObject-instances) and
       use the calibrated camera to draw the Scene as an image overlay.
       
       The following example demonstrates how to use the Scene class. The example can also be

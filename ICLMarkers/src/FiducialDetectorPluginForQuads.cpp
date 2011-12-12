@@ -194,7 +194,7 @@ namespace icl{
       }
 
       int rot = 0;
-      FiducialImpl *impl = classifyPatch(rect, &rot,returnRejected);
+      FiducialImpl *impl = classifyPatch(rect, &rot,returnRejected,q.getRegion());
       
       if(impl){
         impl->index = data->impls.size();

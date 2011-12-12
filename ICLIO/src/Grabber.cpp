@@ -115,18 +115,50 @@ namespace icl{
   SteppingRange<double> Grabber::translateSteppingRange(const string &rangeStr){
     return parse<SteppingRange<double> >(rangeStr);
   }
+
+  template <class T> static std::string translate_any_vec(const std::vector<T> &v){
+    std::ostringstream s;
+    s << "{";
+    for(unsigned int i=0;i<v.size();++i){
+      s << '"' << v[i] << '"' << (i<v.size()-1 ? ',' : '}');
+    }
+    return s.str();
+  }
+  
+  static std::string strip_quotes(std::string s){
+    if(!s.length()) return s;
+    if(s[0] == '"') s = s.substr(1);
+    if(!s.length()) return s;
+    if(s[s.length()-1] == '"') return s.substr(0,s.length()-1);
+    return s;
+  }
+  
+  template <class T> static std::vector<T> translate_any_string(const std::string &v){
+    std::vector<string> vs = tok(v,",");
+    std::vector<T> ts(vs.size());
+    for(unsigned int i=0; i<vs.size();++i){
+      if(i==0 && vs[i].length() && vs[i][0] == '{'){
+        vs[i] = vs[i].substr(1);
+      }else if(i==vs.size()-1 && vs[i].length() && vs[i][vs[i].length()-1] == '}'){
+        vs[i] = vs[i].substr(0,vs[i].length()-1);
+      }
+      ts[i] = parse<T>(strip_quotes(vs[i]));
+    }
+    return ts;
+  }
+  
   
   string Grabber::translateDoubleVec(const vector<double> &v){
-    return cat(v,",");
+    return translate_any_vec(v);
   }
   vector<double> Grabber::translateDoubleVec(const string &s){
-    return parseVecStr<double>(s,",");
+    return translate_any_string<double>(s);
   }
   string Grabber::translateStringVec(const vector<string> &v){
-    return cat(v,",");
+    return translate_any_vec(v);
   }
   vector<string> Grabber::translateStringVec(const string &v){
-    return tok(v,",");
+    return translate_any_string<std::string>(v);
   }
 
   const ImgBase *Grabber::grab(ImgBase **ppoDst){

@@ -35,9 +35,6 @@
 #ifndef ICL_PYLON_GRABBER_H
 #define ICL_PYLON_GRABBER_H
 
-//#define PYLON_COLOR_CONVERSION
-#define ICL_COLOR_CONVERSION
-
 #include <pylon/PylonIncludes.h>
 #include <pylon/PixelFormatConverterBayer.h>
 #include <pylon/TransportLayer.h>
@@ -91,12 +88,18 @@ namespace icl {
     /** @copydoc icl::Grabber::grab(ImgBase**) **/
     virtual const ImgBase* acquireImage();
 
+    /// Returns a list of available Pylon devices.
     static Pylon::DeviceInfoList_t getPylonDeviceList();
+    /// Prints information about the startup argument options
+    static void printHelp();
+    /// uses args to choose a pylon device, throws when no suitable device exists.
+    static Pylon::CDeviceInfo getDeviceFromArgs(std::string args) throw(ICLException);
 
     private:
     /// the constructor is private so only the friend class can create instances
-    PylonGrabberImpl(const Pylon::CDeviceInfo &dev);
-    
+    PylonGrabberImpl(const Pylon::CDeviceInfo &dev, const std::string args);
+
+
     /// A mutex lock for the camera
     icl::Mutex m_CamMutex;
     /// count of buffers for grabbing
@@ -124,14 +127,14 @@ namespace icl {
     */
     bool m_ResetImage;
     /// an IclImageBase
-    icl::Img8u* m_Image2;
-    icl::ImgBase* m_Image;
+    uint8_t* m_Image2;
+    icl::Img8u* m_Image;
     /// Pylon color format converter
-    icl::BayerConverter* m_ColorConverter;
-    //Pylon::CPixelFormatConverterBayer m_ColorConv;
-    //Pylon::SImageFormat m_InputFormat;
-    //Pylon::SOutputImageFormat m_OutputFormat;
-
+    Pylon::CPixelFormatConverter* m_ColorConverter;
+    Pylon::SImageFormat m_InputFormat;
+    Pylon::SOutputImageFormat m_OutputFormat;
+    /// indicates whether the current colorformat needs conversion.
+    bool m_Convert;
     /// a variable to count aquired picture.
     unsigned long m_Aquired;
     /// a variable to count aquiring-errors.
@@ -157,30 +160,6 @@ namespace icl {
     void cameraDefaultSettings();
     /// creates a new ImgBase is not already there.
     void initImgBase();
-    /// returns the expected image size. used to get the needed size of buffers.
-    long getNeededBufferSize();
-    /// returns the expected pixel size. used by getNeededBufferSize().
-    int getBitsPerPixel();
-    /// returns a string representation of the value of a parameter of the camera.
-    std::string getParameterValueString(std::string parameter);
-    /// used for getting a value of a parameter of a specific type from a specific source (camera/grabber)
-    template <typename SOURCE, typename NODE, typename RET>
-    RET getParameterValueOf(SOURCE* source, std::string param);
-    /// used for setting a value of a parameter of a specific type on a specific source (camera/grabber)
-    template <typename OBJ, typename NODE, typename VAL>
-    bool setParameterValueOf(OBJ* object, std::string parameter, VAL value);
-    /// template function to get the value of an IValue-subclass
-    template <typename NODE, typename RET>
-    RET getNodeValue(NODE* node);
-    /// template function overload to get the value of an IEnumeration
-    template <typename NODE, typename RET>
-    std::string getNodeValue(GenApi::IEnumeration* node);
-    /// template function to set the value of an IValue-subclass
-    template <typename NODE, typename VAL>
-    void setNodeValue(NODE* node, VAL value);
-    /// template function overload to set the value of an IEnumeration
-    template <typename NODE, typename VAL>
-    void setNodeValue(GenApi::IEnumeration* node, std::string value);
   };
 
   /** This is just a wrapper class of the underlying PylonGrabberImpl class */
@@ -188,30 +167,25 @@ namespace icl {
 
     /// create a new PylonGrabber
     /** @see PylonGrabberImpl for more details*/
-    inline PylonGrabber(const Pylon::CDeviceInfo *dev=NULL){
-      if(!dev){
-        // return when no devices are found
-        if(PylonGrabberImpl::getPylonDeviceList().empty()) { return; }
-        // initializing grabber for first found camera
-        Pylon::CDeviceInfo dev2 = PylonGrabberImpl::getPylonDeviceList().front();
-        if(isNew(dev2.GetFullName().c_str())){
-          initialize(new PylonGrabberImpl(dev2), dev2.GetFullName().c_str());
-        }else{
-          initialize(dev2.GetFullName().c_str());
-        }
-      }
-      if(isNew(dev -> GetFullName().c_str())){
-        initialize(new PylonGrabberImpl(*dev), dev -> GetFullName().c_str());
+    inline PylonGrabber(const std::string args="") throw(ICLException) {
+      // looking for Pylon device compatible to the args
+      Pylon::CDeviceInfo dev = PylonGrabberImpl::getDeviceFromArgs(args);
+      if(isNew(dev.GetFullName().c_str())){
+        initialize(new PylonGrabberImpl(dev, args), dev.GetFullName().c_str());
       }else{
-        initialize(dev -> GetFullName().c_str());
+        initialize(dev.GetFullName().c_str());
       }
-      getPylonDeviceList();
     }
     /// Returns a list of detected pylon devices
     static Pylon::DeviceInfoList_t getPylonDeviceList(){
       return PylonGrabberImpl::getPylonDeviceList();
     }
     
+    /// Prints information about the startup argument options of PylonGrabberImpl
+    static void printHelp(){
+      return PylonGrabberImpl::printHelp();
+    }
+
     static std::vector<GrabberDeviceDescription> getDeviceList(bool rescan){
     static std::vector<GrabberDeviceDescription> deviceList;
       if(rescan){

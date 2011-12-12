@@ -196,6 +196,7 @@ namespace icl{
                                                 code.id,data->impls.size(),
                                                 data->sizes[code.id],
                                                 r,code);
+      impl->imageRegion = r;
       
       FiducialImpl::Info2D *info2D = impl->ensure2D();
       info2D->infoCenter = r.getCOG();

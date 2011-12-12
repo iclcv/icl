@@ -77,7 +77,7 @@ namespace icl{
     void prepareForPatchClassification();
 
     /// Identifies the given image patch using bch decoding
-    virtual FiducialImpl *classifyPatch(const Img8u &image, int *rot, bool returnRejectedQuads);
+    virtual FiducialImpl *classifyPatch(const Img8u &image, int *rot, bool returnRejectedQuads, ImageRegion r);
 
     /// describes the marker rectification parameters
     virtual void getQuadRectificationParameters(Size &markerSizeWithBorder,

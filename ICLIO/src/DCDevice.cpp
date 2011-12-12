@@ -457,7 +457,7 @@ namespace icl{
   DCDevice::Mode::Mode(const string &stringRepr){
     // {{{ open
 
-    StrTok s(stringRepr,"@");
+    StrTok s(stringRepr,"~");
     const vector<string> &toks = s.allTokens();
     ICLASSERT(toks.size() == 2);
     videomode = dc::videomode_from_string(toks[0]);
@@ -469,7 +469,7 @@ namespace icl{
   string DCDevice::Mode::toString() const{
     // {{{ open
 
-    return dc::to_string(videomode)+"@"+dc::to_string(framerate);
+    return dc::to_string(videomode)+"~"+dc::to_string(framerate);
   }
 
   // }}}

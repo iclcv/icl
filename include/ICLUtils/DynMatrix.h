@@ -131,6 +131,23 @@ namespace icl{
       std::copy(other.begin(),other.end(),begin());
     }
 
+    /// creates a new DynMatrix from given csv filename
+    /** @see DynMatrix<T>::loadCSV */
+    inline DynMatrix(const std::string &filename):m_rows(0),m_cols(0),m_data(0),m_ownData(true){
+      *this = loadCSV(filename);
+    }
+    
+    /// loads a dynmatrix from given CSV file
+    /** supported types T are all icl8u, icl16s, icl32s, icl32f, icl64f.
+        Each row of the CSV file becomes a matrix row. The column delimiter is ','
+        Rows, that begin with '#' or with ' ' or that have no length are ignored
+    */
+    static DynMatrix<T> loadCSV(const std::string &filename) throw (ICLException);
+    
+    /// writes the current matrix to a csv file
+    /** supported types T are all icl8u, icl16s, icl32s, icl32f, icl64f */
+    void saveCSV(const std::string &filename) throw (ICLException);
+
     /// returns with this matrix has a valid data pointer
     inline bool isNull() const { return !m_data; }
 
@@ -307,14 +324,14 @@ namespace icl{
     }
 
     /// adds a scalar to each element
-    inline DynMatrix operator+(const T &t){
+    inline DynMatrix operator+(const T &t) const{
       DynMatrix d(cols(),rows());
       std::transform(begin(),end(),d.begin(),std::bind2nd(std::plus<T>(),t));
       return d;
     }
 
     /// substacts a scalar from each element
-    inline DynMatrix operator-(const T &t){
+    inline DynMatrix operator-(const T &t) const{
       DynMatrix d(cols(),rows());
       std::transform(begin(),end(),d.begin(),std::bind2nd(std::minus<T>(),t));
       return d;
@@ -333,7 +350,7 @@ namespace icl{
     }
 
     /// Matrix addition
-    inline DynMatrix operator+(const DynMatrix &m) throw (IncompatibleMatrixDimensionException){
+    inline DynMatrix operator+(const DynMatrix &m) const throw (IncompatibleMatrixDimensionException){
       if(cols() != m.cols() || rows() != m.rows()) throw IncompatibleMatrixDimensionException("A+B size(A) must be size(B)");
       DynMatrix d(cols(),rows());
       std::transform(begin(),end(),m.begin(),d.begin(),std::plus<T>());
@@ -341,7 +358,7 @@ namespace icl{
     }
 
     /// Matrix substraction
-    inline DynMatrix operator-(const DynMatrix &m) throw (IncompatibleMatrixDimensionException){
+    inline DynMatrix operator-(const DynMatrix &m) const throw (IncompatibleMatrixDimensionException){
       if(cols() != m.cols() || rows() != m.rows()) throw IncompatibleMatrixDimensionException("A+B size(A) must be size(B)");
       DynMatrix d(cols(),rows());
       std::transform(begin(),end(),m.begin(),d.begin(),std::minus<T>());
@@ -415,7 +432,28 @@ namespace icl{
       }
       return ::pow(double(accu),1.0/l);
     }
-
+    
+    /** \cond */
+  private:
+    static T diff_power_two(const T&a, const T&b){
+      T d = a-b;
+      return d*d;
+    }
+  public:
+    /** \endcond */
+    
+    /// returns the distance of the inner data vectors (linearly interpreted) (todo: speed up using IPP)
+    inline T distanceTo(const DynMatrix &other) throw (InvalidMatrixDimensionException){
+      ICLASSERT_THROW(dim() == other.dim(), InvalidMatrixDimensionException("DynMatrix::distanceTo: dimension missmatch"));
+      return ::sqrt( std::inner_product(begin(),end(),other.begin(),T(0), std::plus<T>(), diff_power_two) );
+      /*
+          for(unsigned int i=0;i<dim();++i){
+          T d = m_data[i] - other.m_data[i];
+          accu += d*d;
+          }
+          return ::sqrt(accu);
+      */
+    }
 
 
     /// default iterator type (just a data-pointer)
@@ -1161,6 +1199,37 @@ DYN_MATRIX_MULT_BY_CONSTANT(64f)
 
 #endif // HAVE_IPP
 
+ /// vertical concatenation of matrices
+ /** missing elementes are padded with 0 */
+ template<class T>
+ inline DynMatrix<T> operator,(const DynMatrix<T> &left, const DynMatrix<T> &right){
+   int w = left.cols() + right.cols();
+   int h = iclMax(left.rows(),right.rows());
+   DynMatrix<T> result(w,h,float(0));
+   for(unsigned int y=0;y<left.rows();++y){
+     std::copy(left.row_begin(y), left.row_end(y), result.row_begin(y));
+   }
+   for(unsigned int y=0;y<right.rows();++y){
+     std::copy(right.row_begin(y), right.row_end(y), result.row_begin(y) + left.cols());
+   }
+   return result;
+ }
+
+ /// horizontal concatenation of matrices
+ /** missing elementes are padded with 0 */
+ template<class T>
+ inline DynMatrix<T> operator%(const DynMatrix<T> &top, const DynMatrix<T> &bottom){
+   int w = iclMax(top.cols(),bottom.cols());
+   int h = top.rows() + bottom.rows();
+   DynMatrix<T> result(w,h,float(0));
+   for(unsigned int y=0;y<top.rows();++y){
+     std::copy(top.row_begin(y), top.row_end(y), result.row_begin(y));
+   }
+   for(unsigned int y=0;y<bottom.rows();++y){
+     std::copy(bottom.row_begin(y), bottom.row_end(y), result.row_begin(y+top.rows()));
+   }
+   return result;
+ }
 }
 
 #endif

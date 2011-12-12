@@ -327,7 +327,8 @@ namespace icl{
   
   
   
-  FiducialImpl *FiducialDetectorPluginART::classifyPatch(const Img8u &image, int *rot, bool returnRejectedQuads){
+  FiducialImpl *FiducialDetectorPluginART::classifyPatch(const Img8u &image, int *rot, 
+                                                         bool returnRejectedQuads, ImageRegion r){
     std::string a = getPropertyValue("matching algorithm");
     int matchDim = getPropertyValue("matching dim");
     Size matchSize(matchDim,matchDim);
@@ -343,11 +344,15 @@ namespace icl{
                                              Fiducial::Rotation2D |
                                              Fiducial::Corners2D );
     if(n && err < e){
-      return new FiducialImpl(this,supported,computed,
-                              n->id, -1, n->size);
+      FiducialImpl *impl = new FiducialImpl(this,supported,computed,
+                                            n->id, -1, n->size);
+      impl->imageRegion = r;
+      return impl;
     }else if (returnRejectedQuads){
       *rot = 0;
-      return new FiducialImpl(this,supported,computed, 999999, -1, Size(1,1)); // dummy ID
+      FiducialImpl *impl = new FiducialImpl(this,supported,computed, 999999, -1, Size(1,1)); // dummy ID
+      impl->imageRegion = r;
+      return impl;
     }else{
       return 0;
     }

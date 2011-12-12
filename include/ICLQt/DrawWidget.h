@@ -166,6 +166,11 @@ int main(int n, char **ppc){
 </TD></TR></TABLE>
 */
  class ICLDrawWidget : public ICLWidget {
+    template<class T> 
+    static inline void icl_given_type_has_no_int_index_operator(const T &t){
+      t[0];
+    }
+
     public:
     /// enum used for specification of predefined symbols
     enum Sym {symRect,symCross,symPlus,symTriangle,symCircle};
@@ -231,11 +236,23 @@ int main(int n, char **ppc){
     /// draws a point at the given location
     void point(float x, float y); 
 
-    /// convenience wrapper for point(float,float);
+    /// convenience wrapper for Point types
     void point(const Point &p){
-      point(p.x,p.y);
+      this->point(p.x,p.y);
     }
 
+    /// convenience wrapper for Point32f types
+    void point(const Point32f &p){
+      this->point(p.x,p.y);
+    }
+
+    /// convenience wrapper for arbitrary types, that provide an index operator [int]
+    template<class VectorType>
+    void point(const VectorType &p){
+      icl_given_type_has_no_int_index_operator(p);
+      this->point(p[0],p[1]);
+    }
+    
     /// draws a set of points
     /** for relative Point coordinates the factors can be set
         point i is drawn at pts[i].x/xfac and pts[i].y/yfac
@@ -244,6 +261,16 @@ int main(int n, char **ppc){
 
     /// draws a set of points
     void points(const std::vector<Point32f> &pts);
+    
+    /// convenience wrapper for arbitrary types, that provide an index operator [int]
+    template<class VectorType>
+    void point(const std::vector<VectorType> &points){
+      icl_given_type_has_no_int_index_operator(points[0]);
+      std::vector<Point32f> tmp(points.size());
+      for(unsigned int i=0;i<points.size();++i) tmp[i] = Point32f(points[i][0],points[i][1]);
+      this->points(tmp);
+    }
+    
     
     /// draws a set of connected points
     /** for relative Point coordinates the factors can be set
@@ -260,6 +287,14 @@ int main(int n, char **ppc){
     
     /// convenience function for drawing lines between two points
     void line(const Point32f &a, const Point32f &b);
+
+    /// convenience wrapper for arbitrary types, that provide an index operator [int]
+    template<class VectorTypeA, class VectorTypeB>
+    void line(const VectorTypeA &a, const VectorTypeB &b){
+      icl_given_type_has_no_int_index_operator(a);
+      icl_given_type_has_no_int_index_operator(b);
+      this->line(a[0],a[1],b[0],b[1]);
+    }
 
     /// draws an arrow from a to b (arrow cap is at b)
     void arrow(float ax, float ay, float bx, float by, float capsize=10);
