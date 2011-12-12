@@ -1014,6 +1014,8 @@ endif()
 				WORLD_READ WORLD_EXECUTE COMPONENT filess)
 endif()
 
+install(SCRIPT ./post_install.cmake)
+
 #add_custom_target(postinstall chmod g+w ${CMAKE_INSTALL_PREFIX}/${LIBRARY_OUTPUT_PATH}
 #					COMMAND chmod g+w ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig
 #					COMMAND chmod g+w ${CMAKE_INSTALL_PREFIX}/${EXECUTABLE_OUTPUT_PATH}
@@ -1049,6 +1051,7 @@ SET(CPACK_SET_DESTDIR "ON")
 #TODO set ignore file for doxyfile and install doc dir
 #set(CPACK_INSTALLED_DIRECTORIES "${CPACK_INSTALLED_DIRECTORIES};${CMAKE_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/html;${CMAKE_INSTALL_PREFIX}/doc/${ICL_SUB_PACKAGE_PLACEHOLDER}")
 
+
 #endforeach()
 set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}-${CMAKE_SYSTEM_PROCESSOR}")
 #set(CPACK_PACKAGE_INSTALL_PREFIX "/")
@@ -1057,4 +1060,5 @@ set(CPACK_STRIP_FILES "ICLUtils/lib/ICLUtils.so" "ICLCore/lib/ICLCore.so" "ICLCC
 
 include(CPack)
 
-install(SCRIPT post_install.cmake)
+
+
