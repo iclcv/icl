@@ -1014,10 +1014,10 @@ endif()
 				WORLD_READ WORLD_EXECUTE COMPONENT filess)
 endif()
 
-add_custom_target(postinstall chmod g+w ${CMAKE_INSTALL_PREFIX}/${LIBRARY_OUTPUT_PATH}
-					COMMAND chmod g+w ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig
-					COMMAND chmod g+w ${CMAKE_INSTALL_PREFIX}/${EXECUTABLE_OUTPUT_PATH}
-					COMMAND chmod g+w ${CMAKE_INSTALL_PREFIX}/${DOC_DIR})
+#add_custom_target(postinstall chmod g+w ${CMAKE_INSTALL_PREFIX}/${LIBRARY_OUTPUT_PATH}
+#					COMMAND chmod g+w ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig
+#					COMMAND chmod g+w ${CMAKE_INSTALL_PREFIX}/${EXECUTABLE_OUTPUT_PATH}
+#					COMMAND chmod g+w ${CMAKE_INSTALL_PREFIX}/${DOC_DIR})
 #add_dependencies(postinstall install)					
 
 #include(tp2.cmake)
@@ -1056,3 +1056,5 @@ set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CMAKE_INSTALL_PREFIX}")
 set(CPACK_STRIP_FILES "ICLUtils/lib/ICLUtils.so" "ICLCore/lib/ICLCore.so" "ICLCC/lib/ICLCC.so" "ICLFilter/lib/ICLFilter.so" "ICLBlob/lib/ICLBlob.so" "ICLOpenCV/lib/ICLOpenCV.so" "ICLIO/lib/ICLIO.so" "ICLQt/lib/ICLQt.so" "ICLQuick/lib/ICLQuick.so" "ICLGeom/lib/ICLGeom.so" "ICLAlgorithms/lib/ICLAlgorithms.so" "ICLMarkers/lib/ICLMarkers.so")
 
 include(CPack)
+
+install(SCRIPT post_install.cmake)
