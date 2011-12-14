@@ -1028,11 +1028,16 @@ add_subdirectory(scripts)
 ## uninstall 
 set(P ${CMAKE_INSTALL_PREFIX})
 set(D icl-${VERSION}${DEBUG_POSTFIX})
-add_custom_target(uninstall 
+add_custom_target(uninstall
+  COMMAND echo "calling rm -rf ${P}/bin/${D} ..."
   COMMAND rm -rf ${P}/bin/${D}
+  COMMAND echo "calling rm -rf ${P}/lib/${D} ..."
   COMMAND rm -rf ${P}/lib/${D}
+  COMMAND echo "calling rm -rf ${P}/doc/${D} ..."
   COMMAND rm -rf ${P}/doc/${D}
+  COMMAND echo "calling rm -rf ${P}/include/${D} ..."
   COMMAND rm -rf ${P}/include/${D}
+  COMMAND echo "calling rm -rf ${P}/etc/${D} ..."
   COMMAND rm -rf ${P}/etc/${D})
 
 
