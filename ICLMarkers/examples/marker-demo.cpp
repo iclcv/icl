@@ -30,6 +30,7 @@ void init(){
               "[@maxsize=100x2@handle=vis@label=visualization]")
           << "prop(fid)"
           << "togglebutton(running,pause)[@out=pause]"
+          << "fslider(1,20,5)[@out=f@label=focal length]"
          )
       << "!show";
 
@@ -70,6 +71,10 @@ void run(){
   //save(*image->asImg<icl8u>(),"image.ppm");
   
   const std::vector<Fiducial> &fids = fid->detect(image);
+  
+  scene.getCamera(0).setFocalLength(gui["f"]);
+  fid->setCamera(scene.getCamera(0));
+  
   gui_DrawHandle3D(draw);
   draw = fid->getIntermediateImage(gui["vis"]);
 
