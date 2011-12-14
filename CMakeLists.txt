@@ -1025,6 +1025,16 @@ endif()
 add_subdirectory(scripts)
 
 
+## uninstall 
+set(P ${CMAKE_INSTALL_PREFIX})
+set(D icl-${VERSION}${DEBUG_POSTFIX})
+add_custom_target(uninstall 
+  COMMAND rm -rf ${P}/bin/${D}
+  COMMAND rm -rf ${P}/lib/${D}
+  COMMAND rm -rf ${P}/doc/${D}
+  COMMAND rm -rf ${P}/etc/${D})
+
+
 #add_custom_target(postinstall chmod g+w ${CMAKE_INSTALL_PREFIX}/${LIBRARY_OUTPUT_PATH}
 #					COMMAND chmod g+w ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig
 #					COMMAND chmod g+w ${CMAKE_INSTALL_PREFIX}/${EXECUTABLE_OUTPUT_PATH}
