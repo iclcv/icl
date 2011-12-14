@@ -1,0 +1,18 @@
+set(P ${CMAKE_INSTALL_PREFIX})
+set(E icl-${VERSION}${DEBUG_POSTFIX})
+set(S "_")
+set(BIN ${P}/bin)
+set(ETC ${E}/etc)
+set(LIB ${P}/lib)
+set(DOC ${E}/doc)
+
+install(SCRIPT CODE "message(STATUS calling${S}chmod${S}-f${S}g+w${S}${P})")
+install(SCRIPT CODE "execute_process(COMMAND chmod -f g+w ${P} RES OUT)")
+
+set(X BIN ETC LIB DOC)
+foreach(x ${X})
+  install(SCRIPT CODE "message(STATUS calling${S}chmod${S}-f${S}g+w${S}${${x}})")
+  install(SCRIPT CODE "execute_process(COMMAND chmod -f g+w ${${x}} RES OUT)")
+  install(SCRIPT CODE "message(STATUS calling${S}chmod${S}-r${S}-f${S}g+w${S}${${x}}/${E})")
+  install(SCRIPT CODE "execute_process(COMMAND chmod -r -f g+w ${${x}}/${E} RES OUT)")
+endforeach()
