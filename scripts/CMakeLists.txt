@@ -5,11 +5,12 @@ set(BIN ${P}/bin)
 set(ETC ${E}/etc)
 set(LIB ${P}/lib)
 set(DOC ${E}/doc)
+set(INC ${E}/include)
 
 install(SCRIPT CODE "message(STATUS calling${S}chmod${S}-f${S}g+rwX${S}${P})")
 install(SCRIPT CODE "execute_process(COMMAND chmod -f g+rwX ${P} RES OUT)")
 
-set(X BIN ETC LIB DOC)
+set(X BIN ETC LIB DOC INC)
 foreach(x ${X})
   install(SCRIPT CODE "message(STATUS calling${S}chmod${S}-f${S}g+rwX${S}${${x}})")
   install(SCRIPT CODE "execute_process(COMMAND chmod -f g+rwX ${${x}} RES OUT)")
