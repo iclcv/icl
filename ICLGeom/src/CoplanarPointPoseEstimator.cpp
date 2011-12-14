@@ -96,7 +96,7 @@ namespace icl{
     std::copy(data->V.col_begin(8),data->V.col_end(8),H.begin());
 #else
     Homography2D H(pas.data(),pbs.data(),n);
-    SHOW(H);
+    //    SHOW(H);
 #endif
 
 

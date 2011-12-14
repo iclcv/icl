@@ -30,12 +30,12 @@ void init(){
               "[@maxsize=100x2@handle=vis@label=visualization]")
           << "prop(fid)"
           << "togglebutton(running,pause)[@out=pause]"
-          << "fslider(1,20,5)[@out=f@label=focal length]"
+          //<< "fslider(0.1,2,1)[@out=f@label=focal length]"
          )
       << "!show";
 
   grabber.init(pa("-input"));
-  grabber.useDesired<Size>(pa("-size"));
+  if(pa("-size")) grabber.useDesired<Size>(pa("-size"));
   grabber.useDesired(formatGray);
   
   //fid->loadMarkers("[0,10]",ParamList("size",Size(96,96)));
@@ -54,8 +54,9 @@ void init(){
     scene.addCamera(Camera(*pa("-c")));
   }else{
     scene.addCamera(Camera());
+    scene.getCamera(0).setResolution(pa("-size"));
   }
-  scene.getCamera(0).setResolution(pa("-size"));
+
   scene.addObject(obj);
   // scene.setDrawCoordinateFrameEnabled(true);
   fid->setCamera(scene.getCamera(0));
@@ -72,8 +73,8 @@ void run(){
   
   const std::vector<Fiducial> &fids = fid->detect(image);
   
-  scene.getCamera(0).setFocalLength(gui["f"]);
-  fid->setCamera(scene.getCamera(0));
+  //scene.getCamera(0).setFocalLength(gui["f"]);
+  //fid->setCamera(scene.getCamera(0));
   
   gui_DrawHandle3D(draw);
   draw = fid->getIntermediateImage(gui["vis"]);

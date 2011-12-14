@@ -60,9 +60,18 @@ void init(){
   obj = new ImgObj;
 
   scene.addObject(obj);
-  scene.addCamera(Camera(Vec(-123.914,18.5966,-633.489,1),
-                         Vec(0.0202104,-0.00327371,0.99979,1),
-                         Vec(0.999566,-0.0213787,0.0202811,1)));
+  if(pa("-r")){
+    scene.addCamera(Camera(*pa("-r")));
+    scene.getCamera(0).setPosition(Vec(-123.914,18.5966,-633.489,1));
+    scene.getCamera(0).setNorm(Vec(0.0202104,-0.00327371,0.99979,1));
+    scene.getCamera(0).setUp(Vec(0.999566,-0.0213787,0.0202811,1));
+  }else{
+    scene.addCamera(Camera(Vec(-123.914,18.5966,-633.489,1),
+                           Vec(0.0202104,-0.00327371,0.99979,1),
+                           Vec(0.999566,-0.0213787,0.0202811,1)));
+  }
+  SHOW(scene.getCamera(0));
+
   scene.getLight(0).setAmbientEnabled(true);
   scene.getLight(0).setAmbient(GeomColor(255,255,255,150));
   
@@ -87,5 +96,5 @@ int main(int n, char **ppc){
   ("-o","generic image output output specification (e.g. -o sm xyz) writes images to shared memory segment \"xyz\"")
   ("-s","if given, the image will only be grabbed once");
 
-  return ICLApp(n,ppc,"-input|-i(2) -o(2) -single-grab|-s",init,run).exec();
+  return ICLApp(n,ppc,"-input|-i(2) -o(2) -single-grab|-s -rendering-camera|-r(camerafile)" ,init,run).exec();
 }
