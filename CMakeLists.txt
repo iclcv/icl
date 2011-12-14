@@ -95,6 +95,7 @@ else()
 set(ICL_VAR_INSTALL_PREFIX "/vol/nivision" CACHE PATH "")
 endif()
 set(CMAKE_INSTALL_PREFIX "${ICL_VAR_INSTALL_PREFIX}" CACHE INTERNAL "")
+set(CMAKE_ICL_INSTALL_FOLDER_NAME "abdce" CACHE INTERNAL "")
 message(STATUS "Install Path: ${CMAKE_INSTALL_PREFIX}")
 
 if(APPLE)
@@ -1019,6 +1020,8 @@ endif()
 # the scripts/CMakeLists does only contain the
 # install(SCRIPT ./post_install.cmake)
 # line ...
+
+
 add_subdirectory(scripts)
 
 
