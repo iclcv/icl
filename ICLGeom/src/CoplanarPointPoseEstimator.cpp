@@ -2,6 +2,7 @@
 
 #include <ICLGeom/Camera.h>
 #include <ICLGeom/GeomDefs.h>
+#include <ICLUtils/Homography2D.h>
 
 namespace icl{
   typedef DynMatrix<float> DMat;
@@ -70,24 +71,37 @@ namespace icl{
     float icx = -ifx * cam.getPrincipalPointOffset().x;
     float icy = -ify * cam.getPrincipalPointOffset().y;
 
+#if 0
     DMat &A = data->A;
     A.setBounds(9,2*n);
-  
+#else
+    std::vector<Point32f> pas(n), pbs(n);
+#endif
     for(int i=0;i<n;++i){
       float px = ifx*imagePoints[i].x+icx, py = ify * imagePoints[i].y+icy;
       float qx = modelPoints[i].x, qy = modelPoints[i].y;
+
+#if 0
       assign_row(A.row_begin(2*i+0),0,0,0,-qx,-qy,-1,py*qx,py*qy,py);
       assign_row(A.row_begin(2*i+1),qx,qy,1,0,0,0,-px*qx,-px*qy,-px);
+#else
+      pas[i] = Point32f(px,py);
+      pbs[i] = Point32f(qx,qy);
+#endif
     }
   
+#if 0
     A.svd(data->U,data->s,data->V);
-
     FixedMatrix<float,3,3> &H = data->H;
     std::copy(data->V.col_begin(8),data->V.col_end(8),H.begin());
+#else
+    Homography2D H(pas.data(),pbs.data(),n);
+#endif
+
 
     //SHOW(data->s[8]);
     DMat h(1,9,H.begin(),true);
-    //SHOW(A*h);
+
 
     H *= 1.0/sqrt( pow(H(0,0),2) + pow(H(0,1),2) + pow(H(0,2),2) ); 
     

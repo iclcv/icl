@@ -13,7 +13,8 @@ Scene scene;
 struct Obj : public SceneObject{
   Obj(){
     addChild(new ComplexCoordinateFrameSceneObject);
-    addCube(0,0,48,96);
+    Size s  = parse<Size>(pa("-m",2));
+    addCuboid(0,0,10,s.width,s.height,20);
   }
 } *obj = 0;
 
@@ -77,9 +78,9 @@ void run(){
   draw->reset3D();
   draw->linewidth(2);
   for(unsigned int i=0;i<fids.size();++i){
-    //if(fids[i].getID() == 3){
-    //  obj->setTransformation(fids[i].getPose3D());
-    //}
+    if(fids[i].getID() == 0){
+      obj->setTransformation(fids[i].getPose3D());
+    }
     
     draw->color(255,0,0,255);
     draw->linestrip(fids[i].getCorners2D());
@@ -96,8 +97,9 @@ void run(){
         draw->sym(p.imagePos, '+');
         draw->text(str(p.ID), p.imagePos.x,p.imagePos.y,9);
         }
-    draw->callback(scene.getGLCallback(0));
+
    */
+    draw->callback(scene.getGLCallback(0));
   }
   draw->unlock();
 
