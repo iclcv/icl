@@ -1532,7 +1532,8 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
   {
     CHECK_VALUES_NO_SIZE(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
 
-#if 0
+#if 1
+#warning "we are aware of the fact that ippiResize is deprecated, however the replacement seems to be buggy in case of LIN interpolation"
     //NOTE: this function has become deprecated
     // attention: for source image IPP wants indeed the *image* origin
     ippiResize_8u_C1R(src->getData(srcC),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
@@ -1548,7 +1549,7 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
     }
     
 
-    std::vector<icl8u> buf(bufSize*100);
+    std::vector<icl8u> buf(bufSize);
     
     float fx = (float)dstSize.width/(float)srcSize.width, fy = (float)dstSize.height/(float)srcSize.height;
     float tx = -fx*srcOffs.x, ty = -fy*srcOffs.y;
@@ -1576,7 +1577,8 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
     FUNCTION_LOG("");
     CHECK_VALUES_NO_SIZE(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
     
-#if 0
+#if 1
+#warning "we are aware of the fact that ippiResize is deprecated, however the replacement seems to be buggy in case of LIN interpolation"
     //NOTE: this function has become deprecated
     // attention: for source image IPP wants indeed the *image* origin
     ippiResize_32f_C1R(src->getData(srcC),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),

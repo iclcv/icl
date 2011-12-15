@@ -24,19 +24,24 @@ void init(){
                              ParamList("size",(*pa("-m",2)) ) );
   
   fid->setConfigurableID("fid");
+
+  grabber.init(pa("-input"));
+  if(pa("-size")) grabber.useDesired<Size>(pa("-size"));
+  grabber.useDesired(formatGray);
+
   gui << "draw3D("+*pa("-size")+")[@handle=draw@minsize=16x12]"
       << (GUI("vbox[@maxsize=16x100]") 
           << ("combo(" + fid->getIntermediateImageNames() + ")"
               "[@maxsize=100x2@handle=vis@label=visualization]")
           << "prop(fid)"
-          << "togglebutton(running,pause)[@out=pause]"
+          << (GUI("hbox") 
+              << "togglebutton(running,pause)[@out=pause]"
+              << "camcfg()"
+              )
           //<< "fslider(0.1,2,1)[@out=f@label=focal length]"
          )
       << "!show";
 
-  grabber.init(pa("-input"));
-  if(pa("-size")) grabber.useDesired<Size>(pa("-size"));
-  grabber.useDesired(formatGray);
   
   //fid->loadMarkers("[0,10]",ParamList("size",Size(96,96)));
   try{
@@ -96,6 +101,7 @@ void run(){
     draw->color(0,255,0,255);
     float a = fids[i].getRotation2D();
     draw->line(fids[i].getCenter2D(), fids[i].getCenter2D() + Point32f( cos(a), sin(a))*100 );
+    
     /*
         const std::vector<Fiducial::KeyPoint> &kp = fids[i].getKeyPoints2D();
         for(unsigned int j=0;j<kp.size();++j){
@@ -104,8 +110,8 @@ void run(){
         draw->sym(p.imagePos, '+');
         draw->text(str(p.ID), p.imagePos.x,p.imagePos.y,9);
         }
-
-   */
+    */
+   
     draw->callback(scene.getGLCallback(0));
   }
   draw->unlock();

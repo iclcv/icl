@@ -78,11 +78,19 @@ namespace icl{
     }
   
     Homography2D H(ips.data(),modelPoints,n);
+    
+    // homography error, which is always 0
+    //float err = 0;
+    // for(int i=0;i<n;++i){
+    //  err += H.apply(modelPoints[i]).distanceTo(ips[i]);
+    //}
+    //DEBUG_LOG("the error is " << err);
 
     H *= 1.0/sqrt( pow(H(0,0),2) + pow(H(0,1),2) + pow(H(0,2),2) ); 
     
     // if H solves Ax=0 then also -H solves it, therefore, we always
     // take the solution, where z is positive (object is in front of the camera)
+    
     if(H(2,2) < 0){
       H *= -1;
     }
@@ -103,8 +111,48 @@ namespace icl{
     
     data->T(0,3) = data->T(1,3) = data->T(2,3) = 0;
     data->T(3,3) = 1;
-    
-    
+
+#if 0
+    Mat M = cam.getCSTransformationMatrix().inv()*data->T;
+    float error = 0;
+    for(int i=0;i<n;++i){
+      Vec tmp = M * Vec(modelPoints[i].x,modelPoints[i].y,0,1);
+      Point32f p = cam.project(tmp);
+      error += p.distanceTo(imagePoints[i]);
+    }
+
+    Mat P = cam.getProjectionMatrix();    
+    float error2 = 0;
+    for(int i=0;i<n;++i){
+      Vec tmp = homogenize( P * data->T * Vec(modelPoints[i].x,modelPoints[i].y,0,1) );
+      error2 += Point32f(tmp[0],tmp[1]).distanceTo(imagePoints[i]);
+    }
+    std::cout << "error: " << error <<  "  error2:" << error2 << std::endl;
+
+    /* explanation: 
+                  ||                                     ||  where, I: imagePoints
+       E(T) = sum || I[i] - project(C⁻1 * T * vec4(M[i]) ||         M: modelPoints
+               i  ||                                     ||       C⁻1: inverse cam transform
+
+        but since, project(x) p2(hom(P*C*x)), where P: projection matrix and C: camera matrix,
+        and p2: extracts x and y from a 4D homogenious vector,
+        
+                  ||                                   ||  where,   P: cam projection matrix
+       E(T) = sum || I[i] - p2(hom(P * T * vec4(M[i])) ||         hom: homogenization
+               i  ||                                   ||          p2(x,y,z,w) = (x,y)
+        
+        The question, that remains is, how this function is minimized and, if we assume a 
+        closed solution in least sqaure scene, if the initial T does already minimize E(T)
+        if T is a homogeneous transform [R|t]
+
+        * first approach: try to use stochastic search (perhaps coarse to fine) to find
+          better solutions for T iteratively
+        * 2nd approach: try to derivate E(T) wrt. T in order to implement gradient descent
+          to optimize T
+        * find out whether a closed form solution for E(T) is already found with the method
+          above 
+    */
+#endif
     if(data->referenceFrame == cameraFrame){
       return data->T;
     }else{
