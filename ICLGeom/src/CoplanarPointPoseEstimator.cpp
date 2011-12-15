@@ -71,41 +71,18 @@ namespace icl{
     float icx = -ifx * cam.getPrincipalPointOffset().x;
     float icy = -ify * cam.getPrincipalPointOffset().y;
 
-#if 0
-    DMat &A = data->A;
-    A.setBounds(9,2*n);
-#else
-    std::vector<Point32f> pas(n), pbs(n);
-#endif
+    // please note, the old implementation can be found in svn rev. 2753
+    std::vector<Point32f> ips(n);//, pbs(n);
     for(int i=0;i<n;++i){
-      float px = ifx*imagePoints[i].x+icx, py = ify * imagePoints[i].y+icy;
-      float qx = modelPoints[i].x, qy = modelPoints[i].y;
-
-#if 0
-      assign_row(A.row_begin(2*i+0),0,0,0,-qx,-qy,-1,py*qx,py*qy,py);
-      assign_row(A.row_begin(2*i+1),qx,qy,1,0,0,0,-px*qx,-px*qy,-px);
-#else
-      pas[i] = Point32f(px,py);
-      pbs[i] = Point32f(qx,qy);
-#endif
+      ips[i] = Point32f(ifx*imagePoints[i].x+icx, ify * imagePoints[i].y+icy);
     }
   
-#if 0
-    A.svd(data->U,data->s,data->V);
-    FixedMatrix<float,3,3> &H = data->H;
-    std::copy(data->V.col_begin(8),data->V.col_end(8),H.begin());
-#else
-    Homography2D H(pas.data(),pbs.data(),n);
-    //    SHOW(H);
-#endif
-
-
-    //SHOW(data->s[8]);
-    DMat h(1,9,H.begin(),true);
-
+    Homography2D H(ips.data(),modelPoints,n);
 
     H *= 1.0/sqrt( pow(H(0,0),2) + pow(H(0,1),2) + pow(H(0,2),2) ); 
     
+    // if H solves Ax=0 then also -H solves it, therefore, we always
+    // take the solution, where z is positive (object is in front of the camera)
     if(H(2,2) < 0){
       H *= -1;
     }
@@ -115,18 +92,6 @@ namespace icl{
     R2 -= R1*(R1.transp()*R2)[0];  
     R2.normalize();
     FixedColVector<float,3> R3 = cross3(R1,R2);
-    //R2 = cross3(R1,R3);
-
-
-    /*
-        SHOW(R1.length())
-        SHOW(R2.length())
-        SHOW(R3.length())
-        
-        SHOW(R1.transp() * R2);
-        SHOW(R2.transp() * R3);
-        SHOW(R1.transp() * R3);
-    */
     
     data->T.part<0,0,3,3>() = data->R = (R1,R2,R3);
 
@@ -135,9 +100,6 @@ namespace icl{
     
     // this provides the original camera CS-Transformation Matrix
     data->T.part<3,0,1,3>() = FixedColVector<float,3>( H(2,0),H(2,1),H(2,2) );
-
-    // if h solves Ax=0 then also -h solves it, therefore, we always
-    // take the solution, where z is positive (object is in front of the camera)
     
     data->T(0,3) = data->T(1,3) = data->T(2,3) = 0;
     data->T(3,3) = 1;

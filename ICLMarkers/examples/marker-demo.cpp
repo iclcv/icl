@@ -40,7 +40,7 @@ void init(){
   
   //fid->loadMarkers("[0,10]",ParamList("size",Size(96,96)));
   try{
-    fid->setPropertyValue("regions.minimum region size",400);
+    fid->setPropertyValue("quads.minimum region size",400);
     fid->setPropertyValue("thresh.global threshold",-11);
     fid->setPropertyValue("thresh.mask size",45);
     fid->setPropertyValue("thresh.algorithm","tiled linear");
@@ -69,6 +69,7 @@ void init(){
 void run(){
   while(gui["pause"]) Thread::msleep(100);
   const ImgBase *image = grabber.grab();
+  //SHOW(*image);
   //save(*image->asImg<icl8u>(),"image.ppm");
   
   const std::vector<Fiducial> &fids = fid->detect(image);
