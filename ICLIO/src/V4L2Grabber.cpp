@@ -667,7 +667,9 @@ namespace icl{
 
    const ImgBase *V4L2GrabberImpl::acquireImage(){
      Mutex::Locker lock(implMutex);
-     return impl->acquireImage();
+     const ImgBase *image = 0;
+     do{ image = impl->acquireImage(); } while(!image || !image->getDim() );
+     return image;
    }
 
 
