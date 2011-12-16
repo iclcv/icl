@@ -56,7 +56,7 @@ namespace icl{
       // actually we use the homography backwards
       std::swap(x,y);
 
-      DynMatrix<float> M(8,2*n),r(1,8);
+      DynMatrix<float> M(8,2*n),r(1,2*n);
       for(int i=0;i<n;++i){
         float xx = x[i].x, xy=x[i].y, yx=y[i].x, yy=y[i].y;
         float *m = &M(0,2*i);

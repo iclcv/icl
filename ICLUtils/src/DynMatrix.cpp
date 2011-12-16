@@ -342,7 +342,7 @@ namespace icl{
   template<class T>
   DynMatrix<T> DynMatrix<T>::solve(const DynMatrix &b, const std::string &method ,T zeroThreshold)
     throw(InvalidMatrixDimensionException,  ICLException, SingularMatrixException){
-    ICLASSERT_THROW(rows() == b.rows(), InvalidMatrixDimensionException("DynMatrix::solve (Mx=b -> x=M^(-1)b needs M.cols == b.cols)"));
+    ICLASSERT_THROW(rows() == b.rows(), InvalidMatrixDimensionException("DynMatrix::solve (Mx=b -> x=M^(-1)b needs M.rows == b.rows)"));
     if(method == "lu"){
       DynMatrix<T> L,U;
       decompose_LU(L,U);
