@@ -3,6 +3,7 @@
 #include <ICLGeom/Camera.h>
 #include <ICLGeom/GeomDefs.h>
 #include <ICLUtils/Homography2D.h>
+#include <ICLCore/Random.h>
 
 namespace icl{
   typedef DynMatrix<float> DMat;
@@ -61,6 +62,86 @@ namespace icl{
     data->referenceFrame = f;
   }
 
+  static float compute_error(const Mat &P, const Mat &T, const Point32f *M, const Point32f *I, int n){
+    float error2 = 0;
+    for(int i=0;i<n;++i){
+      Vec tmp = homogenize( P * T * Vec(M[i].x,M[i].y,0,1) );
+      error2 += Point32f(tmp[0],tmp[1]).distanceTo(I[i]);
+    }
+    return error2;
+  }
+
+  static Mat optimize_error_old(const Mat &P, const Mat &T_initial, const Point32f *M, const Point32f *I, int n){
+    const float E_initial = compute_error(P,T_initial,M,I,n);
+    FixedMatrix<float,1,3> r = extract_euler_angles(T_initial);
+    FixedMatrix<float,1,3> t = T_initial.part<3,0,1,3>();
+    URandI ridx(5);
+    GRand rR(0,0.1),rT(0,1);
+    FixedMatrix<float,1,3> rBest = r, tBest = t;
+    float E_best = E_initial;
+    DEBUG_LOG("---\ninitial error is " << E_initial);
+    static const std::string what[] = {"rx","ry","rz","tx","ty","tz"};
+    for(int i=0;i<10000;++i){
+      int idx = ridx;
+
+      float *change = idx > 2 ? &tBest[idx-3] : &rBest[idx];
+      float save = *change;
+      *change += idx > 2 ? rT : rR;
+      Mat T = create_hom_4x4<float>(rBest[0],rBest[1],rBest[2],tBest[0],tBest[1],tBest[2]);
+      float E_curr = compute_error(P,T,M,I,n);
+      if(E_curr < E_best){
+        DEBUG_LOG("new best error:" << E_curr);
+        E_best = E_curr;
+      }else{
+        *change = save;
+      }
+    }
+    return create_hom_4x4<float>(rBest[0],rBest[1],rBest[2],tBest[0],tBest[1],tBest[2]);
+  }
+
+  static Mat optimize_error(const Mat &P, const Mat &T_initial, const Point32f *M, const Point32f *I, int n){
+    const float E_initial = compute_error(P,T_initial,M,I,n);
+    FixedMatrix<float,1,3> r = extract_euler_angles(T_initial);
+    FixedMatrix<float,1,3> t = T_initial.part<3,0,1,3>();
+    FixedMatrix<float,1,3> rBest = r, tBest = t, tInit = t, rInit = r;;
+    float E_best = E_initial;
+    
+    const int N_steps = 4;
+    const float limitsR[N_steps] = {0.8, 0.4, 0.2, 0.1};//, 0.05};
+    const float stepsR[N_steps] = {0.4, 0.2, 0.1, 0.025};//, 0.025};
+    
+    const float limitsT[N_steps] = {20, 10,   5,  2.5};//, 1.25};
+    const float stepsT[N_steps] =  {20, 10,   5,  2.5};//, 0.175};
+  
+    for(int s = 0;s< N_steps;++s){
+      for(float drx=-limitsR[s]; drx <= limitsR[s]; drx += stepsR[s]){
+        for(float dry=-limitsR[s]; dry <= limitsR[s]; dry += stepsR[s]){
+          for(float drz=-limitsR[s]; drz <= limitsR[s]; drz += stepsR[s]){
+            for(float dx=-limitsT[s]; dx <= limitsT[s]; dx += stepsT[s]){
+              for(float dy=-limitsT[s]; dy <= limitsT[s]; dy += stepsT[s]){
+                for(float dz=-limitsT[s]; dz <= limitsT[s]; dz += stepsT[s]){
+                  Mat T = create_hom_4x4<float>(r[0]+drx,r[1]+dry,r[2]+drz,t[0]+dx,t[1]+dy,t[2]+dz);
+                  float E_curr = compute_error(P,T,M,I,n);
+                  if(E_curr < E_best){
+                    DEBUG_LOG("new best error:" << E_curr << " s=" << s);
+                    E_best = E_curr;
+                    rBest = r + FixedMatrix<float,1,3>(drx,dry,drz);
+                    tBest = t + FixedMatrix<float,1,3>(dx,dy,dz);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      r = rBest;
+      t = tBest;
+    }
+    DEBUG_LOG("optimization deltas dr:" << (rInit-rBest).transp() << " dt:" << (tInit-tBest).transp());
+
+    return create_hom_4x4<float>(rBest[0],rBest[1],rBest[2],tBest[0],tBest[1],tBest[2]);
+  }
+
     
   Mat CoplanarPointPoseEstimator::getPose(int n, 
                                           const Point32f *modelPoints, 
@@ -111,6 +192,8 @@ namespace icl{
     
     data->T(0,3) = data->T(1,3) = data->T(2,3) = 0;
     data->T(3,3) = 1;
+
+    //data->T = optimize_error(cam.getProjectionMatrix(), data->T, modelPoints, imagePoints, n);
 
 #if 0
     Mat M = cam.getCSTransformationMatrix().inv()*data->T;

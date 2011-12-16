@@ -65,7 +65,7 @@ void init(){
   scene.addObject(obj);
   // scene.setDrawCoordinateFrameEnabled(true);
   fid->setCamera(scene.getCamera(0));
-  //  gui["draw"].install(scene.getSceneMouseHandler(0));
+  gui["draw"].install(scene.getMouseHandler(0));
 }
 
 
