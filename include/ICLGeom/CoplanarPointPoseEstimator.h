@@ -3,6 +3,7 @@
 
 #include <ICLUtils/FixedMatrix.h>
 #include <ICLUtils/Point32f.h>
+#include <ICLUtils/Configurable.h>
 
 namespace icl{
   
@@ -58,7 +59,7 @@ namespace icl{
       Simple Pose estimation with 4 points needs about 80 ns on an Intel(R) Xeon(R) E5530
       (2.40GHz). If 9 points are used, it needs about 110 ns.
   */
-  class CoplanarPointPoseEstimator{
+  class CoplanarPointPoseEstimator : public Configurable{
 
     /// Internal data structure
     struct Data;
@@ -66,6 +67,9 @@ namespace icl{
     /// Internally used data pointer
     Data *data;
 
+    /// internally used to sync property settings with internal data
+    void propertyChangedCallback(const Property &p);
+    
     public:
 
     /// Reference frame enumeration
@@ -73,9 +77,27 @@ namespace icl{
       cameraFrame, //!< poses are returned w.r.t. the camera frame
       worldFrame   //!< poses are returned w.r.t. the world frame
     };
+
+    /// Algorithm, that is used for pose-estimation
+    /** TODO: describe the algorithms*/
+    enum PoseEstimationAlgorithm{
+      HomographyBasedOnly,       //!< uses the above described algorithm (\ref ALG) only
+      SampleRotationOnly,  //!< subsequent heuristic search (coarse, only for the rotation part of the pose)
+      SampleAllSeparate,   //!< subsequent heuristic search (coarse,  first rotation, then position)
+      SampleAllAtOnce,     //!< subsequent heuristic search (coarse, rotation and position at once -> slow)
+    };
+    
+    /// Sampling density
+    enum SamplingDensity{
+      SampleCoarse,   //!< rough sampling
+      SampleFine,     //!< fine sampling
+      SampleVeryFine  //!< very fine sampling
+    };
     
     /// Default constructor with given reference-frame for the returned poses
-    CoplanarPointPoseEstimator(ReferenceFrame returnedPosesReferenceFrame=worldFrame);
+    CoplanarPointPoseEstimator(ReferenceFrame returnedPosesReferenceFrame=worldFrame, 
+                               PoseEstimationAlgorithm a = SampleAllSeparate,
+                               SamplingDensity d = SampleCoarse);
 
     /// Destructor
     ~CoplanarPointPoseEstimator();
