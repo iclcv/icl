@@ -32,6 +32,9 @@
 **                                                                 **
 *********************************************************************/
 
+#ifndef ICL_POINT_NORMAL_ESTIMATION_H
+#define ICL_POINT_NORMAL_ESTIMATION_H
+
 #include <ICLQuick/Quick.h>
 #include <ICLGeom/GeomDefs.h>
 
@@ -39,173 +42,176 @@
 #include <CL/cl.hpp>
 #endif
 
-/**
-   This class is a normal estimator and edge detector for depth images. It uses OpenCL for hardware parallelization if a compatible GPU is found. The input is a depth image and the output a binarized edge image.
-   All interim results can be accessed (e.g. point normals) or set to use only a part of the processing pipeline.*/
-class PointNormalEstimation{
+namespace icl{
+  /**
+     This class is a normal estimator and edge detector for depth images. It uses OpenCL for hardware parallelization if a compatible GPU is found. The input is a depth image and the output a binarized edge image.
+     All interim results can be accessed (e.g. point normals) or set to use only a part of the processing pipeline.*/
+  class PointNormalEstimation{
 	
- public:
-#ifdef HAVE_OPENCL
-  typedef cl_float4 Vec4;
-#else
-  struct Vec4{
-    inline Vec4(){}
-    inline Vec4(float x,float y, float z, float w): x(x),y(y),z(z),w(w){}
-    float x,y,z,w;
-  };
-#endif
-    
-  ///Constructor
-  /** Constructs an object of this class. All default parameters are set. Use setters for desired values.
-      @param size size of the input depth image */
-  PointNormalEstimation(Size size); 
+   public:
+  #ifdef HAVE_OPENCL
+    typedef cl_float4 Vec4;
+  #else
+    struct Vec4{
+      inline Vec4(){}
+      inline Vec4(float x,float y, float z, float w): x(x),y(y),z(z),w(w){}
+      float x,y,z,w;
+    };
+  #endif
+      
+    ///Constructor
+    /** Constructs an object of this class. All default parameters are set. Use setters for desired values.
+        @param size size of the input depth image */
+    PointNormalEstimation(Size size); 
 	
-  ///Destructor
-  ~PointNormalEstimation();
+    ///Destructor
+    ~PointNormalEstimation();
 	
-  /// Sets the input depth image (input for median filter).
-  /**       @param depthImg the input depth image */
-  void setDepthImage(const Img32f &depthImg);
+    /// Sets the input depth image (input for median filter).
+    /**       @param depthImg the input depth image */
+    void setDepthImage(const Img32f &depthImg);
 	
-  /// Calculates a filtered image using a median filter. The mask size is set by setMedianFilterSize(int size).
-  void medianFilter();
+    /// Calculates a filtered image using a median filter. The mask size is set by setMedianFilterSize(int size).
+    void medianFilter();
 	
-  /// Returns the filtered depth image.
-  /**        @return the filtered depth image */
-  Img32f getFilteredImage();
+    /// Returns the filtered depth image.
+    /**        @return the filtered depth image */
+    Img32f getFilteredImage();
 	
-  /// Sets the (filtered) depth image (input for normal calculation). This call is not necessary if medianFilter() is executed before.
-  /**        @param filteredImg the (filtered) depth image */
-  void setFilteredImage(Img32f &filteredImg); 
+    /// Sets the (filtered) depth image (input for normal calculation). This call is not necessary if medianFilter() is executed before.
+    /**        @param filteredImg the (filtered) depth image */
+    void setFilteredImage(Img32f &filteredImg); 
 	
-  /// Calculates the point normals. The range for calculation is set by setNormalCalculationRange(int range). 
-  void normalCalculation();
+    /// Calculates the point normals. The range for calculation is set by setNormalCalculationRange(int range). 
+    void normalCalculation();
 	
-  /// Recalculates the normals by averaging the normals in a given range. This reduces the noise and is called from calculateNormals() if it is enabled width setUseNormalAveraging(bool use). The range is set by setNormalAveragingRange(int range).
-  void normalAveraging();
+    /// Recalculates the normals by averaging the normals in a given range. This reduces the noise and is called from calculateNormals() if it is enabled width setUseNormalAveraging(bool use). The range is set by setNormalAveragingRange(int range).
+    void normalAveraging();
 
-  /// Returns the point normals.
-  /**        @return the point normals */
-  Vec4* getNormals();
+    /// Returns the point normals.
+    /**        @return the point normals */
+    Vec4* getNormals();
 	
-  /// Sets the point normals (input for angle image calculation). This call is not necessary if normalCalculation() is executed before.
-  /**        @param pNormals the point normals */
-  void setNormals(Vec4* pNormals);
+    /// Sets the point normals (input for angle image calculation). This call is not necessary if normalCalculation() is executed before.
+    /**        @param pNormals the point normals */
+    void setNormals(Vec4* pNormals);
 	
-  /// Calculates the angle image. The mode is set by setAngleNeighborhoodMode(int mode) and the range is set by setAngleNeighborhoodRange(int range)
-  void angleImageCalculation();
+    /// Calculates the angle image. The mode is set by setAngleNeighborhoodMode(int mode) and the range is set by setAngleNeighborhoodRange(int range)
+    void angleImageCalculation();
 	
-  /// Returns the angle image.
-  /**        @return the angle image */
-  Img32f getAngleImage();
+    /// Returns the angle image.
+    /**        @return the angle image */
+    Img32f getAngleImage();
 	
-  /// Sets the angle image (input for image binarization). This call is not necessary if angleImageCalculation() is executed before.
-  /**        @param angleImg the angle image */
-  void setAngleImage(Img32f &angleImg);
+    /// Sets the angle image (input for image binarization). This call is not necessary if angleImageCalculation() is executed before.
+    /**        @param angleImg the angle image */
+    void setAngleImage(Img32f &angleImg);
 	
-  /// Binarizes the angle image to detect edges. The threshold is set by setBinarizationThreshold(float threshold).
-  void imageBinarization();
+    /// Binarizes the angle image to detect edges. The threshold is set by setBinarizationThreshold(float threshold).
+    void imageBinarization();
 	
-  /// Returns the binarized angle image (final output).
-  /**        @return the (final) binarized angle image */
-  Img32f getBinarizedImage();
-	
-	
-  /// Sets the mask size for medianFilter(). Size n corresponds to mask size n x n. (default 3, min 3, max 9, odd only)
-  /**        @param size the mask size */
-  void setMedianFilterSize(int size);
-	
-  /// Sets the range for normalCalculation(). (default 2)
-  /**        @param range the normal calculation range */
-  void setNormalCalculationRange(int range);
-	
-  /// Sets the averaging range for normalAveraging(). (default 1)
-  /**        @param range the normal averaging range */
-  void setNormalAveragingRange(int range);
-	
-  /// Sets the neighborhood mode for angleImageCalculation(). 0=max, 1=mean. (default 0)
-  /**        @param mode the neighborhood mode */
-  void setAngleNeighborhoodMode(int mode);
-	
-  /// Sets the neighborhood range for angleImageCalculation(). (default 3, min 1)
-  /**        @param range the neighborhood range */
-  void setAngleNeighborhoodRange(int range);
-	
-  /// Sets the binarization threshold for imageBinarization(). Value n for acos(n), so that 0 is 90° and 1 is 0° angle. (default 0.89) 
-  /**        @param threshold binarization threshold */
-  void setBinarizationThreshold(float threshold);
-	
-  /// Sets openCL enabled/disabled. Enabling has no effect if no openCL context is available. (default true=enabled)
-  /**        @param use enable/disable openCL */
-  void setUseCL(bool use);
-	
-  /// Sets normal averaging enabled/disabled. (default true=enabled)
-  /**        @param use enable/disable normal averaging */
-  void setUseNormalAveraging(bool use);
-	
-  /// Returns the openCL status (true=openCL context ready, false=no openCL context available)
-  /**        @return openCL context ready/unavailable */
-  bool isCLReady();
-	
-  /// Returns the openCL activation status (true=openCL enabled, false=openCL disabled). The status can be set by setUseCL(bool use).
-  /**        @return openCL enabled/disabled */
-  bool isCLActive();
+    /// Returns the binarized angle image (final output).
+    /**        @return the (final) binarized angle image */
+    Img32f getBinarizedImage();
 	
 	
-  /// One call function for calculation of the complete pipeline ((filter)->normals->(normalAvg)->angles->binarization)
-  /**        @param depthImage the input depth image
-	     @param filter enable/disable filtering
-	     @param average enable/disable normal averaging */
-  Img32f calculate(const Img32f &depthImage, bool filter, bool average);
+    /// Sets the mask size for medianFilter(). Size n corresponds to mask size n x n. (default 3, min 3, max 9, odd only)
+    /**        @param size the mask size */
+    void setMedianFilterSize(int size);
 	
- private:
+    /// Sets the range for normalCalculation(). (default 2)
+    /**        @param range the normal calculation range */
+    void setNormalCalculationRange(int range);
 	
-  int w,h;
-  int medianFilterSize;
-  int normalRange;
-  int normalAveragingRange;
-  int neighborhoodMode;
-  int neighborhoodRange;
-  float binarizationThreshold;
-  bool clReady;
-  bool useCL;
-  bool useNormalAveraging;
-  Vec4* normals;
-  Vec4* avgNormals;
-  Img32f rawImage;
-  Img32f filteredImage;
-  Img32f angleImage;
-  Img32f binarizedImage;
+    /// Sets the averaging range for normalAveraging(). (default 1)
+    /**        @param range the normal averaging range */
+    void setNormalAveragingRange(int range);
 	
-#ifdef HAVE_OPENCL
-  //OpenCL data
-  Vec4 * outputNormals;
-  float* outputFilteredImage;//output of kernel for image
-  float* outputAngleImage;
-  float* outputBinarizedImage;
-  float* rawImageArray;//input for image to kernel
-  float* filteredImageArray;
-  float* angleImageArray;
-  float* binarizedImageArray;
+    /// Sets the neighborhood mode for angleImageCalculation(). 0=max, 1=mean. (default 0)
+    /**        @param mode the neighborhood mode */
+    void setAngleNeighborhoodMode(int mode);
 	
-  //OpenCL    
-  cl::Context context;
-  std::vector<cl::Device> devices;
-  cl::Program program;
-  cl::CommandQueue queue;
+    /// Sets the neighborhood range for angleImageCalculation(). (default 3, min 1)
+    /**        @param range the neighborhood range */
+    void setAngleNeighborhoodRange(int range);
+	
+    /// Sets the binarization threshold for imageBinarization(). Value n for acos(n), so that 0 is 90° and 1 is 0° angle. (default 0.89) 
+    /**        @param threshold binarization threshold */
+    void setBinarizationThreshold(float threshold);
+	
+    /// Sets openCL enabled/disabled. Enabling has no effect if no openCL context is available. (default true=enabled)
+    /**        @param use enable/disable openCL */
+    void setUseCL(bool use);
+	
+    /// Sets normal averaging enabled/disabled. (default true=enabled)
+    /**        @param use enable/disable normal averaging */
+    void setUseNormalAveraging(bool use);
+	
+    /// Returns the openCL status (true=openCL context ready, false=no openCL context available)
+    /**        @return openCL context ready/unavailable */
+    bool isCLReady();
+	
+    /// Returns the openCL activation status (true=openCL enabled, false=openCL disabled). The status can be set by setUseCL(bool use).
+    /**        @return openCL enabled/disabled */
+    bool isCLActive();
+	
+	
+    /// One call function for calculation of the complete pipeline ((filter)->normals->(normalAvg)->angles->binarization)
+    /**        @param depthImage the input depth image
+	       @param filter enable/disable filtering
+	       @param average enable/disable normal averaging */
+    Img32f calculate(const Img32f &depthImage, bool filter, bool average);
+	
+   private:
+	
+    int w,h;
+    int medianFilterSize;
+    int normalRange;
+    int normalAveragingRange;
+    int neighborhoodMode;
+    int neighborhoodRange;
+    float binarizationThreshold;
+    bool clReady;
+    bool useCL;
+    bool useNormalAveraging;
+    Vec4* normals;
+    Vec4* avgNormals;
+    Img32f rawImage;
+    Img32f filteredImage;
+    Img32f angleImage;
+    Img32f binarizedImage;
+	
+  #ifdef HAVE_OPENCL
+    //OpenCL data
+    Vec4 * outputNormals;
+    float* outputFilteredImage;//output of kernel for image
+    float* outputAngleImage;
+    float* outputBinarizedImage;
+    float* rawImageArray;//input for image to kernel
+    float* filteredImageArray;
+    float* angleImageArray;
+    float* binarizedImageArray;
+	
+    //OpenCL    
+    cl::Context context;
+    std::vector<cl::Device> devices;
+    cl::Program program;
+    cl::CommandQueue queue;
+      
+    cl::Kernel kernelMedianFilter;
+    cl::Kernel kernelNormalCalculation;
+    cl::Kernel kernelNormalAveraging;
+    cl::Kernel kernelAngleImageCalculation;
+    cl::Kernel kernelImageBinarization;
     
-  cl::Kernel kernelMedianFilter;
-  cl::Kernel kernelNormalCalculation;
-  cl::Kernel kernelNormalAveraging;
-  cl::Kernel kernelAngleImageCalculation;
-  cl::Kernel kernelImageBinarization;
-  
-  //OpenCL buffer
-  cl::Buffer rawImageBuffer;
-  cl::Buffer filteredImageBuffer;
-  cl::Buffer normalsBuffer;
-  cl::Buffer avgNormalsBuffer;
-  cl::Buffer angleImageBuffer;
-  cl::Buffer binarizedImageBuffer;
+    //OpenCL buffer
+    cl::Buffer rawImageBuffer;
+    cl::Buffer filteredImageBuffer;
+    cl::Buffer normalsBuffer;
+    cl::Buffer avgNormalsBuffer;
+    cl::Buffer angleImageBuffer;
+    cl::Buffer binarizedImageBuffer;
+  #endif
+  };
+}
 #endif
-};
