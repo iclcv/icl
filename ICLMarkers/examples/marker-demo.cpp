@@ -132,7 +132,7 @@ void run(){
 int main(int n, char **ppc){
   return ICLApp(n,ppc,"[m]-input|-i(2) -camera|-c(camerafile) -size|-s(size=VGA) "
                 "-marker-type|-m(type=art,whichToLoad=art/*.png,size=50x50) "
-                "-interval(1) -posFactor(1) -steps(1) -decreaseFactor(1)",init,run).exec();
+                "-interval(1) -posFactor(1) -steps(1) -decreaseFactor(1) -substeps(1)",init,run).exec();
 }
 
 

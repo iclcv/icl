@@ -418,19 +418,17 @@ namespace icl{
     const float posFactor = pa("-posFactor");
     const int steps = pa("-steps");
     const float decreaseFactor = pa("-decreaseFactor");
-
-    std::cout << "interval: " << interval << "   pos factor:" << posFactor 
-              << "   steps:" << steps <<  "  decrease:" << decreaseFactor << "\t";
+    const int substeps = pa("-substeps");
 
     Time ttt = Time::now();
-    FixedMatrix<float,1,3> rCurr, tCurr;
+    FixedMatrix<float,1,3> rCurr=r, tCurr=t;
     for(int s=0;s<steps;++s){
       
-      for(int rx=-1;rx<=1;++rx){
+      for(int rx=-substeps;rx<=substeps;++rx){
         rCurr[0] = r[0]+rx*interval;
-        for(int ry=-1;ry<=1;++ry){
+        for(int ry=-substeps;ry<=substeps;++ry){
           rCurr[1] = r[1]+ry*interval;
-          for(int rz=-1;rz<=1;++rz){
+          for(int rz=-substeps;rz<=substeps;++rz){
             rCurr[2] = r[2]+rz*interval;
             float E_curr = compute_error_opt(P,rCurr,t,M,I,n);
             if(E_curr < E_best){
@@ -441,11 +439,11 @@ namespace icl{
         }
       }
       
-      for(int tx=-1;tx<=1;++tx){
+      for(int tx=-substeps;tx<=substeps;++tx){
         tCurr[0] = t[0] + tx*interval*posFactor;
-        for(int ty=-1;ty<=1;++ty){
+        for(int ty=-substeps;ty<=substeps;++ty){
           tCurr[1] = t[1] + ty*interval*posFactor;
-          for(int tz=-1;tz<=1;++tz){
+          for(int tz=-substeps;tz<=substeps;++tz){
             tCurr[2] = t[2] + tz*interval*posFactor;
             float E_curr = compute_error_opt(P,r,tCurr,M,I,n);
             if(E_curr < E_best){
@@ -463,7 +461,76 @@ namespace icl{
     }
 
 
-    std::cout << "dt: "<<(Time::now()-ttt).toMilliSecondsDouble() << ":::" <<E_initial << " --> " << E_best << std::endl;
+    std::cout << "dt: "<<(Time::now()-ttt).toMilliSecondsDouble() 
+              << "  ##" <<E_initial << "## --> ####" << E_best << "####"
+              << "  Dt:" << (tBest-tInit).transp() 
+              << "  Dr:"  << (rBest-rInit).transp() << std::endl;
+  
+    
+    return create_hom_4x4<float>(rBest[0],rBest[1],rBest[2],tBest[0],tBest[1],tBest[2]);
+  }
+
+  static Mat optimize_error_6(const Mat &P, const Mat &T_initial, const Point32f *M, const Point32f *I, int n){
+    const float E_initial = compute_error(P,T_initial,M,I,n);
+    FixedMatrix<float,1,3> r = extract_euler_angles(T_initial);
+    FixedMatrix<float,1,3> t = T_initial.part<3,0,1,3>();
+    FixedMatrix<float,1,3> rBest = r, tBest = t, tInit = t, rInit = r;;
+    float E_best = E_initial;
+    
+    /*
+        float interval = 1.2;
+        const float posFactor = 5;
+        const int steps = 30;
+        const float decreaseFactor = 0.9;
+    */
+    float interval = pa("-interval");
+    const float posFactor = pa("-posFactor");
+    const int steps = pa("-steps");
+    const float decreaseFactor = pa("-decreaseFactor");
+    const int substeps = pa("-substeps");
+
+    Time ttt = Time::now();
+    FixedMatrix<float,1,3> rCurr=r, tCurr=t;
+    for(int s=0;s<steps;++s){
+      
+      for(int rx=-substeps;rx<=substeps;++rx){
+        rCurr[0] = r[0]+rx*interval;
+        for(int ry=-substeps;ry<=substeps;++ry){
+          rCurr[1] = r[1]+ry*interval;
+          for(int rz=-substeps;rz<=substeps;++rz){
+            rCurr[2] = r[2]+rz*interval;
+            float E_curr = compute_error_opt(P,rCurr,t,M,I,n);
+            if(E_curr < E_best){
+              E_best = E_curr;
+              rBest = rCurr;
+            }
+          }
+        }
+      }
+      
+      //for(int tx=-substeps;tx<=substeps;++tx){
+      //  tCurr[0] = t[0] + tx*interval*posFactor;
+      //  for(int ty=-substeps;ty<=substeps;++ty){
+      //    tCurr[1] = t[1] + ty*interval*posFactor;
+      for(int tz=-substeps;tz<=substeps;++tz){
+        tCurr[2] = t[2] + tz*interval*posFactor;
+        float E_curr = compute_error_opt(P,r,tCurr,M,I,n);
+        if(E_curr < E_best){
+          E_best = E_curr;
+          tBest = tCurr;
+        }
+      }
+
+      interval *= decreaseFactor;
+      r = rBest;
+      t = tBest;
+    }
+
+
+    std::cout << "dt: "<<(Time::now()-ttt).toMilliSecondsDouble() 
+              << "  ##" <<E_initial << "## --> ####" << E_best << "####"
+              << "  Dt:" << (tBest-tInit).transp() 
+              << "  Dr:"  << (rBest-rInit).transp() << std::endl;
   
     
     return create_hom_4x4<float>(rBest[0],rBest[1],rBest[2],tBest[0],tBest[1],tBest[2]);
@@ -486,14 +553,8 @@ namespace icl{
       ips[i] = Point32f(ifx*imagePoints[i].x+icx, ify * imagePoints[i].y+icy);
     }
   
-    Homography2D H(ips.data(),modelPoints,n);
-    
-    // homography error, which is always 0
-    //float err = 0;
-    // for(int i=0;i<n;++i){
-    //  err += H.apply(modelPoints[i]).distanceTo(ips[i]);
-    //}
-    //DEBUG_LOG("the error is " << err);
+    typedef float real;
+    GenericHomography2D<real> H(ips.data(),modelPoints,n); // tested the homography error which is always almost 0
 
     H *= 1.0/sqrt( pow(H(0,0),2) + pow(H(0,1),2) + pow(H(0,2),2) ); 
     
@@ -504,24 +565,24 @@ namespace icl{
       H *= -1;
     }
 
-    FixedColVector<float,3> R1 = H.col(0);
-    FixedColVector<float,3> R2 = H.col(1);
+    FixedColVector<real,3> R1 = H.col(0);
+    FixedColVector<real,3> R2 = H.col(1);
     R2 -= R1*(R1.transp()*R2)[0];  
     R2.normalize();
-    FixedColVector<float,3> R3 = cross3(R1,R2);
+    FixedColVector<real,3> R3 = cross3(R1,R2);
     
     data->T.part<0,0,3,3>() = data->R = (R1,R2,R3);
 
     // -R * t -> provides translation part in 'clear-text'
-    data->T.part<3,0,1,3>() = data->R.transp()*FixedColVector<float,3>( -H(2,0),-H(2,1),-H(2,2) ); 
+    data->T.part<3,0,1,3>() = data->R.transp()*FixedColVector<real,3>( -H(2,0),-H(2,1),-H(2,2) ); 
     
     // this provides the original camera CS-Transformation Matrix
-    data->T.part<3,0,1,3>() = FixedColVector<float,3>( H(2,0),H(2,1),H(2,2) );
+    data->T.part<3,0,1,3>() = FixedColVector<real,3>( H(2,0),H(2,1),H(2,2) );
     
     data->T(0,3) = data->T(1,3) = data->T(2,3) = 0;
     data->T(3,3) = 1;
 
-    data->T = optimize_error_5(cam.getProjectionMatrix(), data->T, modelPoints, imagePoints, n);
+    data->T = optimize_error_6(cam.getProjectionMatrix(), data->T, modelPoints, imagePoints, n);
     
 #if 0
     Mat M = cam.getCSTransformationMatrix().inv()*data->T;
@@ -572,3 +633,18 @@ namespace icl{
   }
 
 }
+
+#if 0
+some nice results
+~/projects/ICL/build/release/ICLMarkers/bin/icl-6.4.0/icl-marker-demo -m bch 0 40x40 -c calib-webcam.xml -i file '~/Desktop/test-images/*' -interval 1.5 -posFactor 40 -decreaseFactor 0.5 -steps 10
+interval: 1.5   pos factor:40   steps:10  decrease:0.5	dt: 0.305:::10.5562 --> 2.54668
+interval: 1.5   pos factor:40   steps:10  decrease:0.5	dt: 0.285:::30.2762 --> 7.09786
+interval: 1.5   pos factor:40   steps:10  decrease:0.5	dt: 0.287:::4.36137 --> 0.762217
+interval: 1.5   pos factor:40   steps:10  decrease:0.5	dt: 0.288:::27.0267 --> 2.90564
+interval: 1.5   pos factor:40   steps:10  decrease:0.5	dt: 0.286:::1.77211 --> 0.81319
+interval: 1.5   pos factor:40   steps:10  decrease:0.5	dt: 0.289:::0.951812 --> 0.6892
+interval: 1.5   pos factor:40   steps:10  decrease:0.5	dt: 0.29:::12.1164 --> 6.60629
+interval: 1.5   pos factor:40   steps:10  decrease:0.5	dt: 0.289:::5.96745 --> 1.07477
+interval: 1.5   pos factor:40   steps:10  decrease:0.5	dt: 0.287:::17.3968 --> 12.2853
+interval: 1.5   pos factor:40   steps:10  decrease:0.5	dt: 0.286:::15.4596 --> 1.8423
+#endif
