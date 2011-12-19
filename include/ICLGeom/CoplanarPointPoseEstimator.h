@@ -81,23 +81,18 @@ namespace icl{
     /// Algorithm, that is used for pose-estimation
     /** TODO: describe the algorithms*/
     enum PoseEstimationAlgorithm{
-      HomographyBasedOnly,       //!< uses the above described algorithm (\ref ALG) only
-      SampleRotationOnly,  //!< subsequent heuristic search (coarse, only for the rotation part of the pose)
-      SampleAllSeparate,   //!< subsequent heuristic search (coarse,  first rotation, then position)
-      SampleAllAtOnce,     //!< subsequent heuristic search (coarse, rotation and position at once -> slow)
+      HomographyBasedOnly, //!< uses the above described algorithm (\ref ALG) only
+      SamplingCoarse,      //!< use some predefined sampling parameters for coase sampling (fast)
+      SamplingMedium,      //!< use some predefined sampling parameters for medium sampling (average speed)
+      SamplingFine,        //!< use some predefined sampling parameters for fine sampling (slow)
+      SamplingCustom,      //!< uses custom properties to define sampling parameters
+      SimplexSampling      //!< performs simplex sampling for optimization (not implemented yet)
     };
     
-    /// Sampling density
-    enum SamplingDensity{
-      SampleCoarse,   //!< rough sampling
-      SampleFine,     //!< fine sampling
-      SampleVeryFine  //!< very fine sampling
-    };
     
     /// Default constructor with given reference-frame for the returned poses
     CoplanarPointPoseEstimator(ReferenceFrame returnedPosesReferenceFrame=worldFrame, 
-                               PoseEstimationAlgorithm a = SampleAllSeparate,
-                               SamplingDensity d = SampleCoarse);
+                               PoseEstimationAlgorithm a = SamplingMedium);
 
     /// Destructor
     ~CoplanarPointPoseEstimator();

@@ -117,22 +117,12 @@ void run(){
   draw->unlock();
 
   draw.update();
-  
-  if(grabber.getType() == "file"){
-    static int l = -1;
-    int c = parse<int>(grabber.getValue("relative progress"));
-    if( c < l ) {
-      ::exit(0);
-    }
-    l = c;
-  }
 }
 
 // default main function
 int main(int n, char **ppc){
   return ICLApp(n,ppc,"[m]-input|-i(2) -camera|-c(camerafile) -size|-s(size=VGA) "
-                "-marker-type|-m(type=art,whichToLoad=art/*.png,size=50x50) "
-                "-interval(1) -posFactor(1) -steps(1) -decreaseFactor(1) -substeps(1)",init,run).exec();
+                "-marker-type|-m(type=art,whichToLoad=art/*.png,size=50x50)",init,run).exec();
 }
 
 

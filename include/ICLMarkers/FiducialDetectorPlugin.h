@@ -60,7 +60,7 @@ namespace icl{
         
     
     /// initializes the plugin with a 0-camera
-    FiducialDetectorPlugin():camera(0){}
+    FiducialDetectorPlugin();
     
     /// returns how to compute the markers 2D center
     /** <b>note</b>, if this information is already available in the detect method,

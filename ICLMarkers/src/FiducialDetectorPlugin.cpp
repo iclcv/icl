@@ -35,6 +35,10 @@
 #include <ICLUtils/Range.h>
 
 namespace icl{
+  FiducialDetectorPlugin::FiducialDetectorPlugin():camera(0){
+    addChildConfigurable(&poseEst,"pose");
+  }
+
   void FiducialDetectorPlugin::getCenter2D(Point32f &dst, FiducialImpl &impl){
     throw ICLException("FiducialDetectorPlugin::getCenter2D not supported for this type");
   }

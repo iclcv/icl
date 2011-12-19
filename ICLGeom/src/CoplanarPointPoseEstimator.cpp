@@ -31,69 +31,73 @@ namespace icl{
     
     CoplanarPointPoseEstimator::ReferenceFrame referenceFrame;
     CoplanarPointPoseEstimator::PoseEstimationAlgorithm algorithm;
-    CoplanarPointPoseEstimator::SamplingDensity density;
+ 
+    float samplingInterval;
+    int samplingSteps;
+    int samplingSubSteps;
+    float decreaseFactor;
+    float positionMultiplier;
+    bool timeMonitoring;
+ 
   };
   
-  inline std::ostream &operator<<(std::ostream &stream, CoplanarPointPoseEstimator::PoseEstimationAlgorithm a){
-    static std::string s[4] = {"HomographyBasedOnly","SampleRotationOnly","SampleAllSeparate","SampleAllAtOnce"};
-
-    if((int)a >= 4 || (int)a < 0) throw ICLException("invalid value for CoplanarPointPoseEstimator::PoseEstimationAlgorithm");
-    return stream << s[(int)a];
-  }
-
-  inline std::istream &operator>>(std::istream &stream, CoplanarPointPoseEstimator::PoseEstimationAlgorithm a){
-    std::string s;
-    stream >> s;
-#define A(x)if(s == #x) { a = CoplanarPointPoseEstimator::x; return stream; }
-    A(HomographyBasedOnly);A(SampleRotationOnly);A(SampleAllSeparate);A(SampleAllAtOnce);
-#undef A
-    throw ICLException("invalid value for CoplanarPointPoseEstimator::PoseEstimationAlgorithm");
-    return stream;
-  }
-
-  inline std::ostream &operator<<(std::ostream &stream, CoplanarPointPoseEstimator::SamplingDensity a){
-    static std::string s[4] = {"SampleCoarse","SampleFine","SampleVeryFine"};
-
-    if((int)a >= 3 || (int)a < 0) throw ICLException("invalid value for CoplanarPointPoseEstimator::SamplingDensity");
-    return stream << s[(int)a];
-  }
-
-  inline std::istream &operator>>(std::istream &stream, CoplanarPointPoseEstimator::SamplingDensity a){
-    std::string s;
-    stream >> s;
-#define A(x)if(s == #x) { a = CoplanarPointPoseEstimator::x; return stream; }
-    A(SampleCoarse);A(SampleFine);A(SampleVeryFine);
-#undef A
-    throw ICLException("invalid value for CoplanarPointPoseEstimator::SamplingDensity");
-    return stream;
+  static const std::string &get_all_algorithms(){
+    static const std::string s = ("HomographyBasedOnly,SamplingCoarse,SamplingMedium,SamplingFine,"
+                                  "SamplingCustom,SimplexSampling");
+    return s;
   }
   
-
+  static std::string algorithm_to_string(CoplanarPointPoseEstimator::PoseEstimationAlgorithm a){
+    static std::vector<std::string> as = tok(get_all_algorithms(),",");
+    if((int)a < 0 || (int)a>=as.size()){
+      throw ICLException("CoplanarPointPoseEstimator: wrong PoseEstimationAlgorithm value");
+    }
+    return as[(int)a];
+  }
   
+  CoplanarPointPoseEstimator::PoseEstimationAlgorithm string_to_algorithm(const std::string &value){
+    static std::vector<std::string> as = tok(get_all_algorithms(),",");
+    std::vector<std::string>::const_iterator it = std::find(as.begin(),as.end(),value);
+    if(it == as.end()) throw ICLException("CoplanarPointPoseEstimator: wrong string-value for PoseEstimationAlgorithm");
+    return (CoplanarPointPoseEstimator::PoseEstimationAlgorithm)(int)(it - as.begin());
+  }
   
   
   CoplanarPointPoseEstimator::CoplanarPointPoseEstimator(ReferenceFrame returnedPoseReferenceFrame,
-                                                         PoseEstimationAlgorithm a,
-                                                         SamplingDensity d):
+                                                         PoseEstimationAlgorithm a):
     data(new Data){
-    std::string as=str(HomographyBasedOnly);
-    std::string ds=str(SampleCoarse);
-    for(int i=1;i<4;++i) as+=str(',')+str((PoseEstimationAlgorithm)i);
-    for(int i=1;i<3;++i) ds+=str(',')+str((SamplingDensity)i);
-    
-    addProperty("algorithm","menu",as,a);
-    addProperty("sampling density","menu",ds,d);
-    
-    data->referenceFrame = returnedPoseReferenceFrame;
+
     data->algorithm = a;
-    data->density = d;
+    data->samplingInterval = 0.6;
+    data->samplingSteps = 10;
+    data->samplingSubSteps = 1;
+    data->decreaseFactor = 0.6;
+    data->positionMultiplier = 50;
+    data->timeMonitoring = false;
+      
+    addProperty("algorithm","menu",get_all_algorithms(),algorithm_to_string(a));
+    addProperty("sampling interval","float","[-3.14,3.14]",data->samplingInterval);
+    addProperty("sampling steps","int","[1,100000]:1",data->samplingSteps);
+    addProperty("sampling substeps","int","[1,100]",data->samplingSubSteps);
+    addProperty("decrease factor","float","[0,1]",data->decreaseFactor);
+    addProperty("position multiplier","float","[1,5000]",data->positionMultiplier);
+    addProperty("time monitoring","flag","",data->timeMonitoring);
+
     
     registerCallback(function(this,&CoplanarPointPoseEstimator::propertyChangedCallback));
   }
   
   void CoplanarPointPoseEstimator::propertyChangedCallback(const Property &p){
-    if(p.name == "algorithm") data->algorithm = parse<PoseEstimationAlgorithm>(p.value);
-    if(p.name == "sampling density") data->density = parse<SamplingDensity>(p.value);
+    if(p.name == "algorithm") data->algorithm = string_to_algorithm(p.value);
+    else if(p.name == "sampling interval") data->samplingInterval = parse<float>(p.value);
+    else if(p.name == "sampling steps") data->samplingSteps = parse<int>(p.value);
+    else if(p.name == "sampling substeps") data->samplingSubSteps = parse<int>(p.value);
+    else if(p.name == "decrease factor") data->decreaseFactor = parse<float>(p.value);
+    else if(p.name == "position multiplier") data->positionMultiplier = parse<float>(p.value);
+    else if(p.name == "time monitoring") data->timeMonitoring = parse<bool>(p.value);
+    else {
+      WARNING_LOG("invalid property name: " << p.name);
+    }
   }
     
   
@@ -122,6 +126,7 @@ namespace icl{
     data->referenceFrame = f;
   }
 
+#if 0
   static float compute_error(const Mat &P, const Mat &T, const Point32f *M, const Point32f *I, int n){
     float error2 = 0;
     for(int i=0;i<n;++i){
@@ -139,18 +144,6 @@ namespace icl{
       error += Point32f(tmp[0],tmp[1]).distanceTo(I[i]);
     }
     return error;
-  }
-#if 0  
-  inline void get_3x3_rot_data(T rx, T ry, T rz,T *p){
-    T cx = cos(rx);
-    T cy = cos(-ry);
-    T cz = cos(-rz);
-    T sx = sin(rx);
-    T sy = sin(-ry);
-    T sz = sin(-rz);
-    *p++=cy*cz-sx*sy*sz; *p++=-sz*cx; *p++=cz*sy+sz*sx*cy; if(skip4th) p++;
-    *p++=cy*sz+cz*sx*sy; *p++=cz*cx;  *p++=sz*sy-sx*cy*cz; if(skip4th) p++;
-    *p++=-sy*cx;         *p++=sx;     *p++=cx*cy;       
   }
 #endif
   
@@ -187,6 +180,225 @@ namespace icl{
     return error;
   }
   
+
+
+  static Mat optimize_error(const Mat &P, const Mat &T_initial, const Point32f *M, const Point32f *I, int n,
+                            float interval, const float posFactor, const int steps, const int substeps,
+                            const float decreaseFactor, bool timeMonitoring){
+    
+    FixedMatrix<float,1,3> r = extract_euler_angles(T_initial);
+    FixedMatrix<float,1,3> t = T_initial.part<3,0,1,3>();
+    const float E_initial = compute_error_opt(P,r,t,M,I,n);
+    FixedMatrix<float,1,3> rBest = r, tBest = t, tInit = t, rInit = r;;
+    float E_best = E_initial;
+    
+    Time ttt = timeMonitoring ? Time::now() : Time();
+
+    FixedMatrix<float,1,3> rCurr=r, tCurr=t;
+    for(int s=0;s<steps;++s){
+      for(int rx=-substeps;rx<=substeps;++rx){
+        rCurr[0] = r[0]+rx*interval;
+        for(int ry=-substeps;ry<=substeps;++ry){
+          rCurr[1] = r[1]+ry*interval;
+          for(int rz=-substeps;rz<=substeps;++rz){
+            rCurr[2] = r[2]+rz*interval;
+            float E_curr = compute_error_opt(P,rCurr,t,M,I,n);
+            if(E_curr < E_best){
+              E_best = E_curr;
+              rBest = rCurr;
+            }
+          }
+        }
+      }
+      
+      //for(int tx=-substeps;tx<=substeps;++tx){
+      //  tCurr[0] = t[0] + tx*interval*posFactor;
+      //  for(int ty=-substeps;ty<=substeps;++ty){
+      //    tCurr[1] = t[1] + ty*interval*posFactor;
+      for(int tz=-substeps;tz<=substeps;++tz){
+        tCurr[2] = t[2] + tz*interval*posFactor;
+        float E_curr = compute_error_opt(P,r,tCurr,M,I,n);
+        if(E_curr < E_best){
+          E_best = E_curr;
+          tBest = tCurr;
+        }
+      }
+      
+      interval *= decreaseFactor;
+      r = rBest;
+      t = tBest;
+    }
+
+    
+    if(timeMonitoring){
+        std::cout << "dt: "<<(Time::now()-ttt).toMilliSecondsDouble() 
+                  << "  ##" <<E_initial << "## --> ####" << E_best << "####"
+                  << "  Dt:" << (tBest-tInit).transp() 
+                  << "  Dr:"  << (rBest-rInit).transp() << std::endl;
+    }
+    
+    return create_hom_4x4<float>(rBest[0],rBest[1],rBest[2],tBest[0],tBest[1],tBest[2]);
+  }
+
+
+    
+  Mat CoplanarPointPoseEstimator::getPose(int n, 
+                                          const Point32f *modelPoints, 
+                                          const Point32f *imagePoints, 
+                                          const Camera &cam){
+    
+    SHOW(imagePoints[0]);
+    SHOW(imagePoints[1]);
+    SHOW(imagePoints[2]);
+    SHOW(imagePoints[3]);
+    float ifx = 1.0f/(cam.getFocalLength()*cam.getSamplingResolutionX());
+    float ify = 1.0f/(cam.getFocalLength()*cam.getSamplingResolutionY());
+    float icx = -ifx * cam.getPrincipalPointOffset().x;
+    float icy = -ify * cam.getPrincipalPointOffset().y;
+
+    // please note, the old implementation can be found in svn rev. 2753
+    std::vector<Point32f> ips(n);//, pbs(n);
+    for(int i=0;i<n;++i){
+      ips[i] = Point32f(ifx*imagePoints[i].x+icx, ify * imagePoints[i].y+icy);
+    }
+  
+    typedef float real;
+    GenericHomography2D<real> H(ips.data(),modelPoints,n); // tested the homography error which is always almost 0
+
+    H *= 1.0/sqrt( pow(H(0,0),2) + pow(H(0,1),2) + pow(H(0,2),2) ); 
+    
+    // if H solves Ax=0 then also -H solves it, therefore, we always
+    // take the solution, where z is positive (object is in front of the camera)
+    
+    if(H(2,2) < 0){
+      H *= -1;
+    }
+
+    FixedColVector<real,3> R1 = H.col(0);
+    FixedColVector<real,3> R2 = H.col(1);
+    R2 -= R1*(R1.transp()*R2)[0];  
+    R2.normalize();
+    FixedColVector<real,3> R3 = cross3(R1,R2);
+    
+    data->T.part<0,0,3,3>() = data->R = (R1,R2,R3);
+
+    // -R * t -> provides translation part in 'clear-text'
+    data->T.part<3,0,1,3>() = data->R.transp()*FixedColVector<real,3>( -H(2,0),-H(2,1),-H(2,2) ); 
+    
+    // this provides the original camera CS-Transformation Matrix
+    data->T.part<3,0,1,3>() = FixedColVector<real,3>( H(2,0),H(2,1),H(2,2) );
+    
+    data->T(0,3) = data->T(1,3) = data->T(2,3) = 0;
+    data->T(3,3) = 1;
+
+    if(data->algorithm != HomographyBasedOnly){
+      switch(data->algorithm){
+        case SamplingCustom:
+          data->T = optimize_error(cam.getProjectionMatrix(), data->T, modelPoints, imagePoints, n,
+                                   data->samplingInterval, data->positionMultiplier, data->samplingSteps, data->samplingSubSteps,
+                                   data->decreaseFactor,data->timeMonitoring);
+          break;
+        case SamplingCoarse:
+          data->T = optimize_error(cam.getProjectionMatrix(), data->T, modelPoints, imagePoints, n,
+                                   1.0, 50, 10, 1, 0.6, data->timeMonitoring);
+          break;
+        case SamplingMedium:
+          data->T = optimize_error(cam.getProjectionMatrix(), data->T, modelPoints, imagePoints, n,
+                                   1.2, 60, 20, 1, 0.65, data->timeMonitoring);
+          break;
+        case SamplingFine:
+          data->T = optimize_error(cam.getProjectionMatrix(), data->T, modelPoints, imagePoints, n,
+                                   1.5, 60, 100, 2, 0.9,data->timeMonitoring);
+          break;
+        case SimplexSampling:
+          throw ICLException("Error in " + str(__FUNCTION__) + ": pose estimation algorithm"
+                             " 'Simplex Sampling' is not yet implemented");
+          break;
+        default:
+          throw ICLException("Error in " + str(__FUNCTION__) + ": invalind pose estimation algorithm");
+      }
+    }
+    
+#if 0
+    Mat M = cam.getCSTransformationMatrix().inv()*data->T;
+    float error = 0;
+    for(int i=0;i<n;++i){
+      Vec tmp = M * Vec(modelPoints[i].x,modelPoints[i].y,0,1);
+      Point32f p = cam.project(tmp);
+      error += p.distanceTo(imagePoints[i]);
+    }
+
+    Mat P = cam.getProjectionMatrix();    
+    float error2 = 0;
+    for(int i=0;i<n;++i){
+      Vec tmp = homogenize( P * data->T * Vec(modelPoints[i].x,modelPoints[i].y,0,1) );
+      error2 += Point32f(tmp[0],tmp[1]).distanceTo(imagePoints[i]);
+    }
+    std::cout << "error: " << error <<  "  error2:" << error2 << std::endl;
+
+    /* explanation: 
+                  ||                                     ||  where, I: imagePoints
+       E(T) = sum || I[i] - project(C⁻1 * T * vec4(M[i]) ||         M: modelPoints
+               i  ||                                     ||       C⁻1: inverse cam transform
+
+        but since, project(x) p2(hom(P*C*x)), where P: projection matrix and C: camera matrix,
+        and p2: extracts x and y from a 4D homogenious vector,
+        
+                  ||                                   ||  where,   P: cam projection matrix
+       E(T) = sum || I[i] - p2(hom(P * T * vec4(M[i])) ||         hom: homogenization
+               i  ||                                   ||          p2(x,y,z,w) = (x,y)
+        
+        The question, that remains is, how this function is minimized and, if we assume a 
+        closed solution in least sqaure scene, if the initial T does already minimize E(T)
+        if T is a homogeneous transform [R|t]
+
+        * first approach: try to use stochastic search (perhaps coarse to fine) to find
+          better solutions for T iteratively
+        * 2nd approach: try to derivate E(T) wrt. T in order to implement gradient descent
+          to optimize T
+        * find out whether a closed form solution for E(T) is already found with the method
+          above 
+    */
+#endif
+    if(data->referenceFrame == cameraFrame){
+      return data->T;
+    }else{
+      return cam.getCSTransformationMatrix().inv()*data->T;
+    }
+  }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#if 0
+some nice results
+~/projects/ICL/build/release/ICLMarkers/bin/icl-6.4.0/icl-marker-demo -m bch 0 40x40 -c calib-webcam.xml -i file '~/Desktop/test-images/*' -interval 1.5 -posFactor 40 -decreaseFactor 0.5 -steps 10
+interval: 1.5   pos factor:40   steps:10  decrease:0.5	dt: 0.305:::10.5562 --> 2.54668
+interval: 1.5   pos factor:40   steps:10  decrease:0.5	dt: 0.285:::30.2762 --> 7.09786
+interval: 1.5   pos factor:40   steps:10  decrease:0.5	dt: 0.287:::4.36137 --> 0.762217
+interval: 1.5   pos factor:40   steps:10  decrease:0.5	dt: 0.288:::27.0267 --> 2.90564
+interval: 1.5   pos factor:40   steps:10  decrease:0.5	dt: 0.286:::1.77211 --> 0.81319
+interval: 1.5   pos factor:40   steps:10  decrease:0.5	dt: 0.289:::0.951812 --> 0.6892
+interval: 1.5   pos factor:40   steps:10  decrease:0.5	dt: 0.29:::12.1164 --> 6.60629
+interval: 1.5   pos factor:40   steps:10  decrease:0.5	dt: 0.289:::5.96745 --> 1.07477
+interval: 1.5   pos factor:40   steps:10  decrease:0.5	dt: 0.287:::17.3968 --> 12.2853
+interval: 1.5   pos factor:40   steps:10  decrease:0.5	dt: 0.286:::15.4596 --> 1.8423
+
 
   static Mat optimize_error_old(const Mat &P, const Mat &T_initial, const Point32f *M, const Point32f *I, int n){
     const float E_initial = compute_error(P,T_initial,M,I,n);
@@ -382,17 +594,6 @@ namespace icl{
       t = tBest;
     }
 
-#if 0
-    FixedMatrix<float,1,6> A(tInit[0],tInit[1],tInit[2],rInit[0],rInit[1],rInit[2]);
-    FixedMatrix<float,1,6> B(tBest[0],tBest[1],tBest[2],rBest[0],rBest[1],rBest[2]);
-    FixedMatrix<float,1,6> delta = (B-A)*0.1;
-    for(int i=0;i<10;++i){
-      FixedMatrix<float,1,6> C = A + delta * float(i);
-      Mat T = create_hom_4x4<float>(C[3],C[4],C[5],C[0],C[1],C[2]);
-      float e = compute_error(P,T,M,I,n);
-      std::cout << e << " ";
-    }
-#endif
     std::cout << "dt: "<<(Time::now()-ttt).toMilliSecondsDouble() << ":::" <<E_initial << " --> " << E_best << std::endl;
     //    DEBUG_LOG("optimization deltas dr:" << (rInit-rBest).transp() << " dt:" 
     //          << (tInit-tBest).transp() << " dE:" << E_initial-E_best 
@@ -537,114 +738,4 @@ namespace icl{
   }
 
 
-    
-  Mat CoplanarPointPoseEstimator::getPose(int n, 
-                                          const Point32f *modelPoints, 
-                                          const Point32f *imagePoints, 
-                                          const Camera &cam){
-    float ifx = 1.0f/(cam.getFocalLength()*cam.getSamplingResolutionX());
-    float ify = 1.0f/(cam.getFocalLength()*cam.getSamplingResolutionY());
-    float icx = -ifx * cam.getPrincipalPointOffset().x;
-    float icy = -ify * cam.getPrincipalPointOffset().y;
-
-    // please note, the old implementation can be found in svn rev. 2753
-    std::vector<Point32f> ips(n);//, pbs(n);
-    for(int i=0;i<n;++i){
-      ips[i] = Point32f(ifx*imagePoints[i].x+icx, ify * imagePoints[i].y+icy);
-    }
-  
-    typedef float real;
-    GenericHomography2D<real> H(ips.data(),modelPoints,n); // tested the homography error which is always almost 0
-
-    H *= 1.0/sqrt( pow(H(0,0),2) + pow(H(0,1),2) + pow(H(0,2),2) ); 
-    
-    // if H solves Ax=0 then also -H solves it, therefore, we always
-    // take the solution, where z is positive (object is in front of the camera)
-    
-    if(H(2,2) < 0){
-      H *= -1;
-    }
-
-    FixedColVector<real,3> R1 = H.col(0);
-    FixedColVector<real,3> R2 = H.col(1);
-    R2 -= R1*(R1.transp()*R2)[0];  
-    R2.normalize();
-    FixedColVector<real,3> R3 = cross3(R1,R2);
-    
-    data->T.part<0,0,3,3>() = data->R = (R1,R2,R3);
-
-    // -R * t -> provides translation part in 'clear-text'
-    data->T.part<3,0,1,3>() = data->R.transp()*FixedColVector<real,3>( -H(2,0),-H(2,1),-H(2,2) ); 
-    
-    // this provides the original camera CS-Transformation Matrix
-    data->T.part<3,0,1,3>() = FixedColVector<real,3>( H(2,0),H(2,1),H(2,2) );
-    
-    data->T(0,3) = data->T(1,3) = data->T(2,3) = 0;
-    data->T(3,3) = 1;
-
-    data->T = optimize_error_6(cam.getProjectionMatrix(), data->T, modelPoints, imagePoints, n);
-    
-#if 0
-    Mat M = cam.getCSTransformationMatrix().inv()*data->T;
-    float error = 0;
-    for(int i=0;i<n;++i){
-      Vec tmp = M * Vec(modelPoints[i].x,modelPoints[i].y,0,1);
-      Point32f p = cam.project(tmp);
-      error += p.distanceTo(imagePoints[i]);
-    }
-
-    Mat P = cam.getProjectionMatrix();    
-    float error2 = 0;
-    for(int i=0;i<n;++i){
-      Vec tmp = homogenize( P * data->T * Vec(modelPoints[i].x,modelPoints[i].y,0,1) );
-      error2 += Point32f(tmp[0],tmp[1]).distanceTo(imagePoints[i]);
-    }
-    std::cout << "error: " << error <<  "  error2:" << error2 << std::endl;
-
-    /* explanation: 
-                  ||                                     ||  where, I: imagePoints
-       E(T) = sum || I[i] - project(C⁻1 * T * vec4(M[i]) ||         M: modelPoints
-               i  ||                                     ||       C⁻1: inverse cam transform
-
-        but since, project(x) p2(hom(P*C*x)), where P: projection matrix and C: camera matrix,
-        and p2: extracts x and y from a 4D homogenious vector,
-        
-                  ||                                   ||  where,   P: cam projection matrix
-       E(T) = sum || I[i] - p2(hom(P * T * vec4(M[i])) ||         hom: homogenization
-               i  ||                                   ||          p2(x,y,z,w) = (x,y)
-        
-        The question, that remains is, how this function is minimized and, if we assume a 
-        closed solution in least sqaure scene, if the initial T does already minimize E(T)
-        if T is a homogeneous transform [R|t]
-
-        * first approach: try to use stochastic search (perhaps coarse to fine) to find
-          better solutions for T iteratively
-        * 2nd approach: try to derivate E(T) wrt. T in order to implement gradient descent
-          to optimize T
-        * find out whether a closed form solution for E(T) is already found with the method
-          above 
-    */
-#endif
-    if(data->referenceFrame == cameraFrame){
-      return data->T;
-    }else{
-      return cam.getCSTransformationMatrix().inv()*data->T;
-    }
-  }
-
-}
-
-#if 0
-some nice results
-~/projects/ICL/build/release/ICLMarkers/bin/icl-6.4.0/icl-marker-demo -m bch 0 40x40 -c calib-webcam.xml -i file '~/Desktop/test-images/*' -interval 1.5 -posFactor 40 -decreaseFactor 0.5 -steps 10
-interval: 1.5   pos factor:40   steps:10  decrease:0.5	dt: 0.305:::10.5562 --> 2.54668
-interval: 1.5   pos factor:40   steps:10  decrease:0.5	dt: 0.285:::30.2762 --> 7.09786
-interval: 1.5   pos factor:40   steps:10  decrease:0.5	dt: 0.287:::4.36137 --> 0.762217
-interval: 1.5   pos factor:40   steps:10  decrease:0.5	dt: 0.288:::27.0267 --> 2.90564
-interval: 1.5   pos factor:40   steps:10  decrease:0.5	dt: 0.286:::1.77211 --> 0.81319
-interval: 1.5   pos factor:40   steps:10  decrease:0.5	dt: 0.289:::0.951812 --> 0.6892
-interval: 1.5   pos factor:40   steps:10  decrease:0.5	dt: 0.29:::12.1164 --> 6.60629
-interval: 1.5   pos factor:40   steps:10  decrease:0.5	dt: 0.289:::5.96745 --> 1.07477
-interval: 1.5   pos factor:40   steps:10  decrease:0.5	dt: 0.287:::17.3968 --> 12.2853
-interval: 1.5   pos factor:40   steps:10  decrease:0.5	dt: 0.286:::15.4596 --> 1.8423
 #endif
