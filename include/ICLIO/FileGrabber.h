@@ -35,10 +35,7 @@
 #ifndef ICL_FILE_GRABBER_H
 #define ICL_FILE_GRABBER_H
 
-#include <string>
-#include <map>
 #include <ICLIO/FileGrabberPlugin.h>
-#include <ICLIO/FileList.h>
 #include <ICLIO/GrabberHandle.h>
 
 namespace icl{
@@ -128,7 +125,7 @@ namespace icl{
         To indicate which files could be buffered, a reference to the internal file list is
         returned.
         */
-    const FileList &bufferImages(bool omitExceptions=true);
+    void bufferImages(bool omitExceptions=true);
 
     /// internally skips the next to-be-grabbed image
     /** E.g. if the image directory "images/" contains 6 valid ".jpg"-files,
@@ -187,29 +184,8 @@ namespace icl{
     virtual int isVolatile(const std::string &propertyName);
     
     private:
-    /// internal file list
-    FileList m_oFileList;
-    
-    /// current file list index
-    int m_iCurrIdx;
-    
-    /// buffer for buffered mode
-    std::vector<ImgBase*> m_vecImageBuffer;
-    
-    /// flag whether to pre-buffer images or not
-    bool m_bBufferImages;
-
-    /// indicates whether to jump to next frame automatically
-    bool m_bAutoNext;
-    
-    /// A special buffer image
-    ImgBase *m_poBufferImage;
-    
-    /// map of plugins
-    static std::map<std::string,FileGrabberPlugin*> s_mapPlugins;
-    
-    /// forced plugin name
-    std::string m_forcedPluginType;
+    struct Data;  
+    Data *m_data;
   };
   
 
@@ -246,9 +222,9 @@ namespace icl{
 
     /// makes the grabber buffer all images internally
     /** @see FileGrabberImpl::bufferImages(bool) */
-    inline const FileList &bufferImages(bool omitExceptions=true){
+    inline void bufferImages(bool omitExceptions=true){
       Mutex::Locker l(m_instance->mutex);
-      return m_instance.get()->ptr->bufferImages(omitExceptions);
+      m_instance.get()->ptr->bufferImages(omitExceptions);
     }
 
     /// skips the next to-be-grabbed image

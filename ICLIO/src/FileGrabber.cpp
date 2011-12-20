@@ -55,44 +55,70 @@
 #ifdef HAVE_IMAGEMAGICK
 #include <ICLIO/FileGrabberPluginImageMagick.h>
 #endif
-using namespace std;
+
+#include <string>
+#include <map>
+#include <ICLIO/FileList.h>
 
 namespace icl{
 
-  map<string,FileGrabberPlugin*> FileGrabberImpl::s_mapPlugins;
+  struct FileGrabberImpl::Data{
+    /// internal file list
+    FileList oFileList;
+    
+    /// current file list index
+    int iCurrIdx;
+    
+    /// buffer for buffered mode
+    std::vector<ImgBase*> vecImageBuffer;
+    
+    /// flag whether to pre-buffer images or not
+    bool bBufferImages;
 
-  struct FileGrabberPluginMapInitializer{
-    // {{{ open PLUGINS ARE INCLUDED HERE
-
-    FileGrabberPluginMapInitializer(){
-      FileGrabberImpl::s_mapPlugins[".ppm"] = new FileGrabberPluginPNM;  
-      FileGrabberImpl::s_mapPlugins[".pgm"] = new FileGrabberPluginPNM; 
-      FileGrabberImpl::s_mapPlugins[".pnm"] = new FileGrabberPluginPNM; 
-      FileGrabberImpl::s_mapPlugins[".icl"] = new FileGrabberPluginPNM; 
-      FileGrabberImpl::s_mapPlugins[".csv"] = new FileGrabberPluginCSV; 
+    /// indicates whether to jump to next frame automatically
+    bool bAutoNext;
+    
+    /// if true, the grabber grabs all given images in a loop, otherwise it ends with an execption
+    bool loop;
+    
+    /// A special buffer image
+    ImgBase *poBufferImage;
+    
+    /// forced plugin name
+    std::string forcedPluginType;
+  };
+  
+  static FileGrabberPlugin *find_plugin(const std::string &type){
+    static std::map<std::string,SmartPtr<FileGrabberPlugin> > plugins;
+    if(!plugins.size()){
+      plugins[".ppm"] = new FileGrabberPluginPNM;  
+      plugins[".pgm"] = new FileGrabberPluginPNM; 
+      plugins[".pnm"] = new FileGrabberPluginPNM; 
+      plugins[".icl"] = new FileGrabberPluginPNM; 
+      plugins[".csv"] = new FileGrabberPluginCSV; 
 
 #ifdef HAVE_LIBJPEG
-      FileGrabberImpl::s_mapPlugins[".jpg"] = new FileGrabberPluginJPEG; 
-      FileGrabberImpl::s_mapPlugins[".jpeg"] = new FileGrabberPluginJPEG; 
+      plugins[".jpg"] = new FileGrabberPluginJPEG; 
+      plugins[".jpeg"] = new FileGrabberPluginJPEG; 
 #elif HAVE_IMAGEMAGICK
-      FileGrabberImpl::s_mapPlugins[".jpg"] = new FileGrabberPluginImageMagick;
-      FileGrabberImpl::s_mapPlugins[".jpeg"] = new FileGrabberPluginImageMagick;
+      plugins[".jpg"] = new FileGrabberPluginImageMagick;
+      plugins[".jpeg"] = new FileGrabberPluginImageMagick;
 #endif
 
 #ifdef HAVE_LIBZ
-      FileGrabberImpl::s_mapPlugins[".ppm.gz"] = new FileGrabberPluginPNM; 
-      FileGrabberImpl::s_mapPlugins[".pgm.gz"] = new FileGrabberPluginPNM; 
-      FileGrabberImpl::s_mapPlugins[".pnm.gz"] = new FileGrabberPluginPNM; 
-      FileGrabberImpl::s_mapPlugins[".icl.gz"] = new FileGrabberPluginPNM; 
-      FileGrabberImpl::s_mapPlugins[".csv.gz"] = new FileGrabberPluginCSV;       
+      plugins[".ppm.gz"] = new FileGrabberPluginPNM; 
+      plugins[".pgm.gz"] = new FileGrabberPluginPNM; 
+      plugins[".pnm.gz"] = new FileGrabberPluginPNM; 
+      plugins[".icl.gz"] = new FileGrabberPluginPNM; 
+      plugins[".csv.gz"] = new FileGrabberPluginCSV;       
 #endif
 
 #ifdef HAVE_LIBPNG
-      FileGrabberImpl::s_mapPlugins[".png"] = new FileGrabberPluginPNG;
+      plugins[".png"] = new FileGrabberPluginPNG;
 #endif
 
 #ifdef HAVE_IMAGEMAGICK
-      static const char *imageMagickFormats[] = {
+      const char *imageMagickFormats[] = {
 #ifndef HAVE_LIBPNG
         "png",
 #endif
@@ -108,47 +134,42 @@ namespace icl{
       };
       
       for(const char **pc=imageMagickFormats;*pc;++pc){
-        FileGrabberImpl::s_mapPlugins[std::string(".")+*pc] = new FileGrabberPluginImageMagick;
+        plugins[std::string(".")+*pc] = new FileGrabberPluginImageMagick;
       }
 #endif
-      
-      
-
       // add additional plugins to the map
     }
-    ~FileGrabberPluginMapInitializer(){
-      for(map<string,FileGrabberPlugin*>::iterator it = FileGrabberImpl::s_mapPlugins.begin(); 
-          it!= FileGrabberImpl::s_mapPlugins.end(); ++it){
-        delete it->second;
-      }
+    std::string lowerType = type;
+    for(unsigned int i=0;i<lowerType.length();++i){
+      lowerType[i] = tolower(lowerType[i]);
     }
-  };
-
-  // }}}
-
-
-  static void init_filegrabber(){
-    static FileGrabberPluginMapInitializer i;
+    std::map<std::string,SmartPtr<FileGrabberPlugin> >::iterator it = plugins.find(lowerType);
+    if(it == plugins.end()) return 0;
+    else return it->second.get();
   }
   
-  FileGrabberImpl::FileGrabberImpl():m_iCurrIdx(0),m_bAutoNext(true){
-    init_filegrabber();
+  FileGrabberImpl::FileGrabberImpl():m_data(new Data){
+    m_data->iCurrIdx  = 0;
+    m_data->bBufferImages = false;
+    m_data->bAutoNext = true;
+    m_data->loop = true;
+    m_data->poBufferImage = 0;
   }
   
   FileGrabberImpl::FileGrabberImpl(const std::string &pattern, 
-                           bool buffer, 
-                           bool ignoreDesired) throw(FileNotFoundException):
+                                   bool buffer, 
+                                   bool ignoreDesired) throw(FileNotFoundException):m_data(new Data){
     // {{{ open
 
-    m_oFileList(pattern),
-    m_iCurrIdx(0),
-    m_bBufferImages(false),
-    m_bAutoNext(true),
-    m_poBufferImage(0){
+    m_data->oFileList = pattern;
+    m_data->iCurrIdx  = 0;
+    m_data->bBufferImages = false;
+    m_data->bAutoNext = true;
+    m_data->loop = true;
+    m_data->poBufferImage = 0;
     
-    init_filegrabber();
-        
-    if(!m_oFileList.size()){
+    m_data->oFileList = FileList(pattern);
+    if(!m_data->oFileList.size()){
       throw FileNotFoundException(pattern);
     }
     
@@ -162,48 +183,48 @@ namespace icl{
   FileGrabberImpl::~FileGrabberImpl(){  
     // {{{ open
 
-    ICL_DELETE(m_poBufferImage);
-    for(unsigned int i=0;i<m_vecImageBuffer.size();i++){
-      ICL_DELETE(m_vecImageBuffer[i]);
+    ICL_DELETE(m_data->poBufferImage);
+    for(unsigned int i=0;i<m_data->vecImageBuffer.size();i++){
+      ICL_DELETE(m_data->vecImageBuffer[i]);
     }
+    delete(m_data);
   }
 
   // }}}
 
-  const FileList &FileGrabberImpl::bufferImages(bool omitExceptions){
+  void FileGrabberImpl::bufferImages(bool omitExceptions){
     // {{{ open
 
-    if(!m_vecImageBuffer.size()){
-      vector<string> correctNames;
-      m_vecImageBuffer.resize(m_oFileList.size());
-      std::fill(m_vecImageBuffer.begin(),m_vecImageBuffer.end(),(ImgBase*)0);
-      for(int i=0;i<m_oFileList.size();i++){
+    if(!m_data->vecImageBuffer.size()){
+      std::vector<std::string> correctNames;
+      m_data->vecImageBuffer.resize(m_data->oFileList.size());
+      std::fill(m_data->vecImageBuffer.begin(),m_data->vecImageBuffer.end(),(ImgBase*)0);
+      for(int i=0;i<m_data->oFileList.size();i++){
         if(omitExceptions){
           try{
-            grab(&m_vecImageBuffer[i]);
-            correctNames.push_back(m_oFileList[i]);
+            grab(&m_data->vecImageBuffer[i]);
+            correctNames.push_back(m_data->oFileList[i]);
           }catch(ICLException &ex){
             (void)ex;
           }
         }else{
-          grab(&m_vecImageBuffer[i]);
-          correctNames.push_back(m_oFileList[i]);
+          grab(&m_data->vecImageBuffer[i]);
+          correctNames.push_back(m_data->oFileList[i]);
         }
       }
-      vector<ImgBase*> buf;
-      for(unsigned int i=0;i<m_vecImageBuffer.size();++i){
-        if(m_vecImageBuffer[i]){
-          buf.push_back(m_vecImageBuffer[i]);
+      std::vector<ImgBase*> buf;
+      for(unsigned int i=0;i<m_data->vecImageBuffer.size();++i){
+        if(m_data->vecImageBuffer[i]){
+          buf.push_back(m_data->vecImageBuffer[i]);
         }
       }
-      m_vecImageBuffer = buf;
-      m_oFileList = FileList(correctNames);
+      m_data->vecImageBuffer = buf;
+      m_data->oFileList = FileList(correctNames);
       if(!buf.size()){
         throw FileNotFoundException("...");
       }
     }
-    m_bBufferImages = true;
-    return m_oFileList;
+    m_data->bBufferImages = true;
   }
 
   // }}}
@@ -211,18 +232,18 @@ namespace icl{
   void FileGrabberImpl::next(){
     // {{{ open
 
-    ICLASSERT_RETURN(m_oFileList.size());
-    m_iCurrIdx++;
-    if(m_iCurrIdx >= m_oFileList.size()) m_iCurrIdx = 0;
+    ICLASSERT_RETURN(m_data->oFileList.size());
+    m_data->iCurrIdx++;
+    if(m_data->iCurrIdx >= m_data->oFileList.size()) m_data->iCurrIdx = 0;
   }
 
   // }}}
   void FileGrabberImpl::prev(){
     // {{{ open
 
-    ICLASSERT_RETURN(m_oFileList.size());
-    m_iCurrIdx--;
-    if(m_iCurrIdx <= 0) m_iCurrIdx = m_oFileList.size()-1;
+    ICLASSERT_RETURN(m_data->oFileList.size());
+    m_data->iCurrIdx--;
+    if(m_data->iCurrIdx <= 0) m_data->iCurrIdx = m_data->oFileList.size()-1;
   }
 
   // }}}
@@ -230,7 +251,7 @@ namespace icl{
   unsigned int FileGrabberImpl::getFileCount() const{
     // {{{ open
 
-    return m_oFileList.size();
+    return m_data->oFileList.size();
   }
 
   // }}}
@@ -238,7 +259,7 @@ namespace icl{
   const std::string &FileGrabberImpl::getNextFileName() const{
     // {{{ open
 
-    return m_oFileList[m_iCurrIdx];
+    return m_data->oFileList[m_data->iCurrIdx];
   }
 
   // }}}
@@ -246,44 +267,45 @@ namespace icl{
   const ImgBase *FileGrabberImpl::acquireImage(){
     // {{{ open
 
-    if(m_bBufferImages){
-      ICLASSERT_RETURN_VAL(m_vecImageBuffer.size(),NULL);
-      ImgBase *p = m_vecImageBuffer[m_iCurrIdx];
-      if(m_bAutoNext) ++m_iCurrIdx;
-      if(m_iCurrIdx >= (int)m_vecImageBuffer.size()) m_iCurrIdx = 0;
+    if(m_data->bBufferImages){
+      ICLASSERT_RETURN_VAL(m_data->vecImageBuffer.size(),NULL);
+      ImgBase *p = m_data->vecImageBuffer[m_data->iCurrIdx];
+      if(m_data->bAutoNext) ++m_data->iCurrIdx;
+      if(m_data->iCurrIdx >= (int)m_data->vecImageBuffer.size()) m_data->iCurrIdx = 0;
       return p;
     }
 
-    ICLASSERT_RETURN_VAL(!m_oFileList.isNull(),NULL);
-    File f(m_oFileList[m_iCurrIdx]);
-    if(m_bAutoNext) ++m_iCurrIdx;
+    ICLASSERT_RETURN_VAL(!m_data->oFileList.isNull(),NULL);
+    File f(m_data->oFileList[m_data->iCurrIdx]);
+    if(m_data->bAutoNext) ++m_data->iCurrIdx;
     if(!f.exists()) throw FileNotFoundException(f.getName());
-    if(m_iCurrIdx >= m_oFileList.size()) m_iCurrIdx = 0;
-    
-    std::map<string,FileGrabberPlugin*>::iterator it;
-    if( m_forcedPluginType == ""){
-      it = s_mapPlugins.find(toLower(f.getSuffix()));
-    }else{
-      it = s_mapPlugins.find("."+toLower(m_forcedPluginType));
+    if(m_data->iCurrIdx >= m_data->oFileList.size()){
+      if(m_data->loop){
+        m_data->iCurrIdx = 0;
+      }else{
+        throw ICLException("No more files available");
+      }
     }
-    if(it == s_mapPlugins.end()){     
-      throw InvalidFileException(string("file type (filename was \"")+f.getName()+"\")");
+    
+    FileGrabberPlugin *p = find_plugin(m_data->forcedPluginType == "" ? f.getSuffix() : m_data->forcedPluginType);
+    if(!p){
+      throw InvalidFileException(str("file type (filename was \"")+f.getName()+"\")");
       return 0;
     }
     
     try{
-      it->second->grab(f,&m_poBufferImage);
+      p->grab(f,&m_data->poBufferImage);
     }catch(ICLException&){
       if(f.isOpen()) f.close();
       throw;
     }
-    return m_poBufferImage;
+    return m_data->poBufferImage;
   }
 
   // }}}
 
   void FileGrabberImpl::forcePluginType(const std::string &suffix){
-    m_forcedPluginType = suffix;
+    m_data->forcedPluginType = suffix;
   }  
 
 
@@ -293,13 +315,15 @@ namespace icl{
       next();
     }else if(property == "prev"){
       prev();
+    }else if(property == "loop"){
+      m_data->loop = parse<bool>(value);
     }else if(property == "jump-to-start"){
-      m_iCurrIdx = 0;
+      m_data->iCurrIdx = 0;
     }else if(property == "auto-next"){
       if(value == "on"){
-        m_bAutoNext = true;
+        m_data->bAutoNext = true;
       }else if(value == "off"){
-        m_bAutoNext = false;
+        m_data->bAutoNext = false;
       }else{
         ERROR_LOG("cannot set property \"auto-next\" to \"" 
                   << value 
@@ -311,20 +335,20 @@ namespace icl{
   }
   
   std::vector<std::string> FileGrabberImpl::getPropertyList(){
-    static const std::string ps[8] = {
+    static const std::string ps[10] = {
       "next","prev","next filename","current filename","jump-to-start",
-      "relative progress","absolute progress","auto-next"
+      "relative progress","absolute progress","auto-next","loop","file-count"
     };
-    return std::vector<std::string>(ps,ps+8);
+    return std::vector<std::string>(ps,ps+10);
   }
   
   std::string FileGrabberImpl:: getType(const std::string &name){
     if(name == "next" || name == "prev" || name == "jump-to-start"){
       return "command";
     }else if (name == "next filename" || name == "current filename" || name == "relative progress"
-              || name == "absolute progress"){
+              || name == "absolute progress" || name == "file-count"){
       return "info";
-    }else if(name == "auto-next"){
+    }else if(name == "auto-next" || name == "loop"){
       return "menu";
     }else{
       ERROR_LOG("nothing known about property \"" << name << "\"");
@@ -333,7 +357,7 @@ namespace icl{
   }
   
   std::string FileGrabberImpl::getInfo(const std::string &name){
-    if(name == "auto-next") return "{\"on\",\"off\"}";
+    if(name == "auto-next" || name == "loop") return "{\"on\",\"off\"}";
     ERROR_LOG("no info available for info \"" << name << "\"");
     return "undefined";
   }
@@ -342,13 +366,15 @@ namespace icl{
     if(name == "next filename"){
       return getNextFileName();
     }else if(name == "current filename"){
-      return m_oFileList[iclMax(m_iCurrIdx-1,0)];
+      return m_data->oFileList[iclMax(m_data->iCurrIdx-1,0)];
+    }else if(name == "file-count"){
+      return str(m_data->oFileList.size());
     }else if(name == "relative progress"){
-      return str((100* (m_iCurrIdx+1)) / float(m_oFileList.size()))+" %";
+      return str((100* (m_data->iCurrIdx+1)) / float(m_data->oFileList.size()))+" %";
     }else if(name == "absolute progress"){
-      return str(m_iCurrIdx+1) + " / " + str(m_oFileList.size());
+      return str(m_data->iCurrIdx+1) + " / " + str(m_data->oFileList.size());
     }else if(name == "auto-next"){
-      return m_bAutoNext ? "on" : "off";
+      return m_data->bAutoNext ? "on" : "off";
     }else{
       ERROR_LOG("no info available for property \"" << name << "\"");
       return "undefined";
@@ -356,7 +382,7 @@ namespace icl{
   }
 
   int FileGrabberImpl::isVolatile(const std::string &name){
-    if(name == "next" || name == "prev" || name == "jump-to-start" || name == "auto-next"){
+    if(name == "next" || name == "prev" || name == "jump-to-start" || name == "auto-next" || name == "file-count"){
       return 0;
     }else if (name == "next filename" || name == "current filename" || name == "relative progress"
               || name == "absolute progress"){

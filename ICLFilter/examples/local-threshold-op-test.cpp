@@ -38,6 +38,7 @@
 #include <ICLCC/CCFunctions.h>
 #include <ICLUtils/ConfigFile.h>
 #include <ICLQuick/Common.h>
+#include <ICLIO/FileList.h>
 
 #include <QtGui/QInputDialog>
 GUI gui("hbox");
