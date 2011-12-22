@@ -45,22 +45,38 @@
 
 namespace icl {
 
-  class PylonGrabberBuffer
-  {
-    public:
-    PylonGrabberBuffer(const size_t imageSize);
-    ~PylonGrabberBuffer();
-
-    uint8_t* getBufferPointer(void) { return m_pBuffer; }
-    Pylon::StreamBufferHandle getBufferHandle(void) { return m_hBuffer; }
-    void setBufferHandle(Pylon::StreamBufferHandle hBuffer) { m_hBuffer = hBuffer; };
-
+  template <typename T>
+  class PylonGrabberBuffer {
     private:
-    uint8_t *m_pBuffer;
+    T *m_pBuffer;
     Pylon::StreamBufferHandle m_hBuffer;
+
+    public:
+    PylonGrabberBuffer(size_t size) : m_pBuffer(NULL) {
+        m_pBuffer = new T[size];
+        if (m_pBuffer == NULL)
+          throw icl::ICLException("Not enough memory to allocate image buffer");
+      }
+
+    ~PylonGrabberBuffer(){
+        if (m_pBuffer != NULL)
+          delete[] m_pBuffer;
+      }
+
+    T* getBufferPointer(void) {
+      return m_pBuffer;
+    }
+
+    Pylon::StreamBufferHandle getBufferHandle(void) {
+      return m_hBuffer;
+    }
+
+    void setBufferHandle(Pylon::StreamBufferHandle hBuffer) {
+      m_hBuffer = hBuffer;
+    }
   };
 
-  class PylonGrabberImpl : public Grabber{
+  class PylonGrabberImpl : public Grabber {
     public:
     friend class PylonGrabber;
     friend class PylonAutoEnv;
@@ -127,7 +143,7 @@ namespace icl {
     /// the streamGrabber of the camera.
     Pylon::IStreamGrabber* m_Grabber;
     /// a list of used buffers.
-    std::vector<PylonGrabberBuffer*> m_BufferList;
+    std::vector<PylonGrabberBuffer<uint16_t>*> m_BufferList;
     /**
     * indicates whether m_Image and m_ColorConverter should
     * be reinitialized in the next acquireImage call.
@@ -168,7 +184,7 @@ namespace icl {
     /// creates a new ImgBase is not already there.
     void initImgBase();
     /// Converts pImageBuffer to correct type and writes it into m_Image
-    void convert(const uint8_t *pImageBuffer);
+    void convert(const void *pImageBuffer);
   };
 
   /** This is just a wrapper class of the underlying PylonGrabberImpl class */
