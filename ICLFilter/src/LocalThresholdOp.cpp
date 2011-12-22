@@ -354,41 +354,35 @@ namespace icl{
   }
   // }}}
 
-  template<class T, class B>
-  struct CountPix{
-    mutable volatile B *t;
-    CountPix(volatile B &t):t(&t){}
-    inline void operator()(const T &v) const{
-      *t += v;
-    }
-  };
-  
-  template<class T>
-  inline T roi_mean(Img<T> &s, int dim){
-    volatile icl64f t = 0 ;
-    s.forEach(CountPix<T,icl64f>(t));
-    return T(t/dim);
-  }
 
-  template<> inline icl8u roi_mean(Img<icl8u> &s, int dim){
-    volatile unsigned int t = 0 ;
-    s.forEach(CountPix<icl8u,unsigned int>(t));
-    return icl8u(t/dim);
+  template<class T, class B>
+  inline T roi_mean_gen(const Channel<T> &s, int dim, const Rect &roi){
+    B buf = 0;
+    for(int y=roi.y; y< roi.bottom();++y){
+      for(int x=roi.x; x< roi.right();++x){
+        buf += s(x,y);
+      }
+    }
+    return buf/dim;
   }
-  template<> inline icl16s roi_mean(Img<icl16s> &s, int dim){
-    volatile int64_t t = 0;
-    s.forEach(CountPix<icl16s,int64_t>(t));
-    return icl16s(t/dim);
+  template<class T>
+  inline T roi_mean(const Channel<T> &s, int dim, const Rect &roi){
+    return roi_mean_gen<T,icl64f>(s,dim,roi);
   }
-  template<> inline icl32s roi_mean(Img<icl32s> &s, int dim){
-    volatile int64_t t = 0 ;
-    s.forEach(CountPix<icl32s,int64_t>(t));
-    return icl32s(t/dim);
+  template<> inline icl8u roi_mean(const Channel<icl8u> &s, int dim, const Rect &roi){
+    return roi_mean_gen<icl8u,int64_t>(s,dim,roi);
+  }
+  template<> inline icl16s roi_mean(const Channel<icl16s> &s, int dim, const Rect &roi){
+    return roi_mean_gen<icl16s,int64_t>(s,dim,roi);
+  }
+  template<> inline icl32s roi_mean(const Channel<icl32s> &s, int dim, const Rect &roi){
+    return roi_mean_gen<icl32s,int64_t>(s,dim,roi);
   }
 
   template<class S>
-  static void apply_tiled_thresh(Img<S> s, Img8u &dst, Img<S> &buf1, Img<S> &buf2, int ts, int threshold, BinaryCompareOp *cmp, bool lin){
-    S *pbuf1 = buf1.begin(0);
+  static void apply_tiled_thresh(const Img<S> &s, Img8u &dst, 
+                                 Img<S> &buf1, Img<S> &buf2, int ts, int threshold, BinaryCompareOp *cmp, bool lin){
+    
     int w = s.getWidth();
     int bw = w/ts;
     int h = s.getHeight();
@@ -400,16 +394,16 @@ namespace icl{
     Rect r(0,0,ts,ts);
     
     for(int c=s.getChannels()-1;c>=0;--c){
+      S *pbuf1 = buf1.begin(c);
+      const Channel<S> chan = s[c];
       for(int y=0;y<NY;++y){
         r.y = ts*y;
         for(int x=0;x<NX;++x){
           r.x = ts*x;
-          s.setROI(r);
-          pbuf1[x+bw*y] = roi_mean(s,dim)+threshold;
+          pbuf1[x+bw*y] = roi_mean(chan,dim,r)+threshold;
         }
       }
     }
-    s.setFullROI();
     buf1.scaledCopy(&buf2,lin?interpolateLIN:interpolateNN);
     cmp->apply(&s,&buf2,bpp(dst));
   }

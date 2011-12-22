@@ -3,6 +3,7 @@
 
 #include <ICLUtils/FixedMatrix.h>
 #include <ICLUtils/Point32f.h>
+#include <ICLUtils/Configurable.h>
 
 namespace icl{
   
@@ -58,7 +59,7 @@ namespace icl{
       Simple Pose estimation with 4 points needs about 80 ns on an Intel(R) Xeon(R) E5530
       (2.40GHz). If 9 points are used, it needs about 110 ns.
   */
-  class CoplanarPointPoseEstimator{
+  class CoplanarPointPoseEstimator : public Configurable{
 
     /// Internal data structure
     struct Data;
@@ -66,6 +67,9 @@ namespace icl{
     /// Internally used data pointer
     Data *data;
 
+    /// internally used to sync property settings with internal data
+    void propertyChangedCallback(const Property &p);
+    
     public:
 
     /// Reference frame enumeration
@@ -73,9 +77,22 @@ namespace icl{
       cameraFrame, //!< poses are returned w.r.t. the camera frame
       worldFrame   //!< poses are returned w.r.t. the world frame
     };
+
+    /// Algorithm, that is used for pose-estimation
+    /** TODO: describe the algorithms*/
+    enum PoseEstimationAlgorithm{
+      HomographyBasedOnly, //!< uses the above described algorithm (\ref ALG) only
+      SamplingCoarse,      //!< use some predefined sampling parameters for coase sampling (fast)
+      SamplingMedium,      //!< use some predefined sampling parameters for medium sampling (average speed)
+      SamplingFine,        //!< use some predefined sampling parameters for fine sampling (slow)
+      SamplingCustom,      //!< uses custom properties to define sampling parameters
+      SimplexSampling      //!< performs simplex sampling for optimization (not implemented yet)
+    };
+    
     
     /// Default constructor with given reference-frame for the returned poses
-    CoplanarPointPoseEstimator(ReferenceFrame returnedPosesReferenceFrame=worldFrame);
+    CoplanarPointPoseEstimator(ReferenceFrame returnedPosesReferenceFrame=worldFrame, 
+                               PoseEstimationAlgorithm a = SamplingMedium);
 
     /// Destructor
     ~CoplanarPointPoseEstimator();

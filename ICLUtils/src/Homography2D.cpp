@@ -38,9 +38,10 @@
 #include <ICLUtils/FixedVector.h>
 
 namespace icl{
-  Homography2D::Homography2D(const Point32f *x, const Point32f *y, int n, Homography2D::Algorithm alg){
+  template<class T>
+  GenericHomography2D<T>::GenericHomography2D(const Point32f *x, const Point32f *y, int n,GenericHomography2D<T>::Algorithm alg){
     if(alg == Simple){
-      DynMatrix<float> X(n,3),Y(n,3);
+      DynMatrix<T> X(n,3),Y(n,3);
       for(int i=0;i<n;++i){
         X(i,0) = x[i].x;
         X(i,1) = x[i].y;
@@ -49,17 +50,17 @@ namespace icl{
         Y(i,1) = y[i].y; 
         Y(i,2) = 1;
       }
-      DynMatrix<float> H = X*Y.pinv(true); // A * B.pinv()
+      DynMatrix<T> H = X*Y.pinv(true); // A * B.pinv()
       
-      std::copy(H.begin(),H.end(),begin());
+      std::copy(H.begin(),H.end(),Super::begin());
     }else{
       // actually we use the homography backwards
       std::swap(x,y);
-
-      DynMatrix<float> M(8,2*n),r(1,8);
+      
+      DynMatrix<T> M(8,2*n),r(1,2*n);
       for(int i=0;i<n;++i){
-        float xx = x[i].x, xy=x[i].y, yx=y[i].x, yy=y[i].y;
-        float *m = &M(0,2*i);
+        T xx = x[i].x, xy=x[i].y, yx=y[i].x, yy=y[i].y;
+        T *m = &M(0,2*i);
         m[0] = xx; 
         m[1] = xy;
         m[2] = 1;
@@ -77,10 +78,14 @@ namespace icl{
         r[2*i] = yx;
         r[2*i+1] = yy;
       }
-      DynMatrix<float> h  = M.solve(r,"svd");
-      std::copy(h.begin(),h.end(),begin());
+      DynMatrix<T> h  = M.solve(r,"svd");
+
+      std::copy(h.begin(),h.end(),Super::begin());
       this->operator[](8) = 1;
     }
   }
+  
+  template class GenericHomography2D<float>;
+  template class GenericHomography2D<double>;
 
 }

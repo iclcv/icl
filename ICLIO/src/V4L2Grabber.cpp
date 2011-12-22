@@ -94,6 +94,12 @@ namespace icl{
     Impl(const std::string &deviceName, const std::string &initialFormat="", bool startGrabbing=true):
       deviceName(deviceName),isGrabbing(startGrabbing),avoidDoubleFrames(true),lastTime(Time::now()){
       
+      // note, \b is the word boundary special character (while $ is a line end which does not work so well here)
+      if(deviceName.length() == 1 && match(deviceName,"^[0-9]\\b")){
+        this->deviceName = "/dev/video/"+deviceName; 
+        std::cout << "V4L2Grabber added device prefix '/dev/video/' automatically" << std::endl;
+      }
+
       open_device();
       init_device(initialFormat);
       find_supported_properties();
@@ -661,7 +667,9 @@ namespace icl{
 
    const ImgBase *V4L2GrabberImpl::acquireImage(){
      Mutex::Locker lock(implMutex);
-     return impl->acquireImage();
+     const ImgBase *image = 0;
+     do{ image = impl->acquireImage(); } while(!image || !image->getDim() );
+     return image;
    }
 
 

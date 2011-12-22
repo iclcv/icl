@@ -95,6 +95,7 @@ else()
 set(ICL_VAR_INSTALL_PREFIX "/vol/nivision" CACHE PATH "")
 endif()
 set(CMAKE_INSTALL_PREFIX "${ICL_VAR_INSTALL_PREFIX}" CACHE INTERNAL "")
+set(CMAKE_ICL_INSTALL_FOLDER_NAME "abdce" CACHE INTERNAL "")
 message(STATUS "Install Path: ${CMAKE_INSTALL_PREFIX}")
 
 if(APPLE)
@@ -1014,33 +1015,59 @@ endif()
 				WORLD_READ WORLD_EXECUTE COMPONENT filess)
 endif()
 
-add_custom_target(postinstall chmod g+w ${CMAKE_INSTALL_PREFIX}/${LIBRARY_OUTPUT_PATH}
-					COMMAND chmod g+w ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig
-					COMMAND chmod g+w ${CMAKE_INSTALL_PREFIX}/${EXECUTABLE_OUTPUT_PATH}
-					COMMAND chmod g+w ${CMAKE_INSTALL_PREFIX}/${DOC_DIR})
+
+# if this is the last sub-dir, its exectued at the end
+# the scripts/CMakeLists does only contain the
+# install(SCRIPT ./post_install.cmake)
+# line ...
+
+
+add_subdirectory(scripts)
+
+
+## uninstall 
+set(P ${CMAKE_INSTALL_PREFIX})
+set(D icl-${VERSION}${DEBUG_POSTFIX})
+add_custom_target(uninstall
+  COMMAND echo "calling rm -rf ${P}/bin/${D} ..."
+  COMMAND rm -rf ${P}/bin/${D}
+  COMMAND echo "calling rm -rf ${P}/lib/${D} ..."
+  COMMAND rm -rf ${P}/lib/${D}
+  COMMAND echo "calling rm -rf ${P}/doc/${D} ..."
+  COMMAND rm -rf ${P}/doc/${D}
+  COMMAND echo "calling rm -rf ${P}/include/${D} ..."
+  COMMAND rm -rf ${P}/include/${D}
+  COMMAND echo "calling rm -rf ${P}/etc/${D} ..."
+  COMMAND rm -rf ${P}/etc/${D})
+
+
+#add_custom_target(postinstall chmod g+w ${CMAKE_INSTALL_PREFIX}/${LIBRARY_OUTPUT_PATH}
+#					COMMAND chmod g+w ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig
+#					COMMAND chmod g+w ${CMAKE_INSTALL_PREFIX}/${EXECUTABLE_OUTPUT_PATH}
+#					COMMAND chmod g+w ${CMAKE_INSTALL_PREFIX}/${DOC_DIR})
 #add_dependencies(postinstall install)					
 
 #include(tp2.cmake)
 #############################################
 #in shell type: cpack
 #to build automatically the deb package
-set(CPACK_PACKAGE_DESCRIPTION "Do the example thingie")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A longer description about our example app.")
-set(CPACK_PACKAGE_NAME "ICL - Image Component Library")
+#set(CPACK_PACKAGE_DESCRIPTION "Do the example thingie")
+#set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A longer description about our example a#pp.")
+#set(CPACK_PACKAGE_NAME "ICL - Image Component Library")
 #xine qt libz libjpg graphicsmagick opengl
 #set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.3.6), libgcc1 (>= 1:4.1)")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libdc1394-22, libunicap2, libxine1, libgraphicsmagick++3, zlib1g")
-set(CPACK_PACKAGE_CONTACT "wer auch immer")
-set(CPACK_PACKAGE_VENDOR "uni")
-set(CPACK_PACKAGE_VERSION_MAJOR "${ICL_MAJOR}")
-set(CPACK_PACKAGE_VERSION_MINOR "${ICL_MINOR}")
-set(CPACK_PACKAGE_VERSION_PATCH "${ICL_PATCH}")
-set(VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
-set(CPACK_PACKAGE_EXECUTABLES "")
+#set(CPACK_DEBIAN_PACKAGE_DEPENDS "libdc1394-22, libunicap2, libxine1, libgraphi#csmagick++3, zlib1g")
+#set(CPACK_PACKAGE_CONTACT "wer auch immer")
+#set(CPACK_PACKAGE_VENDOR "uni")
+#set(CPACK_PACKAGE_VERSION_MAJOR "${ICL_MAJOR}")
+#set(CPACK_PACKAGE_VERSION_MINOR "${ICL_MINOR}")
+#set(CPACK_PACKAGE_VERSION_PATCH "${ICL_PATCH}")
+#set(VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
+#set(CPACK_PACKAGE_EXECUTABLES "")
 #set(CPACK_COMPONENTS_ALL filess)
-set(CPACK_ALL_INSTALL_TYPES Full)
-set(CPACK_GENERATOR "DEB;TGZ")
-SET(CPACK_SET_DESTDIR "ON")
+#set(CPACK_ALL_INSTALL_TYPES Full)
+#set(CPACK_GENERATOR "DEB;TGZ")
+#SET(CPACK_SET_DESTDIR "ON")
 #set(CPACK_INSTALL_CMAKE_PROJECTS "headers")
 #message(STATUS "ignore ${CPACK_SOURCE_IGNORE_FILES}")
 #set(CPACK_SOURCE_IGNORE_FILES "\\\\doxyfile$")
@@ -1049,10 +1076,14 @@ SET(CPACK_SET_DESTDIR "ON")
 #TODO set ignore file for doxyfile and install doc dir
 #set(CPACK_INSTALLED_DIRECTORIES "${CPACK_INSTALLED_DIRECTORIES};${CMAKE_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/html;${CMAKE_INSTALL_PREFIX}/doc/${ICL_SUB_PACKAGE_PLACEHOLDER}")
 
-#endforeach()
-set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}-${CMAKE_SYSTEM_PROCESSOR}")
-#set(CPACK_PACKAGE_INSTALL_PREFIX "/")
-set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CMAKE_INSTALL_PREFIX}")
-set(CPACK_STRIP_FILES "ICLUtils/lib/ICLUtils.so" "ICLCore/lib/ICLCore.so" "ICLCC/lib/ICLCC.so" "ICLFilter/lib/ICLFilter.so" "ICLBlob/lib/ICLBlob.so" "ICLOpenCV/lib/ICLOpenCV.so" "ICLIO/lib/ICLIO.so" "ICLQt/lib/ICLQt.so" "ICLQuick/lib/ICLQuick.so" "ICLGeom/lib/ICLGeom.so" "ICLAlgorithms/lib/ICLAlgorithms.so" "ICLMarkers/lib/ICLMarkers.so")
 
-include(CPack)
+#endforeach()
+#set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}-${CMAKE_SYSTEM_PROCESSOR}")
+#set(CPACK_PACKAGE_INSTALL_PREFIX "/")
+#set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CMAKE_INSTALL_PREFIX}")
+#set(CPACK_STRIP_FILES "ICLUtils/lib/ICLUtils.so" "ICLCore/lib/ICLCore.so" "ICLCC/lib/ICLCC.so" "ICLFilter/lib/ICLFilter.so" "ICLBlob/lib/ICLBlob.so" "ICLOpenCV/lib/ICLOpenCV.so" "ICLIO/lib/ICLIO.so" "ICLQt/lib/ICLQt.so" "ICLQuick/lib/ICLQuick.so" "ICLGeom/lib/ICLGeom.so" "ICLAlgorithms/lib/ICLAlgorithms.so" "ICLMarkers/lib/ICLMarkers.so")
+
+#include(CPack)
+
+
+

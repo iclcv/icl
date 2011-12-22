@@ -13,7 +13,8 @@ Scene scene;
 struct Obj : public SceneObject{
   Obj(){
     addChild(new ComplexCoordinateFrameSceneObject);
-    addCube(0,0,48,96);
+    Size s  = parse<Size>(pa("-m",2));
+    addCuboid(0,0,10,s.width,s.height,20);
   }
 } *obj = 0;
 
@@ -23,22 +24,28 @@ void init(){
                              ParamList("size",(*pa("-m",2)) ) );
   
   fid->setConfigurableID("fid");
+
+  grabber.init(pa("-input"));
+  if(pa("-size")) grabber.useDesired<Size>(pa("-size"));
+  grabber.useDesired(formatGray);
+
   gui << "draw3D("+*pa("-size")+")[@handle=draw@minsize=16x12]"
       << (GUI("vbox[@maxsize=16x100]") 
           << ("combo(" + fid->getIntermediateImageNames() + ")"
               "[@maxsize=100x2@handle=vis@label=visualization]")
           << "prop(fid)"
-          << "togglebutton(running,pause)[@out=pause]"
+          << (GUI("hbox") 
+              << "togglebutton(running,pause)[@out=pause]"
+              << "camcfg()"
+              )
+          //<< "fslider(0.1,2,1)[@out=f@label=focal length]"
          )
       << "!show";
 
-  grabber.init(pa("-input"));
-  grabber.useDesired<Size>(pa("-size"));
-  grabber.useDesired(formatGray);
   
   //fid->loadMarkers("[0,10]",ParamList("size",Size(96,96)));
   try{
-    fid->setPropertyValue("regions.minimum region size",400);
+    fid->setPropertyValue("quads.minimum region size",400);
     fid->setPropertyValue("thresh.global threshold",-11);
     fid->setPropertyValue("thresh.mask size",45);
     fid->setPropertyValue("thresh.algorithm","tiled linear");
@@ -52,12 +59,13 @@ void init(){
     scene.addCamera(Camera(*pa("-c")));
   }else{
     scene.addCamera(Camera());
+    scene.getCamera(0).setResolution(pa("-size"));
   }
-  scene.getCamera(0).setResolution(pa("-size"));
+
   scene.addObject(obj);
   // scene.setDrawCoordinateFrameEnabled(true);
   fid->setCamera(scene.getCamera(0));
-  //  gui["draw"].install(scene.getSceneMouseHandler(0));
+  gui["draw"].install(scene.getMouseHandler(0));
 }
 
 
@@ -66,9 +74,14 @@ void init(){
 void run(){
   while(gui["pause"]) Thread::msleep(100);
   const ImgBase *image = grabber.grab();
+  //SHOW(*image);
   //save(*image->asImg<icl8u>(),"image.ppm");
   
   const std::vector<Fiducial> &fids = fid->detect(image);
+  
+  //scene.getCamera(0).setFocalLength(gui["f"]);
+  //fid->setCamera(scene.getCamera(0));
+  
   gui_DrawHandle3D(draw);
   draw = fid->getIntermediateImage(gui["vis"]);
 
@@ -77,9 +90,9 @@ void run(){
   draw->reset3D();
   draw->linewidth(2);
   for(unsigned int i=0;i<fids.size();++i){
-    //if(fids[i].getID() == 3){
-    //  obj->setTransformation(fids[i].getPose3D());
-    //}
+    if(fids[i].getID() == 0){
+      obj->setTransformation(fids[i].getPose3D());
+    }
     
     draw->color(255,0,0,255);
     draw->linestrip(fids[i].getCorners2D());
@@ -88,6 +101,7 @@ void run(){
     draw->color(0,255,0,255);
     float a = fids[i].getRotation2D();
     draw->line(fids[i].getCenter2D(), fids[i].getCenter2D() + Point32f( cos(a), sin(a))*100 );
+    
     /*
         const std::vector<Fiducial::KeyPoint> &kp = fids[i].getKeyPoints2D();
         for(unsigned int j=0;j<kp.size();++j){
@@ -96,8 +110,9 @@ void run(){
         draw->sym(p.imagePos, '+');
         draw->text(str(p.ID), p.imagePos.x,p.imagePos.y,9);
         }
+    */
+   
     draw->callback(scene.getGLCallback(0));
-   */
   }
   draw->unlock();
 
@@ -109,3 +124,5 @@ int main(int n, char **ppc){
   return ICLApp(n,ppc,"[m]-input|-i(2) -camera|-c(camerafile) -size|-s(size=VGA) "
                 "-marker-type|-m(type=art,whichToLoad=art/*.png,size=50x50)",init,run).exec();
 }
+
+

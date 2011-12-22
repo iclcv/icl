@@ -40,7 +40,7 @@
 
 namespace icl{
   
-  /// Utility structure that represents a 2D homography
+  /// Utility structure that represents a 2D homography (implemented for float and double)
   /** Basically, a 2D homography implements a transformation between 2 paralellograms 
       Given a set of at least 4 points in parallellogram A and the same number of 
       corresponding points in parallelogram B, the homography (affine 2D transformation
@@ -155,18 +155,22 @@ namespace icl{
       of H was set fixed to 1. <b>Please note:</b> Internally, the matrix equation \f$ M h = r \f$ is solved using
       an SVD (@see ICLUtils/DynMatrix::solve) based solver (the much faster lu-decomposition based solver does not provide useful results)
   */
-  struct Homography2D : public FixedMatrix<float,3,3>{
+  template<class T>
+  struct GenericHomography2D : public FixedMatrix<T,3,3>{
+    /// super class typedef for shorter super-class references
+    typedef FixedMatrix<T,3,3> Super;
     
+    /// Internally used algorithm type
     enum Algorithm{
       Simple,   //!< use the simple algorithm (@see @ref ALG)
       Advanced, //!< use the advanced algorithm (@see @ref ALG)
     };
     
     /// Empty constructor
-    Homography2D(){}
+    GenericHomography2D(){}
     
     /// Constructor from given two point sets of size n>=4
-    Homography2D(const Point32f *pAs, const Point32f *pBs, int n=4, Algorithm algo = Advanced);
+    GenericHomography2D(const Point32f *pAs, const Point32f *pBs, int n=4, Algorithm algo = Advanced);
 
 
     /// applies a given homography matrix
@@ -193,6 +197,10 @@ namespace icl{
       return apply_homography_int(*this, p);
     }
   };
+  
+  /// default homography 2D type definition (usually fload depth is enough)
+  typedef GenericHomography2D<float> Homography2D;
+  
 
 }
 

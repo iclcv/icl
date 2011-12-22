@@ -99,6 +99,13 @@ namespace icl {
     /// the constructor is private so only the friend class can create instances
     PylonGrabberImpl(const Pylon::CDeviceInfo &dev, const std::string args);
 
+    /// Used to determine wether (and to what) to convert an image.
+    enum convert_to {
+      yes_rgba,
+      yes_mono8u,
+      no_mono8u,
+      no_mono16,
+    };
 
     /// A mutex lock for the camera
     icl::Mutex m_CamMutex;
@@ -128,13 +135,13 @@ namespace icl {
     bool m_ResetImage;
     /// an IclImageBase
     uint8_t* m_Image2;
-    icl::Img8u* m_Image;
+    icl::ImgBase* m_Image;
     /// Pylon color format converter
     Pylon::CPixelFormatConverter* m_ColorConverter;
     Pylon::SImageFormat m_InputFormat;
     Pylon::SOutputImageFormat m_OutputFormat;
     /// indicates whether the current colorformat needs conversion.
-    bool m_Convert;
+    convert_to m_Convert;
     /// a variable to count aquired picture.
     unsigned long m_Aquired;
     /// a variable to count aquiring-errors.
@@ -160,6 +167,8 @@ namespace icl {
     void cameraDefaultSettings();
     /// creates a new ImgBase is not already there.
     void initImgBase();
+    /// Converts pImageBuffer to correct type and writes it into m_Image
+    void convert(const uint8_t *pImageBuffer);
   };
 
   /** This is just a wrapper class of the underlying PylonGrabberImpl class */

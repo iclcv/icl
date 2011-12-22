@@ -40,7 +40,7 @@
 
 #include <unistd.h>
 
-#define USE_SMALL_PICTURES
+//#define USE_SMALL_PICTURES
 
 using namespace icl;
 
@@ -150,7 +150,7 @@ PylonGrabberBuffer::~PylonGrabberBuffer()
 
 // Constructor of PylonGrabberImpl
 PylonGrabberImpl::PylonGrabberImpl(const Pylon::CDeviceInfo &dev, const std::string args)
-  : m_CamMutex(), m_Aquired(0), m_Error(0), m_ResetImage(true), m_Convert(false)
+  : m_CamMutex(), m_Aquired(0), m_Error(0), m_ResetImage(true)
 {
   DEBUG_LOG("args: " << args)
   // getting camera mutex to exclude race-conditions
@@ -301,7 +301,7 @@ void PylonGrabberImpl::cameraDefaultSettings(){
   m_Offsetx = 640;
   m_Offsety = 300;
 #endif
-  m_Format = "BayerGB8";
+  //m_Format = "BayerGB16";
   //m_Format = "Mono8";
 
   DEBUG_LOG("setting camera to " << m_Format)
@@ -341,13 +341,10 @@ const icl::ImgBase* PylonGrabberImpl::acquireImage(){
   m_Grabber -> RetrieveResult(result);
 
   if (result.Succeeded()){
-    //DEBUG_LOG("Succeeded")
     ++m_Aquired;
     // Grabbing was successful, process image
     const uint8_t *pImageBuffer = (uint8_t *) result.Buffer();
-    //DEBUG_LOG("imgbase")
     initImgBase();
-    //DEBUG_LOG("imgbase_")
 
     /*DEBUG_LOG("w = " << m_Width << " h = " << m_Height << " o = " << m_Offsetx << "x" << m_Offsety)
     DEBUG_LOG("BufferSize: " << getNeededBufferSize(m_Camera) << " BytesPerPixel: " << getCameraPixelSize(m_Camera))
@@ -359,22 +356,8 @@ const icl::ImgBase* PylonGrabberImpl::acquireImage(){
     DEBUG_LOG("buffer pixtype: " << result.GetPixelType())
     DEBUG_LOG("buffer size x: " << result.GetSizeX())
     DEBUG_LOG("buffer size y: " << result.GetSizeY())*/
-    if(m_Convert){
-      m_ColorConverter -> Convert(m_Image2, m_Width*m_Height*4, pImageBuffer, getNeededBufferSize(m_Camera), m_InputFormat, m_OutputFormat);
-      for(int y = 0; y < m_Image -> getHeight(); ++y){
-        for(int x = 0; x < m_Image -> getWidth(); ++x){
-          (*m_Image)(x,y,0) = m_Image2[m_Width*y*4 + x*4 + 2];
-          (*m_Image)(x,y,1) = m_Image2[m_Width*y*4 + x*4 + 1];
-          (*m_Image)(x,y,2) = m_Image2[m_Width*y*4 + x*4 + 0];
-        }
-      }
-    } else {
-      for(int y = 0; y < m_Image -> getHeight(); ++y){
-        for(int x = 0; x < m_Image -> getWidth(); ++x){
-          (*m_Image)(x,y,0) = pImageBuffer[m_Width*y + x];
-        }
-      }
-    }
+    convert(pImageBuffer);
+
     // Reuse the buffer for grabbing the next image
     m_Grabber -> QueueBuffer(result.Handle(), NULL);
 
@@ -388,6 +371,42 @@ const icl::ImgBase* PylonGrabberImpl::acquireImage(){
     // Reuse the buffer for grabbing the next image
     m_Grabber -> QueueBuffer(result.Handle(), NULL);
     return m_Image;
+  }
+}
+
+void PylonGrabberImpl::convert(const uint8_t *pImageBuffer){
+  if (m_Convert == yes_rgba){
+    m_ColorConverter -> Convert(m_Image2, m_Width*m_Height*4, pImageBuffer, getNeededBufferSize(m_Camera), m_InputFormat, m_OutputFormat);
+    Img8u* img = dynamic_cast<Img8u*>(m_Image);
+    for(int y = 0; y < m_Image -> getHeight(); ++y){
+      for(int x = 0; x < m_Image -> getWidth(); ++x){
+        (*img)(x,y,0) = m_Image2[m_Width*y*4 + x*4 + 2];//2
+        (*img)(x,y,1) = m_Image2[m_Width*y*4 + x*4 + 1];//1
+        (*img)(x,y,2) = m_Image2[m_Width*y*4 + x*4 + 0];//0
+      }
+    }
+  } else if (m_Convert == yes_mono8u){
+    // m_Image2 is already registered as content of m_Image
+    m_ColorConverter -> Convert(m_Image2, m_Width*m_Height*4, pImageBuffer, getNeededBufferSize(m_Camera), m_InputFormat, m_OutputFormat);
+  } else if (m_Convert == no_mono8u){
+  Img8u* img = dynamic_cast<Img8u*>(m_Image);
+    for(int y = 0; y < m_Image -> getHeight(); ++y){
+      for(int x = 0; x < m_Image -> getWidth(); ++x){
+        (*img)(x,y,0) = pImageBuffer[m_Width*y + x];
+      }
+    }
+  } else if (m_Convert == no_mono16){
+  Img16s* img = dynamic_cast<Img16s*>(m_Image);
+  uint16_t* pImageBuffer16 = (uint16_t*) pImageBuffer;
+    for(int y = 0; y < m_Image -> getHeight(); ++y){
+      for(int x = 0; x < m_Image -> getWidth(); ++x){
+        (*img)(x,y,0) = pImageBuffer16[m_Width*y + x];
+      }
+     }
+  } else {
+    std::stringstream ex("Conversion to color format convert_to=");
+    ex << m_Convert << " not defined";
+    throw new ICLException(ex.str());
   }
 }
 
@@ -406,35 +425,95 @@ void PylonGrabberImpl::initImgBase(){
       delete m_ColorConverter;
       m_ColorConverter = NULL;
     }
+    m_InputFormat = Pylon::SImageFormat();
+    m_OutputFormat = Pylon::SOutputImageFormat();
     m_ResetImage = false;
   }
 
   if(!m_Image){
     DEBUG_LOG("creating image")
     // create color format converter
-    Pylon::PixelType pt = getCameraPixelType(m_Camera);
+    Pylon::PixelType pixelType = getCameraPixelType(m_Camera);
     m_InputFormat.Width = m_Width;
     m_InputFormat.Height = m_Height;
-    m_InputFormat.LinePitch =  (int) (m_Width * (getCameraPixelSize(m_Camera)/8.0) + 0.5);
-    m_InputFormat.PixelFormat = pt;
-    if (Pylon::IsBayer(pt)){
-      m_Convert = true;
-      m_ColorConverter = new Pylon::CPixelFormatConverterBayer();
-      m_ColorConverter -> Init(m_InputFormat);
+
+    if(Pylon::IsPacked(pixelType)){
+      m_InputFormat.LinePitch = 0;
+    //} else if (Pylon::IsYUV(pixelType)){
+    } else {
+      m_InputFormat.LinePitch =
+        (int) (m_Width * (getCameraPixelSize(m_Camera)/8.0) + 0.5);
+    }
+
+    // Settings for input format Bayer
+    if (Pylon::IsBayer(pixelType)){
+      m_Convert = yes_rgba;
+      m_InputFormat.PixelFormat = pixelType;
       m_OutputFormat.LinePitch = m_Width*4;
       m_OutputFormat.PixelFormat = Pylon::PixelType_RGBA8packed;
 
       m_Image = new Img8u(Size(m_Width, m_Height), icl::formatRGB);
       m_Image2 = new icl8u[m_Width*m_Height*4];
-    } else if (Pylon::IsYUV(pt)){
-      m_Convert = false;
-      m_Image = new Img8u(Size(m_Width, m_Height), icl::formatYUV);
-    } else if (Pylon::IsMono(pt)){
-      m_Convert = false;
-      m_Image = new Img8u(Size(m_Width, m_Height), icl::formatGray);
+
+      m_ColorConverter = new Pylon::CPixelFormatConverterBayer();
+      m_ColorConverter -> Init(m_InputFormat);
+    // Settings for input format Yuv422-UYVY
+    } else if (pixelType == Pylon::PixelType_YUV422packed){
+      m_Convert = yes_rgba;
+      m_InputFormat.PixelFormat = pixelType;
+      m_OutputFormat.LinePitch = m_Width*4;
+      m_OutputFormat.PixelFormat = Pylon::PixelType_RGBA8packed;
+
+      m_Image = new Img8u(Size(m_Width, m_Height), icl::formatRGB);
+      m_Image2 = new icl8u[m_Width*m_Height*4];
+
+      m_ColorConverter = new Pylon::CPixelFormatConverterYUV422;
+      m_ColorConverter -> Init(m_InputFormat);
+    // Settings for input format Yuv422-YUYV
+    } else if (pixelType == Pylon::PixelType_YUV422_YUYV_Packed){
+      m_Convert = yes_rgba;
+      m_InputFormat.PixelFormat = pixelType;
+      m_OutputFormat.LinePitch = m_Width*4;
+      m_OutputFormat.PixelFormat = Pylon::PixelType_RGBA8packed;
+
+      m_Image = new Img8u(Size(m_Width, m_Height), icl::formatRGB);
+      m_Image2 = new icl8u[m_Width*m_Height*4];
+
+      m_ColorConverter = new Pylon::CPixelFormatConverterYUV422YUYV;
+      m_ColorConverter -> Init(m_InputFormat);
+    // Settings for input format Mono
+    } else if (Pylon::IsMono(pixelType)){
+      // Settings for input format Mono8
+      if (pixelType == Pylon::PixelType_Mono8
+          || pixelType == Pylon::PixelType_Mono8signed){
+        m_Convert = no_mono8u;
+        m_Image = new Img8u(Size(m_Width, m_Height), icl::formatGray);
+        // Settings for input format Mono16
+      } else if (pixelType == Pylon::PixelType_Mono16){
+        m_Convert = no_mono16;
+        m_Image = new Img16s(Size(m_Width, m_Height), icl::formatGray);
+        // Settings for other Mono-input formats (convert using truncation)
+      } else {
+        m_Convert = yes_mono8u;
+        m_InputFormat.PixelFormat = pixelType;
+        m_OutputFormat.LinePitch = m_Width;
+        m_OutputFormat.PixelFormat = Pylon::PixelType_Mono8;
+
+        m_Image2 = new icl8u[m_Width*m_Height];
+        std::vector<icl8u*> channels;
+        channels.push_back(m_Image2);
+        m_Image = new Img8u(Size(m_Width, m_Height),
+                            icl::formatGray, channels, false);
+        if(Pylon::IsPacked(pixelType)){
+          m_ColorConverter = new Pylon::CPixelFormatConverterTruncatePacked();
+        } else {
+          m_ColorConverter = new Pylon::CPixelFormatConverterTruncate();
+        }
+        m_ColorConverter -> Init(m_InputFormat);
+      }
     } else {
       std::stringstream error("PixelColor type ");
-      error << pt << " not supported by PylonGrabber.";
+      error << pixelType << " not supported by PylonGrabber.";
       throw ICLException(error.str());
     }
   }
@@ -484,11 +563,6 @@ void PylonGrabberImpl::setProperty(const std::string &property, const std::strin
   }
 
   AcquisitionInterruptor acqInt(this, GenApi::IsWritable(node));
-
-//  if (){
-//    DEBUG_LOG("Stop acquisition to set '" << property << "' parameter")
-//    acqInterruptor = new AcquisitionInterruptor(this);
-//  }
 
   bool stopped = false;
   if (!GenApi::IsWritable(node)){
@@ -870,16 +944,15 @@ GenICam::gcstring getParameterValueString(Pylon::IPylonDevice* camera,
 Pylon::PixelType getCameraPixelType(Pylon::IPylonDevice* camera){
   GenICam::gcstring tStr = getParameterValueString(camera, "PixelFormat");
   Pylon::PixelType pt = Pylon::CPixelTypeMapper::GetPylonPixelTypeByName(tStr);
-
-    if(Pylon::PixelSize(pt) == Pylon::PS_Undefined){
-      DEBUG_LOG("PixelFormat from camera '" << pt << "' is not defined.");
-    }
+  if(pt == Pylon::PixelType_Undefined){
+    DEBUG_LOG("PixelType " << tStr.c_str() << "=" << pt << "' is not defined.");
+  }
   DEBUG_LOG("Camera PixelType is " << tStr.c_str() << " (" << pt << ")")
   return pt;
 }
 
 int getCameraPixelSize(Pylon::IPylonDevice* camera){
-  return Pylon::PixelSize(getCameraPixelType(camera));
+  return Pylon::BitPerPixel(getCameraPixelType(camera));
 }
 
 long getNeededBufferSize(Pylon::IPylonDevice* camera){
