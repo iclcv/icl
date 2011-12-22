@@ -40,17 +40,16 @@
 
 #include <unistd.h>
 
-#include <pylon/PylonIncludes.h>
-#include <pylon/TransportLayer.h>
-#include <pylon/PixelType.h>
-
 //#define USE_SMALL_PICTURES
 
 using namespace icl;
 
+// Static mutex and counter for clean initialising
+// and deleting of Pylon environment
 static unsigned int pylon_env_inits = 0;
 static icl::Mutex* env_mutex = new icl::Mutex();
 
+// This enum is a helper to get the correct icl-value-type strings
 enum icl_val_type {
   range,
   value_list,
@@ -58,10 +57,10 @@ enum icl_val_type {
   command,
   info
 } icl_val_type;
-
 const char *icl_val_str[]={ "range", "value-list", "menu", "command", "info" };
 
-const int default_sizes_count = 30;
+// This is a list of dafault sizes strings for
+// the 'size' parameter of the camera
 const char *default_sizes[]={
       "0x0", "128x96", "176x144", "160x120", "320x200", "320x240",
       "352x288", "360x240", "480x320", "640x350", "640x480", "768x576",
@@ -70,42 +69,82 @@ const char *default_sizes[]={
       "1280x1024", "1600x900", "1400x1050", "1600x1050", "1600x1200",
       "1920x1080", "3840x2160"
 };
+const int default_sizes_count =sizeof(default_sizes)/sizeof(char*);
 
-// Constructor allocates the image buffer
-PylonGrabberBuffer::PylonGrabberBuffer(const size_t imageSize):
-m_pBuffer(NULL)
-{
-  m_pBuffer = new uint8_t[imageSize];
-  if (m_pBuffer == NULL)
-  {
-    throw icl::ICLException("Not enough memory to allocate image buffer");
-  }
+// Function definitions
+// template function to get the value of an IValue-subclass
+template <typename NODE, typename RET>
+RET getNodeValue(NODE* node){
+  return node -> GetValue();
 }
 
-// Freeing the memory
-PylonGrabberBuffer::~PylonGrabberBuffer()
-{
-  if (m_pBuffer != NULL)
-    delete[] m_pBuffer;
+// template function overload to get the int64_t-value of an IEnumeration
+template <typename NODE, typename RET>
+int64_t getNodeValue(GenApi::IEnumeration* node){
+  return node -> GetIntValue();
 }
+
+// template function to set the value of an IValue-subclass
+template <typename NODE, typename VAL>
+void setNodeValue(NODE* node, VAL value){
+  node -> SetValue(value, true);
+  return;
+}
+
+// template function overload to set the value of an IEnumeration
+template <typename NODE, typename VAL>
+void setNodeValue(GenApi::IEnumeration* node, std::string value){
+  node -> FromString(value.c_str(), true);
+  return;
+}
+
+// template function overload to set the value of an IEnumeration
+template <typename NODE, typename VAL>
+void setNodeValue(GenApi::IEnumeration* node, int64_t value){
+  node -> SetIntValue(value, true);
+  return;
+}
+
+// used for setting a value of a parameter of a specific type on
+// a specific source (camera/grabber)
+template <typename OBJ, typename NODE, typename VAL>
+bool setParameterValueOf(OBJ* object, std::string parameter, VAL value);
+
+// used for getting a value of a parameter of a specific type from
+// a specific source (camera/grabber)
+template <typename SOURCE, typename NODE, typename RET>
+RET getParameterValueOf(SOURCE* source, std::string param);
+
+// returns a string representation of the value of a parameter of the camera.
+GenICam::gcstring getParameterValueString(
+  Pylon::IPylonDevice* camera,
+  std::string parameter
+  );
+
+// returns the Pylon::PixelType enum describing the cameras current pixel type
+Pylon::PixelType getCameraPixelType(Pylon::IPylonDevice* camera);
+
+// returns the expected pixel size.
+int getCameraPixelSize(Pylon::IPylonDevice* camera);
+
+// returns the expected image size. used to get the needed size of buffers.
+long getNeededBufferSize(Pylon::IPylonDevice* camera);
 
 // Constructor of PylonGrabberImpl
-PylonGrabberImpl::PylonGrabberImpl(const Pylon::CDeviceInfo &dev) : m_CamMutex(), m_Aquired(0), m_Error(0) {
+PylonGrabberImpl::PylonGrabberImpl(const Pylon::CDeviceInfo &dev,
+  const std::string args) : m_CamMutex(), m_Aquired(0), m_Error(0),
+  m_ResetImage(true)
+{
+  DEBUG_LOG("args: " << args)
   // getting camera mutex to exclude race-conditions
   icl::Mutex::Locker l(m_CamMutex);
   m_Image = NULL;
   m_Image2 = NULL;
-  m_BayerConverter = new BayerConverter(BayerConverter::bilinear, BayerConverter::bayerPattern_GBRG, Size(m_Width, m_Height));
+  m_ColorConverter = NULL;
   // Initialization of the pylon Runtime Library
   initPylonEnv();
   Pylon::CTlFactory& tlFactory = Pylon::CTlFactory::GetInstance();
-#ifdef ICL_PYLON_GRABBER_ONLY_GIGE
-  m_GigECamera = new Pylon::CBaslerGigECamera();
   m_Camera = tlFactory.CreateDevice(dev);
-  m_GigECamera -> Attach(m_Camera);
-#else
-  m_Camera = tlFactory.CreateDevice(dev);
-#endif
 
   if(m_Camera -> GetNumStreamGrabberChannels() == 0){
     throw icl::ICLException("No stream grabber channels avaliable!");
@@ -127,10 +166,10 @@ PylonGrabberImpl::PylonGrabberImpl(const Pylon::CDeviceInfo &dev) : m_CamMutex()
 
 void PylonGrabberImpl::prepareGrabbing(){
   // Get the image buffer size
-  const size_t imageSize = getNeededBufferSize();
+  const size_t imageSize = getNeededBufferSize(m_Camera);
   DEBUG_LOG("Buffer size: " << imageSize)
-  unsigned char* ppBuffers[m_NumBuffers];
-  Pylon::StreamBufferHandle handles[m_NumBuffers];
+  //unsigned char* ppBuffers[m_NumBuffers];
+  //Pylon::StreamBufferHandle handles[m_NumBuffers];
 
   // We won't use image buffers greater than imageSize
   setParameterValueOf<Pylon::IStreamGrabber, GenApi::IInteger, int>
@@ -146,7 +185,8 @@ void PylonGrabberImpl::prepareGrabbing(){
   // Buffers used for grabbing must be registered at the stream grabber -> 
   // The registration returns a handle to be used for queuing the buffer.
   for (int i = 0; i < m_NumBuffers; ++i){
-    PylonGrabberBuffer *pGrabBuffer = new PylonGrabberBuffer(imageSize);
+    PylonGrabberBuffer<uint16_t> *pGrabBuffer =
+      new PylonGrabberBuffer<uint16_t>(imageSize);
     Pylon::StreamBufferHandle handle =
       m_Grabber -> RegisterBuffer(pGrabBuffer -> getBufferPointer(), imageSize);
     pGrabBuffer -> setBufferHandle(handle);
@@ -156,6 +196,7 @@ void PylonGrabberImpl::prepareGrabbing(){
 
     // Put buffer into the grab queue for grabbing
     m_Grabber -> QueueBuffer(handle);
+    m_ResetImage = true;
   }
 }
 
@@ -169,7 +210,7 @@ void PylonGrabberImpl::finishGrabbing(){
   }
 
   // deregister the buffers before freeing the memory
-  std::vector<PylonGrabberBuffer*>::iterator it;
+  std::vector<PylonGrabberBuffer<uint16_t>*>::iterator it;
   for (it = m_BufferList.begin(); it != m_BufferList.end(); it++){
     m_Grabber -> DeregisterBuffer((*it) -> getBufferHandle());
     delete *it;
@@ -182,26 +223,24 @@ void PylonGrabberImpl::finishGrabbing(){
 }
 
 void PylonGrabberImpl::acquisitionStart(){
-#ifdef ICL_PYLON_GRABBER_ONLY_GIGE
-  m_GigECamera -> AcquisitionStart.Execute();
-#else
-  GenApi::ICommand* node = (GenApi::ICommand*) m_Camera -> GetNodeMap() -> GetNode("AcquisitionStart");
-  DEBUG_LOG("Command AcessMode: " << node -> GetAccessMode())
-  DEBUG_LOG("Command Executed?: " << node -> IsDone())
-  node -> Execute();
-  DEBUG_LOG("Command Executed?: " << node -> IsDone())
-  (*node)();
-  DEBUG_LOG("Command Executed?: " << node -> IsDone())
-#endif
+  GenApi::INode* node = m_Camera -> GetNodeMap() -> GetNode("AcquisitionStart");
+  try {
+  GenApi::ICommand* node2 = dynamic_cast<GenApi::ICommand*>(node);
+  node2 -> Execute();
+  } catch (std::exception &e){
+    DEBUG_LOG("Could not cast 'AcquisitionStart' to an ICommand")
+  }
 }
 
 void PylonGrabberImpl::acquisitionStop(){
-#ifdef ICL_PYLON_GRABBER_ONLY_GIGE
-  m_GigECamera -> AcquisitionStop.Execute();
-#else
-  GenApi::ICommand* node = (GenApi::ICommand*) m_Camera -> GetNodeMap() -> GetNode("AcquisitionStop");
-  node -> Execute();
-#endif
+  GenApi::ICommand* node =
+    (GenApi::ICommand*) m_Camera -> GetNodeMap() -> GetNode("AcquisitionStop");
+  try {
+  GenApi::ICommand* node2 = dynamic_cast<GenApi::ICommand*>(node);
+  node2 -> Execute();
+  } catch (std::exception &e){
+    DEBUG_LOG("Could not cast 'AcquisitionStop' to an ICommand")
+  }
 }
 
 PylonGrabberImpl::~PylonGrabberImpl(){
@@ -226,172 +265,66 @@ PylonGrabberImpl::~PylonGrabberImpl(){
   m_Camera -> Close();
   // Free resources allocated by the pylon runtime system.
   std::cout << "terminating pylon" << std::endl;
-#ifdef ICL_PYLON_GRABBER_ONLY_GIGE
-  delete m_GigECamera;
-#endif
-  delete m_BayerConverter;
+  delete m_ColorConverter;
+  delete m_Image;
   termPylonEnv();
 }
 
-long PylonGrabberImpl::getNeededBufferSize(){
-  try {
-    return getParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>(m_Camera, "PayloadSize");
-  } catch (ICLException &e){
-    std::cerr << "The camera does not have a parameter calles PayloadSize." << std::endl;
-    std::cerr << "Assuming that the image size is width * height * pixelsize." << std::endl;
-    return (long) ((m_Width * m_Height * getBitsPerPixel() / 8) + 0.5);
-  }
-}
-
-int PylonGrabberImpl::getBitsPerPixel(){
-  std::string bppString = getParameterValueString("PixelSize");
-  if(bppString.at(0) == 'B' 
-      && bppString.at(1) == 'p'
-      && bppString.at(2) == 'p')
-  {
-    std::istringstream in(bppString.substr(3));
-    int bpp;
-    in >> bpp;
-    return bpp;
-  }
-  else {
-    throw icl::ICLException("could not interpret Pixel size '" + bppString + "'. expected 'Bpp...'");
-  }
-}
-
-template <typename NODE, typename RET>
-RET PylonGrabberImpl::getNodeValue(NODE* node){
-  return node -> GetValue();
-}
-
-template <typename NODE, typename RET>
-std::string PylonGrabberImpl::getNodeValue(GenApi::IEnumeration* node){
-  return (node -> ToString()).c_str();
-}
-
-template <typename NODE, typename VAL>
-void PylonGrabberImpl::setNodeValue(NODE* node, VAL value){
-  node -> SetValue(value, true);
-  return;
-}
-
-template <typename NODE, typename VAL>
-void PylonGrabberImpl::setNodeValue(GenApi::IEnumeration* node, std::string value){
-  node -> FromString(value.c_str(), true);
-  return;
-}
-
-//template function to set parameters of camera and grabber
-template <typename OBJ, typename NODE, typename VAL>
-bool PylonGrabberImpl::setParameterValueOf(OBJ* object, std::string parameter, VAL value){
-  GenApi::INode* node = object -> GetNodeMap() -> GetNode(parameter.c_str());
-  if (!node) {
-    std::cerr << "There is no parameter called '" << parameter << "'" << std::endl;
-    return false;
-  }
-  //dynamic cast to needed node-type
-  NODE* node2;
-  try{
-    node2 = dynamic_cast<NODE*>(node);
-  } catch (std::exception &e){
-    std::cerr << "Could not cast node '"<< parameter << "' to desired type" << std::endl;
-    return false;
-  }
-  if(!GenApi::IsWritable(node2)){
-    std::cerr << "Parameter called '" << parameter << "' is not writable." << std::endl;
-    return false;
-  }
-  // now setting parameter
-  try{
-    setNodeValue<NODE, VAL>(node2, value);
-    return true;
-  }
-  catch (GenICam::GenericException &e) {
-    std::cerr << e.what() << std::endl;
-    return false;
-  }
-}
-
-//template function to get parameter values of camera and grabber
-template <typename SOURCE, typename NODE, typename RET>
-RET PylonGrabberImpl::getParameterValueOf(SOURCE* source, std::string param){
-  GenApi::INode* node = source -> GetNodeMap() -> GetNode(param.c_str());
-  if(!node){
-    throw icl::ICLException("parameter of this type not found");
-  }
-  //dynamic cast to needed node-type
-  try{
-    NODE* node2 = dynamic_cast<NODE*>(node);
-    if(!node2){
-      throw icl::ICLException("Could not cast " + param + " to desired type");
-    }
-    if(!GenApi::IsReadable(node2)){
-      throw icl::ICLException("The node " + param + " is not Readable");
-    }
-    return getNodeValue<NODE, RET>(node2);
-  } catch (std::exception &e){
-    throw icl::ICLException(e.what());
-  }
-}
-
-std::string PylonGrabberImpl::getParameterValueString(std::string parameter){
-  GenApi::INode* node = m_Camera -> GetNodeMap() -> GetNode(parameter.c_str());
-  if (!node) {
-    std::cerr << "There is no parameter called '" << parameter << "'" << std::endl;
-    return NULL;
-  }
-  GenApi::IValue* value = dynamic_cast<GenApi::IValue*>(node);
-  return (value -> ToString()).c_str();
-}
-
 void PylonGrabberImpl::cameraDefaultSettings(){
-  m_Height = getParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>(m_Camera, "Height");
-  m_Width = getParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>(m_Camera, "Width");
-  m_Offsetx = getParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>(m_Camera, "OffsetX");
-  m_Offsety = getParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>(m_Camera, "OffsetY");
-  m_Format = getParameterValueOf
-    <Pylon::IPylonDevice, GenApi::IEnumeration, std::string>(m_Camera, "PixelFormat");
+  m_Height = getParameterValueOf
+    <Pylon::IPylonDevice, GenApi::IInteger, int>(m_Camera, "Height");
+  m_Width = getParameterValueOf
+    <Pylon::IPylonDevice, GenApi::IInteger, int>(m_Camera, "Width");
+  m_Offsetx = getParameterValueOf
+    <Pylon::IPylonDevice, GenApi::IInteger, int>(m_Camera, "OffsetX");
+  m_Offsety = getParameterValueOf
+    <Pylon::IPylonDevice, GenApi::IInteger, int>(m_Camera, "OffsetY");
+  m_Format = getParameterValueString(m_Camera, "PixelFormat");
 
-  //std::cout << "ImageFormat at startup: " << m_Width << "x" << m_Height << " , " << m_Format << std::endl;
-  //std::cout << "Payload: " << getParameterValueString("PayloadSize") << std::endl;
+  //std::cout << "ImageFormat at startup: " << m_Width << "x" << m_Height
+  //<< " , " << m_Format << std::endl;
+  //std::cout << "Payload: " << getParameterValueString("PayloadSize")
+  //<< std::endl;
 
 #ifdef USE_SMALL_PICTURES
   m_Height = 480;
   m_Width = 640;
   m_Offsetx = 640;
   m_Offsety = 300;
-  m_Format = "BayerGB8";
 #endif
-  m_Format = "BayerGB8";
+  //m_Format = "BayerGB16";
+  //m_Format = "Mono8";
+
   DEBUG_LOG("setting camera to " << m_Format)
   // default camera settings: image format, AOI, acquisition mode and exposure
   setParameterValueOf<Pylon::IPylonDevice, GenApi::IEnumeration, std::string>
     (m_Camera, "PixelFormat", m_Format);
-  setParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>(m_Camera, "OffsetX", m_Offsetx);
-  setParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>(m_Camera, "OffsetY", m_Offsety);
-  setParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>(m_Camera, "Width", m_Width);
-  setParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>(m_Camera, "Height", m_Height);
-  setParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>(m_Camera, "GevSCPSPacketSize", 1500);
+  setParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>
+    (m_Camera, "OffsetX", m_Offsetx);
+  setParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>
+    (m_Camera, "OffsetY", m_Offsety);
+  setParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>
+    (m_Camera, "Width", m_Width);
+  setParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>
+    (m_Camera, "Height", m_Height);
+  setParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>
+    (m_Camera, "GevSCPSPacketSize", 1500);
   //std::cout << "ImageFormat after settings: " 
-  //<< getParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>(m_Camera, "Width") << "x" 
-  //<< getParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>(m_Camera, "Height") << " , " 
-  //<< getParameterValueOf<Pylon::IPylonDevice, GenApi::IEnumeration, std::string>(m_Camera, "PixelFormat")
-  //<< std::endl;
-  //std::cout << "Payload: " << getParameterValueString("PayloadSize") << std::endl;
-  //std::cout << "PixelSize: " << getParameterValueString("PixelSize") << std::endl;
+  //  << getParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>
+  //    (m_Camera, "Width") << "x"
+  //  << getParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>
+  //    (m_Camera, "Height") << " , "
+  //  << getParameterValueOf<Pylon::IPylonDevice, GenApi::IEnumeration,
+  //    std::string>(m_Camera, "PixelFormat")
+  //  << std::endl;
+  //std::cout << "Payload: "
+  //  << getParameterValueString("PayloadSize") << std::endl;
+  //std::cout << "PixelSize: "
+  //  << getParameterValueString("PixelSize") << std::endl;
 
   // default Aquisition Mode
   setParameterValueOf<Pylon::IPylonDevice, GenApi::IEnumeration, std::string>
     (m_Camera, "AcquisitionMode", "Continuous");
-
-  // create color format converter
-  //m_InputFormat.Width = m_Width;
-  //m_InputFormat.Height = m_Height;
-  //m_InputFormat.LinePitch = m_Width;
-  //m_InputFormat.PixelFormat = Pylon::PixelType_BayerBG8;
-  //m_ColorConv.Init(m_InputFormat);
-  //m_OutputFormat.LinePitch = m_Width;
-  //m_OutputFormat.PixelFormat = Pylon::PixelType_RGB8planar;
 }
 
 const icl::ImgBase* PylonGrabberImpl::acquireImage(){
@@ -409,35 +342,24 @@ const icl::ImgBase* PylonGrabberImpl::acquireImage(){
   m_Grabber -> RetrieveResult(result);
 
   if (result.Succeeded()){
-    //DEBUG_LOG("Succeeded")
     ++m_Aquired;
     // Grabbing was successful, process image
-    const uint8_t *pImageBuffer = (uint8_t *) result.Buffer();
-    //DEBUG_LOG("imgbase")
+    const void *pImageBuffer = result.Buffer();
     initImgBase();
-    //DEBUG_LOG("imgbase_")
 
-    // DEBUG_LOG("w = " << m_Width << " h = " << m_Height << "o = " << m_Offsetx << "x" << m_Offsety)
-    //DEBUG_LOG("channels: " << m_Image -> getChannels())
-    //DEBUG_LOG("width: " << m_Image -> getWidth())
-    //DEBUG_LOG("height: " << m_Image -> getHeight())
-    //DEBUG_LOG("buffer psize: " << result.GetPayloadSize())
-    //DEBUG_LOG("buffer ptype: " << result.GetPayloadType())
-    //DEBUG_LOG("buffer pixtype: " << result.GetPixelType())
-    //DEBUG_LOG("buffer size x: " << result.GetSizeX())
-    //DEBUG_LOG("buffer size y: " << result.GetSizeY())
-    for(int c=0;c<m_Image2 -> getChannels();++c){
-      for(int x=0;x<m_Image2 -> getWidth();++x){
-        for(int y=0;y<m_Image2 -> getHeight();++y){
-           (*m_Image2)(x,y,c) = pImageBuffer[m_Width*y + x];
-        }
-      }
-    }
-    //DEBUG_LOG("loop_")
-    m_BayerConverter -> apply(m_Image2, &m_Image);
-    //DEBUG_LOG("conv")
-    //m_ColorConv.Convert(m_Image, m_Width*m_Height*3, pImageBuffer, m_Width*m_Height, m_InputFormat, m_OutputFormat);
-    //DEBUG_LOG("conv_")
+    /*DEBUG_LOG("w = " << m_Width << " h = " << m_Height << " o = "
+      << m_Offsetx << "x" << m_Offsety)
+    DEBUG_LOG("BufferSize: " << getNeededBufferSize(m_Camera)
+      << " BytesPerPixel: " << getCameraPixelSize(m_Camera))
+    DEBUG_LOG("channels: " << m_Image -> getChannels())
+    DEBUG_LOG("width: " << m_Image -> getWidth())
+    DEBUG_LOG("height: " << m_Image -> getHeight())
+    DEBUG_LOG("buffer psize: " << result.GetPayloadSize())
+    DEBUG_LOG("buffer ptype: " << result.GetPayloadType())
+    DEBUG_LOG("buffer pixtype: " << result.GetPixelType())
+    DEBUG_LOG("buffer size x: " << result.GetSizeX())
+    DEBUG_LOG("buffer size y: " << result.GetSizeY())*/
+    convert(pImageBuffer);
 
     // Reuse the buffer for grabbing the next image
     m_Grabber -> QueueBuffer(result.Handle(), NULL);
@@ -447,7 +369,8 @@ const icl::ImgBase* PylonGrabberImpl::acquireImage(){
   } else {
     ++m_Error;
     // Error handling
-    DEBUG_LOG("No image acquired!" << "Error description : " << result.GetErrorDescription())
+    DEBUG_LOG("No image acquired!" << "Error description : "
+      << result.GetErrorDescription())
 
     // Reuse the buffer for grabbing the next image
     m_Grabber -> QueueBuffer(result.Handle(), NULL);
@@ -455,35 +378,150 @@ const icl::ImgBase* PylonGrabberImpl::acquireImage(){
   }
 }
 
+void PylonGrabberImpl::convert(const void *pImageBuffer){
+  if (m_Convert == yes_rgba){
+    m_ColorConverter -> Convert(m_Image2, m_Width*m_Height*4, pImageBuffer,
+      getNeededBufferSize(m_Camera), m_InputFormat, m_OutputFormat);
+    Img8u* img = dynamic_cast<Img8u*>(m_Image);
+    for(int y = 0; y < m_Image -> getHeight(); ++y){
+      for(int x = 0; x < m_Image -> getWidth(); ++x){
+        (*img)(x,y,0) = m_Image2[m_Width*y*4 + x*4 + 2];//2
+        (*img)(x,y,1) = m_Image2[m_Width*y*4 + x*4 + 1];//1
+        (*img)(x,y,2) = m_Image2[m_Width*y*4 + x*4 + 0];//0
+      }
+    }
+  } else if (m_Convert == yes_mono8u){
+    // m_Image2 is already registered as content of m_Image
+    m_ColorConverter -> Convert(m_Image2, m_Width*m_Height*4, pImageBuffer,
+      getNeededBufferSize(m_Camera), m_InputFormat, m_OutputFormat);
+  } else if (m_Convert == no_mono8u){
+  Img8u* img = dynamic_cast<Img8u*>(m_Image);
+  uint8_t* pImageBuffer8 = (uint8_t*) pImageBuffer;
+    for(int y = 0; y < m_Image -> getHeight(); ++y){
+      for(int x = 0; x < m_Image -> getWidth(); ++x){
+        (*img)(x,y,0) = pImageBuffer8[m_Width*y + x];
+      }
+    }
+  } else if (m_Convert == no_mono16){
+  Img16s* img = dynamic_cast<Img16s*>(m_Image);
+  int16_t* pImageBuffer16 = (int16_t*) pImageBuffer;
+    for(int y = 0; y < m_Image -> getHeight(); ++y){
+      for(int x = 0; x < m_Image -> getWidth(); ++x){
+        (*img)(x,y,0) = pImageBuffer16[m_Width*y + x];
+      }
+     }
+  } else {
+    std::stringstream ex("Conversion to color format convert_to=");
+    ex << m_Convert << " not defined";
+    throw new ICLException(ex.str());
+  }
+}
+
 void PylonGrabberImpl::initImgBase(){
-  //DEBUG_LOG("initImgBase")
+  //DEBUG_LOG("initImgBase here")
+  if(m_ResetImage) {
+    if(m_Image){
+      delete m_Image;
+      m_Image = NULL;
+    }
+    if(m_Image2){
+      delete [] m_Image2;
+      m_Image2 = NULL;
+    }
+    if(m_ColorConverter){
+      delete m_ColorConverter;
+      m_ColorConverter = NULL;
+    }
+    m_InputFormat = Pylon::SImageFormat();
+    m_OutputFormat = Pylon::SOutputImageFormat();
+    m_ResetImage = false;
+  }
+
   if(!m_Image){
     DEBUG_LOG("creating image")
-    int bpp = getBitsPerPixel();
-    DEBUG_LOG("bpp = " << bpp)
-    switch (bpp) {
-      case 8:
-        //m_Image = new icl::Img8u(icl::Size(m_Width, m_Height), icl::formatGray);
-        //break;
-      case 10:
-      case 12:
-      case 14:
-      case 16:
-        //m_Image = new icl::Img16s(icl::Size(m_Width, m_Height), icl::formatGray);
-        //break;
-      case 24:
-      case 32:
-        //m_Image = new icl::Img32s(icl::Size(m_Width, m_Height), icl::formatGray);
-        //break;
-      case 36:
-      case 48:
-      case 64:
-        //m_Image = new icl::Img64f(icl::Size(m_Width, m_Height), icl::formatGray);
-        //break;
-      default:
-      m_Image = new icl::Img8u(icl::Size(m_Width, m_Height), icl::formatRGB);
-      m_Image2 = new icl::Img8u(icl::Size(m_Width, m_Height), icl::formatRGB);
-      break;
+    // create color format converter
+    Pylon::PixelType pixelType = getCameraPixelType(m_Camera);
+    m_InputFormat.Width = m_Width;
+    m_InputFormat.Height = m_Height;
+
+    if(Pylon::IsPacked(pixelType)){
+      m_InputFormat.LinePitch = 0;
+    //} else if (Pylon::IsYUV(pixelType)){
+    } else {
+      m_InputFormat.LinePitch =
+        (int) (m_Width * (getCameraPixelSize(m_Camera)/8.0) + 0.5);
+    }
+
+    // Settings for input format Bayer
+    if (Pylon::IsBayer(pixelType)){
+      m_Convert = yes_rgba;
+      m_InputFormat.PixelFormat = pixelType;
+      m_OutputFormat.LinePitch = m_Width*4;
+      m_OutputFormat.PixelFormat = Pylon::PixelType_RGBA8packed;
+
+      m_Image = new Img8u(Size(m_Width, m_Height), icl::formatRGB);
+      m_Image2 = new icl8u[m_Width*m_Height*4];
+
+      m_ColorConverter = new Pylon::CPixelFormatConverterBayer();
+      m_ColorConverter -> Init(m_InputFormat);
+    // Settings for input format Yuv422-UYVY
+    } else if (pixelType == Pylon::PixelType_YUV422packed){
+      m_Convert = yes_rgba;
+      m_InputFormat.PixelFormat = pixelType;
+      m_OutputFormat.LinePitch = m_Width*4;
+      m_OutputFormat.PixelFormat = Pylon::PixelType_RGBA8packed;
+
+      m_Image = new Img8u(Size(m_Width, m_Height), icl::formatRGB);
+      m_Image2 = new icl8u[m_Width*m_Height*4];
+
+      m_ColorConverter = new Pylon::CPixelFormatConverterYUV422;
+      m_ColorConverter -> Init(m_InputFormat);
+    // Settings for input format Yuv422-YUYV
+    } else if (pixelType == Pylon::PixelType_YUV422_YUYV_Packed){
+      m_Convert = yes_rgba;
+      m_InputFormat.PixelFormat = pixelType;
+      m_OutputFormat.LinePitch = m_Width*4;
+      m_OutputFormat.PixelFormat = Pylon::PixelType_RGBA8packed;
+
+      m_Image = new Img8u(Size(m_Width, m_Height), icl::formatRGB);
+      m_Image2 = new icl8u[m_Width*m_Height*4];
+
+      m_ColorConverter = new Pylon::CPixelFormatConverterYUV422YUYV;
+      m_ColorConverter -> Init(m_InputFormat);
+    // Settings for input format Mono
+    } else if (Pylon::IsMono(pixelType)){
+      // Settings for input format Mono8
+      if (pixelType == Pylon::PixelType_Mono8
+          || pixelType == Pylon::PixelType_Mono8signed){
+        m_Convert = no_mono8u;
+        m_Image = new Img8u(Size(m_Width, m_Height), icl::formatGray);
+        // Settings for input format Mono16
+      } else if (pixelType == Pylon::PixelType_Mono16){
+        m_Convert = no_mono16;
+        m_Image = new Img16s(Size(m_Width, m_Height), icl::formatGray);
+        // Settings for other Mono-input formats (convert using truncation)
+      } else {
+        m_Convert = yes_mono8u;
+        m_InputFormat.PixelFormat = pixelType;
+        m_OutputFormat.LinePitch = m_Width;
+        m_OutputFormat.PixelFormat = Pylon::PixelType_Mono8;
+
+        m_Image2 = new icl8u[m_Width*m_Height];
+        std::vector<icl8u*> channels;
+        channels.push_back(m_Image2);
+        m_Image = new Img8u(Size(m_Width, m_Height),
+                            icl::formatGray, channels, false);
+        if(Pylon::IsPacked(pixelType)){
+          m_ColorConverter = new Pylon::CPixelFormatConverterTruncatePacked();
+        } else {
+          m_ColorConverter = new Pylon::CPixelFormatConverterTruncate();
+        }
+        m_ColorConverter -> Init(m_InputFormat);
+      }
+    } else {
+      std::stringstream error("PixelColor type ");
+      error << pixelType << " not supported by PylonGrabber.";
+      throw ICLException(error.str());
     }
   }
 }
@@ -507,7 +545,9 @@ Pylon::DeviceInfoList_t PylonGrabberImpl::getPylonDeviceList(){
 }
 
 // interface for the setter function for video device properties
-void PylonGrabberImpl::setProperty(const std::string &property, const std::string &value){
+void PylonGrabberImpl::setProperty(
+  const std::string &property, const std::string &value)
+{
   std::cout << "setProperty(" << property << ", " << value << ")" << std::endl;
   if(property.compare("size") == 0){
     icl::Size size(value);
@@ -527,15 +567,12 @@ void PylonGrabberImpl::setProperty(const std::string &property, const std::strin
   GenApi::INodeMap* nodeMap = m_Camera -> GetNodeMap();
   GenApi::CValuePtr node = nodeMap -> GetNode(property.c_str());
   if (!node) {
-    std::cerr << "There is no parameter called '" << property << "'" << std::endl;
+    std::cerr << "There is no parameter called '"
+      << property << "'" << std::endl;
     return;
   }
 
-  AcquisitionInterruptor* a = NULL;
-  if (!GenApi::IsWritable(node)){
-    DEBUG_LOG("Stop acquisition to set '" << property << "' parameter")
-    a = new AcquisitionInterruptor(this);
-  }
+  AcquisitionInterruptor acqInt(this, GenApi::IsWritable(node));
 
   bool stopped = false;
   if (!GenApi::IsWritable(node)){
@@ -558,9 +595,6 @@ void PylonGrabberImpl::setProperty(const std::string &property, const std::strin
   if(stopped) {
     prepareGrabbing(); 
   }
-  if(a){
-    delete a;
-  }
 }
 
 // returns a list of properties, that can be set using setProperty
@@ -571,18 +605,13 @@ std::vector<std::string> PylonGrabberImpl::getPropertyList(){
   ps.push_back("format");
   GenApi::INode* rootNode = m_Camera -> GetNodeMap() -> GetNode("Root");
   addToPropertyList(ps, rootNode);
-  DEBUG_LOG("Property-Count: " << ps.size())
-  std::cout << "properties: " << ps.size() << std::endl;
-  //ps.resize(35);
-  for (int i = 0 ; i < ps.size(); ++i){
-    std::cout << ps.at(i) << ", ";
-  }
-  std::cout << std::endl;
   return ps;
 }
 
 // helper function for getPropertyList
-void PylonGrabberImpl::addToPropertyList(std::vector<std::string> &ps, const GenApi::CNodePtr& node){
+void PylonGrabberImpl::addToPropertyList(
+  std::vector<std::string> &ps, const GenApi::CNodePtr& node)
+{
   GenApi::EInterfaceType type = node -> GetPrincipalInterfaceType();
   switch (type) { 
     case GenApi::intfIInteger:
@@ -727,14 +756,15 @@ std::string PylonGrabberImpl::getInfo(const std::string &name){
   switch (type) { 
     case GenApi::intfIInteger:
       GenApi::IInteger* inode;
-      if(inode = dynamic_cast<GenApi::IInteger*>(node)) {
-        ret << "[" << inode -> GetMin() << "," << inode -> GetMax() << "]:" << inode -> GetInc();
+      if((inode = dynamic_cast<GenApi::IInteger*>(node))) {
+        ret << "[" << inode -> GetMin() << "," << inode -> GetMax()
+          << "]:" << inode -> GetInc();
       }
       break;
 
     case GenApi::intfIFloat:
       GenApi::IFloat* fnode;
-      if(fnode = dynamic_cast<GenApi::IFloat*>(node)) {
+      if((fnode = dynamic_cast<GenApi::IFloat*>(node))) {
         ret << "[" << fnode -> GetMin() << "," << fnode -> GetMax() << "]";
         if(fnode -> HasInc()){
           ret << ":" << fnode -> GetInc();
@@ -750,7 +780,7 @@ std::string PylonGrabberImpl::getInfo(const std::string &name){
       break;
     case GenApi::intfIEnumeration:
       GenApi::IEnumeration* enode;
-      if(enode = dynamic_cast<GenApi::IEnumeration*>(node)) {
+      if((enode = dynamic_cast<GenApi::IEnumeration*>(node))) {
         Pylon::StringList_t symbols;
         enode -> GetSymbolics(symbols);
         ret << "{";
@@ -780,13 +810,12 @@ std::string PylonGrabberImpl::getInfo(const std::string &name){
 
 // returns the current value of a property or a parameter
 std::string PylonGrabberImpl::getValue(const std::string &name){
-  DEBUG_LOG(name)
+  DEBUG_LOG("getValue of " << name)
   if(name.compare("size") == 0){
     std::ostringstream ret;
     ret << getValue("Width") << "x" << getValue("Height");
     return ret.str();
   }
-  
   if(name.compare("format") == 0){
     return getValue("PixelFormat");
   }
@@ -794,21 +823,15 @@ std::string PylonGrabberImpl::getValue(const std::string &name){
   GenApi::INode* node = 
     m_Camera -> GetNodeMap() -> GetNode(name.c_str());
   if (!node) {
-    std::cerr << "There is no parameter called '" 
-      << name << "'" << std::endl;
+    DEBUG_LOG("There is no parameter called '" << name << "'")
     return "";
   }
-
   GenApi::IValue* val;
-
-  if(val = dynamic_cast<GenApi::IValue*>(node)){
+  if((val = dynamic_cast<GenApi::IValue*>(node))){
     return (val -> ToString()).c_str();
   }
-
-  std::cerr << "There is no node named '" << name << "'" 
-    << " could not be cast to 'IValue'." << std::endl;
+  DEBUG_LOG("Node named '" << name << "' could not be cast to 'IValue'.")
   return "";
-
 }
 
 // Returns whether this property may be changed internally. 
@@ -817,12 +840,14 @@ int PylonGrabberImpl::isVolatile(const std::string &propertyName){
   return true;
 }
 
-// initializes the Pylon environment (returns whether PylonInitialize() was called)
+// initializes the Pylon environment
+// (returns whether PylonInitialize() was called)
 bool PylonGrabberImpl::initPylonEnv(){
   icl::Mutex::Locker l(env_mutex);
   ICLASSERT(pylon_env_inits >= 0)
   pylon_env_inits++;
   if(pylon_env_inits == 1){
+    DEBUG_LOG("Initializing Pylon environment")
     Pylon::PylonInitialize();
     return true;
   } else {
@@ -830,12 +855,14 @@ bool PylonGrabberImpl::initPylonEnv(){
   }
 }
 
-// terminates the Pylon environment (returns whether PylonTerminate() was called).
+// terminates the Pylon environment
+// (returns whether PylonTerminate() was called).
 bool PylonGrabberImpl::termPylonEnv(){
   icl::Mutex::Locker l(env_mutex);
   ICLASSERT(pylon_env_inits > 0)
   pylon_env_inits--;
   if(pylon_env_inits == 0){
+    DEBUG_LOG("Terminating Pylon environment")
     Pylon::PylonTerminate();
     return true;
   } else {
@@ -843,3 +870,124 @@ bool PylonGrabberImpl::termPylonEnv(){
   }
 }
 
+void PylonGrabberImpl::printHelp(){
+  std::cout << "The PylonGrabber can be startet with "
+   << "multiple arguments" << std::endl;
+  std::cout << "Arguments must be split by a comma" << std::endl;
+  std::cout << "    -devs   "
+   << "lets pylon print all available pylon devices" << std::endl;
+  std::cout << "    -start  inits a special device from the device list "
+    << "acquired by '-devs'" << std::endl;
+  std::cout << "            '-start,0' "
+    << "initializes the first device" << std::endl;
+  std::cout << "            '-start,1' "
+    << "initializes the secound and so on" << std::endl;
+}
+
+Pylon::CDeviceInfo PylonGrabberImpl::getDeviceFromArgs(std::string args)
+  throw(ICLException)
+{
+  Pylon::DeviceInfoList_t devices = getPylonDeviceList();
+  if(devices.empty()){
+    throw ICLException("No Pylon devices found.");
+  }
+  std::vector<std::string> 	argvec = icl::tok(args, ",");
+  //TODO: do something
+  return devices.front();
+}
+
+template <typename OBJ, typename NODE, typename VAL>
+bool setParameterValueOf(OBJ* object, std::string parameter, VAL value){
+  GenApi::INode* node = object -> GetNodeMap() -> GetNode(parameter.c_str());
+  if (!node) {
+    DEBUG_LOG("There is no parameter called '" << parameter << "'")
+    return false;
+  }
+  //dynamic cast to needed node-type
+  NODE* node2;
+  try{
+    node2 = dynamic_cast<NODE*>(node);
+  } catch (std::exception &e){
+    DEBUG_LOG ("Could not cast node '"<< parameter << "' to desired type2")
+    return false;
+  }
+  if(!GenApi::IsWritable(node2)){
+    DEBUG_LOG("Parameter called '" << parameter << "' is not writable.")
+    return false;
+  }
+  // now setting parameter
+  try{
+    setNodeValue<NODE, VAL>(node2, value);
+    return true;
+  }
+  catch (GenICam::GenericException &e) {
+    std::cerr << e.what() << std::endl;
+    return false;
+  }
+}
+
+template <typename SOURCE, typename NODE, typename RET>
+RET getParameterValueOf(SOURCE* source, std::string param){
+  GenApi::INode* node = source -> GetNodeMap() -> GetNode(param.c_str());
+  if(!node){
+    throw icl::ICLException("parameter of this type not found");
+  }
+  //dynamic cast to needed node-type
+  try{
+    NODE* node2 = dynamic_cast<NODE*>(node);
+    if(!node2){
+      throw icl::ICLException("Could not cast " + param + " to desired type");
+    }
+    if(!GenApi::IsReadable(node2)){
+      throw icl::ICLException("The node " + param + " is not Readable");
+    }
+    return getNodeValue<NODE, RET>(node2);
+  } catch (std::exception &e){
+    throw icl::ICLException(e.what());
+  }
+}
+
+GenICam::gcstring getParameterValueString(Pylon::IPylonDevice* camera,
+  std::string parameter)
+{
+  GenApi::INode* node = camera -> GetNodeMap() -> GetNode(parameter.c_str());
+  if (!node) {
+    DEBUG_LOG("There is no parameter called '" << parameter << "'")
+    return NULL;
+  }
+  GenApi::IValue* value = dynamic_cast<GenApi::IValue*>(node);
+  if (!value) {
+    DEBUG_LOG("Could not cast '" << parameter << "' node to IValue")
+    return NULL;
+  }
+  return value -> ToString();
+}
+
+Pylon::PixelType getCameraPixelType(Pylon::IPylonDevice* camera){
+  GenICam::gcstring tStr = getParameterValueString(camera, "PixelFormat");
+  Pylon::PixelType pt = Pylon::CPixelTypeMapper::GetPylonPixelTypeByName(tStr);
+  if(pt == Pylon::PixelType_Undefined){
+    DEBUG_LOG("PixelType " << tStr.c_str() << "=" << pt << "' is not defined.");
+  }
+  DEBUG_LOG("Camera PixelType is " << tStr.c_str() << " (" << pt << ")")
+  return pt;
+}
+
+int getCameraPixelSize(Pylon::IPylonDevice* camera){
+  return Pylon::BitPerPixel(getCameraPixelType(camera));
+}
+
+long getNeededBufferSize(Pylon::IPylonDevice* camera){
+  try {
+    return getParameterValueOf
+      <Pylon::IPylonDevice, GenApi::IInteger, int>(camera, "PayloadSize");
+  } catch (ICLException &e){
+    DEBUG_LOG("The camera does not have a parameter called PayloadSize.")
+    DEBUG_LOG("Assuming that the image size is width * height * pixelsize.")
+    int height = getParameterValueOf
+      <Pylon::IPylonDevice, GenApi::IInteger, int>(camera, "Height");
+    int width = getParameterValueOf
+      <Pylon::IPylonDevice, GenApi::IInteger, int>(camera, "Width");
+    return (long) ((width * height * getCameraPixelSize(camera) / 8) + 0.5);
+  }
+}

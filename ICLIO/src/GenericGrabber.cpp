@@ -142,7 +142,8 @@ namespace icl{
 
     static const char *plugins[] = { "pwc","dc","dc800","unicap","file","demo","create",
                                      "xcfp","xcfs","xcfm","mv","sr","video","cvvideo", 
-                                     "cvcam","sm","myr","kinectd","kinectc","kinecti"};
+                                     "cvcam","sm","myr","kinectd","kinectc","kinecti",
+                                     "pylon"};
     static const int NUM_PLUGINS=sizeof(plugins)/sizeof(char*);
 
     for(unsigned int i=0;i<ts.size();++i){
@@ -488,14 +489,19 @@ namespace icl{
 
 #ifdef HAVE_PYLON
       if(l[i] == "pylon"){
-      Pylon::DeviceInfoList_t dlist = PylonGrabber::getPylonDeviceList();
-      if(dlist.size() == 0){
-        ADD_ERR("pylon");
-        continue;
-      }
-      m_poGrabber = new PylonGrabber(&(dlist.front()));
-        m_sType = "pylon";
-        break;
+        if (pmap["pylon"].id == "-help"){
+          PylonGrabber::printHelp();
+          ADD_ERR("pylon");
+          continue;
+        }
+        try{
+          m_poGrabber = new PylonGrabber(pmap["pylon"].id);
+          m_sType = "pylon";
+          break;
+        } catch (ICLException &e){
+          ADD_ERR("pylon");
+          continue;
+        }
       }
 #endif
       
