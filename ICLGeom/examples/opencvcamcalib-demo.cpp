@@ -8,7 +8,7 @@
  **                                                                 **
  ** File   : ICLGeom/examples/opencvcamcalib-demo.cpp               **
  ** Module : ICLGeom                                                **
- ** Authors: Christian Groszewski                                   **
+ ** Authors: Christian Groszewski, Andre Ueckermann                 **
  **                                                                 **
  **                                                                 **
  ** Commercial License                                              **
@@ -36,6 +36,8 @@
 #include <ICLQuick/Common.h>
 #include <ICLOpenCV/OpenCV.h>
 
+#include <ICLUtils/ConfigFile.h>
+
 using namespace icl;
 
 GUI gui("hsplit");
@@ -50,6 +52,36 @@ CvSize boardSize;
 CvPoint2D32f* corners = 0;
 int successes = 0;
 int minSuccesses = 0;
+
+int framewidth=0;
+int frameheight=0;
+
+DynMatrix<icl64f> *intr;
+DynMatrix<icl64f> *dist;
+
+void save_params(){
+  try{
+	  std::string filename = saveFileDialog("XML-Files (*.xml)");
+    ConfigFile f;
+    f.setPrefix("config.");
+	  f["intrin.size.x"] = (double)framewidth;
+	  f["intrin.size.y"] = (double)frameheight;
+	  f["intrin.fx"] = (double)intr->at(0,0);
+	  f["intrin.fy"] = (double)intr->at(1,1);
+	  f["intrin.ix"] = (double)intr->at(2,0);
+	  f["intrin.iy"] = (double)intr->at(2,1);
+	  f["intrin.skew"] = (double)0;
+	  f["dist.k1"] = (double)dist->at(0,0);
+	  f["dist.k2"] = (double)dist->at(0,1);
+	  f["dist.k3"] = (double)dist->at(0,2);
+	  f["dist.k4"] = (double)dist->at(0,3);
+	  f["dist.k5"] = (double)dist->at(0,4);			
+    f.save(filename);
+  }catch(...){
+    std::cout<<"save error"<<std::endl;
+  }
+  std::cout<<"save parameters"<<std::endl;
+}
 
 void init(){
 	Size s = pa("-s");
@@ -69,9 +101,13 @@ void init(){
 	*/
 	gui << (GUI("hbox")
 			<< "draw[@handle=calib_object@minsize=20x20@label=calib]"
-			<< "draw[@handle=draw_object@minsize=20x20@label=plot]");
+			<< "draw[@handle=draw_object@minsize=20x20@label=plot]")
+			<< "button(save parameters)[@handle=saveParams]"
+			<< "button(reset calibration)[@handle=reset]";
 
 	gui.show();
+	gui["saveParams"].disable();
+	gui["saveParams"].registerCallback(save_params);
 }
 
 double compute_error(const ImgBase *img){
@@ -121,10 +157,18 @@ double compute_error(const ImgBase *img){
 }
 
 void run(){
+  gui_ButtonHandle(reset);
+	if(reset.wasTriggered()){
+	  gui["saveParams"].disable();
+	  successes=0;
+	  camc->resetData(width,height,minSuccesses);
+  }
 	Mutex::Locker lock(mutex);
 	static FPSLimiter fps(30);
 	const ImgBase *img = cg->grab();
 	const ImgBase *img2 = 0;
+	framewidth=img->getWidth();
+	frameheight=img->getHeight();
 	if(successes < minSuccesses){
 		Thread::msleep(400);
 
@@ -155,15 +199,17 @@ void run(){
 		gui["draw_object"] = img2;
 		gui["draw_object"].update();
 	}
+  
 	if(successes == minSuccesses){
 		camc->calibrateCam();
 		successes++;
-		DynMatrix<icl64f> *intr = camc->getIntrinsics();
+		intr = camc->getIntrinsics();
 		SHOW(*intr);
-		delete intr;
-		DynMatrix<icl64f> *dist = camc->getDistortion();
+		//delete intr;
+		dist = camc->getDistortion();
 		SHOW(*dist);
-		delete dist;
+		//delete dist;
+		gui["saveParams"].enable();
 	} else if(successes > minSuccesses){
 		const ImgBase *img2 = camc->undisort(img);
 
