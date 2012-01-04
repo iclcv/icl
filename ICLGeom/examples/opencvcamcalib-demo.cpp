@@ -65,8 +65,8 @@ void save_params(){
     ConfigFile f;
     f.setPrefix("config.");
     f["model"] = str("MatlabModel5Params");
-	  f["size.x"] = (int)framewidth;
-	  f["size.y"] = (int)frameheight;
+	  f["size.width"] = (int)framewidth;
+	  f["size.height"] = (int)frameheight;
 	  f["intrin.fx"] = (double)intr->at(0,0);
 	  f["intrin.fy"] = (double)intr->at(1,1);
 	  f["intrin.ix"] = (double)intr->at(2,0);
