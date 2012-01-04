@@ -150,6 +150,9 @@ namespace icl{
     
     png_write_end(writer, NULL);
 
+    //png_destroy_info_struct(writer,&info);
+    png_destroy_write_struct(&writer,&info);
+
     fclose(cfile);
   }
   
