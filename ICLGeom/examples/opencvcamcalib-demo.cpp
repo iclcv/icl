@@ -64,18 +64,19 @@ void save_params(){
 	  std::string filename = saveFileDialog("XML-Files (*.xml)");
     ConfigFile f;
     f.setPrefix("config.");
-	  f["intrin.size.x"] = (double)framewidth;
-	  f["intrin.size.y"] = (double)frameheight;
+    f["model"] = str("MatlabModel5Params");
+	  f["size.x"] = (int)framewidth;
+	  f["size.y"] = (int)frameheight;
 	  f["intrin.fx"] = (double)intr->at(0,0);
 	  f["intrin.fy"] = (double)intr->at(1,1);
 	  f["intrin.ix"] = (double)intr->at(2,0);
 	  f["intrin.iy"] = (double)intr->at(2,1);
 	  f["intrin.skew"] = (double)0;
-	  f["dist.k1"] = (double)dist->at(0,0);
-	  f["dist.k2"] = (double)dist->at(0,1);
-	  f["dist.k3"] = (double)dist->at(0,2);
-	  f["dist.k4"] = (double)dist->at(0,3);
-	  f["dist.k5"] = (double)dist->at(0,4);			
+	  f["udist.k1"] = (double)dist->at(0,0);
+	  f["udist.k2"] = (double)dist->at(0,1);
+	  f["udist.k3"] = (double)dist->at(0,2);
+	  f["udist.k4"] = (double)dist->at(0,3);
+	  f["udist.k5"] = (double)dist->at(0,4);			
     f.save(filename);
   }catch(...){
     std::cout<<"save error"<<std::endl;
