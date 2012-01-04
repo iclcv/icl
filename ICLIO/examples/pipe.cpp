@@ -73,19 +73,6 @@ void init_grabber(){
   }
 
   
-  if(pa("-dist")){
-    string fn = pa("-dist");
-    ImageUndistortion udist(fn);
-    if(pa("-size")){
-      //grabber->enableUndistortion(pa("-dist"),pa("-size"));
-      std::string sz =pa("-size");
-      Size size(sz);
-      grabber->enableUndistortion(udist,size);
-    }else{
-      //grabber->enableUndistortion(pa("-dist"),grabber->grab()->getSize());
-    grabber->enableUndistortion(udist,grabber->grab()->getSize());
-    }
-  }
   if(pa("-camera-config")){
     grabber->loadProperties(pa("-camera-config"),false);
   }  
@@ -310,7 +297,6 @@ int main(int n, char **ppc){
   //("-dist","give 4 parameters for radial lens distortion.\n"
   // "\tThis parameters can be obtained using ICL application\n"
   //"\ticl-calib-radial-distortion")
-  ("-dist","give filename for xml file with parameters for radial lens distortion and intrinsics.\n")
   ("-reset","reset bus on startup")
   ("-progress","show progress bar (only used in -no-gui mode)")
   ("-idu","if this is given, image updates are initally switched off which means, that no"

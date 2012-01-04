@@ -34,9 +34,12 @@
 
 #include <ICLQuick/Common.h>
 
-/**
- * Simple example how to undistort a picture given xml-file with undistortion parameters.
- */
+//
+// Simple example how to undistort a picture given xml-file with undistortion parameters.
+// Please note, that icl-undistortion-demo -input dc 0 -udist params.xml is equivalent to
+// icl-undistortion-demo -input dc 0@udist=params.xml. This feature is available for
+// all ICL applications that use the GenericGrabber in combination with a program-argument 
+//
 
 GUI gui("hsplit");
 GenericGrabber grabber;
@@ -50,9 +53,7 @@ void init(){
   gui.show();
   grabber.init(pa("-i"));
 
-  ImageUndistortion u(*pa("-d"));
-  const Size &size  = pa("-s");
-  grabber.enableUndistortion(u,size,interpolateLIN);
+  grabber.enableUndistortion(pa("-d"));
 
   //this is only for showing the warpmap
   if(pa("-wm")){
@@ -67,16 +68,16 @@ void run(){
   gui["image"].update();
   
 }
-
-/**
-  * Usage: icl-undistort-pic -d camconfig.xml -s 640x480 -wm
-  * or icl-undistort-pic -d camconfig.xml -s 640x480
-  */
 int main(int argc, char** argv){
   paex("-d","given xml file with distortion and "
        "intrinsic parameters computed with")
-  ("-s","undistortion image size")
   ("-wm","show warpmap as well")
   ("-i","input devide and parameters");
-  return ICLApp(argc,argv,"-input|-i(2) -d(fn) -s(warpMapSize) -wm()",init,run).exec();
+
+  std::cout << "Please note, that \"icl-undistortion-demo -input dc 0 -udist params.xml\" is equivalent to"
+            <<" \"icl-undistortion-demo -input dc 0@udist=params.xml\". This feature is available for"
+            <<" all ICL applications that use the GenericGrabber in combination with a program-argument " 
+            << std::endl;
+  
+  return ICLApp(argc,argv,"-input|-i(2) -udist|-d(fn) -wm()",init,run).exec();
 }

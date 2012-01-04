@@ -404,12 +404,6 @@ void init(){
   }
   
   grabber.init(pa("-i"));
-  if(pa("-dist")){
-    //grabber.enableUndistortion(pa("-dist"),grabber.grab()->getSize());
-    string fn = pa("-dist");
-    ImageUndistortion udist(fn);
-    grabber.enableUndistortion(udist,grabber.grab()->getSize());
-  }
 
   // view camera
   scene.addCamera(Camera(Vec(-500,-320,570),
@@ -770,14 +764,10 @@ int main(int n, char **ppc){
   ("-o","define output config xml file name (./extracted-camera-cfg.xml)")
   ("-config","define input marker config file (calib-config.xml by default), if no config-file is given, only the "
              "completely manual mode is enabled. Here you can define reference points manually.")
-  //("-dist","give 4 distortion parameters")
-  ("-dist","give xml file with distortion and intrinsic parameters")
   ("-s","forced image size that is used (even if the grabber device provides another size)")
   ("-create-empty-config-file","if this flag is given, an empty config file is created as ./new-calib-config.xml");
   return ICLApp(n,ppc,"[m]-input|-i(device,device-params) "
                 "-config|-c(config-xml-file-name) "
-                //"-dist|d(float,float,float,float) "
-		"-dist|-d(fn) "
                 "-create-empty-config-file|-cc "
                 "-size|-s(WxH) "
                 "-output|-o(output-xml-file-name=extracted-cam-cfg.xml) "

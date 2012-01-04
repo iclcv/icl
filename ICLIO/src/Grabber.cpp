@@ -168,65 +168,83 @@ namespace icl{
     // on the aqcuired image or on the adapte image?
     // for now, we use the adapted which seem to make
     // much more sence
+    
+    //    SHOW( (data->warp ? "YES" : "NO") );
+    //SHOW((void*)this);
+
+    const ImgBase *adapted = adaptGrabResult(acquired,data->warp ? 0 : ppoDst);
     if(data->warp){
-      return data->warp->apply(adaptGrabResult(acquired,ppoDst));
+      if(ppoDst){
+        data->warp->apply(adapted, ppoDst);
+        return *ppoDst;
+      }else{
+        //  DEBUG_LOG("here!");
+        return data->warp->apply(adapted);
+      }
     }else{
-      return adaptGrabResult(acquired,ppoDst);
+      return adapted;
     }
   }
 
-  static inline void undistort_point(const double params[4], int xi, int yi,float &xd, float &yd){
-    const double &x0 = params[0];
-    const double &y0 = params[1];
-    const double &f = params[2]/100000000.0;
-    const double &s = params[3];
+  /*
+      static inline void undistort_point(const double params[4], int xi, int yi,float &xd, float &yd){
+      const double &x0 = params[0];
+      const double &y0 = params[1];
+      const double &f = params[2]/100000000.0;
+      const double &s = params[3];
     
-    float x = s*(xi-x0);
-    float y = s*(yi-y0);
-    float p = 1 - f * (x*x + y*y);
-    xd = (p*x + x0);
-    yd = (p*y + y0);
-  }
+      float x = s*(xi-x0);
+      float y = s*(yi-y0);
+      float p = 1 - f * (x*x + y*y);
+      xd = (p*x + x0);
+      yd = (p*y + y0);
+      }
+  */
   
- void Grabber::enableUndistortion(const ImageUndistortion &udist, scalemode m){
-    const Size size = udist.getSize();
-    enableUndistortion(udist, size, m);
-  }
-
- void Grabber::enableUndistortion(const ImageUndistortion &udist, const Size &size, scalemode m){
+  void Grabber::enableUndistortion(const ImageUndistortion &udist){
+    const Size size = udist.getImageSize();
     Img32f warpMap(size,2);
-    Channel32f cs[2];
-    warpMap.extractChannels(cs);
+    Channel32f cs[2] = { warpMap[0], warpMap[1] };
  
     for(float xi=0;xi<size.width;++xi){
       for(float yi=0;yi<size.height; ++yi){
-        Point32f point(xi,yi);
-        Point32f p = udist.undistort(point);
+        Point32f p = udist(Point32f(xi,yi));
         cs[0](xi,yi) = p.x;
         cs[1](xi,yi) = p.y; 
       }
     }
-    enableUndistortion(warpMap, m);
+    enableUndistortion(warpMap);
+  }
+
+  void Grabber::enableUndistortion(const std::string &filename){
+    enableUndistortion(ImageUndistortion(filename));    
   }
   
-  void Grabber::enableUndistortion(const ProgArg &pa, scalemode m){
-    std::string fn =  icl::pa(pa.getID(),0);
-    ImageUndistortion udist(fn);
-    std::string sz = icl::pa(pa.getID(),1);
-    Size size(sz);
-    enableUndistortion(udist,size,m);
+  void Grabber::enableUndistortion(const ProgArg &pa){
+    enableUndistortion(icl::pa(pa.getID(),0).as<std::string>());
   }
+
+  void Grabber::setUndistortionInterpolationMode(scalemode mode){
+    if(data->warp){
+      data->warp->setScaleMode(mode);
+    }else {
+      WARNING_LOG("cannot set undistortion interpolation mode if distortion was not disabled before (skipped)!");
+    }
+  }
+
 
   bool Grabber::isUndistortionEnabled() const{
     return data->warp;
   }
   
-  void Grabber::enableUndistortion(const Img32f &warpMap, scalemode m){
+  void Grabber::enableUndistortion(const Img32f &warpMap){
     if(!data->warp){
+      //DEBUG_LOG("data->warp created!");
+      //SHOW((void*)this);
       data->warp = new WarpOp;
     }
     data->warp->setWarpMap(warpMap);
-    data->warp->setScaleMode(m);
+    data->warp->setScaleMode(interpolateLIN);
   }
   
   void Grabber::disableUndistortion(){

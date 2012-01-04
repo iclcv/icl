@@ -109,9 +109,16 @@ namespace icl {
                                   set after device instantiation. E.g. demo=0@size=QVGA@blob-red=128, instantiates
                                   a demo-grabber, where the two additionally given properties (size and blob-red) 
                                   are set immediately after grabber instantiation. By these means particularly a 
-                                  grabber's format can be set in the grabber instantiation call. Furthermore, two
+                                  grabber's format can be set in the grabber instantiation call. Furthermore, three
                                   special \@-tokens are possible: \@info (e.g. dc=0\@info) lists the 0th dc device's
-                                  available properties. \@load=filename loads a given property filename directly.
+                                  available properties. \@load=filename loads a given property filename directly. 
+                                  \@udist=filename loads a given undistortion parameter filename directly and therefore
+                                  makes the grabber grab undistorted images according to the undistortion parameters
+                                  and model type (either 3 or 5 parameters) that is found in the given xml-file. 
+                                  <b>todo fix this sentence according to the fixed application names</b>
+                                  Please note, that valid xml-undistortion files can be created using the
+                                  undistortion-calibration tools icl-opencvcamcalib-demo,
+                                  icl-intrinsic-camera-calibration and icl-intrinsic-calibrator-demo.
                                   On the C++-level, this is only a minor advantage, since all these things can 
                                   also be achieved via function calls, however if you use the most recommended way
                                   for ICL-Grabber instantiation using ICL's program-argument evaluation framework,

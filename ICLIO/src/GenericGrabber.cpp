@@ -564,6 +564,8 @@ namespace icl{
           }
           std::cout << t << std::endl;
           std::terminate();
+        }else if(p.first == "udist"){
+          this->enableUndistortion(p.second);
         }else{
           //  DEBUG_LOG("setting property -" << p.first << "- to value -" << p.second << "-");
           m_poGrabber->setProperty(p.first,p.second);

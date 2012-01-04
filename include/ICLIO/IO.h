@@ -176,6 +176,14 @@
     
     # set several options at once
     icl-camviewer -input kinectc '0\@LED=green\@format=IR Image (10Bit)'
+
+    # enable image undistortion according to undistortion parameters stored in an appropriate** xml file.
+    icl-camviewer -input dc 0@udist=my-udist-properties.xml
+    
+    # **appropriate means, that the xml-files were created by serializing an icl::ImageUndistortion
+    # structure to a file. The tools  <b>todo fix this sentence according to the fixed application names</b>
+    # icl-opencvcamcalib-demo, icl-intrinsic-camera-calibration and icl-intrinsic-calibrator-demo can
+    # be setup to write the calibration results in the correct file format
     </pre>    
    
     Furthermore, since almost all ICL-applications use the icl::GenericGrabber in combination

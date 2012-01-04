@@ -59,24 +59,13 @@ void init(){
   if(pa("-size")){
     grabber.useDesired<Size>(pa("-size"));
   }
-  if(pa("-dist")){
-    //grabber.enableDistortion(pa("-dist"),grabber.grab()->getSize());
-    string fn = pa("-dist");
-    ImageUndistortion udist(fn);
-    grabber.enableUndistortion(udist,grabber.grab()->getSize());
-  }
 }
 
 int main(int n, char**ppc){
   paex
   ("-input","define input grabber parameters\ne.g. -dc 0 or -file *.ppm")
-  //("-dist","define for parameters for radial distortion.\n"
-   //"parameters can be obained running 'icl-calib-radial-distortion'")
-   ("-dist","define for parameterfile for radial distortion and intrinsic parameters.\n"
-   "parameters can be obained running by intrinsic calibrator")
   ("-size","desired image size of grabber");
   return ICLApp(n,ppc,"[m]-input|-i(device,device-params) "
-                //"-dist|-d(float=0,float=0,float=0,float=0) "
 		"-dist|-d(fn) "
                 "-size|-s(Size) -maxfps(float=30) ",
                 init,run).exec();

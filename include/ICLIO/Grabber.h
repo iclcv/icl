@@ -331,19 +331,25 @@ namespace icl {
      /// @} 
      
      /// @{ @name distortion functions
-
-     ///enabled the distortion plugin for the grabber using radial and tangential distortion parameters
-     void enableUndistortion(const ImageUndistortion &udist, const Size &size, scalemode m=interpolateLIN);
-
-     ///enabled the distortion plugin for the grabber using radial and tangential distortion parameters
-     void enableUndistortion(const ImageUndistortion &udist, scalemode m=interpolateLIN);
+     
+     /// enables the undistorion
+     void enableUndistortion(const std::string &filename);
+     
+     ///enables the undistortion plugin for the grabber using radial and tangential distortion parameters
+     void enableUndistortion(const ImageUndistortion &udist);
 
      /// enables undistortion from given programm argument. 
      /** where first argument is the filename of the xml file and second is the size of picture*/
-     void enableUndistortion(const ProgArg &pa, scalemode m=interpolateLIN);
+     void enableUndistortion(const ProgArg &pa);
 
      /// enables undistortion for given warp map
-     void enableUndistortion(const Img32f &warpMap, scalemode m=interpolateLIN);
+     void enableUndistortion(const Img32f &warpMap);
+     
+     /// sets how undistortion is interpolated (supported modes are interpolateNN and interpolateLIN)
+     /** Please note, that this method has no effect if the undistortion was not enabled before
+         using one of the Grabber::enableUndistortion methods. Furthermore, the setting is lost
+         if the undistortion is deactivated using Grabber::disableUndistortion */
+     void setUndistortionInterpolationMode(scalemode mode);
      
      /// disables distortion
      void disableUndistortion();

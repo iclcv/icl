@@ -1429,45 +1429,30 @@ void IntrinsicCalibrator::optimize(const DynMatrix<icl64f> &impoints, const DynM
 	(m_data->distortion_coeffs)->at(2,0) = param[7];
 	(m_data->distortion_coeffs)->at(3,0) = param[8];
 	(m_data->distortion_coeffs)->at(4,0) = param[9];
-	for(int i=0;i<10;++i)
-		m_calres.params.push_back(param[i]);
+
+        std::vector<double> paramsVec(param.begin(),param.end());
+        m_calres = Result(paramsVec,Size(m_data->nx,m_data->ny));
 }
 
-void IntrinsicCalibrator::saveIntrinsics(const char *filename, const Size &size){
-	ConfigFile a;
-	if(size.width > 0 && size.height >0){
-	    a["config.size.x"] = size.width;
-	    a["config.size.y"] = size.height;
-	}
-	a["config.intrin.fx"] = (m_data->intrinsic_matrix)->at(0,0);
-	a["config.intrin.fy"] = (m_data->intrinsic_matrix)->at(1,1);
-	a["config.intrin.ix"] = (m_data->intrinsic_matrix)->at(2,0);
-	a["config.intrin.iy"] = (m_data->intrinsic_matrix)->at(2,1);
-	a["config.intrin.skew"] = (m_data->intrinsic_matrix)->at(1,0);
-	a["config.dist.k1"] = (m_data->distortion_coeffs)->at(0,0);
-	a["config.dist.k2"] = (m_data->distortion_coeffs)->at(1,0);
-	a["config.dist.k3"] = (m_data->distortion_coeffs)->at(2,0);
-	a["config.dist.k4"] = (m_data->distortion_coeffs)->at(3,0);
-	a["config.dist.k5"] = (m_data->distortion_coeffs)->at(4,0);
-	a.save(filename);
-}
+  void IntrinsicCalibrator::saveIntrinsics(const std::string &filename){
+    std::ofstream s(filename.c_str());
+    s << m_calres;
+  }
 
-void IntrinsicCalibrator::loadIntrinsics(const char *filename){
-	ConfigFile a(filename);
-	//not necessary to load the size
-	//a["config.size.x"];
-	//a["config.size.y"];
 
-	(m_data->intrinsic_matrix)->at(0,0) = a["config.intrin.fx"];
-	(m_data->intrinsic_matrix)->at(1,1) = a["config.intrin.fy"];
-	(m_data->intrinsic_matrix)->at(2,0) = a["config.intrin.ix"];
-	(m_data->intrinsic_matrix)->at(2,1) = a["config.intrin.iy"];
-	(m_data->intrinsic_matrix)->at(1,0) = a["config.intrin.skew"];
-	(m_data->distortion_coeffs)->at(0,0) = a["config.dist.k1"];
-	(m_data->distortion_coeffs)->at(1,0) = a["config.dist.k2"];
-	(m_data->distortion_coeffs)->at(2,0) = a["config.dist.k3"];
-	(m_data->distortion_coeffs)->at(3,0) = a["config.dist.k4"];
-	(m_data->distortion_coeffs)->at(4,0) = a["config.dist.k5"];
+  void IntrinsicCalibrator::loadIntrinsics(const std::string &filename){
+    static_cast<ImageUndistortion&>(m_calres) = ImageUndistortion(filename);
+    
+    (m_data->intrinsic_matrix)->at(0,0) = m_calres.getParams()[0];
+    (m_data->intrinsic_matrix)->at(1,1) = m_calres.getParams()[1];
+    (m_data->intrinsic_matrix)->at(2,0) = m_calres.getParams()[2];
+    (m_data->intrinsic_matrix)->at(2,1) = m_calres.getParams()[3];
+    (m_data->intrinsic_matrix)->at(1,0) = m_calres.getParams()[4];
+    (m_data->distortion_coeffs)->at(0,0) = m_calres.getParams()[5];
+    (m_data->distortion_coeffs)->at(1,0) = m_calres.getParams()[6];
+    (m_data->distortion_coeffs)->at(2,0) = m_calres.getParams()[7];
+    (m_data->distortion_coeffs)->at(3,0) = m_calres.getParams()[8];
+    (m_data->distortion_coeffs)->at(4,0) = m_calres.getParams()[9];
 }
 
 void IntrinsicCalibrator::resetData(unsigned int boardWidth, unsigned int boardHeight,

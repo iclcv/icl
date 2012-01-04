@@ -45,64 +45,50 @@
 namespace icl{
 
 class ImageUndistortion{
+  public:
+  struct Impl; //!< internal impl
+  
+  private:
+  Impl *impl;  //!< internal impl pointer
 
-	Size imgsize;
 
-	const Point32f undistortSimple(const Point32f &point) const {
-		const double &x0 = params[0];
-		const double &y0 = params[1];
-		const double &f = params[2]/100000000.0;
-		const double &s = params[3];
+  public:
+  /// creates a null instance
+  ImageUndistortion();
+  
+  /// creates an Undistortion instance given parameters
+  /** @param model distortion mode possible values are MatlabModel5Params and SimpleARTBased
+      @param params parameters for the given model (MatlabModel5Params needs 5 parameters, 
+                    SimpleARTBased needs 3 parameters)
+      @param imageSize underlying image size */
+  ImageUndistortion(const std::string &model, const std::vector<double> &params,
+                    const Size &imageSize);
+  
+  /// copy constructor
+  ImageUndistortion(const ImageUndistortion &other);
+  
+  /// assignment operator
+  ImageUndistortion &operator=(const ImageUndistortion &other);
+  
+  /// loads ImageUndistortion from file using the istream operator
+  ImageUndistortion(const std::string &filename);
 
-		float x = s*(point.x-x0);
-		float y = s*(point.y-y0);
-		float p = 1 - f * (x*x + y*y);
-		float xd = (p*x + x0);
-		float yd = (p*y + y0);
-		return Point32f(xd,yd);
-	}
-
-	const Point32f undistort5Param(const Point32f &point) const;
-
-public:
-	FixedMatrix<icl64f,3,3> KK_new_inv;
-	std::vector<double> params;
-
-	ImageUndistortion(const std::string &filename);
-
-	ImageUndistortion();
-
-	enum Model{
-		SimpleARTBasedUndistortion, MatlabModel5Params
-	} model;
-
-	const Point32f undistort(const Point32f &point,Model  model = MatlabModel5Params) const {
-		switch(model){
-		case SimpleARTBasedUndistortion: return undistortSimple(point);
-		case MatlabModel5Params: return undistort5Param(point);
-		}
-	}
-
-	void setSize(int width,int height){
-		imgsize = Size(width,height);
-	}
-
-	const Size getSize() {
-	    return imgsize;
-	}
-
- 	const Size getSize() const {
-	    return imgsize;
-	}
-
+  /// returns curren timage size
+  const Size &getImageSize() const;
+  const std::vector<double> &getParams() const;
+  const std::string &getModel() const;
+  const Point32f operator()(const Point32f &distortedPos) const;
+  
+  inline bool isNull() const { return !impl; }
 };
 
+/// overloaded ostream operator for ImageUndistortion instances 
 std::istream &operator>>(std::istream &is, ImageUndistortion &udist);
 
-std::ostream &operator<<(std::ostream &s, ImageUndistortion &udist);
-
+/// overloaded istream operator for ImageUndistortion instances 
+std::ostream &operator<<(std::ostream &s, const ImageUndistortion &udist);
 }
 
-#endif /* ICL_IMAGEUNDISTORTION_H_ */
+#endif
 
 
