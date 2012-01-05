@@ -38,6 +38,8 @@
 #include <ICLGeom/GridSceneObject.h>
 
 #include <QtGui/QMessageBox>
+#include <fstream>
+#include <ICLUtils/ConfigFile.h>
 
 typedef FixedColVector<float,3> Vec3;
 

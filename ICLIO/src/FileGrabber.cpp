@@ -329,17 +329,32 @@ namespace icl{
                   << value 
                   << "\" (allowed values are  \"on\" and \"off\")");
       }
+    }else if(property ==  "frame-index"){
+      if(m_data->bAutoNext){
+        WARNING_LOG("the \"frame-index\" property cannot be set if \"auto-next\" is on");
+      }else{
+        int idx = parse<int>(value);
+        if(idx < 0 || idx >= m_data->oFileList.size()){
+          if(idx < 0){
+            idx = 0;
+          }else{
+            idx = m_data->oFileList.size()-1;
+          }
+          WARNING_LOG("given frame-index was not within the valid range (given value was clipped)");
+        }
+        m_data->iCurrIdx = parse<int>(value) % (m_data->oFileList.size()-1);
+      }
     }else{
       ERROR_LOG("property \"" << property << "\" is not available of cannot be set");
     }
   }
   
   std::vector<std::string> FileGrabberImpl::getPropertyList(){
-    static const std::string ps[10] = {
+    static const std::string ps[11] = {
       "next","prev","next filename","current filename","jump-to-start",
-      "relative progress","absolute progress","auto-next","loop","file-count"
+      "relative progress","absolute progress","auto-next","loop","file-count","frame-index"
     };
-    return std::vector<std::string>(ps,ps+10);
+    return std::vector<std::string>(ps,ps+11);
   }
   
   std::string FileGrabberImpl:: getType(const std::string &name){
@@ -350,6 +365,8 @@ namespace icl{
       return "info";
     }else if(name == "auto-next" || name == "loop"){
       return "menu";
+    }else if(name == "frame-index"){
+      return "range";
     }else{
       ERROR_LOG("nothing known about property \"" << name << "\"");
       return "undefined";
@@ -358,6 +375,9 @@ namespace icl{
   
   std::string FileGrabberImpl::getInfo(const std::string &name){
     if(name == "auto-next" || name == "loop") return "{\"on\",\"off\"}";
+    else if(name == "frame-index"){
+      return "[0," + str(m_data->oFileList.size()-1) + "]:1";
+    }
     ERROR_LOG("no info available for info \"" << name << "\"");
     return "undefined";
   }
@@ -375,8 +395,12 @@ namespace icl{
       return str(m_data->iCurrIdx+1) + " / " + str(m_data->oFileList.size());
     }else if(name == "auto-next"){
       return m_data->bAutoNext ? "on" : "off";
+    }else if(name == "frame-index"){
+      return str(m_data->iCurrIdx);
+    }else if(name == "loop"){
+      return m_data->loop ? "on" : "off";
     }else{
-      ERROR_LOG("no info available for property \"" << name << "\"");
+      ERROR_LOG("no value available for property \"" << name << "\"");
       return "undefined";
     }
   }
@@ -385,7 +409,7 @@ namespace icl{
     if(name == "next" || name == "prev" || name == "jump-to-start" || name == "auto-next" || name == "file-count"){
       return 0;
     }else if (name == "next filename" || name == "current filename" || name == "relative progress"
-              || name == "absolute progress"){
+              || name == "absolute progress" || name == "frame-index"){
       return 20;
     }else{
       ERROR_LOG("nothing known about property \"" << name << "\"");

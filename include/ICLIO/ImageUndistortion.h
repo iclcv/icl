@@ -34,14 +34,8 @@
 #ifndef ICL_IMAGEUNDISTORTION_H_
 #define ICL_IMAGEUNDISTORTION_H_
 
-#include <ICLUtils/ConfigFile.h>
-#include <ICLUtils/Point32f.h>
-#include <ICLUtils/XML.h>
-#include <ICLUtils/FixedMatrix.h>
-#include <ICLUtils/Size.h>
-#include <fstream>
-#include <string>
-#include <vector>
+#include <ICLCore/Img.h>
+
 namespace icl{
 
 class ImageUndistortion{
@@ -78,6 +72,7 @@ class ImageUndistortion{
   const std::vector<double> &getParams() const;
   const std::string &getModel() const;
   const Point32f operator()(const Point32f &distortedPos) const;
+  const Img32f &createWarpMap() const;
   
   inline bool isNull() const { return !impl; }
 };

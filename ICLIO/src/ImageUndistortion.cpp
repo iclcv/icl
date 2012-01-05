@@ -32,10 +32,14 @@
  **                                                                 **
  *********************************************************************/
 #include <ICLIO/ImageUndistortion.h>
+#include <ICLUtils/ConfigFile.h>
+#include <ICLUtils/XML.h>
+#include <fstream>
 
 namespace icl{
 
   struct ImageUndistortion::Impl{
+    Img32f warpMap;
     std::string model;
     std::vector<double> params;
     Size imageSize;
@@ -125,6 +129,7 @@ namespace icl{
     }
     impl->model = model;
     impl->imageSize = imageSize;
+    impl->warpMap.detach();
     
   }
 
@@ -151,6 +156,21 @@ namespace icl{
     return impl->undistort(p);
   }
   
+  const Size &ImageUndistortion::getImageSize() const{
+    ICLASSERT_THROW(!isNull(), ICLException("unable to query the image size from a null-ImageUndistortion instance"));
+    return impl->imageSize;
+  }
+  const std::vector<double> &ImageUndistortion::getParams() const{
+    ICLASSERT_THROW(!isNull(), ICLException("unable to query the undistortion parameters from a null-ImageUndistortion instance"));
+    return impl->params;
+
+  
+  }
+  const std::string &ImageUndistortion::getModel() const{
+    ICLASSERT_THROW(!isNull(), ICLException("unable to query the model from a null-ImageUndistortion instance"));
+    return impl->model;
+  }
+
   std::istream &operator>>(std::istream &is, ImageUndistortion &dest){
     XMLDocument *doc = new XMLDocument;
     doc->loadNext(is);
@@ -200,22 +220,6 @@ namespace icl{
 #undef CHECK_THROW
     return is;
   }
-
-  const Size &ImageUndistortion::getImageSize() const{
-    ICLASSERT_THROW(!isNull(), ICLException("unable to query the image size from a null-ImageUndistortion instance"));
-    return impl->imageSize;
-  }
-  const std::vector<double> &ImageUndistortion::getParams() const{
-    ICLASSERT_THROW(!isNull(), ICLException("unable to query the undistortion parameters from a null-ImageUndistortion instance"));
-    return impl->params;
-
-  
-  }
-  const std::string &ImageUndistortion::getModel() const{
-    ICLASSERT_THROW(!isNull(), ICLException("unable to query the model from a null-ImageUndistortion instance"));
-    return impl->model;
-  }
-
   
   std::ostream &operator<<(std::ostream &s,const ImageUndistortion &udist){
     ICLASSERT_THROW(!udist.isNull(), ICLException("unable to serialize a null-ImageUndistortion instance"));
@@ -246,5 +250,21 @@ namespace icl{
     }
     return s << f;
   }
-  
+
+  const Img32f &ImageUndistortion::createWarpMap() const{
+    if(!impl->warpMap.getChannels()){
+      impl->warpMap.setChannels(2);
+      impl->warpMap.setSize(getImageSize());
+      Channel32f cs[2] = { impl->warpMap[0], impl->warpMap[1] };
+      const Size size = getImageSize();
+      for(int xi=0;xi<size.width;++xi){
+        for(int yi=0;yi<size.height; ++yi){
+          Point32f p = impl->undistort(Point32f(xi,yi));
+          cs[0](xi,yi) = p.x;
+          cs[1](xi,yi) = p.y; 
+        }
+      }
+    }
+    return impl->warpMap;
+  }
 }

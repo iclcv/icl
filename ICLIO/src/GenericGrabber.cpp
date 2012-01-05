@@ -557,10 +557,14 @@ namespace icl{
           t[0] = tok("property,type,allowed values,current value",",");
           for(unsigned int j=0;j<ps.size();++j){
             const std::string &p2 = ps[j];
+            const std::string ty = m_poGrabber->getType(p2);
+            const bool isCommand = ty == "command";
+            const bool isInfo = ty == "info";
+            
             t(0,j+1) = p2;
-            t(1,j+1) = m_poGrabber->getType(p2);
-            t(2,j+1) = m_poGrabber->getInfo(p2);
-            t(3,j+1) = m_poGrabber->getValue(p2);
+            t(1,j+1) = ty;
+            t(2,j+1) = (isInfo||isCommand) ? str("-") : m_poGrabber->getInfo(p2);
+            t(3,j+1) = isCommand ? "-" : m_poGrabber->getValue(p2);
           }
           std::cout << t << std::endl;
           std::terminate();

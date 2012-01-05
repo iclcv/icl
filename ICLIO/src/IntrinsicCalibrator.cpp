@@ -32,6 +32,8 @@
  **                                                                 **
  *********************************************************************/
 #include <ICLIO/IntrinsicCalibrator.h>
+#include <fstream>
+
 using namespace icl;
 namespace icl{
 
