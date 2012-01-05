@@ -128,6 +128,9 @@ namespace icl{
     Vector xr; // reflection vector
     Vector xe; // expansion vector
     Vector xc; // contraction vector
+    
+    /// optional iteration callback structure
+    SimplexOptimizer<T,Vector>::iteration_callback iteration_callback;
   };
 
   
@@ -265,6 +268,10 @@ namespace icl{
           }	  
         }
       }
+      if(m_data->iteration_callback){
+        const Result result = { m_data->x[idxBest], m_data->fx[idxBest], currentIteration, m_data->x };
+        m_data->iteration_callback(result);
+      }
     } 
     Result result = { m_data->x[idxBest], m_data->fx[idxBest], currentIteration, m_data->x };
     return result;
@@ -322,6 +329,11 @@ namespace icl{
   template<class T, class Vector>  
   Function<T,const Vector&> SimplexOptimizer<T,Vector>::getErrorFunction() const{
     return m_data->f;
+  }
+  
+  template<class T, class Vector>
+  void SimplexOptimizer<T,Vector>::setIterationCallback(const SimplexOptimizer<T,Vector>::iteration_callback &cb){
+    m_data->iteration_callback = cb;
   }
 
   

@@ -5,6 +5,7 @@
 #include <ICLUtils/Homography2D.h>
 #include <ICLCore/Random.h>
 #include <ICLUtils/ProgArg.h>
+#include <ICLUtils/SimplexOptimizer.h>
 
 namespace icl{
   typedef DynMatrix<float> DMat;
@@ -148,8 +149,8 @@ namespace icl{
 #endif
   
   static float compute_error_opt(const Mat &P, 
-                                 FixedMatrix<float,1,3> &r,
-                                 FixedMatrix<float,1,3> &t, 
+                                 const FixedMatrix<float,1,3> &r,
+                                 const FixedMatrix<float,1,3> &t, 
                                  const Point32f *_M, 
                                  const Point32f *_I, 
                                  int n){
@@ -179,7 +180,20 @@ namespace icl{
     }
     return error;
   }
-  
+
+  typedef FixedColVector<float,6> Pose6D;
+  typedef FunctionImpl<float,const Pose6D&> ErrorFunction;
+
+  struct SimplexErrorFunction{
+    const Mat &P;
+    const Point32f *M,*I;
+    int n;
+    inline SimplexErrorFunction(const Mat &P, const Point32f *M, const Point32f *I, int n):
+      P(P),M(M),I(I),n(n){}
+    float f(const Pose6D &rt) const {
+      return compute_error_opt(P,rt.part<0,0,1,3>(),rt.part<0,3,1,3>(),M,I,n);
+    }
+  };
 
 
   static Mat optimize_error(const Mat &P, const Mat &T_initial, const Point32f *M, const Point32f *I, int n,
@@ -241,16 +255,25 @@ namespace icl{
   }
 
 
+  //  void simplex_iteration_callback(const SimplexOptimizer<float,Pose6D>::Result &r){
+  //    if(r.iterations == 1 || !(r.iterations%100)){
+  //    std::cout << "iteration:" << r.iterations << "  error:" << r.fx << std::endl;
+  //  }
+  //}
+  
+  std::vector<Pose6D> create_initial_simplex(const FixedMatrix<float,1,3> &r, const FixedMatrix<float,1,3> &t){
+    Pose6D start = r%t;
+    std::vector<Pose6D> simplex(7,start);
+    for(int i=0;i<6;++i){
+      simplex[i][i] *= (i>3 ? 1.2 : 1.5);
+    }
+    return simplex;
+  }
     
   Mat CoplanarPointPoseEstimator::getPose(int n, 
                                           const Point32f *modelPoints, 
                                           const Point32f *imagePoints, 
                                           const Camera &cam){
-    
-    SHOW(imagePoints[0]);
-    SHOW(imagePoints[1]);
-    SHOW(imagePoints[2]);
-    SHOW(imagePoints[3]);
     float ifx = 1.0f/(cam.getFocalLength()*cam.getSamplingResolutionX());
     float ify = 1.0f/(cam.getFocalLength()*cam.getSamplingResolutionY());
     float icx = -ifx * cam.getPrincipalPointOffset().x;
@@ -310,10 +333,17 @@ namespace icl{
           data->T = optimize_error(cam.getProjectionMatrix(), data->T, modelPoints, imagePoints, n,
                                    1.5, 60, 100, 2, 0.9,data->timeMonitoring);
           break;
-        case SimplexSampling:
-          throw ICLException("Error in " + str(__FUNCTION__) + ": pose estimation algorithm"
-                             " 'Simplex Sampling' is not yet implemented");
+        case SimplexSampling:{
+          SimplexErrorFunction err(cam.getProjectionMatrix(),modelPoints,imagePoints,n);
+          Function<float,const Pose6D &> ferr = function(err,&SimplexErrorFunction::f); 
+          SimplexOptimizer<float,Pose6D> opt(ferr,6,400,0.5);
+          FixedMatrix<float,1,3> r = extract_euler_angles(data->T);
+          FixedMatrix<float,1,3> t = data->T.part<3,0,1,3>();
+          SimplexOptimizer<float,Pose6D>::Result res = opt.optimize(create_initial_simplex(r,t));
+          const Pose6D &x = res.x;
+          data->T = create_hom_4x4(x[0],x[1],x[2],x[3],x[4],x[5]);
           break;
+        }
         default:
           throw ICLException("Error in " + str(__FUNCTION__) + ": invalind pose estimation algorithm");
       }

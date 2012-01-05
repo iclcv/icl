@@ -153,6 +153,8 @@ namespace icl{
     /// error function type that is used
     typedef Function<T, const Vector&> error_function;
     typedef SimplexOptimizationResult<T,Vector> Result;
+    typedef Function<void,const Result &> iteration_callback;
+    
 
     /// creates a new instance with given parameters
     /** @param f error function 
@@ -224,6 +226,9 @@ namespace icl{
 
     /// returns the curren error function
     error_function getErrorFunction() const;
+
+    /// sets a callback function, that is called after every iteration step
+    void setIterationCallback(const iteration_callback &cb);
     
     /// runs an optimization using internal parameters starting at given input vector
     /** the initial simplex is created internally using the heuristic shown in the

@@ -82,17 +82,20 @@ namespace icl{
     /** TODO: describe the algorithms*/
     enum PoseEstimationAlgorithm{
       HomographyBasedOnly, //!< uses the above described algorithm (\ref ALG) only
-      SamplingCoarse,      //!< use some predefined sampling parameters for coase sampling (fast)
-      SamplingMedium,      //!< use some predefined sampling parameters for medium sampling (average speed)
-      SamplingFine,        //!< use some predefined sampling parameters for fine sampling (slow)
-      SamplingCustom,      //!< uses custom properties to define sampling parameters
-      SimplexSampling      //!< performs simplex sampling for optimization (not implemented yet)
+      SimplexSampling,     //!< performs simplex sampling for optimization (very fast and very accurate!
+      SamplingCoarse,      //!< use some predefined sampling parameters for brute force coase sampling (fast)
+      SamplingMedium,      //!< use some predefined sampling parameters for brute force medium sampling (average speed)
+      SamplingFine,        //!< use some predefined sampling parameters for brute force fine sampling (slow)
+      SamplingCustom,      //!< uses custom properties to define sampling parameters for brute force sampling
     };
     
     
     /// Default constructor with given reference-frame for the returned poses
+    /** Please note that the Downhill Simplex based pose optimization is very accurate and very fast.
+        Using other modes does usually slowdown the pose estimation process <b>and</b> also decrease
+        the result quality. Hovever the brute force search is still provided due to 'historic' reasons */
     CoplanarPointPoseEstimator(ReferenceFrame returnedPosesReferenceFrame=worldFrame, 
-                               PoseEstimationAlgorithm a = SamplingMedium);
+                               PoseEstimationAlgorithm a = SimplexSampling);
 
     /// Destructor
     ~CoplanarPointPoseEstimator();
