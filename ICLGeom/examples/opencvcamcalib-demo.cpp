@@ -85,7 +85,15 @@ void save_params(){
 }
 
 void init(){
-	Size s = pa("-s");
+  if(pa("-s")){
+    Size size = pa("-s");
+    std::cout<<"use desired size: "<<size<<std::endl;
+    framewidth=size.width;
+    frameheight=size.height;
+  }else{
+    std::cout<<"use standard size"<<std::endl;
+  }
+	Size s = pa("-cbs");
 	width = s.width;
 	height = s.height;
 	minSuccesses = pa("-m");
@@ -94,7 +102,10 @@ void init(){
 	corners = new CvPoint2D32f[width*height];
 
 	cg = new GenericGrabber(pa("-i"));
-
+	if(pa("-s")){
+	  cg->setDesiredSizeInternal(pa("-s"));
+  }
+  
 	/*
 	static std::string params[] = {"*.png"};
 	std::string dev = "file";
@@ -236,8 +247,9 @@ int main(int n, char **args){
 	paex
 	("-i","defines input device and parameters")
 	("-s","defines image size to use")
+	("-cbs","defines number of checkerboard fields (XxY) to use")
 	("-m","minimal count of pics of success");
-	ICLApp app(n,args,"[m]-input|-i(device,device-params) -size|-s(Size=6x9) -minImg|-m(int)",init,run);
+	ICLApp app(n,args,"[m]-input|-i(device,device-params) -size|-s(Size) -checkerboardsize|-cbs(Size=7x9) -minImg|-m(int)",init,run);
 	app.addFinalization(finalize);
 	return app.exec();
 	//return ICLApp(n,args,"-size|-s(Size=256x256) -minImg|-m",init,run).exec();
