@@ -515,6 +515,7 @@ void init(){
   }
   
   grabber.init(pa("-i"));
+  if(pa("-s")) grabber.useDesired(pa("-s").as<Size>());
   
   gui << "draw3D()[@handle=draw@minsize=32x24]";
   
