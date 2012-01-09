@@ -1127,12 +1127,13 @@ namespace icl{
     // {{{ open
 
     static bool vertical(const GUIDefinition &def){
-      return (def.numParams() == 4) ? (def.param(3)=="vertical") : false;
+      return (def.numParams() >= 4) ? (def.param(3)=="vertical") : false;
     }
     
-    SliderGUIWidget(const GUIDefinition &def):GUIWidget(def,3,4,GUIWidget::gridLayout,vertical(def)?Size(1,4):Size(4,1)){
+    SliderGUIWidget(const GUIDefinition &def):GUIWidget(def,3,5,GUIWidget::gridLayout,vertical(def)?Size(1,4):Size(4,1)){
       /// param_order = min,max,curr,step=1,orientation=("horizontal")|"vertical"
-      
+      bool deactivateDisplay = (def.numParams() == 5) && (def.param(4) == "off");
+
       m_piValue = &getGUI()->allocValue<int>(def.output(0),def.intParam(2));
       
       int iVerticalFlag = vertical(def);
@@ -1151,22 +1152,26 @@ namespace icl{
       m_poSlider->setMaximum(iMax);
       m_poSlider->setValue(iCurr);
      
-      int nDigits = iclMax(QString::number(iMin).length(),QString::number(iMax).length());
-      // what is this ???
-      // int iAbsMax = iMax > -iMin ? iMax : -iMin;
-      // int iAddOneForSign = iMax < -iMin;
-      // m_poLCD = new QLCDNumber(QString::number(iAbsMax).length()+iAddOneForSign,def.parentWidget());
-      m_poLCD = new QLCDNumber(nDigits,def.parentWidget());
-      m_poLCD->display(iCurr);
-      
-      if(iVerticalFlag){
-        addToGrid(m_poLCD,0,1,1,4);
+      if(deactivateDisplay){
+        m_poLCD = 0;
       }else{
-        addToGrid(m_poLCD,1,0,4,1);
+        int nDigits = iclMax(QString::number(iMin).length(),QString::number(iMax).length());
+        // what is this ???
+        // int iAbsMax = iMax > -iMin ? iMax : -iMin;
+        // int iAddOneForSign = iMax < -iMin;
+        // m_poLCD = new QLCDNumber(QString::number(iAbsMax).length()+iAddOneForSign,def.parentWidget());
+        m_poLCD = new QLCDNumber(nDigits,def.parentWidget());
+        m_poLCD->display(iCurr);
+      
+        if(iVerticalFlag){
+          addToGrid(m_poLCD,0,1,1,4);
+        }else{
+          addToGrid(m_poLCD,1,0,4,1);
+        }
+        connect(m_poSlider,SIGNAL(valueChanged(int)),m_poLCD,SLOT(display(int)));
       }
 
       connect(m_poSlider,SIGNAL(valueChanged(int)),this,SLOT(ioSlot()));
-      connect(m_poSlider,SIGNAL(valueChanged(int)),m_poLCD,SLOT(display(int)));
       
       m_bVerticalFlag = iVerticalFlag ? true : false;
      
@@ -1174,17 +1179,18 @@ namespace icl{
 
       if(def.handle() != ""){
         getGUI()->lockData();
-        getGUI()->allocValue<SliderHandle>(def.handle(),SliderHandle(m_poSlider,this));
+        getGUI()->allocValue<SliderHandle>(def.handle(),SliderHandle(m_poSlider,this,m_poLCD));
         getGUI()->unlockData();
       }
     }
     static string getSyntax(){
       return 
-      string("slider(MIN,MAX,CURR,ORIENTATION=horizontal)[general params] \n")+
+      string("slider(MIN,MAX,CURR,ORIENTATION=horizontal,DISPLAY=on)[general params] \n")+
       string("\tMIN is the minimum value of the slider\n")+
       string("\tMAX is the maximum value of the slider\n")+
       string("\tCURR is the initializing value of the slider\n")+
-      string("\tORIENTATION is horizontal or vertical\n");
+      string("\tORIENTATION is horizontal or vertical\n")+
+      string("\tDISPLAY can be \"on\" (default) or \"off\" \n")+
       gen_params();
     }
     virtual void processIO(){
@@ -1204,10 +1210,11 @@ namespace icl{
     // {{{ open
 
     static bool vertical(const GUIDefinition &def){
-      return (def.numParams() == 4) ? (def.param(3)=="vertical") : false;
+      return (def.numParams() >= 4) ? (def.param(3)=="vertical") : false;
     }
     
-    FloatSliderGUIWidget(const GUIDefinition &def):GUIWidget(def,3,4,GUIWidget::gridLayout,vertical(def)?Size(1,4):Size(4,1)){
+    FloatSliderGUIWidget(const GUIDefinition &def):GUIWidget(def,3,5,GUIWidget::gridLayout,vertical(def)?Size(1,4):Size(4,1)){
+      bool deactivateDisplay = (def.numParams() == 5) && (def.param(4) == "off");
       //
       // y = mx+b
       // m =dy/dx = max-min/1000
@@ -1240,20 +1247,25 @@ namespace icl{
       m_poSlider->setMinimum(0);
       m_poSlider->setMaximum(10000);
       m_poSlider->setValue(f2i(fCurr));
-      m_poLCD = new QLCDNumber(nDigits,def.parentWidget());
-      m_poLCD->display(fCurr);
       
-      if(iVerticalFlag){
-        addToGrid(m_poLCD,0,1,1,4);
+      if(deactivateDisplay){
+        m_poLCD = 0;
       }else{
-        addToGrid(m_poLCD,1,0,4,1);
-      }    
+        m_poLCD = new QLCDNumber(nDigits,def.parentWidget());
+        m_poLCD->display(fCurr);
+        
+        if(iVerticalFlag){
+          addToGrid(m_poLCD,0,1,1,4);
+        }else{
+          addToGrid(m_poLCD,1,0,4,1);
+        }    
+      }
       connect(m_poSlider,SIGNAL(valueChanged(int)),this,SLOT(ioSlot()));
       setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
 
       if(def.handle() != ""){
         getGUI()->lockData();
-        getGUI()->allocValue<FSliderHandle>(def.handle(),FSliderHandle(m_poSlider,&m_fMinVal,&m_fMaxVal,&m_fM,&m_fB,10000,this));
+        getGUI()->allocValue<FSliderHandle>(def.handle(),FSliderHandle(m_poSlider,&m_fMinVal,&m_fMaxVal,&m_fM,&m_fB,10000,this,m_poLCD));
         getGUI()->unlockData();
       }
     }
@@ -1263,13 +1275,15 @@ namespace icl{
       string("\tMIN is the minimum value of the slider\n")+
       string("\tMAX is the maximum value of the slider\n")+
       string("\tCURR is the initializing value of the slider\n")+
-      string("\tORIENTATION is horizontal or vertical\n");
+      string("\tORIENTATION is horizontal or vertical\n")+
+      string("\tDISPLAY can be \"on\" (default) or \"off\" \n")+
       gen_params();
     }
     virtual void processIO(){
       float value = i2f(m_poSlider->value());
-      m_poLCD->display(value);
-      //      pritnf("displaying %f \n",value);
+      if(m_poLCD){
+        m_poLCD->display(value);
+      }
       *m_pfValue = value;
     }
   private:

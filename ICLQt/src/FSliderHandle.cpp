@@ -37,10 +37,10 @@
 
 namespace icl{
   FSliderHandle::FSliderHandle():
-    GUIHandle<ThreadedUpdatableSlider>(),m_fMin(0),m_fMax(0),m_fM(0),m_fB(0),m_iSliderRange(0){
+    GUIHandle<ThreadedUpdatableSlider>(),lcd(0),m_fMin(0),m_fMax(0),m_fM(0),m_fB(0),m_iSliderRange(0){
   }
-  FSliderHandle::FSliderHandle(ThreadedUpdatableSlider *sl,float *minV, float *maxV, float *M, float *B,int range, GUIWidget *w):
-    GUIHandle<ThreadedUpdatableSlider>(sl,w),m_fMin(minV),m_fMax(maxV),m_fM(M),m_fB(B),m_iSliderRange(range){
+  FSliderHandle::FSliderHandle(ThreadedUpdatableSlider *sl,float *minV, float *maxV, float *M, float *B,int range, GUIWidget *w, QLCDNumber *lcd):
+    GUIHandle<ThreadedUpdatableSlider>(sl,w),lcd(lcd),m_fMin(minV),m_fMax(maxV),m_fM(M),m_fB(B),m_iSliderRange(range){
     updateMB();
   }
   void FSliderHandle::setMin(float min){

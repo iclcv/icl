@@ -40,18 +40,25 @@
 
 /** \cond */
 class QSlider;
+class QLCDNumber;
 /** \endcond */
 
 namespace icl{
   
   /// Handle class for slider componets \ingroup HANDLES
   class FSliderHandle : public GUIHandle<ThreadedUpdatableSlider>{
+    /// associated display
+    QLCDNumber *lcd;
     public:
     /// Create an empty slider handle
     FSliderHandle();
 
     /// create a slider handle
-    FSliderHandle(ThreadedUpdatableSlider *sl,float *minV, float *maxV, float *M, float *B,int range, GUIWidget *w);
+    FSliderHandle(ThreadedUpdatableSlider *sl,float *minV, float *maxV, float *M, float *B,int range, GUIWidget *w, QLCDNumber *lcd=0);
+    
+    /// retuns the QLCDNumber that is used as display
+    /** result is null, if the slider was created without display */
+    inline QLCDNumber *getDisplay() { return lcd; }
     
     /// set the min value
     void setMin(float min);

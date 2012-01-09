@@ -39,6 +39,10 @@
 #include <ICLQt/ThreadedUpdatableSlider.h>
 
 
+/** \cond */
+class QLCDNumber;
+/** \encond */
+
 namespace icl{
   
   /** \cond */
@@ -47,12 +51,20 @@ namespace icl{
  
   /// Handle class for slider componets \ingroup HANDLES
   class SliderHandle : public GUIHandle<ThreadedUpdatableSlider>{
+
+    /// associated display
+    QLCDNumber *lcd;
+    
     public:
     /// Creates and empty slider handle
-    SliderHandle(){}
+    SliderHandle():lcd(0){}
 
     /// create a slider handle
-    SliderHandle(ThreadedUpdatableSlider *sl, GUIWidget *w):GUIHandle<ThreadedUpdatableSlider>(sl,w){}
+    SliderHandle(ThreadedUpdatableSlider *sl, GUIWidget *w, QLCDNumber *lcd=0):GUIHandle<ThreadedUpdatableSlider>(sl,w),lcd(lcd){}
+    
+    /// retuns the QLCDNumber that is used as display
+    /** result is null, if the slider was created without display */
+    inline QLCDNumber *getDisplay() { return lcd; }
     
     /// set the min value
     void setMin(int min);

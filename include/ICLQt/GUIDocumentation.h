@@ -256,14 +256,14 @@
         Each label component can be used to show dynamic as well as static content. A label can be
         initialized with a given string (or an int/float as string). Later on this content can be
         changed by accessing this label from outside the GUI object.
-      - <b>slider(int MIN,int MAX,int CURRENT[,vertical])</b>\n
+      - <b>slider(int MIN,int MAX,int CURRENT[,vertical[,on|off]])</b>\n
         A slider is created by a given range {MIN,...,MAX} and a given initial value CURRENT. If the 4th 
         parameter is 'vertical', the slider is layouted in vertical direction. However, this argument is
-        optional.
-      - <b>fslider(float MIN,float MAX,float CURRENT[,vertical])</b>
+        optional. The last option can optionally be set to "off" in order to deactivate the slider display
+      - <b>fslider(float MIN,float MAX,float CURRENT[,vertical[,on|off]])</b>
         A fslider is created by a given range {MIN,...,MAX} and a given initial value CURRENT. If the 4th 
         parameter is 'vertical', the slider is layouted in vertical direction. However, this argument is
-        optional.
+        optional.The last option can optionally be set to "off" in order to deactivate the slider display
       - <b>int</b>\n
         An integer input field is created by a given range {MIN,...,MAX} and a given initial value CURRENT.
         The text field will only allow inputs that are inside of this range.
