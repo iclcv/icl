@@ -38,9 +38,9 @@
 #include <ICLIO/PylonGrabber.h>
 #include <ICLUtils/Macros.h>
 
-#include <unistd.h>
+#include <pylon/gige/BaslerGigEDeviceInfo.h>
 
-//#define USE_SMALL_PICTURES
+#include <unistd.h>
 
 using namespace icl;
 
@@ -62,7 +62,7 @@ const char *icl_val_str[]={ "range", "value-list", "menu", "command", "info" };
 // This is a list of dafault sizes strings for
 // the 'size' parameter of the camera
 const char *default_sizes[]={
-      "0x0", "128x96", "176x144", "160x120", "320x200", "320x240",
+      "128x96", "176x144", "160x120", "320x200", "320x240",
       "352x288", "360x240", "480x320", "640x350", "640x480", "768x576",
       "800x480", "800x600", "960x540", "960x640", "1024x768", "1152x864",
       "1200x800", "1280x720", "1280x800", "1440x900", "1280x960",
@@ -130,6 +130,10 @@ int getCameraPixelSize(Pylon::IPylonDevice* camera);
 // returns the expected image size. used to get the needed size of buffers.
 long getNeededBufferSize(Pylon::IPylonDevice* camera);
 
+// returns which Streamgrabber-channel is specified in args. returns 0 when
+// not specified
+int channelFromArgs(std::string args);
+
 // Constructor of PylonGrabberImpl
 PylonGrabberImpl::PylonGrabberImpl(const Pylon::CDeviceInfo &dev,
   const std::string args) : m_CamMutex(), m_Aquired(0), m_Error(0),
@@ -146,15 +150,19 @@ PylonGrabberImpl::PylonGrabberImpl(const Pylon::CDeviceInfo &dev,
   Pylon::CTlFactory& tlFactory = Pylon::CTlFactory::GetInstance();
   m_Camera = tlFactory.CreateDevice(dev);
 
+  int channel = channelFromArgs(args);
   if(m_Camera -> GetNumStreamGrabberChannels() == 0){
-    throw icl::ICLException("No stream grabber channels avaliable!");
+    throw icl::ICLException("No stream grabber channels avaliable.");
+  } else if(m_Camera -> GetNumStreamGrabberChannels() < channel){
+    DEBUG_LOG("From args='" << args << "' demanded channel=" << channel <<
+              "but available=" << m_Camera -> GetNumStreamGrabberChannels())
+    throw icl::ICLException("Demanded StreamGrabberChannel not avaliable.");
   }
-  DEBUG_LOG("StreamGrabberCount: " << m_Camera -> GetNumStreamGrabberChannels())
 
   m_Camera -> Open();
   cameraDefaultSettings();
   // getting first Grabber
-  m_Grabber = m_Camera -> GetStreamGrabber(0);
+  m_Grabber = m_Camera -> GetStreamGrabber(channel);
 
   m_Grabber -> Open();
 
@@ -286,14 +294,12 @@ void PylonGrabberImpl::cameraDefaultSettings(){
   //std::cout << "Payload: " << getParameterValueString("PayloadSize")
   //<< std::endl;
 
-#ifdef USE_SMALL_PICTURES
   m_Height = 480;
   m_Width = 640;
   m_Offsetx = 640;
   m_Offsety = 300;
-#endif
   //m_Format = "BayerGB16";
-  //m_Format = "Mono8";
+  m_Format = "Mono8";
 
   DEBUG_LOG("setting camera to " << m_Format)
   // default camera settings: image format, AOI, acquisition mode and exposure
@@ -871,17 +877,16 @@ bool PylonGrabberImpl::termPylonEnv(){
 }
 
 void PylonGrabberImpl::printHelp(){
-  std::cout << "The PylonGrabber can be startet with "
-   << "multiple arguments" << std::endl;
-  std::cout << "Arguments must be split by a comma" << std::endl;
-  std::cout << "    -devs   "
-   << "lets pylon print all available pylon devices" << std::endl;
-  std::cout << "    -start  inits a special device from the device list "
-    << "acquired by '-devs'" << std::endl;
-  std::cout << "            '-start,0' "
-    << "initializes the first device" << std::endl;
-  std::cout << "            '-start,1' "
-    << "initializes the secound and so on" << std::endl;
+  std::cout << "The Pylon grabber can be called with the following parameters" << std::endl;
+  std::cout << "        -i pylon 'CAM','BUFFER_NR'" << std::endl;
+  std::cout << "  CAM_NR can be an integer, choosing one of "
+               "the available cameras or the ip-addres of a perticular "
+               "ip-camera." << std::endl;
+  std::cout << "  BUFFER_NR is optional and chooses one of the Streambuffers "
+               "provided by the camera." << std::endl;
+  std::cout << "A convenient call could be:" << std::endl;
+  std::cout << "        -i pylon 0" << std::endl;
+  std::cout << "  to get the first stream of the first camera." << std::endl;
 }
 
 Pylon::CDeviceInfo PylonGrabberImpl::getDeviceFromArgs(std::string args)
@@ -892,8 +897,33 @@ Pylon::CDeviceInfo PylonGrabberImpl::getDeviceFromArgs(std::string args)
     throw ICLException("No Pylon devices found.");
   }
   std::vector<std::string> 	argvec = icl::tok(args, ",");
-  //TODO: do something
-  return devices.front();
+  ICLASSERT(argvec.size() <= 2)
+    if(argvec.at(0).find('.') == std::string::npos){
+      int nr = icl::parse<int>(argvec.at(0));
+      if(devices.size() < nr + 1){
+        DEBUG_LOG("Demanded device Nr. " << nr << " but only "
+                  << devices.size() << " available.")
+            throw ICLException("Could not find demanded device.");
+      } else {
+        return devices.at(nr);
+      }
+    } else { // cam by IP
+      Pylon::CBaslerGigEDeviceInfo di;
+      di.SetIpAddress(argvec.at(0).c_str());
+      DEBUG_LOG("Trying to start camera from IP: " << argvec.at(0).c_str())
+      return di;
+    }
+  DEBUG_LOG("Wrong parameters: " << args)
+  throw ICLException("PylonDevice not found");
+}
+
+int channelFromArgs(std::string args){
+  std::vector<std::string> 	argvec = icl::tok(args, ",");
+  if(argvec.size() < 2){
+      return 0;
+  } else {
+    return icl::parse<int>(argvec.at(1));
+  }
 }
 
 template <typename OBJ, typename NODE, typename VAL>
