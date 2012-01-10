@@ -100,6 +100,12 @@ set(CONDITIONLIST "HAVE_GTEST_COND")
 set(ICLLibsToLinkAgainst ICLGeom ICLUtils ICLCore)
 add_gtest (${PROJECT_NAME} "test-camera" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
+
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_OPENGL_COND)
+set(ICLLibsToLinkAgainst ICLGeom ICLUtils ICLQuick ICLMarkers)
+add_example (${PROJECT_NAME} "kinect-rgbd-calib" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+
+
 #create lib
 if(WIN32)
 add_library(${PROJECT_NAME} ${LIB_SOURCES})
