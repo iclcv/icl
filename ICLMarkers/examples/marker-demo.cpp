@@ -91,6 +91,8 @@ void run(){
   draw->linewidth(2);
   for(unsigned int i=0;i<fids.size();++i){
     if(fids[i].getID() == 0){
+      fids[i].getPose3D();
+      fids[i].getPose3D();
       obj->setTransformation(fids[i].getPose3D());
     }
     

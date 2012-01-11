@@ -50,7 +50,7 @@ namespace icl{
   
   static std::string algorithm_to_string(CoplanarPointPoseEstimator::PoseEstimationAlgorithm a){
     static std::vector<std::string> as = tok(get_all_algorithms(),",");
-    if((int)a < 0 || (int)a>=as.size()){
+    if((int)a < 0 || (int)a>=(int)as.size()){
       throw ICLException("CoplanarPointPoseEstimator: wrong PoseEstimationAlgorithm value");
     }
     return as[(int)a];
@@ -75,6 +75,7 @@ namespace icl{
     data->decreaseFactor = 0.6;
     data->positionMultiplier = 50;
     data->timeMonitoring = false;
+    data->referenceFrame = returnedPoseReferenceFrame;
       
     addProperty("algorithm","menu",get_all_algorithms(),algorithm_to_string(a));
     addProperty("sampling interval","float","[-3.14,3.14]",data->samplingInterval);
