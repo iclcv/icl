@@ -52,6 +52,9 @@ add_libsource (${PROJECT_NAME} "src/FiducialImpl.cpp" "${CONDITIONLIST}" LIB_SOU
 add_libsource (${PROJECT_NAME} "src/ImageRectification.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/QuadDetector.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/TwoLevelRegionStructure.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/MultiCamFiducial.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/MultiCamFiducialImpl.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/MultiCamFiducialDetector.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
 add_libsource (${PROJECT_NAME} "src/MarkerCodeICL1.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/MarkerMetricsICL1.cpp" "${CONDITIONLIST}" LIB_SOURCES)
@@ -60,6 +63,7 @@ add_libsource (${PROJECT_NAME} "src/FiducialDetectorPluginICL1.cpp" "${CONDITION
 set(CONDITIONLIST HAVE_QT_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick ICLGeom ICLQt)
 add_example (${PROJECT_NAME} "marker-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "multi-cam-marker-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "simple-marker-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "create-marker" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "cam-calib-2" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
