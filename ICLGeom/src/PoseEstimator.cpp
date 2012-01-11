@@ -220,7 +220,11 @@ namespace icl{
       T w; V3 v;
       M4 evecs;
       V4 evals;
-      N.eigen(evecs,evals);
+      try{
+        N.eigen(evecs,evals);
+      }catch(ICLException &e){
+        throw SingularMatrixException("error in eigenvalue decomposition (the internal matrix is too singular)");
+      }
     
       if(fabs(evals[0]-evals[1]) < 0.00001 || N_PTS == 2){
         // if points are collinear, choose the quaternion that 
