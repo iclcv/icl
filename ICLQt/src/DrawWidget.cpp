@@ -35,7 +35,7 @@
 #include <ICLQt/DrawWidget.h>
 #include <ICLQt/PaintEngine.h>
 #include <ICLCore/ImgBase.h>
-#include <ICLQt/GLTextureMapBaseImage.h>
+#include <ICLQt/GLImg.h>
 
 using std::string;
 namespace icl{
@@ -570,18 +570,17 @@ namespace icl{
 
   public:
     ImageCommand(ImgBase *image, float x, float y, float w, float h):
-      DrawCommand4F(x,y,w,h){
-      m_poImage = new GLTextureMapBaseImage(image);
+      DrawCommand4F(x,y,w,h),image(image){
     }
     virtual ~ImageCommand(){
-      if(m_poImage)delete m_poImage;
+      
     }
     virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
       (void)e;
       Rect r(tP(m_fA,m_fB,s),tS(m_fC, m_fD,s));
-      m_poImage->drawTo(Rect(tP(m_fA,m_fB,s),tS(m_fC, m_fD,s)),s->size);
+      image.draw2D(Rect(tP(m_fA,m_fB,s),tS(m_fC, m_fD,s)),s->size);
     }
-    GLTextureMapBaseImage *m_poImage;
+    GLImg image;
   };
 
   // }}}

@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLQt/DrawWidget3D.h>
-#include <ICLQt/GLTextureMapBaseImage.h>
+#include <ICLQt/GLImg.h>
 
 #ifdef ICL_SYSTEM_APPLE
 #include <OpenGL/gl.h>
@@ -220,11 +220,11 @@ namespace icl{
     // {{{ open
 
     ImageCube3DDrawCommand(float x,float y,float z, float d, const ImgBase *image):x(x),y(y),z(z),d(d){
-      glimages.push_back(new GLTextureMapBaseImage(image));
+      glimages.push_back(new GLImg(image));
     }
     ImageCube3DDrawCommand(float x,float y,float z, float d, const ImgBase *images[6]):x(x),y(y),z(z),d(d){
       for(int i=0;i<6;++i){
-        glimages.push_back(new GLTextureMapBaseImage(images[i]));
+        glimages.push_back(new GLImg(images[i]));
       }
     }
 
@@ -254,21 +254,21 @@ namespace icl{
       float H[3] = {x-d, y+d, z-d};
 
       if(glimages.size() == 1){
-        glimages[0]->drawTo3D(A,B,E);
-        glimages[0]->drawTo3D(A,D,E);
-        glimages[0]->drawTo3D(A,D,B);
+        glimages[0]->draw3D(A,B,E);
+        glimages[0]->draw3D(A,D,E);
+        glimages[0]->draw3D(A,D,B);
         
-        glimages[0]->drawTo3D(G,H,C);
-        glimages[0]->drawTo3D(G,H,F);
-        glimages[0]->drawTo3D(G,F,C);
+        glimages[0]->draw3D(G,H,C);
+        glimages[0]->draw3D(G,H,F);
+        glimages[0]->draw3D(G,F,C);
       }else{
-        glimages[0]->drawTo3D(A,B,E);
-        glimages[1]->drawTo3D(A,D,E);
-        glimages[2]->drawTo3D(A,D,B);
+        glimages[0]->draw3D(A,B,E);
+        glimages[1]->draw3D(A,D,E);
+        glimages[2]->draw3D(A,D,B);
         
-        glimages[3]->drawTo3D(G,H,C);
-        glimages[4]->drawTo3D(G,H,F);
-        glimages[5]->drawTo3D(G,F,C);
+        glimages[3]->draw3D(G,H,C);
+        glimages[4]->draw3D(G,H,F);
+        glimages[5]->draw3D(G,F,C);
       }
       d*=2;
 
@@ -277,7 +277,7 @@ namespace icl{
       }
     }
     float x,y,z,d;
-    std::vector<GLTextureMapBaseImage*> glimages;
+    std::vector<GLImg*> glimages;
   };
 
   // }}}
@@ -288,7 +288,7 @@ namespace icl{
       c[0]=cX; c[1]=cY; c[2]=cZ;
       a[0]=aX; a[1]=aY; a[2]=aZ;
       b[0]=bX; b[1]=bY; b[2]=bZ;
-      glimage = new GLTextureMapBaseImage(image);
+      glimage = new GLImg(image);
     }
     ~Image3DDrawCommand(){
       delete glimage;
@@ -300,14 +300,14 @@ namespace icl{
         glDisable(GL_LIGHTING);
       }
       
-      glimage->drawTo3D(c,a,b);
+      glimage->draw3D(c,a,b);
       
       if(wasLightingEnabled){
         glEnable(GL_LIGHTING);
       }    
     }
     float c[3],a[3],b[3];
-    GLTextureMapBaseImage *glimage;
+    GLImg *glimage;
   };
 
   // }}}

@@ -36,7 +36,7 @@
 
 #include <ICLQt/Widget.h>
 #include <ICLCore/Img.h>
-#include <ICLQt/GLTextureMapBaseImage.h>
+#include <ICLQt/GLImg.h>
 #include <ICLQt/GLPaintEngine.h>
 #include <ICLIO/GenericImageOutput.h>
 #include <string>
@@ -119,7 +119,7 @@ namespace icl{
     bool toggled;
     bool visible;
 
-    GLTextureMapBaseImage tmImage;
+    GLImg tmImage;
 
     Function<void> vcb;
     Function<void,bool> bcb;                
@@ -190,10 +190,12 @@ namespace icl{
 
     void drawGL(const Size &windowSize){
       if(!visible) return;
-      tmImage.bci(over*20,down*20,0);
+      tmImage.setBCI(over*20,down*20,0);
+      tmImage.setScaleMode(interpolateLIN);
       const Img8u &im = toggled ? downIcon : icon;
-      tmImage.updateTextures(&im);
-      tmImage.drawTo(bounds,windowSize,interpolateLIN);
+      tmImage.update(&im);
+      
+      tmImage.draw2D(bounds,windowSize);
     }
     bool update_mouse_move(int x, int y, ICLWidget *parent){
       if(!visible) return false;
@@ -327,10 +329,10 @@ namespace icl{
   // }}}
   
   struct ICLWidget::Data{
-    // {{{ open
+        // {{{ open
 
     Data(ICLWidget *parent):
-      parent(parent),channelSelBuf(0),image(new GLTextureMapBaseImage(0)),
+      parent(parent),channelSelBuf(0),
       qimageConv(0),qimage(0),mutex(QMutex::Recursive),fm(fmHoldAR),fmSave(fmHoldAR),
       rm(rmOff),bciUpdateAuto(false),channelUpdateAuto(false),
       mouseX(-1),mouseY(-1),selChannel(-1),showNoImageWarnings(true),
@@ -352,7 +354,6 @@ namespace icl{
     }  
     ~Data(){
       ICL_DELETE(channelSelBuf);
-      ICL_DELETE(image);
       ICL_DELETE(qimageConv);
       ICL_DELETE(qimage);
       ICL_DELETE(qic);
@@ -365,7 +366,7 @@ namespace icl{
     
     ICLWidget *parent;
     ImgBase *channelSelBuf;
-    GLTextureMapBaseImage *image;
+    GLImg image;
     QImageConverter *qimageConv;
     QImage *qimage;
     QMutex mutex;
@@ -564,7 +565,7 @@ namespace icl{
         frameIdx = 0;
       }
       try{
-        SmartPtr<ImgBase> image(data->image->deepCopy());
+        SmartPtr<const ImgBase> image(data->image.extractImage(),false);
         
         if(converter){
           converter->apply(image.get(),&convertedBuffer);
@@ -1423,7 +1424,7 @@ namespace icl{
     // {{{ open
 
     m_data->defaultViewPort = size;
-    if(!m_data->image->hasImage()){
+    if(m_data->image.isNull()){
       m_data->imageInfoIndicator->update(m_data->defaultViewPort);
     }
       
@@ -1628,11 +1629,11 @@ namespace icl{
   void ICLWidget::captureCurrentImage(){
     // {{{ open
 
-    ImgBase *buf = 0;
+    const ImgBase *buf = 0;
     {
       LOCK_SECTION;
-      if(m_data->image){
-        buf = m_data->image->deepCopy();
+      if(!m_data->image.isNull()){
+        buf = m_data->image.extractImage();
       }
     }
 
@@ -1645,7 +1646,6 @@ namespace icl{
           ERROR_LOG("unable to capture current image: " << ex.what());
         }
       }
-      delete buf;
     }
   }
 
@@ -1685,21 +1685,23 @@ namespace icl{
   
   void ICLWidget::rebufferImageInternal(){
     // {{{ open
-
-    m_data->mutex.lock();
-    if(m_data->image && m_data->image->hasImage()){
-      if(m_data->channelSelBuf){
+    /*
+        m_data->mutex.lock();
+        if(m_data-m_data->image && m_data->image->hasImage()){
+        if(m_data->channelSelBuf){
         m_data->mutex.unlock();
         setImage(m_data->channelSelBuf);
-      }else{
+        }else{
         ImgBase *tmpImage = m_data->image->deepCopy();
         m_data->mutex.unlock();
         setImage(tmpImage);
         delete tmpImage;
-      }
-    }else{
-      m_data->mutex.unlock();
-    }
+        }
+        }else{
+        m_data->mutex.unlock();
+        }
+    */
+    WARNING_LOG("rebuffering was disabled!");
     update();
   }
 
@@ -1744,15 +1746,16 @@ namespace icl{
                  m_data->backgroundColor[2],1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     GLPaintEngine *pe = 0;
-    if(m_data->image && m_data->image->hasImage()){
+    if(!m_data->image.isNull()){
       Rect r;
       if(m_data->fm == fmZoom){
         QMutexLocker locker(&m_data->menuMutex);
-        r = computeRect(m_data->image->getSize(),getSize(),fmZoom,m_data->zoomRect);//zoomAdjuster->aw->r);
+        r = computeRect(m_data->image.getSize(),getSize(),fmZoom,m_data->zoomRect);//zoomAdjuster->aw->r);
       }else{
-        r = computeRect(m_data->image->getSize(),getSize(),m_data->fm);
+        r = computeRect(m_data->image.getSize(),getSize(),m_data->fm);
       }
-      m_data->image->drawTo(r,getSize(),m_data->useLinInterpolation?interpolateLIN:interpolateNN);
+      m_data->image.setScaleMode(m_data->useLinInterpolation?interpolateLIN:interpolateNN);
+      m_data->image.draw2D(r,getSize());
     }else{
       pe = new GLPaintEngine(this);
       pe->fill(0,0,0,255);
@@ -1801,7 +1804,7 @@ namespace icl{
 
     LOCK_SECTION;
     if(!image){
-      m_data->image->updateTextures(0); // in this case [null will be drawn]
+      m_data->image.update(0);
       m_data->imageInfoIndicator->update(m_data->defaultViewPort);
       return;
     }
@@ -1809,22 +1812,22 @@ namespace icl{
     update_data(image->getSize(),m_data);
     
     if(m_data->rm == rmAuto){
-      m_data->image->bci(-1,-1,-1);
+      m_data->image.setBCI(-1,-1,-1);
     }else if(m_data->rm == rmOn){
-      m_data->image->bci(m_data->bci[0],m_data->bci[1],m_data->bci[2]);
+      m_data->image.setBCI(m_data->bci[0],m_data->bci[1],m_data->bci[2]);
     }else{
-      m_data->image->bci(0,0,0);
+      m_data->image.setBCI(0,0,0);
     }
 
     if(m_data->selChannel >= 0 && m_data->selChannel < image->getChannels()){
       const ImgBase *selectedChannel = image->selectChannel(m_data->selChannel);
-      m_data->image->updateTextures(selectedChannel);
+      m_data->image.update(selectedChannel);
       delete selectedChannel;
       if(image != m_data->channelSelBuf){
         image->deepCopy(&m_data->channelSelBuf);
       }
     }else{
-      m_data->image->updateTextures(image);
+      m_data->image.update(image);
       ICL_DELETE(m_data->channelSelBuf);
     }
 
@@ -2161,7 +2164,7 @@ namespace icl{
  
   void ICLWidget::setShowPixelGridEnabled(bool enabled){
     // {{{ open
-    m_data->image->setDrawGrid(enabled,m_data->gridColor);
+    m_data->image.setDrawGrid(enabled,m_data->gridColor);
     updateFromOtherThread();
   }
   // }}}
@@ -2214,10 +2217,10 @@ namespace icl{
 
   void ICLWidget::showGridColorDialog(){
     // {{{ open
-    const float *g = m_data->image->getGridColor();
+    const float *g = m_data->image.getGridColor();
     QColor color = QColorDialog::getColor(QColor(g[0]*255,g[1]*255,g[2]*255),this);
     float n[4] = { float(color.red())/255, float(color.green())/255, float(color.blue())/255, g[3]};
-    m_data->image->setGridColor(n);
+    m_data->image.setGridColor(n);
     updateFromOtherThread();
   }
   // }}}
@@ -2225,30 +2228,30 @@ namespace icl{
   void ICLWidget::setGridBlack(){
     // {{{ open
     float c[4] = {0,0,0,1};
-    m_data->image->setGridColor(c);
+    m_data->image.setGridColor(c);
     updateFromOtherThread();
   }
   // }}}
   void ICLWidget::setGridWhite(){
     // {{{ open
     float c[4] = {1,1,1,1};
-    m_data->image->setGridColor(c);
+    m_data->image.setGridColor(c);
     updateFromOtherThread();
   }
   // }}}
   void ICLWidget::setGridGray(){
     // {{{ open
     float c[4] = {0.3,0.3,0.3,1};
-    m_data->image->setGridColor(c);
+    m_data->image.setGridColor(c);
     updateFromOtherThread();
   }
   // }}}
 
   void ICLWidget::setGridAlpha(int alpha){
     // {{{ open 
-    const float *c = m_data->image->getGridColor();
+    const float *c = m_data->image.getGridColor();
     float n[4] = {c[0],c[1],c[2],float(alpha)/255};
-    m_data->image->setGridColor(n);
+    m_data->image.setGridColor(n);
     updateFromOtherThread();
   }
   // }}}
@@ -2257,28 +2260,28 @@ namespace icl{
     // {{{ open
     std::vector<string> info;
 
-    GLTextureMapBaseImage* i = m_data->image;
-    if(!i || !i->hasImage()){
+    GLImg &i = m_data->image;
+    if(i.isNull()){
       info.push_back("Image is NULL");
       return info;
     }
-    info.push_back(string("depth:   ")+str(i->getDepth()));
-    info.push_back(string("size:    ")+str(i->getSize()));
-    info.push_back(string("channels:")+str(i->getChannels()));
-    info.push_back(string("format:  ")+str(i->getFormat()));
-    if(i->getROI() == Rect(Point::null,i->getSize())){
+    info.push_back(string("depth:   ")+str(i.getDepth()));
+    info.push_back(string("size:    ")+str(i.getSize()));
+    info.push_back(string("channels:")+str(i.getChannels()));
+    info.push_back(string("format:  ")+str(i.getFormat()));
+    if(i.getROI() == Rect(Point::null,i.getSize())){
       info.push_back("roi:   full");
     }else{
-      info.push_back(str(i->getROI()));
+      info.push_back(str(i.getROI()));
     }
     
-    std::vector<Range<icl32f> > ranges = i->getMinMax();
-    for(int a=0;a<i->getChannels();a++){
+    std::vector<Range<icl64f> > ranges = i.getMinMax();
+    for(int a=0;a<i.getChannels();a++){
       info.push_back(str("channel "+str(a)+":"));
       info.push_back(str("   ")+str(ranges[a]));
     }
 
-    info.push_back(string("time:  ")+str(i->getTime()));
+    info.push_back(string("time:  ")+str(i.getTime()));
     return info;
   }
 
@@ -2290,8 +2293,8 @@ namespace icl{
       m_data->mutex.lock();
     }
     Size s;
-    if(m_data->image->hasImage()){
-      s = m_data->image->getSize(); 
+    if(!m_data->image.isNull()){
+      s = m_data->image.getSize(); 
     }else{
       s = m_data->defaultViewPort;
     }
@@ -2313,9 +2316,9 @@ namespace icl{
     Rect r;
     if(m_data->fm == fmZoom){
       QMutexLocker locker(&m_data->menuMutex);
-      r = computeRect(m_data->image->hasImage() ? m_data->image->getSize() : m_data->defaultViewPort, getSize(),fmZoom,m_data->zoomRect);
+      r = computeRect(!m_data->image.isNull() ? m_data->image.getSize() : m_data->defaultViewPort, getSize(),fmZoom,m_data->zoomRect);
     }else{
-      r = computeRect(m_data->image->hasImage() ? m_data->image->getSize() : m_data->defaultViewPort, getSize(),m_data->fm);
+      r = computeRect(!m_data->image.isNull() ? m_data->image.getSize() : m_data->defaultViewPort, getSize(),m_data->fm);
     }
     if(fromGUIThread){
       m_data->mutex.unlock();
@@ -2358,8 +2361,8 @@ namespace icl{
 #endif
       
       Rect r = getImageRect();
-      int iw = m_data->image->hasImage() ? m_data->image->getSize().width : m_data->defaultViewPort.width;
-      int ih = m_data->image->hasImage() ? m_data->image->getSize().height : m_data->defaultViewPort.height;
+      int iw = !m_data->image.isNull() ? m_data->image.getWidth() : m_data->defaultViewPort.width;
+      int ih = !m_data->image.isNull() ? m_data->image.getHeight() : m_data->defaultViewPort.height;
       float boxX = m_data->mouseX - r.x;
       float boxY = m_data->mouseY - r.y;
       float imageX32f = (boxX*iw)/float(r.width);
@@ -2371,8 +2374,8 @@ namespace icl{
       float relImageY = float(imageY)/ih;
 
       std::vector<double> color;
-      if(m_data->image && m_data->image->hasImage() && r.contains(m_data->mouseX,m_data->mouseY)){
-        color = m_data->image->getColor(imageX,imageY);
+      if(!m_data->image.isNull() && r.contains(m_data->mouseX,m_data->mouseY)){
+        color = m_data->image.getColor(imageX,imageY);
       }
       
       const Point &wheelDelta = (type == MouseWheelEvent) ? m_data->wheelDelta : Point::null;
@@ -2398,8 +2401,8 @@ namespace icl{
   const ImageStatistics &ICLWidget::getImageStatistics() {
     // {{{ open
 
-    if(m_data->image){
-      return m_data->image->getStatistics();
+    if(!m_data->image.isNull()){
+      return m_data->image.getStats();
     }else{
       static ImageStatistics s;
       s.isNull = true;

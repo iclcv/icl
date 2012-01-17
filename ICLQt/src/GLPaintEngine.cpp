@@ -39,7 +39,7 @@
 #include <QtGui/QPainter>
 #include <ICLCore/Mathematics.h>
 #include <ICLCC/CCFunctions.h>
-#include <ICLQt/GLTextureMapBaseImage.h>
+#include <ICLQt/GLImg.h>
 
 using std::string; using std::min;
 
@@ -211,10 +211,9 @@ namespace icl{
     
     ICLASSERT_RETURN(image);
     glColor4f(1,1,1,1);
-    GLTextureMapBaseImage texmapImage;
-    texmapImage.bci(m_bci[0],m_bci[1],m_bci[2]);
-    texmapImage.updateTextures(image);
-    texmapImage.drawTo(computeRect(r,image->getSize(),mode), Size(m_widget->width(),m_widget->height()),sm);
+    GLImg gli(image,sm);
+    gli.setBCI(m_bci[0],m_bci[1],m_bci[2]);
+    gli.draw2D(computeRect(r,image->getSize(),mode), Size(m_widget->width(),m_widget->height()));
   }
 
   // }}}

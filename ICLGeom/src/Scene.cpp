@@ -38,7 +38,7 @@
 #include <ICLGeom/ComplexCoordinateFrameSceneObject.h>
 #ifdef HAVE_QT
 #include <ICLQt/DrawWidget.h>
-#include <ICLQt/GLTextureMapBaseImage.h>
+#include <ICLQt/GLImg.h>
 #endif
 
 #ifdef HAVE_GLX
@@ -485,7 +485,7 @@ namespace icl{
             }
             glColor4f(1,1,1,1);
           
-            GLTextureMapBaseImage tim(&p.tex);
+            GLImg tim(&p.tex, p.mode);
             if(!p.billboardHeight){
               const Vec &a = ps[p.a()];
               const Vec &b = ps[p.b()];
@@ -497,13 +497,13 @@ namespace icl{
               }
               
               if(p.hasNormals){
-                tim.drawToQuad(a.begin(),b.begin(),c.begin(),d.begin(),p.mode,
-                               o->m_normals[p.na()].data(),
-                               o->m_normals[p.nb()].data(),
-                               o->m_normals[p.nc()].data(),
-                               o->m_normals[p.nd()].data());
+                tim.draw3D(a.begin(),b.begin(),c.begin(),d.begin(),
+                           o->m_normals[p.na()].data(),
+                           o->m_normals[p.nb()].data(),
+                           o->m_normals[p.nc()].data(),
+                           o->m_normals[p.nd()].data());
               }else{
-                tim.drawToQuad(a.begin(),b.begin(),c.begin(),d.begin(),p.mode);
+                tim.draw3D(a.begin(),b.begin(),c.begin(),d.begin());
               }
             }else{
              
@@ -531,7 +531,7 @@ namespace icl{
               glNormal3fv(normalize(-(cross(p2-p3,p4-p3))).data());
               
               /// draw the backface to flip x direction
-              tim.drawToQuad(p2.begin(),p1.begin(),p4.begin(),p3.begin(),p.mode);
+              tim.draw3D(p2.begin(),p1.begin(),p4.begin(),p3.begin());
 
 #if 0
               float ry = p.billboardHeight/2;
@@ -995,7 +995,7 @@ namespace icl{
     
     GLXContext context;    /* OpenGL context */
     GLXPbuffer pbuffer;    /* Pbuffer */
-    SmartPtr<GLTextureMapBaseImage> background; // optionally used background image
+    SmartPtr<GLImg> background; // optionally used background image
     Size size;
     std::vector<icl8u> rgbbuf;
     Img8u buf;
@@ -1078,10 +1078,10 @@ namespace icl{
       glMatrixMode(GL_MODELVIEW);
       glLoadIdentity();
       glDisable(GL_LIGHTING);
-      SmartPtr<GLTextureMapBaseImage> &bg = p.background;
-      if(!bg) bg = SmartPtr<GLTextureMapBaseImage>(new GLTextureMapBaseImage);
-      bg->updateTextures(background);
-      bg->drawTo(Rect(0,0,w,h),s);
+      SmartPtr<GLImg> &bg = p.background;
+      if(!bg) bg = SmartPtr<GLImg>(new GLImg);
+      bg->update(background);
+      bg->draw2D(Rect(0,0,w,h),s);
       glEnable(GL_LIGHTING);
     }
 
