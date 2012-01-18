@@ -93,6 +93,8 @@ namespace icl{
     glBegin(GL_TRIANGLES);
 
     gl_auto_normal(ctx, i(0), i(1), i(2), i(3)==-1);
+    
+    glColor4f(color[0]/255, color[1]/255, color[2]/255, color[3]/255);
 
     for(int j=0;j<3;++j){
       gl_normal(ctx,i(j+3));
@@ -106,6 +108,8 @@ namespace icl{
     glBegin(GL_QUADS);
     
     gl_auto_normal(ctx, i(3), i(1), i(2), i(4)==-1);
+    
+    glColor4f(color[0]/255, color[1]/255, color[2]/255, color[3]/255);
 
     for(int j=0;j<4;++j){
       gl_normal(ctx,i(j+4));
@@ -120,6 +124,7 @@ namespace icl{
     
     // no autonormals supported!
     bool haveNormals = (idx.getHeight() == 2);
+    glColor4f(color[0]/255, color[1]/255, color[2]/255, color[3]/255);
     
     for(int j=0;j<idx.getWidth();++j){
       if(haveNormals) gl_normal(ctx,idx(j,1));
