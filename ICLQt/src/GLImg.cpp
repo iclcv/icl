@@ -14,9 +14,11 @@
 #include <ICLUtils/Rect32f.h>
 #include <ICLUtils/Lockable.h>
 
+#ifdef HAVE_QT
 #include <QtCore/QObject>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QMutex>
+#endif
 
 namespace icl{
   struct WhiteTexture{
@@ -33,7 +35,8 @@ namespace icl{
     glTexCoord2f(0,0);
     wt.gli.bind();
   }
-  
+
+#ifdef HAVE_QT  
   struct AsynchronousTextureDeleter : public QObject{
     struct Event : public QEvent{
       Event(const std::vector<GLuint> &del):
@@ -43,7 +46,6 @@ namespace icl{
     virtual bool event(QEvent *eIn){
       Event *e = dynamic_cast<Event*>(eIn);
       if(!e) return false;
-      DEBUG_LOG("deleting "<< e->del.size() << " textures!");
       glDeleteTextures(e->del.size(), e->del.data());
       return true;
     }
@@ -53,6 +55,7 @@ namespace icl{
     static SmartPtr<AsynchronousTextureDeleter> deleter(new AsynchronousTextureDeleter);
     QCoreApplication::postEvent(deleter.get(), new AsynchronousTextureDeleter::Event(del));
   }
+#endif
 
   inline float static winToDraw(float x, float w) { return (2/w) * x -1; }  
   inline float static drawToWin(float x, float w) { return (w/2) * x + (w/2); } 
@@ -205,13 +208,19 @@ namespace icl{
     }
     
     void releaseTextures(){
+
       if(textures.size()){
+#ifdef HAVE_QT
         if(QCoreApplication::instance()){
           freeTextures(textures);
         }else{
           glDeleteTextures(textures.size(),textures.data());
         }
         textures.clear();
+#else
+        glDeleteTextures(textures.size(),textures.data());
+#endif
+
       }
     }
 

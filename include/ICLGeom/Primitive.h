@@ -37,8 +37,156 @@
 
 #include <ICLGeom/GeomDefs.h>
 #include <ICLCore/Img.h>
+#include <ICLUtils/FixedVector.h>
+#include <ICLUtils/Array2D.h>
+#include <ICLQt/GLImg.h>
 
 namespace icl{
+  /** \cond */
+  class SceneObject;
+  /** \endcond */
+  
+  /// Primitive  interface
+  struct Primitive{
+    enum Type{
+      vertex   = 1<<0, //<! vertex
+      line     = 1<<1, //<! line primitive (adressing two vertices -> start and end position of the line)
+      triangle = 1<<2, //<! triange primitive (adressing three vertices)
+      quad     = 1<<3, //<! quad primitve (adressing four vertices)
+      polygon  = 1<<4, //<! polygon primitive (adressing at least 3 vertices)
+      texture  = 1<<5, //<! texture primitive (using 4 vertices like a quad as textured rectangle)
+      text     = 1<<6, //<! text primitive (internally implmented as texture or as billboard)
+      nothing  = 1<<7, //<! internally used type
+      PRIMITIVE_TYPE_COUNT = 8  //<! also for internal use only
+    };
+  
+    Type type;
+  
+    Primitive(Type type=nothing):type(type){}
+    /// virtual render method, which is called by the parent scene object
+    virtual void render(SceneObject *parent) = 0;
+    virtual Primitive *copy() const = 0;
+  };
+  
+  /// line primitive (the line references 2 vertices)
+  struct LinePrimitive : public FixedColVector<int,2>, public Primitive{
+    typedef  FixedColVector<int,2> super; 
+    LinePrimitive(int a, int b):FixedColVector<int,2>(a,b),Primitive(Primitive::line){}
+    virtual void render(SceneObject *parent);
+    inline int i(int idx) const { return super::operator[](idx); }
+    virtual Primitive *copy() const { return new LinePrimitive(*this); }
+  };
+
+  /// triangle primitive
+  struct TrianglePrimitive : public FixedColVector<int,6>, public Primitive{
+    typedef  FixedColVector<int,6> super; 
+    TrianglePrimitive(int a, int b, int c, int na=-1, int nb=-1, int nc=-1):
+    FixedColVector<int,5>(a,b,c,na,nb,nc),Primitive(Primitive::triangle){}
+    virtual void render(SceneObject *parent);
+    inline int i(int idx) const { return super::operator[](idx); }
+    virtual Primitive *copy() const { return new TrianglePrimitive(*this); }
+  };
+
+  /// quad primitive
+  struct QuadPrimitive : public FixedColVector<int,8>, public Primitive{
+    typedef  FixedColVector<int,8> super; 
+    LinePrimitive(int a, int b, int c, int d, int na=-1, int nb=-1, int nc=-1, int nd=-1):
+    FixedColVector<int,8>(a,b,c,d,na,nb,nc,nd),Primitive(Primitive::quad){}
+    virtual void render(SceneObject *parent);
+    inline int i(int idx) const { return super::operator[](idx); }
+    virtual Primitive *copy() const { return new QuadPrimitive(*this); }
+  };
+
+  /// polygon primitive
+  /** The Array2D's first row contains the */
+  struct PolygonPrimitive : public Primitive{
+    Array2D<int> idx;
+    PolygonPrimitive(int n, int *vidx, int *nidx=0):idx(n,nidx?2:1),Primitive(Primitive::polygon){
+      std::copy(vidx,vidx+n,idx.begin());
+      if(nidx) std::copy(nidx,nidx+n,idx.begin()+n);
+    }
+    virtual void render(SceneObject *parent);
+    virtual Primitive *copy() const { 
+      PolygonPrimitive *p = new PolygonPrimitive(*this);
+      p.idx.detach();
+      return p;
+    }
+  };
+  
+  /// Texture Primitive 
+  struct TexturePrimitive : public QuadPrimitive{
+    GLImg texture;   //!<< internal texture
+    ImgBase *image;  //!<< set if the texture shall be updated every time it is drawn
+
+    /// create with given texture that is either copied once or everytime the primitive is rendered
+    TexturePrimitive(int a, int b, int c, int d, 
+                         const ImgBase *image=0, bool createTextureOnce=true, 
+                         int na=-1, int nb=-1, int nc=-1, int nd=-1):
+    QuadPrimitive(a,b,c,d,na,nb,nc,nd), texture(image), 
+      image(createTextureOnce ? 0 : image){
+      type = Primitive::texture;
+    }
+
+    /// create with given texture, that is copied once
+    TexturePrimitive(int a, int b, int c, int d, 
+                     const Img8u &image,
+                     int na=-1, int nb=-1, int nc=-1, int nd=-1):
+    QuadPrimitive(a,b,c,d,na,nb,nc,nd), texture(&image), 
+      image(0){
+      type = Primitive::texture;
+    }
+
+    
+    virtual void render(SceneObject *parent);
+
+    virtual Primitive *copy() const { 
+      return new TexturePrimitive(i(0),i(1),i(2),i(3),
+                                  image ? image : texture.extractImage(),
+                                  image ? true : false,
+                                  i(4),i(5),i(6),i(7))
+    }
+
+  };
+  
+  /// Text impl
+  struct TextPrimitive : public TexturePrimitive{
+
+    /// utility method to creat a text texture
+    static Img8u create_texture(const std::string &text, const GeomColor &color, int textSize);
+    
+    /// used for billboard text
+    /** if the value is > 0, the text-texture will always be oriented towards the camera.
+        the billboardHeight value is used as text-height (in scene units) */
+    int billboardHeight;
+    
+    TextPrimitive(int a, int b, int c, int d, 
+                  const std::string &text,
+                  int textSize=20,
+                  const GeomColor &textColor=GeomColor(255,255,255,255),
+                  int na=-1, int nb=-1, int nc=-1, int nd=-1,
+                  int billboardHeight=0):
+    TexturePrimitive(a,b,c,d,create_texutre_image(text,textSize,textColor),na,nb,nc,nd),
+    billboardHeight(billboardHeight){
+      type = Primitive::text;
+    }
+    
+    virtual void render(SceneObject *parent);
+
+    virtual Primitive *copy() const {
+      Primitive *p = TexturePrimitive::copy();
+      p.type = text
+      return p
+    }
+  };
+  
+}
+
+#endif
+
+
+
+
+#if 0
   /// Storage class for 3D geometrical primitive used in the SceneObject class
   /** Instances of the class SceneObject consist basically of a set of vertices 
       and of a set of so called Primitive's. These are geometical primitives,
@@ -173,7 +321,6 @@ namespace icl{
     float billboardHeight;
 
   };
-  
 }
 
 #endif

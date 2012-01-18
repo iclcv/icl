@@ -496,7 +496,7 @@ namespace icl{
     std::vector<Vec> m_normals;
     
     std::vector<GeomColor> m_vertexColors;
-    std::vector<Primitive> m_primitives;
+    std::vector<Primitive*> m_primitives;
     bool m_visible[Primitive::PRIMITIVE_TYPE_COUNT];
 
     bool m_lineColorsFromVertices;

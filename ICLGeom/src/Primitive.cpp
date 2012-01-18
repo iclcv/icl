@@ -1,5 +1,3 @@
-#include <ICLGeom/Primitive.h>
-
 #ifdef HAVE_QT
 #include <QtGui/QFontMetrics>
 #include <QtCore/QRectF>
@@ -9,10 +7,22 @@
 #include <ICLCC/CCFunctions.h>
 #endif
 
-#include <ICLIO/FileWriter.h>
+#ifdef ICL_SYSTEM_APPLE
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+#else
+#include <GL/gl.h>
+#include <GL/glu.h>
+#endif
+
+#include <ICLGeom/Primitive.h>
+#include <ICLGeom/SceneObject.h>
+
 
 namespace icl{
-  Img8u Primitive::create_text_texture(const std::string &text,const GeomColor &color, int textSize){
+
+namespace icl{
+  Img8u TextPrimitive::create_texture(const std::string &text,const GeomColor &color, int textSize){
 #ifdef HAVE_QT
     int r = color[0];
     int g = color[1];
@@ -42,6 +52,147 @@ namespace icl{
 #endif
   }
 
+
+  static void gl_color(SceneObject *o, int vertexIndex, bool condition=true){
+    if(condition) glColor4fv((o->m_vertexColors[vertexIndex]/255).data());
+  }
+  static void gl_vertex(SceneObject *o, int vertexIndex){
+    glVertex3fv(o->m_vertices[vertexIndex].data());
+  }
+  static void gl_normal(SceneObject *o, int normalIndex){
+    if(normalIndex >= 0) glNormal3fv(o->m_normals[normalIndex].data());
+  }
+  static void gl_auto_normal(SceneObject *o, int a, int b, int c, bool condition=true){
+    if(!condition) return;
+    const Vec &va = o->m_vertices[a];
+    const Vec &vb = o->m_vertices[b];
+    const Vec &vc = o->m_vertices[c];
+    
+    glNormal3fv(normalize(cross(va-vc,vb-vc)).data());
+  }
+
+  void LinePrimitive::render(SceneObject *o){
+    GLboolean lightWasOn = true;
+    glGetBooleanv(GL_LIGHTING,&lightWasOn);
+    glDisable(GL_LIGHTING);
+    glBegin(GL_LINES);
+    //    glNormal3f(0,0,0);
+
+    for(int j=0;j<2;++j){
+      gl_color(o,i(j),o->m_lineColorsFromVertices);
+      gl_vertex(o,i(j));
+    }
+
+    glEnd();
+    
+    if(lightWasOn){
+      glEnable(GL_LIGHTING);
+    }           
+  }
+
+  void TrianglePrimitive::render(SceneObject *o){
+    glBegin(GL_TRIANGLES);
+
+    gl_auto_normal(o, i(0), i(1), i(2), i(3)==-1);
+
+    for(int j=0;j<3;++j){
+      gl_normal(o,i(j+3));
+      gl_color(o,i(j),o->m_triangleColorsFromVertices);
+      gl_vertex(o,i(j));
+    }
+    glEnd();
+  }
+
+  void QuadPrimitive::render(SceneObject *o){
+    glBegin(GL_QUADS);
+    
+    gl_auto_normal(o, i(3), i(1), i(2), i(4)==-1);
+
+    for(int j=0;j<4;++j){
+      gl_normal(o,i(j+4));
+      gl_color(o,i(j),o->m_quadColorsFromVertices);
+      gl_vertex(o,i(j));
+    }
+    glEnd();
+  }
+
+  void PolygonPrimitive::render(SceneObject *o){
+    glBegin(GL_POLYGON);
+    
+    // no autonormals supported!
+    bool haveNormals = (idx.getHeight() == 2);
+    
+    for(int j=0;j<getWidth();++j){
+      if(haveNormals) gl_normal(o,idx(j,1));
+      gl_color(o,idx(j,0),o->m_polyColorsFromVertices);
+      gl_vertex(o,idx(j,0));
+    }
+    glEnd();
+  }
+  
+  void TexturePrimitive::render(SceneObject *o){
+    if(image){
+      texture.update(image);
+    }
+
+    const Vec &a = o->m_vertices[i(0)];
+    const Vec &b = o->m_vertices[i(1)];
+    const Vec &c = o->m_vertices[i(2)];
+    const Vec &d = o->m_vertices[i(3)];
+    
+    if(i(4) != -1 && i(5) != -1 && i(6) != -1 && i(7) != -1){
+      const Vec &na = o->m_normals[i(4)];
+      const Vec &nb = o->m_normals[i(5)];
+      const Vec &nc = o->m_normals[i(6)];
+      const Vec &nd = o->m_normals[i(7)];
+      texture.draw3D(a.data(),b.data(),c.data(),d.data(),
+                     na.data(), nb.data(), nc.data(), nd.data());
+    }else{
+      gl_auto_normal(o, i(3), i(1), i(2));
+      texture.draw3D(a.data(),b.data(),c.data(),d.data());
+    }
+  }
+  
+  void TextPrimitive::render(SceneObject *o){
+    glEnable(GL_ALPHA_TEST);
+    glAlphaFunc(GL_GREATER,0.3); 
+    
+    if(billboardHeight > 0){
+      const Vec &a = ps[i(0)];
+
+      glMatrixMode(GL_MODELVIEW);
+      float m[16];
+      glGetFloatv(GL_MODELVIEW_MATRIX, m);
+             
+      /// inverted rotation matrix
+      Mat R(m[0],m[1],m[2],0,
+            m[4],m[5],m[6],0,
+            m[8],m[9],m[10],0,
+            0,0,0,1);
+              
+      float ry = billboardHeight/2;
+      float rx = ry * (float(texture.getWidth())/float(texture.getHeight()));
+              
+      Vec p1 = a + R*Vec(-rx,-ry,0,1);
+      Vec p2 = a + R*Vec(rx,-ry,0,1);
+      Vec p3 = a + R*Vec(rx,ry,0,1);
+      Vec p4 = a + R*Vec(-rx,ry,0,1);
+              
+      /// -normal as we draw the backface
+      glNormal3fv(normalize(-(cross(p2-p3,p4-p3))).data());
+              
+      /// draw the backface to flip x direction
+      texture.draw3D(p2.begin(),p1.begin(),p4.begin(),p3.begin());
+    }else{
+      TexturePrimitive::render(o);
+    }
+
+    glAlphaFunc(GL_GREATER,0.05); 
+  }
+
+
+}
+#if 0
   /*
       Primitive &Primitive::operator=(const Primitive &other){
       vertexIndices = other.vertexIndices;
@@ -203,3 +354,4 @@ namespace icl{
 
 
 }
+#endif

@@ -513,7 +513,7 @@ namespace icl{
               float m[16];
               glGetFloatv(GL_MODELVIEW_MATRIX, m);
              
-              /// interted rotation matrix
+              /// inverted rotation matrix
               Mat R(m[0],m[1],m[2],0,
                     m[4],m[5],m[6],0,
                     m[8],m[9],m[10],0,
