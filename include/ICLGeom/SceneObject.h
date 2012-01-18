@@ -158,32 +158,33 @@ namespace icl{
     const std::vector<Vec> &getVertices() const;
 
     /// returns object's primitives (lines, quads, etc...)
-    std::vector<Primitive> &getPrimitives();
+    std::vector<Primitive*> &getPrimitives();
 
     /// returns object's primitives (lines, quads, etc...) (const)
-    const std::vector<Primitive> &getPrimitives() const;
+    const std::vector<Primitive*> &getPrimitives() const;
 
     /// changes visibility of given primitive type
-    void setVisible(Primitive::Type t, bool visible, bool recursive=true);
+    void setVisible(int oredTypes, bool visible, bool recursive=true);
     
     /// returns visibility of given primitive type
     bool isVisible(Primitive::Type t) const;
     
     /// adds a new vertex to this object
     void addVertex(const Vec &p, const GeomColor &color=GeomColor(255,0,0,255));
+
+    /// adds a GLImg as shared texture
+    void addSharedTexture(SmartPtr<GLImg> gli);
+    
+    /// adds an ImgBase * as shared texutre
+    void addSharedTexture(const ImgBase *image, scalemode sm=interpolateLIN);
     
     /// adds a new normal to this object
     void addNormal(const Vec &n);
     
     /// adds a new line to this object
     /** If the given normal indices (na and nb) are -1, no normals are used for this primitives */
-    void addLine(int x, int y, int na, int nb, const GeomColor &color=GeomColor(100,100,100,255));
+    void addLine(int x, int y, const GeomColor &color=GeomColor(100,100,100,255));
 
-    /// convenience method for creation of a line with auto-normals
-    inline void addLine(int x, int y, const GeomColor &color=GeomColor(100,100,100,255)){
-      addLine(x,y,-1,-1,color);
-    }
-    
     /// adds a new triangle to this onject
     /** If the given normal indices (na,nb and nc) are -1, auto-normal are computed using cross-product */
     void addTriangle(int a, int b, int c, int na, int nb, int nc,
@@ -207,29 +208,32 @@ namespace icl{
 
     /// add a polygon to this object (note triangles and quads are slower here)
     /** If the given normal indices's size is 0, auto-normal are computed using cross-product */
-    void addPolygon(const std::vector<int> &vertexIndices, 
-                    const std::vector<int> &normalIndices,
-                    const GeomColor &color=GeomColor(0,100,250,255)); 
-    
-    /// convenience method for creation of a polygon with auto-normals
-    inline void addPolygon(const std::vector<int> &vertexIndices, 
-                           const GeomColor &color=GeomColor(0,100,250,255)){
-      addPolygon(vertexIndices,std::vector<int>(),color);
-    }
+    void addPolygon(int nPoints,const int *vertexIndices, const GeomColor &color=GeomColor(0,100,250,255), 
+                    const int *normalIndices=0);
 
     
     /** If the given normal indices (na,nb,nc and nd) are -1, auto-normal are computed using cross-product */
     void addTexture(int a, int b, int c, int d, 
-                    const Img8u &texture, 
+                    const ImgBase *texture, 
                     int na, int nb, int nc, int nd,
-                    bool deepCopy=false);
+                    bool createTextureOnce=true,
+                    scalemode sm = interpolateLIN);
 
     /// convenience method for creation of a texture with auto-normals
     inline void addTexture(int a, int b, int c, int d, 
-                           const Img8u &texture, 
-                           bool deepCopy=false){
-      addTexture(a,b,c,d,texture,-1,-1,-1,-1,deepCopy);
+                           const ImgBase *texture, 
+                           bool createTextureOnce=true,
+                           scalemode sm = interpolateLIN){
+      addTexture(a,b,c,d,texture,-1,-1,-1,-1,createTextureOnce,sm);
     }
+
+    /// adds are shared texture primitive
+    /** The sharedTextureIndex references a shared texture that has been added
+        by using SceneObject::addSharedTexture */
+    void addTexture(int a, int b, int c, int d, 
+                    int sharedTextureIndex,
+                    int na=-1, int nb=-1, int nc=-1, int nd=-1);
+                 
 
     /// adds text-texture quad -primitive to this object
     /** If the given normal indices (na,nb,nc and nd) are -1, auto-normal are computed using cross-product.
@@ -238,13 +242,14 @@ namespace icl{
     void addTextTexture(int a, int b, int c, int d, const std::string &text,
                         const GeomColor &color, 
                         int na, int nb, int nc, int nd,
-                        int textSize, bool holdTextAR);
+                        int textSize,scalemode sm = interpolateLIN);
+                        
 
     /// convenience method for creation of a text-texture with auto-normals
     inline void addTextTexture(int a, int b, int c, int d, const std::string &text,
                         const GeomColor &color=GeomColor(255,255,255,255), 
-                        int textSize=30, bool holdTextAR=true){
-      addTextTexture(a,b,c,d,text,color,-1,-1,-1,-1,textSize,holdTextAR);
+                               int textSize=30, scalemode sm = interpolateLIN){
+      addTextTexture(a,b,c,d,text,color,-1,-1,-1,-1,textSize, sm);
     }
     
     /// adds a billboard text-texture attached to given node index a
@@ -255,8 +260,16 @@ namespace icl{
     */
     void addText(int a, const std::string &text, float billboardHeight=10, 
                  const GeomColor &color=GeomColor(255,255,255,255),
-                 int textRenderSize=30);
+                 int textRenderSize=30, scalemode sm=interpolateLIN);
 
+    /// adds a custom primitive
+    /** This should only be used for non-directly supported primitives 
+        Note: right now, there is no 'hit' checking for non standard primitives
+    */
+    inline void addCustomPrimitive(Primitive *p){
+      m_primitives.push_back(p);
+    }
+    
     /// adds a cube child-object with given parameters
     /** returns a pointer to the cube added. This can be used to adapt
         further properties of that object */
@@ -301,10 +314,6 @@ namespace icl{
     /// sets point size
     void setLineWidth(float lineWidth, bool recursive=true);
 
-    /// sets the interpolation mode for textures
-    /** allowed values are interpolateNN and interpolateLIN*/
-    void setTextureInterpolation(scalemode mode, bool recursive=true) throw (ICLException);
-    
     /// this function can be implemented by subclasses that need an eplicit locking
     /** E.g. if an objects data is updated from another thread, you can sub-class 
         this class and implement a locking mechanism for it*/
@@ -486,6 +495,8 @@ namespace icl{
         an updated version of it */
     void freeDisplayList();
     
+    friend class Primitive;
+    
     protected:
     /// recursive picking method
     static void collect_hits_recursive(SceneObject *obj, const ViewRay &v, 
@@ -497,7 +508,8 @@ namespace icl{
     
     std::vector<GeomColor> m_vertexColors;
     std::vector<Primitive*> m_primitives;
-    bool m_visible[Primitive::PRIMITIVE_TYPE_COUNT];
+    std::vector<SmartPtr<GLImg> > m_sharedTextures;
+    int m_visibleMask;
 
     bool m_lineColorsFromVertices;
     bool m_triangleColorsFromVertices;

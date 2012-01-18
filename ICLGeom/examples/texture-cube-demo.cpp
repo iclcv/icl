@@ -42,14 +42,25 @@ float cubep[] = {0,0,0,7};
 struct TextureCube : public SceneObject{
   TextureCube():SceneObject("cube",cubep){
     Img8u image = cvt8u(icl::scale(create("lena"),300,300));
-    addTexture(0,1,2,3,image,0,0,0,0);
-    addTexture(7,6,5,4,image,1,1,1,1);
-    addTexture(0,3,7,4,image,2,2,2,2);
-    addTexture(5,6,2,1,image,3,3,3,3);
-    addTexture(4,5,1,0,image,4,4,4,4);
-    addTexture(3,2,6,7,image,5,5,5,5);
     
-    setVisible(Primitive::texture,true);
+#if DO_NOT_USE_SHARED_TEXTURE
+    addTexture(0,1,2,3,&image,0,0,0,0);
+    addTexture(7,6,5,4,&image,1,1,1,1);
+    addTexture(0,3,7,4,&image,2,2,2,2);
+    addTexture(5,6,2,1,&image,3,3,3,3);
+    addTexture(4,5,1,0,&image,4,4,4,4);
+    addTexture(3,2,6,7,&image,5,5,5,5);
+#else
+    addSharedTexture(&image);
+
+    addTexture(0,1,2,3,0,0,0,0,0);
+    addTexture(7,6,5,4,0,1,1,1,1);
+    addTexture(0,3,7,4,0,2,2,2,2);
+    addTexture(5,6,2,1,0,3,3,3,3);
+    addTexture(4,5,1,0,0,4,4,4,4);
+    addTexture(3,2,6,7,0,5,5,5,5);
+
+#endif
     setVisible(Primitive::quad,false);
   }
 } cube;
@@ -112,6 +123,7 @@ void init(){
 
 
 void run(){
+  Thread::msleep(20);
   gui["draw"].update(); 
 }
 

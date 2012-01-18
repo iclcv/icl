@@ -21,7 +21,6 @@
 
 namespace icl{
 
-namespace icl{
   Img8u TextPrimitive::create_texture(const std::string &text,const GeomColor &color, int textSize){
 #ifdef HAVE_QT
     int r = color[0];
@@ -53,25 +52,25 @@ namespace icl{
   }
 
 
-  static void gl_color(SceneObject *o, int vertexIndex, bool condition=true){
-    if(condition) glColor4fv((o->m_vertexColors[vertexIndex]/255).data());
+  static void gl_color(const Primitive::RenderContext &ctx, int vertexIndex, bool condition=true){
+    if(condition) glColor4fv((ctx.vertexColors[vertexIndex]/255).data());
   }
-  static void gl_vertex(SceneObject *o, int vertexIndex){
-    glVertex3fv(o->m_vertices[vertexIndex].data());
+  static void gl_vertex(const Primitive::RenderContext &ctx, int vertexIndex){
+    glVertex3fv(ctx.vertices[vertexIndex].data());
   }
-  static void gl_normal(SceneObject *o, int normalIndex){
-    if(normalIndex >= 0) glNormal3fv(o->m_normals[normalIndex].data());
+  static void gl_normal(const Primitive::RenderContext &ctx, int normalIndex){
+    if(normalIndex >= 0) glNormal3fv(ctx.normals[normalIndex].data());
   }
-  static void gl_auto_normal(SceneObject *o, int a, int b, int c, bool condition=true){
+  static void gl_auto_normal(const Primitive::RenderContext &ctx, int a, int b, int c, bool condition=true){
     if(!condition) return;
-    const Vec &va = o->m_vertices[a];
-    const Vec &vb = o->m_vertices[b];
-    const Vec &vc = o->m_vertices[c];
+    const Vec &va = ctx.vertices[a];
+    const Vec &vb = ctx.vertices[b];
+    const Vec &vc = ctx.vertices[c];
     
     glNormal3fv(normalize(cross(va-vc,vb-vc)).data());
   }
 
-  void LinePrimitive::render(SceneObject *o){
+  void LinePrimitive::render(const Primitive::RenderContext &ctx){
     GLboolean lightWasOn = true;
     glGetBooleanv(GL_LIGHTING,&lightWasOn);
     glDisable(GL_LIGHTING);
@@ -79,8 +78,8 @@ namespace icl{
     //    glNormal3f(0,0,0);
 
     for(int j=0;j<2;++j){
-      gl_color(o,i(j),o->m_lineColorsFromVertices);
-      gl_vertex(o,i(j));
+      gl_color(ctx,i(j),ctx.lineColorsFromVertices);
+      gl_vertex(ctx,i(j));
     }
 
     glEnd();
@@ -90,75 +89,94 @@ namespace icl{
     }           
   }
 
-  void TrianglePrimitive::render(SceneObject *o){
+  void TrianglePrimitive::render(const Primitive::RenderContext &ctx){
     glBegin(GL_TRIANGLES);
 
-    gl_auto_normal(o, i(0), i(1), i(2), i(3)==-1);
+    gl_auto_normal(ctx, i(0), i(1), i(2), i(3)==-1);
 
     for(int j=0;j<3;++j){
-      gl_normal(o,i(j+3));
-      gl_color(o,i(j),o->m_triangleColorsFromVertices);
-      gl_vertex(o,i(j));
+      gl_normal(ctx,i(j+3));
+      gl_color(ctx,i(j),ctx.triangleColorsFromVertices);
+      gl_vertex(ctx,i(j));
     }
     glEnd();
   }
 
-  void QuadPrimitive::render(SceneObject *o){
+  void QuadPrimitive::render(const Primitive::RenderContext &ctx){
     glBegin(GL_QUADS);
     
-    gl_auto_normal(o, i(3), i(1), i(2), i(4)==-1);
+    gl_auto_normal(ctx, i(3), i(1), i(2), i(4)==-1);
 
     for(int j=0;j<4;++j){
-      gl_normal(o,i(j+4));
-      gl_color(o,i(j),o->m_quadColorsFromVertices);
-      gl_vertex(o,i(j));
+      gl_normal(ctx,i(j+4));
+      gl_color(ctx,i(j),ctx.quadColorsFromVertices);
+      gl_vertex(ctx,i(j));
     }
     glEnd();
   }
 
-  void PolygonPrimitive::render(SceneObject *o){
+  void PolygonPrimitive::render(const Primitive::RenderContext &ctx){
     glBegin(GL_POLYGON);
     
     // no autonormals supported!
     bool haveNormals = (idx.getHeight() == 2);
     
-    for(int j=0;j<getWidth();++j){
-      if(haveNormals) gl_normal(o,idx(j,1));
-      gl_color(o,idx(j,0),o->m_polyColorsFromVertices);
-      gl_vertex(o,idx(j,0));
+    for(int j=0;j<idx.getWidth();++j){
+      if(haveNormals) gl_normal(ctx,idx(j,1));
+      gl_color(ctx,idx(j,0),ctx.polygonColorsFromVertices);
+      gl_vertex(ctx,idx(j,0));
     }
     glEnd();
   }
   
-  void TexturePrimitive::render(SceneObject *o){
+  void TexturePrimitive::render(const Primitive::RenderContext &ctx){
     if(image){
       texture.update(image);
     }
 
-    const Vec &a = o->m_vertices[i(0)];
-    const Vec &b = o->m_vertices[i(1)];
-    const Vec &c = o->m_vertices[i(2)];
-    const Vec &d = o->m_vertices[i(3)];
+    const Vec &a = ctx.vertices[i(0)];
+    const Vec &b = ctx.vertices[i(1)];
+    const Vec &c = ctx.vertices[i(2)];
+    const Vec &d = ctx.vertices[i(3)];
     
     if(i(4) != -1 && i(5) != -1 && i(6) != -1 && i(7) != -1){
-      const Vec &na = o->m_normals[i(4)];
-      const Vec &nb = o->m_normals[i(5)];
-      const Vec &nc = o->m_normals[i(6)];
-      const Vec &nd = o->m_normals[i(7)];
+      const Vec &na = ctx.normals[i(4)];
+      const Vec &nb = ctx.normals[i(5)];
+      const Vec &nc = ctx.normals[i(6)];
+      const Vec &nd = ctx.normals[i(7)];
       texture.draw3D(a.data(),b.data(),c.data(),d.data(),
                      na.data(), nb.data(), nc.data(), nd.data());
     }else{
-      gl_auto_normal(o, i(3), i(1), i(2));
+      gl_auto_normal(ctx, i(3), i(1), i(2));
       texture.draw3D(a.data(),b.data(),c.data(),d.data());
     }
   }
+
+  void SharedTexturePrimitive::render(const Primitive::RenderContext &ctx){
+    GLImg &gli = const_cast<GLImg&>(*ctx.sharedTextures[sharedTextureIndex]);
+    const Vec &a = ctx.vertices[i(0)];
+    const Vec &b = ctx.vertices[i(1)];
+    const Vec &c = ctx.vertices[i(2)];
+    const Vec &d = ctx.vertices[i(3)];
+    if(i(4) != -1 && i(5) != -1 && i(6) != -1 && i(7) != -1){
+      const Vec &na = ctx.normals[i(4)];
+      const Vec &nb = ctx.normals[i(5)];
+      const Vec &nc = ctx.normals[i(6)];
+      const Vec &nd = ctx.normals[i(7)];
+      gli.draw3D(a.data(),b.data(),c.data(),d.data(),
+                 na.data(), nb.data(), nc.data(), nd.data());
+    }else{
+      gl_auto_normal(ctx, i(3), i(1), i(2));
+      gli.draw3D(a.data(),b.data(),c.data(),d.data());
+    }
+  }
   
-  void TextPrimitive::render(SceneObject *o){
+  void TextPrimitive::render(const Primitive::RenderContext &ctx){
     glEnable(GL_ALPHA_TEST);
     glAlphaFunc(GL_GREATER,0.3); 
     
     if(billboardHeight > 0){
-      const Vec &a = ps[i(0)];
+      const Vec &a = ctx.vertices[i(0)];
 
       glMatrixMode(GL_MODELVIEW);
       float m[16];
@@ -179,12 +197,12 @@ namespace icl{
       Vec p4 = a + R*Vec(-rx,ry,0,1);
               
       /// -normal as we draw the backface
-      glNormal3fv(normalize(-(cross(p2-p3,p4-p3))).data());
+      glNormal3fv(icl::normalize(-(cross(p2-p3,p4-p3))).data());
               
       /// draw the backface to flip x direction
       texture.draw3D(p2.begin(),p1.begin(),p4.begin(),p3.begin());
     }else{
-      TexturePrimitive::render(o);
+      TexturePrimitive::render(ctx);
     }
 
     glAlphaFunc(GL_GREATER,0.05); 

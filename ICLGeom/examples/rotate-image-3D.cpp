@@ -18,11 +18,10 @@ struct ImgObj : public SceneObject{
     addVertex(Vec(w/2,h/2,0,1));
     addVertex(Vec(-w/2,h/2,0,1));
 
-    addTexture(0,1,2,3,image,false);
-    setTextureInterpolation(interpolateLIN);
+    addTexture(0,1,2,3,&image,pa("-s"));
+
     
-    setVisible(Primitive::vertex,false);
-    setVisible(Primitive::line,false);
+    setVisible(Primitive::vertex | Primitive::line,false);
     setVisible(Primitive::texture,true);
   }
 } *obj = 0;

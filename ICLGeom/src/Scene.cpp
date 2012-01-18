@@ -78,9 +78,10 @@ namespace icl{
     bool haveName;
     Mutex mutex;
     std::string lastName;
+    Img8u nameTexture;
 
     CameraObject(Scene *parent, int cameraIndex, float camSize):
-      scene(parent),cameraIndex(cameraIndex){
+      scene(parent),cameraIndex(cameraIndex), nameTexture(Size(1,1),4){
 
       S = camSize*50;
 
@@ -114,7 +115,7 @@ namespace icl{
         addVertex(Vec(0,0,0,1),geom_invisible());
       }
 
-      addTexture(7,8,10,9,Img8u(Size(10,10),4));
+      addTexture(7,8,10,9,&nameTexture);
 
       origVertices = m_vertices;
     }
@@ -135,13 +136,10 @@ namespace icl{
       std::string name = cam.getName();
       
       if(name != lastName){
-        if(name != ""){
-          lock();
-          m_primitives.back().tex = Primitive::create_text_texture(name,GeomColor(255,255,255,255),30);
-          unlock();
-        }else{
-          m_primitives.back().tex.fill((icl8u)0);
-        }
+        lock();
+        Img8u newTexture = TextPrimitive::create_texture(name.length() ? name : str("camera"),GeomColor(255,255,255,255),30);
+        dynamic_cast<TexturePrimitive*>(m_primitives.back())->texture.update(&newTexture);
+        unlock();
         lastName = name;
       }
       
@@ -365,216 +363,31 @@ namespace icl{
     glPushMatrix();
     const Mat &T = o->getTransformation(true);
     glMultMatrixf(T.transp().data());
-    
     if(o->isVisible()){
 
       o->customRender();
-      
-      for(unsigned int j=0;j<o->m_primitives.size();++j){
-        const Primitive &p = o->m_primitives[j];
-        if(!o->isVisible(p.type)) continue;
-        glColor4fv(((p.color)/255.0).begin());
-        switch(p.type){
-          case Primitive::line:{
-            GLboolean lightWasOn = true;
-            glGetBooleanv(GL_LIGHTING,&lightWasOn);
-            glDisable(GL_LIGHTING);
-            glBegin(GL_LINES);
-            
-            if(p.hasNormals) glNormal3fv(o->m_normals[p.na()].data());
-            if(o->m_lineColorsFromVertices) glColor4fv((o->m_vertexColors[p.a()]/255).data());
-            glVertex3fv(ps[p.a()].data());
-            if(p.hasNormals) glNormal3fv(o->m_normals[p.nb()].data());
-            if(o->m_lineColorsFromVertices) glColor4fv((o->m_vertexColors[p.b()]/255).data());
-            glVertex3fv(ps[p.b()].data());
-            glEnd();
-            
-            if(lightWasOn){
-              glEnable(GL_LIGHTING);
-            }          
-            break;
+      if(o->m_primitives.size()){
+        const Primitive::RenderContext ctx = { o->m_vertices, o->m_normals, o->m_vertexColors, 
+                                               o->m_sharedTextures,
+                                               o->m_lineColorsFromVertices,
+                                               o->m_triangleColorsFromVertices, 
+                                               o->m_quadColorsFromVertices,
+                                               o->m_polyColorsFromVertices, o };
+        
+        for(unsigned int j=0;j<o->m_primitives.size();++j){
+          Primitive *p = o->m_primitives[j];
+          if(o->isVisible(p->type)){
+            p->render(ctx);
           }
-          case Primitive::triangle:{
-            glBegin(GL_TRIANGLES);
-            const Vec &a = ps[p.a()];
-            const Vec &b = ps[p.b()];
-            const Vec &c = ps[p.c()];
-
-            if(!p.hasNormals){
-              glNormal3fv(normalize(cross(a-c,b-c)).data());
-            }
-            
-            if(p.hasNormals) glNormal3fv(o->m_normals[p.na()].data());
-            if(o->m_triangleColorsFromVertices) glColor4fv((o->m_vertexColors[p.a()]/255).data());
-            glVertex3fv(a.data());
-            
-            if(p.hasNormals) glNormal3fv(o->m_normals[p.nb()].data());
-            if(o->m_triangleColorsFromVertices) glColor4fv((o->m_vertexColors[p.b()]/255).data());
-            glVertex3fv(b.data());
-            
-            if(p.hasNormals) glNormal3fv(o->m_normals[p.nc()].data());
-            if(o->m_triangleColorsFromVertices) glColor4fv((o->m_vertexColors[p.c()]/255).data());
-            glVertex3fv(c.data());
-            
-            glEnd();
-            break;
-          }case Primitive::quad:{
-             glBegin(GL_QUADS);
-             const Vec &a = ps[p.a()];
-             const Vec &b = ps[p.b()];
-             const Vec &c = ps[p.c()];
-             const Vec &d = ps[p.d()];
-             
-             if(!p.hasNormals){
-               glNormal3fv(normalize(cross(d-c,b-c)).data());
-             }
-             
-             if(p.hasNormals) glNormal3fv(o->m_normals[p.na()].data());
-             if(o->m_quadColorsFromVertices) glColor4fv((o->m_vertexColors[p.a()]/255).data());
-             glVertex3fv(a.data());
-             
-             if(p.hasNormals) glNormal3fv(o->m_normals[p.nb()].data());
-             if(o->m_quadColorsFromVertices) glColor4fv((o->m_vertexColors[p.b()]/255).data());
-             glVertex3fv(b.data());
-             
-             if(p.hasNormals) glNormal3fv(o->m_normals[p.nc()].data());
-             if(o->m_quadColorsFromVertices) glColor4fv((o->m_vertexColors[p.c()]/255).data());
-             glVertex3fv(c.data());
-             
-             if(p.hasNormals) glNormal3fv(o->m_normals[p.nd()].data());
-             if(o->m_quadColorsFromVertices) glColor4fv((o->m_vertexColors[p.d()]/255).data());
-             glVertex3fv(d.data());
-             
-             glEnd();
-             break;
-           }
-          case Primitive::polygon:{
-            glBegin(GL_POLYGON);
-            // no autonormals possible
-            for(unsigned int k=0;k<p.vertexIndices.size();++k){
-              const Vec &v = ps[p.vertexIndices[k]];
-              if(o->m_polyColorsFromVertices) glColor4fv((o->m_vertexColors[p.vertexIndices[k]]/255).data());
-              if(p.hasNormals) glNormal3fv(o->m_normals[p.normalIndices[k]].data());
-              glVertex3fv(v.data());
-            }
-            glEnd();
-            break;
-          }
-          case Primitive::text:
-          case Primitive::texture:{
-
-            /// right now, the alternative does not work!
-#define ICL_TEXT_ALPHA_COVERAGE_WITH_ALPHA_TEST
-
-
-            if(p.type == Primitive::text){
-#ifdef ICL_TEXT_ALPHA_COVERAGE_WITH_ALPHA_TEST              
-              // fast-hack for semitransparent textures 
-              // without this step, event fully transparent pixels
-              // are drawn into the zBuffer. Therefore,
-              // we avoid filling the zBuffer for pixles whose
-              // alpha value is less then 30%, i.e., that are
-              // too transparent
-              glEnable(GL_ALPHA_TEST);
-              glAlphaFunc(GL_GREATER,0.3); 
-#else
-              glDisable(GL_BLEND);
-              glEnable(GL_MULTISAMPLE_ARB);
-              glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE_ARB);
-#endif
-            }
-            glColor4f(1,1,1,1);
-          
-            GLImg tim(&p.tex, p.mode);
-            if(!p.billboardHeight){
-              const Vec &a = ps[p.a()];
-              const Vec &b = ps[p.b()];
-              const Vec &c = ps[p.c()];
-              const Vec &d = ps[p.d()];
-              // left hand normal ?!
-              if(!p.hasNormals){
-                glNormal3fv(normalize(cross(b-c,d-c)).data());
-              }
-              
-              if(p.hasNormals){
-                tim.draw3D(a.begin(),b.begin(),c.begin(),d.begin(),
-                           o->m_normals[p.na()].data(),
-                           o->m_normals[p.nb()].data(),
-                           o->m_normals[p.nc()].data(),
-                           o->m_normals[p.nd()].data());
-              }else{
-                tim.draw3D(a.begin(),b.begin(),c.begin(),d.begin());
-              }
-            }else{
-             
-              const Vec &a = ps[p.a()];
-
-              glMatrixMode(GL_MODELVIEW);
-              float m[16];
-              glGetFloatv(GL_MODELVIEW_MATRIX, m);
-             
-              /// inverted rotation matrix
-              Mat R(m[0],m[1],m[2],0,
-                    m[4],m[5],m[6],0,
-                    m[8],m[9],m[10],0,
-                    0,0,0,1);
-              
-              float ry = p.billboardHeight/2;
-              float rx = ry * (float(p.tex.getWidth())/float(p.tex.getHeight()));
-              
-              Vec p1 = a + R*Vec(-rx,-ry,0,1);
-              Vec p2 = a + R*Vec(rx,-ry,0,1);
-              Vec p3 = a + R*Vec(rx,ry,0,1);
-              Vec p4 = a + R*Vec(-rx,ry,0,1);
-              
-              /// -normal as we draw the backface
-              glNormal3fv(normalize(-(cross(p2-p3,p4-p3))).data());
-              
-              /// draw the backface to flip x direction
-              tim.draw3D(p2.begin(),p1.begin(),p4.begin(),p3.begin());
-
-#if 0
-              float ry = p.billboardHeight/2;
-              float rx = ry * (float(p.tex.getWidth())/float(p.tex.getHeight()));
-              
-              Mat R (T(0,0),T(1,0),T(2,0),0,
-                     T(0,1),T(1,1),T(2,1),0,
-                     T(0,2),T(1,2),T(2,2),0,
-                     0,0,0,1);
-              R=R.inv();
-              
-              Vec p1 = a + R*Vec(-rx,-ry,0,1);
-              Vec p2 = a + R*Vec(rx,-ry,0,1);
-              Vec p3 = a + R*Vec(rx,ry,0,1);
-              Vec p4 = a + R*Vec(-rx,ry,0,1);
-              glBegin(GL_LINES);
-              glColor3f(1,0,0); glVertex3fv(p1.data()); glVertex3fv(p2.data());
-              glColor3f(0,1,0); glVertex3fv(p1.data()); glVertex3fv(p3.data());
-              glColor3f(0,0,1); glVertex3fv(p1.data()); glVertex3fv(p4.data());
-              glEnd();
-#endif
-            }
-            if(p.type == Primitive::text){
-#ifdef ICL_TEXT_ALPHA_COVERAGE_WITH_ALPHA_TEST
-              glDisable(GL_ALPHA_TEST);
-#else
-              glEnable(GL_BLEND);
-              glDisable(GL_MULTISAMPLE_ARB);
-              glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE_ARB);
-#endif
-            }
-            break;
-          }
-          default:
-            ERROR_LOG("unsupported primitive type");
         }
       }
+
       glBegin(GL_POINTS);
       if(o->isVisible(Primitive::vertex)){
         GLboolean lightWasOn = true;
         glGetBooleanv(GL_LIGHTING,&lightWasOn);
         glDisable(GL_LIGHTING);
-
+        
         for(unsigned int j=0;j<ps.size();++j){
           glColor4fv(((o->m_vertexColors[j])/255.0).data());
           glVertex3fv(ps[j].data());

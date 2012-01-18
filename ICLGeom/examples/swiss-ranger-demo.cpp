@@ -110,7 +110,7 @@ struct ImageObj : public SceneObject{
     addVertex(Vec(0,0,0,1),GeomColor(0,0,0,0));
     addVertex(Vec(0,0,0,1),GeomColor(0,0,0,0));
 
-    addTexture(s.getDim(),size.getDim()+1,size.getDim()+2,size.getDim()+3,image);
+    addTexture(s.getDim(),size.getDim()+1,size.getDim()+2,size.getDim()+3,&image,false);
     
     for(int x=0;x<s.width-1;++x){
       for(int y=0;y<s.height-1;++y){

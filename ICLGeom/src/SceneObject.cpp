@@ -47,24 +47,28 @@ namespace icl{
     return m_vertices; 
   }
 
-  const std::vector<Primitive> &SceneObject::getPrimitives() const { 
+  const std::vector<Primitive*> &SceneObject::getPrimitives() const { 
     return m_primitives; 
   }
-  std::vector<Primitive> &SceneObject::getPrimitives() { 
+  std::vector<Primitive*> &SceneObject::getPrimitives() { 
     return m_primitives; 
   }
   
-  void SceneObject::setVisible(Primitive::Type t, bool visible, bool recursive) {
-    m_visible[t] = visible;
+  void SceneObject::setVisible(int oredTypes, bool visible, bool recursive) {
+    if(visible){
+      m_visibleMask |= oredTypes;
+    }else{
+      m_visibleMask &= ~oredTypes;
+    }
     if(recursive){
       for(unsigned int i=0;i<m_children.size();++i){
-        m_children[i]->setVisible(t,visible);
+        m_children[i]->setVisible(oredTypes,visible);
       }
     }
   }
     
   bool SceneObject::isVisible(Primitive::Type t) const {
-    return m_visible[t];
+    return m_visibleMask & t;
   }
   
   SceneObject::SceneObject():
@@ -80,7 +84,7 @@ namespace icl{
     m_parent(0)
   {
 
-    std::fill(m_visible,m_visible+Primitive::PRIMITIVE_TYPE_COUNT,true);
+    m_visibleMask = Primitive::all;
   }
   
   void SceneObject::addVertex(const Vec &p, const GeomColor &color){
@@ -88,69 +92,60 @@ namespace icl{
     m_vertexColors.push_back(color);
   }
   
+  void SceneObject::addSharedTexture(SmartPtr<GLImg> gli){
+    m_sharedTextures.push_back(gli);
+  }
+  
+  void SceneObject::addSharedTexture(const ImgBase *image, scalemode sm){
+    m_sharedTextures.push_back(new GLImg(image,sm));
+  }
+
+  
   /// adds a new normal to this object
   void SceneObject::addNormal(const Vec &n){
     m_normals.push_back(n);
   }
 
-  void SceneObject::addLine(int a, int b, int na, int nb, const GeomColor &color){
-    if(na>=0 && nb>=0){
-      m_primitives.push_back(Primitive(a,b,color,na,nb));
-    }else{
-      m_primitives.push_back(Primitive(a,b,color));
-    }
+  void SceneObject::addLine(int a, int b, const GeomColor &color){
+    m_primitives.push_back(new LinePrimitive(a,b,color));
   }
     
   void SceneObject::addTriangle(int a, int b, int c, int na, int nb, int nc, const GeomColor &color){
-    if(na>=0 && nb>=0 && nc>=0){
-      m_primitives.push_back(Primitive(a,b,c,color,na,nb,nc));
-    }else{
-      m_primitives.push_back(Primitive(a,b,c,color));    
-    }
+    m_primitives.push_back(new TrianglePrimitive(a,b,c,color,na,nb,nc));
   }
   
   void SceneObject::addQuad(int a, int b, int c, int d, int na, int nb, int nc, int nd, const GeomColor &color){
-    if(na>=0 && nb>=0 && nc>=0 && nd>=0){
-      m_primitives.push_back(Primitive(a,b,c,d,color,na,nb,nc,nd));
-    }else{
-      m_primitives.push_back(Primitive(a,b,c,d,color));
-    }
+    m_primitives.push_back(new QuadPrimitive(a,b,c,d,color,na,nb,nc,nd));
   }
 
-  void SceneObject::addPolygon(const std::vector<int> &vertexIndices, 
-                               const std::vector<int> &normalIndices, 
-                               const GeomColor &color){
-    ICLASSERT_RETURN(!normalIndices.size() || (vertexIndices.size() == normalIndices.size()));
-    if(normalIndices.size()){
-      m_primitives.push_back(Primitive(vertexIndices,color,normalIndices));
-    }else{
-      m_primitives.push_back(Primitive(vertexIndices,color));
-    }
+  void SceneObject::addPolygon(int nPoints,const int *vertexIndices, const GeomColor &color, 
+                               const int *normalIndices){
+    ICLASSERT_RETURN(vertexIndices);
+    m_primitives.push_back(new PolygonPrimitive(nPoints,vertexIndices,color,normalIndices));
   }
 
-  void SceneObject::addTexture(int a, int b, int c, int d,const Img8u &texture, int na, int nb, int nc, int nd, bool deepCopy){
-    if(na>=0 && nb>=0 && nc>=0 && nd>=0){
-      m_primitives.push_back(Primitive(a,b,c,d,texture,deepCopy,interpolateLIN,na,nb,nc,nd));
-    }else{
-      m_primitives.push_back(Primitive(a,b,c,d,texture,deepCopy,interpolateLIN));
-    }
+  void SceneObject::addTexture(int a, int b, int c, int d,const ImgBase *texture, 
+                               int na, int nb, int nc, int nd, bool createTextureOnce, scalemode sm){
+    m_primitives.push_back(new TexturePrimitive(a,b,c,d,texture,createTextureOnce,na,nb,nc,nd,sm));
+  }
+
+  void SceneObject::addTexture(int a, int b, int c, int d, 
+                               int sharedTextureIndex,
+                               int na, int nb, int nc, int nd){
+    m_primitives.push_back(new SharedTexturePrimitive(a,b,c,d,sharedTextureIndex,na,nb,nc,nd));
   }
   
+
   void SceneObject::addTextTexture(int a, int b, int c, int d, const std::string &text,
                                    const GeomColor &color,
                                    int na, int nb, int nc, int nd,
-                                   int textSize, bool holdTextAR){
-#warning holdTextAR is not supported yet
-    if(na>=0 && nb>=0 && nc>=0 && nd>=0){
-      m_primitives.push_back(Primitive(a,b,c,d,text,color,textSize,interpolateLIN,na,nb,nc,nd));
-    }else{
-      m_primitives.push_back(Primitive(a,b,c,d,text,color,textSize,interpolateLIN));
-    }
+                                   int textSize, scalemode sm){
+    m_primitives.push_back(new TextPrimitive(a,b,c,d,text,textSize,color,na,nb,nc,nd,-1, sm));
   }
 
   void SceneObject::addText(int a, const std::string &text, float billboardHeight,
-                            const GeomColor &color, int textRenderSize){
-    m_primitives.push_back(Primitive(a,text,color,textRenderSize,billboardHeight,interpolateLIN));
+                            const GeomColor &color, int textRenderSize, scalemode sm){
+    m_primitives.push_back(new TextPrimitive(a,0,0,0,text,textRenderSize,color,-1,-1,-1,-1,billboardHeight, sm));
   }
 
 
@@ -163,28 +158,14 @@ namespace icl{
       std::fill(m_vertexColors.begin(),m_vertexColors.end(),color);
     }else{
       for(unsigned int i=0;i<m_primitives.size();++i){
-        if(m_primitives[i].type == t){
-          m_primitives[i].color = color;
+        if(m_primitives[i]->type == t){
+          m_primitives[i]->color = color;
         }
       }
     }
     if(recursive){
       for(unsigned int i=0;i<m_children.size();++i){
         m_children[i]->setColor(t,color);
-      }
-    }
-  }
-
-  void SceneObject::setTextureInterpolation(scalemode mode, bool recursive) throw (ICLException){
-    if(mode != interpolateLIN && mode != interpolateNN){
-      throw ICLException("SceneObject::setTextureInterpolation invalid interpolation mode");
-    }
-    for(unsigned int i=0;i<m_primitives.size();++i){
-      m_primitives[i].mode = mode;
-    }
-    if(recursive){
-      for(unsigned i=0;i<m_children.size();++i){
-        m_children[i]->setTextureInterpolation(mode);
       }
     }
   }
@@ -228,7 +209,7 @@ namespace icl{
     m_hasTransformation(false),
     m_parent(0)
   {
-    std::fill(m_visible,m_visible+5,true);
+    m_visibleMask = Primitive::all;
 
     if(type == "cuboid" || type == "cube"){
       float x = *params++;
@@ -432,7 +413,7 @@ namespace icl{
 
         bottom.push_back(i+1);
       }
-      addPolygon(bottom,std::vector<int>(steps,0));
+      addPolygon(steps,bottom.data());
     }else if(type == "cylinder"){
       // args: x,y,z, dx, dy, dz, steps
       float x = *params++;
@@ -466,8 +447,8 @@ namespace icl{
         bottom.push_back(2*i);
         top.push_back(2*i+1);
       }
-      addPolygon(top,std::vector<int>(steps,0));
-      addPolygon(bottom,std::vector<int>(steps,0));
+      addPolygon(steps,top.data());
+      addPolygon(steps,top.data());
     }else{
       ERROR_LOG("unknown type:" << type);
     }
@@ -514,6 +495,9 @@ namespace icl{
   }
 
   SceneObject::~SceneObject(){
+    for(unsigned int i=0;i<m_primitives.size();++i){
+      delete m_primitives[i];
+    }
   }
   
   SceneObject::SceneObject(const std::string &objFileName) throw (ICLException):
@@ -601,7 +585,7 @@ namespace icl{
               for(unsigned int i=0;i<x.size();++i){
                 xx[i] = parse<int>(x[i])-1;
               }
-              addPolygon(xx);
+              addPolygon(xx.size(),xx.data());
             }
             break;
           case 'B': // for now, this is simple, we simply dont use the 2nd and 3rd token;
@@ -631,9 +615,9 @@ namespace icl{
               }
             }else{
               if( C == 'B'){
-                addPolygon(is);
+                addPolygon(is.size(),is.data());
               }else{
-                addPolygon(is,ns);
+                addPolygon(is.size(),is.data(),GeomColor(0,100,255,255),ns.data());
               }
             }
           }
@@ -683,23 +667,6 @@ namespace icl{
     setVisible(Primitive::triangle,true);
     setVisible(Primitive::quad,true);
     setVisible(Primitive::polygon,true);
-
-    
-    for(unsigned int i=0;i<m_primitives.size();++i){
-      const Primitive &p = m_primitives[i];
-      for(unsigned int j=0;j<p.normalIndices.size();++j){
-        if(p.normalIndices[j] >= (int)m_normals.size()){
-          throw ICLException("found normal error in " + str(i) + "th primitive: (normal-index is "
-                             + str(p.normalIndices[j]) + " normal count is " + str(m_normals.size()));
-        }
-      }
-      for(unsigned int j=0;j<p.vertexIndices.size();++j){
-        if(p.vertexIndices[j] >= (int)m_vertices.size()){
-          throw ICLException("found vertex error in " + str(i) + "th primitive: (vertex-index is "
-                             + str(p.vertexIndices[j]) + " vertex count is " + str(m_vertices.size()));
-        }
-      }
-    }
   }
 
   void SceneObject::setColorsFromVertices(Primitive::Type t, bool on, bool recursive){
@@ -847,7 +814,8 @@ namespace icl{
 #undef DEEP_COPY
 #undef DEEP_COPY_2
 #undef DEEP_COPY_4
-    std::copy(other.m_visible,other.m_visible+(int)Primitive::PRIMITIVE_TYPE_COUNT,m_visible);
+    m_sharedTextures = other.m_sharedTextures;
+    m_visibleMask = other.m_visibleMask;
     m_children.clear();
     m_children.resize(other.m_children.size());
     for(unsigned int i=0;i<other.m_children.size();++i){
@@ -855,7 +823,12 @@ namespace icl{
     }
     
     for(unsigned int i=0;i<m_primitives.size();++i){
-      m_primitives[i].detachTextureIfDeepCopied();
+      m_primitives[i] = m_primitives[i]->copy();
+    }
+
+    for(unsigned int i=0;i<m_sharedTextures.size();++i){
+      m_sharedTextures[i] = new GLImg(m_sharedTextures[i]->extractImage(), 
+                                      m_sharedTextures[i]->getScaleMode());
     }
     
     return *this;
@@ -1068,7 +1041,7 @@ namespace icl{
     
     int nFaces = 0;
     for(unsigned int i=0;i<obj->m_primitives.size();++i){
-      const Primitive &p = obj->m_primitives[i];
+      const Primitive &p = *obj->m_primitives[i];
       switch(p.type){
         case Primitive::triangle:
           nFaces++; break;
@@ -1076,7 +1049,8 @@ namespace icl{
         case Primitive::texture:
           nFaces+=2; break;
         case Primitive::polygon:
-          nFaces+=p.vertexIndices.size()-2; break;
+          
+          nFaces+=dynamic_cast<const PolygonPrimitive&>(p).getNumPoints()-2; break;
         default:
           break;
       }
@@ -1145,11 +1119,12 @@ namespace icl{
       }
       if(aabbCheckOK){
         for(unsigned int i=0;i<obj->m_primitives.size();++i){
-          const Primitive &p = obj->m_primitives[i];
-          switch(p.type){
+          const Primitive *p = obj->m_primitives[i];
+          switch(p->type){
             case Primitive::triangle:{
               Hit h;
-              if(compute_intersection(v,Triangle(vs[p.a()],vs[p.b()],vs[p.c()] ),h.pos) == foundIntersection){
+              const TrianglePrimitive *tp = reinterpret_cast<const TrianglePrimitive*>(p);
+              if(compute_intersection(v,Triangle(vs[tp->i(0)],vs[tp->i(1)],vs[tp->i(1)] ),h.pos) == foundIntersection){
                 h.obj = obj;
                 h.dist = l3(v.offset,h.pos);
                 hits.push_back(h);
@@ -1163,11 +1138,12 @@ namespace icl{
                   d--c
               */
               Hit h;
-              if(compute_intersection(v, Triangle(vs[p.a()],vs[p.b()],vs[p.c()] ),h.pos) == foundIntersection){
+              const QuadPrimitive *qp = reinterpret_cast<const QuadPrimitive*>(p);
+              if(compute_intersection(v, Triangle(vs[qp->i(0)],vs[qp->i(1)],vs[qp->i(2)] ),h.pos) == foundIntersection){
                 h.obj = obj;
                 h.dist = l3(v.offset,h.pos);
                 hits.push_back(h);
-              }else if(compute_intersection(v,Triangle(vs[p.a()],vs[p.c()],vs[p.d()]),h.pos) == foundIntersection){
+              }else if(compute_intersection(v,Triangle(vs[qp->i(0)],vs[qp->i(2)],vs[qp->i(3)]),h.pos) == foundIntersection){
                 h.obj = obj;
                 h.dist = l3(v.offset,h.pos);
                 hits.push_back(h);
@@ -1175,20 +1151,20 @@ namespace icl{
               break;
             }
             case Primitive::polygon:{
-              DEBUG_LOG("checking polygon");
-              int n = p.vertexIndices.size();
+              const PolygonPrimitive *pp = reinterpret_cast<const PolygonPrimitive*>(p);
+              int n = pp->getNumPoints();
               // use easy algorithm: choose center and triangularize
               std::vector<Vec> vertices(n);
               Vec mean(0,0,0,0);
               for(int i=0;i<n;++i){
-                vertices[i] = vs[p.vertexIndices[i]];
+                vertices[i] = vs[pp->getVertexIndex(i)];
                 mean += vertices.back();
               }
               mean *= (1.0/vertices.size());
               
               for(int i=0;i<n-1;++i){
                 Hit h;
-                Triangle t(vs[p.vertexIndices[i]],vs[p.vertexIndices[i+1]],mean);
+                Triangle t(vs[pp->getVertexIndex(i)],vs[pp->getVertexIndex(i+1)],mean);
                 if(compute_intersection(v,t,h.pos) == foundIntersection){
                   h.obj = obj;
                   h.dist = l3(v.offset,h.pos);

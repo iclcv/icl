@@ -2028,7 +2028,8 @@ namespace icl{
     }
     
     emit mouseEvent(createMouseEvent(MouseWheelEvent));
-    
+
+    update();
     //QGLWidget::wheelEvent(e);
 #if 0
     if(m_data->embeddedZoomMode && m_data->embeddedZoomModeJustEnabled){

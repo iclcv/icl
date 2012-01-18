@@ -195,11 +195,11 @@ namespace icl{
     format imageFormat;
     Time timeStamp;
     mutable ImageStatistics stats;
-    mutable QMutex statsMutex;
+    mutable QMutex textureBufferMutex;
 
     bool isImageNull;
 
-    Data():statsMutex(QMutex::Recursive){
+    Data():textureBufferMutex(QMutex::Recursive){
     }
     
     ~Data(){
@@ -227,8 +227,7 @@ namespace icl{
 
     template<class ExternalType, class InternalType>
     void bufferTextureData(const Img<ExternalType> &src, int maxCellSize){
-
-      statsMutex.lock();
+      textureBufferMutex.lock();
       timeStamp = src.getTime();
       imageROI = src.getROI();
       
@@ -263,7 +262,7 @@ namespace icl{
       }
       
       dirty = true;
-      statsMutex.unlock();
+      textureBufferMutex.unlock();
     }
 
     template<class T>
@@ -293,7 +292,7 @@ namespace icl{
 
     
     const ImageStatistics &updateStats() const {
-      statsMutex.lock();
+      textureBufferMutex.lock();
       stats.params = ImgParams(imageSize,imageChannels);
       stats.time = timeStamp;
       stats.d = origImageDepth;
@@ -323,13 +322,13 @@ namespace icl{
       }
       
       
-      statsMutex.unlock();
+      textureBufferMutex.unlock();
       return stats;
     }
 
     template<class T, int C>
     std::vector<Range64f> findMinMax() const{
-      statsMutex.lock();
+      textureBufferMutex.lock();
       std::vector<Range64f> all;
       for(int y=0;y<data.getHeight();++y){
         for(int x=0;x<data.getWidth();++x){
@@ -343,7 +342,7 @@ namespace icl{
           }
         }
       }
-      statsMutex.unlock();
+      textureBufferMutex.unlock();
       return all;
     }
     std::vector<Range64f> findMinMaxGeneric() const{
@@ -498,7 +497,6 @@ namespace icl{
     void uploadTextureData(){
       ICLASSERT_THROW(data.getDim(),ICLException("unable to draw GLImg: no texture data available"));
       if(!dirty) return;
-      
       setupPixelTransfer();
       
       if(textures.size()){
@@ -507,6 +505,9 @@ namespace icl{
       textures.resize(data.getDim());
       glGenTextures(textures.size(), textures.data());
       
+      textureBufferMutex.lock();
+      
+
       static GLenum types[] = { GL_UNSIGNED_BYTE, GL_SHORT, GL_FLOAT, GL_FLOAT, GL_FLOAT };
       static GLenum chan[] = { 0, GL_LUMINANCE, GL_RGB, GL_RGB, GL_RGBA};
       
@@ -532,6 +533,7 @@ namespace icl{
         }
       }
       dirty = false;
+      textureBufferMutex.unlock();
     }
   };
 
@@ -914,6 +916,9 @@ namespace icl{
     ICLASSERT_RETURN_VAL(!isNull(),std::vector<double>());
     return m_data->findColorGeneric(x,y);
   }
+  scalemode GLImg::getScaleMode() const{
+    return m_data->sm;
+  }
 
   const ImgBase *GLImg::extractImage() const{
     ICLASSERT_RETURN_VAL(!isNull(),0);
@@ -959,7 +964,13 @@ namespace icl{
     return m_data->imageROI;
   }
   
-  
+  void GLImg::lock() const{
+    m_data->textureBufferMutex.lock();
+
+  }
+  void GLImg::unlock() const{
+    m_data->textureBufferMutex.unlock();
+  }
     
 }
 

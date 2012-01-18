@@ -1,3 +1,6 @@
+#ifndef ICL_GL_IMG_H
+#define ICL_GL_IMG_H
+
 #include <ICLCore/ImgBase.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/FixedVector.h>
@@ -225,6 +228,15 @@ namespace icl{
 
     /// returns the current grid color
     const float *getGridColor() const;
+    
+    /// returns the current scalemode
+    scalemode getScaleMode() const;
+    
+    /// locks the texture buffer
+    void lock() const;
+
+    /// unlocks the texture buffer
+    void unlock() const;
 
     
   };
@@ -232,3 +244,4 @@ namespace icl{
 
 
 
+#endif

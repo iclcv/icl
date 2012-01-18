@@ -51,12 +51,12 @@ struct OSRCube : public SceneObject{
   OSRCube():SceneObject("cube",Vec(0,0,0,3).data()){
     image = Img8u(Size(300,300),formatRGB);
     std::fill(image.begin(0),image.end(0),255);
-    addTexture(0,1,2,3,image);
-    addTexture(7,6,5,4,image);
-    addTexture(0,3,7,4,image);
-    addTexture(5,6,2,1,image);
-    addTexture(4,5,1,0,image);
-    addTexture(3,2,6,7,image);
+    addTexture(0,1,2,3,&image,false);
+    addTexture(7,6,5,4,&image,false);
+    addTexture(0,3,7,4,&image,false);
+    addTexture(5,6,2,1,&image,false);
+    addTexture(4,5,1,0,&image,false);
+    addTexture(3,2,6,7,&image,false);
     
     setVisible(Primitive::texture,true);
     setVisible(Primitive::quad,false);
