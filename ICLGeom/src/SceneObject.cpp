@@ -37,9 +37,10 @@
 #include <ICLIO/File.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLGeom/PlaneEquation.h>
+#include <ICLGeom/Scene.h>
 
 namespace icl{
-
+  
   const std::vector<Vec> &SceneObject::getVertices() const { 
     return m_vertices; 
   }
@@ -81,15 +82,42 @@ namespace icl{
     m_isVisible(true),
     m_transformation(Mat::id()),
     m_hasTransformation(false),
-    m_parent(0)
+    m_parent(0),
+    m_displayListHandle(0)
   {
 
     m_visibleMask = Primitive::all;
   }
+
+  static const float COLOR_FACTOR = 1.0/255.0;
+
   
   void SceneObject::addVertex(const Vec &p, const GeomColor &color){
     m_vertices.push_back(p);
-    m_vertexColors.push_back(color);
+    m_vertexColors.push_back(color*COLOR_FACTOR);
+  }
+  /// adds a new normal to this object
+  void SceneObject::addNormal(const Vec &n){
+    m_normals.push_back(n);
+  }
+
+  void SceneObject::addLine(int a, int b, const GeomColor &color){
+    m_primitives.push_back(new LinePrimitive(a,b,color*COLOR_FACTOR));
+  }
+    
+  void SceneObject::addTriangle(int a, int b, int c, int na, int nb, int nc, const GeomColor &color){
+    m_primitives.push_back(new TrianglePrimitive(a,b,c,color*COLOR_FACTOR,na,nb,nc));
+  }
+  
+  void SceneObject::addQuad(int a, int b, int c, int d, int na, int nb, int nc, int nd, const GeomColor &color){
+    m_primitives.push_back(new QuadPrimitive(a,b,c,d,color*COLOR_FACTOR,na,nb,nc,nd));
+  }
+
+  void SceneObject::addPolygon(int nPoints,const int *vertexIndices, const GeomColor &color, 
+                               const int *normalIndices){
+    ICLASSERT_RETURN(vertexIndices);
+    m_primitives.push_back(new PolygonPrimitive(nPoints,vertexIndices,
+                                                color*COLOR_FACTOR,normalIndices));
   }
   
   void SceneObject::addSharedTexture(SmartPtr<GLImg> gli){
@@ -98,30 +126,6 @@ namespace icl{
   
   void SceneObject::addSharedTexture(const ImgBase *image, scalemode sm){
     m_sharedTextures.push_back(new GLImg(image,sm));
-  }
-
-  
-  /// adds a new normal to this object
-  void SceneObject::addNormal(const Vec &n){
-    m_normals.push_back(n);
-  }
-
-  void SceneObject::addLine(int a, int b, const GeomColor &color){
-    m_primitives.push_back(new LinePrimitive(a,b,color));
-  }
-    
-  void SceneObject::addTriangle(int a, int b, int c, int na, int nb, int nc, const GeomColor &color){
-    m_primitives.push_back(new TrianglePrimitive(a,b,c,color,na,nb,nc));
-  }
-  
-  void SceneObject::addQuad(int a, int b, int c, int d, int na, int nb, int nc, int nd, const GeomColor &color){
-    m_primitives.push_back(new QuadPrimitive(a,b,c,d,color,na,nb,nc,nd));
-  }
-
-  void SceneObject::addPolygon(int nPoints,const int *vertexIndices, const GeomColor &color, 
-                               const int *normalIndices){
-    ICLASSERT_RETURN(vertexIndices);
-    m_primitives.push_back(new PolygonPrimitive(nPoints,vertexIndices,color,normalIndices));
   }
 
   void SceneObject::addTexture(int a, int b, int c, int d,const ImgBase *texture, 
@@ -147,7 +151,6 @@ namespace icl{
                             const GeomColor &color, int textRenderSize, scalemode sm){
     m_primitives.push_back(new TextPrimitive(a,0,0,0,text,textRenderSize,color,-1,-1,-1,-1,billboardHeight, sm));
   }
-
 
   SceneObject *SceneObject::copy() const{
     return new SceneObject(*this);
@@ -207,7 +210,8 @@ namespace icl{
     m_isVisible(true),
     m_transformation(Mat::id()),
     m_hasTransformation(false),
-    m_parent(0)
+    m_parent(0),
+    m_displayListHandle(0)
   {
     m_visibleMask = Primitive::all;
 
@@ -498,6 +502,10 @@ namespace icl{
     for(unsigned int i=0;i<m_primitives.size();++i){
       delete m_primitives[i];
     }
+    if(m_displayListHandle){
+      Scene::freeDisplayList(m_displayListHandle);
+      m_displayListHandle = 0;
+    }
   }
   
   SceneObject::SceneObject(const std::string &objFileName) throw (ICLException):
@@ -511,7 +519,8 @@ namespace icl{
     m_isVisible(true),
     m_transformation(Mat::id()),
     m_hasTransformation(false),
-    m_parent(0)
+    m_parent(0),
+    m_displayListHandle(0)
   {
     File file(objFileName,File::readText);
     if(!file.exists()) throw ICLException("Error in SceneObject(objFilename): unable to open file " + objFileName);
@@ -814,7 +823,7 @@ namespace icl{
 #undef DEEP_COPY
 #undef DEEP_COPY_2
 #undef DEEP_COPY_4
-    m_sharedTextures = other.m_sharedTextures;
+
     m_visibleMask = other.m_visibleMask;
     m_children.clear();
     m_children.resize(other.m_children.size());
@@ -825,12 +834,15 @@ namespace icl{
     for(unsigned int i=0;i<m_primitives.size();++i){
       m_primitives[i] = m_primitives[i]->copy();
     }
-
+    m_sharedTextures = other.m_sharedTextures;
     for(unsigned int i=0;i<m_sharedTextures.size();++i){
       m_sharedTextures[i] = new GLImg(m_sharedTextures[i]->extractImage(), 
                                       m_sharedTextures[i]->getScaleMode());
     }
-    
+    if(m_displayListHandle){
+      Scene::freeDisplayList(m_displayListHandle);
+      m_displayListHandle = 0;
+    }
     return *this;
   }
 
@@ -1211,14 +1223,5 @@ namespace icl{
     }
   }
   
-  void SceneObject::createDisplayList(){
-    /// todo
-  }
-  
-  void SceneObject::freeDisplayList(){
-    /// todo
-  }
-              
-
   
 }

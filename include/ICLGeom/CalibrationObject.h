@@ -35,6 +35,10 @@
 #ifndef ICL_CALIBRATION_OBJECT_H
 #define ICL_CALIBRATION_OBJECT_H
 
+#ifndef HAVE_OPENGL
+#warning "this header must not be included if HAVE_OPENGL is not defined"
+#else
+
 #include <ICLUtils/Uncopyable.h>
 #include <ICLCore/ImgBase.h>
 #include <ICLUtils/Configurable.h>
@@ -165,5 +169,5 @@ namespace icl{
   };
 }
 
-
+#endif
 #endif

@@ -40,6 +40,24 @@
 GUI gui;
 Scene scene;
 
+struct LorenzAttractor  : public Vec{
+  float rho,sigma,beta,dt;
+  LorenzAttractor(float rho=28, float sigma=10, float beta=8./3, 
+                  float x=0.1, float y=0, float z=0, float dt = 0.001):
+    Vec(x,y,z,1), rho(rho),sigma(sigma),beta(beta),dt(dt){
+  }
+  const Vec &step(){
+    float &x = (*this)[0], &y=(*this)[1], &z=(*this)[2];
+    float dx = sigma * ( y - x );
+    float dy = rho * x - y - x*z;//x * (rho - z) - y;
+    float dz = x*y - beta * z;
+    x += dx * dt;
+    y += dy * dt;
+    z += dz * dt;
+    return *this;
+  }
+};
+
 void reload_obj(){
   scene.removeObject(0);
   SceneObject *o = new SceneObject(*pa("-o")); 
@@ -76,6 +94,19 @@ void init(){
     const float data[] = {0,0,0,7,3,2, 30, 30};
     if(shape == "cylinder" || shape == "cone" || shape == "spheroid" || shape == "cuboid"){
       scene.addObject(new SceneObject(shape,data));
+    }else if(shape == "point-cloud"){
+      SceneObject *o = new SceneObject;
+      LorenzAttractor lorenz;
+      for(int i=0;i<1000000;++i){
+        const Vec &v = lorenz.step();
+        o->addVertex(Vec(v[0],v[1],v[2]-25,1),GeomColor((v[0]+20.f)*(255.f/41.f),
+                                                        (v[1]+26.7f)*(255.f/55.1f),
+                                                        v[2] * 255.f/54.4,
+                                                        255));
+        if(i) o->addLine(i,i-1);
+      }
+      o->setColorsFromVertices(Primitive::line,true);
+      scene.addObject(o,true,pa("-dl"));
     }else{
       pausage("invalid shape arg for -s");
       ::exit(-1);
@@ -109,8 +140,8 @@ void run(){
 
 int main(int n, char**ppc){
   paex("-o","loads a given opengl .obj file  (if -o and -s is given, -o is used)");
-  paex("-s","visualizes one of the shape types (cyliner,spheroid, cuboid, cone)");
+  paex("-s","visualizes one of the shape types (cyliner,spheroid, cuboid, cone, point-cloud)");
   /// create a whole application 
-  return ICLApplication(n,ppc,"-obj|-o(.obj-filename) -shape|-s(shape=cuboid)",init,run).exec();
+  return ICLApplication(n,ppc,"-obj|-o(.obj-filename) -shape|-s(shape=cuboid) -create-display-list|-dl",init,run).exec();
 }
 

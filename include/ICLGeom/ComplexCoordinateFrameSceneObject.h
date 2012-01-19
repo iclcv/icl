@@ -35,6 +35,10 @@
 #ifndef ICL_COMPLEX_COORDINATE_FRAME_SCENE_OBJECT_H
 #define ICL_COMPLEX_COORDINATE_FRAME_SCENE_OBJECT_H
 
+#ifndef HAVE_OPENGL
+#warning "this header must not be included if HAVE_OPENGL is not defined"
+#else
+
 #include <ICLGeom/SceneObject.h>
 #include <ICLUtils/Mutex.h>
 
@@ -80,6 +84,6 @@ namespace icl{
   };
 }
 
-
+#endif
 #endif
 

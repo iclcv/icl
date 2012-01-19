@@ -172,10 +172,12 @@ namespace icl{
     return pmap;
   }
   
+#if HAVE_UNICAP
   static bool is_int(const std::string &x){
     int i = parse<int>(x);
     return i>0 || x=="0";
   }
+#endif
   
   void GenericGrabber::init(const std::string &desiredAPIOrder, 
                                  const std::string &params, 
@@ -613,6 +615,7 @@ namespace icl{
     }
     return 0;
   }
+#ifdef HAVE_LIBFREENECT
   static const GrabberDeviceDescription *find_description_2(const std::vector<GrabberDeviceDescription> &ds, const std::string &id,
                                                             const std::string &type){
     for(unsigned int i=0;i<ds.size();++i){
@@ -624,6 +627,7 @@ namespace icl{
     }
     return 0;
   }
+#endif
 
   template<class T>
   static void add_devices(std::vector<GrabberDeviceDescription> &all,

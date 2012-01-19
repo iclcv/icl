@@ -35,6 +35,10 @@
 #ifndef ICL_SCENE_H
 #define ICL_SCENE_H
 
+#ifndef HAVE_OPENGL
+#warning "this header must not be included if HAVE_OPENGL is not defined"
+#else
+
 #include <ICLGeom/SceneObject.h>
 #include <ICLGeom/Camera.h>
 #include <ICLGeom/SceneLight.h>
@@ -42,9 +46,7 @@
 
 #ifdef HAVE_QT
 #include <ICLQt/MouseHandler.h>
-#ifdef HAVE_OPENGL
 #include <ICLQt/DrawWidget3D.h>
-#endif
 #include <ICLGeom/SceneMouseHandler.h>
 #endif
 
@@ -127,13 +129,21 @@ int main(int n, char**ppc){
 }
       \endcode
 
+      \section _DISPLAY_LISTS_ Display Lists
+      
+      For static objects, display lists can be created using 
+      Scene::createDisplayList(SceneObject*). This will speed up the 
+      object rendering significantly. However it must not be called before
+      the OpenGL context was created, i.e., it can only be called when
+      the ICL-GUI containing the gl-context has already been created.
   */
   class Scene : public Lockable{
     public:
 
-#ifdef HAVE_OPENGL
+    /// make SceneObject friend of Scene
+    friend class SceneObject;
+    
     struct GLCallback;
-#endif
     
     /// Base constructor (creates an empty scene)
     Scene();
@@ -191,8 +201,17 @@ int main(int n, char**ppc){
     /// adds a new top-level object to the Scene instance 
     /** By default, the object's memory is managed externally. If you want
         to pass the ownership to the Scene instance, you have to set
-        passOwnerShip to true */
-    void addObject(SceneObject *object, bool passOwnerShip=false);
+        passOwnerShip to true.
+
+        If the object will never change again, a displaylist of it
+        can be created by setting createDisplayList to true.
+        
+        Whenever the object is updated externally, it's display
+        list can be updated by calling createDisplayList(object*)
+      
+        @see \ref _DISPLAY_LISTS_
+    */
+    void addObject(SceneObject *object, bool passOwnerShip=false, bool createDisplayList=false);
     
     /// removed object at given index
     /** The object is deleted if it's ownwership was passed */
@@ -243,8 +262,6 @@ int main(int n, char**ppc){
     void clear(bool camerasToo=false);
 
 #ifdef HAVE_QT
-#ifdef HAVE_OPENGL
-    
     /// returns a mouse handler that adapts the scene's camera using mouse-interaction
     MouseHandler *getMouseHandler(int camIndex=0);
     
@@ -282,8 +299,6 @@ int main(int n, char**ppc){
     
     /// frees the pbffer associated with given size (if there is one)
     void freePBuffer(const Size &size);
-#endif
-
 #endif
 #endif
 
@@ -337,19 +352,20 @@ int main(int n, char**ppc){
     inline std::vector<Hit> findObjects(int camIndex, int xScreen, int ySceen){
       return findObjects(getCamera(camIndex).getViewRay(Point(xScreen,ySceen)));
     }
-    
-    
-    
+    /// creates a displaylist for the given object
+    void createDisplayList(SceneObject *o);
+
+    /// frees the display list, that is associated with an object
+    void deleteDisplayList(SceneObject *o);
+
     protected:
 #ifdef HAVE_QT
-#ifdef HAVE_OPENGL
     /// internally used rendering method
     void renderScene(int camIndex, ICLDrawWidget3D *widget=0) const;
-
+#endif
     /// internally used rendering method for recursive rendering of the scene graph
     void renderSceneObjectRecursive(SceneObject *o) const;
-#endif
-#endif
+
     /// internally used utility method that computes the extend of the Scene content
     /** The extend is used when scene mouse handlers are created. Here, it will e.g. 
         compute a usefull step when moving forward or strafing. */
@@ -371,13 +387,13 @@ int main(int n, char**ppc){
     std::vector<SmartPtr<SceneObject> > m_cameraObjects;
 
 #ifdef HAVE_QT
-#ifdef HAVE_OPENGL
-    
     /// internally used list of mouse handlers
     std::vector<SmartPtr<SceneMouseHandler> > m_mouseHandlers;
 
     /// internally used list of callbacks
     std::vector<SmartPtr<GLCallback> > m_glCallbacks;
+#endif
+
 
     /// internal class for offscreen rendering
     struct PBuffer;
@@ -392,9 +408,6 @@ int main(int n, char**ppc){
     /// intenal list of of offscreen rendering buffers
     mutable std::map<Size,PBuffer*,CmpSize> m_pbuffers;
 
-#endif
-#endif
-    
     /// internally used flag
     bool m_drawCamerasEnabled;
     
@@ -409,8 +422,12 @@ int main(int n, char**ppc){
     
     /// internal list of lights
     SmartPtr<SceneLight> m_lights[8];
-    
+
+    private:
+    /// called from the SceneObject class
+    static void freeDisplayList(void *handle);
   };
 }
 
+#endif
 #endif

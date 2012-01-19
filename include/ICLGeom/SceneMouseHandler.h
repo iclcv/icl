@@ -35,20 +35,23 @@
 #ifndef ICL_SCENE_MOUSE_HANDLER_H
 #define ICL_SCENE_MOUSE_HANDLER_H
 
-#include <ICLGeom/Camera.h>
 
-
-#ifdef HAVE_QT
-#include <ICLQt/MouseHandler.h>
+#ifndef HAVE_OPENGL
+#define HAVE_OPENGL_OR_HAVE_QT_MISSING
+#endif
+#ifndef HAVE_QT
+#define HAVE_OPENGL_OR_HAVE_QT_MISSING
 #endif
 
+#ifdef HAVE_OPENGL_OR_HAVE_QT_MISSING
+#warning "this header must not be included if HAVE_OPENGL or HAVE_QT is not defined"
+#else
+
+
+#include <ICLGeom/Camera.h>
+#include <ICLQt/MouseHandler.h>
 
 namespace icl{
-
-
-#ifdef HAVE_QT
-//#ifdef HAVE_OPENGL
-
 
 /** Mouse action function pointer
 * parameters:
@@ -470,9 +473,7 @@ public:
 
 };
 //#endif
-#endif
-
 
 }
-
+#endif
 #endif

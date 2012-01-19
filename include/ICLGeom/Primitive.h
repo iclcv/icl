@@ -35,6 +35,11 @@
 #ifndef ICL_PRIMITIVE_H
 #define ICL_PRIMITIVE_H
 
+#ifndef HAVE_OPENGL
+#warning "this header must not be included if HAVE_OPENGL is not defined"
+#else
+
+
 #include <ICLGeom/GeomDefs.h>
 #include <ICLCore/Img.h>
 #include <ICLUtils/FixedVector.h>
@@ -205,7 +210,7 @@ namespace icl{
     /// utility method to ask whether normal indices are available
     inline bool hasNormals() const { return idx.getHeight() == 2; }
   };
-  
+
   /// Texture Primitive 
   /** Texture Primitives hare two modes: 
       -# createTextureOnce=true: In this case, the texture data that is
@@ -311,149 +316,12 @@ namespace icl{
       return p;
     }
   };
+
   
 }
 
 #endif
 
-
-
-
-#if 0
-  /// Storage class for 3D geometrical primitive used in the SceneObject class
-  /** Instances of the class SceneObject consist basically of a set of vertices 
-      and of a set of so called Primitive's. These are geometical primitives,
-      that are basically defined by their type and by references to the parent
-      SceneObject's vertices. E.g. a line-typed Primitive uses 2 vertex references
-      (start- and end-position) 
-  */
-  struct Primitive{
-    
-    /// Primitive type flags
-    enum Type{
-      vertex,   //<! very basic type, that is currently not used since a SceneObjects vertices are treated in a special way
-      line,     //<! line primitive (adressing two vertices -> start and end position of the line)
-      triangle, //<! triange primitive (adressing three vertices)
-      quad,     //<! quad primitve (adressing four vertices)
-      polygon,  //<! polygon primitive (adressing at least 3 vertices)
-      texture,  //<! texture primitive (using 4 vertices like a quad as textured rectangle)
-      text,     //<! text primitive (internally implmented as texture or as billboard)
-      nothing,  //<! intenally used type
-      PRIMITIVE_TYPE_COUNT //<! also for internal use only
-    };
-
-    /// Base constructor creating an empty primitive
-    Primitive();
-    
-    /// Line-Constructor
-    Primitive(int a, int b, const GeomColor &color=GeomColor());
-
-    /// Line-Constructor
-    Primitive(int a, int b, const GeomColor &color, int na, int nb);
-
-    /// Triangle constructor
-    Primitive(int a, int b, int c, const GeomColor &color=GeomColor());
-    
-    /// Triangle constructor
-    Primitive(int a, int b, int c, const GeomColor &color,int na, int nb, int nc);
-    
-    /// Quad constructor
-    Primitive(int a, int b, int c, int d,const GeomColor &color=GeomColor());
-
-    /// Quad constructor
-    Primitive(int a, int b, int c, int d,const GeomColor &color, int na, int nb, int nc, int nd);
-    
-    /// texture constructor
-    Primitive(int a, int b, int c, int d,const Img8u &tex, bool deepCopy=false, scalemode mode=interpolateNN);
-
-    /// texture constructor
-    Primitive(int a, int b, int c, int d,const Img8u &tex, bool deepCopy, scalemode mode,
-              int na, int nb, int nc, int nd);
-    
-    /// Special constructor to create a texture primitive that contains 3D text
-    /** There is not special TEXT-type: type remains 'texture' */
-    Primitive(int a, int b, int c, int d, const std::string &text, const GeomColor &color, 
-              int textSize=30, scalemode mode=interpolateNN);
-    
-    /// Special constructor to create a texture primitive that contains 3D text
-    /** There is not special TEXT-type: type remains 'texture' */
-    Primitive(int a, int b, int c, int d, const std::string &text, const GeomColor &color, 
-              int textSize, scalemode mode, int na, int nb, int nc, int nd);
-
-    /// Special constructor to create a billboard texture primitive
-    /** There is not special TEXT-type: type remains 'texture' */
-    Primitive(int a, const std::string &text, const GeomColor &color, 
-              int textSize, float billboardHeight, scalemode mode=interpolateLIN);
-
-    /// Creates a polygon primitive
-    Primitive(const std::vector<int> &polyData, const GeomColor &color=GeomColor());
-
-    /// Creates a polygon primitive
-    Primitive(const std::vector<int> &polyData, const GeomColor &color, const std::vector<int> &normalIndices);
-
-    /// detaches deep copied textures
-    void detachTextureIfDeepCopied();
-    
-    /// Creates a deep copy (in particular deep copy of the texture image)
-    //Primitive(const Primitive &other);
-
-    /// Creates a deep copy in assignment
-    //Primitive &operator=(const Primitive &other);
-    
-    /// static utility method that allows for simple creation of text-textures
-    static Img8u create_text_texture(const std::string &text,const GeomColor &color, int textSize=30);
-    
-    /// 4 vertex references for lines, quads triangles and textures
-    int a() const { return vertexIndices[0]; }
-    int b() const { return vertexIndices[1]; }
-    int c() const { return vertexIndices[2]; }
-    int d() const { return vertexIndices[3]; }
-
-    int na() const { return normalIndices[0]; }
-    int nb() const { return normalIndices[1]; }
-    int nc() const { return normalIndices[2]; }
-    int nd() const { return normalIndices[3]; }
-
-    int &a() { return vertexIndices[0]; }
-    int &b() { return vertexIndices[1]; }
-    int &c() { return vertexIndices[2]; }
-    int &d() { return vertexIndices[3]; }
-
-    int &na() { return normalIndices[0]; }
-    int &nb() { return normalIndices[1]; }
-    int &nc() { return normalIndices[2]; }
-    int &nd() { return normalIndices[3]; }
-    
-    /// vertex indices
-    std::vector<int> vertexIndices;
-    
-    /// vertex normal indices -> if size is 0, auto-normals are created using cross-product
-    std::vector<int> normalIndices;
-    
-    /// primitve color
-    GeomColor color;
-    
-    /// optional texture
-    Img8u tex;
-    
-    /// is the texture referenced or was is copied deeply
-    bool texDeepCopied;
-    
-    /// primitve type
-    Type type;
-    
-    /// interpolation state for textures
-    scalemode mode;
-    
-    /// flag that indicates whether a normal was defined
-    bool hasNormals;
-
-    /// this flag is only used for text-texture primitives
-    /** if the value is > 0, the text-texture will always be oriented towards the camera.
-        the billboardHeight value is used as text-height (in scene units) */
-    float billboardHeight;
-
-  };
-}
-
 #endif
+
+

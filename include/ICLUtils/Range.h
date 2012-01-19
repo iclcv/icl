@@ -110,7 +110,18 @@ namespace icl{
     bool operator!=(const Range<Type> &other) const{
       return minVal!=other.minVal || maxVal != other.maxVal;
     }
-
+    
+    /// extends the range so that the given value is within this range
+    void extend(const Type &t){
+      if(t < minVal) minVal = t;
+      if(t > maxVal) maxVal = t;
+    }
+    
+    /// extends the range so that the given range is within this range
+    void extend(const Range &r){
+      if(r.minVal < minVal) minVal = r.minVal;
+      if(r.maxVal > maxVal) maxVal = r.maxVal;
+    }
   };
   
 #define ICL_INSTANTIATE_DEPTH(D) typedef Range<icl##D> Range##D;

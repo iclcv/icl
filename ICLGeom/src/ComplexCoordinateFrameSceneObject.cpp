@@ -83,10 +83,11 @@ namespace icl{
     addVertex(Vec(l+3*d,0,0,1),GeomColor(0,0,0,0));
     addVertex(Vec(0,l+3*d,0,1),GeomColor(0,0,0,0));
     addVertex(Vec(0,0,l+3*d,1),GeomColor(0,0,0,0));
-    
+#ifdef HAVE_OPENGL
     addText(0,"x");
     addText(1,"y");
     addText(2,"z");
+#endif
   }
 
 }

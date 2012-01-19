@@ -51,8 +51,6 @@
 #include <ICLGeom/GeomDefs.h>
 #include <ICLUtils/StringUtils.h>
 
-#ifdef HAVE_OPENGL
-
 #ifdef ICL_SYSTEM_APPLE
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
@@ -61,14 +59,12 @@
 #include <GL/glu.h>
 #endif
 
-
-#endif
-
 #include <set>
 #include <ICLUtils/Time.h>
 
 namespace icl{
-  
+
+  static bool creatingDisplayList = false;
 
   struct CameraObject : public SceneObject{
     Scene *scene;
@@ -134,7 +130,7 @@ namespace icl{
       m_vertices[6] = cam.getViewRay(Point32f(0,h-1)).getIntersection(p);
 
       std::string name = cam.getName();
-      
+
       if(name != lastName){
         lock();
         Img8u newTexture = TextPrimitive::create_texture(name.length() ? name : str("camera"),GeomColor(255,255,255,255),30);
@@ -167,7 +163,6 @@ namespace icl{
 
 
 #ifdef HAVE_QT
-#ifdef HAVE_OPENGL
   struct Scene::GLCallback : public ICLDrawWidget3D::GLCallback{
     int cameraIndex;
     Scene *parent;
@@ -179,7 +174,6 @@ namespace icl{
     }
   };
 #endif
-#endif
 
  
   Scene::Scene():m_drawCamerasEnabled(true),
@@ -189,10 +183,8 @@ namespace icl{
   }
   Scene::~Scene(){
 #ifdef HAVE_GLX
-#ifdef HAVE_OPENGL
 #ifdef HAVE_QT
     freeAllPBuffers();
-#endif
 #endif
 #endif
   }
@@ -207,7 +199,6 @@ namespace icl{
       m_objects[i] = scene.m_objects[i]->copy();
     }
 #ifdef HAVE_QT
-#ifdef HAVE_OPENGL
     m_mouseHandlers.resize(scene.m_mouseHandlers.size());
     for(unsigned int i=0;i<m_mouseHandlers.size();++i){
       m_mouseHandlers[i] = SmartPtr<SceneMouseHandler>(new SceneMouseHandler( *(scene.m_mouseHandlers[i].get()) ));
@@ -222,7 +213,6 @@ namespace icl{
     freeAllPBuffers();
 #endif
     
-#endif
 #endif
 
     m_drawCamerasEnabled = scene.m_drawCamerasEnabled;
@@ -271,8 +261,9 @@ namespace icl{
     return cams;
   }
 
-  void Scene::addObject(SceneObject *object, bool passOwnerShip){
+  void Scene::addObject(SceneObject *object, bool passOwnerShip, bool createDisplayList){
     m_objects.push_back(SmartPtr<SceneObject>(object,passOwnerShip));
+    if(createDisplayList) this->createDisplayList(object);
   }
 
   void Scene::removeObject(int idx){
@@ -317,10 +308,8 @@ namespace icl{
       m_cameras.clear();
     }
 #ifdef HAVE_QT
-#ifdef HAVE_OPENGL
     m_mouseHandlers.clear();
     m_glCallbacks.clear();
-#endif
 #endif
 
   }
@@ -337,9 +326,12 @@ namespace icl{
     };
   }
 #ifdef HAVE_QT
-#ifdef HAVE_OPENGL
-
   void Scene::renderSceneObjectRecursive(SceneObject *o) const{
+    if(!creatingDisplayList && o->m_displayListHandle){
+      glCallLists(1,GL_UNSIGNED_INT,o->m_displayListHandle);
+      return;
+    }
+
     if(o->getSmoothShading()){
       glShadeModel(GL_SMOOTH);
     }else{
@@ -349,11 +341,6 @@ namespace icl{
     glPointSize(o->m_pointSize);
     glLineWidth(o->m_lineWidth);
     
-    // *new* we use openGL's matrix stack to draw the scene graph!
-    // this is much more efficient than trasforming all vertices in
-    // software. 
-    // Nontheless, prepareForRenderingAndTransform is still used for
-    // the non-opengl based redering pipeline ...
     o->prepareForRendering();
 
     o->lock();
@@ -382,21 +369,36 @@ namespace icl{
         }
       }
 
-      glBegin(GL_POINTS);
+
       if(o->isVisible(Primitive::vertex)){
         GLboolean lightWasOn = true;
         glGetBooleanv(GL_LIGHTING,&lightWasOn);
         glDisable(GL_LIGHTING);
-        
-        for(unsigned int j=0;j<ps.size();++j){
-          glColor4fv(((o->m_vertexColors[j])/255.0).data());
-          glVertex3fv(ps[j].data());
+
+        if(creatingDisplayList){
+          glBegin(GL_POINTS);        
+          for(unsigned int j=0;j<ps.size();++j){
+            glColor4fv(((o->m_vertexColors[j])/255.0).data());
+            glVertex3fv(ps[j].data());
+          }
+          glEnd();
+        }else{
+          glEnableClientState(GL_VERTEX_ARRAY);
+          glEnableClientState(GL_COLOR_ARRAY);
+          
+          glVertexPointer(4,GL_FLOAT,0,o->m_vertices.data());
+          glColorPointer(4,GL_FLOAT,0,o->m_vertexColors.data());
+          
+          glDrawArrays(GL_POINTS, 0, o->m_vertices.size());
+          
+          glDisableClientState(GL_VERTEX_ARRAY);
+          glDisableClientState(GL_COLOR_ARRAY);
         }
         if(lightWasOn){
           glEnable(GL_LIGHTING);
         }   
       }
-      glEnd();
+
     } // is visible
     
     for(unsigned int i=0;i<o->m_children.size();++i){
@@ -544,7 +546,6 @@ namespace icl{
   }
 
 #endif // QT
-#endif // GL
 
   void Scene::setDrawCamerasEnabled(bool enabled){
     m_drawCamerasEnabled = enabled;
@@ -752,8 +753,33 @@ namespace icl{
     return hits;
   }
 
+  void Scene::freeDisplayList(void *handle){
+    glDeleteLists(*(GLuint*)handle,1);
+    delete (GLuint*)handle;
+  }
 
-#ifdef HAVE_OPENGL
+
+  void Scene::createDisplayList(SceneObject *o){
+    if(!o->m_displayListHandle){
+      o->m_displayListHandle = new GLuint(0);
+      *(GLuint*)o->m_displayListHandle = glGenLists(1);
+    }
+    creatingDisplayList = true;
+    glNewList(*(GLuint*)o->m_displayListHandle, GL_COMPILE);
+    renderSceneObjectRecursive(o);
+    glEndList();
+    creatingDisplayList = false;
+  }
+  
+  void Scene::deleteDisplayList(SceneObject *o){
+    if(o->m_displayListHandle){
+      freeDisplayList(o->m_displayListHandle);
+      o->m_displayListHandle = 0;
+    }
+  }
+
+
+
 #ifdef HAVE_QT
 #ifdef HAVE_GLX
 
@@ -949,7 +975,6 @@ namespace icl{
   }
   
 
-#endif
 #endif
 #endif
 

@@ -647,8 +647,8 @@ namespace icl{
       catch (cl::Error err) {//catch openCL error
         std::cout<< "ERROR: "<< err.what()<< "("<< err.err()<< ")"<< std::endl;
       }
-      return normals;
   #endif
+      return normals;
     }
     else{
       if(useNormalAveraging==true){

@@ -35,6 +35,10 @@
 #ifndef ICL_CALIBRATION_GRID_H
 #define ICL_CALIBRATION_GRID_H
 
+#ifndef HAVE_OPENGL
+#warning "this header must not be included if HAVE_OPENGL is not defined"
+#else
+
 #include <ICLUtils/Rect.h>
 #include <ICLGeom/SceneObject.h>
 #include <ICLGeom/Camera.h>
@@ -132,4 +136,5 @@ namespace icl{
 
 }
 
+#endif
 #endif

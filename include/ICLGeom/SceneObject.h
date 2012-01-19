@@ -35,6 +35,10 @@
 #ifndef ICL_SCENE_OBJECT_H
 #define ICL_SCENE_OBJECT_H
 
+#ifndef HAVE_OPENGL
+#warning "this header must not be included if HAVE_OPENGL is not defined"
+#else
+
 #include <ICLGeom/Primitive.h>
 #include <ICLGeom/ViewRay.h>
 #include <ICLGeom/Hit.h>
@@ -102,10 +106,19 @@ namespace icl{
       };
       \endcode
 
+      \section _COLORS_ Colors
+      In the object specification (when you add vertices and other primitives, colors
+      are always expected to be in ICL's commong [0,255]^3 range. However, the colors
+      are scaled by 1/255 to range [0,1]^3 internally, since this is how OpenGL can access
+      the colors more easily. Please keep in mind, that the colors you can find in
+      m_vertexColors and also in primitive-instances is alaws in [0,1]^3 range
+      
       \section CFV Colors From Vertices
       Sometimes, you might want to draw primtives that use different colors 
       for different corners and interpolate between these. This can be achieved
       by using SceneObject::setColorsFromVertices(true). 
+
+      
   */
   class SceneObject{
     public:
@@ -170,6 +183,9 @@ namespace icl{
     bool isVisible(Primitive::Type t) const;
     
     /// adds a new vertex to this object
+    /** Please note, that colors are defined in ICL's commong [0,255] range,
+        but they are stored internally in [0,1] range, since this is how
+        OpenGL expects colors */
     void addVertex(const Vec &p, const GeomColor &color=GeomColor(255,0,0,255));
 
     /// adds a GLImg as shared texture
@@ -177,7 +193,8 @@ namespace icl{
     
     /// adds an ImgBase * as shared texutre
     void addSharedTexture(const ImgBase *image, scalemode sm=interpolateLIN);
-    
+
+
     /// adds a new normal to this object
     void addNormal(const Vec &n);
     
@@ -477,24 +494,6 @@ namespace icl{
     /// calls setVisible(true)
     void show(bool recursive=true){ setVisible(true); }
     
-    /// (not yet implemented) sets a flag, so that the next time, the object is rendered, an OpenGL display list is created
-    /** Creating a display list for a static objects increases the rendering performance
-        The display list is always created recursively, i.e. also for all subobjects.
-        Once, a display list for a SceneObject instance is created, parameter updates
-        are not visible. You can call also this method again, to update the internal display list.
-        <b>Note:</b> an objects transformation is not part of the display list, so changing
-        an objects transformation is still possible without updating an objects display list
-    */
-    void createDisplayList();
-    
-    
-    /// (not yet implemented) frees the OpenGL display list, that is associated with this SceneObject instance
-    /** The method does nothing, if no display list is associated. If you want to update
-        an object's properties you have to call createDisplayList after changing the 
-        properties. This will free the old display list automatically before creating
-        an updated version of it */
-    void freeDisplayList();
-    
     friend class Primitive;
     
     protected:
@@ -528,8 +527,13 @@ namespace icl{
     SceneObject *m_parent;
     std::vector<SmartPtr<SceneObject> > m_children;
 
+    private:
+
+    /// internally used flag
+    void *m_displayListHandle;
  
   };
 }
 
+#endif
 #endif
