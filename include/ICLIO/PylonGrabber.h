@@ -105,7 +105,7 @@ namespace icl {
     virtual const ImgBase* acquireImage();
 
     /// Returns a list of available Pylon devices.
-    static Pylon::DeviceInfoList_t getPylonDeviceList();
+    static Pylon::DeviceInfoList_t getPylonDeviceList(Pylon::DeviceInfoList_t* filter=NULL);
     /// Prints information about the startup argument options
     static void printHelp();
     /// uses args to choose a pylon device, throws when no suitable device exists.
@@ -149,9 +149,14 @@ namespace icl {
     * be reinitialized in the next acquireImage call.
     */
     bool m_ResetImage;
-    /// an IclImageBase
-    uint8_t* m_Image2;
+    /// Here the Image is saved that acquireImage returns
     icl::ImgBase* m_Image;
+    /// Buffer für color conversion
+    uint8_t* m_ImageBuff;
+    /// Buffer for interlieved-to-planar conversion
+    icl::Img8u* m_ImageRGBA;
+    /// Vector for channels
+    std::vector<icl8u*>* m_Channels;
     /// Pylon color format converter
     Pylon::CPixelFormatConverter* m_ColorConverter;
     Pylon::SImageFormat m_InputFormat;
@@ -202,7 +207,8 @@ namespace icl {
       }
     }
     /// Returns a list of detected pylon devices
-    static Pylon::DeviceInfoList_t getPylonDeviceList(){
+    static Pylon::DeviceInfoList_t
+    getPylonDeviceList(Pylon::DeviceInfoList_t* filter=NULL){
       return PylonGrabberImpl::getPylonDeviceList();
     }
     
