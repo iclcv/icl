@@ -91,6 +91,9 @@ namespace icl{
     m_hasTransformation(false),
     m_parent(0),
     m_enableLocking(false),
+    m_pointSmoothingEnabled(true),
+    m_lineSmoothingEnabled(true),
+    m_polygonSmoothingEnabled(true),
     m_displayListHandle(0)
   {
 
@@ -221,6 +224,9 @@ namespace icl{
     m_hasTransformation(false),
     m_parent(0),
     m_enableLocking(false),
+    m_pointSmoothingEnabled(true),
+    m_lineSmoothingEnabled(true),
+    m_polygonSmoothingEnabled(true),
     m_displayListHandle(0)
   {
     m_visibleMask = Primitive::all;
@@ -531,6 +537,9 @@ namespace icl{
     m_hasTransformation(false),
     m_parent(0),
     m_enableLocking(false),
+    m_pointSmoothingEnabled(true),
+    m_lineSmoothingEnabled(true),
+    m_polygonSmoothingEnabled(true),
     m_displayListHandle(0)
   {
     File file(objFileName,File::readText);
@@ -834,6 +843,10 @@ namespace icl{
 #undef DEEP_COPY
 #undef DEEP_COPY_2
 #undef DEEP_COPY_4
+
+    m_pointSmoothingEnabled = other.m_pointSmoothingEnabled;
+    m_lineSmoothingEnabled  = other.m_lineSmoothingEnabled;
+    m_polygonSmoothingEnabled = other.m_polygonSmoothingEnabled;
 
     setLockingEnabled(other.getLockingEnabled());
     m_visibleMask = other.m_visibleMask;

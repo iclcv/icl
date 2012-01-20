@@ -338,6 +338,24 @@ namespace icl{
       glShadeModel(GL_FLAT);
     }
     
+    if(o->m_lineSmoothingEnabled){
+      glEnable(GL_LINE_SMOOTH);
+    }else{
+      glDisable(GL_LINE_SMOOTH);
+    }
+    
+    if(o->m_pointSmoothingEnabled){
+      glEnable(GL_POINT_SMOOTH);
+    }else{
+      glDisable(GL_POINT_SMOOTH);
+    }
+    
+    if(o->m_polygonSmoothingEnabled){
+      glEnable(GL_POLYGON_SMOOTH);
+    }else{
+      glDisable(GL_POLYGON_SMOOTH);
+    }
+    
     glPointSize(o->m_pointSize);
     glLineWidth(o->m_lineWidth);
     
@@ -461,12 +479,7 @@ namespace icl{
       glViewport(0,0,s.width,s.height);
     }
     
-    GLboolean on[4] = {0,0,0,0};
-    GLenum flags[4] = {GL_DEPTH_TEST,GL_LINE_SMOOTH,GL_POINT_SMOOTH,GL_POLYGON_SMOOTH};
-    for(int i=0;i<4;++i){
-      glGetBooleanv(flags[i],on+i);
-      glEnable(flags[i]);
-    }
+    glEnable(GL_DEPTH_TEST);
 
     std::vector<SmartPtr<SceneObject> > allObjects(m_objects);
     if(m_drawCamerasEnabled){
@@ -481,12 +494,6 @@ namespace icl{
 
     for(unsigned int i=0;i<allObjects.size();++i){
       renderSceneObjectRecursive(allObjects[i].get());
-    }
-
-    for(int i=0;i<4;++i){
-      if(!on[i]){
-        glDisable(flags[i]);
-      }
     }
 
   }

@@ -543,6 +543,27 @@ namespace icl{
     
     friend class Primitive;
     
+
+    /// sets whether points are visualized in a smoothed manner
+    /** This might not be supported by the graphics hardware or driver.
+        Default value is true */
+    inline void setPointSmoothingEnabled(bool enabled=true){
+      m_pointSmoothingEnabled = enabled;
+    }
+
+    /// sets whether lines are visualized in a smoothed manner
+    /** This might not be supported by the graphics hardware or driver
+        Default value is true */
+    inline void setLineSmoothingEnabled(bool enabled=true){
+      m_lineSmoothingEnabled = enabled;
+    }
+ 
+    /// sets whether faces are visualized in a smoothed manner
+    /** This might not be supported by the graphics hardware or driver
+        Default value is true */
+    inline void setPolygonSmoothingEnabled(bool enabled=true){
+      m_polygonSmoothingEnabled = enabled;
+    }
     
     protected:
     /// recursive picking method
@@ -577,6 +598,10 @@ namespace icl{
 
     Mutex m_mutex; //!< for asynchronous updates
     bool m_enableLocking; //!< can be enabled
+
+    bool m_pointSmoothingEnabled;
+    bool m_lineSmoothingEnabled;
+    bool m_polygonSmoothingEnabled;
 
     private:
 
