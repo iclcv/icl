@@ -39,6 +39,7 @@
 #warning "this header must not be included if HAVE_OPENGL is not defined"
 #else
 
+#include <ICLUtils/Mutex.h>
 #include <ICLGeom/Primitive.h>
 #include <ICLGeom/ViewRay.h>
 #include <ICLGeom/Hit.h>
@@ -87,13 +88,18 @@ namespace icl{
       - polygons: no auto normals supported
       - textures: here we always use auto-normals
       
-      \section DYN Dynamic SceneObjects
+      \section DYN Dynamic SceneObjects and Locking
       Custome extensions of the SceneObject-interface can implement the SceneObject's 
       virtual method SceneObject::prepareForRendering which is calle every time before
       the object is acutally rendered. Here, the custom SceneObject can be adapted 
       dynamically. \n
       <b>Please note:</b> When then you want to change the vertex-, primitive- or 
-      children count at runtime, you have to implement the virtual methods 
+      you'll have to enable the SceneObjects locking mechanism using
+      SceneObject::setLockingEnabled(true).
+
+      
+      For compatibility with former version of the SceneObject class, you can 
+      also re-implement the virtual methods 
       SceneObject::lock() and SceneObject::unlock() appropriately. Usually this will
       look like this:
       \code
@@ -105,6 +111,8 @@ namespace icl{
         ...
       };
       \endcode
+      
+      
 
       \section _COLORS_ Colors
       In the object specification (when you add vertices and other primitives, colors
@@ -165,10 +173,21 @@ namespace icl{
     virtual ~SceneObject();
     
     /// returns object vertices
+    /** If the vertex count is changed, the object needs to be
+        locked */
     std::vector<Vec> &getVertices();
 
     /// returns object vertices (const)
     const std::vector<Vec> &getVertices() const;
+
+    /// returns object vertex colors
+    /** If the number of vertex colors is changed, the object needs to be
+        locked */
+    std::vector<GeomColor> &getVertexColors();
+
+    /// returns object vertex colors (const)
+    const std::vector<GeomColor> &getVertexColors() const;
+
 
     /// returns object's primitives (lines, quads, etc...)
     std::vector<Primitive*> &getPrimitives();
@@ -331,15 +350,7 @@ namespace icl{
     /// sets point size
     void setLineWidth(float lineWidth, bool recursive=true);
 
-    /// this function can be implemented by subclasses that need an eplicit locking
-    /** E.g. if an objects data is updated from another thread, you can sub-class 
-        this class and implement a locking mechanism for it*/
-    virtual void lock(){}
-
-    /// this function can be implemented by subclasses that need an eplicit locking
-    /** E.g. if an objects data is updated from another thread, you can sub-class 
-        this class and implement a locking mechanism for it*/
-    virtual void unlock(){}
+   
     
     /// performs a deep copy of this object
     virtual SceneObject *copy() const;
@@ -493,8 +504,45 @@ namespace icl{
 
     /// calls setVisible(true)
     void show(bool recursive=true){ setVisible(true); }
+
+
+    /// sets locking enabled or disabled
+    /** Note, that the method itself locks the internal mutex
+        to prevent, that m_enableLocking is disabled while
+        the mutex is locked somewhere else */
+    inline void setLockingEnabled(bool enabled) { 
+      m_mutex.lock();
+      m_enableLocking = enabled; 
+      m_mutex.unlock();
+    }
+    
+    /// returns whether locking is current enabled for this object
+    bool getLockingEnabled() const {
+      return m_enableLocking;
+    }
+
+    /// locks the internal mutex if locking enabled is set to true
+    /** This function can be re implemented by subclasses that need an eplicit locking.
+        Note, that explicit locking can be enabled/disabled using setLockingEnabled\n 
+        E.g. if an objects data is updated from another thread, you can sub-class 
+        this class and implement a locking mechanism for it*/
+    virtual void lock(){
+      if(!m_enableLocking) return;
+      m_mutex.lock();
+    }
+    
+    /// unlocks the internal mutex if locking enabled is set to true
+    /** This function can be re implemented by subclasses that need an eplicit locking.
+        Note, that explicit locking can be enabled/disabled using setLockingEnabled\n 
+        E.g. if an objects data is updated from another thread, you can sub-class 
+        this class and implement a locking mechanism for it*/
+    virtual void unlock(){
+      if(!m_enableLocking) return;
+      m_mutex.unlock();
+    }
     
     friend class Primitive;
+    
     
     protected:
     /// recursive picking method
@@ -526,6 +574,9 @@ namespace icl{
     bool m_hasTransformation;
     SceneObject *m_parent;
     std::vector<SmartPtr<SceneObject> > m_children;
+
+    Mutex m_mutex; //!< for asynchronous updates
+    bool m_enableLocking; //!< can be enabled
 
     private:
 

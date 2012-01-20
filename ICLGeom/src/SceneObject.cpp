@@ -45,7 +45,14 @@ namespace icl{
     return m_vertices; 
   }
   std::vector<Vec> &SceneObject::getVertices() { 
-    return m_vertices; 
+    return m_vertices;
+  }
+
+  const std::vector<GeomColor> &SceneObject::getVertexColors() const { 
+    return m_vertexColors; 
+  }
+  std::vector<GeomColor> &SceneObject::getVertexColors() { 
+    return m_vertexColors;
   }
 
   const std::vector<Primitive*> &SceneObject::getPrimitives() const { 
@@ -83,6 +90,7 @@ namespace icl{
     m_transformation(Mat::id()),
     m_hasTransformation(false),
     m_parent(0),
+    m_enableLocking(false),
     m_displayListHandle(0)
   {
 
@@ -212,6 +220,7 @@ namespace icl{
     m_transformation(Mat::id()),
     m_hasTransformation(false),
     m_parent(0),
+    m_enableLocking(false),
     m_displayListHandle(0)
   {
     m_visibleMask = Primitive::all;
@@ -521,6 +530,7 @@ namespace icl{
     m_transformation(Mat::id()),
     m_hasTransformation(false),
     m_parent(0),
+    m_enableLocking(false),
     m_displayListHandle(0)
   {
     File file(objFileName,File::readText);
@@ -825,6 +835,7 @@ namespace icl{
 #undef DEEP_COPY_2
 #undef DEEP_COPY_4
 
+    setLockingEnabled(other.getLockingEnabled());
     m_visibleMask = other.m_visibleMask;
     m_children.clear();
     m_children.resize(other.m_children.size());
