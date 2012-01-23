@@ -548,7 +548,7 @@ PylonGrabberImpl::getPylonDeviceList(Pylon::DeviceInfoList_t* filter){
 
   Pylon::DeviceInfoList_t lstDevices;
   // Get all attached cameras
-  if(filter=NULL){
+  if(filter==NULL){
     Pylon::CTlFactory::GetInstance().EnumerateDevices(lstDevices);
   } else {
     Pylon::CTlFactory::GetInstance().EnumerateDevices(lstDevices, *filter);
