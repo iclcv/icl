@@ -564,6 +564,9 @@ namespace icl{
     inline void setPolygonSmoothingEnabled(bool enabled=true){
       m_polygonSmoothingEnabled = enabled;
     }
+
+    /// deletes and removes all primitives
+    void clearAllPrimitives(); 
     
     protected:
     /// recursive picking method

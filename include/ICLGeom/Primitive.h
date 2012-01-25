@@ -105,6 +105,9 @@ namespace icl{
     /// Default constructor
     Primitive(Type type=nothing, const GeomColor &color=GeomColor(255,255,255,255)):type(type),color(color){}
 
+    /// virtual, but empty destructor
+    virtual ~Primitive() {}
+
     /// virtual render method, which is called by the parent scene object
     virtual void render(const Primitive::RenderContext &ctx) = 0;
     

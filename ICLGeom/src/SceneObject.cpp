@@ -102,6 +102,12 @@ namespace icl{
 
   static const float COLOR_FACTOR = 1.0/255.0;
 
+  void SceneObject::clearAllPrimitives(){
+    for(unsigned int i=0;i<m_primitives.size();++i){
+      delete m_primitives[i];
+    }
+    m_primitives.clear();
+  }
   
   void SceneObject::addVertex(const Vec &p, const GeomColor &color){
     m_vertices.push_back(p);
