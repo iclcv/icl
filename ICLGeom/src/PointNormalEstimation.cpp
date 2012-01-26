@@ -381,6 +381,7 @@ namespace icl{
         queue=cl::CommandQueue(context, devices[0], 0);//create command queue        
       }catch (cl::Error err) {//catch openCL errors
         std::cout<< "ERROR: "<< err.what()<< "("<< err.err()<< ")"<< std::endl;
+        clReady=false;
       }
     }
       
