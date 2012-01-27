@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLQt/src/PlotWidget.cpp                                **
+** File   : ICLQt/src/PlotWidget.cpp                               **
 ** Module : ICLQt                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -283,6 +283,12 @@ namespace icl{
   bool PlotWidget::drawSeriesData(QPainter &p, const DrawState &state){
     if(!data->seriesData.size()) return false;
 
+    bool clipping = p.hasClipping();
+    if(!clipping) {
+      p.setClipping(true);
+      p.setClipRect(QRect(state.b_left, state.b_top, width()-state.b_right, height()-state.b_bottom));
+    }
+
     const int rows = (int)data->seriesData.size();
 
     const Rect32f &v = state.dynamicViewPort;
@@ -296,10 +302,10 @@ namespace icl{
     LinearTransform1D lx(Range32f(lFrac*(len-1), rFrac*(len-1)),
                          Range32f(state.b_left,width()-state.b_right));
     LinearTransform1D ly(yrange, Range32f(height()-state.b_bottom,state.b_top)); 
-
+#if 0
     const int firstVisibleX = iclMax(0,(int)floor(lFrac*len));
     const int lastVisibleX = iclMin((int)len, (int)ceil(rFrac*len)+1);
-
+#endif
     //  SHOW(len << "    "  << lastVisibleX);
     
     Range32s winYRange(state.b_top, height()-state.b_bottom);
@@ -308,6 +314,10 @@ namespace icl{
       const Data::SeriesData &sd = *data->seriesData[y];
       const float *r = sd.data.get();
       const int stride = sd.stride;
+
+      const int firstVisibleX = iclMax(0,(int)floor(lFrac*sd.size()));
+      const int lastVisibleX = iclMin((int)sd.size(), (int)ceil(rFrac*sd.size())+1);
+
 
       std::vector<float> &ybuf = data->ybuf;
       std::vector<float> &xbuf = data->xbuf;
@@ -335,18 +345,22 @@ namespace icl{
       const bool symbolFilled = ( drawSymbols &&  'A' <= s->symbol  && s->symbol <= 'Z');
 
       if(drawFill){
+
         const int fillBottom = height()-state.b_bottom;
         p.setBrush(s->fillBrush);
         p.setPen(Qt::NoPen);
-
+        // const int yMinVisible = state.b_top;
+        // const int yMaxVisible = height()-state.b_bottom;
         for(int x=firstVisibleX+1;x<lastVisibleX;++x){
-          int minY = iclMax(ybuf[x-1],ybuf[x]);
+          const int currY = ybuf[x];//icl::clip((int)ybuf[x],yMinVisible,yMaxVisible); 
+          const int lastY = ybuf[x-1]; //icl::clip((int)ybuf[x-1],yMinVisible,yMaxVisible); 
+          const int minY = iclMax(currY,lastY);
           
-          psFill[0] = QPoint(xbuf[x-1],ybuf[x-1]);
-          psFill[1] = QPoint(xbuf[x],ybuf[x]);
+          psFill[0] = QPoint(xbuf[x-1],lastY);
+          psFill[1] = QPoint(xbuf[x],currY);
           psFill[2] = ( minY == psFill[0].y() ?
-                        QPoint(xbuf[x],ybuf[x-1]) : 
-                        QPoint(xbuf[x-1],ybuf[x]) );
+                        QPoint(xbuf[x],lastY) :
+                        QPoint(xbuf[x-1],currY) );
 
           p.drawConvexPolygon(psFill,3);
           p.drawRect(QRect(QPoint(xbuf[x-1],minY), QPoint(xbuf[x]-1, fillBottom)));
@@ -445,6 +459,8 @@ namespace icl{
         }
       }
     }
+    if(!clipping)p.setClipping(false);
+
     return true;
   }
 

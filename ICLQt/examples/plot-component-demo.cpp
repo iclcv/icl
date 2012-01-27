@@ -33,34 +33,73 @@
 *********************************************************************/
 
 #include <ICLQuick/Common.h>
+#include <ICLUtils/FPSLimiter.h>
 
-GUI gui;
+GUI gui("vbox");
 
 void init(){
-  gui << "plot(0,6.5,-1,1,GL)[@handle=plot@minsize=32x24]" << "!show";
+  std::string gl = pa("-gl") ? "gl" : "noGL";
+  gui << (GUI("hbox") 
+          << "plot(0,6.5,-1,1,"+gl+")[@handle=plot1@minsize=16x12]"
+          << "plot(0,6.5,-1,1,"+gl+")[@handle=plot2@minsize=16x12]"
+          )
+      << (GUI("hbox") 
+          << "plot(0,6.5,-1,1,"+gl+")[@handle=plot3@minsize=16x12]" 
+          << "plot(0,6.5,-1,1,"+gl+")[@handle=plot4@minsize=16x12]" 
+          ) << "!show";
 }
 
 void run(){
-  static PlotHandle plot = gui["plot"];
-  static std::vector<float> sinData(1000);
+  static PlotHandle plots[] = { 
+    gui["plot1"], gui["plot2"],
+    gui["plot3"], gui["plot4"]
+  };
+
+  static std::vector<float> sinData(100);
+  static std::vector<float> cosData(100);
+  static std::vector<float> tanData(100);
+
   static Time t = Time::now();
   float dtSec = (Time::now()-t).toSecondsDouble();
   for(unsigned int i=0;i<sinData.size();++i){
     float relI = float(i)/sinData.size();
     sinData[i] = sin(relI * 2*M_PI + dtSec);
+    cosData[i] = cos(relI * 2*M_PI + dtSec);
+    tanData[i] = cosData[i] > 1.E-10 ? sinData[i]/cosData[i] : 1.E30;
   }
-  plot->lock();
-  plot->clear();
-  //plot->addSeriesData(sinData.data()+10, sinData.size()-10, new AbstractPlotWidget::Pen(QColor(0,255,0)));
-  //plot->addSeriesData(sinData.data()+20, sinData.size()-20, new AbstractPlotWidget::Pen(QColor(0,100,255)));
-  plot->addSeriesData(sinData.data(), sinData.size(), new AbstractPlotWidget::Pen(QColor(255,0,0)));
+  for(int i=0;i<4;++i){
+    PlotHandle &plot = plots[i];
+    plot->lock();
+    plot->clear();
+    plot->setPropertyValue("tics.y-distance",0.25);
+    if(i==0 || i==3){
+      plot->addSeriesData(sinData.data(), sinData.size(), 
+                          new AbstractPlotWidget::Pen(QColor(255,0,0),Qt::NoPen,' ',5, QColor(255,0,0,100)),
+                          "sin(x)");
+      if(i==0){
+        plot->setPropertyValue("enable fill",true);
+      }
+    }
+    if(i==1 || i == 3){
+      plot->addSeriesData(cosData.data(), cosData.size(), 
+                          new AbstractPlotWidget::Pen(QColor(0,255,0),QColor(0,255,0),'o',2, QColor(0,255,0,100)),
+                          "cos(x)");
+      if(i==3) plot->setPropertyValue("enable symbols",false);
+    }
+    if(i==2 || i == 3){
+      plot->addSeriesData(tanData.data(), tanData.size(), 
+                          new AbstractPlotWidget::Pen(QColor(0,100,255),Qt::NoPen,' ',2, QColor(0,100,255,100)),
+                          "tan(x)");
+    }
 
-  plot->unlock();
-  plot.update();
+    plot->unlock();
+    plot.update();
+  }
 
-  Thread::msleep(25);
+  static FPSLimiter fpsLimit(20,10);
+  fpsLimit.wait();
 }
 
 int main(int n, char **ppc){
-  return ICLApp(n,ppc,"",init,run).exec();
+  return ICLApp(n,ppc,"-use-opengl|-gl",init,run).exec();
 }

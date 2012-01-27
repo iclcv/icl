@@ -349,6 +349,15 @@ namespace icl{
     const float bx = -mx * rx.minVal + b_left;
     const float by = -my * ry.minVal + (h-1-b_bottom);
 
+
+    /*
+    p.setPen(QColor(255,0,0));
+    p.drawLine(QPoint(0,height()-b_bottom), QPoint(width(), height()-b_bottom));
+
+    p.setPen(QColor(0,255,0));
+    p.drawLine(QPoint(0,drawToWinY(ry.minVal)), QPoint(width(),drawToWinY(ry.minVal))); 
+    */
+
     // set up view transform to data range
     p.translate(bx,by);
     p.scale(mx,my);
@@ -360,6 +369,7 @@ namespace icl{
 
     const int prx = getPropertyValue("labels.x-precision");
     const int pry = getPropertyValue("labels.y-precision");
+
 
     // --------------------------------------------------
     // -- X-Axis Tics and labels ------------------------
@@ -798,7 +808,7 @@ namespace icl{
         }
         p.setBrush(Qt::NoBrush);
         p.setPen(QColor(0,0,0));
-        p.drawText(QRectF(x+10,y,ENTRY_WIDTH-10,ENTRY_HEIGHT),
+        p.drawText(QRectF(x+14,y,ENTRY_WIDTH-10,ENTRY_HEIGHT),
                    Qt::AlignVCenter | Qt::AlignLeft,
                    rowNames[next].c_str());
         if(SYMBOLS_ON){
