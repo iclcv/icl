@@ -97,6 +97,8 @@
 #include <ICLQt/MultiDrawHandle.h>
 #include <ICLQt/SplitterHandle.h>
 #include <ICLQt/ColorHandle.h>
+#include <ICLQt/PlotHandle.h>
+#include <ICLQt/PlotWidget.h>
 #include <QtGui/QCheckBox>
 #include <QtGui/QCleanlooksStyle>
 #include <QtCore/QTimer>
@@ -1511,6 +1513,60 @@ public:
   };
 
   // }}}
+
+  struct PlotGUIWidget : public GUIWidget{
+    // {{{ open
+    PlotGUIWidget(const GUIDefinition &def):GUIWidget(def,0,5){
+
+      m_plot = new PlotWidget(def.parentWidget());
+      
+      float minX = def.numParams()>=1 ? def.floatParam(0) : 0;
+      float maxX = def.numParams()>=2 ? def.floatParam(1) : 0;
+      float minY = def.numParams()>=3 ? def.floatParam(2) : 0;
+      float maxY = def.numParams()>=4 ? def.floatParam(3) : 0;
+      
+      bool useGL = def.numParams()==5 ? (def.param(4) == "GL") : false;
+      
+      m_plot->setDataViewPort(Range32f(minX,maxX), Range32f(minY,maxY));
+
+      if(useGL){
+        QGLWidget *gl = new QGLWidget(def.parentWidget());
+        QLayout *layout = new QVBoxLayout(gl);
+        layout->setSpacing(0);
+        layout->setContentsMargins(0,0,0,0);
+        gl->setLayout(layout);
+        gl->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
+        m_plot->setParent(gl);
+        layout->addWidget(m_plot);
+        addToGrid(gl);
+      }else{
+        addToGrid(m_plot);
+      }
+      
+      if(def.handle() != ""){
+        getGUI()->lockData();
+        getGUI()->allocValue<PlotHandle>(def.handle(),PlotHandle(m_plot,this));
+        getGUI()->unlockData();  
+      }
+      
+      setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
+    }
+    static string getSyntax(){
+      return 
+      string("plot(X_VIEWPORT_MIN=0,X_VIEWPORT_MAX=0,Y_VIEWPORT_MIN=0,Y_VIEWPORT_MAX=0,GL)[general params]\n")+
+      string("\tX/Y_VIEWPORT_MIN/MAX are optionally given. The parameters define the data viewport in\n")+
+      string("\tcreated PlotWidget. If min and max X are zero, the PlotWidget will automatically estimate\n")+
+      string("\tthe X-data viewport. The same is true for the Y-data viewport. Please note, that\n")+
+      string("\tthe data viewport can also later be set\n")+
+      string("\tGL if the 5th parameter is set to GL, the widget will be embedded into an QGLWidget to enhance performance\n");
+      gen_params();
+    }
+  private:
+    PlotWidget *m_plot;
+  };
+
+  // }}}
+
   struct DrawGUIWidget : public GUIWidget{
     // {{{ open
     DrawGUIWidget(const GUIDefinition &def):GUIWidget(def,0,1){
@@ -1810,7 +1866,7 @@ public:
     return t;
   }
 
-  // }}}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  // }}}
   
   /// Definition for an arbitrary GUIWidget creator function
   typedef GUIWidget* (*gui_widget_creator_function)(const GUIDefinition &def);
@@ -1867,6 +1923,7 @@ public:
       MAP_CREATOR_FUNCS["prop"] = create_widget_template<ConfigurableGUIWidget>;
       MAP_CREATOR_FUNCS["color"] = create_widget_template<ColorGUIWidget>;
       MAP_CREATOR_FUNCS["ps"] = create_widget_template<ProcessMonitorGUIWidget>;
+      MAP_CREATOR_FUNCS["plot"] = create_widget_template<PlotGUIWidget>;
 
       //      MAP_CREATOR_FUNCS["hcontainer"] = create_widget_template<HContainerGUIWidget>;
       //      MAP_CREATOR_FUNCS["vcontainer"] = create_widget_template<VContainerGUIWidget>;

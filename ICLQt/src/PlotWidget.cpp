@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLQt/src/PlotWidget.cpp                               **
+** File   : ICLQt/src/PlotWidget.cpp                                **
 ** Module : ICLQt                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -33,314 +33,578 @@
 *********************************************************************/
 
 #include <ICLQt/PlotWidget.h>
+#include <ICLUtils/LinearTransform1D.h>
+#include <ICLUtils/SmartArray.h>
+#include <ICLUtils/Macros.h>
 
-#include <ICLQt/GUIWidget.h>
-#include <ICLUtils/Mutex.h>
-#include <algorithm>
-#include <ICLCore/Mathematics.h>
+#include <QtGui/QPainter>
 
 namespace icl{
 
-  struct FunctionFunctor{
-    PlotWidget::Function *f;
-    FunctionFunctor(PlotWidget::Function *f):f(f){}
-    inline float operator()(float val){
-      return (*f)(val);
-    }
+  struct PlotWidget::DrawState{
+    bool allowLines;
+    bool allowSymbols;
+    bool allowFill;
+      
+    float b_left;
+    float b_right;
+    float b_top;
+    float b_bottom;
+      
+    bool render_symbols_as_images;
+
+    Rect32f dynamicViewPort;
+    Rect32f dataViewPort;
+    
+    bool zoomed;
   };
 
-  std::vector<float> PlotWidget::Function::operator()(const std::vector<float> &xs){
-    std::vector<float> ys(xs.size());
-    std::transform(xs.begin(),xs.end(),ys.begin(),FunctionFunctor(this));    
-    return xs;
-  }
-  std::vector<float> &PlotWidget::Function::operator()(const std::vector<float> &xs, std::vector<float> &dst){
-    dst.resize(xs.size());
-    std::transform(xs.begin(),xs.end(),dst.begin(),FunctionFunctor(this));    
-    return dst;
-  }
-  
 
   struct PlotWidget::Data{
-    Data(bool useControlGUIUsed):
-      controlGUIUsed(useControlGUIUsed),selectedFunction(-1),
-      logMode(false),accuMode(false),fillMode(false),
-      blurMode("none"),aaMode(true),xTicsEnabled(false),xTicsSpacing(1),
-      yTicsEnabled(false),yTicsSpacing(1),ticLabelsEnabled(false),
-      leftMargin(5),topMargin(5),rightMargin(5),
-      bottomMargin(5),controlGUIHeight(150),xsRangeHint(0){
-    }
+    struct AbstractData{
+      std::string name;
+      int numPoints;
+      PenPtr style;
+      AbstractData(const std::string &name, int numPoints):name(name),numPoints(numPoints){}
+      virtual ~AbstractData(){}
+      int size() const { return numPoints; }
+    };
     
-    ~Data(){
-      for(unsigned int i=0;i<funcs.size();++i){
-        delete funcs[i];
+    struct ScatterData : public AbstractData{
+      ScatterData(char sym, int num, const std::string &name, 
+                  int r, int g, int b, int size, bool filled, bool connect,
+                  int xStride, int yStride):
+        AbstractData(name, num),xStride(xStride),yStride(yStride){
+        QColor color(r,g,b);
+        style = new AbstractPlotWidget::Pen(connect ? QPen(color) : QPen(Qt::NoPen),
+                                            QPen(color), sym, size, 
+                                            filled ? QBrush(color) : QBrush(Qt::NoBrush));
+        
       }
-      ICL_DELETE(xsRangeHint);
-    }
-    std::vector<PlotWidget::Function*> funcs;
+      int xStride;
+      int yStride;
+      SmartArray<float> xs;
+      SmartArray<float> ys;
 
-    bool controlGUIUsed;
-    GUI controlGUI;  
+      float xAt(int i) const { return xs[i*xStride]; }
+      float yAt(int i) const { return ys[i*xStride]; }
+    };
+    
+    struct SeriesData : public AbstractData{
+      SeriesData(const PenPtr &style, int num,
+                 const std::string &name, int stride):
+        AbstractData(name, num), stride(stride){
+        this->style = style;
+      }
+      int stride;
+      SmartArray<float> data;
+      float at(int i) const { return data[i*stride]; }
+    };
 
-    int selectedFunction;
 
-    bool logMode;
-    bool accuMode;
-    bool fillMode;
-    bool aaMode;
-    QString blurMode;
+    std::vector<float> ybuf;
+    std::vector<float> xbuf;
+    std::vector<bool> yClipBuf;
+    std::vector<QPoint> polygonBuf;
+    std::vector<ScatterData*> scatterData;
+    std::vector<SeriesData*> seriesData;
+    std::vector<QPoint> qpointBuf;
+    int numUsedQPoints;
     
-    
-    bool xTicsEnabled;
-    float xTicsSpacing;
-    bool yTicsEnabled;
-    float yTicsSpacing;
-    
-    bool ticLabelsEnabled;
-
-    int leftMargin;
-    int topMargin;    
-    int rightMargin;
-    int bottomMargin;
-    int controlGUIHeight;
-  
-    // one of this is used (that one that is not null)
-    std::vector<icl32f> xsValues;
-    Range32f *xsRangeHint;
-    Mutex mutex;
-    
-    QRectF getWidgetViewPort(const QSize &s){
-      bool top = this->topMargin + (controlGUIUsed ? controlGUIHeight : 0);
-      return QRectF(leftMargin,top,s.width()-(leftMargin+rightMargin),s.height()-(topMargin+bottomMargin));
-    }
-    
-    Range32f bounds(const std::vector<float> &v){
-      if(!v.size()) return Range32f(0,0);
-      float min_ = *std::min_element(xsValues.begin(),xsValues.end());
-      float max_ = *std::max_element(xsValues.begin(),xsValues.end());
-      return Range32f(min_,max_);      
-    }
-    
-    Range32f getXRange(){
-      if(xsRangeHint){
-        return *xsRangeHint;
-      }else{
-        return bounds(xsValues);
+    int getMaxSeriesDataRowLen() const{
+      int maxLineLen = 0;
+      for(unsigned int i=0;i<seriesData.size();++i){
+        const SeriesData &d = *seriesData[i];
+        if(d.size() > maxLineLen) maxLineLen = d.size();
       }
-    }
-    inline float adaptLog(float f){
-      if(logMode){
-        if(f<0) return 0;
-        else return ::log(f);
-      }else{
-        return f;
-      }
-    }
-    
-    Range32f adaptLog(const Range32f &r){
-      return Range32f(adaptLog(r.minVal),adaptLog(r.maxVal));
-    }
-    
-    Range32f getYRange(){
-      unsigned int N = funcs.size();
-      if(selectedFunction>=0 && selectedFunction<N){
-        /// accuMode doesn't matter here
-        Function &f = *funcs[selectedFunction];
-        Range32f yr = f.yrange();
-        if(yr != Range32f(0,0)){
-          return adaptLog(yr);
-        }else{
-          return adaptLog(bounds(f(xsValues)));
-        }
-      }
-      if(accuMode){          
-        bool allFuncsHaveRanges = true;
-        Range32f r = Range32f::limits();
-        for(unsigned int j=0;j<xsValues.size();++j){
-          float sum = 0;
-          for(unsigned int i=0;i<N;++i){
-            sum += (*funcs[i])(xsValues[j]);
-          }
-          if(sum < r.minVal) r.minVal = sum;
-          if(sum > r.maxVal) r.maxVal = sum;
-        }
-        return adaptLog(r);
-      }
-      int selectedFunctionSave = selectedFunction;
-      Range32f r = Range32f::limits();
-      std::swap(r.minVal,r.maxVal);
-      for(unsigned int i=0;i<N;++i){
-        selectedFunction = i;
-        Range32f ri = getYRange();
-        if(ri.minVal < r.minVal) r.minVal = ri.minVal;
-        if(ri.maxVal < r.maxVal) r.maxVal = ri.maxVal;
-      }
-      selectedFunction = selectedFunctionSave;
-      return r;
-    }
-
-    QRectF getDataViewPort(){
-      Range32f xrange = getXRange();
-      Range32f yrange = getYRange();
-      return QRectF(xrange.minVal,yrange.minVal,xrange.getLength(),yrange.getLength());
+      return maxLineLen;
     }
   };
-  
-#define LOCK_DATA Mutex::Locker LOCAL_MUTEX_LOCKER(m_data->mutex);
-  
-  void create_control_gui(PlotWidget *widget, PlotWidget::Data *data){
-    
 
+  
 
-    
+  PlotWidget::PlotWidget(QWidget *parent) : AbstractPlotWidget(parent),data(new Data){
+
   }
 
-  
-  PlotWidget::PlotWidget(bool createControlGUI, QWidget *parent):
-    QGLWidget(parent),m_data(new PlotWidget::Data(createControlGUI)){
-    
-    setBackgroundRole(QPalette::Base);
-  }
-  
   PlotWidget::~PlotWidget(){
-    delete m_data;
+    delete data;
   }
   
-  
-  void PlotWidget::paintEvent(QPaintEvent *e){
-    LOCK_DATA;
-    float sx=0,sy=0,ox=0,oy=0;
-    QRectF widgetViewPort = m_data->getWidgetViewPort(size());
-    QRectF dataViewPort = m_data->getDataViewPort();
+  bool PlotWidget::drawData(QPainter &p){
+    const Rect32f dynViewPort = getDynamicDataViewPort();
+    const Rect32f dataViewPort = getDataViewPort();
 
-  }
-  
-  void PlotWidget::addFunction(Function *f){
-    LOCK_DATA;
-    m_data->funcs.push_back(f);
-  }
-  
-  void PlotWidget::deleteFunction(Function *f){
-    LOCK_DATA;
-    std::vector<Function*>::iterator it = std::find(m_data->funcs.begin(),m_data->funcs.end(),f);
-    if(it != m_data->funcs.end()){
-      delete *it;
-      m_data->funcs.erase(it);
+    const DrawState state = {
+      getPropertyValue("enable lines").as<bool>(),
+      getPropertyValue("enable symbols").as<bool>(),
+      getPropertyValue("enable fill").as<bool>(),
+      getPropertyValue("borders.left").as<float>(),
+      getPropertyValue("borders.right").as<float>(),
+      getPropertyValue("borders.top").as<float>(),
+      getPropertyValue("borders.bottom").as<float>(),
+      getPropertyValue("render symbols as images").as<bool>(),
+      dynViewPort,
+      dataViewPort,
+      (dynViewPort != dataViewPort),
+
+    };
+
+    p.resetTransform();    
+    
+    if(state.zoomed){
+      p.setClipping(true);
+      p.setClipRect(QRect(state.b_left, state.b_top, width()-state.b_right, height()-state.b_bottom));
     }
-  }
-  void PlotWidget::removeFunction(Function *f){
-    LOCK_DATA;
-    std::vector<Function*>::iterator it = std::find(m_data->funcs.begin(),m_data->funcs.end(),f);
-    if(it != m_data->funcs.end()){
-      m_data->funcs.erase(it);
+    
+    bool result = drawSeriesData(p,state)  | drawScatterData(p,state);
+    
+    if(state.zoomed){
+      p.setClipping(false);
     }
-  }
-  
-  void PlotWidget::deleteAllFunctions(){
-    LOCK_DATA;
-    for(unsigned int i=0;i<m_data->funcs.size();++i){
-      delete m_data->funcs[i];
-    }
-    m_data->funcs.clear();
+    return result;
     
   }
-  void PlotWidget::removeAllFunctions(){
-    LOCK_DATA;
-    m_data->funcs.clear();
-  }
   
-  void PlotWidget::setMargins(int left, int top, int right, int bottom){
-    LOCK_DATA;
-    m_data->leftMargin = left;
-    m_data->topMargin = top;
-    m_data->rightMargin = right;
-    m_data->bottomMargin = bottom;
-    
-  }
-  void PlotWidget::setXTicsSpacing(float val){
-    LOCK_DATA;
-    m_data->xTicsSpacing = val;
-  }
-  void PlotWidget::setYTicsSpacing(float val){
-    LOCK_DATA;
-    m_data->yTicsSpacing = val;
-  }
+  bool PlotWidget::drawScatterData(QPainter &p, const DrawState &state){
+    const Rect32f &v = state.dynamicViewPort;
+    const int w = width(), h = height();
+    const Range32f xdata(v.x,v.right()), ydata(v.y,v.bottom());
+    const Range32f xwin(state.b_left, w - state.b_right);
+    const Range32f ywin(state.b_top, h - state.b_bottom);
+    LinearTransform1D tx(xdata,xwin), ty(ydata,Range32f(ywin.maxVal, ywin.minVal));
 
-  void PlotWidget::setXRange(const SteppingRange<icl32f> &xs){
-    LOCK_DATA;
-    m_data->xsValues.clear();
-    m_data->xsValues.reserve(xs.getLength()/xs.stepping+1);
-    for(float f=xs.minVal;f<=xs.maxVal;f+=xs.stepping){
-      m_data->xsValues.push_back(f);
-    }
-    ICL_DELETE(m_data->xsRangeHint);
-    m_data->xsRangeHint = new Range32f(xs.minVal,xs.maxVal);
-  }
-  void PlotWidget::setXValues(const std::vector<icl32f> &xs){
-    LOCK_DATA;
-    m_data->xsValues = xs;
-    ICL_DELETE(m_data->xsRangeHint);
-  }
-  
-  void PlotWidget::setFillModeEnabled(bool enabled){
-    LOCK_DATA;
-    m_data->fillMode = enabled;
-  }
-  void PlotWidget::setLogModeEnabled(bool enabled){
-    LOCK_DATA;
-    m_data->logMode = enabled;
-  }
-  void PlotWidget::setAccuModeEnalbed(bool enabled){
-    LOCK_DATA;
-    m_data->accuMode = enabled;
-  }
-  void PlotWidget::setAAMode(bool enabled){    
-    LOCK_DATA;
-    m_data->aaMode = enabled;
-  }
-  
-  /// how to blur functions (none, mean3, mean5, median)
-  void PlotWidget::setBlurModeEnabled(const QString &mode){
-    LOCK_DATA;
-    m_data->blurMode = mode;
-  }
-  
-  void PlotWidget::setControlGUIEnabled(bool enabled){
-    LOCK_DATA;
-    // XXX TODO create menu or not
-    if(m_data->controlGUIUsed != enabled){
-      m_data->controlGUIUsed == enabled;
-      if(enabled){
-        create_control_gui(this,m_data);
+    for(unsigned int i=0;i<data->scatterData.size();++i){
+      const Data::ScatterData &s = *data->scatterData[i];
+      const PenPtr &style = s.style;
+      const int symSize = style->symbolSize;
+
+      std::vector<float> &xbuf = data->xbuf;
+      std::vector<float> &ybuf = data->ybuf;
+      std::vector<bool> &clipBuf = data->yClipBuf;
+      if((int)xbuf.size() < s.size()) xbuf.resize(s.size());
+      if((int)ybuf.size() < s.size()) ybuf.resize(s.size());
+      if((int)clipBuf.size() < s.size()) clipBuf.resize(s.size());
+
+      // optimization for points: TODO!!!
+      if(state.allowSymbols && style->symbolPen != Qt::NoPen && style->symbol){
+        std::vector<QPoint> &qpointBuf = data->qpointBuf; 
+        if((int)qpointBuf.size() < s.size()) qpointBuf.resize(s.size());
+        int &numUsedQPoints = data->numUsedQPoints;
+        numUsedQPoints = -1;
+        for(int j=0;j<s.size();++j){
+          xbuf[j] = tx(s.xAt(j));
+          ybuf[j] = ty(s.yAt(j));
+          if( (clipBuf[j] = xwin.contains(xbuf[j]) && ywin.contains(ybuf[j]) ) ){
+            qpointBuf[++numUsedQPoints] = QPoint(xbuf[j],ybuf[j]);
+          }
+        }
+        ++numUsedQPoints; // count is always one more!
       }else{
-        delete m_data->controlGUI.getRootWidget();
-        m_data->controlGUI = GUI();
+        /// normal version
+        for(int j=0;j<s.size();++j){
+          xbuf[j] = tx(s.xAt(j));
+          ybuf[j] = ty(s.yAt(j));
+          clipBuf[j] = xwin.contains(xbuf[j]) && ywin.contains(ybuf[j]);
+        }
+      }
+
+
+      if(state.allowFill && style->fillBrush != Qt::NoBrush){
+
+        if(state.allowLines){
+          p.setPen(style->linePen);
+        }else{
+          p.setPen(Qt::NoPen);
+        }
+        p.setBrush(style->fillBrush);
+                   
+        std::vector<QPoint> &polygonBuf = data->polygonBuf;
+        if((int)polygonBuf.size() < (int)s.size()){
+          polygonBuf.resize(s.size());
+        }
+        for(int j=0;j<s.size();++j){
+          polygonBuf[j] = QPoint(xbuf[j],ybuf[j]);
+        }
+        p.drawConvexPolygon(polygonBuf.data(), polygonBuf.size());
+        
+      }else if(state.allowLines && style->linePen != Qt::NoPen){
+        p.setPen(style->linePen);
+        for(int j=1;j<s.size();++j){
+          if(clipBuf[j] ||clipBuf[j-1]){
+            p.drawLine(xbuf[j-1], ybuf[j-1], xbuf[j], ybuf[j]);
+          }
+        } 
+      }
+
+      
+      if(state.allowSymbols && style->symbolPen != Qt::NoPen){
+        p.setPen(style->symbolPen);
+        if('A' <= style->symbol && style->symbol <= 'Z'){
+          p.setBrush(style->symbolPen.color());
+        }else{
+          p.setBrush(Qt::NoBrush);
+        }
+        switch(style->symbol){
+          case '.':
+            p.drawPoints(data->qpointBuf.data(), data->numUsedQPoints);
+            break;
+#define PLOT_WIDGET_CASE_X(X)                                           \
+          case X:                                                       \
+            for(int j=0;j<s.size();++j) {                               \
+              if(clipBuf[j]){                                           \
+                draw_symbol<X>(p,symSize,xbuf[j],ybuf[j]);              \
+              }                                                         \
+            }                                                           \
+            break;
+#define PLOT_WIDGET_CASE_XY(X,Y)                \
+          case Y:                               \
+            PLOT_WIDGET_CASE_X(X)
+
+          // PLOT_WIDGET_CASE_X('.');
+            PLOT_WIDGET_CASE_X('-');
+            PLOT_WIDGET_CASE_X('x');
+            PLOT_WIDGET_CASE_X('*');
+            PLOT_WIDGET_CASE_X('+');
+            PLOT_WIDGET_CASE_XY('s','S');
+            PLOT_WIDGET_CASE_XY('t','T');
+            PLOT_WIDGET_CASE_XY('o','O');
+            PLOT_WIDGET_CASE_XY('d','D');
+          default: break;
+        }
+#undef PLOT_WIDGET_CASE_XY
+#undef PLOT_WIDGET_CASE_X
+      }
+
+    }
+    return true;
+  }
+  
+  bool PlotWidget::drawSeriesData(QPainter &p, const DrawState &state){
+    if(!data->seriesData.size()) return false;
+
+    const int rows = (int)data->seriesData.size();
+
+    const Rect32f &v = state.dynamicViewPort;
+    const Range32f xrange(v.x,v.right()), yrange(v.y,v.bottom());
+    const Rect32f &vd = state.dataViewPort;
+
+    LinearTransform1D A(Range32f(vd.left(), vd.right()),Range32f(0,1));
+    float lFrac = A(v.left()), rFrac = A(v.right());
+    float len = data->getMaxSeriesDataRowLen()-1;
+    // we use (len-1) as range since with 100 bins, we have only 99 gaps
+    LinearTransform1D lx(Range32f(lFrac*(len-1), rFrac*(len-1)),
+                         Range32f(state.b_left,width()-state.b_right));
+    LinearTransform1D ly(yrange, Range32f(height()-state.b_bottom,state.b_top)); 
+
+    const int firstVisibleX = iclMax(0,(int)floor(lFrac*len));
+    const int lastVisibleX = iclMin((int)len, (int)ceil(rFrac*len)+1);
+
+    //  SHOW(len << "    "  << lastVisibleX);
+    
+    Range32s winYRange(state.b_top, height()-state.b_bottom);
+    
+    for(int y=0;y<rows;++y){
+      const Data::SeriesData &sd = *data->seriesData[y];
+      const float *r = sd.data.get();
+      const int stride = sd.stride;
+
+      std::vector<float> &ybuf = data->ybuf;
+      std::vector<float> &xbuf = data->xbuf;
+      std::vector<bool> &yClipBuf = data->yClipBuf;
+      if((int)ybuf.size() < sd.size()) ybuf.resize(sd.size());
+      if((int)xbuf.size() < sd.size()) xbuf.resize(sd.size());
+      if(state.zoomed && (int)yClipBuf.size() < sd.size()) yClipBuf.resize(sd.size());
+      
+      for(int x=firstVisibleX;x<=lastVisibleX;++x){
+        ybuf[x] = ly(r[stride*x]);
+        xbuf[x] = lx(x);
+        if( state.zoomed ){
+          yClipBuf[x] = winYRange.contains(ybuf[x]);
+        }
+      }
+      
+      const PenPtr &s = sd.style;
+
+      QPoint psFill[3];
+      const bool drawFill = state.allowFill && (s->fillBrush != Qt::NoBrush);
+      const bool drawLines = state.allowLines && (s->linePen != Qt::NoPen);
+      const bool drawSymbols = ( state.allowSymbols && (s->symbolPen != Qt::NoPen) 
+                                 && s->symbol != ' '
+                                 && s->symbolSize > 0 );
+      const bool symbolFilled = ( drawSymbols &&  'A' <= s->symbol  && s->symbol <= 'Z');
+
+      if(drawFill){
+        const int fillBottom = height()-state.b_bottom;
+        p.setBrush(s->fillBrush);
+        p.setPen(Qt::NoPen);
+
+        for(int x=firstVisibleX+1;x<lastVisibleX;++x){
+          int minY = iclMax(ybuf[x-1],ybuf[x]);
+          
+          psFill[0] = QPoint(xbuf[x-1],ybuf[x-1]);
+          psFill[1] = QPoint(xbuf[x],ybuf[x]);
+          psFill[2] = ( minY == psFill[0].y() ?
+                        QPoint(xbuf[x],ybuf[x-1]) : 
+                        QPoint(xbuf[x-1],ybuf[x]) );
+
+          p.drawConvexPolygon(psFill,3);
+          p.drawRect(QRect(QPoint(xbuf[x-1],minY), QPoint(xbuf[x]-1, fillBottom)));
+        }
+      }
+      
+      if(drawLines){
+        if(state.zoomed){
+          for(int x=firstVisibleX+1;x<lastVisibleX;++x){
+            if(yClipBuf[x-1] || yClipBuf[x]){
+              p.setPen(s->linePen);
+              p.drawLine(QPoint(xbuf[x],ybuf[x]), QPoint(xbuf[x-1],ybuf[x-1]));
+            }
+          }
+        }else{
+          for(int x=firstVisibleX+1;x<lastVisibleX;++x){
+            p.setPen(s->linePen);
+            p.drawLine(QPoint(xbuf[x],ybuf[x]), QPoint(xbuf[x-1],ybuf[x-1]));
+          }
+        }
+      }
+
+      if(drawSymbols){
+        if(state.render_symbols_as_images){
+          
+          const int symbolSize = s->symbolSize;
+          QImage symbolImage(symbolSize*2+1,symbolSize*2+1,QImage::Format_ARGB32_Premultiplied);
+          symbolImage.fill(0);
+          QPainter ps(&symbolImage);
+          ps.setPen(s->symbolPen);
+          ps.setBrush(symbolFilled ? QBrush(s->symbolPen.color()) : QBrush(Qt::NoBrush));
+#define PLOT_WIDGET_CASE_X(X)                                           \
+          case X:                                                       \
+            AbstractPlotWidget::draw_symbol<X>(ps,symbolSize,           \
+                                               symbolSize,symbolSize);  \
+            break
+          
+#define PLOT_WIDGET_CASE_XY(X,Y)                       \
+          case Y:                                      \
+            PLOT_WIDGET_CASE_X(X)
+          
+          switch(s->symbol){
+            PLOT_WIDGET_CASE_X('.');
+            PLOT_WIDGET_CASE_X('-');
+            PLOT_WIDGET_CASE_X('x');
+            PLOT_WIDGET_CASE_X('*');
+            PLOT_WIDGET_CASE_X('+');
+            PLOT_WIDGET_CASE_XY('s','S');
+            PLOT_WIDGET_CASE_XY('t','T');
+            PLOT_WIDGET_CASE_XY('o','O');
+            PLOT_WIDGET_CASE_XY('d','D');
+            case ' ': break;
+            default:
+              ERROR_LOG("unabled to draw symbol of unknown type " + str((int) s->symbol));
+          }
+#undef PLOT_WIDGET_CASE_XY
+#undef PLOT_WIDGET_CASE_X
+
+          for(int x=firstVisibleX;x<lastVisibleX;++x){
+            p.drawImage(QPointF(xbuf[x]-symbolSize+0.5,ybuf[x]-symbolSize+0.5),symbolImage);
+          }
+          
+        }else{ // normal symbol rendering ..
+          const int symbolSize = s->symbolSize;
+          p.setPen(s->symbolPen);
+          p.setBrush(symbolFilled ? QBrush(s->symbolPen.color()) : QBrush(Qt::NoBrush));
+          
+#define PLOT_WIDGET_CASE_X(X)                                           \
+          case X:                                                       \
+            for(int x=firstVisibleX;x<lastVisibleX;++x){                \
+              AbstractPlotWidget::draw_symbol<X>(p,symbolSize,xbuf[x],ybuf[x]); \
+            }                                                           \
+            break
+          
+#define PLOT_WIDGET_CASE_XY(X,Y)    \
+          case Y:                   \
+            PLOT_WIDGET_CASE_X(X)
+          
+          switch(s->symbol){
+            PLOT_WIDGET_CASE_X('.');
+            PLOT_WIDGET_CASE_X('-');
+            PLOT_WIDGET_CASE_X('x');
+            PLOT_WIDGET_CASE_X('*');
+            PLOT_WIDGET_CASE_X('+');
+            PLOT_WIDGET_CASE_XY('s','S');
+            PLOT_WIDGET_CASE_XY('t','T');
+            PLOT_WIDGET_CASE_XY('o','O');
+            PLOT_WIDGET_CASE_XY('d','D');
+            case ' ': break;
+            default:
+              ERROR_LOG("unabled to draw symbol of unknown type " + str("[") + s->symbol + "]");
+          }
+#undef PLOT_WIDGET_CASE_X
+#undef PLOT_WIDGET_CASE_XY
+          
+        }
       }
     }
+    return true;
   }
-  
-  void PlotWidget::selectFunction(int index){
-    LOCK_DATA;
-    m_data->selectedFunction = index;
+
+
+  Range32f PlotWidget::estimateDataXRange() const{
+    bool haveSeries = data->seriesData.size(), haveScatter = data->scatterData.size();
+    if(!haveSeries && !haveScatter){
+      // no data at all
+      return Range32f(0,0);
+    }
+    if(haveSeries && haveScatter){
+      // both is given, but not viewport is set -> what to use?
+      WARNING_LOG("both scatter- and series data is given, data x-viewport is missing");
+      return Range32f(0,0);
+    }
+
+    if(haveSeries){
+      // use max line len, 0
+      return Range32f(0, data->getMaxSeriesDataRowLen()-1);
+    }else{
+      Range32f r = Range32f::limits();
+      std::swap(r.minVal, r.maxVal);
+      for(unsigned int i=0;i<data->scatterData.size();++i){
+        const Data::ScatterData &d = *data->scatterData[i];
+        for(int j=0;j<d.size();++j){
+          r.extend(d.xAt(j));
+        }
+      }
+      return r;
+    }
   }
-  
-  void PlotWidget::deselectFunction(){
-    LOCK_DATA;
-    m_data->selectedFunction = -1;
-  }
-  
-  
-  void PlotWidget::setXTicsEnabled(bool enabled){
-    LOCK_DATA;
-    m_data->xTicsEnabled = enabled;
-  }
-  void PlotWidget::setYTicsEnabled(bool enabled){
-    LOCK_DATA;
-    m_data->yTicsEnabled = enabled;
+
+  Range32f PlotWidget::estimateDataYRange() const{
+    bool haveSeries = data->seriesData.size(), haveScatter = data->scatterData.size();
+    if(!haveSeries && !haveScatter){
+      // no data at all
+      return Range32f(0,0);
+    }
     
+    /// find range for both, scatter and series data
+    Range32f r = Range32f::limits();
+    std::swap(r.minVal, r.maxVal);
+
+    if(haveSeries){
+      for(unsigned int i=0;i<data->seriesData.size();++i){
+        const Data::SeriesData &d = *data->seriesData[i];
+        for(int j=0;j<d.size();++j){
+          r.extend(d.at(j));
+        }
+      }
+    }
+    if(haveScatter){
+      for(unsigned int i=0;i<data->scatterData.size();++i){
+        const Data::ScatterData &d = *data->scatterData[i];
+        for(int j=0;j<d.size();++j){
+          r.extend(d.yAt(j));
+        }
+      }
+    }
+    return r;
   }
-  void PlotWidget::setTicLablesEnabled(bool enabled){
-    LOCK_DATA;
-    m_data->ticLabelsEnabled = enabled;
+  
+  Rect32f PlotWidget::getDataViewPort() const{
+    Locker lock(this);
+    Rect32f r = AbstractPlotWidget::getDataViewPort();
+    if(!r.width){
+      Range32f rx = estimateDataXRange();
+      r.x = rx.minVal;
+      r.width = rx.getLength();
+    }
+    if(!r.height){
+      Range32f ry = estimateDataYRange();
+      r.y = ry.minVal;
+      r.height = ry.getLength();
+    }
+    return r;
+  }
+  
+  void PlotWidget::drawLegend(QPainter &p,const Rect &where, bool horizontal){
+    int num = data->scatterData.size() + data->seriesData.size();
+    if(!num) return;
+    
+    std::vector<std::string> rowNames(num);
+    std::vector<PenPtr> rowStyles(num);
+    for(unsigned int i=0;i<data->seriesData.size();++i){
+      rowNames[i] = data->seriesData[i]->name;
+      rowStyles[i] = data->seriesData[i]->style;
+    }
+    const int offs = data->seriesData.size();
+    for(unsigned int i=0;i<data->scatterData.size();++i){
+      rowNames[offs+i] = data->scatterData[i]->name;
+      rowStyles[offs+i] = data->scatterData[i]->style;
+    }
+
+    drawDefaultLedgend(p,where,horizontal,rowNames,rowStyles);
+  }
+
+  void PlotWidget::clearSeriesData(){
+    Locker lock(this);
+    for(unsigned int i=0;i<data->seriesData.size();++i){
+      delete data->seriesData[i];
+    }
+    data->seriesData.clear();
+  }
+  
+  void PlotWidget::clearScatterData(){
+    Locker lock(this);
+    for(unsigned int i=0;i<data->scatterData.size();++i){
+      delete data->scatterData[i];
+    }
+    data->scatterData.clear();
+  }
+
+  /// adds series data
+  void PlotWidget::addSeriesData(const float *data, int len, 
+                                 const AbstractPlotWidget::PenPtr &style,
+                                 const std::string &name, int stride, bool deepCopyData, bool passOwnerShip){
+    Data::SeriesData *s = new Data::SeriesData(style, len, name, deepCopyData?1:stride);
+
+    if(deepCopyData){
+      s->data = new float[len];
+      for(int i=0;i<len;++i){
+        s->data[i] = data[i*stride];
+      }
+    }else{
+      s->data = SmartArray<float>(const_cast<float*>(data), passOwnerShip);
+    }
+    Locker lock(this);
+    this->data->seriesData.push_back(s);
+  
+  }
+  
+  void PlotWidget::addScatterData(char sym, const float *xs, const float *ys, int num, 
+                                  const std::string &name, int r, int g, int b, int size, bool filled,
+                                  int xStride, int yStride, bool connectingLine,
+                                  bool deepCopyData, bool passDataOwnerShip){
+    Data::ScatterData *s = new Data::ScatterData(sym, num, name, r,g,b, size, filled, connectingLine, 
+                                                 deepCopyData?1:xStride, deepCopyData?1:yStride);
+    if(deepCopyData){
+      s->xs = new float[num];
+      s->ys = new float[num];
+      for(int i=0;i<num;++i){
+        s->xs[i] = xs[i*xStride];
+        s->ys[i] = ys[i*yStride];
+      }
+    }else{
+      s->xs = SmartArray<float>(const_cast<float*>(xs), passDataOwnerShip);
+      s->ys = SmartArray<float>(const_cast<float*>(ys), passDataOwnerShip);
+    }
+    Locker lock(this);
+    data->scatterData.push_back(s);
+  }
+
+
+  void PlotWidget::clear() {
+    clearAnnotations();
+    clearSeriesData(); 
+    clearScatterData(); 
   }
 }
+ 
+
+

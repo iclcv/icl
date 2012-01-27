@@ -42,6 +42,7 @@
 #include <ICLUtils/Range.h>
 #include <ICLCore/Img.h>
 
+#include <ICLQt/PlotHandle.h>
 #include <ICLQt/TabHandle.h>
 #include <ICLQt/StateHandle.h>
 #include <ICLQt/SplitterHandle.h>
@@ -358,6 +359,13 @@ INST_OTHER_TYPES
             });
     FROM_TO(ImageHandle,ICLWidget*,dst = *src);
 
+    /// PlotHandle
+    FROM_TO(DataStore::Data::Event,PlotHandle,
+            if(src.message=="update"){
+              dst.update();
+            });
+    FROM_TO(PlotHandle,PlotWidget*,dst = *src);
+
 
     // DrawHandle
     FROM_IMG(DrawHandle,dst=src);
@@ -592,6 +600,11 @@ namespace icl{
     ADD(DataStore::Data::Event,ImageHandle);
     ADD_T_TO_T(ImageHandle);
     ADD(ImageHandle,ICLWidget*);
+    
+    // PlotHandle
+    ADD(DataStore::Data::Event,PlotHandle);
+    ADD_T_TO_T(PlotHandle);
+    ADD(PlotHandle,PlotWidget*);
 
     // DrawHandle
     FROM_IMG_ADD(DrawHandle);

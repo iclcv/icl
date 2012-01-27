@@ -68,6 +68,7 @@
 #include <ICLQt/MultiDrawHandle.h>
 #include <ICLQt/TabHandle.h>
 #include <ICLQt/SplitterHandle.h>
+#include <ICLQt/PlotHandle.h>
 
 /// extract a given type as reference from GUI object named gui
 #define gui_VAL(T,NAME) static T &NAME = gui.getValue<T>(#NAME)
