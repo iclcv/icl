@@ -35,43 +35,75 @@
 #include <ICLQuick/Common.h>
 #include <ICLUtils/FPSLimiter.h>
 
-GUI gui("vbox");
+#include <ICLCore/Random.h>
+
+GUI gui("hbox");
 
 void init(){
   std::string gl = pa("-gl") ? "gl" : "noGL";
-  gui << (GUI("hbox") 
+  gui << (GUI("vbox") 
           << "plot(0,6.5,-1,1,"+gl+")[@handle=plot1@minsize=16x12]"
           << "plot(0,6.5,-1,1,"+gl+")[@handle=plot2@minsize=16x12]"
           )
-      << (GUI("hbox") 
+      << (GUI("vbox") 
           << "plot(0,6.5,-1,1,"+gl+")[@handle=plot3@minsize=16x12]" 
           << "plot(0,6.5,-1,1,"+gl+")[@handle=plot4@minsize=16x12]" 
+          )
+      << (GUI("vbox") 
+          << "plot(-9,9,-9,9,"+gl+")[@handle=plot5@minsize=16x12]" 
+          << "plot(0,0,0,0,"+gl+")[@handle=plot6@minsize=16x12]" 
           ) << "!show";
 }
 
 void run(){
   static PlotHandle plots[] = { 
     gui["plot1"], gui["plot2"],
-    gui["plot3"], gui["plot4"]
+    gui["plot3"], gui["plot4"],
+    gui["plot5"], gui["plot6"]
   };
 
   static std::vector<float> sinData(100);
   static std::vector<float> cosData(100);
   static std::vector<float> tanData(100);
+  static std::vector<Point32f> scatterData1(10000);
+  static std::vector<Point32f> scatterData2(10000);
+  static std::vector<Point32f> scatterData3(1000);
+  static GRand grand;
+  static const float C[] = { 1.9, 1.2, 
+                             1.2, 2.8 };
+  for(unsigned int i=0;i<scatterData1.size();++i){
+    Point32f p(grand, grand);
+    scatterData1[i].x = p.x * C[0] + p.y * C[1];
+    scatterData1[i].y = p.x * C[2] + p.y * C[3];
 
+    scatterData2[i].x = p.x * C[0] + p.y * -C[1] + 1;
+    scatterData2[i].y = p.x * -C[2] + p.y * C[3] + 0.5;
+  }
   static Time t = Time::now();
   float dtSec = (Time::now()-t).toSecondsDouble();
+  for(unsigned int i=0;i<scatterData3.size();++i){
+    float rel = float(i)/(scatterData3.size()-1) * 2 * M_PI;
+    float r = 2 + 3 * sin(4*rel+dtSec);
+    scatterData3[i].x  = r * cos(rel);
+    scatterData3[i].y  = r * sin(rel);
+  }
+
   for(unsigned int i=0;i<sinData.size();++i){
     float relI = float(i)/sinData.size();
     sinData[i] = sin(relI * 2*M_PI + dtSec);
     cosData[i] = cos(relI * 2*M_PI + dtSec);
     tanData[i] = cosData[i] > 1.E-10 ? sinData[i]/cosData[i] : 1.E30;
   }
-  for(int i=0;i<4;++i){
+  for(int i=0;i<6;++i){
     PlotHandle &plot = plots[i];
     plot->lock();
     plot->clear();
-    plot->setPropertyValue("tics.y-distance",0.25);
+    if(i < 4){
+      plot->setPropertyValue("tics.y-distance",0.25);
+    }else{
+      plot->setPropertyValue("tics.y-distance",3);
+      plot->setPropertyValue("tics.x-distance",3);
+    }
     if(i==0 || i==3){
       plot->addSeriesData(sinData.data(), sinData.size(), 
                           new AbstractPlotWidget::Pen(QColor(255,0,0),Qt::NoPen,' ',5, QColor(255,0,0,100)),
@@ -91,7 +123,19 @@ void run(){
                           new AbstractPlotWidget::Pen(QColor(0,100,255),Qt::NoPen,' ',2, QColor(0,100,255,100)),
                           "tan(x)");
     }
-
+    if(i == 4){
+      plot->addScatterData('.',&scatterData1[0].x,&scatterData1[0].y,scatterData1.size(), 
+                           "some noise", 255, 0, 0, 2, false, 2, 2, false, false, false);
+      plot->addScatterData('.',&scatterData2[0].x,&scatterData2[0].y,scatterData2.size(), 
+                           "some other noise", 0, 100, 255, 2, false, 2, 2,false, false, false);
+    }
+    if(i == 5){
+      plot->addScatterData('.',&scatterData3[0].x,&scatterData3[0].y,scatterData3.size(), 
+                           "some shape", 0, 100, 255, 2, true, 2, 2, true, false, false);
+      plot->addAnnotations('r',FixedMatrix<float,1,4>(-.2,-.2,.4,.4).data() ,1,QColor(255,0,0), QColor(255,0,0,100));
+      plot->addAnnotations('l',FixedMatrix<float,1,4>(0,0,3,3).data(),1,QColor(255,0,0));
+      plot->addAnnotations('t',FixedMatrix<float,1,2>(3.f,3.f).data(),1,QColor(255,0,0),Qt::NoBrush,"the center");
+    }
     plot->unlock();
     plot.update();
   }

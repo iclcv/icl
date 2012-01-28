@@ -151,17 +151,11 @@ namespace icl{
     };
 
     p.resetTransform();    
-    
-    if(state.zoomed){
-      p.setClipping(true);
-      p.setClipRect(QRect(state.b_left, state.b_top, width()-state.b_right, height()-state.b_bottom));
-    }
-    
+    p.setClipping(true);
+    p.setClipRect(QRect(QPoint(state.b_left, state.b_top), QPoint(width()-state.b_right-2, height()-state.b_bottom-2)));
     bool result = drawSeriesData(p,state)  | drawScatterData(p,state);
-    
-    if(state.zoomed){
-      p.setClipping(false);
-    }
+    p.setClipping(false);
+
     return result;
     
   }
@@ -283,12 +277,6 @@ namespace icl{
   bool PlotWidget::drawSeriesData(QPainter &p, const DrawState &state){
     if(!data->seriesData.size()) return false;
 
-    bool clipping = p.hasClipping();
-    if(!clipping) {
-      p.setClipping(true);
-      p.setClipRect(QRect(state.b_left, state.b_top, width()-state.b_right, height()-state.b_bottom));
-    }
-
     const int rows = (int)data->seriesData.size();
 
     const Rect32f &v = state.dynamicViewPort;
@@ -302,11 +290,6 @@ namespace icl{
     LinearTransform1D lx(Range32f(lFrac*(len-1), rFrac*(len-1)),
                          Range32f(state.b_left,width()-state.b_right));
     LinearTransform1D ly(yrange, Range32f(height()-state.b_bottom,state.b_top)); 
-#if 0
-    const int firstVisibleX = iclMax(0,(int)floor(lFrac*len));
-    const int lastVisibleX = iclMin((int)len, (int)ceil(rFrac*len)+1);
-#endif
-    //  SHOW(len << "    "  << lastVisibleX);
     
     Range32s winYRange(state.b_top, height()-state.b_bottom);
     
@@ -349,8 +332,6 @@ namespace icl{
         const int fillBottom = height()-state.b_bottom;
         p.setBrush(s->fillBrush);
         p.setPen(Qt::NoPen);
-        // const int yMinVisible = state.b_top;
-        // const int yMaxVisible = height()-state.b_bottom;
         for(int x=firstVisibleX+1;x<lastVisibleX;++x){
           const int currY = ybuf[x];//icl::clip((int)ybuf[x],yMinVisible,yMaxVisible); 
           const int lastY = ybuf[x-1]; //icl::clip((int)ybuf[x-1],yMinVisible,yMaxVisible); 
@@ -459,8 +440,6 @@ namespace icl{
         }
       }
     }
-    if(!clipping)p.setClipping(false);
-
     return true;
   }
 
@@ -594,8 +573,8 @@ namespace icl{
   }
   
   void PlotWidget::addScatterData(char sym, const float *xs, const float *ys, int num, 
-                                  const std::string &name, int r, int g, int b, int size, bool filled,
-                                  int xStride, int yStride, bool connectingLine,
+                                  const std::string &name, int r, int g, int b, int size, bool connectingLine,
+                                  int xStride, int yStride, bool filled,
                                   bool deepCopyData, bool passDataOwnerShip){
     Data::ScatterData *s = new Data::ScatterData(sym, num, name, r,g,b, size, filled, connectingLine, 
                                                  deepCopyData?1:xStride, deepCopyData?1:yStride);

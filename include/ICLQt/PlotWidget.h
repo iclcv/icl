@@ -153,6 +153,17 @@ namespace icl{
     virtual Rect32f getDataViewPort() const;
     
     /// adds series data
+    /** @param data data pointer
+        @param len number of elements in the data pointer 
+        @param style draw style
+        @param stride data stride (in units of sizeof(float))
+        @param deepCopy if true, the data is copied into the drawer, otherwise, it is just
+               linked. If the data is linked, it must remain valid until the seriesData is
+               removed using PlotWidget::clearSeriesData or PlotWidget::clear.
+        @param passOwnerShip. This flag is only used if deepCopy is false. If passOwnerShip
+               is true, the PlotWidget will delete the data at deletion or when clear/
+               clearSeriesData is called.
+        */
     void addSeriesData(const float *data, int len, 
                        const AbstractPlotWidget::PenPtr &style = new AbstractPlotWidget::Pen(QColor(255,0,0)),
                        const std::string &name="", int stride=1, bool deepCopy=true, bool passOwnerShip=false);
@@ -167,8 +178,9 @@ namespace icl{
         @param b symbol blue component
         @param size symbol size (in screen pixels)
         @param filled defines whether the symbol must be filled (for triangle, circle, rect and diamond only)
-        @param xStride stride for xs-data
-        @param yStride stride for ys-data
+        @param xStride stride for xs-data (in units of sizeof(float), i.e. if the underlying data is
+               interleaved (x,y)-data, the strides are 2 )
+        @param yStride stride for ys-data (in units of sizeof(float))
         @param connectingLine draw a line that connects successive symbols
         @param deepCopyData if set to true, xs, and ys are copied deeply
                otherwise, they are just linked (via pointer)
@@ -179,8 +191,8 @@ namespace icl{
     */
     void addScatterData(char symbol, const float *xs, const float *ys, int num, 
                         const std::string &name = "",
-                        int r=255, int g=0, int b=0, int size=5, bool filled=false,
-                        int xStride=1, int yStride=1, bool connectingLine = false,
+                        int r=255, int g=0, int b=0, int size=5, bool connectingLine=false,
+                        int xStride=1, int yStride=1, bool filled = false,
                         bool deepCopyData=true, bool passDataOwnerShip=false);
     
     /// clears the symbol draw list
