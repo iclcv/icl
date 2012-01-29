@@ -146,8 +146,8 @@ namespace icl{
       getPropertyValue("render symbols as images").as<bool>(),
       dynViewPort,
       dataViewPort,
-      (dynViewPort != dataViewPort),
-
+      //(dynViewPort != dataViewPort),
+      AbstractPlotWidget::isZoomed()
     };
 
     p.resetTransform();    
@@ -298,9 +298,10 @@ namespace icl{
       const float *r = sd.data.get();
       const int stride = sd.stride;
 
-      const int firstVisibleX = iclMax(0,(int)floor(lFrac*sd.size()));
-      const int lastVisibleX = iclMin((int)sd.size(), (int)ceil(rFrac*sd.size())+1);
-
+      int firstVisibleX = iclMax(0,(int)floor(lFrac*sd.size()));
+      int lastVisibleX = iclMin((int)sd.size(), (int)ceil(rFrac*sd.size())+1);
+      firstVisibleX = clip(firstVisibleX,0,sd.size()-1);
+      lastVisibleX = clip(lastVisibleX,0,sd.size()-1);
 
       std::vector<float> &ybuf = data->ybuf;
       std::vector<float> &xbuf = data->xbuf;
@@ -509,11 +510,13 @@ namespace icl{
       Range32f rx = estimateDataXRange();
       r.x = rx.minVal;
       r.width = rx.getLength();
+      if(!r.width) r.width = 1;
     }
     if(!r.height){
       Range32f ry = estimateDataYRange();
       r.y = ry.minVal;
       r.height = ry.getLength();
+      if(!r.height) r.height = 1;
     }
     return r;
   }

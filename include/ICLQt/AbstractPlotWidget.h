@@ -228,6 +228,9 @@ namespace icl{
     
     protected:
     
+    /// returns whether the zoom is active
+    bool isZoomed() const;
+    
     /// internally used
     virtual void mouseDoubleClickEvent(QMouseEvent *event);
 

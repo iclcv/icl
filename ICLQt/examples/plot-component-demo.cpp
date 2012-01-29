@@ -36,6 +36,7 @@
 #include <ICLUtils/FPSLimiter.h>
 
 #include <ICLCore/Random.h>
+#include <deque>
 
 GUI gui("hbox");
 
@@ -52,6 +53,11 @@ void init(){
       << (GUI("vbox") 
           << "plot(-9,9,-9,9,"+gl+")[@handle=plot5@minsize=16x12]" 
           << "plot(0,0,0,0,"+gl+")[@handle=plot6@minsize=16x12]" 
+          )
+      << (GUI("vbox") 
+          << "plot(0,0,0,0,"+gl+")[@handle=plot7@minsize=16x12]" 
+          << "plot(0,0,0,0,"+gl+")[@handle=plot8@minsize=16x12]" 
+          
           ) << "!show";
 }
 
@@ -59,7 +65,8 @@ void run(){
   static PlotHandle plots[] = { 
     gui["plot1"], gui["plot2"],
     gui["plot3"], gui["plot4"],
-    gui["plot5"], gui["plot6"]
+    gui["plot5"], gui["plot6"],
+    gui["plot7"], gui["plot8"]
   };
 
   static std::vector<float> sinData(100);
@@ -68,6 +75,43 @@ void run(){
   static std::vector<Point32f> scatterData1(10000);
   static std::vector<Point32f> scatterData2(10000);
   static std::vector<Point32f> scatterData3(1000);
+  static Time t = Time::now();
+  float dtSec = (Time::now()-t).toSecondsDouble();
+
+#if 0
+  static std::vector<float> sinSeries;
+
+
+  float sinVal = sin(dtSec);
+  if(sinSeries.size() < 200){
+    sinSeries.push_back(sinVal);
+  }else{
+    for(unsigned int i=1;i<200;++i){
+      sinSeries.at(i-1) = sinSeries.at(i);
+    }
+    sinSeries.back() = sinVal;
+  }
+#else
+  static std::deque<float> sinSeriesX;
+  static std::deque<float> sinSeriesY;
+  sinSeriesX.push_back(sin(dtSec));
+  sinSeriesY.push_back(dtSec);
+  if(sinSeriesX.size() > 100){
+    sinSeriesX.pop_front();
+    sinSeriesY.pop_front();
+  }
+#endif
+  //  std::cout << "--------" << std::endl;
+  //for(unsigned int i=0;i<sinSeries.size();++i){
+  //  std::cout << "sinSeries[" << i << "]: " << sinSeries[i] << std::endl;
+  //}
+
+  //  sinSeries.push_back(sin(dtSec));
+  //if(sinSeries.size() > 1000){
+  //  sinSeries.pop_front();
+  //}
+  
+  
   static GRand grand;
   static const float C[] = { 1.9, 1.2, 
                              1.2, 2.8 };
@@ -79,8 +123,6 @@ void run(){
     scatterData2[i].x = p.x * C[0] + p.y * -C[1] + 1;
     scatterData2[i].y = p.x * -C[2] + p.y * C[3] + 0.5;
   }
-  static Time t = Time::now();
-  float dtSec = (Time::now()-t).toSecondsDouble();
   for(unsigned int i=0;i<scatterData3.size();++i){
     float rel = float(i)/(scatterData3.size()-1) * 2 * M_PI;
     float r = 2 + 3 * sin(4*rel+dtSec);
@@ -94,15 +136,18 @@ void run(){
     cosData[i] = cos(relI * 2*M_PI + dtSec);
     tanData[i] = cosData[i] > 1.E-10 ? sinData[i]/cosData[i] : 1.E30;
   }
-  for(int i=0;i<6;++i){
+  for(int i=0;i<8;++i){
     PlotHandle &plot = plots[i];
     plot->lock();
     plot->clear();
     if(i < 4){
       plot->setPropertyValue("tics.y-distance",0.25);
-    }else{
+    }else if(i<6){
       plot->setPropertyValue("tics.y-distance",3);
       plot->setPropertyValue("tics.x-distance",3);
+    }else{
+      plot->setPropertyValue("tics.y-distance",0.5);
+      plot->setPropertyValue("tics.x-distance",50);
     }
     if(i==0 || i==3){
       plot->addSeriesData(sinData.data(), sinData.size(), 
@@ -135,6 +180,15 @@ void run(){
       plot->addAnnotations('r',FixedMatrix<float,1,4>(-.2,-.2,.4,.4).data() ,1,QColor(255,0,0), QColor(255,0,0,100));
       plot->addAnnotations('l',FixedMatrix<float,1,4>(0,0,3,3).data(),1,QColor(255,0,0));
       plot->addAnnotations('t',FixedMatrix<float,1,2>(3.f,3.f).data(),1,QColor(255,0,0),Qt::NoBrush,"the center");
+    }
+    if( i == 6){
+      plot->addSeriesData(&sinSeriesX[0],sinSeriesX.size(),
+                          new AbstractPlotWidget::Pen(QColor(255,0,0)), "continous data");
+    }
+    if(i == 7){
+      float xs[] = { 1,2,3,4};
+      float ys[] = { 1,2,3,4};
+      plot->addScatterData('x',xs,ys,4,"dummy data");
     }
     plot->unlock();
     plot.update();

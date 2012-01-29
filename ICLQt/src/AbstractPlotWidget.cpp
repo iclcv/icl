@@ -126,6 +126,9 @@ namespace icl{
     bool showZoomIndicator;
   };
   
+  bool AbstractPlotWidget::isZoomed() const{
+    return data->viewPortStack.size();
+  }
   
   void AbstractPlotWidget::addAnnotations(const char type,const float *data, int num, 
                                           const QPen &linePen,
