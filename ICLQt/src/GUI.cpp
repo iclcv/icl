@@ -1516,7 +1516,7 @@ public:
 
   struct PlotGUIWidget : public GUIWidget{
     // {{{ open
-    PlotGUIWidget(const GUIDefinition &def):GUIWidget(def,0,5){
+    PlotGUIWidget(const GUIDefinition &def):GUIWidget(def,0,7){
 
       m_plot = new PlotWidget(def.parentWidget());
       
@@ -1525,7 +1525,20 @@ public:
       float minY = def.numParams()>=3 ? def.floatParam(2) : 0;
       float maxY = def.numParams()>=4 ? def.floatParam(3) : 0;
       
-      bool useGL = def.numParams()==5 ? (def.param(4) == "GL") : false;
+      bool useGL = def.numParams()>=5 ? (def.param(4) == "GL" || def.param(4) == "gl") : false;
+      
+      std::string xAxisLabel = def.numParams()>=6 ? def.param(5) : str("");
+      std::string yAxisLabel = def.numParams()>=7 ? def.param(6) : str("");
+      
+      if(xAxisLabel.length() && xAxisLabel != "-"){
+        m_plot->setPropertyValue("labels.x-axis",xAxisLabel);
+        m_plot->setPropertyValue("borders.bottom",55);
+      }
+      if(yAxisLabel.length() && yAxisLabel != "-"){
+        m_plot->setPropertyValue("labels.y-axis",yAxisLabel);
+        m_plot->setPropertyValue("borders.left",55);
+      }
+
       
       m_plot->setDataViewPort(Range32f(minX,maxX), Range32f(minY,maxY));
 
@@ -1553,12 +1566,15 @@ public:
     }
     static string getSyntax(){
       return 
-      string("plot(X_VIEWPORT_MIN=0,X_VIEWPORT_MAX=0,Y_VIEWPORT_MIN=0,Y_VIEWPORT_MAX=0,GL)[general params]\n")+
+      string("plot(X_VIEWPORT_MIN=0,X_VIEWPORT_MAX=0,Y_VIEWPORT_MIN=0,"
+             "Y_VIEWPORT_MAX=0,GL=noGL,X_AXIS_LABEL=\"\",Y_AXIS_LABEL=\"\")[general params]\n")+
       string("\tX/Y_VIEWPORT_MIN/MAX are optionally given. The parameters define the data viewport in\n")+
       string("\tcreated PlotWidget. If min and max X are zero, the PlotWidget will automatically estimate\n")+
       string("\tthe X-data viewport. The same is true for the Y-data viewport. Please note, that\n")+
       string("\tthe data viewport can also later be set\n")+
-      string("\tGL if the 5th parameter is set to GL, the widget will be embedded into an QGLWidget to enhance performance\n");
+      string("\tGL if the 5th parameter is set to GL, the widget will be embedded into an QGLWidget to enhance performance\n")+
+      string("\tX_AXIS_LABEL and Y_AXIS_LABEL can be given optionally use \"-\" as placeholder for no label\n");
+
       gen_params();
     }
   private:

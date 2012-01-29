@@ -93,14 +93,15 @@ namespace icl{
     
     /// different pen types
     enum PenType{
-      X_AXIS_PEN,   //!< pen used to draw the x-axis
-      Y_AXIS_PEN,   //!< pen used to draw the y-axis
-      X_TIC_PEN,    //!< pen used to draw the x-tics
-      Y_TIC_PEN,    //!< pen used to draw the y-tics
-      X_LABEL_PEN,  //!< pen used to draw the x-labels
-      Y_LABEL_PEN,  //!< pen used to draw the y-labels
-      X_GRID_PEN,   //!< pen used to draw the x-grid lines
-      Y_GRID_PEN,   //!< pen used to draw the y-grid lines
+      X_AXIS_PEN,    //!< pen used to draw the x-axis
+      Y_AXIS_PEN,    //!< pen used to draw the y-axis
+      X_TIC_PEN,     //!< pen used to draw the x-tics
+      Y_TIC_PEN,     //!< pen used to draw the y-tics
+      X_LABEL_PEN,   //!< pen used to draw the x-labels
+      Y_LABEL_PEN,   //!< pen used to draw the y-labels
+      X_GRID_PEN,    //!< pen used to draw the x-grid lines
+      Y_GRID_PEN,    //!< pen used to draw the y-grid lines
+      AXIS_NAME_PEN, //!< pen used to draw the axis labels
       NUM_PEN_TYPES
     };
 
@@ -225,7 +226,7 @@ namespace icl{
     /// clears everything from the widget
     /** 'Everything' means all data and all annotations */
     virtual void clear() { clearAnnotations(); }
-    
+
     protected:
     
     /// returns whether the zoom is active

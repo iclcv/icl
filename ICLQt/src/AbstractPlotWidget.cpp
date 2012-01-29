@@ -179,13 +179,48 @@ namespace icl{
 
 
   void AbstractPlotWidget::property_changed(const Property &p){
-    if(!data->disableUpdate){
-      updateFromOtherThread();
-    }
     if(p.name == "show mouse pos"){
       bool on = getPropertyValue(p.name);
       data->track_mouse = on;
     }
+    else if(p.name == "style preset"){
+      std::string preset = getPropertyValue("style preset");
+      QPen defaultPen;
+      QPen gridPen;
+      QPen axisLabelPen;
+      lock();
+      if(preset == "default"){
+        defaultPen = QPen(QColor(50,50,50));
+        gridPen = QPen(QColor(150,150,150));
+        axisLabelPen = QPen(QColor(0,0,0));
+        data->bgBrush = QPalette().window();
+      }else if(preset == "black"){
+        defaultPen = QPen(QColor(150,150,150));
+        gridPen = QPen(QColor(50,50,50));
+        axisLabelPen = QPen(QColor(200,200,200));
+        data->bgBrush = QBrush(QColor(0,0,0));
+      }else if(preset == "white"){
+        defaultPen = QPen(QColor(100,100,100));
+        gridPen = QPen(QColor(200,200,200));
+        axisLabelPen = QPen(QColor(50,50,50));
+        data->bgBrush = QBrush(QColor(255,255,255));
+      }
+
+      data->pens[X_AXIS_PEN] = defaultPen;
+      data->pens[Y_AXIS_PEN] = defaultPen;
+      data->pens[X_TIC_PEN] = defaultPen;
+      data->pens[Y_TIC_PEN] = defaultPen;
+      data->pens[X_LABEL_PEN] = defaultPen;
+      data->pens[Y_LABEL_PEN] = defaultPen;
+      data->pens[X_GRID_PEN] = gridPen;
+      data->pens[Y_GRID_PEN] = gridPen;
+      data->pens[AXIS_NAME_PEN] = axisLabelPen;
+      unlock();
+    }
+    if(!data->disableUpdate){
+      updateFromOtherThread();
+    }
+    
     /* basically, this works, but the results is useless due to it's poor quality
         if(p.name == "export to SVG"){
         QSvgGenerator svgGen;
@@ -219,6 +254,7 @@ namespace icl{
 
     addProperty("antialiasing","flag","",false);
     addProperty("dynamic-tic-scaling", "flag","",true);
+    addProperty("style preset","menu","default,black,white");
 
     addProperty("tics.length","range:spinbox","[0,100]",6);
     addProperty("tics.x-distance","float","[1E-37,1E+37]",1);
@@ -229,7 +265,9 @@ namespace icl{
     addProperty("labels.x-precision","range:spinbox","[0,20]",3);
     addProperty("labels.y-precision","range:spinbox","[0,20]",3);
     addProperty("labels.text-size","range:spinbox","[1,100]",8);
-
+    addProperty("labels.x-axis","string","100","");
+    addProperty("labels.y-axis","string","100","");
+    addProperty("labels.diagramm","string","100","");
 
     addProperty("enable lines","flag","",true);
     addProperty("enable symbols","flag","",true);
@@ -248,6 +286,7 @@ namespace icl{
 
     addProperty("legend.orientation","menu","horizontal,vertical","horizontal");
     addProperty("show mouse pos","flag","",true);
+    
 
     // does not work properly
     //    addProperty("export to SVG","command","","");
@@ -263,6 +302,7 @@ namespace icl{
     data->pens[Y_LABEL_PEN] = defaultPen;
     data->pens[X_GRID_PEN] = QPen(QColor(150,150,150));
     data->pens[Y_GRID_PEN] = QPen(QColor(150,150,150));
+    data->pens[AXIS_NAME_PEN] = QPen(QColor(0,0,0));
     
     setContextMenuPolicy(Qt::CustomContextMenu);
     
@@ -373,11 +413,12 @@ namespace icl{
     const int prx = getPropertyValue("labels.x-precision");
     const int pry = getPropertyValue("labels.y-precision");
 
+    
 
     // --------------------------------------------------
     // -- X-Axis Tics and labels ------------------------
     // --------------------------------------------------
-    if(data->hasPen(X_TIC_PEN) || data->hasPen(X_LABEL_PEN) || data->hasPen(X_GRID_PEN)){
+    if(data->hasPen(X_TIC_PEN) || data->hasPen(X_LABEL_PEN) || data->hasPen(X_GRID_PEN) || data->hasPen(AXIS_NAME_PEN)){
       const bool xgrid = getPropertyValue("tics.x-grid");
       float dx = getPropertyValue("tics.x-distance");
       
@@ -418,6 +459,14 @@ namespace icl{
           p.resetTransform();
           //          p.drawText(QRectF(mx*x+bx,my*(y1)+by+f/2+2,0,0), Qt::AlignHCenter |  Qt::TextDontClip, QString::number(x,'f',prx));
           p.drawText(QRectF(mx*x+bx,h-b_bottom +f/2,0,0), Qt::AlignHCenter |  Qt::TextDontClip, QString::number(x,'f',prx));
+
+          if(x == firstVisibleTic && data->setPen(AXIS_NAME_PEN)){
+            const std::string label = getPropertyValue("labels.x-axis");
+            if(label.length()){
+              p.drawText(QRect(b_left + (width()-(b_left+b_right))/2, h-b_bottom + 2*f, 0,0),
+                         Qt::AlignHCenter | Qt::TextDontClip, label.c_str());
+            }
+          }
           p.restore();
         }
       }
@@ -428,7 +477,7 @@ namespace icl{
     // --------------------------------------------------
 
    
-    if(data->hasPen(Y_TIC_PEN) || data->hasPen(Y_LABEL_PEN) || data->hasPen(Y_GRID_PEN)){
+    if(data->hasPen(Y_TIC_PEN) || data->hasPen(Y_LABEL_PEN) || data->hasPen(Y_GRID_PEN) || data->hasPen(AXIS_NAME_PEN)){
       const bool ygrid = getPropertyValue("tics.y-grid");
       float dy = getPropertyValue("tics.y-distance");
 
@@ -465,7 +514,16 @@ namespace icl{
         if(data->setPen(Y_LABEL_PEN)){
           p.save();
           p.resetTransform();
-          p.drawText(QRectF(mx*x1+bx-f/2, my*y+by,0,0), Qt::AlignVCenter | Qt::AlignRight | Qt::TextDontClip, QString::number(y,'f',pry));
+          p.drawText(QRectF(mx*x1+bx-f/2, my*y+by,0,0), Qt::AlignVCenter | Qt::AlignRight | Qt::TextDontClip, 
+                     QString::number(y,'f',pry));
+          if(y == firstVisibleTic && data->setPen(AXIS_NAME_PEN)){
+            const std::string label = getPropertyValue("labels.y-axis");
+            if(label.length()){
+              p.translate(2,b_top + (height()-(b_top+b_bottom))/2);
+              p.rotate(-90);
+              p.drawText(QRect(0,0,0,0),Qt::AlignHCenter | Qt::TextDontClip, label.c_str());
+            }
+          }
           p.restore();
         }
       }
@@ -863,6 +921,7 @@ namespace icl{
     
 
   }
+  
 
 
   float AbstractPlotWidget::winToDrawX(int winX) const{

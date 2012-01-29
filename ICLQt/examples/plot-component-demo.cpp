@@ -55,7 +55,7 @@ void init(){
           << "plot(0,0,0,0,"+gl+")[@handle=plot6@minsize=16x12]" 
           )
       << (GUI("vbox") 
-          << "plot(0,0,0,0,"+gl+")[@handle=plot7@minsize=16x12]" 
+          << "plot(0,0,0,0,"+gl+",something [pi])[@handle=plot7@minsize=16x12]" 
           << "plot(0,0,0,0,"+gl+")[@handle=plot8@minsize=16x12]" 
           
           ) << "!show";
@@ -92,20 +92,17 @@ void run(){
     sinSeries.back() = sinVal;
   }
 #else
-  static std::deque<float> sinSeriesX;
-  static std::deque<float> sinSeriesY;
-  sinSeriesX.push_back(sin(dtSec));
-  sinSeriesY.push_back(dtSec);
-  if(sinSeriesX.size() > 100){
-    sinSeriesX.pop_front();
-    sinSeriesY.pop_front();
+  static Point32f sinSeries[101];
+  static int sinSeriesUsed = 0;
+  sinSeries[sinSeriesUsed++] = Point32f(sin(dtSec), dtSec/M_PI);
+  if(sinSeriesUsed == 101){
+    for(int i=0;i<100;++i){
+      sinSeries[i] = sinSeries[i+1];
+    }
+    sinSeriesUsed = 100;
   }
 #endif
-  //  std::cout << "--------" << std::endl;
-  //for(unsigned int i=0;i<sinSeries.size();++i){
-  //  std::cout << "sinSeries[" << i << "]: " << sinSeries[i] << std::endl;
-  //}
-
+    
   //  sinSeries.push_back(sin(dtSec));
   //if(sinSeries.size() > 1000){
   //  sinSeries.pop_front();
@@ -147,7 +144,7 @@ void run(){
       plot->setPropertyValue("tics.x-distance",3);
     }else{
       plot->setPropertyValue("tics.y-distance",0.5);
-      plot->setPropertyValue("tics.x-distance",50);
+      plot->setPropertyValue("tics.x-distance",1);
     }
     if(i==0 || i==3){
       plot->addSeriesData(sinData.data(), sinData.size(), 
@@ -182,8 +179,9 @@ void run(){
       plot->addAnnotations('t',FixedMatrix<float,1,2>(3.f,3.f).data(),1,QColor(255,0,0),Qt::NoBrush,"the center");
     }
     if( i == 6){
-      plot->addSeriesData(&sinSeriesX[0],sinSeriesX.size(),
-                          new AbstractPlotWidget::Pen(QColor(255,0,0)), "continous data");
+      plot->setDataViewPort(Range32f(sinSeries[0].y, sinSeries[sinSeriesUsed-1].y), Range32f(0,0));
+      plot->addSeriesData(&sinSeries[0].x, sinSeriesUsed,
+                          new AbstractPlotWidget::Pen(QColor(255,0,0)), "continous data", 2);
     }
     if(i == 7){
       float xs[] = { 1,2,3,4};
