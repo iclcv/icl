@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Language" content="de">
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-<title>Image Component Library</title>
+<title>ICL @DOC_VERSION_STRING@</title>
 <link href="style.css" rel="stylesheet" type="text/css"/>
 <base target="Inhalt">
 </head>
@@ -14,7 +14,7 @@
       <tr>
         <td> 
           <p align="center"><font size="4">
-              <b>I</b>mage<b> C</b>omponent <b>L</b>ibrary API-Reference
+              <b>I</b>mage<b> C</b>omponent <b>L</b>ibrary API-Reference @DOC_VERSION_STRING@
         </td>
       </tr>
     </table>

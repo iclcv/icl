@@ -157,6 +157,10 @@ endif()
 #include file with macros
 include(icl_cmake_macros.cmake)
 
+TODAY(DATE)
+set(DOC_VERSION_STRING "(build ${VERSION})")
+set(DOC_DATE_STRING "(build date ${DATE})")
+
 #if ON all found third party libs will be used
 set(ICL_XDEP_ALL_ON OFF CACHE BOOL "Use all available third party libs")
 #if ON pkg-config will be used where it is available
@@ -902,6 +906,8 @@ foreach(ICL_SUB_PACKAGE_PLACEHOLDER ${ICL_SUB_PACKAGES})
 endforeach()
 #configure file for the menu
 configure_file(doc/menu.htmltemplate ${CMAKE_SOURCE_DIR}/doc/menu.html @ONLY)
+configure_file(doc/index.html.in ${CMAKE_SOURCE_DIR}/doc/index.html @ONLY)
+configure_file(doc/top.html.in ${CMAKE_SOURCE_DIR}/doc/top.html @ONLY)
 
 #copy necessary files to build dir
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/alldoc/

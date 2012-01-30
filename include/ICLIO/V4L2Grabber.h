@@ -39,7 +39,7 @@
 
 namespace icl{
   
-  /// The Video for Linux 2 Grabber uses the v4l2-api to access video capturing devices \ingroup GRABBER_G
+  /// The Video for Linux 2 Grabber uses the v4l2-api to access video capturing devices \ingroup GRABBER_G \ingroup V4L_G
   /** This grabber backend is usually used for USB-Webcams as well as for Grabber cards */
   class V4L2GrabberImpl : public Grabber{
     class Impl; //!< internal implementation

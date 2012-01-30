@@ -44,7 +44,9 @@ namespace icl{
   /** \section _TYPES_ Data types
       So far, the PlotWidget can be used as scatter-plot and as series-plot (graph-plot)
       The both types can also be used in parallel for overlayed visualizations
-      
+
+      \image html plot_widget_h.png
+
       \section _SCATTER_ scatter plots
       The scatter plot engine uses a set of data sets, that can be added successively.
       Each dataset is basically defined by a set of N (x,y) points, where the x- and y-
@@ -114,6 +116,117 @@ namespace icl{
            - lines only or in combination with any symbol: 1ms
            - fill only (with alpha value) -> 9ms
            - fill and lines -> 15ms
+
+      \section _EX_ Examples
+      Please note, that the example application can be found at ICLQt/examples/plot-component-demo.cpp
+      the binary name is icl-plot-component-demo.
+      
+      
+      \subsection _EX_1_ Series Data 1
+      \code
+      PlotWidget pw;
+      static std::vector<float> sinData(100); // fill it
+      pw.setPropertyValue("tics.y-distance",0.25);
+      pw.setPropertyValue("enable fill",true);
+      pw.addSeriesData(sinData.data(), sinData.size(), 
+                       new AbstractPlotWidget::Pen(QColor(255,0,0),Qt::NoPen,' ',5, QColor(255,0,0,100)),
+                       "sin(x)");
+      \endcode
+      \image html plot_widget_a.png
+
+      
+      \subsection _EX_2_ Series Data 2 (no fill)
+      \code
+      static std::vector<float> tanData(100); // fill it!
+      pw.setPropertyValue("tics.y-distance",0.25);
+      pw.addSeriesData(tanData.data(), tanData.size(), 
+                       new AbstractPlotWidget::Pen(QColor(0,100,255),Qt::NoPen,' ',2, QColor(0,100,255,100)),
+                       "tan(x)");
+      \endcode
+      \image html plot_widget_b.png
+
+
+      \subsection _EX_3_ Series Data 3 (symbols)
+      \code
+      static std::vector<float> cosData(100); // fill it!
+      pw.setPropertyValue("tics.y-distance",0.25);
+      // we use symbols of radius 2, the 'o' selects circles
+      pw.addSeriesData(cosData.data(), cosData.size(), 
+                       new AbstractPlotWidget::Pen(QColor(0,255,0),QColor(0,255,0),'o',2, QColor(0,255,0,100)),
+                       "cos(x)");
+      \endcode
+      \image html plot_widget_e.png
+
+
+      \subsection _EX_4_ Series Data 4 (multiple functions)
+      \code
+      // use sin, cos and tan data from above
+      pw.setPropertyValue("tics.y-distance",0.25);
+      pw.addSeriesData(sinData.data(), sinData.size(), 
+                       new AbstractPlotWidget::Pen(QColor(255,0,0)),
+                       "sin(x)");
+      pw.addSeriesData(cosData.data(), cosData.size(), 
+                       new AbstractPlotWidget::Pen(QColor(0,255,0)),
+                       "cos(x)");
+      pw.addSeriesData(tanData.data(), tanData.size(), 
+                       new AbstractPlotWidget::Pen(QColor(0,100,255)),
+                       "tan(x)");
+      \endcode
+      \image html plot_widget_f.png
+
+
+      \subsection _EX_5_ Scatter Data (one or two data sets)
+      \code
+      /// interleaved data
+      static std::vector<Point32f> scatterData1(10000); // fill it!
+      
+      /// planar data order
+      static std::vector<float> scatterData2(20000); // fill it!
+      
+      pw.setPropertyValue("tics.x-distance",3);
+      pw.setPropertyValue("tics.y-distance",3);
+      /// for interleaved data, the x- and y-stride is 2
+      /// the data is static, so we use shallow copy instead of deep copy
+      pw.addScatterData('.',&scatterData1[0].x,&scatterData1[0].y,scatterData1.size(), 
+                           "some noise", 255, 0, 0, 2, false, 2, 2, false, false, false);
+      
+      /// for the planar data, the x- and y-stride is 1
+      pw.addScatterData('.',&scatterData2[0],&scatterData2[0]+10000,scatterData2.size()/2, 
+                           "some other noise", 0, 100, 255, 2, false, 1, 1, false, false, false);
+      
+      \endcode
+      \image html plot_widget_c.png
+
+
+      
+      \subsection _EX_6_ Connected Scatter Data and annotations
+      \code
+      static std::vector<Point32f> scatterData3(1000);
+      /// here, we fill it!
+      static Time t = Time::now();
+      float dtSec = (Time::now()-t).toSecondsDouble();
+      for(unsigned int i=0;i<scatterData3.size();++i){
+        float rel = float(i)/(scatterData3.size()-1) * 2 * M_PI;
+        float r = 2 + 3 * sin(4*rel+dtSec);
+        scatterData3[i].x  = r * cos(rel);
+        scatterData3[i].y  = r * sin(rel);
+      }
+      // again, we use stride values of two for the interleaved data
+      // this time, connectLines is true
+      pw.addScatterData('.',&scatterData3[0].x,&scatterData3[0].y,scatterData3.size(), 
+                           "some shape", 0, 100, 255, 2, true, 2, 2, true, false, false);
+      
+      /// further more we add some annotations
+      pw.addAnnotations('r',FixedMatrix<float,1,4>(-.2,-.2,.4,.4).data() ,1,QColor(255,0,0), QColor(255,0,0,100));
+      pw.addAnnotations('l',FixedMatrix<float,1,4>(0,0,3,3).data(),1,QColor(255,0,0));
+      pw.addAnnotations('t',FixedMatrix<float,1,2>(3.f,3.f).data(),1,QColor(255,0,0),Qt::NoBrush,"the center");
+      
+      \endcode
+      \image html plot_widget_g.png
+      
+
+
+
   */
   class PlotWidget : public virtual AbstractPlotWidget{
     class Data; //!< pimpl

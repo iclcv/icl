@@ -190,11 +190,12 @@
       - <b>image</b> an ICLWidget component
       - <b>draw</b> an ICLDrawWidget component
       - <b>draw3D</b> an ICLDrawWidget3D component
+      - <b>plot</b> a powerful data visualization component of type PlotWidget
       - <b>combo</b> a combo box
       - <b>spinner</b> a spin box (integer valued with given range)
       - <b>fps</b> label component showing current frames per second
       - <b>multidraw</b> tabbed widget of draw widget components accessible via string index
-      - <b>camcfg</b> single button that pops up a camera configuration widget (see CamCfgWiget) if clicked
+      - <b>camcfg</b> single button that pops up a camera configuration widget (see icl::CamCfgWidget) if clicked
       - <b>config</b> single button or embedded tree-view that enables 
       - <b>prop</b> complex embedded component containing GUI compoments to configure an ICLUtils::Configurable at runtime
       - <b>color</b> component to choose a color using an pop-up QColorChooser
@@ -285,6 +286,13 @@
         As for the draw-component, also here the given viewport size is only used if no image was set.
         The viewport is used to hold the 3D-context's aspect ratio and for zooming. Usually the default
         sizf of VGA is ok.
+      - <b>plot</b>(VIEWPORT_MIN_X=0, VIEWPORT_MAX_X=0,VIEWPORT_MIN_Y=0,VIEWPORT_MAY_Y=0,GL_FLAG=noGL,
+        X_AXIS_LABEL="", Y_AXIS_LABEL=""). The viewport parameters define the data viewport of the widget
+        it can also later be set dynamically. If the viewport range in one direction is 0, it is estimated
+        automatically in every draw step. GL_FLAG can either be "gl" or something else. If is is set to 
+        GL, the widget is automatically embedded into an OpenGL context. This might enhance the widget's
+        performance, but sometimes, also the non-GL performance is better. If axis labels are given,
+        the widget's border-properties are automatically adapted, so the the label names are fully visible.
       - <b>combo(string ENTRY1,string ENTRY2,...)</b>\n
         Creates a combox with given entries. The entry list is comma separated and must have at least on
         element.
@@ -308,7 +316,7 @@
         settings (buffermode=one). Otherwise, if application runs slowly (e.g. only 2Hz, this) it will become
         more responsive if buffermode is set to "all". If images displayed are held permanently, it will
         speed up performance if buffermethod is set to "shallowcopy" then.
-      - <b>camcfg(deviceType="",deviceID="")
+      - <b>camcfg</b>(deviceType="",deviceID="")
         You may use either two parameters (e.g. "camcfg(dc,0)" for the first dc-device) or no parameters.
         See section \ref CAMCFG for more details
       - <b>config(MODE)</b> MODE has to be either 'embedded' or 'popup' (whithout the '-ticks). If param is embedded, the
@@ -421,7 +429,8 @@
       <TR> <TD>disp</TD>         <TD>DispHandle</TD>        <TD>0</TD>                  <TD>-</TD>                                                   </TR>
       <TR> <TD>image</TD>        <TD>ImageHandle</TD>       <TD>0</TD>                  <TD>-</TD>                                                   </TR>
       <TR> <TD>draw</TD>         <TD>DrawHandle</TD>        <TD>0</TD>                  <TD>-</TD>                                                   </TR>
-      <TR> <TD>draw3D</TD>       <TD>DrawHandle<3D/TD>      <TD>0</TD>                  <TD>-</TD>                                                   </TR>
+      <TR> <TD>draw3D</TD>       <TD>DrawHandle3D</TD>      <TD>0</TD>                  <TD>-</TD>                                                   </TR>
+      <TR> <TD>plot</TD>         <TD>PlotHandle</TD>        <TD>0</TD>                  <TD>-</TD>                                                   </TR>
       <TR> <TD>combo</TD>        <TD>ComboHandle</TD>       <TD>1 type std::string</TD> <TD>current selected item <b>don't use this, use the handle instead!</b></TD></TR>
       <TR> <TD>spinner</TD>      <TD>SpinnerHandle</TD>     <TD>1 type int</TD>         <TD>current value</TD>                                       </TR>
       <TR> <TD>fps</TD>          <TD>FPSHandle</TD>         <TD>0</TD>                  <TD>-</TD>                                                   </TR>
@@ -532,6 +541,105 @@
       \endcode
       
       \image html Image05_LabelDemo.jpg
+
+      \subsection _COMMON_HANDLES_ Usint the Most Common Handles "image", "draw", "draw3D" and "plot"
+    
+      These handles are most commonly used. In very easy cases, "image"-handles most not be extracted.
+      If only images are displayed, it can be achieved using the GUI's smart index opaerator.
+
+      \code
+#include <ICLQuick/Common.h>
+GUI gui;
+GenericGrabber grabber;
+
+void init(){
+   grabber.init(pa("-i"));
+   gui << "image[@handle=image@minsize=16x12]" << "!show";
+}
+void run(){
+   // set an image (anonymously, without handle)
+   gui["image"] = grabber.grab();
+   gui["image"].update();
+}
+int main(int n, char **args){
+   return ICLApp(n,args,"-input|-i(2)",init,run).exec();
+}
+      \endcode
+
+      Alternatively, we can also extract the ImageHandle before
+      \code
+#include <ICLQuick/Common.h>
+GUI gui;
+GenericGrabber grabber;
+
+void init(){
+   grabber.init(pa("-i"));
+   gui << "image[@handle=image@minsize=16x12]" << "!show";
+}
+void run(){
+   // this can be done statically, since the gui will not change
+   // this is also slightly faster, but usually fully neglegible
+   static ImageHandle image = gui["image"];
+   image = grabber.grab();
+   image.update();
+}
+int main(int n, char **args){
+   return ICLApp(n,args,"-input|-i(2)",init,run).exec();
+}
+      \endcode
+
+    
+      If other, more complex components such as "draw", "draw3D" or "plot" are used, it
+      is usually necessary to extract the handle explicitly aswell.
+      \code
+#include <ICLQuick/Common.h>
+GUI gui;
+GenericGrabber grabber;
+
+void init(){
+   grabber.init(pa("-i"));
+   gui << "draw[@handle=image@minsize=16x12]" << "!show";
+}
+void run(){
+   // 1st, we extract the handle
+   static DrawHandle draw = gui["image"];
+    
+   // we set a new background image
+   draw = grabber.grab();
+   
+   // now, we want to draw some things, e.g. some 
+   // annotations of detection results
+   // Here, we use the handles pointer operator to 
+   // access the wrapped ICLDrawWidget
+   // What we see now, is also documented in the 
+   // ICLDrawWidget documentation
+   
+   // lock the drawing queue
+   plot->lock();
+    
+   // clear the drawing queue
+   plot->clear();
+    
+   // draw stuff ..
+    
+   // unlock the drawing queue
+   plot->unlock();
+    
+   // post an update event through Qt
+   // please note: do not use the ICLDrawWidget's 
+   // update method plot->update(), because
+   // this is not thread-safe
+   plot.update();
+}
+int main(int n, char **args){
+   return ICLApp(n,args,"-input|-i(2)",init,run).exec();
+}
+      \endcode
+    
+      @see ICLDrawWidget
+      @see ICLDrawWidget3D
+      @see PlotWidget
+
 
       \subsection DISPC DispHandles
       

@@ -72,11 +72,13 @@
     <TD>\image html art.png</TD>
     <TD>\image html bch.png</TD>
     <TD>\image html amoeba.png</TD>
+    <TD>\image html icl1.png</TD>
     </TR>
     <TR>
     <TD>"art" marker</TD>
     <TD>"bch" marker</TD>
     <TD>"amoeba" marker</TD>
+    <TD>"icl1" marker</TD>
     </TR>
     </TABLE>
     
@@ -98,8 +100,12 @@
       <a href="http://reactivision.sourceforge.net/">reactivision software</a>
       Amoeba fiducials cannot be detected in 3D. They do only provide 2D center and
       rotation and the 2D boundary. 
-    - "icl1" 
-      for ICL's former 'paper' markers <b>not yet supported, but comming soon :-)</b>
+    - "icl1"\n
+      for ICL's former 'paper' markers. These markers consist of 4 vertical sections.
+      Each of these sections contains a number of dot-regions. Therefore, the marker
+      detection method is comparable to other hierarchical markers such as "amoeba",
+      however, the well defined marker structure allows for the systematic identification
+      of every single marker region, which provides better 3D pose-estimation results.
     
     \section BENCH Benchmarks
     
@@ -108,7 +114,7 @@
     \subsection MT Multithreading
 
     We did not speed up the algorithms using multithreading techniques since usually
-    the provided methods are fast enough using a single thread. "Fast enough" means, the
+    the provided methods are fast enough using a single thread. "Fast enough" means, that the
     detection is faster than the amount of data, that is usually provided by common cameras.
     Perhaps, multithreading will added later as a 'Configurable' property.
 

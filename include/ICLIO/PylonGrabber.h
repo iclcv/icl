@@ -45,6 +45,7 @@
 
 namespace icl {
 
+  /// Utility structure \ingroup GIGE_G
   template <typename T>
   class PylonGrabberBuffer {
     private:
@@ -76,6 +77,7 @@ namespace icl {
     }
   };
 
+  /// Actual implementation of the Basler Pylon based GIG-E Grabber \ingroup GIGE_G
   class PylonGrabberImpl : public Grabber {
     public:
     friend class PylonGrabber;
@@ -192,6 +194,7 @@ namespace icl {
     void convert(const void *pImageBuffer);
   };
 
+  /// Grabber implementation for a Basler Pylon-based GIG-E Grabber \ingroup GIGE_G
   /** This is just a wrapper class of the underlying PylonGrabberImpl class */
   struct PylonGrabber : public GrabberHandle<PylonGrabberImpl>{
 
@@ -237,6 +240,7 @@ namespace icl {
   
   };
   
+  /// Utility Structure \ingroup GIGE_G
   /** 
    * This struct is used to automaticly terminate an initialized pylon 
    * environment on destruction. 
@@ -247,6 +251,7 @@ namespace icl {
       ~PylonAutoEnv(){PylonGrabberImpl::termPylonEnv();}
   };
   
+  /// Utility Structure \ingroup GIGE_G
   /**
    * This struct is used to stop the picture-acquisition and restart it
    * on destruction. It also gets the mutex lock for the camera so the

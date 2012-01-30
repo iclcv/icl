@@ -47,6 +47,17 @@
     As it's core, this package provides a wrapper API for Qt-based GUI components. The main class of this
     package is the icl::GUI class (documentation: \ref GUI_INTRO) . Further essential components are part of the \ref IVF .
 
+    \section _GENERAL_ General Idea of this Package
+    When developing computer vision applications, one does usually not want to fight with the common GUI
+    issues -- such as layouting GUI components and synchronizing GUI events and values with the applications
+    working thread. To avoid theses issues, ICL comes up with a string- and stream-based GUI creation framework,
+    that allows to create most complex GUI in only a few lines of code. However it always provides full access to
+    the underlying Qt-components to allows the user to use <em>traditional</em> Qt-code to implement custom
+    stuff where it is needed. 
+
+    The GUI-framework provides some special components, such as the image visualization and annotation widgets (\ref IVF)
+    and the icl::PlotWidget for 2D data visualization. In addition all common Qt-components are also wrapped.
+
     \section IVF Image Visualisation and Annotation Framework
     
     Development of a QWidget implementation for image visualisation implies finding answers to the following questions:

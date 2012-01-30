@@ -40,7 +40,7 @@
 
 namespace icl{
   
-  /// Xine-based Video Grabber (grabs most common image formats)
+  /// Xine-based Video Grabber (grabs most common image formats) \ingroup MOVIE_FILE_G
   /** The VideoGrabber implementation differs somehow from other Grabber implementations, as 
       video playback is heavily constrained by the current video framerate. The
       VideoGrabber's property interface provides functions to set up the grabbers video playback

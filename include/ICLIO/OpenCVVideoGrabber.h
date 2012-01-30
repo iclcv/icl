@@ -23,12 +23,12 @@
  ** following information to ensure the GNU General Public License  **
  ** version 3.0 requirements will be met:                           **
  ** http://www.gnu.org/copyleft/gpl.html.                           **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
+ **                                                                 **
+ ** The development of this software was supported by the           **
+ ** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
+ ** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
+ ** Forschungsgemeinschaft (DFG) in the context of the German       **
+ ** Excellence Initiative.                                          **
  **                                                                 **
  *********************************************************************/
 #ifndef ICL_OPENCV_VIDEO_GRABBER_H
@@ -47,13 +47,14 @@
 #include <ICLIO/File.h>
 namespace icl{
 
-class OpenCVVideoGrabber : public Grabber{
-    struct Data;
-    Data *data;
+  /// opencv base grabber implementation for movie files \ingroup MOVIE_FILE_G
+  class OpenCVVideoGrabber : public Grabber{
+    struct Data; //!< pimpl type
+    Data *data; //!< pimpl pointer
     public:
     
     /// returns a list of properties, that can be set using setProperty
-    /**currently:
+    /** currently:
         -pos_msec current position in file in msec
         -pos_frames current frame
         -pos_avi_ratio current position in file in %

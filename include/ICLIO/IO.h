@@ -80,8 +80,11 @@
     \defgroup UTILS_G Common File-I/O Utility Functions and Classes
     \defgroup FILEIO_G Plugin-based File-Writer and File-Grabber implementation
     \defgroup GRABBER_G List of all provided Grabber implementations
-    
+    \defgroup MOVIE_FILE_G grabbers for movie file sources
+    \defgroup V4L_G Video 4 Linux based grabbesr
+    \defgroup GIGE_G Gigabit Ethernet (GIG-E) based grabber
     \mainpage ICLIO (Input/Ouput) package
+    
     \section Overview
     The ICLIO Package encloses a wide range of images sources that are all
     derived from the abstract icl::Grabber interface. Furthermore some utility functions
@@ -91,7 +94,11 @@
     -# \ref UNICAP_G
     -# \ref UTILS_G
     -# \ref FILEIO_G
-    -# \ref GRABBER_G
+    -# \ref MOVIE_FILE_G
+    -# \ref V4L_G
+    -# \ref GIGE_G
+    -# <b>\ref GRABBER_G</b>
+
 
     \section GRABBERS Grabbers
     

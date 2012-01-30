@@ -43,25 +43,28 @@ GUI gui("hbox");
 void init(){
   std::string gl = pa("-gl") ? "gl" : "noGL";
   gui << (GUI("vbox") 
-          << "plot(0,6.5,-1,1,"+gl+")[@handle=plot1@minsize=16x12]"
-          << "plot(0,6.5,-1,1,"+gl+")[@handle=plot2@minsize=16x12]"
+          << "plot(0,6.5,-1,1,"+gl+")[@handle=plot1@minsize=15x12]"
+          << "plot(0,6.5,-1,1,"+gl+")[@handle=plot2@minsize=15x12]"
           )
       << (GUI("vbox") 
-          << "plot(0,6.5,-1,1,"+gl+")[@handle=plot3@minsize=16x12]" 
-          << "plot(0,6.5,-1,1,"+gl+")[@handle=plot4@minsize=16x12]" 
+          << "plot(0,6.5,-1,1,"+gl+")[@handle=plot3@minsize=15x12]" 
+          << "plot(0,6.5,-1,1,"+gl+")[@handle=plot4@minsize=15x12]" 
           )
       << (GUI("vbox") 
-          << "plot(-9,9,-9,9,"+gl+")[@handle=plot5@minsize=16x12]" 
-          << "plot(0,0,0,0,"+gl+")[@handle=plot6@minsize=16x12]" 
+          << "plot(-9,9,-9,9,"+gl+")[@handle=plot5@minsize=15x12]" 
+          << "plot(0,0,0,0,"+gl+")[@handle=plot6@minsize=15x12]" 
           )
       << (GUI("vbox") 
-          << "plot(0,0,0,0,"+gl+",something [pi])[@handle=plot7@minsize=16x12]" 
-          << "plot(0,0,0,0,"+gl+")[@handle=plot8@minsize=16x12]" 
-          
-          ) << "!show";
+          << "plot(0,0,0,0,"+gl+",something [pi])[@handle=plot7@minsize=15x12]" 
+          << "plot(0,0,0,0,"+gl+")[@handle=plot8@minsize=15x12]" 
+          << "checkbox(animate,checked)[@out=run]"
+         ) << "!show";
 }
 
 void run(){
+  while(!gui["run"].as<bool>()){
+    Thread::msleep(100);
+  }
   static PlotHandle plots[] = { 
     gui["plot1"], gui["plot2"],
     gui["plot3"], gui["plot4"],
