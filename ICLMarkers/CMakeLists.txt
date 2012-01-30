@@ -78,7 +78,7 @@ else()
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
 endif()
 #linker
-target_link_libraries(${PROJECT_NAME} ${ICLMarker_dependencies})
+target_link_libraries(${PROJECT_NAME} ${ICLMarkers_dependencies})
 
 link_directories("${LIBRARY_OUTPUT_PATH}")
 if(WIN32)
