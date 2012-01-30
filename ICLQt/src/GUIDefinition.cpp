@@ -66,8 +66,8 @@ namespace icl{
     static void split_string(const std::string &s, string &type, string &params, string &optparams){
       string::size_type obrPos = s.find('(');
       string::size_type cbrPos = s.find(')');
-      string::size_type obrPos2 = s.find('[',cbrPos);
-      string::size_type cbrPos2 = s.find(']',cbrPos);
+      string::size_type obrPos2 = s.find('[',cbrPos==string::npos ? 0 : cbrPos);
+      string::size_type cbrPos2 = s.find(']',cbrPos==string::npos ? 0 : cbrPos);
       
       if(obrPos != string::npos){
         if(cbrPos == string::npos) throw GUISyntaxErrorException(s,"missing ')' character!");

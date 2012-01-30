@@ -32,8 +32,6 @@
 **                                                                 **
 *********************************************************************/
 
-// {{{ includes
-
 #include <ICLQt/Widget.h>
 #include <ICLCore/Img.h>
 #include <ICLQt/GLImg.h>
@@ -92,7 +90,6 @@
 #include <ICLQt/ThreadedUpdatableSlider.h>
 #include <ICLQt/HistogrammWidget.h>
 
-// }}}
 
 using namespace std;
 namespace icl{
@@ -100,14 +97,14 @@ namespace icl{
 #define LOCK_SECTION QMutexLocker SECTION_LOCKER(&m_data->mutex)
 
   class ZoomAdjustmentWidgetParent;
-  
-  struct OSDGLButton{
-    // {{{ open
 
+  struct OSDGLButton{
     enum IconType {Tool,Zoom,Lock, Unlock,RedZoom,RedCam,
-                   NNInter, LINInter, CustomIcon, RangeNormal, RangeScaled};
+                   NNInter, LINInter, CustomIcon, RangeNormal, RangeScaled,
+                   EnterFullScreen, LeaveFullScreen };
     enum Event { Move, Press, Release, Enter, Leave,Draw};
 
+    ICLWidget *parent;
     std::string id;
     Rect bounds;
     bool toggable;
@@ -122,8 +119,14 @@ namespace icl{
     GLImg tmImage;
 
     Function<void> vcb;
-    Function<void,bool> bcb;                
-                  
+    Function<void,bool> bcb;
+
+    std::string toolTipText;
+
+    bool isToolTipVisible() const{
+      return over && visible;
+    }
+
     static inline const Img8u &get_icon(IconType icon){
       switch(icon){
         case Tool: return IconFactory::create_image("tool");
@@ -137,14 +140,17 @@ namespace icl{
         case RangeNormal: return IconFactory::create_image("range-normal");
         case RangeScaled: return IconFactory::create_image("range-scaled");
         case CustomIcon: return IconFactory::create_image("custom");
+        case LeaveFullScreen: return IconFactory::create_image("leave-fullscreen");
+        case EnterFullScreen: return IconFactory::create_image("enter-fullscreen");
       }
       static Img8u undef(Size(32,32),4);
       return undef;
     }
     
-    OSDGLButton(const std::string &id, int x, int y, int w, int h,const ImgBase *icon, const Function<void> &cb=Function<void>()):
-      id(id),bounds(x,y,w,h),toggable(false),over(false),down(false),
-      toggled(false),visible(false),vcb(cb){
+    OSDGLButton(ICLWidget *parent, const std::string &toolTipText, const std::string &id, int x, int y, int w, int h,
+                const ImgBase *icon, const Function<void> &cb=Function<void>()):
+      parent(parent),id(id),bounds(x,y,w,h),toggable(false),over(false),down(false),
+      toggled(false),visible(false),vcb(cb),toolTipText(toolTipText){
       if(icon){
         icon->convert(&this->icon);
       }else{
@@ -153,24 +159,25 @@ namespace icl{
     }
   
     
-    OSDGLButton(const std::string &id, int x, int y, int w, int h, IconType icon, const Function<void> &cb=Function<void>()):
-      id(id),bounds(x,y,w,h),toggable(false),over(false),down(false),
-      toggled(false),visible(false),vcb(cb){
+    OSDGLButton(ICLWidget *parent, const std::string &toolTipText, const std::string &id, int x, int y, int w, int h, 
+                IconType icon, const Function<void> &cb=Function<void>()):
+      parent(parent),id(id),bounds(x,y,w,h),toggable(false),over(false),down(false),
+      toggled(false),visible(false),vcb(cb),toolTipText(toolTipText){
       this->icon = get_icon(icon);
     }
-    OSDGLButton(const std::string &id, int x, int y, int w, int h, IconType icon, 
+    OSDGLButton(ICLWidget *parent, const std::string &toolTipText, const std::string &id, int x, int y, int w, int h, IconType icon, 
                 IconType downIcon, const Function<void,bool> &cb=Function<void,bool>(), bool toggled = false):
-      id(id),bounds(x,y,w,h),toggable(true),over(false),down(false),
-      toggled(toggled),visible(false),bcb(cb){
+      parent(parent),id(id),bounds(x,y,w,h),toggable(true),over(false),down(false),
+      toggled(toggled),visible(false),bcb(cb),toolTipText(toolTipText){
       this->icon = get_icon(icon);
       this->downIcon = get_icon(downIcon);
     }
 
-    OSDGLButton(const std::string &id, int x, int y, int w, int h, 
+    OSDGLButton(ICLWidget *parent, const std::string &toolTipText, const std::string &id, int x, int y, int w, int h, 
                 const ImgBase *untoggledIcon, const ImgBase *toggledIcon, 
                 const Function<void,bool> &cb=Function<void,bool>(), bool toggled = false):
-      id(id),bounds(x,y,w,h),toggable(true),over(false),down(false),
-      toggled(toggled),visible(false),bcb(cb){
+      parent(parent),id(id),bounds(x,y,w,h),toggable(true),over(false),down(false),
+      toggled(toggled),visible(false),bcb(cb),toolTipText(toolTipText){
       if(untoggledIcon){
         untoggledIcon->convert(&icon);
       }else{
@@ -199,7 +206,8 @@ namespace icl{
     }
     bool update_mouse_move(int x, int y, ICLWidget *parent){
       if(!visible) return false;
-      return (over = bounds.contains(x,y)); 
+      over = bounds.contains(x,y); 
+      return over;
     }
 
     bool update_mouse_press(int x, int y,ICLWidget *parent){
@@ -226,15 +234,17 @@ namespace icl{
     }
 
     bool event(int x, int y, Event evt, ICLWidget *parent){
-
       switch(evt){
-        case Move: return update_mouse_move(x,y,parent);
+        case Move:{
+          return update_mouse_move(x,y,parent);
+        }
         case Press: return update_mouse_press(x,y,parent);
         case Release: return update_mouse_release(x,y,parent);
         case Enter:
-        case Leave: 
+        case Leave:{ 
           visible = evt==Enter;
           return bounds.contains(x,y);
+        }
         case Draw: 
           drawGL(Size(parent->width(),parent->height()));
           return false;
@@ -243,11 +253,10 @@ namespace icl{
     }
   };
 
-  // }}}
+
 
 
   struct ImageInfoIndicator : public ThreadedUpdatableWidget{
-    // {{{ open
     ImgParams p;
     icl::depth d;
     Point mousePos;
@@ -308,6 +317,8 @@ namespace icl{
    virtual void paintEvent(QPaintEvent *e){
      QWidget::paintEvent(e);
      QPainter pa(this);
+     
+
      pa.setRenderHint(QPainter::Antialiasing);
 
      pa.setBrush(QColor(210,210,210));
@@ -326,11 +337,9 @@ namespace icl{
    }
   };
 
-  // }}}
+
   
   struct ICLWidget::Data{
-        // {{{ open
-
     Data(ICLWidget *parent):
       parent(parent),channelSelBuf(0),
       qimageConv(0),qimage(0),mutex(QMutex::Recursive),fm(fmHoldAR),fmSave(fmHoldAR),
@@ -342,7 +351,7 @@ namespace icl{
       selectedTabIndex(0),embeddedZoomMode(false),
       embeddedZoomModeJustEnabled(false),embeddedZoomRect(0),
       useLinInterpolation(false),nextButtonX(2),lastMouseReleaseButton(0),
-      defaultViewPort(Size::VGA)
+      defaultViewPort(Size::VGA),parentBeforeFullScreen(0)
     {
       for(int i=0;i<3;++i){
         bci[i] = 0;
@@ -362,7 +371,6 @@ namespace icl{
       deleteAllCallbacks();
       // ICL_DELETE(outputCap); this must be done by the parent widget
     }
-    
     
     ICLWidget *parent;
     ImgBase *channelSelBuf;
@@ -409,11 +417,12 @@ namespace icl{
     float backgroundColor[3];
     Point wheelDelta;
     Size defaultViewPort;
+    QWidget *parentBeforeFullScreen;
     
     bool event(int x, int y, OSDGLButton::Event evt){
       bool any = false;
       for(unsigned int i=0;i<glbuttons.size();++i){
-        if(i == 5 && (evt == OSDGLButton::Enter || evt == OSDGLButton::Leave)){
+        if(i == 6 && (evt == OSDGLButton::Enter || evt == OSDGLButton::Leave)){
           continue;
         }
         any |= glbuttons[i]->event(x,y,evt,parent);
@@ -452,13 +461,41 @@ namespace icl{
     void popScaleMode(){
       fm = fmSave;
     }
+
+
+    void enterFullScreen(){
+      if(!parent->isFullScreen()){
+        parentBeforeFullScreen = (QWidget*)parent->parent();
+        parent->setParent(0);
+        parent->setWindowState(parent->windowState() ^ Qt::WindowFullScreen);
+        parent->show();
+        glbuttons[5]->toggled = true;
+        for(unsigned int i=0;i<glbuttons.size();++i) glbuttons[i]->over = false;
+
+      }
+    }
+    void leaveFullScreen(){
+      if(parent->isFullScreen()){
+        parent->setWindowState(parent->windowState() & !Qt::WindowFullScreen);
+        parent->setParent(parentBeforeFullScreen);
+        if(parentBeforeFullScreen && parentBeforeFullScreen->layout()){
+          parentBeforeFullScreen->layout()->addWidget(parent);
+        }
+        parent->show();
+        parent->setFocus();
+        glbuttons[5]->toggled = false;
+        for(unsigned int i=0;i<glbuttons.size();++i) glbuttons[i]->over = false;
+      }
+    }
+    void changeFullScreenMode(bool toggled){
+      if(toggled) enterFullScreen();
+      else leaveFullScreen();
+    }
   };
 
-  // }}}
+
 
   struct ICLWidget::OutputBufferCapturer{
-    // {{{ open
-
     ICLWidget *parent;
     ICLWidget::Data *data;
     
@@ -602,11 +639,10 @@ namespace icl{
     }
   };
 
-  // }}}
-  
-  static Rect computeRect(const Size &imageSize, const Size &widgetSize, ICLWidget::fitmode mode,const Rect32f &relZoomRect=Rect32f::null){
-    // {{{ open
 
+  
+  static Rect computeRect(const Size &imageSize, const Size &widgetSize,
+                          ICLWidget::fitmode mode,const Rect32f &relZoomRect=Rect32f::null){
     int iImageW = imageSize.width;
     int iImageH = imageSize.height;
     int iW = widgetSize.width;
@@ -655,10 +691,9 @@ namespace icl{
     return Rect(0,0,iW,iH);
   }
 
-  // }}}
+
 
   static Rect32f fixRectAR(const Rect32f &r, ICLWidget *w){
-    // {{{ open
     // Adapt the rects aspect ratio to current image size
     Size widgetSize = w->getSize();
     Size imageSize = w->getImageSize(true);
@@ -672,11 +707,9 @@ namespace icl{
     Point32f cOrig = r.center();
     return Rect32f(cOrig.x-relW/2,cOrig.y-relH/2,relW,relH);
   }
-  // }}}
+
   
   struct ZoomAdjustmentWidget : public QWidget{
-    // {{{ open
-
     Rect32f &r;
     bool downMask[3];
     
@@ -911,11 +944,9 @@ namespace icl{
     }
   };
 
-  // }}}
+
 
   struct ZoomAdjustmentWidgetParent : public QWidget{
-    // {{{ open
-
     Size imageSize;
     ZoomAdjustmentWidget *aw;
     ZoomAdjustmentWidgetParent(const Size &imageSize, QWidget *parent, Rect32f &r, QWidget *parentICLWidget):
@@ -937,11 +968,9 @@ namespace icl{
     }    
   };
 
-  // }}}
+
 
   static void create_menu(ICLWidget *widget,ICLWidget::Data *data){
-    // {{{ open
-
     QMutexLocker locker(&data->menuMutex);
 
     // OK, we need to extract default values for all gui elements if gui is already defined!
@@ -1210,11 +1239,9 @@ namespace icl{
     }
   }
 
-  // }}}
+
   
   void update_data(const Size &newImageSize, ICLWidget::Data *data){
-    // {{{ open
-
     /// XXX
     data->menuMutex.lock();
     if(data->menuptr){
@@ -1227,7 +1254,7 @@ namespace icl{
     data->menuMutex.unlock();
   }
 
-  // }}}
+
 
   // ------------ ICLWidget ------------------------------
 
@@ -1238,8 +1265,6 @@ namespace icl{
 #define GL_BUTTON_X_INC (GL_BUTTON_W+GL_BUTTON_SPACE)
 
   ICLWidget::ICLWidget(QWidget *parent) : 
-    // {{{ open
-
     m_data(new ICLWidget::Data(this)){
     
     setMouseTracking(true);
@@ -1247,22 +1272,26 @@ namespace icl{
     
     static const int y = GL_BUTTON_Y, w = GL_BUTTON_W, h = GL_BUTTON_H;
     int &x = m_data->nextButtonX;
-    m_data->glbuttons.push_back(new OSDGLButton("",x,y,w,h,OSDGLButton::Tool,
+    m_data->glbuttons.push_back(new OSDGLButton(this,"show/hide menu","",x,y,w,h,OSDGLButton::Tool,
                                                 icl::function(this,&ICLWidget::showHideMenu)));
     x+=GL_BUTTON_X_INC;
-    m_data->glbuttons.push_back(new OSDGLButton("",x,y,w,h,OSDGLButton::Unlock,OSDGLButton::Lock,
+    m_data->glbuttons.push_back(new OSDGLButton(this,"popup/embedded menu","",x,y,w,h,OSDGLButton::Unlock,OSDGLButton::Lock,
                                                 icl::function(this,&ICLWidget::setMenuEmbedded),true));
     x+=GL_BUTTON_X_INC;
-    m_data->glbuttons.push_back(new OSDGLButton("",x,y,w,h,OSDGLButton::NNInter,OSDGLButton::LINInter,
+    m_data->glbuttons.push_back(new OSDGLButton(this,"interpolation mode","",x,y,w,h,OSDGLButton::NNInter,OSDGLButton::LINInter,
                                                 icl::function(this,&ICLWidget::setLinInterpolationEnabled),false));
     x+=GL_BUTTON_X_INC;
-    m_data->glbuttons.push_back(new OSDGLButton("",x,y,w,h,OSDGLButton::Zoom,OSDGLButton::RedZoom,
+    m_data->glbuttons.push_back(new OSDGLButton(this,"zoom (left button drag)","",x,y,w,h,OSDGLButton::Zoom,OSDGLButton::RedZoom,
                                                 icl::function(this,&ICLWidget::setEmbeddedZoomModeEnabled),false));
     x+=GL_BUTTON_X_INC;
-    m_data->glbuttons.push_back(new OSDGLButton("",x,y,w,h,OSDGLButton::RangeNormal,OSDGLButton::RangeScaled,
+    m_data->glbuttons.push_back(new OSDGLButton(this,"scale value range","",x,y,w,h,OSDGLButton::RangeNormal,OSDGLButton::RangeScaled,
                                                 icl::function(this,&ICLWidget::setRangeModeNormalOrScaled),false));
     x+=GL_BUTTON_X_INC;
-    m_data->glbuttons.push_back(new OSDGLButton("",x,y,w,h,OSDGLButton::RedCam,
+    m_data->glbuttons.push_back(new OSDGLButton(this,"enter/leave fullscreen (F11)","",x,y,w,h,OSDGLButton::EnterFullScreen,
+                                                OSDGLButton::LeaveFullScreen,
+                                                icl::function(m_data,&ICLWidget::Data::changeFullScreenMode)));
+    x+=GL_BUTTON_X_INC;
+    m_data->glbuttons.push_back(new OSDGLButton(this,"press to stop recording","",x,y,w,h,OSDGLButton::RedCam,
                                                 icl::function(this,&ICLWidget::stopButtonClicked)));
     x+=GL_BUTTON_X_INC;
 
@@ -1270,60 +1299,52 @@ namespace icl{
     m_data->imageInfoIndicator->update(m_data->defaultViewPort);
   }
 
-  // }}}
+
   
   ICLWidget::~ICLWidget(){
-    // {{{ open
-
     ICL_DELETE(m_data->outputCap);// just because of the classes definition order 
     delete m_data; 
   }
 
-  // }}}
+
 
 
   void ICLWidget::addSpecialToggleButton(const std::string &id, 
                                          const ImgBase* untoggledIcon, 
                                          const ImgBase *toggledIcon, 
                                          bool initiallyToggled, 
-                                         const Function<void,bool> &cb){
-    // {{{ open
-
+                                         const Function<void,bool> &cb,
+                                         const std::string &toolTipText){
     static const int y = GL_BUTTON_Y, w = GL_BUTTON_W, h = GL_BUTTON_H;
     int &x = m_data->nextButtonX;
-    m_data->glbuttons.push_back(new OSDGLButton(id,x,y,w,h,untoggledIcon,toggledIcon,cb,initiallyToggled));
+    m_data->glbuttons.push_back(new OSDGLButton(this,toolTipText,id,x,y,w,h,untoggledIcon,toggledIcon,cb,initiallyToggled));
     
     x+=GL_BUTTON_X_INC;
     
     
   }
 
-  // }}}
+
   void ICLWidget::addSpecialButton(const std::string &id, 
                                    const ImgBase* icon, 
-                                   const Function<void> &cb){
-    // {{{ open
-
+                                   const Function<void> &cb,
+                                   const std::string &toolTipText){
     static const int y = GL_BUTTON_Y, w = GL_BUTTON_W, h = GL_BUTTON_H;
     int &x = m_data->nextButtonX;
-    m_data->glbuttons.push_back(new OSDGLButton(id,x,y,w,h,icon,cb));
+    m_data->glbuttons.push_back(new OSDGLButton(this,toolTipText,id,x,y,w,h,icon,cb));
     
     x+=GL_BUTTON_X_INC;
   }
 
-  // }}}
+
   
   void ICLWidget::removeSpecialButton(const std::string &id){
-    // {{{ open
-
     DEBUG_LOG("removins special buttons is not yet implemented!");
   }
 
-  // }}}
+
 
   void ICLWidget::setEmbeddedZoomModeEnabled(bool enabled){
-    // {{{ open
-
     m_data->embeddedZoomMode = enabled;
     if(!enabled){
       ICL_DELETE(m_data->embeddedZoomRect);
@@ -1336,17 +1357,14 @@ namespace icl{
     
   }
 
-  // }}} 
+ 
 
   void ICLWidget::setLinInterpolationEnabled(bool enabled){
-    // {{{ open
     m_data->useLinInterpolation = enabled;
   }
-  // }}}
+
 
   void ICLWidget::bciModeChanged(int modeIdx){
-    // {{{ open
-
     switch(modeIdx){
       case 0: m_data->rm = rmOn; break;
       case 1: m_data->rm = rmOff; break;
@@ -1358,44 +1376,36 @@ namespace icl{
     }
   }
 
-  // }}}
+
 
   void ICLWidget::brightnessChanged(int val){
-    // {{{ open
-
     m_data->bci[0] = val;
     if(*m_data->bciUpdateAuto){
       rebufferImageInternal();
     }
   }
 
-  // }}}
+
 
   void ICLWidget::contrastChanged(int val){
-    // {{{ open
-
     m_data->bci[1] = val;
     if(*m_data->bciUpdateAuto){
       rebufferImageInternal();
     }
   }
 
-  // }}}
+
 
   void ICLWidget::intensityChanged(int val){
-    // {{{ open
-
     m_data->bci[2] = val;
     if(*m_data->bciUpdateAuto){
       rebufferImageInternal();
     }
   }
 
-  // }}}
+
   
   void ICLWidget::scaleModeChanged(int modeIdx){
-    // {{{ open
-
     //hold aspect ratio,force fit,no scale, zoom
     switch(modeIdx){
       case 0: m_data->fm = fmNoScale; break;
@@ -1407,22 +1417,18 @@ namespace icl{
     update();
   }
 
-  // }}}
+
 
   void ICLWidget::currentChannelChanged(int modeIdx){
-    // {{{ open
-
     m_data->selChannel = modeIdx - 1;
     if(*m_data->channelUpdateAuto){
       rebufferImageInternal();
     }
   }
 
-  // }}}
+
   
   void ICLWidget::setViewPort(const Size &size){
-    // {{{ open
-
     m_data->defaultViewPort = size;
     if(m_data->image.isNull()){
       m_data->imageInfoIndicator->update(m_data->defaultViewPort);
@@ -1430,11 +1436,9 @@ namespace icl{
       
   }
 
-  // }}}
+
 
   void ICLWidget::showHideMenu(){
-    // {{{ open
-
     if(!m_data->menuptr){
       create_menu(this,m_data);
     }
@@ -1452,11 +1456,9 @@ namespace icl{
     m_data->adaptMenuSize(size());
   }
 
-  // }}}
+
   
   void ICLWidget::setMenuEmbedded(bool embedded){
-    // {{{ open
-
     if(!m_data->menuptr){
       create_menu(this,m_data);
     }
@@ -1474,11 +1476,9 @@ namespace icl{
     m_data->menuptr->setVisible(visible);
   }
 
-  // }}}
+
 
   void ICLWidget::recordButtonToggled(bool checked){
-    // {{{ open
-
     if(!m_data->outputCap){
       m_data->outputCap = new OutputBufferCapturer(this,m_data);
     }
@@ -1500,54 +1500,48 @@ namespace icl{
       if(!ok){
         (*m_data->menu.getValue<ButtonHandle>("auto-cap-record"))->setChecked(false);
       }else{
-        m_data->glbuttons.back()->visible = true;
+        m_data->glbuttons[6]->visible = true;
         update();
       }
     }else{
       m_data->outputCap->stopRecording();
-      m_data->glbuttons.back()->visible = false;
+      m_data->glbuttons[6]->visible = false;
       update();
     }
   }
 
-  // }}}
+
 
   void ICLWidget::pauseButtonToggled(bool checked){
-    // {{{ open
-
     if(!m_data->outputCap){
       m_data->outputCap = new OutputBufferCapturer(this,m_data);
     }
     m_data->outputCap->setPaused(checked);
   }
 
-  // }}}
+
 
   void ICLWidget::stopButtonClicked(){
-    // {{{ open
     if(m_data->outputCap){
       m_data->outputCap->stopRecording();
       QMutexLocker l(&m_data->menuMutex);
       (*m_data->menu.getValue<ButtonHandle>("auto-cap-record"))->setChecked(false);
     }
-    m_data->glbuttons[5]->visible = false;
+    m_data->glbuttons[6]->visible = false;
     update();
   }
 
-  // }}}
+
   
   void ICLWidget::skipFramesChanged(int frameSkip){
-    // {{{ open
-
     if(m_data->outputCap){
       m_data->outputCap->frameSkip = frameSkip;
     }
   }
 
-  // }}}
+
 
   void ICLWidget::menuTabChanged(int index){
-      // {{{ open
     m_data->selectedTabIndex = index;
     if(index == 5){
       m_data->infoTabVisible = true;
@@ -1557,10 +1551,9 @@ namespace icl{
     }
   }
 
-  // }}}
+
 
   void ICLWidget::histoPanelParamChanged(){
-    // {{{ open
     QMutexLocker l(&m_data->menuMutex);
     if(!m_data->histoWidget) return;
     m_data->histoWidget->setFeatures(m_data->menu.getValue<bool>("log-on"),
@@ -1572,11 +1565,9 @@ namespace icl{
     m_data->histoWidget->update();
     
   }
-  // }}}
+
  
   void ICLWidget::updateInfoTab(){
-    // {{{ open
-
     if(m_data->menuMutex.tryLock()){
       if(m_data->histoWidget && m_data->infoTabVisible){
         m_data->histoWidget->update(getImageStatistics());
@@ -1589,11 +1580,9 @@ namespace icl{
 
   }
 
-  // }}}
+
   
   std::string ICLWidget::getImageCaptureFileName(){
-    // {{{ open
-
     QMutexLocker l(&m_data->menuMutex);
     if(!m_data->menu.getDataStore().contains("cap-filename")){
       return "image.pnm";
@@ -1624,11 +1613,9 @@ namespace icl{
     return filename;
   }
 
-  // }}}
+
 
   void ICLWidget::captureCurrentImage(){
-    // {{{ open
-
     const ImgBase *buf = 0;
     {
       LOCK_SECTION;
@@ -1649,11 +1636,9 @@ namespace icl{
     }
   }
 
-  // }}}
+
 
   const Img8u &ICLWidget::grabFrameBufferICL(){
-    // {{{ open
-
     if(!m_data->qic){
       m_data->qic = new QImageConverter;
     }
@@ -1662,11 +1647,9 @@ namespace icl{
     return *m_data->qic->getImg<icl8u>();
   }
 
-  // }}}
+
   
   void ICLWidget::captureCurrentFrameBuffer(){
-    // {{{ open
-
     const Img8u &fb = grabFrameBufferICL();
     std::string filename = getImageCaptureFileName();
     if(filename == ""){
@@ -1681,11 +1664,13 @@ namespace icl{
     }
   }
 
-  // }}}
+
   
   void ICLWidget::rebufferImageInternal(){
-    // {{{ open
     /*
+        THIS is no longer needed: rebuffering is done automatically
+        using the dirty flag of the GLImg
+
         m_data->mutex.lock();
         if(m_data-m_data->image && m_data->image->hasImage()){
         if(m_data->channelSelBuf){
@@ -1700,16 +1685,16 @@ namespace icl{
         }else{
         m_data->mutex.unlock();
         }
+        WARNING_LOG("rebuffering was disabled!");
     */
-    WARNING_LOG("rebuffering was disabled!");
+
+    m_data->image.setBCI(m_data->bci[0], m_data->bci[1],m_data->bci[2]);
     update();
   }
 
-  // }}}
+
   
   void ICLWidget::initializeGL(){
-    // {{{ open
-
     glClearColor (0.0, 0.0, 0.0, 0.0);
     //    glShadeModel(GL_FLAT);
     glEnable(GL_TEXTURE_2D);
@@ -1725,20 +1710,17 @@ namespace icl{
     glLoadIdentity();
   }
 
-  // }}}
+
 
   void ICLWidget::resizeGL(int w, int h){
-    // {{{ open
-
     LOCK_SECTION;
     makeCurrent();
     glViewport(0, 0, (GLint)w, (GLint)h);
   }
 
-  // }}}
+
  
   void ICLWidget::paintGL(){
-    // {{{ open
     //    m_data->mutex.lock();
     
     LOCK_SECTION;
@@ -1784,24 +1766,48 @@ namespace icl{
       pe->rect(Rect((int)r.x,(int)r.y,(int)r.width,(int)r.height));
     }
 
+
+
+    for(unsigned int i=0;i<m_data->glbuttons.size();++i){
+      if(m_data->glbuttons[i]->isToolTipVisible()){
+        pe->fontsize(10);
+        const Rect &rr = m_data->glbuttons[i]->bounds;
+        std::string text = m_data->glbuttons[i]->toolTipText;
+        if(!text.length()){
+          text = "no tooltip available";
+        }
+        Size size = pe->estimateTextBounds(text);
+        Rect r(rr.x+20,24,size.width+8, 16), r2=r;
+        r2.y -= 2;
+        pe->color(20,120,255,255);
+        pe->linewidth(2);
+        pe->line(Point32f(rr.x+rr.width/2., 18),
+                 Point32f(rr.x+rr.width/2., 32));
+        pe->line(Point32f(rr.x+rr.width/2., 32),
+                 Point32f(rr.x+rr.width/2.+10, 32));
+
+        pe->fill(20,120,255,200);
+        pe->rect(r);
+        pe->color(255,255,255,255);
+        pe->text(r2,text);
+        break;
+      }
+    }
+
     m_data->event(0,0,OSDGLButton::Draw);
 
     ICL_DELETE(pe);
   }
 
-  // }}}
+
 
   void ICLWidget::paintEvent(QPaintEvent *e){
-    // {{{ open
-
     QGLWidget::paintEvent(e);    
   }
 
-  // }}}
+
 
   void ICLWidget::setImage(const ImgBase *image){ 
-    // {{{ open
-
     LOCK_SECTION;
     if(!image){
       m_data->image.update(0);
@@ -1838,37 +1844,39 @@ namespace icl{
     updateInfoTab();
   }
 
-  // }}}
+
 
   void ICLWidget::setFitMode(fitmode fm){
-    // {{{ open
     m_data->fm = fm;
   }
 
-  // }}}
+
 
   void ICLWidget::setRangeMode(rangemode rm){
-    // {{{ open
     m_data->rm = rm;
   }
 
-  // }}}
+
 
   void ICLWidget::setBCI(int brightness, int contrast, int intensity){
-    // {{{ open
+    DEBUG_LOG("set bci was called");
     m_data->bci[0] = brightness;
     m_data->bci[1] = contrast;
     m_data->bci[2] = intensity;
   }
-  // }}}
+
 
   void ICLWidget::customPaintEvent(PaintEngine*){
-    // {{{ open
+
   }
-  // }}}
+
+  void ICLWidget::hideEvent(QHideEvent *e){
+    if(m_data->menu.hasBeenCreated()) m_data->menu.hide();
+  }
+
 
   void ICLWidget::mousePressEvent(QMouseEvent *e){
-    // {{{ open
+    setFocus();
 
     if(m_data->embeddedZoomMode){
       m_data->embeddedZoomRect = new Rect32f(e->x(),e->y(),0.1,0.1);
@@ -1890,11 +1898,9 @@ namespace icl{
     update();
   }
 
-  // }}}
+
 
   void ICLWidget::mouseReleaseEvent(QMouseEvent *e){
-    // {{{ open
-
     if(m_data->embeddedZoomMode){
       if(m_data->embeddedZoomModeJustEnabled){
         m_data->embeddedZoomModeJustEnabled = false;
@@ -1941,11 +1947,9 @@ namespace icl{
     update();
   }
 
-  // }}}
+
 
   void ICLWidget::mouseMoveEvent(QMouseEvent *e){
-    // {{{ open
-
     if(m_data->embeddedZoomMode && m_data->embeddedZoomRect){
       m_data->embeddedZoomRect->width = e->x()-m_data->embeddedZoomRect->x;
       m_data->embeddedZoomRect->height = e->y()-m_data->embeddedZoomRect->y;
@@ -1975,11 +1979,9 @@ namespace icl{
     update();
   }
 
-  // }}}
+
   
   void ICLWidget::enterEvent(QEvent*){
-    // {{{ open
-
     if(m_data->menuEnabled){
       if(m_data->event(-1,-1,OSDGLButton::Enter)){
         update();
@@ -1994,11 +1996,9 @@ namespace icl{
     update();
   }
 
-  // }}}
+
 
   void ICLWidget::leaveEvent(QEvent*){
-    // {{{ open
-
     if(m_data->menuEnabled){
       if(m_data->event(-1,-1,OSDGLButton::Leave)){
         update();
@@ -2014,11 +2014,17 @@ namespace icl{
     update();
   }
 
-  // }}}
+  void ICLWidget::keyPressEvent(QKeyEvent *event){
+    
+    if(event->key() == Qt::Key_F11){
+      if(isFullScreen()) m_data->leaveFullScreen();
+      else m_data->enterFullScreen();
+    }
+  }
+  
+
 
   void ICLWidget::wheelEvent(QWheelEvent *e){
-    // {{{ open 
-
     // possibly adding a wheel base zooming if a certain keyboard modifier is pressed
     
     if(e->orientation() == Qt::Horizontal){
@@ -2035,8 +2041,6 @@ namespace icl{
     if(m_data->embeddedZoomMode && m_data->embeddedZoomModeJustEnabled){
       return;
     }
-
-
 
     static const float zoominfac = 0.9;
     static const float zoomoutfac = 1.5;
@@ -2088,10 +2092,9 @@ namespace icl{
 #endif
   }
 
-  // }}}
+
 
   void ICLWidget::resizeEvent(QResizeEvent *e){
-    // {{{ open
     resizeGL(e->size().width(),e->size().height());
     m_data->adaptMenuSize(size());
     if(m_data->embeddedZoomMode || m_data->fm == fmZoom){
@@ -2101,10 +2104,9 @@ namespace icl{
       }
     }
   }
-  // }}}
+
 
   void ICLWidget::setVisible(bool visible){
-    // {{{ open
     QGLWidget::setVisible(visible);
     // xxx m_data->showMenuButton->setVisible(false);
     // xxx m_data->embedMenuButton->setVisible(false);
@@ -2115,63 +2117,50 @@ namespace icl{
     }
   }
 
-  // }}}
+
 
   ICLWidget::fitmode ICLWidget::getFitMode(){
-    // {{{ open
-
     return m_data->fm;
   }
 
-  // }}}
+
   
   ICLWidget::rangemode ICLWidget::getRangeMode(){
-    // {{{ open
-
     return m_data->rm;
   }
 
-  // }}}
+
 
   void ICLWidget::setShowNoImageWarnings(bool showWarnings){
-    // {{{ open
-
     m_data->showNoImageWarnings = showWarnings;
   }
 
-  // }}}
+
 
   void ICLWidget::updateFromOtherThread(){
-    // {{{ open
-
     QApplication::postEvent(this,new QEvent(QEvent::User),Qt::HighEventPriority);
   }
 
-  // }}}
+
 
   void ICLWidget::setMenuEnabled(bool enabled){
-    // {{{ open
-
     m_data->menuEnabled = enabled;
   }
 
-  // }}}
+
 
   void ICLWidget::setImageInfoIndicatorEnabled(bool enabled){
-    // {{{ open
     m_data->imageInfoIndicatorEnabled = enabled;
   }
-  // }}}
+
  
   void ICLWidget::setShowPixelGridEnabled(bool enabled){
-    // {{{ open
     m_data->image.setDrawGrid(enabled,m_data->gridColor);
     updateFromOtherThread();
   }
-  // }}}
+
 
   void ICLWidget::setRangeModeNormalOrScaled(bool enabled){
-    // {{{ open
     setRangeMode(enabled?rmAuto:rmOff);
     rebufferImageInternal();
     if(!m_data->menuptr){
@@ -2182,11 +2171,9 @@ namespace icl{
     ComboHandle ch = m_data->menu.getValue<ComboHandle>("bci-mode");
     ch.setSelectedIndex(enabled?2:1);
   }
-  // }}}
+
 
   void ICLWidget::showBackgroundColorDialog(){
-    // {{{ open
-
     float *o = m_data->backgroundColor;
     QColor color = QColorDialog::getColor(QColor(o[0]*255,o[1]*255,o[2]*255),this);
     o[0] = float(color.red())/255;
@@ -2195,70 +2182,61 @@ namespace icl{
     updateFromOtherThread();
   }
 
-  // }}}
+
   void ICLWidget::setBackgroundBlack(){
-    // {{{ open
     std::fill(m_data->backgroundColor,m_data->backgroundColor+3,0);
     updateFromOtherThread();
   }
-  // }}}
+
   
   void ICLWidget::setBackgroundWhite(){
-    // {{{ open
     std::fill(m_data->backgroundColor,m_data->backgroundColor+3,1);
     updateFromOtherThread();
   }
-  // }}}
+
   void ICLWidget::setBackgroundGray(){
-    // {{{ open
     std::fill(m_data->backgroundColor,m_data->backgroundColor+3,0.3);
     updateFromOtherThread();
   }
-  // }}}
+
 
   void ICLWidget::showGridColorDialog(){
-    // {{{ open
     const float *g = m_data->image.getGridColor();
     QColor color = QColorDialog::getColor(QColor(g[0]*255,g[1]*255,g[2]*255),this);
     float n[4] = { float(color.red())/255, float(color.green())/255, float(color.blue())/255, g[3]};
     m_data->image.setGridColor(n);
     updateFromOtherThread();
   }
-  // }}}
+
   
   void ICLWidget::setGridBlack(){
-    // {{{ open
     float c[4] = {0,0,0,1};
     m_data->image.setGridColor(c);
     updateFromOtherThread();
   }
-  // }}}
+
   void ICLWidget::setGridWhite(){
-    // {{{ open
     float c[4] = {1,1,1,1};
     m_data->image.setGridColor(c);
     updateFromOtherThread();
   }
-  // }}}
+
   void ICLWidget::setGridGray(){
-    // {{{ open
     float c[4] = {0.3,0.3,0.3,1};
     m_data->image.setGridColor(c);
     updateFromOtherThread();
   }
-  // }}}
+
 
   void ICLWidget::setGridAlpha(int alpha){
-    // {{{ open 
     const float *c = m_data->image.getGridColor();
     float n[4] = {c[0],c[1],c[2],float(alpha)/255};
     m_data->image.setGridColor(n);
     updateFromOtherThread();
   }
-  // }}}
+
   
   std::vector<std::string> ICLWidget::getImageInfo(){
-    // {{{ open
     std::vector<string> info;
 
     GLImg &i = m_data->image;
@@ -2286,10 +2264,9 @@ namespace icl{
     return info;
   }
 
-  // }}}
+
 
   Size ICLWidget::getImageSize(bool fromGUIThread){
-    // {{{ open
     if(fromGUIThread){
       m_data->mutex.lock();
     }
@@ -2306,10 +2283,9 @@ namespace icl{
     return s;
   }
 
-  // }}}
+
 
   Rect ICLWidget::getImageRect(bool fromGUIThread){
-    // {{{ open
     if(fromGUIThread){
       m_data->mutex.lock();
     }
@@ -2328,12 +2304,9 @@ namespace icl{
     return r;
   }
 
-  // }}}
+
 
   const MouseEvent &ICLWidget::createMouseEvent(MouseEventType type){
-    // {{{ open
-
-
     MouseEvent &evt = m_data->mouseEvent;
 
     LOCK_SECTION;
@@ -2397,11 +2370,9 @@ namespace icl{
 #endif
   }
 
-  // }}}
+
 
   const ImageStatistics &ICLWidget::getImageStatistics() {
-    // {{{ open
-
     if(!m_data->image.isNull()){
       return m_data->image.getStats();
     }else{
@@ -2410,29 +2381,23 @@ namespace icl{
       return s;
     }
   }
-  // }}}
+
 
   void ICLWidget::install(MouseHandler *h){
-    // {{{ open
-
     connect(this,SIGNAL(mouseEvent(const MouseEvent&)),
             h,SLOT(handleEvent(const MouseEvent&)));  
   }
 
-  // }}}
+
 
   void ICLWidget::uninstall(MouseHandler *h){
-    // {{{ open
-
     disconnect(this,SIGNAL(mouseEvent(const MouseEvent &)),
                h,SLOT(handleEvent(const MouseEvent &)));  
   }
 
-  // }}}
+
 
   bool ICLWidget::event(QEvent *event){
-    // {{{ open
-
     ICLASSERT_RETURN_VAL(event,false);
     if(event->type() == QEvent::User){
       update();
@@ -2442,11 +2407,9 @@ namespace icl{
     }
   } 
 
-  // }}}
+
 
   void ICLWidget::registerCallback(const GUI::Callback &cb, const std::string &eventList){
-    // {{{ open
-
     struct CallbackHandler : public MouseHandler{
       GUI::Callback cb;
       std::vector<MouseEventType> evts;
@@ -2493,14 +2456,12 @@ namespace icl{
     install(cbh);
   }
 
-  // }}}
+
   
   void ICLWidget::removeCallbacks(){
-    // {{{ open
-
     m_data->deleteAllCallbacks();
   }
 
-  // }}}
 }
+
 

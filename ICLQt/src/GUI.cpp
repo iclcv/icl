@@ -2227,6 +2227,12 @@ public:
     }
   }
 
+
+  bool GUI::hasBeenCreated() const{
+    return m_poWidget;
+  }
+
+
   void GUI::show(){
     // {{{ open
     create();

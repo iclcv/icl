@@ -293,13 +293,15 @@ int main(int n, char **args){
                                 const ImgBase* untoggledIcon = 0, 
                                 const ImgBase *toggledIcon = 0, 
                                 bool initiallyToggled = 0, 
-                                const Function<void,bool> &cb=Function<void,bool>());
+                                const Function<void,bool> &cb=Function<void,bool>(),
+                                const std::string &toolTipText="");
 
     /// Adds a new toggle-button to the OSD-button bar on the upper widget edge
     /** @see addSpecialToggleButton */
     void addSpecialButton(const std::string &id, 
                           const ImgBase* icon = 0, 
-                          const Function<void> &cb=Function<void>());
+                          const Function<void> &cb=Function<void>(),
+                          const std::string &toolTipText="");
 
     
     /// removes special button with given ID
@@ -325,8 +327,10 @@ int main(int n, char **args){
     virtual void enterEvent(QEvent *e);
     virtual void leaveEvent(QEvent *e);
     virtual void resizeEvent(QResizeEvent *e);
-    virtual void wheelEvent(QWheelEvent *event);
-    
+    virtual void wheelEvent(QWheelEvent *e);
+    virtual void hideEvent(QHideEvent *e);
+    /// listens for F11 which enables the fullscreen mode
+    virtual void keyPressEvent(QKeyEvent *event);
     
     public slots:
     void showHideMenu();
@@ -386,7 +390,6 @@ int main(int n, char **args){
 
     /// creates internal event instance
     const MouseEvent &createMouseEvent(MouseEventType type);
-
   };
   
 }

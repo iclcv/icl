@@ -85,8 +85,9 @@ namespace icl{
     std::vector<Annotation*> annotations;
     
     QMutex mutex;
+    QWidget *parentBeforeFullScreen;
 
-    Data():mutex(QMutex::Recursive){
+    Data():mutex(QMutex::Recursive),parentBeforeFullScreen(0){
       mousePos = QPoint(-1,-1);
       track_mouse = true;
     }
@@ -217,6 +218,21 @@ namespace icl{
       data->pens[AXIS_NAME_PEN] = axisLabelPen;
       unlock();
     }
+    else if(p.name == "fullscreen"){
+      if(isFullScreen()){
+        setWindowState(windowState() & !Qt::WindowFullScreen);
+        setParent(data->parentBeforeFullScreen);
+        if(data->parentBeforeFullScreen && data->parentBeforeFullScreen->layout()){
+          data->parentBeforeFullScreen->layout()->addWidget(this);
+        }
+      }else{
+        data->parentBeforeFullScreen = (QWidget*)parent();
+        setParent(0);
+        setWindowState(windowState() ^ Qt::WindowFullScreen);
+      }
+      show();
+    }
+
     if(!data->disableUpdate){
       updateFromOtherThread();
     }
@@ -286,6 +302,7 @@ namespace icl{
 
     addProperty("legend.orientation","menu","horizontal,vertical","horizontal");
     addProperty("show mouse pos","flag","",true);
+    addProperty("fullscreen","flag","",false);
     
 
     // does not work properly
@@ -318,8 +335,14 @@ namespace icl{
     clearAnnotations();
     delete data;
   }
-  
 
+  void AbstractPlotWidget::keyPressEvent(QKeyEvent *event){
+    if(event->key() == Qt::Key_F11){
+      const bool on = getPropertyValue("fullscreen");
+      setPropertyValue("fullscreen",!on);
+    }
+  }
+  
   Rect32f AbstractPlotWidget::getDynamicDataViewPort() const{
     if(data->viewPortStack.size()){
       return data->viewPortStack.back();
@@ -750,6 +773,7 @@ namespace icl{
   }
 
   void AbstractPlotWidget::mousePressEvent(QMouseEvent *event){
+    setFocus();
     switch(event->button()){
       case Qt::LeftButton:
         if(data->showZoomIndicator && data->viewPortStack.size() && 

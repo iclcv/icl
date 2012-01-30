@@ -231,11 +231,12 @@ namespace icl{
     glEnd();
     
     glColor4fv(m_linecolor);
-    glBegin(GL_LINE_LOOP);
+    glBegin(GL_LINE_STRIP);
     glVertex2f((GLfloat)r.x,(GLfloat)r.y);
     glVertex2f((GLfloat)r.right(),(GLfloat)r.y);
     glVertex2f((GLfloat)r.right(),(GLfloat)r.bottom());
     glVertex2f((GLfloat)r.x,(GLfloat)r.bottom());
+    glVertex2f((GLfloat)r.x,(GLfloat)r.y);
     glEnd();
     
     
@@ -315,6 +316,14 @@ namespace icl{
   }
 
   // }}}
+
+  Size GLPaintEngine::estimateTextBounds(const std::string &text) const{
+    QFontMetrics m(m_font);
+    QRectF br = m.boundingRect(text.c_str());
+    return Size(br.width(), br.height());
+  }
+
+
   void GLPaintEngine::text(const Rect32f &r, const string text, PaintEngine::AlignMode mode){
     // {{{ open
     QFontMetrics m(m_font);

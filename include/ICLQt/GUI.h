@@ -187,6 +187,9 @@ namespace icl{
         * are not added by the stream operator
     */
     inline bool isDummy() const { return m_sDefinition == "" || m_sDefinition == "dummy"; }
+    
+    /// returns whether this GUI has been created or not
+    bool hasBeenCreated() const;
 
     private:
     void create(QLayout *parentLayout,ProxyLayout *proxy, QWidget *parentWidget, DataStore *ds);

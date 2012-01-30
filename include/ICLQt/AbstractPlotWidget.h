@@ -114,6 +114,9 @@ namespace icl{
     
     /// custom drawing 
     virtual void paintEvent(QPaintEvent *evt);
+
+    /// listens for F11 which enables the fullscreen mode
+    virtual void keyPressEvent(QKeyEvent *event);
     
     /// renders the whole content using the given qpainter
     void renderTo(QPainter &p);

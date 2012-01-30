@@ -101,6 +101,8 @@ namespace icl{
     virtual float getPointSize() const {
       return m_pointsize;
     }
+    // estimates the size of a given text
+    Size estimateTextBounds(const std::string &text) const;
 
 
     protected:
