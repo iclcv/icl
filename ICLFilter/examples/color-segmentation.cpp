@@ -116,6 +116,7 @@ struct LUT3DSceneObject : public SceneObject {
       m_children[i]->setVisible( lut[i] );
       m_children[i]->setColor(Primitive::quad,GeomColor(rs[i],gs[i],bs[i],alpha));
       m_children[i]->setVisible(Primitive::line,hoveredClassID == lut[i]);
+      //scene.createDisplayList(m_children[i].get()); bug?
     }
   }
   
@@ -161,7 +162,6 @@ void mouse(const MouseEvent &e){
     highlight_regions(-1);
     return;
   }
-  
   if(e.getWidget() == wLUT){
     highlight_regions(currLUT.getImageRect().contains(p.x,p.y) ?
                       currLUT(p.x,p.y,0) :
@@ -173,6 +173,7 @@ void mouse(const MouseEvent &e){
     int cc = gui["currClass"]; 
     int r = gui["radius"];
     std::vector<double> c = e.getColor();
+    
     if(c.size() == 3){
       if(e.isLeft()){
         segmenter->lutEntry(formatRGB,(int)c[0],(int)c[1],(int)c[2],r,r,r, (!gui["lb"].as<bool>()) * (cc+1) );

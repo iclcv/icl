@@ -401,9 +401,9 @@ namespace icl{
     template<class T>
     const std::vector<double> findColor(int x, int y) const {
       int nx = imageSize.width, ny = imageSize.height;
-      for(int y=0;y<ny;++y){
-        for(int x=0;x<nx;++x){
-          const TextureElement &t = *data(x,y);
+      for(int yCell=0;yCell<ny;++yCell){
+        for(int xCell=0;xCell<nx;++xCell){
+          const TextureElement &t = *data(xCell,yCell);
           if(Rect(t.offset,t.size).contains(x,y)){
             const T *p = reinterpret_cast<const T*>(t.data.data());
             p += imageChannels*((x-t.offset.x) + t.size.width * (y-t.offset.y));
