@@ -94,7 +94,8 @@ namespace icl{
     m_pointSmoothingEnabled(true),
     m_lineSmoothingEnabled(true),
     m_polygonSmoothingEnabled(true),
-    m_displayListHandle(0)
+    m_displayListHandle(0),
+    m_createDisplayListNextTime(0)
   {
 
     m_visibleMask = Primitive::all;
@@ -233,7 +234,8 @@ namespace icl{
     m_pointSmoothingEnabled(true),
     m_lineSmoothingEnabled(true),
     m_polygonSmoothingEnabled(true),
-    m_displayListHandle(0)
+    m_displayListHandle(0),
+    m_createDisplayListNextTime(0)
   {
     m_visibleMask = Primitive::all;
 
@@ -546,7 +548,8 @@ namespace icl{
     m_pointSmoothingEnabled(true),
     m_lineSmoothingEnabled(true),
     m_polygonSmoothingEnabled(true),
-    m_displayListHandle(0)
+    m_displayListHandle(0),
+    m_createDisplayListNextTime(0)
   {
     File file(objFileName,File::readText);
     if(!file.exists()) throw ICLException("Error in SceneObject(objFilename): unable to open file " + objFileName);
@@ -1252,6 +1255,14 @@ namespace icl{
         m_children[i]->setVisible(visible,true);
       }
     }
+  }
+
+  void SceneObject::createDisplayList(){
+    m_createDisplayListNextTime = 1;
+  }
+  
+  void SceneObject::freeDisplayList(){
+    m_createDisplayListNextTime = 2;
   }
   
   

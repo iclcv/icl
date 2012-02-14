@@ -116,8 +116,9 @@ struct LUT3DSceneObject : public SceneObject {
       m_children[i]->setVisible( lut[i] );
       m_children[i]->setColor(Primitive::quad,GeomColor(rs[i],gs[i],bs[i],alpha));
       m_children[i]->setVisible(Primitive::line,hoveredClassID == lut[i]);
-      //scene.createDisplayList(m_children[i].get()); bug?
     }
+    // createDisplayList(); // this does not help yet, since we update
+    // the object every cycle even if nothing was changed ...
   }
   
 } *lut3D=0;

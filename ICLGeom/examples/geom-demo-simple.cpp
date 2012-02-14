@@ -106,7 +106,9 @@ void init(){
         if(i) o->addLine(i,i-1);
       }
       o->setColorsFromVertices(Primitive::line,true);
-      scene.addObject(o,true,pa("-dl"));
+      if(pa("-dl")) o->createDisplayList();
+      scene.addObject(o,true);
+      
     }else{
       pausage("invalid shape arg for -s");
       ::exit(-1);

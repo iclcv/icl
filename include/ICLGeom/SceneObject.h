@@ -126,7 +126,13 @@ namespace icl{
       for different corners and interpolate between these. This can be achieved
       by using SceneObject::setColorsFromVertices(true). 
 
+      \section _DISPLAY_LISTS_ Display Lists
       
+      For static objects (or objects that are not so frequently changed), display lists
+      can be created using SceneObject::createDisplayList(). This will speed up the 
+      object rendering significantly. Please note, that a display list is always created
+      in the next render cycle, which is why SceneObject::createDisplayList can also
+      be called from the working thread.
   */
   class SceneObject{
     public:
@@ -568,6 +574,13 @@ namespace icl{
     /// deletes and removes all primitives
     void clearAllPrimitives(); 
     
+    /// creates a displaylist in the next render cycle
+    /** if the displaylist was already created, it is updated */
+    void createDisplayList();
+    
+    /// frees the displaylist in the next render cycle
+    void freeDisplayList();
+    
     protected:
     /// recursive picking method
     static void collect_hits_recursive(SceneObject *obj, const ViewRay &v, 
@@ -610,6 +623,11 @@ namespace icl{
 
     /// internally used flag
     void *m_displayListHandle;
+    /// internal flag
+    /** - 0: no change.
+        - 1: create/update display list in next render cycle 
+        - 2: free display-list (if there is any) in the next render cycle */
+    int m_createDisplayListNextTime;
  
   };
 }

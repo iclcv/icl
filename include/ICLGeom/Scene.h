@@ -129,13 +129,7 @@ int main(int n, char**ppc){
 }
       \endcode
 
-      \section _DISPLAY_LISTS_ Display Lists
-      
-      For static objects, display lists can be created using 
-      Scene::createDisplayList(SceneObject*). This will speed up the 
-      object rendering significantly. However it must not be called before
-      the OpenGL context was created, i.e., it can only be called when
-      the ICL-GUI containing the gl-context has already been created.
+    
   */
   class Scene : public Lockable{
     public:
@@ -202,16 +196,8 @@ int main(int n, char**ppc){
     /** By default, the object's memory is managed externally. If you want
         to pass the ownership to the Scene instance, you have to set
         passOwnerShip to true.
-
-        If the object will never change again, a displaylist of it
-        can be created by setting createDisplayList to true.
-        
-        Whenever the object is updated externally, it's display
-        list can be updated by calling createDisplayList(object*)
-      
-        @see \ref _DISPLAY_LISTS_
     */
-    void addObject(SceneObject *object, bool passOwnerShip=false, bool createDisplayList=false);
+    void addObject(SceneObject *object, bool passOwnerShip=false);
     
     /// removed object at given index
     /** The object is deleted if it's ownwership was passed */
@@ -352,13 +338,15 @@ int main(int n, char**ppc){
     inline std::vector<Hit> findObjects(int camIndex, int xScreen, int ySceen){
       return findObjects(getCamera(camIndex).getViewRay(Point(xScreen,ySceen)));
     }
-    /// creates a displaylist for the given object
-    void createDisplayList(SceneObject *o);
-
-    /// frees the display list, that is associated with an object
-    void deleteDisplayList(SceneObject *o);
 
     protected:
+
+    /// creates a displaylist for the given object
+    void createDisplayList(SceneObject *o) const;
+
+    /// frees the display list, that is associated with an object
+    void freeDisplayList(SceneObject *o) const;
+
 #ifdef HAVE_QT
     /// internally used rendering method
     void renderScene(int camIndex, ICLDrawWidget3D *widget=0) const;

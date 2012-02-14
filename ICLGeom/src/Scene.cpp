@@ -261,9 +261,8 @@ namespace icl{
     return cams;
   }
 
-  void Scene::addObject(SceneObject *object, bool passOwnerShip, bool createDisplayList){
+  void Scene::addObject(SceneObject *object, bool passOwnerShip){
     m_objects.push_back(SmartPtr<SceneObject>(object,passOwnerShip));
-    if(createDisplayList) this->createDisplayList(object);
   }
 
   void Scene::removeObject(int idx){
@@ -327,9 +326,18 @@ namespace icl{
   }
 #ifdef HAVE_QT
   void Scene::renderSceneObjectRecursive(SceneObject *o) const{
-    if(!creatingDisplayList && o->m_displayListHandle){
-      glCallLists(1,GL_UNSIGNED_INT,o->m_displayListHandle);
-      return;
+    if(!creatingDisplayList){
+      if(o->m_createDisplayListNextTime == 1){
+        createDisplayList(o);
+        o->m_createDisplayListNextTime = 0;
+        return;
+      }else if(o->m_createDisplayListNextTime == 2){
+        freeDisplayList(o);
+        o->m_createDisplayListNextTime = 0;
+      }else if(o->m_displayListHandle){
+        glCallLists(1,GL_UNSIGNED_INT,o->m_displayListHandle);
+        return;
+      }
     }
 
     if(o->getSmoothShading()){
@@ -766,19 +774,19 @@ namespace icl{
   }
 
 
-  void Scene::createDisplayList(SceneObject *o){
+  void Scene::createDisplayList(SceneObject *o) const{
     if(!o->m_displayListHandle){
       o->m_displayListHandle = new GLuint(0);
       *(GLuint*)o->m_displayListHandle = glGenLists(1);
     }
     creatingDisplayList = true;
-    glNewList(*(GLuint*)o->m_displayListHandle, GL_COMPILE);
+    glNewList(*(GLuint*)o->m_displayListHandle, GL_COMPILE_AND_EXECUTE);
     renderSceneObjectRecursive(o);
     glEndList();
     creatingDisplayList = false;
   }
   
-  void Scene::deleteDisplayList(SceneObject *o){
+  void Scene::freeDisplayList(SceneObject *o) const{
     if(o->m_displayListHandle){
       freeDisplayList(o->m_displayListHandle);
       o->m_displayListHandle = 0;
