@@ -139,7 +139,8 @@ namespace icl{
 
 
 
-   AffineOp::AffineOp (scalemode eInterpolate) : m_eInterpolate (eInterpolate)  {
+  AffineOp::AffineOp (scalemode eInterpolate) : m_eInterpolate (eInterpolate),
+                                                m_adaptResultImage(true)  {
      // {{{ open
      reset ();
 #define ICL_INSTANTIATE_DEPTH(D) m_aMethods[depth##D] = &AffineOp::affine<icl##D>;
@@ -182,6 +183,7 @@ namespace icl{
       adResult[0] = m_aadT[0][0]*p[0] + m_aadT[0][1]*p[1] + m_aadT[0][2];
       adResult[1] = m_aadT[1][0]*p[0] + m_aadT[1][1]*p[1] + m_aadT[1][2];
    }
+
 
   // }}}
   
@@ -228,16 +230,26 @@ namespace icl{
      ICLASSERT_RETURN(poSrc);
      ICLASSERT_RETURN(ppoDst);
      ICLASSERT_RETURN(poSrc != *ppoDst);
-     ICLASSERT_RETURN( poSrc->getDepth() == depth32f || poSrc->getDepth() == depth8u);
-     double xShift, yShift;
-     Size   oSize;
-     getShiftAndSize (poSrc->getROI(), oSize, xShift, yShift);
-     translate (-xShift, -yShift);
+     //ICLASSERT_RETURN( poSrc->getDepth() == depth32f || poSrc->getDepth() == depth8u);
+
+     double xShift=0, yShift=0;     
+     Size oSize;
+     
+     if(m_adaptResultImage){
+       getShiftAndSize (poSrc->getROI(), oSize, xShift, yShift);
+       translate (-xShift, -yShift);
+     }else{
+       oSize = poSrc->getSize();
+     }
+     
      ensureCompatible (ppoDst, poSrc->getDepth(), oSize, 
                        poSrc->getChannels(), poSrc->getFormat());
      
      (this->*(m_aMethods[poSrc->getDepth()]))(poSrc, *ppoDst);
-     translate (xShift, yShift);
+     
+     if(m_adaptResultImage){
+       translate (xShift, yShift);
+     }
    }
 
   // }}}

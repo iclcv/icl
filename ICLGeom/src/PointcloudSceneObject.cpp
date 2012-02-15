@@ -1148,6 +1148,13 @@ namespace icl{
   
   float PointcloudSceneObject::depth_to_distance_mm(int d){
     return 1.046 * (d==2047 ? 0 : 1000. / (d * -0.0030711016 + 3.3309495161));
+    /*  what is this?
+        const float k1 = 1.1863;
+        const float k2 = 2842.5;
+        const float k3 = 0.1236;
+        return k3 * tanf(d/k2 + k1);
+    */
+    
   }
   
   

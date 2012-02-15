@@ -48,6 +48,7 @@ namespace icl{
     TranslateOp (double dX=0.0, double dY=0.0, scalemode eInterpolate=interpolateLIN) :
       AffineOp (eInterpolate) {
         setTranslation(dX,dY);
+        setAdaptResultImage(false);
       }
     
     /// performs a translation
@@ -69,6 +70,7 @@ namespace icl{
     private: // hide the following methods
     AffineOp::rotate;
     AffineOp::scale;
+    AffineOp::setAdaptResultImage;
   };
 }
 #endif

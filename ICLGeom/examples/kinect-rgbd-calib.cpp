@@ -168,7 +168,7 @@ Homography2D simplexBasedHomography(const Point32f *as,
                                     int N){
   typedef SimplexOptimizer<float,std::vector<float> > Simplex;
   std::vector<int> inliners;
-  Homography2D h = ransacBasedHomography(as,bs,N,&inliners,1000);
+  Homography2D h = ransacBasedHomography(as,bs,N,&inliners,10000);
   Err err = {inliners, as, bs};
 
   Simplex simplex(function(err,&Err::f), 8, 1E6, 1.E-5, 1.E-15);
@@ -217,7 +217,10 @@ void init(){
            << "button(calculate homography)[@handle=calcHomo]"
            << "button(save homography)[@handle=saveHomo]"
            << "button(clear points and reset)[@handle=clearPoints]"
-           << "button(more ...)[@handle=more]" 
+           //  << (GUI("hbox")
+               << "button(more ...)[@handle=more]" 
+           //    << "camcfg"
+           //    )
            )
       << "!show";
   
@@ -314,7 +317,7 @@ void run(){
   grabColor.grab();
   grabColor.grab(bpp(C));
   grabColor.disableUndistortion();
-  grabColor.setProperty("format","IR Image (10Bit)");
+  grabColor.setProperty("format","IR Image (8Bit)");
   if(pa("-ir-udist")){
     grabColor.enableUndistortion(udistIR);
   }
@@ -390,6 +393,7 @@ void run(){
     }
   }
       
+  matchImage.normalizeAllChannels(Range32f(0,255));
 
   gui["match"] = matchImage;
     

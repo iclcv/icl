@@ -40,6 +40,7 @@
 #include <ICLCore/Img.h>
 #include <ICLUtils/Mutex.h>
 #include <ICLUtils/Thread.h>
+#include <ICLFilter/TranslateOp.h>
 
 #include <libfreenect.h>
 #include <map>
@@ -100,6 +101,8 @@ namespace icl{
 
   struct FreenectDevice{
     struct Used{
+      enum IRShift{ Off=0,Fast,Accurate } irShift;
+      
       freenect_device *device;
       int numColorUsers;
       int numDepthUsers;
@@ -172,7 +175,14 @@ namespace icl{
         lastColorTime = src.getTime();
 
         ImgBase *pDst = &dst;
-        src.deepCopy(&pDst);
+
+        if((currentColorMode != KinectGrabber::GRAB_RGB_IMAGE) && (irShift != Off)){
+          TranslateOp t(-4.8, -3.9, irShift == Fast ? interpolateNN : interpolateLIN);
+          t.apply(&src, &pDst);
+          // apply affine warp
+        }else{
+          src.deepCopy(&pDst);
+        }
         return dst;
       }
       void setTiltDegrees(double angle) {
@@ -244,6 +254,7 @@ namespace icl{
       if(it == devices.end()){
         //        DEBUG_LOG("device " << index << " was not used before: creating new one");
         used = devices[index] = new Used;
+        used->irShift = Used::Off;
         used->currentColorMode = mode;
 
         if(freenect_open_device(ctx.ctx, &used->device, index) < 0){
@@ -375,6 +386,7 @@ namespace icl{
   
   
   struct KinectGrabber::Impl{
+   
     static SmartPtr<FreenectContext> context;
     SmartPtr<FreenectDevice> device;
     int ledColor;
@@ -384,6 +396,7 @@ namespace icl{
     
     Impl(KinectGrabber::Mode mode, int index, const Size &size){
       Mutex::Locker lock(mutex);
+
       bool createdContextHere = false;
       if(!context){
         createdContextHere = true;
@@ -393,6 +406,7 @@ namespace icl{
       if(createdContextHere){
         context->start();
       }
+
     }
 
     void switchMode(KinectGrabber::Mode mode, const Size &size){
@@ -438,7 +452,7 @@ namespace icl{
   /// get type of property 
   std::string KinectGrabber::getType(const std::string &name){
     Mutex::Locker lock(m_impl->mutex);
-    if(name == "format" || name == "size" || name == "LED") return "menu";
+    if(name == "format" || name == "size" || name == "LED" || name == "shift-IR-image") return "menu";
     else if(name == "Desired-Tilt-Angle"){
       return "range";
     }else if(name =="Current-Tilt-Angle" || "Accelerometers"){
@@ -463,6 +477,8 @@ namespace icl{
       return "[-35,25]";
     }else if(name == "Current-Tilt-Angle" || name == "Accelerometers"){
       return "undefined for type info!";
+    }else if(name == "shift-IR-image"){
+      return "{\"off\",\"fast\",\"accurate\"}";
     }else{
       return "undefined";
     }
@@ -500,6 +516,9 @@ namespace icl{
       double a[3]={0,0,0};
       m_impl->device->used->getState().getAccelerometers(a,a+1,a+2);
       return str(a[0]) + "," + str(a[1]) + "," + str(a[2]);
+    }else if(name == "shift-IR-image"){
+      static const std::string values[] = {"off","fast","accurate"};
+      return values[(int)(m_impl->device->used->irShift)];
     }else{
       return "undefined";
     }
@@ -558,12 +577,22 @@ namespace icl{
       }else if(value == "blink red/yellow"){
         m_impl->device->used->setLed((freenect_led_options)6);
       }else{
-        ERROR_LOG("invalid property value for property 'LED'");
+        ERROR_LOG("invalid property value for property 'LED'" << value);
       }
     }else if(name == "Desired-Tilt-Angle"){
       m_impl->device->used->setTiltDegrees(parse<double>(value));
     }else if(name == "Current-Tilt-Angle" || name == "Accelerometers"){
       ERROR_LOG("info-properties cannot be set");
+    }else if(name == "shift-IR-image"){
+      if(value == "off"){
+        m_impl->device->used->irShift = FreenectDevice::Used::Off;
+      }else if(value == "fast"){
+        m_impl->device->used->irShift = FreenectDevice::Used::Fast;
+      }else if(value == "accurate"){
+        m_impl->device->used->irShift = FreenectDevice::Used::Accurate;
+      }else{
+        ERROR_LOG("invalid property value for property 'shift-IR-image':" << value);
+      }
     }else{
       ERROR_LOG("invalid property name '" << name << "'"); 
     }
@@ -572,8 +601,8 @@ namespace icl{
   /// returns a list of properties, that can be set using setProperty
   std::vector<std::string> KinectGrabber::getPropertyList(){
     Mutex::Locker lock(m_impl->mutex);
-    static std::string props[] = {"format","size","LED","Desired-Tilt-Angle","Current-Tilt-Angle","Accelerometers"};
-    return std::vector<std::string>(props,props+6);
+    static std::string props[] = {"format","size","LED","Desired-Tilt-Angle","Current-Tilt-Angle","Accelerometers","shift-IR-image"};
+    return std::vector<std::string>(props,props+7);
   }
 
   /// returns a list of attached kinect devices
