@@ -318,6 +318,12 @@ void run(){
   grabColor.grab(bpp(C));
   grabColor.disableUndistortion();
   grabColor.setProperty("format","IR Image (8Bit)");
+  if(pa("-do-not-shift-the-IR-image")){
+    grabColor.setProperty("shift-IR-image", "accurate");
+  }else{
+    grabColor.setProperty("shift-IR-image", "off");
+  }
+  
   if(pa("-ir-udist")){
     grabColor.enableUndistortion(udistIR);
   }
@@ -515,6 +521,7 @@ int main(int n, char **ppc){
                 "-output|-o(output-xml-file-name=homogeneity.xml) "
                 "-rgb-udist(fn1) "
                 "-ir-udist(fn2) "
-                "-marker-type|-m(type=bch,whichToLoad=[0-1000],size=50x50)",
+                "-marker-type|-m(type=bch,whichToLoad=[0-1000],size=50x50) "
+                "-do-not-shift-the-IR-image",
                 init,run).exec();
 }

@@ -254,7 +254,7 @@ namespace icl{
       if(it == devices.end()){
         //        DEBUG_LOG("device " << index << " was not used before: creating new one");
         used = devices[index] = new Used;
-        used->irShift = Used::Off;
+        used->irShift = Used::Accurate;
         used->currentColorMode = mode;
 
         if(freenect_open_device(ctx.ctx, &used->device, index) < 0){

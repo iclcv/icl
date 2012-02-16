@@ -117,7 +117,7 @@ namespace icl{
       \f]
 
       \f[
-      \Leftrightarrow \frac{X a}{b_x} - L_x a_x - L_y a_y - 1 = 0    \;\;\;\;\;and\;\;\;\;\;\;    \frac{Y a}{b_y} - L_x a_x L_y a_y - 1 = 0
+      \Leftrightarrow \frac{X a}{b_x} - L_x a_x - L_y a_y - 1 = 0    \;\;\;\;\;and\;\;\;\;\;\;    \frac{Y a}{b_y} - L_x a_x - L_y a_y - 1 = 0
       \f]
 
       \f[
@@ -127,11 +127,11 @@ namespace icl{
       By multiplying with \f$ b_x \f$ (\f$ b_y \f$ resp.), we get
 
       \f[
-      \Leftrightarrow X a - L_x b_x a_x - L_y a_y b_x = b_x    \;\;\;\;\;and\;\;\;\;\;\;    Y a - L_x a_x b_x - L_y a_y b_y = b_y
+      \Leftrightarrow X a - L_x b_x a_x - L_y a_y b_x = b_x    \;\;\;\;\;and\;\;\;\;\;\;    Y a - L_x a_x b_y - L_y a_y b_y = b_y
       \f]
       
       These two equations can be expressed in a single huge matrix expression  \f$ M h = r \f$ where M is a 2n by 8 matrix, 
-      and \f$ h = (X^T Y^T L_x L_y)^T \f$ and r are 2n-dimensional row vectors. M and r are build as follows. For each input/output tuble
+      and \f$ h = (X^T Y^T L_x L_y)^T \f$ and r are 2n-dimensional row vectors. M and r are build as follows. For each input/output tuple
       \f$(a_i,b_i)\f$, two rows of M are created using the following scheme:
       
       \f[
