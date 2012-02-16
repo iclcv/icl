@@ -134,27 +134,42 @@ struct Bla : public SceneObject{
       return;
     }
     
+    Mat Q = H_cam.getProjectionMatrix()*H_cam.getCSTransformationMatrix();
+    //    Vec xi = homogenize(P*T*Xw);
+    // return Point32f(xi[0],xi[1]);
+
+    Time now = Time::now();
+    
     for(int y=0;y<480;++y){
-      for(int x=0;x<640;++x){
-        int idx = x + 640 * y;
-        float depthValue = getDepth(D(x,y), x, y);
-        const ViewRay &v = viewRays(x,y);
-        m_vertices.at(idx) = v(depthValue);
-
-        Point p = H_cam.project(Vec(x,y,depthValue,1));
-        if(imageRect.contains(p.x, p.y)){
-          int redValue = r(p.x,p.y);
-          int greenValue = g(p.x,p.y);
-          int blueValue = b(p.x,p.y);
-
-
-
-          m_vertexColors.at(idx) = GeomColor(redValue, greenValue,blueValue,255) * (1.0/255);
-        }else{
-          m_vertexColors.at(idx) = GeomColor(255,0,0,255) * (1.0/255);
+      // too much page misses if we add parallellism
+#pragma omp parallel num_threads(1)
+      {
+#pragma openmp for
+        for(int x=0;x<640;++x){
+          int idx = x + 640 * y;
+          const float depthValue = getDepth(D(x,y), x, y);
+          
+          m_vertices[idx] = viewRays(x,y)(depthValue);
+          
+          const float phInv = 1.0/ (Q(0,3) * x + Q(1,3) * y + Q(2,3) * depthValue + Q(3,3));
+          const int px = phInv * ( Q(0,0) * x + Q(1,0) * y + Q(2,0) * depthValue + Q(3,0) );
+          const int py = phInv * ( Q(0,1) * x + Q(1,1) * y + Q(2,1) * depthValue + Q(3,1) );
+          
+          GeomColor &c = m_vertexColors[idx];        
+          if(imageRect.contains(px, py)){
+            static const float FACTOR = 1.0/255;
+            c[0] = r(px,py) * FACTOR;
+            c[1] = g(px,py) * FACTOR;
+            c[2] = g(px,py) * FACTOR;
+            c[3] = 1;
+          }else{
+            c[3] = 0;
+          }
         }
       }
     }
+    
+    SHOW( (Time::now()-now).toMilliSecondsDouble() );
     unlock();
     
     
@@ -203,10 +218,8 @@ void init(){
            << "button(save homography)[@handle=saveHomo]"
            << "button(clear points and reset)[@handle=clearPoints]"
            << "checkbox(view only,checked)[@out=viewOnly]"
-           //  << (GUI("hbox")
-               << "button(more ...)[@handle=more]" 
-           //    << "camcfg"
-           //    )
+           << "button(more ...)[@handle=more]" 
+           << "fps(10)[@handle=fps]"
            )
       << "!show";
   
@@ -306,6 +319,8 @@ void visualizeMatches(DrawHandle &draw, const std::vector<Fiducial> &fids,
 
 
 void run(){
+  gui["fps"].update();
+
   bool viewOnly = gui["viewOnly"];
   gui_ButtonHandle(addPoints);
   gui_ButtonHandle(clearPoints);
@@ -504,6 +519,6 @@ int main(int n, char **ppc){
                 "-rgb-udist(fn1) "
                 "-ir-udist(fn2) "
                 "-marker-type|-m(type=bch,whichToLoad=[0-1000],size=50x50) "
-                "-H(filename)",
+                "-H(filename) -cam(camerafilename)",
                 init,run).exec();
 }
