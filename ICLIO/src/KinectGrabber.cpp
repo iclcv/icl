@@ -102,6 +102,7 @@ namespace icl{
   struct FreenectDevice{
     struct Used{
       enum IRShift{ Off=0,Fast,Accurate } irShift;
+      bool depthImageUnitMM;
       
       freenect_device *device;
       int numColorUsers;
@@ -141,6 +142,11 @@ namespace icl{
         }
 
       }
+      
+      static inline float kinect_raw_to_mm(icl16s d){
+        return 1.046 * (d==2047 ? 0 : 1000. / (d * -0.0030711016 + 3.3309495161));
+      }
+      
       const Img32f &getLastDepthImage(bool avoidDoubleFrames){
         Mutex::Locker lock(depthMutex);
         if(avoidDoubleFrames){
@@ -151,7 +157,13 @@ namespace icl{
           }
         }
         lastDepthTime = depthImage.getTime();
-        depthImage.deepCopy(&depthImageOut);
+        if(depthImageUnitMM){
+          depthImage.deepCopy(&depthImageOut);
+        }else{
+          depthImageOut.setSize(depthImage.getSize());
+          depthImageOut.setChannels(1);
+          std::transform( depthImage.begin(0), depthImage.end(0), depthImageOut.begin(0), kinect_raw_to_mm);
+        }
         return depthImageOut;
       }
       const ImgBase &getLastColorImage(bool avoidDoubleFrames){
@@ -255,6 +267,7 @@ namespace icl{
         //        DEBUG_LOG("device " << index << " was not used before: creating new one");
         used = devices[index] = new Used;
         used->irShift = Used::Accurate;
+        used->depthImageUnitMM = true;
         used->currentColorMode = mode;
 
         if(freenect_open_device(ctx.ctx, &used->device, index) < 0){
@@ -452,7 +465,7 @@ namespace icl{
   /// get type of property 
   std::string KinectGrabber::getType(const std::string &name){
     Mutex::Locker lock(m_impl->mutex);
-    if(name == "format" || name == "size" || name == "LED" || name == "shift-IR-image") return "menu";
+    if(name == "format" || name == "size" || name == "LED" || name == "shift-IR-image" || "depth-image-unit" ) return "menu";
     else if(name == "Desired-Tilt-Angle"){
       return "range";
     }else if(name =="Current-Tilt-Angle" || "Accelerometers"){
@@ -479,6 +492,8 @@ namespace icl{
       return "undefined for type info!";
     }else if(name == "shift-IR-image"){
       return "{\"off\",\"fast\",\"accurate\"}";
+    }else if(name == "depth-image-unit"){
+      return "{\"raw\",\"mm\"}";
     }else{
       return "undefined";
     }
@@ -519,6 +534,8 @@ namespace icl{
     }else if(name == "shift-IR-image"){
       static const std::string values[] = {"off","fast","accurate"};
       return values[(int)(m_impl->device->used->irShift)];
+    }else if(name == "depth-image-unit"){
+      return m_impl->device->used->depthImageUnitMM ? "mm" : "raw";
     }else{
       return "undefined";
     }
@@ -593,6 +610,12 @@ namespace icl{
       }else{
         ERROR_LOG("invalid property value for property 'shift-IR-image':" << value);
       }
+    }else if(name == "depth-image-unit"){
+      if(value == "mm") m_impl->device->used->depthImageUnitMM = true;
+      else if(value == "raw") m_impl->device->used->depthImageUnitMM = false;
+      else{
+        ERROR_LOG("invalid property value for property 'depth-image-unit':" << value);
+      }
     }else{
       ERROR_LOG("invalid property name '" << name << "'"); 
     }
@@ -601,8 +624,8 @@ namespace icl{
   /// returns a list of properties, that can be set using setProperty
   std::vector<std::string> KinectGrabber::getPropertyList(){
     Mutex::Locker lock(m_impl->mutex);
-    static std::string props[] = {"format","size","LED","Desired-Tilt-Angle","Current-Tilt-Angle","Accelerometers","shift-IR-image"};
-    return std::vector<std::string>(props,props+7);
+    static std::string props[] = {"format","size","LED","Desired-Tilt-Angle","Current-Tilt-Angle","Accelerometers","shift-IR-image","depth-image-unit"};
+    return std::vector<std::string>(props,props+8);
   }
 
   /// returns a list of attached kinect devices

@@ -35,8 +35,6 @@
 #include <ICLQuick/Common.h>
 #include <ICLUtils/ConfigFile.h>
 #include <ICLMarkers/FiducialDetector.h>
-#include <ICLGeom/PointNormalEstimation.h>
-#include <ICLUtils/Homography2D.h>
 
 #include <ICLCore/Random.h>
 #include <ICLUtils/ConsoleProgress.h>
@@ -46,16 +44,17 @@
 #include <ICLGeom/SceneObject.h>
 
 #include <ICLCC/CCFunctions.h>
+#include <ICLFilter/MedianOp.h>
 #include <ICLGeom/GeomDefs.h>
 #include <ICLGeom/Geom.h>
 
+#include <ICLGeom/RGBDImageSceneObject.h>
 #include <fstream>
 
 static float sprod(const Vec &a, const Vec &b){
   return a[0]*b[0] +a[1]*b[1] +a[2]*b[2];
 }
 
-PointNormalEstimation *pEst;
 
 ImageUndistortion udistRGB;
 ImageUndistortion udistIR;
@@ -72,9 +71,7 @@ struct Correspondence{
 
 std::vector<Correspondence> correspondences;
 
-//FixedMatrix<float,3,3> H;
-//Homography2D H;
-Camera H_cam;
+//RGBDMapping mapping;
 
 Img32f matchImage(Size(320,240), formatRGB);
 
@@ -83,7 +80,7 @@ GUI fidDetectorPropertyGUI("hsplit");
 
 
 Scene scene;
-
+#if 0
 
 
 struct Bla : public SceneObject{
@@ -141,7 +138,7 @@ struct Bla : public SceneObject{
               const Channel32f &b){
     lock();
     static const Rect imageRect(0,0,640,480);
-    Mat Q = H_cam.getProjectionMatrix()*H_cam.getCSTransformationMatrix();
+    
     Time now = Time::now();
     
     for(int y=0;y<480;++y){
@@ -160,17 +157,19 @@ struct Bla : public SceneObject{
           v[1] = m_viewRayOffset[1] + depthValue * dir[1];
           v[2] = m_viewRayOffset[2] + depthValue * dir[2];
           
-          const float phInv = 1.0/ (Q(0,3) * x + Q(1,3) * y + Q(2,3) * depthValue + Q(3,3));
-          const int px = phInv * ( Q(0,0) * x + Q(1,0) * y + Q(2,0) * depthValue + Q(3,0) );
-          const int py = phInv * ( Q(0,1) * x + Q(1,1) * y + Q(2,1) * depthValue + Q(3,1) );
+          Point p = mapping.apply(x,y,depthValue);
+          
+          //          const float phInv = 1.0/ (Q(0,3) * x + Q(1,3) * y + Q(2,3) * depthValue + Q(3,3));
+          // const int px = phInv * ( Q(0,0) * x + Q(1,0) * y + Q(2,0) * depthValue + Q(3,0) );
+          // const int py = phInv * ( Q(0,1) * x + Q(1,1) * y + Q(2,1) * depthValue + Q(3,1) );
           
           GeomColor &c = m_vertexColors[idx];        
-          if(imageRect.contains(px, py)){
+          if(imageRect.contains(p.x, p.y)){
             static const float FACTOR = 1.0/255;
-            c[0] = r(px,py) * FACTOR;
-            c[1] = g(px,py) * FACTOR;
-          c[2] = g(px,py) * FACTOR;
-          c[3] = 1;
+            c[0] = r(p.x,p.y) * FACTOR;
+            c[1] = g(p.x,p.y) * FACTOR;
+            c[2] = g(p.x,p.y) * FACTOR;
+            c[3] = 1;
           }else{
             c[3] = 0;
           }
@@ -183,32 +182,22 @@ struct Bla : public SceneObject{
   }
 } *obj = 0;
 
+#endif
+
+RGBDImageSceneObject *obj = 0;
 
 
 void init(){
-  static const Vec DEF_POS(36.279,306.559,32080.1,1);
-  static const Vec DEF_UP(-0.040448,-0.802474,0.595314,1);
-  static const Vec DEF_NORM(-0.0563062,0.596686,0.800497,1);
-  static const float DEF_F = 1;
-  static const Point32f DEF_PPO(1450.55,-13180.7);
-  static const float DEF_SAMPLING_X_RES = 22643.6;
-  static const float DEF_SAMPLING_Y_RES = 18158;
+  const Size size = pa("-size");
   
-  static const float DEF_SKEW = 746.198;
-  static const Size DEF_SIZE(640,480);
+  RGBDMapping m = RGBDImageSceneObject::get_default_kinect_rgbd_mapping(size);
+  Camera cam = RGBDImageSceneObject::get_default_kinect_camera(size);
+  if(pa("-mapping")) m = RGBDMapping(*pa("-mapping"));
+  if(pa("-cam")) cam = Camera(*pa("-cam"));
+  
+  obj = new RGBDImageSceneObject(size,m,cam);
+  obj->setConfigurableID("obj");
 
-  if(pa("-H")){
-    H_cam = Camera(*pa("-H"));
-  }else{
-    H_cam = Camera(DEF_POS, DEF_NORM, DEF_UP,DEF_F,
-                   DEF_PPO, DEF_SAMPLING_X_RES, DEF_SAMPLING_Y_RES,
-                   DEF_SKEW,
-                   Camera::RenderParams());
-  }
-  
-  
-  Size size = pa("-size");
-  pEst=new PointNormalEstimation(size);
   matchImage.setSize(size);
   grabDepth.init("kinectd","kinectd=0");
   grabColor.init("kinectc","kinectc=0");
@@ -261,6 +250,7 @@ void init(){
                               << ("combo(" + fid2->getIntermediateImageNames() + ")"
                                   "[@maxsize=100x2@handle=vis2@label=infrared image]")
                               << "prop(fid2)")
+                          << "prop(obj)"
                           << "!create";
   gui["more"].registerCallback(function(&fidDetectorPropertyGUI,&GUI::switchVisibility));
         
@@ -294,12 +284,7 @@ void init(){
   }
 
  
-  if(pa("-cam")){
-    scene.addCamera(Camera(*pa("-cam")));
-  }else{
-    scene.addCamera(Camera());
-  }
-  obj = new Bla;
+  scene.addCamera(cam);
   scene.addObject(obj);
   
   float params[] = {0,0,0,1000};
@@ -356,13 +341,14 @@ void run(){
   gui_ButtonHandle(saveHomo);
     
   Size size = pa("-size");
-  static Img32f C,IR,D;
-  Img32f IRmed;
+  static Img8u C, IR, IRmed;
+  static Img32f D;
 
   grabDepth.grab(bpp(D));
   grabDepth.grab();
   grabColor.disableUndistortion();
   grabColor.useDesired(formatRGB);
+  grabColor.useDesired(depth8u);
   grabColor.setProperty("format","Color Image (24Bit RGB)");
 
   if(pa("-rgb-udist")){
@@ -376,6 +362,7 @@ void run(){
   if(!viewOnly){
     grabColor.disableUndistortion();
     grabColor.useDesired(formatGray);
+    grabColor.useDesired(depth8u);
     grabColor.setProperty("format","IR Image (8Bit)");
     
     
@@ -385,19 +372,10 @@ void run(){
     grabColor.grab();
     grabColor.grab(bpp(IR));
 
-    if(size==Size::QVGA){
-      pEst->setMedianFilterSize(3);
-    pEst->setDepthImage(IR);
-    pEst->medianFilter();
-    IRmed=pEst->getFilteredImage();
-    }else if(size==Size::VGA){
-      pEst->setMedianFilterSize(5);
-      pEst->setDepthImage(IR);
-      pEst->medianFilter();
-      IRmed=pEst->getFilteredImage(); 
-    }else{
-      IRmed=IR;
-    } 
+    static MedianOp median(Size(5,5));
+    median.setClipToROI(false);
+    median.apply(&IR, bpp(IRmed));
+        
     gui["ir"] = IRmed; 
   }
   
@@ -406,7 +384,12 @@ void run(){
   gui["color"] = C;
         
   std::vector<Fiducial> fids, fids2;
-        
+  
+  obj->update(D,C);
+  const std::vector<Vec> & van = obj->getViewRaysAndNorms();
+  const RGBDMapping M = obj->getMapping();
+  
+  const Channel32f dd = D[0];
   if(!viewOnly){
     static Img8u Cgray(C.getSize(),formatGray);
     cc(&C,&Cgray);
@@ -421,13 +404,13 @@ void run(){
     visualizeMatches(ir,fids2, fid2.get(), fidDetectorPropertyGUI["vis2"], false);
     
     const Rect r = C.getImageRect();
-    Channel32f c = C[0];
+    Channel8u c = C[0];
     
     { /// visualize the (CAM) homography ...
       //Mat T = H_cam.getCSTransformationMatrix();
       //Mat P = H_cam.getProjectionMatrix();
       //Mat Q = P*T;
-      Channel32f dd = D[0];
+     
       matchImage.setChannels(2);
       
       std::copy(IR.begin(0),IR.end(0),matchImage.begin(1));
@@ -437,12 +420,13 @@ void run(){
       
       for(int y=0; y<size.height; y++){
         for(int x=0; x<size.width; x++){
-          float depthValue = obj->getDepth(dd(x,y),x,y);
+          const int idx = x + size.width * y;
+          float depthValue = dd(x,y) * van[idx][3]; //obj->getDepth(dd(x,y),x,y);
           if(!depthValue){
             miC0(x,y) = 0;
             miC1(x,y) = 0;
-        }else{
-            Point p = H_cam.project(Vec(x,y,depthValue,1));
+          }else{
+            Point p = M.apply(x,y,depthValue); //H_cam.project(Vec(x,y,depthValue,1));
             //        Vec pp = Q*Vec(x,y,dd(x,y),1);
             //Point p(pp[0]/pp[3], pp[1]/pp[3]);
             
@@ -457,8 +441,8 @@ void run(){
     
     gui["match"] = matchImage;
   }
-  
-  obj->update(D[0], C[0],C[1],C[2]);
+
+
   
   gui["depth"].update();
   gui["color"].update();
@@ -488,7 +472,7 @@ void run(){
             float bx = fb.getCenter2D().x, by = fb.getCenter2D().y;
             Correspondence c = { bx,
                                  by,
-                                 obj->getDepth(D(bx,by,0), bx, by),
+                                 dd(bx,by) * van[bx + size.width*by][3],// obj->getDepth(D(bx,by,0), bx, by),
                                  fa.getCenter2D().x, 
                                  fa.getCenter2D().y,
                                  fa.getName() };
@@ -505,7 +489,7 @@ void run(){
                 
                 Correspondence c = { bx,
                                      by,
-                                     obj->getDepth(D(bx,by,0), bx, by),
+                                     dd(bx,by) * van[bx + size.width*by][3],//obj->getDepth(D(bx,by,0), bx, by),
                                      ax,
                                      ay,
                                      fa.getName() + "key-point " + str(i)};
@@ -528,14 +512,13 @@ void run(){
         Xis[i] = Point32f(c.a,c.b);
         Xws[i] = Vec(c.x,c.y,c.d,1);
       }
-      H_cam = Camera::calibrate(Xws,Xis);
-      
-      std::ofstream f("H.xml");
-      f << H_cam;
+      obj->setMapping(RGBDMapping(Xws,Xis));
+      obj->getMapping().save("last-mapping.xml");
     }
     
     if(saveHomo.wasTriggered()){
-      //TODO!!
+      obj->getMapping().save("saved-mapping.xml");
+      std::cout << "wrote saved-mapping.xml" << std::endl;
     }
   }
 }
@@ -543,10 +526,10 @@ void run(){
 int main(int n, char **ppc){
   return ICLApp(n,ppc,
                 "-size|-s(Size=VGA) "
-                "-output|-o(output-xml-file-name=homogeneity.xml) "
                 "-rgb-udist(fn1) "
                 "-ir-udist(fn2) "
                 "-marker-type|-m(type=bch,whichToLoad=[0-1000],size=50x50) "
-                "-H(filename) -cam(camerafilename)",
+                "-mapping(mapping-filename) "
+                "-cam(camerafilename)",
                 init,run).exec();
 }

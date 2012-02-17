@@ -32,8 +32,8 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_MY_CAMERA_H
-#define ICL_MY_CAMERA_H
+#ifndef ICL_CAMERA_H
+#define ICL_CAMERA_H
 
 #include <ICLUtils/Size.h>
 #include <ICLUtils/Point32f.h>
