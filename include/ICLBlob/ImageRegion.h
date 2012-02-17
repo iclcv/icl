@@ -203,7 +203,12 @@ namespace icl{
         getLineSegments() instead */
     const std::vector<Point> &getPixels() const;
     
-    void drawTo(const ImgBase *image, int val) const;
+    /// sets all pixel positions in given image to val in channel 0 of image
+    void drawTo(const ImgBase *image, icl64f val) const;
+    
+    /// highlights the region in the image using the given color
+    /** please note, that color must contain at least one element for each channel in the given image */
+    void drawToColor(const ImgBase *image, const icl64f *color) const;
 
     /// returns a list of all fully contained image regions 
     /** This function is only provided if region graph information is available (see \ref GRAPH) 

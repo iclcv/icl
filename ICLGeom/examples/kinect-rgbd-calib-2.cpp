@@ -87,15 +87,15 @@ Scene scene;
 
 
 struct Bla : public SceneObject{
-  Array2D<ViewRay> viewRays;
-  std::vector<float> norms;
-
+  std::vector<Vec> m_normedViewRayDirs; // (x,y,z)normed and norm
+  Vec m_viewRayOffset;
+  
   inline float getNormFactor(const ViewRay &a, const ViewRay &b){
     return sprod(a.direction,b.direction)/(norm3(a.direction)*norm3(b.direction));
   }
 
   Bla(){
-    m_vertices.resize(640*480);
+    m_vertices.resize(640*480, Vec(0,0,0,1));
     m_vertexColors.resize(640*480);
     setLockingEnabled(true);
     setVisible(Primitive::vertex,true);
@@ -104,13 +104,22 @@ struct Bla : public SceneObject{
     
     Camera cam = pa("-cam") ? Camera(*pa("-cam")) : Camera();
 
-    viewRays = cam.getAllViewRays();
-
-    int i=0;
-    norms.resize(640*480);
-    for(int y=0;y<640;++y){
-      for(int x=0;x<480;++x,++i){
-        norms[i] = 1.0/getNormFactor(viewRays[i],viewRays(319,239));
+    Array2D<ViewRay> viewRays = cam.getAllViewRays();
+    m_viewRayOffset = viewRays(0,0).offset;
+    m_normedViewRayDirs.resize(640*480);
+    
+    for(int y=0;y<480;++y){
+      for(int x=0;x<640;++x){
+        const int idx = x + 640 * y;
+        const ViewRay &v = viewRays[idx];
+        Vec &n = m_normedViewRayDirs[idx];
+        
+        float norm = 1.0/getNormFactor(v,viewRays(319,239));
+        
+        n[0] = v.direction[0];
+        n[1] = v.direction[1];
+        n[2] = v.direction[2];
+        n[3] = norm;
       }
     }
   }
@@ -119,8 +128,11 @@ struct Bla : public SceneObject{
     return 1.046 * (d==2047 ? 0 : 1000. / (d * -0.0030711016 + 3.3309495161));
   }
   
-  inline float getDepth(int d, int x, int y) const{
-    return depth_to_distance_mm(d) * norms[ x + 640 * y ];
+  inline float getDepth(int d, float norm) const{
+    return depth_to_distance_mm(d) * norm;
+  }
+  inline float getDepth(int d, int x, int y) const{ 
+    return getDepth(d,m_normedViewRayDirs[x+640*y][3]);
   }
   
   void update(const Channel32f &D, 
@@ -129,27 +141,24 @@ struct Bla : public SceneObject{
               const Channel32f &b){
     lock();
     static const Rect imageRect(0,0,640,480);
-    if(!viewRays.getDim()){
-      unlock();
-      return;
-    }
-    
     Mat Q = H_cam.getProjectionMatrix()*H_cam.getCSTransformationMatrix();
-    //    Vec xi = homogenize(P*T*Xw);
-    // return Point32f(xi[0],xi[1]);
-
     Time now = Time::now();
     
     for(int y=0;y<480;++y){
       // too much page misses if we add parallellism
-#pragma omp parallel num_threads(1)
+#pragma omp parallel num_threads(4)
+      
       {
-#pragma openmp for
+#pragma omp for 
         for(int x=0;x<640;++x){
           int idx = x + 640 * y;
-          const float depthValue = getDepth(D(x,y), x, y);
+          const Vec &dir = m_normedViewRayDirs[idx];
+          const float depthValue = getDepth( D[idx], dir[3]);
           
-          m_vertices[idx] = viewRays(x,y)(depthValue);
+          Vec &v = m_vertices[idx];
+          v[0] = m_viewRayOffset[0] + depthValue * dir[0];
+          v[1] = m_viewRayOffset[1] + depthValue * dir[1];
+          v[2] = m_viewRayOffset[2] + depthValue * dir[2];
           
           const float phInv = 1.0/ (Q(0,3) * x + Q(1,3) * y + Q(2,3) * depthValue + Q(3,3));
           const int px = phInv * ( Q(0,0) * x + Q(1,0) * y + Q(2,0) * depthValue + Q(3,0) );
@@ -160,26 +169,44 @@ struct Bla : public SceneObject{
             static const float FACTOR = 1.0/255;
             c[0] = r(px,py) * FACTOR;
             c[1] = g(px,py) * FACTOR;
-            c[2] = g(px,py) * FACTOR;
-            c[3] = 1;
+          c[2] = g(px,py) * FACTOR;
+          c[3] = 1;
           }else{
             c[3] = 0;
           }
         }
       }
     }
-    
     SHOW( (Time::now()-now).toMilliSecondsDouble() );
     unlock();
-    
-    
+
   }
 } *obj = 0;
 
 
 
 void init(){
- 
+  static const Vec DEF_POS(36.279,306.559,32080.1,1);
+  static const Vec DEF_UP(-0.040448,-0.802474,0.595314,1);
+  static const Vec DEF_NORM(-0.0563062,0.596686,0.800497,1);
+  static const float DEF_F = 1;
+  static const Point32f DEF_PPO(1450.55,-13180.7);
+  static const float DEF_SAMPLING_X_RES = 22643.6;
+  static const float DEF_SAMPLING_Y_RES = 18158;
+  
+  static const float DEF_SKEW = 746.198;
+  static const Size DEF_SIZE(640,480);
+
+  if(pa("-H")){
+    H_cam = Camera(*pa("-H"));
+  }else{
+    H_cam = Camera(DEF_POS, DEF_NORM, DEF_UP,DEF_F,
+                   DEF_PPO, DEF_SAMPLING_X_RES, DEF_SAMPLING_Y_RES,
+                   DEF_SKEW,
+                   Camera::RenderParams());
+  }
+  
+  
   Size size = pa("-size");
   pEst=new PointNormalEstimation(size);
   matchImage.setSize(size);
@@ -195,6 +222,9 @@ void init(){
   fid2 = new FiducialDetector(pa("-m").as<std::string>(), 
                               pa("-m",1).as<std::string>(), 
                               ParamList("size",(*pa("-m",2)) ) );
+  fid2->setPropertyValue("thresh.global threshold","-5.4");
+  fid2->setPropertyValue("thresh.mask size","60");
+  
   
   fid->setConfigurableID("fid");
   fid2->setConfigurableID("fid2");    
@@ -285,9 +315,7 @@ void init(){
   
   scene.removeObject(cube);
   
-  if(pa("-H")){
-    H_cam = Camera(*pa("-H"));
-  }
+ 
 }
 
 void visualizeMatches(DrawHandle &draw, const std::vector<Fiducial> &fids, 

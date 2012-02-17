@@ -540,7 +540,7 @@ namespace icl{
 
       Channel<T> *c;
       T val;
-      inline DrawLineSeg(Channel<T> *c, int val):c(c),val(val){}
+      inline DrawLineSeg(Channel<T> *c, icl64f val):c(c),val(val){}
       inline void operator()(const LineSegment &sl){
         T *p = &((*c)(sl.x,sl.y));
         std::fill(p,p+sl.len(),val);
@@ -550,7 +550,7 @@ namespace icl{
     // }}}
   }
 
-  void ImageRegion::drawTo(const ImgBase *image, int val) const{
+  void ImageRegion::drawTo(const ImgBase *image, icl64f val) const{
     // {{{ open
     ICLASSERT_RETURN(image);
     ICLASSERT_RETURN(image->getChannels());
@@ -570,6 +570,19 @@ namespace icl{
   }
 
   // }}}
+
+
+  void ImageRegion::drawToColor(const ImgBase *image, const icl64f *color) const{
+    ICLASSERT_RETURN(image);
+    ICLASSERT_RETURN(image->getChannels());
+    ICLASSERT_RETURN(color);
+    
+    for(int i=0;i<image->getChannels();++i){
+      SmartPtr<const ImgBase> c(image->selectChannel(i));
+      drawTo(c.get(), color[i]);
+    }    
+  }
+
 
 
   // search for a isBorder-region without collecting regions from buf
