@@ -59,6 +59,7 @@ add_libsource (${PROJECT_NAME} "src/GridSceneObject.cpp" "${CONDITIONLIST}" LIB_
 add_libsource (${PROJECT_NAME} "src/CalibrationObject.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/ComplexCoordinateFrameSceneObject.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/PointcloudSceneObject.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/RGBDImageSceneObject.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
 
 set(CONDITIONLIST HAVE_OPENCV2_COND)
@@ -108,7 +109,6 @@ add_gtest (${PROJECT_NAME} "test-camera" "${CONDITIONLIST}" ICLLibsToLinkAgainst
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_OPENGL_COND)
 set(ICLLibsToLinkAgainst ICLGeom ICLUtils ICLQuick ICLMarkers)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
 #add_example (${PROJECT_NAME} "kinect-rgbd-calib" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "kinect-rgbd-calib-2" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 

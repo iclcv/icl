@@ -202,6 +202,8 @@ void init(){
   grabDepth.init("kinectd","kinectd=0");
   grabColor.init("kinectc","kinectc=0");
   grabDepth.useDesired(depth32f, size, formatGray);
+  grabDepth.setProperty("depth-image-unit","mm");
+
   grabColor.useDesired(depth32f, size, formatGray);
   
   fid = new FiducialDetector(pa("-m").as<std::string>(), 
@@ -232,11 +234,12 @@ void init(){
                "[@handle=resultVis@label=result visualization method@maxsize=99x3]")
            << "combo(least squares,ransac, ransac+simplex)[@handle=optMethod@label=optimization method]"
            << "checkbox(use corners,unchecked)[@out=useCorners]"
+           << "checkbox(view only,checked)[@out=viewOnly]"
+           << "checkbox(color mapping,unchecked)[@out=colorMapping]"
            << "button(add points)[@handle=addPoints]"
            << "button(calculate homography)[@handle=calcHomo]"
            << "button(save homography)[@handle=saveHomo]"
            << "button(clear points and reset)[@handle=clearPoints]"
-           << "checkbox(view only,checked)[@out=viewOnly]"
            << "button(more ...)[@handle=more]" 
            << "fps(10)[@handle=fps]"
            )
@@ -385,7 +388,10 @@ void run(){
         
   std::vector<Fiducial> fids, fids2;
   
-  obj->update(D,C);
+  
+  obj->update(D,gui["colorMapping"] ? &C : 0
+);
+  
   const std::vector<Vec> & van = obj->getViewRaysAndNorms();
   const RGBDMapping M = obj->getMapping();
   

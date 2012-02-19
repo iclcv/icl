@@ -41,6 +41,7 @@
 #include <ICLUtils/Mutex.h>
 #include <ICLUtils/Thread.h>
 #include <ICLFilter/TranslateOp.h>
+#include <ICLFilter/MedianOp.h>
 
 #include <libfreenect.h>
 #include <map>
@@ -103,6 +104,9 @@ namespace icl{
     struct Used{
       enum IRShift{ Off=0,Fast,Accurate } irShift;
       bool depthImageUnitMM;
+      int depthImagePostProcessingMedianRadius;
+      MedianOp postProcessor3x3;
+      MedianOp postProcessor5x5;
       
       freenect_device *device;
       int numColorUsers;
@@ -114,13 +118,30 @@ namespace icl{
       Img32f depthImage,depthImageOut;  
       Time lastColorTime, lastDepthTime;
       Size size;
+
+      Used():postProcessor3x3(Size(3,3)),postProcessor5x5(Size(5,5)){
+        postProcessor3x3.setClipToROI(false);
+        postProcessor5x5.setClipToROI(false);
+      }
+
       KinectGrabber::Mode currentColorMode; // this must not be reset as long as the device is used somewhere else
       
       
       void depth_cb(void *data, uint32_t timestamp){
         Mutex::Locker lock(depthMutex);
-        depthImage.setTime(Time::now());
-        std::copy((const icl16s*)data,(const icl16s*)data+640*480,depthImage.begin(0)); 
+        const int r = depthImagePostProcessingMedianRadius;
+        MedianOp *pp = (r == 3) ? &postProcessor3x3 : r == 5 ? &postProcessor5x5 : (MedianOp*)0;
+        if(pp){
+          const Img16s tmp(Size::VGA, 1, std::vector<icl16s*>(1, (icl16s*)data));
+          pp->apply(&tmp)->convert(&depthImage);
+          int b = (r-1)/2;
+          depthImage.setROI(Rect(b,b,640-2*b, 480-2*b));
+          depthImage.fillBorder(&tmp);
+          depthImage.setTime(Time::now());
+        }else{
+          depthImage.setTime(Time::now());
+          std::copy((const icl16s*)data,(const icl16s*)data+640*480,depthImage.begin(0)); 
+        }
       }
       void color_cb(void *data, uint32_t timestamp){
         Mutex::Locker lock(colorMutex);
@@ -157,7 +178,9 @@ namespace icl{
           }
         }
         lastDepthTime = depthImage.getTime();
-        if(depthImageUnitMM){
+        
+       
+        if(!depthImageUnitMM){
           depthImage.deepCopy(&depthImageOut);
         }else{
           depthImageOut.setSize(depthImage.getSize());
@@ -269,7 +292,8 @@ namespace icl{
         used->irShift = Used::Accurate;
         used->depthImageUnitMM = true;
         used->currentColorMode = mode;
-
+        used->depthImagePostProcessingMedianRadius = 0;
+        
         if(freenect_open_device(ctx.ctx, &used->device, index) < 0){
           throw ICLException("FreenectDevice:: unable to open kinect device for device " + str(index));
         }
@@ -465,7 +489,8 @@ namespace icl{
   /// get type of property 
   std::string KinectGrabber::getType(const std::string &name){
     Mutex::Locker lock(m_impl->mutex);
-    if(name == "format" || name == "size" || name == "LED" || name == "shift-IR-image" || "depth-image-unit" ) return "menu";
+    if(name == "format" || name == "size" || name == "LED" || name == "shift-IR-image" 
+       || name == "depth-image-unit" || name == "depth-image-post-processing") return "menu";
     else if(name == "Desired-Tilt-Angle"){
       return "range";
     }else if(name =="Current-Tilt-Angle" || "Accelerometers"){
@@ -494,6 +519,8 @@ namespace icl{
       return "{\"off\",\"fast\",\"accurate\"}";
     }else if(name == "depth-image-unit"){
       return "{\"raw\",\"mm\"}";
+    }else if(name == "depth-image-post-processing"){
+      return "{\"off\",\"median 3x3\",\"median 5x5\"}";
     }else{
       return "undefined";
     }
@@ -536,6 +563,11 @@ namespace icl{
       return values[(int)(m_impl->device->used->irShift)];
     }else if(name == "depth-image-unit"){
       return m_impl->device->used->depthImageUnitMM ? "mm" : "raw";
+    }else if(name == "depth-image-post-processing"){
+      const int r  = m_impl->device->used->depthImagePostProcessingMedianRadius;
+      if(r == 3) return "median 3x3";
+      if(r == 5) return "median 5x4";
+      return "off";
     }else{
       return "undefined";
     }
@@ -616,6 +648,13 @@ namespace icl{
       else{
         ERROR_LOG("invalid property value for property 'depth-image-unit':" << value);
       }
+    }else if(name == "depth-image-post-processing"){
+      if(value == "off") m_impl->device->used->depthImagePostProcessingMedianRadius = 0;
+      else if(value == "median 3x3") m_impl->device->used->depthImagePostProcessingMedianRadius = 3;
+      else if(value == "median 5x5") m_impl->device->used->depthImagePostProcessingMedianRadius = 5;
+      else{
+        ERROR_LOG("invalid property value for property 'depth-image-post-processing':" << value);
+      }
     }else{
       ERROR_LOG("invalid property name '" << name << "'"); 
     }
@@ -624,8 +663,11 @@ namespace icl{
   /// returns a list of properties, that can be set using setProperty
   std::vector<std::string> KinectGrabber::getPropertyList(){
     Mutex::Locker lock(m_impl->mutex);
-    static std::string props[] = {"format","size","LED","Desired-Tilt-Angle","Current-Tilt-Angle","Accelerometers","shift-IR-image","depth-image-unit"};
-    return std::vector<std::string>(props,props+8);
+    static std::string props[] = { "format","size","LED","Desired-Tilt-Angle",
+                                   "Current-Tilt-Angle","Accelerometers",
+                                   "shift-IR-image","depth-image-unit",
+                                   "depth-image-post-processing" };
+    return std::vector<std::string>(props,props+9);
   }
 
   /// returns a list of attached kinect devices
