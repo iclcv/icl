@@ -349,5 +349,6 @@ namespace icl{
     return m_data->filteredRegions;
   }
 
+  REGISTER_CONFIGURABLE_DEFAULT(RegionDetector)
 }
 

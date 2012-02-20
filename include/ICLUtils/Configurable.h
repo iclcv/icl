@@ -52,43 +52,18 @@ namespace icl{
   /// Interface for classes that can be configured from configuration-files and GUI-Components
   /** The Configurable-interface can be used to define a classes parameters/properties 
       that shall be changed at runtime. The Configurable-subclasses can define properties that can
-      be accessed by string identifiers. Each property has one of ... TODO
+      be accessed by string identifiers. Each property has a type, a type-dependend description
+      of possible values, a current value and a so called volatileness. Please see class interface
+      and it's function descriptions for more details. A list of supported property types is provided
+      in the documentation of the method icl::Configurable::getPropertyType
 
       \section IMPL Implementing the Configurable Interface
-      It is not recommended to re-implement the configurables virtual interface. But
-      there are two ways to implement the Configurable interface. You can either reimplement the
-      Configurables virtual configuration functions
-      \code
-      /// sets value of a property (always call call_callbacks(propertyName) or Configurable::setPropertyValue)
-      virtual void setPropertyValue(const std::string &propertyName, const Any &value) throw (ICLException);
-      
-      /// returns Configurable property list
-      virtual std::vector<std::string> getPropertyList();
-      
-      /// returns type of given property 
-      virtual std::string getPropertyType(const std::string &propertyName);
-      
-      /// returns info for given property
-      virtual std::string getPropertyInfo(const std::string &propertyName);
-      
-      /// returns value for given property
-      virtual Any getPropertyValue(const std::string &propertyName);
-      
-      /// returns volatileness for given property
-      virtual int getPropertyVolatileness(const std::string &propertyName);
-      \endcode
-      or you can use the Configurales internal string based property storage by adding
-      properties with
-      \code
-      void addProperty(const std::string &name, const std::string &type, 
-      const std::string &info, const std::string &value="", 
-      int volatileness=0) throw (ICLException); 
-      \endcode
-      Reimplementing the virtual functions has several performance advantagest, but it usually entails more
-      implementation expense. Using the Configurables internal property storage, can help to reduce the number of
-      state-member variables in the derived classes. But in this case, all property-values are stored in a
-      map as strings. Therefore, a map-lookup has to be performed and a string has to be parsed before a certain
-      property value is available. But please note that in most cases this will be not critical at all.
+      It is strongly recommended to use the Configurable's property storage mechanism to 
+      manage a classes properties. Special behaviour to the adaption of certain properties can 
+      easily be added by registering a callback to an own member function. Alternatively, all
+      Configurable's virtual methods can be reimplemented to obtain special behaviour. In this case
+      the programmer himself can provide storage for the classes properties, but this is -- as said above -- 
+      not recommended due to the complex interface. 
       
       
       \section CP Child Configurables
@@ -98,10 +73,102 @@ namespace icl{
       this behaviour must be preserved if the virtual functions setPropertyValue and getPropertyValue are
       reimplemented. Usually, you can simply call Configurable::[set/get]PropertyValue(...) at the
       end of you versions of these methods.
+      
+      \section REG Configurable Registration
+      Configurable class should be registered statically using one of the two registration macros REGISTER_CONFIGURABLE 
+      or REGISTER_CONFIGURABLE_DEFAULT. This is strongly recommended since the class interface of a configurable class
+      does not give information about the properties that are provided by a specific Configurable class. Instead, all
+      classes, that implement the Configurable interface, can be registered statically, which allows for runtime exploration
+      of possible Configurable classes and their supported properties. 
+      
+      The example application <b>icl-configurable-info</b> can be used to explore allowed properties.
+      
 
-      \section EX Examples ...
-      TODO example for both approaches:
-      */
+      In order to make the static registration process as easy as possible, special macros are provided. Example:
+      <code>
+      namespace icl{
+        // MyConfigurable.h
+        struct MyConfigurable{
+           MyConfigurable();
+           void foo(){}
+           ...
+        };
+      }
+
+      // MyConfigurable.cpp
+      namespace icl{
+        MyConfigurable::MyConfigurable(){
+          addProperty(....);
+        }
+        void MyConfigurable::foo() {...}
+      
+        // registration at the end of the .cpp file 
+        // within the icl-namespace
+        REGISTER_CONFIGURABLE_DEFAULT(MyConfigurable);
+      }
+      </code>
+      
+      If no default constructor is available, the macro REGISTER_CONFIGURABLE can be used. Here, 
+      you can also specify how an instance of that class is created. Example:
+
+      <code>
+      namespace icl{
+        // MyComplexConfigurable.h
+        struct MyComplexConfigurable{
+           // no default constructor
+           MyComplexConfigurable(int i, float j);
+           void foo(){}
+           ...
+        };
+      }
+
+      // MyComplexConfigurable.cpp
+      namespace icl{
+        MyComplexConfigurable::MyComplexConfigurable(int i, float j){
+          addProperty(....);
+        }
+        void MyComplexConfigurable::foo() {...}
+      
+        // provide default arguments here
+        REGISTER_CONFIGURABLE(MyComplexConfigurable, return new MyComplexConfigurable(1,4.5));
+      }
+      </code>
+
+      For classes with pure-virtual methods, it is recommended to provide a dummy non-virtual
+      extension of that class whose name is extended by a _VIRTUAL postfix. In this case,
+      listing the Configurable classnames shows explicitly, that a class is a virtual interface.
+      Example:
+
+      <code>
+      namespace icl{
+        // MyVirtualConfigurable.h
+        struct MyVirtualConfigurable{
+           MyVirtualConfigurable();
+           // pure virtual method
+           virtual void foo(int bar) = 0;
+           ...
+        };
+      }
+
+      // MyVirtualConfigurable.cpp
+      namespace icl{
+        MyVirtualConfigurable::MyVirtualConfigurable(){
+          addProperty(....);
+        }
+        
+        struct MyVirtualConfigurable_VIRTUAL : public MyVirtualConfigurable{
+          virtual void foo(int){}
+        };
+
+        // register the dummy implementation
+        REGISTER_CONFIGURABLE_DEFAULT(MyVirtualConfigurable_VIRTUAL);
+      }
+      </code>
+
+      \section EX Examples
+      There are several examples available in the ICL-source try. Use the ICL-tool <b>icl-configurable-info -list</b> to
+      obtain a list of all Configurable implementations and their supported properties.
+  */
   class Configurable{
     public:
     /// Represents a single property
@@ -360,9 +427,38 @@ namespace icl{
     virtual int getPropertyVolatileness(const std::string &propertyName){
       return prop(propertyName).volatileness;
     }
-
+    
+    /// registers a configurable type
+    /** @see \ref REG */
+    static void register_configurable_type(const std::string &classname, Function<Configurable*> creator) throw (ICLException);
+    
+    /// returns a list of all registered configurable classnames
+    /** @see \ref REG */
+    static std::vector<std::string> get_registered_configurables();
+    
+    /// creates a configurable by given name
+    /** @see \ref REG */
+    static Configurable *create_configurable(const std::string &classname) throw (ICLException);
   };
 
+  /// registration macro for configurables
+  /** @see \ref REG */
+#define REGISTER_CONFIGURABLE(NAME,CREATE)                              \
+  struct StaticConfigurableRegistrationFor_##NAME{                      \
+    typedef StaticConfigurableRegistrationFor_##NAME This;              \
+    static Configurable *create(){                                      \
+      CREATE;                                                           \
+    }                                                                   \
+    StaticConfigurableRegistrationFor_##NAME(){                         \
+      Configurable::register_configurable_type(#NAME, &This::create);   \
+    }                                                                   \
+  } staticConfigurableRegistrationFor_##NAME;
+
+  
+  /// simpel registration macro for configurables that provide a default constructor
+  /** @see \ref REG */
+#define REGISTER_CONFIGURABLE_DEFAULT(NAME) REGISTER_CONFIGURABLE(NAME,return new NAME)
+  
 }
 
 #endif

@@ -972,4 +972,19 @@ namespace icl{
     return Point(drawToWinX(p.x), drawToWinY(p.y));
   }
 
+  struct AbstractPlotWidget_VIRTUAL : public AbstractPlotWidget{
+    virtual bool drawData(QPainter&){ return false; }
+  };
+  
+  static Configurable *create_AbstractPlotWidget_VIRTUAL(){
+    if(!dynamic_cast<QApplication*>(QApplication::instance())){
+      static const char *args[] = {"app",0};
+      static int n = 1;
+      static QApplication __static_app(n,(char**)args);
+    }
+    return new AbstractPlotWidget_VIRTUAL;
+  }
+  
+  REGISTER_CONFIGURABLE(AbstractPlotWidget_VIRTUAL, return create_AbstractPlotWidget_VIRTUAL());
+
 }

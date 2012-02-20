@@ -198,6 +198,7 @@ namespace icl{
     return data->grid;
   }
 
+  REGISTER_CONFIGURABLE_DEFAULT(CalibrationObject);
 }
   
 

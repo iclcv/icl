@@ -103,4 +103,11 @@ namespace icl{
     return back;
   }
 
+  struct FiducialDetectorPlugin_VIRTUAL : public FiducialDetectorPlugin{
+    virtual void getFeatures(Fiducial::FeatureSet&){}
+    virtual void detect(std::vector<FiducialImpl*> &, const Img8u &){}
+    virtual void addOrRemoveMarkers(bool, const Any &, const ParamList &){}
+  };
+  
+  REGISTER_CONFIGURABLE_DEFAULT(FiducialDetectorPlugin_VIRTUAL);
 }

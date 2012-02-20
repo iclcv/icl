@@ -258,4 +258,6 @@ namespace icl {
 
   // }}}
 #endif
+
+  REGISTER_CONFIGURABLE(ProximityOp, return new ProximityOp(ProximityOp::crossCorr));
 }

@@ -41,8 +41,6 @@
 #include <fstream>
 #include <ICLUtils/ConfigFile.h>
 
-typedef FixedColVector<float,3> Vec3;
-
 struct PossibleMarker{
   PossibleMarker():loaded(false){}
   PossibleMarker(int cfgFileIndex,const Vec &v):loaded(true),center(v),hasCorners(false),cfgFileIndex(cfgFileIndex){}

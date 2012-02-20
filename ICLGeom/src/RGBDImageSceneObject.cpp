@@ -376,6 +376,7 @@ namespace icl{
     }
   }
 
+  REGISTER_CONFIGURABLE_DEFAULT(RGBDImageSceneObject);
 } // end namespace icl
 
 

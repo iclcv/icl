@@ -341,5 +341,6 @@ namespace icl{
       }
     }catch(...){ throw 3;}
   }
-  
+
+  REGISTER_CONFIGURABLE_DEFAULT(QuadDetector);
 }

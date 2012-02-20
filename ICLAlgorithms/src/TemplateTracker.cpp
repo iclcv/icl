@@ -175,5 +175,7 @@ namespace icl{
     return bestResult;
   }
 
+  REGISTER_CONFIGURABLE_DEFAULT(TemplateTracker);
+  
 }
 

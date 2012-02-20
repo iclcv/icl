@@ -395,5 +395,6 @@ namespace icl{
     else if(propertyName == "debug-mode") return debug_mode ? "on" : "off";
     else return "undefined";
   }
-  
+
+  REGISTER_CONFIGURABLE_DEFAULT(CornerDetectorCSS);
 }

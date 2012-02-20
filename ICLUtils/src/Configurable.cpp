@@ -304,4 +304,35 @@ namespace icl{
     }
   }
 
+  typedef std::map<std::string, Function<Configurable*> > CRM;
+
+  static CRM &get_configurable_registration_map(){
+    static SmartPtr<CRM> crm = new CRM;
+    return *crm;
+  }
+  
+  void Configurable::register_configurable_type(const std::string &classname, 
+                                                Function<Configurable*> creator) throw (ICLException){
+    CRM &crm = get_configurable_registration_map();
+    CRM::iterator it = crm.find(classname);
+    if(it != crm.end()) throw ICLException("unable to register configurable " + classname + ": name already in use");
+    crm[classname] = creator;
+  }
+  
+  std::vector<std::string> Configurable::get_registered_configurables(){
+    std::vector<std::string> all;
+    CRM &crm = get_configurable_registration_map();
+    for(CRM::iterator it = crm.begin(); it != crm.end(); ++it){
+      all.push_back(it->first);
+    }
+    return all;
+  }
+  
+  Configurable *Configurable::create_configurable(const std::string &classname) throw (ICLException){
+    CRM &crm = get_configurable_registration_map();
+    CRM::iterator it = crm.find(classname);
+    if(it == crm.end()) throw ICLException("unable to create configurable " + classname + ": name not registered");
+    return it->second();
+  }
+
 }

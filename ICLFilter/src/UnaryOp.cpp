@@ -416,4 +416,10 @@ namespace icl{
     Configurable::setPropertyValue(propertyName,value);
   }
 
+
+  struct UnaryOp_VIRTUAL : public UnaryOp{
+    virtual void apply(const ImgBase *,ImgBase **){}
+  };
+  
+  REGISTER_CONFIGURABLE_DEFAULT(UnaryOp_VIRTUAL);
 }

@@ -204,6 +204,7 @@ namespace icl{
     return data->plugin->createMarker(whichOne,size,params);
   }
 
-
+  REGISTER_CONFIGURABLE_DEFAULT(FiducialDetector);
+  
 }
 

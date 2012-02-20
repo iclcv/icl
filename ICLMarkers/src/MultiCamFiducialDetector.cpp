@@ -224,4 +224,5 @@ namespace icl{
   }
 
 
+  REGISTER_CONFIGURABLE_DEFAULT(MultiCamFiducialDetector);
 }

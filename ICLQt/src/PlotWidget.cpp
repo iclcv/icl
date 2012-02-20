@@ -602,6 +602,17 @@ namespace icl{
     clearSeriesData(); 
     clearScatterData(); 
   }
+  
+  static Configurable *create_PlotWidget(){
+    if(!dynamic_cast<QApplication*>(QApplication::instance())){
+      static const char *args[] = {"app",0};
+      static int n = 1;
+      static QApplication __static_app(n,(char**)args);
+    }
+    return new PlotWidget;
+  }
+  
+  REGISTER_CONFIGURABLE(PlotWidget, return create_PlotWidget());
 }
  
 
