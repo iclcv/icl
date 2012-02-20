@@ -60,6 +60,7 @@ add_libsource (${PROJECT_NAME} "src/CalibrationObject.cpp" "${CONDITIONLIST}" LI
 add_libsource (${PROJECT_NAME} "src/ComplexCoordinateFrameSceneObject.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/PointcloudSceneObject.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/RGBDImageSceneObject.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/RGBDMapping.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
 
 set(CONDITIONLIST HAVE_OPENCV2_COND)

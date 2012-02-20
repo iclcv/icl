@@ -51,11 +51,6 @@
 #include <ICLGeom/RGBDImageSceneObject.h>
 #include <fstream>
 
-static float sprod(const Vec &a, const Vec &b){
-  return a[0]*b[0] +a[1]*b[1] +a[2]*b[2];
-}
-
-
 ImageUndistortion udistRGB;
 ImageUndistortion udistIR;
 
@@ -71,121 +66,10 @@ struct Correspondence{
 
 std::vector<Correspondence> correspondences;
 
-//RGBDMapping mapping;
-
 Img32f matchImage(Size(320,240), formatRGB);
-
 GUI fidDetectorPropertyGUI("hsplit");
-
-
-
 Scene scene;
-#if 0
-
-
-struct Bla : public SceneObject{
-  std::vector<Vec> m_normedViewRayDirs; // (x,y,z)normed and norm
-  Vec m_viewRayOffset;
-  
-  inline float getNormFactor(const ViewRay &a, const ViewRay &b){
-    return sprod(a.direction,b.direction)/(norm3(a.direction)*norm3(b.direction));
-  }
-
-  Bla(){
-    m_vertices.resize(640*480, Vec(0,0,0,1));
-    m_vertexColors.resize(640*480);
-    setLockingEnabled(true);
-    setVisible(Primitive::vertex,true);
-    setPointSize(3);
-    setPointSmoothingEnabled(false);
-    
-    Camera cam = pa("-cam") ? Camera(*pa("-cam")) : Camera();
-
-    Array2D<ViewRay> viewRays = cam.getAllViewRays();
-    m_viewRayOffset = viewRays(0,0).offset;
-    m_normedViewRayDirs.resize(640*480);
-    
-    for(int y=0;y<480;++y){
-      for(int x=0;x<640;++x){
-        const int idx = x + 640 * y;
-        const ViewRay &v = viewRays[idx];
-        Vec &n = m_normedViewRayDirs[idx];
-        
-        float norm = 1.0/getNormFactor(v,viewRays(319,239));
-        
-        n[0] = v.direction[0];
-        n[1] = v.direction[1];
-        n[2] = v.direction[2];
-        n[3] = norm;
-      }
-    }
-  }
-
-  static inline float depth_to_distance_mm(int d){
-    return 1.046 * (d==2047 ? 0 : 1000. / (d * -0.0030711016 + 3.3309495161));
-  }
-  
-  inline float getDepth(int d, float norm) const{
-    return depth_to_distance_mm(d) * norm;
-  }
-  inline float getDepth(int d, int x, int y) const{ 
-    return getDepth(d,m_normedViewRayDirs[x+640*y][3]);
-  }
-  
-  void update(const Channel32f &D, 
-              const Channel32f &r,
-              const Channel32f &g,
-              const Channel32f &b){
-    lock();
-    static const Rect imageRect(0,0,640,480);
-    
-    Time now = Time::now();
-    
-    for(int y=0;y<480;++y){
-      // too much page misses if we add parallellism
-#pragma omp parallel num_threads(4)
-      
-      {
-#pragma omp for 
-        for(int x=0;x<640;++x){
-          int idx = x + 640 * y;
-          const Vec &dir = m_normedViewRayDirs[idx];
-          const float depthValue = getDepth( D[idx], dir[3]);
-          
-          Vec &v = m_vertices[idx];
-          v[0] = m_viewRayOffset[0] + depthValue * dir[0];
-          v[1] = m_viewRayOffset[1] + depthValue * dir[1];
-          v[2] = m_viewRayOffset[2] + depthValue * dir[2];
-          
-          Point p = mapping.apply(x,y,depthValue);
-          
-          //          const float phInv = 1.0/ (Q(0,3) * x + Q(1,3) * y + Q(2,3) * depthValue + Q(3,3));
-          // const int px = phInv * ( Q(0,0) * x + Q(1,0) * y + Q(2,0) * depthValue + Q(3,0) );
-          // const int py = phInv * ( Q(0,1) * x + Q(1,1) * y + Q(2,1) * depthValue + Q(3,1) );
-          
-          GeomColor &c = m_vertexColors[idx];        
-          if(imageRect.contains(p.x, p.y)){
-            static const float FACTOR = 1.0/255;
-            c[0] = r(p.x,p.y) * FACTOR;
-            c[1] = g(p.x,p.y) * FACTOR;
-            c[2] = g(p.x,p.y) * FACTOR;
-            c[3] = 1;
-          }else{
-            c[3] = 0;
-          }
-        }
-      }
-    }
-    SHOW( (Time::now()-now).toMilliSecondsDouble() );
-    unlock();
-
-  }
-} *obj = 0;
-
-#endif
-
 RGBDImageSceneObject *obj = 0;
-
 
 void init(){
   const Size size = pa("-size");
@@ -412,31 +296,20 @@ void run(){
     const Rect r = C.getImageRect();
     Channel8u c = C[0];
     
-    { /// visualize the (CAM) homography ...
-      //Mat T = H_cam.getCSTransformationMatrix();
-      //Mat P = H_cam.getProjectionMatrix();
-      //Mat Q = P*T;
-     
+    {       
       matchImage.setChannels(2);
-      
       std::copy(IR.begin(0),IR.end(0),matchImage.begin(1));
-      
       Channel32f miC0 = matchImage[0];
       Channel32f miC1 = matchImage[1];
-      
       for(int y=0; y<size.height; y++){
         for(int x=0; x<size.width; x++){
           const int idx = x + size.width * y;
-          float depthValue = dd(x,y) * van[idx][3]; //obj->getDepth(dd(x,y),x,y);
+          float depthValue = dd(x,y) * van[idx][3];
           if(!depthValue){
             miC0(x,y) = 0;
             miC1(x,y) = 0;
           }else{
-            Point p = M.apply(x,y,depthValue); //H_cam.project(Vec(x,y,depthValue,1));
-            //        Vec pp = Q*Vec(x,y,dd(x,y),1);
-            //Point p(pp[0]/pp[3], pp[1]/pp[3]);
-            
-            //Point p = H.apply_int(Point32f(x,y)); TODO !!
+            Point p = M.apply(x,y,depthValue);
             miC0(x,y) = r.contains(p.x,p.y) ? c(p.x,p.y) : 0.0f;
           }
         }

@@ -35,15 +35,14 @@
 #ifndef ICL_RGBD_IMAGE_SCENE_OBJECT_H
 #define ICL_RGBD_IMAGE_SCENE_OBJECT_H
 
+#include <ICLUtils/Configurable.h>
+#include <ICLUtils/Array2D.h>
+
 #include <ICLGeom/Camera.h>
 #include <ICLGeom/SceneObject.h>
 #include <ICLGeom/RGBDMapping.h>
-#include <ICLUtils/Configurable.h>
-
 
 namespace icl{
-  
-  
   class RGBDImageSceneObject : public SceneObject, public Configurable{
     protected:
     /// corresponging depth image size
@@ -69,6 +68,7 @@ namespace icl{
     */
     float getDepthNorm(const Vec &dir, const Vec &centerDir);
 
+    /// internal initialization method
     void init(const Size &size,
               const RGBDMapping &mapping,
               const Camera &cam);
@@ -111,6 +111,32 @@ namespace icl{
                depth-image point cloud using the current mapping
         */
     virtual void update(const Img32f &depthImage, const Img8u *rgbImage=0);
+
+    /// returns the objects 3D points as Array2D<Vec>
+    /** The returned Array2D<Vec> is just a shallow wrapper around the internal data pointer. */
+    inline Array2D<Vec> getPoints() { 
+      return Array2D<Vec>(m_size, m_vertices.data(), false); 
+    }
+
+    /// returns the objects 3D points as Array2D<Vec> (const version)
+    /** The returned Array2D<Vec> is just a shallow wrapper around the internal data pointer. */
+    inline const Array2D<Vec> getPoints() const { 
+      return const_cast<RGBDImageSceneObject*>(this)->getPoints(); 
+    }
+      
+    /// returns the objects point colors Array2D<Vec>
+    /** The returned Array2D<GeomColor> is just a shallow wrapper around the internal data pointer. 
+        The color data is just valid if RGBDImageSceneObject::update was called with a non-null rgbImage. */
+    inline Array2D<GeomColor> getColors() { 
+      return Array2D<GeomColor>(m_size, m_vertexColors.data(), false); 
+    }
+
+    /// returns the objects point colors Array2D<Vec> (const version)
+    /** The returned Array2D<GeomColor> is just a shallow wrapper around the internal data pointer. 
+        The color data is just valid if RGBDImageSceneObject::update was called with a non-null rgbImage. */
+    inline Array2D<GeomColor> getColors() const { 
+      return const_cast<RGBDImageSceneObject*>(this)->getColors(); 
+    }
   };
 }
 

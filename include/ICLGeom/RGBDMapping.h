@@ -35,8 +35,12 @@
 #ifndef ICL_RGBD_MAPPING_H
 #define ICL_RGBD_MAPPING_H
 
-#include <ICLGeom/Camera.h>
-#include <ICLUtils/ConfigFile.h>
+#include <vector>
+
+#include <ICLUtils/Point32f.h>
+
+#include <ICLGeom/GeomDefs.h>
+
 
 namespace icl{
   
@@ -61,7 +65,7 @@ namespace icl{
     public:
     
     /// creates an ID mapping
-    RGBDMapping():Mat(Mat::id()){}
+    RGBDMapping();
 
     /// creates a mapping using the given set of landmark points for calibration
     /** @param depthImagePointsAndDepths the i-th component Vi contains the depth image
@@ -70,19 +74,15 @@ namespace icl{
         @param rgbImagePoints the i-th component is the corresponding landmark calibration point
                in the rgb image.
     */
-    inline RGBDMapping(const std::vector<Vec> &depthImagePointsAndDepths,
-                       const std::vector<Point32f> &rgbImagePoints){
-      Camera cam = Camera::calibrate(depthImagePointsAndDepths, rgbImagePoints);
-      (Mat&)(*this) = cam.getProjectionMatrix()*cam.getCSTransformationMatrix();
-    }
+    RGBDMapping(const std::vector<Vec> &depthImagePointsAndDepths,
+                       const std::vector<Point32f> &rgbImagePoints);
     
     /// loads a mapping from given xml filename
-    inline RGBDMapping(const std::string &filename){
-      ConfigFile f(filename);
-      Mat m = f["config.rgbd-mapping"];
-      (Mat&)(*this) = m;
-    }
-
+    RGBDMapping(const std::string &filename);
+    
+    /// constructor from given Mat
+    RGBDMapping(const Mat &M);
+    
     /// applies the mapping
     /** @param x depth image x coordinate
         @param y depth image y coordinate
@@ -97,14 +97,10 @@ namespace icl{
     }
     
     /// saves the mapping using a given xml filename
-    void save(const std::string &filename) const{
-      ConfigFile f;
-      f["config.rgbd-mapping"] = (const Mat&)(*this);
-      f.save(filename);
-    }
+    void save(const std::string &filename) const;
     
-    
-    
+    /// assignmed from given mat
+    RGBDMapping &operator=(const Mat &M);
   };
   
 }
