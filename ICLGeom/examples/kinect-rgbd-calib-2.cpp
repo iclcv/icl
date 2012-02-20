@@ -87,6 +87,7 @@ void init(){
   grabColor.init("kinectc","kinectc=0");
   grabDepth.useDesired(depth32f, size, formatGray);
   grabDepth.setProperty("depth-image-unit","mm");
+  grabDepth.setProperty("depth-image-post-processing","median 3x3");
 
   grabColor.useDesired(depth32f, size, formatGray);
   
@@ -170,9 +171,15 @@ void init(){
     std::cout<<"IR-UNDISTORTION: --- "<<fn2<<" --- "<<std::endl<<udistIR<<std::endl;
   }
 
- 
+  
   scene.addCamera(cam);
   scene.addObject(obj);
+  scene.setLightingEnabled(false);
+
+  // shift object center to -1m for better mouse handling ...
+  Vec offset = cam.getNorm() * -1000;
+  obj->translate(offset);
+  scene.getCamera(0).setPosition(cam.getPosition() + offset);
   
   float params[] = {0,0,0,1000};
   SceneObject *cube = new SceneObject("cube",params);
@@ -192,8 +199,10 @@ void init(){
 
 void visualizeMatches(DrawHandle &draw, const std::vector<Fiducial> &fids, 
                       FiducialDetector *fd, const std::string &imageName, 
-                      bool showCorrespondences){
-  //draw = fd->getIntermediateImage(imageName);
+                      bool showCorrespondences, bool setImage){
+  if(setImage){
+    draw = fd->getIntermediateImage(imageName);
+  }
   draw->lock();
   draw->reset();
   draw->linewidth(1);
@@ -232,7 +241,7 @@ void run(){
   static Img32f D;
 
   grabDepth.grab(bpp(D));
-  grabDepth.grab();
+  //grabDepth.grab();
   grabColor.disableUndistortion();
   grabColor.useDesired(formatRGB);
   grabColor.useDesired(depth8u);
@@ -263,7 +272,7 @@ void run(){
     median.setClipToROI(false);
     median.apply(&IR, bpp(IRmed));
         
-    gui["ir"] = IRmed; 
+    //gui["ir"] = IRmed; 
   }
   
 
@@ -273,13 +282,13 @@ void run(){
   std::vector<Fiducial> fids, fids2;
   
   
-  obj->update(D,gui["colorMapping"] ? &C : 0
-);
+  obj->update(D,gui["colorMapping"] ? &C : 0);
   
-  const std::vector<Vec> & van = obj->getViewRaysAndNorms();
+  const std::vector<Vec3> &vrs = obj->getViewRayDirs();//RaysAndNorms();
   const RGBDMapping M = obj->getMapping();
+  const Img32f &corrD = obj->getCorrectedDepthImage();
   
-  const Channel32f dd = D[0];
+  const Channel32f dd = corrD[0];
   if(!viewOnly){
     static Img8u Cgray(C.getSize(),formatGray);
     cc(&C,&Cgray);
@@ -290,8 +299,8 @@ void run(){
     static DrawHandle color = gui["color"];
     static DrawHandle ir = gui["ir"];
     
-    visualizeMatches(color,fids, fid.get(), fidDetectorPropertyGUI["vis"], true);
-    visualizeMatches(ir,fids2, fid2.get(), fidDetectorPropertyGUI["vis2"], false);
+    visualizeMatches(color,fids, fid.get(), fidDetectorPropertyGUI["vis"], true, false);
+    visualizeMatches(ir,fids2, fid2.get(), fidDetectorPropertyGUI["vis2"], false, true);
     
     const Rect r = C.getImageRect();
     Channel8u c = C[0];
@@ -304,7 +313,7 @@ void run(){
       for(int y=0; y<size.height; y++){
         for(int x=0; x<size.width; x++){
           const int idx = x + size.width * y;
-          float depthValue = dd(x,y) * van[idx][3];
+          float depthValue = dd(x,y);// * corrs[idx];//[3];
           if(!depthValue){
             miC0(x,y) = 0;
             miC1(x,y) = 0;
@@ -351,7 +360,7 @@ void run(){
             float bx = fb.getCenter2D().x, by = fb.getCenter2D().y;
             Correspondence c = { bx,
                                  by,
-                                 dd(bx,by) * van[bx + size.width*by][3],// obj->getDepth(D(bx,by,0), bx, by),
+                                 dd(bx,by),
                                  fa.getCenter2D().x, 
                                  fa.getCenter2D().y,
                                  fa.getName() };
@@ -368,7 +377,7 @@ void run(){
                 
                 Correspondence c = { bx,
                                      by,
-                                     dd(bx,by) * van[bx + size.width*by][3],//obj->getDepth(D(bx,by,0), bx, by),
+                                     dd(bx,by),
                                      ax,
                                      ay,
                                      fa.getName() + "key-point " + str(i)};

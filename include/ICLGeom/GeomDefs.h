@@ -90,6 +90,8 @@ namespace icl{
   /// Short typedef for 4D float matrices
   typedef Mat4D32f Mat;
 
+  /// another shortcut for 3D vectors
+  typedef FixedColVector<icl32f,3> Vec3;
   
   /// normalize a vector to length 1
   template<class T>

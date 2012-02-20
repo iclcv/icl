@@ -95,7 +95,7 @@ namespace icl{
       const int py = phInv * ( (*this)(0,1) * x + (*this)(1,1) * y + (*this)(2,1) * depthValue + (*this)(3,1) );
       return Point(px,py);
     }
-    
+
     /// saves the mapping using a given xml filename
     void save(const std::string &filename) const;
     

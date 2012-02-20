@@ -33,58 +33,105 @@
 *********************************************************************/
 
 #include <ICLGeom/RGBDImageSceneObject.h>
+#include <omp.h>
+#ifdef ICL_SYSTEM_APPLE
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+#else
+#include <GL/gl.h>
+#include <GL/glu.h>
+#endif
+
 
 namespace icl{
-  
-  
-  // static inline float sprod3(const Vec &a, const Vec &b){ 
-  //  return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
-  // }
-  
-  //static inline float norm3(const Vec &a){
-  //  return ::sqrt(a[0]*a[0] + a[1]*a[1] + a[2]*a[2]);
-  //}
-  
-  inline float RGBDImageSceneObject::getDepthNorm(const Vec &dir, const Vec &centerDir){
+  static inline float compute_depth_norm(const Vec &dir, const Vec &centerDir){
     return sprod3(dir,centerDir)/(norm3(dir)*norm3(centerDir));
   }
   
-  void RGBDImageSceneObject::init(const Size &size,
-                                  const RGBDMapping &mapping,
-                                  const Camera &cam){
-    m_size = size;
-    m_mapping = mapping;
+
+  struct RGBDImageSceneObject::Data{
+    FixedMatrix<float,3,4> Qi;
+    Size size;
+    std::vector<Vec3> viewRayDirs;
+    std::vector<float> correctionFactors;
     
-    addProperty("use openmp","flag","",false);
+    Vec viewRayOffset;
+    RGBDMapping mapping;
+    RGBDImageSceneObject *parent;
+    Img32f lastCorrectedDepthImage;
     
-    const int dim = size.getDim();
-      
-    m_vertices.resize(dim,Vec(0,0,0,1));
-    m_vertexColors.resize(dim, GeomColor(0.0,0.4,1,1));
-    m_viewRaysAndNorms.resize(dim);
+    /// internal initialization method
+    void init(const Size &size,
+              const RGBDMapping &mapping,
+              const Camera &cam,
+              RGBDImageSceneObject *parent){
+      this->parent = parent;
+      this->size = size;
+      this->mapping = mapping;
+      lastCorrectedDepthImage = Img32f(size,1);
+      Qi = cam.getQMatrix().pinv(true);
     
-    setLockingEnabled(true);
-    setVisible(Primitive::vertex,true);
-    setPointSize(3);
-    setPointSmoothingEnabled(false);
+      const int dim = size.getDim();
     
-    Array2D<ViewRay> viewRays = cam.getAllViewRays();
-    m_viewRayOffset = viewRays(0,0).offset;
+      parent->m_vertices.resize(dim,Vec(0,0,0,1));
+      parent->m_vertexColors.resize(dim, GeomColor(0.0,0.4,1,1));
+      parent->setLockingEnabled(true);
+      parent->setVisible(Primitive::vertex,true);
+      parent->setPointSize(3);
+      parent->setPointSmoothingEnabled(false);
+
+      viewRayDirs.resize(dim);
+      correctionFactors.resize(dim);
+      Array2D<ViewRay> viewRays = cam.getAllViewRays();
+      viewRayOffset = viewRays(0,0).offset;
     
-    
-    for(int y=0;y<size.height;++y){
-      for(int x=0;x<size.width;++x){
-        const int idx = x + size.width * y;
-        const Vec &d = viewRays[idx].direction;
-        Vec &n = m_viewRaysAndNorms[idx];
+      for(int y=0;y<size.height;++y){
+        for(int x=0;x<size.width;++x){
+          const int idx = x + size.width * y;
+          const Vec &d = viewRays[idx].direction;
+          Vec3 &n = viewRayDirs[idx];
         
-        n[0] = d[0];
-        n[1] = d[1];
-        n[2] = d[2];
-        n[3] = 1.0/getDepthNorm(d,viewRays(319,239).direction);
+          n[0] = d[0];
+          n[1] = d[1];
+          n[2] = d[2];
+          correctionFactors[idx] = 1.0/compute_depth_norm(d,viewRays(319,239).direction);
+        }
       }
+
+      parent->addProperty("openmp threads","range","[1,16]:1",1);
+      parent->addProperty("update time","info","","inf");
+      parent->addProperty("rendering.point size","range","[1:10]:1",3);
+      parent->addProperty("rendering.mode","menu","points,triangles","points");
+      
+      parent->registerCallback(function(this,&Data::property_callback));
     }
-  }
+    
+    void property_callback(const Configurable::Property &p){
+      const std::string &n = p.name;
+      if(n == "update time") return;
+      if(n == "rendering.point size") parent->setPointSize(parent->getPropertyValue(n));
+    }
+  };
+
+  /** This could be useful on the graphics card (however there's still a bug in this!)
+      static inline Vec3 cast_ray(const FixedMatrix<icl32f,3,4> &Qi, float x, float y, const Vec &p){
+      const float dirX = Qi(0,0) * x + Qi(1,0) * y + Qi(2,0);
+      const float dirY = Qi(0,1) * x + Qi(1,1) * y + Qi(2,1);
+      const float dirZ = Qi(0,2) * x + Qi(1,2) * y + Qi(2,2);
+      const float dirH = Qi(0,3) * x + Qi(1,3) * y + Qi(2,3);
+      
+      const float sign = dirH > 0 ? -1 : 1;
+      
+      const float dirX2 = p[0] - dirX/dirH;
+      const float dirY2 = p[1] - dirY/dirH;
+      const float dirZ2 = p[2] - dirZ/dirH;
+      
+      const float len = ::sqrt( dirX2*dirX2 + dirY2*dirY2 + dirZ2*dirZ2);
+      
+      return Vec3(sign * dirX/len, sign * dirY/len, sign * dirZ/len);
+      }
+  */
+  
     
   Camera RGBDImageSceneObject::get_default_kinect_camera(const Size &size) { 
     return Camera(); 
@@ -107,56 +154,87 @@ namespace icl{
   
   
     
-  RGBDImageSceneObject::RGBDImageSceneObject(const Size &size){
-    init(size, get_default_kinect_rgbd_mapping(size), get_default_kinect_camera(size) );
+  RGBDImageSceneObject::RGBDImageSceneObject(const Size &size):m_data(new Data){
+   
+    m_data->init(size, get_default_kinect_rgbd_mapping(size), get_default_kinect_camera(size), this);
   }
   
   RGBDImageSceneObject::RGBDImageSceneObject(const Size &size, const RGBDMapping &mapping,
-                                             const Camera &cam){
-    init(size,mapping,cam);
+                                             const Camera &cam):m_data(new Data){
+    m_data->init(size,mapping,cam, this);
+  }
+  
+  RGBDImageSceneObject::~RGBDImageSceneObject(){
+    delete m_data;
   }
   
   const RGBDMapping &RGBDImageSceneObject::getMapping() const{ 
-    return m_mapping; 
+    return m_data->mapping; 
   }
   
   void RGBDImageSceneObject::setMapping(const RGBDMapping &mapping) { 
-    m_mapping = mapping; 
+    m_data->mapping = mapping; 
   }
   
   const Size &RGBDImageSceneObject::getSize() const { 
-    return m_size;
+    return m_data->size;
   }
   
-  const std::vector<Vec> &RGBDImageSceneObject::getViewRaysAndNorms() const { 
-    return  m_viewRaysAndNorms;
+  const std::vector<Vec3> &RGBDImageSceneObject::getViewRayDirs() const { 
+    return  m_data->viewRayDirs;
+  }
+  
+  const std::vector<float> &RGBDImageSceneObject::getCorrectionFactors() const {
+    return m_data->correctionFactors;
+  }
+  const Img32f &RGBDImageSceneObject::getCorrectedDepthImage() const{
+    return m_data->lastCorrectedDepthImage;
   }
   
   void RGBDImageSceneObject::update(const Img32f &depthImage,
                                     const Img8u *rgbImage){
-    
+
+    const int W = m_data->size.width;
+    const int H = m_data->size.height;
+    const int DIM = W*H;
+    const Rect imageRect(Point::null,m_data->size);
+
     lock();
-    const Channel32f d = depthImage[0];
-    const Rect imageRect(Point::null,m_size);
+
+    { 
+#ifdef HAVE_IPP
+      ippsMul_32f(depthImage.begin(0),  m_data->correctionFactors.data(), m_data->lastCorrectedDepthImage.begin(0), DIM);
+#else
+      std::transform(depthImage.begin(0), depthImage.end(0), m_data->correctionFactors.begin(),
+                     m_data->lastCorrectedDepthImage.begin(0), std::multiplies<float>());
+#endif
+    }
+    
+    
+    const icl32f *d = m_data->lastCorrectedDepthImage.begin(0);
+
     
     Time now = Time::now();
-    const bool useOpenMP = getPropertyValue("use openmp");
+    const int ompThreads = getPropertyValue("openmp threads");
+    omp_set_num_threads(ompThreads);
     
     // chache some local variables
-    const RGBDMapping M = m_mapping;
-    const int W = m_size.width;
-    const int H = m_size.height;
-    const Vec off = m_viewRayOffset;
+    const RGBDMapping M = m_data->mapping;
+    const Vec off = m_data->viewRayOffset;
+    
+    const FixedMatrix<float,3,4> Qi = m_data->Qi;
+
     if(rgbImage){
       const Channel8u r = (*rgbImage)[0], g = (*rgbImage)[1], b = (*rgbImage)[2];
       for(int y=0;y<H;++y){
-#pragma omp parallel if(useOpenMP)
+#pragma omp parallel
         {
 #pragma omp for
           for(int x=0;x<W;++x){
             const int idx = x + W * y;
-            const Vec &dir = m_viewRaysAndNorms[idx];
-            const float depthValue = d[idx] * dir[3];
+            
+            const Vec3 &dir = m_data->viewRayDirs[idx];
+            const float depthValue = d[idx];// * dir[3];
             
             Vec &v = m_vertices[idx];
             v[0] = off[0] + depthValue * dir[0];
@@ -180,12 +258,12 @@ namespace icl{
       }
     }else{ // no rgb image -> creation of the pointcloud only
       const int DIM = W*H;
-#pragma omp parallel if(useOpenMP)
+#pragma omp parallel
       {
 #pragma omp for
         for(int i=0;i<DIM;++i){
-          const Vec &dir = m_viewRaysAndNorms[i];
-          const float depthValue = d[i] * dir[3];
+          const Vec3 &dir = m_data->viewRayDirs[i];
+          const float depthValue = d[i];// * dir[3];
           Vec &v = m_vertices[i];
           v[0] = off[0] + depthValue * dir[0];
           v[1] = off[1] + depthValue * dir[1];
@@ -193,8 +271,109 @@ namespace icl{
         }
       }
     }
-    SHOW( (Time::now()-now).toMilliSecondsDouble() );
+    const float dtMS = (Time::now()-now).toMilliSecondsDouble();
+    setPropertyValue("update time", str(0.01*(int)(dtMS*100)) + "ms" );
     unlock();
+  }
+
+  Array2D<Vec> RGBDImageSceneObject::getPoints() { 
+    return Array2D<Vec>(m_data->size, m_vertices.data(), false); 
+  }
+  
+  const Array2D<Vec> RGBDImageSceneObject::getPoints() const { 
+    return const_cast<RGBDImageSceneObject*>(this)->getPoints(); 
+  }
+  
+  
+  Array2D<GeomColor> RGBDImageSceneObject::getColors() { 
+    return Array2D<GeomColor>(m_data->size, m_vertexColors.data(), false); 
+  }
+  
+  
+  const Array2D<GeomColor> RGBDImageSceneObject::getColors() const { 
+    return const_cast<RGBDImageSceneObject*>(this)->getColors(); 
+  }
+
+  template<class T>
+  void map_image(const Img<T> &src, Img<T> &dst, const RGBDMapping M, const float *D){
+    const int W = src.getWidth(), H = src.getHeight();
+    const Rect imageRect(0,0,W,H);
+    const int C = src.getChannels();
+    for(int c=0;c<C;++c){
+      const Channel<T> s = src[c];
+      Channel<T> d = dst[c];
+      for(int y=0;y<H;++y){
+        for(int x=0;x<W;++x,++D){
+          Point p = M.apply(x,y,(*D));
+          d(x,y) = imageRect.contains(p.x,p.y) ? s(p.x,p.y) : 0;
+        }
+      }
+    }
+  }
+
+  void RGBDImageSceneObject::prepareForRendering(){
+    if(getPropertyValue("rendering.mode") == "points"){
+      setVisible(Primitive::vertex,true);
+    }else{
+      setVisible(Primitive::vertex,false);
+    }
+  }
+
+  void RGBDImageSceneObject::customRender(){
+    if(getPropertyValue("rendering.mode") == "points") return;
+
+    // TODO dont draw if max dz is too large, use triangle strip
+
+    const int W1 = m_data->size.width, H1 = m_data->size.height -1;
+    glBegin(GL_TRIANGLES);
+    const Channel32f d = m_data->lastCorrectedDepthImage[0];
+    const Array2D<GeomColor> colors = getColors();
+    const Array2D<Vec> points = getPoints();
+    for(int y=0;y<H1;++y){
+      for(int x=0;x<W1;++x){
+        if(d(x,y) && d(x+1,y) && d(x,y+1)){
+          glColor3fv(&colors(x,y)[0]);
+          glVertex3fv(&points(x,y)[0]);
+
+          glColor3fv(&colors(x+1,y)[0]);
+          glVertex3fv(&points(x+1,y)[0]);
+
+          glColor3fv(&colors(x,y+1)[0]);
+          glVertex3fv(&points(x,y+1)[0]);
+        }
+
+        if(d(x+1,y+1) && d(x+1,y) && d(x,y+1)){
+          glColor3fv(&colors(x+1,y+1)[0]);
+          glVertex3fv(&points(x+1,y+1)[0]);
+
+
+          glColor3fv(&colors(x,y+1)[0]);
+          glVertex3fv(&points(x,y+1)[0]);
+
+          glColor3fv(&colors(x+1,y)[0]);
+          glVertex3fv(&points(x+1,y)[0]);
+        }
+
+      }
+    }
+    
+    glEnd();
+  }
+
+  void RGBDImageSceneObject::mapImage(const ImgBase *src, ImgBase **dst){
+    if(!src) throw ICLException(str(__FUNCTION__)+": given source image was null");
+    if(!dst) throw ICLException(str(__FUNCTION__)+": given destination image was null");
+    ensureCompatible(dst,src->getDepth(),src->getSize(),src->getChannels());
+    (*dst)->setTime(src->getTime());
+    switch(src->getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D)                                        \
+      case depth##D: map_image(*src->as##D(), *(*dst)->as##D(),         \
+                               m_data->mapping,                         \
+                               m_data->lastCorrectedDepthImage.begin(0)); \
+        break;
+      ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
+    }
   }
 
 } // end namespace icl

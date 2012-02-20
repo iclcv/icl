@@ -44,34 +44,12 @@
 
 namespace icl{
   class RGBDImageSceneObject : public SceneObject, public Configurable{
-    protected:
-    /// corresponging depth image size
-    Size m_size;
+    /// internal data structure
+    struct Data;
     
-    /// each view-ray directions and depth normalization factors
-    /** v = [ dir-x, dir-y, dir-z, norm-factor ] */
-    std::vector<Vec> m_viewRaysAndNorms;
-    
-    /// Camera center
-    Vec m_viewRayOffset;
-    
-    /// mapping, that maps RGB to depth values
-    RGBDMapping m_mapping;
-    
-    /// computes the normalization factor for two given viewrays
-    /** if the depth values, a camera provide are given wrt to the distance to the 
-        camera's sensor plane, using view-rays demands to correct these values
-        because, the view-ray lengths need the distances to the sensor center.
-        
-        In 3D space, the nomalization factor is exactly the cosine between the
-        center view-ray direction an the actual view ray direction        
-    */
-    float getDepthNorm(const Vec &dir, const Vec &centerDir);
-
-    /// internal initialization method
-    void init(const Size &size,
-              const RGBDMapping &mapping,
-              const Camera &cam);
+    /// internal data pointer (pimpl)
+    Data *m_data;
+  
     public:
     
     /// returns a default camera model for VGA and QVGA kinect cameras
@@ -90,6 +68,9 @@ namespace icl{
     /// creates and RGBDImageSceneObject with given mapping and camera
     RGBDImageSceneObject(const Size &size, const RGBDMapping &mapping,const Camera &cam);
     
+    /// Destructor
+    ~RGBDImageSceneObject();
+    
     /// returns the current mapping
     const RGBDMapping &getMapping() const;
     
@@ -99,10 +80,15 @@ namespace icl{
     /// returns the current size
     const Size &getSize() const;
 
-    /// returns all view-rays-directions and norms
-    /** Each Vec in the return value is layouted [x,y,z,n], where (x,y,z) is the viewray
-        and n is the depthvalue normalization factor. The whole data vector is orded row-major */
-    const std::vector<Vec> &getViewRaysAndNorms() const;
+    /// returns the camera's viewray directions
+    const std::vector<Vec3> &getViewRayDirs() const;
+    
+    /// depth value correction factors
+    const std::vector<float> &getCorrectionFactors() const;
+    
+    /// returns the last corrected depth image
+    /** the result image contains the corrected depth image from the last update call */
+    const Img32f &getCorrectedDepthImage() const;
 
     /// updates the scene object from new kinect depth and optionally also color image
     /** the internal point-cloud image is created using the given depth image.
@@ -112,31 +98,34 @@ namespace icl{
         */
     virtual void update(const Img32f &depthImage, const Img8u *rgbImage=0);
 
+    
+    /// maps another given image just like the rgbImage would be mapped
+    /** This method uses the last depthImage that was passed to RGBDImageSceneObject::update */
+    void mapImage(const ImgBase *src, ImgBase **dst);
+
     /// returns the objects 3D points as Array2D<Vec>
     /** The returned Array2D<Vec> is just a shallow wrapper around the internal data pointer. */
-    inline Array2D<Vec> getPoints() { 
-      return Array2D<Vec>(m_size, m_vertices.data(), false); 
-    }
+    inline Array2D<Vec> getPoints();
 
+    
     /// returns the objects 3D points as Array2D<Vec> (const version)
     /** The returned Array2D<Vec> is just a shallow wrapper around the internal data pointer. */
-    inline const Array2D<Vec> getPoints() const { 
-      return const_cast<RGBDImageSceneObject*>(this)->getPoints(); 
-    }
+    inline const Array2D<Vec> getPoints() const;
       
     /// returns the objects point colors Array2D<Vec>
     /** The returned Array2D<GeomColor> is just a shallow wrapper around the internal data pointer. 
         The color data is just valid if RGBDImageSceneObject::update was called with a non-null rgbImage. */
-    inline Array2D<GeomColor> getColors() { 
-      return Array2D<GeomColor>(m_size, m_vertexColors.data(), false); 
-    }
+    Array2D<GeomColor> getColors();
 
     /// returns the objects point colors Array2D<Vec> (const version)
     /** The returned Array2D<GeomColor> is just a shallow wrapper around the internal data pointer. 
         The color data is just valid if RGBDImageSceneObject::update was called with a non-null rgbImage. */
-    inline Array2D<GeomColor> getColors() const { 
-      return const_cast<RGBDImageSceneObject*>(this)->getColors(); 
-    }
+    const Array2D<GeomColor> getColors() const;
+
+    virtual void prepareForRendering();
+    
+    virtual void customRender();
+    
   };
 }
 
