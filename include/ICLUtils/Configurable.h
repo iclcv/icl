@@ -85,7 +85,7 @@ namespace icl{
       
 
       In order to make the static registration process as easy as possible, special macros are provided. Example:
-      <code>
+      \code
       namespace icl{
         // MyConfigurable.h
         struct MyConfigurable{
@@ -106,12 +106,12 @@ namespace icl{
         // within the icl-namespace
         REGISTER_CONFIGURABLE_DEFAULT(MyConfigurable);
       }
-      </code>
+      \endcode
       
       If no default constructor is available, the macro REGISTER_CONFIGURABLE can be used. Here, 
       you can also specify how an instance of that class is created. Example:
 
-      <code>
+      \code
       namespace icl{
         // MyComplexConfigurable.h
         struct MyComplexConfigurable{
@@ -132,14 +132,14 @@ namespace icl{
         // provide default arguments here
         REGISTER_CONFIGURABLE(MyComplexConfigurable, return new MyComplexConfigurable(1,4.5));
       }
-      </code>
+      \endcode
 
       For classes with pure-virtual methods, it is recommended to provide a dummy non-virtual
       extension of that class whose name is extended by a _VIRTUAL postfix. In this case,
       listing the Configurable classnames shows explicitly, that a class is a virtual interface.
       Example:
 
-      <code>
+      \code
       namespace icl{
         // MyVirtualConfigurable.h
         struct MyVirtualConfigurable{
@@ -163,7 +163,7 @@ namespace icl{
         // register the dummy implementation
         REGISTER_CONFIGURABLE_DEFAULT(MyVirtualConfigurable_VIRTUAL);
       }
-      </code>
+      \endcode
 
       \section EX Examples
       There are several examples available in the ICL-source try. Use the ICL-tool <b>icl-configurable-info -list</b> to

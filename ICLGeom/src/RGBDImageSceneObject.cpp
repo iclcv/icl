@@ -105,7 +105,7 @@ namespace icl{
       parent->addProperty("rendering.point size","range","[1:10]:1",3,0,
                           "point size for rendering (only used of the property\n"
                           "rendering.mode is set to points)");
-      parent->addProperty("rendering.mode","menu","points,triangles","points",0,
+      parent->addProperty("rendering.mode","menu","points,triangles","triangles",0,
                           "Mode for rendering:\n"
                           "points:    In this case, the scene object is rendered\n"
                           "           in the default manner. It's vertices are\n"
@@ -113,7 +113,20 @@ namespace icl{
                           "triangles: In this, case the SceneObjects vertices are not\n"
                           "           rendered, but a custom triangle based rendering\n"
                           "           method is called");
-      
+      parent->addProperty("rendering.max Dz","range","[10,100]:1",15,0,
+                          "(For triangle rendering only)\n"
+                          "This value defines the max depth difference for\n"
+                          "for triangles. Triangles, whose corners depth\n"
+                          "difference is larger than this value are not rendered.");
+      parent->addProperty("rendering.max depth","range","[300,10000]:1",5000,0,
+                          "(For triangle rendering only)\n"
+                          "Triangles that have a corner that is further away than\n"
+                          "this value (in mm) are not drawn");
+      parent->addProperty("rendering.min depth","range","[1,5000]:1",500,0,
+                          "(For triangle rendering only)\n"
+                          "Triangles that have a corner that is closer to the camera\n"
+                          "than this value (in mm) are not drawn");
+
       parent->registerCallback(function(this,&Data::property_callback));
     }
     
@@ -330,16 +343,17 @@ namespace icl{
     }
   }
   
-  static inline bool relative_distance(float a, float b, float c){
-    if(!a) return false;
-    
-    const float d1 = sqr(a-b);
-    const float d2 = sqr(a-c);
-    return sqr(d1-d2) < 100;
+  static inline bool relative_distance(float a, float b, float c, float maxDZ){
+    return sqr(a-b)+sqr(b-c)+sqr(a-c) < maxDZ;
   }
 
   void RGBDImageSceneObject::customRender(){
     if(getPropertyValue("rendering.mode") == "points") return;
+    const int maxDZ = 3 * sqr(getPropertyValue("rendering.max Dz").as<int>());
+    const int maxDepth = getPropertyValue("rendering.max depth");
+    const int minDepth = getPropertyValue("rendering.min depth");
+                              
+
 
     // TODO dont draw if max dz is too large, use triangle strip
 
@@ -350,7 +364,9 @@ namespace icl{
     const Array2D<Vec> points = getPoints();
     for(int y=0;y<H1;++y){
       for(int x=0;x<W1;++x){
-        if( relative_distance( d(x,y), d(x+1,y), d(x,y+1) )) {
+        if( (d(x,y) < minDepth) || (d(x,y) > maxDepth) ) continue;
+        
+        if( relative_distance( d(x,y), d(x+1,y), d(x,y+1), maxDZ )) {
           glColor3fv(&colors(x,y)[0]);
           glVertex3fv(&points(x,y)[0]);
           
@@ -361,7 +377,7 @@ namespace icl{
           glVertex3fv(&points(x,y+1)[0]);
         }
         
-        if(relative_distance( d(x+1,y+1), d(x+1,y), d(x,y+1)) ){
+        if(relative_distance( d(x+1,y+1), d(x+1,y), d(x,y+1), maxDZ) ){
           glColor3fv(&colors(x+1,y+1)[0]);
           glVertex3fv(&points(x+1,y+1)[0]);
           

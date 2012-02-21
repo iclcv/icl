@@ -125,6 +125,7 @@ void init(){
            << "button(calculate homography)[@handle=calcHomo]"
            << "button(save homography)[@handle=saveHomo]"
            << "button(clear points and reset)[@handle=clearPoints]"
+           << "button(reset view)[@handle=resetView]" 
            << "button(more ...)[@handle=more]" 
            << "fps(10)[@handle=fps]"
            )
@@ -180,6 +181,9 @@ void init(){
   Vec offset = cam.getNorm() * -1000;
   obj->translate(offset);
   scene.getCamera(0).setPosition(cam.getPosition() + offset);
+
+  // add 2nd camera for resetting the view
+  scene.addCamera(scene.getCamera(0));
   
   float params[] = {0,0,0,1000};
   SceneObject *cube = new SceneObject("cube",params);
@@ -235,6 +239,7 @@ void run(){
   gui_ButtonHandle(clearPoints);
   gui_ButtonHandle(calcHomo);
   gui_ButtonHandle(saveHomo);
+  gui_ButtonHandle(resetView);
     
   Size size = pa("-size");
   static Img8u C, IR, IRmed;
@@ -248,6 +253,9 @@ void run(){
     grabDepth.grab();
   }
 
+  if(resetView.wasTriggered()){
+    scene.getCamera(0) = scene.getCamera(1);
+  }
 
   grabColor.disableUndistortion();
   grabColor.useDesired(formatRGB);
