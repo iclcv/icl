@@ -54,7 +54,10 @@ namespace icl{
   class GUIDefinition{
     public:
     /// create a new GUI Definition
-    GUIDefinition(const std::string &def, GUI *gui, QLayout *parentLayout=0, ProxyLayout *parentProxyLayout=0, QWidget *parentWidget=0);
+    GUIDefinition(const std::string &def, GUI *gui, 
+                  QLayout *parentLayout=0, 
+                  ProxyLayout *parentProxyLayout=0, 
+                  QWidget *parentWidget=0);
       
     /// return the type string
     const std::string &type() const { return m_sType; }
@@ -128,6 +131,12 @@ namespace icl{
     
     /// returns a list of all parameters
     const std::vector<std::string> &allParams() const { return m_vecParams; }
+    
+    /// returns the tooltip text
+    inline const std::string &toolTip() const { return m_toolTip; }
+
+    /// returns whether the tooltip text is not ""
+    inline bool hasToolTip() const { return m_toolTip.length(); }
 
   private:
     std::string m_sDefinitionString;       //<! whole definition string
@@ -146,6 +155,7 @@ namespace icl{
     QLayout *m_poParentLayout;             //<! parent layout or NULL if there is no parent
     QWidget *m_poParentWidget;             //<! parent widget to avoid reparenting calls
     ProxyLayout *m_poParentProxyLayout;    //<! parent widget proxy layout
+    std::string m_toolTip;                 //<! optionally given tooltip
   };
 }
 

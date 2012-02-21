@@ -35,7 +35,8 @@ namespace icl{
     for(unsigned int i=0;i<ps.size();++i){
       Property p = Property(configurable, pfx+ps[i],configurable->getPropertyType(ps[i]),
                             configurable->getPropertyInfo(ps[i]),configurable->getPropertyValue(ps[i]),
-                            configurable->getPropertyVolatileness(ps[i]));
+                            configurable->getPropertyVolatileness(ps[i]),
+                            configurable->getPropertyToolTip(ps[i]));
       p.childPrefix = pfx;
       std::map<std::string,Property>::iterator it = m_properties.find(p.name);
       if(it != m_properties.end()) throw ICLException("Property " + str(p.name) + "cannot be added from child configurable due to name conflicts");
@@ -59,12 +60,12 @@ namespace icl{
 
   void Configurable::addProperty(const std::string &name, const std::string &type, 
                                  const std::string &info, const Any &value, 
-                                 int volatileness) throw (ICLException){
+                                 int volatileness, const std::string &tooltip) throw (ICLException){
     try{
       prop(name);
       throw ICLException("Unable to add property " + name + " because it is already used");
     }catch(ICLException &ex){
-      m_properties[name]= Property(this,name,type,info,value,volatileness);
+      m_properties[name]= Property(this,name,type,info,value,volatileness, tooltip);
     }
   }
   
@@ -294,13 +295,15 @@ namespace icl{
     return passed;
   }
 
-  void Configurable::adaptProperty(const std::string &name,const std::string &newType,const std::string &newInfo) throw (ICLException){
+  void Configurable::adaptProperty(const std::string &name,const std::string &newType,
+                                   const std::string &newInfo, const std::string &newToolTip) throw (ICLException){
     Property &p = prop(name);
     if(p.configurable != this){
-      p.configurable->adaptProperty(name.substr(p.childPrefix.length()),newType,newInfo);
+      p.configurable->adaptProperty(name.substr(p.childPrefix.length()),newType,newInfo, newToolTip);
     }else{
       p.type = newType;
       p.info = newInfo;
+      p.tooltip = newToolTip;
     }
   }
 

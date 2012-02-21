@@ -97,11 +97,20 @@ namespace icl{
   RegionDetector::RegionDetector(bool createRegionGraph, const std::string &configurableID):Configurable(configurableID){
     m_data = new Data;
 
-    addProperty("minimum region size","range:spinbox","[0,100000]","0");
-    addProperty("maximum region size","range:spinbox","[0,100000]","1000000");
-    addProperty("minimum value","range:slider","[0,255]","0");
-    addProperty("maximum value","range:slider","[0,255]","255");
-    addProperty("create region graph","menu","off,on",createRegionGraph ? "on" : "off");
+    addProperty("minimum region size","range:spinbox","[0,100000]","0",0,
+                "Minimum amount of pixels, detection regions must have.");
+    addProperty("maximum region size","range:spinbox","[0,100000]","1000000",0,
+                "Maximum amount of pixels, detected regions must have.");
+    addProperty("minimum value","range:slider","[0,255]","0",0,
+                "Minimum pixel value for detected regions.");
+    addProperty("maximum value","range:slider","[0,255]","255",0,
+                "Maximum pixel value for detected regions.");
+    addProperty("create region graph","menu","off,on",createRegionGraph ? "on" : "off", 0,
+                "If this property is set to 'on', a region\n"
+                "conectivity graph is created in the region\n"
+                "detection step. This graph is used to find\n"
+                "region neighbours, children (fully contained\n"
+                "regions) and parents.");
 
     addChildConfigurable(&m_data->css,"CSS");
   }

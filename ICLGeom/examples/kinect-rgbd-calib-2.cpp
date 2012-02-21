@@ -241,7 +241,14 @@ void run(){
   static Img32f D;
 
   grabDepth.grab(bpp(D));
-  //grabDepth.grab();
+
+  if(!viewOnly){
+    // this avoid the bug that the grabber sometimes complaines about
+    // the fact, that the wrong callback is executed
+    grabDepth.grab();
+  }
+
+
   grabColor.disableUndistortion();
   grabColor.useDesired(formatRGB);
   grabColor.useDesired(depth8u);

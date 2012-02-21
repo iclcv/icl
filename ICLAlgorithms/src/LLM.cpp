@@ -233,11 +233,11 @@ namespace icl{
         m_epsilonSigma = 0.001;
     */
 
-    addProperty("epsilon In","range","[0,0.1]",0.01);
-    addProperty("epsilon Out","range","[0,0.5]",0.01);
-    addProperty("epsilon A","range","[0,0.1]",0.001);
-    addProperty("epsilon Sigma","range","[0,0.1]",0.0);
-    addProperty("soft max enabled","flag","",true);
+    addProperty("epsilon In","range","[0,0.1]",0.01,0,"input weight learning rate");
+    addProperty("epsilon Out","range","[0,0.5]",0.01,0,"output weight learning rate");
+    addProperty("epsilon A","range","[0,0.1]",0.001,0,"slope matrix learning rate");
+    addProperty("epsilon Sigma","range","[0,0.1]",0.0,0,"kernel variance learning rate");
+    addProperty("soft max enabled","flag","",true,0,"enables the soft-max interpolation");
   }
   
   LLM::LLM(unsigned int inputDim, unsigned int outputDim){

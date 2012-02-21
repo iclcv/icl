@@ -159,7 +159,10 @@ namespace icl{
             std::copy((const icl16s*)data,(const icl16s*)data +  (size==Size::VGA ? 640*480 : 320*240), irImage16s.begin(0));
             break;
           default:
-            throw ICLException("processed color callback for depth grabber (this should not happen)");
+            // actually, this happens sometimes, when the grabbers 'format' is switched frequently
+            // at runtime. This is why, we avoid to throw an exception here!
+            // throw ICLException("processed color callback for depth grabber (this should not happen)");
+            break;
         }
 
       }

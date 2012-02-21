@@ -77,13 +77,39 @@ namespace icl{
     data->timeMonitoring = false;
     data->referenceFrame = returnedPoseReferenceFrame;
       
-    addProperty("algorithm","menu",get_all_algorithms(),algorithm_to_string(a));
-    addProperty("sampling interval","float","[-3.14,3.14]",data->samplingInterval);
-    addProperty("sampling steps","int","[1,100000]:1",data->samplingSteps);
-    addProperty("sampling substeps","int","[1,100]",data->samplingSubSteps);
-    addProperty("decrease factor","float","[0,1]",data->decreaseFactor);
-    addProperty("position multiplier","float","[1,5000]",data->positionMultiplier);
-    addProperty("time monitoring","flag","",data->timeMonitoring);
+    addProperty("algorithm","menu",get_all_algorithms(),algorithm_to_string(a),0,
+                "Specifies the used algorithm:\n"
+                "HomographyBasedOnly: straight forward least-square based\n"
+                "SamplingCoarse:  Use exhaustive sampling around the result\n"
+                "                 of the linear result (using parameters for\n"
+                "                 coarse sampling)\n"
+                "SamplingMedium:  As above, but finer sampling (more\n"
+                "                 accurate, but slower\n"
+                "SamplingFine:    As abouve, but even finer (again more\n"
+                "                 accurate and slower\n"
+                "SamplingCustom:  Exhaustive sampling with custom parameters\n"
+                "SimplexSampling: Use the Simplex-Search algorithm for\n"
+                "                 optimization (usually, this provides the best\n"
+                "                 result and is still much faster than exhaustive\n"
+                "                 sampling");
+    addProperty("sampling interval","float","[-3.14,3.14]",data->samplingInterval,0,
+                "(only used if the 'algorithm' property is set to 'SamplingCustom'\n"
+                "Defines the angle search range for exhaustive search");
+    addProperty("sampling steps","int","[1,100000]:1",data->samplingSteps,0,
+                "(only used if the 'algorithm' property is set to 'SamplingCustom'\n"
+                "Defines the number of coarse steps for exhaustive sampling.");
+    addProperty("sampling substeps","int","[1,100]",data->samplingSubSteps,0,
+                "(only used if the 'algorithm' property is set to 'SamplingCustom'\n"
+                "Defines the number of fine steps for exhaustive sampling.");    
+    addProperty("decrease factor","float","[0,1]",data->decreaseFactor,0,
+                "(only used if the 'algorithm' property is set to 'SamplingCustom'\n"
+                "Defines the factor, which is used to reduce the step-width after\n"
+                "every coarse step");
+    addProperty("position multiplier","float","[1,5000]",data->positionMultiplier,0,
+                "(only used if the 'algorithm' property is set to 'SamplingCustom'\n"
+                "Defines the ratio between angle and position values");
+    addProperty("time monitoring","flag","",data->timeMonitoring,0,
+                "If set to true, benchmarking is enabled");
 
     
     registerCallback(function(this,&CoplanarPointPoseEstimator::propertyChangedCallback));

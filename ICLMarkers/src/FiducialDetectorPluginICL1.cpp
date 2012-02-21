@@ -263,5 +263,7 @@ namespace icl{
     
   }
 
+  REGISTER_CONFIGURABLE_DEFAULT(FiducialDetectorPluginICL1);
+
   
 }

@@ -105,12 +105,12 @@ namespace icl{
 
     /// returns the objects 3D points as Array2D<Vec>
     /** The returned Array2D<Vec> is just a shallow wrapper around the internal data pointer. */
-    inline Array2D<Vec> getPoints();
+    Array2D<Vec> getPoints();
 
     
     /// returns the objects 3D points as Array2D<Vec> (const version)
     /** The returned Array2D<Vec> is just a shallow wrapper around the internal data pointer. */
-    inline const Array2D<Vec> getPoints() const;
+    const Array2D<Vec> getPoints() const;
       
     /// returns the objects point colors Array2D<Vec>
     /** The returned Array2D<GeomColor> is just a shallow wrapper around the internal data pointer. 
@@ -122,8 +122,10 @@ namespace icl{
         The color data is just valid if RGBDImageSceneObject::update was called with a non-null rgbImage. */
     const Array2D<GeomColor> getColors() const;
 
+    /// prepares the object for rendering
     virtual void prepareForRendering();
     
+    /// custom render method for triangle based rendering
     virtual void customRender();
     
   };

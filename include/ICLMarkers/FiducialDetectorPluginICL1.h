@@ -57,6 +57,11 @@ namespace icl{
 
     /// This class cannot be used 
     friend class icl::FiducialDetector;
+    
+    /** \cond **/
+    // for static initialization
+    friend class StaticConfigurableRegistrationFor_FiducialDetectorPluginICL1;
+    /** \endcond **/
 
     /// Destructor
     ~FiducialDetectorPluginICL1();

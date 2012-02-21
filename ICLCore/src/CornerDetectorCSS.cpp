@@ -396,5 +396,36 @@ namespace icl{
     else return "undefined";
   }
 
+  std::string CornerDetectorCSS::getPropertyToolTip(const std::string &propertyName){
+    if(propertyName == "angle-threshold"){
+      return str( "denotes the maximum obtuse angle that a corner\n"
+                  "can have when it is detected as a true corner,\n"
+                  "default value is 162." );
+    }else if(propertyName == "rc-coefficient"){
+      return str( "denotes the minimum ratio of major axis to minor\n"
+                  "axis of an ellipse, whose vertex could be detected\n"
+                  "as a corner by proposed detector. The default\n"
+                  "value is 1.5." );
+    }else if(propertyName == "sigma"){
+      return str( "denotes the standard deviation of the Gaussian\n"
+                  "filter when computeing curvature. The default sig is 3");
+    }else if(propertyName == "curvature-cutoff") {
+      return str("cutoff for curvature values");
+    }else if(propertyName == "straight-line-threshold"){
+      return str("In order to estimate the angle of a corner, either a\n"
+                 "circle or a straight line approximation of the left and\n"
+                 "right surrounding is used. The straight line\n"
+                 "approximation is used, if the angle between the\n"
+                 "left neigbour, corner candidate and  and the point\n"
+                 "on the contour half way between them is smaller than\n"
+                 "straight_line_thresh. A value of 0 leads to circle \n"
+                 "approximation only, 180 to straight line approximation\n"
+                 "only.");
+    }else if(propertyName == "debug-mode"){
+      return str("If this property is enabled, debug information\n"
+                 "is created internally");
+    }
+  }
+
   REGISTER_CONFIGURABLE_DEFAULT(CornerDetectorCSS);
 }

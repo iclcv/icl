@@ -262,47 +262,47 @@ namespace icl{
     data->menuCreated = false;
     data->bgBrush = QPalette().window();
     
-    addProperty("borders.left","range:spinbox","[0,1000]",35);
-    addProperty("borders.right","range:spinbox","[0,1000]",5);
-    addProperty("borders.top","range:spinbox","[0,1000]",5);
-    addProperty("borders.bottom","range:spinbox","[0,1000]",38);
+    addProperty("borders.left","range:spinbox","[0,1000]",35,0,"Left distance from widget border to the drawing area");
+    addProperty("borders.right","range:spinbox","[0,1000]",5,0,"Right distance from widget border to the drawing area");
+    addProperty("borders.top","range:spinbox","[0,1000]",5,0,"Top distance from widget border to the drawing area");
+    addProperty("borders.bottom","range:spinbox","[0,1000]",38,0,"Bottom distance from widget border to the drawing area");
 
 
-    addProperty("antialiasing","flag","",false);
-    addProperty("dynamic-tic-scaling", "flag","",true);
-    addProperty("style preset","menu","default,black,white");
+    addProperty("antialiasing","flag","",false,0,"Enables Antialiased Rendering (slow)");
+    addProperty("dynamic-tic-scaling", "flag","",true,0,"Automatic adaption of tic-distance when zooming in.");
+    addProperty("style preset","menu","default,black,white","default",0,"Preset forground and background Styles");
 
-    addProperty("tics.length","range:spinbox","[0,100]",6);
-    addProperty("tics.x-distance","float","[1E-37,1E+37]",1);
-    addProperty("tics.y-distance","float","[1E-37,1E+37]",1);
-    addProperty("tics.x-grid","flag","",true);
-    addProperty("tics.y-grid","flag","",true);
+    addProperty("tics.length","range:spinbox","[0,100]",6, 0, "Length of tics in pixels.");
+    addProperty("tics.x-distance","float","[1E-37,1E+37]",1, 0, "Distance for tics along the X-axis(in drawing units)");
+    addProperty("tics.y-distance","float","[1E-37,1E+37]",10, 0,"Distance for tics along the Y-axis (in drawing units)");
+    addProperty("tics.x-grid","flag","",true,0,"Enables the vertical grid");
+    addProperty("tics.y-grid","flag","",true,0,"Enables the horizontal grid");
 
-    addProperty("labels.x-precision","range:spinbox","[0,20]",3);
-    addProperty("labels.y-precision","range:spinbox","[0,20]",3);
-    addProperty("labels.text-size","range:spinbox","[1,100]",8);
-    addProperty("labels.x-axis","string","100","");
-    addProperty("labels.y-axis","string","100","");
-    addProperty("labels.diagramm","string","100","");
+    addProperty("labels.x-precision","range:spinbox","[0,20]",3,0,"Precision for X-axis labels");
+    addProperty("labels.y-precision","range:spinbox","[0,20]",3,0,"Precision for Y-axis labels");
+    addProperty("labels.text-size","range:spinbox","[1,100]",8,0,"Font size");
+    addProperty("labels.x-axis","string","100","",0,"X-axis label");
+    addProperty("labels.y-axis","string","100","",0,"Y-axis label");
+    addProperty("labels.diagramm","string","100","",0,"Headline label");
 
-    addProperty("enable lines","flag","",true);
-    addProperty("enable symbols","flag","",true);
-    addProperty("enable fill","flag","",false);
-    addProperty("draw legend","flag","",true);
-    addProperty("render symbols as images","flag","",false);
-    addProperty("show zoom indicator","flag","",true);
-    addProperty("highlight 0-axis'","flag","",true);
+    addProperty("enable lines","flag","",true,0,"Enables line rendering (for scatter- and function data)");
+    addProperty("enable symbols","flag","",true,0,"Enables symbol rendering (for scatter- and function data)");
+    addProperty("enable fill","flag","",false,0,"Enables filled rendering (for scatter- and function data)");
+    addProperty("draw legend","flag","",true,0,"Show/Hide the legend");
+    addProperty("render symbols as images","flag","",false,0,"Method that is used for symbols");
+    addProperty("show zoom indicator","flag","",true,0,"Visualize the current zoom rect in the upper right corner"); 
+    addProperty("highlight 0-axis'","flag","",true,0,"Draw the X=0 and Y=0 grid lines with a thicker pen");
 
-    addProperty("drawing time","info","","?");
+    addProperty("drawing time","info","","?",0,"Benchmark for rendering time");
 
-    addProperty("legend.x","range:spinbox","[-10000,10000]",10);
-    addProperty("legend.y","range:spinbox","[-10000,10000]",-22);
-    addProperty("legend.width","range:spinbox","[-10000,10000]",-20);
-    addProperty("legend.height","range:spinbox","[-10000,10000]",20);
+    addProperty("legend.x","range:spinbox","[-10000,10000]",10,0,"Legend X-offset");
+    addProperty("legend.y","range:spinbox","[-10000,10000]",-22,0,"Legend Y-offset");
+    addProperty("legend.width","range:spinbox","[-10000,10000]",-20,0,"Legend width");
+    addProperty("legend.height","range:spinbox","[-10000,10000]",20,0,"Legend height");
 
-    addProperty("legend.orientation","menu","horizontal,vertical","horizontal");
-    addProperty("show mouse pos","flag","",true);
-    addProperty("fullscreen","flag","",false);
+    addProperty("legend.orientation","menu","horizontal,vertical","horizontal",0,"Horizontal or vertical legend allignment");
+    addProperty("show mouse pos","flag","",true,0,"if true, the mose position is visualized");
+    addProperty("fullscreen","flag","",false,0,"activates the fullscreen view (F11)");
     
 
     // does not work properly

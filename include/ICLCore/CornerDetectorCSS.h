@@ -43,53 +43,56 @@
 namespace icl{
 
   /// Curvature Corner Detector
-  /** 
-      * Implementation of the Curvature Scale Space corner detection algorithm
-      * described in the paper "Corner detector based on global and local curvature properties",
-      * by Chen He, Xiao and Yung, Nelson H.C. in Optical Engineering 2008.
-      * There also is a Matlab implementation of the algorithm by Chen He, Xiao available
-      * at http://www.mathworks.com/matlabcentral/fileexchange/7652
-      *
-      * The algorithm takes an array of contour points as input, that are then smoothed
-      * by a gaussian filter. Afterwards the curvature function is calculated and its
-      * maxima positions are taken as corner candidates.
-      * Afterwards all candidates which belong to round or "false" (noise induced, etc.) corners
-      * are removed and finally a list of corners is given back.
-      * 
-      * Parameters for the algorithm are:
-      * rc_coeff - denotes the minimum ratio of major axis to minor axis of an ellipse, 
-      *            whose vertex could be detected as a corner by proposed detector
-      *            The default value is 1.5.
-      * angle_thresh - denotes the maximum obtuse angle that a corner can have when 
-      *            it is detected as a true corner, default value is 162.
-      * sigma -    denotes the standard deviation of the Gaussian filter when
-      *            computeing curvature. The default sig is 3.
-      * straight_line_thresh - to estimate the angle of a corner, either a circle or a
-      *            straight line approximation of the left and right surrounding is used.
-      *            The straight line approximation is used, if the angle between the
-      *            left neigbour, corner candidate and  and the point on the contour half
-      *            way between them is smaller than straight_line_thresh.
-      *            0 leads to circle approximation only, 180 to straight line approximation only.
-      *
-      * Diffent to the reference implementation of Xiao He, the second half of the contour
-      * is copied before the start of the contour and the first half of the contour is
-      * copied behind the end of the contour. That way, the (artificially) first and
-      * last corners in the closed contour are calculated more acurately, since there are
-      * no discontinuities.
-      *
-      * For visualizing the algorithm, you can call setDebugMode(true) after construction
-      * of the CornerDetectionCSS object and retrieve detailed information of the detection
-      * process afterwards with the getDebugInformation() method.
-      * See the icl-corner-detection-css-demo as an example.
-      *
-      * usage example:
-      *   \code 
-      *   const std::vector<icl::Region> &rs = d.detect(&image);
-      *   const std::vector<Point32f> &boundary = getThinnedBoundary(rs[0].getBoundary());
-      *   CornerDetectorCSS css;
-      *   const std::vector<Point32f> &corners = css.detectCorners(boundary);
-      *   \endcode
-      **/
+  /** Implementation of the Curvature Scale Space corner detection algorithm
+      described in the paper "Corner detector based on global and local curvature properties",
+      by Chen He, Xiao and Yung, Nelson H.C. in Optical Engineering 2008.
+      There also is a Matlab implementation of the algorithm by Chen He, Xiao available
+      at http://www.mathworks.com/matlabcentral/fileexchange/7652
+      
+      The algorithm takes an array of contour points as input, that are then smoothed
+      by a gaussian filter. Afterwards the curvature function is calculated and its
+      maxima positions are taken as corner candidates.
+      Afterwards all candidates which belong to round or "false" (noise induced, etc.) corners
+      are removed and finally a list of corners is given back.
+      
+      Parameters for the algorithm are:
+    - <b>rc_coeff</b>
+      denotes the minimum ratio of major axis to minor axis of an ellipse, 
+      whose vertex could be detected as a corner by proposed detector
+      The default value is 1.5.
+    - <b>angle_thresh</b> 
+      denotes the maximum obtuse angle that a corner can have when 
+      it is detected as a true corner, default value is 162.
+    - <b>sigma</b>
+      denotes the standard deviation of the Gaussian filter when
+      computeing curvature. The default sig is 3.
+    - <b>straight_line_thresh</b>
+      to estimate the angle of a corner, either a circle or a
+      straight line approximation of the left and right surrounding is used.
+      The straight line approximation is used, if the angle between the
+      left neigbour, corner candidate and  and the point on the contour half
+      way between them is smaller than straight_line_thresh.
+      0 leads to circle approximation only, 180 to straight line approximation only.
+      
+      Diffent to the reference implementation of Xiao He, the second half of the contour
+      is copied before the start of the contour and the first half of the contour is
+      copied behind the end of the contour. That way, the (artificially) first and
+      last corners in the closed contour are calculated more acurately, since there are
+      no discontinuities.
+      
+      For visualizing the algorithm, you can call setDebugMode(true) after construction
+      of the CornerDetectionCSS object and retrieve detailed information of the detection
+      process afterwards with the getDebugInformation() method.
+      See the icl-corner-detection-css-demo as an example.
+   
+      usage example:
+      \code
+      const std::vector<icl::Region> &rs = d.detect(&image);
+      const std::vector<Point32f> &boundary = getThinnedBoundary(rs[0].getBoundary());
+      CornerDetectorCSS css;
+      const std::vector<Point32f> &corners = css.detectCorners(boundary);
+      \endcode
+  **/
   class CornerDetectorCSS : public Configurable{
     public:
     /// 1 dim gaussian kernel
@@ -147,6 +150,9 @@ namespace icl{
       
     /// returns volatileness for given property
     virtual inline int getPropertyVolatileness(const std::string &propertyName) { return 0; }
+    
+    /// returns property descriptions
+    virtual std::string getPropertyToolTip(const std::string &propertyName);
     
     /// calculates a normalized 1d gaussian std::vector
     /**

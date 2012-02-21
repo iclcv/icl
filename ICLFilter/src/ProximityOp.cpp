@@ -67,8 +67,21 @@ namespace icl {
 
     ProximityOp::ProximityOp(optype ot, applymode am):
       m_poImageBuffer(0),m_poTemplateBuffer(0){
-      addProperty("operation type","menu","sqrDistance,crossCorr,crossCorrCoeff",ot);
-      addProperty("apply mode","menu","full,valid,same",am);
+      addProperty("operation type","menu","sqrDistance,crossCorr,crossCorrCoeff",ot,0,
+                  "Proximity measurement type (square distance, cross correlation,\n"
+                  "and cross correlation coefficient)");
+      addProperty("apply mode","menu","full,valid,same",am,0,
+                  "Defines on what part of the input image the proximity\n"
+                  "measurement is applied:\n"
+                  "'full':  means, the images are compared in every configuration,\n"
+                  "         where the two images have at least one pixel overlap.\n"
+                  "         (the result image becomes larger)\n"
+                  "'same':  the pattern is centered at every pixel of the\n"
+                  "         source image. (The result image size is identical to\n"
+                  "'valid': the pattern is only matched agains the source\n"
+                  "         image where the full pattern fits into it.\n"
+                  "         (The result image becomes smaller than the\n"
+                  "         source image");
     }
 
     void ProximityOp::setOpType(optype ot){

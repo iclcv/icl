@@ -176,14 +176,15 @@ namespace icl{
       Property():configurable(0),volatileness(0){}
       Property(Configurable *parent,
                const std::string &name, const std::string &type, const std::string &info, const std::string &value,
-               int volatileness):configurable(parent),name(name),type(type),info(info),value(value),
-        volatileness(volatileness){}
+               int volatileness, const std::string &tooltip):configurable(parent),name(name),type(type),info(info),value(value),
+        volatileness(volatileness), tooltip(tooltip){}
       Configurable *configurable; //!< corresponding Configurable
       std::string name;  //!< property-ID
       std::string type;  //!< property-type (menu, range,....);
       std::string info;  //!< property-information (depends on type)
       std::string value; //!< (optional) property-value this can be use to store current property value
       int volatileness;  //!< volatileness of a this property (0= no-volatileness, X=expected update every X msec)
+      std::string tooltip; //!< property description, that is also used as tooltip
       std::string childPrefix;
       /// for more efficient find
       bool operator==(const std::string &name) const { return this->name == name; }
@@ -223,7 +224,7 @@ namespace icl{
         */
     void addProperty(const std::string &name, const std::string &type, 
                      const std::string &info, const Any &value=Any(), 
-                     int volatileness=0) throw (ICLException); 
+                     int volatileness=0, const std::string &tooltip=std::string()) throw (ICLException); 
     
     /// This adds another configurable as child
     /** Child configurables can be added with a given prefix. If this prefix is not "",
@@ -297,7 +298,8 @@ namespace icl{
         A range property can e.g. be adapted to a menu property, which then again restricts possible values.
         You can also set a properties type from range:spinbox to range:slider
         */
-    virtual void adaptProperty(const std::string &name, const std::string &newType, const std::string &newInfo) throw (ICLException);
+    virtual void adaptProperty(const std::string &name, const std::string &newType, 
+                               const std::string &newInfo, const std::string &newToolTip) throw (ICLException);
 
 
     /// this function can be used in subclasses to create a default ID
@@ -414,6 +416,11 @@ namespace icl{
     /** If the property is actually owned by a child-configurable,
         the function forwards to that configurable */
     virtual Any getPropertyValue(const std::string &propertyName);
+    
+    /// returns the tooltip description for a given property
+    virtual std::string getPropertyToolTip(const std::string &propertyName) {
+      return prop(propertyName).tooltip;
+    }
 
     /// Returns whether this property may be changed internally
     /** For example a video grabber's current stream position. This can be changed

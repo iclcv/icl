@@ -35,8 +35,8 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0)
 PROJECT(ICL)
 #ubuntu version
 set(ICL_MAJOR "6")
-set(ICL_MINOR "7")
-set(ICL_PATCH "1")
+set(ICL_MINOR "8")
+set(ICL_PATCH "0")
 set(VERSION "${ICL_MAJOR}.${ICL_MINOR}.${ICL_PATCH}")
 cmake_policy(SET CMP0002 OLD)
 if(NOT ${CMAKE_PATCH_VERSION} STREQUAL "0")
@@ -722,6 +722,8 @@ set(ICLCore_internal_dependencies ICLUtils)
 set(ICLCC_internal_dependencies ICLCore)
 set(ICLFilter_internal_dependencies ICLCC)
 set(ICLBlob_internal_dependencies ICLCC)
+set(ICLMarkers_internal_dependencies ICLGeom ICLFilter ICLQuick)
+
 if(${HAVE_OPENCV_COND})
     set(ICLOpenCV_internal_dependencies ICLCore ICLCC)
     #check for version of opencv
@@ -733,7 +735,7 @@ if(${HAVE_OPENCV_COND})
 	set(ICLOpenCV_external_dependencies OPENCV)
     endif()
     set(ICLIO_internal_dependencies ICLOpenCV ICLFilter)
-    set(ICLAlgorithms_internal_dependencies ICLOpenCV ICLQuick ICLGeom)
+    set(ICLAlgorithms_internal_dependencies ICLOpenCV ICLQuick ICLGeom ICLMarkers)
 else()
     set(ICLIO_internal_dependencies ICLFilter)
     set(ICLAlgorithms_internal_dependencies ICLQuick ICLGeom)
@@ -757,7 +759,7 @@ endif()
 set(ICLGeom_internal_dependencies ICLQuick )
 set(ICLAlgorithms_external_dependencies OPENSURF)
 
-set(ICLMarkers_internal_dependencies ICLGeom ICLFilter ICLQuick)
+
 
 #resolve internal dependencies
 add_internal_dependencies(ICLCore_internal_dependencies ICLCore_dependencies)

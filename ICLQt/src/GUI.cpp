@@ -153,16 +153,18 @@ namespace icl{
   static const std::string &gen_params(){
     // {{{ open
 
-    static std::string op = 
-    string("general params are: \n")+
-    string("\t@size=WxH     (W and H are positive integers) set min and max size of that widget\n")+
-    string("\t@minsize=WxH  (W and H are positive integers) set min. size of that widget\n")+
-    string("\t@maxsize=WxH  (W and H are positive integers) set max. size of that widget\n")+
-    string("\t@handle=NAME  if defined, the componets handle is allocated with id NAME\n")+
-    string("\t              (all size parameters are defined in cells of 15x15 pixles)\n")+
-    string("\t@label=L      L is the label of this component\n")+
-    string("\t@out=LIST     LIST is a comma-seperated list of output names\n")+
-    string("\t@inp=LIST     LIST is a comma-seperated list of output names\n");
+    static std::string op = ( "general params are: \n"
+                              "\t@size=WxH     (W and H are positive integers) set min and max size of that widget\n"
+                              "\t@minsize=WxH  (W and H are positive integers) set min. size of that widget\n"
+                              "\t@maxsize=WxH  (W and H are positive integers) set max. size of that widget\n"
+                              "\t@handle=NAME  if defined, the componets handle is allocated with id NAME\n"
+                              "\t              (all size parameters are defined in cells of 15x15 pixles)\n"
+                              "\t@label=L      L is the label of this component\n"
+                              "\t@out=LIST     LIST is a comma-seperated list of output names\n"
+                              "\t@inp=LIST     LIST is a comma-seperated list of output names\n"
+                              "\tmargin=MARGIN MARGING is the layout pixel margin for layouting components\n"
+                              "\tspacing=SPA   SPA is the layout spacing for layouting components\n"
+                              "\ttooltip=TEXT  TEXT is a tooltip text\n" );
     return op;
   }
 
@@ -184,6 +186,10 @@ namespace icl{
       if(def.numParams() > 1) throw GUISyntaxErrorException(def.defString(),"0 or 1 parameters are allowed here");
       float fps = def.numParams() ? parse<float>(def.param(0)) : 10;
       if(fps <= 0 || fps > 10) throw GUISyntaxErrorException(def.defString(),"fps must be in range ]0,10]");
+      
+      if(def.hasToolTip()){
+        WARNING_LOG("tooltip is not supported for the ProcessMonitor GUI component!");
+      }
       
       updater.setInterval(1000.0f/fps);
 
@@ -318,40 +324,43 @@ namespace icl{
     
     void add_component(GUI &gui,const StSt &p, std::ostringstream &ostr, GUI &timerGUI){
       std::string t = conf->getPropertyType(p.full);
+      std::string tt = conf->getPropertyToolTip(p.full);
+      std::string ttt = tt.length() ? "@tooltip="+tt : str("");
+
       if(t == "range" || t == "range:slider"){
         // todo check stepping ...
         std::string handle="#r#"+p.full;
         SteppingRange<float> r = parse<SteppingRange<float> >(conf->getPropertyInfo(p.full));
         std::string c = conf->getPropertyValue(p.full);
         if(r.stepping == 1){
-          gui << "slider("+str(r.minVal)+","+str(r.maxVal)+","+c+")[@handle="+handle+"@minsize=12x2@label="+p.half+"]";
+          gui << "slider("+str(r.minVal)+","+str(r.maxVal)+","+c+")["+ttt+"@handle="+handle+"@minsize=12x2@label="+p.half+"]";
         }else{
           if(r.stepping){
             WARNING_LOG("the prop-GUI compoment is not able to adjust a slider stepping that is not 1");
             WARNING_LOG("component was " << p.full);
           }
-          gui << "fslider("+str(r.minVal)+","+str(r.maxVal)+","+c+")[@handle="+handle+"@minsize=12x2@label="+p.half+"]";
+          gui << "fslider("+str(r.minVal)+","+str(r.maxVal)+","+c+")["+ttt+"@handle="+handle+"@minsize=12x2@label="+p.half+"]";
         }
         ostr << '\1' << handle;
       }else if( t == "range:spinbox"){
         std::string handle="#R#"+p.full;
         Range32s r = parse<Range32s>(conf->getPropertyInfo(p.full));
         std::string c = conf->getPropertyValue(p.full);
-        gui << "spinner("+str(r.minVal)+","+str(r.maxVal)+","+c+")[@handle="+handle+"@minsize=12x2@label="+p.half+"]";
+        gui << "spinner("+str(r.minVal)+","+str(r.maxVal)+","+c+")["+ttt+"@handle="+handle+"@minsize=12x2@label="+p.half+"]";
         ostr << '\1' << handle;
       }else if(t == "menu" || t == "value-list" || t == "valueList"){
         std::string handle = (t == "menu" ? "#m#" : "#v#")+p.full;
         //gui << "combo("+conf->getPropertyInfo(p.full)+")[@handle="+handle+"@minsize=12x2@label="+p.half+"]";
-        gui << "combo("+get_combo_list(p.full)+")[@handle="+handle+"@minsize=12x2@label="+p.half+"]";
+        gui << "combo("+get_combo_list(p.full)+")["+ttt+"@handle="+handle+"@minsize=12x2@label="+p.half+"]";
         ostr << '\1' << handle;
       }else if(t == "command"){
         std::string handle = "#c#"+p.full;
         ostr << '\1' << handle;
-        gui << "button("+p.half+")[@handle="+handle+"@minsize=12x2]";
+        gui << "button("+p.half+")["+ttt+"@handle="+handle+"@minsize=12x2]";
       }else if(t == "info"){
         std::string handle = "#i#"+p.full;
         ostr << '\1' << handle;
-        gui << "label("+conf->getPropertyValue(p.full)+")[@handle="+handle+"@minsize=12x2@label="+p.half+"]";
+        gui << "label("+conf->getPropertyValue(p.full)+")["+ttt+"@handle="+handle+"@minsize=12x2@label="+p.half+"]";
         int volatileness = conf->getPropertyVolatileness(p.full);
         if(volatileness){
           timers.push_back(new VolatileUpdater(volatileness,p.full,timerGUI,*conf));
@@ -359,25 +368,28 @@ namespace icl{
       }else if(t == "flag"){
         std::string handle = "#f#"+p.full;
         ostr << '\1' << handle;
-        gui << "checkbox("+p.half+","+(conf->getPropertyValue(p.full).as<bool>() ? "checked" : "unchecked") +")[@handle="+handle+"@minsize=12x1]";
+        gui << "checkbox("+p.half+","+(conf->getPropertyValue(p.full).as<bool>() ? "checked" : "unchecked") +")["+ttt+"@handle="+handle+"@minsize=12x1]";
       }else if(t == "float"){
         std::string handle = "#F#"+p.full;
         ostr << '\1' << handle;
         Range32f mm = parse<Range32f>(conf->getPropertyInfo(p.full));
         float v = conf->getPropertyValue(p.full);
-        gui << "float(" + str(mm.minVal) + "," + str(mm.maxVal) + "," + str(v) + ")[@handle="+handle+"@minsize=12x2@label="+p.half+"]";
+        gui << "float(" + str(mm.minVal) + "," + str(mm.maxVal) + "," + str(v) + ")["+ttt+"@handle="+handle+"@minsize=12x2@label="+p.half+"]";
         
       }else if(t == "int"){
         std::string handle = "#I#"+p.full;
         ostr << '\1' << handle;
         Range32s mm = parse<Range32s>(conf->getPropertyInfo(p.full));
         int v = conf->getPropertyValue(p.full);
-        gui << "int(" + str(mm.minVal) + "," + str(mm.maxVal) + "," + str(v) + ")[@handle="+handle+"@minsize=12x2@label="+p.half+"]";
+        gui << "int(" + str(mm.minVal) + "," + str(mm.maxVal) + "," + str(v) + ")["+ttt+"@handle="+handle+"@minsize=12x2@label="+p.half+"]";
       }else if(t == "string"){
         std::string handle = "#S#"+p.full;
         ostr << '\1' << handle;
         int max_len = parse<int>(conf->getPropertyInfo(p.full));
-        gui << "string(" + str(max_len) + ")[@handle=" + handle + "@minsize=12x2@label="+p.half+"]";
+        std::string value = conf->getPropertyValue(p.full);
+        if(!value.length()) value = " ";
+        //        DEBUG_LOG("creating string component: ---" << ("string("  + value + "," + str(max_len) + ")["+ttt+"@handle=" + handle + "@minsize=12x2@label="+p.half+"]" ) << "---");
+        gui << "string("  + value + "," + str(max_len) + ")["+ttt+"@handle=" + handle + "@minsize=12x2@label="+p.half+"]";
       }
       
       else{
@@ -391,6 +403,10 @@ namespace icl{
       
       std::vector<std::string> props = conf->getPropertyListWithoutDeactivated();
       std::map<std::string,std::vector<StSt> > sections;
+
+      if(def.hasToolTip()){
+        WARNING_LOG("tooltip is not supported for the Configurable GUI component!");
+      }
 
       for(unsigned int i=0;i<props.size();++i){
         const std::string &p = props[i];
@@ -534,6 +550,10 @@ namespace icl{
       }
       m_button = new QPushButton("camcfg",this);
       connect(m_button,SIGNAL(clicked()),this,SLOT(ioSlot()));
+
+      if(def.hasToolTip()){
+        WARNING_LOG("tooltip is not supported for the Camera Configuration GUI component!");
+      }
       
       if(def.numParams()){
         devType = def.param(0);
@@ -560,7 +580,9 @@ namespace icl{
   struct ConfigFileGUIWidget : public GUIWidget{
     // {{{ open
     ConfigFileGUIWidget(const GUIDefinition &def):GUIWidget(def,1){
-      
+      if(def.hasToolTip()){
+        WARNING_LOG("tooltip is not supported for the Config File component!");
+      }
       if(def.param(0) == "embedded"){
         m_button = 0;
         m_cfg = new ConfigFileGUI(ConfigFile::getConfig(),this);
@@ -591,6 +613,9 @@ namespace icl{
 
     ScrollGUIWidgetBase(const GUIDefinition &def, QBoxLayout::Direction d):
       GUIWidget(def,0,-1,GUIWidget::noLayout){
+      if(def.hasToolTip()){
+        WARNING_LOG("tooltip is not supported for Layouting GUI components!");
+      }
       setLayout(new QBoxLayout(d,this));
       m_poScroll = new QScrollArea(this);
       layout()->addWidget(m_poScroll);
@@ -648,6 +673,9 @@ namespace icl{
     // {{{ open
     HBoxGUIWidget(const GUIDefinition &def):GUIWidget(def,0,0,GUIWidget::hboxLayout){
       setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
+      if(def.hasToolTip()){
+        WARNING_LOG("tooltip is not supported for Layouting GUI components!");
+      }
 
       if(def.handle() != ""){
         getGUI()->lockData();
@@ -667,6 +695,10 @@ namespace icl{
     // {{{ open
     VBoxGUIWidget(const GUIDefinition &def):GUIWidget(def,0,0,GUIWidget::vboxLayout){
       setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
+      if(def.hasToolTip()){
+        WARNING_LOG("tooltip is not supported for Layouting GUI components!");
+      }
+
       if(def.handle() != ""){
         getGUI()->lockData();
         getGUI()->allocValue<BoxHandle>(def.handle(),BoxHandle(false,this,this));//def.parentWidget()));
@@ -683,6 +715,10 @@ namespace icl{
   struct SplitterGUIWidgetBase : public GUIWidget, public ProxyLayout{
     // {{{ open
     SplitterGUIWidgetBase(const GUIDefinition &def, bool horz):GUIWidget(def,0,0,GUIWidget::noLayout){
+      if(def.hasToolTip()){
+        WARNING_LOG("tooltip is not supported for Layouting GUI components!");
+      }
+
       m_layout = new QGridLayout(this);
       m_splitter = new QSplitter(horz ? Qt::Horizontal:Qt::Vertical , this);
       m_layout->addWidget(m_splitter,0,0);
@@ -734,6 +770,10 @@ namespace icl{
   struct TabGUIWidget : public GUIWidget, public ProxyLayout{
     // {{{ open
     TabGUIWidget(const GUIDefinition &def):GUIWidget(def,0,2<<20,GUIWidget::noLayout){
+      if(def.hasToolTip()){
+        WARNING_LOG("tooltip is not supported for Layouting GUI components!");
+      }
+
       m_layout = new QGridLayout(this);
       m_tabWidget = new QTabWidget(this);
       m_layout->addWidget(m_tabWidget,0,0);
@@ -781,6 +821,11 @@ namespace icl{
     // {{{ open
 
     BorderGUIWidget(const GUIDefinition &def):GUIWidget(def,1){
+
+      if(def.hasToolTip()){
+        WARNING_LOG("tooltip is not supported for Layouting GUI components!");
+      }
+
       m_poGroupBox = new QGroupBox(def.param(0).c_str(),def.parentWidget());
       m_poGroupBox->setFlat(false);
       //m_poGroupBox->setStyleSheet("QGroupBox{ border: 1px solid gray; border-radius: 3px;}");
@@ -821,7 +866,8 @@ namespace icl{
       
       m_haveAlpha = (def.numParams() == 4);
 
-      
+
+
       if(m_haveAlpha) m_color = new Color4D(def.intParam(0),def.intParam(1),def.intParam(2),0);
       else m_color = new Color4D();
 
@@ -832,6 +878,8 @@ namespace icl{
       getGUI()->unlockData();
 
       colorLabel = new ColorLabel(*m_color,m_haveAlpha,def.parentWidget());
+      
+      if(def.hasToolTip()) colorLabel->setToolTip(def.toolTip().c_str());
 
       addToGrid(colorLabel,1,0,1,1);
       
@@ -871,6 +919,9 @@ namespace icl{
     // {{{ open
     ButtonGUIWidget(const GUIDefinition &def):GUIWidget(def,1,1,GUIWidget::gridLayout,Size(4,1)){
       QPushButton *b = new QPushButton(def.param(0).c_str(),def.parentWidget());
+
+      if(def.hasToolTip()) b->setToolTip(def.toolTip().c_str());
+
       addToGrid(b);
       connect(b,SIGNAL(pressed()),this,SLOT(ioSlot()));
       
@@ -910,6 +961,8 @@ namespace icl{
           text = text.substr(1);
         }
         QRadioButton * b = new QRadioButton(text.c_str(),def.parentWidget());
+        if(def.hasToolTip()) b->setToolTip(def.toolTip().c_str());
+
         m_vecButtons.push_back(b);
         addToGrid(b,0,i);
         connect(b,SIGNAL(clicked()),this,SLOT(ioSlot()));
@@ -974,6 +1027,8 @@ namespace icl{
       if(t1.length() && t1[0]=='!') t1 = t1.substr(1);
       if(t2.length() && t2[0]=='!') t2 = t2.substr(1);
       m_poButton = new ToggleButton(t1,t2,def.parentWidget(),stateRef);
+      if(def.hasToolTip()) m_poButton->setToolTip(def.toolTip().c_str());
+
       if(initToggled){
         m_poButton->setChecked(true);
       }
@@ -1032,6 +1087,8 @@ namespace icl{
       std::string t = def.param(0);
       m_poCheckBox = new QCheckBox(def.param(0).c_str(),def.parentWidget());
       m_poCheckBox->setTristate(false);
+      if(def.hasToolTip()) m_poCheckBox->setToolTip(def.toolTip().c_str());
+
       if(initChecked){
         m_poCheckBox->setCheckState(Qt::Checked);
       }else{
@@ -1075,7 +1132,8 @@ namespace icl{
     LabelGUIWidget(const GUIDefinition &def):GUIWidget(def,0,1,GUIWidget::gridLayout,Size(4,1)){
     
       m_poLabel = new CompabilityLabel(def.numParams()==1?def.param(0).c_str():"",def.parentWidget());
-      
+      if(def.hasToolTip()) m_poLabel->setToolTip(def.toolTip().c_str());
+
       addToGrid(m_poLabel);
       
       if(def.handle() != ""){
@@ -1103,6 +1161,7 @@ namespace icl{
     StateGUIWidget(const GUIDefinition &def):GUIWidget(def,0,1,GUIWidget::gridLayout,Size(4,1)){
       m_text = new ThreadedUpdatableTextView(def.parentWidget());
       m_text->setReadOnly(true);
+      if(def.hasToolTip()) m_text->setToolTip(def.toolTip().c_str());
 
       addToGrid(m_text);
       
@@ -1148,6 +1207,8 @@ namespace icl{
       }else{
         m_poSlider = new ThreadedUpdatableSlider(Qt::Horizontal,def.parentWidget());
       }
+      if(def.hasToolTip()) m_poSlider->setToolTip(def.toolTip().c_str());
+
       addToGrid(m_poSlider);
       
       m_poSlider->setMinimum(iMin);
@@ -1244,6 +1305,8 @@ namespace icl{
       }else{
         m_poSlider = new ThreadedUpdatableSlider(Qt::Horizontal,def.parentWidget());
       }
+      if(def.hasToolTip()) m_poSlider->setToolTip(def.toolTip().c_str());
+
       addToGrid(m_poSlider);
 
       m_poSlider->setMinimum(0);
@@ -1311,6 +1374,8 @@ public:
       m_poLineEdit->setValidator(new QIntValidator(def.intParam(0),def.intParam(1),0));
       m_poLineEdit->setText(QString::number(def.intParam(2)));
       
+      if(def.hasToolTip()) m_poLineEdit->setToolTip(def.toolTip().c_str());
+            
       QObject::connect(m_poLineEdit,SIGNAL(returnPressed ()),this,SLOT(ioSlot()));
       
       addToGrid(m_poLineEdit);
@@ -1354,6 +1419,8 @@ public:
       m_poLineEdit->setValidator(new QDoubleValidator(def.floatParam(0),def.floatParam(1),20,0));
       m_poLineEdit->setText(QString::number(def.floatParam(2)));
       
+      if(def.hasToolTip()) m_poLineEdit->setToolTip(def.toolTip().c_str());
+            
       QObject::connect(m_poLineEdit,SIGNAL(returnPressed ()),this,SLOT(ioSlot()));
       
       addToGrid(m_poLineEdit);
@@ -1409,6 +1476,8 @@ public:
       m_poLineEdit->setValidator(new StringLenValidator(def.numParams() == 2 ? def.intParam(1) : 100));
       m_poLineEdit->setText(def.numParams()>=1 ? def.param(0).c_str() : "");
       
+      if(def.hasToolTip()) m_poLineEdit->setToolTip(def.toolTip().c_str());
+
       QObject::connect(m_poLineEdit,SIGNAL(returnPressed ()),this,SLOT(ioSlot()));
       
       addToGrid(m_poLineEdit);
@@ -1470,6 +1539,8 @@ public:
       for(int x=0;x<nW;x++){
         for(int y=0;y<nH;y++){
           CompabilityLabel *l = new CompabilityLabel("",def.parentWidget());
+          if(def.hasToolTip()) l->setToolTip(def.toolTip().c_str());
+
           (*m_poLabelMatrix)(x,y) = LabelHandle(l,this);
           addToGrid(l,x,y);
         }
@@ -1494,6 +1565,8 @@ public:
     ImageGUIWidget(const GUIDefinition &def):GUIWidget(def,0){
 
       m_poWidget = new ICLWidget(def.parentWidget());
+      if(def.hasToolTip()) m_poWidget->setToolTip(def.toolTip().c_str());
+
       addToGrid(m_poWidget);
       
       if(def.handle() != ""){
@@ -1519,6 +1592,9 @@ public:
     PlotGUIWidget(const GUIDefinition &def):GUIWidget(def,0,7){
 
       m_plot = new PlotWidget(def.parentWidget());
+
+      if(def.hasToolTip()) m_plot->setToolTip(def.toolTip().c_str());
+
       
       float minX = def.numParams()>=1 ? def.floatParam(0) : 0;
       float maxX = def.numParams()>=2 ? def.floatParam(1) : 0;
@@ -1587,6 +1663,8 @@ public:
     // {{{ open
     DrawGUIWidget(const GUIDefinition &def):GUIWidget(def,0,1){
       m_poWidget = new ICLDrawWidget(def.parentWidget());
+      if(def.hasToolTip()) m_poWidget->setToolTip(def.toolTip().c_str());
+
       if(def.numParams() == 1) {
         m_poWidget->setViewPort(parse<Size>(def.param(0)));
       }
@@ -1646,6 +1724,9 @@ public:
       
       m_poTabBar = new QTabBar(def.parentWidget());
       m_poDrawWidget = new ICLDrawWidget(def.parentWidget());
+
+      if(def.hasToolTip()) m_poDrawWidget->setToolTip(def.toolTip().c_str());
+
       
       m_poTabBar->setMaximumHeight(25);
       getGUIWidgetLayout()->addWidget(m_poTabBar);
@@ -1689,6 +1770,9 @@ public:
         m_poWidget3D->setViewPort(parse<Size>(def.param(0)));
       }
 
+      if(def.hasToolTip()) m_poWidget3D->setToolTip(def.toolTip().c_str());
+            
+
 
       addToGrid(m_poWidget3D);
       
@@ -1715,6 +1799,9 @@ public:
       if(def.numParams() < 1) throw GUISyntaxErrorException(def.defString(),"at least 1 param needed here!");
     
       m_poCombo = new QComboBox(def.parentWidget());
+
+      if(def.hasToolTip()) m_poCombo->setToolTip(def.toolTip().c_str());
+
       addToGrid(m_poCombo);
 
       unsigned int selectedIndex = 0;
@@ -1769,6 +1856,9 @@ public:
       m_poSpinBox = new QSpinBox(def.parentWidget());
       m_poSpinBox->setRange(def.intParam(0),def.intParam(1));
       m_poSpinBox->setValue(def.intParam(2));
+
+      if(def.hasToolTip()) m_poSpinBox->setToolTip(def.toolTip().c_str());
+
       
       QObject::connect(m_poSpinBox,SIGNAL(valueChanged(int)),this,SLOT(ioSlot()));
       
@@ -1810,6 +1900,8 @@ public:
       int fpsEstimatorTimeWindow = np ? def.intParam(0) : 10;
       
       m_poLabel = new CompabilityLabel("fps...",def.parentWidget());
+      if(def.hasToolTip()) m_poLabel->setToolTip(def.toolTip().c_str());
+      
       
       addToGrid(m_poLabel);
       

@@ -349,7 +349,8 @@
       - <b>\@size=size</b> defines the initial size (in 20x20-cells) of this component
       - <b>\@margin=int</b> defines the pixel margin around contained component (only for container 
         components)
-      - <b>\@spacin=int</b> pixel-spacing between components (only for container components)
+      - <b>\@spacing=int</b> pixel-spacing between components (only for container components)
+      - <b>\@tooltip=string</b> component tooltip (not for all components)
 
     <tiny>
     To decide which value/handle should be accessed by that call, each input/and output of a GUI 

@@ -68,13 +68,14 @@ namespace icl{
   QuadDetector::QuadDetector(QuadDetector::QuadColor c, bool dynamic):data(new Data){
     data->dynamicQuadColor = dynamic;
     
-    addProperty("pp.filter","menu","none,median,erosion,dilatation,opening,closing","median");
-    addProperty("pp.mask size","menu","3x3,5x5","3x3");
+    addProperty("pp.filter","menu","none,median,erosion,dilatation,opening,closing","median",0,"Post processing filter.");
+    addProperty("pp.mask size","menu","3x3,5x5","3x3", 0,"Mask size for post processing.");
 
     if(dynamic){
-      addProperty("quad value","menu",str(BlackOnly) + "," + str(WhiteOnly) + "," + str(BlackAndWhite),str(c));
+      addProperty("quad value","menu",str(BlackOnly) + "," + str(WhiteOnly) + "," + str(BlackAndWhite),str(c), 0,
+                  "Defines whether the marker borders are black, white or mixed");
     }
-    addProperty("optimize edges","flag","","true");
+    addProperty("optimize edges","flag","","true", 0, "Flag for optimized marker corner detection");
     
     data->rd = new RegionDetector(0,2<<20,RD_VALS[(int)c],RD_VALS[(int)c + 3]);
     data->rd->deactivateProperty("minimum value");
@@ -90,7 +91,10 @@ namespace icl{
 
     data->css.deactivateProperty("debug-mode");
     addChildConfigurable(&data->css,"css");
-    addProperty("css.dynamic sigma","flag","",true);
+    addProperty("css.dynamic sigma","flag","",true,0,
+                "If set to true, the border-smoothing sigma is adapted\n"
+                "relatively to the actual marker size (usually provides\n"
+                "much better results)");
 
     data->css.setSigma(4.2);
     

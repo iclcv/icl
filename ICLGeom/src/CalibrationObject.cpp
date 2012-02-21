@@ -81,8 +81,15 @@ namespace icl{
     addChildConfigurable(&data->rd,"region detector");
     addChildConfigurable(&data->lt,"local threshold");
 
-    addProperty("morph thresholded image","menu","off,on","on");
-    addProperty("min formfactor","range","[0.5,8]","2.5"); 
+    addProperty("morph thresholded image","menu","off,on","on",0,
+                "If set to 'on', the internally thresholded image is\n"
+                "automatically post-processed using a 3x3 dilation");
+    addProperty("min formfactor","range","[0.5,8]","2.5",0,
+                "Minimum form factor for detected circles\n"
+                "A value of 1 defines a perfect circle, however,\n"
+                "values less than 1 can occur caused by the pixel grid\n"
+                "The large the values are, the more less circular blobs\n"
+                "will also be detected."); 
     //addProperty("visualized image","menu","input,gray,threshold,dilated","input"); 
     
     data->grid = grid;

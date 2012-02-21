@@ -89,12 +89,29 @@ namespace icl{
     data->maxLoaded = -1;
     data->sizes.resize(4096);
 
-    addProperty("max bch errors","range","[0,4]:1",3);
-    addProperty("match factor","range","[1,10]:1",2);
-    addProperty("border width","range","[1,10]:1",2);
-    addProperty("binarize.threshold","range","[1,254]:1",127);
-    addProperty("binarize.k-means steps","range","[1:5]:1",1);
-    addProperty("binarize.mode","menu","k-means,threshold","k-means");
+    addProperty("max bch errors","range","[0,4]:1",3,0,
+                "Maximum amount of binary BCH code error\n");
+    addProperty("match factor","range","[1,10]:1",2,0,
+                "Internal subsampling for matching (usually 2 is perfect)");
+    addProperty("border width","range","[1,10]:1",2,0,
+                "Number of marker pixel units for the markers border width\n"
+                "The marker center (the bch code consits of 6x6 pixels)");
+    addProperty("binarize.threshold","range","[1,254]:1",127,0,
+                "(Only used if 'binarize.mode' is 'threshold')\n"
+                "Threshold for static pattern binarization.");
+    addProperty("binarize.k-means steps","range","[1:5]:1",1,0,
+                "(Only used if 'binarize.mode' is 'k-means')\n"
+                "Number of k-means steps for finding an optimal split\n"
+                "between black and white marker pixels");
+    addProperty("binarize.mode","menu","k-means,threshold","k-means",0,
+                "Marker patch binarization method. For decoding the BCH-code\n"
+                "pattern, black and white marker pixels need to be distinguished.\n"
+                "This property defines the algorithm that is used for this:\n"
+                "k-means: the default method, that should usually be superior\n"
+                "         black and white pixels are created by iteratively\n"
+                "         clustering black and white pixels using and optimized\n"
+                "         two-center k-means"
+                "threshold: use a custom global threshold value");
   }
 
   FiducialDetectorPluginBCH::~FiducialDetectorPluginBCH(){

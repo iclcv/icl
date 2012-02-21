@@ -58,10 +58,23 @@ namespace icl{
     data->prox = new ProximityOp(ProximityOp::crossCorrCoeff);
     data->lastResult = initialResult;
     
-    addProperty("tracking.position range","range","[1,1000]:1",positionTrackingRangePix);
-    addProperty("tracking.rotation range","range","[0,360]",rotationTrackingRangeDegree);
-    addProperty("tracking.coarse steps","range:spinbox","[1,100000]:1",coarseSteps);
-    addProperty("tracking.fine steps","range:spinbox","[1,100000]:1",fineSteps);
+    addProperty("tracking.position range","range","[1,1000]:1",positionTrackingRangePix,0,
+                "Search window size in positive and negative\n"
+                "x- and y-direction in pixels. The tracker searches\n"
+                "for the best-matching new position within a squared\n"
+                "region that is centered at the current postion.");
+    addProperty("tracking.rotation range","range","[0,360]",rotationTrackingRangeDegree,0,
+                "Sets the rotation search window radius in deg.\n"               
+                "The rotation search window is centered at the\n"
+                "current rotation.");
+    addProperty("tracking.coarse steps","range:spinbox","[1,100000]:1",coarseSteps,0,
+                "Number of rotation tracking steps. The rotation\n"
+                "search window size is partitioned into the given\n"
+                "step count. The rotation search window size devided\n"
+                "the amount of steps define the angle resolution.");
+    addProperty("tracking.fine steps","range:spinbox","[1,100000]:1",fineSteps,0,
+                "Parameter for coarse to fine search\n"
+                "(not supported yet)");
 
     addChildConfigurable(data->prox.get(),"proximity");
 
