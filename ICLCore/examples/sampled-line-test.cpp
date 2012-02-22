@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLCore/SampledLine.h>
-#include <ICLCore/Random.h>
+#include <ICLUtils/Random.h>
 
 int main(){
   icl::randomSeed();

@@ -425,6 +425,7 @@ namespace icl{
       return str("If this property is enabled, debug information\n"
                  "is created internally");
     }
+    return "";
   }
 
   REGISTER_CONFIGURABLE_DEFAULT(CornerDetectorCSS);

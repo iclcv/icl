@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLCore/src/Random.cpp                                 **
-** Module : ICLCore                                                **
+** File   : ICLUtils/src/Random.cpp                                **
+** Module : ICLUtils                                               **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -32,7 +32,8 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLCore/Random.h>
+#include <ICLUtils/Random.h>
+
 namespace icl{
   
   double gaussRandom(double mu, double sigma){

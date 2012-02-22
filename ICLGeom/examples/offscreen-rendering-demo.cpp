@@ -35,7 +35,7 @@
 #include <ICLQuick/Common.h>
 #include <ICLGeom/Geom.h>
 #include <ICLUtils/FPSLimiter.h>
-#include <ICLCore/Random.h>
+#include <ICLUtils/Random.h>
 
 // global data
 GUI gui("hbox");

@@ -44,7 +44,7 @@
 #include <ipps.h>
 #endif
 
-#include <ICLCore/Random.h>
+#include <ICLUtils/Random.h>
 namespace icl {
   
                               

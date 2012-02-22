@@ -272,7 +272,7 @@ namespace icl{
               static const float FACTOR = 1.0/255;
               c[0] = r(p.x,p.y) * FACTOR;
               c[1] = g(p.x,p.y) * FACTOR;
-              c[2] = g(p.x,p.y) * FACTOR;
+              c[2] = b(p.x,p.y) * FACTOR;
               c[3] = 1;
             }else{
               c[3] = 0;

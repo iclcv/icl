@@ -36,7 +36,7 @@
 #include <ICLUtils/SimplexOptimizer.h>
 #include <ICLGeom/Geom.h>
 #include <ICLGeom/CoordinateFrameSceneObject.h>
-#include <ICLCore/Random.h>
+#include <ICLUtils/Random.h>
 
 GUI gui;
 Scene scene;

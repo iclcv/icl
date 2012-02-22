@@ -36,7 +36,7 @@
 #include <ICLUtils/ConfigFile.h>
 #include <ICLMarkers/FiducialDetector.h>
 
-#include <ICLCore/Random.h>
+#include <ICLUtils/Random.h>
 #include <ICLUtils/ConsoleProgress.h>
 #include <ICLUtils/SimplexOptimizer.h>
 
@@ -121,6 +121,8 @@ void init(){
            << "checkbox(use corners,unchecked)[@out=useCorners]"
            << "checkbox(view only,checked)[@out=viewOnly]"
            << "checkbox(color mapping,unchecked)[@out=colorMapping]"
+           << "checkbox(median on IR image,unchecked)[@out=medianIR]"
+           << "checkbox(show mapped color image,unchecked)[@out=showMCI]"
            << "button(add points)[@handle=addPoints]"
            << "button(calculate homography)[@handle=calcHomo]"
            << "button(save homography)[@handle=saveHomo]"
@@ -283,10 +285,13 @@ void run(){
     grabColor.grab();
     grabColor.grab(bpp(IR));
 
-    static MedianOp median(Size(5,5));
-    median.setClipToROI(false);
-    median.apply(&IR, bpp(IRmed));
-        
+    if(gui["medianIR"]){
+      static MedianOp median(Size(5,5));
+      median.setClipToROI(false);
+      median.apply(&IR, bpp(IRmed));
+    }else{
+      IR.deepCopy(&IRmed);
+    }
     //gui["ir"] = IRmed; 
   }
   
@@ -299,7 +304,22 @@ void run(){
   
   obj->update(D,gui["colorMapping"] ? &C : 0);
   
-  const std::vector<Vec3> &vrs = obj->getViewRayDirs();//RaysAndNorms();
+  if(gui["showMCI"]){
+    const Array2D<GeomColor> &ps = obj->getColors();
+    static Img8u image(D.getSize(),3);
+    icl8u *r = image.begin(0), *g=image.begin(1), *b=image.begin(2);
+    const int DIM = image.getDim();
+    for(int i=0;i<DIM;++i){
+      r[i] = ps[i][0] * 255;
+      g[i] = ps[i][1] * 255;
+      b[i] = ps[i][2] * 255;
+    }
+    gui["depth"] = &image;
+  }else{
+    gui["depth"] = (ImgBase*)(0);
+  }
+  
+  //const std::vector<Vec3> &vrs = obj->getViewRayDirs();//RaysAndNorms();
   const RGBDMapping M = obj->getMapping();
   const Img32f &corrD = obj->getCorrectedDepthImage();
   
@@ -327,7 +347,7 @@ void run(){
       Channel32f miC1 = matchImage[1];
       for(int y=0; y<size.height; y++){
         for(int x=0; x<size.width; x++){
-          const int idx = x + size.width * y;
+          //const int idx = x + size.width * y;
           float depthValue = dd(x,y);// * corrs[idx];//[3];
           if(!depthValue){
             miC0(x,y) = 0;

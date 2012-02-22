@@ -35,7 +35,7 @@
 #include <ICLQuick/Common.h>
 #include <ICLUtils/FPSLimiter.h>
 
-#include <ICLCore/Random.h>
+#include <ICLUtils/Random.h>
 #include <deque>
 
 GUI gui("hbox");

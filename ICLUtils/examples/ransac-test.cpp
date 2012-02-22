@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLBlob/examples/interactive-vector-tracker-benchmark.cpp  **
-** Module : ICLBlob                                                **
+** File   : ICLUtils/examples/ransac-test.cpp                      **
+** Module : ICLUtils                                               **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -32,80 +32,58 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
+#include <ICLUtils/ProgArg.h>
+#include <ICLUtils/StringUtils.h>
+#include <ICLUtils/FixedVector.h>
+#include <ICLUtils/RansacFitter.h>
 #include <ICLUtils/Random.h>
-#include <ICLBlob/VectorTracker.h>
+#include <ICLUtils/Point32f.h>
 
-GUI gui;
-VectorTracker vt;
-Mutex mutex;
+using namespace icl;
 
+typedef FixedColVector<float,2> Line;
 
-void updateVT(){
-  Mutex::Locker l(mutex);
-  static int &dim = gui.getValue<int>("dim-val");
-  static bool &optOn = gui.getValue<bool>("trivial-val");
-  static bool &normOn = gui.getValue<bool>("norm-val");
-  static bool &ffOn = gui.getValue<bool>("ff-val");
-
-  vt = VectorTracker(dim,
-                     10000,
-                     std::vector<float>(normOn?dim:0,0.9),
-                     ffOn ? VectorTracker::firstFree : VectorTracker::brandNew,
-                     0.0,
-                     optOn);
-}
-
-
-void init(){
-  gui << "slider(1,1000,2)[@label=data dimension@handle=dim@out=dim-val]";
-  gui << "slider(1,300,30)[@label=num inputs@handle=num@out=num-val]";
-  gui << "slider(0,5,0)[@label=num std. deviation@handle=dev@out=dev-val]";
-  gui << ( GUI("hbox") 
-           << "fps(10)[@handle=fps@minsize=5x2]"
-           << "togglebutton(off,on)[@label=try tivial@handle=trivial@out=trivial-val]"
-           << "togglebutton(off,on)[@label=use norm@handle=norm@out=norm-val]"
-           << "togglebutton(off,on)[@label=first free ID@handle=ff@out=ff-val]"
-         );
-  
-  gui.show();
-  
-  gui.registerCallback(updateVT,"dim,ff,norm,trivial");
-  
-  updateVT();
-}
-
-
-void run(){
-
-  static int &num = gui.getValue<int>("num-val");
-  static int &dev = gui.getValue<int>("dev-val");
-  static std::vector<VectorTracker::Vec> data;
-
-  while(true){
-    mutex.lock();
-    data.resize(clip(num+(int)gaussRandom(0,dev),0,300));
-    
-    for(unsigned int i=0;i<data.size();++i){
-      data[i].resize(vt.getDim());
-      std::fill(data[i].begin(),data[i].end(),URand(0,1));
-    }
-
-    vt.pushData(data);
-
-    std::vector<int> ids(data.size());
-    for(unsigned int i=0;i<data.size();++i){
-      ids[i] = vt.getID(i);
-    }
-    
-    gui["fps"].update();
-    mutex.unlock();
-
-    Thread::msleep(1);
+Line fit_line(const std::vector<Point32f> &pts){
+  int n = pts.size();
+  DynMatrix<float> xs(n,2), ys(n,1);
+  for(int i=0;i<n;++i){
+    xs(i,0) = 1;
+    xs(i,1) = pts[i].x;
+    ys(i,0) = pts[i].y;
   }
+  DynMatrix<float> fit = ys * xs.pinv(true);
+  return Line(fit[0],fit[1]);
+}
+
+double line_dist(const Line &line, const Point32f &p){
+  return sqr(line[0] + line[1]*p.x - p.y);
+}
+
+static const Line THE_LINE(1.23456, 7.89);
+
+const std::vector<Point32f> get_line_points(){
+  Line l = THE_LINE;
+  std::vector<Point32f> pts(100);
+  URand r(-100,100);
+  GRand gr(0,1);
+  for(int i=0;i<50;++i){
+    pts[i].x = r;
+    pts[i].y = l[0] + l[1]* pts[i].x + gr;
+  }
+  for(int i=0;i<50;++i){
+    pts[i+50] = Point32f(r,r);
+  }
+  return pts;
 }
 
 
 int main(int n, char **ppc){
-  return ICLApplication(n,ppc,"",init,run).exec();
+  randomSeed();
+
+  RansacFitter<Point32f,Line> fitLine(2,1000,fit_line,line_dist,1.5,30);
+  std::cout << "original line was " <<   THE_LINE.transp() << std::endl;
+  RansacFitter<Point32f,Line>::Result r = fitLine.fit(get_line_points());
+  
+  std::cout << "fitted result was " << r.model.transp() << std::endl;
+  std::cout << "fitting error was " << r.error << std::endl;
 }

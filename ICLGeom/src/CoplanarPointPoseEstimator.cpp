@@ -3,7 +3,7 @@
 #include <ICLGeom/Camera.h>
 #include <ICLGeom/GeomDefs.h>
 #include <ICLUtils/Homography2D.h>
-#include <ICLCore/Random.h>
+#include <ICLUtils/Random.h>
 #include <ICLUtils/ProgArg.h>
 #include <ICLUtils/SimplexOptimizer.h>
 
