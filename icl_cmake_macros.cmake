@@ -64,7 +64,7 @@ macro(icl_check_external_package ID INCFILES LIBFILES REL_LIB_DIR REL_INC_DIR DE
         if(NOT EXISTS ${ICL_XDEP_${ID}_PATH}/${REL_LIB_DIR}/lib${lLIB}.so)
           if(NOT EXISTS ${ICL_XDEP_${ID}_PATH}/${REL_LIB_DIR}/${ICL_REL_LIB_DIR_SUFFIX}/lib${lLIB}.so)
             set(ALL_LIBS_CHECK_${ID} FALSE)
-            message(STATUS "File ${lLIB} not found in ${ICL_XDEP_${ID}_PATH}/${REL_LIB_DIR}")
+            message(STATUS "File lib${lLIB}.so not found in ${ICL_XDEP_${ID}_PATH}/${REL_LIB_DIR}/${ICL_REL_LIB_DIR_SUFFIX}")
             break()
           else()
             set(REL_LIB_DIR "${REL_LIB_DIR}/${ICL_REL_LIB_DIR_SUFFIX}")
