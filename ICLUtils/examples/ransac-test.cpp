@@ -74,7 +74,8 @@ const std::vector<Point32f> get_line_points(){
     pts[i+50] = Point32f(r,r);
   }
   return pts;
-}
+} 
+
 
 
 int main(int n, char **ppc){
