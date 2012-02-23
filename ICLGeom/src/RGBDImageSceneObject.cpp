@@ -59,15 +59,18 @@ namespace icl{
     RGBDMapping mapping;
     RGBDImageSceneObject *parent;
     Img32f lastCorrectedDepthImage;
+    RGBDImageSceneObject::MappingMode mode;
     
     /// internal initialization method
     void init(const Size &size,
               const RGBDMapping &mapping,
               const Camera &cam,
+              MappingMode mode,
               RGBDImageSceneObject *parent){
       this->parent = parent;
       this->size = size;
       this->mapping = mapping;
+      this->mode = mode;
       lastCorrectedDepthImage = Img32f(size,1);
       Qi = cam.getQMatrix().pinv(true);
     
@@ -178,14 +181,15 @@ namespace icl{
   
   
     
-  RGBDImageSceneObject::RGBDImageSceneObject(const Size &size):m_data(new Data){
+  RGBDImageSceneObject::RGBDImageSceneObject(const Size &size,MappingMode mode):m_data(new Data){
    
-    m_data->init(size, get_default_kinect_rgbd_mapping(size), get_default_kinect_camera(size), this);
+    m_data->init(size, get_default_kinect_rgbd_mapping(size), 
+                 get_default_kinect_camera(size), mode,this);
   }
   
   RGBDImageSceneObject::RGBDImageSceneObject(const Size &size, const RGBDMapping &mapping,
-                                             const Camera &cam):m_data(new Data){
-    m_data->init(size,mapping,cam, this);
+                                             const Camera &cam, MappingMode mode):m_data(new Data){
+    m_data->init(size,mapping,cam, mode,this);
   }
   
   RGBDImageSceneObject::~RGBDImageSceneObject(){
@@ -248,6 +252,8 @@ namespace icl{
     
     const FixedMatrix<float,3,4> Qi = m_data->Qi;
 
+    const bool xyzMapping = m_data->mode == XYZ_WORLD;
+    
     if(rgbImage){
       const Channel8u r = (*rgbImage)[0], g = (*rgbImage)[1], b = (*rgbImage)[2];
       for(int y=0;y<H;++y){
@@ -265,7 +271,8 @@ namespace icl{
             v[1] = off[1] + depthValue * dir[1];
             v[2] = off[2] + depthValue * dir[2];
             
-            Point p = M.apply(x,y,depthValue);
+            /// todo: move this if out of this loop!
+            Point p = xyzMapping ? M.apply(v[0],v[1],v[2]) : M.apply(x,y,depthValue); 
             
             GeomColor &c = m_vertexColors[idx];        
             if(imageRect.contains(p.x, p.y)){

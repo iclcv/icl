@@ -45,11 +45,18 @@ namespace icl{
     Camera cam = Camera::calibrate(depthImagePointsAndDepths, rgbImagePoints);
     (Mat&)(*this) = cam.getProjectionMatrix()*cam.getCSTransformationMatrix();
   }
+
+  RGBDMapping::RGBDMapping(const Camera &cam){
+    (Mat&)(*this) = cam.getProjectionMatrix()*cam.getCSTransformationMatrix();
+  }
   
   RGBDMapping::RGBDMapping(const std::string &filename){
     ConfigFile f(filename);
-    Mat m = f["config.rgbd-mapping"];
-    (Mat&)(*this) = m;
+    try{
+      Mat m = f["config.rgbd-mapping"];
+      (Mat&)(*this) = m;
+    }catch(...){}
+    *this = RGBDMapping(Camera(filename));
   }
   
   RGBDMapping::RGBDMapping(const Mat &M){

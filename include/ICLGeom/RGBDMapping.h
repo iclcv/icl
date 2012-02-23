@@ -35,12 +35,7 @@
 #ifndef ICL_RGBD_MAPPING_H
 #define ICL_RGBD_MAPPING_H
 
-#include <vector>
-
-#include <ICLUtils/Point32f.h>
-
-#include <ICLGeom/GeomDefs.h>
-
+#include <ICLGeom/Camera.h>
 
 namespace icl{
   
@@ -75,9 +70,14 @@ namespace icl{
                in the rgb image.
     */
     RGBDMapping(const std::vector<Vec> &depthImagePointsAndDepths,
-                       const std::vector<Point32f> &rgbImagePoints);
+                const std::vector<Point32f> &rgbImagePoints);
+    
+    /// creates mapping from a given camera
+    RGBDMapping(const Camera &cam);
     
     /// loads a mapping from given xml filename
+    /** The xml-file format can either contain just the matrix,
+        or a whole camera definition */
     RGBDMapping(const std::string &filename);
     
     /// constructor from given Mat
@@ -89,13 +89,13 @@ namespace icl{
         @param depthValue the depth images depth value at position (x,y) (in mm) 
         @return rgb-image position
     */
-    inline Point apply(int x, int y, float depthValue) const {
+    inline Point apply(float x, float y, float depthValue) const {
       const float phInv = 1.0/ ((*this)(0,3) * x + (*this)(1,3) * y + (*this)(2,3) * depthValue + (*this)(3,3));
       const int px = phInv * ( (*this)(0,0) * x + (*this)(1,0) * y + (*this)(2,0) * depthValue + (*this)(3,0) );
       const int py = phInv * ( (*this)(0,1) * x + (*this)(1,1) * y + (*this)(2,1) * depthValue + (*this)(3,1) );
       return Point(px,py);
     }
-
+    
     /// saves the mapping using a given xml filename
     void save(const std::string &filename) const;
     

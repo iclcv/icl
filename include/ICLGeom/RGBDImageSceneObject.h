@@ -52,6 +52,22 @@ namespace icl{
   
     public:
     
+    /// defines on what data the mapping is applied
+    /** The RGBD-Mapping can either be created using point-correspondances 
+        from the depth and the RGB-Image. This is exactly, what the demo
+        application icl-kinect-rgbd-calib provides. In this case, the 
+        projective transform for the mapping gets the depth-images
+        x- and y- pixel coordinate and it's (corrected) depth value
+        at (x,y). \n
+        Alternatively, the mapping can also be applied on the x-, y-
+        and z- world coordinates. That are created by using the depth
+        images camera-viewrays and it's depth values. 
+    */
+    enum MappingMode{
+      XY_PIX_D,  //!< the mapping is applied on the x- and y- pixel coordinate and on the depth value
+      XYZ_WORLD, //!< the mapping is applied on the xyz- world coordinates
+    };
+    
     /// returns a default camera model for VGA and QVGA kinect cameras
     /** If the default camera model does not work well for your application, you
         can calibrate your kinect device using the icl-cam-calib-2 tool */
@@ -63,10 +79,11 @@ namespace icl{
     static RGBDMapping get_default_kinect_rgbd_mapping(const Size &size);
 
     /// creates an RGBDImageSceneObject with given size which uses the default mapping and camera
-    RGBDImageSceneObject(const Size &size = Size::VGA);
+    RGBDImageSceneObject(const Size &size = Size::VGA, MappingMode mode=XY_PIX_D);
     
     /// creates and RGBDImageSceneObject with given mapping and camera
-    RGBDImageSceneObject(const Size &size, const RGBDMapping &mapping,const Camera &cam);
+    RGBDImageSceneObject(const Size &size, const RGBDMapping &mapping, 
+                         const Camera &cam,MappingMode mode=XY_PIX_D);
     
     /// Destructor
     ~RGBDImageSceneObject();

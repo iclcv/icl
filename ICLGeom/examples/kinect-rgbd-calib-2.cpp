@@ -79,7 +79,11 @@ void init(){
   if(pa("-mapping")) m = RGBDMapping(*pa("-mapping"));
   if(pa("-cam")) cam = Camera(*pa("-cam"));
   
-  obj = new RGBDImageSceneObject(size,m,cam);
+  SHOW(m);
+
+  obj = new RGBDImageSceneObject(size,m,cam, (*pa("-mm") == "xyz") ? 
+                                 RGBDImageSceneObject::XYZ_WORLD :
+                                 RGBDImageSceneObject::XY_PIX_D);
   obj->setConfigurableID("obj");
 
   matchImage.setSize(size);
@@ -447,12 +451,15 @@ void run(){
 }
 
 int main(int n, char **ppc){
+  paex("-mm","mapping mode either xyd (default)or xyz");
+
   return ICLApp(n,ppc,
                 "-size|-s(Size=VGA) "
                 "-rgb-udist(fn1) "
                 "-ir-udist(fn2) "
                 "-marker-type|-m(type=bch,whichToLoad=[0-1000],size=50x50) "
                 "-mapping(mapping-filename) "
-                "-cam(camerafilename)",
+                "-cam(camerafilename) "
+                "-mapping-mode|-mm(mode=xyd)",
                 init,run).exec();
 }
