@@ -139,7 +139,7 @@ namespace icl{
   template<class DataPoint=std::vector<float>,
            class Model=std::vector<float> >
   class RansacFitter{
-    
+    public:
     /// DataSet type (just a set of DataPoint instances)
     typedef std::vector<DataPoint> DataSet;
     
@@ -149,7 +149,7 @@ namespace icl{
     /// Error function for single points
     typedef Function<icl64f,const Model&,const DataPoint&> PointError;
     
-    
+    private:
     int m_minPointsForModel;
     int m_iterations;
     icl64f m_minModelDistance;
