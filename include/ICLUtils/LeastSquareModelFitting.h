@@ -50,8 +50,8 @@ namespace icl{
       
       \subsection MODELS Models
 
-      For this algorithm, models defined by an implicit equation f=da=0.
-      d = [f1(x), f2(x), ...]^T defines features computed on the input data x.
+      For this algorithm, models are defined by implicit equations f=da=0.
+      d = [f1(x), f2(x), ...]^T defines features that are computed on the input data x.
       a = [a1,a2,...] are the linear coefficients. In other words, models
       are expressed as intersections between geometric primitives and the f=0 plane.
       The resulting models always have an extra parameter, which is disambiguated by
@@ -62,15 +62,15 @@ namespace icl{
       2D models are discussed.
       
       <b>lines</b>\n
-      Straight lines in 2D are expressed by a simple parametric equation here, the 
-      features d from a given input (x,y) are just d=(x,y,1)^T. The resulting 
+      Straight lines in 2D are expressed by a simple parametric equation. The 
+      features d for a given input (x,y) are simply d=(x,y,1)^T. The resulting 
       equation can be seen a scalar product (a1,a2)*(x,y)^T whose result is -a3.
       Geometrically, a line is defined by it's perpendicular vector (a1,a2) and an
       offset to the origin which is -a3.
 
       <b>circles</b>\n
       The standard coordinate-equation for a circle is (x-cx)^2 + (y-cy)^2 = r^2.
-      By decopling the coefficients, we can create a 4 parameter model:\n
+      By decoupling the coefficients, we can create a 4 parameter model:\n
       \code 
         a1(x^2 + y^2) + a2 x + a3 y +a4 = 0
       
@@ -97,7 +97,7 @@ namespace icl{
       set of input data D (where the vectors d are the rows of d). Usually, the data is
       noisy. Therefore we try to minimize the error E=|Da|^2. D is the so called 
       design matrix.
-      In order to avoid to get only the trivial solution a=0, the constraint matrix C is
+      In order to avoid receiving the trivial solution a=0, the constraint matrix C is
       introduced. The minimization is then applied by introducing Lagrange multipliers:
       \code
       minimize:         2 D^T Da - 2 lambda C a = 0
@@ -113,7 +113,7 @@ namespace icl{
       \subsection IMPL Implemented Algorithm
       
       -# create the design matrix D
-      -# create the scatter matrix S
+      -# create the scatter matrix S = D^T D
       -# create the constraint matrix C (usually id)
       -# find eigen vectors and eigen values for S^-1 C
       -# use the eigen vector to the largest eigen value as model 

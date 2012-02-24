@@ -39,7 +39,7 @@
 #include <ICLUtils/Random.h>
 #include <ICLUtils/Point32f.h>
 
-#include <ICLUtils/LeastSquareModelFitting.h>
+#include <ICLUtils/LeastSquareModelFitting2D.h>
 
 using namespace icl;
 

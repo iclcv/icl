@@ -36,7 +36,7 @@
 #include <ICLUtils/RansacFitter.h>
 #include <ICLUtils/Random.h>
 #include <ICLUtils/Point32f.h>
-#include <ICLUtils/LeastSquareModelFitting.h>
+#include <ICLUtils/LeastSquareModelFitting2D.h>
 
 typedef LeastSquareModelFitting2D LS;
 typedef RansacFitter<Point32f,std::vector<double> > RANSAC;
