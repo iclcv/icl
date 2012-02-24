@@ -150,30 +150,57 @@ namespace icl{
     typedef Function<icl64f,const Model&,const DataPoint&> PointError;
     
     private:
+    /// minimum points that are used to create a coarse model
     int m_minPointsForModel;
+    
+    /// number of iterations
     int m_iterations;
-    icl64f m_minModelDistance;
+    
+    /// maximum distance of a point to the model to become an inlier
+    icl64f m_maxModelDistance;
+    
+    /// minimum amount of inliers for a 'good' model
     int m_minClosePointsForGoodModel;
+    
+    /// fitting function
     ModelFitting m_fitting;
+    
+    /// point-model error function
     PointError m_err;
+    
+    /// min error criterion for early exit
     icl64f m_minErrorExit;
     
     public:
+    /// result structure
     struct Result{
+      /// reached error
       icl64f error;
+      
+      /// model (zero sized if no model was found)
       Model model;
-      std::vector<DataPoint> consensusSet;
+      
+      /// consensus set of best match (i.e. inliers)
+      /** empty if no model was found */
+      DataSet consensusSet;
+
+      /// number of iterations needed
       int iterationCount;
+      
+      /// returns whether any model was found
       bool found() const { return consensusSet.size(); }
     };
     
     private:
+    /// internal result buffer
     Result m_result;
     
+    /// internal utility method
     static inline bool find_in(const std::vector<int> &v, int i, int n){
       return std::find(v.data(), v.data()+n, i) != v.data()+n;
     }
 
+    /// internal utility method
     void find_random_consensus_set(DataSet &currConsensusSet,
                                    const DataSet &allPoints,
                                    std::vector<int> &usedIndices){
@@ -187,22 +214,28 @@ namespace icl{
     }
     
     public:
+    /// empty constructor (creates a dummy instance)
+    RansacFitter(){}
+    
+    /// constructor with given parameters
+    /** The parameters functionality is documented with the
+        analogously named member variables */
     RansacFitter(int minPointsForModel, 
                  int iterations, 
                  ModelFitting fitting,
                  PointError err,
-                 icl64f minModelDistance,
+                 icl64f maxModelDistance,
                  int minClosePointsForGoodModel,
                  icl64f minErrorExit=0):
       m_minPointsForModel(minPointsForModel),
       m_iterations(iterations),
-      m_minModelDistance(minModelDistance),
+      m_maxModelDistance(maxModelDistance),
       m_minClosePointsForGoodModel(minClosePointsForGoodModel),
       m_fitting(fitting),m_err(err),
       m_minErrorExit(minErrorExit){
     }
     
-    
+    /// fitting function (actual RANSAC algorithm)
     const Result &fit(const DataSet &allPoints){
       m_result.model = Model();
       m_result.consensusSet.clear();
@@ -219,7 +252,7 @@ namespace icl{
         Model model = m_fitting(consensusSet);
         for(int j=0;j<(int)allPoints.size();++j){
           if(find_in(usedIndices, j, usedIndices.size())) continue;
-          if(m_err(model, allPoints[j]) < m_minModelDistance){
+          if(m_err(model, allPoints[j]) < m_maxModelDistance){
             consensusSet.push_back(allPoints[j]);
           }
         }

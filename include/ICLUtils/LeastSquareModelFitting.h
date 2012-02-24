@@ -39,8 +39,99 @@
 
 namespace icl{
   
-  /// Direct Least Square Fitting Algorithm (not working yet!)
-  /** TODO: make it working :-) */
+  /// Direct Least Square Fitting Algorithm 
+  /** The given algorithm is based on the paper <em><b>Direct Least Square Fitting 
+      of Ellipses</b></em> written by<em>Andrew W. Fitzgibbon</em>, <em>Maurizio Milu</em>
+      and <em>Robert B. Fischer</em>.
+
+      \section ALG The direct least square fitting algorithm
+      
+      Here, the algorithm is explained, later, some examples will be given.
+      
+      \subsection MODELS Models
+
+      For this algorithm, models defined by an implicit equation f=da=0.
+      d = [f1(x), f2(x), ...]^T defines features computed on the input data x.
+      a = [a1,a2,...] are the linear coefficients. In other words, models
+      are expressed as intersections between geometric primitives and the f=0 plane.
+      The resulting models always have an extra parameter, which is disambiguated by
+      finding solutions where |a|^2 = 1. Actually, this is just a special yet very
+      common disambiguation technique. More generally spoken, a^T C a = 1 is used
+      where C is the so called <em>constraint matrix</em>. If C is set to the 
+      identity matrix, the norm becomes |a|^2=1. In the following, some common
+      2D models are discussed.
+      
+      <b>lines</b>\n
+      Straight lines in 2D are expressed by a simple parametric equation here, the 
+      features d from a given input (x,y) are just d=(x,y,1)^T. The resulting 
+      equation can be seen a scalar product (a1,a2)*(x,y)^T whose result is -a3.
+      Geometrically, a line is defined by it's perpendicular vector (a1,a2) and an
+      offset to the origin which is -a3.
+
+      <b>circles</b>\n
+      The standard coordinate-equation for a circle is (x-cx)^2 + (y-cy)^2 = r^2.
+      By decopling the coefficients, we can create a 4 parameter model:\n
+      \code 
+        a1(x^2 + y^2) + a2 x + a3 y +a4 = 0
+      
+        where, cx = -a2/(2*a1),
+               cy = -a3/(2*a1)
+          and  r = ::sqrt( (a2*a2+a3*a3)/(4*a1*a1) -a4/a1 )
+      \endcode
+
+      <b>ellipses</b>\n
+      General ellipses are expressed by the 6 parameter model
+      \code
+      a1 x^2 + a2 xy + a3 y^2 +  a4 x + a5 y + a6 = 0;
+      \endcode 
+      If we want to restrict the ellipses to be non-rotated, the mixed 
+      term needs to be removed:
+      \code
+      a1 x^2 + a2 y^2 +  a3 x + a4 y + a5 = 0;
+      \endcode 
+      If a1 and a2 are coupled, we get the circle model shown above.
+      
+      \subsection DLSF Direct Least Square Fitting
+   
+      Instead of finding a solution da=0, for a single data point, we have a larger
+      set of input data D (where the vectors d are the rows of d). Usually, the data is
+      noisy. Therefore we try to minimize the error E=|Da|^2. D is the so called 
+      design matrix.
+      In order to avoid to get only the trivial solution a=0, the constraint matrix C is
+      introduced. The minimization is then applied by introducing Lagrange multipliers:
+      \code
+      minimize:         2 D^T Da - 2 lambda C a = 0
+      with subject to                   a^T C a = 1
+      \endcode
+      By introducing the the scatter matrix S = D^T D, we get a generlized eigen vector
+      problem:
+      \code
+      minimize:         S a - lambda C a = 0
+      with subject to            a^T C a = 1
+      \endcode
+      
+      \subsection IMPL Implemented Algorithm
+      
+      -# create the design matrix D
+      -# create the scatter matrix S
+      -# create the constraint matrix C (usually id)
+      -# find eigen vectors and eigen values for S^-1 C
+      -# use the eigen vector to the largest eigen value as model 
+      
+      
+      \section EX Examples
+      Examples for usage are given in the interactive application
+      icl-model-fitting-example located in the ICLQt package. Here, the 
+      icl::LeastSquareModelFitting is demonstrated and it is combined with the 
+      icl::RansacFitter class in order to show the advantages of using
+      the RANSAC algorithm in presence of outliers and noise.
+      
+
+      For the creation of a LeastSquareModelFitting instance, only the
+      model dimension and the creation function for rows of the design
+      matrix D. Optionally, a non-ID constraint matrix can be given.
+  */
+
   template<class T, class DataPoint>
   class LeastSquareModelFitting{
     public:
@@ -52,13 +143,27 @@ namespace icl{
     typedef std::vector<T> Model;
     
     private:
+    /// model dimension
     int m_modelDim;
+
+    /// design matrix row generator
     DesignMatrixGen m_gen;
+    
+    /// utility valiables
     DynMatrix<T> m_D, m_S, m_Evecs, m_Evals;
+    
+    /// constraint matrix
     SmartPtr<DynMatrix<T> >m_C;
+    
+    /// the model parameters
     Model m_model;
     
     public:
+    
+    /// Empty constructor that creates a dummy instance
+    LeastSquareModelFitting(){}
+    
+    /// constructor with given parameters
     LeastSquareModelFitting(int modelDim, DesignMatrixGen gen, 
                             DynMatrix<T> *constraintMatrix=0):
     m_modelDim(modelDim),m_gen(gen),m_S(modelDim,modelDim), 
@@ -76,6 +181,10 @@ namespace icl{
       return fabs(e);
     }
     
+    /// fits the model to the given data points and returns optimal parameter set
+    /** Internally we use a workaround when the matrix inversion fails due to stability
+        problems. If the standard matrix inversion fails, a SVD-based inversion is 
+        used */
     Model fit(const std::vector<DataPoint> &points){
       const int M = m_modelDim;
       const int N = (int)points.size();
@@ -108,56 +217,6 @@ namespace icl{
       }
       
       return m_model;
-    }
-  };
-
-  
-  class LeastSquareModelFitting2D : public LeastSquareModelFitting<double,Point32f>{
-    typedef LeastSquareModelFitting<double,Point32f> Super;
-    public:
-    LeastSquareModelFitting2D(int modelDim, DesignMatrixGen gen, 
-                         DynMatrix<double> *constraintMatrix = 0):
-    Super(modelDim,gen,constraintMatrix){}
-    
-    /// DesignMatrixGenerator for the 3-parameter line model
-    static inline void line_gen(const Point32f &p, double *d){
-      d[0] = p.x; 
-      d[1] = p.y; 
-      d[2] = 1;
-    }
-    
-    /// DesignMatrixGenerator for the 4 parameter circle model
-    static inline void circle_gen(const Point32f &p, double *d){
-      d[0] = sqr(p.x) + sqr(p.y);
-      d[1] = p.x;
-      d[2] = p.y;
-      d[3] = 1;
-    }
-
-    /// DesignMatrixGenerator for the 5 parameter restricted ellipse model
-    static inline void restr_ellipse_gen(const Point32f &p, double *d){
-      d[0] = sqr(p.x);
-      d[1] = sqr(p.y);
-      d[2] = p.x;
-      d[3] = p.y;
-      d[4] = 1;
-    }
-
-    /// DesignMatrixGenerator for the 6 parameter general ellipse model
-    static inline void ellipse_gen(const Point32f &p, double *d){
-      d[0] = sqr(p.x);
-      d[1] = p.x * p.y;
-      d[2] = sqr(p.y);
-      d[3] = p.x;
-      d[4] = p.y;
-      d[5] = 1;
-    }
-    
-    inline std::vector<double> fit(const std::vector<Point32f> &points){
-      return Super::fit(points);
-    }
-    inline icl64f getError(const std::vector<double> &model,const Point32f &p) {
-      return Super::getError(model,p);
     }
   };
 }
