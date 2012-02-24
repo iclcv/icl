@@ -46,7 +46,7 @@ namespace icl{
     public:
     /// fills the give float* with data from the given data point
     /** creates the rows of the design matrix */
-    typedef Function<void,const DataPoint&,float*> DesignMatrixGen;
+    typedef Function<void,const DataPoint&,T*> DesignMatrixGen;
     
     /// model type (defines the model parameters)
     typedef std::vector<T> Model;
@@ -69,9 +69,11 @@ namespace icl{
     /// computes the error for a given data point
     /** if model is 0, the last fitted model is used */
     icl64f getError(const Model &model,const DataPoint &p){
-      std::vector<float> d(m_modelDim);
+      std::vector<T> d(m_modelDim);
       m_gen(p,d.data());
-      return std::inner_product(d.begin(),d.end(),model.begin(), icl64f(0));
+      icl64f e = 0;
+      for(int i=0;i<m_modelDim;++i) e += d[i] * model[i];
+      return fabs(e);
     }
     
     Model fit(const std::vector<DataPoint> &points){
@@ -87,41 +89,45 @@ namespace icl{
       
       /// create the scatter matrix S
       m_D.transp().mult(m_D,m_S);
-
-      if(m_C){
-        /// solve EV-problem for S^-1 * C
-        (m_S.inv() * (*m_C)).eigen(m_Evecs, m_Evals);
-      }else{
-        /// solve EV-problem for S^-1
-        DynMatrix<float> Si = m_S.inv();
-        SHOW(Si);
-        Si.eigen(m_Evecs, m_Evals);
+      
+      
+      
+      DynMatrix<T> Si;
+      try{ 
+        Si = m_C ? m_S.inv()* (*m_C) : m_S.inv();
+      }catch(SingularMatrixException &ex){
+        Si = m_C ? m_S.pinv(true)* (*m_C) : m_S.pinv(true); 
       }
       
-      /// use eigen vector for the largest eigen value
-      std::copy(m_Evecs.col_begin(0), m_Evecs.col_end(0), m_model.begin());
+      try{
+        Si.eigen(m_Evecs, m_Evals);
+        /// use eigen vector for the largest eigen value
+        std::copy(m_Evecs.col_begin(0), m_Evecs.col_end(0), m_model.begin());
+      }catch(ICLException &e){
+        std::fill(m_model.begin(),m_model.end(),Range<T>::limits().maxVal);
+      }
       
       return m_model;
     }
   };
 
   
-  class LeastSquareModelFitting2D : public LeastSquareModelFitting<float,Point32f>{
-    typedef LeastSquareModelFitting<float,Point32f> Super;
+  class LeastSquareModelFitting2D : public LeastSquareModelFitting<double,Point32f>{
+    typedef LeastSquareModelFitting<double,Point32f> Super;
     public:
     LeastSquareModelFitting2D(int modelDim, DesignMatrixGen gen, 
-                         DynMatrix<float> *constraintMatrix = 0):
+                         DynMatrix<double> *constraintMatrix = 0):
     Super(modelDim,gen,constraintMatrix){}
     
     /// DesignMatrixGenerator for the 3-parameter line model
-    static inline void line_gen(const Point32f &p, float *d){
+    static inline void line_gen(const Point32f &p, double *d){
       d[0] = p.x; 
       d[1] = p.y; 
       d[2] = 1;
     }
     
     /// DesignMatrixGenerator for the 4 parameter circle model
-    static inline void circle_gen(const Point32f &p, float *d){
+    static inline void circle_gen(const Point32f &p, double *d){
       d[0] = sqr(p.x) + sqr(p.y);
       d[1] = p.x;
       d[2] = p.y;
@@ -129,7 +135,7 @@ namespace icl{
     }
 
     /// DesignMatrixGenerator for the 5 parameter restricted ellipse model
-    static inline void restr_ellipse_gen(const Point32f &p, float *d){
+    static inline void restr_ellipse_gen(const Point32f &p, double *d){
       d[0] = sqr(p.x);
       d[1] = sqr(p.y);
       d[2] = p.x;
@@ -138,7 +144,7 @@ namespace icl{
     }
 
     /// DesignMatrixGenerator for the 6 parameter general ellipse model
-    static inline void ellipse_gen(const Point32f &p, float *d){
+    static inline void ellipse_gen(const Point32f &p, double *d){
       d[0] = sqr(p.x);
       d[1] = p.x * p.y;
       d[2] = sqr(p.y);
@@ -147,10 +153,10 @@ namespace icl{
       d[5] = 1;
     }
     
-    inline std::vector<float> fit(const std::vector<Point32f> &points){
+    inline std::vector<double> fit(const std::vector<Point32f> &points){
       return Super::fit(points);
     }
-    inline icl64f getError(const std::vector<float> &model,const Point32f &p) {
+    inline icl64f getError(const std::vector<double> &model,const Point32f &p) {
       return Super::getError(model,p);
     }
   };

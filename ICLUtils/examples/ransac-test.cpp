@@ -78,16 +78,18 @@ const std::vector<Point32f> get_line_points(){
   return pts;
 } 
 
-const std::vector<Point32f> gen_line_points(const std::vector<float> &line){
-  // ax + by + c = 0   ---> y(x) = (c-ax)/b
+const std::vector<Point32f> gen_line_points(const std::vector<double> &line){
+  // ax + by + c = 0   ---> y(x) = (-c-ax)/b
   std::vector<Point32f> pts(100);
   URand r(-100,100);
   GRand gr(0,1);
-  for(int i=0;i<50;++i){
+  
+  for(int i=0;i<100;++i){
     pts[i].x = r;
-    pts[i].y = (line[2] - line[0]*pts[i].x) / line[1]; 
+    pts[i].y = (-line[2] - line[0]*pts[i].x) / line[1]; 
+    //    std::cout << pts[i].x << " " << pts[i].y << std::endl;
   }
-  for(int i=0;i<50;++i){
+  for(int i=0;i<0;++i){
     pts[i+50] = Point32f(r,r);
   }
   return pts;
@@ -97,21 +99,24 @@ const std::vector<Point32f> gen_line_points(const std::vector<float> &line){
 
 int main(int n, char **ppc){
   randomSeed();
-#if 0
+#if 1
   typedef LeastSquareModelFitting2D LS;
-  typedef RansacFitter<Point32f,std::vector<float> > RANSAC;
+  typedef RansacFitter<Point32f,std::vector<double> > RANSAC;
   LeastSquareModelFitting2D ls(3,LeastSquareModelFitting2D::line_gen); 
   
   const float line[] = {6,0.2,5}; // ax + by + c = 0
-  const std::vector<float> LINE(line,line+3);
+  const std::vector<double> LINE(line,line+3);
   RANSAC::ModelFitting fit = function(ls,&LS::fit);
   RANSAC::PointError err = function(ls,&LS::getError);
-  RANSAC fitLine(10,1000,fit,err,1.5,30);
+  RANSAC fitLine(40,1000,fit,err,0.1,30);
 
   RANSAC::Result r = fitLine.fit(gen_line_points(LINE));
   std::cout << "original line was " << "[ " << line[0]  << "," << line[1] << "," << line[2] << "]" << std::endl;
   std::cout << "fitted result was " << "[ " << r.model[0]  << "," << r.model[1] << "," << r.model[2] << "]" << std::endl;
   std::cout << "fitting error was " << r.error << std::endl;
+  gen_line_points(r.model);
+  
+  // seems to work ...
 
 #else
   RansacFitter<Point32f,Line> fitLine(2,1000,fit_line,line_dist,1.5,30);

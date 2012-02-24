@@ -1,4 +1,4 @@
-#*********************************************************************
+##*********************************************************************
 #**                Image Component Library (ICL)                    **
 #**                                                                 **
 #** Copyright (C) 2006-2010 CITEC, University of Bielefeld          **
@@ -63,6 +63,7 @@ add_example (${PROJECT_NAME} "special-button-demo" "${CONDITIONLIST}" ICLLibsToL
 add_example (${PROJECT_NAME} "configurable-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "plot-component-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "create-button-icon" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "model-fitting-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST "")
 #sources for lib

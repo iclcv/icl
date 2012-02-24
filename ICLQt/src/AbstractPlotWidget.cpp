@@ -717,10 +717,10 @@ namespace icl{
           }
           case 'c':{
             for(int i=0;i<a.num;++i, data+=3){
-              const float x = tx(data[0]-data[2]/2);
-              const float y = ty(data[1]-data[2]/2);
-              const float m = tx(data[0]+data[2]/2);
-              const float n = ty(data[1]+data[2]/2);
+              const float x = tx(data[0]-data[2]);
+              const float y = ty(data[1]-data[2]);
+              const float m = tx(data[0]+data[2]);
+              const float n = ty(data[1]+data[2]);
                                
               QRect r(x,y,m-x, n-y);
               p.drawEllipse(r);
