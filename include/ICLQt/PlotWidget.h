@@ -50,10 +50,17 @@ namespace icl{
     inline void lock() { LowLevelPlotWidget::lock(); }
     inline void unlock() { LowLevelPlotWidget::unlock(); }
 
+
+    virtual void clear() {}
+ 
     inline void reset() { clear(); }
     
+    void name(const std::string &nextName);
     void color(int r, int g, int b, int a=255);
+    void pen(const QPen &pen);
+
     void fill(int r, int g, int b, int a=255);
+    void brush(const QBrush &brush);
     
     template<class VectorType>
     inline void color(const VectorType &c){
@@ -74,23 +81,21 @@ namespace icl{
     
     void linewidth(float width);
     void symsize(float size);
-    void pointsize(float size);
-    
     
     template<class T>
-    void scatter(const T *xs, const T *ys, int num, int xStride = 1, int yStride=1);
+    void scatter(const T *xs, const T *ys, int num, int xStride = 1, int yStride=1, bool connect=false);
 
-    inline void scatter(const std::vector<Point32f> &ps){
-      scatter(&ps[0].x, &ps[0].y, ps.size(), 2, 2);
+    inline void scatter(const std::vector<Point32f> &ps, bool connect=false){
+      scatter(&ps[0].x, &ps[0].y, ps.size(), 2, 2, connect);
     }
     
-    inline void scatter(const std::vector<Point> &ps){
-      scatter(&ps[0].x, &ps[0].y, ps.size(), 2, 2);
+    inline void scatter(const std::vector<Point> &ps, bool connect=false){
+      scatter(&ps[0].x, &ps[0].y, ps.size(), 2, 2, connect);
     }
     
     template<class T, int WIDTH>
-    inline void scatter(const FixedMatrix<T,WIDTH,3-WIDTH> *ps, int num){
-      scatter(&ps[0][0],&ps[0][1], num, 2, 2);
+    inline void scatter(const FixedMatrix<T,WIDTH,3-WIDTH> *ps, int num, bool connect=false){
+      scatter(&ps[0][0],&ps[0][1], num, 2, 2, connect);
     }
 
     
