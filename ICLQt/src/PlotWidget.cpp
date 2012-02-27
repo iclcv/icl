@@ -337,16 +337,20 @@ namespace icl{
 
       if(drawFill || drawLines){
 
-        const int fillZero = ly(0);
+        const int fillZero = floor(ly(0));
         p.setBrush(s->fillBrush);
         p.setPen(s->linePen);
         
-        const float wAll = .8*(xbuf[1] - xbuf[0]);
+        const float wAll = .8*(xbuf[firstVisibleX+1] - xbuf[firstVisibleX]);
 
         for(int x=firstVisibleX;x<lastVisibleX;++x){
-          const float xStart = xbuf[x] + y * (wAll/rows);
-          const float wOne = floor(wAll/rows) - 2;
-          p.drawRect(QRect(QPoint(xStart, ybuf[x]), QPoint(xStart+wOne, fillZero)));
+          const float xStart = ceil(xbuf[x] + y * (wAll/rows));
+          const float wOne = floor(wAll/rows) - 1;
+          if(ybuf[x] < fillZero){
+            p.drawRect(QRect(QPoint(xStart, ybuf[x]), QPoint(xStart+wOne, fillZero-1)));
+          }else{
+            p.drawRect(QRect(QPoint(xStart, ybuf[x]), QPoint(xStart+wOne, fillZero)));
+          }
         }
       }
     } 
@@ -638,7 +642,7 @@ namespace icl{
   }
   
   void PlotWidget::drawLegend(QPainter &p,const Rect &where, bool horizontal){
-    int num = data->scatterData.size() + data->seriesData.size();
+    int num = data->scatterData.size() + data->seriesData.size() + data->barPlotData.size();
     if(!num) return;
     
     std::vector<std::string> rowNames(num);
@@ -647,12 +651,16 @@ namespace icl{
       rowNames[i] = data->seriesData[i]->name;
       rowStyles[i] = data->seriesData[i]->style;
     }
-    const int offs = data->seriesData.size();
+    int offs = data->seriesData.size();
     for(unsigned int i=0;i<data->scatterData.size();++i){
       rowNames[offs+i] = data->scatterData[i]->name;
       rowStyles[offs+i] = data->scatterData[i]->style;
     }
-
+    offs = data->seriesData.size() + data->scatterData.size();
+    for(unsigned int i=0;i<data->barPlotData.size();++i){
+      rowNames[offs+i] = data->barPlotData[i]->name;
+      rowStyles[offs+i] = data->barPlotData[i]->style;
+    }
     drawDefaultLedgend(p,where,horizontal,rowNames,rowStyles);
   }
 

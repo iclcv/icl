@@ -81,7 +81,7 @@ void run(){
   static Time t = Time::now();
   float dtSec = (Time::now()-t).toSecondsDouble();
 
-#if 0
+
   static Point32f sinSeries[101];
   static int sinSeriesUsed = 0;
   sinSeries[sinSeriesUsed++] = Point32f(sin(dtSec), dtSec/M_PI);
@@ -116,12 +116,12 @@ void run(){
     cosData[i] = cos(relI * 2*M_PI + dtSec);
     tanData[i] = cosData[i] > 1.E-10 ? sinData[i]/cosData[i] : 1.E30;
   }
-#endif
+
   for(int i=0;i<8;++i){
     PlotHandle &plot = plots[i];
     plot->lock();
     plot->clear();
-#if 0
+
     if(i < 4){
       plot->setPropertyValue("tics.y-distance",0.25);
     }else if(i<6){
@@ -168,14 +168,16 @@ void run(){
       plot->addSeriesData(&sinSeries[0].x, sinSeriesUsed,
                           new AbstractPlotWidget::Pen(QColor(255,0,0)), "continous data", 2);
     }
-#endif
+
     if(i == 7){
       //float xs[] = { 1,2,3,4};
       //float ys[] = { 1,2,3,4};
       const float data[10] = {1,2,3,4,5,6,-7,3,2,1};
-      plot->addBarPlotData(data,10, new AbstractPlotWidget::Pen(QColor(255,0,0), Qt::NoPen, ' ', 5, QColor(255,0,0,200)));
+      plot->addBarPlotData(data,10, new AbstractPlotWidget::Pen(QColor(255,0,0), Qt::NoPen, ' ', 5, QColor(255,0,0,200)),"red data");
       const float data2[11] = {0.7,1,2,3,4,5,6,-7,3,2,1};
-      plot->addBarPlotData(data2,10, new AbstractPlotWidget::Pen(QColor(0,255,0), Qt::NoPen, ' ', 5, QColor(0,255,0,200)));
+      plot->addBarPlotData(data2,10, new AbstractPlotWidget::Pen(QColor(0,255,0), Qt::NoPen, ' ', 5, QColor(0,255,0,200)),"green data");
+      const float data3[14] = {3,4,5,0.7,1,2,3,4,5,6,-7,3,2,1};
+      plot->addBarPlotData(data3,14, new AbstractPlotWidget::Pen(QColor(0,100,255), Qt::NoPen, ' ', 5, QColor(0,100,255,200)),"blue data");
 
       //plot->addScatterData('x',xs,ys,4,"dummy data");
     }
