@@ -108,6 +108,8 @@ namespace icl{
     std::vector<QPoint> polygonBuf;
     std::vector<ScatterData*> scatterData;
     std::vector<SeriesData*> seriesData;
+    std::vector<SeriesData*> barPlotData;
+
     std::vector<QPoint> qpointBuf;
     int numUsedQPoints;
     
@@ -115,6 +117,10 @@ namespace icl{
       int maxLineLen = 0;
       for(unsigned int i=0;i<seriesData.size();++i){
         const SeriesData &d = *seriesData[i];
+        if(d.size() > maxLineLen) maxLineLen = d.size();
+      }
+      for(unsigned int i=0;i<barPlotData.size();++i){
+        const SeriesData &d = *barPlotData[i];
         if(d.size() > maxLineLen) maxLineLen = d.size();
       }
       return maxLineLen;
@@ -128,6 +134,7 @@ namespace icl{
   }
 
   PlotWidget::~PlotWidget(){
+    clear();
     delete data;
   }
   
@@ -153,7 +160,7 @@ namespace icl{
     p.resetTransform();    
     p.setClipping(true);
     p.setClipRect(QRect(QPoint(state.b_left, state.b_top), QPoint(width()-state.b_right-2, height()-state.b_bottom-2)));
-    bool result = drawSeriesData(p,state)  | drawScatterData(p,state);
+    bool result = drawSeriesData(p,state)  | drawScatterData(p,state) | drawBarPlotData(p,state);
     p.setClipping(false);
 
     return result;
@@ -273,6 +280,79 @@ namespace icl{
     }
     return true;
   }
+
+  /// draws the bar plot data
+  bool PlotWidget::drawBarPlotData(QPainter &p, const DrawState &state){
+    if(!data->barPlotData.size()) return false;
+    
+    const int rows = (int)data->barPlotData.size();
+
+    const Rect32f &v = state.dynamicViewPort;
+    const Range32f xrange(v.x,v.right()), yrange(v.y,v.bottom());
+    const Rect32f &vd = state.dataViewPort;
+
+    LinearTransform1D A(Range32f(vd.left(), vd.right()),Range32f(0,1));
+    float lFrac = A(v.left()), rFrac = A(v.right());
+    float len = data->getMaxSeriesDataRowLen()-1;
+    // we use (len-1) as range since with 100 bins, we have only 99 gaps
+    LinearTransform1D lx(Range32f(lFrac*(len-1), rFrac*(len-1)),
+                         Range32f(state.b_left,width()-state.b_right));
+    LinearTransform1D ly(yrange, Range32f(height()-state.b_bottom,state.b_top)); 
+    
+    Range32s winYRange(state.b_top, height()-state.b_bottom);
+    
+    for(int y=0;y<rows;++y){
+      const Data::SeriesData &sd = *data->barPlotData[y];
+      const float *r = sd.data.get();
+      const int stride = sd.stride;
+
+      int firstVisibleX = iclMax(0,(int)floor(lFrac*sd.size()));
+      int lastVisibleX = iclMin((int)sd.size(), (int)ceil(rFrac*sd.size())+1);
+      firstVisibleX = clip(firstVisibleX,0,sd.size()-1);
+      lastVisibleX = clip(lastVisibleX,0,sd.size()-1);
+
+      std::vector<float> &ybuf = data->ybuf;
+      std::vector<float> &xbuf = data->xbuf;
+      std::vector<bool> &yClipBuf = data->yClipBuf;
+      if((int)ybuf.size() < sd.size()) ybuf.resize(sd.size());
+      if((int)xbuf.size() < sd.size()) xbuf.resize(sd.size());
+      if(state.zoomed && (int)yClipBuf.size() < sd.size()) yClipBuf.resize(sd.size());
+      
+      for(int x=firstVisibleX;x<=lastVisibleX;++x){
+        ybuf[x] = ly(r[stride*x]);
+        xbuf[x] = lx(x);
+        if( state.zoomed ){
+          yClipBuf[x] = winYRange.contains(ybuf[x]);
+        }
+      }
+      
+      const PenPtr &s = sd.style;
+
+      const bool drawFill = state.allowFill && (s->fillBrush != Qt::NoBrush);
+      const bool drawLines = state.allowLines && (s->linePen != Qt::NoPen);
+      // const bool drawSymbols = ( state.allowSymbols && (s->symbolPen != Qt::NoPen) 
+      //                           && s->symbol != ' '
+      //                           && s->symbolSize > 0 );
+      //    const bool symbolFilled = ( drawSymbols &&  'A' <= s->symbol  && s->symbol <= 'Z');
+
+      if(drawFill || drawLines){
+
+        const int fillZero = ly(0);
+        p.setBrush(s->fillBrush);
+        p.setPen(s->linePen);
+        
+        const float wAll = .8*(xbuf[1] - xbuf[0]);
+
+        for(int x=firstVisibleX;x<lastVisibleX;++x){
+          const float xStart = xbuf[x] + y * (wAll/rows);
+          const float wOne = floor(wAll/rows) - 2;
+          p.drawRect(QRect(QPoint(xStart, ybuf[x]), QPoint(xStart+wOne, fillZero)));
+        }
+      }
+    } 
+    return true;
+  }
+
   
   bool PlotWidget::drawSeriesData(QPainter &p, const DrawState &state){
     if(!data->seriesData.size()) return false;
@@ -320,7 +400,7 @@ namespace icl{
       
       const PenPtr &s = sd.style;
 
-      QPoint psFill[3];
+      QPoint psFill[4];
       const bool drawFill = state.allowFill && (s->fillBrush != Qt::NoBrush);
       const bool drawLines = state.allowLines && (s->linePen != Qt::NoPen);
       const bool drawSymbols = ( state.allowSymbols && (s->symbolPen != Qt::NoPen) 
@@ -330,22 +410,42 @@ namespace icl{
 
       if(drawFill){
 
-        const int fillBottom = height()-state.b_bottom;
+        //        const int fillBottom = height()-state.b_bottom;
+        const int fillZeroY = ly(0);
+        
         p.setBrush(s->fillBrush);
         p.setPen(Qt::NoPen);
         for(int x=firstVisibleX+1;x<lastVisibleX;++x){
-          const int currY = ybuf[x];//icl::clip((int)ybuf[x],yMinVisible,yMaxVisible); 
-          const int lastY = ybuf[x-1]; //icl::clip((int)ybuf[x-1],yMinVisible,yMaxVisible); 
-          const int minY = iclMax(currY,lastY);
-          
-          psFill[0] = QPoint(xbuf[x-1],lastY);
-          psFill[1] = QPoint(xbuf[x],currY);
-          psFill[2] = ( minY == psFill[0].y() ?
-                        QPoint(xbuf[x],lastY) :
-                        QPoint(xbuf[x-1],currY) );
-
-          p.drawConvexPolygon(psFill,3);
-          p.drawRect(QRect(QPoint(xbuf[x-1],minY), QPoint(xbuf[x]-1, fillBottom)));
+          const int currY = ybuf[x];
+          const int lastY = ybuf[x-1]; 
+          const int maxY = iclMax(currY,lastY);
+          const int minY = iclMin(currY,lastY);
+          if((currY >= fillZeroY && lastY >= fillZeroY) ||
+             (currY < fillZeroY && lastY < fillZeroY) ){
+            if(currY < fillZeroY){
+              psFill[0] = QPoint(xbuf[x-1],lastY);
+              psFill[1] = QPoint(xbuf[x],currY);
+              psFill[2] = ( maxY == psFill[0].y() ?
+                            QPoint(xbuf[x],lastY) :
+                            QPoint(xbuf[x-1],currY) );
+              p.drawConvexPolygon(psFill,3);
+              p.drawRect(QRect(QPoint(xbuf[x-1],maxY), QPoint(xbuf[x]-1, fillZeroY))); 
+            }else{
+              psFill[0] = QPoint(xbuf[x-1],lastY+1);
+              psFill[1] = QPoint(xbuf[x],currY+1);
+              psFill[2] = ( minY == lastY ?
+                            QPoint(xbuf[x],lastY+1) :
+                            QPoint(xbuf[x-1],currY+1) );
+              p.drawConvexPolygon(psFill,3);
+              p.drawRect(QRect(QPoint(xbuf[x-1],minY), QPoint(xbuf[x]-1, fillZeroY))); 
+            }
+          }else{ // the function plot intersects the y=0 level
+            psFill[0] = QPoint(xbuf[x-1],lastY);
+            psFill[1] = QPoint(xbuf[x-1],fillZeroY);
+            psFill[2] = QPoint(xbuf[x],fillZeroY);
+            psFill[3] = QPoint(xbuf[x],currY);
+            p.drawConvexPolygon(psFill,4);
+          }
         }
       }
       
@@ -446,18 +546,23 @@ namespace icl{
 
 
   Range32f PlotWidget::estimateDataXRange() const{
-    bool haveSeries = data->seriesData.size(), haveScatter = data->scatterData.size();
-    if(!haveSeries && !haveScatter){
+
+
+    const bool haveSeries = data->seriesData.size();
+    const bool haveScatter = data->scatterData.size();
+    const bool haveBarPlot = data->barPlotData.size();
+    
+    if(!haveSeries && !haveScatter && !haveBarPlot){
       // no data at all
       return Range32f(0,0);
     }
-    if(haveSeries && haveScatter){
+    if((haveSeries||haveBarPlot) && haveScatter){
       // both is given, but not viewport is set -> what to use?
-      WARNING_LOG("both scatter- and series data is given, data x-viewport is missing");
+      WARNING_LOG("both scatter- and series/bar-plot data is given, data x-viewport is missing");
       return Range32f(0,0);
     }
 
-    if(haveSeries){
+    if(haveSeries || haveBarPlot){
       // use max line len, 0
       return Range32f(0, data->getMaxSeriesDataRowLen()-1);
     }else{
@@ -474,8 +579,10 @@ namespace icl{
   }
 
   Range32f PlotWidget::estimateDataYRange() const{
-    bool haveSeries = data->seriesData.size(), haveScatter = data->scatterData.size();
-    if(!haveSeries && !haveScatter){
+    const bool haveSeries = data->seriesData.size();
+    const bool haveScatter = data->scatterData.size();
+    const bool haveBarPlot = data->barPlotData.size();
+    if(!haveSeries && !haveScatter && !haveBarPlot){
       // no data at all
       return Range32f(0,0);
     }
@@ -500,6 +607,15 @@ namespace icl{
         }
       }
     }
+    if(haveBarPlot){
+      for(unsigned int i=0;i<data->barPlotData.size();++i){
+        const Data::SeriesData &d = *data->barPlotData[i];
+        for(int j=0;j<d.size();++j){
+          r.extend(d.at(j));
+        }
+      }
+    }
+
     return r;
   }
   
@@ -556,6 +672,15 @@ namespace icl{
     data->scatterData.clear();
   }
 
+
+  void PlotWidget::clearBarPlotData(){
+    Locker lock(this);
+    for(unsigned int i=0;i<data->barPlotData.size();++i){
+      delete data->barPlotData[i];
+    }
+    data->barPlotData.clear();
+  }
+
   /// adds series data
   void PlotWidget::addSeriesData(const float *data, int len, 
                                  const AbstractPlotWidget::PenPtr &style,
@@ -595,12 +720,33 @@ namespace icl{
     Locker lock(this);
     data->scatterData.push_back(s);
   }
+  
+  /// adds data for a bar plots
+  void PlotWidget::addBarPlotData(const float *data, int len,
+                                  const AbstractPlotWidget::PenPtr &style, const std::string &name, int stride, 
+                                  bool deepCopyData, bool passOwnerShip){
+  Data::SeriesData *s = new Data::SeriesData(style, len, name, deepCopyData?1:stride);
+
+    if(deepCopyData){
+      s->data = new float[len];
+      for(int i=0;i<len;++i){
+        s->data[i] = data[i*stride];
+      }
+    }else{
+      s->data = SmartArray<float>(const_cast<float*>(data), passOwnerShip);
+    }
+    Locker lock(this);
+    this->data->barPlotData.push_back(s);
+  
+
+  }
 
 
   void PlotWidget::clear() {
     clearAnnotations();
     clearSeriesData(); 
     clearScatterData(); 
+    clearBarPlotData();
   }
   
   static Configurable *create_PlotWidget(){

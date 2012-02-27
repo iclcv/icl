@@ -244,6 +244,9 @@ namespace icl{
     /// draws the sctter data
     virtual bool drawScatterData(QPainter &p, const DrawState &state); 
 
+    /// draws the bar plot data
+    virtual bool drawBarPlotData(QPainter &p, const DrawState &state); 
+
     /// draws all the data
     virtual bool drawData(QPainter &p); 
 
@@ -280,6 +283,12 @@ namespace icl{
     void addSeriesData(const float *data, int len, 
                        const AbstractPlotWidget::PenPtr &style = new AbstractPlotWidget::Pen(QColor(255,0,0)),
                        const std::string &name="", int stride=1, bool deepCopy=true, bool passOwnerShip=false);
+    
+    
+    /// adds data for a bar plots
+    void addBarPlotData(const float *data, int len,
+                        const AbstractPlotWidget::PenPtr &style = new AbstractPlotWidget::Pen(QColor(255,0,0)),
+                        const std::string &name="", int stride=1, bool deepCopy=true, bool passOwnerShip=false);
 
       /// adds a list of symbols 
     /** @param sym symbol type 
@@ -307,12 +316,15 @@ namespace icl{
                         int r=255, int g=0, int b=0, int size=5, bool connectingLine=false,
                         int xStride=1, int yStride=1, bool filled = false,
                         bool deepCopyData=true, bool passDataOwnerShip=false);
-    
-    /// clears the symbol draw list
+
+    /// clears the scatter data draw list
     void clearScatterData();
     
-    /// clears the symbol draw list
+    /// clears series data draw list
     void clearSeriesData();
+    
+    /// clears the bar plot draw list
+    void clearBarPlotData();
     
     /// clears all contained data
     void clear();
