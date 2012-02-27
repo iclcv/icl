@@ -326,17 +326,28 @@ namespace icl{
   }
 
   template<class T>
-  void map_image(const Img<T> &src, Img<T> &dst, const RGBDMapping M, const float *D){
+  void map_image(const Img<T> &src, Img<T> &dst, const RGBDMapping M, const float *D, 
+                 const Array2D<Vec> &ps, RGBDImageSceneObject::MappingMode mode){
     const int W = src.getWidth(), H = src.getHeight();
     const Rect imageRect(0,0,W,H);
     const int C = src.getChannels();
     for(int c=0;c<C;++c){
       const Channel<T> s = src[c];
       Channel<T> d = dst[c];
-      for(int y=0;y<H;++y){
-        for(int x=0;x<W;++x,++D){
-          Point p = M.apply(x,y,(*D));
-          d(x,y) = imageRect.contains(p.x,p.y) ? s(p.x,p.y) : 0;
+      if(mode == RGBDImageSceneObject::XYZ_WORLD){
+        for(int y=0;y<H;++y){
+          for(int x=0;x<W;++x,++D){
+            const Vec &pW = ps(x,y);
+            Point p = M.apply(pW[0],pW[1],pW[2]);
+            d(x,y) = imageRect.contains(p.x,p.y) ? s(p.x,p.y) : 0;
+          }
+        }
+      }else{
+        for(int y=0;y<H;++y){
+          for(int x=0;x<W;++x,++D){
+            Point p = M.apply(x,y,(*D));
+            d(x,y) = imageRect.contains(p.x,p.y) ? s(p.x,p.y) : 0;
+          }
         }
       }
     }
@@ -409,7 +420,8 @@ namespace icl{
 #define ICL_INSTANTIATE_DEPTH(D)                                        \
       case depth##D: map_image(*src->as##D(), *(*dst)->as##D(),         \
                                m_data->mapping,                         \
-                               m_data->lastCorrectedDepthImage.begin(0)); \
+                               m_data->lastCorrectedDepthImage.begin(0), \
+                               getPoints(), m_data->mode);           \
         break;
       ICL_INSTANTIATE_ALL_DEPTHS
 #undef ICL_INSTANTIATE_DEPTH

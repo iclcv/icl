@@ -286,6 +286,9 @@ namespace icl{
     
     
     /// adds data for a bar plots
+    /** Bar plots basically work like function/series data except for the fact, that
+        bars are drawn instead of a (filled) function graph line
+        @see addSeriesData */
     void addBarPlotData(const float *data, int len,
                         const AbstractPlotWidget::PenPtr &style = new AbstractPlotWidget::Pen(QColor(255,0,0)),
                         const std::string &name="", int stride=1, bool deepCopy=true, bool passOwnerShip=false);
