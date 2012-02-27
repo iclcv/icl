@@ -35,9 +35,71 @@
 #include <ICLQt/PlotWidget.h>
 
 namespace icl{
-  PlotWidget::PlotWidget(QWidget *parent):
-    LowLevelPlotWidget(parent){
-  
+  struct PlotWidget::Data{
+
   };
+  
+  PlotWidget::PlotWidget(QWidget *parent):
+    LowLevelPlotWidget(parent),m_data(new Data){
+  }
+  
+  PlotWidget::~PlotWidget(){
+    delete m_data;
+  }
+  
+  void PlotWidget::color(int r, int g, int b, int a=255){
+    
+  }
+  
+  void PlotWidget::fill(int r, int g, int b, int a=255){
+  
+  }
+
+  void PlotWidget::sym(char s){
+  
+  }
+  
+  void PlotWidget::linewidth(float width){
+  
+  }
+  
+  void PlotWidget::symsize(float size){
+  
+  }
+  
+  void PlotWidget::pointsize(float size){
+  
+  }
+  
+  template<class T>
+  void PlotWidget::scatter(const T *xs, const T *ys, int num, int xStride, int yStride){
+    
+  }
+  /// TODO instantiate!
+
+  template<class T>
+  void PlotWidget::series(const T *data, int num, int stride){
+  
+  }
+
+  template<class T>
+  void PlotWidget::bars(const T *data, int num, int stride){
+  
+  }
+
+  void PlotWidget::point(){
+  
+  }
+  void PlotWidget::points(){}
+  void PlotWidget::line(){}
+  void PlotWidget::lines(){}
+  void PlotWidget::linestrip(){}
+  void PlotWidget::triangle(){}
+  void PlotWidget::rect(){}
+  void PlotWidget::text(){}
+  void PlotWidget::fontsize(){}
+  void PlotWidget::ellipse(){}
+  void PlotWidget::circle(){}
+  void PlotWidget::arrow(){}
 
 }
