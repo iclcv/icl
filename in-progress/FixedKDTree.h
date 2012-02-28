@@ -53,33 +53,65 @@ namespace icl{
     
     
     struct Node{
+      Node *parent;
       Node *left;
       Node *right;
       T median;
-      Node(const Vector *v, int num, int level):left(0),right(0){
+      Vector vector;
+      mutable bool visited;
+      
+      Node(Node *parent, const Vector *v, int num, int level):parent(parent),left(0),right(0){
         const int dim = level%K
         if(num == 1){
           median = (*v)[dim];
+          vector = *v;
         }else{
           std::sort(v,v+num,sort_by(dim));
           const int m = dim>>1;
-          median = v[m];
-          left = new Node(v,m,level+1);
-          right = new Node(v+m,num-m,level+1);
+          vector = v[m];
+          median = vector[dim];
+          left = new Node(this,v,m,level+1);
+          right = new Node(this,v+m,num-m,level+1);
         }
       }
       ~Node(){
         if(left) delete left;
         if(right) delete right;
       }
+
+      void reset() const{
+        visited = false;
+        if(left) left->reset();
+        if(right) right->reset();
+      }
+      T dist(const Vector &v) const{
+        T sum = 0;
+        for(int i=0;i<K;++i){
+          sum += sqr(v[i],vector[i]);
+        }
+        return sum;
+      }
+      
     }*root;
 
     FixedKDTree(const Vector *v, int num){
       std::vector<Vector> cpy(v,v+num);
-      root = new Node(cpy.data(), num, 0);
+      root = new Node(0,cpy.data(), num, 0);
     }
     
-        
+    Vector nn(const Vector &v) const{
+      root->reset();
+      const Node *n = root;
+      T minDist = n->dist(v);
+      Node *best = n;
+      int dim = 0;
+      while(true){
+        if(n->is
+        if(v[dim] < 
+      }
+    }
+      
+  
     
     
     
