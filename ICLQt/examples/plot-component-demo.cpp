@@ -75,8 +75,8 @@ void run(){
   static std::vector<float> sinData(100);
   static std::vector<float> cosData(100);
   static std::vector<float> tanData(100);
-  static std::vector<Point32f> scatterData1(10000);
-  static std::vector<Point32f> scatterData2(10000);
+  static std::vector<Point32f> scatterData1(5000);
+  static std::vector<Point32f> scatterData2(5000);
   static std::vector<Point32f> scatterData3(1000);
   static Time t = Time::now();
   float dtSec = (Time::now()-t).toSecondsDouble();
@@ -132,53 +132,72 @@ void run(){
       plot->setPropertyValue("tics.x-distance",1);
     }
     if(i==0 || i==3){
-      plot->addSeriesData(sinData.data(), sinData.size(), 
-                          new AbstractPlotWidget::Pen(QColor(255,0,0),Qt::NoPen,' ',5, QColor(255,0,0,100)),
-                          "sin(x)");
-      if(i==0){
-        plot->setPropertyValue("enable fill",true);
-      }
+      plot->linewidth(1);
+      plot->color(255,0,0);
+      if(i==0) plot->fill(255,0,0,100);
+      plot->label("sin(x)");
+      plot->series(sinData);
     }
     if(i==1 || i == 3){
-      plot->addSeriesData(cosData.data(), cosData.size(), 
-                          new AbstractPlotWidget::Pen(QColor(0,255,0),QColor(0,255,0),'o',2, QColor(0,255,0,100)),
-                          "cos(x)");
-      if(i==3) plot->setPropertyValue("enable symbols",false);
+      plot->color(0,255,0);
+      if(i==1) plot->sym('o',2);
+      plot->label("cos (x)");
+      plot->series(cosData);
     }
     if(i==2 || i == 3){
-      plot->addSeriesData(tanData.data(), tanData.size(), 
-                          new AbstractPlotWidget::Pen(QColor(0,100,255),Qt::NoPen,' ',2, QColor(0,100,255,100)),
-                          "tan(x)");
+      plot->color(0,100,255);
+      plot->label("tan (x)");
+      plot->series(tanData);
     }
     if(i == 4){
-      plot->addScatterData('.',&scatterData1[0].x,&scatterData1[0].y,scatterData1.size(), 
-                           "some noise", 255, 0, 0, 2, false, 2, 2, false, false, false);
-      plot->addScatterData('.',&scatterData2[0].x,&scatterData2[0].y,scatterData2.size(), 
-                           "some other noise", 0, 100, 255, 2, false, 2, 2,false, false, false);
+      plot->label("red noise");
+      plot->color(255,0,0);
+      plot->scatter(scatterData1);
+
+      plot->label("dirty blue noise");
+      plot->color(0,100,255);
+      plot->scatter(scatterData2);
     }
     if(i == 5){
-      plot->addScatterData('.',&scatterData3[0].x,&scatterData3[0].y,scatterData3.size(), 
-                           "some shape", 0, 100, 255, 2, true, 2, 2, true, false, false);
-      plot->addAnnotations('r',FixedMatrix<float,1,4>(-.2,-.2,.4,.4).data() ,1,QColor(255,0,0), QColor(255,0,0,100));
-      plot->addAnnotations('l',FixedMatrix<float,1,4>(0,0,3,3).data(),1,QColor(255,0,0));
-      plot->addAnnotations('t',FixedMatrix<float,1,2>(3.f,3.f).data(),1,QColor(255,0,0),Qt::NoBrush,"the center");
+      plot->color(0,200,255);
+      plot->label("some nice shape");
+      plot->scatter(scatterData3,true);
+      plot->color(255,0,0);
+      plot->fill(255,0,0,100);
+      plot->rect(-.2,-.2,.4,.4);
+      plot->line(0,0,3,3);
+      plot->text(3,3,"the center");
+
     }
     if( i == 6){
       plot->setDataViewPort(Range32f(sinSeries[0].y, sinSeries[sinSeriesUsed-1].y), Range32f(0,0));
-      plot->addSeriesData(&sinSeries[0].x, sinSeriesUsed,
-                          new AbstractPlotWidget::Pen(QColor(255,0,0)), "continous data", 2);
+      plot->color(255,0,0);
+      plot->label("continous data");
+      plot->series(&sinSeries[0].x, sinSeriesUsed, 2);
+      //      plot->addSeriesData(&sinSeries[0].x, sinSeriesUsed,
+      //                    new AbstractPlotWidget::Pen(QColor(255,0,0)), "continous data", 2);
     }
 
     if(i == 7){
       //float xs[] = { 1,2,3,4};
       //float ys[] = { 1,2,3,4};
-      const float data[10] = {1,2,3,4,5,6,-7,3,2,1};
-      plot->addBarPlotData(data,10, new AbstractPlotWidget::Pen(QColor(255,0,0), Qt::NoPen, ' ', 5, QColor(255,0,0,200)),"red data");
-      const float data2[11] = {0.7,1,2,3,4,5,6,-7,3,2,1};
-      plot->addBarPlotData(data2,10, new AbstractPlotWidget::Pen(QColor(0,255,0), Qt::NoPen, ' ', 5, QColor(0,255,0,200)),"green data");
-      const float data3[14] = {3,4,5,0.7,1,2,3,4,5,6,-7,3,2,1};
-      plot->addBarPlotData(data3,14, new AbstractPlotWidget::Pen(QColor(0,100,255), Qt::NoPen, ' ', 5, QColor(0,100,255,200)),"blue data");
+      const float data[8] = {.1,.2,.3,.4,.5,.6,-.7,.3};
+      const float data2[8] = {0.7,.1,.2,.3,.4,.5,.6,-.7};
+      const float data3[10] = {.3,.4,.5,0.7,.1,.2,.3,.4,.5,.6};
+      plot->color(255,0,0);
+      plot->fill(255,0,0,100);
+      plot->label("red bars");
+      plot->bars(data,8);
 
+      plot->color(0,255,0);
+      plot->fill(0,255,0,100);
+      plot->label("green bars");
+      plot->bars(data2,8);
+
+      plot->color(0,100,255);
+      plot->fill(0,100,255,100);
+      plot->label("blue bars");
+      plot->bars(data3,10);
       //plot->addScatterData('x',xs,ys,4,"dummy data");
     }
     plot->unlock();

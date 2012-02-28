@@ -58,44 +58,51 @@ namespace icl{
       for(unsigned int i=0;i<buffers.size();++i){
         if(!buffers[i].used && buffers[i].len >= len){
           buffers[i].used = true;
-          return buffers[i];
+          return buffers[i].get();
         }
       }
       buffers.push_back(Buffer(len));
       buffers.back().used = true;
-      return buffers.back().get();
+     return buffers.back().get();
     }
     
     
     AbstractPlotWidget::Pen state;
-    std::string name;
+    std::string label;
   };
   
   PlotWidget::PlotWidget(QWidget *parent):
     LowLevelPlotWidget(parent),m_data(new Data){
+
+    clear();
   }
   
   PlotWidget::~PlotWidget(){
     delete m_data;
   }
   
-  void PlotWidget::clear::clear() {
-    PlotWidget::clear();
+  void PlotWidget::clear() {
+    LowLevelPlotWidget::clear();
     m_data->freeBuffers();
+    m_data->state.linePen = QPen(QColor(255,0,0));
+    m_data->state.symbolPen = QPen(QColor(255,0,0));
+    m_data->state.fillBrush = Qt::NoBrush;
+    m_data->state.symbol = ' ';
+    m_data->state.symbolSize = 5;
   }
-  void PlotWidget::name(const std::string &nextName){
-    m_data->name = nextName;
+  void PlotWidget::label(const std::string &l){
+    m_data->label = l;
   }
   
-  void PlotWidget::color(int r, int g, int b, int a=255){
+  void PlotWidget::color(int r, int g, int b, int a){
     m_data->state.linePen.setColor(a==255 ? QColor(r,g,b) : QColor(r,g,b,a));
     m_data->state.symbolPen.setColor(a==255 ? QColor(r,g,b) : QColor(r,g,b,a));
   }
   void PlotWidget::pen(const QPen &pen){
-    m_data->linePen = m_data->symbolPen = pen;
+    m_data->state.linePen = m_data->state.symbolPen = pen;
   }  
 
-  void PlotWidget::fill(int r, int g, int b, int a=255){
+  void PlotWidget::fill(int r, int g, int b, int a){
     m_data->state.fillBrush = QBrush(a==255 ? QColor(r,g,b) : QColor(r,g,b,a));
   }
   void PlotWidget::brush(const QBrush &brush){
@@ -108,7 +115,7 @@ namespace icl{
   
   void PlotWidget::linewidth(float width){
     m_data->state.linePen.setWidthF(width);
-    m_data->state.sybolPen.setWidthF(width);
+    m_data->state.symbolPen.setWidthF(width);
   }
   
   void PlotWidget::symsize(float size){
@@ -128,8 +135,8 @@ namespace icl{
     }
     const QColor c = m_data->state.symbolPen.color();
     
-    addScatterData(m_data->state.symbol,
-                   startB, startB+1, num, m_data->name,
+    addScatterData((m_data->state.symbol == ' ' && !connect) ? '.' : m_data->state.symbol,
+                   startB, startB+1, num, m_data->label,
                    c.red(), c.green(), c.blue(),
                    m_data->state.symbolSize,
                    connect, 2, 2, false, false, false);
@@ -146,7 +153,7 @@ namespace icl{
         b[i] =  data[i*stride];
       }
     }
-    addSeriesData(b,num,new AbstractPlotWidget::Pen(m_data->state), m_data->name, 1, false, false);
+    addSeriesData(b,num,new AbstractPlotWidget::Pen(m_data->state), m_data->label, 1, false, false);
   }
 
   template<class T>
@@ -159,37 +166,33 @@ namespace icl{
         b[i] =  data[i*stride];
       }
     }
-    addBarPlotData(b,num,new AbstractPlotWidget::Pen(m_data->state), m_data->name, 1, false, false);
+    addBarPlotData(b,num,new AbstractPlotWidget::Pen(m_data->state), m_data->label, 1, false, false);
   }
 
-  /*
 
-const char type,const float *data, int num=1, 
-                        const QPen &linePen = QColor(255,0,0),
-                        const QBrush &brush = Qt::NoBrush,
-                        const std::string &text="", const std::string &textDelim=","
-
-*/
-
+   
+  template void PlotWidget::bars<icl32f>(const icl32f*,int,int);
+  template void PlotWidget::series<icl32f>(const icl32f*,int,int);
+  template void PlotWidget::scatter<icl32f>(const icl32f*, const icl32f*, int,int,int,bool);
+  
+ 
   void PlotWidget::line(const Point32f &a, const Point32f &b){
     const float data[] = { a.x, a.y, b.x, b.y };
-    addAnnotations('l',data, 1, m_data->state.linePen, Qt::NoBrush, m_data->text, '\0'); 
+    addAnnotations('l',data, 1, m_data->state.linePen, Qt::NoBrush);
   }
 
-  void PlotWidget::point(const Point32f &p){
-    const float data[] = { a.x, a.y, b.x, b.y };
-    addAnnotations('l',data, 1, m_data->state.linePen, Qt::NoBrush, m_data->text, '\0'); 
-    
-  }
-  
-  void PlotWidget::linestrip(const std::vector<Point32f> &ps, bool closedLoop=true){
+  void PlotWidget::linestrip(const std::vector<Point32f> &ps, bool closedLoop){
     linestrip(&ps[0].x, &ps[0].y, ps.size(), closedLoop);
   }
-  void PlotWidget::linestrip(const std::vector<Point> &ps, bool closedLoop=true){}
-  void PlotWidget::linestrip(const Point32f *ps, int num, bool closedLoop=true){}
-  linestrip(&ps[0].x, &ps[0].y, num, closedLoop);
-  void PlotWidget::linestrip(const Point *ps, int num, bool closedLoop=true){
-    std::vector<Point32f> data(2*(num-1) + closedLoop*4);
+  void PlotWidget::linestrip(const std::vector<Point> &ps, bool closedLoop){
+    linestrip(ps.data(), ps.size(), closedLoop);
+  }
+  void PlotWidget::linestrip(const Point32f *ps, int num, bool closedLoop){
+    linestrip(&ps[0].x, &ps[0].y, num, closedLoop);
+  }
+
+  void PlotWidget::linestrip(const Point *ps, int num, bool closedLoop){
+    std::vector<Point32f> data(2*(num-1) + closedLoop*2);
     int idx;
     for(int i=1;i<num;++i){
       data[idx++] = ps[i-1];
@@ -199,26 +202,49 @@ const char type,const float *data, int num=1,
       data[idx++] = ps[num-1];
       data[idx++] = ps[0];
     }
-    addAnnotations('l',data, 1, m_data->state.linePen, Qt::NoBrush, m_data->text, '\0');
+    addAnnotations('l',&data[0].x, 1, m_data->state.linePen, Qt::NoBrush, m_data->label, '\0');
   }
-  void PlotWidget::linestrip(const float *xs, const float *ys, int num, bool closedLoop=true){
-    
+  void PlotWidget::linestrip(const float *xs, const float *ys, int num, bool closedLoop){
+    std::vector<Point32f> data(2*(num-1) + closedLoop*2);
+    int idx;
+    for(int i=1;i<num;++i){
+      data[idx++] = Point32f(xs[i-1], ys[i-1]);
+      data[idx++] = Point32f(xs[i], ys[i]);
+    }
+    if(closedLoop){
+      data[idx++] = Point32f(xs[num-1], ys[num-1]);
+      data[idx++] = Point32f(*xs,*ys);
+    }
+    addAnnotations('l',&data[0].x, 1, m_data->state.linePen, Qt::NoBrush);
   }
   
   
-  void PlotWidget::rect(const Point32f &ul, const Point32f &lr){}
-  void PlotWidget::rect(const Rect &r){}
-  void PlotWidget::rect(const Rect32f &r){}
-  void PlotWidget::rect(float x, float y, float w, float h){}
+  void PlotWidget::rect(const Point32f &ul, const Point32f &lr){
+    rect(Rect32f(ul.x,ul.y, lr.x-ul.x, lr.y-ul.y));
+  }
+  void PlotWidget::rect(const Rect &r){
+    rect(Rect32f(r.x,r.y,r.width,r.height));
+  }
+  void PlotWidget::rect(const Rect32f &r){
+    addAnnotations('r',&r.x, 1,m_data->state.linePen, m_data->state.fillBrush);
+  }
+  void PlotWidget::rect(float x, float y, float w, float h){
+    rect(Rect32f(x,y,w,h));
+  }
   
   void PlotWidget::circle(const Point32f &c, float r){
-  
+    circle(c.x,c.y,r);
   }
   void PlotWidget::circle(float cx, float cy, float r){
-  
+    const float d[] = {cx,cy,r};
+    addAnnotations('c',d,1,m_data->state.linePen, m_data->state.fillBrush);
   }
   
-  void PlotWidget::text(float x, float y, const std::string &text){}
-  void PlotWidget::text(const Point32f &p, const std::string &text){}
+  void PlotWidget::text(float x, float y, const std::string &text){
+    this->text(Point32f(x,y),text);
+  }
+  void PlotWidget::text(const Point32f &p, const std::string &text){
+    addAnnotations('t',&p.x,1,m_data->state.linePen, m_data->state.fillBrush, text, "\n");
+  }
   
 }

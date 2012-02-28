@@ -36,6 +36,7 @@
 #define ICL_PLOT_WIDGET_H
 
 #include <ICLQt/LowLevelPlotWidget.h>
+#include <ICLUtils/FixedMatrix.h>
 
 namespace icl{
 
@@ -51,12 +52,12 @@ namespace icl{
     inline void unlock() { LowLevelPlotWidget::unlock(); }
 
 
-    virtual void clear() {}
+    virtual void clear();
  
     inline void reset() { clear(); }
     
-    void name(const std::string &nextName);
-    inline void noname() { name(""); }
+    void label(const std::string &primitiveLabel);
+    inline void nolabel() { label(""); }
     
     void color(int r, int g, int b, int a=255);
     void pen(const QPen &pen);
@@ -76,6 +77,10 @@ namespace icl{
 
 
     void sym(char s);
+    inline void sym(char s, int symsize){
+      sym(s);
+      this->symsize(symsize);
+    }
     
     inline void nocolor(){ color(0,0,0,0); }
     inline void nofill() { fill(0,0,0,0); }
@@ -117,14 +122,6 @@ namespace icl{
     template<class T>
     inline void bars(const std::vector<T> &data){
       bars(data.data(), data.size(), 1);
-    }
-    
-    /// draws a point using the current color, fill and symbol
-    void point(const Point32f &p);
-
-    /// draws a point using the current color, fill and symbol
-    inline void point(float x, float y){
-      point(Point32f(x,y));
     }
     
     /// draws a line using the current color
