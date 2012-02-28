@@ -56,6 +56,8 @@ namespace icl{
     inline void reset() { clear(); }
     
     void name(const std::string &nextName);
+    inline void noname() { name(""); }
+    
     void color(int r, int g, int b, int a=255);
     void pen(const QPen &pen);
 
@@ -116,25 +118,38 @@ namespace icl{
     inline void bars(const std::vector<T> &data){
       bars(data.data(), data.size(), 1);
     }
+    
+    /// draws a point using the current color, fill and symbol
+    void point(const Point32f &p);
 
-    /// annotation stuff
-    point();
-    points();
-    line();
-    lines();
-    linestrip();
-    triangle();
-    rect();
-    text();
-    fontsize();
-    ellipse();
-    circle();
-    arrow();
+    /// draws a point using the current color, fill and symbol
+    inline void point(float x, float y){
+      point(Point32f(x,y));
+    }
     
+    /// draws a line using the current color
+    void line(const Point32f &a, const Point32f &b);
     
-    
-    
+    inline void line(float x1, float y1, float x2, float y2){
+      line(Point32f(x1,y1),Point32f(x2,y2));
+    }
 
+    void linestrip(const std::vector<Point32f> &ps, bool closedLoop=true);
+    void linestrip(const std::vector<Point> &ps, bool closedLoop=true);
+    void linestrip(const Point32f *ps, int num, bool closedLoop=true);
+    void linestrip(const Point *ps, int num, bool closedLoop=true);
+    void linestrip(const float *xs, const float *ys, int num, bool closedLoop=true);
+
+    void rect(const Point32f &ul, const Point32f &lr);
+    void rect(const Rect &r);
+    void rect(const Rect32f &r);
+    void rect(float x, float y, float w, float h);
+
+    void circle(const Point32f &c, float r);
+    void circle(float cx, float cy, float r);
+      
+    void text(float x, float y, const std::string &text);
+    void text(const Point32f &p, const std::string &text);
   };
 
 };

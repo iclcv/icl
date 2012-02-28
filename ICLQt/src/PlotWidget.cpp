@@ -138,27 +138,87 @@ namespace icl{
 
   template<class T>
   void PlotWidget::series(const T *data, int num, int stride){
-  
+    float *b = m_data->getBuffer(num);
+    if(stride ==1){
+      std::copy(data,data+num, b);
+    }else{
+      for(int i=0;i<num;++i){
+        b[i] =  data[i*stride];
+      }
+    }
+    addSeriesData(b,num,new AbstractPlotWidget::Pen(m_data->state), m_data->name, 1, false, false);
   }
 
   template<class T>
   void PlotWidget::bars(const T *data, int num, int stride){
-  
+    float *b = m_data->getBuffer(num);
+    if(stride ==1){
+      std::copy(data,data+num, b);
+    }else{
+      for(int i=0;i<num;++i){
+        b[i] =  data[i*stride];
+      }
+    }
+    addBarPlotData(b,num,new AbstractPlotWidget::Pen(m_data->state), m_data->name, 1, false, false);
   }
 
-  void PlotWidget::point(){
+  /*
+
+const char type,const float *data, int num=1, 
+                        const QPen &linePen = QColor(255,0,0),
+                        const QBrush &brush = Qt::NoBrush,
+                        const std::string &text="", const std::string &textDelim=","
+
+*/
+
+  void PlotWidget::line(const Point32f &a, const Point32f &b){
+    const float data[] = { a.x, a.y, b.x, b.y };
+    addAnnotations('l',data, 1, m_data->state.linePen, Qt::NoBrush, m_data->text, '\0'); 
+  }
+
+  void PlotWidget::point(const Point32f &p){
+    const float data[] = { a.x, a.y, b.x, b.y };
+    addAnnotations('l',data, 1, m_data->state.linePen, Qt::NoBrush, m_data->text, '\0'); 
+    
+  }
+  
+  void PlotWidget::linestrip(const std::vector<Point32f> &ps, bool closedLoop=true){
+    linestrip(&ps[0].x, &ps[0].y, ps.size(), closedLoop);
+  }
+  void PlotWidget::linestrip(const std::vector<Point> &ps, bool closedLoop=true){}
+  void PlotWidget::linestrip(const Point32f *ps, int num, bool closedLoop=true){}
+  linestrip(&ps[0].x, &ps[0].y, num, closedLoop);
+  void PlotWidget::linestrip(const Point *ps, int num, bool closedLoop=true){
+    std::vector<Point32f> data(2*(num-1) + closedLoop*4);
+    int idx;
+    for(int i=1;i<num;++i){
+      data[idx++] = ps[i-1];
+      data[idx++] = ps[i];
+    }
+    if(closedLoop){
+      data[idx++] = ps[num-1];
+      data[idx++] = ps[0];
+    }
+    addAnnotations('l',data, 1, m_data->state.linePen, Qt::NoBrush, m_data->text, '\0');
+  }
+  void PlotWidget::linestrip(const float *xs, const float *ys, int num, bool closedLoop=true){
+    
+  }
+  
+  
+  void PlotWidget::rect(const Point32f &ul, const Point32f &lr){}
+  void PlotWidget::rect(const Rect &r){}
+  void PlotWidget::rect(const Rect32f &r){}
+  void PlotWidget::rect(float x, float y, float w, float h){}
+  
+  void PlotWidget::circle(const Point32f &c, float r){
   
   }
-  void PlotWidget::points(){}
-  void PlotWidget::line(){}
-  void PlotWidget::lines(){}
-  void PlotWidget::linestrip(){}
-  void PlotWidget::triangle(){}
-  void PlotWidget::rect(){}
-  void PlotWidget::text(){}
-  void PlotWidget::fontsize(){}
-  void PlotWidget::ellipse(){}
-  void PlotWidget::circle(){}
-  void PlotWidget::arrow(){}
-
+  void PlotWidget::circle(float cx, float cy, float r){
+  
+  }
+  
+  void PlotWidget::text(float x, float y, const std::string &text){}
+  void PlotWidget::text(const Point32f &p, const std::string &text){}
+  
 }
