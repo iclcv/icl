@@ -169,11 +169,14 @@ namespace icl{
     addBarPlotData(b,num,new AbstractPlotWidget::Pen(m_data->state), m_data->label, 1, false, false);
   }
 
-
-   
-  template void PlotWidget::bars<icl32f>(const icl32f*,int,int);
-  template void PlotWidget::series<icl32f>(const icl32f*,int,int);
-  template void PlotWidget::scatter<icl32f>(const icl32f*, const icl32f*, int,int,int,bool);
+  
+#define ICL_INSTANTIATE_DEPTH(D)                                        \
+  template void PlotWidget::bars<icl##D>(const icl##D*,int,int);        \
+  template void PlotWidget::series<icl##D>(const icl##D*,int,int);      \
+  template void PlotWidget::scatter<icl##D>(const icl##D*, const icl##D*, int,int,int,bool);
+  
+  ICL_INSTANTIATE_ALL_DEPTHS;
+#undef ICL_INSTANTIATE_DEPTH
   
  
   void PlotWidget::line(const Point32f &a, const Point32f &b){

@@ -58,8 +58,10 @@ namespace icl{
       
       \section _WHERE_ where is the data
       Since the PlotWidget is just an abstract interface, it does not define
-      how the actual data is shaped
-
+      how the actual data is shaped. Use the derived classes LowLevelPlotWidget
+      or PlotWidget to visualize your data. We strongly recommend to use
+      the (high level) PlotWidget class, whose interface is designed in ICL
+      manner.
 
       \section _FEATURES_ Features
       The Abstract PlotWidget provides setting, visualizing and navigating
@@ -201,12 +203,21 @@ namespace icl{
     void unlock() const;
 
     /// adds an annotation to the data viewport
-    /** annotations can be 
+    /** annotations are used to add some extra information to the data that is already
+        displayed. Please note, that annotation points are not used to estimate the 
+        data viewport. If you need the data viewport to be adapted automatically to
+        show all your annotations, you have to compute and set the data viewport manually.
+
         @param type annotation primitive type
             - rectangles (type: 'r'): data order [x,y,width,height],...
             - circles (type 'c'): data order [x,y,radius]..
             - lines (type 'l') data order: [x1,y1,x2,y2], ...
             - text (type 't'): data order: [x,y],...
+            - linestrip (type 'L') data order [x1,y1], ... 
+              for linestrips annotations, "text" is not used
+            - grid (type 'g') data order [nXCells, nYCells] [x1, x2], ...
+              (point order is row major)
+              for grid annotations, "text" is not used
            
             rectangles and circles can optionally be labelled with text labels
             The text labels are displayed centered at the annotations, but the

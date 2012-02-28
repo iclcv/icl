@@ -703,6 +703,41 @@ namespace icl{
         p.setBrush(a.brush);
         const float *data = a.data.data();
         switch(a.type){
+          case 'L':{ // line strip
+            QPoint last(tx(data[0]), ty(data[1]));
+            for(int i=1;i<a.num;++i){
+              QPoint curr(tx(data[2*i]),ty(data[2*i+1]));
+              p.drawLine(last,curr);
+              last = curr;
+            }
+            break;
+          }
+          case 'g':{ // grid
+            const int W = data[0];
+            const int H = data[1];
+            const Point32f *ps = reinterpret_cast<const Point32f*>(data+2);
+            QPoint *currLine = new QPoint[W], *lastLine = new QPoint[W];
+            for(int i=0;i<W;++i){
+              lastLine[i] = QPoint(tx(ps[i].x),ty(ps[i].y));
+              if(i) p.drawLine(lastLine[i-1], lastLine[i]);
+            }
+            for(int y=1;y<H;++y){
+              ps += W;
+              for(int i=0;i<W;++i){
+                currLine[i] = QPoint(tx(ps[i].x),ty(ps[i].y));
+              }              
+              p.drawLine(currLine[0], lastLine[0]);
+              for(int x=1;x<W;++x){
+                p.drawLine(currLine[x-1], currLine[x]);
+                p.drawLine(lastLine[x], currLine[x]);
+              }
+              
+              std::swap(currLine,lastLine);
+            }
+            delete [] currLine;
+            delete [] lastLine;
+            break;
+          }
           case 'r':{
             for(int i=0;i<a.num;++i, data+=4){
               const float x = tx(data[0]), y = ty(data[1]),

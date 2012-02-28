@@ -410,7 +410,7 @@ namespace icl{
 
       for(unsigned int i=0;i<props.size();++i){
         const std::string &p = props[i];
-        unsigned int pos = p.find('.');
+        size_t pos = p.find('.');
         if(pos == std::string::npos){
           sections["general"].push_back(StSt(p,p));
         }else{
