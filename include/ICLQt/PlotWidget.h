@@ -45,6 +45,79 @@ namespace icl{
   /** In contrast to it's parent class icl::LowLevelPlotWidget, the
       icl::PlotWidget interface is allinged with ICL's 2D image
       annotation framework (see icl::ICLDrawWidget).
+
+      \section TYP Visualization Types
+      The PlotWidget has two types of content: 
+      -# <b>Plotting Data</b> (visualized as scatter-plot: 
+         PlotWidget::scatter, or series/function plot:
+         PlotWidget::series, or bar-plot: PlotWidget::bars)
+      -# <b>Annotation data</b> these are extra primitives
+         that are used to show/highligh additional information
+         in the data plot. Annotations are always drawn in the
+         data coordinate space. 
+      
+      Only plotting data is used for automatic view-port estimation.
+      
+      \section GEN General Usage
+      The PlotWidget internally uses a synchronized queue of darw
+      commands. Draw commands can only added in a thread-safe manner
+      if the PlotWidget is locked (see PlotWidget::lock() and 
+      PlotWidget::unlock() ). The PlotWidget does not support
+      to reference to be visualized data using a shallow/pointer
+      copy. Instead, the given data is always copied deeply into
+      an internal buffer. By theses means, given data must not
+      be kept in memory or synchronized mannually. While
+      locked, the following operations for data visualization are
+      available:
+      - PlotWidget::clear() clears the former draw command queue
+      - PlotWidget::label and PlotWidget::nolabel set/unset the
+        legend label for the next scatter, series or bar plot
+      - PlotWidget::color sets the drawing color. This is usually
+        used for symbols as well as for any lines for drawing data
+        as well as for annotations.
+      - PlotWidget::pen also affects the drawing color, but it
+        can be used to a custom pen for line drawing. The pen
+        can e.g. be set up to draw dashed lines.
+      - PlotWidget::linewidth does also affect the pen, so
+        using PlotWidget::pen, will also overwrite the last
+        linewidth value.
+      - PlotWidget::fill is used to the the color for filled
+        areas, such as the bars in a bar-plot, or area between
+        the function-graph and the y=0 axis in series plots.
+        It also affects the fill color of rect- and ellipse
+        annotations.
+      - PlotWidget::brush is similar to fill as pen to color. By
+        setting a QBrush, special color patterns can be used for
+        filling.
+      - PlotWidget::sym sets the symbol, that is used for 
+        scatter and series plots. Supported symbols are listed
+        in the documentation of the AbstractPlotWidget::Pen::Pen
+        constructor.
+      - PlotWidget::scatter, PlotWidget::series and PlotWidget::bars
+        are used to pass Plotting data that is then visualized. For
+        each of these functions, that are several convenience methods
+        and even template that allow for passing differently shaped
+        data directly.
+      
+      For annotation data, the following basic methods are provided.
+      Again, for each of these, several convience methods are also
+      available.
+      - PlotWidget::line draws a line (using the current color)
+      - PlotWidget::rect draws a rect (using the current color and fill)
+      - PlotWidget::circle draws a circle (using the current color and fill)
+      - PlotWidget::text draws text into the drawing area (using
+        the currnet color)
+      - PlotWidget::linestrip draws several lines each starting
+        where the last line ended. In this case, only N-1 points 
+        have to be passed for N lines
+      - PlotWidget::grid allows to draw a 2D grid annotation
+      
+      The methods, PlotWidget::title, PlotWidget::xlabel and 
+      PlotWidget::ylabel are just convenience function that use
+      the derived Configurable's Configurable::setPropertyValue method
+      in a direct manner.
+      
+      \section _EX_ Examples
       
   */
   class PlotWidget : public LowLevelPlotWidget{
