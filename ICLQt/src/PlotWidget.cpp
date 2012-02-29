@@ -248,12 +248,6 @@ namespace icl{
       b[2*i+1] = ys[i*stride];
     }
     b -= 2;
-    SHOW(b[0]);
-    SHOW(b[1]);
-    SHOW(b[2]);
-    SHOW(b[3]);
-    SHOW(b[4]);
-
     addAnnotations('g', b, 1, m_data->state.linePen, Qt::NoBrush);
   }
   

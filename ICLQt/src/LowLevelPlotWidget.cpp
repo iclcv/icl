@@ -339,8 +339,8 @@ namespace icl{
       if(drawFill || drawLines){
 
         const int fillZero = floor(ly(0));
-        p.setBrush(s->fillBrush);
-        p.setPen(s->linePen);
+        p.setBrush(drawFill ? s->fillBrush : Qt::NoBrush);
+        p.setPen(drawLines ? s->linePen : Qt::NoPen);
         
         const float wAll = .8*(xbuf[firstVisibleX+1] - xbuf[firstVisibleX]);
 

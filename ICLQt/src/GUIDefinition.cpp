@@ -112,7 +112,6 @@ namespace icl{
     
     if(paramList.length()){
       m_vecParams = StrTok(paramList,",",true,'\\').allTokens();
-      if(m_vecParams.size()) SHOW(m_vecParams[0]);
     }
     
     if(optParamList.length()){

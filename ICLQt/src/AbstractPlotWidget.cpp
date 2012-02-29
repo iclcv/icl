@@ -288,7 +288,7 @@ namespace icl{
 
     addProperty("enable lines","flag","",true,0,"Enables line rendering (for scatter- and function data)");
     addProperty("enable symbols","flag","",true,0,"Enables symbol rendering (for scatter- and function data)");
-    addProperty("enable fill","flag","",false,0,"Enables filled rendering (for scatter- and function data)");
+    addProperty("enable fill","flag","",true,0,"Enables filled rendering (for scatter- and function data)");
     addProperty("draw legend","flag","",true,0,"Show/Hide the legend");
     addProperty("render symbols as images","flag","",false,0,"Method that is used for symbols");
     addProperty("show zoom indicator","flag","",true,0,"Visualize the current zoom rect in the upper right corner"); 
@@ -448,7 +448,7 @@ namespace icl{
       
       if(v.width && vd.width && getPropertyValue("dynamic-tic-scaling").as<bool>()){
         float f = 1;
-        while(v.width * f < vd.width) f*=2;
+        while(2 * v.width * f < vd.width) f*=2;
         dx /= f;
       }
       
@@ -697,6 +697,8 @@ namespace icl{
     /// draw the annotations
     if(data->annotations.size()){
       p.resetTransform();
+      p.setClipping(true);
+      p.setClipRect(QRect(QPoint(b_left, b_top), QPoint(width()-b_right-2, height()-b_bottom-2)));
       LinearTransform1D tx(data->lastXRange, Range32f(data->lastWindowRect.x, data->lastWindowRect.right()));
       LinearTransform1D ty(data->lastYRange, Range32f(data->lastWindowRect.bottom(),data->lastWindowRect.y));
       for(unsigned int i=0;i<data->annotations.size();++i){
@@ -717,13 +719,7 @@ namespace icl{
           case 'g':{ // grid
             const int W = data[0];
             const int H = data[1];
-            SHOW(W);
-            SHOW(H);
             const Point32f *ps = reinterpret_cast<const Point32f*>(data+2);
-            SHOW(ps[0]);
-            SHOW(ps[1]);
-            SHOW(ps[2]);
-            SHOW("-----------");
             QPoint *currLine = new QPoint[W], *lastLine = new QPoint[W];
             for(int i=0;i<W;++i){
               lastLine[i] = QPoint(tx(ps[i].x),ty(ps[i].y));

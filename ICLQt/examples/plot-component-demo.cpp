@@ -169,7 +169,7 @@ void run(){
     X(i,4) = x*x*x*x;
     Y[i] = y;
   }
-  DynMatrix<float> R = Y*X.pinv(true);
+  DynMatrix<float> R = Y*X.pinv(false);
   static std::vector<float> fApprox(fData.size());
   for(size_t xi=0;xi<fApprox.size();++xi){
     float x = xi/float(fData.size()-1);
