@@ -91,10 +91,12 @@ add_example (${PROJECT_NAME} "config-file-test" "${CONDITIONLIST}" ICLLibsToLink
 add_example (${PROJECT_NAME} "function-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "text-table-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "ransac-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "string-tokenizer-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST HAVE_GTEST_COND)
 set(ICLLibsToLinkAgainst ICLUtils)
 add_gtest (${PROJECT_NAME} "test-matrix" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+
 
 #create lib
 if(WIN32)

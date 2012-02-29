@@ -70,7 +70,8 @@ namespace icl{
         }
         const int dim =  ((type=='c') ? 3 :
                           (type=='r' || type == 'l') ? 4 :
-                          (type=='t' || type == 'L' || type == 'g') ? 2 : 0);
+                          (type=='t' || type == 'L') ? 2 : 
+                          (type=='g') ? (data[0]*data[1]*2+2) : 0);
         if(!dim) throw ICLException("AbstractPlotWidget::addAnnotation(..): invalid type");
         this->data.assign(data,data+num*dim);
       }
@@ -452,13 +453,9 @@ namespace icl{
       }
       
       const float tl = getPropertyValue("tics.length").as<float>()/(2*my) ;
-      //      const float y1 = ryd.minVal - tl, y2 = ryd.minVal + tl;
       const float y1 = winToDrawY(h-b_bottom) - tl, y2 =  winToDrawY(h-b_bottom) + tl;
-      //const float numTics = rxd.getLength()/dx;
-      //    float firstTic = rxd.minVal;
-      // float lastTic = rxd.maxVal + rxd.getLength()/(numTics*100);
 
-      const float gridT = iclMax(ryd.minVal,winToDrawY(b_right));
+      const float gridT = iclMax(ryd.minVal,winToDrawY(b_top));
       const float gridB = iclMin(ryd.maxVal,winToDrawY(height()-b_bottom));
       
       float firstVisibleTic = winToDrawX(b_left);
@@ -523,7 +520,7 @@ namespace icl{
       firstVisibleTic = dy * dyUnits;
       
       float lastVisibleTic = winToDrawY(b_top);
-      dyUnits = ceil(lastVisibleTic/dy);
+      dyUnits = floor(lastVisibleTic/dy);
       lastVisibleTic = dy * dyUnits;
       
       for(float y=firstVisibleTic; y <= lastVisibleTic; y+=dy){
@@ -596,6 +593,11 @@ namespace icl{
                         (lh<0) ? (h+lh) : lh), getPropertyValue("legend.orientation")[0] == 'h');
     }
 
+    std::string title = getPropertyValue("labels.diagramm");
+    if(title.length() && data->setPen(X_AXIS_PEN)){
+      p.drawText(QRectF(w/2,10, 0, 0), Qt::AlignCenter | Qt::TextDontClip, title.c_str());
+    }
+    
     p.resetTransform();
     if(data->mousePressCurr != QPoint(-1,-1)){
       p.setPen(QColor(0,100,255));
@@ -715,7 +717,13 @@ namespace icl{
           case 'g':{ // grid
             const int W = data[0];
             const int H = data[1];
+            SHOW(W);
+            SHOW(H);
             const Point32f *ps = reinterpret_cast<const Point32f*>(data+2);
+            SHOW(ps[0]);
+            SHOW(ps[1]);
+            SHOW(ps[2]);
+            SHOW("-----------");
             QPoint *currLine = new QPoint[W], *lastLine = new QPoint[W];
             for(int i=0;i<W;++i){
               lastLine[i] = QPoint(tx(ps[i].x),ty(ps[i].y));
@@ -922,10 +930,20 @@ namespace icl{
         p.setBrush(FILL_ON ? s.fillBrush : Qt::NoBrush);
         static const int RECT_DIM=10;
 
-        if(LINES_ON){
-          p.setPen(s.linePen);
-          p.drawLine(x,y+(ENTRY_HEIGHT-RECT_DIM)/2+RECT_DIM/2,x+RECT_DIM,y+(ENTRY_HEIGHT-RECT_DIM)/2+RECT_DIM/2);
+        if(FILL_ON && s.fillBrush != Qt::NoBrush){
+          if(LINES_ON){
+            p.setPen(s.linePen);
+          }else{
+            p.setPen(Qt::NoPen);
+          }
+          p.drawRect(QRect(x+6,y+6,6,6));
+        }else{
+          if(LINES_ON){
+            p.setPen(s.linePen);
+            p.drawLine(x,y+(ENTRY_HEIGHT-RECT_DIM)/2+RECT_DIM/2,x+RECT_DIM,y+(ENTRY_HEIGHT-RECT_DIM)/2+RECT_DIM/2);
+          }
         }
+        
         p.setBrush(Qt::NoBrush);
         p.setPen(QColor(0,0,0));
         p.drawText(QRectF(x+14,y,ENTRY_WIDTH-10,ENTRY_HEIGHT),

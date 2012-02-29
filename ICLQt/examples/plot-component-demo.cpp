@@ -87,7 +87,27 @@ void run(){
   static Time t = Time::now();
   float dtSec = (Time::now()-t).toSecondsDouble();
 
-
+  static Array2D<Point32f> grid(30,30);
+  static bool first = true;
+  if(first){
+    first = false;
+    for(int x=0;x<grid.getWidth();++x){
+      for(int y=0;y<grid.getHeight();++y){
+        grid(x,y) = Point32f(x,y);
+      }
+    }
+  }
+  Range32f rxGrid = Range32f::limits(), ryGrid=Range32f::limits();
+  std::swap(rxGrid.minVal, rxGrid.maxVal);
+  std::swap(ryGrid.minVal, ryGrid.maxVal);
+  
+  for(int i=0;i<grid.getDim();++i){
+    GRand gr(0,0.01*Point32f(grid.getWidth()/2-1, grid.getHeight()/2-1).distanceTo(Point32f(i%grid.getWidth(),i/grid.getWidth())));
+    grid[i] += Point32f(gr,gr);
+    rxGrid.extend(grid[i].x);
+    ryGrid.extend(grid[i].y);
+  }
+  
   static Point32f sinSeries[101];
   static int sinSeriesUsed = 0;
   sinSeries[sinSeriesUsed++] = Point32f(sin(dtSec), dtSec/M_PI);
@@ -122,6 +142,42 @@ void run(){
     cosData[i] = cos(relI * 2*M_PI + dtSec);
     tanData[i] = cosData[i] > 1.E-10 ? sinData[i]/cosData[i] : 1.E30;
   }
+  
+  static std::vector<float> fData(100);
+  for(size_t xi=0;xi<fData.size();++xi){
+    float x = xi/float(fData.size()-1);
+    fData[xi] = (200-dtSec)*x*x*x*x - (60+dtSec)*x*x*x - (dtSec/10)*5*x*x - 32*x - 8;
+  }
+  static std::vector<Point32f> fDataSamples(100);
+  for(size_t i=0;i<fDataSamples.size();++i){
+    URand r(0,1);
+    GRand gr(0,4);
+    float x = r;
+    float fx = (200-dtSec)*x*x*x*x - (60+dtSec)*x*x*x - (dtSec/10)*5*x*x - 32*x - 8 + gr;
+    fDataSamples[i] = Point32f(x,fx);
+  }
+  /// try polynomial regression here!
+  DynMatrix<float> X(fDataSamples.size(), 5);
+  DynMatrix<float> Y(fDataSamples.size(), 1);
+  
+  for(size_t i=0;i<fDataSamples.size();++i){
+    const float x = fDataSamples[i].x, y = fDataSamples[i].y;
+    X(i,0) = 1; 
+    X(i,1) = x;
+    X(i,2) = x*x;
+    X(i,3) = x*x*x;
+    X(i,4) = x*x*x*x;
+    Y[i] = y;
+  }
+  DynMatrix<float> R = Y*X.pinv(true);
+  static std::vector<float> fApprox(fData.size());
+  for(size_t xi=0;xi<fApprox.size();++xi){
+    float x = xi/float(fData.size()-1);
+    fApprox[xi] = R[0] + R[1]*x + R[2] *x*x + R[3]*x*x*x + R[4]*x*x*x*x;
+  }
+  /// xxx
+
+  
 
   for(int i=0;i<12;++i){
     PlotHandle &plot = plots[i];
@@ -132,7 +188,7 @@ void run(){
 
     if(i < 4){
       plot->setPropertyValue("tics.y-distance",0.25);
-    }else if(i<6){
+    }else if(i<6 || i>=8){
       plot->setPropertyValue("tics.y-distance",3);
       plot->setPropertyValue("tics.x-distance",3);
     }else{
@@ -142,7 +198,10 @@ void run(){
     if(i==0 || i==3){
       plot->linewidth(1);
       plot->color(255,0,0);
-      if(i==0) plot->fill(255,0,0,100);
+      if(i==0){
+        plot->fill(255,0,0,100);
+        plot->setPropertyValue("enable fill",true);
+      }
       plot->label("sin(x)");
       plot->series(sinData);
     }
@@ -222,8 +281,57 @@ void run(){
       plot->linestrip(scatterData3);
       plot->color(0,0,0);
       plot->title("shape drawn as linestrip");
+      plot->setPropertyValue("borders.top",18);
     }
+    if(i == 9){
+      plot->color(255,0,0);
+      plot->grid(grid);
+      plot->setDataViewPort(rxGrid,ryGrid);
+      plot->setPropertyValue("labels.x-precision",0);
+      plot->setPropertyValue("labels.y-precision",0);
+      plot->title("some distorted grid");
+      plot->setPropertyValue("borders.top",18);
+    }
+    if(i == 10){
+      plot->fill(255,0,0,100);
+      plot->setDataViewPort(Range32f(0,1),Range32f(-50,50));
+      plot->setPropertyValue("enable fill",true);
+      plot->setPropertyValue("tics.x-distance",0.2);
+      plot->setPropertyValue("tics.y-distance",5);
+      plot->setPropertyValue("labels.x-precision",1);
+      plot->setPropertyValue("labels.y-precision",0);
+      plot->label("orig. function");
+      plot->series(fData);
 
+      plot->sym('x',2);
+      plot->color(0,100,255);
+      plot->label("samples");
+      plot->scatter(fDataSamples);
+
+      plot->nosym();
+      
+      plot->color(0,255,0);
+      plot->fill(0,255,0,100);
+      plot->label("regression result");
+      plot->series(fApprox);
+    }
+    if(i==11){
+      plot->setPropertyValue("enable fill",true);
+      plot->setDataViewPort(Range32f(0,2*M_PI),Range32f(-1,1));
+      plot->nocolor();
+      plot->label("sin");
+      plot->fill(255,0,0);
+      plot->bars(sinData.data(), sinData.size()/5,5);
+
+      plot->label("cos");
+      plot->fill(0,255,0);
+      plot->bars(cosData.data(), cosData.size()/5,5);
+
+      plot->label("tan");
+      plot->fill(0,50,255);
+      plot->bars(tanData.data(), tanData.size()/5,5);
+
+    }
     plot->unlock();
     plot.update();
   }

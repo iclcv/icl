@@ -111,7 +111,8 @@ namespace icl{
     split_string(def,m_sType,paramList,optParamList);
     
     if(paramList.length()){
-      m_vecParams = StrTok(paramList,",").allTokens();
+      m_vecParams = StrTok(paramList,",",true,'\\').allTokens();
+      if(m_vecParams.size()) SHOW(m_vecParams[0]);
     }
     
     if(optParamList.length()){
