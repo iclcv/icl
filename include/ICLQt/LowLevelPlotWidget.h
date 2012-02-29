@@ -41,13 +41,25 @@ namespace icl{
 
   
   /// Default AbstractPlotWidget implementation for plotting different kinds of data
-  /** \section _TYPES_ Data types
+  /** \section WHY Why Low-Level ?
+      ICL's plotting framework does also provide a derived class called icl::PlotWidget.
+      We strongly recommend to use the PlotWidget instead of the LowLevelPlotWidget
+      be cause the PlotWidget provides a simpler interface and it's usage is
+      more similar to the usage of ICL's image annotation framework (see ICLDrawWidget
+      and ICLDrawWidget3D). However, in some special situations, the LowLevelPlotWidget
+      provides a better performance, since it can e.g. visualize data that is just linked
+      into it using a shallow copy. In contrast to the LowLevelPlotWidget, the PlotWidget
+      does also provide template methods, that can be used to draw data of all POD types
+      directly. In short:
+      <b> The LowLevelPlotWidget provides a low level interface for
+      data visualization. It's functions are tuned for speed. Usually, the
+      derived class icl::PlotWidget is simpler to use. </b>
+
+
+      \section _TYPES_ Data types
       So far, the LowLevelPlotWidget can be used as scatter plot, bar-plot and as
       series-plot (graph-plot). All types can be used in parallel for overlayed
-      visualization. The LowLevelPlotWidget provides a low level interface for
-      data visualization. It's functions are tuned for speed. Usually, the
-      derived class icl::PlotWidget is simpler to use.
-
+      visualization. 
       \image html plot_widget_h.png
 
       \section _SCATTER_ scatter plots
@@ -67,6 +79,13 @@ namespace icl{
       data X-values (which are not given) are assumed to be equally distributed withing
       the data-viewport's x-range. If no data viewport is provided, the X-range is
       automatically estimated to [0, N-1], which is the data index range.
+
+      \section _BAR_PLOTS_
+      Basically, bar plots are quite similar to function data/series plots. The viewport
+      adaptions is managed indentically here. If several bar plots are used in one graph, 
+      the bars of each bin become smaller and the different bins are shown in an interleaved
+      manner. As for function data, the longest bar plot row is used to determine
+      the data x-range if no x-range is provided explicitly.
 
       <b>Please Note:</b> If both, scatter- and function data is given, but not viewport
       information is available, it is not clear, whether to use the scatter-data X-range

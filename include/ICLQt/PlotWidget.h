@@ -37,6 +37,7 @@
 
 #include <ICLQt/LowLevelPlotWidget.h>
 #include <ICLUtils/FixedMatrix.h>
+#include <ICLUtils/Array2D.h>
 
 namespace icl{
 
@@ -135,7 +136,7 @@ namespace icl{
     void linestrip(const std::vector<Point> &ps, bool closedLoop=true);
     void linestrip(const Point32f *ps, int num, bool closedLoop=true);
     void linestrip(const Point *ps, int num, bool closedLoop=true);
-    void linestrip(const float *xs, const float *ys, int num, bool closedLoop=true);
+    void linestrip(const float *xs, const float *ys, int num, bool closedLoop=true, int stride = 1);
 
     void rect(const Point32f &ul, const Point32f &lr);
     void rect(const Rect &r);
@@ -147,6 +148,50 @@ namespace icl{
       
     void text(float x, float y, const std::string &text);
     void text(const Point32f &p, const std::string &text);
+
+    void grid(int nX, int nY, const float *xs, const float *ys, int stride=1);
+    void grid(const Array2D<Point> &data);
+    
+    inline void grid(const Array2D<Point32f> &data){
+      grid(data.getWidth(), data.getHeight(), &data(0,0).x, &data(0,0).y, 2);
+    }
+    inline void grid(int nX, int nY, const float *xys){
+      grid(nX,nY,xys, xys+1,2);
+    }
+    inline void grid(int nX, int nY, const Point *ps){
+      grid(Array2D<Point>(nX,nY,const_cast<Point*>(ps),false));
+    }
+    inline void grid(int nX, int nY, const Point32f *ps){
+      grid(nX, nY, &ps[0].x, &ps[0].y, 2);
+    }
+    inline void grid(int nX, int nY, const std::vector<Point32f> &ps){
+      grid(nX, nY, &ps[0].x, &ps[0].y, 2);
+    }
+    inline void grid(int nX, int nY, const std::vector<Point> &ps){
+      grid(Array2D<Point>(nX,nY, const_cast<Point*>(ps.data()), false));    
+    }
+    inline void grid(int nX, int nY, const std::vector<float> &xys){
+      grid(nX, nY, xys.data(), xys.data()+1,2);
+    }
+    inline void grid(int nX, int nY, const std::vector<float> &xs, const std::vector<float> &ys){
+      grid(nX, nY, xs.data(), ys.data());
+    }
+
+    /// sets the plot title
+    void title(const std::string &title){
+      setPropertyValue("labels.diagramm",title);
+    }
+    
+    /// sets the x-axis label
+    void xlabel(const std::string &xlabel){
+      setPropertyValue("labels.x-axis",xlabel);
+    }
+
+    /// sets the y-axis label
+    void ylabel(const std::string &ylabel){
+      setPropertyValue("labels.y-axis",ylabel);
+    }
+    
   };
 
 };

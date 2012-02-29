@@ -185,40 +185,28 @@ namespace icl{
   }
 
   void PlotWidget::linestrip(const std::vector<Point32f> &ps, bool closedLoop){
-    linestrip(&ps[0].x, &ps[0].y, ps.size(), closedLoop);
+    linestrip(&ps[0].x, &ps[0].y, ps.size(), closedLoop,2);
   }
   void PlotWidget::linestrip(const std::vector<Point> &ps, bool closedLoop){
     linestrip(ps.data(), ps.size(), closedLoop);
   }
   void PlotWidget::linestrip(const Point32f *ps, int num, bool closedLoop){
-    linestrip(&ps[0].x, &ps[0].y, num, closedLoop);
+    linestrip(&ps[0].x, &ps[0].y, num, closedLoop, 2);
   }
 
   void PlotWidget::linestrip(const Point *ps, int num, bool closedLoop){
-    std::vector<Point32f> data(2*(num-1) + closedLoop*2);
-    int idx;
-    for(int i=1;i<num;++i){
-      data[idx++] = ps[i-1];
-      data[idx++] = ps[i];
-    }
-    if(closedLoop){
-      data[idx++] = ps[num-1];
-      data[idx++] = ps[0];
-    }
-    addAnnotations('l',&data[0].x, 1, m_data->state.linePen, Qt::NoBrush, m_data->label, '\0');
+    std::vector<Point32f> data(num + !!closedLoop);
+    std::copy(ps,ps+num,data.begin());
+    if(closedLoop) data.back() = *ps;
+    addAnnotations('L',&data[0].x, data.size(), m_data->state.linePen, Qt::NoBrush, m_data->label, '\0');
   }
-  void PlotWidget::linestrip(const float *xs, const float *ys, int num, bool closedLoop){
-    std::vector<Point32f> data(2*(num-1) + closedLoop*2);
-    int idx;
-    for(int i=1;i<num;++i){
-      data[idx++] = Point32f(xs[i-1], ys[i-1]);
-      data[idx++] = Point32f(xs[i], ys[i]);
+  void PlotWidget::linestrip(const float *xs, const float *ys, int num, bool closedLoop, int stride){
+    std::vector<Point32f> data(num + !!closedLoop);
+    for(int i=0;i<num;++i){
+      data[i] = Point32f(xs[i*stride], ys[i*stride]);
     }
-    if(closedLoop){
-      data[idx++] = Point32f(xs[num-1], ys[num-1]);
-      data[idx++] = Point32f(*xs,*ys);
-    }
-    addAnnotations('l',&data[0].x, 1, m_data->state.linePen, Qt::NoBrush);
+    if(closedLoop) data.back() = Point32f(xs[0], ys[0]);
+    addAnnotations('L',&data[0].x, data.size(), m_data->state.linePen, Qt::NoBrush);
   }
   
   
@@ -250,4 +238,33 @@ namespace icl{
     addAnnotations('t',&p.x,1,m_data->state.linePen, m_data->state.fillBrush, text, "\n");
   }
   
+  void PlotWidget::grid(int nX, int nY, const float *xs, const float *ys, int stride){
+    const int dim = nX * nY;
+    float *b = m_data->getBuffer(dim*2 + 2);
+    *b++ = nX;
+    *b++ = nY;
+    for(int i=0;i<dim;++i){
+      b[2*i] = xs[i*stride];
+      b[2*i+1] = ys[i*stride];
+    }
+    addAnnotations('g', b-2, 1, m_data->state.linePen, Qt::NoBrush);
+  }
+  
+  void PlotWidget::grid(const Array2D<Point> &data){
+    const int *xs = &data(0,0).x;
+    const int *ys = &data(0,0).y;
+    const int stride = 2;
+    
+    const int dim = data.getDim();
+    float *b = m_data->getBuffer(dim*2 + 2);
+    *b++ = data.getWidth();
+    *b++ = data.getHeight();
+    for(int i=0;i<dim;++i){
+      b[2*i] = xs[i*stride];
+      b[2*i+1] = ys[i*stride];
+    }
+    addAnnotations('g', b-2, 1, m_data->state.linePen, Qt::NoBrush);
+    
+  }
+
 }

@@ -70,7 +70,7 @@ namespace icl{
         }
         const int dim =  ((type=='c') ? 3 :
                           (type=='r' || type == 'l') ? 4 :
-                          (type=='t') ? 2 : 0);
+                          (type=='t' || type == 'L' || type == 'g') ? 2 : 0);
         if(!dim) throw ICLException("AbstractPlotWidget::addAnnotation(..): invalid type");
         this->data.assign(data,data+num*dim);
       }

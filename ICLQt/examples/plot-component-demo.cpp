@@ -45,18 +45,22 @@ void init(){
   gui << (GUI("vbox") 
           << "plot(0,6.5,-1,1,"+gl+")[@handle=plot1@minsize=15x12]"
           << "plot(0,6.5,-1,1,"+gl+")[@handle=plot2@minsize=15x12]"
+          << "plot(-5,5,-5,5,"+gl+")[@handle=plot9@minsize=15x12]"
           )
       << (GUI("vbox") 
           << "plot(0,6.5,-1,1,"+gl+")[@handle=plot3@minsize=15x12]" 
-          << "plot(0,6.5,-1,1,"+gl+")[@handle=plot4@minsize=15x12]" 
+          << "plot(0,6.5,-1,1,"+gl+")[@handle=plot4@minsize=15x12]"
+          << "plot(0,0,0,0,"+gl+")[@handle=plot10@minsize=15x12]" 
           )
       << (GUI("vbox") 
           << "plot(-9,9,-9,9,"+gl+")[@handle=plot5@minsize=15x12]" 
           << "plot(0,0,0,0,"+gl+")[@handle=plot6@minsize=15x12]" 
+          << "plot(0,0,0,0,"+gl+")[@handle=plot11@minsize=15x12]"
           )
       << (GUI("vbox") 
           << "plot(0,0,0,0,"+gl+",something [pi])[@handle=plot7@minsize=15x12]" 
           << "plot(0,0,0,0,"+gl+")[@handle=plot8@minsize=15x12]" 
+          << "plot(0,0,0,0,"+gl+")[@handle=plot12@minsize=15x12]"
           << "checkbox(animate,checked)[@out=run]"
          ) << "!show";
 }
@@ -69,7 +73,9 @@ void run(){
     gui["plot1"], gui["plot2"],
     gui["plot3"], gui["plot4"],
     gui["plot5"], gui["plot6"],
-    gui["plot7"], gui["plot8"]
+    gui["plot7"], gui["plot8"],
+    gui["plot9"], gui["plot10"],
+    gui["plot11"], gui["plot12"],
   };
 
   static std::vector<float> sinData(100);
@@ -117,10 +123,12 @@ void run(){
     tanData[i] = cosData[i] > 1.E-10 ? sinData[i]/cosData[i] : 1.E30;
   }
 
-  for(int i=0;i<8;++i){
+  for(int i=0;i<12;++i){
     PlotHandle &plot = plots[i];
     plot->lock();
-    plot->clear();
+    if(i!=8 ){
+      plot->clear();
+    }
 
     if(i < 4){
       plot->setPropertyValue("tics.y-distance",0.25);
@@ -181,6 +189,7 @@ void run(){
     if(i == 7){
       //float xs[] = { 1,2,3,4};
       //float ys[] = { 1,2,3,4};
+      plot->setDataViewPort(Range32f(0,4),Range32f(-.8,.8));
       const float data[8] = {.1,.2,.3,.4,.5,.6,-.7,.3};
       const float data2[8] = {0.7,.1,.2,.3,.4,.5,.6,-.7};
       const float data3[10] = {.3,.4,.5,0.7,.1,.2,.3,.4,.5,.6};
@@ -200,6 +209,21 @@ void run(){
       plot->bars(data3,10);
       //plot->addScatterData('x',xs,ys,4,"dummy data");
     }
+
+    if(i == 8){
+      static Time last = Time::now();
+      float dtS = (Time::now() -last).toSecondsDouble();
+      if( dtS > 5){
+        plot->clear();
+        last = Time::now();
+      }
+      
+      plot->color(dtS*50,0,255-dtS*50);
+      plot->linestrip(scatterData3);
+      plot->color(0,0,0);
+      plot->title("shape drawn as linestrip");
+    }
+
     plot->unlock();
     plot.update();
   }
