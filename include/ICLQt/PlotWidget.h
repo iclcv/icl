@@ -40,7 +40,13 @@
 #include <ICLUtils/Array2D.h>
 
 namespace icl{
-
+  
+  /// Easy to use widget component for 2D data visualization
+  /** In contrast to it's parent class icl::LowLevelPlotWidget, the
+      icl::PlotWidget interface is allinged with ICL's 2D image
+      annotation framework (see icl::ICLDrawWidget).
+      
+  */
   class PlotWidget : public LowLevelPlotWidget{
     struct Data;
     Data *m_data;
