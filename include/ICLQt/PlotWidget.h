@@ -153,7 +153,7 @@ namespace icl{
       \endcode
       
       \section _EX_ More Examples
-      
+      *Soon!*
       
   */
   class PlotWidget : public LowLevelPlotWidget{
@@ -247,7 +247,7 @@ namespace icl{
     void symsize(float size);
     
     
-    /// draws a scatter plot with given x- and y-data pointer
+    /// adds a scatter plot with given x- and y-data pointer
     /** @param xs source pointer for the x-values 
         @param ys source poitner for the y-value 
         @param num number of points
@@ -261,91 +261,151 @@ namespace icl{
     template<class T>
     void scatter(const T *xs, const T *ys, int num, int xStride = 1, int yStride=1, bool connect=false);
 
+    /// adds a scatter plot from given vector of points
     inline void scatter(const std::vector<Point32f> &ps, bool connect=false){
       scatter(&ps[0].x, &ps[0].y, ps.size(), 2, 2, connect);
     }
     
+    /// adds a scatter plot from given vector of points
     inline void scatter(const std::vector<Point> &ps, bool connect=false){
       scatter(&ps[0].x, &ps[0].y, ps.size(), 2, 2, connect);
     }
-    
+
+    /// adds a scatter plot from given set of of fixed vectors
     template<class T, int WIDTH>
     inline void scatter(const FixedMatrix<T,WIDTH,3-WIDTH> *ps, int num, bool connect=false){
       scatter(&ps[0][0],&ps[0][1], num, 2, 2, connect);
     }
 
-    
+    /// adds series data 
+    /** @param data data pointer
+        @param num number of elements
+        @param stride data increment to iterate through the data elements
+               stride is given in sizeof(float) units */
     template<class T>
     void series(const T *data, int num, int stride=1);
     
+    /// adds series data from given std::vector
     template<class T>
     inline void series(const std::vector<T> &data){
       series(data.data(), data.size(), 1);
     }
     
 
-    /// what about bar labels ?
+    /// adds bar plot data
+    /** @param data data pointer
+        @param num number of elements
+        @param stride data increment to iterate through the data elements
+               stride is given in sizeof(float) units */
     template<class T>
     void bars(const T *data, int num, int stride=1);
     
+    /// adds bar plot data from given std::vector
     template<class T>
     inline void bars(const std::vector<T> &data){
       bars(data.data(), data.size(), 1);
     }
     
-    /// draws a line using the current color
+    /// draws a line annotation using the current color
     void line(const Point32f &a, const Point32f &b);
     
+    /// draws a line  annotation given 4 coordinates
     inline void line(float x1, float y1, float x2, float y2){
       line(Point32f(x1,y1),Point32f(x2,y2));
     }
 
+    /// draws a line strip annotation
     void linestrip(const std::vector<Point32f> &ps, bool closedLoop=true);
+
+    /// draws a line strip annotation
     void linestrip(const std::vector<Point> &ps, bool closedLoop=true);
+
+    /// draws a line strip annotation
     void linestrip(const Point32f *ps, int num, bool closedLoop=true);
+
+    /// draws a line strip annotation
     void linestrip(const Point *ps, int num, bool closedLoop=true);
+
+    /// draws a line strip annotation
     void linestrip(const float *xs, const float *ys, int num, bool closedLoop=true, int stride = 1);
 
+    /// draws a rectangle annotation with given upper left and lower right coordinate
     void rect(const Point32f &ul, const Point32f &lr);
+
+    /// draws a rectangle annotation
     void rect(const Rect &r);
+
+    /// draws a rectangle annotation
     void rect(const Rect32f &r);
+
+    /// draws a rectangle annotation
     void rect(float x, float y, float w, float h);
 
+    /// draws a circle annotation
     void circle(const Point32f &c, float r);
+
+    /// draws a circle annotation
     void circle(float cx, float cy, float r);
       
+    /// draws a text annotation
+    /** Note.: the text anchor is always centered) */
     void text(float x, float y, const std::string &text);
+
+    /// draws a text annotation
+    /** Note.: the text anchor is always centered) */
     void text(const Point32f &p, const std::string &text);
 
+    /// draws a grid-annoation
     void grid(int nX, int nY, const float *xs, const float *ys, int stride=1);
+
+    /// draws a grid-annoation
     void grid(const Array2D<Point> &data);
     
+    /// draws a grid-annoation
     inline void grid(const Array2D<Point32f> &data){
       grid(data.getWidth(), data.getHeight(), &data(0,0).x, &data(0,0).y, 2);
     }
+
+    /// draws a grid-annoation
     inline void grid(int nX, int nY, const float *xys){
       grid(nX,nY,xys, xys+1,2);
     }
+
+    /// draws a grid-annoation
     inline void grid(int nX, int nY, const Point *ps){
       grid(Array2D<Point>(nX,nY,const_cast<Point*>(ps),false));
     }
+
+    /// draws a grid-annoation
     inline void grid(int nX, int nY, const Point32f *ps){
       grid(nX, nY, &ps[0].x, &ps[0].y, 2);
     }
+
+    /// draws a grid-annoation
     inline void grid(int nX, int nY, const std::vector<Point32f> &ps){
       grid(nX, nY, &ps[0].x, &ps[0].y, 2);
     }
+
+    /// draws a grid-annoation
     inline void grid(int nX, int nY, const std::vector<Point> &ps){
       grid(Array2D<Point>(nX,nY, const_cast<Point*>(ps.data()), false));    
     }
+
+    /// draws a grid-annoation
     inline void grid(int nX, int nY, const std::vector<float> &xys){
       grid(nX, nY, xys.data(), xys.data()+1,2);
     }
+    
+    /// draws a grid-annoation
     inline void grid(int nX, int nY, const std::vector<float> &xs, const std::vector<float> &ys){
       grid(nX, nY, xs.data(), ys.data());
     }
 
-    /// sets the plot title
+    /// sets the diagram title
+    /** Please note, that usually the property 
+        "borders.top" needs to be set to something around 18.
+        Otherwise, the tiltle is placed within the drawing area
+    */
     void title(const std::string &title){
       setPropertyValue("labels.diagramm",title);
     }
