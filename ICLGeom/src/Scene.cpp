@@ -861,24 +861,28 @@ namespace icl{
   /** Benchmark results:
       
       Hardware:     using dell xt2 laptop (intel integrated graphics adapter)
+                    times in braces are taken from an Quad-Core Xeon Workstation with
+                    nvida quadro card 
       ViewPortSize: VGA
       Scene:        ICL's scene graph demo (including the parrot background image)
       
       context creation/
-      buffer allocation   : 11ms (first time, then 0.06ms)
+      buffer allocation   : 11ms (first time, then 0.06ms) (43ms, then 0.4ms)
       
-      rendering the scene : 85ms
+      rendering the scene : 85ms (5ms)
       
-      pbuffer read-out    : 31ms
+      pbuffer read-out    : 31ms (3.2ms)
       
-      interlavedToPlanar  : 0.8ms
+      interlavedToPlanar  : 0.8ms (0.2ms)
 
-      flip vertically     : 0.6ms
+      flip vertically     : 0.6ms (0.13ms)
+
+      grabbing the depth buffer: ?? (4.29ms)
     -------------------------------------
-      total               : 117ms (first time: 128ms)
+      total               : 117ms (9ms) + time for depth buffer
       
   */
-  const Img8u &Scene::render(int camIndex, const ImgBase *background) const throw (ICLException){
+  const Img8u &Scene::render(int camIndex, const ImgBase *background, Img32f *depthBuffer) const throw (ICLException){
     //#define DO_BENCH
 
 #ifdef DO_BENCH
@@ -968,7 +972,27 @@ namespace icl{
 #ifdef DO_BENCH
     std::cout << "mirror took" << std::endl;
     SHOW((Time::now()-t).toMilliSecondsDouble());
+    t = Time::now();
 #endif
+    
+    if(depthBuffer){
+      const float zMin = cam.getRenderParams().clipZNear;
+      const float zMax = cam.getRenderParams().clipZFar;
+
+      depthBuffer->setSize(Size(w,h));
+      depthBuffer->setChannels(1);
+      glReadPixels(0,0,w,h, GL_DEPTH_COMPONENT, GL_FLOAT, depthBuffer->begin(0));
+      depthBuffer->mirror(axisHorz);
+      depthBuffer->normalizeImg(Range32f(0,1),Range32f(zMin,zMax));
+      SHOW(depthBuffer->getMinMax());
+
+#ifdef DO_BENCH
+      std::cout << "grabbing the depth buffer took" << std::endl;
+      SHOW((Time::now()-t).toMilliSecondsDouble());
+      t = Time::now();
+#endif
+    }
+    
     return p.buf;
   }
 

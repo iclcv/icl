@@ -277,8 +277,10 @@ int main(int n, char**ppc){
         (the output image is rendered to the image size that the camera at given index has), you should
         free the pbuffers from time to time using 
         Scene::freeAllPBuffers and Scene::freePBuffer(const Size&).
+        
+        If a non-null depthBuffer parameter is provided, it is filled with the scene depth buffer
     */
-    const Img8u &render(int camIndx, const ImgBase *background=0) const throw (ICLException);
+    const Img8u &render(int camIndx, const ImgBase *background=0, Img32f *depthBuffer=0) const throw (ICLException);
     
     /// frees all pbuffers allocated before
     void freeAllPBuffers();

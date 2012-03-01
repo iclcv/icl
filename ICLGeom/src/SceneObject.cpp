@@ -1006,6 +1006,7 @@ namespace icl{
     if (tt < 0.0 || (s + tt) > 1.0){
       return noIntersection;
     }
+    intersection[3] = 1;
     return foundIntersection;
   }
 #else

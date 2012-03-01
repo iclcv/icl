@@ -1,8 +1,9 @@
 #include <ICLQuick/Common.h>
 #include <ICLGeom/Geom.h>
 #include <ICLUtils/FPSLimiter.h>
+#include <ICLGeom/ComplexCoordinateFrameSceneObject.h>
 
-GUI gui("vbox");
+GUI gui("hbox");
 Scene scene;
 struct Orbit : public SceneObject{
   Orbit(float orbit, const GeomColor &c){
@@ -31,6 +32,62 @@ struct Planet : public SceneObject{
   }
 };
 
+struct PositionIndicator : public SceneObject{
+  PositionIndicator(){
+    addChild(new ComplexCoordinateFrameSceneObject());
+    addVertex(Vec(0,0,120,1));
+    addText(0,"pos is ...");
+    setLockingEnabled(true);
+  }
+  void update(const Vec &w, const Vec &c){
+    lock();
+    removeTransformation();
+    translate(w);
+    //    m_primitives.clear();
+    //addText(0,str(c.transp()));
+    ((TextPrimitive*)m_primitives[0])->updateText(str(c.transp()));
+    unlock();
+  }
+} *pos;
+
+
+MouseHandler *sceneHandler = 0;
+void mouse(const MouseEvent &evt){
+  if(evt.isModifierActive(ShiftModifier) || 
+     evt.isModifierActive(AltModifier) ||
+     evt.isModifierActive(ControlModifier)){
+    if(evt.isLeft() && evt.isPressEvent()){
+      scene.lock();
+      Hit h = scene.findObject(0, evt.getX(), evt.getY());
+      if(h){
+        Vec p = h.pos;
+        Mat T = scene.getCamera(0).getCSTransformationMatrix();
+        pos->update(p,T*p);
+      }
+      scene.unlock();
+    }
+  }else{
+    sceneHandler->process(evt);
+    //Vec p = pos->getTransformation().part<3,0,1,4>();
+    //Mat T = scene.getCamera(0).getCSTransformationMatrix();
+    //pos->update(p,T*p);
+  }
+}
+void mouse_2(const MouseEvent &evt){
+  static DrawHandle draw = gui["image"];
+  if(evt.isLeft() && evt.isPressEvent()){
+    std::vector<double> c = evt.getColor();
+    if(c.size()){
+      draw->lock();
+      draw->reset();
+      draw->color(255,0,0);
+      draw->sym(evt.getPos(),'x');
+      draw->text(str(c[0]),evt.getX(), evt.getY(), 10);
+      draw->unlock();
+      // draw.update();
+    }
+  }
+}
 //void capture(){
 //  static ImgQ bg = create("parrot");
 //  show(scene.render(0,&bg));
@@ -38,8 +95,9 @@ struct Planet : public SceneObject{
 
 void init(){
   gui << "draw3D()[@minsize=32x24@handle=view]" 
+      << "draw[@handle=image@minsize=32x24]"
       << (GUI("hbox") 
-          << "button(capture framebuffer)[@handle=capture]"
+          << "combo(none,rgb,depth)[@handle=capture@label=offscreen rendering]"
          )
       << "!show";
   
@@ -64,8 +122,12 @@ void init(){
   scene.addObject(p);
   scene.addObject(new Orbit(200,GeomColor(10,244,200,255)));
 
+  pos = new PositionIndicator;
+  scene.addObject(pos);
 
-  gui["view"].install(scene.getMouseHandler(0));
+  sceneHandler = scene.getMouseHandler(0);
+  gui["view"].install(new MouseHandler(mouse));
+  gui["image"].install(new MouseHandler(mouse_2));
   
   scene.getLight(0).setDiffuse(GeomColor(10,10,255,100));
 
@@ -82,6 +144,7 @@ void init(){
   scene.getLight(2).setAnchor(p);
 
   scene.setDrawCoordinateFrameEnabled(true,400,10);
+  
 }
 
 void run(){
@@ -97,11 +160,21 @@ void run(){
   d->unlock();
   d->updateFromOtherThread();
   
-  gui_ButtonHandle(capture);
-  if(capture.wasTriggered()){
-    show(scene.render(0));
+  int capture = gui["capture"];
+  static Img32f db;
+  switch(capture){
+    case 1:
+      gui["image"] = scene.render(0);
+      gui["image"].update();
+      break;
+    case 2:
+      scene.render(0,0,&db);
+      gui["image"] = db;
+      gui["image"].update();
+      break;
+    default:
+      break;
   }
-  //SHOW(scene.getCamera(0));
 }
 
 int main(int n, char **argv){

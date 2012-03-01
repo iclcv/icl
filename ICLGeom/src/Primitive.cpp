@@ -181,6 +181,9 @@ namespace icl{
     glEnable(GL_ALPHA_TEST);
     glAlphaFunc(GL_GREATER,0.3); 
     
+    glPushAttrib(GL_ENABLE_BIT);
+    glDisable(GL_LIGHTING);
+
     if(billboardHeight > 0){
       const Vec &a = ctx.vertices[i(0)];
 
@@ -210,7 +213,8 @@ namespace icl{
     }else{
       TexturePrimitive::render(ctx);
     }
-
+    glPopAttrib();
+    
     glAlphaFunc(GL_GREATER,0.05); 
   }
 

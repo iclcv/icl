@@ -287,7 +287,12 @@ namespace icl{
   /// Text Texture
   /** The text texture is implemented by a static common texture */
   struct TextPrimitive : public TexturePrimitive{
+    /// internal memory for the text size
+    int textSize;
 
+    /// internal memory for the text color
+    GeomColor textColor;
+    
     /// utility method to creat a text texture
     static Img8u create_texture(const std::string &text, const GeomColor &color, int textSize);
     
@@ -305,7 +310,7 @@ namespace icl{
                   int billboardHeight=0,
                   scalemode sm=interpolateLIN):
     TexturePrimitive(a,b,c,d,create_texture(text,textColor,textSize),na,nb,nc,nd, sm),
-    billboardHeight(billboardHeight){
+    textSize(textSize), textColor(textColor), billboardHeight(billboardHeight){
       type = Primitive::text;
     }
     
@@ -318,6 +323,13 @@ namespace icl{
       p->type = text;
       return p;
     }
+
+    /// sets new text
+    inline void updateText(const std::string &newText){
+      Img8u t = create_texture(newText,textColor,textSize);
+      texture.update(&t);
+    }
+
   };
 
   
