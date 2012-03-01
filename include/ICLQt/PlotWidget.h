@@ -116,59 +116,148 @@ namespace icl{
       PlotWidget::ylabel are just convenience function that use
       the derived Configurable's Configurable::setPropertyValue method
       in a direct manner.
+
+      \section _GUI_ GUI Embedding
+      The plot widget is also a component of ICL's icl::GUI framework.
+      The component tag is "plot" its parameters are 
+      - X viewport min value
+      - X viewport max value
+      - Y viewport min value
+      - Y viewport max value
+      - an optional flag "gl". If this is given, the PlotWidget
+        is rendered in OpenGL. This <b>can</b> increase the rendering
+        performance, however it can also make it slower
       
-      \section _EX_ Examples
+      Example:
+      \code
+      // create some data
+      std::vector<float> sinData(100);
+      for(float i=0;i<100;++i){
+        sinData[i] = sin(i/100 * 2*M_PI);
+      }
+
+      GUI gui;
+      gui << "plot(0,6.283,-1.1,1.1)[@handle=plot@minsize=20x20]" << "!show";
+
+      // extract the handle
+      PlotHandle plot = gui["plot"];
+
+      plot->lock();            // lock the draw queue
+      plot->color(255,0,0);    // set graph line color
+      plot->fill(255,0,0,100); // set graph fill (semi transparent)
+      plot->label("sin(x)");   // set the legend label
+      plot->series(sinData);   // add data to visualize
+      plot->unlock();          // unlock the draw queue
+      plot.update();           // post an update event to Qt
+      
+      \endcode
+      
+      \section _EX_ More Examples
+      
       
   */
   class PlotWidget : public LowLevelPlotWidget{
-    struct Data;
-    Data *m_data;
+    struct Data;  //!< internal data structure
+    Data *m_data; //!< internal data (pimpl)
     
     public:
+    
+    /// Constructor with given parent
+    /** Usually, the */
     PlotWidget(QWidget *parent=0);
+    
+    /// Destrutor
     ~PlotWidget();
     
+    /// locks the draw queue
     inline void lock() { LowLevelPlotWidget::lock(); }
+
+    /// unlocks the draw queue
     inline void unlock() { LowLevelPlotWidget::unlock(); }
 
-
+    /// clears the draw queue
     virtual void clear();
  
+    /// synonym for clear()
     inline void reset() { clear(); }
     
+    /// sets the legend label for the next scatter-, series- or bar-plot
     void label(const std::string &primitiveLabel);
+    
+    /// calls label("")
     inline void nolabel() { label(""); }
     
+    /// sets the line color
     void color(int r, int g, int b, int a=255);
-    void pen(const QPen &pen);
 
-    void fill(int r, int g, int b, int a=255);
-    void brush(const QBrush &brush);
-    
+    /// convenience macro for types that provide and index operator []
+    /** Please note, that c needs 4 elements at least.  */
     template<class VectorType>
     inline void color(const VectorType &c){
       color(c[0],c[1],c[2],c[3]);
     }
+    
+    /// sets a fully transparent line color
+    inline void nocolor(){ color(0,0,0,0); }
 
+    /// sets the line pen
+    /** This overwrites the current setting for linewidth and color. The
+        pen can e.g. be used to draw dashed lines. */
+    void pen(const QPen &pen);
+
+    /// sets the fill color for series- and bar-plots
+    /** The fill color is also used for rect- and circle annotations */
+    void fill(int r, int g, int b, int a=255);
+
+
+    /// convenience macro for types that provide and index operator []
+    /** Please note, that c needs 4 elements at least.  */
     template<class VectorType>
     inline void fill(const VectorType &c){
       fill(c[0],c[1],c[2],c[3]);
     }
-
-
+    /// sets a fully transparent fill color
+    inline void nofill() { fill(0,0,0,0); }
+    
+    /// sets the fill brush
+    /** This is more powerful then just setting the fill color using 
+        PlotWidget::fill. The brush overwrites the current fill color
+        setting. In contrast to PlotWidget::fill, the brush can also
+        be set up to fill areas with a given pattern */
+    void brush(const QBrush &brush);
+    
+    /// sets the current symbol
+    /** The symbol is used for series and scatter plots */
     void sym(char s);
+    
+    /// sets the current symbol and the symbol size
+    /** The symbol size is always given in pixels */
     inline void sym(char s, int symsize){
       sym(s);
       this->symsize(symsize);
     }
     
-    inline void nocolor(){ color(0,0,0,0); }
-    inline void nofill() { fill(0,0,0,0); }
+    /// resets the symbol to ' ' which means no symbols are shown
     inline void nosym() { sym(' '); }
     
+    /// sets the linewidth
     void linewidth(float width);
+    
+    /// sets the symbols size
     void symsize(float size);
     
+    
+    /// draws a scatter plot with given x- and y-data pointer
+    /** @param xs source pointer for the x-values 
+        @param ys source poitner for the y-value 
+        @param num number of points
+        @param xStride pointer increment to to iterate through the 
+               elements of xs (in sizeof(float) units)
+        @param yStride pointer increment to to iterate through the 
+               elements of ys (in sizeof(float) units)
+        @param connect if set to true, successive points are connected
+               using a line
+    */
     template<class T>
     void scatter(const T *xs, const T *ys, int num, int xStride = 1, int yStride=1, bool connect=false);
 
