@@ -105,7 +105,7 @@ namespace icl {
       Rect viewport;    //!< in [pixel]
       float viewportZMin, viewportZMax; //!< interval for the z coordinates in viewport
 
-      RenderParams(const Size &chipSize=Size::VGA, float clipZNear=0., float clipZFar=10000.,
+      RenderParams(const Size &chipSize=Size::VGA, float clipZNear=1.0, float clipZFar=10000.,
         const Rect &viewport=Rect(0,0,640,480), float viewportZMin=0.,
         float viewportZMax=1.):
         chipSize(chipSize), clipZNear(clipZNear), clipZFar(clipZFar), viewport(viewport),

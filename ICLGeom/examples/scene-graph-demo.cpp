@@ -96,8 +96,9 @@ void mouse_2(const MouseEvent &evt){
 void init(){
   gui << "draw3D()[@minsize=32x24@handle=view]" 
       << "draw[@handle=image@minsize=32x24]"
-      << (GUI("hbox") 
+      << (GUI("vbox") 
           << "combo(none,rgb,depth)[@handle=capture@label=offscreen rendering]"
+          << "combo(raw,dist. to z0,dist to cam center)[@handle=dmode@label=depth map mode]"
          )
       << "!show";
   
@@ -106,6 +107,7 @@ void init(){
   scene.addCamera(Camera(Vec(567,12,215,1),
                          Vec(-0.937548,-0.0012938,-0.347854,1),
                          Vec(0.333029,0.286923, -0.898202,1)));
+  scene.getCamera(0).getRenderParams().clipZFar = 1000;
   scene.addObject(new Planet(40,GeomColor(150,150,50,255),0,0.5));
 
   scene.addObject(new Planet(20,GeomColor(255,200,200,255),300,1));
@@ -168,7 +170,7 @@ void run(){
       gui["image"].update();
       break;
     case 2:
-      scene.render(0,0,&db);
+      scene.render(0,0,&db,(Scene::DepthBufferMode)gui["dmode"].as<int>());
       gui["image"] = db;
       gui["image"].update();
       break;

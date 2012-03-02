@@ -259,6 +259,12 @@ int main(int n, char**ppc){
     ICLDrawWidget3D::GLCallback *getGLCallback(int camIndex);
     
 #ifdef HAVE_GLX
+    enum DepthBufferMode{
+      RawDepth01,      //!< raw depth buffer in range [0,1]
+      DistToCamPlane,  //!< depth buffer values define distance to the camera's z=0 plane
+      DistToCamCenter  //!< depth buffer values define distanct to the camera center
+    };
+    
     /// renders the current scene using an instance of glx pbuffer
     /** This method is currently only supported on linux systems, since
         the used pbuffer (OpenGL offscreen framebuffer object) 
@@ -268,8 +274,8 @@ int main(int n, char**ppc){
         an at least 4 4 4 16 context is tryed to be created. If this does also fail,
         an exception will be thrown.
         
-        <b>Please note:</b> The rendering pbuffer is allocated on you graphics card. Per definition,
-        pbuffers are located in the screenbuffer memory segment with might be much smaller than the
+        <b>Please note:</b> The rendering pbuffer is allocated on the graphics card. Per definition,
+        pbuffers are located in the screenbuffer memory segment which might be much smaller than the
         actual memory of your graphics card. Therefore, it is strongly recommended to free all pbuffers
         when they are no longer used.
         The pbuffer that is created to render the image in this method is stored internally and it
@@ -278,9 +284,19 @@ int main(int n, char**ppc){
         free the pbuffers from time to time using 
         Scene::freeAllPBuffers and Scene::freePBuffer(const Size&).
         
-        If a non-null depthBuffer parameter is provided, it is filled with the scene depth buffer
+        If a non-null depthBuffer parameter is provided, it is filled with data from the scene depth buffer
+        usually, the raw depth buffer does not provide useful information for further processing. 
+        In OpenGL, the standard depth buffer values are highly non-linearily distributed within the
+        near and far clipping plane. If the depth buffer mode is not RawDepth01, this is compensated
+        and the depth buffer is filled with (metric) depth values that denote either a pixel's distance
+        to the z=0 plane in camera space or the distance to the camera center. For correcting the
+        linearized depth buffer values that are computed for the DistToCamPlane mode, a set of correction 
+        coefficients has to be computed, which entails creation of all camera viewrays. This can last
+        about a second in the first call. In later calls, the values are just re-used. 
+        
     */
-    const Img8u &render(int camIndx, const ImgBase *background=0, Img32f *depthBuffer=0) const throw (ICLException);
+    const Img8u &render(int camIndx, const ImgBase *background=0, Img32f *depthBuffer=0, 
+                        DepthBufferMode mode=DistToCamCenter) const throw (ICLException);
     
     /// frees all pbuffers allocated before
     void freeAllPBuffers();

@@ -853,6 +853,45 @@ namespace icl{
     Size size;
     std::vector<icl8u> rgbbuf;
     Img8u buf;
+    
+    struct DepthCorrection{
+      std::vector<icl32f> factors;
+      Size resolution;
+      icl32f fX,fY,skew;
+      Point32f ppOffs;
+
+      static inline float compute_depth_norm(const Vec &dir, const Vec &centerDir){
+        return sprod3(dir,centerDir)/(norm3(dir)*norm3(centerDir));
+      }
+      
+      void update(const Camera &cam){
+        const Camera::RenderParams &p = cam.getRenderParams();
+        const float f = cam.getFocalLength();
+        const int w = p.viewport.width, h = p.viewport.height;
+        if(!factors.size() ||
+           resolution != Size(w,h) ||
+           fX != f*cam.getSamplingResolutionX() ||
+           fY != f*cam.getSamplingResolutionY() ||
+           skew != cam.getSkew() ||
+           ppOffs != cam.getPrincipalPointOffset()){
+          
+          resolution = Size(w,h);
+          fX = f*cam.getSamplingResolutionX();
+          fY = f*cam.getSamplingResolutionY();
+          skew = cam.getSkew();
+          ppOffs = cam.getPrincipalPointOffset();
+          
+          factors.resize(w*h);
+          
+          Array2D<ViewRay> vs = cam.getAllViewRays();
+          
+          const Vec c = vs(w/2-1,h/2-1).direction;
+          for(int idx=0;idx<w*h; ++idx){
+            factors[idx] = 1.0/compute_depth_norm(vs[idx].direction,c);
+          }
+        }
+      }
+    } depthCorr;
   };
   
   
@@ -882,7 +921,8 @@ namespace icl{
       total               : 117ms (9ms) + time for depth buffer
       
   */
-  const Img8u &Scene::render(int camIndex, const ImgBase *background, Img32f *depthBuffer) const throw (ICLException){
+  const Img8u &Scene::render(int camIndex, const ImgBase *background, Img32f *depthBuffer,
+                             DepthBufferMode mode) const throw (ICLException){
     //#define DO_BENCH
 
 #ifdef DO_BENCH
@@ -976,15 +1016,38 @@ namespace icl{
 #endif
     
     if(depthBuffer){
-      const float zMin = cam.getRenderParams().clipZNear;
-      const float zMax = cam.getRenderParams().clipZFar;
-
       depthBuffer->setSize(Size(w,h));
       depthBuffer->setChannels(1);
       glReadPixels(0,0,w,h, GL_DEPTH_COMPONENT, GL_FLOAT, depthBuffer->begin(0));
       depthBuffer->mirror(axisHorz);
-      depthBuffer->normalizeImg(Range32f(0,1),Range32f(zMin,zMax));
-      SHOW(depthBuffer->getMinMax());
+
+      if(mode != RawDepth01){
+        const float zNear = cam.getRenderParams().clipZNear;
+        const float zFar = cam.getRenderParams().clipZFar;
+        
+        icl32f *db = depthBuffer->begin(0);
+
+        const int dim = w*h;
+        const float Q = zFar / ( zFar - zNear );
+        const float izFar = 1.0/zFar;
+        
+        const float m = zFar-zNear;
+        const float b = zNear;
+        
+        const float A = izFar * m;
+
+        if(mode == DistToCamCenter){
+          p.depthCorr.update(cam);
+          const float *corr = p.depthCorr.factors.data();
+          for(int i=0;i<dim;++i){
+            db[i] = corr[i] * (A / (Q-db[i]) + b);
+          }
+        }else{
+          for(int i=0;i<dim;++i){
+            db[i] = (A / (Q-db[i]) + b);
+          }
+        }
+      }
 
 #ifdef DO_BENCH
       std::cout << "grabbing the depth buffer took" << std::endl;
