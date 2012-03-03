@@ -51,6 +51,7 @@
 #include <QtGui/QPainter>
 #include <QtCore/QTimer>
 #include <QtGui/QLabel>
+#include <QtGui/QCheckBox>
 #include <QtGui/QInputDialog>
 #include <QtCore/QMutexLocker>
 #include <QtGui/QPushButton>
@@ -74,6 +75,7 @@
 #include <ICLQt/SplitterHandle.h>
 #include <ICLQt/LabelHandle.h>
 #include <ICLQt/ButtonHandle.h>
+#include <ICLQt/CheckBoxHandle.h>
 #include <ICLQt/ComboHandle.h>
 #include <ICLQt/StringHandle.h>
 #include <ICLQt/SpinnerHandle.h>
@@ -1067,11 +1069,10 @@ namespace icl{
 
     GUI infoGUI("vsplit[@handle=info-tab]");
     infoGUI << ( GUI("hbox")
-                 << "combo(all ,channel #0, channel #1,channel #2, channel #3)[@handle=histo-channel@out=_15]"
-                 << "togglebutton(median,median)[@handle=median@out=median-on]"
-                 << "togglebutton(log,log)[@handle=log@out=log-on]"
-                 << "togglebutton(blur,blur)[@handle=blur@out=blur-on]"
-                 << "togglebutton(fill,fill)[@handle=fill@out=fill-on]"
+                 << "spinner(-1,100,-1)[@handle=histo-channel@out=_15@label=select channel@tooltip=pick a single channel,\nchoose -1 for all]"
+                 << "checkbox(median,unchecked)[@handle=median@out=median-on]"
+                 << "checkbox(log,unchecked)[@handle=log@out=log-on]"
+                 << "checkbox(blur,unchecked)[@handle=blur@out=blur-on]"
                )
             <<  ( GUI("hsplit")
                   << "hbox[@label=histogramm@handle=histo-box@minsize=12x10]"
@@ -1197,11 +1198,10 @@ namespace icl{
     
     QObject::connect(*data->menu.getValue<TabHandle>("root"),SIGNAL(currentChanged(int)),widget,SLOT(menuTabChanged(int)));
     
-    QObject::connect(*data->menu.getValue<ButtonHandle>("fill"),SIGNAL(toggled(bool)),widget,SLOT(histoPanelParamChanged()));
-    QObject::connect(*data->menu.getValue<ButtonHandle>("blur"),SIGNAL(toggled(bool)),widget,SLOT(histoPanelParamChanged()));
-    QObject::connect(*data->menu.getValue<ButtonHandle>("median"),SIGNAL(toggled(bool)),widget,SLOT(histoPanelParamChanged()));
-    QObject::connect(*data->menu.getValue<ButtonHandle>("log"),SIGNAL(toggled(bool)),widget,SLOT(histoPanelParamChanged()));
-    QObject::connect(*data->menu.getValue<ComboHandle>("histo-channel"),SIGNAL(currentIndexChanged(int)),widget,SLOT(histoPanelParamChanged()));
+    QObject::connect(*data->menu.getValue<CheckBoxHandle>("blur"),SIGNAL(stateChanged(int)),widget,SLOT(histoPanelParamChanged()));
+    QObject::connect(*data->menu.getValue<CheckBoxHandle>("median"),SIGNAL(stateChanged(int)),widget,SLOT(histoPanelParamChanged()));
+    QObject::connect(*data->menu.getValue<CheckBoxHandle>("log"),SIGNAL(stateChanged(int)),widget,SLOT(histoPanelParamChanged()));
+    QObject::connect(*data->menu.getValue<SpinnerHandle>("histo-channel"),SIGNAL(valueChanged(int)),widget,SLOT(histoPanelParamChanged()));
 
     
     QObject::connect(*data->menu.getValue<ButtonHandle>("grid-on"),SIGNAL(toggled(bool)),widget,SLOT(setShowPixelGridEnabled(bool)));
@@ -1559,8 +1559,7 @@ namespace icl{
     m_data->histoWidget->setFeatures(m_data->menu.getValue<bool>("log-on"),
                                      m_data->menu.getValue<bool>("blur-on"),
                                      m_data->menu.getValue<bool>("median-on"),
-                                     m_data->menu.getValue<bool>("fill-on"),
-                                     m_data->menu.getValue<ComboHandle>("histo-channel").getSelectedIndex()-1);
+                                     m_data->menu.getValue<SpinnerHandle>("histo-channel").getValue());
 
     m_data->histoWidget->update();
     
@@ -1570,7 +1569,7 @@ namespace icl{
   void ICLWidget::updateInfoTab(){
     if(m_data->menuMutex.tryLock()){
       if(m_data->histoWidget && m_data->infoTabVisible){
-        m_data->histoWidget->update(getImageStatistics());
+        m_data->histoWidget->updateData(getImageStatistics());
         // xxx TODO
         std::vector<string> s = getImageInfo();
         m_data->menu.getValue<LabelHandle>("image-info-label") = cat(s,"\n");

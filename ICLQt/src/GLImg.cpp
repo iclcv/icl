@@ -301,6 +301,7 @@ namespace icl{
       stats.isNull = false;
       for(int i=0;i<imageChannels;++i){ 
         stats.histos[i].resize(256);
+        std::fill(stats.histos[i].begin(), stats.histos[i].end(), 0);
       }
       for(int x=0;x<data.getWidth();++x){
         for(int y=0;y<data.getHeight();++y){
