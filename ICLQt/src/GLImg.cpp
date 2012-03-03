@@ -169,8 +169,89 @@ namespace icl{
   }
 
 #endif
-
-
+  
+  template<class T>
+  static inline void histo_entry(T v, double m, vector<int> &h, unsigned int n, double r){
+    // todo check 1000 times +5 times (3Times done!)
+    ++h[ floor( n*(v-m)/(r+1)) ];
+  }
+  template<class T>
+  static void histo_interleaved(const void *vdata,
+                                const int dim,
+                                const int channels, 
+                                const std::vector<Range64f> &ranges,
+                                std::vector< std::vector<int> > &histos){
+    const T * data = reinterpret_cast<const T*>(vdata);
+    double mins[4],ls[4];
+    for(unsigned int i=0;i<ranges.size();++i){
+      mins[i] = ranges[i].minVal;
+      ls[i] = ranges[i].getLength();
+    }
+    for(int i=0;i<dim;++i){
+      for(int c=0;c<channels;++c){
+        const T &val = data[channels * i + c];
+        histo_entry(val,mins[c],histos[c],256,ls[c]);
+      }
+    }
+  }
+  
+  template<>
+  void histo_interleaved<icl8u>(const void *vdata,
+                                const int dim,
+                                const int channels, 
+                                const std::vector<Range64f> &ranges,
+                                std::vector< std::vector<int> > &histos){
+    const icl8u *data = reinterpret_cast<const icl8u*>(vdata);
+    switch(channels){
+      case 1:{
+          int *h = histos[0].data();
+          for(int i=0;i<dim;++i){
+            ++h[ data[i] ];
+          }
+          break;
+      }
+      case 2:{
+        int *h0 = histos[0].data();
+        int *h1 = histos[1].data();
+        for(int i=0;i<dim;++i){
+          ++h0[ data[2*i] ];
+          ++h1[ data[2*i+1] ];
+        }
+        break;
+      }
+      case 3:{
+        int *h0 = histos[0].data();
+        int *h1 = histos[1].data();
+        int *h2 = histos[2].data();
+        for(int i=0;i<dim;++i){
+          ++h0[ data[3*i] ];
+          ++h1[ data[3*i+1] ];
+          ++h2[ data[3*i+2] ];
+        }
+        break;
+      }
+      case 4:{
+        int *h0 = histos[0].data();
+        int *h1 = histos[1].data();
+        int *h2 = histos[2].data();
+        int *h3 = histos[3].data();
+        for(int i=0;i<dim;++i){
+          ++h0[ data[4*i] ];
+          ++h1[ data[4*i+1] ];
+          ++h2[ data[4*i+2] ];
+          ++h3[ data[4*i+3] ];
+        }
+        break;
+      }
+      default:
+        for(int i=0;i<dim;++i){
+          for(int c=0;c<channels;++c){
+            ++ histos[c][ data[i * channels + c] ];
+          }
+        }  
+        break;
+    }
+  }
 
   struct GLImg::Data{
     scalemode sm;
@@ -263,31 +344,6 @@ namespace icl{
       
       dirty = true;
       textureBufferMutex.unlock();
-    }
-
-    template<class T>
-    static inline void histo_entry(T v, double m, vector<int> &h, unsigned int n, double r){
-      // todo check 1000 times +5 times (3Times done!)
-      ++h[ floor( n*(v-m)/(r+1)) ];
-    }
-    template<class T>
-    static void histo_interleaved(const void *vdata,
-                                  const int dim,
-                                  const int channels, 
-                                  const std::vector<Range64f> &ranges,
-                                  std::vector< std::vector<int> > &histos){
-      const T * data = reinterpret_cast<const T*>(vdata);
-      double mins[4],ls[4];
-      for(unsigned int i=0;i<ranges.size();++i){
-        mins[i] = ranges[i].minVal;
-        ls[i] = ranges[i].getLength();
-      }
-      for(int i=0;i<dim;++i){
-        for(int c=0;c<channels;++c){
-          const T &val = data[channels * i + c];
-          histo_entry(val,mins[c],histos[c],256,ls[c]);
-        }
-      }
     }
 
     

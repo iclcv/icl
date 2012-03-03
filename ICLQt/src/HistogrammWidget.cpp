@@ -39,6 +39,12 @@ namespace icl{
     clear();
     if(!s.isNull){
       float maxY = 0;
+      float minX = 0, maxX = 255; // TODO this must be adapted dynamically
+                                  // the histo contians 256 bins between
+                                  // minVal and maxVal, but what if
+                                  // the min- and max vals are not identical in
+                                  // all channels ??
+      
       bool haveData = false;
       for(size_t i=0;i<s.histos.size();++i){
         float *buf1 = buf.data();
@@ -92,7 +98,7 @@ namespace icl{
                          maxY > 100 ? int(maxY/100)*20 :
                          20);
         setPropertyValue("labels.y-axis",logOn ? "log(number of pixels)" : "number of pixels");
-        setDataViewPort(Range32f(0,255), Range32f(0,maxY));
+        setDataViewPort(Range32f(minX,maxX), Range32f(0,maxY));
       }
     }    
     unlock();
