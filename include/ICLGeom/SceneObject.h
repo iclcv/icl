@@ -387,13 +387,13 @@ namespace icl{
     /** All vertices are transformed with this matrix before rendering. If the
         SceneObject instance has a parent-Scene object, then the parent's
         SceneObject's transformation pre-multiplied */
-    void setTransformation(const Mat &m);
+    virtual void setTransformation(const Mat &m);
     
     /// sets the internal transformation to the identity matrix
     void removeTransformation();
 
     /// multiplies the current transformation matrix by given matrix 
-    void transform(const Mat &m);
+    virtual void transform(const Mat &m);
 
     /// utility method for passing arbitrary matrix classes 
     /** Note: the given T instance m, needs to have a function-operator(x,y)*/
@@ -406,21 +406,21 @@ namespace icl{
     } 
     
     /// rotates the scene object (this affects it's transformation matrix)
-    void rotate(float rx, float ry, float rz);
+    virtual void rotate(float rx, float ry, float rz);
 
     /// utility wrapper for vector based rotation 
     template<class T>
     inline void rotate(const T &t) { rotate((float)t[0],(float)t[1],(float)t[2]); }
     
     /// translates the scene object (this affects it's translates matrix)
-    void translate(float dx, float dy, float dz);
+    virtual void translate(float dx, float dy, float dz);
 
     /// utility wrapper for vector based translation
     template<class T>
     inline void translate(const T &t) { translate((float)t[0],(float)t[1],(float)t[2]); }
 
     /// transformes the current transformation matrix by a scale matrix
-    void scale(float sx, float sy, float sz);
+    virtual void scale(float sx, float sy, float sz);
     
     /// utility wrapper for vector based scaling
     template<class T>
