@@ -35,7 +35,7 @@
 #include <ICLUtils/PugiXML.h>
 #include <iostream>
 #include <cstdlib>
-
+ 
 int main(int n, char **ppc){
   if(n!=2){
     std::cout << "usage:\n\t" << (*ppc) << " <XML-DOCUMENT-NAME>" << std::cout;

@@ -37,8 +37,10 @@
 
 #ifdef ICL_SYSTEM_APPLE
 #include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
 #else
 #include <GL/gl.h>
+#include <GL/glu.h>
 #endif
 
 namespace icl{

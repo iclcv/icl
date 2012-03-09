@@ -36,7 +36,7 @@ message(STATUS "macros found")
 
 #standard check for external dependency
 #macro(icl_check_external_package ID FFILE REL_LIB_DIR REL_INC_DIR DEFAULT_PATH DEFINE_COND)
-macro(icl_check_external_package ID INCFILES LIBFILES REL_LIB_DIR REL_INC_DIR DEFAULT_PATH DEFINE_COND)
+macro(icl_check_external_package ID INCFILES LIBFILES REL_LIB_DIR REL_INC_DIR DEFAULT_PATH DEFINE_COND VERBOSE_NOT_FOUND)
   set(${DEFINE_COND} FALSE)
   message(STATUS "-- checking package ${ID} --")
   #message(STATUS "searching for ${FFILE}")# in ${DEFAULT_PATH}/${REL_INC_DIR}")# and ${${ID}_PATH}/${REL_INC_DIR}")
@@ -115,7 +115,9 @@ macro(icl_check_external_package ID INCFILES LIBFILES REL_LIB_DIR REL_INC_DIR DE
     message(STATUS "Path ${ICL_XDEP_${ID}_PATH} not found")
     set(${DEFINE_COND} FALSE)
     set(ICL_XDEP_${ID}_ON OFF CACHE BOOL "Use ${ID} when available" FORCE)
-    message(STATUS "${ID} detected: FALSE")
+    if(${VERBOSE_NOT_FOUND})
+      message(STATUS "${ID} detected: FALSE")
+    endif()
   endif()
 endmacro()
 
