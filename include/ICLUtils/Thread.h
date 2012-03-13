@@ -145,7 +145,12 @@ namespace icl{
         Thread 
     **/
     void lock();
-    
+    /// internal used trylock function
+    /** works like lock but without blocking (it returns immediately).
+        @return zero if lock is acquired. otherwise an error-number
+    **/
+    int trylock();
+
     /// internal used unlock function
     void unlock();
   };

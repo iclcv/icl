@@ -95,6 +95,9 @@ namespace icl{
   void Thread::lock(){
     impl->mutex.lock();
   }
+  int Thread::trylock(){
+    return impl->mutex.trylock();
+  }
   void Thread::unlock(){
     impl->mutex.unlock();
   }
