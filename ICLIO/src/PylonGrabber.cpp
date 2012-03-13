@@ -247,12 +247,8 @@ void PylonGrabberImpl::cameraDefaultSettings(){
 const icl::ImgBase* PylonGrabberImpl::acquireImage(){//TODO: Threading issues
   // Get the grab result from the grabber thread
   // getCurrentImage is Thread safe
-  //icl::Mutex::Locker a(m_CamMutex);
-  //icl::Mutex::Locker b(m_GrabberThread -> m_BufferMutex);
   if(TsBuffer<int16_t>* tmp = m_GrabberThread -> getCurrentImage()){
     icl::ImgBase* ptr = m_ColorConverter -> convert(tmp -> m_Buffer);
-    std::cout << "\n\nin Grabber\n\n" << std::endl;
-    ptr -> print();
     return ptr;
   } else {
     return NULL;
