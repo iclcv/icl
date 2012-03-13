@@ -79,6 +79,17 @@ namespace icl{
 	  
 	  #endif
     }
+    /// locks the mutex without blocking. returns immediately.
+    /**
+        @return zero if lock is acquired. otherwise an error-number
+    **/
+    int trylock(){
+      #ifndef ICL_SYSTEM_WINDOWS
+      pthread_mutex_trylock(&m);
+      #else
+
+      #endif
+    }
 
     /// unlocks the mutex
     void unlock(){
