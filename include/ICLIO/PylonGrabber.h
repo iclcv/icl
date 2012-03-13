@@ -36,260 +36,152 @@
 #define ICL_PYLON_GRABBER_H
 
 #include <pylon/PylonIncludes.h>
-#include <pylon/PixelFormatConverterBayer.h>
-#include <pylon/TransportLayer.h>
-#include <pylon/PixelType.h>
 
 #include <ICLIO/GrabberHandle.h>
-#include <ICLCC/BayerConverter.h>
+#include <ICLIO/PylonUtils.h>
+#include <ICLIO/PylonCameraOptions.h>
+#include <ICLIO/PylonGrabberThread.h>
+#include <ICLIO/PylonColorConverter.h>
 
 namespace icl {
+  namespace pylon {
 
-  /// Utility structure \ingroup GIGE_G
-  template <typename T>
-  class PylonGrabberBuffer {
-    private:
-    T *m_pBuffer;
-    Pylon::StreamBufferHandle m_hBuffer;
+    /// Actual implementation of the Basler Pylon based GIG-E Grabber \ingroup GIGE_G
+    class PylonGrabberImpl : public Grabber, public Interruptable {
+      public:
+        friend class PylonGrabber;
 
-    public:
-    PylonGrabberBuffer(size_t size) : m_pBuffer(NULL) {
-        m_pBuffer = new T[size];
-        if (m_pBuffer == NULL)
-          throw icl::ICLException("Not enough memory to allocate image buffer");
-      }
+        /// interface for the setter function for video device properties
+        virtual void setProperty(const std::string &property, const std::string &value);
+        /// returns a list of properties, that can be set using setProperty
+        virtual std::vector<std::string> getPropertyList();
+        /// base implementation for property check (seaches in the property list)
+        virtual bool supportsProperty(const std::string &property);
+        /// get type of property
+        virtual std::string getType(const std::string &name);
+        /// get information of a properties valid values
+        virtual std::string getInfo(const std::string &name);
+        /// returns the current value of a property or a parameter
+        virtual std::string getValue(const std::string &name);
+        /// Returns whether this property may be changed internally.
+        virtual int isVolatile(const std::string &propertyName);
 
-    ~PylonGrabberBuffer(){
-        if (m_pBuffer != NULL)
-          delete[] m_pBuffer;
-      }
-
-    T* getBufferPointer(void) {
-      return m_pBuffer;
-    }
-
-    Pylon::StreamBufferHandle getBufferHandle(void) {
-      return m_hBuffer;
-    }
-
-    void setBufferHandle(Pylon::StreamBufferHandle hBuffer) {
-      m_hBuffer = hBuffer;
-    }
-  };
-
-  /// Actual implementation of the Basler Pylon based GIG-E Grabber \ingroup GIGE_G
-  class PylonGrabberImpl : public Grabber {
-    public:
-    friend class PylonGrabber;
-    friend class PylonAutoEnv;
-    friend class AcquisitionInterruptor;
-
-    /// interface for the setter function for video device properties
-    virtual void setProperty(const std::string &property, const std::string &value);
-   	/// returns a list of properties, that can be set using setProperty
-    virtual std::vector<std::string> 	getPropertyList();
-   	/// base implementation for property check (seaches in the property list)
-    virtual bool supportsProperty(const std::string &property);
-    /// get type of property
-    virtual std::string getType(const std::string &name);
-    /// get information of a properties valid values
-    virtual std::string getInfo(const std::string &name);
-    /// returns the current value of a property or a parameter
-    virtual std::string getValue(const std::string &name);
-   	/// Returns whether this property may be changed internally. 
-    virtual int isVolatile(const std::string &propertyName);
-
-    /// Destructor
-    ~PylonGrabberImpl();
+        /// Destructor
+        ~PylonGrabberImpl();
          
-    /// grab function grabs an image (destination image is adapted on demand)
-    /** @copydoc icl::Grabber::grab(ImgBase**) **/
-    virtual const ImgBase* acquireImage();
+        /// grab function grabs an image (destination image is adapted on demand)
+        /** @copydoc icl::Grabber::grab(ImgBase**) **/
+        virtual const ImgBase* acquireImage();
 
-    /// Returns a list of available Pylon devices.
-    static Pylon::DeviceInfoList_t getPylonDeviceList(Pylon::DeviceInfoList_t* filter=NULL);
-    /// Prints information about the startup argument options
-    static void printHelp();
-    /// uses args to choose a pylon device, throws when no suitable device exists.
-    static Pylon::CDeviceInfo getDeviceFromArgs(std::string args) throw(ICLException);
+        /// Prints information about the startup argument options
+        static void printHelp();
+        /// Uses args to choose a pylon device
+        /**
+        * @param args The arguments provided to this grabber.
+        * @throw ICLException when no suitable device exists.
+        */
+        static Pylon::CDeviceInfo getDeviceFromArgs(std::string args) throw(ICLException);
 
-    private:
-    /// the constructor is private so only the friend class can create instances
-    PylonGrabberImpl(const Pylon::CDeviceInfo &dev, const std::string args);
+      private:
+        /// The constructor is private so only the friend class can create instances
+        /**
+        * @param dev The PylonDevice that should be used for image acquisition.
+        * @param args The arguments provided to this grabber.
+        */
+        PylonGrabberImpl(const Pylon::CDeviceInfo &dev, const std::string args);
 
-    /// Used to determine wether (and to what) to convert an image.
-    enum convert_to {
-      yes_rgba,
-      yes_mono8u,
-      no_mono8u,
-      no_mono16,
+        /// Used to determine wether (and to what) to convert an image.
+        enum convert_to {
+          yes_rgba,
+          yes_mono8u,
+          no_mono8u,
+          no_mono16,
+        };
+
+        /// A mutex lock for the camera.
+        Mutex m_CamMutex;
+        /// The PylonEnvironment automation.
+        PylonAutoEnv m_PylonEnv;
+        /// Count of buffers for grabbing
+        static const int m_NumBuffers = 10;
+        /// Count of buffers used by GrabberThread
+        static const int m_ThreadNumBuffers = 5;
+        /// The camera interface.
+        Pylon::IPylonDevice* m_Camera;
+        /// The streamGrabber of the camera.
+        Pylon::IStreamGrabber* m_Grabber;
+        /// PylonCameraOptions used to get and set camera settings.
+        PylonCameraOptions* m_CameraOptions;
+        /// PylonColorConverter used for color conversion.
+        PylonColorConverter* m_ColorConverter;
+        /// PylonGrabberThread used for continous image acquisition.
+        PylonGrabberThread* m_GrabberThread;
+        /// A list of used buffers.
+        std::vector<PylonGrabberBuffer<uint16_t>*> m_BufferList;
+    
+        /// starts the acquisition of pictures by the camera
+        void acquisitionStart();
+        /// stops the acquisition of pictures by the camera
+        void acquisitionStop();
+        /// creates buffers and registers them at the grabber
+        void grabbingStart();
+        /// deregisters buffers from grabber and deletes them
+        void grabbingStop();
+
+        /// helper function that makes default settings for the camera.
+        void cameraDefaultSettings();
+        /// Converts pImageBuffer to correct type and writes it into m_Image
+        void convert(const void *pImageBuffer);
     };
 
-    /// A mutex lock for the camera
-    icl::Mutex m_CamMutex;
-    /// count of buffers for grabbing
-    static const int m_NumBuffers = 10;
-    /// image height
-    int m_Height;
-    /// image width
-    int m_Width;
-    /// image offset in x direction
-    int m_Offsetx;
-    /// image offset in y direction
-    int m_Offsety;
-    /// image format
-    std::string m_Format;
-    /// the camera interface.
-    Pylon::IPylonDevice* m_Camera;
+    /// Grabber implementation for a Basler Pylon-based GIG-E Grabber \ingroup GIGE_G
+    /** This is just a wrapper class of the underlying PylonGrabberImpl class */
+    struct PylonGrabber : public GrabberHandle<PylonGrabberImpl>{
 
-    /// the streamGrabber of the camera.
-    Pylon::IStreamGrabber* m_Grabber;
-    /// a list of used buffers.
-    std::vector<PylonGrabberBuffer<uint16_t>*> m_BufferList;
-    /**
-    * indicates whether m_Image and m_ColorConverter should
-    * be reinitialized in the next acquireImage call.
-    */
-    bool m_ResetImage;
-    /// Here the Image is saved that acquireImage returns
-    icl::ImgBase* m_Image;
-    /// Buffer für color conversion
-    uint8_t* m_ImageBuff;
-    /// Buffer for interlieved-to-planar conversion
-    icl::Img8u* m_ImageRGBA;
-    /// Vector for channels
-    std::vector<icl8u*>* m_Channels;
-    /// Pylon color format converter
-    Pylon::CPixelFormatConverter* m_ColorConverter;
-    Pylon::SImageFormat m_InputFormat;
-    Pylon::SOutputImageFormat m_OutputFormat;
-    /// indicates whether the current colorformat needs conversion.
-    convert_to m_Convert;
-    /// a variable to count aquired picture.
-    unsigned long m_Aquired;
-    /// a variable to count aquiring-errors.
-    unsigned long m_Error;
+      /// create a new PylonGrabber
+      /** @see PylonGrabberImpl for more details*/
+      inline PylonGrabber(const std::string args="") throw(ICLException) {
+      /// looking for Pylon device compatible to args
+      Pylon::CDeviceInfo dev = getDeviceFromArgs(args);
+        if(isNew(dev.GetFullName().c_str())){
+          initialize(new PylonGrabberImpl(dev, args), dev.GetFullName().c_str());
+        }else{
+          initialize(dev.GetFullName().c_str());
+        }
+      }
+
+      /// Returns a list of detected pylon devices
+      static Pylon::DeviceInfoList_t
+      getPylonDeviceList(Pylon::DeviceInfoList_t* filter=NULL){
+        return icl::pylon::getPylonDeviceList();
+      }
     
-    /// initializes the Pylon environment.
-    /** @return whether Pylon::PylonInitialize() actually was called. */
-    static bool initPylonEnv();
-    /// terminates the Pylon environment.
-    /** @return whether Pylon::PylontTerminate() actually was called. */
-    static bool termPylonEnv();
-    /// starts the acquisition of pictures by the camera
-    void acquisitionStart();
-    /// stops the acquisition of pictures by the camera
-    void acquisitionStop();
-    /// creates buffers and registers them at the grabber
-    void prepareGrabbing();
-    /// deregisters buffers from grabber and deletes them
-    void finishGrabbing();
-    /// helper function for getPropertyList.
-    void addToPropertyList(std::vector<std::string> &ps, const GenApi::CNodePtr& node);
-    /// helper function that makes default settings for the camera.
-    void cameraDefaultSettings();
-    /// creates a new ImgBase is not already there.
-    void initImgBase();
-    /// Converts pImageBuffer to correct type and writes it into m_Image
-    void convert(const void *pImageBuffer);
-  };
-
-  /// Grabber implementation for a Basler Pylon-based GIG-E Grabber \ingroup GIGE_G
-  /** This is just a wrapper class of the underlying PylonGrabberImpl class */
-  struct PylonGrabber : public GrabberHandle<PylonGrabberImpl>{
-
-    /// create a new PylonGrabber
-    /** @see PylonGrabberImpl for more details*/
-    inline PylonGrabber(const std::string args="") throw(ICLException) {
-      // looking for Pylon device compatible to the args
-      Pylon::CDeviceInfo dev = PylonGrabberImpl::getDeviceFromArgs(args);
-      if(isNew(dev.GetFullName().c_str())){
-        initialize(new PylonGrabberImpl(dev, args), dev.GetFullName().c_str());
-      }else{
-        initialize(dev.GetFullName().c_str());
+      /// Prints information about the startup argument options of PylonGrabberImpl
+      static void printHelp(){
+        return pylon::printHelp();
       }
-    }
-    /// Returns a list of detected pylon devices
-    static Pylon::DeviceInfoList_t
-    getPylonDeviceList(Pylon::DeviceInfoList_t* filter=NULL){
-      return PylonGrabberImpl::getPylonDeviceList();
-    }
-    
-    /// Prints information about the startup argument options of PylonGrabberImpl
-    static void printHelp(){
-      return PylonGrabberImpl::printHelp();
-    }
 
-    static std::vector<GrabberDeviceDescription> getDeviceList(bool rescan){
-    static std::vector<GrabberDeviceDescription> deviceList;
-      if(rescan){
-        deviceList.clear();
-        Pylon::DeviceInfoList_t devs = getPylonDeviceList();
-        for(unsigned int i = 0 ; i < devs.size() ; ++i){
-          deviceList.push_back(
-            GrabberDeviceDescription(
-              "pylon",
-              str(i) + "|||" + devs.at(i).GetFullName().c_str(),
-              devs.at(i).GetFullName().c_str()
-            )
-          );
+      static std::vector<GrabberDeviceDescription> getDeviceList(bool rescan){
+      static std::vector<GrabberDeviceDescription> deviceList;
+        if(rescan){
+          deviceList.clear();
+          Pylon::DeviceInfoList_t devs = getPylonDeviceList();
+          for(unsigned int i = 0 ; i < devs.size() ; ++i){
+            deviceList.push_back(
+              GrabberDeviceDescription(
+                "pylon",
+                str(i) + "|||" + devs.at(i).GetFullName().c_str(),
+                devs.at(i).GetFullName().c_str()
+              )
+            );
+          }
         }
+      return deviceList;
       }
-    return deviceList;
-    }
-  
-  };
-  
-  /// Utility Structure \ingroup GIGE_G
-  /** 
-   * This struct is used to automaticly terminate an initialized pylon 
-   * environment on destruction. 
-   */
-  struct PylonAutoEnv{
-    public:
-      PylonAutoEnv(){PylonGrabberImpl::initPylonEnv();}
-      ~PylonAutoEnv(){PylonGrabberImpl::termPylonEnv();}
-  };
-  
-  /// Utility Structure \ingroup GIGE_G
-  /**
-   * This struct is used to stop the picture-acquisition and restart it
-   * on destruction. It also gets the mutex lock for the camera so the
-   * camera can't be stopped twice.
-   */
-  struct AcquisitionInterruptor{
-    private: 
-      PylonGrabberImpl* m_Impl;
-      icl::Mutex::Locker* m_Locker;
+    };
 
-    public:
-      /// gets the mutex lock and stops the acquisiton
-      AcquisitionInterruptor(PylonGrabberImpl* i, bool mock=false){
-        DEBUG_LOG("before stop")
-        if(!mock){
-          m_Impl = i;
-          DEBUG_LOG("Locking camMutex")
-          m_Locker = new icl::Mutex::Locker(i -> m_CamMutex);
-          m_Impl -> acquisitionStop();
-        } else {
-          m_Impl = NULL;
-          m_Locker = NULL;
-        }
-        DEBUG_LOG("after stop")
-
-      }
-      ~AcquisitionInterruptor(){
-        DEBUG_LOG("before start")
-        if((m_Locker != NULL) && (m_Impl != NULL)){
-          m_Impl -> acquisitionStart();
-          delete m_Locker;
-          DEBUG_LOG("Releasing camMutex")
-        }
-        DEBUG_LOG("after start")
-      }
-  };
-  
-  
-} //namespace
+  } //namespace pylon
+} //namespace icl
 
 #endif
+

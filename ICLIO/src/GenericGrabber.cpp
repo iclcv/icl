@@ -492,12 +492,12 @@ namespace icl{
 #ifdef HAVE_PYLON
       if(l[i] == "pylon"){
         if (pmap["pylon"].id == "-help"){
-          PylonGrabber::printHelp();
+          pylon::PylonGrabber::printHelp();
           ADD_ERR("pylon");
           continue;
         }
         try{
-          m_poGrabber = new PylonGrabber(pmap["pylon"].id);
+          m_poGrabber = new pylon::PylonGrabber(pmap["pylon"].id);
           m_sType = "pylon";
           break;
         } catch (ICLException &e){
@@ -745,7 +745,7 @@ namespace icl{
 #endif
 
 #ifdef HAVE_PYLON
-      add_devices<PylonGrabber>(deviceList,"pylon",useFilter,pmap);
+      add_devices<pylon::PylonGrabber>(deviceList,"pylon",useFilter,pmap);
 #endif
     }
     return deviceList;
