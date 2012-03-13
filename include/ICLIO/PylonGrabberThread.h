@@ -73,9 +73,6 @@ namespace icl {
         *         or resetBuffer().
         */
         TsBuffer<int16_t>* getCurrentImage();
-        int pos;
-        bool runb;
-        void finalize(){DEBUG_LOG("\n\n\nThread stopped, finalize");}
         /// The mutex used for internal buffer-monitoring.
         Mutex m_BufferMutex;
       private:

@@ -46,8 +46,6 @@ PylonGrabberThread::PylonGrabberThread(Pylon::IStreamGrabber* grabber,
     m_Error(0), m_Timeout(0), m_Acquired(0), m_NewAvail(false)
 {  
   // init Buffers
-  pos=-1;
-  runb = true;
   icl::Mutex::Locker l(m_BufferMutex);
   initBuffer();
   DEBUG_LOG("buffermutex = " << &m_BufferMutex)
@@ -100,98 +98,62 @@ void PylonGrabberThread::clearBuffer(){
 void PylonGrabberThread::run(){
   // non-stop-loop
   while(1){
-    pos = 1;
+    msleep(1);
     // to prevent deadlocks always get the camera mutex before locking thread
-    int count = 0;
-    while(m_CamMutex -> trylock()){
-      ++count;
-      msleep(1);
+    if(m_CamMutex -> trylock()){
+      // did not get lock
+      continue;
     }
-    //if(count > 0){
-    //    DEBUG_LOG("count = " << count)
-    //}
-    pos = 2;
-    int trycount = 0;
-    while(trylock() && trycount < 1000){
-        ++trycount;
+    // camera-lock acquired. locking thread
+    if(trylock()){
+      // did not get thread lock. release cam.
+      m_CamMutex -> unlock();
+      continue;
     }
-    if(trycount>=1000){
-        m_CamMutex->unlock();
-        msleep(1);
-    } else {
-        pos = 3;
-        // grab image.
-        grab();
-        pos = 4;
-        // release camera lock before unlocking thread.
-        pos = 5;
-        // allow thread-stop.
-        m_CamMutex -> unlock();
-        unlock();
-        //std::cout << "unlocked" << std::endl;
-        //std::cerr << "unlocked" << std::endl;
-        pos = 6;
-        //std::cout << "unl2" << std::endl;
-        //std::cerr << "unl2" << std::endl;
-        // short sleep so thread can be stopped.
-        //std::cout << "sleep " << this << std::endl;
-        //std::cerr << "sleep " << this << std::endl;
-        msleep(1);
-        pos = 7;
-        }
+    // here we have both locks (cam and thread)
+    // grab image.
+    grab();
+    // release camera lock before unlocking thread.
+    m_CamMutex -> unlock();
+    // allow thread-stop.
+    unlock();
   }
 }
 
 void PylonGrabberThread::grab(){
   // Wait for the grabbed image with timeout of 2 seconds
-  pos = 8;
   if (!m_Grabber -> GetWaitObject().Wait(2000)){
-  pos = 9;
     // Timeout
-    //DEBUG_LOG("Timeout occurred!")
+    DEBUG_LOG("Timeout occurred!")
     ++m_Timeout;
     return;
   }
-  pos = 10;
   // Get the grab result from the grabber's result queue
   Pylon::GrabResult result;
-  pos = 11;
   if(!m_Grabber -> RetrieveResult(result)){
       //This should not happen, but seems to do on camemu.
       //DEBUG_LOG("Wait object came back but no result available.")
       ++m_Error;
       return;
   }
-  pos = 12;
   if (result.Succeeded()){
-    pos = 13;
     ++m_Acquired;
-    pos = 14;
     // Grabbing was successful, save the buffer content to queue
     m_BufferMutex.lock();
-    pos = 15;
     TsBuffer<int16_t>* tmp = m_BufferQueue.front();
-    pos = 16;
     m_BufferQueue.pop();
-    pos = 17;
     tmp -> copy(result.Buffer());
-    pos = 18;
     tmp -> m_Timestamp = result.GetTimeStamp();
-    pos = 19;
     m_BufferQueue.push(tmp);
-    pos = 20;
     m_NewAvail = true;
-    pos = 21;
     // Reuse buffer for grabbing the next image
     m_Grabber -> QueueBuffer(result.Handle(), NULL);
-    pos = 22;
     m_BufferMutex.unlock();
-    pos = 13;
   } else {
     ++m_Error;
     // Error handling
-    //DEBUG_LOG("No image acquired!" << "Error description : "
-    //<< result.GetErrorDescription())
+    DEBUG_LOG("No image acquired!" << "Error description : "
+    << result.GetErrorDescription())
     // Reuse the buffer for grabbing the next image
     m_Grabber -> QueueBuffer(result.Handle(), NULL);
   }
@@ -208,9 +170,7 @@ TsBuffer<int16_t>* PylonGrabberThread::getCurrentImage(){
       return tmp;
     }
     m_BufferMutex.unlock();
-    //DEBUG_LOG("wait for new image")
     msleep(10);
   }
-  //DEBUG_LOG("could not get new image, return null");
   return NULL;
 }

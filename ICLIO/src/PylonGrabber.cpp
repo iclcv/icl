@@ -80,7 +80,6 @@ PylonGrabberImpl::PylonGrabberImpl(
     m_CameraOptions -> acquisitionStart();
     m_GrabberThread -> start();
   }
-  DEBUG_LOG("ready")
   DEBUG_LOG("cam mutex = " << &m_CamMutex)
 }
 
@@ -175,25 +174,16 @@ void PylonGrabberImpl::grabbingStop(){
 }
 
 void PylonGrabberImpl::acquisitionStart(){
-  DEBUG_LOG("acquire start called")
   m_CameraOptions -> acquisitionStart();
-  DEBUG_LOG("thread start")
   m_GrabberThread -> start();
-  DEBUG_LOG("thread started")
   m_GrabberThread -> m_BufferMutex.unlock();
-  DEBUG_LOG("buffer unlocked")
   m_CamMutex.unlock();
-  DEBUG_LOG("cam unlocked")
 }
 
 void PylonGrabberImpl::acquisitionStop(){
-  DEBUG_LOG("locking cam")
   m_CamMutex.lock();
-  DEBUG_LOG("acquire stop called, stopping thread..." << m_GrabberThread->pos)
   m_GrabberThread -> stop();
-  DEBUG_LOG("thread stopped")
   m_GrabberThread -> m_BufferMutex.lock();
-  DEBUG_LOG("buffer locked")
   m_CameraOptions -> acquisitionStop();
 }
 
@@ -244,7 +234,7 @@ void PylonGrabberImpl::cameraDefaultSettings(){
   //  (m_Camera, "AcquisitionMode", "Continuous");
 }
 
-const icl::ImgBase* PylonGrabberImpl::acquireImage(){//TODO: Threading issues
+const icl::ImgBase* PylonGrabberImpl::acquireImage(){
   // Get the grab result from the grabber thread
   // getCurrentImage is Thread safe
   if(TsBuffer<int16_t>* tmp = m_GrabberThread -> getCurrentImage()){
