@@ -46,7 +46,7 @@ PylonGrabberImpl::PylonGrabberImpl(
         const Pylon::CDeviceInfo &dev, const std::string args)
     : m_CamMutex(), m_PylonEnv()
 {
-  DEBUG_LOG("args: " << args)
+  FUNCTION_LOG("args: " << args)
   // getting camera mutex to exclude race-conditions
   icl::Mutex::Locker l(m_CamMutex);
   // Initialization of the pylon Runtime Library
@@ -80,22 +80,14 @@ PylonGrabberImpl::PylonGrabberImpl(
     m_CameraOptions -> acquisitionStart();
     m_GrabberThread -> start();
   }
-  DEBUG_LOG("cam mutex = " << &m_CamMutex)
 }
 
 PylonGrabberImpl::~PylonGrabberImpl(){
   // getting camera mutex to exclude race-conditions
   icl::Mutex::Locker l(m_CamMutex);
-
-  DEBUG_LOG("Pylongrabber destructor called");
-
+  FUNCTION_LOG();
   // Stop acquisition
-  if (0){
-   acquisitionStop();
-  } else {
-      m_GrabberThread -> stop();
-      m_CameraOptions -> acquisitionStop();
-  }
+  acquisitionStop();
   // deregister buffers
   grabbingStop();
 
@@ -103,15 +95,15 @@ PylonGrabberImpl::~PylonGrabberImpl(){
   m_Grabber -> Close();
   // Close camera
   m_Camera -> Close();
-  if (m_ColorConverter) delete m_ColorConverter;
-  if (m_CameraOptions) delete m_CameraOptions;
-  if (m_GrabberThread) delete m_GrabberThread;
+  ICL_DELETE(m_ColorConverter)
+  ICL_DELETE(m_CameraOptions)
+  ICL_DELETE(m_GrabberThread)
   // Free resources allocated by the pylon runtime system automated.
 }
 
 
 void PylonGrabberImpl::grabbingStart(){
-  DEBUG_LOG("grab start called")
+  FUNCTION_LOG()
   // Get the image buffer size
   const size_t imageSize = m_CameraOptions -> getNeededBufferSize();
   DEBUG_LOG("Buffer size: " << imageSize)
@@ -132,7 +124,6 @@ void PylonGrabberImpl::grabbingStart(){
   for (int i = 0; i < m_NumBuffers; ++i){
     PylonGrabberBuffer<uint16_t> *pGrabBuffer =
       new PylonGrabberBuffer<uint16_t>(imageSize);
-    if (!pGrabBuffer) DEBUG_LOG("pgrabBuffer is null")
     Pylon::StreamBufferHandle handle =
       m_Grabber -> RegisterBuffer(pGrabBuffer -> getBufferPointer(), imageSize);
     pGrabBuffer -> setBufferHandle(handle);
@@ -154,12 +145,12 @@ void PylonGrabberImpl::grabbingStart(){
 }
 
 void PylonGrabberImpl::grabbingStop(){
-  DEBUG_LOG("grab stop called")
+  FUNCTION_LOG()
   m_Grabber -> CancelGrab();
   Pylon::GrabResult result;
   while (m_Grabber -> GetWaitObject().Wait(0)) {
     if (!m_Grabber -> RetrieveResult(result)) {
-      std::cerr << "Failed to retrieve item from output queue" << std::endl;
+      DEBUG_LOG("Failed to retrieve item from output queue")
     }
   }
   // deregister the buffers before freeing the memory
@@ -174,6 +165,7 @@ void PylonGrabberImpl::grabbingStop(){
 }
 
 void PylonGrabberImpl::acquisitionStart(){
+  FUNCTION_LOG()
   m_CameraOptions -> acquisitionStart();
   m_GrabberThread -> start();
   m_GrabberThread -> m_BufferMutex.unlock();
@@ -181,6 +173,7 @@ void PylonGrabberImpl::acquisitionStart(){
 }
 
 void PylonGrabberImpl::acquisitionStop(){
+  FUNCTION_LOG()
   m_CamMutex.lock();
   m_GrabberThread -> stop();
   m_GrabberThread -> m_BufferMutex.lock();
@@ -188,55 +181,20 @@ void PylonGrabberImpl::acquisitionStop(){
 }
 
 void PylonGrabberImpl::cameraDefaultSettings(){
-
+  // activate timestamp-chunks
   setParameterValueOf<Pylon::IPylonDevice, GenApi::IBoolean, bool>
     (m_Camera, "ChunkModeActive", true);
   setParameterValueOf<Pylon::IPylonDevice, GenApi::IEnumeration, std::string>
     (m_Camera, "ChunkSelector", "Timestamp");
   setParameterValueOf<Pylon::IPylonDevice, GenApi::IBoolean, bool>
     (m_Camera, "ChunkEnable", true);
+  // set PacketSize
   setParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>
     (m_Camera, "GevSCPSPacketSize", 8000);
-
-  //m_Height = 480;
-  //m_Width = 640;
-  //m_Offsetx = 640;
-  //m_Offsety = 300;
-  //m_Format = "BayerGB16";
-
-  //DEBUG_LOG("setting camera to " << m_Format)
-  // default camera settings: image format, AOI, acquisition mode and exposure
-  //setParameterValueOf<Pylon::IPylonDevice, GenApi::IEnumeration, std::string>
-  //  (m_Camera, "PixelFormat", m_Format);
-  //setParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>
-  //  (m_Camera, "OffsetX", m_Offsetx);
-  //setParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>
-  //  (m_Camera, "OffsetY", m_Offsety);
-  //setParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>
-  //  (m_Camera, "Width", m_Width);
-  //setParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>
-  //  (m_Camera, "Height", m_Height);
-  //std::cout << "ImageFormat after settings: " 
-  //  << getParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>
-  //    (m_Camera, "Width") << "x"
-  //  << getParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>
-  //    (m_Camera, "Height") << " , "
-  //  << getParameterValueOf<Pylon::IPylonDevice, GenApi::IEnumeration,
-  //    std::string>(m_Camera, "PixelFormat")
-  //  << std::endl;
-  //std::cout << "Payload: "
-  //  << getParameterValueString("PayloadSize") << std::endl;
-  //std::cout << "PixelSize: "
-  //  << getParameterValueString("PixelSize") << std::endl;
-
-  // default Aquisition Mode
-  //setParameterValueOf<Pylon::IPylonDevice, GenApi::IEnumeration, std::string>
-  //  (m_Camera, "AcquisitionMode", "Continuous");
 }
 
 const icl::ImgBase* PylonGrabberImpl::acquireImage(){
   // Get the grab result from the grabber thread
-  // getCurrentImage is Thread safe
   if(TsBuffer<int16_t>* tmp = m_GrabberThread -> getCurrentImage()){
     icl::ImgBase* ptr = m_ColorConverter -> convert(tmp -> m_Buffer);
     return ptr;
@@ -245,7 +203,7 @@ const icl::ImgBase* PylonGrabberImpl::acquireImage(){
   }
 }
 
-// interface for the setter function for video device properties
+// setter function for video device properties
 void PylonGrabberImpl::setProperty(
   const std::string &property, const std::string &value)
 {
@@ -257,7 +215,7 @@ std::vector<std::string> PylonGrabberImpl::getPropertyList(){
   return m_CameraOptions -> getPropertyList();
 }
 
-// base implementation for property check (seaches in the property list)
+// checks if property is returned, implemented, available and of processable GenApi::EInterfaceType
 bool PylonGrabberImpl::supportsProperty(const std::string &property){
   return m_CameraOptions -> supportsProperty(property);
 }

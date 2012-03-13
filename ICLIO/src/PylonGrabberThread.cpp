@@ -48,21 +48,18 @@ PylonGrabberThread::PylonGrabberThread(Pylon::IStreamGrabber* grabber,
   // init Buffers
   icl::Mutex::Locker l(m_BufferMutex);
   initBuffer();
-  DEBUG_LOG("buffermutex = " << &m_BufferMutex)
-  DEBUG_LOG("this pointer " << this)
 }
 
 PylonGrabberThread::~PylonGrabberThread(){
   // free all allocated memory
   icl::Mutex::Locker l(m_BufferMutex);
   clearBuffer();
-
   DEBUG_LOG("pictures aquired: " << m_Acquired << " errors: " << m_Error
             << " timesouts: " << m_Timeout)
 }
 
 void PylonGrabberThread::resetBuffer(int bufferSize, int bufferCount){
-  DEBUG_LOG("Reset Buffer " << bufferSize << " , " << bufferCount)
+  FUNCTION_LOG("Reset Buffer " << bufferSize << " , " << bufferCount)
   // set members to new values
   m_BufferSize = bufferSize;
   m_BufferCount = bufferCount;
@@ -72,17 +69,14 @@ void PylonGrabberThread::resetBuffer(int bufferSize, int bufferCount){
 }
 
 void PylonGrabberThread::initBuffer(){
-  DEBUG_LOG("initBuffer. n=" << m_BufferCount)
   if(!m_BufferQueue.empty()){
     throw ICLException("m_BufferQueue must be empty when calling init");
   }
   // fill buffer-queue with new buffers.
   for (int i = 0; i < m_BufferCount; ++i){
     TsBuffer<int16_t>* buffer = new TsBuffer<int16_t>(m_BufferSize);
-    DEBUG_LOG("BUFFER: " << buffer);
     m_BufferQueue.push(buffer);
   }
-  DEBUG_LOG("buffer size" << m_BufferQueue.size())
   m_NewAvail = false;
 }
 
@@ -132,7 +126,7 @@ void PylonGrabberThread::grab(){
   Pylon::GrabResult result;
   if(!m_Grabber -> RetrieveResult(result)){
       //This should not happen, but seems to do on camemu.
-      //DEBUG_LOG("Wait object came back but no result available.")
+      DEBUG_LOG("Wait object came back but no result available.")
       ++m_Error;
       return;
   }
@@ -160,7 +154,7 @@ void PylonGrabberThread::grab(){
 }
 
 TsBuffer<int16_t>* PylonGrabberThread::getCurrentImage(){
-  for (int n = 0; n < 20; ++n){
+  for (int n = 0; n < 100; ++n){
     // lock buffer-queue
     m_BufferMutex.lock();
     if(m_NewAvail){

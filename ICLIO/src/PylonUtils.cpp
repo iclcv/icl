@@ -100,9 +100,8 @@ AcquisitionInterruptor::AcquisitionInterruptor(Interruptable* i, bool mock)
 {
   if(!mock){
     m_Interu = i;
-    DEBUG_LOG("stopping acquisition")
+    DEBUG_LOG("stop acquisition")
     m_Interu -> acquisitionStop();
-    DEBUG_LOG("acquisition stopped")
   } else {
     m_Interu = NULL;
   }
@@ -111,19 +110,17 @@ AcquisitionInterruptor::AcquisitionInterruptor(Interruptable* i, bool mock)
 // Releases the mutex lock, if acquired before. Starts acquisition.
 AcquisitionInterruptor::~AcquisitionInterruptor(){
   if(m_Interu){
-    DEBUG_LOG("starting acquisition")
+    DEBUG_LOG("start acquisition")
     m_Interu -> acquisitionStart();
-    DEBUG_LOG("started acquisition")
   }
 }
 
 // Frees all grabbing resources
 GrabbingInterruptor::GrabbingInterruptor(Interruptable* i, bool mock){
   if(!mock){
-    DEBUG_LOG("before stop grab")
+    DEBUG_LOG("stop grabbing")
     m_Interu = i;
     m_Interu -> grabbingStop();
-    DEBUG_LOG("after stop grab")
   } else {
     m_Interu = NULL;
   }
@@ -132,9 +129,8 @@ GrabbingInterruptor::GrabbingInterruptor(Interruptable* i, bool mock){
 // Reallocates all needed resources.
 GrabbingInterruptor::~GrabbingInterruptor(){
   if(m_Interu){
-    DEBUG_LOG("before start grab")
+    DEBUG_LOG("start grab")
     m_Interu -> grabbingStart();
-    DEBUG_LOG("after start grab")
   }
 }
 

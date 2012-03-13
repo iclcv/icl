@@ -55,7 +55,7 @@ namespace icl {
         virtual void setProperty(const std::string &property, const std::string &value);
         /// returns a list of properties, that can be set using setProperty
         virtual std::vector<std::string> getPropertyList();
-        /// base implementation for property check (seaches in the property list)
+        /// checks if property is returned, implemented, available and of processable GenApi::EInterfaceType
         virtual bool supportsProperty(const std::string &property);
         /// get type of property
         virtual std::string getType(const std::string &name);

@@ -59,7 +59,6 @@ const std::string default_sizes =
 
 PylonCameraOptions::PylonCameraOptions(
         Pylon::IPylonDevice* camera, Interruptable* grabber){
-    DEBUG_LOG("Constructing CAM_OPTIONS")
     m_Interu = grabber;
     m_Camera = camera;
 }
@@ -72,15 +71,14 @@ PylonCameraOptions::~PylonCameraOptions(){
 void PylonCameraOptions::setProperty(
         const std::string &property, const std::string &value)
 {
-  std::cout << "setProperty(" << property << ", " << value << ")" << std::endl;
+  FUNCTION_LOG(property << ", " << value)
   if(setICLProperty(property, value)){
       // property is 'format' or 'size' and already set by setICLProperty.
       return;
   }
   GenApi::CValuePtr node = getNode(property);
   if (!node) {
-    std::cerr << "There is no parameter called '"
-      << property << "'" << std::endl;
+    DEBUG_LOG("There is no parameter called '" << property << "'")
     return;
   }
   AcquisitionInterruptor a(m_Interu, GenApi::IsWritable(node));
@@ -100,7 +98,7 @@ void PylonCameraOptions::setProperty(
 
 // returns a list of properties, that can be set using setProperty
 std::vector<std::string> PylonCameraOptions::getPropertyList(){
-  DEBUG_LOG("get property list")
+  FUNCTION_LOG()
   std::vector<std::string> ps;
   ps.push_back("size");
   ps.push_back("format");
@@ -150,9 +148,9 @@ void PylonCameraOptions::addToPropertyList(
   }
 }
 
-// base implementation for property check (seaches in the property list)
+// checks if property is returned, implemented, available and of processable GenApi::EInterfaceType
 bool PylonCameraOptions::supportsProperty(const std::string &property){
-  DEBUG_LOG(property)
+  FUNCTION_LOG(property)
   if((property.compare("size") == 0) || (property.compare("format") == 0)){
     return true;
   }
@@ -187,7 +185,7 @@ bool PylonCameraOptions::supportsProperty(const std::string &property){
 
 // get type of property
 std::string PylonCameraOptions::getType(const std::string &name){
-  DEBUG_LOG(name)
+  FUNCTION_LOG(name)
   if(name.compare("size") == 0){
     return icl_val_str[menu];
   }
@@ -197,7 +195,7 @@ std::string PylonCameraOptions::getType(const std::string &name){
 
   GenApi::INode* node = getNode(name);
   if (!node) {
-    std::cerr << "There is no parameter called '" << name << "'" << std::endl;
+    DEBUG_LOG("There is no parameter called '" << name << "'")
     return icl_val_str[info];
   }
 
@@ -299,7 +297,7 @@ std::string PylonCameraOptions::getInfo(const std::string &name){
 
   GenApi::INode* node = getNode(name);
   if (!node) {
-    std::cerr << "There is no parameter called '" << name << "'" << std::endl;
+    DEBUG_LOG("There is no parameter called '" << name << "'")
     return "";
   }
   std::string ret = "";
@@ -333,7 +331,7 @@ std::string PylonCameraOptions::getInfo(const std::string &name){
 
 // returns the current value of a property or a parameter
 std::string PylonCameraOptions::getValue(const std::string &name){
-  DEBUG_LOG(name)
+  FUNCTION_LOG(name)
   if(name.compare("size") == 0){
     std::ostringstream ret;
     ret << getValue("Width") << "x" << getValue("Height");
@@ -348,13 +346,13 @@ std::string PylonCameraOptions::getValue(const std::string &name){
 
 // Returns whether this property may be changed internally.
 int PylonCameraOptions::isVolatile(const std::string &propertyName){
-  // can't guarantee anything.
+  // can't guarantee anything, sorry.
   return true;
 }
 
 bool PylonCameraOptions::setICLProperty(
         const std::string &property, const std::string &value){
-    DEBUG_LOG(value)
+  FUNCTION_LOG(value)
   if(property.compare("size") == 0){
     Size size(value);
     setProperty("Width", toStr(size.width));
@@ -380,7 +378,6 @@ Pylon::PixelType PylonCameraOptions::getCameraPixelType(){
   if(type == Pylon::PixelType_Undefined){
     DEBUG_LOG("PixelType " << format << "=" << type << "' is not defined.");
   }
-  DEBUG_LOG("Camera PixelType is " << format << " (" << type << ")")
   return type;
 }
 
@@ -399,8 +396,7 @@ long PylonCameraOptions::getNeededBufferSize(){
   } catch (ICLException &e){
     DEBUG_LOG("The camera does not have a parameter called PayloadSize.")
     DEBUG_LOG("Assuming that the image size is width * height * pixelsize.")
-    return (long)
-         ((getWidth() * getHeight() * getCameraPixelSize() / 8) + 0.5);
+    return (long) ((getWidth() * getHeight() * getCameraPixelSize() / 8) + 0.5);
   }
 }
 

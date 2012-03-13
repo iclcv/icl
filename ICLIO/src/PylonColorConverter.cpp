@@ -89,15 +89,15 @@ void PylonColorConverter::freeAll(){
   ICL_DELETE(m_OutputFormat)
 }
 
-// adapts the conversion to the passed properties
+// makes the conversion adapt to the passed properties on next convert.
 void PylonColorConverter::resetConversion(int width, int height,
                                           Pylon::PixelType pixel_type,
                                           int pixel_size_bits,
                                           long buffer_size){
   //locking mutex
   Mutex::Locker l(m_Mutex);
-  DEBUG_LOG("resetConversion")
-  DEBUG_LOG("w="<<width<<" h="<<height<<" t="<<pixel_type<<" sb="<<pixel_size_bits<<" bs="<<buffer_size)
+  FUNCTION_LOG("w=" << width << " h=" << height << " t=" << pixel_type
+                    << " sb=" << pixel_size_bits << " bs=" << buffer_size)
   // set image information
   m_Height = height;
   m_Width = width;
@@ -108,7 +108,6 @@ void PylonColorConverter::resetConversion(int width, int height,
 }
 
 void PylonColorConverter::initConversion(){
-  if(!m_Reset) return;
   // free all resources
   freeAll();
   // create pylon color format converter
@@ -119,31 +118,30 @@ void PylonColorConverter::initConversion(){
   m_OutputFormat = new Pylon::SOutputImageFormat();
   // Line pitch default settings for input image
   if(Pylon::IsPacked(m_PixelType)){
-      DEBUG_LOG("is packed")
+      DEBUG_LOG("isPacked")
     m_InputFormat -> LinePitch = 0;
   } else {
     m_InputFormat -> LinePitch =
       (int) (m_Width * (m_PixelSize/8.0) + 0.5);
   }
   if (isColor(m_PixelType)){
-      DEBUG_LOG("color")
+      DEBUG_LOG("isColor")
     // make settings for rgb-conversion
     setConversionRGB();
   } else if (Pylon::IsMono(m_PixelType)){
-      DEBUG_LOG("mono")
+      DEBUG_LOG("isMono")
     // make settings for mono-conversion
     setConversionMono();
   } else if (m_PixelType == 35127316){
     // make settings for RGBPacked-conversion
+    DEBUG_LOG("isRGBPacked")
     setConversionRGBPacked();
   } else {
     DEBUG_LOG("\n\nATTENTION: ColorFormat " << m_PixelType
               << " is currently not supported.\n"
-              << "Stopping Application to prevend undefined behavior.\n")
+              << "Stopping Application to prevend from undefined behavior.\n")
     exit(-1);
   }
-  m_Reset = false;
-  DEBUG_LOG("end")
 }
 
 // makes all settings for the conv. of color images.
@@ -241,7 +239,11 @@ void PylonColorConverter::setConversionMono(){
 // Converts pImageBuffer to correct type and writes it into m_Image
 icl::ImgBase* PylonColorConverter::convert(const void *pImageBuffer){
   Mutex::Locker l(m_Mutex);
-  initConversion();
+  // reinitialize conversion if needed
+  if(m_Reset) {
+    initConversion();
+    m_Reset = false;
+  }
   // check which conversion to use
   if (m_Convert == yes_rgba){
     // rgb color conversion, call Pylon-convert function

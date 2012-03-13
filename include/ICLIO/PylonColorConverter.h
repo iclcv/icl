@@ -52,7 +52,7 @@ namespace icl {
       /// Destructor
       ~PylonColorConverter();
 
-      /// makes the conversion adapts to the passed properties on nect convert.
+      /// makes the conversion adapt to the passed properties on next convert.
       void resetConversion(int width, int height, Pylon::PixelType pixel_type,
                            int pixel_size_bits, long buffer_size);
       /// Converts pImageBuffer into an internal ImageBase.
