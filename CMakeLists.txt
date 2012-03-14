@@ -47,6 +47,8 @@ endif()
 #message(STATUS "${vv}")
 #endforeach()
 
+set(ICL_VAR_EXAMPLES_TO_BUILD "all" CACHE STRING "Build examples")
+
 # use void pointer size to check if we are building on 64bit
 if(CMAKE_SIZEOF_VOID_P MATCHES "8")
     set(ICL_64BIT TRUE)

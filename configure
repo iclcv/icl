@@ -4,6 +4,7 @@ PREFIX=
 BUILD=
 PKGCFG=
 INTELOMP=
+EXAMPLES=
 
 function usage {
     echo "usage: configure <CFG-FILE-NAME>"
@@ -51,6 +52,7 @@ for T in "$@" ; do
                         "prefix") PREFIX="$TR" ;;
                         "build") BUILD="$TR" ;;
                         "arch") ARCH="$TR" ;;
+                        "examples") EXAMPLES="$TR" ;;
                         "pkgcfg") PKGCFG="$TR" ;;
                         "intelomp") INTELOMP="$TR" ;;
                         *) eval "path_$T1=$TR" ;;
@@ -73,6 +75,9 @@ if [ -z $BUILD ] ; then
 fi
 if [ -z $ARCH ] ; then 
     ARCH=false
+fi
+if [ -z $EXAMPLES ] ; then 
+    EXAMPLES=all
 fi
 if [ -z $PREFIX ] ; then 
     PREFIX=/vol/nivision
@@ -101,6 +106,7 @@ CMD="$CMD -D ICL_VAR_DEBUG_MODE:BOOL=$DEBUG_VAL"
 CMD="$CMD -D ICL_VAR_USE_INTEL_OMP_IF_POSSIBLE:BOOL=$(echo $INTELOMP | tr '[:lower:]' '[:upper:]')"
 CMD="$CMD -D ICL_VAR_ARCHITECTURE_DEPENDENT_BUILD_ON:BOOL=$(echo $ARCH | tr '[:lower:]' '[:upper:]')"
 CMD="$CMD -D ICL_VAR_USE_PKG_CONFIG:BOOL=$(echo $PKGCFG | tr '[:lower:]' '[:upper:]')"
+CMD="$CMD -D ICL_VAR_EXAMPLES_TO_BUILD:STRING=$EXAMPLES "
 
 echo "extracting configuration"
 echo "-----------------------------------------------------"
@@ -124,6 +130,7 @@ echo "ICL version:               $(./VERSION.sh)"
 echo "version (debug/release):   $VERSION"
 echo "build directory:           $BUILD"
 echo "arch dependent build:      $ARCH"
+echo "examples:                  $EXAMPLES"
 echo "installation prefix:       $PREFIX"
 echo "use pkg-config:            $PKGCFG"
 echo "use intel omp if possible: $INTELOMP"
