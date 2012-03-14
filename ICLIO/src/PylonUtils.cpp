@@ -171,7 +171,7 @@ Pylon::CDeviceInfo icl::pylon::getDeviceFromArgs(std::string args) throw(ICLExce
   std::vector<std::string> 	argvec = icl::tok(args, ":");
   ICLASSERT(argvec.size() <= 2)
   if(argvec.at(0).find('.') == std::string::npos){
-    int nr = icl::parse<int>(argvec.at(0));
+    unsigned int nr = icl::parse<int>(argvec.at(0));
     Pylon::DeviceInfoList_t devices = getPylonDeviceList();
     if(devices.size() < nr + 1){
       DEBUG_LOG("Demanded device Nr. " << nr << " but only "

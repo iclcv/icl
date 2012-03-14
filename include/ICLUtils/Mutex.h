@@ -85,7 +85,7 @@ namespace icl{
     **/
     int trylock(){
       #ifndef ICL_SYSTEM_WINDOWS
-      pthread_mutex_trylock(&m);
+      return pthread_mutex_trylock(&m);
       #else
 
       #endif
