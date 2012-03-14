@@ -52,7 +52,7 @@ PylonGrabberImpl::PylonGrabberImpl(
   // Initialization of the pylon Runtime Library
   m_Camera = Pylon::CTlFactory::GetInstance().CreateDevice(dev);
 
-  int channel = channelFromArgs(args);
+  unsigned int channel = channelFromArgs(args);
   if(m_Camera -> GetNumStreamGrabberChannels() == 0){
     throw icl::ICLException("No stream grabber channels avaliable.");
   } else if(m_Camera -> GetNumStreamGrabberChannels() < channel){

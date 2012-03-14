@@ -41,9 +41,10 @@ using namespace icl::pylon;
 
 PylonGrabberThread::PylonGrabberThread(Pylon::IStreamGrabber* grabber,
                               Mutex* camMutex, int bufferCount, int bufferSize)
-  : m_Grabber(grabber), m_CamMutex(camMutex), m_BufferMutex(),
-    m_BufferSize(bufferSize), m_BufferCount(bufferCount), m_BufferQueue(),
-    m_Error(0), m_Timeout(0), m_Acquired(0), m_NewAvail(false)
+  : m_BufferMutex(), m_Grabber(grabber), m_CamMutex(camMutex),
+    m_BufferSize(bufferSize), m_BufferCount(bufferCount),
+    m_Error(0), m_Timeout(0), m_Acquired(0), m_BufferQueue(),
+    m_NewAvail(false)
 {  
   // init Buffers
   icl::Mutex::Locker l(m_BufferMutex);
