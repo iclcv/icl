@@ -88,21 +88,37 @@ namespace icl {
         int getWidth();
         /// returns the cameras PixelFormat as string
         std::string getFormatString();
+        /// whether double frames should be omitted.
+        bool omitDoubleFrames();
 
       private:
         /// the Interruptable that provides interruption for the camera.
         Interruptable* m_Interu;
         /// The camera
         Pylon::IPylonDevice* m_Camera;
+        /// whether double frames should be omitted.
+        bool m_OmitDoubleFrames;
     
         /// helper function for getPropertyList.
         void addToPropertyList(std::vector<std::string> &ps, const GenApi::CNodePtr& node);
-        /// setter used to catch 'format' and 'size' properies
-        /** @return true when property == 'format' || 'size'*/
-        bool setICLProperty(const std::string &property, const std::string &value);
-        /// getter used to catch 'format' and 'size' properies
-        /** @return empty string when property != 'format' || 'size'*/
-        std::string getICLProperty(const std::string &name);
+        /// setter function options of PylonGrabber (device-independent)
+        void setPropertyExtra(const std::string &property, const std::string &value);
+        /// adds PylonGrabber properties to property list
+        void addPropertiesExtra(std::vector<std::string> &ps);
+        /// checks whether property is from PylonGrabber (always supported)
+        bool supportsPropertyExtra(const std::string &property);
+        /// get type of PylonGrabber property
+        /** @return null when not PylonGrabber property **/
+        std::string getTypeExtra(const std::string &name);
+        /// get information of a PylonGrabber properties valid values.
+        /** @return null when not PylonGrabber property **/
+        std::string getInfoExtra(const std::string &name);
+        /// returns the current value of a property or a parameter.
+        /** @return null when not PylonGrabber property **/
+        std::string getValueExtra(const std::string &name);
+        /// Returns whether a PylonGrabber-property may be changed internally.
+        int isVolatileExtra(const std::string &propertyName);
+
         /// gets the corresponding CValuePtr to the passed name.
         GenApi::INode *getNode(std::string name);
     };

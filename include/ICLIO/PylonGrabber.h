@@ -98,14 +98,12 @@ namespace icl {
           no_mono16,
         };
 
-        /// A mutex lock for the camera.
-        Mutex m_CamMutex;
+        /// A mutex lock to synchronize buffer and color converter access.
+        Mutex m_ImgMutex;
         /// The PylonEnvironment automation.
         PylonAutoEnv m_PylonEnv;
         /// Count of buffers for grabbing
-        static const int m_NumBuffers = 10;
-        /// Count of buffers used by GrabberThread
-        static const int m_ThreadNumBuffers = 5;
+        static const int m_NumBuffers = 4;
         /// The camera interface.
         Pylon::IPylonDevice* m_Camera;
         /// The streamGrabber of the camera.
@@ -118,6 +116,8 @@ namespace icl {
         PylonGrabberThread* m_GrabberThread;
         /// A list of used buffers.
         std::vector<PylonGrabberBuffer<uint16_t>*> m_BufferList;
+        /// A pointer to the last used buffer.
+        TsBuffer<int16_t>* m_LastBuffer;
     
         /// starts the acquisition of pictures by the camera
         void acquisitionStart();

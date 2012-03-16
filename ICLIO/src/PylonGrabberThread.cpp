@@ -39,77 +39,34 @@
 using namespace icl;
 using namespace icl::pylon;
 
-PylonGrabberThread::PylonGrabberThread(Pylon::IStreamGrabber* grabber,
-                              Mutex* camMutex, int bufferCount, int bufferSize)
-  : m_BufferMutex(), m_Grabber(grabber), m_CamMutex(camMutex),
-    m_BufferSize(bufferSize), m_BufferCount(bufferCount),
-    m_Error(0), m_Timeout(0), m_Acquired(0), m_BufferQueue(),
-    m_NewAvail(false)
+PylonGrabberThread::PylonGrabberThread(
+Pylon::IStreamGrabber* grabber, int bufferSize) :
+m_Grabber(grabber), m_Buffers(bufferSize), m_Error(0), m_Timeout(0),
+    m_Acquired(0)
 {  
-  // init Buffers
-  icl::Mutex::Locker l(m_BufferMutex);
-  initBuffer();
+  // nothing to do.
 }
 
 PylonGrabberThread::~PylonGrabberThread(){
   // free all allocated memory
-  icl::Mutex::Locker l(m_BufferMutex);
-  clearBuffer();
   DEBUG_LOG("pictures aquired: " << m_Acquired << " errors: " << m_Error
             << " timesouts: " << m_Timeout)
 }
 
-void PylonGrabberThread::resetBuffer(int bufferSize, int bufferCount){
-  FUNCTION_LOG("Reset Buffer " << bufferSize << " , " << bufferCount)
-  // set members to new values
-  m_BufferSize = bufferSize;
-  m_BufferCount = bufferCount;
-  // reallocate buffers
-  clearBuffer();
-  initBuffer();
-}
-
-void PylonGrabberThread::initBuffer(){
-  if(!m_BufferQueue.empty()){
-    throw ICLException("m_BufferQueue must be empty when calling init");
-  }
-  // fill buffer-queue with new buffers.
-  for (int i = 0; i < m_BufferCount; ++i){
-    TsBuffer<int16_t>* buffer = new TsBuffer<int16_t>(m_BufferSize);
-    m_BufferQueue.push(buffer);
-  }
-  m_NewAvail = false;
-}
-
-void PylonGrabberThread::clearBuffer(){
-  // pop and delete all buffers from queue.
-  while (!m_BufferQueue.empty()){
-    TsBuffer<int16_t>* tmp = m_BufferQueue.front();
-    delete tmp;
-    m_BufferQueue.pop();
-  }
+void PylonGrabberThread::resetBuffer(int bufferSize){
+  FUNCTION_LOG("Reset Buffer " << bufferSize)
+  // reset buffer size
+  m_Buffers.reset(bufferSize);
 }
 
 void PylonGrabberThread::run(){
   // non-stop-loop
   while(1){
     msleep(1);
-    // to prevent deadlocks always get the camera mutex before locking thread
-    if(m_CamMutex -> trylock()){
-      // did not get lock
-      continue;
-    }
-    // camera-lock acquired. locking thread
-    if(trylock()){
-      // did not get thread lock. release cam.
-      m_CamMutex -> unlock();
-      continue;
-    }
-    // here we have both locks (cam and thread)
-    // grab image.
+    // locking thread
+    if(trylock()) continue;
+    //thread locked grab image.
     grab();
-    // release camera lock before unlocking thread.
-    m_CamMutex -> unlock();
     // allow thread-stop.
     unlock();
   }
@@ -134,16 +91,11 @@ void PylonGrabberThread::grab(){
   if (result.Succeeded()){
     ++m_Acquired;
     // Grabbing was successful, save the buffer content to queue
-    m_BufferMutex.lock();
-    TsBuffer<int16_t>* tmp = m_BufferQueue.front();
-    m_BufferQueue.pop();
-    tmp -> copy(result.Buffer());
-    tmp -> m_Timestamp = result.GetTimeStamp();
-    m_BufferQueue.push(tmp);
-    m_NewAvail = true;
+    TsBuffer<int16_t>* write = m_Buffers.getNextBuffer();
+    write -> copy(result.Buffer());
+    write -> m_Timestamp = result.GetTimeStamp();
     // Reuse buffer for grabbing the next image
     m_Grabber -> QueueBuffer(result.Handle(), NULL);
-    m_BufferMutex.unlock();
   } else {
     ++m_Error;
     // Error handling
@@ -155,17 +107,6 @@ void PylonGrabberThread::grab(){
 }
 
 TsBuffer<int16_t>* PylonGrabberThread::getCurrentImage(){
-  for (int n = 0; n < 100; ++n){
-    // lock buffer-queue
-    m_BufferMutex.lock();
-    if(m_NewAvail){
-      TsBuffer<int16_t>* tmp = m_BufferQueue.back();
-      m_BufferMutex.unlock();
-      m_NewAvail = false;;
-      return tmp;
-    }
-    m_BufferMutex.unlock();
-    msleep(10);
-  }
-  return NULL;
+  // just return the buffered readimage.
+  return m_Buffers.getNextImage();
 }

@@ -53,59 +53,35 @@ namespace icl {
         * @param bufferCount The number of buffers the Grabber should queue.
         * @param bufferSize The size a buffer needs to hold a single image.
         */
-        PylonGrabberThread(Pylon::IStreamGrabber* grabber, Mutex* camMutex,
-                           int bufferCount=0, int bufferSize=0);
+        PylonGrabberThread(Pylon::IStreamGrabber* grabber, int bufferSize=0);
         /// Destructor frees all allocated memory
         ~PylonGrabberThread();
         /// acquires images and writes them into an internal queue
         void run();
-        /// frees all previously allocated memory and reinitializes it
+        /// reinitializes buffer
         /**
-        * @param bufferCount The amount of buffer the GrabberThread should queue.
         * @param bufferSize The size a buffer needs to hold a single image.
         */
-        void resetBuffer(int bufferSize, int bufferCount);
+        void resetBuffer(int bufferSize);
         /// getter for the most current image
         /**
         * @return a pointer to an internally used TsBuffer the buffer
-        *         is removed from the grabbing-queue and can safely
-        *         be used until the next call to getCurrentImage()
-        *         or resetBuffer().
+        *         can safely be used until the next call to
+        *         getCurrentImage() or resetBuffer().
         */
         TsBuffer<int16_t>* getCurrentImage();
-        /// The mutex used for internal buffer-monitoring.
-        Mutex m_BufferMutex;
       private:
         /// A pointer to the image-providing StreamGrabber.
         Pylon::IStreamGrabber* m_Grabber;
-        /// A pointer to the camera-mutex.
-        Mutex* m_CamMutex;
-        /// The size of a single image-buffer.
-        int m_BufferSize;
-        /// The number of buffers the queue holds.
-        int m_BufferCount;
+        /// A buffer holding read and write buffers
+        ConcGrabberBuffer m_Buffers;
         /// A counter for acquisition errors.
         int m_Error;
         /// A counter for acquisition timeouts.
         int m_Timeout;
         /// A counter for correct acquisitions.
         int m_Acquired;
-        /// A queue holding the image buffers.
-        std::queue<TsBuffer<int16_t>*> m_BufferQueue;
-        /// tells whether a new image is available since last getCurrentImage().
-        bool m_NewAvail;
 
-        /// Fills m_BufferQueue with newly allocated TsBuffers
-        /**
-        * not thread safe. always lock m_BufferMutex before calling this.
-        * @throw ICLException when m_BufferQueue is not empty
-        */
-        void initBuffer();
-        /// pops and deletes all buffers from m_BufferQueue.
-        /**
-        * not thread safe. always lock m_BufferMutex before calling this.
-        */
-        void clearBuffer();
         /// grabs a single image into m_BufferQueue.
         void grab();
   };

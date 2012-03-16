@@ -57,10 +57,15 @@ const std::string default_sizes =
         "1152x864,1200x800,1280x720,1280x800,1440x900,1280x960,1280x1024,"
         "1600x900,1400x1050,1600x1050,1600x1200,1920x1080,3840x2160}";
 
+const std::string size = "size";
+const std::string form = "format";
+const std::string omit = "OmitDoubleFrames";
+
 PylonCameraOptions::PylonCameraOptions(
         Pylon::IPylonDevice* camera, Interruptable* grabber){
     m_Interu = grabber;
     m_Camera = camera;
+    m_OmitDoubleFrames = true;
 }
 
 PylonCameraOptions::~PylonCameraOptions(){
@@ -72,9 +77,9 @@ void PylonCameraOptions::setProperty(
         const std::string &property, const std::string &value)
 {
   FUNCTION_LOG(property << ", " << value)
-  if(setICLProperty(property, value)){
-      // property is 'format' or 'size' and already set by setICLProperty.
-      return;
+  if(supportsPropertyExtra(property)){
+    setPropertyExtra(property, value);
+    return;
   }
   GenApi::CValuePtr node = getNode(property);
   if (!node) {
@@ -100,8 +105,7 @@ void PylonCameraOptions::setProperty(
 std::vector<std::string> PylonCameraOptions::getPropertyList(){
   FUNCTION_LOG()
   std::vector<std::string> ps;
-  ps.push_back("size");
-  ps.push_back("format");
+  addPropertiesExtra(ps);
   addToPropertyList(ps, getNode("Root"));
   return ps;
 }
@@ -151,7 +155,7 @@ void PylonCameraOptions::addToPropertyList(
 // checks if property is returned, implemented, available and of processable GenApi::EInterfaceType
 bool PylonCameraOptions::supportsProperty(const std::string &property){
   FUNCTION_LOG(property)
-  if((property.compare("size") == 0) || (property.compare("format") == 0)){
+  if(supportsPropertyExtra(property)){
     return true;
   }
   // Check whether node exists
@@ -186,11 +190,8 @@ bool PylonCameraOptions::supportsProperty(const std::string &property){
 // get type of property
 std::string PylonCameraOptions::getType(const std::string &name){
   FUNCTION_LOG(name)
-  if(name.compare("size") == 0){
-    return icl_val_str[menu];
-  }
-  if(name.compare("format") == 0){
-    return getType("PixelFormat");
+  if(supportsPropertyExtra(name)){
+    return getTypeExtra(name);
   }
 
   GenApi::INode* node = getNode(name);
@@ -287,12 +288,9 @@ std::string enumInfo(GenApi::INode* node){
 
 // get information of a properties valid values
 std::string PylonCameraOptions::getInfo(const std::string &name){
-  DEBUG_LOG(name)
-  if(name.compare("size") == 0){
-    return default_sizes;
-  }
-  if(name.compare("format") == 0){
-    return getInfo("PixelFormat");
+  FUNCTION_LOG(name)
+  if(supportsPropertyExtra(name)){
+    return getInfoExtra(name);
   }
 
   GenApi::INode* node = getNode(name);
@@ -332,39 +330,135 @@ std::string PylonCameraOptions::getInfo(const std::string &name){
 // returns the current value of a property or a parameter
 std::string PylonCameraOptions::getValue(const std::string &name){
   FUNCTION_LOG(name)
-  if(name.compare("size") == 0){
-    std::ostringstream ret;
-    ret << getValue("Width") << "x" << getValue("Height");
-    return ret.str();
+  if(supportsPropertyExtra(name)){
+    return getValueExtra(name);
   }
-  if(name.compare("format") == 0){
-    return getValue("PixelFormat");
-  }
-
   return getParameterValueString(m_Camera, name);
 }
 
 // Returns whether this property may be changed internally.
 int PylonCameraOptions::isVolatile(const std::string &propertyName){
+  if(supportsPropertyExtra(propertyName)){
+    return isVolatileExtra(propertyName);
+  }
   // can't guarantee anything, sorry.
   return true;
 }
 
-bool PylonCameraOptions::setICLProperty(
-        const std::string &property, const std::string &value){
+// adds PylonGrabber properties to property list
+void PylonCameraOptions::addPropertiesExtra(std::vector<std::string> &ps){
+  ps.push_back(size);
+  ps.push_back(form);
+  ps.push_back(omit);
+}
+
+// checks whether property is from PylonGrabber (always supported)
+bool PylonCameraOptions::supportsPropertyExtra(const std::string &property){
+  if (property.compare(size) == 0) return true;
+  if (property.compare(form) == 0) return true;
+  if (property.compare(omit) == 0) return true;
+  return false;
+}
+
+// setter function options of PylonGrabber (device-independent)
+void PylonCameraOptions::setPropertyExtra(
+                       const std::string &property, const std::string &value){
   FUNCTION_LOG(value)
-  if(property.compare("size") == 0){
+  if(property.compare(size) == 0){
     Size size(value);
     setProperty("Width", toStr(size.width));
     setProperty("Height", toStr(size.height));
-    return true;
+    return;
   }
-  if(property.compare("format") == 0){
+  if(property.compare(form) == 0){
     setProperty("PixelFormat", value);
+    return;
+  }
+  if(property.compare(omit) == 0){
+    m_OmitDoubleFrames = (value.compare("true") == 0);
+    return;
+  }
+  std::ostringstream a;
+  a << "PylonGrabber does not provide " << property;
+  throw ICLException(a.str());
+}
+
+// get type of PylonGrabber property
+std::string PylonCameraOptions::getTypeExtra(const std::string &name){
+  if(name.compare(size) == 0){
+    return icl_val_str[menu];
+  }
+  if(name.compare(form) == 0){
+    return getType("PixelFormat");
+  }
+  if(name.compare(omit) == 0){
+    return icl_val_str[value_list];
+  }
+  std::ostringstream a;
+  a << "PylonGrabber does not provide " << name;
+  throw ICLException(a.str());
+}
+
+// get information of a PylonGrabber properties valid values.
+std::string PylonCameraOptions::getInfoExtra(const std::string &name){
+  if(name.compare(size) == 0){
+    return default_sizes;
+  }
+  if(name.compare(form) == 0){
+    return getInfo("PixelFormat");
+  }
+    if(name.compare(omit) == 0){
+    return "{true,false}";
+  }
+  std::ostringstream a;
+  a << "PylonGrabber does not provide " << name;
+  throw ICLException(a.str());
+}
+
+// returns the current value of a property or a parameter.
+std::string PylonCameraOptions::getValueExtra(const std::string &name){
+  if(name.compare(size) == 0){
+    std::ostringstream ret;
+    ret << getValue("Width") << "x" << getValue("Height");
+    return ret.str();
+  }
+  if(name.compare(form) == 0){
+    return getValue("PixelFormat");
+  }
+  if(name.compare(omit) == 0){
+    if(m_OmitDoubleFrames){
+      return "true";
+    } else {
+      return "false";
+    }
+  }
+  std::ostringstream a;
+  a << "PylonGrabber does not provide " << name;
+  throw ICLException(a.str());
+}
+
+// Returns whether a PylonGrabber-property may be changed internally.
+int PylonCameraOptions::isVolatileExtra(const std::string &propertyName){
+  if(propertyName.compare(size) == 0){
     return true;
   }
-  return false;
+  if(propertyName.compare(form) == 0){
+    return true;
+  }
+  if(propertyName.compare(omit) == 0){
+    return false;
+  }
+  std::ostringstream a;
+  a << "PylonGrabber does not provide " << propertyName;
+  throw ICLException(a.str());
 }
+
+// whether double frames should be omitted.
+bool PylonCameraOptions::omitDoubleFrames(){
+  return m_OmitDoubleFrames;
+}
+
+
 
 GenApi::INode *PylonCameraOptions::getNode(std::string name){
     return m_Camera -> GetNodeMap() -> GetNode(name.c_str());

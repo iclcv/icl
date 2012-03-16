@@ -37,6 +37,7 @@
 #include <ICLCore/Img.h>
 #include <ICLIO/PylonGrabber.h>
 #include <ICLUtils/Macros.h>
+#include <ICLUtils/Time.h>
 
 using namespace icl;
 using namespace icl::pylon;
@@ -44,11 +45,10 @@ using namespace icl::pylon;
 // Constructor of PylonGrabberImpl
 PylonGrabberImpl::PylonGrabberImpl(
         const Pylon::CDeviceInfo &dev, const std::string args)
-    : m_CamMutex(), m_PylonEnv()
+    : m_ImgMutex(), m_PylonEnv(), m_LastBuffer(NULL)
 {
   FUNCTION_LOG("args: " << args)
-  // getting camera mutex to exclude race-conditions
-  icl::Mutex::Locker l(m_CamMutex);
+  icl::Mutex::Locker l(m_ImgMutex);
   // Initialization of the pylon Runtime Library
   m_Camera = Pylon::CTlFactory::GetInstance().CreateDevice(dev);
 
@@ -69,28 +69,20 @@ PylonGrabberImpl::PylonGrabberImpl(
 
   m_CameraOptions = new PylonCameraOptions(m_Camera, this);
   m_ColorConverter = new PylonColorConverter();
-  m_GrabberThread = new PylonGrabberThread(m_Grabber, &m_CamMutex);
+  m_GrabberThread = new PylonGrabberThread(m_Grabber);
   // prepare grabbing
   grabbingStart();
   // Let the camera acquire images
-  ///
-  if(0){
-    acquisitionStart();
-  } else  {
-    m_CameraOptions -> acquisitionStart();
-    m_GrabberThread -> start();
-  }
+  m_CameraOptions -> acquisitionStart();
+  m_GrabberThread -> start();
 }
 
 PylonGrabberImpl::~PylonGrabberImpl(){
-  // getting camera mutex to exclude race-conditions
-  icl::Mutex::Locker l(m_CamMutex);
   FUNCTION_LOG();
   // Stop acquisition
   acquisitionStop();
   // deregister buffers
   grabbingStop();
-
   // Close stream grabber
   m_Grabber -> Close();
   // Close camera
@@ -134,7 +126,7 @@ void PylonGrabberImpl::grabbingStart(){
     // Put buffer into the grab queue for grabbing
     m_Grabber -> QueueBuffer(handle);
   }
-  m_GrabberThread -> resetBuffer(imageSize, m_ThreadNumBuffers);
+  m_GrabberThread -> resetBuffer(imageSize);
   m_ColorConverter -> resetConversion(
               m_CameraOptions -> getWidth(),
               m_CameraOptions -> getHeight(),
@@ -168,15 +160,13 @@ void PylonGrabberImpl::acquisitionStart(){
   FUNCTION_LOG()
   m_CameraOptions -> acquisitionStart();
   m_GrabberThread -> start();
-  m_GrabberThread -> m_BufferMutex.unlock();
-  m_CamMutex.unlock();
+  m_ImgMutex.unlock();
 }
 
 void PylonGrabberImpl::acquisitionStop(){
   FUNCTION_LOG()
-  m_CamMutex.lock();
+  m_ImgMutex.lock();
   m_GrabberThread -> stop();
-  m_GrabberThread -> m_BufferMutex.lock();
   m_CameraOptions -> acquisitionStop();
 }
 
@@ -194,13 +184,38 @@ void PylonGrabberImpl::cameraDefaultSettings(){
 }
 
 const icl::ImgBase* PylonGrabberImpl::acquireImage(){
-  // Get the grab result from the grabber thread
-  if(TsBuffer<int16_t>* tmp = m_GrabberThread -> getCurrentImage()){
-    icl::ImgBase* ptr = m_ColorConverter -> convert(tmp -> m_Buffer);
-    return ptr;
+  //Time s = Time::now();
+  //DEBUG_LOG("start: " << s.age())
+  TsBuffer<int16_t>* tmp = NULL;
+  if(m_CameraOptions-> omitDoubleFrames()){
+    while(1){
+      // lock image lock so buffers are safe till release.
+      m_ImgMutex.lock();
+      // Get the grab result from the grabber thread
+      tmp = m_GrabberThread -> getCurrentImage();
+      if(tmp == m_LastBuffer){
+        // old frame release and sleep
+        m_ImgMutex.unlock();
+        Thread::msleep(1);
+        continue;
+      }
+      // got new image, save pointer.
+      m_LastBuffer = tmp;
+      // unlock mutex
+      m_ImgMutex.unlock();
+      break;
+    }
   } else {
-    return NULL;
+    // lock image lock so buffers are safe till release.
+    Mutex::Locker l(m_ImgMutex);
+    // Get the grab result from the grabber thread
+    tmp = m_GrabberThread -> getCurrentImage();
   }
+  // convert and return image.
+  //DEBUG_LOG("age micro " << s.age())
+  //DEBUG_LOG("age milli " << s.age() / 1000)
+  //DEBUG_LOG("age sec " << s.age() / 1000000)
+  return m_ColorConverter -> convert(tmp -> m_Buffer);
 }
 
 // setter function for video device properties

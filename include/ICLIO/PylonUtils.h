@@ -105,6 +105,46 @@ namespace icl {
         }
     };
 
+    /// This is used for concurrent writing and reading of TsBuffers.
+    /**
+        This class holds three TsBuffers of which one is the currently
+        read and the other two are alternately written to.
+    **/
+    class ConcGrabberBuffer {
+      public:
+        /// Constructor creates and initializes resources.
+        ConcGrabberBuffer(int bufferSize=0);
+        /// Destructor frees allocated memory.
+        ~ConcGrabberBuffer();
+        /// returns a pointer to the most recent actualized buffer.
+        /**
+            the buffer will then be marked and not overwritten till the
+        **/
+        TsBuffer<int16_t>* getNextImage();
+        /// returns a pointer to the next write buffer
+        /**
+            sets the returned buffer as current write buffer and marks
+            the old write buffer as new.
+        **/
+        TsBuffer<int16_t>* getNextBuffer();
+        /// frees allocated memory and reinitializes Buffers to bufferSize.
+        void reset(int bufferSize);
+
+      private:
+        /// internal Buffers which alternately are read and written.
+        TsBuffer<int16_t>*  m_Buffers[3];
+        /// the Mutex is used for concurrent reading and writing of the queue.
+        Mutex m_Mutex;
+        /// The buffer currently written to.
+        int m_Write;
+        /// The write buffer currently not written to.
+        int m_Next;
+        /// The buffer currently read from.
+        int m_Read;
+        /// tells whether a new buffer is available.
+        bool m_Avail;
+    };
+
     /// Utility Structure \ingroup GIGE_G
     /**
      * This struct is used to initialize and terminate the pylon environment.
