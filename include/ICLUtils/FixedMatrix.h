@@ -1033,7 +1033,7 @@ namespace icl{
 
   /// extracts the euler angles from the given rotation matrix
   /** Even though the function interface suggests, that m can have arbitrary dimensions, 
-      it must have at least 3 rows and 3 colums. We chose this very generic interface
+      it must hae at least 3 rows and 3 colums. We chose this very generic interface
       in order to avoid having several functions for 3x3, 4x4, ... matrices. To avoid
       seg-faults, an exception is thrown in case of too small matrices m. */
   template<class T,unsigned int COLS, unsigned int ROWS>

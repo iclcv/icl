@@ -292,6 +292,69 @@ namespace icl{
   void apply_local_threshold_six(const Img<S> &src,const Img<I> &ii, ImgBase *dst, float t, int m, float gs){
     // {{{ open
 
+#if 1
+    switch(dst->getDepth()){
+      case depth8u:
+        if(gs!=0.0f){
+          for(int c=0;c<src.getChannels();++c){
+            fast_lt<S,I,icl8u,int,true>(src,ii,*dst->asImg<icl8u>(),m,int(t),gs,c);
+          }
+        }else{
+          for(int c=0;c<src.getChannels();++c){
+            fast_lt<S,I,icl8u,int,false>(src,ii,*dst->asImg<icl8u>(),m,int(t),gs,c);
+          }
+        }
+        break;
+      case depth16s:
+        if(gs!=0.0f){
+          for(int c=0;c<src.getChannels();++c){
+            fast_lt<S,I,icl16s,int,true>(src,ii,*dst->asImg<icl16s>(),m,int(t),gs,c);
+          }
+        }else{
+          for(int c=0;c<src.getChannels();++c){
+            fast_lt<S,I,icl16s,int,false>(src,ii,*dst->asImg<icl16s>(),m,int(t),gs,c);
+          }
+        }
+        break;
+      case depth32s:
+        if(gs!=0.0f){
+          for(int c=0;c<src.getChannels();++c){
+            fast_lt<S,I,icl32s,int,true>(src,ii,*dst->asImg<icl32s>(),m,int(t),gs,c);
+          }
+        }else{
+          for(int c=0;c<src.getChannels();++c){
+            fast_lt<S,I,icl32s,int,false>(src,ii,*dst->asImg<icl32s>(),m,int(t),gs,c);
+          }
+        }
+        break;
+      case depth32f:
+        if(gs!=0.0f){
+          for(int c=0;c<src.getChannels();++c){
+            fast_lt<S,I,icl32f,float,true>(src,ii,*dst->asImg<icl32f>(),m,t,gs,c);
+          }
+        }else{
+          for(int c=0;c<src.getChannels();++c){
+            fast_lt<S,I,icl32f,float,false>(src,ii,*dst->asImg<icl32f>(),m,t,gs,c);
+          }
+        }
+        break;
+      case depth64f:
+        if(gs!=0.0f){
+          for(int c=0;c<src.getChannels();++c){
+            fast_lt<S,I,icl64f,float,true>(src,ii,*dst->asImg<icl64f>(),m,t,gs,c);
+          }
+        }else{
+          for(int c=0;c<src.getChannels();++c){
+            fast_lt<S,I,icl64f,float,false>(src,ii,*dst->asImg<icl64f>(),m,t,gs,c);
+          }
+        }
+        break;
+      default:
+        // this may not happen
+        ICL_INVALID_DEPTH;
+    }
+
+#else
     switch(dst->getDepth()){
       case depth8u:
         if(gs!=0.0f){
@@ -319,6 +382,7 @@ namespace icl{
         // this may not happen
         ICL_INVALID_DEPTH;
     }
+#endif
   }
 
   // }}}

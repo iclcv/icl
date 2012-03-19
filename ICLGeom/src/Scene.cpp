@@ -981,6 +981,7 @@ namespace icl{
       bg->update(background);
       bg->draw2D(Rect(0,0,w,h),s);
       glEnable(GL_LIGHTING);
+      glClear(GL_DEPTH_BUFFER_BIT );    
     }
 
     renderScene(camIndex);
