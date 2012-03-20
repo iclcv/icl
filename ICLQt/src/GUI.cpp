@@ -1562,7 +1562,7 @@ public:
   // }}}
   struct ImageGUIWidget : public GUIWidget{
     // {{{ open
-    ImageGUIWidget(const GUIDefinition &def):GUIWidget(def,0){
+    ImageGUIWidget(const GUIDefinition &def):GUIWidget(def,0,0,GUIWidget::gridLayout,Size(16,12)){
 
       m_poWidget = new ICLWidget(def.parentWidget());
       if(def.hasToolTip()) m_poWidget->setToolTip(def.toolTip().c_str());
@@ -1589,7 +1589,7 @@ public:
 
   struct PlotGUIWidget : public GUIWidget{
     // {{{ open
-    PlotGUIWidget(const GUIDefinition &def):GUIWidget(def,0,7){
+    PlotGUIWidget(const GUIDefinition &def):GUIWidget(def,0,7,GUIWidget::gridLayout,Size(16,12)){
 
       m_plot = new PlotWidget(def.parentWidget());
 
@@ -1661,7 +1661,7 @@ public:
 
   struct DrawGUIWidget : public GUIWidget{
     // {{{ open
-    DrawGUIWidget(const GUIDefinition &def):GUIWidget(def,0,1){
+    DrawGUIWidget(const GUIDefinition &def):GUIWidget(def,0,1,GUIWidget::gridLayout,Size(16,12)){
       m_poWidget = new ICLDrawWidget(def.parentWidget());
       if(def.hasToolTip()) m_poWidget->setToolTip(def.toolTip().c_str());
 
@@ -1764,7 +1764,7 @@ public:
 #ifdef HAVE_OPENGL
   struct DrawGUIWidget3D : public GUIWidget{
     // {{{ open
-    DrawGUIWidget3D(const GUIDefinition &def):GUIWidget(def,0,1){
+    DrawGUIWidget3D(const GUIDefinition &def):GUIWidget(def,0,1,GUIWidget::gridLayout,Size(16,12)){
       m_poWidget3D = new ICLDrawWidget3D(def.parentWidget());
       if(def.numParams() == 1) {
         m_poWidget3D->setViewPort(parse<Size>(def.param(0)));

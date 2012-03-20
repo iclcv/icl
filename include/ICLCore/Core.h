@@ -73,21 +73,21 @@
     #include <ICLQuick/Common.h>
 
     GUI gui;
+    GenericGrabber grabber;
 
     void init(){
-      gui << "image[@handle=image@minsize=16x12]";
+      grabber.init(pa("-i"));
+      gui << "image[@handle=image]";
       gui.show();
     }
 
     void run(){
-      static GenericGrabber g(pa("-i"));
-      gui["image"] = g.grab();
+      gui["image"] = grabber.grab();
       gui["image"].update();
     }
 
     int main(int n, char **args){
-      return ICLApplication(n,args,"-input|-i(2)",
-                            init,run).exec();
+      return ICLApp(n,args,"-input|-i(2)",init,run).exec();
     }
     \endcode
 
