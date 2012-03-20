@@ -45,6 +45,6 @@
 #include <ICLUtils/ProgArg.h>
 #include <ICLUtils/Mutex.h>
 #include <ICLIO/FileWriter.h>
-
+#include <ICLCC/Color.h>
 
 

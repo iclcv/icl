@@ -70,13 +70,39 @@ namespace icl {
     };
 #endif
     
+    /// translate a given relation into an optype
+    /** - UnaryCompareOp::lt -> "<" 
+        - UnaryCompareOp::gt -> ">" 
+        - UnaryCompareOp::lteq -> "<=" 
+        - UnaryCompareOp::gteq -> ">=" 
+        - UnaryCompareOp::eq -> "==" 
+        - UnaryCompareOp::eqt -> "~=" 
+    */
+    static optype translate_op_type(const std::string &stringVersion) throw (ICLException){
+      if(stringVersion == "<") return UnaryCompareOp::lt;
+      if(stringVersion == ">") return UnaryCompareOp::gt;
+      if(stringVersion == "<=") return UnaryCompareOp::lteq;
+      if(stringVersion == ">=") return UnaryCompareOp::gteq;
+      if(stringVersion == "==") return UnaryCompareOp::eq;
+      if(stringVersion == " ~=") return UnaryCompareOp::eqt;
+      throw ICLException("UnaryCompareOp::translate_op_type(" + stringVersion + "): invalid optype string!");
+      /// satisfy the compiler :-)
+      return UnaryCompareOp::lt;
+    }
+    
     /// Creates a new UnaryCompareOp object with given optype, value and tolerance level
     /** @param ot operation type ("<","<=",...)
         @param value value to compare each pixel with
         @param tolerance tolerance level (only of optype==eqt)
     **/
-    UnaryCompareOp(optype ot=eq, icl64f value=128, icl64f tolerance=0):
+    UnaryCompareOp(optype ot=gt, icl64f value=128, icl64f tolerance=0):
     m_eOpType(ot), m_dValue(value), m_dTolerance(tolerance){ }
+
+    /// creates a new UnaryCompareOp instance with given parameters
+    /** The optype parameters is here given as a string 
+        @see translate_op_type(const std::string&)*/
+    UnaryCompareOp(const std::string &op, icl64f value=128, icl64f tolerance=0):
+    m_eOpType(translate_op_type(op)), m_dValue(value), m_dTolerance(tolerance){ }
     
     /// Destructor
     virtual ~UnaryCompareOp(){}

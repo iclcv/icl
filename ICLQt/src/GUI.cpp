@@ -397,7 +397,7 @@ namespace icl{
       }
      }
 
-    ConfigurableGUIWidget(const GUIDefinition &def):GUIWidget(def,1,1),deactivateExec(false){
+    ConfigurableGUIWidget(const GUIDefinition &def):GUIWidget(def,1,1,GUIWidget::gridLayout, Size(8,12)),deactivateExec(false){
       conf = Configurable::get(def.param(0));
       if(!conf) throw GUISyntaxErrorException(def.defString(),"No Configurable with ID "+def.param(0)+" registered");
       
@@ -1895,7 +1895,7 @@ public:
 
   struct FPSGUIWidget : public GUIWidget{
     // {{{ open
-    FPSGUIWidget(const GUIDefinition &def):GUIWidget(def,0,1,GUIWidget::gridLayout,Size(4,2)){
+    FPSGUIWidget(const GUIDefinition &def):GUIWidget(def,0,1,GUIWidget::gridLayout,Size(5,2)){
       int np = def.numParams();
       int fpsEstimatorTimeWindow = np ? def.intParam(0) : 10;
       

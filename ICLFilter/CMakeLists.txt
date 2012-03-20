@@ -41,6 +41,7 @@ add_libsource (${PROJECT_NAME} "src/BinaryArithmeticalOp.cpp" "${CONDITIONLIST}"
 add_libsource (${PROJECT_NAME} "src/BinaryCompareOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/BinaryLogicalOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/ChamferOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/ColorDistanceOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/ConvolutionKernel.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/ConvolutionOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/DynamicConvolutionOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)

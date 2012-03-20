@@ -86,6 +86,7 @@
 
 #include <ICLQt/ThreadedUpdatableSlider.h>
 #include <ICLQt/ThreadedUpdatableTextView.h>
+#include <ICLQt/MouseHandler.h>
 
 using namespace icl;
 
@@ -734,5 +735,17 @@ namespace icl{
     DataMap::iterator it = m_oDataMapPtr->find(key);
     if(it == m_oDataMapPtr->end()) throw KeyNotFoundException(key);
     return Data(&it->second);
+  }
+
+
+  void DataStore::Data::install(Function<void,const MouseEvent&> f){
+    /// crazy local class here!
+    struct FunctionMouseHandler : public MouseHandler{
+      Function<void,const MouseEvent&> f;
+      FunctionMouseHandler(Function<void,const MouseEvent&> f):f(f){}
+      void process(const MouseEvent &e){ f(e); }
+    };
+
+    install(new FunctionMouseHandler(f));
   }
 }

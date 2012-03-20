@@ -222,15 +222,20 @@ int main(int n, char **ppc){
         <b>Important: if the given fontsize is negative, its absolute value is used
         but the font size unit is image pixels instead of screen-pixels </b>
         */
-    void text(std::string text, float x, float y, float w, float h, float fontsize=15);
+    void text(std::string text, float x, float y, float w, float h, float fontsize=10);
 
     /// draws text at given x, y location with given fontsize
     /*    The given fontsize paramter defines the font-size in screen pixels.
         <b>Important: if the given fontsize is negative, its absolute value is used
         but the font size unit is image pixels instead of screen-pixels </b>
     */
-    void text(const std::string &text, float x, float y, float fontsize=15){
+    void text(const std::string &text, float x, float y, float fontsize=10){
       this->text(text,x,y,-1,-1,fontsize);
+    }
+    
+    /// draws the text at given position p
+    void text(const std::string &text, const Point32f &p, float fontsize=10){
+      this->text(text,p.x,p.y,-1,-1,fontsize);
     }
 
     /// draws a point at the given location

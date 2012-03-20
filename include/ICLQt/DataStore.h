@@ -39,9 +39,11 @@
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Function.h>
 #include <ICLUtils/StringUtils.h>
+#include <ICLQt/MouseEvent.h>
 
 namespace icl{
-  
+
+ 
   /// Extension of the associative container MultiTypeMap \ingroup UNCOMMON
   /** Adds an index operator[string] for direct access to contained values
    */
@@ -125,6 +127,14 @@ namespace icl{
       void install(void *data){
         *this  = Event("install",data);
       }
+      
+      /// installs a function directly
+      void install(Function<void,const MouseEvent &> f);
+
+      // installs a global function (should be implicit)
+      //void install(void (*f)(const MouseEvent &)){
+      //  install(function(f));
+      //}
       
       /// register simple callback type
       void registerCallback(const Function<void> &cb){
