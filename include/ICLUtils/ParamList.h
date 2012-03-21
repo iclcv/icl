@@ -51,10 +51,36 @@ namespace icl{
     
     /// The Value type (icl::Any)
     typedef Any Value;
+
+    /// creates an empty param list instance
+    inline ParamList(){}
+
+    /// creates a param list from a single given string
+    /** The string is a comma seperated list of key=value tokens. Both
+        comma and the '='-character can be escaped using backslash */
+    inline ParamList(const std::string &commaSepKeyValueString) throw (ICLException){
+      init(commaSepKeyValueString);
+    }
+
+    /// this allows for implicit creation of a ParamList instance from a given const char *
+    inline ParamList(const char *commaSepKeyValueString) throw (ICLException){
+      init(commaSepKeyValueString);
+    }
+
+    inline void init(const std::string commaSepKeyValueString) throw (ICLException){
+      std::vector<std::string> ts = tok(commaSepKeyValueString,",",true,'\\');
+      for(size_t i=0;i<ts.size();++i){
+        std::vector<std::string> kv = tok(ts[i],"=",true,'\\');
+        ICLASSERT_THROW(kv.size() == 2, ICLException("ParamList(string): invalid token :'" 
+                                                    + ts[i] + "'"));
+        const_cast<ParamList*>(this)->operator[](kv[0]) = kv[1];
+      }
+    }
+
     
     /// Constructor, that can get up to 10 key-value pairs
     /** zero-length keys are skipped! */
-    inline ParamList(const Key &key0="", const Value &value0="",
+    inline ParamList(const Key &key0, const Value &value0,
                      const Key &key1="", const Value &value1="",
                      const Key &key2="", const Value &value2="",
                      const Key &key3="", const Value &value3="",

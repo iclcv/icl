@@ -72,7 +72,6 @@ namespace icl{
     int nAll = 0;
     for(unsigned int i=0;i<allChildren.size();++i){
       const ImageRegion &c = allChildren[i];
-      Point32f cog = c.getCOG();
       const std::vector<ImageRegion> &s=c.getSubRegions();
       if(s.size()){
         for(unsigned int j=0;j<s.size();++j){

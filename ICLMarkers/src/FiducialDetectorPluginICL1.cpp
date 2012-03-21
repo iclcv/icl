@@ -129,7 +129,6 @@ namespace icl{
   void FiducialDetectorPluginICL1::getKeyPoints2D(std::vector<Fiducial::KeyPoint> &dst, FiducialImpl &impl){
     FiducialImplICL1 &iicl = (FiducialImplICL1&)(impl);
     const MarkerMetricsICL1 &metrics = iicl.metrics;
-    Point32f c = impl.info2D->infoCenter;
     std::vector<ImageRegion> srs = iicl.region.getSubRegions();
     std::vector<ImageRegion> sorted = sort_subregions(srs, get_outer_regions(srs));
     

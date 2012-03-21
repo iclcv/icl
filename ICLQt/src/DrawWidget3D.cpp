@@ -757,13 +757,19 @@ namespace icl{
     m_vecCommands3D.push_back(new ID3DCommand);
   }
   void ICLDrawWidget3D::callback(ICLDrawWidget3D::GLCallbackFunc func, void *data){
+    lock();
     m_vecCommands3D.push_back(new CallbackFunc3DCommand(func,data));
+    unlock();
   }
   void ICLDrawWidget3D::callback(ICLDrawWidget3D::GLCallback *cb){
+    lock();
     m_vecCommands3D.push_back(new Callback3DCommand(this,cb));
+    unlock();
   }
   void ICLDrawWidget3D::callback(SmartPtr<ICLDrawWidget3D::GLCallback> smartCB){
+    lock();
     m_vecCommands3D.push_back(new SmartCallback3DCommand(this,smartCB));
+    unlock();
   }
 
   void ICLDrawWidget3D::setProperty(const std::string &property, const std::string &value){

@@ -166,9 +166,11 @@ namespace icl{
     void id();
     
     /// creates a callback function draw command
+    /** This method locks the internal recursive mutex automatically */
     void callback(GLCallbackFunc, void *data=0);
     
     /// create a callback object draw comamnd (ownership is not passed!)
+    /** This method locks the internal recursive mutex automatically */
     void callback(GLCallback *cb);
     
     /// create a callback object draw command using a smart ptr (so ownership is passed smartly)
@@ -176,7 +178,8 @@ namespace icl{
         released in some other thread than that one, which fills and clears the DrawWidget3D's 
         draw command queue. Here it would be possible, that the command queue contains already
         released objects, which leads to run-time errors, if Qt's GUI-threads tries to execute this
-        callback objects asynchronously.
+        callback objects asynchronously.\\
+        This method locks the internal recursive mutex automatically
     */
     void callback(SmartPtr<GLCallback> smartCB);
 

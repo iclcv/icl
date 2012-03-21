@@ -368,8 +368,7 @@ namespace icl{
       try{
         svd_dyn(*this,U,s,V);
       }catch(const ICLException &ex){
-        TODO_LOG("fix me!!");
-        throw ;
+        return pinv(false,zeroThreshold);
       }
       DynMatrix S(s.rows(),s.rows(),0.0f);
       for(unsigned int i=0;i<s.rows();++i){

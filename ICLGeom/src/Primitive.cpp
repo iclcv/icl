@@ -136,6 +136,9 @@ namespace icl{
   }
   
   void TexturePrimitive::render(const Primitive::RenderContext &ctx){
+    glEnable(GL_ALPHA_TEST);
+    glAlphaFunc(GL_GREATER,0.1); 
+
     if(image){
       texture.update(image);
     }
@@ -156,9 +159,14 @@ namespace icl{
       gl_auto_normal(ctx, i(3), i(1), i(2));
       texture.draw3D(a.data(),b.data(),c.data(),d.data());
     }
+    glAlphaFunc(GL_GREATER,0.05); 
+
   }
 
   void SharedTexturePrimitive::render(const Primitive::RenderContext &ctx){
+    glEnable(GL_ALPHA_TEST);
+    glAlphaFunc(GL_GREATER,0.1); 
+
     GLImg &gli = const_cast<GLImg&>(*ctx.sharedTextures[sharedTextureIndex]);
     const Vec &a = ctx.vertices[i(0)];
     const Vec &b = ctx.vertices[i(1)];
@@ -175,6 +183,7 @@ namespace icl{
       gl_auto_normal(ctx, i(3), i(1), i(2));
       gli.draw3D(a.data(),b.data(),c.data(),d.data());
     }
+    glAlphaFunc(GL_GREATER,0.05); 
   }
   
   void TextPrimitive::render(const Primitive::RenderContext &ctx){

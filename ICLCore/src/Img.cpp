@@ -1495,10 +1495,16 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
         fSY = ((float)srcSize.height-1)/(float)(dstSize.height);
         subPixelMethod = &Img<T>::subPixelLIN;
         break;
-      default:
-        ERROR_LOG("unknown interpoation method!");
+      default:{
+        static bool first = true;
+        if(first){
+          first = false;
+          WARNING_LOG("region average interpolation is not support without IPP");
+          WARNING_LOG("using nearest neighbour interpolation as fallback!");
+        }
         subPixelMethod = &Img<T>::subPixelNN;
         break;
+      }
     }
 
     ImgIterator<T> itDst(dst->getData(dstC),dst->getSize().width,Rect(dstOffs,dstSize));
