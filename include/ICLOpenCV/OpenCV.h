@@ -35,13 +35,8 @@
 #ifndef ICL_OPEN_CV_H
 #define ICL_OPEN_CV_H
 
-#ifdef HAVE_OPENCV211
-#include <opencv2/core/types_c.h>
-#include <opencv2/core/core_c.h>
-#else
 #ifdef HAVE_OPENCV
 #include <cxcore.h>
-#endif
 #endif
 
 #include <ICLCC/CCFunctions.h>

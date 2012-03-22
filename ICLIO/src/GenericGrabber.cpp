@@ -77,9 +77,6 @@
 
 #ifdef HAVE_OPENCV
 #include <ICLIO/OpenCVCamGrabber.h>
-#endif
-
-#ifdef HAVE_OPENCV2
 #include <ICLIO/OpenCVVideoGrabber.h>
 #endif
 

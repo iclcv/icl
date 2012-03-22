@@ -63,7 +63,7 @@ add_libsource (${PROJECT_NAME} "src/RGBDImageSceneObject.cpp" "${CONDITIONLIST}"
 add_libsource (${PROJECT_NAME} "src/RGBDMapping.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
 
-set(CONDITIONLIST HAVE_OPENCV2_COND)
+set(CONDITIONLIST HAVE_OPENCV_COND)
 add_libsource (${PROJECT_NAME} "src/OpenCVCamCalib.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQt)
@@ -98,7 +98,7 @@ set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_IPP_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLAlgorithms ICLQuick  ICLBlob ICLFilter ICLCC ICLCore ICLUtils ${QT_LIBS_l})
 add_example_mult(${PROJECT_NAME} "intrinsic-camera-calibration" "examples/intrinsic-camera-calibration.cpp;examples/intrinsic-camera-calibration-tools.cpp;examples/intrinsic-camera-calibration-tools.h" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_OPENCV2_COND)
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_OPENCV_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick ICLQt ICLOpenCV ICLCore ICLUtils ${QT_LIBS_l})
 add_example (${PROJECT_NAME} "opencvcamcalib-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 

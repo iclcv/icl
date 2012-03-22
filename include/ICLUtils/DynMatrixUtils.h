@@ -469,9 +469,11 @@ namespace icl{
 
   /** @{ @name SVD functions (currently only with IPP-support)*/
 #ifdef HAVE_IPP
+#ifdef HAVE_IPP_6X
   /// IPP based svd implementation (only available if Intel IPP Support is enabled)
   /** <b>don't use this function directly: please use icl::svd_dyn instead </b> */
   void svd_ipp_64f(const DynMatrix<icl64f> &A, DynMatrix<icl64f> &U, DynMatrix<icl64f> &s, DynMatrix<icl64f> &V) throw (ICLException);
+#endif
 #endif
 
   /// C++ fallback implementation for computing SVD
@@ -494,7 +496,7 @@ namespace icl{
     s.setBounds(1,A.cols());
     DynMatrix<icl64f> A64f(A.cols(),A.rows()),U64f(U.cols(),U.rows()),s64f(1,s.rows()),V64f(V.cols(),V.rows());
     std::copy(A.begin(),A.end(),A64f.begin());
-#ifdef HAVE_IPP
+#ifdef HAVE_IPP_6X
     svd_ipp_64f(A64f,U64f,s64f,V64f);
 #else
     svd_cpp_64f(A64f,U64f,s64f,V64f);
@@ -510,7 +512,7 @@ namespace icl{
     U.setBounds(A.cols(), A.rows());
     V.setBounds(A.cols(), A.cols());
     s.setBounds(1,A.cols());
-#ifdef HAVE_IPP
+#ifdef HAVE_IPP_6X
     svd_ipp_64f(A,U,s,V);
 #else
     svd_cpp_64f(A,U,s,V);

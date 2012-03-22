@@ -102,8 +102,7 @@ namespace icl{
 
 
   void OpenCVCamGrabberImpl::setProperty(const std::string &name, const std::string &value){
-    int i = 0;
-    int j = 0;
+    int i,j;
     Mutex::Locker lock(m_mutex);
     if(name == "size"){
       cvReleaseCapture(&cvc);

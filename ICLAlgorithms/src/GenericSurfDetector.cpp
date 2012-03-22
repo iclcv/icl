@@ -36,13 +36,9 @@
 
 #include <ICLAlgorithms/GenericSurfDetector.h>
 
-#ifdef HAVE_OPENCV2
+#ifdef HAVE_OPENCV
 #include <ICLAlgorithms/OpenCVSurfDetector.h>
-#ifdef HAVE_OPENCV211
-#include <opencv2/core/core_c.h>
-#else
 #include <cv.h>
-#endif
 #endif
 
 #ifdef HAVE_OPENSURF

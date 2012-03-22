@@ -44,7 +44,7 @@
 #include <ICLIO/SharedMemoryPublisher.h>
 #endif
 
-#ifdef HAVE_OPENCV2
+#ifdef HAVE_OPENCV
 #include <ICLIO/OpenCVVideoWriter.h>
 #endif
 

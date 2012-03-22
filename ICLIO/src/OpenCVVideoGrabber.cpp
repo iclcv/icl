@@ -165,5 +165,6 @@ namespace icl{
     }else if(name  == "use_video_fps"){
       data->use_video_fps = (value == "on");
     }
+    (void)i;
   }
 }

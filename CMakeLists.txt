@@ -35,138 +35,28 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0)
 PROJECT(ICL)
 #ubuntu version
 set(ICL_MAJOR "6")
-set(ICL_MINOR "9")
+set(ICL_MINOR "10")
 set(ICL_PATCH "0")
 set(VERSION "${ICL_MAJOR}.${ICL_MINOR}.${ICL_PATCH}")
 cmake_policy(SET CMP0002 OLD)
 if(NOT ${CMAKE_PATCH_VERSION} STREQUAL "0")
 	cmake_policy(SET CMP0015 OLD)
 endif()
-#get_cmake_property(v VARIABLES)
-#foreach(vv ${v})
-#message(STATUS "${vv}")
-#endforeach()
 
-set(ICL_VAR_EXAMPLES_TO_BUILD "all" CACHE STRING "Build examples")
-
-# use void pointer size to check if we are building on 64bit
-if(CMAKE_SIZEOF_VOID_P MATCHES "8")
-    set(ICL_64BIT TRUE)
-    add_definitions( -DICL_64BIT)
-    message("Building for 64bit")
-    set(ICL_REL_LIB_DIR_SUFFIX "x86_64-linux-gnu")
-else()
-    add_definitions( -DICL_32BIT)
-    set(ICL_REL_LIB_DIR_SUFFIX "i386-linux-gnu")
-endif()
 
 set(ICL_VAR_ARCHITECTURE_DEPENDENT_BUILD_ON OFF CACHE BOOL "Compile architecture dependent (adding -march=native to CXX_FLAGS)")
-#build type (Debug or Release)
 set(ICL_VAR_DEBUG_MODE OFF CACHE BOOL "Compile with debug options")
 set(ICL_VAR_USE_INTEL_OMP_IF_POSSIBLE OFF CACHE BOOL "link against Intel's libiomp5 and libguide if available")
-if(ICL_VAR_DEBUG_MODE)
-    if(ICL_VAR_ARCHITECTURE_DEPENDENT_BUILD_ON)
-	set(CMAKE_CXX_FLAGS "-Wall -O0 -g3 -march=native -fopenmp")
-    else()
-        set(CMAKE_CXX_FLAGS "-Wall -O0 -g3 -fopenmp")
-    endif()
-set(CMAKE_BUILD_TYPE "Debug" CACHE INTERNAL "")
-set(DEBUG_POSTFIX "-debug")
-set(PC_FILE_NAME "icl-${VERSION}-debug.pc")
-else()
-    if(ICL_VAR_ARCHITECTURE_DEPENDENT_BUILD_ON)
-	set(CMAKE_CXX_FLAGS "-O3 -march=native -fopenmp")
-    else()
-        set(CMAKE_CXX_FLAGS "-O3 -fopenmp")
-    endif()
-set(CMAKE_BUILD_TYPE "Release" CACHE INTERNAL "")
-set(DEBUG_POSTFIX "")
-set(PC_FILE_NAME "icl-${VERSION}.pc")
-endif()
-message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
-#build in verbos g++ mode
-if(WIN32)
-set(CMAKE_VERBOSE_MAKEFILE ON)
-endif()
-message(STATUS "Verbose makefiles: ${CMAKE_VERBOSE_MAKEFILE}")
 
-#where to install ICL
-if(WIN32)
-set(ICL_VAR_INSTALL_PREFIX "C:/Users/lukas/temp/testICL${VERSION}" CACHE PATH "")
-else()
-set(ICL_VAR_INSTALL_PREFIX "/vol/nivision" CACHE PATH "")
-endif()
-set(CMAKE_INSTALL_PREFIX "${ICL_VAR_INSTALL_PREFIX}" CACHE INTERNAL "")
-set(CMAKE_ICL_INSTALL_FOLDER_NAME "abdce" CACHE INTERNAL "")
-message(STATUS "Install Path: ${CMAKE_INSTALL_PREFIX}")
 
-if(APPLE)
-    add_definitions( -DSYSTEM_APPLE)
-    add_definitions( -DICL_SYSTEM_APPLE)
-#TODO remove after  debug
-set(CMAKE_VERBOSE_MAKEFILE ON)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
-elseif(UNIX)
-	#current def to indicate we are on linux
-    add_definitions( -DSYSTEM_LINUX)
-	#in the future the above def will be replaced by this def to achieve compatibility with mingw
-    add_definitions( -DICL_SYSTEM_LINUX)
-    set(SYSTEM_LINUX_COND TRUE)
-	#pass -pthread directly to flags
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
-endif()
-if(NOT WIN32)
-	#runtimepath options
-	# use, i.e. don't skip the full RPATH for the build tree
-	SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
-
-	# when building, don't use the install RPATH already
-	# (but later on when installing)
-	SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
-
-	# the RPATH to be used when installing
-	SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/icl-${VERSION}${DEBUG_POSTFIX}")
-
-	# add the automatically determined parts of the RPATH
-	# which point to directories outside the build tree to the install RPATH
-	SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-endif()
-
-if(WIN32)
-	#current def to indicate we are on windows
-    #add_definitions( -DSYSTEM_WINDOWS)
-	#in the future the above def will be replaced by this def to achieve compatibility with mingw
-    add_definitions( -DICL_SYSTEM_WINDOWS)
-	
-	#if(1)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lpthread")# -static-libgcc")
-	include_directories("C:/Qt/2010.02.1/mingw/mingw32/include")
-	link_directories("C:/Qt/2010.02.1/mingw/mingw32/lib")
-	#else()
-	#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lpthreadGC2 -static-libgcc -lgcc")
-	#link_directories("C:/Qt/2010.02.1/mingw/lib/gcc/mingw32/4.4.0")
-	#include_directories("C:/Users/lukas/pthread/Pre-built.2/include")
-	#link_directories("C:/Users/lukas/pthread/Pre-built.2/lib")
-	#endif()
-	#link_directories("C:/MinGW/lib")
-	
-	#include_directories("C:/Qt/2010.04/mingw/mingw32/include")
-	#link_directories("C:/Qt/2010.04/mingw/mingw32/lib")
-	#link_directories("C:/Qt/2010.04/mingw/lib")
-	#link_directories("C:/WINDOWS/system32")
-endif()
-
-#include file with macros
-include(icl_cmake_macros.cmake)
+include(cmake_files/build_options.cmake)
+include(cmake_files/macros.cmake)
 
 TODAY(DATE)
+
 set(DOC_VERSION_STRING "(build ${VERSION})")
 set(DOC_DATE_STRING "(build date ${DATE})")
 
-#if ON all found third party libs will be used
-set(ICL_XDEP_ALL_ON OFF CACHE BOOL "Use all available third party libs")
-#if ON pkg-config will be used where it is available
-set(ICL_VAR_USE_PKG_CONFIG OFF CACHE BOOL "Use all available pkgconfig")
 #if ON examples apps will be build and install
 set(ICL_VAR_BUILD_EXAMPLES ON CACHE BOOL "Build example applications")
 
@@ -192,7 +82,6 @@ set(ICL_XDEP_XCF_ON OFF CACHE BOOL "Use XCF if available")
 set(ICL_XDEP_QT_ON OFF CACHE BOOL "Use QT if available")
 set(ICL_XDEP_OPENGL_ON OFF CACHE BOOL "Use OPENGL if available")
 set(ICL_XDEP_GLX_ON OFF CACHE BOOL "Use GLX if available")
-#set(ICL_XDEP_SVS_ON OFF CACHE BOOL "Use SVS if available")
 set(ICL_XDEP_OPENSURF_ON OFF CACHE BOOL "Use OPENSURF if available")
 set(ICL_XDEP_GTEST_ON OFF CACHE BOOL "Use GTest if available")
 set(ICL_XDEP_VIDEODEV_ON OFF CACHE BOOL "Use videodev (v4l) headers if available")
@@ -202,524 +91,73 @@ set(ICL_XDEP_GENICAM_ON ON CACHE BOOL "Use GenICam if available")
 set(ICL_XDEP_OPENCL_ON ON CACHE BOOL "Use OpenCL if available")
 
 FIND_PACKAGE(PkgConfig)
+include(CheckLibraryExists)
 
 #####VIDEODEV#######
 if(UNIX)
-  if(${ICL_XDEP_VIDEODEV_ON} OR ${ICL_XDEP_ALL_ON})
-    #TODO special check for videodev
-    if(EXISTS /usr/include/linux/videodev.h 
-        AND EXISTS /usr/include/sys/ioctl.h 
-        AND EXISTS /usr/include/sys/mman.h 
-        AND EXISTS /usr/include/fcntl.h)
-      message(STATUS "VIDEODEV detected: TRUE")
-      set(HAVE_VIDEODEV_COND TRUE)
-      add_definitions( -DHAVE_VIDEODEV)
-    else()
-      # check new package: external package !!
-      # libname libv4l1.so
-      # header: /usr/include/libv4l1-videodev.h
-      # /usr/include/libv4l1.h
-      # set: an extra definition
-      #add_definitions( -DUSE_NEW_VIDEO_DEV_1_HEADERS)
-      set(HAVE_VIDEODEV_COND FALSE)
-      message(STATUS "VIDEODEV detected: FALSE")
-    endif()
-  else()
-    message(STATUS "VIDEODEV detected: FALSE")
+  include(cmake_files/linux/find_VIDEODEV.cmake)
+  include(cmake_files/linux/find_VIDEODEV2.cmake)
+  include(cmake_files/linux/find_IPP.cmake)
+  include(cmake_files/linux/find_MKL.cmake)
+  include(cmake_files/linux/find_OPENCV.cmake)
+  include(cmake_files/linux/find_LIBZ.cmake)
+  include(cmake_files/linux/find_LIBPNG.cmake)
+  include(cmake_files/linux/find_LIBFREENECT.cmake)
+  include(cmake_files/linux/find_LIBMESASR.cmake)
+  include(cmake_files/linux/find_LIBJPEG.cmake)
+  include(cmake_files/linux/find_IMAGEMAGICK.cmake)
+  include(cmake_files/linux/find_LIBDC.cmake)
+  include(cmake_files/linux/find_UNICAP.cmake)
+  include(cmake_files/linux/find_XINE.cmake)
+  include(cmake_files/linux/find_XCF.cmake)
+  include(cmake_files/linux/find_OPENCL.cmake)
+  include(cmake_files/linux/find_OPENGL.cmake)
+  include(cmake_files/linux/find_GENICAM.cmake)
+  include(cmake_files/linux/find_GTEST.cmake)
+  
+  if(HAVE_OPENGL_COND)
+    include(cmake_files/linux/find_QT.cmake)
+  elseif(ICL_XDEP_QT_ON)
+    message(STATUS "QT dependency was deactivated due to the missing OPENGL dependency")
+    message(STATUS "QT detected: FALSE")
   endif()
-endif()
-
-
-if(UNIX)
-  if(${ICL_XDEP_VIDEODEV2_ON} OR ${ICL_XDEP_ALL_ON})
-    #TODO special check for videodev
-    if(EXISTS /usr/include/linux/videodev2.h 
-        AND EXISTS /usr/include/sys/ioctl.h 
-        AND EXISTS /usr/include/sys/mman.h 
-        AND EXISTS /usr/include/fcntl.h)
-      message(STATUS "VIDEODEV2 detected: TRUE")
-      set(HAVE_VIDEODEV2_COND TRUE)
-      add_definitions( -DHAVE_VIDEODEV2)
-    else()
-      set(HAVE_VIDEODEV2_COND FALSE)
-      message(STATUS "VIDEODEV2 detected: FALSE")
-    endif()
-  else()
-    message(STATUS "VIDEODEV2 detected: FALSE")
-  endif()
-endif()
-
-
-
-#check if and what external third party libs are available
-#####IPP######
-if(APPLE)
-icl_check_external_package(IPP ipp.h "libippi.dylib;libippcore.dylib" Libraries include _/opt/intel/Compiler/11.1/080/Frameworks/ipp HAVE_IPP_COND TRUE)
-if(HAVE_IPP_COND)
-  if(ICL_VAR_USE_INTEL_OMP_IF_POSSIBLE)
-    set(IPP_LIBS_l ippcore ippi ipps ippsr ippcv ippm ippcc guide iomp5 )
-  else()
-    set(IPP_LIBS_l ippcore ippi ipps ippsr ippcv ippm ippcc)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /lib/i386-linux-gnu/libpthread.so.0")
-  endif()
-endif()
-elseif(UNIX)
-if(ICL_64BIT)
-  icl_check_external_package(IPP ipp.h "ippcore;ippi;ipps;ippsr;ippcv;ippm;ippcc" em64t/sharedlib em64t/include /vol/nivision/share/IPP/6.1-ia32 HAVE_IPP_COND TRUE)
-else()
-  icl_check_external_package(IPP ipp.h "ippcore;ippi;ipps;ippsr;ippcv;ippm;ippcc" sharedlib include /vol/nivision/share/IPP/6.1-ia32 HAVE_IPP_COND TRUE)
-endif()
-if(HAVE_IPP_COND)
-  if(ICL_VAR_USE_INTEL_OMP_IF_POSSIBLE)
-    set(IPP_LIBS_l ippcore ippi ipps ippsr ippcv ippm ippcc guide iomp5)
-  else()
-    set(IPP_LIBS_l ippcore ippi ipps ippsr ippcv ippm ippcc)# guide iomp5)
-  endif()
-endif()
-endif()
-
-
-#icl_check_external_package(MKL "mkl_types.h;mkl_cblas.h" "mkl_intel;mkl_intel_thread;mkl_core;iomp5" lib/32 include /vol/nivision/MKL/10.2 HAVE_MKL_COND)
-#if(HAVE_MKL_COND)
-#    set(MKL_LIBS_l mkl_intel mkl_intel_thread mkl_core iomp5)
-#endif()
-
-####MKL############
-if(APPLE)
-  icl_check_external_package(MKL "mkl_types.h;mkl_cblas.h" "libmkl_intel_lp64.dylib;libmkl_intel_thread.dylib;libmkl_core.dylib" lib/em64t include _/opt/intel/Compiler/11.1/080/Frameworks/mkl HAVE_MKL_COND)
-  if(HAVE_MKL_COND)
-    set(MKL_LIBS_l mkl_intel_lp64 mkl_intel_thread mkl_core)
-  endif()
-elseif(UNIX)
-  if(ICL_64BIT)
-    icl_check_external_package(MKL "mkl_types.h;mkl_cblas.h" "mkl_intel_lp64;mkl_intel_thread;mkl_core" lib/em64t include /vol/nivision/share/MKL/10.2-ia32 HAVE_MKL_COND TRUE)
-    if(HAVE_MKL_COND)
-      if(ICL_VAR_USE_INTEL_OMP_IF_POSSIBLE)
-        set(MKL_LIBS_l mkl_intel_lp64 mkl_intel_thread mkl_core iomp5)
-      else()
-        set(MKL_LIBS_l mkl_intel_lp64 mkl_intel_thread mkl_core)
-      endif()
-    endif()
-  else()  
-    icl_check_external_package(MKL "mkl_types.h;mkl_cblas.h" "mkl_intel;mkl_intel_thread;mkl_core" lib/32 include /vol/nivision/share/MKL/10.2-ia32 HAVE_MKL_COND TRUE)
-    if(HAVE_MKL_COND)
-      if(ICL_VAR_USE_INTEL_OMP_IF_POSSIBLE)
-        set(MKL_LIBS_l mkl_intel mkl_intel_thread mkl_core iomp5)
-      else()
-        set(MKL_LIBS_l mkl_intel mkl_intel_thread mkl_core)
-      endif()
-    endif()
-  endif()
-endif()
-
-include(CheckLibraryExists)
-####OPENCV#### 
-if(ICL_VAR_USE_PKG_CONFIG)
-	icl_check_external_package_from_pkg_conf(OPENCV opencv HAVE_OPENCV_COND)
-	list(FIND OPENCV_LIBS_l "ml" ML_INDEX)
-	if(NOT ML_INDEX STREQUAL "-1")
-		set(HAVE_OPENCV2_COND TRUE)
-		add_definitions( -DHAVE_OPENCV2)
-	endif()
-	list(FIND OPENCV_LIBS_l "opencv_imgproc" IMGPROC_INDEX)
-	if(NOT IMGPROC_INDEX STREQUAL "-1")
-		set(HAVE_OPENCV2_COND TRUE)
-		add_definitions( -DHAVE_OPENCV2)
-	    add_definitions( -DHAVE_OPENCV211)
-	endif()
-endif()
-if(NOT OPENCV_PKG_FOUND)
-    #temporary variable for checking opencv2.1.1 if other checks fail
-	set(ICL_XDEP_OPENCV_ON_TMP ${ICL_XDEP_OPENCV_ON})
-  #check for opencv <= 2.1.0
-  if(WIN32)
-  icl_check_external_package(OPENCV "cv.h;cvaux.h;cxcore.h;highgui.h" "cvaux200.dll.a;cxcore200.dll.a;highgui200.dll.a;cv200.dll.a;ml200.dll.a" lib include/opencv "C:/Programme/OpenCV2.0" HAVE_OPENCV_COND TRUE)
-  elseif(APPLE)
-    icl_check_external_package(OPENCV ""  "libopencv_core.dylib;libopencv_highgui.dylib;libopencv_ml.dylib;libopencv_features2d.dylib;libopencv_imgproc.dylib;libopencv_calib3d.dylib" lib include /vol/nivision/share/opencv HAVE_OPENCV_COND TRUE)
-  else()
-  icl_check_external_package(OPENCV "cv.h;cvaux.h;cxcore.h;highgui.h" "cvaux;cxcore;highgui;cv" lib include/opencv /opt/OpenCV2.1.1 HAVE_OPENCV_COND FALSE)
-  endif()
+  
   if(HAVE_OPENCV_COND)
-    if(WIN32)
-	set(OPENCV_LIBS_l cxcore200 cv200 highgui200 cvaux200)
-    elseif(APPLE)
-	set(OPENCV_LIBS_l opencv_core opencv_highgui opencv_ml opencv_features2d opencv_imgproc opencv_calib3d)
-	add_definitions( -DHAVE_OPENCV211)
-    else()
-	set(OPENCV_LIBS_l cxcore cv highgui cvaux)
-    endif()
-	#check for version of opencv	
-	set(CMAKE_REQUIRED_LIBRARIES ${OPENCV_LIBS_l})
-	set(CMAKE_REQUIRED_INCLUDES "${ICL_XDEP_OPENCV_PATH}/include/opencv")
-	#if libml.so is not found to link against, this check will fail => VERSION 1 of OpenCV
-	if(WIN32)
-	check_library_exists(libml200.dll.a cvConvertMaps ${ICL_XDEP_OPENCV_PATH}/lib HAVE_OPENCV2_COND)
-	elseif(APPLE)
-	set(HAVE_OPENCV2_COND TRUE)
-	else()
-	check_library_exists(libml.so cvConvertMaps ${ICL_XDEP_OPENCV_PATH}/lib HAVE_OPENCV2_COND)
-	endif()
-	if(HAVE_OPENCV2_COND)
-		if(WIN32)
-		set(OPENCV_LIBS_l cxcore200 cv200 highgui200 cvaux200 ml200)
-		elseif(APPLE)
-		#nothing to do
-		else()
-		set(OPENCV_LIBS_l cxcore cv highgui cvaux ml)
-		endif()
-		add_definitions( -DHAVE_OPENCV2)
-	endif()
-  else()
-    #check for opencv 2.1.1
-    if(ICL_XDEP_OPENCV_ON_TMP)
-    set(ICL_XDEP_OPENCV_ON ${ICL_XDEP_OPENCV_ON_TMP})
-    endif()
-	message(STATUS "checking for v2.1.1 ${ICL_XDEP_OPENCV_ON}")
-	#TODO change headernames for check cv.h;cvaux.h;cxcore.h;highgui.h;ml.h
-	icl_check_external_package(OPENCV "" "opencv_core;opencv_highgui;opencv_ml;opencv_features2d;opencv_imgproc;opencv_calib3d" lib include/ /opt/OpenCV2.1.1 HAVE_OPENCV_COND FALSE)
-    if(HAVE_OPENCV_COND)
-      set(HAVE_OPENCV2_COND TRUE)
-      set(HAVE_OPENCV211_COND TRUE)
-      include_directories(${ICL_XDEP_OPENCV_PATH}/include)
-      set(OPENCV_INCLUDE_PATH "${OPENCV_INCLUDE_PATH};${ICL_XDEP_OPENCV_PATH}/include")
-      message(STATUS "inc ${OPENCV_INCLUDE_PATH}")
-      add_definitions( -DHAVE_OPENCV2)
-      add_definitions( -DHAVE_OPENCV211)	
-      set(OPENCV_LIBS_l opencv_core opencv_highgui opencv_ml opencv_features2d opencv_imgproc opencv_calib3d)
-    else()
-      message(STATUS "OPENCV detected: FALSE")
-    endif()
+    include(cmake_files/linux/find_OPENSURF.cmake)
+  else(ICL_XDEP_OPENSURF_ON)
+    message(STATUS "OPENSURF dependency was deactivated due to the missing OPENCV dependency")
+    message(STATUS "OPENSURF detected: FALSE")
   endif()
-endif()
 
-######LIBZ########
-if(WIN32)
-icl_check_external_package(LIBZ zlib.h zdll.lib lib include C:/Programme/zlib125 HAVE_LIBZ_COND TRUE)
-elseif(APPLE)
-icl_check_external_package(LIBZ zlib.h libz.dylib lib include /usr HAVE_LIBZ_COND TRUE)
-else()
-icl_check_external_package(LIBZ zlib.h z lib include /usr HAVE_LIBZ_COND TRUE)
-endif()
-if(HAVE_LIBZ_COND)
-	if(WIN32)
-	set(LIBZ_LIBS_l zdll)
-	else()#same for LINUX and APPLE
-	set(LIBZ_LIBS_l z)
-	endif()
-endif()
-
-######### LIBPNG ##################################################
-if(UNIX)
-  icl_check_external_package(LIBPNG png.h png lib include /usr HAVE_LIBPNG_COND TRUE)
-  if(HAVE_LIBPNG_COND)
-    set(LIBPNG_LIBS_l png)
-  endif()
-else()
-set(HAVE_LIBPNG_COND FALSE)
-endif()
-
-
-#TODO APPLE
-#########KINECT Drivers (libfreenect)##############################
-if(NOT WIN32)
-    set(ICL_XDEP_LIBFREENECT_ON_TMP ${ICL_XDEP_LIBFREENECT_ON})
-    icl_check_external_package(LIBFREENECT libfreenect.h freenect lib include /usr HAVE_LIBFREENECT_COND FALSE)
-    if(NOT HAVE_LIBFREENECT_COND)
-        if(ICL_XDEP_LIBFREENECT_ON_TMP)
-	    set(ICL_XDEP_LIBFREENECT_ON ${ICL_XDEP_LIBFREENECT_ON_TMP})
-	endif()
-        icl_check_external_package(LIBFREENECT libfreenect.h freenect lib include/libfreenect /usr HAVE_LIBFREENECT_COND FALSE)
-    endif()
-endif()
-if(HAVE_LIBFREENECT_COND)
-  if(NOT WIN32)
-    set(LIBFREENECT_LIBS_l freenect)
-    #include_directories(${ICL_XDEP_LIBFREENECT_PATH}/include/libfreenect)
-    #set(LIBFREENECT_INCLUDE_PATH "${LIBFREENECT_INCLUDE_PATH};${ICL_XDEP_LIBFREENCT_PATH}/include/libfreenect" )
-  endif()
-else()
-  message(STATUS "LIBFREENECT detected: FALSE")
-endif()
-
-#TODO APPLE
-if(WIN32)
-    icl_check_external_package(LIBMESASR libMesaSR.h libMesaSR.lib libMesaSR libMesaSR C:/PProgramme/MesaImaging/Swissranger HAVE_LIBMESASR_COND TRUE)
-else()
-    icl_check_external_package(LIBMESASR libMesaSR.h mesasr lib include /usr HAVE_LIBMESASR_COND TRUE)
-endif()
-if(HAVE_LIBMESASR_COND)
-    if(WIN32)
-	set(LIBMESASR_LIBS_l MesaSR)
-    else()
-        set(LIBMESASR_LIBS_l mesasr)
-    endif()
-endif()
-
-####LIBJPEG####
-if(WIN32)
-    icl_check_external_package(LIBJPEG jpeglib.h jpeg.lib lib include C:/Programme/libjpeg HAVE_LIBJPEG_COND TRUE)
-elseif(APPLE)
-    #http://www.ijg.org/files/jpegsrc.v8b.tar.gz
-    #./configure --disable-static, make -j2, sudo make install
-    icl_check_external_package(LIBJPEG jpeglib.h libjpeg.dylib lib include /usr/local HAVE_LIBJPEG_COND TRUE)
-else()
-    icl_check_external_package(LIBJPEG jpeglib.h jpeg lib include /usr HAVE_LIBJPEG_COND TRUE)
-endif()
-if(HAVE_LIBJPEG_COND)
-    if(WIN32)
-        set(LIBJPEG_LIBS_l jpeg)
-    else()#same for LINUX and OS X
-        set(LIBJPEG_LIBS_l jpeg)
-    endif()
-endif()
-
-####GRAPHICSMAGICK/IMAGEMAGICK####
-if(ICL_VAR_USE_PKG_CONFIG)
-	icl_check_external_package_from_pkg_conf(IMAGEMAGICK GraphicsMagick++ HAVE_IMAGEMAGICK_COND TRUE)
-endif()
-if(NOT IMAGEMAGICK_PKG_FOUND)
-  if(WIN32)
-  icl_check_external_package(IMAGEMAGICK Magick++.h "CORE_RL_wand_.lib;CORE_RL_magick_.lib;CORE_RL_Magick++_.lib" lib include "C:/PProgramme/ImageMagick-6.6.0-Q16" HAVE_IMAGEMAGICK_COND TRUE)
-  elseif(APPLE)
-    #ftp://ftp.graphicsmagick.org/pub/GraphicsMagick/GraphicsMagick-LATEST.tar.gz
-    #./configure --enable-shared, male -j2, sudo make install
-    icl_check_external_package(IMAGEMAGICK Magick++.h libGraphicsMagick++.la lib include/GraphicsMagick /usr/local HAVE_IMAGEMAGICK_COND TRUE)
-  else()
-  icl_check_external_package(IMAGEMAGICK Magick++.h GraphicsMagick++ lib include/GraphicsMagick /usr HAVE_IMAGEMAGICK_COND TRUE)
-  endif()
-  if(HAVE_IMAGEMAGICK_COND)
-	if(WIN32)
-	set(IMAGEMAGICK_LIBS_l CORE_RL_Magick++_ CORE_RL_magick_.lib)
-	#elseif(APPLE)
-	#set(IMAGEMAGICK_LIBS_l GraphicsMagick++)
-	else()
-	set(IMAGEMAGICK_LIBS_l GraphicsMagick++)
-	endif()
-   endif()
-endif()
-
-####IMAGEMAGICK####
-#old package, maybe  used in the future again
-#icl_check_external_package(IMAGEMAGICK Magick++.h lib include/ImageMagick /usr HAVE_IMAGEMAGICK_COND)
-#if(HAVE_IMAGEMAGICK_COND)
-#	 	set(IMAGEMAGICK_LIBS_l Magick++)
-#endif()
-
-####LIBDC####
-if(ICL_VAR_USE_PKG_CONFIG)
-	icl_check_external_package_from_pkg_conf(LIBDC "libdc1394-2" HAVE_LIBDC_COND)
-endif()
-if(NOT LIBDC_PKG_FOUND)
-	#http://damien.douxchamps.net/ieee1394/libdc1394/download/
-	#svn co https://libdc1394.svn.sourceforge.net/svnroot/libdc1394 libdc1394
-	#autoreconf -i -s, ./configure ,make -j2,sudo make install
-	if(APPLE)
-	icl_check_external_package(LIBDC dc1394.h libdc1394.dylib lib include/dc1394 _/usr/local HAVE_LIBDC_COND TRUE)
-	elseif(UNIX)
-  	icl_check_external_package(LIBDC dc1394.h dc1394 lib include/dc1394 /usr HAVE_LIBDC_COND TRUE)
-	endif()  	
-	if(HAVE_LIBDC_COND)#same for LINUX and OS X
-	set(LIBDC_LIBS_l dc1394)
-	endif()
-endif()
-
-####UNICAP####
-if(ICL_VAR_USE_PKG_CONFIG)
-	icl_check_external_package_from_pkg_conf(UNICAP libunicap HAVE_UNICAP_COND)
-	#additional definition
-	add_definitions(-DUNICAP_FLAGS_NOT_AS_ENUM)
-endif()
-if(NOT UNICAP_PKG_FOUND)
-  icl_check_external_package(UNICAP unicap.h unicap lib include/unicap /usr HAVE_UNICAP_COND TRUE)
-  if(HAVE_UNICAP_COND)
-	set(UNICAP_LIBS_l unicap rt)
-	#additional definition
-	add_definitions(-DUNICAP_FLAGS_NOT_AS_ENUM)
-   endif()
-endif()
-
-####XINE####
-if(ICL_VAR_USE_PKG_CONFIG)
-	icl_check_external_package_from_pkg_conf(XINE libxine HAVE_XINE_COND)
-endif()
-if(NOT XINE_PKG_FOUND)
-  icl_check_external_package(XINE "xine.h;xine/xineutils.h" xine lib include /usr HAVE_XINE_COND TRUE)
-  if(HAVE_XINE_COND)
-	set(XINE_LIBS_l xine)
-   endif()
-endif()
-
-####XCF####
-if(ICL_VAR_USE_PKG_CONFIG)
-	icl_check_external_package_from_pkg_conf_mult(XCF HAVE_XCF_COND xcf xmltio Memory)
-endif()
-if(NOT XCF_PKG_FOUND)
-  icl_check_external_package(XCF "xcf/xcf.hpp;xmltio/xmltio.hpp" "xcf;xmltio" lib include /opt/xcf HAVE_XCF_COND TRUE)
-  if(HAVE_XCF_COND)
-	set(XCF_LIBS_l xcf xqilla log4cxx Memory xmltio Ice IceUtil xerces-c)
-   endif()
-endif()
-
-####OPENCL####
-if(UNIX)
-  icl_check_external_package(OPENCL "cl.h;cl.hpp" "OpenCL" lib include/CL /usr HAVE_OPENCL_COND TRUE)
- if(HAVE_OPENCL_COND)
-   set(OPENCL_LIBS_l OpenCL)
- endif()
-endif()
-
-####OPENGL####
-if(WIN32)
-icl_check_external_package(OPENGL "gl.h;glu.h" "glu32.a" lib include/GL C:/Qt/2010.02.1/mingw HAVE_OPENGL_COND TRUE)
-elseif(APPLE)
-icl_check_external_package(OPENGL "gl.h;glu.h" "libGL.dylib;libGLU.dylib" Libraries Headers /Developer/SDKs/MacOSX10.6.sdk/System/Library/Frameworks/OpenGL.framework HAVE_OPENGL_COND TRUE)
-else()
-icl_check_external_package(OPENGL "gl.h;glu.h" "GL;GLU" lib include/GL /usr HAVE_OPENGL_COND TRUE)
-icl_check_external_package(GLX "glx.h" "GL" lib include/GL /usr HAVE_GLX_COND TRUE)
-endif()
-if(${HAVE_OPENGL_COND})
-	if(WIN32)
-	set(OPENGL_LIBS_l glu32 opengl32)
-	elseif(APPLE)
-	#special linker flags on OS X
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -F/Developer/SDKs/MacOSX10.6.sdk/System/Library/Frameworks/ -framework OpenGL")
-	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -F/Developer/SDKs/MacOSX10.6.sdk/System/Library/Frameworks/ -framework OpenGL")	
-	else()
-	set(OPENGL_LIBS_l GL GLU)
-	endif()
-endif()
-
-
-####Qt####
-#first check if pkg-config shall be used
-if(NOT HAVE_OPENGL_COND)
-  message(STATUS "QT package is deactivated because OpenGL dev package is not available")
-  message(STATUS "QT detected: FALSE (due to missing dependency OPENGL)")
-else() # OPENGL is available, so qt can be used
-if(ICL_VAR_USE_PKG_CONFIG)
-	icl_check_external_package_from_pkg_conf_mult(QT HAVE_QT_COND QtCore QtGui QtOpenGL)
-endif()
-if(NOT QT_PKG_FOUND)
-  if(WIN32)
-  icl_check_external_package(QT "QtCore/QtCore;QtGui/QtGui;QtOpenGL/QtOpenGL" "QtCore4.a;QtGui4.a;QtOpenGL4.a" lib include C:/Qt/2010.02.1/qt HAVE_QT_COND TRUE)
-  elseif(APPLE)
-	#icl_check_external_package(QT "QtCore/QtCore;QtGui/QtGui;QtOpenGL/QtOpenGL" "" lib include /opt/local/libexec/qt4-mac HAVE_QT_COND)
-   	 icl_check_external_package(QT "QtCore.framework/Headers/QtCore;QtGui.framework/Headers/QtGui;QtOpenGL.framework/Headers/QtOpenGL" "QtCore.framework/QtCore;QtGui.framework/QtGui;QtOpenGL.framework/QtOpenGL" . . /Library/Frameworks/ HAVE_QT_COND TRUE)
-if(HAVE_QT_COND)
-	#special definition on OS X
-	add_definitions( -DQT_SHARED)
-	#special linker falgs on OS X
-set(CMAKE_EXE_LINKER_FLAGS "-F/Library/Frameworks -framework QtCore -F/Library/Frameworks -framework QtGui -F/Library/Frameworks -framework QtOpenGL")
-set(CMAKE_SHARED_LINKER_FLAGS "-F/Library/Frameworks -framework QtCore -F/Library/Frameworks -framework QtGui -F/Library/Frameworks -framework QtOpenGL")
-#"-F/Library/Frameworks/QtCore.framework -framework QtCore -F/Library/Frameworks/QtGui.framework -framework QtGui -F/Library/Frameworks/QtOpenGL.framework -framework QtOpenGL")
-#set(CMAKE_EXE_LINKER_FLAGS "-F/opt/local/libexec/qt4-mac/lib -framework QtCore -F/opt/local/libexec/qt4-mac/lib -framework QtGui -F/opt/local/libexec/qt4-mac/lib -framework QtOpenGL")
-#set(CMAKE_SHARED_LINKER_FLAGS "-F/opt/local/libexec/qt4-mac/lib -framework QtCore -F/opt/local/libexec/qt4-mac/lib -framework QtGui -F/opt/local/libexec/qt4-mac/lib -framework QtOpenGL")
-
-	#TODO is this really needed
-	#link_directories(/opt/local/libexec/qt4-mac/lib)
-	link_directories(/Library/Frameworks/QtOpenGL.framework/Versions/4)
-	link_directories(/Library/Frameworks/QtCore.framework/Versions/4)
-endif()
-  else()
-    #temporary var
-    set(temp ${ICL_XDEP_QT_ON})
-    #check for special location of qt
-    #icl_check_external_package(QT "QtCore/QtCore;QtGui/QtGui;QtOpenGL/QtOpenGL" "QtCore;QtGui;QtOpenGL" lib include /oopt/qtsdk-2010.04/qt HAVE_QT_COND)
-      if((NOT HAVE_QT_COND) OR temp)
-	     #check for standard location of qt
-         icl_check_external_package(QT "QtCore/QtCore;QtGui/QtGui;QtOpenGL/QtOpenGL" "QtCore;QtGui;QtOpenGL" lib include/qt4 /usr HAVE_QT_COND TRUE)
-      endif()
-  endif()
-if(HAVE_QT_COND)
-#message(STATUS "QT FOUNDDDD")
-  if(WIN32)
-	set(QT_LIBS_l QtCore4 QtGui4 QtOpenGL4)
-  elseif(APPLE)
-	#message(STATUS "adding link dirs for mac")
-	#TODO not really sure if this is needed
-	#link_directories(/opt/local/libexec/qt4-mac/lib/QtCore.framework/Versions/4)
-	#link_directories(/opt/local/libexec/qt4-mac/lib/QtGui.framework/Versions/4)
-	#link_directories(/opt/local/libexec/qt4-mac/lib/QtOpenGL.framework/Versions/4)
-  else()
-	set(QT_LIBS_l QtCore QtGui QtOpenGL)
-  endif()
-endif()
-endif()
-
-endif() # NOT HAVE_OPENGL_COND
-
-
-####OPENSURF####
-if(ICL_VAR_USE_PKG_CONFIG)
-	#icl_check_external_package_from_pkg_conf(OPENSURF opensurf HAVE_OPENSURF_COND)
-	icl_check_external_package_from_pkg_conf(OPENSURF surf HAVE_OPENSURF_COND)
-endif()
-if(NOT OPENSURF_PKG_FOUND)
-  if(NOT HAVE_OPENCV211_COND)
-  icl_check_external_package(OPENSURF "opensurf/fasthessian.h;opensurf/integral.h;opensurf/surf.h;opensurf/surflib.h;opensurf/utils.h" surf lib include /vol/nivision HAVE_OPENSURF_COND TRUE)
-  else()
-  message(STATUS "opensurf is not compatible to OpenCV2.1.1")
-  endif()
-  if(HAVE_OPENSURF_COND)
-	set(OPENSURF_LIBS_l surf)
-   endif()
-endif()
-
-####GENICAM####
-if(APPLE)
-  #TODO: APPLE
-elseif(WIN32)
-  #TODO: WIN32
-else()
-  if(ICL_64BIT)
-    icl_check_external_package(GENICAM "GenICam.h;GenApi/GenApi.h" GenApi_gcc40_v2_1 bin/Linux64_x64 library/CPP/include /opt/pylon/genicam HAVE_GENICAM_COND TRUE)
-  else() 
-    icl_check_external_package(GENICAM "GenICam.h;GenApi/GenApi.h" GenApi_gcc40_v2_1 bin/Linux32_i86 library/CPP/include /opt/pylon/genicam HAVE_GENICAM_COND TRUE)
-  endif()
   if(HAVE_GENICAM_COND)
-    set (GENICAM_LIBS_l ) #TODO:genicam libs)
+    include(cmake_files/linux/find_PYLON.cmake)
+  else(ICL_XDEP_PYLON_ON)
+    message(STATUS "PYLON dependency was deactivated due to the missing GENICAM dependency")
+    message(STATUS "PYLON detected: FALSE")
   endif()
+    
 endif()
 
-
-####PYLON####
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
 if(APPLE)
-  #TODO: APPLE
-elseif(WIN32)
-  #TODO: WIN32
-else()
-  if(ICL_64BIT)
-    icl_check_external_package(PYLON "pylon/PylonIncludes.h;pylon/TransportLayer.h" "pylonbase" lib64 include /opt/pylon HAVE_PYLON_COND TRUE)
-  else() 
-    icl_check_external_package(PYLON "pylon/PylonIncludes.h" "pylonbase" lib include /opt/pylon HAVE_PYLON_COND TRUE)
-  endif()
-  if(HAVE_PYLON_COND)
-    if(HAVE_GENICAM_COND)
-      set (PYLON_LIBS_l "pylonbase;pylonutility;pylongigesupp")
-    else()
-      set(HAVE_PYLON_COND false)
-      message(STATUS "AttentionPylon will not work without GenICam")
-    endif()
+  include(cmake_files/apple/find_IPP.cmake)
+  include(cmake_files/apple/find_MKL.cmake)
+  include(cmake_files/apple/find_LIBZ.cmake)
+  include(cmake_files/apple/find_LIBJPEG.cmake)
+  include(cmake_files/apple/find_IMAGEMAGICK.cmake)
+  include(cmake_files/apple/find_LIBDC.cmake)
+  include(cmake_files/apple/find_OPENGL.cmake)
+  include(cmake_files/apple/find_GTEST.cmake)
+  if(HAVE_OPENGL_COND)
+    include(cmake_files/apple/find_QT.cmake)
+  else()
+    message(STATUS "QT dependency was deactivated due to the missing OpenGL dependency")
+    message(STATUS "QT detected: FALSE")
   endif()
 endif()
 
-#####GOOGLE TEST##########
-if(APPLE)
-icl_check_external_package(GTEST gtest/gtest.h libgtest.dylib lib include /usr/local HAVE_GTEST_COND TRUE)
-elseif(UNIX)
-icl_check_external_package(GTEST gtest/gtest.h gtest lib include /vol/nivision/share HAVE_GTEST_COND TRUE)
-endif()
-if(HAVE_GTEST_COND)#same for LINUX and OS X
-	set(GTEST_LIBS_l gtest)
-endif()
 
 #add include directories of ICL
 include_directories(${PROJECT_SOURCE_DIR}/include)
-
-#set(incl)
-#GET_DIRECTORY_PROPERTY(incl INCLUDE_DIRECTORIES)
-#message(STATUS "i: ${incl}")
 
 #check for doxygen in order to build the documentation of ICL
 include(UseDoxygen OPTIONAL)
@@ -1037,7 +475,7 @@ endif()
 endif()
 
 
-# if this is the last sub-dir, its exectued at the end
+# if this is the last sub-dir, it is exectued at the end
 # the scripts/CMakeLists does only contain the
 # install(SCRIPT ./post_install.cmake)
 # line ...

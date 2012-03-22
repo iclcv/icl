@@ -36,12 +36,11 @@
 #define ICL_OPENCVVIDEOWRITER_H
 
 #include <string>
-#ifdef HAVE_OPENCV211
-#include <opencv2/highgui/highgui_c.h>
-#else
+
+#ifdef HAVE_OPENCV
 #include <highgui.h>
-#include <cxtypes.h>
 #endif
+
 #include <ICLIO/ImageOutput.h>
 #include <ICLUtils/Uncopyable.h>
 

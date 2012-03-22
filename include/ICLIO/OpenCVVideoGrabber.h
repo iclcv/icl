@@ -38,11 +38,10 @@
 #include <ICLIO/Grabber.h>
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLUtils/Exception.h>
-#ifdef HAVE_OPENCV211
-#include <opencv2/highgui/highgui_c.h>
-#else
+#ifdef HAVE_OPENCV
 #include <highgui.h>
 #endif
+
 #include <string>
 #include <ICLIO/File.h>
 namespace icl{
