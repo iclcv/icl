@@ -34,7 +34,7 @@
 
 #include <ICLIO/PWCGrabber.h>
 #include <ICLCore/Img.h>
-#ifdef SYSTEM_LINUX
+#ifdef ICL_SYSTEM_LINUX
 #include <ICLCC/CCFunctions.h>
 #include <stdio.h>
 #include <errno.h>
