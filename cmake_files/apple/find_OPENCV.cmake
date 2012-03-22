@@ -1,0 +1,1 @@
+message(STATUS "OpenCV is not yet supported for Apple system")

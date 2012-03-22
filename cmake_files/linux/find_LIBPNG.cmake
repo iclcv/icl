@@ -1,0 +1,6 @@
+icl_check_external_package(LIBPNG png.h png lib include /usr HAVE_LIBPNG_COND TRUE)
+if(HAVE_LIBPNG_COND)
+  set(LIBPNG_LIBS_l png)
+else()
+  message(STATUS "LIBPNG detected: FALSE")
+endif()
