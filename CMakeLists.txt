@@ -96,7 +96,6 @@ include(CheckLibraryExists)
 #####VIDEODEV#######
 if(UNIX)
   include(cmake_files/linux/find_VIDEODEV.cmake)
-  include(cmake_files/linux/find_VIDEODEV2.cmake)
   include(cmake_files/linux/find_IPP.cmake)
   include(cmake_files/linux/find_MKL.cmake)
   include(cmake_files/linux/find_OPENCV.cmake)

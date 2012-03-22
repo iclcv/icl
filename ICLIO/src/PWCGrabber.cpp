@@ -41,7 +41,15 @@
 #include <sys/time.h>
 #include <sys/types.h>
 
+#ifdef ICL_USE_VIDEODEV_LIB
+#include <libv4l1-videodev.h>
+#include <libv4l1.h>
+//#include <libv4l2.h>
+//#include <libv4lconvert.h>
+#else
 #include <linux/videodev.h>
+#endif
+
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <fcntl.h>

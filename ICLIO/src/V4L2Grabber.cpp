@@ -39,9 +39,15 @@
 #include <sys/mman.h>
 #include <sys/ioctl.h>
 
+#ifdef ICL_USE_VIDEODEV_LIB
+#include <libv4l1-videodev.h>
+#include <libv4l1.h>
+#include <libv4l2.h>
+#include <libv4lconvert.h>
+#else
 #include <linux/videodev2.h>
+#endif
 
-//#include <ICLCore/Common.h>
 #include <ICLUtils/Thread.h>
 #include <ICLIO/FileList.h>
 #include <ICLIO/ColorFormatDecoder.h>

@@ -49,7 +49,14 @@
 #include <cstdlib>
 
 #include <sys/time.h>	//needed by linux/videodev
+#ifdef ICL_USE_VIDEODEV_LIB
+#include <libv4l1-videodev.h>
+#include <libv4l1.h>
+#include <libv4l2.h>
+#include <libv4lconvert.h>
+#else
 #include <linux/videodev.h>
+#endif
 
 #include <ICLCore/Img.h>
 #include <ICLUtils/StringUtils.h>

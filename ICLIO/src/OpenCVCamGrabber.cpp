@@ -125,6 +125,8 @@ namespace icl{
     }else if(name == "hue"){
       i = cvSetCaptureProperty(cvc,CV_CAP_PROP_HUE,parse<double>(value));
     }
+    (void)i;
+    (void)j;
   }
   
   

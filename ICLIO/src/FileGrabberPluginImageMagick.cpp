@@ -41,7 +41,11 @@
 #ifndef ICL_SYSTEM_LINUX
 #include <Magick++.h>
 #else
+#ifdef ICL_USE_GRAPHICSMAGICK
 #include <GraphicsMagick/Magick++.h>
+#else
+#include <ImageMagick/Magick++.h>
+#endif
 #endif
 #endif
 

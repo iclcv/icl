@@ -371,13 +371,13 @@ namespace icl{
 
   UnaryOp *UnaryOp::fromString(const std::string &definition) throw (ICLException){
     unary_op_from_string::static_init();
-    bool hasParams = true;
+    //bool hasParams = true;
     if(!definition.size()) throw ICLException(str(__FUNCTION__)+": empty defintion string");
     std::string::size_type a = definition.find('(');
     std::string name;
     std::vector<std::string> plist;
     if(a == std::string::npos){
-      hasParams = false;
+      //hasParams = false;
       name = definition;
     }else{
       if(definition[definition.size()-1] != ')') throw ICLException(str(__FUNCTION__)+": missing closing ')' in definition ["+definition+"]");
