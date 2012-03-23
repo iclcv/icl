@@ -46,7 +46,7 @@ endif()
 
 set(ICL_VAR_ARCHITECTURE_DEPENDENT_BUILD_ON OFF CACHE BOOL "Compile architecture dependent (adding -march=native to CXX_FLAGS)")
 set(ICL_VAR_DEBUG_MODE OFF CACHE BOOL "Compile with debug options")
-set(ICL_VAR_USE_INTEL_OMP_IF_POSSIBLE OFF CACHE BOOL "link against Intel's libiomp5 and libguide if available")
+set(ICL_VAR_USE_OMP OFF CACHE BOOL "add -fopenmp to compiler flags (might not work in combination with Intel IPP or MKL)")
 
 
 include(cmake_files/build_options.cmake)

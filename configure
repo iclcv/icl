@@ -3,7 +3,7 @@ ARCH=
 PREFIX=
 BUILD=
 PKGCFG=
-INTELOMP=
+OMP=
 EXAMPLES=
 
 function usage {
@@ -54,7 +54,7 @@ for T in "$@" ; do
                         "arch") ARCH="$TR" ;;
                         "examples") EXAMPLES="$TR" ;;
                         "pkgcfg") PKGCFG="$TR" ;;
-                        "intelomp") INTELOMP="$TR" ;;
+                        "omp") OMP="$TR" ;;
                         *) eval "path_$T1=$TR" ;;
                     esac
                 fi
@@ -83,8 +83,8 @@ if [ -z $PREFIX ] ; then
     PREFIX=/vol/nivision
 fi
 
-if [ -z $INTELOMP ] ; then 
-    INTELOMP=false
+if [ -z $OMP ] ; then 
+    OMP=false
 fi
 
 for D in $DEPS ; do
@@ -103,7 +103,7 @@ fi
 
 CMD="cmake -D ICL_XDEP_ALL_ON:BOOL=FALSE -D ICL_VAR_INSTALL_PREFIX:STRING=$PREFIX "
 CMD="$CMD -D ICL_VAR_DEBUG_MODE:BOOL=$DEBUG_VAL"
-CMD="$CMD -D ICL_VAR_USE_INTEL_OMP_IF_POSSIBLE:BOOL=$(echo $INTELOMP | tr '[:lower:]' '[:upper:]')"
+CMD="$CMD -D ICL_VAR_USE_OMP:BOOL=$(echo $OMP | tr '[:lower:]' '[:upper:]')"
 CMD="$CMD -D ICL_VAR_ARCHITECTURE_DEPENDENT_BUILD_ON:BOOL=$(echo $ARCH | tr '[:lower:]' '[:upper:]')"
 CMD="$CMD -D ICL_VAR_USE_PKG_CONFIG:BOOL=$(echo $PKGCFG | tr '[:lower:]' '[:upper:]')"
 CMD="$CMD -D ICL_VAR_EXAMPLES_TO_BUILD:STRING=$EXAMPLES "
