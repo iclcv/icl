@@ -43,6 +43,7 @@
 #include <iostream>
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/ClippedCast.h>
+#include <ICLUtils/PThreadFix.h>
 
 /// The ICL-namespace
 /** This namespace is dedicated for ICLCore- and all additional Computer-Vision

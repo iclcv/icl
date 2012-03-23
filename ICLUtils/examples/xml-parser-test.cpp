@@ -34,12 +34,12 @@
 
 #include <ICLUtils/PugiXML.h>
 #include <iostream>
-#include <cstdlib>
+#include <ICLUtils/PThreadFix.h>
  
 int main(int n, char **ppc){
   if(n!=2){
     std::cout << "usage:\n\t" << (*ppc) << " <XML-DOCUMENT-NAME>" << std::cout;
-    exit(-1);
+    return 0;
   }
 
   pugi::xml_document doc;

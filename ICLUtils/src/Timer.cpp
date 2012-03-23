@@ -56,8 +56,8 @@ Timer::Timer(int iTimerMode)
   FUNCTION_LOG("Timer mode: " << iTimerMode);
   m_iTimerMode = iTimerMode;
 
-  m_vecTime.clear();
-  m_vecTimerName.clear();
+  //m_vecTime.clear();
+  //m_vecTimerName.clear();
 }
 
 // }}}

@@ -43,8 +43,8 @@
 //
 // **********************************************************************
 
-#ifndef ICL_UTIL_TIME_H
-#define ICL_UTIL_TIME_H
+#ifndef ICL_UTILS_TIME_H
+#define ICL_UTILS_TIME_H
 
 
 namespace icl{
