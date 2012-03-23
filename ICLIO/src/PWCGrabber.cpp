@@ -257,13 +257,13 @@ bool usb_grabber_funct(void *data ){
   int use_frame=0;
   int semval;
   
-  long  usec;
+  //  long  usec;
   struct timeval zeit;
   struct timespec delay;
   
   //init
    gettimeofday(&zeit,NULL);
-   usec=zeit.tv_usec;
+   // usec=zeit.tv_usec;
    delay.tv_sec = 0;
    delay.tv_nsec = 1500000; //entspricht 15msec  (Kamera liefert max. alle 40msec ein Bild)
  
@@ -313,7 +313,7 @@ bool usb_grabber_funct(void *data ){
 
      //check ob Schleife zu langsam
      gettimeofday(&zeit,NULL);
-     usec=zeit.tv_usec;
+     //    usec=zeit.tv_usec;
      
      //blockieren
      pthread_mutex_lock(&usb_frame_mutex[device]);
