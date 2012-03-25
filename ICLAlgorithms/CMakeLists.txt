@@ -56,11 +56,14 @@ add_libsource (${PROJECT_NAME} "src/GenericSurfDetector.cpp" "${CONDITIONLIST}" 
 set(CONDITIONLIST HAVE_OPENSURF_COND HAVE_OPENCV_COND)
 add_libsource (${PROJECT_NAME} "src/OpenSurfDetector.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
+
+
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)
-set(ICLLibsToLinkAgainst ${PROJECT_NAME})
-add_example (${PROJECT_NAME} "lma-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLMarkers)
 add_example (${PROJECT_NAME} "configurable-info" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
+set(ICLLibsToLinkAgainst ${PROJECT_NAME})
+add_example (${PROJECT_NAME} "lma-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_IPP_COND)
 add_example (${PROJECT_NAME} "template-matching-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 

@@ -35,7 +35,16 @@
 #include <ICLUtils/Configurable.h>
 #include <ICLUtils/ProgArg.h>
 
+#include <ICLAlgorithms/LMA.h>
+#include <ICLMarkers/FiducialDetector.h>
+
 using namespace icl;
+
+// include some static instances to ensure, that the linker
+// does not purge the linked libraries because no symbols of these
+// are used here
+static LMA lma; // adds all the basic stuff
+static FiducialDetector fid; // includes lots of additional stuff such as ICLFilter, ICLBlob and ICLMarkers
 
 int main(int n, char **ppc){
   painit(n,ppc,"-list|-ls|-l "
