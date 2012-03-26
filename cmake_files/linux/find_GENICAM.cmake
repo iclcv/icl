@@ -4,7 +4,7 @@ else()
   set(GENICAM_LIB bin/Linux32_i86)
 endif()
 
-icl_check_external_package(GENICAM "GenICam.h;GenApi/GenApi.h" GenApi_gcc40_v2_1 ${GENICAM_LIB} library/CPP/include HAVE_GENICAM_COND TRUE)
+icl_check_external_package(GENICAM "GenICam.h;GenApi/GenApi.h" GenApi_gcc40_v2_1 ${GENICAM_LIB} library/CPP/include TRUE)
 
 # this is done automatically now!
 #if(HAVE_GENICAM_COND)

@@ -50,7 +50,14 @@ set(ICL_VAR_USE_OMP OFF CACHE BOOL "add -fopenmp to compiler flags (might not wo
 
 
 include(cmake_files/build_options.cmake)
-include(cmake_files/macros-linux.cmake)
+
+if(UNIX)
+  include(cmake_files/macros-linux.cmake)
+elseif(APPLE)
+  include(cmake_files/macros-apple.cmake)
+elseif(WIN32)
+  # not supported yet
+endif()
 
 TODAY(DATE)
 

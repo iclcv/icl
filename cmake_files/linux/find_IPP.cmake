@@ -1,5 +1,5 @@
 if(ICL_64BIT)
-  icl_check_external_package(IPP ipp.h "ippcore;ippi;ipps;ippcv;ippm;ippcc" em64t/sharedlib em64t/include HAVE_IPP_COND TRUE)
+  icl_check_external_package(IPP ipp.h "ippcore;ippi;ipps;ippcv;ippm;ippcc" em64t/sharedlib em64t/include TRUE)
 else()
-  icl_check_external_package(IPP ipp.h "ippcore;ippi;ipps;ippcv;ippm;ippcc" sharedlib include HAVE_IPP_COND TRUE)
+  icl_check_external_package(IPP ipp.h "ippcore;ippi;ipps;ippcv;ippm;ippcc" sharedlib include TRUE)
 endif()

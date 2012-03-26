@@ -188,14 +188,13 @@ done < $TMPFILE
 rm -rf $TMPFILE
 
 echo ""
-echo "cmake detected TRUE:"
-echo -e $CMAKE_DETECTED | grep TRUE
+echo "deactivated dependencies"
+echo -e $CMAKE_DETECTED | grep DEACTIVATED | sed 's|detected: DEACTIVATED||g'
 echo ""
-echo "cmake detected FALSE:"
+echo "found dependencies"
+echo -e $CMAKE_DETECTED | grep TRUE | sed 's|detected: TRUE||g'
+echo ""
+echo "not found dependencies"
+echo -e $CMAKE_DETECTED | grep FALSE | sed 's|detected: FALSE||g'
 
-if [ "$(echo -e $CMAKE_DETECTED | grep TRUE | grep OPENCV)" != "" ] ; then
-   echo -e $CMAKE_DETECTED | grep FALSE | grep -v OPENCV
-else
-   echo -e $CMAKE_DETECTED | grep FALSE
-fi
 

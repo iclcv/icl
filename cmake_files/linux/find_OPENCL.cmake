@@ -1,1 +1,1 @@
-icl_check_external_package(OPENCL "cl.h;cl.hpp" "OpenCL" lib include/CL HAVE_OPENCL_COND TRUE)
+icl_simple_check_external_package(OPENCL "CL/cl.h;CL/cl.hpp" OpenCL)

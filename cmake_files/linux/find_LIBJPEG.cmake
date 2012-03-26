@@ -1,1 +1,1 @@
-icl_check_external_package(LIBJPEG jpeglib.h jpeg lib include HAVE_LIBJPEG_COND TRUE)
+icl_simple_check_external_package(LIBJPEG jpeglib.h jpeg)

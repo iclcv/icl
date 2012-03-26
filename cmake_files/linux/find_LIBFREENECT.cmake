@@ -1,1 +1,1 @@
-icl_check_external_package(LIBFREENECT libfreenect.h freenect lib include/libfreenect HAVE_LIBFREENECT_COND FALSE)
+icl_simple_check_external_package(LIBFREENECT libfreenect/libfreenect.h freenect)

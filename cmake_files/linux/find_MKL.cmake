@@ -1,5 +1,5 @@
 if(ICL_64BIT)
-  icl_check_external_package(MKL "mkl_types.h;mkl_cblas.h" "mkl_intel_lp64;mkl_intel_thread;mkl_core" lib/em64t include HAVE_MKL_COND TRUE)
+  icl_check_external_package(MKL "mkl_types.h;mkl_cblas.h" "mkl_intel_lp64;mkl_intel_thread;mkl_core" lib/em64t include TRUE)
 else()  
-  icl_check_external_package(MKL "mkl_types.h;mkl_cblas.h" "mkl_intel;mkl_intel_thread;mkl_core" lib/32 include HAVE_MKL_COND TRUE)
+  icl_check_external_package(MKL "mkl_types.h;mkl_cblas.h" "mkl_intel;mkl_intel_thread;mkl_core" lib/32 include  TRUE)
 endif()
