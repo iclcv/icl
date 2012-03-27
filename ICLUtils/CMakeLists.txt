@@ -76,7 +76,10 @@ add_libsource (${PROJECT_NAME} "src/ProcessMonitor.cpp" "${CONDITIONLIST}" LIB_S
 add_libsource (${PROJECT_NAME} "src/TextTable.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/SimplexOptimizer.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/Random.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-add_libsource (${PROJECT_NAME} "src/PThreadFix.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+# this issue was solved by replacing libiomp5 from IPP 6.1 by the libiomp5
+# version, that is shipped with IPP 7.0 (update 6)
+#add_libsource (${PROJECT_NAME} "src/PThreadFix.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME})

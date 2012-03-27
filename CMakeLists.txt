@@ -506,49 +506,66 @@ add_custom_target(uninstall
   COMMAND rm -rf ${P}/etc/${D})
 
 
-#add_custom_target(postinstall chmod g+w ${CMAKE_INSTALL_PREFIX}/${LIBRARY_OUTPUT_PATH}
-#					COMMAND chmod g+w ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig
-#					COMMAND chmod g+w ${CMAKE_INSTALL_PREFIX}/${EXECUTABLE_OUTPUT_PATH}
-#					COMMAND chmod g+w ${CMAKE_INSTALL_PREFIX}/${DOC_DIR})
-#add_dependencies(postinstall install)					
 
-#include(tp2.cmake)
+macro(add_deb_dependency WHAT WHEN)
+  if(${WHEN})
+    message(STATUS "adding CPack dependency ${WHAT}")
+    if(CPACK_DEBIAN_PACKAGE_DEPENDS)
+      set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, ${WHAT}")
+    else()
+      set(CPACK_DEBIAN_PACKAGE_DEPENDS "${WHAT}")
+    endif()
+  endif()
+endmacro()
 #############################################
+
+
+
 #in shell type: cpack
 #to build automatically the deb package
-#set(CPACK_PACKAGE_DESCRIPTION "Do the example thingie")
-#set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A longer description about our example a#pp.")
-#set(CPACK_PACKAGE_NAME "ICL - Image Component Library")
-#xine qt libz libjpg graphicsmagick opengl
+set(CPACK_PACKAGE_DESCRIPTION "Do the example thingie")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A longer description about our example app.")
+set(CPACK_PACKAGE_NAME "icl")
+
+message(STATUS "CPack configuring dependencies")
 #set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.3.6), libgcc1 (>= 1:4.1)")
-#set(CPACK_DEBIAN_PACKAGE_DEPENDS "libdc1394-22, libunicap2, libxine1, libgraphi#csmagick++3, zlib1g")
-#set(CPACK_PACKAGE_CONTACT "wer auch immer")
-#set(CPACK_PACKAGE_VENDOR "uni")
-#set(CPACK_PACKAGE_VERSION_MAJOR "${ICL_MAJOR}")
-#set(CPACK_PACKAGE_VERSION_MINOR "${ICL_MINOR}")
-#set(CPACK_PACKAGE_VERSION_PATCH "${ICL_PATCH}")
-#set(VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
-#set(CPACK_PACKAGE_EXECUTABLES "")
-#set(CPACK_COMPONENTS_ALL filess)
-#set(CPACK_ALL_INSTALL_TYPES Full)
-#set(CPACK_GENERATOR "DEB;TGZ")
-#SET(CPACK_SET_DESTDIR "ON")
-#set(CPACK_INSTALL_CMAKE_PROJECTS "headers")
-#message(STATUS "ignore ${CPACK_SOURCE_IGNORE_FILES}")
-#set(CPACK_SOURCE_IGNORE_FILES "\\\\doxyfile$")
-#set(CPACK_INSTALLED_DIRECTORIES "")
+add_deb_dependency(libdc1394-22-dev HAVE_LIBDC_COND)
+add_deb_dependency(libgraphicsmagick++1-dev HAVE_IMAGEMAGICK_COND)
+add_deb_dependency(libunicap2-dev HAVE_UNICAP_COND)
+add_deb_dependency(libqt4-opengl-dev HAVE_QT_COND)
+add_deb_dependency(libjpeg62-dev HAVE_LIBJPEG_COND)
+add_deb_dependency(zlib1g-dev HAVE_LIBZ_COND)
+add_deb_dependency(libpng12-dev HAVE_LIBPNG_COND)
+add_deb_dependency(libv4l-dev HAVE_VIDEODEV_COND)
+
+set(CPACK_PACKAGE_CONTACT "nivision@techfak.uni-bielefeld.de")
+set(CPACK_PACKAGE_VENDOR "CITEC, Bielefeld University, Neuroinformatics Group")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Christof Elbrechter")
+set(CPACK_PACKAGE_VERSION_MAJOR "${ICL_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${ICL_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${ICL_PATCH}")
+
+set(CPACK_PACKAGE_EXECUTABLES "")
+set(CPACK_COMPONENTS_ALL filess)
+set(CPACK_ALL_INSTALL_TYPES Full)
+set(CPACK_GENERATOR "DEB")
+set(CPACK_SET_DESTDIR "ON")
+#OLD ?? set(CPACK_INSTALL_CMAKE_PROJECTS "headers")
+#set(CPACK_INSTALL_CMAKE_PROJECTS "/homes/celbrech/projects/ICL;ICL;ALL;/")
+message(STATUS "ignore ${CPACK_SOURCE_IGNORE_FILES}")
+set(CPACK_SOURCE_IGNORE_FILES "\\\\doxyfile$")
+set(CPACK_INSTALLED_DIRECTORIES "")
 #foreach(ICL_SUB_PACKAGE_PLACEHOLDER ${ICL_SUB_PACKAGES})
 #TODO set ignore file for doxyfile and install doc dir
-#set(CPACK_INSTALLED_DIRECTORIES "${CPACK_INSTALLED_DIRECTORIES};${CMAKE_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/html;${CMAKE_INSTALL_PREFIX}/doc/${ICL_SUB_PACKAGE_PLACEHOLDER}")
-
-
+#  set(CPACK_INSTALLED_DIRECTORIES "${CPACK_INSTALLED_DIRECTORIES};${CMAKE_BINARY_DIR}/${ICL_SUB_PACKAGE_PLACEHOLDER}/doc/html;${CMAKE_INSTALL_PREFIX}/doc/${ICL_SUB_PACKAGE_PLACEHOLDER}")
 #endforeach()
-#set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}-${CMAKE_SYSTEM_PROCESSOR}")
-#set(CPACK_PACKAGE_INSTALL_PREFIX "/")
-#set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CMAKE_INSTALL_PREFIX}")
-#set(CPACK_STRIP_FILES "ICLUtils/lib/ICLUtils.so" "ICLCore/lib/ICLCore.so" "ICLCC/lib/ICLCC.so" "ICLFilter/lib/ICLFilter.so" "ICLBlob/lib/ICLBlob.so" "ICLOpenCV/lib/ICLOpenCV.so" "ICLIO/lib/ICLIO.so" "ICLQt/lib/ICLQt.so" "ICLQuick/lib/ICLQuick.so" "ICLGeom/lib/ICLGeom.so" "ICLAlgorithms/lib/ICLAlgorithms.so" "ICLMarkers/lib/ICLMarkers.so")
+set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}-${CMAKE_SYSTEM_PROCESSOR}")
+set(CPACK_PACKAGE_INSTALL_PREFIX "/tmp/")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CMAKE_INSTALL_PREFIX}")
+set(CPACK_STRIP_FILES "ICLUtils/lib/ICLUtils.so" "ICLCore/lib/ICLCore.so" "ICLCC/lib/ICLCC.so" "ICLFilter/lib/ICLFilter.so" "ICLBlob/lib/ICLBlob.so" "ICLOpenCV/lib/ICLOpenCV.so" "ICLIO/lib/ICLIO.so" "ICLQt/lib/ICLQt.so" "ICLQuick/lib/ICLQuick.so" "ICLGeom/lib/ICLGeom.so" "ICLAlgorithms/lib/ICLAlgorithms.so" "ICLMarkers/lib/ICLMarkers.so")
+#SET(CPACK_SYSTEM_NAME "Linux-i686")
+#SET(CPACK_TOPLEVEL_TAG "Linux-i686")
 
-#include(CPack)
-
+include(CPack)
 
 
