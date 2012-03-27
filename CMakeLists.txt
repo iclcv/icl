@@ -523,17 +523,17 @@ endmacro()
 
 #in shell type: cpack
 #to build automatically the deb package
-set(CPACK_PACKAGE_DESCRIPTION "Do the example thingie")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A longer description about our example app.")
+set(CPACK_PACKAGE_DESCRIPTION "The Image Component Library (ICL) is a C++ computer vision library. ICL does not only focus on providing computer vision related tools, but it also provides a well chosen set of support functionalities.  ")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Image Component Library (ICL)")
 set(CPACK_PACKAGE_NAME "icl")
 
 message(STATUS "CPack configuring dependencies")
 #set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.3.6), libgcc1 (>= 1:4.1)")
 add_deb_dependency(libdc1394-22-dev HAVE_LIBDC_COND)
-add_deb_dependency(libgraphicsmagick++1-dev HAVE_IMAGEMAGICK_COND)
+add_deb_dependency(libmagick++-dev HAVE_IMAGEMAGICK_COND)
 add_deb_dependency(libunicap2-dev HAVE_UNICAP_COND)
-add_deb_dependency(libqt4-opengl-dev HAVE_QT_COND)
-add_deb_dependency(libjpeg62-dev HAVE_LIBJPEG_COND)
+add_deb_dependency(libqt4-dev HAVE_QT_COND)
+add_deb_dependency(libjpeg-dev HAVE_LIBJPEG_COND)
 add_deb_dependency(zlib1g-dev HAVE_LIBZ_COND)
 add_deb_dependency(libpng12-dev HAVE_LIBPNG_COND)
 add_deb_dependency(libv4l-dev HAVE_VIDEODEV_COND)
