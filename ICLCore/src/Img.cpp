@@ -1684,9 +1684,9 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
 #ifdef HAVE_IPP
   /// IPP-OPTIMIZED specialization for icl8u image flipping
   template <>
-  inline void flippedCopyChannelROI<icl8u>(axis eAxis, 
-                                           const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
-                                           Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize) {
+  void flippedCopyChannelROI<icl8u>(axis eAxis, 
+                                    const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
+                                    Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize) {
     // {{{ open
 
     CHECK_VALUES(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
@@ -1699,9 +1699,9 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
 
   /// IPP-OPTIMIZED specialization for icl8u image flipping
   template <>
-  inline void flippedCopyChannelROI<icl32f>(axis eAxis, 
-                                            const Img<icl32f> *src, int srcC, const Point &srcOffs, const Size &srcSize,
-                                            Img<icl32f> *dst, int dstC, const Point &dstOffs, const Size &dstSize) {
+  void flippedCopyChannelROI<icl32f>(axis eAxis, 
+                                     const Img<icl32f> *src, int srcC, const Point &srcOffs, const Size &srcSize,
+                                     Img<icl32f> *dst, int dstC, const Point &dstOffs, const Size &dstSize) {
     // {{{ open
 
     CHECK_VALUES(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
@@ -1711,14 +1711,17 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
   }
 
   // }}}
+ // OLD version ...
   // ipp case: do not instantiate the already specialized functions 8u and 32f
-  ICL_INSTANTIATE_DEPTH(16s)
-    ICL_INSTANTIATE_DEPTH(32s)
-    ICL_INSTANTIATE_DEPTH(64f)
-
+  //  ICL_INSTANTIATE_DEPTH(16s)
+  //  ICL_INSTANTIATE_DEPTH(32s)
+  //  ICL_INSTANTIATE_DEPTH(64f)
+  ICL_INSTANTIATE_ALL_DEPTHS
 #else
-    // no-ipp case instantiate all functions
-    ICL_INSTANTIATE_ALL_DEPTHS
+ 
+  // now, we instantiate all functions
+  // no-ipp case instantiate all functions
+  ICL_INSTANTIATE_ALL_DEPTHS
 #endif
 
 #undef ICL_INSTANTIATE_DEPTH

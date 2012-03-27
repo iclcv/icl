@@ -36,9 +36,29 @@
 #ifndef ICL_PTHREAD_FIX_H
 #define ICL_PTHREAD_FIX_H
 
+#if 0
 #if   defined(HAVE_IPP) || defined(HAVE_MKL)
 #include <ICLUtils/Timer.h>
-static icl::Timer ICL_STATIC_FIX_TO_AVOID_UNDEFINED_REFERENCE_TO_PTHREAD_ATFORK;
+namespace icl{
+  static icl::Timer ICL_STATIC_FIX_TO_AVOID_UNDEFINED_REFERENCE_TO_PTHREAD_ATFORK;
+  struct ICL_PThreadAtForkFix{
+    ICL_PThreadAtForkFix();
+    static ICL_PThreadAtForkFix fix;
+  };
+}
+
+// for some reason, this symbol is missing, and we cannot
+// tell the linker to find it ??
+#define EXPLICITLY_INSTANTIATE_PTHREAD_AT_FORK                  \
+  extern "C"{                                                   \
+    extern int pthread_atfork(void (*)(void), void (*)(void),   \
+                              void (*)(void)){                  \
+    }                                                           \
+  }
+#else
+#define EXPLICITLY_INSTANTIATE_PTHREAD_AT_FORK
+#endif
+
 #endif
 
 #endif

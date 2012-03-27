@@ -94,7 +94,8 @@ namespace icl{
     FILE * fp;
     char res[128] = {0};
     fp = popen("/bin/cat /proc/cpuinfo |grep -c '^processor'","r");
-    fread(res, 1, sizeof(res)-1, fp);
+    size_t fread_result = fread(res, 1, sizeof(res)-1, fp);
+    (void)fread_result;
     fclose(fp);
     m_data->info.numCPUs = parse<int>(res);
 #endif

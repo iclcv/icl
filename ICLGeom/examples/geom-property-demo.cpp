@@ -36,6 +36,9 @@
 #include <ICLGeom/Geom.h>
 #include <ICLUtils/FPSLimiter.h>
 
+// also comment in include/ICLUtils/PThreadFix.h and .cpp
+//EXPLICITLY_INSTANTIATE_PTHREAD_AT_FORK
+
 GUI gui("hsplit");
 Scene scene;
 

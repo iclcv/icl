@@ -42,9 +42,14 @@
 #include <ICLFilter/MedianOp.h>
 #include <ICLFilter/ConvolutionOp.h>
 
+#include <pthread.h>
+
 #ifdef HAVE_QT
 GUI gui("vbox");
 #endif
+
+// also comment in include/ICLUtils/PThreadFix.h and .cpp
+// EXPLICITLY_INSTANTIATE_PTHREAD_AT_FORK;
 
 bool first = true;
 bool *ppEnabled = 0;
