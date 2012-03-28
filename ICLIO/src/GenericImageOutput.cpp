@@ -85,7 +85,7 @@ namespace icl{
     }
 #endif
     
-#ifdef HAVE_OPENCV2
+#ifdef HAVE_OPENCV
     if(type == "video"){
       try{
         std::vector<std::string> t = tok(d,",");

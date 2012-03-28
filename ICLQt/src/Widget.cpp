@@ -493,6 +493,15 @@ namespace icl{
       if(toggled) enterFullScreen();
       else leaveFullScreen();
     }
+
+    void autoCapDeviceChanged(){
+      std::string newDevice = menu["auto-cap-device"];
+      if(newDevice == "video") menu["auto-cap-filepattern"] = str("video.avi,MP42,VGA,25");
+      else if(newDevice == "xcfp") menu["auto-cap-filepattern"] = str("publisher-name");
+      else if(newDevice == "xcfs") menu["auto-cap-filepattern"] = str("stream-name");
+      else if(newDevice == "file") menu["auto-cap-filepattern"] = str("image_######.pnm");
+      else if(newDevice == "sm") menu["auto-cap-filepattern"] = str("id-string");
+    }
   };
 
 
@@ -534,7 +543,16 @@ namespace icl{
         QDir("./").mkpath(dirName);
       }
     }
-    bool startRecording(CaptureTarget t, const std::string &device, const std::string &params, int frameSkip,
+    
+    static inline std::string truncate(const std::string &s){
+      size_t begin = 0;
+      while(begin<s.length() && s[begin] == ' ') ++begin;
+      size_t end = s.length()-1;
+      while(end >= 0 && s[end] == ' ') --end;
+      return s.substr(begin,end-begin+1);
+    }
+    
+    bool startRecording(CaptureTarget t, const std::string &device, std::string params, int frameSkip,
                         bool forceParams, const Size &dstSize, icl::format dstFmt,  icl::depth dstDepth){
       Mutex::Locker l(mutex);
     
@@ -543,11 +561,14 @@ namespace icl{
         converter = new FixedConverter(ImgParams(dstSize,dstFmt),dstDepth);
       }
 
+      std::vector<std::string> ts = tok(params,",");
+      for(size_t i=0;i<ts.size();++i) ts[i] = truncate(ts[i]);
+      params = cat(ts,",");
+      
       if(device == "file"){
         ensureDirExists(File(params).getDir().c_str());        
       }else if(device == "video"){
-        std::vector<std::string> ts = tok(params,",");
-        if(!ts.size()) throw ICLException(str(__FUNCTION__)+": Error 12345 (this should not happen)");
+        if(!ts.size()) throw ICLException("invalid input");
         File f(ts.front());
         if(f.exists()){
           QMessageBox::StandardButton b = QMessageBox::question(0,"file exists",QString("given input file\n")+
@@ -1086,6 +1107,8 @@ namespace icl{
     data->menu << bciGUI << scaleGUI << channelGUI << captureGUI << extraGUI << infoGUI << licGUI << helpGUI;
     
     data->menu.create();
+    
+    data->menu["auto-cap-device"].registerCallback(function(data,&ICLWidget::Data::autoCapDeviceChanged));
 
 
     (*data->menu.getValue<ComboHandle>("auto-cap-mode"))->setToolTip("== Choose What to Capture =="
@@ -1133,7 +1156,7 @@ namespace icl{
                                                                              "\n"
                                                                              "= video =\n"
                                                                              "Syntax FILENAME[,CODEC[,SIZE[,FPS]]]\n"
-                                                                             "like foo.avi,DIVX,24\n"
+                                                                             "like foo.avi,DIVX,VGA,24\n"
                                                                              "or simply bla.avi\n"
                                                                              "possible codes are: \n"
                                                                              " * PIM1 (for mpeg 1)\n"
