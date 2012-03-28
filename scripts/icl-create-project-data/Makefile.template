@@ -361,7 +361,7 @@ installlink: all ${PC} uninstall create-install-dirs custom-install-hook
 ${BIN_INSTALL_PREFIX}/%: app/obj/%.o
 	${AT}rm -rf $@
 	${ECHO} ${PROGRESS} ${BYEL}[install/relink]${DEF} $@
-	${AT}${CXX} ${LIB_LNK_INSTALL} $< ${CXXFLAGS} ${CXXCPP}  ${LDFLAGS} -o $@
+	${AT}${CXX} $< ${CXXFLAGS} ${CXXCPP} ${LIB_LNK_INSTALL} ${LDFLAGS} -o $@
 	${AT}chmod 775 $@
 
 
