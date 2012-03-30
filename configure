@@ -26,7 +26,7 @@ if [ "$1"  = "-h" ] ; then
 fi 
 
 
-DEPS="ipp mkl opencv libz libfreenect libmesasr libjpeg libpng unicap xine qt opengl opencl glx opensurf gtest xcf imagemagick libdc videodev genicam pylon"
+DEPS="ipp mkl opencv libz libfreenect libmesasr libjpeg libpng unicap xine qt opengl opencl glx opensurf gtest xcf imagemagick libdc videodev genicam pylon rsb protobuf"
 
 for T in $DEPS ; do 
     eval "path_$T=_" ; 
@@ -132,8 +132,7 @@ echo "build directory:           $BUILD"
 echo "arch dependent build:      $ARCH"
 echo "examples:                  $EXAMPLES"
 echo "installation prefix:       $PREFIX"
-echo "use pkg-config:            $PKGCFG"
-echo "use intel omp if possible: $INTELOMP"
+echo "use omp :                  $OMP"
 echo "-----------------------------------------------------"
 
 

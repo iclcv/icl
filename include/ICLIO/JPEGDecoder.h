@@ -58,7 +58,7 @@ namespace icl{
                           libjpeg obviously reads only necessary bytes.
         @param dst destination image, which is adapted to the found images parameters */
     static void decode(const unsigned char *data,unsigned int maxDataLen,ImgBase **dst);
-
+    
     private:
     /// internal utility function, which does all the work
     static void decode_internal(File *file,const unsigned char *data, 
