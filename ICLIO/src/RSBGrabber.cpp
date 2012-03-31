@@ -51,7 +51,7 @@ using namespace rsb::converter;
 
 namespace icl{
 
-  struct RSBGrabber::Data {
+  struct RSBGrabberImpl::Data {
     ListenerPtr listener;
     Mutex mutex;
     ImgBase *bufferImage;
@@ -60,8 +60,8 @@ namespace icl{
     ImageCompressor compressor;
     
     struct Handler : public DataHandler<RSBImage>{
-      RSBGrabber::Data *data;
-      Handler(RSBGrabber::Data *data):data(data){}
+      RSBGrabberImpl::Data *data;
+      Handler(RSBGrabberImpl::Data *data):data(data){}
       virtual void notify(shared_ptr<RSBImage> image){
         data->update(*image);
       }
@@ -87,15 +87,15 @@ namespace icl{
     }
   };
   
-  RSBGrabber::RSBGrabber(){
+  RSBGrabberImpl::RSBGrabberImpl(){
     m_data = 0;
   }
   
-  RSBGrabber::RSBGrabber(const std::string &scope, const std::string &transportList):m_data(0){
+  RSBGrabberImpl::RSBGrabberImpl(const std::string &scope, const std::string &transportList):m_data(0){
     init(scope,transportList);
   }
   
-  void RSBGrabber::init(const std::string &scope, const std::string &transportList){
+  void RSBGrabberImpl::init(const std::string &scope, const std::string &transportList){
     ICL_DELETE(m_data);
     m_data = new Data;
     m_data->outputImage = 0;
@@ -113,7 +113,7 @@ namespace icl{
     m_data->listener->addHandler(m_data->handler);
   }
   
-  RSBGrabber::~RSBGrabber(){
+  RSBGrabberImpl::~RSBGrabberImpl(){
     if(m_data){
       ICL_DELETE(m_data->outputImage);
       ICL_DELETE(m_data->bufferImage);
@@ -122,7 +122,7 @@ namespace icl{
     }
   }
   
-  const ImgBase *RSBGrabber::acquireImage(){
+  const ImgBase *RSBGrabberImpl::acquireImage(){
     ICLASSERT_RETURN_VAL(!isNull(),0);
     Mutex::Locker lock(m_data->mutex);
     while(!m_data->bufferImage || !m_data->hasNewImage){
@@ -134,4 +134,14 @@ namespace icl{
     m_data->hasNewImage = false;
     return m_data->outputImage;
   }
+
+  const std::vector<GrabberDeviceDescription> &RSBGrabberImpl::getDeviceList(bool rescan){
+    static std::vector<GrabberDeviceDescription> all;
+    if(!rescan) return all;
+    
+    /// TODO: list segments
+
+    return all;
+  }
+
 }

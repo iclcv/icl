@@ -97,6 +97,11 @@
 
 #include <ICLUtils/TextTable.h>
 
+
+#if defined(HAVE_RSB) && defined(HAVE_PROTOBUF)
+#include <ICLIO/RSBGrabber.h>
+#endif
+
 namespace icl{
   static std::vector<GrabberDeviceDescription> deviceList;
 
@@ -140,7 +145,7 @@ namespace icl{
     static const char *plugins[] = { "pwc","dc","dc800","unicap","file","demo","create",
                                      "xcfp","xcfs","xcfm","mv","sr","xine","cvvideo", 
                                      "cvcam","sm","myr","kinectd","kinectc","kinecti",
-                                     "pylon"};
+                                     "pylon","rsb"};
     static const int NUM_PLUGINS=sizeof(plugins)/sizeof(char*);
 
     for(unsigned int i=0;i<ts.size();++i){
@@ -545,6 +550,30 @@ namespace icl{
       }
 #endif
 
+#if defined(HAVE_RSB) && defined(HAVE_PROTOBUF)
+      if(createListOnly){
+        supportedDevices.push_back("rsb:scope[,transportList=spread]:Robotics Service Bus based image source");
+      }
+      if(l[i] == "rsb"){
+        try{
+          std::vector<std::string> ts = tok(pmap["rsb"].id,",");
+          if(!ts.size()) throw ICLException("invalid argument count (expected 1 or 2)");
+          else if(ts.size() == 1) m_poGrabber = new RSBGrabber(ts[0]);
+          else {
+            std::string scope = ts[0];
+            ts.erase(ts.begin());
+            m_poGrabber = new RSBGrabber(scope,cat(ts,","));
+          }
+          m_sType = "rsb";
+          break;
+          break;
+        }catch(std::exception &e){
+          ADD_ERR("rsb");
+          continue;
+        }
+      }
+#endif
+
       if(createListOnly){
         supportedDevices.push_back("file:file name or file-pattern (in ''):image source for single or a list of image files");
         supportedDevices.push_back("demo:0:demo image source");
@@ -764,14 +793,10 @@ namespace icl{
         deviceList.push_back(GrabberDeviceDescription("demo","0","Demo Grabber Device"));
       }
       
-#ifdef ICL_SYSTEM_LINUX
 #ifdef HAVE_VIDEODEV
       add_devices<PWCGrabber>(deviceList,"pwc",useFilter,pmap);
       add_devices<MyrmexGrabber>(deviceList,"myr",useFilter,pmap);
-#endif
-#ifdef HAVE_VIDEODEV
       add_devices<V4L2Grabber>(deviceList,"v4l2",useFilter,pmap);
-#endif
 #endif
       
 #ifdef HAVE_LIBDC
@@ -803,6 +828,10 @@ namespace icl{
 
 #ifdef HAVE_PYLON
       add_devices<pylon::PylonGrabber>(deviceList,"pylon",useFilter,pmap);
+#endif
+
+#if defined(HAVE_RSB) && defined(HAVE_PROTOBUF)
+      add_devices<RSBGrabber>(deviceList,"rsb",useFilter,pmap);
 #endif
     }
     return deviceList;

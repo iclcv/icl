@@ -48,6 +48,10 @@
 #include <ICLIO/OpenCVVideoWriter.h>
 #endif
 
+#if defined(HAVE_RSB) && defined(HAVE_PROTOBUF)
+#include <ICLIO/RSBImageOutput.h>
+#endif
+
 #include <ICLIO/FileWriter.h>
 
 #include <ICLUtils/StringUtils.h>
@@ -94,8 +98,8 @@ namespace icl{
         Size size = t.size() > 2 ? parse<Size>(t[2]) : Size::VGA;
         double fps = t.size() > 3 ? parse<double>(t[3]) : 24;
         o = new OpenCVVideoWriter(t[0],fourcc,fps,size);
-      }catch(const std::exception &ex){
-        ERROR_LOG("Unable to create OpenCVVideoWriter with this parameters: " << d);
+      }catch(const std::exception &e){
+        ERROR_LOG("Unable to create OpenCVVideoWriter with this parameters: " << d << "(error: " << e.what() << ")");
       }
       
     }
@@ -108,9 +112,29 @@ namespace icl{
     }
 #endif
     
+#if defined(HAVE_RSB) && defined(HAVE_PROTOBUF)
+    if(type == "rsb"){
+      try{
+        std::vector<std::string> ts = tok(d,",");
+        if(!ts.size()) throw ICLException("unable to create RSBImageOutput without scope-definition");
+        std::string scope = ts[0];
+        ts.erase(ts.begin());
+        o = new RSBImageOutput(scope,ts.size()?cat(ts,",") : str("spread"));
+      }catch(std::exception &e){
+        ERROR_LOG("Unable to create RSBImageOutput with this parameters: " << d << "(error: "  <<e.what() << ")");
+      }
+    }
+#endif
     
     if(type == "file"){
       o = new FileWriter(d);
+    }
+    
+    if(type == "null"){
+      struct DummyOutput : public ImageOutput{
+        virtual void send(const ImgBase *image){ (void)image; }
+      };
+      o = new DummyOutput;
     }
     
     if(!o){

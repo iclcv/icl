@@ -45,20 +45,20 @@
 namespace icl{
   
   /// Grabber implementation for RSB based image transfer
-  class RSBGrabber : public Grabber{
+  class RSBGrabberImpl : public Grabber{
     struct Data;  //!< pimpl type
     Data *m_data; //!< pimpl pointer
     
     public:
     
     /// empty constructor (creates a null instance)
-    RSBGrabber();
+    RSBGrabberImpl();
 
     /// Destructor
-    ~RSBGrabber();
+    ~RSBGrabberImpl();
     
     /// main constructor with given scope and comma separated transportList
-    RSBGrabber(const std::string &scope, const std::string &transportList="spread");
+    RSBGrabberImpl(const std::string &scope, const std::string &transportList="spread");
     
     /// deferred intialization with given scope and comma separated transportList
     void init(const std::string &scope, const std::string &transportList="spread");
@@ -68,7 +68,51 @@ namespace icl{
     
     /// returns whether this grabber has not jet been initialized
     inline bool isNull() const { return !m_data; }
+
+    /// returns a list of all available rsb streams
+    static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
   };
+
+  /// Grabber class that grabs images from RSB scope
+  /** for more details: @see RSBGrabberImpl */
+  class RSBGrabber : public GrabberHandle<RSBGrabberImpl>{
+    public:
+    
+    /// returns a list of available pwc devices 
+    /** @see RSBGrabberImpl for more details*/
+    static inline const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan){
+      return RSBGrabberImpl::getDeviceList(rescan);
+    }
+    
+    /// creates a new RSBGrabber instance
+    /** @see RSBGrabberImpl for more details */
+    inline RSBGrabber(const std::string &scope, const std::string &transportList="spread"){
+      std::string uid = transportList+":"+scope;
+      if(isNew(uid)){
+        initialize(new RSBGrabberImpl(scope, transportList),uid);
+      }else{
+        initialize(uid);
+      }
+    }
+    /// empty constructor (initialize late using init())
+    /** @see RSBGrabberImpl for more details */
+    inline RSBGrabber(){}
+    
+    /// for deferred connection to (other) shared memory segment
+    /** @see RSBGrabberImpl for more details */
+    inline void init(const std::string &scope, const std::string &transportList="spread") throw (ICLException){
+      std::string uid = transportList+":"+scope;
+      if(isNew(uid)){
+        initialize(new RSBGrabberImpl(scope, transportList),uid);
+      }else{
+        initialize(uid);
+      }
+    }
+    
+    /// not necessary for this type
+    static void resetBus(){}
+  };  
+
 }
 
 #endif

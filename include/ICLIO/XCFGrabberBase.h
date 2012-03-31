@@ -41,10 +41,6 @@
 #include <xmltio/Location.hpp>
 #include <xcf/CTU.hpp>
 
-#if 0
-#include <ICLCC/BayerConverter.h>
-#endif
-
 namespace icl {
 
   
@@ -70,18 +66,6 @@ namespace icl {
     /** \copydoc icl::Grabber::grab(ImgBase**)*/
     virtual const ImgBase* acquireImage();
 
-#if 0 
-    /** \cond */
-    /// grabbing a whole image set, e.g. from a stereo camera
-    /** The vector of images is resized to match the number of grabbed
-          images. Existing images in the vector are adapted to the desired
-        output depth and parameters. Ownership for all grabbed images goes
-        to the caller! 
-     */
-    void grab (std::vector<ImgBase*>& vGrabbedImages);
-    /** \endcond */
-#endif
-  
     protected:   
     /// retrieve most current image set in provided composite transport unit
     virtual void receive (XCF::CTUPtr& result) = 0;
@@ -90,16 +74,6 @@ namespace icl {
       
     XCF::CTUPtr          m_result;
     ImgBase*             m_poSource;
-
-#if 0
-    void makeOutput (const xmltio::Location& l, ImgBase* poOutput);
-
-    BayerConverter*	 m_poBayerConverter;
-    ImgBase*             m_poBayerBuffer;
-    ImgBase*             m_poDesiredParamsBuffer;
-    bool                 m_bIgnoreDesired;
-#endif
-
   };
   
 }
