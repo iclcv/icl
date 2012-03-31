@@ -33,6 +33,7 @@
 *********************************************************************/
 
 #include <rsb/Factory.h>
+#include <rsb/Handler.h>
 #include <rsb/converter/Repository.h>
 #include <rsb/converter/ProtocolBufferConverter.h>
 
@@ -41,6 +42,7 @@
 #include <ICLIO/ImageCompressor.h>
 #include <ICLIO/RSBImageOutput.h>
 #include <ICLIO/RSBImage.pb.h>
+#include <ICLUtils/Mutex.h>
 
 using namespace boost;
 using namespace rsb;
@@ -56,11 +58,29 @@ namespace icl{
   } static_RSBImage_type_registration;
   
   struct RSBImageOutput::Data{
+    Mutex mutex;
     Informer<RSBImage>::Ptr informer;
     Informer<RSBImage>::DataPtr out;
     std::string compressionType;
     std::string compressionQuality;
     ImageCompressor compressor;
+
+    ListenerPtr propertyListener;
+    std::string propertyScopeName;
+
+    struct PropertyHandler : public DataHandler<std::string>{
+      RSBImageOutput *out;
+      PropertyHandler(RSBImageOutput *out):out(out){}
+      virtual void notify(shared_ptr<std::string> s){
+        std::vector<std::string> ts = tok(*s,":");
+        if(ts.size() != 2){
+          ERROR_LOG("invalid property definition at " << out->m_data->propertyScopeName);
+        }
+        out->setCompression(ts[0],ts[1]);
+      }
+    };
+    shared_ptr<rsb::Handler> propertyHandler;
+
   };
 
   RSBImageOutput::RSBImageOutput():m_data(0){}
@@ -74,12 +94,14 @@ namespace icl{
   }
 
   void RSBImageOutput::setCompression(const std::string &compression, const std::string &quality){
+    Mutex::Locker lock(m_data->mutex);
     ICLASSERT_RETURN(!isNull());
     m_data->compressionType = compression;
     m_data->compressionQuality = quality;
   }
     
   std::pair<std::string,std::string> RSBImageOutput::getCompression() const{
+    Mutex::Locker lock(m_data->mutex);
     ICLASSERT_RETURN_VAL(!isNull(), (std::pair<std::string,std::string>()));
     return std::pair<std::string,std::string>(m_data->compressionType,m_data->compressionQuality);
   }
@@ -98,9 +120,16 @@ namespace icl{
     }
     m_data->informer = Factory::getInstance().createInformer<RSBImage>(rsbScope,rsbCfg);
     m_data->out = Informer<RSBImage>::DataPtr(new RSBImage);
+
+    
+    m_data->propertyScopeName = "/icl/RSBImageOutput/configuration"+scope;
+    m_data->propertyListener = Factory::getInstance().createListener(Scope(m_data->propertyScopeName), rsbCfg);
+    m_data->propertyHandler = shared_ptr<rsb::Handler>(new Data::PropertyHandler(this));
+    m_data->propertyListener->addHandler(m_data->propertyHandler);
   }
     
   void RSBImageOutput::send(const ImgBase *image){
+    Mutex::Locker lock(m_data->mutex);
     ICLASSERT_RETURN(!isNull());
     ICLASSERT_RETURN(image->getDim() > 0);
     ICLASSERT_RETURN(image->getChannels() > 0);

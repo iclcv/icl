@@ -53,17 +53,48 @@ namespace icl{
 
   struct RSBGrabberImpl::Data {
     ListenerPtr listener;
+    Informer<std::string>::Ptr propertyInformer;
+    std::string propertyScopeName;
+    
     Mutex mutex;
     ImgBase *bufferImage;
     ImgBase *outputImage;
     bool hasNewImage;
     ImageCompressor compressor;
     
+    int setJPEGQuality;
+    int setRLEQuality;
+    std::string setCompressionMode;
+
+    int receivedJPEGQuality;
+    int receivedRLEQuality;
+    std::string receivedCompressionMode;
+
+    int lastImageDataSize;
+    
+    void sendUpdateToSource(){
+      shared_ptr<std::string> cmd;
+      if(setCompressionMode == "off"){
+        cmd = shared_ptr<std::string>(new std::string("off:off"));
+      }else if(setCompressionMode == "rle"){
+        cmd = shared_ptr<std::string>(new std::string("rle:" + str(setRLEQuality)));
+      }else if(setCompressionMode == "jpeg"){
+        cmd = shared_ptr<std::string>(new std::string("jpeg:" + str(setJPEGQuality)));
+      }else{
+        ERROR_LOG("cannot update the image source (error that should not occur)");
+      }
+      if(cmd){
+        propertyInformer->publish(cmd);
+      }
+    }
+    
     struct Handler : public DataHandler<RSBImage>{
       RSBGrabberImpl::Data *data;
-      Handler(RSBGrabberImpl::Data *data):data(data){}
+      RSBGrabberImpl *impl;
+      Handler(RSBGrabberImpl::Data *data, RSBGrabberImpl *impl):data(data),impl(impl){}
       virtual void notify(shared_ptr<RSBImage> image){
         data->update(*image);
+        data->lastImageDataSize = image->data().length();
       }
     };
     shared_ptr<rsb::Handler> handler;
@@ -73,11 +104,18 @@ namespace icl{
       const std::string &data = image.data();
       const std::string &mode = image.compressionmode();
       
+      receivedCompressionMode = mode;
       if(mode == "off"){
         // quality is not used here!
         ImageSerializer::deserialize((const icl8u*)&data[0],&bufferImage);
       }else if(mode == "rle" || mode == "jpeg"){
         compressor.decode((const icl8u*)&data[0], data.length()).deepCopy(&bufferImage);
+        
+        if(mode == "jpeg"){
+          receivedJPEGQuality = parse<int>(image.compressionquality());
+        }else{
+          receivedRLEQuality = parse<int>(image.compressionquality());
+        }
       }
       if(bufferImage){
         bufferImage->setTime(image.time());
@@ -109,8 +147,17 @@ namespace icl{
       rsbCfg.addTransport(ParticipantConfig::Transport(transports[i]));
     }
     m_data->listener = Factory::getInstance().createListener(rsbScope,rsbCfg);
-    m_data->handler = shared_ptr<Handler>(new Data::Handler(m_data));
+    m_data->handler = shared_ptr<Handler>(new Data::Handler(m_data,this));
     m_data->listener->addHandler(m_data->handler);
+
+    m_data->propertyScopeName = "/icl/RSBImageOutput/configuration"+scope;
+    m_data->propertyInformer = Factory::getInstance().createInformer<std::string>(Scope(m_data->propertyScopeName),rsbCfg);
+
+    m_data->receivedJPEGQuality = 90;
+    m_data->receivedRLEQuality = 1;
+    m_data->receivedCompressionMode = "off";
+
+    m_data->lastImageDataSize = 0;
   }
   
   RSBGrabberImpl::~RSBGrabberImpl(){
@@ -143,5 +190,86 @@ namespace icl{
 
     return all;
   }
+
+  void RSBGrabberImpl::setProperty(const std::string &property, const std::string &value){
+    Mutex::Locker lock(m_data->mutex);
+    if(property == "compression-type"){
+      m_data->setRLEQuality = m_data->receivedRLEQuality;
+      m_data->setJPEGQuality = m_data->receivedJPEGQuality;
+      m_data->setCompressionMode = value;
+      m_data->sendUpdateToSource();
+    }else if(property == "RLE-quality"){
+      m_data->setCompressionMode = m_data->receivedCompressionMode;
+      m_data->setRLEQuality = parse<int>(value);
+      m_data->sendUpdateToSource();
+    }else if(property == "JPEG-quality"){
+      m_data->setCompressionMode = m_data->receivedCompressionMode;
+      m_data->setRLEQuality = m_data->receivedRLEQuality;
+      m_data->setJPEGQuality = parse<int>(value);
+      m_data->sendUpdateToSource();
+    }else{
+      ERROR_LOG("invalid property: " << property);
+    }
+  }
+
+  int RSBGrabberImpl::isVolatile(const std::string &name){
+    return name == "image data size" ? 100 : 0;
+  }
+
+  
+  std::vector<std::string> RSBGrabberImpl::getPropertyList(){
+    static std::vector<std::string> ps = tok("compression-type,RLE-quality,JPEG-quality,image data size",",");
+    return ps;
+  }
+    
+  std::string RSBGrabberImpl::getType(const std::string &name){
+    Mutex::Locker lock(m_data->mutex);
+    if(name == "compression-type"){
+      return "menu";
+    }else if(name == "RLE-quality"){
+      return "menu";
+    }else if(name == "JPEG-quality"){
+      return "range";
+    }else if(name == "image data size"){
+      return "info";
+    }else{
+      ERROR_LOG("invalid property: " << name);
+    }
+    return "unknown";
+    
+  }
+
+  std::string RSBGrabberImpl::getInfo(const std::string &property){
+    Mutex::Locker lock(m_data->mutex);
+    if(property == "compression-type"){
+      return "{\"off\",\"rle\",\"jpeg\"}";
+    }else if(property == "RLE-quality"){
+      return "{\"1 Bit\",\"4 Bit\",\"6 Bit\"}";
+    }else if(property == "JPEG-quality"){
+      return "[1,100]";
+    }else if(property == "image data size"){
+      return "";
+    }else{
+      ERROR_LOG("invalid property: " << property);
+    }
+    return "unknown";
+  }
+
+  std::string RSBGrabberImpl::getValue(const std::string &property){
+    Mutex::Locker lock(m_data->mutex);
+    if(property == "compression-type"){
+      return m_data->receivedCompressionMode;
+    }else if(property == "RLE-quality"){
+      return str(m_data->receivedRLEQuality);
+    }else if(property == "JPEG-quality"){
+      return str(m_data->receivedJPEGQuality);
+    }else if(property == "image data size"){
+      return str(m_data->lastImageDataSize);
+    }else{
+      ERROR_LOG("invalid property: " << property);
+    }
+    return "unknown";
+  }
+
 
 }

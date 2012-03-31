@@ -71,6 +71,30 @@ namespace icl{
 
     /// returns a list of all available rsb streams
     static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
+
+    /// interface for the setter function for video device properties 
+    /** \copydoc icl::Grabber::setProperty(const std::string&,const std::string&) **/
+    virtual void setProperty(const std::string &property, const std::string &value);
+    
+    /// returns a list of properties, that can be set usingsetProperty
+    /** @return list of supported property names **/
+    virtual std::vector<std::string> getPropertyList();
+    
+    /// get type of property
+    /** \copydoc icl::Grabber::getType(const std::string &)*/
+    virtual std::string getType(const std::string &name);
+
+    /// get information of a property valid values
+    /** \copydoc icl::Grabber::getInfo(const std::string &)*/
+    virtual std::string getInfo(const std::string &name);
+
+    /// returns the current value of a property or a parameter
+    virtual std::string getValue(const std::string &name);
+    /** @} */
+
+    /// volatileness
+    virtual int isVolatile(const std::string &name);
+
   };
 
   /// Grabber class that grabs images from RSB scope
