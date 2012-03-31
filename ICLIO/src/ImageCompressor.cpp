@@ -68,17 +68,17 @@ namespace icl{
     if(data[0] != 'r' || data[1] != 'l' || data[2] != 'e'){
       throw ICLException("given data is RLE");
     }
-    const icl32s *p = reinterpret_cast<const icl32s*>(data);
-    const int metaLen = p[11];
+    const icl32s *p = reinterpret_cast<const icl32s*>(data+3);
+    const int metaLen = p[8];
     const int headerLen = 47+metaLen;
     
     Header header = { 
-      CompressionMode(p[3]),
-      Size(p[4],p[5]),
-      Rect(p[6],p[7],p[8],p[9]),
-      p[10],
+      CompressionMode(p[0]),
+      Size(p[1],p[2]),
+      Rect(p[3],p[4],p[5],p[6]),
+      p[7],
       "",
-      Time(*reinterpret_cast<const int64_t*>(data+12)),
+      Time(*reinterpret_cast<const int64_t*>(data+9)),
       data+headerLen,
       len-headerLen
     };
@@ -284,10 +284,11 @@ namespace icl{
     
     m_data->encoded_buffer.resize(estimateBufferSize(image,(int)meta.length()));
     
-    icl32s *header = reinterpret_cast<icl32s*>(m_data->encoded_buffer.data());
-    *header++ = 'r'; // magick code!
-    *header++ = 'l';
-    *header++ = 'e';
+    icl8u  *header8u = reinterpret_cast<icl8u*>(m_data->encoded_buffer.data());
+    *header8u++ = 'r'; // magick code!
+    *header8u++ = 'l';
+    *header8u++ = 'e';
+    icl32s *header = reinterpret_cast<icl32s*>(header8u);
     *header++ = (int)m_data->mode;
     *header++ = image.getWidth();
     *header++ = image.getHeight();
@@ -330,6 +331,8 @@ namespace icl{
     ICLASSERT_THROW(data, ICLException("ImageCompressor::decode: "
                                        "given data pointer is NULL"));
     ICLASSERT_THROW(len > 3, ICLException("ImageCompressor::decode: given data pointer is too short"));
+
+    //SHOW(std::string("")+char(data[0])+char(data[1])+char(data[2]));
     bool isRLE = (data[0]=='r' && data[1]=='l' && data[2]=='e');
     if(!isRLE){
 #ifdef HAVE_LIBJPEG
