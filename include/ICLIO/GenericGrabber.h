@@ -101,6 +101,8 @@ namespace icl {
                                   - <b>kinectd</b> Uses libfreenect to grab Microsoft-Kinect's depth images
                                   - <b>kinectc</b> Uses libfreenect to grab Microsoft-Kinect's rgb color images
                                   - <b>kinecti</b> Uses libfreenect to grab Microsoft-Kinect's IR images
+                                  - <b>rsb</b> Robotics Service Bus Source 
+        
         
         
         @param params comma separated device depend parameter list: e.g.
@@ -161,6 +163,7 @@ namespace icl {
                                   - kinectd=device-index (int) 
                                   - kinectc=device-index (int) 
                                   - kinecti=device-index (int) 
+                                  - rsb=[comma-sep. transport-list=spread]:scope)
 
         @param notifiyErrors if set to false, no exception is thrown if no suitable device was found
     **/

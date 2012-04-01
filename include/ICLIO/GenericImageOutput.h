@@ -68,6 +68,7 @@ namespace icl{
         - "video" (description=output-video-filename,CODEC-FOURCCC=DIV3,VideoSize=VGA,FPS=24)
         - "sm" (SharedMemory output, description=memory-segment-ID)
         - "xcfp" (XCF Publisher output, description=stream-name)
+        - "rsb" (Robotics Service Bus Output), description=[comma-sep. transport-list=spread]:scope)
     */
     void init(const std::string &type, const std::string &description);
 

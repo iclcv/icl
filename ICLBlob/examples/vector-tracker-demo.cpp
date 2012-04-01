@@ -239,10 +239,8 @@ struct InputGrabber : public Grabber, public Lockable , public MouseHandler{
       Blob &b = blobs[i];
       Blob bSave = b;
       unsigned int t=0;
-      bool err = false;
       bool cont = false;
       while(true){
-        err = false;
         cont = false;
         b.x += (int)round(b.vx);
         b.y += (int)round(b.vy);
@@ -257,7 +255,6 @@ struct InputGrabber : public Grabber, public Lockable , public MouseHandler{
         if(cont) continue;
         if(!ok(b,i)){
           if(++t > maxtrys){
-            err = true;
             break;
           }else{
             b = bSave;

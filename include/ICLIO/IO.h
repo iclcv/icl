@@ -227,6 +227,15 @@
     
     # re-encode a video using a xine-based grabber
     icl-pipe -input video some-file.mpg -o some-file-converted,DIVX,SVGA,30
+
+    # grab images from a robotics service bus scope /foo/bar (using spread-based multicast connection)
+    icl-camviewer -input rsb /foo/bar
+
+    # grab images from a robotics service bus scope /foo/bar (using socket connection)
+    icl-camviewer -input rsb socket:/foo/bar
+    
+    # grab video file and use a robotics service bus informer to publish the image via spread and socket
+    icl-pipe -input cvvideo myfile.avi -o rsb spread,socket:/foo/bar
     </pre>
     
     For further details and a complete list of possible Grabber-backends, 
@@ -254,6 +263,8 @@
     - <b>icl::OpenCVCamGrabber</b> OpenCV based camera grab that grabs image using an opencv backend (needs OpenCV)
     - <b>icl::KinectGrabber</b> libfreenect based Grabber for Microsoft's Kinect Camera (supports color-, depth and IR-camera)
     - <b>icl::MyrmexGrabber</b> v4l2-based grabber for the Myrmex tactile device developed by Carsten Schürman
+    - <b>icl::RSBGrabber</b> Robotics Service Bus based grabber 
+      (Supports different transport-layers, such as inprocess, spread and socket)
     
 */
 

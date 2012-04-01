@@ -58,9 +58,13 @@ namespace icl{
     ~RSBGrabberImpl();
     
     /// main constructor with given scope and comma separated transportList
+    /** supported transports are socket, spread and inprocess. Please note, that
+        the spread-transport requires spread running. */
     RSBGrabberImpl(const std::string &scope, const std::string &transportList="spread");
     
     /// deferred intialization with given scope and comma separated transportList
+    /** supported transports are socket, spread and inprocess. Please note, that
+        the spread-transport requires spread running. */
     void init(const std::string &scope, const std::string &transportList="spread");
     
     /// grabber-interface 

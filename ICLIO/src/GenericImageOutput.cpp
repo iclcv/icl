@@ -115,11 +115,16 @@ namespace icl{
 #if defined(HAVE_RSB) && defined(HAVE_PROTOBUF)
     if(type == "rsb"){
       try{
-        std::vector<std::string> ts = tok(d,",");
+        std::vector<std::string> ts = tok(d,":");
         if(!ts.size()) throw ICLException("unable to create RSBImageOutput without scope-definition");
-        std::string scope = ts[0];
-        ts.erase(ts.begin());
-        o = new RSBImageOutput(scope,ts.size()?cat(ts,",") : str("spread"));
+        if(ts.size() == 1){
+          o = new RSBImageOutput(ts[0]);
+        }else if(ts.size() == 2){
+          o = new RSBImageOutput(ts[1],ts[0]);
+        }else{
+          throw ICLException("invalid definition string (exptected: [transport-list]:scope");
+        }
+
       }catch(std::exception &e){
         ERROR_LOG("Unable to create RSBImageOutput with this parameters: " << d << "(error: "  <<e.what() << ")");
       }

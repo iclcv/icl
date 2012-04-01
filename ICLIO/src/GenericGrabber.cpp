@@ -552,20 +552,20 @@ namespace icl{
 
 #if defined(HAVE_RSB) && defined(HAVE_PROTOBUF)
       if(createListOnly){
-        supportedDevices.push_back("rsb:scope[,transportList=spread]:Robotics Service Bus based image source");
+        supportedDevices.push_back("rsb:[comma sep. transport list=spread]\\:scope:Robotics Service Bus based image source");
       }
       if(l[i] == "rsb"){
+        
         try{
-          std::vector<std::string> ts = tok(pmap["rsb"].id,",");
+          std::vector<std::string> ts = tok(pmap["rsb"].id,":");
           if(!ts.size()) throw ICLException("invalid argument count (expected 1 or 2)");
           else if(ts.size() == 1) m_poGrabber = new RSBGrabber(ts[0]);
-          else {
-            std::string scope = ts[0];
-            ts.erase(ts.begin());
-            m_poGrabber = new RSBGrabber(scope,cat(ts,","));
+          else if(ts.size() == 2){
+            m_poGrabber = new RSBGrabber(ts[1],ts[0]);
+          }else{
+            throw ICLException("invalid definition string (exptected: [transport-list]:scope");
           }
           m_sType = "rsb";
-          break;
           break;
         }catch(std::exception &e){
           ADD_ERR("rsb");
@@ -613,7 +613,7 @@ namespace icl{
         TextTable t(4,supportedDevices.size()+1,80);
         t[0] = tok("index,ID,parameter,description",",");
         for(size_t k=0;k<supportedDevices.size();++k){
-          t[k+1] = tok(str(k)+":"+supportedDevices[k],":");
+          t[k+1] = tok(str(k)+":"+supportedDevices[k],":",true,'\\');
         }
         std::cout << t << std::endl;
         std::terminate();

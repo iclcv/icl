@@ -55,9 +55,13 @@ namespace icl{
     ~RSBImageOutput();
     
     /// create RSBImageOutput with given scope and comma separated transport list
+    /** supported transports are socket, spread and inprocess. Please note, that
+        the spread-transport requires spread running. */
     RSBImageOutput(const std::string &scope, const std::string &transportList="spread");
     
     /// deferred initialization (see RSBImageOutput(const string&,const string&)
+    /** supported transports are socket, spread and inprocess. Please note, that
+        the spread-transport requires spread running. */
     void init(const std::string &scope, const std::string &transportList="spread");
     
     /// sets the current compression type
