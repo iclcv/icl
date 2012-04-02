@@ -55,7 +55,7 @@ macro(icl_check_lib ID LIB DIR RESULT)
 endmacro()
 
 #standard check for external dependency
-macro(icl_check_external_package ID INCFILES LIBFILES REL_LIB_DIR REL_INC_DIR VERBOSE_NOT_FOUND)
+macro(icl_check_external_package ID INCFILES LIBFILES REL_LIB_DIR REL_INC_DIR VERBOSE_NOT_FOUND VERBOSE_FOUND)
   message(STATUS " ############### checking for ${ID} ####################")
   if(NOT ICL_XDEP_${ID}_ON)
     message(STATUS "${ID} detected: DEACTIVATED")
@@ -75,7 +75,7 @@ macro(icl_check_external_package ID INCFILES LIBFILES REL_LIB_DIR REL_INC_DIR VE
     endforeach()
     
     foreach(inc ${INCFILES})
-      icl_check_single_path(${ID} "${I}/${inc}" "include file" FOUND_ALL)
+      icl_check_single_path(${ID} "${I}/${inc}" "header" FOUND_ALL)
     endforeach()
     
     if(${FOUND_ALL})
@@ -86,7 +86,9 @@ macro(icl_check_external_package ID INCFILES LIBFILES REL_LIB_DIR REL_INC_DIR VE
       add_definitions( -DHAVE_${ID})
       include_directories(${ICL_XDEP_${ID}_PATH}/${REL_INC_DIR})
       link_directories(${ICL_XDEP_${ID}_PATH}/${REL_LIB_DIR})
-      message(STATUS "${ID} detected: TRUE")
+      if(${VERBOSE_FOUND})
+        message(STATUS "${ID} detected: TRUE")
+      endif()
       set(${ID}_LIBS_l ${LIBFILES})
     else()
       set(ICL_XDEP_${ID}_ON OFF CACHE BOOL "Use ${ID} when available" FORCE)
@@ -98,7 +100,7 @@ macro(icl_check_external_package ID INCFILES LIBFILES REL_LIB_DIR REL_INC_DIR VE
 endmacro()
 
 macro(icl_simple_check_external_package ID INCFILES LIBFILES)
-  icl_check_external_package(${ID} "${INCFILES}" "${LIBFILES}" lib include TRUE)
+  icl_check_external_package(${ID} "${INCFILES}" "${LIBFILES}" lib include TRUE TRUE)
 endmacro()
 
 #dissolves internal dependencies and add them to new list, removes duplicates

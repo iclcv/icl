@@ -195,7 +195,7 @@ if(UNIX AND HAVE_PROTOBUF_COND)
   set(I ${CMAKE_SOURCE_DIR}/include/ICLIO/RSBImage.pb.h)
   set(C ${CMAKE_SOURCE_DIR}/ICLIO/src/RSBImage.pb.cpp)
   ADD_CUSTOM_COMMAND(OUTPUT ${C} ${I}
-    COMMAND protoc RSBImage.proto --cpp_out=.
+    COMMAND ${PROTOC_CMD} RSBImage.proto --cpp_out=.
     && mv "./RSBImage.pb.h" ${I}
     && mv "./RSBImage.pb.cc" ${C}
     && sed -i 's|"RSBImage.pb.h"|<ICLIO/RSBImage.pb.h>|g' ${C}
