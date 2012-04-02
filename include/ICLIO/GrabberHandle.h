@@ -161,6 +161,7 @@ namespace icl{
     inline ~GrabberHandle(){
       if(isNull()) return;
       Mutex::Locker l(s_mutex);
+      
       if(m_instance.use_count() == 2){
         // only two remaining instances: m_instance and s_instances[getID()]
      
@@ -169,7 +170,6 @@ namespace icl{
         typename InstanceMap::iterator it = s_instances.find(m_instance->id);
         ICLASSERT_RETURN(it != s_instances.end());
         s_instances.erase(it); // releases s_instances[getID()]
-
         // m_instance itself is released automatically by it's destructor
       }
     }

@@ -378,6 +378,7 @@ namespace icl{
     int num = SR_GetImageList(m_sr->cam,&imgs);
     result.setChannels((m_sr->pickChannel<0) ? (num +(m_sr->createXYZ*3)) : 1);
 
+    
     ImgEntry *im_DISTANCE = 0;
     int DISTANCE_idx = -1;
     ImgEntry *im_AMPLITUDE = 0;
@@ -400,7 +401,10 @@ namespace icl{
       std::string info = "";
       switch(t){
 #define CASE(X) case ImgEntry::IT_##X: info = #X ; im_##X = imgs+i; X##_idx = i; break;
-        CASE(DISTANCE);CASE(AMPLITUDE);CASE(INTENSITY);CASE(CONF_MAP);
+        CASE(DISTANCE);
+        CASE(AMPLITUDE);
+        CASE(INTENSITY);
+        CASE(CONF_MAP);
 #undef CASE
         default: info = "unknown"; break;
       }

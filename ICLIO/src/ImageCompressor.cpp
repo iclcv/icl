@@ -38,13 +38,14 @@
 #include <ICLIO/JPEGEncoder.h>
 #include <ICLIO/JPEGDecoder.h>
 #endif
-#include <ICLBlob/RunLengthEncoder.h>
+#include <ICLBlob/RegionDetectorTools.h>
 #include <ICLIO/File.h>
+
+#include <ICLUtils/StackTimer.h>
 
 namespace icl{
 
   struct ImageCompressor::Data{
-    RunLengthEncoder rle;
     std::vector<icl8u> encoded_buffer;
     Img8u decoded_buffer;
     CompressionMode mode;
@@ -105,35 +106,45 @@ namespace icl{
     return m_data->mode;
   }
 
-
+  static const icl8u *find_first_not_binarized(const icl8u *curr, const icl8u *end, icl8u val){
+    if(val){
+      for(;curr<end;++curr){
+        if(*curr < 127) return curr;
+      }
+    }else{
+      for(;curr<end;++curr){
+        if(*curr >= 127) return curr;
+      }
+    }
+    return end;
+  }
 
   static icl8u *compressChannel(const icl8u *imageData, 
                                 icl8u *compressedData, 
                                 const Size &imageSize, 
                                 const Rect &roi, 
-                                ImageCompressor::CompressionMode mode,
-                                RunLengthEncoder &rle){
-    
+                                ImageCompressor::CompressionMode mode){
     switch(mode){
       case ImageCompressor::CompressRLE1Bit:{
-
-        const Img8u image(imageSize, 1, std::vector<icl8u*>(1,const_cast<icl8u*>(imageData)));
-        rle.encode(&image);
-        int roiBottom = roi.bottom();
-        for(int y=roi.y;y<roiBottom;++y){
-          const WorkingLineSegment *l = rle.begin(y);
-          const WorkingLineSegment *e = rle.end(y);
-          for(;l<e;++l){
-            int len = l->len();
-            while(len > 128){
-              *compressedData++ = 0xff >> (!l->val);
-              len -= 128;
-            }if(len){
-              *compressedData++ = (len-1) | (!!l->val << 7);
-            }
-
+        BENCHMARK_THIS_SECTION("compress 1bit");
+        const icl8u *imageDataEnd = imageData+imageSize.getDim();
+        icl8u currVal = !!*imageData;
+        int allLen = 0;
+        while(imageData < imageDataEnd){
+          const icl8u *other = find_first_not_binarized(imageData,imageDataEnd,currVal); 
+          size_t len = (size_t)(other-imageData);
+          while(len >= 128){
+            *compressedData++ = 0xff >> !currVal;
+            len -= 128;
+            allLen += 128;
           }
-        }        
+          if(len){
+            *compressedData++ = (len-1) | (currVal << 7);
+            allLen += len;
+          }
+          currVal = !currVal;
+          imageData = other;
+        }
         break;
       }case ImageCompressor::NoCompression:{
          std::copy(imageData,imageData+imageSize.getDim(), compressedData);
@@ -307,7 +318,7 @@ namespace icl{
     p += meta.length();
     
     for(int c=0;c<image.getChannels();++c){
-      p = compressChannel(image.begin(c),p, image.getSize(),image.getImageRect(), m_data->mode, m_data->rle);
+      p = compressChannel(image.begin(c),p, image.getSize(),image.getImageRect(), m_data->mode);
     }
     
     float len = (float)(p-m_data->encoded_buffer.data());

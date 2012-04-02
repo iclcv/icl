@@ -21,12 +21,23 @@ message RSBImage {
       formatMatrix = 6;
     }
     required Format format   = 8;
-    required int64 time      = 9;
 
-    required string compressionMode = 10;
-    required string compressionQuality = 11;    
+
+    enum Depth {
+      depth8u = 0;
+      depth16s = 1;
+      depth32s = 2;
+      depth32f = 3;
+      depth64f = 4;
+    }    
+    required Depth depth     = 9;    
+
+    required int64 time      = 10;
+
+    required string compressionMode = 11;
+    required string compressionQuality = 12;    
     
-    required bytes data = 12;
+    required bytes data = 13;
 
-    optional string metadata = 13;
+    optional string metadata = 14;
 };

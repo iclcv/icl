@@ -124,7 +124,7 @@ add_libsource (${PROJECT_NAME} "src/PylonCameraOptions.cpp" "${CONDITIONLIST}" L
 add_libsource (${PROJECT_NAME} "src/PylonColorConverter.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/PylonUtils.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 set(CONDITIONLIST HAVE_RSB_COND HAVE_PROTOBUF_COND)
-add_libsource (${PROJECT_NAME} "src/RSBImage.pb.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+#add_libsource (${PROJECT_NAME} "src/RSBImage.pb.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/RSBImageOutput.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/RSBGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
@@ -189,6 +189,22 @@ add_example (${PROJECT_NAME} "video-player" "${CONDITIONLIST}" ICLLibsToLinkAgai
 set(CONDITIONLIST HAVE_GTEST_COND)
 set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}")
 #add_gtest (${PROJECT_NAME} "test-image.cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+
+if(UNIX AND HAVE_PROTOBUF_COND)
+  set(P ${CMAKE_SOURCE_DIR}/ICLIO/src/RSBImage.proto)
+  set(I ${CMAKE_SOURCE_DIR}/include/ICLIO/RSBImage.pb.h)
+  set(C ${CMAKE_SOURCE_DIR}/ICLIO/src/RSBImage.pb.cpp)
+  ADD_CUSTOM_COMMAND(OUTPUT ${C} ${I}
+    COMMAND protoc RSBImage.proto --cpp_out=.
+    && mv "./RSBImage.pb.h" ${I}
+    && mv "./RSBImage.pb.cc" ${C}
+    && sed -i 's|"RSBImage.pb.h"|<ICLIO/RSBImage.pb.h>|g' ${C}
+    DEPENDS ${P}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/ICLIO/src")
+  set_source_files_properties(${I} ${C} PROPERTIES GENERATED TRUE)
+  set(LIB_SOURCES "${LIB_SOURCES};${I};${C}")
+
+endif()
 
 #create lib
 if(WIN32)

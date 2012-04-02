@@ -145,16 +145,9 @@ namespace icl{
     out->set_roiw(image->getROIWidth());
     out->set_roih(image->getROIHeight());
 
-    switch(image->getFormat()){
-      case formatGray: out->set_format(RSBImage::formatGray); break;
-      case formatRGB: out->set_format(RSBImage::formatRGB); break;
-      case formatHLS: out->set_format(RSBImage::formatHLS); break;
-      case formatYUV: out->set_format(RSBImage::formatYUV); break;
-      case formatLAB: out->set_format(RSBImage::formatLAB); break;
-      case formatChroma: out->set_format(RSBImage::formatChroma); break;
-      case formatMatrix: out->set_format(RSBImage::formatMatrix); break;
-    }
-    
+    out->set_format((RSBImage::Format)image->getFormat());
+    out->set_depth((RSBImage::Depth)image->getDepth());
+
     // compression // set up in this class
     out->set_compressionmode(m_data->compressionType);
     out->set_compressionquality(m_data->compressionQuality);

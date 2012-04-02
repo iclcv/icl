@@ -71,6 +71,7 @@ namespace icl{
     std::string receivedCompressionMode;
 
     int lastImageDataSize;
+    float lastCompressionRatio;
     
     void sendUpdateToSource(){
       shared_ptr<std::string> cmd;
@@ -95,6 +96,10 @@ namespace icl{
       virtual void notify(shared_ptr<RSBImage> image){
         data->update(*image);
         data->lastImageDataSize = image->data().length();
+        
+        float realImageSize = image->width() * image->height() * image->channels() * getSizeOf((depth)image->depth());
+        float r = float(data->lastImageDataSize) / realImageSize;
+        data->lastCompressionRatio = float((int)(r*10000))/100;
       }
     };
     shared_ptr<rsb::Handler> handler;
@@ -158,6 +163,7 @@ namespace icl{
     m_data->receivedCompressionMode = "off";
 
     m_data->lastImageDataSize = 0;
+    m_data->lastCompressionRatio = 0;
   }
   
   RSBGrabberImpl::~RSBGrabberImpl(){
@@ -213,12 +219,12 @@ namespace icl{
   }
 
   int RSBGrabberImpl::isVolatile(const std::string &name){
-    return name == "image data size" ? 100 : 0;
+    return ((name == "image data size") || (name == "compression ratio")) ? 100 : 0;
   }
 
   
   std::vector<std::string> RSBGrabberImpl::getPropertyList(){
-    static std::vector<std::string> ps = tok("compression-type,RLE-quality,JPEG-quality,image data size",",");
+    static std::vector<std::string> ps = tok("compression-type,RLE-quality,JPEG-quality,image data size,compression ratio",",");
     return ps;
   }
     
@@ -230,7 +236,7 @@ namespace icl{
       return "menu";
     }else if(name == "JPEG-quality"){
       return "range";
-    }else if(name == "image data size"){
+    }else if(name == "image data size" || name == "compression ratio"){
       return "info";
     }else{
       ERROR_LOG("invalid property: " << name);
@@ -246,8 +252,8 @@ namespace icl{
     }else if(property == "RLE-quality"){
       return "{\"1 Bit\",\"4 Bit\",\"6 Bit\"}";
     }else if(property == "JPEG-quality"){
-      return "[1,100]";
-    }else if(property == "image data size"){
+      return "[1,100]:1";
+    }else if(property == "image data size" || property == "compression ratio"){
       return "";
     }else{
       ERROR_LOG("invalid property: " << property);
@@ -265,6 +271,8 @@ namespace icl{
       return str(m_data->receivedJPEGQuality);
     }else if(property == "image data size"){
       return str(m_data->lastImageDataSize);
+    }else if(property == "compression ratio"){
+      return str(m_data->lastCompressionRatio) + "%";
     }else{
       ERROR_LOG("invalid property: " << property);
     }
