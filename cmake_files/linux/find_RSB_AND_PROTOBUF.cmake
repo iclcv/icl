@@ -12,9 +12,9 @@ else()
 endif()
 
 if(HAVE_PROTOBUF_COND)
-  message(STATIS "PROTOBUF detected: TRUE")
+  message(STATUS "PROTOBUF detected: TRUE")
 else()
-  message(STATIS "PROTOBUF detected: FALSE")
+  message(STATUS "PROTOBUF detected: FALSE")
 endif()
 
 
