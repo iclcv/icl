@@ -260,8 +260,6 @@ namespace icl{
 
     m_data->encoded.bytes = m_data->dataBuffer.data();
     m_data->encoded.len = bytesWritten;
-    SHOW(m_data->dataBuffer.size());
-    SHOW(bytesWritten);
     return m_data->encoded;
 
   }

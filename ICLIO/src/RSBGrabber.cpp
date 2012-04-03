@@ -94,7 +94,7 @@ namespace icl{
       RSBGrabberImpl *impl;
       Handler(RSBGrabberImpl::Data *data, RSBGrabberImpl *impl):data(data),impl(impl){}
       virtual void notify(shared_ptr<RSBImage> image){
-        data->update(*image);
+        data->update(*image,impl);
         data->lastImageDataSize = image->data().length();
         
         float realImageSize = image->width() * image->height() * image->channels() * getSizeOf((depth)image->depth());
@@ -104,7 +104,7 @@ namespace icl{
     };
     shared_ptr<rsb::Handler> handler;
     
-    void update(RSBImage &image){
+    void update(RSBImage &image, RSBGrabberImpl *impl){
       Mutex::Locker lock(mutex); // "reentrant-ness" and external access
       const std::string &data = image.data();
       const std::string &mode = image.compressionmode();
@@ -126,6 +126,12 @@ namespace icl{
         bufferImage->setTime(image.time());
         bufferImage->setROI(Rect(image.roix(),image.roiy(), image.roiw(), image.roih()));
         hasNewImage = true;
+      }
+      
+      if(image.has_metadata()){
+        impl->newDataAvailable(bufferImage,image.metadata());
+      }else{
+        impl->newDataAvailable(bufferImage,"");
       }
     }
   };

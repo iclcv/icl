@@ -41,8 +41,6 @@
 #include <ICLBlob/RegionDetectorTools.h>
 #include <ICLIO/File.h>
 
-#include <ICLUtils/StackTimer.h>
-
 namespace icl{
 
   struct ImageCompressor::Data{
@@ -126,7 +124,6 @@ namespace icl{
                                 ImageCompressor::CompressionMode mode){
     switch(mode){
       case ImageCompressor::CompressRLE1Bit:{
-        BENCHMARK_THIS_SECTION("compress 1bit");
         const icl8u *imageDataEnd = imageData+imageSize.getDim();
         icl8u currVal = !!*imageData;
         int allLen = 0;

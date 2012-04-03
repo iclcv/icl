@@ -130,12 +130,33 @@ namespace icl{
     
   void RSBImageOutput::send(const ImgBase *image){
     Mutex::Locker lock(m_data->mutex);
+    Informer<RSBImage>::DataPtr &out = m_data->out;
+    
+    if(!image){
+      // if the image is null, only the meta data is sent
+      const std::string *meta = getMetaData();
+      if(meta) out->set_metadata(*meta);
+      else out->set_metadata("");
+      out->set_width(0);
+      out->set_height(0);
+      out->set_channels(0);
+      out->set_time(0);
+      out->set_roix(0);
+      out->set_roiy(0);
+      out->set_roiw(0);
+      out->set_roih(0);
+      out->set_format(RSBImage::formatMatrix);
+      out->set_depth(RSBImage::depth8u);
+      out->set_compressionmode("off");
+      out->set_compressionquality(0);
+      m_data->informer->publish(out);
+      return;
+    }
+    
     ICLASSERT_RETURN(!isNull());
     ICLASSERT_RETURN(image->getDim() > 0);
     ICLASSERT_RETURN(image->getChannels() > 0);
 
-    Informer<RSBImage>::DataPtr &out = m_data->out;
-    
     out->set_width(image->getWidth());
     out->set_height(image->getHeight());
     out->set_channels(image->getChannels());
@@ -147,6 +168,12 @@ namespace icl{
 
     out->set_format((RSBImage::Format)image->getFormat());
     out->set_depth((RSBImage::Depth)image->getDepth());
+    const std::string *meta = getMetaData();
+    if(meta){
+      out->set_metadata(*meta);
+    }else{
+      out->set_metadata("");
+    }
 
     // compression // set up in this class
     out->set_compressionmode(m_data->compressionType);

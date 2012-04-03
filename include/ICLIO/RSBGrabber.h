@@ -49,6 +49,13 @@ namespace icl{
     struct Data;  //!< pimpl type
     Data *m_data; //!< pimpl pointer
     
+    protected:
+    /// this can be re-implemented in sub-classes to achieve a callback based handling
+    virtual void newDataAvailable(const ImgBase *image, const std::string &metadata){
+      (void)image;
+      (void)metadata;
+    }
+    
     public:
     
     /// empty constructor (creates a null instance)

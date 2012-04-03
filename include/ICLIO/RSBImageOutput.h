@@ -47,6 +47,13 @@ namespace icl{
     struct Data;  //!< pimpl type
     Data *m_data; //!< pimpl pointer
     
+    protected:
+    /// this can be overwritten in subclasses, that also provide an interface for sending meta-data
+    /** This classes send-method will always 'ask' getMetaData() whether there is extra data that
+        has to be attached to the image. Note, that the RSBGrabber (and also the GenericGrabber)
+        does not have an interface for accessing meta data. Use the RSBDataReceiver instead  */
+    virtual const std::string *getMetaData() { return 0; }
+
     public:
     /// creates a null instance
     RSBImageOutput();
