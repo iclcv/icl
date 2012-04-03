@@ -53,6 +53,7 @@ add_libsource (${PROJECT_NAME} "src/RegionPCAInfo.cpp" "${CONDITIONLIST}" LIB_SO
 add_libsource (${PROJECT_NAME} "src/VQ2D.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/SimpleBlobSearcher.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/MeanShiftTracker.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/FloodFiller.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME})
@@ -67,7 +68,7 @@ add_example (${PROJECT_NAME} "simple-blob-searcher-test" "${CONDITIONLIST}" ICLL
 add_example (${PROJECT_NAME} "mean-shift-online-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "corner-detection-css-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "online-region-detection-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-
+add_example (${PROJECT_NAME} "flood-filler-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "region-based-blob-finder-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "region-detector-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 

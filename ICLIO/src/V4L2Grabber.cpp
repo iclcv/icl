@@ -52,6 +52,7 @@
 #include <ICLIO/FileList.h>
 #include <ICLIO/ColorFormatDecoder.h>
 #include <ICLIO/V4L2Grabber.h>
+#include <ICLIO/File.h>
 
 
 
@@ -102,8 +103,17 @@ namespace icl{
       
       // note, \b is the word boundary special character (while $ is a line end which does not work so well here)
       if(deviceName.length() == 1 && match(deviceName,"^[0-9]\\b")){
-        this->deviceName = "/dev/video/"+deviceName; 
-        std::cout << "V4L2Grabber added device prefix '/dev/video/' automatically" << std::endl;
+        if(File("/dev/video/"+deviceName).exists()){
+          this->deviceName = "/dev/video/"+deviceName; 
+          std::cout << "V4L2Grabber added device prefix '/dev/video/' automatically" << std::endl;
+        }else if(File("/dev/video"+deviceName).exists()){
+          this->deviceName = "/dev/video"+deviceName; 
+          std::cout << "V4L2Grabber added device prefix '/dev/video' automatically" << std::endl;
+        }else{
+          throw ICLException("V4L2Grabber initialization unable to find video device (given device ID: "
+                             +deviceName + ", tried /dev/video and /dev/video/ prefix, but both files"
+                             +" were not found");
+        }
       }
 
       open_device();
