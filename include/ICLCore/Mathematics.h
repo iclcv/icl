@@ -151,7 +151,7 @@ namespace icl {
       ++begin;
       num++;
     }
-    return d/(empiricMean&&num>1 ? num - 1 : num); 
+    return sum/(empiricMean&&num>1 ? num - 1 : num); 
   }
 
   /// Compute the variance of a given data range \ingroup MATH
