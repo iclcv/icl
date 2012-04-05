@@ -1,7 +1,7 @@
 /********************************************************************
 **                Image Component Library (ICL)                    **
 **                                                                 **
-** Copyright (C) 2006-2010 CITEC, University of Bielefeld          **
+** Copyright (C) 2006-2012 CITEC, University of Bielefeld          **
 **                         Neuroinformatics Group                  **
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
@@ -219,7 +219,7 @@ namespace icl{
           
           str << "\tPart of the Image Component Library (ICL)" << std::endl
               << "\tICL Version " << VERSION << std::endl
-              << "\tCopyright (C) 2006-2010 CITEC, University of Bielefeld" << std::endl
+              << "\tCopyright (C) 2006-2012 CITEC, University of Bielefeld" << std::endl
               << "\t                        Neuroinformatics Group" << std::endl
               << "\tContact: nivision@techfak.uni-bielefeld.de" << std::endl
               << "\tWebsite: www.iclcv.org and" << std::endl
