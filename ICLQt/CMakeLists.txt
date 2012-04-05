@@ -138,52 +138,24 @@ SET(HWQ_Qt4_SRC
 )
 
 
-#elseif(APPLE)
-
-#old code
-#QT4_WRAP_CPP(HWQ_MOC_CPP ${HWQ_Qt4_SRC})
-#SET( HWQ_SRC ${LIB_SOURCES} ${HWQ_MOC_CPP})
-
-#else()
-#pkg-config --variable moc_location QtCore /usr/bin/moc-qt4
-set(moc_found "")
-set(moc_path_ex "")
-set(QT_MOC_EXECUTABLE "")#${ICL_XDEP_QT_PATH}/bin/moc)
-execute_process(
-   COMMAND pkg-config --variable moc_location QtCore 
-   OUTPUT_VARIABLE QT_MOC_EXECUTABLE
-   RESULT_VARIABLE moc_found)
-string(STRIP "${QT_MOC_EXECUTABLE}" QT_MOC_EXECUTABLE)
-if(APPLE)
-set(QT_MOC_EXECUTABLE "/usr/bin/moc")
-endif()
-if(WIN32)
-set(QT_MOC_EXECUTABLE "${ICL_XDEP_QT_PATH}/bin/moc.exe")
-endif()
-#message(STATUS "moc_exe:${QT_MOC_EXECUTABLE}")
-
-#set(HWQ_SRC ${LIB_SOURCES})
 
 
-if(NOT ${QT_MOC_EXECUTABLE} STREQUAL "")
-message(STATUS "moc_exe:${QT_MOC_EXECUTABLE}")
-# QT4_GET_MOC_FLAGS(moc_flags)
-SET(_moc_flags "")
-  GET_DIRECTORY_PROPERTY(_inc_DIRS INCLUDE_DIRECTORIES)
-	set(framework_path ${QT_INCLUDE_PATH})
-  FOREACH(_current ${_inc_DIRS})
-    IF("${_current}" MATCHES ".framework/?$")
-      STRING(REGEX REPLACE "/[^/]+.framework" "" framework_path "${_current}")
-      SET(_moc_flags ${_moc_flags} "-F${framework_path}")
-    ELSE("${_current}" MATCHES ".framework/?$")
-      SET(_moc_flags ${_moc_flags} "-I${_current}")
-    ENDIF()
-  ENDFOREACH(_current ${_inc_DIRS})
+set(_moc_flags "")
+get_directory_property(_inc_DIRS INCLUDE_DIRECTORIES)
+set(framework_path ${QT_INCLUDE_PATH})
+foreach(_current ${_inc_DIRS})
+  if("${_current}" MATCHES ".framework/?$")
+    string(REGEX REPLACE "/[^/]+.framework" "" framework_path "${_current}")
+    set(_moc_flags ${_moc_flags} "-F${framework_path}")
+  else("${_current}" MATCHES ".framework/?$")
+    set(_moc_flags ${_moc_flags} "-I${_current}")
+  endif()
+endforeach()
 
-  GET_DIRECTORY_PROPERTY(_defines COMPILE_DEFINITIONS)
-  FOREACH(_current ${_defines})
-    SET(_moc_flags ${_moc_flags} "-D${_current}")
-  ENDFOREACH(_current ${_defines})
+get_directory_property(_defines COMPILE_DEFINITIONS)
+foreach(_current ${_defines})
+  set(_moc_flags ${_moc_flags} "-D${_current}")
+endforeach(_current ${_defines})
 
 set(outfiles "")
 set(moc_options "")
@@ -201,7 +173,6 @@ foreach(it ${moc_files})
                       DEPENDS ${it})
   set(outfiles ${outfiles} ${outfile})	
 endforeach()
-endif()
 set(HWQ_SRC ${LIB_SOURCES} ${outfiles})
 #endif()
 
