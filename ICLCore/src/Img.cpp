@@ -1917,12 +1917,20 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
         }
       }
       // bottom
+      //      if(roi.bottom()<im.bottom()){
+      //  srcOffs.y = roi.bottom();
+      //  for(Point p(srcOffs.x,roi.bottom()+1);p.y<im.height;p.y++){
+      //    deepCopyChannelROI(this,c, srcOffs, srcDstSize, this,c,p,srcDstSize);
+      //  }
+      //}
+      // bottom
       if(roi.bottom()<im.bottom()){
-        srcOffs.y = roi.bottom();
-        for(Point p(srcOffs.x,roi.bottom()+1);p.y<im.height;p.y++){
-          deepCopyChannelROI(this,c, srcOffs, srcDstSize, this,c,p,srcDstSize);
+        srcOffs.y = roi.bottom()-1;
+        for(Point p(srcOffs.x,roi.bottom());p.y<im.height;p.y++){
+          deepCopyChannelROI(this,c, srcOffs, srcDstSize,this,c,p,srcDstSize);
         }
       }
+      
     }
     if(setFullROI) this->setFullROI();
   }
