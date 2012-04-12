@@ -40,9 +40,22 @@
 #include <ICLCore/ImgBase.h>
 #include <ICLCore/Img.h>
 #include <ICLUtils/Mutex.h>
+#include <ICLIO/PylonUtils.h>
+#include <ICLCC/BayerConverter.h>
 
 namespace icl {
   namespace pylon {
+
+    /// Pure virtual interface for color converters  \ingroup GIGE_G
+    class ColorConverter{
+      public:
+        /// Virtual destructor
+        virtual ~ColorConverter() {}
+        /// initializes buffers in b as needed for color conversion.
+        virtual void initBuffers(ConvBuffers* b) = 0;
+        /// writes image from imgBuffer to b using appropriate conversion.
+        virtual void convert(const void *imgBuffer, ConvBuffers* b) = 0;
+    };
 
     /// This is the color-conversion-class for Pylon images \ingroup GIGE_G
     class PylonColorConverter {
@@ -53,59 +66,26 @@ namespace icl {
       ~PylonColorConverter();
 
       /// makes the conversion adapt to the passed properties on next convert.
-      void resetConversion(int width, int height, Pylon::PixelType pixel_type,
-                           int pixel_size_bits, long buffer_size);
+      void resetConversion(int width, int height, int pixel_size_bits,
+                           long buffer_size, Pylon::PixelType pixel_type,
+                           std::string pixel_type_name);
       /// Converts pImageBuffer into an internal ImageBase.
       /**
       * @return a pointer to the converted image.
       */
-      icl::ImgBase* convert(const void *pImageBuffer);
+      icl::ImgBase* convert(const void *imgBuffer, ConvBuffers* b);
 
       private:
-      /// image height
-      int m_Height;
-      /// image width
-      int m_Width;
-      /// input image pixel type
-      Pylon::PixelType m_PixelType;
-      /// input image pixel size (bit)
-      int m_PixelSize;
-      /// input image buffer size
-      int m_BufferSize;
       /// A mutex lock for concurrency.
       Mutex m_Mutex;
-
-      /// To this ImageBase the converted image is written.
-      icl::ImgBase* m_Image;
-      /// Buffer für color conversion
-      icl8u* m_ImageBuff;
-      /// Buffer für 16 bit mono copy conversion
-      icl16s* m_ImageBuff16;
-      /// Buffer for interlieved-to-planar conversion
-      icl::Img8u* m_ImageRGBA;
-      /// Vector for channels
-      std::vector<icl8u*>* m_Channels;
-      /// Vector for 16bit mono-channel
-      std::vector<icl16s*>* m_Channels16;
-
-      /// Pylon color format converter
-      Pylon::CPixelFormatConverter* m_ColorConverter;
-      Pylon::SImageFormat* m_InputFormat;
-      Pylon::SOutputImageFormat* m_OutputFormat;
-
-      /// Used to determine wether (and to what) to convert an image.
-      enum convert_to {
-        yes_rgba,
-        no_rgb_packed,
-        yes_mono8u,
-        no_mono8u,
-        no_mono16,
-        undefined = -1
-      };
-      /// indicates whether the current colorformat needs conversion.
-      convert_to m_Convert;
-      /// indicates whether conversion should be reinitialized.
-      bool m_Reset;
+      /// A pointer to the currently used converter.
+      ColorConverter* m_Converter;
+      /// field for error message
+      /**
+         when no appropriate color conversion could be found, an error message
+         is saved here and printed on every call to convert.
+      **/
+      std::string m_ErrorMessage;
 
       /// used to free all allocated resources
       void freeAll();
@@ -119,6 +99,153 @@ namespace icl {
       void setConversionRGBPacked();
       /// makes all settings for the conv. of grayscale images.
       void setConversionMono();
+    };
+
+    /// This ColorConverter is used for pylon-mono8u to icl-mono8u conversion.
+    class Mono8uToMono8u : public ColorConverter{
+      public:
+        /// Constructor initializes conversion
+        Mono8uToMono8u(int width, int height);
+        /// initializes buffers in b as needed for color conversion.
+        void initBuffers(ConvBuffers* b);
+        /// writes image from imgBuffer to b using appropriate conversion.
+        void convert(const void *imgBuffer, ConvBuffers* b);
+      private:
+        int m_Width;
+        int m_Height;
+    };
+
+    /// This ColorConverter is used for pylon-mono16s to icl-mono16s conversion.
+    class Mono16sToMono16s : public ColorConverter{
+      public:
+        /// Constructor initializes conversion
+        Mono16sToMono16s(int width, int height);
+        /// initializes buffers in b as needed for color conversion.
+        void initBuffers(ConvBuffers* b);
+        /// writes image from imgBuffer to b using appropriate conversion.
+        void convert(const void *imgBuffer, ConvBuffers* b);
+      private:
+        int m_Width;
+        int m_Height;
+    };
+
+    /// This ColorConverter is used for other pylon-mono to icl-mono8u conversion.
+    class MonoToMono8u : public ColorConverter{
+      public:
+        /// Constructor initializes conversion
+        MonoToMono8u(int width, int height, Pylon::PixelType pixel_type,
+                     int pixel_size_bits, long buffer_size);
+        /// frees allocated ressources
+        ~MonoToMono8u();
+        /// initializes buffers in b as needed for color conversion.
+        void initBuffers(ConvBuffers* b);
+        /// writes image from imgBuffer to b using appropriate conversion.
+        void convert(const void *imgBuffer, ConvBuffers* b);
+      private:
+        int m_Width;
+        int m_Height;
+        Pylon::PixelType m_PixelType;
+        int m_PixelSize;
+        long m_BufferSize;
+        /// Pylon color format converter
+        Pylon::CPixelFormatConverter* m_ColorConverter;
+        /// Pylon color format converter input format
+        Pylon::SImageFormat* m_InputFormat;
+        /// Pylon color format converter output format
+        Pylon::SOutputImageFormat* m_OutputFormat;
+    };
+
+    /// This ColorConverter is used for pylon-rgb to icl-rgb conversion.
+    /** This color type is only used by pylon camera-emulation **/
+    class Rgb8uToRgb8u : public ColorConverter{
+      public:
+        /// Constructor initializes conversion
+        Rgb8uToRgb8u(int width, int height);
+        /// initializes buffers in b as needed for color conversion.
+        void initBuffers(ConvBuffers* b);
+        /// writes image from imgBuffer to b using appropriate conversion.
+        void convert(const void *imgBuffer, ConvBuffers* b);
+      private:
+        int m_Width;
+        int m_Height;
+    };
+
+    /// This ColorConverter is used for pylon-bayer/yuv to icl-rgb conversion.
+    class PylonColorToRgb : public ColorConverter{
+      public:
+        /// Constructor initializes conversion
+        PylonColorToRgb(int width, int height, Pylon::PixelType pixel_type,
+                     int pixel_size_bits, long buffer_size);
+        /// frees allocated ressources
+        ~PylonColorToRgb();
+        /// initializes buffers in b as needed for color conversion.
+        void initBuffers(ConvBuffers* b);
+        /// writes image from imgBuffer to b using appropriate conversion.
+        void convert(const void *imgBuffer, ConvBuffers* b);
+      private:
+        int m_Width;
+        int m_Height;
+        Pylon::PixelType m_PixelType;
+        int m_PixelSize;
+        long m_BufferSize;
+        /// Pylon color format converter
+        Pylon::CPixelFormatConverter* m_ColorConverter;
+        /// Pylon color format converter input format
+        Pylon::SImageFormat* m_InputFormat;
+        /// Pylon color format converter output format
+        Pylon::SOutputImageFormat* m_OutputFormat;
+    };
+
+    /// This ColorConverter uses the icl Yuv422 to Rgb conversion.
+    class Yuv422ToRgb8Icl : public ColorConverter{
+      public:
+        /// Constructor initializes conversion
+        Yuv422ToRgb8Icl(int width, int height);
+        /// frees allocated ressources
+        ~Yuv422ToRgb8Icl();
+        /// initializes buffers in b as needed for color conversion.
+        void initBuffers(ConvBuffers* b);
+        /// writes image from imgBuffer to b using appropriate conversion.
+        void convert(const void *imgBuffer, ConvBuffers* b);
+      private:
+        Size m_Size;
+        icl8u* m_ConvBuffer;
+    };
+
+    /// This ColorConverter uses the icl Yuv422YUYV to Rgb conversion.
+    class Yuv422YUYVToRgb8Icl : public ColorConverter{
+      public:
+        /// Constructor initializes conversion
+        Yuv422YUYVToRgb8Icl(int width, int height);
+        /// frees allocated ressources
+        ~Yuv422YUYVToRgb8Icl();
+        /// initializes buffers in b as needed for color conversion.
+        void initBuffers(ConvBuffers* b);
+        /// writes image from imgBuffer to b using appropriate conversion.
+        void convert(const void *imgBuffer, ConvBuffers* b);
+      private:
+        Size m_Size;
+        icl8u* m_ConvBuffer;
+    };
+
+    /// This ColorConverter uses the icl Bayer to Rgb conversion.
+    class BayerToRgb8Icl : public ColorConverter{
+      public:
+        /// Constructor initializes conversion
+        BayerToRgb8Icl(BayerConverter::bayerConverterMethod method,
+                       BayerConverter::bayerPattern pattern,
+                       Size s);
+        /// frees allocated ressources
+        ~BayerToRgb8Icl();
+        /// initializes buffers in b as needed for color conversion.
+        void initBuffers(ConvBuffers* b);
+        /// writes image from imgBuffer to b using appropriate conversion.
+        void convert(const void *imgBuffer, ConvBuffers* b);
+      private:
+        BayerConverter m_Conv;
+        std::vector<icl8u*> m_Channels;
+        Size m_Size;
+        int m_Dim;
     };
 
   } //namespace

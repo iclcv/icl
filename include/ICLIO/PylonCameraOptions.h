@@ -90,6 +90,8 @@ namespace icl {
         std::string getFormatString();
         /// whether double frames should be omitted.
         bool omitDoubleFrames();
+        /// getter for the current expected framerate
+        double getResultingFrameRateAbs();
 
       private:
         /// the Interruptable that provides interruption for the camera.

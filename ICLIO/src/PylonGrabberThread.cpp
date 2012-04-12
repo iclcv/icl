@@ -35,16 +35,22 @@
 #include <pylon/PylonIncludes.h>
 
 #include <ICLIO/PylonGrabberThread.h>
+#include <ICLUtils/Time.h>
+
+int iter = 0;
 
 using namespace icl;
 using namespace icl::pylon;
 
-PylonGrabberThread::PylonGrabberThread(
-Pylon::IStreamGrabber* grabber, int bufferSize) :
-m_Grabber(grabber), m_Buffers(bufferSize), m_Error(0), m_Timeout(0),
-    m_Acquired(0)
+// Constructor sets all internal fields and allocates memory
+PylonGrabberThread::PylonGrabberThread(Pylon::IStreamGrabber* grabber,
+                                PylonColorConverter* converter,
+                                PylonCameraOptions* options) :
+m_Grabber(grabber), m_Buffers(),
+    m_Error(0), m_Timeout(0), m_Acquired(0), m_ResultingFramerate(0.0)
 {  
-  // nothing to do.
+  m_Converter = converter;
+  m_Options = options;
 }
 
 PylonGrabberThread::~PylonGrabberThread(){
@@ -53,10 +59,8 @@ PylonGrabberThread::~PylonGrabberThread(){
             << " timesouts: " << m_Timeout)
 }
 
-void PylonGrabberThread::resetBuffer(int bufferSize){
-  FUNCTION_LOG("Reset Buffer " << bufferSize)
-  // reset buffer size
-  m_Buffers.reset(bufferSize);
+void PylonGrabberThread::resetBuffer(){
+  m_Buffers.setReset();
 }
 
 void PylonGrabberThread::run(){
@@ -64,7 +68,11 @@ void PylonGrabberThread::run(){
   while(1){
     msleep(1);
     // locking thread
-    if(trylock()) continue;
+    if(trylock()) {
+
+      std::cout << "\nthreadlock returned error\n" << std::endl;
+      continue;
+    }
     //thread locked grab image.
     grab();
     // allow thread-stop.
@@ -73,8 +81,12 @@ void PylonGrabberThread::run(){
 }
 
 void PylonGrabberThread::grab(){
+  if(m_ResultingFramerate == 0.0){
+  msleep(2000);
+  }
+  Time t = Time::now();
   // Wait for the grabbed image with timeout of 2 seconds
-  if (!m_Grabber -> GetWaitObject().Wait(2000)){
+  if (!m_Grabber -> GetWaitObject().Wait(1000)){
     // Timeout
     DEBUG_LOG("Timeout occurred!")
     ++m_Timeout;
@@ -89,24 +101,46 @@ void PylonGrabberThread::grab(){
       return;
   }
   if (result.Succeeded()){
+    //std::cout << "waited for buffer: " << t.age() << std::endl;
     ++m_Acquired;
-    // Grabbing was successful, save the buffer content to queue
-    TsBuffer<int16_t>* write = m_Buffers.getNextBuffer();
-    write -> copy(result.Buffer());
-    write -> m_Timestamp = result.GetTimeStamp();
+    // Grabbing was successful, convert and save
+    ConvBuffers* write = m_Buffers.getNextWriteBuffer();
+    //Time ct = Time::now();
+    m_Converter -> convert(result.Buffer(), write);
+    //++iter;
+    //std::cout << iter << "\t" << ct.age() << std::endl;
+    if(result.GetTimeStamp()){
+      write -> m_Image -> setTime(result.GetTimeStamp());
+    } else {
+      write -> m_Image -> setTime();
+    }
     // Reuse buffer for grabbing the next image
     m_Grabber -> QueueBuffer(result.Handle(), NULL);
   } else {
     ++m_Error;
     // Error handling
-    DEBUG_LOG("No image acquired!" << "Error description : "
-    << result.GetErrorDescription())
+    std::cout << "No image acquired! (waited " << t.age() << ")"
+    << "Error description : " << result.GetErrorDescription() << std::endl;
+
     // Reuse the buffer for grabbing the next image
     m_Grabber -> QueueBuffer(result.Handle(), NULL);
+    // make grabber reset framerate.
+    m_ResultingFramerate = 0.0;
+  }
+  if(m_ResultingFramerate == 0.0){
+    m_ResultingFramerate = m_Options -> getResultingFrameRateAbs();
+    //DEBUG_LOG("FramerateAbs updated to: " << m_ResultingFramerate)
+  }
+
+  double looptime = 1000.0 / m_ResultingFramerate;
+  double sleeptime = looptime - (t.age()).toMilliSecondsDouble();
+  if(sleeptime > 0) {
+    //std::cout << "age ~ " << t.age().toMilliSecondsDouble() << " sleeping: " << sleeptime << "(" << (int) (sleeptime + 1.0)<< ")" << " looptime: " << looptime << std::endl;
+    msleep((int) (sleeptime + 1));
   }
 }
 
-TsBuffer<int16_t>* PylonGrabberThread::getCurrentImage(){
+ImgBase* PylonGrabberThread::getCurrentImage(){
   // just return the buffered readimage.
-  return m_Buffers.getNextImage();
+  return m_Buffers.getNextReadBuffer() -> m_Image;
 }

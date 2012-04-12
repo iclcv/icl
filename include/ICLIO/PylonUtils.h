@@ -39,6 +39,8 @@
 #include <ICLUtils/Mutex.h>
 #include <ICLUtils/Exception.h>
 #include <ICLCore/CoreFunctions.h>
+#include <ICLCore/ImgBase.h>
+#include <ICLCore/Img.h>
 
 namespace icl {
   namespace pylon {
@@ -105,43 +107,72 @@ namespace icl {
         }
     };
 
-    /// This is used for concurrent writing and reading of TsBuffers.
+    /// This class holds all buffers needed for ColorConversion
+    class ConvBuffers {
+      public:
+        /// Constructor sets all pointers to NULL
+        ConvBuffers();
+        /// calls free
+        ~ConvBuffers();
+        /// deletes Objects pointed at, when pointer != NULL
+        void free();
+        /// To this ImageBase the converted image is written.
+        icl::ImgBase* m_Image;
+        /// Buffer für color conversion
+        icl8u* m_ImageBuff;
+        /// Buffer für 16 bit mono copy
+        icl16s* m_ImageBuff16;
+        /// Buffer for interlieved-to-planar conversion
+        icl::Img8u* m_ImageRGBA;
+        /// Vector for channels
+        std::vector<icl8u*>* m_Channels;
+        /// Vector for 16bit mono-channel
+        std::vector<icl16s*>* m_Channels16;
+        /// boolean showing whether this buffers need a reset
+        bool m_Reset;
+    };
+
+    /// This is used for concurrent writing and reading of ConvBuffers
     /**
-        This class holds three TsBuffers of which one is the currently
-        read and the other two are alternately written to.
+        This class holds three pointers to ConvBuffers of which one is the
+        currently read and the other two are alternately written to.
     **/
     class ConcGrabberBuffer {
       public:
         /// Constructor creates and initializes resources.
-        ConcGrabberBuffer(int bufferSize=0);
+        ConcGrabberBuffer();
         /// Destructor frees allocated memory.
         ~ConcGrabberBuffer();
-        /// returns a pointer to the most recent actualized buffer.
+
+        /// returns a pointer to the most recent actualized ConvBuffers.
         /**
-            the buffer will then be marked and not overwritten till the
+            ConvBuffers will then be marked and not overwritten till the
+            next call to getNextImage()
         **/
-        TsBuffer<int16_t>* getNextImage();
-        /// returns a pointer to the next write buffer
+        ConvBuffers* getNextReadBuffer();
+        /// returns a pointer to the next write ConvBuffers.
         /**
-            sets the returned buffer as current write buffer and marks
-            the old write buffer as new.
+            sets the returned ConvBuffers as current writeable and marks
+            the old writeable as new.
         **/
-        TsBuffer<int16_t>* getNextBuffer();
-        /// frees allocated memory and reinitializes Buffers to bufferSize.
-        void reset(int bufferSize);
+        ConvBuffers* getNextWriteBuffer();
+        /// mark ConvBuffers to be reset on next write-access.
+        void setReset();
+        /// tells whether a new ConvBuffers is available
+        bool newAvailable();
 
       private:
-        /// internal Buffers which alternately are read and written.
-        TsBuffer<int16_t>*  m_Buffers[3];
-        /// the Mutex is used for concurrent reading and writing of the queue.
+        /// current objects which alternately are read and written.
+        ConvBuffers*  m_Buffers[3];
+        /// the Mutex is used for concurrent reading and writing.
         Mutex m_Mutex;
-        /// The buffer currently written to.
+        /// The object currently written to.
         int m_Write;
-        /// The write buffer currently not written to.
+        /// The write object currently not written to.
         int m_Next;
-        /// The buffer currently read from.
+        /// The object currently read from.
         int m_Read;
-        /// tells whether a new buffer is available.
+        /// tells whether an actualized object was written.
         bool m_Avail;
     };
 

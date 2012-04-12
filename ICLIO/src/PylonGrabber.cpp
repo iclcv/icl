@@ -37,10 +37,11 @@
 #include <ICLCore/Img.h>
 #include <ICLIO/PylonGrabber.h>
 #include <ICLUtils/Macros.h>
-#include <ICLUtils/Time.h>
 
 using namespace icl;
 using namespace icl::pylon;
+
+//#define SPEED_TEST
 
 // Constructor of PylonGrabberImpl
 PylonGrabberImpl::PylonGrabberImpl(
@@ -69,7 +70,8 @@ PylonGrabberImpl::PylonGrabberImpl(
 
   m_CameraOptions = new PylonCameraOptions(m_Camera, this);
   m_ColorConverter = new PylonColorConverter();
-  m_GrabberThread = new PylonGrabberThread(m_Grabber);
+  m_GrabberThread = new PylonGrabberThread(
+                            m_Grabber, m_ColorConverter, m_CameraOptions);
   // prepare grabbing
   grabbingStart();
   // Let the camera acquire images
@@ -126,13 +128,14 @@ void PylonGrabberImpl::grabbingStart(){
     // Put buffer into the grab queue for grabbing
     m_Grabber -> QueueBuffer(handle);
   }
-  m_GrabberThread -> resetBuffer(imageSize);
+  m_GrabberThread -> resetBuffer();
   m_ColorConverter -> resetConversion(
               m_CameraOptions -> getWidth(),
               m_CameraOptions -> getHeight(),
-              m_CameraOptions -> getCameraPixelType(),
               m_CameraOptions -> getCameraPixelSize(),
-              m_CameraOptions -> getNeededBufferSize()
+              m_CameraOptions -> getNeededBufferSize(),
+              m_CameraOptions -> getCameraPixelType(),
+              m_CameraOptions -> getFormatString()
               );
 }
 
@@ -183,39 +186,105 @@ void PylonGrabberImpl::cameraDefaultSettings(){
     (m_Camera, "GevSCPSPacketSize", 8000);
 }
 
-const icl::ImgBase* PylonGrabberImpl::acquireImage(){
-  //Time s = Time::now();
-  //DEBUG_LOG("start: " << s.age())
-  TsBuffer<int16_t>* tmp = NULL;
-  if(m_CameraOptions-> omitDoubleFrames()){
-    while(1){
-      // lock image lock so buffers are safe till release.
-      m_ImgMutex.lock();
-      // Get the grab result from the grabber thread
-      tmp = m_GrabberThread -> getCurrentImage();
-      if(tmp == m_LastBuffer){
-        // old frame release and sleep
-        m_ImgMutex.unlock();
-        Thread::msleep(1);
-        continue;
+#ifdef SPEED_TEST
+Time aqtimesum = Time();
+Time cotimesum = Time();
+const int iterations = 100;
+int timesumcount = iterations;
+int step = 0;
+std::string last = "";
+const std::string colors[] = {"BayerGB12Packed",
+                        "BayerGB16","BayerGB8",
+                        "Mono8","YUV422Packed",
+                        "YUV422_YUYV_Packed"};
+const int colorc = 6;
+std::vector<std::pair<std::string, std::pair<Time,Time> >* > times
+    = std::vector<std::pair<std::string, std::pair<Time,Time> >* >();
+
+std::string reset(PylonCameraOptions* opt, std::string color, int omit){
+  if(omit){
+    opt -> setProperty("OmitDoubleFrames", "true");
+  } else {
+    opt -> setProperty("OmitDoubleFrames", "false");
+  }
+  opt -> setProperty("PixelFormat", color);
+
+  aqtimesum = Time();
+  cotimesum = Time();
+  timesumcount = 0;
+  std::ostringstream ret;
+  ret << "color: " << color << " omit: " << omit;
+  return ret.str();
+}
+
+
+void test(PylonCameraOptions* opt){
+  if(timesumcount >= iterations){
+     if(step == 0){
+      last = reset(opt, colors[0], true);
+      ++step;
+    } else if(step < colorc){
+      std::pair<std::string, std::pair<Time,Time> > * time
+                        = new std::pair<std::string, std::pair<Time,Time> > ();
+
+      time->first = last;
+      time->second.first =  aqtimesum / timesumcount;
+      time->second.second =  cotimesum / timesumcount;
+      last = reset(opt, colors[step], true);
+      times.push_back(time);
+      ++step;
+    } else if(step == colorc){
+      //end
+      std::cout << std::endl;
+      for(int i = 0; i < times.size(); ++i){
+        std::pair<std::string, std::pair<Time,Time> > * time = times.at(i);
+        std::cout << time->first << ":\n\t aq: " << time->second.first
+        << "\t co: " << time->second.second << std::endl;
       }
-      // got new image, save pointer.
-      m_LastBuffer = tmp;
-      // unlock mutex
+      std::cout << std::endl;
+      exit(0);
+    }
+  }
+}
+
+#endif
+
+const icl::ImgBase* PylonGrabberImpl::acquireImage(){
+#ifdef SPEED_TEST
+  Time s = Time::now();
+#endif
+  ImgBase* ret = NULL;
+  int counter = 0;
+  while(1){
+    // lock image lock so buffers are safe till release.
+    m_ImgMutex.lock();
+    // Get the image from the grabber thread
+    ret = m_GrabberThread -> getCurrentImage();
+    if(m_CameraOptions-> omitDoubleFrames() && ret == m_LastBuffer
+                                            && counter <= 1000)
+    {
+      // old frame release and sleep
+      m_ImgMutex.unlock();
+      ret = NULL;
+      ++counter;
+      Thread::msleep(1);
+    } else {
       m_ImgMutex.unlock();
       break;
     }
-  } else {
-    // lock image lock so buffers are safe till release.
-    Mutex::Locker l(m_ImgMutex);
-    // Get the grab result from the grabber thread
-    tmp = m_GrabberThread -> getCurrentImage();
   }
-  // convert and return image.
-  //DEBUG_LOG("age micro " << s.age())
-  //DEBUG_LOG("age milli " << s.age() / 1000)
-  //DEBUG_LOG("age sec " << s.age() / 1000000)
-  return m_ColorConverter -> convert(tmp -> m_Buffer);
+  m_LastBuffer = ret;
+#ifdef SPEED_TEST
+  aqtimesum += (s.age());
+  if(timesumcount >= 100){
+    std::cout << "\n\n aquisition: " << (aqtimesum/timesumcount) << std::endl;
+    aqtimesum = Time();
+    timesumcount = 0;
+  } else {
+    ++timesumcount;
+  }
+#endif
+  return ret;
 }
 
 // setter function for video device properties

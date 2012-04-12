@@ -42,6 +42,7 @@
 #include <ICLIO/PylonCameraOptions.h>
 #include <ICLIO/PylonGrabberThread.h>
 #include <ICLIO/PylonColorConverter.h>
+#include <ICLUtils/Time.h>
 
 namespace icl {
   namespace pylon {
@@ -90,20 +91,12 @@ namespace icl {
         */
         PylonGrabberImpl(const Pylon::CDeviceInfo &dev, const std::string args);
 
-        /// Used to determine wether (and to what) to convert an image.
-        enum convert_to {
-          yes_rgba,
-          yes_mono8u,
-          no_mono8u,
-          no_mono16,
-        };
-
         /// A mutex lock to synchronize buffer and color converter access.
         Mutex m_ImgMutex;
         /// The PylonEnvironment automation.
         PylonAutoEnv m_PylonEnv;
         /// Count of buffers for grabbing
-        static const int m_NumBuffers = 4;
+        static const int m_NumBuffers = 3;
         /// The camera interface.
         Pylon::IPylonDevice* m_Camera;
         /// The streamGrabber of the camera.
@@ -117,7 +110,7 @@ namespace icl {
         /// A list of used buffers.
         std::vector<PylonGrabberBuffer<uint16_t>*> m_BufferList;
         /// A pointer to the last used buffer.
-        TsBuffer<int16_t>* m_LastBuffer;
+        ImgBase* m_LastBuffer;
     
         /// starts the acquisition of pictures by the camera
         void acquisitionStart();

@@ -37,6 +37,8 @@
 
 #include <ICLUtils/Thread.h>
 #include <ICLIO/PylonUtils.h>
+#include <ICLIO/PylonColorConverter.h>
+#include <ICLIO/PylonCameraOptions.h>
 
 #include <queue>
 
@@ -53,7 +55,9 @@ namespace icl {
         * @param bufferCount The number of buffers the Grabber should queue.
         * @param bufferSize The size a buffer needs to hold a single image.
         */
-        PylonGrabberThread(Pylon::IStreamGrabber* grabber, int bufferSize=0);
+        PylonGrabberThread(Pylon::IStreamGrabber* grabber,
+                                PylonColorConverter* converter,
+                                PylonCameraOptions* options);
         /// Destructor frees all allocated memory
         ~PylonGrabberThread();
         /// acquires images and writes them into an internal queue
@@ -62,17 +66,21 @@ namespace icl {
         /**
         * @param bufferSize The size a buffer needs to hold a single image.
         */
-        void resetBuffer(int bufferSize);
+        void resetBuffer();
         /// getter for the most current image
         /**
         * @return a pointer to an internally used TsBuffer the buffer
         *         can safely be used until the next call to
         *         getCurrentImage() or resetBuffer().
         */
-        TsBuffer<int16_t>* getCurrentImage();
+        ImgBase* getCurrentImage();
       private:
         /// A pointer to the image-providing StreamGrabber.
         Pylon::IStreamGrabber* m_Grabber;
+        /// A pointer to the ColorConverter.
+        PylonColorConverter* m_Converter;
+        /// A pointer to the CameraOptions.
+        PylonCameraOptions* m_Options;
         /// A buffer holding read and write buffers
         ConcGrabberBuffer m_Buffers;
         /// A counter for acquisition errors.
@@ -81,6 +89,8 @@ namespace icl {
         int m_Timeout;
         /// A counter for correct acquisitions.
         int m_Acquired;
+        /// used for framerate preserving.
+        double m_ResultingFramerate;
 
         /// grabs a single image into m_BufferQueue.
         void grab();

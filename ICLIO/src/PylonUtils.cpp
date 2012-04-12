@@ -45,13 +45,39 @@ using namespace icl::pylon;
 static unsigned int pylon_env_inits = 0;
 static icl::Mutex* env_mutex = new icl::Mutex();
 
+// Constructor sets all pointers to NULL
+ConvBuffers::ConvBuffers(){
+  m_Image = NULL;
+  m_ImageBuff = NULL;
+  m_ImageBuff16 = NULL;
+  m_ImageRGBA = NULL;
+  m_Channels = NULL;
+  m_Channels16 = NULL;
+  m_Reset = true;
+}
+
+// calls free
+ConvBuffers::~ConvBuffers(){
+  free();
+}
+
+// deletes Objects pointed at, when pointer != NULL
+void ConvBuffers::free(){
+  ICL_DELETE(m_Image)
+  ICL_DELETE_ARRAY(m_ImageBuff)
+  ICL_DELETE_ARRAY(m_ImageBuff16)
+  ICL_DELETE(m_ImageRGBA)
+  ICL_DELETE(m_Channels)
+  ICL_DELETE(m_Channels16)
+}
+
 // Constructor creates and initializes resources.
-ConcGrabberBuffer::ConcGrabberBuffer(int bufferSize) :
+ConcGrabberBuffer::ConcGrabberBuffer() :
 m_Mutex(), m_Write(0), m_Next(1), m_Read(2) {
   Mutex::Locker l(m_Mutex);
-  m_Buffers[0] = new TsBuffer<int16_t>(bufferSize);
-  m_Buffers[1] = new TsBuffer<int16_t>(bufferSize);
-  m_Buffers[2] = new TsBuffer<int16_t>(bufferSize);
+  m_Buffers[0] = new ConvBuffers();
+  m_Buffers[1] = new ConvBuffers();
+  m_Buffers[2] = new ConvBuffers();
 }
 
 // Destructor frees memory
@@ -62,20 +88,19 @@ ConcGrabberBuffer::~ConcGrabberBuffer() {
   ICL_DELETE(m_Buffers[2]);
 }
 
-// returns a pointer to the most recent actualized buffer.
-TsBuffer<int16_t>* ConcGrabberBuffer::getNextImage(){
+// returns a pointer to the most recent actualized ConvBuffers.
+ConvBuffers* ConcGrabberBuffer::getNextReadBuffer(){
   Mutex::Locker l(m_Mutex);
   if(m_Avail){
     // new buffer is available.
     std::swap(m_Next, m_Read);
     m_Avail = false;
-
   }
   return m_Buffers[m_Read];
 }
 
-// returns a pointer to the next write buffer
-TsBuffer<int16_t>* ConcGrabberBuffer::getNextBuffer(){
+// returns a pointer to the next write ConvBuffers.
+ConvBuffers* ConcGrabberBuffer::getNextWriteBuffer(){
   Mutex::Locker l(m_Mutex);
   // swap write buffer and next buffer.
   std::swap(m_Next, m_Write);
@@ -85,15 +110,18 @@ TsBuffer<int16_t>* ConcGrabberBuffer::getNextBuffer(){
   return m_Buffers[m_Write];
 }
 
-// frees allocated memory and reinitializes Buffers to bufferSize.
-void ConcGrabberBuffer::reset(int bufferSize){
+// mark ConvBuffers to be reset on next write-access.
+void ConcGrabberBuffer::setReset(){
   Mutex::Locker l(m_Mutex);
-  delete m_Buffers[0];
-  m_Buffers[0] = new TsBuffer<int16_t>(bufferSize);
-  delete m_Buffers[1];
-  m_Buffers[1] = new TsBuffer<int16_t>(bufferSize);
-  delete m_Buffers[2];
-  m_Buffers[2] = new TsBuffer<int16_t>(bufferSize);
+  m_Buffers[0] -> m_Reset = true;
+  m_Buffers[1] -> m_Reset = true;
+  m_Buffers[2] -> m_Reset = true;
+}
+
+// tells whether a new image is available
+bool ConcGrabberBuffer::newAvailable(){
+  Mutex::Locker l(m_Mutex);
+  return m_Avail;
 }
 
 // Initializes Pylon environment if not already done.

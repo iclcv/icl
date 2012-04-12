@@ -458,7 +458,10 @@ bool PylonCameraOptions::omitDoubleFrames(){
   return m_OmitDoubleFrames;
 }
 
-
+// getter for the current expected framerate
+double PylonCameraOptions::getResultingFrameRateAbs(){
+  return parse<double>(getValue("ResultingFrameRateAbs"));
+}
 
 GenApi::INode *PylonCameraOptions::getNode(std::string name){
     return m_Camera -> GetNodeMap() -> GetNode(name.c_str());
