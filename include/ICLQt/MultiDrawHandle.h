@@ -79,7 +79,7 @@ namespace icl{
     Assigner operator[](const std::string &name);
     
     /// calles updated internally
-    void update();
+    void render();
     int getSelectedIndex();
     int getNumTabs();
     std::string getSelected();

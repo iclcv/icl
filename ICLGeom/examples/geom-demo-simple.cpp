@@ -120,19 +120,15 @@ void init(){
   if(pa("-o")){
     gui["reload"].registerCallback(reload_obj);
   }
+
+  //  TODO das geht nicht!!
+  gui["draw"].link(scene.getGLCallback(0));
 }
 
 
 void run(){
-  DrawHandle3D draw = gui["draw"]; // get the draw-GUI compoment
   scene.getCamera(0).setFocalLength(gui["f"]); // update the camera's focal length
-
-  // now simply copy and past this block ...
-  draw->lock();    // lock the internal drawing queue
-  draw->reset3D(); // remove former drawing commands
-  draw->callback(scene.getGLCallback(0)); // render the whole scene
-  draw->unlock();  // unlock the internal drawin queue
-  draw.update();   // post an update-event (don't use draw->update() !!)
+  gui["draw"].render();
 
   /// limit drawing speed to 25 fps
   static FPSLimiter limiter(25);

@@ -86,7 +86,6 @@ void run(){
   
   const ImgBase *image = g.grab();
   gui["input"] = image;
-  gui["input"].update();
   std::vector<UnaryOp*> ops;
   for(int i=0;i<N;++i){
     Time t = Time::now();
@@ -112,7 +111,6 @@ void run(){
       }
       gui["dt"+si] = str((Time::now()-t).toMilliSeconds())+"ms";
       gui["im"+si] = image;
-      gui["im"+si].update();
     }
   }
   for(unsigned int i=0;i<ops.size();++i){

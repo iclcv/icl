@@ -92,11 +92,11 @@ int main (int n, char **ppc){
     }
 
     Size size = compute_image_size(std::vector<const ImgBase*>(1,image),QApplication::desktop());
-    gui = GUI("image[@handle=draw@size="+str(size/20)+"]");
+    gui = GUI("draw[@handle=draw@size="+str(size/20)+"]");
     gui.show();
 
     gui["draw"] = image;
-    gui["draw"].update();
+    gui["draw"].render();
 
   }else if(pacount()){
     if(pa("-delete")){
@@ -143,13 +143,11 @@ int main (int n, char **ppc){
 
   if(pa("-roi")){
     if(pa("-input")){
-      gui_DrawHandle(draw);
-      draw->lock();
-      draw->reset();
+      static DrawHandle draw = gui["draw"];
       draw->color(255,0,0);
       draw->fill(0,0,0,0);
       draw->rect(image->getROI().x,image->getROI().y,image->getROI().width,image->getROI().height);
-      draw->unlock();
+      draw.render();
     }else{
       std::cout << "roi visualization is not supported in multi image mode!" << std::endl;
     }

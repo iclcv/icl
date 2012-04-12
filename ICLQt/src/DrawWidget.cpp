@@ -40,6 +40,7 @@
 using std::string;
 namespace icl{
   
+
   
   /// internally used classes
   struct ICLDrawWidget::State{
@@ -71,6 +72,13 @@ namespace icl{
   };
 
   // }}}
+
+  static void clear_queue(std::vector<ICLDrawWidget::DrawCommand*> &q){
+    for(std::vector<ICLDrawWidget::DrawCommand*>::iterator it = q.begin();it!= q.end();++it){
+      delete (*it);
+    }
+    q.clear();
+  }
   
   // {{{ abstract commands (intelligent, 2f, 3f 4f)
 
@@ -686,6 +694,7 @@ namespace icl{
 
   // }}}
   
+#if 0
   class ClearCommand : public DrawCommand4F{
     // {{{ open
     
@@ -706,6 +715,7 @@ namespace icl{
   };
 
   // }}}
+#endif
 
   class SetImageSizeCommand : public ICLDrawWidget::DrawCommand{
     // {{{ open
@@ -782,142 +792,154 @@ namespace icl{
     
     //    memset(m_poState->bg,0,4*sizeof(unsigned char));
 
+    m_queues[0] = new std::vector<DrawCommand*>;
+    m_queues[1] = new std::vector<DrawCommand*>;
+
     setShowNoImageWarnings(false);
+    
+    setAutoRenderOnSetImage(false);
   }
 
     // }}}
   ICLDrawWidget::~ICLDrawWidget(){
-    lock();
-    reset();
+    //lock();
+    //reset();
     if(m_poState)delete m_poState;
-    unlock();
+
+    clear_queue(*m_queues[0]);
+    clear_queue(*m_queues[1]);
+
+    delete m_queues[0];
+    delete m_queues[1];
+
+    //unlock();
   }
 
   // {{{ commands: line, sym, rel, ...
   void ICLDrawWidget::image(ImgBase *image,float x, float y, float w, float h){
-    m_vecCommands.push_back(new ImageCommand(image,x,y,w,h));
+    m_queues[0]->push_back(new ImageCommand(image,x,y,w,h));
   }
  
   void ICLDrawWidget::text(string text, float x, float y, float w, float h, float fontsize){
-    m_vecCommands.push_back(new TextCommand(text,x,y,w,h,fontsize));
+    m_queues[0]->push_back(new TextCommand(text,x,y,w,h,fontsize));
   } 
 
   void ICLDrawWidget::line(float x1, float y1, float x2, float y2){
-    m_vecCommands.push_back(new LineCommand(x1,y1,x2,y2));
+    m_queues[0]->push_back(new LineCommand(x1,y1,x2,y2));
   }
   void ICLDrawWidget::line(const Point32f &a, const Point32f &b){
-    m_vecCommands.push_back(new LineCommand(a.x,a.y,b.x,b.y));
+    m_queues[0]->push_back(new LineCommand(a.x,a.y,b.x,b.y));
   }
   void ICLDrawWidget::arrow(float ax, float ay, float bx, float by, float capsize){
-    m_vecCommands.push_back(new ArrowCommand(ax,ay,bx,by,capsize));
+    m_queues[0]->push_back(new ArrowCommand(ax,ay,bx,by,capsize));
   }
   void ICLDrawWidget::arrow(const Point32f &a, const Point32f &b, float capsize){
-    m_vecCommands.push_back(new ArrowCommand(a.x,a.y,b.x,b.y,capsize));
+    m_queues[0]->push_back(new ArrowCommand(a.x,a.y,b.x,b.y,capsize));
   }
   void ICLDrawWidget::sym(float x, float y, Sym s){
-    m_vecCommands.push_back(new SymCommand(x,y,s));
+    m_queues[0]->push_back(new SymCommand(x,y,s));
   }
   void ICLDrawWidget::symsize(float w, float h){
-    m_vecCommands.push_back(new SymSizeCommand(w,h==-1? w : h));
+    m_queues[0]->push_back(new SymSizeCommand(w,h==-1? w : h));
   }
 
   void ICLDrawWidget::linewidth(float w){
-    m_vecCommands.push_back(new LineWidthCommand(w));
+    m_queues[0]->push_back(new LineWidthCommand(w));
   }
 
   void ICLDrawWidget::pointsize(float s){
-    m_vecCommands.push_back(new PointSizeCommand(s));
+    m_queues[0]->push_back(new PointSizeCommand(s));
   }
 
   void ICLDrawWidget::point(float x, float y){
-    m_vecCommands.push_back(new PointCommand(x,y));
+    m_queues[0]->push_back(new PointCommand(x,y));
   }
   void ICLDrawWidget::points(const std::vector<Point> &pts, int xfac, int yfac){
-    m_vecCommands.push_back(new PointsCommand(pts,xfac,yfac,false,false));
+    m_queues[0]->push_back(new PointsCommand(pts,xfac,yfac,false,false));
   }
   void ICLDrawWidget::points(const std::vector<Point32f> &pts){
-    m_vecCommands.push_back(new Points32fCommand(pts,false,false));
+    m_queues[0]->push_back(new Points32fCommand(pts,false,false));
   }
 
   void  ICLDrawWidget::linestrip(const std::vector<Point> &pts, bool closeLoop, int xfac, int yfac){
-    m_vecCommands.push_back(new PointsCommand(pts,xfac,yfac,true,closeLoop));
+    m_queues[0]->push_back(new PointsCommand(pts,xfac,yfac,true,closeLoop));
   }
   void  ICLDrawWidget::linestrip(const std::vector<Point32f> &pts, bool closeLoop){
-    m_vecCommands.push_back(new Points32fCommand(pts,true,closeLoop));
+    m_queues[0]->push_back(new Points32fCommand(pts,true,closeLoop));
   }
 
   void ICLDrawWidget::polygon(const std::vector<Point32f> &ps){
-    m_vecCommands.push_back(new PolygonCommand(ps));
+    m_queues[0]->push_back(new PolygonCommand(ps));
   }
   
   void ICLDrawWidget::grid(const Point32f *points, int nx, int ny, bool rowMajor){
-    m_vecCommands.push_back(new GridCommand(points,nx,ny,rowMajor));
+    m_queues[0]->push_back(new GridCommand(points,nx,ny,rowMajor));
   }
 
   void ICLDrawWidget::abs(){
-    m_vecCommands.push_back(new AbsCommand());
+    m_queues[0]->push_back(new AbsCommand());
   }
   void ICLDrawWidget::rel(){
-    m_vecCommands.push_back(new RelCommand());
+    m_queues[0]->push_back(new RelCommand());
   }
   void ICLDrawWidget::rect(float x, float y, float w, float h){
-    m_vecCommands.push_back(new RectCommand(x,y,w,h));
+    m_queues[0]->push_back(new RectCommand(x,y,w,h));
   }
   void ICLDrawWidget::rect(const Rect &r){
-    m_vecCommands.push_back(new RectCommand(r.x,r.y,r.width,r.height));
+    m_queues[0]->push_back(new RectCommand(r.x,r.y,r.width,r.height));
   }
   void ICLDrawWidget::rect(const Rect32f &r){
-    m_vecCommands.push_back(new RectCommand(r.x,r.y,r.width,r.height));
+    m_queues[0]->push_back(new RectCommand(r.x,r.y,r.width,r.height));
   }
   void ICLDrawWidget::triangle(float x1, float y1, float x2, float y2, float x3, float y3){
-    m_vecCommands.push_back(new TriangleCommand(x1,y1,x2,y2,x3,y3));
+    m_queues[0]->push_back(new TriangleCommand(x1,y1,x2,y2,x3,y3));
   }
   void ICLDrawWidget::triangle(const Point32f &a, const Point32f &b, const Point32f &c){
-    m_vecCommands.push_back(new TriangleCommand(a.x,a.y,b.x,b.y,c.x,c.y));
+    m_queues[0]->push_back(new TriangleCommand(a.x,a.y,b.x,b.y,c.x,c.y));
   }
   void ICLDrawWidget::quad(float x1, float y1, float x2, float y2, float x3, float y3,float x4,float y4){
-    m_vecCommands.push_back(new QuadCommand(x1,y1,x2,y2,x3,y3,x4,y4));
+    m_queues[0]->push_back(new QuadCommand(x1,y1,x2,y2,x3,y3,x4,y4));
   }
   void ICLDrawWidget::quad(const Point32f &a, const Point32f &b, const Point32f &c, const Point32f &d){
-    m_vecCommands.push_back(new QuadCommand(a.x,a.y,b.x,b.y,c.x,c.y,d.x,d.y));
+    m_queues[0]->push_back(new QuadCommand(a.x,a.y,b.x,b.y,c.x,c.y,d.x,d.y));
   }
   void ICLDrawWidget::ellipse(float x, float y, float w, float h){
-    m_vecCommands.push_back(new EllipseCommand(x,y,w,h));
+    m_queues[0]->push_back(new EllipseCommand(x,y,w,h));
   }
 
   void ICLDrawWidget::ellipse(const Rect &r){
-    m_vecCommands.push_back(new EllipseCommand(r.x,r.y,r.width,r.height));
+    m_queues[0]->push_back(new EllipseCommand(r.x,r.y,r.width,r.height));
   }
   void ICLDrawWidget::ellipse(const Rect32f &r){
-    m_vecCommands.push_back(new EllipseCommand(r.x,r.y,r.width,r.height));
+    m_queues[0]->push_back(new EllipseCommand(r.x,r.y,r.width,r.height));
   }
   void ICLDrawWidget::circle(float cx, float cy, float r){
-    m_vecCommands.push_back(new EllipseCommand(cx-r,cy-r,2*r,2*r));
+    m_queues[0]->push_back(new EllipseCommand(cx-r,cy-r,2*r,2*r));
   }
   void ICLDrawWidget::circle(const Point32f &center, float radius){
-    m_vecCommands.push_back(new EllipseCommand(center.x-radius,center.y-radius,2*radius,2*radius));
+    m_queues[0]->push_back(new EllipseCommand(center.x-radius,center.y-radius,2*radius,2*radius));
   }
   void ICLDrawWidget::color(float r, float g, float b, float alpha){
-    m_vecCommands.push_back(new EdgeCommand(r,g,b,alpha));
+    m_queues[0]->push_back(new EdgeCommand(r,g,b,alpha));
   }
   void ICLDrawWidget::fill(float r, float g, float b, float alpha){
-    m_vecCommands.push_back(new FillCommand(r,g,b,alpha));
+    m_queues[0]->push_back(new FillCommand(r,g,b,alpha));
   }
   void ICLDrawWidget::nocolor(){
-    m_vecCommands.push_back(new NoEdgeCommand());
+    m_queues[0]->push_back(new NoEdgeCommand());
   }
   void ICLDrawWidget::nofill(){
-    m_vecCommands.push_back(new NoFillCommand());
+    m_queues[0]->push_back(new NoFillCommand());
   }
+
+#if 0
   void ICLDrawWidget::clear(float r, float g, float b, float alpha){
-    m_vecCommands.push_back(new ClearCommand(r,g,b,alpha));
+    m_queues[0]->push_back(new ClearCommand(r,g,b,alpha));
   }
   void ICLDrawWidget::reset(){
-    for(std::vector<DrawCommand*>::iterator it = m_vecCommands.begin();it!= m_vecCommands.end();++it){
-      delete (*it);
-    }
-    m_vecCommands.clear();
+    clear_queue(*m_queues[0]);
   }
+#endif
 
     // }}}
 
@@ -943,15 +965,14 @@ namespace icl{
     m_poState->size = Size32f(width(),height());
     m_poState->imsize = getImageSize(true);
     m_poState->symsize = QSizeF(5,5);
-    //static float id[] = { 1, 0, 0,
-    //                          0, 1, 0 };
-    //    std::copy(id,id+6,m_poState->transform);
-    //    memset(m_poState->bg,0,4*sizeof(unsigned char));
     e->font("Arial",8,PaintEngine::DemiBold);
     e->color(255,255,255);
     e->fill(0,0,0);
     initializeCustomPaintEvent(e);
-    for(std::vector<DrawCommand*>::iterator it = m_vecCommands.begin();it!= m_vecCommands.end();++it){
+
+    std::vector<DrawCommand*> &q = *m_queues[1];
+
+    for(std::vector<DrawCommand*>::iterator it = q.begin();it!= q.end();++it){
       (*it)->exec(e,m_poState);
     }
     finishCustomPaintEvent(e);
@@ -960,4 +981,10 @@ namespace icl{
 
     // }}}
 
+  void ICLDrawWidget::swapQueues(){
+    m_oCommandMutex.lock();
+    std::swap(m_queues[0],m_queues[1]);
+    clear_queue(*m_queues[0]);
+    m_oCommandMutex.unlock();
+  }
 }

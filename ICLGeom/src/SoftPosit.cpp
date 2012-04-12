@@ -139,7 +139,7 @@ void SoftPosit::softPosit(DynMatrix<icl64f> imagePts, DynMatrix<icl64f> worldPts
 	int betaCount = 0;
 	int poseConverged = 0;
 	int assignConverged = 0;
-	int foundPose = 0;
+        //	int foundPose = 0;
 	beta = beta0;
 	DynMatrix<icl64f> r1Tr2T(2,3);
 	assignMat = DynMatrix<icl64f>(nbWorldPts+1,nbImagePts+1,1+epsilon0);
@@ -323,10 +323,10 @@ void SoftPosit::softPosit(DynMatrix<icl64f> imagePts, DynMatrix<icl64f> worldPts
 			ROT.at(i,1) = R2.at(0,i);
 			ROT.at(i,2) = R3.at(0,i);
 		}
-		if(delta < maxDelta && betaCount > minBetaCount)
-			foundPose = 1;
-		else
-			foundPose = 0;
+                //	if(delta < maxDelta && betaCount > minBetaCount)
+		//	foundPose = 1;
+		//else
+		//	foundPose = 0;
 #ifdef HAVE_QT
 		if(draw){
 			proj3dto2d(worldPts, ROT, T, focalLength, 1, center,pts2d);
@@ -586,8 +586,8 @@ double SoftPosit::max(DynMatrix<icl64f> s){
 void SoftPosit::visualize(const DynMatrix<icl64f> & imagePts, const DynMatrix<icl64f> &projWorldPts, unsigned int delay){
 	dw->color(255,0,0,1);
 	dw->linewidth(2);
-	dw->lock();
-	dw->reset();
+        //	dw->lock();
+	//dw->reset();
 	float offsetx=dw->size().rwidth()/2.0;
 	float offsety=dw->size().rheight()/2.0;
 	for(unsigned int i=0;i<wAdj.cols();++i){
@@ -607,8 +607,8 @@ void SoftPosit::visualize(const DynMatrix<icl64f> & imagePts, const DynMatrix<ic
 			}
 		}
 	}
-	dw->unlock();
-	dw->update();
+	//dw->unlock();
+	dw->render();//update();
 	Thread::msleep(delay);
 }
 
@@ -616,8 +616,8 @@ void SoftPosit::visualize(ICLDrawWidget &w,const DynMatrix<icl64f> & imagePts, c
 		const DynMatrix<icl64f> &projWorldPts, const DynMatrix<icl64f> &worldAdj, unsigned int delay){
 	w.color(255,0,0,1);
 	w.linewidth(2);
-	w.lock();
-	w.reset();
+        //	w.lock();
+	//w.reset();
 	float offsetx=w.size().rwidth()/2.0;
 	float offsety=w.size().rheight()/2.0;
 	for(unsigned int i=0;i<worldAdj.cols();++i){
@@ -637,8 +637,8 @@ void SoftPosit::visualize(ICLDrawWidget &w,const DynMatrix<icl64f> & imagePts, c
 			}
 		}
 	}
-	w.unlock();
-	w.update();
+	//w.unlock();
+	w.render();
 	Thread::msleep(delay);
 }
 #endif

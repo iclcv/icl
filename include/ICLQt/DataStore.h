@@ -117,10 +117,15 @@ namespace icl{
       /// returns the internal type ID (obtained by C++'s RTTI)
       const std::string &getTypeID() const { return data->type; }
       
-      /// this is necessary for some gui components
-      /** Currently supported for Data-types ImageHandle, DrawHandle and FPSHandle */
-      void update() throw (UnassignableTypesException){ 
-        *this = Event("update"); 
+
+      /** Currently supported for Data-types ImageHandle, DrawHandle, FPSHandle and PlotHandle */
+      void render() throw (UnassignableTypesException){ 
+        *this = Event("render"); 
+      }
+
+      /// links DrawWidget3D and GLCallback
+      void link(void *data) throw (UnassignableTypesException){ 
+        *this = Event("link", data); 
       }
       
       /// data must be of type MouseHandler*

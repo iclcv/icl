@@ -128,7 +128,7 @@ namespace icl{
         Channel32s dst = (*poDst)[channel];
         
         poDst->clear(channel,maxVal,true);
-        Rect r = poDst->getROI();
+        //Rect r = poDst->getROI();
         for(int x=xSrcStart;x<xSrcEnd;++x){
           for(int y=ySrcStart;y<ySrcEnd;++y){
             if(src(x,y)) dst(xDstStart + (x-xSrcStart)/scaleFactor,yDstStart + (y-ySrcStart)/scaleFactor ) = 0;

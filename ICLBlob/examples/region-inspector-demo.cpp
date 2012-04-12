@@ -216,9 +216,6 @@ void run(){
     }
     lastLevels = levels;
     
-    d.lock();
-    d.reset();
-    
     Point m(mouseIO.x,mouseIO.y);
   
     if(useImage->getImageRect().contains(m.x,m.y)){
@@ -301,8 +298,7 @@ void run(){
       }
     }
     
-    d.unlock();
-    d.updateFromOtherThread();
+    d.render();
     mutex.unlock();
     Thread::msleep(10);
   }

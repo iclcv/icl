@@ -222,8 +222,6 @@ namespace icl{
       P[0] = Parable(D[0].pos()*255,D[1].pos()*255,D[2].pos()*255);
       P[1] = Parable(D[3].pos()*255,D[4].pos()*255,D[5].pos()*255);
       setImage(&image);
-      lock();
-      reset();
       rel();
       color(255,0,0,255);
       for(float x=0;x<255;x+=1.0){
@@ -237,8 +235,7 @@ namespace icl{
         D[i].draw(this);
       }
       color(255,255,255,255);
-      unlock();
-      update();
+      render();
     }
 
     // }}}

@@ -103,7 +103,6 @@ void run(){
       Img32f m = g->getKernels()[0].detached();
       m.normalizeAllChannels(Range<float>(0,255));
       gui["mask"] = m;
-      gui["mask"].update();
     }
     saveSize = size;
     memcpy(saveParams,params,5*sizeof(float));
@@ -112,9 +111,7 @@ void run(){
     resultImage->normalizeAllChannels(Range<icl64f>(0,255));
     
     gui["image"] = resultImage;
-    gui["image"].update();
-    
-    gui["fps"].update();
+    gui["fps"].render();
   }
 }
 

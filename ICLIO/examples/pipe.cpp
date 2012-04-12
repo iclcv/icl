@@ -190,9 +190,8 @@ void send_app(){
       gui_bool(updateImages);
       if(updateImages){
         IH = normImage;
-        IH.update();
       }
-      FPS.update();
+      FPS.render();
     }
 #endif
     first = false;

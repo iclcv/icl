@@ -159,8 +159,6 @@ void init(){
   //  view camera
   scene.addCamera(cam);
   
-  Size s = pa("-size");
-  
   FixedMatrix<float,3,3> homogeneity = FixedMatrix<float,3,3>::id();
   
   try{
@@ -192,8 +190,6 @@ void init(){
 
 
 void run(){
-  Size size = pa("-size");
-
   bool heatSet=false;
  
   if(gui["disableCL"]){
@@ -237,7 +233,6 @@ void run(){
   obj->setPointSize(pointSize);
  
   gui_ButtonHandle(resetView);
-  gui_DrawHandle3D(draw3D);
   gui_DrawHandle3D(hdepth);
   gui_DrawHandle3D(hcolor);
   
@@ -360,15 +355,12 @@ void run(){
     
   hcolor = &colorImage;
   
-  gui["fps"].update();
-  hdepth.update();
-  hcolor.update();
+  gui["fps"].render();
+  hdepth.render();
+  hcolor.render();
 
-  draw3D->lock();
-  draw3D->reset3D();
-  draw3D->callback(scene.getGLCallback(VIEW_CAM));
-  draw3D->unlock();
-  draw3D.update();
+  gui["draw3D"].link(scene.getGLCallback(VIEW_CAM));
+  gui["draw3D"].render();
 }
 
 

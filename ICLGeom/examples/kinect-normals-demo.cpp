@@ -169,13 +169,8 @@ void run(){
   gui["color"] = colorImage;
   gui["angle"] = angleImage;
   gui["edge"] = edgeImage;
-  
-  gui["depth"].update();
-  gui["color"].update();
-  gui["angle"].update();
-  gui["edge"].update();
 
-  gui["fps"].update();
+  gui["fps"].render();
 }
 
 int main(int n, char **ppc){

@@ -46,9 +46,9 @@ GenericGrabber grabber;
 void init(){
   
   gui << (GUI("hbox")
-          << "draw[@handle=image@minsize=20x20@label=undistorted image]");
+          << "image[@handle=image@minsize=20x20@label=undistorted image]");
   if(pa("-wm")){
-    gui << ("draw[@handle=warp@minsize=20x20@label=warp map]");
+    gui << ("image[@handle=warp@minsize=20x20@label=warp map]");
   }
   gui.show();
   grabber.init(pa("-i"));
@@ -58,14 +58,11 @@ void init(){
   //this is only for showing the warpmap
   if(pa("-wm")){
     gui["warp"] = grabber.getUndistortionWarpMap();
-    gui["warp"].update();
   }
 }
 
 void run(){
-  const ImgBase *img = grabber.grab();
-  gui["image"] = img;
-  gui["image"].update();
+  gui["image"] = grabber.grab();
   
 }
 int main(int argc, char** argv){

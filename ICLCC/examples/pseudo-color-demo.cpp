@@ -64,11 +64,7 @@ void step(const std::string &handle){
     }
   }
   gui["color"] = &pcc.apply(::color);
-  gui["color"].update();
-  
   gui["image"] = &pcc.apply(::image);
-  gui["image"].update();
-
 }
 
 void stop_chooser(GUI &dst, int idx,float pos, float r, float g, float b){

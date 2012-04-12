@@ -50,18 +50,10 @@ void init(){
 }
 
 void run(){
-  gui_DrawHandle(draw);
+  DrawHandle draw = gui["draw"];
   draw = grabber.grab();
-
-  draw->lock();
-  draw->reset();
   mouse.visualize(**draw);
-  draw->unlock();
-
-  draw.update();
-
-  
-  Thread::msleep(10);
+  draw.render();
 }
 
 int main(int n, char **ppc){

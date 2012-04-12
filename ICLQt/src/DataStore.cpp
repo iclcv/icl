@@ -352,8 +352,8 @@ INST_OTHER_TYPES
 
 
     FROM_TO(DataStore::Data::Event,ImageHandle,
-            if(src.message=="update"){
-              dst.update();
+            if(src.message=="render"){
+              dst.render();
             }
             else if(src.message=="install"){
               (*dst)->install((MouseHandler*)src.data);
@@ -362,8 +362,8 @@ INST_OTHER_TYPES
 
     /// PlotHandle
     FROM_TO(DataStore::Data::Event,PlotHandle,
-            if(src.message=="update"){
-              dst.update();
+            if(src.message=="render"){
+              dst.render();
             });
     FROM_TO(PlotHandle,PlotWidget*,dst = *src);
 
@@ -372,8 +372,8 @@ INST_OTHER_TYPES
     FROM_IMG(DrawHandle,dst=src);
     FROM_IMG_PTR(DrawHandle,dst=src);
     FROM_TO(DataStore::Data::Event,DrawHandle,
-            if(src.message=="update"){
-              dst.update();
+            if(src.message=="render"){
+              dst.render();
             }
             else if(src.message=="install"){
               (*dst)->install((MouseHandler*)src.data);
@@ -388,19 +388,22 @@ INST_OTHER_TYPES
     FROM_IMG_PTR(DrawHandle3D,dst=src);
     //FROM_TO(DataStore::Data::Event,DrawHandle,if(src.message=="update")dst.update());
     FROM_TO(DataStore::Data::Event,DrawHandle3D,
-            if(src.message=="update"){
-              dst.update();
+            if(src.message=="render"){
+              dst.render();
             }
             else if(src.message=="install"){
               (*dst)->install((MouseHandler*)src.data);
+            }else if(src.message=="link"){
+              (*dst)->link((ICLDrawWidget3D::GLCallback*)src.data);
             });
+
     FROM_TO(DrawHandle3D,ICLDrawWidget3D*,dst = *src);
     FROM_TO(DrawHandle3D,ICLDrawWidget*,dst = *src);
     FROM_TO(DrawHandle3D,ICLWidget*,dst = *src);
 #endif
     
     // FPSHandle
-    FROM_TO(DataStore::Data::Event,FPSHandle,if(src.message=="update")dst.update());
+    FROM_TO(DataStore::Data::Event,FPSHandle,if(src.message=="render")dst.render());
     
     // SliderHandle
     FROM_TO_NUM(SliderHandle,dst.setValue((int)src),dst=src.getValue());

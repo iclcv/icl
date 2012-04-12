@@ -76,6 +76,7 @@ namespace icl{
 
   // }}}
  
+#if 0
   struct ICLDrawWidget3D::DrawCommand3D{
     // {{{ open
     virtual ~DrawCommand3D(){}
@@ -83,6 +84,14 @@ namespace icl{
   };
 
   // }}}
+
+  static void clear_queue(std::vector<ICLDrawWidget3D::DrawCommand3D*> &q){
+    for(size_t i=0;i<q.size();++i){
+      delete q[i];
+    }
+    q.clear();
+  }
+
   
   template<void (*func)(void)>
   struct FunctionCommand3D : public ICLDrawWidget3D::DrawCommand3D{
@@ -230,7 +239,7 @@ namespace icl{
       }
     }
 
-    ~ImageCube3DDrawCommand(){
+   ImageCube3DDrawCommand(){
       for(unsigned int i=0;i<glimages.size();++i){
         delete glimages[i];
       }
@@ -292,7 +301,7 @@ namespace icl{
       b[0]=bX; b[1]=bY; b[2]=bZ;
       glimage = new GLImg(image);
     }
-    ~Image3DDrawCommand(){
+    Image3DDrawCommand(){
       delete glimage;
     }
     virtual void execute(){
@@ -506,6 +515,7 @@ namespace icl{
 
   // }}}
   
+#endif
 
     /*
         - property "diffuse" value "on|off" (default is on)
@@ -598,12 +608,22 @@ namespace icl{
   
   ICLDrawWidget3D::ICLDrawWidget3D(QWidget *parent):ICLDrawWidget(parent),m_properties(new Properties){
     // {{{ open
-
+#if 0
+    m_commands[0] = new std::vector<DrawCommand3D*>;
+    m_commands[1] = new std::vector<DrawCommand3D*>;
+#endif
+    m_linkedCallback = 0;
   }
 
   // }}}
   ICLDrawWidget3D::~ICLDrawWidget3D(){
     // {{{ open
+#if 0
+    clear_queue(*m_commands[0]);
+    clear_queue(*m_commands[1]);
+    delete m_commands[0];
+    delete m_commands[1];
+#endif
     delete m_properties;
   }
 
@@ -611,7 +631,8 @@ namespace icl{
 
   void ICLDrawWidget3D::customPaintEvent(PaintEngine *e){
     // {{{ open
-    lock();
+
+    m_oCommandMutex.lock();
     glClear(GL_DEPTH_BUFFER_BIT);
     glPushAttrib(GL_ALL_ATTRIB_BITS);
     glMatrixMode(GL_PROJECTION);
@@ -646,14 +667,26 @@ namespace icl{
               0, 0,  0,   // view center point
               1, 0,  0 );// up vector
     
-
-#ifdef DO_NOT_USE_GL_VISUALIZATION
-    ERROR_LOG("3D Visualization is not supported without OpenGL!");
-#else
-    for(unsigned int i=0;i<m_vecCommands3D.size();++i){
-      m_vecCommands3D[i]->execute();
+    if(m_linkedCallback){
+      m_linkedCallback->draw_extern(this);
     }
     
+#if 0
+    if(m_commands[1]->size()){
+      WARNING_LOG("using a linked callback in combination with other 3D commands is not allowed");
+      WARNING_LOG("please use link instead of callback and other methods");
+    }
+  }else{
+    static bool first = true;
+    if(first && m_commands[1]->size()){
+      first = false;
+      WARNING_LOG("please note, that using the ICLDrawWidget3D's draw commands is deprecated.");
+      WARNING_LOG("use ICLDrawWidget3D::link instead");
+    }
+    for(unsigned int i=0;i<m_commands[1]->size();++i){
+      m_commands[1]->operator[](i)->execute();
+    }
+  }
 #endif
     
     glPopAttrib();
@@ -661,70 +694,69 @@ namespace icl{
     glPopMatrix();
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
-    unlock();
+    m_oCommandMutex.unlock();
 
     ICLDrawWidget::customPaintEvent(e);
   }
 
   // }}}
+
+#if 0
   void ICLDrawWidget3D::reset3D(){
     // {{{ open
-    for(unsigned int i=0;i<m_vecCommands3D.size();++i){
-      delete m_vecCommands3D[i];
-    }
-    m_vecCommands3D.clear();
+    clear_queue(*m_commands[0]);
   }
 
   // }}}
   
   
   void ICLDrawWidget3D::clear3D(){
-    m_vecCommands3D.push_back(new Clear3DDrawCommand);
+    m_commands[0]->push_back(new Clear3DDrawCommand);
   }
   void ICLDrawWidget3D::cube3D(float x,float y, float z, float d){
-    m_vecCommands3D.push_back(new Cube3DDrawCommand(x,y,z,d));
+    m_commands[0]->push_back(new Cube3DDrawCommand(x,y,z,d));
   } 
   void ICLDrawWidget3D::supercube3D(float x,float y, float z, float d){
-    m_vecCommands3D.push_back(new SuperCube3DDrawCommand(x,y,z,d));
+    m_commands[0]->push_back(new SuperCube3DDrawCommand(x,y,z,d));
   }
   void ICLDrawWidget3D::imagecube3D(float cx, float cy, float cz, float d, const ImgBase *image){
-    m_vecCommands3D.push_back(new ImageCube3DDrawCommand(cx,cy,cz,d,image));
+    m_commands[0]->push_back(new ImageCube3DDrawCommand(cx,cy,cz,d,image));
   }
   void ICLDrawWidget3D::imagecube3D(float cx, float cy, float cz, float d, const ImgBase *images[6]){
-    m_vecCommands3D.push_back(new ImageCube3DDrawCommand(cx,cy,cz,d,images));
+    m_commands[0]->push_back(new ImageCube3DDrawCommand(cx,cy,cz,d,images));
   }
   void ICLDrawWidget3D::image3D(float cX,float cY,float cZ,float aX, float aY,float aZ,float bX,float bY,float bZ, const ImgBase *image){
-    m_vecCommands3D.push_back(new Image3DDrawCommand(cX,cY,cZ,aX,aY,aZ,bX,bY,bZ,image));
+    m_commands[0]->push_back(new Image3DDrawCommand(cX,cY,cZ,aX,aY,aZ,bX,bY,bZ,image));
   }
   void ICLDrawWidget3D::color3D(float r, float g, float b, float a){
-    m_vecCommands3D.push_back(new Color3DDrawCommand(r,g,b,a));
+    m_commands[0]->push_back(new Color3DDrawCommand(r,g,b,a));
   }
   void ICLDrawWidget3D::lookAt3D(float eyeX, float eyeY, float eyeZ, float cX, float cY, float cZ, float upX, float upY, float upZ){
-    m_vecCommands3D.push_back(new LookAt3DDrawCommand(eyeX,eyeY,eyeZ,cX,cY,cZ,upX,upY,upZ));
+    m_commands[0]->push_back(new LookAt3DDrawCommand(eyeX,eyeY,eyeZ,cX,cY,cZ,upX,upY,upZ));
   }
   void ICLDrawWidget3D::frustum3D(float left,float right,float bottom, float top,float zNear,float zFar){
-    m_vecCommands3D.push_back(new Frustum3DDrawCommand(left,right,bottom,top,zNear,zFar));
+    m_commands[0]->push_back(new Frustum3DDrawCommand(left,right,bottom,top,zNear,zFar));
   }
   void ICLDrawWidget3D::viewport3D(float x,float y, float width, float height){
-    m_vecCommands3D.push_back(new ViewPort3DDrawCommand(x,y,width,height));
+    m_commands[0]->push_back(new ViewPort3DDrawCommand(x,y,width,height));
   }
   void ICLDrawWidget3D::rotate3D(float rx, float ry, float rz){
-    m_vecCommands3D.push_back(new Rotate3DDrawCommand(rx,ry,rz));
+    m_commands[0]->push_back(new Rotate3DDrawCommand(rx,ry,rz));
   }
   void ICLDrawWidget3D::translate3D(float tx, float ty, float tz){
-    m_vecCommands3D.push_back(new Translate3DDrawCommand(tx,ty,tz));
+    m_commands[0]->push_back(new Translate3DDrawCommand(tx,ty,tz));
   }
   void ICLDrawWidget3D::scale3D(float sx, float sy,float sz){
-    m_vecCommands3D.push_back(new Scale3DDrawCommand(sx,sy,sz));
+    m_commands[0]->push_back(new Scale3DDrawCommand(sx,sy,sz));
   }
   void ICLDrawWidget3D::setMat3D(float *mat){
-    m_vecCommands3D.push_back(new SetMat3DDrawCommand(mat));
+    m_commands[0]->push_back(new SetMat3DDrawCommand(mat));
   }
   void ICLDrawWidget3D::modelview(){
-    m_vecCommands3D.push_back(new MatrixMode3DDrawCommand(false));
+    m_commands[0]->push_back(new MatrixMode3DDrawCommand(false));
   }
   void ICLDrawWidget3D::projection(){
-    m_vecCommands3D.push_back(new MatrixMode3DDrawCommand(true));
+    m_commands[0]->push_back(new MatrixMode3DDrawCommand(true));
   }
   
    #ifdef ICL_SYSTEM_WINDOWS
@@ -736,42 +768,45 @@ namespace icl{
 	glPushMatrix();
   }
   void ICLDrawWidget3D::pushMatrix(){
-    m_vecCommands3D.push_back(new FunctionCommand3D<glPushMatrix2>);
+    m_commands[0]->push_back(new FunctionCommand3D<glPushMatrix2>);
   }
   void ICLDrawWidget3D::popMatrix(){
-    m_vecCommands3D.push_back(new FunctionCommand3D<glPopMatrix2>);
+    m_commands[0]->push_back(new FunctionCommand3D<glPopMatrix2>);
   }
   #else
   void ICLDrawWidget3D::pushMatrix(){
-    m_vecCommands3D.push_back(new FunctionCommand3D<glPushMatrix>);
+    m_commands[0]->push_back(new FunctionCommand3D<glPushMatrix>);
   }
   void ICLDrawWidget3D::popMatrix(){
-    m_vecCommands3D.push_back(new FunctionCommand3D<glPopMatrix>);
+    m_commands[0]->push_back(new FunctionCommand3D<glPopMatrix>);
   }
   #endif  
   
   void ICLDrawWidget3D::perspective(float angle, float aspect, float nearVal, float farVal){
-    m_vecCommands3D.push_back(new Perspective3DCommand(angle,aspect,nearVal,farVal));
+    m_commands[0]->push_back(new Perspective3DCommand(angle,aspect,nearVal,farVal));
   }
   void ICLDrawWidget3D::id(){
-    m_vecCommands3D.push_back(new ID3DCommand);
+    m_commands[0]->push_back(new ID3DCommand);
   }
   void ICLDrawWidget3D::callback(ICLDrawWidget3D::GLCallbackFunc func, void *data){
-    lock();
-    m_vecCommands3D.push_back(new CallbackFunc3DCommand(func,data));
-    unlock();
+    //lock();
+    m_commands[0]->push_back(new CallbackFunc3DCommand(func,data));
+    //unlock();
   }
   void ICLDrawWidget3D::callback(ICLDrawWidget3D::GLCallback *cb){
-    lock();
-    m_vecCommands3D.push_back(new Callback3DCommand(this,cb));
-    unlock();
+    //lock();
+    m_commands[0]->push_back(new Callback3DCommand(this,cb));
+    //unlock();
   }
   void ICLDrawWidget3D::callback(SmartPtr<ICLDrawWidget3D::GLCallback> smartCB){
-    lock();
-    m_vecCommands3D.push_back(new SmartCallback3DCommand(this,smartCB));
-    unlock();
+    //lock();
+    m_commands[0]->push_back(new SmartCallback3DCommand(this,smartCB));
+    //unlock();
   }
 
+#endif
+
+#if 0
   void ICLDrawWidget3D::setProperty(const std::string &property, const std::string &value){
     if(property == "diffuse"){
       if(value == "on"){
@@ -863,6 +898,19 @@ namespace icl{
       }
     }
   }
+  
+  void ICLDrawWidget3D::swapQueues(){
+    m_oCommandMutex.lock();
+    ICLDrawWidget::swapQueues(); // recursive mutex allows this!
+    
+    std::swap(m_commands[0],m_commands[1]);
 
+    m_oCommandMutex.unlock();
+  }
+#endif
+
+  void ICLDrawWidget3D::link(ICLDrawWidget3D::GLCallback *cb){
+    m_linkedCallback = cb;
+  }
 
 }

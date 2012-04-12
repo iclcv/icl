@@ -35,12 +35,14 @@
 #include <ICLQuick/Common.h>
 
 GUI gui;
-ICLDrawWidget *w = 0;
+GenericGrabber grabber;
+
 void init(){
-  gui << "draw[@handle=image]";
-  gui.show();
+  grabber.init(pa("-i"));
   
-  w = *gui.getValue<DrawHandle>("image");
+  gui << "image[@handle=image]" << "!show";
+  
+  ICLDrawWidget *w = *gui.getValue<DrawHandle>("image");
   
   ImgQ x = scale(create("parrot"),100,100);
   w->addSpecialButton("im",&x,function((ICLWidget*)w,&ICLWidget::captureCurrentImage));
@@ -56,14 +58,10 @@ void init(){
   }
   
   w->addSpecialButton("fb",&k,function((ICLWidget*)w,&ICLWidget::captureCurrentFrameBuffer));
-
-  
 }
 
 void run(){
-  static GenericGrabber grabber(pa("-i"));
   gui["image"] = grabber.grab();
-  gui["image"].update();
 }
 
 int main(int n, char **ppc){

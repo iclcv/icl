@@ -243,7 +243,6 @@ namespace icl{
     
     if(data->complex){
       data->gui["image"] = image;
-      data->gui["image"].update();
       data->gui["fps"] = data->fps.getFPSString();
     }
 
@@ -555,7 +554,6 @@ namespace icl{
 
       if(!data->grabber.isNull()){
         data->gui["image"] = data->grabber.grab();
-        data->gui["image"].update();
         data->gui["fps"] = data->fps.getFPSString();
         data->mutex.unlock();
         if(data->useFPSLimiter){

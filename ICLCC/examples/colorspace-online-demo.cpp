@@ -51,7 +51,6 @@ void run(){
   g.useDesired(parse<format>(cs));
   
   gui["image"] = g.grab();
-  gui["image"].update();
 }
 
 int main(int n, char **args){

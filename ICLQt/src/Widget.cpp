@@ -353,7 +353,7 @@ namespace icl{
       selectedTabIndex(0),embeddedZoomMode(false),
       embeddedZoomModeJustEnabled(false),embeddedZoomRect(0),
       useLinInterpolation(false),nextButtonX(2),lastMouseReleaseButton(0),
-      defaultViewPort(Size::VGA),parentBeforeFullScreen(0)
+      defaultViewPort(Size::VGA),parentBeforeFullScreen(0),autoRender(true)
     {
       for(int i=0;i<3;++i){
         bci[i] = 0;
@@ -420,6 +420,7 @@ namespace icl{
     Point wheelDelta;
     Size defaultViewPort;
     QWidget *parentBeforeFullScreen;
+    bool autoRender;
     
     bool event(int x, int y, OSDGLButton::Event evt){
       bool any = false;
@@ -1828,6 +1829,10 @@ namespace icl{
   }
 
 
+  void ICLWidget::setAutoRenderOnSetImage(bool on){
+    m_data->autoRender = on;
+  }
+
 
   void ICLWidget::setImage(const ImgBase *image){ 
     LOCK_SECTION;
@@ -1864,6 +1869,8 @@ namespace icl{
     }
     m_data->imageInfoIndicator->update(image->getParams(),image->getDepth());
     updateInfoTab();
+    
+    if(m_data->autoRender) render();
   }
 
 
@@ -2159,7 +2166,8 @@ namespace icl{
 
 
 
-  void ICLWidget::updateFromOtherThread(){
+  void ICLWidget::render(){
+    swapQueues();
     QApplication::postEvent(this,new QEvent(QEvent::User),Qt::HighEventPriority);
   }
 
@@ -2178,7 +2186,8 @@ namespace icl{
  
   void ICLWidget::setShowPixelGridEnabled(bool enabled){
     m_data->image.setDrawGrid(enabled,m_data->gridColor);
-    updateFromOtherThread();
+
+    QApplication::postEvent(this,new QEvent(QEvent::User),Qt::HighEventPriority);
   }
 
 
@@ -2201,24 +2210,28 @@ namespace icl{
     o[0] = float(color.red())/255;
     o[1] = float(color.green())/255;
     o[2] = float(color.blue())/255;
-    updateFromOtherThread();
+    
+    QApplication::postEvent(this,new QEvent(QEvent::User),Qt::HighEventPriority);
   }
 
 
   void ICLWidget::setBackgroundBlack(){
     std::fill(m_data->backgroundColor,m_data->backgroundColor+3,0);
-    updateFromOtherThread();
+    
+    QApplication::postEvent(this,new QEvent(QEvent::User),Qt::HighEventPriority);
   }
 
   
   void ICLWidget::setBackgroundWhite(){
     std::fill(m_data->backgroundColor,m_data->backgroundColor+3,1);
-    updateFromOtherThread();
+    
+    QApplication::postEvent(this,new QEvent(QEvent::User),Qt::HighEventPriority);
   }
 
   void ICLWidget::setBackgroundGray(){
     std::fill(m_data->backgroundColor,m_data->backgroundColor+3,0.3);
-    updateFromOtherThread();
+
+    QApplication::postEvent(this,new QEvent(QEvent::User),Qt::HighEventPriority);
   }
 
 
@@ -2227,26 +2240,31 @@ namespace icl{
     QColor color = QColorDialog::getColor(QColor(g[0]*255,g[1]*255,g[2]*255),this);
     float n[4] = { float(color.red())/255, float(color.green())/255, float(color.blue())/255, g[3]};
     m_data->image.setGridColor(n);
-    updateFromOtherThread();
+
+    QApplication::postEvent(this,new QEvent(QEvent::User),Qt::HighEventPriority);
   }
 
   
   void ICLWidget::setGridBlack(){
     float c[4] = {0,0,0,1};
     m_data->image.setGridColor(c);
-    updateFromOtherThread();
+
+    QApplication::postEvent(this,new QEvent(QEvent::User),Qt::HighEventPriority);
+
   }
 
   void ICLWidget::setGridWhite(){
     float c[4] = {1,1,1,1};
     m_data->image.setGridColor(c);
-    updateFromOtherThread();
+
+    QApplication::postEvent(this,new QEvent(QEvent::User),Qt::HighEventPriority);
   }
 
   void ICLWidget::setGridGray(){
     float c[4] = {0.3,0.3,0.3,1};
     m_data->image.setGridColor(c);
-    updateFromOtherThread();
+
+    QApplication::postEvent(this,new QEvent(QEvent::User),Qt::HighEventPriority);
   }
 
 
@@ -2254,7 +2272,7 @@ namespace icl{
     const float *c = m_data->image.getGridColor();
     float n[4] = {c[0],c[1],c[2],float(alpha)/255};
     m_data->image.setGridColor(n);
-    updateFromOtherThread();
+    QApplication::postEvent(this,new QEvent(QEvent::User),Qt::HighEventPriority);
   }
 
   

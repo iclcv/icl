@@ -121,25 +121,17 @@ void run(){
   ostringstream sstr; sstr << *dstImage;
   
   src = roiedImage;
-  (*src)->lock();
-  (*src)->reset();
-  (*src)->color(255,0,0,255);
-  (*src)->fill(0,0,0,0);
-  (*src)->rect(roi.enlarged(-1));
-  (*src)->unlock();
+  src->color(255,0,0,255);
+  src->fill(0,0,0,0);
+  src->rect(roi.enlarged(-1));
   
   dst = dstImage;
+  dst->color(255,0,0,255);
+  dst->text(sstr.str(),10,10,-1,-1,7);
   
-  (*dst)->lock();
-  (*dst)->reset();
-  (*dst)->color(255,0,0,255);
-  (*dst)->text(sstr.str(),10,10,-1,-1,7);
-  (*dst)->unlock();
-  
-  
-  src.update();
-  dst.update();
-  fps.update();
+  src.render();
+  dst.render();
+  fps.render();
   
   delete roiedImage;
 }

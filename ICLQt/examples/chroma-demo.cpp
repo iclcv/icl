@@ -57,10 +57,7 @@ void run(){
   }
 
   gui["image"] = &image;
-  gui["image"].update();
   gui["segimage"] = &segImage;
-  gui["segimage"].update();
-  Thread::msleep(10);
 }
 
 void init(){

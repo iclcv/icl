@@ -70,26 +70,17 @@ void init(){
   
   scene.getCamera(0).setName("Left Camera");
   scene.getCamera(1).setName("Right Camera");
+  
+  gui["w1"].link(scene.getGLCallback(0));
+  gui["w2"].link(scene.getGLCallback(1));
 }
 
 
 void run(){
-  static DrawHandle3D draws[2] = { gui["w1"], gui["w2"] };
-  static Camera *cams[2] = { &scene.getCamera(0), &scene.getCamera(1)}; 
-  gui["fps"].update();
+  gui["fps"].render();
+  gui["w1"].render();
+  gui["w2"].render();
   
-  for(int i=0;i<2;++i){
-    cams[i]->setFocalLength(gui[str("f")+(i?"r":"l")]);
-    cams[i]->setSkew(gui["skew"]);
-    cams[i]->setSamplingResolution(gui["sx"],gui["sy"]);
-    cams[i]->setPrincipalPointOffset(gui["px"],gui["py"]);
-
-    draws[i]->lock();
-    draws[i]->reset3D();
-    draws[i]->callback(scene.getGLCallback(i));
-    draws[i]->unlock();
-    draws[i]->update();
-  }
   static FPSLimiter limiter(25);
   limiter.wait();
 }

@@ -40,12 +40,10 @@ GenericGrabber grabber;
 
 void run(){
   static FPSLimiter fps(pa("-maxfps"),10);
-  while(true){
-    gui["image"] = grabber.grab();
-    gui["image"].update();
-    gui["fps"].update();
-    fps.wait();
-  }
+  
+  gui["image"] = grabber.grab();
+  gui["fps"].render();
+  fps.wait();
 }
 
 void init(){

@@ -56,7 +56,6 @@ void step(){
   op.apply(&image,&dst);
 
   gui["draw"] = dst;
-  gui["draw"].update();
   Thread::msleep(10);
 }
 
@@ -81,7 +80,7 @@ void bench(){
 }
 
 void init(){
-  gui << "draw[@handle=draw@minsize=32x24]";
+  gui << "image[@handle=draw@minsize=32x24]";
   gui << ( GUI("vbox[@maxsize=10x100]") 
            << "fslider(0.1,5,1,vertical)[@out=scale@label=scale@handle=a]"
            << "fslider(0,6.3,0,vertical)[@out=angle@label=angle@handle=b]"
@@ -96,7 +95,6 @@ void init(){
   gui.registerCallback(function(step),"a,b,c,d");
   gui.registerCallback(function(bench),"bench");
   gui["draw"] = image;
-  gui["draw"].update();
 }
 
 

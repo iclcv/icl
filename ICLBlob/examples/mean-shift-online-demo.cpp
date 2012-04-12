@@ -62,7 +62,6 @@ class Mouse : public MouseHandler{
       std::fill(image.begin(1),image.end(1),COLOR[1]);
       std::fill(image.begin(2),image.end(2),COLOR[2]);
       gui["color"] = image;
-      gui["color"].update();
     }
     m.unlock();
   }
@@ -132,7 +131,6 @@ void run(){
      ms.getBandwidth() != bandwidth){
     ms.setKernel((MeanShiftTracker::kernelType)kernelType.getSelectedIndex(),bandwidth,bandwidth/2);
     gui["kernel"] = ms.getKernelImage();
-    gui["kernel"].update();
   }
   if(newPos){
     pos = *newPos;
@@ -143,15 +141,12 @@ void run(){
 
   static ICLDrawWidget &w = **gui.getValue<DrawHandle>("image");
   w.setImage( (shownImage.getSelectedIndex()) ? (&wi) : (image));
-  w.lock();
-  w.reset();
   w.color(255,0,0,255);
   w.fill(255,0,0,50);
   w.rect(pos.x-bandwidth,pos.y-bandwidth,2*bandwidth+1,2*bandwidth+1);
   w.symsize(20);
   w.sym(pos.x,pos.y, ICLDrawWidget::symPlus);
-  w.unlock();
-  w.update();
+  w.render();
 
   Thread::msleep(50);
 }

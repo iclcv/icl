@@ -248,9 +248,10 @@ int main(int n, char **args){
     /// removes all callbacks registered using registerCallback
     void removeCallbacks();
 
-    /// this function should be called to update the widget asyncronously from a working thread
-    void updateFromOtherThread();
-    
+    /// re-renders the widget (thread-safe)
+    /** in subclasses, */
+    void render();
+
     /// overloaded event function processing special thread save update events
     virtual bool event(QEvent *event);
     
@@ -306,6 +307,11 @@ int main(int n, char **args){
     
     /// removes special button with given ID
     void removeSpecialButton(const std::string &id);
+
+    /// sets whether the widget will automatically call render when setImage is called
+    /** Default is true for the ICLWidget class and false for the Derived classes 
+        ICLDrawWidget and ICLDrawWidget3D */
+    void setAutoRenderOnSetImage(bool on);
     
     public slots:
     /// sets up the current image
@@ -319,6 +325,11 @@ int main(int n, char **args){
     void specialButtonClicked(const std::string &id);
     void specialButtonToggled(const std::string &id, bool down);
 
+    protected:
+
+    /// this is reimplemented by the DrawWidget and by the DrawWidget3D for internal buffers swapping
+    /** swapQueues is automatically called by render */
+    virtual void swapQueues(){}
 
     public:
     virtual void mousePressEvent(QMouseEvent *e);

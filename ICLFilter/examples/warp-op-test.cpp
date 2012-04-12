@@ -73,12 +73,10 @@ void run(){
     l = str((Time::now()-t).toMilliSeconds())+"ms";
     
     H = dst;
-    H.update();
   }else{
     H = grabber.grab();
-    H.update();
   }
-  fps.update();
+  fps.render();
   Thread::msleep(2);
 }
 

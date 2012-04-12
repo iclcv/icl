@@ -42,7 +42,6 @@ add_example (${PROJECT_NAME} "colorpicker" "${CONDITIONLIST}" ICLLibsToLinkAgain
 add_example (${PROJECT_NAME} "gui-callback-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "interactive-filter-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "mouse-interaction-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-add_example (${PROJECT_NAME} "visualization-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "camcfg" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "config-gui-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "configurable-gui-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
@@ -51,8 +50,8 @@ add_example (${PROJECT_NAME} "complex-gui-callback-test" "${CONDITIONLIST}" ICLL
 add_example (${PROJECT_NAME} "image-compare" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "define-rects-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_OPENGL_COND)
-add_example (${PROJECT_NAME} "3D-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+#set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_OPENGL_COND)
+#add_example (${PROJECT_NAME} "3D-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick)

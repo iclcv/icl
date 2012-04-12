@@ -86,7 +86,6 @@ void update(){
   dt = (Time::now()-t).toMilliSecondsDouble();
   
   image = dst;
-  image.update();
 }
 
 void run(){

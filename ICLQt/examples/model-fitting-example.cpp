@@ -147,7 +147,7 @@ void compute(){
     }
   }
   plot->unlock();
-  plot.update();
+  plot.render();
 }
 
 void init(){

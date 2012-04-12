@@ -77,9 +77,8 @@ void run(){
   while(1){
     for(unsigned int i=0;i<gs.size();i++){
       gui["image"+str(i)] = gs[i]->grab();
-      gui["image"+str(i)].update();
     }
-    fps.update();
+    fps.render();
     Thread::msleep(gs.size()*10);
   }
 }

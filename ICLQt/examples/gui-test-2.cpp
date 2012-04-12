@@ -48,7 +48,6 @@ void run(){
   while(1){
     for(int i=0;i<3;++i){
       *ws[i] = image;
-      ws[i]->update();
     }
     if(click.wasTriggered()){
       std::cout << "button 'click' was triggered!" << std::endl;

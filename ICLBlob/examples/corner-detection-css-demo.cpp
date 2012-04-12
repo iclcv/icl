@@ -205,7 +205,7 @@ void drawStep2(ICLDrawWidget *w, const CornerDetectorCSS::DebugInformation &css_
 
 void run(){
 	// draw handles
-	static DrawHandle &h = gui.getValue<DrawHandle>("img_in");
+  static DrawHandle &h = gui.getValue<DrawHandle>("img_in");
   static DrawHandle &h1 = gui.getValue<DrawHandle>("img1");
   static DrawHandle &h2 = gui.getValue<DrawHandle>("img2");
   static DrawHandle &h3 = gui.getValue<DrawHandle>("img3");
@@ -223,11 +223,7 @@ void run(){
 	h1 = &bgImage1; h2 = &bgImage2; h3 = &bgImage3;
 
 	// lock the DrawWidgets before drawing
-  ICLDrawWidget *w = *h;
-  ICLDrawWidget *w1 = *h1, *w2 = *h2, *w3 = *h3;
-  w->lock(); w->reset();
-  w1->lock(); w1->reset(); w2->lock(); w2->reset();
-  w3->lock(); w3->reset();
+  ICLDrawWidget *w = *h,  *w1 = *h1, *w2 = *h2, *w3 = *h3;
 
 	// detect regions
   static RegionDetector d(100,200000,255,255);
@@ -250,13 +246,15 @@ void run(){
     drawStep3(w3, css_inf);
     
     Point32f cog = rs[i].getCOG();
-  	w->color(255,0,0,255); w->fill(255,0,0,255);
-	  w->ellipse(cog.x-1, cog.y-1,2,2);  
+    w->color(255,0,0,255); w->fill(255,0,0,255);
+    w->ellipse(cog.x-1, cog.y-1,2,2);  
   }
-  w->unlock(); w1->unlock(); w2->unlock(); w3->unlock();
 	
 	// update the draw widgets
-  h.update(); h1.update(); h2.update(); h3.update();
+  h.render(); 
+  h1.render();
+  h2.render();
+  h3.render();
   Thread::msleep(100);
 }
 

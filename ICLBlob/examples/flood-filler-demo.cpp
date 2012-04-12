@@ -92,7 +92,6 @@ void run(){
   }
   
   gui["image"] = image;
-  gui["image"].update();
 }
 
 void init(){

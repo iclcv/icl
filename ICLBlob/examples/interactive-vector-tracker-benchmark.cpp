@@ -98,7 +98,7 @@ void run(){
       ids[i] = vt.getID(i);
     }
     
-    gui["fps"].update();
+    gui["fps"].render();
     mutex.unlock();
 
     Thread::msleep(1);

@@ -60,7 +60,7 @@ namespace icl{
     GUIHandle<CompabilityLabel>(l,w),m_oFpsEstimator(fpsEstimatorFrames){}
     
     // notifies and updates the internal fps estimator and the shown fps-string
-    void update(){
+    void render(){
       lab()->setText(m_oFpsEstimator.getFPSString().c_str());
       lab()->updateFromOtherThread();
     }

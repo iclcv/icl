@@ -86,7 +86,7 @@ void init(){
            << "camcfg()"
          );
   
-  gui << "draw[@minsize=32x24@handle=image]" 
+  gui << "image[@minsize=32x24@handle=image]" 
       << con;
 
   gui.show();
@@ -99,7 +99,7 @@ void init(){
 
 void run(){
   gui_SliderHandle(pos);
-  gui_DrawHandle(image);
+  gui_ImageHandle(image);
   gui_bool(pause);
 #ifndef HAVE_OPENCV
   gui_int(speed);
@@ -116,9 +116,7 @@ void run(){
   }
   
   image = grabber.grab();
-  image.update();
-
-  gui["fps"].update();
+  gui["fps"].render();
 
   int p = parse<int>(grabber.getValue(::pos));
   disableNextUpdate = true;

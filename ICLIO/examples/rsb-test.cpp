@@ -50,7 +50,6 @@ std::string app;
 
 void cb_func(const ImgBase *image, const std::string &text){
   gui["cb_image"] = image;
-  gui["cb_image"].update();
   gui["cb_text"] = text;
 }
 
@@ -97,16 +96,14 @@ void run(){
   if(MODE == Send || MODE == Both){
     const ImgBase *image = grabber.grab();
     gui["image"] = image;
-    gui["image"].update();
     sender.send(gui["text"],image);
   }else{
     std::string text;
     const ImgBase *image = receiver.receive(&text);
     gui["image"] = image;
-    gui["image"].update();
     gui["text"] = text;
   }
-  gui["fps"].update();
+  gui["fps"].render();
 }
 
 void run2(){

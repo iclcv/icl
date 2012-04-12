@@ -78,15 +78,12 @@ void run(){
 
   // visualization
   draw = im;
-  draw->lock();
-  draw->reset();
   draw->color(0,100,255);
   for(unsigned int i=0;i<rs.size();++i){
     // obtain region information (boundary pixels here)
     draw->linestrip(rs[i].getBoundary());
   }
-  draw->unlock();
-  draw.update();
+  draw.render();
 }
 
 // default main function

@@ -129,8 +129,6 @@ void step(){
   }
 
   
-  orig->lock();
-  orig->reset();
   if(selroi[0] != Rect::null){
     orig->color(0,100,255);
     orig->fill(0,100,255,20);
@@ -140,15 +138,10 @@ void step(){
   orig->color(255,0,0);
   orig->nofill();
   orig->rect(selroi[1]);
-
-  orig->unlock();
-  
-  
-  orig.update();
+  orig.render();
     
   prev = result;
-  prev.update();
-  fps.update();
+  fps.render();
 }
 
 void init(){

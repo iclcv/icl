@@ -45,11 +45,11 @@ namespace icl{
   /** Even though, it is possible to use the ICLDrawWidget3D for rendering
       3D stuff on top of an image directly, it is strongly recommended to use
       an instance of ICLGeom::Scene to manage camera, scene objects and lights.
-      A scene instance provides a single ICLDrawWidget3D::GLCallback instance 
-      that can be passed to the DrawWidget3D instace using the 
-      DrawWidget3D::callback method.
+      A scene instance provides a single ICLDrawWidget3D::GLCallback* that can easily
+      be linked to the DrawWidget3D by using the ICLDrawWidget3D::link method.
       
-      still todo: more documentation and examples 
+      Most older methods got the deprecated status. They will be removed soon, since
+      it turned out, that using ICLGeom's Scene class is much easier and less error-prone.
   */
   class ICLDrawWidget3D : public ICLDrawWidget {
     /// Internal structure for hidden data
@@ -94,86 +94,87 @@ namespace icl{
     
     virtual void customPaintEvent(PaintEngine *e);
 
-    /// reset the command queue
-    void reset3D();
+#if 0
+    /// reset the command queue  (deprecated)
+    ICL_DEPRECATED void reset3D();
     
-    /// clears all buffers
-    void clear3D();
+    /// clears all buffers (deprecated)
+    ICL_DEPRECATED void clear3D();
     
-    /// draws a 3D cube with size d at given location (x,y,z)
-    void cube3D(float cx, float cy, float cz, float d);
+    /// draws a 3D cube with size d at given location (x,y,z) (deprecated)
+    ICL_DEPRECATED void cube3D(float cx, float cy, float cz, float d);
 
-    /// draws a very nice 3D cube with size d at given location (x,y,z)
-    void supercube3D(float cx, float cy, float cz, float d);
+    /// draws a very nice 3D cube with size d at given location (x,y,z) (deprecated)
+    ICL_DEPRECATED void supercube3D(float cx, float cy, float cz, float d);
 
-    /// draws a 3D cube with size d at given location (x,y,z)
-    void imagecube3D(float cx, float cy, float cz, float d, const ImgBase *image);
+    /// draws a 3D cube with size d at given location (x,y,z) (deprecated)
+    ICL_DEPRECATED void imagecube3D(float cx, float cy, float cz, float d, const ImgBase *image);
 
-    /// draws a 3D cube with size d at given location (x,y,z)
+    /// draws a 3D cube with size d at given location (x,y,z) (deprecated)
     /** @param images array of images to draw on each face of the cube*/
-    void imagecube3D(float cx, float cy, float cz, float d, const ImgBase *images[6]);
+    ICL_DEPRECATED void imagecube3D(float cx, float cy, float cz, float d, const ImgBase *images[6]);
 
-    /// draw a 3D image texture into the parallelogram defined by the base vector c and two direction vector a and b
-    void image3D(float cX,float cY,float cZ,float aX, float aY,float aZ,float bX,float bY,float bZ, const ImgBase *image);
+    /// draw a 3D image texture into the parallelogram defined by the base vector c and two direction vector a and b (deprecated)
+    ICL_DEPRECATED void image3D(float cX,float cY,float cZ,float aX, float aY,float aZ,float bX,float bY,float bZ, const ImgBase *image);
 
-    /// sets the current color to (r,g,b,a)
-    void color3D(float r, float g, float b, float a);
+    /// sets the current color to (r,g,b,a) (deprecated)
+    ICL_DEPRECATED void color3D(float r, float g, float b, float a);
     
-    /// sets up the current modelview-matrix
+    /// sets up the current modelview-matrix (deprecated)
     /** - eye position of the camera in the scene
         - center center of the szene (where the camera is looking at)
         - up up-vector 
     */
-    void lookAt3D(float eyeX, float eyeY, float eyeZ, float cX, float cY, float cZ, float upX, float upY, float upZ);
+    ICL_DEPRECATED void lookAt3D(float eyeX, float eyeY, float eyeZ, float cX, float cY, float cZ, float upX, float upY, float upZ);
     
-    /// sets up the current projection-matrix
-    void frustum3D(float left,float right,float bottom, float top,float zNear,float zFar);
+    /// sets up the current projection-matrix (deprecated)
+    ICL_DEPRECATED void frustum3D(float left,float right,float bottom, float top,float zNear,float zFar);
     
-    /// sets up the gl view port
-    void viewport3D(float x,float y, float width, float height);
+    /// sets up the gl view port (deprecated)
+    ICL_DEPRECATED void viewport3D(float x,float y, float width, float height);
     
-    /// sets up current projection matrix using a perpective projection
-    void perspective(float angle, float aspect, float near, float far);
+    /// sets up current projection matrix using a perpective projection (deprecated)
+    ICL_DEPRECATED void perspective(float angle, float aspect, float near, float far);
     
-    /// rotates the current matrix by given angles
-    void rotate3D(float rx, float ry, float rz);
+    /// rotates the current matrix by given angles (deprecated)
+    ICL_DEPRECATED void rotate3D(float rx, float ry, float rz);
 
-    /// translates the current szene by given angles
-    void translate3D(float rx, float ry, float rz);
+    /// translates the current szene by given angles (deprecated)
+    ICL_DEPRECATED void translate3D(float rx, float ry, float rz);
     
-    /// calls glScalef multiply the current matrix with a scaling matrix
-    void scale3D(float sx, float sy, float sz);
+    /// calls glScalef multiply the current matrix with a scaling matrix (deprecated)
+    ICL_DEPRECATED void scale3D(float sx, float sy, float sz);
     
-    /// multiplies the current matrix with a given matrix
-    void multMat3D(float *mat);
+    /// multiplies the current matrix with a given matrix (deprecated)
+    ICL_DEPRECATED void multMat3D(float *mat);
     
-    /// sets the current matrix with a given matrix
-    void setMat3D(float *mat);
+    /// sets the current matrix with a given matrix (deprecated)
+    ICL_DEPRECATED void setMat3D(float *mat);
 
-    /// switches the current matrix to modelview matrix
-    void modelview();
+    /// switches the current matrix to modelview matrix (deprecated)
+    ICL_DEPRECATED void modelview();
     
-    /// switches the current matrix to projection matrix
-    void projection();
+    /// switches the current matrix to projection matrix (deprecated)
+    ICL_DEPRECATED void projection();
     
-    /// creates a glPushMatrix command in the command queue
-    void pushMatrix();
+    /// creates a glPushMatrix command in the command queue (deprecated)
+    ICL_DEPRECATED void pushMatrix();
     
-    /// creates a glPopMatrix command in the command queue
-    void popMatrix();
+    /// creates a glPopMatrix command in the command queue (deprecated)
+    ICL_DEPRECATED void popMatrix();
 
-    /// sets the current matrix to the identity matrix
-    void id();
+    /// sets the current matrix to the identity matrix (deprecated)
+    ICL_DEPRECATED void id();
     
-    /// creates a callback function draw command
+    /// creates a callback function draw command (deprecated)
     /** This method locks the internal recursive mutex automatically */
-    void callback(GLCallbackFunc, void *data=0);
+    ICL_DEPRECATED void callback(GLCallbackFunc, void *data=0);
     
-    /// create a callback object draw comamnd (ownership is not passed!)
+    /// create a callback object draw comamnd (ownership is not passed!) (deprecated)
     /** This method locks the internal recursive mutex automatically */
-    void callback(GLCallback *cb);
+    ICL_DEPRECATED void callback(GLCallback *cb);
     
-    /// create a callback object draw command using a smart ptr (so ownership is passed smartly)
+    /// create a callback object draw command using a smart ptr (so ownership is passed smartly) (deprecated)
     /** Using smart-pointer callback is recommended, if given callback objects are endangered to be
         released in some other thread than that one, which fills and clears the DrawWidget3D's 
         draw command queue. Here it would be possible, that the command queue contains already
@@ -181,8 +182,15 @@ namespace icl{
         callback objects asynchronously.\\
         This method locks the internal recursive mutex automatically
     */
-    void callback(SmartPtr<GLCallback> smartCB);
+    ICL_DEPRECATED void callback(SmartPtr<GLCallback> smartCB);
 
+#endif
+    /// add a single 3D callback, that is rendered (here, no queue swapping is neccessary)
+    /** the linked callback can be removed by calling link(0). The ownership of the linked 
+        callback is never passed. */
+    void link(GLCallback *cb);
+    
+#if 0
     /// forward declaration of the internally used DrawCommandClass
     class DrawCommand3D;
 
@@ -209,12 +217,19 @@ namespace icl{
         Note: specular light is not working yet, maybe the object 
         material has to be set up for specular light as well.
     */
-    void setProperty(const std::string &property, const std::string &value);
+    ICL_DEPRECATED void setProperty(const std::string &property, const std::string &value);
 
     protected:    
 
+    virtual void swapQueues();
+    
     /// draw command event queue
-    std::vector<DrawCommand3D*> m_vecCommands3D;
+    std::vector<DrawCommand3D*> *m_commands[2];
+#endif
+
+    protected:
+    /// special single callback linked to the 3D visualisation
+    GLCallback *m_linkedCallback;
 
   };
 }

@@ -65,7 +65,7 @@ namespace icl{
     void operator=(const ImgBase &image) { setImage(&image); }
     
     /// calles updated internally
-    void update();
+    void render();
 
     /// passes callback registration to wrapped ICLWidget instance)
     /** allowed event names are all,move,drag,press,release,enter,leave */

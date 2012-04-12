@@ -60,8 +60,8 @@ namespace icl{
     /// make the wrapped ICLWidget show a given image (as set Image)
     void operator=(const ImgBase *image) { setImage(image); }
     
-    /// calles updated internally
-    void update();
+    /// re-renders the widget
+    void render();
 
     /// passes callback registration to wrapped ICLWidget instance)
     virtual void registerCallback(const GUI::Callback &cb, const std::string &events="all");

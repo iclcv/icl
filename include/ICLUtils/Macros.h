@@ -235,4 +235,6 @@ namespace icl{
 
 #define ICL_DELETE_ARRAY(X) if((X)){ delete [] (X); (X)=0; }
 
+#define ICL_DEPRECATED __attribute__((deprecated))
+
 #endif //ICLMACROS_H

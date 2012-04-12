@@ -70,15 +70,12 @@ void mouse(const MouseEvent &event){
 }
 
 void run(){
-  gui_DrawHandle(draw);
+  static DrawHandle draw = gui["draw"];
 
   const ImgBase *grabbedImage = grabber->grab();
   draw = grabbedImage;
   
   if(x>0){ // else no mouse event has been recognized yet
-    draw->lock();
-    draw->reset();
-    
     Rect roi(x-101,y-101,202,202);
     
     if(Rect(Point::null,grabbedImage->getSize()).contains(roi)){
@@ -112,10 +109,8 @@ void run(){
     draw->text(ac,x-90,y+110,-1,-1,8);
     draw->text(sKernel,x-90,y+100,-1,-1,8);
     draw->text("(click!)",x+60,y+120,-1,-1,8);
-    
-    draw->unlock();
   }
-  draw.update();
+  draw.render();
 }
 
 

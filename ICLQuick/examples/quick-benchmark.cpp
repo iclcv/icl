@@ -88,14 +88,8 @@ void run(){
   
   ImgQ i = copyroi(h);
   
-  static ImageHandle han = gui.getValue<ImageHandle>("image");
-  han = i;
-  han.update();
-
-  static FPSHandle fps = gui.getValue<FPSHandle>("fps");
-  fps.update();
-  
-  
+  gui["image"] = i;
+  gui["fps"].render();
 }
 
 

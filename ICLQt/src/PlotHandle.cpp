@@ -35,7 +35,7 @@
 #include <ICLQt/PlotHandle.h>
 
 namespace icl{
-  void PlotHandle::update(){
+  void PlotHandle::render(){
     (**this)->updateFromOtherThread();
   }
   

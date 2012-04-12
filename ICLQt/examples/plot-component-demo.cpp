@@ -333,7 +333,7 @@ void run(){
 
     }
     plot->unlock();
-    plot.update();
+    plot.render();
   }
 
   static FPSLimiter fpsLimit(20,10);

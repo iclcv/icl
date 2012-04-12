@@ -39,8 +39,8 @@ namespace icl{
   void ImageHandle::setImage(const ImgBase *image){
     (**this)->setImage(image);
   }
-  void ImageHandle::update(){
-    (**this)->updateFromOtherThread();
+  void ImageHandle::render(){
+    (**this)->render();
   }
 
   void ImageHandle::registerCallback(const GUI::Callback &cb, const std::string &events){

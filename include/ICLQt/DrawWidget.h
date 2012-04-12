@@ -181,6 +181,7 @@ int main(int n, char **ppc){
     /// destructor2
     ~ICLDrawWidget();
 
+#if 0
     /// locks the state machine
     /** The state machine collects all draw commands in a command queue internally.
         The access to this command queue must be locked, as push operations on this
@@ -189,10 +190,11 @@ int main(int n, char **ppc){
         OpenGL commands. Do not forget to call unlock after performing all drawing
         commands.
     */
-    void lock(){m_oCommandMutex.lock();}
+    ICL_DEPRECATED void lock(){}//m_oCommandMutex.lock();}
 
     /// unlocks the draw command queue ( so it can be drawn by OpenGL )
-    void unlock(){m_oCommandMutex.unlock();}
+    ICL_DEPRECATED void unlock(){}//{m_oCommandMutex.unlock();}
+#endif
 
     /// sets up the state machine to treat coordinates in the image pixel coordinate system
     /** the visualization space is x={0..w-1} and y={0..h-1}*/
@@ -438,15 +440,18 @@ int main(int n, char **ppc){
     
     /// disables filling primitives
     void nofill();
-    
+
+#if 0    
     /// fills the whole image area with the given color
     void clear(float r=0, float g=0, float b=0, float alpha = 255);
 
+    note: this is done automatically now
     /// clears the drawing command queue 
     /** When drawing in a real-time systems working thread, do not forget to
         call reset before drawing a new frame 
     */
     void reset();
+#endif
     
     /// this function can be reimplemented in derived classes to perform some custom drawing operations
     virtual void customPaintEvent(PaintEngine *e);
@@ -465,8 +470,13 @@ int main(int n, char **ppc){
     class DrawCommand;
 
     protected:    
-    /// draw command event queue
-    std::vector<DrawCommand*> m_vecCommands;
+
+    /// swaps the draw queues
+    virtual void swapQueues();
+
+    /// two lists of draw commands
+    /** queues[0] is filled, queues[1] is drawn*/
+    std::vector<DrawCommand*> *m_queues[2];
 
     /// Data of the "State Machine"
     State *m_poState;

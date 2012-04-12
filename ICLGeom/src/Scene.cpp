@@ -441,7 +441,7 @@ namespace icl{
     ICLASSERT_RETURN(camIndex >= 0 && camIndex < (int)m_cameras.size());
 
     Rect currentImageRect = widget ? widget->getImageRect(true) : Rect::null;
-    Size currentImageSize = widget ? widget->getImageSize(true) : Size::null;
+    //    Size currentImageSize = widget ? widget->getImageSize(true) : Size::null;
     Size widgetSize = widget ? widget->getSize() : Size::null;
 
     Camera cam = m_cameras[camIndex];

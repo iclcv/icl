@@ -81,15 +81,12 @@ void run(){
   
   draw = image;
 
-  draw->lock();  
-  draw->reset();
   for(unsigned int i=0;i<blobs.size();++i){
     draw->color(255,255,255,255);
     draw->linestrip(blobs[i].region->getBoundary());
     draw->text(str(blobs[i].refColorIndex), blobs[i].region->getCOG().x,blobs[i].region->getCOG().y);
   }
-  draw->unlock();  
-  draw.update();
+  draw.render();
   fps.wait();
 }
 

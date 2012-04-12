@@ -90,7 +90,7 @@ namespace icl{
       }
       if(idx < (int)m_imageBuffer->size()){
         (**this)->setImage(m_imageBuffer->at(idx));  
-        (**this)->updateFromOtherThread();
+        (**this)->render();
       }
     }
   }
@@ -148,8 +148,8 @@ namespace icl{
     }
   }
     
-  void MultiDrawHandle::update(){
-    (**this)->updateFromOtherThread();
+  void MultiDrawHandle::render(){
+    (**this)->render();
   }
   
   int MultiDrawHandle::getSelectedIndex(){

@@ -49,8 +49,8 @@ namespace icl{
     /// create a new ImageHandel
     PlotHandle(PlotWidget *w, GUIWidget *guiw):GUIHandle<PlotWidget>(w,guiw){}
     
-    /// calles updated internally
-    void update();
+    /// re-renders the widget
+    void render();
 
     // todo: implement several set data method for more convenience
 

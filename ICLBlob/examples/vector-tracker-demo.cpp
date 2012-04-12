@@ -376,9 +376,6 @@ void run(){
 
   w->setImage(image);
   
-  w->lock();       
-  w->reset();
-
   if(vVT.size()){
     
     std::vector<float> normFactors(3);
@@ -434,9 +431,7 @@ void run(){
   sprintf(buf,"blobs:%4d frames:%6d Error-frames:%4d Errors:%4d   ",(unsigned int)vVT.size(),frame_counter,error_frames,error_counter);
   w->text(string(buf)+"   "+fps.getFPSString().c_str(),5,5,-1,-1,8); 
   
-  w->unlock();
-  w->update();
-
+  w->render();
 
   static int &sleepTime = gui.getValue<int>("Vsl");
   Thread::msleep(sleepTime);
