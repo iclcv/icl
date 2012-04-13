@@ -42,10 +42,10 @@ void init(){
   
   gui << "image[@handle=image]" << "!show";
   
-  ICLDrawWidget *w = *gui.getValue<DrawHandle>("image");
+  ICLWidget *w = *gui.getValue<ImageHandle>("image");
   
   ImgQ x = scale(create("parrot"),100,100);
-  w->addSpecialButton("im",&x,function((ICLWidget*)w,&ICLWidget::captureCurrentImage));
+  w->addSpecialButton("im",&x,function((ICLWidget*)w,&ICLWidget::captureCurrentImage),"capture current image");
   
   ImgQ k = zeros(100,100,4);
   color(255,0,0,255);
@@ -57,7 +57,7 @@ void init(){
     }
   }
   
-  w->addSpecialButton("fb",&k,function((ICLWidget*)w,&ICLWidget::captureCurrentFrameBuffer));
+  w->addSpecialButton("fb",&k,function((ICLWidget*)w,&ICLWidget::captureCurrentFrameBuffer),"capture framebuffer");
 }
 
 void run(){

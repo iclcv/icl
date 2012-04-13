@@ -995,7 +995,7 @@ namespace icl{
     // }}}
   void ICLDrawWidget::customPaintEvent(PaintEngine *e){
     // {{{ open
-    m_oCommandMutex.lock();
+    QMutexLocker lock(&m_oCommandMutex);
     //Rect r = getImageRect();
     m_poState->aa = false;
     m_poState->rel = false;
@@ -1014,7 +1014,6 @@ namespace icl{
       (*it)->exec(e,m_poState);
     }
     finishCustomPaintEvent(e);
-    m_oCommandMutex.unlock();
   }
 
     // }}}
@@ -1023,10 +1022,11 @@ namespace icl{
     QMutexLocker lock(&m_oCommandMutex);
     if(m_autoResetQueue){
       std::swap(m_queues[0],m_queues[1]);
-    }else{
+      clear_queue(*m_queues[0]);
+     }else{
       std::copy(m_queues[0]->begin(), m_queues[0]->end(), std::back_inserter(*m_queues[1]));
+      m_queues[0]->clear();
     }
-    clear_queue(*m_queues[0]);
   }
 
   void ICLDrawWidget::setAutoResetQueue(bool on){

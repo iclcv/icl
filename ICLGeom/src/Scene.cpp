@@ -118,17 +118,43 @@ namespace icl{
 
     virtual void prepareForRendering() {
       const Camera &cam = scene->getCamera(cameraIndex);
-
-      Mat T = cam.getCSTransformationMatrix().inv();
       int w = cam.getRenderParams().viewport.width;
       int h = cam.getRenderParams().viewport.height;
 
-      PlaneEquation p(T*Vec(0,0,S,1),T*Vec(0,0,1,1)-cam.getPosition());
-      m_vertices[3] = cam.getViewRay(Point32f(w-1,0)).getIntersection(p);
-      m_vertices[4] = cam.getViewRay(Point32f(0,0)).getIntersection(p);
-      m_vertices[5] = cam.getViewRay(Point32f(w-1,h-1)).getIntersection(p);
-      m_vertices[6] = cam.getViewRay(Point32f(0,h-1)).getIntersection(p);
+      Mat T = cam.getCSTransformationMatrix().inv();
+#if 1
 
+      try{
+        PlaneEquation p(T*Vec(0,0,S,1),T*Vec(0,0,1,1)-cam.getPosition());
+        const Point32f ps[4] = { Point32f(w-1,0), Point32f(0,0), Point32f(w-1,h-1), Point32f(0,h-1) };
+        std::vector<ViewRay> vs = cam.getViewRays(std::vector<Point32f>(ps,ps+4));
+
+        for(int i=0;i<4;++i){
+          m_vertices[i+3] = vs[i].getIntersection(p);
+        }
+
+      }catch(ICLException &e){
+        WARNING_LOG("error visualizsing camera: " << e.what());
+      }
+
+#else
+      // old version with same issue
+      try{
+        PlaneEquation p(T*Vec(0,0,S,1),T*Vec(0,0,1,1)-cam.getPosition());
+        SHOW(p.normal.transp());
+        SHOW(cam.getViewRay(Point32f(w-1,0)).direction.transp());
+        SHOW(cam.getViewRay(Point32f(0,0)).direction.transp());
+        SHOW(cam.getViewRay(Point32f(0,h-1)).direction.transp());
+        SHOW(cam.getViewRay(Point32f(w-1,h-1)).direction.transp());
+
+        m_vertices[3] = cam.getViewRay(Point32f(w-1,0)).getIntersection(p);
+        m_vertices[4] = cam.getViewRay(Point32f(0,0)).getIntersection(p);
+        m_vertices[5] = cam.getViewRay(Point32f(w-1,h-1)).getIntersection(p);
+        m_vertices[6] = cam.getViewRay(Point32f(0,h-1)).getIntersection(p);
+      }catch(ICLException &e){
+        WARNING_LOG("error visualizsing camera: " << e.what());
+      }
+#endif
       std::string name = cam.getName();
 
       if(name != lastName){

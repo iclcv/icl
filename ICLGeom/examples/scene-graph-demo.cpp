@@ -109,6 +109,7 @@ void mouse_2(const MouseEvent &evt){
   if(evt.isLeft() && evt.isPressEvent()){
     std::vector<double> c = evt.getColor();
     if(c.size()){
+      draw->resetQueue();
       draw->color(255,0,0);
       draw->sym(evt.getPos(),'x');
       draw->text(str(c[0]),evt.getX(), evt.getY(), 10);
@@ -117,8 +118,8 @@ void mouse_2(const MouseEvent &evt){
 }
 
 void init(){
-  gui << "draw3D()[@minsize=32x24@handle=view]" 
-      << "draw[@handle=image@minsize=32x24]"
+  gui << "draw3D()[@handle=view]" 
+      << "draw[@handle=image]"
       << (GUI("vbox") 
           << "combo(none,rgb,depth)[@handle=capture@label=offscreen rendering]"
           << "combo(raw,dist. to z0,dist to cam center)[@handle=dmode@label=depth map mode]"
@@ -169,7 +170,10 @@ void init(){
   scene.getLight(2).setAnchor(p);
 
   scene.setDrawCoordinateFrameEnabled(true,400,10);
+
   
+  DrawHandle ih = gui["image"];
+  ih->setAutoResetQueue(false);
 }
 
 void run(){

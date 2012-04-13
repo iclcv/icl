@@ -57,10 +57,6 @@ void init(){
            )
       << "!show";
 
-  Img8u bg(Size::VGA,1);
-  gui["w1"] = &bg;
-  gui["w2"] = &bg;
-  
   scene.addCamera(Camera(Vec(-250,0,1000,1),Vec(0,0,-1,1),Vec(0,1,0,1)));
   scene.addCamera(Camera(Vec(200,0,200,1),Vec(-1,0,0,1),Vec(0,1,0,1)));
   scene.setDrawCoordinateFrameEnabled(true,120,10);
@@ -77,6 +73,16 @@ void init(){
 
 
 void run(){
+  Camera &l = scene.getCamera(0), &r = scene.getCamera(1);
+  l.setFocalLength(gui["fl"]);
+  r.setFocalLength(gui["fr"]);
+
+  l.setPrincipalPointOffset(Point32f(gui["px"],gui["py"]));
+  l.setSamplingResolution(gui["sx"],gui["sy"]);
+  
+  l.setSkew(gui["skew"]);
+
+  
   gui["fps"].render();
   gui["w1"].render();
   gui["w2"].render();
@@ -87,6 +93,7 @@ void run(){
 
 
 int main(int n, char**ppc){
+  ERROR_LOG("this demo has a bug!");
   return ICLApplication(n,ppc,"",init,run).exec();
 }
 
