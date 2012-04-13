@@ -591,11 +591,6 @@ void init(){
   scene.addCamera(Camera());
   scene.getCamera(0).setResolution(grabber.grab()->getSize());
   
-  DrawHandle3D draw = gui["draw"];
-  draw->lock();
-  draw->callback(scene.getGLCallback(0));
-  draw->unlock();
-  
   gui["showRelTransGUI"].registerCallback(function(&relTransGUI,&GUI::switchVisibility));
   
   planeOptionGUI["planeOffset"].disable();
@@ -604,6 +599,7 @@ void init(){
   planeOptionGUI["planeColor"].disable();
   planeOptionGUI.registerCallback(change_plane,"planeOffset,planeRadius,planeTicDist,planeDim,planeColor");
   
+  gui["draw"].link(scene.getGLCallback(0));
   gui["draw"].install(new MouseHandler(mouse));
 }
 
@@ -781,8 +777,6 @@ void run(){
   static DrawHandle3D draw = gui["draw"];
   
   draw = lastFD->getIntermediateImage(gui["iin"].as<std::string>());
-  draw->lock();
-  draw->reset();
   draw->symsize(7);
   for(unsigned int i=0;i<markers.size();++i){
     FoundMarker &m = markers[i];
@@ -846,8 +840,7 @@ void run(){
   }
 
 
-  draw->unlock();
-  draw.update();
+  draw.render();
 }
 
 

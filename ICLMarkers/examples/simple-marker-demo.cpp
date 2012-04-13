@@ -57,9 +57,6 @@ void run(){
   const std::vector<Fiducial> &fids = fid.detect(image);
 
   draw = image;
-  
-  draw->lock();
-  draw->reset();
   draw->linewidth(2);
   for(unsigned int i=0;i<fids.size();++i){
     Point32f c = fids[i].getCenter2D();
@@ -74,9 +71,7 @@ void run(){
     draw->linestrip(fids[i].getCorners2D());
 
   }
-  draw->unlock();
-
-  draw.update();
+  draw.render();
 }
 
 int main(int n, char **ppc){

@@ -37,6 +37,8 @@
 #include <ICLCore/ImgBase.h>
 #include <ICLQt/GLImg.h>
 
+#include <QtCore/QMutexLocker>
+
 using std::string;
 namespace icl{
   
@@ -798,6 +800,8 @@ namespace icl{
     setShowNoImageWarnings(false);
     
     setAutoRenderOnSetImage(false);
+    
+    m_autoResetQueue = true;
   }
 
     // }}}
@@ -817,118 +821,152 @@ namespace icl{
 
   // {{{ commands: line, sym, rel, ...
   void ICLDrawWidget::image(ImgBase *image,float x, float y, float w, float h){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new ImageCommand(image,x,y,w,h));
   }
  
   void ICLDrawWidget::text(string text, float x, float y, float w, float h, float fontsize){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new TextCommand(text,x,y,w,h,fontsize));
   } 
 
   void ICLDrawWidget::line(float x1, float y1, float x2, float y2){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new LineCommand(x1,y1,x2,y2));
   }
   void ICLDrawWidget::line(const Point32f &a, const Point32f &b){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new LineCommand(a.x,a.y,b.x,b.y));
   }
   void ICLDrawWidget::arrow(float ax, float ay, float bx, float by, float capsize){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new ArrowCommand(ax,ay,bx,by,capsize));
   }
   void ICLDrawWidget::arrow(const Point32f &a, const Point32f &b, float capsize){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new ArrowCommand(a.x,a.y,b.x,b.y,capsize));
   }
   void ICLDrawWidget::sym(float x, float y, Sym s){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new SymCommand(x,y,s));
   }
   void ICLDrawWidget::symsize(float w, float h){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new SymSizeCommand(w,h==-1? w : h));
   }
 
   void ICLDrawWidget::linewidth(float w){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new LineWidthCommand(w));
   }
 
   void ICLDrawWidget::pointsize(float s){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new PointSizeCommand(s));
   }
 
   void ICLDrawWidget::point(float x, float y){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new PointCommand(x,y));
   }
   void ICLDrawWidget::points(const std::vector<Point> &pts, int xfac, int yfac){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new PointsCommand(pts,xfac,yfac,false,false));
   }
   void ICLDrawWidget::points(const std::vector<Point32f> &pts){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new Points32fCommand(pts,false,false));
   }
 
   void  ICLDrawWidget::linestrip(const std::vector<Point> &pts, bool closeLoop, int xfac, int yfac){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new PointsCommand(pts,xfac,yfac,true,closeLoop));
   }
   void  ICLDrawWidget::linestrip(const std::vector<Point32f> &pts, bool closeLoop){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new Points32fCommand(pts,true,closeLoop));
   }
 
   void ICLDrawWidget::polygon(const std::vector<Point32f> &ps){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new PolygonCommand(ps));
   }
   
   void ICLDrawWidget::grid(const Point32f *points, int nx, int ny, bool rowMajor){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new GridCommand(points,nx,ny,rowMajor));
   }
 
   void ICLDrawWidget::abs(){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new AbsCommand());
   }
   void ICLDrawWidget::rel(){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new RelCommand());
   }
   void ICLDrawWidget::rect(float x, float y, float w, float h){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new RectCommand(x,y,w,h));
   }
   void ICLDrawWidget::rect(const Rect &r){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new RectCommand(r.x,r.y,r.width,r.height));
   }
   void ICLDrawWidget::rect(const Rect32f &r){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new RectCommand(r.x,r.y,r.width,r.height));
   }
   void ICLDrawWidget::triangle(float x1, float y1, float x2, float y2, float x3, float y3){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new TriangleCommand(x1,y1,x2,y2,x3,y3));
   }
   void ICLDrawWidget::triangle(const Point32f &a, const Point32f &b, const Point32f &c){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new TriangleCommand(a.x,a.y,b.x,b.y,c.x,c.y));
   }
   void ICLDrawWidget::quad(float x1, float y1, float x2, float y2, float x3, float y3,float x4,float y4){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new QuadCommand(x1,y1,x2,y2,x3,y3,x4,y4));
   }
   void ICLDrawWidget::quad(const Point32f &a, const Point32f &b, const Point32f &c, const Point32f &d){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new QuadCommand(a.x,a.y,b.x,b.y,c.x,c.y,d.x,d.y));
   }
   void ICLDrawWidget::ellipse(float x, float y, float w, float h){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new EllipseCommand(x,y,w,h));
   }
-
   void ICLDrawWidget::ellipse(const Rect &r){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new EllipseCommand(r.x,r.y,r.width,r.height));
   }
   void ICLDrawWidget::ellipse(const Rect32f &r){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new EllipseCommand(r.x,r.y,r.width,r.height));
   }
   void ICLDrawWidget::circle(float cx, float cy, float r){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new EllipseCommand(cx-r,cy-r,2*r,2*r));
   }
   void ICLDrawWidget::circle(const Point32f &center, float radius){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new EllipseCommand(center.x-radius,center.y-radius,2*radius,2*radius));
   }
   void ICLDrawWidget::color(float r, float g, float b, float alpha){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new EdgeCommand(r,g,b,alpha));
   }
   void ICLDrawWidget::fill(float r, float g, float b, float alpha){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new FillCommand(r,g,b,alpha));
   }
   void ICLDrawWidget::nocolor(){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new NoEdgeCommand());
   }
   void ICLDrawWidget::nofill(){
+    QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new NoFillCommand());
   }
 
@@ -982,9 +1020,24 @@ namespace icl{
     // }}}
 
   void ICLDrawWidget::swapQueues(){
-    m_oCommandMutex.lock();
-    std::swap(m_queues[0],m_queues[1]);
+    QMutexLocker lock(&m_oCommandMutex);
+    if(m_autoResetQueue){
+      std::swap(m_queues[0],m_queues[1]);
+    }else{
+      std::copy(m_queues[0]->begin(), m_queues[0]->end(), std::back_inserter(*m_queues[1]));
+    }
     clear_queue(*m_queues[0]);
-    m_oCommandMutex.unlock();
   }
+
+  void ICLDrawWidget::setAutoResetQueue(bool on){
+    m_autoResetQueue = on;
+  }
+    
+
+  void ICLDrawWidget::resetQueue(){
+    QMutexLocker lock(&m_oCommandMutex);
+    clear_queue(*m_queues[0]);
+    clear_queue(*m_queues[1]);
+  }
+
 }

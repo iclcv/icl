@@ -276,16 +276,13 @@ void run(){
 
   Vec p3D = estimate_3D_pos(POS,IMAGE,CAM);
   
-  w.lock();
-  w.reset();
   w.color(0,100,255,255);
   w.fill(0,100,255,100);
   w.rect(POS.x-1,POS.y-1,1,1);
   w.color(255,255,255,255);
   w.text("("+str(p3D[0])+","+str(p3D[1])+","+str(p3D[2]) + ")[VAL:"+str(p3D[3])+"]",POS.x+3,POS.y+3,-1,-1,10);
-  w.unlock();
 
-  draw.update();
+  draw.render();
 
   gui_TabHandle(tab);
   gui_DrawHandle3D(draw3D);
@@ -310,11 +307,8 @@ void run(){
     grid->update(IMAGE,CAM,(VisMode)visColor.getSelectedIndex(),pointSize,imageOn);
 
     ICLDrawWidget3D &dw = **draw3D;
-    dw.lock();
-    dw.reset3D();
-    dw.callback(scene.getGLCallback(0));
-    dw.unlock();
-    dw.update();
+    dw.link(scene.getGLCallback(0));
+    dw.render();
   }
   
   Thread::msleep(10);

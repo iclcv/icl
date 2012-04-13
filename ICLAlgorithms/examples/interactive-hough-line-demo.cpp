@@ -82,7 +82,7 @@ void init(){
   gui_DrawHandle(view);
   (*view)->install(new Mouse);
   view = Img8u(Size::VGA,1);
-  view.update();
+  view.render();
 }
 
 void run(){
@@ -110,19 +110,16 @@ void run(){
   (*lut)->setRangeMode(ICLWidget::rmAuto);
   (*lut)->setFitMode(ICLWidget::fmFit);
   lut = h.getImage();
-  lut.update();
+  lut.render();
   
   
   if(gaussianInhibition){
     (*inhibit)->setRangeMode(ICLWidget::rmAuto);
     (*inhibit)->setFitMode(ICLWidget::fmFit);
     inhibit = h.getInhibitionMap();
-    inhibit.update();
   }
   
 
-  (*view)->lock();
-  (*view)->reset();
   (*view)->color(255,255,255,255);
   (*view)->fill(255,255,255,255);
   for(unsigned int i=0;i<points.size();++i){
@@ -139,10 +136,9 @@ void run(){
     (*view)->line(a[0],a[1],b[0],b[1]);
     (*view)->text(str(sig[i]),l.o[0],l.o[1],-1,-1,8);
   }
-
-  (*view)->unlock();
-  points_mutex.unlock();  
   
+  points_mutex.unlock();  
+  view->render();
   Thread::msleep(10);
 }
 

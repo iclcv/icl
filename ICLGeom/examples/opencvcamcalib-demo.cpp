@@ -209,7 +209,7 @@ void run(){
 			cvReleaseImage(&gray_image);
 		cvReleaseImage(&image);
 		gui["draw_object"] = img2;
-		gui["draw_object"].update();
+		gui["draw_object"].render();
 	}
   
 	if(successes == minSuccesses){
@@ -226,7 +226,7 @@ void run(){
 		const ImgBase *img2 = camc->undisort(img);
 
 		gui["draw_object"] = img2;
-		gui["draw_object"].update();
+		gui["draw_object"].render();
 #ifdef OPENCVCAMCALIBDEBUG
 		std::coust << "error on new image: " << compute_error(img2) << std::endl;
 		std::coust << "error on old image: " << compute_error(img) << std::endl;
@@ -234,7 +234,7 @@ void run(){
 		delete img2;
 	}
 	gui["calib_object"] = img;
-	gui["calib_object"].update();
+	gui["calib_object"].render();
 	fps.wait();
 }
 

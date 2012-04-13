@@ -77,7 +77,7 @@ void run(){
     if(pa("-o")){
       output.send(&scene.render(0));
     }
-    gui["draw"].update();
+    gui["draw"].render();
     Thread::msleep(10);
   }
 }
@@ -103,17 +103,12 @@ void init(){
                            Vec(0.0202104,-0.00327371,0.99979,1),
                            Vec(0.999566,-0.0213787,0.0202811,1)));
   }
-  SHOW(scene.getCamera(0));
 
   scene.getLight(0).setAmbientEnabled(true);
   scene.getLight(0).setAmbient(GeomColor(255,255,255,150));
   
   DrawHandle3D draw = gui["draw"];
-  draw->lock();
-  draw->reset3D();
-  draw->callback(scene.getGLCallback(0));
-  draw->unlock();
-  draw.update();
+  draw->link(scene.getGLCallback(0));
 
   draw->install(scene.getMouseHandler(0));
   if(pa("-s")){

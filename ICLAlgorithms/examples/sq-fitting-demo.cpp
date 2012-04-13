@@ -279,12 +279,7 @@ void init(){
 
 	scene.addObject(squad,true);
 	gui["draw"].install(scene.getMouseHandler(0));
-
-	DrawHandle3D draw = gui["draw"];
-	draw->lock();
-	draw->reset3D();
-	draw->callback(scene.getGLCallback(0));
-	draw->unlock();
+	gui["draw"].link(scene.getGLCallback(0));
 
 	SceneLight &l = scene.getLight(1);
 	l.setOn();
@@ -364,7 +359,7 @@ void run(){
 
 	//SHOW(scene.getCamera(0));
 
-	gui["draw"].update();
+	gui["draw"].render();
 	static FPSLimiter limiter(25);
 	limiter.wait();
 }

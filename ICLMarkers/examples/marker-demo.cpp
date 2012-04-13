@@ -100,6 +100,8 @@ void init(){
   // scene.setDrawCoordinateFrameEnabled(true);
   fid->setCamera(scene.getCamera(0));
   gui["draw"].install(scene.getMouseHandler(0));
+  gui["draw"].link(scene.getGLCallback(0));
+
 }
 
 
@@ -115,13 +117,10 @@ void run(){
   
   //scene.getCamera(0).setFocalLength(gui["f"]);
   //fid->setCamera(scene.getCamera(0));
-  
-  gui_DrawHandle3D(draw);
+
+  DrawHandle3D draw = gui["draw"];
   draw = fid->getIntermediateImage(gui["vis"]);
 
-  draw->lock();
-  draw->reset();
-  draw->reset3D();
   draw->linewidth(2);
   for(unsigned int i=0;i<fids.size();++i){
     if(fids[i].getID() == 0){
@@ -137,22 +136,9 @@ void run(){
     draw->color(0,255,0,255);
     float a = fids[i].getRotation2D();
     draw->line(fids[i].getCenter2D(), fids[i].getCenter2D() + Point32f( cos(a), sin(a))*100 );
-    
-    /*
-        const std::vector<Fiducial::KeyPoint> &kp = fids[i].getKeyPoints2D();
-        for(unsigned int j=0;j<kp.size();++j){
-        const Fiducial::KeyPoint &p = kp[j];
-        draw->color(255,0,255,255);
-        draw->sym(p.imagePos, '+');
-        draw->text(str(p.ID), p.imagePos.x,p.imagePos.y,9);
-        }
-    */
-   
-    draw->callback(scene.getGLCallback(0));
   }
-  draw->unlock();
 
-  draw.update();
+  draw.render();
 }
 
 // default main function

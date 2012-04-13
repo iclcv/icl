@@ -83,6 +83,7 @@ void init(){
           << "prop(fd)"
           )
       <<"!show";
+  
 }
 
 
@@ -103,14 +104,8 @@ void run(){
     }
     updateCube(fs[i].getID(),fs[i].getPose3D());
   }
-
   const int camID = fd.getCameraIDFromIntermediteImageName(gui["vis"]);
-  
-  draw->lock();
-  draw->reset3D();
-  draw->callback(scene.getGLCallback(camID));
-  draw->unlock();
-  draw.update();
+  draw->link(scene.getGLCallback(camID));
 }
 
 int main(int n, char **args){

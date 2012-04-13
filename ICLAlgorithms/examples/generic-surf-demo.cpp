@@ -72,10 +72,7 @@ void gui_cb(const std::string &handle){
     gui_DrawHandle(draw_object);
     SmartPtr<ImgBase> obj = surf->getObjectImg(); 
     draw_object = obj.get();
-    draw_object->lock();
-    draw_object->reset();
-    draw_object->unlock();
-    draw_object->update(); // we can risk that because we are in the gui-thread
+    draw_object->render(); // we can risk that because we are in the gui-thread
   }else if(!handle.find("oct")){
     surf->setOctaves(gui["octaves"]);
   }else if(!handle.find("intervals")){
@@ -110,10 +107,7 @@ void select_object(const MouseEvent &m){
           objRect = roi.getImageRect();
           gui_DrawHandle(draw_object);
           draw_object = &roi;
-          draw_object->lock();
-          draw_object->reset();
-          draw_object->unlock();
-          draw_object->update();
+          draw_object->render();
         }
       }
       r = Rect::null;
@@ -224,14 +218,6 @@ void run(){
   draw_result = image;
   draw_image = image;
   
-  draw_result->lock();
-  draw_object->lock();
-  draw_image->lock();
-  
-  draw_image->reset();
-  draw_result->reset();
-  draw_object->reset();
-  
   gui_CheckBox(sf_handle);
   if(sf_handle.isChecked()){
     const std::vector<GenericSurfDetector::GenericPoint> features = surf->extractFeatures(image);
@@ -256,15 +242,11 @@ void run(){
     draw_image->rect(r.normalized());
   }
   
-  draw_result->unlock();
-  draw_object->unlock();
-  draw_image->unlock();
-  draw_object.update();
-  draw_result.update();
-  draw_image.update();
+  draw_object.render();
+  draw_result.render();
+  draw_image.render();
   
-  gui_FPSHandle(fps);
-  fps.update();
+  gui["fps"].render();
 }
 
 

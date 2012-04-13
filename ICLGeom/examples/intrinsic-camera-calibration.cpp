@@ -116,8 +116,6 @@ void vis_som(SOM2D  &som, int gridW, int gridH){
   static ICLDrawWidget &w = **d;
   ImgQ ps = zeros(gridW,gridH,2);
   
-  w.lock();
-  w.reset();
   w.color(255,0,0,255);
   for(int x=0;x<gridW;++x){
     for(int y=0;y<gridH;++y){
@@ -138,8 +136,7 @@ void vis_som(SOM2D  &som, int gridW, int gridH){
   for(int y=1;y<gridH;++y){
     w.line(ps(0,y,0),ps(0,y,1),ps(0,y-1,0),ps(0,y-1,1));
   }
-  w.unlock();
-  d.update();
+  d.render();
   Thread::msleep(1);
 }
 
@@ -184,7 +181,6 @@ std::vector<Point32f> sort_points(const std::vector<Point32f> points, int gridW,
     }
     vis_som(som,gridW,gridH);
 
-    w.lock();
     w.color(0,100,255,255);
     for(unsigned int i=0;i<points.size();++i){
       const Point &p = points[i];
@@ -202,8 +198,7 @@ std::vector<Point32f> sort_points(const std::vector<Point32f> points, int gridW,
         ERROR_LOG("could not sort point at index " << i);
       }
     }
-    w.unlock();
-    w.update();
+    w.render();
     
     btn = QMessageBox::question(*gui.getValue<DrawHandle>("image"),
                                 "please confirm ...","Is this tesselation correct?",
@@ -246,7 +241,6 @@ void set_state(bool good){
   }
   static ImageHandle &h = gui.getValue<ImageHandle>("state");
   h = good ? iGood : iBad;
-  h.update();
 }
 
 
@@ -367,7 +361,6 @@ void detect_vis(bool add=false){
   }else if(vis == "warp-field"){
     static Img8u bg(IMAGE.getSize(),1);
     d = bg;
-    w.lock();
     w.color(255,0,0,200);
     for(int x=IMAGE.getSize().width-10;x>=0;x-=20){
       for(int y=IMAGE.getSize().height-10;y>=0;y-=20){
@@ -376,13 +369,11 @@ void detect_vis(bool add=false){
         w.point(x,y);
       }
     }
-    w.unlock();
   }else if(vis == "warp-map"){
     d = WARP_MAP;
   }
 
   if(!add){
-    w.lock();
     w.color(255,0,0,200);
   }
   std::vector<Point32f> pts;
@@ -399,7 +390,6 @@ void detect_vis(bool add=false){
     }
   }
   if(!add){
-    w.unlock();
     set_state((int)pts.size() == CALIB_DATA.dim());
   }else{
     DEBUG_LOG("adding data ...");
@@ -454,8 +444,6 @@ void create_pattern_gui(){
   Img8u bg(Size(W+1,H+1),1);
   std::fill(bg.begin(0),bg.end(0),255);
   w.setImage(&bg);
-  w.lock();
-  w.reset();
   w.color(0,0,0,255);  
   w.fill(0,0,0,255);  
   
@@ -466,7 +454,6 @@ void create_pattern_gui(){
     }
   }
 
-  w.unlock();
   w.show();
 }
 
@@ -560,9 +547,7 @@ void run(){
     grabber->grab()->convert(&IMAGE);
   }
   
-  w.lock();
-  w.reset();
-  w.unlock();
+  w.resetQueue();
 
   if((*tab)->currentIndex()  ==   0){
     detect_vis(false);
@@ -570,7 +555,7 @@ void run(){
     manual_adjust();
   }
   
-  d.update();
+  d.render();
 
   if(opt.wasTriggered()){
     DEBUG_LOG("optimizing ...");

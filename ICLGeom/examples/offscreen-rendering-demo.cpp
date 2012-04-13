@@ -111,18 +111,12 @@ void run(){
   DrawHandle image = gui["image"];
 
   int ms = cube.updateImage();
-  image->lock();
-  image->reset();
   image->color(255,255,255,255);
   image->text("offscreen rendering time: " + str(ms)+" ms",10,10,9);
-  image->unlock();
-  image.update();
+  image.render();
 
-  draw->lock();    // lock the internal drawing queue
-  draw->reset3D(); // remove former drawing commands
-  draw->callback(scene.getGLCallback(0)); // render the whole scene
-  draw->unlock();  // unlock the internal drawin queue
-  draw.update();   // post an update-event (don't use draw->update() !!)
+  draw->link(scene.getGLCallback(0)); // render the whole scene
+  draw.render();
 }
 
 

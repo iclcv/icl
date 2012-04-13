@@ -155,19 +155,17 @@ void run(){
     static FPSHandle &fps = gui.getValue<FPSHandle>("fps");
 
 
-    fps.update();
+    fps.render();
 
     image = &currImage;
     
-    (*image)->lock();
-    (*image)->reset();
     if(dragging){
       if(dragging_R){
         vis_roi(*image);
       }else{
-        (*image)->color(255,0,0,200);
-        (*image)->fill(255,255,255,50);
-        (*image)->rect(currRect);
+        image->color(255,0,0,200);
+        image->fill(255,255,255,50);
+        image->rect(currRect);
       }      
     }else if(currTempl.getDim()){
       
@@ -182,18 +180,17 @@ void run(){
       
       const std::vector<Rect> &rs = matcher.match(currImage,currTempl,useMasks?imageMask:Img8u::null,useMasks?templMask:Img8u::null);
       
-      (*image)->color(255,0,0,200);
-      (*image)->fill(255,255,255,0);
+      image->color(255,0,0,200);
+      image->fill(255,255,255,0);
       for(unsigned int i=0;i<rs.size();++i){
-        (*image)->rect(rs[i]);
+        image->rect(rs[i]);
       }
 
       buf = matcher.getBuffer();
-      buf.update();
+      buf.render();
 
     }
-    (*image)->unlock();
-    image.update();
+    image.render();
 
     
 
@@ -201,7 +198,7 @@ void run(){
     mutex.lock();
     if(currTempl.getDim()){
       templ = &currTempl;
-      templ.update();
+      templ.render();
     }
     mutex.unlock();
 

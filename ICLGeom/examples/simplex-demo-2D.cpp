@@ -54,7 +54,10 @@ void init(){
       bgc(x,y) = error_function(Pos(x,y));
     }     
   }
-  gui["draw"] = norm(bg);
+  DrawHandle draw = gui["draw"];
+  draw = norm(bg);
+  draw->setAutoResetQueue(false);
+  
 }
 
 void run(){
@@ -63,11 +66,11 @@ void run(){
   static float err = 10000;
   
   DrawHandle draw = gui["draw"];
+  
   std::vector<Point32f> ps(curr.size());
   for(unsigned int i=0;i<ps.size();++i) ps[i] = Point32f(curr[i][0],curr[i][1]);
   static int step = 0;
   ++step;
-  draw->lock();
   draw->color((!(step%3))*255, (!((step+1)%3))*255, (!((step+2)%3))*255,255);
   draw->linestrip(ps);
   draw->fill(255,255,255,255);
@@ -76,10 +79,7 @@ void run(){
 
   draw->color(255,0,0,255);
   draw->text("error: " + str(err), 30,30,10);
-
-  draw->unlock();
-
-  draw.update();
+  draw.render();
 
   SimplexOptimizer<float,Pos>::Result r = opt.optimize(curr);
 

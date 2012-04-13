@@ -181,6 +181,17 @@ int main(int n, char **ppc){
     /// destructor2
     ~ICLDrawWidget();
 
+    /// sets whether the draw commands are accumulative (default is on=true)
+    /** If the "auto reset queue" flag is set to false, the internal draw command
+        queues are not cleared when ICLWidget::render() is called. In this case,
+        ICLDrawWidget::resetQueue can be called manually. */
+    void setAutoResetQueue(bool on);
+    
+    /// clears the current draw queue
+    /** This is done automatically by default. Only if the user wants accumulative
+        draw commands, resetQueue can be called manually to clear the queues */
+    void resetQueue();
+    
 #if 0
     /// locks the state machine
     /** The state machine collects all draw commands in a command queue internally.
@@ -483,6 +494,9 @@ int main(int n, char **ppc){
 
     /// Mutex for a thread save event queue
     QMutex m_oCommandMutex;
+    
+    /// internal flag
+    bool m_autoResetQueue;
   };
 }
 

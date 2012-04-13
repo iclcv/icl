@@ -102,9 +102,6 @@ void mouse(const MouseEvent &evt){
     }
   }else{
     sceneHandler->process(evt);
-    //Vec p = pos->getTransformation().part<3,0,1,4>();
-    //Mat T = scene.getCamera(0).getCSTransformationMatrix();
-    //pos->update(p,T*p);
   }
 }
 void mouse_2(const MouseEvent &evt){
@@ -112,20 +109,12 @@ void mouse_2(const MouseEvent &evt){
   if(evt.isLeft() && evt.isPressEvent()){
     std::vector<double> c = evt.getColor();
     if(c.size()){
-      draw->lock();
-      draw->reset();
       draw->color(255,0,0);
       draw->sym(evt.getPos(),'x');
       draw->text(str(c[0]),evt.getX(), evt.getY(), 10);
-      draw->unlock();
-      // draw.update();
     }
   }
 }
-//void capture(){
-//  static ImgQ bg = create("parrot");
-//  show(scene.render(0,&bg));
-//}
 
 void init(){
   gui << "draw3D()[@minsize=32x24@handle=view]" 
@@ -186,27 +175,23 @@ void init(){
 void run(){
   ICLDrawWidget3D *d = gui["view"];
   static FPSLimiter fps(100,10);
-  std::string fpsString = fps.getFPSString(); // wait outside widget lock!
-  d->lock();
-  d->reset3D();
-  d->reset();
-  d->callback(scene.getGLCallback(0));
+  std::string fpsString = fps.getFPSString(); 
+  d->link(scene.getGLCallback(0));
   d->color(255,0,0,255);
   d->text(fpsString,550,10,8);
-  d->unlock();
-  d->updateFromOtherThread();
+  d->render();
   
   int capture = gui["capture"];
   static Img32f db;
   switch(capture){
     case 1:
       gui["image"] = scene.render(0);
-      gui["image"].update();
+      gui["image"].render();
       break;
     case 2:
       scene.render(0,0,&db,(Scene::DepthBufferMode)gui["dmode"].as<int>());
       gui["image"] = db;
-      gui["image"].update();
+      gui["image"].render();
       break;
     default:
       break;

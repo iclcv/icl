@@ -113,18 +113,13 @@ void init(){
   scene.addObject(bg);
   
   gui["draw"].install(scene.getMouseHandler(0));
-
-  DrawHandle3D draw = gui["draw"];
-  draw->lock(); 
-  draw->reset3D();
-  draw->callback(scene.getGLCallback(0));
-  draw->unlock();
+  gui["draw"].link(scene.getGLCallback(0));
 }
 
 
 void run(){
   Thread::msleep(20);
-  gui["draw"].update(); 
+  gui["draw"].render();
 }
 
 

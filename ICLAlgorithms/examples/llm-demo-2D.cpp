@@ -103,8 +103,7 @@ public:
     
     gui.show();
     
-    gui.getValue<ImageHandle>("orig-image") = &image;    
-    gui.getValue<ImageHandle>("orig-image").update();
+    gui["orig-image"] = image;
     
     initLLM();
   }
@@ -124,7 +123,7 @@ public:
     ImgQ netImage = copy(image);
     w.setImage(&netImage);
 
-    w.updateFromOtherThread();
+    w.render();
     
     while(1){
       
@@ -155,7 +154,7 @@ public:
         for(int j=0;j<3;++j){
           (*mseDisp)(j,0) = mse[j]/(W*H);    
         }
-        w.updateFromOtherThread();
+        w.render();
       }
       if(showKernelsButton.wasTriggered()){
         llm.showKernels();

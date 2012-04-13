@@ -195,16 +195,10 @@ void init(){
   SceneObject *cube = new SceneObject("cube",params);
   scene.addObject(cube);
   
-  DrawHandle3D draw = gui["depth"];
-  draw->lock();
-  draw->callback(scene.getGLCallback(0));
-  draw->unlock();
-  
-  draw->install(scene.getMouseHandler(0));  
+  gui["draw"].install(scene.getMouseHandler(0));  
+  gui["draw"].link(scene.getGLCallback(0));
   
   scene.removeObject(cube);
-  
- 
 }
 
 void visualizeMatches(DrawHandle &draw, const std::vector<Fiducial> &fids, 
@@ -213,8 +207,6 @@ void visualizeMatches(DrawHandle &draw, const std::vector<Fiducial> &fids,
   if(setImage){
     draw = fd->getIntermediateImage(imageName);
   }
-  draw->lock();
-  draw->reset();
   draw->linewidth(1);
   draw->symsize(20);
   for(unsigned int i=0;i<fids.size();++i){
@@ -232,13 +224,11 @@ void visualizeMatches(DrawHandle &draw, const std::vector<Fiducial> &fids,
       draw->sym(Point32f(c.a,c.b), 'o');
     }
   }
-  
-  draw->unlock();
 }
 
 
 void run(){
-  gui["fps"].update();
+  gui["fps"].render();
 
   bool viewOnly = gui["viewOnly"];
   gui_ButtonHandle(addPoints);
@@ -371,10 +361,10 @@ void run(){
 
 
   
-  gui["depth"].update();
-  gui["color"].update();
-  gui["ir"].update();
-  gui["match"].update();
+  gui["depth"].render();
+  gui["color"].render();
+  gui["ir"].render();
+  gui["match"].render();
         
   while(gui["paused"]){
     Thread::msleep(10);

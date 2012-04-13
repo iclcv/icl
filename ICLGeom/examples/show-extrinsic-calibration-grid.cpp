@@ -81,17 +81,13 @@ void init(){
   
 
 void run(){
-  gui_DrawHandle(draw);
+  static DrawHandle draw = gui["draw"];
   
   draw=grabber->grab();
 
-  draw->lock();
-  draw->reset();
   draw->color(0,100,255,200);
   draw->grid(grid.data(),Nx,Ny);
-  draw->unlock();
-  
-  draw.update();
+  draw->render();
   Thread::msleep(10);
 }
 

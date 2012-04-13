@@ -102,8 +102,6 @@ void run(){
     llm.init(gui["kernel-count"], vector<Range<icl32f> >(1,Range<icl32f>(MINX,MAXX)),std::vector<float>(1,5));
   }
       
-  draw->lock();
-  draw->reset();
   draw->rel();
   
   // draw the function AND the net
@@ -143,8 +141,7 @@ void run(){
     draw->line(x-stddev,y-0.01,x+stddev,y-0.01);
   }
   
-  draw->unlock();
-  draw.update();
+  draw.render();
 }
 
 

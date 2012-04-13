@@ -70,9 +70,7 @@ void init(){
 
 
 void run(){
-  gui_FPSHandle(fps);
-  static Size size = pa("-size");
-
+  FPSHandle fps = gui["fps"];
   
   while(1){
     for(unsigned int i=0;i<gs.size();i++){

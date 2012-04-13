@@ -62,11 +62,8 @@ void init(){
   o->translate(initPos[0],initPos[1],initPos[2]);
   scene.addObject(o);
   
-  DrawHandle3D draw = gui["draw"];
-  draw->lock();
-  draw->callback(scene.getGLCallback(0));
-  draw->unlock();
-  draw->install(scene.getMouseHandler(0));
+  gui["draw"].link(scene.getGLCallback(0));
+  gui["draw"].install(scene.getMouseHandler(0));
 }
 
 static std::vector<Pos> createRandomSimplex(const Pos &p){
@@ -104,7 +101,7 @@ void run(){
     scene.addObject(o);
     scene.unlock();
     
-    gui["draw"].update();
+    gui["draw"].render();
     
     SimplexOptimizer<float,Pos>::Result r = opt.optimize(curr);
 

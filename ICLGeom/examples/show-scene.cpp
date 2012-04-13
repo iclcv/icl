@@ -46,7 +46,7 @@ int nCams = 0;
 void change_camera(){
   static ComboHandle cams = gui["cams"];
   scene.getCamera(nCams) = scene.getCamera(cams.getSelectedIndex());
-  gui["draw"].update();
+  gui["draw"].render();
 }
 
 void init(){
@@ -92,10 +92,7 @@ void init(){
   scene.setDrawCamerasEnabled(true);
   scene.setDrawCoordinateFrameEnabled(true);
   
-  static DrawHandle3D draw = gui["draw"]; 
-  draw->lock();
-  draw->callback(scene.getGLCallback(nCams));
-  draw->unlock();
+  gui["draw"].link(scene.getGLCallback(nCams));
 }
 
 
@@ -110,7 +107,7 @@ void run(){
     }else{
       draw = &black;
     }
-    draw.update();    
+    draw.render();
   }
 
 }

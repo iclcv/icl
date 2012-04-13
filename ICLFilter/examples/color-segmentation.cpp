@@ -345,10 +345,7 @@ void init(){
     init_3D_LUT();
     scene.addCamera(Camera(Vec(0,0,100,1),Vec(0,0,-1,1),Vec(1,0,0,1)));
     gui_DrawHandle3D(lut3D);
-    lut3D->lock();
-    lut3D->callback(scene.getGLCallback(0));
-    lut3D->unlock();
-    
+    lut3D->link(scene.getGLCallback(0));
     lut3D->install(scene.getMouseHandler(0));
   }
 }
@@ -447,8 +444,6 @@ void run(){
   
   //--lut--
   lut = &currLUTColor;
-  lut->lock();
-  lut->reset();
   lut->linewidth(2);
   
   for(unsigned int i=0;i<drawLUT.size();++i){
@@ -465,28 +460,24 @@ void run(){
       lut->rect(drawLUT[i].getBoundingBox().enlarged(1));
     }
   }
-  lut->unlock();
-  lut.update();
+  lut.render();
   
   //--image and seg--
   ICLDrawWidget *ws[2] = {*image,*seg};
   for(int i=0;i<2;++i){
-    ws[i]->lock();
-    ws[i]->reset();
     ws[i]->linewidth(2);
     ws[i]->color(255,255-i*255,255-i*255,255);
     for(unsigned int j=0;j<drawIM_AND_SEG.size();++j){
       ws[i]->linestrip(drawIM_AND_SEG[j].getBoundary());
     }
-    ws[i]->unlock();
-    ws[i]->updateFromOtherThread();
+    ws[i]->render();
   }
   
-  gui["fps"].update();
+  gui["fps"].render();
   
   if(lut3D){
     lut3D->update(gui["alpha"]);
-    gui["lut3D"].update();
+    gui["lut3D"].render();
   }
 }
 
