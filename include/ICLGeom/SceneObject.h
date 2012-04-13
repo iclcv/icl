@@ -157,8 +157,39 @@ namespace icl{
            - (rzSlices,rxSlices) is used for the number of steps the create nodes
     */
     SceneObject(const std::string &type,const float *params);
+    
+    /// create a cube scene object
+    static inline SceneObject *cube(float x, float y, float z, float r){
+      const float p[] = { x,y,z,r };
+      return new SceneObject("cube",p);
+    }
 
+    /// create a cuboid scene object
+    static inline SceneObject *cuboid(float x, float y, float z, float dx, float dy, float dz){
+      const float p[] = { x,y,z,dx,dy,dz };
+      return new SceneObject("cuboid",p);
+    }
 
+    /// create a shere scene object
+    static inline SceneObject *sphere(float x, float y, float z, float r, int rzSteps, int xySlices){
+      const float p[] = { x,y,z,r, rzSteps, xySlices };
+      return new SceneObject("sphere",p);
+    }
+
+    /// create a shere scene object
+    static inline SceneObject *spheroid(float x, float y, float z, float rx, float ry, float rz, int rzSteps, int xySlices){
+      const float p[] = { x,y,z,rx, ry, rz, rzSteps, xySlices };
+      return new SceneObject("spheroid",p);
+    }
+
+    /// create a superquadric scene object
+    static inline SceneObject *superquadric(float x, float y, float z, float rx, float ry, float rz, 
+                                            float dx, float dy, float dz, float e1, float e2, int rzSteps, int xySlices){
+      const float p[] = { x,y,z,rx, ry, rz, dx, dy, dz, e1, e2, rzSteps, xySlices };
+      return new SceneObject("superquadric",p);
+    }
+
+    
     /// creates a scene object from given .obj file
     SceneObject(const std::string &objFileName) throw (ICLException);
 

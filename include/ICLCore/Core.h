@@ -77,13 +77,11 @@
 
     void init(){
       grabber.init(pa("-i"));
-      gui << "image[@handle=image]";
-      gui.show();
+      gui << "image[@handle=image]" << "!show";
     }
 
     void run(){
       gui["image"] = grabber.grab();
-      gui["image"].update();
     }
 
     int main(int n, char **args){

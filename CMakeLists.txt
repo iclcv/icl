@@ -34,8 +34,8 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0)
 PROJECT(ICL)
 #ubuntu version
-set(ICL_MAJOR "6")
-set(ICL_MINOR "11")
+set(ICL_MAJOR "7")
+set(ICL_MINOR "0")
 set(ICL_PATCH "0")
 set(VERSION "${ICL_MAJOR}.${ICL_MINOR}.${ICL_PATCH}")
 cmake_policy(SET CMP0002 OLD)
