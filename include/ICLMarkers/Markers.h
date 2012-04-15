@@ -130,7 +130,7 @@ GenericGrabber grabber;
 
 // the global detector class
 // here, using the first 100 "bch"-markers
-icl::FiducialDetector fid("bch","[0-100]",ParamList("size",Size(30,30)));
+icl::FiducialDetector fid("bch","[0-100]","size=30x30");
 
 // initialization function (called once after start)
 void init(){
@@ -138,9 +138,9 @@ void init(){
   fid.setConfigurableID("fid");
 
   // create the GUI
-  gui << "draw[@handle=draw@minsize=16x12]" // create drawing component
-      << "prop(fid)[@maxsize=18x100]"       // create the propery widged for 'fid'
-      << "!show";                           // show the main widget
+  gui << "draw[@handle=draw]"           // create drawing component
+      << "prop(fid)[@maxsize=18x100]"   // create the propery widged for 'fid'
+      << "!show";                       // show the main widget
 
   // initialize the grabber from given program argument
   grabber.init(pa("-input")); 
@@ -162,8 +162,6 @@ void run(){
   draw = image;
   
   // draw marker detection results
-  draw->lock();
-  draw->reset();
   draw->linewidth(2);
   for(unsigned int i=0;i<fids.size();++i){
     Point32f c = fids[i].getCenter2D();
@@ -178,10 +176,8 @@ void run(){
     draw->linestrip(fids[i].getCorners2D());
 
   }
-  draw->unlock();
-
   // update the visualization
-  draw.update();
+  draw.render();
 }
 
 // main method 

@@ -116,7 +116,8 @@
     - <b>ICLQuick</b> provides almost 100 functions and functors for rapid prototyping
     - <b>ICLGeom</b> contains classes for 3D-modelling and camera calibration. 
     - <b>ICLQt*</b> contains a Qt-4 based GUI-API that facilitates creation of simple and complex GUI 
-      applications significantly. And of course a powerful image     visualisation widget called ICLWidget is provided.
+      applications significantly. And of course a powerful image visualisation widget called ICLWidget is provided.
+    - <b>ICLMarkers</b> contains a generic Fiducial Marker detection framework
     - <b>ICLAlgorithms</b> contains high level classes like a hough-transformation-based line detector or generic self organizing map (SOM) implementation. 
     - <b>ICLOpenCV*</b> offers functions for shallow and deep copies from ICL-images types into OpenCV's images types and v.v.
     

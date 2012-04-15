@@ -45,18 +45,20 @@
     \mainpage ICLQt For Rapid Development of GUI-based Computer-Vision Applications
     
     As it's core, this package provides a wrapper API for Qt-based GUI components. The main class of this
-    package is the icl::GUI class (documentation: \ref GUI_INTRO) . Further essential components are part of the \ref IVF .
+    package is the icl::GUI class (documentation: \ref GUI_INTRO) . Further essential components are located in
+    the \ref IVF .
 
     \section _GENERAL_ General Idea of this Package
     When developing computer vision applications, one does usually not want to fight with the common GUI
     issues -- such as layouting GUI components and synchronizing GUI events and values with the applications
     working thread. To avoid theses issues, ICL comes up with a string- and stream-based GUI creation framework,
-    that allows to create most complex GUI in only a few lines of code. However it always provides full access to
-    the underlying Qt-components to allows the user to use <em>traditional</em> Qt-code to implement custom
-    stuff where it is needed. 
+    that allows for creating most complex GUIs with just a few lines of well readable code.
+    However it always provides full access to the underlying Qt-components to enable the user to use 
+    <em>traditional</em> Qt-code to implement custom stuff where it is needed. 
 
     The GUI-framework provides some special components, such as the image visualization and annotation widgets (\ref IVF)
-    and the icl::PlotWidget for 2D data visualization. In addition all common Qt-components are also wrapped.
+    and the icl::PlotWidget for 2D data visualization. In addition all common Qt-components, such as sliders and buttons,
+    are also wrapped.
 
     \section IVF Image Visualisation and Annotation Framework
     
@@ -71,7 +73,8 @@
     - How can the user change image visualisation parameters (e.g, brightness or contrast adjustment)?
     - How can images be annotated in online applications (here again, one has to face synchronization issues)?
     - How can the image annotation be abstracted from visualisation features (e.g., current zoom)?
-    - How can 3D objects be drawn into a scene (using OpenGL)?
+    - How can 3D objects be drawn into a scene so that it matches it's real-world counter part?
+    - Can 3D overlay be implemented using OpenGL?
     - ...
 
     <TABLE border=0><TR><TD>
@@ -80,12 +83,13 @@
     - icl::ICLDrawWidget 
     - icl::ICLDrawWidget3D.
 
-    At the lowest layer, the icl::GLTextureMapBaseImage provides an interfaces for converting ImgBase
-    instances into a grid of squared OpenGL textures, that can be drawn arbitrarily into an OpenGL 
-    scene. Internally, the icl::GLTextureMapImage template class is used for different image depths
+    At the lowest layer, the icl::GLImg provides an interfaces for converting ImgBase
+    instances into an OpenGL texture (if the image is larger than OpenGL's maximum texture sizes, it
+    has to be split into several texture) that can be drawn arbitrarily into an OpenGL 
+    scene. Internally, the icl::GLImg class is used for different image depths
     depths. Here, OpenGL's pixel-transfer parameters are used for hardware accelerated brightness and 
     contrast adjustment. Furthermore, fitting images into the widget viewport can simply be performed 
-    by the graphics hardware. The GLTextureMapBaseImage can also be used as video texture.
+    by the graphics hardware. The GLImg can also be used as efficient video texture.
     
     The next layer is implemented by the icl::ICLWidget class, which inherits Qt's QGLWidget class for
     creation of an embedded OpenGL context and viewport. The ICLWidget provides a software interface for 
@@ -93,22 +97,31 @@
     an embedded user interface for interactive adaption of these parameters. Furthermore, the ICLWidgets 
     provides a function <tt>setImage(ImgBase*)</tt> to make it show a new image. Internally, the image
     is buffered into a mutex-protected interleaved intermediate format, which can more easily be transferred
-    to the graphics buffer. By this means, <tt>setImage</tt> can simply be called from the applications
-    working thread without any explicit synchronization. Now, the ICLWidget instances can be setup to
-    visualize this new image by calling <tt>updateFromOtherThread()</tt> (please note, that the QWidget's
-    <tt>update()</tt> function is not threadsafe and therefore it must not be called from outside Qt's
-    GUI-thread). Calls to <tt>updateFromOtherThread</tt> are translated into Qt-Events, which are processed
-    by the current QApplication asynchronously. 
+    to the graphics buffer. By these means, <tt>setImage</tt> can simply be called from the application's
+    working thread without any explicit synchronization. Once an new image is given, the icl::ICLWidget will
+    automatically post a Qt-update event by calling the ICLWidget::render() method. In this way, the used OpenGL
+    context is actually re-rendered asynchronously in the application's GUI thread.
 
-    For image annotation, the icl::ICLDrawWidget is provided. It works like a drawing state-machine
+    For image annotation (such as rendering boxes or symbols on top of the image to visualize image processing
+    results), the icl::ICLDrawWidget is provided. It works like a drawing state-machine
     that automatically synchronized image annotations with Qt's event loop. Internally, this is achieved
-    by using a mutex protected draw-command queue, which can be filled from the working thread.
+    by using two thread-safe draw-command queues. One of these queues can be filled with new draw commands,
+    while the other queue belongs to the GUI thread and is rendered. Every time, the parent icl::ICLWidget classes
+    icl::ICLWidget::render() method is called, the queues are swapped, and the queue that is now being filled
+    with new commands is automatically cleared. Here, the icl::ICLDrawWidget adapts the behavior of the parent
+    icl::ICLWidget class. <b>The icl::ICLDrawWidget will not automatically call ICLWidget::render() when
+    a new background image is given</b>. Since usually setting the background image is followed by posting
+    a set of draw-commands, icl::ICLWidget::render() has to be called manually, once the image annotation is
+    finished. (TODO add reference to example)
     
-    On the last level, the icl::ICLDrawWidget3D provides an interfaces for drawing OpenGL-based 3D
-    primitives as overlay onto an image;
-    
-
-    
+    On the last level, the icl::ICLDrawWidget3D, which itself extends the icl::ICLDrawWidget, provides an interfaces
+    for rendering 3D stuff on top of an image. The icl::ICLDrawWidget3D provides the icl::ICLDrawWidget3D::link method,
+    which links a simple callback function to it. When the icl::ICLDrawWidget3D is rendered, it will also execute
+    the linked OpenGL callback function in the GUI Thread, while still being able to render 2D annotations. <b>
+    It is highly recommended to use the icl::Scene class to create 3D rendering overlays</b> The scene class can easily
+    provide an appropriate OpenGL callback function for it's contained cameras.
+        
+    Usage examples are given on <a href="http://www.iclcv.org">ICL's webpage</a>. Select info->tutorial in the top-menu.
 
     </TD><TD valign="top">
     \image html drawing-layers.png "Collaboration in ICL's visualisation and annotation framework"
@@ -118,6 +131,7 @@
     
     <TABLE border=0><TR><TD>
     
+    <b>note: this section is not up-to-date</b>\n
     The icl::ICLWidget's on-screen-menu provides a lot of basic features to adjust image
     visualisation parameters, such as brightness-contrast adjustment, or zooming to a certain
     sub-rectangle of the whole image. Furthermore, it provides basic functionalities for
