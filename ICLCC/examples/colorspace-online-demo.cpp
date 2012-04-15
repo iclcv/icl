@@ -33,24 +33,26 @@
 *********************************************************************/
 
 #include <ICLQuick/Common.h>
-
+#include <ICLCC/CCFunctions.h>
 GUI gui;
+GenericGrabber grabber;
 
 void init(){
-  gui << "image[@handle=image@minsize=16x12]"
+  gui << "image[@handle=image]"
       << "combo(Gray,RGB,HLS,YUV,LAB,Chroma,Matrix)"
-         "[@out=cs@label=color space@maxsize=100x3]";
-  
-  gui.show();
+         "[@handle=fmt@maxsize=100x3]"
+      << "!show";
+  grabber.init(pa("-i"));
 }
 
 void run(){
-  gui_string(cs);
-  static GenericGrabber g(pa("-i"));
-  g.useDesired(g.grab()->getSize());
-  g.useDesired(parse<format>(cs));
-  
-  gui["image"] = g.grab();
+  //grabber.useDesired(parse<format>(gui["fmt"]));
+  //gui["image"] = grabber.grab();
+  const ImgBase *image = grabber.grab();
+  static Img8u dst;
+  dst.setFormat(parse<format>(gui["fmt"]));
+  cc(image,&dst);
+  gui["image"] = dst;
 }
 
 int main(int n, char **args){

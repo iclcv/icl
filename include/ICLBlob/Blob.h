@@ -158,61 +158,40 @@
     \code
 #include <ICLQuick/Common.h>
 #include <ICLBlob/RegionDetector.h>
-#include <ICLCC/Color.h>
-#include <ICLQuick/QuickRegions.h>
+#include <ICLFilter/ColorDistanceOp.h>
 
-// global data (GUI and reference color)
-GUI gui("draw[@handle=draw@minsize=16x12]");
-std::vector<double> refcol(3);
+GUI gui;
 GenericGrabber grabber;
-// reference color callback (ref. color is
-// updated by mouse-click/drag)
-void click_color(const MouseEvent &evt){
-  if(evt.isLeft() && evt.getColor().size() == 3){
-    refcol = evt.getColor();
+RegionDetector rd(100,1E9,255,255);
+ColorDistanceOp cd(Color(0,120,240),100);
+
+void mouse(const MouseEvent &e){
+  if(e.isLeft()){
+    cd.setReferenceColor(e.getColor());
   }
 }
 
-// initialization (create gui and install callback)
 void init(){
-  gui.show();
-  gui["draw"].install(new MouseHandler(click_color));
-  grabber.init(FROM_PROGARG("-input"));
-  grabber.setIgnoreDesiredParams(true);
+  grabber.init(pa("-i"));
+  gui << "draw[@handle=image]" << "!show";
+  gui["image"].install(mouse);
 }
 
-
-// working loop
 void run(){
-  
-  Img32f im = cvt(grabber.grab());
-  Img32f cm = colormap(im,refcol[0],refcol[1],refcol[2]);
-  Img32f bi = thresh(cm,240);
-  
-  // create a region detector
-  static RegionDetector rd(100,1<<20,255,255);
-  const std::vector<ImageRegion> &rs = rd.detect(&bi);
+  DrawHandle draw = gui["image"];
+  const ImgBase *I = grabber.grab();
 
-  gui_DrawHandle(draw);
+  draw = I;
 
-  // visualization
-  draw = im;
-  draw->lock();
-  draw->reset();
-  draw->color(0,100,255);
-  for(unsigned int i=0;i<rs.size();++i){
-    // obtain region information (boundary pixels here)
+  std::vector<ImageRegion> rs = rd.detect(cd.apply(I));
+  for(size_t i=0;i<rs.size();++i){
     draw->linestrip(rs[i].getBoundary());
   }
-  draw->unlock();
-  draw.update();
+  draw->render();
 }
-
-// default main function
-int main(int n, char **ppc){
-  return ICLApp(n,ppc,"-input(2)",init,run).exec();
+int main(int n,char **v){
+  return ICLApp(n,v,"-input|-i(2)",init,run).exec();
 }
-
     \endcode
     </td><td valign=top>
     \image html icl-online-region-detection-demo-screenshot.png "icl-online-region-detection-demo screenshot"

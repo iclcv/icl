@@ -115,28 +115,28 @@
     Here is a small example for a dynamic-source grab example
 
     <TABLE border=0><TR><TD>
-        \code
+    \code
     #include <ICLQuick/Common.h>
 
     GUI gui;
     GenericGrabber grabber;
 
     void init(){
-      gui << "image[@handle=image@minsize=16x12]" << "!show";
       grabber.init(pa("-i"));
+      gui << "image[@handle=image]" << "!show";
     }
 
     void run(){
       gui["image"] = grabber.grab();
-      gui["image"].update();
     }
 
     int main(int n, char **args){
       return ICLApp(n,args,"-input|-i(2)",init,run).exec();
     }
     \endcode
+
     </TD><TD>
-    \image html viewer.jpg "most simple image displaying example"
+    \image html viewer.jpg
     </TD></TR></TABLE>
     
     A slightly adapted version of this application is available as an example application

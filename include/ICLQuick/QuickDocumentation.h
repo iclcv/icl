@@ -153,18 +153,19 @@
 #include <ICLQuick/Common.h>
 
 GUI gui;
+GenericGrabber grabber;
 
 void init(){
-  gui << "image[@handle=image@minsize=16x12]"
+  gui << "image[@handle=image]"
       << "slider(0,255,127)"
-         "[@out=t@maxsize=100x2@label=threshold]";
-  
-  gui.show();
+         "[@out=t@maxsize=100x2@label=threshold]"
+      << "!show";
+  grabber.init(pa("-i"));
 }
 
 void run(){
   static ImgQ last;
-  ImgQ curr = cvt(grab(FROM_PROGARG("-input")));
+  ImgQ curr = cvt(grabbe.grab());
   
   gui["image"] = thresh(abs(last-curr),gui["t"].as<int>());
   gui["image"].update();

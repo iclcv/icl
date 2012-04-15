@@ -60,33 +60,54 @@ This package contains functions and classes for color conversion. Currently, the
 #include <ICLQuick/Common.h>
 
 GUI gui;
+GenericGrabber grabber;
 
 void init(){
-  gui << "image[@handle=image@minsize=16x12]"
+  gui << "image[@handle=image]"
       << "combo(Gray,RGB,HLS,YUV,LAB,Chroma,Matrix)"
-         "[@out=cs@label=color space@maxsize=100x3]";
-  
-  gui.show();
+         "[@handle=fmt@maxsize=100x3]"
+      << "!show";
+  grabber.init(pa("-i"));
 }
 
 void run(){
-  gui_string(cs);
-  static GenericGrabber g(FROM_PROGARG("-input"));
-  g.setDesiredSize(Size::VGA);
-  g.setDesiredFormat(parse<format>(cs));
-  g.setIgnoreDesiredParams(false);
-  
-  gui["image"] = g.grab();
-  gui["image"].update();
+  grabber.useDesired(parse<format>(gui["fmt"]));
+  gui["image"] = grabber.grab();
 }
 
 int main(int n, char **args){
-  return ICLApplication(n,args,"-input(2)",init,run).exec();
+  return ICLApplication(n,args,"[m]-i|-input(2)",init,run).exec();
 }
 \endcode
 </TD><TD>
 \image html color-space-demo.png "icl-colorspace-demo GUI" width=5cm
 </TD></TR></TABLE>
+
+Actually, we do not see how to use color space conversion manually, since the
+Grabber's icl::Grabber::useDesired(format) is used here to make the grabber
+return already converted images. Color conversion can be triggered manually by
+using the icl::cc function, that converts the color format from a given source
+image into a given destination image. icl::cc is also able to convert the image
+depth simultaneously. Here is an adapted run loop for the example above, that
+applies color conversion manually. \n
+<b>Please note:</b> The image visualization component does not convert the
+detected color back to the screen color format RGB. Instead, it interprets
+the found color channels as gray (one channel) red/blue (two channels) or
+RGB (3 channels).
+
+\code
+// include this header at the top of the file
+#include <ICLCC/CCFunctions.h>
+
+// adapted run loop manually performing color conversion
+void run(){
+  const ImgBase *image = grabber.grab();
+  static Img8u dst;
+  dst.setFormat(parse<format>(gui["fmt"]));
+  cc(image,&dst);
+  gui["image"] = dst;
+}
+\endcode
 
 \section secRanges Color Ranges
 As default, the all ICL color spaces are represented in

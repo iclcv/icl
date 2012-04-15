@@ -31,62 +31,39 @@
 ** Excellence Initiative.                                          **
 **                                                                 **
 *********************************************************************/
-
 #include <ICLQuick/Common.h>
 #include <ICLBlob/RegionDetector.h>
-#include <ICLCC/Color.h>
-#include <ICLQuick/QuickRegions.h>
+#include <ICLFilter/ColorDistanceOp.h>
 
-// global data (GUI and reference color)
-GUI gui("hsplit");
-std::vector<double> refcol(3);
+GUI gui;
 GenericGrabber grabber;
-RegionDetector rd(100,1<<20,255,255);
+RegionDetector rd(100,1E9,255,255);
+ColorDistanceOp cd(Color(0,120,240),100);
 
-// reference color callback (ref. color is
-// updated by mouse-click/drag)
-void click_color(const MouseEvent &evt){
-  if(evt.isLeft() && evt.getColor().size() == 3){
-    refcol = evt.getColor();
+void mouse(const MouseEvent &e){
+  if(e.isLeft()){
+    cd.setReferenceColor(e.getColor());
   }
 }
 
-// initialization (create gui and install callback)
 void init(){
-  rd.setConfigurableID("rd");
-  gui << "draw[@handle=draw@minsize=16x12]"
-      << "prop(rd)";
-  gui.show();
-  gui["draw"].install(new MouseHandler(click_color));
   grabber.init(pa("-i"));
+  gui << "draw[@handle=image]" << "!show";
+  gui["image"].install(mouse);
 }
 
-
-// working loop
 void run(){
-  
-  Img32f im = cvt(grabber.grab());
-  Img32f cm = colormap(im,refcol[0],refcol[1],refcol[2]);
-  Img32f bi = thresh(cm,240);
-  Img8u im8u = cvt8u(bi);
-  
-  // create a region detector
+  DrawHandle draw = gui["image"];
+  const ImgBase *I = grabber.grab();
 
-  const std::vector<ImageRegion> &rs = rd.detect(&im8u);
+  draw = I;
 
-  gui_DrawHandle(draw);
-
-  // visualization
-  draw = im;
-  draw->color(0,100,255);
-  for(unsigned int i=0;i<rs.size();++i){
-    // obtain region information (boundary pixels here)
+  std::vector<ImageRegion> rs = rd.detect(cd.apply(I));
+  for(size_t i=0;i<rs.size();++i){
     draw->linestrip(rs[i].getBoundary());
   }
-  draw.render();
+  draw->render();
 }
-
-// default main function
-int main(int n, char **ppc){
-  return ICLApp(n,ppc,"[m]-input|-i(2)",init,run).exec();
+int main(int n,char **v){
+  return ICLApp(n,v,"-input|-i(2)",init,run).exec();
 }
