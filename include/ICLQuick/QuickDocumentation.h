@@ -63,7 +63,7 @@
     The ICLQuick functions are, if no real-time performance is
     required:
     \code
-    \#include <ICLQuick/Quick.h>
+    #include <ICLQuick/Quick.h>
     // no using namespace etc, ICLQuick automatically 
     // uses namespace icl and std
     int main(){
@@ -71,10 +71,10 @@
       for(int i=0;i<10;i++){
         ImgQ a;
         for(int j=0;j<10;j++){
-           // right-side concatenation of a scaled snapshot from dc camera
+           // horizontal concatenation using the comma operator
            a = (a,scale(grab("dc","0"),0.1)); 
         }
-        // bottom side concatenation of a the "10xa-row" to the current b
+        // vertical concatenation of a the "10xa-row" to the current b
         b=(b%a);
       }
       // visualize b using icl-xv
@@ -154,28 +154,26 @@
 
 GUI gui;
 GenericGrabber grabber;
+ImgQ last;  // last image
 
 void init(){
   gui << "image[@handle=image]"
-      << "slider(0,255,127)"
-         "[@out=t@maxsize=100x2@label=threshold]"
+      << "slider(0,255,127)[@out=thresh]"
       << "!show";
   grabber.init(pa("-i"));
 }
 
 void run(){
-  static ImgQ last;
-  ImgQ curr = cvt(grabbe.grab());
-  
-  gui["image"] = thresh(abs(last-curr),gui["t"].as<int>());
-  gui["image"].update();
+  // use cvt to create an Img32 (aka ImgQ)
+  ImgQ curr = cvt(grabber.grab());
+  // nested use of operators
+  gui["image"] = thresh(abs(last-curr),gui["thresh"]);
   last = curr;
 }
 
 int main(int n, char **ppc){
-  return ICLApplication(n,ppc,"-input(2)",init,run).exec();
+  return ICLApplication(n,ppc,"-input|-i(2)",init,run).exec();
 }
-
 \endcode
     
     </td><td>

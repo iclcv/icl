@@ -555,12 +555,11 @@ GenericGrabber grabber;
 
 void init(){
    grabber.init(pa("-i"));
-   gui << "image[@handle=image@minsize=16x12]" << "!show";
+   gui << "image[@handle=image]" << "!show";
 }
 void run(){
    // set an image (anonymously, without handle)
    gui["image"] = grabber.grab();
-   gui["image"].update();
 }
 int main(int n, char **args){
    return ICLApp(n,args,"-input|-i(2)",init,run).exec();
@@ -575,14 +574,13 @@ GenericGrabber grabber;
 
 void init(){
    grabber.init(pa("-i"));
-   gui << "image[@handle=image@minsize=16x12]" << "!show";
+   gui << "image[@handle=image]" << "!show";
 }
 void run(){
    // this can be done statically, since the gui will not change
    // this is also slightly faster, but usually fully neglegible
    static ImageHandle image = gui["image"];
    image = grabber.grab();
-   image.update();
 }
 int main(int n, char **args){
    return ICLApp(n,args,"-input|-i(2)",init,run).exec();
@@ -599,7 +597,7 @@ GenericGrabber grabber;
 
 void init(){
    grabber.init(pa("-i"));
-   gui << "draw[@handle=image@minsize=16x12]" << "!show";
+   gui << "draw[@handle=image]" << "!show";
 }
 void run(){
    // 1st, we extract the handle
@@ -615,22 +613,15 @@ void run(){
    // What we see now, is also documented in the 
    // ICLDrawWidget documentation
    
-   // lock the drawing queue
-   plot->lock();
-    
-   // clear the drawing queue
-   plot->clear();
-    
    // draw stuff ..
-    
-   // unlock the drawing queue
-   plot->unlock();
+   draw->color(255,0,0);
+   draw->fill(255,0,0,100);
+   draw->line(10,10,20,20);
+   draw->rect(Rect(0,0,100,100));
     
    // post an update event through Qt
-   // please note: do not use the ICLDrawWidget's 
-   // update method plot->update(), because
-   // this is not thread-safe
-   plot.update();
+   // and swap draw command queues internally
+   plot.render();
 }
 int main(int n, char **args){
    return ICLApp(n,args,"-input|-i(2)",init,run).exec();
@@ -757,7 +748,6 @@ int main(int n, char **args){
       
       The following example can also be found as ICLQt/examples/gui-callback-test.cpp
       \code
-
 #include <ICLQuick/Common.h>
 
 /// global gui instance
@@ -766,9 +756,7 @@ GUI gui;
 // Our working thread, calling it's run function 
 // asynchronously to the GUI Thread
 void run(){
-  // shortcut to extract currentTimeLabel from the gui
-  gui_LabelHandle(currentTimeLabel);
-  currentTimeLabel = Time::now().toString();
+  gui["currentTimeLabel"] = Time::now().toString();
   Thread::sleep(1);
 }
 
@@ -784,19 +772,6 @@ void click_callback(){
   currentTimeLabel = "hello!";
 }
 
-// a more complex callback implementing the GUI::Callback interface
-// In contrast to simple functions, this callbacks are able to have 'own data'
-struct MyCallback : public GUI::Callback{
-  Time m_lastTime;
-  virtual void exec(){
-    Time now = Time::now();
-    Time dt = now-m_lastTime;
-
-    // here we could use the macro gui_LabelHandle(timeDiffLabel) as well
-    gui.getValue<LabelHandle>("timeDiffLabel") = str(dt.toSecondsDouble())+" sec";
-    m_lastTime = now;
-  }
-};
 
 void init(){
   // create some nice components
@@ -804,22 +779,15 @@ void init(){
       << "label(something)[@handle=timeDiffLabel@label=time since last call]"
       << "button(Click me!)[@handle=click]"
       << "button(Click me too!)[@handle=click-2]"
-      << "button(Exit!)[@handle=exit]";
+      << "button(Exit!)[@handle=exit]"
+      << "!show";
   
-  
-  // create and show the GUI
-  gui.show();
-  
-  /// sometimes, this works as well !
+  /// assign text to a label
   gui["currentTimeLabel"] = Time::now().toString();
   
   // register callbacks (on the specific handles)
-  gui.getValue<ButtonHandle>("exit").registerCallback(new GUI::Callback(exit_callback));
-  gui.getValue<ButtonHandle>("click").registerCallback(new GUI::Callback(click_callback));
-
-  // or let gui find the corresponding components internally
-  gui.registerCallback(new MyCallback,"click-2");
-  
+  gui["exit"].registerCallback(exit_callback);
+  gui["click"].registerCallback(click_callback);
 }
 
 int main(int n, char **ppc){
@@ -849,12 +817,12 @@ void handle_event(const std::string &handle){
 }
 
 void init(){
-  gui << "slider(0,100,50)[@handle=slider@label=slider@out=_1]"
-      << "togglebutton(off,on)[@handle=togglebutton@label=toggle button@out=_2]"
-      << "button(click me)[@handle=button@label=a button]";
+  gui << "slider(0,100,50)[@handle=s@label=slider]"
+      << "togglebutton(off,on)[@handle=t@label=toggle button]"
+      << "button(click me)[@handle=b@label=a button]";
   gui.show();
   
-  gui.registerCallback(new GUI::Callback(handle_event),"slider,button,togglebutton");
+  gui.registerCallback(handle_event,"s,t,b");
 }
 
 int main(int n, char **ppc){
@@ -895,7 +863,8 @@ int main(int n, char **ppc){
       \endcode
     
       This implicit cast/assignment mechanism works for many pairs of lvalue/rvalue types (note: "number values" are all
-      common float and integer data types).
+      common float and integer data types). Soon, an extra tool will be provided for providing a runtime-overview of
+      assignable types.
     
       - all handles and values can be accessed directly using 
         \code  type t = gui["id"]; \endcode
@@ -916,11 +885,11 @@ int main(int n, char **ppc){
       - num-type = button extracts whether the button is currently toggled
       - num-type|string = string-meta-handle extracts/parses the current input
       - the function registerCallback can be called on all meta-handles in order to register a GUI::Callback*
-      - the function update() can be called on image-, draw- and draw3D meta handles. This function calls
-        the internal components updateFromOtherThread()-method
+      - the function render() can be called on image-, draw- and draw3D meta handles. This function calls
+        the internal components render()-method
       - the function install() can can also be called on these meta handles. It installs a MouseHandler*
         (passed as anonymous void*)
-      - the function update() updates an fps-meta handle
+      - the function render() updates an fps-meta handle
 
 
       \subsubsection ABCDE Qt-Dialogs
@@ -1039,15 +1008,37 @@ int main(int n, char **ppc){
       
       Here's an example for using tabs (available as gui-test-2.cpp):
       
-      \code 
+      \code
 #include <ICLQuick/Common.h>
-#include <QProgressBar>
+#include <QtGui/QProgressBar>
 
 GUI gui;
 
-void init(){
-  gui = GUI("tab(a,b,c,d,e,f)[@handle=tab]");
+void run(){
+  Img8u image = cvt8u(scale(create("parrot"),0.2));
+  ImageHandle *ws[3] = {
+    &gui.getValue<ImageHandle>("image1"),
+    &gui.getValue<ImageHandle>("image2"),
+    &gui.getValue<ImageHandle>("image3")
+  };
+  ButtonHandle &click = gui.getValue<ButtonHandle>("click");
+  while(1){
+    for(int i=0;i<3;++i){
+      *ws[i] = image;
+    }
+    if(click.wasTriggered()){
+      std::cout << "button 'click' was triggered!" << std::endl;
+    }
+    Thread::msleep(50);
+  }
+}
+
+int main(int n, char **ppc){
+  ExecThread x(run);
+  QApplication app(n,ppc);
   
+  gui = GUI("tab(a,b,c,d,e,f)[@handle=tab]");
+
   gui << "image[@handle=image1@label=image1]"
       << "image[@handle=image2@label=image2]"
       << "image[@handle=image3@label=image3]";
@@ -1059,33 +1050,28 @@ void init(){
     << "combo(entry1,entry2,entry3)[@out=combo@label=the-combobox]"
     << "spinner(-50,100,20)[@out=the-spinner@label=a spin-box]"
     << "button(click me)[@handle=click]";
-  
+
+  v << ( GUI("vsplit")
+         << "combo(a,b,c,e,d,f)[@out=bla1@label=combo a]"
+         << "combo(a,b,c,e,d,f)[@out=bla2@label=combo b]"
+         << "combo(a,b,c,e,d,f)[@out=bla3@label=combo c]"
+         << (
+               GUI("hsplit") 
+               << "slider(0,100,50)[@out=fjd-1@label=A]"
+               << "slider(0,100,50)[@out=fjd-2@label=B]"
+            )
+         );
   
   gui << v;
-  
+
   gui.show();
   
   gui.getValue<TabHandle>("tab").insert(2,new ICLWidget,"ext. 1");
   gui.getValue<TabHandle>("tab").add(new QProgressBar,"ext. 2");
-}
 
-
-void run(){
-  static Img8u image = cvt8u(scale(create("parrot"),0.2));
-  gui_ButtonHandle(click);
+  x.run();
   
-  for(int i=0;i<3;++i){
-    gui["image"+str(i+1)] = image;
-    gui["image"+str(i+1)].update();
-  }
-  if(click.wasTriggered()){
-    std::cout << "button 'click' was triggered!" << std::endl;
-  }
-  Thread::msleep(50);
-}
-
-int main(int n, char **ppc){
-  return ICLApplication(n,ppc,"",init,run).exec();
+  return app.exec();
 }
      \endcode
 
