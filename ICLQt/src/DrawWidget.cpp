@@ -891,6 +891,11 @@ namespace icl{
     QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new PolygonCommand(ps));
   }
+
+  void ICLDrawWidget::polygon(const std::vector<Point> &ps){
+    polygon(std::vector<Point32f>(ps.begin(),ps.end()));
+  }
+
   
   void ICLDrawWidget::grid(const Point32f *points, int nx, int ny, bool rowMajor){
     QMutexLocker lock(&m_oCommandMutex);

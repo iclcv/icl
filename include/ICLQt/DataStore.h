@@ -215,6 +215,9 @@ namespace icl{
       for(unsigned int i=0;i<keys.size();++i) v[i] = operator[](keys[i]);
       return v;
     }
+
+    /// gives a list of possible assignemts for optinally given src and dst Type
+    static void list_possible_assignments(const std::string &srcType, const std::string &dstType);
     
   };
 }

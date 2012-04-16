@@ -359,6 +359,9 @@ int main(int n, char **ppc){
     /// draws a convex polygon
     void polygon(const std::vector<Point32f> &ps);
 
+    /// draws a convex polygon (int-points)
+    void polygon(const std::vector<Point> &ps);
+
     /// draws a regular grid between given points
     void grid(const Point32f *points, int nx, int ny, bool rowMajor=true);
 

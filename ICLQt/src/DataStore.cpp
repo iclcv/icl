@@ -93,11 +93,17 @@ using namespace icl;
 namespace{
   
   struct Assign{
+    std::string srcType,dstType,srcRTTI,dstRTTI;
+    Assign(const std::string &srcType, const std::string &dstType, 
+           const std::string &srcRTTI, const std::string &dstRTTI):
+      srcType(srcType),dstType(dstType),srcRTTI(srcRTTI),dstRTTI(dstRTTI){}
     virtual bool operator()(void *src, void *dst){ return false; }
   };
   
   template<class S, class D>
   struct AssignSpecial : public Assign{
+    AssignSpecial(const std::string &srcType, const std::string &dstType):
+      Assign(srcType,dstType,DataStore::get_type_name<S>(),DataStore::get_type_name<D>()){}
     bool apply(S &src, D &dst){ dst = static_cast<D>(src); return true; }
     virtual bool operator()(void *src, void *dst){
       return apply(*reinterpret_cast<S*>(src),*reinterpret_cast<D*>(dst));
@@ -252,6 +258,9 @@ INST_OTHER_TYPES
 
 #define FROM_TO(S,D,HOW)                                                         \
     template<> struct AssignSpecial<S,D> : public Assign{                        \
+        AssignSpecial(const std::string &srcType, const std::string &dstType):   \
+          Assign(srcType,dstType,DataStore::get_type_name<S>(),                  \
+                 DataStore::get_type_name<D>()){}                                \
         bool apply(S &src, D &dst){                                              \
           HOW; return true;                                                      \
         }                                                                        \
@@ -464,7 +473,7 @@ namespace icl{
     AssignMap &m = *new AssignMap;
     
 #define TYPE(T) (DataStore::get_type_name<T>())
-#define ADD(X,Y) m[TYPE(X)][TYPE(Y)] = new AssignSpecial<X,Y>;
+#define ADD(X,Y) m[TYPE(X)][TYPE(Y)] = new AssignSpecial<X,Y>(str(#X),str(#Y));
 
     // X = X
 #define INST_TYPE(T) ADD(T,T)
@@ -716,9 +725,13 @@ namespace icl{
     return &m;
   }
   
+  AssignMap *create_singelton_assign_map(){
+    static AssignMap *am = create_assign_map();
+    return am;
+  }
+  
   void DataStore::Data::assign(void *src, const std::string &srcType, void *dst, const std::string &dstType) throw (DataStore::UnassignableTypesException){
-    static AssignMap *am = 0;
-    if(!am) am = create_assign_map();
+    AssignMap *am = create_singelton_assign_map();
     AssignMap::iterator it1 = am->find(srcType);
     if(it1 == am->end()){
       throw DataStore::UnassignableTypesException(srcType,dstType); 
@@ -751,4 +764,76 @@ namespace icl{
 
     install(new FunctionMouseHandler(f));
   }
+
+  typedef AssignMap::const_iterator It;
+  typedef std::map<const std::string, Assign*>::const_iterator Jt;
+  
+  AssignMap translate_assign_map(const AssignMap *m){
+    AssignMap d;
+    for(It it = m->begin(); it != m->end(); ++it){
+      for(Jt jt = it->second.begin(); jt != it->second.end();++jt){
+        Assign *a = jt->second;
+        if(a) d[a->srcType][a->dstType] = a;
+      }
+    }
+    return d;
+  }
+  
+  
+  void DataStore::list_possible_assignments(const std::string &srcType, const std::string &dstType){
+    typedef AssignMap::const_iterator It;
+    typedef std::map<const std::string, Assign*>::const_iterator Jt;
+    AssignMap am = translate_assign_map(create_singelton_assign_map());
+
+    if(srcType.length()){
+      It it = am.find(srcType);
+      if(it == am.end()){
+        std::cout << "no assignment rules for source type '" << srcType << "' found" << std::endl;
+      }
+      if(dstType.length()){
+        Jt jt = it->second.find(dstType);
+        if(jt == it->second.end()){
+          std::cout << "no assignment rule for " << dstType << " <- " << srcType << " found" << std::endl;
+        }else{
+          const Assign *as = jt->second;
+          std::cout << as->dstType << " <- " << as->srcType << 
+          "  (rtti: " << as->dstRTTI << " <- " << as->srcRTTI << std::endl;
+        }
+      }else{
+        std::cout << "the following assignemt rules for source type " << srcType << " are available:" << std::endl;
+        for(Jt jt=it->second.begin(); jt != it->second.end(); ++jt){
+          const Assign *as = jt->second;
+          std::cout << as->dstType << " <- " << as->srcType << 
+          "  (rtti: " << as->dstRTTI << " <- " << as->srcRTTI << std::endl;
+        }
+      }
+    }else{
+      if(dstType.length()){
+        std::cout << "the following assignemt rules for destination type " << dstType << " are available:" << std::endl;
+        for(It it = am.begin(); it != am.end(); ++it){
+          Jt jt = it->second.find(dstType);
+          if(jt != it->second.end()){
+            Assign *a = jt->second;
+            std::cout << "   " << a->dstType << " <- " << a->srcType << 
+            "  (rtti: " << a->dstRTTI << " <- " << a->srcRTTI << std::endl;
+          }
+        }
+      }else{
+        int num = 0;
+        for(It it = am.begin(); it != am.end(); ++it){
+          num += it->second.size();
+        }
+        std::cout << "listing all " << num << " assignment rules " << std::endl;
+        for(It it = am.begin(); it != am.end(); ++it){
+          std::cout << "source type: " << it->first << std::endl;
+          for(Jt jt = it->second.begin(); jt != it->second.end();++jt){
+            Assign *a = jt->second;
+            std::cout << "   " << a->dstType << " <- " << a->srcType << 
+            "  (rtti: " << a->dstRTTI << " <- " << a->srcRTTI << std::endl;
+          }
+        }
+      }
+    }
+  }
+
 }

@@ -131,6 +131,125 @@
       \endcode
       \image html Image02_FirstImage.jpg
 
+    \section INDEX_OP GUI instances and the []-index operator
+    
+    For more convenience, the GUI class provides a smart index operator "[]". The index 
+    operator can be called with a GUI entry's string-ID (either the handle or output). It returns
+    an intermediate structure of type DataStore::Data, which provides smart implicit type
+    conversion (in case of creation and assignment). Usually, using the index-"[]"-operator leads
+    to better readable code. Instead of explicitly declaring the type of an extracted value,
+    one can simple leave this work for the run-time type assignment system. 
+    What types are assignable can be queried using the tool <b>icl-gui-assignment-info</b>.
+    The only drawback of this method is, that the particular assignment operation has to be
+    searched at run-time, however, this is usually negligible.
+
+    \code
+    GUI gui("hsplit");
+    Scene scene;
+    
+    void init(){
+      gui << "image[@handle=image]"
+      gui << "draw3D[@handle=draw]"
+          << ( GUI("vbox")
+               << "button(click me)[@handle=bu]"
+               << "slider(0,255,100)[@out=sl@handle=slh]"
+               << "combobox(rgb,hls,yuv)[@handle=co]"
+               << "checkbox(flag,checked)[@handle=cb]"
+               << "fps(10)[@handle=fps]"
+             )
+          << "!show";
+
+      scene.addCamera(Camera());
+    }
+    void run(){
+      // extracting slider value (explicit)
+      int s1 = gui.getValue<int>("sl");
+      // extracting slider value (implicit)
+      int s2 = gui["sl"];
+  
+      // setting slider range (explicit)
+      gui.getValue<SliderHandle>("slh").setRange(0,200);
+      //setting slider range (implicit)
+      gui["slh"] = Range8u(0,200);
+
+      // getting checkbox value
+      bool cb1 = gui.getValue<SliderHandle>("cb");
+      bool cb2 = gui["cb"];
+
+      // check checkbox
+      gui["cb"] = true;
+
+      // setting image
+      gui.getValue<ImageHandle>("image") = grabber.grab();
+      gui["image"] = grabber.grab();
+    
+      // extracting the image handle
+      ImageHandle image1 = gui.getValue<ImageHandle>("image");
+      ImageHandle image2 = gui["image"];
+
+      // re-render 3D draw widget
+      gui.getValue<DrawHandle3D>("draw").render();
+      gui["draw"].render();
+    
+      // register callback to button or slider
+      gui.getValue<ButtonHandle>("bu").registerCallback(my_cb_func);
+      gui["bu"].registerCallback(my_cb_func);
+
+      // install mouse listener (void mouse_func(const MouseEvent &e){...})
+      gui["image"].install(mouse_func);
+
+      // update fps label
+      gui["fps"].render();
+    
+      // getting a combobox' current text
+      std::string t = gui["co"];
+
+      // getting a combobox' selected index
+      int idx = gui["co"];
+      
+      // select first field of combobox ..
+      gui["co"] = 0;
+      
+      // ... or a given entry
+      gui["co"] = str("yuv");
+    
+      // link the scene rendering to the 3D drawing compoent
+      gui["draw"].link(scene.getGLCallback(0));
+      // install a scene mouse handler for interactive camera movement
+      gui["draw"].install(scene.getMouseHandler(0));
+    }
+    \endcode
+    
+      This implicit cast/assignment mechanism works for many pairs of lvalue/rvalue types (note: "number values" are all
+      common float and integer data types). 
+    
+      - all handles and values can be accessed directly using 
+        \code  type t = gui["id"]; \endcode
+      - combo-handles can be assigned to string values (extracts selected item)
+        and to number values (extracts current index) e.g.,  
+        \code  string mode = gui["mode"]; \endcode
+      - int- and float handles can be assigned to number-values and to strings e.g., 
+        \code  int threshold = gui["thresh"]; \endcode
+      - all image types and pointers of these can be assigned to image-, draw- and draw3D handles e.g., 
+        \code  gui["image"] = myImage; \endcode
+      - number-type = slider or spinner meta handle is supported and string = slider or spinner meta handle
+      - slider or spinner = Range8u|32s|32f sets the range of the underlying component
+      - button-group = number-type sets the current selected item of a button group
+      - number-type = button-group gets the current selected item of a button group
+      - label = string shows the string on the label
+      - label = image|image-pointer (shows an image description on the label)
+      - string = label extracts the current text of a label
+      - num-type = button extracts whether the button is currently toggled
+      - num-type|string = string-meta-handle extracts/parses the current input
+      - the function registerCallback can be called on all meta-handles in order to register a GUI::Callback*
+      - the function render() can be called on image-, draw- and draw3D meta handles. This function calls
+        the internal components render()-method
+      - the function install() can can also be called on these meta handles. It installs a MouseHandler*
+        (passed as anonymous void*)
+      - the function render() updates an fps-meta handle
+    
+    for a complete list of assignable types, use the <b>icl-gui-assignment-info</b> application. 
+
     \section SBS Step by Step
       
       In the last section we have seen, that the GUI API of the ICL helps us to
@@ -545,8 +664,8 @@
 
       \subsection _COMMON_HANDLES_ Usint the Most Common Handles "image", "draw", "draw3D" and "plot"
     
-      These handles are most commonly used. In very easy cases, "image"-handles most not be extracted.
-      If only images are displayed, it can be achieved using the GUI's smart index opaerator.
+      These handles are most commonly used. In very easy cases, "image"-handles one can simple use the
+      GUI's []-index operator (see \ref INDEX_OP):
 
       \code
 #include <ICLQuick/Common.h>
@@ -829,67 +948,6 @@ int main(int n, char **ppc){
   return ICLApplication(n,ppc,"",init).exec();
 }
       \endcode
-
-      \subsubsection INDEX_OP GUI instances and the []-index operator (Meta-Handles)
-    
-      For even more convenience the GUI's parent class DataStore does also provide an implementation of the 
-      index operator "[]". The index operator can be called with the entries string-ID in order to get a
-      so called <b>meta-handle</b> for this entry of type DataStore::Data. This class provides intelligent implicit-cast-  and
-      assignment-operators. These operators can be used to produce much prettier code:
-
-      \code
-      
-      GUI gui;
-      gui << "..." << "...";
-      gui.show();
-      // instead of writing
-      gui.getValue<ImageHandle>("image")->setImage(myImage);
-      gui.getValue<ImageHandle>("image")->updateFromOtherThread();
-    
-      // you can simply write
-      gui["image"] = myImage;
-      gui["image"].update();
-    
-    
-      // this:
-      int val = gui.getValue<float>("mySlider");
-    
-      // you can write this:
-      int val = gui["mySlider"]
-    
-      // or also 
-      ImageHandle h = gui["image"];
-    
-      \endcode
-    
-      This implicit cast/assignment mechanism works for many pairs of lvalue/rvalue types (note: "number values" are all
-      common float and integer data types). Soon, an extra tool will be provided for providing a runtime-overview of
-      assignable types.
-    
-      - all handles and values can be accessed directly using 
-        \code  type t = gui["id"]; \endcode
-      - combo-handles can be assigned to string values (extracts selected item)
-        and to number values (extracts current index) e.g.,  
-        \code  string mode = gui["mode"]; \endcode
-      - int- and float handles can be assigned to number-values and to strings e.g., 
-        \code  int threshold = gui["thresh"]; \endcode
-      - all image types and pointers of these can be assigned to image-, draw- and draw3D handles e.g., 
-        \code  gui["image"] = myImage; \endcode
-      - number-type = slider or spinner meta handle is supported and string = slider or spinner meta handle
-      - slider or spinner = Range8u|32s|32f sets the range of the underlying component
-      - button-group = number-type sets the current selected item of a button group
-      - number-type = button-group gets the current selected item of a button group
-      - label = string shows the string on the label
-      - label = image|image-pointer (shows an image description on the label)
-      - string = label extracts the current text of a label
-      - num-type = button extracts whether the button is currently toggled
-      - num-type|string = string-meta-handle extracts/parses the current input
-      - the function registerCallback can be called on all meta-handles in order to register a GUI::Callback*
-      - the function render() can be called on image-, draw- and draw3D meta handles. This function calls
-        the internal components render()-method
-      - the function install() can can also be called on these meta handles. It installs a MouseHandler*
-        (passed as anonymous void*)
-      - the function render() updates an fps-meta handle
 
 
       \subsubsection ABCDE Qt-Dialogs

@@ -45,7 +45,7 @@ namespace icl{
 
   /// Utility helper class for faster and more convenient access to single channel image data \ingroup IMAGE
   /** Yet, the (x,x,c)-operator of the Img<T> class is slow, because of hight computational overhead 
-      due to the nessity of a channel lookup
+      due to the necessity of a channel lookup
       The (x,y,c)-operator needs first to lookup for the channel c in the channel 
       array of the image, before it can address a pixels value by dereferencing the shared 
       pointers wrapped data pointer. In many cases, The user works on images with a fixed channel count
