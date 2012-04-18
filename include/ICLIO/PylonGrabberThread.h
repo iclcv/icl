@@ -89,8 +89,6 @@ namespace icl {
         int m_Timeout;
         /// A counter for correct acquisitions.
         int m_Acquired;
-        /// used for framerate preserving.
-        double m_ResultingFramerate;
 
         /// grabs a single image into m_BufferQueue.
         void grab();

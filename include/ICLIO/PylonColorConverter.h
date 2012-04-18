@@ -196,6 +196,27 @@ namespace icl {
         Pylon::SOutputImageFormat* m_OutputFormat;
     };
 
+/// This ColorConverter uses the icl Bayer to Rgb conversion.
+    class BayerToRgb8Icl : public ColorConverter{
+      public:
+        /// Constructor initializes conversion
+        BayerToRgb8Icl(BayerConverter::bayerConverterMethod method,
+                       BayerConverter::bayerPattern pattern,
+                       Size s);
+        /// frees allocated ressources
+        ~BayerToRgb8Icl();
+        /// initializes buffers in b as needed for color conversion.
+        void initBuffers(ConvBuffers* b);
+        /// writes image from imgBuffer to b using appropriate conversion.
+        void convert(const void *imgBuffer, ConvBuffers* b);
+      private:
+        BayerConverter m_Conv;
+        std::vector<icl8u*> m_Channels;
+        Size m_Size;
+        int m_Dim;
+    };
+
+#ifdef HAVE_IPP
     /// This ColorConverter uses the icl Yuv422 to Rgb conversion.
     class Yuv422ToRgb8Icl : public ColorConverter{
       public:
@@ -227,26 +248,7 @@ namespace icl {
         Size m_Size;
         icl8u* m_ConvBuffer;
     };
-
-    /// This ColorConverter uses the icl Bayer to Rgb conversion.
-    class BayerToRgb8Icl : public ColorConverter{
-      public:
-        /// Constructor initializes conversion
-        BayerToRgb8Icl(BayerConverter::bayerConverterMethod method,
-                       BayerConverter::bayerPattern pattern,
-                       Size s);
-        /// frees allocated ressources
-        ~BayerToRgb8Icl();
-        /// initializes buffers in b as needed for color conversion.
-        void initBuffers(ConvBuffers* b);
-        /// writes image from imgBuffer to b using appropriate conversion.
-        void convert(const void *imgBuffer, ConvBuffers* b);
-      private:
-        BayerConverter m_Conv;
-        std::vector<icl8u*> m_Channels;
-        Size m_Size;
-        int m_Dim;
-    };
+#endif
 
   } //namespace
 } //namespace

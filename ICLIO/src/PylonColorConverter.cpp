@@ -71,7 +71,7 @@ void PylonColorConverter::resetConversion(
 
   //locking mutex
   Mutex::Locker l(m_Mutex);
-  DEBUG_LOG("w=" << width << " h=" << height << " t=" << pixel_type
+  DEBUG_LOG2("w=" << width << " h=" << height << " t=" << pixel_type
                     << " sb=" << pixel_size_bits << " bs=" << buffer_size)
   #ifdef SPEED_TEST
     type_name = pixel_type_name;
@@ -148,11 +148,21 @@ void PylonColorConverter::resetConversion(
 
 
     case PixelType_YUV422packed:
+    #ifdef HAVE_IPP
       m_Converter = new Yuv422ToRgb8Icl(width, height);
+    #else
+      m_Converter = new PylonColorToRgb(width, height, pixel_type,
+                                          pixel_size_bits, buffer_size);
+    #endif
       break;
 
     case PixelType_YUV422_YUYV_Packed:
+    #ifdef HAVE_IPP
       m_Converter = new Yuv422YUYVToRgb8Icl(width, height);
+    #else
+      m_Converter = new PylonColorToRgb(width, height, pixel_type,
+                                          pixel_size_bits, buffer_size);
+    #endif
       break;
 
     case PixelType_RGB8packed:
@@ -376,7 +386,6 @@ PylonColorToRgb::PylonColorToRgb(int width, int height,
   // create/init correct converter
   if (Pylon::IsBayer(m_PixelType)){
     // Bayer color Converter
-    DEBUG_LOG("is bayer")
     m_ColorConverter = new Pylon::CPixelFormatConverterBayer();
   } else if (m_PixelType == Pylon::PixelType_YUV422packed){
     // Yuv422-UYVY color Converter
@@ -429,6 +438,41 @@ void PylonColorToRgb::convert(const void *imgBuffer, ConvBuffers* b){
     interleavedToPlanar(b -> m_ImageBuff, b -> m_ImageRGBA);
 }
 
+// Constructor initializes conversion
+BayerToRgb8Icl::BayerToRgb8Icl(BayerConverter::bayerConverterMethod method,
+                               BayerConverter::bayerPattern pattern,
+                               Size size)
+  : m_Conv(method, pattern, size), m_Channels(3), m_Size(size),
+    m_Dim(size.getDim())
+{
+// nothing to do.
+}
+
+// frees allocated ressources
+BayerToRgb8Icl::~BayerToRgb8Icl(){
+// nothing to do.
+}
+
+// initializes buffers in b as needed for color conversion.
+void BayerToRgb8Icl::initBuffers(ConvBuffers* b){
+  // just an rgb image
+  b -> m_Image = new Img8u(m_Size, icl::formatRGB);
+}
+
+// writes image from imgBuffer to b using appropriate conversion.
+void BayerToRgb8Icl::convert(const void *imgBuffer, ConvBuffers* b){
+  // set buffer as channels of source image
+  icl8u* iBuff = (icl8u*) imgBuffer;
+  m_Channels[0] = (icl8u*) iBuff;
+  m_Channels[1] = (icl8u*) (iBuff + m_Dim);
+  m_Channels[2] = (icl8u*) (iBuff + 2 * m_Dim);
+  // m_Image gets the RGB channels from m_ImageRGBA
+  Img8u src(m_Size, icl::formatRGB, m_Channels);
+  // use BayerConverter for colorconversion
+  m_Conv.apply(&src, &(b -> m_Image));
+}
+
+#ifdef HAVE_IPP
 // Constructor initializes conversion
 Yuv422ToRgb8Icl::Yuv422ToRgb8Icl(int width, int height)
   : m_Size(width, height)
@@ -490,37 +534,4 @@ void Yuv422YUYVToRgb8Icl::convert(const void *imgBuffer, ConvBuffers* b){
   // conversion writes interleaved image into m_ConvBuffer.
   interleavedToPlanar(m_ConvBuffer, (Img8u*) b -> m_Image);
 }
-
-// Constructor initializes conversion
-BayerToRgb8Icl::BayerToRgb8Icl(BayerConverter::bayerConverterMethod method,
-                               BayerConverter::bayerPattern pattern,
-                               Size size)
-  : m_Conv(method, pattern, size), m_Channels(3), m_Size(size),
-    m_Dim(size.getDim())
-{
-// nothing to do.
-}
-
-// frees allocated ressources
-BayerToRgb8Icl::~BayerToRgb8Icl(){
-// nothing to do.
-}
-
-// initializes buffers in b as needed for color conversion.
-void BayerToRgb8Icl::initBuffers(ConvBuffers* b){
-  // just an rgb image
-  b -> m_Image = new Img8u(m_Size, icl::formatRGB);
-}
-
-// writes image from imgBuffer to b using appropriate conversion.
-void BayerToRgb8Icl::convert(const void *imgBuffer, ConvBuffers* b){
-  // set buffer as channels of source image
-  icl8u* iBuff = (icl8u*) imgBuffer;
-  m_Channels[0] = (icl8u*) iBuff;
-  m_Channels[1] = (icl8u*) (iBuff + m_Dim);
-  m_Channels[2] = (icl8u*) (iBuff + 2 * m_Dim);
-  // m_Image gets the RGB channels from m_ImageRGBA
-  Img8u src(m_Size, icl::formatRGB, m_Channels);
-  // use BayerConverter for colorconversion
-  m_Conv.apply(&src, &(b -> m_Image));
-}
+#endif

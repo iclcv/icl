@@ -41,8 +41,6 @@
 using namespace icl;
 using namespace icl::pylon;
 
-//#define SPEED_TEST
-
 // Constructor of PylonGrabberImpl
 PylonGrabberImpl::PylonGrabberImpl(
         const Pylon::CDeviceInfo &dev, const std::string args)
@@ -100,7 +98,7 @@ void PylonGrabberImpl::grabbingStart(){
   FUNCTION_LOG()
   // Get the image buffer size
   const size_t imageSize = m_CameraOptions -> getNeededBufferSize();
-  DEBUG_LOG("Buffer size: " << imageSize)
+  DEBUG_LOG2("Buffer size: " << imageSize)
 
   // We won't use image buffers greater than imageSize
   setParameterValueOf<Pylon::IStreamGrabber, GenApi::IInteger, int>
@@ -186,73 +184,7 @@ void PylonGrabberImpl::cameraDefaultSettings(){
     (m_Camera, "GevSCPSPacketSize", 8000);
 }
 
-#ifdef SPEED_TEST
-Time aqtimesum = Time();
-Time cotimesum = Time();
-const int iterations = 100;
-int timesumcount = iterations;
-int step = 0;
-std::string last = "";
-const std::string colors[] = {"BayerGB12Packed",
-                        "BayerGB16","BayerGB8",
-                        "Mono8","YUV422Packed",
-                        "YUV422_YUYV_Packed"};
-const int colorc = 6;
-std::vector<std::pair<std::string, std::pair<Time,Time> >* > times
-    = std::vector<std::pair<std::string, std::pair<Time,Time> >* >();
-
-std::string reset(PylonCameraOptions* opt, std::string color, int omit){
-  if(omit){
-    opt -> setProperty("OmitDoubleFrames", "true");
-  } else {
-    opt -> setProperty("OmitDoubleFrames", "false");
-  }
-  opt -> setProperty("PixelFormat", color);
-
-  aqtimesum = Time();
-  cotimesum = Time();
-  timesumcount = 0;
-  std::ostringstream ret;
-  ret << "color: " << color << " omit: " << omit;
-  return ret.str();
-}
-
-
-void test(PylonCameraOptions* opt){
-  if(timesumcount >= iterations){
-     if(step == 0){
-      last = reset(opt, colors[0], true);
-      ++step;
-    } else if(step < colorc){
-      std::pair<std::string, std::pair<Time,Time> > * time
-                        = new std::pair<std::string, std::pair<Time,Time> > ();
-
-      time->first = last;
-      time->second.first =  aqtimesum / timesumcount;
-      time->second.second =  cotimesum / timesumcount;
-      last = reset(opt, colors[step], true);
-      times.push_back(time);
-      ++step;
-    } else if(step == colorc){
-      //end
-      std::cout << std::endl;
-      for(int i = 0; i < times.size(); ++i){
-        std::pair<std::string, std::pair<Time,Time> > * time = times.at(i);
-        std::cout << time->first << ":\n\t aq: " << time->second.first
-        << "\t co: " << time->second.second << std::endl;
-      }
-      std::cout << std::endl;
-      exit(0);
-    }
-  }
-}
-
-#endif
-
 const icl::ImgBase* PylonGrabberImpl::acquireImage(){
-#ifdef SPEED_TEST
-  Time s = Time::now();
-#endif
   ImgBase* ret = NULL;
   int counter = 0;
   while(1){
@@ -274,16 +206,6 @@ const icl::ImgBase* PylonGrabberImpl::acquireImage(){
     }
   }
   m_LastBuffer = ret;
-#ifdef SPEED_TEST
-  aqtimesum += (s.age());
-  if(timesumcount >= 100){
-    std::cout << "\n\n aquisition: " << (aqtimesum/timesumcount) << std::endl;
-    aqtimesum = Time();
-    timesumcount = 0;
-  } else {
-    ++timesumcount;
-  }
-#endif
   return ret;
 }
 

@@ -37,8 +37,6 @@
 #include <ICLIO/PylonGrabberThread.h>
 #include <ICLUtils/Time.h>
 
-int iter = 0;
-
 using namespace icl;
 using namespace icl::pylon;
 
@@ -47,7 +45,7 @@ PylonGrabberThread::PylonGrabberThread(Pylon::IStreamGrabber* grabber,
                                 PylonColorConverter* converter,
                                 PylonCameraOptions* options) :
 m_Grabber(grabber), m_Buffers(),
-    m_Error(0), m_Timeout(0), m_Acquired(0), m_ResultingFramerate(0.0)
+    m_Error(0), m_Timeout(0), m_Acquired(0)
 {  
   m_Converter = converter;
   m_Options = options;
@@ -55,8 +53,8 @@ m_Grabber(grabber), m_Buffers(),
 
 PylonGrabberThread::~PylonGrabberThread(){
   // free all allocated memory
-  DEBUG_LOG("pictures aquired: " << m_Acquired << " errors: " << m_Error
-            << " timesouts: " << m_Timeout)
+  DEBUG_LOG("Images aquired: " << m_Acquired << " Errors: " << m_Error
+            << " Timesouts: " << m_Timeout)
 }
 
 void PylonGrabberThread::resetBuffer(){
@@ -69,8 +67,7 @@ void PylonGrabberThread::run(){
     msleep(1);
     // locking thread
     if(trylock()) {
-
-      std::cout << "\nthreadlock returned error\n" << std::endl;
+      DEBUG_LOG2("threadlock returned error. sleep and retry.");
       continue;
     }
     //thread locked grab image.
@@ -81,14 +78,10 @@ void PylonGrabberThread::run(){
 }
 
 void PylonGrabberThread::grab(){
-  if(m_ResultingFramerate == 0.0){
-  msleep(2000);
-  }
-  Time t = Time::now();
   // Wait for the grabbed image with timeout of 2 seconds
   if (!m_Grabber -> GetWaitObject().Wait(1000)){
     // Timeout
-    DEBUG_LOG("Timeout occurred!")
+    DEBUG_LOG2("Timeout occurred!")
     ++m_Timeout;
     return;
   }
@@ -101,14 +94,10 @@ void PylonGrabberThread::grab(){
       return;
   }
   if (result.Succeeded()){
-    //std::cout << "waited for buffer: " << t.age() << std::endl;
     ++m_Acquired;
     // Grabbing was successful, convert and save
     ConvBuffers* write = m_Buffers.getNextWriteBuffer();
-    //Time ct = Time::now();
     m_Converter -> convert(result.Buffer(), write);
-    //++iter;
-    //std::cout << iter << "\t" << ct.age() << std::endl;
     if(result.GetTimeStamp()){
       write -> m_Image -> setTime(result.GetTimeStamp());
     } else {
@@ -119,24 +108,11 @@ void PylonGrabberThread::grab(){
   } else {
     ++m_Error;
     // Error handling
-    std::cout << "No image acquired! (waited " << t.age() << ")"
-    << "Error description : " << result.GetErrorDescription() << std::endl;
+    DEBUG_LOG("No image acquired! Error description : "
+              << result.GetErrorDescription())
 
     // Reuse the buffer for grabbing the next image
     m_Grabber -> QueueBuffer(result.Handle(), NULL);
-    // make grabber reset framerate.
-    m_ResultingFramerate = 0.0;
-  }
-  if(m_ResultingFramerate == 0.0){
-    m_ResultingFramerate = m_Options -> getResultingFrameRateAbs();
-    //DEBUG_LOG("FramerateAbs updated to: " << m_ResultingFramerate)
-  }
-
-  double looptime = 1000.0 / m_ResultingFramerate;
-  double sleeptime = looptime - (t.age()).toMilliSecondsDouble();
-  if(sleeptime > 0) {
-    //std::cout << "age ~ " << t.age().toMilliSecondsDouble() << " sleeping: " << sleeptime << "(" << (int) (sleeptime + 1.0)<< ")" << " looptime: " << looptime << std::endl;
-    msleep((int) (sleeptime + 1));
   }
 }
 
