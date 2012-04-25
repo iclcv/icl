@@ -163,6 +163,9 @@
     # grab from a standad webcam using opencv
     icl-camviewer -input cvcam 0
 
+    # grab from a pylon compatible GigE device
+    icl-camviewer -input pylon 0
+
     </pre>    
 
 

@@ -180,8 +180,8 @@ void PylonGrabberImpl::cameraDefaultSettings(){
   setParameterValueOf<Pylon::IPylonDevice, GenApi::IBoolean, bool>
     (m_Camera, "ChunkEnable", true);
   // set PacketSize
-  setParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>
-    (m_Camera, "GevSCPSPacketSize", 8000);
+  //setParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>
+    //(m_Camera, "GevSCPSPacketSize", 8192);
 }
 
 const icl::ImgBase* PylonGrabberImpl::acquireImage(){

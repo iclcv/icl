@@ -44,6 +44,9 @@ using namespace icl;
 using namespace icl::pylon;
 using namespace Pylon;
 
+icl8u* tmp = NULL;
+icl8u* tmpDst = NULL;
+
 #ifdef SPEED_TEST
   int count = 0;
   Time conv = Time();
@@ -442,10 +445,11 @@ void PylonColorToRgb::convert(const void *imgBuffer, ConvBuffers* b){
 BayerToRgb8Icl::BayerToRgb8Icl(BayerConverter::bayerConverterMethod method,
                                BayerConverter::bayerPattern pattern,
                                Size size)
-  : m_Conv(method, pattern, size), m_Channels(3), m_Size(size),
+  : m_Conv(method, pattern, size), m_Channels(1), m_Size(size),
     m_Dim(size.getDim())
 {
 // nothing to do.
+tmpDst = new icl8u[(m_Size.width * m_Size.height)];
 }
 
 // frees allocated ressources
@@ -456,20 +460,34 @@ BayerToRgb8Icl::~BayerToRgb8Icl(){
 // initializes buffers in b as needed for color conversion.
 void BayerToRgb8Icl::initBuffers(ConvBuffers* b){
   // just an rgb image
-  b -> m_Image = new Img8u(m_Size, icl::formatRGB);
+  //b -> m_Image = new Img8u(m_Size, icl::formatRGB);
+  b -> m_ImageBuff = new icl8u[m_Size.getDim() * 3];
+  b -> m_Channels = new std::vector<icl8u*>();
+  b -> m_Channels -> push_back(b -> m_ImageBuff);
+  b -> m_Channels -> push_back((b -> m_ImageBuff) + m_Size.getDim());
+  b -> m_Channels -> push_back((b -> m_ImageBuff) + 2 * m_Size.getDim());
+  b -> m_Image = new Img8u(m_Size, icl::formatRGB, *b -> m_Channels);
 }
 
 // writes image from imgBuffer to b using appropriate conversion.
 void BayerToRgb8Icl::convert(const void *imgBuffer, ConvBuffers* b){
   // set buffer as channels of source image
   icl8u* iBuff = (icl8u*) imgBuffer;
-  m_Channels[0] = (icl8u*) iBuff;
-  m_Channels[1] = (icl8u*) (iBuff + m_Dim);
-  m_Channels[2] = (icl8u*) (iBuff + 2 * m_Dim);
-  // m_Image gets the RGB channels from m_ImageRGBA
-  Img8u src(m_Size, icl::formatRGB, m_Channels);
-  // use BayerConverter for colorconversion
-  m_Conv.apply(&src, &(b -> m_Image));
+  ICL_DELETE(tmp)
+  tmp = new icl8u[m_Size.getDim() * 3];
+
+  Time a = Time::now();
+  Size s(m_Size);
+  s.height = s.height/2;
+  s.width = s.width/2;
+
+  ippiCFAToRGB_8u_C1C3R(iBuff, Rect(0, 0, m_Size.width, m_Size.height), m_Size, m_Size.width, tmp, m_Size.width*3, ippiBayerGBRG, 0);
+  //ippiCFAToRGB_8u_C1C3R(iBuff, Rect(0, 0, m_Size.width, m_Size.height), m_Size, m_Size.width, b -> m_ImageBuff, m_Size.width*3, ippiBayerGBRG, 0);
+  //ippiDemosaicAHD_8u_C1C3R(iBuff, Rect(0, 0, m_Size.width, m_Size.height), m_Size, m_Size.width, tmp, m_Size.width*3, ippiBayerGBRG, tmpDst, m_Size.width + 660);
+  //DEBUG_LOG(a.age())
+  Img8u* im = dynamic_cast<Img8u*>(b -> m_Image);
+  interleavedToPlanar(tmp, im);
+  //interleavedToPlanar(b -> m_ImageBuff, im);
 }
 
 #ifdef HAVE_IPP

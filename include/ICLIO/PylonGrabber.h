@@ -128,7 +128,45 @@ namespace icl {
     };
 
     /// Grabber implementation for a Basler Pylon-based GIG-E Grabber \ingroup GIGE_G
-    /** This is just a wrapper class of the underlying PylonGrabberImpl class */
+    /**
+        This is just a wrapper class of the underlying PylonGrabberImpl class
+
+        Some useful hints to increase GigE camera output:
+
+       -# Jumbo Frames: If your Network Adapter supports Jumbo Frames they
+          should be enabled by setting the Maximum Transfer Unit (MTU) size
+          to 8192. Accordingly the cameras property "GevSCPSPacketSize" is
+          set to 8192 per default. Setting this property to a value higher
+          then the Network Adapters MTU may create transfer errors.
+       -# Real-time thread priorities: To minimize network packet losses it
+          helps to grant pylon the permission to change a threads priority
+          to real time. This can be achieved by adding the line:
+          \code
+             *      -      rtprio      99
+          \endcode
+          to
+          \code
+          /etc/security/limits.conf
+          \endcode
+          This can make the difference between a network throughput of 32 and 100Mb/s.
+       -# Transmission errors: If you often get the error code
+          'GX status 0xe1000014' and already followed the previous hints
+          increasing the 'GevSCPD' (Inter packet delay) parameter can help to
+          minimize these transmission errors.
+       -# Camera IP Configuration: can be made with the IpConfigurator which
+          is included in the Pylon driver package. When the tool does not
+          find the camera, ICL will neither. This most commonly means that the
+          camera is in an other ip-address block then the computer. Because a
+          connection to the camera is needed in order to change the cameras ip
+          settings, it is possible to either chnage the ip address of the
+          computer to the same ip-address block or to use the Windows version
+          of the IpConfigurator - which does not seem to have souch problems - to
+          change the cameras ip settings once.
+       -# Network Adapter: Basler is recommending Network Adapters of the
+          Intel PRO 1000 series. They observed a significantly higher CPU load
+          when working with other.
+
+    **/
     struct PylonGrabber : public GrabberHandle<PylonGrabberImpl>{
 
       /// create a new PylonGrabber
