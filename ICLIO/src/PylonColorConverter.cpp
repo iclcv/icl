@@ -44,9 +44,6 @@ using namespace icl;
 using namespace icl::pylon;
 using namespace Pylon;
 
-icl8u* tmp = NULL;
-icl8u* tmpDst = NULL;
-
 #ifdef SPEED_TEST
   int count = 0;
   Time conv = Time();
@@ -446,48 +443,52 @@ BayerToRgb8Icl::BayerToRgb8Icl(BayerConverter::bayerConverterMethod method,
                                BayerConverter::bayerPattern pattern,
                                Size size)
   : m_Conv(method, pattern, size), m_Channels(1), m_Size(size),
-    m_Dim(size.getDim())
+    m_Rect(0, 0, size.width, size.height), m_Dim(size.getDim())
 {
-// nothing to do.
-tmpDst = new icl8u[(m_Size.width * m_Size.height)];
+  // nothing to do.
+  switch(pattern){
+    case BayerConverter::bayerPattern_BGGR:
+      m_Pattern = ippiBayerBGGR;
+      break;
+    case BayerConverter::bayerPattern_GBRG:
+      m_Pattern = ippiBayerGBRG;
+      break;
+    case BayerConverter::bayerPattern_GRBG:
+      m_Pattern = ippiBayerGRBG;
+      break;
+    case BayerConverter::bayerPattern_RGGB:
+      m_Pattern = ippiBayerRGGB;
+      break;
+  }
+
+  m_ImgBuff = new icl8u[m_Size.getDim() * 3];
 }
 
 // frees allocated ressources
 BayerToRgb8Icl::~BayerToRgb8Icl(){
-// nothing to do.
+  // nothing to do.
+  ICL_DELETE(m_ImgBuff)
 }
 
 // initializes buffers in b as needed for color conversion.
 void BayerToRgb8Icl::initBuffers(ConvBuffers* b){
   // just an rgb image
-  //b -> m_Image = new Img8u(m_Size, icl::formatRGB);
-  b -> m_ImageBuff = new icl8u[m_Size.getDim() * 3];
-  b -> m_Channels = new std::vector<icl8u*>();
-  b -> m_Channels -> push_back(b -> m_ImageBuff);
-  b -> m_Channels -> push_back((b -> m_ImageBuff) + m_Size.getDim());
-  b -> m_Channels -> push_back((b -> m_ImageBuff) + 2 * m_Size.getDim());
-  b -> m_Image = new Img8u(m_Size, icl::formatRGB, *b -> m_Channels);
+  b -> m_Image = new Img8u(m_Size, icl::formatRGB);
 }
 
 // writes image from imgBuffer to b using appropriate conversion.
 void BayerToRgb8Icl::convert(const void *imgBuffer, ConvBuffers* b){
   // set buffer as channels of source image
-  icl8u* iBuff = (icl8u*) imgBuffer;
-  ICL_DELETE(tmp)
-  tmp = new icl8u[m_Size.getDim() * 3];
+  icl8u* camImg = (icl8u*) imgBuffer;
+  Img8u* retImg = dynamic_cast<Img8u*>(b -> m_Image);
+  int n = 0;
+  ippGetNumThreads(&n);
+  ippSetNumThreads(1);
+  ippiCFAToRGB_8u_C1C3R(camImg, m_Rect, m_Size, m_Size.width,
+                        m_ImgBuff, m_Size.width*3, m_Pattern, 0);
+  ippSetNumThreads(n);
 
-  Time a = Time::now();
-  Size s(m_Size);
-  s.height = s.height/2;
-  s.width = s.width/2;
-
-  ippiCFAToRGB_8u_C1C3R(iBuff, Rect(0, 0, m_Size.width, m_Size.height), m_Size, m_Size.width, tmp, m_Size.width*3, ippiBayerGBRG, 0);
-  //ippiCFAToRGB_8u_C1C3R(iBuff, Rect(0, 0, m_Size.width, m_Size.height), m_Size, m_Size.width, b -> m_ImageBuff, m_Size.width*3, ippiBayerGBRG, 0);
-  //ippiDemosaicAHD_8u_C1C3R(iBuff, Rect(0, 0, m_Size.width, m_Size.height), m_Size, m_Size.width, tmp, m_Size.width*3, ippiBayerGBRG, tmpDst, m_Size.width + 660);
-  //DEBUG_LOG(a.age())
-  Img8u* im = dynamic_cast<Img8u*>(b -> m_Image);
-  interleavedToPlanar(tmp, im);
-  //interleavedToPlanar(b -> m_ImageBuff, im);
+  interleavedToPlanar(m_ImgBuff, retImg);
 }
 
 #ifdef HAVE_IPP

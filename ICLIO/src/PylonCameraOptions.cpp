@@ -83,21 +83,21 @@ void PylonCameraOptions::setProperty(
   }
   GenApi::CValuePtr node = getNode(property);
   if (!node) {
-    DEBUG_LOG("There is no parameter called '" << property << "'")
+    DEBUG_LOG2("There is no parameter called '" << property << "'")
     return;
   }
   AcquisitionInterruptor a(m_Interu, GenApi::IsWritable(node));
   GrabbingInterruptor g(m_Interu, GenApi::IsWritable(node));
 
   if(!GenApi::IsWritable(node)){
-    DEBUG_LOG("The parameter '" << property << "' is not writable")
+    DEBUG_LOG2("The parameter '" << property << "' is not writable")
     return;
   }
 
   try {
   node -> FromString(value.c_str(), true);
   } catch (GenICam::GenericException &e) {
-    DEBUG_LOG("catched exception: " << e.what())
+    DEBUG_LOG2("catched exception: " << e.what())
   }
 }
 

@@ -213,7 +213,10 @@ namespace icl {
         BayerConverter m_Conv;
         std::vector<icl8u*> m_Channels;
         Size m_Size;
+        Rect m_Rect;
         int m_Dim;
+        IppiBayerGrid m_Pattern;
+        icl8u* m_ImgBuff;
     };
 
 #ifdef HAVE_IPP
