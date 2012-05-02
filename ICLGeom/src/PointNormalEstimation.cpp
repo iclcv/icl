@@ -298,29 +298,35 @@ namespace icl{
     outputBinarizedImage=new float[w*h];
        
     std::vector<cl::Platform> platformList;//get number of available openCL platforms
-    if(cl::Platform::get(&platformList)==CL_SUCCESS){
-      std::cout<<"openCL platform found"<<std::endl;
-    }else{
-      std::cout<<"no openCL platform available"<<std::endl;
-    }
-    std::cout<<"number of openCL platforms: "<<platformList.size()<<std::endl;
-      
     int selectedDevice=0;//initially select platform 0
-    //check devices on platforms
-    for(unsigned int i=0; i<platformList.size(); i++){//check all platforms
-      std::cout<<"platform "<<i+1<<":"<<std::endl;
-      std::vector<cl::Device> deviceList;
-      if(platformList.at(i).getDevices(CL_DEVICE_TYPE_GPU, &deviceList)==CL_SUCCESS){
-        std::cout<<"GPU-DEVICE(S) FOUND"<<std::endl;
-        selectedDevice=i; //if GPU found on platform, select this platform
-        clReady=true; //and mark CL context as available
-      }else if(platformList.at(i).getDevices(CL_DEVICE_TYPE_CPU, &deviceList)==CL_SUCCESS){
-        std::cout<<"CPU-DEVICE(S) FOUND"<<std::endl;
+    try{
+      if(cl::Platform::get(&platformList)==CL_SUCCESS){
+        std::cout<<"openCL platform found"<<std::endl;
       }else{
-        std::cout<<"UNKNOWN DEVICE(S) FOUND"<<std::endl;
+        std::cout<<"no openCL platform available"<<std::endl;
       }
-      std::cout<<"number of devices: "<<deviceList.size()<<std::endl;
-    }
+      std::cout<<"number of openCL platforms: "<<platformList.size()<<std::endl;
+        
+      //check devices on platforms
+      for(unsigned int i=0; i<platformList.size(); i++){//check all platforms
+        std::cout<<"platform "<<i+1<<":"<<std::endl;
+        std::vector<cl::Device> deviceList;
+        if(platformList.at(i).getDevices(CL_DEVICE_TYPE_GPU, &deviceList)==CL_SUCCESS){
+          std::cout<<"GPU-DEVICE(S) FOUND"<<std::endl;
+          selectedDevice=i; //if GPU found on platform, select this platform
+          clReady=true; //and mark CL context as available
+        }else if(platformList.at(i).getDevices(CL_DEVICE_TYPE_CPU, &deviceList)==CL_SUCCESS){
+          std::cout<<"CPU-DEVICE(S) FOUND"<<std::endl;
+        }else{
+          std::cout<<"UNKNOWN DEVICE(S) FOUND"<<std::endl;
+        }
+        std::cout<<"number of devices: "<<deviceList.size()<<std::endl;
+      }
+    }catch (cl::Error err) {//catch openCL errors
+      std::cout<< "ERROR: "<< err.what()<< "("<< err.err()<< ")"<< std::endl;
+      std::cout<<"OpenCL not ready"<<std::endl;
+      clReady=false;//disable openCL on error
+    }  
       
     if(clReady==true){//only if CL context is available
       try{
