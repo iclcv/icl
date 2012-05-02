@@ -38,7 +38,7 @@
 
 #define CONCAT(x) (std::ostringstream << x).str()
 
-//#define SPEED_TEST
+#define SPEED_TEST
 
 using namespace icl;
 using namespace icl::pylon;
@@ -97,25 +97,25 @@ void PylonColorConverter::resetConversion(
       break;
 
     case PixelType_BayerGR8:
-      m_Converter = new BayerToRgb8Icl(BayerConverter::simple,
+      m_Converter = new BayerToRgb8Icl(BayerConverter::nearestNeighbor,
                                        BayerConverter::bayerPattern_GRBG,
                                        Size(width, height));
       break;
 
     case PixelType_BayerRG8:
-      m_Converter = new BayerToRgb8Icl(BayerConverter::simple,
+      m_Converter = new BayerToRgb8Icl(BayerConverter::nearestNeighbor,
                                        BayerConverter::bayerPattern_RGGB,
                                        Size(width, height));
       break;
 
     case PixelType_BayerGB8:
-      m_Converter = new BayerToRgb8Icl(BayerConverter::simple,
+      m_Converter = new BayerToRgb8Icl(BayerConverter::nearestNeighbor,
                                        BayerConverter::bayerPattern_GBRG,
                                        Size(width, height));
       break;
 
     case PixelType_BayerBG8:
-      m_Converter = new BayerToRgb8Icl(BayerConverter::simple,
+      m_Converter = new BayerToRgb8Icl(BayerConverter::nearestNeighbor,
                                        BayerConverter::bayerPattern_BGGR,
                                        Size(width, height));
       break;
@@ -442,32 +442,14 @@ void PylonColorToRgb::convert(const void *imgBuffer, ConvBuffers* b){
 BayerToRgb8Icl::BayerToRgb8Icl(BayerConverter::bayerConverterMethod method,
                                BayerConverter::bayerPattern pattern,
                                Size size)
-  : m_Conv(method, pattern, size), m_Channels(1), m_Size(size),
-    m_Rect(0, 0, size.width, size.height), m_Dim(size.getDim())
+  : m_Conv(method, pattern, size), m_Channels(1), m_Size(size)
 {
   // nothing to do.
-  switch(pattern){
-    case BayerConverter::bayerPattern_BGGR:
-      m_Pattern = ippiBayerBGGR;
-      break;
-    case BayerConverter::bayerPattern_GBRG:
-      m_Pattern = ippiBayerGBRG;
-      break;
-    case BayerConverter::bayerPattern_GRBG:
-      m_Pattern = ippiBayerGRBG;
-      break;
-    case BayerConverter::bayerPattern_RGGB:
-      m_Pattern = ippiBayerRGGB;
-      break;
-  }
-
-  m_ImgBuff = new icl8u[m_Size.getDim() * 3];
 }
 
 // frees allocated ressources
 BayerToRgb8Icl::~BayerToRgb8Icl(){
   // nothing to do.
-  ICL_DELETE(m_ImgBuff)
 }
 
 // initializes buffers in b as needed for color conversion.
@@ -479,16 +461,9 @@ void BayerToRgb8Icl::initBuffers(ConvBuffers* b){
 // writes image from imgBuffer to b using appropriate conversion.
 void BayerToRgb8Icl::convert(const void *imgBuffer, ConvBuffers* b){
   // set buffer as channels of source image
-  icl8u* camImg = (icl8u*) imgBuffer;
-  Img8u* retImg = dynamic_cast<Img8u*>(b -> m_Image);
-  int n = 0;
-  ippGetNumThreads(&n);
-  ippSetNumThreads(1);
-  ippiCFAToRGB_8u_C1C3R(camImg, m_Rect, m_Size, m_Size.width,
-                        m_ImgBuff, m_Size.width*3, m_Pattern, 0);
-  ippSetNumThreads(n);
-
-  interleavedToPlanar(m_ImgBuff, retImg);
+  m_Channels[0] = (icl8u*) imgBuffer;
+  Img8u tmp = Img8u(m_Size, icl::formatGray, m_Channels);
+  m_Conv.apply(&tmp, &(b -> m_Image));
 }
 
 #ifdef HAVE_IPP

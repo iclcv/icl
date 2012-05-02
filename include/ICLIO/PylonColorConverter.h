@@ -196,7 +196,7 @@ namespace icl {
         Pylon::SOutputImageFormat* m_OutputFormat;
     };
 
-/// This ColorConverter uses the icl Bayer to Rgb conversion.
+    /// This ColorConverter uses the icl Bayer to Rgb conversion.
     class BayerToRgb8Icl : public ColorConverter{
       public:
         /// Constructor initializes conversion
@@ -213,10 +213,6 @@ namespace icl {
         BayerConverter m_Conv;
         std::vector<icl8u*> m_Channels;
         Size m_Size;
-        Rect m_Rect;
-        int m_Dim;
-        IppiBayerGrid m_Pattern;
-        icl8u* m_ImgBuff;
     };
 
 #ifdef HAVE_IPP

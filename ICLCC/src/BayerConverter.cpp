@@ -45,6 +45,24 @@ namespace icl {
      m_eBayerPattern = eBayerPattern;
      m_eConvMethod = eConvMethod;
      m_buffer.resize(s.getDim()*3);
+     #ifdef HAVE_IPP
+       switch(eBayerPattern){
+         case BayerConverter::bayerPattern_BGGR:
+           m_IppBayerPattern = ippiBayerBGGR;
+           break;
+         case BayerConverter::bayerPattern_GBRG:
+           m_IppBayerPattern = ippiBayerGBRG;
+           break;
+         case BayerConverter::bayerPattern_GRBG:
+           m_IppBayerPattern = ippiBayerGRBG;
+           break;
+         case BayerConverter::bayerPattern_RGGB:
+           m_IppBayerPattern = ippiBayerRGGB;
+           break;
+         default:
+           DEBUG_LOG("bayerPattern: " << eBayerPattern << " not defined.")
+       }
+     #endif
   }
   
   
@@ -61,7 +79,11 @@ namespace icl {
     switch (m_eConvMethod) {
       case nearestNeighbor: 
         FUNCTION_LOG("Nearest Neighbor interpolation");
-        nnInterpolation(src);
+        //#ifdef HAVE_IPP
+        //  nnInterpolationIpp(src);
+        //#else
+          nnInterpolation(src);
+        //#endif
         break;
         
       case bilinear:
@@ -85,7 +107,12 @@ namespace icl {
         break;
         
       default:
-        nnInterpolation(src);
+        exit(-1);
+        //#ifdef HAVE_IPP
+        //  nnInterpolationIpp(src);
+        //#else
+          nnInterpolation(src);
+        //#endif
     }
 
     // convert data order from interleaved to planar
@@ -841,7 +868,27 @@ namespace icl {
   }
 
 // }}}
-  
+#ifdef HAVE_IPP
+  void BayerConverter::nnInterpolationIpp(const Img<icl8u> *poBayerImg) {
+    // {{{ open
+
+    int n = 0;
+    ippGetNumThreads(&n);
+    ippSetNumThreads(1);
+    ippiCFAToRGB_8u_C1C3R(poBayerImg -> getData(0),
+                          Rect(0,0,poBayerImg->getWidth(),
+                               poBayerImg->getHeight()),
+                          poBayerImg->getSize(),
+                          poBayerImg->getWidth(),
+                          m_buffer.data(),
+                          poBayerImg->getWidth()*3,
+                          m_IppBayerPattern, 0);
+    ippSetNumThreads(n);
+  }
+
+// }}}
+#endif
+
   void BayerConverter::clearBorders(icl8u *rgb, int iWidth, 
                                     int iHeight, int w) {
     // {{{ open
