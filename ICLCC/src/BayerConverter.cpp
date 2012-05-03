@@ -74,13 +74,12 @@ namespace icl {
     // Check bayer and dst image compatibility
     ensureCompatible(dst, depth8u, src->getSize(), 3, formatRGB);
     m_buffer.resize(src->getDim()*3);
-    
     // Select interpolation method
     switch (m_eConvMethod) {
       case nearestNeighbor: 
         FUNCTION_LOG("Nearest Neighbor interpolation");
         //#ifdef HAVE_IPP
-        //  nnInterpolationIpp(src);
+          //nnInterpolationIpp(src);
         //#else
           nnInterpolation(src);
         //#endif
@@ -107,7 +106,6 @@ namespace icl {
         break;
         
       default:
-        exit(-1);
         //#ifdef HAVE_IPP
         //  nnInterpolationIpp(src);
         //#else
@@ -871,7 +869,6 @@ namespace icl {
 #ifdef HAVE_IPP
   void BayerConverter::nnInterpolationIpp(const Img<icl8u> *poBayerImg) {
     // {{{ open
-
     int n = 0;
     ippGetNumThreads(&n);
     ippSetNumThreads(1);
