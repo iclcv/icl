@@ -440,7 +440,8 @@ namespace icl{
       bool createdContextHere = false;
       if(!context){
         createdContextHere = true;
-        context = SmartPtr<FreenectContext>(new FreenectContext);
+        context = SmartPtr<FreenectContext>(new FreenectContext,false); // hack do not pass ownership to the smartpointer
+                                                                        // because freeing the freenect context did not work   
       }
       device = SmartPtr<FreenectDevice>(new FreenectDevice(*context,index,mode, size));
       if(createdContextHere){
