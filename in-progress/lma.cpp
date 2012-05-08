@@ -3,7 +3,7 @@
 #include <ICLUtils/DynMatrixUtils.h>
 #include <ICLUtils/Random.h>
 
-typedef double real;
+typedef float real;
 typedef DynColVector<real> V;
 typedef DynMatrix<real> M;
 typedef V Params;
@@ -21,7 +21,7 @@ Params lma( const std::vector<XY> &data,
   const int I = data[0].x.cols();
   const int D = data.size();
   const int P = params.dim();
-  const int MAX_IT = 10;
+  const int MAX_IT = 1000;
   const real MIN_E = 1e-20;
   
   V y(D),y_est(D),y_est_new(D), dst(D);
@@ -66,12 +66,12 @@ Params lma( const std::vector<XY> &data,
         return params_new;
       }
       e = e_new;
-      lambda *= 2;
+      lambda /= 2;
       params = params_new;
       updateJ = true;
     }else{
       updateJ=false;
-      lambda /= 2;
+      lambda *= 2;
     }
   }
   return params_new;
@@ -95,7 +95,7 @@ V j(const Params &p, const V &vx){
 V j_auto(const Params &p, const V &vx){
   const real x = vx[0];
   V res(p.dim());
-  real delta = 0.000001;
+  real delta = 0.001;
   for(int i=0;i<p.dim();++i){
     V pPlus = p, pMinus = p;
     pPlus[i] +=delta;
