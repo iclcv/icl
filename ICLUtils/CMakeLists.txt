@@ -76,6 +76,7 @@ add_libsource (${PROJECT_NAME} "src/ProcessMonitor.cpp" "${CONDITIONLIST}" LIB_S
 add_libsource (${PROJECT_NAME} "src/TextTable.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/SimplexOptimizer.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/Random.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/LevenbergMarquardFitter.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 # this issue was solved by replacing libiomp5 from IPP 6.1 by the libiomp5
 # version, that is shipped with IPP 7.0 (update 6)
 #add_libsource (${PROJECT_NAME} "src/PThreadFix.cpp" "${CONDITIONLIST}" LIB_SOURCES)
@@ -96,6 +97,7 @@ add_example (${PROJECT_NAME} "function-test" "${CONDITIONLIST}" ICLLibsToLinkAga
 add_example (${PROJECT_NAME} "text-table-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "ransac-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "string-tokenizer-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "levenberg-marquard-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST HAVE_GTEST_COND)
 set(ICLLibsToLinkAgainst ICLUtils)
