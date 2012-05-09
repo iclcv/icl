@@ -243,9 +243,11 @@ namespace icl{
 
     
     Time now = Time::now();
+#ifdef HAVE_MKL
     const int ompThreads = getPropertyValue("openmp threads");
     omp_set_num_threads(ompThreads);
-    
+#endif    
+
     // chache some local variables
     const RGBDMapping M = m_data->mapping;
     const Vec off = m_data->viewRayOffset;
