@@ -38,6 +38,7 @@ endif()
 
 if(ICL_VAR_USE_OMP)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+  add_definitions( -DUSE_OPENMP)
 endif()
 
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
