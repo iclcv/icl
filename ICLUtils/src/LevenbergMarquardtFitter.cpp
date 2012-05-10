@@ -1,15 +1,15 @@
-#include <ICLUtils/LevenbergMarquardFitter.h>
+#include <ICLUtils/LevenbergMarquardtFitter.h>
 #include <ICLUtils/DynMatrixUtils.h>
-
+#include <ICLUtils/Random.h>
 
 namespace icl{
   template<class Scalar>
-  LevenbergMarquardFitter<Scalar>::LevenbergMarquardFitter(){
+  LevenbergMarquardtFitter<Scalar>::LevenbergMarquardtFitter(){
   
   }
   
   template<class Scalar>
-  LevenbergMarquardFitter<Scalar>::LevenbergMarquardFitter(Function f, Jacobian j, 
+  LevenbergMarquardtFitter<Scalar>::LevenbergMarquardtFitter(Function f, Jacobian j, 
                                                            Scalar initialLambda, int maxIterations,
                                                            Scalar minError, Scalar lambdaMultiplier,
                                                            const std::string &linSolver){
@@ -17,7 +17,7 @@ namespace icl{
   }
 
   template<class Scalar>
-  void LevenbergMarquardFitter<Scalar>::init(Function f, Jacobian j,
+  void LevenbergMarquardtFitter<Scalar>::init(Function f, Jacobian j,
                                              Scalar initialLambda, int maxIterations,
                                              Scalar minError, Scalar lambdaMultiplier,
                                              const std::string &linSolver){
@@ -25,7 +25,7 @@ namespace icl{
     if(j){
       this->j = j;
     }else{
-      this->j = create_numeric_jacobian(f);
+      this->j = create_numerical_jacobian(f);
     }
     this->initialLambda = initialLambda;
     this->maxIterations = maxIterations;
@@ -36,8 +36,8 @@ namespace icl{
 
   
   template<class Scalar>
-  typename LevenbergMarquardFitter<Scalar>::Result
-  LevenbergMarquardFitter<Scalar>::fit(const Matrix &xs, const Vector &ys, Params params){
+  typename LevenbergMarquardtFitter<Scalar>::Result
+  LevenbergMarquardtFitter<Scalar>::fit(const Matrix &xs, const Vector &ys, Params params){
     const int I = xs.cols();
     const int D = xs.rows();
     const int P = params.dim();
@@ -120,9 +120,9 @@ namespace icl{
   
   template<class Scalar>
   struct NumericJacobian : public FunctionImpl<void,const DynColVector<Scalar>&,const DynColVector<Scalar>&,DynColVector<Scalar>&>{
-    typedef typename LevenbergMarquardFitter<Scalar>::Function Function;
-    typedef typename LevenbergMarquardFitter<Scalar>::Params Params;
-    typedef typename LevenbergMarquardFitter<Scalar>::Vector Vector;
+    typedef typename LevenbergMarquardtFitter<Scalar>::Function Function;
+    typedef typename LevenbergMarquardtFitter<Scalar>::Params Params;
+    typedef typename LevenbergMarquardtFitter<Scalar>::Vector Vector;
     
     Function f;
     Scalar delta;
@@ -146,18 +146,30 @@ namespace icl{
 
 
   template<class Scalar>
-  typename LevenbergMarquardFitter<Scalar>::Jacobian 
-  LevenbergMarquardFitter<Scalar>::create_numeric_jacobian(Function f, float delta){
+  typename LevenbergMarquardtFitter<Scalar>::Jacobian 
+  LevenbergMarquardtFitter<Scalar>::create_numerical_jacobian(Function f, float delta){
     return Jacobian(new NumericJacobian<Scalar>(f,delta));
   }
   
   template<class Scalar>
-  void LevenbergMarquardFitter<Scalar>::setDebugCallback(DebugCallback dbg){
+  void LevenbergMarquardtFitter<Scalar>::setDebugCallback(DebugCallback dbg){
     this->dbg = dbg;
   }
+  
+  template<class Scalar>
+  typename LevenbergMarquardtFitter<Scalar>::Data
+  LevenbergMarquardtFitter<Scalar>::create_data(const Params &p, Function f, int xDim, int num, Scalar minX, Scalar maxX){
+    URand r(minX,maxX);
+    Data data = { Matrix(xDim,num), Vector(num) };
+    for(int i=0;i<num;++i){
+      data.x[i] = r;
+      data.y[i] = f(p,Vector(xDim,data.x.row_begin(i),false));
+    }
+    return data;
+  }
 
-  template class LevenbergMarquardFitter<icl32f>;
-  template class LevenbergMarquardFitter<icl64f>;
+  template class LevenbergMarquardtFitter<icl32f>;
+  template class LevenbergMarquardtFitter<icl64f>;
 
 }
 

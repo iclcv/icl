@@ -1,9 +1,9 @@
-#include <ICLUtils/LevenbergMarquardFitter.h>
+#include <ICLUtils/LevenbergMarquardtFitter.h>
 #include <ICLUtils/Random.h>
 
 using namespace icl;
 typedef float real;
-typedef LevenbergMarquardFitter<real> LM;
+typedef LevenbergMarquardtFitter<real> LM;
 typedef LM::Function LMFunction;
 typedef LM::Jacobian Jacobian;
 typedef LM::Matrix Matrix;
@@ -99,8 +99,7 @@ int main(int n, char **ppc){
 
   // f
   LM lm(f);
-  lm.setDebugCallback(dbg);
-
+  //  lm.setDebugCallback(dbg);
 
   std::cout << "fitting f(x) = a + b*x + c*x^2 + d*x^3 ((a,b,c,d)=(1,2,3,4), using numeric jacobian)" << std::endl;
   result = lm.fit(d.first,d.second,Params(4,1));
