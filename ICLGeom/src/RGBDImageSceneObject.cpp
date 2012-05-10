@@ -243,7 +243,7 @@ namespace icl{
 
     
     Time now = Time::now();
-#ifdef HAVE_MKL
+#ifdef USE_OPENMP
     const int ompThreads = getPropertyValue("openmp threads");
     omp_set_num_threads(ompThreads);
 #endif    
@@ -259,9 +259,13 @@ namespace icl{
     if(rgbImage){
       const Channel8u r = (*rgbImage)[0], g = (*rgbImage)[1], b = (*rgbImage)[2];
       for(int y=0;y<H;++y){
+#ifdef USE_OPENMP
 #pragma omp parallel
+#endif
         {
+#ifdef USE_OPENMP
 #pragma omp for
+#endif
           for(int x=0;x<W;++x){
             const int idx = x + W * y;
             
@@ -291,9 +295,13 @@ namespace icl{
       }
     }else{ // no rgb image -> creation of the pointcloud only
       const int DIM = W*H;
+#ifdef USE_OPENMP
 #pragma omp parallel
+#endif
       {
+#ifdef USE_OPENMP
 #pragma omp for
+#endif
         for(int i=0;i<DIM;++i){
           const Vec3 &dir = m_data->viewRayDirs[i];
           const float depthValue = d[i];// * dir[3];
