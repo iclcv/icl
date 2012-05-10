@@ -34,6 +34,7 @@ namespace icl{
     Scalar initialLambda;
     int maxIterations;
     Scalar minError;
+    Scalar lambdaMultiplier;
     std::string linSolver;
 
     Vector y_est,y_est_new, dst;
@@ -45,12 +46,14 @@ namespace icl{
     LevenbergMarquardFitter();
     
     LevenbergMarquardFitter(Function f, Jacobian j=Jacobian(), 
-                            Scalar initialLambda=1.e-6, int maxIterations=10000,
-                            Scalar minError = 1.e-6, const std::string &linSolver="lu");
+                            Scalar initialLambda=1.e-8, int maxIterations=10000,
+                            Scalar minError = 1.e-6, Scalar lambdaMultiplier=10,
+                            const std::string &linSolver="lu");
     
     void init(Function f, Jacobian j=Jacobian(), 
-              Scalar initialLambda=1.e-6, int maxIterations=10000,
-              Scalar minError = 1.e-6, const std::string &linSolver="lu");
+              Scalar initialLambda=1.e-8, int maxIterations=10000,
+              Scalar minError = 1.e-6, Scalar lambdaMultiplier=10,
+              const std::string &linSolver="lu");
     
     Result fit(const Matrix &xs, const Vector &ys, Params initParams);
     

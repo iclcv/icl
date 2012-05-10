@@ -11,14 +11,16 @@ namespace icl{
   template<class Scalar>
   LevenbergMarquardFitter<Scalar>::LevenbergMarquardFitter(Function f, Jacobian j, 
                                                            Scalar initialLambda, int maxIterations,
-                                                           Scalar minError, const std::string &linSolver){
-    init(f,j,initialLambda,maxIterations,minError,linSolver);
+                                                           Scalar minError, Scalar lambdaMultiplier,
+                                                           const std::string &linSolver){
+    init(f,j,initialLambda,maxIterations,minError,lambdaMultiplier,linSolver);
   }
 
   template<class Scalar>
   void LevenbergMarquardFitter<Scalar>::init(Function f, Jacobian j,
                                              Scalar initialLambda, int maxIterations,
-                                             Scalar minError, const std::string &linSolver){
+                                             Scalar minError, Scalar lambdaMultiplier,
+                                             const std::string &linSolver){
     this->f = f;
     if(j){
       this->j = j;
@@ -28,6 +30,7 @@ namespace icl{
     this->initialLambda = initialLambda;
     this->maxIterations = maxIterations;
     this->minError = minError;
+    this->lambdaMultiplier = lambdaMultiplier;
     this->linSolver = linSolver;
   }
 
@@ -56,6 +59,7 @@ namespace icl{
     bool dirty=true;
     
     std::vector<Vector> xis(D);
+
     for(int i=0;i<D;++i){
       xis[i] = Vector(I,const_cast<Scalar*>(xs.row_begin(i)),false);
     }
@@ -78,12 +82,16 @@ namespace icl{
       }
       // Creating Mx = b to solve
       // (H + lambda diag (H)) x = J^T(y-f(beta))
-      params_new = params - H_damped.solve(dst,linSolver);
+      Params pSolved = H_damped.solve(dst,linSolver);
+      params_new = params - pSolved;
       
       e_new = 0;
+
       for(int i=0;i<D;++i){
+        //  SHOW(xis[i])
         y_est_new[i] = f(params_new, xis[i]);
         e_new += sqr(ys[i]-y_est_new[i]);
+        // std::cout << "ys["<<i<<"] = " << ys[i] << "   --> y_est["<<i<<"]" << y_est_new[i] << std::endl;
       }
       
       
@@ -93,12 +101,12 @@ namespace icl{
           return result;
         }
         e = e_new;
-        lambda /= 2;
+        lambda /= lambdaMultiplier;
         params = params_new;
         dirty = true;
       }else{
         dirty=false;
-        lambda *= 2;
+        lambda *= lambdaMultiplier;
       }
       if(dbg){
         Result r = { it, e, lambda, params};
