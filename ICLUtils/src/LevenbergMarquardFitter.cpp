@@ -1,4 +1,6 @@
 #include <ICLUtils/LevenbergMarquardFitter.h>
+#include <ICLUtils/DynMatrixUtils.h>
+
 
 namespace icl{
   template<class Scalar>
@@ -8,14 +10,14 @@ namespace icl{
   
   template<class Scalar>
   LevenbergMarquardFitter<Scalar>::LevenbergMarquardFitter(Function f, Jacobian j, 
-                                                           int initialLambda, int maxIterations,
+                                                           Scalar initialLambda, int maxIterations,
                                                            Scalar minError, const std::string &linSolver){
     init(f,j,initialLambda,maxIterations,minError,linSolver);
   }
 
   template<class Scalar>
   void LevenbergMarquardFitter<Scalar>::init(Function f, Jacobian j,
-                                             int initialLambda, int maxIterations,
+                                             Scalar initialLambda, int maxIterations,
                                              Scalar minError, const std::string &linSolver){
     this->f = f;
     if(j){
@@ -23,7 +25,7 @@ namespace icl{
     }else{
       this->j = create_numeric_jacobian(f);
     }
-    this->initLambda = initialLambda;
+    this->initialLambda = initialLambda;
     this->maxIterations = maxIterations;
     this->minError = minError;
     this->linSolver = linSolver;
@@ -31,7 +33,7 @@ namespace icl{
 
   
   template<class Scalar>
-  typename LevenbergMarquardFitter<Scalar>::Params 
+  typename LevenbergMarquardFitter<Scalar>::Result
   LevenbergMarquardFitter<Scalar>::fit(const Matrix &xs, const Vector &ys, Params params){
     const int I = xs.cols();
     const int D = xs.rows();
@@ -42,23 +44,24 @@ namespace icl{
     y_est.setDim(D);
     y_est_new.setDim(D);
     dst.setDim(D);
+    params_new.setDim(P); 
     
     J.setBounds(P,D);
     H.setBounds(P,P);
     H_damped.setBounds(P,P);
-    
-    Scalar lambda=initLambda;
+
+    Scalar lambda=initialLambda;
     Scalar e = 1e38;
     Scalar e_new = 0;
     bool dirty=true;
-    Params params_new(P); 
     
     std::vector<Vector> xis(D);
     for(int i=0;i<D;++i){
       xis[i] = Vector(I,const_cast<Scalar*>(xs.row_begin(i)),false);
     }
     
-    for(int it=0;it < MAX_IT; ++it){
+    int it = 0;
+    for(;it < MAX_IT; ++it){
       if(dirty){
         for(int i=0;i<D;++i){
           Vector Ji(P,J.row_begin(i),false);
@@ -83,9 +86,11 @@ namespace icl{
         e_new += sqr(ys[i]-y_est_new[i]);
       }
       
+      
       if(e_new < e){
         if(e_new < MIN_E){
-          return params_new;
+          Result result = { it, e_new, lambda, params_new};
+          return result;
         }
         e = e_new;
         lambda /= 2;
@@ -95,8 +100,13 @@ namespace icl{
         dirty=false;
         lambda *= 2;
       }
+      if(dbg){
+        Result r = { it, e, lambda, params};
+        dbg(r);
+      }
     }
-    return params_new;
+    Result result = { it, e, lambda, params };
+    return result;
   }
 
   
@@ -132,8 +142,14 @@ namespace icl{
   LevenbergMarquardFitter<Scalar>::create_numeric_jacobian(Function f, float delta){
     return Jacobian(new NumericJacobian<Scalar>(f,delta));
   }
+  
+  template<class Scalar>
+  void LevenbergMarquardFitter<Scalar>::setDebugCallback(DebugCallback dbg){
+    this->dbg = dbg;
+  }
 
   template class LevenbergMarquardFitter<icl32f>;
   template class LevenbergMarquardFitter<icl64f>;
 
 }
+
