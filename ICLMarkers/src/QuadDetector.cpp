@@ -68,7 +68,7 @@ namespace icl{
   QuadDetector::QuadDetector(QuadDetector::QuadColor c, bool dynamic):data(new Data){
     data->dynamicQuadColor = dynamic;
     
-    addProperty("pp.filter","menu","none,median,erosion,dilatation,opening,closing","median",0,"Post processing filter.");
+    addProperty("pp.filter","menu","none,median,erosion,dilatation,opening,closing","none",0,"Post processing filter.");
     addProperty("pp.mask size","menu","3x3,5x5","3x3", 0,"Mask size for post processing.");
 
     if(dynamic){
@@ -97,8 +97,16 @@ namespace icl{
                 "much better results)");
 
     data->css.setSigma(4.2);
-    
+    data->css.setCurvatureCutoff(66);
     data->lastBinImage = 0;
+
+    // set some default values ...
+    setPropertyValue("css.angle-threshold",180);
+    setPropertyValue("css.curvature-cutoff",66);
+    setPropertyValue("css.rc-coefficient",1);
+    
+    setPropertyValue("thresh.global threshold",-10);
+    setPropertyValue("thresh.mask size",30);
   }
   
   QuadDetector::~QuadDetector(){

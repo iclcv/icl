@@ -3,7 +3,7 @@
 #include <ICLUtils/DynMatrixUtils.h>
 #include <ICLUtils/Random.h>
 
-typedef float real;
+typedef double real;
 typedef DynColVector<real> V;
 typedef DynMatrix<real> M;
 typedef V Params;
@@ -21,8 +21,8 @@ Params lma( const std::vector<XY> &data,
   const int I = data[0].x.cols();
   const int D = data.size();
   const int P = params.dim();
-  const int MAX_IT = 1000;
-  const real MIN_E = 1e-20;
+  const int MAX_IT = 10000;
+  const real MIN_E = 1e-6;
   
   V y(D),y_est(D),y_est_new(D), dst(D);
   M J(P,D), H(P,P), H_damped(P,P);
@@ -98,8 +98,8 @@ V j_auto(const Params &p, const V &vx){
   real delta = 0.001;
   for(int i=0;i<p.dim();++i){
     V pPlus = p, pMinus = p;
-    pPlus[i] +=delta;
-    pMinus[i] -=delta;
+    pPlus[i] +=delta/2;
+    pMinus[i] -=delta/2;
     res[i] = ( f(pPlus,vx) - f(pMinus,vx) ) / delta;
   }
   return res;
@@ -119,9 +119,68 @@ std::vector<XY> create_data(){
   return data;
 }
 
-int main(){
+int main2(){
   Params initParams(4);
   std::fill(initParams.begin(),initParams.end(),0.1);
   Params opt = lma(create_data(),f,j_auto,initParams);
   SHOW(opt);
+}
+
+
+real f_new(const Params &p, const V &vx){
+  const real x = vx[0];
+  return p[0] + sqr(p[0])*x + sqr(p[1])*x + p[0]*p[1]*x + p[2]*x*x;
+  
+}
+#if 0
+V j_new(const Params &p, const V &vx){
+  const real x = vx[0];
+  V res(p.dim());
+  res[0] = 2*p[0]*x + 1
+  res[1] = x;
+  res[2] = x*x;
+  res[3] = x*x*x;
+  return res;
+}
+#endif
+
+V j_auto_new(const Params &p, const V &vx){
+  const real x = vx[0];
+  V res(p.dim());
+  real delta = 0.01;
+  for(int i=0;i<p.dim();++i){
+    V pPlus = p, pMinus = p;
+    pPlus[i] +=delta/2;
+    pMinus[i] -=delta/2;
+    res[i] = ( f_new(pPlus,vx) - f(pMinus,vx) ) / delta;
+  }
+  return res;
+}
+
+
+std::vector<XY> create_data_new(){
+  Params p(3); 
+  p[0] = 1;
+  p[1] = 2;
+  p[2] = 3;
+  
+  URand r(-10,10);
+  const int N = 100;
+  XY init = { V(1), 0 };
+  std::vector<XY> data(N,init);
+  for(int i=0;i<N;++i){
+    real x = r;
+    data[i].x[0] = x;
+    data[i].y = f_new(p,data[i].x);
+  }
+  return data;
+}
+
+
+int main(){
+  Params initParams(3);
+  std::fill(initParams.begin(),initParams.end(),1);
+  Params opt = lma(create_data_new(),f_new,j_auto_new,initParams);
+  SHOW(opt);
+
 }

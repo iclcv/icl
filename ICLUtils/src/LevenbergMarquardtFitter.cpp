@@ -106,7 +106,18 @@ namespace icl{
           j(params,xis[i],Ji);
           y_est[i] = f(params,xis[i]);
         }
-        matrix_mult_t(J,J,H,SRC1_T); // H = J.transp() * J;
+        if(h){
+          DEBUG_LOG("analytic hessians are not supported properly yet");
+          std::fill(H.begin(),H.end(),0);
+          for(int i=0;i<D;++i){
+            h(params,xis[i],H);
+          }
+          SHOW(H);
+          matrix_mult_t(J,J,H,SRC1_T); 
+          SHOW(H);
+        }else{
+          matrix_mult_t(J,J,H,SRC1_T); 
+        }
         matrix_mult_t(J,y_est-ys,dst,SRC1_T); 
       }
       

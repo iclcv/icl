@@ -153,7 +153,7 @@ FiducialDetector *create_new_fd(MarkerType t, std::vector<std::string> &configur
   configurables.push_back(ts[t]);
   iin = fd->getIntermediateImageNames();
   fd->setPropertyValue("css.angle-threshold",180);
-  fd->setPropertyValue("css.curvature-cutoff",30);
+  fd->setPropertyValue("css.curvature-cutoff",66);
   fd->setPropertyValue("css.rc-coefficient",1);
   fd->setPropertyValue("thresh.global threshold",-10);
   fd->setPropertyValue("thresh.mask size",30);

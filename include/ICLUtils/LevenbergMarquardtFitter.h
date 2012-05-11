@@ -231,12 +231,17 @@ int main(){
     /** \see \ref _J_ */
     typedef icl::Function<void,const Params&, const Vector&, Vector &> Jacobian;
     
+    typedef icl::Function<void,const Params&, const Vector&, Matrix &> Hessian;
+    
     /// Optionally given debug callback, that is called in every iterations
     typedef icl::Function<void,const Result&> DebugCallback;
+    
+    
 
     protected:
     Function f;  //!< Function f
     Jacobian j;  //!< Jacobian (either analytical or numerical)
+    Hessian h;
 
     Scalar initialLambda;     //!< initial damping parameter lambda
     int maxIterations;        //!< maximum number of iterations
@@ -254,6 +259,8 @@ int main(){
     Params params_new; //!< new parameters (after update step)
 
     public:
+    
+    void setHessian(Hessian h) { this->h = h; }
     
     /// creates a dummy (null instance)
     LevenbergMarquardtFitter();

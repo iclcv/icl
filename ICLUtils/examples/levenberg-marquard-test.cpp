@@ -37,6 +37,19 @@ void j2(const Params &p, const Vector &vx, Vector &dst){
   dst[1] = 2*b*x + a*x;
   dst[2] = x*x;
 }
+
+void h2(const Params &p, const Vector &vx, Matrix &dst){
+  // f(x) = a + a^2 x + b^2 x + a*b*x + c*x^2  
+  real x = vx[0];
+  real a = p[0], b = p[1], c = p[2];
+  
+  FixedMatrix<real,3,3> Hi ( 2*x, x, 0,
+                             x, 2*x, 0,
+                             0, 0, 0 );
+
+  dst += Hi.dyn(); // Hack here!
+}
+
 std::pair<Matrix,Vector> data(const Params &p, LMFunction f){
   URand r(-4,4);
   const int N = 100;
@@ -123,6 +136,12 @@ int main(int n, char **ppc){
   result = lm.fit(d.first,d.second,Params(3,0.1));
   std::cout << "final parameters: " << result << std::endl << std::endl; 
 
+  std::cout << "fitting f(x) = a + a*a*x + b*b*x + a*b*x + c*x^2 ((a,b,c) = (1,2,3) using analytic jacobian + hessian)" << std::endl;
+  lm.init(f2,j2);
+  lm.setHessian(h2)
+  result = lm.fit(d.first,d.second,Params(3,0.1));
+  std::cout << "final parameters: " << result << std::endl << std::endl; 
+
 
   // f3
   std::cout << "fitting f(x,y,z) = x*y*a*b + y*z*d*d*c - z*x*f*e*b + sqr(a + b + c + d) (using numeric jacobian)" << std::endl;
@@ -146,3 +165,5 @@ int main(int n, char **ppc){
 
 }
 
+
+TODO try analytical hessian, which just adds the results of the hessian Xi to the given destination matrix
