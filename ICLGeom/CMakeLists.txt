@@ -86,6 +86,7 @@ set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_OPENGL_COND HAVE_GLX_
 add_example (${PROJECT_NAME} "offscreen-rendering-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "rotate-image-3D" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "kinect-pointcloud-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "rgbd-mapping-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 if(NOT APPLE)
 add_example (${PROJECT_NAME} "scene-graph-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 endif()
