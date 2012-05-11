@@ -80,7 +80,7 @@ macro(icl_check_external_package ID INCFILES LIBFILES REL_LIB_DIR REL_INC_DIR VE
     
     if(${FOUND_ALL})
       set(${ID}_LIB_PATH "${ICL_XDEP_${ID}_PATH}/${REL_LIB_DIR}")
-      set(${ID}_INCLUDE_PATH "${ICL_XDEP_${ID}_PATH}/${REL_INC_DIR}")		
+      set(${ID}_INCLUDE_PATH "${ICL_XDEP_${ID}_PATH}/${REL_INC_DIR}")
       set(ICL_XDEP_${ID}_ON ON CACHE BOOL "Use ${ID} when available" FORCE)
       set(HAVE_${ID}_COND TRUE)
       add_definitions( -DHAVE_${ID})
