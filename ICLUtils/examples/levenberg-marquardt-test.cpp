@@ -1,3 +1,37 @@
+/********************************************************************
+**                Image Component Library (ICL)                    **
+**                                                                 **
+** Copyright (C) 2006-2012 CITEC, University of Bielefeld          **
+**                         Neuroinformatics Group                  **
+** Website: www.iclcv.org and                                      **
+**          http://opensource.cit-ec.de/projects/icl               **
+**                                                                 **
+** File   : ICLUtils/examples/levenberg-marquardt-test.cpp         **
+** Module : ICLUtils                                               **
+** Authors: Christof Elbrechter                                    **
+**                                                                 **
+**                                                                 **
+** Commercial License                                              **
+** ICL can be used commercially, please refer to our website       **
+** www.iclcv.org for more details.                                 **
+**                                                                 **
+** GNU General Public License Usage                                **
+** Alternatively, this file may be used under the terms of the     **
+** GNU General Public License version 3.0 as published by the      **
+** Free Software Foundation and appearing in the file LICENSE.GPL  **
+** included in the packaging of this file.  Please review the      **
+** following information to ensure the GNU General Public License  **
+** version 3.0 requirements will be met:                           **
+** http://www.gnu.org/copyleft/gpl.html.                           **
+**                                                                 **
+** The development of this software was supported by the           **
+** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
+** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
+** Forschungsgemeinschaft (DFG) in the context of the German       **
+** Excellence Initiative.                                          **
+**                                                                 **
+*********************************************************************/
+
 #include <ICLUtils/LevenbergMarquardtFitter.h>
 #include <ICLUtils/Random.h>
 
@@ -41,37 +75,13 @@ void j2(const Params &p, const Vector &vx, Vector &dst){
 void h2(const Params &p, const Vector &vx, Matrix &dst){
   // f(x) = a + a^2 x + b^2 x + a*b*x + c*x^2  
   real x = vx[0];
-  real a = p[0], b = p[1], c = p[2];
+  real Hi[] = { 2*x, x, 0,
+                x, 2*x, 0,
+                0, 0, 0 };
   
-  FixedMatrix<real,3,3> Hi ( 2*x, x, 0,
-                             x, 2*x, 0,
-                             0, 0, 0 );
-
-  dst += Hi.dyn(); // Hack here!
+  dst += Matrix(3,3,Hi,false);
 }
 
-std::pair<Matrix,Vector> data(const Params &p, LMFunction f){
-  URand r(-4,4);
-  const int N = 100;
-  Matrix x(1,N);
-  Vector y(N);
-  for(int i=0;i<N;++i){
-    x[i] = r;
-    y[i] = f(p,x.row(i));
-  }
-  return std::pair<Matrix,Vector>(x,y);
-}
-
-std::pair<Matrix,Vector> data3D(const Params &p, LMFunction f){
-  const int N = 1000;
-  Matrix x(3,N);
-  std::fill(x.begin(),x.end(),URand(-5,5));
-  Vector y(N);
-  for(int i=0;i<N;++i){
-    y[i] = f(p,Vector(3,x.row_begin(i),false));
-  }
-  return std::pair<Matrix,Vector>(x,y);
-}
 
 real f3(const Params &p, const Vector &vx){
   real x = vx[0], y=vx[1], z=vx[2];
@@ -85,17 +95,17 @@ void j3(const Params &p, const Vector &vx, Vector &dst){
   real k = 2 * (a+b+c+d);
   dst[0] = x*y*b + k;
   dst[1] = x*y*a  - z*x*f*e + k;
-  dst[2] = y*z*d*d  - z*x*f*e + k;
+  dst[2] = y*z*d*d + k;
   dst[3] = 2*d*y*z*c + k;
   dst[4] = -z*x*f*b;
   dst[5] = -z*x*e*b;
 }
 
 void cmp3(LMFunction f,  Params a, Params b){
-  std::pair<Matrix,Vector> d = data3D(a,f);
-  for(unsigned int i=0;i<d.first.rows();++i){
-    real y = f(b,Vector(3,d.first.row_begin(i)));
-    std::cout << " d(" << i << "):" << fabs(y - d.second[i]) << std::endl;
+  LM::Data d = LM::create_data(a,f,3);
+  for(unsigned int i=0;i<d.x.rows();++i){
+    real y = f(b,Vector(3,d.x.row_begin(i)));
+    std::cout << " d(" << i << "):" << fabs(y - d.y[i]) << std::endl;
   }
 }
 
@@ -107,39 +117,41 @@ void dbg(const LM::Result &d){
 int main(int n, char **ppc){
   const real v[] = {1,2,3,4};
   Params p(4,v);
-  std::pair<Matrix,Vector> d = data(p,f);
+  LM::Data d = LM::create_data(p,f,1);
   Result result;
 
   // f
   LM lm(f);
   //  lm.setDebugCallback(dbg);
 
+
   std::cout << "fitting f(x) = a + b*x + c*x^2 + d*x^3 ((a,b,c,d)=(1,2,3,4), using numeric jacobian)" << std::endl;
-  result = lm.fit(d.first,d.second,Params(4,1));
+  result = lm.fit(d.x,d.y,Params(4,1));
   std::cout << "final parameters: " << result << std::endl << std::endl; 
 
   std::cout << "fitting f(x) = a + b*x + c*x^2 + d*x^3 ((a,b,c,d)=(1,2,3,4), using analytic jacobian)" << std::endl;
   lm.init(f,j);
-  result = lm.fit(d.first,d.second,Params(4,1));
+  result = lm.fit(d.x,d.y,Params(4,1));
   std::cout << "final parameters: " << result << std::endl << std::endl; 
 
 
   // f2
   std::cout << "fitting f(x) = a + a*a*x + b*b*x + a*b*x + c*x^2 ((a,b,c) = (1,2,3) using numeric jacobian)" << std::endl;
   lm.init(f2);
-  d = data(p,f2);
-  result = lm.fit(d.first,d.second,Params(3,0.1));
+  d = LM::create_data(p,f2,1);
+  result = lm.fit(d.x,d.y,Params(3,0.1));
   std::cout << "final parameters: " << result << std::endl << std::endl; 
 
   std::cout << "fitting f(x) = a + a*a*x + b*b*x + a*b*x + c*x^2 ((a,b,c) = (1,2,3) using analytic jacobian)" << std::endl;
   lm.init(f2,j2);
-  result = lm.fit(d.first,d.second,Params(3,0.1));
+  result = lm.fit(d.x,d.y,Params(3,0.1));
   std::cout << "final parameters: " << result << std::endl << std::endl; 
 
-  std::cout << "fitting f(x) = a + a*a*x + b*b*x + a*b*x + c*x^2 ((a,b,c) = (1,2,3) using analytic jacobian + hessian)" << std::endl;
+  std::cout << "fitting f(x) = a + a*a*x + b*b*x + a*b*x + c*x^2 ((a,b,c) = "
+            << "(1,2,3) using analytic jacobian + hessian)" << std::endl;
   lm.init(f2,j2);
-  lm.setHessian(h2)
-  result = lm.fit(d.first,d.second,Params(3,0.1));
+  lm.setHessian(h2);
+  result = lm.fit(d.x,d.y,Params(3,0.1));
   std::cout << "final parameters: " << result << std::endl << std::endl; 
 
 
@@ -147,14 +159,14 @@ int main(int n, char **ppc){
   std::cout << "fitting f(x,y,z) = x*y*a*b + y*z*d*d*c - z*x*f*e*b + sqr(a + b + c + d) (using numeric jacobian)" << std::endl;
   const real v2[] = {1,2,3,4,5,6};
   p = Params(6,v2);
-  d = data3D(p,f3);
+  d = LM::create_data(p,f3,3);
   lm.init(f3);
-  result = lm.fit(d.first,d.second,Params(6,4));
+  result = lm.fit(d.x,d.y,Params(6,4));
   std::cout << "final parameters: " << result << std::endl << std::endl; 
 
   std::cout << "fitting f(x,y,z) = x*y*a*b + y*z*d*d*c - z*x*f*e*b + sqr(a + b + c + d) (using analytic jacobian)" << std::endl;
   lm.init(f3,j3);
-  result = lm.fit(d.first,d.second,Params(6,4));
+  result = lm.fit(d.x,d.y,Params(6,4));
   std::cout << "final parameters: " << result << std::endl << std::endl; 
 
   
@@ -165,5 +177,3 @@ int main(int n, char **ppc){
 
 }
 
-
-TODO try analytical hessian, which just adds the results of the hessian Xi to the given destination matrix
