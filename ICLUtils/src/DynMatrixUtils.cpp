@@ -154,8 +154,8 @@ namespace icl{
   template<> DynMatrix<double> &matrix_##op(DynMatrix<double> &m){      \
     return ipp_unary_func_i<double,ipps##func##_64f_I>(m);              \
   }                                                                     \
-  template<> DynMatrix<float> &matrix_##op(DynMatrix<float> &m);        \
-  template<> DynMatrix<double> &matrix_##op(DynMatrix<double> &m);      \
+  template DynMatrix<float> &matrix_##op(DynMatrix<float> &m);          \
+  template DynMatrix<double> &matrix_##op(DynMatrix<double> &m);        \
                                                                         \
   template<class T>                                                     \
   DynMatrix<T> &matrix_##op(const DynMatrix<T> &m, DynMatrix<T> &dst){  \
@@ -168,8 +168,8 @@ namespace icl{
   template<> DynMatrix<double> &matrix_##op(const DynMatrix<double> &m, DynMatrix<double> &dst){ \
     return ipp_unary_func<double,ipps##func##_64f>(m,dst);              \
   }                                                                     \
-  template<> DynMatrix<float> &matrix_##op(const DynMatrix<float> &m, DynMatrix<float> &dst); \
-  template<> DynMatrix<double> &matrix_##op(const DynMatrix<double> &m, DynMatrix<double> &dst);
+  template DynMatrix<float> &matrix_##op(const DynMatrix<float> &m, DynMatrix<float> &dst); \
+  template DynMatrix<double> &matrix_##op(const DynMatrix<double> &m, DynMatrix<double> &dst);
 
   INSTANTIATE_DYN_MATRIX_MATH_OP(abs,Abs)
   INSTANTIATE_DYN_MATRIX_MATH_OP(log,Ln)
@@ -1049,28 +1049,27 @@ template<class T, typename func>
 
 #endif
 
-
-  template<> DynMatrix<double> &matrix_mult_t(const DynMatrix<double>&,const DynMatrix<double>&,DynMatrix<double>&,int)
+  template DynMatrix<double> &matrix_mult_t(const DynMatrix<double>&,const DynMatrix<double>&,DynMatrix<double>&,int)
     throw (IncompatibleMatrixDimensionException);
-  template<> DynMatrix<float> &matrix_mult_t(const DynMatrix<float>&,const DynMatrix<float>&,DynMatrix<float>&,int)
-    throw (IncompatibleMatrixDimensionException);
-
-
-  template<> DynMatrix<double> &big_matrix_mult_t(const DynMatrix<double>&,const DynMatrix<double>&,DynMatrix<double>&,int)
-    throw (IncompatibleMatrixDimensionException);
-  template<> DynMatrix<float> &big_matrix_mult_t(const DynMatrix<float>&,const DynMatrix<float>&,DynMatrix<float>&,int)
+  template DynMatrix<float> &matrix_mult_t(const DynMatrix<float>&,const DynMatrix<float>&,DynMatrix<float>&,int)
     throw (IncompatibleMatrixDimensionException);
 
 
-  template<> DynMatrix<double> &matrix_add_t(const DynMatrix<double>&,const DynMatrix<double>&,DynMatrix<double>&,int)
+  template DynMatrix<double> &big_matrix_mult_t(const DynMatrix<double>&,const DynMatrix<double>&,DynMatrix<double>&,int)
     throw (IncompatibleMatrixDimensionException);
-  template<> DynMatrix<float> &matrix_add_t(const DynMatrix<float>&,const DynMatrix<float>&,DynMatrix<float>&,int)
+  template DynMatrix<float> &big_matrix_mult_t(const DynMatrix<float>&,const DynMatrix<float>&,DynMatrix<float>&,int)
     throw (IncompatibleMatrixDimensionException);
 
 
-  template<> DynMatrix<double> &matrix_sub_t(const DynMatrix<double>&,const DynMatrix<double>&,DynMatrix<double>&,int)
+  template DynMatrix<double> &matrix_add_t(const DynMatrix<double>&,const DynMatrix<double>&,DynMatrix<double>&,int)
     throw (IncompatibleMatrixDimensionException);
-  template<> DynMatrix<float> &matrix_sub_t(const DynMatrix<float>&,const DynMatrix<float>&,DynMatrix<float>&,int)
+  template DynMatrix<float> &matrix_add_t(const DynMatrix<float>&,const DynMatrix<float>&,DynMatrix<float>&,int)
+    throw (IncompatibleMatrixDimensionException);
+
+
+  template DynMatrix<double> &matrix_sub_t(const DynMatrix<double>&,const DynMatrix<double>&,DynMatrix<double>&,int)
+    throw (IncompatibleMatrixDimensionException);
+  template DynMatrix<float> &matrix_sub_t(const DynMatrix<float>&,const DynMatrix<float>&,DynMatrix<float>&,int)
     throw (IncompatibleMatrixDimensionException);
 
 
