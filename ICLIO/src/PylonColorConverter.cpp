@@ -38,7 +38,7 @@
 
 #define CONCAT(x) (std::ostringstream << x).str()
 
-#define SPEED_TEST
+//#define SPEED_TEST
 
 using namespace icl;
 using namespace icl::pylon;

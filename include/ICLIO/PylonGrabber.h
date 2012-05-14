@@ -45,6 +45,7 @@
 #include <ICLUtils/Time.h>
 
 namespace icl {
+
   namespace pylon {
 
     /// Actual implementation of the Basler Pylon based GIG-E Grabber \ingroup GIGE_G
@@ -212,6 +213,9 @@ namespace icl {
     };
 
   } //namespace pylon
+
+  typedef pylon::PylonGrabber PylonGrabber;
+
 } //namespace icl
 
 #endif
