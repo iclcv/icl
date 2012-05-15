@@ -62,7 +62,7 @@ int main(int n, char **ppc){
   painit(n,ppc,"-dc|d -dc800|8 -demo -unicap|u -mry|y -pwc|p -sr|s -cvcam|c -sm|m -v4l2|v"
          " -reset-bus|-r|r -kinect|k "
          "-input|-i(device-type,device-ID) -list-devices-only|-l");
-  QApplication a(n,ppc);
+
   
   std::ostringstream str;
   if(pa("d")) str << ",dc";
@@ -115,6 +115,7 @@ int main(int n, char **ppc){
       std::cout << " " << (i<10?" ":"") << " description: " << gds[i].description << "\n\n";
     }
   }else{
+    QApplication a(n,ppc);
     CamCfgWidget w(devlist,0);
     w.setGeometry(50,50,700,700);
     w.setWindowTitle("icl-camcfg (ICL' Camera Configuration Tool)");
