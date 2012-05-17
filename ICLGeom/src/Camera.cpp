@@ -392,6 +392,8 @@ namespace icl {
     return os.str();
   }
 
+  
+  
   /// ostream operator
   std::ostream &operator<<(std::ostream &os, const Camera &cam){
     ConfigFile f;
@@ -416,6 +418,26 @@ namespace icl {
     f["render-params.viewport"] = cam.getRenderParams().viewport;
     f["render-params.viewport-z-min"] = cam.getRenderParams().viewportZMin;
     f["render-params.viewport-z-max"] = cam.getRenderParams().viewportZMax;
+
+    std::ostringstream str;
+    const Vec &p = cam.getPosition(), &n = cam.getNorm(), &u = cam.getUp();
+    float fl = cam.getFocalLength(), px = cam.getPrincipalPointOffset().x, 
+          py = cam.getPrincipalPointOffset().y, s = cam.getSkew(), 
+          sx = cam.getSamplingResolutionX(), sy = cam.getSamplingResolutionY();
+
+    const Camera::RenderParams &r = cam.getRenderParams();
+    str << std::endl
+        << "Camera(Vec(" << p[0] << "," << p[1] << "," << p[2] << ",1)," << std::endl
+        << "       Vec(" << n[0] << "," << n[1] << "," << n[2] << ",1)," << std::endl
+        << "       Vec(" << u[0] << "," << u[1] << "," << u[2] << ",1)," << std::endl
+        << "      " << fl << ", Point32f(" << px << "," << py << ")," << sx << "," << sy << "," << std::endl
+        << "      " << s << ", Camera::RenderParams(Size(" << r.chipSize.width <<  "," << r.chipSize.height << ")," << std::endl
+        << "                         " << r.clipZNear << ","  << r.clipZFar << ", " << std::endl
+        << "                         Rect(" << r.viewport.x << "," << r.viewport.y << "," 
+        << r.viewport.width << "," << r.viewport.height << ")," << std::endl
+        << "                         " << r.viewportZMin << "," << r.viewportZMax << "));" << std::endl;
+    
+    f["for-direct-embedding-in-C++"] = str.str();
 
     return os << f;
   }
