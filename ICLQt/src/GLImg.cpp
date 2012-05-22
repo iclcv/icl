@@ -891,7 +891,7 @@ namespace icl{
     glBindTexture(GL_TEXTURE_2D, t.tex);
 
     const bool haveNormals = nxs && nys && nzs;
-    const float nxf = nx, nyf = ny;
+    const float nxf = nx-1, nyf = ny-1;
 
 #define AT(_p,_x,_y) _p[stride*(_x+_y*nx)]
 #define X(_x,_y) AT(xs,_x,_y)
