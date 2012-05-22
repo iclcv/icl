@@ -107,9 +107,10 @@ namespace icl {
     Mat T = getCSTransformationMatrix();
     Mat P = getProjectionMatrix();
     Mat M = P*T;
+    
     return FixedMatrix<icl32f,4,3>(M(0,0),M(1,0),M(2,0),M(3,0),
                                    M(0,1),M(1,1),M(2,1),M(3,1),
-                                   M(0,3),M(1,3),M(2,3),M(3,3)).pinv(true);
+                                   M(0,3),M(1,3),M(2,3),M(3,3)).pinv(false); // somehow true (i.e. SVD) did not work
   }
 
 
@@ -481,6 +482,7 @@ namespace icl {
   std::vector<ViewRay> Camera::getViewRays(const std::vector<Point32f> &pixels) const{
     std::vector<ViewRay> vs(pixels.size());
     FixedMatrix<icl32f,3,4> Qi = getInvQMatrix();
+    
     for(unsigned int i=0;i<pixels.size();++i){
       vs[i] = create_view_ray(Qi,pixels[i].x,pixels[i].y,m_pos);
     }
@@ -490,6 +492,7 @@ namespace icl {
   Array2D<ViewRay> Camera::getAllViewRays() const{
     Array2D<ViewRay> m(getRenderParams().chipSize);
     FixedMatrix<icl32f,3,4> Qi = getInvQMatrix();
+
     for(int y=0;y<m.getHeight();++y){
       for(int x=0;x<m.getWidth();++x){
         m(x,y) = create_view_ray(Qi,x,y,m_pos);

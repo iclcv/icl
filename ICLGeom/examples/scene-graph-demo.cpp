@@ -118,6 +118,8 @@ void mouse_2(const MouseEvent &evt){
 }
 
 void init(){
+  Scene::enableSharedOffscreenRendering();
+  
   gui << "draw3D()[@handle=view]" 
       << "draw[@handle=image]"
       << (GUI("vbox") 

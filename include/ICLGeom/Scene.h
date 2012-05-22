@@ -265,6 +265,21 @@ int main(int n, char**ppc){
       DistToCamCenter  //!< depth buffer values define distanct to the camera center
     };
     
+    
+    /// This function must be called when rendering a Scene from two different GLContexts
+    /** This does in particular happen, when a single Scene is rendered on a widget and into
+        an offsceen buffer. In this case, stored texture-ID's are only valid in a single thread,
+        which is why, textures need to be updated everytime, they are drawn. 
+        
+        \section FIX Possible Fix in the Future
+        We plan to fix this issue with a more elaborated texture ID handling in the ICLQt 
+        GLImg class.
+    */
+    static void enableSharedOffscreenRendering();
+    
+    /// re-enables the dirty flag in the GLImg class 
+    static void disableSharedOffscreenRendering();
+    
     /// renders the current scene using an instance of glx pbuffer
     /** This method is currently only supported on linux systems, since
         the used pbuffer (OpenGL offscreen framebuffer object) 
@@ -273,6 +288,10 @@ int main(int n, char**ppc){
         with 24Bit depthbuffer. If this is not supported, 
         an at least 4 4 4 16 context is tryed to be created. If this does also fail,
         an exception will be thrown.
+
+        \section SOR Shared Offsceen Rendering
+        When a single scene is used for both on- and offscreen rendering, an internal optimation
+        needs to be deactivated by calling Scene::enableSharedOffscreenRendering.
         
         <b>Please note:</b> The rendering pbuffer is allocated on the graphics card. Per definition,
         pbuffers are located in the screenbuffer memory segment which might be much smaller than the

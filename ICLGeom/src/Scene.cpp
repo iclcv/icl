@@ -313,6 +313,18 @@ namespace icl{
   }
   
 
+  void Scene::enableSharedOffscreenRendering(){
+#ifdef HAVE_QT
+    GLImg::set_use_dirty_flag(false);
+#endif
+  }
+  
+  void Scene::disableSharedOffscreenRendering(){
+#ifdef HAVE_QT
+    GLImg::set_use_dirty_flag(true);
+#endif
+  }
+
 
   void Scene::removeObjects(int startIndex, int endIndex){
     if(endIndex < 0) endIndex = m_objects.size();
@@ -912,6 +924,7 @@ namespace icl{
           Array2D<ViewRay> vs = cam.getAllViewRays();
           
           const Vec c = vs(w/2-1,h/2-1).direction;
+
           for(int idx=0;idx<w*h; ++idx){
             factors[idx] = 1.0/compute_depth_norm(vs[idx].direction,c);
           }

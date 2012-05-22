@@ -87,6 +87,28 @@ namespace icl{
     
     public:
     
+    /// static utlity function that sets whether to use a dirty flag or not
+    /** If a GLImg instance is used from several threads, it cannot use a dirty flag. If the texture
+        did not change, from the last call, i.e. the dirty flag is false, the texture-data is not
+        uploaded to the graphicscard memory again. Instead, the texture handle is used to pick
+        the texture that does already exist. Since texture handles are only valid in the
+        context where they were created, this must be deactivated when rendering from diffrent threads.
+        
+        \section WHEN When to use this Funktion
+        In general, this function does not need to be called explicitly. If one ICLGeom Scene is
+        used for onscreen and offscreen rendering at once, this function is called automatically
+        by calling the more explict ICLGeom icl::Scene::enableSharedOffscreenRendering().
+        
+        
+        \section _PS_ Possible Solution
+        In the future, this could possibly be fixed by extending the internal structure to have
+        one dirty flag per context.
+    */
+    static void set_use_dirty_flag(bool useIt);
+    
+    /// returns whether a diry flag is used
+    static bool get_use_dirty_flag();
+    
     /// creates a new GLImg instance
     /** optional parameters are
         @param src optionally given source image (if null, isNull() will return true)

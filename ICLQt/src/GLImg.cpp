@@ -288,6 +288,8 @@ namespace icl{
   }
 
   struct GLImg::Data{
+    static bool useDirtyFlag;
+    
     scalemode sm;
     bool dirty;
     
@@ -320,6 +322,10 @@ namespace icl{
     ~Data(){
       releaseTextures();
       ICL_DELETE(extractedImageBuffer);
+    }
+    
+    inline bool isDirty(){
+      return useDirtyFlag ? dirty : true;
     }
     
     void releaseTextures(){
@@ -582,12 +588,10 @@ namespace icl{
       setup_pixel_transfer(s,s,s,s,b,b,b,b);
       
     }
-    
-   
-    
+
     void uploadTextureData(){
       ICLASSERT_THROW(data.getDim(),ICLException("unable to draw GLImg: no texture data available"));
-      if(!dirty) return;
+      if(!isDirty()) return;
       setupPixelTransfer();
       
       if(textures.size()){
@@ -627,6 +631,18 @@ namespace icl{
       textureBufferMutex.unlock();
     }
   };
+
+  
+  bool GLImg::Data::useDirtyFlag = true;
+  
+  void GLImg::set_use_dirty_flag(bool useIt){
+    Data::useDirtyFlag = useIt;
+  }  
+  
+  bool GLImg::get_use_dirty_flag(){
+    return Data::useDirtyFlag;
+  }
+   
 
   
   GLImg::GLImg(const ImgBase *src, scalemode sm, int maxCellSize):m_data(new Data){
@@ -803,7 +819,7 @@ namespace icl{
                      const Point32f &texCoordsD){
     ICLASSERT_RETURN(!isNull());
     
-    if(m_data->dirty) m_data->uploadTextureData();
+    if(m_data->isDirty()) m_data->uploadTextureData();
     /**
         a -- b
         |    |
@@ -863,7 +879,7 @@ namespace icl{
 
   void GLImg::drawToGrid(int nx, int ny, const float *xs, const float *ys, const float *zs,
                          const float *nxs, const float *nys, const float *nzs,const int stride){
-    if(m_data->dirty) m_data->uploadTextureData();
+    if(m_data->isDirty()) m_data->uploadTextureData();
     if(m_data->data.getSize() != Size(1,1)){
       WARNING_LOG("GLImg::drawToGrid: the texture was split into " << m_data->data.getSize()
                   << " cells, which is not supported by this method. The first cell element is used only!");
