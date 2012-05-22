@@ -44,26 +44,33 @@ namespace icl{
   /// The ColorFormatDecoder allows for easy conversion of special color formats to RGB
   /** If a capturing device does not support to provide RGB image directly, this
       Decoder is usually used to convert the compressed image data into a simple
-      planar RGB image (Img8u). \n
+      planar RGB image (Img8u). However, also other output depth value are supported. \n
       The decoding routine, is chosen by analyising the source data based on its
       <b>fourcc</b> color code (see: http://en.wikipedia.org/wiki/FourCC and 
       http://v4l2spec.bytesex.org/spec/c2030.htm for more details)
       
+      \section EX ICL Specific Extensions
+      For supporting the Myrmex Tactile Device, we added an extra
+      FourCC code called "MYRM".
+
       @see FourCC
   */
   class ColorFormatDecoder{
     public:
     // conversion function type
-    typedef void (*decoder_func)(const icl8u*,const Size&,Img8u&, std::vector<icl8u>*);
+    typedef void (*decoder_func)(const icl8u*,const Size&,ImgBase**,std::vector<icl8u>*);
     
     private:
     std::vector<icl8u> m_buffer; //!< internal buffer  
     std::map<icl32u,decoder_func> m_functions; //!< internal lookup for conversion functions
-    Img8u m_dstBuf;  //!< optionally used output buffer
+    ImgBase *m_dstBuf;  //!< optionally used output buffer
     
     public:
     /// create a new instance
     ColorFormatDecoder();
+    
+    /// Destructor
+    ~ColorFormatDecoder();
     
     /// return whether a given format is supported
     inline bool supports(FourCC fourcc){
@@ -71,11 +78,11 @@ namespace icl{
     }
     
     /// decodes a given data range to RGB
-    void decode(FourCC fourcc, const icl8u *data, const Size &size, Img8u &dst);
+    void decode(FourCC fourcc, const icl8u *data, const Size &size, ImgBase **dst);
 
     /// decode, but use the internal buffer as output
-    Img8u &decode(FourCC fourcc, const icl8u *data, const Size &size){
-      decode(fourcc,data,size,m_dstBuf);
+    const ImgBase *decode(FourCC fourcc, const icl8u *data, const Size &size){
+      decode(fourcc,data,size,&m_dstBuf);
       return m_dstBuf;
     }
     

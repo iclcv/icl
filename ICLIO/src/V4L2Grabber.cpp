@@ -97,9 +97,14 @@ namespace icl{
     bool isGrabbing;
     bool avoidDoubleFrames;
     Time lastTime;
+    
+    ImgBase *image;
+    ImgBase *imageOut;
+    std::vector<icl8u> convertBuffer;
+    ColorFormatDecoder decoder;
 
     Impl(const std::string &deviceName, const std::string &initialFormat="", bool startGrabbing=true):
-      deviceName(deviceName),isGrabbing(startGrabbing),avoidDoubleFrames(true),lastTime(Time::now()){
+      deviceName(deviceName),isGrabbing(startGrabbing),avoidDoubleFrames(true),lastTime(Time::now()),image(0),imageOut(0){
       
       // note, \b is the word boundary special character (while $ is a line end which does not work so well here)
       if(deviceName.length() == 1 && match(deviceName,"^[0-9]\\b")){
@@ -133,6 +138,9 @@ namespace icl{
         release_device();
       }
       close_device();
+      
+      ICL_DELETE(image);
+      ICL_DELETE(imageOut);
     }
     
     std::string getSupportedFormats() const {
@@ -449,29 +457,28 @@ namespace icl{
       return true;
     }
 
-    Img8u image;
-    Img8u imageOut;
-    std::vector<icl8u> convertBuffer;
-    
-    ColorFormatDecoder decoder;
+   
     
     void process_image(const icl8u *p, int fourcc){
       Mutex::Locker lock(mutex);
       Time t = Time::now();
-      decoder.decode(fourcc,p, currentSize, image);
-      image.setTime(t);
+      if(deviceNameInfo == "Myrmex"){ // spezialization for the myrmex tactile device
+	fourcc = FourCC("MYRM");
+      }
+      decoder.decode(fourcc,p, currentSize, &image);
+      image->setTime(t);
      }
 
      const ImgBase *acquireImage(){
        Mutex::Locker lock(mutex);
-       while(avoidDoubleFrames && lastTime == image.getTime()){
+       while(!image || (avoidDoubleFrames && lastTime == image->getTime())){
          mutex.unlock();
          Thread::msleep(0);
          mutex.lock();         
        }
-       image.deepCopy(&imageOut);
-       lastTime = image.getTime();
-       return &imageOut;
+       image->deepCopy(&imageOut);
+       lastTime = image->getTime();
+       return imageOut;
      }
 
      void release_device(){

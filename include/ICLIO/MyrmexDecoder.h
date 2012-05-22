@@ -6,9 +6,9 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLIO/FourCC.h                                 **
+** File   : include/ICLIO/ColorFormatDecoder.h                     **
 ** Module : ICLIO                                                  **
-** Authors: Christof Elbrechter                                    **
+** Authors: Carsten Schürmann                                      **
 **                                                                 **
 ** Commercial License                                              **
 ** ICL can be used commercially, please refer to our website       **
@@ -31,74 +31,54 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FOUR_CC_H
-#define ICL_FOUR_CC_H
+#ifndef ICL_MYRMEX_DEODER_H
+#define ICL_MYRMEX_DEODER_H
 
-#include <ICLUtils/BasicTypes.h>
-#include <ICLUtils/Exception.h>
-#include <string>
-#include <iostream>
+#include <ICLCore/Img.h>
+
+#define ERROR_MARK  0xA000 //Top 4 Bits code on last pixel of last frame to mark that an error occurred during readout
+//Connections
+#define WEST 0
+#define EAST 1
+#define SOUTH 2
+#define NORTH 3
+#define NOGATE 4
+#define SIDE 1
+#define TOP 0
+//Viewpoints
+#define VIEW_W 0
+#define VIEW_3 1
+#define VIEW_M 2
+#define VIEW_E 3
+
 
 namespace icl{
-  
-  /// Wrapper class for fourcc color codes
-  /** @see ColorFormatDecoder */
-  class FourCC{
-    icl32s key; //!< internally a fourcc is represented by an u-int value
-      
-    public:
-    /// create a null FourCC (key = 0)
-    FourCC():key(0){}
-    
-    /// create a FourCC with given key
-    FourCC(icl32s key):key(key){} 
-    
-    /// create a fourCC from given string color code (e.g. Y422 or MJPG)
-    FourCC(const std::string &key){
-      init(key);
-    }
-    
-    /// create a fourCC from given string color code (cstring style)
-    FourCC(const char *key){
-      init(key);
-    }
 
-    /// initialization utility method
-    void init(const std::string &key) throw (ICLException){
-      if(key.length() != 4) throw ICLException("FourCC::FourCC(string): invalid fourcc code " + key);
-      if(key == "null") this->key = 0;
-      else this->key = (((icl32u)(key[0])<<0)|((icl32u)(key[1])<<8)|((icl32u)(key[2])<<16)|((icl32u)(key[3])<<24));
-    }
-    
-    /// int-assignment
-    inline FourCC &operator=(icl32s key) { return *this=FourCC(key); }
+  class MyrmexDecoder {
+ 
+  public:
+    MyrmexDecoder();
+    void decode(const icl16s *data, const Size &size, ImgBase **dst);
 
-    /// std::string-assignment
-    inline FourCC &operator=(const std::string &key) { return *this=FourCC(key); }
-    
-    /// convert to string
-    std::string asString() const {
-      if(!key) return "null";
-      int tmp[2] = {key,0};
-      return std::string((char*)tmp);
-    }
-    
-    /// obtain current key (uint)
-    icl32s asInt() const {
-      return key;
-    }
-    
-    /// check whether it is null
-    operator bool() { return key != 0; }
+  private:
+    bool first_run;
+    char attachedPosition; //store position of central unit
+    int bigtarget[16*16]; //table which maps module orientation
+    std::vector<char> conversionTable;  //table which maps usb input texel position to grabber output texel position
+    std::vector<unsigned int> flat; //table which maps pixel order from per-module style to per-frame-line style
+    unsigned int image_width; //store converted width
+    unsigned int image_height; //store converted height
 
-    /// implicit conversion to int
-    operator int() { return asInt(); }
+    std::vector<char> getConnectionsMeta(const icl16s *data, int size);
+    int grabMetadata(const icl16s *data, unsigned char metadata[256], int size);
+    int setCompression(unsigned int i);
+    int setSpeed(unsigned int i);
+    unsigned short swap16(unsigned short a);
+    void parseConnections( std::vector<char> connections, char* attached, int* weite, int* hoehe );
+    std::vector<char> makeConversiontable( int width, int height, std::vector<char> connections, char attached, char viewpoint );//generate conversiontable to match real world layout + using our viewpoint 
+    int convertImage(const icl16s *data, icl16s *outputImageData, const Size &size);
+    void init(const icl16s *data, const Size &size,char viewpoint,unsigned char speed, unsigned char compression);
   };
-
-  /// overloaded ostream operator for type fourCC
-  inline std::ostream &operator<<(std::ostream &stream, const FourCC &fourCC){
-    return stream << "FourCC(" << fourCC.asString() << ")" << std::endl;
-  }
 
 }
 
