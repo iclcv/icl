@@ -306,7 +306,14 @@ namespace icl{
     void addTexture(int a, int b, int c, int d, 
                     int sharedTextureIndex,
                     int na=-1, int nb=-1, int nc=-1, int nd=-1);
-                 
+               
+
+    /// adds a texture that is drawn on a 2D grid of vertices in 3D space
+    void addTextureGrid(int w, int h, const ImgBase *image,
+                        const icl32f *px, const icl32f *py, const icl32f *pz,
+                        const icl32f *pnx=0, const icl32f *pny=0, const icl32f *pnz=0,
+                        int stride = 1,bool createTextureOnce=true,scalemode sm=interpolateLIN);
+
 
     /// adds text-texture quad -primitive to this object
     /** If the given normal indices (na,nb,nc and nd) are -1, auto-normal are computed using cross-product.

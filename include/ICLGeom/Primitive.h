@@ -253,11 +253,37 @@ namespace icl{
     virtual Primitive *copy() const { 
       return new TexturePrimitive(i(0),i(1),i(2),i(3),
                                   image ? image : texture.extractImage(),
-                                  image ? true : false,
+                                  !image,
                                   i(4),i(5),i(6),i(7),
                                   texture.getScaleMode());
     }
 
+  };
+
+  /// Special texture Primitive for single textures spread over a regular grid of vertices
+  /** For more details look at ICLQt's icl::GLImg::drawToGrid method */
+  class TextureGridPrimitive : public Primitive{
+    int w,h;
+    GLImg texture;
+    const icl32f *px, *py, *pz, *pnx,  *pny, *pnz;
+    int stride;
+    const ImgBase *image;
+    
+    public:
+    TextureGridPrimitive(int w, int h, const ImgBase *image,
+                         const icl32f *px, const icl32f *py, const icl32f *pz,
+                         const icl32f *pnx=0, const icl32f *pny=0, const icl32f *pnz=0,
+                         int stride = 1,bool createTextureOnce=true,scalemode sm=interpolateLIN):
+    Primitive(Primitive::texture),w(w),h(h),texture(image,sm),px(px),py(py),pz(pz),
+    pnx(pnx),pny(pny),pnz(pnz),stride(stride),image(createTextureOnce ? 0 : image){}
+
+    virtual void render(const Primitive::RenderContext &ctx);
+    
+    virtual Primitive *copy() const { 
+      return new TextureGridPrimitive(w,h,image ? image : texture.extractImage(),
+                                      px,py,pz,pnx,pny,pnz,stride,!image,
+                                      texture.getScaleMode()); 
+    }
   };
 
   

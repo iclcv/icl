@@ -156,6 +156,15 @@ namespace icl{
                                int na, int nb, int nc, int nd){
     m_primitives.push_back(new SharedTexturePrimitive(a,b,c,d,sharedTextureIndex,na,nb,nc,nd));
   }
+    /// adds a texture that is drawn on a 2D grid of vertices in 3D space
+  void SceneObject::addTextureGrid(int w, int h, const ImgBase *image,
+                                   const icl32f *px, const icl32f *py, const icl32f *pz,
+                                   const icl32f *pnx, const icl32f *pny, const icl32f *pnz,
+                                   int stride,bool createTextureOnce,scalemode sm){
+    m_primitives.push_back(new TextureGridPrimitive(w,h,image,px,py,pz,pnx, pny,pnz,
+                                                    stride,createTextureOnce,sm));
+  }
+
   
 
   void SceneObject::addTextTexture(int a, int b, int c, int d, const std::string &text,

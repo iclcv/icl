@@ -252,7 +252,7 @@ namespace icl{
     const RGBDMapping M = m_data->mapping;
     const Vec off = m_data->viewRayOffset;
     
-    const FixedMatrix<float,3,4> Qi = m_data->Qi;
+    //const FixedMatrix<float,3,4> Qi = m_data->Qi;
 
     const bool xyzMapping = m_data->mode == XYZ_WORLD;
     

@@ -261,5 +261,11 @@ namespace icl{
     glAlphaFunc(GL_GREATER,0.05); 
   }
 
-
+  void TextureGridPrimitive::render(const Primitive::RenderContext &ctx){
+    if(image){
+      texture.update(image);
+    }
+    texture.drawToGrid(w,h,px,py,pz,pnx,pny,pnz,stride);
+  }
+  
 }
