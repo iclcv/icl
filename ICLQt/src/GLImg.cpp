@@ -52,6 +52,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QMutex>
+#include <QtOpenGL/QGLContext>
 #endif
 
 namespace icl{
@@ -74,12 +75,16 @@ namespace icl{
   struct AsynchronousTextureDeleter : public QObject{
     struct Event : public QEvent{
       Event(const std::vector<GLuint> &del):
-        QEvent((QEvent::Type)QEvent::registerEventType()),del(del){}
+        QEvent((QEvent::Type)QEvent::registerEventType()),del(del){
+        ctx = QGLContext::currentContext();
+      }
       std::vector<GLuint> del;
+      const QGLContext *ctx;
     };
     virtual bool event(QEvent *eIn){
       Event *e = dynamic_cast<Event*>(eIn);
       if(!e) return false;
+      const_cast<QGLContext*>(e->ctx)->makeCurrent();
       glDeleteTextures(e->del.size(), e->del.data());
       return true;
     }
@@ -591,6 +596,7 @@ namespace icl{
 
     void uploadTextureData(){
       ICLASSERT_THROW(data.getDim(),ICLException("unable to draw GLImg: no texture data available"));
+
       if(!isDirty()) return;
       setupPixelTransfer();
       
@@ -886,11 +892,14 @@ namespace icl{
     }
     glPushAttrib(GL_ENABLE_BIT);
     glEnable(GL_TEXTURE_2D);
+    glColor4f(1,1,1,1);
     
     TextureElement &t = *m_data->data(0,0);
     glBindTexture(GL_TEXTURE_2D, t.tex);
 
     const bool haveNormals = nxs && nys && nzs;
+
+    if(!haveNormals) glDisable(GL_LIGHTING);
     const float nxf = nx-1, nyf = ny-1;
 
 #define AT(_p,_x,_y) _p[stride*(_x+_y*nx)]

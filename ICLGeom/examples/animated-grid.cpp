@@ -43,18 +43,27 @@ struct Grid : public SceneObject{
   Mutex mutex;
   int w,h;
   int idx(int x, int y) const { return x + w* y; }
-  Grid(const ImgBase *image):w(40),h(40){
+  Grid(const ImgBase *image):w(50),h(50){
     
     m_vertices.resize(w*h,Vec(0,0,0,1));
     m_vertexColors.resize(w*h,GeomColor(1,0,0,1));
     
 
-    addTextureGrid(40,40,image,
+    addTextureGrid(w,h,image,
                    &m_vertices[0][0], 
                    &m_vertices[0][1], 
                    &m_vertices[0][2], 
-                   0,0,0,4,false);
+                   0,0,0,4,true);
     
+    for(int x=1;x<w;++x){
+      addLine(idx(x-1,0),idx(x,0),geom_red());
+      addLine(idx(x-1,w-1),idx(x,w-1),geom_red());
+    }
+    for(int y=1;y<h;++y){
+      addLine(idx(0,y-1),idx(0,y),geom_red());
+      addLine(idx(w-1,y-1),idx(w-1,y),geom_red());
+    }
+
     setVisible(Primitive::texture,true);
     setVisible(Primitive::vertex,false);
   }
@@ -81,19 +90,24 @@ void run(){
   grabber.grab()->convert(&image);  
   gui["draw"].render();
   
-  gui["offscreen"] = scene.render(0);
+  gui["offscreen0"] = scene.render(0);
+  gui["offscreen1"] = scene.render(1);
 }
 
 void init(){
+  scene.setDrawCamerasEnabled(false);
   Scene::enableSharedOffscreenRendering();
   
   grabber.init(pa("-i"));
 
   gui << "draw3D()[@handle=draw@minsize=20x15@label=interaction area]" 
-      << "image[@handle=offscreen@label=offscreen rendered]"
+      << "image[@handle=offscreen0@label=offscreen rendered cam 0]"
+      << "image[@handle=offscreen1@label=offscreen rendered cam 1]"
       << "fslider(0,1,0.2,vertical)[@out=freq@label=frequence]"
       << "!show";
 
+  grabber.grab();
+  grabber.grab();
   grabber.grab()->convert(&image);  
   obj = new Grid(&image);
 
@@ -101,6 +115,7 @@ void init(){
   scene.addCamera(Camera(Vec(0,0,60,1),
                          Vec(0,0,-1,1),
                          Vec(0,1,0,1)));
+  scene.addCamera(scene.getCamera(0));
 
   gui["draw"].link(scene.getGLCallback(0));
   gui["draw"].install(scene.getMouseHandler(0));

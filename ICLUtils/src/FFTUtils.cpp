@@ -1180,6 +1180,7 @@ icl::DynMatrix<std::complex<icl32f> >& mkl_wrapper_function_result_fft_icl32fc(c
 	MKL_LONG status, l[2]={dimy,dimx};
 	DFTI_DESCRIPTOR_HANDLE my_desc1_handle;
 	status = DftiCreateDescriptor( &my_desc1_handle, DFTI_SINGLE, DFTI_COMPLEX, 2,l);
+        (void)status;
 	mkl_wrapper_function_result_fft_complex(my_desc1_handle,srcbuf,dst.data(),buffer.data(),dimx,dimy);
 	delete[] srcbuf;
 	return dst;
