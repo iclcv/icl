@@ -53,7 +53,7 @@ struct Grid : public SceneObject{
                    &m_vertices[0][0], 
                    &m_vertices[0][1], 
                    &m_vertices[0][2], 
-                   0,0,0,4,true);
+                   0,0,0,4,false);
     
     for(int x=1;x<w;++x){
       addLine(idx(x-1,0),idx(x,0),geom_red());
@@ -66,6 +66,19 @@ struct Grid : public SceneObject{
 
     setVisible(Primitive::texture,true);
     setVisible(Primitive::vertex,false);
+
+
+    setFragmentShader(new GLFragmentShader( "uniform sampler2D texSampler;"
+                                            "void main(void){"
+                                            "   vec4 tmp;"
+                                            "   tmp = texture2D(texSampler, vec2(gl_TexCoord[0]));"
+                                            "   for (int i=0; i<4; i++){"
+                                            "     if ( tmp[i] > float(0.3)) gl_FragColor[i] = float(1);"
+                                            "     else gl_FragColor[i] = tmp[i];"
+                                            "   }"
+                                            "}"));
+
+
   }
   
   void prepareForRendering(){

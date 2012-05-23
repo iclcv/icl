@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLQt/GLFragmentShader.h                       **
-** Module : ICLGeom                                                **
+** File   : ICLQt/src/GLContext.h                                  **
+** Module : ICLQt                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -32,38 +32,44 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_GL_FRAGMENT_SHADER_H
-#define ICL_GL_FRAGMENT_SHADER_H
+#include <ICLQt/GLContext.h>
 
-#include <ICLUtils/Uncopyable.h>
-#include <ICLUtils/Exception.h>
+#include <QtOpenGL/QGLContext>
+
+#ifdef ICL_SYSTEM_APPLE
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+#include <OpenGL/glx.h>
+#else
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <GL/glx.h>
+#endif
 
 namespace icl{
-  /// Simple wrapper class for OpenGL 2.0 Fragment Shader Programs
-  /** The GLFragmentShader class can be used to create simple fragment shader programs.
-      
-  */
-  class GLFragmentShader : public Uncopyable{
-    struct Data;
-    Data *m_data;
-    
-    void create();
-    
-    public:
-    GLFragmentShader(const std::string &program, bool createOnFirstActivate=true) throw (ICLException);
-    ~GLFragmentShader();
-    
-    void activate();
-    
-    /// deactivates the shader
-    /** This function does not do anything, if the shader was not enabled before! */
-    void deactivate();
-    
-    /// creates a deep copy of this shader
-    /** The resulting copy does only use this instance's program string and is other than this
-        independent. The copy is created in createOnFirstActivate mode */
-    GLFragmentShader *copy() const;
-  };
-}
+  
+  GLContext GLContext::current_glx_context(0,false,0,0);
+  
+  void GLContext::set_current_glx_context(Handle handle, long unsigned int pbuffer, Handle display){
+    current_glx_context = GLContext(handle,true,pbuffer,display);
+  }
 
-#endif
+  void GLContext::unset_current_glx_context(){
+    current_glx_context = GLContext(0,false,0,0);
+  }
+
+  GLContext GLContext::currentContext(){
+    const QGLContext *ctx = QGLContext::currentContext();
+    if(!ctx) return current_glx_context;
+    return GLContext((void*)ctx,false);
+  }
+  
+  void GLContext::makeCurrent() const{
+    if(isNull()) return;
+    if(isGLX) glXMakeCurrent((Display*)display,(GLXPbuffer)pbuffer, (GLXContext) handle);
+    else ((QGLContext*)handle)->makeCurrent();
+  }
+
+  
+
+}

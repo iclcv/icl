@@ -43,7 +43,7 @@
 #include <ICLGeom/Primitive.h>
 #include <ICLGeom/ViewRay.h>
 #include <ICLGeom/Hit.h>
-
+#include <ICLQt/GLFragmentShader.h>
 
 namespace icl{
 
@@ -619,6 +619,16 @@ namespace icl{
     /// frees the displaylist in the next render cycle
     void freeDisplayList();
     
+    /// sets a fragment shader to use for this object
+    /** use set fragment shader (0) in order to delete the fragment shader */
+    void setFragmentShader(GLFragmentShader *shader);
+    
+    /// returns the current fragment shader (or NULL if non was given)
+    inline GLFragmentShader *getFragmentShader() { return m_fragmentShader; }
+    
+    /// returns the current fragment shader (or NULL if non was given, const version)
+    inline const GLFragmentShader *getFragmentShader() const{ return m_fragmentShader; }
+    
     protected:
     /// recursive picking method
     static void collect_hits_recursive(SceneObject *obj, const ViewRay &v, 
@@ -656,7 +666,8 @@ namespace icl{
     bool m_pointSmoothingEnabled;
     bool m_lineSmoothingEnabled;
     bool m_polygonSmoothingEnabled;
-
+    
+    
     private:
 
     /// internally used flag
@@ -666,7 +677,10 @@ namespace icl{
         - 1: create/update display list in next render cycle 
         - 2: free display-list (if there is any) in the next render cycle */
     int m_createDisplayListNextTime;
- 
+
+    /// internal optionally given fragment shader
+    GLFragmentShader *m_fragmentShader;
+
   };
 }
 

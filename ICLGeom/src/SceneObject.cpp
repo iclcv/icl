@@ -95,7 +95,8 @@ namespace icl{
     m_lineSmoothingEnabled(true),
     m_polygonSmoothingEnabled(true),
     m_displayListHandle(0),
-    m_createDisplayListNextTime(0)
+    m_createDisplayListNextTime(0),
+    m_fragmentShader(0)
   {
 
     m_visibleMask = Primitive::all;
@@ -244,7 +245,8 @@ namespace icl{
     m_lineSmoothingEnabled(true),
     m_polygonSmoothingEnabled(true),
     m_displayListHandle(0),
-    m_createDisplayListNextTime(0)
+    m_createDisplayListNextTime(0),
+    m_fragmentShader(0)
   {
     m_visibleMask = Primitive::all;
 
@@ -539,6 +541,7 @@ namespace icl{
       Scene::freeDisplayList(m_displayListHandle);
       m_displayListHandle = 0;
     }
+    ICL_DELETE(m_fragmentShader);
   }
   
   SceneObject::SceneObject(const std::string &objFileName) throw (ICLException):
@@ -558,7 +561,8 @@ namespace icl{
     m_lineSmoothingEnabled(true),
     m_polygonSmoothingEnabled(true),
     m_displayListHandle(0),
-    m_createDisplayListNextTime(0)
+    m_createDisplayListNextTime(0),
+    m_fragmentShader(0)
   {
     File file(objFileName,File::readText);
     if(!file.exists()) throw ICLException("Error in SceneObject(objFilename): unable to open file " + objFileName);
@@ -885,6 +889,11 @@ namespace icl{
     if(m_displayListHandle){
       Scene::freeDisplayList(m_displayListHandle);
       m_displayListHandle = 0;
+    }
+    if(other.getFragmentShader()){
+      setFragmentShader(other.getFragmentShader()->copy());
+    }else{
+      setFragmentShader(0);
     }
     return *this;
   }
@@ -1273,6 +1282,11 @@ namespace icl{
   
   void SceneObject::freeDisplayList(){
     m_createDisplayListNextTime = 2;
+  }
+
+  void SceneObject::setFragmentShader(GLFragmentShader *shader){
+    ICL_DELETE(m_fragmentShader);
+    m_fragmentShader = shader;
   }
   
   

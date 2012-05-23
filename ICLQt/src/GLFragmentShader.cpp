@@ -46,6 +46,9 @@
 
 #include <ICLUtils/Macros.h>
 
+#include <ICLQt/GLContext.h>
+#include <map>
+
 namespace icl{
   static std::string shader_info(GLuint obj){
     int infologLength = 0;
@@ -79,13 +82,24 @@ namespace icl{
   
   struct GLFragmentShader::Data{
     std::string programString;
+#ifdef USE_ONE_INSTANCE
     GLuint shader;
     GLuint program;
     bool enabled;
     bool created;
+
+#else
+    struct GLData{
+      GLuint shader;
+      GLuint program;
+      bool enabled;
+    };
+    std::map<GLContext,GLData> lut;
+#endif
   };
   
   void GLFragmentShader::create(){
+#ifdef USE_ONE_INSTANCE
     if(m_data->created) return;
     m_data->shader = glCreateShader(GL_FRAGMENT_SHADER);
     
@@ -109,14 +123,43 @@ namespace icl{
       throw ICLException("unable to link shader program:[ \n" + info + "\n]");
     }
     m_data->created = true;
+#else
+    GLContext ctx = GLContext::currentContext();
+
+    if(ctx.isNull() || m_data->lut.find(ctx) != m_data->lut.end()) return;
+    Data::GLData & d = m_data->lut[ctx];
+    d.shader = glCreateShader(GL_FRAGMENT_SHADER);
+    
+    const char *p = m_data->programString.c_str();
+    int len = m_data->programString.size();
+    
+    glShaderSource(d.shader,1,&p,&len);
+    glCompileShader(d.shader);
+    
+    std::string info = shader_info(d.shader);
+    if(info.length()){
+      throw ICLException("unable to compile shader:[ \n" + info + "\n]");
+    }
+    d.program = glCreateProgram();
+    
+    glAttachShader(d.program,d.shader);
+    glLinkProgram(d.program);
+
+    info = program_info(d.program);
+    if(info.length()){
+      throw ICLException("unable to link shader program:[ \n" + info + "\n]");
+    }
+#endif
   }
   
   GLFragmentShader::GLFragmentShader(const std::string &program, bool createOnFirstActivate) throw (ICLException):
     m_data(new Data){
+    
     m_data->programString = program;
+#ifdef USE_ONE_INSTANCE
     m_data->enabled = false;
     m_data->created = false;
-    
+#endif
     static bool first = true;
     if(first){
       first = false;
@@ -129,22 +172,64 @@ namespace icl{
   }
   
   GLFragmentShader::~GLFragmentShader(){
+#ifdef USE_ONE_INSTANCE
     glDetachShader(m_data->program,m_data->shader);
     glDeleteShader(m_data->shader); 
     glDeleteProgram(m_data->program);
     delete m_data;
+#else
+    for(std::map<GLContext,Data::GLData>::iterator it = m_data->lut.begin();
+        it != m_data->lut.end(); ++it){
+      it->first.makeCurrent();
+      Data::GLData &d = it->second;
+      glDetachShader(d.program,d.shader);
+      glDeleteShader(d.shader); 
+      glDeleteProgram(d.program);
+    }
+    delete m_data;
+#endif
   }
   
   void GLFragmentShader::activate(){
+#ifdef USE_ONE_INSTANCE
     create();
     m_data->enabled = true;
     glUseProgram(m_data->program);
+#else
+    create();
+    GLContext ctx = GLContext::currentContext();
+    if(ctx.isNull()){
+      throw ICLException("tried to activate shader program where no GL-Context was active");
+    }
+    Data::GLData &d = m_data->lut[ctx];
+    d.enabled = true;
+    glUseProgram(d.program);
+
+#endif
   }
 
   void GLFragmentShader::deactivate(){
+#ifdef USE_ONE_INSTANCE
     if(m_data->enabled){
       m_data->enabled = false;
       glUseProgram(0);
     }
+#else
+    GLContext ctx = GLContext::currentContext();
+    if(ctx.isNull()){
+      throw ICLException("tried to deactivate shader program where no GL-Context was active");
+    }
+    
+    std::map<GLContext,Data::GLData>::iterator it = m_data->lut.find(ctx);
+    if(it != m_data->lut.end()){
+      it->second.enabled = false;
+      glUseProgram(0);
+    }
+#endif
   }
+
+  GLFragmentShader *GLFragmentShader::copy() const{
+    return new GLFragmentShader(m_data->programString,true);
+  }
+
 }

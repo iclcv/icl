@@ -44,6 +44,7 @@
 #ifdef HAVE_GLX
 #include <GL/glx.h>
 #include <ICLCC/CCFunctions.h>
+#include <ICLQt/GLContext.h>
 #endif
 
 
@@ -402,6 +403,10 @@ namespace icl{
       glDisable(GL_POLYGON_SMOOTH);
     }
     
+    if(o->getFragmentShader()){
+      o->getFragmentShader()->activate();
+    }
+    
     glPointSize(o->m_pointSize);
     glLineWidth(o->m_lineWidth);
     
@@ -470,6 +475,11 @@ namespace icl{
     }
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
+
+    if(o->getFragmentShader()){
+      o->getFragmentShader()->deactivate();
+    }
+
     o->unlock();
   }
 
@@ -883,6 +893,7 @@ namespace icl{
     }
     void makeCurrent(){
       glXMakeCurrent(getDisplay(),pbuffer,context);
+      GLContext::set_current_glx_context(context,pbuffer,getDisplay());
     }
     
     GLXContext context;    /* OpenGL context */
@@ -1096,6 +1107,7 @@ namespace icl{
 #endif
     }
     
+    GLContext::unset_current_glx_context();
     return p.buf;
   }
 
