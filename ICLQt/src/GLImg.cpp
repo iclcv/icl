@@ -886,6 +886,7 @@ namespace icl{
   void GLImg::drawToGrid(int nx, int ny, const float *xs, const float *ys, const float *zs,
                          const float *nxs, const float *nys, const float *nzs,const int stride){
     if(m_data->isDirty()) m_data->uploadTextureData();
+    
     if(m_data->data.getSize() != Size(1,1)){
       WARNING_LOG("GLImg::drawToGrid: the texture was split into " << m_data->data.getSize()
                   << " cells, which is not supported by this method. The first cell element is used only!");
@@ -902,6 +903,7 @@ namespace icl{
     if(!haveNormals) glDisable(GL_LIGHTING);
     const float nxf = nx-1, nyf = ny-1;
 
+    
 #define AT(_p,_x,_y) _p[stride*(_x+_y*nx)]
 #define X(_x,_y) AT(xs,_x,_y)
 #define Y(_x,_y) AT(ys,_x,_y)
@@ -909,6 +911,7 @@ namespace icl{
 #define NX(_x,_y) AT(nxs,_x,_y)
 #define NY(_x,_y) AT(nys,_x,_y)
 #define NZ(_x,_y) AT(nzs,_x,_y)
+
 
 #define PART(_x,_y)                                             \
     glTexCoord2f((_x)/nxf, (_y)/nyf);                           \

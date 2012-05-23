@@ -1111,10 +1111,17 @@ namespace icl{
         case Primitive::triangle:
           nFaces++; break;
         case Primitive::quad:
-        case Primitive::texture:
           nFaces+=2; break;
+        case Primitive::texture:{
+          const TextureGridPrimitive *tg = dynamic_cast<const TextureGridPrimitive*>(&p);
+          if(tg){
+            nFaces += tg->w * tg->h * 2;
+          }else{
+            nFaces+=2; 
+          }
+          break;
+        }
         case Primitive::polygon:
-          
           nFaces+=dynamic_cast<const PolygonPrimitive&>(p).getNumPoints()-2; break;
         default:
           break;
@@ -1149,7 +1156,7 @@ namespace icl{
             |4----+5
             ||    ||
             2+----3|
-            6-----7
+             6-----7
             |
             V
             y
@@ -1181,6 +1188,10 @@ namespace icl{
                        compute_intersection(v,Triangle(v2,v4,v6),__) == foundIntersection ||
                        compute_intersection(v,Triangle(v1,v5,v3),__) == foundIntersection ||
                        compute_intersection(v,Triangle(v3,v5,v7),__) == foundIntersection );
+        
+        // ok, TextureGridPrimitives are not supported so far
+        // However as long as their xs, ys, and zs, pointers point directly
+        // into the vertex list of the object, it _is_ supported implicitly
       }
       if(aabbCheckOK){
         for(unsigned int i=0;i<obj->m_primitives.size();++i){
@@ -1198,20 +1209,44 @@ namespace icl{
             }
             case Primitive::texture:
             case Primitive::quad:{
-              /** a--b xxx
-                  |  |
-                  d--c
-              */
+              const TextureGridPrimitive *t = dynamic_cast<const TextureGridPrimitive*>(p);
               Hit h;
-              const QuadPrimitive *qp = reinterpret_cast<const QuadPrimitive*>(p);
-              if(compute_intersection(v, Triangle(vs[qp->i(0)],vs[qp->i(1)],vs[qp->i(2)] ),h.pos) == foundIntersection){
-                h.obj = obj;
-                h.dist = l3(v.offset,h.pos);
-                hits.push_back(h);
-              }else if(compute_intersection(v,Triangle(vs[qp->i(0)],vs[qp->i(2)],vs[qp->i(3)]),h.pos) == foundIntersection){
-                h.obj = obj;
-                h.dist = l3(v.offset,h.pos);
-                hits.push_back(h);
+              if(t){
+                for(int x=1;x<t->w;++x){
+                  for(int y=1;y<t->h;++y){
+                    Vec a = t->getPos(x-1,y-1);
+                    Vec b = t->getPos(x,y-1);
+                    Vec c = t->getPos(x,y);
+                    Vec d = t->getPos(x-1,y);
+                    
+                    if(compute_intersection(v, Triangle(a,d,b), h.pos) == foundIntersection){
+                      h.obj = obj;
+                      h.dist = l3(v.offset,h.pos);
+                      hits.push_back(h);
+                    }else if(compute_intersection(v, Triangle(c,b,d), h.pos) == foundIntersection){
+                      h.obj = obj;
+                      h.dist = l3(v.offset,h.pos);
+                      hits.push_back(h);
+                    }
+                  }
+                }
+              }else{
+                
+                /** a--b xxx
+                    |  |
+                    d--c
+                    */
+
+                const QuadPrimitive *qp = reinterpret_cast<const QuadPrimitive*>(p);
+                if(compute_intersection(v, Triangle(vs[qp->i(0)],vs[qp->i(1)],vs[qp->i(2)] ),h.pos) == foundIntersection){
+                  h.obj = obj;
+                  h.dist = l3(v.offset,h.pos);
+                  hits.push_back(h);
+                }else if(compute_intersection(v,Triangle(vs[qp->i(0)],vs[qp->i(2)],vs[qp->i(3)]),h.pos) == foundIntersection){
+                  h.obj = obj;
+                  h.dist = l3(v.offset,h.pos);
+                  hits.push_back(h);
+                }
               }
               break;
             }

@@ -263,6 +263,7 @@ namespace icl{
   /// Special texture Primitive for single textures spread over a regular grid of vertices
   /** For more details look at ICLQt's icl::GLImg::drawToGrid method */
   class TextureGridPrimitive : public Primitive{
+    friend class SceneObject;
     int w,h;
     GLImg texture;
     const icl32f *px, *py, *pz, *pnx,  *pny, *pnz;
@@ -283,6 +284,12 @@ namespace icl{
       return new TextureGridPrimitive(w,h,image ? image : texture.extractImage(),
                                       px,py,pz,pnx,pny,pnz,stride,!image,
                                       texture.getScaleMode()); 
+    }
+    void getAABB(Range32f aabb[3]);
+    
+    inline Vec getPos(int x, int y) const {
+      const int idx = stride*(x + w*y);
+      return Vec(px[idx],py[idx],pz[idx],1);
     }
   };
 

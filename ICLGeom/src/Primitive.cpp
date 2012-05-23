@@ -267,5 +267,18 @@ namespace icl{
     }
     texture.drawToGrid(w,h,px,py,pz,pnx,pny,pnz,stride);
   }
+
+  void TextureGridPrimitive::getAABB(Range32f aabb[3]){
+    Range32f limits = Range32f::limits(); 
+    std::swap(limits.minVal,limits.maxVal);
+    std::fill(aabb,aabb+3,limits);
+    
+    const int dim = w * h * stride;
+    for(int i=0;i<dim;i+=stride){
+      aabb[0].extend(px[i]);
+      aabb[1].extend(py[i]);
+      aabb[2].extend(pz[i]);
+    }
+  }
   
 }
