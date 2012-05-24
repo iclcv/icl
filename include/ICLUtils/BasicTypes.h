@@ -37,9 +37,15 @@
 
 #ifdef HAVE_IPP
 #include <ipp.h>
+
+#if IPP_VERSION_MAJOR == 6
+#define HAVE_IPP_6X
+#endif
+
 #endif
 
 #include <stdint.h>
+
 
 
 namespace icl {

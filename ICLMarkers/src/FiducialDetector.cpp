@@ -123,7 +123,7 @@ namespace icl{
         data->pp = p;
         addChildConfigurable(p,"thresh");
         break;
-      }
+       }
       case FiducialDetectorPlugin::Gray:
         data->pp = new FormatPP(formatGray);
         break;

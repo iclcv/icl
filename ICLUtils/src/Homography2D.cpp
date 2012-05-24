@@ -78,7 +78,11 @@ namespace icl{
         r[2*i] = yx;
         r[2*i+1] = yy;
       }
+
+
+      
       DynMatrix<T> h  = M.solve(r,"svd");
+
 
       std::copy(h.begin(),h.end(),Super::begin());
       this->operator[](8) = 1;

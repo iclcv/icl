@@ -1407,12 +1407,14 @@ template<class T, typename func>
     svd_copy_mat_sort(_V, Vt, idxlut);
     svd_copy_vec_sort(_s, s, idxlut);
     
+    svd_free_mat(_M, M.rows());
     svd_free_mat(_U, iclMax(M.rows(),M.cols()));
     svd_free_mat(_V, M.cols());
     delete [] _s;
   } 
 
 #ifdef HAVE_IPP
+
 #ifdef HAVE_IPP_6X
   void svd_ipp_64f(const DynMatrix<icl64f> &A, DynMatrix<icl64f> &U, DynMatrix<icl64f> &s, DynMatrix<icl64f> &V) throw (ICLException){
     int niter = A.rows();

@@ -97,6 +97,8 @@ namespace icl{
       convexity_check(ps);
     }
     
+
+    
     buffer.setChannels(src.getChannels());
     buffer.setSize(resultSize);
     int W = resultSize.width;
@@ -107,7 +109,10 @@ namespace icl{
       Point32f(W-1,H-1),
       Point32f(0,H-1)
     };
+    
     const Homography2D HOM(ps,ys,4, (Homography2D::Algorithm)advanedAlgorithm);
+
+
     if(hom) *hom = HOM;
     if(Q || R || (maxTilt > 0)){
       FixedMatrix<float,2,2> q,r;
@@ -142,7 +147,7 @@ namespace icl{
                                              const Rect *resultROI){
     int W=resultSize.width,H=resultSize.height;
     const Homography2D HOM = create_and_check_homography(validateAndSortPoints,ps,src,resultSize,hom,Q,R,maxTilt,buffer, advanedAlgorithm);
-    
+
     for(int c=0;c<src.getChannels();++c){
       Channel<T> r = buffer[c];
       const Channel<T> s = src[c];

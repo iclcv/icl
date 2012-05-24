@@ -179,6 +179,8 @@ namespace icl{
 
     prepareForPatchClassification();
  
+
+    
     for(unsigned int i=0;i<data->quads->size();++i){
       const TiltedQuad &q = data->quads->operator[](i);
       /// !! add some heuristics that skip detection of too tilted quads
@@ -198,6 +200,8 @@ namespace icl{
                   " rectification");
         return;
       }
+
+
 
       int rot = 0;
       FiducialImpl *impl = classifyPatch(rect, &rot,returnRejected,q.getRegion());
