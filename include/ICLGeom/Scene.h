@@ -423,15 +423,14 @@ int main(int n, char**ppc){
     /// internal class for offscreen rendering
     struct PBuffer;
     
-    /// Utility structure for comparing size-instances
-    struct CmpSize{ 
-      bool operator()(const Size &a, const Size &b) const{
-        return (a.width == b.width) ? (a.height < b.height) : (a.width < b.width);
-      }
+    struct PBufferIndex : public Size{
+      unsigned int threadID;
+      PBufferIndex(const Size &size);
+      bool operator<(const PBufferIndex &other) const;
     };
     
     /// intenal list of of offscreen rendering buffers
-    mutable std::map<Size,PBuffer*,CmpSize> m_pbuffers;
+    mutable std::map<PBufferIndex,PBuffer*> m_pbuffers;
 
     /// internally used flag
     bool m_drawCamerasEnabled;

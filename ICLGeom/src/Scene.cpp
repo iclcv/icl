@@ -847,6 +847,9 @@ namespace icl{
 #ifdef HAVE_GLX
 
   struct Scene::PBuffer{
+    
+    static Mutex glxMutex; // glx context's are not thread-safe -> so offscreen rendering performed in an atomic code segment
+    
     static Display *getDisplay(){
       static Display *d = XOpenDisplay(getenv("DISPLAY"));
       // this leads to errors due to missing x-server connection
@@ -943,9 +946,18 @@ namespace icl{
       }
     } depthCorr;
   };
-  
-  
-  // std::vector<PBuffer*> m_pbuffers;
+
+  Scene::PBufferIndex::PBufferIndex(const Size &size):
+    Size(size),threadID(pthread_self()){}
+
+  bool Scene::PBufferIndex::operator<(const Scene::PBufferIndex &other) const{
+    if(other.threadID == threadID){
+      if(other.width == width) return other.height < height;
+      else return other.width < width;
+    }else return other.threadID < threadID;
+  }
+
+  Mutex Scene::PBuffer::glxMutex;
   
   /** Benchmark results:
       
@@ -973,44 +985,21 @@ namespace icl{
   */
   const Img8u &Scene::render(int camIndex, const ImgBase *background, Img32f *depthBuffer,
                              DepthBufferMode mode) const throw (ICLException){
-    //#define DO_BENCH
-
-#ifdef DO_BENCH
-    Time t = Time::now();
-#endif
     ICLASSERT_THROW(camIndex < (int)m_cameras.size(),ICLException("Scene::render: invalid camera index"));
     const Camera &cam = getCamera(camIndex);
     int w = cam.getRenderParams().viewport.width;
     int h = cam.getRenderParams().viewport.height;
     Size s(w,h);
+    PBufferIndex idx(s);
 
-    std::map<Size,PBuffer*,CmpSize>::iterator it = m_pbuffers.find(s);
-    PBuffer &p = (it==m_pbuffers.end())?(*(m_pbuffers[s] = new PBuffer(s))):(*it->second);
-    
-    /*
-        if(!m_pbuffers[camIndex]){
-        PBuffer &p = *(m_pbuffers[camIndex] = new PBuffer);
-        
-        p.pbuffer = glXCreatePbuffer(display, configs[0], size);
-        p.context = glXCreateNewContext(display, configs[0], GLX_RGBA_BIT, 0, True);
-        p.size = Size(w,h);
-        }else if(m_pbuffers[camIndex]->size != Size(w,h)){
-        PBuffer &p = *m_pbuffers[camIndex];
-        glXDestroyContext(display, p.context);
-        glXDestroyPbuffer(display, p.pbuffer);
-        p.pbuffer = glXCreatePbuffer(display, configs[0], size);
-        p.context = glXCreateNewContext(display, configs[0], GLX_RGBA_BIT, 0, True);
-        p.size = Size(w,h);
-        }
-    */
-    
+    Mutex::Locker lock(PBuffer::glxMutex);
+    //    PBuffer::glxMutex.lock();
+    std::map<PBufferIndex,PBuffer*>::iterator it = m_pbuffers.find(idx);
+    PBuffer &p = (it==m_pbuffers.end())?(*(m_pbuffers[idx] = new PBuffer(s))):(*it->second);
+    // PBuffer::glxMutex.unlock();
+
+
     p.makeCurrent();
-    //glXMakeCurrent(display, m_pbuffers[camIndex]->pbuffer, m_pbuffers[camIndex]->context);
-#ifdef DO_BENCH
-    std::cout << "context creation took:" << std::endl;
-    SHOW((Time::now()-t).toMilliSecondsDouble());
-    t = Time::now();
-#endif
 
     glClearColor(0,0,0,0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );    
@@ -1035,36 +1024,9 @@ namespace icl{
     }
 
     renderScene(camIndex);
-
-#ifdef DO_BENCH
-    std::cout << "rendering the scene took:" << std::endl;
-    SHOW((Time::now()-t).toMilliSecondsDouble());
-    t = Time::now();
-#endif
-
     glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, p.rgbbuf.data());
-
-#ifdef DO_BENCH
-    std::cout << "glReadPixles took:" << std::endl;
-    SHOW((Time::now()-t).toMilliSecondsDouble());
-    t = Time::now();
-#endif
-
     interleavedToPlanar(p.rgbbuf.data(),&p.buf);
-
-#ifdef DO_BENCH
-    std::cout << "interleaved To planar took:" << std::endl;
-    SHOW((Time::now()-t).toMilliSecondsDouble());
-    t = Time::now();
-#endif
-
     p.buf.mirror(axisHorz); // software mirroring takes only about 1ms (with ipp)
-
-#ifdef DO_BENCH
-    std::cout << "mirror took" << std::endl;
-    SHOW((Time::now()-t).toMilliSecondsDouble());
-    t = Time::now();
-#endif
     
     if(depthBuffer){
       depthBuffer->setSize(Size(w,h));
@@ -1099,12 +1061,6 @@ namespace icl{
           }
         }
       }
-
-#ifdef DO_BENCH
-      std::cout << "grabbing the depth buffer took" << std::endl;
-      SHOW((Time::now()-t).toMilliSecondsDouble());
-      t = Time::now();
-#endif
     }
     
     GLContext::unset_current_glx_context();
@@ -1112,7 +1068,7 @@ namespace icl{
   }
 
   void Scene::freeAllPBuffers(){
-    typedef std::map<Size,PBuffer*,CmpSize>::iterator It;
+    typedef std::map<PBufferIndex,PBuffer*>::iterator It;
     for(It it = m_pbuffers.begin();it != m_pbuffers.end();++it){
       delete it->second;
     }
@@ -1120,8 +1076,9 @@ namespace icl{
   }
 
   void Scene::freePBuffer(const Size &size){
-    typedef std::map<Size,PBuffer*,CmpSize>::iterator It;
-    It it = m_pbuffers.find(size);
+    typedef std::map<PBufferIndex,PBuffer*>::iterator It;
+    PBufferIndex idx(size);
+    It it = m_pbuffers.find(idx);
     if(it != m_pbuffers.end()){
       delete it->second;
       m_pbuffers.erase(it);
