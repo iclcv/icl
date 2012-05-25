@@ -318,6 +318,10 @@ namespace icl{
     
     /// removes a callback that was registered before 
     void removedCallback(const Callback &cb);
+
+    /// this can be used to let this instance also apply property changes to others
+    /** Please take care to not create cyclic dependency graphs */
+    void syncChangesTo(Configurable *others, int num=1);
     
     protected:
     /// internally managed list of callbacks

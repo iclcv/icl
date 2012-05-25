@@ -371,4 +371,24 @@ namespace icl{
     return it->second();
   }
 
+  
+  namespace{
+    struct SyncImpl : public FunctionImpl<void,const Configurable::Property&>{
+      Configurable *src, *synced;
+      int num;
+      SyncImpl(Configurable *src, Configurable *synced, int num):
+        src(src),synced(synced),num(num){}
+      virtual void  operator()(const Configurable::Property &p) const{
+        Any val = src->getPropertyValue(p.name);
+        for(int i=0;i<num;++i){
+          synced[i].setPropertyValue(p.name,val);
+        }
+      }
+    };
+  }
+  
+  void Configurable::syncChangesTo(Configurable *others, int num){
+    registerCallback(Function<void,const Configurable::Property&>(new SyncImpl(this,others,num)));
+  }
+
 }
