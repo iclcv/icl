@@ -124,6 +124,8 @@ add_libsource (${PROJECT_NAME} "src/PylonGrabberThread.cpp" "${CONDITIONLIST}" L
 add_libsource (${PROJECT_NAME} "src/PylonCameraOptions.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/PylonColorConverter.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/PylonUtils.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+set(CONDITIONLIST HAVE_OPENNI_COND)
+add_libsource (${PROJECT_NAME} "src/OpenNIGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 set(CONDITIONLIST HAVE_RSB_COND HAVE_PROTOBUF_COND)
 #add_libsource (${PROJECT_NAME} "src/RSBImage.pb.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/RSBImageOutput.cpp" "${CONDITIONLIST}" LIB_SOURCES)

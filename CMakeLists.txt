@@ -96,6 +96,7 @@ set(ICL_XDEP_VIDEODEV2_ON OFF CACHE BOOL "Use videodev2 (v4l2) headers if availa
 set(ICL_XDEP_PYLON_ON ON CACHE BOOL "Use Pylon if available")
 set(ICL_XDEP_GENICAM_ON ON CACHE BOOL "Use GenICam if available")
 set(ICL_XDEP_OPENCL_ON ON CACHE BOOL "Use OpenCL if available")
+set(ICL_XDEP_OPENNI_ON ON CACHE BOOL "Use OpenNI if available")
 
 set(ICL_XDEP_RSB_ON ON CACHE BOOL "Use Robotics Service Bus if available")
 set(ICL_XDEP_PROTOBUF_ON ON CACHE BOOL "Use Google Protocol Buffers if available (necessary for RSB)")
@@ -123,6 +124,7 @@ if(UNIX)
   include(cmake_files/linux/find_OPENCL.cmake)
   include(cmake_files/linux/find_OPENGL.cmake)
   include(cmake_files/linux/find_GENICAM.cmake)
+  include(cmake_files/linux/find_OPENNI.cmake)
   include(cmake_files/linux/find_GTEST.cmake)
   include(cmake_files/linux/find_RSB_AND_PROTOBUF.cmake)
   
@@ -203,7 +205,7 @@ else()
     set(ICLAlgorithms_internal_dependencies ICLQuick ICLGeom)
 endif()
 
-set(ICLIO_external_dependencies LIBZ LIBJPEG LIBMESASR LIBDC XINE UNICAP IMAGEMAGICK XCF VIDEODEV VIDEODEV2 QT LIBFREENECT LIBPNG PYLON GENICAM RSB PROTOBUF)
+set(ICLIO_external_dependencies LIBZ LIBJPEG LIBMESASR LIBDC XINE UNICAP IMAGEMAGICK XCF VIDEODEV VIDEODEV2 QT LIBFREENECT LIBPNG PYLON GENICAM OPENNI RSB PROTOBUF)
 set(ICLQt_internal_dependencies ICLFilter ICLIO)
 set(ICLQt_external_dependencies QT OPENGL GLX)
 

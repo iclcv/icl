@@ -92,6 +92,10 @@
 #include <ICLIO/PylonGrabber.h>
 #endif
 
+#ifdef HAVE_OPENNI
+#include <ICLIO/OpenNIGrabber.h>
+#endif
+
 #include <ICLIO/DemoGrabber.h>
 #include <ICLUtils/Exception.h>
 
@@ -550,6 +554,23 @@ namespace icl{
       }
 #endif
 
+#ifdef HAVE_OPENNI
+      if(createListOnly){
+        supportedDevices.push_back("oni:camera ID");
+      }
+
+      if(l[i] == "oni"){
+        try{
+          m_poGrabber = new OpenNIGrabber(pmap["oni"].id);
+          m_sType = "oni";
+          break;
+        } catch (ICLException &e){
+          ADD_ERR("oni");
+          continue;
+        }
+      }
+#endif
+
 #if defined(HAVE_RSB) && defined(HAVE_PROTOBUF)
       if(createListOnly){
         supportedDevices.push_back("rsb:[comma sep. transport list=spread]\\:scope:Robotics Service Bus based image source");
@@ -828,6 +849,10 @@ namespace icl{
 
 #ifdef HAVE_PYLON
       add_devices<pylon::PylonGrabber>(deviceList,"pylon",useFilter,pmap);
+#endif
+
+#ifdef HAVE_OPENNI
+      add_devices<OpenNIGrabber>(deviceList,"oni",useFilter,pmap);
 #endif
 
 #if defined(HAVE_RSB) && defined(HAVE_PROTOBUF)
