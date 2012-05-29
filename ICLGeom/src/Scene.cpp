@@ -1064,6 +1064,8 @@ namespace icl{
     }
     
     GLContext::unset_current_glx_context();
+    p.buf.setTime(Time::now());
+    if(depthBuffer) depthBuffer->setTime(p.buf.getTime());
     return p.buf;
   }
 

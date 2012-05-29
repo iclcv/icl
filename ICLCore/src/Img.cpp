@@ -160,6 +160,7 @@ namespace icl {
   {
     FUNCTION_LOG("this: " << this);
     m_vecChannels = tSrc.m_vecChannels;
+    setTime(tSrc.getTime());
   }
 
   // }}}
