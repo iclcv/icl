@@ -110,7 +110,7 @@ namespace icl {
     
     return FixedMatrix<icl32f,4,3>(M(0,0),M(1,0),M(2,0),M(3,0),
                                    M(0,1),M(1,1),M(2,1),M(3,1),
-                                   M(0,3),M(1,3),M(2,3),M(3,3)).pinv(false); // somehow true (i.e. SVD) did not work
+                                   M(0,3),M(1,3),M(2,3),M(3,3)).pinv(true); // somehow true (i.e. SVD) did not work
   }
 
 

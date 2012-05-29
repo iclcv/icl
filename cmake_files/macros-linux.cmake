@@ -68,7 +68,10 @@ macro(icl_check_external_package ID INCFILES LIBFILES REL_LIB_DIR REL_INC_DIR VE
     set(FOUND_ALL TRUE)
     icl_check_single_path(${ID} "${P}" "root dir" FOUND_ALL)
     icl_check_single_path(${ID} "${I}" "include dir" FOUND_ALL)
-    icl_check_single_path(${ID} "${L}" "lib dir" FOUND_ALL)
+    
+    if(NOT "${LIBFILES}" STREQUAL "")
+      icl_check_single_path(${ID} "${L}" "lib dir" FOUND_ALL)
+    endif()
     
     foreach(lib ${LIBFILES})
       icl_check_lib(${ID} "${lib}" "${L}" FOUND_ALL) 

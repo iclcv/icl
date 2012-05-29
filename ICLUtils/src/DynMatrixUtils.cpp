@@ -42,6 +42,10 @@
   #include "mkl_cblas.h"
 #endif
 
+#ifdef HAVE_EIGEN2
+  #include <Eigen/SVD>
+#endif
+
 // check matrix dimensions: (m1.cols == m2.cols) and (m1.rows == m2.rows)
 //#define CHECK_DIM(m1,m2,RET)
 //  ICLASSERT_RETURN_VAL( (m1.cols() == m2.cols()) && (m1.rows() == m2.rows()), RET)
@@ -1380,6 +1384,28 @@ template<class T, typename func>
   }
 
   void svd_cpp_64f(const DynMatrix<double> &M, DynMatrix<double> &U, DynMatrix<double> &s, DynMatrix<double> &Vt) throw (ICLException){
+#ifdef HAVE_EIGEN2_OFF_ACTIVATE_LATER
+    
+    Eigen::Map<Eigen::MatrixXd> m(M.begin(),M.rows(),M.cols());
+    Eigen::SVD<Eigen::MatrixXd> svd(m);// eigen 3?: JacobiSVD Eigen::ComputeFullU | Eigen::ComputeFullV
+
+    Eigen::Map<Eigen::MatrixXd> ms(s.begin(),s.rows(),s.cols());
+    Eigen::Map<Eigen::MatrixXd> mU(U.begin(),U.rows(),U.cols());
+    Eigen::Map<Eigen::MatrixXd> mV(Vt.begin(),Vt.rows(),Vt.cols());
+    
+    ms = svd.singularValues();
+    mU = svd.matrixU();
+    mV = svd.matrixV();
+
+    for(int y=0;y<Vt.rows();++y){    
+      for(int x=y;x<Vt.cols();++x){
+        std::swap(Vt(x,y),Vt(y,x));
+      }
+    }
+
+    SHOW(Vt);
+#endif
+
     U.setBounds(M.cols(),M.rows());
     Vt.setBounds(M.cols(),M.cols());
     s.setBounds(1,M.cols());
@@ -1411,12 +1437,21 @@ template<class T, typename func>
     svd_free_mat(_U, iclMax(M.rows(),M.cols()));
     svd_free_mat(_V, M.cols());
     delete [] _s;
+
+    SHOW(Vt);
   } 
 
 #ifdef HAVE_IPP
 
 #ifdef HAVE_IPP_6X
   void svd_ipp_64f(const DynMatrix<icl64f> &A, DynMatrix<icl64f> &U, DynMatrix<icl64f> &s, DynMatrix<icl64f> &V) throw (ICLException){
+    
+    SHOW(A.cols());
+    SHOW(A.rows());
+
+#warning "using c++ fallback for SVD"
+    svd_cpp_64f(A,U,s,V); return;
+
     int niter = A.rows();
     while (true) {
       IppStatus status = ippsSVDSort_64f_D2(A.begin(), U.begin(), A.rows(), s.begin(), V.begin(), A.cols(), A.cols(), niter);

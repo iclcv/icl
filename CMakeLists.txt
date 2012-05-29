@@ -97,6 +97,7 @@ set(ICL_XDEP_PYLON_ON ON CACHE BOOL "Use Pylon if available")
 set(ICL_XDEP_GENICAM_ON ON CACHE BOOL "Use GenICam if available")
 set(ICL_XDEP_OPENCL_ON ON CACHE BOOL "Use OpenCL if available")
 set(ICL_XDEP_OPENNI_ON ON CACHE BOOL "Use OpenNI if available")
+set(ICL_XDEP_EIGEN2_ON ON CACHE BOOL "Use Eigen2 if available")
 
 set(ICL_XDEP_RSB_ON ON CACHE BOOL "Use Robotics Service Bus if available")
 set(ICL_XDEP_PROTOBUF_ON ON CACHE BOOL "Use Google Protocol Buffers if available (necessary for RSB)")
@@ -127,6 +128,7 @@ if(UNIX)
   include(cmake_files/linux/find_OPENNI.cmake)
   include(cmake_files/linux/find_GTEST.cmake)
   include(cmake_files/linux/find_RSB_AND_PROTOBUF.cmake)
+  include(cmake_files/linux/find_EIGEN2.cmake)
   
   if(HAVE_OPENGL_COND)
     include(cmake_files/linux/find_QT.cmake)
@@ -181,7 +183,7 @@ configure_file(${PROJECT_SOURCE_DIR}/include/ICLUtils/config.h.cmake ${PROJECT_S
 
 #set the internal and external deps of the ICL
 #if an entry is not available, it will be empty
-set(ICLUtils_external_dependencies IPP MKL OPENCL)
+set(ICLUtils_external_dependencies IPP MKL OPENCL EIGEN2)
 set(ICLCore_internal_dependencies ICLUtils)
 set(ICLCC_internal_dependencies ICLCore)
 set(ICLFilter_internal_dependencies ICLCC)
@@ -544,6 +546,7 @@ add_deb_dependency(libjpeg-dev HAVE_LIBJPEG_COND)
 add_deb_dependency(zlib1g-dev HAVE_LIBZ_COND)
 add_deb_dependency(libpng12-dev HAVE_LIBPNG_COND)
 add_deb_dependency(libv4l-dev HAVE_VIDEODEV_COND)
+add_deb_dependency(libeigen2-dev HAVE_EIGEN2_COND)
 
 set(CPACK_PACKAGE_CONTACT "nivision@techfak.uni-bielefeld.de")
 set(CPACK_PACKAGE_VENDOR "CITEC, Bielefeld University, Neuroinformatics Group")
