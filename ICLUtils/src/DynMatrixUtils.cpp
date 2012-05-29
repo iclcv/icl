@@ -1444,9 +1444,6 @@ template<class T, typename func>
 #ifdef HAVE_IPP_6X
   void svd_ipp_64f(const DynMatrix<icl64f> &A, DynMatrix<icl64f> &U, DynMatrix<icl64f> &s, DynMatrix<icl64f> &V) throw (ICLException){
     
-    SHOW(A.cols());
-    SHOW(A.rows());
-
 #warning "using c++ fallback for SVD"
     svd_cpp_64f(A,U,s,V); return;
 
