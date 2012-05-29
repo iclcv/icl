@@ -1397,13 +1397,12 @@ template<class T, typename func>
     mU = svd.matrixU();
     mV = svd.matrixV();
 
-    for(int y=0;y<Vt.rows();++y){    
-      for(int x=y;x<Vt.cols();++x){
-        std::swap(Vt(x,y),Vt(y,x));
-      }
-    }
+    // for(int y=0;y<Vt.rows();++y){    
+    //  for(int x=y;x<Vt.cols();++x){
+    //    std::swap(Vt(x,y),Vt(y,x));
+    //  }
+    //}
 
-    SHOW(Vt);
 #endif
 
     U.setBounds(M.cols(),M.rows());
@@ -1438,7 +1437,6 @@ template<class T, typename func>
     svd_free_mat(_V, M.cols());
     delete [] _s;
 
-    SHOW(Vt);
   } 
 
 #ifdef HAVE_IPP
