@@ -1888,7 +1888,6 @@ namespace icl{
 
 
   void ICLWidget::setBCI(int brightness, int contrast, int intensity){
-    DEBUG_LOG("set bci was called");
     m_data->bci[0] = brightness;
     m_data->bci[1] = contrast;
     m_data->bci[2] = intensity;
