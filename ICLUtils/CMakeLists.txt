@@ -98,6 +98,7 @@ add_example (${PROJECT_NAME} "text-table-demo" "${CONDITIONLIST}" ICLLibsToLinkA
 add_example (${PROJECT_NAME} "ransac-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "string-tokenizer-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "levenberg-marquardt-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "svd-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST HAVE_GTEST_COND)
 set(ICLLibsToLinkAgainst ICLUtils)

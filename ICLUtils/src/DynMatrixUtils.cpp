@@ -42,7 +42,7 @@
   #include "mkl_cblas.h"
 #endif
 
-#ifdef HAVE_EIGEN2
+#ifdef HAVE_EIGEN3
   #include <Eigen/SVD>
 #endif
 
@@ -1085,6 +1085,7 @@ template<class T, typename func>
 #undef CHECK_DIM_RC
 #undef CHECK_DIM_RR
 
+#ifndef HAVE_EIGEN3
   // C++ fallback for SVD
   static int svd_internal(int m,int n,int withu,int withv,double eps,double tol,
                           double **a,double *q,double **u,double **v){
@@ -1358,13 +1359,15 @@ template<class T, typename func>
     delete [] m;
   }
   
-  struct SVD_IdxEV{
-    double ev;
-    int idx;
+  namespace{
+    struct SVD_IdxEV{
+      double ev;
+      int idx;
     SVD_IdxEV(){}
-    SVD_IdxEV(double ev, int idx):ev(ev),idx(idx){}
-    bool operator<(const SVD_IdxEV &i) const { return ev > i.ev; }
-  };
+      SVD_IdxEV(double ev, int idx):ev(ev),idx(idx){}
+      bool operator<(const SVD_IdxEV &i) const { return ev > i.ev; }
+    };
+  }
   
   static void svd_copy_mat_sort(double **m, DynMatrix<double> &M, const std::vector<SVD_IdxEV> &idxlut){
     for(unsigned int j=0;j<M.cols();++j){
@@ -1376,39 +1379,58 @@ template<class T, typename func>
     }
   }
   
-  void svd_copy_vec_sort(double *m, DynMatrix<double> &M, const std::vector<SVD_IdxEV> &idxlut){
+  static void svd_copy_vec_sort(double *m, DynMatrix<double> &M, const std::vector<SVD_IdxEV> &idxlut){
     for(unsigned int j=0;j<M.rows();++j){
       int jidx = idxlut[j].idx;
       M[j] = m[jidx]; // or M[jidx] = m[j]??
     }
   }
+#else // use eigen
+  template<class T>
+  void svd_eigen(const DynMatrix<T> &M, DynMatrix<T> &U, DynMatrix<T> &s, DynMatrix<T> &Vt) throw (ICLException){
+    typedef Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> EigenMat;
 
-  void svd_cpp_64f(const DynMatrix<double> &M, DynMatrix<double> &U, DynMatrix<double> &s, DynMatrix<double> &Vt) throw (ICLException){
-#ifdef HAVE_EIGEN2_OFF_ACTIVATE_LATER
-    
-    Eigen::Map<Eigen::MatrixXd> m(M.begin(),M.rows(),M.cols());
-    Eigen::SVD<Eigen::MatrixXd> svd(m);// eigen 3?: JacobiSVD Eigen::ComputeFullU | Eigen::ComputeFullV
-
-    Eigen::Map<Eigen::MatrixXd> ms(s.begin(),s.rows(),s.cols());
-    Eigen::Map<Eigen::MatrixXd> mU(U.begin(),U.rows(),U.cols());
-    Eigen::Map<Eigen::MatrixXd> mV(Vt.begin(),Vt.rows(),Vt.cols());
-    
+    Eigen::Map<EigenMat> m(const_cast<T*>(M.begin()),M.rows(),M.cols());
+    Eigen::JacobiSVD<EigenMat> svd(m, Eigen::ComputeThinU | Eigen::ComputeThinV);
+    Eigen::Map<EigenMat> ms(s.begin(),s.rows(),s.cols());
+    Eigen::Map<EigenMat> mU(U.begin(),U.rows(),U.cols());
+    Eigen::Map<EigenMat> mV(Vt.begin(),Vt.rows(),Vt.cols());
     ms = svd.singularValues();
     mU = svd.matrixU();
     mV = svd.matrixV();
-
-    // for(int y=0;y<Vt.rows();++y){    
-    //  for(int x=y;x<Vt.cols();++x){
-    //    std::swap(Vt(x,y),Vt(y,x));
-    //  }
-    //}
-
+  }
 #endif
 
-    U.setBounds(M.cols(),M.rows());
-    Vt.setBounds(M.cols(),M.cols());
+  
+  template<class T>
+  void svd_dyn(const DynMatrix<T> &A, DynMatrix<T> &U, DynMatrix<T> &s, DynMatrix<T> &V) throw (ICLException){
+    (void)A; (void)U; (void)s; (void)V;
+  }
+  
+
+  template<>
+  void svd_dyn(const DynMatrix<icl64f> &M, DynMatrix<icl64f> &U, DynMatrix<icl64f> &s, DynMatrix<icl64f> &Vt) throw (ICLException){
+    U.setBounds(M.cols(), M.rows());
+    Vt.setBounds(M.cols(), M.cols());
     s.setBounds(1,M.cols());
-    
+
+#if defined HAVE_IPP
+    int niter = M.rows();                
+    while (true) {
+      IppStatus status = ippsSVDSort_64f_D2(M.begin(), U.begin(), M.rows(), s.begin(), Vt.begin(), M.cols(), M.cols(), niter);
+      switch (status) {
+        case ippStsNoErr: 
+          return;
+        case ippStsSVDCnvgErr: // indicates that the algorithm did not converge in niter steps.
+          niter *= 2;
+          break;
+        default:
+          throw ICLException(ippGetStatusString(status));
+      }
+    }
+#elif defined HAVE_EIGEN3
+    svd_eigen(M,U,s,Vt);
+#else
     double ** _M = svd_get_mat(M);
     double ** _U = svd_get_mat(iclMax(M.rows(),M.cols()),iclMax(M.rows(),M.cols()));
     double ** _V = svd_get_mat(M.cols(),M.cols());
@@ -1417,7 +1439,6 @@ template<class T, typename func>
     int r = svd_internal(M.rows(),M.cols(), 1, 1, 
                          10e-18,10e-18,
                          _M, _s, _U, _V);
-    
     if(r) {
       throw ICLException("error in svd (c++): no convergence for singular value '" + str(r) +"'");
     }
@@ -1436,34 +1457,28 @@ template<class T, typename func>
     svd_free_mat(_U, iclMax(M.rows(),M.cols()));
     svd_free_mat(_V, M.cols());
     delete [] _s;
-
-  } 
-
-#ifdef HAVE_IPP
-
-#ifdef HAVE_IPP_6X
-  void svd_ipp_64f(const DynMatrix<icl64f> &A, DynMatrix<icl64f> &U, DynMatrix<icl64f> &s, DynMatrix<icl64f> &V) throw (ICLException){
-    
-#warning "using c++ fallback for SVD"
-    svd_cpp_64f(A,U,s,V); return;
-
-    int niter = A.rows();
-    while (true) {
-      IppStatus status = ippsSVDSort_64f_D2(A.begin(), U.begin(), A.rows(), s.begin(), V.begin(), A.cols(), A.cols(), niter);
-      switch (status) {
-        case ippStsNoErr: // Indicates no error.
-          return;
-        case ippStsSVDCnvgErr: // indicates that the algorithm did not converge in niter steps.
-          niter *= 2;
-          //DEBUG_LOG("SVD: Increasing step to " << niter);
-          break;
-        default: 
-          throw ICLException(ippGetStatusString(status));
-      }
-    }
+#endif // HAVE_EIGEN3
   }
+
+  template<>
+  void svd_dyn(const DynMatrix<icl32f> &A, DynMatrix<icl32f> &U, DynMatrix<icl32f> &s, DynMatrix<icl32f> &V) throw (ICLException){
+    U.setBounds(A.cols(), A.rows());
+    V.setBounds(A.cols(), A.cols());
+    s.setBounds(1,A.cols());
+
+#if defined HAVE_EIGEN3 && !defined HAVE_IPP
+    svd_eigen(A,U,s,V);
+#else
+    DynMatrix<icl64f> A64f(A.cols(),A.rows()),U64f(U.cols(),U.rows()),s64f(1,s.rows()),V64f(V.cols(),V.rows());
+    std::copy(A.begin(),A.end(),A64f.begin());
+
+    svd_dyn(A64f,U64f,s64f,V64f);
+
+    std::copy(U64f.begin(),U64f.end(),U.begin());
+    std::copy(V64f.begin(),V64f.end(),V.begin());
+    std::copy(s64f.begin(),s64f.end(),s.begin());
 #endif
-#endif // HAVE_IPP
-
-
+  }
+  
+  
 }
