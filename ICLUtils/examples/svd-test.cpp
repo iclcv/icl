@@ -40,12 +40,15 @@ using namespace icl;
 int main(){
   typedef double real;
   
-  DynMatrix<real> a(100,10);
+  DynMatrix<real> a(4,2);
   std::fill(a.begin(),a.end(),URand(0,1));
 
   Time t=Time::now();
   DynMatrix<real> U,s,Vt;
   a.svd(U,s,Vt);
-  //  SHOW(U);
+
+  SHOW(U);
+  SHOW(s);
+  SHOW(Vt);
   SHOW(t.age().toMilliSecondsDouble());
 }

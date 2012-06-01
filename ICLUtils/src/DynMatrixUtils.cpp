@@ -42,6 +42,7 @@
   #include "mkl_cblas.h"
 #endif
 
+
 #ifdef HAVE_EIGEN3
   #include <Eigen/SVD>
 #endif
@@ -1390,13 +1391,25 @@ template<class T, typename func>
   void svd_eigen(const DynMatrix<T> &M, DynMatrix<T> &U, DynMatrix<T> &s, DynMatrix<T> &Vt) throw (ICLException){
     typedef Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> EigenMat;
 
+    int sdim = iclMin(M.rows(),M.cols());
+    
     Eigen::Map<EigenMat> m(const_cast<T*>(M.begin()),M.rows(),M.cols());
-    Eigen::JacobiSVD<EigenMat> svd(m, Eigen::ComputeThinU | Eigen::ComputeThinV);
-    Eigen::Map<EigenMat> ms(s.begin(),s.rows(),s.cols());
-    Eigen::Map<EigenMat> mU(U.begin(),U.rows(),U.cols());
+    Eigen::JacobiSVD<EigenMat> svd(m, Eigen::ComputeThinU | Eigen::ComputeFullV);
+    Eigen::Map<EigenMat> ms(s.begin(),sdim,s.cols());
+    std::fill(s.begin()+sdim, s.end(), 0);
     Eigen::Map<EigenMat> mV(Vt.begin(),Vt.rows(),Vt.cols());
+
     ms = svd.singularValues();
-    mU = svd.matrixU();
+    
+    if(M.cols() > M.rows()){
+      // wrap eigen matrix around the left  part of the ICL-Matrix
+      std::fill(U.begin(),U.end(),0);
+      Eigen::Map<EigenMat,0,Eigen::OuterStride<> > mU(U.begin(),U.rows(),sdim, Eigen::OuterStride<>(U.cols()));
+      mU = svd.matrixU();    
+    }else{
+      Eigen::Map<EigenMat> mU(U.begin(),U.rows(),U.cols());
+      mU = svd.matrixU();    
+    }
     mV = svd.matrixV();
   }
 #endif
