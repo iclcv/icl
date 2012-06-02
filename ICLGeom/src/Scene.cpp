@@ -735,12 +735,12 @@ namespace icl{
     m_lightingEnabled = flag;
   }
 
-  inline SceneObject *Scene::getObject(int index) throw (ICLException){
+  SceneObject *Scene::getObject(int index) throw (ICLException){
     if(index < 0 || index >= (int)m_objects.size()) throw ICLException("Scene::getObject: invalid index");
     return m_objects[index].get();
   }
 
-  inline const SceneObject *Scene::getObject(int index) const throw (ICLException){
+  const SceneObject *Scene::getObject(int index) const throw (ICLException){
     return const_cast<Scene*>(this)->getObject(index);
   }
   
