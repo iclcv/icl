@@ -34,6 +34,7 @@
 
 #include <ICLCore/Img.h>
 #include <ICLQt/GLImg.h>
+#include <ICLQt/GLContext.h>
 #include <ICLCC/CCFunctions.h>
 
 #ifdef ICL_SYSTEM_APPLE
@@ -306,6 +307,24 @@ namespace icl{
     int maxCellSize;
     int bci[3];
     
+    struct TextureInfo{
+      inline TextureInfo():threadID(0){}
+      inline TextureInfo(unsigned threadID, const GLContext &ctx):
+        threadID(threadID),ctx(ctx){}
+      
+      unsigned int threadID;
+      GLContext ctx;
+      
+      static inline TextureInfo getCurrentTextureInfo(){
+        return TextureInfo(pthread_self(), GLContext::currentContext());
+      }
+      inline bool operator==(const TextureInfo &other) const{
+        return threadID == other.threadID && ctx == other.ctx;
+      }
+    };
+      
+    TextureInfo textureInfo;
+    
     std::vector<GLuint> textures;
     Array2D<TextureElementPtr> data;
     mutable ImgBase *extractedImageBuffer;
@@ -338,9 +357,13 @@ namespace icl{
       if(textures.size()){
 #ifdef HAVE_QT
         if(QCoreApplication::instance()){
-          freeTextures(textures);
+          if(textureInfo == TextureInfo::getCurrentTextureInfo()){
+            glDeleteTextures(textures.size(),textures.data());
+          }else{
+            freeTextures(textures);
+          }
         }else{
-          glDeleteTextures(textures.size(),textures.data());
+            glDeleteTextures(textures.size(),textures.data());
         }
         textures.clear();
 #else
@@ -605,6 +628,8 @@ namespace icl{
       }
       textures.resize(data.getDim());
       glGenTextures(textures.size(), textures.data());
+      
+      textureInfo = TextureInfo::getCurrentTextureInfo();
       
       textureBufferMutex.lock();
       

@@ -200,6 +200,7 @@ namespace icl{
     }else{
       buf = Img8u(Size(image.width(),image.height()),4);
     }
+    
     interleavedToPlanar(image.bits(),&buf);
     this->image(r,&buf,mode,sm);
   }
@@ -211,6 +212,7 @@ namespace icl{
     
     ICLASSERT_RETURN(image);
     glColor4f(1,1,1,1);
+    Time t = Time::now();
     GLImg gli(image,sm);
     gli.setBCI(m_bci[0],m_bci[1],m_bci[2]);
     gli.draw2D(computeRect(r,image->getSize(),mode), Size(m_widget->width(),m_widget->height()));

@@ -1014,10 +1014,11 @@ namespace icl{
     initializeCustomPaintEvent(e);
 
     std::vector<DrawCommand*> &q = *m_queues[1];
-
+    
     for(std::vector<DrawCommand*>::iterator it = q.begin();it!= q.end();++it){
       (*it)->exec(e,m_poState);
     }
+    
     finishCustomPaintEvent(e);
   }
 

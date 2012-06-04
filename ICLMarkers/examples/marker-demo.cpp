@@ -69,6 +69,11 @@ void init(){
               "[@maxsize=100x2@handle=vis@label=visualization]")
           << "prop(fid)"
           << (GUI("hbox") 
+              << "fps[@handle=fps]"
+              << "label(no markers found yet)[@label=detected markers@handle=count]"
+             )
+          << "checkbox(show IDs,checked)[@out=showIDs]"
+          << (GUI("hbox") 
               << "togglebutton(running,pause)[@out=pause]"
               << "camcfg()"
               )
@@ -88,7 +93,7 @@ void init(){
   }
   
 
-  obj = new Obj;
+
   if(pa("-c")){
     scene.addCamera(Camera(*pa("-c")));
   }else{
@@ -96,34 +101,36 @@ void init(){
     scene.getCamera(0).setResolution(pa("-size"));
   }
 
-  scene.addObject(obj);
-  // scene.setDrawCoordinateFrameEnabled(true);
-  fid->setCamera(scene.getCamera(0));
-  gui["draw"].install(scene.getMouseHandler(0));
-  gui["draw"].link(scene.getGLCallback(0));
+  if(pa("-3D").as<bool>() || pa("-c").as<bool>()){
+    obj = new Obj;
+    scene.addObject(obj);
+    fid->setCamera(scene.getCamera(0));
+    gui["draw"].install(scene.getMouseHandler(0));
+    gui["draw"].link(scene.getGLCallback(0));
+  }
 
 }
 
-
-
 // working loop
 void run(){
+  static bool enable3D = pa("-3D").as<bool>() || pa("-c").as<bool>();
   while(gui["pause"]) Thread::msleep(100);
   const ImgBase *image = grabber.grab();
-  //SHOW(*image);
-  //save(*image->asImg<icl8u>(),"image.ppm");
-  
+ 
   const std::vector<Fiducial> &fids = fid->detect(image);
-  
-  //scene.getCamera(0).setFocalLength(gui["f"]);
-  //fid->setCamera(scene.getCamera(0));
 
   DrawHandle3D draw = gui["draw"];
   draw = fid->getIntermediateImage(gui["vis"]);
 
   draw->linewidth(2);
+  
+  gui["count"] = fids.size();
+
+  const bool showIDs = gui["showIDs"];
+  
   for(unsigned int i=0;i<fids.size();++i){
-    if(fids[i].getID() == 0){
+    
+    if(enable3D && fids[i].getID() == 0){
       fids[i].getPose3D();
       fids[i].getPose3D();
       obj->setTransformation(fids[i].getPose3D());
@@ -131,20 +138,24 @@ void run(){
     
     draw->color(255,0,0,255);
     draw->linestrip(fids[i].getCorners2D());
+
+    if(showIDs){
     draw->color(0,100,255,255);
-    draw->text(fids[i].getName(),fids[i].getCenter2D().x, fids[i].getCenter2D().y,9);
+      draw->text(fids[i].getName(),fids[i].getCenter2D().x, fids[i].getCenter2D().y,9);
+    }
     draw->color(0,255,0,255);
     float a = fids[i].getRotation2D();
     draw->line(fids[i].getCenter2D(), fids[i].getCenter2D() + Point32f( cos(a), sin(a))*100 );
   }
 
   draw.render();
+  gui["fps"].render();
 }
 
 // default main function
 int main(int n, char **ppc){
   return ICLApp(n,ppc,"[m]-input|-i(2) -camera|-c(camerafile) -size|-s(size=VGA) "
-                "-marker-type|-m(type=art,whichToLoad=art/*.png,size=50x50)",init,run).exec();
+                "-marker-type|-m(type=bch,whichToLoad=[0-4095],size=30x30) -3D",init,run).exec();
 }
 
 
