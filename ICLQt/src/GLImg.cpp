@@ -914,7 +914,7 @@ namespace icl{
 
 
 #define PART(_x,_y)                                             \
-    glTexCoord2f((_x)/nxf, (_y)/nyf);                           \
+    glTexCoord2f((_x)/nxf, (_y)/nyf);                       \
     if(haveNormals) glNormal3f(NX(_x,_y),NY(_x,_y), NZ(_x,_y)); \
     glVertex3f(X(_x,_y), Y(_x,_y), Z(_x,_y));    
 

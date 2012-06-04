@@ -47,8 +47,9 @@ int main(int n, char **ppc){
       ("-size","define output file size")
       ("-rotate","rotate angle by given angle (clock-wise in deg)")
       ("-scale","define size scaling factor")
+      ("-flip","flips the image (allowed values are horz, vert, or both")
       ("-scalemode", "defines scalemode to use (one of NN, LIN, or RA)");
-  painit(n,ppc,"-input|-i(filename) -output|-o(filename) -depth|-d(depth) -format|-f(format) -size|-s(Size) -scale(factor) -scalemode(scalemode) -rotate(angle)",true);
+  painit(n,ppc,"-input|-i(filename) -output|-o(filename) -depth|-d(depth) -format|-f(format) -size|-s(Size) -scale(factor) -scalemode(scalemode) -rotate(angle) -flip(axis)",true);
   
   std::string inFileName,outFileName;
 
@@ -127,6 +128,18 @@ int main(int n, char **ppc){
   ImgBase *dst = 0;
   conv.apply(image,&dst);
   
+  if(pa("-flip")){
+    std::string axis = pa("-flip");
+    icl::axis a = axisHorz;
+    if(axis == "horz"){}
+    else if(axis == "vert") a = axisVert;
+    else if(axis == "both") a = axisBoth;
+    else {
+      ERROR_LOG("invalied flip axis (allowed is 'horz', 'vert' or 'both', but got " << axis << ")" );
+      return -1;
+    }
+    dst->mirror(a);
+  }       
   if(pa("-rotate")){
     float angle = pa("-rotate");
     static RotateOp rot(angle,sm);
