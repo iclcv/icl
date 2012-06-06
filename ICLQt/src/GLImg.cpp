@@ -563,6 +563,10 @@ namespace icl{
                  (imageDepth == depth16s) ? depth16s : 
                  depth32f);
       ensureCompatible(&extractedImageBuffer, d, imageSize, imageChannels);
+      if(extractedImageBuffer->getChannels() == 3) extractedImageBuffer->setFormat(formatRGB);
+      else if(extractedImageBuffer->getChannels() == 1) extractedImageBuffer->setFormat(formatGray);
+      else extractedImageBuffer->setFormat(formatMatrix);
+
       if(imageDepth == depth8u) return extractImage<icl8u>(*extractedImageBuffer->as8u());
       else if(imageDepth == depth16s) return extractImage<icl16s>(*extractedImageBuffer->as16s());
       return extractImage<icl32f>(*extractedImageBuffer->as32f());
