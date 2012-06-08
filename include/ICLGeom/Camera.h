@@ -47,52 +47,89 @@
 
 // the icl namespace
 namespace icl {
-  /// Sophisticated Camera class
+  /// Camera class
   /** This camera class implements a model of a central projection camera with
       finite focal length. It is very general and can be applied to most cameras,
       e.g. CCD cameras. Because it assumes a linear projection, any distortion in
       the camera image should be corrected before using it in this class.
 
-      The projection which describes the camera can be characterized by the
-      following parameters.
-      - External Parameters (position of camera in world space)
-        - <b>pos</b> the camera position vector.
-        - <b>norm</b> the image plane's normal vector (sometimes called the view-vector)
+      <h2> The Camera Model</h2>
+
+      The camera model was explicitly designed close to the camera model that is used in
+      OpenGL. It is described by a set of extrinsic and intrinsic parameters:
+
+      - Extrinsic camera parameters (position and orientation of the camera in the world)
+        - <b>p</b> the camera position vector.
+        - <b>n</b> the image plane's normal vector (sometimes called the view-vector)
           the norm vector is directed from the camera center to the scene.
-        - <b>up</b> which defines the "roll"-angle of the camera. It points into
+        - <b>u</b> which defines the "roll"-angle of the camera. It points into
           the positive y-direction of the image-plane (which means that it will
           normally, despite its name, point from the center of the camera towards
           its bottom side) and is perpendicular to the norm vector.
-        - <b>horiz</b> the horizontal vector pointing to the positive x-direction of the
+        - <b>h</b> the horizontal vector pointing to the positive x-direction of the
           image plane is computed based on norm and up vector. It forms a right-handed
           coordinate system together with them.
-      - Internal Parameters
-        - <b>focal length</b> is the distance between the lense and the image plane
+      - Intrinsic Parameters
+        - <b>f</b> The focal length is the distance between the lense and the image plane
           of the camera
-        - <b>mx, my</b> sampling resolution on the camera image. In case of CCD
+        - <b>m<sub>x</sub>, m<sub>y</sub></b> sampling resolution on the camera image. In case of CCD
           cameras this is the resolution of the sensor chip in [pixel/mm]
-        - <b>px, py</b> the offset between the center of the image plane and the
+        - <b>p<sub>x</sub>, p<sub>y</sub></b> the offset between the center of the image plane and the
           principal point of the camera, in [pixel]
-        - <b>skew</b> this parameter is zero, when the x- and y-axis of the
+        - <b>s</b> The skew parameter is zero, when the x- and y-axis of the
           image plane are perpendicular to each other. This should normally be
           the case.
 
-      These parameters can also be estimated by using a number of point references
-      between points with known position in the world coord. sys. and their
-      corresponding projections on the image plane.
+      The Intrinsic camera parameters are used to create the camera's projection matrix <b>P</b>
 
-      Additionally to calculating the projection of points in the world coord. sys.
-      onto the image plane and the back-projection of image points onto view rays
-      in the world coord. sys., the camera class can also be used to render scenes
-      on the screen. In order to render it on the screen, the size of the camera
-      chip and the distance to the far clipping plane must be specified, so that
-      the image can be clipped. Also, the position and size of the viewport (the rectangle on the screen in which the
-      camera image should be rendered) in x, y and z coordinates must be specified.
-      - Rendering Parameters
-        - <b>chip size</b> in [pixel] used for transformation to clip coordinates
-        - <b>zFar</b> in [mm] position of the far clipping plane
-        - <b>viewport size</b> in [pixel]
-        - <b>zMin and zMax</b> for the viewport
+      \f[
+      P = \left(\begin{array}{cccc} 
+         fm_x & s     & p_x & 0 \\
+         0    & f m_y & p_y & 0 \\
+         0    & 0     & 0 &   0 \\
+         0    & 0     & 1 &   0
+      \end{array}\right)
+      \f]
+
+      Please note, that OpenGL's definition of the projection matrix looks different. 
+      OpenGL uses a flipped y-axis, and it's definition of projection also contains 
+      entries in the 3rd row. In our case, z values are not needed after the projection.
+
+      The cameras coordinate system transformation matrix <b>C</b> is defined by:
+
+      \f[
+      C = \left(\begin{array}{cc} 
+         h^T & -h^T p \\
+         u^T & -u^T p \\
+         n^T & -n^T p \\
+         (0,0,0) & 1  \\
+      \end{array}\right)
+      \f]
+
+      Together, <b>P</b> and <b>C</b> are used to describe the projection model of the camera.
+      A 3D Point <b>p<sub>w</sub></b> in the world is projected to the camera screen <b>p<sub>s</sub></b> by
+      
+      \f[
+      p_s' = homogenize(P C p_w)
+      \f]
+
+      <b>p<sub>s</sub></b> contains just the first two components of <b>p'<sub>s</sub></b>. 
+      The <em>homogenized</em> operation devided a homogeneous 3D vector by it's 4th component.
+
+      In literature, sometimes are simgle 3x4 camera matrix is used. We call this matrix the
+      camera's <em><b>Q</b>-matrix</em>. The matrix contains all information that is neccessary for
+      creating a camera. Usually, it can be decomposed into <b>P</b> and <b>C</b> using
+      QR-decomposition. The icl::Camera class provides function to directly obtain a camera's 
+      <b>Q</b>-matrix. <b>Q</b> is defined by the first two and the last row of the matrix product <b>P C</b>. 
+
+      
+      <h2>Camera Calibration</h2>
+
+      Valid camera instances can either be set up manually, or they can be created 
+      by camera calibration. ICL uses a quite simple yet very powerful calibration technique,
+      which needs a set of at least 8 non-coplanar world points and their corresponding image
+      coordinates. ICL features an easy to use camera calibration tool, which is discribed on
+      ICL's <a href="www.iclcv.org">website</a>.
   */
 
   class Camera {

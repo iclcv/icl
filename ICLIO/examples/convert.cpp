@@ -93,7 +93,7 @@ int main(int n, char **ppc){
   //ImgParams(const Size &size, int channels, format fmt, const Rect& roi = Rect::null)
   
   format fmt = pa("-format") ? parse<format>(pa("-format")) : image->getFormat();
-  int channels = image->getChannels();
+  int channels = pa("-format") ? getChannelsOfFormat(fmt) : image->getChannels();
   Size size = pa("-size") ? parse<Size>(pa("-size")) : image->getSize();
   if(pa("-scale")){
     Size32f s32(size.width,size.height);

@@ -51,6 +51,10 @@ std::string app;
 void cb_func(const ImgBase *image, const std::string &text){
   gui["cb_image"] = image;
   gui["cb_text"] = text;
+  static bool verbose = pa("-v");
+  if(verbose){
+    std::cout << text << std::endl;
+  }
 }
 
 void init(){
@@ -116,6 +120,8 @@ void run2(){
 }
 
 int main(int n, char **v){
+  paex("-what","possible values are 'send', 'receive' and 'both'")
+  ("-v","verbose mode, prints received strings to std::out");
   app = *v;
-  return ICLApp(n,v,"-what(what-to-do=both) -input|-i(2) -scope|-s(scope=spread:/icl/foo)",init,run,run2).exec();
+  return ICLApp(n,v,"-what(what-to-do=both) -input|-i(2) -scope|-s(scope=spread:/icl/foo) -v",init,run,run2).exec();
 }

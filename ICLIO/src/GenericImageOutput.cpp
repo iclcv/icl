@@ -82,6 +82,12 @@ namespace icl{
     std::string d = description;
     if(d.substr(0,type.length()+1) == type+"=") d = d.substr(type.length()+1);
 
+    if(type == "null"){
+      struct NullOutput : public ImageOutput{
+        virtual void send(const ImgBase *) {}
+      };
+      o = new NullOutput;
+    }
     
 #ifdef HAVE_XCF
     if(type == "xcfp"){

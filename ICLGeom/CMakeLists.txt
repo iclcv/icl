@@ -88,6 +88,7 @@ add_example (${PROJECT_NAME} "rotate-image-3D" "${CONDITIONLIST}" ICLLibsToLinkA
 add_example (${PROJECT_NAME} "animated-grid" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "kinect-pointcloud-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "rgbd-mapping-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "scene-renderer" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 if(NOT APPLE)
 add_example (${PROJECT_NAME} "scene-graph-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 endif()
