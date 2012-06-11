@@ -304,29 +304,31 @@ namespace icl{
       psSupported = filter_unstable_params(psSupported);
     }
     f.setPrefix("config.properties.");
-    for(unsigned int i=0;i<psSupported.size();++i){
-      std::string &prop = psSupported[i];
-      std::string type = getType(prop);
-      
-      if(type == "info") continue;
-      if(type == "command") continue;
-
-      if(type == "range" || type == "value-list"){
-        try{
-          setProperty(prop,str((icl32f)f[prop]));
-        }catch(...){
-          std::cout << "Grabber::loadProperties: property '"  << prop << "' was not set" << std::endl;
-          std::cout << "(it was either not not found in the given property file or it or it's value is not"
-                    << " supported by the current grabber type)" << std::endl;
-        }
-      }else if(type == "menu"){
-        try{
-          std::string val = f[prop];
-          setProperty(prop,f[prop]); 
-        }catch(...){
-          std::cout << "Grabber::loadProperties: property '"  << prop << "' was not set" << std::endl;
-          std::cout << "(it was either not not found in the given property file or it or it's value is not"
-                    << " supported by the current grabber type)" << std::endl;
+    for(int x=0;x<2;++x){ // do it twice for beeing shure all properties set correctly
+      for(unsigned int i=0;i<psSupported.size();++i){
+        std::string &prop = psSupported[i];
+        std::string type = getType(prop);
+        
+        if(type == "info") continue;
+        if(type == "command") continue;
+        
+        if(type == "range" || type == "value-list"){
+          try{
+            setProperty(prop,str((icl32f)f[prop]));
+          }catch(...){
+            std::cout << "Grabber::loadProperties: property '"  << prop << "' was not set" << std::endl;
+            std::cout << "(it was either not not found in the given property file or it or it's value is not"
+                      << " supported by the current grabber type)" << std::endl;
+          }
+        }else if(type == "menu"){
+          try{
+            std::string val = f[prop];
+            setProperty(prop,f[prop]); 
+          }catch(...){
+            std::cout << "Grabber::loadProperties: property '"  << prop << "' was not set" << std::endl;
+            std::cout << "(it was either not not found in the given property file or it or it's value is not"
+                      << " supported by the current grabber type)" << std::endl;
+          }
         }
       }
     }
