@@ -467,7 +467,7 @@ namespace icl{
       }
       decoder.decode(fourcc,p, currentSize, &image);
       image->setTime(t);
-     }
+    }
 
      const ImgBase *acquireImage(){
        Mutex::Locker lock(mutex);

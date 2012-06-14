@@ -41,7 +41,6 @@
 #ifdef ICL_SYSTEM_LINUX
 #ifdef HAVE_VIDEODEV
 #include <ICLIO/PWCGrabber.h>
-#include <ICLIO/MyrmexGrabber.h>
 #endif
 #ifdef HAVE_VIDEODEV
 #include <ICLIO/V4L2Grabber.h>
@@ -148,7 +147,7 @@ namespace icl{
 
     static const char *plugins[] = { "pwc","dc","dc800","unicap","file","demo","create",
                                      "xcfp","xcfs","xcfm","mv","sr","xine","cvvideo", 
-                                     "cvcam","sm","myr","kinectd","kinectc","kinecti",
+                                     "cvcam","sm","kinectd","kinectc","kinecti",
                                      "pylon","rsb"};
     static const int NUM_PLUGINS=sizeof(plugins)/sizeof(char*);
 
@@ -238,7 +237,6 @@ namespace icl{
 #ifdef HAVE_VIDEODEV
       if(createListOnly){
         supportedDevices.push_back("pwc:/dev/videoX index:Phillip 640 Webcam source");
-        supportedDevices.push_back("myr:/dev/videoX index:Myrmex tactile device source");
         supportedDevices.push_back("v4l2:/dev/videoX index or device-file:V4l2 based camera source");
       }
       if(l[i] == "pwc"){
@@ -254,17 +252,6 @@ namespace icl{
         }
       }
 
-      if(l[i] == "myr"){
-        try{
-          MyrmexGrabber *myr = new MyrmexGrabber(parse<int>(pmap["myr"].id));
-          m_poGrabber = myr;
-          m_sType = "myr";
-          break;
-        }catch(ICLException &ex){
-          ADD_ERR("myr [error message:" + str(ex.what()) + "]");
-          continue;
-        }
-      }
       if(l[i] == "v4l2"){
         try{
           V4L2Grabber *g = new V4L2Grabber(pmap["v4l2"].id);
@@ -816,7 +803,6 @@ namespace icl{
       
 #ifdef HAVE_VIDEODEV
       add_devices<PWCGrabber>(deviceList,"pwc",useFilter,pmap);
-      add_devices<MyrmexGrabber>(deviceList,"myr",useFilter,pmap);
       add_devices<V4L2Grabber>(deviceList,"v4l2",useFilter,pmap);
 #endif
       
