@@ -82,7 +82,7 @@ namespace icl{
 
   /// just copied form libfreenect.hpp
   class FreenectTiltStateICL {
-    friend class FreenectDevice;
+    friend struct FreenectDevice;
     FreenectTiltStateICL(freenect_raw_tilt_state *_state):
       m_code(_state->tilt_status), m_state(_state)
     {}

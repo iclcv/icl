@@ -121,7 +121,7 @@ namespace icl{
     }
 
     /// also provides the map's not-const index operator
-    std::map<std::string,Any>::operator[];
+    using std::map<std::string,Any>::operator[];
   };
 
   

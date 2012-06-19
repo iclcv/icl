@@ -59,13 +59,6 @@ namespace icl{
 
     // }}}
 
-    inline float eucl_dist(const float *a,const  float *b,unsigned  int dim){
-      // {{{ open
-
-      return sqrt(square_vec(a,b,dim));
-    }
-
-    // }}}
     /// scalar product of row r of the w x ? matrix M with w-dim vector a
     inline float mult_mat_row(const float *M, unsigned int w, int r,const  float *a){
       // {{{ open

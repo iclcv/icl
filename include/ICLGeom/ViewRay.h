@@ -41,7 +41,7 @@
 
 namespace icl{
   /** \cond */
-  class PlaneEquation;
+  struct PlaneEquation;
   /** \endcond */
 
   /// This is a view-ray's line equation in parameter form

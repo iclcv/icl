@@ -310,16 +310,16 @@ namespace icl{
     inline Size getROISize() const { return m_roi.getSize(); }
 
     /// returns the channel ROI width
-    inline const Rect &getROIWidth() const { return m_roi.width; }
+    inline int getROIWidth() const { return m_roi.width; }
 
     /// returns the channel ROI height
-    inline const Rect &getROIHeight() const { return m_roi.height; }
+    inline int getROIHeight() const { return m_roi.height; }
 
     /// returns the channel ROI X-Offset
-    inline const Rect &getROIXOffset() const { return m_roi.x; }
+    inline int getROIXOffset() const { return m_roi.x; }
 
     /// returns the channel ROI Y-Offset
-    inline const Rect &getROIYOffset() const { return m_roi.y; }
+    inline int getROIYOffset() const { return m_roi.y; }
 
     /// Sets a new ROI to this image channel (this does not affect the underlying images ROI)
     /** @param newROI new channel roi */

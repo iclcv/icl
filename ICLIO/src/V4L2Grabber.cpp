@@ -63,7 +63,8 @@ namespace icl{
     return std::string((char*)tmp);
   }
 
-  struct V4L2GrabberImpl::Impl : public Thread{
+  class V4L2GrabberImpl::Impl : public Thread{
+    public:
     struct V4L2Buffer{
       void *data;
       size_t length;

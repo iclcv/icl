@@ -42,7 +42,7 @@
 
 namespace icl{
   /** \cond */
-  class ExecThread;
+  struct ExecThread;
   /** \endcond */
   
   

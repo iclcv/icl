@@ -251,6 +251,9 @@ namespace icl{
     
     public:
     
+    /// virtual destructor 
+    ~Configurable() {}
+
     /// Copy constructor
     /** the configurable ID is not copied. Use setConfigurableID afterwards */
     Configurable(const Configurable &other);

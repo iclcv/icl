@@ -99,15 +99,6 @@ namespace icl{
       static bool cmp_less_abs(const IdxPoint32f &a, const IdxPoint32f &b){
         return fabs(a.distToLine) < fabs(b.distToLine);
       }
-      friend std::ostream &operator<<(std::ostream &s, const IdxPoint32f &p){
-        std::string valid=p.idx>=(int)p.cogs->size() ? "invalid!" : "ok";
-        if(valid == "ok"){
-          return std::cout << "IdxPoint32f(index=" << p.idx << ", valid= " << valid << ", Point=" << p.p() << ")";
-        }else{
-          return std::cout << "IdxPoint32f(index=" << p.idx << ", valid= " << valid << ", Point=" << "xxx" << ")";
-        }
-      }
-
     };
     struct DistToLineCompare{
       const StraightLine2D &line;
@@ -242,33 +233,7 @@ namespace icl{
     }
   };
   
-  IdxPoint32f find_closest_point_to_line(const StraightLine2D &line, const std::vector<IdxPoint32f> &ps){
-    if(!ps.size()) throw ICLException("find_closest_point_to_line: given point set size was 0");
-    return *min_element(ps.begin(),ps.end(),DistToLineCompare(line));
-  }
-  
-  std::vector<IdxPoint32f> find_n_closest_points_to_point(int n, std::vector<IdxPoint32f> list, const IdxPoint32f &X){
-    //if((int)list.size() < n) throw ICLException(str("error in grid fitting process: in find_n_closest_points_to_point\n")+
-    //                                            str("searching for at least ")+str(n)+str(" points in a list of size ") + 
-    //                                            str(list.size()));
-    // we dont need this, since at the end, only ny points are left ..
-    if(!list.size()) throw ICLException("find_n_closest_points_to_point: list size was null");
-    std::sort(list.begin(),list.end(),DistToPointCompare(X));
-    list.erase(list.begin());
-    if((int)list.size()>n) list.resize(n);
-    return list;
-  }
 
-  int find_index_of_point_with_closest_slope(const StraightLine2D &line, const IdxPoint32f &X, const std::vector<IdxPoint32f> &ys){
-    std::vector<float> ds(ys.size());
-    for(unsigned int i=0;i<ys.size();++i){
-      StraightLine2D ly(StraightLine2D::Pos(X.p().x, X.p().y),
-                        StraightLine2D::Pos(ys[i].p().x, ys[i].p().y)-
-                        StraightLine2D::Pos(X.p().x, X.p().y));
-      ds[i] = fabs(ly.v.element_wise_inner_product(line.v));
-    }
-    return (int)(max_element(ds.begin(),ds.end())-ds.begin());
-  }
 
   struct SortPointsByDistanceToPerpendicularLine{
     StraightLine2D perpLine;
@@ -286,93 +251,6 @@ namespace icl{
     return (fabs(a.x-b.x) + fabs(a.y-b.y)) < 0.01;
   }
 
-  StraightLine2D fix_line_direction_and_sort_first_points(StraightLine2D line, std::vector<IdxPoint32f> &points, 
-                                                          const Point32f &s1,const Point32f &s2){
-    std::sort(points.begin(),points.end(),SortPointsByDistanceToPerpendicularLine(line));
-    Point32f top;
-    if(is_almost(points.front().p(),s1) || is_almost(points.back().p(),s1)){
-      top = s1;
-    }else{
-      top = s2;
-    }
-    if(is_almost(top,points.front().p())){
-      line.v = -line.v;
-      std::reverse(points.begin(),points.end());
-    }
-    return line;
-  }
-
-  std::vector<std::vector<IdxPoint32f> > match_grid(const std::vector<Point32f> &cogs, int s1, int s2, int nx, int ny){
-    std::vector<std::vector<IdxPoint32f> > columns(cogs.size() / ny);
-    
-    
-    StraightLine2D line(StraightLine2D::Pos(cogs[s1].x,cogs[s1].y),
-                        StraightLine2D::Pos(cogs[s2].x,cogs[s2].y)-
-                        StraightLine2D::Pos(cogs[s1].x,cogs[s1].y));
-    
-    std::vector<IdxPoint32f> cogsi(cogs.size());
-    for(unsigned int i=0;i<cogs.size();++i){
-      cogsi[i] = IdxPoint32f(&cogs,i,&line);
-    }
-    std::sort(cogsi.begin(),cogsi.end(),IdxPoint32f::cmp_less_abs);
-    std::copy(cogsi.begin(),cogsi.begin()+ny, back_inserter(columns[nx]));
-    cogsi.erase(cogsi.begin(),cogsi.begin()+ny);
-
-    //std::pair<int,int> ds = count_distance_signs(cogsi);
-    //if(ds.first < ds.second){
-    //  line.v = -line.v;
-    //}
-    
-    line = fix_line_direction_and_sort_first_points(line, columns[nx], cogs[s1], cogs[s2]);
-    
-    /// now sort points to the left and to the right
-    std::vector<IdxPoint32f> left,right;
-    for(unsigned int i=0;i<cogsi.size();++i){
-      (cogsi[i].distToLine < 0 ? left : right).push_back(cogsi[i]); 
-    }
-    if((int)left.size() != nx*ny) throw ICLException("Left and Right size was wrong");
-    
-    StraightLine2D lastLine = line;
-
-    /// sort left points
-    for(int i=0;i<nx;++i){
-      // hint -> xxx
-      IdxPoint32f X = find_closest_point_to_line(lastLine,left);
-      std::vector<IdxPoint32f> Y = find_n_closest_points_to_point(3,left,X); // X will be removed automatically
-      int yi = find_index_of_point_with_closest_slope(lastLine, X, Y);
-      StraightLine2D lastLineSave = lastLine;
-      lastLine = StraightLine2D(StraightLine2D::Pos(X.p().x,X.p().y),
-                                StraightLine2D::Pos(Y[yi].p().x,Y[yi].p().y)-
-                                StraightLine2D::Pos(X.p().x,X.p().y));
-      
-      std::sort(left.begin(),left.end(),DistToLineCompare(lastLine));
-      std::copy(left.begin(),left.begin()+ny, std::back_inserter(columns[nx-1-i]));
-      left.erase(left.begin(),left.begin()+ny);
-      std::sort(columns[nx-1-i].begin(),columns[nx-1-i].end(),SortPointsByDistanceToPerpendicularLine(lastLineSave));
-    }
-      
-    lastLine = line;
-    // sort right points
-    for(int i=0;i<nx-1;++i){
-      // hint -> xxx
-      IdxPoint32f X = find_closest_point_to_line(lastLine,right);
-      std::vector<IdxPoint32f> Y = find_n_closest_points_to_point(3
-,right,X); 
-      int yi = find_index_of_point_with_closest_slope(lastLine, X, Y);
-      StraightLine2D lastLineSave = lastLine;
-      lastLine = StraightLine2D(StraightLine2D::Pos(X.p().x,X.p().y),
-                                StraightLine2D::Pos(Y[yi].p().x,Y[yi].p().y)-
-                                StraightLine2D::Pos(X.p().x,X.p().y));
-      
-      std::sort(right.begin(),right.end(),DistToLineCompare(lastLine));
-      std::copy(right.begin(),right.begin()+ny, std::back_inserter(columns[nx+1+i]));
-      right.erase(right.begin(),right.begin()+ny);
-      std::sort(columns[nx+1+i].begin(),columns[nx+1+i].end(),SortPointsByDistanceToPerpendicularLine(lastLineSave));
-    }
-    return columns;
-  }
-      
-      
   // xxx
   // find the next ny points that are 
   // - closest to the lastLine 

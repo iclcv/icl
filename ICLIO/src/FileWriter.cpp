@@ -57,7 +57,8 @@ namespace icl{
 
   map<string,FileWriterPlugin*> FileWriter::s_mapPlugins;
   
-  struct FileWriterPluginMapInitializer{
+  class FileWriterPluginMapInitializer{
+  public:
     // {{{ open
 
     FileWriterPluginMapInitializer(){

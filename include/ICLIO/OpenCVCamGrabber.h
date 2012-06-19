@@ -39,8 +39,8 @@
 #include <ICLUtils/Mutex.h>
 
 #ifdef HAVE_OPENCV
-#include <highgui.h>
-#include <cxcore.h>
+#include <opencv/highgui.h>
+#include <opencv/cxcore.h>
 #endif
 namespace icl{
 

@@ -49,6 +49,7 @@ namespace icl{
   struct FunctionImpl{
     /// function interface
     virtual R operator()(A a, B b, C c) const = 0;
+    virtual ~FunctionImpl(){}
   };
   
   /// Special Implementation for unary functions \ingroup FUNCTION
@@ -57,6 +58,7 @@ namespace icl{
   struct FunctionImpl<R,A,B,void>{
     /// function interface
     virtual R operator()(A a, B b) const = 0;
+    virtual ~FunctionImpl(){}
   };
   
   /// Special Implementation for unary functions \ingroup FUNCTION
@@ -65,6 +67,7 @@ namespace icl{
   struct FunctionImpl<R,A,void>{
     /// function interface
     virtual R operator()(A a) const = 0;
+    virtual ~FunctionImpl(){}
   };
 
   /// Special Implementation for void functions \ingroup FUNCTION
@@ -73,6 +76,7 @@ namespace icl{
   struct FunctionImpl<R,void,void>{
     /// function interface
     virtual R operator()() const= 0;
+    virtual ~FunctionImpl(){}
   };
 
   //////////////////////////////////////////////////////////

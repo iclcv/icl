@@ -48,6 +48,9 @@ namespace icl{
     /** Current FPS values are averaged over given intervall n*/
     FPSEstimator(int n=2);
 
+    /// virtual destructor
+    virtual ~FPSEstimator() {}
+
     /// Sets a new averaging interval
     void reset(int n);
     

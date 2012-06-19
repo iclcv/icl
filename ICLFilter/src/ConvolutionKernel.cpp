@@ -132,7 +132,7 @@ namespace icl{
     isnull = !idata;
   }
   ConvolutionKernel::ConvolutionKernel(float *data, const Size &size, bool deepCopy) throw (InvalidSizeException):
-    size(size),fdata(0),idata(0),factor(factor),isnull(false),owned(deepCopy),ft(custom){
+    size(size),fdata(0),idata(0),factor(1),isnull(false),owned(deepCopy),ft(custom){
     ICLASSERT_THROW(getDim() > 0,InvalidSizeException(__FUNCTION__));
     if(deepCopy){
       fdata = deepcopy(data,getDim());

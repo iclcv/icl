@@ -112,9 +112,6 @@ namespace icl{
     /// switch to next ring buffer
     int CYCLE_IDX(int &i){ int j=i++; if(i==NBUFS)i=0; return j; }
     
-    /// flag to indicate DMA usage
-    bool m_bUseDMA;
-
     /// flag to indicate the grabber has been started to grab
     bool m_bStarted;
 

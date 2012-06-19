@@ -42,7 +42,8 @@
 
 namespace icl{
 
-  struct ColorSegmentationOp::LUT3D : public Uncopyable{
+  class ColorSegmentationOp::LUT3D : public Uncopyable{
+    public:
     int dim, w, h,t, wh;
     icl8u *data;
     mutable Img8u image;

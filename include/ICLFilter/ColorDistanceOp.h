@@ -71,7 +71,7 @@ namespace icl {
     void apply(const ImgBase *src, ImgBase **dst);
     
     /// Import unaryOps apply function without destination image
-    UnaryOp::apply;
+    using UnaryOp::apply;
     
     /// sets the threshold value
     inline void setThreshold(double threshold){

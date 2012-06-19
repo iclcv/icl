@@ -41,7 +41,8 @@ namespace icl{
   
   /// Minimal interface for image output classes
   struct ImageOutput{
-    
+    /// virtual destructor
+    virtual ~ImageOutput() {}
     /// ImageOutput instances must implement this method
     virtual void send(const ImgBase *image) = 0;
   };

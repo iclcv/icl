@@ -57,7 +57,8 @@ namespace icl{
     enum FilenameGeneratorMode { hashPatterns, objectAndImage };
   }
   
-  struct FilenameGeneratorImpl{
+  class FilenameGeneratorImpl{
+  public:
     FilenameGeneratorImpl(const string &pattern, int maxFiles)
       // {{{ open
 

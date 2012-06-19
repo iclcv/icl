@@ -40,7 +40,8 @@
 
 
 namespace icl{
-  struct MultiThreader::MTWorkThread : public Thread{
+  class MultiThreader::MTWorkThread : public Thread{
+  public:
     // {{{ open
 
     MTWorkThread(Semaphore *sem1, Semaphore *sem2, Semaphore *semDone):work(0),m_bCurr(0){

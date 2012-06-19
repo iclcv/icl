@@ -37,7 +37,7 @@
 
 namespace icl{
   DefaultGrabEngine::DefaultGrabEngine(UnicapDevice *device, bool useDMA, bool progressiveGrabMode):
-    m_poDevice(device), m_iCurrBuf(0), m_bUseDMA(useDMA), m_bStarted(false), m_bProgressiveGrabMode(progressiveGrabMode){
+    m_poDevice(device), m_iCurrBuf(0), m_bStarted(false), m_bProgressiveGrabMode(progressiveGrabMode){
     
     UnicapFormat fmt = m_poDevice->getCurrentUnicapFormat();
     int bufferSize = fmt.getBufferSize() ? fmt.getBufferSize() : fmt.getSize().getDim()*4; // just something large here

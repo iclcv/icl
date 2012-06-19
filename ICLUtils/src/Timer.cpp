@@ -105,7 +105,7 @@ void Timer::stopTimer(string sName)
           
         case 1:
           cout << " --  [" << m_vecTimerName[i] << "] -> Time: "
-               << lTmpTimeDiff << " µs" << endl;
+               << lTmpTimeDiff << " micro sec" << endl;
           break;
       }
     }    
@@ -153,3 +153,4 @@ Time::value_type Timer::getTime()
 // }}}
 
 } //namespace
+

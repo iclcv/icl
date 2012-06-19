@@ -60,7 +60,7 @@ namespace icl{
     
     /** \cond **/
     // for static initialization
-    friend class StaticConfigurableRegistrationFor_FiducialDetectorPluginICL1;
+    friend struct StaticConfigurableRegistrationFor_FiducialDetectorPluginICL1;
     /** \endcond **/
 
     /// Destructor

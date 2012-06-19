@@ -43,7 +43,8 @@ namespace icl{
   /** This class shall help to implement GUI container components,
       that do not use a QLayout for layouting e.g. QTabWidgets or
       QSplitters */
-  struct ProxyLayout{
+  class ProxyLayout{
+    public:
     /// defines how to add widges
     virtual void addWidget(GUIWidget *widget)=0;
   };  

@@ -38,7 +38,7 @@
 
 #ifdef HAVE_OPENCV
 #include <ICLAlgorithms/OpenCVSurfDetector.h>
-#include <cv.h>
+#include <opencv/cv.h>
 #endif
 
 #ifdef HAVE_OPENSURF
@@ -143,7 +143,8 @@ namespace icl{
 #define THROW_NO_BACKEND 
 #endif
   
-  struct GenericSurfDetector::Data{
+  class GenericSurfDetector::Data{
+    public:
     std::string impl;
     std::vector<GenericPoint> points;
     std::vector<GenericPoint> fpoints;

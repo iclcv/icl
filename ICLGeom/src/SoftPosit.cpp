@@ -36,6 +36,10 @@
 using namespace icl;
 namespace icl{
 
+  const double SoftPosit::betaUpdate = 1.05;
+  
+  const double SoftPosit::betaZero = 0.0004;
+
 #ifdef HAVE_QT
 SoftPosit::SoftPosit():dw(0){
 	ROT.setBounds(3,3);

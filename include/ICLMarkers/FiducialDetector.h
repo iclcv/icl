@@ -51,7 +51,7 @@ namespace icl{
   class FiducialDetector : public Uncopyable, public Configurable{
     
     /// hidden data class
-    class Data;
+    struct Data;
     
     /// hidden data pointer
     Data *data;
@@ -104,7 +104,7 @@ namespace icl{
                      const Camera *camera=0) throw (ICLException);
 
     /// Destructor
-    ~FiducialDetector();
+    virtual ~FiducialDetector();
     
     /// returns the current plugin type
     const std::string &getPluginType() const;

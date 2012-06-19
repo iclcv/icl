@@ -61,7 +61,6 @@ namespace icl{
     void decode(const icl16s *data, const Size &size, ImgBase **dst);
 
   private:
-    bool first_run;
     char attachedPosition; //store position of central unit
     int bigtarget[16*16]; //table which maps module orientation
     std::vector<char> conversionTable;  //table which maps usb input texel position to grabber output texel position

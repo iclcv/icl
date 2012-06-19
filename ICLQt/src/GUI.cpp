@@ -915,7 +915,8 @@ namespace icl{
     bool m_haveAlpha;
   };
 
-  struct ButtonGUIWidget : public GUIWidget{
+  class ButtonGUIWidget : public GUIWidget{
+  public:
     // {{{ open
     ButtonGUIWidget(const GUIDefinition &def):GUIWidget(def,1,1,GUIWidget::gridLayout,Size(4,1)){
       QPushButton *b = new QPushButton(def.param(0).c_str(),def.parentWidget());
@@ -1007,7 +1008,7 @@ namespace icl{
   };
 
   // }}}
-  struct ToggleButtonGUIWidget : public GUIWidget{
+  class ToggleButtonGUIWidget : public GUIWidget{
     // {{{ open
   public:
     ToggleButtonGUIWidget(const GUIDefinition &def):
@@ -1063,7 +1064,6 @@ namespace icl{
   private:
     ToggleButton *m_poButton;
     ButtonHandle *m_poHandle;
-    bool *m_pbToggled;
   };
 
 // }}}

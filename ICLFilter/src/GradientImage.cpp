@@ -49,8 +49,8 @@ namespace icl{
       gx.setROI(src.getROI().enlarged(-1));
       gy.setROI(src.getROI().enlarged(-1));
       
-      static ConvolutionOp convX(ConvolutionKernel(ConvolutionKernel::sobelX3x3));
-      static ConvolutionOp convY(ConvolutionKernel(ConvolutionKernel::sobelY3x3));
+      static ConvolutionOp convX( (ConvolutionKernel(ConvolutionKernel::sobelX3x3)) );
+      static ConvolutionOp convY( (ConvolutionKernel(ConvolutionKernel::sobelY3x3)) );
       static Mutex convXYMutex;
       static bool first = true;
       convXYMutex.lock();

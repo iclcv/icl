@@ -100,7 +100,8 @@ namespace icl{
 
   class ZoomAdjustmentWidgetParent;
 
-  struct OSDGLButton{
+  class OSDGLButton{
+  public:
     enum IconType {Tool,Zoom,Lock, Unlock,RedZoom,RedCam,
                    NNInter, LINInter, CustomIcon, RangeNormal, RangeScaled,
                    EnterFullScreen, LeaveFullScreen };
@@ -161,14 +162,17 @@ namespace icl{
     }
   
     
-    OSDGLButton(ICLWidget *parent, const std::string &toolTipText, const std::string &id, int x, int y, int w, int h, 
-                IconType icon, const Function<void> &cb=Function<void>()):
+    OSDGLButton(ICLWidget *parent, const std::string &toolTipText, 
+                const std::string &id, int x, int y, int w, int h, 
+                IconType icon, const Function<void> &cb=(FunctionImpl<void>*)0):// clang fix Function<void>()):
       parent(parent),id(id),bounds(x,y,w,h),toggable(false),over(false),down(false),
       toggled(false),visible(false),vcb(cb),toolTipText(toolTipText){
       this->icon = get_icon(icon);
     }
-    OSDGLButton(ICLWidget *parent, const std::string &toolTipText, const std::string &id, int x, int y, int w, int h, IconType icon, 
-                IconType downIcon, const Function<void,bool> &cb=Function<void,bool>(), bool toggled = false):
+    OSDGLButton(ICLWidget *parent, const std::string &toolTipText, 
+                const std::string &id, int x, int y, int w, int h, IconType icon, 
+                IconType downIcon, const Function<void,bool> &cb=(FunctionImpl<void,bool>*)0,// clang fix Function<void,bool>(), 
+                bool toggled = false):
       parent(parent),id(id),bounds(x,y,w,h),toggable(true),over(false),down(false),
       toggled(toggled),visible(false),bcb(cb),toolTipText(toolTipText){
       this->icon = get_icon(icon);
@@ -177,7 +181,8 @@ namespace icl{
 
     OSDGLButton(ICLWidget *parent, const std::string &toolTipText, const std::string &id, int x, int y, int w, int h, 
                 const ImgBase *untoggledIcon, const ImgBase *toggledIcon, 
-                const Function<void,bool> &cb=Function<void,bool>(), bool toggled = false):
+                const Function<void,bool> &cb=(FunctionImpl<void,bool>*)0, // clang fix Function<void,bool>(), 
+                bool toggled = false):
       parent(parent),id(id),bounds(x,y,w,h),toggable(true),over(false),down(false),
       toggled(toggled),visible(false),bcb(cb),toolTipText(toolTipText){
       if(untoggledIcon){
@@ -341,11 +346,12 @@ namespace icl{
 
 
   
-  struct ICLWidget::Data{
+  class ICLWidget::Data{
+  public:
     Data(ICLWidget *parent):
       parent(parent),channelSelBuf(0),
       qimageConv(0),qimage(0),mutex(QMutex::Recursive),fm(fmHoldAR),fmSave(fmHoldAR),
-      rm(rmOff),bciUpdateAuto(false),channelUpdateAuto(false),
+      rm(rmOff),bciUpdateAuto(0),channelUpdateAuto(0),
       mouseX(-1),mouseY(-1),selChannel(-1),showNoImageWarnings(true),
       outputCap(0),menuOn(true),menuMutex(QMutex::Recursive),menuptr(0),zoomAdjuster(0),
       qic(0),menuEnabled(true),infoTab(0),
@@ -507,7 +513,8 @@ namespace icl{
 
 
 
-  struct ICLWidget::OutputBufferCapturer{
+  class ICLWidget::OutputBufferCapturer{
+    public:
     ICLWidget *parent;
     ICLWidget::Data *data;
     
@@ -549,7 +556,7 @@ namespace icl{
       size_t begin = 0;
       while(begin<s.length() && s[begin] == ' ') ++begin;
       size_t end = s.length()-1;
-      while(end >= 0 && s[end] == ' ') --end;
+      while((int)end >= 0 && s[end] == ' ') --end;
       return s.substr(begin,end-begin+1);
     }
     
@@ -970,7 +977,8 @@ namespace icl{
 
 
 
-  struct ZoomAdjustmentWidgetParent : public QWidget{
+  class ZoomAdjustmentWidgetParent : public QWidget{
+  public:
     Size imageSize;
     ZoomAdjustmentWidget *aw;
     ZoomAdjustmentWidgetParent(const Size &imageSize, QWidget *parent, Rect32f &r, QWidget *parentICLWidget):

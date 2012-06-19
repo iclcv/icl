@@ -37,7 +37,8 @@
 #include <ICLMarkers/TwoLevelRegionStructure.h>
 
 namespace icl{
-  struct FiducialDetectorPluginAmoeba::Data{
+  class FiducialDetectorPluginAmoeba::Data{
+    public:
     std::vector<TwoLevelRegionStructure> rs;
     std::vector<ImageRegion> matchingRegions;
     std::vector<FiducialImpl*> fids;

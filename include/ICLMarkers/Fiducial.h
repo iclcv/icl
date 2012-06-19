@@ -44,8 +44,8 @@
 namespace icl{
   
   /** \cond */
-  class FiducialImpl;
-  class FiducialDetectorPlugin;
+  struct FiducialImpl;
+  struct FiducialDetectorPlugin;
   /** \endcond */
   
   

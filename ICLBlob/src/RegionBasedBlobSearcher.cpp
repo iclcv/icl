@@ -49,67 +49,7 @@ namespace icl{
     /// struct to use a Size struct as std::map - key
    
 
-    std::vector<Point> &cat(const std::vector<std::vector<Point> > &src, std::vector<Point> &dst){
-      // {{{ open
-      dst.clear();
-      for(std::vector<std::vector<Point> >::const_iterator it = src.begin();it!=src.end();++it){
-        for(std::vector<Point>::const_iterator jt = it->begin();jt!= it->end();++jt){
-          dst.push_back(*jt);
-        }
-      }
-      return dst;
-    }
-    // }}}
 
-    std::vector<Point32f> &cat(const std::vector<std::vector<Point32f> > &src, std::vector<Point32f> &dst){
-      // {{{ open
-      dst.clear();
-      for(std::vector<std::vector<Point32f> >::const_iterator it = src.begin();it!=src.end();++it){
-        for(std::vector<Point32f>::const_iterator jt = it->begin();jt!= it->end();++jt){
-          dst.push_back(*jt);
-        }
-      }
-      return dst;
-    }
-    // }}}
-
-    std::vector<Rect> &cat(const std::vector<std::vector<Rect> > &src, std::vector<Rect> &dst){
-      // {{{ open
-      dst.clear();
-      for(std::vector<std::vector<Rect> >::const_iterator it = src.begin();it!=src.end();++it){
-        for(std::vector<Rect>::const_iterator jt = it->begin();jt!= it->end();++jt){
-          dst.push_back(*jt);
-        }
-      }
-      return dst;
-    }
-    // }}}
-    std::vector<RegionPCAInfo> &cat(const std::vector<std::vector<RegionPCAInfo> > &src, std::vector<RegionPCAInfo> &dst){
-      // {{{ open
-      dst.clear();
-      for(std::vector<std::vector<RegionPCAInfo> >::const_iterator it = src.begin();it!=src.end();++it){
-        for(std::vector<RegionPCAInfo>::const_iterator jt = it->begin();jt!= it->end();++jt){
-          dst.push_back(*jt);
-        }
-      }
-      return dst;
-    }
-    // }}}
-
-    std::vector<int> &toPOD(const std::vector<std::vector<Point> >&src, std::vector<int> &dst){
-      // {{{ open
-
-    dst.clear();
-    for(unsigned int i=0;i<src.size();++i){
-      for(unsigned int j=0;j<src[i].size();++j){
-        dst.push_back(src[i][j].x);
-        dst.push_back(src[i][j].y);
-      }
-    }   
-    return dst;
-  }
-
-  // }}}
     std::vector<int> &toPOD(const std::vector<Point> &src, std::vector<int> &dst){
       // {{{ open
 
@@ -151,20 +91,6 @@ namespace icl{
 
   // }}}
 
-    std::vector<std::vector<float> > &toPOD(const std::vector<std::vector<Point32f> >&src, std::vector<std::vector<float> > &dst){
-      // {{{ open
-      dst.clear();
-      for(unsigned int i=0;i<src.size();++i){
-        dst.push_back(std::vector<float>());
-        for(unsigned int j=0;j<src[i].size();++j){
-          dst[i].push_back(src[i][j].x);
-          dst[i].push_back(src[i][j].y);
-        }
-      }   
-      return dst;
-    }
-
-  // }}}
 
 
     std::vector<int> &toPOD(const std::vector<std::vector<Rect> > &src, std::vector<int> &dst){

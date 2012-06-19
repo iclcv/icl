@@ -124,7 +124,7 @@ namespace icl{
     virtual void apply (const ImgBase *poSrc, ImgBase **ppoDst);
 
     /// import from super-class
-    BaseAffineOp::apply;
+    using BaseAffineOp::apply;
 
     /// sets whether the result image is is scaled and translated to contain the whole result image   
     /** @see \ref ARI */

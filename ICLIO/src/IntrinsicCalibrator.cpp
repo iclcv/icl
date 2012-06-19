@@ -37,7 +37,8 @@
 using namespace icl;
 namespace icl{
 
-struct IntrinsicCalibrator::Data{
+class IntrinsicCalibrator::Data{
+public:
 	int bWidth;
 	int bHeight;
 	int successes;

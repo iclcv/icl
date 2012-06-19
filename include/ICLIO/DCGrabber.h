@@ -197,7 +197,8 @@ namespace icl{
   
   /// Grabber implementation for grabbing images from firewire cameras using libdc1394-2 \ingroup GRABBER_G \ingroup DC_G
   /** This is just a wrapper class of the underlying DCGrabberImpl class */
-  struct DCGrabber : public GrabberHandle<DCGrabberImpl>{
+  class DCGrabber : public GrabberHandle<DCGrabberImpl>{
+    public:
     
     /// create a new DCGrabber
     /** @see DCGrabberImpl for more details*/

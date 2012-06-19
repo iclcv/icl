@@ -351,7 +351,7 @@ namespace icl{
           If given type T is not registered, an UnregisteredTypeException is thrown
       */
       template<class T>
-      Data &operator=(const T &t) throw (UnregisteredTypeException){
+      Data &operator=(const T &t) throw (UnregisteredTypeException,InvalidTypeException,EntryNotFoundException){
         cf->set(id,t);
         return *this;
       }
@@ -581,10 +581,12 @@ namespace icl{
   std::ostream &operator<<(std::ostream &s, const ConfigFile &cf);
 
   /** \cond */
-  template<> inline ConfigFile::Data &ConfigFile::Data::operator=(char * const &t) throw (InvalidTypeException,EntryNotFoundException){
+  template<> inline ConfigFile::Data &ConfigFile::Data::operator=(char * const &t) 
+  throw (UnregisteredTypeException,InvalidTypeException,EntryNotFoundException){
     return ConfigFile::Data::operator=(std::string(t));
   }
-  template<> inline ConfigFile::Data &ConfigFile::Data::operator=(const char * const &t) throw (InvalidTypeException,EntryNotFoundException){
+  template<> inline ConfigFile::Data &ConfigFile::Data::operator=(const char * const &t) 
+  throw (UnregisteredTypeException,InvalidTypeException,EntryNotFoundException){
     return ConfigFile::Data::operator=(std::string(t));
   }
   /** \endcond */

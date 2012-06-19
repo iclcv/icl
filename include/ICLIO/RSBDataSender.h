@@ -64,7 +64,7 @@ namespace icl{
     RSBDataSender(const std::string &scope, const std::string &transportList="spread");
     
     /// import send method from the RSBImageOutput class
-    RSBImageOutput::send;
+    using RSBImageOutput::send;
     
     /// send string data plus an optional image attachment
     void send(const std::string &data, const ImgBase *attachment=0);

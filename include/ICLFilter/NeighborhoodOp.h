@@ -82,7 +82,7 @@ namespace icl {
     virtual void applyMT(const ImgBase *operand1, ImgBase **dst, unsigned int nThreads);
     
     /// Import unaryOps apply function without destination image
-    UnaryOp::apply;
+    using UnaryOp::apply;
     
     protected:
     NeighborhoodOp() : m_oMaskSize(1,1), m_oAnchor (0,0) {}

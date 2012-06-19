@@ -142,11 +142,11 @@ namespace{
   
 
   // X = X for other types
-#define INST_TYPE(T) template class AssignSpecial<T,T>;
+#define INST_TYPE(T) template struct AssignSpecial<T,T>;
 INST_OTHER_TYPES
 #undef INST_TYPE
 
-#define ADD(X,Y) template class AssignSpecial<X,Y>;
+#define ADD(X,Y) template struct AssignSpecial<X,Y>;
 
 
    // X = Y for numerical types
@@ -268,7 +268,7 @@ INST_OTHER_TYPES
            return apply(*reinterpret_cast<S*>(src),*reinterpret_cast<D*>(dst));  \
         }                                                                        \
       };                                                                         \
-      template class AssignSpecial<S,D>;
+      template struct AssignSpecial<S,D>;
 
     // ComboHandle
     FROM_TO_NUM(ComboHandle,dst.setSelectedIndex((int)src),dst=src.getSelectedIndex());

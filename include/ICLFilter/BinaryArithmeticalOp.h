@@ -71,7 +71,7 @@ namespace icl {
     virtual void apply(const ImgBase *poSrc1,const ImgBase *poSrc2, ImgBase **poDst);
 
     /// import apply symbol from parent class
-    BinaryOp::apply;
+    using BinaryOp::apply;
     
     /// sets the operaion that will be performed by apply
     /**

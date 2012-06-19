@@ -43,8 +43,8 @@
 #include <ICLOpenCV/OpenCV.h>
 
 #ifdef HAVE_OPENCV
-#include <ml.h>
-#include <cv.h>
+#include <opencv/ml.h>
+#include <opencv/cv.h>
 #endif
 
 namespace icl{

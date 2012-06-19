@@ -305,7 +305,7 @@ namespace icl{
     return 0;
   }
   template<class T>
-  T matrix_max(const DynMatrix<T> &m, int *x=0, int *y=0){
+  T matrix_max(const DynMatrix<T> &m, int *x, int *y){
     ERROR_LOG("not implemented for this type!");
     return 0;
   }

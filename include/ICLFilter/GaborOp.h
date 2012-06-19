@@ -180,7 +180,7 @@ namespace icl{
     virtual void apply(const ImgBase *poSrc, ImgBase **ppoDst);
 
     /// Import unaryOps apply function without destination image
-    UnaryOp::apply;
+    using UnaryOp::apply;
 
     /// apply all filters to an image at a specific position
     /** The result vector contains the filter-response for all

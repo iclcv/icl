@@ -278,7 +278,8 @@ namespace icl{
     iimUnknownPixelsUnchanged
   };
   
-  struct SwissRangerGrabberImpl::SwissRanger{
+  class SwissRangerGrabberImpl::SwissRanger{
+    public:
     SRCAM cam;
     Size size;
     Img32f buf;

@@ -197,8 +197,8 @@ namespace icl {
     void apply(const ImgBase *poSrc, ImgBase **ppoDst);
     
     /// Import unaryOps apply function without destination image
-    NeighborhoodOp::apply;
-    
+    using NeighborhoodOp::apply;
+
     /// ensures that mask width and height are odd 
     /** This is a workaround, necessary because of an ipp Bug that allows no
         even mask sizes here! 

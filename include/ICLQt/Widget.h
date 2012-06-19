@@ -294,14 +294,14 @@ int main(int n, char **args){
                                 const ImgBase* untoggledIcon = 0, 
                                 const ImgBase *toggledIcon = 0, 
                                 bool initiallyToggled = 0, 
-                                const Function<void,bool> &cb=Function<void,bool>(),
+                                const Function<void,bool> &cb=(FunctionImpl<void,bool>*)0,//Function<void,bool>(), fix for clang
                                 const std::string &toolTipText="");
 
     /// Adds a new toggle-button to the OSD-button bar on the upper widget edge
     /** @see addSpecialToggleButton */
     void addSpecialButton(const std::string &id, 
                           const ImgBase* icon = 0, 
-                          const Function<void> &cb=Function<void>(),
+                          const Function<void> &cb=(FunctionImpl<void>*)0,//Function<void>(), fix for clang
                           const std::string &toolTipText="");
 
     

@@ -36,7 +36,7 @@
 #define ICL_OPEN_CV_H
 
 #ifdef HAVE_OPENCV
-#include <cxcore.h>
+#include <opencv/cxcore.h>
 #endif
 
 #include <ICLCC/CCFunctions.h>

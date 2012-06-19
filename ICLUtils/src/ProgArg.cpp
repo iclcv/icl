@@ -152,7 +152,8 @@ namespace icl{
     }
   };
   
-  struct GivenArg{
+  class GivenArg{
+  public:
     GivenArg(AllowedArg *allowed):allowed(allowed){
       allowed->given = this;
     }

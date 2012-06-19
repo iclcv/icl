@@ -73,6 +73,7 @@ namespace icl{
     struct Matching{
       virtual void prepare(const std::vector<SmartPtr<NamedImage> > &loaded, const Size &matchDim)=0;
       virtual NamedImage *match(const Img8u &image, int *rot, float *err) = 0;
+      virtual ~Matching(){}
     };
     
     struct Img4{

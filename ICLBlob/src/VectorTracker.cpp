@@ -258,7 +258,8 @@ namespace icl{
   
   
   struct VectorTracker::Data : public VTMat{
-    
+    virtual ~Data(){}
+
     Data(int dim, bool tryOpt,VectorTracker::IDmode idMode, 
          float distanceThreshold, float largeVal, 
          const std::vector<float> &normFactors):

@@ -49,6 +49,7 @@ namespace icl{
 
   struct Preprocessor{
     virtual const Img8u &pp(const ImgBase *src) = 0;
+    virtual ~Preprocessor() {}
   };
   
   struct BinaryPP : public Preprocessor, public Configurable{

@@ -44,7 +44,7 @@
 #include <ICLOpenCV/OpenCV.h>
 
 #ifdef HAVE_OPENCV
-#include <cv.h>
+#include <opencv/cv.h>
 #endif
 namespace icl{
 
@@ -53,7 +53,7 @@ namespace icl{
  */
 class OpenCVCamCalib : public Uncopyable{
 
-	class Data;
+	struct Data;
 	///Class for internal params and buffers.
 	Data *m_data;
 

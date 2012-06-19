@@ -49,7 +49,10 @@ namespace icl{
     public:
     /// creates new FPSLimiter instance with given parameter
     FPSLimiter(float maxFPS, int fpsEstimationInterval=10);
-    
+
+    /// virtual destructor
+    virtual ~FPSLimiter() {}
+
     /// sets max fps value
     void setMaxFPS(float maxFPS) { m_maxFPS = maxFPS; }
 

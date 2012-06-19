@@ -211,7 +211,7 @@ namespace icl{
         supportedDevices.push_back("kinecti:devide ID:kinect IR camera source");
       }
       if(l[i] == "kinectd" || l[i] == "kinectc" || l[i] == "kinecti"){
-        KinectGrabber::Mode mode;        
+        KinectGrabber::Mode mode = KinectGrabber::GRAB_DEPTH_IMAGE;        
         switch(l[i][6]){
           case 'd': mode = KinectGrabber::GRAB_DEPTH_IMAGE; break;
           case 'c': mode = KinectGrabber::GRAB_RGB_IMAGE; break;

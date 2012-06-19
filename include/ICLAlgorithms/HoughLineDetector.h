@@ -244,7 +244,6 @@ namespace icl{
     
 
     float m_dRho;
-    float m_dR;
     Range32f m_rRange;
     int m_w;
     int m_h;

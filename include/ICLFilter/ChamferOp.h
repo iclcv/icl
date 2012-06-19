@@ -237,7 +237,7 @@ namespace icl{
     virtual void apply(const ImgBase *poSrc, ImgBase **ppoDst);
 
     /// Import unaryOps apply function without destination image
-    UnaryOp::apply;
+    using UnaryOp::apply;
     
     /// static utility function to convert a model represented by a point set into a binary image
     /** @param model model to convert into the binary image representation 

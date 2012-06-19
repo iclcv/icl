@@ -146,7 +146,7 @@ namespace icl {
     void apply (const ImgBase *poSrc, ImgBase **ppoDst);
     
     /// Import unaryOps apply function without destination image
-    UnaryOp::apply;
+    using UnaryOp::apply;
     
 #ifdef HAVE_IPP
   private:

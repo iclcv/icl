@@ -51,8 +51,8 @@
 using namespace std;
 namespace icl{
 
-  struct ChromaWidget : public ICLDrawWidget, public MouseHandler{
-
+  class ChromaWidget : public ICLDrawWidget, public MouseHandler{
+    public:
     ChromaWidget(QWidget *parent = 0):ICLDrawWidget(parent){
       // {{{ open
 
@@ -202,7 +202,7 @@ namespace icl{
       
       // now reopen that file and add gui-informamtion
       ConfigFile f(filename);
-      static std::string x[6] = {"xpos","ypos","dim","red","green","blue"};
+      //static std::string x[6] = {"xpos","ypos","dim","red","green","blue"};
     
       for(int i=0;i<6;i++){
         std::string pfx = std::string("config.gui-info.dragger-")+str(i)+".";

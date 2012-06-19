@@ -39,7 +39,10 @@
 namespace icl{
   
   namespace{
-    struct PatternBinarization{  virtual void apply(icl8u *p) = 0;  };
+    struct PatternBinarization{  
+      virtual void apply(icl8u *p) = 0;  
+      virtual ~PatternBinarization() {}
+    };
     
     struct PatternBinarizationThresh : public PatternBinarization{
       int t;

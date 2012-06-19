@@ -39,7 +39,7 @@
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLUtils/Exception.h>
 #ifdef HAVE_OPENCV
-#include <highgui.h>
+#include <opencv/highgui.h>
 #endif
 
 #include <string>

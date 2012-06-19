@@ -58,7 +58,7 @@ namespace icl{
     StateHandle(){}
     
     /// Create a new LabelHandle
-    StateHandle(ThreadedUpdatableTextView *l, GUIWidget *w,int manLen):
+    StateHandle(ThreadedUpdatableTextView *l, GUIWidget *w, int maxLen):
       GUIHandle<ThreadedUpdatableTextView>(l,w),maxLen(maxLen){}
     
     /// appends a string

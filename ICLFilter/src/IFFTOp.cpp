@@ -40,7 +40,8 @@ using namespace icl;
 using namespace icl::fft;
 namespace icl{
 
-struct IFFTOp::Data{
+class IFFTOp::Data{
+public:
 	ResultMode m_rm;
 	SizeAdaptionMode m_sam;
 	Rect m_roi;

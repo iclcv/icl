@@ -105,7 +105,7 @@ namespace icl{
     }
     
     /// import the other register callback method
-    GUIHandleBase::registerCallback;
+    using GUIHandleBase::registerCallback;
     
     /// empties both callback locations (GUIHandleBase and ThreadedUpdatableSlider)
     virtual void removeCallbacks(){

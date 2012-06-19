@@ -52,7 +52,8 @@
 namespace icl{
   typedef FixedColVector<float,3> Vec3;
   
-  struct CalibrationObject::Data{
+  class CalibrationObject::Data{
+    public:
     ImgBase *gray8u;
     LocalThresholdOp lt;
     RegionDetector rd;

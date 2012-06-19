@@ -180,6 +180,7 @@ namespace icl{
       value constraints.
   */
   class RegionDetector : public Uncopyable, public Configurable{
+    
     struct Data;  //!< internal data structure
     Data *m_data; //!< internal data pointer
     
@@ -194,7 +195,7 @@ namespace icl{
                    const std::string &configurableID=Configurable::create_default_ID("region-detector-"));
 
     /// Destructor
-    ~RegionDetector();
+    virtual ~RegionDetector();
 
     /// set up new constraints
     void setConstraints(int minSize, int maxSize, int minVal, int maxVal);

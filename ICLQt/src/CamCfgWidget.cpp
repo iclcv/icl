@@ -73,7 +73,8 @@ namespace icl{
     }
   };
     
-  struct CamCfgWidget::Data{
+  class CamCfgWidget::Data{
+    public:
     bool complex;
     std::string deviceFilter;
     GUI gui;

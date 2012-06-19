@@ -137,6 +137,8 @@ namespace icl{
         return TEMP_IMAGES.back();
       }
     }
+#if 0
+    /// obviously, this is not used!
     ImgQ &get_temp_image(){
       for(std::list<ImgQ>::iterator it = TEMP_IMAGES.begin(); it != TEMP_IMAGES.end();++it){
         if(it->isIndependent()){
@@ -146,6 +148,7 @@ namespace icl{
       TEMP_IMAGES.push_back(ImgQ());
       return TEMP_IMAGES.back();
     }
+#endif
 
     inline ImgQ get_temp_image(const Size &size, int channels){
       return get_temp_image(ImgParams(size,channels));

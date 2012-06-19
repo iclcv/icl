@@ -237,21 +237,6 @@ Time                    g_Time[4];
 // }}}
   // {{{ usb_grabber_funct
 
-  namespace{
-    string toStr(int i){
-      char buf[20];
-      sprintf(buf,"%d",i);
-      return buf;
-    }
-    string toStr(double d){
-      char buf[30];
-      sprintf(buf,"%f",d);
-      return buf;
-    }
-    
-  }
-
-
 bool usb_grabber_funct(void *data ){
   int device=*(int*)data;
   int use_frame=0;

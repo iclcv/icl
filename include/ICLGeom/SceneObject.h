@@ -585,7 +585,7 @@ namespace icl{
       m_mutex.unlock();
     }
     
-    friend class Primitive;
+    friend struct Primitive;
     
 
     /// sets whether points are visualized in a smoothed manner

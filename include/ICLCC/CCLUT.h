@@ -49,8 +49,8 @@ namespace icl{
     
     private:
     Img8u m_oLUT;
-    format m_eSrcFmt;
-    format m_eDstFmt;
+    // format m_eSrcFmt;
+    // format m_eDstFmt;
   };
   
   

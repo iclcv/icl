@@ -44,8 +44,6 @@ namespace icl{
 
 
   namespace {
-    inline string toStr(double val){ return str(val); }
-    inline string toStrComma(double val){ std::ostringstream str; str << val << ','; return str.str(); }
     inline bool inList(const string &s, const std::vector<string> &vec){
       return find(vec.begin(),vec.end(),s) != vec.end();
     }

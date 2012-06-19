@@ -62,15 +62,13 @@ private:
 
 	DynMatrix<icl64f> assignMat;
 
-	double gamma;
-
 	double beta;
 
 	double betaFinal;
 
-	static const double betaUpdate = 1.05;
+	static const double betaUpdate;// not allowed in clang = 1.05;
 
-	static const double betaZero = 0.0004;
+	static const double betaZero;;// not allowed in clang = 0.0004;
 #ifdef HAVE_QT
 	ICLDrawWidget *dw;
 #endif
@@ -132,8 +130,6 @@ private:
 	double Tz;
 	double Tx;
 	double Ty;
-
-	double f;
 
 	double sumNonslack;
 

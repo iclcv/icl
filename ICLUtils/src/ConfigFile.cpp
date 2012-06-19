@@ -305,9 +305,9 @@ namespace icl{
       e.parent = this;
       e.id = key;
       e.value = n.first_child().value();
-      std::map<std::string,std::string>::const_iterator it = s_typeMapReverse.find(n.attribute("type").value());
-      if(it == s_typeMapReverse.end()) throw UnregisteredTypeException(n.attribute("type").value());
-      e.rttiType = it->second;
+      std::map<std::string,std::string>::const_iterator jt = s_typeMapReverse.find(n.attribute("type").value());
+      if(jt == s_typeMapReverse.end()) throw UnregisteredTypeException(n.attribute("type").value());
+      e.rttiType = jt->second;
       
       XMLAttribute rangeAtt = n.attribute("range");
       

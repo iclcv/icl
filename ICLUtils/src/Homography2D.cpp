@@ -89,7 +89,7 @@ namespace icl{
     }
   }
   
-  template class GenericHomography2D<float>;
-  template class GenericHomography2D<double>;
+  template struct GenericHomography2D<float>;
+  template struct GenericHomography2D<double>;
 
 }

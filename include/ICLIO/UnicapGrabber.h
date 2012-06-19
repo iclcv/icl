@@ -43,8 +43,8 @@
 
 namespace icl{
   /** \cond */
-  class UnicapGrabEngine;
-  class UnicapConvertEngine;
+  struct UnicapGrabEngine;
+  struct UnicapConvertEngine;
   /** \endcond */  
 
   /// Specialization of ICLs Grabber interface wrapping a unicap-Grabber \ingroup UNICAP_G \ingroup GRABBER_G

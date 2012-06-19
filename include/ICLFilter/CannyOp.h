@@ -129,7 +129,7 @@ namespace icl {
     virtual void apply(const ImgBase *src, ImgBase **dst);
         
     /// Import unaryOps apply function without destination image
-    UnaryOp::apply;
+    using UnaryOp::apply;
     
     /// sets the pre-blur-radius
     /** if r> 0, gaussian kernel with masksize r*2+1 is applied to the input image first */

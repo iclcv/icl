@@ -69,7 +69,7 @@ namespace icl {
     virtual void apply(const ImgBase *poSrc, ImgBase **ppoDst);
     
     /// Import unaryOps apply function without destination image
-    UnaryOp::apply;
+    using UnaryOp::apply;
     
     /// sets the second operand, with the source is operated with.
     /**

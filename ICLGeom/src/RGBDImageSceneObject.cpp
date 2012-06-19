@@ -33,7 +33,10 @@
 *********************************************************************/
 
 #include <ICLGeom/RGBDImageSceneObject.h>
+#ifdef USE_OPENMP
 #include <omp.h>
+#endif
+
 #ifdef ICL_SYSTEM_APPLE
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>

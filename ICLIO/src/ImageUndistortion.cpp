@@ -39,6 +39,7 @@
 namespace icl{
 
   struct ImageUndistortion::Impl{
+    virtual ~Impl(){}
     Img32f warpMap;
     std::string model;
     std::vector<double> params;

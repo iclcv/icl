@@ -419,7 +419,7 @@ namespace icl{
     delete op;
   }
 
-  void UnaryOp::setPropertyValue(const std::string &propertyName, const std::string &value) throw (ICLException){
+  void UnaryOp::setPropertyValue(const std::string &propertyName, const Any &value) throw (ICLException){
     if(propertyName == "UnaryOp.clip to ROI") setClipToROI(value == "on");
     else if(propertyName == "UnaryOp.check only") setCheckOnly(value == "on");
     Configurable::setPropertyValue(propertyName,value);

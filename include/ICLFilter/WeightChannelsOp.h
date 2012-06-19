@@ -81,7 +81,7 @@ namespace icl {
     void apply (const ImgBase *poSrc, ImgBase **ppoDst);
     
     /// Import unaryOps apply function without destination image
-    UnaryOp::apply;
+    using UnaryOp::apply;
     
 
     /// returns the current weight vector

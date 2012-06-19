@@ -54,7 +54,7 @@ namespace icl{
     virtual ~BaseAffineOp(){}
     
     /// import from super class
-    UnaryOp::apply;
+    using UnaryOp::apply;
   };
 
 }

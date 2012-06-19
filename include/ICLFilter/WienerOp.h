@@ -72,7 +72,7 @@ namespace icl {
     void apply (const ImgBase *poSrc, ImgBase **ppoDst);
 
     /// Import unaryOps apply function without destination image
-    NeighborhoodOp::apply;
+    using NeighborhoodOp::apply;
 
     /// returns the current noise factor
     /** @return current noise factor **/

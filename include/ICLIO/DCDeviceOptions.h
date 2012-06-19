@@ -40,7 +40,8 @@
 namespace icl{
   
   /// Utility struct for DC Camera device options \ingroup DC_G
-  struct DCDeviceOptions{
+  class DCDeviceOptions{
+    public:
     
     /// bayer method
     dc1394bayer_method_t bayermethod;

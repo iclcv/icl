@@ -143,7 +143,7 @@ namespace icl{
     virtual void apply(const ImgBase *src, ImgBase **dst);
     
     /// Imported apply from parent UnaryOp class
-    UnaryOp::apply;
+    using UnaryOp::apply;
     
     /// classifies a pixel in given rgb format
     icl8u classifyPixel(icl8u r, icl8u g, icl8u b);

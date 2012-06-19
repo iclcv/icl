@@ -41,7 +41,8 @@
 
 namespace icl{
 
-  struct LowLevelPlotWidget::DrawState{
+  class LowLevelPlotWidget::DrawState{
+    public:
     bool allowLines;
     bool allowSymbols;
     bool allowFill;
@@ -60,7 +61,8 @@ namespace icl{
   };
 
 
-  struct LowLevelPlotWidget::Data{
+  class LowLevelPlotWidget::Data{
+    public:
     struct AbstractData{
       std::string name;
       int numPoints;

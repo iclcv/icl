@@ -47,6 +47,9 @@ namespace icl{
     GUIHandleBase(GUIWidget *w=0):m_poGUIWidget(w){}
 
     public:
+    
+    /// virtual destructor
+    virtual ~GUIHandleBase(){}
 
     /** \cond */
     friend class icl::GUI;

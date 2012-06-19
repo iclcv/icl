@@ -116,7 +116,7 @@ namespace icl{
     
   private:
     /// Internal data representation (hidden)
-    class Data;
+    struct Data;
     
     /// internal data pointer
     Data *m_data;

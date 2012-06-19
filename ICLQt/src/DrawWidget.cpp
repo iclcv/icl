@@ -45,7 +45,8 @@ namespace icl{
 
   
   /// internally used classes
-  struct ICLDrawWidget::State{
+  class ICLDrawWidget::State{
+    public:
     // {{{  struct
     State(){
       
@@ -63,7 +64,8 @@ namespace icl{
 
   // }}}
 
-  struct ICLDrawWidget::DrawCommand{
+  class ICLDrawWidget::DrawCommand{
+  public:
     // {{{ open struct
 
     virtual ~DrawCommand(){}

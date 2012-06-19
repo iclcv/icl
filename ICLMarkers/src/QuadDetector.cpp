@@ -47,7 +47,8 @@ namespace icl{
 
   static void optimize_edges(std::vector<Point32f> &e4, const std::vector<Point> &boundary) throw (int);
 
-  struct QuadDetector::Data{
+  class QuadDetector::Data{
+    public:
     std::vector<TiltedQuad> quads;
 
     SmartPtr<RegionDetector> rd;

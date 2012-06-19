@@ -104,7 +104,7 @@ namespace icl{
     
     /// result type (basically a 4x4 homogeneous transformation matrix)
     struct Result : public Mat{
-      friend class Posit::Data;
+      friend struct Posit::Data;
       private:
       /// private Konstructor
       inline Result():Mat(0.0){}

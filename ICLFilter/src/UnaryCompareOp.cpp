@@ -67,7 +67,7 @@ namespace icl {
 
   // }}}
   
-  template <class T, template<typename T> class C>
+  template <class T, template<typename X> class C>
   inline void fallbackCompare(const Img<T> *src, T value,Img<icl8u> *dst){
     // {{{ open
     for(int c=src->getChannels()-1; c >= 0; --c) {

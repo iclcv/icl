@@ -641,7 +641,8 @@ namespace icl{
     typedef const col_iterator const_col_iterator;
 
     /// Internally used Utility structure referencing a matrix column shallowly
-    struct DynMatrixColumn{
+    class DynMatrixColumn{
+      public:
 #ifdef DYN_MATRIX_INDEX_CHECK
 #define DYN_MATRIX_COLUMN_CHECK(C,E) if(C) ERROR_LOG(E)
 #else

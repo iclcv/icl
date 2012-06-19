@@ -440,8 +440,7 @@ namespace {
 }
 
 namespace icl{
-  CCLUT::CCLUT(format srcFmt, format dstFmt):
-    m_eSrcFmt(srcFmt),m_eDstFmt(dstFmt){
+  CCLUT::CCLUT(format srcFmt, format dstFmt){
     switch(getChannelsOfFormat(srcFmt)){
       case 1: m_oLUT = create_lut_1X(srcFmt, dstFmt); break;
       case 2: m_oLUT = create_lut_2X(srcFmt, dstFmt); break;

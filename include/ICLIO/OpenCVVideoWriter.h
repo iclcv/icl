@@ -38,7 +38,7 @@
 #include <string>
 
 #ifdef HAVE_OPENCV
-#include <highgui.h>
+#include <opencv/highgui.h>
 #endif
 
 #include <ICLIO/ImageOutput.h>

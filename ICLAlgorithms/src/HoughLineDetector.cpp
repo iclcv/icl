@@ -42,7 +42,7 @@ namespace icl{
   HoughLineDetector::HoughLineDetector(float dRho, float dR, const Range32f rRange, float rInhibitionRange, float rhoInhibitionRange,
                                        bool gaussianInhib, bool blurHoughSpace,bool dilateEntries,bool blurredSampling):
     
-    m_dRho(dRho),m_dR(dR),m_rRange(rRange),m_rInhib(rInhibitionRange),m_rhoInhib(rhoInhibitionRange),
+    m_dRho(dRho),m_rRange(rRange),m_rInhib(rInhibitionRange),m_rhoInhib(rhoInhibitionRange),
     m_gaussianInhibition(gaussianInhib), m_blurHoughSpace(blurHoughSpace),m_dilateEntries(dilateEntries),
     m_blurredSampling(blurredSampling){
     
@@ -139,7 +139,7 @@ namespace icl{
   void HoughLineDetector::blur_hough_space_if_necessary(){ 
     if(m_blurHoughSpace){
       ImgBase *image = 0;
-      ConvolutionOp co(ConvolutionKernel(ConvolutionKernel::gauss3x3));
+      ConvolutionOp co( (ConvolutionKernel(ConvolutionKernel::gauss3x3)) );
       co.setClipToROI(false);
       co.apply(&m_image,&image);
       m_image = *image->asImg<icl32s>();

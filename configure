@@ -5,6 +5,7 @@ BUILD=
 PKGCFG=
 OMP=
 EXAMPLES=
+COMPILER=
 
 function usage {
     echo "usage: configure <CFG-FILE-NAME>"
@@ -107,6 +108,7 @@ CMD="$CMD -D ICL_VAR_USE_OMP:BOOL=$(echo $OMP | tr '[:lower:]' '[:upper:]')"
 CMD="$CMD -D ICL_VAR_ARCHITECTURE_DEPENDENT_BUILD_ON:BOOL=$(echo $ARCH | tr '[:lower:]' '[:upper:]')"
 CMD="$CMD -D ICL_VAR_USE_PKG_CONFIG:BOOL=$(echo $PKGCFG | tr '[:lower:]' '[:upper:]')"
 CMD="$CMD -D ICL_VAR_EXAMPLES_TO_BUILD:STRING=$EXAMPLES "
+CMD="$CMD -D CMAKE_CXX_COMPILER=/vol/llvm/bin/clang++ "
 
 echo "extracting configuration"
 echo "-----------------------------------------------------"

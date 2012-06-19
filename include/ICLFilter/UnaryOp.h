@@ -112,7 +112,7 @@ namespace icl{
     
     
     /// sets value of a property (always call call_callbacks(propertyName) or Configurable::setPropertyValue)
-    virtual void setPropertyValue(const std::string &propertyName, const std::string &value) throw (ICLException);
+    virtual void setPropertyValue(const std::string &propertyName, const Any &value) throw (ICLException);
 
     /// Creates a UnaryOp instance from given string definition
     /** Supported definitions have the followin syntax:

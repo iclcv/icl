@@ -151,7 +151,8 @@ namespace icl {
   /// this class implements a (36-bit binary BCH en/decoder)
   /** the code can carry 12 bits of information and it can be
       extracted event if 4 errors occur */
-  struct BCHCoder::Impl{
+  class BCHCoder::Impl{
+    public:
     enum Constants{
       BCH_DEFAULT_M      = 6,
       BCH_DEFAULT_LENGTH = 36,

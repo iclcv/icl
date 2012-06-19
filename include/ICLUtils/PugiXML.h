@@ -93,8 +93,8 @@ namespace std
 
 /** \endcond */
 
-namespace pugi
-{
+/// The PugiXML namespace
+namespace pugi{
   /// Character type used for all internal storage and operations; depends on PUGIXML_WCHAR_MODE
   typedef PUGIXML_CHAR char_t;
 
@@ -102,10 +102,7 @@ namespace pugi
   /// String type used for operations that work with STL string; depends on PUGIXML_WCHAR_MODE
   typedef std::basic_string<PUGIXML_CHAR, std::char_traits<PUGIXML_CHAR>, std::allocator<PUGIXML_CHAR> > string_t;
 #endif
-}
 
-/// The PugiXML namespace
-namespace pugi{
   /// Tree node types
   /** @see icl::XMLNodeType */
   enum xml_node_type{
@@ -245,8 +242,7 @@ namespace pugi{
   class PUGIXML_CLASS xml_writer_file: public xml_writer{
     public:
     /// Construct writer from a FILE* object; void* is used to avoid header dependencies on stdio
-    xml_writer_file(void* file);
-    
+    xml_writer_file(void* file);    
     virtual void write(const void* data, size_t size);
     
     private:

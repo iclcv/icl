@@ -53,6 +53,14 @@ namespace icl {
     template <> inline icl::format grabber_get_null<icl::format>(){ return (icl::format)-1; }
     template <> inline icl::depth grabber_get_null<icl::depth>(){ return (icl::depth)-1; }
     template <> inline icl::Size grabber_get_null<icl::Size>(){ return icl::Size::null; }
+
+    struct grabber_get_xxx_dummy{
+      grabber_get_xxx_dummy(){
+        grabber_get_null<icl::format>();
+        grabber_get_null<icl::depth>();
+        grabber_get_null<icl::Size>();
+      }
+    };
   }
   template <class T> class GrabberHandle;
   class GenericGrabber;

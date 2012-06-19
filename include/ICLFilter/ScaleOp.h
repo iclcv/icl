@@ -61,11 +61,11 @@ namespace icl{
         
     // apply should still be public
     ///applies the scale
-    AffineOp::apply;
+    using AffineOp::apply;
 
     private: // hide the following methods
-    AffineOp::rotate;
-    AffineOp::translate;
+    using AffineOp::rotate;
+    using AffineOp::translate;
   };
 }
 #endif

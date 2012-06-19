@@ -43,7 +43,8 @@
 
 namespace icl{
   
-  struct ThreadImpl{
+  class ThreadImpl{
+  public:
     pthread_t thread;
     Mutex mutex;
     bool on;
