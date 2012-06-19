@@ -157,10 +157,14 @@ namespace icl{
   struct QuadPrimitive : public FixedColVector<int,8>, public Primitive{
     /// super type
     typedef  FixedColVector<int,8> super; 
+    
+    /// visualization optimization flag
+    bool trySurfaceOptimization;
 
     /// constructor
-    QuadPrimitive(int a, int b, int c, int d, const GeomColor &color, int na=-1, int nb=-1, int nc=-1, int nd=-1):
-    super(a,b,c,d,na,nb,nc,nd),Primitive(Primitive::quad,color){}
+    QuadPrimitive(int a, int b, int c, int d, const GeomColor &color, int na=-1, int nb=-1, int nc=-1, int nd=-1, 
+                  bool trySurfaceOptimization=false):
+    super(a,b,c,d,na,nb,nc,nd),Primitive(Primitive::quad,color),trySurfaceOptimization(trySurfaceOptimization){}
     
     /// render method
     virtual void render(const Primitive::RenderContext &ctx);

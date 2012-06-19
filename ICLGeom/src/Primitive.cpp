@@ -140,12 +140,36 @@ namespace icl{
   }
 
   void QuadPrimitive::render(const Primitive::RenderContext &ctx){
+    if(trySurfaceOptimization){
+      WARNING_LOG("trySurfaceOptimization flag is not supported yet!");
+#if 0
+      bool swap = ( ctx.vertices[i(0)].dot(ctx.vertices[i(2)])[0] >
+                    ctx.vertices[i(1)].dot(ctx.vertices[i(2)])[0] );
+      if(swap){
+        FixedColVector<int,8> &t = (*this);
+        for(int i=0;i<4;++i){
+          std::swap(t[2*i],t[2*i+1]);
+        }
+      }
+
+      trySurfaceOptimization = false;
+      render(ctx);
+      trySurfaceOptimization= true;
+      
+      if(swap){
+        FixedColVector<int,8> &t = (*this);
+        for(int i=0;i<4;++i){
+          std::swap(t[2*i],t[2*i+1]);
+        }
+      }      
+#endif
+    }
     glBegin(GL_QUADS);
-    
+      
     gl_auto_normal(ctx, i(3), i(1), i(2), i(4)==-1);
     
     glColor4fv(color.data());
-
+    
     for(int j=0;j<4;++j){
       gl_normal(ctx,i(j+4));
       gl_color(ctx,i(j),ctx.quadColorsFromVertices);

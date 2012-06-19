@@ -105,7 +105,7 @@ namespace icl{
         @param p chooses the norm 
         @return norm value 
     **/
-    float norm(float p=2);
+    float norm(float p=2) const;
     
     /// normalized this 2D vector to length=1;
     /** uses the euclidian norm!
