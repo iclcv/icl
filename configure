@@ -56,6 +56,7 @@ for T in "$@" ; do
                         "examples") EXAMPLES="$TR" ;;
                         "pkgcfg") PKGCFG="$TR" ;;
                         "omp") OMP="$TR" ;;
+                        "compiler") COMPILER="$TR" ;;
                         *) eval "path_$T1=$TR" ;;
                     esac
                 fi
@@ -108,8 +109,9 @@ CMD="$CMD -D ICL_VAR_USE_OMP:BOOL=$(echo $OMP | tr '[:lower:]' '[:upper:]')"
 CMD="$CMD -D ICL_VAR_ARCHITECTURE_DEPENDENT_BUILD_ON:BOOL=$(echo $ARCH | tr '[:lower:]' '[:upper:]')"
 CMD="$CMD -D ICL_VAR_USE_PKG_CONFIG:BOOL=$(echo $PKGCFG | tr '[:lower:]' '[:upper:]')"
 CMD="$CMD -D ICL_VAR_EXAMPLES_TO_BUILD:STRING=$EXAMPLES "
-CMD="$CMD -D CMAKE_CXX_COMPILER=/vol/llvm/bin/clang++ "
-
+if [ "$COMPILER" != "" ] ; then
+  CMD="$CMD -D CMAKE_CXX_COMPILER=${COMPILER} "
+fi
 echo "extracting configuration"
 echo "-----------------------------------------------------"
 for D in $DEPS ; do
@@ -135,6 +137,11 @@ echo "arch dependent build:      $ARCH"
 echo "examples:                  $EXAMPLES"
 echo "installation prefix:       $PREFIX"
 echo "use omp :                  $OMP"
+if [ "$COMPILER" != "" ] ; then
+  echo "compiler:                  $COMPILER" ;
+else
+  echo "compiler:                  $(which g++)" ;
+fi
 echo "-----------------------------------------------------"
 
 
