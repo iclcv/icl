@@ -34,11 +34,11 @@
 #include <ICLGeom/ComplexCoordinateFrameSceneObject.h>
 
 namespace icl{
-  ComplexCoordinateFrameSceneObject::ComplexCoordinateFrameSceneObject(float axisLength,float axisThickness){
-    setParams(axisLength,axisThickness);
+  ComplexCoordinateFrameSceneObject::ComplexCoordinateFrameSceneObject(float axisLength,float axisThickness, bool withLabels){
+    setParams(axisLength,axisThickness,withLabels);
   }
   
-  void ComplexCoordinateFrameSceneObject::setParams(float axisLength, float axisThickness){
+  void ComplexCoordinateFrameSceneObject::setParams(float axisLength, float axisThickness, bool withLabels){
     Mutex::Locker lock(mutex);
     
     m_vertices.clear();
@@ -83,11 +83,12 @@ namespace icl{
     addVertex(Vec(l+3*d,0,0,1),GeomColor(0,0,0,0));
     addVertex(Vec(0,l+3*d,0,1),GeomColor(0,0,0,0));
     addVertex(Vec(0,0,l+3*d,1),GeomColor(0,0,0,0));
-#ifdef HAVE_OPENGL
-    addText(0,"x");
-    addText(1,"y");
-    addText(2,"z");
-#endif
+
+    if(withLabels){
+      addText(0,"x");
+      addText(1,"y");
+      addText(2,"z");
+    }
   }
 
 }
