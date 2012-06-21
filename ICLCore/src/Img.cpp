@@ -161,6 +161,7 @@ namespace icl {
     FUNCTION_LOG("this: " << this);
     m_vecChannels = tSrc.m_vecChannels;
     setTime(tSrc.getTime());
+    setMetaData(tSrc.getMetaData());
   }
 
   // }}}
@@ -226,6 +227,7 @@ namespace icl {
 
     //take over timestamp
     this->setTime(tSrc.getTime());
+    this->setMetaData(tSrc.getMetaData());
     return *this;
   }
 
@@ -294,6 +296,7 @@ namespace icl {
     }
     poDst->setFormat(fmt);
     poDst->setTime(t);
+    poDst->setMetaData(getMetaData());
     return poDst;  
   }
 
@@ -384,6 +387,7 @@ namespace icl {
     if(!poDst) poDst = new Img<Type>(getParams());
     else poDst->setParams(getParams());
     poDst->setTime(getTime());
+    poDst->setMetaData(getMetaData());
 
     for(int c=getChannels()-1; c>=0; --c){
       deepCopyChannel(this,c,poDst,c);
@@ -403,6 +407,7 @@ namespace icl {
     poDst->setChannels(getChannels());
     poDst->setFormat(getFormat());
     poDst->setTime(getTime());
+    poDst->setMetaData(getMetaData());
     //    poDst->setFullROI(); 
     for(int c=getChannels()-1; c>=0; --c){
       scaledCopyChannelROI(this,c,Point::null,getSize(),poDst,c,Point::null,poDst->getSize(),eScaleMode);
@@ -429,6 +434,7 @@ namespace icl {
       poDst->setFormat(getFormat());
     }
     poDst->setTime(getTime());
+    poDst->setMetaData(getMetaData());
     for(int c=getChannels()-1; c>=0; --c){
       deepCopyChannelROI(this,c, getROIOffset(), getROISize(), 
                          poDst,c, poDst->getROIOffset(), poDst->getROISize() );
@@ -448,6 +454,7 @@ namespace icl {
     poDst->setChannels(getChannels());
     poDst->setFormat(getFormat());
     poDst->setTime(getTime());
+    poDst->setMetaData(getMetaData());
     
     for(int c=getChannels()-1; c>=0; --c){
       scaledCopyChannelROI(this,c, getROIOffset(), getROISize(), 
@@ -570,6 +577,7 @@ namespace icl {
     other.append(this,index);
     other.setROI(getROI());
     other.setTime(getTime());
+    other.setMetaData(getMetaData());
     other.setFormat(formatMatrix);
     return other;
   }
@@ -585,6 +593,7 @@ namespace icl {
     other.append(this,indices);
     other.setROI(getROI());
     other.setTime(getTime());
+    other.setMetaData(getMetaData());
     other.setFormat(formatMatrix);
     return other;
   }
@@ -613,6 +622,7 @@ namespace icl {
       if(dst->getROISize() != getROISize()) throw ICLException("Img<T>::lut source and destination ROI sizes differ");
     }
     dst->setTime(getTime());
+    dst->setMetaData(getMetaData());
     const int shift = 8-bits;
     
     for(int c=getChannels()-1; c >= 0; --c) {
@@ -639,6 +649,7 @@ namespace icl {
       if(dst->getROISize() != getROISize()) throw ICLException("Img<T>::lut source and destination ROI sizes differ");
     }
     dst->setTime(getTime());
+    dst->setMetaData(getMetaData());
     
     for(int c=getChannels()-1; c >= 0; --c) {
       ippiLUTPalette_8u_C1R(getROIData(c),getLineStep(),
@@ -1741,6 +1752,7 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
     
     ImgBase *poDst = ensureCompatible(ppoDst,poSrc->getDepth(),poSrc->getSize(),poSrc->getChannels(),poSrc->getFormat());
     poDst->setTime(poSrc->getTime());
+    poDst->setMetaData(poSrc->getMetaData());
     
 
 
@@ -1788,6 +1800,7 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
       poDst->setFormat(poSrc->getFormat());
     }
     poDst->setTime(poSrc->getTime()); 
+    poDst->setMetaData(poSrc->getMetaData());
     for(int c=poSrc->getChannels()-1; c>=0; --c){
       switch(poSrc->getDepth()){
 #define ICL_INSTANTIATE_DEPTH(D)                                                                                           \

@@ -118,6 +118,7 @@ add_libsource (${PROJECT_NAME} "src/SharedMemoryPublisher.cpp" "${CONDITIONLIST}
 set(CONDITIONLIST HAVE_LIBFREENECT_COND)
 add_libsource (${PROJECT_NAME} "src/KinectGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 set(CONDITIONLIST HAVE_PYLON_COND)
+
 add_libsource (${PROJECT_NAME} "src/PylonGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/PylonGrabberThread.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/PylonCameraOptions.cpp" "${CONDITIONLIST}" LIB_SOURCES)
@@ -130,8 +131,6 @@ set(CONDITIONLIST HAVE_RSB_COND HAVE_PROTOBUF_COND)
 #add_libsource (${PROJECT_NAME} "src/RSBImage.pb.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/RSBImageOutput.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/RSBGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-add_libsource (${PROJECT_NAME} "src/RSBDataSender.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-add_libsource (${PROJECT_NAME} "src/RSBDataReceiver.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME})

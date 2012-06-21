@@ -43,6 +43,26 @@
 namespace icl{
   
   /// Generic Sink for images
+  /** Like the GenericGrabber, the GenericImageOutput provides a string-configurable
+      interface for arbitrary image sinks. 
+      
+      \section BACK Supported Backends
+      
+      Supported Backends are:
+        - "file" (description=filepattern)
+        - "video" (description=output-video-filename,CODEC-FOURCCC=DIV3,VideoSize=VGA,FPS=24)
+        - "sm" (SharedMemory output, description=memory-segment-ID)
+        - "xcfp" (XCF Publisher output, description=stream-name)
+        - "rsb" (Robotics Service Bus Output), description=[comma-sep. transport-list=spread]:scope)
+
+      \section META Image Meta Data
+      
+      Only a few backends do actually support sending also image meta data. So far,
+      this is only supported by the RSB and by the shared memory backend, however, 
+      we plan to add this feature at least for the .icl-file format. The corresponding
+      GenericGrabber backends for these types are also able to deserialize the images meta data
+  */
+  
   class GenericImageOutput : public ImageOutput{
     std::string type;
     std::string description;
@@ -61,15 +81,6 @@ namespace icl{
     GenericImageOutput(const ProgArg &pa);
     
     /// initialize this instance
-    /** Like the GenericGrabber, this 'generic tool' can also be set up by
-        two string specifiers 
-        Possible types are:
-        - "file" (description=filepattern)
-        - "video" (description=output-video-filename,CODEC-FOURCCC=DIV3,VideoSize=VGA,FPS=24)
-        - "sm" (SharedMemory output, description=memory-segment-ID)
-        - "xcfp" (XCF Publisher output, description=stream-name)
-        - "rsb" (Robotics Service Bus Output), description=[comma-sep. transport-list=spread]:scope)
-    */
     void init(const std::string &type, const std::string &description);
 
     /// initialization method (from given progarg)
@@ -92,6 +103,18 @@ namespace icl{
 
     /// retusn current description string
     inline const std::string &getDescription() const { return description; }
+
+    /// sets the implementations compression options
+    virtual void setCompression(const ImageCompressor::CompressionSpec &spec){
+      ICLASSERT_THROW(impl,ICLException("GenericImageOutput:setCompression: impl was null"));
+      impl->setCompression(spec);
+    }
+    
+    /// returns the implementation's current compression type (result.first) and quality (result.second)
+    virtual CompressionSpec getCompression() const{
+      ICLASSERT_THROW(impl,ICLException("GenericImageOutput:getCompression: impl was null"));
+      return impl->getCompression();
+    }
   };
 }
 

@@ -90,8 +90,8 @@ namespace icl{
   }
 
   void ImageSerializer::serialize(const ImgBase *image, icl8u *dst, 
-                                  const ImageSerializer::ImageHeader &header, 
-                                  const ImageSerializer::MetaData &meta)throw (ICLException){
+                                  const ImageSerializer::ImageHeader &header,
+                                  bool skipMetaData) throw (ICLException){
     ICLASSERT_THROW(image,ICLException(str(__FUNCTION__)+": image was null"));
     
     if(header.size()){
@@ -110,26 +110,25 @@ namespace icl{
         dst += lengthPerChannel;
       }
     }
-    *(icl32s*)dst = (icl32s)meta.size();
-    dst += sizeof(icl32s);
-    std::copy(meta.begin(),meta.end(),dst);
-  }
-  
-  void ImageSerializer::serialize(const ImgBase *image, std::vector<icl8u> &data,
-                                  const ImageSerializer::ImageHeader &header,
-                                  const ImageSerializer::MetaData &meta) throw (ICLException){
-    ICLASSERT_THROW(image,ICLException(str(__FUNCTION__)+": image was null"));
-    if(header.size()){
-      data.resize(header.size()+estimateImageDataSize(image));
-      serialize(image,data.data(),header,meta);
+    if(skipMetaData){
+      *(icl32s*)dst = 0;
     }else{
-      ImageHeader header2 = createHeader(image);
-      data.resize(header2.size()+estimateImageDataSize(image));
-      serialize(image,data.data(),header2,meta);
+      *(icl32s*)dst = (icl32s)image->getMetaData().length();
+      dst += sizeof(icl32s);
+      std::copy(image->getMetaData().begin(), image->getMetaData().end(), dst);
     }
   }
   
-  void ImageSerializer::deserialize(const icl8u *data, ImgBase **dst, ImageSerializer::MetaData *meta) throw (ICLException){
+  void ImageSerializer::serialize(const ImgBase *image, std::vector<icl8u> &data,
+                                  const ImageSerializer::ImageHeader &header, 
+                                  bool skipMetaData) throw (ICLException){
+    ICLASSERT_THROW(image,ICLException(str(__FUNCTION__)+": image was null"));
+
+    data.resize(estimateSerializedSize(image,skipMetaData));
+    serialize(image,data.data(),header,skipMetaData);
+  }
+  
+  void ImageSerializer::deserialize(const icl8u *data, ImgBase **dst) throw (ICLException){
     ICLASSERT_THROW(dst,ICLException(str(__FUNCTION__)+": destination ImgBase** was null"));
     ICLASSERT_THROW(dst,ICLException(str(__FUNCTION__)+": source data pinter was null"));
     
@@ -156,19 +155,18 @@ namespace icl{
       }
     }
     
-    if(meta){
-      int metaDataLen = *(icl32s*)data;
-      data+= sizeof(icl32s);
-      meta->resize(metaDataLen);
-      std::copy(data,data+metaDataLen,meta->begin());
+    int metaLen = *(icl32s*)data;
+    data+= sizeof(icl32s);
+    if(metaLen){
+      (*dst)->getMetaData().assign((char*)data, metaLen);
+    }else{
+      (*dst)->clearMetaData();
     }
-
   }
 
-  int ImageSerializer::estimateSerializedSize(const ImgBase *image, 
-                                              const ImageSerializer::MetaData &meta) throw (ICLException){
+  int ImageSerializer::estimateSerializedSize(const ImgBase *image, bool skipMetaData) throw (ICLException){
     ICLASSERT_THROW(image,ICLException(str(__FUNCTION__)+": image was null"));
-    return getHeaderSize() + estimateImageDataSize(image) + sizeof(icl32s) + meta.size();
+    return getHeaderSize() + estimateImageDataSize(image) + sizeof(icl32s) + (skipMetaData ? 0 : image->getMetaData().length());
   }
 
   Time ImageSerializer::deserializeTimeStamp(const icl8u *data) throw (ICLException){

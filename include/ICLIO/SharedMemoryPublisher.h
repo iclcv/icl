@@ -48,7 +48,7 @@ namespace icl{
       If two publishers are set up to publish to one memory, the result
       is undetermined.
   */
-  class SharedMemoryPublisher : public ImageOutput, public Uncopyable{
+  class SharedMemoryPublisher : public ImageOutput{
     struct Data;  //!< intenal data
     Data *m_data; //!< intenal data
     

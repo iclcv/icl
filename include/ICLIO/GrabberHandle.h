@@ -271,6 +271,20 @@ namespace icl{
       return m_instance->ptr->getDesiredSizeInternal();
     }
 
+    /// passes registered callback to the internal pointer
+    virtual void registerCallback(callback cb){
+      ICLASSERT_RETURN(!isNull());
+      Mutex::Locker l(m_instance->mutex);
+      return m_instance->ptr->registerCallback(cb);
+    }
+     
+    /// passes registered callback to the internal pointer
+    virtual void removeAllCallbacks(){
+      ICLASSERT_RETURN(!isNull());
+      Mutex::Locker l(m_instance->mutex);
+      return m_instance->ptr->removeAllCallbacks();
+    }
+
     /// returns all current instances available
     static inline const InstanceMap &getInstanceMap() { return s_instances; }
     

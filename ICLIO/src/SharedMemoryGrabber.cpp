@@ -35,20 +35,27 @@
 #include <ICLIO/SharedMemoryGrabber.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Thread.h>
-#include <ICLCore/ImageSerializer.h>
+#include <ICLIO/ImageCompressor.h>
 
 #include <QtCore/QSharedMemory>
 #include <QtCore/QProcess>
+#include <QtCore/QMutex>
+#include <QtCore/QThread>
+#include <QtCore/QMutexLocker>
 
 namespace icl{
   
   struct SharedMemoryGrabberImpl::Data{
+    
+    Data():acquireMutex(QMutex::Recursive){}
+    
     QSharedMemory mem;
     ImgBase *image;
     ImgBase *converted_image;
     bool omitDoubledFrames; // todo implement this feature!
     Time lastImageTimeStamp;
     Time lastValidImageGrabbed;
+    ImageCompressor compressor;
     
     bool isNew(const Time &t, Grabber &g){
       if(t == Time::null){
@@ -76,6 +83,29 @@ namespace icl{
         return true;
       }
     }
+    
+    QMutex acquireMutex;
+    bool callbacksEnabled;
+    
+    struct CallbackCaller : public QThread{
+      SharedMemoryGrabberImpl *impl;
+      SharedMemoryGrabberImpl::Data *data;
+      CallbackCaller(SharedMemoryGrabberImpl *impl, SharedMemoryGrabberImpl::Data *data):
+        impl(impl),data(data){
+        start();
+      }
+      virtual void run(){
+        while(true){
+          while(!data->callbacksEnabled){
+            Thread::sleep(100);
+          }
+          impl->notifyNewImageAvailable(impl->acquireImage());
+        }
+      }
+    } *caller;
+    
+   
+    
   };
   
   SharedMemoryGrabberImpl::SharedMemoryGrabberImpl(const std::string &sharedMemorySegmentID) throw(ICLException):
@@ -84,7 +114,9 @@ namespace icl{
     m_data->image = 0;
     m_data->converted_image = 0;
     m_data->omitDoubledFrames = true;
-    
+    m_data->callbacksEnabled = false;
+    m_data->caller = new Data::CallbackCaller(this,m_data);
+
     if(sharedMemorySegmentID.length()){
       m_data->mem.setKey(sharedMemorySegmentID.c_str());
       if(!m_data->mem.attach(QSharedMemory::ReadOnly)){
@@ -147,17 +179,19 @@ namespace icl{
   }
   
   const ImgBase* SharedMemoryGrabberImpl::acquireImage(){
+    QMutexLocker lock(&m_data->acquireMutex);
+
     if(!m_data->mem.isAttached()) throw ICLException(str(__FUNCTION__)+": grabber is currently not attached to shared memory segment");
    
     m_data->mem.lock();
     while(m_data->omitDoubledFrames && // WAIT FOR NEW IMAGE LOOP
-          !m_data->isNew(ImageSerializer::deserializeTimeStamp((const icl8u*)m_data->mem.constData()),*this)){
-      
+          !m_data->isNew(m_data->compressor.pickTimeStamp((const icl8u*)m_data->mem.constData()),*this) ){
       m_data->mem.unlock();
       Thread::msleep(1);
       m_data->mem.lock();
     }
-    ImageSerializer::deserialize((const icl8u*)m_data->mem.constData(),&m_data->image);
+    
+    m_data->compressor.uncompress((const icl8u*)m_data->mem.constData(), m_data->mem.size(), &m_data->image);
     m_data->mem.unlock();
     return m_data->image;
 
@@ -206,20 +240,36 @@ namespace icl{
   void SharedMemoryGrabberImpl::setProperty(const std::string &property, const std::string &value){
     if(property == "omit-doubled-frames"){
       if(value == "on") m_data->omitDoubledFrames = true;
-      else if(value == "off") m_data->omitDoubledFrames = false;
+      else if(value == "off") {
+        m_data->omitDoubledFrames = false;
+        if(m_data->callbacksEnabled){
+          WARNING_LOG("setting omitDoubledFrames to false will also set callbacksEnabled to false");
+          m_data->callbacksEnabled = false;
+        }
+      }
       else ERROR_LOG("unable to set property 'omit-doubled-frames' to " << value << " (allowed values are 'on' and 'off')");
+    }if(property == "enable-callbacks"){
+      if(value == "on"){
+        if(!m_data->omitDoubledFrames){
+          WARNING_LOG("enabling enable-callbacks will also enabled omitDoubledFrames");
+        }
+        m_data->omitDoubledFrames = true;
+        m_data->callbacksEnabled = true;
+      }else if(value == "off"){
+        m_data->callbacksEnabled = false;
+      }else ERROR_LOG("unable to set property 'enable-callbacks' to " << value << " (allowed values are 'on' and 'off')");
     }else{
       ERROR_LOG("unable to set unsupported property " << property);
     }
   }
   
   std::vector<std::string> SharedMemoryGrabberImpl::getPropertyList(){
-    static const std::string ps[1] = {"omit-doubled-frames"};
+    static const std::string ps[1] = {"omit-doubled-frames,enable-callbacks"};
     return std::vector<std::string>(ps,ps+1);
   }
   
   std::string SharedMemoryGrabberImpl::getType(const std::string &name){
-    if(name == "omit-doubled-frames") {
+    if(name == "omit-doubled-frames" || name == "enable-callbacks") {
       return "menu";
     }else{
       ERROR_LOG("invalid property name " << name);
@@ -228,7 +278,7 @@ namespace icl{
   }
   
   std::string SharedMemoryGrabberImpl::getInfo(const std::string &name){
-    if(name == "omit-doubled-frames") {
+    if(name == "omit-doubled-frames" || name == "enable-callbacks") {
       return "{\"on\",\"off\"}";
     }else{
       ERROR_LOG("invalid property name " << name);
@@ -239,6 +289,8 @@ namespace icl{
   std::string SharedMemoryGrabberImpl::getValue(const std::string &name){
     if(name == "omit-doubled-frames") {
       return m_data->omitDoubledFrames ? "true" : "false";
+    }else if(name == "enable-callbacks"){
+      return m_data->callbacksEnabled ? "true" : "false";
     }else{
       ERROR_LOG("invalid property name " << name);
       return "undefined";

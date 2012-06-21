@@ -36,15 +36,36 @@
 #define ICL_IMAGE_OUTPUT_H
 
 #include <ICLCore/ImgBase.h>
+#include <ICLIO/ImageCompressor.h>
 
 namespace icl{
   
   /// Minimal interface for image output classes
-  struct ImageOutput{
+  /** The image output is used as generic interface for image sinks.
+      Usually, it is recommended to use the GenericImageOutput class
+      tha provides a string-based interface to set up the output
+      backend. 
+
+      \section CMP Compression 
+      A few outputs do also support generic image compression, while
+      other implementation provide output dependend compression parameters.
+      E.g. shared memory or RSB-based network output streams use
+      the inherited ImageCompressor to compress sent data. The file- our
+      video image output of course use the used video/file formats compression
+      mechanism.
+  */
+  struct ImageOutput : protected ImageCompressor{
     /// virtual destructor
     virtual ~ImageOutput() {}
+
     /// ImageOutput instances must implement this method
     virtual void send(const ImgBase *image) = 0;
+
+    /// provide the protectedly inherited image compressor options here
+    using ImageCompressor::getCompression;
+
+    /// provide the protectedly inherited image compressor options here
+    using ImageCompressor::setCompression;
   };
 }
 

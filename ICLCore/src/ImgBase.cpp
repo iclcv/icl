@@ -86,7 +86,14 @@ namespace icl {
     }
     
     std::cout << " -----------------------------------------" << std::endl;
-
+    
+    if(hasMetaData()){
+      std::cout << "| no meta data available " << std::endl;
+    }else{
+      std::cout << "| meta data: " << std::endl;
+      std::cout << getMetaData() << std::endl;
+    }
+    std::cout << " -----------------------------------------" << std::endl;
 }
 
   // }}}
@@ -128,6 +135,7 @@ namespace icl {
     if(!poDst) poDst = new Img<otherT>(getParams());
     else poDst->setParams(getParams());
     poDst->setTime(getTime());
+    poDst->setMetaData(getMetaData());
     
 #define ICL_INSTANTIATE_DEPTH(D)                                 \
    case depth##D: for(int c=getChannels()-1;c>=0;--c){           \
@@ -183,6 +191,7 @@ namespace icl {
       poDst->setFormat(getFormat());
     }
     poDst->setTime(getTime());
+    poDst->setMetaData(getMetaData());
     
 #define ICL_INSTANTIATE_DEPTH(D)                                            \
   case depth##D:                                                            \

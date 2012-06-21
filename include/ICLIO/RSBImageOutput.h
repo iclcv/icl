@@ -47,13 +47,6 @@ namespace icl{
     struct Data;  //!< pimpl type
     Data *m_data; //!< pimpl pointer
     
-    protected:
-    /// this can be overwritten in subclasses, that also provide an interface for sending meta-data
-    /** This classes send-method will always 'ask' getMetaData() whether there is extra data that
-        has to be attached to the image. Note, that the RSBGrabber (and also the GenericGrabber)
-        does not have an interface for accessing meta data. Use the RSBDataReceiver instead  */
-    virtual const std::string *getMetaData() { return 0; }
-
     public:
     /// creates a null instance
     RSBImageOutput();
@@ -70,19 +63,6 @@ namespace icl{
     /** supported transports are socket, spread and inprocess. Please note, that
         the spread-transport requires spread running. */
     void init(const std::string &scope, const std::string &transportList="spread");
-    
-    /// sets the current compression type
-    /** Valid compression modes are
-        - off no compression (default, possible for all data types)
-        - rle run lenght encoding (quality can be 1, 4 or 6, it defines 
-          the number of bits, that are used for the value domain. 
-          Default value is 1, which is used for binary images)
-        - jpeg jpeg encoding (quality is default jpeg quality 1% - 100%)
-    */
-    void setCompression(const std::string &compression, const std::string &quality="default");
-    
-    /// returns the current compression type (first) and quality (second)
-    std::pair<std::string,std::string> getCompression() const;
     
     /// sender method
     virtual void send(const ImgBase *image);

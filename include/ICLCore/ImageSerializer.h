@@ -70,17 +70,14 @@ namespace icl{
     /// Internally used type for image headers
     typedef std::vector<icl8u> ImageHeader;
     
-    /// Type for meta-data
-    typedef std::vector<icl8u> MetaData;
-    
     /// returns the size of an image header (in Bytes)
     static int getHeaderSize();
     
     /// estimates the size for the image data of an serialized image
     static int estimateImageDataSize(const ImgBase *image) throw (ICLException);
 
-    /// estimates the full size of an serialized image (without meta-data)
-    static int estimateSerializedSize(const ImgBase *image, const MetaData &meta=MetaData()) throw (ICLException);
+    /// estimates the full size of an serialized image
+    static int estimateSerializedSize(const ImgBase *image, bool skipMetaData=false) throw (ICLException);
     
     /// creates an image header from given image
     static ImageHeader createHeader(const ImgBase *image) throw (ICLException);
@@ -88,15 +85,15 @@ namespace icl{
     /// serializes an image into given destination data-points (which has to be long enough)
     static void serialize(const ImgBase *image, icl8u *dst, 
                           const ImageHeader &header=ImageHeader(),
-                          const MetaData &meta=MetaData()) throw (ICLException);
+                          bool skipMetaData=false) throw (ICLException);
     
     /// serializes an image into given vector (the vector size is adapted automatically)
     static void serialize(const ImgBase *image, std::vector<icl8u> &data,
                           const ImageHeader &header=ImageHeader(),
-                          const MetaData &meta=MetaData()) throw (ICLException);
+                          bool skipMetaData=false) throw (ICLException);
     
     /// deserializes an image (and optionally also the meta-data) from given icl8u data block
-    static void deserialize(const icl8u *data, ImgBase **dst, MetaData *dstMeta=0) throw (ICLException);
+    static void deserialize(const icl8u *data, ImgBase **dst) throw (ICLException);
 
     /// extracts only an images TimeStamp from it's serialized form
     static Time deserializeTimeStamp(const icl8u *data) throw (ICLException);

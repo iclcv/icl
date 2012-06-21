@@ -75,10 +75,10 @@ namespace icl{
     
     void sendUpdateToSource(){
       shared_ptr<std::string> cmd;
-      if(setCompressionMode == "off"){
-        cmd = shared_ptr<std::string>(new std::string("off:off"));
-      }else if(setCompressionMode == "rle"){
-        cmd = shared_ptr<std::string>(new std::string("rle:" + str(setRLEQuality)));
+      if(setCompressionMode == "none"){
+        cmd = shared_ptr<std::string>(new std::string("none:none"));
+      }else if(setCompressionMode == "rlen"){
+        cmd = shared_ptr<std::string>(new std::string("rlen:" + str(setRLEQuality)));
       }else if(setCompressionMode == "jpeg"){
         cmd = shared_ptr<std::string>(new std::string("jpeg:" + str(setJPEGQuality)));
       }else{
@@ -110,29 +110,16 @@ namespace icl{
       const std::string &mode = image.compressionmode();
       
       receivedCompressionMode = mode;
-      if(mode == "off"){
-        // quality is not used here!
-        ImageSerializer::deserialize((const icl8u*)&data[0],&bufferImage);
-      }else if(mode == "rle" || mode == "jpeg"){
-        compressor.decode((const icl8u*)&data[0], data.length()).deepCopy(&bufferImage);
-        
-        if(mode == "jpeg"){
-          receivedJPEGQuality = parse<int>(image.compressionquality());
-        }else{
-          receivedRLEQuality = parse<int>(image.compressionquality());
-        }
-      }
+
+      compressor.uncompress((const icl8u*)&data[0], data.length(), &bufferImage); //)->deepCopy(&bufferImage);
+          
       if(bufferImage){
         bufferImage->setTime(image.time());
         bufferImage->setROI(Rect(image.roix(),image.roiy(), image.roiw(), image.roih()));
+        bufferImage->setMetaData(image.metadata());
         hasNewImage = true;
       }
-      
-      if(image.has_metadata()){
-        impl->newDataAvailable(bufferImage,image.metadata());
-      }else{
-        impl->newDataAvailable(bufferImage,"");
-      }
+      impl->notifyNewImageAvailable(bufferImage);
     }
   };
   
@@ -254,9 +241,9 @@ namespace icl{
   std::string RSBGrabberImpl::getInfo(const std::string &property){
     Mutex::Locker lock(m_data->mutex);
     if(property == "compression-type"){
-      return "{\"off\",\"rle\",\"jpeg\"}";
+      return "{\"none\",\"rlen\",\"jpeg\"}";
     }else if(property == "RLE-quality"){
-      return "{\"1 Bit\",\"4 Bit\",\"6 Bit\"}";
+      return "{\"1 Bit\",\"4 Bit\",\"6 Bit\",\"8 Bit\"}";
     }else if(property == "JPEG-quality"){
       return "[1,100]:1";
     }else if(property == "image data size" || property == "compression ratio"){

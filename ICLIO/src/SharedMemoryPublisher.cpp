@@ -37,9 +37,11 @@
 #include <ICLUtils/StringUtils.h>
 #include <ICLCore/ImageSerializer.h>
 #include <ICLCore/Img.h>
+#include <ICLIO/ImageCompressor.h>
 
 namespace icl{
-  
+  #define MIN_MEMORY_SEGMENT_SIZE 5000000
+
   struct SharedMemoryLocker{
     QSharedMemory &mem;
     SharedMemoryLocker(QSharedMemory &mem):
@@ -121,7 +123,7 @@ namespace icl{
     m_data = new Data;
     m_data->name = memorySegmentName;
     m_data->listMem.setKey("icl-shared-mem-grabbers");
-    
+
     Img8u image;
     publish(&image);
   }
@@ -149,39 +151,41 @@ namespace icl{
   void SharedMemoryPublisher::publish(const ImgBase *image){
     QSharedMemory &mem = m_data->mem;
 
-    int imageSize = ImageSerializer::estimateSerializedSize(image);
+    CompressedData data = compress(image);
     
     if(!mem.isAttached()){
       if(!m_data->name.length()) throw ICLException(str(__FUNCTION__)+": no memory segment name was defined yet!");
       mem.setKey(m_data->name.c_str());
       mem.lock();
       if(m_data->mem.attach(QSharedMemory::ReadWrite)){
-        WARNING_LOG(str(__FUNCTION__)+": memory segment did already exist before (using it)!");
         register_grabber(m_data->listMem,m_data->name);
       }else{
-        if(mem.create(imageSize)){
+        if(mem.create(iclMax(MIN_MEMORY_SEGMENT_SIZE,data.len))){
           register_grabber(m_data->listMem,m_data->name);
         }
       }
       mem.unlock();
     }
-    ICLASSERT_THROW(mem.isAttached(),ICLException(str(__FUNCTION__)+": QSharedMemory is still not attached (this should not happen)" ));
+    ICLASSERT_THROW(mem.isAttached(),ICLException(str(__FUNCTION__)+
+                                                  ": QSharedMemory is still not attached (this should not happen)" ));
 
 
-    if(mem.size() != imageSize){
+    if(mem.size() < data.len){
       mem.detach();
-      if(!mem.create(imageSize)){
+      if(!mem.create(data.len)){
         throw ICLException(str(__FUNCTION__)+": unable to resize memory segment (it seems to be in use from somewhere else)");
       }
     }
 
     mem.lock();    
-    ImageSerializer::serialize(image,(icl8u*)mem.data());
+    std::copy(data.bytes, data.bytes+data.len,(icl8u*)mem.data());
     mem.unlock();
   }
 
   std::string SharedMemoryPublisher::getMemorySegmentName() const throw (ICLException){
     return m_data->name;
   }
+
 }
+
 

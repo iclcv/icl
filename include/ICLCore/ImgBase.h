@@ -36,11 +36,12 @@
 #define ICLBASE_H
 
 #include <vector>
+#include <string>
 #include <ICLCore/CoreFunctions.h>
 #include <ICLCore/ImgParams.h>
 #include <ICLUtils/Time.h>
 #include <ICLUtils/Range.h>
-    
+#include <ICLUtils/SmartPtr.h>
 
 namespace icl {
   
@@ -906,6 +907,30 @@ namespace icl {
       /// @}
       /* }}} */
 
+      /// returns whether meta data has been associated to this image
+      inline bool hasMetaData() const { return m_metaData.length(); }
+      
+      /// associates new meta data with this image
+      inline void setMetaData(const std::string &data){
+        m_metaData = data;
+      }
+
+      /// removes all meta data
+      inline void clearMetaData(){
+        setMetaData("");
+      }
+
+      /// returns associated meta data
+      inline const std::string &getMetaData() const {
+        return m_metaData;
+      }
+      
+      /// returns associated meta data (unconst)
+      std::string &getMetaData() {
+        return m_metaData;
+      }
+        
+
       protected:
 
       /* {{{ Constructor  */
@@ -932,6 +957,9 @@ namespace icl {
       /// timestamp of the image
       Time m_timestamp;
 
+      /// additional information associated with this image
+      std::string m_metaData;
+      
       /* }}} */
     };
 

@@ -35,6 +35,7 @@
 #include <ICLIO/Grabber.h>
 #include <ICLFilter/WarpOp.h>
 #include <ICLUtils/StringUtils.h>
+#include <ICLUtils/Mutex.h>
 #include <ICLUtils/ConfigFile.h>
 #include <ICLCC/Converter.h>
 
@@ -56,7 +57,13 @@ namespace icl{
     Converter converter;
     ImgBase  *image;
     WarpOp *warp;
+    
+    Mutex callbackMutex;
+    std::vector<Grabber::callback> callbacks;
   };
+
+  
+
 
   Grabber::Grabber():
     data(new Data){
@@ -357,6 +364,24 @@ namespace icl{
   const Img32f *Grabber::getUndistortionWarpMap() const{
     return data->warp ? &data->warp->getWarpMap() : 0;
   }
+
   
+  
+  void Grabber::registerCallback(Grabber::callback cb){
+    Mutex::Locker lock(data->callbackMutex);
+    data->callbacks.push_back(cb);
+  }
+     
+  void Grabber::removeAllCallbacks(){
+    Mutex::Locker lock(data->callbackMutex);
+    data->callbacks.clear();
+  }
+
+  void Grabber::notifyNewImageAvailable(const ImgBase *image){
+    Mutex::Locker lock(data->callbackMutex);
+    for(size_t i=0;i<data->callbacks.size();++i){
+      data->callbacks[i](image);
+    }
+  }
 
 }

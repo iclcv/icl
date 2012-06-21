@@ -48,7 +48,7 @@
 
 namespace icl{
 
-  class OpenCVVideoWriter :public ImageOutput, public Uncopyable{
+  class OpenCVVideoWriter :public ImageOutput{
 private:
 	///OpenCV VideoWriter struct
 	CvVideoWriter *writer;

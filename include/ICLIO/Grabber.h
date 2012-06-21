@@ -40,6 +40,7 @@
 
 #include <ICLCore/ImgBase.h>
 #include <ICLUtils/SteppingRange.h>
+#include <ICLUtils/Function.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/ProgArg.h>
 #include <ICLIO/GrabberDeviceDescription.h>
@@ -129,6 +130,24 @@ namespace icl {
       must have at least the two properties 'format' and 'size'. These
       are handled in a special way by the automatically created Grabber-
       property-GUIs available in the ICLQt package.
+
+
+      \section CB Callback Based Image Akquisition
+      
+      As a very new experimental features, ICL's Grabber interface provides
+      methods to register callback functions to the grabber that are 
+      then called automatically whenever a new image is available. This
+      feature needs to be implemented explicitly for each grabber backend and
+      does sometimes not even make sense. Furthermore, it' could lead to 
+      some strange behaviour of the whole application, because the internal
+      image akquisition process is suddenly linked to the further image
+      processing steps directly. This feature should not be used for 
+      writing applications that are scheduled by the speed of the internal
+      image aquisition loop. Therefore, images should never be processed
+      in the callback functions that are registred.
+      
+      So far only a few grabbers provide this feature at all. If it
+      is not provided, the registered callbacks will never be called.
   */
   class Grabber : public Uncopyable{
     /// internal data class
@@ -369,6 +388,23 @@ namespace icl {
      const Img32f *getUndistortionWarpMap() const;
      /// @}
 
+     /// new image callback type
+     typedef Function<void,const ImgBase*> callback;
+     
+     /// registers a callback that is called each time, a new image is available
+     /** This feature must not be implemented by specific grabber implementations. And
+         it is up to the implementation whether the image that is passed to the
+         callback has the "desired parameters" or not. Most likely, an internal
+         image buffer is passed, which does not have the desired paremters. The output image
+         is also usually not undistorted. */
+     virtual void registerCallback(callback cb);
+     
+     /// removes all registered image callbacks
+     virtual void removeAllCallbacks();
+     
+     /// this function can be implemented by subclasses in order to notify, that a new image is available
+     /** When this function is called, it will automatically call all callbacks with the given image. */
+     virtual void notifyNewImageAvailable(const ImgBase *image);
     protected:
 
 

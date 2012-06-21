@@ -11,7 +11,8 @@
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
-** Commercial License                                              **
+** Commercial License            
+                                  **
 ** ICL can be used commercially, please refer to our website       **
 ** www.iclcv.org for more details.                                 **
 **                                                                 **

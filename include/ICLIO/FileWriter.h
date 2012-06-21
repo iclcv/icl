@@ -118,7 +118,7 @@ namespace icl{
       }
       \endcode
   **/
-  class FileWriter : public ImageOutput, public Uncopyable{
+  class FileWriter : public ImageOutput{
     public:
     /// initializer class
     friend class FileWriterPluginMapInitializer;

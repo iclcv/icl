@@ -300,6 +300,21 @@ namespace icl {
       return m_poGrabber->getDesiredSizeInternal();
     }
 
+    /// passes registered callback to the internal pointer
+    virtual void registerCallback(callback cb){
+      ICLASSERT_RETURN(!isNull());
+      Mutex::Locker l(m_mutex);
+      return m_poGrabber->registerCallback(cb);
+    }
+
+    /// passes registered callback to the internal pointer
+    virtual void removeAllCallbacks(){
+      ICLASSERT_RETURN(!isNull());
+      Mutex::Locker l(m_mutex);
+      return m_poGrabber->removeAllCallbacks();
+    }
+
+
      /// returns a list of all currently available devices (according to the filter-string)
      /** The filter-string is a comma separated list of single filters like
          <pre> dc=0,unicap </pre>
