@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLIO/PylonGrabber.h                           **
+** File   : include/ICLIO/OpenNIGrabber.h                          **
 ** Module : ICLIO                                                  **
 ** Authors: Viktor Richter                                         **
 **                                                                 **
@@ -37,10 +37,10 @@
 
 #include <ICLIO/GrabberHandle.h>
 #include <ICLUtils/Time.h>
+#include <ICLIO/OpenNIUtils.h>
 
 #include <XnOS.h>
 #include <XnCppWrapper.h>
-
 
 namespace icl {
 
@@ -74,15 +74,36 @@ namespace icl {
       private:
         /// The constructor is private so only the friend class can create instances
         /**
-        * @param args The arguments provided to this grabber.
+        * @param device NodeInfo of the device to use.
         */
-        OpenNIGrabberImpl(const std::string args);
+        OpenNIGrabberImpl(std::string name, std::string args);
 
-        /// Returna a unique qualifier for the currently used camera.
+        /// Returns a string rep((DepthGenerator*) m_Generator)resentation of NodeInfo.
+        static std::string getTreeStringRepresentation(xn::NodeInfo info);
+
+        /// gets progargs and finds the corresponding device
+        static std::string getDeviceNodeNameFromArgs(std::string args);
+
+        /// creates a NodeInfo corresponding to passed TreeStringRepresentation.
+        xn::NodeInfo* createDeviceFromName(std::string name);
+
+        /// Returns the string representation of the currently used device.
         std::string getName();
 
+        /// switches generator.
+        void setGeneratorTo(std::string value);
+
+        /// the OpenNI context
+        OpenNIAutoContext m_AutoContext;
+        xn::Context* m_Context;
+        /// A NodeInfo describing the underlying device.
+        xn::NodeInfo* m_Device;
         /// A mutex lock to synchronize buffer and color converter access.
-        Mutex m_ImgMutex;
+        Mutex m_GeneratorLock;
+        /// This pointer holds an OpenNIImageGenerator
+        OpenNIImageGenerator* m_Generator;
+        /// Which generator should be used on next acqusition.
+        OpenNIImageGenerator::Generators m_SetToGenerator;
     };
 
     /// Grabber implementation for OpenNI based camera access.
@@ -94,26 +115,40 @@ namespace icl {
       /// create a new OpenNIGrabber
       /** @see OpenNIGrabber for more details*/
       inline OpenNIGrabber(const std::string args="") throw(ICLException) {
-      /// looking for Pylon device compatible to args
-        OpenNIGrabberImpl* tmp = new OpenNIGrabberImpl(args);
-        if(isNew(tmp -> getName())){
-            initialize(tmp, tmp -> getName());
+      /// looking for OpenNI device compatible to args
+      DEBUG_LOG("get device name")
+      std::string name = OpenNIGrabberImpl::getDeviceNodeNameFromArgs(args);
+      DEBUG_LOG(name)
+        if(isNew(name)){
+            DEBUG_LOG("isnew")
+            OpenNIGrabberImpl* tmp = new OpenNIGrabberImpl(name, args);
+            initialize(tmp, name);
         }else{
-          initialize(tmp -> getName());
+          DEBUG_LOG("isold Grabber")
+          initialize(name);
         }
+      DEBUG_LOG("end")
       }
     
       static std::vector<GrabberDeviceDescription> getDeviceList(bool rescan){
-      static std::vector<GrabberDeviceDescription> deviceList;
+        static std::vector<GrabberDeviceDescription> deviceList;
         if(rescan){
           deviceList.clear();
-          deviceList.push_back(
-            GrabberDeviceDescription(
-              "oni",
-              "0|||someNiDevice",
-                "someNiDevice"
-              )
-            );
+          xn::Context context;
+          xn::NodeInfoList nodes;
+          context.EnumerateProductionTrees(XN_NODE_TYPE_DEVICE, NULL , nodes, NULL);
+          int i = 0;
+          for (xn::NodeInfoList::Iterator it = nodes.Begin(); it != nodes.End(); ++it){
+            std::string name = OpenNIGrabberImpl::getTreeStringRepresentation(*it);
+            deviceList.push_back(
+              GrabberDeviceDescription(
+                "oni",
+                str(i) + "|||" + name,
+                name
+                )
+              );
+            i++;
+          }
         }
       return deviceList;
       }

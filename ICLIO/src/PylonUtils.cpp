@@ -40,6 +40,8 @@
 using namespace icl;
 using namespace icl::pylon;
 
+static int inits = 0;
+
 // Static mutex and counter for clean initialising
 // and deleting of Pylon environment
 static unsigned int pylon_env_inits = 0;

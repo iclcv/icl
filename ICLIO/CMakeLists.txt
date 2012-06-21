@@ -125,6 +125,7 @@ add_libsource (${PROJECT_NAME} "src/PylonColorConverter.cpp" "${CONDITIONLIST}" 
 add_libsource (${PROJECT_NAME} "src/PylonUtils.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 set(CONDITIONLIST HAVE_OPENNI_COND)
 add_libsource (${PROJECT_NAME} "src/OpenNIGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/OpenNIUtils.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 set(CONDITIONLIST HAVE_RSB_COND HAVE_PROTOBUF_COND)
 #add_libsource (${PROJECT_NAME} "src/RSBImage.pb.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/RSBImageOutput.cpp" "${CONDITIONLIST}" LIB_SOURCES)

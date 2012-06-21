@@ -41,105 +41,218 @@
 using namespace xn;
 using namespace icl;
 
-Context g_context;
-ScriptNode g_scriptNode;
-DepthGenerator g_depth;
-ImageGenerator g_image;
-DepthMetaData g_depthMD;
-ImageMetaData g_imageMD;
+void printNodeInfo(Context cont){
+    NodeInfoList l;
+    XnStatus rc = cont.EnumerateExistingNodes(l);
+    DEBUG_LOG("XnStatus: " << xnGetStatusString(rc))
+    XnProductionNodeDescription pi;
+    DEBUG_LOG("NodeInfoList")
+    for (NodeInfoList::Iterator it = l.Begin(); it != l.End(); ++it){
+        pi = (*it).GetDescription();
+        DEBUG_LOG(pi.strName)
+        DEBUG_LOG(pi.strVendor)
+        DEBUG_LOG(pi.Type)
+                DEBUG_LOG(pi.Version.nMajor << " : "
+                          << pi.Version.nMinor << " : "
+                          << pi.Version.nMaintenance << " : ")
+    }
+    if(l.Begin() == l.End()){
+        DEBUG_LOG("The nodelist is empty \n")
+    } else {
+        std::cout << std::endl;
+    }
+}
 
-Img8u* rgbImage;
-Img8u* depthImage;
+void printProductionTrees(Context cont){
+  EnumerationErrors errors;
+  NodeInfoList l;
+  XnStatus rc = cont.EnumerateProductionTrees(XN_NODE_TYPE_DEVICE, NULL , l, &errors);
+  DEBUG_LOG("XnStatus: " << xnGetStatusString(rc))
+  DEBUG_LOG("ProductionTree - NodeInfoList")
+  int i = 0;
+  for (NodeInfoList::Iterator it = l.Begin(); it != l.End(); ++it){
+      NodeInfo deviceNodeInfo = *it;
+      Device deviceNode;
 
-int img = 0;
+      deviceNodeInfo.GetInstance(deviceNode);
+      XnBool bExists = deviceNode.IsValid();
 
-using namespace icl;
+      if (!bExists) {
+        DEBUG_LOG1("Node not valid. CreateProductionTree")
+        cont.CreateProductionTree(deviceNodeInfo, deviceNode);
+      }
+
+      if (deviceNode.IsValid() && deviceNode.IsCapabilitySupported(XN_CAPABILITY_DEVICE_IDENTIFICATION)) {
+        const XnUInt32 bSize = 200;
+        XnChar deviceName[bSize];
+        XnChar deviceSN[bSize];
+        XnChar treeStrRep[bSize];
+
+        deviceNode.GetIdentificationCap().GetDeviceName(deviceName, bSize);
+        deviceNode.GetIdentificationCap().GetSerialNumber(deviceSN, bSize);
+        deviceNodeInfo.GetTreeStringRepresentation(treeStrRep, bSize);
+        DEBUG_LOG(" [" << i << "]" << deviceName << "(" << deviceSN << ")")
+                DEBUG_LOG(deviceNodeInfo.GetAdditionalData())
+                DEBUG_LOG(deviceNodeInfo.GetCreationInfo())
+                DEBUG_LOG(deviceNodeInfo.GetDescription().strName)
+                DEBUG_LOG(deviceNodeInfo.GetDescription().strVendor)
+                DEBUG_LOG(deviceNodeInfo.GetDescription().Type)
+                DEBUG_LOG(deviceNodeInfo.GetDescription().Version.nMajor)
+                DEBUG_LOG(deviceNodeInfo.GetInstanceName())
+                DEBUG_LOG("CAM: " << treeStrRep)
+      }
+      i++;
+  }
+}
+
+
+
+void printSupportedMapOutputModes(MapGenerator gen){
+  XnUInt32 count = gen.GetSupportedMapOutputModesCount();
+  DEBUG_LOG("count: " << count)
+  XnMapOutputMode* modes = new XnMapOutputMode[count];
+  XnStatus rc = gen.GetSupportedMapOutputModes(modes, count);
+  DEBUG_LOG("XnStatus: " << xnGetStatusString(rc))
+  DEBUG_LOG("SupportedMapOutputModes: " << count)
+  for(int i = 0; i < count; ++i){
+      DEBUG_LOG("fps: " << modes[i].nFPS)
+      DEBUG_LOG("xRes: " << modes[i].nXRes)
+      DEBUG_LOG("yRes: " << modes[i].nYRes)
+  }
+  std::cout << std::endl;
+  delete[] modes;
+}
+
+void assertStatus(XnStatus &status){
+  if (status != XN_STATUS_OK){
+    throw new ICLException("Status " + *xnGetStatusString(status));
+  }
+}
+
+//##############################################################################
+//############################# OpenNIGrabberImpl ##############################
+//##############################################################################
 
 // Constructor of OpenNIGrabberImpl
-OpenNIGrabberImpl::OpenNIGrabberImpl(const std::string args)
-    : m_ImgMutex()
+OpenNIGrabberImpl::OpenNIGrabberImpl(std::string name, std::string args)
+    : m_AutoContext(), m_Context(m_AutoContext.getContextPtr()), m_Device(NULL),
+      m_GeneratorLock(), m_Generator(NULL),
+      m_SetToGenerator(OpenNIImageGenerator::RGB)
 {
-  DEBUG_LOG("args: " << args)
-  icl::Mutex::Locker lock(m_ImgMutex);
-
+  icl::Mutex::Locker lock(m_GeneratorLock);
   XnStatus rc;
+  rc = m_Context -> Init();
+  assertStatus(rc);
 
-  EnumerationErrors errors;
-  g_context.Init();
+  m_Device = createDeviceFromName(name);
 
-  NodeInfoList l;
-  g_context.EnumerateExistingNodes(l);
-
-  g_depth.Create(g_context);
-  g_image.Create(g_context);
+//  m_Generator = OpenNIImageGenerator::
+//                  createGenerator(m_Context, OpenNIImageGenerator::RGB);
 
   // Set it to VGA maps at 30 FPS
-  XnMapOutputMode mapMode;
-  mapMode.nXRes = 640;
-  mapMode.nYRes = 480;
-  mapMode.nFPS = 30;
-  g_depth.SetMapOutputMode(mapMode);
-  g_image.SetMapOutputMode(mapMode);
+  // XnMapOutputMode mapMode;
+  // mapMode.nXRes = 1280;
+  // mapMode.nYRes = 1024;
+  // mapMode.nFPS = 30;
 
-  g_context.StartGeneratingAll();
+  // printSupportedMapOutputModes(m_Image);
+  // rc = m_Image.SetMapOutputMode(mapMode);
 
-  g_depth.GetMetaData(g_depthMD);
-  g_image.GetMetaData(g_imageMD);
-
-  rgbImage = new Img8u(Size(g_imageMD.FullXRes(), g_imageMD.FullYRes()), formatRGB);
-  depthImage = new Img8u(Size(g_depthMD.FullXRes(), g_depthMD.FullYRes()), formatGray);
+  DEBUG_LOG("init done")
 }
 
 OpenNIGrabberImpl::~OpenNIGrabberImpl(){
     DEBUG_LOG("");
+    m_Context -> Release();
 }
 
 const icl::ImgBase* OpenNIGrabberImpl::acquireImage(){
-  XnStatus rc = XN_STATUS_OK;
-
-  // Read a new frame
-  rc = g_context.WaitAnyUpdateAll();
-  if (rc != XN_STATUS_OK)
-  {
-    printf("Read failed: %s\n", xnGetStatusString(rc));
-    return NULL;
+  Mutex::Locker l(m_GeneratorLock);
+  if(m_SetToGenerator != OpenNIImageGenerator::NOT_SPECIFIED){
+      ICL_DELETE(m_Generator)
+      m_Generator = OpenNIImageGenerator::
+                  createGenerator(m_Context, m_SetToGenerator);
+      m_SetToGenerator = OpenNIImageGenerator::NOT_SPECIFIED;
   }
+  return m_Generator -> acquireImage();
+}
 
-  g_depth.GetMetaData(g_depthMD);
-  g_image.GetMetaData(g_imageMD);
-  // draw RGB image
-  const XnRGB24Pixel* rgbPixel = g_imageMD.RGB24Data();
-
-  for (int y = 0; y < g_imageMD.YRes(); ++y){
-    for (int x = 0; x < g_imageMD.XRes(); ++x, ++rgbPixel){
-      (*rgbImage)(x, y, 0) = rgbPixel -> nRed;
-      (*rgbImage)(x, y, 1) = rgbPixel -> nGreen;
-      (*rgbImage)(x, y, 2) = rgbPixel -> nBlue;
-    }
-  }
-  // draw DEPTH image
-  const XnDepthPixel* pDepthRow = g_depthMD.Data();
-  float depth = 0;
-  for (int y = 0; y < g_depthMD.YRes(); ++y){
-    for (int x = 0; x < g_depthMD.XRes(); ++x){
-      (*depthImage)(x, y, 0) = (((float) *(pDepthRow + (g_depthMD.XRes() * y) + x)) / g_depthMD.ZRes() * 256);
-    }
-  }
-
-  return rgbImage;
+// Returns the string representation of the currently used device.
+std::string OpenNIGrabberImpl::getName(){
+    return getTreeStringRepresentation(*m_Device);
 }
 
 // default name
-std::string OpenNIGrabberImpl::getName()
-{
-    return "default";
+std::string OpenNIGrabberImpl::getTreeStringRepresentation(NodeInfo info){
+  //XnChar treeRep[200];
+  //info.GetTreeStringRepresentation(treeRep, 200);
+  DEBUG_LOG("info:")
+  std::ostringstream str;
+  str << info.GetDescription().strName;
+  str << info.GetDescription().strVendor;
+  str << info.GetDescription().Type;
+  return str.str();
+}
+
+// gets progargs and finds the corresponding device
+std::string OpenNIGrabberImpl::getDeviceNodeNameFromArgs(std::string args){
+  OpenNIAutoContext c;
+  unsigned int nr = icl::parse<int>(args);
+  xn::NodeInfoList devices;
+  c.getContextPtr() ->
+          EnumerateProductionTrees(XN_NODE_TYPE_DEVICE, NULL , devices, NULL);
+  if(devices.IsEmpty()){
+    DEBUG_LOG("No devices available.")
+    throw ICLException("No devices available.");
+  }
+  DEBUG_LOG("search device")
+  int i = 0;
+  for(NodeInfoList::Iterator it = devices.Begin();
+      it != devices.End(); ++i, ++it){
+    if(i != nr){
+      continue;
+    }
+    return getTreeStringRepresentation(*it);
+  }
+  std::cout << "Demanded device Nr. " << nr
+            << " but only " << i << "devices available.";
+  throw ICLException("Could not find demanded device.");
+}
+
+NodeInfo* OpenNIGrabberImpl::createDeviceFromName(std::string name){
+    xn::NodeInfoList devices;
+    m_Context ->
+            EnumerateProductionTrees(XN_NODE_TYPE_DEVICE, NULL , devices, NULL);
+    if(devices.IsEmpty()){
+      DEBUG_LOG("No devices available.")
+      throw ICLException("No devices available.");
+    }
+    DEBUG_LOG("search device")
+    int i = 0;
+    for(NodeInfoList::Iterator it = devices.Begin();
+        it != devices.End(); ++i, ++it){
+      if(!getTreeStringRepresentation(*it).compare(name)){
+        return new NodeInfo(*it);
+      }
+    }
+    DEBUG_LOG("could not find device: " << name)
+    throw ICLException("Could not find demanded device.");
 }
 
 // setter function for video device properties
 void OpenNIGrabberImpl::setProperty(
   const std::string &property, const std::string &value)
 {
-    DEBUG_LOG(property << " := " << value)
+  DEBUG_LOG(property << " := " << value)
+  if (property.compare("size") == 0){
+      DEBUG_LOG("not implemented")
+  }
+  if (property.compare("format") == 0){
+      DEBUG_LOG("not implemented")
+  }
+  if (property.compare("generator") == 0){
+      setGeneratorTo(value);
+  }
 }
 
 // returns a list of properties, that can be set using setProperty
@@ -148,7 +261,7 @@ std::vector<std::string> OpenNIGrabberImpl::getPropertyList(){
   std::vector<std::string> ps;
   ps.push_back("size");
   ps.push_back("format");
-  ps.push_back("DummyProp");
+  ps.push_back("generator");
   return ps;
 }
 
@@ -156,7 +269,7 @@ bool OpenNIGrabberImpl::supportsProperty(const std::string &property){
     DEBUG_LOG("");
   if (property.compare("size") == 0) return true;
   if (property.compare("format") == 0) return true;
-  if (property.compare("DummyProp") == 0) return true;
+  if (property.compare("generator") == 0) return true;
   return false;
 }
 
@@ -169,8 +282,8 @@ std::string OpenNIGrabberImpl::getType(const std::string &name){
   if(name.compare("format") == 0){
       return "menu";
   }
-  if(name.compare("DummyProp") == 0){
-      return "range";
+  if(name.compare("generator") == 0){
+      return "menu";
   }
 }
 
@@ -183,8 +296,8 @@ std::string OpenNIGrabberImpl::getInfo(const std::string &name){
     if(name.compare("format") == 0){
         return "{depth,rgb}";
     }
-      if(name.compare("DummyProp") == 0){
-      return "[10,100]:1.3";;
+    if(name.compare("generator") == 0){
+      return "{depth,rgb}";
     }
 }
 
@@ -197,12 +310,39 @@ std::string OpenNIGrabberImpl::getValue(const std::string &name){
   if(name.compare("format") == 0){
     return "depth";
   }
-  if(name.compare("DummyProp") == 0){
-    return "50";
+  if(name.compare("generator") == 0){
+      switch(m_Generator->getType()){
+        case OpenNIImageGenerator::DEPTH:
+          return "depth";
+        case OpenNIImageGenerator::RGB:
+          return "rgb";
+      }
   }
+  return "error: property not found";
 }
 
 // Returns whether this property may be changed internally.
 int OpenNIGrabberImpl::isVolatile(const std::string &propertyName){
   return true;
+}
+
+// switches generator.
+void OpenNIGrabberImpl::setGeneratorTo(std::string value){
+    if(!value.compare("depth")){
+      if(m_Generator->getType() == OpenNIImageGenerator::DEPTH){
+        return;
+      }
+      Mutex::Locker l(m_GeneratorLock);
+      m_SetToGenerator = OpenNIImageGenerator::DEPTH;
+      return;
+    }
+    if(!value.compare("rgb")){
+        if(m_Generator->getType() == OpenNIImageGenerator::RGB){
+          return;
+        }
+        Mutex::Locker l(m_GeneratorLock);
+        m_SetToGenerator = OpenNIImageGenerator::RGB;
+        return;
+    }
+    DEBUG_LOG("value " << value << " not found.")
 }
