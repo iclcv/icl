@@ -1122,7 +1122,7 @@ namespace icl{
       }
         
     }
-
+    dst->setMetaData(src->getMetaData());
   }
 
   // }}}

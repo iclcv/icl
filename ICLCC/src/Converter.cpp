@@ -208,6 +208,7 @@ namespace icl{
         }
         break;
     }
+    poDst->setMetaData(poSrc->getMetaData());
   }
 
   // }}}
@@ -238,6 +239,7 @@ namespace icl{
     if(srcIn != src){
       ICL_DELETE(src);
     }
+    dst->setMetaData(src->getMetaData());
   }
 
   // }}}
