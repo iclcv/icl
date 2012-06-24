@@ -314,6 +314,14 @@ namespace icl{
                         const icl32f *pnx=0, const icl32f *pny=0, const icl32f *pnz=0,
                         int stride = 1,bool createTextureOnce=true,scalemode sm=interpolateLIN);
 
+    /// adds a texture grid that has two different texture for the two faces
+    /** Internally, the TwoSidedTextureGridPrimitive is used */
+    void addTwoSidedTextureGrid(int w, int h, const ImgBase *front, const ImgBase *back,
+                           const icl32f *px, const icl32f *py, const icl32f *pz,
+                           const icl32f *pnx=0, const icl32f *pny=0, const icl32f *pnz=0,
+                           int stride = 1,bool createFrontOnce=true,
+                           bool createBackOnce=true, scalemode sm=interpolateLIN);
+
 
     /// adds text-texture quad -primitive to this object
     /** If the given normal indices (na,nb,nc and nd) are -1, auto-normal are computed using cross-product.

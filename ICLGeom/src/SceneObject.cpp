@@ -166,6 +166,14 @@ namespace icl{
                                                     stride,createTextureOnce,sm));
   }
 
+  void SceneObject::addTwoSidedTextureGrid(int w, int h, const ImgBase *front, const ImgBase *back,
+                                           const icl32f *px, const icl32f *py, const icl32f *pz,
+                                           const icl32f *pnx, const icl32f *pny, const icl32f *pnz,
+                                           int stride,bool createFrontOnce, bool createBackOnce, scalemode sm){
+    m_primitives.push_back(new TwoSidedTextureGridPrimitive(w,h,front,back,px,py,pz,pnx,pny,pnz,
+                                                            stride,createFrontOnce, createBackOnce, sm));
+  }
+
   
 
   void SceneObject::addTextTexture(int a, int b, int c, int d, const std::string &text,

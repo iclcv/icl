@@ -56,6 +56,7 @@ namespace icl{
   };
 
   ImageCompressor::ImageCompressor(const ImageCompressor::CompressionSpec &spec):m_data(new Data){
+    m_data->decoded_buffer = 0;
     setCompression(spec);
   }
 

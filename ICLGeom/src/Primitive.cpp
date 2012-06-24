@@ -292,6 +292,26 @@ namespace icl{
     texture.drawToGrid(w,h,px,py,pz,pnx,pny,pnz,stride);
   }
 
+  void TwoSidedTextureGridPrimitive::render(const Primitive::RenderContext &ctx){
+    if(image){
+      texture.update(image);
+    }
+    if(iback){
+      back.update(iback);
+    }
+    glEnable(GL_CULL_FACE);
+    glFrontFace(GL_FRONT);
+    glCullFace(GL_FRONT);
+
+    texture.drawToGrid(w,h,px,py,pz,pnx,pny,pnz,stride);
+
+    glFrontFace(GL_BACK);
+    glCullFace(GL_BACK);
+    back.drawToGrid(w,h,px,py,pz,pnx,pny,pnz,stride);
+
+    glDisable(GL_CULL_FACE);
+  }
+
   void TextureGridPrimitive::getAABB(Range32f aabb[3]){
     Range32f limits = Range32f::limits(); 
     std::swap(limits.minVal,limits.maxVal);

@@ -267,6 +267,7 @@ namespace icl{
   /// Special texture Primitive for single textures spread over a regular grid of vertices
   /** For more details look at ICLQt's icl::GLImg::drawToGrid method */
   class TextureGridPrimitive : public Primitive{
+    protected:
     friend class SceneObject;
     int w,h;
     GLImg texture;
@@ -297,6 +298,20 @@ namespace icl{
     }
   };
 
+  class TwoSidedTextureGridPrimitive : public TextureGridPrimitive{
+    GLImg back;
+    const ImgBase *iback;
+    public:
+    TwoSidedTextureGridPrimitive(int w, int h, const ImgBase *front, const ImgBase *back,
+                                 const icl32f *px, const icl32f *py, const icl32f *pz,
+                                 const icl32f *pnx=0, const icl32f *pny=0, const icl32f *pnz=0,
+                                 int stride = 1,bool createFrontOnce=true,
+                                 bool createBackOnce=true, scalemode sm=interpolateLIN):
+    TextureGridPrimitive(w,h,front,px,py,pz,pnx,pny,pnz,stride,createFrontOnce,sm),back(back,sm),
+    iback(createBackOnce ? 0 : back){}
+    
+    virtual void render(const Primitive::RenderContext &ctx);
+  };
   
   /// The shared texture primitive references a texture from the parent SceneObject
   /** Therefore, shared textures can be reused in order to avoid that identical textures

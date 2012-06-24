@@ -37,7 +37,9 @@
 GUI gui("hbox");
 Scene scene;
 GenericGrabber grabber;
+GenericGrabber backFaceGrabber;
 Img8u image;
+Img8u backImage;
 
 struct Grid : public SceneObject{
   Mutex mutex;
@@ -49,11 +51,19 @@ struct Grid : public SceneObject{
     m_vertexColors.resize(w*h,GeomColor(1,0,0,1));
     
 
-    addTextureGrid(w,h,image,
-                   &m_vertices[0][0], 
-                   &m_vertices[0][1], 
-                   &m_vertices[0][2], 
-                   0,0,0,4,false);
+    if(pa("-b")){
+      addCustomPrimitive(new TwoSidedTextureGridPrimitive(w,h,image,&backImage,
+                                                          &m_vertices[0][0], 
+                                                          &m_vertices[0][1], 
+                                                          &m_vertices[0][2], 
+                                                          0,0,0, 4, false, false ));
+    }else{
+      addTextureGrid(w,h,image,
+                     &m_vertices[0][0], 
+                     &m_vertices[0][1], 
+                     &m_vertices[0][2], 
+                     0,0,0,4,false);
+    }
     
     for(int x=1;x<w;++x){
       addLine(idx(x-1,0),idx(x,0),geom_red());
@@ -101,6 +111,9 @@ struct Grid : public SceneObject{
 
 void run(){
   grabber.grab()->convert(&image);  
+  if(pa("-b")){
+    backFaceGrabber.grab()->convert(&backImage);
+  }
   gui["draw"].render();
   
   gui["offscreen0"] = scene.render(0);
@@ -112,7 +125,9 @@ void init(){
   Scene::enableSharedOffscreenRendering();
   
   grabber.init(pa("-i"));
-
+  if(pa("-b")){
+    backFaceGrabber.init(pa("-b"));
+  }
   gui << "draw3D()[@handle=draw@minsize=20x15@label=interaction area]" 
       << "image[@handle=offscreen0@label=offscreen rendered cam 0]"
       << "image[@handle=offscreen1@label=offscreen rendered cam 1]"
@@ -137,5 +152,5 @@ void init(){
 
 
 int main(int n, char **ppc){
-  return ICLApp(n,ppc,"-input|-i(2)" ,init,run).exec();
+  return ICLApp(n,ppc,"-input|-i(2) -back-face-input|-b(2)" ,init,run).exec();
 }
