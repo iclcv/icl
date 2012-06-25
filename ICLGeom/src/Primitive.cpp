@@ -54,6 +54,14 @@
 
 
 namespace icl{
+  AlphaFuncProperty::AlphaFuncProperty(){
+    alphaFunc = (int)GL_GREATER;
+    alphaValue = 0.1;
+  }
+  
+  void AlphaFuncProperty::restoreAlphaDefaults(){
+    glAlphaFunc(GL_GREATER,0.05);
+  }
 
   Img8u TextPrimitive::create_texture(const std::string &text,const GeomColor &color, int textSize){
 #ifdef HAVE_QT
@@ -195,7 +203,7 @@ namespace icl{
   
   void TexturePrimitive::render(const Primitive::RenderContext &ctx){
     glEnable(GL_ALPHA_TEST);
-    glAlphaFunc(GL_GREATER,0.1); 
+    glAlphaFunc((GLenum)alphaFunc,alphaValue);
 
     if(image){
       texture.update(image);
@@ -217,13 +225,12 @@ namespace icl{
       gl_auto_normal(ctx, i(3), i(1), i(2));
       texture.draw3D(a.data(),b.data(),c.data(),d.data());
     }
-    glAlphaFunc(GL_GREATER,0.05); 
-
+    restoreAlphaDefaults(); 
   }
 
   void SharedTexturePrimitive::render(const Primitive::RenderContext &ctx){
     glEnable(GL_ALPHA_TEST);
-    glAlphaFunc(GL_GREATER,0.1); 
+    glAlphaFunc((GLenum)alphaFunc,alphaValue);
 
     GLImg &gli = const_cast<GLImg&>(*ctx.sharedTextures[sharedTextureIndex]);
     const Vec &a = ctx.vertices[i(0)];
@@ -241,12 +248,28 @@ namespace icl{
       gl_auto_normal(ctx, i(3), i(1), i(2));
       gli.draw3D(a.data(),b.data(),c.data(),d.data());
     }
-    glAlphaFunc(GL_GREATER,0.05); 
+    restoreAlphaDefaults();
   }
   
+  TextPrimitive::TextPrimitive(int a, int b, int c, int d, 
+                               const std::string &text,
+                               int textSize,
+                               const GeomColor &textColor,
+                               int na, int nb, int nc, int nd,
+                               int billboardHeight,
+                               scalemode sm):
+    TexturePrimitive(a,b,c,d,create_texture(text,textColor,textSize),na,nb,nc,nd, sm),
+    textSize(textSize), textColor(textColor), billboardHeight(billboardHeight){
+    type = Primitive::text;
+    
+    alphaFunc = (int)GL_GREATER;
+    alphaValue = 0.3;
+  }
+  
+
   void TextPrimitive::render(const Primitive::RenderContext &ctx){
     glEnable(GL_ALPHA_TEST);
-    glAlphaFunc(GL_GREATER,0.3); 
+    glAlphaFunc((GLenum)alphaFunc,alphaValue);
     
     glPushAttrib(GL_ENABLE_BIT);
     glDisable(GL_LIGHTING);
@@ -282,17 +305,25 @@ namespace icl{
     }
     glPopAttrib();
     
-    glAlphaFunc(GL_GREATER,0.05); 
+    restoreAlphaDefaults();
   }
 
   void TextureGridPrimitive::render(const Primitive::RenderContext &ctx){
+    glEnable(GL_ALPHA_TEST);
+    glAlphaFunc((GLenum)alphaFunc,alphaValue);
+
     if(image){
       texture.update(image);
     }
     texture.drawToGrid(w,h,px,py,pz,pnx,pny,pnz,stride);
+    
+    restoreAlphaDefaults();
   }
 
   void TwoSidedTextureGridPrimitive::render(const Primitive::RenderContext &ctx){
+    glEnable(GL_ALPHA_TEST);
+    glAlphaFunc((GLenum)alphaFunc,alphaValue);
+
     if(image){
       texture.update(image);
     }
@@ -310,6 +341,8 @@ namespace icl{
     back.drawToGrid(w,h,px,py,pz,pnx,pny,pnz,stride);
 
     glDisable(GL_CULL_FACE);
+    
+    restoreAlphaDefaults();
   }
 
   void TextureGridPrimitive::getAABB(Range32f aabb[3]){

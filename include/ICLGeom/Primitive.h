@@ -218,6 +218,25 @@ namespace icl{
     inline bool hasNormals() const { return idx.getHeight() == 2; }
   };
 
+  /// extra base class for primitives, that use a special alpha function (in particular textures)
+  struct AlphaFuncProperty{
+    /// base constructor setting up to GL_GREATER 0.1
+    AlphaFuncProperty();
+    AlphaFuncProperty(int alphaFunc, float alphaValue):alphaFunc(alphaFunc),alphaValue(alphaValue){}
+  
+    int alphaFunc;         //!<< used for glAlphaFunc call glAlphaFunc((GLenum)alphaFunc,alphaValue)
+    float alphaValue;      //!<< used for glAlphaFunc call glAlphaFunc((GLenum)alphaFunc,alphaValue)
+    
+    /// used for setting up the alpha func, that is used to render this texture primitive
+    void setAlphaFunc(int func, float value){
+      alphaFunc = func;
+      alphaValue = value;
+    }
+    
+    void restoreAlphaDefaults();
+  };
+
+  
   /// Texture Primitive 
   /** Texture Primitives hare two modes: 
       -# createTextureOnce=true: In this case, the texture data that is
@@ -228,7 +247,7 @@ namespace icl{
       -# createTextureOnce=false: in this case, the texture data
          will always be updated before the texture is drawn. In this way,
          one can easily create video textures. */
-  struct TexturePrimitive : public QuadPrimitive{
+  struct TexturePrimitive : public QuadPrimitive, public AlphaFuncProperty{
     GLImg texture;         //!<< internal texture
     const ImgBase *image;  //!<< set if the texture shall be updated every time it is drawn
 
@@ -261,12 +280,13 @@ namespace icl{
                                   i(4),i(5),i(6),i(7),
                                   texture.getScaleMode());
     }
+    
 
   };
 
   /// Special texture Primitive for single textures spread over a regular grid of vertices
   /** For more details look at ICLQt's icl::GLImg::drawToGrid method */
-  class TextureGridPrimitive : public Primitive{
+  class TextureGridPrimitive : public Primitive, public AlphaFuncProperty{
     protected:
     friend class SceneObject;
     int w,h;
@@ -316,7 +336,7 @@ namespace icl{
   /// The shared texture primitive references a texture from the parent SceneObject
   /** Therefore, shared textures can be reused in order to avoid that identical textures
       have to be hold several times in the graphics hardware memory */
-  struct SharedTexturePrimitive : public QuadPrimitive{
+  struct SharedTexturePrimitive : public QuadPrimitive, public AlphaFuncProperty{
     int sharedTextureIndex;
     
     /// create with given texture that is either copied once or everytime the primitive is rendered
@@ -360,11 +380,7 @@ namespace icl{
                   const GeomColor &textColor=GeomColor(255,255,255,255),
                   int na=-1, int nb=-1, int nc=-1, int nd=-1,
                   int billboardHeight=0,
-                  scalemode sm=interpolateLIN):
-    TexturePrimitive(a,b,c,d,create_texture(text,textColor,textSize),na,nb,nc,nd, sm),
-    textSize(textSize), textColor(textColor), billboardHeight(billboardHeight){
-      type = Primitive::text;
-    }
+                  scalemode sm=interpolateLIN);
     
     /// render method
     virtual void render(const Primitive::RenderContext &ctx);
