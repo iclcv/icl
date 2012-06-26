@@ -157,6 +157,10 @@ FiducialDetector *create_new_fd(MarkerType t, std::vector<std::string> &configur
   fd->setPropertyValue("css.rc-coefficient",1);
   fd->setPropertyValue("thresh.global threshold",-10);
   fd->setPropertyValue("thresh.mask size",30);
+
+  if(pa("-s") && parse<Size>(pa("-s")) == Size::QVGA){
+    fd->setPropertyValue("pp.filter","none");
+  }
   lastFD = fd;
   return fd;
 }
@@ -601,6 +605,8 @@ void init(){
   
   gui["draw"].link(scene.getGLCallback(0));
   gui["draw"].install(new MouseHandler(mouse));
+  
+ 
 }
 
 struct FoundMarker{
@@ -857,7 +863,7 @@ int main(int n, char **ppc){
                 "-config|-c(...) "
                 "-camera|-cam(camera_file_to_load) "
                 "-create-empty-config-file|-cc "
-                "-force-size|-s(WxH) "
+                "-force-size|-s|-size(WxH) "
                 "-output|-o(output-xml-file-name) "
                 ,init,run).exec();
 }
