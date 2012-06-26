@@ -40,6 +40,7 @@
 // plugins
 #include <ICLIO/FileWriterPluginPNM.h> 
 #include <ICLIO/FileWriterPluginCSV.h> 
+#include <ICLIO/FileWriterPluginBICL.h> 
 #ifdef HAVE_LIBJPEG
 #include <ICLIO/FileWriterPluginJPEG.h> 
 #endif
@@ -67,6 +68,12 @@ namespace icl{
       FileWriter::s_mapPlugins[".pnm"] = new FileWriterPluginPNM;
       FileWriter::s_mapPlugins[".icl"] = new FileWriterPluginPNM;
       FileWriter::s_mapPlugins[".csv"] = new FileWriterPluginCSV;
+      FileWriter::s_mapPlugins[".bicl"] = new FileWriterPluginBICL;
+      FileWriter::s_mapPlugins[".rle1"] = new FileWriterPluginBICL("rlen","1");
+      FileWriter::s_mapPlugins[".rle4"] = new FileWriterPluginBICL("rlen","4");
+      FileWriter::s_mapPlugins[".rle6"] = new FileWriterPluginBICL("rlen","6");
+      FileWriter::s_mapPlugins[".rle8"] = new FileWriterPluginBICL("rlen","8");
+      
 
 #ifdef HAVE_LIBJPEG
       FileWriter::s_mapPlugins[".jpeg"] = new FileWriterPluginJPEG;
@@ -82,6 +89,12 @@ namespace icl{
       FileWriter::s_mapPlugins[".pnm.gz"] = new FileWriterPluginPNM;
       FileWriter::s_mapPlugins[".icl.gz"] = new FileWriterPluginPNM;
       FileWriter::s_mapPlugins[".csv.gz"] = new FileWriterPluginCSV;
+      FileWriter::s_mapPlugins[".bicl.gz"] = new FileWriterPluginBICL;
+      FileWriter::s_mapPlugins[".rle1.gz"] = new FileWriterPluginBICL("rlen","1");
+      FileWriter::s_mapPlugins[".rle4.gz"] = new FileWriterPluginBICL("rlen","4");
+      FileWriter::s_mapPlugins[".rle6.gz"] = new FileWriterPluginBICL("rlen","6");
+      FileWriter::s_mapPlugins[".rle8.gz"] = new FileWriterPluginBICL("rlen","8");
+
 #endif
 
 #ifdef HAVE_LIBPNG

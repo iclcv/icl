@@ -42,6 +42,7 @@
 #include <ICLUtils/StringUtils.h>
 // plugins
 #include <ICLIO/FileGrabberPluginPNM.h>
+#include <ICLIO/FileGrabberPluginBICL.h>
 #include <ICLIO/FileGrabberPluginCSV.h>
 
 #ifdef HAVE_LIBJPEG
@@ -96,6 +97,11 @@ namespace icl{
       plugins[".pnm"] = new FileGrabberPluginPNM; 
       plugins[".icl"] = new FileGrabberPluginPNM; 
       plugins[".csv"] = new FileGrabberPluginCSV; 
+      plugins[".bicl"] = new FileGrabberPluginBICL;
+      plugins[".rle1"] = new FileGrabberPluginBICL;
+      plugins[".rle4"] = new FileGrabberPluginBICL;
+      plugins[".rle6"] = new FileGrabberPluginBICL;
+      plugins[".rle8"] = new FileGrabberPluginBICL;
 
 #ifdef HAVE_LIBJPEG
       plugins[".jpg"] = new FileGrabberPluginJPEG; 
@@ -111,6 +117,11 @@ namespace icl{
       plugins[".pnm.gz"] = new FileGrabberPluginPNM; 
       plugins[".icl.gz"] = new FileGrabberPluginPNM; 
       plugins[".csv.gz"] = new FileGrabberPluginCSV;       
+      plugins[".bicl.gz"] = new FileGrabberPluginBICL;
+      plugins[".rle1.gz"] = new FileGrabberPluginBICL;
+      plugins[".rle4.gz"] = new FileGrabberPluginBICL;
+      plugins[".rle6.gz"] = new FileGrabberPluginBICL;
+      plugins[".rle8.gz"] = new FileGrabberPluginBICL;
 #endif
 
 #ifdef HAVE_LIBPNG
