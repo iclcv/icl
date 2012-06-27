@@ -73,11 +73,13 @@ namespace icl{
       FileWriter::s_mapPlugins[".rle4"] = new FileWriterPluginBICL("rlen","4");
       FileWriter::s_mapPlugins[".rle6"] = new FileWriterPluginBICL("rlen","6");
       FileWriter::s_mapPlugins[".rle8"] = new FileWriterPluginBICL("rlen","8");
+
       
 
 #ifdef HAVE_LIBJPEG
       FileWriter::s_mapPlugins[".jpeg"] = new FileWriterPluginJPEG;
       FileWriter::s_mapPlugins[".jpg"] = new FileWriterPluginJPEG;
+      FileWriter::s_mapPlugins[".jicl"] = new FileWriterPluginBICL("jpeg","40");
 #elif HAVE_IMAGEMAGICK
       FileWriter::s_mapPlugins[".jpeg"] = new FileWriterPluginImageMagick;
       FileWriter::s_mapPlugins[".jpg"] = new FileWriterPluginImageMagick;

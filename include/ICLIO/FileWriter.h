@@ -77,6 +77,9 @@ namespace icl{
         binary images, does also support writing and reading of image meta data)
       - <b>rle4,rle6,rle8</b> for non-binary images with run-length encoding (other than this,
         as rle1
+      - <b>jicl</b> only supported with jpeg support, like bicl, but with jpeg compressed
+        image data (jpeg compression is set to 70%, does also support saving meta data).
+
       
       \section ZLIB Z-Lib support
         All supported file formats (except jpg) can be written/read as gzipped file. This 

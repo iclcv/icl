@@ -116,6 +116,7 @@ namespace icl{
 #ifdef HAVE_LIBJPEG
       plugins[".jpg"] = new FileGrabberPluginJPEG; 
       plugins[".jpeg"] = new FileGrabberPluginJPEG; 
+      plugins[".jicl"] = new FileGrabberPluginBICL;
 #elif HAVE_IMAGEMAGICK
       plugins[".jpg"] = new FileGrabberPluginImageMagick;
       plugins[".jpeg"] = new FileGrabberPluginImageMagick;
