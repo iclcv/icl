@@ -71,6 +71,12 @@ namespace icl{
       - <b>jpg</b> Format of the <b>J</b>oint <b>P</b>hotographic <b>E</b>xperts <b>G</b>roup.
         Loss-full compressed image format (libjpeg required and -DWITH_JPEG_SUPPORT must be
         defined, which is performed automatically by the makefile system)
+      - <b>bicl</b> ICL's built-in binary format. This format does also support loading
+        and saving of image meta data
+      - <b>rle1</b> for run-length encoded binary images (best format for low-noise
+        binary images, does also support writing and reading of image meta data)
+      - <b>rle4,rle6,rle8</b> for non-binary images with run-length encoding (other than this,
+        as rle1
       
       \section ZLIB Z-Lib support
         All supported file formats (except jpg) can be written/read as gzipped file. This 
@@ -100,7 +106,7 @@ namespace icl{
       </table>
       
       \section EX Example
-      The following example illustrates using the file grabber:
+      The following example illustrates using the file writer:
       \code
       
       #include <ICLIO/FileWriter.h>

@@ -40,6 +40,7 @@
 #include <ICLUtils/Exception.h>
 #include <ICLIO/IOUtils.h>
 #include <ICLUtils/StringUtils.h>
+#include <ICLUtils/Thread.h>
 // plugins
 #include <ICLIO/FileGrabberPluginPNM.h>
 #include <ICLIO/FileGrabberPluginBICL.h>
@@ -87,6 +88,15 @@ namespace icl{
     
     /// forced plugin name
     std::string forcedPluginType;
+
+    /// for time stamp based image acquisition
+    bool useTimeStamps;
+    
+    /// also for time stamp based image acquisition
+    Time referenceTime;
+    
+    /// also for time stamp based image acquisition
+    Time referenceTimeReal;
   };
   
   static FileGrabberPlugin *find_plugin(const std::string &type){
@@ -165,6 +175,7 @@ namespace icl{
     m_data->bAutoNext = true;
     m_data->loop = true;
     m_data->poBufferImage = 0;
+    m_data->useTimeStamps = false;
   }
   
   FileGrabberImpl::FileGrabberImpl(const std::string &pattern, 
@@ -178,6 +189,7 @@ namespace icl{
     m_data->bAutoNext = true;
     m_data->loop = true;
     m_data->poBufferImage = 0;
+    m_data->useTimeStamps = false;
     
     m_data->oFileList = FileList(pattern);
     if(!m_data->oFileList.size()){
@@ -279,6 +291,10 @@ namespace icl{
     // {{{ open
 
     if(m_data->bBufferImages){
+      if(m_data->useTimeStamps) {
+        ERROR_LOG("buffering images and using timestamps cannot be used in parallel! (deactivating use of timestamps)");
+        m_data->useTimeStamps = false;
+      }
       ICLASSERT_RETURN_VAL(m_data->vecImageBuffer.size(),NULL);
       ImgBase *p = m_data->vecImageBuffer[m_data->iCurrIdx];
       if(m_data->bAutoNext) ++m_data->iCurrIdx;
@@ -310,6 +326,35 @@ namespace icl{
       if(f.isOpen()) f.close();
       throw;
     }
+    if(m_data->useTimeStamps){
+      Time now = Time::now();
+      Time &ref = m_data->referenceTime;
+      Time &refReal = m_data->referenceTimeReal;
+      Time t = m_data->poBufferImage->getTime();
+      if(t == Time(0)){
+        ERROR_LOG("property 'use-time-stamps' activated, but image with time-stamp '0' found (deactivating 'use-time-stamps')");
+        m_data->useTimeStamps = false;
+        return m_data->poBufferImage;
+      }
+      if(ref == Time(0) || m_data->iCurrIdx == 1){
+        ref = t;
+        refReal = now;
+      }else{
+        Time desiredDT = t - ref;
+        Time currentDT = now - refReal;
+        if(desiredDT > currentDT){
+          Time ddt = desiredDT - currentDT;
+          Thread::usleep(ddt.toMicroSeconds());
+        }else{
+          static bool first = true;
+          if(first && m_data->iCurrIdx != 2){ // hack!!
+            first = false;
+            WARNING_LOG("property 'use-time-stamps' is activated, but the processing framerate\n"
+                        "    is slower than the captured image framerate (this message is only shown once)");
+          }
+        }
+      }
+    }
     return m_data->poBufferImage;
   }
 
@@ -328,6 +373,13 @@ namespace icl{
       prev();
     }else if(property == "loop"){
       m_data->loop = parse<bool>(value);
+    }else if(property == "use-time-stamps"){
+      bool val = parse<bool>(value);
+      if(val != m_data->useTimeStamps){
+        m_data->useTimeStamps = val;
+        m_data->referenceTime = Time(0);
+        m_data->referenceTimeReal = Time(0);
+      }
     }else if(property == "jump-to-start"){
       m_data->iCurrIdx = 0;
     }else if(property == "auto-next"){
@@ -361,11 +413,11 @@ namespace icl{
   }
   
   std::vector<std::string> FileGrabberImpl::getPropertyList(){
-    static const std::string ps[11] = {
-      "next","prev","next filename","current filename","jump-to-start",
+    static const std::string ps[12] = {
+      "next","prev","use-time-stamps","next filename","current filename","jump-to-start",
       "relative progress","absolute progress","auto-next","loop","file-count","frame-index"
     };
-    return std::vector<std::string>(ps,ps+11);
+    return std::vector<std::string>(ps,ps+12);
   }
   
   std::string FileGrabberImpl:: getType(const std::string &name){
@@ -374,7 +426,7 @@ namespace icl{
     }else if (name == "next filename" || name == "current filename" || name == "relative progress"
               || name == "absolute progress" || name == "file-count"){
       return "info";
-    }else if(name == "auto-next" || name == "loop"){
+    }else if(name == "auto-next" || name == "loop" || name == "use-time-stamps"){
       return "menu";
     }else if(name == "frame-index"){
       return "range";
@@ -385,7 +437,7 @@ namespace icl{
   }
   
   std::string FileGrabberImpl::getInfo(const std::string &name){
-    if(name == "auto-next" || name == "loop") return "{\"on\",\"off\"}";
+    if(name == "auto-next" || name == "loop" || name == "use-time-stamps") return "{\"on\",\"off\"}";
     else if(name == "frame-index"){
       return "[0," + str(m_data->oFileList.size()-1) + "]:1";
     }
@@ -396,6 +448,8 @@ namespace icl{
   std::string FileGrabberImpl::getValue(const std::string &name){
     if(name == "next filename"){
       return getNextFileName();
+    }else if(name == "use-time-stamps"){
+      return m_data->useTimeStamps ? "on" : "off";
     }else if(name == "current filename"){
       return m_data->oFileList[iclMax(m_data->iCurrIdx-1,0)];
     }else if(name == "file-count"){
