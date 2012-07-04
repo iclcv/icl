@@ -706,6 +706,9 @@ namespace icl{
     FROM_TO_STR_ADD(StringHandle);
     ADD_T_TO_T(StringHandle);
     
+    // BoxHandle
+    ADD_T_TO_T(BoxHandle);
+
     // ColorHandle
     ADD(ColorHandle,Color);
     ADD(ColorHandle,Color4D);
