@@ -158,7 +158,7 @@ FiducialDetector *create_new_fd(MarkerType t, std::vector<std::string> &configur
   fd->setPropertyValue("thresh.global threshold",-10);
   fd->setPropertyValue("thresh.mask size",30);
 
-  if(pa("-s") && parse<Size>(pa("-s")) == Size::QVGA){
+  if(pa("-s").as<bool>() && parse<Size>(pa("-s")) == Size::QVGA){
     fd->setPropertyValue("pp.filter","none");
   }
   lastFD = fd;

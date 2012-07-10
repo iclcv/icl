@@ -42,6 +42,9 @@
 namespace icl{
   #define MIN_MEMORY_SEGMENT_SIZE 5000000
 
+  // extra amount of bytes, always allocated for image meta data (1MB)
+  #define MIN_EXTRA_PAYLOAD_SIZE  1000000
+
   struct SharedMemoryLocker{
     QSharedMemory &mem;
     SharedMemoryLocker(QSharedMemory &mem):
@@ -148,6 +151,24 @@ namespace icl{
     publish(&tmp);
   }
     
+  static std::string translate_qsharedmemory_error(QSharedMemory::SharedMemoryError e){
+    switch(e){
+#define CASE(X) case X: return #X
+      CASE(QSharedMemory::PermissionDenied);
+      CASE(QSharedMemory::InvalidSize);
+      CASE(QSharedMemory::KeyError);
+      CASE(QSharedMemory::AlreadyExists);
+      CASE(QSharedMemory::NotFound);
+      CASE(QSharedMemory::LockError);
+      CASE(QSharedMemory::OutOfResources);
+      CASE(QSharedMemory::UnknownError);
+#undef CASE
+      default: return "NoError";
+    }
+    return "";
+  }
+
+  
   void SharedMemoryPublisher::publish(const ImgBase *image){
     QSharedMemory &mem = m_data->mem;
 
@@ -160,7 +181,7 @@ namespace icl{
       if(m_data->mem.attach(QSharedMemory::ReadWrite)){
         register_grabber(m_data->listMem,m_data->name);
       }else{
-        if(mem.create(iclMax(MIN_MEMORY_SEGMENT_SIZE,data.len))){
+        if(mem.create(iclMax(MIN_MEMORY_SEGMENT_SIZE,data.len+MIN_EXTRA_PAYLOAD_SIZE))){
           register_grabber(m_data->listMem,m_data->name);
         }
       }
@@ -172,8 +193,9 @@ namespace icl{
 
     if(mem.size() < data.len){
       mem.detach();
-      if(!mem.create(data.len)){
-        throw ICLException(str(__FUNCTION__)+": unable to resize memory segment (it seems to be in use from somewhere else)");
+      if(!mem.create(iclMax(MIN_MEMORY_SEGMENT_SIZE,data.len+MIN_EXTRA_PAYLOAD_SIZE))){
+        throw ICLException(str(__FUNCTION__)+": unable to resize memory segment (" + 
+                           translate_qsharedmemory_error(mem.error()));
       }
     }
 

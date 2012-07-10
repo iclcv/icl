@@ -366,16 +366,18 @@ namespace icl{
     *reinterpret_cast<Header::Params*>(dst) = header.params;
     dst += sizeof(Header::Params);
     if(!skipMetaData){
-      std::copy(image->getMetaData().begin(), image->getMetaData().end(),dst);//header.metaBegin(), header.metaBegin()+header.params.metaLen,dst);
-      //      std::copy(header.metaBegin(), header.metaBegin()+header.params.metaLen,dst);
+      std::copy(image->getMetaData().begin(), image->getMetaData().end(),dst);
       dst+= header.params.metaLen;
     }
+
+    float len = 0;
   
     if(image->getDepth() == depth8u){
       const Img8u *image8u = image->as8u();
       for(int c=0;c<image->getChannels();++c){
         dst = compressChannel(image8u->begin(c),dst, image8u->getSize(),image8u->getImageRect(), header.compressionSpec());
       }
+      len = (float)(dst-m_data->encoded_buffer.data());
     }else{ // only no-compression mode
       int l = image->getDim() * getSizeOf(image->getDepth());
       for(int c=0;c<image->getChannels();++c){
@@ -383,9 +385,10 @@ namespace icl{
                   (const icl8u*)image->getDataPtr(c)+l,
                   dst+c*l);
       }
+
+      len = l * image->getChannels();
     }
-    
-    float len = (float)(dst-m_data->encoded_buffer.data());
+
     return CompressedData(m_data->encoded_buffer.data(), (int)len, len/m_data->encoded_buffer.size());
   }
 
