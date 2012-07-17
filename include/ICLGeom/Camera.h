@@ -268,6 +268,9 @@ namespace icl {
     /// set norm and up vectors according to the passed yaw, pitch and roll
     void setRotation(const Vec &rot);
 
+    /// sets the camera's rotation and position from given 4x4 homogeneous matrix
+    void setTransformation(const Mat &m);
+
     /// get world to image coordinate system transformation matrix
     Mat getCSTransformationMatrix() const;
     /// get world to image coordinate system transformation matrix

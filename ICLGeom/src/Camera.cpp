@@ -233,6 +233,12 @@ namespace icl {
       m_up *= -1; m_up[3] = 1;
     }
   }
+  
+  void Camera::setTransformation(const Mat &m){
+    setRotation(m.part<0,0,3,3>());
+    setPosition(m.part<3,0,1,4>());
+  }
+
 
   Camera Camera::createFromProjectionMatrix(const FixedMatrix<icl32f,4,3> &Q,
                                                 float focalLength) {

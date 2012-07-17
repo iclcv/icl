@@ -7,6 +7,9 @@ GUI prevGUI("hbox");
 
 GenericImageOutput colorOut, depthOut;
 SceneObject *obj = 0;
+
+SmartPtr<Mat> colorDepthTM;
+
 void init(){
   bool cOut = pa("-c"), dOut = pa("-d");
   
@@ -44,6 +47,14 @@ void init(){
                     Vec(-0.498035,0.458701,-0.735904,1),
                     Vec(0.787984,-0.116955,-0.604486,1));
   scene.addCamera( !pa("-cam").as<bool>() ? defaultCam : Camera(*pa("-cam")));
+  
+  if(pa("-different-color-camera")){
+    scene.addCamera(*pa("-different-color-camera"));
+    Mat D=scene.getCamera(0).getCSTransformationMatrix();
+    Mat C=scene.getCamera(1).getCSTransformationMatrix();
+    
+    colorDepthTM = new Mat(C*D.inv());
+  }
   SceneObject* ground = SceneObject::cuboid(0,0,0,200,200,3);
   ground->setColor(Primitive::quad,GeomColor(100,100,100,255));
   
@@ -73,13 +84,26 @@ void run() {
   static Img32f depthImage;
   if(cOut || dOut){
     const Img8u colorImage = scene.render(0,0,dOut ? &depthImage : 0);
-    if(cOut) colorOut.send(&colorImage);
+    
+    if(colorDepthTM){
+      Camera &d = scene.getCamera(0);
+      Camera &c = scene.getCamera(1);
+      c.setTransformation(*colorDepthTM * d.getCSTransformationMatrix());
+      const Img8u colorImage2 = scene.render(1);
+      if(cOut) colorOut.send(&colorImage2);
+      if(prevGUI.isVisible()){
+        if(cOut) prevGUI["color"] = colorImage2;
+        if(dOut) prevGUI["depth"] = depthImage;
+      }
+    }else{
+      if(cOut) colorOut.send(&colorImage);
+      if(prevGUI.isVisible()){
+        if(cOut) prevGUI["color"] = colorImage;
+        if(dOut) prevGUI["depth"] = depthImage;
+      }
+    }
     if(dOut) depthOut.send(&depthImage);
     
-    if(prevGUI.isVisible()){
-      if(cOut) prevGUI["color"] = colorImage;
-      if(dOut) prevGUI["depth"] = depthImage;
-    }
   }
   gui["draw"].render();
 }  
@@ -87,5 +111,6 @@ void run() {
 
 int main(int n, char **v){
   return ICLApp(n,v,"-depth-out|-d(2) -color-out|-c(2) "
-		"-object|-o(obj-filename) -initial-camera|-cam(camerafile)",init,run).exec();
+		"-object|-o(obj-filename) -initial-camera|-cam(camerafile) "
+                "-different-color-camera(camerafile)",init,run).exec();
 }
