@@ -136,7 +136,7 @@ namespace icl {
     public:
 
     struct RenderParams {
-      Size chipSize;    //!< chip size in [mm] for transformation to clip coordinates
+      Size chipSize;    //!< chip size in [pixels] for transformation to chip coordinates
       float clipZNear;  //!< position of the near clipping plane in [mm]
       float clipZFar;   //!< position of the far clipping plane in [mm]
       Rect viewport;    //!< in [pixel]
@@ -340,6 +340,8 @@ namespace icl {
     */
     void setResolution(const Size &newScreenSize, const Point &newPrincipalPointOffset);
 
+    /// returns the current chipSize (camera resolution in pixels)
+    inline const Size &getResolution() const { return m_renderParams.chipSize; }
     /** @} @{ @name 3D-position estimation */
 
     /// computes the 3D position of a n view from n cameras

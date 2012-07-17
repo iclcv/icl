@@ -83,7 +83,10 @@ void run() {
 
   static Img32f depthImage;
   if(cOut || dOut){
-    const Img8u colorImage = scene.render(0,0,dOut ? &depthImage : 0);
+    static Scene::DepthBufferMode dbm = ( pa("-depth-map-dist-to-cam-center") ? 
+                                          Scene::DistToCamCenter :
+                                          Scene::DistToCamPlane );
+    const Img8u colorImage = scene.render(0,0,dOut ? &depthImage : 0, dbm);
     
     if(colorDepthTM){
       Camera &d = scene.getCamera(0);
@@ -112,5 +115,6 @@ void run() {
 int main(int n, char **v){
   return ICLApp(n,v,"-depth-out|-d(2) -color-out|-c(2) "
 		"-object|-o(obj-filename) -initial-camera|-cam(camerafile) "
-                "-different-color-camera(camerafile)",init,run).exec();
+                "-different-color-camera(camerafile) "
+                "-depth-map-dist-to-cam-center",init,run).exec();
 }
