@@ -820,6 +820,33 @@ namespace icl{
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
   }
+
+  void GLImg::draw2D(const float a[2], const float b[2], const float c[2],const float d[2], const Size &windowSize){
+    const int w = windowSize.width;
+    const int h = windowSize.height;
+    
+    const float da[3]={winToDraw(a[0],w), winToDraw(a[1],h),0};
+    const float db[3]={winToDraw(b[0],w), winToDraw(b[1],h),0};
+    const float dc[3]={winToDraw(c[0],w), winToDraw(c[1],h),0};
+    const float dd[3]={winToDraw(d[0],w), winToDraw(d[1],h),0};
+    
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+    glColor4f(1,1,1,1);
+    glScalef(1,-1,1); // flip y
+    
+    draw3D(da,db,dc,dd);
+
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+  }
+
+
   static float *interpolate_billinear(const float *a, const float *b, const float *c, const float *d, 
                                       float relx,float rely, float *dst){
     float &x = relx, &y=rely, x1=1-x, y1=1-y;

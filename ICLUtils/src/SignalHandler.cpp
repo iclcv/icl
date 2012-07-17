@@ -157,17 +157,19 @@ int kill(pid_t pid, int signal);
       new_action.sa_handler = signal_handler_function;
       sigemptyset (&new_action.sa_mask);
       new_action.sa_flags = 0;
-      #ifndef ICL_SYSTEM_WINDOWS
+#ifndef ICL_SYSTEM_WINDOWS
       sigaction (signal, NULL, old_action);
-	  #else
-	  
-	  #endif
+#else
+      
+#endif
       if (old_action->sa_handler != SIG_IGN){
-	    #ifndef ICL_SYSTEM_WINDOWS
+
+
+#ifndef ICL_SYSTEM_WINDOWS
         sigaction (signal, &new_action, NULL);
-        #else
-		
-		#endif
+#else
+        
+#endif
         SHM[signal]=this;    
         SAM[signal]=old_action;
         m_vecAssocitatedSignals.push_back(signal);

@@ -133,6 +133,10 @@ namespace icl{
     /// draws the image to the given 2D rect
     /** This method is optimized for the OpenGL parameters set by the ICLQt::Widget class */
     void draw2D(const Rect &r, const Size &windowSize);
+
+    /// draws the image to the given quadrangle
+    /** This method is optimized for the OpenGL parameters set by the ICLQt::Widget class */
+    void draw2D(const float a[2], const float b[2], const float c[2],const float e[2], const Size &windowSize);
     
     /// draws the texture to the given nodes quad in 3D space
     /** the point order is 

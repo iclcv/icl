@@ -229,6 +229,19 @@ int main(int n, char **ppc){
       this->image(image,r.x,r.y,r.width,r.height);
     }
     
+    /// draws an image into given quadrangle 
+    /** node order is 
+        <pre>
+        a--------b
+        |         \
+        |          \ 
+        d---___     \
+               ---___c  
+        </pre>
+    */
+    void image(const ImgBase *image, const float a[2], const float b[2],
+               const float c[2], const float d[2]);
+    
     /// draws a string into the given rect
     /** if w=-1 and h=-1, fontsize is used to determine the bitmap size.
         The given fontsize paramter defines the font-size in screen pixels.

@@ -589,8 +589,38 @@ namespace icl{
     }
     virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
       (void)e;
-      Rect r(tP(m_fA,m_fB,s),tS(m_fC, m_fD,s));
+      //Rect r(tP(m_fA,m_fB,s),tS(m_fC, m_fD,s));
       image.draw2D(Rect(tP(m_fA,m_fB,s),tS(m_fC, m_fD,s)),s->size);
+    }
+    GLImg image;
+  };
+
+  // }}}
+
+  class ImageQuadrangleCommand : public IntelligentDrawCommand{
+    // {{{ open
+    float a[2],b[2],c[2],d[2];
+  public:
+    ImageQuadrangleCommand(const ImgBase *image, const float a[2],const float b[2],
+                 const float c[2],const float d[2]):image(image){
+      for(int i=0;i<2;++i){
+        this->a[i] = a[i];
+        this->b[i] = b[i];
+        this->c[i] = c[i];
+        this->d[i] = d[i];
+      }
+    }
+    virtual ~ImageQuadrangleCommand(){
+      
+    }
+    virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
+      (void)e;
+      const float da[2] = { tX(a[0],s), tY(a[1],s) };
+      const float db[2] = { tX(b[0],s), tY(b[1],s) };
+      const float dc[2] = { tX(c[0],s), tY(c[1],s) };
+      const float dd[2] = { tX(d[0],s), tY(d[1],s) };
+
+      image.draw2D(da,db,dc,dd, s->size);
     }
     GLImg image;
   };
@@ -825,6 +855,11 @@ namespace icl{
   void ICLDrawWidget::image(ImgBase *image,float x, float y, float w, float h){
     QMutexLocker lock(&m_oCommandMutex);
     m_queues[0]->push_back(new ImageCommand(image,x,y,w,h));
+  }
+  void ICLDrawWidget::image(const ImgBase *image, const float a[2], const float b[2],
+                            const float c[2], const float d[2]){
+    QMutexLocker lock(&m_oCommandMutex);
+    m_queues[0]->push_back(new ImageQuadrangleCommand(image,a,b,c,d));
   }
  
   void ICLDrawWidget::text(string text, float x, float y, float w, float h, float fontsize){
