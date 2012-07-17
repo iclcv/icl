@@ -148,7 +148,7 @@ namespace icl{
       plot->label("sin(x)");   // set the legend label
       plot->series(sinData);   // add data to visualize
       plot->unlock();          // unlock the draw queue
-      plot.update();           // post an update event to Qt
+      plot.render();           // post an update event to Qt
       
       \endcode
       
