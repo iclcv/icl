@@ -257,6 +257,16 @@ namespace icl{
       }
     }
     
+    if(scene.m_bounds){
+      setBounds(scene.m_bounds[0].minVal,
+                scene.m_bounds[0].maxVal,
+                scene.m_bounds[1].minVal,
+                scene.m_bounds[1].maxVal,
+                scene.m_bounds[2].minVal,
+                scene.m_bounds[2].maxVal);
+    }else{
+      m_bounds = 0;
+    }
     
     return *this;
   }
@@ -568,7 +578,13 @@ namespace icl{
     // No mouse handler found for camera. Create a new one.
     SceneMouseHandler* newSceneMouseHandler = new SceneMouseHandler(camIndex,this);
     ICLASSERT(newSceneMouseHandler!=0);
-    newSceneMouseHandler->setSensitivities(getMaxSceneDim());
+    if(m_bounds){
+      float maxLen = iclMax(m_bounds[0].getLength(), m_bounds[1].getLength());
+      maxLen = iclMax(m_bounds[2].getLength(), maxLen);
+      newSceneMouseHandler->setSensitivities(maxLen);
+    }else{
+      newSceneMouseHandler->setSensitivities(getMaxSceneDim());
+    }
     m_mouseHandlers.push_back(newSceneMouseHandler);
 
     // return mouse handler
@@ -841,6 +857,29 @@ namespace icl{
     }
   }
 
+  void Scene::setBounds(float minX, float maxX, float minY, float maxY, float minZ, float maxZ){
+    m_bounds = SmartArray<Range32f>(new Range32f[3]);
+    if(minX == maxX){
+      maxX = -minX;
+      if(minX == maxX){
+        m_bounds = 0;
+        return;
+      }
+    }
+    m_bounds[0] = Range32f(minX,maxX);
+    if(minY == maxY){
+      m_bounds[1] = Range32f(minX,maxX);
+    }else{
+      m_bounds[1] = Range32f(minY,maxY);
+    }
+    if(minZ == maxZ){
+      m_bounds[2] = Range32f(minX,maxX);
+    }else{
+      m_bounds[2] = Range32f(minZ,maxZ);
+    }
+  }
+  
+
 
 
 #ifdef HAVE_QT
@@ -1087,7 +1126,6 @@ namespace icl{
     }
   }
   
-
 #endif
 #endif
 

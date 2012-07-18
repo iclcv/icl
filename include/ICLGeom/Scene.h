@@ -51,6 +51,8 @@
 #endif
 
 #include <ICLUtils/Lockable.h>
+#include <ICLUtils/SmartArray.h>
+
 
 namespace icl{
 
@@ -375,6 +377,16 @@ int main(int n, char**ppc){
     inline std::vector<Hit> findObjects(int camIndex, int xScreen, int ySceen){
       return findObjects(getCamera(camIndex).getViewRay(Point(xScreen,ySceen)));
     }
+    
+    /// sets the expected bounds of contained objects
+    /** The set information is used when a mouse-handler is created, in order to
+        estimate appropriate step sizes. If the scene bounds were not explicitly,
+        the scene tries to infer this information from the contained objects\n
+        Each [min-max] range where min=max, is automatically set to [minX,maxX].
+        If additionally, minX is equal to maxX, max is is set to -minX.
+        If the resulting x-range has still zero length, the bounds are deleted
+        internally */
+    void setBounds(float minX, float maxX=0, float minY=0, float mayY=0, float minZ=0, float maxZ=0);
 
     protected:
 
@@ -446,6 +458,9 @@ int main(int n, char**ppc){
     
     /// internal list of lights
     SmartPtr<SceneLight> m_lights[8];
+    
+    /// optionally given bounds of the scene
+    SmartArray<Range32f> m_bounds;
 
     private:
     /// called from the SceneObject class
