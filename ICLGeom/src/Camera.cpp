@@ -235,8 +235,16 @@ namespace icl {
   }
   
   void Camera::setTransformation(const Mat &m){
-    setRotation(m.part<0,0,3,3>());
-    setPosition(m.part<3,0,1,4>());
+    FixedMatrix<float,3,3> R = m.part<0,0,3,3>();
+    setRotation(R);
+    
+    // since the transformation matrix T is [ R | -Rt ], we have to undo -Rt by -R^1t
+    // and since R is orthogonal, R^-1 is equal to R.transp()
+    FixedColVector<float,3> t = m.part<3,0,1,3>();
+    t = -R.transp()*t;
+    m_pos[0] = t[0];
+    m_pos[1] = t[1];
+    m_pos[2] = t[2];
   }
 
 

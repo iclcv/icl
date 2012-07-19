@@ -8,7 +8,8 @@ GUI prevGUI("hbox");
 GenericImageOutput colorOut, depthOut;
 SceneObject *obj = 0;
 
-SmartPtr<Mat> colorDepthTM;
+SmartPtr<Mat> relTM;
+Camera initDepthCam;
 
 void init(){
   bool cOut = pa("-c"), dOut = pa("-d");
@@ -28,10 +29,16 @@ void init(){
 
   gui << "draw3D[@handle=draw]" 
       << ( GUI("vbox[@minsize=10x2]")
-           << "fslider(-10,10,0)[@out=x@label=x]"
-           << "fslider(-10,10,0)[@out=y@label=y]"
-           << "fslider(1.5,10,0)[@out=z@label=z]"
+           << "fslider(-10,10,0)[@out=x@label=translate x]"
+           << "fslider(-10,10,0)[@out=y@label=translate y]"
+           << "fslider(1.5,10,0)[@out=z@label=translate z]"
+
+           << "fslider(-4,4,0)[@out=rx@label=rotate x]"
+           << "fslider(-4,4,0)[@out=ry@label=rotate y]"
+           << "fslider(-4,4,0)[@out=rz@label=rotate z]"
+
            << ((cOut||dOut) ? "togglebutton(show,hide)[@label=preview@handle=preview]" : "")
+           << "button(reset view)[@handle=resetView]"
          )
       << "!show";
   
@@ -47,14 +54,16 @@ void init(){
                     Vec(-0.498035,0.458701,-0.735904,1),
                     Vec(0.787984,-0.116955,-0.604486,1));
   scene.addCamera( !pa("-cam").as<bool>() ? defaultCam : Camera(*pa("-cam")));
+  initDepthCam = scene.getCamera(0);
   
-  if(pa("-different-color-camera")){
-    scene.addCamera(*pa("-different-color-camera"));
+  if(pa("-ccam")){
+    scene.addCamera(*pa("-ccam"));
     Mat D=scene.getCamera(0).getCSTransformationMatrix();
     Mat C=scene.getCamera(1).getCSTransformationMatrix();
     
-    colorDepthTM = new Mat(C*D.inv());
+    relTM = new Mat( C * D.inv() );
   }
+
   SceneObject* ground = SceneObject::cuboid(0,0,0,200,200,3);
   ground->setColor(Primitive::quad,GeomColor(100,100,100,255));
   
@@ -71,14 +80,19 @@ void init(){
   
   gui["draw"].link(scene.getGLCallback(0));
   gui["draw"].install(scene.getMouseHandler(0));
-  
 
+  scene.setDrawCamerasEnabled(false);
 }
 
 void run() {
+  static ButtonHandle resetView = gui["resetView"];
+  if(resetView.wasTriggered()){
+    scene.getCamera(0) = initDepthCam;
+  }
   bool cOut = pa("-c"), dOut = pa("-d");
   
   obj->removeTransformation();
+  obj->rotate(gui["rx"],gui["ry"],gui["rz"]);
   obj->translate(Vec(gui["x"],gui["y"],gui["z"],1));
 
   static Img32f depthImage;
@@ -88,10 +102,12 @@ void run() {
                                           Scene::DistToCamPlane );
     const Img8u colorImage = scene.render(0,0,dOut ? &depthImage : 0, dbm);
     
-    if(colorDepthTM){
+    if(relTM){
       Camera &d = scene.getCamera(0);
       Camera &c = scene.getCamera(1);
-      c.setTransformation(*colorDepthTM * d.getCSTransformationMatrix());
+      
+      c.setTransformation( *relTM * d.getCSTransformationMatrix() );
+     
       const Img8u colorImage2 = scene.render(1);
       if(cOut) colorOut.send(&colorImage2);
       if(prevGUI.isVisible()){
@@ -113,8 +129,20 @@ void run() {
 
 
 int main(int n, char **v){
+  paex("-d","depth image output stream (if given, depth image is exported)")
+  ("-c","color image output stream (if given, the color image is exported)")
+  ("-o","if given, the given obj-file is loaded into the scene")
+  ("-cam","camera for depth rendering (also used for\n"
+   "rendering color images if no color camera was given explicitly using -ccam)")
+  ("-ccam","optionally given color camera (when the depth camera\n"
+   "is moved using mouse input, the color camera will\n"
+   "be move in order to make the relative transformations\n"
+   "stay the same")
+  ("-depth-map-dist-to-cam-center","this can be set in order to change the\n"
+   "interpretation of the depth image values");
+
   return ICLApp(n,v,"-depth-out|-d(2) -color-out|-c(2) "
-		"-object|-o(obj-filename) -initial-camera|-cam(camerafile) "
-                "-different-color-camera(camerafile) "
+		"-object|-o(obj-filename) -camera|-cam(camerafile) "
+                "-color-camera|-ccam(camerafile) "
                 "-depth-map-dist-to-cam-center",init,run).exec();
 }
