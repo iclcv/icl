@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLGeom/examples/rgbd-mapping-demo.cpp                 **
+** File   : include/ICLGeom/PointCloudObject                       **
 ** Module : ICLGeom                                                **
 ** Authors: Christof Elbrechter, Patrick Nobou                     **
 **                                                                 **
@@ -32,81 +32,70 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
-#include <ICLGeom/Geom.h>
-#ifdef HAVE_PCL
-#include <ICLGeom/PCLPointCloudObject.h>
-#else
-#include <ICLGeom/PointCloudObject.h>
+#ifndef ICL_POINT_CLOUD_OBJECT_H
+#define ICL_POINT_CLOUD_OBJECT_H
+
+#include <ICLGeom/PointCloudObjectBase.h>
+
+namespace icl{
+  
+  /// Base implementation of the SceneObjectBase interface for compability with common icl::SceneObjects
+  /** This class replaces the former implementations
+      - PointcloudSceneObject
+      - RGBDImageSceneObject 
+      
+      \section TODO
+      - add optional color (perhaps not possible)
+      - add optional normals and may other useful fields
+  */
+  class PointCloudObject : public PointCloudObjectBase{
+    protected:
+    bool m_organized; //!< internal 2D organized flag
+    Size m_dim2D;     //!< 2D dimension
+    
+    public:
+    
+    /// creates a new ordered or unordered SimplePointCloudObject instance
+    /** @param width number of points per line (if unordered, number of points)
+        @param height number of points per row (if unordered, height is not used)
+        @param organized specifies whether there is a 2D data order or not
+        */
+    PointCloudObject(int width=0, int height=0, bool organized=true);
+
+    /// returns which features are supported (only XYZ and RGBA32f)
+    virtual bool supports(FeatureType t);
+    
+    /// returns whether the points are 2D-ordered
+    virtual bool isOrganized() const;
+
+    /// returns the 2D size of the pointcloud (throws exception if not ordered)
+    virtual Size getSize() const throw (ICLException);
+    
+    /// return the linearily ordered number of point in the point cloud
+    virtual int getDim() const;
+
+    /// adapts the point cloud size
+    /** if the sizes height is smaller than 1, the cloud becomes un-organized*/
+    virtual void setSize(const Size &size);
+
+    /// returns XYZ data segment
+    virtual DataSegment<float,3> selectXYZ();
+    
+    /// returns the RGBA data segment (4-floats)
+    virtual DataSegment<float,4> selectRGBA32f();
+
+    /// important, this is again, reimplemented in order to NOT draw the stuff manually here
+    virtual void customRender();
+
+    /// deep copy function
+    virtual PointCloudObject *copy() const {
+      return new PointCloudObject(*this);
+    }
+
+  };
+
+  
+  
+}
+
 #endif
-#include <ICLGeom/DepthCameraPointCloudGrabber.h>
-
-GUI gui("hsplit");
-Scene scene;
-
-#ifdef HAVE_PCL
-PCLPointCloudObject<pcl::PointXYZRGBA> obj(640,480);
-#else
-PointCloudObject obj(640,480);
-#endif
-
-SmartPtr<DepthCameraPointCloudGrabber> grabber;
-
-void init(){
-  grabber = new DepthCameraPointCloudGrabber(*pa("-d",2), *pa("-c",2),
-                                             *pa("-d",0), *pa("-d",1),
-                                             *pa("-c",0), *pa("-c",1) );
-
-  gui << ( GUI("vbox")
-           << "image[@handle=color@label=color image]"
-           << "image[@handle=depth@label=depth image]"
-           )
-      <<( GUI("vbox")
-          << "draw3D[@handle=overlay@label=mapped color image overlay]"
-          << "draw3D[@handle=scene@label=interactive scene]"
-          )
-      <<( GUI("vbox")
-             << "checkbox(show overlay,checked)[@out=showOverlay]"
-             )
-      << "!show";
-
-
-  // kinect camera
-  scene.addCamera(*pa("-d",2) );
-  scene.setBounds(-100);
-  //  view camera
-  scene.addCamera(scene.getCamera(0));
-  scene.setDrawCamerasEnabled(false);
-  scene.addObject(&obj);
-
-  gui["overlay"].link(scene.getGLCallback(0));
-  gui["scene"].link(scene.getGLCallback(1));
-  gui["scene"].install(scene.getMouseHandler(1));
-
-  ImageHandle d = gui["depth"];
-  d->setRangeMode(ICLWidget::rmAuto);
-
-  scene.setDrawCoordinateFrameEnabled(false);
-}
-
-
-void run(){
-  gui["overlay"].link( gui["showOverlay"] ? scene.getGLCallback(0) : 0);
-
-  grabber->grab(obj);
-
-  gui["color"] = grabber->getLastColorImage();
-  gui["depth"] = grabber->getLastDepthImage();
-
-  //gui["overlay"] = mappedColorImage;
-  gui["overlay"].render();
-
-  gui["scene"].render();
-}
-
-
-int main(int n, char **ppc){
-  return ICLApp(n,ppc,"-depth-cam|-d(device-type,device-ID,calib-filename) "
-                "-color-cam|-c(device-type,device-ID,calib-filename)",init,run).exec();
-}
-

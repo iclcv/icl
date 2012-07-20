@@ -6,9 +6,9 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLGeom/examples/rgbd-mapping-demo.cpp                 **
+** File   : include/ICLGeom/PrimitiveType.h                        **
 ** Module : ICLGeom                                                **
-** Authors: Christof Elbrechter, Patrick Nobou                     **
+** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
 ** Commercial License                                              **
@@ -32,81 +32,22 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
-#include <ICLGeom/Geom.h>
-#ifdef HAVE_PCL
-#include <ICLGeom/PCLPointCloudObject.h>
-#else
-#include <ICLGeom/PointCloudObject.h>
+#ifndef ICL_PRIMITIVE_TYPE_H
+#define ICL_PRIMITIVE_TYPE_H
+
+namespace icl{
+
+  enum PrimitiveType{
+    vertexPrimitive   = 1<<0, //<! vertex
+    linePrimitive     = 1<<1, //<! line primitive (adressing two vertices -> start and end position of the line)
+    trianglePrimitive = 1<<2, //<! triange primitive (adressing three vertices)
+    quadPrimitive     = 1<<3, //<! quad primitve (adressing four vertices)
+    polygonPrimitive  = 1<<4, //<! polygon primitive (adressing at least 3 vertices)
+    texturePrimitive  = 1<<5, //<! texture primitive (using 4 vertices like a quad as textured rectangle)
+    textPrimitive     = 1<<6, //<! text primitive (internally implmented as texture or as billboard)
+    noPrimitive       = 1<<7, //<! internally used type
+    PRIMITIVE_TYPE_COUNT = 8  //<! also for internal use only
+  };
+}
+
 #endif
-#include <ICLGeom/DepthCameraPointCloudGrabber.h>
-
-GUI gui("hsplit");
-Scene scene;
-
-#ifdef HAVE_PCL
-PCLPointCloudObject<pcl::PointXYZRGBA> obj(640,480);
-#else
-PointCloudObject obj(640,480);
-#endif
-
-SmartPtr<DepthCameraPointCloudGrabber> grabber;
-
-void init(){
-  grabber = new DepthCameraPointCloudGrabber(*pa("-d",2), *pa("-c",2),
-                                             *pa("-d",0), *pa("-d",1),
-                                             *pa("-c",0), *pa("-c",1) );
-
-  gui << ( GUI("vbox")
-           << "image[@handle=color@label=color image]"
-           << "image[@handle=depth@label=depth image]"
-           )
-      <<( GUI("vbox")
-          << "draw3D[@handle=overlay@label=mapped color image overlay]"
-          << "draw3D[@handle=scene@label=interactive scene]"
-          )
-      <<( GUI("vbox")
-             << "checkbox(show overlay,checked)[@out=showOverlay]"
-             )
-      << "!show";
-
-
-  // kinect camera
-  scene.addCamera(*pa("-d",2) );
-  scene.setBounds(-100);
-  //  view camera
-  scene.addCamera(scene.getCamera(0));
-  scene.setDrawCamerasEnabled(false);
-  scene.addObject(&obj);
-
-  gui["overlay"].link(scene.getGLCallback(0));
-  gui["scene"].link(scene.getGLCallback(1));
-  gui["scene"].install(scene.getMouseHandler(1));
-
-  ImageHandle d = gui["depth"];
-  d->setRangeMode(ICLWidget::rmAuto);
-
-  scene.setDrawCoordinateFrameEnabled(false);
-}
-
-
-void run(){
-  gui["overlay"].link( gui["showOverlay"] ? scene.getGLCallback(0) : 0);
-
-  grabber->grab(obj);
-
-  gui["color"] = grabber->getLastColorImage();
-  gui["depth"] = grabber->getLastDepthImage();
-
-  //gui["overlay"] = mappedColorImage;
-  gui["overlay"].render();
-
-  gui["scene"].render();
-}
-
-
-int main(int n, char **ppc){
-  return ICLApp(n,ppc,"-depth-cam|-d(device-type,device-ID,calib-filename) "
-                "-color-cam|-c(device-type,device-ID,calib-filename)",init,run).exec();
-}
-

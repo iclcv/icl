@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLGeom/examples/rgbd-mapping-demo.cpp                 **
+** File   : include/ICLGeom/PointCloudGrabber.h                    **
 ** Module : ICLGeom                                                **
 ** Authors: Christof Elbrechter, Patrick Nobou                     **
 **                                                                 **
@@ -32,81 +32,18 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
-#include <ICLGeom/Geom.h>
-#ifdef HAVE_PCL
-#include <ICLGeom/PCLPointCloudObject.h>
-#else
-#include <ICLGeom/PointCloudObject.h>
+#ifndef ICL_POINT_CLOUD_GRABBER_H
+#define ICL_POINT_CLOUD_GRABBER_H
+
+#include <ICLGeom/PointCloudObjectBase.h>
+
+namespace icl{
+
+  /// Generic interface for PointCloud sources
+  struct PointCloudGrabber{
+    /// fills the given point cloud with grabbed information
+    virtual void grab(PointCloudObjectBase &dst) = 0;
+  };
+}
+
 #endif
-#include <ICLGeom/DepthCameraPointCloudGrabber.h>
-
-GUI gui("hsplit");
-Scene scene;
-
-#ifdef HAVE_PCL
-PCLPointCloudObject<pcl::PointXYZRGBA> obj(640,480);
-#else
-PointCloudObject obj(640,480);
-#endif
-
-SmartPtr<DepthCameraPointCloudGrabber> grabber;
-
-void init(){
-  grabber = new DepthCameraPointCloudGrabber(*pa("-d",2), *pa("-c",2),
-                                             *pa("-d",0), *pa("-d",1),
-                                             *pa("-c",0), *pa("-c",1) );
-
-  gui << ( GUI("vbox")
-           << "image[@handle=color@label=color image]"
-           << "image[@handle=depth@label=depth image]"
-           )
-      <<( GUI("vbox")
-          << "draw3D[@handle=overlay@label=mapped color image overlay]"
-          << "draw3D[@handle=scene@label=interactive scene]"
-          )
-      <<( GUI("vbox")
-             << "checkbox(show overlay,checked)[@out=showOverlay]"
-             )
-      << "!show";
-
-
-  // kinect camera
-  scene.addCamera(*pa("-d",2) );
-  scene.setBounds(-100);
-  //  view camera
-  scene.addCamera(scene.getCamera(0));
-  scene.setDrawCamerasEnabled(false);
-  scene.addObject(&obj);
-
-  gui["overlay"].link(scene.getGLCallback(0));
-  gui["scene"].link(scene.getGLCallback(1));
-  gui["scene"].install(scene.getMouseHandler(1));
-
-  ImageHandle d = gui["depth"];
-  d->setRangeMode(ICLWidget::rmAuto);
-
-  scene.setDrawCoordinateFrameEnabled(false);
-}
-
-
-void run(){
-  gui["overlay"].link( gui["showOverlay"] ? scene.getGLCallback(0) : 0);
-
-  grabber->grab(obj);
-
-  gui["color"] = grabber->getLastColorImage();
-  gui["depth"] = grabber->getLastDepthImage();
-
-  //gui["overlay"] = mappedColorImage;
-  gui["overlay"].render();
-
-  gui["scene"].render();
-}
-
-
-int main(int n, char **ppc){
-  return ICLApp(n,ppc,"-depth-cam|-d(device-type,device-ID,calib-filename) "
-                "-color-cam|-c(device-type,device-ID,calib-filename)",init,run).exec();
-}
-

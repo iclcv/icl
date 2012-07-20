@@ -60,6 +60,13 @@ add_libsource (${PROJECT_NAME} "src/PointcloudSceneObject.cpp" "${CONDITIONLIST}
 add_libsource (${PROJECT_NAME} "src/RGBDImageSceneObject.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/RGBDMapping.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
+add_libsource (${PROJECT_NAME} "src/DepthCameraPointCloudGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/PointCloudCreator.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/PointCloudObject.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/PointCloudObjectBase.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+
+set(CONDITIONLIST HAVE_OPENCV_COND HAVE_PCL_COND)
+add_libsource (${PROJECT_NAME} "src/PCLPointCloudObject.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
 set(CONDITIONLIST HAVE_OPENCV_COND)
 add_libsource (${PROJECT_NAME} "src/OpenCVCamCalib.cpp" "${CONDITIONLIST}" LIB_SOURCES)

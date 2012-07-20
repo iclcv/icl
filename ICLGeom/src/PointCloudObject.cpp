@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLGeom/examples/rgbd-mapping-demo.cpp                 **
+** File   : ICLGeom/src/PointCloudObject.cpp                       **
 ** Module : ICLGeom                                                **
 ** Authors: Christof Elbrechter, Patrick Nobou                     **
 **                                                                 **
@@ -32,81 +32,51 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
-#include <ICLGeom/Geom.h>
-#ifdef HAVE_PCL
-#include <ICLGeom/PCLPointCloudObject.h>
-#else
 #include <ICLGeom/PointCloudObject.h>
-#endif
-#include <ICLGeom/DepthCameraPointCloudGrabber.h>
 
-GUI gui("hsplit");
-Scene scene;
+namespace icl{
 
-#ifdef HAVE_PCL
-PCLPointCloudObject<pcl::PointXYZRGBA> obj(640,480);
-#else
-PointCloudObject obj(640,480);
-#endif
+  PointCloudObject::PointCloudObject(int width, int height, bool organized):
+    m_organized(organized){
+    if(organized){
+      m_dim2D = Size(width,height);
+    }else{
+      m_dim2D = Size(width,1);
+    }
+    m_vertices.resize(m_dim2D.getDim(),Vec(0,0,0,1));
+    m_vertexColors.resize(m_dim2D.getDim(),Vec(0,0,0,1));
+  }
+  
+  bool PointCloudObject::supports(FeatureType t) {
+    return t == RGBA32f || t == XYZ;
+  }
+  
+  bool PointCloudObject::isOrganized() const{
+    return m_organized;
+  }
 
-SmartPtr<DepthCameraPointCloudGrabber> grabber;
+  Size PointCloudObject::getSize() const throw (ICLException){
+    if(!isOrganized()) throw ICLException("SimplePointCloudObject:getSize(): instance is not 2D-ordered");
+    return m_dim2D;
+  }
+  
+  int PointCloudObject::getDim() const{
+    return m_dim2D.getDim();
+  }
 
-void init(){
-  grabber = new DepthCameraPointCloudGrabber(*pa("-d",2), *pa("-c",2),
-                                             *pa("-d",0), *pa("-d",1),
-                                             *pa("-c",0), *pa("-c",1) );
+  DataSegment<float,3> PointCloudObject::selectXYZ(){
+    return DataSegment<float,3>(&m_vertices[0][0],4*sizeof(float),m_vertices.size(),m_dim2D.width);  
+  }
+  DataSegment<float,4> PointCloudObject::selectRGBA32f(){
+    return DataSegment<float,4>(&m_vertexColors[0][0],4*sizeof(float),m_vertexColors.size(),m_dim2D.width);  
+  }
+  
+  void PointCloudObject::customRender() {}
 
-  gui << ( GUI("vbox")
-           << "image[@handle=color@label=color image]"
-           << "image[@handle=depth@label=depth image]"
-           )
-      <<( GUI("vbox")
-          << "draw3D[@handle=overlay@label=mapped color image overlay]"
-          << "draw3D[@handle=scene@label=interactive scene]"
-          )
-      <<( GUI("vbox")
-             << "checkbox(show overlay,checked)[@out=showOverlay]"
-             )
-      << "!show";
+  void PointCloudObject::setSize(const Size &size){
+    m_vertices.resize(size.getDim(),Vec(0,0,0,1));
+    m_vertexColors.resize(size.getDim(),Vec(0,0,0,1));
+    m_organized = (size.height > 0);
+  }
 
-
-  // kinect camera
-  scene.addCamera(*pa("-d",2) );
-  scene.setBounds(-100);
-  //  view camera
-  scene.addCamera(scene.getCamera(0));
-  scene.setDrawCamerasEnabled(false);
-  scene.addObject(&obj);
-
-  gui["overlay"].link(scene.getGLCallback(0));
-  gui["scene"].link(scene.getGLCallback(1));
-  gui["scene"].install(scene.getMouseHandler(1));
-
-  ImageHandle d = gui["depth"];
-  d->setRangeMode(ICLWidget::rmAuto);
-
-  scene.setDrawCoordinateFrameEnabled(false);
 }
-
-
-void run(){
-  gui["overlay"].link( gui["showOverlay"] ? scene.getGLCallback(0) : 0);
-
-  grabber->grab(obj);
-
-  gui["color"] = grabber->getLastColorImage();
-  gui["depth"] = grabber->getLastDepthImage();
-
-  //gui["overlay"] = mappedColorImage;
-  gui["overlay"].render();
-
-  gui["scene"].render();
-}
-
-
-int main(int n, char **ppc){
-  return ICLApp(n,ppc,"-depth-cam|-d(device-type,device-ID,calib-filename) "
-                "-color-cam|-c(device-type,device-ID,calib-filename)",init,run).exec();
-}
-

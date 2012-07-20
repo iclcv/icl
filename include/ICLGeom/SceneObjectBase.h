@@ -6,9 +6,9 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLGeom/examples/rgbd-mapping-demo.cpp                 **
+** File   : include/ICLGeom/SceneObjectBase.h                      **
 ** Module : ICLGeom                                                **
-** Authors: Christof Elbrechter, Patrick Nobou                     **
+** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
 ** Commercial License                                              **
@@ -32,81 +32,31 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
-#include <ICLGeom/Geom.h>
-#ifdef HAVE_PCL
-#include <ICLGeom/PCLPointCloudObject.h>
+#ifndef ICL_SCENE_OBJECT_BASE_H
+#define ICL_SCENE_OBJECT_BASE_H
+
+#ifndef HAVE_OPENGL
+#warning "this header must not be included if HAVE_OPENGL is not defined"
 #else
-#include <ICLGeom/PointCloudObject.h>
-#endif
-#include <ICLGeom/DepthCameraPointCloudGrabber.h>
 
-GUI gui("hsplit");
-Scene scene;
+#include <ICLUtils/Mutex.h>
+#include <ICLQt/GLFragmentShader.h>
 
-#ifdef HAVE_PCL
-PCLPointCloudObject<pcl::PointXYZRGBA> obj(640,480);
-#else
-PointCloudObject obj(640,480);
-#endif
+namespace icl{
 
-SmartPtr<DepthCameraPointCloudGrabber> grabber;
+  /** \cond */
+  class Scene;
+  /** \endcond */
+ 
+  
+  /// The SceneObjectBase class defines and abstract interface for visible entities in 3D scenes
+  /** TODO */
+  class SceneObjectBase{
+    public:
+    virtual SceneObjectBase *copy() const = 0;
 
-void init(){
-  grabber = new DepthCameraPointCloudGrabber(*pa("-d",2), *pa("-c",2),
-                                             *pa("-d",0), *pa("-d",1),
-                                             *pa("-c",0), *pa("-c",1) );
-
-  gui << ( GUI("vbox")
-           << "image[@handle=color@label=color image]"
-           << "image[@handle=depth@label=depth image]"
-           )
-      <<( GUI("vbox")
-          << "draw3D[@handle=overlay@label=mapped color image overlay]"
-          << "draw3D[@handle=scene@label=interactive scene]"
-          )
-      <<( GUI("vbox")
-             << "checkbox(show overlay,checked)[@out=showOverlay]"
-             )
-      << "!show";
+    virtual void customRender() = 0;
+  };
 
 
-  // kinect camera
-  scene.addCamera(*pa("-d",2) );
-  scene.setBounds(-100);
-  //  view camera
-  scene.addCamera(scene.getCamera(0));
-  scene.setDrawCamerasEnabled(false);
-  scene.addObject(&obj);
-
-  gui["overlay"].link(scene.getGLCallback(0));
-  gui["scene"].link(scene.getGLCallback(1));
-  gui["scene"].install(scene.getMouseHandler(1));
-
-  ImageHandle d = gui["depth"];
-  d->setRangeMode(ICLWidget::rmAuto);
-
-  scene.setDrawCoordinateFrameEnabled(false);
 }
-
-
-void run(){
-  gui["overlay"].link( gui["showOverlay"] ? scene.getGLCallback(0) : 0);
-
-  grabber->grab(obj);
-
-  gui["color"] = grabber->getLastColorImage();
-  gui["depth"] = grabber->getLastDepthImage();
-
-  //gui["overlay"] = mappedColorImage;
-  gui["overlay"].render();
-
-  gui["scene"].render();
-}
-
-
-int main(int n, char **ppc){
-  return ICLApp(n,ppc,"-depth-cam|-d(device-type,device-ID,calib-filename) "
-                "-color-cam|-c(device-type,device-ID,calib-filename)",init,run).exec();
-}
-
