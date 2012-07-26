@@ -45,9 +45,6 @@
 using namespace xn;
 using namespace icl;
 
-ImageGenerator* ig = NULL;
-DepthGenerator* dg = NULL;
-
 //##############################################################################
 //############################# OpenNIAutoContext ##############################
 //##############################################################################
@@ -160,12 +157,10 @@ OpenNIImageGenerator* OpenNIImageGenerator::createGenerator(
 }*/
 
 OpenNIDepthGenerator::OpenNIDepthGenerator(Context* context, int num)
-  : m_Context(context), m_DepthGenerator(dg)
+  : m_Context(context), m_DepthGenerator(NULL)
 {
   XnStatus status;
-  ICL_DELETE(m_DepthGenerator);
-  dg = new DepthGenerator();
-  m_DepthGenerator = dg;
+  m_DepthGenerator = new DepthGenerator();
   status = m_DepthGenerator -> Create(*m_Context);
   if (status != XN_STATUS_OK){
     std::ostringstream s;
@@ -270,18 +265,13 @@ Img16s* OpenNIDepthGenerator::initBuffer(){
 }*/
 
 OpenNIRgbGenerator::OpenNIRgbGenerator(Context* context, int num)
-  : m_Context(context), m_RgbGenerator(ig)
+  : m_Context(context), m_RgbGenerator(NULL)
 {
   XnStatus status;
-
-  ICL_DELETE(ig);
-  ICL_DELETE(dg);
-
-  dg = new DepthGenerator();
-  status = dg -> Create(*m_Context);
+  m_DepthGenerator = new DepthGenerator();
+  status = m_DepthGenerator -> Create(*m_Context);
 
   m_RgbGenerator = new ImageGenerator();
-  ig = m_RgbGenerator;
   status = m_RgbGenerator -> Create(*m_Context);
 
   if (status != XN_STATUS_OK){
@@ -296,7 +286,8 @@ OpenNIRgbGenerator::OpenNIRgbGenerator(Context* context, int num)
 // Destructor frees all resouurces
 OpenNIRgbGenerator::~OpenNIRgbGenerator(){
   m_RgbGenerator -> StopGenerating();
-  ICL_DELETE(m_RgbGenerator)
+  ICL_DELETE(m_RgbGenerator);
+  ICL_DELETE(m_DepthGenerator);
 }
 
 // grab function grabs an image

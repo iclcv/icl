@@ -104,9 +104,9 @@ namespace icl {
       /// Destructor frees allocated memory.
       ~ReadWriteBuffer(){
         Mutex::Locker l(m_Mutex);
-        ICL_DELETE(m_Buffers[0])
-            ICL_DELETE(m_Buffers[1])
-            ICL_DELETE(m_Buffers[2])
+        ICL_DELETE(m_Buffers[0]);
+            ICL_DELETE(m_Buffers[1]);
+            ICL_DELETE(m_Buffers[2]);
       }
 
       /// returns a pointer to the most recent actualized Buffer.
@@ -305,6 +305,12 @@ namespace icl {
       xn::NodeInfo* m_DeviceInfo;
       /// the underlying rgb-image generator
       xn::ImageGenerator* m_RgbGenerator;
+      /// the underlying depth generator
+      /**
+          The Xtion cam does not provide rgb images without depthGenerator
+          being created.
+      **/
+      xn::DepthGenerator* m_DepthGenerator;
       /// a ImagehMetaData object holding image information
       xn::ImageMetaData m_RgbMD;
   };
