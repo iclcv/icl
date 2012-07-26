@@ -271,8 +271,8 @@ namespace icl {
     Pylon::DeviceInfoList_t
     getPylonDeviceList(Pylon::DeviceInfoList_t* filter=NULL);
 
-  } //namespace
-} //namespace
+  } //namespace pylon
+} //namespace icl
 
 #endif
 

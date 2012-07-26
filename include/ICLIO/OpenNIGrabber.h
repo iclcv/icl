@@ -38,121 +38,129 @@
 #include <ICLIO/GrabberHandle.h>
 #include <ICLUtils/Time.h>
 #include <ICLIO/OpenNIUtils.h>
+#include <ICLUtils/Thread.h>
 
 #include <XnOS.h>
 #include <XnCppWrapper.h>
 
 namespace icl {
 
-    /// Actual implementation of the OpenNI based Grabber
-    class OpenNIGrabberImpl : public Grabber {
-      public:
-        friend class OpenNIGrabber;
+  // Forward declaration of OpenNIGrabberImpl
+  class OpenNIGrabberImpl;
 
-        /// interface for the setter function for video device properties
-        virtual void setProperty(const std::string &property, const std::string &value);
-        /// returns a list of properties, that can be set using setProperty
-        virtual std::vector<std::string> getPropertyList();
-        /// checks if property is returned, implemented, available and of processable GenApi::EInterfaceType
-        virtual bool supportsProperty(const std::string &property);
-        /// get type of property
-        virtual std::string getType(const std::string &name);
-        /// get information of a properties valid values
-        virtual std::string getInfo(const std::string &name);
-        /// returns the current value of a property or a parameter
-        virtual std::string getValue(const std::string &name);
-        /// Returns whether this property may be changed internally.
-        virtual int isVolatile(const std::string &propertyName);
+  /// Internally spawned thread class for continuous grabbing
+  class OpenNIGrabberThread : public Thread {
+    public:
+      /// Constructor sets used grabber
+      OpenNIGrabberThread(OpenNIGrabberImpl* grabber);
 
-        /// Destructor
-        ~OpenNIGrabberImpl();
+      /// constantly calls grabNextImage.
+      void run();
+    private:
+      OpenNIGrabberImpl* m_Grabber;
+  };
+
+  /// Actual implementation of the OpenNI based Grabber
+  class OpenNIGrabberImpl : public Grabber {
+    public:
+      friend class OpenNIGrabber;
+
+      /// interface for the setter function for video device properties
+      virtual void setProperty(const std::string &property, const std::string &value);
+      /// returns a list of properties, that can be set using setProperty
+      virtual std::vector<std::string> getPropertyList();
+      /// checks if property is returned, implemented, available and of processable GenApi::EInterfaceType
+      virtual bool supportsProperty(const std::string &property);
+      /// get type of property
+      virtual std::string getType(const std::string &name);
+      /// get information of a properties valid values
+      virtual std::string getInfo(const std::string &name);
+      /// returns the current value of a property or a parameter
+      virtual std::string getValue(const std::string &name);
+      /// Returns whether this property may be changed internally.
+      virtual int isVolatile(const std::string &propertyName);
+
+      /// Destructor
+      ~OpenNIGrabberImpl();
          
-        /// grab function grabs an image (destination image is adapted on demand)
-        /** @copydoc icl::Grabber::grab(ImgBase**) **/
-        virtual const ImgBase* acquireImage();
+      /// grab function grabs an image (destination image is adapted on demand)
+      /** @copydoc icl::Grabber::grab(ImgBase**) **/
+      virtual const ImgBase* acquireImage();
 
-      private:
-        /// The constructor is private so only the friend class can create instances
-        /**
-        * @param device NodeInfo of the device to use.
-        */
-        OpenNIGrabberImpl(std::string name, std::string args);
+      /// grabs an image from Imagegenerator
+      void grabNextImage();
 
-        /// Returns a string rep((DepthGenerator*) m_Generator)resentation of NodeInfo.
-        static std::string getTreeStringRepresentation(xn::NodeInfo info);
+      /// switches the current generator to desired
+      void setGeneratorTo(OpenNIImageGenerator::Generators desired);
 
-        /// gets progargs and finds the corresponding device
-        static std::string getDeviceNodeNameFromArgs(std::string args);
+    private:
+      /// The constructor is private so only the friend class can create instances
+      /**
+      * @param device NodeInfo of the device to use.
+      */
+      OpenNIGrabberImpl(std::string args);
 
-        /// creates a NodeInfo corresponding to passed TreeStringRepresentation.
-        xn::NodeInfo* createDeviceFromName(std::string name);
+      /// Returns the string representation of the currently used device.
+      std::string getName();
 
-        /// Returns the string representation of the currently used device.
-        std::string getName();
+      /// Mutex used for concurrency issues.
+      icl::Mutex m_Mutex;
+      /// a device number and grabber id
+      int m_Id;
+      /// the OpenNI context
+      xn::Context m_Context;
+      /// holds a pointer to the currently used image generator
+      OpenNIImageGenerator* m_Generator;
+      /// Internally used ReadWriteBuffer
+      ReadWriteBuffer<ImgBase>* m_Buffer;
+      /// A Thread continuously grabbing images
+      OpenNIGrabberThread* m_GrabberThread;
+      /// whether double frames should be omited
+      bool m_OmitDoubleFrames;
+      /// MapGeneratorOptions for current MapGenerator
+      MapGeneratorOptions* m_MapGenOptions;
+  };
 
-        /// switches generator.
-        void setGeneratorTo(std::string value);
+  /// Grabber implementation for OpenNI based camera access.
+  /**
+      This is just a wrapper class of the underlying OpenNIGrabberImpl class
+  **/
+  struct OpenNIGrabber : public GrabberHandle<OpenNIGrabberImpl>{
 
-        /// the OpenNI context
-        OpenNIAutoContext m_AutoContext;
-        xn::Context* m_Context;
-        /// A NodeInfo describing the underlying device.
-        xn::NodeInfo* m_Device;
-        /// A mutex lock to synchronize buffer and color converter access.
-        Mutex m_GeneratorLock;
-        /// This pointer holds an OpenNIImageGenerator
-        OpenNIImageGenerator* m_Generator;
-        /// Which generator should be used on next acqusition.
-        OpenNIImageGenerator::Generators m_SetToGenerator;
-    };
-
-    /// Grabber implementation for OpenNI based camera access.
-    /**
-        This is just a wrapper class of the underlying OpenNIGrabberImpl class
-    **/
-    struct OpenNIGrabber : public GrabberHandle<OpenNIGrabberImpl>{
-
-      /// create a new OpenNIGrabber
-      /** @see OpenNIGrabber for more details*/
-      inline OpenNIGrabber(const std::string args="") throw(ICLException) {
-      /// looking for OpenNI device compatible to args
-      DEBUG_LOG("get device name")
-      std::string name = OpenNIGrabberImpl::getDeviceNodeNameFromArgs(args);
-      DEBUG_LOG(name)
-        if(isNew(name)){
-            DEBUG_LOG("isnew")
-            OpenNIGrabberImpl* tmp = new OpenNIGrabberImpl(name, args);
-            initialize(tmp, name);
-        }else{
-          DEBUG_LOG("isold Grabber")
-          initialize(name);
-        }
+  /// create a new OpenNIGrabber
+  /** @see OpenNIGrabber for more details*/
+  inline OpenNIGrabber(const std::string args="") throw(ICLException) {
+    /// looking for OpenNI device compatible to args
+    if(isNew(args)){
+      DEBUG_LOG("isnew")
+      OpenNIGrabberImpl* tmp = new OpenNIGrabberImpl(args);
+      initialize(tmp, args);
+    }else{
+      DEBUG_LOG("isold Grabber")
+      initialize(args);
+    }
       DEBUG_LOG("end")
-      }
+    }
     
-      static std::vector<GrabberDeviceDescription> getDeviceList(bool rescan){
-        static std::vector<GrabberDeviceDescription> deviceList;
-        if(rescan){
-          deviceList.clear();
-          xn::Context context;
-          xn::NodeInfoList nodes;
-          context.EnumerateProductionTrees(XN_NODE_TYPE_DEVICE, NULL , nodes, NULL);
-          int i = 0;
-          for (xn::NodeInfoList::Iterator it = nodes.Begin(); it != nodes.End(); ++it){
-            std::string name = OpenNIGrabberImpl::getTreeStringRepresentation(*it);
-            deviceList.push_back(
-              GrabberDeviceDescription(
-                "oni",
-                str(i) + "|||" + name,
-                name
-                )
-              );
-            i++;
-          }
-        }
-      return deviceList;
+  static std::vector<GrabberDeviceDescription> getDeviceList(bool rescan){
+    static std::vector<GrabberDeviceDescription> deviceList;
+    if(rescan){
+      deviceList.clear();
+      xn::Context context;
+      context.Init();
+      xn::NodeInfoList nodes;
+      context.EnumerateProductionTrees(XN_NODE_TYPE_DEVICE, NULL , nodes, NULL);
+      int i = 0;
+      for (xn::NodeInfoList::Iterator it = nodes.Begin(); it != nodes.End(); ++it, ++i){
+        deviceList.push_back(
+          GrabberDeviceDescription("oni", str(i) + "|||" + str(i), str(i))
+        );
       }
-    };
+      context.Release();
+    }
+  return deviceList;
+  }
+ };
 
 } //namespace icl
 
