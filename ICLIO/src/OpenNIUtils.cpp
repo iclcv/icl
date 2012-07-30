@@ -358,13 +358,28 @@ std::string getMapOutputModeInfo(MapGenerator* gen){
   XnUInt32 count = gen -> GetSupportedMapOutputModesCount();
   XnMapOutputMode* modes = new XnMapOutputMode[count];
   gen -> GetSupportedMapOutputModes(modes, count);
+  // remove double entries
+  std::vector<XnMapOutputMode*> cleaned;
+  for(unsigned int i = 0; i < count; ++i){
+    bool added = false;
+    for (unsigned int j = 0; j < cleaned.size(); ++j){
+      if(modes[i].nXRes == cleaned.at(j) -> nXRes &&
+         modes[i].nYRes == cleaned.at(j) -> nYRes &&
+         modes[i].nFPS == cleaned.at(j) -> nFPS){
+        added = true;
+        break;
+      }
+    }
+    if(!added) cleaned.push_back(modes + i);
+  }
+  // create info-string
   std::ostringstream ret;
   ret << "{";
-  for(unsigned int i = 0; i < count; ++i){
-    ret << modes[i].nXRes << "x";
-    ret << modes[i].nYRes << "@";
-    ret << modes[i].nFPS << "fps";
-    if(i+1 < count){
+  for(unsigned int i = 0; i < cleaned.size(); ++i){
+    ret << cleaned.at(i) -> nXRes << "x";
+    ret << cleaned.at(i) -> nYRes << "@";
+    ret << cleaned.at(i) -> nFPS << "fps";
+    if(i+1 < cleaned.size()){
       ret << ",";
     }
   }

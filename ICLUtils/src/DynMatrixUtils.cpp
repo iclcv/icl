@@ -1427,7 +1427,7 @@ template<class T, typename func>
     Vt.setBounds(M.cols(), M.cols());
     s.setBounds(1,M.cols());
 
-#if defined HAVE_IPP
+#if defined HAVE_IPP_SVD
     int niter = M.rows();                
     while (true) {
       IppStatus status = ippsSVDSort_64f_D2(M.begin(), U.begin(), M.rows(), s.begin(), Vt.begin(), M.cols(), M.cols(), niter);
