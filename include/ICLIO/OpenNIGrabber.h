@@ -91,7 +91,7 @@ namespace icl {
       void grabNextImage();
 
       /// switches the current generator to desired
-      void setGeneratorTo(OpenNIImageGenerator::Generators desired);
+      void setGeneratorTo(icl_openni::OpenNIMapGenerator::Generators desired);
 
     private:
       /// The constructor is private so only the friend class can create instances
@@ -110,15 +110,13 @@ namespace icl {
       /// the OpenNI context
       xn::Context m_Context;
       /// holds a pointer to the currently used image generator
-      OpenNIImageGenerator* m_Generator;
+      icl_openni::OpenNIMapGenerator* m_Generator;
       /// Internally used ReadWriteBuffer
-      ReadWriteBuffer<ImgBase>* m_Buffer;
+      icl_openni::ReadWriteBuffer<ImgBase>* m_Buffer;
       /// A Thread continuously grabbing images
       OpenNIGrabberThread* m_GrabberThread;
       /// whether double frames should be omited
       bool m_OmitDoubleFrames;
-      /// MapGeneratorOptions for current MapGenerator
-      MapGeneratorOptions* m_MapGenOptions;
   };
 
   /// Grabber implementation for OpenNI based camera access.

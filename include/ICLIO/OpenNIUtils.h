@@ -43,89 +43,116 @@
 #include <XnCppWrapper.h>
 
 #include <map>
+#include <limits>
 
 namespace icl {
 
-  /// Utility Structure
-  /**
-   * This struct is used to initialize and release the OpenNI Context.
-   * It intializes an xn::Context on creation and releases it on destruction.
-   * Uses a static counter to ensure initialization only on first and
-   * release on last call.
-   */
-  struct OpenNIAutoContext{
-    public:
-      /// Initializes OpenNI context if not already done.
-      OpenNIAutoContext();
+  namespace icl_openni {
 
-      /// Releases OpenNI context when (calls to term) == (calls to init).
-      ~OpenNIAutoContext();
+    /// fills an ICL-ImgBase from OpenNI DepthMetaData
+    template<class T>
+    Img<T>* convertDepthImg(xn::DepthMetaData* src, Img<T>* dst){
+      float max = 0;
+      if (std::numeric_limits<T>::max() < src -> ZRes()){
+        max = ((float) std::numeric_limits<T>::max()) / ((float) src -> ZRes());
+      }
 
-      /// Initializes the OpenNI context.
-      /** @return whether Context.init() actually was called. */
-      static bool initOpenNIContext();
+      dst -> setSize(Size(src -> XRes(), src -> YRes()));
+      T* data = dst -> getData(0);
+      // draw DEPTH image
+      const XnDepthPixel* pDepthRow = src -> Data();
+      if(!max){
+        for (unsigned int y = 0; y < src -> YRes(); ++y){
+          for (unsigned int x = 0; x < src -> XRes(); ++x, ++pDepthRow, ++data){
+            *data = *pDepthRow;
+          }
+        }
+      } else {
+        for (unsigned int y = 0; y < src -> YRes(); ++y){
+          for (unsigned int x = 0; x < src -> XRes(); ++x, ++pDepthRow, ++data){
+            *data = *pDepthRow * max;
+          }
+        }
+      }
+      return dst;
+    }
 
-      /// releases the OpenNI context.
-      /** @return whether Context.release() actually was called. */
-      static bool releaseOpenNIContext();
+    /**
+      fills an ICL-ImgBase from OpenNI ImageMetaData expecting the Generator
+      to generate RGB24 Data.
+    **/
+    static Img8u* convertRGBImg(xn::ImageMetaData* src, Img8u* dst){
+      dst -> setSize(Size(src -> XRes(), src -> YRes()));
+      // draw RGB image
+      icl8u* rChannel = dst -> getData(0);
+      icl8u* gChannel = dst -> getData(1);
+      icl8u* bChannel = dst -> getData(2);
+      const XnRGB24Pixel* rgbPixel = src -> RGB24Data();
+      for (unsigned int y = 0; y < src -> YRes(); ++y){
+        for (unsigned int x = 0; x < src -> XRes(); ++x, ++rgbPixel, ++rChannel,
+             ++gChannel, ++bChannel)
+        {
+          *rChannel = rgbPixel -> nRed;
+          *gChannel = rgbPixel -> nGreen;
+          *bChannel = rgbPixel -> nBlue;
+        }
+      }
+      return dst;
+    }
 
-      /// returns a pointer to the OpenNI context.
-      xn::Context* getContextPtr();
-  };
+    template<typename T>
+    class ReadWriteBufferHandler {
+      public:
+        virtual T* initBuffer() = 0;
+    };
 
-  template<typename T>
-  class ReadWriteBufferHandler {
-    public:
-      virtual T* initBuffer() = 0;
-  };
-
-  /// This is used for concurrent writing and reading of Buffers
-  /**
+    /// This is used for concurrent writing and reading of Buffers
+    /**
       This class holds three pointers to T of which one is the
       currently read and the other two are alternately written to.
   **/
-  template<typename T>
-  class ReadWriteBuffer {
-    public:
-      /// Constructor creates and initializes resources.
-      ReadWriteBuffer(ReadWriteBufferHandler<T>* buffer_handler)
-        : m_Mutex(), m_Write(0), m_Next(1), m_Read(2)
-      {
-        Mutex::Locker l(m_Mutex);
-        m_BufferHandler = buffer_handler;
-        m_Buffers[0] = m_BufferHandler -> initBuffer();
-        m_Buffers[1] = m_BufferHandler -> initBuffer();
-        m_Buffers[2] = m_BufferHandler -> initBuffer();
-        m_ResetBuffers[0] = false;
-        m_ResetBuffers[1] = false;
-        m_ResetBuffers[2] = false;
-      }
+    template<typename T>
+    class ReadWriteBuffer {
+      public:
+        /// Constructor creates and initializes resources.
+        ReadWriteBuffer(ReadWriteBufferHandler<T>* buffer_handler)
+          : m_Mutex(), m_Write(0), m_Next(1), m_Read(2)
+        {
+          Mutex::Locker l(m_Mutex);
+          m_BufferHandler = buffer_handler;
+          m_Buffers[0] = m_BufferHandler -> initBuffer();
+          m_Buffers[1] = m_BufferHandler -> initBuffer();
+          m_Buffers[2] = m_BufferHandler -> initBuffer();
+          m_ResetBuffers[0] = false;
+          m_ResetBuffers[1] = false;
+          m_ResetBuffers[2] = false;
+        }
 
-      /// Destructor frees allocated memory.
-      ~ReadWriteBuffer(){
-        Mutex::Locker l(m_Mutex);
-        ICL_DELETE(m_Buffers[0]);
-            ICL_DELETE(m_Buffers[1]);
-            ICL_DELETE(m_Buffers[2]);
-      }
+        /// Destructor frees allocated memory.
+        ~ReadWriteBuffer(){
+          Mutex::Locker l(m_Mutex);
+          ICL_DELETE(m_Buffers[0]);
+          ICL_DELETE(m_Buffers[1]);
+          ICL_DELETE(m_Buffers[2]);
+        }
 
-      /// returns a pointer to the most recent actualized Buffer.
-      /**
+        /// returns a pointer to the most recent actualized Buffer.
+        /**
           Buffer will then be marked and not overwritten till the
           next call to getNextReadBuffer()
       **/
-      T* getNextReadBuffer(){
-        Mutex::Locker l(m_Mutex);
-        if(m_Avail){
-          // new buffer is available.
-          std::swap(m_Next, m_Read);
-          m_Avail = false;
+        T* getNextReadBuffer(){
+          Mutex::Locker l(m_Mutex);
+          if(m_Avail){
+            // new buffer is available.
+            std::swap(m_Next, m_Read);
+            m_Avail = false;
+          }
+          return m_Buffers[m_Read];
         }
-        return m_Buffers[m_Read];
-      }
 
-      /// returns pointer to most recent buffer.
-      /**
+        /// returns pointer to most recent buffer.
+        /**
           if omit_double_frames is true, this function will call sleep for
           omit_sleep_millis and retry until a new buffer is available or
           omit_max_wait_millis is reached. when no new buffer could be returned
@@ -139,211 +166,262 @@ namespace icl {
                  buffer (in microseconds).
           will return null when no new ReadBuffer available.
       **/
-      T* getNextReadBuffer(bool omit_double_frames=false,
-                           int omit_max_wait_millis=1000,
-                           int omit_sleep_micros=1000){
-        T* tmp = NULL;
-        Time t = Time::now();
-        while (true){
-          m_Mutex.lock();
-          if(m_Avail){
-            // new buffer is available.
-            std::swap(m_Next, m_Read);
-            m_Avail = false;
-            tmp = m_Buffers[m_Read];
+        T* getNextReadBuffer(bool omit_double_frames=false,
+                             int omit_max_wait_millis=1000,
+                             int omit_sleep_micros=1000){
+          T* tmp = NULL;
+          Time t = Time::now();
+          while (true){
+            m_Mutex.lock();
+            if(m_Avail){
+              // new buffer is available.
+              std::swap(m_Next, m_Read);
+              m_Avail = false;
+              tmp = m_Buffers[m_Read];
+              m_Mutex.unlock();
+              break;
+            } else if(!omit_double_frames){
+              tmp = m_Buffers[m_Read];
+              m_Mutex.unlock();
+              break;
+            }
             m_Mutex.unlock();
-            break;
-          } else if(!omit_double_frames){
-            tmp = m_Buffers[m_Read];
-            m_Mutex.unlock();
-            break;
+            if(t.age().toMilliSeconds() > omit_max_wait_millis){
+              break;
+            }
+            icl::Thread::usleep(omit_sleep_micros);
           }
-          m_Mutex.unlock();
-          if(t.age().toMilliSeconds() > omit_max_wait_millis){
-            break;
-          }
-          icl::Thread::usleep(omit_sleep_micros);
+          return tmp;
         }
-        return tmp;
-      }
 
-      /// returns a pointer to the next write Buffer.
-      /**
+        /// returns a pointer to the next write Buffer.
+        /**
           sets the returned Buffer as current writeable and marks
           the old writeable as new.
       **/
-      T* getNextWriteBuffer(){
-        Mutex::Locker l(m_Mutex);
-        // swap write buffer and next buffer.
-        std::swap(m_Next, m_Write);
-        // new buffer is available for reading.
-        m_Avail = true;
-        // reset buffer when needed
-        if(m_ResetBuffers[m_Write]){
-          ICL_DELETE(m_Buffers[m_Write])
-              m_Buffers[m_Write] = m_BufferHandler -> initBuffer();
-          m_ResetBuffers[m_Write] = false;
+        T* getNextWriteBuffer(){
+          Mutex::Locker l(m_Mutex);
+          // swap write buffer and next buffer.
+          std::swap(m_Next, m_Write);
+          // new buffer is available for reading.
+          m_Avail = true;
+          // reset buffer when needed
+          if(m_ResetBuffers[m_Write]){
+            ICL_DELETE(m_Buffers[m_Write])
+                m_Buffers[m_Write] = m_BufferHandler -> initBuffer();
+            m_ResetBuffers[m_Write] = false;
+          }
+          // return new write buffer.
+          return m_Buffers[m_Write];
         }
-        // return new write buffer.
-        return m_Buffers[m_Write];
-      }
 
-      /// mark Buffer to be reset on next write-access.
-      void setReset(){
-        Mutex::Locker l(m_Mutex);
-        m_ResetBuffers[0] = true;
-        m_ResetBuffers[1] = true;
-        m_ResetBuffers[2] = true;
-      }
+        /// mark Buffer to be reset on next write-access.
+        void setReset(){
+          Mutex::Locker l(m_Mutex);
+          m_ResetBuffers[0] = true;
+          m_ResetBuffers[1] = true;
+          m_ResetBuffers[2] = true;
+        }
 
-      /// switches the handler
-      void switchHandler(ReadWriteBufferHandler<T>* new_handler){
-        Mutex::Locker l(m_Mutex);
-        m_BufferHandler = new_handler;
-        m_ResetBuffers[0] = true;
-        m_ResetBuffers[1] = true;
-        m_ResetBuffers[2] = true;
-      }
+        /// switches the handler
+        void switchHandler(ReadWriteBufferHandler<T>* new_handler){
+          Mutex::Locker l(m_Mutex);
+          m_BufferHandler = new_handler;
+          m_ResetBuffers[0] = true;
+          m_ResetBuffers[1] = true;
+          m_ResetBuffers[2] = true;
+        }
 
-      /// tells whether a new ConvBuffers is available
-      bool newAvailable(){
-        Mutex::Locker l(m_Mutex);
-        return m_Avail;
-      }
+        /// tells whether a new ConvBuffers is available
+        bool newAvailable(){
+          Mutex::Locker l(m_Mutex);
+          return m_Avail;
+        }
 
-    private:
-      /// The handler used to create new buffers
-      ReadWriteBufferHandler<T>* m_BufferHandler;
-      /// current objects which alternately are read and written.
-      T*  m_Buffers[3];
-      /// a bool for every buffer telling whether it needs a reset
-      bool  m_ResetBuffers[3];
-      /// the Mutex is used for concurrent reading and writing.
-      Mutex m_Mutex;
-      /// The object currently written to.
-      int m_Write;
-      /// The write object currently not written to.
-      int m_Next;
-      /// The object currently read from.
-      int m_Read;
-      /// tells whether an actualized object was written.
-      bool m_Avail;
-  };
+      private:
+        /// The handler used to create new buffers
+        ReadWriteBufferHandler<T>* m_BufferHandler;
+        /// current objects which alternately are read and written.
+        T*  m_Buffers[3];
+        /// a bool for every buffer telling whether it needs a reset
+        bool  m_ResetBuffers[3];
+        /// the Mutex is used for concurrent reading and writing.
+        Mutex m_Mutex;
+        /// The object currently written to.
+        int m_Write;
+        /// The write object currently not written to.
+        int m_Next;
+        /// The object currently read from.
+        int m_Read;
+        /// tells whether an actualized object was written.
+        bool m_Avail;
+    };
 
-  /// abstract super-class of all Image generators
-  class OpenNIImageGenerator : public ReadWriteBufferHandler<ImgBase> {
-    public:
+    /// this class interprets and sets Properties of OpenNI MapGenerators
+    class MapGeneratorOptions {
+      public:
+        /// constructor
+        MapGeneratorOptions(xn::MapGenerator* generator);
 
-      /// an enum listing all supported data generators
-      enum Generators {
-        RGB,
-        DEPTH,
-        NOT_SPECIFIED = -1
-      };
+        /// interface for the setter function for video device properties
+        void setProperty(const std::string &property, const std::string &value);
+        /// adds properties to propertylist
+        void addPropertiesToList(std::vector<std::string> &properties);
+        /// checks if property is supported
+        bool supportsProperty(const std::string &property);
+        /// get type of property
+        std::string getType(const std::string &name);
+        /// get information of a properties valid values
+        std::string getInfo(const std::string &name);
+        /// returns the current value of a property or a parameter
+        std::string getValue(const std::string &name);
+        /// Returns whether this property may be changed internally.
+        int isVolatile(const std::string &propertyName);
 
-      /// grab function grabs an image returns whether grabbing worked
-      virtual bool acquireImage(ImgBase* dest) = 0;
-      /// tells the type of the Generator
-      virtual Generators getType() = 0;
-      /// returns underlying xn::MapGenerator instance
-      virtual xn::MapGenerator* getMapGenerator() = 0;
-      /// Creates an ImgBase for ReadWriteBuffer
-      virtual ImgBase* initBuffer() = 0;
+      private:
+        /// the used MapGenerator
+        xn::MapGenerator* m_Generator;
+        /// A vector holding all capabilities of the MapGenerator
+        std::vector<std::string> m_Capabilities;
+    };
 
-      ///  Creates the corresponding Generator.
-      static OpenNIImageGenerator* createGenerator(xn::Context* context,
-                                                   Generators type, int num);
-  };
+    /// abstract super-class of all Image generators
+    class OpenNIMapGenerator : public ReadWriteBufferHandler<ImgBase> {
+      public:
 
-  /// Depth Image Generator
-  class OpenNIDepthGenerator : public OpenNIImageGenerator {
-    public:
-      /// Creates DepthGenerator number num from Context
-      OpenNIDepthGenerator(xn::Context* context, int num);
-      /// Destructor frees all resouurces
-      ~OpenNIDepthGenerator();
+        /// an enum listing all supported data generators
+        enum Generators {
+          RGB,
+          DEPTH,
+          NOT_SPECIFIED = -1
+        };
 
-      /// grab function grabs an image returns whether grabbing worked
-      bool acquireImage(ImgBase* dest);
-      /// tells the type of the Generator
-      Generators getType();
-      /// returns underlying xn::MapGenerator instance
-      xn::MapGenerator* getMapGenerator();
-      /// Creates an Img16s for ReadWriteBuffer
-      Img16s* initBuffer();
+        /// setter function for video device properties
+        virtual void setProperty(const std::string &property, const std::string &value) = 0;
+        /// adds properties to propertylist
+        virtual void addPropertiesToList(std::vector<std::string> &properties) = 0;
+        /// checks if property is supported
+        virtual bool supportsProperty(const std::string &property) = 0;
+        /// get type of property
+        virtual std::string getType(const std::string &name) = 0;
+        /// get information of a properties valid values
+        virtual std::string getInfo(const std::string &name) = 0;
+        /// returns the current value of a property or a parameter
+        virtual std::string getValue(const std::string &name) = 0;
+        /// Returns whether this property may be changed internally.
+        virtual int isVolatile(const std::string &propertyName) = 0;
 
-    private:
-      /// the OpenNI context
-      xn::Context* m_Context;
-      /// the underlying depth generator
-      xn::DepthGenerator* m_DepthGenerator;
-      /// a DepthMetaData object holding image information
-      xn::DepthMetaData m_DepthMD;
-  };
+        /// grab function grabs an image returns whether grabbing worked
+        virtual bool acquireImage(ImgBase* dest) = 0;
+        /// tells the type of the Generator
+        virtual Generators getGeneratorType() = 0;
+        /// returns underlying xn::MapGenerator instance
+        virtual xn::MapGenerator* getMapGenerator() = 0;
+        /// Creates an ImgBase for ReadWriteBuffer
+        virtual ImgBase* initBuffer() = 0;
 
-  /// RGB Image Generator
-  class OpenNIRgbGenerator : public OpenNIImageGenerator {
-    public:
-      /// Creates RgbGenerator number num from Context
-      OpenNIRgbGenerator(xn::Context* context, int num);
-      /// Destructor frees all resouurces
-      ~OpenNIRgbGenerator();
+        ///  Creates the corresponding Generator.
+        static OpenNIMapGenerator* createGenerator(xn::Context* context,
+                                                     Generators type, int num);
+    };
 
-      /// grab function grabs an image returns whether grabbing worked
-      bool acquireImage(ImgBase* dest);
-      /// tells the type of the Generator
-      Generators getType();
-      /// returns underlying xn::MapGenerator instance
-      xn::MapGenerator* getMapGenerator();
-      /// Creates an Img8u for ReadWriteBuffer
-      Img8u* initBuffer();
+    /// Depth Image Generator
+    class OpenNIDepthGenerator : public OpenNIMapGenerator {
+      public:
+        /// Creates DepthGenerator number num from Context
+        OpenNIDepthGenerator(xn::Context* context, int num);
+        /// Destructor frees all resouurces
+        ~OpenNIDepthGenerator();
 
-    private:
-      /// the OpenNI context
-      xn::Context* m_Context;
-      /// A NodeInfo for the used device
-      xn::NodeInfo* m_DeviceInfo;
-      /// the underlying rgb-image generator
-      xn::ImageGenerator* m_RgbGenerator;
-      /// the underlying depth generator
-      /**
+        /// setter function for video device properties
+        virtual void setProperty(const std::string &property, const std::string &value);
+        /// adds properties to propertylist
+        virtual void addPropertiesToList(std::vector<std::string> &properties);
+        /// checks if property is supported
+        virtual bool supportsProperty(const std::string &property);
+        /// get type of property
+        virtual std::string getType(const std::string &name);
+        /// get information of a properties valid values
+        virtual std::string getInfo(const std::string &name);
+        /// returns the current value of a property or a parameter
+        virtual std::string getValue(const std::string &name);
+        /// Returns whether this property may be changed internally.
+        virtual int isVolatile(const std::string &propertyName);
+
+        /// grab function grabs an image returns whether grabbing worked
+        bool acquireImage(ImgBase* dest);
+        /// tells the type of the Generator
+        Generators getGeneratorType();
+        /// returns underlying xn::MapGenerator instance
+        xn::MapGenerator* getMapGenerator();
+        /// Creates an Img16s for ReadWriteBuffer
+        Img16s* initBuffer();
+
+      private:
+        /// the OpenNI context
+        xn::Context* m_Context;
+        /// the underlying depth generator
+        xn::DepthGenerator* m_DepthGenerator;
+        /// a DepthMetaData object holding image information
+        xn::DepthMetaData m_DepthMD;
+        /// pointer to internally used MapGeneratorOptions
+        MapGeneratorOptions* m_Options;
+    };
+
+    /// RGB Image Generator
+    class OpenNIRgbGenerator : public OpenNIMapGenerator {
+      public:
+        /// Creates RgbGenerator number num from Context
+        OpenNIRgbGenerator(xn::Context* context, int num);
+        /// Destructor frees all resouurces
+        ~OpenNIRgbGenerator();
+
+        /// setter function for video device properties
+        virtual void setProperty(const std::string &property, const std::string &value);
+        /// adds properties to propertylist
+        virtual void addPropertiesToList(std::vector<std::string> &properties);
+        /// checks if property is supported
+        virtual bool supportsProperty(const std::string &property);
+        /// get type of property
+        virtual std::string getType(const std::string &name);
+        /// get information of a properties valid values
+        virtual std::string getInfo(const std::string &name);
+        /// returns the current value of a property or a parameter
+        virtual std::string getValue(const std::string &name);
+        /// Returns whether this property may be changed internally.
+        virtual int isVolatile(const std::string &propertyName);
+
+        /// grab function grabs an image returns whether grabbing worked
+        bool acquireImage(ImgBase* dest);
+        /// tells the type of the Generator
+        Generators getGeneratorType();
+        /// returns underlying xn::MapGenerator instance
+        xn::MapGenerator* getMapGenerator();
+        /// Creates an Img8u for ReadWriteBuffer
+        Img8u* initBuffer();
+
+      private:
+        /// the OpenNI context
+        xn::Context* m_Context;
+        /// A NodeInfo for the used device
+        xn::NodeInfo* m_DeviceInfo;
+        /// the underlying rgb-image generator
+        xn::ImageGenerator* m_RgbGenerator;
+        /// the underlying depth generator
+        /**
           The Xtion cam does not provide rgb images without depthGenerator
           being created.
       **/
-      xn::DepthGenerator* m_DepthGenerator;
-      /// a ImagehMetaData object holding image information
-      xn::ImageMetaData m_RgbMD;
-  };
+        xn::DepthGenerator* m_DepthGenerator;
+        /// a ImagehMetaData object holding image information
+        xn::ImageMetaData m_RgbMD;
+        /// pointer to internally used MapGeneratorOptions
+        MapGeneratorOptions* m_Options;
+    };
 
-  /// this class interprets and sets Properties of OpenNI MapGenerators
-  class MapGeneratorOptions {
-    public:
-      /// constructor
-      MapGeneratorOptions(xn::MapGenerator* generator);
+  } // namespace icl_openni
 
-      /// interface for the setter function for video device properties
-      void setProperty(const std::string &property, const std::string &value);
-      /// adds properties to propertylist
-      void addPropertiesToList(std::vector<std::string> &properties);
-      /// checks if property is supported
-      bool supportsProperty(const std::string &property);
-      /// get type of property
-      std::string getType(const std::string &name);
-      /// get information of a properties valid values
-      std::string getInfo(const std::string &name);
-      /// returns the current value of a property or a parameter
-      std::string getValue(const std::string &name);
-      /// Returns whether this property may be changed internally.
-      int isVolatile(const std::string &propertyName);
-
-    private:
-      /// the used MapGenerator
-      xn::MapGenerator* m_Generator;
-      /// A vector holding all capabilities of the MapGenerator
-      std::vector<std::string> m_Capabilities;
-  };
-
-} //namespace icl
+} // namespace icl
 
 #endif
 
