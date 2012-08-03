@@ -82,6 +82,8 @@ void init(){
   gui["draw"].install(scene.getMouseHandler(0));
 
   scene.setDrawCamerasEnabled(false);
+
+  scene.addCamera(scene.getCamera(0));
 }
 
 void run() {
@@ -105,7 +107,7 @@ void run() {
     if(relTM){
       Camera &d = scene.getCamera(0);
       Camera &c = scene.getCamera(1);
-      
+
       c.setTransformation( *relTM * d.getCSTransformationMatrix() );
      
       const Img8u colorImage2 = scene.render(1);

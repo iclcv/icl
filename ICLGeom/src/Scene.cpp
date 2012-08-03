@@ -1092,11 +1092,11 @@ namespace icl{
           p.depthCorr.update(cam);
           const float *corr = p.depthCorr.factors.data();
           for(int i=0;i<dim;++i){
-            db[i] = corr[i] * (A / (Q-db[i]) + b);
+            db[i] = corr[i] * (A / (Q-db[i]) + b) - 1;
           }
         }else{
           for(int i=0;i<dim;++i){
-            db[i] = (A / (Q-db[i]) + b);
+            db[i] = (A / (Q-db[i]) + b) - 1;
           }
         }
       }

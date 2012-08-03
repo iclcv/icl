@@ -98,7 +98,7 @@ void run(){
   gui["color"] = grabber->getLastColorImage();
   gui["depth"] = grabber->getLastDepthImage();
 
-  //gui["overlay"] = mappedColorImage;
+  // gui["overlay"] = 
   gui["overlay"].render();
 
   gui["scene"].render();

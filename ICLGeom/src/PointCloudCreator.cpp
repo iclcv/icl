@@ -122,7 +122,7 @@ namespace icl{
 
 
   inline Point map_rgbd(const Mat &M, const Vec3 &v){
-    const float phInv = 1.0/ (M(0,3) * v[0] + M(1,3) * v[1] + M(2,3) * v[2] + M(3,3));
+    const float phInv = 1.0/ ( M(0,3) * v[0] + M(1,3) * v[1] + M(2,3) * v[2] + M(3,3) );
     const int px = phInv * ( M(0,0) * v[0] + M(1,0) * v[1] + M(2,0) * v[2] + M(3,0) );
     const int py = phInv * ( M(0,1) * v[0] + M(1,1) * v[1] + M(2,1) * v[2] + M(3,1) );
     return Point(px,py);
@@ -162,7 +162,7 @@ namespace icl{
     assign_rgba(reinterpret_cast<FixedColVector<icl8u,4>&>(rgba), r,g,b,a);
   }
 
-
+  static Camera *static_cam = 0;
 
 
   template<bool HAVE_RGBD_MAPPING, class RGBA_DATA_SEGMENT_TYPE>
@@ -170,8 +170,10 @@ namespace icl{
                          const Vec O, const unsigned int W, const unsigned int H, const int DIM, 
                          DataSegment<float,3> xyz, 
                          RGBA_DATA_SEGMENT_TYPE rgba,
-                         const Channel8u rgb[3],
+                         const Channel8u rgbIn[3],
                          const Array2D<Vec3> &dirs){
+    
+    const Channel8u rgb[3] = { rgbIn[0], rgbIn[1], rgbIn[2] };
     for(int i=0;i<DIM;++i){
       const Vec3 &dir = dirs[i];
       const float d = depthValues[i];
@@ -195,6 +197,8 @@ namespace icl{
   }
 
   void PointCloudCreator::create(const Img32f &depthImageMM, PointCloudObjectBase &destination, const Img8u *rgbImage){
+    static_cam  = m_data->colorCamera.get();
+
     if(depthImageMM.getSize() != m_data->imageSize){
       throw ICLException("PointCloudCreator::create: depthImage's size is not equal to the camera size");
     }
@@ -229,7 +233,7 @@ namespace icl{
     const Channel8u rgb[3];
     for(int i=0;rgbImage && i<3;++i) rgb[i] = (*rgbImage)[i];
 
-    Time t = Time::now();
+    //Time t = Time::now();
     
     if(destination.supports(PointCloudObjectBase::RGBA32f)){
       if(X) point_loop<true>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs);
@@ -247,7 +251,7 @@ namespace icl{
       throw ICLException("unable to apply RGBD-Mapping given destination PointCloud type does not support rgb information");
     }
     
-    SHOW(t.age().toMilliSecondsDouble());
+    //SHOW(t.age().toMilliSecondsDouble());
   }
 
   const Camera &PointCloudCreator::getDepthCamera() const{

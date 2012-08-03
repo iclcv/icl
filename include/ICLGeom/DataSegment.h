@@ -160,7 +160,7 @@ int main(){
     
     /// linear index operator (const)
     inline const FixedColVector<T,N> &operator[](int idx) const{
-      return const_cast<DataSegment<T,N> &>(this)->operator[](idx);
+      return const_cast<DataSegment<T,N> *>(this)->operator[](idx);
     }
     
     /// 2D-index operator (only for organized data segments)
