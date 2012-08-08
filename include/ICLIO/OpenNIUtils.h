@@ -49,7 +49,7 @@ namespace icl {
 
   namespace icl_openni {
 
-    /// fills an ICL-ImgBase from OpenNI DepthMetaData
+    /// fills an ICL-Img<T> from OpenNI DepthMetaData
     template<class T>
     Img<T>* convertDepthImg(xn::DepthMetaData* src, Img<T>* dst){
       float max = 0;
@@ -72,6 +72,20 @@ namespace icl {
           for (unsigned int x = 0; x < src -> XRes(); ++x, ++pDepthRow, ++data){
             *data = *pDepthRow * max;
           }
+        }
+      }
+      return dst;
+    }
+
+    /// fills an ICL-Img16s from OpenNI IRMetaData
+    static Img16s* convertIRImg(xn::IRMetaData* src, Img16s* dst){
+      dst -> setSize(Size(src -> XRes(), src -> YRes()));
+      icl16s* data = dst -> getData(0);
+      const XnIRPixel* pIRRow = src -> Data();
+      // draw grayscale image
+      for (unsigned int y = 0; y < src -> YRes(); ++y){
+        for (unsigned int x = 0; x < src -> XRes(); ++x, ++pIRRow, ++data){
+          *data = *pIRRow;
         }
       }
       return dst;
@@ -283,6 +297,8 @@ namespace icl {
         xn::MapGenerator* m_Generator;
         /// A vector holding all capabilities of the MapGenerator
         std::vector<std::string> m_Capabilities;
+        /// A Map Holding all used ProductionNodes
+        std::map<std::string, xn::ProductionNode> m_ProductionNodeMap;
     };
 
     /// abstract super-class of all Image generators
@@ -293,6 +309,7 @@ namespace icl {
         enum Generators {
           RGB,
           DEPTH,
+          IR,
           NOT_SPECIFIED = -1
         };
 
@@ -322,7 +339,7 @@ namespace icl {
 
         ///  Creates the corresponding Generator.
         static OpenNIMapGenerator* createGenerator(xn::Context* context,
-                                                     Generators type, int num);
+                                                   std::string id);
     };
 
     /// Depth Image Generator
@@ -355,7 +372,7 @@ namespace icl {
         /// returns underlying xn::MapGenerator instance
         xn::MapGenerator* getMapGenerator();
         /// Creates an Img16s for ReadWriteBuffer
-        Img16s* initBuffer();
+        ImgBase* initBuffer();
 
       private:
         /// the OpenNI context
@@ -413,8 +430,54 @@ namespace icl {
           being created.
       **/
         xn::DepthGenerator* m_DepthGenerator;
+        xn::IRGenerator* m_IrGenerator;
         /// a ImagehMetaData object holding image information
         xn::ImageMetaData m_RgbMD;
+        /// pointer to internally used MapGeneratorOptions
+        MapGeneratorOptions* m_Options;
+    };
+
+    /// IR Image Generator
+    class OpenNIIRGenerator : public OpenNIMapGenerator {
+      public:
+        /// Creates IRGenerator number num from Context
+        OpenNIIRGenerator(xn::Context* context, int num);
+        /// Destructor frees all resouurces
+        ~OpenNIIRGenerator();
+
+        /// setter function for video device properties
+        virtual void setProperty(const std::string &property, const std::string &value);
+        /// adds properties to propertylist
+        virtual void addPropertiesToList(std::vector<std::string> &properties);
+        /// checks if property is supported
+        virtual bool supportsProperty(const std::string &property);
+        /// get type of property
+        virtual std::string getType(const std::string &name);
+        /// get information of a properties valid values
+        virtual std::string getInfo(const std::string &name);
+        /// returns the current value of a property or a parameter
+        virtual std::string getValue(const std::string &name);
+        /// Returns whether this property may be changed internally.
+        virtual int isVolatile(const std::string &propertyName);
+
+        /// grab function grabs an image returns whether grabbing worked
+        bool acquireImage(ImgBase* dest);
+        /// tells the type of the Generator
+        Generators getGeneratorType();
+        /// returns underlying xn::MapGenerator instance
+        xn::MapGenerator* getMapGenerator();
+        /// Creates an Img8u for ReadWriteBuffer
+        Img16s* initBuffer();
+
+      private:
+        /// the OpenNI context
+        xn::Context* m_Context;
+        /// A NodeInfo for the used device
+        xn::NodeInfo* m_DeviceInfo;
+        /// the underlying it-image generator
+        xn::IRGenerator* m_IrGenerator;
+        /// a ImagehMetaData object holding image information
+        xn::IRMetaData m_IrMD;
         /// pointer to internally used MapGeneratorOptions
         MapGeneratorOptions* m_Options;
     };

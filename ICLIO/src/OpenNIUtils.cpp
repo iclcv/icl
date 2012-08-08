@@ -53,15 +53,30 @@ using namespace icl_openni;
 
 //  Creates the corresponding Generator.
 OpenNIMapGenerator* OpenNIMapGenerator::createGenerator(
-    xn::Context* context, Generators type, int num)
+    xn::Context* context, std::string id)
 {
-  switch(type){
-    case DEPTH:
-      return new OpenNIDepthGenerator(context, num);
-    case RGB:
-      return new OpenNIRgbGenerator(context, num);
-    default:
-      throw new ICLException("Generator not supported.");
+  if(id == "depth"){
+    return new OpenNIDepthGenerator(context, 0);
+  } else if(id == "rgb"){
+    return new OpenNIRgbGenerator(context, 0);
+  } else if(id == "ir") {
+    return new OpenNIIRGenerator(context, 0);
+  }
+
+  std::string type = id.substr(0,id.size()-1);
+  int num = icl::parse<int>(id.substr(id.size()-1, id.npos));
+  if(type == "depth"){
+    return new OpenNIDepthGenerator(context, num);
+  } else if(type == "rgb"){
+    return new OpenNIRgbGenerator(context, num);
+  } else if(type == "ir") {
+    return new OpenNIIRGenerator(context, num);
+  } else {
+    std::ostringstream s;
+    s << "Generator type '" << id << "' not supported.";
+    std::cout << "Unknown generator type '" << id << "'." << std::endl;
+    std::cout << "Supported generator types are: rgb, depth and ir" << std::endl;
+    throw new ICLException(s.str());
   }
 }
 
@@ -70,52 +85,31 @@ OpenNIMapGenerator* OpenNIMapGenerator::createGenerator(
 //##############################################################################
 
 // Creates a DepthGenerator from Context
-/*OpenNIDepthGenerator::OpenNIDepthGenerator(Context* context, int num)
-  : m_Context(context), m_DepthGenerator(NULL)
-{
-  XnStatus status;
-  NodeInfoList nodeInfoList;
-  status = m_Context -> EnumerateProductionTrees(
-             XN_NODE_TYPE_DEPTH , NULL , nodeInfoList);
-  DEBUG_LOG("enumerate: "<< xnGetStatusString(status));
-
-  if(nodeInfoList.IsEmpty()){
-    throw ICLException("empty nodeinfo list");
-  }
-  ProductionNode pn;
-  NodeInfoList::Iterator it = nodeInfoList.Begin();
-  for(int i = 0; it != nodeInfoList.End(); it++, i++){
-    if(i == num){
-      NodeInfo ni = *it;
-      status = ni.GetInstance(pn);
-      DEBUG_LOG("getinstance: "<< xnGetStatusString(status));
-
-      DEBUG_LOG("Creating OpenNIDepthGenerator");
-      m_DepthGenerator = new DepthGenerator(pn);
-      status = m_DepthGenerator -> Create(*m_Context);
-      if (status != XN_STATUS_OK){
-        std::ostringstream s;
-        s << "Generator init error " << xnGetStatusString(status);
-        throw ICLException(s.str());
-      }
-      m_DepthGenerator -> StartGenerating();
-      return;
-    }
-  }
-  std::ostringstream s;
-  s << "Could not find enough depth generators to create nr. " << num;
-  throw ICLException(s.str());
-}*/
-
 OpenNIDepthGenerator::OpenNIDepthGenerator(Context* context, int num)
   : m_Context(context), m_DepthGenerator(NULL), m_Options(NULL)
 {
   XnStatus status;
   m_DepthGenerator = new DepthGenerator();
-  status = m_DepthGenerator -> Create(*m_Context);
+  NodeInfoList l;
+  m_Context -> EnumerateProductionTrees(XN_NODE_TYPE_DEPTH, NULL , l);
+  int i = 0;
+  for (NodeInfoList::Iterator it = l.Begin(); it != l.End(); ++it, ++i){
+    if (i == num){
+      NodeInfo ni = *it;
+      status = m_Context -> CreateProductionTree(ni, *m_DepthGenerator);
+    }
+  }
+  if(i <= num){
+    std::ostringstream s;
+    s << "Demanded depth generator nr " << num
+      << " but only " << i << " available.";
+    DEBUG_LOG(s.str());
+    throw ICLException(s.str());
+  }
   if (status != XN_STATUS_OK){
     std::ostringstream s;
     s << "Generator init error " << xnGetStatusString(status);
+    DEBUG_LOG(s.str());
     throw ICLException(s.str());
   }
   m_Options = new MapGeneratorOptions(m_DepthGenerator);
@@ -177,9 +171,9 @@ bool OpenNIDepthGenerator::acquireImage(ImgBase* dest){
     DEBUG_LOG("Read failed: " << xnGetStatusString(rc));
     return false;
   }
-
   m_DepthGenerator -> GetMetaData(m_DepthMD);
-  convertDepthImg(&m_DepthMD, dest->as16s());
+
+  convertDepthImg(&m_DepthMD, dest -> as16s());
   //DEBUG_LOG("grabbed in " << t.age());
   return true;
 }
@@ -194,7 +188,7 @@ MapGenerator* OpenNIDepthGenerator::getMapGenerator(){
   return m_DepthGenerator;
 }
 
-Img16s* OpenNIDepthGenerator::initBuffer(){
+ImgBase* OpenNIDepthGenerator::initBuffer(){
   return new Img16s(Size(0,0), formatGray);
 }
 
@@ -203,61 +197,39 @@ Img16s* OpenNIDepthGenerator::initBuffer(){
 //##############################################################################
 
 // Creates a RgbGenerator from Context
-/*OpenNIRgbGenerator::OpenNIRgbGenerator(Context* context, int num)
-  : m_Context(context), m_RgbGenerator(NULL)
-{
-  XnStatus status;
-  NodeInfoList nodeInfoList;
-  status = m_Context -> EnumerateProductionTrees(
-             XN_NODE_TYPE_IMAGE , NULL , nodeInfoList);
-  DEBUG_LOG("enumerate: "<< xnGetStatusString(status));
-
-      if(nodeInfoList.IsEmpty()){
-    throw ICLException("empty nodeinfo list");
-  }
-  ProductionNode pn;
-  NodeInfoList::Iterator it = nodeInfoList.Begin();
-  for(int i = 0; it != nodeInfoList.End(); it++, i++){
-    if(i == num){
-      NodeInfo ni = *it;
-      status = ni.GetInstance(pn);
-      DEBUG_LOG("getinstance: "<< xnGetStatusString(status));
-
-
-      DEBUG_LOG("Creating OpenNIRgbGenerator");
-      m_RgbGenerator = new ImageGenerator(pn);
-      status = m_RgbGenerator -> Create(*m_Context);
-
-      if (status != XN_STATUS_OK){
-        std::string error(xnGetStatusString(status));
-        DEBUG_LOG("Generator init error '" << error << "'");
-            throw new ICLException(error);
-      }
-      m_RgbGenerator -> StartGenerating();
-      DEBUG_LOG("done creating OpenNIRgbGenerator");
-      return;
-    }
-  }
-  std::ostringstream s;
-  s << "Could not find enough depth generators to create nr. " << num;
-  throw ICLException(s.str());
-}*/
-
 OpenNIRgbGenerator::OpenNIRgbGenerator(Context* context, int num)
   : m_Context(context), m_RgbGenerator(NULL), m_Options(NULL)
 {
   XnStatus status;
   m_DepthGenerator = new DepthGenerator();
-  status = m_DepthGenerator -> Create(*m_Context);
-
-  m_RgbGenerator = new ImageGenerator();
-  status = m_RgbGenerator -> Create(*m_Context);
-
-  if (status != XN_STATUS_OK){
+  if (XN_STATUS_OK != m_DepthGenerator -> Create(*m_Context)){
     std::string error =  xnGetStatusString(status);
-    DEBUG_LOG("Generator init error '" << error << "'");
+    DEBUG_LOG("DepthGenerator init error '" << error << "'");
     throw new ICLException(error);
   }
+  m_RgbGenerator = new ImageGenerator();
+  NodeInfoList l;
+  m_Context -> EnumerateProductionTrees(XN_NODE_TYPE_IMAGE, NULL , l);
+  int i = 0;
+  for (NodeInfoList::Iterator it = l.Begin(); it != l.End(); ++it, ++i){
+    if (i == num){
+      NodeInfo ni = *it;
+      status = m_Context -> CreateProductionTree(ni, *m_RgbGenerator);
+    }
+  }
+  if(i <= num){
+    std::ostringstream s;
+    s << "Demanded rgb generator nr " << num
+      << " but only " << i << " available.";
+    DEBUG_LOG(s.str());
+    throw ICLException(s.str());
+  }
+  if (status != XN_STATUS_OK){
+    std::string error =  xnGetStatusString(status);
+    DEBUG_LOG("ImageGenerator init error '" << error << "'");
+    throw new ICLException(error);
+  }
+
   m_Options = new MapGeneratorOptions(m_RgbGenerator);
   m_RgbGenerator -> StartGenerating();
   DEBUG_LOG("done creating OpenNIRgbGenerator");
@@ -267,6 +239,7 @@ OpenNIRgbGenerator::OpenNIRgbGenerator(Context* context, int num)
 OpenNIRgbGenerator::~OpenNIRgbGenerator(){
   m_RgbGenerator -> StopGenerating();
   ICL_DELETE(m_RgbGenerator);
+  ICL_DELETE(m_IrGenerator);
   ICL_DELETE(m_DepthGenerator);
   ICL_DELETE(m_Options);
 }
@@ -321,7 +294,6 @@ bool OpenNIRgbGenerator::acquireImage(ImgBase* dest){
     //DEBUG_LOG("Read failed: " << xnGetStatusString(rc))
     return false;
   }
-
   //DEBUG_LOG("getmeta")
   m_RgbGenerator -> GetMetaData(m_RgbMD);
   //DEBUG_LOG("getmeta_")
@@ -343,6 +315,125 @@ MapGenerator* OpenNIRgbGenerator::getMapGenerator(){
 
 Img8u* OpenNIRgbGenerator::initBuffer(){
   return new Img8u(Size(0,0), formatRGB);
+}
+
+//##############################################################################
+//############################# OpenNIIRGenerator #############################
+//##############################################################################
+
+// Creates a IrGenerator from Context
+OpenNIIRGenerator::OpenNIIRGenerator(Context* context, int num)
+  : m_Context(context), m_IrGenerator(NULL), m_Options(NULL)
+{
+  XnStatus status;
+  m_IrGenerator = new IRGenerator();
+  NodeInfoList l;
+  m_Context -> EnumerateProductionTrees(XN_NODE_TYPE_IR, NULL , l);
+  int i = 0;
+  for (NodeInfoList::Iterator it = l.Begin(); it != l.End(); ++it, ++i){
+    if (i == num){
+      NodeInfo ni = *it;
+      status = m_Context -> CreateProductionTree(ni, *m_IrGenerator);
+    }
+  }
+  if(i <= num){
+    std::ostringstream s;
+    s << "Demanded ir generator nr " << num
+      << " but only " << i << " available.";
+    DEBUG_LOG(s.str());
+    throw ICLException(s.str());
+  }
+  if (XN_STATUS_OK != status){
+    std::string error =  xnGetStatusString(status);
+    DEBUG_LOG("IRGenerator init error '" << error << "'");
+    throw new ICLException(error);
+  }
+
+  m_Options = new MapGeneratorOptions(m_IrGenerator);
+  // somehow my kinect did not create the ir generator before setting it to
+  // this MapOutputMode.
+  XnMapOutputMode mo;
+  mo.nFPS = 30;
+  mo.nXRes = 640;
+  mo.nYRes = 480;
+  m_IrGenerator -> SetMapOutputMode(mo);
+  status = m_IrGenerator -> StartGenerating();
+  DEBUG_LOG("startgenerating: " << xnGetStatusString(status));
+  DEBUG_LOG("done creating OpenNIIRGenerator");
+}
+
+// Destructor frees all resouurces
+OpenNIIRGenerator::~OpenNIIRGenerator(){
+  m_IrGenerator -> StopGenerating();
+  ICL_DELETE(m_IrGenerator);
+  ICL_DELETE(m_Options);
+}
+
+// setter function for video device properties
+void OpenNIIRGenerator::setProperty(const std::string &property, const std::string &value){
+  m_Options -> setProperty(property, value);
+}
+
+// adds properties to propertylist
+void OpenNIIRGenerator::addPropertiesToList(std::vector<std::string> &properties){
+  m_Options -> addPropertiesToList(properties);
+}
+
+// checks if property is supported
+bool OpenNIIRGenerator::supportsProperty(const std::string &property){
+  return m_Options -> supportsProperty(property);
+}
+
+// get type of property
+std::string OpenNIIRGenerator::getType(const std::string &name){
+  if(m_Options -> supportsProperty(name)) return m_Options -> getType(name);
+}
+
+// get information of a properties valid values
+std::string OpenNIIRGenerator::getInfo(const std::string &name){
+  if(m_Options -> supportsProperty(name)) return m_Options -> getInfo(name);
+}
+
+// returns the current value of a property or a parameter
+std::string OpenNIIRGenerator::getValue(const std::string &name){
+  if(m_Options -> supportsProperty(name)) return m_Options -> getValue(name);
+}
+
+// Returns whether this property may be changed internally.
+int OpenNIIRGenerator::isVolatile(const std::string &propertyName){
+  if(m_Options -> supportsProperty(propertyName)) return m_Options -> isVolatile(propertyName);
+}
+
+// grab function grabs an image
+bool OpenNIIRGenerator::acquireImage(ImgBase* dest){
+  XnStatus rc = XN_STATUS_OK;
+  Time t = Time::now();
+  // Read a new frame
+  rc = m_Context -> WaitOneUpdateAll(*m_IrGenerator);
+  t = t.now();
+  if (rc != XN_STATUS_OK)
+  {
+    return false;
+  }
+  m_IrGenerator -> GetMetaData(m_IrMD);
+  t = t.now();
+  convertIRImg(&m_IrMD, dest -> as16s());
+  t = t.now();
+  return true;
+}
+
+// tells the type of the Generator
+OpenNIMapGenerator::Generators OpenNIIRGenerator::getGeneratorType(){
+  return OpenNIMapGenerator::IR;
+}
+
+// returns underlying xn::MapGenerator instance
+MapGenerator* OpenNIIRGenerator::getMapGenerator(){
+  return m_IrGenerator;
+}
+
+Img16s* OpenNIIRGenerator::initBuffer(){
+  return new Img16s(Size(0,0), formatGray);
 }
 
 //##############################################################################
@@ -690,120 +781,155 @@ std::string getCroppingInfo(xn::MapGenerator* gen, const std::string &property){
   if (property == "Cropping Enabled"){
     return "{On,Off}";
   } else {
+    // get max map output in every for x and y
+    int x = 0; int y = 0;
+    XnUInt32 count = gen -> GetSupportedMapOutputModesCount();
+    XnMapOutputMode* modes = new XnMapOutputMode[count];
+    gen -> GetSupportedMapOutputModes(modes, count);
+    for(unsigned int i = 0; i < count; ++i){
+      x = (modes[i].nXRes > x) ? modes[i].nXRes : x;
+      y = (modes[i].nYRes > y) ? modes[i].nYRes : y;
+    }
+    // write info
     std::ostringstream tmp;
-    XnMapOutputMode mode;
-    gen -> GetMapOutputMode(mode);
     if (property == "Cropping offset X"){
-      tmp << "[0," << mode.nXRes << "]:1";
+      tmp << "[0," << x << "]:1";
     } else if (property == "Cropping offset Y"){
-      tmp << "[0," << mode.nYRes << "]:1";
+      tmp << "[0," << y << "]:1";
     } else if (property == "Cropping size X"){
-      tmp << "[0," << mode.nXRes << "]:1";
+      tmp << "[0," << x << "]:1";
     } else if (property == "Cropping size Y"){
-      tmp << "[0," << mode.nYRes << "]:1";
+      tmp << "[0," << y << "]:1";
     }
     return tmp.str();
   }
 }
 
-void alternativeViewPiontCapabilitySet(xn::MapGenerator* gen, const std::string &value){
+void alternativeViewPiontCapabilitySet(xn::MapGenerator* gen,
+                                       const std::string &value,
+                                       std::map<std::string, xn::ProductionNode> &pn_map)
+{
   AlternativeViewPointCapability avc = gen -> GetAlternativeViewPointCap();
   ProductionNode n;
   XnStatus status;
   if(value == "self"){
     status = avc.ResetViewPoint();
-  } else if (value == "rgb") {
-    gen->GetContext().CreateAnyProductionTree(XN_NODE_TYPE_IMAGE, NULL, n);
-    if(avc.IsViewPointSupported(n)){
-      status = avc.SetViewPoint(n);
-    }
-  } else if (value == "ir") {
-    gen->GetContext().CreateAnyProductionTree(XN_NODE_TYPE_IR, NULL, n);
-    if(avc.IsViewPointSupported(n)){
-      status = avc.SetViewPoint(n);
-    }
-  } else if (value == "audio") {
-    gen->GetContext().CreateAnyProductionTree(XN_NODE_TYPE_AUDIO, NULL, n);
-    if(avc.IsViewPointSupported(n)){
-      status = avc.SetViewPoint(n);
-    }
-  } else if (value == "depth") {
-    gen->GetContext().CreateAnyProductionTree(XN_NODE_TYPE_DEPTH, NULL, n);
-    if(avc.IsViewPointSupported(n)){
-      status = avc.SetViewPoint(n);
+  } else {
+    std::map<std::string, xn::ProductionNode>::iterator it = pn_map.find(value);
+    if (it != pn_map.end()) {
+      if(avc.IsViewPointSupported(pn_map[value])){
+        status = avc.SetViewPoint(pn_map[value]);
+      }
+      if(status != XN_STATUS_OK){
+        DEBUG_LOG("Setting Viewpoint returned error: " << xnGetStatusString(status));
+      }
+    } else {
+      DEBUG_LOG("ProductinNode " << value << " for alt. Viewpoint not found.");
     }
   }
-  DEBUG_LOG("status = " << xnGetStatusString(status));
 }
 
-std::string alternativeViewPiontCapabilityValue(xn::MapGenerator* gen){
+std::string alternativeViewPiontCapabilityValue(xn::MapGenerator* gen,
+                                                std::map<std::string, xn::ProductionNode> &pn_map)
+{
   AlternativeViewPointCapability avc = gen -> GetAlternativeViewPointCap();
+  std::map<std::string, xn::ProductionNode>::iterator it;
+  for(it = pn_map.begin(); it != pn_map.end(); ++it){
+    if(avc.IsViewPointAs((*it).second)){
+      return (*it).first;
+    }
+  }
   return "self";
 }
 
-std::string alternativeViewPiontCapabilityInfo(xn::MapGenerator* gen){
-  std::ostringstream ret;
-  NodeInfoList l;
-
-  ret << "{self,";
+std::string alternativeViewPiontCapabilityInfo(xn::MapGenerator* gen,
+                                               std::map<std::string, xn::ProductionNode> &pn_map)
+{
   AlternativeViewPointCapability avc = gen -> GetAlternativeViewPointCap();
-  Context c = gen -> GetContext();
-  ProductionNode n;
-  // RGB
-  c.EnumerateProductionTrees(XN_NODE_TYPE_IMAGE, NULL , l);
-  int i = 0;
-  for (NodeInfoList::Iterator it = l.Begin(); it != l.End(); ++it, ++i){
-    NodeInfo ni = *it;
-    c.CreateProductionTree(ni, n);
-    if(avc.IsViewPointSupported(n)){
-      ret << "rgb";
-      if(i) ret << i;
-      ret << ",";
-    }
-  }
-  // DEPTH
-  c.EnumerateProductionTrees(XN_NODE_TYPE_DEPTH, NULL , l);
-  i = 0;
-  for (NodeInfoList::Iterator it = l.Begin(); it != l.End(); ++it, ++i){
-    NodeInfo ni = *it;
-    c.CreateProductionTree(ni, n);
-    if(avc.IsViewPointSupported(n)){
-      ret << "depth";
-      if(i) ret << i;
-      ret << ",";
-    }
-  }
-  // IR
-  c.EnumerateProductionTrees(XN_NODE_TYPE_IR, NULL , l);
-  i = 0;
-  for (NodeInfoList::Iterator it = l.Begin(); it != l.End(); ++it, ++i){
-    NodeInfo ni = *it;
-    c.CreateProductionTree(ni, n);
-    if(avc.IsViewPointSupported(n)){
-      ret << "ir";
-      if(i) ret << i;
-      ret << ",";
-    }
-  }
-  // AUDIO
-  c.EnumerateProductionTrees(XN_NODE_TYPE_AUDIO, NULL , l);
-  i = 0;
-  for (NodeInfoList::Iterator it = l.Begin(); it != l.End(); ++it, ++i){
-    NodeInfo ni = *it;
-    c.CreateProductionTree(ni, n);
-    if(avc.IsViewPointSupported(n)){
-      ret << "audio";
-      if(i) ret << i;
-      ret << ",";
+  std::ostringstream ret;
+  ret << "{self,";
+  std::map<std::string, xn::ProductionNode>::iterator it;
+  for(it = pn_map.begin(); it != pn_map.end(); ++it){
+    if(avc.IsViewPointSupported((*it).second)){
+      ret << (*it).first << ",";
     }
   }
   return ret.str();
+}
+
+void fillProductionNodeMap(Context context,
+                           std::map<std::string, xn::ProductionNode> &pn_map)
+{
+  ProductionNode n;
+  XnStatus status = XN_STATUS_OK;
+  NodeInfoList l;
+  // RGB
+  context.EnumerateProductionTrees(XN_NODE_TYPE_IMAGE, NULL , l);
+  int i = 0;
+  for (NodeInfoList::Iterator it = l.Begin(); it != l.End(); ++it, ++i){
+    std::ostringstream tmp;
+    tmp << "rgb";
+    if(i) tmp << i;
+    NodeInfo ni = *it;
+    status = context.CreateProductionTree(ni, n);
+    if(status == XN_STATUS_OK){
+      pn_map[tmp.str()] = n;
+    } else {
+      DEBUG_LOG("error while creating Production tree: " << xnGetStatusString(status));
+    }
+  }
+  // DEPTH
+  context.EnumerateProductionTrees(XN_NODE_TYPE_DEPTH, NULL , l);
+  i = 0;
+  for (NodeInfoList::Iterator it = l.Begin(); it != l.End(); ++it, ++i){
+    std::ostringstream tmp;
+    tmp << "depth";
+    if(i) tmp << i;
+    NodeInfo ni = *it;
+    status = context.CreateProductionTree(ni, n);
+    if(status == XN_STATUS_OK){
+      pn_map[tmp.str()] = n;
+    } else {
+      DEBUG_LOG("error while creating Production tree: " << xnGetStatusString(status));
+    }
+  }
+  // IR
+  context.EnumerateProductionTrees(XN_NODE_TYPE_IR, NULL , l);
+  i = 0;
+  for (NodeInfoList::Iterator it = l.Begin(); it != l.End(); ++it, ++i){
+    std::ostringstream tmp;
+    tmp << "ir";
+    if(i) tmp << i;
+    NodeInfo ni = *it;
+    status = context.CreateProductionTree(ni, n);
+    if(status == XN_STATUS_OK){
+      pn_map[tmp.str()] = n;
+    } else {
+      DEBUG_LOG("error while creating Production tree: " << xnGetStatusString(status));
+    }
+  }
+  // AUDIO
+  context.EnumerateProductionTrees(XN_NODE_TYPE_AUDIO, NULL , l);
+  i = 0;
+  for (NodeInfoList::Iterator it = l.Begin(); it != l.End(); ++it, ++i){
+    std::ostringstream tmp;
+    tmp << "audio";
+    if(i) tmp << i;
+    NodeInfo ni = *it;
+    status = context.CreateProductionTree(ni, n);
+    if(status == XN_STATUS_OK){
+      pn_map[tmp.str()] = n;
+    } else {
+      DEBUG_LOG("error while creating Production tree: " << xnGetStatusString(status));
+    }
+  }
 }
 
 MapGeneratorOptions::MapGeneratorOptions(xn::MapGenerator* generator)
   : m_Generator(generator)
 {
   m_Capabilities.push_back("map output mode");
+  fillProductionNodeMap(m_Generator -> GetContext(), m_ProductionNodeMap);
   if(m_Generator -> IsCapabilitySupported(XN_CAPABILITY_CROPPING)){
     addCroppingCapability(m_Capabilities);
   }
@@ -812,6 +938,9 @@ MapGeneratorOptions::MapGeneratorOptions(xn::MapGenerator* generator)
   }
   if(m_Generator -> IsCapabilitySupported(XN_CAPABILITY_ALTERNATIVE_VIEW_POINT)){
     m_Capabilities.push_back(XN_CAPABILITY_ALTERNATIVE_VIEW_POINT);
+  }
+  if(m_Generator -> IsCapabilitySupported(XN_CAPABILITY_MIRROR)){
+    m_Capabilities.push_back(XN_CAPABILITY_MIRROR);
   }
   addGeneralIntCapability(m_Generator, m_Capabilities, XN_CAPABILITY_BRIGHTNESS);
   addGeneralIntCapability(m_Generator, m_Capabilities, XN_CAPABILITY_CONTRAST);
@@ -832,22 +961,6 @@ MapGeneratorOptions::MapGeneratorOptions(xn::MapGenerator* generator)
   addGeneralIntCapability(m_Generator, m_Capabilities, XN_CAPABILITY_LOW_LIGHT_COMPENSATION);
 }
 
-// interface for the setter function for video device properties
-void MapGeneratorOptions::setProperty(
-    const std::string &property, const std::string &value){
-  if(isCropping(property)){
-    setCropping(m_Generator, property, value);
-  } else if (property == XN_CAPABILITY_ANTI_FLICKER){
-    antiFlickerCapabilitySet(m_Generator, value);
-  } else if (property == XN_CAPABILITY_ALTERNATIVE_VIEW_POINT){
-    alternativeViewPiontCapabilitySet(m_Generator, value);
-  } else if (setGeneralIntCapability(m_Generator, property, value)){
-    // nothing to do setting is done in condition
-  } else if (property == "map output mode"){
-    setCurrentMapOutputmode(m_Generator, value);
-  }
-}
-
 // adds properties to propertylist
 void MapGeneratorOptions::addPropertiesToList(
     std::vector<std::string> &properties){
@@ -864,6 +977,24 @@ bool MapGeneratorOptions::supportsProperty(const std::string &property){
   return false;
 }
 
+// interface for the setter function for video device properties
+void MapGeneratorOptions::setProperty(
+    const std::string &property, const std::string &value){
+  if(isCropping(property)){
+    setCropping(m_Generator, property, value);
+  } else if (property == XN_CAPABILITY_ANTI_FLICKER){
+    antiFlickerCapabilitySet(m_Generator, value);
+  } else if (property == XN_CAPABILITY_ALTERNATIVE_VIEW_POINT){
+    alternativeViewPiontCapabilitySet(m_Generator, value, m_ProductionNodeMap);
+  } else if (property == XN_CAPABILITY_MIRROR){
+    m_Generator -> GetMirrorCap().SetMirror(value == "On");
+  } else if (setGeneralIntCapability(m_Generator, property, value)){
+    // nothing to do setting is done in condition
+  } else if (property == "map output mode"){
+    setCurrentMapOutputmode(m_Generator, value);
+  }
+}
+
 // get type of property
 std::string MapGeneratorOptions::getType(const std::string &name){
   if(isCropping(name)){
@@ -871,6 +1002,8 @@ std::string MapGeneratorOptions::getType(const std::string &name){
   } else if (name == XN_CAPABILITY_ANTI_FLICKER){
     return "menu";
   } else if (name == XN_CAPABILITY_ALTERNATIVE_VIEW_POINT){
+    return "menu";
+  } else if (name == XN_CAPABILITY_MIRROR){
     return "menu";
   } else if (isGeneralIntCapability(name)){
     return "range";
@@ -890,7 +1023,9 @@ std::string MapGeneratorOptions::getInfo(const std::string &name){
         "Power line frequency 50Hz,"
         "Power line frequency 60Hz}";
   } else if (name == XN_CAPABILITY_ALTERNATIVE_VIEW_POINT){
-    return alternativeViewPiontCapabilityInfo(m_Generator);
+    return alternativeViewPiontCapabilityInfo(m_Generator, m_ProductionNodeMap);
+  } else if (name == XN_CAPABILITY_MIRROR){
+    return "{On,Off}";
   } else if (isGeneralIntCapability(name)){
     return generalIntCapabilityInfo(getGeneralIntCapability(m_Generator, name));
   } else if (isGeneralIntAutoCapability(name)){
@@ -909,7 +1044,9 @@ std::string MapGeneratorOptions::getValue(const std::string &name){
   } else if (name == XN_CAPABILITY_ANTI_FLICKER){
     return antiFlickerCapabilityValue(m_Generator);
   } else if (name == XN_CAPABILITY_ALTERNATIVE_VIEW_POINT){
-    return alternativeViewPiontCapabilityValue(m_Generator);
+    return alternativeViewPiontCapabilityValue(m_Generator, m_ProductionNodeMap);
+  } else if (name == XN_CAPABILITY_MIRROR){
+     return (m_Generator -> GetMirrorCap().IsMirrored()) ? "On" : "Off";
   } else if (isGeneralIntCapability(name)){
     return generalIntCapabilityValue(getGeneralIntCapability(m_Generator, name));
   } else if (isGeneralIntAutoCapability(name)){
@@ -924,5 +1061,8 @@ std::string MapGeneratorOptions::getValue(const std::string &name){
 
 // Returns whether this property may be changed internally.
 int MapGeneratorOptions::isVolatile(const std::string &propertyName){
-  return true;
+  if(isCropping(propertyName)){
+    return 100;
+  }
+  return 0;
 }

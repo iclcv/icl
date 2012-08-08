@@ -152,7 +152,7 @@ void OpenNIGrabberThread::run(){
 
 // Constructor of OpenNIGrabberImpl
 OpenNIGrabberImpl::OpenNIGrabberImpl(std::string args)
-  : m_Id(parse<int>(args)), m_OmitDoubleFrames(true)
+  : m_Id(args), m_OmitDoubleFrames(true)
 {
   icl::Mutex::Locker lock(m_Mutex);
 
@@ -161,10 +161,7 @@ OpenNIGrabberImpl::OpenNIGrabberImpl(std::string args)
   rc = m_Context.Init();
   assertStatus(rc);
 
-  printProductionTrees(m_Context);
-
-  m_Generator = OpenNIMapGenerator::createGenerator(
-                  &m_Context, OpenNIMapGenerator::DEPTH, m_Id);
+  m_Generator = OpenNIMapGenerator::createGenerator(&m_Context, m_Id);
   m_Buffer = new ReadWriteBuffer<ImgBase>(m_Generator);
   m_Generator -> getMapGenerator()->StartGenerating();
   m_GrabberThread = new OpenNIGrabberThread(this);
@@ -202,49 +199,9 @@ void OpenNIGrabberImpl::grabNextImage(){
   //DEBUG_LOG("");
 }
 
-// switches the current generator to desired
-void
-OpenNIGrabberImpl::setGeneratorTo(OpenNIMapGenerator::Generators desired){
-  DEBUG_LOG("set Generator to " << desired);
-  if(desired != m_Generator -> getGeneratorType()){
-    DEBUG_LOG("switching generator");
-    Mutex::Locker l(m_Mutex);
-    DEBUG_LOG("got lock");
-    ICL_DELETE(m_Generator);
-    m_Generator = OpenNIMapGenerator::createGenerator(
-                    &m_Context, desired, m_Id
-                    );
-    m_Buffer -> switchHandler(m_Generator);
-    DEBUG_LOG("done");
-  }
-}
-
 // Returns the string representation of the currently used device.
 std::string OpenNIGrabberImpl::getName(){
-  return toStr(m_Id);
-}
-
-std::string stringFromGenerator(const OpenNIMapGenerator::Generators &gen){
-  switch (gen){
-    case OpenNIMapGenerator::RGB:
-      return "rgb";
-    case OpenNIMapGenerator::DEPTH:
-      return "depth";
-    case OpenNIMapGenerator::NOT_SPECIFIED:
-      return "not_specified";
-    default:
-      return "error";
-  }
-}
-
-OpenNIMapGenerator::Generators generatorFromString(const std::string &value){
-  if(!value.compare("rgb")){
-    return OpenNIMapGenerator::RGB;
-  }
-  if(!value.compare("depth")){
-    return OpenNIMapGenerator::DEPTH;
-  }
-  return OpenNIMapGenerator::NOT_SPECIFIED;
+  return m_Id;
 }
 
 // interface for the setter function for video device properties
@@ -260,10 +217,6 @@ void OpenNIGrabberImpl::setProperty(const std::string &property, const std::stri
     m_OmitDoubleFrames = (value == "On");
     return;
   }
-  if (property.compare("generator") == 0){
-    setGeneratorTo(generatorFromString(value));
-    return;
-  }
   if (m_Generator -> supportsProperty(property)){
     m_Generator -> setProperty(property, value);
     return;
@@ -277,7 +230,6 @@ std::vector<std::string> OpenNIGrabberImpl::getPropertyList(){
   ps.push_back("size");
   ps.push_back("format");
   ps.push_back("omit double frames");
-  ps.push_back("generator");
   m_Generator -> addPropertiesToList(ps);
   return ps;
 }
@@ -288,7 +240,6 @@ bool OpenNIGrabberImpl::supportsProperty(const std::string &property){
   if (property.compare("size") == 0) return true;
   if (property.compare("format") == 0) return true;
   if (property.compare("omit double frames") == 0) return true;
-  if (property.compare("generator") == 0) return true;
   if (m_Generator -> supportsProperty(property)) return true;
   return false;
 }
@@ -296,16 +247,13 @@ bool OpenNIGrabberImpl::supportsProperty(const std::string &property){
 // get type of property
 std::string OpenNIGrabberImpl::getType(const std::string &name){
   DEBUG_LOG("");
-      if(name.compare("size") == 0){
+  if(name.compare("size") == 0){
     return "info";
   }
   if(name.compare("format") == 0){
     return "menu";
   }
   if(name.compare("omit double frames") == 0){
-    return "menu";
-  }
-  if(name.compare("generator") == 0){
     return "menu";
   }
   if (m_Generator -> supportsProperty(name)){
@@ -327,9 +275,6 @@ std::string OpenNIGrabberImpl::getInfo(const std::string &name){
   if(name.compare("omit double frames") == 0){
     return "{On,Off}";
   }
-  if(name.compare("generator") == 0){
-    return "{depth,rgb}";
-  }
   if (m_Generator -> supportsProperty(name)){
     return m_Generator -> getInfo(name);
   }
@@ -340,7 +285,7 @@ std::string OpenNIGrabberImpl::getInfo(const std::string &name){
 // returns the current value of a property or a parameter
 std::string OpenNIGrabberImpl::getValue(const std::string &name){
   DEBUG_LOG(name);
-      if(name.compare("size") == 0){
+  if(name.compare("size") == 0){
     return "set by format";
   }
   if(name.compare("format") == 0){
@@ -348,9 +293,6 @@ std::string OpenNIGrabberImpl::getValue(const std::string &name){
   }
   if(name.compare("omit double frames") == 0){
     return (m_OmitDoubleFrames) ? "On" : "Off";
-  }
-  if(name.compare("generator") == 0){
-    return stringFromGenerator(m_Generator -> getGeneratorType());
   }
   if (m_Generator -> supportsProperty(name)){
     return m_Generator -> getValue(name);

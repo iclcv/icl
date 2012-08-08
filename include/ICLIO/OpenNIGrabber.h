@@ -105,8 +105,8 @@ namespace icl {
 
       /// Mutex used for concurrency issues.
       icl::Mutex m_Mutex;
-      /// a device number and grabber id
-      int m_Id;
+      /// a grabber id
+      std::string m_Id;
       /// the OpenNI context
       xn::Context m_Context;
       /// holds a pointer to the currently used image generator
@@ -130,15 +130,12 @@ namespace icl {
   inline OpenNIGrabber(const std::string args="") throw(ICLException) {
     /// looking for OpenNI device compatible to args
     if(isNew(args)){
-      DEBUG_LOG("isnew")
       OpenNIGrabberImpl* tmp = new OpenNIGrabberImpl(args);
       initialize(tmp, args);
     }else{
-      DEBUG_LOG("isold Grabber")
       initialize(args);
     }
-      DEBUG_LOG("end")
-    }
+  }
     
   static std::vector<GrabberDeviceDescription> getDeviceList(bool rescan){
     static std::vector<GrabberDeviceDescription> deviceList;
