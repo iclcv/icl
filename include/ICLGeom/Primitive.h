@@ -355,6 +355,41 @@ namespace icl{
       return new SharedTexturePrimitive(*this);
     }
   };
+
+  /// Texture Primitive for rendering textures with arbitrary texture coordinates
+  struct GenericTexturePrimitive : public Primitive, public AlphaFuncProperty{
+    SmartPtr<GLImg> texture;
+    const ImgBase *image;
+
+    std::vector<Vec> ps;
+    std::vector<Point32f> texCoords;
+    std::vector<Vec> normals;
+    
+    /// if these are given (size > 0), ps and normals are not used!
+    std::vector<int> vertexIndices;
+    std::vector<int> normalIndices;
+
+    /// Generic version, where the given values are copied deeply into the internal buffers for rendering
+    GenericTexturePrimitive(const ImgBase *image, int numPoints,
+                            const float *xs, const float *ys, const float *zs, int xyzStride,
+                            const Point32f *texCoords, const float *nxs=0, const float *nys=0,
+                            const float *nzs=0, int nxyzStride=1, bool createTextureOnce=true);
+    
+    /// less generic Constructor, that uses index-pointers for referencing vertices and normals of the parent SceneObject
+    GenericTexturePrimitive(const ImgBase *image, int numPoints, const int *vertexIndices,
+                            const Point32f *texCoords, const int *normalIndices = 0,
+                            bool createTextureOnce=true);
+    
+    //// custom render implementation
+    virtual void render(const Primitive::RenderContext &ctx);    
+
+    /// deep copy method
+    virtual Primitive *copy() const {
+      GenericTexturePrimitive *cpy = new GenericTexturePrimitive(*this);
+      cpy->texture = new GLImg(image ? image : texture->extractImage());
+      return cpy;
+    }
+  };
   
   /// Text Texture
   /** The text texture is implemented by a static common texture */

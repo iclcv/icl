@@ -357,5 +357,50 @@ namespace icl{
       aabb[2].extend(pz[i]);
     }
   }
+
+  GenericTexturePrimitive::GenericTexturePrimitive(const ImgBase *image, int numPoints,
+                                                   const float *xs, const float *ys, const float *zs, int xyzStride,
+                                                   const Point32f *texCoords, const float *nxs, const float *nys,
+                                                   const float *nzs, int nxyzStride, bool createTextureOnce):
+    texture(new GLImg(image)),image(createTextureOnce ? 0 : image){
+    ps.resize(numPoints);
+    this->texCoords.resize(numPoints);
+    normals.resize(nxs && nys && nzs ? numPoints : 0);
+    
+    for(int i=0;i<numPoints;++i){
+      ps[i] = Vec(xs[xyzStride*i], ys[xyzStride*i], zs[xyzStride*i], 1);
+      this->texCoords[i] = texCoords[i];
+      if(normals.size()) normals[i] = Vec(nxs[nxyzStride*i], nys[nxyzStride*i], nzs[nxyzStride*i], 1);
+    }
+  }
+  
+  GenericTexturePrimitive::GenericTexturePrimitive(const ImgBase *image, int numPoints, const int *vertexIndices,
+                                                   const Point32f *texCoords, const int *normalIndices,
+                                                   bool createTextureOnce):
+    texture(new GLImg(image)),image(createTextureOnce ? 0 : image){
+  
+    this->vertexIndices.assign(vertexIndices, vertexIndices+numPoints);
+    if(normalIndices) this->normalIndices.assign(normalIndices,normalIndices+numPoints);
+    this->texCoords.assign(texCoords, texCoords+numPoints);
+  }
+  
+  void GenericTexturePrimitive::render(const Primitive::RenderContext &ctx){
+    // update the buffers with indices and Object-Data (if neccessary)
+    if(vertexIndices.size()){ 
+      ps.resize(vertexIndices.size());
+      normals.resize(normalIndices.size());
+      for(size_t i=0;i<vertexIndices.size();++i){
+        ps[i] = ctx.vertices[vertexIndices[i]];
+        if(normalIndices.size()) normals[i] = ctx.normals[normalIndices[i]];
+      }
+    }
+    
+    if(image) texture->update(image);
+    
+    const bool n = normals.size();
+    texture->draw3DGeneric(ps.size(), &ps[0][0], &ps[0][1], &ps[0][2], 4, texCoords.data(),
+                           n ? &normals[0][0] : 0, n ? &normals[0][1] : 0, n ? &normals[0][2] : 0, 4);
+    
+  }
   
 }

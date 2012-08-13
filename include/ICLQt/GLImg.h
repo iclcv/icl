@@ -159,6 +159,14 @@ namespace icl{
                 const Point32f &texCoordsC=Point32f(0,1),
                 const Point32f &texCoordsD=Point32f(1,1));     
 
+    /// draws the texture using the given 3D Points, texture coordinates and optionally given normals
+    /** The strides are given in float-units. If normals are not given (i.e. at least one of the points
+        nxs, nys or nzs is null, no normals will be set. */
+    void draw3DGeneric(int numPoints,
+                       const float *xs, const float *ys, const float *zs, int xyzStride,
+                       const Point32f *texCoords, const float *nxs=0, const float *nys=0,
+                       const float *nzs=0, int nxyzStride=1);
+
     /// draws the texture to given quad that is spanned by two vectors
     inline void draw3D(const float a[3],const float b[3],const float c[3]){
       const float d[3] = { b[0] + c[0] -a[0], b[1] + c[1] -a[1], b[2] + c[2] -a[2]  };

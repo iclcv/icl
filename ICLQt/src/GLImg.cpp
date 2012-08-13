@@ -938,6 +938,41 @@ namespace icl{
     bindWhiteTexture();
     glPopAttrib();
   }
+  
+  void GLImg::draw3DGeneric(int numPoints,
+                            const float *xs, const float *ys, const float *zs, int xyzStride,
+                            const Point32f *texCoords, const float *nxs, const float *nys,
+                            const float *nzs, int nxyzStride){
+    if(numPoints < 3) throw ICLException("GImg::draw3DGeneric: numPoints must be at least 3");
+    ICLASSERT_RETURN(!isNull());
+    
+    if(m_data->isDirty()) m_data->uploadTextureData();
+    if(m_data->data.getSize() != Size(1,1)) throw ICLException("GLImg::draw3DGeneric: the texture is too large for this");
+    glPushAttrib(GL_ENABLE_BIT);
+    glEnable(GL_TEXTURE_2D);
+
+    glColor4f(1,1,1,1);
+    const bool haveNormals = nxs && nys && nzs;
+
+    TextureElement &t = *m_data->data(0,0);
+    glBindTexture(GL_TEXTURE_2D, t.tex);
+    
+    glBegin(numPoints == 3 ? GL_TRIANGLES : numPoints == 4 ? GL_QUADS : GL_POLYGON);
+    
+    for(int i=0;i<numPoints;++i){
+      glTexCoord2fv(&texCoords[i].x);
+      glVertex3f(xs[i*xyzStride], ys[i*xyzStride], zs[i*xyzStride] );
+      if(haveNormals){
+        glNormal3f(nxs[i*nxyzStride],nys[i*nxyzStride],nzs[i*nxyzStride]);
+      }
+    }
+    
+    glEnd();
+    bindWhiteTexture();
+    glPopAttrib();
+  }
+
+
 
   void GLImg::drawToGrid(int nx, int ny, const float *xs, const float *ys, const float *zs,
                          const float *nxs, const float *nys, const float *nzs,const int stride){

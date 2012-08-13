@@ -306,6 +306,11 @@ namespace icl{
     void addTexture(int a, int b, int c, int d, 
                     int sharedTextureIndex,
                     int na=-1, int nb=-1, int nc=-1, int nd=-1);
+
+    /// adds a GenericTexturePrimitive for custom texCoords
+    void addTexture(const ImgBase *image, int numPoints, const int *vertexIndices,
+                    const Point32f *texCoords, const int *normalIndices = 0,
+                    bool createTextureOnce=true);
                
 
     /// adds a texture that is drawn on a 2D grid of vertices in 3D space
