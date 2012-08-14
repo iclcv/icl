@@ -141,7 +141,7 @@ namespace icl{
       }
       virtual void timerEvent(QTimerEvent * e){
         if(!l){
-          l = &gui.getValue<LabelHandle>("#i#"+prop);
+          l = &gui.get<LabelHandle>("#i#"+prop);
         }
         (***l).setText(conf.getPropertyValue(prop).c_str());
         (***l).update(); 
@@ -289,15 +289,15 @@ namespace icl{
         if(t == "range" || t == "range:slider"){
           SteppingRange<float> r = parse<SteppingRange<float> >(conf->getPropertyInfo(p));
           if(r.stepping == 1){
-            gui.getValue<SliderHandle>("#r#"+p).setValue( parse<icl32s>(conf->getPropertyValue(p)) );
+            gui.get<SliderHandle>("#r#"+p).setValue( parse<icl32s>(conf->getPropertyValue(p)) );
           }else{
-            gui.getValue<FSliderHandle>("#r#"+p).setValue( parse<icl32f>(conf->getPropertyValue(p)) );
+            gui.get<FSliderHandle>("#r#"+p).setValue( parse<icl32f>(conf->getPropertyValue(p)) );
           }
         }else if( t == "range:spinbox"){
-          gui.getValue<SpinnerHandle>("#R#"+p).setValue( parse<icl32s>(conf->getPropertyValue(p)) );
+          gui.get<SpinnerHandle>("#R#"+p).setValue( parse<icl32s>(conf->getPropertyValue(p)) );
         }else if( t == "menu" || t == "value-list" || t == "valueList"){
           std::string handle = (t == "menu" ? "#m#" : "#v#")+p;
-          gui.getValue<ComboHandle>(handle).setSelectedItem(conf->getPropertyValue(p));
+          gui.get<ComboHandle>(handle).setSelectedItem(conf->getPropertyValue(p));
         }else if( t == "info"){
           gui["#i#"+p] = conf->getPropertyValue(p);
         }else if( t == "flag"){
@@ -2148,8 +2148,8 @@ public:
   // }}}
   GUI::GUI(const GUI &g,QWidget *parent):
     // {{{ open
-    m_sDefinition(g.m_sDefinition),
-    m_vecChilds(g.m_vecChilds),
+    m_sDefinition(g.createDefinition()),
+    m_children(g.m_children),
     m_poWidget(NULL),m_bCreated(false),
     m_poParent(parent){
   }
@@ -2160,6 +2160,13 @@ public:
     //delete m_poWidget;
   }
 
+  /// adds a new GUI component 
+  GUI &GUI::operator<<(const GUIComponent &component){
+    // TODO: this is just a slow fallback right now
+    // as a first attempt, we could bypass the parsing
+    // of the serialized string version ...
+    return (*this) << component.toString();
+  }
 
   GUI &GUI::operator<<(const std::string &definition){
     // {{{ open
@@ -2204,7 +2211,7 @@ public:
       string rest = remove_label(definition,label);
       return ( (*this) << ( GUI(string("border("+label+")["+minsize+maxsize+size+"]")) << rest ) );
     }else{
-      m_vecChilds.push_back(new GUI(definition));
+      m_children.push_back(new GUI(definition));
       return *this;
     }
   }
@@ -2219,10 +2226,11 @@ public:
       return *this;
     }
     
-    string label = extract_label(g.m_sDefinition);
-    string minsize = extract_minsize(g.m_sDefinition);
-    string maxsize = extract_maxsize(g.m_sDefinition);
-    string size = extract_size(g.m_sDefinition);
+    std::string def = g.createDefinition();
+    string label = extract_label(def);
+    string minsize = extract_minsize(def);
+    string maxsize = extract_maxsize(def);
+    string size = extract_size(def);
     
     Size S11(1,1);
     if(minsize.length()) minsize = string("@minsize=")+str(parse<Size>(minsize)+S11);
@@ -2232,18 +2240,19 @@ public:
 
     if(label.length()){
       GUI gNew(g);
-      if(gNew.m_sDefinition.length() > 100000) {
+      def = gNew.createDefinition();
+      if(def.length() > 1000000) {
         throw GUISyntaxErrorException("-- long text --","definition string was too large! (>100000 characters)");
       }
-      gNew.m_sDefinition = remove_label(g.m_sDefinition,label);
+      gNew.m_sDefinition = remove_label(def,label);
       return ( *this << (  GUI(string("border(")+label+")["+minsize+maxsize+size+"]") << gNew ) );
     }else{
-      m_vecChilds.push_back(new GUI(g));
+      m_children.push_back(new GUI(g));
       return *this;
     }
 
     
-    //    m_vecChilds.push_back(new GUI(g));
+    //    m_children.push_back(new GUI(g));
     return *this;
   }
 
@@ -2257,7 +2266,7 @@ public:
         throw ICLException("cannot create a \"dummy\"-GUI. (Dummy GUI's are GUI-instances\n"
                            "that are created from an empty string or from the string \"dummy\") ");
       }
-      GUIDefinition def(m_sDefinition,this,parentLayout,proxy,parentWidget);
+      GUIDefinition def(createDefinition(),this,parentLayout,proxy,parentWidget);
       
       m_poWidget = create_widget(def);
 
@@ -2274,12 +2283,12 @@ public:
       QLayout *layout = m_poWidget->getGUIWidgetLayout();
       ProxyLayout *proxy = m_poWidget->getProxyLayout();
 
-      if(!layout && !proxy && m_vecChilds.size()){
-        ERROR_LOG("GUI widget has no layout, "<< m_vecChilds.size() <<" child components can't be added!");
+      if(!layout && !proxy && m_children.size()){
+        ERROR_LOG("GUI widget has no layout, "<< m_children.size() <<" child components can't be added!");
         return;
       }
-      for(unsigned int i=0;i<m_vecChilds.size();i++){
-        m_vecChilds[i]->create(layout,proxy,m_poWidget,&m_oDataStore);
+      for(unsigned int i=0;i<m_children.size();i++){
+        m_children[i]->create(layout,proxy,m_poWidget,&m_oDataStore);
       }
       m_bCreated = true;
     }catch(GUISyntaxErrorException &ex){

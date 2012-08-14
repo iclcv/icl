@@ -40,7 +40,7 @@
 #include <ICLUtils/SmartPtr.h>
 #include <ICLUtils/Function.h>
 #include <ICLQt/DataStore.h>
-
+#include <ICLQt/GUIComponent.h>
 #include <QtGui/QLayout>
 #include <QtGui/QWidget>
 #include <QtGui/QApplication>
@@ -67,6 +67,9 @@ namespace icl{
     /// default constructor 
     GUI(const std::string &definition="vbox", QWidget *parent=0);
     
+    /// creates a GUI from a givne GUIComponent
+    GUI(const GUIComponent &component, QWidget *parent=0);
+    
     /// copy constructor
     GUI(const GUI &gui,QWidget *parent=0);
 
@@ -75,7 +78,10 @@ namespace icl{
     
     /// stream operator to add new widgets
     /** if the given definition is "" or "dummy", this operator does nothing */
-    virtual GUI &operator<<(const std::string &definition);
+    ICL_DEPRECATED virtual GUI &operator<<(const std::string &definition);
+
+    /// adds a new GUI component 
+    virtual GUI &operator<<(const GUIComponent &component);
     
     /// stream operator to add new other GUIs
     /** if the given GUI is a dummy GUI, this operator does nothing */
@@ -88,7 +94,7 @@ namespace icl{
     }
     /// wraps the data-stores allocArray function
     template<class T>
-    inline T *allocArray(const std::string &id,unsigned int n){
+    ICL_DEPRECATED inline T *allocArray(const std::string &id,unsigned int n){
       return m_oDataStore.allocArray<T>(id,n);
     }
     /// wraps the datastores release function
@@ -99,13 +105,18 @@ namespace icl{
     
     /// wraps the datastores getValue function
     template<class T> 
-    T &getValue(const std::string &id, bool typeCheck=true){
+    ICL_DEPRECATED T &getValue(const std::string &id, bool typeCheck=true){
+      return m_oDataStore.getValue<T>(id,typeCheck);
+    }
+
+    template<class T> 
+    T &get(const std::string &id, bool typeCheck=true){
       return m_oDataStore.getValue<T>(id,typeCheck);
     }
 
     /// wraps the datastores getArray function
     template<class T> 
-    inline T* getArray(const std::string &id, int *lenDst=0){
+    ICL_DEPRECATED inline T* getArray(const std::string &id, int *lenDst=0){
       return m_oDataStore.getArray<T>(id,lenDst);
     }
     
@@ -191,17 +202,26 @@ namespace icl{
     /// returns whether this GUI has been created or not
     bool hasBeenCreated() const;
 
+    protected:
+    /// can be overwritten in subclasses (such as ContainerGUIComponent)
+    virtual std::string createDefinition() const { return m_sDefinition; }
+
     private:
+
     void create(QLayout *parentLayout,ProxyLayout *proxy, QWidget *parentWidget, DataStore *ds);
 
     /// own definition string
     std::string m_sDefinition;
-    std::vector<GUI*> m_vecChilds;
+    std::vector<GUI*> m_children;
     GUIWidget *m_poWidget;
     DataStore m_oDataStore;
     bool m_bCreated;
     QWidget *m_poParent;
   };  
+
+
+ 
+
 }
 
 #endif
