@@ -73,6 +73,9 @@ namespace icl{
     /// copy constructor
     GUI(const GUI &gui,QWidget *parent=0);
 
+    /// gui-copy operator
+    GUI &operator=(const GUI &other);
+
     /// Destructor
     virtual ~GUI();
     

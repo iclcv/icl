@@ -2191,6 +2191,16 @@ public:
     m_poParent(parent){
   }
   // }}}
+
+  
+  GUI &GUI::operator=(const GUI &other){
+    m_sDefinition = other.createDefinition();
+    m_children = other.m_children;
+    m_poWidget = NULL;
+    m_bCreated = false;
+    m_poParent = other.m_poParent;
+    m_oDataStore = other.m_oDataStore;
+  }
   
   GUI::~GUI(){
     // this leads to seg-faults 

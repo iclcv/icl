@@ -129,6 +129,7 @@ namespace icl{
         str << '(' << m_params << ')';
       }
       if(m_options.handle.length() ||
+         m_options.label.length() ||
          m_options.out.length() ||
          m_options.in.length() ||
          m_options.tooltip.length() ||
@@ -245,8 +246,20 @@ namespace icl{
   };
 
   struct Button : public GUIComponentWithOutput{
-    Button(const std::string &text, const std::string &toggledText=""):
-    GUIComponentWithOutput(toggledText.length() ? "togglebutton" : "button",toggledText.length() ? (text+','+toggledText) : text){}
+    private:
+    static std::string form_args(const std::string &text, const std::string &toggledText, bool initiallyToggled){
+      if(!toggledText.length()){
+        return text;
+      }
+      std::ostringstream str;
+      str << text << ',';
+      if(initiallyToggled) str << '!';
+      str << toggledText;
+      return str.str();
+    }
+    public:
+    Button(const std::string &text, const std::string &toggledText="", bool initiallyToggled=false):
+    GUIComponentWithOutput(toggledText.length() ? "togglebutton" : "button",form_args(text,toggledText,initiallyToggled)){}
   };
     
 
@@ -269,7 +282,7 @@ namespace icl{
   };
     
   struct Label : public GUIComponent{
-    Label(const std::string &text):GUIComponent("label",text){}
+    Label(const std::string &text=""):GUIComponent("label",text){}
   };
 
   struct Slider : public GUIComponentWithOutput{
@@ -349,9 +362,20 @@ namespace icl{
   };
     
   struct Combo : public GUIComponent{
+    private:
+    static std::string form_args(const std::string &entries, int initialIndex){
+      if(!initialIndex) return entries;
+      std::vector<std::string> ls = tok(entries,",");
+      if(initialIndex < 0 || initialIndex >= (int)ls.size()){
+        throw ICLException("Combo::Combo(entries,initialIndex): initialIndex is invalid");
+      }
+      ls[initialIndex] = '!' + ls[initialIndex];
+      return cat(ls,",");
+    }
+    public:
     // should be with-output, but this cannot be thread-safe !!
-    Combo(const std::string &commaSepEntries):
-    GUIComponent("combo",commaSepEntries){}
+    Combo(const std::string &commaSepEntries, int initialIndex=0):
+    GUIComponent("combo",form_args(commaSepEntries,initialIndex)){}
   };
     
   struct Spinner : public GUIComponentWithOutput{

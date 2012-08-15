@@ -766,6 +766,7 @@ namespace icl{
     draw3D(a,b,c,d);
 
     if(m_data->drawGrid){
+      glLineWidth(1);
       glColor4fv(m_data->gridColor);
       
       //glLineWidth(1); dunno?
