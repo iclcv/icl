@@ -34,6 +34,7 @@
 
 #ifdef HAVE_QT
 #include <ICLQt/GUI.h>
+#include <ICLQt/ContainerGUIComponent.h>
 #include <ICLQt/QtMacros.h>
 #include <ICLQt/Application.h>
 #endif

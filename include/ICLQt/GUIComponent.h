@@ -300,14 +300,13 @@ namespace icl{
 
   struct String : public GUIComponent{
     // should be with-output, but this cannot be thread-safe !!
-    String(int maxLen=100):GUIComponent("string",str(maxLen)){}
+    String(const std::string &initText, int maxLen=100):GUIComponent("string",initText+','+str(maxLen)){}
   };
 
   struct Disp : public GUIComponent{
     Disp(int nxCells, int nyCells):
     GUIComponent("disp",str(nxCells)+','+str(nyCells)){}
   };
-
 
   struct Image : public GUIComponent{
     Image():GUIComponent("image"){}

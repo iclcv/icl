@@ -92,7 +92,7 @@ int main (int n, char **ppc){
     }
 
     Size size = compute_image_size(std::vector<const ImgBase*>(1,image),QApplication::desktop());
-    gui = GUI("draw[@handle=draw@size="+str(size/20)+"]");
+    gui << Draw().handle("draw").size(size/20);
     gui.show();
 
     gui["draw"] = image;
@@ -106,6 +106,7 @@ int main (int n, char **ppc){
     std::string imageList = "";
     std::vector<const ImgBase*> imageVec;
     std::vector<std::string> imageVecStrs;
+    
     Size maxSize;
     for(unsigned int i=0;i<pacount();++i){
       std::string s = pa(i);
@@ -126,19 +127,20 @@ int main (int n, char **ppc){
       }
     }
     Size size = compute_image_size(imageVec,QApplication::desktop());
-    gui << std::string("multidraw(")+imageList+",!all,!deepcopy)[@handle=image@size="+str(size/20)+"]";
-    gui.show();
+    Tab t(imageList);
 
-    MultiDrawHandle &h = gui.getValue<MultiDrawHandle>("image");
-    for(unsigned int i=0;i<imageVecStrs.size();++i){
-      h[imageVecStrs[i]] = imageVec[i];
+    for(size_t i=0;i<imageVecStrs.size();++i){
+      t << Image().handle("image-"+str(i));
+    }
+    
+    gui << t << Show();
+    
+    for(size_t i=0;i<imageVecStrs.size();++i){
+      gui["image-"+str(i)] = imageVec[i];
       ICL_DELETE(imageVec[i]);
     }
   }else{
-    static ImgQ o = ones(320,240,1)*100;
-    image = &o;
-    fontsize(15);
-    text(o, 110,90,"no image set!");
+    throw ICLException("no image given, or none of the given images was found!");
   }
 
   if(pa("-roi")){

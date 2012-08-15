@@ -13,8 +13,8 @@ namespace icl{
       
     public:
 
-    ContainerGUIComponent(const std::string &definitionString, QWidget *parent):
-    GUI(definitionString,parent), component(definitionString){}
+    ContainerGUIComponent(const std::string &type, const std::string &params, QWidget *parent):
+    GUI(type+'('+params+')',parent), component(type, params){}
       
     GUI &operator<<(const GUIComponent &component) const{
       return const_cast<GUI*>(static_cast<const GUI*>(this))->operator<<(component);
@@ -111,38 +111,38 @@ namespace icl{
     ContainerGUIComponent &spacing(int spacing) {
       component.m_options.spacing = spacing; return *this;
     }
-    
+
     protected:
-    virtual std::string createDefinition() const { return component.toString();  }
+    virtual std::string createDefinition() const { return component.toString();  }    
   };
     
   struct HBox : public ContainerGUIComponent{
-    HBox(QWidget *parent=0):ContainerGUIComponent("hbox",parent){}
+    HBox(QWidget *parent=0):ContainerGUIComponent("hbox","",parent){}
   };
     
   struct VBox : public ContainerGUIComponent{
-    VBox(QWidget *parent=0):ContainerGUIComponent("vbox",parent){}
+    VBox(QWidget *parent=0):ContainerGUIComponent("vbox","",parent){}
   };
     
   struct HScroll : public ContainerGUIComponent{
-    HScroll(QWidget *parent=0):ContainerGUIComponent("hscroll",parent){}
+    HScroll(QWidget *parent=0):ContainerGUIComponent("hscroll","",parent){}
   };
     
   struct VScroll : public ContainerGUIComponent{
-    VScroll(QWidget *parent=0):ContainerGUIComponent("vscroll",parent){}
+    VScroll(QWidget *parent=0):ContainerGUIComponent("vscroll","",parent){}
   };
     
   struct HSplit : public ContainerGUIComponent{
-    HSplit(QWidget *parent=0):ContainerGUIComponent("hsplit",parent){}
+    HSplit(QWidget *parent=0):ContainerGUIComponent("hsplit","",parent){}
   };
     
   struct VSplit : public ContainerGUIComponent{
-    VSplit(QWidget *parent=0):ContainerGUIComponent("vsplit",parent){}
+    VSplit(QWidget *parent=0):ContainerGUIComponent("vsplit","",parent){}
   };
     
   struct Tab : public ContainerGUIComponent{
     Tab(const std::string &commaSepTitles,QWidget *parent=0):
-    ContainerGUIComponent("tab"+'('+commaSepTitles+')', parent){}
+    ContainerGUIComponent("tab",commaSepTitles, parent){}
   };
 
 
