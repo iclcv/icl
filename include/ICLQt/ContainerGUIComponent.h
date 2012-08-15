@@ -16,6 +16,14 @@ namespace icl{
     ContainerGUIComponent(const std::string &definitionString, QWidget *parent):
     GUI(definitionString,parent), component(definitionString){}
       
+    GUI &operator<<(const GUIComponent &component) const{
+      return const_cast<GUI*>(static_cast<const GUI*>(this))->operator<<(component);
+    }
+    
+    GUI &operator<<(const GUI &g) const{
+      return const_cast<GUI*>(static_cast<const GUI*>(this))->operator<<(g);
+    }
+
     const ContainerGUIComponent &handle(const std::string &handle) const{
       component.handle(handle); return *this;
     }
@@ -60,6 +68,50 @@ namespace icl{
       component.m_options.spacing = spacing; return *this;
     }
 
+    ContainerGUIComponent &handle( std::string &handle) {
+      component.handle(handle); return *this;
+    }
+    
+    ContainerGUIComponent &label( std::string &label) {
+      component.label(label); return *this;
+    }
+    
+    ContainerGUIComponent &tooltip( std::string &tooltip) {
+      component.tooltip(tooltip); return *this;
+    }
+    
+    ContainerGUIComponent &size( Size &size)  {
+      component.size(size); return *this;
+    }
+    
+    ContainerGUIComponent &size(int w, int h)  {
+      component.size(w,h); return *this;
+    }
+    
+    ContainerGUIComponent &minSize( Size &minSize)  {
+      component.minSize(minSize); return *this;
+    }
+    
+    ContainerGUIComponent &minSize(int w, int h)  {
+      component.minSize(w,h); return *this;
+    }
+    
+    ContainerGUIComponent &maxSize( Size &maxSize)  {
+      component.maxSize(maxSize); return *this;
+    }
+    
+    ContainerGUIComponent &maxSize(int w, int h)  {
+      component.maxSize(w,h); return *this;
+    }
+    
+    ContainerGUIComponent &margin(int margin) {
+      component.m_options.margin = margin; return *this;
+    }
+    
+    ContainerGUIComponent &spacing(int spacing) {
+      component.m_options.spacing = spacing; return *this;
+    }
+    
     protected:
     virtual std::string createDefinition() const { return component.toString();  }
   };
@@ -92,6 +144,7 @@ namespace icl{
     Tab(const std::string &commaSepTitles,QWidget *parent=0):
     ContainerGUIComponent("tab"+'('+commaSepTitles+')', parent){}
   };
+
 
 } // namespace icl
 

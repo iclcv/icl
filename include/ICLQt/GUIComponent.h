@@ -86,6 +86,41 @@ namespace icl{
       return maxSize(Size(w,h));
     }
 
+    GUIComponent &handle( std::string &handle) {
+      m_options.handle = handle; return *this;
+    }
+    
+    GUIComponent &label( std::string &label) {
+      m_options.label = label; return *this;
+    }
+    
+    GUIComponent &tooltip( std::string &tooltip) {
+      m_options.tooltip = tooltip; return *this;
+    }
+    
+    GUIComponent &size( Size &size)  {
+      m_options.size = size; return *this;
+    }
+    
+    GUIComponent &size(int w, int h)  {
+      m_options.size = Size(w,h); return *this;
+    }
+    
+    GUIComponent &minSize( Size &minSize)  {
+      m_options.minSize = minSize; return *this;
+    }
+    
+    GUIComponent &minSize(int w, int h)  {
+      m_options.minSize = Size(w,h); return *this;
+    }
+    
+    GUIComponent &maxSize( Size &maxSize)  {
+      m_options.maxSize = maxSize; return *this;
+    }
+    
+    GUIComponent &maxSize(int w, int h)  {
+      m_options.maxSize = Size(w,h); return *this;
+    }
     
     std::string toString() const {
       std::ostringstream str;
@@ -162,16 +197,56 @@ namespace icl{
     const GUIComponentWithOutput &maxSize(int w, int h) const {
       return maxSize(Size(w,h));
     }
-  };
 
+    GUIComponentWithOutput &out( std::string &out) {
+      m_options.out = out; return *this;
+    }
+    
+    GUIComponentWithOutput &handle( std::string &handle) {
+      m_options.handle = handle; return *this;
+    }
+    
+    GUIComponentWithOutput &label( std::string &label) {
+      m_options.label = label; return *this;
+    }
+    
+    GUIComponentWithOutput &tooltip( std::string &tooltip) {
+      m_options.tooltip = tooltip; return *this;
+    }
+    
+    GUIComponentWithOutput &size( Size &size)  {
+      m_options.size = size; return *this;
+    }
+    
+    GUIComponentWithOutput &size(int w, int h)  {
+      m_options.size = Size(w,h); return *this;
+    }
+    
+    GUIComponentWithOutput &minSize( Size &minSize)  {
+      m_options.minSize = minSize; return *this;
+    }
+    
+    GUIComponentWithOutput &minSize(int w, int h)  {
+      m_options.minSize = Size(w,h); return *this;
+    }
+    
+    GUIComponentWithOutput &maxSize( Size &maxSize)  {
+      m_options.maxSize = maxSize; return *this;
+    }
+    
+    GUIComponentWithOutput &maxSize(int w, int h)  {
+      m_options.maxSize = Size(w,h); return *this;
+    }
+    
+  };
   
   struct Border : public GUIComponent{
     Border(const std::string &label):GUIComponent("border",label){}
   };
 
-  struct Button : public GUIComponent{
+  struct Button : public GUIComponentWithOutput{
     Button(const std::string &text, const std::string &toggledText=""):
-    GUIComponent(toggledText.length() ? "togglebutton" : "button",toggledText.length() ? (text+','+toggledText) : text){}
+    GUIComponentWithOutput(toggledText.length() ? "togglebutton" : "button",toggledText.length() ? (text+','+toggledText) : text){}
   };
     
 
@@ -200,11 +275,17 @@ namespace icl{
   struct Slider : public GUIComponentWithOutput{
     Slider(int min=0, int max=100, int curr=50, bool vertical=false):
     GUIComponentWithOutput("slider",form_args_4(min,max,curr,vertical?"vertical":"horizontal")){}
+
+    Slider(const Range32f &r, int curr, bool vertical=false):
+    GUIComponentWithOutput("slider",form_args_4(r.minVal,r.maxVal,curr,vertical?"vertical":"horizontal")){}
   };
 
   struct FSlider : public GUIComponentWithOutput{
     FSlider(float min=0, float max=1, float curr=0.5, bool vertical=false):
     GUIComponentWithOutput("fslider",form_args_4(min,max,curr,vertical?"vertical":"horizontal")){}
+    
+    FSlider(const Range32f &r, float curr=0.5, bool vertical=false):
+    GUIComponentWithOutput("fslider",form_args_4(r.minVal,r.maxVal,curr,vertical?"vertical":"horizontal")){}
   };
 
   struct Int : public GUIComponentWithOutput{
@@ -316,13 +397,13 @@ namespace icl{
   };
 
   /// [Deprecated]
-  ICL_DEPRECATED struct MultiDrawComponent : public GUIComponent{
+  struct ICL_DEPRECATED MultiDrawComponent : public GUIComponent{
     MultiDrawComponent(const std::string commanSepTabLabels, bool bufferAll=false, bool deepCopyBuffering=true):
     GUIComponent("multidraw",str(bufferAll?"!all":"!one")+','+(deepCopyBuffering?"!deepcopy":"!shallowcopy")+','+commanSepTabLabels){}
   };
 
   /// [Deprecated]
-  ICL_DEPRECATED struct ConfigFileComponent : public GUIComponent{
+  struct ICL_DEPRECATED ConfigFileComponent : public GUIComponent{
     ConfigFileComponent(bool popup=true):GUIComponent("config",popup?"popup":"embedded"){}
   };
     

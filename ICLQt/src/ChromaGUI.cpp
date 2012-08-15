@@ -315,7 +315,7 @@ namespace icl{
                 )
             << Show();
 
-#if 0    
+#ifdef OLD_GUI
     (*this) << "vbox[@handle=image@label=Chromaticity Space@minsize=18x16]";
     
     (*this) << ( GUI("hbox") 

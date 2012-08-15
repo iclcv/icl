@@ -35,6 +35,7 @@
 #include <ICLQt/CamCfgWidget.h>
 
 #include <ICLIO/GenericGrabber.h>
+#include <ICLQt/ContainerGUIComponent.h>
 #include <ICLQt/GUIWidget.h>
 #include <ICLQt/ComboHandle.h>
 #include <ICLQt/BoxHandle.h>
@@ -54,6 +55,8 @@
 #include <QtGui/QPushButton>
 
 
+
+
 namespace icl{
   
 
@@ -66,7 +69,7 @@ namespace icl{
       setInterval(msec);
     }
     virtual void timerEvent(QTimerEvent * e){
-      LabelHandle &l = gui.getValue<LabelHandle>("#i#"+prop);
+      LabelHandle &l = gui.get<LabelHandle>("#i#"+prop);
       (**l).setText(grabber.getValue(prop).c_str());
       (**l).update(); 
       QApplication::processEvents();
@@ -114,6 +117,39 @@ namespace icl{
     
     data->deviceFilter = deviceFilter;
       
+    data->gui = HSplit(this);
+    data->gui <<  ( VSplit()
+                    << Image().handle("image").minSize(8,6).label("preview")
+                    << ( VBox().minSize(18,15).maxSize(100,15)
+                         << ( HBox().label("devices")
+                              << Combo("no devices found").handle("device")
+                              << Button("rescan").handle("scan").maxSize(3,8)
+                            )
+                         << ( HBox()
+                              << Combo("no devices found").handle("format").label("format")
+                              << Combo("no devices found").handle("size").label("size")
+                            )
+                         <<  ( HBox().label("control / FPS")
+                               << Button("capture!","stop").handle("capture").out("grabbing")
+                               << Combo("max 1Hz,max 5Hz,max 10Hz,max 15Hz,max 20Hz,max 25Hz,max 30Hz,max 50Hz,max 100Hz,max 120Hz,!no limit").handle("hz").maxSize(4,2)
+                               << Label("--.--").handle("fps")
+                             )
+                         <<  ( HBox().label("desired params")
+                               << Combo("default,QQVGA,QVGA,VGA,SVGA,XGA,XGAP,UXGA").handle("desired-size").label("size")
+                               << Combo("default,depth8u,depth16s,depth32s,depth32f,depth64f").handle("desired-depth").label("depth")
+                               << Combo("default,formatGray,formatRGB,formatHLS,formatYUV,formatLAB,formatChroma,formatMatrix").handle("desired-format").label("format")
+                             )
+                       )
+                    )
+              <<  ( VBox()
+                    << VBox().handle("props").minSize(10,1).label("properties")
+                    << ( HBox().maxSize(100,2)
+                         << Button("load props").handle("load")
+                         << Button("save props").handle("save")
+                        )
+                   );
+    
+#ifdef OLD_GUI
     data->gui = GUI("hsplit",this);
     
     data->gui <<  ( GUI("vsplit") 
@@ -149,6 +185,7 @@ namespace icl{
                          << "button(save props)[@handle=save]"
                         )
                    );
+#endif
 
     data->gui.create();
 
@@ -159,7 +196,7 @@ namespace icl{
     data->gui.registerCallback(function(this,&icl::CamCfgWidget::callback),"device,scan,format,size,capture,fps,load,save,"
                                "desired-size,desired-depth,desired-format,hz");
     
-    QWidget *w = (*data->gui.getValue<BoxHandle>("props"));
+    QWidget *w = (*data->gui.get<BoxHandle>("props"));
     w->layout()->setContentsMargins(0,0,0,0);
     w->layout()->addWidget(data->scroll = new QScrollArea(w));
     
@@ -199,7 +236,18 @@ namespace icl{
         }
       }
     }
+    data->gui = VBox(this);
+    if(needDeviceCombo){
+      data->gui << Combo("no devices found").handle("device").maxSize(100,2).label("available devices");
+    }
+    data->gui << VBox().handle("props").minSize(10,1).label("properties for device "+devText)
+              << ( HBox().maxSize(100,2)
+                   << Button("load props").handle("load")
+                   << Button("save props").handle("save")
+                 )
+              << Create();
 
+#ifdef OLD_GUI
     data->gui = GUI("vbox",this);
     if(needDeviceCombo){
       data->gui << "combo(no devices found)[@handle=device@maxsize=100x2@label=available devices]";
@@ -210,9 +258,10 @@ namespace icl{
                    << "button(save props)[@handle=save]"
                  );
     data->gui.create();
+#endif
 
     if(needDeviceCombo){
-      ComboHandle devices = data->gui.getValue<ComboHandle>("device");
+      ComboHandle devices = data->gui.get<ComboHandle>("device");
       devices.clear();
       for(unsigned int i=0;i<data->foundDevices.size();++i){
         devices.add("[" + data->foundDevices[i].type + "] ID:" + data->foundDevices[i].id);
@@ -229,7 +278,7 @@ namespace icl{
       data->gui.registerCallback(function(this,&icl::CamCfgWidget::callback),"load,save");
     }
     
-    QWidget *w = (*data->gui.getValue<BoxHandle>("props"));
+    QWidget *w = (*data->gui.get<BoxHandle>("props"));
     w->layout()->setContentsMargins(0,0,0,0);
     w->layout()->addWidget(data->scroll = new QScrollArea(w));
 
@@ -320,20 +369,32 @@ namespace icl{
         std::string handle="#r#"+p;
         SteppingRange<float> r = parse<SteppingRange<float> >(grabber.getInfo(p));
         std::string c = grabber.getValue(p);
+#ifdef OLD_GUI
         gui << "fslider("+str(r.minVal)+","+str(r.maxVal)+","+c+")[@handle="+handle+"@minsize=12x2@label="+pp+"]";
+#endif
+        gui << FSlider(r,parse<float>(c)).handle(handle).minSize(12,2).label(pp);
         ostr << '\1' << handle;
       }else if(pt == "menu" || pt == "value-list" || pt == "valueList"){
         std::string handle = (pt == "menu" ? "#m#" : "#v#")+p;
+#ifdef OLD_GUI
         gui << "combo("+get_combo_content_str(p,grabber)+")[@handle="+handle+"@minsize=12x2@label="+pp+"]";
+#endif
+        gui << Combo(get_combo_content_str(p,grabber)).handle(handle).minSize(12,2).label(pp);
         ostr << '\1' << handle;
       }else if(pt == "command"){
         std::string handle = "#c#"+p;
         ostr << '\1' << handle;
+#ifdef OLD_GUI
         gui << "button("+pp+")[@handle="+handle+"@minsize=12x2]";
+#endif
+        gui << Button(pp).handle(handle).minSize(12,2);
       }else if(pt == "info"){
         std::string handle = "#i#"+p;
         ostr << '\1' << handle;
+#ifdef OLD_GUI
         gui << "label(unknown)[@handle="+handle+"@minsize=12x2@label="+p+"]";
+#endif
+        gui << Label("unknown").handle(handle).minSize(12,2).label(p);
         int volatileness = grabber.isVolatile(p);
         if(volatileness){
           timers.push_back(new VolatileUpdater(volatileness,p,gui,grabber));
@@ -393,8 +454,8 @@ namespace icl{
       }
 
       if(data->complex){
-        ComboHandle &fmt = data->gui.getValue<ComboHandle>("format");
-        ComboHandle &siz = data->gui.getValue<ComboHandle>("size");
+        ComboHandle &fmt = data->gui.get<ComboHandle>("format");
+        ComboHandle &siz = data->gui.get<ComboHandle>("size");
         fmt.clear();
         siz.clear();
       }
@@ -419,8 +480,8 @@ namespace icl{
         data->scroll->setWidget(data->propGUI.getRootWidget());
 
         if(data->complex){
-          ComboHandle &fmt = data->gui.getValue<ComboHandle>("format");
-          ComboHandle &siz = data->gui.getValue<ComboHandle>("size");
+          ComboHandle &fmt = data->gui.get<ComboHandle>("format");
+          ComboHandle &siz = data->gui.get<ComboHandle>("size");
         
           std::vector<std::string> fmts = tok(strip(data->grabber.getInfo("format"),'{','}'),"\",",false);
           std::vector<std::string> sizes = tok(strip(data->grabber.getInfo("size"),'{','}'),",");
@@ -438,8 +499,8 @@ namespace icl{
         }
         
       }catch(const std::exception &x){
-        ComboHandle &fmt = data->gui.getValue<ComboHandle>("format");
-        ComboHandle &siz = data->gui.getValue<ComboHandle>("size");
+        ComboHandle &fmt = data->gui.get<ComboHandle>("format");
+        ComboHandle &siz = data->gui.get<ComboHandle>("size");
 
         fmt.add("no devices found");
         siz.add("no devices found");
@@ -523,7 +584,7 @@ namespace icl{
   void CamCfgWidget::scan(){
     data->scanScope = true;
     
-    ComboHandle &devices = data->gui.getValue<ComboHandle>("device");
+    ComboHandle &devices = data->gui.get<ComboHandle>("device");
     devices.clear();
     data->foundDevices = GenericGrabber::getDeviceList(data->deviceFilter);
     if(data->foundDevices.size()){
@@ -538,7 +599,7 @@ namespace icl{
   }
 
   void CamCfgWidget::run(){
-    bool &b = data->gui.getValue<bool>("grabbing");
+    bool &b = data->gui.get<bool>("grabbing");
     data->mutex.lock();
     while(1){
       if(data->end){
