@@ -40,9 +40,9 @@ GenericGrabber grabber;
 void init(){
   grabber.init(pa("-i"));
   
-  gui << "image[@handle=image]" << "!show";
+  gui << Image().handle("image") << Show();
   
-  ICLWidget *w = *gui.getValue<ImageHandle>("image");
+  ICLWidget *w = *gui.get<ImageHandle>("image");
   
   ImgQ x = scale(create("parrot"),100,100);
   w->addSpecialButton("im",&x,function((ICLWidget*)w,&ICLWidget::captureCurrentImage),"capture current image");

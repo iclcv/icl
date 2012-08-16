@@ -38,31 +38,35 @@
 #include <ICLUtils/Random.h>
 #include <deque>
 
-GUI gui("hbox");
+HBox gui;
 
 void init(){
-  std::string gl = pa("-gl") ? "gl" : "noGL";
-  gui << (GUI("vbox") 
-          << "plot(0,6.5,-1,1,"+gl+")[@handle=plot1@minsize=15x12]"
-          << "plot(0,6.5,-1,1,"+gl+")[@handle=plot2@minsize=15x12]"
-          << "plot(-5,5,-5,5,"+gl+")[@handle=plot9@minsize=15x12]"
+  bool gl = pa("-gl");
+  gui << ( VBox()
+           << Plot(0,6.5,-1,1,gl).handle("plot1").minSize(15,12)
+           << Plot(0,6.5,-1,1,gl).handle("plot2").minSize(15,12)
+           << Plot(-5,5,-5,5,gl).handle("plot9").minSize(15,12)
+           )
+      << ( VBox()
+           << Plot(0,6.5,-1,1,gl).handle("plot3").minSize(15,12) 
+           << Plot(0,6.5,-1,1,gl).handle("plot4").minSize(15,12)
+           << Plot(0,0,0,0,gl).handle("plot10").minSize(15,12) 
+           )
+      << (VBox()
+          << Plot(-9,9,-9,9,gl).handle("plot5").minSize(15,12) 
+          << Plot(0,0,0,0,gl).handle("plot6").minSize(15,12) 
+          << Plot(0,0,0,0,gl).handle("plot11").minSize(15,12)
           )
-      << (GUI("vbox") 
-          << "plot(0,6.5,-1,1,"+gl+")[@handle=plot3@minsize=15x12]" 
-          << "plot(0,6.5,-1,1,"+gl+")[@handle=plot4@minsize=15x12]"
-          << "plot(0,0,0,0,"+gl+")[@handle=plot10@minsize=15x12]" 
+      << (VBox()
+          << Plot(0,0,0,0,gl,"something [pi]").handle("plot7").minSize(15,12) 
+          << Plot(0,0,0,0,gl).handle("plot8").minSize(15,12) 
+          << Plot(0,0,0,0,gl).handle("plot12").minSize(15,12)
+          << CheckBox("animate",true).out("run")
           )
-      << (GUI("vbox") 
-          << "plot(-9,9,-9,9,"+gl+")[@handle=plot5@minsize=15x12]" 
-          << "plot(0,0,0,0,"+gl+")[@handle=plot6@minsize=15x12]" 
-          << "plot(0,0,0,0,"+gl+")[@handle=plot11@minsize=15x12]"
-          )
-      << (GUI("vbox") 
-          << "plot(0,0,0,0,"+gl+",something [pi])[@handle=plot7@minsize=15x12]" 
-          << "plot(0,0,0,0,"+gl+")[@handle=plot8@minsize=15x12]" 
-          << "plot(0,0,0,0,"+gl+")[@handle=plot12@minsize=15x12]"
-          << "checkbox(animate,checked)[@out=run]"
-         ) << "!show";
+      << Show();
+
+      
+
 }
 
 void run(){

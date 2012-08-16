@@ -359,6 +359,12 @@ namespace icl{
          const std::string &xLabel="",
          const std::string &yLabel=""): 
     GUIComponent("plot",form_args(xRange,xRange, useOpenGL, xLabel, yLabel)){}
+
+    Plot(float minX=0, float maxX=0, float minY=0, float maxY=0,
+         bool useOpenGL=false,
+         const std::string &xLabel="",
+         const std::string &yLabel=""): 
+    GUIComponent("plot",form_args(Range32f(minX,maxX),Range32f(minY,maxY), useOpenGL, xLabel, yLabel)){}
   };
     
   struct Combo : public GUIComponent{
