@@ -80,10 +80,10 @@ struct A : public Configurable{
 
 
 void init(){
-  gui << "prop(a)[@label=properties of a]" 
-      << "prop(a)[@label=also properties of a]" 
-      << "prop(c)[@label=properties of c only]" 
-      << "!show";
+  gui << Prop("a").label("properties of a")
+      << Prop("a").label("also properties of a")
+      << Prop("c").label("properties of c only")
+      << Show();
 }
 
 

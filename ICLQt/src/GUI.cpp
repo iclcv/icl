@@ -2413,7 +2413,7 @@ public:
 
     StrTok tok(handleNamesList,delims);
     while(tok.hasMoreTokens()){
-      getValue<GUIHandleBase>(tok.nextToken(),false).registerCallback(cb);
+      get<GUIHandleBase>(tok.nextToken(),false).registerCallback(cb);
     }
   }
 
@@ -2422,7 +2422,7 @@ public:
 
     StrTok tok(handleNamesList,delims);
     while(tok.hasMoreTokens()){
-      getValue<GUIHandleBase>(tok.nextToken(),false).removeCallbacks();
+      get<GUIHandleBase>(tok.nextToken(),false).removeCallbacks();
     }
   }
 

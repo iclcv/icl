@@ -38,7 +38,7 @@
 using namespace icl;
 using namespace std;
 
-GUI gui("hbox");
+HBox gui;
 ChromaGUI *cg;
 GenericGrabber grabber;
 
@@ -63,15 +63,23 @@ void run(){
 void init(){
   grabber.init(pa("-i"));
   grabber.useDesired(depth8u);
-
+#ifdef OLD_GUI
   gui << ( GUI("vbox")  
            << "image[@minsize=16x12@handle=image@label=Camera Image]" 
            << "image[@minsize=16x12@handle=segimage@label=Semented Image]" 
          )
       << "hbox[@handle=box]"  
       << "!show";
+#endif
+  gui << ( VBox()  
+           << Image().minSize(16,12).handle("image").label("Camera Image")
+           << Image().minSize(16,12).handle("segimage").label("Semented Image")
+           )
+      << HBox().handle("box")
+      << Show();
+
   
-  cg = new ChromaGUI(*gui.getValue<BoxHandle>("box"));
+  cg = new ChromaGUI(*gui.get<BoxHandle>("box"));
 
 }
 

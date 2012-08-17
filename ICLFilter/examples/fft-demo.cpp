@@ -38,8 +38,8 @@
 GenericGrabber grabber;
 GUI gui("hsplit");
 void run(){
-  gui_ComboHandle(resultMode);
-  gui_ComboHandle(sizeAdMode);
+  ComboHandle resultMode = gui["resultMode"];
+  ComboHandle sizeAdMode = gui["sizeAdMode"];
   
   static FFTOp fft(FFTOp::LOG_POWER_SPECTRUM,FFTOp::NO_SCALE);
   fft.setResultMode((FFTOp::ResultMode)(int)resultMode);
@@ -69,7 +69,7 @@ void init(){
   
   gui.show();
   
-  gui_ImageHandle(result);
+  ImageHandle result = gui["result"];
   result-> setRangeMode(ICLWidget::rmAuto);
 }
 
