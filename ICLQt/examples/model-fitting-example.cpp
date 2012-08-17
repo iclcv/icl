@@ -151,6 +151,7 @@ void compute(){
 }
 
 void init(){
+#ifdef OLD_GUI
   gui << "plot[@handle=plot@minsize=30x30]"
       << (GUI ("vbox")
           << "combo(line,circle)[@handle=what]"
@@ -163,6 +164,20 @@ void init(){
              )
           )
       << "!show";
+#endif
+  gui << Plot().handle("plot").minSize(30,30)
+      << (VBox()
+          << Combo("line,circle").handle("what")
+          << CheckBox("ransac").handle("ransac")
+          << Button("new data").handle("new")
+          << Button("stopped","running").handle("run")
+          << ( HBox()
+               << FSlider(0.01,1,0.2,true).out("noise").label("noise").tooltip("noise factor")
+               << Slider(0,100,30,true).out("random").label("good %").tooltip("percentage of non-random points")
+              )
+          )
+      << Show();
+
   
   gui["what"].registerCallback(compute);
   gui["new"].registerCallback(compute);

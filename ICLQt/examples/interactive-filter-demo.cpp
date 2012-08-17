@@ -37,7 +37,7 @@
 
 
 GUI gui;
-GenericGrabber *grabber = 0;
+GenericGrabber grabber;
 int x,y;
 int r,g,b;
 ConvolutionKernel::fixedType k;
@@ -72,7 +72,7 @@ void mouse(const MouseEvent &event){
 void run(){
   static DrawHandle draw = gui["draw"];
 
-  const ImgBase *grabbedImage = grabber->grab();
+  const ImgBase *grabbedImage = grabber.grab();
   draw = grabbedImage;
   
   if(x>0){ // else no mouse event has been recognized yet
@@ -115,11 +115,10 @@ void run(){
 
 
 void init(){
-  grabber = new GenericGrabber(pa("-i"));
-  grabber->resetBus();
+  grabber.init(pa("-i"));
 
-  gui << "draw[@handle=draw@minsize=16x12]";
-  gui.show();
+  gui << Draw().handle("draw").minSize(16,12) << Show();
+
   gui["draw"].install(new MouseHandler(mouse));
 }
 
