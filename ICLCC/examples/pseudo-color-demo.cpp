@@ -36,7 +36,7 @@
 #include <ICLQuick/Common.h>
 #include <ICLCC/PseudoColorConverter.h>
 
-GUI gui("hsplit");
+HSplit gui;
 GenericGrabber grabber;
 PseudoColorConverter pcc;
 Img8u color,image;
@@ -69,12 +69,21 @@ void step(const std::string &handle){
 
 void stop_chooser(GUI &dst, int idx,float pos, float r, float g, float b){
   std::string si = str(idx);
-  std::string sp = str(pos);
-  
+
+#ifdef OLD_GUI  
   dst <<( GUI("hbox") 
           << "checkbox(use,checked)[@out=use"+si+"@handle="+si+"]"
           << "fslider(0,1,"+sp+")[@out=relPos"+si+"@handle=p"+si+"]"
           << "color("+str(r)+","+str(g)+","+str(b)+")[@out=color"+si+"@handle=c"+si+"]" );
+#endif
+
+  dst << ( HBox() 
+           << CheckBox("use",true).out("use"+si).handle(si)
+           << FSlider(0,1,pos).out("relPos"+si).handle("p"+si)
+           << ColorSelect(r,g,b).out("color"+si).handle("c"+si) 
+           );
+
+
 }
 
 void init(){
@@ -90,8 +99,9 @@ void init(){
     }
   }
   
-  GUI colors("vbox[@minsize=18x1]");
-  colors << "checkbox(use custom gradient below,unchecked)[@out=custom@handle=customH]";
+  GUI colors = ( VBox().minSize(18,1)
+                 << CheckBox("use custom gradient below").out("custom").handle("customH")
+               );
   stop_chooser(colors,0,0.1,0,0,0);
   stop_chooser(colors,1,0.2,0,255,0);
   stop_chooser(colors,2,0.3,0,255,255);
@@ -99,13 +109,26 @@ void init(){
   stop_chooser(colors,4,0.5,255,0,255);
   stop_chooser(colors,5,0.6,255,255,255);
   
+#ifdef OLD_GUI
   colors << ( GUI("hbox") << "button(load)[@handle=load]" << "button(save)[@handle=save]" ); 
   
   gui << ( GUI("vbox") 
            << "image[@handle=color@minsize=32x10]" 
            << "image[@handle=image@minsize=32x24]"
          ) << colors << "!show";
+#endif
 
+  colors << ( HBox() 
+              << Button("load").handle("load")
+              << Button("save").handle("save") 
+             ); 
+  
+  gui << ( VBox() 
+           << Image().handle("color").minSize(32,10) 
+           << Image().handle("image").minSize(32,24)
+         ) 
+      << colors 
+      << Show();
   
   gui.registerCallback(icl::function(step),"customH,load,save");
   for(int i=0;i<6;++i){
