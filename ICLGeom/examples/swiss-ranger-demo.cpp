@@ -200,6 +200,7 @@ void mouse(const MouseEvent &evt){
 }
 
 void init(){
+#ifdef OLD_GUI
   gui << ( GUI ("tab(2D,3D)[@handle=tab]")
            << "draw[@handle=draw@minsize=32x24]"
            << "draw3D[@handle=draw3D@minsize=32x24]"
@@ -221,15 +222,35 @@ void init(){
   //con << "camcfg";
   gui << con;
   gui.show();
+#endif
+
+  gui << ( Tab("2D,3D").handle("tab")
+           << Draw().handle("draw").minSize(32,24)
+           << Draw3D().handle("draw3D").minSize(32,24)
+         )
+      << ( VBox().maxSize(12,100)
+           << Button("off","!on").out("grab").label("grab loop")
+           << Button("off","!on").out("pp").label("median")
+           << ( VBox().label("3D vis ")
+                << CheckBox("points",true).out("points")
+                << CheckBox("lines").out("lines")
+                << CheckBox("fill").out("fill")
+                << CheckBox("image").out("imageOn")
+                << Spinner(1,10,2).out("pointSize").label("point size")
+                << Combo("solid,depth,intensity,confidence").handle("visColor")
+                << Button("reset pos").handle("resPos")
+                )
+           )
+      << Show();
   
-  gui["draw"].install(new MouseHandler(mouse));
+  gui["draw"].install(mouse);
   
   grabber = new GenericGrabber(pa("-i"));
   
   CAM = Camera(*pa("-input",2));
 
-  gui_DrawHandle(draw);
-  gui_DrawHandle3D(draw3D);
+  static DrawHandle draw = gui["draw"];
+  static DrawHandle3D draw3D = gui["draw3D"];
   (*draw)->setRangeMode(ICLWidget::rmAuto);
 
   float data[] = {0,0,0,1000,1000,1000};
@@ -252,13 +273,12 @@ void init(){
 }
 
 
-void run(){
-  gui_DrawHandle(draw);
-  gui_ButtonHandle(resPos);
-  ICLDrawWidget &w = **draw;
-  gui_bool(grab);
-  gui_bool(pp);
-
+void run(){ 
+  DrawHandle draw = gui["draw"];
+  static ButtonHandle resPos = gui["resPos"];
+  static ICLDrawWidget &w = **draw;
+  bool grab = gui["grab"];
+  bool pp = gui["pp"];
   
   if(grab){
     const ImgBase *image = grabber->grab();
@@ -284,14 +304,15 @@ void run(){
 
   draw.render();
 
-  gui_TabHandle(tab);
-  gui_DrawHandle3D(draw3D);
-  gui_ComboHandle(visColor);
-  gui_bool(points);
-  gui_bool(lines);
-  gui_bool(fill);
-  gui_bool(imageOn);
-  gui_int(pointSize);
+
+  static TabHandle tab = gui["tab"];
+  static DrawHandle3D draw3D = gui["draw3D"];
+  static ComboHandle visColor = gui["visColor"];
+  bool points = gui["points"];
+  bool lines = gui["lines"];
+  bool fill = gui["fill"];
+  bool imageOn = gui["imageOn"];
+  int pointSize = gui["pointSize"];
 
   if(resPos.wasTriggered()){
     scene.getCamera(0) = scene.getCamera(1);

@@ -13,7 +13,7 @@ namespace icl{
     
     public:
     struct Options {
-    Options():margin(-1),spacing(-1){}
+    Options():margin(-1),spacing(-1), hide(false){}
       std::string handle;
       std::string out;
       std::string in;
@@ -24,6 +24,7 @@ namespace icl{
       Size minSize;
       Size maxSize;
       Size size;
+      bool hide;
     };
     protected:
     mutable Options m_options;
@@ -86,6 +87,10 @@ namespace icl{
       return maxSize(Size(w,h));
     }
 
+    const GUIComponent &hideIf(bool flag) const{
+      if(flag) m_options.hide = true; return *this;
+    }
+
     GUIComponent &handle( std::string &handle) {
       m_options.handle = handle; return *this;
     }
@@ -121,8 +126,13 @@ namespace icl{
     GUIComponent &maxSize(int w, int h)  {
       m_options.maxSize = Size(w,h); return *this;
     }
+
+    GUIComponent &hideIf(bool flag)  {
+      if(flag) m_options.hide = true; return *this;
+    }
     
     std::string toString() const {
+      if(m_options.hide) return "";
       std::ostringstream str;
       str << m_type;
       if(m_params.length()){

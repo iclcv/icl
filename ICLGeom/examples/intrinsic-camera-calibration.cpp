@@ -112,7 +112,7 @@ void update_warp_map(ImgQ &WARP_MAP=::WARP_MAP, double *dist=DIST_FACTOR){
 
 void vis_som(SOM2D  &som, int gridW, int gridH){
   
-  static DrawHandle &d = gui.getValue<DrawHandle>("image");
+  static DrawHandle &d = gui.get<DrawHandle>("image");
   static ICLDrawWidget &w = **d;
   ImgQ ps = zeros(gridW,gridH,2);
   
@@ -142,7 +142,7 @@ void vis_som(SOM2D  &som, int gridW, int gridH){
 
 std::vector<Point32f> sort_points(const std::vector<Point32f> points, int gridW, int gridH, int imageW, int imageH){
   static std::vector<Range32f> initBounds(2,Range32f(0,1));
-  static DrawHandle &d = gui.getValue<DrawHandle>("image");
+  static DrawHandle &d = gui.get<DrawHandle>("image");
   static ICLDrawWidget &w = **d;
 
   randomSeed();
@@ -200,7 +200,7 @@ std::vector<Point32f> sort_points(const std::vector<Point32f> points, int gridW,
     }
     w.render();
     
-    btn = QMessageBox::question(*gui.getValue<DrawHandle>("image"),
+    btn = QMessageBox::question(*gui.get<DrawHandle>("image"),
                                 "please confirm ...","Is this tesselation correct?",
                                 QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
     if(btn == QMessageBox::Cancel) throw ICLException("cancel pressed");
@@ -211,7 +211,7 @@ std::vector<Point32f> sort_points(const std::vector<Point32f> points, int gridW,
 void optimize_params(){
   Mutex::Locker l(MUTEX);
   
-  if(gui.getValue<bool>("use-stochastic-opt")){
+  if(gui.get<bool>("use-stochastic-opt")){
     calc_distortion_stochastic_search(CALIB_DATA,IMAGE.getWidth(),IMAGE.getHeight(),DIST_FACTOR);  
   }else{
     calc_distortion(CALIB_DATA,IMAGE.getWidth(),IMAGE.getHeight(),DIST_FACTOR);
@@ -239,7 +239,7 @@ void set_state(bool good){
     text(iBad,2,0,"searching");
     
   }
-  static ImageHandle &h = gui.getValue<ImageHandle>("state");
+  static ImageHandle &h = gui.get<ImageHandle>("state");
   h = good ? iGood : iBad;
 }
 
@@ -257,10 +257,10 @@ void man_show_cb(){
 
 void manual_adjust_cb(){
   Mutex::Locker l(MUTEX);
-  gui_LabelHandle(manErr);
+  static LabelHandle manErr = gui["manErr"];
   
-  gui_float(manScale);
-  gui_float(manDist);
+  float manScale = gui["manScale"];
+  float manDist = gui["manDist"];
   
   MAN_DIST_FACTOR[0] = currPos.x;
   MAN_DIST_FACTOR[1] = currPos.y;
@@ -281,7 +281,7 @@ void mouse(const MouseEvent &evt){
 
 void manual_adjust(){
   Mutex::Locker l(MUTEX);
-  static DrawHandle &d = gui.getValue<DrawHandle>("image");
+  static DrawHandle &d = gui.get<DrawHandle>("image");
   static ICLDrawWidget &w = **d;
 
   static WarpOp warp(MAN_WARP_MAP);
@@ -291,8 +291,8 @@ void manual_adjust(){
   w.color(0,100,255,255);
   w.fill(0,100,255,100);
   w.rect(currPos.x-3,currPos.y-3,6,6);
-  
-  gui_bool(manShowGrid);
+
+  bool manShowGrid = gui["manShowGrid"];
   
   static const int NX = 20;
   static const int NY = 15;
@@ -316,22 +316,22 @@ void manual_adjust(){
 
 void detect_vis(bool add=false){
   Mutex::Locker l(MUTEX);
-  static DrawHandle &d = gui.getValue<DrawHandle>("image");
+  static DrawHandle &d = gui.get<DrawHandle>("image");
   static ICLDrawWidget &w = **d;
 
   static Img32f grayIm(IMAGE.getSize(),formatGray);
   cc(&IMAGE,&grayIm);
   
   static LocalThresholdOp lt(35,-10,0);
-  static int &threshold = gui.getValue<int>("thresh");
-  static int &maskSize = gui.getValue<int>("mask-size");
+  static int &threshold = gui.get<int>("thresh");
+  static int &maskSize = gui.get<int>("mask-size");
   lt.setGlobalThreshold(threshold);
   lt.setMaskSize(maskSize);
   
   static ImgBase *ltIm = 0;
   lt.apply(&grayIm,&ltIm);
 
-  gui_bool(useMorph);
+  bool useMorph = gui["useMorph"];
 
   static ImgBase *moIm = 0;
   static MorphologicalOp morph(MorphologicalOp::dilate3x3);
@@ -340,10 +340,10 @@ void detect_vis(bool add=false){
   
 
   static RegionDetector rd(100,50000,0,0);
-  rd.setConstraints(gui.getValue<int>("min-blob-size"),50000,0,0);
+  rd.setConstraints(gui.get<int>("min-blob-size"),50000,0,0);
   const std::vector<ImageRegion> &rs = rd.detect(useMorph ? moIm : ltIm);
   
-  static std::string &vis = gui.getValue<std::string>("vis");
+  std::string vis = gui["vis"];
 
   if(vis == "color"){
     d  = IMAGE;  
@@ -378,7 +378,7 @@ void detect_vis(bool add=false){
   }
   std::vector<Point32f> pts;
   for(unsigned int i=0;i<rs.size();++i){
-    static float &minFormFactor = gui.getValue<float>("min-form-factor");
+    static float &minFormFactor = gui.get<float>("min-form-factor");
     bool warpX = (vis == "warp") || (vis == "warp-field") || (vis == "warp-map");
     if(rs[i].getFormFactor() < minFormFactor){
       if(!add && !warpX){
@@ -421,7 +421,7 @@ void add(void){
 }
 
 void save_warp_map(){
-  static DrawHandle &d = gui.getValue<DrawHandle>("image");
+  static DrawHandle &d = gui.get<DrawHandle>("image");
   
   std::string defName = str("./warp-map-")+str(WARP_MAP.getSize())+
   "-"+str(DIST_FACTOR[0])+"-"+str(DIST_FACTOR[1])+"-"+str(DIST_FACTOR[2])+"-"+str(DIST_FACTOR[3])+".icl";
@@ -480,8 +480,8 @@ void init(){
   if(pa("-cp")){
     create_pattern_gui();
   }
- 
-  
+
+#ifdef OLD_GUI
   gui << "draw[@minsize=32x24@handle=image]";
   GUI controls("vbox[@minsize=10x1]");
   controls << "image[@maxsize=100x2@minsize=5x2label=state@handle=state]";
@@ -511,19 +511,48 @@ void init(){
   
   gui << ( GUI("tab(auto,manual)[@handle=tab]") << controls << manCont );
   gui.show();
+#endif 
+  
+  gui << Draw().minSize(32,24).handle("image");
+  
+  GUI controls = VBox().minSize(10,1);
+  controls << Image().maxSize(100,2).minSize(5,2).label("state").handle("state")
+           << Combo("color,gray,thresh,morph,warp,warp-field,warp-map").handle("vis").label("visualization")
+           << Button("off","on").out("grab-loop-val").handle("grab-loop").label("grab loop")
+           << FSlider(0.8,2.0,1.1).out("min-form-factor").label("roundness")
+           << Slider(10,10000,500).out("min-blob-size").label("min blob size")
+           << (VBox().label("local threshold")
+               << Slider(2,100,10).out("mask-size").label("mask size")
+               << Slider(pa("-t",0),pa("-t",1),-10).out("thresh").label("threshold")
+              )
+           << Button("no","yes").out("useMorph").label("use morphed image")
+           << Button("add").handle("add")
+           << Button("no","yes").out("use-stochastic-opt").label("stochastic mode")
+           << Button("optimize").handle("optimize")
+           << Button("save").handle("save");
+  
+  GUI manCont = VBox().minSize(10,1);
+  manCont <<  ( HBox()
+                << FSlider(-100,1500,0,true).out("manDist").label("dist").handle("manDistH")
+                << FSlider(-1,1,0,true).out("manScale").label("scale").handle("manScaleH")
+                )
+          << Label("---").maxSize(100,2).handle("manErr")
+          << Button("off","on").maxSize(100,2).out("manShowGrid").label("grid")
+          << Button("write").maxSize(100,2).handle("manWrite").handle("manWriteH");
+
+  gui << ( Tab("auto,manual").handle("tab") 
+           << controls 
+           << manCont 
+           )
+      << Show();
 
   gui.registerCallback(manual_adjust_cb,"manDistH,manScaleH");
   gui.registerCallback(man_show_cb,"manWriteH");
-  gui["image"].install(new MouseHandler(mouse));
+  gui["image"].install(mouse);
   
   
-  //  gui.getValue<ButtonHandle>("detect").registerCallback(new GUI::Callback(detect));
-  (*gui.getValue<ButtonHandle>("grab-loop"))->setChecked(true);
-
-  //  (*gui.getValue<ImageHandle>("state"))->setFitMode(ICLWidget::fmFit);
-  (*gui.getValue<ImageHandle>("state"))->setMenuEnabled(false);
-
-  
+  gui.get<ButtonHandle>("grab-loop")->setChecked(true);
+  gui.get<ImageHandle>("state")->setMenuEnabled(false);
 
   CALIB_DATA.data.reserve(10);
 
@@ -534,13 +563,13 @@ void init(){
 
 void run(){
 
-  static DrawHandle &d = gui.getValue<DrawHandle>("image");
+  static DrawHandle &d = gui.get<DrawHandle>("image");
   static ICLDrawWidget &w = **d;
-  static bool &grab = gui.getValue<bool>("grab-loop-val");
-  //static ButtonHandle &add = gui.getValue<ButtonHandle>("add");
-  static ButtonHandle &opt = gui.getValue<ButtonHandle>("optimize");
+  static bool &grab = gui.get<bool>("grab-loop-val");
+  //static ButtonHandle &add = gui.get<ButtonHandle>("add");
+  static ButtonHandle &opt = gui.get<ButtonHandle>("optimize");
   
-  gui_TabHandle(tab);
+  static TabHandle tab=gui["tab"];
   
   if(grab){
     Mutex::Locker l(MUTEX);
@@ -577,5 +606,5 @@ int main(int n, char **ppc){
    "local threshold operators slider for threshold adjustment");
   return ICLApp(n,ppc,"-nx(int=5) -ny(int=4) [m]-input|-i(device,device-params) "
                 "-cp -init(float=0,float=0,float=0,float=0) "
-                "-thresh-range(min=-20,max=20)",init,run).exec();
+                "-thresh-range|-t(min=-20,max=20)",init,run).exec();
 }

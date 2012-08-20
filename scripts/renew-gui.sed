@@ -35,9 +35,9 @@ s/"float(\([^)]*\))/Float\(\1\)/g
 s/"string("\([^"]*\)",\([0-9]*\))/String\("\1",\2\)/g
 s/"disp(\([^)]*\))/Disp\("\1"\)/g
 s/"image/Image\(\)/g
-s/"draw/Draw()/g
 s/"draw3D/Draw3D\(\)/g
 s/"draw3d/Draw3D\(\)/g
+s/"draw/Draw()/g
 s/"plot(\([^)]*\))/Plot\("\1"\)/g
 s/"plot/Plot\()/g
 s/"combo(\([^)]*\))/Combo\("\1"\)/g

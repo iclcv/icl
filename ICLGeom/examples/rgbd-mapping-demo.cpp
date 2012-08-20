@@ -57,6 +57,7 @@ void init(){
                                              *pa("-d",0), *pa("-d",1),
                                              *pa("-c",0), *pa("-c",1) );
 
+#ifdef OLD_GUI
   gui << ( GUI("vbox")
            << "image[@handle=color@label=color image]"
            << "image[@handle=depth@label=depth image]"
@@ -69,6 +70,20 @@ void init(){
              << "checkbox(show overlay,checked)[@out=showOverlay]"
              )
       << "!show";
+#endif
+
+  gui << ( VBox()
+           << Image().handle("color").label("color image")
+           << Image().handle("depth").label("depth image")
+           )
+      <<( VBox()
+          << Draw3D().handle("overlay").label("mapped color image overlay")
+          << Draw3D().handle("scene").label("interactive scene")
+          )
+      <<( VBox()
+          << CheckBox("show overlay",true).out("showOverlay")
+          )
+      << Show();
 
 
   // kinect camera

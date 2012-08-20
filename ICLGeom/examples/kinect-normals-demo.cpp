@@ -61,7 +61,7 @@ void init(){
   grabColor.init("kinectc","kinectc=0");
   grabDepth.useDesired(depth32f, size, formatMatrix);
   grabColor.useDesired(depth8u, size, formatRGB);
-    
+#ifdef OLD_GUI
   GUI controls("vbox[@minsize=12x2]");
   controls << "fps(10)[@handle=fps]"
 	   << "fslider(0.7,1.0,0.89)[@out=threshold@label=threshold@handle=thresholdHandle]"
@@ -79,16 +79,33 @@ void init(){
       << "image[@handle=edge@minsize=16x12]"
       << controls
       << "!show";
+  #endif
+  GUI controls = VBox().minSize(12,2);
+  controls << Fps(10).handle("fps")
+           << FSlider(0.7,1.0,0.89).out("threshold").label("threshold").handle("thresholdHandle")
+           << ButtonGroup("unfiltered,median3x3,median5x5").handle("usedFilter")
+           << Slider(1,15,2).out("normalrange").label("normal range").handle("normalrangeHandle")
+           << Button("disable averaging","enable averaging").out("disableAveraging")
+           << Slider(1,15,1).out("avgrange").label("averaging range").handle("avgrangeHandle")
+           << ButtonGroup("max,mean").handle("usedAngle")
+           << Slider(1,15,3).out("neighbrange").label("neighborhood range").handle("neighbrangeHandle")
+           << Button("disable CL","enable CL").out("disableCL");
   
-  usedFilterHandle= gui.getValue<ButtonGroupHandle>("usedFilter");
+  gui << Image().handle("depth").minSize(16,12)
+      << Image().handle("color").minSize(16,12)
+      << Image().handle("angle").minSize(16,12)
+      << Image().handle("edge").minSize(16,12)
+      << controls
+      << Show();
+
+  usedFilterHandle= gui.get<ButtonGroupHandle>("usedFilter");
   usedFilterHandle.select(1);
-  usedAngleHandle= gui.getValue<ButtonGroupHandle>("usedAngle");
+  usedAngleHandle= gui.get<ButtonGroupHandle>("usedAngle");
   usedAngleHandle.select(0);
 	
-  gui_ImageHandle(depth);
-  depth->setRangeMode(ICLWidget::rmAuto);
-  gui_ImageHandle(angle);
-  angle->setRangeMode(ICLWidget::rmAuto);
+
+  gui.get<ImageHandle>("depth")->setRangeMode(ICLWidget::rmAuto);
+  gui.get<ImageHandle>("angle")->setRangeMode(ICLWidget::rmAuto);
 }
 
 void run(){
@@ -112,7 +129,7 @@ void run(){
   timeval start, end;
   gettimeofday(&start, 0);
 
-  usedFilterHandle = gui.getValue<ButtonGroupHandle>("usedFilter");
+  usedFilterHandle = gui.get<ButtonGroupHandle>("usedFilter");
   if(usedFilterHandle.getSelected()==1){ //median 3x3
     normalEstimator->setMedianFilterSize(3);
   }
@@ -125,7 +142,7 @@ void run(){
 
   normalEstimator->setNormalCalculationRange(normalrange);	
   normalEstimator->setNormalAveragingRange(avgrange);	
-  usedAngleHandle = gui.getValue<ButtonGroupHandle>("usedAngle");
+  usedAngleHandle = gui.get<ButtonGroupHandle>("usedAngle");
   if(usedAngleHandle.getSelected()==0){//max
     normalEstimator->setAngleNeighborhoodMode(0);
   }

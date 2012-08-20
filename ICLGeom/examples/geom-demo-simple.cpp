@@ -66,8 +66,10 @@ void reload_obj(){
   scene.addObject(o);
 }
 
+
 void init(){
   // create graphical user interface
+#ifdef OLD_GUI
   GUI ctrl("hbox[@maxsize=100x3]");
   ctrl << "fslider(0.5,20,3)[@out=f@handle=focal@label=focal length@maxsize=100x3]";
   if(pa("-o")){
@@ -75,6 +77,16 @@ void init(){
   }
   
   gui << "draw3D[@minsize=16x12@handle=draw@label=scene view]" << ctrl << "!show";
+#endif
+  
+  gui << Draw3D().minSize(16,12).handle("draw").label("scene view") 
+      << ( HBox()
+           << FSlider(0.5,20,3).out("f").handle("focal").label("focal length").maxSize(100,3)
+           << Button("reload").handle("reload").hideIf(!pa("-o"))
+         )
+      << Show();
+  
+
   
   // create camera and add to scene instance
   Camera cam(Vec(0,0,-10), // position

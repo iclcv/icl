@@ -111,6 +111,7 @@ void init(){
 	std::string dev = "file";
 	cg->init(dev,dev+"="+params[0]);
 	*/
+#ifdef OLD_GUI
 	gui << (GUI("hbox")
 			<< "draw[@handle=calib_object@minsize=20x20@label=calib]"
 			<< "draw[@handle=draw_object@minsize=20x20@label=plot]")
@@ -118,6 +119,16 @@ void init(){
 			<< "button(reset calibration)[@handle=reset]";
 
 	gui.show();
+#endif
+
+        gui << (HBox()
+                << Draw().handle("calib_object").minSize(20,20).label("calib")
+                << Draw().handle("draw_object").minSize(20,20).label("plot"))
+            << Button("save parameters").handle("saveParams")
+            << Button("reset calibration").handle("reset")
+            << Show();
+
+
 	gui["saveParams"].disable();
 	gui["saveParams"].registerCallback(save_params);
 }
@@ -169,7 +180,8 @@ double compute_error(const ImgBase *img){
 }
 
 void run(){
-  gui_ButtonHandle(reset);
+  ButtonHandle reset = gui["reset"];
+
 	if(reset.wasTriggered()){
 	  gui["saveParams"].disable();
 	  successes=0;

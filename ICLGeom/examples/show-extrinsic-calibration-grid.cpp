@@ -45,9 +45,7 @@ GenericGrabber *grabber = 0;
 void init(){
   
  
-  gui << "draw[@handle=draw@minsize=32x24]";
-  gui.show();
-
+  gui << Draw().handle("draw").minSize(16,12) << Show();
 
   cam = Camera(*pa("-input",2));
   grabber = new GenericGrabber(pa("-i"));

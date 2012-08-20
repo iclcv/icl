@@ -52,6 +52,7 @@ bool is_different(const float a[13],const float b[13]){
 
 
 void init(){
+#ifdef OLD_GUI
   gui << "draw3D(VGA)[@minsize=32x24@handle=draw]"
       << (GUI("vbox[@minsize=15x1]") 
           << "fslider(-10,10,0)[@out=x@label=x-position]"
@@ -73,6 +74,31 @@ void init(){
           << "slider(5,100,30)[@out=step2@label=y-Steps]"
           << "checkbox(grid,unchecked)[@out=grid]"
           ) << "!show";
+#endif
+  gui << Draw3D(Size::VGA).minSize(32,24).handle("draw")
+      << ( VBox().minSize(15,1) 
+           << FSlider(-7,7,0).out("rx").label("x-rotation")
+           << FSlider(-7,7,0).out("ry").label("y-rotation")
+           << FSlider(-7,7,0).out("rz").label("z-rotation")
+           
+           << FSlider(0.1,10,1).out("dx").label("x-size")
+           << FSlider(0.1,10,1).out("dy").label("y-size")
+           << FSlider(0.1,10,1).out("dz").label("z-size")
+           
+           << ( HBox().label("e1")
+                << CheckBox("1/x").out("e1x") 
+                << FSlider(1,10,1).out("e1") 
+                )
+           << ( HBox().label("e1")
+                << CheckBox("1/x").out("e2x")
+                << FSlider(1,10,1).out("e2") 
+                )
+           << Slider(5,100,30).out("step1").label("x-Steps")
+           << Slider(5,100,30).out("step2").label("y-Steps")
+           << CheckBox("grid").out("grid")
+           ) 
+      << Show();
+
   scene.addCamera(Camera(Vec(0,0,-10),Vec(0,0,1), Vec(1,0,0)));
   o = new SceneObject("superquadric",sq);
   o->setVisible(Primitive::vertex,false);
@@ -92,7 +118,7 @@ void init(){
 
 
 void run(){
-  float sq_curr[] = { gui["x"], gui["y"], gui["z"],
+  float sq_curr[] = { 0,0,0,
                       gui["rx"], gui["ry"], gui["rz"],
                       gui["dx"], gui["dy"], gui["dz"],
                       gui["e1"], gui["e2"],

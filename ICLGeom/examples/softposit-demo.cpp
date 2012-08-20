@@ -31,15 +31,9 @@
  ** Excellence Initiative.                                          **
  **                                                                 **
  *********************************************************************/
-#include <ICLQuick/Quick.h>
-#include <ICLQt/QtMacros.h>
-#include <ICLQt/Application.h>
-#include <ICLQt/GUI.h>
-#include <ICLCore/Img.h>
-#include <ICLQt/DrawWidget.h>
+#include <ICLQuick/Common.h>
 #include <ICLGeom/SoftPosit.h>
-using namespace icl;
-GUI gui("hsplit");
+VBox gui;
 Img<icl8u> image(Size(800,600),3);
 
 void run(){
@@ -95,18 +89,17 @@ void run(){
 
 	SoftPosit softposit;
 	softposit.init();
-	gui_DrawHandle(draw_object);
+
 	softposit.softPosit(imagePts, imageAdj, worldPts, worldAdj, beta0,
-			noiseStd, initRot, initTrans, focalLength, **draw_object, center);
+                            noiseStd, initRot, initTrans, focalLength, **gui.get<DrawHandle>("draw"), center);
 }
 
 void init(){
-	gui << (GUI("vbox")
-		<< "draw[@handle=draw_object@minsize=40x30@label=plot]");
+  gui << Draw().handle("draw").minSize(16,12).label("plot")
+      << Show();
+  
 
-	gui.show();
-	gui_DrawHandle(draw_object);
-	draw_object = image;
+  gui["draw"] = image;
 }
 
 int main(int n, char *args[]){

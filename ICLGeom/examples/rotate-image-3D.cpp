@@ -87,7 +87,7 @@ void init(){
   if(pa("-o")){
     output.init(pa("-o"));
   }
-  gui << "draw3D()[@handle=draw@minsize=20x15]" << "!show";
+  gui << Draw3D().handle("draw").minSize(20,15) << Show();
 
   grabber.grab()->convert(&image);  
   obj = new ImgObj;
