@@ -187,9 +187,9 @@ void mouse(const MouseEvent &e){
   Mutex::Locker lock(mutex);
   if(!currLUT.getDim()) return;
   
-  static const ICLWidget *wIM = *gui.getValue<DrawHandle>("image");
-  static const ICLWidget *wLUT = *gui.getValue<DrawHandle>("lut");
-  static const ICLWidget *wSEG = *gui.getValue<DrawHandle>("seg");
+  static const ICLWidget *wIM = *gui.get<DrawHandle>("image");
+  static const ICLWidget *wLUT = *gui.get<DrawHandle>("lut");
+  static const ICLWidget *wSEG = *gui.get<DrawHandle>("seg");
 
   Point p = e.getPos();
   
@@ -274,7 +274,7 @@ void init(){
     segmenter->load(pa("-l"));
   }
   
-  
+#ifdef OLD_GUI  
   gui << ( GUI("hsplit")
            << "draw[@handle=image@minsize=16x12@label=camera image]"
            << "draw[@handle=seg@minsize=16x12@label=segmentation result]"
@@ -324,13 +324,67 @@ void init(){
                 )
            )
       << "!show";
+#endif
+  gui << ( HSplit()
+           << Draw().handle("image").minSize(16,12).label("camera image")
+           << Draw().handle("seg").minSize(16,12).label("segmentation result")
+           )
+      << ( HSplit()  
+           << (Tab("2D,3D").handle("tab")
+               << ( HBox() 
+                    << Draw().handle("lut").minSize(16,12).label("lut")
+                    << ( VBox().maxSize(3,100).minSize(4,1)
+                         << Combo("x,y,z").handle("zAxis")
+                         << Slider(0,255,0,true).out("z").label("vis. plane")
+                         )
+                    )
+               << ( HBox() 
+                    << Draw3D(Size::VGA).handle("lut3D")
+                    << Slider(0,255,200,true).maxSize(2,100).out("alpha").label("alpha")
+                  )
+               )
+           << ( VBox()
+                << ( HBox() 
+                     << Combo(classes.str()).handle("currClass").label("current class")
+                     << Button("current class","background").label("left button").handle("lb")
+                   )
+                << Slider(0,255,4).out("radius").label("color radius")
+                
+                << (HBox().label("smooth LUT")
+                    << Slider(0,27,10).out("smoothThresh").label("threshold")
+                    << Button("do it").handle("smooth")
+                    )
+                << ( HBox() 
+                     <<Button("load").handle("load")
+                     << Button("save").handle("save")
+                   )
+                << ( HBox() 
+                     << CheckBox("pre median").out("preMedian")
+                     << CheckBox("post median").out("postMedian")
+                   )
+                << ( HBox() 
+                     << CheckBox("post dilation").out("postDilatation")
+                     << CheckBox("post erosion").out("postErosion")
+                   )
+                << ( HBox() 
+                     << Label("?").handle("time").label("time for segm.")
+                     << Fps(10).handle("fps").label("system fps")
+                   )
+                << ( HBox() 
+                     << CamCfg("") 
+                     << Button("clear").handle("clear") )
+                )
+           )
+      << Show();
+
 
   gui["seg"].install(new MouseHandler(mouse));
   gui["image"].install(new MouseHandler(mouse));
   gui["lut"].install(new MouseHandler(mouse));
   
-  gui_DrawHandle(lut);
-  gui_DrawHandle(seg);
+  DrawHandle lut = gui["lut"];
+  DrawHandle seg = gui["seg"];
+
   lut->setRangeMode(ICLWidget::rmAuto);
   seg->setRangeMode(ICLWidget::rmAuto);
 
@@ -344,15 +398,16 @@ void init(){
   if(dim <= MAX_LUT_3D_DIM){
     init_3D_LUT();
     scene.addCamera(Camera(Vec(0,0,100,1),Vec(0,0,-1,1),Vec(1,0,0,1)));
-    gui_DrawHandle3D(lut3D);
+    DrawHandle3D lut3D = gui["lut3D"];
     lut3D->link(scene.getGLCallback(0));
     lut3D->install(scene.getMouseHandler(0));
   }
 }
 
 void run(){
-  gui_ButtonHandle(smooth);
-  gui_int(smoothThresh);
+  static ButtonHandle smooth = gui["smooth"];
+  static int &smoothThresh = gui.get<int>("smoothThresh");
+
   if(smooth.wasTriggered()){
     icl8u *lut = segmenter->getLUT();
     int w, h, t;
@@ -393,18 +448,18 @@ void run(){
   }
   
   static const Point xys[3]={Point(1,2),Point(0,2),Point(0,1)};
-  gui_DrawHandle(image);
-  gui_DrawHandle(lut);
-  gui_DrawHandle(seg);
-  gui_LabelHandle(time);
-  gui_bool(preMedian);
-  gui_bool(postMedian);
+  DrawHandle image = gui["image"];
+  DrawHandle lut = gui["lut"];
+  DrawHandle seg = gui["seg"];
 
-  gui_bool(postErosion);
-  gui_bool(postDilatation);
+  LabelHandle time = gui["time"];
+  bool &preMedian = gui.get<bool>("preMedian");
+  bool &postMedian = gui.get<bool>("postMedian");
+  bool &postErosion = gui.get<bool>("postErosion");
+  bool &postDilatation = gui.get<bool>("postDilatation");
 
   int zAxis = gui["zAxis"];
-  gui_int(z);
+  int &z = gui.get<int>("z");
   const Img8u *grabbedImage = grabber.grab()->asImg<icl8u>();
 
   Mutex::Locker lock(mutex);
