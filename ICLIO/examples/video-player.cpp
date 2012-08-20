@@ -59,7 +59,7 @@ enum SliderEventType { press,release };
 template<SliderEventType t>
 void stream_pos(){
   Mutex::Locker lock(mutex);
-  gui_int(posVal);
+  int posVal = gui["posVal"];
   switch(t){
     case press: paused = true; break;
     case release:{
@@ -71,9 +71,9 @@ void stream_pos(){
 }
 
 void init(){
-  GUI con("vbox[@maxsize=1000x5]");
-  
   grabber.init(type,type+"="+filename);
+#ifdef OLD_GUI  
+  UI con("vbox[@maxsize=1000x5]");
 
   con << "slider(0,"+grabber.getValue(len)+",0)[@label=stream position in "+unit+"@out=posVal@handle=pos@maxsize=1000x2]"
       << ( GUI("hbox[@maxsize=1000x3]") 
@@ -90,22 +90,37 @@ void init(){
       << con;
 
   gui.show();
- 
+ #endif
+
+
+  int len = parse<int>(grabber.getValue("len"));
+  gui << Image().minSize(32,24).handle("image")
+      << Slider(0,len,0).label("stream position in "+unit).out("posVal").handle("pos").maxSize(1000,2)
+      << ( HBox().maxSize(1000,3) 
+#ifndef HAVE_OPENCV
+           << Slider(0,100,50).out("speed").label("playback speed")
+           << Slider(0,100,50).out("volume").label("audio volume")
+#endif
+           << Fps(100).handle("fps").maxSize(5,2).minSize(5,2) 
+           << Button("play","pause").out("pause").maxSize(4,2)
+           << CamCfg()
+         )
+      << Show();
+
   
-  gui_SliderHandle(pos);
-  pos.registerCallback(stream_pos<press>,"press");
-  pos.registerCallback(stream_pos<release>,"release");
+  SliderHandle slider = gui["pos"];
+  slider.registerCallback(stream_pos<press>,"press");
+  slider.registerCallback(stream_pos<release>,"release");
 }
 
 void run(){
-  gui_SliderHandle(pos);
-  gui_ImageHandle(image);
-  gui_bool(pause);
+  static SliderHandle pos = gui["pos"];
+  static ImageHandle image = gui["image"];
+  bool pause = gui["pause"];
 #ifndef HAVE_OPENCV
-  gui_int(speed);
-  gui_int(volume);
+  int speed = gui["speed"];
+  int volume = gui["volume"];
 #endif
-
 
   Mutex::Locker lock(mutex);
   

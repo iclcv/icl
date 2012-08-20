@@ -42,6 +42,7 @@ enum Mode{
 } MODE;
 
 GUI gui;
+
 GenericGrabber grabber;
 GenericImageOutput sender;
 GenericGrabber receiver;
@@ -64,18 +65,25 @@ void init(){
            Both );
 
   if(MODE == Send || MODE == Both){
+#ifdef OLD_GUI
     gui << "image[@handle=image]"
         << "string(100)[@handle=text@label=write some text message here!]"
         << "fps(10)[@handle=fps]"
         << "!show";
+#endif
+    gui << Image().handle("image")
+        << String("",100).handle("text").label("write some text message here!")
+        << Fps(10).handle("fps")
+        << Show();
+    
     grabber.init(pa("-i"));
     sender.init(t,t+"="+*pa("-s"));
     if(pa("-compression")){
       sender.setCompression(ImageCompressor::CompressionSpec(*pa("-compression",0),*pa("-compression",1)));
     }
   }else{
-    gui = GUI("hsplit");
-    
+    gui = HSplit();
+#ifdef OLD_GUI    
     gui << ( GUI("vbox[@label=loop based]")
              << "label( )[@handle=text@label=received text]"
              << "image[@handle=image]" );
@@ -86,6 +94,18 @@ void init(){
     }
     gui << "fps(10)[@handle=fps]"  
         << "!show";
+#endif
+    gui << ( VBox().label("loop based")
+             << Label().handle("text").label("received text")
+             << Image().handle("image") 
+           );
+    if(!pa("-no-callback")){
+      gui<< ( VBox().label("callback based")
+              << Label("").handle("cb_text").label("received text")
+              << Image().handle("cb_image") );
+    }
+    gui << Fps(10).handle("fps")
+        << Show();
 
     receiver.init(t,t+"="+*pa("-s"));
 

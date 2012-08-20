@@ -414,7 +414,7 @@ namespace icl{
   std::vector<char> MyrmexDecoder::makeConversiontable( int width, int height, std::vector<char> connections, char attached, char viewpoint ){
 	
 
-    char actual[width][height];
+    //char actual[width][height];
 
     //conversion array
     std::vector<char> conversion(width*height);
@@ -561,7 +561,7 @@ namespace icl{
     int y=starty;
     int ccounter=0;
     conversion[ccounter++] = target[x][y];
-    actual[x][y]=0; 
+    //actual[x][y]=0; 
     //We walk through the target array using the connection information
     //and create the actual module positions and the conversion ones
     for(unsigned int i=1;i<connections.size();i++){
@@ -570,7 +570,7 @@ namespace icl{
       if (connections[i] == EAST ) x-=1;
       if (connections[i] == WEST ) x+=1;
       conversion[ccounter++] = target[x][y];
-      actual[x][y]=i;
+      //actual[x][y]=i;
 
     }
 

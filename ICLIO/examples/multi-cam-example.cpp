@@ -35,7 +35,7 @@
 #include <ICLQuick/Common.h>
 #include <ICLIO/FileWriter.h>
 
-GUI gui("vsplit");
+VSplit gui;
 
 std::vector<SmartPtr<GenericGrabber> > gs;
 
@@ -60,12 +60,13 @@ void init(){
   }
   
   for(unsigned int i=0;i<gs.size();++i){
-    gui << "image[@handle=image"+str(i)+"@minsize=12x8]";
+    gui << Image().handle("image"+str(i)).minSize(12,8);
   }
-  gui << ( GUI ("hbox") 
-           << "fps(10)[@handle=fps@label=current fps@maxsize=100x3@minsize=5x3]" 
-           << "camcfg()" );
-  gui.show();
+  gui << ( HBox()
+           << Fps(10).handle("fps").label("FPS")
+           << CamCfg()
+           )
+      << Show();
 }
 
 
@@ -77,7 +78,6 @@ void run(){
       gui["image"+str(i)] = gs[i]->grab();
     }
     fps.render();
-    Thread::msleep(gs.size()*10);
   }
 }
 
