@@ -58,6 +58,7 @@ void init(){
   grabber.useDesired<Size>(pa("-s"));
   grabber.useDesired(formatGray);
   
+#ifdef OLD_GUI
   gui << (GUI("vbox")
           << "image[@handle=image@minsize=16x12]"
           << "image[@handle=result@minsize=16x12]"
@@ -68,9 +69,20 @@ void init(){
           );
   
   gui.show();
+#endif
+  std::string resultModes = "complex,imag,real,power,log-power,magnitude,phase,magnitude/phase";
+  std::string sizeAdaptionModes = "no-scale,pad-zero,pad-copy,pad-mirror,scale-up,scale-down";
+  gui << ( VBox()
+          << Image().handle("image").minSize(16,12)
+          << Image().handle("result").minSize(16,12)
+          << Fps(10).handle("fps").maxSize(100,2).minSize(8,2))
+      << ( VBox().minSize(8,1)
+           << Combo(resultModes).label("result mode").handle("resultMode")
+           << Combo(sizeAdaptionModes).label("size adaption mode").handle("sizeAdMode")
+         )
+      << Show();
   
-  ImageHandle result = gui["result"];
-  result-> setRangeMode(ICLWidget::rmAuto);
+  gui.get<ImageHandle>("result")->setRangeMode(ICLWidget::rmAuto);
 }
 
 int main(int n, char **args){
