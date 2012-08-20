@@ -41,25 +41,22 @@
 #include <ICLCore/Line.h>
 #include <ICLCore/CornerDetectorCSS.h>
 
-GUI gui("hbox");
+HBox gui;
 
 Mutex mutex;
 Color refColor = Color(255,255,255);
 CornerDetectorCSS css;
 GenericGrabber *grabber = 0;
 
-class Mouse : public MouseHandler{
-  public:
-  virtual void process(const MouseEvent &event){
-    if(event.isPressEvent()){
-      if(event.getColor().size() == 3) {
-        Mutex::Locker l(mutex);
-        for(int i=0;i<3;++i) refColor[i] = event.getColor()[i];
-        std::cout << "new Ref-Color:"  << refColor.transp() << std::endl;
-      }
+void mouse(const MouseEvent &event){
+  if(event.isPressEvent()){
+    if(event.getColor().size() == 3) {
+      Mutex::Locker l(mutex);
+      for(int i=0;i<3;++i) refColor[i] = event.getColor()[i];
+      std::cout << "new Ref-Color:"  << refColor.transp() << std::endl;
     }
   }
-} mouse;
+}
 
 void init(){
   if(pa("-r")){
@@ -68,6 +65,7 @@ void init(){
   
   css.setConfigurableID("css");
   css.setPropertyValue("debug-mode","on");
+#ifdef OLD_GUI
   GUI gui2("vsplit[@handle=B]");
   GUI controls("vbox");
   controls << ( GUI("hbox") 
@@ -89,7 +87,28 @@ void init(){
   gui << gui2 << "prop(css)[@label=CSS Params@minsize=14x12]";
   
   gui.show();
-  (*gui.getValue<DrawHandle>("img_in"))->install(&mouse);
+#endif
+
+  gui << ( VBox()
+           << ( HBox() 
+                << CamCfg("")
+                <<  Combo("color image,binary image").handle("vis")
+              )
+           << FSlider(0,1,0.03).out("t").label("threshold")
+         )
+      << ( VSplit()
+           << ( HBox()
+                << Draw().handle("img_in").minSize(16,12)
+                << Draw().handle("img1").minSize(16,12)
+                << Draw().handle("img2").minSize(16,12)
+                )
+           << Draw().handle("img3").minSize(16,12)
+          )
+      << Prop("css").label("CSS Params").minSize(14,12)
+      << Show();
+
+  gui["img_in"].install(mouse);
+
   
   // grabber
   grabber = new GenericGrabber(pa("-i"));
@@ -205,20 +224,20 @@ void drawStep2(ICLDrawWidget *w, const CornerDetectorCSS::DebugInformation &css_
 
 void run(){
 	// draw handles
-  static DrawHandle &h = gui.getValue<DrawHandle>("img_in");
-  static DrawHandle &h1 = gui.getValue<DrawHandle>("img1");
-  static DrawHandle &h2 = gui.getValue<DrawHandle>("img2");
-  static DrawHandle &h3 = gui.getValue<DrawHandle>("img3");
+  static DrawHandle &h = gui.get<DrawHandle>("img_in");
+  static DrawHandle &h1 = gui.get<DrawHandle>("img1");
+  static DrawHandle &h2 = gui.get<DrawHandle>("img2");
+  static DrawHandle &h3 = gui.get<DrawHandle>("img3");
 	// images: get camera input and apply threshold
   const Img8u &image = *grabber->grab()->asImg<icl8u>();
   static Img8u threshedImage;
   static Img8u bgImage1(image.getSize(), 1); bgImage1.clear(0,255);
   static Img8u bgImage2(image.getSize(), 1); bgImage2.clear(0,255);
   static Img8u bgImage3(image.getSize(), 1); bgImage3.clear(0,255);
-  thresh(image,threshedImage,gui.getValue<float>("t"),refColor);
+  thresh(image,threshedImage,gui.get<float>("t"),refColor);
 	
 	// draw background images
-  static std::string &vis = gui.getValue<std::string>("vis");
+  std::string vis = gui["vis"];
   h = (vis == "color image") ? &image : &threshedImage;
 	h1 = &bgImage1; h2 = &bgImage2; h3 = &bgImage3;
 

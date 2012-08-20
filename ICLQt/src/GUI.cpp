@@ -2182,6 +2182,11 @@ public:
     m_sDefinition(definition),m_poWidget(0),m_bCreated(false),m_poParent(parent){
   }
 
+  GUI::GUI(const GUIComponent &component, QWidget *parent):
+    m_sDefinition(component.toString()), m_poWidget(0),m_bCreated(false),m_poParent(parent){
+  }
+
+
   // }}}
   GUI::GUI(const GUI &g,QWidget *parent):
     // {{{ open
