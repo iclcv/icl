@@ -128,11 +128,18 @@ void init(){
   if(pa("-b")){
     backFaceGrabber.init(pa("-b"));
   }
+  gui << Draw3D().handle("draw").minSize(20,15).label("interaction area")
+      << Image().handle("offscreen0").label("offscreen rendered cam 0")
+      << Image().handle("offscreen1").label("offscreen rendered cam 1")
+      << FSlider(0,1,0.2,true).out("freq").label("frequence")
+      << Show();
+#ifdef OLD_GUI
   gui << "draw3D()[@handle=draw@minsize=20x15@label=interaction area]" 
       << "image[@handle=offscreen0@label=offscreen rendered cam 0]"
       << "image[@handle=offscreen1@label=offscreen rendered cam 1]"
       << "fslider(0,1,0.2,vertical)[@out=freq@label=frequence]"
       << "!show";
+#endif
 
   grabber.grab();
   grabber.grab();
