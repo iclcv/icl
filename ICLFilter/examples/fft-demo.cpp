@@ -36,7 +36,8 @@
 #include <ICLFilter/FFTOp.h>
 
 GenericGrabber grabber;
-GUI gui("hsplit");
+HSplit gui;
+
 void run(){
   ComboHandle resultMode = gui["resultMode"];
   ComboHandle sizeAdMode = gui["sizeAdMode"];

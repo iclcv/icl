@@ -47,7 +47,7 @@ SmartPtr<GenericSurfDetector> surf = new GenericSurfDetector("opensurf");
 SmartPtr<GenericSurfDetector> surf = new GenericSurfDetector("opencv");
 #endif
 
-GUI gui("hsplit");
+HSplit gui;
 Rect r = Rect::null;
 Rect objRect;
 

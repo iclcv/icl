@@ -41,7 +41,7 @@
 #include <ICLIO/FileList.h>
 
 #include <QtGui/QInputDialog>
-GUI gui("hbox");
+HBox gui;
 GenericGrabber grabber;
 LocalThresholdOp ltop;
 Mutex mutex;

@@ -225,10 +225,9 @@ namespace icl{
               const ConfigFile::KeyRestriction *restriction = es[i]->restr.get();
               if(restriction && restriction->hasValues){
                 const std::string &values = restriction->values;
-                std::string p = str("[@minsize=3x1@out=v@handle=h]");
                 m_guis.push_back(NamedGUI());
                 GUI &gui = m_guis.back().gui;
-                gui = GUI(str("combo(")+values+")"+p);
+                gui = Combo(values).minSize(3,1).handle("h");
                 gui.create();
                 
                 ComboHandle &ch = gui.get<ComboHandle>("h");
@@ -253,7 +252,7 @@ namespace icl{
               GUI &gui = m_guis.back().gui;
               bool bo = icl::parse<bool>(e.toLatin1().data());
               std::string tr = bo ? "!true" : "true";
-              gui = GUI("togglebutton(false,"+tr+")[@handle=b@out=v@minsize=5x1]");
+              gui = Button("false","true",bo).handle("b").out("v").minSize(5,1);
               gui.create();
               gui.get<ButtonHandle>("b").registerCallback(icl::function(this,SelectFunctor<void>()));
               m_guis.back().id = es[i]->getRelID();
@@ -265,21 +264,21 @@ namespace icl{
               const ConfigFile::KeyRestriction *restriction = es[i]->restr.get();
               if(restriction && restriction->hasRange){
                 const Range64f r(restriction->min,restriction->max);
-                std::string p = str("[@minsize=5x1@out=v@handle=h]");
                 m_guis.push_back(NamedGUI());
                 GUI &gui = m_guis.back().gui;
-                gui = GUI("hbox[@handle=b]");
+                gui = HBox().handle("b");
                 std::string el = e.toLatin1().data();
+                float val = parse<float>(el);
                 bool ok = true;
                 if(!r.contains(to64f(el))){
                   ERROR_LOG("Entry: " << es[i]->id << ":\nInitial value is out of given range");
                 }
                 if(t == "float"){
-                  gui << str("fslider(")+str(r.minVal)+','+str(r.maxVal)+','+el+')'+p;
+                  gui << FSlider(r.minVal,r.maxVal,val).minSize(5,1).out("v").handle("h");
                   gui.create();
                   gui.get<FSliderHandle>("h").registerCallback(icl::function(this,SelectFunctor<void>()));
                 }else if (t == "int"){
-                  gui << str("slider(")+str((int)r.minVal)+','+str((int)r.maxVal)+','+el+')'+p;
+                  gui << Slider(r.minVal,r.maxVal,val).minSize(5,1).out("v").handle("h");
                   gui.create();
                   gui.get<SliderHandle>("h").registerCallback(icl::function(this,SelectFunctor<void>()));
                 }else{

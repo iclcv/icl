@@ -37,7 +37,7 @@
 #include <ICLUtils/FPSLimiter.h>
 
 // global data
-GUI gui("hsplit");
+HSplit gui;
 Scene scene;
 GenericGrabber grabber;
 int nCams = 0;

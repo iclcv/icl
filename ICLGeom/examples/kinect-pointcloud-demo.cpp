@@ -41,7 +41,7 @@
 
 #include <ICLUtils/ConfigFile.h>
 
-GUI gui("hsplit");
+HSplit gui;
 GenericGrabber grabDepth, grabColor;
 int KINECT_CAM=0,VIEW_CAM=1;
 

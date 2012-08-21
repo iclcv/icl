@@ -38,7 +38,7 @@
 #include <ICLUtils/Random.h>
 
 // global data
-GUI gui("hbox");
+HBox gui;
 Scene scene;
 
 struct OSRCube : public SceneObject{

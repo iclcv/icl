@@ -144,7 +144,15 @@ namespace icl{
     Tab(const std::string &commaSepTitles,QWidget *parent=0):
     ContainerGUIComponent("tab",commaSepTitles, parent){}
   };
-
+  
+  /** \cond */
+  struct Border : public ContainerGUIComponent{
+    friend class GUI;
+    private:
+    Border(const std::string &label, QWidget *parent=0):
+    ContainerGUIComponent("border",label,parent){}
+  };
+  /** \encond */
 
 } // namespace icl
 

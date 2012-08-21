@@ -34,7 +34,7 @@
 
 #include <ICLQuick/Common.h>
 
-GUI gui("vsplit");
+VSplit gui;
 std::string filename;
 GenericGrabber grabber;
 bool disableNextUpdate = false;

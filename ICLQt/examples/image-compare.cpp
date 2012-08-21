@@ -83,7 +83,7 @@ int main(int n, char **ppc){
 
 
   QApplication app(n,ppc);
-  GUI gui("hbox");
+  HBox gui;
   gui << Image().handle("sub").label("A-B") 
       << Image().handle("eq").label("A==B")
       << Show();

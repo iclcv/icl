@@ -41,7 +41,7 @@
 
 GenericGrabber *grabber = 0;
 
-GUI gui("hsplit");
+HSplit gui;
 Img32f IMAGE;
 Camera CAM;
 Point32f POS;

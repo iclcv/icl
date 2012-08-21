@@ -37,7 +37,7 @@
 #include <ICLGeom/Geom.h>
 #include <ICLGeom/ComplexCoordinateFrameSceneObject.h>
 
-GUI gui("hsplit");
+HSplit gui;
 GenericGrabber grabber;
 MultiCamFiducialDetector fd;
 std::vector<SmartPtr<GenericGrabber> > grabbers;

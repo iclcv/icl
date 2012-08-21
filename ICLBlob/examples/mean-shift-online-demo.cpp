@@ -38,7 +38,7 @@
 
 
 Mutex m;
-GUI gui("hsplit");
+HSplit gui;
 Grabber *grabber = 0;
 Point32f *newPos = 0;
 Point32f pos;

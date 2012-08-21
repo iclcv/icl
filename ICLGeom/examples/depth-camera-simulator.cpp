@@ -2,8 +2,8 @@
 #include <ICLGeom/Geom.h>
 #include <ICLIO/GenericImageOutput.h>
 Scene scene;
-GUI gui("hsplit");
-GUI prevGUI("hbox");
+HSplit gui;
+GUI prevGUI = HBox();
 
 GenericImageOutput colorOut, depthOut;
 SceneObject *obj = 0;

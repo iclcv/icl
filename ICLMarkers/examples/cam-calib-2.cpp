@@ -385,7 +385,7 @@ void init(){
 
   std::vector<std::string> configurables;
   std::string iin;
-  GUI objGUI("vbox");
+  GUI objGUI;
 
   for(int c = 0; c <pa("-c").n(); ++c){
     CalibFile cf;

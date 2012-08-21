@@ -35,7 +35,7 @@
 #include <ICLQuick/Common.h>
 #include <ICLUtils/Configurable.h>
 
-GUI gui("hbox");
+HBox gui;
 
 
 struct C : public Configurable{

@@ -301,7 +301,7 @@ namespace icl{
   
   static void create_property_gui(GUI &gui,GenericGrabber &grabber,const GUI::ComplexCallback &cb,  
                                   std::vector<SmartPtr<VolatileUpdater> > &timers){
-    gui = GUI("vbox");
+    gui = VBox();
     std::ostringstream ostr;
     std::vector<std::string> propertyList = grabber.getPropertyList();
     

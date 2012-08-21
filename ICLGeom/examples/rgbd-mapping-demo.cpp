@@ -41,7 +41,7 @@
 #endif
 #include <ICLGeom/DepthCameraPointCloudGrabber.h>
 
-GUI gui("hsplit");
+HSplit gui;
 Scene scene;
 
 #ifdef HAVE_PCL

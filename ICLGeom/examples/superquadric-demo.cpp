@@ -37,7 +37,7 @@
 #include <ICLUtils/FPSLimiter.h>
 
 // global data
-GUI gui("hsplit");
+HSplit gui;
 Scene scene;
 float sq[] = {0,0,0,0,0,0,1,1,1,1,1,30,30};
 SceneObject *o = 0;

@@ -39,7 +39,7 @@
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLGeom/Primitive.h>
 
-GUI gui("hsplit");
+HSplit gui;
 Scene scene;
 
 void init(){

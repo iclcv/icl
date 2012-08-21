@@ -41,7 +41,7 @@
 // all ICL applications that use the GenericGrabber in combination with a program-argument 
 //
 
-GUI gui("hsplit");
+HSplit gui;
 GenericGrabber grabber;
 void init(){
   

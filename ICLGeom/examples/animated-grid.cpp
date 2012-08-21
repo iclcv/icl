@@ -34,7 +34,7 @@
 
 #include <ICLQuick/Common.h>
 #include <ICLGeom/Geom.h>
-GUI gui("hbox");
+HBox gui;
 Scene scene;
 GenericGrabber grabber;
 GenericGrabber backFaceGrabber;

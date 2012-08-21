@@ -831,7 +831,7 @@ namespace icl{
           static int confiurableIdx = 0;
           std::string id = "_ICL_AbstractPlotWidget-"+str(confiurableIdx++);
           setConfigurableID(id);
-          data->menu = GUI("prop("+id+")");
+          data->menu = Prop(id);
           data->menu.create();
           setConfigurableID(origID);
           data->menu.getRootWidget()->setWindowFlags(Qt::Popup);

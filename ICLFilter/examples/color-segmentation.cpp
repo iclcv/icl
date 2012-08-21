@@ -42,7 +42,8 @@
 
 #include <ICLGeom/Scene.h>
 #include <ICLGeom/GeomDefs.h>
-GUI gui("vsplit");
+
+VSplit gui;
 
 #define MAX_LUT_3D_DIM 1000000
 

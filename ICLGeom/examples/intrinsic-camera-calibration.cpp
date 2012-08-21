@@ -50,7 +50,7 @@
 #include <QtGui/QFileDialog>
 #include <QtGui/QPushButton>
 
-GUI gui("hsplit");
+HSplit gui;
 GenericGrabber *grabber = 0;
 
 Img32f IMAGE;

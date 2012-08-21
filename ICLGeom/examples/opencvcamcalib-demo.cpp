@@ -40,7 +40,7 @@
 
 using namespace icl;
 
-GUI gui("hsplit");
+HSplit gui;
 SmartPtr<GenericGrabber> cg;
 Mutex mutex;
 OpenCVCamCalib *camc = 0;

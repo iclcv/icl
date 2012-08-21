@@ -58,14 +58,24 @@ namespace icl{
 
   // documentation in GUIDocumentation.h !
   class GUI{
+    private:
+    /// stream operator to add new widgets
+    /** if the given definition is "" or "dummy", this operator does nothing */
+    virtual GUI &operator<<(const std::string &definition);
+
+    protected:
+    /// default constructor 
+    GUI(const std::string &definition, QWidget *parent);
+
+
     public:
     /// cell width (all sizes are given in this unit)
     static const int CELLW = 20;
     /// cell height (all sizes are given in this unit)
     static const int CELLH = 20;
     
-    /// default constructor 
-    GUI(const std::string &definition="vbox", QWidget *parent=0);
+    /// Default constructor, creates a vbox GUI Component
+    GUI(QWidget *parent=0);
     
     /// creates a GUI from a givne GUIComponent
     GUI(const GUIComponent &component, QWidget *parent=0);
@@ -78,10 +88,6 @@ namespace icl{
 
     /// Destructor
     virtual ~GUI();
-    
-    /// stream operator to add new widgets
-    /** if the given definition is "" or "dummy", this operator does nothing */
-    ICL_DEPRECATED virtual GUI &operator<<(const std::string &definition);
 
     /// adds a new GUI component 
     virtual GUI &operator<<(const GUIComponent &component);
@@ -95,34 +101,18 @@ namespace icl{
     inline T &allocValue(const std::string &id, const T&val=T()){
       return m_oDataStore.allocValue<T>(id,val);
     }
-    /// wraps the data-stores allocArray function
-    template<class T>
-    ICL_DEPRECATED inline T *allocArray(const std::string &id,unsigned int n){
-      return m_oDataStore.allocArray<T>(id,n);
-    }
+
     /// wraps the datastores release function
     template<class T>
     inline void release(const std::string &id){
       m_oDataStore.release<T>(id);
     }
     
-    /// wraps the datastores getValue function
-    template<class T> 
-    ICL_DEPRECATED T &getValue(const std::string &id, bool typeCheck=true){
-      return m_oDataStore.getValue<T>(id,typeCheck);
-    }
-
     template<class T> 
     T &get(const std::string &id, bool typeCheck=true){
       return m_oDataStore.getValue<T>(id,typeCheck);
     }
 
-    /// wraps the datastores getArray function
-    template<class T> 
-    ICL_DEPRECATED inline T* getArray(const std::string &id, int *lenDst=0){
-      return m_oDataStore.getArray<T>(id,lenDst);
-    }
-    
     /// returns a Data instance from the datastore
     DataStore::Data operator[](const std::string &key){
       return m_oDataStore.operator[](key);

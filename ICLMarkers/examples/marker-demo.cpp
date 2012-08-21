@@ -38,7 +38,7 @@
 
 #include <ICLMarkers/FiducialDetector.h>
 
-GUI gui("hsplit");
+HSplit gui;
 
 GenericGrabber grabber;
 FiducialDetector *fid = 0;

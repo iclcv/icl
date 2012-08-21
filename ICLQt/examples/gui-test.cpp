@@ -38,8 +38,9 @@
 HScroll gui;
 
 void init(){
-  GUI x("ps");
-  x.show();
+  GUI ps;
+  ps << Ps() << Show();
+
 
   gui << Image().handle("image1").label("image1").minSize(10,10)
       << Image().handle("image2").label("image2").minSize(10,10)

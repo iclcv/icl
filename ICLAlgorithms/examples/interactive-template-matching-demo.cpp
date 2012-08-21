@@ -38,7 +38,8 @@
 #include <ICLAlgorithms/ViewBasedTemplateMatcher.h>
 
 Size imageSize(640,480);
-GUI gui("hbox");
+
+HBox gui;
 Img8u currTempl;
 Img8u templMask(Size(1,1),1);
 

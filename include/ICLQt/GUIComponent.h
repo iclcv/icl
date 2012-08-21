@@ -10,7 +10,8 @@ namespace icl{
   class GUIComponent{
     
     friend class ContainerGUIComponent;
-    
+    friend class GUI;
+
     public:
     struct Options {
     Options():margin(-1),spacing(-1), hide(false){}
@@ -251,10 +252,6 @@ namespace icl{
     
   };
   
-  struct Border : public GUIComponent{
-    Border(const std::string &label):GUIComponent("border",label){}
-  };
-
   struct Button : public GUIComponentWithOutput{
     private:
     static std::string form_args(const std::string &text, const std::string &toggledText, bool initiallyToggled){

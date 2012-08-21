@@ -36,7 +36,7 @@
 #include <ICLFilter/AffineOp.h>
 #include <ICLUtils/StackTimer.h>
 
-GUI gui("hsplit[@minsize=32x24]");
+GUI gui = HSplit().minSize(32,24);
 Img8u image;
 
 void step(){

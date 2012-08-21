@@ -38,7 +38,7 @@
 
 
 static LLM llm(2,3);
-GUI gui("hbox");
+HBox gui;
 static const int W = 100;
 static const int H = 100;
 static const float MINX = 0;

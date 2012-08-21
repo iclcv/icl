@@ -41,7 +41,7 @@
 typedef LeastSquareModelFitting2D LS;
 typedef RansacFitter<Point32f,std::vector<double> > RANSAC;
 
-GUI gui("hsplit");
+HSplit gui;
 
 Point32f get_line_point(const std::vector<double> &line, float x){
   return Point32f(x,(-line[2] - line[0]*x) / line[1]);

@@ -429,11 +429,11 @@ namespace icl{
         ++i;
       }
       
-      gui = GUI("tab("+tablist+")[@handle=__the_tab__]",this);
+      gui = Tab(tablist,this).handle("__the_tab__");
 
       std::ostringstream ostr;
       for(std::map<std::string,std::vector<StSt> >::iterator it=sections.begin();it != sections.end();++it){
-        GUI tab("vscroll");
+        GUI tab = VScroll();
         for(unsigned int i=0;i<it->second.size();++i){
           add_component(tab,it->second[i],ostr,gui);          
         }
@@ -2141,6 +2141,10 @@ public:
 
   // }}}
 
+
+  GUI::GUI(QWidget *parent):
+    m_sDefinition("vbox"),m_poWidget(0),m_bCreated(false),m_poParent(parent){
+  }
   GUI::GUI(const std::string &definition,QWidget *parent):
     // {{{ open
     m_sDefinition(definition),m_poWidget(0),m_bCreated(false),m_poParent(parent){
@@ -2226,7 +2230,11 @@ public:
 
     if(label.length()){
       string rest = remove_label(definition,label);
-      return ( (*this) << ( GUI(string("border("+label+")["+minsize+maxsize+size+"]")) << rest ) );
+      //      return ( (*this) << ( GUI(string("border("+label+")["+minsize+maxsize+size+"]")) << rest ) );
+      GUI border(string("border(")+label+")["+minsize+maxsize+size+"]");
+      border << rest;
+      *this << border;
+      return *this;
     }else{
       m_children.push_back(new GUI(definition));
       return *this;

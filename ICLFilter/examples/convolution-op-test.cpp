@@ -36,8 +36,7 @@
 #include <ICLFilter/ConvolutionOp.h>
 #include <sstream>
 
-
-GUI gui("hsplit");
+HSplit gui;
 GenericGrabber *grabber = 0;
 
 void init(){

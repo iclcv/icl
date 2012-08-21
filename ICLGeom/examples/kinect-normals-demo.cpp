@@ -37,7 +37,7 @@
 #include <ICLGeom/PointNormalEstimation.h>
 #include <sys/time.h>
 
-GUI gui("hsplit");
+HSplit gui;
 GenericGrabber grabDepth, grabColor;
 
 PointNormalEstimation *normalEstimator;

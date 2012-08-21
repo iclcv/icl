@@ -37,7 +37,7 @@
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLGeom/ComplexCoordinateFrameSceneObject.h>
 
-GUI gui("hbox");
+HBox gui;
 Scene scene;
 struct Orbit : public SceneObject{
   Orbit(float orbit, const GeomColor &c){
