@@ -6,30 +6,39 @@
 
 namespace icl{
 
-  
+  /// The GUIComponent class servers as a generic interface for GUI definitions
+  /** <b>Please refer to the ICL-manual for an introduction to the GUI toolkit</b>\n
+   */
   class GUIComponent{
-    
+  
+    /// friend container class
     friend class ContainerGUIComponent;
+    
+    /// friend GUI class
     friend class GUI;
 
     public:
+    /// Actual options (set using the .xxx methods)
     struct Options {
     Options():margin(-1),spacing(-1), hide(false){}
-      std::string handle;
-      std::string out;
-      std::string in;
-      std::string label;
-      std::string tooltip;
-      int margin;
-      int spacing;
-      Size minSize;
-      Size maxSize;
-      Size size;
-      bool hide;
+      std::string handle;  //!< the component handle
+      std::string out;     //!< the component output (only GUIComponentWithOutput subclasses)
+      std::string in;      //!< not used!
+      std::string label;   //!< label (results in a titeld border
+      std::string tooltip; //!< component tooltip (not for containers) 
+      int margin;          //!< layout margin (only for containers)
+      int spacing;         //!< layout spacing (onyl for containers)
+      Size minSize;        //!< minimum size constraint of the component (in units of 20px)
+      Size maxSize;        //!< maximum size constraint of the component (in units of 20px)
+      Size size;           //!< intial size of the component (in units of 20px)
+      bool hide;           //!< if true, the component is not created at all
     };
     protected:
+    
+    /// all component options (mutable for C++-reasons)
     mutable Options m_options;
     
+    /// utility method to concatenate 3 values
     template<class A, class B, class C> 
     static std::string form_args_3(const A &a, const B &b, const C &c){
       std::ostringstream str;
@@ -37,6 +46,7 @@ namespace icl{
       return str.str();
     }
     
+    /// utility method to concatenate 4 values
     template<class A, class B, class C, class D> 
     static std::string form_args_4(const A &a, const B &b, const C &c, const D &d){
       std::ostringstream str;
@@ -44,12 +54,16 @@ namespace icl{
       return str.str();
     }
     
+    /// component type
     std::string m_type;
+    
+    /// component parameters
     std::string m_params;
     
+    /// creates a component with given type and optionally given parameters
+    /** the params parameter is a comma-separated list of single entries */
     GUIComponent(const std::string &type, const std::string &params=""):
     m_type(type),m_params(params){}
-
     public:
       
     const GUIComponent &handle(const std::string &handle) const{
