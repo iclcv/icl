@@ -42,7 +42,7 @@ static const float MAXX = 100;
 static const float MINY = -10;
 static const float MAXY = 10;
 
-GUI gui("hbox");
+HBox gui;
 
 inline float tx(float x){
   return (x-MINX)/(MAXX-MINX); 
@@ -57,6 +57,7 @@ float func(float x){
 
 void init(){
   llm.setConfigurableID("llm");
+#ifdef OLD_GUI
   GUI controls("vbox[@minsize=15x0]");
   controls << "button(Train Step)[@handle=train]"
            << "togglebutton(Train Off,Train On)[@out=train-loop]"
@@ -70,6 +71,20 @@ void init(){
   gui << controls;
   
   gui.show();
+#endif
+  
+  gui << Draw().minSize(40,30).label("View").handle("draw")
+      << ( VBox().minSize(15,0)
+           << Button("Train Step").handle("train")
+           << Button("Train Off","Train On").out("train-loop")
+           << Label("NAN").handle("mse").label("mse")
+           << Prop("llm")
+           << Button("Show Kernels").handle("show-k")
+           << Button("Reset").handle("reset")
+           << Int(1,1000,10).out("kernel-count").label("Kernel Count")
+           )
+      << Show();
+
   
   
   llm.init(10, vector<Range<icl32f> >(1,Range<icl32f>(MINX,MAXX)),std::vector<float>(1,5));

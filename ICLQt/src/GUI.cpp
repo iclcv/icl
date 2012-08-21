@@ -2205,6 +2205,7 @@ public:
     m_bCreated = false;
     m_poParent = other.m_poParent;
     m_oDataStore = other.m_oDataStore;
+    return *this;
   }
   
   GUI::~GUI(){

@@ -40,11 +40,11 @@ GUI gui;
 void run(){
   Img8u image = cvt8u(scale(create("parrot"),0.2));
   ImageHandle *ws[3] = {
-    &gui.getValue<ImageHandle>("image1"),
-    &gui.getValue<ImageHandle>("image2"),
-    &gui.getValue<ImageHandle>("image3")
+    &gui.get<ImageHandle>("image1"),
+    &gui.get<ImageHandle>("image2"),
+    &gui.get<ImageHandle>("image3")
   };
-  ButtonHandle &click = gui.getValue<ButtonHandle>("click");
+  ButtonHandle &click = gui.get<ButtonHandle>("click");
   while(1){
     for(int i=0;i<3;++i){
       *ws[i] = image;

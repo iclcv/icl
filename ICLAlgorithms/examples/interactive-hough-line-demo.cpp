@@ -37,7 +37,7 @@
 
 typedef FixedColVector<float,2> Pos;
 
-GUI gui("hsplit"),con("vsplit");
+HSplit gui;
 HoughLineDetector *h = 0;
 
 std::vector<Point32f> points;
@@ -56,6 +56,7 @@ struct Mouse : public MouseHandler {
 };
 
 void init(){
+#ifdef OLD_GUI
   con << "image[@handle=lut@label=hough space@minsize=16x12]";
   con << ( GUI("vbox") 
            << "image[@handle=inhibit@label=local inhibition image@minsize=8x6]"
@@ -73,31 +74,51 @@ void init(){
                 << "togglebutton(off,!on)[@out=blurredSampling@label=blurred sampling]"
                 )
            );
+ #endif
 
-  gui << "draw[@handle=view@minsize=32x24]" 
-      << con;
-  
-  gui.show();
+ 
 
-  gui_DrawHandle(view);
-  (*view)->install(new Mouse);
-  view = Img8u(Size::VGA,1);
-  view.render();
+  gui << Draw().handle("view").minSize(32,24)
+      << ( VSplit()
+           << Image().handle("lut").label("hough space").minSize(16,12)
+           << ( VBox() 
+                << Image().handle("inhibit").label("local inhibition image").minSize(8,6)
+                << Slider(0,100,1).out("maxlines").label("max lines")
+                << FSlider(0.01,1,0.03).out("dRho").label("rho sampling step")
+                << FSlider(0.1,10,2).out("dR").label("r sampling step")
+                << FSlider(2,100,10).out("rInhib").label("r inhibition radius")
+                << FSlider(0.05,2,0.3).out("rhoInhib").label("rho inhibition radius")
+                << ( HBox() 
+                     << Button("off","!on").out("gaussianInhibition").label("gaussian inhib")
+                     << Button("off","!on").out("blurHoughSpace").label("blur hough space")
+                     )
+                << ( HBox() 
+                     << Button("off","!on").out("dilateEntries").label("dilate entries")
+                     << Button("off","!on").out("blurredSampling").label("blurred sampling")
+                     )
+                )
+
+           )
+      << Show();
+
+  gui["view"].install(new Mouse);
+  gui["view"] = Img8u(Size::VGA,1);
+  gui["view"].render();
 }
 
 void run(){
-  gui_int(maxlines);
-  gui_float(dRho);
-  gui_float(dR);
-  gui_float(rInhib);
-  gui_float(rhoInhib);
-  gui_ImageHandle(lut);
-  gui_ImageHandle(inhibit);
-  gui_DrawHandle(view);
-  gui_bool(gaussianInhibition);
-  gui_bool(blurHoughSpace);
-  gui_bool(dilateEntries);
-  gui_bool(blurredSampling);
+  int maxlines = gui["maxlines"];
+  float dRho = gui["dRho"];
+  float dR = gui["dR"];
+  float rInhib = gui["rInhib"];
+  float rhoInhib = gui["rhoInhib"];
+  ImageHandle lut = gui["lut"];
+  ImageHandle inhibit = gui["inhibit"];
+  DrawHandle view = gui["view"];
+  bool gaussianInhibition = gui["gaussianInhibition"];
+  bool blurHoughSpace = gui["blurHoughSpace"];
+  bool dilateEntries = gui["dilateEntries"];
+  bool blurredSampling = gui["blurredSampling"];
   
   HoughLineDetector h(dRho,dR,Range32f(0,sqrt(640*640+480*480)),rInhib,rhoInhib,
                       gaussianInhibition,blurHoughSpace,dilateEntries,blurredSampling);

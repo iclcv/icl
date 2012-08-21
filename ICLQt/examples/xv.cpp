@@ -130,7 +130,7 @@ int main (int n, char **ppc){
     Tab t(imageList);
 
     for(size_t i=0;i<imageVecStrs.size();++i){
-      t << Image().handle("image-"+str(i));
+      t << Image().handle("image-"+str(i)).size(size/20);
     }
     
     gui << t << Show();

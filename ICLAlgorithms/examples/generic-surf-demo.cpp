@@ -69,7 +69,7 @@ void gui_cb(const std::string &handle){
   }else if(!handle.find("snap")){
     const ImgBase *tmp = grabber.grab();
     surf->setObjectImg(tmp);
-    gui_DrawHandle(draw_object);
+    DrawHandle draw_object = gui["draw_object"];
     SmartPtr<ImgBase> obj = surf->getObjectImg(); 
     draw_object = obj.get();
     draw_object->render(); // we can risk that because we are in the gui-thread
@@ -105,7 +105,7 @@ void select_object(const MouseEvent &m){
           image.deepCopyROI(&roi);
           surf->setObjectImg(&roi);
           objRect = roi.getImageRect();
-          gui_DrawHandle(draw_object);
+          static DrawHandle draw_object = gui["draw_object"];
           draw_object = &roi;
           draw_object->render();
         }
@@ -128,6 +128,7 @@ void init(){
     objRect = obj->getImageRect();
   }
   
+#ifdef OLD_GUI
   gui << (GUI("vbox")
           <<(GUI("hbox")
              << (GUI("vbox")
@@ -150,6 +151,31 @@ void init(){
           );
   
   gui.show();
+#endif
+  
+  gui << (VBox()
+          <<(HBox()
+             << (VBox()
+                 << Draw().handle("draw_object").minSize(16,12).label("result of surf match")
+                 << Button("snapshot").handle("snap_handle"))
+             << Draw().handle("draw_result").minSize(16,12).label("result of surf match")
+             << Draw().handle("draw_image").minSize(16,12).label("result of surf"))
+          
+          <<(HBox()
+             << Fps(10).handle("fps").maxSize(100,2).minSize(8,2)))
+      << (VBox().minSize(8,1)
+          << CheckBox("opensurf",true).out("os").handle("os_handle")
+          << CheckBox("show_matches").out("sm").handle("sm_handle")
+          << CheckBox("show_features").out("sf").handle("sf_handle")
+          << CheckBox("rotatationinvariance/extended").out("ri").handle("ri_handle")
+          << Slider(0,20,4).out("octaves").handle("oct_handle").label("octaves")
+          << Slider(0,20,4).out("intervals").handle("intervals_handle").label("intervals/octavelayer")
+          << Slider(0,10,2).out("samples").handle("sample_handle").label("init samples")
+          << FSlider(0,0.04,0.001).out("thresh").handle("thresh_handle").label("threshold")
+         );
+  
+  gui.show();
+
   
   gui.registerCallback(gui_cb,"os_handle,ri_handle,snap_handle,oct_handle,intervals_handle,sample_handle,thresh_handle");
   gui["draw_object"] =  surf->getObjectImg().get();
@@ -212,19 +238,20 @@ void run(){
   Mutex::Locker lock(mutex);
   const ImgBase *image = grabber.grab();
   
-  gui_DrawHandle(draw_result);
-  gui_DrawHandle(draw_object);
-  gui_DrawHandle(draw_image);
+  
+  static DrawHandle draw_result = gui["draw_result"];
+  static DrawHandle draw_object = gui["draw_object"];
+  static DrawHandle draw_image = gui["draw_image"];
+  static CheckBoxHandle sf_handle = gui["sf_handle"];
+  static CheckBoxHandle sm_handle = gui["sm_handle"];
   draw_result = image;
   draw_image = image;
-  
-  gui_CheckBox(sf_handle);
+
   if(sf_handle.isChecked()){
     const std::vector<GenericSurfDetector::GenericPoint> features = surf->extractFeatures(image);
     surf->visualizeFeatures(**draw_image,features);
   }
   
-  gui_CheckBox(sm_handle);
   if(sm_handle.isChecked()){
     const std::vector<std::pair<GenericSurfDetector::GenericPoint,
     GenericSurfDetector::GenericPoint> > &matches = surf->match(image);
