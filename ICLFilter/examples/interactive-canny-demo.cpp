@@ -43,21 +43,6 @@ VSplit gui;
 void update();
 
 void init(){
-#ifdef OLD_GUI
-  gui << "image[@handle=image@minsize=32x24]";
-  GUI gui2;
-  gui2 << "fslider(0,2000,10)[@out=low@label=low@maxsize=100x2@handle=low-handle]";
-  gui2 << "fslider(0,2000,100)[@out=high@label=high@maxsize=100x2@handle=high-handle]";
-  gui2 <<  ( GUI("hbox")  
-             << "slider(0,10,0)[@out=preGaussRadius@handle=pre-gauss-handle@label=pre gaussian radius]"
-             << "label(time)[@handle=dt@label=filter time in ms]"
-             << "togglebutton(stopped,running)[@out=running@label=capture]"
-             << "camcfg()" );
-  
-  gui << gui2;
-  
-  gui.show();
-#endif
   gui << Image().handle("image").minSize(32,24)
       << (VBox()
           << FSlider(0,2000,10).out("low").label("low").maxSize(100,2).handle("low-handle")

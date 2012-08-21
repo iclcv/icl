@@ -47,14 +47,6 @@ void run(){
 }
 
 void init(){
-#ifdef OLD_GUI
-  gui << "image()[@handle=image@minsize=16x12]";
-  gui << ( GUI("hbox[@maxsize=100x2]") 
-           << "fps(10)[@handle=fps@maxsize=100x2@minsize=5x2]"
-           << "camcfg()"
-          )
-      << "!show";
-#endif
   gui << Image().handle("image").minSize(16,12);
   gui << ( HBox().maxSize(100,2) 
            << Fps(10).handle("fps").maxSize(100,2).minSize(5,2)

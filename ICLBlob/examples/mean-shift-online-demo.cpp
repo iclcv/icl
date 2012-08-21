@@ -71,23 +71,6 @@ void init(){
   grabber->useDesired(formatRGB);
   grabber->useDesired<Size>(pa("-size"));
 
-#ifdef OLD_GUI
-  GUI controls;
-  controls << "image[@handle=kernel@minsize=8x6@label=kernel image]"
-           << "image[@handle=color@minsize=8x6@label=current color]"
-           << "slider(1,1000,20)[@out=maxCycles@label=max cycles]"
-           << "fslider(0.1,5,1.0)[@out=convergence@label=conv. crit.]"
-           << "slider(4,200,50)[@out=bandwidth@label=kernel bandwidth]"
-           << "combo(epanechnikov,gaussian)[@out=_@handle=kernel-type@label=kernel type]"
-           << "combo(color image,weight image)[@out=__@handle=vis@label=shown image]";
-
-  
-  
-  gui << "draw()[@handle=image@minsize=32x24@label=image stream]" 
-      << controls;
-
-  gui.show();
-#endif
   gui << Draw().handle("image").minSize(32,24).label("image stream ")
       << ( VBox()
            << Image().handle("kernel").minSize(8,6).label("kernel image")

@@ -52,29 +52,6 @@ bool is_different(const float a[13],const float b[13]){
 
 
 void init(){
-#ifdef OLD_GUI
-  gui << "draw3D(VGA)[@minsize=32x24@handle=draw]"
-      << (GUI("vbox[@minsize=15x1]") 
-          << "fslider(-10,10,0)[@out=x@label=x-position]"
-          << "fslider(-10,10,0)[@out=y@label=y-position]"
-          << "fslider(-10,10,0)[@out=z@label=z-position]"
-          
-          << "fslider(-7,7,0)[@out=rx@label=x-rotation]"
-          << "fslider(-7,7,0)[@out=ry@label=y-rotation]"
-          << "fslider(-7,7,0)[@out=rz@label=z-rotation]"
-
-          << "fslider(0.1,10,1)[@out=dx@label=x-size]"
-          << "fslider(0.1,10,1)[@out=dy@label=y-size]"
-          << "fslider(0.1,10,1)[@out=dz@label=z-size]"
-
-          << ( GUI("hbox[@label=e1]") << "checkbox(1/x,unchecked)[@out=e1x]" << "fslider(1,10,1)[@out=e1]" )
-          << ( GUI("hbox[@label=e1]") << "checkbox(1/x,unchecked)[@out=e2x]" << "fslider(1,10,1)[@out=e2]" )
-
-          << "slider(5,100,30)[@out=step1@label=x-Steps]"
-          << "slider(5,100,30)[@out=step2@label=y-Steps]"
-          << "checkbox(grid,unchecked)[@out=grid]"
-          ) << "!show";
-#endif
   gui << Draw3D(Size::VGA).minSize(32,24).handle("draw")
       << ( VBox().minSize(15,1) 
            << FSlider(-7,7,0).out("rx").label("x-rotation")

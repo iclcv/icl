@@ -106,20 +106,6 @@ void init(){
 	  cg->setDesiredSizeInternal(pa("-s"));
   }
   
-	/*
-	static std::string params[] = {"*.png"};
-	std::string dev = "file";
-	cg->init(dev,dev+"="+params[0]);
-	*/
-#ifdef OLD_GUI
-	gui << (GUI("hbox")
-			<< "draw[@handle=calib_object@minsize=20x20@label=calib]"
-			<< "draw[@handle=draw_object@minsize=20x20@label=plot]")
-			<< "button(save parameters)[@handle=saveParams]"
-			<< "button(reset calibration)[@handle=reset]";
-
-	gui.show();
-#endif
 
         gui << (HBox()
                 << Draw().handle("calib_object").minSize(20,20).label("calib")

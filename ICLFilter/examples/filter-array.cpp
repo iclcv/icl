@@ -40,10 +40,6 @@
 #include <ICLFilter/MorphologicalOp.h>
 #include <map>
 
-#ifdef OLD_GUI
-GUI gui("hsplit");
-#endif
-
 HSplit gui;
 int N = 0;
 
@@ -54,18 +50,6 @@ std::string get_filters(){
 }
 
 GUI gui_col(int i){
-#ifdef OLD_GUI
-  return ( GUI() 
-           << ("image[@handle=im"+str(i)+"@minsize=8x6]")
-           << ( GUI("hbox[@maxsize=100x3]")
-                << ("combo("+get_filters()+")[@out=cb"+str(i)+"@maxsize=100x2@minsize=3x2@label=filter]") 
-                << ("string( )[@label=params@handle=ps"+str(i)+"@maxsize=100x2@out=_"+str(i)+"@minsize=4x2]")
-                << ("checkbox(vis,checked)[@maxsize=3x2@out=vis"+str(i)+"@minsize=3x2]"))
-           << ( GUI("hbox[@maxsize=100x3]")
-                << ("label(ok)[@handle=err"+str(i)+"@maxsize=100x2@label=error@minsize=1x2]") 
-                << ("label(9999ms)[@label=dt@handle=dt"+str(i)+"@size=2x3]"))
-           << ("label(unknown)[@handle=syn"+str(i)+"@maxsize=100x2@label=syntax@minsize=1x2]") );
-#endif
   std::string si = str(i);
   return ( VBox()
            << Image().handle("im"+si).minSize(8,6)

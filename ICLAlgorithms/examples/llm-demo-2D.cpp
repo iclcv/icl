@@ -81,29 +81,6 @@ class MyThread : public Thread{
 public:
   MyThread(){
     initI();
-#ifdef OLD_GUI
-    GUI controls("vbox[@minsize=15x0]");
-    controls << "button(Train Step)[@handle=train]";
-    controls << "togglebutton(Train Off,Train On)[@out=train-loop]";
-    controls << "togglebutton(NO Soft-Max,Soft-Max)[@out=use-soft-max]";
-    controls << "slider(1,10000,1000)[@out=steps@label=Steps per Cycle]";
-    controls << "disp(3,1)[@handle=mse@label=MSE@minsize=5x2]";
-    controls << "fslider(0,0.1,0.01)[@out=e-in@label=Epsilon In]";
-    controls << "fslider(0,0.1,0.01)[@out=e-out@label=Epsilon Out]";
-    controls << "fslider(0,0.5,0.1)[@out=e-a@label=Epsilon A]";
-    controls << "fslider(0,0.0001,0.0)[@out=e-sigma@label=Epsilon Sigma]";
-    controls << "fslider(1,100,10)[@out=init-sigma@label=Initial Sigma]";
-    controls << "button(Show Kernels)[@handle=show-k]";
-    controls << "button(Reset)[@handle=reset]";
-    controls << "int(1,1000,20)[@out=kc@label=Kernel Count]";
-    
-    gui << "image[@minsize=20x15@label=Original@handle=orig-image]";
-    gui << "image[@minsize=20x15@label=Net Output@handle=net-image]";
-    gui << controls;
-    
-    gui.show();
-#endif
-    
 
     
     gui << Image().minSize(20,15).label("Original").handle("orig-image")

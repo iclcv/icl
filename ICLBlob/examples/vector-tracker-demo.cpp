@@ -339,23 +339,14 @@ void init(){
   grabber->useDesired(Size::VGA);
   grabber->useDesired(depth8u);
   grabber->useDesired(formatGray);
-#ifdef OLD_GUI
-    gui << "draw[@handle=image@minsize=32x24]";
-    gui << ( GUI("hbox") 
-             << string("slider(0,100,")+ *pa("-sleeptime") + ")"
-             "[@handle=Hsl@out=Vsl@label=sleeptime]"
-             << "togglebutton(off,!on)[@out=Vlo@label=Show labels]"
-             );
-    gui.show();
-#endif
-    gui << Draw().handle("image").minSize(32,24);
-    gui << ( HBox() 
-             << Slider(0,100,pa("-sleeptime")).handle("Hsl").out("Vsl").label("sleeptime")
-             << Button("off","on",true).out("Vlo").label("Show labels")
-             )
-        << Show();
-    
-    gui["image"].install(grabber);
+  gui << Draw().handle("image").minSize(32,24);
+  gui << ( HBox() 
+           << Slider(0,100,pa("-sleeptime")).handle("Hsl").out("Vsl").label("sleeptime")
+           << Button("off","on",true).out("Vlo").label("Show labels")
+           )
+      << Show();
+  
+  gui["image"].install(grabber);
 }
  
 void run(){

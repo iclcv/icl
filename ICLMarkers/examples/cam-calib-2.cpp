@@ -414,12 +414,6 @@ void init(){
       cf.transforms.push_back(NamedTransform("identity",Mat::id()));
     }
 
-#ifdef OLD_GUI
-    objGUI << ( GUI("hbox[@label="+cf.filename+"@minsize=1x3@maxsize=100x3]")
-                << "checkbox(enable,checked)[@out=enable-obj-"+str(c)+"]"
-                << "combo("+transformNameList.str() + (transformGiven?"":",id")+")[@handle=transform-obj-"+str(c)+"]"
-                );
-#endif
 
     File cff(cf.filename);
     std::string tt = "full path: " + cf.filename;

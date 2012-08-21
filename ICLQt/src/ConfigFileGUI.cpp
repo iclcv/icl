@@ -130,13 +130,6 @@ namespace icl{
 
     loadConfig(config);
 
-#ifdef OLD_GUI    
-    buttons << "button(collapse)[@handle=collapse]";
-    buttons << "button(expand)[@handle=expand]";
-    buttons << "button(save)[@handle=save-as]";
-    buttons << "button(load)[@handle=load]";
-    buttons << "button(update)[@handle=update]";
-#endif
     
     (*this) << ( HBox().handle("right").maxSize(100,2)
                 << Button("collapse").handle("collapse")

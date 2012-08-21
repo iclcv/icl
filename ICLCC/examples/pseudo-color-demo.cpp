@@ -70,12 +70,6 @@ void step(const std::string &handle){
 void stop_chooser(GUI &dst, int idx,float pos, float r, float g, float b){
   std::string si = str(idx);
 
-#ifdef OLD_GUI  
-  dst <<( GUI("hbox") 
-          << "checkbox(use,checked)[@out=use"+si+"@handle="+si+"]"
-          << "fslider(0,1,"+sp+")[@out=relPos"+si+"@handle=p"+si+"]"
-          << "color("+str(r)+","+str(g)+","+str(b)+")[@out=color"+si+"@handle=c"+si+"]" );
-#endif
 
   dst << ( HBox() 
            << CheckBox("use",true).out("use"+si).handle(si)
@@ -109,14 +103,6 @@ void init(){
   stop_chooser(colors,4,0.5,255,0,255);
   stop_chooser(colors,5,0.6,255,255,255);
   
-#ifdef OLD_GUI
-  colors << ( GUI("hbox") << "button(load)[@handle=load]" << "button(save)[@handle=save]" ); 
-  
-  gui << ( GUI("vbox") 
-           << "image[@handle=color@minsize=32x10]" 
-           << "image[@handle=image@minsize=32x24]"
-         ) << colors << "!show";
-#endif
 
   colors << ( HBox() 
               << Button("load").handle("load")

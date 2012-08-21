@@ -41,28 +41,6 @@ void init(){
   GUI x("ps");
   x.show();
 
-#ifdef OLD_GUI
-  gui = GUI("hscroll");
-  gui << "image[@handle=image1@label=image1@minsize=10x10]"
-      << "image[@handle=image2@label=image2@minsize=10x10]"
-      << "image[@handle=image3@label=image3@minsize=10x10]"
-      << (GUI("vbox")
-          << "color(255,0,0)[@handle=firstColor@label=RGB color]"
-          << "color(255,0,0,128)[@handle=secondColor@label=RGBA color]"
-          << "button(show Colors)[@handle=showColors]"
-          << "button(set Colors)[@handle=setColors]"
-          );
-  
-  GUI v("vbox[@maxsize=10x1000]");
-  v << "slider(-1000,1000,0)[@out=the-int1@maxsize=35x1@label=slider1@minsize=1x2]"
-    << "slider(-1000,1000,0)[@out=the-int2@maxsize=35x1@label=slider2@minsize=1x2]"
-    << "slider(-1000,1000,0)[@out=the-int3@maxsize=35x1@label=slider3@minsize=1x2]"
-    << "combo(entry1,entry2,entry3)[@out=combo@label=the-combobox]"
-    << "spinner(-50,100,20)[@out=the-spinner@label=a spin-box]"
-    << "button(click me)[@handle=click]"
-    << "checkbox(hello,unchecked)[@out=cb]";
-  gui << v << "!show";
-#endif
   gui << Image().handle("image1").label("image1").minSize(10,10)
       << Image().handle("image2").label("image2").minSize(10,10)
       << Image().handle("image3").label("image3").minSize(10,10)

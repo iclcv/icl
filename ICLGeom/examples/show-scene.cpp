@@ -79,14 +79,6 @@ void init(){
   scene.addCamera(scene.getCamera(nCams-1));
 
 
-#ifdef OLD_GUI
-  gui << "draw3D[@handle=draw@minsize=32x24]"
-      << ( GUI("vbox[@minsize=10x1@maxsize=10x100]")
-           << "combo("+comboList.str()+")[@handle=cams@label=cameras]"
-           << (pa("-i") ? "checkbox(background image,checked)[@handle=grab]" : "dummy")
-           )
-      << "!show";
-#endif
 
   gui << Draw3D().handle("draw").minSize(32,24)
       << ( VBox().minSize(10,1).maxSize(10,100)

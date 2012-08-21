@@ -56,15 +56,6 @@ void mouse(const MouseEvent &e){
 
 
 void init(){
-#ifdef OLD_GUI
-  gui << "draw[@minsize=32x24@handle=draw]";
-  gui << ( GUI("hbox[@maxsize=100x3]") 
-           << "spinner(1,100000,100)[@out=minSize@label=min size]"
-           << "spinner(1,100000,1000)[@out=maxSize@label=max size]"
-           << "fslider(0,300,30)[@out=thresh@label=threshold]" );
-  gui.show();
-#endif
-  
   gui << Draw().minSize(32,24).handle("draw");
   gui << ( HBox().maxSize(100,3) 
            << Spinner(1,100000,100).out("minSize").label("min size")

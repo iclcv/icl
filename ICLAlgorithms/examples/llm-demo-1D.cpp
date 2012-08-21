@@ -57,21 +57,6 @@ float func(float x){
 
 void init(){
   llm.setConfigurableID("llm");
-#ifdef OLD_GUI
-  GUI controls("vbox[@minsize=15x0]");
-  controls << "button(Train Step)[@handle=train]"
-           << "togglebutton(Train Off,Train On)[@out=train-loop]"
-           << "label(NAN)[@handle=mse@label=mse]"
-           << "prop(llm)"
-           << "button(Show Kernels)[@handle=show-k]"
-           << "button(Reset)[@handle=reset]"
-           << "int(1,1000,10)[@out=kernel-count@label=Kernel Count]";
-  
-  gui << "draw[@minsize=40x30@label=View@handle=draw]";
-  gui << controls;
-  
-  gui.show();
-#endif
   
   gui << Draw().minSize(40,30).label("View").handle("draw")
       << ( VBox().minSize(15,0)

@@ -43,21 +43,6 @@ GUI gui("hsplit");
 Scene scene;
 
 void init(){
-#ifdef OLD_GUI
-  gui << "draw3D[@minsize=16x12@handle=w1@label=Rendered into GL-Context]"
-      << "draw3D[@minsize=16x12@handle=w2@label=Rendered into GL-Context]"
-      << ( GUI("vbox[@minsize=12x1]") 
-           << "fslider(0.1,10,1.7)[@label=focal length left@out=fl]"
-           << "fslider(0.1,10,1.7)[@label=focal length right@out=fr]"
-           << "fslider(60,660,360)[@label=principal point offset x@out=px]"
-           << "fslider(40,440,240)[@label=principal point offset y@out=py]"
-           << "fslider(100,300,200)[@label=sampling resolution x@out=sx]"
-           << "fslider(100,300,200)[@label=sampling resolution y@out=sy]"
-           << "fslider(-100,100,0)[@label=skew@out=skew]"
-           << "fps(10)[@handle=fps]"
-           )
-      << "!show";
-#endif
 
   gui << Draw3D().minSize(16,12).handle("w1").label("Rendered into GL-Context")
       << Draw3D().minSize(16,12).handle("w2").label("Rendered into GL-Context")

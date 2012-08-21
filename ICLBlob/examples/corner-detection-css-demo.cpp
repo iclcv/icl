@@ -65,29 +65,6 @@ void init(){
   
   css.setConfigurableID("css");
   css.setPropertyValue("debug-mode","on");
-#ifdef OLD_GUI
-  GUI gui2("vsplit[@handle=B]");
-  GUI controls("vbox");
-  controls << ( GUI("hbox") 
-                << "camcfg()"
-                <<  "combo(color image,binary image)[@out=vis]"
-              )
-           << "fslider(0,1,0.03)[@out=t@label=threshold]";
-  
-  gui2 << ( GUI("vsplit")
-           << ( GUI("hbox")
-                << "draw[@handle=img_in@minsize=16x12]"
-                << "draw[@handle=img1@minsize=16x12]"
-                << "draw[@handle=img2@minsize=16x12]"
-              )
-           << "draw[@handle=img3@minsize=16x12]"
-         )
-       << controls;
-
-  gui << gui2 << "prop(css)[@label=CSS Params@minsize=14x12]";
-  
-  gui.show();
-#endif
 
   gui << ( VBox()
            << ( HBox() 

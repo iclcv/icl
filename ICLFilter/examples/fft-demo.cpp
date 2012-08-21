@@ -58,18 +58,6 @@ void init(){
   grabber.useDesired<Size>(pa("-s"));
   grabber.useDesired(formatGray);
   
-#ifdef OLD_GUI
-  gui << (GUI("vbox")
-          << "image[@handle=image@minsize=16x12]"
-          << "image[@handle=result@minsize=16x12]"
-          << "fps(10)[@handle=fps@maxsize=100x2@minsize=8x2]")
-      << (GUI("vbox[@minsize=8x1]")
-          << "combo(complex,imag,real,power,log-power,magnitude,phase,magnitude/phase)[@label=result mode@handle=resultMode@out=_]"
-          << "combo(no-scale,pad-zero,pad-copy,pad-mirror,scale-up,scale-down)[@label=size adaption mode@handle=sizeAdMode@out=_2]"
-          );
-  
-  gui.show();
-#endif
   std::string resultModes = "complex,imag,real,power,log-power,magnitude,phase,magnitude/phase";
   std::string sizeAdaptionModes = "no-scale,pad-zero,pad-copy,pad-mirror,scale-up,scale-down";
   gui << ( VBox()

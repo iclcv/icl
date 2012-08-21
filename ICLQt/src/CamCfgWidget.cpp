@@ -149,43 +149,6 @@ namespace icl{
                         )
                    );
     
-#ifdef OLD_GUI
-    data->gui = GUI("hsplit",this);
-    
-    data->gui <<  ( GUI("vsplit") 
-                    << "image[@handle=image@minsize=8x6@label=preview]"
-                    << ( GUI("vbox[@minsize=18x15@maxsize=100x15]")
-                         << ( GUI("hbox[@label=devices]") 
-                              << "combo(no devices found)[@handle=device]"
-                              << "button(rescan)[@handle=scan@maxsize=3x8]"
-                            )
-                         << ( GUI("hbox") 
-                              << "combo(no devices found)[@handle=format@label=format]"
-                              << "combo(no devices found)[@handle=size@label=size]"
-                            )
-                         <<  ( GUI("hbox[@label=control / FPS]") 
-                               << "togglebutton(capture!,stop)[@handle=capture@out=grabbing]"
-                               << "combo(max 1Hz,max 5Hz,max 10Hz,max 15Hz,max 20Hz,max 25Hz,max"
-                                  " 30Hz,max 50Hz,max 100Hz,max 120Hz,!no limit)[@handle=hz@maxsize=4x2]"
-                               << "label(--.--)[@handle=fps]"
-                              
-                             )
-                         <<  ( GUI("hbox[@label=desired params]")
-                               << "combo(default,QQVGA,QVGA,VGA,SVGA,XGA,XGAP,UXGA)[@handle=desired-size@label=size]"
-                               << "combo(default,depth8u,depth16s,depth32s,depth32f,depth64f)[@handle=desired-depth@label=depth]"
-                               << "combo(default,formatGray,formatRGB,formatHLS,formatYUV,formatLAB,formatChroma,formatMatrix)"
-                                  "[@handle=desired-format@label=format]"
-                             )
-                       )
-                    )
-              <<  ( GUI("vbox")
-                    << "vbox[@handle=props@minsize=10x1@label=properties]"
-                    << ( GUI("hbox[@maxsize=100x2]")
-                         << "button(load props)[@handle=load]"
-                         << "button(save props)[@handle=save]"
-                        )
-                   );
-#endif
 
     data->gui.create();
 
@@ -247,18 +210,6 @@ namespace icl{
                  )
               << Create();
 
-#ifdef OLD_GUI
-    data->gui = GUI("vbox",this);
-    if(needDeviceCombo){
-      data->gui << "combo(no devices found)[@handle=device@maxsize=100x2@label=available devices]";
-    }
-    data->gui << "vbox[@handle=props@minsize=10x1@label=properties for device "+devText+"]"
-              << ( GUI("hbox[@maxsize=100x2]")
-                   << "button(load props)[@handle=load]"
-                   << "button(save props)[@handle=save]"
-                 );
-    data->gui.create();
-#endif
 
     if(needDeviceCombo){
       ComboHandle devices = data->gui.get<ComboHandle>("device");
@@ -369,31 +320,19 @@ namespace icl{
         std::string handle="#r#"+p;
         SteppingRange<float> r = parse<SteppingRange<float> >(grabber.getInfo(p));
         std::string c = grabber.getValue(p);
-#ifdef OLD_GUI
-        gui << "fslider("+str(r.minVal)+","+str(r.maxVal)+","+c+")[@handle="+handle+"@minsize=12x2@label="+pp+"]";
-#endif
         gui << FSlider(r,parse<float>(c)).handle(handle).minSize(12,2).label(pp);
         ostr << '\1' << handle;
       }else if(pt == "menu" || pt == "value-list" || pt == "valueList"){
         std::string handle = (pt == "menu" ? "#m#" : "#v#")+p;
-#ifdef OLD_GUI
-        gui << "combo("+get_combo_content_str(p,grabber)+")[@handle="+handle+"@minsize=12x2@label="+pp+"]";
-#endif
         gui << Combo(get_combo_content_str(p,grabber)).handle(handle).minSize(12,2).label(pp);
         ostr << '\1' << handle;
       }else if(pt == "command"){
         std::string handle = "#c#"+p;
         ostr << '\1' << handle;
-#ifdef OLD_GUI
-        gui << "button("+pp+")[@handle="+handle+"@minsize=12x2]";
-#endif
         gui << Button(pp).handle(handle).minSize(12,2);
       }else if(pt == "info"){
         std::string handle = "#i#"+p;
         ostr << '\1' << handle;
-#ifdef OLD_GUI
-        gui << "label(unknown)[@handle="+handle+"@minsize=12x2@label="+p+"]";
-#endif
         gui << Label("unknown").handle(handle).minSize(12,2).label(p);
         int volatileness = grabber.isVolatile(p);
         if(volatileness){

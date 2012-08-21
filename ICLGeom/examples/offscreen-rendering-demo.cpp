@@ -87,11 +87,6 @@ struct OSRCube : public SceneObject{
 
 void init(){
   // create graphical user interface
-#ifdef OLD_GUI
-  gui << "draw3D(300x300)[@label=3D scene@minsize=16x16@handle=draw]" 
-      << "draw[@minsize=16x16@handle=image@label=offscreen rendered image]"
-      << "!show";
-#endif
 
   gui << Draw3D(Size(300,300)).label("3D scene").minSize(16,16).handle("draw")
       << Draw().minSize(16,16).handle("image").label("offscreen rendered image")

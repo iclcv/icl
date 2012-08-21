@@ -95,25 +95,6 @@ GenericGrabber g;
 void init(){
   g.init(pa("-input"));
   g.useDesired(depth8u);
-#ifdef OLD_GUI
-  gui << "draw()[@label=image@minsize=32x24@handle=image]";
-  gui << ( GUI("vbox") 
-           << "draw()[@label=template@minsize=10x6@handle=templ]"
-           << "draw()[@label=buffer@minsize=10x6@handle=buf]"
-          );
-           
-
-  GUI controls("vbox[@minsize=7x7]");
-  controls << "fslider(0,1,0.9)[@handle=significance-handle@label=significance@out=significance]";
-  controls << "fps(50)[@handle=fps@minsize=5x5]";
-  controls << "togglebutton(no masks, with masks)[@out=use-masks]";
-  controls << "togglebutton(dont clip buffers,clip buffers)[@out=clip-buffers]";
-  controls << "togglebutton(square distance,norm. cross corr)[@out=mode]";
-  
-  gui << controls;
-   
-  gui.show();
-#endif
   
   gui << Draw().label("image").minSize(32,24).handle("image")
       << ( VBox() 

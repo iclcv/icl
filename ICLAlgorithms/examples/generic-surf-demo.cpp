@@ -128,30 +128,6 @@ void init(){
     objRect = obj->getImageRect();
   }
   
-#ifdef OLD_GUI
-  gui << (GUI("vbox")
-          <<(GUI("hbox")
-             << (GUI("vbox")
-                 << "draw[@handle=draw_object@minsize=16x12@label=result of surf match]"
-                 << "button(snapshot)[@handle=snap_handle]")
-             << "draw[@handle=draw_result@minsize=16x12@label=result of surf match]"
-             << "draw[@handle=draw_image@minsize=16x12@label=result of surf]")
-          
-          <<(GUI("hbox")
-             << "fps(10)[@handle=fps@maxsize=100x2@minsize=8x2]"))
-      << (GUI("vbox[@minsize=8x1]")
-          << "checkbox(opensurf,checked)[@out=os@handle=os_handle]"
-          << "checkbox(show_matches,unchecked)[@out=sm@handle=sm_handle]"
-          << "checkbox(show_features,unchecked)[@out=sf@handle=sf_handle]"
-          << "checkbox(rotatationinvariance/extended,unchecked)[@out=ri@handle=ri_handle]"
-          << "slider(0,20,4)[@out=octaves@handle=oct_handle@label=octaves]"
-          << "slider(0,20,4)[@out=intervals@handle=intervals_handle@label=intervals/octavelayer]"
-          << "slider(0,10,2)[@out=samples@handle=sample_handle@label=init samples]"
-          << "fslider(0,0.04,0.001)[@out=thresh@handle=thresh_handle@label=threshold]"
-          );
-  
-  gui.show();
-#endif
   
   gui << (VBox()
           <<(HBox()

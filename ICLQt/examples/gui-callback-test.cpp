@@ -86,17 +86,6 @@ void slider_complex_cb(const std::string &handle){
 
 void init(){
   // create some nice components
-#ifdef OLD_GUI
-  gui << "label(something)[@handle=currentTimeLabel@label=current time]"
-      << "label(something)[@handle=timeDiffLabel@label=time since last call]"
-      << "slider(0,100,50)[@handle=slider@label=a slider]"
-      << "button(Click me!)[@handle=click]"
-      << "button(Click me too!)[@handle=click-2]"
-      << "button(Exit!)[@handle=exit]";
-  // create and show the GUI
-  gui.show();
-  
-#endif
   gui << Label("something").handle("currentTimeLabel").label("current time")
       << Label("something").handle("timeDiffLabel").label("time since last call")
       << Slider(0,100,50).handle("slider").label("a slider")

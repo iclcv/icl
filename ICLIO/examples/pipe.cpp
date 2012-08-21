@@ -238,21 +238,6 @@ void init_gui(){
   bool idu = pa("-idu");
   
   if(pa("-pp")){
-#ifdef OLD_GUI
-    gui << "image[@handle=image@minsize=12x8]" 
-        << ( GUI("vbox[@maxsize=100x8]") 
-             <<  ( GUI("hbox") 
-                   << "camcfg()[@maxsize=5x2]"
-                   << ("spinner(1,100,"+*pa("-fps")+")[@out=fpsLimit@label=max fps]")
-                   << "fps(10)[@handle=fps]"
-                 )
-             <<  ( GUI("hbox") 
-                   << "togglebutton(off,"+idu+"on)[@out=updateImages@label=update images]"
-                   << "togglebutton(off,!on)[@handle=_@out=pp-on@label=preprocessing@minsize=5x2]"
-                 )
-             );
-    gui.show();
-#endif
     gui << Image().handle("image").minSize(12,8) 
         << ( VBox().maxSize(100,8) 
              <<  ( HBox() 
@@ -269,20 +254,6 @@ void init_gui(){
 
     ppEnabled = &gui.get<bool>("pp-on");
   }else{
-#ifdef OLD_GUI
-    gui << "image[@handle=image@minsize=12x8]" 
-        << ( GUI("vbox[@maxsize=100x8]") 
-             <<  ( GUI("hbox") 
-                   << "camcfg()[@maxsize=5x2]"
-                   << ("spinner(1,100,"+*pa("-fps")+")[@out=fpsLimit@label=max fps]")
-                   )
-             <<  ( GUI("hbox") 
-                   << "fps(10)[@handle=fps]"
-                   << "togglebutton(off,"+idu+"on)[@out=updateImages@label=update images]"
-                 )
-             );
-    gui.show();
-#endif
     gui << Image().handle("image").minSize(12,8) 
         << ( VBox().maxSize(100,8) 
              <<  ( HBox() 

@@ -41,11 +41,6 @@ FiducialDetector fid("bch","[0-100]",ParamList("size",Size(30,30)));
 
 void init(){
   fid.setConfigurableID("fid");
-#ifdef OLD_GUI
-  gui << "draw[@handle=draw@minsize=16x12]"
-      << "prop(fid)[@maxsize=18x100]"
-      << "!show";
-#endif
   gui << Draw().handle("draw").minSize(16,12).size(32,24)
       << Prop("fid").label("detection properties").maxSize(18,100).minSize(14,1)
       << Show();

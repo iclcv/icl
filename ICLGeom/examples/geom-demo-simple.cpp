@@ -69,15 +69,6 @@ void reload_obj(){
 
 void init(){
   // create graphical user interface
-#ifdef OLD_GUI
-  GUI ctrl("hbox[@maxsize=100x3]");
-  ctrl << "fslider(0.5,20,3)[@out=f@handle=focal@label=focal length@maxsize=100x3]";
-  if(pa("-o")){
-    ctrl << "button(reload)[@handle=reload]";
-  }
-  
-  gui << "draw3D[@minsize=16x12@handle=draw@label=scene view]" << ctrl << "!show";
-#endif
   
   gui << Draw3D().minSize(16,12).handle("draw").label("scene view") 
       << ( HBox()

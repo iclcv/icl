@@ -315,26 +315,6 @@ namespace icl{
                 )
             << Show();
 
-#ifdef OLD_GUI
-    (*this) << "vbox[@handle=image@label=Chromaticity Space@minsize=18x16]";
-    
-    (*this) << ( GUI("hbox") 
-             << "slider(0,255,128)[@handle=bluedisphandle@label=Disp. Blue@out=bluedisp]" 
-             << "button(load)[@handle=load]" << "button(save)[@handle=save]" );
-    (*this) << ( GUI("hbox") 
-             << "slider(0,255,128)[@handle=red@label=Red Color@out=redval]" 
-             << "slider(0,255,128)[@handle=red-thresh@label=Red Threshold@out=redtval]" );
-    (*this) << ( GUI("hbox") 
-             << "slider(0,255,128)[@handle=green@label=Green Color@out=greenval]" 
-             << "slider(0,255,128)[@handle=green-thresh@label=Green Threshold@out=greentval]" );
-    (*this) << ( GUI("hbox") 
-             << "slider(0,255,128)[@handle=blue@label=Blue Color@out=blueval]" 
-             << "slider(0,255,128)[@handle=blue-thresh@label=Blue Threshold@out=bluetval]" );
-    
-    show();
-#endif
-   
-    
     BoxHandle &h = get<BoxHandle>("image");
     m_poChromaWidget = new ChromaWidget(*h);
     h.add(m_poChromaWidget);

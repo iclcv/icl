@@ -58,20 +58,6 @@ void updateVT(){
 
 
 void init(){
-#ifdef OLD_GUI
-  gui << "slider(1,1000,2)[@label=data dimension@handle=dim@out=dim-val]";
-  gui << "slider(1,300,30)[@label=num inputs@handle=num@out=num-val]";
-  gui << "slider(0,5,0)[@label=num std. deviation@handle=dev@out=dev-val]";
-  gui << ( GUI("hbox") 
-           << "fps(10)[@handle=fps@minsize=5x2]"
-           << "togglebutton(off,on)[@label=try tivial@handle=trivial@out=trivial-val]"
-           << "togglebutton(off,on)[@label=use norm@handle=norm@out=norm-val]"
-           << "togglebutton(off,on)[@label=first free ID@handle=ff@out=ff-val]"
-         );
-  
-  gui.show();
-#endif
-
   gui << Slider(1,1000,2).label("data dimension").handle("dim").out("dim-val")
       << Slider(1,300,30).label("num inputs").handle("num").out("num-val")
       << Slider(0,5,0).label("num std. deviation").handle("dev").out("dev-val")

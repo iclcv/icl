@@ -155,26 +155,6 @@ void init(){
     gamma = f["config.gammaslope"];
   }
 
-#ifdef OLD_GUI
-  gui << "draw[@minsize=32x24@handle=orig@label=original]";
-  gui << "image[@minsize=32x24@handle=prev@label=preview]";
-  gui << ( GUI("vbox[@label=controls]")
-           << string("slider(2,200,")+str(masksize)+")[@label=mask size@out=masksize@minsize=15x2@handle=a]"
-           << string("fslider(-30,40,")+str(thresh)+")[@label=threshold@out=threshold@minsize=15x2@handle=b]"
-           << string("fslider(0,15,")+str(gamma)+")[@label=gamma slope@out=gamma@minsize=15x2@handle=c]"
-           << "button(next image)[@handle=next]"
-           << "togglebutton(stopped,running)[@out=loop@handle=d]"
-           << "togglebutton(no clip,clip to roi)[@out=clipToROI@handle=e]"
-           << "button(save params)[@handle=save]"
-           << "combo(region mean,tiledNN,tiledLIN)[@handle=algorithm@label=algorithm]"
-           << ( GUI("hbox")
-                << "label(..ms)[@handle=time@label=apply time@minsize=2x3]"
-                << "fps(10)[@handle=fps@minsize=4x3@label=fps]")
-         );
-  
-  
-  gui.show();
-#endif
   gui << Draw().minSize(16,12).handle("orig").label("original image")
       << Image().minSize(16,12).handle("prev").label("preview image")
       << ( VBox().label("controls")

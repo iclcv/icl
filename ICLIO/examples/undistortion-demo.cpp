@@ -45,13 +45,6 @@ GUI gui("hsplit");
 GenericGrabber grabber;
 void init(){
   
-#ifdef OLD_GUI
-  gui << "image[@handle=image@minsize=20x20@label=undistorted image]");
-  if(pa("-wm")){
-    gui << ("image[@handle=warp@minsize=20x20@label=warp map]");
-  }
-  gui.show();
-#endif
 
   gui << Image().handle("image").minSize(20,20).label("undistorted image")
       << (pa("-wm") ? Image().handle("warp").minSize(20,20).label("warp map") : Dummy())

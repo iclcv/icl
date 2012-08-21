@@ -274,57 +274,6 @@ void init(){
     segmenter->load(pa("-l"));
   }
   
-#ifdef OLD_GUI  
-  gui << ( GUI("hsplit")
-           << "draw[@handle=image@minsize=16x12@label=camera image]"
-           << "draw[@handle=seg@minsize=16x12@label=segmentation result]"
-         )
-      << ( GUI("hsplit")  
-           << (GUI("tab(2D,3D)[@handle=tab]")
-               << ( GUI("hbox") 
-                    << "draw[@handle=lut@minsize=16x12@label=lut]"
-                    << ( GUI("vbox[@maxsize=3x100@minsize=4x1]")
-                         << "combo(x,y,z)[@handle=zAxis]" 
-                         << "slider(0,255,0,vertical)[@out=z@label=vis. plane]"
-                         )
-                    )
-               << ( GUI("hbox") 
-                    << "draw3D(VGA)[@handle=lut3D]"
-                    << "slider(0,255,200,vertical)[@maxsize=2x100@out=alpha@label=alpha]"
-                  )
-               )
-           << ( GUI("vbox")
-                << ( GUI("hbox") 
-                     << "combo(" + classes.str() + ")[@handle=currClass@label=current class]"
-                     << "togglebutton(current class,background)[@label=left button@handle=lb]"
-                   )
-                << "slider(0,255,4)[@out=radius@label=color radius]"
-                
-                << (GUI("hbox[@label=smooth LUT]")
-                    << "slider(0,27,10)[@out=smoothThresh@label=threshold]"
-                    << "button(do it)[@handle=smooth]"
-                    )
-                << ( GUI("hbox") 
-                     <<"button(load)[@handle=load]"
-                     << "button(save)[@handle=save]"
-                   )
-                << ( GUI("hbox") 
-                     << "checkbox(pre median,unchecked)[@out=preMedian]"
-                     << "checkbox(post median,unchecked)[@out=postMedian]"
-                   )
-                << ( GUI("hbox") 
-                     << "checkbox(post dilation,unchecked)[@out=postDilatation]"
-                     << "checkbox(post erosion,unchecked)[@out=postErosion]"
-                   )
-                << ( GUI("hbox") 
-                     << "label(?)[@handle=time@label=time for segm.]"
-                     << "fps(10)[@handle=fps@label=system fps]"
-                   )
-                << ( GUI("hbox") << "camcfg()" << "button(clear)[@handle=clear]" )
-                )
-           )
-      << "!show";
-#endif
   gui << ( HSplit()
            << Draw().handle("image").minSize(16,12).label("camera image")
            << Draw().handle("seg").minSize(16,12).label("segmentation result")

@@ -49,17 +49,6 @@ void init(){
   cfg.setRestriction("config.threshold",ConfigFile::KeyRestriction(0,255));
   ConfigFile::loadConfig(cfg);
 
-#ifdef OLD_GUI
-  gui << "image[@handle=image@minsize=32x24@label=image]";
-  
-  GUI con("vbox");
-  con << "config(embedded)[@label=configuration@minsize=15x15]";
-  con << "fps(50)[@handle=fps]";
-
-  gui << con;
-  gui.show();
-#endif
-  
   gui << Image().handle("image").minSize(32,24).label("image")
       << (VBox()
           (embedded).label("configuration").minSize(15,15);

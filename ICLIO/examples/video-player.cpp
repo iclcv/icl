@@ -72,27 +72,6 @@ void stream_pos(){
 
 void init(){
   grabber.init(type,type+"="+filename);
-#ifdef OLD_GUI  
-  UI con("vbox[@maxsize=1000x5]");
-
-  con << "slider(0,"+grabber.getValue(len)+",0)[@label=stream position in "+unit+"@out=posVal@handle=pos@maxsize=1000x2]"
-      << ( GUI("hbox[@maxsize=1000x3]") 
-#ifndef HAVE_OPENCV
-           << "slider(0,100,50)[@out=speed@label=playback speed]"
-           << "slider(0,100,50)[@out=volume@label=audio volume]"
-#endif
-           << "fps(100)[@handle=fps@maxsize=5x2@minsize=5x2]" 
-           << "togglebutton(play,pause)[@out=pause@maxsize=4x2]"
-           << "camcfg()"
-         );
-  
-  gui << "image[@minsize=32x24@handle=image]" 
-      << con;
-
-  gui.show();
- #endif
-
-
   int len = parse<int>(grabber.getValue("len"));
   gui << Image().minSize(32,24).handle("image")
       << Slider(0,len,0).label("stream position in "+unit).out("posVal").handle("pos").maxSize(1000,2)

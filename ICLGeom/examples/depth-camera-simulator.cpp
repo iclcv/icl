@@ -26,22 +26,6 @@ void init(){
             << (dOut ? Image().handle("depth") : Dummy())
             << Create();
   }
-#ifdef OLD_GUI
-  gui << "draw3D[@handle=draw]" 
-      << ( GUI("vbox[@minsize=10x2]")
-           << "fslider(-10,10,0)[@out=x@label=translate x]"
-           << "fslider(-10,10,0)[@out=y@label=translate y]"
-           << "fslider(1.5,10,0)[@out=z@label=translate z]"
-
-           << "fslider(-4,4,0)[@out=rx@label=rotate x]"
-           << "fslider(-4,4,0)[@out=ry@label=rotate y]"
-           << "fslider(-4,4,0)[@out=rz@label=rotate z]"
-
-           << ((cOut||dOut) ? "togglebutton(show,hide)[@label=preview@handle=preview]" : "")
-           << "button(reset view)[@handle=resetView]"
-         )
-      << "!show";
-#endif
 
   gui << Draw3D().handle("draw")
       << ( VBox().minSize(10,2)

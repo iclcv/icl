@@ -481,37 +481,6 @@ void init(){
     create_pattern_gui();
   }
 
-#ifdef OLD_GUI
-  gui << "draw[@minsize=32x24@handle=image]";
-  GUI controls("vbox[@minsize=10x1]");
-  controls << "image[@maxsize=100x2@minsize=5x2label=state@handle=state]";
-  controls << "combo(!color,gray,thresh,morph,warp,warp-field,warp-map)[@out=vis@label=visualization]";
-  controls << "togglebutton(off,on)[@out=grab-loop-val@handle=grab-loop@label=grab loop]";
-  controls << "fslider(0.8,2.0,1.1)[@out=min-form-factor@label=roundness]";
-  controls << "slider(10,10000,500)[@out=min-blob-size@label=min blob size]";
-  controls << (GUI("vbox[@label=local threshold]") 
-               << "slider(2,100,10)[@out=mask-size@label=mask size]"
-               << ("slider("+*pa("-thresh-range",0)+","+
-                   *pa("-thresh-range",1)+",-10)[@out=thresh@label=threshold]") );
-  controls << "togglebutton(!no,yes)[@out=useMorph@label=use morphed image]";
-  controls << "button(add)[@handle=add]";
-  controls << "togglebutton(no,yes)[@out=use-stochastic-opt@label=stochastic mode]";
-  controls << "button(optimize)[@handle=optimize]";
-  controls << "button(save)[@handle=save]";
-
-  GUI manCont("vbox[@minsize=10x1]");
-  manCont <<  ( GUI("hbox")
-                 << "fslider(-100,1500,0,vertical)[@out=manDist@label=dist@handle=manDistH]"
-                << "fslider(-1,1,0,vertical)[@out=manScale@label=scale@handle=manScaleH]"
-               )
-          << "label(---)[@maxsize=100x2@handle=manErr]"
-          << "togglebutton(off,on)[@maxsize=100x2@out=manShowGrid@label=grid]"
-          << "button(write)[@maxsize=100x2@handle=manWrite@handle=manWriteH]";
-
-  
-  gui << ( GUI("tab(auto,manual)[@handle=tab]") << controls << manCont );
-  gui.show();
-#endif 
   
   gui << Draw().minSize(32,24).handle("image");
   

@@ -61,25 +61,6 @@ void init(){
   grabColor.init("kinectc","kinectc=0");
   grabDepth.useDesired(depth32f, size, formatMatrix);
   grabColor.useDesired(depth8u, size, formatRGB);
-#ifdef OLD_GUI
-  GUI controls("vbox[@minsize=12x2]");
-  controls << "fps(10)[@handle=fps]"
-	   << "fslider(0.7,1.0,0.89)[@out=threshold@label=threshold@handle=thresholdHandle]"
-	   << "buttongroup(unfiltered, median3x3, median5x5)[@handle=usedFilter]"
-	   << "slider(1,15,2)[@out=normalrange@label=normal range@handle=normalrangeHandle]"
-	   << "togglebutton(disable averaging, enable averaging)[@out=disableAveraging]"
-	   << "slider(1,15,1)[@out=avgrange@label=averaging range@handle=avgrangeHandle]"
-	   << "buttongroup(max, mean)[@handle=usedAngle]"
-	   << "slider(1,15,3)[@out=neighbrange@label=neighborhood range@handle=neighbrangeHandle]"
-	   << "togglebutton(disable CL, enable CL)[@out=disableCL]";
-  
-  gui << "image[@handle=depth@minsize=16x12]"
-      << "image[@handle=color@minsize=16x12]"
-      << "image[@handle=angle@minsize=16x12]"
-      << "image[@handle=edge@minsize=16x12]"
-      << controls
-      << "!show";
-  #endif
   GUI controls = VBox().minSize(12,2);
   controls << Fps(10).handle("fps")
            << FSlider(0.7,1.0,0.89).out("threshold").label("threshold").handle("thresholdHandle")

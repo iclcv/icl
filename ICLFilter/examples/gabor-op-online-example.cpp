@@ -49,28 +49,6 @@ inline vector<float> vec1(float f) {
 }
 
 void init(){
-#ifdef OLD_GUI
-  gui = GUI("hbox");
-  GUI params("vbox[@label=Gabor Parameters@minsize=15x20]");
-  params  << "fslider(0.1,100,20)[@label=Wave-Length -Lambda-@minsize=15x2@out=lambda]"
-          << "fslider(0,3.15,0)[@label=Wave-Angle -Theta-@minsize=15x2@out=theta]"
-         << "fslider(0,50,0)[@label=Phase-Offset -Psi-@minsize=15x2@out=psi]"
-          << "fslider(0.01,10,0.5)[@label=Elipticity -Gamma-@minsize=15x2@out=gamma]"
-          << "fslider(0.1,18,20)[@label=Gaussian Std-Dev. -Sigma-@minsize=15x2@out=sigma]"
-          << "slider(3,50,10)[@label=Width@minsize=15x2@out=width]"
-          << "slider(3,50,10)[@label=Height@minsize=15x2@out=height]";
-  
-  GUI maskNfps("hbox");
-  maskNfps << "image[@minsize=15x15@label=Gabor Mask@handle=mask]"
-           << "fps(10)[handle=fps]"; 
-  
-  GUI sidebar("vbox");
-  sidebar << maskNfps << params;
-  
-  gui << "image[@minsize=32x24@label=Result Image@handle=image]" << sidebar;
-  
-  gui.show();
-#endif
   gui << Image().minSize(32,24).label("Result Image").handle("image")
       << (VBox().handle("sidebar")
           << ( HBox()

@@ -38,17 +38,6 @@
 GUI gui;
 GenericGrabber grabber;
 void init(){
-#ifdef OLD_GUI
-  gui << "image()[@handle=image@minsize=32x24]";
-  gui << ( GUI("hbox[@maxsize=100x3]") 
-           << "togglebutton(no,!yes)[@label=enable-warping@handle=warp-h@out=warp]"
-           << "togglebutton(nn,lin)[@label=interpolation@handle=__@out=interpolation]"
-           << "combo(depth8u,depth16s,depth32s,depth32f,depth64f)[@label=image depth@out=depth]"
-           << "fps(10)[@handle=fps@label=FPS]"
-           << "label(---ms)[@label=apply time@handle=apply-time]"
-         );
-  gui.show();
-#endif
   gui << Image().handle("image").minSize(32,24)
       << ( HBox().maxSize(100,3) 
            << Button("no","!yes").label("enable-warping").out("warp")

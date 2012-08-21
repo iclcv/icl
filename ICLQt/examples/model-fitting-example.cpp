@@ -151,20 +151,6 @@ void compute(){
 }
 
 void init(){
-#ifdef OLD_GUI
-  gui << "plot[@handle=plot@minsize=30x30]"
-      << (GUI ("vbox")
-          << "combo(line,circle)[@handle=what]"
-          << "checkbox(ransac,unchecked)[@handle=ransac]"
-          << "button(new data)[@handle=new]"
-          << "togglebutton(stopped,running)[@handle=run]"
-          << ( GUI("hbox")
-               << "fslider(0.01,1,0.2,vertical)[@out=noise@label=noise@tooltip=noise factor]"
-               << "slider(0,100,30,vertical)[@out=random@label=good %@tooltip=percentage of non-random points]"
-             )
-          )
-      << "!show";
-#endif
   gui << Plot().handle("plot").minSize(30,30)
       << (VBox()
           << Combo("line,circle").handle("what")

@@ -200,29 +200,6 @@ void mouse(const MouseEvent &evt){
 }
 
 void init(){
-#ifdef OLD_GUI
-  gui << ( GUI ("tab(2D,3D)[@handle=tab]")
-           << "draw[@handle=draw@minsize=32x24]"
-           << "draw3D[@handle=draw3D@minsize=32x24]"
-         );
-  
-  GUI con("vbox[@maxsize=12x100]");
-  con << "togglebutton(off,!on)[@out=grab@label=grab loop]";
-  con << "togglebutton(off,!on)[@out=pp@label=median]";
-  con << ( GUI("vbox[@label=3D vis]") 
-           << "checkbox(points,on)[@out=points]"
-           << "checkbox(lines,off)[@out=lines]"
-           << "checkbox(fill,off)[@out=fill]"
-           << "checkbox(image,off)[@out=imageOn]"
-           << "spinner(1,10,2)[@out=pointSize@label=point size]"
-           << "combo(solid,depth,intensity,confidence)[@handle=visColor@out=_]"
-           << "button(reset pos)[@handle=resPos]"
-         );
-
-  //con << "camcfg";
-  gui << con;
-  gui.show();
-#endif
 
   gui << ( Tab("2D,3D").handle("tab")
            << Draw().handle("draw").minSize(32,24)

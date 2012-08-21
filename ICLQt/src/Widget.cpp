@@ -1008,28 +1008,13 @@ namespace icl{
     QMutexLocker locker(&data->menuMutex);
 
     // OK, we need to extract default values for all gui elements if gui is already defined!
-#ifdef OLD_GUI
-    data->menu = GUI("tab(bci,scale,channel,capture,grid,info,license,help)[@handle=root@minsize=5x7]",widget);
-#endif
     data->menu = Tab("bci,scale,channel,capture,grid,info,license,help",widget).handle("root").minSize(5,7);
 
-#ifdef OLD_GUI
-    GUI bciGUI("vbox");
-#endif
     VBox bciGUI;
 
     std::string bcis[3]={"custom,","off,","auto"};
     bcis[((int)data->rm)-1] = str("!")+bcis[((int)data->rm)-1];
     bool bciAuto = data->bciUpdateAuto && *data->bciUpdateAuto;
-#ifdef OLD_GUI
-    bciGUI << ( GUI("hbox")
-                << str("combo(")+bcis[0]+bcis[1]+bcis[2]+")[@label=bci-mode@handle=bci-mode@out=bci-mode-out]"
-                << str("togglebutton(manual,")+(bciAuto?"!":"")+"auto)[@label=update mode@out=bci-update-mode]"
-              )
-           << str("slider(-255,255,")+str(data->bci[0])+")[@handle=brightness@label=brightness@out=_2]"
-           << str("slider(-255,255,")+str(data->bci[1])+")[@handle=contrast@label=contrast@out=_1]"
-           << str("slider(-255,255,")+str(data->bci[2])+")[@handle=intensity@label=intensity@out=_0]";
-#endif
     bciGUI << ( HBox()
                 << Combo(bcis[0]+bcis[1]+bcis[2]).label("bci-mode").handle("bci-mode")
                 << Button("manual","auto",bciAuto).label("update mode").out("bci-update-mode")
@@ -1038,36 +1023,14 @@ namespace icl{
            << Slider(-255,255,data->bci[1]).handle("contrast").label("contrast")
            << Slider(-255,255,data->bci[2]).handle("intensity").label("intensity");
     
-#ifdef OLD_GUI
-    GUI scaleGUI("vbox");
-#endif
     VBox scaleGUI;
     
     std::string em[4]={"no scale,","hold aspect ratio,","force fit,","zoom"};
     em[data->fm] = str("!")+em[data->fm];
 
-#ifdef OLD_GUI
-    scaleGUI << str("combo(")+em[0]+em[1]+em[2]+em[3]+")[@maxsize=100x2@handle=fit-mode@label=scale mode@out=_3]";
-    scaleGUI << "hbox[@handle=scale-widget@minsize=4x3]";
-#endif
     scaleGUI << Combo(em[0]+em[1]+em[2]+em[3]).maxSize(100,2).handle("fit-mode").label("scale mode")
              << HBox().handle("scale-widget").minSize(4,3);
 
-#ifdef OLD_GUI
-    GUI channelGUI("vbox");
-    channelGUI << "combo(all,channel #0,channel #1,channel #2,channel #3)[@maxsize=100x2@handle=channel@label=visualized channel@out=_4]"
-               << "togglebutton(manual,auto)[@maxsize=100x2@label=update mode@out=channel-update-mode]";
-
-    GUI captureGUI("vbox");
-     
-    captureGUI << ( GUI("hbox")
-                    << ( GUI("hbox[@label=single shot]") 
-                         << "button(image)[@handle=cap-image]"
-                         << "button(frame buffer)[@handle=cap-fb]"
-                       )
-                    << "combo(image.pnm,image_TIME.pnm,ask me)[@label=filename@handle=cap-filename@out=_5]"
-                  );
-#endif
     VBox channelGUI;
     channelGUI << Combo("all,channel #0,channel #1,channel #2,channel #3").maxSize(100,2).handle("channel").label("visualized channel")
                << Button("manual","auto").maxSize(100,2).label("update mode").out("channel-update-mode");
@@ -1099,27 +1062,6 @@ namespace icl{
     }
     std::string autoCapFP = data->outputCap ? data->outputCap->deviceInfo : "captured/image_####.ppm";
     
-#ifdef OLD_GUI
-    GUI autoCapGUI("vbox[@label=automatic]");
-    autoCapGUI << ( GUI("hbox")
-                    << str("combo(image,")+(autoCapFB?"!":"")+"frame buffer)[@label=mode@handle=auto-cap-mode@out=_6]"
-                    << str("spinner(0,100,")+str(autoCapFS)+")[@label=frame skip@handle=auto-cap-frameskip@out=_10]"
-                    << str("combo(")+FILE+","+VIDEO+","+XCFP+","+SM+")[@label=dest.@handle=auto-cap-device]"
-                    << str("string(")+autoCapFP+",200)[@label=output params@handle=auto-cap-filepattern@out=_7]"
-                  )
-               << ( GUI("hbox")
-                    << "checkbox(force params,unchecked)[@out=auto-cap-force]"
-                    << "combo(160x120,320x240,!640x480,800x600,1024x768,1200x800,1600x1200,1280x7200,1920x1080)"
-                       "[@label=size@handle=auto-cap-size]"
-                    << "combo(gray,!rgb,hls,yuv,lab)[@label=color@handle=auto-cap-format]"
-                    << "combo(depth8u,depth16s,depth32s,depth32f,depth64f)[@label=depth@handle=auto-cap-depth]"
-                  )
-               << ( GUI("hbox")
-                    << str("togglebutton(record,")+(autoCapRec?"!":"")+"record)[@handle=auto-cap-record@out=_8]"
-                    << str("togglebutton(pause,")+(autoCapPau?"!":"")+"pause)[@handle=auto-cap-pause@out=_9]"
-                    << "button(stop)[@handle=auto-cap-stop]"
-                  );
-#endif
     //VBox autoCapGUI;
     //    autoCapGUI.label("automatic");
     GUI autoCapGUI = VBox().label("automatic");
@@ -1145,40 +1087,6 @@ namespace icl{
 
     captureGUI << autoCapGUI;    
     
-#ifdef OLD_GUI
-    GUI extraGUI("vbox");
-
-    extraGUI << (GUI("hbox[@label=background color]")
-                 << "button(select color)[@handle=select-bg-color]"
-                 << "button(black)[@handle=bg-black]"
-                 << "button(white)[@handle=bg-white]"
-                 << "button(gray)[@handle=bg-gray]" )
-             << (GUI("hbox") 
-                 << "togglebutton(off,on)[@handle=grid-on@label=show grid]"
-                 << "slider(0,255,100)[@label=grid alpha@handle=grid-alpha]")
-             << (GUI("hbox[@label=grid color]")
-                 << "button(select color)[@handle=select-grid-color]"
-                 << "button(black)[@handle=grid-black]"
-                 << "button(white)[@handle=grid-white]"
-                 << "button(gray)[@handle=grid-gray]" );
-    
-
-    GUI infoGUI("vsplit[@handle=info-tab]");
-    infoGUI << ( GUI("hbox")
-                 << "spinner(-1,100,-1)[@handle=histo-channel@out=_15@label=select channel@tooltip=pick a single channel,\nchoose -1 for all]"
-                 << "checkbox(median,unchecked)[@handle=median@out=median-on]"
-                 << "checkbox(log,unchecked)[@handle=log@out=log-on]"
-                 << "checkbox(blur,unchecked)[@handle=blur@out=blur-on]"
-               )
-            <<  ( GUI("hsplit")
-                  << "hbox[@label=histogramm@handle=histo-box@minsize=12x10]"
-                  << "label[@label=params@handle=image-info-label]"
-                );
-
-    GUI licGUI("vbox[@handle=lic]");
-
-    GUI helpGUI("vbox[@handle=help]");
-#endif    
 
     VBox extraGUI;
 

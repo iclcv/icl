@@ -38,12 +38,6 @@ GUI gui;
 GenericGrabber grabber;
 
 void init(){
-#ifdef OLD_GUI
-  gui << "image[@handle=image]"
-      << "combo(Gray,RGB,HLS,YUV,LAB,Chroma,Matrix)[@handle=fmt@maxsize=100x3]"
-      << "!show";
-  grabber.init(pa("-i"));
-#endif
 
   gui << Image().handle("image")
       << Combo("Gray,RGB,HLS,YUV,LAB,Chroma,Matrix").handle("fmt").maxSize(100,3)

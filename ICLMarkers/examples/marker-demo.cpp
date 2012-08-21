@@ -63,25 +63,6 @@ void init(){
   if(pa("-size")) grabber.useDesired<Size>(pa("-size"));
   grabber.useDesired(formatGray);
 
-#ifdef OLD_GUI
-  gui << "draw3D("+*pa("-size")+")[@handle=draw@minsize=16x12]"
-      << (GUI("vbox[@maxsize=16x100]") 
-          << ("combo(" + fid->getIntermediateImageNames() + ")"
-              "[@maxsize=100x2@handle=vis@label=visualization]")
-          << "prop(fid)"
-          << (GUI("hbox") 
-              << "fps[@handle=fps]"
-              << "label(no markers found yet)[@label=detected markers@handle=count]"
-             )
-          << "checkbox(show IDs,checked)[@out=showIDs]"
-          << (GUI("hbox") 
-              << "togglebutton(running,pause)[@out=pause]"
-              << "camcfg()"
-              )
-          //<< "fslider(0.1,2,1)[@out=f@label=focal length]"
-         )
-      << "!show";
-#endif
   gui << Draw3D(pa("-size").as<Size>()).handle("draw").minSize(16,12)
       << (VBox().maxSize(16,100) 
           << Combo(fid->getIntermediateImageNames()).maxSize(100,2).handle("vis").label("visualization")

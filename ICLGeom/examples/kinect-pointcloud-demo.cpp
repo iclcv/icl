@@ -98,46 +98,6 @@ void init(){
     grabDepth.setUndistortionInterpolationMode(interpolateNN);
   }
   
-#ifdef OLD_GUI
-  GUI controls("hbox[@minsize=12x12]");
-  GUI controls2("hbox[@minsize=12x12]");
-  controls << ( GUI("vbox")
-                << "button(reset view)[@handle=resetView]"
-                << "fps(10)[@handle=fps]"
-                << "fslider(0.9,1.1,1.0)[@out=depthScaling@label=depth scaling]"
-                << "slider(1,10,3)[@out=pointSize@label=point size]"
-                << "slider(1,10,1)[@out=lineWidth@label=line width]"
-                << "buttongroup(UniColor, RGB, Depth, Normals Cam, Normals World)[@handle=usedVisualization]"
-                << "camcfg()"
-                << "togglebutton(disable CL, enable CL)[@out=disableCL]"
-                << "togglebutton(vSync Off, vSync On)[@out=vSync]"
-                << "togglebutton(show CoordFrame, hide CoordFrame)[@out=showCoord]"
-                << "togglebutton(draw NormalLines, hide normalLines)[@out=drawLines]"
-                << "fslider(2.0,100.0,40.0)[@out=lineLength@label=normalLineLength]"
-                << "slider(1,20,4)[@out=lineGranularity@label=normalLineGranularity]"
-              );
-
-  controls2 << ( GUI("vbox")
-            << "slider(0,255,0)[@out=unicolorR@label=unicolor R@handle=unicolorRHandle]"
-            << "slider(0,255,0)[@out=unicolorG@label=unicolor G@handle=unicolorGHandle]"
-            << "slider(0,255,255)[@out=unicolorB@label=unicolor B@handle=unicolorBHandle]"
-            << "buttongroup(unfiltered, median3x3, median5x5)[@handle=usedFilter@label=normals filter]"
-            << "slider(1,15,2)[@out=normalrange@label=normal range@handle=normalrangeHandle]"
-            << "togglebutton(disable averaging, enable averaging)[@out=disableAveraging]"
-            << "slider(1,15,1)[@out=avgrange@label=normal averaging range@handle=avgrangeHandle]"
-        );
-  gui << ( GUI("vbox") 
-           << "draw3D[@handle=hdepth@minsize=10x8]"
-           << "togglebutton(heatmap, gray)[@out=heatmap]"
-           << "draw3D[@handle=hcolor@minsize=10x8]"
-         )
-      << ( GUI("hsplit") 
-           << "draw3D[@handle=draw3D@minsize=40x30]"
-           << controls
-           << controls2
-         )
-      << "!show";
-#endif
   GUI controls = HBox().minSize(12,12);
   GUI controls2 = HBox().minSize(12,12);
   controls << ( VBox()

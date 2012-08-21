@@ -65,12 +65,6 @@ void init(){
            Both );
 
   if(MODE == Send || MODE == Both){
-#ifdef OLD_GUI
-    gui << "image[@handle=image]"
-        << "string(100)[@handle=text@label=write some text message here!]"
-        << "fps(10)[@handle=fps]"
-        << "!show";
-#endif
     gui << Image().handle("image")
         << String("",100).handle("text").label("write some text message here!")
         << Fps(10).handle("fps")
@@ -83,18 +77,6 @@ void init(){
     }
   }else{
     gui = HSplit();
-#ifdef OLD_GUI    
-    gui << ( GUI("vbox[@label=loop based]")
-             << "label( )[@handle=text@label=received text]"
-             << "image[@handle=image]" );
-    if(!pa("-no-callback")){
-      gui<< ( GUI("vbox[@label=callback based]")
-              << "label( )[@handle=cb_text@label=received text]"
-              << "image[@handle=cb_image]" );
-    }
-    gui << "fps(10)[@handle=fps]"  
-        << "!show";
-#endif
     gui << ( VBox().label("loop based")
              << Label().handle("text").label("received text")
              << Image().handle("image") 

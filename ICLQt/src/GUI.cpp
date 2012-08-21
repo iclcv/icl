@@ -334,18 +334,12 @@ namespace icl{
         SteppingRange<float> r = parse<SteppingRange<float> >(conf->getPropertyInfo(p.full));
         std::string c = conf->getPropertyValue(p.full);
         if(r.stepping == 1){
-#ifdef OLD_GUI
-          gui << "slider("+str(r.minVal)+","+str(r.maxVal)+","+c+")["+ttt+"@handle="+handle+"@minsize=12x2@label="+p.half+"]";
-#endif
           gui << Slider(r.minVal,r.maxVal,parse<int>(c)).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
         }else{
           if(r.stepping){
             WARNING_LOG("the prop-GUI compoment is not able to adjust a slider stepping that is not 1");
             WARNING_LOG("component was " << p.full);
           }
-#ifdef OLD_GUI
-          gui << "fslider("+str(r.minVal)+","+str(r.maxVal)+","+c+")["+ttt+"@handle="+handle+"@minsize=12x2@label="+p.half+"]";
-#endif
           gui << FSlider(r,parse<float>(c)).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
         }
         ostr << '\1' << handle;
@@ -353,31 +347,19 @@ namespace icl{
         std::string handle="#R#"+p.full;
         Range32s r = parse<Range32s>(conf->getPropertyInfo(p.full));
         std::string c = conf->getPropertyValue(p.full);
-#ifdef OLD_GUI 
-        gui << "spinner("+str(r.minVal)+","+str(r.maxVal)+","+c+")["+ttt+"@handle="+handle+"@minsize=12x2@label="+p.half+"]";
-#endif
         gui << Spinner(r.minVal, r.maxVal, parse<int>(c)).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
         ostr << '\1' << handle;
       }else if(t == "menu" || t == "value-list" || t == "valueList"){
         std::string handle = (t == "menu" ? "#m#" : "#v#")+p.full;
-#ifdef OLD_GUI
-        gui << "combo("+get_combo_list(p.full)+")["+ttt+"@handle="+handle+"@minsize=12x2@label="+p.half+"]";
-#endif
         gui << Combo(get_combo_list(p.full)).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
         ostr << '\1' << handle;
       }else if(t == "command"){
         std::string handle = "#c#"+p.full;
         ostr << '\1' << handle;
-#ifdef OLD_GUI
-        gui << "button("+p.half+")["+ttt+"@handle="+handle+"@minsize=12x2]";
-#endif
         gui << Button(p.half).tooltip(tt).handle(handle).minSize(12,2);
       }else if(t == "info"){
         std::string handle = "#i#"+p.full;
         ostr << '\1' << handle;
-#ifdef OLD_GUI
-        gui << "label("+conf->getPropertyValue(p.full)+")["+ttt+"@handle="+handle+"@minsize=12x2@label="+p.half+"]";
-#endif
         gui << Label(conf->getPropertyValue(p.full)).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
 
         int volatileness = conf->getPropertyVolatileness(p.full);
@@ -387,18 +369,12 @@ namespace icl{
       }else if(t == "flag"){
         std::string handle = "#f#"+p.full;
         ostr << '\1' << handle;
-#ifdef OLD_GUI
-        gui << "checkbox("+p.half+","+(conf->getPropertyValue(p.full).as<bool>() ? "checked" : "unchecked") +")["+ttt+"@handle="+handle+"@minsize=12x1]";
-#endif
         gui << CheckBox(p.half, conf->getPropertyValue(p.full)).tooltip(tt).handle(handle).minSize(12,2);
       }else if(t == "float"){
         std::string handle = "#F#"+p.full;
         ostr << '\1' << handle;
         Range32f mm = parse<Range32f>(conf->getPropertyInfo(p.full));
         float v = conf->getPropertyValue(p.full);
-#ifdef OLD_GUI
-        gui << "float(" + str(mm.minVal) + "," + str(mm.maxVal) + "," + str(v) + ")["+ttt+"@handle="+handle+"@minsize=12x2@label="+p.half+"]";
-#endif
         gui << Float(mm.minVal, mm.maxVal, v).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
         
       }else if(t == "int"){
@@ -406,9 +382,6 @@ namespace icl{
         ostr << '\1' << handle;
         Range32s mm = parse<Range32s>(conf->getPropertyInfo(p.full));
         int v = conf->getPropertyValue(p.full);
-#ifdef OLD_GUI
-        gui << "int(" + str(mm.minVal) + "," + str(mm.maxVal) + "," + str(v) + ")["+ttt+"@handle="+handle+"@minsize=12x2@label="+p.half+"]";
-#endif
         gui << Int(mm.minVal,mm.maxVal,v).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
       }else if(t == "string"){
         std::string handle = "#S#"+p.full;
@@ -416,9 +389,6 @@ namespace icl{
         int max_len = parse<int>(conf->getPropertyInfo(p.full));
         std::string value = conf->getPropertyValue(p.full);
         if(!value.length()) value = " ";
-#ifdef OLD_GUI
-        gui << "string("  + value + "," + str(max_len) + ")["+ttt+"@handle=" + handle + "@minsize=12x2@label="+p.half+"]";
-#endif
         gui << String(value, max_len).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
       }
       
@@ -468,12 +438,6 @@ namespace icl{
           add_component(tab,it->second[i],ostr,gui);          
         }
         if(it->first == "general"){
-#ifdef OLD_GUI
-          tab << ( GUI("hbox")
-                    << "button(load)[@handle=#X#load]"
-                    << "button(save)[@handle=#X#save]"
-                 );
-#endif
           tab << ( HBox()
                    << Button("load").handle("#X#load")
                    << Button("save").handle("#X#save")

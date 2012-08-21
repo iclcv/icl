@@ -134,20 +134,6 @@ void calc_mean(){
 void init(){
   grabber.init(pa("-i"));
 
-#ifdef OLD_GUI
-
-  gui << "draw[@label=image@handle=image@size=32x24]";
-  gui << "togglebutton(Run!,Stop!)[@out=run]";
-  gui << ( GUI("hbox") 
-              << "slider(0,400,10)[@out=sleep@label=sleeptime]" 
-              << "combo(!rgb,hls,gray,yuv)[@out=colormode@label=colormode]" 
-              << "button(Reset List)[@handle=reset]"
-              << "button(Calculate Mean)[@handle=calc]"
-              );
-  
-  gui.show();
-
-#endif
 
   gui << Image().label("image").handle("image").size(32,24);
   gui << Button("Run!","Stop!",true).out("running");

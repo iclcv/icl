@@ -56,27 +56,6 @@ struct Mouse : public MouseHandler {
 };
 
 void init(){
-#ifdef OLD_GUI
-  con << "image[@handle=lut@label=hough space@minsize=16x12]";
-  con << ( GUI("vbox") 
-           << "image[@handle=inhibit@label=local inhibition image@minsize=8x6]"
-           << "slider(0,100,1)[@out=maxlines@label=max lines]"
-           << "fslider(0.01,1,0.03)[@out=dRho@label=rho sampling step]"
-           << "fslider(0.1,10,2)[@out=dR@label=r sampling step]"
-           << "fslider(2,100,10)[@out=rInhib@label=r inhibition radius]"
-           << "fslider(0.05,2,0.3)[@out=rhoInhib@label=rho inhibition radius]"
-           << ( GUI("hbox") 
-                << "togglebutton(off,!on)[@out=gaussianInhibition@label=gaussian inhib]"
-                << "togglebutton(off,!on)[@out=blurHoughSpace@label=blur hough space]"
-                )
-           << ( GUI("hbox") 
-                << "togglebutton(off,!on)[@out=dilateEntries@label=dilate entries]"
-                << "togglebutton(off,!on)[@out=blurredSampling@label=blurred sampling]"
-                )
-           );
- #endif
-
- 
 
   gui << Draw().handle("view").minSize(32,24)
       << ( VSplit()

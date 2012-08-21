@@ -75,17 +75,6 @@ void bench(){
 }
 
 void init(){
-#ifdef OLD_GUI
-  gui << "image[@handle=draw@minsize=32x24]";
-  gui << ( GUI("vbox[@maxsize=10x100]") 
-           << "fslider(0.1,5,1,vertical)[@out=scale@label=scale@handle=a]"
-           << "fslider(0,6.3,0,vertical)[@out=angle@label=angle@handle=b]"
-           << "togglebutton(clip,off)[@label=clip ROI@out=clip@handle=c]"
-           << "togglebutton(lin,nn)[@label=interp.@out=interp@handle=d]"
-           << "button(bench)[@handle=bench]"
-          );
-  gui.show();
-#endif
   gui << Image().handle("draw").minSize(32,24)
       << ( VBox().maxSize(10,100) 
            << FSlider(0.1,5,1,true).out("scale").label("scale").handle("a")
