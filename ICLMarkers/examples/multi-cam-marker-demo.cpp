@@ -76,6 +76,7 @@ void init(){
   if(!pa("-nosync").as<bool>()){
     fd.setPropertyValue("thresh.global threshold",4.8);
   }
+#ifdef OLD_GUI
   gui << "draw3D[@handle=draw@minsize=16x12]" 
       << (GUI("vbox[@maxsize=15x99@minsize=15x1]") 
           << "combo("+fd.getIntermediateImageNames()+")"
@@ -83,7 +84,13 @@ void init(){
           << "prop(fd)"
           )
       <<"!show";
-  
+#endif
+  gui << Draw3D().handle("draw").minSize(16,12) 
+      << (VBox().maxSize(15,99).minSize(15,1) 
+          << Combo(fd.getIntermediateImageNames()).handle("vis").label("visualized image")
+          << Prop("fd")
+          )
+      <<Show();
 }
 
 

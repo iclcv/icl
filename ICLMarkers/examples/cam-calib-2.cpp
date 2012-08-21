@@ -64,16 +64,17 @@ enum MarkerType {
 };
 
 
-GUI gui("hsplit");
+HSplit gui;
 GUI relTransGUI;
 GUI markerDetectionOptionGUI;
-GUI planeOptionGUI("vbox");
+GUI planeOptionGUI;
 
 Scene scene;
 GenericGrabber grabber;
 
 Point32f currentMousePos;
 bool havePlane = false;
+bool haveAnyCalibration = false;
 
 
 SmartPtr<FiducialDetector> fds[2];
@@ -195,17 +196,20 @@ void save(){
   save_cam(cam,filename);
 }                   
 
-struct BestOf10Saver : public QObject{
+struct BestOfNSaver : public QObject{
   std::vector<Camera> cams;
   std::vector<float> errors;
   int n;
+  int num_end;
   bool inited;
   std::string filename;
   
   float lastBestError;
   std::string lastFileName;
-    
-  BestOf10Saver():
+
+  float runningBestError;
+  
+  BestOfNSaver():
     inited(false)
   {}
 
@@ -220,14 +224,23 @@ struct BestOf10Saver : public QObject{
   } 
   
   void init(){
+    num_end = gui["save_num_frames"].as<int>();
     Mutex::Locker l(save_lock);
     if(inited) return;
     filename = get_save_filename();
     if(filename != ""){
-      cams.resize(0); cams.reserve(10);
-      errors.resize(0); errors.reserve(10);
+      cams.resize(0); cams.reserve(num_end);
+      errors.resize(0); errors.reserve(num_end);
       n = 0;
       inited = true;
+    }
+    runningBestError = 99999;
+  }
+  
+  void stop(){
+    Mutex::Locker l(save_lock);
+    if(inited){
+      n = num_end;
     }
   }
   
@@ -240,10 +253,17 @@ struct BestOf10Saver : public QObject{
       errors.push_back(error);
     }
     ++n;
-    if(n == 10){
+
+    gui["save_remaining_frames"] = num_end - n;
+    if(error > 0 && (error < runningBestError)){
+      runningBestError = error;
+    }
+    gui["save_best_error"] = runningBestError;
+    
+    if(n >= num_end){
       if(!cams.size()){
-        QMessageBox::critical(0,"error","unable to save the best of 10 calibration results:\n"
-                              "all 10 calibration runs failed!");
+        QMessageBox::critical(0,"error","unable to save the best of N calibration results:\n"
+                              "all N calibration runs failed!");
       }
       else{
         int best = (int)(std::min_element(errors.begin(),errors.end())-errors.begin());
@@ -261,7 +281,7 @@ struct BestOf10Saver : public QObject{
     }
   }
   
-} *bestOf10Saver = 0;
+} *bestOfNSaver = 0;
 
 
 static inline Vec set_3_to_1(Vec a){
@@ -356,7 +376,7 @@ struct CalibFile{
 std::vector<CalibFile> loadedFiles;
 
 void init(){
-  bestOf10Saver = new BestOf10Saver;
+  bestOfNSaver = new BestOfNSaver;
 
   if( !pa("-c") || !pa("-c").n() ){
     pausage("program argument -c must be given with at least one sub-argument");
@@ -394,11 +414,19 @@ void init(){
       cf.transforms.push_back(NamedTransform("identity",Mat::id()));
     }
 
+#ifdef OLD_GUI
     objGUI << ( GUI("hbox[@label="+cf.filename+"@minsize=1x3@maxsize=100x3]")
                 << "checkbox(enable,checked)[@out=enable-obj-"+str(c)+"]"
                 << "combo("+transformNameList.str() + (transformGiven?"":",id")+")[@handle=transform-obj-"+str(c)+"]"
                 );
+#endif
 
+    File cff(cf.filename);
+    std::string tt = "full path: " + cf.filename;
+    objGUI << ( HBox().label(cff.getBaseName()+cff.getSuffix()).minSize(1,3).maxSize(100,3)
+                << CheckBox("enable",true).out("enable-obj-"+str(c)).tooltip(tt)
+                << Combo(transformNameList.str() + (transformGiven?"":",id")).handle("transform-obj-"+str(c)).tooltip(tt)
+                );
     
     try{
       std::string s;
@@ -420,6 +448,7 @@ void init(){
       o->setLineWidth(2);
       o->setTransformation(cf.transforms[0].transform);
       scene.addObject(o);
+      o->setVisible(false);
       cf.obj = o;
     }catch(ICLException &e){
       SHOW(e.what());
@@ -518,18 +547,22 @@ void init(){
   
   grabber.init(pa("-i"));
   if(pa("-s")) grabber.useDesired(pa("-s").as<Size>());
-  
+
+#ifdef OLD_GUI  
   gui << "draw3D()[@handle=draw@minsize=32x24]";
+#endif
+  gui << Draw3D().handle("draw").minSize(32,24);
   
-  std::string tabstr = "tab(";
+  //std::ostringstream tabs;
+  //for(unsigned int i=0;i<configurables.size();++i){
+  // tabs << configurables[i] << (i<configurables.size()-1 ? "," 
+  //}
+  //tabstr[tabstr.length()-1] = ')';
+  markerDetectionOptionGUI = Tab(cat(configurables,","));
   for(unsigned int i=0;i<configurables.size();++i){
-    tabstr += configurables[i]+',';
+    markerDetectionOptionGUI << Prop(configurables[i]);
   }
-  tabstr[tabstr.length()-1] = ')';
-  markerDetectionOptionGUI = GUI(tabstr);
-  for(unsigned int i=0;i<configurables.size();++i){
-    markerDetectionOptionGUI << "prop(" + configurables[i] + ")";
-  }
+#ifdef OLD_GUI
   gui << ( GUI("vbox[@minsize=16x1@maxsize=16x100]") 
            << ( GUI("hbox[@maxsize=100x3@minsize=1x3]") 
                 << "combo(" +iin + ")[@handle=iin@label=visualized image]"
@@ -583,14 +616,94 @@ void init(){
                         )
                    )
               << "button(show transformation matrix)[@handle=showRelTrans]" << "!create";
+#endif
+  
+  gui << ( VBox().minSize(14,28).maxSize(14,100)
+           << (VBox().label("visualization").minSize(1,5)
+               << ( HBox().maxSize(100,3).minSize(1,3) 
+                    << Combo(iin).handle("iin").label("visualized image")
+                    << Slider(0,255,128).out("objAlpha").label("object-alpha")
+                    )
+               << ( HBox().maxSize(100,3) 
+                    << CheckBox("use corners",true).out("useCorners")
+                    << CheckBox("show CS",false).out("showCS")
+                    )
+               )
+           << ( HBox().label("more options").minSize(1,3).maxSize(100,3)
+                << Button("plane").handle("show-plane-options")
+                << Button("markers").handle("show-marker-detection-options")
+                << Button("rel. Transf.").handle("showRelTransGUI")
+                )
+           << (VScroll().label("calibration objects") 
+               << objGUI
+               )
+           << (HBox().maxSize(100,3)
+               << Label().handle("error").label("error").tooltip("The error is given by the mean square distance\n"
+                                                                 "of the actually detected points and the points\n"
+                                                                 "that are projected into the scene using the\n"
+                                                                 "current camera calibration result\n"
+                                                                 "If 'normalized error' is checked, the sum of the\n"
+                                                                 "is not normalized by the number of points N\n"
+                                                                 "but by N^2. To make the error comparable, it is\n"
+                                                                 "also mutiplied by 100 in this case.")
+               << CheckBox("nomalized error",true).out("errNormalized").tooltip("if checked, the total calibration error\n"
+                                                                                "is not devided by the number of calibration points N,\n"
+                                                                                "but by N^2 in order to avoid favoring frames where\n"
+                                                                                "only few markers were found.")
+               )
+           << Label("ready..").minSize(1,2).maxSize(100,2).label("detection status").handle("status")
+           << ( VBox().maxSize(100,6).minSize(1,6) 
+                << ( HBox()
+                     << Spinner(1,10000,10).out("save_num_frames").label("# frames").tooltip("When you press save, the system will\ncapture that many frames to find\nan optimal calibration result")
+                     << Button("save").handle("save")
+                     << Button("stop").handle("save_stop")
+                     )
+                << ( HBox()
+                     << Label("10").handle("save_remaining_frames").label("remaining")
+                     << Label().handle("save_best_error").label("best error")
+                   )
+               )
+           )
+      << Show();
+  
+  planeOptionGUI << ( HBox()
+                      << Combo("none,x,y,z").label("normal").handle("planeDim")
+                      << Float(-10000,10000,0).label("offset mm").handle("planeOffset")
+                      )
+                 << ( HBox()
+                      << Combo("100,200,500,!1000,2000,3000,5000,10000").label("radius mm").handle("planeRadius")
+                      << Float(1,1000,10).label("tic distance mm").handle("planeTicDist")
+                      )
+                 << ( HBox()
+                      << Label().handle("planeStatus").label("status")
+                      << ColorSelect(40,40,40,255).handle("planeColor").label("color")
+                      )
+                 << Create();
+  
+  
+  relTransGUI << ( VBox().label("rel-transformation")
+                   << ( HBox()
+                        << Spinner(0,8,0).label("x-rotation *pi/4").out("rx")
+                        << Spinner(0,8,0).label("y-rotation *pi/4").out("ry")
+                        << Spinner(0,8,0).label("z-rotation *pi/4").out("rz")
+                        )
+                   << ( HBox()
+                        << Float(-100000,100000,0).label("x-offset").out("tx")
+                        << Float(-100000,100000,0).label("y-offset").out("ty")
+                        << Float(-100000,100000,0).label("z-offset").out("tz")
+                        )
+                   )
+              << Button("show transformation matrix").handle("showRelTrans") 
+              << Create();
+
   
   markerDetectionOptionGUI.create();
   gui["show-marker-detection-options"].registerCallback(function(&markerDetectionOptionGUI,&GUI::switchVisibility));
   gui["show-plane-options"].registerCallback(function(&planeOptionGUI,&GUI::switchVisibility));
            
 
-  gui["save"].registerCallback(save);
-  gui["save10"].registerCallback(function(bestOf10Saver,&BestOf10Saver::init));
+  gui["save"].registerCallback(function(bestOfNSaver,&BestOfNSaver::init));
+  gui["save_stop"].registerCallback(function(bestOfNSaver,&BestOfNSaver::stop));
 
   scene.addCamera(Camera());
   scene.getCamera(0).setResolution(grabber.grab()->getSize());
@@ -646,9 +759,9 @@ void run(){
   std::vector<bool> enabled(Ts.size());
 
   for(unsigned int i=0;i<loadedFiles.size();++i){
-    int tidx = gui.getValue<ComboHandle>("transform-obj-"+str(i)).getSelectedIndex();
+    int tidx = gui.get<ComboHandle>("transform-obj-"+str(i)).getSelectedIndex();
     Ts[i] = loadedFiles[i].transforms[tidx].transform;
-    enabled[i] = gui.getValue<bool>("enable-obj-"+str(i));
+    enabled[i] = gui.get<bool>("enable-obj-"+str(i));
 
     SceneObject *calibObj = loadedFiles[i].obj;
     if(!calibObj) continue;
@@ -751,28 +864,39 @@ void run(){
         cam.getRenderParams().chipSize = image->getSize();
       }
 
-      scene.setDrawCoordinateFrameEnabled(true);
+      //      scene.setDrawCoordinateFrameEnabled(true);
       
       float error = 0;
       
       for(unsigned int i=0;i<W[idx]->size();++i){
         error += I[idx]->operator[](i).distanceTo(cam.project(W[idx]->operator[](i)));
       }
-      error /= W[idx]->size();
+      if(gui["errNormalized"]){
+        error /= sqr(W[idx]->size());
+        error *= 100;
+      }else{
+        error /= W[idx]->size();
+      }
 
       gui["error"] = error;
       gui["status"] = str("ok") + ((idx&&useCorners) ? "(used centers only)" : "");
       if(idx) deactivatedCenters = true;
       
-      bestOf10Saver->next_hook(cam,error);
+      bestOfNSaver->next_hook(cam,error);
       
+      if(error > 0 && !haveAnyCalibration){
+        haveAnyCalibration = true;
+        for(int i=0;i<scene.getObjectCount();++i){
+          scene.getObject(i)->setVisible(true);
+        }
+      }
       break;
     }catch(ICLException &e){
       if(idx == 0){
         ++idx;
       }else{
         gui["status"] = str(e.what());
-        bestOf10Saver->next_hook(Camera(),-1);
+        bestOfNSaver->next_hook(Camera(),-1);
         break;
       }
     }

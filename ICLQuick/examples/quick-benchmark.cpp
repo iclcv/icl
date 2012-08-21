@@ -32,12 +32,16 @@
 **                                                                 **
 *********************************************************************/
 
+int main(){}
+
+#if 0
+// will be removed very soon
 #include <ICLQuick/Common.h>
 #include <ICLUtils/ConfigFile.h>
 #include <ICLQt/ConfigEntry.h>
 
-GUI gui("hbox");
-GenericGrabber *grabber = 0;
+HBox gui;
+GenericGrabber grabber;
 
 void init(){
   ConfigFile cfg;
@@ -45,7 +49,7 @@ void init(){
   cfg.setRestriction("config.threshold",ConfigFile::KeyRestriction(0,255));
   ConfigFile::loadConfig(cfg);
 
-
+#ifdef OLD_GUI
   gui << "image[@handle=image@minsize=32x24@label=image]";
   
   GUI con("vbox");
@@ -54,11 +58,20 @@ void init(){
 
   gui << con;
   gui.show();
+#endif
+  
+  gui << Image().handle("image").minSize(32,24).label("image")
+      << (VBox()
+          (embedded).label("configuration").minSize(15,15);
+  con << Fps(50).handle("fps");
+
+  gui << con;
+  gui.show();
   
   
 
-  grabber = new GenericGrabber(pa("-i"));
-  grabber->useDesired(Size::VGA);
+  grabber.init(pa("-i"));
+  grabber.useDesired(Size::VGA);
 }
 
 
@@ -96,3 +109,4 @@ void run(){
 int main(int n,char **ppc){
   return ICLApp(n,ppc,"[m]-input|-i(device,device-params)",init,run).exec();
 }
+#endif
