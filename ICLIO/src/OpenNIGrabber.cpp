@@ -42,74 +42,7 @@ using namespace xn;
 using namespace icl;
 using namespace icl_openni;
 
-ScriptNode g_scriptNode;
-
-void printNodeInfo(Context cont){
-  NodeInfoList l;
-  XnStatus rc = cont.EnumerateExistingNodes(l);
-  DEBUG_LOG("XnStatus: " << xnGetStatusString(rc))
-      XnProductionNodeDescription pi;
-  DEBUG_LOG("NodeInfoList")
-      for (NodeInfoList::Iterator it = l.Begin(); it != l.End(); ++it){
-    pi = (*it).GetDescription();
-    DEBUG_LOG(pi.strName);
-    DEBUG_LOG(pi.strVendor);
-    DEBUG_LOG(pi.Type);
-    DEBUG_LOG(pi.Version.nMajor << " : "
-              << pi.Version.nMinor << " : "
-              << pi.Version.nMaintenance << " : ");
-  }
-  if(l.Begin() == l.End()){
-    DEBUG_LOG("The nodelist is empty \n");
-  } else {
-    std::cout << std::endl;
-  }
-}
-
-void printProductionTrees(Context cont){
-  EnumerationErrors errors;
-  NodeInfoList l;
-  XnStatus rc = cont.EnumerateProductionTrees(XN_NODE_TYPE_DEVICE, NULL , l, &errors);
-  DEBUG_LOG("XnStatus: " << xnGetStatusString(rc));
-  DEBUG_LOG("ProductionTree - NodeInfoList");
-  int i = 0;
-  for (NodeInfoList::Iterator it = l.Begin(); it != l.End(); ++it){
-    NodeInfo deviceNodeInfo = *it;
-    Device deviceNode;
-
-    deviceNodeInfo.GetInstance(deviceNode);
-    XnBool bExists = deviceNode.IsValid();
-
-    if (!bExists) {
-      DEBUG_LOG1("Node not valid. CreateProductionTree");
-      cont.CreateProductionTree(deviceNodeInfo, deviceNode);
-    }
-
-    if (deviceNode.IsValid() && deviceNode.IsCapabilitySupported(XN_CAPABILITY_DEVICE_IDENTIFICATION)) {
-      const XnUInt32 bSize = 200;
-      XnChar deviceName[bSize];
-      XnChar deviceSN[bSize];
-      XnChar treeStrRep[bSize];
-
-      deviceNode.GetIdentificationCap().GetDeviceName(deviceName, bSize);
-      deviceNode.GetIdentificationCap().GetSerialNumber(deviceSN, bSize);
-      deviceNodeInfo.GetTreeStringRepresentation(treeStrRep, bSize);
-      DEBUG_LOG(" [" << i << "]" << deviceName << "(" << deviceSN << ")");
-      /*DEBUG_LOG(deviceNodeInfo.GetAdditionalData());
-      DEBUG_LOG(deviceNodeInfo.GetCreationInfo());
-      DEBUG_LOG(deviceNodeInfo.GetDescription().strName);
-      DEBUG_LOG(deviceNodeInfo.GetDescription().strVendor);
-      DEBUG_LOG(deviceNodeInfo.GetDescription().Type);
-      DEBUG_LOG(deviceNodeInfo.GetDescription().Version.nMajor);
-      DEBUG_LOG(deviceNodeInfo.GetInstanceName());*/
-      DEBUG_LOG("CAM: " << treeStrRep);
-    } else {
-      DEBUG_LOG("No device identification cap:" << i);
-    }
-    i++;
-  }
-}
-
+// checks whether status is OK. else throws an Exception.
 void assertStatus(XnStatus &status){
   if (status != XN_STATUS_OK){
     std::ostringstream st;
@@ -136,10 +69,10 @@ void OpenNIGrabberThread::run(){
     msleep(1);
     // locking thread
     if(trylock()) {
-      DEBUG_LOG("threadlock returned error. sleep and retry.");
+      DEBUG_LOG2("threadlock returned error. sleep and retry.");
       continue;
     }
-    //thread locked grab image.
+    // thread locked grab image.
     m_Grabber -> grabNextImage();
     // allow thread-stop.
     unlock();
@@ -157,23 +90,28 @@ OpenNIGrabberImpl::OpenNIGrabberImpl(std::string args)
   icl::Mutex::Locker lock(m_Mutex);
 
   XnStatus rc;
-  DEBUG_LOG("init " << m_Id);
+  DEBUG_LOG2("init " << m_Id);
+  // init OpenNI Context
   rc = m_Context.Init();
   assertStatus(rc);
 
+  // create ImageGenerator and Buffer
   m_Generator = OpenNIMapGenerator::createGenerator(&m_Context, m_Id);
   m_Buffer = new ReadWriteBuffer<ImgBase>(m_Generator);
   m_Generator -> getMapGenerator()->StartGenerating();
+  // create grabber-thread
   m_GrabberThread = new OpenNIGrabberThread(this);
   m_GrabberThread -> start();
-  DEBUG_LOG("init done");
+  DEBUG_LOG2("init done");
 }
 
 OpenNIGrabberImpl::~OpenNIGrabberImpl(){
-  DEBUG_LOG("");
+  DEBUG_LOG2("");
+  // stop grabbing
   m_GrabberThread -> stop();
 
   icl::Mutex::Locker lock(m_Mutex);
+  // free all
   ICL_DELETE(m_Generator);
   ICL_DELETE(m_Buffer);
   ICL_DELETE(m_GrabberThread);
@@ -181,22 +119,24 @@ OpenNIGrabberImpl::~OpenNIGrabberImpl(){
 }
 
 const icl::ImgBase* OpenNIGrabberImpl::acquireImage(){
+  // get image from buffer
   ImgBase* img = m_Buffer -> getNextReadBuffer(m_OmitDoubleFrames);
-  if(!img){
-    DEBUG_LOG("img is null");
-  } else if(!(img -> getDim())){
-    DEBUG_LOG("img is empty");
+  if(img && !(img -> getDim())){ // catch empty images
     return NULL;
   }
   return img;
 }
 
-// grabs an image from Imagegenerator
+// returns the underlying handle of the grabber. In this case the corresponding MapGenerator.
+void* OpenNIGrabberImpl::getHandle(){
+  return m_Generator -> getMapGenerator();
+}
+
+// grabs an image from ImageGenerator
 void OpenNIGrabberImpl::grabNextImage(){
   Mutex::Locker l(m_Mutex);
-  //DEBUG_LOG("");
+  // make ImageGenerator grab an image.
   m_Generator -> acquireImage(m_Buffer -> getNextWriteBuffer());
-  //DEBUG_LOG("");
 }
 
 // Returns the string representation of the currently used device.
@@ -206,47 +146,49 @@ std::string OpenNIGrabberImpl::getName(){
 
 // interface for the setter function for video device properties
 void OpenNIGrabberImpl::setProperty(const std::string &property, const std::string &value){
-  DEBUG_LOG(property << " := " << value);
-      if (property.compare("size") == 0){
+  DEBUG_LOG2(property << " := " << value);
+  if (property.compare("size") == 0){
     return;
   }
   if (property.compare("format") == 0){
-    m_Generator -> setProperty("map output mode", value);
+    m_Generator -> getMapGeneratorOptions() -> setProperty("map output mode", value);
   }
   if (property.compare("omit double frames") == 0){
     m_OmitDoubleFrames = (value == "On");
     return;
   }
-  if (m_Generator -> supportsProperty(property)){
-    m_Generator -> setProperty(property, value);
+  if (m_Generator -> getMapGeneratorOptions() -> supportsProperty(property)){
+    m_Generator -> getMapGeneratorOptions() -> setProperty(property, value);
     return;
   }
 }
 
 // returns a list of properties, that can be set using setProperty
 std::vector<std::string> OpenNIGrabberImpl::getPropertyList(){
-  DEBUG_LOG("");
-      std::vector<std::string> ps;
+  DEBUG_LOG2("");
+  std::vector<std::string> ps;
   ps.push_back("size");
   ps.push_back("format");
   ps.push_back("omit double frames");
-  m_Generator -> addPropertiesToList(ps);
+  m_Generator -> getMapGeneratorOptions() -> addPropertiesToList(ps);
   return ps;
 }
 
 // checks if property is returned, implemented, available and of processable GenApi::EInterfaceType
 bool OpenNIGrabberImpl::supportsProperty(const std::string &property){
-  DEBUG_LOG("");
+  DEBUG_LOG2("");
   if (property.compare("size") == 0) return true;
   if (property.compare("format") == 0) return true;
   if (property.compare("omit double frames") == 0) return true;
-  if (m_Generator -> supportsProperty(property)) return true;
+  if (m_Generator -> getMapGeneratorOptions() -> supportsProperty(property)){
+    return true;
+  }
   return false;
 }
 
 // get type of property
 std::string OpenNIGrabberImpl::getType(const std::string &name){
-  DEBUG_LOG("");
+  DEBUG_LOG2("");
   if(name.compare("size") == 0){
     return "info";
   }
@@ -256,8 +198,8 @@ std::string OpenNIGrabberImpl::getType(const std::string &name){
   if(name.compare("omit double frames") == 0){
     return "menu";
   }
-  if (m_Generator -> supportsProperty(name)){
-    return m_Generator -> getType(name);
+  if (m_Generator -> getMapGeneratorOptions() -> supportsProperty(name)){
+    return m_Generator -> getMapGeneratorOptions() -> getType(name);
   }
   DEBUG_LOG("unknown property " << name);
   throw ICLException("unkown property");
@@ -265,18 +207,18 @@ std::string OpenNIGrabberImpl::getType(const std::string &name){
 
 // get information of a properties valid values
 std::string OpenNIGrabberImpl::getInfo(const std::string &name){
-  DEBUG_LOG("");
-      if(name.compare("size") == 0){
+  DEBUG_LOG2("");
+  if(name.compare("size") == 0){
     return "";
   }
   if(name.compare("format") == 0){
-    return m_Generator -> getInfo("map output mode");
+    return m_Generator -> getMapGeneratorOptions() -> getInfo("map output mode");
   }
   if(name.compare("omit double frames") == 0){
     return "{On,Off}";
   }
-  if (m_Generator -> supportsProperty(name)){
-    return m_Generator -> getInfo(name);
+  if (m_Generator -> getMapGeneratorOptions() -> supportsProperty(name)){
+    return m_Generator -> getMapGeneratorOptions() -> getInfo(name);
   }
   DEBUG_LOG("unknown property " << name);
   throw ICLException("unkown property");
@@ -284,26 +226,26 @@ std::string OpenNIGrabberImpl::getInfo(const std::string &name){
 
 // returns the current value of a property or a parameter
 std::string OpenNIGrabberImpl::getValue(const std::string &name){
-  DEBUG_LOG(name);
+  DEBUG_LOG2(name);
   if(name.compare("size") == 0){
     return "set by format";
   }
   if(name.compare("format") == 0){
-    return "depth";
+    return m_Generator -> getMapGeneratorOptions() -> getValue("map output mode");
   }
   if(name.compare("omit double frames") == 0){
     return (m_OmitDoubleFrames) ? "On" : "Off";
   }
-  if (m_Generator -> supportsProperty(name)){
-    return m_Generator -> getValue(name);
+  if (m_Generator -> getMapGeneratorOptions() -> supportsProperty(name)){
+    return m_Generator -> getMapGeneratorOptions() -> getValue(name);
   }
   return "error: property not found";
 }
 
 // Returns whether this property may be changed internally.
 int OpenNIGrabberImpl::isVolatile(const std::string &propertyName){
-  if (m_Generator -> supportsProperty(propertyName)){
-    return m_Generator -> isVolatile(propertyName);
+  if (m_Generator -> getMapGeneratorOptions() -> supportsProperty(propertyName)){
+    return m_Generator -> getMapGeneratorOptions() -> isVolatile(propertyName);
   }
   return true;
 }

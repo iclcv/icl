@@ -64,12 +64,13 @@ namespace icl {
   class OpenNIGrabberImpl : public Grabber {
     public:
       friend class OpenNIGrabber;
+      friend class OpenNIGrabberThread;
 
       /// interface for the setter function for video device properties
       virtual void setProperty(const std::string &property, const std::string &value);
       /// returns a list of properties, that can be set using setProperty
       virtual std::vector<std::string> getPropertyList();
-      /// checks if property is returned, implemented, available and of processable GenApi::EInterfaceType
+      /// checks if property supported
       virtual bool supportsProperty(const std::string &property);
       /// get type of property
       virtual std::string getType(const std::string &name);
@@ -82,16 +83,16 @@ namespace icl {
 
       /// Destructor
       ~OpenNIGrabberImpl();
-         
+
       /// grab function grabs an image (destination image is adapted on demand)
       /** @copydoc icl::Grabber::grab(ImgBase**) **/
       virtual const ImgBase* acquireImage();
 
-      /// grabs an image from Imagegenerator
-      void grabNextImage();
-
-      /// switches the current generator to desired
-      void setGeneratorTo(icl_openni::OpenNIMapGenerator::Generators desired);
+      /**
+          returns the underlying handle of the grabber.
+          In this case the corresponding MapGenerator.
+      **/
+      virtual void* getHandle();
 
     private:
       /// The constructor is private so only the friend class can create instances
@@ -99,6 +100,16 @@ namespace icl {
       * @param device NodeInfo of the device to use.
       */
       OpenNIGrabberImpl(std::string args);
+
+      /// makes the MapGenerator grab a new image. called repeatedly in thread.
+      void grabNextImage();
+
+      /**
+          switches the current generator to desired. this function works but
+          after changing to another Generator the camcfg-properties will not
+          be refreshed.
+      **/
+      void setGeneratorTo(icl_openni::OpenNIMapGenerator::Generators desired);
 
       /// Returns the string representation of the currently used device.
       std::string getName();
@@ -109,11 +120,11 @@ namespace icl {
       std::string m_Id;
       /// the OpenNI context
       xn::Context m_Context;
-      /// holds a pointer to the currently used image generator
+      /// pointer to the currently used image generator
       icl_openni::OpenNIMapGenerator* m_Generator;
-      /// Internally used ReadWriteBuffer
+      /// internally used ReadWriteBuffer
       icl_openni::ReadWriteBuffer<ImgBase>* m_Buffer;
-      /// A Thread continuously grabbing images
+      /// a thread continuously grabbing images
       OpenNIGrabberThread* m_GrabberThread;
       /// whether double frames should be omited
       bool m_OmitDoubleFrames;
@@ -125,39 +136,43 @@ namespace icl {
   **/
   struct OpenNIGrabber : public GrabberHandle<OpenNIGrabberImpl>{
 
-  /// create a new OpenNIGrabber
-  /** @see OpenNIGrabber for more details*/
-  inline OpenNIGrabber(const std::string args="") throw(ICLException) {
-    /// looking for OpenNI device compatible to args
-    if(isNew(args)){
-      OpenNIGrabberImpl* tmp = new OpenNIGrabberImpl(args);
-      initialize(tmp, args);
-    }else{
-      initialize(args);
-    }
-  }
-    
-  static std::vector<GrabberDeviceDescription> getDeviceList(bool rescan){
-    static std::vector<GrabberDeviceDescription> deviceList;
-    if(rescan){
-      deviceList.clear();
-      xn::Context context;
-      context.Init();
-      xn::NodeInfoList nodes;
-      context.EnumerateProductionTrees(XN_NODE_TYPE_DEVICE, NULL , nodes, NULL);
-      int i = 0;
-      for (xn::NodeInfoList::Iterator it = nodes.Begin(); it != nodes.End(); ++it, ++i){
-        deviceList.push_back(
-          GrabberDeviceDescription("oni", str(i) + "|||" + str(i), str(i))
-        );
+      /// create a new OpenNIGrabber
+      /** @see OpenNIGrabber for more details*/
+      inline OpenNIGrabber(const std::string args="") throw(ICLException) {
+        /// looking for OpenNI device compatible to args
+        if(isNew(args)){
+          OpenNIGrabberImpl* tmp = new OpenNIGrabberImpl(args);
+          initialize(tmp, args);
+        }else{
+          initialize(args);
+        }
       }
-      context.Release();
-    }
-  return deviceList;
-  }
- };
+
+      /// returns the underlying handle of the grabber. In this case the corresponding MapGenerator.
+      virtual void* getHandle(){
+        return m_instance -> ptr -> getHandle();
+      }
+
+      static std::vector<GrabberDeviceDescription> getDeviceList(bool rescan){
+        static std::vector<GrabberDeviceDescription> deviceList;
+        if(rescan){
+          deviceList.clear();
+          xn::Context context;
+          context.Init();
+          xn::NodeInfoList nodes;
+          context.EnumerateProductionTrees(XN_NODE_TYPE_DEVICE, NULL , nodes, NULL);
+          int i = 0;
+          for (xn::NodeInfoList::Iterator it = nodes.Begin(); it != nodes.End(); ++it, ++i){
+            deviceList.push_back(
+                  GrabberDeviceDescription("oni", str(i) + "|||" + str(i), str(i))
+                  );
+          }
+          context.Release();
+        }
+        return deviceList;
+      }
+  };
 
 } //namespace icl
 
 #endif
-

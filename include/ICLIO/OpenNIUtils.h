@@ -49,7 +49,7 @@ namespace icl {
 
   namespace icl_openni {
 
-    /// fills an ICL-Img<T> from OpenNI DepthMetaData
+    /// fills an Img<T> from OpenNI DepthMetaData
     template<class T>
     Img<T>* convertDepthImg(xn::DepthMetaData* src, Img<T>* dst){
       float max = 0;
@@ -77,7 +77,7 @@ namespace icl {
       return dst;
     }
 
-    /// fills an ICL-Img16s from OpenNI IRMetaData
+    /// fills an Img16s from OpenNI IRMetaData
     static Img16s* convertIRImg(xn::IRMetaData* src, Img16s* dst){
       dst -> setSize(Size(src -> XRes(), src -> YRes()));
       icl16s* data = dst -> getData(0);
@@ -92,8 +92,8 @@ namespace icl {
     }
 
     /**
-      fills an ICL-ImgBase from OpenNI ImageMetaData expecting the Generator
-      to generate RGB24 Data.
+      fills a three channel Img8u from OpenNI ImageMetaData expecting
+      the Generator to generate RGB24 Data.
     **/
     static Img8u* convertRGBImg(xn::ImageMetaData* src, Img8u* dst){
       dst -> setSize(Size(src -> XRes(), src -> YRes()));
@@ -114,9 +114,11 @@ namespace icl {
       return dst;
     }
 
+    /// A BufferHandlers only task is to create T's.
     template<typename T>
     class ReadWriteBufferHandler {
       public:
+        /// creates an instance of T and returns a pointer. passes ownership.
         virtual T* initBuffer() = 0;
     };
 
@@ -150,7 +152,7 @@ namespace icl {
           ICL_DELETE(m_Buffers[2]);
         }
 
-        /// returns a pointer to the most recent actualized Buffer.
+        /// returns a pointer to the most recent actualized buffer.
         /**
           Buffer will then be marked and not overwritten till the
           next call to getNextReadBuffer()
@@ -221,15 +223,15 @@ namespace icl {
           m_Avail = true;
           // reset buffer when needed
           if(m_ResetBuffers[m_Write]){
-            ICL_DELETE(m_Buffers[m_Write])
-                m_Buffers[m_Write] = m_BufferHandler -> initBuffer();
+            ICL_DELETE(m_Buffers[m_Write]);
+            m_Buffers[m_Write] = m_BufferHandler -> initBuffer();
             m_ResetBuffers[m_Write] = false;
           }
           // return new write buffer.
           return m_Buffers[m_Write];
         }
 
-        /// mark Buffer to be reset on next write-access.
+        /// mark buffers to be reset on next write-access.
         void setReset(){
           Mutex::Locker l(m_Mutex);
           m_ResetBuffers[0] = true;
@@ -253,19 +255,19 @@ namespace icl {
         }
 
       private:
-        /// The handler used to create new buffers
+        /// the handler used to create new buffers
         ReadWriteBufferHandler<T>* m_BufferHandler;
         /// current objects which alternately are read and written.
         T*  m_Buffers[3];
         /// a bool for every buffer telling whether it needs a reset
         bool  m_ResetBuffers[3];
-        /// the Mutex is used for concurrent reading and writing.
+        /// the mutex is used for concurrent reading and writing.
         Mutex m_Mutex;
-        /// The object currently written to.
+        /// the object currently written to.
         int m_Write;
-        /// The write object currently not written to.
+        /// the write object currently not written to.
         int m_Next;
-        /// The object currently read from.
+        /// the object currently read from.
         int m_Read;
         /// tells whether an actualized object was written.
         bool m_Avail;
@@ -276,6 +278,36 @@ namespace icl {
       public:
         /// constructor
         MapGeneratorOptions(xn::MapGenerator* generator);
+
+        /// interface for the setter function for video device properties
+        virtual void setProperty(const std::string &property, const std::string &value);
+        /// adds properties to propertylist
+        virtual void addPropertiesToList(std::vector<std::string> &properties);
+        /// checks if property is supported
+        virtual bool supportsProperty(const std::string &property);
+        /// get type of property
+        virtual std::string getType(const std::string &name);
+        /// get information of a properties valid values
+        virtual std::string getInfo(const std::string &name);
+        /// returns the current value of a property or a parameter
+        virtual std::string getValue(const std::string &name);
+        /// Returns whether this property may be changed internally.
+        virtual int isVolatile(const std::string &propertyName);
+
+      private:
+        /// the used MapGenerator
+        xn::MapGenerator* m_Generator;
+        /// A vector holding all capabilities of the MapGenerator
+        std::vector<std::string> m_Capabilities;
+        /// A Map Holding all used ProductionNodes
+        std::map<std::string, xn::ProductionNode> m_ProductionNodeMap;
+    };
+
+    /// this class interprets and sets Properties of OpenNI DepthGenerators
+    class DepthGeneratorOptions : public MapGeneratorOptions {
+      public:
+        /// constructor
+        DepthGeneratorOptions(xn::DepthGenerator* generator);
 
         /// interface for the setter function for video device properties
         void setProperty(const std::string &property, const std::string &value);
@@ -293,12 +325,34 @@ namespace icl {
         int isVolatile(const std::string &propertyName);
 
       private:
-        /// the used MapGenerator
-        xn::MapGenerator* m_Generator;
-        /// A vector holding all capabilities of the MapGenerator
-        std::vector<std::string> m_Capabilities;
-        /// A Map Holding all used ProductionNodes
-        std::map<std::string, xn::ProductionNode> m_ProductionNodeMap;
+        /// the used DepthGenerator
+        xn::DepthGenerator* m_DepthGenerator;
+    };
+
+    /// this class interprets and sets Properties of OpenNI ImageGenerators
+    class ImageGeneratorOptions : public MapGeneratorOptions {
+      public:
+        /// constructor
+        ImageGeneratorOptions(xn::ImageGenerator* generator);
+
+        /// interface for the setter function for video device properties
+        void setProperty(const std::string &property, const std::string &value);
+        /// adds properties to propertylist
+        void addPropertiesToList(std::vector<std::string> &properties);
+        /// checks if property is supported
+        bool supportsProperty(const std::string &property);
+        /// get type of property
+        std::string getType(const std::string &name);
+        /// get information of a properties valid values
+        std::string getInfo(const std::string &name);
+        /// returns the current value of a property or a parameter
+        std::string getValue(const std::string &name);
+        /// Returns whether this property may be changed internally.
+        int isVolatile(const std::string &propertyName);
+
+      private:
+        /// the used ImageGenerator
+        xn::ImageGenerator* m_ImageGenerator;
     };
 
     /// abstract super-class of all Image generators
@@ -313,21 +367,6 @@ namespace icl {
           NOT_SPECIFIED = -1
         };
 
-        /// setter function for video device properties
-        virtual void setProperty(const std::string &property, const std::string &value) = 0;
-        /// adds properties to propertylist
-        virtual void addPropertiesToList(std::vector<std::string> &properties) = 0;
-        /// checks if property is supported
-        virtual bool supportsProperty(const std::string &property) = 0;
-        /// get type of property
-        virtual std::string getType(const std::string &name) = 0;
-        /// get information of a properties valid values
-        virtual std::string getInfo(const std::string &name) = 0;
-        /// returns the current value of a property or a parameter
-        virtual std::string getValue(const std::string &name) = 0;
-        /// Returns whether this property may be changed internally.
-        virtual int isVolatile(const std::string &propertyName) = 0;
-
         /// grab function grabs an image returns whether grabbing worked
         virtual bool acquireImage(ImgBase* dest) = 0;
         /// tells the type of the Generator
@@ -336,6 +375,9 @@ namespace icl {
         virtual xn::MapGenerator* getMapGenerator() = 0;
         /// Creates an ImgBase for ReadWriteBuffer
         virtual ImgBase* initBuffer() = 0;
+        /// getter for MapGeneratorOptions
+        virtual MapGeneratorOptions* getMapGeneratorOptions() = 0;
+
 
         ///  Creates the corresponding Generator.
         static OpenNIMapGenerator* createGenerator(xn::Context* context,
@@ -350,21 +392,6 @@ namespace icl {
         /// Destructor frees all resouurces
         ~OpenNIDepthGenerator();
 
-        /// setter function for video device properties
-        virtual void setProperty(const std::string &property, const std::string &value);
-        /// adds properties to propertylist
-        virtual void addPropertiesToList(std::vector<std::string> &properties);
-        /// checks if property is supported
-        virtual bool supportsProperty(const std::string &property);
-        /// get type of property
-        virtual std::string getType(const std::string &name);
-        /// get information of a properties valid values
-        virtual std::string getInfo(const std::string &name);
-        /// returns the current value of a property or a parameter
-        virtual std::string getValue(const std::string &name);
-        /// Returns whether this property may be changed internally.
-        virtual int isVolatile(const std::string &propertyName);
-
         /// grab function grabs an image returns whether grabbing worked
         bool acquireImage(ImgBase* dest);
         /// tells the type of the Generator
@@ -373,6 +400,8 @@ namespace icl {
         xn::MapGenerator* getMapGenerator();
         /// Creates an Img16s for ReadWriteBuffer
         ImgBase* initBuffer();
+        /// getter for MapGeneratorOptions
+        MapGeneratorOptions* getMapGeneratorOptions();
 
       private:
         /// the OpenNI context
@@ -393,21 +422,6 @@ namespace icl {
         /// Destructor frees all resouurces
         ~OpenNIRgbGenerator();
 
-        /// setter function for video device properties
-        virtual void setProperty(const std::string &property, const std::string &value);
-        /// adds properties to propertylist
-        virtual void addPropertiesToList(std::vector<std::string> &properties);
-        /// checks if property is supported
-        virtual bool supportsProperty(const std::string &property);
-        /// get type of property
-        virtual std::string getType(const std::string &name);
-        /// get information of a properties valid values
-        virtual std::string getInfo(const std::string &name);
-        /// returns the current value of a property or a parameter
-        virtual std::string getValue(const std::string &name);
-        /// Returns whether this property may be changed internally.
-        virtual int isVolatile(const std::string &propertyName);
-
         /// grab function grabs an image returns whether grabbing worked
         bool acquireImage(ImgBase* dest);
         /// tells the type of the Generator
@@ -416,6 +430,8 @@ namespace icl {
         xn::MapGenerator* getMapGenerator();
         /// Creates an Img8u for ReadWriteBuffer
         Img8u* initBuffer();
+        /// getter for MapGeneratorOptions
+        MapGeneratorOptions* getMapGeneratorOptions();
 
       private:
         /// the OpenNI context
@@ -445,21 +461,6 @@ namespace icl {
         /// Destructor frees all resouurces
         ~OpenNIIRGenerator();
 
-        /// setter function for video device properties
-        virtual void setProperty(const std::string &property, const std::string &value);
-        /// adds properties to propertylist
-        virtual void addPropertiesToList(std::vector<std::string> &properties);
-        /// checks if property is supported
-        virtual bool supportsProperty(const std::string &property);
-        /// get type of property
-        virtual std::string getType(const std::string &name);
-        /// get information of a properties valid values
-        virtual std::string getInfo(const std::string &name);
-        /// returns the current value of a property or a parameter
-        virtual std::string getValue(const std::string &name);
-        /// Returns whether this property may be changed internally.
-        virtual int isVolatile(const std::string &propertyName);
-
         /// grab function grabs an image returns whether grabbing worked
         bool acquireImage(ImgBase* dest);
         /// tells the type of the Generator
@@ -468,6 +469,8 @@ namespace icl {
         xn::MapGenerator* getMapGenerator();
         /// Creates an Img8u for ReadWriteBuffer
         Img16s* initBuffer();
+        /// getter for MapGeneratorOptions
+        MapGeneratorOptions* getMapGeneratorOptions();
 
       private:
         /// the OpenNI context
