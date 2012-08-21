@@ -95,6 +95,7 @@ void run(){
 }
 
 void init(){
+#ifdef OLD_GUI
   gui << "image()[@handle=image@minsize=16x12]";
   gui << ( GUI("hbox[@maxsize=100x3]") 
            << "slider(0,255,10)[@out=thresh@label=threshold]"
@@ -102,6 +103,26 @@ void init(){
            << "label(0)[@handle=dt@label=dt]"
           )
       << "!show";
+
+#endif
+
+  GUI selector;
+  if(pa("-gray")){
+    GUI x = Slider(0,255,255).handle("fill").label("fill");
+    selector = x;
+  }else{
+    selector = ColorSelect(255,0,0).handle("fill").label("fill");
+  }
+  
+  gui << Image().handle("image").minSize(16,12)
+      << ( HBox().maxSize(100,3) 
+           << Slider(0,255,10).out("thresh").label("threshold")
+           << selector
+           << Label(0).handle("dt").label("dt")
+           )
+      << Show();
+
+
   grabber.init(pa("-i"));
 
   if(pa("-gray")){

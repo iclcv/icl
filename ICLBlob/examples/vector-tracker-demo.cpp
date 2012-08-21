@@ -55,7 +55,7 @@ void update_error_frames_B(){
 }
 
 
-struct InputGrabber : public Grabber, public Lockable , public MouseHandler{
+struct InputGrabber : public MouseHandler, public Grabber, public Lockable {
   struct Blob{
     unsigned int x;
     unsigned int y;
@@ -317,25 +317,6 @@ typedef std::vector<int> vec;
 GUI gui;
 InputGrabber *grabber = 0;
 
-/*
-    static vec getCenters(const Img8u &image){
-    static RegionDetector rd;
-    rd.setRestrictions(10,100000,1,255);
-    
-    const std::vector<icl::Region> &bd = rd.detect(&image);
-    
-    static vec v;
-    v.clear();
-    
-    for(unsigned int i=0;i<bd.size();++i){
-    Point p = bd[i].getCOG();
-    v.push_back(p.x);
-    v.push_back(p.y);
-    }
-    return v;
-    }
-*/
-
 static std::vector<std::vector<float> > getCentersAndSizes(const Img8u &image){
   static RegionDetector rd;
   rd.setConstraints(10,100000,1,255);
@@ -356,19 +337,29 @@ static std::vector<std::vector<float> > getCentersAndSizes(const Img8u &image){
 void init(){
   grabber = new InputGrabber(pa("-n").as<int>());
   grabber->useDesired(Size::VGA);
+  grabber->useDesired(depth8u);
   grabber->useDesired(formatGray);
+#ifdef OLD_GUI
     gui << "draw[@handle=image@minsize=32x24]";
     gui << ( GUI("hbox") 
-             << string("slider(0,100,")+ *pa("-sleeptime") + ")[@handle=Hsl@out=Vsl@label=sleeptime]"
+             << string("slider(0,100,")+ *pa("-sleeptime") + ")"
+             "[@handle=Hsl@out=Vsl@label=sleeptime]"
              << "togglebutton(off,!on)[@out=Vlo@label=Show labels]"
-           );
+             );
     gui.show();
-
-    (*gui.getValue<DrawHandle>("image"))->install(grabber);
+#endif
+    gui << Draw().handle("image").minSize(32,24);
+    gui << ( HBox() 
+             << Slider(0,100,pa("-sleeptime")).handle("Hsl").out("Vsl").label("sleeptime")
+             << Button("off","on",true).out("Vlo").label("Show labels")
+             )
+        << Show();
+    
+    gui["image"].install(grabber);
 }
  
 void run(){
-  static ICLDrawWidget *w = *gui.getValue<DrawHandle>("image");
+  static ICLDrawWidget *w = *gui.get<DrawHandle>("image");
   
   const ImgBase *image = grabber->grab();
 
@@ -402,7 +393,7 @@ void run(){
       int curr_y = vVT[i][1];
 
       w->sym(curr_x,curr_y,ICLDrawWidget::symCross);
-      static bool &labelsOnFlag = gui.getValue<bool>("Vlo");
+      static bool &labelsOnFlag = gui.get<bool>("Vlo");
       
 
       
@@ -433,7 +424,7 @@ void run(){
   
   w->render();
 
-  static int &sleepTime = gui.getValue<int>("Vsl");
+  static int &sleepTime = gui.get<int>("Vsl");
   Thread::msleep(sleepTime);
 }
 
@@ -451,7 +442,8 @@ int main(int n, char  **ppc){
   ("-iam","one of {new,or free}")
   ("-norm","give norm factors for x and y distances and for the region size");
 
-  return ICLApplication(n,ppc,"-norm(x-norm=1,y-norm=1,size-norm=1000) -id-generation-mode|-iam(mode=free) -nblobs|-n(int=30) -sleeptime|-s(msec=20) "
+  return ICLApplication(n,ppc,"-norm(x-norm=1,y-norm=1,size-norm=1000) "
+                        "-id-generation-mode|-iam(mode=free) -nblobs|-n(int=30) -sleeptime|-s(msec=20) "
                         "-mingap(int=3) -minr(int=10) -maxr(int=20) -maxv(int=10) -maxdv(int=2) "
                         "-thresh(int=5)",init,run).exec();
 }

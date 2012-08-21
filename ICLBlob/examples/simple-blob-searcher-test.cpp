@@ -37,15 +37,15 @@
 #include <ICLUtils/FPSLimiter.h>
 
 GUI gui;
-GenericGrabber *grabber;
+GenericGrabber grabber;
 SimpleBlobSearcher S;
 Mutex mutex;
 
 void mouse(const MouseEvent &e){
   if(e.hitImage() && e.isPressEvent()){
-    gui_int(minSize);
-    gui_int(maxSize);
-    gui_float(thresh);
+    static int &minSize = gui.get<int>("minSize");
+    static int &maxSize = gui.get<int>("maxSize");
+    static float &thresh = gui.get<float>("thresh");
     Mutex::Locker lock(mutex);
     int idx = e.isMiddle() ? 1 : e.isRight() ? 2 : 0;
     std::vector<double> color = e.getColor();
@@ -56,15 +56,26 @@ void mouse(const MouseEvent &e){
 
 
 void init(){
+#ifdef OLD_GUI
   gui << "draw[@minsize=32x24@handle=draw]";
   gui << ( GUI("hbox[@maxsize=100x3]") 
            << "spinner(1,100000,100)[@out=minSize@label=min size]"
            << "spinner(1,100000,1000)[@out=maxSize@label=max size]"
            << "fslider(0,300,30)[@out=thresh@label=threshold]" );
   gui.show();
+#endif
+  
+  gui << Draw().minSize(32,24).handle("draw");
+  gui << ( HBox().maxSize(100,3) 
+           << Spinner(1,100000,100).out("minSize").label("min size")
+           << Spinner(1,100000,1000).out("maxSize").label("max size")
+           << FSlider(0,300,30).out("thresh").label("threshold") 
+           )
+      << Show();
+
   
   gui["draw"].install(new MouseHandler(mouse));
-  grabber = new GenericGrabber(pa("-i"));
+  grabber.init(pa("-i"));
   
   S.add(Color(255,0,0),100,Range32s(100,100));
   S.add(Color(0,255,0),100,Range32s(100,100));
@@ -72,10 +83,9 @@ void init(){
 }
 
 void run(){
-  gui_DrawHandle(draw);
+  static DrawHandle draw = gui["draw"];
   static FPSLimiter fps(20);
-  
-  const Img8u *image = grabber->grab()->asImg<icl8u>();
+  const Img8u *image = grabber.grab()->asImg<icl8u>();
   
   const std::vector<SimpleBlobSearcher::Blob> &blobs = S.detect(*image);
   

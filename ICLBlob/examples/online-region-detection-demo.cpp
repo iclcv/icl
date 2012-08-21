@@ -35,7 +35,7 @@
 #include <ICLBlob/RegionDetector.h>
 #include <ICLFilter/ColorDistanceOp.h>
 
-GUI gui;
+VBox gui;
 GenericGrabber grabber;
 RegionDetector rd(100,1E9,255,255);
 ColorDistanceOp cd(Color(0,120,240),100);
@@ -48,7 +48,8 @@ void mouse(const MouseEvent &e){
 
 void init(){
   grabber.init(pa("-i"));
-  gui << "draw[@handle=image]" << "!show";
+  gui << Draw().handle("image") << Show();
+
   gui["image"].install(mouse);
 }
 

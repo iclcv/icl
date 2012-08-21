@@ -45,7 +45,7 @@
 #include <pthread.h>
 
 #ifdef HAVE_QT
-GUI gui("vbox");
+VBox gui;
 #endif
 
 // also comment in include/ICLUtils/PThreadFix.h and .cpp
@@ -139,8 +139,8 @@ void send_app(){
   ImageHandle IH;
   FPSHandle FPS;
   if(!pa("-no-gui")){
-    IH = gui.getValue<ImageHandle>("image");
-    FPS= gui.getValue<FPSHandle>("fps");
+    IH = gui.get<ImageHandle>("image");
+    FPS= gui.get<FPSHandle>("fps");
   }
 #endif
  
@@ -187,7 +187,7 @@ void send_app(){
     output.send(normImage);
 #ifdef HAVE_QT
     if(!pa("-no-gui")){
-      gui_bool(updateImages);
+      bool &updateImages = gui.get<bool>("updateImages");
       if(updateImages){
         IH = normImage;
       }
@@ -200,7 +200,7 @@ void send_app(){
 #ifdef HAVE_QT
     int fpsLimit = 0;
     if(!pa("-no-gui")){
-      fpsLimit = gui.getValue<int>("fpsLimit");
+      fpsLimit = gui.get<int>("fpsLimit");
       useGUI = true;
     }else{
       fpsLimit = pa("-fps").as<int>();
@@ -235,9 +235,10 @@ void send_app(){
 
 #ifdef HAVE_QT
 void init_gui(){
-  std::string idu = pa("-idu") ? "" : "!";
+  bool idu = pa("-idu");
   
   if(pa("-pp")){
+#ifdef OLD_GUI
     gui << "image[@handle=image@minsize=12x8]" 
         << ( GUI("vbox[@maxsize=100x8]") 
              <<  ( GUI("hbox") 
@@ -251,8 +252,24 @@ void init_gui(){
                  )
              );
     gui.show();
-    ppEnabled = &gui.getValue<bool>("pp-on");
+#endif
+    gui << Image().handle("image").minSize(12,8) 
+        << ( VBox().maxSize(100,8) 
+             <<  ( HBox() 
+                   << CamCfg().maxSize(5,2)
+                   << Spinner(1,100,pa("-fps").as<int>()).out("fpsLimit").label("max fps")
+                   << Fps(10).handle("fps")
+                   )
+             <<  ( HBox() 
+                   << Button("off","on",!idu).out("updateImages").label("update images")
+                   << Button("off","!on").handle("_").out("pp-on").label("preprocessing").minSize(5,2)
+                   )
+             );
+    gui.show();
+
+    ppEnabled = &gui.get<bool>("pp-on");
   }else{
+#ifdef OLD_GUI
     gui << "image[@handle=image@minsize=12x8]" 
         << ( GUI("vbox[@maxsize=100x8]") 
              <<  ( GUI("hbox") 
@@ -265,6 +282,20 @@ void init_gui(){
                  )
              );
     gui.show();
+#endif
+    gui << Image().handle("image").minSize(12,8) 
+        << ( VBox().maxSize(100,8) 
+             <<  ( HBox() 
+                   << CamCfg().maxSize(5,2)
+                   << Spinner(1,100,pa("-fps").as<int>()).out("fpsLimit").label("max fps")
+                   )
+             <<  ( HBox() 
+                   << Fps(10).handle("fps")
+                   << Button("off","on",!idu).out("updateImages").label("update images")
+                   )
+             );
+    gui.show();
+
     ppEnabled = new bool(false);
   }
 }

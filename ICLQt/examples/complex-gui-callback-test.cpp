@@ -41,10 +41,17 @@ void handle_event(const std::string &handle){
 }
 
 void init(){
+#ifdef OLD_GUI
   gui << "slider(0,100,50)[@handle=slider@label=slider@out=_1]"
       << "togglebutton(off,on)[@handle=togglebutton@label=toggle button@out=_2]"
       << "button(click me)[@handle=button@label=a button]";
   gui.show();
+#endif
+  gui << Slider(0,100,50).handle("slider").label("slider")
+      << Button("off","on").handle("togglebutton").label("toggle button")
+      << Button("click me").handle("button").label("a button");
+  gui.show();
+
   
   gui.registerCallback(function(handle_event),"slider,button,togglebutton");
 }

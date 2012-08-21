@@ -41,8 +41,7 @@ GUI gui;
 // asynchronously to the GUI Thread
 void run(){
   // shortcut to extract currentTimeLabel from the gui
-  gui_LabelHandle(currentTimeLabel);
-  currentTimeLabel = Time::now().toString();
+  gui["currentTimeLabel"] = Time::now().toString();
   Thread::sleep(1);
 }
 
@@ -54,8 +53,7 @@ void exit_callback(void){
 
 // another one (we can also access the GUI from here)
 void click_callback(){
-  gui_LabelHandle(currentTimeLabel);
-  currentTimeLabel = "hello!";
+  gui["currentTimeLabel"] = str("hello!");
 }
 
 // a more complex callback implementing the GUI::Callback interface
@@ -67,7 +65,7 @@ struct MyCallback : public GUI::Callback{
     Time dt = now-m_lastTime;
 
     // here we could use the macro gui_LabelHandle(timeDiffLabel) as well
-    gui.getValue<LabelHandle>("timeDiffLabel") = str(dt.toSecondsDouble())+" sec";
+    gui["timeDiffLabel"] = str(dt.toSecondsDouble())+" sec";
     m_lastTime = now;
   }
 } myCallback;
@@ -88,23 +86,31 @@ void slider_complex_cb(const std::string &handle){
 
 void init(){
   // create some nice components
+#ifdef OLD_GUI
   gui << "label(something)[@handle=currentTimeLabel@label=current time]"
       << "label(something)[@handle=timeDiffLabel@label=time since last call]"
       << "slider(0,100,50)[@handle=slider@label=a slider]"
       << "button(Click me!)[@handle=click]"
       << "button(Click me too!)[@handle=click-2]"
       << "button(Exit!)[@handle=exit]";
-  
-  
   // create and show the GUI
   gui.show();
+  
+#endif
+  gui << Label("something").handle("currentTimeLabel").label("current time")
+      << Label("something").handle("timeDiffLabel").label("time since last call")
+      << Slider(0,100,50).handle("slider").label("a slider")
+      << Button("Click me!").handle("click")
+      << Button("Click me too!").handle("click-2")
+      << Button("Exit!").handle("exit")
+      << Show();
   
   /// sometimes, this works as well !
   gui["currentTimeLabel"] = Time::now().toString();
   
   // register callbacks (on the specific handles)
   gui["exit"].registerCallback(function(exit_callback));
-  gui.getValue<ButtonHandle>("click").registerCallback(function(click_callback));
+  gui["click"].registerCallback(function(click_callback));
 
   // or let gui find the corresponding components internally
   gui.registerCallback(function(myCallback,&MyCallback::foo),"click-2");
@@ -114,7 +120,7 @@ void init(){
 
   // .. or extract the slider-handle that provides an interface
   // for registering callbacks to specific slider events
-  gui_SliderHandle(slider);
+  SliderHandle slider = gui["slider"];
   slider.registerCallback(slider_cb<0>,"move");
   slider.registerCallback(slider_cb<1>,"press");
   slider.registerCallback(slider_cb<2>,"release");

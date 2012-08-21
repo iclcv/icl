@@ -37,6 +37,7 @@
 #include <ICLQt/GLImg.h>
 #include <ICLQt/GLPaintEngine.h>
 #include <ICLIO/GenericImageOutput.h>
+#include <ICLQt/ContainerGUIComponent.h>
 #include <string>
 #include <vector>
 #include <ICLUtils/Time.h>
@@ -44,6 +45,7 @@
 #include <ICLQt/QImageConverter.h>
 #include <ICLCC/FixedConverter.h>
 #include <QtGui/QImage>
+
 
 #include <ICLQt/IconFactory.h>
 #include <ICLUtils/Thread.h>
@@ -1006,13 +1008,20 @@ namespace icl{
     QMutexLocker locker(&data->menuMutex);
 
     // OK, we need to extract default values for all gui elements if gui is already defined!
+#ifdef OLD_GUI
     data->menu = GUI("tab(bci,scale,channel,capture,grid,info,license,help)[@handle=root@minsize=5x7]",widget);
+#endif
+    data->menu = Tab("bci,scale,channel,capture,grid,info,license,help",widget).handle("root").minSize(5,7);
 
+#ifdef OLD_GUI
     GUI bciGUI("vbox");
+#endif
+    VBox bciGUI;
 
     std::string bcis[3]={"custom,","off,","auto"};
     bcis[((int)data->rm)-1] = str("!")+bcis[((int)data->rm)-1];
     bool bciAuto = data->bciUpdateAuto && *data->bciUpdateAuto;
+#ifdef OLD_GUI
     bciGUI << ( GUI("hbox")
                 << str("combo(")+bcis[0]+bcis[1]+bcis[2]+")[@label=bci-mode@handle=bci-mode@out=bci-mode-out]"
                 << str("togglebutton(manual,")+(bciAuto?"!":"")+"auto)[@label=update mode@out=bci-update-mode]"
@@ -1020,13 +1029,31 @@ namespace icl{
            << str("slider(-255,255,")+str(data->bci[0])+")[@handle=brightness@label=brightness@out=_2]"
            << str("slider(-255,255,")+str(data->bci[1])+")[@handle=contrast@label=contrast@out=_1]"
            << str("slider(-255,255,")+str(data->bci[2])+")[@handle=intensity@label=intensity@out=_0]";
+#endif
+    bciGUI << ( HBox()
+                << Combo(bcis[0]+bcis[1]+bcis[2]).label("bci-mode").handle("bci-mode")
+                << Button("manual","auto",bciAuto).label("update mode").out("bci-update-mode")
+              )
+           << Slider(-255,255,data->bci[0]).handle("brightness").label("brightness")
+           << Slider(-255,255,data->bci[1]).handle("contrast").label("contrast")
+           << Slider(-255,255,data->bci[2]).handle("intensity").label("intensity");
     
+#ifdef OLD_GUI
     GUI scaleGUI("vbox");
+#endif
+    VBox scaleGUI;
+    
     std::string em[4]={"no scale,","hold aspect ratio,","force fit,","zoom"};
     em[data->fm] = str("!")+em[data->fm];
+
+#ifdef OLD_GUI
     scaleGUI << str("combo(")+em[0]+em[1]+em[2]+em[3]+")[@maxsize=100x2@handle=fit-mode@label=scale mode@out=_3]";
     scaleGUI << "hbox[@handle=scale-widget@minsize=4x3]";
+#endif
+    scaleGUI << Combo(em[0]+em[1]+em[2]+em[3]).maxSize(100,2).handle("fit-mode").label("scale mode")
+             << HBox().handle("scale-widget").minSize(4,3);
 
+#ifdef OLD_GUI
     GUI channelGUI("vbox");
     channelGUI << "combo(all,channel #0,channel #1,channel #2,channel #3)[@maxsize=100x2@handle=channel@label=visualized channel@out=_4]"
                << "togglebutton(manual,auto)[@maxsize=100x2@label=update mode@out=channel-update-mode]";
@@ -1040,7 +1067,20 @@ namespace icl{
                        )
                     << "combo(image.pnm,image_TIME.pnm,ask me)[@label=filename@handle=cap-filename@out=_5]"
                   );
-                  
+#endif
+    VBox channelGUI;
+    channelGUI << Combo("all,channel #0,channel #1,channel #2,channel #3").maxSize(100,2).handle("channel").label("visualized channel")
+               << Button("manual","auto").maxSize(100,2).label("update mode").out("channel-update-mode");
+    
+    VBox captureGUI;
+    captureGUI << ( HBox()
+                    << ( HBox().label("single shot")
+                         << Button("image").handle("cap-image")
+                         << Button("frame buffer").handle("cap-fb")
+                        )
+                    << Combo("image.pnm,image_TIME.pnm,ask me").label("filename").handle("cap-filename")
+                   );
+    
     
     bool autoCapFB = data->outputCap && data->outputCap->target==ICLWidget::OutputBufferCapturer::FRAME_BUFFER;
     int autoCapFS = data->outputCap ? (data->outputCap->frameSkip) : 0;
@@ -1059,6 +1099,7 @@ namespace icl{
     }
     std::string autoCapFP = data->outputCap ? data->outputCap->deviceInfo : "captured/image_####.ppm";
     
+#ifdef OLD_GUI
     GUI autoCapGUI("vbox[@label=automatic]");
     autoCapGUI << ( GUI("hbox")
                     << str("combo(image,")+(autoCapFB?"!":"")+"frame buffer)[@label=mode@handle=auto-cap-mode@out=_6]"
@@ -1078,8 +1119,33 @@ namespace icl{
                     << str("togglebutton(pause,")+(autoCapPau?"!":"")+"pause)[@handle=auto-cap-pause@out=_9]"
                     << "button(stop)[@handle=auto-cap-stop]"
                   );
+#endif
+    //VBox autoCapGUI;
+    //    autoCapGUI.label("automatic");
+    GUI autoCapGUI = VBox().label("automatic");
+
+    static const std::string sizes="160x120,320x240,!640x480,800x600,1024x768,1200x800,1600x1200,1280x720,1920x1080";
+    autoCapGUI << ( HBox()
+                    << Combo("image,frame buffer",!!autoCapFB).label("mode").handle("auto-cap-mode")
+                    << Spinner(0,100,autoCapFS).label("frame skip").handle("auto-cap-frameskip")
+                    << Combo("file,video,xcfp,sm").label("dest.").handle("auto-cap-device")
+                    << String(autoCapFP,200).label("output params").handle("auto-cap-filepattern")
+                  )
+               << ( HBox()
+                    << CheckBox("force params").out("auto-cap-force")
+                    << Combo(sizes).label("size").handle("auto-cap-size")
+                    << Combo("gray,!rgb,hls,yuv,lab").label("color").handle("auto-cap-format")
+                    << Combo("depth8u,depth16s,depth32s,depth32f,depth64f").label("depth").handle("auto-cap-depth")
+                  )
+               << ( HBox()
+                    << Button("record","record",autoCapRec).handle("auto-cap-record")
+                    << Button("pause","pause",!!autoCapPau).handle("auto-cap-pause")
+                    << Button("stop").handle("auto-cap-stop")
+                  );
+
     captureGUI << autoCapGUI;    
     
+#ifdef OLD_GUI
     GUI extraGUI("vbox");
 
     extraGUI << (GUI("hbox[@label=background color]")
@@ -1087,9 +1153,9 @@ namespace icl{
                  << "button(black)[@handle=bg-black]"
                  << "button(white)[@handle=bg-white]"
                  << "button(gray)[@handle=bg-gray]" )
-                 << (GUI("hbox") 
+             << (GUI("hbox") 
                  << "togglebutton(off,on)[@handle=grid-on@label=show grid]"
-        << "slider(0,255,100)[@label=grid alpha@handle=grid-alpha]")
+                 << "slider(0,255,100)[@label=grid alpha@handle=grid-alpha]")
              << (GUI("hbox[@label=grid color]")
                  << "button(select color)[@handle=select-grid-color]"
                  << "button(black)[@handle=grid-black]"
@@ -1112,7 +1178,40 @@ namespace icl{
     GUI licGUI("vbox[@handle=lic]");
 
     GUI helpGUI("vbox[@handle=help]");
+#endif    
+
+    VBox extraGUI;
+
+    extraGUI << ( HBox().label("background color")
+                  << Button("select color").handle("select-bg-color")
+                  << Button("black").handle("bg-black")
+                  << Button("white").handle("bg-white")
+                  << Button("gray").handle("bg-gray") )
+             << ( HBox()
+                  << Button("off","on").handle("grid-on").label("show grid")
+                  << Slider(0,255,100).label("grid alpha").handle("grid-alpha") )
+             << ( HBox().label("grid color")
+                  << Button("select color").handle("select-grid-color")
+                  << Button("black").handle("grid-black")
+                  << Button("white").handle("grid-white")
+                  << Button("gray").handle("grid-gray") );
     
+
+    ContainerGUIComponent infoGUI = VSplit().handle("info-tab");
+    infoGUI << ( HBox()
+                 << Spinner(-1,100,-1).handle("histo-channel").label("select channel").tooltip("pick a single channel,\nchoose -1 for all")
+                 << CheckBox("median").handle("median").out("median-on")
+                 << CheckBox("log").handle("log").out("log-on")
+                 << CheckBox("blur").handle("blur").out("blur-on")
+               )
+            <<  ( HSplit()
+                  << HBox().label("histogramm").handle("histo-box").minSize(12,10)
+                  << Label().label("params").handle("image-info-label")
+                );
+
+    ContainerGUIComponent licGUI = VBox().handle("lic");
+    ContainerGUIComponent helpGUI = VBox().handle("help");
+
     data->menu << bciGUI << scaleGUI << channelGUI << captureGUI << extraGUI << infoGUI << licGUI << helpGUI;
     
     data->menu.create();
@@ -1120,7 +1219,7 @@ namespace icl{
     data->menu["auto-cap-device"].registerCallback(function(data,&ICLWidget::Data::autoCapDeviceChanged));
 
 
-    (*data->menu.getValue<ComboHandle>("auto-cap-mode"))->setToolTip("== Choose What to Capture =="
+    (*data->menu.get<ComboHandle>("auto-cap-mode"))->setToolTip("== Choose What to Capture =="
                                                                      "\n"
                                                                      "= image =\n"
                                                                      "Captures each image that is set via\n"
@@ -1137,7 +1236,7 @@ namespace icl{
                                                                      "size. If you minimize the window, the\n"
                                                                      "resulting images might become black");
 
-    (*data->menu.getValue<ComboHandle>("auto-cap-device"))->setToolTip("== Choose Output Device Type ==\n"
+    (*data->menu.get<ComboHandle>("auto-cap-device"))->setToolTip("== Choose Output Device Type ==\n"
                                                                        "\n"
                                                                        "= file =\n"
                                                                        "Captures each image as file to disk.\n"
@@ -1156,7 +1255,7 @@ namespace icl{
                                                                        "Creates a SharedMemoryPublisher, that\n"
                                                                        "publishs the image via QShareMemory"
                                                                        );
-    (*data->menu.getValue<StringHandle>("auto-cap-filepattern"))->setToolTip("== Specify Parameters for Capturing\n"
+    (*data->menu.get<StringHandle>("auto-cap-filepattern"))->setToolTip("== Specify Parameters for Capturing\n"
                                                                              "The allowed parameters depend on the\n"
                                                                              "used device type.\n"
                                                                              "\n"
@@ -1199,66 +1298,66 @@ namespace icl{
     //data->menuptr->setStyleSheet("QWidget { background : rgba(200,200,200,10) }");
     
     
-    data->bciUpdateAuto = &data->menu.getValue<bool>("bci-update-mode");
-    data->channelUpdateAuto = &data->menu.getValue<bool>("channel-update-mode");
+    data->bciUpdateAuto = &data->menu.get<bool>("bci-update-mode");
+    data->channelUpdateAuto = &data->menu.get<bool>("channel-update-mode");
 
-    data->infoTab = *data->menu.getValue<SplitterHandle>("info-tab");
+    data->infoTab = *data->menu.get<SplitterHandle>("info-tab");
     
-    data->histoWidget = new HistogrammWidget(*data->menu.getValue<BoxHandle>("histo-box"));
-    data->menu.getValue<BoxHandle>("histo-box").add(data->histoWidget);
+    data->histoWidget = new HistogrammWidget(*data->menu.get<BoxHandle>("histo-box"));
+    data->menu.get<BoxHandle>("histo-box").add(data->histoWidget);
     
-    QObject::connect(*data->menu.getValue<ComboHandle>("bci-mode"),SIGNAL(currentIndexChanged(int)),widget,SLOT(bciModeChanged(int)));
-    QObject::connect(*data->menu.getValue<ComboHandle>("fit-mode"),SIGNAL(currentIndexChanged(int)),widget,SLOT(scaleModeChanged(int)));
-    QObject::connect(*data->menu.getValue<ComboHandle>("channel"),SIGNAL(currentIndexChanged(int)),widget,SLOT(currentChannelChanged(int)));
+    QObject::connect(*data->menu.get<ComboHandle>("bci-mode"),SIGNAL(currentIndexChanged(int)),widget,SLOT(bciModeChanged(int)));
+    QObject::connect(*data->menu.get<ComboHandle>("fit-mode"),SIGNAL(currentIndexChanged(int)),widget,SLOT(scaleModeChanged(int)));
+    QObject::connect(*data->menu.get<ComboHandle>("channel"),SIGNAL(currentIndexChanged(int)),widget,SLOT(currentChannelChanged(int)));
 
-    QObject::connect(*data->menu.getValue<SliderHandle>("brightness"),SIGNAL(valueChanged(int)),widget,SLOT(brightnessChanged(int)));
-    QObject::connect(*data->menu.getValue<SliderHandle>("contrast"),SIGNAL(valueChanged(int)),widget,SLOT(contrastChanged(int)));
-    QObject::connect(*data->menu.getValue<SliderHandle>("intensity"),SIGNAL(valueChanged(int)),widget,SLOT(intensityChanged(int)));
+    QObject::connect(*data->menu.get<SliderHandle>("brightness"),SIGNAL(valueChanged(int)),widget,SLOT(brightnessChanged(int)));
+    QObject::connect(*data->menu.get<SliderHandle>("contrast"),SIGNAL(valueChanged(int)),widget,SLOT(contrastChanged(int)));
+    QObject::connect(*data->menu.get<SliderHandle>("intensity"),SIGNAL(valueChanged(int)),widget,SLOT(intensityChanged(int)));
     
     data->zoomAdjuster = new ZoomAdjustmentWidgetParent(Size::null,0,data->zoomRect,widget);
-    data->menu.getValue<BoxHandle>("scale-widget").add(data->zoomAdjuster);
+    data->menu.get<BoxHandle>("scale-widget").add(data->zoomAdjuster);
 
-    QObject::connect(*data->menu.getValue<ButtonHandle>("cap-image"),SIGNAL(clicked()),widget,SLOT(captureCurrentImage()));
-    QObject::connect(*data->menu.getValue<ButtonHandle>("cap-fb"),SIGNAL(clicked()),widget,SLOT(captureCurrentFrameBuffer()));
+    QObject::connect(*data->menu.get<ButtonHandle>("cap-image"),SIGNAL(clicked()),widget,SLOT(captureCurrentImage()));
+    QObject::connect(*data->menu.get<ButtonHandle>("cap-fb"),SIGNAL(clicked()),widget,SLOT(captureCurrentFrameBuffer()));
     
 
-    QObject::connect(*data->menu.getValue<ButtonHandle>("auto-cap-record"),SIGNAL(toggled(bool)),widget,SLOT(recordButtonToggled(bool)));
-    QObject::connect(*data->menu.getValue<ButtonHandle>("auto-cap-pause"),SIGNAL(toggled(bool)),widget,SLOT(pauseButtonToggled(bool)));
-    QObject::connect(*data->menu.getValue<ButtonHandle>("auto-cap-stop"),SIGNAL(clicked()),widget,SLOT(stopButtonClicked()));
-    QObject::connect(*data->menu.getValue<ComboHandle>("auto-cap-mode"),SIGNAL(currentIndexChanged(int)),widget,SLOT(stopButtonClicked()));
-    QObject::connect(*data->menu.getValue<SpinnerHandle>("auto-cap-frameskip"),SIGNAL(valueChanged(int)),widget,SLOT(skipFramesChanged(int)));
+    QObject::connect(*data->menu.get<ButtonHandle>("auto-cap-record"),SIGNAL(toggled(bool)),widget,SLOT(recordButtonToggled(bool)));
+    QObject::connect(*data->menu.get<ButtonHandle>("auto-cap-pause"),SIGNAL(toggled(bool)),widget,SLOT(pauseButtonToggled(bool)));
+    QObject::connect(*data->menu.get<ButtonHandle>("auto-cap-stop"),SIGNAL(clicked()),widget,SLOT(stopButtonClicked()));
+    QObject::connect(*data->menu.get<ComboHandle>("auto-cap-mode"),SIGNAL(currentIndexChanged(int)),widget,SLOT(stopButtonClicked()));
+    QObject::connect(*data->menu.get<SpinnerHandle>("auto-cap-frameskip"),SIGNAL(valueChanged(int)),widget,SLOT(skipFramesChanged(int)));
     
-    QObject::connect(*data->menu.getValue<TabHandle>("root"),SIGNAL(currentChanged(int)),widget,SLOT(menuTabChanged(int)));
+    QObject::connect(*data->menu.get<TabHandle>("root"),SIGNAL(currentChanged(int)),widget,SLOT(menuTabChanged(int)));
     
-    QObject::connect(*data->menu.getValue<CheckBoxHandle>("blur"),SIGNAL(stateChanged(int)),widget,SLOT(histoPanelParamChanged()));
-    QObject::connect(*data->menu.getValue<CheckBoxHandle>("median"),SIGNAL(stateChanged(int)),widget,SLOT(histoPanelParamChanged()));
-    QObject::connect(*data->menu.getValue<CheckBoxHandle>("log"),SIGNAL(stateChanged(int)),widget,SLOT(histoPanelParamChanged()));
-    QObject::connect(*data->menu.getValue<SpinnerHandle>("histo-channel"),SIGNAL(valueChanged(int)),widget,SLOT(histoPanelParamChanged()));
+    QObject::connect(*data->menu.get<CheckBoxHandle>("blur"),SIGNAL(stateChanged(int)),widget,SLOT(histoPanelParamChanged()));
+    QObject::connect(*data->menu.get<CheckBoxHandle>("median"),SIGNAL(stateChanged(int)),widget,SLOT(histoPanelParamChanged()));
+    QObject::connect(*data->menu.get<CheckBoxHandle>("log"),SIGNAL(stateChanged(int)),widget,SLOT(histoPanelParamChanged()));
+    QObject::connect(*data->menu.get<SpinnerHandle>("histo-channel"),SIGNAL(valueChanged(int)),widget,SLOT(histoPanelParamChanged()));
 
     
-    QObject::connect(*data->menu.getValue<ButtonHandle>("grid-on"),SIGNAL(toggled(bool)),widget,SLOT(setShowPixelGridEnabled(bool)));
-    QObject::connect(*data->menu.getValue<ButtonHandle>("select-grid-color"),SIGNAL(clicked()),widget,SLOT(showGridColorDialog()));
-    QObject::connect(*data->menu.getValue<ButtonHandle>("grid-black"),SIGNAL(clicked()),widget,SLOT(setGridBlack()));
-    QObject::connect(*data->menu.getValue<ButtonHandle>("grid-white"),SIGNAL(clicked()),widget,SLOT(setGridWhite()));
-    QObject::connect(*data->menu.getValue<ButtonHandle>("grid-gray"),SIGNAL(clicked()),widget,SLOT(setGridGray()));
-    QObject::connect(*data->menu.getValue<SliderHandle>("grid-alpha"),SIGNAL(sliderMoved(int)),widget,SLOT(setGridAlpha(int)));
+    QObject::connect(*data->menu.get<ButtonHandle>("grid-on"),SIGNAL(toggled(bool)),widget,SLOT(setShowPixelGridEnabled(bool)));
+    QObject::connect(*data->menu.get<ButtonHandle>("select-grid-color"),SIGNAL(clicked()),widget,SLOT(showGridColorDialog()));
+    QObject::connect(*data->menu.get<ButtonHandle>("grid-black"),SIGNAL(clicked()),widget,SLOT(setGridBlack()));
+    QObject::connect(*data->menu.get<ButtonHandle>("grid-white"),SIGNAL(clicked()),widget,SLOT(setGridWhite()));
+    QObject::connect(*data->menu.get<ButtonHandle>("grid-gray"),SIGNAL(clicked()),widget,SLOT(setGridGray()));
+    QObject::connect(*data->menu.get<SliderHandle>("grid-alpha"),SIGNAL(sliderMoved(int)),widget,SLOT(setGridAlpha(int)));
 
-    QObject::connect(*data->menu.getValue<ButtonHandle>("select-bg-color"),SIGNAL(clicked()),widget,SLOT(showBackgroundColorDialog()));
-    QObject::connect(*data->menu.getValue<ButtonHandle>("bg-black"),SIGNAL(clicked()),widget,SLOT(setBackgroundBlack()));
-    QObject::connect(*data->menu.getValue<ButtonHandle>("bg-white"),SIGNAL(clicked()),widget,SLOT(setBackgroundWhite()));
-    QObject::connect(*data->menu.getValue<ButtonHandle>("bg-gray"),SIGNAL(clicked()),widget,SLOT(setBackgroundGray()));
+    QObject::connect(*data->menu.get<ButtonHandle>("select-bg-color"),SIGNAL(clicked()),widget,SLOT(showBackgroundColorDialog()));
+    QObject::connect(*data->menu.get<ButtonHandle>("bg-black"),SIGNAL(clicked()),widget,SLOT(setBackgroundBlack()));
+    QObject::connect(*data->menu.get<ButtonHandle>("bg-white"),SIGNAL(clicked()),widget,SLOT(setBackgroundWhite()));
+    QObject::connect(*data->menu.get<ButtonHandle>("bg-gray"),SIGNAL(clicked()),widget,SLOT(setBackgroundGray()));
                  
             
     { //ugly :-)    
       // license widget
-      BoxHandle &h = data->menu.getValue<BoxHandle>("lic");
+      BoxHandle &h = data->menu.get<BoxHandle>("lic");
       QTextEdit *lic = new QTextEdit(*h);
       lic->setReadOnly(true);
       lic->setWordWrapMode(QTextOption::QTextOption::NoWrap);
       lic->setText(pagetlic().c_str());
       h.add(lic,"License Information");
     }{
-      BoxHandle &h = data->menu.getValue<BoxHandle>("help");
+      BoxHandle &h = data->menu.get<BoxHandle>("help");
       QTextEdit *help = new QTextEdit(*h);
       help->setReadOnly(true);
       help->setWordWrapMode(QTextOption::QTextOption::NoWrap);
@@ -1516,21 +1615,21 @@ namespace icl{
     }
     if(checked){
       QMutexLocker l(&m_data->menuMutex);
-      OutputBufferCapturer::CaptureTarget t = m_data->menu.getValue<ComboHandle>("auto-cap-mode").getSelectedIndex()?
+      OutputBufferCapturer::CaptureTarget t = m_data->menu.get<ComboHandle>("auto-cap-mode").getSelectedIndex()?
                                               OutputBufferCapturer::FRAME_BUFFER :  OutputBufferCapturer::SET_IMAGES;
 
-      const std::string params = m_data->menu.getValue<StringHandle>("auto-cap-filepattern").getCurrentText();
-      const std::string device = m_data->menu.getValue<ComboHandle>("auto-cap-device").getSelectedItem();
-      int frameSkip = m_data->menu.getValue<SpinnerHandle>("auto-cap-frameskip").getValue();
+      const std::string params = m_data->menu.get<StringHandle>("auto-cap-filepattern").getCurrentText();
+      const std::string device = m_data->menu.get<ComboHandle>("auto-cap-device").getSelectedItem();
+      int frameSkip = m_data->menu.get<SpinnerHandle>("auto-cap-frameskip").getValue();
       
-      bool forceParams = m_data->menu.getValue<bool>("auto-cap-force");
-      Size dstSize = parse<Size>(m_data->menu.getValue<ComboHandle>("auto-cap-size").getSelectedItem());
-      icl::format dstFmt = parse<icl::format>(m_data->menu.getValue<ComboHandle>("auto-cap-format").getSelectedItem());
-      icl::depth dstDepth = parse<icl::depth>(m_data->menu.getValue<ComboHandle>("auto-cap-depth").getSelectedItem());
+      bool forceParams = m_data->menu.get<bool>("auto-cap-force");
+      Size dstSize = parse<Size>(m_data->menu.get<ComboHandle>("auto-cap-size").getSelectedItem());
+      icl::format dstFmt = parse<icl::format>(m_data->menu.get<ComboHandle>("auto-cap-format").getSelectedItem());
+      icl::depth dstDepth = parse<icl::depth>(m_data->menu.get<ComboHandle>("auto-cap-depth").getSelectedItem());
 
       bool ok = m_data->outputCap->startRecording(t,device,params,frameSkip,forceParams,dstSize,dstFmt,dstDepth);
       if(!ok){
-        (*m_data->menu.getValue<ButtonHandle>("auto-cap-record"))->setChecked(false);
+        (*m_data->menu.get<ButtonHandle>("auto-cap-record"))->setChecked(false);
       }else{
         m_data->glbuttons[6]->visible = true;
         update();
@@ -1557,7 +1656,7 @@ namespace icl{
     if(m_data->outputCap){
       m_data->outputCap->stopRecording();
       QMutexLocker l(&m_data->menuMutex);
-      (*m_data->menu.getValue<ButtonHandle>("auto-cap-record"))->setChecked(false);
+      (*m_data->menu.get<ButtonHandle>("auto-cap-record"))->setChecked(false);
     }
     m_data->glbuttons[6]->visible = false;
     update();
@@ -1588,10 +1687,10 @@ namespace icl{
   void ICLWidget::histoPanelParamChanged(){
     QMutexLocker l(&m_data->menuMutex);
     if(!m_data->histoWidget) return;
-    m_data->histoWidget->setFeatures(m_data->menu.getValue<bool>("log-on"),
-                                     m_data->menu.getValue<bool>("blur-on"),
-                                     m_data->menu.getValue<bool>("median-on"),
-                                     m_data->menu.getValue<SpinnerHandle>("histo-channel").getValue());
+    m_data->histoWidget->setFeatures(m_data->menu.get<bool>("log-on"),
+                                     m_data->menu.get<bool>("blur-on"),
+                                     m_data->menu.get<bool>("median-on"),
+                                     m_data->menu.get<SpinnerHandle>("histo-channel").getValue());
 
     m_data->histoWidget->update();
     
@@ -1604,7 +1703,7 @@ namespace icl{
         m_data->histoWidget->updateData(getImageStatistics());
         // xxx TODO
         std::vector<string> s = getImageInfo();
-        m_data->menu.getValue<LabelHandle>("image-info-label") = cat(s,"\n");
+        m_data->menu.get<LabelHandle>("image-info-label") = cat(s,"\n");
       }
       m_data->menuMutex.unlock();
     }
@@ -1618,7 +1717,7 @@ namespace icl{
     if(!m_data->menu.getDataStore().contains("cap-filename")){
       return "image.pnm";
     }
-    ComboHandle &h = m_data->menu.getValue<ComboHandle>("cap-filename");
+    ComboHandle &h = m_data->menu.get<ComboHandle>("cap-filename");
     std::string filename="image.pnm";
     switch(h.getSelectedIndex()){
       case 1:{
@@ -2206,7 +2305,7 @@ namespace icl{
       showHideMenu();
       showHideMenu();
     }
-    ComboHandle ch = m_data->menu.getValue<ComboHandle>("bci-mode");
+    ComboHandle ch = m_data->menu.get<ComboHandle>("bci-mode");
     ch.setSelectedIndex(enabled?2:1);
   }
 

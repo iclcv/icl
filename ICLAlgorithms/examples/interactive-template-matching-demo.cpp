@@ -95,7 +95,7 @@ GenericGrabber g;
 void init(){
   g.init(pa("-input"));
   g.useDesired(depth8u);
-  
+#ifdef OLD_GUI
   gui << "draw()[@label=image@minsize=32x24@handle=image]";
   gui << ( GUI("vbox") 
            << "draw()[@label=template@minsize=10x6@handle=templ]"
@@ -113,10 +113,23 @@ void init(){
   gui << controls;
    
   gui.show();
-
- 
+#endif
   
-  (*gui.getValue<DrawHandle>("image"))->install(new MouseHandler(mouse));
+  gui << Draw().label("image").minSize(32,24).handle("image")
+      << ( VBox() 
+           << Draw().label("template").minSize(10,6).handle("templ")
+           << Draw().label("buffer").minSize(10,6).handle("buf")
+           )
+      << (VBox().minSize(7,7)
+          << FSlider(0,1,0.9).handle("significance-handle").label("significance").out("significance")
+          << Fps(50).handle("fps").minSize(5,5)
+          << Button("no masks"," with masks").out("use-masks")
+          << Button("dont clip buffers","clip buffers").out("clip-buffers")
+          << Button("square distance","norm. cross corr").out("mode")
+          )
+      << Show();
+
+  gui["image"].install(mouse);
 }
 
 void vis_roi(ICLDrawWidget *w){
@@ -145,14 +158,14 @@ void run(){
     }
     mutex.unlock();
     
-    static DrawHandle &image = gui.getValue<DrawHandle>("image");
-    static DrawHandle &templ = gui.getValue<DrawHandle>("templ");
-    static DrawHandle &buf = gui.getValue<DrawHandle>("buf");
-    static float &significance = gui.getValue<float>("significance");
-    static bool &useMasks = gui.getValue<bool>("use-masks");
-    static bool &clipBuffers = gui.getValue<bool>("clip-buffers");
-    static bool &mode = gui.getValue<bool>("mode");
-    static FPSHandle &fps = gui.getValue<FPSHandle>("fps");
+    static DrawHandle &image = gui.get<DrawHandle>("image");
+    static DrawHandle &templ = gui.get<DrawHandle>("templ");
+    static DrawHandle &buf = gui.get<DrawHandle>("buf");
+    static float &significance = gui.get<float>("significance");
+    static bool &useMasks = gui.get<bool>("use-masks");
+    static bool &clipBuffers = gui.get<bool>("clip-buffers");
+    static bool &mode = gui.get<bool>("mode");
+    static FPSHandle &fps = gui.get<FPSHandle>("fps");
 
 
     fps.render();

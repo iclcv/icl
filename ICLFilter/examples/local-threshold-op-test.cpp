@@ -69,9 +69,9 @@ void mouse(const MouseEvent &e){
 }
 
 void save(){
-  static int &masksize = gui.getValue<int>("masksize");
-  static int &thresh = gui.getValue<int>("threshold");
-  static float &gamma = gui.getValue<float>("gamma");
+  static int &masksize = gui.get<int>("masksize");
+  static int &thresh = gui.get<int>("threshold");
+  static float &gamma = gui.get<float>("gamma");
   bool ok = false;
   
   QString qname = QInputDialog::getText(0,"Save Params",
@@ -88,17 +88,17 @@ void save(){
 
 void step(){
   Mutex::Locker lock(mutex);
-  gui_DrawHandle(orig);
-  gui_ImageHandle(prev);
-  gui_ButtonHandle(next);
-  gui_LabelHandle(time);
-  gui_ComboHandle(algorithm);
-  gui_FPSHandle(fps);
-  gui_bool(loop);
-  gui_bool(clipToROI);
-  gui_int(masksize);
-  gui_float(threshold);
-  gui_float(gamma);
+  static DrawHandle orig = gui["orig"];
+  static ImageHandle prev = gui["prev"];
+  static ButtonHandle next = gui["next"];
+  static LabelHandle time = gui["time"];
+  static ComboHandle algorithm = gui["algorithm"];
+  static FPSHandle fps = gui["fps"];
+  bool loop = gui["loop"];
+  bool clipToROI = gui["clipToROI"];
+  int masksize = gui["masksize"];
+  float threshold = gui["threshold"];
+  float gamma = gui["gamma"];
   gui["save"].registerCallback(save);
 
   ltop.setClipToROI(clipToROI);
@@ -155,7 +155,7 @@ void init(){
     gamma = f["config.gammaslope"];
   }
 
-  
+#ifdef OLD_GUI
   gui << "draw[@minsize=32x24@handle=orig@label=original]";
   gui << "image[@minsize=32x24@handle=prev@label=preview]";
   gui << ( GUI("vbox[@label=controls]")
@@ -174,6 +174,24 @@ void init(){
   
   
   gui.show();
+#endif
+  gui << Draw().minSize(16,12).handle("orig").label("original image")
+      << Image().minSize(16,12).handle("prev").label("preview image")
+      << ( VBox().label("controls")
+           << Slider(2,200,masksize).label("mask size").out("masksize").minSize(15,2).handle("a")
+           << FSlider(-30,40,thresh).label("threshold").out("threshold").minSize(15,2).handle("b")
+           << FSlider(0,15,gamma).label("gamma slope").out("gamma").minSize(15,2).handle("c")
+           << Button("next image").handle("next")
+           << Button("stopped","running").out("loop").handle("d")
+           << Button("no clip","clip to roi").out("clipToROI").handle("e")
+           << Button("save params").handle("save")
+           << Combo("region mean,tiledNN,tiledLIN").handle("algorithm").label("algorithm")
+           << ( HBox()
+                << Label("..ms").handle("time").label("apply time").minSize(2,3)
+                << Fps(10).handle("fps").minSize(4,3).label("fps")
+                )
+           )
+      << Show();
   
   grabber.init(pa("-i"));
   if(grabber.getType() != "file"){
@@ -247,8 +265,7 @@ void batch_mode(){
 }
 
 void run(){
-  gui_bool(loop);
-  while(!loop) Thread::msleep(100);
+  while(!gui["loop"].as<bool>()) Thread::msleep(100);
   step();
 }
 

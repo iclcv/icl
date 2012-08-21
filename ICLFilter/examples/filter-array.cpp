@@ -40,7 +40,11 @@
 #include <ICLFilter/MorphologicalOp.h>
 #include <map>
 
+#ifdef OLD_GUI
 GUI gui("hsplit");
+#endif
+
+HSplit gui;
 int N = 0;
 
 
@@ -50,6 +54,7 @@ std::string get_filters(){
 }
 
 GUI gui_col(int i){
+#ifdef OLD_GUI
   return ( GUI() 
            << ("image[@handle=im"+str(i)+"@minsize=8x6]")
            << ( GUI("hbox[@maxsize=100x3]")
@@ -60,22 +65,48 @@ GUI gui_col(int i){
                 << ("label(ok)[@handle=err"+str(i)+"@maxsize=100x2@label=error@minsize=1x2]") 
                 << ("label(9999ms)[@label=dt@handle=dt"+str(i)+"@size=2x3]"))
            << ("label(unknown)[@handle=syn"+str(i)+"@maxsize=100x2@label=syntax@minsize=1x2]") );
+#endif
+  std::string si = str(i);
+  return ( VBox()
+           << Image().handle("im"+si).minSize(8,6)
+           << ( HBox().maxSize(100,3)
+                << Combo(get_filters()).handle("cb"+si).maxSize(100,2).minSize(3,2).label("filter")
+                << String("").label("params").handle("ps"+si).maxSize(100,2).minSize(4,2)
+                << CheckBox("vis",true).maxSize(3,2).out("vis"+si).minSize(3,2)
+                )
+           << ( HBox().maxSize(100,3)
+                << Label("ok").handle("err"+si).maxSize(100,2).label("error").minSize(1,2)
+                << Label("9999ms").label("dt").handle("dt"+si).size(2,3)
+                << Label("unknown").handle("syn"+si).maxSize(100,2).label("syntax").minSize(1,2)
+                ) 
+           );
 }
 
 void init(){
   N = pa("-n");
+#ifdef OLD_GUI
+         gui << ( GUI("vbox") 
+                  << "image[@handle=input@minsize=8x6]"
+                  << (GUI("hbox[@label=desired params@maxsize=100x4]") 
+                      << "combo(QVGA,!VGA,SVGA,XGA,WXGA,UXGA)[@out=_dsize@handle=dsize@label=size]"
+                      << "combo(!depth8u,depth16s,depth32s,depth32f,depth64f)[@out=_ddepeth@handle=ddepth@label=size]"
+                      << "combo(gray,!rgb,hls,lab,yuv)[@out=_dformat@handle=dformat@label=format]"));
+#endif
   
-  gui << ( GUI("vbox") 
-           << "image[@handle=input@minsize=8x6]"
-           << (GUI("hbox[@label=desired params@maxsize=100x4]") 
-               << "combo(QVGA,!VGA,SVGA,XGA,WXGA,UXGA)[@out=_dsize@handle=dsize@label=size]"
-               << "combo(!depth8u,depth16s,depth32s,depth32f,depth64f)[@out=_ddepeth@handle=ddepth@label=size]"
-               << "combo(gray,!rgb,hls,lab,yuv)[@out=_dformat@handle=dformat@label=format]"));
+  gui << ( VBox() 
+           << Image().handle("input").minSize(8,6)
+           << (HBox().label("desired params").maxSize(100,4) 
+               << Combo("QVGA,!VGA,SVGA,XGA,WXGA,UXGA").handle("dsize").label("size")
+               << Combo("!depth8u,depth16s,depth32s,depth32f,depth64f").handle("ddepth").label("size")
+               << Combo("gray,!rgb,hls,lab,yuv").handle("dformat").label("format")
+               )
+           );
+         
   for(int i=0;i<N;++i){
     gui << gui_col(i);
   }
 
-  gui.show();
+  gui << Show();
 }
 
 void run(){

@@ -723,6 +723,8 @@ namespace icl{
     ADD(Color4D,Color);
     ADD_T_TO_T(ColorHandle);
     ADD(DataStore::Data::Event,ColorHandle);
+
+    ADD_T_TO_T(TabHandle);
     
 
     return &m;

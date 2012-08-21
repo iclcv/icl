@@ -98,6 +98,7 @@ void init(){
     grabDepth.setUndistortionInterpolationMode(interpolateNN);
   }
   
+#ifdef OLD_GUI
   GUI controls("hbox[@minsize=12x12]");
   GUI controls2("hbox[@minsize=12x12]");
   controls << ( GUI("vbox")
@@ -136,6 +137,46 @@ void init(){
            << controls2
          )
       << "!show";
+#endif
+  GUI controls = HBox().minSize(12,12);
+  GUI controls2 = HBox().minSize(12,12);
+  controls << ( VBox()
+                << Button("reset view").handle("resetView")
+                << Fps(10).handle("fps")
+                << FSlider(0.9,1.1,1.0).out("depthScaling").label("depth scaling")
+                << Slider(1,10,3).out("pointSize").label("point size")
+                << Slider(1,10,1).out("lineWidth").label("line width")
+                << ButtonGroup("UniColor, RGB, Depth, Normals Cam, Normals World").handle("usedVisualization")
+                << CamCfg("")
+                << Button("disable CL"," enable CL").out("disableCL")
+                << Button("vSync Off"," vSync On").out("vSync")
+                << Button("show CoordFrame"," hide CoordFrame").out("showCoord")
+                << Button("draw NormalLines"," hide normalLines").out("drawLines")
+                << FSlider(2.0,100.0,40.0).out("lineLength").label("normalLineLength")
+                << Slider(1,20,4).out("lineGranularity").label("normalLineGranularity")
+              );
+
+  controls2 << ( VBox()
+            << Slider(0,255,0).out("unicolorR").label("unicolor R").handle("unicolorRHandle")
+            << Slider(0,255,0).out("unicolorG").label("unicolor G").handle("unicolorGHandle")
+            << Slider(0,255,255).out("unicolorB").label("unicolor B").handle("unicolorBHandle")
+            << ButtonGroup("unfiltered, median3x3, median5x5").handle("usedFilter").label("normals filter")
+            << Slider(1,15,2).out("normalrange").label("normal range").handle("normalrangeHandle")
+            << Button("disable averaging"," enable averaging").out("disableAveraging")
+            << Slider(1,15,1).out("avgrange").label("normal averaging range").handle("avgrangeHandle")
+        );
+  gui << ( VBox() 
+           << Draw3D().handle("hdepth").minSize(10,8)
+           << Button("heatmap","gray").out("heatmap")
+           << Draw3D().handle("hcolor").minSize(10,8)
+         )
+      << ( HSplit() 
+           << Draw3D().handle("draw3D").minSize(40,30)
+           << controls
+           << controls2
+           )
+      << Show();
+
 
   if(pa("-c")){
     string camname = pa("-c");
@@ -149,9 +190,9 @@ void init(){
   }
   cam.setName("Kinect Camera");
 
-  usedVisualizationHandle= gui.getValue<ButtonGroupHandle>("usedVisualization");
+  usedVisualizationHandle= gui.get<ButtonGroupHandle>("usedVisualization");
 	usedVisualizationHandle.select(0);
-  usedFilterHandle= gui.getValue<ButtonGroupHandle>("usedFilter");
+  usedFilterHandle= gui.get<ButtonGroupHandle>("usedFilter");
   usedFilterHandle.select(1);
 
   // kinect camera
@@ -177,7 +218,7 @@ void init(){
   obj  = new PointcloudSceneObject(size,scene.getCamera(KINECT_CAM));
   scene.addObject(obj);
   
-  gui_DrawHandle3D(draw3D);
+  DrawHandle3D draw3D = gui["draw3D"];
   
   mouse = new AdaptedSceneMouseHandler(scene.getMouseHandler(VIEW_CAM));
   draw3D->install(mouse);
@@ -185,7 +226,7 @@ void init(){
   scene.setDrawCoordinateFrameEnabled(false);
   scene.setLightingEnabled(false);
 
-  gui_DrawHandle3D(hdepth);
+  DrawHandle3D hdepth = gui["hdepth"];
   hdepth->setRangeMode(ICLWidget::rmAuto);
 }
 
@@ -233,10 +274,11 @@ void run(){
   obj->setDepthScaling(depthS);
   obj->setPointSize(pointSize);
  
-  gui_ButtonHandle(resetView);
-  gui_DrawHandle3D(hdepth);
-  gui_DrawHandle3D(hcolor);
   
+  ButtonHandle resetView = gui["resetView"];
+  DrawHandle3D hdepth = gui["hdepth"];
+  DrawHandle3D hcolor = gui["hcolor"];
+
   if(resetView.wasTriggered()){
     scene.getCamera(VIEW_CAM) = scene.getCamera(KINECT_CAM);
   }
@@ -255,7 +297,7 @@ void run(){
     hdepth = &depthImage;
   }
 	
-	usedVisualizationHandle = gui.getValue<ButtonGroupHandle>("usedVisualization");
+	usedVisualizationHandle = gui.get<ButtonGroupHandle>("usedVisualization");
 	
 	if(usedVisualizationHandle.getSelected()==0){//unicolor
 	  int cR=gui["unicolorR"];
@@ -290,7 +332,7 @@ void run(){
     }
   
   }else if(usedVisualizationHandle.getSelected()==3){//normals cam 
-    usedFilterHandle = gui.getValue<ButtonGroupHandle>("usedFilter");
+    usedFilterHandle = gui.get<ButtonGroupHandle>("usedFilter");
 	  if(usedFilterHandle.getSelected()==1){ //median 3x3
 		  normalEstimator->setMedianFilterSize(3);
 		  normalEstimator->setDepthImage(depthImage);
@@ -321,7 +363,7 @@ void run(){
     }
     
   }else if(usedVisualizationHandle.getSelected()==4){//normals world
-    usedFilterHandle = gui.getValue<ButtonGroupHandle>("usedFilter");
+    usedFilterHandle = gui.get<ButtonGroupHandle>("usedFilter");
 	  if(usedFilterHandle.getSelected()==1){ //median 3x3
 		  normalEstimator->setMedianFilterSize(3);
 		  normalEstimator->setDepthImage(depthImage);

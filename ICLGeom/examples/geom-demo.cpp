@@ -43,6 +43,7 @@ GUI gui("hsplit");
 Scene scene;
 
 void init(){
+#ifdef OLD_GUI
   gui << "draw3D[@minsize=16x12@handle=w1@label=Rendered into GL-Context]"
       << "draw3D[@minsize=16x12@handle=w2@label=Rendered into GL-Context]"
       << ( GUI("vbox[@minsize=12x1]") 
@@ -56,6 +57,21 @@ void init(){
            << "fps(10)[@handle=fps]"
            )
       << "!show";
+#endif
+
+  gui << Draw3D().minSize(16,12).handle("w1").label("Rendered into GL-Context")
+      << Draw3D().minSize(16,12).handle("w2").label("Rendered into GL-Context")
+      << ( VBox().minSize(12,1) 
+           << FSlider(0.1,10,1.7).label("focal length left").out("fl")
+           << FSlider(0.1,10,1.7).label("focal length right").out("fr")
+           << FSlider(60,660,360).label("principal point offset x").out("px")
+           << FSlider(40,440,240).label("principal point offset y").out("py")
+           << FSlider(100,300,200).label("sampling resolution x").out("sx")
+           << FSlider(100,300,200).label("sampling resolution y").out("sy")
+           << FSlider(-100,100,0).label("skew").out("skew")
+           << Fps(10).handle("fps")
+           )
+      << Show();
 
   scene.addCamera(Camera(Vec(-250,0,1000,1),Vec(0,0,-1,1),Vec(0,1,0,1)));
   scene.addCamera(Camera(Vec(200,0,200,1),Vec(-1,0,0,1),Vec(0,1,0,1)));

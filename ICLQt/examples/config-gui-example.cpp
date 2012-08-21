@@ -42,11 +42,8 @@ int main(int n, char **ppc){
   ConfigFile::loadConfig(*pa("-c"));
 
   ConfigFile::getConfig().listContents();
-  GUI gui("vbox");
-  gui << "config(embedded)";
-  gui.show();
-  //  ConfigFileGUI gui(ConfigFile::getConfig());
-  //gui.show();
+  VBox gui;
+  gui << ConfigFileComponent(false) << Show();
   
   return app.exec();
 }

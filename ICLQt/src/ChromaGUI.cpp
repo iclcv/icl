@@ -33,6 +33,7 @@
 *********************************************************************/
 
 #include <ICLQt/ChromaGUI.h>
+#include <ICLQt/ContainerGUIComponent.h>
 #include <QtGui/QFileDialog>
 #include <vector>
 
@@ -294,8 +295,27 @@ namespace icl{
 
   ChromaGUI::ChromaGUI(QWidget *parent):QObject(parent),GUI("vsplit[@handle=parent]",parent){
     // {{{ open
+    (*this) << VBox().handle("image").label("Chromaticity Space").minSize(18,16)
+            << ( HBox()
+                 << Slider(0,255,128).handle("bluedisphandle").label("Disp. Blue").out("bluedisp")
+                 << Button("load").handle("load")
+                 << Button("save").handle("save")
+                )
+            << ( HBox()
+                 << Slider(0,255,128).handle("red").label("Red Color").out("redval")
+                 << Slider(0,255,128).handle("red-thresh").label("Red Threshold").out("redtval")
+                )
+            << ( HBox()
+                 << Slider(0,255,128).handle("green").label("Green Color").out("greenval")
+                 << Slider(0,255,128).handle("green-thresh").label("Green Threshold").out("greentval")
+                )
+            << ( HBox()
+                 << Slider(0,255,128).handle("blue").label("Blue Color").out("blueval")
+                 << Slider(0,255,128).handle("blue-thresh").label("Blue Threshold").out("bluetval")
+                )
+            << Show();
 
-    
+#ifdef OLD_GUI
     (*this) << "vbox[@handle=image@label=Chromaticity Space@minsize=18x16]";
     
     (*this) << ( GUI("hbox") 
@@ -312,34 +332,34 @@ namespace icl{
              << "slider(0,255,128)[@handle=blue-thresh@label=Blue Threshold@out=bluetval]" );
     
     show();
-    
+#endif
    
     
-    BoxHandle &h = getValue<BoxHandle>("image");
+    BoxHandle &h = get<BoxHandle>("image");
     m_poChromaWidget = new ChromaWidget(*h);
     h.add(m_poChromaWidget);
 
 
-    m_aoSliderHandles[0][0] = getValue<SliderHandle>("red");
-    m_aoSliderHandles[0][1] = getValue<SliderHandle>("green");
-    m_aoSliderHandles[0][2] = getValue<SliderHandle>("blue");
+    m_aoSliderHandles[0][0] = get<SliderHandle>("red");
+    m_aoSliderHandles[0][1] = get<SliderHandle>("green");
+    m_aoSliderHandles[0][2] = get<SliderHandle>("blue");
 
-    m_aoSliderHandles[1][0] = getValue<SliderHandle>("red-thresh");
-    m_aoSliderHandles[1][1] = getValue<SliderHandle>("green-thresh");  
-    m_aoSliderHandles[1][2] = getValue<SliderHandle>("blue-thresh");
+    m_aoSliderHandles[1][0] = get<SliderHandle>("red-thresh");
+    m_aoSliderHandles[1][1] = get<SliderHandle>("green-thresh");  
+    m_aoSliderHandles[1][2] = get<SliderHandle>("blue-thresh");
  
 
-    QObject::connect((QObject*)*(getValue<SliderHandle>("bluedisphandle")),SIGNAL(valueChanged(int)),
+    QObject::connect((QObject*)*(get<SliderHandle>("bluedisphandle")),SIGNAL(valueChanged(int)),
                      (QObject*)this,SLOT(blueSliderChanged(int)));
 
-    QObject::connect((QObject*)*(getValue<SliderHandle>("bluedisphandle")),SIGNAL(valueChanged(int)),
+    QObject::connect((QObject*)*(get<SliderHandle>("bluedisphandle")),SIGNAL(valueChanged(int)),
                      (QObject*)this,SLOT(blueSliderChanged(int)));
     
-    QObject::connect((QObject*)*getValue<ButtonHandle>("load"),SIGNAL(clicked(bool)),
+    QObject::connect((QObject*)*get<ButtonHandle>("load"),SIGNAL(clicked(bool)),
                      (QObject*)this,SLOT(load()));
     
     
-    QObject::connect((QObject*)*(getValue<ButtonHandle>("save")),SIGNAL(clicked(bool)),
+    QObject::connect((QObject*)*(get<ButtonHandle>("save")),SIGNAL(clicked(bool)),
                      (QObject*)this,SLOT(save()));
   }
 
@@ -404,7 +424,7 @@ namespace icl{
     m_aoSliderHandles[1][1] = data[4];
     m_aoSliderHandles[1][2] = data[5];
     
-    getValue<SliderHandle>("bluedisphandle") = data[6];
+    get<SliderHandle>("bluedisphandle") = data[6];
   }
 
   // }}}
@@ -429,7 +449,7 @@ namespace icl{
     data.push_back(m_aoSliderHandles[1][1].getValue());
     data.push_back(m_aoSliderHandles[1][2].getValue());
     
-    data.push_back(getValue<SliderHandle>("bluedisphandle").getValue());
+    data.push_back(get<SliderHandle>("bluedisphandle").getValue());
     
     m_poChromaWidget->save(filename.toLatin1().data(),data);
 

@@ -63,6 +63,7 @@ void init(){
   if(pa("-size")) grabber.useDesired<Size>(pa("-size"));
   grabber.useDesired(formatGray);
 
+#ifdef OLD_GUI
   gui << "draw3D("+*pa("-size")+")[@handle=draw@minsize=16x12]"
       << (GUI("vbox[@maxsize=16x100]") 
           << ("combo(" + fid->getIntermediateImageNames() + ")"
@@ -80,7 +81,22 @@ void init(){
           //<< "fslider(0.1,2,1)[@out=f@label=focal length]"
          )
       << "!show";
-
+#endif
+  gui << Draw3D(pa("-size").as<Size>()).handle("draw").minSize(16,12)
+      << (VBox().maxSize(16,100) 
+          << Combo(fid->getIntermediateImageNames()).maxSize(100,2).handle("vis").label("visualization")
+          << Prop("fid")
+          << (HBox() 
+              << Fps().handle("fps")
+              << Label("no markers found yet").label("detected markers").handle("count")
+              )
+          << CheckBox("show IDs",true).out("showIDs")
+          << (HBox() 
+              << Button("running","pause").out("pause")
+              << CamCfg("")
+              )
+         )
+      << Show();
   
   //fid->loadMarkers("[0,10]",ParamList("size",Size(96,96)));
   try{

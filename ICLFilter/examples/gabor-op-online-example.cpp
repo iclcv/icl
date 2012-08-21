@@ -35,7 +35,7 @@
 #include <ICLQuick/Common.h>
 #include <ICLUtils/FPSEstimator.h>
 #include <ICLFilter/GaborOp.h>
-GUI gui;
+HBox gui;
 GenericGrabber grabber;
 
 inline bool is_equal(const float *a, const float *b, unsigned int n){
@@ -49,11 +49,12 @@ inline vector<float> vec1(float f) {
 }
 
 void init(){
+#ifdef OLD_GUI
   gui = GUI("hbox");
   GUI params("vbox[@label=Gabor Parameters@minsize=15x20]");
   params  << "fslider(0.1,100,20)[@label=Wave-Length -Lambda-@minsize=15x2@out=lambda]"
           << "fslider(0,3.15,0)[@label=Wave-Angle -Theta-@minsize=15x2@out=theta]"
-          << "fslider(0,50,0)[@label=Phase-Offset -Psi-@minsize=15x2@out=psi]"
+         << "fslider(0,50,0)[@label=Phase-Offset -Psi-@minsize=15x2@out=psi]"
           << "fslider(0.01,10,0.5)[@label=Elipticity -Gamma-@minsize=15x2@out=gamma]"
           << "fslider(0.1,18,20)[@label=Gaussian Std-Dev. -Sigma-@minsize=15x2@out=sigma]"
           << "slider(3,50,10)[@label=Width@minsize=15x2@out=width]"
@@ -69,6 +70,24 @@ void init(){
   gui << "image[@minsize=32x24@label=Result Image@handle=image]" << sidebar;
   
   gui.show();
+#endif
+  gui << Image().minSize(32,24).label("Result Image").handle("image")
+      << (VBox().handle("sidebar")
+          << ( HBox()
+               << Image().minSize(15,15).label("Gabor Mask").handle("mask")
+               << Fps(10).handle("fps")
+              )
+          << (VBox()
+              << FSlider(0.1,100,20).label("Wave-Length -Lambda-").minSize(15,2).out("lambda")
+              << FSlider(0,3.15,0).label("Wave-Angle -Theta-").minSize(15,2).out("theta")
+              << FSlider(0,50,0).label("Phase-Offset -Psi-").minSize(15,2).out("psi")
+              << FSlider(0.01,10,0.5).label("Elipticity -Gamma-").minSize(15,2).out("gamma")
+              << FSlider(0.1,18,20).label("Gaussian Std-Dev. -Sigma-").minSize(15,2).out("sigma")
+              << Slider(3,50,10).label("Width").minSize(15,2).out("width")
+              << Slider(3,50,10).label("Height").minSize(15,2).out("height")
+             )
+          )
+      << Show();
 
   grabber.init(pa("-i"));
   grabber.useDesired(parse<Size>(pa("-size")));
@@ -78,13 +97,13 @@ void init(){
 }
 
 void run(){
-  float &lambda = gui.getValue<float>("lambda");
-  float &theta = gui.getValue<float>("theta");
-  float &psi = gui.getValue<float>("psi");
-  float &gamma = gui.getValue<float>("gamma");
-  float &sigma = gui.getValue<float>("sigma");
-  int &width = gui.getValue<int>("width");
-  int &height = gui.getValue<int>("height");
+  float &lambda = gui.get<float>("lambda");
+  float &theta = gui.get<float>("theta");
+  float &psi = gui.get<float>("psi");
+  float &gamma = gui.get<float>("gamma");
+  float &sigma = gui.get<float>("sigma");
+  int &width = gui.get<int>("width");
+  int &height = gui.get<int>("height");
   
   float saveParams[] = {0,0,0,0,0};
   Size saveSize = Size::null;

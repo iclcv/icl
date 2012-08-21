@@ -54,7 +54,7 @@ struct MyConfigurable : public Configurable{
 
 void init(){
   cfg.setConfigurableID("cfg");
-  gui << "prop(cfg)" << "prop(cfg)" << "!show";
+  gui << Prop("cfg") << Prop("cfg") << Show();
 }
 void run(){
   Thread::msleep(100);

@@ -36,12 +36,8 @@
 #include <ICLCC/CCFunctions.h>
 #include <ICLUtils/Thread.h>
 
-GUI *gui;
-ICLDrawWidget *widget;
-GenericGrabber *grabber;
-bool *running;
-int *sleeptime;
-string *colormode;
+VBox gui;
+GenericGrabber grabber;
 Mutex mutex;
 
 
@@ -65,50 +61,48 @@ vector<XC> colorbuffer;
 
   
 void mouse(const MouseEvent &event){
-  mutex.lock();
+  Mutex::Locker lock(mutex);
+  std::string colormode = gui["colormode"];
   if(event.isPressEvent()){
     const std::vector<icl64f> &c = event.getColor();
     if(c.size() == 1){
       printf("color: %d \n",(int)c[0]);
     }else if(c.size() > 2){
       // Assertion ; input type is rgb!!
-      if(*colormode == "rgb"){
+      if(colormode == "rgb"){
         printf("rgb: %d %d %d \n",(int)c[0],(int)c[1],(int)c[2]);          
         colorbuffer.push_back(XC(c[0],c[1],c[2]));
-      }else if (*colormode == "hls"){
+      }else if (colormode == "hls"){
         icl32f hls[3];
         cc_util_rgb_to_hls (c[0],c[1],c[2],hls[0],hls[1],hls[2]);
         printf("hls: %d %d %d \n",(int)hls[0],(int)hls[1],(int)hls[2]);      
         colorbuffer.push_back(XC(hls));
       }
-      else if (*colormode == "yuv"){
+      else if (colormode == "yuv"){
         icl32s yuv[3];
         cc_util_rgb_to_yuv ((int)c[0],(int)c[1],(int)c[2],yuv[0],yuv[1],yuv[2]);
         printf("yuv: %d %d %d \n",yuv[0],(int)yuv[1],(int)yuv[2]);          
         colorbuffer.push_back(XC(yuv[0],yuv[1],yuv[2]));
       }
-      else if(*colormode == "gray"){
+      else if(colormode == "gray"){
         printf("gray: %d \n",(int)((c[0]+c[1]+c[2])/3));
       }
       else{
-        printf("error color mode is (%s) \n",colormode->c_str());
+        printf("error color mode is (%s) \n",colormode.c_str());
       }
     }
   }
-  mutex.unlock();
 }  
 
 
 void reset_list(){
-  mutex.lock();
+  Mutex::Locker lock(mutex);
   colorbuffer.clear();
   printf("cleared! \n----------------------------------------\n");
-  mutex.unlock();
 }
 void calc_mean(){
-  mutex.lock();
+  Mutex::Locker lock(mutex);
   if(!colorbuffer.size()){
-    mutex.unlock();
     return;
   }
   XC xM,xV;
@@ -135,54 +129,48 @@ void calc_mean(){
   printf("mean   = %3d %3d %3d \n",(int)xM[0],(int)xM[1],(int)xM[2]);
   printf("stddev = %3d %3d %3d \n",(int)sqrt(xV[0]),(int)sqrt(xV[1]),(int)sqrt(xV[2]));
   printf("-------------------------------------------------\n");  
-
-  mutex.unlock();
 }
 
 void init(){
-  grabber = new GenericGrabber(pa("-i"));
-  
-  gui = new GUI;
-  (*gui) << "draw[@label=image@handle=image@size=32x24]";
-  (*gui) << "togglebutton(Run!,Stop!)[@out=run]";
-  (*gui) << ( GUI("hbox") 
+  grabber.init(pa("-i"));
+
+#ifdef OLD_GUI
+
+  gui << "draw[@label=image@handle=image@size=32x24]";
+  gui << "togglebutton(Run!,Stop!)[@out=run]";
+  gui << ( GUI("hbox") 
               << "slider(0,400,10)[@out=sleep@label=sleeptime]" 
               << "combo(!rgb,hls,gray,yuv)[@out=colormode@label=colormode]" 
               << "button(Reset List)[@handle=reset]"
               << "button(Calculate Mean)[@handle=calc]"
               );
   
-  (*gui).show();
+  gui.show();
+
+#endif
+
+  gui << Image().label("image").handle("image").size(32,24);
+  gui << Button("Run!","Stop!",true).out("running");
+  gui << ( HBox() 
+              << Combo("!rgb,hls,gray,yuv").handle("colormode").label("colormode")
+              << Button("Reset List").handle("reset")
+              << Button("Calculate Mean").handle("calc")
+              );
   
-  widget = *gui->getValue<DrawHandle>("image");
-  running = &gui->getValue<bool>("run");
-  sleeptime = &gui->getValue<int>("sleep");
-  colormode = &gui->getValue<string>("colormode");
-  (*gui)["reset"].registerCallback(function(reset_list));
-  (*gui)["calc"].registerCallback(function(calc_mean));
+  gui.show();
   
-  widget->install(new MouseHandler(mouse));
+  gui["reset"].registerCallback(reset_list);
+  gui["calc"].registerCallback(calc_mean);
+  
+  gui["image"].install(mouse);
 }
 
 
 void run(){
-  while(!(*running)){
-	Thread::msleep(100);
-    //usleep(100*1000);
+  while(!gui["running"].as<bool>()){
+    Thread::sleep(0.1);
   }
-  const ImgBase *image = grabber->grab();
-  if(!image){
-    printf("no image found \n");
-    exit(0);
-  }
-  widget->setImage(image);
-  widget->update();
-#ifdef ICL_32BIT
-  Thread::msleep((unsigned int)sleeptime);
-#else
-  Thread::msleep((uint64_t)sleeptime);
-#endif
-  //usleep(1000*(*sleeptime));
+  gui["image"] = grabber.grab();
 }
 
 

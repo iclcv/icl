@@ -44,36 +44,34 @@ Point32f *newPos = 0;
 Point32f pos;
 std::vector<double> COLOR(3,255);
 
-class Mouse : public MouseHandler{
-  virtual void process(const MouseEvent &evt){
-    m.lock();
-    if(evt.isLeft()){
-      if(newPos) *newPos = evt.getPos();
-      else newPos = new Point32f(evt.getPos());
-    }else if(evt.isRight()){
-      std::vector<double> newColor = evt.getColor();
-      if(newColor.size() == 3){
-        COLOR = newColor;
-      }else{
-        ERROR_LOG("colors must be given in color image mode!");
-      }
-      Img32f image(Size(4,3),formatRGB);
-      std::fill(image.begin(0),image.end(0),COLOR[0]);
-      std::fill(image.begin(1),image.end(1),COLOR[1]);
-      std::fill(image.begin(2),image.end(2),COLOR[2]);
-      gui["color"] = image;
+void mouse(const MouseEvent &evt){
+  m.lock();
+  if(evt.isLeft()){
+    if(newPos) *newPos = evt.getPos();
+    else newPos = new Point32f(evt.getPos());
+  }else if(evt.isRight()){
+    std::vector<double> newColor = evt.getColor();
+    if(newColor.size() == 3){
+      COLOR = newColor;
+    }else{
+      ERROR_LOG("colors must be given in color image mode!");
     }
-    m.unlock();
+    Img32f image(Size(4,3),formatRGB);
+    std::fill(image.begin(0),image.end(0),COLOR[0]);
+    std::fill(image.begin(1),image.end(1),COLOR[1]);
+    std::fill(image.begin(2),image.end(2),COLOR[2]);
+    gui["color"] = image;
   }
-};
-
+  m.unlock();
+}
 
 void init(){
   grabber = new GenericGrabber(pa("-i"));
   grabber->useDesired(depth32f);
   grabber->useDesired(formatRGB);
   grabber->useDesired<Size>(pa("-size"));
-  
+
+#ifdef OLD_GUI
   GUI controls;
   controls << "image[@handle=kernel@minsize=8x6@label=kernel image]"
            << "image[@handle=color@minsize=8x6@label=current color]"
@@ -89,9 +87,21 @@ void init(){
       << controls;
 
   gui.show();
+#endif
+  gui << Draw().handle("image").minSize(32,24).label("image stream ")
+      << ( VBox()
+           << Image().handle("kernel").minSize(8,6).label("kernel image")
+           << Image().handle("color").minSize(8,6).label("current color")
+           << Slider(1,1000,20).out("maxCycles").label("max cycles")
+           << FSlider(0.1,5,1.0).out("convergence").label("conv. crit.")
+           << Slider(4,200,50).out("bandwidth").label("kernel bandwidth")
+           << Combo("epanechnikov,gaussian").handle("kernel-type").label("kernel type")
+           << Combo("color image,weight image").handle("vis").label("shown image")
+           )
+      << Show();
 
-  (*gui.getValue<DrawHandle>("image"))->install(new Mouse());
-  (*gui.getValue<ImageHandle>("kernel"))->setRangeMode(ICLWidget::rmAuto);
+  gui["image"].install(mouse);
+  gui.get<ImageHandle>("kernel")->setRangeMode(ICLWidget::rmAuto);
 }
 
 struct ColorDist{
@@ -119,11 +129,11 @@ void run(){
   m.lock();
   const Img32f &wi = create_weight_image(*image,COLOR);
  
-  static int &maxCycles = gui.getValue<int>("maxCycles");
-  static float &convergence = gui.getValue<float>("convergence");
-  static ComboHandle &kernelType = gui.getValue<ComboHandle>("kernel-type");
-  static ComboHandle &shownImage = gui.getValue<ComboHandle>("vis");
-  static int &bandwidth = gui.getValue<int>("bandwidth");
+  static int &maxCycles = gui.get<int>("maxCycles");
+  static float &convergence = gui.get<float>("convergence");
+  static ComboHandle &kernelType = gui.get<ComboHandle>("kernel-type");
+  static ComboHandle &shownImage = gui.get<ComboHandle>("vis");
+  static int &bandwidth = gui.get<int>("bandwidth");
   
   static MeanShiftTracker ms(MeanShiftTracker::epanechnikov, 1);
   
@@ -139,7 +149,7 @@ void run(){
   pos = ms.step(wi,pos,maxCycles,convergence);
   m.unlock();
 
-  static ICLDrawWidget &w = **gui.getValue<DrawHandle>("image");
+  static ICLDrawWidget &w = **gui.get<DrawHandle>("image");
   w.setImage( (shownImage.getSelectedIndex()) ? (&wi) : (image));
   w.color(255,0,0,255);
   w.fill(255,0,0,50);

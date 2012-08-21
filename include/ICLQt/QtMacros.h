@@ -70,6 +70,8 @@
 #include <ICLQt/SplitterHandle.h>
 #include <ICLQt/PlotHandle.h>
 
+#ifdef OLD_GUI_WITH_OLD_MACROS
+
 /// extract a given type as reference from GUI object named gui
 #define gui_VAL(T,NAME) static T &NAME = gui.getValue<T>(#NAME)
 
@@ -150,5 +152,7 @@
 
 /// extract a SplitterHandle as reference from GUI object named gui
 #define gui_StateHandle(NAME) gui_VAL(StateHandle,NAME)
+
+#endif
 
 #endif

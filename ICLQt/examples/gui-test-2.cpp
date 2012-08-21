@@ -40,11 +40,11 @@ GUI gui;
 void run(){
   Img8u image = cvt8u(scale(create("parrot"),0.2));
   ImageHandle *ws[3] = {
-    &gui.getValue<ImageHandle>("image1"),
-    &gui.getValue<ImageHandle>("image2"),
-    &gui.getValue<ImageHandle>("image3")
+    &gui.get<ImageHandle>("image1"),
+    &gui.get<ImageHandle>("image2"),
+    &gui.get<ImageHandle>("image3")
   };
-  ButtonHandle &click = gui.getValue<ButtonHandle>("click");
+  ButtonHandle &click = gui.get<ButtonHandle>("click");
   while(1){
     for(int i=0;i<3;++i){
       *ws[i] = image;
@@ -60,6 +60,7 @@ int main(int n, char **ppc){
   ExecThread x(run);
   QApplication app(n,ppc);
   
+#ifdef OLD_GUI
   gui = GUI("tab(a,b,c,d,e,f)[@handle=tab]");
 
   gui << "image[@handle=image1@label=image1]"
@@ -88,9 +89,34 @@ int main(int n, char **ppc){
   gui << v;
 
   gui.show();
+#endif
+  gui = Tab("a,b,c,d,e,f").handle("tab");
+
+  gui << Image().handle("image1").label("image1")
+      << Image().handle("image2").label("image2")
+      << Image().handle("image3").label("image3");
   
-  gui.getValue<TabHandle>("tab").insert(2,new ICLWidget,"ext. 1");
-  gui.getValue<TabHandle>("tab").add(new QProgressBar,"ext. 2");
+  GUI v = Tab("a,b,c,d,e,f").label("internal tab widget");
+  v << Slider(-1000,1000,0).maxSize(35,1).label("slider1").minSize(1,2)
+    << Slider(-1000,1000,0).maxSize(35,1).label("slider2").minSize(1,2)
+    << Slider(-1000,1000,0).maxSize(35,1).label("slider3").minSize(1,2)
+    << Combo("entry1,entry2,entry3").label("the-combobox")
+    << Spinner(-50,100,20).out("the-spinner").label("a spin-box")
+    << Button("click me").handle("click")
+    << ( VSplit()
+         << Combo("a,b,c,e,d,f").label("combo a")
+         << Combo("a,b,c,e,d,f").label("combo b")
+         << Combo("a,b,c,e,d,f").label("combo c")
+         << ( HSplit() 
+              << Slider(0,100,50).label("A")
+              << Slider(0,100,50).label("B")
+              )
+         );
+  gui << v << Show();
+
+  
+  gui.get<TabHandle>("tab").insert(2,new ICLWidget,"ext. 1");
+  gui.get<TabHandle>("tab").add(new QProgressBar,"ext. 2");
 
   x.run();
   

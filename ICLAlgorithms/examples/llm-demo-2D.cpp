@@ -81,7 +81,7 @@ class MyThread : public Thread{
 public:
   MyThread(){
     initI();
-
+#ifdef OLD_GUI
     GUI controls("vbox[@minsize=15x0]");
     controls << "button(Train Step)[@handle=train]";
     controls << "togglebutton(Train Off,Train On)[@out=train-loop]";
@@ -102,23 +102,45 @@ public:
     gui << controls;
     
     gui.show();
+#endif
     
+
+    
+    gui << Image().minSize(20,15).label("Original").handle("orig-image")
+        << Image().minSize(20,15).label("Net Output").handle("net-image")
+        << ( VBox().minSize(15,0)
+             << Button("Train Step").handle("train")
+             << Button("Train Off","Train On").out("train-loop")
+             << Button("NO Soft-Max","Soft-Max").out("use-soft-max")
+             << Slider(1,10000,1000).out("steps").label("Steps per Cycle")
+             << Disp(3,1).handle("mse").label("MSE").minSize(5,2)
+             << FSlider(0,0.1,0.01).out("e-in").label("Epsilon In")
+             << FSlider(0,0.1,0.01).out("e-out").label("Epsilon Out")
+             << FSlider(0,0.5,0.1).out("e-a").label("Epsilon A")
+             << FSlider(0,0.0001,0.0).out("e-sigma").label("Epsilon Sigma")
+             << FSlider(1,100,10).out("init-sigma").label("Initial Sigma")
+             << Button("Show Kernels").handle("show-k")
+             << Button("Reset").handle("reset")
+             << Int(1,1000,20).out("kc").label("Kernel Count")
+           )
+        << Show();
+
     gui["orig-image"] = image;
     
     initLLM();
   }
   virtual void run(){
-    static ICLWidget &w = **gui.getValue<ImageHandle>("net-image");
-    static ButtonHandle &trainButton = gui.getValue<ButtonHandle>("train");    
-    static ButtonHandle &showKernelsButton = gui.getValue<ButtonHandle>("show-k");
-    static ButtonHandle &resetButton = gui.getValue<ButtonHandle>("reset");
+    static ICLWidget &w = **gui.get<ImageHandle>("net-image");
+    static ButtonHandle &trainButton = gui.get<ButtonHandle>("train");    
+    static ButtonHandle &showKernelsButton = gui.get<ButtonHandle>("show-k");
+    static ButtonHandle &resetButton = gui.get<ButtonHandle>("reset");
 
 
-    nKernels = &gui.getValue<int>("kc");
-    mseDisp = &gui.getValue<DispHandle>("mse");
-    nTrainingSteps = &gui.getValue<int>("steps");
-    initialSigma = &gui.getValue<float>("init-sigma");
-    softMaxEnabled = &gui.getValue<bool>("use-soft-max");
+    nKernels = &gui.get<int>("kc");
+    mseDisp = &gui.get<DispHandle>("mse");
+    nTrainingSteps = &gui.get<int>("steps");
+    initialSigma = &gui.get<float>("init-sigma");
+    softMaxEnabled = &gui.get<bool>("use-soft-max");
     //    ImgQ netImage(image.getSize(),formatRGB);
     ImgQ netImage = copy(image);
     w.setImage(&netImage);
@@ -127,13 +149,13 @@ public:
     
     while(1){
       
-      llm.setEpsilonIn(gui.getValue<float>("e-in"));
-      llm.setEpsilonOut(gui.getValue<float>("e-out"));
-      llm.setEpsilonA(gui.getValue<float>("e-a"));
-      llm.setEpsilonSigma(gui.getValue<float>("e-sigma"));
+      llm.setEpsilonIn(gui.get<float>("e-in"));
+      llm.setEpsilonOut(gui.get<float>("e-out"));
+      llm.setEpsilonA(gui.get<float>("e-a"));
+      llm.setEpsilonSigma(gui.get<float>("e-sigma"));
       llm.setSoftMaxEnabled(*softMaxEnabled);
       
-      if(trainButton.wasTriggered() || gui.getValue<bool>("train-loop")){
+      if(trainButton.wasTriggered() || gui.get<bool>("train-loop")){
         trainLLM();
 
         float xx[2]={0,0};

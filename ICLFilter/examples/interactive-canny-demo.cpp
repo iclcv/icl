@@ -37,28 +37,40 @@
 #include <ICLFilter/ConvolutionOp.h>
 
 
-GUI gui("vsplit");
+VSplit gui;
 
 
 void update();
 
 void init(){
+#ifdef OLD_GUI
   gui << "image[@handle=image@minsize=32x24]";
-  
   GUI gui2;
   gui2 << "fslider(0,2000,10)[@out=low@label=low@maxsize=100x2@handle=low-handle]";
   gui2 << "fslider(0,2000,100)[@out=high@label=high@maxsize=100x2@handle=high-handle]";
   gui2 <<  ( GUI("hbox")  
-           << "slider(0,10,0)[@out=preGaussRadius@handle=pre-gauss-handle@label=pre gaussian radius]"
-           << "label(time)[@handle=dt@label=filter time in ms]"
-           << "togglebutton(stopped,running)[@out=running@label=capture]"
-           << "camcfg()" );
-
+             << "slider(0,10,0)[@out=preGaussRadius@handle=pre-gauss-handle@label=pre gaussian radius]"
+             << "label(time)[@handle=dt@label=filter time in ms]"
+             << "togglebutton(stopped,running)[@out=running@label=capture]"
+             << "camcfg()" );
+  
   gui << gui2;
-
+  
   gui.show();
-
-
+#endif
+  gui << Image().handle("image").minSize(32,24)
+      << (VBox()
+          << FSlider(0,2000,10).out("low").label("low").maxSize(100,2).handle("low-handle")
+          << FSlider(0,2000,100).out("high").label("high").maxSize(100,2).handle("high-handle")
+          <<  ( HBox()  
+                << Slider(0,2,0).out("preGaussRadius").handle("pre-gauss-handle").label("pre gaussian radius")
+                << Label("time").handle("dt").label("filter time in ms")
+                << Button("stopped","running").out("running").label("capture")
+                << CamCfg() 
+               )
+          )
+      << Show();
+  
   gui.registerCallback(function(update),"low-handle,high-handle,pre-gauss-handle");
   
   update();
@@ -71,11 +83,11 @@ void update(){
 
   static GenericGrabber grabber(pa("-i"));
   
-  gui_ImageHandle(image);
-  gui_LabelHandle(dt);
-  gui_float(low);
-  gui_float(high);
-  gui_int(preGaussRadius);
+  static ImageHandle image = gui["image"];
+  static LabelHandle dt = gui["dt"];
+  float low = gui["low"];
+  float high = gui["high"];
+  int preGaussRadius = gui["preGaussRadius"];
   
   CannyOp canny(low,high,preGaussRadius);
   static ImgBase *dst = 0;
@@ -89,8 +101,7 @@ void update(){
 }
 
 void run(){
-  gui_bool(running);
-  while(!running){
+  while(!gui["running"].as<bool>()){
     Thread::msleep(100);
   }
   Thread::msleep(1);

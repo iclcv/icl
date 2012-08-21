@@ -85,7 +85,7 @@ struct Light : public SceneObject{
 
 
 void init(){
-  gui << "draw3D[@minsize=32x24@handle=draw@label=scene view]" << "!show";
+  gui << Draw3D().minSize(16,12).handle("draw").label("scene view") << Show();
   
   scene.addCamera(Camera(Vec(0,-10,-10),
                          Vec(0,0.707,0.707),  

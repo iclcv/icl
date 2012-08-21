@@ -40,17 +40,12 @@ GUI gui("hsplit[@minsize=32x24]");
 Img8u image;
 
 void step(){
-  gui_float(scale);
-  gui_float(angle);
-  gui_bool(clip);
-  gui_bool(interp);
-  
-  AffineOp op(interp ? interpolateNN : interpolateLIN);
-  image.setROI(clip?Rect(50,50,200,300):image.getImageRect());
-  op.setClipToROI(clip);
+  AffineOp op(gui["interp"] ? interpolateNN : interpolateLIN);
+  image.setROI(gui["clip"]?Rect(50,50,200,300):image.getImageRect());
+  op.setClipToROI(gui["clip"]);
     
-  op.scale(scale,scale);
-  op.rotate(angle*180/M_PI);
+  op.scale(gui["scale"],gui["scale"]);
+  op.rotate(gui["angle"].as<float>()*180/M_PI);
   
   static ImgBase *dst = 0;
   op.apply(&image,&dst);
@@ -80,6 +75,7 @@ void bench(){
 }
 
 void init(){
+#ifdef OLD_GUI
   gui << "image[@handle=draw@minsize=32x24]";
   gui << ( GUI("vbox[@maxsize=10x100]") 
            << "fslider(0.1,5,1,vertical)[@out=scale@label=scale@handle=a]"
@@ -89,6 +85,16 @@ void init(){
            << "button(bench)[@handle=bench]"
           );
   gui.show();
+#endif
+  gui << Image().handle("draw").minSize(32,24)
+      << ( VBox().maxSize(10,100) 
+           << FSlider(0.1,5,1,true).out("scale").label("scale").handle("a")
+           << FSlider(0,6.3,0,true).out("angle").label("angle").handle("b")
+           << Button("clip","off").label("clip ROI").out("clip").handle("c")
+           << Button("lin","nn").label("interp.").out("interp").handle("d")
+           << Button("bench").handle("bench")
+          )
+      << Show();
   
   image = cvt8u(scale(create("parrot"),0.4));
 

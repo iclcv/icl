@@ -50,7 +50,7 @@ void init(){
   scene.addObject(obj);
   scene.addObject(SceneObject::cube(0,0,0,100));
   
-  gui << "draw3D[@handle=draw]" << "!show";
+  gui << Draw3D().handle("draw") << Show();
   
   gui["draw"].link(scene.getGLCallback(0));
   gui["draw"].install(scene.getMouseHandler(0));

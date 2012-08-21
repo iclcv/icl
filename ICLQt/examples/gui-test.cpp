@@ -35,13 +35,13 @@
 #include <ICLQuick/Common.h>
 #include <ICLCC/Color.h>
 
-GUI gui;
+HScroll gui;
 
 void init(){
   GUI x("ps");
   x.show();
 
-
+#ifdef OLD_GUI
   gui = GUI("hscroll");
   gui << "image[@handle=image1@label=image1@minsize=10x10]"
       << "image[@handle=image2@label=image2@minsize=10x10]"
@@ -60,40 +60,56 @@ void init(){
     << "combo(entry1,entry2,entry3)[@out=combo@label=the-combobox]"
     << "spinner(-50,100,20)[@out=the-spinner@label=a spin-box]"
     << "button(click me)[@handle=click]"
-    << "checkbox(hello,off)[@out=cb]";
+    << "checkbox(hello,unchecked)[@out=cb]";
   gui << v << "!show";
-
+#endif
+  gui << Image().handle("image1").label("image1").minSize(10,10)
+      << Image().handle("image2").label("image2").minSize(10,10)
+      << Image().handle("image3").label("image3").minSize(10,10)
+      << (VBox()
+          << ColorSelect(255,0,0).handle("firstColor").label("RGB color")
+          << ColorSelect(255,0,0,128).handle("secondColor").label("RGBA color")
+          << Button("show Colors").handle("showColors")
+          << Button("set Colors").handle("setColors")
+          );
+  
+  GUI v = VBox().maxSize(10,1000);
+  v << Slider(-1000,1000,0).out("the-int1").maxSize(35,1).label("slider1").minSize(1,2)
+    << Slider(-1000,1000,0).out("the-int2").maxSize(35,1).label("slider2").minSize(1,2)
+    << Slider(-1000,1000,0).out("the-int3").maxSize(35,1).label("slider3").minSize(1,2)
+    << Combo("entry1,entry2,entry3").label("the-combobox")
+    << Spinner(-50,100,20).out("the-spinner").label("a spin-box")
+    << Button("click me").handle("click")
+    << CheckBox("hello,off").out("cb");
+  gui << v << Show();
 }
 
 void run(){
-  Img8u image = cvt8u(scale(create("parrot"),0.2));
-  ImageHandle *ws[3] = {
-    &gui.getValue<ImageHandle>("image1"),
-    &gui.getValue<ImageHandle>("image2"),
-    &gui.getValue<ImageHandle>("image3")
+  static Img8u image = cvt8u(scale(create("parrot"),0.2));
+  static ImageHandle *ws[3] = {
+    &gui.get<ImageHandle>("image1"),
+    &gui.get<ImageHandle>("image2"),
+    &gui.get<ImageHandle>("image3")
   };
-  gui_ButtonHandle(click);
-  gui_ButtonHandle(showColors);
-  gui_ButtonHandle(setColors);
-  while(1){
-    for(int i=0;i<3;++i){
-      *ws[i] = image;
-    }
-    if(click.wasTriggered()){
-      std::cout << "button 'click' was triggered!" << std::endl;
-    }
-    if(showColors.wasTriggered()){
-      SHOW(gui["firstColor"].as<Color>());
-      SHOW(gui["secondColor"].as<Color4D>());
-    }
-    if(setColors.wasTriggered()){
-      gui["firstColor"] = Color(0,100,255);
-      gui["secondColor"] = Color4D(100,100,255,128);
-    }
-    Thread::msleep(50);
-  }
-  
+  static ButtonHandle click = gui["click"];
+  static ButtonHandle showColors = gui["showColors"];
+  static ButtonHandle setColors = gui["setColors"];
 
+  for(int i=0;i<3;++i){
+      *ws[i] = image;
+  }
+  if(click.wasTriggered()){
+    std::cout << "button 'click' was triggered!" << std::endl;
+  }
+  if(showColors.wasTriggered()){
+    SHOW(gui["firstColor"].as<Color>());
+    SHOW(gui["secondColor"].as<Color4D>());
+  }
+  if(setColors.wasTriggered()){
+    gui["firstColor"] = Color(0,100,255);
+    gui["secondColor"] = Color4D(100,100,255,128);
+  }
+  Thread::msleep(50);
 }
 
 int main(int n, char **ppc){

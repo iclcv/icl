@@ -32,6 +32,10 @@
 **                                                                 **
 *********************************************************************/
 
+int main(){
+  // this application will be removed very soon
+}
+#if 0
 #include <ICLQuick/Common.h>
 #include <ICLUtils/ConfigFile.h>
 #include <ICLMarkers/FiducialDetector.h>
@@ -453,3 +457,4 @@ int main(int n, char **ppc){
                 "-mapping-mode|-mm(mode=xyd)",
                 init,run).exec();
 }
+#endif

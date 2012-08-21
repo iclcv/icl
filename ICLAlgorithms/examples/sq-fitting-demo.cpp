@@ -19,6 +19,8 @@
  ** Alternatively, this file may be used under the terms of the     **
  ** GNU General Public License version 3.0 as published by the      **
  ** Free Software Foundation and appearing in the file LICENSE.GPL  **
+
+
  ** included in the packaging of this file.  Please review the      **
  ** following information to ensure the GNU General Public License  **
  ** version 3.0 requirements will be met:                           **
@@ -31,6 +33,11 @@
  ** Excellence Initiative.                                          **
  **                                                                 **
  *********************************************************************/
+
+int main(){}
+
+#if 0
+# this example will be remove very soon
 #include <ICLGeom/SuperQuadric.h>
 #include <ICLAlgorithms/SQFitter.h>
 #include <ICLQuick/Common.h>
@@ -392,3 +399,5 @@ int main(int n, char *ppc[]){
 			"-initvalues|-iv(x,y,z,e1,e2,a1,a2,a3,rx,ry,rz)"
 			,init,run).exec();
 }
+
+#endif

@@ -60,6 +60,7 @@
 #include <ICLUtils/Range.h>
 
 #include <ICLUtils/Rect.h>
+#include <ICLQt/ContainerGUIComponent.h>
 
 using std::string;
 
@@ -128,31 +129,37 @@ namespace icl{
     m_tree->setColumnWidth(2,50);
 
     loadConfig(config);
-    
 
-    GUI buttons("hbox[@handle=right@maxsize=1000x2]");
+#ifdef OLD_GUI    
     buttons << "button(collapse)[@handle=collapse]";
     buttons << "button(expand)[@handle=expand]";
     buttons << "button(save)[@handle=save-as]";
     buttons << "button(load)[@handle=load]";
     buttons << "button(update)[@handle=update]";
-
-    (*this) << buttons;
-    (*this) << str("vbox[@handle=left@label=config:")+config.get<std::string>("config.title","no title")+"]";
+#endif
+    
+    (*this) << ( HBox().handle("right").maxSize(100,2)
+                << Button("collapse").handle("collapse")
+                << Button("expand").handle("expand")
+                << Button("save").handle("save-as")
+                << Button("load").handle("load")
+                << Button("update").handle("update")
+               )
+            << VBox().handle("left").label("config:"+config.get<std::string>("config.title","no title"));
     
     this->create();
     
-    connect(*getValue<ButtonHandle>("collapse"),SIGNAL(clicked()),m_tree,SLOT(collapseAll()));
-    connect(*getValue<ButtonHandle>("expand"),SIGNAL(clicked()),m_tree,SLOT(expandAll()));
-    //connect(*getValue<ButtonHandle>("save"),SIGNAL(clicked()),this,SLOT(save()));
-    connect(*getValue<ButtonHandle>("save-as"),SIGNAL(clicked()),this,SLOT(saveAs()));
-    connect(*getValue<ButtonHandle>("load"),SIGNAL(clicked()),this,SLOT(load()));
-    //connect(*getValue<ButtonHandle>("reload"),SIGNAL(clicked()),this,SLOT(reload()));
-    connect(*getValue<ButtonHandle>("update"),SIGNAL(clicked()),this,SLOT(updateTree()));
+    connect(*get<ButtonHandle>("collapse"),SIGNAL(clicked()),m_tree,SLOT(collapseAll()));
+    connect(*get<ButtonHandle>("expand"),SIGNAL(clicked()),m_tree,SLOT(expandAll()));
+    //connect(*get<ButtonHandle>("save"),SIGNAL(clicked()),this,SLOT(save()));
+    connect(*get<ButtonHandle>("save-as"),SIGNAL(clicked()),this,SLOT(saveAs()));
+    connect(*get<ButtonHandle>("load"),SIGNAL(clicked()),this,SLOT(load()));
+    //connect(*get<ButtonHandle>("reload"),SIGNAL(clicked()),this,SLOT(reload()));
+    connect(*get<ButtonHandle>("update"),SIGNAL(clicked()),this,SLOT(updateTree()));
     
-    (*getValue<BoxHandle>("parent"))->resize(500,500);
+    (*get<BoxHandle>("parent"))->resize(500,500);
 
-    getValue<BoxHandle>("left").add(m_tree);
+    get<BoxHandle>("left").add(m_tree);
     connect(m_tree,SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)),
             this,SLOT(itemDoubleClicked(QTreeWidgetItem*,int)));
 
@@ -177,7 +184,7 @@ namespace icl{
   }
 
   QWidget *ConfigFileGUI::getWidget(){
-    return *getValue<BoxHandle>("parent");
+    return *get<BoxHandle>("parent");
   }
 
   void ConfigFileGUI::loadConfig(const ConfigFile &config){
@@ -231,7 +238,7 @@ namespace icl{
                 gui = GUI(str("combo(")+values+")"+p);
                 gui.create();
                 
-                ComboHandle &ch = gui.getValue<ComboHandle>("h");
+                ComboHandle &ch = gui.get<ComboHandle>("h");
                 ch.registerCallback(icl::function(this,SelectFunctor<void>()));
                 
                 int idx = (*ch)->findText(e);
@@ -244,7 +251,7 @@ namespace icl{
                 m_guis.back().id = es[i]->getRelID();
                 m_guis.back().type = t.toLatin1().data();
                 m_guis.back().item = n;
-                m_tree->setItemWidget(n,1,*gui.getValue<ComboHandle>("h"));
+                m_tree->setItemWidget(n,1,*gui.get<ComboHandle>("h"));
 
                 n->setText(1,"");
               }
@@ -255,11 +262,11 @@ namespace icl{
               std::string tr = bo ? "!true" : "true";
               gui = GUI("togglebutton(false,"+tr+")[@handle=b@out=v@minsize=5x1]");
               gui.create();
-              gui.getValue<ButtonHandle>("b").registerCallback(icl::function(this,SelectFunctor<void>()));
+              gui.get<ButtonHandle>("b").registerCallback(icl::function(this,SelectFunctor<void>()));
               m_guis.back().id = es[i]->getRelID();
               m_guis.back().type = t.toLatin1().data();
               m_guis.back().item = n;
-              m_tree->setItemWidget(n,1,*gui.getValue<ButtonHandle>("b"));
+              m_tree->setItemWidget(n,1,*gui.get<ButtonHandle>("b"));
               n->setText(1,"");
             }else if(t == "float" || t == "int"){
               const ConfigFile::KeyRestriction *restriction = es[i]->restr.get();
@@ -277,11 +284,11 @@ namespace icl{
                 if(t == "float"){
                   gui << str("fslider(")+str(r.minVal)+','+str(r.maxVal)+','+el+')'+p;
                   gui.create();
-                  gui.getValue<FSliderHandle>("h").registerCallback(icl::function(this,SelectFunctor<void>()));
+                  gui.get<FSliderHandle>("h").registerCallback(icl::function(this,SelectFunctor<void>()));
                 }else if (t == "int"){
                   gui << str("slider(")+str((int)r.minVal)+','+str((int)r.maxVal)+','+el+')'+p;
                   gui.create();
-                  gui.getValue<SliderHandle>("h").registerCallback(icl::function(this,SelectFunctor<void>()));
+                  gui.get<SliderHandle>("h").registerCallback(icl::function(this,SelectFunctor<void>()));
                 }else{
                   ok = false;
                 }
@@ -291,7 +298,7 @@ namespace icl{
                   m_guis.back().id = es[i]->getRelID();
                   m_guis.back().type = t.toLatin1().data();
                   m_guis.back().item = n;
-                  m_tree->setItemWidget(n,1,*gui.getValue<BoxHandle>("b"));
+                  m_tree->setItemWidget(n,1,*gui.get<BoxHandle>("b"));
                   n->setText(1,"");
                 }else{
                   m_guis.pop_back();
@@ -586,16 +593,16 @@ namespace icl{
   void ConfigFileGUI::operator()(){
     for(std::list<ConfigFileGUI::NamedGUI>::iterator it = m_guis.begin();it!=m_guis.end();++it){
       if(it->type == "int"){
-        int i = it->gui.getValue<int>("v");
+        int i = it->gui.get<int>("v");
         m_config->set(it->id,i);
       }else if(it->type == "float"){
-        float f = it->gui.getValue<float>("v");
+        float f = it->gui.get<float>("v");
         m_config->set(it->id,f);
       }else if(it->type == "string"){
-        std::string s = it->gui.getValue<std::string>("v");
+        std::string s = it->gui.get<std::string>("v");
         m_config->set(it->id,s);
       }else if(it->type == "bool"){
-        bool s = it->gui.getValue<bool>("v");
+        bool s = it->gui.get<bool>("v");
         m_config->set(it->id,s);
       }
     }

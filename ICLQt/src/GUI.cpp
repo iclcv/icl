@@ -40,6 +40,7 @@
 
 #include <ICLQt/GUI.h>
 #include <ICLQt/GUIWidget.h>
+#include <ICLQt/ContainerGUIComponent.h>
 #include <ICLQt/GUIDefinition.h>
 #include <ICLQt/GUISyntaxErrorException.h>
 #include <ICLUtils/Exception.h>
@@ -141,7 +142,7 @@ namespace icl{
       }
       virtual void timerEvent(QTimerEvent * e){
         if(!l){
-          l = &gui.getValue<LabelHandle>("#i#"+prop);
+          l = &gui.get<LabelHandle>("#i#"+prop);
         }
         (***l).setText(conf.getPropertyValue(prop).c_str());
         (***l).update(); 
@@ -289,15 +290,15 @@ namespace icl{
         if(t == "range" || t == "range:slider"){
           SteppingRange<float> r = parse<SteppingRange<float> >(conf->getPropertyInfo(p));
           if(r.stepping == 1){
-            gui.getValue<SliderHandle>("#r#"+p).setValue( parse<icl32s>(conf->getPropertyValue(p)) );
+            gui.get<SliderHandle>("#r#"+p).setValue( parse<icl32s>(conf->getPropertyValue(p)) );
           }else{
-            gui.getValue<FSliderHandle>("#r#"+p).setValue( parse<icl32f>(conf->getPropertyValue(p)) );
+            gui.get<FSliderHandle>("#r#"+p).setValue( parse<icl32f>(conf->getPropertyValue(p)) );
           }
         }else if( t == "range:spinbox"){
-          gui.getValue<SpinnerHandle>("#R#"+p).setValue( parse<icl32s>(conf->getPropertyValue(p)) );
+          gui.get<SpinnerHandle>("#R#"+p).setValue( parse<icl32s>(conf->getPropertyValue(p)) );
         }else if( t == "menu" || t == "value-list" || t == "valueList"){
           std::string handle = (t == "menu" ? "#m#" : "#v#")+p;
-          gui.getValue<ComboHandle>(handle).setSelectedItem(conf->getPropertyValue(p));
+          gui.get<ComboHandle>(handle).setSelectedItem(conf->getPropertyValue(p));
         }else if( t == "info"){
           gui["#i#"+p] = conf->getPropertyValue(p);
         }else if( t == "flag"){
@@ -333,34 +334,52 @@ namespace icl{
         SteppingRange<float> r = parse<SteppingRange<float> >(conf->getPropertyInfo(p.full));
         std::string c = conf->getPropertyValue(p.full);
         if(r.stepping == 1){
+#ifdef OLD_GUI
           gui << "slider("+str(r.minVal)+","+str(r.maxVal)+","+c+")["+ttt+"@handle="+handle+"@minsize=12x2@label="+p.half+"]";
+#endif
+          gui << Slider(r.minVal,r.maxVal,parse<int>(c)).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
         }else{
           if(r.stepping){
             WARNING_LOG("the prop-GUI compoment is not able to adjust a slider stepping that is not 1");
             WARNING_LOG("component was " << p.full);
           }
+#ifdef OLD_GUI
           gui << "fslider("+str(r.minVal)+","+str(r.maxVal)+","+c+")["+ttt+"@handle="+handle+"@minsize=12x2@label="+p.half+"]";
+#endif
+          gui << FSlider(r,parse<float>(c)).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
         }
         ostr << '\1' << handle;
       }else if( t == "range:spinbox"){
         std::string handle="#R#"+p.full;
         Range32s r = parse<Range32s>(conf->getPropertyInfo(p.full));
         std::string c = conf->getPropertyValue(p.full);
+#ifdef OLD_GUI 
         gui << "spinner("+str(r.minVal)+","+str(r.maxVal)+","+c+")["+ttt+"@handle="+handle+"@minsize=12x2@label="+p.half+"]";
+#endif
+        gui << Spinner(r.minVal, r.maxVal, parse<int>(c)).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
         ostr << '\1' << handle;
       }else if(t == "menu" || t == "value-list" || t == "valueList"){
         std::string handle = (t == "menu" ? "#m#" : "#v#")+p.full;
-        //gui << "combo("+conf->getPropertyInfo(p.full)+")[@handle="+handle+"@minsize=12x2@label="+p.half+"]";
+#ifdef OLD_GUI
         gui << "combo("+get_combo_list(p.full)+")["+ttt+"@handle="+handle+"@minsize=12x2@label="+p.half+"]";
+#endif
+        gui << Combo(get_combo_list(p.full)).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
         ostr << '\1' << handle;
       }else if(t == "command"){
         std::string handle = "#c#"+p.full;
         ostr << '\1' << handle;
+#ifdef OLD_GUI
         gui << "button("+p.half+")["+ttt+"@handle="+handle+"@minsize=12x2]";
+#endif
+        gui << Button(p.half).tooltip(tt).handle(handle).minSize(12,2);
       }else if(t == "info"){
         std::string handle = "#i#"+p.full;
         ostr << '\1' << handle;
+#ifdef OLD_GUI
         gui << "label("+conf->getPropertyValue(p.full)+")["+ttt+"@handle="+handle+"@minsize=12x2@label="+p.half+"]";
+#endif
+        gui << Label(conf->getPropertyValue(p.full)).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
+
         int volatileness = conf->getPropertyVolatileness(p.full);
         if(volatileness){
           timers.push_back(new VolatileUpdater(volatileness,p.full,timerGUI,*conf));
@@ -368,28 +387,39 @@ namespace icl{
       }else if(t == "flag"){
         std::string handle = "#f#"+p.full;
         ostr << '\1' << handle;
+#ifdef OLD_GUI
         gui << "checkbox("+p.half+","+(conf->getPropertyValue(p.full).as<bool>() ? "checked" : "unchecked") +")["+ttt+"@handle="+handle+"@minsize=12x1]";
+#endif
+        gui << CheckBox(p.half, conf->getPropertyValue(p.full)).tooltip(tt).handle(handle).minSize(12,2);
       }else if(t == "float"){
         std::string handle = "#F#"+p.full;
         ostr << '\1' << handle;
         Range32f mm = parse<Range32f>(conf->getPropertyInfo(p.full));
         float v = conf->getPropertyValue(p.full);
+#ifdef OLD_GUI
         gui << "float(" + str(mm.minVal) + "," + str(mm.maxVal) + "," + str(v) + ")["+ttt+"@handle="+handle+"@minsize=12x2@label="+p.half+"]";
+#endif
+        gui << Float(mm.minVal, mm.maxVal, v).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
         
       }else if(t == "int"){
         std::string handle = "#I#"+p.full;
         ostr << '\1' << handle;
         Range32s mm = parse<Range32s>(conf->getPropertyInfo(p.full));
         int v = conf->getPropertyValue(p.full);
+#ifdef OLD_GUI
         gui << "int(" + str(mm.minVal) + "," + str(mm.maxVal) + "," + str(v) + ")["+ttt+"@handle="+handle+"@minsize=12x2@label="+p.half+"]";
+#endif
+        gui << Int(mm.minVal,mm.maxVal,v).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
       }else if(t == "string"){
         std::string handle = "#S#"+p.full;
         ostr << '\1' << handle;
         int max_len = parse<int>(conf->getPropertyInfo(p.full));
         std::string value = conf->getPropertyValue(p.full);
         if(!value.length()) value = " ";
-        //        DEBUG_LOG("creating string component: ---" << ("string("  + value + "," + str(max_len) + ")["+ttt+"@handle=" + handle + "@minsize=12x2@label="+p.half+"]" ) << "---");
+#ifdef OLD_GUI
         gui << "string("  + value + "," + str(max_len) + ")["+ttt+"@handle=" + handle + "@minsize=12x2@label="+p.half+"]";
+#endif
+        gui << String(value, max_len).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
       }
       
       else{
@@ -438,10 +468,17 @@ namespace icl{
           add_component(tab,it->second[i],ostr,gui);          
         }
         if(it->first == "general"){
+#ifdef OLD_GUI
           tab << ( GUI("hbox")
                     << "button(load)[@handle=#X#load]"
                     << "button(save)[@handle=#X#save]"
                  );
+#endif
+          tab << ( HBox()
+                   << Button("load").handle("#X#load")
+                   << Button("save").handle("#X#save")
+                 );
+                   
           ostr <<  '\1' << "#X#load";
           ostr <<  '\1' << "#X#save";
         }
@@ -450,7 +487,7 @@ namespace icl{
       
       gui.create();
       
-      (**gui.getValue<TabHandle>("__the_tab__")).setCurrentIndex(generalIdx);
+      (**gui.get<TabHandle>("__the_tab__")).setCurrentIndex(generalIdx);
       
       std::string cblist = ostr.str();
       if(cblist.size() > 1){
@@ -474,16 +511,16 @@ namespace icl{
       if(type == "range" || type == "range:slider"){
         SteppingRange<float> r = parse<SteppingRange<float> >(conf->getPropertyInfo(name));
         if(r.stepping == 1){
-          gui.getValue<SliderHandle>("#r#"+name).setValue( parse<icl32s>(conf->getPropertyValue(name)) );
+          gui.get<SliderHandle>("#r#"+name).setValue( parse<icl32s>(conf->getPropertyValue(name)) );
         }else{
-          gui.getValue<FSliderHandle>("#r#"+name).setValue( parse<icl32f>(conf->getPropertyValue(name)) );
+          gui.get<FSliderHandle>("#r#"+name).setValue( parse<icl32f>(conf->getPropertyValue(name)) );
         }
       }else if (type == "range:spinbox"){
-        gui.getValue<SpinnerHandle>("#R#"+name).setValue( parse<icl32s>(conf->getPropertyValue(name)) );
+        gui.get<SpinnerHandle>("#R#"+name).setValue( parse<icl32s>(conf->getPropertyValue(name)) );
       }else if( type == "menu" || type == "value-list" || type == "valueList"){
         std::string handle = (type == "menu" ? "#m#" : "#v#")+name;
         //     DEBUG_LOG("handle is " << handle << " value is " << conf->getPropertyValue(name));
-        gui.getValue<ComboHandle>(handle).setSelectedItem(conf->getPropertyValue(name));
+        gui.get<ComboHandle>(handle).setSelectedItem(conf->getPropertyValue(name));
       }else if( type == "info"){
         gui["#i#"+name] = conf->getPropertyValue(name);
       }else if( type == "flag"){
@@ -2145,21 +2182,44 @@ public:
     m_sDefinition(definition),m_poWidget(0),m_bCreated(false),m_poParent(parent){
   }
 
+  GUI::GUI(const GUIComponent &component, QWidget *parent):
+    m_sDefinition(component.toString()), m_poWidget(0),m_bCreated(false),m_poParent(parent){
+  }
+
+
   // }}}
   GUI::GUI(const GUI &g,QWidget *parent):
     // {{{ open
-    m_sDefinition(g.m_sDefinition),
-    m_vecChilds(g.m_vecChilds),
+    m_sDefinition(g.createDefinition()),
+    m_children(g.m_children),
     m_poWidget(NULL),m_bCreated(false),
     m_poParent(parent){
   }
   // }}}
+
+  
+  GUI &GUI::operator=(const GUI &other){
+    m_sDefinition = other.createDefinition();
+    m_children = other.m_children;
+    m_poWidget = NULL;
+    m_bCreated = false;
+    m_poParent = other.m_poParent;
+    m_oDataStore = other.m_oDataStore;
+    return *this;
+  }
   
   GUI::~GUI(){
     // this leads to seg-faults 
     //delete m_poWidget;
   }
 
+  /// adds a new GUI component 
+  GUI &GUI::operator<<(const GUIComponent &component){
+    // TODO: this is just a slow fallback right now
+    // as a first attempt, we could bypass the parsing
+    // of the serialized string version ...
+    return (*this) << component.toString();
+  }
 
   GUI &GUI::operator<<(const std::string &definition){
     // {{{ open
@@ -2204,7 +2264,7 @@ public:
       string rest = remove_label(definition,label);
       return ( (*this) << ( GUI(string("border("+label+")["+minsize+maxsize+size+"]")) << rest ) );
     }else{
-      m_vecChilds.push_back(new GUI(definition));
+      m_children.push_back(new GUI(definition));
       return *this;
     }
   }
@@ -2219,10 +2279,11 @@ public:
       return *this;
     }
     
-    string label = extract_label(g.m_sDefinition);
-    string minsize = extract_minsize(g.m_sDefinition);
-    string maxsize = extract_maxsize(g.m_sDefinition);
-    string size = extract_size(g.m_sDefinition);
+    std::string def = g.createDefinition();
+    string label = extract_label(def);
+    string minsize = extract_minsize(def);
+    string maxsize = extract_maxsize(def);
+    string size = extract_size(def);
     
     Size S11(1,1);
     if(minsize.length()) minsize = string("@minsize=")+str(parse<Size>(minsize)+S11);
@@ -2232,18 +2293,19 @@ public:
 
     if(label.length()){
       GUI gNew(g);
-      if(gNew.m_sDefinition.length() > 100000) {
+      def = gNew.createDefinition();
+      if(def.length() > 1000000) {
         throw GUISyntaxErrorException("-- long text --","definition string was too large! (>100000 characters)");
       }
-      gNew.m_sDefinition = remove_label(g.m_sDefinition,label);
+      gNew.m_sDefinition = remove_label(def,label);
       return ( *this << (  GUI(string("border(")+label+")["+minsize+maxsize+size+"]") << gNew ) );
     }else{
-      m_vecChilds.push_back(new GUI(g));
+      m_children.push_back(new GUI(g));
       return *this;
     }
 
     
-    //    m_vecChilds.push_back(new GUI(g));
+    //    m_children.push_back(new GUI(g));
     return *this;
   }
 
@@ -2257,7 +2319,7 @@ public:
         throw ICLException("cannot create a \"dummy\"-GUI. (Dummy GUI's are GUI-instances\n"
                            "that are created from an empty string or from the string \"dummy\") ");
       }
-      GUIDefinition def(m_sDefinition,this,parentLayout,proxy,parentWidget);
+      GUIDefinition def(createDefinition(),this,parentLayout,proxy,parentWidget);
       
       m_poWidget = create_widget(def);
 
@@ -2274,12 +2336,12 @@ public:
       QLayout *layout = m_poWidget->getGUIWidgetLayout();
       ProxyLayout *proxy = m_poWidget->getProxyLayout();
 
-      if(!layout && !proxy && m_vecChilds.size()){
-        ERROR_LOG("GUI widget has no layout, "<< m_vecChilds.size() <<" child components can't be added!");
+      if(!layout && !proxy && m_children.size()){
+        ERROR_LOG("GUI widget has no layout, "<< m_children.size() <<" child components can't be added!");
         return;
       }
-      for(unsigned int i=0;i<m_vecChilds.size();i++){
-        m_vecChilds[i]->create(layout,proxy,m_poWidget,&m_oDataStore);
+      for(unsigned int i=0;i<m_children.size();i++){
+        m_children[i]->create(layout,proxy,m_poWidget,&m_oDataStore);
       }
       m_bCreated = true;
     }catch(GUISyntaxErrorException &ex){
@@ -2348,7 +2410,7 @@ public:
 
     StrTok tok(handleNamesList,delims);
     while(tok.hasMoreTokens()){
-      getValue<GUIHandleBase>(tok.nextToken(),false).registerCallback(cb);
+      get<GUIHandleBase>(tok.nextToken(),false).registerCallback(cb);
     }
   }
 
@@ -2357,7 +2419,7 @@ public:
 
     StrTok tok(handleNamesList,delims);
     while(tok.hasMoreTokens()){
-      getValue<GUIHandleBase>(tok.nextToken(),false).registerCallback(cb);
+      get<GUIHandleBase>(tok.nextToken(),false).registerCallback(cb);
     }
   }
 
@@ -2366,7 +2428,7 @@ public:
 
     StrTok tok(handleNamesList,delims);
     while(tok.hasMoreTokens()){
-      getValue<GUIHandleBase>(tok.nextToken(),false).removeCallbacks();
+      get<GUIHandleBase>(tok.nextToken(),false).removeCallbacks();
     }
   }
 

@@ -22,11 +22,11 @@ void init(){
   }
   
   if(cOut || dOut){
-    prevGUI << (cOut ? "image[@handle=color]" : "")
-            << (dOut ? "image[@handle=depth]" : "")
-            << "!create";
+    prevGUI << (cOut ? Image().handle("color") : Dummy())
+            << (dOut ? Image().handle("depth") : Dummy())
+            << Create();
   }
-
+#ifdef OLD_GUI
   gui << "draw3D[@handle=draw]" 
       << ( GUI("vbox[@minsize=10x2]")
            << "fslider(-10,10,0)[@out=x@label=translate x]"
@@ -41,6 +41,24 @@ void init(){
            << "button(reset view)[@handle=resetView]"
          )
       << "!show";
+#endif
+
+  gui << Draw3D().handle("draw")
+      << ( VBox().minSize(10,2)
+           << FSlider(-10,10,0).out("x").label("translate x")
+           << FSlider(-10,10,0).out("y").label("translate y")
+           << FSlider(1.5,10,0).out("z").label("translate z")
+           
+           << FSlider(-4,4,0).out("rx").label("rotate x")
+           << FSlider(-4,4,0).out("ry").label("rotate y")
+           << FSlider(-4,4,0).out("rz").label("rotate z")
+
+           << ((cOut||dOut) ? (const GUIComponent&)Button("show","hide").label("preview").handle("preview") 
+               : (const GUIComponent&)Dummy() )
+           << Button("reset view").handle("resetView")
+         )
+      << Show();
+
   
   if(cOut || dOut){
     gui["preview"].registerCallback(function(&prevGUI,&GUI::switchVisibility));

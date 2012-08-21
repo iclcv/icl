@@ -43,10 +43,10 @@ Mutex mutex;
 
 void updateVT(){
   Mutex::Locker l(mutex);
-  static int &dim = gui.getValue<int>("dim-val");
-  static bool &optOn = gui.getValue<bool>("trivial-val");
-  static bool &normOn = gui.getValue<bool>("norm-val");
-  static bool &ffOn = gui.getValue<bool>("ff-val");
+  static int &dim = gui.get<int>("dim-val");
+  static bool &optOn = gui.get<bool>("trivial-val");
+  static bool &normOn = gui.get<bool>("norm-val");
+  static bool &ffOn = gui.get<bool>("ff-val");
 
   vt = VectorTracker(dim,
                      10000,
@@ -58,6 +58,7 @@ void updateVT(){
 
 
 void init(){
+#ifdef OLD_GUI
   gui << "slider(1,1000,2)[@label=data dimension@handle=dim@out=dim-val]";
   gui << "slider(1,300,30)[@label=num inputs@handle=num@out=num-val]";
   gui << "slider(0,5,0)[@label=num std. deviation@handle=dev@out=dev-val]";
@@ -69,6 +70,19 @@ void init(){
          );
   
   gui.show();
+#endif
+
+  gui << Slider(1,1000,2).label("data dimension").handle("dim").out("dim-val")
+      << Slider(1,300,30).label("num inputs").handle("num").out("num-val")
+      << Slider(0,5,0).label("num std. deviation").handle("dev").out("dev-val")
+      << ( HBox() 
+           << Fps(10).handle("fps").minSize(5,2)
+           << Button("off","on").label("try tivial").handle("trivial").out("trivial-val")
+           << Button("off","on").label("use norm").handle("norm").out("norm-val")
+           << Button("off","on").label("first free ID").handle("ff").out("ff-val")
+           )
+      << Show();
+
   
   gui.registerCallback(updateVT,"dim,ff,norm,trivial");
   
@@ -78,8 +92,8 @@ void init(){
 
 void run(){
 
-  static int &num = gui.getValue<int>("num-val");
-  static int &dev = gui.getValue<int>("dev-val");
+  static int &num = gui.get<int>("num-val");
+  static int &dev = gui.get<int>("dev-val");
   static std::vector<VectorTracker::Vec> data;
 
   while(true){

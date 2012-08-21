@@ -84,8 +84,9 @@ int main(int n, char **ppc){
 
   QApplication app(n,ppc);
   GUI gui("hbox");
-  gui << "image[@handle=sub@label='A-B']" << "image[@handle=eq@label='A==B']";
-  gui.show();
+  gui << Image().handle("sub").label("A-B") 
+      << Image().handle("eq").label("A==B")
+      << Show();
   
   gui["sub"] = subImage;
   gui["eq"] = cmpImage;

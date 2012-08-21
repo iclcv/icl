@@ -41,6 +41,7 @@ GUI gui("hsplit");
 GenericGrabber *grabber = 0;
 
 void init(){
+#ifdef OLD_GUI
   GUI controls("vbox[@label=controls]");
   GUI images("vsplit");
   
@@ -61,6 +62,23 @@ void init(){
   
   gui << controls << images;
   gui.show();
+#endif
+  std::string filters = "custom,sobelX3x3,sobelY3x3,sobelX5x5,sobelY5x5,!gauss3x3,gauss5x5,laplace3x3,laplace5x5";
+  gui << ( VBox().label("controls")
+           << Combo("QQVGA,QVGA,HVGA,!VGA,SVGA,HD720,WXGA,SXGAP,HD1080").label("source size").handle("src-size")
+           << Combo("depth8u,depth16s,depth32s,depth32f,depth64f").label("source depth").handle("src-depth")
+           << Combo("full,ul,ur,ll,rl,center").label("source roi").handle("src-roi")
+           << Combo(filters).label("kernel-type").handle("kernel-type")
+           << Button("off","on").label("force unsigned").out("force-unsigned")
+           << Button("off","on").label("clip to ROI").out("clip-to-roi")
+           << Fps(10).handle("fps").label("FPS")
+           << Label("--").handle("apply-time").label("apply time")
+           )
+      << ( VSplit()
+           << Draw().minSize(16,12).handle("src").label("source image")
+           << Draw().minSize(16,12).handle("dst").label("result image")
+           )
+      << Show();
 }
 
 Rect get_roi(const std::string &info,const Rect &full){
@@ -87,19 +105,19 @@ ConvolutionKernel::fixedType get_kernel(const std::string &name){
 }
 
 void run(){
-  static DrawHandle src = gui.getValue<DrawHandle>("src");
-  static DrawHandle dst = gui.getValue<DrawHandle>("dst");
+  static DrawHandle src = gui.get<DrawHandle>("src");
+  static DrawHandle dst = gui.get<DrawHandle>("dst");
 
-  static ComboHandle srcSize = gui.getValue<ComboHandle>("src-size");
-  static ComboHandle srcDepth = gui.getValue<ComboHandle>("src-depth");
-  static ComboHandle srcROI = gui.getValue<ComboHandle>("src-roi");
-  static ComboHandle kernel = gui.getValue<ComboHandle>("kernel-type");
+  static ComboHandle srcSize = gui.get<ComboHandle>("src-size");
+  static ComboHandle srcDepth = gui.get<ComboHandle>("src-depth");
+  static ComboHandle srcROI = gui.get<ComboHandle>("src-roi");
+  static ComboHandle kernel = gui.get<ComboHandle>("kernel-type");
   
-  static bool &forceUnsigned = gui.getValue<bool>("force-unsigned");
-  static bool &clipToROI = gui.getValue<bool>("clip-to-roi");
+  static bool &forceUnsigned = gui.get<bool>("force-unsigned");
+  static bool &clipToROI = gui.get<bool>("clip-to-roi");
 
-  static FPSHandle fps = gui.getValue<FPSHandle>("fps");
-  static LabelHandle applyTime = gui.getValue<LabelHandle>("apply-time");
+  static FPSHandle fps = gui.get<FPSHandle>("fps");
+  static LabelHandle applyTime = gui.get<LabelHandle>("apply-time");
   
   static GenericGrabber grabber(pa("-i"));
 
