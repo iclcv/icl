@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLUtils/test/test-matrix.cpp                          **
+** File   : ICLUtils/test/matrix-test.cpp                          **
 ** Module : ICLUtils                                               **
 ** Authors: Erik Weitnauer                                         **
 **                                                                 **
