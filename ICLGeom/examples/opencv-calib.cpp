@@ -6,7 +6,7 @@
  ** Website: www.iclcv.org and                                      **
  **          http://opensource.cit-ec.de/projects/icl               **
  **                                                                 **
- ** File   : ICLGeom/examples/opencvcamcalib-demo.cpp               **
+ ** File   : ICLGeom/examples/opencv-calib.cpp                      **
  ** Module : ICLGeom                                                **
  ** Authors: Christian Groszewski, Andre Ueckermann                 **
  **                                                                 **

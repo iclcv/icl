@@ -6,9 +6,9 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLGeom/examples/intrinsic-camera-calibration-tools.h  **
+** File   : ICLGeom/examples/camera-demo.cpp                       **
 ** Module : ICLGeom                                                **
-** Authors: Christof Elbrechter                                    **
+** Authors: Christof Elbrechter, Erik Weitnauer                    **
 **                                                                 **
 **                                                                 **
 ** Commercial License                                              **
@@ -32,60 +32,69 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef INTRINSIC_CAMERA_CALIBRATION_TOOLS_H
-#define INTRINSIC_CAMERA_CALIBRATION_TOOLS_H
+#include <ICLGeom/Geom.h>
+#include <ICLGeom/Scene.h>
+#include <ICLGeom/Camera.h>
+#include <ICLQuick/Common.h>
+#include <ICLUtils/FPSLimiter.h>
+#include <ICLGeom/Primitive.h>
 
-#include <ICLCore/Img.h>
-#include <ICLUtils/Point32f.h>
-#include <ICLUtils/FixedVector.h>
+HSplit gui;
+Scene scene;
 
-namespace icl{
-  typedef FixedColVector<double,2> P64f;
-  typedef FixedMatrix<double,2,2> M64f;
+void init(){
 
-  struct CalibrationStep{
-    Img32f colorImage;
-    Img32f image;
-    std::vector<Point32f> points;
-    Point32f &operator[](int idx) { return points[idx]; }
-    const Point32f &operator[](int idx) const { return points[idx]; }
+  gui << Draw3D().minSize(16,12).handle("w1").label("Rendered into GL-Context")
+      << Draw3D().minSize(16,12).handle("w2").label("Rendered into GL-Context")
+      << ( VBox().minSize(12,1) 
+           << FSlider(0.1,10,1.7).label("focal length left").out("fl")
+           << FSlider(0.1,10,1.7).label("focal length right").out("fr")
+           << FSlider(60,660,360).label("principal point offset x").out("px")
+           << FSlider(40,440,240).label("principal point offset y").out("py")
+           << FSlider(100,300,200).label("sampling resolution x").out("sx")
+           << FSlider(100,300,200).label("sampling resolution y").out("sy")
+           << FSlider(-100,100,0).label("skew").out("skew")
+           << Fps(10).handle("fps")
+           )
+      << Show();
 
-    void showSelf() const{
-      std::cout << "Calibration Step npoints: " << points.size() << "image: " << image << std::endl;
-    }
-  };
+  scene.addCamera(Camera(Vec(-250,0,1000,1),Vec(0,0,-1,1),Vec(0,1,0,1)));
+  scene.addCamera(Camera(Vec(200,0,200,1),Vec(-1,0,0,1),Vec(0,1,0,1)));
+  scene.setDrawCoordinateFrameEnabled(true,120,10);
 
-  struct CalibrationData{
-    std::vector<CalibrationStep> data;
-    int nx,ny;
-    int nloops() const { return (int) data.size(); }
-    int dim() const { return nx*ny; }
-    const CalibrationStep &operator[](int idx) const { return data[idx]; }
-    CalibrationStep &operator[](int idx){ return data[idx]; }
-    
-    void showSelf() const{
-      std::cout << "Calibration Data  " << data.size() << " slices nx:" << nx << " ny:" << ny << std::endl;
-      for(unsigned int i=0;i<data.size();++i){
-        data[i].showSelf();
-      }
-    }
-  };
-
-
-  double get_fitting_error(const CalibrationData &data, double dist_factor[4]);
+  gui["w1"].install(scene.getMouseHandler(0));
+  gui["w2"].install(scene.getMouseHandler(1));
   
-  double check_error(const std::vector<double> &x, const std::vector<double> &y, int num, double dist_factor[4]);
+  scene.getCamera(0).setName("Left Camera");
+  scene.getCamera(1).setName("Right Camera");
   
-  double calc_distortion2(const CalibrationData &data, double dist_factor[4]);
-  
-  double get_size_factor(double dist_factor[4], int xsize, int ysize);
-  
-  void calc_distortion(const CalibrationData &data,int xsize, int ysize, double dist_factor[4]);
-
-  void calc_distortion_stochastic_search(const CalibrationData &data,
-                                         int xsize, int ysize, double dist_factor[4]);
-
-
-  void apply_pca(const std::vector<P64f> &input, M64f &evec, P64f &eval, P64f &mean);
+  gui["w1"].link(scene.getGLCallback(0));
+  gui["w2"].link(scene.getGLCallback(1));
 }
-#endif
+
+
+void run(){
+  Camera &l = scene.getCamera(0), &r = scene.getCamera(1);
+  l.setFocalLength(gui["fl"]);
+  r.setFocalLength(gui["fr"]);
+
+  l.setPrincipalPointOffset(Point32f(gui["px"],gui["py"]));
+  l.setSamplingResolution(gui["sx"],gui["sy"]);
+  
+  l.setSkew(gui["skew"]);
+
+  
+  gui["fps"].render();
+  gui["w1"].render();
+  gui["w2"].render();
+  
+  static FPSLimiter limiter(25);
+  limiter.wait();
+}
+
+
+int main(int n, char**ppc){
+  ERROR_LOG("this demo has a bug!");
+  return ICLApplication(n,ppc,"",init,run).exec();
+}
+

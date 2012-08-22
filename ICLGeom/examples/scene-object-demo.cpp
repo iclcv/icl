@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLGeom/examples/geom-demo-simple.cpp                  **
+** File   : ICLGeom/examples/scene-object-demo.cpp                 **
 ** Module : ICLGeom                                                **
 ** Authors: Christof Elbrechter, Erik Weitnauer                    **
 **                                                                 **

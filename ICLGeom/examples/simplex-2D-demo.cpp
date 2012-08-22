@@ -6,9 +6,9 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLGeom/examples/geom-demo.cpp                         **
+** File   : ICLGeom/examples/simplex-2D-demo.cpp                   **
 ** Module : ICLGeom                                                **
-** Authors: Christof Elbrechter, Erik Weitnauer                    **
+** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
 ** Commercial License                                              **
@@ -32,69 +32,63 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLGeom/Geom.h>
-#include <ICLGeom/Scene.h>
-#include <ICLGeom/Camera.h>
 #include <ICLQuick/Common.h>
-#include <ICLUtils/FPSLimiter.h>
-#include <ICLGeom/Primitive.h>
+#include <ICLUtils/SimplexOptimizer.h>
 
-HSplit gui;
-Scene scene;
+
+GUI gui;
+
+typedef FixedColVector<float,2> Pos;
+
+float error_function(const Pos &p){
+  return ::sqrt(sqr(p[0]-400) + sqr(p[1]-550));
+}
 
 void init(){
-
-  gui << Draw3D().minSize(16,12).handle("w1").label("Rendered into GL-Context")
-      << Draw3D().minSize(16,12).handle("w2").label("Rendered into GL-Context")
-      << ( VBox().minSize(12,1) 
-           << FSlider(0.1,10,1.7).label("focal length left").out("fl")
-           << FSlider(0.1,10,1.7).label("focal length right").out("fr")
-           << FSlider(60,660,360).label("principal point offset x").out("px")
-           << FSlider(40,440,240).label("principal point offset y").out("py")
-           << FSlider(100,300,200).label("sampling resolution x").out("sx")
-           << FSlider(100,300,200).label("sampling resolution y").out("sy")
-           << FSlider(-100,100,0).label("skew").out("skew")
-           << Fps(10).handle("fps")
-           )
-      << Show();
-
-  scene.addCamera(Camera(Vec(-250,0,1000,1),Vec(0,0,-1,1),Vec(0,1,0,1)));
-  scene.addCamera(Camera(Vec(200,0,200,1),Vec(-1,0,0,1),Vec(0,1,0,1)));
-  scene.setDrawCoordinateFrameEnabled(true,120,10);
-
-  gui["w1"].install(scene.getMouseHandler(0));
-  gui["w2"].install(scene.getMouseHandler(1));
+  gui << Draw().minSize(20,20).handle("draw") << Show();
   
-  scene.getCamera(0).setName("Left Camera");
-  scene.getCamera(1).setName("Right Camera");
+  Img32f bg(Size(1000,1000),1);
+  Channel32f bgc = bg[0];
+  for(int y=0;y<bg.getHeight();++y){
+    for(int x=0;x<bg.getWidth();++x){
+      bgc(x,y) = error_function(Pos(x,y));
+    }     
+  }
+  DrawHandle draw = gui["draw"];
+  draw = norm(bg);
+  draw->setAutoResetQueue(false);
   
-  gui["w1"].link(scene.getGLCallback(0));
-  gui["w2"].link(scene.getGLCallback(1));
 }
-
 
 void run(){
-  Camera &l = scene.getCamera(0), &r = scene.getCamera(1);
-  l.setFocalLength(gui["fl"]);
-  r.setFocalLength(gui["fr"]);
+  static SimplexOptimizer<float,Pos> opt(error_function,2,1);
+  static std::vector<Pos> curr = SimplexOptimizer<float,Pos>::createDefaultSimplex(Pos(950,840));
+  static float err = 10000;
+  
+  DrawHandle draw = gui["draw"];
+  
+  std::vector<Point32f> ps(curr.size());
+  for(unsigned int i=0;i<ps.size();++i) ps[i] = Point32f(curr[i][0],curr[i][1]);
+  static int step = 0;
+  ++step;
+  draw->color((!(step%3))*255, (!((step+1)%3))*255, (!((step+2)%3))*255,255);
+  draw->linestrip(ps);
+  draw->fill(255,255,255,255);
+  draw->color(0,0,0,0);
+  draw->rect(0,25,400,50);
 
-  l.setPrincipalPointOffset(Point32f(gui["px"],gui["py"]));
-  l.setSamplingResolution(gui["sx"],gui["sy"]);
-  
-  l.setSkew(gui["skew"]);
+  draw->color(255,0,0,255);
+  draw->text("error: " + str(err), 30,30,10);
+  draw.render();
 
-  
-  gui["fps"].render();
-  gui["w1"].render();
-  gui["w2"].render();
-  
-  static FPSLimiter limiter(25);
-  limiter.wait();
+  SimplexOptimizer<float,Pos>::Result r = opt.optimize(curr);
+
+  curr = r.vertices;
+  err = r.fx;
+  Thread::msleep(100);  
 }
 
 
-int main(int n, char**ppc){
-  ERROR_LOG("this demo has a bug!");
-  return ICLApplication(n,ppc,"",init,run).exec();
-}
-
+int main(int n, char **ppc){
+  return ICLApp(n,ppc,"",init,run).exec();
+};
