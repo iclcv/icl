@@ -58,25 +58,13 @@
 
 #include <ICLIO/TestImages.h>
 
-#ifdef HAVE_UNICAP
-#include <ICLIO/UnicapGrabber.h>
-#endif
 
 #ifdef HAVE_XINE
 #include <ICLIO/VideoGrabber.h>
 #endif 
 
-#ifdef HAVE_XCF
-#include <ICLIO/XCFMemoryGrabber.h>
-#include <ICLIO/XCFMemoryListener.h>
-#include <ICLIO/XCFPublisherGrabber.h>
-#include <ICLIO/XCFPublisher.h>
-#include <ICLIO/XCFServerGrabber.h>
-#include <ICLIO/XCFUtils.h>
-#endif
 
 /** \defgroup DC_G LibDC1394-2 based IEEE-1394 Camera Grabber and Control API
-    \defgroup UNICAP_G Unicap based IEEE-1394 Camera Grabber and Control API
     \defgroup UTILS_G Common File-I/O Utility Functions and Classes
     \defgroup FILEIO_G Plugin-based File-Writer and File-Grabber implementation
     \defgroup GRABBER_G List of all provided Grabber implementations
@@ -91,7 +79,6 @@
     and classes for File handling and management are provided. The functionalities
     can be grouped into the following modules:
     -# \ref DC_G
-    -# \ref UNICAP_G
     -# \ref UTILS_G
     -# \ref FILEIO_G
     -# \ref MOVIE_FILE_G
@@ -215,14 +202,6 @@
     # now, the images can be read online from the shared memory
     icl-camviewer -input sm my-segment
     
-    # grab images and pipe them via XCF-based network interface (here, an XCF-publisher is used)
-    # please note, that an XCF-dispatcher must be running and the XCF_Initial_Host 
-    # environment variable must be set correctly 
-    icl-pipe -input dc 0 -o xcfp my-publisher-name
-    
-    # grab images and pipe then via XCF-Server (here also, the XCF dispatcher must be running)
-    icl-pipe -input dc 0 -o xcfs my-server-name
-
     # capture a video using an opencv based video writer (here, with DIVX code, VGA-resolution
     # and playback speed of 24 frames per second (note, not all combinations of codecs, resolutions
     # and sizes are possible (actually, most are not :-)
@@ -247,17 +226,12 @@
 
     \subsection GRABBER_BACKENDS Grabber Backends and Corresponding 3rd Party Libraries
 
-    - <b>icl::PWCGrabber</b> Phillips WebCam grabber (needs videodev headers from the linux kernel)
     - <b>icl::DCGrabber</b> Grabber for FireWire 400 and 800 Cameras (using libdc1394_2)
-    - <b>icl::UnicapGrabber</b> Grabber for FireWire and video 4 linux based cameras (needs libunicap)
     - <b>icl::FileGrabber</b> Grabber for image file sources (.pgm, .ppm and .pnm .icl formats are supported natively,
       .jpeg files needs libjpeg, .png-files needs libpng, zipped file like e.g. .pgm.gz needs libz, and all other formats needs
       libMagick++)
     - <b>icl::CreateGrabber</b> Creates one of 8 demo images (e.g. the famous 'lena' or the 'camera man'-image)
     - <b>icl::DemoGrabber</b> Creates images with a moving red rectangle (no dependencies)
-    - <b>icl::XCFPublisherGrabber</b> Grabber for XCFPublishers (publisher-subscriber-communication)(needs libxcf)
-    - <b>icl::XCFServerGrabber</b> Grabber for XCFServers (rmi-communication) (needs libxcf)
-    - <b>icl::XCFMemoryGrabber</b> Grabber to extract images from XCF based Active memory (needs xcf)
     - <b>icl::PylonGrabber</b> Grabber using Baslers Pylon-Libraries for grabbing from Gigabit Ethernet (GIG-E) cameras
     - <b>icl::SwissRangerGrabber</b> Grabber for SwissRanger camera from Mesa-Imaging company. (nees libmesasr)
     - <b>icl::VideoGrabber</b> Xine based video grabber (grabbing videos frame by frame) (needs libxine)    

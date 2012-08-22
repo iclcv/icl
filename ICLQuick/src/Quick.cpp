@@ -37,9 +37,6 @@
 #include <ICLIO/TestImages.h>
 #include <ICLCC/Converter.h>
 
-#ifdef HAVE_VIDEODEV
-#include <ICLIO/PWCGrabber.h>
-#endif
 #include <ICLIO/GenericGrabber.h>
 
 #include <ICLCC/CCFunctions.h>
@@ -207,22 +204,6 @@ namespace icl{
     int FONTSIZE = 12;
     string FONTFAMILY = "Times";
 
-
-#ifdef HAVE_VIDEODEV
-    static PWCGrabber *G[4] = {0,0,0,0};
-    struct PWCReleaser{
-      // {{{ open
-
-      ~PWCReleaser(){
-        for(int i=0;i<4;i++){
-          if(G[i]) delete G[i];
-        }
-      }
-    };
-
-    // }}}
-    static PWCReleaser __r;
-#endif
 
     inline ImgQ *prepare_for_binary_op(const ImgQ &a, const ImgQ &b, ImgQ &na, ImgQ &nb){
       // {{{ open

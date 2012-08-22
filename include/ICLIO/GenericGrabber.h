@@ -80,18 +80,12 @@ namespace icl {
                                   undesired devices can be left out. In particular you can 
                                   also give only a single desired device type e.g. "pwc".
                                   The following device types are supported:
-                                  - <b>pwc</b> pwc grabber 
-                                  - <b>v4l2</b> Video for Linux 2 based grabber
+                                  - <b>v4l</b> Video for Linux 2 based grabber
                                   - <b>dc</b> dc grabber 
                                   - <b>dc800</b> dc grabber but with 800MBit iso-speed 
-                                  - <b>unicap</b> unicap grabber 
                                   - <b>file</b> file grabber
                                   - <b>demo</b> demo grabber (moving red spot)
                                   - <b>create</b> create grabber (create an image using ICL's create function)
-                                  - <b>xcfp</b> xcf publisher grabber
-                                  - <b>xcfs</b> xcf server grabber
-                                  - <b>xcfm</b> xcf memory grabber
-                                  - <b>mv</b> matrix vision grabber
                                   - <b>sr</b> SwissRanger camera (mesa-imaging)
                                   - <b>video</b> Xine based video grabber (grabbing videos frame by frame)
                                   - <b>cvcam</b> OpenCV based camera grabber (supporting video 4 linux devices)
@@ -106,7 +100,7 @@ namespace icl {
         
         
         @param params comma separated device depend parameter list: e.g.
-                                  "pwc=0,file=images//image*.ppm,dc=0" with self-explaining syntax\n
+                                  "v4l=0,file=images//image*.ppm,dc=0" with self-explaining syntax\n
                                   Additionally, each token a=b can be extended by device property that are directly
                                   set after device instantiation. E.g. demo=0@size=QVGA@blob-red=128, instantiates
                                   a demo-grabber, where the two additionally given properties (size and blob-red) 
@@ -129,18 +123,13 @@ namespace icl {
                                   command line: e.g.: "icl-camviewer -input dc 0\@size=VGA"
   
                                   Semantics:\n
-                                  - pwc=device-index (int)
-                                  - v4l2=device-name (e.g. "/dev/video0")
+                                  - v4l=device-name (e.g. "/dev/video0")
                                   - dc=device-index (int) or dc=UniqueID (string) 
                                     (the unique ID can be found with 'icl-cam-cfg d -list-devices-only')
                                   - dc800=device-index (int)
                                   - file=pattern (string)
-                                  - unicap=device pattern (string) or device index (int)
                                   - demo=anything (not regarded)
                                   - create=image name (see also icl::TestImages::create)
-                                  - xcfp=publisher's-stream-name (string)
-                                  - xcfs=server-name (string) (currently method name is always "retreiveImage")
-                                  - xcfm=memory-name (string) (currently image-xpath is always "//IMAGE")
                                   - mv=device-name (string)
                                   - sr=device-serial-number (-1 -> menu, 0 -> auto-select)
                                     <b>or</b>

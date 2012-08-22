@@ -40,9 +40,6 @@
 
 #ifdef ICL_SYSTEM_LINUX
 #ifdef HAVE_VIDEODEV
-#include <ICLIO/PWCGrabber.h>
-#endif
-#ifdef HAVE_VIDEODEV
 #include <ICLIO/V4L2Grabber.h>
 #endif
 
@@ -52,22 +49,8 @@
 #include <ICLIO/DCGrabber.h>
 #endif
 
-#ifdef HAVE_UNICAP
-#include <ICLIO/UnicapGrabber.h>
-#endif
-
-#ifdef HAVE_XCF
-#include <ICLIO/XCFPublisherGrabber.h>
-#include <ICLIO/XCFServerGrabber.h>
-#include <ICLIO/XCFMemoryGrabber.h>
-#endif
-
 #ifdef HAVE_LIBMESASR
 #include <ICLIO/SwissRangerGrabber.h>
-#endif
-
-#ifdef HAVE_MV
-#include </MVGrabber.h>
 #endif
 
 #ifdef HAVE_XINE
@@ -145,8 +128,8 @@ namespace icl{
 
     ParamMap pmap;
 
-    static const char *plugins[] = { "pwc","dc","dc800","unicap","file","demo","create",
-                                     "xcfp","xcfs","xcfm","mv","sr","xine","cvvideo", 
+    static const char *plugins[] = { "pwc","dc","dc800","file","demo","create",
+                                     "mv","sr","xine","cvvideo", "v4l"
                                      "cvcam","sm","kinectd","kinectc","kinecti",
                                      "pylon","rsb"};
     static const int NUM_PLUGINS=sizeof(plugins)/sizeof(char*);
@@ -176,13 +159,6 @@ namespace icl{
     }
     return pmap;
   }
-  
-#if HAVE_UNICAP
-  static bool is_int(const std::string &x){
-    int i = parse<int>(x);
-    return i>0 || x=="0";
-  }
-#endif
   
   void GenericGrabber::init(const std::string &desiredAPIOrder, 
                                  const std::string &params, 
@@ -236,30 +212,17 @@ namespace icl{
       
 #ifdef HAVE_VIDEODEV
       if(createListOnly){
-        supportedDevices.push_back("pwc:/dev/videoX index:Phillip 640 Webcam source");
-        supportedDevices.push_back("v4l2:/dev/videoX index or device-file:V4l2 based camera source");
-      }
-      if(l[i] == "pwc"){
-        PWCGrabber *pwc = new PWCGrabber;
-        if(pwc->init(Size(640,480),24,to32s(pmap["pwc"].id),true)){
-          m_poGrabber = pwc;
-          m_sType = "pwc";
-          break;
-        }else{
-          ADD_ERR("pwc");
-          delete pwc;
-          continue;
-        }
+        supportedDevices.push_back("v4l:/dev/videoX index or device-file:V4l2 based camera source");
       }
 
-      if(l[i] == "v4l2"){
+      if(l[i] == "v4l"){
         try{
-          V4L2Grabber *g = new V4L2Grabber(pmap["v4l2"].id);
+          V4L2Grabber *g = new V4L2Grabber(pmap["v4l"].id);
           m_poGrabber = g;
-          m_sType = "v4l2";
+          m_sType = "v4l";
           break;
         }catch(ICLException &ex){
-          ADD_ERR("v4l2 [error message:" + str(ex.what()) + "]");
+          ADD_ERR("v4l [error message:" + str(ex.what()) + "]");
           continue;
         }
       }
@@ -370,109 +333,6 @@ namespace icl{
         break;
       }
 #endif
-
-#ifdef HAVE_UNICAP
-      if(createListOnly){
-        supportedDevices.push_back("unicap:camera ID or pattern:Unicap library based camera source");
-      }
-      
-      if(l[i] == "unicap"){
-        std::vector<UnicapDevice> devs;
-        if(is_int(pmap["unicap"].id)){
-          devs = UnicapGrabber::getUnicapDeviceList("");
-          int idx = parse<int>(pmap["unicap"].id);
-          if((int)devs.size() > idx){
-            m_poGrabber = new UnicapGrabber(devs[idx]);
-            m_sType = "unicap";
-            break;
-          }else{
-            ADD_ERR("unicap");
-            continue;
-          }
-        }else{
-          devs = UnicapGrabber::getUnicapDeviceList(pmap["unicap"].id);
-          if(!devs.size()){
-            ADD_ERR("unicap");
-            continue;
-          }else{
-            m_poGrabber = new UnicapGrabber(devs[0]);
-            m_sType = "unicap";
-            break;
-          }        
-        }
-      }
-#endif
-
-
-#ifdef HAVE_XCF
-      if(createListOnly){
-        supportedDevices.push_back("xcfs:xcf server stream name:XCF-based server network source");
-        supportedDevices.push_back("xcfp:xcf publisher stream name:XCF-based publisher network source");
-        supportedDevices.push_back("xcfm:xcf Active-Memory name:XCF-based ActiveMemory network source");
-      }
-      if(l[i].size()==4 && l[i].substr(0,3) == "xcf"){
-        switch(l[i][3]){
-          case 's':
-            try{
-              m_poGrabber = new XCFServerGrabber(pmap["xcfs"].id);
-            }catch(...){
-              if(notifyErrors){
-                m_poGrabber = 0;
-                ADD_ERR("xcfs");
-              }
-            }
-            break;
-          case 'p':
-            try{
-              m_poGrabber = new XCFPublisherGrabber(pmap["xcfp"].id);
-            }catch(...){
-              if(notifyErrors){
-                m_poGrabber = 0;
-                ADD_ERR("xcfp");
-              }
-            }
-            break;
-          case 'm':
-            try{
-              m_poGrabber = new XCFMemoryGrabber(pmap["xcfm"].id);
-            }catch(...){
-              if(notifyErrors){
-                m_poGrabber = 0;
-                ADD_ERR("xcfm");
-              }
-            }
-            break;
-          default:
-            break;
-        }
-        if(m_poGrabber){
-          m_sType = l[i];
-          break;
-        }else{
-          continue;
-        }
-      }
-#endif
-
-#ifdef HAVE_MV
-      if(createListOnly){
-        supportedDevices.push_back("mv:camera ID:MatrixVision driver based camera source");
-      }
-      // not yet supported, and maybe, already replaced by pylon grabber?
-      if(l[i] == "mv") {
-        std::vector<MVDevice> devs = MVGrabber::getDeviceList();
-        
-        if(!devs.size()) {
-          ADD_ERR("mv");
-          continue;
-        } else {
-          m_poGrabber = new MVGrabber(pmap["mv"].id);
-          m_sType = "mv";
-          break;
-        }
-      }
-#endif
-
 
 #ifdef HAVE_OPENCV
       if(createListOnly){
@@ -802,17 +662,12 @@ namespace icl{
       }
       
 #ifdef HAVE_VIDEODEV
-      add_devices<PWCGrabber>(deviceList,"pwc",useFilter,pmap);
-      add_devices<V4L2Grabber>(deviceList,"v4l2",useFilter,pmap);
+      add_devices<V4L2Grabber>(deviceList,"v4l",useFilter,pmap);
 #endif
       
 #ifdef HAVE_LIBDC
       add_devices<DCGrabber>(deviceList,"dc",useFilter,pmap);
       add_devices<DCGrabber>(deviceList,"dc800",useFilter,pmap);
-#endif
-      
-#ifdef HAVE_UNICAP
-      add_devices<UnicapGrabber>(deviceList,"unicap",useFilter,pmap);
 #endif
       
       
