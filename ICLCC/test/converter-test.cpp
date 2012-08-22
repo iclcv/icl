@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLCC/examples/converter-test.cpp                      **
+** File   : ICLCC/test/converter-test.cpp                          **
 ** Module : ICLCC                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **

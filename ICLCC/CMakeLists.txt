@@ -44,20 +44,14 @@ add_libsource (${PROJECT_NAME} "src/Converter.cpp" "${CONDITIONLIST}" LIB_SOURCE
 add_libsource (${PROJECT_NAME} "src/FixedConverter.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/PseudoColorConverter.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
-set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)
-set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLIO ICLCore ICLUtils)
-add_example (${PROJECT_NAME} "bayer-benchmark" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-
-set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick)
-add_example (${PROJECT_NAME} "converter-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_OPENGL_COND)
-add_example (${PROJECT_NAME} "colorspace-online-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}" ICLQuick)
+add_example (${PROJECT_NAME} "colorspace-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "pseudo-color-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST HAVE_GTEST_COND)
-set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}")
-#add_gtest (${PROJECT_NAME} "test-image.cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}" ICLQuick)
+add_gtest (${PROJECT_NAME} "converter-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 #create lib
 if(WIN32)
