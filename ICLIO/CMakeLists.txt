@@ -140,11 +140,9 @@ add_example (${PROJECT_NAME} "jpg2cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "convert" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick)
-add_example (${PROJECT_NAME} "write-file-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-add_example (${PROJECT_NAME} "testimages-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "create" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 set(CONDITIONLIST HAVE_RSB_COND HAVE_PROTOBUF_COND)
-add_example (${PROJECT_NAME} "rsb-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "rsb-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_LIBDC_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME})
@@ -156,12 +154,7 @@ add_example (${PROJECT_NAME} "reset-dc-bus" "${CONDITIONLIST}" ICLLibsToLinkAgai
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_LIBDC_COND HAVE_QT_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick)
-add_example (${PROJECT_NAME} "multi-cam-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-
-set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_LIBFREENECT_COND HAVE_QT_COND)
-set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick)
-add_example (${PROJECT_NAME} "kinect-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-
+add_example (${PROJECT_NAME} "multi-cam-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_XCF_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME})
