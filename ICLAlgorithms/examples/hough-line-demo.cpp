@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLAlgorithms/examples/interactive-hough-line-demo.cpp  **
+** File   : ICLAlgorithms/examples/hough-line-demo.cpp             **
 ** Module : ICLAlgorithms                                          **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **

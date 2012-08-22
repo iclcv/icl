@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLAlgorithms/examples/interactive-template-matching-demo.cpp  **
+** File   : ICLAlgorithms/examples/template-matching-demo.cpp      **
 ** Module : ICLAlgorithms                                          **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **

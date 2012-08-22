@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLAlgorithms/examples/llm-test-2D.cpp                 **
+** File   : ICLAlgorithms/examples/llm-2D-demo.cpp                 **
 ** Module : ICLAlgorithms                                          **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
