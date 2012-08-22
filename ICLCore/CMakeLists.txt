@@ -52,10 +52,6 @@ add_libsource (${PROJECT_NAME} "src/ImageSerializer.cpp" "${CONDITIONLIST}" LIB_
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME})
 add_example (${PROJECT_NAME} "img-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-add_example (${PROJECT_NAME} "copy-channel-roi-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-add_example (${PROJECT_NAME} "img-iterator-benchmark" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-add_example (${PROJECT_NAME} "reduce-channels-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-add_example (${PROJECT_NAME} "sampled-line-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST HAVE_GTEST_COND)
 set(ICLLibsToLinkAgainst ICLCore)
