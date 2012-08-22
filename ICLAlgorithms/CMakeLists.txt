@@ -44,9 +44,6 @@ add_libsource (${PROJECT_NAME} "src/UsefulFunctions.cpp" "${CONDITIONLIST}" LIB_
 add_libsource (${PROJECT_NAME} "src/ViewBasedTemplateMatcher.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/HoughLineDetector.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/TemplateTracker.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-#set(CONDITIONLIST HAVE_SVS_COND)
-#add_libsource (${PROJECT_NAME} "src/SVS.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-
 set(CONDITIONLIST HAVE_OPENCV_COND)
 add_libsource (${PROJECT_NAME} "src/OpenCVSurfDetector.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/GenericSurfDetector.cpp" "${CONDITIONLIST}" LIB_SOURCES)
@@ -72,12 +69,9 @@ add_example (${PROJECT_NAME} "hough-line-demo" "${CONDITIONLIST}" ICLLibsToLinkA
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_OPENCV_COND)
 add_example (${PROJECT_NAME} "generic-surf-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-#set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_SVS_COND)
-#add_example (${PROJECT_NAME} "svs-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-
 set(CONDITIONLIST HAVE_GTEST_COND)
 set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}")
-#add_gtest (${PROJECT_NAME} "test-image.cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+#add_gtest (${PROJECT_NAME} "test-image" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 #create lib
 if(WIN32)
