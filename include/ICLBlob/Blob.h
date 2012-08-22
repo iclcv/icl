@@ -54,7 +54,6 @@
 /** 
     \defgroup G_CBS Color Blob Searcher API (template based)
     \defgroup G_RD Region Detection Package
-    \defgroup G_RBBS Region Based Blob Searcher Package
     \defgroup G_PT Position Tracker template class
     \defgroup G_UTILS Utility classes and Functions
     
@@ -123,22 +122,9 @@
     available. A very common pre-processing function may be <b>ICLFilter/LUT::reduceBits(..)</b>.
     In section \ref REGION_DETECTOR_EXAMPLE an example is presented.
 
-    
-    \ref G_RBBS \n    
-    The icl::RegionBasedBlobSearcher also searches for a set of image blobs, which
-    are discriminated <em>here</em> by their spacial location. The <em>connection</em>
-    feature is compulsory for blobs. The advantage of this region based approach 
-    is, that it is able to detect a large number of image blobs with identical color. 
-    The drawback is that detected blobs have no kind of <em>ID</em>, which could be
-    used for blob <em>tracking</em>. \n
-    The RegionBasedBlobSearcher wraps the icl::RegionDetector and provides an additional
-    feature-map creation and region evaluation interface.
-    For standard region based blob detection, the icl::SimpleBlobSearcher might be 
-    sufficient and much more convenient.
-        
 
     \ref G_PT \n    
-    The 3 approaches above all perform Blob or region detection. The icl::PositionTracker or 
+    These approaches above all perform Blob or region detection. The icl::PositionTracker or 
     it's generalized version icl::VectorTracker can be used to tracking the resulting regions
     or blobs through time.
     

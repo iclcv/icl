@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLBlob/examples/mean-shift-online-demo.cpp            **
+** File   : ICLBlob/examples/mean-shift-demo.cpp                   **
 ** Module : ICLBlob                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **

@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLBlob/examples/region-detector-test.cpp              **
+** File   : ICLBlob/examples/simple-blob-searcher-demo.cpp         **
 ** Module : ICLBlob                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -32,81 +32,66 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Quick.h>
-#include <ICLQuick/QuickRegions.h>
-#include <ICLBlob/RegionDetector.h>
+#include <ICLQuick/Common.h>
+#include <ICLBlob/SimpleBlobSearcher.h>
+#include <ICLUtils/FPSLimiter.h>
 
+GUI gui;
+GenericGrabber grabber;
+SimpleBlobSearcher S;
+Mutex mutex;
 
-int main(){
-
-  ImgQ a = create("parrot");
-
-  a = scale(a,0.5);
-
-  a = gray(a);
-
-  a = thresh(a,128);
-
-  a = filter(a,"median");
-
-  a.setROI(Rect(20,20,100,300));
-  
-  vector<vector<Point> > px = pixels(a,0,2<<20,255,255);
-  vector<RegionPCAInfo> pcas = pca(a,0,2<<20,255,255);
-  
-  ImgQ b = a*0;
-  a = a|b|b;
-  for(unsigned int i=0;i<px.size();++i){
-    color(0,255,0);
-    pix(a,px[i]);
-    
-    color(0,0,255);
-    draw(a,pcas[i]);
+void mouse(const MouseEvent &e){
+  if(e.hitImage() && e.isPressEvent()){
+    static int &minSize = gui.get<int>("minSize");
+    static int &maxSize = gui.get<int>("maxSize");
+    static float &thresh = gui.get<float>("thresh");
+    Mutex::Locker lock(mutex);
+    int idx = e.isMiddle() ? 1 : e.isRight() ? 2 : 0;
+    std::vector<double> color = e.getColor();
+    ICLASSERT_RETURN(color.size() == 3);
+    S.adapt(idx,Color(color[0],color[1],color[2]),thresh,Range32s(minSize,maxSize));
   }
-  show(a);
+}
+
+
+void init(){
+  gui << Draw().minSize(32,24).handle("draw");
+  gui << ( HBox().maxSize(100,3) 
+           << Spinner(1,100000,100).out("minSize").label("min size")
+           << Spinner(1,100000,1000).out("maxSize").label("max size")
+           << FSlider(0,300,30).out("thresh").label("threshold") 
+           )
+      << Show();
+
   
-  /** TEST 2
-  a.setROI(Rect(20,20,100,300));
-
-  ERROR_LOG("centers");
-  vector<Point> cs = centers(a);
-  ERROR_LOG("bbs");
-  vector<Rect> bs = boundingboxes(a);
-  ERROR_LOG("pcas");
-  vector<RegionPCAInfo> pcas = pca(a);
-  ERROR_LOG("boundaries");
-
+  gui["draw"].install(new MouseHandler(mouse));
+  grabber.init(pa("-i"));
   
+  S.add(Color(255,0,0),100,Range32s(100,100));
+  S.add(Color(0,255,0),100,Range32s(100,100));
+  S.add(Color(0,0,255),100,Range32s(100,100));
+}
+
+void run(){
+  static DrawHandle draw = gui["draw"];
+  static FPSLimiter fps(20);
+  const Img8u *image = grabber.grab()->asImg<icl8u>();
   
-
-  ImgQ xxx = rgb(a);
-  xxx = xxx*0.2;
-  ImgQ xxx2 = copy(xxx);
-  color(255,0,0);
-  pix(xxx,118-a.getROI().x,57-a.getROI().y);
-  show((xxx,zeros(1,1,1),xxx2));
+  const std::vector<SimpleBlobSearcher::Blob> &blobs = S.detect(*image);
   
+  draw = image;
 
-  vector<vector<Point> > bounds = boundaries(a);
-
-  a.setFullROI();
- 
-  a = rgb(a);
-  color(255,0,0); pix(a,cs);
-  for(unsigned int i=0;i<bs.size();++i){
-    color(255,255,0); rect(a,bs[i]);
+  for(unsigned int i=0;i<blobs.size();++i){
+    draw->color(255,255,255,255);
+    draw->linestrip(blobs[i].region->getBoundary());
+    draw->text(str(blobs[i].refColorIndex), blobs[i].region->getCOG().x,blobs[i].region->getCOG().y);
   }
-  color(0,0,255); draw(a,pcas);
+  draw.render();
+  fps.wait();
+}
 
-  for(unsigned int i=0;i<bounds.size();++i){
-    color(0,255,255); pix(a,bounds[i]);
-  }
-  show(a);
-  */
-  
-  
-
-  
-
-  return 0;
+int main(int n, char **ppc){
+  paex("-i","defines input device to use");
+  return ICLApplication(n,ppc,"[m]-input|-i(device,device-params)",init,run).exec();
 }
