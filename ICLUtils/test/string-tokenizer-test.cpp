@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLUtils/examples/string-tokenizer-test.cpp            **
+** File   : ICLUtils/test/string-tokenizer-test.cpp                **
 ** Module : ICLUtils                                               **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **

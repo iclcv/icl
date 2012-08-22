@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLUtils/examples/dyn-matrix-utils-test.cpp            **
+** File   : ICLUtils/test/dyn-matrix-utils-test.cpp                **
 ** Module : ICLUtils                                               **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **

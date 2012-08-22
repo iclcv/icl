@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLUtils/examples/svd-test.cpp                         **
+** File   : ICLUtils/examples/progargdemo-example.cpp              **
 ** Module : ICLUtils                                               **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -32,23 +32,48 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLUtils/DynMatrixUtils.h>
-#include <ICLUtils/Random.h>
+#include <ICLUtils/ProgArg.h>
+#include <ICLUtils/Size.h>
+#include <string>
+#include <cstdio>
 
 using namespace icl;
 
-int main(){
-  typedef double real;
+int main(int n, char **ppc){
   
-  DynMatrix<real> a(4,2);
-  std::fill(a.begin(),a.end(),URand(0,1));
+  paex("-s","defines image size")
+      ("-f","defines image foramt (RGB,Gray or HLS)")
+      ("-c","defines channel count to use")
+      ("-fast","enables a 'fast'-mode");
 
-  Time t=Time::now();
-  DynMatrix<real> U,s,Vt;
-  a.svd(U,s,Vt);
+  painit(n,ppc,"-size|-s(Size=VGA) -format|-f(format=RGB) -channels|-c(int) -fast",true);
 
-  SHOW(U);
-  SHOW(s);
-  SHOW(Vt);
-  SHOW(t.age().toMilliSecondsDouble());
+  // program name
+  SHOW(paprogname());
+
+  // number of all arguments
+  SHOW(pacount(false));
+  
+  SHOW(!!pa("-c"));
+
+  SHOW(!!pa("-f"));
+  // number of dangling arguments
+
+  Size s = pa("-s");
+  std::cout << "argument '-size' was " << (pa("-s")?"":"not ") 
+            << "given: " << s << std::endl;
+  
+  if(pa("-format")){
+    SHOW(pa("-format"));
+  }
+  if(pa("-fast")){
+    std::cout << "argument -fast was given:" << std::endl;
+  }
+  SHOW(pa("-fast"));
+    
+  
+  for(unsigned int i=0;i<pacount();i++){
+    std::cout << "dangling argument " << i << " is:'" 
+              << pa(i) << "'" << std::endl;
+  }
 }

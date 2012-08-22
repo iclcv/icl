@@ -85,6 +85,9 @@ add_libsource (${PROJECT_NAME} "src/LevenbergMarquardtFitter.cpp" "${CONDITIONLI
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME})
 add_example (${PROJECT_NAME} "regex-find" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "levenberg-marquardt-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "progarg-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "function-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST HAVE_GTEST_COND)
 set(ICLLibsToLinkAgainst ICLUtils)
@@ -95,12 +98,8 @@ add_gtest (${PROJECT_NAME} "matrix-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst
 #add_gtest (${PROJECT_NAME} "dyn-matrix-utils-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 #add_gtest (${PROJECT_NAME} "dyn-vector-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 #add_gtest (${PROJECT_NAME} "fixed-matrix-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-#add_gtest (${PROJECT_NAME} "function-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-#add_gtest (${PROJECT_NAME} "levengerg-marquardt-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-#add_gtest (${PROJECT_NAME} "progarg-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 #add_gtest (${PROJECT_NAME} "ransac-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 #add_gtest (${PROJECT_NAME} "string-tokenizer-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-#add_gtest (${PROJECT_NAME} "svd-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 #add_gtest (${PROJECT_NAME} "xml-parser-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 #create lib
