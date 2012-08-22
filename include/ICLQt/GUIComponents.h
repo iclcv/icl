@@ -266,17 +266,6 @@ namespace icl{
     Ps(int updatePFS=10):GUIComponent("ps",str(updatePFS)){}
   };
 
-  /// [Deprecated]
-  struct ICL_DEPRECATED MultiDrawComponent : public GUIComponent{
-    MultiDrawComponent(const std::string commanSepTabLabels, bool bufferAll=false, bool deepCopyBuffering=true):
-    GUIComponent("multidraw",str(bufferAll?"!all":"!one")+','+(deepCopyBuffering?"!deepcopy":"!shallowcopy")+','+commanSepTabLabels){}
-  };
-
-  /// [Deprecated]
-  struct ICL_DEPRECATED ConfigFileComponent : public GUIComponent{
-    ConfigFileComponent(bool popup=true):GUIComponent("config",popup?"popup":"embedded"){}
-  };
-    
   /// Creates not component
   struct Dummy : public GUIComponent{
     Dummy():GUIComponent(""){}

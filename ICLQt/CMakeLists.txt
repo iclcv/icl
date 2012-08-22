@@ -44,7 +44,6 @@ add_example (${PROJECT_NAME} "gui-assignment-info" "${CONDITIONLIST}" ICLLibsToL
 add_example (${PROJECT_NAME} "interactive-filter-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "mouse-interaction-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "camcfg" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-add_example (${PROJECT_NAME} "config-gui-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "configurable-gui-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "datastore-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "complex-gui-callback-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
@@ -109,7 +108,6 @@ add_libsource (${PROJECT_NAME} "src/Widget.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/HistogrammWidget.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/CamCfgWidget.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/ToggleButton.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-add_libsource (${PROJECT_NAME} "src/ConfigFileGUI.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/Application.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/IconFactory.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/ThreadedUpdatableTextView.cpp" "${CONDITIONLIST}" LIB_SOURCES)
@@ -136,7 +134,6 @@ SET(HWQ_Qt4_SRC
 	"../include/ICLQt/ThreadedUpdatableSlider.h"
 	"../include/ICLQt/MultiDrawHandle.h"
 	"../include/ICLQt/ToggleButton.h"
-	"../include/ICLQt/ConfigFileGUI.h"
 )
 
 

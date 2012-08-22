@@ -106,7 +106,6 @@
 
 #include <QtGui/QFileDialog>
 
-#include <ICLQt/ConfigFileGUI.h>
 #include <ICLQt/CamCfgWidget.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLQt/ToggleButton.h>
@@ -577,37 +576,6 @@ namespace icl{
     QPushButton *m_button;
     std::string devType,devID;
   };
-
-  struct ConfigFileGUIWidget : public GUIWidget{
-    // {{{ open
-    ConfigFileGUIWidget(const GUIDefinition &def):GUIWidget(def,1){
-      if(def.hasToolTip()){
-        WARNING_LOG("tooltip is not supported for the Config File component!");
-      }
-      if(def.param(0) == "embedded"){
-        m_button = 0;
-        m_cfg = new ConfigFileGUI(ConfigFile::getConfig(),this);
-        m_cfg->create();
-        addToGrid(m_cfg->getWidget());
-      }else if(def.param(0) == "popup"){
-        m_button = new QPushButton("config",this);
-        connect(m_button,SIGNAL(clicked()),this,SLOT(ioSlot()));
-        m_cfg = new ConfigFileGUI;
-        addToGrid(m_button);
-      }else{
-        throw GUISyntaxErrorException(def.defString(),"allowed parameters are \"embedded\" or \"popup\"");
-      }
-    }
-    virtual void processIO(){
-      m_cfg->show();
-    }
-    static string getSyntax(){
-      return string("config(popup|embedded)[general params]\n")+gen_params();
-    }
-    ConfigFileGUI *m_cfg;
-    QPushButton *m_button;
-  };
-
 
   struct ScrollGUIWidgetBase : public GUIWidget, public ProxyLayout{
     // {{{ open
@@ -2028,7 +1996,6 @@ public:
       MAP_CREATOR_FUNCS["hsplit"] = create_widget_template<HSplitterGUIWidget>;
       MAP_CREATOR_FUNCS["vsplit"] = create_widget_template<VSplitterGUIWidget>;
       MAP_CREATOR_FUNCS["camcfg"] = create_widget_template<CamCfgGUIWidget>;
-      MAP_CREATOR_FUNCS["config"] = create_widget_template<ConfigFileGUIWidget>;
       MAP_CREATOR_FUNCS["prop"] = create_widget_template<ConfigurableGUIWidget>;
       MAP_CREATOR_FUNCS["color"] = create_widget_template<ColorGUIWidget>;
       MAP_CREATOR_FUNCS["ps"] = create_widget_template<ProcessMonitorGUIWidget>;
