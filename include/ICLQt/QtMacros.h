@@ -35,40 +35,6 @@
 #ifndef ICL_QT_MACROS_H
 #define ICL_QT_MACROS_H
 
-#include <ICLQt/Widget.h>
-#include <ICLQt/DrawWidget.h>
-#include <ICLQt/DrawWidget3D.h>
-#include <ICLQt/GUI.h>
-#include <ICLQt/MouseHandler.h>
-
-#include <QtGui/QApplication>
-#include <ICLUtils/Thread.h>
-#include <ICLUtils/ThreadUtils.h>
-#include <ICLUtils/Mutex.h>
-
-#include <ICLQt/ButtonHandle.h>
-#include <ICLQt/BoxHandle.h>
-#include <ICLQt/BorderHandle.h>
-#include <ICLQt/ButtonGroupHandle.h>
-#include <ICLQt/LabelHandle.h>
-#include <ICLQt/SliderHandle.h>
-#include <ICLQt/FSliderHandle.h>
-#include <ICLQt/IntHandle.h>
-#include <ICLQt/CheckBoxHandle.h>
-#include <ICLQt/FloatHandle.h>
-#include <ICLQt/StateHandle.h>
-#include <ICLQt/StringHandle.h>
-#include <ICLQt/ComboHandle.h>
-#include <ICLQt/SpinnerHandle.h>
-#include <ICLQt/ImageHandle.h>
-#include <ICLQt/DrawHandle.h>
-#include <ICLQt/DrawHandle3D.h>
-#include <ICLQt/DispHandle.h>
-#include <ICLQt/FPSHandle.h>
-#include <ICLQt/MultiDrawHandle.h>
-#include <ICLQt/TabHandle.h>
-#include <ICLQt/SplitterHandle.h>
-#include <ICLQt/PlotHandle.h>
 
 #ifdef OLD_GUI_WITH_OLD_MACROS
 

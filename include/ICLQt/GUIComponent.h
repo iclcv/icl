@@ -1,3 +1,37 @@
+/********************************************************************
+**                Image Component Library (ICL)                    **
+**                                                                 **
+** Copyright (C) 2006-2012 CITEC, University of Bielefeld          **
+**                         Neuroinformatics Group                  **
+** Website: www.iclcv.org and                                      **
+**          http://opensource.cit-ec.de/projects/icl               **
+**                                                                 **
+** File   : include/ICLQt/GUIComponent.h                           **
+** Module : ICLQt                                                  **
+** Authors: Christof Elbrechter                                    **
+**                                                                 **
+**                                                                 **
+** Commercial License                                              **
+** ICL can be used commercially, please refer to our website       **
+** www.iclcv.org for more details.                                 **
+**                                                                 **
+** GNU General Public License Usage                                **
+** Alternatively, this file may be used under the terms of the     **
+** GNU General Public License version 3.0 as published by the      **
+** Free Software Foundation and appearing in the file LICENSE.GPL  **
+** included in the packaging of this file.  Please review the      **
+** following information to ensure the GNU General Public License  **
+** version 3.0 requirements will be met:                           **
+** http://www.gnu.org/copyleft/gpl.html.                           **
+**                                                                 **
+** The development of this software was supported by the           **
+** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
+** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
+** Forschungsgemeinschaft (DFG) in the context of the German       **
+** Excellence Initiative.                                          **
+**                                                                 **
+*********************************************************************/
+
 #ifndef ICL_GUI_COMPONENT_H
 #define ICL_GUI_COMPONENT_H
 
@@ -66,86 +100,119 @@ namespace icl{
     m_type(type),m_params(params){}
     public:
       
+    /// sets the component handle
     const GUIComponent &handle(const std::string &handle) const{
       m_options.handle = handle; return *this;
     }
 
+    /// sets the component label
     const GUIComponent &label(const std::string &label) const{
       m_options.label = label; return *this;
     }
 
+    /// sets the component tooltip
     const GUIComponent &tooltip(const std::string &tooltip) const{
       m_options.tooltip = tooltip; return *this;
     }
 
+    /// sets the component initial size
     const GUIComponent &size(const Size &size) const {
       m_options.size = size; return *this;
     }
 
+    /// sets the component initial size
     const GUIComponent &size(int w, int h) const {
       return size(Size(w,h));
     }
 
+    /// sets the component minimum size constraint
     const GUIComponent &minSize(const Size &minSize) const {
       m_options.minSize = minSize; return *this;
     }
       
+    /// sets the component minimum size constraint
     const GUIComponent &minSize(int w, int h) const {
       return minSize(Size(w,h));
     }
     
+    /// sets the component maximum size constraint
     const GUIComponent &maxSize(const Size &maxSize) const {
       m_options.maxSize = maxSize; return *this;
     }
 
+    /// sets the component maximum size constraint
     const GUIComponent &maxSize(int w, int h) const {
       return maxSize(Size(w,h));
     }
 
+    /// hides the component if the given flag is true
+    /** this can be used to circumvent C++-language issues when creating
+        GUI components optionally, e.g.
+        \code
+        bool flag = ....;
+        GUI gui;
+        gui << (flag ? Image() : Dummy()).handle("image"); // does not work
+        
+        gui << Image().hideIf(!flag).handle("image");    // works
+        \endcode
+        
+    */
     const GUIComponent &hideIf(bool flag) const{
       if(flag) m_options.hide = true; return *this;
     }
 
-    GUIComponent &handle( std::string &handle) {
+    /// sets the component handle
+    GUIComponent &handle(std::string &handle) {
       m_options.handle = handle; return *this;
     }
     
-    GUIComponent &label( std::string &label) {
+    /// sets the component label
+    GUIComponent &label(std::string &label) {
       m_options.label = label; return *this;
     }
     
-    GUIComponent &tooltip( std::string &tooltip) {
+    /// sets the component tooltip
+    GUIComponent &tooltip(std::string &tooltip) {
       m_options.tooltip = tooltip; return *this;
     }
     
-    GUIComponent &size( Size &size)  {
+    /// sets the component initial size
+    GUIComponent &size(Size &size)  {
       m_options.size = size; return *this;
     }
     
+    /// sets the component initial size
     GUIComponent &size(int w, int h)  {
       m_options.size = Size(w,h); return *this;
     }
     
-    GUIComponent &minSize( Size &minSize)  {
+    /// sets the component minimum size constraint
+    GUIComponent &minSize(Size &minSize)  {
       m_options.minSize = minSize; return *this;
     }
-    
+
+    /// sets the component minimum size constraint
     GUIComponent &minSize(int w, int h)  {
       m_options.minSize = Size(w,h); return *this;
     }
     
-    GUIComponent &maxSize( Size &maxSize)  {
+    /// sets the component maximum size constraint
+    GUIComponent &maxSize(Size &maxSize)  {
       m_options.maxSize = maxSize; return *this;
     }
     
+    /// sets the component maximum size constraint
     GUIComponent &maxSize(int w, int h)  {
       m_options.maxSize = Size(w,h); return *this;
     }
 
+    /// hides the component if the given flag is true
+    /** \copydoc icl::GUIComponent::hideIf(bool)const */
     GUIComponent &hideIf(bool flag)  {
       if(flag) m_options.hide = true; return *this;
     }
     
+    /// creates a string representation of the component
     std::string toString() const {
       if(m_options.hide) return "";
       std::ostringstream str;
@@ -180,295 +247,6 @@ namespace icl{
     }
   };
 
-  struct GUIComponentWithOutput : public GUIComponent{
-    GUIComponentWithOutput(const std::string &type, const std::string &params):
-    GUIComponent(type,params){}
-
-    const GUIComponentWithOutput &out(const std::string &out) const{
-      m_options.out = out; return *this;
-    }
-       
-    const GUIComponentWithOutput &handle(const std::string &handle) const{
-      m_options.handle = handle; return *this;
-    }
-
-    const GUIComponentWithOutput &label(const std::string &label) const{
-      m_options.label = label; return *this;
-    }
-
-    const GUIComponentWithOutput &tooltip(const std::string &tooltip) const{
-      m_options.tooltip = tooltip; return *this;
-    }
-
-    const GUIComponentWithOutput &size(const Size &size) const {
-      m_options.size = size; return *this;
-    }
-
-    const GUIComponentWithOutput &size(int w, int h) const {
-      return size(Size(w,h));
-    }
-
-    const GUIComponentWithOutput &minSize(const Size &minSize) const {
-      m_options.minSize = minSize; return *this;
-    }
-      
-    const GUIComponentWithOutput &minSize(int w, int h) const {
-      return minSize(Size(w,h));
-    }
-    
-    const GUIComponentWithOutput &maxSize(const Size &maxSize) const {
-      m_options.maxSize = maxSize; return *this;
-    }
-
-    const GUIComponentWithOutput &maxSize(int w, int h) const {
-      return maxSize(Size(w,h));
-    }
-
-    GUIComponentWithOutput &out( std::string &out) {
-      m_options.out = out; return *this;
-    }
-    
-    GUIComponentWithOutput &handle( std::string &handle) {
-      m_options.handle = handle; return *this;
-    }
-    
-    GUIComponentWithOutput &label( std::string &label) {
-      m_options.label = label; return *this;
-    }
-    
-    GUIComponentWithOutput &tooltip( std::string &tooltip) {
-      m_options.tooltip = tooltip; return *this;
-    }
-    
-    GUIComponentWithOutput &size( Size &size)  {
-      m_options.size = size; return *this;
-    }
-    
-    GUIComponentWithOutput &size(int w, int h)  {
-      m_options.size = Size(w,h); return *this;
-    }
-    
-    GUIComponentWithOutput &minSize( Size &minSize)  {
-      m_options.minSize = minSize; return *this;
-    }
-    
-    GUIComponentWithOutput &minSize(int w, int h)  {
-      m_options.minSize = Size(w,h); return *this;
-    }
-    
-    GUIComponentWithOutput &maxSize( Size &maxSize)  {
-      m_options.maxSize = maxSize; return *this;
-    }
-    
-    GUIComponentWithOutput &maxSize(int w, int h)  {
-      m_options.maxSize = Size(w,h); return *this;
-    }
-    
-  };
-  
-  struct Button : public GUIComponentWithOutput{
-    private:
-    static std::string form_args(const std::string &text, const std::string &toggledText, bool initiallyToggled){
-      if(!toggledText.length()){
-        return text;
-      }
-      std::ostringstream str;
-      str << text << ',';
-      if(initiallyToggled) str << '!';
-      str << toggledText;
-      return str.str();
-    }
-    public:
-    Button(const std::string &text, const std::string &toggledText="", bool initiallyToggled=false):
-    GUIComponentWithOutput(toggledText.length() ? "togglebutton" : "button",form_args(text,toggledText,initiallyToggled)){}
-  };
-    
-
-  struct ButtonGroup : public GUIComponentWithOutput{
-    ButtonGroup(const std::string &commaSepTexts):
-    GUIComponentWithOutput("buttongroup",commaSepTexts){}
-  };
-
-#if 0
-  // use Button(with two strings instead)
-  struct ToggleButton : public GUIComponentWithOutput{
-    ToggleButton(const std::string &untoggledText, const std::string &toggledText):
-    GUIComponentWithOutput("togglebutton",untoggledText+','+toggledText){}
-  };
-#endif
-
-  struct CheckBox : public GUIComponentWithOutput{
-    CheckBox(const std::string &label, bool checked=false):
-    GUIComponentWithOutput("checkbox",label+','+(checked ? "checked":"unchecked")){}
-  };
-    
-  struct Label : public GUIComponent{
-    Label(const std::string &text=""):GUIComponent("label",text){}
-  };
-
-  struct Slider : public GUIComponentWithOutput{
-    Slider(int min=0, int max=100, int curr=50, bool vertical=false):
-    GUIComponentWithOutput("slider",form_args_4(min,max,curr,vertical?"vertical":"horizontal")){}
-
-    Slider(const Range32f &r, int curr, bool vertical=false):
-    GUIComponentWithOutput("slider",form_args_4(r.minVal,r.maxVal,curr,vertical?"vertical":"horizontal")){}
-  };
-
-  struct FSlider : public GUIComponentWithOutput{
-    FSlider(float min=0, float max=1, float curr=0.5, bool vertical=false):
-    GUIComponentWithOutput("fslider",form_args_4(min,max,curr,vertical?"vertical":"horizontal")){}
-    
-    FSlider(const Range32f &r, float curr=0.5, bool vertical=false):
-    GUIComponentWithOutput("fslider",form_args_4(r.minVal,r.maxVal,curr,vertical?"vertical":"horizontal")){}
-  };
-
-  struct Int : public GUIComponentWithOutput{
-    Int(int min=0, int max=100, int curr=50):
-    GUIComponentWithOutput("int",form_args_3(min, max, curr)){}
-  };
-
-  struct Float : public GUIComponentWithOutput{
-    Float(float min=0, float max=1, float curr=0.5):
-    GUIComponentWithOutput("float",form_args_3(min, max, curr)){}
-  };
-
-  struct String : public GUIComponent{
-    // should be with-output, but this cannot be thread-safe !!
-    String(const std::string &initText, int maxLen=100):GUIComponent("string",initText+','+str(maxLen)){}
-  };
-
-  struct Disp : public GUIComponent{
-    Disp(int nxCells, int nyCells):
-    GUIComponent("disp",str(nxCells)+','+str(nyCells)){}
-  };
-
-  struct Image : public GUIComponent{
-    Image():GUIComponent("image"){}
-  };
-
-  struct Draw : public GUIComponent{
-    Draw(const Size &defaultViewPortsize=Size::VGA):
-    GUIComponent("draw",str(defaultViewPortsize)){}
-  };
-
-  struct Draw3D : public GUIComponent{
-    Draw3D(const Size &defaultViewPortsize=Size::VGA):
-    GUIComponent("draw3D",str(defaultViewPortsize)){}
-  };
-
-    
-  struct Plot : public GUIComponent{
-    private:
-    static std::string form_args(const Range32f xRange, const Range32f yRange, bool useOpenGL,
-                                 const std::string &xLabel,  const std::string &yLabel){
-      std::ostringstream str;
-      str << xRange.minVal << ',' << xRange.maxVal << ',' << yRange.minVal << ',' << xRange.maxVal << ','
-          << (useOpenGL ? "gl" : "noGL");
-      if(xLabel.length()){
-        str << ',' << xLabel;
-        if(xLabel.length()){
-          str << ',' << yLabel;
-        }
-      }
-      return str.str();
-    }
-
-    public:
-    Plot(const Range32f xRange=Range32f(0,0),
-         const Range32f yRange=Range32f(0,0),
-         bool useOpenGL=false,
-         const std::string &xLabel="",
-         const std::string &yLabel=""): 
-    GUIComponent("plot",form_args(xRange,xRange, useOpenGL, xLabel, yLabel)){}
-
-    Plot(float minX, float maxX=0, float minY=0, float maxY=0,
-         bool useOpenGL=false,
-         const std::string &xLabel="",
-         const std::string &yLabel=""): 
-    GUIComponent("plot",form_args(Range32f(minX,maxX),Range32f(minY,maxY), useOpenGL, xLabel, yLabel)){}
-  };
-    
-  struct Combo : public GUIComponent{
-    private:
-    static std::string form_args(const std::string &entries, int initialIndex){
-      if(!initialIndex) return entries;
-      std::vector<std::string> ls = tok(entries,",");
-      if(initialIndex < 0 || initialIndex >= (int)ls.size()){
-        throw ICLException("Combo::Combo(entries,initialIndex): initialIndex is invalid");
-      }
-      ls[initialIndex] = '!' + ls[initialIndex];
-      return cat(ls,",");
-    }
-    public:
-    // should be with-output, but this cannot be thread-safe !!
-    Combo(const std::string &commaSepEntries, int initialIndex=0):
-    GUIComponent("combo",form_args(commaSepEntries,initialIndex)){}
-  };
-    
-  struct Spinner : public GUIComponentWithOutput{
-    Spinner(int min, int max, int curr):
-    GUIComponentWithOutput("spinner",form_args_3(min,max,curr)){}
-  };
-    
-
-  struct Fps : public GUIComponent{
-    Fps(int timeWindowSize=10):
-    GUIComponent("fps",str(timeWindowSize)){}
-  };
-    
-   
-  struct CamCfg : public GUIComponent{
-    private:
-    static inline std::string form_args(const std::string &a, const std::string &b){
-      std::ostringstream str;
-      if(a.length()){
-        str << a;
-        if(b.length()){
-          str << ',' << b;
-        }
-      }
-      return str.str();
-    }
-    public:
-    CamCfg(const std::string &deviceTypeHint="", const std::string &deviceIDHint=""):GUIComponent("camcfg",form_args(deviceTypeHint,deviceIDHint)){}
-  };
-
-  struct Prop : public GUIComponent{
-    Prop(const std::string &configurableID):GUIComponent("prop",configurableID){}
-  };
-
-    
-  struct ColorSelect : public GUIComponentWithOutput{
-    ColorSelect(int r, int g, int b, int a=-1):GUIComponentWithOutput("color",a>=0 ? form_args_4(r,g,b,a) : form_args_3(r,g,b)){}
-  };
-    
-  struct Ps : public GUIComponent{
-    Ps(int updatePFS=10):GUIComponent("ps",str(updatePFS)){}
-  };
-
-  /// [Deprecated]
-  struct ICL_DEPRECATED MultiDrawComponent : public GUIComponent{
-    MultiDrawComponent(const std::string commanSepTabLabels, bool bufferAll=false, bool deepCopyBuffering=true):
-    GUIComponent("multidraw",str(bufferAll?"!all":"!one")+','+(deepCopyBuffering?"!deepcopy":"!shallowcopy")+','+commanSepTabLabels){}
-  };
-
-  /// [Deprecated]
-  struct ICL_DEPRECATED ConfigFileComponent : public GUIComponent{
-    ConfigFileComponent(bool popup=true):GUIComponent("config",popup?"popup":"embedded"){}
-  };
-    
-
-  struct Dummy : public GUIComponent{
-    Dummy():GUIComponent(""){}
-  };
-    
-  struct Show : public GUIComponent{
-    Show():GUIComponent("!show"){};
-  };
-
-  struct Create : public GUIComponent{
-    Create():GUIComponent("!create"){};
-  };
     
 }
 

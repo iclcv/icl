@@ -40,7 +40,7 @@
 
 #include <ICLQt/GUI.h>
 #include <ICLQt/GUIWidget.h>
-#include <ICLQt/ContainerGUIComponent.h>
+#include <ICLQt/ContainerGUIComponents.h>
 #include <ICLQt/GUIDefinition.h>
 #include <ICLQt/GUISyntaxErrorException.h>
 #include <ICLUtils/Exception.h>

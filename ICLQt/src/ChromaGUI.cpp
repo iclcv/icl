@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLQt/ChromaGUI.h>
-#include <ICLQt/ContainerGUIComponent.h>
+#include <ICLQt/ContainerGUIComponents.h>
 #include <QtGui/QFileDialog>
 #include <vector>
 

@@ -40,7 +40,7 @@
 #include <ICLUtils/SmartPtr.h>
 #include <ICLUtils/Function.h>
 #include <ICLQt/DataStore.h>
-#include <ICLQt/GUIComponent.h>
+#include <ICLQt/GUIComponents.h>
 #include <QtGui/QLayout>
 #include <QtGui/QWidget>
 #include <QtGui/QApplication>

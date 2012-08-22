@@ -60,7 +60,7 @@
 #include <ICLUtils/Range.h>
 
 #include <ICLUtils/Rect.h>
-#include <ICLQt/ContainerGUIComponent.h>
+#include <ICLQt/ContainerGUIComponents.h>
 
 using std::string;
 

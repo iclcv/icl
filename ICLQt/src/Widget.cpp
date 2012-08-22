@@ -37,7 +37,7 @@
 #include <ICLQt/GLImg.h>
 #include <ICLQt/GLPaintEngine.h>
 #include <ICLIO/GenericImageOutput.h>
-#include <ICLQt/ContainerGUIComponent.h>
+#include <ICLQt/ContainerGUIComponents.h>
 #include <string>
 #include <vector>
 #include <ICLUtils/Time.h>

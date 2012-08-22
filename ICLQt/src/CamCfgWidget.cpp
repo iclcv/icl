@@ -35,7 +35,7 @@
 #include <ICLQt/CamCfgWidget.h>
 
 #include <ICLIO/GenericGrabber.h>
-#include <ICLQt/ContainerGUIComponent.h>
+#include <ICLQt/ContainerGUIComponents.h>
 #include <ICLQt/GUIWidget.h>
 #include <ICLQt/ComboHandle.h>
 #include <ICLQt/BoxHandle.h>
