@@ -80,29 +80,18 @@ add_libsource (${PROJECT_NAME} "src/CannyOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/ProximityOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
 set(CONDITIONLIST BUILD_EXAMPLES)
-set(ICLLibsToLinkAgainst ${PROJECT_NAME} )
-add_example (${PROJECT_NAME} "weighted-sum-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick)
-add_example (${PROJECT_NAME} "arithmetical-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-add_example (${PROJECT_NAME} "champfer-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-add_example (${PROJECT_NAME} "inplace-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-add_example (${PROJECT_NAME} "median-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-add_example (${PROJECT_NAME} "threshold-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-add_example (${PROJECT_NAME} "weight-channels-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-add_example (${PROJECT_NAME} "morphological-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-
-set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_IPP_COND)
-add_example (${PROJECT_NAME} "wiener-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_IPP_COND HAVE_QT_COND)
-add_example (${PROJECT_NAME} "interactive-canny-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick)
+add_example (${PROJECT_NAME} "canny-op-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND)
-add_example (${PROJECT_NAME} "local-threshold-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-add_example (${PROJECT_NAME} "gabor-op-online-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-add_example (${PROJECT_NAME} "convolution-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-add_example (${PROJECT_NAME} "warp-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-add_example (${PROJECT_NAME} "interactive-affine-op-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick)
+add_example (${PROJECT_NAME} "local-thresh" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "gabor-op-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "convolution-op-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "warp-op-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "affine-op-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "filter-array" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "fft-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
@@ -111,7 +100,10 @@ add_example (${PROJECT_NAME} "color-segmentation" "${CONDITIONLIST}" ICLLibsToLi
 
 set(CONDITIONLIST HAVE_GTEST_COND)
 set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}")
-#add_gtest (${PROJECT_NAME} "test-image.cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+#add_gtest (${PROJECT_NAME} "inplace-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+#add_gtest (${PROJECT_NAME} "morphological-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+#add_gtest (${PROJECT_NAME} "champfer-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+
 
 #create lib
 if(WIN32)

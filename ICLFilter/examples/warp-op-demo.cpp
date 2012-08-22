@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLFilter/examples/inplace-op-test.cpp                 **
+** File   : ICLFilter/examples/warp-op-demo.cpp                    **
 ** Module : ICLFilter                                              **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -32,27 +32,47 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Quick.h>
-#include <ICLFilter/InplaceArithmeticalOp.h>
-#include <ICLFilter/InplaceLogicalOp.h>
+#include <ICLQuick/Common.h>
+#include <ICLFilter/WarpOp.h>
 
-int main(){
-  ImgQ a = scale(create("parrot"),0.5);
-  ImgQ addRes = copy(a);
-  ImgQ notRes = copy(a);
-  Img8u binNotRes = cvt8u(copy(a));
+GUI gui;
+GenericGrabber grabber;
+void init(){
+  gui << Image().handle("image").minSize(32,24)
+      << ( HBox().maxSize(100,3) 
+           << Button("no","!yes").label("enable-warping").out("warp")
+           << Button("nn","lin").label("interpolation").out("interpolation")
+           << Combo("depth8u,depth16s,depth32s,depth32f,depth64f").label("image depth").handle("depth")
+           << Fps(10).handle("fps").label("FPS")
+           << Label("---ms").label("apply time").handle("apply-time")
+         );
+  gui.show();
+  
+  grabber.init(pa("-i"));
+  grabber.useDesired(Size::VGA);
+  grabber.useDesired(formatRGB);
+}
 
-  InplaceArithmeticalOp(InplaceArithmeticalOp::addOp,100).apply(&addRes);
-  InplaceLogicalOp(InplaceLogicalOp::notOp).apply(&notRes);
-  InplaceLogicalOp(InplaceLogicalOp::binNotOp).apply(&binNotRes);
-  
-  
-  
-  show( ( label(a,"original"),
-          label(addRes,"add(100)"),
-          label(notRes,"logical not (!)"),
-          label(cvt(binNotRes),"binary not (~)")
-      ) );
-  
-  return 0;  
-};
+void run(){
+  static WarpOp op(icl::load(pa("-w")));
+  grabber.useDesired(parse<depth>(gui["depth"]));
+
+  const ImgBase *image = grabber.grab();
+  if(gui["warp"]){
+    op.setScaleMode(gui["lin"]?interpolateLIN:interpolateNN);
+    
+    Time t = Time::now();
+    const ImgBase *result = op.apply(image);
+    gui["apply-time"] = str(t.age().toMilliSeconds())+"ms";
+    
+    gui["image"] = result;
+  }else{
+    gui["image"] = image;
+  }
+  gui["fps"].render();
+}
+
+int main(int n, char **ppc){
+  return ICLApp(n,ppc,"[m]-input|-i(device,device-params) "
+                "[m]-warp-table|-w(filename)",init,run).exec();
+}

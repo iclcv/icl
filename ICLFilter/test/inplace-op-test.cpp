@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLFilter/examples/arithmetical-op-test.cpp            **
+** File   : ICLFilter/test/inplace-op-test.cpp                     **
 ** Module : ICLFilter                                              **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -32,21 +32,27 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
+#include <ICLQuick/Quick.h>
+#include <ICLFilter/InplaceArithmeticalOp.h>
+#include <ICLFilter/InplaceLogicalOp.h>
 
-int main(int nArgs, char **ppcArg){
+int main(){
+  ImgQ a = scale(create("parrot"),0.5);
+  ImgQ addRes = copy(a);
+  ImgQ notRes = copy(a);
+  Img8u binNotRes = cvt8u(copy(a));
 
-  ImgQ a = scale(create("flowers"),320,240);
-  ImgQ b = scale(create("windows"),320,240);
-
-  /// this will implicitly use the arithmetical op  
-  ImgQ apb = norm(a+b);
-  ImgQ amb = norm(a-b);
-  ImgQ am100 = norm(a-100);
-
-  ImgQ x = (label(a,"A"), label(b,"B")) %
-  (label(apb,"norm(A+B)"), label(amb,"norm(A-B)"), label(am100,"norm(a-100)"));
+  InplaceArithmeticalOp(InplaceArithmeticalOp::addOp,100).apply(&addRes);
+  InplaceLogicalOp(InplaceLogicalOp::notOp).apply(&notRes);
+  InplaceLogicalOp(InplaceLogicalOp::binNotOp).apply(&binNotRes);
   
-  show(x);
   
-}
+  
+  show( ( label(a,"original"),
+          label(addRes,"add(100)"),
+          label(notRes,"logical not (!)"),
+          label(cvt(binNotRes),"binary not (~)")
+      ) );
+  
+  return 0;  
+};

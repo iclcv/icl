@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLFilter/examples/convolution-op-test.cpp             **
+** File   : ICLFilter/examples/convolution-op-demo.cpp             **
 ** Module : ICLFilter                                              **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **

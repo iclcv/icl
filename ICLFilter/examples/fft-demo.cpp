@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLFilter/examples/fft-demo.cpp                        **
 ** Module : ICLFilter                                              **
-** Authors: Christof Elbrechter, Michael Götting                  **
+** Authors: Christof Elbrechter, Christian Goszewski               **
 **                                                                 **
 **                                                                 **
 ** Commercial License                                              **

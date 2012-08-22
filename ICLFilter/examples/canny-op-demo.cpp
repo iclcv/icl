@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLFilter/examples/weight-channels-op-test.cpp         **
+** File   : ICLFilter/examples/canny-op-demo.cpp                   **
 ** Module : ICLFilter                                              **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -32,32 +32,69 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLFilter/WeightChannelsOp.h>
 #include <ICLQuick/Common.h>
-#include <ICLUtils/StackTimer.h>
-#include <ICLCore/Mathematics.h>
-#include <vector>
+#include <ICLFilter/CannyOp.h>
+#include <ICLFilter/ConvolutionOp.h>
 
-void apply_weighted_channel(WeightChannelsOp &wc, 
-                            ImgBase &src, 
-                            ImgBase **dst){
-  BENCHMARK_THIS_FUNCTION;
-  wc.apply(&src,dst);
+
+VSplit gui;
+
+
+void update();
+
+void init(){
+  gui << Image().handle("image").minSize(32,24)
+      << (VBox()
+          << FSlider(0,2000,10).out("low").label("low").maxSize(100,2).handle("low-handle")
+          << FSlider(0,2000,100).out("high").label("high").maxSize(100,2).handle("high-handle")
+          <<  ( HBox()  
+                << Slider(0,2,0).out("preGaussRadius").handle("pre-gauss-handle").label("pre gaussian radius")
+                << Label("time").handle("dt").label("filter time in ms")
+                << Button("stopped","running").out("running").label("capture")
+                << CamCfg() 
+               )
+          )
+      << Show();
+  
+  gui.registerCallback(function(update),"low-handle,high-handle,pre-gauss-handle");
+  
+  update();
 }
 
-int main() {
-  ImgQ src = create("parrot");
-  ImgBase *dst = 0;
 
-  vector<icl64f> w(3);
-  for(int i=0;i<3;i++){
-    w[i] = random(double(0.1), double(1));
-  }
+void update(){
+  static Mutex mutex;
+  Mutex::Locker l(mutex);
+
+  static GenericGrabber grabber(pa("-i"));
   
-  WeightChannelsOp wc(w);
-  for(int i=0;i<100;i++){
-    apply_weighted_channel(wc,src,&dst);
-  }
+  static ImageHandle image = gui["image"];
+  static LabelHandle dt = gui["dt"];
+  float low = gui["low"];
+  float high = gui["high"];
+  int preGaussRadius = gui["preGaussRadius"];
   
-  show(scale(cvt(dst),0.4));
+  CannyOp canny(low,high,preGaussRadius);
+  static ImgBase *dst = 0;
+
+  Time t = Time::now();
+  canny.apply(grabber.grab(),&dst);
+  
+  dt = (Time::now()-t).toMilliSecondsDouble();
+  
+  image = dst;
+}
+
+void run(){
+  while(!gui["running"].as<bool>()){
+    Thread::msleep(100);
+  }
+  Thread::msleep(1);
+  update();
+}
+
+int main(int n, char **ppc){
+  return ICLApplication(n,ppc,"[m]-input|-i(2)",init,run).exec();
+ 
+  
 }

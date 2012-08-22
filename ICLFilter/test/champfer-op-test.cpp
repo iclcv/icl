@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLFilter/examples/interactive-canny-demo.cpp          **
+** File   : ICLFilter/test/champfer-op-test.cpp                    **
 ** Module : ICLFilter                                              **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -32,69 +32,59 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
-#include <ICLFilter/CannyOp.h>
-#include <ICLFilter/ConvolutionOp.h>
+#include <ICLQuick/Quick.h>
+#include <ICLFilter/ChamferOp.h>
+#include <ICLUtils/StackTimer.h>
 
-
-VSplit gui;
-
-
-void update();
-
-void init(){
-  gui << Image().handle("image").minSize(32,24)
-      << (VBox()
-          << FSlider(0,2000,10).out("low").label("low").maxSize(100,2).handle("low-handle")
-          << FSlider(0,2000,100).out("high").label("high").maxSize(100,2).handle("high-handle")
-          <<  ( HBox()  
-                << Slider(0,2,0).out("preGaussRadius").handle("pre-gauss-handle").label("pre gaussian radius")
-                << Label("time").handle("dt").label("filter time in ms")
-                << Button("stopped","running").out("running").label("capture")
-                << CamCfg() 
-               )
-          )
-      << Show();
-  
-  gui.registerCallback(function(update),"low-handle,high-handle,pre-gauss-handle");
-  
-  update();
+void test_func_8(const ImgBase *src, ImgBase **dst){
+  BENCHMARK_THIS_FUNCTION;
+  static ChamferOp co(3,4,8,false);
+  co.apply(src,dst);
 }
 
-
-void update(){
-  static Mutex mutex;
-  Mutex::Locker l(mutex);
-
-  static GenericGrabber grabber(pa("-i"));
-  
-  static ImageHandle image = gui["image"];
-  static LabelHandle dt = gui["dt"];
-  float low = gui["low"];
-  float high = gui["high"];
-  int preGaussRadius = gui["preGaussRadius"];
-  
-  CannyOp canny(low,high,preGaussRadius);
-  static ImgBase *dst = 0;
-
-  Time t = Time::now();
-  canny.apply(grabber.grab(),&dst);
-  
-  dt = (Time::now()-t).toMilliSecondsDouble();
-  
-  image = dst;
+void test_func_2(const ImgBase *src, ImgBase **dst){
+  BENCHMARK_THIS_FUNCTION;
+  static ChamferOp co(3,4,2,false);
+  co.apply(src,dst);
+}
+void test_func_4(const ImgBase *src, ImgBase **dst){
+  BENCHMARK_THIS_FUNCTION;
+  static ChamferOp co(3,4,4,false);
+  co.apply(src,dst);
+}
+void test_func_1(const ImgBase *src, ImgBase **dst){
+  BENCHMARK_THIS_FUNCTION;
+  static ChamferOp co(3,4,1,false);
+  co.apply(src,dst);
 }
 
-void run(){
-  while(!gui["running"].as<bool>()){
-    Thread::msleep(100);
-  }
-  Thread::msleep(1);
-  update();
-}
 
 int main(int n, char **ppc){
-  return ICLApplication(n,ppc,"[m]-input|-i(2)",init,run).exec();
- 
   
+  ImgQ image = create("parrot");
+  image = gray(image);
+  image = scale(image,640,480);
+  image = filter(image,"laplace");
+  image = thresh(image,250);
+  //image.setROI(Rect(100,100,320,240));
+  
+  ImgQ resAccu;
+  ImgBase *res=0;
+  Img8u im = cvt8u(image);
+  
+  for(int i=0;i<50;i++){
+    test_func_1(&im,&res);
+    test_func_2(&im,&res);
+    test_func_4(&im,&res);
+    test_func_8(&im,&res);
+  }
+  printf("------- \n");
+  ImgQ r = cvt(res);
+  r = norm(r);
+  // roi(image) = roi(r);
+  //image.setFullROI();
+  show(r);
+
+
+  return 0;
 }

@@ -49,6 +49,40 @@ namespace icl{
       can be created with a given row- and column count.
       The table data can be set using the (x,y)-function-
       call operator.
+      \section EX Example
+      \code
+#include <ICLUtils/TextTable.h>
+
+using namespace icl;
+
+int main(int n, char **ppc){
+  TextTable t;
+  
+  t(0,0) = "name";
+
+  t(1,0) = "forename";
+
+  t(2,0) = "age";
+  t(3,0) = "address";
+
+  t[1] = tok("elbrechter,christof,34,Some Street in Oerlinghausen (close to Bielefeld)",",");
+  t[2] = tok("gotting,michael,??,Somewhere else",",");
+
+  std::cout << t << std::endl;
+}
+
+//  output
+//  +------------+----------+-----+----------------------+
+//  |    name    | forename | age |       address        | 
+//  +------------+----------+-----+----------------------+
+//  | elbrechter | christof | 34  | Some Street in Oerli | 
+//  |            |          |     | nghausen (close to B | 
+//  |            |          |     |      ielefeld)       | 
+//  +------------+----------+-----+----------------------+
+//  |  gotting   | michael  | ??  |    Somewhere else    | 
+//  +------------+----------+-----+----------------------+
+
+      \encode
       */
   class TextTable{
     std::vector<std::string> m_texts; //!< internal text data

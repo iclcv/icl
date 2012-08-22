@@ -6,9 +6,9 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLCore/test/test-template.cpp                         **
+** File   : ICLCore/test/test-image.cpp                            **
 ** Module : ICLCore                                                **
-** Authors: Erik Weitnauer, Christof Elbrechter                    **
+** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
 ** Commercial License                                              **

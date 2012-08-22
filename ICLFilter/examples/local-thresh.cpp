@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLFilter/examples/local-threshold-op-test.cpp         **
+** File   : ICLFilter/examples/local-thresh.cpp                    **
 ** Module : ICLFilter                                              **
 ** Authors: Christof Elbrechter, Robert Haschke                    **
 **                                                                 **
