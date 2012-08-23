@@ -37,13 +37,12 @@ set(CONDITIONLIST "")
 #sources for lib
 set(LIB_SOURCES "")
 add_libsource (${PROJECT_NAME} "src/Quick.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-add_libsource (${PROJECT_NAME} "src/QuickRegions.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/ImgBuffer.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME})
-add_example (${PROJECT_NAME} "quick-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-add_example (${PROJECT_NAME} "quick-benchmark" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "quick-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "quick-diff-image-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST HAVE_GTEST_COND)
 set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}")

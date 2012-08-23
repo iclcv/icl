@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLQuick/examples/quick-benchmark.cpp                  **
+** File   : ICLQuick/examples/quick-diff-image-demo.cpp            **
 ** Module : ICLQuick                                               **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -32,70 +32,27 @@
 **                                                                 **
 *********************************************************************/
 
-int main(){}
-
-#if 0
-// will be removed very soon
 #include <ICLQuick/Common.h>
-#include <ICLUtils/ConfigFile.h>
-#include <ICLQt/ConfigEntry.h>
 
-HBox gui;
+GUI gui;
 GenericGrabber grabber;
+ImgQ last;  // last image
 
 void init(){
-  ConfigFile cfg;
-  cfg.set("config.threshold",int(3));
-  cfg.setRestriction("config.threshold",ConfigFile::KeyRestriction(0,255));
-  ConfigFile::loadConfig(cfg);
-
-  gui << Image().handle("image").minSize(32,24).label("image")
-      << (VBox()
-          (embedded).label("configuration").minSize(15,15);
-  con << Fps(50).handle("fps");
-
-  gui << con;
-  gui.show();
-  
-  
-
+  gui << Image().handle("image")
+      << Slider(0,255,127).out("thresh")
+      << Show();
   grabber.init(pa("-i"));
-  grabber.useDesired(Size::VGA);
 }
-
-
 
 void run(){
-  ImgQ image = cvt(grabber->grab());
-
-  ImgQ a = gray(image);
-  
-  static ConfigEntry<int> t("config.threshold");
-
-  ImgQ b = thresh(a,t);
-
-  ImgQ c = thresh(a,2*t);
-  
-  ImgQ d = binXOR<icl8u>(b,c);
-  
-  ImgQ e = (b,c,d);
-  
-  ImgQ f = thresh(b,128);
-  
-  ImgQ g = (255.0/c+d-b+4*0.3);
-  
-  ImgQ h = (e%g);
-
-  h.setROI(Rect(300,300,332,221));
-  
-  ImgQ i = copyroi(h);
-  
-  gui["image"] = i;
-  gui["fps"].render();
+  // use cvt to create an Img32 (aka ImgQ)
+  ImgQ curr = cvt(grabber.grab());
+  // nested use of operators
+  gui["image"] = thresh(abs(last-curr),gui["thresh"]);
+  last = curr;
 }
 
-
-int main(int n,char **ppc){
-  return ICLApp(n,ppc,"[m]-input|-i(device,device-params)",init,run).exec();
+int main(int n, char **ppc){
+  return ICLApplication(n,ppc,"-input|-i(2)",init,run).exec();
 }
-#endif

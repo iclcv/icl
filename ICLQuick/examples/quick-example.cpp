@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLQuick/examples/quick-test.cpp                       **
+** File   : ICLQuick/examples/quick-example.cpp                    **
 ** Module : ICLQuick                                               **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -33,63 +33,12 @@
 *********************************************************************/
 
 #include <ICLQuick/Quick.h>
-#include <ICLBlob/RegionBasedBlobSearcher.h>
-#include <ICLBlob/FMCreator.h>
-#include <ICLBlob/RegionFilter.h>
-
-#include <vector>
-#include <QtGui/QFont>
-#include <QtGui/QFontMetrics>
-#include <QtGui/QApplication>
 
 int main(int nargs, char **ppc){
 
-  ImgQ A = scale(create("parrot"),0.5);
+  ImgQ image = scale(create("parrot"),0.5);
   
-  
-  RegionBasedBlobSearcher rbbs;
-  
-  icl8u rc[] = {255,0,0};
-  icl8u tr[] = {55,55,55};
-  vector<icl8u> refColor;
-  vector<icl8u> thresh;
-  for(int i=0;i<3;i++){
-    refColor.push_back(rc[i]);
-    thresh.push_back(tr[i]);
-  }
-  
-  FMCreator *fmc = FMCreator::getDefaultFMCreator(A.getSize(),formatRGB,refColor, thresh);
-  Img8u A8u= cvt8u(A);
-  Img8u fm = *(fmc->getFM(&A8u));
-
-  ImgQ fm2 = cvt(fm);
-  fm2.setFormat(formatGray);
-
-  RegionFilter *rf = new RegionFilter(new Range<icl8u>(200,255),      // val 
-                                      new Range<icl32s>( 5,200000),   // size
-                                      0,
-                                      new Range<icl32f>(10,1000)    );   // formfactor 
-                                      
-  rbbs.add(fmc,rf);
-  rbbs.extractRegions(&A);
-  
-  const std::vector<Point> &centers = rbbs.getCOGs();
-
-  const std::vector<std::vector<Point> > &boundaries = rbbs.getBoundaries();
-  ImgQ B = rgb(fm2);
-
-  for(unsigned int i=0;i<centers.size();i++){
-    color(255,0,0);
-    cross(B,centers[i]);
-    color(0,100,255);
-    pix(B,boundaries[i]);
-  }
-
-  color(0,255,0,200);
-  for(int o=0;o<5;o++){
-    circle(B,3*o+100,20*o+10,50);
-  }
-  show((A,B));
+  show(image);
   
   return 0;
 }

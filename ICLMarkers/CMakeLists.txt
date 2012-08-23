@@ -66,7 +66,7 @@ add_example (${PROJECT_NAME} "marker-demo" "${CONDITIONLIST}" ICLLibsToLinkAgain
 add_example (${PROJECT_NAME} "multi-cam-marker-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "simple-marker-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "create-marker" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-add_example (${PROJECT_NAME} "cam-calib-2" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "camera-calibration" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 set(CONDITIONLIST HAVE_GTEST_COND)
 set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}")
 #add_gtest (${PROJECT_NAME} "test-image.cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
