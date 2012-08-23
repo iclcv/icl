@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLBlob/examples/region-inspector-demo.cpp             **
+** File   : ICLBlob/examples/region-inspector.cpp                  **
 ** Module : ICLBlob                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
