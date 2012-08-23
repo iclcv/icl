@@ -55,10 +55,28 @@ namespace icl{
   **/
   class Mutex : public Uncopyable{ 
     public:
+
+    /// This enum holds available mutex types.
+    enum MutexType {
+    #ifndef ICL_SYSTEM_WINDOWS
+      /// normal mutex can not be locked by owner before unlocking
+      mutexTypeNormal = PTHREAD_MUTEX_NORMAL,
+      /// recursive mutex can be locked repeatedly by owner-thread. needs equal unlocks.
+      mutexTypeRecursive = PTHREAD_MUTEX_RECURSIVE
+    #else
+
+    #endif
+    };
+
     /// Create a mutex
-    Mutex(){
+    /**
+         @param type The default MutexType is MutexType::mutexTypeNormal
+    **/
+    Mutex(MutexType type = mutexTypeNormal){
 	  #ifndef ICL_SYSTEM_WINDOWS
-		pthread_mutex_init(&m,0);
+      pthread_mutexattr_init(&a);
+      pthread_mutexattr_settype(&a, type);
+      pthread_mutex_init(&m,&a);
 	  #else
 	  
 	  #endif
@@ -124,6 +142,8 @@ namespace icl{
     private:
     /// wrapped thread_mutex_t struct
     pthread_mutex_t m;
+    /// wrapped thread_mutexattr struct
+    pthread_mutexattr_t a;
   };
   
   
