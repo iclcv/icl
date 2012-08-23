@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLQt/examples/datastore-test.cpp                      **
+** File   : ICLQt/examples/configurable-gui-demo.cpp               **
 ** Module : ICLQt                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -33,67 +33,60 @@
 *********************************************************************/
 
 #include <ICLQuick/Common.h>
-#include <ICLUtils/Rect32f.h>
+#include <ICLUtils/Configurable.h>
 
-#define INST_NUM_TYPES                           \
-  INST_TYPE(char)                                \
-  INST_TYPE(unsigned char)                       \
-  INST_TYPE(short)                               \
-  INST_TYPE(unsigned short)                      \
-  INST_TYPE(int)                                 \
-  INST_TYPE(unsigned int)                        \
-  INST_TYPE(long)                                \
-  INST_TYPE(unsigned long)                       \
-  INST_TYPE(float)                               \
-  INST_TYPE(double)                              
+HBox gui;
 
 
-#define INST_OTHER_TYPES                         \
-  INST_TYPE(Rect)                                \
-  INST_TYPE(Rect32f)                             \
-  INST_TYPE(Size)                                \
-  INST_TYPE(Point)                               \
-  INST_TYPE(Point32f)                            \
-  INST_TYPE(Range32s)                            \
-  INST_TYPE(Range32f)                            \
-  INST_TYPE(std::string)                         \
-  INST_TYPE(Img8u)                               \
-  INST_TYPE(Img16s)                              \
-  INST_TYPE(Img32s)                              \
-  INST_TYPE(Img32f)                              \
-  INST_TYPE(Img64f)                              
+struct C : public Configurable{
+  C(){
+    addProperty("general.x","range:slider","[0,100]",50);
+    addProperty("general.y","range:spinbox","[0,10]",4);
+    addProperty("general.z","command","");
+    setConfigurableID("c");
+  }
+};
 
-
-
-int main(){
-  DataStore d;
+struct B : public Configurable, public Thread{
+  C c;
+  B(){
+    addProperty("time","info","",Time::now().toString(),100);
+    addProperty("general.f","flag","",true);
+    addChildConfigurable(&c);
+    start();
+  }
   
-#define INST_TYPE(T) d.allocValue(#T,*new T());
-  INST_NUM_TYPES
-  INST_OTHER_TYPES
-#undef INST_TYPE
+  virtual void run(){
+    while(true){
+      Thread::msleep(100);
+      setPropertyValue("time",Time::now().toString());
+    }
+  }
+};
 
-  d.listContents();
+struct A : public Configurable{
+  B b;
+  A(){
+    addProperty("general.my range","range:slider","[0,100]",50);
+    addProperty("general.spinner-property","range:spinbox","[0,10]",4);
+    addProperty("general.some menu property","menu","a,b,c,d","a");
+    addProperty("general.hey its a flag","flag","",true);
 
-#define INST_TYPE(T)                                                    \
-  d[#T] = 0;                                                            \
-  std::cout << "entry of type " << #T << " value is: " << d[#T].as<T>() << std::endl;
-  
-  INST_NUM_TYPES
-#undef INST_TYPE
-
-#define INST_TYPE(T)                                                    \
-  d[#T] = icl8u(7);                                                     \
-  std::cout << "entry of type " << #T << " value is: " << d[#T].as<T>() << std::endl;
-  
-  INST_NUM_TYPES
-#undef INST_TYPE
+    setConfigurableID("a");
+    
+    addChildConfigurable(&b,"b");
+  }
+} a;
 
 
-
-  
-
+void init(){
+  gui << Prop("a").label("properties of a")
+      << Prop("a").label("also properties of a")
+      << Prop("c").label("properties of c only")
+      << Show();
 }
 
 
-
+int main(int n, char **ppc){
+  return ICLApp(n,ppc,"",init).exec();
+}

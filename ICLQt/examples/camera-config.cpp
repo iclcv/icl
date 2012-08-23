@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLQt/examples/camcfg.cpp                              **
+** File   : ICLQt/examples/camera-config.cpp                       **
 ** Module : ICLQt                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **

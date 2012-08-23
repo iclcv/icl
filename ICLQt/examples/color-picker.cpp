@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLQt/examples/colorpicker.cpp                         **
+** File   : ICLQt/examples/color-picker.cpp                        **
 ** Module : ICLQt                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **

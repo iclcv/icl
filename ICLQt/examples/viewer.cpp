@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLQt/examples/mouse-interaction-demo.cpp              **
+** File   : ICLQt/examples/viewer.cpp                              **
 ** Module : ICLQt                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -33,39 +33,39 @@
 *********************************************************************/
 
 #include <ICLQuick/Common.h>
-#include <iterator>
+#include <ICLUtils/FPSLimiter.h>
 
-GenericGrabber grabber;
 GUI gui;
+GenericGrabber grabber;
 
-
-void mouse(const MouseEvent &event){
-  std::cout << "image location: " << event.getPos() << std::endl;    
-  std::cout << "widget location: " << event.getWidgetPos() << std::endl;
-  
-  std::string eventNames[] = {"MoveEvent","DragEvent","PressEvent","ReleaseEvent", "EnterEvent","LeaveEvent"};
-  std::cout << "type: " << eventNames[event.getType()] << std::endl;
-  
-  if(event.isPressEvent()){
-    if(event.getColor().size()){
-      std::cout << "color:";
-      std::copy(event.getColor().begin(),event.getColor().end(),std::ostream_iterator<icl64f>(std::cout,","));
-      std::cout << endl;
-    }else{
-      std::cout << "no color here!" << std::endl;
-    }
-  }
-} 
-
-void init(){
-  gui << Image().handle("image") << Show();
-  grabber.init(pa("-i"));
-  gui["image"].install(mouse);
-}  
 void run(){
+  static FPSLimiter fps(pa("-maxfps"),10);
+  
   gui["image"] = grabber.grab();
+  gui["fps"].render();
+  fps.wait();
 }
 
-int main(int n, char **ppc){
-  return ICLApplication(n,ppc,"[m]-input|-i(2)",init,run).exec();
+void init(){
+  gui << Image().handle("image").minSize(16,12);
+  gui << ( HBox().maxSize(100,2) 
+           << Fps(10).handle("fps").maxSize(100,2).minSize(5,2)
+           << CamCfg("")
+           )
+      << Show();
+
+  grabber.init(pa("-i"));
+  if(pa("-size")){
+    grabber.useDesired<Size>(pa("-size"));
+  }
+}
+
+int main(int n, char**ppc){
+  paex
+  ("-input","define input grabber parameters\ne.g. -dc 0 or -file *.ppm")
+  ("-size","desired image size of grabber");
+  return ICLApp(n,ppc,"[m]-input|-i(device,device-params) "
+		"-dist|-d(fn) "
+                "-size|-s(Size) -maxfps(float=30) ",
+                init,run).exec();
 }

@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLQt/examples/chroma-demo.cpp                         **
+** File   : ICLQt/examples/onscreen-button-demo.cpp                **
 ** Module : ICLQt                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -32,49 +32,49 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQt/ChromaGUI.h>
 #include <ICLQuick/Common.h>
+#include <ICLQt/IconFactory.h>
 
-using namespace icl;
-using namespace std;
-
-HBox gui;
-ChromaGUI *cg;
+GUI gui;
 GenericGrabber grabber;
+Mutex mutex;
+const ImgBase *image;
 
-void run(){
-  const Img8u &image = *grabber.grab()->asImg<icl8u>();
-  static Img8u segImage(image.getSize(),1);
-    
-  Channel8u c[3] = {image[0],image[1],image[2] };
-  Channel8u s = segImage[0];
-  
-  ChromaAndRGBClassifier classi = cg->getChromaAndRGBClassifier();
-  
-  const int dim = image.getDim();
-  for(int i=0;i<dim;++i){
-    s[i] = 255 * classi(c[0][i],c[1][i],c[2][i]);
+void capture(){
+  Mutex::Locker lock(mutex);
+  std::string filename = saveFileDialog();
+  if(filename.length()){
+    save(cvt(image),filename);
   }
-
-  gui["image"] = &image;
-  gui["segimage"] = &segImage;
 }
 
 void init(){
   grabber.init(pa("-i"));
-  grabber.useDesired(depth8u);
-  gui << ( VBox()  
-           << Image().minSize(16,12).handle("image").label("Camera Image")
-           << Image().minSize(16,12).handle("segimage").label("Semented Image")
-           )
-      << HBox().handle("box")
-      << Show();
-
   
-  cg = new ChromaGUI(*gui.get<BoxHandle>("box"));
+  gui << Image().handle("image") << Show();
+  
+  ICLWidget *w = gui["image"];
+  
+  ImgQ empty = cvt(IconFactory::create_image("empty"));
+  ImgQ camera = empty.detached();
 
+  color(255,255,255,255);
+  fill(0,0,0,0);
+  rect(camera,5,10,22,12);
+  fill(255,255,255,255);
+  circle(camera,16,16,4);
+  fill(0,0,0,0);
+  rect(camera,16,6,6,4);
+  w->addSpecialButton("im",&camera,capture,"capture current image");
+}
+
+void run(){
+  mutex.lock();
+  image = grabber.grab();
+  mutex.unlock();
+  gui["image"] = image;
 }
 
 int main(int n, char **ppc){
-  return ICLApp(n,ppc,"[m]-input|-i(device,device-params)",init,run).exec();
+  return ICLApplication(n,ppc,"-input|-i(dev=create,id=lena)",init,run).exec();
 }
