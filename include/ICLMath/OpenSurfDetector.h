@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLMath/OpenSurfDetector.h               **
-** Module : ICLMath                                          **
+** File   : include/ICLMath/OpenSurfDetector.h                     **
+** Module : ICLMath                                                **
 ** Authors: Christian Groszewski                                   **
 **                                                                 **
 **                                                                 **

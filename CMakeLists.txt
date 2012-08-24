@@ -191,12 +191,15 @@ configure_file(${PROJECT_SOURCE_DIR}/include/ICLUtils/config.h.cmake ${PROJECT_S
 
 #set the internal and external deps of the ICL
 #if an entry is not available, it will be empty
-set(ICLUtils_external_dependencies IPP MKL OPENCL EIGEN3)
+set(ICLCV_external_dependencies OPENSURF)
+set(ICLUtils_external_dependencies IPP MKL OPENCL)
+set(ICLMath_external_dependencies EIGEN3)
 set(ICLCore_external_dependencies OPENCV)
-set(ICLCore_internal_dependencies ICLUtils)
+set(ICLMath_internal_dependencies ICLUtils)
+set(ICLCore_internal_dependencies ICLMath)
 set(ICLFilter_internal_dependencies ICLCore)
-set(ICLCV_internal_dependencies ICLCore)
-set(ICLMarkers_internal_dependencies ICLGeom ICLFilter ICLQuick)
+set(ICLCV_internal_dependencies ICLCore ICLIO ICLFilter)
+set(ICLMarkers_internal_dependencies ICLGeom ICLFilter ICLCV)
 
 set(ICLQt_internal_dependencies ICLCore)
 set(ICLIO_internal_dependencies ICLCore ICLFilter)
@@ -217,24 +220,24 @@ if(${HAVE_QT_COND})
 else()
     set(ICLQuick_internal_dependencies ICLFilter ICLIO ICLCV)
 endif()
-set(ICLGeom_internal_dependencies ICLQuick)
-set(ICLMath_external_dependencies OPENSURF)
+set(ICLGeom_internal_dependencies ICLCV)
 set(ICLMath_internal_dependencies ICLGeom)
 
 
 
 #resolve internal dependencies
+add_internal_dependencies(ICLMath_internal_dependencies ICLMath_dependencies)
 add_internal_dependencies(ICLCore_internal_dependencies ICLCore_dependencies)
 add_internal_dependencies(ICLFilter_internal_dependencies ICLFilter_dependencies)
 add_internal_dependencies(ICLCV_internal_dependencies ICLCV_dependencies)
 add_internal_dependencies(ICLIO_internal_dependencies ICLIO_dependencies)
 add_internal_dependencies(ICLQt_internal_dependencies ICLQt_dependencies)
-add_internal_dependencies(ICLQuick_internal_dependencies ICLQuick_dependencies)
 add_internal_dependencies(ICLGeom_internal_dependencies ICLGeom_dependencies)
 add_internal_dependencies(ICLMath_internal_dependencies ICLMath_dependencies)
 add_internal_dependencies(ICLMarkers_internal_dependencies ICLMarkers_dependencies)
 #resolve external dependencies
 add_external_dependencies(ICLUtils_external_dependencies ICLUtils_dependencies)
+add_external_dependencies(ICLMath_external_dependencies ICLMath_dependencies)
 add_external_dependencies(ICLCore_external_dependencies ICLCore_dependencies)
 add_external_dependencies(ICLOpenCV_external_dependencies ICLOpenCV_dependencies)
 add_external_dependencies(ICLIO_external_dependencies ICLIO_dependencies)
@@ -244,17 +247,15 @@ add_external_dependencies(ICLMath_external_dependencies ICLMath_dependencies)
 
 #add subdirs
 add_subdirectory(ICLUtils)
+add_subdirectory(ICLMath)
 add_subdirectory(ICLCore)
-#what about the dir located in ../examples
-add_subdirectory(ICLFilter)
-add_subdirectory(ICLCV)
 add_subdirectory(ICLIO)
+add_subdirectory(ICLFilter)
 if(${HAVE_QT_COND})
     add_subdirectory(ICLQt)
 endif()
-add_subdirectory(ICLQuick)
+add_subdirectory(ICLCV)
 add_subdirectory(ICLGeom)
-add_subdirectory(ICLMath)
 add_subdirectory(ICLMarkers)
 
 #installs include files of the project on make install

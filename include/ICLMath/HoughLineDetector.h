@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLMath/HoughLineDetector.h              **
-** Module : ICLMath                                          **
+** File   : include/ICLMath/HoughLineDetector.h                    **
+** Module : ICLMath                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **

@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLMath/HoughLine.h                      **
-** Module : ICLMath                                          **
+** File   : include/ICLMath/HoughLine.h                            **
+** Module : ICLMath                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **

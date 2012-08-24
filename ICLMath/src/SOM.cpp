@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLMath/src/SOM.cpp                              **
-** Module : ICLMath                                          **
+** File   : ICLMath/src/SOM.cpp                                    **
+** Module : ICLMath                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **

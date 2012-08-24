@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLMath/src/TemplateTracker.cpp                  **
-** Module : ICLMath                                          **
+** File   : ICLMath/src/TemplateTracker.cpp                        **
+** Module : ICLMath                                                **
 ** Authors: Eckard Riedenklau, Christof Elbrechter                 **
 **                                                                 **
 **                                                                 **
