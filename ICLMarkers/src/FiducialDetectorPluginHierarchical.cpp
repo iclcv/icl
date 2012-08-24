@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLMarkers/FiducialDetectorPluginHierarchical.h>
-#include <ICLBlob/RegionDetector.h>
+#include <ICLCV/RegionDetector.h>
 
 namespace icl{
   struct FiducialDetectorPluginHierarchical::Data{

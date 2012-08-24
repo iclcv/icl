@@ -7,7 +7,7 @@
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
 ** File   : include/ICLMarkers/TiltedQuad.h                        **
-** Module : ICLBlob                                                **
+** Module : ICLCV                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -36,7 +36,7 @@
 #define ICL_TILTED_QUAD_H
 
 #include <ICLUtils/Point32f.h>
-#include <ICLBlob/ImageRegion.h>
+#include <ICLCV/ImageRegion.h>
 #include <algorithm>
 
 namespace icl{

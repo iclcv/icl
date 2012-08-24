@@ -7,7 +7,7 @@
 **          http://opensource.cit-ec.de/projects/icl                 **
 **                                                                   **
 ** File   : include/ICLMarkers/FiducialDetectorPluginHierarchical.h  **
-** Module : ICLBlob                                                  **
+** Module : ICLCV                                                  **
 ** Authors: Christof Elbrechter                                      **
 **                                                                   **
 **                                                                   **
@@ -35,7 +35,7 @@
 #ifndef ICL_FIDUCIAL_DETECTOR_PLUGIN_HIERARCHICAL_H
 #define ICL_FIDUCIAL_DETECTOR_PLUGIN_HIERARCHICAL_H
 
-#include <ICLBlob/ImageRegion.h>
+#include <ICLCV/ImageRegion.h>
 
 #include <ICLMarkers/FiducialDetectorPlugin.h>
 #include <ICLMarkers/RegionStructure.h>

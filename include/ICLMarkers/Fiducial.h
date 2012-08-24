@@ -7,7 +7,7 @@
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
 ** File   : include/ICLMarkers/Fiducial.h                          **
-** Module : ICLBlob                                                **
+** Module : ICLCV                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -39,7 +39,7 @@
 
 #include <ICLUtils/Point32f.h>
 #include <ICLGeom/GeomDefs.h>
-#include <ICLBlob/ImageRegion.h>
+#include <ICLCV/ImageRegion.h>
 
 namespace icl{
   

@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLMarkers/TwoLevelRegionStructure.h>
-#include <ICLBlob/ImageRegion.h>
+#include <ICLCV/ImageRegion.h>
 
 namespace icl{
   TwoLevelRegionStructure::TwoLevelRegionStructure(const std::string &code) throw (ICLException) : color(0), code(code){

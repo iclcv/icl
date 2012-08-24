@@ -42,7 +42,7 @@ using namespace icl;
 // include some static instances to ensure, that the linker
 // does not purge the linked libraries because no symbols of these
 // are used here
-static FiducialDetector fid; // includes lots of additional stuff such as ICLFilter, ICLBlob and ICLMarkers
+static FiducialDetector fid; // includes lots of additional stuff such as ICLFilter, ICLCV and ICLMarkers
 
 int main(int n, char **ppc){
   painit(n,ppc,"-list|-ls|-l "

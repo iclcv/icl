@@ -7,7 +7,7 @@
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
 ** File   : include/ICLMarkers/FiducialDetectorPluginForQuads.h    **
-** Module : ICLBlob                                                **
+** Module : ICLCV                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **

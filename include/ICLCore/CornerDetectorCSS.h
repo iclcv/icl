@@ -181,7 +181,7 @@ namespace icl{
     const std::vector<Point32f> &detectCorners(const std::vector<Point> &boundary);
     
     /// returns the result of last detectCorners call
-    /** This function can be used as optimization e.g. whithin ICLBlob::Region implementation */
+    /** This function can be used as optimization e.g. whithin ICLCV::Region implementation */
     inline const std::vector<Point32f> &getLastCorners() const {
       return corners;
     }

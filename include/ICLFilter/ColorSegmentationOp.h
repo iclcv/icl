@@ -98,7 +98,7 @@ namespace icl{
       
       By adding color prototypes for different objects, but with different class labels, 
       you can also use this class to segment several objects at once. In the next step,
-      you will possibly use an instance of ICLBlob/RegionDetector to extract the segemented
+      you will possibly use an instance of ICLCV/RegionDetector to extract the segemented
       image regions. Here, you can then obtain the corresponding class label by using the
       ImageRegion's getVal method.
       Please note that always the last lut-entry is used if your prototype-entries overlap.

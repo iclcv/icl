@@ -34,7 +34,7 @@
 
 #include <ICLMarkers/QuadDetector.h>
 
-#include <ICLBlob/RegionDetector.h>
+#include <ICLCV/RegionDetector.h>
 #include <ICLFilter/LocalThresholdOp.h>
 #include <ICLFilter/MorphologicalOp.h>
 #include <ICLFilter/MedianOp.h>

@@ -38,7 +38,7 @@
 #include <ICLIO/JPEGEncoder.h>
 #include <ICLIO/JPEGDecoder.h>
 #endif
-#include <ICLBlob/RegionDetectorTools.h>
+#include <ICLCV/RegionDetectorTools.h>
 #include <ICLIO/File.h>
 #include <ICLUtils/StringUtils.h>
 

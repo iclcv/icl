@@ -36,7 +36,7 @@
 #define ICL_USEFUL_FUNCTIONS_H
 
 #include <ICLCore/Img.h>
-#include <ICLBlob/RegionDetector.h>
+#include <ICLCV/RegionDetector.h>
 
 namespace icl{
   

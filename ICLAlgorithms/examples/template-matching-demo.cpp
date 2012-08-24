@@ -34,7 +34,7 @@
 
 #include <ICLQuick/Common.h>
 #include <ICLAlgorithms/UsefulFunctions.h>
-#include <ICLBlob/RegionDetector.h>
+#include <ICLCV/RegionDetector.h>
 #include <ICLAlgorithms/ViewBasedTemplateMatcher.h>
 
 Size imageSize(640,480);

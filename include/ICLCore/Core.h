@@ -111,7 +111,7 @@
     - <b>ICLCC</b> provides functions and classes for color conversion.
     - <b>ICLIO</b> extends the range of functions by input and output classes. Camera grabbers different camera 
       types (e.g. IEEE-1394 or Video-4-Linux) can be found     here as well a video file grabber or a file writer class.
-    - <b>ICLBlob</b> contains classes for blob detection and tracking and for connected component analysis.
+    - <b>ICLCV</b> contains classes for blob detection and tracking and for connected component analysis.
     - <b>ICLFilter</b> provides classes for most common image filters like linear filters and morphological operators.
     - <b>ICLQuick</b> provides almost 100 functions and functors for rapid prototyping
     - <b>ICLGeom</b> contains classes for 3D-modelling and camera calibration. 
