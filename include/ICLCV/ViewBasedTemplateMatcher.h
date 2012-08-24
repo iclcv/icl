@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLMath/ViewBasedTemplateMatcher.h             **
-** Module : ICLMath                                                **
+** File   : include/ICLCV/ViewBasedTemplateMatcher.h               **
+** Module : ICLCV                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -35,7 +35,7 @@
 #ifndef ICL_VIEW_BASED_TEMPLATE_MATCHER_H
 #define ICL_VIEW_BASED_TEMPLATE_MATCHER_H
 
-#include <ICLMath/UsefulFunctions.h>
+#include <ICLCV/UsefulFunctions.h>
 #include <ICLUtils/UncopiedInstance.h>
 
 namespace icl{

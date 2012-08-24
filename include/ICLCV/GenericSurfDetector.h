@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLMath/GenericSurfDetector.h                  **
-** Module : ICLMath                                                **
+** File   : include/ICLCV/GenericSurfDetector.h                    **
+** Module : ICLCV                                                  **
 ** Authors: Christian Groszewski, Christof Elbrechter              **
 **                                                                 **
 **                                                                 **

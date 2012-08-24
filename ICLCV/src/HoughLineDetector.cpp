@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLMath/src/HoughLineDetector.cpp                      **
-** Module : ICLMath                                                **
+** File   : ICLCV/src/HoughLineDetector.cpp                        **
+** Module : ICLCV                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLMath/HoughLineDetector.h>
+#include <ICLCV/HoughLineDetector.h>
 #include <ICLUtils/DynMatrixUtils.h>
 #include <ICLFilter/ConvolutionOp.h>
 

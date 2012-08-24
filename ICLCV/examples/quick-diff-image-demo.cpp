@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLMath/src/ViewBasedTemplateMatcher.cpp               **
-** Module : ICLMath                                                **
+** File   : ICLCV/examples/quick-diff-image-demo.cpp               **
+** Module : ICLCV                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -32,44 +32,27 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLMath/ViewBasedTemplateMatcher.h>
+#include <ICLCV/Common.h>
 
-namespace icl{
+GUI gui;
+GenericGrabber grabber;
+ImgQ last;  // last image
 
-  ViewBasedTemplateMatcher::ViewBasedTemplateMatcher(float significance, mode m, bool clipBuffersToROI):
-    m_fSignificance(significance),m_eMode(m),m_bClipBuffersToROI(clipBuffersToROI){}
-  
-  void ViewBasedTemplateMatcher::setSignificance(float significance){
-    m_fSignificance = significance;
-  }
-  void ViewBasedTemplateMatcher::setMode(mode m){
-    m_eMode = m;
-    
-  }
-  
-  void ViewBasedTemplateMatcher::setClipBuffersToROI(bool flag){
-    m_bClipBuffersToROI = flag;
-  }
-  
-  const std::vector<Rect> &ViewBasedTemplateMatcher::match(const Img8u &image, 
-                                                           const Img8u &templ, 
-                                                           const Img8u &imageMask,
-                                                           const Img8u &templMask){
-    
-    m_vecResults =  iclMatchTemplate(image,
-                                     imageMask.isNull() ? 0 : &imageMask,
-                                     templ,
-                                     templMask.isNull() ? 0 : &templMask,
-                                     m_fSignificance,
-                                     m_aoBuffers,
-                                     m_aoBuffers+1,
-                                     m_aoBuffers+2,
-                                     m_bClipBuffersToROI,
-                                     &m_oRD,
-                                     m_eMode == sqrtDistance ? false : true);
-    
-    return m_vecResults;
-  }
-  
-  
+void init(){
+  gui << Image().handle("image")
+      << Slider(0,255,127).out("thresh")
+      << Show();
+  grabber.init(pa("-i"));
+}
+
+void run(){
+  // use cvt to create an Img32 (aka ImgQ)
+  ImgQ curr = cvt(grabber.grab());
+  // nested use of operators
+  gui["image"] = thresh(abs(last-curr),gui["thresh"]);
+  last = curr;
+}
+
+int main(int n, char **ppc){
+  return ICLApplication(n,ppc,"-input|-i(2)",init,run).exec();
 }

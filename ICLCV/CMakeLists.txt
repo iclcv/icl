@@ -52,8 +52,12 @@ add_libsource (${PROJECT_NAME} "src/SimpleBlobSearcher.cpp" "${CONDITIONLIST}" L
 add_libsource (${PROJECT_NAME} "src/MeanShiftTracker.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/FloodFiller.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
+
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)
+set(ICLLibsToLinkAgainst ${PROJECT_NAME})
+add_example (${PROJECT_NAME} "quick-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND)
-set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick)
 add_example (${PROJECT_NAME} "region-inspector" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "vector-tracker-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "simple-blob-searcher-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
@@ -61,6 +65,7 @@ add_example (${PROJECT_NAME} "mean-shift-demo" "${CONDITIONLIST}" ICLLibsToLinkA
 add_example (${PROJECT_NAME} "corner-detection-css-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "region-detection-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "flood-filler-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "quick-diff-image-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST HAVE_GTEST_COND)
 set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}")

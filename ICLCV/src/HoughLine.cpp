@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLMath/src/HoughLine.cpp                              **
-** Module : ICLMath                                                **
+** File   : ICLCV/src/HoughLine.cpp                                **
+** Module : ICLCV                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLMath/HoughLine.h>
+#include <ICLCV/HoughLine.h>
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/Range.h>
 #include <ICLUtils/FixedMatrix.h>

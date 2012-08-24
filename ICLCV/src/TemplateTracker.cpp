@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLMath/src/TemplateTracker.cpp                        **
-** Module : ICLMath                                                **
+** File   : ICLCV/src/TemplateTracker.cpp                          **
+** Module : ICLCV                                                  **
 ** Authors: Eckard Riedenklau, Christof Elbrechter                 **
 **                                                                 **
 **                                                                 **
@@ -31,7 +31,7 @@
 ** Excellence Initiative.                                          **
 **                                                                 **
 *********************************************************************/
-#include <ICLMath/TemplateTracker.h>
+#include <ICLCV/TemplateTracker.h>
 
 #include <ICLFilter/ProximityOp.h>
 #include <ICLFilter/RotateOp.h>

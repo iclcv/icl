@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLMath/src/GenericSurfDetector.cpp                    **
-** Module : ICLMath                                                **
+** File   : ICLCV/src/GenericSurfDetector.cpp                      **
+** Module : ICLCV                                                  **
 ** Authors: Christian Groszewski, Christof Elbrechter              **
 **                                                                 **
 **                                                                 **
@@ -34,15 +34,15 @@
 
 
 
-#include <ICLMath/GenericSurfDetector.h>
+#include <ICLCV/GenericSurfDetector.h>
 
 #ifdef HAVE_OPENCV
-#include <ICLMath/OpenCVSurfDetector.h>
+#include <ICLCV/OpenCVSurfDetector.h>
 #include <opencv/cv.h>
 #endif
 
 #ifdef HAVE_OPENSURF
-#include <ICLMath/OpenSurfDetector.h>
+#include <ICLCV/OpenSurfDetector.h>
 #include <opensurf/surflib.h>
 #endif
 

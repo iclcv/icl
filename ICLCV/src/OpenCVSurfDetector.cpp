@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLMath/src/OpenCVSurfDetector.cpp                     **
-** Module : ICLMath                                                **
+** File   : ICLCV/src/OpenCVSurfDetector.cpp                       **
+** Module : ICLCV                                                  **
 ** Authors: Christian Groszewski                                   **
 **                                                                 **
 **                                                                 **
@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLMath/OpenCVSurfDetector.h>
+#include <ICLCV/OpenCVSurfDetector.h>
 using namespace icl;
 namespace icl{
 

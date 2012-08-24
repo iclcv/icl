@@ -6,8 +6,8 @@
 #** Website: www.iclcv.org and                                      **
 #**          http://opensource.cit-ec.de/projects/icl               **
 #**                                                                 **
-#** File   : ICLMath/CMakeLists.txt                           **
-#** Module : ICLMath                                          **
+#** File   : ICLMath/CMakeLists.txt                                 **
+#** Module : ICLMath                                                **
 #** Authors: Christian Groszewski                                   **
 #**                                                                 **
 #**                                                                 **

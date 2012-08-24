@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLMath/Algorithms.h                           **
-** Module : ICLMath                                                **
+** File   : ICLCV/src/ViewBasedTemplateMatcher.cpp                 **
+** Module : ICLCV                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -32,12 +32,44 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_ALGORITHMS_H
-#define ICL_ALGORITHMS_H
+#include <ICLCV/ViewBasedTemplateMatcher.h>
 
+namespace icl{
 
-/** \mainpage ICLMath (A Package for High-Level Algorithms and Applications)
-
-    <b>TODO: work in progress</b>
-*/
-#endif
+  ViewBasedTemplateMatcher::ViewBasedTemplateMatcher(float significance, mode m, bool clipBuffersToROI):
+    m_fSignificance(significance),m_eMode(m),m_bClipBuffersToROI(clipBuffersToROI){}
+  
+  void ViewBasedTemplateMatcher::setSignificance(float significance){
+    m_fSignificance = significance;
+  }
+  void ViewBasedTemplateMatcher::setMode(mode m){
+    m_eMode = m;
+    
+  }
+  
+  void ViewBasedTemplateMatcher::setClipBuffersToROI(bool flag){
+    m_bClipBuffersToROI = flag;
+  }
+  
+  const std::vector<Rect> &ViewBasedTemplateMatcher::match(const Img8u &image, 
+                                                           const Img8u &templ, 
+                                                           const Img8u &imageMask,
+                                                           const Img8u &templMask){
+    
+    m_vecResults =  iclMatchTemplate(image,
+                                     imageMask.isNull() ? 0 : &imageMask,
+                                     templ,
+                                     templMask.isNull() ? 0 : &templMask,
+                                     m_fSignificance,
+                                     m_aoBuffers,
+                                     m_aoBuffers+1,
+                                     m_aoBuffers+2,
+                                     m_bClipBuffersToROI,
+                                     &m_oRD,
+                                     m_eMode == sqrtDistance ? false : true);
+    
+    return m_vecResults;
+  }
+  
+  
+}

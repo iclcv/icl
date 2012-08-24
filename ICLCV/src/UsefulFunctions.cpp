@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLMath/src/UsefulFunctions.cpp                        **
-** Module : ICLMath                                                **
+** File   : ICLCV/src/UsefulFunctions.cpp                          **
+** Module : ICLCV                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLMath/UsefulFunctions.h>
+#include <ICLCV/UsefulFunctions.h>
 #include <ICLFilter/ProximityOp.h>
 #include <ICLFilter/BinaryLogicalOp.h>
 #ifdef HAVE_IPP
