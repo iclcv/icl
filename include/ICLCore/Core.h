@@ -118,7 +118,7 @@
     - <b>ICLQt*</b> contains a Qt-4 based GUI-API that facilitates creation of simple and complex GUI 
       applications significantly. And of course a powerful image visualisation widget called ICLWidget is provided.
     - <b>ICLMarkers</b> contains a generic Fiducial Marker detection framework
-    - <b>ICLAlgorithms</b> contains high level classes like a hough-transformation-based line detector or generic self organizing map (SOM) implementation. 
+    - <b>ICLMath</b> contains high level classes like a hough-transformation-based line detector or generic self organizing map (SOM) implementation. 
     - <b>ICLOpenCV*</b> offers functions for shallow and deep copies from ICL-images types into OpenCV's images types and v.v.
     
     (*) The packages ICLQt and ICLOpenCV depend compulsorily on the corresponding external software dependencies Qt4 and OpenCV. 

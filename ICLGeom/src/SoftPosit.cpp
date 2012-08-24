@@ -6,8 +6,8 @@
  ** Website: www.iclcv.org and                                      **
  **          http://opensource.cit-ec.de/projects/icl               **
  **                                                                 **
- ** File   : ICLAlgorithms/src/SoftPosit.cpp                        **
- ** Module : ICLAlgorithms                                          **
+ ** File   : ICLMath/src/SoftPosit.cpp                        **
+ ** Module : ICLMath                                          **
  ** Authors: Christian Groszewski                                   **
  **                                                                 **
  **                                                                 **
