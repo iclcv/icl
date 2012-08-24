@@ -37,7 +37,7 @@
 
 #include <ICLQt/MouseHandler.h>
 #include <ICLUtils/Lockable.h>
-#include <ICLCC/Color.h>
+#include <ICLCore/Color.h>
 #include <ICLUtils/Any.h>
 
 namespace icl{

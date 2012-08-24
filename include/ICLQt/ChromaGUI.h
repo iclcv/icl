@@ -36,8 +36,8 @@
 #define ICL_CHROMA_GUI_H
 
 #include <ICLQt/GUI.h>
-#include <ICLCC/ChromaClassifier.h>
-#include <ICLCC/ChromaAndRGBClassifier.h>
+#include <ICLCore/ChromaClassifier.h>
+#include <ICLCore/ChromaAndRGBClassifier.h>
 #include <ICLQt/SliderHandle.h>
 namespace icl{
 

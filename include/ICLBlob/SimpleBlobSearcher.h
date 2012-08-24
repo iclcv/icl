@@ -36,7 +36,7 @@
 #define ICL_SIMPLE_BLOB_SEARCHER_H
 
 #include <ICLBlob/ImageRegion.h>
-#include <ICLCC/Color.h>
+#include <ICLCore/Color.h>
 #include <ICLUtils/Range.h>
 #include <ICLUtils/Uncopyable.h>
 namespace icl{

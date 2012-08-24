@@ -37,7 +37,7 @@
 #include <dc1394/conversions.h>
 
 #include <ICLCore/Img.h>
-#include <ICLCC/CCFunctions.h>
+#include <ICLCore/CCFunctions.h>
 #include <ICLUtils/Mutex.h>
 #include <ICLUtils/SignalHandler.h>
 #include <ICLIO/DCGrabberThread.h>

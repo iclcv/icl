@@ -36,8 +36,8 @@
 #include <ICLFilter/ColorSegmentationOp.h>
 #include <ICLFilter/MedianOp.h>
 #include <ICLFilter/MorphologicalOp.h>
-#include <ICLCC/CCFunctions.h>
-#include <ICLCC/Color.h>
+#include <ICLCore/CCFunctions.h>
+#include <ICLCore/Color.h>
 #include <ICLBlob/RegionDetector.h>
 
 #include <ICLGeom/Scene.h>

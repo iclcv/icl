@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLQt/ColorLabel.h                             **
-** Module : ICLQt                                                  **
+** File   : include/ICLCore/Parable.h                              **
+** Module : ICLCore                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -32,69 +32,69 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_COLOR_LABEL_H
-#define ICL_COLOR_LABEL_H
+#ifndef ICL_PARABLE_H
+#define ICL_PARABLE_H
 
-#include <ICLQt/ThreadedUpdatableWidget.h>
-#include <QtCore/QMutex>
-#include <ICLCore/Color.h>
+#include <ICLUtils/Point32f.h>
+#include <stdio.h>
 
 namespace icl{
   
-  /// Utility class to avoid Qt warning when accesing QLabels from differnt Threads
-  /** QLabels can not be used from different Threads. So if a QLabel is created in 
-      in the main thread, it might not be set up to show another text/number from
-      the working thread.
-      As a workaround, the "label" component of the ICL GUI API uses not the 
-      original QLabel but this thread-save reimplementation called
-      CompabilityLabel.
+  /// Utility class for the parable-based chromaticity segmentation \ingroup UNCOMMON
+  /** A parabolic function is defined by 3 parameters a,b and c:
+      \f[
+      f(x) = ax^2 + bx + c
+      \f]
+      Parables can be created by given parameters a,b and c
+      or by 3 given points.
   */
-  class ColorLabel : public ThreadedUpdatableWidget{
-    public:
-    /// Create a new label with given text and given parent widget
-    ColorLabel(Color4D &color, bool useAlpha, QWidget *parent=0);
-
-    /// reimplemented drawin function (draw the current text centered)
-    virtual void paintEvent(QPaintEvent *evt);
-
-    /// sets new color rgb
-    void setColor(const Color &color);
-
-    /// sets new color rgba
-    void setColor(const Color4D &color);
-
-    /// returns current color
-    Color getRGB() const;
+  struct Parable{
     
-    /// returns current rgba color
-    Color4D getRGBA() const;
+    /// create an empty parable (a=b=c=0)
+    Parable():a(0),b(0),c(0){}
     
-    /// returns current red value
-    int getRed() const;
+    /// create a parable with given parameters a,b and c
+    Parable(float a, float b,float c):a(a),b(b),c(c){}
 
-    /// returns current green value
-    int getGreen() const;
-
-    /// returns current blue value
-    int getBlue() const;
-
-    /// return current alpha value
-    int getAlhpa() const;
+    /// create a parable with given 3 points
+    /** To avoid numerical problems, the x coordinates of the given points
+        are increased by a small value (0.00000001 - 0.00000003). This 
+        is harmless, as the Parable struct is used for the ChromaWidget, where
+        given input point are defined by relative widget coordination which
+        much less resolution 
+        
+    **/
+    Parable(Point32f p1,Point32f p2,Point32f p3){
+      p1.x+=0.00000001; // avoid numerical problems
+      p2.x+=0.00000002;
+      p3.x+=0.00000003;
+      
+      float xx1 = p1.x * p1.x;
+      float xx2 = p2.x * p2.x;
+      float xx3 = p3.x * p3.x;
+      b = ((p3.y-p1.y)/(xx3-xx1)-(p2.y-p1.y)/(xx2-xx1)) / 
+      ((p1.x-p2.x)/(xx2-xx1)-(p1.x-p3.x)/(xx3-xx1));
+      
+      a = (b*(p1.x-p2.x)+(p2.y-p1.y)) / (xx2-xx1);
+      
+      c = p1.y-a*xx1-b*p1.x;
+    }
     
-    /// returns wheter internal color uses alpha value
-    bool hasAlpha() const;
-
-    private:
-
-    /// shallowly wrapped color
-    Color4D &m_color; 
-
-    /// indicator wheter alpha is used
-    bool m_hasAlpha; 
+    float a; /**!< first parameter a */
+    float b; /**!< second parameter a */
+    float c; /**!< third parameter a */
     
-    /// Thread-safety mutex
-    mutable QMutex m_oMutex;
+    /// Evaluate this parable at a given location x
+    float operator()(float x) const{ return a*x*x+b*x+c; }
+    
+    /// shows this parable to std::out
+    void show()const{
+      printf("Parable:\n");
+      printf("f(x)=%f*x²+%fx+%f\n",a,b,c);
+    }
   };
+
 }
+
 
 #endif

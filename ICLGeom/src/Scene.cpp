@@ -43,7 +43,7 @@
 
 #ifdef HAVE_GLX
 #include <GL/glx.h>
-#include <ICLCC/CCFunctions.h>
+#include <ICLCore/CCFunctions.h>
 #include <ICLQt/GLContext.h>
 #endif
 

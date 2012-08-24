@@ -35,11 +35,11 @@
 #include <ICLQuick/Quick.h>
 #include <ICLIO/FileGrabber.h>
 #include <ICLIO/TestImages.h>
-#include <ICLCC/Converter.h>
+#include <ICLCore/Converter.h>
 
 #include <ICLIO/GenericGrabber.h>
 
-#include <ICLCC/CCFunctions.h>
+#include <ICLCore/CCFunctions.h>
 #include <map>
 #include <list>
 #include <ICLFilter/ConvolutionOp.h>

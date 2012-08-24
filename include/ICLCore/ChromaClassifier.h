@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLCC/ChromaClassifier.h                       **
-** Module : ICLCC                                                  **
+** File   : include/ICLCore/ChromaClassifier.h                     **
+** Module : ICLCore                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -36,7 +36,7 @@
 #define ICL_CHROMA_CLASSIFIER_H
 
 #include <ICLCore/Types.h>
-#include <ICLCC/Parable.h>
+#include <ICLCore/Parable.h>
 
 namespace icl{
   /// Classifier interface using RG-chromaticity space and two parables \ingroup COMMON

@@ -33,7 +33,7 @@
 *********************************************************************/
 #include <ICLCore/Img.h>
 #include <ICLFilter/LocalThresholdOp.h>
-#include <ICLCC/CCFunctions.h>
+#include <ICLCore/CCFunctions.h>
 
 #include <ICLMarkers/FiducialDetector.h>
 #include <ICLMarkers/FiducialDetectorPlugin.h>

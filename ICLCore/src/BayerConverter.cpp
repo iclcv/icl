@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLCC/src/Bayer.cpp                                    **
-** Module : ICLCC                                                  **
+** File   : ICLCore/src/Bayer.cpp                                  **
+** Module : ICLCore                                                **
 ** Authors: Michael Götting, Felix Reinhard                        **
 **                                                                 **
 **                                                                 **
@@ -32,8 +32,8 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLCC/BayerConverter.h>
-#include <ICLCC/CCFunctions.h>
+#include <ICLCore/BayerConverter.h>
+#include <ICLCore/CCFunctions.h>
 #include <ICLUtils/Exception.h>
 
 namespace icl {

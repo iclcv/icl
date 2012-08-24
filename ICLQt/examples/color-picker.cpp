@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLQuick/Common.h>
-#include <ICLCC/CCFunctions.h>
+#include <ICLCore/CCFunctions.h>
 #include <ICLUtils/Thread.h>
 
 VBox gui;

@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLCC/ChromaAndRGBClassifier.h                 **
-** Module : ICLCC                                                  **
+** File   : include/ICLCore/Color.h                                **
+** Module : ICLCore                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -32,45 +32,58 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_CHROMA_AND_RGB_CLASSIFIER_H
-#define ICL_CHROMA_AND_RGB_CLASSIFIER_H
+#ifndef ICL_COLOR_H
+#define ICL_COLOR_H
 
-#include <ICLCC/ChromaClassifier.h>
+#include <ICLUtils/BasicTypes.h>
+#include <ICLUtils/FixedVector.h>
+#include <string>
 
 namespace icl{
-  /// Combination classifier using RG-chroma. as well as RGB-thresholded reference color classifiation \ingroup COMMON
-  struct ChromaAndRGBClassifier{
-    /// classifies a given r-g-b-Pixel
-    /**The function is:
-        \code
-        bool is_pixel_skin_colored(int r, int g, int b, ChromaClassifier c, int refcol[3], int threshold[3]){
-        return c(r,g,b) 
-        && abs(r-refcol[0])<threshold[0]
-        && abs(g-refcol[1])<threshold[1]
-        && abs(b-refcol[2])<threshold[2];
-        }
-        \endcode
-        */
-    inline bool operator()(icl8u r, icl8u g, icl8u b) const{
-      return c(r,g,b) && ::abs(r-ref[0])<thresh[0] && ::abs(g-ref[1])<thresh[1] && ::abs(b-ref[2])<thresh[2];
-    }
-    /// wrapped ChromaClassifier
-    ChromaClassifier c;
-    
-    /// r-g-b reference color
-    icl8u ref[3];
-    
-    /// r-g-b threshold
-    icl8u thresh[3];
-    
-    /// shows this classifier to std::out
-    void show()const{
-      printf("Combi-Classifier\n");
-      c.show();
-      printf("reference color:  %d %d %d \n",ref[0],ref[1],ref[2]);
-      printf("color thresholds: %d %d %d \n",thresh[0],thresh[1],thresh[2]);
-    }
-  };
-}
 
+  /// Default color type of the ICL
+  typedef FixedColVector<icl8u,3> Color;
+  
+  /// Special color type for float valued colors
+  typedef FixedColVector<icl32f,3> Color32f;
+
+
+  /// Special color type for e.g. rgba color information
+  typedef FixedColVector<icl8u,4> Color4D;
+
+  /// Special color type for e.g. rgba color information (float)
+  typedef FixedColVector<icl32f,4> Color4D32f;
+  
+  // Create a color by given name (see GeneralColor Constructor)
+  const Color &iclCreateColor(std::string name);
+  
+  /// Creates a (by default 20 percent) darker color 
+  inline Color darker(const Color &c, double factor=0.8){
+    return c*factor;
+  }
+  
+  /// Creates a (by default 20 percent) lighter color 
+  inline Color lighter(const Color &c,double factor=0.8){
+    return c/factor;
+  }
+
+  /// Parses a color string representation into a color structur
+  /** If an error occurs, a warning is shown and black color is returned 
+      first checks for some default color names:
+      - black
+      - white
+      - red
+      - green
+      - blue
+      - cyan
+      - magenta
+      - yellow
+      - gray50
+      - gray100
+      - gray150
+      - gray200
+  */
+  Color color_from_string(const std::string &name);
+
+}
 #endif

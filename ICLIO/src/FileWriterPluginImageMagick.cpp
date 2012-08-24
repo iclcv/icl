@@ -47,8 +47,8 @@
 #endif
 #endif
 
-#include <ICLCC/CCFunctions.h>
-#include <ICLCC/Converter.h>
+#include <ICLCore/CCFunctions.h>
+#include <ICLCore/Converter.h>
 #include <ICLUtils/Exception.h>
 
 namespace icl{

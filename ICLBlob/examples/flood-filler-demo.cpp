@@ -34,7 +34,7 @@
 
 #include <ICLQuick/Common.h>
 #include <ICLBlob/FloodFiller.h>
-#include <ICLCC/Color.h>
+#include <ICLCore/Color.h>
 //TODO: crashes in the destructor
 
 GUI gui;

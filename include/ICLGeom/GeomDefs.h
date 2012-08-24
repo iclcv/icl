@@ -39,7 +39,7 @@
 #include <ICLUtils/FixedMatrix.h>
 #include <ICLUtils/FixedVector.h>
 #include <vector>
-#include <ICLCC/Color.h>
+#include <ICLCore/Color.h>
 
 namespace icl{
   /// color for geometry primitives

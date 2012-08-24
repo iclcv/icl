@@ -37,7 +37,7 @@
 #include <QtGui/QFileDialog>
 #include <vector>
 
-#include <ICLCC/Parable.h>
+#include <ICLCore/Parable.h>
 #include <ICLQt/Dragger.h>
 #include <ICLQt/DrawWidget.h>
 #include <ICLQt/MouseHandler.h>

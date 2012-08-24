@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLCC/src/Color.cpp                                    **
-** Module : ICLCC                                                  **
+** File   : ICLCore/src/FixedConverter.cpp                         **
+** Module : ICLCore                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -32,51 +32,19 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLCC/Color.h>
-#include <map>
-#include <ctype.h>
-#include <ICLUtils/StringUtils.h>
+#include <ICLCore/FixedConverter.h>
+
 
 namespace icl{
+
+  FixedConverter::FixedConverter(const ImgParams &p, depth d, bool applyToROIOnly):
+    m_oParams(p),m_oConverter(applyToROIOnly),m_eDepth(d) { }
   
-  namespace{
-    struct ColorMap : public std::map<std::string,Color>{
-      ColorMap(){
-        ColorMap &t = *this;
-        t["black"] = Color(0,0,0);
-        t["white"] = Color(255,255,255);
-
-        t["red"] = Color(255,0,0);
-        t["green"] = Color(0,255,0);
-        t["blue"] = Color(0,0,255);
-
-
-        t["cyan"] = Color(0,255,255);
-        t["magenta"] = Color(255,0,255);
-        t["yellow"] = Color(255,255,0);
-
-        t["gray200"] = Color(200,200,200);
-        t["gray150"] = Color(150,150,150);
-        t["gray100"] = Color(100,100,100);
-        t["gray50"] = Color(50,50,50);
-      }
-    };
-  }
-  
-  static const Color *create_named_color(std::string str){
-    toLowerI(str);
-    static ColorMap cm;
-    ColorMap::iterator it = cm.find(str);
-    if(it != cm.end()) return  &it->second;
-    else return 0;
-  }
-  
-  Color color_from_string(const std::string &name){
-    const Color *col = create_named_color(name);
-    if(col) return *col;
-    return parse<Color>(name);
-  }
-
- 
- 
+  void FixedConverter::apply(const ImgBase *poSrc, ImgBase **ppoDst){
+    FUNCTION_LOG("");
+    ICLASSERT_RETURN( poSrc );
+    ICLASSERT_RETURN( ppoDst );
+    ensureCompatible(ppoDst,m_eDepth,m_oParams);
+    m_oConverter.apply(poSrc,*ppoDst);
+  }  
 }

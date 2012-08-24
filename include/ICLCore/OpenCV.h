@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLOpenCV/OpenCV.h                             **
-** Module : ICLOpenCV                                              **
+** File   : include/ICLCore/OpenCV.h                               **
+** Module : ICLCore                                                **
 ** Authors: Christof Elbrechter, Christian Groszewski              **
 **                                                                 **
 **                                                                 **
@@ -35,31 +35,16 @@
 #ifndef ICL_OPEN_CV_H
 #define ICL_OPEN_CV_H
 
-#ifdef HAVE_OPENCV
+#ifndef HAVE_OPENCV
+#warning "this header should not be included if HAVE_OPENCV is not defined"
+#else
 #include <opencv/cxcore.h>
-#endif
 
 #include <ICLCore/CCFunctions.h>
 #include <ICLCore/Img.h>
 #include <ICLCore/ImgBase.h>
 
 namespace icl{
-
-  /** \mainpage ICLOpenCV For Compatibility with the OpenCV Image Processing Library
-      
-      \section OV General Idea
-      
-      Basically, the OpenCV package provides conversion methods, to exchanges ICL's
-      and OpenCV's image classes.  The conversion methods can be setup to 
-      convert the image with a fixed destination image depth or to use the source
-      images depth value instead. \n
-      For single channel image, also shallow copy functions are provided. 
-      
-      \section OL Outlook
-      
-      Later, we plan to also implement some wrappers for some useful OpenCV algorithms
-      such as the face detector. 
-  */
 
   /// Modes that define whether to prefer the source image's or the destination image's depth
   enum DepthPreference{
@@ -107,7 +92,8 @@ namespace icl{
       @param *src pointer to sourceimage
       @param *dst pointer to destinationmatrix (IplImage)*/
   CvMat *img_to_cvmat_shallow(const ImgBase *src,CvMat *dst=0) throw (ICLException);
-
 }
 #endif
+#endif
+
 

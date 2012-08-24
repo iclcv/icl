@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLQuick/Common.h>
-#include <ICLCC/Color.h>
+#include <ICLCore/Color.h>
 
 HScroll gui;
 

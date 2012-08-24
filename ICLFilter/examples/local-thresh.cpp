@@ -35,7 +35,7 @@
 #include <ICLIO/FileGrabber.h>
 #include <ICLIO/FileWriter.h>
 #include <ICLFilter/LocalThresholdOp.h>
-#include <ICLCC/CCFunctions.h>
+#include <ICLCore/CCFunctions.h>
 #include <ICLUtils/ConfigFile.h>
 #include <ICLQuick/Common.h>
 #include <ICLIO/FileList.h>

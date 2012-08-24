@@ -38,7 +38,7 @@
 #include <QtGui/QFontMetrics>
 #include <QtGui/QPainter>
 #include <ICLCore/Mathematics.h>
-#include <ICLCC/CCFunctions.h>
+#include <ICLCore/CCFunctions.h>
 #include <ICLQt/GLImg.h>
 
 using std::string; using std::min;

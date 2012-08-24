@@ -36,7 +36,7 @@
 /// Visulalization of the CSS corner detection algorithm.
 
 #include <ICLQuick/Common.h>
-#include <ICLCC/Color.h>
+#include <ICLCore/Color.h>
 #include <ICLBlob/RegionDetector.h>
 #include <ICLCore/Line.h>
 #include <ICLCore/CornerDetectorCSS.h>

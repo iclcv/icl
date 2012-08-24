@@ -35,7 +35,7 @@
 #ifndef ICL_DEMO_GRABBER_H
 #define ICL_DEMO_GRABBER_H
 
-#include <ICLCC/Color.h>
+#include <ICLCore/Color.h>
 #include <ICLUtils/Time.h>
 #include <ICLUtils/Size32f.h>
 

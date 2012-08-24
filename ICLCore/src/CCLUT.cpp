@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLCC/src/CCLUT.cpp                                    **
-** Module : ICLCC                                                  **
+** File   : ICLCore/src/CCLUT.cpp                                  **
+** Module : ICLCore                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -32,8 +32,8 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLCC/CCLUT.h>
-#include <ICLCC/CCFunctions.h>
+#include <ICLCore/CCLUT.h>
+#include <ICLCore/CCFunctions.h>
 
 using namespace std;
 using namespace icl;

@@ -32,13 +32,13 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLCC/CCFunctions.h>
+#include <ICLCore/CCFunctions.h>
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLIO/FileWriter.h>
 #include <ICLIO/FileGrabber.h>
 #include <ICLFilter/ColorSegmentationOp.h>
-#include <ICLCC/Color.h>
+#include <ICLCore/Color.h>
 
 namespace icl{
 

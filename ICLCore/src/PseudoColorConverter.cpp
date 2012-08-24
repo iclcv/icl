@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLCC/src/PseudoColorConverter.cpp                     **
-** Module : ICLCC                                                  **
+** File   : ICLCoire/src/PseudoColorConverter.cpp                  **
+** Module : ICLCore                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLCC/PseudoColorConverter.h>
+#include <ICLCore/PseudoColorConverter.h>
 #include <ICLFilter/LUTOp.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/ConfigFile.h>

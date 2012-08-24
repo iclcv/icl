@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLCC/Color.h                                  **
-** Module : ICLCC                                                  **
+** File   : ICLCore/src/Color.cpp                                  **
+** Module : ICLCore                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -32,58 +32,51 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_COLOR_H
-#define ICL_COLOR_H
-
-#include <ICLUtils/BasicTypes.h>
-#include <ICLUtils/FixedVector.h>
-#include <string>
+#include <ICLCore/Color.h>
+#include <map>
+#include <ctype.h>
+#include <ICLUtils/StringUtils.h>
 
 namespace icl{
-
-  /// Default color type of the ICL
-  typedef FixedColVector<icl8u,3> Color;
   
-  /// Special color type for float valued colors
-  typedef FixedColVector<icl32f,3> Color32f;
+  namespace{
+    struct ColorMap : public std::map<std::string,Color>{
+      ColorMap(){
+        ColorMap &t = *this;
+        t["black"] = Color(0,0,0);
+        t["white"] = Color(255,255,255);
+
+        t["red"] = Color(255,0,0);
+        t["green"] = Color(0,255,0);
+        t["blue"] = Color(0,0,255);
 
 
-  /// Special color type for e.g. rgba color information
-  typedef FixedColVector<icl8u,4> Color4D;
+        t["cyan"] = Color(0,255,255);
+        t["magenta"] = Color(255,0,255);
+        t["yellow"] = Color(255,255,0);
 
-  /// Special color type for e.g. rgba color information (float)
-  typedef FixedColVector<icl32f,4> Color4D32f;
-  
-  // Create a color by given name (see GeneralColor Constructor)
-  const Color &iclCreateColor(std::string name);
-  
-  /// Creates a (by default 20 percent) darker color 
-  inline Color darker(const Color &c, double factor=0.8){
-    return c*factor;
+        t["gray200"] = Color(200,200,200);
+        t["gray150"] = Color(150,150,150);
+        t["gray100"] = Color(100,100,100);
+        t["gray50"] = Color(50,50,50);
+      }
+    };
   }
   
-  /// Creates a (by default 20 percent) lighter color 
-  inline Color lighter(const Color &c,double factor=0.8){
-    return c/factor;
+  static const Color *create_named_color(std::string str){
+    toLowerI(str);
+    static ColorMap cm;
+    ColorMap::iterator it = cm.find(str);
+    if(it != cm.end()) return  &it->second;
+    else return 0;
+  }
+  
+  Color color_from_string(const std::string &name){
+    const Color *col = create_named_color(name);
+    if(col) return *col;
+    return parse<Color>(name);
   }
 
-  /// Parses a color string representation into a color structur
-  /** If an error occurs, a warning is shown and black color is returned 
-      first checks for some default color names:
-      - black
-      - white
-      - red
-      - green
-      - blue
-      - cyan
-      - magenta
-      - yellow
-      - gray50
-      - gray100
-      - gray150
-      - gray200
-  */
-  Color color_from_string(const std::string &name);
-
+ 
+ 
 }
-#endif

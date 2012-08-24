@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLIO/FileGrabberPluginImageMagick.h>
-#include <ICLCC/CCFunctions.h>
+#include <ICLCore/CCFunctions.h>
 #include <ICLIO/FileWriterPluginImageMagick.h>
 
 #ifdef HAVE_IMAGEMAGICK 

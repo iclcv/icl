@@ -35,7 +35,7 @@
 #include <ICLCore/Img.h>
 #include <ICLQt/GLImg.h>
 #include <ICLQt/GLContext.h>
-#include <ICLCC/CCFunctions.h>
+#include <ICLCore/CCFunctions.h>
 
 #ifdef ICL_SYSTEM_APPLE
 #include <OpenGL/gl.h>

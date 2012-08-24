@@ -35,7 +35,7 @@
 #include <ICLIO/FileWriterPluginPNM.h>
 #include <string>
 #include <vector>
-#include <ICLCC/CCFunctions.h>
+#include <ICLCore/CCFunctions.h>
 #include <ICLUtils/Time.h>
 #include <ICLIO/IOUtils.h>
 #include <ICLUtils/StringUtils.h>

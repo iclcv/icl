@@ -119,7 +119,7 @@
 #include <ICLQt/ThreadedUpdatableTextView.h>
 #include <ICLQt/ColorLabel.h>
 #include <ICLUtils/Configurable.h>
-#include <ICLCC/Color.h>
+#include <ICLCore/Color.h>
 #include <QtGui/QProgressBar>
 
 #include <map>

@@ -33,7 +33,7 @@
  *********************************************************************/
 #ifndef ICL_OPENCVCAMGRABBER_H
 #define ICL_OPENCVCAMGRABBER_H
-#include <ICLOpenCV/OpenCV.h>
+#include <ICLCore/OpenCV.h>
 #include <ICLIO/GrabberHandle.h>
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Mutex.h>

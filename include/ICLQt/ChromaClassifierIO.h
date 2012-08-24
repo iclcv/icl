@@ -35,9 +35,9 @@
 #ifndef ICL_CHROMA_CLASSIFIER_IO_H
 #define ICL_CHROMA_CLASSIFIER_IO_H
 
-#include <ICLCC/Parable.h>
-#include <ICLCC/ChromaClassifier.h>
-#include <ICLCC/ChromaAndRGBClassifier.h>
+#include <ICLCore/Parable.h>
+#include <ICLCore/ChromaClassifier.h>
+#include <ICLCore/ChromaAndRGBClassifier.h>
 #include <ICLUtils/ConfigFile.h>
 #include <ICLUtils/StringUtils.h>
 

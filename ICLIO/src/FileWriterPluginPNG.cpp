@@ -35,8 +35,7 @@
 #include <ICLIO/FileWriterPluginPNG.h>
 #include <ICLCore/Types.h>
 #include <ICLUtils/StringUtils.h>
-//#include <ICLIO/IOUtils.h>
-#include <ICLCC/CCFunctions.h>
+#include <ICLCore/CCFunctions.h>
 
 #include <png.h>
 #include <cstdio>

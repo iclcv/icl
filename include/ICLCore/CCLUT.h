@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLCC/Parable.h                                **
-** Module : ICLCC                                                  **
+** File   : include/ICLCore/CCLUT.h                                **
+** Module : ICLCore                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -32,69 +32,84 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_PARABLE_H
-#define ICL_PARABLE_H
+#ifndef CC_LUT_H
+#define CC_LUT_H
 
-#include <ICLUtils/Point32f.h>
-#include <stdio.h>
+#include <ICLCore/Img.h>
+#include <vector>
+#include <string>
+#include <ICLUtils/ConsoleProgress.h>
 
 namespace icl{
-  
-  /// Utility class for the parable-based chromaticity segmentation \ingroup UNCOMMON
-  /** A parabolic function is defined by 3 parameters a,b and c:
-      \f[
-      f(x) = ax^2 + bx + c
-      \f]
-      Parables can be created by given parameters a,b and c
-      or by 3 given points.
-  */
-  struct Parable{
-    
-    /// create an empty parable (a=b=c=0)
-    Parable():a(0),b(0),c(0){}
-    
-    /// create a parable with given parameters a,b and c
-    Parable(float a, float b,float c):a(a),b(b),c(c){}
 
-    /// create a parable with given 3 points
-    /** To avoid numerical problems, the x coordinates of the given points
-        are increased by a small value (0.00000001 - 0.00000003). This 
-        is harmless, as the Parable struct is used for the ChromaWidget, where
-        given input point are defined by relative widget coordination which
-        much less resolution 
-        
-    **/
-    Parable(Point32f p1,Point32f p2,Point32f p3){
-      p1.x+=0.00000001; // avoid numerical problems
-      p2.x+=0.00000002;
-      p3.x+=0.00000003;
-      
-      float xx1 = p1.x * p1.x;
-      float xx2 = p2.x * p2.x;
-      float xx3 = p3.x * p3.x;
-      b = ((p3.y-p1.y)/(xx3-xx1)-(p2.y-p1.y)/(xx2-xx1)) / 
-      ((p1.x-p2.x)/(xx2-xx1)-(p1.x-p3.x)/(xx3-xx1));
-      
-      a = (b*(p1.x-p2.x)+(p2.y-p1.y)) / (xx2-xx1);
-      
-      c = p1.y-a*xx1-b*p1.x;
-    }
+  class CCLUT{
+    public:
+    CCLUT(format srcFmt, format dstFmt);
+    void cc(const ImgBase *src, ImgBase *dst, bool roiOnly=false);
     
-    float a; /**!< first parameter a */
-    float b; /**!< second parameter a */
-    float c; /**!< third parameter a */
-    
-    /// Evaluate this parable at a given location x
-    float operator()(float x) const{ return a*x*x+b*x+c; }
-    
-    /// shows this parable to std::out
-    void show()const{
-      printf("Parable:\n");
-      printf("f(x)=%f*x²+%fx+%f\n",a,b,c);
-    }
+    private:
+    Img8u m_oLUT;
+    // format m_eSrcFmt;
+    // format m_eDstFmt;
   };
-
+  
+  
+  /// TODO basisclass CCLUT
+  /// unterklassen CCLUT3x3 usw
+  /** evtl: kleinere luts durch internes runtersamplen der
+      farbinfos z.B. factor 2 oder 4
+      2: 3*2 statt 3*16mb
+      
+      zusätzliche beschleunigung: 
+      statt yuvToRGB vielleicht ippiYUVToHLS direkt im grabber!
+  **/
+  /******************
+      class CCLUT{
+      static const int OFS1 = 256;
+      static const int OFS2 = 65536;
+      
+      public:
+      CCLUT(format srcFmt, format dstFmt){
+      m_iSrcChan = getChannelsOfFormat(srcFmt);
+      m_iDstChan = getChannelsOfFormat(dstFmt);
+      
+      int DIM = (int)pow(256,m_iSrcChan);
+      
+      // alloc lut
+      memset(m_apucLUT,0,3*sizeof(icl8u*));
+      for(int i=0;i<m_iDstChan;++i){
+      m_apucLUT[i] = new icl8u[DIM];
+      }
+      
+      /// this must be much bigger
+      Img8u bufSrc(Size(256*256*256,3),srcFmt);
+      Img8u bufDst(Size(256*256*256,3),dstFmt);
+      
+      for(int r=0;r<256;r++){
+      std::fill(bufSrc.getData(0)+r*OFS2, bufSrc.getData(0)+(r+1)*OFS2, icl8u(r));
+      icl8u *pg = bufSrc.getData(1)+r*OFS2;
+      for(int g=0;g<256;g++){
+      std::fill(pg+g*OFS1,pg+(g+1)*OFS1, icl8u(g));
+      icl8u *pb = bufSrc.getData(2)+r*OFS2 + g*OFS1;
+      for(int b=0;b<256;b++){
+      pb[b] = icl8u(b);
+      }
+      }
+      }
+      }
+      icl8u *m_apucLUT[3];
+      
+      inline void convert3to3(const icl8u &s1,
+      const icl8u &s2,const 
+      icl8u &s3, icl8u s1, 
+      icl8u &d1, icl8u &d2, icl8u &d3){
+      int idx = s1+OFS1*s2+OFS3*s3;
+      d1 = m_apucLUT[0][idx];
+      d2 = m_apucLUT[1][idx];
+      d3 = m_apucLUT[2][idx];
+      }
+      };
+      */
 }
-
 
 #endif

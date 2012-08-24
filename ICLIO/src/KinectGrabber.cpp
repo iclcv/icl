@@ -35,7 +35,7 @@
 #ifdef HAVE_LIBFREENECT
 
 #include <ICLIO/KinectGrabber.h>
-#include <ICLCC/CCFunctions.h>
+#include <ICLCore/CCFunctions.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLCore/Img.h>
 #include <ICLUtils/Mutex.h>

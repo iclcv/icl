@@ -41,7 +41,7 @@
 #include <ICLIO/DCDeviceFeatures.h>
 #include <ICLIO/DCDeviceOptions.h>
 #include <ICLIO/GrabberHandle.h>
-#include <ICLCC/Converter.h>
+#include <ICLCore/Converter.h>
 
 namespace icl{
   /** \cond */

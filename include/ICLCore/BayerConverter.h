@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLCC/Bayer.h                                  **
-** Module : ICLCC                                                  **
+** File   : include/ICLCore/Bayer.h                                **
+** Module : ICLCore                                                **
 ** Authors: Michael Götting, Felix Reinhard, Christof Elbrechter   **
 **                                                                 **
 **                                                                 **

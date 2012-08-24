@@ -34,7 +34,7 @@
 
 #include <ICLIO/OpenCVVideoWriter.h>
 #include <ICLIO/File.h>
-#include <ICLOpenCV/OpenCV.h>
+#include <ICLCore/OpenCV.h>
 
 
 #define ICL_FOURCCC(c1,c2,c3,c4)  \

@@ -34,7 +34,7 @@
 
 #include <ICLIO/FileGrabberPluginPNG.h>
 #include <ICLUtils/StringUtils.h>
-#include <ICLCC/CCFunctions.h>
+#include <ICLCore/CCFunctions.h>
 #include <png.h>
 
 #include <stdio.h>

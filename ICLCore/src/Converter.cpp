@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLCC/src/Converter.cpp                                **
-** Module : ICLCC                                                  **
+** File   : ICLCore/src/Converter.cpp                              **
+** Module : ICLCore                                                **
 ** Authors: Christof Elbrechter, Robert Haschke                    **
 **                                                                 **
 **                                                                 **
@@ -32,8 +32,8 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLCC/CCFunctions.h>
-#include <ICLCC/Converter.h>
+#include <ICLCore/CCFunctions.h>
+#include <ICLCore/Converter.h>
 
 
 namespace icl{

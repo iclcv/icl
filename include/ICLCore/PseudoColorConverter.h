@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLCC/PseudoColorConverter.h                   **
-** Module : ICLGeom                                                **
+** File   : include/ICLCore/PseudoColorConverter.h                 **
+** Module : ICLCore                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -35,7 +35,7 @@
 #ifndef ICL_SPEUDO_COLOR_CONVERTER_H
 #define ICL_SPEUDO_COLOR_CONVERTER_H
 
-#include <ICLCC/Color.h>
+#include <ICLCore/Color.h>
 #include <ICLCore/Img.h>
 
 namespace icl{

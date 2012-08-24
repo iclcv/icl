@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLCC/FixedConverter.h                         **
-** Module : ICLCC                                                  **
+** File   : include/ICLCore/FixedConverter.h                       **
+** Module : ICLCore                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -35,7 +35,7 @@
 #ifndef FIXED_CONVERTER_H
 #define FIXED_CONVERTER_H
 
-#include <ICLCC/Converter.h>
+#include <ICLCore/Converter.h>
 #include <ICLUtils/Uncopyable.h>
 
 namespace icl{

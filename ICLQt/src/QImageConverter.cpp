@@ -36,7 +36,7 @@
 #include <QtGui/QImage>
 #include <QtCore/QVector>
 #include <ICLCore/Img.h>
-#include <ICLCC/CCFunctions.h>
+#include <ICLCore/CCFunctions.h>
 
 
 namespace icl{

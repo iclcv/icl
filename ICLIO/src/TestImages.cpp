@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLIO/TestImages.h>
-#include <ICLCC/Converter.h>
+#include <ICLCore/Converter.h>
 #include <vector>
 #include <string>
 #include <map>

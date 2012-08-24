@@ -43,7 +43,7 @@
 #include <ICLUtils/Time.h>
 #include <ICLUtils/ProgArg.h>
 #include <ICLQt/QImageConverter.h>
-#include <ICLCC/FixedConverter.h>
+#include <ICLCore/FixedConverter.h>
 #include <QtGui/QImage>
 
 

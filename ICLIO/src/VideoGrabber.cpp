@@ -41,7 +41,7 @@
 #include <ICLIO/File.h>
 #include <ICLCore/Img.h>
 #include <vector>
-#include <ICLCC/CCFunctions.h>
+#include <ICLCore/CCFunctions.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/FPSLimiter.h>

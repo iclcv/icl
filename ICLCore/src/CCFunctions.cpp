@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLCC/src/CCFunctions.cpp                              **
-** Module : ICLCC                                                  **
+** File   : ICLCore/src/CCFunctions.cpp                            **
+** Module : ICLCore                                                **
 ** Authors: Christof Elbrechter, Michael Götting, Robert Haschke   **
 **                                                                 **
 **                                                                 **
@@ -32,10 +32,10 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLCC/CCFunctions.h>
+#include <ICLCore/CCFunctions.h>
 #include <ICLCore/Img.h>
 #include <map>
-#include <ICLCC/CCLUT.h>
+#include <ICLCore/CCLUT.h>
 
 
 namespace icl{

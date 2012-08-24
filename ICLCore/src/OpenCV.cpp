@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLOpenCV/src/OpenCV.cpp                               **
-** Module : ICLOpenCV                                              **
+** File   : ICLCore/src/OpenCV.cpp                                 **
+** Module : ICLCore                                                **
 ** Authors: Christof Elbrechter, Christian Groszewski              **
 **                                                                 **
 **                                                                 **

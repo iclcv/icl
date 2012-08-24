@@ -36,7 +36,7 @@
 
 #include <ICLFilter/UnaryOp.h>
 #include <ICLCore/Img.h>
-#include <ICLCC/Color.h>
+#include <ICLCore/Color.h>
 
 namespace icl{
   /// Class for fast LUT-based color segmentation

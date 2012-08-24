@@ -35,7 +35,7 @@
 #include <ICLIO/FileGrabberPluginPNM.h>
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/StringUtils.h>
-#include <ICLCC/CCFunctions.h>
+#include <ICLCore/CCFunctions.h>
 #include <ICLIO/IOUtils.h>
 
 using namespace std;

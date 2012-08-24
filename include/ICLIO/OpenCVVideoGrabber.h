@@ -34,7 +34,7 @@
 #ifndef ICL_OPENCV_VIDEO_GRABBER_H
 #define ICL_OPENCV_VIDEO_GRABBER_H
 
-#include <ICLOpenCV/OpenCV.h>
+#include <ICLCore/OpenCV.h>
 #include <ICLIO/Grabber.h>
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLUtils/Exception.h>
