@@ -31,7 +31,8 @@
 ** Excellence Initiative.                                          **
 **                                                                 **
 *********************************************************************/
-#include <ICLOpenCV/OpenCV.h>
+#include <ICLCore/OpenCV.h>
+
 namespace icl{
 
   IplImage *ensureCompatible(IplImage **dst, int depth,const CvSize& size,int channels){

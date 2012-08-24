@@ -41,7 +41,7 @@
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/Uncopyable.h>
 
-#include <ICLOpenCV/OpenCV.h>
+#include <ICLCore/OpenCV.h>
 
 #ifdef HAVE_OPENCV
 #include <opencv/cv.h>
