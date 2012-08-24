@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_QUICK_H
-#define ICL_QUICK_H
+#pragma once
 
 #include <ICLCore/Img.h>
 #include <ICLUtils/StringUtils.h>
@@ -847,4 +846,3 @@ namespace icl{
 }
 
 
-#endif

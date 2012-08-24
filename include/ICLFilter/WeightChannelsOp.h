@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef WEIGHTCHANNELSOP_H
-#define WEIGHTCHANNELSOP_H
+#pragma once
 
 #include <ICLCore/Img.h>
 #include <ICLFilter/UnaryOp.h>
@@ -100,4 +99,3 @@ namespace icl {
   
 } // namespace icl
 
-#endif

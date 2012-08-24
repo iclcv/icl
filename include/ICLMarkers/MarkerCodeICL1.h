@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_MARKER_CODE_ICL1_H
-#define ICL_MARKER_CODE_ICL1_H
+#pragma once
 
 #include <vector>
 #include <iostream>
@@ -131,4 +130,3 @@ namespace icl{
 }
 
 
-#endif

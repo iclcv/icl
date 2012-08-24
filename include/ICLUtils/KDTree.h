@@ -31,8 +31,7 @@
  ** Excellence Initiative.                                          **
  **                                                                 **
  *********************************************************************/
-#ifndef ICL_KDTREE_H_
-#define ICL_KDTREE_H_
+#pragma once
 
 #include <ICLUtils/DynMatrix.h>
 #include <ICLUtils/Macros.h>
@@ -152,5 +151,3 @@ namespace icl{
     
   };
 }
-#endif /* ICL_KDTREE_H_ */
-

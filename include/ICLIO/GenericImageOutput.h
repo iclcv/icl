@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_GENERIC_IMAGE_OUTPUT_H
-#define ICL_GENERIC_IMAGE_OUTPUT_H
+#pragma once
 
 #include <ICLCore/ImgBase.h>
 #include <ICLUtils/ProgArg.h>
@@ -118,4 +117,3 @@ namespace icl{
   };
 }
 
-#endif

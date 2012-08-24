@@ -32,9 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_SOM_H 
-#define ICL_SOM_H
-
+#pragma once
 #include <ICLCore/Mathematics.h>
 #include <ICLUtils/Range.h>
 #include <ICLUtils/SmartPtr.h>
@@ -192,4 +190,3 @@ namespace icl{
 }
 
 
-#endif

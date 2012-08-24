@@ -32,12 +32,10 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_ALGORITHMS_H
-#define ICL_ALGORITHMS_H
+#pragma once
 
 
 /** \mainpage ICLAlgorithms (A Package for High-Level Algorithms and Applications)
 
     <b>TODO: work in progress</b>
 */
-#endif

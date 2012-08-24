@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FILE_READER_PLUGIN_JPEG_H
-#define ICL_FILE_READER_PLUGIN_JPEG_H
+#pragma once
 
 #include <ICLIO/FileGrabberPlugin.h>
 
@@ -48,4 +47,3 @@ namespace icl{
   };  
 }
 
-#endif

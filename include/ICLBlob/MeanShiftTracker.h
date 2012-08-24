@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_MEAN_SHIFT_TRACKER_H
-#define ICL_MEAN_SHIFT_TRACKER_H
+#pragma once
 
 #include <ICLCore/Img.h>
 
@@ -176,4 +175,3 @@ namespace icl {
   };
 }
 
-#endif

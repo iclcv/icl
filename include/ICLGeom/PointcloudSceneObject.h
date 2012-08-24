@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_POINTCLOUD_SCENE_OBJECT_H
-#define ICL_POINTCLOUD_SCENE_OBJECT_H
+#pragma once
 
 #include <ICLQuick/Quick.h>
 #include <ICLGeom/Geom.h>
@@ -208,4 +207,3 @@ namespace icl{
   #endif
   };
 }
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_DRAW_WIDGET_3D_H
-#define ICL_DRAW_WIDGET_3D_H
+#pragma once
 
 #include <ICLQt/DrawWidget.h>
 #include <vector>
@@ -234,4 +233,3 @@ namespace icl{
   };
 }
 
-#endif

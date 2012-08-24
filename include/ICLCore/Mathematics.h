@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_MATH_H
-#define ICL_MATH_H
+#pragma once
 
 #include <ICLCore/Img.h>
 #include <ICLCore/ImgIterator.h>
@@ -256,4 +255,3 @@ namespace icl {
                                
 } //namespace icl
 
-#endif

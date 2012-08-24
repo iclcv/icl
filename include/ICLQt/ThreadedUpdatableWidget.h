@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_THREADED_UPDATABLE_WIDGET_H
-#define ICL_THREADED_UPDATABLE_WIDGET_H
+#pragma once
 
 #include <QtGui/QWidget>
 #include <QtGui/QApplication>
@@ -76,4 +75,3 @@ namespace icl{
 
 }
 
-#endif

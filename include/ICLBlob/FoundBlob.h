@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef FOUND_BLOB_H
-#define FOUND_BLOB_H
+#pragma once
 
 namespace icl{
   
@@ -77,4 +76,3 @@ namespace icl{
   };
 }
 
-#endif

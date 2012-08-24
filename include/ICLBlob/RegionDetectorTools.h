@@ -33,8 +33,7 @@
 *********************************************************************/
 
 
-#ifndef ICL_REGION_DETECTOR_TOOLS_H
-#define ICL_REGION_DETECTOR_TOOLS_H
+#pragma once
 
 #include <ICLUtils/BasicTypes.h>
 
@@ -142,4 +141,3 @@ namespace icl{
 }
 
 
-#endif  

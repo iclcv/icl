@@ -32,11 +32,9 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef PCL_POINT_CLOUD_OBJECT_H
-#define PCL_POINT_CLOUD_OBJECT_H
+#pragma once
 
-#ifndef HAVE_PCL
-#warning "this header must not be included without HAVE_PCL defined"
+#pragma onceeader must not be included without HAVE_PCL defined"
 #else
 
 #include <ICLGeom/PointCloudObjectBase.h>
@@ -174,6 +172,3 @@ namespace icl{
 
 }
 
-#endif
-
-#endif

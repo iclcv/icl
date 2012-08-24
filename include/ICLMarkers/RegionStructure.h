@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_REGION_STRUCTURE_H
-#define ICL_REGION_STRUCTURE_H
+#pragma once
 
 #include <ICLUtils/SmartPtr.h>
 #include <string>
@@ -63,4 +62,3 @@ namespace icl{
   
 }
 
-#endif

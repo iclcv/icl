@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_HIT_H
-#define ICL_HIT_H
+#pragma once
 
 #include <ICLGeom/GeomDefs.h>
 #include <iostream>
@@ -76,4 +75,3 @@ namespace icl{
 
 }
 
-#endif

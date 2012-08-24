@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_COPLANAR_POINT_POSE_ESTIMATOR_H
-#define ICL_COPLANAR_POINT_POSE_ESTIMATOR_H
+#pragma once
 
 #include <ICLUtils/FixedMatrix.h>
 #include <ICLUtils/Point32f.h>
@@ -157,4 +156,3 @@ namespace icl{
   };
 }
 
-#endif

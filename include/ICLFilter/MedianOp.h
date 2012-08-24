@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICLMEDIAN_H
-#define ICLMEDIAN_H
+#pragma once
 
 #include <ICLFilter/NeighborhoodOp.h>
 
@@ -214,4 +213,3 @@ namespace icl {
   };
 
 }
-#endif

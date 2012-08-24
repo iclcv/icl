@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_SLIDER_UPDATE_EVENT_H
-#define ICL_SLIDER_UPDATE_EVENT_H
+#pragma once
 
 #include <QtCore/QEvent>
 
@@ -50,4 +49,3 @@ namespace icl{
   
 }
 
-#endif

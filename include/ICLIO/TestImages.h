@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_TESTIMAGES_H
-#define ICL_TESTIMAGES_H
+#pragma once
 
 #include <ICLCore/Img.h>
 #include <string>
@@ -136,4 +135,3 @@ namespace icl{
 
 }
 
-#endif

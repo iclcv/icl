@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_POINT_CLOUD_CREATOR_H
-#define ICL_POINT_CLOUD_CREATOR_H
+#pragma once
 
 #include <ICLGeom/RGBDImageSceneObject.h>
 #include <ICLGeom/PointCloudObjectBase.h>
@@ -106,4 +105,3 @@ namespace icl{
 
 }
 
-#endif

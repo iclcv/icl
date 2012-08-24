@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_DRAW_HANDLE_H
-#define ICL_DRAW_HANDLE_H
+#pragma once
 
 #include <ICLQt/GUIHandle.h>
 #include <ICLUtils/Exception.h>
@@ -81,4 +80,3 @@ namespace icl{
   
 }
 
-#endif

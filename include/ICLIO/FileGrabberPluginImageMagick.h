@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FILE_GRABBER_PLUGIN_IMAGE_MAGIC_H
-#define ICL_FILE_GRABBER_PLUGIN_IMAGE_MAGIC_H
+#pragma once
 
 #include <ICLIO/FileGrabberPlugin.h>
 
@@ -62,4 +61,3 @@ namespace icl{
   };  
 }
 
-#endif

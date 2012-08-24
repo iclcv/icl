@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_UNARY_OP_PIPE_H
-#define ICL_UNARY_OP_PIPE_H
+#pragma once
 #include <vector>
 #include <ICLFilter/UnaryOp.h>
 namespace icl{
@@ -138,4 +137,3 @@ namespace icl{
     std::vector<ImgBase*> ims;
   };
 }
-#endif

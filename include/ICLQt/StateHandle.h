@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_STATE_HANDLE_H
-#define ICL_STATE_HANDLE_H
+#pragma once
 
 #include <string>
 #include <ICLQt/GUIHandle.h>
@@ -96,4 +95,3 @@ namespace icl{
  
 }                               
 
-#endif

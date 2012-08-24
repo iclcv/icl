@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_GUI_FPS_H
-#define ICL_GUI_FPS_H
+#pragma once
 
 #include <string>
 #include <QtCore/QString>
@@ -77,4 +76,3 @@ namespace icl{
  
 }                               
 
-#endif

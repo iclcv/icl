@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_CHROMA_AND_RGB_CLASSIFIER_H
-#define ICL_CHROMA_AND_RGB_CLASSIFIER_H
+#pragma once
 
 #include <ICLCC/ChromaClassifier.h>
 
@@ -73,4 +72,3 @@ namespace icl{
   };
 }
 
-#endif

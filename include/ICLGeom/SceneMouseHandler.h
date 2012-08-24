@@ -32,15 +32,12 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_SCENE_MOUSE_HANDLER_H
-#define ICL_SCENE_MOUSE_HANDLER_H
+#pragma once
 
 
-#ifndef HAVE_OPENGL
-#define HAVE_OPENGL_OR_HAVE_QT_MISSING
+#pragma once_OR_HAVE_QT_MISSING
 #endif
-#ifndef HAVE_QT
-#define HAVE_OPENGL_OR_HAVE_QT_MISSING
+#pragma onceENGL_OR_HAVE_QT_MISSING
 #endif
 
 #ifdef HAVE_OPENGL_OR_HAVE_QT_MISSING
@@ -472,8 +469,4 @@ public:
 
 
 };
-//#endif
-
-}
-#endif
-#endif
+//

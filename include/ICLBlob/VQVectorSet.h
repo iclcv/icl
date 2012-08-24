@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef VQVECTOR_SET_H
-#define VQVECTOR_SET_H
+#pragma once
 
 #include <ICLUtils/Macros.h>
 #include <cstring>
@@ -97,6 +96,4 @@ namespace icl{
     bool m_bDeleteDataFlag;/**!< flag to indicate wheather data must be deleted in the destructor */
   };
 }
-
-#endif
 

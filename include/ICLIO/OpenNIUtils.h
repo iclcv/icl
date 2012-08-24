@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_OPENNI_UTILS_H
-#define ICL_OPENNI_UTILS_H
+#pragma once
 
 #include <ICLCore/ImgBase.h>
 #include <ICLUtils/Mutex.h>
@@ -488,6 +487,4 @@ namespace icl {
   } // namespace icl_openni
 
 } // namespace icl
-
-#endif
 

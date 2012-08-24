@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_SPINNER_HANDLE_H
-#define ICL_SPINNER_HANDLE_H
+#pragma once
 
 #include <ICLQt/GUIHandle.h>
 
@@ -91,4 +90,3 @@ namespace icl{
   };  
 }
 
-#endif

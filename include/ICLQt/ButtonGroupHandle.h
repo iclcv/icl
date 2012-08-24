@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_BUTTON_GROUP_HANDLE_H
-#define ICL_BUTTON_GROUP_HANDLE_H
+#pragma once
 
 #include <vector>
 #include <string>
@@ -98,4 +97,3 @@ namespace icl{
   };
   
 }
-#endif

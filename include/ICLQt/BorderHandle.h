@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_BORDER_HANDLE_H
-#define ICL_BORDER_HANDLE_H
+#pragma once
 
 #include <ICLQt/GUIHandle.h>
 #include <string>
@@ -62,4 +61,3 @@ namespace icl{
   
 }
 
-#endif

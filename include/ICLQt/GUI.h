@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_GUI_H
-#define ICL_GUI_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -217,4 +216,3 @@ namespace icl{
 
 }
 
-#endif

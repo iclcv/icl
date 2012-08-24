@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_REGION_PCA_INFO_H
-#define ICL_REGION_PCA_INFO_H
+#pragma once
 
 #include <cmath>
 
@@ -64,4 +63,3 @@ namespace icl{
   };
 }
 
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FUDUCIAL_DETECTOR_PLUGIN_ICL1_H
-#define ICL_FUDUCIAL_DETECTOR_PLUGIN_ICL1_H
+#pragma once
 
 #include <ICLMarkers/FiducialDetectorPluginHierarchical.h>
 
@@ -100,4 +99,3 @@ namespace icl{
   };
 }
 
-#endif

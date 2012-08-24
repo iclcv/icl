@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_SIMPLEX_OPTIMIZER_H
-#define ICL_SIMPLEX_OPTIMIZER_H
+#pragma once
 
 #include <ICLUtils/DynVector.h>
 #include <ICLUtils/FixedVector.h>
@@ -248,4 +247,3 @@ namespace icl{
 } 
 
 
-#endif

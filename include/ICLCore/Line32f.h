@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_LINE_32F_H
-#define ICL_LINE_32f_H
+#pragma once
 
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/Rect.h>
@@ -129,4 +128,3 @@ namespace icl{
 
 }
 
-#endif

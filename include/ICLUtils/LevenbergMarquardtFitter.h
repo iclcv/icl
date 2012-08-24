@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_LEVENBERG_MARQUARDT_FITTER_H
-#define ICL_LEVENBERG_MARQUARDT_FITTER_H
+#pragma once
 
 #include <ICLUtils/DynVector.h>            
 #include <ICLUtils/Function.h>
@@ -334,4 +333,3 @@ int main(){
   };
 }
 
-#endif

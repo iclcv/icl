@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FILE_WRITER_PLUGIN_H
-#define ICL_FILE_WRITER_PLUGIN_H
+#pragma once
 
 #include <ICLCore/Img.h>
 #include <ICLIO/File.h>
@@ -48,4 +47,3 @@ namespace icl{
     virtual void write(File &file, const ImgBase *image)=0;
   };
 }
-#endif

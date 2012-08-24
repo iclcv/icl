@@ -31,8 +31,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_MYRMEX_DEODER_H
-#define ICL_MYRMEX_DEODER_H
+#pragma once
 
 #include <ICLCore/Img.h>
 
@@ -81,4 +80,3 @@ namespace icl{
 
 }
 
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_CHAMFER_OP
-#define ICL_CHAMFER_OP
+#pragma once
 
 #include <ICLFilter/UnaryOp.h>
 #include <ICLCore/Img.h>
@@ -388,4 +387,3 @@ namespace icl{
     Img32s m_oBufferImage;
   };
 }
-#endif

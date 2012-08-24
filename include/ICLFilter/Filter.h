@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FILTER_H
-#define ICL_FILTER_H
+#pragma once
 
 /** \defgroup UNARY Collection of Unary Operations
     \defgroup BINARY Collection of Binary Operations
@@ -96,4 +95,3 @@
     -# \ref OTHER
 
     **/
-#endif

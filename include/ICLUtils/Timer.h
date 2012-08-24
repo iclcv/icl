@@ -45,8 +45,7 @@
               mgoettin@techfak.uni-bielefeld.de
 */
 
-#ifndef ICL_TIMER_H
-#define ICL_TIMER_H
+#pragma once
 
 
 namespace icl {
@@ -111,4 +110,3 @@ class Timer
 } //namespace ICL
 
 
-#endif //ICL_TIME_H

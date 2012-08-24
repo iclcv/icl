@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_BASIC_TYPES_H
-#define ICL_BASIC_TYPES_H
+#pragma once
 
 #ifdef HAVE_IPP
 #include <ipp.h>
@@ -91,4 +90,3 @@ namespace icl {
   typedef uint16_t icl16u;
 }
 
-#endif // include guard

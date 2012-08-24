@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_PRIMITIVE_TYPE_H
-#define ICL_PRIMITIVE_TYPE_H
+#pragma once
 
 namespace icl{
 
@@ -50,4 +49,3 @@ namespace icl{
   };
 }
 
-#endif

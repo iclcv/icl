@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef TRANSLATE_OP_H
-#define TRANSLATE_OP_H
+#pragma once
 
 #include <ICLFilter/AffineOp.h>
 
@@ -73,4 +72,3 @@ namespace icl{
     using AffineOp::setAdaptResultImage;
   };
 }
-#endif

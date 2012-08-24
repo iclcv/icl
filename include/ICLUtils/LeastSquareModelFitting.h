@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_LEAST_SQUARE_MODEL_FITTING_H
-#define ICL_LEAST_SQUARE_MODEL_FITTING_H
+#pragma once
 
 #include <ICLUtils/DynMatrix.h>
 
@@ -222,4 +221,3 @@ namespace icl{
 }
 
 
-#endif

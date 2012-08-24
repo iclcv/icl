@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_IMG_BUFFER_H
-#define ICL_IMG_BUFFER_H
+#pragma once
 
 #include <ICLUtils/Uncopyable.h>
 #include <ICLCore/Img.h>
@@ -113,4 +112,3 @@ namespace icl{
   
 }
 
-#endif

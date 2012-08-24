@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_OPEN_CV_H
-#define ICL_OPEN_CV_H
+#pragma once
 
 #ifdef HAVE_OPENCV
 #include <opencv/cxcore.h>
@@ -109,5 +108,3 @@ namespace icl{
   CvMat *img_to_cvmat_shallow(const ImgBase *src,CvMat *dst=0) throw (ICLException);
 
 }
-#endif
-

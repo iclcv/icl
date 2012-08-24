@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef OP_ROI_HANDLER_H
-#define OP_ROI_HANDLER_H
+#pragma once
 
 #include <ICLCore/ImgBase.h>
 
@@ -138,4 +137,3 @@ namespace icl {
     bool m_bClipToROI, m_bCheckOnly;
   };
 }
-#endif

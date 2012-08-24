@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_USEFUL_FUNCTIONS_H
-#define ICL_USEFUL_FUNCTIONS_H
+#pragma once
 
 #include <ICLCore/Img.h>
 #include <ICLBlob/RegionDetector.h>
@@ -122,4 +121,3 @@ namespace icl{
   
 }
 
-#endif

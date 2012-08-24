@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_CORE_FUNCTIONS_H
-#define ICL_CORE_FUNCTIONS_H
+#pragma once
 
 #include <ICLUtils/Macros.h>
 #include <ICLCore/Types.h>
@@ -330,4 +329,3 @@ ICL_INSTANTIATE_ALL_DEPTHS
   /* }}} */
 
 } // namespace icl
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_XML_H
-#define ICL_XML_H
+#pragma once
 
 #include <ICLUtils/PugiXML.h>
 
@@ -106,4 +105,3 @@ namespace icl{
   typedef pugi::xpath_node_set XPathNodeSet;
 }
 
-#endif

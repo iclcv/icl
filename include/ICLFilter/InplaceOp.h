@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_INPLACE_OP
-#define ICL_INPLACE_OP
+#pragma once
 
 #include <ICLCore/ImgBase.h>
 
@@ -72,4 +71,3 @@ namespace icl{
   };
 }
 
-#endif

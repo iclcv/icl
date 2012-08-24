@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef BASEAFFINE_OP_H
-#define BASEAFFINE_OP_H
+#pragma once
 
 #include <ICLFilter/UnaryOp.h>
 
@@ -59,4 +58,3 @@ namespace icl{
 
 }
 
-#endif

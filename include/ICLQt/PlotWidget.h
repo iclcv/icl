@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_PLOT_WIDGET_H
-#define ICL_PLOT_WIDGET_H
+#pragma once
 
 #include <ICLQt/LowLevelPlotWidget.h>
 #include <ICLUtils/FixedMatrix.h>
@@ -424,4 +423,3 @@ namespace icl{
 
 };
 
-#endif

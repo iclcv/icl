@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_SMART_PTR_H
-#define ICL_SMART_PTR_H
+#pragma once
 
 #include <ICLUtils/SmartPtrBase.h>
 
@@ -94,4 +93,3 @@ namespace icl{
 
 }
 
-#endif

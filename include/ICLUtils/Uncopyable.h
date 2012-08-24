@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_UNCOPYABLE_H
-#define ICL_UNCOPYABLE_H
+#pragma once
 
 namespace icl{
   /// Class interface for un-copyable classes.
@@ -81,4 +80,3 @@ namespace icl{
   };
 }
 
-#endif

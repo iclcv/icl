@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_COMPABILITY_LABEL_H
-#define ICL_COMPABILITY_LABEL_H
+#pragma once
 
 #include <ICLQt/ThreadedUpdatableWidget.h>
 #include <QtCore/QString>
@@ -87,4 +86,3 @@ namespace icl{
   };
 }
 
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ROTATE_OP_H
-#define ROTATE_OP_H
+#pragma once
 
 #include <ICLFilter/AffineOp.h>
 
@@ -66,4 +65,3 @@ namespace icl{
     using AffineOp::scale;
   };
 }
-#endif

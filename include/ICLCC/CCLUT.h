@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef CC_LUT_H
-#define CC_LUT_H
+#pragma once
 
 #include <ICLCore/Img.h>
 #include <vector>
@@ -112,4 +111,3 @@ namespace icl{
       */
 }
 
-#endif

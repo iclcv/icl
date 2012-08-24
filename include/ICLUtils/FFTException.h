@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef FFTEXCEPTION_H_
-#define FFTEXCEPTION_H_
+#pragma once
 #include<ICLUtils/Exception.h>
 
 namespace icl{
@@ -42,4 +41,3 @@ public:
 	FFTException(const std::string &msg):ICLException(msg){}
 };
 }
-#endif /* FFTEXCEPTION_H_ */

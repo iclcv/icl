@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef STR_TOK_H
-#define STR_TOK_H
+#pragma once
 
 #include <vector>
 #include <string>
@@ -121,4 +120,3 @@ namespace icl{
 }
 
 
-#endif

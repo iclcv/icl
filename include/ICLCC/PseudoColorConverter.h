@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_SPEUDO_COLOR_CONVERTER_H
-#define ICL_SPEUDO_COLOR_CONVERTER_H
+#pragma once
 
 #include <ICLCC/Color.h>
 #include <ICLCore/Img.h>
@@ -108,4 +107,3 @@ namespace icl{
 }
 
 
-#endif

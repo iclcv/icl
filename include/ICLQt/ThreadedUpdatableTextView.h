@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_THREADED_UPDATABLE_TEXT_VIEW_H
-#define ICL_THREADED_UPDATABLE_TEXT_VIEW_H
+#pragma once
 
 #include <QtGui/QTextEdit>
 #include <QtCore/QEvent>
@@ -66,4 +65,3 @@ namespace icl{
   };
 }
 
-#endif

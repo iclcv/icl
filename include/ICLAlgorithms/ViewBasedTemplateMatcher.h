@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_VIEW_BASED_TEMPLATE_MATCHER_H
-#define ICL_VIEW_BASED_TEMPLATE_MATCHER_H
+#pragma once
 
 #include <ICLAlgorithms/UsefulFunctions.h>
 #include <ICLUtils/UncopiedInstance.h>
@@ -91,4 +90,3 @@ namespace icl{
   
 }
 
-#endif

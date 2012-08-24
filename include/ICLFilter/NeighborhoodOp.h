@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef NEIGHBORHOOD_OP_H
-#define NEIGHBORHOOD_OP_H
+#pragma once
 
 #include <ICLFilter/UnaryOp.h>
 
@@ -135,4 +134,3 @@ namespace icl {
      Point m_oROIOffset; ///< to-be-used ROI offset for source image
   };
 }
-#endif

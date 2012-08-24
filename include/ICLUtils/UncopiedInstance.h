@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_UNCOPIED_INSTANCE_H
-#define ICL_UNCOPIED_INSTANCE_H
+#pragma once
 
 namespace icl{
   
@@ -87,4 +86,3 @@ namespace icl{
   };
 }
 
-#endif

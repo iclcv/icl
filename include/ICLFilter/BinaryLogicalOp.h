@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef BINARY_LOGICAL_H
-#define BINARY_LOGICAL_H
+#pragma once
 
 #include <ICLFilter/BinaryOp.h>
 #include <ICLCore/Img.h>
@@ -90,4 +89,3 @@ namespace icl {
   
 } // namespace icl
 
-#endif

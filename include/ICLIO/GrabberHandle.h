@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_GRABBER_HANDLE_H
-#define ICL_GRABBER_HANDLE_H
+#pragma once
 
 #include <ICLIO/Grabber.h>
 #include <ICLUtils/Mutex.h>
@@ -313,4 +312,3 @@ namespace icl{
   /** \endcond */
 }
 
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_TEXT_TABLE_H
-#define ICL_TEXT_TABLE_H
+#pragma once
 
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Size.h>
@@ -170,4 +169,3 @@ int main(int n, char **ppc){
   }
 }
 
-#endif

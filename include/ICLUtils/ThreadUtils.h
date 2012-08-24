@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_THREAD_UTILS_H
-#define ICL_THREAD_UTILS_H
+#pragma once
 
 #include <stdlib.h>
 #include <ICLUtils/Thread.h>
@@ -293,4 +292,3 @@ namespace icl{
 
 }
 
-#endif

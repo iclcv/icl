@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef BINARY_COMPARE_OP_H
-#define BINARY_COMPARE_OP_H
+#pragma once
 
 #include <ICLFilter/BinaryOp.h>
 
@@ -116,4 +115,3 @@ namespace icl {
 
 } // namespace icl
 
-#endif

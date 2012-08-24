@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_IMAGE_SPLITTER_H
-#define ICL_IMAGE_SPLITTER_H
+#pragma once
 
 #include <ICLCore/ImgBase.h>
 #include <vector>
@@ -82,4 +81,3 @@ namespace icl{
   };
 }
 
-#endif

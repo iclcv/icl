@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_WORKING_LINE_SEGMENT_H
-#define ICL_WORKING_LINE_SEGMENT_H
+#pragma once
 
 #include <ICLBlob/LineSegment.h>
 
@@ -84,4 +83,3 @@ namespace icl{
   
   
 }
-#endif

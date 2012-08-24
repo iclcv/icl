@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef WIENER_OP_H
-#define WIENER_OP_H
+#pragma once
 
 #include <ICLFilter/NeighborhoodOp.h>
 #include <vector>
@@ -91,4 +90,3 @@ namespace icl {
   };
 } // namespace icl
 
-#endif // WIENER_H

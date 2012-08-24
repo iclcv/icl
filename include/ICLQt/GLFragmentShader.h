@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_GL_FRAGMENT_SHADER_H
-#define ICL_GL_FRAGMENT_SHADER_H
+#pragma once
 
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/Exception.h>
@@ -66,4 +65,3 @@ namespace icl{
   };
 }
 
-#endif

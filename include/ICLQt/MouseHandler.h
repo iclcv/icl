@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef MOUSE_HANDLER_H
-#define MOUSE_HANDLER_H
+#pragma once
 
 #include <QtCore/QObject>
 #include <ICLQt/MouseEvent.h>
@@ -139,4 +138,3 @@ int main(int n, char **ppc){
 
 }
 
-#endif

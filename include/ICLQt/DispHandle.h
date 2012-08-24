@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_DISP_HANDLE_H
-#define ICL_DISP_HANDLE_H
+#pragma once
 
 #include <ICLUtils/Array2D.h>
 #include <ICLQt/LabelHandle.h>
@@ -94,4 +93,3 @@ namespace icl{
 
 }
 
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef PROXIMITY_OP_H
-#define PROXIMITY_OP_H
+#pragma once
 
 #include <ICLFilter/BinaryOp.h>
 #include <ICLFilter/NeighborhoodOp.h>
@@ -184,6 +183,3 @@ namespace icl {
     Img32f *m_poTemplateBuffer;
   };
 } // namespace icl
-#endif
-
-

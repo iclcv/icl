@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_POINT_CLOUD_OBJECT_H
-#define ICL_POINT_CLOUD_OBJECT_H
+#pragma once
 
 #include <ICLGeom/PointCloudObjectBase.h>
 
@@ -98,4 +97,3 @@ namespace icl{
   
 }
 
-#endif

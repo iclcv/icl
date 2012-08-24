@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_CONSOLE_PROGRESS_H
-#define ICL_CONSOLE_PROGRESS_H
+#pragma once
 
 #include <string>
 
@@ -51,4 +50,3 @@ namespace icl{
 
 }
 
-#endif

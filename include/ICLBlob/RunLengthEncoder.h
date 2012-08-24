@@ -33,8 +33,7 @@
 *********************************************************************/
 
 
-#ifndef ICL_RUN_LENGTH_ENCODER_H
-#define ICL_RUN_LENGTH_ENCODER_H
+#pragma once
 
 #include <ICLBlob/WorkingLineSegment.h>
 #include <ICLUtils/Size.h>
@@ -155,4 +154,3 @@ namespace icl {
 
 }
 
-#endif

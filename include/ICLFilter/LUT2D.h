@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_LUT_2D_H
-#define ICL_LUT_2D_H
+#pragma once
 
 namespace icl{
   
@@ -95,4 +94,3 @@ namespace icl{
   };
 }
 
-#endif

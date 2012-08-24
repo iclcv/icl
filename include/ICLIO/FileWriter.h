@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FILE_WRITER2_H
-#define ICL_FILE_WRITER2_H
+#pragma once
 
 #include <ICLUtils/Uncopyable.h>
 #include <ICLIO/ImageOutput.h>
@@ -176,4 +175,3 @@ namespace icl{
 
 }
 
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_UNARY_OP_WORK_H
-#define ICL_UNARY_OP_WORK_H
+#pragma once
 
 #include <ICLUtils/MultiThreader.h>
 #include <ICLFilter/UnaryOp.h>
@@ -65,4 +64,3 @@ namespace icl{
   };
 
 }
-#endif

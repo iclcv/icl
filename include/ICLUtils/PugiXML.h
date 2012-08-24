@@ -14,8 +14,7 @@
     * The ICL developers applied only minor changes on this files
     *************************************************************************/
 
-#ifndef ICL_PUGI_XML_H
-#define ICL_PUGI_XML_H
+#pragma once
 
 /** \cond */
 //#include "pugiconfig.hpp" we use everything here
@@ -1147,7 +1146,6 @@ namespace std
 #endif
 
 
-#endif
 
 /**
     * Copyright (c) 2006-2010 Arseny Kapoulkine

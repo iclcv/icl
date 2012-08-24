@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_RANDOM_H
-#define ICL_RANDOM_H
+#pragma once
 
 #include <cmath>
 #include <cstdlib>
@@ -208,4 +207,3 @@ namespace icl{
   
 }
 
-#endif

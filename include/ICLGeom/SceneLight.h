@@ -32,11 +32,9 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_SCENE_LIGHT_H
-#define ICL_SCENE_LIGHT_H
+#pragma once
 
-#ifndef HAVE_OPENGL
-#warning "this header must not be included if HAVE_OPENGL is not defined"
+#pragma onceer must not be included if HAVE_OPENGL is not defined"
 #else
 
 #include <ICLGeom/GeomDefs.h>
@@ -188,5 +186,3 @@ namespace icl{
   };
 }
 
-#endif
-#endif

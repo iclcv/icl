@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICLBORDERBOX_H
-#define ICLBORDERBOX_H
+#pragma once
 
 #include <QtGui/QGroupBox>
 #include <QtGui/QVBoxLayout>
@@ -64,4 +63,3 @@ namespace icl{
 }
 
 
-#endif

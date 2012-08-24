@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_IO_H
-#define ICL_IO_H
+#pragma once
 
 #ifdef HAVE_LIBDC
 #include <ICLIO/DCGrabber.h>
@@ -247,4 +246,3 @@
 
 
 
-#endif

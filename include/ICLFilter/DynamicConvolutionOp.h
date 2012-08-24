@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef DYNAMIC_CONVOLUTION_OP_H
-#define DYNAMIC_CONVOLUTION_OP_H
+#pragma once
 
 #include <ICLFilter/ConvolutionOp.h>
 
@@ -65,4 +64,3 @@ namespace icl{
   
 }
 
-#endif

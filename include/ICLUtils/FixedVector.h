@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FIXED_VECTOR_H
-#define ICL_FIXED_VECTOR_H
+#pragma once
 
 #include <ICLUtils/FixedMatrix.h>
 
@@ -83,4 +82,3 @@ namespace icl{
   
 }
 
-#endif

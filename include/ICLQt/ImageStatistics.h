@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_IMAGE_STATISTICS_H
-#define ICL_IMAGE_STATISTICS_H
+#pragma once
 
 #include <vector>
 #include <ICLCore/Types.h>
@@ -53,4 +52,3 @@ namespace icl{
   };
 }
 
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_TEMPLATE_TRACKER_H
-#define ICL_TEMPLATE_TRACKER_H
+#pragma once
 
 #include <ICLUtils/Configurable.h>
 #include <ICLUtils/Uncopyable.h>
@@ -98,4 +97,3 @@ namespace icl{
 
 }
 
-#endif

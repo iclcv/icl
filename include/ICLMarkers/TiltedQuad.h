@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_TILTED_QUAD_H
-#define ICL_TILTED_QUAD_H
+#pragma once
 
 #include <ICLUtils/Point32f.h>
 #include <ICLBlob/ImageRegion.h>
@@ -93,4 +92,3 @@ namespace icl{
 }
 
 
-#endif

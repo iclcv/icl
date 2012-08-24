@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FPS_ESTIMATOR_H
-#define ICL_FPS_ESTIMATOR_H
+#pragma once
 
 #include <ICLUtils/Time.h>
 #include <deque>
@@ -80,4 +79,3 @@ namespace icl{
 }
 
 
-#endif

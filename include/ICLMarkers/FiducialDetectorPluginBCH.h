@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FUDUCIAL_DETECTOR_PLUGIN_BCH_H
-#define ICL_FUDUCIAL_DETECTOR_PLUGIN_BCH_H
+#pragma once
 
 #include <ICLMarkers/FiducialDetectorPluginForQuads.h>
 
@@ -89,4 +88,3 @@ namespace icl{
   };
 }
 
-#endif

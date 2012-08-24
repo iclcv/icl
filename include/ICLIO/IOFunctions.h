@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_IO_FUNCTIONS_H
-#define ICL_IO_FUNCTIONS_H
+#pragma once
 
 #include <string>
 #include <ICLCore/Types.h>
@@ -55,4 +54,3 @@ namespace icl {
 
 } //namespace icl
 
-#endif

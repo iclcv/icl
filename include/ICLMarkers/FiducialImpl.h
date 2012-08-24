@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FIDUCIAL_IMPL_H
-#define ICL_FIDUCIAL_IMPL_H
+#pragma once
 
 #include <bitset>
 #include <ICLUtils/Size32f.h>
@@ -166,4 +165,3 @@ namespace icl{
 }
 
 
-#endif

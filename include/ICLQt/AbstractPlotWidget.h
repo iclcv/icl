@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_ABSTRACT_PLOT_WIDGET_H
-#define ICL_ABSTRACT_PLOT_WIDGET_H
+#pragma once
 
 #include <ICLUtils/DynMatrix.h>
 #include <ICLUtils/Range.h>
@@ -360,6 +359,4 @@ namespace icl{
   }
   /** \endcond **/
 }
-
-#endif
 

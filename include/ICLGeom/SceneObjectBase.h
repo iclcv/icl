@@ -32,31 +32,8 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_SCENE_OBJECT_BASE_H
-#define ICL_SCENE_OBJECT_BASE_H
+#pragma once
 
-#ifndef HAVE_OPENGL
-#warning "this header must not be included if HAVE_OPENGL is not defined"
+#pragma onceer must not be included if HAVE_OPENGL is not defined"
 #else
 
-#include <ICLUtils/Mutex.h>
-#include <ICLQt/GLFragmentShader.h>
-
-namespace icl{
-
-  /** \cond */
-  class Scene;
-  /** \endcond */
- 
-  
-  /// The SceneObjectBase class defines and abstract interface for visible entities in 3D scenes
-  /** TODO */
-  class SceneObjectBase{
-    public:
-    virtual SceneObjectBase *copy() const = 0;
-
-    virtual void customRender() = 0;
-  };
-
-
-}

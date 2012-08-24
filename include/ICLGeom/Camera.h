@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_CAMERA_H
-#define ICL_CAMERA_H
+#pragma once
 
 #include <ICLUtils/Size.h>
 #include <ICLUtils/Point32f.h>
@@ -476,4 +475,3 @@ namespace icl {
 
 } // namespace icl
 
-#endif

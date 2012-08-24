@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_COMPAT_MACROS_H
-#define ICL_COMPAT_MACROS_H
+#pragma once
 
 #ifdef SYSTEM_WINDOWS
 #	define IPP_DECL __stdcall
@@ -46,4 +45,3 @@
 #	define IPP_DECL
 #endif
 
-#endif

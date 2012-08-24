@@ -31,8 +31,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FOUR_CC_H
-#define ICL_FOUR_CC_H
+#pragma once
 
 #include <ICLUtils/BasicTypes.h>
 #include <ICLUtils/Exception.h>
@@ -102,4 +101,3 @@ namespace icl{
 
 }
 
-#endif

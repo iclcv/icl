@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FILE_READER_PLUGIN_PNG_H
-#define ICL_FILE_READER_PLUGIN_PNG_H
+#pragma once
 
 #include <ICLIO/FileGrabberPlugin.h>
 #include <vector>
@@ -56,4 +55,3 @@ namespace icl{
   };  
 }
 
-#endif

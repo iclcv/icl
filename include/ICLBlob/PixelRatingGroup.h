@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef PIXEL_RATING_GROUP_H
-#define PIXEL_RATING_GROUP_H
+#pragma once
 
 #include <ICLBlob/PixelRating.h>
 #include <vector>
@@ -110,4 +109,3 @@ namespace icl{
   };
 }
 
-#endif

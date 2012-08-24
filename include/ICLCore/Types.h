@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_TYPES_H
-#define ICL_TYPES_H
+#pragma once
 
 #include <ICLUtils/BasicTypes.h>
 
@@ -113,4 +112,3 @@ namespace icl {
   };
 }
 
-#endif //ICL_TYPES_H

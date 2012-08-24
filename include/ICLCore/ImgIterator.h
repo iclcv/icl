@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_IMG_ITERATOR_H
-#define ICL_IMG_ITERATOR_H
+#pragma once
 
 #include <ICLCore/CoreFunctions.h>
 #include <ICLUtils/MatrixSubRectIterator.h>
@@ -317,4 +316,3 @@ icl8u find_min_iterator_cpp_inRegion(const Img8u &i){
 
   };
 }
-#endif

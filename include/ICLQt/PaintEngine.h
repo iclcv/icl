@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_PAINT_ENGINE_H
-#define ICL_PAINT_ENGINE_H
+#pragma once
 
 #include <stdio.h>
 #include <ICLUtils/Point32f.h>
@@ -85,6 +84,4 @@ namespace icl{
 
   };
 }// namespace
-
-#endif
 

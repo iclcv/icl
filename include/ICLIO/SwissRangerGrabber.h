@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_SWISSRANGER_GRABBER_H
-#define ICL_SWISSRANGER_GRABBER_H
+#pragma once
 
 #include <ICLIO/GrabberHandle.h>
 #include <ICLUtils/Exception.h>
@@ -131,4 +130,3 @@ namespace icl{
   
 }
 
-#endif

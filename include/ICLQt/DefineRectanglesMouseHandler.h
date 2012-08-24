@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_DEFINE_RECTANGLES_MOUSE_HANDLER_H
-#define ICL_DEFINE_RECTANGLES_MOUSE_HANDLER_H
+#pragma once
 
 #include <ICLQt/MouseHandler.h>
 #include <ICLUtils/Lockable.h>
@@ -287,4 +286,3 @@ namespace icl{
   };
 }
 
-#endif

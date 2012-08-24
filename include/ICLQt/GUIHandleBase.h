@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_GUI_HANDLE_BASE_H
-#define ICL_GUI_HANDLE_BASE_H
+#pragma once
 
 #include <ICLQt/GUIWidget.h>
 
@@ -115,4 +114,3 @@ namespace icl{
   };
 }
 
-#endif

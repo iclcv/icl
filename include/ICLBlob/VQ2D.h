@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef VQ2D_H
-#define VQ2D_H
+#pragma once
 
 #include <stdlib.h>
 #include <ICLBlob/VQVectorSet.h>
@@ -100,4 +99,3 @@ namespace icl{
   };
 }
 
-#endif

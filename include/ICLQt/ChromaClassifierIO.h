@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_CHROMA_CLASSIFIER_IO_H
-#define ICL_CHROMA_CLASSIFIER_IO_H
+#pragma once
 
 #include <ICLCC/Parable.h>
 #include <ICLCC/ChromaClassifier.h>
@@ -59,4 +58,3 @@ namespace icl{
   };
 }
 
-#endif

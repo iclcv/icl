@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_TWO_LEVEL_REGION_STRUCTURE_H
-#define ICL_TWO_LEVEL_REGION_STRUCTURE_H
+#pragma once
 
 #include <vector>
 #include <string>
@@ -106,4 +105,3 @@ namespace icl{
 }
 
 
-#endif

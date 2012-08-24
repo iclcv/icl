@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_POINT_32F_H
-#define ICL_POINT_32F_H
+#pragma once
 
 #include <ICLUtils/Point.h>
 #include <ICLUtils/ClippedCast.h>
@@ -137,4 +136,3 @@ namespace icl{
   
 } // namespace icl
 
-#endif // ICLPOINT_32F_H

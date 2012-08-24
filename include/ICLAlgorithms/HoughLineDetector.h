@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_HOUGH_LINE_DETECTOR_H
-#define ICL_HOUGH_LINE_DETECTOR_H
+#pragma once
 
 
 #include <cmath>
@@ -267,4 +266,3 @@ namespace icl{
   
 }
 
-#endif

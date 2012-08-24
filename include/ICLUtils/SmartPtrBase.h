@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_SMART_PTR_BASE_H
-#define ICL_SMART_PTR_BASE_H
+#pragma once
 
 #include <cstdlib>
 #include <ICLUtils/Macros.h>
@@ -242,4 +241,3 @@ namespace icl{
 
 }
 
-#endif

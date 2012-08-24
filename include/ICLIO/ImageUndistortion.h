@@ -31,8 +31,7 @@
  ** Excellence Initiative.                                          **
  **                                                                 **
  *********************************************************************/
-#ifndef ICL_IMAGEUNDISTORTION_H_
-#define ICL_IMAGEUNDISTORTION_H_
+#pragma once
 
 #include <ICLCore/Img.h>
 
@@ -83,7 +82,4 @@ std::istream &operator>>(std::istream &is, ImageUndistortion &udist);
 /// overloaded istream operator for ImageUndistortion instances 
 std::ostream &operator<<(std::ostream &s, const ImageUndistortion &udist);
 }
-
-#endif
-
 

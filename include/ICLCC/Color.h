@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_COLOR_H
-#define ICL_COLOR_H
+#pragma once
 
 #include <ICLUtils/BasicTypes.h>
 #include <ICLUtils/FixedVector.h>
@@ -86,4 +85,3 @@ namespace icl{
   Color color_from_string(const std::string &name);
 
 }
-#endif

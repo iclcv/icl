@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef LOCAL_THRESHOLD_OP_H
-#define LOCAL_THRESHOLD_OP_H
+#pragma once
 
 #include <ICLFilter/UnaryOp.h>
 #include <ICLUtils/Size.h>
@@ -267,4 +266,3 @@ namespace icl{
   };
   
 }  
-#endif

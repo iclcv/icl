@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef BINARY_ARITHMETICAL_H
-#define BINARY_ARITHMETICAL_H
+#pragma once
 
 #include <ICLFilter/BinaryOp.h>
 #include <ICLCore/Img.h>
@@ -90,4 +89,3 @@ namespace icl {
   
 } // namespace icl
 
-#endif

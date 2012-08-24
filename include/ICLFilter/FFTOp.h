@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FFTOP_H_
-#define ICL_FFTOP_H_
+#pragma once
 #include <ICLUtils/FFTUtils.h>
 #include <ICLCore/ImgBase.h>
 #include <ICLCore/Img.h>
@@ -226,4 +225,3 @@ public:
 };
 }
 
-#endif /* ICL_FFTOP_H_ */

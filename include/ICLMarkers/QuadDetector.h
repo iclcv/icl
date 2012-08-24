@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_QUAD_DETECTOR_H
-#define ICL_QUAD_DETECTOR_H
+#pragma once
 
 #include <ICLUtils/Configurable.h>
 #include <ICLUtils/Uncopyable.h>
@@ -108,4 +107,3 @@ namespace icl{
 
 }
 
-#endif

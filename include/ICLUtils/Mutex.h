@@ -32,8 +32,8 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_MUTEX_H
-#define ICL_MUTEX_H
+#pragma once
+
 #include <pthread.h>
 #include <ICLUtils/Uncopyable.h>
 
@@ -160,4 +160,3 @@ namespace icl{
   /** \endcond */
 }
 
-#endif

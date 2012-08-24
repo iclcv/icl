@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_PIXEL_REF_H
-#define ICL_PIXEL_REF_H
+#pragma once
 
 #include <ICLCore/Types.h>
 #include <ICLUtils/SmartArray.h>
@@ -175,4 +174,3 @@ namespace icl{
     }
   };
 }
-#endif

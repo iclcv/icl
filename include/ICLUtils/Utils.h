@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_UTILS_H
-#define ICL_UTILS_H
+#pragma once
 
 #include <ICLUtils/FixedMatrix.h>
 #include <ICLUtils/CompatMacros.h>
@@ -337,4 +336,3 @@ int main(){
     */
 
 
-#endif

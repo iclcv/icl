@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_OPENSURFDETECTOR_H_
-#define ICL_OPENSURFDETECTOR_H_
+#pragma once
 
 #include <ICLCore/ImgBase.h>
 #include <ICLCore/Img.h>
@@ -214,4 +213,3 @@ public:
 };
 }
 
-#endif /* ICL_OPENSURFDETECTOR_H_ */

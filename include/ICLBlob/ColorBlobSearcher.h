@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef COLOR_BLOB_SEARCHER_H
-#define COLOR_BLOB_SEARCHER_H
+#pragma once
 
 #include <ICLBlob/PixelRatingGroup.h>
 #include <ICLBlob/FoundBlob.h>
@@ -157,4 +156,3 @@ namespace icl{
   };
 }
 
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_ICON_FACTORY_H
-#define ICL_ICON_FACTORY_H
+#pragma once
 
 #include <QtGui/QPixmap>
 #include <QtGui/QIcon>
@@ -52,4 +51,3 @@ namespace icl{
   };
   
 }
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef WEIGHTEDSUMOP_H
-#define WEIGHTEDSUMOP_H
+#pragma once
 
 #include <ICLCore/Img.h>
 #include <ICLFilter/UnaryOp.h>
@@ -105,4 +104,3 @@ namespace icl {
   
 } // namespace icl
 
-#endif

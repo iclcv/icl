@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_POSE_ESTIMATOR_H
-#define ICL_POSE_ESTIMATOR_H
+#pragma once
 
 #include <ICLGeom/GeomDefs.h>
 
@@ -113,4 +112,3 @@ namespace icl{
   };
 
 }
-#endif

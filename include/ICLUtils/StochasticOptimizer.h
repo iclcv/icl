@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_STOCHASTIC_OPTIMIZER_H
-#define ICL_STOCHASTIC_OPTIMIZER_H
+#pragma once
 
 namespace icl{
 
@@ -108,4 +107,3 @@ namespace icl{
   };
 }
 
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICLBASE_H
-#define ICLBASE_H
+#pragma once
 
 #include <vector>
 #include <string>
@@ -969,4 +968,3 @@ namespace icl {
  
 }
 
-#endif 

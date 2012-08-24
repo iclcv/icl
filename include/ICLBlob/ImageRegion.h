@@ -33,8 +33,7 @@
 *********************************************************************/
 
 
-#ifndef ICL_IMAGE_REGION_H
-#define ICL_IMAGE_REGION_H
+#pragma once
 
 #include <ICLUtils/ShallowCopyable.h>
 #include <ICLCore/Img.h>
@@ -261,4 +260,3 @@ namespace icl{
   
 }
 
-#endif

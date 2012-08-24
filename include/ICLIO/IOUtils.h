@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_IO_UTILS_H
-#define ICL_IO_UTILS_H
+#pragma once
 
 #include <ICLIO/Grabber.h>
 
@@ -78,4 +77,3 @@ namespace icl{
   }
 }
 
-#endif

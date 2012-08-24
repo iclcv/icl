@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_CONTAINTER_HANDLE_H
-#define ICL_CONTAINTER_HANDLE_H
+#pragma once
 
 #include <ICLUtils/Macros.h>
 #include <QtGui/QWidget>
@@ -63,4 +62,3 @@ namespace icl{
 
   };
 }
-#endif

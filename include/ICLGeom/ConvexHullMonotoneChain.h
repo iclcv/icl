@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_CONVEX_HULL_MONOTONE_CHAIN_H
-#define ICL_CONVEX_HULL_MONOTONE_CHAIN_H
+#pragma once
 
 #include <ICLGeom/GeomDefs.h>
 #include <ICLUtils/Point.h>
@@ -107,4 +106,3 @@ namespace icl{
 
   
 }
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FFTUTILS_H_
-#define ICL_FFTUTILS_H_
+#pragma once
 
 #include <complex>
 #include <ICLCore/Types.h>
@@ -323,4 +322,3 @@ icl::DynMatrix<std::complex<T2> > &joinComplex(const icl::DynMatrix<T1> &real, c
 
 }
 }
-#endif /* ICL_FFTUTILS_H_ */

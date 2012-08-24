@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_DRAGGER_H
-#define ICL_DRAGGER_H
+#pragma once
 
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/Rect32f.h>
@@ -192,4 +191,3 @@ namespace icl{
   
 }
 
-#endif

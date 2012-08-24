@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_HUNGARIAN_ALGORITHM_H
-#define ICL_HUNGARIAN_ALGORITHM_H
+#pragma once
 
 #include <ICLUtils/Array2D.h>
 #include <vector>
@@ -76,4 +75,3 @@ namespace icl{
 
 } //namespace
 
-#endif

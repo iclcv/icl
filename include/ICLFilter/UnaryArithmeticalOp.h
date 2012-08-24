@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef UNARY_ARITHMETICAL_H
-#define UNARY_ARITHMETICAL_H
+#pragma once
 
 #include <ICLFilter/UnaryOp.h>
 #include <ICLCore/Img.h>
@@ -113,4 +112,3 @@ namespace icl {
   };
 } // namespace icl
 
-#endif

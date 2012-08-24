@@ -31,8 +31,7 @@
 ** Excellence Initiative.                                          **
 **                                                                 **
 *********************************************************************/
-#ifndef ICL_IMAGE_REGION_PART_H
-#define ICL_IMAGE_REGION_PART_H
+#pragma once
 
 #include <ICLBlob/WorkingLineSegment.h>
 
@@ -96,4 +95,3 @@ namespace icl{
   
 }
 
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_SIMPLE_BLOB_SEARCHER_H
-#define ICL_SIMPLE_BLOB_SEARCHER_H
+#pragma once
 
 #include <ICLBlob/ImageRegion.h>
 #include <ICLCC/Color.h>
@@ -125,4 +124,3 @@ namespace icl{
   
 }
 
-#endif

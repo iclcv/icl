@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_PARAM_LIST_H
-#define ICL_PARAM_LIST_H
+#pragma once
 
 #include <ICLUtils/Any.h>
 #include <map>
@@ -127,4 +126,3 @@ namespace icl{
   
 }
 
-#endif

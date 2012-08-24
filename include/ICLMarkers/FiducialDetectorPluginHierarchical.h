@@ -32,8 +32,7 @@
 **                                                                   **
 ***********************************************************************/
 
-#ifndef ICL_FIDUCIAL_DETECTOR_PLUGIN_HIERARCHICAL_H
-#define ICL_FIDUCIAL_DETECTOR_PLUGIN_HIERARCHICAL_H
+#pragma once
 
 #include <ICLBlob/ImageRegion.h>
 
@@ -77,4 +76,3 @@ namespace icl{
   
 }
 
-#endif

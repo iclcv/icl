@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_SOM2D_H
-#define ICL_SOM2D_H
+#pragma once
 
 #include <ICLAlgorithms/SOM.h>
 
@@ -84,4 +83,3 @@ namespace icl{
   };
 }
 
-#endif

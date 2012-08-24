@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_DOUBLE_SLIDER_H
-#define ICL_DOUBLE_SLIDER_H
+#pragma once
 
 #include <QtGui/QWidget>
 #include <ICLUtils/CompatMacros.h>
@@ -94,4 +93,3 @@ namespace icl{
   };
 }
 
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_MULTI_CAM_FIDUCIAL_DETECTOR_H
-#define ICL_MULTI_CAM_FIDUCIAL_DETECTOR_H
+#pragma once
 
 #include <ICLMarkers/MultiCamFiducial.h>
 #include <ICLUtils/Configurable.h>
@@ -153,4 +152,3 @@ namespace icl{
   };  
 
 }
-#endif

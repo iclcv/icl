@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_DYN_MATRIX_H
-#define ICL_DYN_MATRIX_H
+#pragma once
 #include <iterator>
 #include <algorithm>
 #include <numeric>
@@ -1233,4 +1232,3 @@ DYN_MATRIX_MULT_BY_CONSTANT(64f)
  }
 }
 
-#endif

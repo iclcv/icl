@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef VQCLUSTERINFO_H
-#define VQCLUSTERINFO_H
+#pragma once
 
 #include <vector>
 
@@ -189,4 +188,3 @@ namespace icl{
   };
 }
 
-#endif

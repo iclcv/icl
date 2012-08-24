@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_BLOB_H
-#define ICL_BLOB_H
+#pragma once
 
 #include <ICLBlob/DefaultColorBlobSearcher.h>
 #include <ICLBlob/Extrapolator.h>
@@ -187,4 +186,3 @@ int main(int n,char **v){
 
 
 
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_PYLON_COLOR_CONVERTER_H
-#define ICL_PYLON_COLOR_CONVERTER_H
+#pragma once
 
 #include <pylon/PylonIncludes.h>
 
@@ -252,4 +251,3 @@ namespace icl {
   } //namespace
 } //namespace
 
-#endif

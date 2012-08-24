@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_GEOM_H
-#define ICL_GEOM_H
+#pragma once
 
 #include <ICLGeom/GeomDefs.h>
 #include <ICLGeom/Scene.h>
@@ -129,4 +128,3 @@ int main(int n, char**ppc){
 
 
 
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FLOOD_FILLER_H
-#define ICL_FLOOD_FILLER_H
+#pragma once
 
 #include <ICLCore/Img.h>
 
@@ -243,4 +242,3 @@ namespace icl{
 }
 
 
-#endif

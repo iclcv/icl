@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_ARRAY_2D_H
-#define ICL_ARRAY_2D_H
+#pragma once
 
 #include <ICLUtils/SmartArray.h>
 #include <ICLUtils/Size.h>
@@ -238,4 +237,3 @@ namespace icl{
 
 }
 
-#endif

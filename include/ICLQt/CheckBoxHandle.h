@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_CHECK_BOX_HANDLE_H
-#define ICL_CHECK_BOX_HANDLE_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -73,4 +72,3 @@ namespace icl{
   };  
 }
 
-#endif

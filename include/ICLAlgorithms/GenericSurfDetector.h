@@ -31,8 +31,7 @@
 ** Excellence Initiative.                                          **
 **                                                                 **
 *********************************************************************/
-#ifndef ICL_GENERICSURFDETECTOR_H_
-#define ICL_GENERICSURFDETECTOR_H_
+#pragma once
 
 #include <ICLCore/ImgBase.h>
 #include <ICLUtils/SmartPtr.h>
@@ -353,4 +352,3 @@ public :
 };
 }
 
-#endif /* ICL_GENERICSURFDETECTOR_H_ */

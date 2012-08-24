@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_LOCKABLE_H
-#define ICL_LOCKABLE_H
+#pragma once
 
 #include <ICLUtils/Mutex.h>
 #include <ICLUtils/UncopiedInstance.h>
@@ -59,4 +58,3 @@ namespace icl{
   
 }
 
-#endif

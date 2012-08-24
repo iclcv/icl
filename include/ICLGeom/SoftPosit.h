@@ -32,8 +32,7 @@
  **                                                                 **
  *********************************************************************/
 
-#ifndef ICL_SOFTPOSIT_H_
-#define ICL_SOFTPOSIT_H_
+#pragma once
 
 #include <ICLUtils/DynMatrix.h>
 #include <ICLUtils/FixedVector.h>
@@ -211,4 +210,3 @@ public:
 
 }
 
-#endif /* ICL_SOFTPOSIT_H_ */

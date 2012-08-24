@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_CONFIG_FILE_H
-#define ICL_CONFIG_FILE_H
+#pragma once
 
 #include <ICLUtils/StringUtils.h> 
 #include <ICLUtils/Exception.h>
@@ -595,4 +594,3 @@ namespace icl{
 
 
 
-#endif

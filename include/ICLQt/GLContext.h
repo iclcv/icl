@@ -33,8 +33,7 @@
 *********************************************************************/
 
 
-#ifndef ICL_GL_CONTEXT_H
-#define ICL_GL_CONTEXT_H
+#pragma once
 
 namespace icl{
   
@@ -121,4 +120,3 @@ namespace icl{
   };
 }
 
-#endif

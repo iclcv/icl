@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_SMART_ARRAY_H
-#define ICL_SMART_ARRAY_H
+#pragma once
 
 #include <ICLUtils/SmartPtrBase.h>
 
@@ -73,4 +72,3 @@ namespace icl{
 
 }
 
-#endif

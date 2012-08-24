@@ -31,8 +31,7 @@
  ** Excellence Initiative.                                          **
  **                                                                 **
  *********************************************************************/
-#ifndef ICL_OPENCVCAMGRABBER_H
-#define ICL_OPENCVCAMGRABBER_H
+#pragma once
 #include <ICLOpenCV/OpenCV.h>
 #include <ICLIO/GrabberHandle.h>
 #include <ICLUtils/Exception.h>
@@ -145,4 +144,3 @@ namespace icl{
 
 }
 
-#endif /* ICL_OPENCVCAMGRABBER_H */

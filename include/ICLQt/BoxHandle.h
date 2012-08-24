@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_BOX_HANDLE_H
-#define ICL_BOX_HANDLE_H
+#pragma once
 
 #include <QtGui/QWidget>
 #include <QtGui/QLayout>
@@ -84,4 +83,3 @@ namespace icl{
   };  
 }
 
-#endif

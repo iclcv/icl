@@ -31,8 +31,7 @@
  ** Excellence Initiative.                                          **
  **                                                                 **
  *********************************************************************/
-#ifndef ICL_SUPERQUADRIC_H_
-#define ICL_SUPERQUADRIC_H_
+#pragma once
 
 #include <ICLUtils/BasicTypes.h>
 #include <ICLUtils/DynMatrix.h>
@@ -290,4 +289,3 @@ namespace icl{
   };
 }
 
-#endif /* ICL_SUPERQUADRIC_H_ */

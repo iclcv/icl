@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FPS_LIMITER_H
-#define ICL_FPS_LIMITER_H
+#pragma once
 
 #include <ICLUtils/Time.h>
 #include <ICLUtils/FPSEstimator.h>
@@ -77,4 +76,3 @@ namespace icl{
   };
 }
 
-#endif

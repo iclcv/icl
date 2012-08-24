@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_PYLON_GRABBER_THREAD_H
-#define ICL_PYLON_GRABBER_THREAD_H
+#pragma once
 
 #include <ICLUtils/Thread.h>
 #include <ICLIO/PylonUtils.h>
@@ -96,4 +95,3 @@ namespace icl {
 
   }//namespace pylon
 }//namespace icl
-#endif

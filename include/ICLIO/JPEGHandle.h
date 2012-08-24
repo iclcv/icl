@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_JPEG_HANDLE_H
-#define ICL_JPEG_HANDLE_H
+#pragma once
 
 #ifdef HAVE_LIBJPEG
 
@@ -78,4 +77,3 @@ namespace icl{
   /** \endcond */
 }
 #endif // not HAVE_LIBJPEG
-#endif // GUARDIAN

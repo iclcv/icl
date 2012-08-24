@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FILE_WRITER_PLUGIN_IMAGEMAGICK_H
-#define ICL_FILE_WRITER_PLUGIN_IMAGEMAGICK_H
+#pragma once
 
 #include <ICLIO/FileWriterPlugin.h>
 
@@ -88,4 +87,3 @@ namespace icl{
   /** \endcond */
 
 }
-#endif

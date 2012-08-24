@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_STRING_SIGNAL_BUTTON_H
-#define ICL_STRING_SIGNAL_BUTTON_H
+#pragma once
 
 #include <QtGui/QPushButton>
 
@@ -57,4 +56,3 @@ namespace icl{
 }
 
 
-#endif

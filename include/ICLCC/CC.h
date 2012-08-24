@@ -32,9 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_CC_H  
-#define ICL_CC_H 
-
+#pragma once
 #include <ICLCC/CCFunctions.h>
 #include <ICLCC/BayerConverter.h>
 #include <ICLCC/CCLUT.h>  
@@ -458,4 +456,3 @@ We aim to fix that in future
 
 */
 
-#endif

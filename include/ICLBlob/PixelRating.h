@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef PIXEL_RATING_H
-#define PIXEL_RATING_H
+#pragma once
 
 #include <stdio.h>
 
@@ -51,4 +50,3 @@ namespace icl{
   
 }
 
-#endif

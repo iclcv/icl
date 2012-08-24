@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_IMAGE_SERIALIZER_H
-#define ICL_IMAGE_SERIALIZER_H
+#pragma once
 
 #include <ICLCore/ImgBase.h>
 #include <ICLCore/Types.h>
@@ -100,6 +99,4 @@ namespace icl{
 
   };
 }
-
-#endif
 

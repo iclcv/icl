@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FIDUCIAL_H
-#define ICL_FIDUCIAL_H
+#pragma once
 
 #include <bitset>
 
@@ -186,4 +185,3 @@ namespace icl{
   }
 }
 
-#endif

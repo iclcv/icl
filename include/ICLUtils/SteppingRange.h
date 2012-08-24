@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_STEPPING_RANGE_H
-#define ICL_STEPPING_RANGE_H
+#pragma once
 
 #include <ICLUtils/Range.h>
 
@@ -111,4 +110,3 @@ namespace icl{
 
   
 }
-#endif

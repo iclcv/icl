@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FILENAME_GENERATOR_H
-#define ICL_FILENAME_GENERATOR_H
+#pragma once
 
 #include <ICLUtils/ShallowCopyable.h>
 #include <string>
@@ -125,4 +124,3 @@ namespace icl{
   };
 }
 
-#endif

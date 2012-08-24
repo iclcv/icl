@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_PROCESS_MONITOR_H
-#define ICL_PROCESS_MONITOR_H
+#pragma once
 
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/Mutex.h>
@@ -120,4 +119,3 @@ namespace icl{
 }
 
 
-#endif

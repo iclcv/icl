@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_THREAD_H
-#define ICL_THREAD_H
+#pragma once
 
 #include <ICLUtils/ShallowCopyable.h>
 #include <ICLUtils/Mutex.h>
@@ -186,4 +185,3 @@ namespace icl{
 }
 
 
-#endif

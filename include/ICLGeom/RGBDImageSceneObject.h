@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_RGBD_IMAGE_SCENE_OBJECT_H
-#define ICL_RGBD_IMAGE_SCENE_OBJECT_H
+#pragma once
 
 #include <ICLUtils/Configurable.h>
 #include <ICLUtils/Array2D.h>
@@ -148,4 +147,3 @@ namespace icl{
   };
 }
 
-#endif

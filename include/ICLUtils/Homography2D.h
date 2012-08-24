@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_HOMOGRAPHY_2D_H
-#define ICL_HOMOGRAPHY_2D_H
+#pragma once
 
 #include <ICLUtils/FixedMatrix.h>
 #include <ICLUtils/Point32f.h>
@@ -204,4 +203,3 @@ namespace icl{
 
 }
 
-#endif

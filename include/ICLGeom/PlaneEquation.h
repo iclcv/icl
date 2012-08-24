@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_PLANE_EQUATION_H
-#define ICL_PLANE_EQUATION_H
+#pragma once
 
 #include <ICLGeom/GeomDefs.h>
 #include <iostream>
@@ -57,4 +56,3 @@ namespace icl{
   std::ostream &operator<<(std::ostream &s, const PlaneEquation &p);
 }
 
-#endif

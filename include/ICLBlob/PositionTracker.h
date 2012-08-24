@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef POSITIONTRACKER_H 
-#define POSITIONTRACKER_H 
+#pragma once
 #include <vector>
 #include <deque>
 #include <ICLUtils/Point32f.h>
@@ -327,4 +326,3 @@ namespace icl{
   
   
 }
-#endif

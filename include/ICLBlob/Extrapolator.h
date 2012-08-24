@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef EXTRAPOLATOR_H
-#define EXTRAPOLATOR_H
+#pragma once
 
 #include <ICLCore/Types.h>
 
@@ -124,4 +123,3 @@ namespace icl{
   };
 }
 
-#endif

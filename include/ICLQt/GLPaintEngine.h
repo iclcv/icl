@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_GL_PAINT_ENGINE_H
-#define ICL_GL_PAINT_ENGINE_H
+#pragma once
 
 #define NOMINMAX // needed for Win32 in order to not define min, max as macros
 
@@ -125,5 +124,3 @@ namespace icl{
     ImgBase *m_incompDepthBuf;
   };
 }// namespace
-#endif
-
