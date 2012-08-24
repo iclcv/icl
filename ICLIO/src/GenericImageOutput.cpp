@@ -36,10 +36,6 @@
 
 #include <ICLIO/ImageOutput.h>
 
-#ifdef HAVE_XCF
-#include <ICLIO/XCFPublisher.h>
-#endif
-
 #ifdef HAVE_QT
 #include <ICLIO/SharedMemoryPublisher.h>
 #endif
@@ -88,12 +84,6 @@ namespace icl{
       };
       o = new NullOutput;
     }
-    
-#ifdef HAVE_XCF
-    if(type == "xcfp"){
-       o = new XCFPublisher(d);
-    }
-#endif
     
 #ifdef HAVE_OPENCV
     if(type == "video"){

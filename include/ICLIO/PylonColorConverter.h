@@ -41,7 +41,7 @@
 #include <ICLCore/Img.h>
 #include <ICLUtils/Mutex.h>
 #include <ICLIO/PylonUtils.h>
-#include <ICLCC/BayerConverter.h>
+#include <ICLCore/BayerConverter.h>
 
 namespace icl {
   namespace pylon {

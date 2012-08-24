@@ -40,7 +40,7 @@
 #ifdef HAVE_QT
 #include <ICLQt/DrawWidget.h>
 #endif
-#include <ICLOpenCV/OpenCV.h>
+#include <ICLCore/OpenCV.h>
 #include <opensurf/surflib.h>
 namespace icl{
 /**

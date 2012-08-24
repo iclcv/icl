@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLIO/PylonColorConverter.h>
-#include <ICLCC/CCFunctions.h>
+#include <ICLCore/CCFunctions.h>
 #include <ICLUtils/Time.h>
 
 #define CONCAT(x) (std::ostringstream << x).str()

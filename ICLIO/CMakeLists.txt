@@ -139,10 +139,6 @@ set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_LIBDC_COND HAVE_QT_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick)
 add_example (${PROJECT_NAME} "multi-cam-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_XCF_COND)
-set(ICLLibsToLinkAgainst ${PROJECT_NAME})
-add_example (${PROJECT_NAME} "memory-listener" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-
 #set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND) should be possible even without GUI
 # Christian: How to make icl-pipe not be built but not link against Qt if this is not available
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)
