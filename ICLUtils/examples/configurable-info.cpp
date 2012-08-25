@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLUtils/StraightLine2D.h                      **
+** File   : ICLUtils/examples/configurable-info.cpp                **
 ** Module : ICLUtils                                               **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -32,70 +32,57 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_STRAIGHT_LINE_2D_H
-#define ICL_STRAIGHT_LINE_2D_H
+#include <ICLUtils/Configurable.h>
+#include <ICLUtils/ProgArg.h>
 
-#include <ICLUtils/FixedVector.h>
-#include <ICLUtils/Point32f.h>
-#include <ICLUtils/Exception.h>
+#include <ICLMarkers/FiducialDetector.h>
 
-namespace icl{
+using namespace icl;
+
+// include some static instances to ensure, that the linker
+// does not purge the linked libraries because no symbols of these
+// are used here
+static FiducialDetector fid; // includes lots of additional stuff such as ICLFilter, ICLCV and ICLMarkers
+
+int main(int n, char **ppc){
+  painit(n,ppc,"-list|-ls|-l "
+         "-create-default-property-file|-o|-c(ConfigurableName,FileName) "
+         "-show-properties|-s|-i(ConfigurableName)");
   
-  /// A straight line is parameterized in offset/direction form
-  /** This formular is used: 
-      \f[ L(x) = \vec{o} + x\vec{v} \f]
-      
-      The template is instantiated for template parameter Pos type
-      Point32f and FixedColVector<float,2>
-  */
-  struct StraightLine2D{
-    /// internal typedef 
-    typedef FixedColVector<float,2> PointPolar;
-
-    /// internal typedef for 2D points
-    typedef FixedColVector<float,2> Pos;
+  std::vector<std::string> all = Configurable::get_registered_configurables();
+  
+  if(pa("-l")){
+    std::cout << "--- Supported Configurables --- " << std::endl;
+    for(unsigned int i=0;i<all.size();++i){
+      std::cout << all[i] << std::endl;
+    }
+  }
+  
+  if(pa("-o")){
+    std::string name = pa("-o",0);
+    std::string filename = pa("-o",1);
+    Configurable::create_configurable(name)->saveProperties(name);
+  }
+  
+  if(pa("-i")){
+    std::string name = pa("-i");
+    Configurable *p = Configurable::create_configurable(name);
     
-    /// creates a straight line from given angle and distance to origin
-    StraightLine2D(float angle, float distance);
-    
-    /// creates a straight line from given 2 points
-    StraightLine2D(const Pos &o=Pos(0,0), const Pos &v=Pos(0,0));
-
-    /// creates a straight line from given point32f
-    StraightLine2D(const Point32f &o, const Point32f &v);
-    
-    /// 2D offset vector
-    Pos o;
-    
-    /// 2D direction vector
-    Pos v;
-    
-    /// computes closest distance to given 2D point
-    float distance(const Pos &p) const;
-    
-    /// computes closest distance to given 2D point
-    /* result is positive if p is left of this->v
-        and negative otherwise */
-    float signedDistance(const Pos &p) const;
-
-    /// computes closest distance to given 2D point
-    inline float distance(const Point32f &p) const { return distance(Pos(p.x,p.y)); }
-    
-    /// computes closest distance to given 2D point
-    /* result is positive if p is left of this->v
-        and negative otherwise */
-    float signedDistance(const Point32f &p) const { return signedDistance(Pos(p.x,p.y)); }
-    
-    /// computes intersection with given other straight line
-    /** if lines are parallel, an ICLException is thrown */
-    Pos intersect(const StraightLine2D &o) const throw(ICLException);
-    
-    /// returns current angle and distance
-    PointPolar getAngleAndDistance() const;
-    
-    /// retunrs the closest point on the straight line to a given other point
-    Pos getClosestPoint(const Pos &p) const;
-  };  
+    std::cout << "--- Properties for Configurable " << name << " ---" << std::endl;
+    std::vector<std::string> props = p->getPropertyList();
+    for(unsigned int j=0;j<props.size();++j){
+      std::string pj = props[j];
+      std::cout << "   \"" << pj << "\"" << std::endl;
+      std::cout << "      type        : " << p->getPropertyType(pj) << std::endl;
+      std::cout << "      def. value  : " << p->getPropertyValue(pj) << std::endl; 
+      std::cout << "      info        : " << p->getPropertyInfo(pj) << std::endl;
+      std::cout << "      volatileness: " << p->getPropertyVolatileness(pj) << std::endl;
+      std::cout << "      tooltip     : ";
+      std::vector<std::string> lines = tok(p->getPropertyToolTip(pj), "\n");
+      for(unsigned int k=0;k<lines.size();++k){
+        std::cout << (k?"                    ":"") << lines[k] << std::endl;
+      }
+      std::cout << std::endl;
+    }
+  }
 }
-
-#endif

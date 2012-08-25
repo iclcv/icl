@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLMath/examples/llm-1D-demo.cpp                 **
-** Module : ICLMath                                          **
+** File   : ICLMath/examples/llm-1D-demo.cpp                       **
+** Module : ICLMath                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **

@@ -33,7 +33,6 @@
 *********************************************************************/
 
 #include <ICLUtils/Point32f.h>
-#include <ICLUtils/FixedMatrix.h>
 
 namespace icl{
   const Point32f Point32f::null(0.0,0.0);
@@ -52,10 +51,21 @@ namespace icl{
   
 
   std::istream &operator>>(std::istream &s, Point32f &p){
-    FixedMatrix<float,2,1> m;
-    s >> m;
-    p.x = m[0]; 
-    p.y = m[1];
+    char c,d;
+    s >> c;
+    if ( ((c >= '0') && (c <= '9')) || c=='-' ){
+      s.unget();
+    }
+    s >> p.x;
+    s >> d; // anything delimiting ...
+    s >> p.y;
+    if (!( ((c >= '0') && (c <= '9')) || c=='-' )){
+      s >> d;
+      if(c == '|' && d != '|') s.unget();
+      if(c == '(' && d != ')') s.unget();
+      if(c == '[' && d != ']') s.unget();
+      if(c == '{' && d != '}') s.unget();
+    }
     return s;
   }
 

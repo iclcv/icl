@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLMath/examples/opensurf-demo.cpp               **
-** Module : ICLMath                                          **
+** File   : ICLCV/examples/opensurf-demo.cpp                       **
+** Module : ICLCV                                                  **
 ** Authors: Christian Groszewski                                   **
 **                                                                 **
 **                                                                 **

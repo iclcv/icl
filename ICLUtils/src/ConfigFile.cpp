@@ -53,9 +53,6 @@
 #include <ICLUtils/Range.h>
 #include <ICLUtils/SteppingRange.h>
 
-#include <ICLUtils/FixedMatrix.h>
-#include <ICLUtils/FixedVector.h>
-
 #include <ICLUtils/Any.h>
 
 using namespace std;
@@ -100,9 +97,12 @@ namespace icl{
         REGISTER_CONFIG_FILE_TYPE(SteppingRange32f);
         //            REGISTER_CONFIG_FILE_TYPE(Color);
 
-        typedef  FixedMatrix<float,3,3> Mat3x3;
-        typedef  FixedMatrix<float,3,4> Mat3x4;
-        typedef  FixedMatrix<float,4,3> Mat4x3;
+        // todo: this needs to be done in static initialization of the ICLMath library
+        // we need to use a real singelton typemap then
+        /*
+        //typedef  FixedMatrix<float,3,3> Mat3x3;
+        //typedef  FixedMatrix<float,3,4> Mat3x4;
+        //typedef  FixedMatrix<float,4,3> Mat4x3;
         typedef  FixedMatrix<float,4,4> Mat4x4;
 
         REGISTER_CONFIG_FILE_TYPE(Mat3x3);
@@ -120,6 +120,7 @@ namespace icl{
         REGISTER_CONFIG_FILE_TYPE(ColVec4);
         REGISTER_CONFIG_FILE_TYPE(RowVec3);
         REGISTER_CONFIG_FILE_TYPE(RowVec4);
+       */
       }
     } StaticConfigFileTypeRegisteringIntance;
   }

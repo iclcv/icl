@@ -52,6 +52,19 @@ add_libsource (${PROJECT_NAME} "src/SimpleBlobSearcher.cpp" "${CONDITIONLIST}" L
 add_libsource (${PROJECT_NAME} "src/MeanShiftTracker.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/FloodFiller.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
+set(CONDITIONLIST HAVE_IPP_COND)
+add_libsource (${PROJECT_NAME} "src/UsefulFunctions.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/ViewBasedTemplateMatcher.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/HoughLineDetector.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/HoughLine.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/TemplateTracker.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+set(CONDITIONLIST HAVE_OPENCV_COND)
+add_libsource (${PROJECT_NAME} "src/OpenCVSurfDetector.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/GenericSurfDetector.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+
+set(CONDITIONLIST HAVE_OPENSURF_COND HAVE_OPENCV_COND)
+add_libsource (${PROJECT_NAME} "src/OpenSurfDetector.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME})
@@ -66,6 +79,15 @@ add_example (${PROJECT_NAME} "corner-detection-css-demo" "${CONDITIONLIST}" ICLL
 add_example (${PROJECT_NAME} "region-detection-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "flood-filler-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "quick-diff-image-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_IPP_COND HAVE_QT_COND)
+add_example (${PROJECT_NAME} "template-matching-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "hough-line-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+
+# use or instead of and ...
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_OPENCV_COND)
+add_example (${PROJECT_NAME} "surf-detector-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+
 
 set(CONDITIONLIST HAVE_GTEST_COND)
 set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}")

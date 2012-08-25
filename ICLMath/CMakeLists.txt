@@ -38,36 +38,22 @@ set(CONDITIONLIST "")
 set(LIB_SOURCES "")
 add_libsource (${PROJECT_NAME} "src/SOM.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/LLM.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-add_libsource (${PROJECT_NAME} "src/HoughLine.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-set(CONDITIONLIST HAVE_IPP_COND)
-add_libsource (${PROJECT_NAME} "src/UsefulFunctions.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-add_libsource (${PROJECT_NAME} "src/ViewBasedTemplateMatcher.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-add_libsource (${PROJECT_NAME} "src/HoughLineDetector.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-add_libsource (${PROJECT_NAME} "src/TemplateTracker.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-set(CONDITIONLIST HAVE_OPENCV_COND)
-add_libsource (${PROJECT_NAME} "src/OpenCVSurfDetector.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-add_libsource (${PROJECT_NAME} "src/GenericSurfDetector.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-
-set(CONDITIONLIST HAVE_OPENSURF_COND HAVE_OPENCV_COND)
-add_libsource (${PROJECT_NAME} "src/OpenSurfDetector.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-
-
+add_libsource (${PROJECT_NAME} "src/DynMatrix.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/FixedMatrix.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/DynMatrixUtils.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/StochasticOptimizer.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/LevenbergMarquardtFitter.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/SimplexOptimizer.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/Homography2D.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/StraightLine2D.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)
-set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLMarkers)
-add_example (${PROJECT_NAME} "configurable-info" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+set(ICLLibsToLinkAgainst ${PROJECT_NAME})
+add_example (${PROJECT_NAME} "levenberg-marquardt-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND)
 add_example (${PROJECT_NAME} "llm-1D-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "llm-1D-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-
-set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_IPP_COND HAVE_QT_COND)
-add_example (${PROJECT_NAME} "template-matching-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-add_example (${PROJECT_NAME} "hough-line-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-
-# use or instead of and ...
-set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_OPENCV_COND)
-add_example (${PROJECT_NAME} "generic-surf-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST HAVE_GTEST_COND)
 set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}")

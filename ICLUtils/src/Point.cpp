@@ -35,7 +35,6 @@
 #include <ICLUtils/Point.h>
 #include <math.h>
 #include <ICLUtils/Point32f.h>
-#include <ICLUtils/FixedMatrix.h>
 
 namespace icl{
   const Point Point::null(0,0);
@@ -54,10 +53,9 @@ namespace icl{
   }
   
   std::istream &operator>>(std::istream &s, Point &p){
-    FixedMatrix<int,2,1> m;
-    s >> m;
-    p.x = m[0]; 
-    p.y = m[1];
+    Point32f p32;
+    s >> p32;
+    p = Point(p32);
     return s;
   }
 

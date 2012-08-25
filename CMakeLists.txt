@@ -189,40 +189,29 @@ FIND_PACKAGE(Doxygen)
 #currently we just write the version number of the ICL to this header file
 configure_file(${PROJECT_SOURCE_DIR}/include/ICLUtils/config.h.cmake ${PROJECT_SOURCE_DIR}/include/ICLUtils/config.h @only)
 
+
 #set the internal and external deps of the ICL
 #if an entry is not available, it will be empty
-set(ICLCV_external_dependencies OPENSURF)
 set(ICLUtils_external_dependencies IPP MKL OPENCL)
 set(ICLMath_external_dependencies EIGEN3)
 set(ICLCore_external_dependencies OPENCV)
+set(ICLFilter_external_dependencies "")
+set(ICLIO_external_dependencies LIBZ LIBJPEG LIBMESASR LIBDC XINE UNICAP IMAGEMAGICK XCF VIDEODEV VIDEODEV2 QT LIBFREENECT LIBPNG PYLON GENICAM OPENNI RSB PROTOBUF)
+set(ICLQt_external_dependencies QT OPENGL GLX)
+set(ICLGeom_external_dependencies PCL)
+set(ICLCV_external_dependencies OPENSURF)
+set(ICLMarkers_external_dependencies "")
+
+# internal dependency tree
+set(ICLUtils_internal_dependencies "")
 set(ICLMath_internal_dependencies ICLUtils)
 set(ICLCore_internal_dependencies ICLMath)
 set(ICLFilter_internal_dependencies ICLCore)
-set(ICLCV_internal_dependencies ICLCore ICLIO ICLFilter)
-set(ICLMarkers_internal_dependencies ICLGeom ICLFilter ICLCV)
-
-set(ICLQt_internal_dependencies ICLCore)
-set(ICLIO_internal_dependencies ICLCore ICLFilter)
-set(ICLIO_external_dependencies LIBZ LIBJPEG LIBMESASR LIBDC XINE UNICAP IMAGEMAGICK XCF VIDEODEV VIDEODEV2 QT LIBFREENECT LIBPNG PYLON GENICAM OPENNI RSB PROTOBUF)
-set(ICLQt_internal_dependencies ICLFilter ICLIO)
-set(ICLQt_external_dependencies QT OPENGL GLX)
-
-if(NOT ${HAVE_QT_COND})
-  if(${HAVE_OPENGL_COND})
-    set(ICLGeom_external_dependencies OPENGL PCL)
-  endif()
-else()
-  set(ICLGeom_external_dependencies PCL)
-endif()
-
-if(${HAVE_QT_COND})
-    set(ICLQuick_internal_dependencies ICLQt ICLFilter ICLIO ICLCV)
-else()
-    set(ICLQuick_internal_dependencies ICLFilter ICLIO ICLCV)
-endif()
-set(ICLGeom_internal_dependencies ICLCV)
-set(ICLMath_internal_dependencies ICLGeom)
-
+set(ICLQt_internal_dependencies ICLCore) # todo: do some have_qt switches ...
+set(ICLIO_internal_dependencies ICLFilter)
+set(ICLGeom_internal_dependencies ICLQt)
+set(ICLCV_internal_dependencies ICLGeom ICLIO)
+set(ICLMarkers_internal_dependencies ICLCV)
 
 
 #resolve internal dependencies
@@ -233,17 +222,15 @@ add_internal_dependencies(ICLCV_internal_dependencies ICLCV_dependencies)
 add_internal_dependencies(ICLIO_internal_dependencies ICLIO_dependencies)
 add_internal_dependencies(ICLQt_internal_dependencies ICLQt_dependencies)
 add_internal_dependencies(ICLGeom_internal_dependencies ICLGeom_dependencies)
-add_internal_dependencies(ICLMath_internal_dependencies ICLMath_dependencies)
 add_internal_dependencies(ICLMarkers_internal_dependencies ICLMarkers_dependencies)
 #resolve external dependencies
 add_external_dependencies(ICLUtils_external_dependencies ICLUtils_dependencies)
 add_external_dependencies(ICLMath_external_dependencies ICLMath_dependencies)
 add_external_dependencies(ICLCore_external_dependencies ICLCore_dependencies)
-add_external_dependencies(ICLOpenCV_external_dependencies ICLOpenCV_dependencies)
 add_external_dependencies(ICLIO_external_dependencies ICLIO_dependencies)
 add_external_dependencies(ICLQt_external_dependencies ICLQt_dependencies)
 add_external_dependencies(ICLGeom_external_dependencies ICLGeom_dependencies)
-add_external_dependencies(ICLMath_external_dependencies ICLMath_dependencies)
+add_external_dependencies(ICLCV_external_dependencies ICLCV_dependencies)
 
 #add subdirs
 add_subdirectory(ICLUtils)
