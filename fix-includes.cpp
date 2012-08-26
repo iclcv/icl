@@ -80,7 +80,7 @@ int main(){
       }else{
         f2.write(l + "\n");
       }
-      //f2.writeLine(l);
+      system(("mv test.tmp "+fn).c_str());
     }
   }
 

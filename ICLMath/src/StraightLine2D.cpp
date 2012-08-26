@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLUtils/src/StraightLine2D.cpp                        **
-** Module : ICLUtils                                               **
+** File   : ICLMath/src/StraightLine2D.cpp                         **
+** Module : ICLMath                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLUtils/StraightLine2D.h>
+#include <ICLMath/StraightLine2D.h>
 
 namespace icl{
 
