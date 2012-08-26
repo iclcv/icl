@@ -2,6 +2,8 @@
 #include <ICLIO/FileList.h>
 #include <ICLIO/File.h>
 
+#include <fstream>
+
 std::map<std::string,std::string> fileToPackage;
 std::map<std::string,std::string> packageToFile;
 
@@ -16,6 +18,7 @@ int main(){
   std::cout << "analyzing ..." << std::endl;
   fileToPackage["RSBImage.pb.h"] = "ICLIO";
   packageToFile["ICLIO"] = "RSBImage.pb.h";
+  
   for(int i=0;i<N;++i){
     std::string p = packages[i];
     std::cout << "package:" << p << std::endl;
@@ -54,10 +57,12 @@ int main(){
   int M = all.size();
   for(int i=0;i<M;++i){
     std::string fn = all[i];
-    File f(fn,File::readText);
-    File f2(fn+".tmp",File::writeText);
-    while(f.hasMoreLines()){
-      std::string l = f.readLine();
+    //    File f2(fn+".tmp",File::writeText);
+    File f2("test.tmp",File::writeText);
+
+    std::ifstream fstr(fn.c_str());
+    string l;
+    while(std::getline(fstr,l)){
       if(l.length() > 13 && l.substr(0,13) == "#include <ICL"){
         std::cout << l << std::endl;
         MatchResult r = match(l,"#include <ICL([^/]*)/([^.]*)\\.h>",3);
@@ -68,7 +73,12 @@ int main(){
         if(targetPackage != curretPackage){
           std::string newLine = "#include <"+targetPackage+"/"+ifile+">";
           std::cout << "found: " << l << " replacing by: " << newLine << std::endl;
+          f2.write(newLine + "\n");
+        }else{
+          f2.write(l + "\n");
         }
+      }else{
+        f2.write(l + "\n");
       }
       //f2.writeLine(l);
     }
