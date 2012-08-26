@@ -82,11 +82,11 @@ add_libsource (${PROJECT_NAME} "src/ProximityOp.cpp" "${CONDITIONLIST}" LIB_SOUR
 set(CONDITIONLIST BUILD_EXAMPLES)
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_IPP_COND HAVE_QT_COND)
-set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick)
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLCV)
 add_example (${PROJECT_NAME} "canny-op-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND)
-set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick)
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLCV)
 add_example (${PROJECT_NAME} "local-thresh" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "gabor-op-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "convolution-op-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
@@ -95,7 +95,7 @@ add_example (${PROJECT_NAME} "affine-op-demo" "${CONDITIONLIST}" ICLLibsToLinkAg
 add_example (${PROJECT_NAME} "filter-array" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "fft-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick ICLGeom)
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLCV)
 add_example (${PROJECT_NAME} "color-segmentation" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST HAVE_GTEST_COND)

@@ -207,10 +207,10 @@ set(ICLUtils_internal_dependencies "")
 set(ICLMath_internal_dependencies ICLUtils)
 set(ICLCore_internal_dependencies ICLMath)
 set(ICLFilter_internal_dependencies ICLCore)
-set(ICLQt_internal_dependencies ICLCore) # todo: do some have_qt switches ...
 set(ICLIO_internal_dependencies ICLFilter)
+set(ICLQt_internal_dependencies ICLIO) # todo: do some have_qt switches ... (we need IO for the camcfg-stuff)
 set(ICLGeom_internal_dependencies ICLQt)
-set(ICLCV_internal_dependencies ICLGeom ICLIO)
+set(ICLCV_internal_dependencies ICLGeom)
 set(ICLMarkers_internal_dependencies ICLCV)
 
 

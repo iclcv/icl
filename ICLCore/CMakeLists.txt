@@ -39,6 +39,7 @@ set(LIB_SOURCES "")
 add_libsource (${PROJECT_NAME} "src/CoreFunctions.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/ImgBase.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/ImgBorder.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/ImgBuffer.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/Img.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/ImgParams.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/Line32f.cpp" "${CONDITIONLIST}" LIB_SOURCES)
@@ -64,13 +65,14 @@ add_example (${PROJECT_NAME} "img-example" "${CONDITIONLIST}" ICLLibsToLinkAgain
 set(CONDITIONLIST HAVE_GTEST_COND)
 set(ICLLibsToLinkAgainst ICLCore)
 add_gtest (${PROJECT_NAME} "test-image.cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}" ICLQuick)
+set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}" ICLQt)
 add_gtest (${PROJECT_NAME} "converter-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_OPENGL_COND)
-set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}" ICLQuick)
+set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}" ICLQt)
 add_example (${PROJECT_NAME} "colorspace-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}" ICLCV)
 add_example (${PROJECT_NAME} "pseudo-color-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 

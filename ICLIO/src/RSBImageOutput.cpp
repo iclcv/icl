@@ -41,7 +41,7 @@
 
 #include <ICLIO/ImageCompressor.h>
 #include <ICLIO/RSBImageOutput.h>
-#include </.h>
+#include <ICLIO/RSBImage.pb.h>
 #include <ICLUtils/Mutex.h>
 
 using namespace boost;
