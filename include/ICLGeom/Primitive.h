@@ -42,7 +42,7 @@
 
 #include <ICLGeom/GeomDefs.h>
 #include <ICLCore/Img.h>
-#include <ICLUtils/FixedVector.h>
+#include <ICLMath/FixedVector.h>
 #include <ICLUtils/Array2D.h>
 #include <ICLQt/GLImg.h>
 

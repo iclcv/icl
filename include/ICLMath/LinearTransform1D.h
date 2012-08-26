@@ -35,7 +35,7 @@
 #ifndef ICL_LINEAR_TRANSFORM_1D_H
 #define ICL_LINEAR_TRANSFORM_1D_H
 
-#include <ICLMath/Range.h>
+#include <ICLUtils/Range.h>
 
 namespace icl{
 

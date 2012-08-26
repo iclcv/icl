@@ -34,8 +34,8 @@
 
 #include <ICLMath/DynMatrixUtils.h>
 #include <cmath>
-#include <ICLMath/Macros.h>
-#include <ICLMath/StringUtils.h>
+#include <ICLUtils/Macros.h>
+#include <ICLUtils/StringUtils.h>
 
 #ifdef HAVE_MKL
   #include "mkl_types.h"

@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLCV/HoughLineDetector.h>
-#include <ICLUtils/DynMatrixUtils.h>
+#include <ICLMath/DynMatrixUtils.h>
 #include <ICLFilter/ConvolutionOp.h>
 
 namespace icl{

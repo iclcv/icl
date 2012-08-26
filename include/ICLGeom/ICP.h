@@ -34,7 +34,7 @@
 #ifndef ICL_ICP_H_
 #define ICL_ICP_H_
 
-#include <ICLUtils/DynMatrix.h>
+#include <ICLMath/DynMatrix.h>
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/KDTree.h>

@@ -43,7 +43,7 @@
 #include <ICLCore/PixelRef.h>
 #include <cmath>
 #include <algorithm>
-#include <ICLUtils/DynMatrix.h>
+#include <ICLMath/DynMatrix.h>
 
 
 namespace icl {

@@ -36,7 +36,7 @@
 #define ICL_IMAGE_RECTIFICATION_H
 
 #include <ICLCore/Img.h>
-#include <ICLUtils/FixedMatrix.h>
+#include <ICLMath/FixedMatrix.h>
 
 namespace icl{
 

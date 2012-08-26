@@ -41,11 +41,11 @@
 
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/StringUtils.h>
-#include <ICLQuick/Quick.h>
+#include <ICLCV/Quick.h>
 #include <ICLIO/GenericGrabber.h>
 #include <ICLUtils/ProgArg.h>
 #include <ICLUtils/Mutex.h>
 #include <ICLIO/FileWriter.h>
-#include <ICLCC/Color.h>
+#include <ICLCore/Color.h>
 
 

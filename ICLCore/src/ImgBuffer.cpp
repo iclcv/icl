@@ -32,7 +32,7 @@
 **                                                                 **
 ********************************************************************/
 
-#include <ICLQuick/ImgBuffer.h>
+#include <ICLCore/ImgBuffer.h>
 
 namespace icl{
   struct ImgBuffer::Data{

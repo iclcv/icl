@@ -39,7 +39,7 @@
 #include <QtCore/QMutex>
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/Rect32f.h>
-#include <ICLUtils/FixedMatrix.h>
+#include <ICLMath/FixedMatrix.h>
 
 namespace icl{
   /** \cond */

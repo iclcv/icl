@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
+#include <ICLCV/Common.h>
 #include <ICLUtils/FPSEstimator.h>
 #include <ICLCV/RegionDetector.h>
 #include <ICLCore/Mathematics.h>

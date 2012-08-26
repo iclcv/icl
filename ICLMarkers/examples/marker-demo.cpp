@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
+#include <ICLCV/Common.h>
 #include <ICLGeom/Scene.h>
 #include <ICLGeom/ComplexCoordinateFrameSceneObject.h>
 

@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLUtils/FFTUtils.h>
+#include <ICLMath/FFTUtils.h>
 #include <limits>
 //#define FFT_DEBUG(X) std::cout << X << std::endl;
 #define FFT_DEBUG(X)

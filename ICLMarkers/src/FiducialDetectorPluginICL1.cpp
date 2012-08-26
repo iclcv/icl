@@ -36,7 +36,7 @@
 #include <ICLMarkers/MarkerMetricsICL1.h>
 #include <ICLUtils/Range.h>
 
-#include <ICLQuick/Quick.h>
+#include <ICLCV/Quick.h>
 
 namespace icl{
 

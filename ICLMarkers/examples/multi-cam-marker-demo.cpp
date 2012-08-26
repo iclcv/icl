@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
+#include <ICLCV/Common.h>
 #include <ICLMarkers/MultiCamFiducialDetector.h>
 #include <ICLGeom/Geom.h>
 #include <ICLGeom/ComplexCoordinateFrameSceneObject.h>

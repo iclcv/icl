@@ -121,7 +121,7 @@
     \section EX Example
 
     \code
-#include <ICLQuick/Common.h>
+#include <ICLCV/Common.h>
 #include <ICLMarkers/FiducialDetector.h>
 
 // static application data

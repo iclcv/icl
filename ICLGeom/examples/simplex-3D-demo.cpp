@@ -32,8 +32,8 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
-#include <ICLUtils/SimplexOptimizer.h>
+#include <ICLCV/Common.h>
+#include <ICLMath/SimplexOptimizer.h>
 #include <ICLGeom/Geom.h>
 #include <ICLGeom/CoordinateFrameSceneObject.h>
 #include <ICLUtils/Random.h>

@@ -668,7 +668,7 @@
       GUI's []-index operator (see \ref INDEX_OP):
 
       \code
-#include <ICLQuick/Common.h>
+#include <ICLCV/Common.h>
 GUI gui;
 GenericGrabber grabber;
 
@@ -687,7 +687,7 @@ int main(int n, char **args){
 
       Alternatively, we can also extract the ImageHandle before
       \code
-#include <ICLQuick/Common.h>
+#include <ICLCV/Common.h>
 GUI gui;
 GenericGrabber grabber;
 
@@ -710,7 +710,7 @@ int main(int n, char **args){
       If other, more complex components such as "draw", "draw3D" or "plot" are used, it
       is usually necessary to extract the handle explicitly aswell.
       \code
-#include <ICLQuick/Common.h>
+#include <ICLCV/Common.h>
 GUI gui;
 GenericGrabber grabber;
 
@@ -867,7 +867,7 @@ int main(int n, char **args){
       
       The following example can also be found as ICLQt/examples/gui-callback-test.cpp
       \code
-#include <ICLQuick/Common.h>
+#include <ICLCV/Common.h>
 
 /// global gui instance
 GUI gui;
@@ -927,7 +927,7 @@ int main(int n, char **ppc){
       mechanism:
 
       \code
-#include <ICLQuick/Common.h>
+#include <ICLCV/Common.h>
 
 GUI gui;
 
@@ -1067,7 +1067,7 @@ int main(int n, char **ppc){
       Here's an example for using tabs (available as gui-test-2.cpp):
       
       \code
-#include <ICLQuick/Common.h>
+#include <ICLCV/Common.h>
 #include <QtGui/QProgressBar>
 
 GUI gui;

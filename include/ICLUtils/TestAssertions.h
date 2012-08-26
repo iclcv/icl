@@ -42,8 +42,8 @@
 
 #include <gtest/gtest.h>
 #include <ICLUtils/Point32f.h>
-#include <ICLUtils/FixedVector.h>
-#include <ICLUtils/DynMatrixUtils.h>
+#include <ICLMath/FixedVector.h>
+#include <ICLMath/DynMatrixUtils.h>
 
 namespace icl {
 

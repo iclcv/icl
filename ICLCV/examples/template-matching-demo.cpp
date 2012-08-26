@@ -32,10 +32,10 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
-#include <ICLMath/UsefulFunctions.h>
+#include <ICLCV/Common.h>
+#include <ICLCV/UsefulFunctions.h>
 #include <ICLCV/RegionDetector.h>
-#include <ICLMath/ViewBasedTemplateMatcher.h>
+#include <ICLCV/ViewBasedTemplateMatcher.h>
 
 Size imageSize(640,480);
 

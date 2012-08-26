@@ -36,8 +36,8 @@
 
 #include <ICLCore/Img.h>
 #include <ICLUtils/BasicTypes.h>
-#include <ICLUtils/DynMatrix.h>
-#include <ICLUtils/DynMatrixUtils.h>
+#include <ICLMath/DynMatrix.h>
+#include <ICLMath/DynMatrixUtils.h>
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/ConfigFile.h>

@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLQt/LowLevelPlotWidget.h>
-#include <ICLUtils/LinearTransform1D.h>
+#include <ICLMath/LinearTransform1D.h>
 #include <ICLUtils/SmartArray.h>
 #include <ICLUtils/Macros.h>
 

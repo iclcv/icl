@@ -35,7 +35,7 @@
 #include <ICLCV/HoughLine.h>
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/Range.h>
-#include <ICLUtils/FixedMatrix.h>
+#include <ICLMath/FixedMatrix.h>
 #include <ICLCore/Img.h>
 #include <cmath>
 

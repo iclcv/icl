@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLMath/LLM.h>
-#include <ICLQuick/Common.h>
+#include <ICLCV/Common.h>
 #include <ICLCore/Mathematics.h>
 
 static LLM llm(1,1);

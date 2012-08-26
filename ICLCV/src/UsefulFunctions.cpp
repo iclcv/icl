@@ -39,7 +39,7 @@
 #include <ippi.h>
 #endif 
 
-#include <ICLQuick/Quick.h>
+#include <ICLCV/Quick.h>
 namespace icl{
 
   namespace{

@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLMath/DynMatrix.h>
-#include <ICLMath/Macros.h>
+#include <ICLUtils/Macros.h>
 #include <stdint.h>
 #include <complex>
 #include <algorithm>
@@ -46,7 +46,7 @@
 #endif
 
 #include <ICLMath/DynMatrixUtils.h>
-#include <ICLMath/StringUtils.h>
+#include <ICLUtils/StringUtils.h>
 
 namespace icl{
 

@@ -35,7 +35,7 @@
 #ifndef ICL_STRAIGHT_LINE_2D_H
 #define ICL_STRAIGHT_LINE_2D_H
 
-#include <ICLUtils/FixedVector.h>
+#include <ICLMath/FixedVector.h>
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/Exception.h>
 

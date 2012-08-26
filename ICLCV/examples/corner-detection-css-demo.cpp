@@ -35,7 +35,7 @@
 // Copyright 2009 Erik Weitnauer
 /// Visulalization of the CSS corner detection algorithm.
 
-#include <ICLQuick/Common.h>
+#include <ICLCV/Common.h>
 #include <ICLCore/Color.h>
 #include <ICLCV/RegionDetector.h>
 #include <ICLCore/Line.h>

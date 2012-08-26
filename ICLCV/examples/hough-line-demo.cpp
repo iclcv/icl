@@ -32,8 +32,8 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
-#include <ICLMath/HoughLineDetector.h>
+#include <ICLCV/Common.h>
+#include <ICLCV/HoughLineDetector.h>
 
 typedef FixedColVector<float,2> Pos;
 

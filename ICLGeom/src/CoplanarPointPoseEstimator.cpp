@@ -36,10 +36,10 @@
 
 #include <ICLGeom/Camera.h>
 #include <ICLGeom/GeomDefs.h>
-#include <ICLUtils/Homography2D.h>
+#include <ICLMath/Homography2D.h>
 #include <ICLUtils/Random.h>
 #include <ICLUtils/ProgArg.h>
-#include <ICLUtils/SimplexOptimizer.h>
+#include <ICLMath/SimplexOptimizer.h>
 
 namespace icl{
   typedef DynMatrix<float> DMat;

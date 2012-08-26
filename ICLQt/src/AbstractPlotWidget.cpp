@@ -33,9 +33,9 @@
 *********************************************************************/
 
 #include <ICLUtils/SmartPtr.h>
-#include <ICLUtils/FixedMatrix.h>
+#include <ICLMath/FixedMatrix.h>
 #include <ICLUtils/Time.h>
-#include <ICLUtils/LinearTransform1D.h>
+#include <ICLMath/LinearTransform1D.h>
 
 #include <ICLQt/AbstractPlotWidget.h>
 #include <ICLQt/GUIWidget.h>

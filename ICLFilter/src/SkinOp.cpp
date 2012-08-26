@@ -34,7 +34,7 @@
 
 #include <ICLFilter/SkinOp.h>
 #include <ICLCore/Img.h>
-#include <ICLCC/CCFunctions.h>
+#include <ICLCore/CCFunctions.h>
 //#include <ICLCore/Mathematics.h>
 
 /*

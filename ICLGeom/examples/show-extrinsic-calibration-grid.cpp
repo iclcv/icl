@@ -33,7 +33,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
+#include <ICLCV/Common.h>
 #include <ICLGeom/Camera.h>
 
 GUI gui;

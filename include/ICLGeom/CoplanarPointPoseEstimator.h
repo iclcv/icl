@@ -35,7 +35,7 @@
 #ifndef ICL_COPLANAR_POINT_POSE_ESTIMATOR_H
 #define ICL_COPLANAR_POINT_POSE_ESTIMATOR_H
 
-#include <ICLUtils/FixedMatrix.h>
+#include <ICLMath/FixedMatrix.h>
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/Configurable.h>
 

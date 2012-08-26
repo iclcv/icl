@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLUtils/ConfigFile.h>
-#include <ICLUtils/DynMatrixUtils.h>
+#include <ICLMath/DynMatrixUtils.h>
 #include <ICLUtils/XML.h>
 #include <ICLIO/File.h>
 #include <ICLGeom/Camera.h>

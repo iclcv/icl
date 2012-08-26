@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLMarkers/ImageRectification.h>
-#include <ICLUtils/Homography2D.h>
+#include <ICLMath/Homography2D.h>
 #include <ICLGeom/ConvexHullMonotoneChain.h>
 
 #include <deque>

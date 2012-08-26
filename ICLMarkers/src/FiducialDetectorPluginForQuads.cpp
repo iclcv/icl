@@ -32,8 +32,8 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLUtils/StraightLine2D.h>
-#include <ICLUtils/Homography2D.h>
+#include <ICLMath/StraightLine2D.h>
+#include <ICLMath/Homography2D.h>
 
 #include <ICLMarkers/FiducialDetectorPluginForQuads.h>
 #include <ICLMarkers/QuadDetector.h>

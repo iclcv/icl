@@ -42,7 +42,7 @@
 #include <ICLCore/ImageSerializer.h>
 
 #include <ICLIO/RSBGrabber.h>
-#include <ICLIO/RSBImage.pb.h>
+#include </.h>
 #include <ICLIO/ImageCompressor.h>
 
 using namespace boost;

@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
+#include <ICLCV/Common.h>
 #include <ICLCV/SimpleBlobSearcher.h>
 #include <ICLUtils/FPSLimiter.h>
 

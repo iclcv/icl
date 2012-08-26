@@ -37,7 +37,7 @@
 #include <ICLCV/HungarianAlgorithm.h>
 #include <ICLCore/Mathematics.h>
 #include <ICLUtils/Exception.h>
-#include <ICLUtils/DynMatrix.h>
+#include <ICLMath/DynMatrix.h>
 #include <set>
 #include <limits>
 

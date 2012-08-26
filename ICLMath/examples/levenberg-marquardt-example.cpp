@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLUtils/LevenbergMarquardtFitter.h>
+#include <ICLMath/LevenbergMarquardtFitter.h>
 #include <ICLUtils/Random.h>
 
 using namespace icl;

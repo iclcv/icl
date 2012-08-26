@@ -71,7 +71,7 @@ namespace icl{
       scene graph can be found at ICLGeom/examples/scene-graph-demo.cpp
 
       \code
-#include <ICLQuick/Common.h>
+#include <ICLCV/Common.h>
 #include <ICLGeom/Geom.h>
 #include <ICLUtils/FPSLimiter.h>
 

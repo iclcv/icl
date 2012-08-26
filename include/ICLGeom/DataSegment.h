@@ -35,7 +35,7 @@
 #ifndef ICL_DATA_SEGMENT_H
 #define ICL_DATA_SEGMENT_H
 
-#include <ICLUtils/FixedVector.h>
+#include <ICLMath/FixedVector.h>
 #include <ICLCore/CoreFunctions.h>
 #include <ICLGeom/DataSegmentBase.h>
 
@@ -80,7 +80,7 @@ namespace icl{
       that automatically create DataSegment instances.
 
       \code
-#include <ICLQuick/Common.h>
+#include <ICLCV/Common.h>
 #include <ICLGeom/GeomDefs.h>
 #include <DataSegment.h>
 
@@ -109,7 +109,7 @@ int main(){
       2D-organized data segments:
       
       \code
-#include <ICLQuick/Common.h>
+#include <ICLCV/Common.h>
 #include <ICLGeom/GeomDefs.h>
 #include <DataSegment.h>
 

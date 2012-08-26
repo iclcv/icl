@@ -35,7 +35,7 @@
 #include <ICLGeom/Geom.h>
 #include <ICLGeom/Scene.h>
 #include <ICLGeom/Camera.h>
-#include <ICLQuick/Common.h>
+#include <ICLCV/Common.h>
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLGeom/Primitive.h>
 

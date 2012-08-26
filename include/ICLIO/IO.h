@@ -49,7 +49,7 @@
 #include <ICLIO/IOFunctions.h>
 
 #ifdef HAVE_VIDEODEV
-#include <ICLIO/PWCGrabber.h>
+#include </PWCGrabber.h>
 #endif
 
 #ifdef HAVE_LIBMESASR

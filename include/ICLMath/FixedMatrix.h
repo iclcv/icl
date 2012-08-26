@@ -42,9 +42,9 @@
 #include <vector>
 #include <cmath>
 
-#include <ICLMath/Exception.h>
+#include <ICLUtils/Exception.h>
 #include <ICLMath/DynMatrix.h>
-#include <ICLMath/ClippedCast.h>
+#include <ICLUtils/ClippedCast.h>
 #include <ICLMath/MatrixSubRectIterator.h>
 
 #ifdef HAVE_IPP

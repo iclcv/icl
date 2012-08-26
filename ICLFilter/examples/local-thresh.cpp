@@ -37,7 +37,7 @@
 #include <ICLFilter/LocalThresholdOp.h>
 #include <ICLCore/CCFunctions.h>
 #include <ICLUtils/ConfigFile.h>
-#include <ICLQuick/Common.h>
+#include <ICLCV/Common.h>
 #include <ICLIO/FileList.h>
 
 #include <QtGui/QInputDialog>

@@ -42,7 +42,7 @@
 #include <ICLCore/Line.h>
 #include <ICLCore/LineSampler.h>
 #include <ICLCore/Mathematics.h>
-#include <ICLCore/Random.h>
+#include <ICLUtils/Random.h>
 #include <ICLCore/SampledLine.h>
 
 /** 

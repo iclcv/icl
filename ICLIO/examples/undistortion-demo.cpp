@@ -32,7 +32,7 @@
  **                                                                 **
  *********************************************************************/
 
-#include <ICLQuick/Common.h>
+#include <ICLCV/Common.h>
 
 //
 // Simple example how to undistort a picture given xml-file with undistortion parameters.

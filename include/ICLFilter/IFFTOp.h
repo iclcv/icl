@@ -36,11 +36,11 @@
 #define ICL_IFFTOP_H_
 #include <ICLCore/Img.h>
 #include <ICLFilter/UnaryOp.h>
-#include <ICLUtils/FFTUtils.h>
+#include <ICLMath/FFTUtils.h>
 #include <cmath>
 #include <complex>
 #include <ICLUtils/BasicTypes.h>
-#include <ICLUtils/DynMatrix.h>
+#include <ICLMath/DynMatrix.h>
 namespace icl{
 /**
  This class implements the unary operator for the inverse fast and discrete 2D fourier transformation.

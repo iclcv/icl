@@ -36,8 +36,8 @@
 #define ICL_GEOM_DEFS_H
 
 #include <ICLCore/Types.h>
-#include <ICLUtils/FixedMatrix.h>
-#include <ICLUtils/FixedVector.h>
+#include <ICLMath/FixedMatrix.h>
+#include <ICLMath/FixedVector.h>
 #include <vector>
 #include <ICLCore/Color.h>
 

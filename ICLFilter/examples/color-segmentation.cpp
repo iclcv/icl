@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
+#include <ICLCV/Common.h>
 #include <ICLFilter/ColorSegmentationOp.h>
 #include <ICLFilter/MedianOp.h>
 #include <ICLFilter/MorphologicalOp.h>

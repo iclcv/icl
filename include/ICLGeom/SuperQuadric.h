@@ -35,7 +35,7 @@
 #define ICL_SUPERQUADRIC_H_
 
 #include <ICLUtils/BasicTypes.h>
-#include <ICLUtils/DynMatrix.h>
+#include <ICLMath/DynMatrix.h>
 
 #include <math.h>
 #include <cmath>

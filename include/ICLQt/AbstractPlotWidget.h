@@ -35,7 +35,7 @@
 #ifndef ICL_ABSTRACT_PLOT_WIDGET_H
 #define ICL_ABSTRACT_PLOT_WIDGET_H
 
-#include <ICLUtils/DynMatrix.h>
+#include <ICLMath/DynMatrix.h>
 #include <ICLUtils/Range.h>
 #include <ICLUtils/Rect32f.h>
 #include <ICLUtils/Configurable.h>

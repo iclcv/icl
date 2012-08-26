@@ -36,7 +36,7 @@
 #define ICL_LEVENBERG_MARQUARDT_FITTER_H
 
 #include <ICLMath/DynVector.h>            
-#include <ICLMath/Function.h>
+#include <ICLUtils/Function.h>
 
 namespace icl{
   

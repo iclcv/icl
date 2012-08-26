@@ -36,7 +36,7 @@
 #define ICL_PLOT_WIDGET_H
 
 #include <ICLQt/LowLevelPlotWidget.h>
-#include <ICLUtils/FixedMatrix.h>
+#include <ICLMath/FixedMatrix.h>
 #include <ICLUtils/Array2D.h>
 
 namespace icl{

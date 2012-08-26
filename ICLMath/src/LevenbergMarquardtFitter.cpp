@@ -34,7 +34,7 @@
 
 #include <ICLMath/LevenbergMarquardtFitter.h>
 #include <ICLMath/DynMatrixUtils.h>
-#include <ICLMath/Random.h>
+#include <ICLUtils/Random.h>
 
 namespace icl{
   template<class Scalar>

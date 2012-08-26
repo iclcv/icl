@@ -39,7 +39,7 @@
 #include <ICLFilter/MorphologicalOp.h>
 #include <ICLFilter/MedianOp.h>
 #include <ICLCore/CornerDetectorCSS.h>
-#include <ICLUtils/StraightLine2D.h>
+#include <ICLMath/StraightLine2D.h>
 
 #include <ICLIO/FileWriter.h>
 

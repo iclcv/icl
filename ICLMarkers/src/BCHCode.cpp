@@ -37,7 +37,7 @@
 
 #include <ICLUtils/SmartPtr.h>
 #include <ICLUtils/Exception.h>
-#include <ICLUtils/FixedVector.h>
+#include <ICLMath/FixedVector.h>
 #include <ICLUtils/Mutex.h>
 
 #include <ICLMarkers/BCHCode.h>

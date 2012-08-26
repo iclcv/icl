@@ -39,7 +39,7 @@
 
 #include <ICLGeom/PointNormalEstimation.h>
 
-#include <ICLQuick/Quick.h>
+#include <ICLCV/Quick.h>
 #include <ICLGeom/GeomDefs.h>
 
 namespace icl{

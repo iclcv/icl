@@ -37,7 +37,7 @@
 
 #include <ICLCore/ImgBase.h>
 #include <ICLUtils/Uncopyable.h>
-#include <ICLUtils/FixedVector.h>
+#include <ICLMath/FixedVector.h>
 #include <ICLUtils/Function.h>
 #include <ICLUtils/Range.h>
 #include <ICLQt/ImageStatistics.h>

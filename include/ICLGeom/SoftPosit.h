@@ -35,8 +35,8 @@
 #ifndef ICL_SOFTPOSIT_H_
 #define ICL_SOFTPOSIT_H_
 
-#include <ICLUtils/DynMatrix.h>
-#include <ICLUtils/FixedVector.h>
+#include <ICLMath/DynMatrix.h>
+#include <ICLMath/FixedVector.h>
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/Point32f.h>

@@ -36,7 +36,7 @@
 #define ICL_COLOR_H
 
 #include <ICLUtils/BasicTypes.h>
-#include <ICLUtils/FixedVector.h>
+#include <ICLMath/FixedVector.h>
 #include <string>
 
 namespace icl{

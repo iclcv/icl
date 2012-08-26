@@ -36,7 +36,7 @@
 #define ICL_HOMOGRAPHY_2D_H
 
 #include <ICLMath/FixedMatrix.h>
-#include <ICLMath/Point32f.h>
+#include <ICLUtils/Point32f.h>
 
 namespace icl{
   

@@ -35,7 +35,7 @@
 #include <ICLFilter/AffineOp.h>
 #include <ICLCore/Img.h>
 #include <cstring>
-#include <ICLUtils/FixedMatrix.h>
+#include <ICLMath/FixedMatrix.h>
 
 using std::memcpy;
 

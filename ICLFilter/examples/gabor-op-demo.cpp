@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
+#include <ICLCV/Common.h>
 #include <ICLUtils/FPSEstimator.h>
 #include <ICLFilter/GaborOp.h>
 HBox gui;

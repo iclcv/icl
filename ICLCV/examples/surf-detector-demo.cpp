@@ -32,8 +32,8 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
-#include <ICLMath/GenericSurfDetector.h>
+#include <ICLCV/Common.h>
+#include <ICLCV/GenericSurfDetector.h>
 
 using namespace icl;
 

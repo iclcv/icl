@@ -38,12 +38,12 @@
 
 #include <cmath>
 #include <vector>
-#include <ICLUtils/FixedVector.h>
+#include <ICLMath/FixedVector.h>
 #include <ICLUtils/Range.h>
 #include <ICLUtils/Point.h>
 #include <ICLUtils/Point32f.h>
-#include <ICLUtils/DynMatrix.h>
-#include <ICLUtils/StraightLine2D.h>
+#include <ICLMath/DynMatrix.h>
+#include <ICLMath/StraightLine2D.h>
 #include <ICLCore/Img.h>
 #include <ICLUtils/Uncopyable.h>
 

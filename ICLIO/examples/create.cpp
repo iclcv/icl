@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Quick.h>
+#include <ICLCV/Quick.h>
 #include <ICLUtils/ProgArg.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLCore/FixedConverter.h>

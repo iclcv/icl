@@ -73,7 +73,7 @@ namespace icl{
       The following code (also available in <em>ICLQt/examples/camviewer_lite.cpp</em> demonstrates how
       simple an ICLWidget can be used to create a simple USB Webcam viewer:
       \code
-#include <ICLQuick/Common.h>
+#include <ICLCV/Common.h>
 
 ICLWidget *widget = 0;
 GenericGrabber grabber;

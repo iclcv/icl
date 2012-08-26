@@ -35,7 +35,7 @@
 #include <ICLIO/FileGrabber.h>
 #include <ICLIO/FileWriter.h>
 #include <ICLCore/FixedConverter.h>
-#include <ICLQuick/Common.h>
+#include <ICLCV/Common.h>
 #include <ICLUtils/Size32f.h>
 #include <ICLFilter/RotateOp.h>
 

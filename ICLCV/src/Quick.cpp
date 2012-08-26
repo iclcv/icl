@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Quick.h>
+#include <ICLCV/Quick.h>
 #include <ICLIO/FileGrabber.h>
 #include <ICLIO/TestImages.h>
 #include <ICLCore/Converter.h>
@@ -63,7 +63,7 @@
 
 #include <ICLCore/Line.h>
 #include <ICLUtils/Point32f.h>
-#include <ICLQuick/ImgBuffer.h>
+#include <ICLCore/ImgBuffer.h>
 
 #include <fstream>
 #include <cstdio>

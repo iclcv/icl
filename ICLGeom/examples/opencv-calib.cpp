@@ -33,7 +33,7 @@
  *********************************************************************/
 #include <ICLGeom/OpenCVCamCalib.h>
 #include <ICLUtils/FPSLimiter.h>
-#include <ICLQuick/Common.h>
+#include <ICLCV/Common.h>
 #include <ICLCore/OpenCV.h>
 
 #include <ICLUtils/ConfigFile.h>

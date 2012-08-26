@@ -38,7 +38,7 @@
 #include <algorithm>
 #include <functional>
 #include <iostream>
-#include <ICLMath/StringUtils.h>
+#include <ICLUtils/StringUtils.h>
 
 namespace icl{
 

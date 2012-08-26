@@ -57,8 +57,8 @@ int main(){
   int M = all.size();
   for(int i=0;i<M;++i){
     std::string fn = all[i];
-    //    File f2(fn+".tmp",File::writeText);
-    File f2("test.tmp",File::writeText);
+    std::string fn2 = fn+".tmp";
+    File f2(fn2,File::writeText);
 
     std::ifstream fstr(fn.c_str());
     string l;
@@ -80,8 +80,9 @@ int main(){
       }else{
         f2.write(l + "\n");
       }
-      system(("mv test.tmp "+fn).c_str());
     }
+    std::cout << "system: --" << ("mv "+fn2+" "+fn).c_str() << "--" << std::endl;
+    system(("mv "+fn2+" "+fn).c_str());
   }
 
 }

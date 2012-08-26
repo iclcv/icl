@@ -36,7 +36,7 @@
 #define ICL_DYN_MATRIX_UTILS_H
 
 #include <ICLMath/DynMatrix.h>
-#include <ICLMath/BasicTypes.h>
+#include <ICLUtils/BasicTypes.h>
 #include <algorithm>
 
 namespace icl{

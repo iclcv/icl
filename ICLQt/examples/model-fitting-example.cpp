@@ -32,11 +32,11 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
-#include <ICLUtils/RansacFitter.h>
+#include <ICLCV/Common.h>
+#include <ICLMath/RansacFitter.h>
 #include <ICLUtils/Random.h>
 #include <ICLUtils/Point32f.h>
-#include <ICLUtils/LeastSquareModelFitting2D.h>
+#include <ICLMath/LeastSquareModelFitting2D.h>
 
 typedef LeastSquareModelFitting2D LS;
 typedef RansacFitter<Point32f,std::vector<double> > RANSAC;

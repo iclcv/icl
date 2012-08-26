@@ -45,7 +45,7 @@
 
 #include <ICLUtils/Array2D.h>
 
-#include <ICLQuick/Quick.h>
+#include <ICLCV/Quick.h>
 #include <ICLUtils/Rect32f.h>
 #include <ICLUtils/Lockable.h>
 

@@ -35,7 +35,7 @@
 #include <ICLGeom/SceneMouseHandler.h>
 
 
-#include <ICLQuick/Quick.h>
+#include <ICLCV/Quick.h>
 #include <ICLGeom/GeomDefs.h>
 #include <ICLGeom/Scene.h>
 

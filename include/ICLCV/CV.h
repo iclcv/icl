@@ -37,7 +37,7 @@
 
 #include <ICLCV/DefaultColorBlobSearcher.h>
 #include <ICLCV/Extrapolator.h>
-#include <ICLCV/RegionBasedBlobSearcher.h>
+#include </RegionBasedBlobSearcher.h>
 #include <ICLCV/HungarianAlgorithm.h>
 #include <ICLCV/MeanShiftTracker.h>
 
@@ -143,7 +143,7 @@
     \section REGION_DETECTOR_EXAMPLE Region Detection Example
     <table border=0><tr><td>
     \code
-#include <ICLQuick/Common.h>
+#include <ICLCV/Common.h>
 #include <ICLCV/RegionDetector.h>
 #include <ICLFilter/ColorDistanceOp.h>
 

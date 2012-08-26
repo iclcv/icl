@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
+#include <ICLCV/Common.h>
 #include <ICLCV/RegionDetector.h>
 #include <ICLUtils/Time.h>
 #include <ICLFilter/MedianOp.h>

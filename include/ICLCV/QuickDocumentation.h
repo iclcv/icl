@@ -150,7 +150,7 @@
     
     
 \code
-#include <ICLQuick/Common.h>
+#include <ICLCV/Common.h>
 
 GUI gui;
 GenericGrabber grabber;

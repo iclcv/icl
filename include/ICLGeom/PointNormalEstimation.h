@@ -35,7 +35,7 @@
 #ifndef ICL_POINT_NORMAL_ESTIMATION_H
 #define ICL_POINT_NORMAL_ESTIMATION_H
 
-#include <ICLQuick/Quick.h>
+#include <ICLCV/Quick.h>
 #include <ICLGeom/GeomDefs.h>
 
 #ifdef HAVE_OPENCL    

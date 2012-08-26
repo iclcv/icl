@@ -37,8 +37,8 @@
 
 #include <ICLMath/DynVector.h>
 #include <ICLMath/FixedVector.h>
-#include <ICLMath/Function.h>
-#include <ICLMath/Uncopyable.h>
+#include <ICLUtils/Function.h>
+#include <ICLUtils/Uncopyable.h>
 
 namespace icl{
   
