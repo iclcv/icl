@@ -39,7 +39,7 @@
 #include <ICLUtils/SmartArray.h>
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Macros.h>
-#include <ICLUtils/FixedMatrix.h>
+#include <ICLMath/FixedMatrix.h>
 #include <ICLUtils/ClippedCast.h>
 
 namespace icl{

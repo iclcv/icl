@@ -6,9 +6,9 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLUtils/FFTException.h                        **
-** Module : ICLUtils                                               **
-** Authors: Christian Groszewski, Christof Elbrechter              **
+** File   : include/ICLCV/Common.h                                 **
+** Module : ICLCV                                                  **
+** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
 ** Commercial License                                              **
@@ -32,14 +32,20 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef FFTEXCEPTION_H_
-#define FFTEXCEPTION_H_
-#include<ICLUtils/Exception.h>
+#pragma once
 
-namespace icl{
-class FFTException : public ICLException{
-public:
-	FFTException(const std::string &msg):ICLException(msg){}
-};
-}
-#endif /* FFTEXCEPTION_H_ */
+#ifdef HAVE_QT
+#include <ICLQt/Qt.h>
+#include <ICLQt/Application.h>
+#endif
+
+#include <ICLUtils/Thread.h>
+#include <ICLUtils/StringUtils.h>
+#include <ICLQuick/Quick.h>
+#include <ICLIO/GenericGrabber.h>
+#include <ICLUtils/ProgArg.h>
+#include <ICLUtils/Mutex.h>
+#include <ICLIO/FileWriter.h>
+#include <ICLCC/Color.h>
+
+

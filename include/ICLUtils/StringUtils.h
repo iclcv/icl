@@ -266,7 +266,7 @@ namespace icl{
   /** @param text source string 
       @param regex regular expression to search in text 
       @param numMatchesToList If 0 (which is default, result contains only an information
-                              whether the match was successful or not. Sub matche can be recorded optionally
+                              whether the match was successful or not. Sub matches can be recorded optionally
                               using a numSubMatches value > 0. Please note, that
                               the whole pattern match is submatches[0] in the resulting MatchResult
                               if numSubMatches is at least 1 

@@ -42,8 +42,8 @@
 #include <vector>
 #include <cmath>
 
-#include <ICLMath/Exception.h>
-#include <ICLMath/Macros.h>
+#include <ICLUtils/Exception.h>
+#include <ICLUtils/Macros.h>
 
 #ifdef HAVE_IPP
 #include <ipp.h>

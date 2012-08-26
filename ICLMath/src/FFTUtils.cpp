@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLUtils/src/FFTUtils.cpp                              **
-** Module : ICLUtils                                               **
+** File   : ICLMath/src/FFTUtils.cpp                               **
+** Module : ICLMath                                                **
 ** Authors: Christian Groszewski, Christof Elbrechter              **
 **                                                                 **
 **                                                                 **

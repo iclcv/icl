@@ -64,7 +64,6 @@ add_libsource (${PROJECT_NAME} "src/MultiTypeMap.cpp" "${CONDITIONLIST}" LIB_SOU
 add_libsource (${PROJECT_NAME} "src/ConfigFile.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/PugiXML.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
-add_libsource (${PROJECT_NAME} "src/FFTUtils.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/Configurable.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/KDTree.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/ProcessMonitor.cpp" "${CONDITIONLIST}" LIB_SOURCES)

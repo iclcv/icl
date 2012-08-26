@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLUtils/FFTUtils.h                            **
-** Module : ICLUtils                                               **
+** File   : include/ICLMath/FFTUtils.h                             **
+** Module : ICLMath                                                **
 ** Authors: Christian Groszewski, Christof Elbrechter              **
 **                                                                 **
 **                                                                 **
@@ -37,8 +37,8 @@
 
 #include <complex>
 #include <ICLCore/Types.h>
-#include <ICLUtils/DynMatrix.h>
-#include <ICLUtils/FFTException.h>
+#include <ICLMath/DynMatrix.h>
+#include <ICLMath/FFTException.h>
 #include <string.h>
 
 namespace icl{

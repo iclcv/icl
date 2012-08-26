@@ -36,7 +36,7 @@
 #define ICL_IMG_ITERATOR_H
 
 #include <ICLCore/CoreFunctions.h>
-#include <ICLUtils/MatrixSubRectIterator.h>
+#include <ICLMath/MatrixSubRectIterator.h>
 
 namespace icl{
   /// Iterator class used to iterate through an Images ROI-pixels \ingroup IMAGE
