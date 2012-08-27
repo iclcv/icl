@@ -34,10 +34,13 @@
 
 #include <ICLMath/SOM.h>
 #include <ICLUtils/Macros.h>
+#include <ICLUtils/Random.h>
 #include <ICLUtils/Exception.h>
 #include <cstring>
 
 using namespace std;
+
+using namespace icl::utils;
 
 namespace icl{
   namespace math{
@@ -74,7 +77,8 @@ namespace icl{
   
     // }}}
   
-    SOM::SOM(unsigned int dataDim, const std::vector<unsigned int> &dims,const std::vector<Range<float> > &prototypeBounds, float epsilon, float sigma){
+    SOM::SOM(unsigned int dataDim, const std::vector<unsigned int> &dims,
+             const std::vector<Range<float> > &prototypeBounds, float epsilon, float sigma){
       // {{{ open
   
       ICLASSERT_THROW(dataDim>0,ICLException("SOM data dimension must be > 0"));

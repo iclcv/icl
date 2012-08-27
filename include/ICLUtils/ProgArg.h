@@ -143,7 +143,7 @@ namespace icl{
     /** \cond */
     // explicit specialization for bool types (returns whether the arg was actually given)
     template<>
-    inline ProgArg::operator bool() const throw(icl::ProgArgException){
+    inline ProgArg::operator bool() const throw(utils::ProgArgException){
       return padefined_internal(*this);
     }
   

@@ -98,17 +98,20 @@ namespace icl {
     ImgBase *imgNew(depth d=depth8u, const ImgParams &params = ImgParams::null);
     
     /// creates a new Img (see the above function for more details) \ingroup IMAGE
-    inline ImgBase *imgNew(depth d, const Size& size, format fmt, const Rect &roi=Rect::null){
+    inline ImgBase *imgNew(depth d, const utils::Size& size, format fmt, 
+                           const utils::Rect &roi=utils::Rect::null){
       return imgNew(d,ImgParams(size,fmt,roi));
     }
   
     /// creates a new Img (see the above function for more details) \ingroup IMAGE
-    inline ImgBase *imgNew(depth d, const Size& size, int channels=1, const Rect &roi=Rect::null){
+    inline ImgBase *imgNew(depth d, const utils::Size& size, int channels=1, 
+                           const utils::Rect &roi=utils::Rect::null){
       return imgNew(d,ImgParams(size,channels,roi));
     }
    
     /// creates a new Img (see the above function for more details) \ingroup IMAGE
-    inline ImgBase *imgNew(depth d, const Size& size, int channels, format fmt, const Rect &roi=Rect::null){
+    inline ImgBase *imgNew(depth d, const utils::Size& size, int channels, format fmt, 
+                           const utils::Rect &roi=utils::Rect::null){
       return imgNew(d,ImgParams(size,channels,fmt,roi));
     }
   
@@ -149,18 +152,18 @@ namespace icl {
         @param roi desired ROI rectangle. If the ROI parameters are not given, 
                    the ROI will comprise the whole image.
     **/
-    inline ImgBase *ensureCompatible(ImgBase **dst, depth d,const Size& size,int channels, const Rect &roi=Rect::null)
+    inline ImgBase *ensureCompatible(ImgBase **dst, depth d,const utils::Size& size,int channels, const utils::Rect &roi=utils::Rect::null)
        { return ensureCompatible(dst,d,ImgParams(size,channels,roi)); }
   
     /// ensures that an image has given depth, size, format and ROI \ingroup IMAGE
-    inline ImgBase *ensureCompatible(ImgBase **dst, depth d,const Size& size, format fmt, const Rect &roi=Rect::null)
+    inline ImgBase *ensureCompatible(ImgBase **dst, depth d,const utils::Size& size, format fmt, const utils::Rect &roi=utils::Rect::null)
        { return ensureCompatible(dst,d,ImgParams(size,fmt,roi)); }
     
     /// ensures that an image has given parameters  \ingroup IMAGE
     /** The given format must be compatible to the given channel count.
         <b>If not:</b> The format is set to "formatMatrix" and an exception is thrown.
     */
-    ImgBase *ensureCompatible(ImgBase **dst, depth d, const Size &size, int channels, format fmt, const Rect &roi=Rect::null);
+    ImgBase *ensureCompatible(ImgBase **dst, depth d, const utils::Size &size, int channels, format fmt, const utils::Rect &roi=utils::Rect::null);
     
     /// ensures that the destination image gets same depth, size, channel count, depth, format and ROI as source image \ingroup IMAGE
     /** If the given pointer to the destination image is 0, a new image is created as a deep copy of poSrc.
@@ -247,7 +250,7 @@ namespace icl {
     /// moves value from source to destination array (with casting on demand) \ingroup GENERAL
     template <class srcT,class dstT>
     inline void convert(const srcT *poSrcStart,const srcT *poSrcEnd, dstT *poDst){
-      std::transform(poSrcStart,poSrcEnd,poDst,clipped_cast<srcT,dstT>);
+      std::transform(poSrcStart,poSrcEnd,poDst,utils::clipped_cast<srcT,dstT>);
     }
     
   #ifdef HAVE_IPP 
@@ -329,6 +332,56 @@ namespace icl {
     }  
   
     /* }}} */
+
+    /// Computes the mean value of a ImgBase* ingroup MATH
+    /** IPP-Optimized for icl32f and icl64f
+        @param poImg input image
+        @param iChannel channel index (-1 for all channels)
+        @return mean value of image or image channel (optionally: roi)
+    */
+    std::vector<double> mean(const ImgBase *poImg, int iChannel=-1, bool roiOnly=false);
+
+    /// Compute the variance value of an image a with given mean \ingroup MATH
+    /** @param poImg input imge
+        @param mean vector with channel means
+        @param empiricMean if true, sum of square distances is devidec by n-1 else by n
+        @param iChannel channel index (-1 for all channels)
+        @return The variance value form the vector
+    */
+    std::vector<double> variance(const ImgBase *poImg, const std::vector<double> &mean, bool empiricMean=true,  int iChannel=-1, bool roiOnly=false);
+    
+    /// Compute the variance value of an image a \ingroup MATH
+    /** @param poImg input imge
+        @param iChannel channel index (-1 for all channels)
+        @return The variance value form the vector
+        */
+    std::vector<double> variance(const ImgBase *poImg, int iChannel=-1, bool roiOnly=false); 
+
+    /// Compute the std::deviation of an image
+    /** @param poImage input image
+        @param iChannel channel index (all channels if -1)
+        */
+    std::vector<double> stdDeviation(const ImgBase *poImage, int iChannel=-1, bool roiOnly = false);
+    
+    /// Compute the std::deviation of an image with given channel means
+    /** @param poImage input image
+        @param iChannel channel index (all channels if -1)
+    */
+    std::vector<double> stdDeviation(const ImgBase *poImage, const std::vector<double> mean, bool empiricMean=true, int iChannel=-1, bool roiOnly = false);
+  
+    /// Calculates mean and standard deviation of given image simultanously
+    /** @param image input image
+        @param iChannel image channel if < 0 all channels are used
+        @return vector v of pairs p with p.first = mean and p.second = stdDev v[i] containing i-th channel's results
+    */
+    std::vector< std::pair<double,double> > meanAndStdDev(const ImgBase *image, int iChannel=-1, bool roiOnly = false);
+    
+    
+    /// computes the color histogramm of given image channel                               
+    std::vector<int> channelHisto(const ImgBase *image,int channel, int levels=256, bool roiOnly=false);
+    
+    /// computes the color histogramm of given image
+    std::vector<std::vector<int> > hist(const ImgBase *image, int levels=256, bool roiOnly=false);
   
   } // namespace core
 } // namespace icl

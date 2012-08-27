@@ -1,4 +1,4 @@
-/********************************************************************
+/*********************************************************************
  **                Image Component Library (ICL)                    **
  **                                                                 **
  ** Copyright (C) 2006-2012 CITEC, University of Bielefeld          **
@@ -6,8 +6,8 @@
  ** Website: www.iclcv.org and                                      **
  **          http://opensource.cit-ec.de/projects/icl               **
  **                                                                 **
- ** File   : include/ICLUtils/KDTree.h                              **
- ** Module : ICLUtils                                               **
+ ** File   : include/ICLMath/KDTree.h                               **
+ ** Module : ICLMath                                                **
  ** Authors: Christian Groszewski                                   **
  **                                                                 **
  **                                                                 **
@@ -41,7 +41,7 @@
 #include <vector>
 
 namespace icl{
-  namespace utils{
+  namespace math{
   
     /// Simple KD-Tree implementation
     /** This class implements a simple kd-tree. You can create an object of this class
@@ -61,7 +61,7 @@ namespace icl{
         ///right node
         Node *right;
         ///point in leafnode, else null
-        DynMatrix<icl64f> *point;
+        utils::DynMatrix<icl64f> *point;
         ///median of dimension
         double median;
         
@@ -88,13 +88,13 @@ namespace icl{
       ///internal print call
       void print(Node *node);
       ///internal call to fill the KDTree with data
-      void buildTree(std::vector<DynMatrix<icl64f> > &list,unsigned int depth, Node *node);
+      void buildTree(std::vector<utils::DynMatrix<icl64f> > &list,unsigned int depth, Node *node);
       ///internal call to fill the KDTree with data
-      void buildTree(std::vector<DynMatrix<icl64f> *> &list,unsigned int depth, Node *node);
+      void buildTree(std::vector<utils::DynMatrix<icl64f> *> &list,unsigned int depth, Node *node);
       ///internal call to sort list by dimension of the vector (unused, instead std::sort)
-      void sortList(std::vector<DynMatrix<icl64f> > &list, unsigned int dim);
+      void sortList(std::vector<utils::DynMatrix<icl64f> > &list, unsigned int dim);
       ///internal call to sort list by dimension of the vector (unused, instead std::sort)
-      void sortList(std::vector<DynMatrix<icl64f>* > &list, unsigned int dim);
+      void sortList(std::vector<utils::DynMatrix<icl64f>* > &list, unsigned int dim);
       ///internal call to release data from KDTree
       void releaseTree();
       
@@ -103,13 +103,13 @@ namespace icl{
       /** Creates a new KDTree object, with data from list.
        * @param list list of points for  the kd-tree
        */
-      KDTree(std::vector<DynMatrix<icl64f> > &list);
+      KDTree(std::vector<utils::DynMatrix<icl64f> > &list);
   
       ///Constructor
       /** Creates a new KDTree object, with data from list.
        * @param list list of points for  the kd-tree
        */
-      KDTree(std::vector<DynMatrix<icl64f>* > &list);
+      KDTree(std::vector<utils::DynMatrix<icl64f>* > &list);
   
       ///Constructor
       /** Creates a new KDTree object, with data from list.
@@ -124,7 +124,7 @@ namespace icl{
       /** Fills empty kd-tree or the current one with new data.
        * @param list list of points for the kd-tree
        */
-      inline void buildTree(std::vector<DynMatrix<icl64f> *> &list){
+      inline void buildTree(std::vector<utils::DynMatrix<icl64f> *> &list){
         releaseTree();
         buildTree(list,0,&root);
       }
@@ -133,7 +133,7 @@ namespace icl{
       /** Fills empty KDTree object or the current one with new data.
        * @param list list of points for the kd-tree
        */
-      inline void buildTree(std::vector<DynMatrix<icl64f> > &list){
+      inline void buildTree(std::vector<utils::DynMatrix<icl64f> > &list){
         releaseTree();
         buildTree(list,0,&root);
       }
@@ -144,12 +144,12 @@ namespace icl{
       ///Returns pointer to nearest neighbour to passed point.
       /** @param point the point to search nearest neighbor for
        *  @return the pointer to nearest neighbour */
-      DynMatrix<icl64f>* nearestNeighbour(const DynMatrix<icl64f> &point);
+      utils::DynMatrix<icl64f>* nearestNeighbour(const utils::DynMatrix<icl64f> &point);
       
       ///Returns pointer to nearest neighbour to passed point.
       /** @param point the point to search nearest neighbor for
        *  @return the pointer to nearest neighbour */
-      DynMatrix<icl64f>* nearestNeighbour(const DynMatrix<icl64f> *point);
+      utils::DynMatrix<icl64f>* nearestNeighbour(const utils::DynMatrix<icl64f> *point);
       
     };
   } // namespace utils

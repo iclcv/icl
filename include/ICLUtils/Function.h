@@ -86,7 +86,7 @@ namespace icl{
     
     /// FunctionImpl implementation for member functions \ingroup FUNCTION
     /** This class should not be used directly! Use the overloaded
-        icl::function - template instead. The class template is 
+        icl::utils::function - template instead. The class template is 
         specialized for member functions with less parameters.
         @see \ref FUNCTION_SECTION */
     template <class Object, class R=void, class A=void, class B=void, class C=void>
@@ -125,7 +125,7 @@ namespace icl{
   
     /// FunctionImpl implementation for const member functions \ingroup FUNCTION
     /** This class should not be used directly! Use the overloaded
-        icl::function - template instead. The class template is 
+        icl::utils::function - template instead. The class template is 
         specialized for member functions with less parameters.
         @see \ref FUNCTION_SECTION */
     template <class Object, class R=void, class A=void, class B=void, class C=void>
@@ -164,7 +164,7 @@ namespace icl{
   
     /// FunctionImpl implementation for Functors \ingroup FUNCTION
     /** This class should not be used directly! Use the overloaded
-        icl::function - template instead. The class template is 
+        icl::utils::function - template instead. The class template is 
         specialized for member functions with less parameters.
         @see \ref FUNCTION_SECTION */
     template <class Object, class R=void, class A=void, class B=void, class C=void>
@@ -198,7 +198,7 @@ namespace icl{
     
     /// FunctionImpl implementation for functors of const objects \ingroup FUNCTION
     /** This class should not be used directly! Use the overloaded
-        icl::function - template instead. The class template is 
+        icl::utils::function - template instead. The class template is 
         specialized for member functions with less parameters.
         @see \ref FUNCTION_SECTION */
     template <class Object, class R=void, class A=void, class B=void, class C=void>
@@ -233,7 +233,7 @@ namespace icl{
    
     /// FunctionImpl implementation for global functions \ingroup FUNCTION
     /** This class should not be used directly! Use the overloaded
-        icl::function - template instead. The class template is 
+        icl::utils::function - template instead. The class template is 
         specialized for member functions with less parameters.
         @see \ref FUNCTION_SECTION */
     template <class R=void, class A=void, class B=void, class C=void>
@@ -274,7 +274,7 @@ namespace icl{
           of FunctionImpl<R,A,B>
         
         This class should not be used directly! Use the overloaded
-        icl::function - template instead. Functions can be copied
+        icl::utils::function - template instead. Functions can be copied
         as objects. Internally, a SmartPointer is used to manage
         the actual function implementation.
         
@@ -292,7 +292,7 @@ namespace icl{
       Function(FunctionImpl<R,A,B,C> *impl):impl(impl){}
   
       /// Constructor with given SmartPtr<Impl>
-      Function(icl::SmartPtr<FunctionImpl<R,A,B,C> >impl):impl(impl){}
+      Function(icl::utils::SmartPtr<FunctionImpl<R,A,B,C> >impl):impl(impl){}
   
       /// Constructor from given global function (for implicit conversion)
       /** This constructor can be used for implicit conversion. Where
@@ -303,10 +303,10 @@ namespace icl{
       }
       
       /// Implementation
-      icl::SmartPtr<FunctionImpl<R,A,B,C> >impl;
+      icl::utils::SmartPtr<FunctionImpl<R,A,B,C> >impl;
       
       /// function operator (always const)
-      /** This is const, since the creator template icl::function
+      /** This is const, since the creator template icl::utils::function
           will automatically create the correct implementation */
       R operator()(A a, B b, C c) const { return (*impl)(a,b,c); }
       
@@ -320,11 +320,11 @@ namespace icl{
     template<class R, class A, class B> struct Function<R,A,B,void> : public std::binary_function<A,B,R>{
       Function(){}
       Function(FunctionImpl<R,A,B> *impl):impl(impl){}
-      Function(icl::SmartPtr<FunctionImpl<R,A,B> >impl):impl(impl){}
+      Function(icl::utils::SmartPtr<FunctionImpl<R,A,B> >impl):impl(impl){}
       Function(R (*global_function)(A,B)):impl(new GlobalFunctionImpl<R,A,B>){
         ((GlobalFunctionImpl<R,A,B>*)(impl.get()))->global_function = global_function;
       }
-      icl::SmartPtr<FunctionImpl<R,A,B> >impl;
+      icl::utils::SmartPtr<FunctionImpl<R,A,B> >impl;
       R operator()(A a, B b) const { return (*impl)(a,b); }
       operator bool() const { return impl; }
       
@@ -334,11 +334,11 @@ namespace icl{
     template<class R, class A> struct Function<R,A,void> : public std::unary_function<A,R>{
       Function(){}
       Function(FunctionImpl<R,A> *impl):impl(impl){}
-      Function(icl::SmartPtr<FunctionImpl<R,A> >impl):impl(impl){}
+      Function(icl::utils::SmartPtr<FunctionImpl<R,A> >impl):impl(impl){}
       Function(R (*global_function)(A)):impl(new GlobalFunctionImpl<R,A>){
         ((GlobalFunctionImpl<R,A>*)(impl.get()))->global_function = global_function;
       }
-      icl::SmartPtr<FunctionImpl<R,A> >impl;
+      icl::utils::SmartPtr<FunctionImpl<R,A> >impl;
       R operator()(A a) const { return (*impl)(a); }
       operator bool() const { return impl; }
       
@@ -348,11 +348,11 @@ namespace icl{
       typedef R result_type;
       Function(){}
       Function(FunctionImpl<R> *impl):impl(impl){}
-      Function(icl::SmartPtr<FunctionImpl<R> >impl):impl(impl){}
+      Function(icl::utils::SmartPtr<FunctionImpl<R> >impl):impl(impl){}
       Function(R (*global_function)()):impl(new GlobalFunctionImpl<R>){
         ((GlobalFunctionImpl<R>*)(impl.get()))->global_function = global_function;
       }
-      icl::SmartPtr<FunctionImpl<R> >impl;
+      icl::utils::SmartPtr<FunctionImpl<R> >impl;
       R operator()() const { return (*impl)(); }
   
       operator bool() const { return impl; }
@@ -533,7 +533,7 @@ namespace icl{
     
     /// create Function instances from given object-functor \ingroup FUNCTION
     /** In constrast to functions, a pointer to an objects overloaded functor can only
-        be defined hardly. Therefore this version of the icl::function-template allows
+        be defined hardly. Therefore this version of the icl::utils::function-template allows
         to pick a functor from a given object 
         @see \ref FUNCTION_SECTION */
     template<class Object,class R, class A, class B, class C>
@@ -545,7 +545,7 @@ namespace icl{
   
     /// create Function instances from given object-functor (const version) \ingroup FUNCTION
     /** In constrast to functions, a pointer to an objects overloaded functor can only
-        be defined hardly. Therefore this version of the icl::function-template allows
+        be defined hardly. Therefore this version of the icl::utils::function-template allows
         to pick a functor from a given object 
         @see \ref FUNCTION_SECTION */
     template<class Object,class R, class A, class B, class C>
@@ -571,7 +571,7 @@ namespace icl{
   
     /// create Function instances from given object-functor \ingroup FUNCTION
     /** In constrast to functions, a pointer to an objects overloaded functor can only
-        be defined hardly. Therefore this version of the icl::function-template allows
+        be defined hardly. Therefore this version of the icl::utils::function-template allows
         to pick a functor from a given object 
         @see \ref FUNCTION_SECTION */
     template<class Object,class R, class A, class B, class C>
@@ -579,7 +579,7 @@ namespace icl{
     
    /// create Function instances from given object-functor (const version) \ingroup FUNCTION
     /** In constrast to functions, a pointer to an objects overloaded functor can only
-        be defined hardly. Therefore this version of the icl::function-template allows
+        be defined hardly. Therefore this version of the icl::utils::function-template allows
         to pick a functor from a given object 
         @see \ref FUNCTION_SECTION */
     template<class Object,class R, class A, class B, class C>

@@ -34,10 +34,13 @@
 
 #include <ICLUtils/Size32f.h>
 
-const icl::Size32f icl::Size32f::null(0,0);
 
 namespace icl{
   namespace utils{
+
+    const Size32f Size32f::null(0,0);
+
+
     std::ostream &operator<<(std::ostream &s, const Size32f &size){
       return s << size.width << 'x' << size.height;
     }

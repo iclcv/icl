@@ -317,7 +317,7 @@ namespace icl{
       for(unsigned int i=0;i<ps.size();++i){
         bool found = false;
         for(unsigned int j=0;j<m_deactivated.size();++j){
-          if(icl::match(ps[i],m_deactivated[j])){
+          if(icl::utils::match(ps[i],m_deactivated[j])){
             found=true;
             break;
           }

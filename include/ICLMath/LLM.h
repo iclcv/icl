@@ -108,7 +108,7 @@ namespace icl{
         - provide an interface for Batch based VQ using (EM-Algorithm or something like that)
         - \f[ f_X(x_1, \dots, x_N) = \frac {1} {(2\pi)^{N/2}|\Sigma|^{1/2}} \exp \left( -\frac{1}{2} ( x - \mu)^\top \Sigma^{-1} (x - \mu) \right) \f]
     **/
-    class LLM : public Configurable{
+    class LLM : public utils::Configurable{
       public:
       public:
       /// Internally used Kernel structure
@@ -176,7 +176,7 @@ namespace icl{
       LLM(unsigned int inputDim, unsigned int outputDim);
   
       LLM(unsigned int inputDim, unsigned int outputDim, unsigned int numCenters, 
-          const std::vector<Range<icl32f> > &ranges, 
+          const std::vector<utils::Range<icl32f> > &ranges, 
           const std::vector<float> &var=std::vector<float>(1,1));
   
       /// initializes the LLM prototypes with given kernel count

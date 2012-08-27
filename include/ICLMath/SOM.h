@@ -35,7 +35,6 @@
 #ifndef ICL_SOM_H 
 #define ICL_SOM_H
 
-#include <ICLCore/Mathematics.h>
 #include <ICLUtils/Range.h>
 #include <ICLUtils/SmartPtr.h>
 #include <vector>
@@ -79,7 +78,7 @@ namespace icl{
           addition, each neuron has a void* meta, that can be used to associate some 
           meta-data with a certain neuron (Note,the pointer meta is not released automatically).*/
       struct Neuron{
-        typedef SmartPtr<float> vector_type;
+        typedef utils::SmartPtr<float> vector_type;
         
         /// create a null neuron
         Neuron(){}
@@ -121,7 +120,9 @@ namespace icl{
           @param epsilon initial learning rate
           @param sigma initial standard deviation for the grid distance function \f$h(a,b)\f$
       */
-      SOM(unsigned int dataDim, const std::vector<unsigned int> &dims,const std::vector<Range<float> > &prototypeBounds, float epsilon=0.1, float sigma=1);
+      SOM(unsigned int dataDim, const std::vector<unsigned int> &dims,
+          const std::vector<utils::Range<float> > &prototypeBounds, 
+          float epsilon=0.1, float sigma=1);
   
       /// Destructor
       ~SOM();
@@ -174,7 +175,7 @@ namespace icl{
       std::vector<unsigned int> m_vecDimensions;
       
       /// internal bounds for prototype ranges (todo: is it necessary to store them ?)
-      std::vector<Range<float> > m_vecPrototypeBounds;
+      std::vector<utils::Range<float> > m_vecPrototypeBounds;
       
       /// set of neurons
       std::vector<Neuron> m_vecNeurons;

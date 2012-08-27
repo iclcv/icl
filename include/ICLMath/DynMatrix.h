@@ -59,23 +59,23 @@ namespace icl{
   namespace math{
   
     /// Special linear algebra exception type  \ingroup LINALG \ingroup EXCEPT
-    struct InvalidMatrixDimensionException :public ICLException{
-      InvalidMatrixDimensionException(const std::string &msg):ICLException(msg){}
+    struct InvalidMatrixDimensionException :public utils::ICLException{
+      InvalidMatrixDimensionException(const std::string &msg):utils::ICLException(msg){}
     };
   
     /// Special linear algebra exception type  \ingroup LINALG \ingroup EXCEPT
-    struct IncompatibleMatrixDimensionException :public ICLException{
-      IncompatibleMatrixDimensionException(const std::string &msg):ICLException(msg){}
+    struct IncompatibleMatrixDimensionException :public utils::ICLException{
+      IncompatibleMatrixDimensionException(const std::string &msg):utils::ICLException(msg){}
     };
   
     /// Special linear algebra exception type  \ingroup LINALG \ingroup EXCEPT
-    struct  InvalidIndexException : public ICLException{
-      InvalidIndexException(const std::string &msg):ICLException(msg){}
+    struct  InvalidIndexException : public utils::ICLException{
+      InvalidIndexException(const std::string &msg):utils::ICLException(msg){}
     };
   
     /// Special linear algebra exception type  \ingroup LINALG \ingroup EXCEPT
-    struct SingularMatrixException : public ICLException{
-      SingularMatrixException(const std::string &msg):ICLException(msg){}
+    struct SingularMatrixException : public utils::ICLException{
+      SingularMatrixException(const std::string &msg):utils::ICLException(msg){}
     };
   
     /// Highly flexible and optimized matrix class implementation  \ingroup LINALG
@@ -143,11 +143,11 @@ namespace icl{
           Each row of the CSV file becomes a matrix row. The column delimiter is ','
           Rows, that begin with '#' or with ' ' or that have no length are ignored
       */
-      static DynMatrix<T> loadCSV(const std::string &filename) throw (ICLException);
+      static DynMatrix<T> loadCSV(const std::string &filename) throw (utils::ICLException);
       
       /// writes the current matrix to a csv file
       /** supported types T are all icl8u, icl16s, icl32s, icl32f, icl64f */
-      void saveCSV(const std::string &filename) throw (ICLException);
+      void saveCSV(const std::string &filename) throw (utils::ICLException);
   
       /// returns with this matrix has a valid data pointer
       inline bool isNull() const { return !m_data; }
@@ -894,7 +894,7 @@ namespace icl{
             * svd 23.4 ms
       */
       DynMatrix solve(const DynMatrix &b, const std::string &method="lu",T zeroThreshold=1E-16)
-        throw(InvalidMatrixDimensionException,  ICLException, SingularMatrixException);
+        throw(InvalidMatrixDimensionException,  utils::ICLException, SingularMatrixException);
   
   
       /// invert the matrix (only for icl32f and icl64f)
@@ -914,7 +914,7 @@ namespace icl{
           @param eigenvalues becomes a N-dimensional column vector which ith element is the eigenvalue that corresponds
                              to the ith column of eigenvectors
       */
-      void eigen(DynMatrix &eigenvectors, DynMatrix &eigenvalues) const throw(InvalidMatrixDimensionException, ICLException);
+      void eigen(DynMatrix &eigenvectors, DynMatrix &eigenvalues) const throw(InvalidMatrixDimensionException, utils::ICLException);
   
       /// Computes Singular Value Decomposition of a matrix - decomposes A into USV'
       /** Internaly, this function will always use double values. Other types are converted internally.
@@ -924,7 +924,7 @@ namespace icl{
           @param V is filled column-wise with the eigenvectors of A'A (in V, V is stored not V')
           @see icl::svd_dyn
       */
-      void svd(DynMatrix &U, DynMatrix &s,  DynMatrix &V) const throw (ICLException);
+      void svd(DynMatrix &U, DynMatrix &s,  DynMatrix &V) const throw (utils::ICLException);
   
       /// calculates the Moore-Penrose pseudo-inverse (only implemented for icl32f and icl64f)
       /** Internally, this functions can use either a QR-decomposition based approach, or it can use
@@ -952,7 +952,7 @@ namespace icl{
           </code>
       */
       DynMatrix pinv(bool useSVD=false, T zeroThreshold=1E-16) const
-        throw (InvalidMatrixDimensionException,SingularMatrixException,ICLException);
+        throw (InvalidMatrixDimensionException,SingularMatrixException,utils::ICLException);
   
       /// calculates the Moore-Penrose pseudo-inverse (specialized for big matrices)
       /**
@@ -962,13 +962,13 @@ namespace icl{
       * @return pseudo inverse
       */
       DynMatrix big_matrix_pinv(T zeroThreshold=1E-16) const
-        throw (InvalidMatrixDimensionException,SingularMatrixException,ICLException);
+        throw (InvalidMatrixDimensionException,SingularMatrixException,utils::ICLException);
   
   #ifdef HAVE_MKL
       typedef void(*GESDD)(char*,int*,int*,T*,int*,T*,T*,int*,T*,int*,T*,int*,int*,int*);
       typedef void(*CBLAS_GEMM)(CBLAS_ORDER,CBLAS_TRANSPOSE,CBLAS_TRANSPOSE,int,int,int,T,const T*,int,const T*,int,T,T*,int);
       DynMatrix big_matrix_pinv(T zeroThreshold, GESDD gesdd, CBLAS_GEMM cblas_gemm) const
-        throw (InvalidMatrixDimensionException,SingularMatrixException,ICLException);
+        throw (InvalidMatrixDimensionException,SingularMatrixException,utils::ICLException);
   #endif
   
       /// matrix determinant (only for icl32f and icl64f)

@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLUtils/src/KDTree.cpp                                **
-** Module : ICLUtils                                               **
+** File   : ICLMath/src/KDTree.cpp                                 **
+** Module : ICLMath                                                **
 ** Authors: Christian Groszewski                                   **
 **                                                                 **
 **                                                                 **
@@ -34,7 +34,7 @@
 #include <ICLUtils/KDTree.h>
 
 namespace icl{
-  namespace utils{
+  namespace math{
   
   KDTree::KDTree(std::vector<DynMatrix<icl64f> > &list){
   	if(list.size()>0){

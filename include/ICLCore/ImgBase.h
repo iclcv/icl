@@ -162,10 +162,10 @@ namespace icl {
             @param time new timestamp for the returned image
             @return shallow-copied image
         **/
-        virtual ImgBase *shallowCopy(const Rect &roi, 
+        virtual ImgBase *shallowCopy(const utils::Rect &roi, 
                                      const std::vector<int> &channelIndices,
                                      format fmt, 
-                                     Time time=Time::null,
+                                     utils::Time time=utils::Time::null,
                                      ImgBase **ppoDst = NULL) = 0;
         
         /** Create a shallow copy of an image with given (const version)
@@ -180,10 +180,10 @@ namespace icl {
             @param time new timestamp for the returned image
             @return shallow-copied image
         **/
-        const ImgBase *shallowCopy(const Rect &roi, 
+        const ImgBase *shallowCopy(const utils::Rect &roi, 
                                    const std::vector<int> &channelIndices,
                                    format fmt, 
-                                   Time time=Time::null) const{
+                                   utils::Time time=utils::Time::null) const{
           // casting constness away is safe, because we effectively return a const Img<Type>*
           return const_cast<ImgBase*>(this)->shallowCopy(roi,channelIndices,fmt,time,0);
         }
@@ -221,7 +221,7 @@ namespace icl {
                        is used.
             @return shallow copy of this image
         **/
-        ImgBase* shallowCopy(const Rect &roi, ImgBase** ppoDst = NULL){
+        ImgBase* shallowCopy(const utils::Rect &roi, ImgBase** ppoDst = NULL){
           return shallowCopy(roi,std::vector<int>(),getFormat(),getTime(),ppoDst);
         }
         ImgBase* shallowCopy(ImgBase** ppoDst = NULL){
@@ -238,7 +238,7 @@ namespace icl {
             @param roi ROI of the returned image (Rect::null is not allowed!)
             @return shallow copy of this image with specified ROI
         */
-        const ImgBase* shallowCopy(const Rect& roi) const {
+        const ImgBase* shallowCopy(const utils::Rect& roi) const {
            // casting constness away is safe, because we effectively return a const Img<Type>*
            return const_cast<ImgBase*>(this)->shallowCopy(roi,0);
         }
@@ -409,7 +409,8 @@ namespace icl {
             @param eScaleMode interpolation method to use when scaling the image
             @return scaled image
         */
-        virtual ImgBase *scaledCopy(const Size &newSize, scalemode eScaleMode=interpolateNN) const = 0;
+        virtual ImgBase *scaledCopy(const utils::Size &newSize, 
+                                    scalemode eScaleMode=interpolateNN) const = 0;
   
         /// Create a scaled copy into a given destination image
         /** If the given destination pointer ppoDst is NULL, a deep copy of this image
@@ -420,7 +421,8 @@ namespace icl {
             @param eScaleMode interpolation method to use when scaling the image
             @return scaled image
         */
-        virtual ImgBase *scaledCopy(ImgBase **ppoDst=0, scalemode eScaleMode=interpolateNN) const = 0;
+        virtual ImgBase *scaledCopy(ImgBase **ppoDst=0, 
+                                    scalemode eScaleMode=interpolateNN) const = 0;
   
         /// Create a scaled copy with given size of an images ROI
         /** This function behaves identically to the scaledCopy function above, except it
@@ -429,7 +431,8 @@ namespace icl {
             @param eScaleMode interpolation method to use when scaling the image
             @return image containing a scaled instance of the source images ROI
         */
-        virtual ImgBase *scaledCopyROI(const Size &newSize, scalemode eScaleMode=interpolateNN) const = 0;
+        virtual ImgBase *scaledCopyROI(const utils::Size &newSize, 
+                                       scalemode eScaleMode=interpolateNN) const = 0;
   
         /// Create a scaled copy of an images ROI with optionally given destination image
         /** This function behaves identically to the scaledCopy function above, except it
@@ -438,7 +441,8 @@ namespace icl {
             @param eScaleMode interpolation method to use when scaling the image
             @return image containing a scaled instance of the source images ROI
         */
-        virtual ImgBase *scaledCopyROI(ImgBase **ppoDst=0, scalemode eScaleMode=interpolateNN) const = 0;
+        virtual ImgBase *scaledCopyROI(ImgBase **ppoDst=0, 
+                                       scalemode eScaleMode=interpolateNN) const = 0;
         
         /// @}
         /* }}} */
@@ -457,7 +461,7 @@ namespace icl {
         **/
         template <class T>
         Img<T> *asImg() {
-          ICLASSERT_RETURN_VAL( icl::getDepth<T>() == getDepth(), 0);
+          ICLASSERT_RETURN_VAL( icl::core::getDepth<T>() == this->getDepth(), 0);
           return reinterpret_cast<Img<T>*>(this);
         }
         
@@ -467,7 +471,7 @@ namespace icl {
         **/
         template <class T>
         const Img<T> *asImg() const {
-          ICLASSERT_RETURN_VAL( icl::getDepth<T>() == getDepth(), 0);
+          ICLASSERT_RETURN_VAL( icl::core::getDepth<T>() == getDepth(), 0);
           return reinterpret_cast<const Img<T>*>(this);
         }
   
@@ -519,7 +523,7 @@ namespace icl {
         /// returns the size of the images
   
         // returns the images size
-        const Size& getSize() const { return m_oParams.getSize(); }
+        const utils::Size& getSize() const { return m_oParams.getSize(); }
   
         /// returns the images width
         int getWidth() const { return m_oParams.getWidth(); }
@@ -540,7 +544,7 @@ namespace icl {
         format getFormat() const { return m_oParams.getFormat(); }
   
         /// returns the timestamp of the image
-        Time getTime() const { return m_timestamp; }
+        utils::Time getTime() const { return m_timestamp; }
   
         /// returns the length of an image line in bytes (width*sizeof(Type))
         /** This information is compulsory for calling any IPP function.
@@ -557,16 +561,16 @@ namespace icl {
         /* {{{ open */
   
         /// returns the images ROI rectangle
-        const Rect &getROI() const{ return m_oParams.getROI(); }
+        const utils::Rect &getROI() const{ return m_oParams.getROI(); }
         
         /// copies the current ROI into the given offset and size references
-        void getROI(Point& offset, Size& size) const { m_oParams.getROI(offset,size); }
+        void getROI(utils::Point& offset, utils::Size& size) const { m_oParams.getROI(offset,size); }
   
         /// returns the images ROI offset (upper left corner)
-        Point getROIOffset() const{ return m_oParams.getROIOffset(); }
+        utils::Point getROIOffset() const{ return m_oParams.getROIOffset(); }
   
         /// returns the images ROI size
-        Size getROISize() const{ return m_oParams.getROISize(); }
+        utils::Size getROISize() const{ return m_oParams.getROISize(); }
   
         /// returns the images ROI width
         int getROIWidth() const{ return m_oParams.getROIWidth(); }
@@ -581,31 +585,31 @@ namespace icl {
         int getROIYOffset() const{ return m_oParams.getROIYOffset(); }
         
         /// returns the image rect (0,0,width, height)
-        Rect getImageRect() const { return Rect(Point::null,getSize()); }
+        utils::Rect getImageRect() const { return utils::Rect(utils::Point::null,getSize()); }
         
         /// sets the image ROI offset to the given value
-        void setROIOffset(const Point &offset) { m_oParams.setROIOffset(offset); }
+        void setROIOffset(const utils::Point &offset) { m_oParams.setROIOffset(offset); }
         
         /// sets the image ROI size to the given value
-        void setROISize(const Size &size) { m_oParams.setROISize(size); }
+        void setROISize(const utils::Size &size) { m_oParams.setROISize(size); }
         
         /// set both image ROI offset and size
-        void setROI(const Point &offset, const Size &size){ m_oParams.setROI(offset,size); }
+        void setROI(const utils::Point &offset, const utils::Size &size){ m_oParams.setROI(offset,size); }
         
         /// sets the image ROI to the given rectangle
-        void setROI(const Rect &roi) { m_oParams.setROI(roi); }
+        void setROI(const utils::Rect &roi) { m_oParams.setROI(roi); }
   
         /// checks, eventually adapts and finally sets the image ROI size
         /** @see ImgParams*/
-        void setROIOffsetAdaptive(const Point &offset) { m_oParams.setROIOffsetAdaptive(offset); }
+        void setROIOffsetAdaptive(const utils::Point &offset) { m_oParams.setROIOffsetAdaptive(offset); }
         
         /// checks, eventually adapts and finally sets the image ROI size
         /** @see ImgParams*/
-        void setROISizeAdaptive(const Size &size){ m_oParams.setROISizeAdaptive(size); }
+        void setROISizeAdaptive(const utils::Size &size){ m_oParams.setROISizeAdaptive(size); }
   
         /// checks, eventually adapts and finally sets the image ROI size
         /** @see ImgParams*/
-        void setROIAdaptive(const Rect &roi) { m_oParams.setROIAdaptive(roi); }
+        void setROIAdaptive(const utils::Rect &roi) { m_oParams.setROIAdaptive(roi); }
        
         /// returns ROISize == ImageSize
         int hasFullROI() const { return m_oParams.hasFullROI(); }
@@ -721,7 +725,7 @@ namespace icl {
                      original width/height is used)
             @see scale
         **/
-        virtual void setSize(const Size &s)=0;
+        virtual void setSize(const utils::Size &s)=0;
   
         /// sets the format associated with channels of the image
         /**
@@ -735,9 +739,9 @@ namespace icl {
         void setFormat(format fmt);
   
         /// sets the timestamp of the image
-        void setTime(const Time time) { m_timestamp = time; }
+        void setTime(const utils::Time time) { m_timestamp = time; }
         /// sets timestamp of the image to the current time
-        void setTime() { m_timestamp = Time::now(); }
+        void setTime() { m_timestamp = utils::Time::now(); }
         
         /// @}
   
@@ -751,14 +755,14 @@ namespace icl {
           @param coords (optinal) if not null, the pixel position of the max is 
                  written into this argument
       **/
-      icl64f getMax(int iChannel, Point *coords=0) const;
+      icl64f getMax(int iChannel, utils::Point *coords=0) const;
     
       /// Returns min pixel value of channel iChannel within ROI
       /** @param iChannel Index of channel
           @param coords (optinal) if not null, the pixel position of the min is 
                  written into this argument
           **/
-      icl64f getMin(int iChannel, Point *coords=0) const;
+      icl64f getMin(int iChannel, utils::Point *coords=0) const;
     
   
       /// return maximal pixel value over all channels (restricted to ROI)
@@ -775,12 +779,14 @@ namespace icl {
                  written into this argument
           @return channel range in terms of a Range<icl64f> struct
       **/
-      const Range<icl64f> getMinMax(int iChannel, Point *minCoords=0, Point *maxCoords=0) const;
+      const utils::Range<icl64f> getMinMax(int iChannel, 
+                                           utils::Point *minCoords=0, 
+                                           utils::Point *maxCoords=0) const;
   
       /// Returns min and max pixel values of all channels within ROI
       /** @return image range in terms of a Range<icl64f> struct
       **/
-      const Range<icl64f> getMinMax() const;
+      const utils::Range<icl64f> getMinMax() const;
   
                       
       /// @}
@@ -797,7 +803,7 @@ namespace icl {
             @param s new size of this image
             @param eScaleMode interpolation method to use for the scaling operation 
         **/
-        virtual void scale(const Size& s, scalemode eScaleMode=interpolateNN)=0;
+        virtual void scale(const utils::Size& s, scalemode eScaleMode=interpolateNN)=0;
   
   
         /// performs an in-place mirror operation
@@ -822,14 +828,15 @@ namespace icl {
             <b>separately</b> for each channel.
             @param dstRange range of all channels after the operation
         **/
-        void normalizeAllChannels(const Range<icl64f> &dstRange);
+        void normalizeAllChannels(const utils::Range<icl64f> &dstRange);
   
         /// Normalize the channel from a given min/max range to the new range 
         /** @param iChannel channel index
             @param srcRange assumption of the current range of the channel
             @param dstRange range of the channel after the operation
          **/
-        void normalizeChannel(int iChannel,const Range<icl64f> &srcRange, const Range<icl64f> &dstRange);
+        void normalizeChannel(int iChannel,const utils::Range<icl64f> &srcRange, 
+                              const utils::Range<icl64f> &dstRange);
   
   
         /// Normalize the channel from a given min/max range to the new range 
@@ -839,13 +846,14 @@ namespace icl {
             @param iChannel channel index
             @param dstRange range of the channel after the operation
         **/
-        void normalizeChannel(int iChannel, const Range<icl64f> &dstRange);
+        void normalizeChannel(int iChannel, const utils::Range<icl64f> &dstRange);
   
         /// Normalize the image from a given min/max range to the new range 
         /** @param srcRange assumption of the current image range 
             @param dstRange range of the image after the operation
         **/
-        void normalizeImg(const Range<icl64f> &srcRange,const Range<icl64f> &dstRange);
+        void normalizeImg(const utils::Range<icl64f> &srcRange,
+                          const utils::Range<icl64f> &dstRange);
     
         /// Normalize the image from a min/max range to the new range 
         /** The min/ max range from the image is automatically detected, combined 
@@ -853,7 +861,7 @@ namespace icl {
             with srcRage = this->getMinMax() )
             @param dstRange range of the image after the operation
         **/
-        void normalizeImg(const Range<icl64f> &dstRange);
+        void normalizeImg(const utils::Range<icl64f> &dstRange);
   
         /// @}
         /* }}} */
@@ -876,7 +884,7 @@ namespace icl {
         /** @param s size to test
             @param nChannels channel count to test
         **/
-        bool isEqual(const Size &s, int nChannels) const {
+        bool isEqual(const utils::Size &s, int nChannels) const {
             FUNCTION_LOG("isEqual("<<s.width<<","<< s.height << ","<< nChannels << ")");
             return (getSize() == s) && (getChannels() == nChannels);
           }
@@ -956,7 +964,7 @@ namespace icl {
         depth m_eDepth;
   
         /// timestamp of the image
-        Time m_timestamp;
+        utils::Time m_timestamp;
   
         /// additional information associated with this image
         std::string m_metaData;

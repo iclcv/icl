@@ -70,24 +70,24 @@ namespace icl{
           @see null   
           */
       ImgParams(const ImgParams &params=null):
-        m_oSize(params.m_oSize),m_iChannels(params.m_iChannels),
-        m_eFormat(params.m_eFormat),m_oROI(params.m_oROI){}
-  
+      m_oSize(params.m_oSize),m_iChannels(params.m_iChannels),
+      m_eFormat(params.m_eFormat),m_oROI(params.m_oROI){}
+      
       /// creates an ImgParams object with specified size, channels, roi and formatMatrix
       /** @see setup */
-      ImgParams(const Size &size, int channels, const Rect &roi = Rect::null)
-         { setup(size,formatMatrix,channels,roi); }
+      ImgParams(const utils::Size &size, int channels, const utils::Rect &roi = utils::Rect::null)
+        { setup(size,formatMatrix,channels,roi); }
   
       /// creates an ImgParams object with specified size, channels, roi and format
       /** @see setup*/
-      ImgParams(const Size &size, format fmt, const Rect &roi = Rect::null);
+      ImgParams(const utils::Size &size, format fmt, const utils::Rect &roi = utils::Rect::null);
   
       /// creates an ImgParams object with all given parameters
       /** Note that channels and format are <b>not independent</b>. Hence, if the given
           channel count is not compatible to the given format, an exception is thrown.
           @see setup
       */
-      ImgParams(const Size &size, int channels, format fmt, const Rect& roi = Rect::null)
+      ImgParams(const utils::Size &size, int channels, format fmt, const utils::Rect& roi = utils::Rect::null)
          { setup(size,fmt,channels,roi); }
   
       /// creates an ImgParams object with specified size, format and roi given as POD-Types
@@ -123,7 +123,7 @@ namespace icl{
       bool operator==(const ImgParams &other) const;
       
       /// sets the size to the current value (and resets the roi to null)
-      void setSize(const Size &size);
+      void setSize(const utils::Size &size);
      
       /// sets the format to the given format (the channel count is adapted on demand)
       void setFormat(format fmt);
@@ -135,28 +135,28 @@ namespace icl{
       /** If the offset is not inside of the image or the new offset causes the roi 
           not to fit into the image, nothing is done, and an exception is thrown.
       */
-      void setROIOffset(const Point &offset);
+      void setROIOffset(const utils::Point &offset);
            
       /// sets the image ROI size to the given value
       /** If the new roi size causes the roi not to fit into the image, nothing is done
           and an exception is thrown
       */
-      void setROISize(const Size &roisize);
+      void setROISize(const utils::Size &roisize);
        
       /// set both image ROI offset and size
       /** This function evaluates if the new offset is inside of the image, as well as
           if the resulting roi does fit into the image.
       */
-      void setROI(const Point &offset, const Size &roisize);
+      void setROI(const utils::Point &offset, const utils::Size &roisize);
       
       /// sets the image ROI to the given rectangle
-      void setROI(const Rect &roi) { setROI (roi.ul(),roi.getSize()); }
+      void setROI(const utils::Rect &roi) { setROI (roi.ul(),roi.getSize()); }
      
       /// checks, eventually adapts and finally sets the image ROI offset
-      void setROIOffsetAdaptive(const Point &offset);
+      void setROIOffsetAdaptive(const utils::Point &offset);
         
       /// checks, eventually adapts and finally sets the image ROI size
-      void setROISizeAdaptive(const Size &size);
+      void setROISizeAdaptive(const utils::Size &size);
   
       /// as setROI, but if checks for negative parameters
       /** While the methods setROI, setROIOffset and setROISize directly set
@@ -168,20 +168,20 @@ namespace icl{
           sub image with a 5-pixel margin. offset(-5,-5) and size (5,5) sets
           the ROI to the lower right 5x5 corner. 
       **/
-      void setROIAdaptive(const Rect &r);
+      void setROIAdaptive(const utils::Rect &r);
        
       /// adapt given ROI, such that it fits for the current ImgParams
       /** @see setROIAdaptive **/
-      Rect& adaptROI(Rect &roi) const;
+      utils::Rect& adaptROI(utils::Rect &roi) const;
   
       /// returns ROISize == ImageSize
       bool hasFullROI() const { return m_oROI.getSize() == m_oSize;}
   
       /// sets the ROI to 0,0,image-width,image-height
-      void setFullROI(){ setROI(Point::null, getSize()); }
+      void setFullROI(){ setROI(utils::Point::null, getSize()); }
   
       /// returns the objects size
-      const Size& getSize() const { return m_oSize;  }
+      const utils::Size& getSize() const { return m_oSize;  }
       
       /// returns the objects channel count
       int getChannels() const { return m_iChannels; }
@@ -190,18 +190,18 @@ namespace icl{
       format getFormat() const { return m_eFormat; }
       
       /// returns the objects ROI rect
-      const Rect& getROI() const { return m_oROI; }
+      const utils::Rect& getROI() const { return m_oROI; }
       
       /// copies the roi parameters into the given structs offset and size
-      void getROI(Point &offset, Size &size) const { 
+      void getROI(utils::Point &offset, utils::Size &size) const { 
          offset=getROIOffset(); size = getROISize(); 
       } 
   
       /// returns the objects ROI offset
-      const Point getROIOffset() const { return m_oROI.ul(); }
+      const utils::Point getROIOffset() const { return m_oROI.ul(); }
   
       /// returns the objects ROI size 
-      const Size getROISize() const{ return m_oROI.getSize(); }
+      const utils::Size getROISize() const{ return m_oROI.getSize(); }
   
       /// returns the objects image width
       int getWidth() const { return m_oSize.width; }
@@ -268,11 +268,11 @@ namespace icl{
             2. The ROI must <em>fit</em> into the image. 
                Otherwise the ROI is set to null (whole image) and an error is thrown.
       */
-      void setup(const Size &size, format fmt, int channels, const Rect &roi);
+      void setup(const utils::Size &size, format fmt, int channels, const utils::Rect &roi);
   
   
       /// image size
-      Size m_oSize;
+      utils::Size m_oSize;
   
       /// image channel count
       int m_iChannels;
@@ -281,7 +281,7 @@ namespace icl{
       format m_eFormat;
   
       /// image roi
-      Rect m_oROI;
+      utils::Rect m_oROI;
   
     };
   

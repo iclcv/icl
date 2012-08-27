@@ -91,13 +91,13 @@ namespace icl{
   
     /// inplace lower case conversion \ingroup STRUTILS
     std::string &toLowerI(std::string &s){
-      std::for_each(s.begin(),s.end(),icl::toLowerX);
+      std::for_each(s.begin(),s.end(),icl::utils::toLowerX);
       return s;
     }
     
     /// inplace upper case conversion \ingroup STRUTILS
     std::string &toUpperI(std::string &s){
-      std::for_each(s.begin(),s.end(),icl::toUpperX);
+      std::for_each(s.begin(),s.end(),icl::utils::toUpperX);
       return s;
     }
   
