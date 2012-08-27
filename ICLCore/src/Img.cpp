@@ -1,4 +1,3 @@
-
 /********************************************************************
 **                Image Component Library (ICL)                    **
 **                                                                 **
@@ -170,7 +169,7 @@ namespace icl {
   //----------------------------------------------------------------------------
   template<class Type>
   Img<Type>::~Img()
-    // {{{ open
+  // {{{ open
   {
     FUNCTION_LOG("this: " << this);
   }
@@ -207,7 +206,7 @@ namespace icl {
 #undef ADD_CHANNEL
     
     
-  }
+    }
   
 
   // }}} constructors...
@@ -255,7 +254,7 @@ namespace icl {
 
   template<class Type> 
   inline Img<Type>* ensureCompatible (ImgBase** ppoDst, const ImgParams& p)
-    // {{{ open
+  // {{{ open
   {
     if (!ppoDst) return new Img<Type>(p);
     icl::ensureCompatible (ppoDst, icl::getDepth<Type>(), p);
@@ -491,7 +490,7 @@ namespace icl {
   //----------------------------------------------------------------------------
   template<class Type> void
   Img<Type>::removeChannel(int iChannel)
-    // {{{ open
+  // {{{ open
 
   {
     FUNCTION_LOG("removeChannel(" << iChannel << ")");
@@ -506,7 +505,7 @@ namespace icl {
   //----------------------------------------------------------------------------
   template<class Type> void
   Img<Type>::append(const Img<Type> *poSrc, int iIndex)
-    // {{{ open
+  // {{{ open
 
   {
     FUNCTION_LOG("");
@@ -525,7 +524,7 @@ namespace icl {
 
   template<class Type> void
   Img<Type>::append(const Img<Type> *poSrc, const std::vector<int>& vChannels)
-    // {{{ open
+  // {{{ open
 
   {
     FUNCTION_LOG("");
@@ -549,7 +548,7 @@ namespace icl {
   //----------------------------------------------------------------------------
   template<class Type> void 
   Img<Type>::swapChannels(int iIndexA, int iIndexB)
-    // {{{ open
+  // {{{ open
   {
     FUNCTION_LOG("swapChannels("<<iIndexA<<","<< iIndexB<< ")");
     ICLASSERT_RETURN(validChannel(iIndexA));
@@ -563,7 +562,7 @@ namespace icl {
   //----------------------------------------------------------------------------
   template<class Type> inline void 
   Img<Type>::replaceChannel(int iThisIndex, Img<Type>* poSrc, int iOtherIndex) 
-    // {{{ open
+  // {{{ open
   {
     FUNCTION_LOG("");
     ICLASSERT_RETURN(validChannel(iThisIndex));
@@ -680,7 +679,7 @@ namespace icl {
   //----------------------------------------------------------------------------
   template<class Type> void
   Img<Type>::mirror(axis eAxis, bool bOnlyROI)
-    // {{{ open
+  // {{{ open
   {
     FUNCTION_LOG("");
     const Point& oOffset = bOnlyROI ? getROIOffset() : Point::null;
@@ -857,7 +856,7 @@ namespace icl {
   //----------------------------------------------------------------------------
   template<class Type> void
   Img<Type>::setSize(const Size &s)
-    // {{{ open
+  // {{{ open
 
   {
     FUNCTION_LOG("");
@@ -879,7 +878,7 @@ namespace icl {
   //----------------------------------------------------------------------------
   template<class Type> void
   Img<Type>::setChannels(int iNumNewChannels)
-    // {{{ open
+  // {{{ open
   {
     FUNCTION_LOG("");
     ICLASSERT_RETURN(iNumNewChannels >= 0);
@@ -932,59 +931,32 @@ namespace icl {
       if(coords)*coords = getLocation(&*it,channel);
       return *it;
     }
-#if 0
-    OLDER IMPLEMENTATION
-    const_iterator it = getROIIterator(iChannel);
-    
-    if (!it.inRegion()) return 0; // empty region
-    Type vMax = *it; 
-    
-    if(!coords){
-      ++it;    
-      for (; it.inRegion(); ++it) {
-        vMax = std::max (vMax, *it);
-      }
-      return vMax;
-    }else{
-      coords->x = it.x();
-      coords->y = it.y();
-      ++it;
-      for (; it.inRegion(); ++it) {
-        if(*it > vMax){
-          coords->x = it.x();
-          coords->y = it.y();
-          vMax = *it;
-        }
-      }
-      return vMax;
-    }
-#endif
   }
 #ifdef HAVE_IPP
-#define ICL_INSTANTIATE_DEPTH(T)                                                                            \
-template<> icl ## T                                                                                         \
-Img<icl ## T>::getMax(int iChannel,Point *coords) const {                                                   \
-   ICLASSERT_RETURN_VAL( validChannel(iChannel), 0 );                                                       \
-   icl ## T vMax = 0;                                                                                       \
-   if(coords){                                                                                              \
-   ippiMaxIndx_ ## T ## _C1R (getROIData(iChannel),getLineStep(),getROISize(),&vMax,&coords->x,&coords->y); \
-   }else{                                                                                                   \
-   ippiMax_ ## T ## _C1R (getROIData(iChannel),getLineStep(),getROISize(),&vMax);                           \
-   }                                                                                                        \
-   return vMax;                                                                                             \
-}
+#define ICL_INSTANTIATE_DEPTH(T)                                        \
+  template<> icl ## T                                                   \
+  Img<icl ## T>::getMax(int iChannel,Point *coords) const {             \
+    ICLASSERT_RETURN_VAL( validChannel(iChannel), 0 );                  \
+    icl ## T vMax = 0;                                                  \
+    if(coords){                                                         \
+      ippiMaxIndx_ ## T ## _C1R (getROIData(iChannel),getLineStep(),getROISize(),&vMax,&coords->x,&coords->y); \
+    }else{                                                              \
+      ippiMax_ ## T ## _C1R (getROIData(iChannel),getLineStep(),getROISize(),&vMax); \
+    }                                                                   \
+    return vMax;                                                        \
+  }
 
   ICL_INSTANTIATE_DEPTH(8u)
-    ICL_INSTANTIATE_DEPTH(16s)
-    ICL_INSTANTIATE_DEPTH(32f)
+  ICL_INSTANTIATE_DEPTH(16s)
+  ICL_INSTANTIATE_DEPTH(32f)
 #undef ICL_INSTANTIATE_DEPTH
 #endif
 
-    // }}}
+  // }}}
 
-    // {{{     getMin
+  // {{{     getMin
 
-    template<class Type> Type 
+  template<class Type> Type 
   Img<Type>::getMin() const{
     FUNCTION_LOG("");
 
@@ -998,7 +970,7 @@ Img<icl ## T>::getMax(int iChannel,Point *coords) const {                       
   // fallback for all types
   template<class Type> Type 
   Img<Type>::getMin(int channel, Point *coords) const {
- FUNCTION_LOG("iChannel: " << channel);
+    FUNCTION_LOG("iChannel: " << channel);
     ICLASSERT_RETURN_VAL( validChannel(channel), 0 );
     ICLASSERT_RETURN_VAL( getROISize().getDim(), 0 );
     if(hasFullROI()){
@@ -1010,63 +982,32 @@ Img<icl ## T>::getMax(int iChannel,Point *coords) const {                       
       if(coords)*coords = getLocation(&*it,channel);
       return *it;
     }
-    
-#if 0 
-    OLDER IMPL...
-    FUNCTION_LOG("iChannel: " << iChannel);
-    ICLASSERT_RETURN_VAL( validChannel(iChannel), 0 );
-
-    const_iterator it = getROIIterator(iChannel);
-    if (!it.inRegion()) return 0; // empty region
-
-    Type vMin = *it; 
-    
-    if(!coords){
-      ++it;
-      for (; it.inRegion(); ++it) {
-        vMin = std::min (vMin, *it);
-      }
-      return vMin;
-    }else{
-      coords->x = it.x();
-      coords->y = it.y();
-      ++it;
-      for (; it.inRegion(); ++it) {
-        if(*it < vMin){
-          coords->x = it.x();
-          coords->y = it.y();
-          vMin = *it;
-        }
-      }
-    }
-    return vMin;
-#endif
   }
 #ifdef HAVE_IPP
-#define ICL_INSTANTIATE_DEPTH(T)                                                                         \
-template<> icl##T                                                                                        \
-Img<icl ## T>::getMin(int iChannel, Point *coords) const {                                               \
-   ICLASSERT_RETURN_VAL( validChannel(iChannel), 0 );                                                    \
-   icl##T vMin = 0;                                                                                      \
-   if(coords){                                                                                           \
-   ippiMinIndx_##T##_C1R (getROIData(iChannel),getLineStep(),getROISize(),&vMin,&coords->x,&coords->y);  \
-   }else{                                                                                                \
-   ippiMin_##T##_C1R (getROIData(iChannel),getLineStep(),getROISize(),&vMin);                            \
-   }                                                                                                     \
-   return vMin; }  
+#define ICL_INSTANTIATE_DEPTH(T)                                        \
+  template<> icl##T                                                     \
+  Img<icl ## T>::getMin(int iChannel, Point *coords) const {            \
+    ICLASSERT_RETURN_VAL( validChannel(iChannel), 0 );                  \
+    icl##T vMin = 0;                                                    \
+    if(coords){                                                         \
+      ippiMinIndx_##T##_C1R (getROIData(iChannel),getLineStep(),getROISize(),&vMin,&coords->x,&coords->y); \
+    }else{                                                              \
+      ippiMin_##T##_C1R (getROIData(iChannel),getLineStep(),getROISize(),&vMin); \
+    }                                                                   \
+    return vMin; }  
 
 
   ICL_INSTANTIATE_DEPTH(8u)
-    ICL_INSTANTIATE_DEPTH(16s)
-    ICL_INSTANTIATE_DEPTH(32f)
+  ICL_INSTANTIATE_DEPTH(16s)
+  ICL_INSTANTIATE_DEPTH(32f)
 #undef ICL_INSTANTIATE_DEPTH
 #endif
 
-    // }}}
+  // }}}
 
-    // {{{     getMinMax
+  // {{{     getMinMax
 
-    template<class Type> const Range<Type>
+  template<class Type> const Range<Type>
   Img<Type>::getMinMax() const
   {
     FUNCTION_LOG("");
@@ -1117,88 +1058,32 @@ Img<icl ## T>::getMin(int iChannel, Point *coords) const {                      
       }
       return Range<Type>(*its.first,*its.second);
     }
-#if 0
-    older version ...
-
-    FUNCTION_LOG("iChannel: " << iChannel);
-    ICLASSERT_RETURN_VAL(validChannel(iChannel), Range<Type>());
-    if( (minCoords && !maxCoords) || (maxCoords && !minCoords) ){
-      ERROR_LOG("please define minCoords AND maxCoords or do not define BOTH (returning 0)");
-      return Range<Type>();
-    }
-    ICLASSERT_RETURN_VAL(getROISize().getDim(),Range<Type>());
-
-    Range<Type> r;
-
-    Type *minPtr=0;
-    type *maxPtr=0;
-    if(hasFullROI()){
-      const_iterator it = begin(iChannel);
-      const_iterator itEnd = end(iChannel);
-      Type min = *it, max=*it;
-      it++;
-      for(;it!=itEnd;++it){
-        min = iclMin(min,*it);
-        max = iclMax(max,*it);
-      }
-      
-    }
-    
-    const_iterator it = getROIIterator(iChannel);
-    if (!it.inRegion()) return Range<Type>(); // empty region: return with 0, 0
-    r.minVal = r.maxVal = *it;
-    if(minCoords){
-      minCoords->x = maxCoords->x = it.x();
-      minCoords->y = maxCoords->y = it.y();
-      ++it;
-      for (; it.inRegion(); ++it) {
-        Type v = *it;
-        if(r.minVal < v){
-          r.minVal = v;
-          minCoords->x = it.x();
-          minCoords->y = it.y();
-        }
-        if(r.maxVal > v){
-          r.maxVal = v;
-          maxCoords->x = it.x();
-          maxCoords->y = it.y();
-        }
-      }
-    }else{
-      ++it;
-      for (; it.inRegion(); ++it) {
-        r.minVal = std::min (r.minVal, *it);
-        r.maxVal = std::max (r.maxVal, *it);
-      }
-    }
-    return r;
-#endif
 
   }
 
 #ifdef HAVE_IPP
 
-#define ICL_INSTANTIATE_DEPTH(T)                                                              \
-template<> const Range<icl##T>                                                                \
-Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const {             \
-   ICLASSERT_RETURN_VAL( validChannel(iChannel) ,Range<icl##T>());                            \
-   if((minCoords && !maxCoords) || (maxCoords && !minCoords)){                                \
-     ERROR_LOG("please define minCoords AND maxCoords or do not define BOTH (returning (0,0))");  \
-     return Range<icl##T>(0,0);                                                               \
-   }                                                                                          \
-   if(minCoords){                                                                             \
-   Range<icl32f> r;                                                                           \
-   ippiMinMaxIndx_ ## T ## _C1R (getROIData(iChannel),getLineStep(),                          \
-                                 getROISize(), &(r.minVal), &(r.maxVal),                      \
-                                 minCoords,maxCoords);                                        \
-   return r.castTo<icl##T>();                                                                 \
-   }else{                                                                                     \
-   Range<icl##T> r;                                                                           \
-   ippiMinMax_ ## T ## _C1R (getROIData(iChannel),getLineStep(),                              \
-                             getROISize(), &(r.minVal), &(r.maxVal));                         \
-   return r;                                                                                  \
-   }                                                                                          \
-}
+#define ICL_INSTANTIATE_DEPTH(T)                                        \
+  template<> const Range<icl##T>                                        \
+  Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const { \
+    ICLASSERT_RETURN_VAL( validChannel(iChannel) ,Range<icl##T>());     \
+    if((minCoords && !maxCoords) || (maxCoords && !minCoords)){         \
+      ERROR_LOG("please define minCoords AND maxCoords or do not define BOTH (returning (0,0))"); \
+      return Range<icl##T>(0,0);                                        \
+    }                                                                   \
+    if(minCoords){                                                      \
+      Range<icl32f> r;                                                  \
+      ippiMinMaxIndx_ ## T ## _C1R (getROIData(iChannel),getLineStep(), \
+                                    getROISize(), &(r.minVal), &(r.maxVal), \
+                                    minCoords,maxCoords);               \
+      return r.castTo<icl##T>();                                        \
+    }else{                                                              \
+      Range<icl##T> r;                                                  \
+      ippiMinMax_ ## T ## _C1R (getROIData(iChannel),getLineStep(),     \
+                                getROISize(), &(r.minVal), &(r.maxVal)); \
+      return r;                                                         \
+    }                                                                   \
+  }
 
   ICL_INSTANTIATE_DEPTH(8u)
   ICL_INSTANTIATE_DEPTH(32f)
@@ -1206,13 +1091,13 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
 #endif
 
 
-    // }}}
+  // }}}
 
-    // }}} Get Min/Max...
+  // }}} Get Min/Max...
 
-    // {{{  Auxillary  functions 
+  // {{{  Auxillary  functions 
 
-    template<class Type>
+  template<class Type>
   SmartArray<Type> Img<Type>::createChannel(Type *ptDataToCopy) const {
     // {{{ open
     FUNCTION_LOG("");
@@ -1275,9 +1160,9 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
         
         float U=0,R=0,B=0,L=0;
         //    ... hmmmm
-     */
+        */
 
-     ERROR_LOG ("region average interpolation is not yet implemented!");
+    ERROR_LOG ("region average interpolation is not yet implemented!");
     return subPixelLIN (x, y, iChannel);
   }
 
@@ -1363,7 +1248,7 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
 
   template<class Type>
   void Img<Type>::clear(int iIndex, Type tValue, bool bROIOnly) 
-    // {{{ open
+  // {{{ open
   {
     //---- Log Message ----
     FUNCTION_LOG("clear(" << iIndex << "," << tValue << ")");
@@ -1456,8 +1341,8 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
       else return 0;
     }
     switch ((*first)->getDepth()) {
-#define ICL_INSTANTIATE_DEPTH(T) \
-     case depth ## T: return __combineImages<icl ## T> (vec, ppoDst); break;
+#define ICL_INSTANTIATE_DEPTH(T)                                        \
+      case depth ## T: return __combineImages<icl ## T> (vec, ppoDst); break;
       ICL_INSTANTIATE_ALL_DEPTHS
 #undef ICL_INSTANTIATE_DEPTH
       }
@@ -1467,23 +1352,23 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
   // }}}
 
 
-#define CHECK_VALUES(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize)                                             \
-  FUNCTION_LOG("");                                                                                                 \
-  ICLASSERT_RETURN( src && dst );                                                                                   \
-  ICLASSERT_RETURN( srcSize == dstSize );                                                                           \
-  ICLASSERT_RETURN( src->validChannel(srcC) );                                                                      \
-  ICLASSERT_RETURN( dst->validChannel(dstC) );                                                                      \
-  ICLASSERT_RETURN( srcOffs.x >= 0 && srcOffs.y >= 0 && dstOffs.x >= 0 && dstOffs.y >= 0);                          \
-  ICLASSERT_RETURN( srcOffs.x+srcSize.width <= src->getWidth() && srcOffs.y+srcSize.height <= src->getHeight() );   \
+#define CHECK_VALUES(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize) \
+  FUNCTION_LOG("");                                                     \
+  ICLASSERT_RETURN( src && dst );                                       \
+  ICLASSERT_RETURN( srcSize == dstSize );                               \
+  ICLASSERT_RETURN( src->validChannel(srcC) );                          \
+  ICLASSERT_RETURN( dst->validChannel(dstC) );                          \
+  ICLASSERT_RETURN( srcOffs.x >= 0 && srcOffs.y >= 0 && dstOffs.x >= 0 && dstOffs.y >= 0); \
+  ICLASSERT_RETURN( srcOffs.x+srcSize.width <= src->getWidth() && srcOffs.y+srcSize.height <= src->getHeight() ); \
   ICLASSERT_RETURN( dstOffs.x+dstSize.width <= dst->getWidth() && dstOffs.y+dstSize.height <= dst->getHeight() );   
 
-#define CHECK_VALUES_NO_SIZE(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize)                                     \
-  FUNCTION_LOG("");                                                                                                 \
-  ICLASSERT_RETURN( src && dst );                                                                                   \
-  ICLASSERT_RETURN( src->validChannel(srcC) );                                                                      \
-  ICLASSERT_RETURN( dst->validChannel(dstC) );                                                                      \
-  ICLASSERT_RETURN( srcOffs.x >= 0 && srcOffs.y >= 0 && dstOffs.x >= 0 && dstOffs.y >= 0);                          \
-  ICLASSERT_RETURN( srcOffs.x+srcSize.width <= src->getWidth() && srcOffs.y+srcSize.height <= src->getHeight() );   \
+#define CHECK_VALUES_NO_SIZE(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize) \
+  FUNCTION_LOG("");                                                     \
+  ICLASSERT_RETURN( src && dst );                                       \
+  ICLASSERT_RETURN( src->validChannel(srcC) );                          \
+  ICLASSERT_RETURN( dst->validChannel(dstC) );                          \
+  ICLASSERT_RETURN( srcOffs.x >= 0 && srcOffs.y >= 0 && dstOffs.x >= 0 && dstOffs.y >= 0); \
+  ICLASSERT_RETURN( srcOffs.x+srcSize.width <= src->getWidth() && srcOffs.y+srcSize.height <= src->getHeight() ); \
   ICLASSERT_RETURN( dstOffs.x+dstSize.width <= dst->getWidth() && dstOffs.y+dstSize.height <= dst->getHeight() );   
 
   // scale channel ROI function for abitrary image scaling operations
@@ -1536,9 +1421,9 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
 
   // }}}
 
-#define ICL_INSTANTIATE_DEPTH(D)  template void scaledCopyChannelROI<icl##D>            \
-                                  (const Img<icl##D>*,int,const Point&,const Size&,     \
-                                  Img<icl##D>*,int,const Point&,const Size&,scalemode); 
+#define ICL_INSTANTIATE_DEPTH(D)  template void scaledCopyChannelROI<icl##D> \
+  (const Img<icl##D>*,int,const Point&,const Size&,                     \
+   Img<icl##D>*,int,const Point&,const Size&,scalemode); 
 
   /// IPP-OPTIMIZED specialization for icl8u to icl8u ROI sclaing (using ippiResize)
 #ifdef HAVE_IPP
@@ -1546,7 +1431,7 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
   scaledCopyChannelROI<icl8u>(const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
                               Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
                               scalemode eScaleMode)
-    // {{{ open 
+  // {{{ open 
 
   {
     CHECK_VALUES_NO_SIZE(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
@@ -1590,7 +1475,7 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
   scaledCopyChannelROI<icl32f>(const Img<icl32f> *src, int srcC, const Point &srcOffs, const Size &srcSize,
                                Img<icl32f> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
                                scalemode eScaleMode)
-    // {{{ open
+  // {{{ open
 
   {
     FUNCTION_LOG("");
@@ -1601,9 +1486,9 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
     //NOTE: this function has become deprecated
     // attention: for source image IPP wants indeed the *image* origin
     ippiResize_32f_C1R(src->getData(srcC),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
-                      dst->getROIData(dstC,dstOffs),dst->getLineStep(),dstSize,
-                      (float)dstSize.width/(float)srcSize.width,
-                      (float)dstSize.height/(float)srcSize.height,(int)eScaleMode);
+                       dst->getROIData(dstC,dstOffs),dst->getLineStep(),dstSize,
+                       (float)dstSize.width/(float)srcSize.width,
+                       (float)dstSize.height/(float)srcSize.height,(int)eScaleMode);
 #else
     int bufSize=0;
     IppStatus s2 = ippiResizeGetBufSize(Rect(srcOffs,srcSize), Rect(dstOffs, dstSize), 1, (int)eScaleMode, &bufSize);
@@ -1633,11 +1518,11 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
 
   // ipp case: do not instantiate the already specialized functions 8u and 32f
   ICL_INSTANTIATE_DEPTH(16s)
-    ICL_INSTANTIATE_DEPTH(32s)
-    ICL_INSTANTIATE_DEPTH(64f)
+  ICL_INSTANTIATE_DEPTH(32s)
+  ICL_INSTANTIATE_DEPTH(64f)
 #else
-    // no-ipp case instantiate all functions
-    ICL_INSTANTIATE_ALL_DEPTHS
+  // no-ipp case instantiate all functions
+  ICL_INSTANTIATE_ALL_DEPTHS
 #endif
 
 #undef ICL_INSTANTIATE_DEPTH
@@ -1690,9 +1575,9 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
   // }}}
 
 
-#define ICL_INSTANTIATE_DEPTH(D) template void flippedCopyChannelROI<icl##D>(axis eAxis,                        \
-                                 const Img<icl##D> *src, int srcC, const Point &srcOffs, const Size &srcSize,   \
-                                 Img<icl##D> *dst, int dstC, const Point &dstOffs, const Size &dstSize);
+#define ICL_INSTANTIATE_DEPTH(D) template void flippedCopyChannelROI<icl##D>(axis eAxis, \
+                                                                             const Img<icl##D> *src, int srcC, const Point &srcOffs, const Size &srcSize, \
+                                                                             Img<icl##D> *dst, int dstC, const Point &dstOffs, const Size &dstSize);
 
 #ifdef HAVE_IPP
   /// IPP-OPTIMIZED specialization for icl8u image flipping
@@ -1724,7 +1609,7 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
   }
 
   // }}}
- // OLD version ...
+  // OLD version ...
   // ipp case: do not instantiate the already specialized functions 8u and 32f
   //  ICL_INSTANTIATE_DEPTH(16s)
   //  ICL_INSTANTIATE_DEPTH(32s)
@@ -1804,8 +1689,8 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
     poDst->setMetaData(poSrc->getMetaData());
     for(int c=poSrc->getChannels()-1; c>=0; --c){
       switch(poSrc->getDepth()){
-#define ICL_INSTANTIATE_DEPTH(D)                                                                                           \
-        case depth##D :flippedCopyChannelROI(eAxis,poSrc->asImg<icl##D>(),c, poSrc->getROIOffset(), poSrc->getROISize(),   \
+#define ICL_INSTANTIATE_DEPTH(D)                                        \
+        case depth##D :flippedCopyChannelROI(eAxis,poSrc->asImg<icl##D>(),c, poSrc->getROIOffset(), poSrc->getROISize(), \
                                              poDst->asImg<icl##D>(),c, poDst->getROIOffset(), poDst->getROISize() ); break;
         ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
@@ -1958,16 +1843,16 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
     for(int c=0;c<getChannels();c++){
       // top
       clearChannelROI<Type>(this,c,val, Point::null,        
-                         Size(s.width,roi.top()));
+                            Size(s.width,roi.top()));
       // bottom
       clearChannelROI<Type>(this,c,val, Point(0,roi.bottom()),
-                         Size(s.width,s.height-roi.bottom()));
+                            Size(s.width,s.height-roi.bottom()));
       // left
       clearChannelROI<Type>(this,c,val, Point(0,roi.top()),
-                         Size(roi.left(),roi.height));
+                            Size(roi.left(),roi.height));
       // right
       clearChannelROI<Type>(this,c,val, roi.ur(),
-                         Size(s.width-roi.right(),roi.height) );
+                            Size(s.width-roi.right(),roi.height) );
     }   
     if(setFullROI) this->setFullROI(); 
   }
@@ -1981,16 +1866,16 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
     for(int c=0;c<getChannels();c++){
       // top
       clearChannelROI<Type>(this,c,vals[c], Point::null,        
-                         Size(s.width,roi.top()));
+                            Size(s.width,roi.top()));
       // bottom
       clearChannelROI<Type>(this,c,vals[c], Point(0,roi.bottom()),
-                         Size(s.width,s.height-roi.bottom()));
+                            Size(s.width,s.height-roi.bottom()));
       // left
       clearChannelROI<Type>(this,c,vals[c], Point(0,roi.top()),
-                         Size(roi.left(),roi.height));
+                            Size(roi.left(),roi.height));
       // right
       clearChannelROI<Type>(this,c,vals[c], roi.ur(),
-                         Size(s.width-roi.right(),roi.height) );
+                            Size(s.width-roi.right(),roi.height) );
     }    
     if(setFullROI) this->setFullROI();
   }
@@ -2023,17 +1908,17 @@ Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const 
     }
 
     switch(src->getDepth()){
-#define ICL_INSTANTIATE_DEPTH(D)                \
-      case depth##D:                            \
-      for(int c=0;c<getChannels();c++){         \
-        for(int i=0;i<4;++i){                   \
-          convertChannelROI<icl##D,Type>(src->asImg<icl##D>(),c,offs[i],size[i],this,c,offs[i],size[i]); \
-        }                                       \
-      }                                         \
-      break;
-ICL_INSTANTIATE_ALL_DEPTHS
+#define ICL_INSTANTIATE_DEPTH(D)                                        \
+      case depth##D:                                                    \
+        for(int c=0;c<getChannels();c++){                               \
+          for(int i=0;i<4;++i){                                         \
+            convertChannelROI<icl##D,Type>(src->asImg<icl##D>(),c,offs[i],size[i],this,c,offs[i],size[i]); \
+          }                                                             \
+        }                                                               \
+        break;
+      ICL_INSTANTIATE_ALL_DEPTHS
 #undef ICL_INSTANTIATE_DEPTH
-    }
+      }
     
     if(setFullROI) this->setFullROI();
   }
