@@ -53,8 +53,13 @@ namespace icl{
   struct StaticRSBImageTypeRegistration{
     StaticRSBImageTypeRegistration(){
       shared_ptr<ProtocolBufferConverter<RSBImage> > p(new ProtocolBufferConverter<RSBImage>());
-      //stringConverterRepository()->registerConverter(p);
+#if RSB_VERSION_MINOR < 8
+      stringConverterRepository()->registerConverter(p);
+#else
       converterRepository<std::string>()->registerConverter(p);
+#endif
+
+
     }
   } static_RSBImage_type_registration;
   
