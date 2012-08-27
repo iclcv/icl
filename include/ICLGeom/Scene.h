@@ -55,56 +55,58 @@
 
 
 namespace icl{
-
-  /** \cond */
-  class ICLDrawWidget;
-  /** \endcond */
-
-  /// Scene Implementation that is used to handle a list of objects and cameras
-  /** The scene combines visual objects (icl::SceneObject) which define nodes of a <b>scene graph</b>
-      and cameras. You can use ICL's camera calibration tool icl-cam-calib (and icl-cam-calib-2) to calibrate
-      cameras in your scene. Later, you can define a scene (including SceneObject-instances) and
-      use the calibrated camera to draw the Scene as an image overlay.
-      
-      The following example demonstrates how to use the Scene class. The example can also be
-      found at ICLGeom/examples/geom-demo-simple.cpp. A more complex demo that also uses the Scene's 
-      scene graph can be found at ICLGeom/examples/scene-graph-demo.cpp
-
-      \code
-#include <ICLCV/Common.h>
-#include <ICLGeom/Geom.h>
-#include <ICLUtils/FPSLimiter.h>
-
-// global data
-GUI gui;
-Scene scene;
-
-void init(){
-  // create graphical user interface
-  gui << "draw3D[@minsize=16x12@handle=draw@label=scene view]"
-      << "fslider(0.5,20,3)[@out=f@handle=focal"
-         "@label=focal length@maxsize=100x3]";
-  gui.show();
+  namespace geom{
   
-  // defines the scene's viewport
-  (**gui.getValue<DrawHandle3D>("draw")).setDefaultImageSize(Size(640,480));
-
-  // create camera and add to scene instance
-  Camera cam(Vec(0,0,-10), // position
-             Vec(0,0,1),   // view-direction
-             Vec(1,0,0));   // up-direction
-  scene.addCamera(cam);
-
+    /** \cond */
+    class ICLDrawWidget;
+    /** \endcond */
   
-  if(pa("-o")){ // either load an .obj file
-    scene.addObject(new SceneObject(*pa("-o")));
-  }else{ // or create a simple cube
-    float data[] = {0,0,0,7,3,2};
-    scene.addObject(new SceneObject("cuboid",data));
-  }
-
-  // link the scene's first camera with mouse gestures in the draw-GUI-component
-  gui["draw"].install(scene.getMouseHandler(0));
+    /// Scene Implementation that is used to handle a list of objects and cameras
+    /** The scene combines visual objects (icl::SceneObject) which define nodes of a <b>scene graph</b>
+        and cameras. You can use ICL's camera calibration tool icl-cam-calib (and icl-cam-calib-2) to calibrate
+        cameras in your scene. Later, you can define a scene (including SceneObject-instances) and
+        use the calibrated camera to draw the Scene as an image overlay.
+        
+        The following example demonstrates how to use the Scene class. The example can also be
+        found at ICLGeom/examples/geom-demo-simple.cpp. A more complex demo that also uses the Scene's 
+        scene graph can be found at ICLGeom/examples/scene-graph-demo.cpp
+  
+        \code
+  #include <ICLCV/Common.h>
+  #include <ICLGeom/Geom.h>
+  #include <ICLUtils/FPSLimiter.h>
+  
+  // global data
+  GUI gui;
+  Scene scene;
+  
+  void init(){
+    // create graphical user interface
+    gui << "draw3D[@minsize=16x12@handle=draw@label=scene view]"
+        << "fslider(0.5,20,3)[@out=f@handle=focal"
+           "@label=focal length@maxsize=100x3]";
+    gui.show();
+    
+    // defines the scene's viewport
+    (**gui.getValue<DrawHandle3D>("draw")).setDefaultImageSize(Size(640,480));
+  
+    // create camera and add to scene instance
+    Camera cam(Vec(0,0,-10), // position
+               Vec(0,0,1),   // view-direction
+               Vec(1,0,0));   // up-direction
+    scene.addCamera(cam);
+  
+    
+    if(pa("-o")){ // either load an .obj file
+      scene.addObject(new SceneObject(*pa("-o")));
+    }else{ // or create a simple cube
+      float data[] = {0,0,0,7,3,2};
+      scene.addObject(new SceneObject("cuboid",data));
+    }
+  
+    // link the scene's first camera with mouse gestures in the draw-GUI-component
+    gui["draw"].install(scene.getMouseHandler(0));
+  } // namespace geom
 }
 
 

@@ -38,14 +38,16 @@
 #include <ICLIO/FileGrabberPlugin.h>
 
 namespace icl{
+  namespace io{
+    
   
-
-  /// Plugin class to read "jpeg" and "jpg" images \ingroup FILEIO_G
-  class FileGrabberPluginJPEG : public FileGrabberPlugin {
-    public:
-    /// grab implementation
-    virtual void grab(File &file, ImgBase **dest); 
-  };  
+    /// Plugin class to read "jpeg" and "jpg" images \ingroup FILEIO_G
+    class FileGrabberPluginJPEG : public FileGrabberPlugin {
+      public:
+      /// grab implementation
+      virtual void grab(File &file, ImgBase **dest); 
+    };  
+  } // namespace io
 }
 
 #endif

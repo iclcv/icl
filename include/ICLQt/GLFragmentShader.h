@@ -39,31 +39,33 @@
 #include <ICLUtils/Exception.h>
 
 namespace icl{
-  /// Simple wrapper class for OpenGL 2.0 Fragment Shader Programs
-  /** The GLFragmentShader class can be used to create simple fragment shader programs.
+  namespace qt{
+    /// Simple wrapper class for OpenGL 2.0 Fragment Shader Programs
+    /** The GLFragmentShader class can be used to create simple fragment shader programs.
+        
+    */
+    class GLFragmentShader : public Uncopyable{
+      struct Data;
+      Data *m_data;
       
-  */
-  class GLFragmentShader : public Uncopyable{
-    struct Data;
-    Data *m_data;
-    
-    void create();
-    
-    public:
-    GLFragmentShader(const std::string &program, bool createOnFirstActivate=true) throw (ICLException);
-    ~GLFragmentShader();
-    
-    void activate();
-    
-    /// deactivates the shader
-    /** This function does not do anything, if the shader was not enabled before! */
-    void deactivate();
-    
-    /// creates a deep copy of this shader
-    /** The resulting copy does only use this instance's program string and is other than this
-        independent. The copy is created in createOnFirstActivate mode */
-    GLFragmentShader *copy() const;
-  };
+      void create();
+      
+      public:
+      GLFragmentShader(const std::string &program, bool createOnFirstActivate=true) throw (ICLException);
+      ~GLFragmentShader();
+      
+      void activate();
+      
+      /// deactivates the shader
+      /** This function does not do anything, if the shader was not enabled before! */
+      void deactivate();
+      
+      /// creates a deep copy of this shader
+      /** The resulting copy does only use this instance's program string and is other than this
+          independent. The copy is created in createOnFirstActivate mode */
+      GLFragmentShader *copy() const;
+    };
+  } // namespace qt
 }
 
 #endif

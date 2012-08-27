@@ -39,52 +39,54 @@
 #include <ICLMath/MatrixSubRectIterator.h>
 
 namespace icl{
-  /// Iterator class used to iterate through an Images ROI-pixels \ingroup IMAGE
-  /** 
-  The ImgIterator is a utility to iterate line by line through
-  all ROI-pixels of an image. The following ASCII image 
-  shows an images ROI.
-  <pre>
-    1st pixel
-      |
-  ....|.................... 
-  ....+->Xoooooooo......... ---
-  .......ooooooooo.........  |
-  .......ooooooooo......... iRoiH
-  .......ooooooooo.........  |
-  .......ooooooooo......... ---
-  ......................... 
-         |-iRoiW-|
-  |---------iImageW-------|
+  namespace core{
+    /// Iterator class used to iterate through an Images ROI-pixels \ingroup IMAGE
+    /** 
+    The ImgIterator is a utility to iterate line by line through
+    all ROI-pixels of an image. The following ASCII image 
+    shows an images ROI.
+    <pre>
+      1st pixel
+        |
+    ....|.................... 
+    ....+->Xoooooooo......... ---
+    .......ooooooooo.........  |
+    .......ooooooooo......... iRoiH
+    .......ooooooooo.........  |
+    .......ooooooooo......... ---
+    ......................... 
+           |-iRoiW-|
+    |---------iImageW-------|
+    
+    </pre>
+    
+    For image operation like thresholding or filters,
+    it is necessary perform calculation for each ROI-
+    pixel. To achieve that, the programmer needs to
+    Take care about:
+       - xoffset
+       - yoffset
+       - step to jump if right border of the roi 
+         is reached (imageW-roiW). current x must be reset
+         to the xoffset, and y must be increased by 1
+       - check of the last valid pixel position
   
-  </pre>
-  
-  For image operation like thresholding or filters,
-  it is necessary perform calculation for each ROI-
-  pixel. To achieve that, the programmer needs to
-  Take care about:
-     - xoffset
-     - yoffset
-     - step to jump if right border of the roi 
-       is reached (imageW-roiW). current x must be reset
-       to the xoffset, and y must be increased by 1
-     - check of the last valid pixel position
-
-  The following code examples demonstrate how to
-  handle image ROIs using the ImgIterator drawing on the 
-  example of a "find-the-min-pixel"-function.
-  The example can be found in 
-  "ICLCore/examples/img-iterator-benchmark.cpp"
-  
-  \subsection IPP IPP-Performance
-      Ok, not very meaningful, but state of the art!
-      If ICL is compiled without IPP the builtin-getMin()-
-      function uses std::min_element instead. By the way, 
-      IPP-performance is ... legendary -- it's about
-      <b>20-times</b> faster than the C++ fallback!!
-\code
-icl8u find_min_ipp(const Img8u &i){
-  return i.getMin();
+    The following code examples demonstrate how to
+    handle image ROIs using the ImgIterator drawing on the 
+    example of a "find-the-min-pixel"-function.
+    The example can be found in 
+    "ICLCore/examples/img-iterator-benchmark.cpp"
+    
+    \subsection IPP IPP-Performance
+        Ok, not very meaningful, but state of the art!
+        If ICL is compiled without IPP the builtin-getMin()-
+        function uses std::min_element instead. By the way, 
+        IPP-performance is ... legendary -- it's about
+        <b>20-times</b> faster than the C++ fallback!!
+  \code
+  icl8u find_min_ipp(const Img8u &i){
+    return i.getMin();
+  } // namespace core
 }
 \endcode
 

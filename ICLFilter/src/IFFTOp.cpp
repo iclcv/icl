@@ -39,25 +39,27 @@ using namespace std;
 using namespace icl;
 using namespace icl::fft;
 namespace icl{
-
-class IFFTOp::Data{
-public:
-	ResultMode m_rm;
-	SizeAdaptionMode m_sam;
-	Rect m_roi;
-	bool m_join;
-	bool m_ifftshift;
-	bool m_forceIDFT;
-	ImgBase *m_adaptedSource;
-	DynMatrix<std::complex<float> > m_buf32f;
-	DynMatrix<std::complex<double> > m_buf64f;
-	DynMatrix<std::complex<float> > m_dstBuf32f;
-	DynMatrix<std::complex<double> > m_dstBuf64f;
-	Data(ResultMode rm, SizeAdaptionMode sam, Rect roi,bool join, bool ifftshift, bool forceIDFT):
-		m_rm(rm),m_sam(sam),m_roi(roi),m_join(join),m_ifftshift(ifftshift),m_forceIDFT(forceIDFT),m_adaptedSource(0){}
-	~Data(){
-		ICL_DELETE(m_adaptedSource);
-	}
+  namespace filter{
+  
+  class IFFTOp::Data{
+  public:
+  	ResultMode m_rm;
+  	SizeAdaptionMode m_sam;
+  	Rect m_roi;
+  	bool m_join;
+  	bool m_ifftshift;
+  	bool m_forceIDFT;
+  	ImgBase *m_adaptedSource;
+  	DynMatrix<std::complex<float> > m_buf32f;
+  	DynMatrix<std::complex<double> > m_buf64f;
+  	DynMatrix<std::complex<float> > m_dstBuf32f;
+  	DynMatrix<std::complex<double> > m_dstBuf64f;
+  	Data(ResultMode rm, SizeAdaptionMode sam, Rect roi,bool join, bool ifftshift, bool forceIDFT):
+  		m_rm(rm),m_sam(sam),m_roi(roi),m_join(join),m_ifftshift(ifftshift),m_forceIDFT(forceIDFT),m_adaptedSource(0){}
+  	~Data(){
+  		ICL_DELETE(m_adaptedSource);
+  	}
+  } // namespace filter
 };
 
 IFFTOp::IFFTOp(ResultMode rm, SizeAdaptionMode zam, Rect roi, bool join, bool ifftshift,bool forceIDFT):

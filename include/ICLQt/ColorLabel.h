@@ -40,61 +40,63 @@
 #include <ICLCore/Color.h>
 
 namespace icl{
+  namespace qt{
+    
+    /// Utility class to avoid Qt warning when accesing QLabels from differnt Threads
+    /** QLabels can not be used from different Threads. So if a QLabel is created in 
+        in the main thread, it might not be set up to show another text/number from
+        the working thread.
+        As a workaround, the "label" component of the ICL GUI API uses not the 
+        original QLabel but this thread-save reimplementation called
+        CompabilityLabel.
+    */
+    class ColorLabel : public ThreadedUpdatableWidget{
+      public:
+      /// Create a new label with given text and given parent widget
+      ColorLabel(Color4D &color, bool useAlpha, QWidget *parent=0);
   
-  /// Utility class to avoid Qt warning when accesing QLabels from differnt Threads
-  /** QLabels can not be used from different Threads. So if a QLabel is created in 
-      in the main thread, it might not be set up to show another text/number from
-      the working thread.
-      As a workaround, the "label" component of the ICL GUI API uses not the 
-      original QLabel but this thread-save reimplementation called
-      CompabilityLabel.
-  */
-  class ColorLabel : public ThreadedUpdatableWidget{
-    public:
-    /// Create a new label with given text and given parent widget
-    ColorLabel(Color4D &color, bool useAlpha, QWidget *parent=0);
-
-    /// reimplemented drawin function (draw the current text centered)
-    virtual void paintEvent(QPaintEvent *evt);
-
-    /// sets new color rgb
-    void setColor(const Color &color);
-
-    /// sets new color rgba
-    void setColor(const Color4D &color);
-
-    /// returns current color
-    Color getRGB() const;
-    
-    /// returns current rgba color
-    Color4D getRGBA() const;
-    
-    /// returns current red value
-    int getRed() const;
-
-    /// returns current green value
-    int getGreen() const;
-
-    /// returns current blue value
-    int getBlue() const;
-
-    /// return current alpha value
-    int getAlhpa() const;
-    
-    /// returns wheter internal color uses alpha value
-    bool hasAlpha() const;
-
-    private:
-
-    /// shallowly wrapped color
-    Color4D &m_color; 
-
-    /// indicator wheter alpha is used
-    bool m_hasAlpha; 
-    
-    /// Thread-safety mutex
-    mutable QMutex m_oMutex;
-  };
+      /// reimplemented drawin function (draw the current text centered)
+      virtual void paintEvent(QPaintEvent *evt);
+  
+      /// sets new color rgb
+      void setColor(const Color &color);
+  
+      /// sets new color rgba
+      void setColor(const Color4D &color);
+  
+      /// returns current color
+      Color getRGB() const;
+      
+      /// returns current rgba color
+      Color4D getRGBA() const;
+      
+      /// returns current red value
+      int getRed() const;
+  
+      /// returns current green value
+      int getGreen() const;
+  
+      /// returns current blue value
+      int getBlue() const;
+  
+      /// return current alpha value
+      int getAlhpa() const;
+      
+      /// returns wheter internal color uses alpha value
+      bool hasAlpha() const;
+  
+      private:
+  
+      /// shallowly wrapped color
+      Color4D &m_color; 
+  
+      /// indicator wheter alpha is used
+      bool m_hasAlpha; 
+      
+      /// Thread-safety mutex
+      mutable QMutex m_oMutex;
+    };
+  } // namespace qt
 }
 
 #endif

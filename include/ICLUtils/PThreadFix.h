@@ -40,11 +40,13 @@
 #if   defined(HAVE_IPP) || defined(HAVE_MKL)
 #include <ICLUtils/Timer.h>
 namespace icl{
-  static icl::Timer ICL_STATIC_FIX_TO_AVOID_UNDEFINED_REFERENCE_TO_PTHREAD_ATFORK;
-  struct ICL_PThreadAtForkFix{
-    ICL_PThreadAtForkFix();
-    static ICL_PThreadAtForkFix fix;
-  };
+  namespace utils{
+    static icl::Timer ICL_STATIC_FIX_TO_AVOID_UNDEFINED_REFERENCE_TO_PTHREAD_ATFORK;
+    struct ICL_PThreadAtForkFix{
+      ICL_PThreadAtForkFix();
+      static ICL_PThreadAtForkFix fix;
+    };
+  } // namespace utils
 }
 
 // for some reason, this symbol is missing, and we cannot

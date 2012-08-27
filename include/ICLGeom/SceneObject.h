@@ -46,655 +46,657 @@
 #include <ICLQt/GLFragmentShader.h>
 
 namespace icl{
-
-  /** \cond */
-  class Scene;
-  /** \endcond */
- 
+  namespace geom{
   
-  /// The SceneObject class defines visible objects in scenes or scene graph nodes
-  /** SceneObject instances are used in combination with the icl::Scene class. You
-      can add SceneObjects into a Scene and then render these as an image overlay.
-      
-      A scene object is defined by
-      - a list of 3D-homogeneous vertices
-      - a list of primitives that use indices to the vertex list 
-      - a transformation matrix
-      - a list of children that are rendered relatively to their parent object 
-      
-      SceneGraph objects can also have no vertices. In this case they are invisible
-      nodes within a scene graph.
-      
-      \section CREATION Creation of SceneObjects
-      Usually special SceneObject instances are created by subclassing the SceneObject
-      class. Subclasses can either simply add other SceneObjects e.g. using the
-      utility methods SceneObject::addCube or SceneObject::addSphere or they can also
-      define a custom geometry by adding vertices and primitives using 
-      SceneObject::addVertex and e.g. SceneObject::addLine or SceneObject::addQuad
-      
-
-      \section NORMALS Normals 
-      Normals are used for realistic lighting. Therefore, it is recommended to use 
-      normals when objects are defined. Normals are also stored in a list. Each face-vertex
-      references one of the normals of this list.
-      
-      \subsection AN AutoNormals
-      If no normals are provided, the normals are computed automatically at run-time using
-      cross-product:
-      
-      - lines: no auto normals
-      - triangles (vertices a,b,c) -> (a-c) x (b-c)
-      - quads (vertices a,b,c,d) -> (d-c) x (b-c)
-      - polygons: no auto normals supported
-      - textures: here we always use auto-normals
-      
-      \section DYN Dynamic SceneObjects and Locking
-      Custome extensions of the SceneObject-interface can implement the SceneObject's 
-      virtual method SceneObject::prepareForRendering which is calle every time before
-      the object is acutally rendered. Here, the custom SceneObject can be adapted 
-      dynamically. \n
-      <b>Please note:</b> When then you want to change the vertex-, primitive- or 
-      you'll have to enable the SceneObjects locking mechanism using
-      SceneObject::setLockingEnabled(true).
-
-      
-      For compatibility with former version of the SceneObject class, you can 
-      also re-implement the virtual methods 
-      SceneObject::lock() and SceneObject::unlock() appropriately. Usually this will
-      look like this:
-      \code
-      class MySceneObject : public SceneObject{
-        Mutex mutex;
-        public:
-        void lock() { mutex.lock(); }
-        void unlock() { mutex.unlock(); }
-        ...
-      };
-      \endcode
-      
-      
-
-      \section _COLORS_ Colors
-      In the object specification (when you add vertices and other primitives, colors
-      are always expected to be in ICL's commong [0,255]^3 range. However, the colors
-      are scaled by 1/255 to range [0,1]^3 internally, since this is how OpenGL can access
-      the colors more easily. Please keep in mind, that the colors you can find in
-      m_vertexColors and also in primitive-instances is alaws in [0,1]^3 range
-      
-      \section CFV Colors From Vertices
-      Sometimes, you might want to draw primtives that use different colors 
-      for different corners and interpolate between these. This can be achieved
-      by using SceneObject::setColorsFromVertices(true). 
-
-      \section _DISPLAY_LISTS_ Display Lists
-      
-      For static objects (or objects that are not so frequently changed), display lists
-      can be created using SceneObject::createDisplayList(). This will speed up the 
-      object rendering significantly. Please note, that a display list is always created
-      in the next render cycle, which is why SceneObject::createDisplayList can also
-      be called from the working thread.
-  */
-  class SceneObject{
-    public:
-    
-    /// provides direct access for the Scene class
-    friend class Scene;
-    
-    /// create an object
-    SceneObject();
-    
-    /// create by string:
-    /** currently allowed:
-        - "cube" params: [x,y,z,radius];
-        - "cuboid" params: [x,y,z,dx,dy,dz]
-        - "sphere" params: [x,y,z,radius,rzSteps,xySlices]
-        - "spheroid" params: [x,y,z,rx,ry,rz,rzSteps,xySlices]
-        - "superquadric" params: [x,y,z,rx,ry,rz,dx,dy,dz,e1,e2,rzSteps,xySlices] where \n
-           - (x,y,z)^T is the center position
-           - (rx,ry,rz)^T are the rotation euler angles
-           - (dx,dy,dz)^T are the diameters into x-, y- and z-direction
-           - (e1,and e2) are the roundness parameters
-           - (rzSlices,rxSlices) is used for the number of steps the create nodes
-    */
-    SceneObject(const std::string &type,const float *params);
-    
-    /// create a cube scene object
-    static inline SceneObject *cube(float x, float y, float z, float r){
-      const float p[] = { x,y,z,r };
-      return new SceneObject("cube",p);
-    }
-
-    /// create a cuboid scene object
-    static inline SceneObject *cuboid(float x, float y, float z, float dx, float dy, float dz){
-      const float p[] = { x,y,z,dx,dy,dz };
-      return new SceneObject("cuboid",p);
-    }
-
-    /// create a shere scene object
-    static inline SceneObject *sphere(float x, float y, float z, float r, int rzSteps, int xySlices){
-      const float p[] = { x,y,z,r, rzSteps, xySlices };
-      return new SceneObject("sphere",p);
-    }
-
-    /// create a shere scene object
-    static inline SceneObject *spheroid(float x, float y, float z, float rx, float ry, float rz, int rzSteps, int xySlices){
-      const float p[] = { x,y,z,rx, ry, rz, rzSteps, xySlices };
-      return new SceneObject("spheroid",p);
-    }
-
-    /// create a superquadric scene object
-    static inline SceneObject *superquadric(float x, float y, float z, float rx, float ry, float rz, 
-                                            float dx, float dy, float dz, float e1, float e2, int rzSteps, int xySlices){
-      const float p[] = { x,y,z,rx, ry, rz, dx, dy, dz, e1, e2, rzSteps, xySlices };
-      return new SceneObject("superquadric",p);
-    }
-
-    
-    /// creates a scene object from given .obj file
-    SceneObject(const std::string &objFileName) throw (ICLException);
-
-    /// deep copy of SceneObject instance
-    /** The new instance's parent is set to null, i.e. it must
-        be added to other's parent explicitly if this is necessary. */
-    SceneObject(const SceneObject &other) { 
-      *this = other; 
-      m_parent = 0;
-    }
-
-    /// assignment operator for deep copy
-    /** This instances parent is not changed. I.e. it must
-        be added to other's parent explicitly if this is necessary. */
-    SceneObject &operator=(const SceneObject &other);
-    
-    /// Empty destructor (but virtual)
-    virtual ~SceneObject();
-    
-    /// returns object vertices
-    /** If the vertex count is changed, the object needs to be
-        locked */
-    std::vector<Vec> &getVertices();
-
-    /// returns object vertices (const)
-    const std::vector<Vec> &getVertices() const;
-
-    /// returns object vertex colors
-    /** If the number of vertex colors is changed, the object needs to be
-        locked */
-    std::vector<GeomColor> &getVertexColors();
-
-    /// returns object vertex colors (const)
-    const std::vector<GeomColor> &getVertexColors() const;
-
-
-    /// returns object's primitives (lines, quads, etc...)
-    std::vector<Primitive*> &getPrimitives();
-
-    /// returns object's primitives (lines, quads, etc...) (const)
-    const std::vector<Primitive*> &getPrimitives() const;
-
-    /// changes visibility of given primitive type
-    void setVisible(int oredTypes, bool visible, bool recursive=true);
-    
-    /// returns visibility of given primitive type
-    bool isVisible(Primitive::Type t) const;
-    
-    /// adds a new vertex to this object
-    /** Please note, that colors are defined in ICL's commong [0,255] range,
-        but they are stored internally in [0,1] range, since this is how
-        OpenGL expects colors */
-    void addVertex(const Vec &p, const GeomColor &color=GeomColor(255,0,0,255));
-
-    /// adds a GLImg as shared texture
-    void addSharedTexture(SmartPtr<GLImg> gli);
-    
-    /// adds an ImgBase * as shared texutre
-    void addSharedTexture(const ImgBase *image, scalemode sm=interpolateLIN);
-
-
-    /// adds a new normal to this object
-    void addNormal(const Vec &n);
-    
-    /// adds a new line to this object
-    /** If the given normal indices (na and nb) are -1, no normals are used for this primitives */
-    void addLine(int x, int y, const GeomColor &color=GeomColor(100,100,100,255));
-
-    /// adds a new triangle to this onject
-    /** If the given normal indices (na,nb and nc) are -1, auto-normal are computed using cross-product */
-    void addTriangle(int a, int b, int c, int na, int nb, int nc,
-                     const GeomColor &color=GeomColor(0,100,250,255));
-    
-    /// convenience method for creation of a triangle with auto-normals
-    inline void addTriangle(int a, int b, int c, const GeomColor &color=GeomColor(0,100,250,255)){
-      addTriangle(a,b,c,-1,-1,-1,color);
-    }
-
-
-    /// adds a new triangle to this onject
-    /** If the given normal indices (na,nb,nc and nd) are -1, auto-normal are computed using cross-product */
-    void addQuad(int a, int b, int c, int d, int na, int nb, int nc, int nd, 
-                 const GeomColor &color=GeomColor(0,100,250,255)); 
-
-    /// convenience method for creation of a quad with auto-normals
-    inline void addQuad(int a, int b, int c, int d, const GeomColor &color=GeomColor(0,100,250,255)){
-      addQuad(a,b,c,d,-1,-1,-1,-1,color);
-    }
-
-    /// add a polygon to this object (note triangles and quads are slower here)
-    /** If the given normal indices's size is 0, auto-normal are computed using cross-product */
-    void addPolygon(int nPoints,const int *vertexIndices, const GeomColor &color=GeomColor(0,100,250,255), 
-                    const int *normalIndices=0);
-
-    
-    /** If the given normal indices (na,nb,nc and nd) are -1, auto-normal are computed using cross-product */
-    void addTexture(int a, int b, int c, int d, 
-                    const ImgBase *texture, 
-                    int na, int nb, int nc, int nd,
-                    bool createTextureOnce=true,
-                    scalemode sm = interpolateLIN);
-
-    /// convenience method for creation of a texture with auto-normals
-    inline void addTexture(int a, int b, int c, int d, 
-                           const ImgBase *texture, 
-                           bool createTextureOnce=true,
-                           scalemode sm = interpolateLIN){
-      addTexture(a,b,c,d,texture,-1,-1,-1,-1,createTextureOnce,sm);
-    }
-
-    /// adds are shared texture primitive
-    /** The sharedTextureIndex references a shared texture that has been added
-        by using SceneObject::addSharedTexture */
-    void addTexture(int a, int b, int c, int d, 
-                    int sharedTextureIndex,
-                    int na=-1, int nb=-1, int nc=-1, int nd=-1);
-
-    /// adds a GenericTexturePrimitive for custom texCoords
-    void addTexture(const ImgBase *image, int numPoints, const int *vertexIndices,
-                    const Point32f *texCoords, const int *normalIndices = 0,
-                    bool createTextureOnce=true);
-               
-
-    /// adds a texture that is drawn on a 2D grid of vertices in 3D space
-    void addTextureGrid(int w, int h, const ImgBase *image,
-                        const icl32f *px, const icl32f *py, const icl32f *pz,
-                        const icl32f *pnx=0, const icl32f *pny=0, const icl32f *pnz=0,
-                        int stride = 1,bool createTextureOnce=true,scalemode sm=interpolateLIN);
-
-    /// adds a texture grid that has two different texture for the two faces
-    /** Internally, the TwoSidedTextureGridPrimitive is used */
-    void addTwoSidedTextureGrid(int w, int h, const ImgBase *front, const ImgBase *back,
-                           const icl32f *px, const icl32f *py, const icl32f *pz,
-                           const icl32f *pnx=0, const icl32f *pny=0, const icl32f *pnz=0,
-                           int stride = 1,bool createFrontOnce=true,
-                           bool createBackOnce=true, scalemode sm=interpolateLIN);
-
-
-    /// adds text-texture quad -primitive to this object
-    /** If the given normal indices (na,nb,nc and nd) are -1, auto-normal are computed using cross-product.
-        Please note, that the text aspect ratio might not be preserved 
-        @param holdTextAR not supported yet! */
-    void addTextTexture(int a, int b, int c, int d, const std::string &text,
-                        const GeomColor &color, 
-                        int na, int nb, int nc, int nd,
-                        int textSize,scalemode sm = interpolateLIN);
-                        
-
-    /// convenience method for creation of a text-texture with auto-normals
-    inline void addTextTexture(int a, int b, int c, int d, const std::string &text,
-                        const GeomColor &color=GeomColor(255,255,255,255), 
-                               int textSize=30, scalemode sm = interpolateLIN){
-      addTextTexture(a,b,c,d,text,color,-1,-1,-1,-1,textSize, sm);
-    }
-    
-    /// adds a billboard text-texture attached to given node index a
-    /** the billboardHeight parameters defines the actual height in world
-        units. The text is always centered at m_vertices[a] and it will
-        always be oriented towards the camera. The textRenderSize parameter
-        defines the pixel resolution of the text
-    */
-    void addText(int a, const std::string &text, float billboardHeight=10, 
-                 const GeomColor &color=GeomColor(255,255,255,255),
-                 int textRenderSize=30, scalemode sm=interpolateLIN);
-
-    /// adds a custom primitive
-    /** This should only be used for non-directly supported primitives 
-        Note: right now, there is no 'hit' checking for non standard primitives
-    */
-    inline void addCustomPrimitive(Primitive *p){
-      m_primitives.push_back(p);
-    }
-    
-    /// adds a cube child-object with given parameters
-    /** returns a pointer to the cube added. This can be used to adapt
-        further properties of that object */
-    SceneObject *addCube(float x, float y, float z, float d){
-      return addCuboid(x,y,z,d,d,d);
-    }
-
-    /// adds a cuboid child-object with given parameters
-    /** returns a pointer to the cube added. This can be used to adapt
-        further properties of that object */
-    SceneObject *addCuboid(float x, float y, float z, float dx, float dy, float dz);
-
-    /// adds a cuboid child-object with given parameters
-    /** returns a pointer to the cube added. This can be used to adapt
-        further properties of that object */
-    SceneObject *addSphere(float x, float y, float z, float r,int rzSteps, int xySlices){
-      return addSpheroid(x,y,z,r,r,r,rzSteps,xySlices);
-    }
-
-    /// adds a cuboid child-object with given parameters
-    /** returns a pointer to the cube added. This can be used to adapt
-        further properties of that object */
-    SceneObject *addSpheroid(float x, float y, float z, float rx, float ry, float rz, int rzSteps, int xySlices);
-    
-    /// adds a cylindical child object with given parameters
-    /** returns a pointer to the cylinder added. This can be used to adapt
-        further properties of that object */
-    SceneObject *addCylinder(float x, float y, float z, float rx, float ry, float h, int steps);
-
-    /// adds a conical child object with given parameters
-    /** returns a pointer to the cone added. This can be used to adapt
-        further properties of that object */
-    SceneObject *addCone(float x, float y, float z, float rx, float ry, float h, int steps);
-
-    
-    /// tints all Primitives with given type in given color
-    void setColor(Primitive::Type t,const GeomColor &color,bool recursive=true);
-    
-    /// sets point size
-    void setPointSize(float pointSize, bool recursive=true);
-
-    /// sets point size
-    void setLineWidth(float lineWidth, bool recursive=true);
-
+    /** \cond */
+    class Scene;
+    /** \endcond */
    
     
-    /// performs a deep copy of this object
-    virtual SceneObject *copy() const;
-
-    /// called by the renderer before the object is rendered
-    /** here, dynamic object types can adapt e.g. their vertices or colors*/
-    virtual void prepareForRendering() {}
-
-    /// this function is called when an object is rendered
-    /** The function can be used to draw something in Object coordinates using
-        OpenGL commands directly. When customRender is called, the OpenGL matrices is 
-        already prepared correctly. Custom render is always called <b>before</b> 
-        the SceneObject's primitives are rendered */
-    virtual void customRender() {}
-
-    /// sets how 2D-geom colors are set 
-    void setColorsFromVertices(Primitive::Type t, bool on, bool recursive=true);
-    
-    /// returns wheather smooth shading is activated
-    bool getSmoothShading() const;
-    
-    /// sets whether to use smoothshading (default is false)
-    void setSmoothShading(bool on, bool recursive=true);
-
-
-    /** @{ @name methods for creation of a scene graph **/
-    /// Sets a transformation matrix 
-    /** All vertices are transformed with this matrix before rendering. If the
-        SceneObject instance has a parent-Scene object, then the parent's
-        SceneObject's transformation pre-multiplied */
-    virtual void setTransformation(const Mat &m);
-    
-    /// sets the internal transformation to the identity matrix
-    void removeTransformation();
-
-    /// multiplies the current transformation matrix by given matrix 
-    virtual void transform(const Mat &m);
-
-    /// utility method for passing arbitrary matrix classes 
-    /** Note: the given T instance m, needs to have a function-operator(x,y)*/
-    template<class T>
-    void transform(const T &m){
-      transform(Mat(m(0,0),m(1,0),m(2,0),m(3,0),
-                    m(0,1),m(1,1),m(2,1),m(3,1),
-                    m(0,2),m(1,2),m(2,2),m(3,2),
-                    m(0,3),m(1,3),m(2,3),m(3,3)));
-    } 
-    
-    /// rotates the scene object (this affects it's transformation matrix)
-    virtual void rotate(float rx, float ry, float rz);
-
-    /// utility wrapper for vector based rotation 
-    template<class T>
-    inline void rotate(const T &t) { rotate((float)t[0],(float)t[1],(float)t[2]); }
-    
-    /// translates the scene object (this affects it's translates matrix)
-    virtual void translate(float dx, float dy, float dz);
-
-    /// utility wrapper for vector based translation
-    template<class T>
-    inline void translate(const T &t) { translate((float)t[0],(float)t[1],(float)t[2]); }
-
-    /// transformes the current transformation matrix by a scale matrix
-    virtual void scale(float sx, float sy, float sz);
-    
-    /// utility wrapper for vector based scaling
-    template<class T>
-    inline void scale(const T &t) { scale((float)t[0],(float)t[1],(float)t[2]); }
-
-    /// returns the current transformation matrix
-    /** If the relative flag is true, only this objects transformation matrix is returned.
-        If it is set to false (which is default), also the parent SceneObjects absolute
-        transformation matrix is queried and premultiplied */
-    Mat getTransformation(bool relative=false) const;
-    
-    /// returns whether the SceneObject has currently a non-ID-transformation
-    /** Here also the parent transformation is regarded if relative is false */
-    bool hasTransformation(bool relative=false) const;
-    
-    /// returns the parent scene object
-    SceneObject *getParent();
-    
-    /// returns the parent scene object (const version)
-    const SceneObject *getParent() const;
-
-    /// adds a new child to this scene object
-    /** If the child's owner ship is passed, it is deleted automatically when it is removed or
-        if the parent is deleted. Otherwise, the caller has to manage the passed child's 
-        memory. 
-        <b>Note:</b> there is no cycle detection in the SceneObject class. Adding A to B and
-        B to A leads to unknown results and most likely to programm errors.
+    /// The SceneObject class defines visible objects in scenes or scene graph nodes
+    /** SceneObject instances are used in combination with the icl::Scene class. You
+        can add SceneObjects into a Scene and then render these as an image overlay.
+        
+        A scene object is defined by
+        - a list of 3D-homogeneous vertices
+        - a list of primitives that use indices to the vertex list 
+        - a transformation matrix
+        - a list of children that are rendered relatively to their parent object 
+        
+        SceneGraph objects can also have no vertices. In this case they are invisible
+        nodes within a scene graph.
+        
+        \section CREATION Creation of SceneObjects
+        Usually special SceneObject instances are created by subclassing the SceneObject
+        class. Subclasses can either simply add other SceneObjects e.g. using the
+        utility methods SceneObject::addCube or SceneObject::addSphere or they can also
+        define a custom geometry by adding vertices and primitives using 
+        SceneObject::addVertex and e.g. SceneObject::addLine or SceneObject::addQuad
+        
+  
+        \section NORMALS Normals 
+        Normals are used for realistic lighting. Therefore, it is recommended to use 
+        normals when objects are defined. Normals are also stored in a list. Each face-vertex
+        references one of the normals of this list.
+        
+        \subsection AN AutoNormals
+        If no normals are provided, the normals are computed automatically at run-time using
+        cross-product:
+        
+        - lines: no auto normals
+        - triangles (vertices a,b,c) -> (a-c) x (b-c)
+        - quads (vertices a,b,c,d) -> (d-c) x (b-c)
+        - polygons: no auto normals supported
+        - textures: here we always use auto-normals
+        
+        \section DYN Dynamic SceneObjects and Locking
+        Custome extensions of the SceneObject-interface can implement the SceneObject's 
+        virtual method SceneObject::prepareForRendering which is calle every time before
+        the object is acutally rendered. Here, the custom SceneObject can be adapted 
+        dynamically. \n
+        <b>Please note:</b> When then you want to change the vertex-, primitive- or 
+        you'll have to enable the SceneObjects locking mechanism using
+        SceneObject::setLockingEnabled(true).
+  
+        
+        For compatibility with former version of the SceneObject class, you can 
+        also re-implement the virtual methods 
+        SceneObject::lock() and SceneObject::unlock() appropriately. Usually this will
+        look like this:
+        \code
+        class MySceneObject : public SceneObject{
+          Mutex mutex;
+          public:
+          void lock() { mutex.lock(); }
+          void unlock() { mutex.unlock(); }
+          ...
+        };
+        \endcode
+        
+        
+  
+        \section _COLORS_ Colors
+        In the object specification (when you add vertices and other primitives, colors
+        are always expected to be in ICL's commong [0,255]^3 range. However, the colors
+        are scaled by 1/255 to range [0,1]^3 internally, since this is how OpenGL can access
+        the colors more easily. Please keep in mind, that the colors you can find in
+        m_vertexColors and also in primitive-instances is alaws in [0,1]^3 range
+        
+        \section CFV Colors From Vertices
+        Sometimes, you might want to draw primtives that use different colors 
+        for different corners and interpolate between these. This can be achieved
+        by using SceneObject::setColorsFromVertices(true). 
+  
+        \section _DISPLAY_LISTS_ Display Lists
+        
+        For static objects (or objects that are not so frequently changed), display lists
+        can be created using SceneObject::createDisplayList(). This will speed up the 
+        object rendering significantly. Please note, that a display list is always created
+        in the next render cycle, which is why SceneObject::createDisplayList can also
+        be called from the working thread.
     */
-    void addChild(SceneObject *child, bool passOwnerShip=true);
-    
-    /// removes given child
-    /** no errors if the child was not found */
-    void removeChild(SceneObject *child);
-
-    /// removes all children
-    void removeAllChildren();
-    
-    /// returns whether the SceneObject has children at all
-    bool hasChildren() const;
-    
-    /// returns the number of children
-    int getChildCount() const;
-    
-    /// returns child at given index
-    SceneObject *getChild(int index);
-    
-    /// returns child at given index (const)
-    const SceneObject *getChild(int index) const;
-    
-    /** @} **/
-
-    /// returns whether this object is hit by the given viewray
-    /** Please note: only faces (i.e. quads, triangles and polygons
-        are checked)
-        The method returns the hit scene object that was closest to
-        the given view-rays origin or null, if it was not hit.
-        If recursive is true, the scene-graph is traversed from this
-        object on and the actually hit child (or child of child etc.) 
-        might also be returned.
-    */
-    Hit hit(const ViewRay &v, bool recursive=true);
-    
-    /// returns whether this object is hit by the given viewray (const)
-    const Hit hit(const ViewRay &v, bool recursive=true) const{
-      return const_cast<SceneObject*>(this)->hit(v,recursive);
-    }
-    
-    /// returns all hits with SceneObjects form the given viewray
-    std::vector<Hit> hits(const ViewRay &v, bool recursive=true);
-
-    /// returns all vertices in their final world coordinates
-    std::vector<Vec> getTransformedVertices() const;
-    
-    /// returns the vertex, that is closest to the given point in wold coordinates
-    /** If relative is true, the vertex is returned in object-coordinates, otherwise
-        it is returned in world coordinates */
-    Vec getClosestVertex(const Vec &pWorld, bool relative=false) throw (ICLException);
-    
-    /// sets the visibility of this object
-    void setVisible(bool visible, bool recursive=true);
-    
-    /// returns whether this object is currently visible
-    bool isVisible() const { return m_isVisible; }
-
-    /// calls setVisible(false)
-    void hide(bool recursive=true){ setVisible(false); }
-
-    /// calls setVisible(true)
-    void show(bool recursive=true){ setVisible(true); }
-
-
-    /// sets locking enabled or disabled
-    /** Note, that the method itself locks the internal mutex
-        to prevent, that m_enableLocking is disabled while
-        the mutex is locked somewhere else */
-    inline void setLockingEnabled(bool enabled) { 
-      m_mutex.lock();
-      m_enableLocking = enabled; 
-      m_mutex.unlock();
-    }
-    
-    /// returns whether locking is current enabled for this object
-    bool getLockingEnabled() const {
-      return m_enableLocking;
-    }
-
-    /// locks the internal mutex if locking enabled is set to true
-    /** This function can be re implemented by subclasses that need an eplicit locking.
-        Note, that explicit locking can be enabled/disabled using setLockingEnabled\n 
-        E.g. if an objects data is updated from another thread, you can sub-class 
-        this class and implement a locking mechanism for it*/
-    virtual void lock(){
-      if(!m_enableLocking) return;
-      m_mutex.lock();
-    }
-    
-    /// unlocks the internal mutex if locking enabled is set to true
-    /** This function can be re implemented by subclasses that need an eplicit locking.
-        Note, that explicit locking can be enabled/disabled using setLockingEnabled\n 
-        E.g. if an objects data is updated from another thread, you can sub-class 
-        this class and implement a locking mechanism for it*/
-    virtual void unlock(){
-      if(!m_enableLocking) return;
-      m_mutex.unlock();
-    }
-    
-    friend struct Primitive;
-    
-
-    /// sets whether points are visualized in a smoothed manner
-    /** This might not be supported by the graphics hardware or driver.
-        Default value is true */
-    inline void setPointSmoothingEnabled(bool enabled=true){
-      m_pointSmoothingEnabled = enabled;
-    }
-
-    /// sets whether lines are visualized in a smoothed manner
-    /** This might not be supported by the graphics hardware or driver
-        Default value is true */
-    inline void setLineSmoothingEnabled(bool enabled=true){
-      m_lineSmoothingEnabled = enabled;
-    }
- 
-    /// sets whether faces are visualized in a smoothed manner
-    /** This might not be supported by the graphics hardware or driver
-        Default value is true */
-    inline void setPolygonSmoothingEnabled(bool enabled=true){
-      m_polygonSmoothingEnabled = enabled;
-    }
-
-    /// deletes and removes all primitives
-    void clearAllPrimitives(); 
-    
-    /// creates a displaylist in the next render cycle
-    /** if the displaylist was already created, it is updated */
-    void createDisplayList();
-    
-    /// frees the displaylist in the next render cycle
-    void freeDisplayList();
-    
-    /// sets a fragment shader to use for this object
-    /** use set fragment shader (0) in order to delete the fragment shader */
-    void setFragmentShader(GLFragmentShader *shader);
-    
-    /// returns the current fragment shader (or NULL if non was given)
-    inline GLFragmentShader *getFragmentShader() { return m_fragmentShader; }
-    
-    /// returns the current fragment shader (or NULL if non was given, const version)
-    inline const GLFragmentShader *getFragmentShader() const{ return m_fragmentShader; }
-    
-    protected:
-    /// recursive picking method
-    static void collect_hits_recursive(SceneObject *obj, const ViewRay &v, 
-                                       std::vector<Hit> &hits, 
-                                       bool recursive);
-    
-    std::vector<Vec> m_vertices;
-    std::vector<Vec> m_normals;
-    
-    std::vector<GeomColor> m_vertexColors;
-    std::vector<Primitive*> m_primitives;
-    std::vector<SmartPtr<GLImg> > m_sharedTextures;
-    int m_visibleMask;
-
-    bool m_lineColorsFromVertices;
-    bool m_triangleColorsFromVertices;
-    bool m_quadColorsFromVertices;
-    bool m_polyColorsFromVertices;
-
-    float m_pointSize;
-    float m_lineWidth;
-    
-    bool m_useSmoothShading;
-    bool m_isVisible;
-    
-    /// for the scene graph implementation
-    Mat m_transformation;
-    bool m_hasTransformation;
-    SceneObject *m_parent;
-    std::vector<SmartPtr<SceneObject> > m_children;
-
-    Mutex m_mutex; //!< for asynchronous updates
-    bool m_enableLocking; //!< can be enabled
-
-    bool m_pointSmoothingEnabled;
-    bool m_lineSmoothingEnabled;
-    bool m_polygonSmoothingEnabled;
-    
-    
-    private:
-
-    /// internally used flag
-    void *m_displayListHandle;
-    /// internal flag
-    /** - 0: no change.
-        - 1: create/update display list in next render cycle 
-        - 2: free display-list (if there is any) in the next render cycle */
-    int m_createDisplayListNextTime;
-
-    /// internal optionally given fragment shader
-    GLFragmentShader *m_fragmentShader;
-
-  };
+    class SceneObject{
+      public:
+      
+      /// provides direct access for the Scene class
+      friend class Scene;
+      
+      /// create an object
+      SceneObject();
+      
+      /// create by string:
+      /** currently allowed:
+          - "cube" params: [x,y,z,radius];
+          - "cuboid" params: [x,y,z,dx,dy,dz]
+          - "sphere" params: [x,y,z,radius,rzSteps,xySlices]
+          - "spheroid" params: [x,y,z,rx,ry,rz,rzSteps,xySlices]
+          - "superquadric" params: [x,y,z,rx,ry,rz,dx,dy,dz,e1,e2,rzSteps,xySlices] where \n
+             - (x,y,z)^T is the center position
+             - (rx,ry,rz)^T are the rotation euler angles
+             - (dx,dy,dz)^T are the diameters into x-, y- and z-direction
+             - (e1,and e2) are the roundness parameters
+             - (rzSlices,rxSlices) is used for the number of steps the create nodes
+      */
+      SceneObject(const std::string &type,const float *params);
+      
+      /// create a cube scene object
+      static inline SceneObject *cube(float x, float y, float z, float r){
+        const float p[] = { x,y,z,r };
+        return new SceneObject("cube",p);
+      }
+  
+      /// create a cuboid scene object
+      static inline SceneObject *cuboid(float x, float y, float z, float dx, float dy, float dz){
+        const float p[] = { x,y,z,dx,dy,dz };
+        return new SceneObject("cuboid",p);
+      }
+  
+      /// create a shere scene object
+      static inline SceneObject *sphere(float x, float y, float z, float r, int rzSteps, int xySlices){
+        const float p[] = { x,y,z,r, rzSteps, xySlices };
+        return new SceneObject("sphere",p);
+      }
+  
+      /// create a shere scene object
+      static inline SceneObject *spheroid(float x, float y, float z, float rx, float ry, float rz, int rzSteps, int xySlices){
+        const float p[] = { x,y,z,rx, ry, rz, rzSteps, xySlices };
+        return new SceneObject("spheroid",p);
+      }
+  
+      /// create a superquadric scene object
+      static inline SceneObject *superquadric(float x, float y, float z, float rx, float ry, float rz, 
+                                              float dx, float dy, float dz, float e1, float e2, int rzSteps, int xySlices){
+        const float p[] = { x,y,z,rx, ry, rz, dx, dy, dz, e1, e2, rzSteps, xySlices };
+        return new SceneObject("superquadric",p);
+      }
+  
+      
+      /// creates a scene object from given .obj file
+      SceneObject(const std::string &objFileName) throw (ICLException);
+  
+      /// deep copy of SceneObject instance
+      /** The new instance's parent is set to null, i.e. it must
+          be added to other's parent explicitly if this is necessary. */
+      SceneObject(const SceneObject &other) { 
+        *this = other; 
+        m_parent = 0;
+      }
+  
+      /// assignment operator for deep copy
+      /** This instances parent is not changed. I.e. it must
+          be added to other's parent explicitly if this is necessary. */
+      SceneObject &operator=(const SceneObject &other);
+      
+      /// Empty destructor (but virtual)
+      virtual ~SceneObject();
+      
+      /// returns object vertices
+      /** If the vertex count is changed, the object needs to be
+          locked */
+      std::vector<Vec> &getVertices();
+  
+      /// returns object vertices (const)
+      const std::vector<Vec> &getVertices() const;
+  
+      /// returns object vertex colors
+      /** If the number of vertex colors is changed, the object needs to be
+          locked */
+      std::vector<GeomColor> &getVertexColors();
+  
+      /// returns object vertex colors (const)
+      const std::vector<GeomColor> &getVertexColors() const;
+  
+  
+      /// returns object's primitives (lines, quads, etc...)
+      std::vector<Primitive*> &getPrimitives();
+  
+      /// returns object's primitives (lines, quads, etc...) (const)
+      const std::vector<Primitive*> &getPrimitives() const;
+  
+      /// changes visibility of given primitive type
+      void setVisible(int oredTypes, bool visible, bool recursive=true);
+      
+      /// returns visibility of given primitive type
+      bool isVisible(Primitive::Type t) const;
+      
+      /// adds a new vertex to this object
+      /** Please note, that colors are defined in ICL's commong [0,255] range,
+          but they are stored internally in [0,1] range, since this is how
+          OpenGL expects colors */
+      void addVertex(const Vec &p, const GeomColor &color=GeomColor(255,0,0,255));
+  
+      /// adds a GLImg as shared texture
+      void addSharedTexture(SmartPtr<GLImg> gli);
+      
+      /// adds an ImgBase * as shared texutre
+      void addSharedTexture(const ImgBase *image, scalemode sm=interpolateLIN);
+  
+  
+      /// adds a new normal to this object
+      void addNormal(const Vec &n);
+      
+      /// adds a new line to this object
+      /** If the given normal indices (na and nb) are -1, no normals are used for this primitives */
+      void addLine(int x, int y, const GeomColor &color=GeomColor(100,100,100,255));
+  
+      /// adds a new triangle to this onject
+      /** If the given normal indices (na,nb and nc) are -1, auto-normal are computed using cross-product */
+      void addTriangle(int a, int b, int c, int na, int nb, int nc,
+                       const GeomColor &color=GeomColor(0,100,250,255));
+      
+      /// convenience method for creation of a triangle with auto-normals
+      inline void addTriangle(int a, int b, int c, const GeomColor &color=GeomColor(0,100,250,255)){
+        addTriangle(a,b,c,-1,-1,-1,color);
+      }
+  
+  
+      /// adds a new triangle to this onject
+      /** If the given normal indices (na,nb,nc and nd) are -1, auto-normal are computed using cross-product */
+      void addQuad(int a, int b, int c, int d, int na, int nb, int nc, int nd, 
+                   const GeomColor &color=GeomColor(0,100,250,255)); 
+  
+      /// convenience method for creation of a quad with auto-normals
+      inline void addQuad(int a, int b, int c, int d, const GeomColor &color=GeomColor(0,100,250,255)){
+        addQuad(a,b,c,d,-1,-1,-1,-1,color);
+      }
+  
+      /// add a polygon to this object (note triangles and quads are slower here)
+      /** If the given normal indices's size is 0, auto-normal are computed using cross-product */
+      void addPolygon(int nPoints,const int *vertexIndices, const GeomColor &color=GeomColor(0,100,250,255), 
+                      const int *normalIndices=0);
+  
+      
+      /** If the given normal indices (na,nb,nc and nd) are -1, auto-normal are computed using cross-product */
+      void addTexture(int a, int b, int c, int d, 
+                      const ImgBase *texture, 
+                      int na, int nb, int nc, int nd,
+                      bool createTextureOnce=true,
+                      scalemode sm = interpolateLIN);
+  
+      /// convenience method for creation of a texture with auto-normals
+      inline void addTexture(int a, int b, int c, int d, 
+                             const ImgBase *texture, 
+                             bool createTextureOnce=true,
+                             scalemode sm = interpolateLIN){
+        addTexture(a,b,c,d,texture,-1,-1,-1,-1,createTextureOnce,sm);
+      }
+  
+      /// adds are shared texture primitive
+      /** The sharedTextureIndex references a shared texture that has been added
+          by using SceneObject::addSharedTexture */
+      void addTexture(int a, int b, int c, int d, 
+                      int sharedTextureIndex,
+                      int na=-1, int nb=-1, int nc=-1, int nd=-1);
+  
+      /// adds a GenericTexturePrimitive for custom texCoords
+      void addTexture(const ImgBase *image, int numPoints, const int *vertexIndices,
+                      const Point32f *texCoords, const int *normalIndices = 0,
+                      bool createTextureOnce=true);
+                 
+  
+      /// adds a texture that is drawn on a 2D grid of vertices in 3D space
+      void addTextureGrid(int w, int h, const ImgBase *image,
+                          const icl32f *px, const icl32f *py, const icl32f *pz,
+                          const icl32f *pnx=0, const icl32f *pny=0, const icl32f *pnz=0,
+                          int stride = 1,bool createTextureOnce=true,scalemode sm=interpolateLIN);
+  
+      /// adds a texture grid that has two different texture for the two faces
+      /** Internally, the TwoSidedTextureGridPrimitive is used */
+      void addTwoSidedTextureGrid(int w, int h, const ImgBase *front, const ImgBase *back,
+                             const icl32f *px, const icl32f *py, const icl32f *pz,
+                             const icl32f *pnx=0, const icl32f *pny=0, const icl32f *pnz=0,
+                             int stride = 1,bool createFrontOnce=true,
+                             bool createBackOnce=true, scalemode sm=interpolateLIN);
+  
+  
+      /// adds text-texture quad -primitive to this object
+      /** If the given normal indices (na,nb,nc and nd) are -1, auto-normal are computed using cross-product.
+          Please note, that the text aspect ratio might not be preserved 
+          @param holdTextAR not supported yet! */
+      void addTextTexture(int a, int b, int c, int d, const std::string &text,
+                          const GeomColor &color, 
+                          int na, int nb, int nc, int nd,
+                          int textSize,scalemode sm = interpolateLIN);
+                          
+  
+      /// convenience method for creation of a text-texture with auto-normals
+      inline void addTextTexture(int a, int b, int c, int d, const std::string &text,
+                          const GeomColor &color=GeomColor(255,255,255,255), 
+                                 int textSize=30, scalemode sm = interpolateLIN){
+        addTextTexture(a,b,c,d,text,color,-1,-1,-1,-1,textSize, sm);
+      }
+      
+      /// adds a billboard text-texture attached to given node index a
+      /** the billboardHeight parameters defines the actual height in world
+          units. The text is always centered at m_vertices[a] and it will
+          always be oriented towards the camera. The textRenderSize parameter
+          defines the pixel resolution of the text
+      */
+      void addText(int a, const std::string &text, float billboardHeight=10, 
+                   const GeomColor &color=GeomColor(255,255,255,255),
+                   int textRenderSize=30, scalemode sm=interpolateLIN);
+  
+      /// adds a custom primitive
+      /** This should only be used for non-directly supported primitives 
+          Note: right now, there is no 'hit' checking for non standard primitives
+      */
+      inline void addCustomPrimitive(Primitive *p){
+        m_primitives.push_back(p);
+      }
+      
+      /// adds a cube child-object with given parameters
+      /** returns a pointer to the cube added. This can be used to adapt
+          further properties of that object */
+      SceneObject *addCube(float x, float y, float z, float d){
+        return addCuboid(x,y,z,d,d,d);
+      }
+  
+      /// adds a cuboid child-object with given parameters
+      /** returns a pointer to the cube added. This can be used to adapt
+          further properties of that object */
+      SceneObject *addCuboid(float x, float y, float z, float dx, float dy, float dz);
+  
+      /// adds a cuboid child-object with given parameters
+      /** returns a pointer to the cube added. This can be used to adapt
+          further properties of that object */
+      SceneObject *addSphere(float x, float y, float z, float r,int rzSteps, int xySlices){
+        return addSpheroid(x,y,z,r,r,r,rzSteps,xySlices);
+      }
+  
+      /// adds a cuboid child-object with given parameters
+      /** returns a pointer to the cube added. This can be used to adapt
+          further properties of that object */
+      SceneObject *addSpheroid(float x, float y, float z, float rx, float ry, float rz, int rzSteps, int xySlices);
+      
+      /// adds a cylindical child object with given parameters
+      /** returns a pointer to the cylinder added. This can be used to adapt
+          further properties of that object */
+      SceneObject *addCylinder(float x, float y, float z, float rx, float ry, float h, int steps);
+  
+      /// adds a conical child object with given parameters
+      /** returns a pointer to the cone added. This can be used to adapt
+          further properties of that object */
+      SceneObject *addCone(float x, float y, float z, float rx, float ry, float h, int steps);
+  
+      
+      /// tints all Primitives with given type in given color
+      void setColor(Primitive::Type t,const GeomColor &color,bool recursive=true);
+      
+      /// sets point size
+      void setPointSize(float pointSize, bool recursive=true);
+  
+      /// sets point size
+      void setLineWidth(float lineWidth, bool recursive=true);
+  
+     
+      
+      /// performs a deep copy of this object
+      virtual SceneObject *copy() const;
+  
+      /// called by the renderer before the object is rendered
+      /** here, dynamic object types can adapt e.g. their vertices or colors*/
+      virtual void prepareForRendering() {}
+  
+      /// this function is called when an object is rendered
+      /** The function can be used to draw something in Object coordinates using
+          OpenGL commands directly. When customRender is called, the OpenGL matrices is 
+          already prepared correctly. Custom render is always called <b>before</b> 
+          the SceneObject's primitives are rendered */
+      virtual void customRender() {}
+  
+      /// sets how 2D-geom colors are set 
+      void setColorsFromVertices(Primitive::Type t, bool on, bool recursive=true);
+      
+      /// returns wheather smooth shading is activated
+      bool getSmoothShading() const;
+      
+      /// sets whether to use smoothshading (default is false)
+      void setSmoothShading(bool on, bool recursive=true);
+  
+  
+      /** @{ @name methods for creation of a scene graph **/
+      /// Sets a transformation matrix 
+      /** All vertices are transformed with this matrix before rendering. If the
+          SceneObject instance has a parent-Scene object, then the parent's
+          SceneObject's transformation pre-multiplied */
+      virtual void setTransformation(const Mat &m);
+      
+      /// sets the internal transformation to the identity matrix
+      void removeTransformation();
+  
+      /// multiplies the current transformation matrix by given matrix 
+      virtual void transform(const Mat &m);
+  
+      /// utility method for passing arbitrary matrix classes 
+      /** Note: the given T instance m, needs to have a function-operator(x,y)*/
+      template<class T>
+      void transform(const T &m){
+        transform(Mat(m(0,0),m(1,0),m(2,0),m(3,0),
+                      m(0,1),m(1,1),m(2,1),m(3,1),
+                      m(0,2),m(1,2),m(2,2),m(3,2),
+                      m(0,3),m(1,3),m(2,3),m(3,3)));
+      } 
+      
+      /// rotates the scene object (this affects it's transformation matrix)
+      virtual void rotate(float rx, float ry, float rz);
+  
+      /// utility wrapper for vector based rotation 
+      template<class T>
+      inline void rotate(const T &t) { rotate((float)t[0],(float)t[1],(float)t[2]); }
+      
+      /// translates the scene object (this affects it's translates matrix)
+      virtual void translate(float dx, float dy, float dz);
+  
+      /// utility wrapper for vector based translation
+      template<class T>
+      inline void translate(const T &t) { translate((float)t[0],(float)t[1],(float)t[2]); }
+  
+      /// transformes the current transformation matrix by a scale matrix
+      virtual void scale(float sx, float sy, float sz);
+      
+      /// utility wrapper for vector based scaling
+      template<class T>
+      inline void scale(const T &t) { scale((float)t[0],(float)t[1],(float)t[2]); }
+  
+      /// returns the current transformation matrix
+      /** If the relative flag is true, only this objects transformation matrix is returned.
+          If it is set to false (which is default), also the parent SceneObjects absolute
+          transformation matrix is queried and premultiplied */
+      Mat getTransformation(bool relative=false) const;
+      
+      /// returns whether the SceneObject has currently a non-ID-transformation
+      /** Here also the parent transformation is regarded if relative is false */
+      bool hasTransformation(bool relative=false) const;
+      
+      /// returns the parent scene object
+      SceneObject *getParent();
+      
+      /// returns the parent scene object (const version)
+      const SceneObject *getParent() const;
+  
+      /// adds a new child to this scene object
+      /** If the child's owner ship is passed, it is deleted automatically when it is removed or
+          if the parent is deleted. Otherwise, the caller has to manage the passed child's 
+          memory. 
+          <b>Note:</b> there is no cycle detection in the SceneObject class. Adding A to B and
+          B to A leads to unknown results and most likely to programm errors.
+      */
+      void addChild(SceneObject *child, bool passOwnerShip=true);
+      
+      /// removes given child
+      /** no errors if the child was not found */
+      void removeChild(SceneObject *child);
+  
+      /// removes all children
+      void removeAllChildren();
+      
+      /// returns whether the SceneObject has children at all
+      bool hasChildren() const;
+      
+      /// returns the number of children
+      int getChildCount() const;
+      
+      /// returns child at given index
+      SceneObject *getChild(int index);
+      
+      /// returns child at given index (const)
+      const SceneObject *getChild(int index) const;
+      
+      /** @} **/
+  
+      /// returns whether this object is hit by the given viewray
+      /** Please note: only faces (i.e. quads, triangles and polygons
+          are checked)
+          The method returns the hit scene object that was closest to
+          the given view-rays origin or null, if it was not hit.
+          If recursive is true, the scene-graph is traversed from this
+          object on and the actually hit child (or child of child etc.) 
+          might also be returned.
+      */
+      Hit hit(const ViewRay &v, bool recursive=true);
+      
+      /// returns whether this object is hit by the given viewray (const)
+      const Hit hit(const ViewRay &v, bool recursive=true) const{
+        return const_cast<SceneObject*>(this)->hit(v,recursive);
+      }
+      
+      /// returns all hits with SceneObjects form the given viewray
+      std::vector<Hit> hits(const ViewRay &v, bool recursive=true);
+  
+      /// returns all vertices in their final world coordinates
+      std::vector<Vec> getTransformedVertices() const;
+      
+      /// returns the vertex, that is closest to the given point in wold coordinates
+      /** If relative is true, the vertex is returned in object-coordinates, otherwise
+          it is returned in world coordinates */
+      Vec getClosestVertex(const Vec &pWorld, bool relative=false) throw (ICLException);
+      
+      /// sets the visibility of this object
+      void setVisible(bool visible, bool recursive=true);
+      
+      /// returns whether this object is currently visible
+      bool isVisible() const { return m_isVisible; }
+  
+      /// calls setVisible(false)
+      void hide(bool recursive=true){ setVisible(false); }
+  
+      /// calls setVisible(true)
+      void show(bool recursive=true){ setVisible(true); }
+  
+  
+      /// sets locking enabled or disabled
+      /** Note, that the method itself locks the internal mutex
+          to prevent, that m_enableLocking is disabled while
+          the mutex is locked somewhere else */
+      inline void setLockingEnabled(bool enabled) { 
+        m_mutex.lock();
+        m_enableLocking = enabled; 
+        m_mutex.unlock();
+      }
+      
+      /// returns whether locking is current enabled for this object
+      bool getLockingEnabled() const {
+        return m_enableLocking;
+      }
+  
+      /// locks the internal mutex if locking enabled is set to true
+      /** This function can be re implemented by subclasses that need an eplicit locking.
+          Note, that explicit locking can be enabled/disabled using setLockingEnabled\n 
+          E.g. if an objects data is updated from another thread, you can sub-class 
+          this class and implement a locking mechanism for it*/
+      virtual void lock(){
+        if(!m_enableLocking) return;
+        m_mutex.lock();
+      }
+      
+      /// unlocks the internal mutex if locking enabled is set to true
+      /** This function can be re implemented by subclasses that need an eplicit locking.
+          Note, that explicit locking can be enabled/disabled using setLockingEnabled\n 
+          E.g. if an objects data is updated from another thread, you can sub-class 
+          this class and implement a locking mechanism for it*/
+      virtual void unlock(){
+        if(!m_enableLocking) return;
+        m_mutex.unlock();
+      }
+      
+      friend struct Primitive;
+      
+  
+      /// sets whether points are visualized in a smoothed manner
+      /** This might not be supported by the graphics hardware or driver.
+          Default value is true */
+      inline void setPointSmoothingEnabled(bool enabled=true){
+        m_pointSmoothingEnabled = enabled;
+      }
+  
+      /// sets whether lines are visualized in a smoothed manner
+      /** This might not be supported by the graphics hardware or driver
+          Default value is true */
+      inline void setLineSmoothingEnabled(bool enabled=true){
+        m_lineSmoothingEnabled = enabled;
+      }
+   
+      /// sets whether faces are visualized in a smoothed manner
+      /** This might not be supported by the graphics hardware or driver
+          Default value is true */
+      inline void setPolygonSmoothingEnabled(bool enabled=true){
+        m_polygonSmoothingEnabled = enabled;
+      }
+  
+      /// deletes and removes all primitives
+      void clearAllPrimitives(); 
+      
+      /// creates a displaylist in the next render cycle
+      /** if the displaylist was already created, it is updated */
+      void createDisplayList();
+      
+      /// frees the displaylist in the next render cycle
+      void freeDisplayList();
+      
+      /// sets a fragment shader to use for this object
+      /** use set fragment shader (0) in order to delete the fragment shader */
+      void setFragmentShader(GLFragmentShader *shader);
+      
+      /// returns the current fragment shader (or NULL if non was given)
+      inline GLFragmentShader *getFragmentShader() { return m_fragmentShader; }
+      
+      /// returns the current fragment shader (or NULL if non was given, const version)
+      inline const GLFragmentShader *getFragmentShader() const{ return m_fragmentShader; }
+      
+      protected:
+      /// recursive picking method
+      static void collect_hits_recursive(SceneObject *obj, const ViewRay &v, 
+                                         std::vector<Hit> &hits, 
+                                         bool recursive);
+      
+      std::vector<Vec> m_vertices;
+      std::vector<Vec> m_normals;
+      
+      std::vector<GeomColor> m_vertexColors;
+      std::vector<Primitive*> m_primitives;
+      std::vector<SmartPtr<GLImg> > m_sharedTextures;
+      int m_visibleMask;
+  
+      bool m_lineColorsFromVertices;
+      bool m_triangleColorsFromVertices;
+      bool m_quadColorsFromVertices;
+      bool m_polyColorsFromVertices;
+  
+      float m_pointSize;
+      float m_lineWidth;
+      
+      bool m_useSmoothShading;
+      bool m_isVisible;
+      
+      /// for the scene graph implementation
+      Mat m_transformation;
+      bool m_hasTransformation;
+      SceneObject *m_parent;
+      std::vector<SmartPtr<SceneObject> > m_children;
+  
+      Mutex m_mutex; //!< for asynchronous updates
+      bool m_enableLocking; //!< can be enabled
+  
+      bool m_pointSmoothingEnabled;
+      bool m_lineSmoothingEnabled;
+      bool m_polygonSmoothingEnabled;
+      
+      
+      private:
+  
+      /// internally used flag
+      void *m_displayListHandle;
+      /// internal flag
+      /** - 0: no change.
+          - 1: create/update display list in next render cycle 
+          - 2: free display-list (if there is any) in the next render cycle */
+      int m_createDisplayListNextTime;
+  
+      /// internal optionally given fragment shader
+      GLFragmentShader *m_fragmentShader;
+  
+    };
+  } // namespace geom
 }
 
 #endif

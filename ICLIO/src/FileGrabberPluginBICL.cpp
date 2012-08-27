@@ -36,17 +36,19 @@
 #include <ICLIO/ImageCompressor.h>
 
 namespace icl{
-
-  void FileGrabberPluginBICL::grab(File &file, ImgBase **dest){
-    ICLASSERT_RETURN(dest);
-    file.open(File::readBinary); 
-    
-    const std::vector<icl8u> &data = file.readAll();
-    
-    ImageCompressor cmp;
-    cmp.uncompress(data.data(), data.size(), dest);
-  }
-
+  namespace io{
+  
+    void FileGrabberPluginBICL::grab(File &file, ImgBase **dest){
+      ICLASSERT_RETURN(dest);
+      file.open(File::readBinary); 
+      
+      const std::vector<icl8u> &data = file.readAll();
+      
+      ImageCompressor cmp;
+      cmp.uncompress(data.data(), data.size(), dest);
+    }
+  
+  } // namespace io
 }
 
 

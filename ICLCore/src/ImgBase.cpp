@@ -39,61 +39,63 @@
 using namespace std;
 
 namespace icl {
-  
-  // {{{ constructor / destructor 
-  
-  ImgBase::ImgBase(depth d, const ImgParams &params):m_oParams(params),m_eDepth(d) {
-    // {{{ open
-
-    FUNCTION_LOG("ImgBase(" << getWidth()
-                 << "," << getHeight()
-                 << "," << translateFormat(getFormat()) 
-                 << ", "<< translateDepth(getDepth()) 
-                 << "," << getChannels() << ")  this:" << this); 
-  }
-
-  // }}}
-  
-  ImgBase::~ImgBase(){
-    // {{{ open
-    FUNCTION_LOG("");
-  }
-
-  // }}}
-  
-  // }}} 
-  
-  // {{{ utility functions
-
-  void ImgBase::print(const string title) const{
-    // {{{ open
+  namespace core{
     
-    FUNCTION_LOG(sTitle);
+    // {{{ constructor / destructor 
     
-    
-    std::cout << " -----------------------------------------" << std::endl
-              << "| image     : " << title  << std::endl
-              << "| timestamp : " << getTime() << std::endl
-              << "| size      : " << getSize() << std::endl
-              << "| channels  : " << getChannels() << std::endl
-              << "| depth     : " << getDepth() << std::endl
-              << "| format    : " << getFormat() << std::endl
-              << "| roi       : " << (hasFullROI() ? str("full") : str(getROI())) << std::endl
-              << " -----------------------------------------" << std::endl;
-    
-    for(int i=0;i<getChannels();++i){
-      std::cout << "| range channel " << i << " :" << getMinMax(i) << std::endl;
+    ImgBase::ImgBase(depth d, const ImgParams &params):m_oParams(params),m_eDepth(d) {
+      // {{{ open
+  
+      FUNCTION_LOG("ImgBase(" << getWidth()
+                   << "," << getHeight()
+                   << "," << translateFormat(getFormat()) 
+                   << ", "<< translateDepth(getDepth()) 
+                   << "," << getChannels() << ")  this:" << this); 
     }
+  
+    // }}}
     
-    std::cout << " -----------------------------------------" << std::endl;
-    
-    if(hasMetaData()){
-      std::cout << "| no meta data available " << std::endl;
-    }else{
-      std::cout << "| meta data: " << std::endl;
-      std::cout << getMetaData() << std::endl;
+    ImgBase::~ImgBase(){
+      // {{{ open
+      FUNCTION_LOG("");
     }
-    std::cout << " -----------------------------------------" << std::endl;
+  
+    // }}}
+    
+    // }}} 
+    
+    // {{{ utility functions
+  
+    void ImgBase::print(const string title) const{
+      // {{{ open
+      
+      FUNCTION_LOG(sTitle);
+      
+      
+      std::cout << " -----------------------------------------" << std::endl
+                << "| image     : " << title  << std::endl
+                << "| timestamp : " << getTime() << std::endl
+                << "| size      : " << getSize() << std::endl
+                << "| channels  : " << getChannels() << std::endl
+                << "| depth     : " << getDepth() << std::endl
+                << "| format    : " << getFormat() << std::endl
+                << "| roi       : " << (hasFullROI() ? str("full") : str(getROI())) << std::endl
+                << " -----------------------------------------" << std::endl;
+      
+      for(int i=0;i<getChannels();++i){
+        std::cout << "| range channel " << i << " :" << getMinMax(i) << std::endl;
+      }
+      
+      std::cout << " -----------------------------------------" << std::endl;
+      
+      if(hasMetaData()){
+        std::cout << "| no meta data available " << std::endl;
+      }else{
+        std::cout << "| meta data: " << std::endl;
+        std::cout << getMetaData() << std::endl;
+      }
+      std::cout << " -----------------------------------------" << std::endl;
+  } // namespace core
 }
 
   // }}}

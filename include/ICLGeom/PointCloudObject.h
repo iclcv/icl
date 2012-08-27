@@ -38,64 +38,66 @@
 #include <ICLGeom/PointCloudObjectBase.h>
 
 namespace icl{
-  
-  /// Base implementation of the SceneObjectBase interface for compability with common icl::SceneObjects
-  /** This class replaces the former implementations
-      - PointcloudSceneObject
-      - RGBDImageSceneObject 
+  namespace geom{
+    
+    /// Base implementation of the SceneObjectBase interface for compability with common icl::SceneObjects
+    /** This class replaces the former implementations
+        - PointcloudSceneObject
+        - RGBDImageSceneObject 
+        
+        \section TODO
+        - add optional color (perhaps not possible)
+        - add optional normals and may other useful fields
+    */
+    class PointCloudObject : public PointCloudObjectBase{
+      protected:
+      bool m_organized; //!< internal 2D organized flag
+      Size m_dim2D;     //!< 2D dimension
       
-      \section TODO
-      - add optional color (perhaps not possible)
-      - add optional normals and may other useful fields
-  */
-  class PointCloudObject : public PointCloudObjectBase{
-    protected:
-    bool m_organized; //!< internal 2D organized flag
-    Size m_dim2D;     //!< 2D dimension
-    
-    public:
-    
-    /// creates a new ordered or unordered SimplePointCloudObject instance
-    /** @param width number of points per line (if unordered, number of points)
-        @param height number of points per row (if unordered, height is not used)
-        @param organized specifies whether there is a 2D data order or not
-        */
-    PointCloudObject(int width=0, int height=0, bool organized=true);
-
-    /// returns which features are supported (only XYZ and RGBA32f)
-    virtual bool supports(FeatureType t);
-    
-    /// returns whether the points are 2D-ordered
-    virtual bool isOrganized() const;
-
-    /// returns the 2D size of the pointcloud (throws exception if not ordered)
-    virtual Size getSize() const throw (ICLException);
-    
-    /// return the linearily ordered number of point in the point cloud
-    virtual int getDim() const;
-
-    /// adapts the point cloud size
-    /** if the sizes height is smaller than 1, the cloud becomes un-organized*/
-    virtual void setSize(const Size &size);
-
-    /// returns XYZ data segment
-    virtual DataSegment<float,3> selectXYZ();
-    
-    /// returns the RGBA data segment (4-floats)
-    virtual DataSegment<float,4> selectRGBA32f();
-
-    /// important, this is again, reimplemented in order to NOT draw the stuff manually here
-    virtual void customRender();
-
-    /// deep copy function
-    virtual PointCloudObject *copy() const {
-      return new PointCloudObject(*this);
-    }
-
-  };
-
+      public:
+      
+      /// creates a new ordered or unordered SimplePointCloudObject instance
+      /** @param width number of points per line (if unordered, number of points)
+          @param height number of points per row (if unordered, height is not used)
+          @param organized specifies whether there is a 2D data order or not
+          */
+      PointCloudObject(int width=0, int height=0, bool organized=true);
   
+      /// returns which features are supported (only XYZ and RGBA32f)
+      virtual bool supports(FeatureType t);
+      
+      /// returns whether the points are 2D-ordered
+      virtual bool isOrganized() const;
   
+      /// returns the 2D size of the pointcloud (throws exception if not ordered)
+      virtual Size getSize() const throw (ICLException);
+      
+      /// return the linearily ordered number of point in the point cloud
+      virtual int getDim() const;
+  
+      /// adapts the point cloud size
+      /** if the sizes height is smaller than 1, the cloud becomes un-organized*/
+      virtual void setSize(const Size &size);
+  
+      /// returns XYZ data segment
+      virtual DataSegment<float,3> selectXYZ();
+      
+      /// returns the RGBA data segment (4-floats)
+      virtual DataSegment<float,4> selectRGBA32f();
+  
+      /// important, this is again, reimplemented in order to NOT draw the stuff manually here
+      virtual void customRender();
+  
+      /// deep copy function
+      virtual PointCloudObject *copy() const {
+        return new PointCloudObject(*this);
+      }
+  
+    };
+  
+    
+    
+  } // namespace geom
 }
 
 #endif

@@ -53,97 +53,99 @@
 #include <ICLUtils/StringUtils.h>
 
 namespace icl{
-  
-  
-  GenericImageOutput::GenericImageOutput(const std::string &type, const std::string &description){
-    init(type,description);
-  }
-
-  GenericImageOutput::GenericImageOutput(const ProgArg &pa){
-    init(pa);
-  }
-  
-  void GenericImageOutput::init(const ProgArg &pa){
-    init(*pa,icl::pa(pa.getID(),1));
-  }
-
-  void GenericImageOutput::init(const std::string &type, const std::string &description){
-    impl = SmartPtr<ImageOutput>();
-          
-    this->type = type;
-    this->description = description;
+  namespace io{
     
-    ImageOutput *o = 0;
-
-    std::string d = description;
-    if(d.substr(0,type.length()+1) == type+"=") d = d.substr(type.length()+1);
-
-    if(type == "null"){
-      struct NullOutput : public ImageOutput{
-        virtual void send(const ImgBase *) {}
-      };
-      o = new NullOutput;
+    
+    GenericImageOutput::GenericImageOutput(const std::string &type, const std::string &description){
+      init(type,description);
+    }
+  
+    GenericImageOutput::GenericImageOutput(const ProgArg &pa){
+      init(pa);
     }
     
-#ifdef HAVE_OPENCV
-    if(type == "video"){
-      try{
-        std::vector<std::string> t = tok(d,",");
-        if(!t.size()) throw ICLException("unable to create OpenCVVideoWriter with empty destination filename");
-        std::string fourcc = t.size() > 1 ? t[1] : str("DIV3");
-        Size size = t.size() > 2 ? parse<Size>(t[2]) : Size::VGA;
-        double fps = t.size() > 3 ? parse<double>(t[3]) : 24;
-        o = new OpenCVVideoWriter(t[0],fourcc,fps,size);
-      }catch(const std::exception &e){
-        ERROR_LOG("Unable to create OpenCVVideoWriter with this parameters: " << d << "(error: " << e.what() << ")");
+    void GenericImageOutput::init(const ProgArg &pa){
+      init(*pa,icl::pa(pa.getID(),1));
+    }
+  
+    void GenericImageOutput::init(const std::string &type, const std::string &description){
+      impl = SmartPtr<ImageOutput>();
+            
+      this->type = type;
+      this->description = description;
+      
+      ImageOutput *o = 0;
+  
+      std::string d = description;
+      if(d.substr(0,type.length()+1) == type+"=") d = d.substr(type.length()+1);
+  
+      if(type == "null"){
+        struct NullOutput : public ImageOutput{
+          virtual void send(const ImgBase *) {}
+        };
+        o = new NullOutput;
       }
       
-    }
-#endif
-    
-
-#ifdef HAVE_QT
-    if(type == "sm"){
-      o = new SharedMemoryPublisher(d);
-    }
-#endif
-    
-#if defined(HAVE_RSB) && defined(HAVE_PROTOBUF)
-    if(type == "rsb"){
-      try{
-        std::vector<std::string> ts = tok(d,":");
-        if(!ts.size()) throw ICLException("unable to create RSBImageOutput without scope-definition");
-        if(ts.size() == 1){
-          o = new RSBImageOutput(ts[0]);
-        }else if(ts.size() == 2){
-          o = new RSBImageOutput(ts[1],ts[0]);
-        }else{
-          throw ICLException("invalid definition string (exptected: [transport-list]:scope");
+  #ifdef HAVE_OPENCV
+      if(type == "video"){
+        try{
+          std::vector<std::string> t = tok(d,",");
+          if(!t.size()) throw ICLException("unable to create OpenCVVideoWriter with empty destination filename");
+          std::string fourcc = t.size() > 1 ? t[1] : str("DIV3");
+          Size size = t.size() > 2 ? parse<Size>(t[2]) : Size::VGA;
+          double fps = t.size() > 3 ? parse<double>(t[3]) : 24;
+          o = new OpenCVVideoWriter(t[0],fourcc,fps,size);
+        }catch(const std::exception &e){
+          ERROR_LOG("Unable to create OpenCVVideoWriter with this parameters: " << d << "(error: " << e.what() << ")");
         }
-
-      }catch(std::exception &e){
-        ERROR_LOG("Unable to create RSBImageOutput with this parameters: " << d << "(error: "  <<e.what() << ")");
+        
+      }
+  #endif
+      
+  
+  #ifdef HAVE_QT
+      if(type == "sm"){
+        o = new SharedMemoryPublisher(d);
+      }
+  #endif
+      
+  #if defined(HAVE_RSB) && defined(HAVE_PROTOBUF)
+      if(type == "rsb"){
+        try{
+          std::vector<std::string> ts = tok(d,":");
+          if(!ts.size()) throw ICLException("unable to create RSBImageOutput without scope-definition");
+          if(ts.size() == 1){
+            o = new RSBImageOutput(ts[0]);
+          }else if(ts.size() == 2){
+            o = new RSBImageOutput(ts[1],ts[0]);
+          }else{
+            throw ICLException("invalid definition string (exptected: [transport-list]:scope");
+          }
+  
+        }catch(std::exception &e){
+          ERROR_LOG("Unable to create RSBImageOutput with this parameters: " << d << "(error: "  <<e.what() << ")");
+        }
+      }
+  #endif
+      
+      if(type == "file"){
+        o = new FileWriter(d);
+      }
+      
+      if(type == "null"){
+        struct DummyOutput : public ImageOutput{
+          virtual void send(const ImgBase *image){ (void)image; }
+        };
+        o = new DummyOutput;
+      }
+      
+      if(!o){
+        ERROR_LOG("unable to instantiate GenericImageOutput with type \"" << type << "\" and params \"" << d << "\"");
+      }else{
+        impl = SmartPtr<ImageOutput>(o);
       }
     }
-#endif
-    
-    if(type == "file"){
-      o = new FileWriter(d);
-    }
-    
-    if(type == "null"){
-      struct DummyOutput : public ImageOutput{
-        virtual void send(const ImgBase *image){ (void)image; }
-      };
-      o = new DummyOutput;
-    }
-    
-    if(!o){
-      ERROR_LOG("unable to instantiate GenericImageOutput with type \"" << type << "\" and params \"" << d << "\"");
-    }else{
-      impl = SmartPtr<ImageOutput>(o);
-    }
-  }
+  } // namespace io
 }
 
 

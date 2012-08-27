@@ -41,116 +41,118 @@
 #include <vector>
 
 namespace icl{
-
-  /// Simple KD-Tree implementation
-  /** This class implements a simple kd-tree. You can create an object of this class
-      with or without given point data. After creating a kd-tree without data you can use
-      the buildTree method to insert data points or to rebuild the kd-tree with new
-      data points. 
-      <b>Note:</b> If point data was passed to the KD-Tree constructor, it only references
-      by the KD-Tree instance. Therefore, that tree instance will only stay valid as long as
-      the referenced data does
-  */
-  class KDTree : public Uncopyable{
-    private:
-    ///Keeps data of node
-    struct Node{
-      ///left node
-      Node *left;
-      ///right node
-      Node *right;
-      ///point in leafnode, else null
-      DynMatrix<icl64f> *point;
-      ///median of dimension
-      double median;
-      
-      ///Constructor
-      inline Node():left(0),right(0),point(0),median(0.0){}
-      
-      ///Destructor
-      inline ~Node(){
-        if(right != 0){
-          delete right;
-          right = 0;
-        }
-        if(left != 0){
-          delete left;
-          left = 0;
-        }
+  namespace utils{
+  
+    /// Simple KD-Tree implementation
+    /** This class implements a simple kd-tree. You can create an object of this class
+        with or without given point data. After creating a kd-tree without data you can use
+        the buildTree method to insert data points or to rebuild the kd-tree with new
+        data points. 
+        <b>Note:</b> If point data was passed to the KD-Tree constructor, it only references
+        by the KD-Tree instance. Therefore, that tree instance will only stay valid as long as
+        the referenced data does
+    */
+    class KDTree : public Uncopyable{
+      private:
+      ///Keeps data of node
+      struct Node{
+        ///left node
+        Node *left;
+        ///right node
+        Node *right;
+        ///point in leafnode, else null
+        DynMatrix<icl64f> *point;
+        ///median of dimension
+        double median;
         
+        ///Constructor
+        inline Node():left(0),right(0),point(0),median(0.0){}
+        
+        ///Destructor
+        inline ~Node(){
+          if(right != 0){
+            delete right;
+            right = 0;
+          }
+          if(left != 0){
+            delete left;
+            left = 0;
+          }
+          
+        }
+      };
+      
+      ///the root node of the tree
+      Node root;
+      
+      ///internal print call
+      void print(Node *node);
+      ///internal call to fill the KDTree with data
+      void buildTree(std::vector<DynMatrix<icl64f> > &list,unsigned int depth, Node *node);
+      ///internal call to fill the KDTree with data
+      void buildTree(std::vector<DynMatrix<icl64f> *> &list,unsigned int depth, Node *node);
+      ///internal call to sort list by dimension of the vector (unused, instead std::sort)
+      void sortList(std::vector<DynMatrix<icl64f> > &list, unsigned int dim);
+      ///internal call to sort list by dimension of the vector (unused, instead std::sort)
+      void sortList(std::vector<DynMatrix<icl64f>* > &list, unsigned int dim);
+      ///internal call to release data from KDTree
+      void releaseTree();
+      
+      public :
+      ///Constructor
+      /** Creates a new KDTree object, with data from list.
+       * @param list list of points for  the kd-tree
+       */
+      KDTree(std::vector<DynMatrix<icl64f> > &list);
+  
+      ///Constructor
+      /** Creates a new KDTree object, with data from list.
+       * @param list list of points for  the kd-tree
+       */
+      KDTree(std::vector<DynMatrix<icl64f>* > &list);
+  
+      ///Constructor
+      /** Creates a new KDTree object, with data from list.
+       * @param list list of points for  the kd-tree
+       */
+      KDTree(){}
+     
+      ///Destructor
+      ~KDTree();
+      
+      ///builds a kd-tree
+      /** Fills empty kd-tree or the current one with new data.
+       * @param list list of points for the kd-tree
+       */
+      inline void buildTree(std::vector<DynMatrix<icl64f> *> &list){
+        releaseTree();
+        buildTree(list,0,&root);
       }
+      
+      ///builds a kd-tree
+      /** Fills empty KDTree object or the current one with new data.
+       * @param list list of points for the kd-tree
+       */
+      inline void buildTree(std::vector<DynMatrix<icl64f> > &list){
+        releaseTree();
+        buildTree(list,0,&root);
+      }
+      
+      ///Prints the tree on standard output.
+      void print();
+      
+      ///Returns pointer to nearest neighbour to passed point.
+      /** @param point the point to search nearest neighbor for
+       *  @return the pointer to nearest neighbour */
+      DynMatrix<icl64f>* nearestNeighbour(const DynMatrix<icl64f> &point);
+      
+      ///Returns pointer to nearest neighbour to passed point.
+      /** @param point the point to search nearest neighbor for
+       *  @return the pointer to nearest neighbour */
+      DynMatrix<icl64f>* nearestNeighbour(const DynMatrix<icl64f> *point);
+      
     };
-    
-    ///the root node of the tree
-    Node root;
-    
-    ///internal print call
-    void print(Node *node);
-    ///internal call to fill the KDTree with data
-    void buildTree(std::vector<DynMatrix<icl64f> > &list,unsigned int depth, Node *node);
-    ///internal call to fill the KDTree with data
-    void buildTree(std::vector<DynMatrix<icl64f> *> &list,unsigned int depth, Node *node);
-    ///internal call to sort list by dimension of the vector (unused, instead std::sort)
-    void sortList(std::vector<DynMatrix<icl64f> > &list, unsigned int dim);
-    ///internal call to sort list by dimension of the vector (unused, instead std::sort)
-    void sortList(std::vector<DynMatrix<icl64f>* > &list, unsigned int dim);
-    ///internal call to release data from KDTree
-    void releaseTree();
-    
-    public :
-    ///Constructor
-    /** Creates a new KDTree object, with data from list.
-     * @param list list of points for  the kd-tree
-     */
-    KDTree(std::vector<DynMatrix<icl64f> > &list);
-
-    ///Constructor
-    /** Creates a new KDTree object, with data from list.
-     * @param list list of points for  the kd-tree
-     */
-    KDTree(std::vector<DynMatrix<icl64f>* > &list);
-
-    ///Constructor
-    /** Creates a new KDTree object, with data from list.
-     * @param list list of points for  the kd-tree
-     */
-    KDTree(){}
-   
-    ///Destructor
-    ~KDTree();
-    
-    ///builds a kd-tree
-    /** Fills empty kd-tree or the current one with new data.
-     * @param list list of points for the kd-tree
-     */
-    inline void buildTree(std::vector<DynMatrix<icl64f> *> &list){
-      releaseTree();
-      buildTree(list,0,&root);
-    }
-    
-    ///builds a kd-tree
-    /** Fills empty KDTree object or the current one with new data.
-     * @param list list of points for the kd-tree
-     */
-    inline void buildTree(std::vector<DynMatrix<icl64f> > &list){
-      releaseTree();
-      buildTree(list,0,&root);
-    }
-    
-    ///Prints the tree on standard output.
-    void print();
-    
-    ///Returns pointer to nearest neighbour to passed point.
-    /** @param point the point to search nearest neighbor for
-     *  @return the pointer to nearest neighbour */
-    DynMatrix<icl64f>* nearestNeighbour(const DynMatrix<icl64f> &point);
-    
-    ///Returns pointer to nearest neighbour to passed point.
-    /** @param point the point to search nearest neighbor for
-     *  @return the pointer to nearest neighbour */
-    DynMatrix<icl64f>* nearestNeighbour(const DynMatrix<icl64f> *point);
-    
-  };
+  } // namespace utils
 }
 #endif /* ICL_KDTREE_H_ */
 

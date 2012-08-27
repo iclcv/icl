@@ -39,77 +39,79 @@
 
 
 namespace icl{
-
-  struct DepthCameraPointCloudGrabber::Data{
-    GenericGrabber depthGrabber;
-    GenericGrabber colorGrabber;
-    PointCloudCreator creator;
-    const Img32f *lastDepthImage;
-    const Img8u *lastColorImage;
-  };
+  namespace geom{
   
-  const Camera &DepthCameraPointCloudGrabber::get_default_depth_cam(){
-    static const Camera cam; return cam;
-  }
-  const Camera &DepthCameraPointCloudGrabber::get_null_color_cam(){
-    static const Camera cam; return cam;
-  }
-  
-  
-  DepthCameraPointCloudGrabber::DepthCameraPointCloudGrabber(const Camera &depthCam,
-                                                   const Camera &colorCam,
-                                                   const std::string &depthDeviceType,
-                                                   const std::string &depthDeviceID,
-                                                   const std::string &colorDeviceType,
-                                                   const std::string &colorDeviceID):
-    m_data(new Data){
-    m_data->lastColorImage = 0;
-    m_data->lastDepthImage = 0;
-    m_data->depthGrabber.init(depthDeviceType,depthDeviceType+"="+depthDeviceID);
-    m_data->depthGrabber.useDesired(formatMatrix);
-    m_data->depthGrabber.useDesired(depth32f);
-    m_data->depthGrabber.useDesired(depthCam.getResolution());
-
-    if(&colorCam != &get_null_color_cam()){
-      m_data->creator.init(depthCam, colorCam);
-      m_data->colorGrabber.init(colorDeviceType,colorDeviceType+"="+colorDeviceID);
-      m_data->colorGrabber.useDesired(formatRGB);
-      m_data->colorGrabber.useDesired(depth8u);
-      m_data->colorGrabber.useDesired(colorCam.getResolution());
-    }else{
-      m_data->creator.init(depthCam);
+    struct DepthCameraPointCloudGrabber::Data{
+      GenericGrabber depthGrabber;
+      GenericGrabber colorGrabber;
+      PointCloudCreator creator;
+      const Img32f *lastDepthImage;
+      const Img8u *lastColorImage;
+    };
+    
+    const Camera &DepthCameraPointCloudGrabber::get_default_depth_cam(){
+      static const Camera cam; return cam;
     }
-  }
-  
-  DepthCameraPointCloudGrabber::~DepthCameraPointCloudGrabber(){
-    delete m_data;
-  }
-
-  
-  void DepthCameraPointCloudGrabber::grab(PointCloudObjectBase &dst){
-    dst.lock();
-    const Img32f &depthImage = *m_data->depthGrabber.grab()->as32f();
-    const Img8u *rgbImage = m_data->colorGrabber.isNull() ? 0 : m_data->colorGrabber.grab()->as8u();
-    m_data->creator.create(depthImage, dst, rgbImage);
-    m_data->lastDepthImage = &depthImage;
-    m_data->lastColorImage = rgbImage;
-    dst.unlock();
-  }
-
-  const Img32f &DepthCameraPointCloudGrabber::getLastDepthImage() const{
-    if(!m_data->lastDepthImage){
-      throw ICLException("DepthCameraPointCloudGrabber::getLastColorImage(): internal depht image was null "
-                         " you must call grab(dst) first)");
+    const Camera &DepthCameraPointCloudGrabber::get_null_color_cam(){
+      static const Camera cam; return cam;
     }
-    return *m_data->lastDepthImage;
-  }
-
-  const Img8u &DepthCameraPointCloudGrabber::getLastColorImage() const throw (ICLException){
-    if(!m_data->lastColorImage){
-      throw ICLException("DepthCameraPointCloudGrabber::getLastColorImage(): internal color image was null (either"
-                         " no color grabber is availalble, or grab(dst) was not called before)");
+    
+    
+    DepthCameraPointCloudGrabber::DepthCameraPointCloudGrabber(const Camera &depthCam,
+                                                     const Camera &colorCam,
+                                                     const std::string &depthDeviceType,
+                                                     const std::string &depthDeviceID,
+                                                     const std::string &colorDeviceType,
+                                                     const std::string &colorDeviceID):
+      m_data(new Data){
+      m_data->lastColorImage = 0;
+      m_data->lastDepthImage = 0;
+      m_data->depthGrabber.init(depthDeviceType,depthDeviceType+"="+depthDeviceID);
+      m_data->depthGrabber.useDesired(formatMatrix);
+      m_data->depthGrabber.useDesired(depth32f);
+      m_data->depthGrabber.useDesired(depthCam.getResolution());
+  
+      if(&colorCam != &get_null_color_cam()){
+        m_data->creator.init(depthCam, colorCam);
+        m_data->colorGrabber.init(colorDeviceType,colorDeviceType+"="+colorDeviceID);
+        m_data->colorGrabber.useDesired(formatRGB);
+        m_data->colorGrabber.useDesired(depth8u);
+        m_data->colorGrabber.useDesired(colorCam.getResolution());
+      }else{
+        m_data->creator.init(depthCam);
+      }
     }
-    return *m_data->lastColorImage;
-  }
-
+    
+    DepthCameraPointCloudGrabber::~DepthCameraPointCloudGrabber(){
+      delete m_data;
+    }
+  
+    
+    void DepthCameraPointCloudGrabber::grab(PointCloudObjectBase &dst){
+      dst.lock();
+      const Img32f &depthImage = *m_data->depthGrabber.grab()->as32f();
+      const Img8u *rgbImage = m_data->colorGrabber.isNull() ? 0 : m_data->colorGrabber.grab()->as8u();
+      m_data->creator.create(depthImage, dst, rgbImage);
+      m_data->lastDepthImage = &depthImage;
+      m_data->lastColorImage = rgbImage;
+      dst.unlock();
+    }
+  
+    const Img32f &DepthCameraPointCloudGrabber::getLastDepthImage() const{
+      if(!m_data->lastDepthImage){
+        throw ICLException("DepthCameraPointCloudGrabber::getLastColorImage(): internal depht image was null "
+                           " you must call grab(dst) first)");
+      }
+      return *m_data->lastDepthImage;
+    }
+  
+    const Img8u &DepthCameraPointCloudGrabber::getLastColorImage() const throw (ICLException){
+      if(!m_data->lastColorImage){
+        throw ICLException("DepthCameraPointCloudGrabber::getLastColorImage(): internal color image was null (either"
+                           " no color grabber is availalble, or grab(dst) was not called before)");
+      }
+      return *m_data->lastColorImage;
+    }
+  
+  } // namespace geom
 }

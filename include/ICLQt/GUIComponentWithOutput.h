@@ -37,123 +37,125 @@
 #include <ICLQt/GUIComponent.h>
 
 namespace icl{
-
-  struct GUIComponentWithOutput : public GUIComponent{
-    GUIComponentWithOutput(const std::string &type, const std::string &params):
-    GUIComponent(type,params){}
-
-    /// sets the component handle
-    const GUIComponentWithOutput &handle(const std::string &handle) const{
-      m_options.handle = handle; return *this;
-    }
-
-    /// sets the component label
-    const GUIComponentWithOutput &label(const std::string &label) const{
-      m_options.label = label; return *this;
-    }
-
-    /// sets the component tooltip
-    const GUIComponentWithOutput &tooltip(const std::string &tooltip) const{
-      m_options.tooltip = tooltip; return *this;
-    }
-
-    /// sets the component initial size
-    const GUIComponentWithOutput &size(const Size &size) const {
-      m_options.size = size; return *this;
-    }
-
-    /// sets the component initial size
-    const GUIComponentWithOutput &size(int w, int h) const {
-      return size(Size(w,h));
-    }
-
-    /// sets the component minimum size constraint
-    const GUIComponentWithOutput &minSize(const Size &minSize) const {
-      m_options.minSize = minSize; return *this;
-    }
+  namespace qt{
+  
+    struct GUIComponentWithOutput : public GUIComponent{
+      GUIComponentWithOutput(const std::string &type, const std::string &params):
+      GUIComponent(type,params){}
+  
+      /// sets the component handle
+      const GUIComponentWithOutput &handle(const std::string &handle) const{
+        m_options.handle = handle; return *this;
+      }
+  
+      /// sets the component label
+      const GUIComponentWithOutput &label(const std::string &label) const{
+        m_options.label = label; return *this;
+      }
+  
+      /// sets the component tooltip
+      const GUIComponentWithOutput &tooltip(const std::string &tooltip) const{
+        m_options.tooltip = tooltip; return *this;
+      }
+  
+      /// sets the component initial size
+      const GUIComponentWithOutput &size(const Size &size) const {
+        m_options.size = size; return *this;
+      }
+  
+      /// sets the component initial size
+      const GUIComponentWithOutput &size(int w, int h) const {
+        return size(Size(w,h));
+      }
+  
+      /// sets the component minimum size constraint
+      const GUIComponentWithOutput &minSize(const Size &minSize) const {
+        m_options.minSize = minSize; return *this;
+      }
+        
+      /// sets the component minimum size constraint
+      const GUIComponentWithOutput &minSize(int w, int h) const {
+        return minSize(Size(w,h));
+      }
       
-    /// sets the component minimum size constraint
-    const GUIComponentWithOutput &minSize(int w, int h) const {
-      return minSize(Size(w,h));
-    }
-    
-    /// sets the component maximum size constraint
-    const GUIComponentWithOutput &maxSize(const Size &maxSize) const {
-      m_options.maxSize = maxSize; return *this;
-    }
-
-    /// sets the component maximum size constraint
-    const GUIComponentWithOutput &maxSize(int w, int h) const {
-      return maxSize(Size(w,h));
-    }
-
-    /// hides the component if the given flag is true
-    /** \copydoc icl::GUIComponent::hideIf(bool)const */     
-    const GUIComponentWithOutput &hideIf(bool flag) const{
-      if(flag) m_options.hide = true; return *this;
-    }
-
-    /// sets the component output id
-    const GUIComponentWithOutput &out(const std::string &name) const {
-      m_options.out = name; return *this;
-    }
-
-    /// sets the component handle
-    GUIComponentWithOutput &handle(std::string &handle) {
-      m_options.handle = handle; return *this;
-    }
-    
-    /// sets the component label
-    GUIComponentWithOutput &label(std::string &label) {
-      m_options.label = label; return *this;
-    }
-    
-    /// sets the component tooltip
-    GUIComponentWithOutput &tooltip(std::string &tooltip) {
-      m_options.tooltip = tooltip; return *this;
-    }
-    
-    /// sets the component initial size
-    GUIComponentWithOutput &size(Size &size)  {
-      m_options.size = size; return *this;
-    }
-    
-    /// sets the component initial size
-    GUIComponentWithOutput &size(int w, int h)  {
-      m_options.size = Size(w,h); return *this;
-    }
-    
-    /// sets the component minimum size constraint
-    GUIComponentWithOutput &minSize(Size &minSize)  {
-      m_options.minSize = minSize; return *this;
-    }
-
-    /// sets the component minimum size constraint
-    GUIComponentWithOutput &minSize(int w, int h)  {
-      m_options.minSize = Size(w,h); return *this;
-    }
-    
-    /// sets the component maximum size constraint
-    GUIComponentWithOutput &maxSize(Size &maxSize)  {
-      m_options.maxSize = maxSize; return *this;
-    }
-    
-    /// sets the component maximum size constraint
-    GUIComponentWithOutput &maxSize(int w, int h)  {
-      m_options.maxSize = Size(w,h); return *this;
-    }
-
-    /// hides the component if the given flag is true
-    /** \copydoc icl::GUIComponent::hideIf(bool)const */
-    GUIComponentWithOutput &hideIf(bool flag)  {
-      if(flag) m_options.hide = true; return *this;
-    }
-
-    /// sets the component output id
-    GUIComponentWithOutput &out(const std::string &name){
-      m_options.out = name; return *this;
-    }
-
-  };
-
+      /// sets the component maximum size constraint
+      const GUIComponentWithOutput &maxSize(const Size &maxSize) const {
+        m_options.maxSize = maxSize; return *this;
+      }
+  
+      /// sets the component maximum size constraint
+      const GUIComponentWithOutput &maxSize(int w, int h) const {
+        return maxSize(Size(w,h));
+      }
+  
+      /// hides the component if the given flag is true
+      /** \copydoc icl::GUIComponent::hideIf(bool)const */     
+      const GUIComponentWithOutput &hideIf(bool flag) const{
+        if(flag) m_options.hide = true; return *this;
+      }
+  
+      /// sets the component output id
+      const GUIComponentWithOutput &out(const std::string &name) const {
+        m_options.out = name; return *this;
+      }
+  
+      /// sets the component handle
+      GUIComponentWithOutput &handle(std::string &handle) {
+        m_options.handle = handle; return *this;
+      }
+      
+      /// sets the component label
+      GUIComponentWithOutput &label(std::string &label) {
+        m_options.label = label; return *this;
+      }
+      
+      /// sets the component tooltip
+      GUIComponentWithOutput &tooltip(std::string &tooltip) {
+        m_options.tooltip = tooltip; return *this;
+      }
+      
+      /// sets the component initial size
+      GUIComponentWithOutput &size(Size &size)  {
+        m_options.size = size; return *this;
+      }
+      
+      /// sets the component initial size
+      GUIComponentWithOutput &size(int w, int h)  {
+        m_options.size = Size(w,h); return *this;
+      }
+      
+      /// sets the component minimum size constraint
+      GUIComponentWithOutput &minSize(Size &minSize)  {
+        m_options.minSize = minSize; return *this;
+      }
+  
+      /// sets the component minimum size constraint
+      GUIComponentWithOutput &minSize(int w, int h)  {
+        m_options.minSize = Size(w,h); return *this;
+      }
+      
+      /// sets the component maximum size constraint
+      GUIComponentWithOutput &maxSize(Size &maxSize)  {
+        m_options.maxSize = maxSize; return *this;
+      }
+      
+      /// sets the component maximum size constraint
+      GUIComponentWithOutput &maxSize(int w, int h)  {
+        m_options.maxSize = Size(w,h); return *this;
+      }
+  
+      /// hides the component if the given flag is true
+      /** \copydoc icl::GUIComponent::hideIf(bool)const */
+      GUIComponentWithOutput &hideIf(bool flag)  {
+        if(flag) m_options.hide = true; return *this;
+      }
+  
+      /// sets the component output id
+      GUIComponentWithOutput &out(const std::string &name){
+        m_options.out = name; return *this;
+      }
+  
+    };
+  
+  } // namespace qt
 }

@@ -47,61 +47,63 @@
 #include <opencv/cv.h>
 #endif
 namespace icl{
-
-/**
- Cameracalibration using OpenCV functions.
- */
-class OpenCVCamCalib : public Uncopyable{
-
-	struct Data;
-	///Class for internal params and buffers.
-	Data *m_data;
-
-public:
-	///Constructor
-	/**boardWidth and boardHeight should not be equal
-	  @param boardWidth width of the chessboard
-	  @param boardHeight of the chessboard
-	  @param boardCount minimum number of chessboards to be found on images before calibration
-	 */
-	OpenCVCamCalib(unsigned int boardWidth=6, unsigned int boardHeight=9, unsigned int boardCount=8);
-
-	///Destructor
-	~OpenCVCamCalib();
-
-	///Adds points from images to computation.
-	/*@param img image to be searched for chessboard and points
-	  @return overall current number of found chessboard for calibration
-	 */
-	int addPoints(const ImgBase *img);
-
-	///Tries to calibrates the camera, if minimal number of found and valid chessboards  is greater zero
-	void calibrateCam();
-
-	///Computes the undistorted image.
-	/*@return the new undistorted image*/
-	ImgBase *undisort(const ImgBase *img);
-
-	///resets internal data and sets given params
-	/*@param width of the chessboard
-	  @param height of the chessboard
-	  @param count minimum number of chessboards to be found on images before calibration*/
-	void resetData(int width, int height, int count);
-
-	///Returns DynMatrix of intrinsic params
-	/*@return intrinsic params*/
-	DynMatrix<icl64f> *getIntrinsics();
-
-	///Returns DynMatrix of distortion params
-	/*@return distortion params*/
-	DynMatrix<icl64f> *getDistortion();
-
-	///loads intrinsic params from file
-	void loadParams(const char* xmlfilename);
-
-	///saves intrinsic params to file
-	void saveParams(const char* xmlfilename);
-
+  namespace geom{
+  
+  /**
+   Cameracalibration using OpenCV functions.
+   */
+  class OpenCVCamCalib : public Uncopyable{
+  
+  	struct Data;
+  	///Class for internal params and buffers.
+  	Data *m_data;
+  
+  public:
+  	///Constructor
+  	/**boardWidth and boardHeight should not be equal
+  	  @param boardWidth width of the chessboard
+  	  @param boardHeight of the chessboard
+  	  @param boardCount minimum number of chessboards to be found on images before calibration
+  	 */
+  	OpenCVCamCalib(unsigned int boardWidth=6, unsigned int boardHeight=9, unsigned int boardCount=8);
+  
+  	///Destructor
+  	~OpenCVCamCalib();
+  
+  	///Adds points from images to computation.
+  	/*@param img image to be searched for chessboard and points
+  	  @return overall current number of found chessboard for calibration
+  	 */
+  	int addPoints(const ImgBase *img);
+  
+  	///Tries to calibrates the camera, if minimal number of found and valid chessboards  is greater zero
+  	void calibrateCam();
+  
+  	///Computes the undistorted image.
+  	/*@return the new undistorted image*/
+  	ImgBase *undisort(const ImgBase *img);
+  
+  	///resets internal data and sets given params
+  	/*@param width of the chessboard
+  	  @param height of the chessboard
+  	  @param count minimum number of chessboards to be found on images before calibration*/
+  	void resetData(int width, int height, int count);
+  
+  	///Returns DynMatrix of intrinsic params
+  	/*@return intrinsic params*/
+  	DynMatrix<icl64f> *getIntrinsics();
+  
+  	///Returns DynMatrix of distortion params
+  	/*@return distortion params*/
+  	DynMatrix<icl64f> *getDistortion();
+  
+  	///loads intrinsic params from file
+  	void loadParams(const char* xmlfilename);
+  
+  	///saves intrinsic params to file
+  	void saveParams(const char* xmlfilename);
+  
+  } // namespace geom
 };
 }
 

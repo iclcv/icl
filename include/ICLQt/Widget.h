@@ -45,45 +45,47 @@
 #include <ICLUtils/Function.h>
 
 namespace icl{
-
-  /** \cond */
-  class PaintEngine;
-  class OSDGLButton;
-  /** \endcond */
- 
-  /// Class for openGL-based image visualization components \ingroup COMMON
-  /** The ICLWidget class provide basic abilities for displaying ICL images (ImgBase) on embedded 
-      Qt GUI components. Its is fitted out with a responsive OpenGL-Overlay On-Screen-Display (OSD),
-      which can be used to adapt some ICLWidget specific settings, and which is partitioned into several
-      sub menus:
-      - <b>adjust</b> here one can define image adjustment parameters via sliders, like brightness and
-        contrast. In addition, there are three different modes: <em>off</em> (no adjustments are 
-        preformed), <em>manual</em> (slider values are exploited) and <em>auto</em> (brightness 
-        and intensity are adapted automatically to exploit the full image range). <b>Note:</b> This time,
-        no intensity adaptions are implemented at all.
-      - <b>fitmode</b> Determines how the image is fit into the widget geometry (see enum 
-        ICLWidget::fitmode) 
-      - <b>channel selection</b> A slider can be used to select a single image channel that should be 
-        shown as gray image 
-      - <b>capture</b> Yet, just a single button is available to save the currently shown image into the
-        local directory 
-      - <b>info</b> shows information about the current image
-      - <b>menu</b> settings for the menu itself, like the alpha value or the color (very useful!)
-      
-      The following code (also available in <em>ICLQt/examples/camviewer_lite.cpp</em> demonstrates how
-      simple an ICLWidget can be used to create a simple USB Webcam viewer:
-      \code
-#include <ICLCV/Common.h>
-
-ICLWidget *widget = 0;
-GenericGrabber grabber;
-
-// initialization method (called in the main thread)
-void init(){
-  grabber.init(FROM_PROGARG("-i"));
-  widget = new ICLWidget;
-  widget->setGeometry(200,200,640,480);   
-  widget->show();         
+  namespace qt{
+  
+    /** \cond */
+    class PaintEngine;
+    class OSDGLButton;
+    /** \endcond */
+   
+    /// Class for openGL-based image visualization components \ingroup COMMON
+    /** The ICLWidget class provide basic abilities for displaying ICL images (ImgBase) on embedded 
+        Qt GUI components. Its is fitted out with a responsive OpenGL-Overlay On-Screen-Display (OSD),
+        which can be used to adapt some ICLWidget specific settings, and which is partitioned into several
+        sub menus:
+        - <b>adjust</b> here one can define image adjustment parameters via sliders, like brightness and
+          contrast. In addition, there are three different modes: <em>off</em> (no adjustments are 
+          preformed), <em>manual</em> (slider values are exploited) and <em>auto</em> (brightness 
+          and intensity are adapted automatically to exploit the full image range). <b>Note:</b> This time,
+          no intensity adaptions are implemented at all.
+        - <b>fitmode</b> Determines how the image is fit into the widget geometry (see enum 
+          ICLWidget::fitmode) 
+        - <b>channel selection</b> A slider can be used to select a single image channel that should be 
+          shown as gray image 
+        - <b>capture</b> Yet, just a single button is available to save the currently shown image into the
+          local directory 
+        - <b>info</b> shows information about the current image
+        - <b>menu</b> settings for the menu itself, like the alpha value or the color (very useful!)
+        
+        The following code (also available in <em>ICLQt/examples/camviewer_lite.cpp</em> demonstrates how
+        simple an ICLWidget can be used to create a simple USB Webcam viewer:
+        \code
+  #include <ICLCV/Common.h>
+  
+  ICLWidget *widget = 0;
+  GenericGrabber grabber;
+  
+  // initialization method (called in the main thread)
+  void init(){
+    grabber.init(FROM_PROGARG("-i"));
+    widget = new ICLWidget;
+    widget->setGeometry(200,200,640,480);   
+    widget->show();         
+  } // namespace qt
 }
 
 // working method (running looped in the working thread)

@@ -38,32 +38,34 @@
 #include <ICLFilter/AffineOp.h>
 
 namespace icl{
-  
- /// Class to rotate images \ingroup UNARY \ingroup AFFINE
-  class RotateOp : public AffineOp {
-    public:
-    /// Constructor
-    RotateOp (double dAngle=0.0, scalemode eInterpolate=interpolateLIN) :
-      AffineOp (eInterpolate) {
-        setAngle(dAngle);
+  namespace filter{
+    
+   /// Class to rotate images \ingroup UNARY \ingroup AFFINE
+    class RotateOp : public AffineOp {
+      public:
+      /// Constructor
+      RotateOp (double dAngle=0.0, scalemode eInterpolate=interpolateLIN) :
+        AffineOp (eInterpolate) {
+          setAngle(dAngle);
+        }
+      
+      /// sets the rotation angle
+      /**
+        @param dAngle angle in degrees (clockwise) 
+      */
+      void setAngle (double dAngle) {
+        AffineOp::reset ();
+        AffineOp::rotate (dAngle);
       }
-    
-    /// sets the rotation angle
-    /**
-      @param dAngle angle in degrees (clockwise) 
-    */
-    void setAngle (double dAngle) {
-      AffineOp::reset ();
-      AffineOp::rotate (dAngle);
-    }
-    
-    // apply should still be public
-    ///applies the rotation
-    using AffineOp::apply;
-
-    private: // hide the following methods
-    using AffineOp::translate;
-    using AffineOp::scale;
-  };
+      
+      // apply should still be public
+      ///applies the rotation
+      using AffineOp::apply;
+  
+      private: // hide the following methods
+      using AffineOp::translate;
+      using AffineOp::scale;
+    };
+  } // namespace filter
 }
 #endif

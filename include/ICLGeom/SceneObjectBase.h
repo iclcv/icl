@@ -43,20 +43,22 @@
 #include <ICLQt/GLFragmentShader.h>
 
 namespace icl{
-
-  /** \cond */
-  class Scene;
-  /** \endcond */
- 
+  namespace geom{
   
-  /// The SceneObjectBase class defines and abstract interface for visible entities in 3D scenes
-  /** TODO */
-  class SceneObjectBase{
-    public:
-    virtual SceneObjectBase *copy() const = 0;
-
-    virtual void customRender() = 0;
-  };
-
-
+    /** \cond */
+    class Scene;
+    /** \endcond */
+   
+    
+    /// The SceneObjectBase class defines and abstract interface for visible entities in 3D scenes
+    /** TODO */
+    class SceneObjectBase{
+      public:
+      virtual SceneObjectBase *copy() const = 0;
+  
+      virtual void customRender() = 0;
+    };
+  
+  
+  } // namespace geom
 }

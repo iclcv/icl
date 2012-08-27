@@ -48,16 +48,18 @@ using namespace std;
 
 //---- ICL in its own namespace ----
 namespace icl {
-
-// {{{ Konstruktor/ Destruktor
-
-Timer::Timer(int iTimerMode)
-{
-  FUNCTION_LOG("Timer mode: " << iTimerMode);
-  m_iTimerMode = iTimerMode;
-
-  //m_vecTime.clear();
-  //m_vecTimerName.clear();
+  namespace utils{
+  
+  // {{{ Konstruktor/ Destruktor
+  
+  Timer::Timer(int iTimerMode)
+  {
+    FUNCTION_LOG("Timer mode: " << iTimerMode);
+    m_iTimerMode = iTimerMode;
+  
+    //m_vecTime.clear();
+    //m_vecTimerName.clear();
+  } // namespace utils
 }
 
 // }}}

@@ -38,12 +38,14 @@
 #include <ICLGeom/PointCloudObjectBase.h>
 
 namespace icl{
-
-  /// Generic interface for PointCloud sources
-  struct PointCloudGrabber{
-    /// fills the given point cloud with grabbed information
-    virtual void grab(PointCloudObjectBase &dst) = 0;
-  };
+  namespace geom{
+  
+    /// Generic interface for PointCloud sources
+    struct PointCloudGrabber{
+      /// fills the given point cloud with grabbed information
+      virtual void grab(PointCloudObjectBase &dst) = 0;
+    };
+  } // namespace geom
 }
 
 #endif

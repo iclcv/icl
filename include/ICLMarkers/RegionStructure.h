@@ -39,28 +39,30 @@
 #include <string>
 
 namespace icl{
-  /** \cond */
-  struct ImageRegion;
-  /** \encond */
-  
-  /// region structure interface class
-  /** A region structure can be defined arbitrarily, It defines
-      how a single image region is matched agains a given structure
-      instance */
-  struct RegionStructure{
-    /// answers the question whether a given region matches a region structure
-    /** Usually, this method is called for every region in an image. Therefore,
-        a particular match-implementation should try to reject a match as fast 
-        as possible. E.g. by first checking whether the root region has a 
-        correct color value */
-    virtual bool match(const ImageRegion &r) const = 0;
-  };
-  
-  /// Managed pointer type definition
-  typedef SmartPtr<RegionStructure> RegionStructurePtr;
-  
-  
-  
+  namespace markers{
+    /** \cond */
+    struct ImageRegion;
+    /** \encond */
+    
+    /// region structure interface class
+    /** A region structure can be defined arbitrarily, It defines
+        how a single image region is matched agains a given structure
+        instance */
+    struct RegionStructure{
+      /// answers the question whether a given region matches a region structure
+      /** Usually, this method is called for every region in an image. Therefore,
+          a particular match-implementation should try to reject a match as fast 
+          as possible. E.g. by first checking whether the root region has a 
+          correct color value */
+      virtual bool match(const ImageRegion &r) const = 0;
+    };
+    
+    /// Managed pointer type definition
+    typedef SmartPtr<RegionStructure> RegionStructurePtr;
+    
+    
+    
+  } // namespace markers
 }
 
 #endif

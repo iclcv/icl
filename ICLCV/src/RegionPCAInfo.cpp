@@ -35,5 +35,7 @@
 #include <ICLCV/RegionPCAInfo.h>
 
 namespace icl{
-  const RegionPCAInfo RegionPCAInfo::null;
+  namespace cv{
+    const RegionPCAInfo RegionPCAInfo::null;
+  } // namespace cv
 }

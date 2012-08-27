@@ -41,25 +41,27 @@
 
 
 namespace icl{
-
-#ifdef HAVE_QT
-
-
-SceneMouseHandler::SceneMouseHandler(
-    const int                       pCameraIndex,
-    Scene*                          pParentScene )
-:   mParentScene( pParentScene ),
-    mCameraIndex( pCameraIndex ),
-    mKeyboardModifiersBackup( 0 )
-{
-    // clear mouse mapping table (2^6 = 64)
-    memset( mMouseMappingTable, 0, sizeof( MouseMappingTableEntry ) * ( MAX_MOUSE_EVENT + 1 ) * 64 );
-
-    // mouse sensitivities
-    setSensitivities( 10.0, 1.0, 1.0, 0.001, 10.0 );
-
-    // default mouse mappings
-    setMouseMappings();
+  namespace geom{
+  
+  #ifdef HAVE_QT
+  
+  
+  SceneMouseHandler::SceneMouseHandler(
+      const int                       pCameraIndex,
+      Scene*                          pParentScene )
+  :   mParentScene( pParentScene ),
+      mCameraIndex( pCameraIndex ),
+      mKeyboardModifiersBackup( 0 )
+  {
+      // clear mouse mapping table (2^6 = 64)
+      memset( mMouseMappingTable, 0, sizeof( MouseMappingTableEntry ) * ( MAX_MOUSE_EVENT + 1 ) * 64 );
+  
+      // mouse sensitivities
+      setSensitivities( 10.0, 1.0, 1.0, 0.001, 10.0 );
+  
+      // default mouse mappings
+      setMouseMappings();
+  } // namespace geom
 }
 
 

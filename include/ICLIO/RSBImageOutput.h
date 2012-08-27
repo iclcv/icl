@@ -41,38 +41,40 @@
 #warning "This header should only be included if HAVE_RSB and HAVE_PROTOBUF are defined and available in ICL"
 #endif
 namespace icl{
+  namespace io{
+    
+    /// image output implementation using the "Robotics Service Bus (RSB)"
+    class RSBImageOutput : public ImageOutput{
+      struct Data;  //!< pimpl type
+      Data *m_data; //!< pimpl pointer
+      
+      public:
+      /// creates a null instance
+      RSBImageOutput();
   
-  /// image output implementation using the "Robotics Service Bus (RSB)"
-  class RSBImageOutput : public ImageOutput{
-    struct Data;  //!< pimpl type
-    Data *m_data; //!< pimpl pointer
-    
-    public:
-    /// creates a null instance
-    RSBImageOutput();
-
-    /// Destructor
-    ~RSBImageOutput();
-    
-    /// create RSBImageOutput with given scope and comma separated transport list
-    /** supported transports are socket, spread and inprocess. Please note, that
-        the spread-transport requires spread running. */
-    RSBImageOutput(const std::string &scope, const std::string &transportList="spread");
-    
-    /// deferred initialization (see RSBImageOutput(const string&,const string&)
-    /** supported transports are socket, spread and inprocess. Please note, that
-        the spread-transport requires spread running. */
-    void init(const std::string &scope, const std::string &transportList="spread");
-    
-    /// sender method
-    virtual void send(const ImgBase *image);
-    
-    /// returns whether this is a null instance
-    inline bool isNull() const { return !m_data; }
-    
-    /// returns whether this is not a null instance
-    inline operator bool() const { return static_cast<bool>(m_data); }
-  };
+      /// Destructor
+      ~RSBImageOutput();
+      
+      /// create RSBImageOutput with given scope and comma separated transport list
+      /** supported transports are socket, spread and inprocess. Please note, that
+          the spread-transport requires spread running. */
+      RSBImageOutput(const std::string &scope, const std::string &transportList="spread");
+      
+      /// deferred initialization (see RSBImageOutput(const string&,const string&)
+      /** supported transports are socket, spread and inprocess. Please note, that
+          the spread-transport requires spread running. */
+      void init(const std::string &scope, const std::string &transportList="spread");
+      
+      /// sender method
+      virtual void send(const ImgBase *image);
+      
+      /// returns whether this is a null instance
+      inline bool isNull() const { return !m_data; }
+      
+      /// returns whether this is not a null instance
+      inline operator bool() const { return static_cast<bool>(m_data); }
+    };
+  } // namespace io
 }
 
 #endif

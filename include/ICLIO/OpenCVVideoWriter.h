@@ -47,47 +47,49 @@
 
 
 namespace icl{
-
-  class OpenCVVideoWriter :public ImageOutput{
-private:
-	///OpenCV VideoWriter struct
-	CvVideoWriter *writer;
-public:
-
-	/// Creates a new videowriter with given filename
-	/** @param filename the filename to write to
-	    @param fourcc this is translated into an instance of FOURCC
-            possible is:
-            * PIM1 (for mpeg 1)
-            * MJPG (for motion jepg)
-            * MP42 (for mpeg 4.2)
-            * DIV3 (for mpeg 4.3)
-            * DIVX (for mpeg 4)
-            * U263 (for H263 codec)
-            * I263 (for H263I codec)
-            * FLV1 (for FLV1 code)
-            * on linux: IYUV for IYUV codec ??
-            * on windows: "" for open dialog
-
-	    @param fps frames per second
-	    @param frame_size size of the frames to be written out
-	    @param frame_color currently only supported on windows 0 for greyscale else color
-	 **/
-	OpenCVVideoWriter(const std::string &filename, const std::string &fourcc,
-	          double fps, Size frame_size, int frame_color=1) throw (ICLException);
-
-	/// Destructor
-	~OpenCVVideoWriter();
-
-	/// writes the next image
-	void write(const ImgBase *image);
-        
-        /// wraps write to implement ImageOutput interface
-        virtual void send(const ImgBase *image) { write(image); }
-
-	/// as write but in stream manner
-	OpenCVVideoWriter &operator<<(const ImgBase *image);
-
+  namespace io{
+  
+    class OpenCVVideoWriter :public ImageOutput{
+  private:
+  	///OpenCV VideoWriter struct
+  	CvVideoWriter *writer;
+  public:
+  
+  	/// Creates a new videowriter with given filename
+  	/** @param filename the filename to write to
+  	    @param fourcc this is translated into an instance of FOURCC
+              possible is:
+              * PIM1 (for mpeg 1)
+              * MJPG (for motion jepg)
+              * MP42 (for mpeg 4.2)
+              * DIV3 (for mpeg 4.3)
+              * DIVX (for mpeg 4)
+              * U263 (for H263 codec)
+              * I263 (for H263I codec)
+              * FLV1 (for FLV1 code)
+              * on linux: IYUV for IYUV codec ??
+              * on windows: "" for open dialog
+  
+  	    @param fps frames per second
+  	    @param frame_size size of the frames to be written out
+  	    @param frame_color currently only supported on windows 0 for greyscale else color
+  	 **/
+  	OpenCVVideoWriter(const std::string &filename, const std::string &fourcc,
+  	          double fps, Size frame_size, int frame_color=1) throw (ICLException);
+  
+  	/// Destructor
+  	~OpenCVVideoWriter();
+  
+  	/// writes the next image
+  	void write(const ImgBase *image);
+          
+          /// wraps write to implement ImageOutput interface
+          virtual void send(const ImgBase *image) { write(image); }
+  
+  	/// as write but in stream manner
+  	OpenCVVideoWriter &operator<<(const ImgBase *image);
+  
+  } // namespace io
 };
 
 }

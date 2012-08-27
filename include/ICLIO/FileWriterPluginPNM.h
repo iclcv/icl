@@ -41,19 +41,21 @@
 #include <ICLCore/Types.h>
 
 namespace icl{
-  
-  /// Writer plugin to write images as ".ppm", ".pgm", ".pnm" and ".icl" \ingroup FILEIO_G
-  class FileWriterPluginPNM : public FileWriterPlugin{
-    public:
-    /// write implementation
-    virtual void write(File &file, const ImgBase *image);
+  namespace io{
     
-    private:
-    /// internal mutex to protect the buffer
-    Mutex m_oBufferMutex;
-    
-    /// internal data conversion buffer
-    std::vector<icl8u> m_vecBuffer;
-  };
+    /// Writer plugin to write images as ".ppm", ".pgm", ".pnm" and ".icl" \ingroup FILEIO_G
+    class FileWriterPluginPNM : public FileWriterPlugin{
+      public:
+      /// write implementation
+      virtual void write(File &file, const ImgBase *image);
+      
+      private:
+      /// internal mutex to protect the buffer
+      Mutex m_oBufferMutex;
+      
+      /// internal data conversion buffer
+      std::vector<icl8u> m_vecBuffer;
+    };
+  } // namespace io
 }
 #endif

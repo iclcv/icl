@@ -39,63 +39,65 @@
 #include <ICLUtils/Uncopyable.h>
 #include <ICLCore/Img.h>
 namespace icl{
-
-
-  /// Utility class vor viewbased template tracking
-  /** TODO: add more documentation! */
-  class TemplateTracker : public Configurable, public Uncopyable{
-    struct Data; //!< internal data storage
-    Data *data;  //!< internal data pointer
-    
-    public:
-    /// Result class that describes a tracking result
-    struct Result{
+  namespace cv{
+  
+  
+    /// Utility class vor viewbased template tracking
+    /** TODO: add more documentation! */
+    class TemplateTracker : public Configurable, public Uncopyable{
+      struct Data; //!< internal data storage
+      Data *data;  //!< internal data pointer
+      
+      public:
+      /// Result class that describes a tracking result
+      struct Result{
+        /// Constructor with given parameters
+        inline Result(const Point32f &pos=Point32f(-1,-1), 
+                      float angle=0, float proximityValue=0,
+                      const Img8u *matchedTemplateImage=0):
+          pos(pos),angle(angle),proximityValue(proximityValue),
+          matchedTemplateImage(matchedTemplateImage){}
+        Point32f pos; //!< image position
+        float angle;  //!< pattern orientation
+        float proximityValue; //!< match quality
+        /// internally assotiate (and rotatated) tempalte
+        const Img8u *matchedTemplateImage;  
+      };
+  
       /// Constructor with given parameters
-      inline Result(const Point32f &pos=Point32f(-1,-1), 
-                    float angle=0, float proximityValue=0,
-                    const Img8u *matchedTemplateImage=0):
-        pos(pos),angle(angle),proximityValue(proximityValue),
-        matchedTemplateImage(matchedTemplateImage){}
-      Point32f pos; //!< image position
-      float angle;  //!< pattern orientation
-      float proximityValue; //!< match quality
-      /// internally assotiate (and rotatated) tempalte
-      const Img8u *matchedTemplateImage;  
+      /** TODO: describe parameters and methology */
+      TemplateTracker(const Img8u *templateImage=0,
+                      float rotationStepSizeDegree=1.0,
+                      int positionTrackingRangePix=100, 
+                      float rotationTrackingRangeDegree=45,
+                      int coarseSteps=10,int fineSteps=1,
+                      const Result &initialResult=Result());
+  
+      /// Desctructor
+      ~TemplateTracker();
+      
+      
+      /// utility method that shows the template rotation lookup table
+      void showRotationLUT() const;
+      
+      /// sets a new set or rotated template images
+      void setRotationLUT(const std::vector<SmartPtr<Img8u> > &lut);
+      
+      /// sets a new template image, that is internally rotated
+      /** internally 360/rotationStepSizeDegree images are sampled using
+          image rotation. Please note that at some loations the image
+          edges are cut. Therefore, the template should only be located
+          within the inner center circle of the template's image rectangle */
+      void setTemplateImage(const Img8u &templateImage, 
+                            float rotationStepSizeDegree=1.0);
+      
+      /// actual track method
+      Result track(const Img8u &image, const Result *initialResult=0,
+                   std::vector<Result> *allResults=0);
+  
     };
-
-    /// Constructor with given parameters
-    /** TODO: describe parameters and methology */
-    TemplateTracker(const Img8u *templateImage=0,
-                    float rotationStepSizeDegree=1.0,
-                    int positionTrackingRangePix=100, 
-                    float rotationTrackingRangeDegree=45,
-                    int coarseSteps=10,int fineSteps=1,
-                    const Result &initialResult=Result());
-
-    /// Desctructor
-    ~TemplateTracker();
-    
-    
-    /// utility method that shows the template rotation lookup table
-    void showRotationLUT() const;
-    
-    /// sets a new set or rotated template images
-    void setRotationLUT(const std::vector<SmartPtr<Img8u> > &lut);
-    
-    /// sets a new template image, that is internally rotated
-    /** internally 360/rotationStepSizeDegree images are sampled using
-        image rotation. Please note that at some loations the image
-        edges are cut. Therefore, the template should only be located
-        within the inner center circle of the template's image rectangle */
-    void setTemplateImage(const Img8u &templateImage, 
-                          float rotationStepSizeDegree=1.0);
-    
-    /// actual track method
-    Result track(const Img8u &image, const Result *initialResult=0,
-                 std::vector<Result> *allResults=0);
-
-  };
-
+  
+  } // namespace cv
 }
 
 #endif

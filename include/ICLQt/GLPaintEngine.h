@@ -44,86 +44,88 @@
 class QGLWidget;
 
 namespace icl{
+  namespace qt{
+    
+    /// Paint engine to be used in QGLWigets for a high performance image visualization \ingroup UNCOMMON
+    /** The GLPaintEngine provides a QPainter like interface for drawing
+        2D-OpenGL primitives directly into a OpenGL graphics context. 
+        It provides the following functionalities:
+        - line and fill color state machniene
+        - antialized Font rendering with implicit scaling if desired
+        - drawing primitives using pixel coordinates (lines, points, rects, ellipese)
+        - drawing QImages and ICL-img images directly without buffering, flipping or 
+          converting image data in software. 
+        - brightness / (contrast / intestity) adjustment (in hardware)
+    
+        @see ICL/trunk/ICLQt/test/ICLDrawDemo for more details
+    */
+    class GLPaintEngine : public PaintEngine{
+      public:
+      
+      GLPaintEngine(QGLWidget *widget);
+      virtual ~GLPaintEngine();
+      
+      virtual void color(float r, float g, float b, float a=255);
+      virtual void fill(float r, float g, float b, float a=255);
+      virtual void fontsize(float size);
+      virtual void font(std::string name, 
+                        float size = -1, 
+                        PaintEngine::TextWeight weight = PaintEngine::Normal, 
+                        PaintEngine::TextStyle style = PaintEngine::StyleNormal);
   
-  /// Paint engine to be used in QGLWigets for a high performance image visualization \ingroup UNCOMMON
-  /** The GLPaintEngine provides a QPainter like interface for drawing
-      2D-OpenGL primitives directly into a OpenGL graphics context. 
-      It provides the following functionalities:
-      - line and fill color state machniene
-      - antialized Font rendering with implicit scaling if desired
-      - drawing primitives using pixel coordinates (lines, points, rects, ellipese)
-      - drawing QImages and ICL-img images directly without buffering, flipping or 
-        converting image data in software. 
-      - brightness / (contrast / intestity) adjustment (in hardware)
+      virtual void linewidth(float w);
+      virtual void pointsize(float s);
+      
+      virtual void line(const Point32f &a, const Point32f &b);
+      virtual void point(const Point32f &p);
+      virtual void image(const Rect32f &r,ImgBase *image, PaintEngine::AlignMode mode = PaintEngine::Justify, scalemode sm=interpolateNN);
+      virtual void image(const Rect32f &r,const QImage &image, PaintEngine::AlignMode mode = PaintEngine::Justify, scalemode sm=interpolateNN);
+      virtual void rect(const Rect32f &r);
+      virtual void triangle(const Point32f &a, const Point32f &b, const Point32f &c);
+      virtual void quad(const Point32f &a, const Point32f &b, const Point32f &c, const Point32f &d);
+      virtual void ellipse(const Rect32f &r);
+      virtual void text(const Rect32f &r, const std::string text, PaintEngine::AlignMode mode = PaintEngine::Centered);
   
-      @see ICL/trunk/ICLQt/test/ICLDrawDemo for more details
-  */
-  class GLPaintEngine : public PaintEngine{
-    public:
-    
-    GLPaintEngine(QGLWidget *widget);
-    virtual ~GLPaintEngine();
-    
-    virtual void color(float r, float g, float b, float a=255);
-    virtual void fill(float r, float g, float b, float a=255);
-    virtual void fontsize(float size);
-    virtual void font(std::string name, 
-                      float size = -1, 
-                      PaintEngine::TextWeight weight = PaintEngine::Normal, 
-                      PaintEngine::TextStyle style = PaintEngine::StyleNormal);
-
-    virtual void linewidth(float w);
-    virtual void pointsize(float s);
-    
-    virtual void line(const Point32f &a, const Point32f &b);
-    virtual void point(const Point32f &p);
-    virtual void image(const Rect32f &r,ImgBase *image, PaintEngine::AlignMode mode = PaintEngine::Justify, scalemode sm=interpolateNN);
-    virtual void image(const Rect32f &r,const QImage &image, PaintEngine::AlignMode mode = PaintEngine::Justify, scalemode sm=interpolateNN);
-    virtual void rect(const Rect32f &r);
-    virtual void triangle(const Point32f &a, const Point32f &b, const Point32f &c);
-    virtual void quad(const Point32f &a, const Point32f &b, const Point32f &c, const Point32f &d);
-    virtual void ellipse(const Rect32f &r);
-    virtual void text(const Rect32f &r, const std::string text, PaintEngine::AlignMode mode = PaintEngine::Centered);
-
-    /// brightness-constrast intensity adjustment (for images only)
-    virtual void bci(float brightness=0, float contrast=0, float intensity=0);
-    virtual void bciAuto();
-    
-    virtual void getColor(float *piColor);
-    virtual void getFill(float *piColor);
-
-    virtual float getFontSize() const{
-      return m_font.pointSize();
-    }
-    virtual float getLineWidth() const {
-      return m_linewidth;
-    }
-    virtual float getPointSize() const {
-      return m_pointsize;
-    }
-    // estimates the size of a given text
-    Size estimateTextBounds(const std::string &text) const;
-
-
-    protected:
-    void setupRasterEngine(const Rect32f& r, const Size32f &s, PaintEngine::AlignMode mode);
-    void setPackAlignment(depth d, int linewidth);
-    void setupPixelTransfer(depth d, float brightness, float contrast, float intensity);
-
-    QGLWidget *m_widget;
-    
-    float m_linewidth;
-    float m_pointsize;
-    float m_linecolor[4];
-    float m_fillcolor[4];
-    float m_bci[3];
-    bool m_bciauto;
-
-    QFont m_font;
-
-    private:
-    ImgBase *m_incompDepthBuf;
-  };
+      /// brightness-constrast intensity adjustment (for images only)
+      virtual void bci(float brightness=0, float contrast=0, float intensity=0);
+      virtual void bciAuto();
+      
+      virtual void getColor(float *piColor);
+      virtual void getFill(float *piColor);
+  
+      virtual float getFontSize() const{
+        return m_font.pointSize();
+      }
+      virtual float getLineWidth() const {
+        return m_linewidth;
+      }
+      virtual float getPointSize() const {
+        return m_pointsize;
+      }
+      // estimates the size of a given text
+      Size estimateTextBounds(const std::string &text) const;
+  
+  
+      protected:
+      void setupRasterEngine(const Rect32f& r, const Size32f &s, PaintEngine::AlignMode mode);
+      void setPackAlignment(depth d, int linewidth);
+      void setupPixelTransfer(depth d, float brightness, float contrast, float intensity);
+  
+      QGLWidget *m_widget;
+      
+      float m_linewidth;
+      float m_pointsize;
+      float m_linecolor[4];
+      float m_fillcolor[4];
+      float m_bci[3];
+      bool m_bciauto;
+  
+      QFont m_font;
+  
+      private:
+      ImgBase *m_incompDepthBuf;
+    };
+  } // namespace qt
 }// namespace
 #endif
 

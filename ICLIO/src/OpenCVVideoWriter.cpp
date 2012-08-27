@@ -41,31 +41,33 @@
     (((c1)&255) + (((c2)&255)<<8) + (((c3)&255)<<16) + (((c4)&255)<<24))
 
 namespace icl{
-
-  OpenCVVideoWriter::OpenCVVideoWriter(const std::string &filename, const std::string &fourcc,
-		double fps, Size frame_size, int frame_color) throw (ICLException){
-	if(File(filename).exists()){
-		throw ICLException("file already exists");
-	}
-	if(fps <= 0){
-		throw ICLException("Invalid fps value");
-	}
-	if(frame_size.width < 1 || frame_size.height < 1){
-		throw ICLException("frame size invalid");
-	}
-	/*if(0){
-		throw ICLException("frame color invalid");
-	}*/
-        
-        int FOURCC = -1;
-        if(fourcc.length() == 4){
-          FOURCC = ICL_FOURCCC(fourcc[0],fourcc[1],fourcc[2],fourcc[3]);
-        }
-
-	writer = cvCreateVideoWriter(filename.c_str(), FOURCC, fps,
-			cvSize(frame_size.width,frame_size.height)
-			, frame_color);
-
+  namespace io{
+  
+    OpenCVVideoWriter::OpenCVVideoWriter(const std::string &filename, const std::string &fourcc,
+  		double fps, Size frame_size, int frame_color) throw (ICLException){
+  	if(File(filename).exists()){
+  		throw ICLException("file already exists");
+  	}
+  	if(fps <= 0){
+  		throw ICLException("Invalid fps value");
+  	}
+  	if(frame_size.width < 1 || frame_size.height < 1){
+  		throw ICLException("frame size invalid");
+  	}
+  	/*if(0){
+  		throw ICLException("frame color invalid");
+  	}*/
+          
+          int FOURCC = -1;
+          if(fourcc.length() == 4){
+            FOURCC = ICL_FOURCCC(fourcc[0],fourcc[1],fourcc[2],fourcc[3]);
+          }
+  
+  	writer = cvCreateVideoWriter(filename.c_str(), FOURCC, fps,
+  			cvSize(frame_size.width,frame_size.height)
+  			, frame_color);
+  
+  } // namespace io
 }
 
 OpenCVVideoWriter::~OpenCVVideoWriter(){

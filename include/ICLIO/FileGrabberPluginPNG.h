@@ -40,20 +40,22 @@
 #include <ICLUtils/Mutex.h>
 
 namespace icl{
-  
-
-  /// Plugin class to read "png" images \ingroup FILEIO_G
-  class FileGrabberPluginPNG : public FileGrabberPlugin {
-    std::vector<unsigned char> data;
-    std::vector<unsigned char*> rows;
-
-    /// ensures, that data and rows is not used from several threads
-    Mutex mutex; 
+  namespace io{
     
-    public:
-    /// grab implementation
-    virtual void grab(File &file, ImgBase **dest); 
-  };  
+  
+    /// Plugin class to read "png" images \ingroup FILEIO_G
+    class FileGrabberPluginPNG : public FileGrabberPlugin {
+      std::vector<unsigned char> data;
+      std::vector<unsigned char*> rows;
+  
+      /// ensures, that data and rows is not used from several threads
+      Mutex mutex; 
+      
+      public:
+      /// grab implementation
+      virtual void grab(File &file, ImgBase **dest); 
+    };  
+  } // namespace io
 }
 
 #endif

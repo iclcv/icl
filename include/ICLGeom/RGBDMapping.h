@@ -38,71 +38,73 @@
 #include <ICLGeom/Camera.h>
 
 namespace icl{
-  
-  //// RGB to Depth image mapping e.g. for Kinect Cameras
-  /** The mappoing algorithm using a projective camera transform to 
-      implement the mapping between a depth camera and a common 2D 
-      (color) camera. For the creation of the mapping one needs a 
-      set of 3D reference points in the depth image where x and y are
-      pixel positions while z is the depth cameras depth value that
-      corresponts to the (x,y) position. In addition corresponding
-      reference points in the RGB image are needed. The 3D reference
-      points must be scattered in 3D (i.e. they must not be coplanar).
-      It is strongly recommended to much more corresponding points.
+  namespace geom{
+    
+    //// RGB to Depth image mapping e.g. for Kinect Cameras
+    /** The mappoing algorithm using a projective camera transform to 
+        implement the mapping between a depth camera and a common 2D 
+        (color) camera. For the creation of the mapping one needs a 
+        set of 3D reference points in the depth image where x and y are
+        pixel positions while z is the depth cameras depth value that
+        corresponts to the (x,y) position. In addition corresponding
+        reference points in the RGB image are needed. The 3D reference
+        points must be scattered in 3D (i.e. they must not be coplanar).
+        It is strongly recommended to much more corresponding points.
+        
+        \section KIN Kinect
+        For the Kinect RGBD Mapping a dedicated calibration application
+        called icl-kinect-rgbd-calib is supported. Here, the (x,y) positions
+        of reference points are obtained by conducting fiducial detection on
+        the infrared image.
+    */
+    class RGBDMapping : public Mat{
+      public:
       
-      \section KIN Kinect
-      For the Kinect RGBD Mapping a dedicated calibration application
-      called icl-kinect-rgbd-calib is supported. Here, the (x,y) positions
-      of reference points are obtained by conducting fiducial detection on
-      the infrared image.
-  */
-  class RGBDMapping : public Mat{
-    public:
-    
-    /// creates an ID mapping
-    RGBDMapping();
-
-    /// creates a mapping using the given set of landmark points for calibration
-    /** @param depthImagePointsAndDepths the i-th component Vi contains the depth image
-               reference point position (Vi[0]=x, Vi[1]=y), and the corresponding normalized
-               depth values [in mm] at Vi[2]. Vi[3] must be 1. 
-        @param rgbImagePoints the i-th component is the corresponding landmark calibration point
-               in the rgb image.
-    */
-    RGBDMapping(const std::vector<Vec> &depthImagePointsAndDepths,
-                const std::vector<Point32f> &rgbImagePoints);
-    
-    /// creates mapping from a given camera
-    RGBDMapping(const Camera &cam);
-    
-    /// loads a mapping from given xml filename
-    /** The xml-file format can either contain just the matrix,
-        or a whole camera definition */
-    RGBDMapping(const std::string &filename);
-    
-    /// constructor from given Mat
-    RGBDMapping(const Mat &M);
-    
-    /// applies the mapping
-    /** @param x depth image x coordinate
-        @param y depth image y coordinate
-        @param depthValue the depth images depth value at position (x,y) (in mm) 
-        @return rgb-image position
-    */
-    inline Point apply(float x, float y, float depthValue) const {
-      const float phInv = 1.0/ ((*this)(0,3) * x + (*this)(1,3) * y + (*this)(2,3) * depthValue + (*this)(3,3));
-      const int px = phInv * ( (*this)(0,0) * x + (*this)(1,0) * y + (*this)(2,0) * depthValue + (*this)(3,0) );
-      const int py = phInv * ( (*this)(0,1) * x + (*this)(1,1) * y + (*this)(2,1) * depthValue + (*this)(3,1) );
-      return Point(px,py);
-    }
-    
-    /// saves the mapping using a given xml filename
-    void save(const std::string &filename) const;
-    
-    /// assignmed from given mat
-    RGBDMapping &operator=(const Mat &M);
-  };
+      /// creates an ID mapping
+      RGBDMapping();
   
+      /// creates a mapping using the given set of landmark points for calibration
+      /** @param depthImagePointsAndDepths the i-th component Vi contains the depth image
+                 reference point position (Vi[0]=x, Vi[1]=y), and the corresponding normalized
+                 depth values [in mm] at Vi[2]. Vi[3] must be 1. 
+          @param rgbImagePoints the i-th component is the corresponding landmark calibration point
+                 in the rgb image.
+      */
+      RGBDMapping(const std::vector<Vec> &depthImagePointsAndDepths,
+                  const std::vector<Point32f> &rgbImagePoints);
+      
+      /// creates mapping from a given camera
+      RGBDMapping(const Camera &cam);
+      
+      /// loads a mapping from given xml filename
+      /** The xml-file format can either contain just the matrix,
+          or a whole camera definition */
+      RGBDMapping(const std::string &filename);
+      
+      /// constructor from given Mat
+      RGBDMapping(const Mat &M);
+      
+      /// applies the mapping
+      /** @param x depth image x coordinate
+          @param y depth image y coordinate
+          @param depthValue the depth images depth value at position (x,y) (in mm) 
+          @return rgb-image position
+      */
+      inline Point apply(float x, float y, float depthValue) const {
+        const float phInv = 1.0/ ((*this)(0,3) * x + (*this)(1,3) * y + (*this)(2,3) * depthValue + (*this)(3,3));
+        const int px = phInv * ( (*this)(0,0) * x + (*this)(1,0) * y + (*this)(2,0) * depthValue + (*this)(3,0) );
+        const int py = phInv * ( (*this)(0,1) * x + (*this)(1,1) * y + (*this)(2,1) * depthValue + (*this)(3,1) );
+        return Point(px,py);
+      }
+      
+      /// saves the mapping using a given xml filename
+      void save(const std::string &filename) const;
+      
+      /// assignmed from given mat
+      RGBDMapping &operator=(const Mat &M);
+    };
+    
+  } // namespace geom
 }
 
 #endif

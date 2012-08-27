@@ -37,14 +37,16 @@
 //#define FFT_DEBUG(X) std::cout << X << std::endl;
 #define FFT_DEBUG(X)
 namespace icl{
-namespace fft{
-
-
-template<class T1, class T2>
-struct CreateComplex{
-	static inline std::complex<T2> create_complex(const T1 &x){
-		return std::complex<T2>(x);
-	}
+  namespace math{
+  namespace fft{
+  
+  
+  template<class T1, class T2>
+  struct CreateComplex{
+  	static inline std::complex<T2> create_complex(const T1 &x){
+  		return std::complex<T2>(x);
+  	}
+  } // namespace math
 };
 
 #define ICL_INSTANTIATE_DEPTH(D)                                        \

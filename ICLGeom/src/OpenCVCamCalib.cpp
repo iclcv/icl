@@ -35,40 +35,42 @@
 
 using namespace icl;
 namespace icl{
-
-struct OpenCVCamCalib::Data{
-	int bWidth;
-	int bHeight;
-	int cornerCount;
-	int successes;
-	int bSize;
-
-	CvMat* image_points;
-	CvMat* object_points;
-	CvMat* point_counts;
-	CvMat* intrinsic_matrix;
-	CvMat* distortion_coeffs;
-	CvPoint2D32f* corners;
-
-	CvSize imgSize;
-
-	Data(unsigned int boardWitdth, unsigned int boardHeigt, unsigned int boardCount):
-		bWidth(boardWitdth),bHeight(boardHeigt),cornerCount(0),successes(0),bSize(bWidth*bHeight){
-		image_points = cvCreateMat(boardCount*bSize, 2, CV_32FC1);
-		object_points = cvCreateMat(boardCount*bSize, 3, CV_32FC1);
-		point_counts = cvCreateMat(boardCount, 1, CV_32SC1);
-		intrinsic_matrix = cvCreateMat(3, 3, CV_32FC1);
-		distortion_coeffs = cvCreateMat(5, 1, CV_32FC1);
-		corners = new CvPoint2D32f[bSize];
-	}
-	~Data(){
-		cvReleaseMat(&image_points );
-		cvReleaseMat(&object_points );
-		cvReleaseMat(&point_counts );
-		cvReleaseMat(&intrinsic_matrix);
-		cvReleaseMat(&distortion_coeffs);
-		delete corners;
-	}
+  namespace geom{
+  
+  struct OpenCVCamCalib::Data{
+  	int bWidth;
+  	int bHeight;
+  	int cornerCount;
+  	int successes;
+  	int bSize;
+  
+  	CvMat* image_points;
+  	CvMat* object_points;
+  	CvMat* point_counts;
+  	CvMat* intrinsic_matrix;
+  	CvMat* distortion_coeffs;
+  	CvPoint2D32f* corners;
+  
+  	CvSize imgSize;
+  
+  	Data(unsigned int boardWitdth, unsigned int boardHeigt, unsigned int boardCount):
+  		bWidth(boardWitdth),bHeight(boardHeigt),cornerCount(0),successes(0),bSize(bWidth*bHeight){
+  		image_points = cvCreateMat(boardCount*bSize, 2, CV_32FC1);
+  		object_points = cvCreateMat(boardCount*bSize, 3, CV_32FC1);
+  		point_counts = cvCreateMat(boardCount, 1, CV_32SC1);
+  		intrinsic_matrix = cvCreateMat(3, 3, CV_32FC1);
+  		distortion_coeffs = cvCreateMat(5, 1, CV_32FC1);
+  		corners = new CvPoint2D32f[bSize];
+  	}
+  	~Data(){
+  		cvReleaseMat(&image_points );
+  		cvReleaseMat(&object_points );
+  		cvReleaseMat(&point_counts );
+  		cvReleaseMat(&intrinsic_matrix);
+  		cvReleaseMat(&distortion_coeffs);
+  		delete corners;
+  	}
+  } // namespace geom
 };
 
 OpenCVCamCalib::OpenCVCamCalib(unsigned int boardWitdth, unsigned int boardHeigt,

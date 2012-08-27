@@ -42,70 +42,72 @@
 #include <ICLMarkers/TiltedQuad.h>
 
 namespace icl{
+  namespace markers{
+    
+    /// Tool-class for detecting tilted quads in images
+    /** The quad detector combines usual steps that are used
+        to find quad-like structures in input images.\n
+        
+        \section GEN General Information
   
-  /// Tool-class for detecting tilted quads in images
-  /** The quad detector combines usual steps that are used
-      to find quad-like structures in input images.\n
+        The QuadDetector combines a local threshold preprocessor, optional
+        further preprocessing steps such as median or morphological
+        operations with an icl::RegionDetector based search for
+        regions with 4 corners.
+        
+        \section CONF Configurable interface
+        The QuadDetector forwards the local-threshold and the 
+        RegionDetector options. It also adds some extra properties
+        for the post-processing the local-threshold result image before
+        it's passed to the region detector internally
+    */
+    class QuadDetector : public Configurable, public Uncopyable{
       
-      \section GEN General Information
-
-      The QuadDetector combines a local threshold preprocessor, optional
-      further preprocessing steps such as median or morphological
-      operations with an icl::RegionDetector based search for
-      regions with 4 corners.
+      /// Internal Data class
+      class Data;
       
-      \section CONF Configurable interface
-      The QuadDetector forwards the local-threshold and the 
-      RegionDetector options. It also adds some extra properties
-      for the post-processing the local-threshold result image before
-      it's passed to the region detector internally
-  */
-  class QuadDetector : public Configurable, public Uncopyable{
-    
-    /// Internal Data class
-    class Data;
-    
-    /// Internal data pointer (hidden)
-    Data *data;
-
-    public:
-    
-    /// enum, that helps to specify what quads are searched in the threshold-result image
-    enum QuadColor{
-      BlackOnly,    //!< only quads that are black (default, value 0)
-      WhiteOnly,    //!< only quads that are white (value 255)
-      BlackAndWhite //!< white and black quads
+      /// Internal data pointer (hidden)
+      Data *data;
+  
+      public:
+      
+      /// enum, that helps to specify what quads are searched in the threshold-result image
+      enum QuadColor{
+        BlackOnly,    //!< only quads that are black (default, value 0)
+        WhiteOnly,    //!< only quads that are white (value 255)
+        BlackAndWhite //!< white and black quads
+      };
+  
+      /// Base constructor
+      /** @param c the detected quads binary value 
+          @param dynamic if this is set to true, there will be a changable
+                         property for the quad color, otherwise, the initial
+                         value will remain fixed
+  
+          */
+      QuadDetector(QuadColor c = BlackOnly, bool dynamic=false);
+      
+      /// Destructor
+      ~QuadDetector();
+  
+      /// apply-method, that extracts quad-like structures in the input image
+      /** This method first applys a local threshold to the given input image, 
+          which results in a binary icl8u-image. This image is then optionally
+          processed by a median and/or by some morphological operations */
+      const std::vector<TiltedQuad> &detect(const ImgBase *image);
+  
+      /// returns the last binary image that was produced internally
+      const Img8u &getLastBinaryImage() const;
     };
-
-    /// Base constructor
-    /** @param c the detected quads binary value 
-        @param dynamic if this is set to true, there will be a changable
-                       property for the quad color, otherwise, the initial
-                       value will remain fixed
-
-        */
-    QuadDetector(QuadColor c = BlackOnly, bool dynamic=false);
     
-    /// Destructor
-    ~QuadDetector();
-
-    /// apply-method, that extracts quad-like structures in the input image
-    /** This method first applys a local threshold to the given input image, 
-        which results in a binary icl8u-image. This image is then optionally
-        processed by a median and/or by some morphological operations */
-    const std::vector<TiltedQuad> &detect(const ImgBase *image);
-
-    /// returns the last binary image that was produced internally
-    const Img8u &getLastBinaryImage() const;
-  };
+    
+    /// ostream operator for QuadDetector::QuadColor instances
+    std::ostream &operator<<(std::ostream &s, const QuadDetector::QuadColor &c);
   
+    /// istream operator for QuadDetector::QuadColor instances
+    std::istream &operator>>(std::istream &s, QuadDetector::QuadColor &c);
   
-  /// ostream operator for QuadDetector::QuadColor instances
-  std::ostream &operator<<(std::ostream &s, const QuadDetector::QuadColor &c);
-
-  /// istream operator for QuadDetector::QuadColor instances
-  std::istream &operator>>(std::istream &s, QuadDetector::QuadColor &c);
-
+  } // namespace markers
 }
 
 #endif

@@ -42,15 +42,17 @@
 #include <ICLUtils/Time.h>
 
 namespace icl{
-  
-  struct ImageStatistics{
-    ImgParams params;
-    depth d;
-    std::vector<Range64f> ranges;
-    std::vector<std::vector<int> > histos;
-    bool isNull;
-    Time time;
-  };
+  namespace qt{
+    
+    struct ImageStatistics{
+      ImgParams params;
+      depth d;
+      std::vector<Range64f> ranges;
+      std::vector<std::vector<int> > histos;
+      bool isNull;
+      Time time;
+    };
+  } // namespace qt
 }
 
 #endif

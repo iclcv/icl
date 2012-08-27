@@ -40,35 +40,37 @@
 
 
 namespace icl{
-  /// MouseEvent handling interaface  \ingroup COMMON
-  /** Here's a short example:
-      \code
-#include <ICLCV/Common.h>
-#include <iterator>
-
-GenericGrabber *grabber;
-ICLWidget *widget;
-
-
-class Mouse : public MouseHandler{
-public:
-  virtual void process(const MouseEvent &event){
-    std::cout << "image location: " << event.getPos() << std::endl;    
-    std::cout << "widget location: " << event.getWidgetPos() << std::endl;
-    
-    std::string eventNames[] = {"MoveEvent","DragEvent","PressEvent","ReleaseEvent", "EnterEvent","LeaveEvent"};
-    std::cout << "type: " << eventNames[event.getType()] << std::endl;
-    
-    if(event.isPressEvent()){
-      if(event.getColor().size()){
-        std::cout << "color:";
-        std::copy(event.getColor().begin(),event.getColor().end(),std::ostream_iterator<icl64f>(std::cout,","));
-        std::cout << endl;
-      }else{
-        std::cout << "no color here!" << std::endl;
+  namespace qt{
+    /// MouseEvent handling interaface  \ingroup COMMON
+    /** Here's a short example:
+        \code
+  #include <ICLCV/Common.h>
+  #include <iterator>
+  
+  GenericGrabber *grabber;
+  ICLWidget *widget;
+  
+  
+  class Mouse : public MouseHandler{
+  public:
+    virtual void process(const MouseEvent &event){
+      std::cout << "image location: " << event.getPos() << std::endl;    
+      std::cout << "widget location: " << event.getWidgetPos() << std::endl;
+      
+      std::string eventNames[] = {"MoveEvent","DragEvent","PressEvent","ReleaseEvent", "EnterEvent","LeaveEvent"};
+      std::cout << "type: " << eventNames[event.getType()] << std::endl;
+      
+      if(event.isPressEvent()){
+        if(event.getColor().size()){
+          std::cout << "color:";
+          std::copy(event.getColor().begin(),event.getColor().end(),std::ostream_iterator<icl64f>(std::cout,","));
+          std::cout << endl;
+        }else{
+          std::cout << "no color here!" << std::endl;
+        }
       }
-    }
-  } 
+    } 
+  } // namespace qt
 } mouse;
 
 void init(){

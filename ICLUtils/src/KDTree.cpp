@@ -34,11 +34,13 @@
 #include <ICLUtils/KDTree.h>
 
 namespace icl{
-
-KDTree::KDTree(std::vector<DynMatrix<icl64f> > &list){
-	if(list.size()>0){
-		buildTree(list, 0, &root);
-	}
+  namespace utils{
+  
+  KDTree::KDTree(std::vector<DynMatrix<icl64f> > &list){
+  	if(list.size()>0){
+  		buildTree(list, 0, &root);
+  	}
+  } // namespace utils
 }
 
 KDTree::KDTree(std::vector<DynMatrix<icl64f> *> &list){

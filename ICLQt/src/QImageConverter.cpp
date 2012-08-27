@@ -40,79 +40,81 @@
 
 
 namespace icl{
-
-template<class T>
-void img_to_qimage(const Img<T> *src, QImage *&dst){
-  // {{{ open
-
-  ICLASSERT_RETURN(src);
-  static QVector<QRgb> palette;
-  if(!palette.size()){ for(int i=0;i<255;++i)palette.push_back(qRgb(i,i,i)); }
-  int w = src->getWidth();
-  int h = src->getHeight();
-  if(!dst){
-    dst = new QImage(1,1,QImage::Format_Indexed8);
-    dst->setColorTable(palette);
-  }
-
-  if(src->getChannels() == 1){
-    if(dst->width() != w || dst->height() != h || dst->format() != QImage::Format_Indexed8){
-      delete dst;
-      dst = new QImage(w,h,QImage::Format_Indexed8);
+  namespace qt{
+  
+  template<class T>
+  void img_to_qimage(const Img<T> *src, QImage *&dst){
+    // {{{ open
+  
+    ICLASSERT_RETURN(src);
+    static QVector<QRgb> palette;
+    if(!palette.size()){ for(int i=0;i<255;++i)palette.push_back(qRgb(i,i,i)); }
+    int w = src->getWidth();
+    int h = src->getHeight();
+    if(!dst){
+      dst = new QImage(1,1,QImage::Format_Indexed8);
       dst->setColorTable(palette);
     }
-  }else{
-    if(dst->width() != w || dst->height() != h || dst->format() != QImage::Format_RGB32){
-      delete dst;
-      dst = new QImage(w,h,QImage::Format_RGB32);
-    }
-  }
   
-  static Img<T> bBuf(Size(1,1),1),wBuf(Size(1,1),1);
-  std::vector<T*> channelVec;
+    if(src->getChannels() == 1){
+      if(dst->width() != w || dst->height() != h || dst->format() != QImage::Format_Indexed8){
+        delete dst;
+        dst = new QImage(w,h,QImage::Format_Indexed8);
+        dst->setColorTable(palette);
+      }
+    }else{
+      if(dst->width() != w || dst->height() != h || dst->format() != QImage::Format_RGB32){
+        delete dst;
+        dst = new QImage(w,h,QImage::Format_RGB32);
+      }
+    }
+    
+    static Img<T> bBuf(Size(1,1),1),wBuf(Size(1,1),1);
+    std::vector<T*> channelVec;
+    
+    switch(src->getChannels()){
+      case 1: 
+        planarToInterleaved<T,icl8u>(src, dst->bits());
+        break;
+      case 2:{
+        if(wBuf.getDim() < src->getDim()){
+          wBuf.setSize(src->getSize());
+          wBuf.clear(-1,255,false);
+          bBuf.setSize(src->getSize());
+        }
+        channelVec.push_back(const_cast<T*>(src->getData(0)));
+        channelVec.push_back(bBuf.getData(0));
+        channelVec.push_back(const_cast<T*>(src->getData(1)));
+        channelVec.push_back(wBuf.getData(0));
+        const Img<T> tmp(src->getSize(),4,channelVec);
+        planarToInterleaved<T,icl8u>(&tmp,dst->bits());
+        break;
+      }
+      case 3:{
+        if(wBuf.getDim() < src->getDim()){
+          wBuf.setSize(src->getSize());
+          wBuf.clear(-1,255,false);
+        }
+        channelVec.push_back(const_cast<T*>(src->getData(2)));
+        channelVec.push_back(const_cast<T*>(src->getData(1)));
+        channelVec.push_back(const_cast<T*>(src->getData(0)));
+        channelVec.push_back(wBuf.getData(0));
+        const Img<T> tmp(src->getSize(),4,channelVec);
   
-  switch(src->getChannels()){
-    case 1: 
-      planarToInterleaved<T,icl8u>(src, dst->bits());
-      break;
-    case 2:{
-      if(wBuf.getDim() < src->getDim()){
-        wBuf.setSize(src->getSize());
-        wBuf.clear(-1,255,false);
-        bBuf.setSize(src->getSize());
+        planarToInterleaved<T,icl8u>(&tmp,dst->bits());
+        break;
       }
-      channelVec.push_back(const_cast<T*>(src->getData(0)));
-      channelVec.push_back(bBuf.getData(0));
-      channelVec.push_back(const_cast<T*>(src->getData(1)));
-      channelVec.push_back(wBuf.getData(0));
-      const Img<T> tmp(src->getSize(),4,channelVec);
-      planarToInterleaved<T,icl8u>(&tmp,dst->bits());
-      break;
-    }
-    case 3:{
-      if(wBuf.getDim() < src->getDim()){
-        wBuf.setSize(src->getSize());
-        wBuf.clear(-1,255,false);
+      default:{
+        channelVec.push_back(const_cast<T*>(src->getData(2)));
+        channelVec.push_back(const_cast<T*>(src->getData(1)));
+        channelVec.push_back(const_cast<T*>(src->getData(0)));
+        channelVec.push_back(const_cast<T*>(src->getData(3)));
+        const Img<T> tmp(src->getSize(),4,channelVec);
+        planarToInterleaved<T,icl8u>(&tmp,dst->bits());
+        break;
       }
-      channelVec.push_back(const_cast<T*>(src->getData(2)));
-      channelVec.push_back(const_cast<T*>(src->getData(1)));
-      channelVec.push_back(const_cast<T*>(src->getData(0)));
-      channelVec.push_back(wBuf.getData(0));
-      const Img<T> tmp(src->getSize(),4,channelVec);
-
-      planarToInterleaved<T,icl8u>(&tmp,dst->bits());
-      break;
     }
-    default:{
-      channelVec.push_back(const_cast<T*>(src->getData(2)));
-      channelVec.push_back(const_cast<T*>(src->getData(1)));
-      channelVec.push_back(const_cast<T*>(src->getData(0)));
-      channelVec.push_back(const_cast<T*>(src->getData(3)));
-      const Img<T> tmp(src->getSize(),4,channelVec);
-      planarToInterleaved<T,icl8u>(&tmp,dst->bits());
-      break;
-    }
-  }
+  } // namespace qt
 }
 
   // }}}

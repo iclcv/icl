@@ -42,48 +42,50 @@
 #include <ICLMath/FixedMatrix.h>
 
 namespace icl{
-  /** \cond */
-  class GLPaintEngine;
-  class ImgBase; 
-  /** \endcond */
-
-/// Extended Image visualization widget, with a drawing state machine interface \ingroup COMMON
-/** The ICLDrawWidget can be used to draw annotation on images in real time.
-    It provides the ability for translating draw command given in image coordinations
-    with respect to the currently used image scaling type (hold-ar, no-scaling or 
-    fit to widget) and to the currently used widget size.
-
-    <h2>Drawing-State machine</h2>
-    Like other drawing state machines, like the QPainter or OpenGL, the ICLDrawWidget
-    can be used for drawing 2D-primitives step by step into the frame-buffer using 
-    OpenGL hardware acceleration. Each implementation of drawing function
-    should contain the following steps.
-    \code
-
-    drawWidget->setImage(..);  /// sets up a new background image 
-    
-    drawWidget.lock();   /// locks the draw widget against the drawing loop
-    drawWidget.reset();  /// deletes all further draw commands
-    ... draw commands ...
-
-    drawWidget->unlock();   /// enable the widget to be drawed
- 
-    \endcode
-
-    \section DRAWING_EXAMPLE Sample Application for Image Segmentation
-    
-    <TABLE border=0><TR><TD>
-    \code
-\#include <ICLQuick/Common.h>
-\#include <ICLQuick/QuickRegions.h>
-
-GUI gui;
-std::vector<double> c(3,255); // ref color
-
-void click(const MouseEvent &e){
-  if(e.isLeft() && !gui["vis"].as<int>()){
-    c = e.getColor();
-  }
+  namespace qt{
+    /** \cond */
+    class GLPaintEngine;
+    class ImgBase; 
+    /** \endcond */
+  
+  /// Extended Image visualization widget, with a drawing state machine interface \ingroup COMMON
+  /** The ICLDrawWidget can be used to draw annotation on images in real time.
+      It provides the ability for translating draw command given in image coordinations
+      with respect to the currently used image scaling type (hold-ar, no-scaling or 
+      fit to widget) and to the currently used widget size.
+  
+      <h2>Drawing-State machine</h2>
+      Like other drawing state machines, like the QPainter or OpenGL, the ICLDrawWidget
+      can be used for drawing 2D-primitives step by step into the frame-buffer using 
+      OpenGL hardware acceleration. Each implementation of drawing function
+      should contain the following steps.
+      \code
+  
+      drawWidget->setImage(..);  /// sets up a new background image 
+      
+      drawWidget.lock();   /// locks the draw widget against the drawing loop
+      drawWidget.reset();  /// deletes all further draw commands
+      ... draw commands ...
+  
+      drawWidget->unlock();   /// enable the widget to be drawed
+   
+      \endcode
+  
+      \section DRAWING_EXAMPLE Sample Application for Image Segmentation
+      
+      <TABLE border=0><TR><TD>
+      \code
+  \#include <ICLQuick/Common.h>
+  \#include <ICLQuick/QuickRegions.h>
+  
+  GUI gui;
+  std::vector<double> c(3,255); // ref color
+  
+  void click(const MouseEvent &e){
+    if(e.isLeft() && !gui["vis"].as<int>()){
+      c = e.getColor();
+    }
+  } // namespace qt
 }
 
 void init(){

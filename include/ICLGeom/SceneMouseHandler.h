@@ -52,35 +52,37 @@
 #include <ICLQt/MouseHandler.h>
 
 namespace icl{
-
-/** Mouse action function pointer
-* parameters:
-*   const MouseEvent&                   pMouseEvent,
-*   const Point32f&                     pCurrentMousePosition,
-*   const Point32f&                     pDeltaMousePosition,
-*   Camera&                             pCamera,
-*   void*                               pData
-*/
-typedef void                            (*MouseActionCallback)(
-    const MouseEvent&,
-    const Point32f&,
-    const Point32f&,
-    Camera&,
-    void* );
-
-
-/// forward declaration of scene class
-class Scene;
-
-
-/// mouse mapping table entry
-struct MouseMappingTableEntry
-{
-    /// pointer to mouse action function
-    MouseActionCallback                 mMouseAction;
-
-    /// pointer to additional data
-    void*                               mData;
+  namespace geom{
+  
+  /** Mouse action function pointer
+  * parameters:
+  *   const MouseEvent&                   pMouseEvent,
+  *   const Point32f&                     pCurrentMousePosition,
+  *   const Point32f&                     pDeltaMousePosition,
+  *   Camera&                             pCamera,
+  *   void*                               pData
+  */
+  typedef void                            (*MouseActionCallback)(
+      const MouseEvent&,
+      const Point32f&,
+      const Point32f&,
+      Camera&,
+      void* );
+  
+  
+  /// forward declaration of scene class
+  class Scene;
+  
+  
+  /// mouse mapping table entry
+  struct MouseMappingTableEntry
+  {
+      /// pointer to mouse action function
+      MouseActionCallback                 mMouseAction;
+  
+      /// pointer to additional data
+      void*                               mData;
+  } // namespace geom
 };
 
 

@@ -50,62 +50,64 @@
 
 
 namespace icl {
-
-class Timer
-{
- private:
-  int m_iTimerMode;
-  std::vector<Time::value_type> m_vecTime;
-  std::vector<std::string> m_vecTimerName;
+  namespace utils{
   
-  Time::value_type getTime();
-  
- public:
-  /// @{ @name constructors / destructor
-  ///Construct the Timer class.      
-  /** @param iTimerMode Select the output format (0 = ms, 1 = ns)
-  **/
-  Timer(int iTimerMode=0);
-
-   /// @}
-
-/* }}} */
-
-/* {{{ Timer functions */
-
-  //--------------------------------------------------------------------------
-  ///Start the time measurement 
-  /** 
-      @sa stopTimer
-  **/
-  void startTimer();
-
-  //--------------------------------------------------------------------------
-  /// Set a sub timer.
-  /** Each sub time is printed at the end of the whole time
-      measure process (stopTimer).
-      @param sName Set the timer name (only for user information)
-      @sa stopTimer
-  **/
-  void stopSubTimer(std::string sName = "no name");
-  
-  //--------------------------------------------------------------------------
-  /// Stop the time measurement and print the complete working time
-  /** 
-      @sa stopSubTimer
-  **/
-    void stopTimer(std::string sName = "no name");
-
-    /// alias for startTimer
-    void start(){ startTimer(); }
+  class Timer
+  {
+   private:
+    int m_iTimerMode;
+    std::vector<Time::value_type> m_vecTime;
+    std::vector<std::string> m_vecTimerName;
     
-    /// alias for stopTimer
-    void stop(std::string sName = "no name" ){ stopTimer(sName) ;}
+    Time::value_type getTime();
     
-    /// stops the timer and returns the overall working time as long int
-    long int stopSilent();
-/* }}} */
-
+   public:
+    /// @{ @name constructors / destructor
+    ///Construct the Timer class.      
+    /** @param iTimerMode Select the output format (0 = ms, 1 = ns)
+    **/
+    Timer(int iTimerMode=0);
+  
+     /// @}
+  
+  /* }}} */
+  
+  /* {{{ Timer functions */
+  
+    //--------------------------------------------------------------------------
+    ///Start the time measurement 
+    /** 
+        @sa stopTimer
+    **/
+    void startTimer();
+  
+    //--------------------------------------------------------------------------
+    /// Set a sub timer.
+    /** Each sub time is printed at the end of the whole time
+        measure process (stopTimer).
+        @param sName Set the timer name (only for user information)
+        @sa stopTimer
+    **/
+    void stopSubTimer(std::string sName = "no name");
+    
+    //--------------------------------------------------------------------------
+    /// Stop the time measurement and print the complete working time
+    /** 
+        @sa stopSubTimer
+    **/
+      void stopTimer(std::string sName = "no name");
+  
+      /// alias for startTimer
+      void start(){ startTimer(); }
+      
+      /// alias for stopTimer
+      void stop(std::string sName = "no name" ){ stopTimer(sName) ;}
+      
+      /// stops the timer and returns the overall working time as long int
+      long int stopSilent();
+  /* }}} */
+  
+  } // namespace utils
 }; //class Timer
 
 } //namespace ICL

@@ -40,38 +40,40 @@
 #include <ICLUtils/Uncopyable.h>
 
 namespace icl{
-
-  /// Publisher, that can be used to publish images via Qt's QSharedMemory
-  /** The publisher automatically creates a 2nd memory segment named
-      'icl-shared-mem-grabbers' that is set up to contain a list of
-      all available ICL shared memory streams 
-      If two publishers are set up to publish to one memory, the result
-      is undetermined.
-  */
-  class SharedMemoryPublisher : public ImageOutput{
-    struct Data;  //!< intenal data
-    Data *m_data; //!< intenal data
-    
-    public:
-    
-    /// Creates a new publisher instance
-    /** If memorySegmentName is "", no connection is performed */
-    SharedMemoryPublisher(const std::string &memorySegmentName="") throw (ICLException);
-    
-    /// Destructor
-    ~SharedMemoryPublisher();
-    
-    /// sets the publisher to use a new segment
-    void createPublisher(const std::string &memorySegmentName="") throw (ICLException);
-    
-    /// publishs given image
-    void publish(const ImgBase *image);
-    
-    /// wraps publish to implement ImageOutput interface
-    virtual void send(const ImgBase *image) { publish(image); }
-
-    /// returns current memory segment name
-    std::string getMemorySegmentName() const throw (ICLException);
-  };
+  namespace io{
+  
+    /// Publisher, that can be used to publish images via Qt's QSharedMemory
+    /** The publisher automatically creates a 2nd memory segment named
+        'icl-shared-mem-grabbers' that is set up to contain a list of
+        all available ICL shared memory streams 
+        If two publishers are set up to publish to one memory, the result
+        is undetermined.
+    */
+    class SharedMemoryPublisher : public ImageOutput{
+      struct Data;  //!< intenal data
+      Data *m_data; //!< intenal data
+      
+      public:
+      
+      /// Creates a new publisher instance
+      /** If memorySegmentName is "", no connection is performed */
+      SharedMemoryPublisher(const std::string &memorySegmentName="") throw (ICLException);
+      
+      /// Destructor
+      ~SharedMemoryPublisher();
+      
+      /// sets the publisher to use a new segment
+      void createPublisher(const std::string &memorySegmentName="") throw (ICLException);
+      
+      /// publishs given image
+      void publish(const ImgBase *image);
+      
+      /// wraps publish to implement ImageOutput interface
+      virtual void send(const ImgBase *image) { publish(image); }
+  
+      /// returns current memory segment name
+      std::string getMemorySegmentName() const throw (ICLException);
+    };
+  } // namespace io
 }
 #endif

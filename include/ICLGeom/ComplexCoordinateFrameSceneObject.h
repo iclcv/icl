@@ -43,46 +43,48 @@
 #include <ICLUtils/Mutex.h>
 
 namespace icl{
+  namespace geom{
+    
+    /// Special SceneObject implementation that define a visible coordinate frame
+    /** In constrast to the <em>normal</em> CoordinateFrameSceneObject class, the
+        ComplexCoordinateFrameSceneObject is build of cones and cylinders and 
+        it uses billboard text as axix label.
+        The ComplexCoordinateFrameSceneObject is already integrated with the Scene
+        class. Simply set scene.setDrawCoordinateFrameEnabled(true,l,t) to
+        visualize a Scene's coordintate frame. If you need a coordinate frame
+        that is not alligned with the scene's origin, you can use this class. */
+    class ComplexCoordinateFrameSceneObject : public SceneObject{
+      /// internally used mutex
+      Mutex mutex;
   
-  /// Special SceneObject implementation that define a visible coordinate frame
-  /** In constrast to the <em>normal</em> CoordinateFrameSceneObject class, the
-      ComplexCoordinateFrameSceneObject is build of cones and cylinders and 
-      it uses billboard text as axix label.
-      The ComplexCoordinateFrameSceneObject is already integrated with the Scene
-      class. Simply set scene.setDrawCoordinateFrameEnabled(true,l,t) to
-      visualize a Scene's coordintate frame. If you need a coordinate frame
-      that is not alligned with the scene's origin, you can use this class. */
-  class ComplexCoordinateFrameSceneObject : public SceneObject{
-    /// internally used mutex
-    Mutex mutex;
-
-    /// length of each axis
-    float axisLength;
-    
-    /// thickness of each axis
-    float axisThickness;
-    
-    public:
-    
-    /// Default constructor with useful default size
-    ComplexCoordinateFrameSceneObject(float axisLength=100,float axisThickness=5, 
-                                      bool withXYZLabels=true);
-
-    /// Dynamic adaption
-    void setParams(float axisLength, float axisThickness, bool withXYZLabels=true);
-    
-    /// returns current length of the axis'
-    inline float getAxisLength() const { return axisLength; }
-
-    /// returns current thickness of the axis'
-    inline float getAxisThickness() const { return axisThickness; }
-    
-    /// locks the internal mutex
-    virtual void lock() { mutex.lock(); }
-
-    /// unlocks the internal mutex
-    virtual void unlock() { mutex.unlock(); }
-  };
+      /// length of each axis
+      float axisLength;
+      
+      /// thickness of each axis
+      float axisThickness;
+      
+      public:
+      
+      /// Default constructor with useful default size
+      ComplexCoordinateFrameSceneObject(float axisLength=100,float axisThickness=5, 
+                                        bool withXYZLabels=true);
+  
+      /// Dynamic adaption
+      void setParams(float axisLength, float axisThickness, bool withXYZLabels=true);
+      
+      /// returns current length of the axis'
+      inline float getAxisLength() const { return axisLength; }
+  
+      /// returns current thickness of the axis'
+      inline float getAxisThickness() const { return axisThickness; }
+      
+      /// locks the internal mutex
+      virtual void lock() { mutex.lock(); }
+  
+      /// unlocks the internal mutex
+      virtual void unlock() { mutex.unlock(); }
+    };
+  } // namespace geom
 }
 
 #endif

@@ -440,19 +440,21 @@ namespace {
 }
 
 namespace icl{
-  CCLUT::CCLUT(format srcFmt, format dstFmt){
-    switch(getChannelsOfFormat(srcFmt)){
-      case 1: m_oLUT = create_lut_1X(srcFmt, dstFmt); break;
-      case 2: m_oLUT = create_lut_2X(srcFmt, dstFmt); break;
-      case 3: m_oLUT = create_lut_3X(srcFmt, dstFmt); break;
-      default: ICL_INVALID_FORMAT;
-    }        
-  }
-  void CCLUT::cc(const ImgBase *src, ImgBase *dst, bool roiOnly){
-    switch(src->getDepth()){
-#define ICL_INSTANTIATE_DEPTH(D) case depth##D: cc_s(src->asImg<icl##D>(),dst, m_oLUT,roiOnly); break;
-      ICL_INSTANTIATE_ALL_DEPTHS;
-#undef ICL_INSTANTIATE_DEPTH
-    }      
-  }
+  namespace core{
+    CCLUT::CCLUT(format srcFmt, format dstFmt){
+      switch(getChannelsOfFormat(srcFmt)){
+        case 1: m_oLUT = create_lut_1X(srcFmt, dstFmt); break;
+        case 2: m_oLUT = create_lut_2X(srcFmt, dstFmt); break;
+        case 3: m_oLUT = create_lut_3X(srcFmt, dstFmt); break;
+        default: ICL_INVALID_FORMAT;
+      }        
+    }
+    void CCLUT::cc(const ImgBase *src, ImgBase *dst, bool roiOnly){
+      switch(src->getDepth()){
+  #define ICL_INSTANTIATE_DEPTH(D) case depth##D: cc_s(src->asImg<icl##D>(),dst, m_oLUT,roiOnly); break;
+        ICL_INSTANTIATE_ALL_DEPTHS;
+  #undef ICL_INSTANTIATE_DEPTH
+      }      
+    }
+  } // namespace core
 }

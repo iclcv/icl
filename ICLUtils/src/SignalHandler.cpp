@@ -49,14 +49,16 @@
 using namespace std;
 
 namespace icl{
-  namespace {
-    static Mutex SignalHandlerMutex;
-    
-#ifdef ICL_SYSTEM_WINDOWS
-	struct sigaction {
-    int          sa_flags;
-    sigset_t     sa_mask;
-    __p_sig_fn_t sa_handler;   /* see mingw/include/signal.h about the type */
+  namespace utils{
+    namespace {
+      static Mutex SignalHandlerMutex;
+      
+  #ifdef ICL_SYSTEM_WINDOWS
+  	struct sigaction {
+      int          sa_flags;
+      sigset_t     sa_mask;
+      __p_sig_fn_t sa_handler;   /* see mingw/include/signal.h about the type */
+  } // namespace utils
 };
 #define sigemptyset(pset)    (*(pset) = 0)
 int sigaction(int signum, const struct sigaction *act, struct sigaction *oact);

@@ -38,66 +38,68 @@
 #include <ICLMarkers/FiducialDetectorPluginHierarchical.h>
 
 namespace icl{
-  
-  /** \cond */
-  class FiducialDetector;
-  /** \endcond */
-  
-  
-  /// FiducialDetectorPlugin for ARToolkit+ like markers using BCH coded IDs \ingroup PLUGINS
-  /** This is just a plugin class that is used by the FiducialDetector. Please
-      refer the icl::FiducialDetector class documentation for more details. */
-  class FiducialDetectorPluginICL1 : public FiducialDetectorPluginHierarchical{
-    struct Data;
-    Data *data;
-
-    /// only the FiducialDetector can instantiate this class
-    FiducialDetectorPluginICL1();
-    public:
-
-    /// This class cannot be used 
-    friend class icl::FiducialDetector;
+  namespace markers{
     
-    /** \cond **/
-    // for static initialization
-    friend struct StaticConfigurableRegistrationFor_FiducialDetectorPluginICL1;
-    /** \endcond **/
-
-    /// Destructor
-    ~FiducialDetectorPluginICL1();
-
-    /// this is the only feature that is computed in a deferred way
-    /** Returns the region boundary */
-    virtual void getCorners2D(std::vector<Point32f> &dst, FiducialImpl &impl);
-
-    /// deferred rotation calculation
-    virtual void getRotation2D(float &dst, FiducialImpl &impl);
-
-    /// defines which features are supported
-    virtual void getFeatures(Fiducial::FeatureSet &dst);
-
-    /// defines how to find makers in the given vector of regions
-    virtual void detect(std::vector<FiducialImpl*> &dst, const std::vector<ImageRegion> &regions);
+    /** \cond */
+    class FiducialDetector;
+    /** \endcond */
     
-    /// defines how to load/remove marker definitions
-    /** The Any paramter 'which' can either be a filename to a file that contains
-        TwoLevelRegionStructure codes per row,
-        or a newline or comma or space separated list of 
-        TwoLevelRegionStructure codes. The ParamList params is not used here.
-    */
-    virtual void addOrRemoveMarkers(bool add, const Any &which, const ParamList &params);
-
-    /// returns how to compute a list of image-position/marker-position correspondences
-    /** The 2D-keypoints are the most common information that is use to compute a markers
-        3D information. Each keypoint defines a 2D marker location in [mm] and a corresponding
-        image location */
-    virtual void getKeyPoints2D(std::vector<Fiducial::KeyPoint> &dst, FiducialImpl &impl);
-
-    /// creates an image of a given marker
-    virtual Img8u createMarker(const Any &whichOne,const Size &size, const ParamList &params);
     
-
-  };
+    /// FiducialDetectorPlugin for ARToolkit+ like markers using BCH coded IDs \ingroup PLUGINS
+    /** This is just a plugin class that is used by the FiducialDetector. Please
+        refer the icl::FiducialDetector class documentation for more details. */
+    class FiducialDetectorPluginICL1 : public FiducialDetectorPluginHierarchical{
+      struct Data;
+      Data *data;
+  
+      /// only the FiducialDetector can instantiate this class
+      FiducialDetectorPluginICL1();
+      public:
+  
+      /// This class cannot be used 
+      friend class icl::FiducialDetector;
+      
+      /** \cond **/
+      // for static initialization
+      friend struct StaticConfigurableRegistrationFor_FiducialDetectorPluginICL1;
+      /** \endcond **/
+  
+      /// Destructor
+      ~FiducialDetectorPluginICL1();
+  
+      /// this is the only feature that is computed in a deferred way
+      /** Returns the region boundary */
+      virtual void getCorners2D(std::vector<Point32f> &dst, FiducialImpl &impl);
+  
+      /// deferred rotation calculation
+      virtual void getRotation2D(float &dst, FiducialImpl &impl);
+  
+      /// defines which features are supported
+      virtual void getFeatures(Fiducial::FeatureSet &dst);
+  
+      /// defines how to find makers in the given vector of regions
+      virtual void detect(std::vector<FiducialImpl*> &dst, const std::vector<ImageRegion> &regions);
+      
+      /// defines how to load/remove marker definitions
+      /** The Any paramter 'which' can either be a filename to a file that contains
+          TwoLevelRegionStructure codes per row,
+          or a newline or comma or space separated list of 
+          TwoLevelRegionStructure codes. The ParamList params is not used here.
+      */
+      virtual void addOrRemoveMarkers(bool add, const Any &which, const ParamList &params);
+  
+      /// returns how to compute a list of image-position/marker-position correspondences
+      /** The 2D-keypoints are the most common information that is use to compute a markers
+          3D information. Each keypoint defines a 2D marker location in [mm] and a corresponding
+          image location */
+      virtual void getKeyPoints2D(std::vector<Fiducial::KeyPoint> &dst, FiducialImpl &impl);
+  
+      /// creates an image of a given marker
+      virtual Img8u createMarker(const Any &whichOne,const Size &size, const ParamList &params);
+      
+  
+    };
+  } // namespace markers
 }
 
 #endif

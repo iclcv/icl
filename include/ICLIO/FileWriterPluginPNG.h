@@ -39,16 +39,18 @@
 #include <ICLUtils/Mutex.h>
 
 namespace icl{
-  
-  /// A Writer Plugin for writing ".png" images \ingroup FILEIO_G
-  class FileWriterPluginPNG : public FileWriterPlugin{
-    icl::Mutex mutex;
-    std::vector<unsigned char> data;
-    std::vector<unsigned char*> rows;
+  namespace io{
     
-    public:
-    /// write implementation
-    virtual void write(File &file, const ImgBase *image);
-  };
+    /// A Writer Plugin for writing ".png" images \ingroup FILEIO_G
+    class FileWriterPluginPNG : public FileWriterPlugin{
+      icl::Mutex mutex;
+      std::vector<unsigned char> data;
+      std::vector<unsigned char*> rows;
+      
+      public:
+      /// write implementation
+      virtual void write(File &file, const ImgBase *image);
+    };
+  } // namespace io
 }
 #endif

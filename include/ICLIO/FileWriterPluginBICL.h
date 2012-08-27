@@ -40,21 +40,23 @@
 #include <ICLIO/ImageCompressor.h>
 
 namespace icl{
-  
-  /// Writer plugin to write binary icl image (extension bicl / bicl.gz)
-  /** The bicl-format does also support saving image meta data */
-  class FileWriterPluginBICL : public FileWriterPlugin{
-    public:
+  namespace io{
     
-    FileWriterPluginBICL(const std::string &compressionType="none",
-                         const std::string &quality="none");
-    
-    /// write implementation
-    virtual void write(File &file, const ImgBase *image);
-    
-    private:
-    ImageCompressor compressor;
-    Mutex mutex;
-  };
+    /// Writer plugin to write binary icl image (extension bicl / bicl.gz)
+    /** The bicl-format does also support saving image meta data */
+    class FileWriterPluginBICL : public FileWriterPlugin{
+      public:
+      
+      FileWriterPluginBICL(const std::string &compressionType="none",
+                           const std::string &quality="none");
+      
+      /// write implementation
+      virtual void write(File &file, const ImgBase *image);
+      
+      private:
+      ImageCompressor compressor;
+      Mutex mutex;
+    };
+  } // namespace io
 }
 #endif

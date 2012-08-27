@@ -35,9 +35,11 @@
 #include <ICLQt/PlotHandle.h>
 
 namespace icl{
-  void PlotHandle::render(){
-    (**this)->updateFromOtherThread();
-  }
-  
-  /// todo: more convecience methods
+  namespace qt{
+    void PlotHandle::render(){
+      (**this)->updateFromOtherThread();
+    }
+    
+    /// todo: more convecience methods
+  } // namespace qt
 }

@@ -37,44 +37,46 @@
 #include <ICLCore/Img.h>
 
 namespace icl{
-
-class ImageUndistortion{
-  public:
-  struct Impl; //!< internal impl
+  namespace io{
   
-  private:
-  Impl *impl;  //!< internal impl pointer
-
-
-  public:
-  /// creates a null instance
-  ImageUndistortion();
+  class ImageUndistortion{
+    public:
+    struct Impl; //!< internal impl
+    
+    private:
+    Impl *impl;  //!< internal impl pointer
   
-  /// creates an Undistortion instance given parameters
-  /** @param model distortion mode possible values are MatlabModel5Params and SimpleARTBased
-      @param params parameters for the given model (MatlabModel5Params needs 5 parameters, 
-                    SimpleARTBased needs 3 parameters)
-      @param imageSize underlying image size */
-  ImageUndistortion(const std::string &model, const std::vector<double> &params,
-                    const Size &imageSize);
   
-  /// copy constructor
-  ImageUndistortion(const ImageUndistortion &other);
+    public:
+    /// creates a null instance
+    ImageUndistortion();
+    
+    /// creates an Undistortion instance given parameters
+    /** @param model distortion mode possible values are MatlabModel5Params and SimpleARTBased
+        @param params parameters for the given model (MatlabModel5Params needs 5 parameters, 
+                      SimpleARTBased needs 3 parameters)
+        @param imageSize underlying image size */
+    ImageUndistortion(const std::string &model, const std::vector<double> &params,
+                      const Size &imageSize);
+    
+    /// copy constructor
+    ImageUndistortion(const ImageUndistortion &other);
+    
+    /// assignment operator
+    ImageUndistortion &operator=(const ImageUndistortion &other);
+    
+    /// loads ImageUndistortion from file using the istream operator
+    ImageUndistortion(const std::string &filename);
   
-  /// assignment operator
-  ImageUndistortion &operator=(const ImageUndistortion &other);
-  
-  /// loads ImageUndistortion from file using the istream operator
-  ImageUndistortion(const std::string &filename);
-
-  /// returns curren timage size
-  const Size &getImageSize() const;
-  const std::vector<double> &getParams() const;
-  const std::string &getModel() const;
-  const Point32f operator()(const Point32f &distortedPos) const;
-  const Img32f &createWarpMap() const;
-  
-  inline bool isNull() const { return !impl; }
+    /// returns curren timage size
+    const Size &getImageSize() const;
+    const std::vector<double> &getParams() const;
+    const std::string &getModel() const;
+    const Point32f operator()(const Point32f &distortedPos) const;
+    const Img32f &createWarpMap() const;
+    
+    inline bool isNull() const { return !impl; }
+  } // namespace io
 };
 
 /// overloaded ostream operator for ImageUndistortion instances 

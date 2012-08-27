@@ -35,22 +35,24 @@
 
 using namespace icl;
 namespace icl{
-
-  const double SoftPosit::betaUpdate = 1.05;
+  namespace geom{
   
-  const double SoftPosit::betaZero = 0.0004;
-
-#ifdef HAVE_QT
-SoftPosit::SoftPosit():dw(0){
-	ROT.setBounds(3,3);
-	T.setBounds(1,3);
-	R1.setBounds(1,3);
-	R2.setBounds(1,3);
-	R3.setBounds(1,3);
-	eye2_2.setBounds(2,2);
-	eye2_2.at(0,0) = 1.0;
-	eye2_2.at(1,1) = 1.0;
-	draw = false;
+    const double SoftPosit::betaUpdate = 1.05;
+    
+    const double SoftPosit::betaZero = 0.0004;
+  
+  #ifdef HAVE_QT
+  SoftPosit::SoftPosit():dw(0){
+  	ROT.setBounds(3,3);
+  	T.setBounds(1,3);
+  	R1.setBounds(1,3);
+  	R2.setBounds(1,3);
+  	R3.setBounds(1,3);
+  	eye2_2.setBounds(2,2);
+  	eye2_2.at(0,0) = 1.0;
+  	eye2_2.at(1,1) = 1.0;
+  	draw = false;
+  } // namespace geom
 }
 #else
 SoftPosit::SoftPosit(){

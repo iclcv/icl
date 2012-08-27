@@ -37,42 +37,44 @@
 #include <ICLUtils/ConfigFile.h>
 
 namespace icl{
-  
-  RGBDMapping::RGBDMapping():Mat(Mat::id()){}
-
-  RGBDMapping::RGBDMapping(const std::vector<Vec> &depthImagePointsAndDepths,
-                       const std::vector<Point32f> &rgbImagePoints){
-    Camera cam = Camera::calibrate(depthImagePointsAndDepths, rgbImagePoints);
-    (Mat&)(*this) = cam.getProjectionMatrix()*cam.getCSTransformationMatrix();
-  }
-
-  RGBDMapping::RGBDMapping(const Camera &cam){
-    (Mat&)(*this) = cam.getProjectionMatrix()*cam.getCSTransformationMatrix();
-  }
-  
-  RGBDMapping::RGBDMapping(const std::string &filename){
-    ConfigFile f(filename);
-    try{
-      Mat m = f["config.rgbd-mapping"];
-      (Mat&)(*this) = m;
-    }catch(...){}
-    *this = RGBDMapping(Camera(filename));
-  }
-  
-  RGBDMapping::RGBDMapping(const Mat &M){
-    *this = M;
-  }
+  namespace geom{
     
-  void RGBDMapping::save(const std::string &filename) const{
-    ConfigFile f;
-    f["config.rgbd-mapping"] = (const Mat&)(*this);
-    f.save(filename);
-  }
+    RGBDMapping::RGBDMapping():Mat(Mat::id()){}
   
-  RGBDMapping &RGBDMapping::operator=(const Mat &M){
-    (Mat&)*this = M;
-    return *this;
-  }
+    RGBDMapping::RGBDMapping(const std::vector<Vec> &depthImagePointsAndDepths,
+                         const std::vector<Point32f> &rgbImagePoints){
+      Camera cam = Camera::calibrate(depthImagePointsAndDepths, rgbImagePoints);
+      (Mat&)(*this) = cam.getProjectionMatrix()*cam.getCSTransformationMatrix();
+    }
   
+    RGBDMapping::RGBDMapping(const Camera &cam){
+      (Mat&)(*this) = cam.getProjectionMatrix()*cam.getCSTransformationMatrix();
+    }
+    
+    RGBDMapping::RGBDMapping(const std::string &filename){
+      ConfigFile f(filename);
+      try{
+        Mat m = f["config.rgbd-mapping"];
+        (Mat&)(*this) = m;
+      }catch(...){}
+      *this = RGBDMapping(Camera(filename));
+    }
+    
+    RGBDMapping::RGBDMapping(const Mat &M){
+      *this = M;
+    }
+      
+    void RGBDMapping::save(const std::string &filename) const{
+      ConfigFile f;
+      f["config.rgbd-mapping"] = (const Mat&)(*this);
+      f.save(filename);
+    }
+    
+    RGBDMapping &RGBDMapping::operator=(const Mat &M){
+      (Mat&)*this = M;
+      return *this;
+    }
+    
+  } // namespace geom
 }
 

@@ -38,39 +38,41 @@
 #include <ICLUtils/SmartPtrBase.h>
 
 namespace icl{
+  namespace utils{
+    
+    /// Specialization of the SmartPtrBase class for Arrays
+    /** If the internal reference counter becomes 0, the contained
+        data pointer is release using <tt>delete []</tt>*/
+    template<class T>
+    struct SmartArray : public SmartPtrBase<T, ArrayDelOp>{
+      // type definition for the parent class
+      typedef SmartPtrBase<T,ArrayDelOp> super;
+      /// creates a null pointer
+      SmartArray():super(){}
   
-  /// Specialization of the SmartPtrBase class for Arrays
-  /** If the internal reference counter becomes 0, the contained
-      data pointer is release using <tt>delete []</tt>*/
-  template<class T>
-  struct SmartArray : public SmartPtrBase<T, ArrayDelOp>{
-    // type definition for the parent class
-    typedef SmartPtrBase<T,ArrayDelOp> super;
-    /// creates a null pointer
-    SmartArray():super(){}
-
-    /// gets pointer, ownership is passed optionally
-    template<class DerivedT>
-    SmartArray(DerivedT *ptData, bool bOwn=true):super(ptData,bOwn){}
-
-    /// gets pointer, ownership is passed optionally
-    SmartArray(T *ptData, bool bOwn=true):super(ptData,bOwn){}
-
-    /// reference counting copy constructor
-    template<class DerivedT>
-    SmartArray(const SmartPtrBase<DerivedT,ArrayDelOp>& r):super(r){}
-
-    /// reference counting copy constructor
-    SmartArray(const SmartPtrBase<T,ArrayDelOp>& r):super(r){}
-    
-    /// index access operator (no index checks)
-    T &operator[](int idx){ ICLASSERT(super::e); return super::e[idx]; }
-    
-    /// index access operator (const, no index checks)
-    const T&operator[](int idx) const{ ICLASSERT(super::e); return super::e[idx]; }
-  };
-
-
+      /// gets pointer, ownership is passed optionally
+      template<class DerivedT>
+      SmartArray(DerivedT *ptData, bool bOwn=true):super(ptData,bOwn){}
+  
+      /// gets pointer, ownership is passed optionally
+      SmartArray(T *ptData, bool bOwn=true):super(ptData,bOwn){}
+  
+      /// reference counting copy constructor
+      template<class DerivedT>
+      SmartArray(const SmartPtrBase<DerivedT,ArrayDelOp>& r):super(r){}
+  
+      /// reference counting copy constructor
+      SmartArray(const SmartPtrBase<T,ArrayDelOp>& r):super(r){}
+      
+      /// index access operator (no index checks)
+      T &operator[](int idx){ ICLASSERT(super::e); return super::e[idx]; }
+      
+      /// index access operator (const, no index checks)
+      const T&operator[](int idx) const{ ICLASSERT(super::e); return super::e[idx]; }
+    };
+  
+  
+  } // namespace utils
 }
 
 #endif

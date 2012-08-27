@@ -38,74 +38,76 @@
 #include <ICLMarkers/FiducialDetectorPlugin.h>
 
 namespace icl{
+  namespace markers{
+    
+    /** \cond */
+    class FiducialDetector;
+    /** \endcond */
+    
+    
+    /// FiducialDetectorPlugin for quad-markers like ARToolkit and BCH-Code markers \ingroup PLUGINS
+    class FiducialDetectorPluginForQuads : public FiducialDetectorPlugin{
+      /// Internal Data
+      struct Data;
+      
+      /// Internal data pointer
+      Data *data;
   
-  /** \cond */
-  class FiducialDetector;
-  /** \endcond */
+      protected:
   
+      /// only the FiducialDetector can instantiate this class
+      FiducialDetectorPluginForQuads();
+      public:
   
-  /// FiducialDetectorPlugin for quad-markers like ARToolkit and BCH-Code markers \ingroup PLUGINS
-  class FiducialDetectorPluginForQuads : public FiducialDetectorPlugin{
-    /// Internal Data
-    struct Data;
-    
-    /// Internal data pointer
-    Data *data;
-
-    protected:
-
-    /// only the FiducialDetector can instantiate this class
-    FiducialDetectorPluginForQuads();
-    public:
-
-    /// This class cannot be used 
-    friend class icl::FiducialDetector;
-
-    /// Destructor
-    ~FiducialDetectorPluginForQuads();
-    
-    // use the edges
-    virtual void getKeyPoints2D(std::vector<Fiducial::KeyPoint> &dst, FiducialImpl &impl);
-    virtual void getFeatures(Fiducial::FeatureSet &dst);
-    virtual void detect(std::vector<FiducialImpl*> &dst, const Img8u &image);
-
-    /// this plugin uses the binarisation from the internally used quad-detector
-    virtual SourceImageType getPreProcessing() const {  return Gray;  }
-    
-    /// loads markers ID's (also implemented in the subclasses)
-    /** @param def this any instance can be ...
-        * of type int (then, only the corresponding marker ID is loaded) 
-        * of type Range32s "[a,b]", (then all markers within the range are loaded)
-        * of something like {a,b,c,d,...} then all marker IDs in the list are loaded
-
-        Please note that other types might be interpreted in the wrong way.
-        Mandatory parameter is "size". Please refer to the 
-        documentation of icl::FiducialDetector::loadMarkers for more details
-    */
-    virtual void addOrRemoveMarkers(bool add, const Any &which, const ParamList &params) = 0;
-
-    /// this plugin provides some extra intermediate images
-    std::string getIntermediateImageNames() const;
-    
-    /// returns the intermediate image, that is associated with the given name
-    /** @see getIntermediateImageNames for more details */
-    const ImgBase *getIntermediateImage(const std::string &name) const throw (ICLException);
-
-    /// this method is called before the patch classification loop is started
-    /** this function can be used to avoid property extraction at runtime. Usually,
-        a certain implementation can read out and store all property values that are used
-        in classify patch once in a whole image processing cylce */
-    virtual void prepareForPatchClassification(){}
-
-    /// this method must be called in the subclasses
-    virtual FiducialImpl *classifyPatch(const Img8u &image, int *rot, bool returnRejectedQuads, ImageRegion r) = 0;
-    
-    /// this method is also implemented in the subclasses
-    /** The method describes the parameters for the marker rectification */
-    virtual void getQuadRectificationParameters(Size &markerSizeWithBorder,
-                                                Size &markerSizeWithoutBorder) = 0;
-        
-  };
+      /// This class cannot be used 
+      friend class icl::FiducialDetector;
+  
+      /// Destructor
+      ~FiducialDetectorPluginForQuads();
+      
+      // use the edges
+      virtual void getKeyPoints2D(std::vector<Fiducial::KeyPoint> &dst, FiducialImpl &impl);
+      virtual void getFeatures(Fiducial::FeatureSet &dst);
+      virtual void detect(std::vector<FiducialImpl*> &dst, const Img8u &image);
+  
+      /// this plugin uses the binarisation from the internally used quad-detector
+      virtual SourceImageType getPreProcessing() const {  return Gray;  }
+      
+      /// loads markers ID's (also implemented in the subclasses)
+      /** @param def this any instance can be ...
+          * of type int (then, only the corresponding marker ID is loaded) 
+          * of type Range32s "[a,b]", (then all markers within the range are loaded)
+          * of something like {a,b,c,d,...} then all marker IDs in the list are loaded
+  
+          Please note that other types might be interpreted in the wrong way.
+          Mandatory parameter is "size". Please refer to the 
+          documentation of icl::FiducialDetector::loadMarkers for more details
+      */
+      virtual void addOrRemoveMarkers(bool add, const Any &which, const ParamList &params) = 0;
+  
+      /// this plugin provides some extra intermediate images
+      std::string getIntermediateImageNames() const;
+      
+      /// returns the intermediate image, that is associated with the given name
+      /** @see getIntermediateImageNames for more details */
+      const ImgBase *getIntermediateImage(const std::string &name) const throw (ICLException);
+  
+      /// this method is called before the patch classification loop is started
+      /** this function can be used to avoid property extraction at runtime. Usually,
+          a certain implementation can read out and store all property values that are used
+          in classify patch once in a whole image processing cylce */
+      virtual void prepareForPatchClassification(){}
+  
+      /// this method must be called in the subclasses
+      virtual FiducialImpl *classifyPatch(const Img8u &image, int *rot, bool returnRejectedQuads, ImageRegion r) = 0;
+      
+      /// this method is also implemented in the subclasses
+      /** The method describes the parameters for the marker rectification */
+      virtual void getQuadRectificationParameters(Size &markerSizeWithBorder,
+                                                  Size &markerSizeWithoutBorder) = 0;
+          
+    };
+  } // namespace markers
 }
 
 #endif

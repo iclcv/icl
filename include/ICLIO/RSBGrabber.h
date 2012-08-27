@@ -43,104 +43,106 @@
 #endif
 
 namespace icl{
+  namespace io{
+    
+    /// Grabber implementation for RSB based image transfer
+    class RSBGrabberImpl : public Grabber{
+      struct Data;  //!< pimpl type
+      Data *m_data; //!< pimpl pointer
+      
+      public:
+      
+      /// empty constructor (creates a null instance)
+      RSBGrabberImpl();
   
-  /// Grabber implementation for RSB based image transfer
-  class RSBGrabberImpl : public Grabber{
-    struct Data;  //!< pimpl type
-    Data *m_data; //!< pimpl pointer
-    
-    public:
-    
-    /// empty constructor (creates a null instance)
-    RSBGrabberImpl();
-
-    /// Destructor
-    ~RSBGrabberImpl();
-    
-    /// main constructor with given scope and comma separated transportList
-    /** supported transports are socket, spread and inprocess. Please note, that
-        the spread-transport requires spread running. */
-    RSBGrabberImpl(const std::string &scope, const std::string &transportList="spread");
-    
-    /// deferred intialization with given scope and comma separated transportList
-    /** supported transports are socket, spread and inprocess. Please note, that
-        the spread-transport requires spread running. */
-    void init(const std::string &scope, const std::string &transportList="spread");
-    
-    /// grabber-interface 
-    virtual const ImgBase *acquireImage();
-    
-    /// returns whether this grabber has not jet been initialized
-    inline bool isNull() const { return !m_data; }
-
-    /// returns a list of all available rsb streams
-    static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
-
-    /// interface for the setter function for video device properties 
-    /** \copydoc icl::Grabber::setProperty(const std::string&,const std::string&) **/
-    virtual void setProperty(const std::string &property, const std::string &value);
-    
-    /// returns a list of properties, that can be set usingsetProperty
-    /** @return list of supported property names **/
-    virtual std::vector<std::string> getPropertyList();
-    
-    /// get type of property
-    /** \copydoc icl::Grabber::getType(const std::string &)*/
-    virtual std::string getType(const std::string &name);
-
-    /// get information of a property valid values
-    /** \copydoc icl::Grabber::getInfo(const std::string &)*/
-    virtual std::string getInfo(const std::string &name);
-
-    /// returns the current value of a property or a parameter
-    virtual std::string getValue(const std::string &name);
-    /** @} */
-
-    /// volatileness
-    virtual int isVolatile(const std::string &name);
-
-  };
-
-  /// Grabber class that grabs images from RSB scope
-  /** for more details: @see RSBGrabberImpl */
-  class RSBGrabber : public GrabberHandle<RSBGrabberImpl>{
-    public:
-    
-    /// returns a list of available pwc devices 
-    /** @see RSBGrabberImpl for more details*/
-    static inline const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan){
-      return RSBGrabberImpl::getDeviceList(rescan);
-    }
-    
-    /// creates a new RSBGrabber instance
-    /** @see RSBGrabberImpl for more details */
-    inline RSBGrabber(const std::string &scope, const std::string &transportList="spread"){
-      std::string uid = transportList+":"+scope;
-      if(isNew(uid)){
-        initialize(new RSBGrabberImpl(scope, transportList),uid);
-      }else{
-        initialize(uid);
+      /// Destructor
+      ~RSBGrabberImpl();
+      
+      /// main constructor with given scope and comma separated transportList
+      /** supported transports are socket, spread and inprocess. Please note, that
+          the spread-transport requires spread running. */
+      RSBGrabberImpl(const std::string &scope, const std::string &transportList="spread");
+      
+      /// deferred intialization with given scope and comma separated transportList
+      /** supported transports are socket, spread and inprocess. Please note, that
+          the spread-transport requires spread running. */
+      void init(const std::string &scope, const std::string &transportList="spread");
+      
+      /// grabber-interface 
+      virtual const ImgBase *acquireImage();
+      
+      /// returns whether this grabber has not jet been initialized
+      inline bool isNull() const { return !m_data; }
+  
+      /// returns a list of all available rsb streams
+      static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
+  
+      /// interface for the setter function for video device properties 
+      /** \copydoc icl::Grabber::setProperty(const std::string&,const std::string&) **/
+      virtual void setProperty(const std::string &property, const std::string &value);
+      
+      /// returns a list of properties, that can be set usingsetProperty
+      /** @return list of supported property names **/
+      virtual std::vector<std::string> getPropertyList();
+      
+      /// get type of property
+      /** \copydoc icl::Grabber::getType(const std::string &)*/
+      virtual std::string getType(const std::string &name);
+  
+      /// get information of a property valid values
+      /** \copydoc icl::Grabber::getInfo(const std::string &)*/
+      virtual std::string getInfo(const std::string &name);
+  
+      /// returns the current value of a property or a parameter
+      virtual std::string getValue(const std::string &name);
+      /** @} */
+  
+      /// volatileness
+      virtual int isVolatile(const std::string &name);
+  
+    };
+  
+    /// Grabber class that grabs images from RSB scope
+    /** for more details: @see RSBGrabberImpl */
+    class RSBGrabber : public GrabberHandle<RSBGrabberImpl>{
+      public:
+      
+      /// returns a list of available pwc devices 
+      /** @see RSBGrabberImpl for more details*/
+      static inline const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan){
+        return RSBGrabberImpl::getDeviceList(rescan);
       }
-    }
-    /// empty constructor (initialize late using init())
-    /** @see RSBGrabberImpl for more details */
-    inline RSBGrabber(){}
-    
-    /// for deferred connection to (other) shared memory segment
-    /** @see RSBGrabberImpl for more details */
-    inline void init(const std::string &scope, const std::string &transportList="spread") throw (ICLException){
-      std::string uid = transportList+":"+scope;
-      if(isNew(uid)){
-        initialize(new RSBGrabberImpl(scope, transportList),uid);
-      }else{
-        initialize(uid);
+      
+      /// creates a new RSBGrabber instance
+      /** @see RSBGrabberImpl for more details */
+      inline RSBGrabber(const std::string &scope, const std::string &transportList="spread"){
+        std::string uid = transportList+":"+scope;
+        if(isNew(uid)){
+          initialize(new RSBGrabberImpl(scope, transportList),uid);
+        }else{
+          initialize(uid);
+        }
       }
-    }
-    
-    /// not necessary for this type
-    static void resetBus(){}
-  };  
-
+      /// empty constructor (initialize late using init())
+      /** @see RSBGrabberImpl for more details */
+      inline RSBGrabber(){}
+      
+      /// for deferred connection to (other) shared memory segment
+      /** @see RSBGrabberImpl for more details */
+      inline void init(const std::string &scope, const std::string &transportList="spread") throw (ICLException){
+        std::string uid = transportList+":"+scope;
+        if(isNew(uid)){
+          initialize(new RSBGrabberImpl(scope, transportList),uid);
+        }else{
+          initialize(uid);
+        }
+      }
+      
+      /// not necessary for this type
+      static void resetBus(){}
+    };  
+  
+  } // namespace io
 }
 
 #endif

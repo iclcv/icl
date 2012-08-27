@@ -38,34 +38,36 @@
 #include <ICLFilter/AffineOp.h>
 
 namespace icl{
-  
-  /// Class to scale images \ingroup UNARY \ingroup AFFINE
-  class ScaleOp : public AffineOp{
-    public:
-    /// Constructor
-    ScaleOp (double factorX=0.0, double factorY=0.0, scalemode eInterpolate=interpolateLIN) :
-    AffineOp (eInterpolate) {
-      setScale(factorX,factorY);
-    }
+  namespace filter{
     
-    /// performs a scale
-    /**
-      @param factorX scale-factor in x-direction
-      @param factorY scale-factor in y-direction
-      different values for x and y will lead to a dilation / upsetting deformation
-    */
-    void setScale (double factorX, double factorY) {
-      AffineOp::reset (); 
-      AffineOp::scale (factorX,factorY);
-    }
-        
-    // apply should still be public
-    ///applies the scale
-    using AffineOp::apply;
-
-    private: // hide the following methods
-    using AffineOp::rotate;
-    using AffineOp::translate;
-  };
+    /// Class to scale images \ingroup UNARY \ingroup AFFINE
+    class ScaleOp : public AffineOp{
+      public:
+      /// Constructor
+      ScaleOp (double factorX=0.0, double factorY=0.0, scalemode eInterpolate=interpolateLIN) :
+      AffineOp (eInterpolate) {
+        setScale(factorX,factorY);
+      }
+      
+      /// performs a scale
+      /**
+        @param factorX scale-factor in x-direction
+        @param factorY scale-factor in y-direction
+        different values for x and y will lead to a dilation / upsetting deformation
+      */
+      void setScale (double factorX, double factorY) {
+        AffineOp::reset (); 
+        AffineOp::scale (factorX,factorY);
+      }
+          
+      // apply should still be public
+      ///applies the scale
+      using AffineOp::apply;
+  
+      private: // hide the following methods
+      using AffineOp::rotate;
+      using AffineOp::translate;
+    };
+  } // namespace filter
 }
 #endif

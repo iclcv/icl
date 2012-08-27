@@ -39,41 +39,43 @@
 #include <iostream>
 
 namespace icl{
-  
-  /** \cond */
-  class SceneObject;
-  /** \endcond */
-  
-  /// utility structure that defines a hit between a ViewRay and SceneObjects
-  struct Hit{
-    /// constructor (initializes obj with 0 and dist with -1)
-    Hit():obj(0),dist(-1){}
+  namespace geom{
     
-    /// hit SceneObject
-    SceneObject *obj; 
-
-    /// exact position in the world where it was hit
-    Vec pos;   
-
-    /// distance to the originating viewrays origin       
-    float dist;
-
-    /// for sorting by closest distance ot viewray origin
-    inline bool operator<(const Hit &h) const { return dist < h.dist; }
-
-    /// can be used to check wheter there was a hit at all
-    operator bool() const { return obj; }
-
-    /// friendly implemented ostream operator ...
-    friend std::ostream &operator<<(std::ostream &str, const Hit &h){
-      return (h ? (str << "Hit(obj=" << (void*) h.obj << ", dist=" << h.dist 
-                   << ", pos=" << h.pos.transp() << ")" ) 
-              : (str << "Hit(NULL)"));
-    }
-  };
-
-
-
+    /** \cond */
+    class SceneObject;
+    /** \endcond */
+    
+    /// utility structure that defines a hit between a ViewRay and SceneObjects
+    struct Hit{
+      /// constructor (initializes obj with 0 and dist with -1)
+      Hit():obj(0),dist(-1){}
+      
+      /// hit SceneObject
+      SceneObject *obj; 
+  
+      /// exact position in the world where it was hit
+      Vec pos;   
+  
+      /// distance to the originating viewrays origin       
+      float dist;
+  
+      /// for sorting by closest distance ot viewray origin
+      inline bool operator<(const Hit &h) const { return dist < h.dist; }
+  
+      /// can be used to check wheter there was a hit at all
+      operator bool() const { return obj; }
+  
+      /// friendly implemented ostream operator ...
+      friend std::ostream &operator<<(std::ostream &str, const Hit &h){
+        return (h ? (str << "Hit(obj=" << (void*) h.obj << ", dist=" << h.dist 
+                     << ", pos=" << h.pos.transp() << ")" ) 
+                : (str << "Hit(NULL)"));
+      }
+    };
+  
+  
+  
+  } // namespace geom
 }
 
 #endif

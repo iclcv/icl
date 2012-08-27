@@ -36,31 +36,33 @@
 
 using namespace icl;
 namespace icl{
-
-class IntrinsicCalibrator::Data{
-public:
-	int bWidth;
-	int bHeight;
-	int successes;
-	int bSize;
-	int nx;
-	int ny;
-
-	DynMatrix<icl64f>* intrinsic_matrix;
-	DynMatrix<icl64f>* distortion_coeffs;
-
-	Data(unsigned int boardWidth, unsigned int boardHeight, unsigned int boardCount,unsigned int imageWidth ,unsigned int imageHeight):
-		bWidth(boardWidth),bHeight(boardHeight), successes(boardCount),
-		bSize(bWidth*bHeight),nx(imageWidth),ny(imageHeight){
-		intrinsic_matrix = new DynMatrix<icl64f>(3, 3);
-		(*intrinsic_matrix)[8] = 1.0;
-		distortion_coeffs = new DynMatrix<icl64f>(5, 1);
-	}
-
-	~Data(){
-		delete intrinsic_matrix;
-		delete distortion_coeffs;
-	}
+  namespace io{
+  
+  class IntrinsicCalibrator::Data{
+  public:
+  	int bWidth;
+  	int bHeight;
+  	int successes;
+  	int bSize;
+  	int nx;
+  	int ny;
+  
+  	DynMatrix<icl64f>* intrinsic_matrix;
+  	DynMatrix<icl64f>* distortion_coeffs;
+  
+  	Data(unsigned int boardWidth, unsigned int boardHeight, unsigned int boardCount,unsigned int imageWidth ,unsigned int imageHeight):
+  		bWidth(boardWidth),bHeight(boardHeight), successes(boardCount),
+  		bSize(bWidth*bHeight),nx(imageWidth),ny(imageHeight){
+  		intrinsic_matrix = new DynMatrix<icl64f>(3, 3);
+  		(*intrinsic_matrix)[8] = 1.0;
+  		distortion_coeffs = new DynMatrix<icl64f>(5, 1);
+  	}
+  
+  	~Data(){
+  		delete intrinsic_matrix;
+  		delete distortion_coeffs;
+  	}
+  } // namespace io
 };
 
 IntrinsicCalibrator::IntrinsicCalibrator(unsigned int boardWidth, unsigned int boardHeight,

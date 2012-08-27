@@ -37,9 +37,11 @@
 #include<ICLUtils/Exception.h>
 
 namespace icl{
-class FFTException : public ICLException{
-public:
-	FFTException(const std::string &msg):ICLException(msg){}
+  namespace math{
+  class FFTException : public ICLException{
+  public:
+  	FFTException(const std::string &msg):ICLException(msg){}
+  } // namespace math
 };
 }
 #endif /* FFTEXCEPTION_H_ */

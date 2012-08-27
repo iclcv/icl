@@ -39,34 +39,36 @@
 #include <ICLQt/PlotWidget.h>
 
 namespace icl{
-  
-  /// Handle class for image components \ingroup HANDLES
-  class PlotHandle : public GUIHandle<PlotWidget>{
-    public:
-    /// Create an empty handle
-    PlotHandle(){}
+  namespace qt{
     
-    /// create a new ImageHandel
-    PlotHandle(PlotWidget *w, GUIWidget *guiw):GUIHandle<PlotWidget>(w,guiw){}
-    
-    /// re-renders the widget
-    void render();
-
-    // todo: implement several set data method for more convenience
-
-    /// callback registration is not supported for this compoment
-    virtual void registerCallback(const GUI::Callback &cb, const std::string &events="all"){
-      throw ICLException("PlotHandle::registerCallback: you cannot register" 
-                         " Callbacks to this component");
-    }
-
-    /// complex callbacks are not allowed for image-components (this method will throw an exception)
-    virtual void registerCallback(const GUI::ComplexCallback&, const std::string &){
-      throw ICLException("PlotHandle::registerCallback: you cannot register "
-                         "GUI::ComplexCallback instances to an image GUI component");
-    }
-  };
+    /// Handle class for image components \ingroup HANDLES
+    class PlotHandle : public GUIHandle<PlotWidget>{
+      public:
+      /// Create an empty handle
+      PlotHandle(){}
+      
+      /// create a new ImageHandel
+      PlotHandle(PlotWidget *w, GUIWidget *guiw):GUIHandle<PlotWidget>(w,guiw){}
+      
+      /// re-renders the widget
+      void render();
   
+      // todo: implement several set data method for more convenience
+  
+      /// callback registration is not supported for this compoment
+      virtual void registerCallback(const GUI::Callback &cb, const std::string &events="all"){
+        throw ICLException("PlotHandle::registerCallback: you cannot register" 
+                           " Callbacks to this component");
+      }
+  
+      /// complex callbacks are not allowed for image-components (this method will throw an exception)
+      virtual void registerCallback(const GUI::ComplexCallback&, const std::string &){
+        throw ICLException("PlotHandle::registerCallback: you cannot register "
+                           "GUI::ComplexCallback instances to an image GUI component");
+      }
+    };
+    
+  } // namespace qt
 }
 
 #endif

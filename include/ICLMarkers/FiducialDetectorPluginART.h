@@ -40,60 +40,62 @@
 #include <ICLMarkers/FiducialDetectorPluginForQuads.h>
 
 namespace icl{
-  
-  /** \cond */
-  class FiducialDetector;
-  /** \endcond */
-  
-  
-  /// FiducialDetectorPlugin for ARToolkit like markers using binary image patches as marker IDs \ingroup PLUGINS
-  /** This is just a plugin class that is used by the FiducialDetector. Please
-      refer the icl::FiducialDetector class documentation for more details. */
-  class FiducialDetectorPluginART : public FiducialDetectorPluginForQuads{
-    struct Data;
-    Data *data;
-
-    /// only the FiducialDetector can instantiate this class
-    FiducialDetectorPluginART();
-    public:
-
-    /// This class cannot be used 
-    friend class icl::FiducialDetector;
-
-    /// Destructor
-    ~FiducialDetectorPluginART();
+  namespace markers{
     
-    /// loads markers ID's
-    /** @param which this instance of Type icl::Any can be any image filename or filename pattern
-                     <b>Please note:</b> internally, all loaded patterns are stored
-                     by a unique ID. The unique ID is computed from the image filename by
-                     removing the file postfix (e.g. .png) and the files folder prefix (e.g. ./patterns/)
-                     In other words, only the image files base-name is used as key. Therefore,
-                     the pattern files have to be named differently, even if they have different
-                     post-fixes and/or different folders.\n
-                     All image files are loaded/removed. The images are internally converted
-                     to grayscale. Every time the 'match algorithm' property is changed, all loaed
-                     patters are processed in order to optimize matching speed.\n
-                     If markers are removed, again, the filepattern is used to 'glob' all markers
-                     that have to be removed. The special Token '*' is used to remove <b>all</b>
-                     loaded markers.\n
-                     The parameter list params must contain the real markers 'size' in mm
-    */
-    virtual void addOrRemoveMarkers(bool add, const Any &which, const ParamList &params);
-
-    /// Identifies the given image patch using bch decoding
-    virtual FiducialImpl *classifyPatch(const Img8u &image, int *rot, bool returnRejectedQuads,ImageRegion r);
+    /** \cond */
+    class FiducialDetector;
+    /** \endcond */
     
-    /// this method is reimplemented here; it returns the impl's file-basename
-    std::string getName(const FiducialImpl *impl);
-
-    /// describes the special marker image rectificatio parameters
-    virtual void getQuadRectificationParameters(Size &markerSizeWithBorder,
-                                                Size &markerSizeWithoutBorder);
-
-    /// creates marker image from given parameters (see FiducialDetector for more details)
-    virtual Img8u createMarker(const Any &whichOne,const Size &size, const ParamList &params);
-  };
+    
+    /// FiducialDetectorPlugin for ARToolkit like markers using binary image patches as marker IDs \ingroup PLUGINS
+    /** This is just a plugin class that is used by the FiducialDetector. Please
+        refer the icl::FiducialDetector class documentation for more details. */
+    class FiducialDetectorPluginART : public FiducialDetectorPluginForQuads{
+      struct Data;
+      Data *data;
+  
+      /// only the FiducialDetector can instantiate this class
+      FiducialDetectorPluginART();
+      public:
+  
+      /// This class cannot be used 
+      friend class icl::FiducialDetector;
+  
+      /// Destructor
+      ~FiducialDetectorPluginART();
+      
+      /// loads markers ID's
+      /** @param which this instance of Type icl::Any can be any image filename or filename pattern
+                       <b>Please note:</b> internally, all loaded patterns are stored
+                       by a unique ID. The unique ID is computed from the image filename by
+                       removing the file postfix (e.g. .png) and the files folder prefix (e.g. ./patterns/)
+                       In other words, only the image files base-name is used as key. Therefore,
+                       the pattern files have to be named differently, even if they have different
+                       post-fixes and/or different folders.\n
+                       All image files are loaded/removed. The images are internally converted
+                       to grayscale. Every time the 'match algorithm' property is changed, all loaed
+                       patters are processed in order to optimize matching speed.\n
+                       If markers are removed, again, the filepattern is used to 'glob' all markers
+                       that have to be removed. The special Token '*' is used to remove <b>all</b>
+                       loaded markers.\n
+                       The parameter list params must contain the real markers 'size' in mm
+      */
+      virtual void addOrRemoveMarkers(bool add, const Any &which, const ParamList &params);
+  
+      /// Identifies the given image patch using bch decoding
+      virtual FiducialImpl *classifyPatch(const Img8u &image, int *rot, bool returnRejectedQuads,ImageRegion r);
+      
+      /// this method is reimplemented here; it returns the impl's file-basename
+      std::string getName(const FiducialImpl *impl);
+  
+      /// describes the special marker image rectificatio parameters
+      virtual void getQuadRectificationParameters(Size &markerSizeWithBorder,
+                                                  Size &markerSizeWithoutBorder);
+  
+      /// creates marker image from given parameters (see FiducialDetector for more details)
+      virtual Img8u createMarker(const Any &whichOne,const Size &size, const ParamList &params);
+    };
+  } // namespace markers
 }
 
 #endif
