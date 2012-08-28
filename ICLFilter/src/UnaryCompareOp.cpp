@@ -35,6 +35,8 @@
 #include <ICLFilter/UnaryCompareOp.h>
 #include <ICLCore/Img.h>
 
+using namespace icl::utils;
+using namespace icl::core;
 
 namespace icl {
   namespace filter{
@@ -170,10 +172,10 @@ namespace icl {
        if (!UnaryOp::prepare (ppoDst, poSrc, depth8u)) return;
        switch (poSrc->getDepth()){
   #define ICL_INSTANTIATE_DEPTH(T) case depth##T:                                              \
-                                   icl::cmp(poSrc->asImg<icl##T>(),(*ppoDst)->asImg<icl8u>(),  \
-                                   clipped_cast<icl64f,icl##T>(m_dValue),                        \
+         icl::filter::cmp(poSrc->asImg<icl##T>(),(*ppoDst)->asImg<icl8u>(), \
+                          clipped_cast<icl64f,icl##T>(m_dValue),        \
                                    clipped_cast<icl64f,icl##T>(m_dTolerance),                   \
-                                   m_eOpType); break;
+                          m_eOpType); break;
          ICL_INSTANTIATE_ALL_DEPTHS;
          default: ICL_INVALID_FORMAT; break;
   #undef ICL_INSTANTIATE_DEPTH

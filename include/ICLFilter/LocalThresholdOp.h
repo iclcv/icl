@@ -166,7 +166,7 @@ namespace icl{
         The experimental gamma-slope-computation is much more expensive: Here, the RegionMean algorithms
         needs about 25ms.
     */
-    class LocalThresholdOp : public UnaryOp, public Uncopyable{
+    class LocalThresholdOp : public UnaryOp, public utils::Uncopyable{
       public:
       
       /// Internally used algorithm 
@@ -197,7 +197,7 @@ namespace icl{
       /** roi support is realized by copying the current input image ROI into a 
           dedicate image buffer with no roi set
       **/
-      virtual void apply(const ImgBase *src, ImgBase **dst);
+      virtual void apply(const core::ImgBase *src, core::ImgBase **dst);
   
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
@@ -233,7 +233,7 @@ namespace icl{
   
       /// internal algorithm function
       template<algorithm a>
-      void apply_a(const ImgBase *src, ImgBase **dst);
+      void apply_a(const core::ImgBase *src, core::ImgBase **dst);
       
       /// mask size 
       // property unsigned int m_maskSize;
@@ -245,10 +245,10 @@ namespace icl{
       // property float m_gammaSlope;
       
       /// input ROI buffer image for ROI support
-      ImgBase *m_roiBufSrc;
+      core::ImgBase *m_roiBufSrc;
   
       /// output ROI buffer image for ROI support
-      ImgBase *m_roiBufDst;
+      core::ImgBase *m_roiBufDst;
       
       /// IntegralImgOp for RegionMean algorithm
       IntegralImgOp *m_iiOp;
@@ -260,10 +260,10 @@ namespace icl{
       BinaryCompareOp *m_cmp;
   
       /// first buffer for tiledXXX algorithsm
-      ImgBase *m_tiledBuf1;
+      core::ImgBase *m_tiledBuf1;
   
       /// second buffer for tiledXXX algorithsm
-      ImgBase *m_tiledBuf2;
+      core::ImgBase *m_tiledBuf2;
   
     };
     

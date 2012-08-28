@@ -35,6 +35,9 @@
 #include <ICLFilter/MirrorOp.h>
 #include <ICLCore/Img.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
   namespace filter{
      template<typename T>

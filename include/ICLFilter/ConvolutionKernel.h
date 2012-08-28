@@ -145,10 +145,10 @@ namespace icl{
           // where *(x,y)* is a convolution at location (x,y)
           </code>
       */
-      ConvolutionKernel(int *data, const Size &size,int factor=1, bool deepCopy=true) throw (InvalidSizeException);
+      ConvolutionKernel(int *data, const utils::Size &size,int factor=1, bool deepCopy=true) throw (utils::InvalidSizeException);
       
       /// create a float valued kernel
-      ConvolutionKernel(float *data, const Size &size, bool deepCopy=true) throw (InvalidSizeException);
+      ConvolutionKernel(float *data, const utils::Size &size, bool deepCopy=true) throw (utils::InvalidSizeException);
       
       /// create a fixed kernel (optionally as float kernel)
       ConvolutionKernel(fixedType t, bool useFloats=false);
@@ -171,7 +171,7 @@ namespace icl{
       inline int getDim() const { return size.getDim(); }
       
       /// returns the kernels size
-      inline const Size &getSize() const { return size; }
+      inline const utils::Size &getSize() const { return size; }
       
       /// returns the kernels width
       inline int getWidth() const { return size.width; }
@@ -207,7 +207,7 @@ namespace icl{
       void detach();
       
     private:
-      Size size;    //!< associated size
+      utils::Size size;    //!< associated size
       float *fdata; //!< float data pointer
       int *idata;   //!< int data pointer
       int factor;   //!< scaling factor for integer kernels

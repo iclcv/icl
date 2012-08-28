@@ -55,7 +55,7 @@ namespace icl{
       InplaceOp():m_bROIOnly(true){}
   
       /// apply function transforms source image pixels inplace
-      virtual ImgBase* apply(ImgBase *src)=0;
+      virtual core::ImgBase* apply(core::ImgBase *src)=0;
       
       /// setup the operation to work on the input images ROI only or not
       void setROIOnly(bool roiOnly) { 
@@ -75,3 +75,4 @@ namespace icl{
 }
 
 #endif
+

@@ -37,7 +37,9 @@
 #include <cstring>
 #include <ICLMath/FixedMatrix.h>
 
-using std::memcpy;
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
 
 namespace icl{
   namespace filter{

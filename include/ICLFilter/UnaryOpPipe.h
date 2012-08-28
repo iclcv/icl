@@ -37,11 +37,12 @@
 #include <vector>
 #include <ICLFilter/UnaryOp.h>
 namespace icl{
+  /** \cond */
+  namespace core{  class ImgBase; }
+  /** \endcond */
+
   namespace filter{
     
-    /** \cond */
-    class ImgBase;
-    /** \endcond */
     
     /// Utility class that helps applying UnaryOps one after another \ingroup UNARY
     /** Consider a default computer vision system, which has some
@@ -100,7 +101,7 @@ namespace icl{
       ~UnaryOpPipe();
       
       /// appends a new op on the end of this pipe (ownership of op and im is passed to the pipe)
-      void add(UnaryOp *op, ImgBase*im=0);
+      void add(UnaryOp *op, core::ImgBase*im=0);
   
       /// stream based wrapper for the add function (calls add(op,0))
       /** ownership of op is passed to the pipe*/
@@ -108,10 +109,10 @@ namespace icl{
         add(op); return *this;
       }    
       /// applies all ops sequentially 
-      virtual void apply(const ImgBase *src, ImgBase **dst);
+      virtual void apply(const core::ImgBase *src, core::ImgBase **dst);
   
       /// This function is reimplemented here; it uses getLastImage() as destination image
-      virtual const ImgBase *apply(const ImgBase *src);
+      virtual const core::ImgBase *apply(const core::ImgBase *src);
       
       /// returns the number of contained ops
       int getLength() const;
@@ -120,7 +121,7 @@ namespace icl{
       UnaryOp *&getOp(int i);
       
       /// returns the result buffer image at given index
-      ImgBase *&getImage(int i);
+      core::ImgBase *&getImage(int i);
       
       /// returns the last image (which is not used by default)
       /** This image is only used, if it is given a 2nd parameter to
@@ -129,14 +130,14 @@ namespace icl{
           MyPipe.apply(mySourceImagePtr,&(MyPipe.getLastImage());
           \endcode
       **/
-      ImgBase *&getLastImage();  
+      core::ImgBase *&getLastImage();  
       
       private:
       /// Internal buffer of ops
       std::vector<UnaryOp*> ops;
       
       /// Internal buffer of result images
-      std::vector<ImgBase*> ims;
+      std::vector<core::ImgBase*> ims;
     };
   } // namespace filter
 }

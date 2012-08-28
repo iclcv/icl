@@ -92,7 +92,7 @@ namespace icl {
           @param poSrc the source image
           @param ppoDst pointer to the destination image
         */
-        virtual void apply (const ImgBase *poSrc, ImgBase **ppoDst);
+        virtual void apply (const core::ImgBase *poSrc, core::ImgBase **ppoDst);
         
         /// Import unaryOps apply function without destination image
         using UnaryOp::apply;
@@ -157,12 +157,12 @@ namespace icl {
         void setType(optype type) {m_eType=type;}
         
   #define ICL_INSTANTIATE_DEPTH(T)                                        \
-        static void tlt(const Img## T*, Img##T*, icl##T);                 \
-        static void tgt(const Img## T*, Img##T*, icl##T);                 \
-        static void tltgt(const Img## T*, Img##T*, icl##T, icl##T);       \
-        static void tltVal(const Img## T*, Img##T*, icl##T, icl##T tVal); \
-        static void tgtVal(const Img## T*, Img##T*, icl##T, icl##T tVal); \
-        static void tltgtVal(const Img## T*, Img##T*, icl##T, icl##T, icl##T, icl##T);
+        static void tlt(const core::Img## T*, core::Img##T*, icl##T);         \
+        static void tgt(const core::Img## T*, core::Img##T*, icl##T);                 \
+        static void tltgt(const core::Img## T*, core::Img##T*, icl##T, icl##T);       \
+        static void tltVal(const core::Img## T*, core::Img##T*, icl##T, icl##T tVal); \
+        static void tgtVal(const core::Img## T*, core::Img##T*, icl##T, icl##T tVal); \
+        static void tltgtVal(const core::Img## T*, core::Img##T*, icl##T, icl##T, icl##T, icl##T);
         ICL_INSTANTIATE_ALL_DEPTHS
   #undef ICL_INSTANTIATE_DEPTH
   
@@ -173,17 +173,17 @@ namespace icl {
         float m_fHighVal;
         optype m_eType;
         /// less than thresholding
-        void tlt(const ImgBase *poSrc, ImgBase **ppoDst, float threshold);
+        void tlt(const core::ImgBase *poSrc, core::ImgBase **ppoDst, float threshold);
         /// greater than thresholding
-        void tgt(const ImgBase *poSrc, ImgBase **ppoDst, float threshold);
+        void tgt(const core::ImgBase *poSrc, core::ImgBase **ppoDst, float threshold);
         /// less than and greater than thresholding
-        void tltgt(const ImgBase *poSrc, ImgBase **ppoDst, float low, float hi);
+        void tltgt(const core::ImgBase *poSrc, core::ImgBase **ppoDst, float low, float hi);
         /// less than thresholding with explicit set value
-        void tltVal(const ImgBase *poSrc, ImgBase **ppoDst, float threshold, float val);
+        void tltVal(const core::ImgBase *poSrc, core::ImgBase **ppoDst, float threshold, float val);
         /// greater than thresholding with explicit set value
-        void tgtVal(const ImgBase *poSrc, ImgBase **ppoDst, float threshold, float val);
+        void tgtVal(const core::ImgBase *poSrc, core::ImgBase **ppoDst, float threshold, float val);
         /// less than and greater than thresholding with explicit set values
-        void tltgtVal(const ImgBase *poSrc, ImgBase **ppoDst, 
+        void tltgtVal(const core::ImgBase *poSrc, core::ImgBase **ppoDst, 
                      float low, float lowVal, float hi, float hiVal);
   
      };

@@ -35,6 +35,9 @@
 #include <ICLFilter/OpROIHandler.h>
 #include <ICLUtils/Macros.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl {
   namespace filter{
   

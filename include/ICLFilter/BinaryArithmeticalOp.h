@@ -69,7 +69,7 @@ namespace icl {
         @param poSrc2 second operand (image)
         @param poDst pointer to the destination image, to store the result
       */
-      virtual void apply(const ImgBase *poSrc1,const ImgBase *poSrc2, ImgBase **poDst);
+      virtual void apply(const core::ImgBase *poSrc1,const core::ImgBase *poSrc2, core::ImgBase **poDst);
   
       /// import apply symbol from parent class
       using BinaryOp::apply;

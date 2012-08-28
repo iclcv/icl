@@ -155,7 +155,7 @@ namespace icl {
         
     **/
     template<class T>
-    class LUTOp3Channel : public UnaryOp, public Uncopyable {
+    class LUTOp3Channel : public UnaryOp, public utils::Uncopyable {
       public:
       
       /// Internal plugin class for the LUTOp3Channel \ingroup OTHER
@@ -226,7 +226,7 @@ namespace icl {
       /** @param src source image
           @param dst destination image**
        */
-      virtual void apply(const ImgBase *src, ImgBase **dst);
+      virtual void apply(const core::ImgBase *src, core::ImgBase **dst);
       
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
@@ -248,7 +248,7 @@ namespace icl {
       private:
       
       /// Image that holds the lut data
-      Img<T> m_oLUT;
+      core::Img<T> m_oLUT;
       
       /// Current plugin pointer
       Plugin *m_poPlugin;

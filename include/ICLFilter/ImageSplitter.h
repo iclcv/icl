@@ -64,13 +64,13 @@ namespace icl{
     class ImageSplitter{
       public:
       /// splits a source image into given number of parts
-      static std::vector<ImgBase*> split(ImgBase *src, int nParts);
+      static std::vector<core::ImgBase*> split(core::ImgBase *src, int nParts);
       
       /// splits a const source image into a given number of const parts
-      static const std::vector<ImgBase*> split(const ImgBase *src, int nParts);
+      static const std::vector<core::ImgBase*> split(const core::ImgBase *src, int nParts);
       
       /// releases all images within the given vector
-      static void release(const std::vector<ImgBase*> &v);
+      static void release(const std::vector<core::ImgBase*> &v);
       
       private:
       /// private constructor 
@@ -79,7 +79,7 @@ namespace icl{
       /** Note: the resulting images must be deleted manually <b>and</b>
           the given parts vector must be given, initalized with NULL pointers.
       **/
-      static void splitImage(ImgBase *src, std::vector<ImgBase*> &parts);
+      static void splitImage(core::ImgBase *src, std::vector<core::ImgBase*> &parts);
     };
   } // namespace filter
 }

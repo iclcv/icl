@@ -34,6 +34,9 @@
 
 #include <ICLFilter/WeightedSumOp.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl {
   namespace filter{
     using namespace std;

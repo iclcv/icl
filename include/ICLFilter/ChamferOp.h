@@ -235,7 +235,7 @@ namespace icl{
                        apply(image,&image)
                        \endcode
       */
-      virtual void apply(const ImgBase *poSrc, ImgBase **ppoDst);
+      virtual void apply(const core::ImgBase *poSrc, core::ImgBase **ppoDst);
   
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
@@ -249,7 +249,7 @@ namespace icl{
           @param roi optionally given destination image ROI ( if null, the whole image rect is used, otherwise, only
                      model-points, which are inside the images ROI are rendered
       */
-      static void renderModel(const std::vector<Point> &model, ImgBase **image, const Size &size, icl32s bg=0, icl32s fg=255, Rect roi=Rect::null);
+      static void renderModel(const std::vector<utils::Point> &model, core::ImgBase **image, const utils::Size &size, icl32s bg=0, icl32s fg=255, utils::Rect roi=utils::Rect::null);
       
       
       /// utility function to calculate the directed Hausdorff distance between an image and a model
@@ -261,8 +261,8 @@ namespace icl{
           @param pm penaltyMode to use
           @param penaltyValue penalty value to use (if pm is not noPenalty)
       */
-      static double computeDirectedHausdorffDistance(const Img32s *chamferImage, 
-                                                     const std::vector<Point> &model,
+      static double computeDirectedHausdorffDistance(const core::Img32s *chamferImage, 
+                                                     const std::vector<utils::Point> &model,
                                                      hausdorffMetric m=hausdorff_mean, 
                                                      outerROIPenaltyMode pm=noPenalty,
                                                      icl32s penaltyValue=0);
@@ -276,8 +276,8 @@ namespace icl{
           @param pm penaltyMode to use
           @param penaltyValue penalty value to use (if pm is not noPenalty)
       */
-      static double computeDirectedHausdorffDistance(const Img32s *chamferImage, 
-                                                     const Img32s *modelChamferImage, 
+      static double computeDirectedHausdorffDistance(const core::Img32s *chamferImage, 
+                                                     const core::Img32s *modelChamferImage, 
                                                      ChamferOp::hausdorffMetric m, 
                                                      ChamferOp::outerROIPenaltyMode pm=noPenalty,
                                                      icl32s penaltyValue=0);
@@ -296,8 +296,8 @@ namespace icl{
           @param pm penaltyMode to use
           @param penaltyValue penalty value to use (if pm is not noPenalty)
       */
-      static double computeSymmetricHausdorffDistance(const Img32s *chamferImageA, 
-                                                      const Img32s *chamferImageB,
+      static double computeSymmetricHausdorffDistance(const core::Img32s *chamferImageA, 
+                                                      const core::Img32s *chamferImageB,
                                                       hausdorffMetric m=hausdorff_mean,
                                                       ChamferOp::outerROIPenaltyMode pm=noPenalty,
                                                       icl32s penaltyValue=0);
@@ -324,8 +324,8 @@ namespace icl{
           @param coA ChamferOp object to exploit for the creation of the chamfer-map for point setA
           @param coB ChamferOp object to exploit for the creation of the chamfer-map for point setB
       */
-      static double computeSymmetricHausdorffDistance(const std::vector<Point> setA, const Size &sizeA, const Rect &roiA, ImgBase **bufferA, 
-                                                      const std::vector<Point> setB, const Size &sizeB, const Rect &roiB, ImgBase **bufferB, 
+      static double computeSymmetricHausdorffDistance(const std::vector<utils::Point> setA, const utils::Size &sizeA, const utils::Rect &roiA, core::ImgBase **bufferA, 
+                                                      const std::vector<utils::Point> setB, const utils::Size &sizeB, const utils::Rect &roiB, core::ImgBase **bufferB, 
                                                       hausdorffMetric m=hausdorff_mean,
                                                       ChamferOp::outerROIPenaltyMode pm=noPenalty,
                                                       icl32s penaltyValue=0,
@@ -346,30 +346,16 @@ namespace icl{
           @param penaltyValue penalty value to use (if pm is not noPenalty)
           @param co ChamferOp object to exploit for the creation of the chamfer-map for point setB
       */
-      static double computeSymmeticHausdorffDistance(const Img32s *chamferImage, 
-                                                     const std::vector<Point> &model, 
-                                                     const Size &modelImageSize,
-                                                     const Rect &modelImageROI,
-                                                     ImgBase **bufferImageA, 
-                                                     ImgBase **bufferImageB, 
+      static double computeSymmeticHausdorffDistance(const core::Img32s *chamferImage, 
+                                                     const std::vector<utils::Point> &model, 
+                                                     const utils::Size &modelImageSize,
+                                                     const utils::Rect &modelImageROI,
+                                                     core::ImgBase **bufferImageA, 
+                                                     core::ImgBase **bufferImageB, 
                                                      hausdorffMetric m=hausdorff_mean,
                                                      ChamferOp::outerROIPenaltyMode pm=noPenalty,
                                                      icl32s penaltyValue=0,
                                                      ChamferOp co=ChamferOp());
-      /*
-      static double computeDirectedHausdorffDistance(const Img32s *chamferImageA, const Img32s *chamferImageB, ChamferOp::hausdorffMetric m);
-  
-      static double computeSymmetricHausdorffDistance(const Img32s *chamferImageA, const Img32s *chamferImageB,hausdorffMetric m=hausdorff_mean);
-      static double computeSymmetricHausdorffDistance(const std::vector<Point> setA, ImgBase **bufferA, 
-                                                      const std::vector<Point> setB, ImgBase **bufferB,
-                                                      const Size &imageSize,hausdorffMetric m=hausdorff_mean);
-      static double computeSymmeticHausdorffDistance(const Img32s *chamferImage, 
-                                                     const std::vector<Point> &model, 
-                                                     ImgBase **bufferImage, 
-                                                     hausdorffMetric m=hausdorff_mean,
-                                                     int penalty=-1,
-                                                     metric m=metric_7071_10000);
-      */
       
       
       private:
@@ -386,7 +372,7 @@ namespace icl{
       bool m_bScaleUpResult;
       
       /// temporarily use buffer
-      Img32s m_oBufferImage;
+      core::Img32s m_oBufferImage;
     };
   } // namespace filter
 }

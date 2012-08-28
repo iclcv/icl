@@ -188,14 +188,14 @@ namespace icl {
       /** @param maskSize of odd width and height
           Even width or height is increased to next higher odd value.
       **/
-      MedianOp (const Size &maskSize):NeighborhoodOp(adaptSize(maskSize)){}
+      MedianOp (const utils::Size &maskSize):NeighborhoodOp(adaptSize(maskSize)){}
       
       /// applies the median operation on poSrc and stores the result in poDst
       /** The depth, channel count and size of poDst is adapted to poSrc' ROI:
           @param poSrc  source image
           @param ppoDst pointer to destination image
       **/
-      void apply(const ImgBase *poSrc, ImgBase **ppoDst);
+      void apply(const core::ImgBase *poSrc, core::ImgBase **ppoDst);
       
       /// Import unaryOps apply function without destination image
       using NeighborhoodOp::apply;
@@ -207,8 +207,8 @@ namespace icl {
           @return adjusted size (width and height are rounded up to the next
                            higher odd value
       **/
-      virtual Size adaptSize(const Size &size){
-        return Size(1+ 2*(size.width/2),1+ 2*(size.height/2));
+      virtual utils::Size adaptSize(const utils::Size &size){
+        return utils::Size(1+ 2*(size.width/2),1+ 2*(size.height/2));
       }
   
       

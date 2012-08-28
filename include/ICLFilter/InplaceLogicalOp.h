@@ -92,7 +92,7 @@ namespace icl{
       m_eOpType(t),m_dValue(value){}
       
       /// applies this operation in-place on given source image
-      virtual ImgBase *apply(ImgBase *src);
+      virtual core::ImgBase *apply(core::ImgBase *src);
       
       /// returns current value
       icl64f getValue() const { return m_dValue; }

@@ -36,6 +36,9 @@
 #include <ICLUtils/Exception.h>
 #include <math.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{  
   namespace filter{
   

@@ -36,7 +36,8 @@
 #include <ICLFilter/ConvolutionOp.h>
 #include <math.h>
 
-using namespace std;
+using namespace icl::utils;
+using namespace icl::core;
 
 namespace icl{
   namespace filter{
@@ -130,9 +131,9 @@ namespace icl{
       }
     }
     
-    vector<icl32f> GaborOp::apply(const ImgBase *poSrc, const Point &p){
-      ICLASSERT_RETURN_VAL( poSrc && poSrc->getChannels() && poSrc->getSize() != Size::null, vector<icl32f>() );
-      vector<icl32f> v;
+    std::vector<icl32f> GaborOp::apply(const ImgBase *poSrc, const Point &p){
+      ICLASSERT_RETURN_VAL( poSrc && poSrc->getChannels() && poSrc->getSize() != Size::null, std::vector<icl32f>() );
+      std::vector<icl32f> v;
       
       
       Img32f resPix(Size(1,1),poSrc->getChannels());

@@ -35,8 +35,11 @@
 #include <ICLFilter/WeightChannelsOp.h>
 #include <ICLFilter/UnaryArithmeticalOp.h>
 
+using namespace icl::core;
+
 namespace icl {
-  namespace filter{
+  
+namespace filter{
     
     using namespace std;
     

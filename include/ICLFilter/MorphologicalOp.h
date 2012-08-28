@@ -88,7 +88,7 @@ namespace icl {
         <b>left: binary image results, right: gray image results</b>
         \image html  morphologic_operator_results.png
     */
-    class MorphologicalOp : public NeighborhoodOp, public Uncopyable {
+    class MorphologicalOp : public NeighborhoodOp, public utils::Uncopyable {
     public:
   
     /// this enum specifiy all possible morphological operations
@@ -115,13 +115,13 @@ namespace icl {
           @param mask  If != NULL, only pixels within that mask that are not 0 are
                        are used       
       */
-    MorphologicalOp (optype t, const Size &maskSize=Size(3,3), const icl8u *mask=0);
+    MorphologicalOp (optype t, const utils::Size &maskSize=utils::Size(3,3), const icl8u *mask=0);
       
       /// Destructor
       ~MorphologicalOp ();
     
       /// Change mask
-      void setMask (Size size, const icl8u* pcMask=0);
+      void setMask (utils::Size size, const icl8u* pcMask=0);
       
       /// returns mask
       /** 
@@ -133,7 +133,7 @@ namespace icl {
       /** 
         @return mask size
       */
-      Size getMaskSize() const;
+      utils::Size getMaskSize() const;
       
       void setOptype(optype type);
       
@@ -144,7 +144,7 @@ namespace icl {
       optype getOptype() const;
       
       /// Performs morph of an image with given optype and mask.
-      void apply (const ImgBase *poSrc, ImgBase **ppoDst);
+      void apply (const core::ImgBase *poSrc, core::ImgBase **ppoDst);
       
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
@@ -153,15 +153,15 @@ namespace icl {
     private:
   
       template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, const Ipp8u*, IppiSize, IppiPoint)>
-      IppStatus ippiMorphologicalCall (const Img<T> *src, Img<T> *dst);
+      IppStatus ippiMorphologicalCall (const core::Img<T> *src, core::Img<T> *dst);
       template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize)>
-      IppStatus ippiMorphologicalCall3x3 (const Img<T> *src, Img<T> *dst);
+      IppStatus ippiMorphologicalCall3x3 (const core::Img<T> *src, core::Img<T> *dst);
   
       template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, _IppiBorderType, IppiMorphState*)>
-      IppStatus ippiMorphologicalBorderReplicateCall (const Img<T> *src, Img<T> *dst,IppiMorphState *state);
+      IppStatus ippiMorphologicalBorderReplicateCall (const core::Img<T> *src, core::Img<T> *dst,IppiMorphState *state);
   
       template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, IppiBorderType, IppiMorphAdvState*)>
-      IppStatus ippiMorphologicalBorderCall (const Img<T> *src, Img<T> *dst, IppiMorphAdvState *advState);
+      IppStatus ippiMorphologicalBorderCall (const core::Img<T> *src, core::Img<T> *dst, IppiMorphAdvState *advState);
   
       typedef IppiMorphState ICLMorphState ;
       typedef IppiMorphAdvState ICLMorphAdvState;
@@ -173,11 +173,11 @@ namespace icl {
       ImgBase *m_gradientBorderBuffer_2;
   
       template<class T>
-      void apply_t(const ImgBase *src, ImgBase **dst);
+      void apply_t(const core::ImgBase *src, core::ImgBase **dst);
   #endif
     private:
       icl8u * m_pcMask;
-      Size m_oMaskSizeMorphOp; // actually masksize of NeighborhoodOp and MorphOp may be different
+      utils::Size m_oMaskSizeMorphOp; // actually masksize of NeighborhoodOp and MorphOp may be different
       ICLMorphState* m_pState8u;
       ICLMorphState* m_pState32f;
       ICLMorphAdvState* m_pAdvState8u;
@@ -189,10 +189,10 @@ namespace icl {
       bool m_bHas_changed;
       bool m_bHas_changedAdv;
       void deleteMorphStates();
-      void checkMorphAdvState8u(const Size roiSize);
-      void checkMorphAdvState32f(const Size roiSize);
-      void checkMorphState8u(const Size roiSize);
-      void checkMorphState32f(const Size roiSize);
+      void checkMorphAdvState8u(const utils::Size roiSize);
+      void checkMorphAdvState32f(const utils::Size roiSize);
+      void checkMorphState8u(const utils::Size roiSize);
+      void checkMorphState32f(const utils::Size roiSize);
     
       
       optype m_eType;

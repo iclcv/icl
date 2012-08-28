@@ -44,7 +44,7 @@ namespace icl{
     class RotateOp : public AffineOp {
       public:
       /// Constructor
-      RotateOp (double dAngle=0.0, scalemode eInterpolate=interpolateLIN) :
+      RotateOp (double dAngle=0.0, core::scalemode eInterpolate=core::interpolateLIN) :
         AffineOp (eInterpolate) {
           setAngle(dAngle);
         }

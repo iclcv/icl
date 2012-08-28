@@ -119,7 +119,7 @@ namespace icl{
         - \f$\gamma\f$ aspect-ratio of the Gaussian
         
     **/
-    class GaborOp : public UnaryOp, public Uncopyable{
+    class GaborOp : public UnaryOp, public utils::Uncopyable{
       public:
       /// creates an empty GaborOp
       GaborOp();
@@ -142,7 +142,7 @@ namespace icl{
           -# \f$\theta=1\f$ and \f$\sigma=200\f$
           -# \f$\theta=2\f$ and \f$\sigma=200\f$
       */
-      GaborOp(const Size &kernelSize,
+      GaborOp(const utils::Size &kernelSize,
               std::vector<icl32f> lambdas,
               std::vector<icl32f> thetas,
               std::vector<icl32f> psis,
@@ -154,7 +154,7 @@ namespace icl{
       /// sets the current kernel size
       /** if the kernels have already been created, they are updated to this
           new size value */
-      void setKernelSize(const Size &size);
+      void setKernelSize(const utils::Size &size);
       
       /// add a new lambda value
       void addLambda(float lambda);
@@ -178,7 +178,7 @@ namespace icl{
       /** The output image gets as many channels as kernels could be created by
           combining given parameters. Channels c of ppoDst is complies the 
           convolution result of the c-th kernel. */
-      virtual void apply(const ImgBase *poSrc, ImgBase **ppoDst);
+      virtual void apply(const core::ImgBase *poSrc, core::ImgBase **ppoDst);
   
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
@@ -186,7 +186,7 @@ namespace icl{
       /// apply all filters to an image at a specific position
       /** The result vector contains the filter-response for all
           kernels */
-      std::vector<icl32f> apply(const ImgBase *poSrc, const Point &p);
+      std::vector<icl32f> apply(const core::ImgBase *poSrc, const utils::Point &p);
       
       /// static function to create a gabor kernel by given gabor parameters
       /** As reminder:
@@ -196,10 +196,11 @@ namespace icl{
         where \f[ x' = x \cos\theta + y \sin\theta\,  \f]
         and \f[ y' = -x \sin\theta + y \cos\theta\, \f]
       */
-      static Img32f *createKernel(const Size &size, float lambda, float theta, float psi, float sigma, float gamma);
+      static core::Img32f *createKernel(const utils::Size &size, float lambda, 
+                                  float theta, float psi, float sigma, float gamma);
   
       /// returns all currently created kernels
-      const std::vector<Img32f> &getKernels() const { return m_vecKernels; }
+      const std::vector<core::Img32f> &getKernels() const { return m_vecKernels; }
      
       
       private:
@@ -209,9 +210,9 @@ namespace icl{
       std::vector<icl32f> m_vecSigmas;
       std::vector<icl32f> m_vecGammas;
       
-      std::vector<Img32f> m_vecKernels;
-      std::vector<ImgBase*> m_vecResults;
-      Size m_oKernelSize;
+      std::vector<core::Img32f> m_vecKernels;
+      std::vector<core::ImgBase*> m_vecResults;
+      utils::Size m_oKernelSize;
     };
   } // namespace filter
 }

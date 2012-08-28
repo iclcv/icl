@@ -35,7 +35,8 @@
 #include <ICLFilter/ImageSplitter.h>
 #include <math.h>
 
-using std::vector;
+using namespace icl::utils;
+using namespace icl::core;
 
 namespace icl{
   namespace filter{
@@ -44,7 +45,7 @@ namespace icl{
     //n=4   10     20     30    40    50
     //
     
-    void ImageSplitter::splitImage(ImgBase *src, vector<ImgBase*> &parts){
+    void ImageSplitter::splitImage(ImgBase *src, std::vector<ImgBase*> &parts){
       Rect r = src->getROI();
       int n = (int)parts.size();
       ICLASSERT_RETURN(n);

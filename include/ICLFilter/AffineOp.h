@@ -86,10 +86,10 @@ namespace icl{
         * linear interpolation 52ms
   
     */
-    class AffineOp : public BaseAffineOp, public Uncopyable {
+    class AffineOp : public BaseAffineOp, public utils::Uncopyable {
       public:
       /// Constructor
-      AffineOp (scalemode eInterpolate=interpolateLIN);
+      AffineOp (core::scalemode eInterpolate=core::interpolateLIN);
       /// resets the internal Matrix
       /** to
           <pre>
@@ -122,7 +122,7 @@ namespace icl{
       }
       
       /// Applies the affine transform to the image
-      virtual void apply (const ImgBase *poSrc, ImgBase **ppoDst);
+      virtual void apply (const core::ImgBase *poSrc, core::ImgBase **ppoDst);
   
       /// import from super-class
       using BaseAffineOp::apply;
@@ -141,18 +141,18 @@ namespace icl{
       
       private:
       /// array of class methods used to transform depth8u and depth32f images
-      void (AffineOp::*m_aMethods[depthLast+1])(const ImgBase *poSrc, ImgBase *poDst); 
+      void (AffineOp::*m_aMethods[core::depthLast+1])(const core::ImgBase *poSrc, core::ImgBase *poDst); 
       
       template<typename T>
-      void affine (const ImgBase *poSrc, ImgBase *poDst);
+      void affine (const core::ImgBase *poSrc, core::ImgBase *poDst);
       
       void applyT (const double p[2], double aResult[2]);
       static void useMinMax (const double aCur[2], 
                              double aMin[2], double aMax[2]);
-      void getShiftAndSize (const Rect& roi, Size& size, 
+      void getShiftAndSize (const utils::Rect& roi, utils::Size& size, 
                             double& xShift, double& yShift);
       double    m_aadT[2][3];
-      scalemode m_eInterpolate;
+      core::scalemode m_eInterpolate;
       
       /// internal flag
       bool m_adaptResultImage;

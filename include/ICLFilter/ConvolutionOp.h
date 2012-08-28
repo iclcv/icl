@@ -97,7 +97,7 @@ namespace icl {
     in two Constructors.
     */
   
-    class ConvolutionOp : public NeighborhoodOp, public Uncopyable{
+    class ConvolutionOp : public NeighborhoodOp, public utils::Uncopyable{
       public:
   
       /// Default constructor (force unsigned is set to false)
@@ -112,7 +112,7 @@ namespace icl {
           @param src  source image
           @param dst destination image
       */
-      void apply(const ImgBase *src, ImgBase **dst);
+      void apply(const core::ImgBase *src, core::ImgBase **dst);
       
       /// Import unaryOps apply function without destination image
       using NeighborhoodOp::apply;

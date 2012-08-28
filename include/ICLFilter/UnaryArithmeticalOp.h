@@ -77,7 +77,7 @@ namespace icl {
         @param poSrc first operand (image)
         @param ppoDst destination image, to store the result
       */
-      virtual void apply(const ImgBase *poSrc, ImgBase **ppoDst);
+      virtual void apply(const core::ImgBase *poSrc, core::ImgBase **ppoDst);
   
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;

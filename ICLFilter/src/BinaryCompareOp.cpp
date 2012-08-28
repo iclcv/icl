@@ -35,6 +35,8 @@
 #include <ICLFilter/BinaryCompareOp.h>
 #include <ICLCore/Img.h>
 
+using namespace icl::utils;
+using namespace icl::core;
 
 namespace icl {
   namespace filter{

@@ -35,13 +35,16 @@
 #include <ICLFilter/DynamicConvolutionOp.h>
 #include <ICLCore/Img.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
   namespace filter{
   
     DynamicConvolutionOp::DynamicConvolutionOp (const ImgBase* poKernel) : 
        ConvolutionOp ()
     {
-       poKernelBuf = new icl::Img<icl32f>(Size(3,3), 1);
+       poKernelBuf = new Img<icl32f>(Size(3,3), 1);
        if (poKernel) setKernel (poKernel);
     }
     
@@ -62,5 +65,7 @@ namespace icl{
        // set ConvolutionOp kernel from float data
        ConvolutionOp::setKernel (ConvolutionKernel(poKernelBuf->getData(0), poKernelBuf->getSize(), false));
     }
-  
-   }
+  }
+}
+
+

@@ -75,26 +75,26 @@ namespace icl{
       GradientImage(){}
       
       /// Main function calculates new gradient image information
-      void update(const ImgBase *src, calculationMode mode=calculateAll); 
+      void update(const core::ImgBase *src, calculationMode mode=calculateAll); 
       
       /// return current X-Gradient image
-      const Img16s &getGradXImage() const{ return m_oX; }
+      const core::Img16s &getGradXImage() const{ return m_oX; }
   
       /// return current Y-Gradient image
-      const Img16s &getGradYImage() const{ return m_oY; }
+      const core::Img16s &getGradYImage() const{ return m_oY; }
   
       /// return current Gradient-Intensity image
-      const Img32f &getGradIntensityImage() const { return m_oI; }
+      const core::Img32f &getGradIntensityImage() const { return m_oI; }
   
       /// return current Gradient-Angle image
-      const Img32f &getGradAngleImage() const { return m_oA; }
+      const core::Img32f &getGradAngleImage() const { return m_oA; }
   
       /// internally normalizes all images to range [0,255]
       void normalize();
       private:
-      Img16s m_oBuf;
-      Img16s m_oX,m_oY;
-      Img32f m_oI,m_oA;
+      core::Img16s m_oBuf;
+      core::Img16s m_oX,m_oY;
+      core::Img32f m_oI,m_oA;
     };
   } // namespace filter
 }

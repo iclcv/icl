@@ -106,40 +106,40 @@ namespace icl{
                  internally create a scaled warp map in case of differing warp map
                  and image size
       **/
-      explicit WarpOp(const Img32f &warpMap=Img32f(), 
-                      scalemode mode=interpolateLIN,
+      explicit WarpOp(const core::Img32f &warpMap=core::Img32f(), 
+                      core::scalemode mode=core::interpolateLIN,
                       bool allowWarpMapScaling=true);
       
       /// Sets a new scalemode (either interpolateLIN or interpolateNN)    
-      void setScaleMode(scalemode scaleMode);
+      void setScaleMode(core::scalemode scaleMode);
   
       /// Sets a new warp map
-      void setWarpMap(const Img32f &warpMap);
+      void setWarpMap(const core::Img32f &warpMap);
   
       /// Sets the allow warp-map-scaling features
       /** @see WarpOp(const Img32f&,scalemode,bool)*/
       void setAllowWarpMapScaling(bool allow);
   
       /// returns the current scalemode
-      scalemode getScaleMode() const { return m_scaleMode; }
+      core::scalemode getScaleMode() const { return m_scaleMode; }
   
       /// returns the current warp map
-      const Img32f &getWarpMap() const { return m_warpMap; }
+      const core::Img32f &getWarpMap() const { return m_warpMap; }
   
       /// returns whether warp map scaling is allowed
       bool getAllowWarpMapScaling() const { return m_allowWarpMapScaling; }
       
       /// virtual apply function
-      virtual void apply(const ImgBase *src, ImgBase **dst);
+      virtual void apply(const core::ImgBase *src, core::ImgBase **dst);
       
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
       
       private:
       bool m_allowWarpMapScaling;
-      Img32f m_warpMap;
-      Img32f m_scaledWarpMap;
-      scalemode m_scaleMode;
+      core::Img32f m_warpMap;
+      core::Img32f m_scaledWarpMap;
+      core::scalemode m_scaleMode;
     };
   
   

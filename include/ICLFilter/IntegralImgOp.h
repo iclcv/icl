@@ -106,7 +106,7 @@ namespace icl{
       /** @param borderSize the border size
           @param integralImageDepth the depth of the integralImage (depth8u etc)
       */
-      IntegralImgOp(depth integralImageDepth=depth32s);
+      IntegralImgOp(core::depth integralImageDepth=core::depth32s);
   
       /// Destructor
       ~IntegralImgOp();
@@ -114,25 +114,25 @@ namespace icl{
       /// sets the depth of the integralImage (depth8u etc)
       /** @param integralImageDepth the depth of the integralImage (depth8u etc)
       */
-      void setIntegralImageDepth(depth integralImageDepth);
+      void setIntegralImageDepth(core::depth integralImageDepth);
       
       /// returns the depth of the integralImage
       /** @return the depth of the integralImage
       */
-      depth getIntegralImageDepth() const;
+      core::depth getIntegralImageDepth() const;
       
       /// applies the integralimage Operaor
       /** @param posrc The source image
         @param ppoDst Pointer to the destination image
       */
-      void apply(const ImgBase *src, ImgBase **dst); 
+      void apply(const core::ImgBase *src, core::ImgBase **dst); 
   
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
       
       private:
-      depth m_integralImageDepth; //!< destination depth
-      ImgBase *m_buf; //!< used only if IPP is available
+      core::depth m_integralImageDepth; //!< destination depth
+      core::ImgBase *m_buf; //!< used only if IPP is available
     };
   } // namespace filter
 }

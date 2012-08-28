@@ -37,9 +37,12 @@
 //#define FFTOp_DEBUG(X) std::cout << X << std::endl;
 #define FFTOp_DEBUG(X)
 
-using namespace std;
-using namespace icl;
-using namespace icl::fft;
+
+using namespace icl::utils;
+using namespace icl::core;
+using namespace icl::math;
+using namespace icl::math::fft;
+
 namespace icl{
   namespace filter{
   
@@ -342,14 +345,14 @@ namespace icl{
           FFTOp_DEBUG("SCALE_UP");
           int newHeight = nextPowerOf2(src->getHeight());
           int newWidth = nextPowerOf2(src->getWidth());
-          m_data->m_adaptedSource = src->scaledCopy(Size(newWidth,newHeight),icl::interpolateLIN);
+          m_data->m_adaptedSource = src->scaledCopy(Size(newWidth,newHeight),icl::core::interpolateLIN);
           m_data->m_adaptedSource->detach(-1);
           return reinterpret_cast<Img<T>*>(m_data->m_adaptedSource);}
         case SCALE_DOWN:{
           FFTOp_DEBUG("SCALE_DOWN");
           int newHeight = priorPowerOf2(src->getHeight());
           int newWidth = priorPowerOf2(src->getWidth());
-          m_data->m_adaptedSource = src->scaledCopy(Size(newWidth,newHeight),icl::interpolateRA);
+          m_data->m_adaptedSource = src->scaledCopy(Size(newWidth,newHeight),icl::core::interpolateRA);
           m_data->m_adaptedSource->detach(-1);
           return reinterpret_cast<Img<T>*>(m_data->m_adaptedSource);}
         default:
@@ -373,12 +376,12 @@ namespace icl{
       }
       depth dstDepth = ((*dst)->getDepth() == depth64f) ? depth64f : depth32f;
       switch(src->getDepth()){
-  #define ICL_INSTANTIATE_DEPTH(D)                \
-        case depth##D:                            \
-          src=adapt_source(src->asImg<icl##D>()); \
+#define ICL_INSTANTIATE_DEPTH(D)                        \
+        case depth##D:                                  \
+          src=adapt_source(src->asImg<icl##D>());       \
           break;
         ICL_INSTANTIATE_ALL_DEPTHS;
-  #undef ICL_INSTANTIATE_DEPTH
+#undef ICL_INSTANTIATE_DEPTH
       }
   
       //if TWO_CHANNEL_? is needed, the channelcount of the destinationimage is two times channelcount of sourceimmage
@@ -391,16 +394,16 @@ namespace icl{
       }
       FFTOp_DEBUG("size of src:"<<src->getSize().width << "  " << src->getSize().height);
       switch(src->getDepth()){
-  #define ICL_INSTANTIATE_DEPTH(D)                                        \
-        case depth##D:                                                    \
-          if(dstDepth == depth32f){                                       \
+#define ICL_INSTANTIATE_DEPTH(D)                                        \
+        case depth##D:                                                  \
+          if(dstDepth == depth32f){                                     \
             apply_internal(*src->asImg<icl##D>(),*(*dst)->asImg<icl32f>(),m_data->m_buf32f,m_data->m_dstBuf32f); \
-          }else{                                                          \
+          }else{                                                        \
             apply_internal(*src->asImg<icl##D>(),*(*dst)->asImg<icl64f>(),m_data->m_buf64f,m_data->m_dstBuf64f); \
-          }                                                               \
+          }                                                             \
           break;
         ICL_INSTANTIATE_ALL_DEPTHS;
-  #undef ICL_INSTANTIATE_DEPTH
+#undef ICL_INSTANTIATE_DEPTH
       }
     }
   } // namespace filter

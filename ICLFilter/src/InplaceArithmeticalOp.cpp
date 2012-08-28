@@ -36,6 +36,9 @@
 #include <ICLCore/Img.h>
 #include <cmath>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
   namespace filter{
     

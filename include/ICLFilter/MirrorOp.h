@@ -42,30 +42,30 @@ namespace icl{
   namespace filter{
     
     /// Class to mirror images vertically or horizontally \ingroup UNARY \ingroup AFFINE
-    class MirrorOp : public BaseAffineOp, public Uncopyable {
+    class MirrorOp : public BaseAffineOp, public utils::Uncopyable {
       public:
       /// Constructor
       /**
         @param eAxis the axis on which the mirroring is performed
       */
-      MirrorOp (axis eAxis);
+      MirrorOp (core::axis eAxis);
       
       /// Destructor
       virtual ~MirrorOp(){}
       
       /// Applies the mirror transform to the images
-      void apply (const ImgBase *poSrc, ImgBase **ppoDst);
+      void apply (const core::ImgBase *poSrc, core::ImgBase **ppoDst);
   
       private:    
       /// array of class methods used to transform depth8u and depth32f images
-      void (MirrorOp::*m_aMethods[depthLast+1])(const ImgBase *poSrc, ImgBase *poDst);
+      void (MirrorOp::*m_aMethods[core::depthLast+1])(const core::ImgBase *poSrc, core::ImgBase *poDst);
       
       template<typename T>
-      void mirror (const ImgBase *poSrc, ImgBase *poDst);
+      void mirror (const core::ImgBase *poSrc, core::ImgBase *poDst);
       
-      axis  m_eAxis;
-      Size  m_oSize;
-      Point m_oSrcOffset, m_oDstOffset;
+      core::axis  m_eAxis;
+      utils::Size  m_oSize;
+      utils::Point m_oSrcOffset, m_oDstOffset;
     };
   } // namespace filter
 }

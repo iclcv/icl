@@ -39,17 +39,20 @@
 #include <ICLUtils/Configurable.h>
 
 namespace icl{
+  /** \cond */
+  namespace utils{
+    class MultiThreader;
+  }
+  /** \endcond */
+
   namespace filter{
     
-    /** \cond */
-    class MultiThreader;
-    /** \endcond */
     
     /// Abstract Base class for Unary Operators \ingroup UNARY
     /** A list of unary operators can be found here:\n
         \ref UNARY
     **/
-    class UnaryOp : public Configurable{
+    class UnaryOp : public utils::Configurable{
       void initConfigurable();
       
       public:
@@ -68,16 +71,16 @@ namespace icl{
       virtual ~UnaryOp();
         
       /// pure virtual apply function, that must be implemented in all derived classes
-      virtual void apply(const ImgBase *operand1, ImgBase **dst)=0;
+      virtual void apply(const core::ImgBase *operand1, core::ImgBase **dst)=0;
   
       /// *NEW* apply function for multithreaded filtering (currently even slower than using one thread)
-      virtual void applyMT(const ImgBase *operand1, ImgBase **dst, unsigned int nThreads);
+      virtual void applyMT(const core::ImgBase *operand1, core::ImgBase **dst, unsigned int nThreads);
   
       /// applys the filter usign an internal buffer as output image 
       /** Normally, this function must not be reimplemented, because it's default implementation
           will call apply(const ImgBase *,ImgBase**) using an internal buffer as destination image.
           This destination image is returned. */
-      virtual const ImgBase *apply(const ImgBase *src);
+      virtual const core::ImgBase *apply(const core::ImgBase *src);
       
       /// sets if the image should be clip to ROI or not
       /**
@@ -113,7 +116,7 @@ namespace icl{
       
       
       /// sets value of a property (always call call_callbacks(propertyName) or Configurable::setPropertyValue)
-      virtual void setPropertyValue(const std::string &propertyName, const Any &value) throw (ICLException);
+      virtual void setPropertyValue(const std::string &propertyName, const utils::Any &value) throw (utils::ICLException);
   
       /// Creates a UnaryOp instance from given string definition
       /** Supported definitions have the followin syntax:
@@ -128,43 +131,45 @@ namespace icl{
           Each specific parameter list's syntax is accessible using the static getFromStringSyntax function.
           
       */
-      static UnaryOp *fromString(const std::string &definition) throw (ICLException);
+      static UnaryOp *fromString(const std::string &definition) throw (utils::ICLException);
   
       /// gives a string syntax description for given opSpecifier
       /** opSpecifier must be a member of the list returned by the static function listFromStringOps */
-      static std::string getFromStringSyntax(const std::string &opSpecifier) throw (ICLException);
+      static std::string getFromStringSyntax(const std::string &opSpecifier) throw (utils::ICLException);
   
       /// returns a list of all supported OP_SPEC values for the fromString function
       static std::vector<std::string> listFromStringOps();
   
       /// creates, applies and releases a UnaryOp defined by given definition string
-      static void applyFromString(const std::string &definition, const ImgBase *src, ImgBase **dst) throw (ICLException);
+      static void applyFromString(const std::string &definition, 
+                                  const core::ImgBase *src, 
+                                  core::ImgBase **dst) throw (utils::ICLException);
       
       protected:
-      bool prepare (ImgBase **ppoDst, depth eDepth, const Size &imgSize, 
-                    format eFormat, int nChannels, const Rect& roi, 
-                    Time timestamp=Time::null){
+      bool prepare (core::ImgBase **ppoDst, core::depth eDepth, const utils::Size &imgSize, 
+                    core::format eFormat, int nChannels, const utils::Rect& roi, 
+                    utils::Time timestamp=utils::Time::null){
         return m_oROIHandler.prepare(ppoDst, eDepth,imgSize,eFormat, nChannels, roi, timestamp);
       }
       
       /// check+adapt destination image to properties of given source image
-      virtual bool prepare (ImgBase **ppoDst, const ImgBase *poSrc) {
+      virtual bool prepare (core::ImgBase **ppoDst, const core::ImgBase *poSrc) {
         return m_oROIHandler.prepare(ppoDst, poSrc);
       }
       
       /// check+adapt destination image to properties of given source image
       /// but use explicitly given depth
-      virtual bool prepare (ImgBase **ppoDst, const ImgBase *poSrc, depth eDepth) {
+      virtual bool prepare (core::ImgBase **ppoDst, const core::ImgBase *poSrc, core::depth eDepth) {
         return m_oROIHandler.prepare(ppoDst, poSrc, eDepth);
       }
   
-      MultiThreader *m_poMT;
+      utils::MultiThreader *m_poMT;
       
       private:
     
       OpROIHandler m_oROIHandler;
       
-      ImgBase *m_buf;
+      core::ImgBase *m_buf;
     };    
   
   

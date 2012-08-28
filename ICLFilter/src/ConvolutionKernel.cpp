@@ -37,6 +37,8 @@
 #include <cmath>
 #include <algorithm>
 
+using namespace icl::utils;
+
 namespace icl{
   namespace filter{
     namespace{

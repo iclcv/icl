@@ -129,55 +129,56 @@ namespace icl{
   	  Img<icl32f>, Img<icl64f>.
   	  Possible destinationparam is: Img<icl32f> and Img<icl64f>.*/
   	template<class SrcT, class DstT>
-  	void apply_internal(const Img<SrcT> &src, Img<DstT> &dst,
-  			icl::DynMatrix<std::complex<DstT> > &buf, icl::DynMatrix<std::complex<DstT> > &dstBuf);
+  	void apply_internal(const core::Img<SrcT> &src, core::Img<DstT> &dst,
+                            math::DynMatrix<std::complex<DstT> > &buf, 
+                            math::DynMatrix<std::complex<DstT> > &dstBuf);
   
   	//Adapts sourceimage before fft/dft computation.
   	/**Called by apply. Adapts sourceimage to specified
   	 values(scaling, padding on so on).Possible sourceparam is: Img<icl8u>, Img<icl16s>, Img<icl32s>,
   	  Img<icl32f>, Img<icl64f>*/
   	template<class T>
-  	const Img<T> *adapt_source(const Img<T> *src);
+  	const core::Img<T> *adapt_source(const core::Img<T> *src);
   
   	//Applies an inplace fftshift  after computation of the fft (if possible).
   	/** Applies inplace fftshift on destinationimage after fftcomputation.
   	 Possible sourceparam is: Img<icl32f> and Img<icl64f>*/
   	template<typename T>
-  	void apply_inplace_fftshift(DynMatrix<T> &m);
+  	void apply_inplace_fftshift(math::DynMatrix<T> &m);
   
   public:
   	///Modes how the sourceimage is to adapt before fftcomputation.
   	/**Several sizeadaptionmodes for sourceimageadaption*/
   	enum SizeAdaptionMode{
-  		NO_SCALE,//!< sourceimage stays as is
-  		PAD_ZERO,//!< creates a border with zeros around the sourceimage(new size is next power of 2 after originsize, or origanalsize if it is power of 2)
-  		PAD_COPY,//!< continues the image with copies the sourceimage(new size is next power of 2 after originsize, or origanalsize if it is power of 2)
-  		PAD_MIRROR,//!< mirrors the image on the edges of the sourceimage(new size is next power of 2 after originsize, or origanalsize if it is power of 2)
-  		SCALE_UP,//!< zooms to next higher power of 2 of originsize, or origanalsize if it is power of 2
-  		SCALE_DOWN //!< zooms to next lower power of 2 of originsize, or origanalsize if it is power of 2
+          NO_SCALE,//!< sourceimage stays as is
+          PAD_ZERO,//!< creates a border with zeros around the sourceimage(new size is next power of 2 after originsize, or origanalsize if it is power of 2)
+          PAD_COPY,//!< continues the image with copies the sourceimage(new size is next power of 2 after originsize, or origanalsize if it is power of 2)
+          PAD_MIRROR,//!< mirrors the image on the edges of the sourceimage(new size is next power of 2 after originsize, or origanalsize if it is power of 2)
+          SCALE_UP,//!< zooms to next higher power of 2 of originsize, or origanalsize if it is power of 2
+          SCALE_DOWN //!< zooms to next lower power of 2 of originsize, or origanalsize if it is power of 2
   	};
   
   	///Modes how the destinationimage will be created.
   	/**Several resultmodes for destinationimage.*/
   	enum ResultMode{
-  		TWO_CHANNEL_COMPLEX,//!< alternates real- and imaginarypart of fftcomputation
-  		IMAG_ONLY,//!< imaginarypart of fftcomputation
-  		REAL_ONLY,//!< realpart of fftcomputation
-  		POWER_SPECTRUM,//!< powerspectrum of fftcomputation
-  		LOG_POWER_SPECTRUM,//!< logpowerspectrum of fftcomputation
-  		MAGNITUDE_ONLY,//!< magnitude of fftcomputation
-  		PHASE_ONLY,//!< phase of fftcomputation
-  		TWO_CHANNEL_MAGNITUDE_PHASE//!< alternates magnitude and phase of fftcomputation
+          TWO_CHANNEL_COMPLEX,//!< alternates real- and imaginarypart of fftcomputation
+          IMAG_ONLY,//!< imaginarypart of fftcomputation
+          REAL_ONLY,//!< realpart of fftcomputation
+          POWER_SPECTRUM,//!< powerspectrum of fftcomputation
+          LOG_POWER_SPECTRUM,//!< logpowerspectrum of fftcomputation
+          MAGNITUDE_ONLY,//!< magnitude of fftcomputation
+          PHASE_ONLY,//!< phase of fftcomputation
+          TWO_CHANNEL_MAGNITUDE_PHASE//!< alternates magnitude and phase of fftcomputation
   	};
-  
+        
   	///Creates a new FFTOp-object.
   	/**Constructor. Params can be changed later.
-  	  @param rm the resultmode
-  	  @param sam the sizeadaptionmode before applying FFTOp
-  	  @param fftshift wether to apply fftshift to destinationimage after fftcomputation or not*
-  	  @param forceDFT wether to apply dft or fft*/
+            @param rm the resultmode
+            @param sam the sizeadaptionmode before applying FFTOp
+            @param fftshift wether to apply fftshift to destinationimage after fftcomputation or not*
+            @param forceDFT wether to apply dft or fft*/
   	FFTOp(ResultMode rm=LOG_POWER_SPECTRUM, SizeAdaptionMode sam=NO_SCALE,
-  			bool fftshift=true,bool forceDFT=false);
+              bool fftshift=true,bool forceDFT=false);
   
   	/**Destructor*/
   	~FFTOp();
@@ -218,14 +219,12 @@ namespace icl{
   	/**Applies FFTOp on src and dst.
   	  @param *src pointer to sourceimage
   	  @param **dst pointer to pointer to destinationimage*/
-  	virtual void apply(const ImgBase *src, ImgBase **dst);
+  	virtual void apply(const core::ImgBase *src, core::ImgBase **dst);
   
   	/// Import unaryOps apply function without destination image
   	using UnaryOp::apply;
-  
-  
+    };  
   } // namespace filter
-};
 }
 
 #endif /* ICL_FFTOP_H_ */

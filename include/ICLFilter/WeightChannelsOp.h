@@ -40,37 +40,37 @@
 
 namespace icl {
   namespace filter{
-  
-     /// Weight pixel values of all image channels \ingroup UNARY
-     /** Pixels of all channels in source image are weighted 
-         by a channel-wise weight:
-         \f[
-         D(x,y,c) = S(x,y,c)*w(c) 
-         \f]
-         where \f$D\f$ is the destination image, \f$S\f$ is the source
-         image, \f$w\f$ is the weight vector and \f$C\f$ is the source 
-         images channel count.
-  
-         Performance: 1000x1000 image with 10 channels averaged over 100 runs (1,83 GHz Core Duo)
-         - icl8u: 34ms
-         - icl32f: 37ms
-         - icl64f: 69ms
-         
-         Performance: 1000x1000 image with 3 channels averaged over 100 runs (1,83 GHz Core Duo)
-         - icl8u: 10.9ms
-         - icl32f: 10.9ms
-         - icl64f: 21ms
-     **/
+    
+    /// Weight pixel values of all image channels \ingroup UNARY
+    /** Pixels of all channels in source image are weighted 
+        by a channel-wise weight:
+        \f[
+        D(x,y,c) = S(x,y,c)*w(c) 
+        \f]
+        where \f$D\f$ is the destination image, \f$S\f$ is the source
+        image, \f$w\f$ is the weight vector and \f$C\f$ is the source 
+        images channel count.
+        
+        Performance: 1000x1000 image with 10 channels averaged over 100 runs (1,83 GHz Core Duo)
+        - icl8u: 34ms
+        - icl32f: 37ms
+        - icl64f: 69ms
+        
+        Performance: 1000x1000 image with 3 channels averaged over 100 runs (1,83 GHz Core Duo)
+        - icl8u: 10.9ms
+        - icl32f: 10.9ms
+        - icl64f: 21ms
+        **/
     class WeightChannelsOp : public UnaryOp {
-    public:
+      public:
       /// creates a new WeightChannelsOp object
       WeightChannelsOp(){}
       
       /// creates an new WeightChannelsOp object  with a given weights vector
       /** @param weights channel weights vector 
-       **/
+          **/
       WeightChannelsOp(const std::vector<icl64f> &weights):
-        m_vecWeights(weights){}
+      m_vecWeights(weights){}
       
       /// applies this operation on the source image
       /** @param poSrc source image
@@ -79,7 +79,7 @@ namespace icl {
           icl64f too.
           
       **/
-      void apply (const ImgBase *poSrc, ImgBase **ppoDst);
+      void apply (const core::ImgBase *poSrc, core::ImgBase **ppoDst);
       
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
@@ -94,7 +94,7 @@ namespace icl {
       void setWeights(const std::vector<icl64f> &weights) { 
         m_vecWeights = weights; }
       
-    private:
+      private:
       /// internal storage for the channel weights
       std::vector<icl64f> m_vecWeights;
     };

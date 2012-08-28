@@ -100,12 +100,12 @@ namespace icl {
       
       /// check+adapt destination images parameters against given values
       /// bCheckOnly mode ignores the given imgSize
-      bool prepare (ImgBase **ppoDst, depth eDepth, const Size &imgSize, 
-                    format eFormat, int nChannels, const Rect& roi, 
-                    Time timestamp=Time::null);
+      bool prepare (core::ImgBase **ppoDst, core::depth eDepth, const utils::Size &imgSize, 
+                    core::format eFormat, int nChannels, const utils::Rect& roi, 
+                    utils::Time timestamp=utils::Time::null);
       
       /// check+adapt destination image to properties of given source image
-      virtual bool prepare (ImgBase **ppoDst, const ImgBase *poSrc) {
+      virtual bool prepare (core::ImgBase **ppoDst, const core::ImgBase *poSrc) {
         // ensure that the checkOnly flag is set to TRUE, if source and destination images are the same pointers, 
         // this can not lead to problems, because *ppoDst is reallocated only if its depth differs from
         // the source images depth (which is not true if poSrc==*ppoDst
@@ -117,7 +117,7 @@ namespace icl {
       
       /// check+adapt destination image to properties of given source image
       /// but use explicitly given depth
-      virtual bool prepare (ImgBase **ppoDst, const ImgBase *poSrc, depth eDepth) {
+      virtual bool prepare (core::ImgBase **ppoDst, const core::ImgBase *poSrc, core::depth eDepth) {
         // ensure that the checkOnly flag is set to TRUE, if source and destination images are the same pointers, 
         // this can not lead to problems, because *ppoDst is reallocated only if its depth differs from
         // the source images depth (which is not true if poSrc==*ppoDst
@@ -127,12 +127,12 @@ namespace icl {
                         poSrc->getTime());
       }
       /// return to-be-used image size depending on bClipToROI
-      const Size chooseSize (const ImgBase *poSrc) {
+      const utils::Size chooseSize (const core::ImgBase *poSrc) {
         return m_bClipToROI ? poSrc->getROISize () : poSrc->getSize ();
       }
       /// return to-be-used ROI depending on bClipToROI
-      const Rect chooseROI (const ImgBase *poSrc) {
-        return m_bClipToROI ? Rect (Point::null, poSrc->getROISize ())
+      const utils::Rect chooseROI (const core::ImgBase *poSrc) {
+        return m_bClipToROI ? utils::Rect (utils::Point::null, poSrc->getROISize ())
           : poSrc->getROI();
       }
       

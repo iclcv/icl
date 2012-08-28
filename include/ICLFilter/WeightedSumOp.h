@@ -75,9 +75,9 @@ namespace icl {
       
       /// creates an new WeightedSumOp object  with a given weights vector
       /** @param weights channel weights vector 
-      **/
+          **/
       WeightedSumOp(const std::vector<icl64f> &weights):
-       m_vecWeights(weights){}
+      m_vecWeights(weights){}
        
       /// applies this operation on the source image
       /** @param poSrc source image
@@ -85,8 +85,8 @@ namespace icl {
                         if the source image has depth64f, ppoDst is adapted to
                         icl64f too.
   
-      **/
-      void apply (const ImgBase *poSrc, ImgBase **ppoDst);
+          **/
+      void apply (const core::ImgBase *poSrc, core::ImgBase **ppoDst);
        
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;

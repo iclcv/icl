@@ -42,9 +42,9 @@ namespace icl{
   namespace filter{
   
     /// Internally used Plugin class for multithreaded unary operations
-    struct UnaryOpWork : public MultiThreader::Work{
+    struct UnaryOpWork : public utils::MultiThreader::Work{
       /// Construktor
-      UnaryOpWork(UnaryOp *op, const ImgBase *src, ImgBase *dst):
+      UnaryOpWork(UnaryOp *op, const core::ImgBase *src, core::ImgBase *dst):
         op(op),src(src),dst(dst){}
       
       /// Destructor
@@ -59,10 +59,10 @@ namespace icl{
       UnaryOp *op;
       
       /// Wrapped src image
-      const ImgBase *src;
+      const core::ImgBase *src;
       
       /// Wrapped dst image
-      ImgBase *dst;
+      core::ImgBase *dst;
     };
   
   } // namespace filter

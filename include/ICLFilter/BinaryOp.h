@@ -60,12 +60,12 @@ namespace icl{
       
       
       /// pure virtual apply function
-      virtual void apply(const ImgBase *operand1,const ImgBase *operand2, ImgBase **result)=0;
+      virtual void apply(const core::ImgBase *operand1,const core::ImgBase *operand2, core::ImgBase **result)=0;
       
       /// applyfunction without explicit destination image 
       /** Usually this function must not be reimplemented, because it's default operation does simply use
           an internal buffer to call apply(const ImgBase*,const ImgBase*,ImgBase**). */
-      virtual const ImgBase *apply(const ImgBase *operand1, const ImgBase *operand2);
+      virtual const core::ImgBase *apply(const core::ImgBase *operand1, const core::ImgBase *operand2);
   
       /// sets if the image should be clip to ROI or not
       /**
@@ -92,27 +92,27 @@ namespace icl{
       bool getCheckOnly() const { return m_oROIHandler.getCheckOnly(); }
   
       protected:
-      bool prepare (ImgBase **ppoDst, depth eDepth, const Size &imgSize, 
-                    format eFormat, int nChannels, const Rect& roi, 
-                    Time timestamp=Time::null){
+      bool prepare (core::ImgBase **ppoDst, core::depth eDepth, const utils::Size &imgSize, 
+                    core::format eFormat, int nChannels, const utils::Rect& roi, 
+                    utils::Time timestamp=utils::Time::null){
         return m_oROIHandler.prepare(ppoDst, eDepth,imgSize,eFormat, nChannels, roi, timestamp);
       }
       
       /// check+adapt destination image to properties of given source image
-      virtual bool prepare (ImgBase **ppoDst, const ImgBase *poSrc) {
+      virtual bool prepare (core::ImgBase **ppoDst, const core::ImgBase *poSrc) {
         return m_oROIHandler.prepare(ppoDst, poSrc);
       }
       
       /// check+adapt destination image to properties of given source image
       /// but use explicitly given depth
-      virtual bool prepare (ImgBase **ppoDst, 
-                            const ImgBase *poSrc, 
-                            depth eDepth) {
+      virtual bool prepare (core::ImgBase **ppoDst, 
+                            const core::ImgBase *poSrc, 
+                            core::depth eDepth) {
         return m_oROIHandler.prepare(ppoDst, poSrc, eDepth);
       }
       
-      static inline bool check(const ImgBase *operand1,
-                               const ImgBase *operand2 , 
+      static inline bool check(const core::ImgBase *operand1,
+                               const core::ImgBase *operand2 , 
                                bool checkDepths = true) {
         if(!checkDepths) {
           return operand1->getChannels() == operand2->getChannels() &&
@@ -128,7 +128,7 @@ namespace icl{
       OpROIHandler m_oROIHandler;
   
       /// internal image buffer which is used for the apply function without destination image argument
-      ImgBase *m_buf;
+      core::ImgBase *m_buf;
     };
   } // namespace filter
 }

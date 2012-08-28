@@ -79,14 +79,14 @@ namespace icl {
           - UnaryCompareOp::eq -> "==" 
           - UnaryCompareOp::eqt -> "~=" 
       */
-      static optype translate_op_type(const std::string &stringVersion) throw (ICLException){
+      static optype translate_op_type(const std::string &stringVersion) throw (utils::ICLException){
         if(stringVersion == "<") return UnaryCompareOp::lt;
         if(stringVersion == ">") return UnaryCompareOp::gt;
         if(stringVersion == "<=") return UnaryCompareOp::lteq;
         if(stringVersion == ">=") return UnaryCompareOp::gteq;
         if(stringVersion == "==") return UnaryCompareOp::eq;
         if(stringVersion == " ~=") return UnaryCompareOp::eqt;
-        throw ICLException("UnaryCompareOp::translate_op_type(" + stringVersion + "): invalid optype string!");
+        throw utils::ICLException("UnaryCompareOp::translate_op_type(" + stringVersion + "): invalid optype string!");
         /// satisfy the compiler :-)
         return UnaryCompareOp::lt;
       }
@@ -135,7 +135,7 @@ namespace icl {
       /** @param poSrc source image 
           @param ppoDst destination image 
       **/
-      virtual void apply(const ImgBase *poSrc, ImgBase **ppoDst);
+      virtual void apply(const core::ImgBase *poSrc, core::ImgBase **ppoDst);
       
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;

@@ -69,7 +69,7 @@ namespace icl {
   
           The source image is assumed to have 3 channels
       */
-      void apply(const ImgBase *src, ImgBase **dst);
+      void apply(const core::ImgBase *src, core::ImgBase **dst);
       
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
@@ -90,7 +90,7 @@ namespace icl {
         m_refColor.assign(refColor.begin(),refColor.end());
         m_threshold = threshold;
         ICLASSERT_THROW(m_refColor.size() >= 3, 
-                        ICLException("ColorDistanceOp::setReferenceColor: ref color needs at least 3 entries"));
+                        utils::ICLException("ColorDistanceOp::setReferenceColor: ref color needs at least 3 entries"));
       }
       
       private:

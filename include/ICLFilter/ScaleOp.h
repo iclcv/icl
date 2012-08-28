@@ -44,7 +44,8 @@ namespace icl{
     class ScaleOp : public AffineOp{
       public:
       /// Constructor
-      ScaleOp (double factorX=0.0, double factorY=0.0, scalemode eInterpolate=interpolateLIN) :
+      ScaleOp (double factorX=0.0, double factorY=0.0, 
+               core::scalemode eInterpolate=core::interpolateLIN) :
       AffineOp (eInterpolate) {
         setScale(factorX,factorY);
       }

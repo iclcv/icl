@@ -54,6 +54,9 @@
 #include <ICLFilter/UnaryCompareOp.h>
 #include <ICLFilter/LocalThresholdOp.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
   namespace filter{
   

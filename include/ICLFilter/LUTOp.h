@@ -70,7 +70,7 @@ namespace icl {
         Yet, only the reduceBits function and therewith the according LUT-objects
         mode with given count of quantization levels is IPP optimized.
     */
-    class LUTOp : public UnaryOp, public Uncopyable{
+    class LUTOp : public UnaryOp, public utils::Uncopyable{
      public:
        /// creates a LUT object with given lut (LUT-mode)
        /** @param lut LUT-vector to use */
@@ -87,7 +87,7 @@ namespace icl {
        /** @param src source image
            @param dst destination image**
        */
-       virtual void apply(const ImgBase *src, ImgBase **dst);
+       virtual void apply(const core::ImgBase *src, core::ImgBase **dst);
        
        /// Import unaryOps apply function without destination image
        using UnaryOp::apply;
@@ -97,14 +97,14 @@ namespace icl {
            @param dst destination image
            @param lut lut-vector to used
        */
-       static void simple(const Img8u *src, Img8u *dst, const std::vector<icl8u>& lut); 
+       static void simple(const core::Img8u *src, core::Img8u *dst, const std::vector<icl8u>& lut); 
        
        /// specialization of a lut transformation to reduce the number colors levels image a given image
        /** @param src source image
            @param dst destination image
            @param levels count of quantization levels to use
        */
-       static void reduceBits(const Img8u *src, Img8u *dst, icl8u levels);
+       static void reduceBits(const core::Img8u *src, core::Img8u *dst, icl8u levels);
   
        /// sets the current lut and switches to the lut-mode
        /** @param lut new lut vector to use*/
@@ -131,7 +131,7 @@ namespace icl {
        bool m_bLutSet;
        std::vector<icl8u> m_vecLUT;
        icl8u m_ucQuantizationLevels;
-       Img8u *m_poBuffer;
+       core::Img8u *m_poBuffer;
        
      };
   } // namespace filter

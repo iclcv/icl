@@ -35,6 +35,10 @@
 #include <ICLFilter/UnaryOpPipe.h>
 #include <ICLFilter/UnaryOp.h>
 #include <ICLCore/ImgBase.h>
+#include <ICLCore/Img.h>
+
+using namespace icl::utils;
+using namespace icl::core;
 
 namespace icl{
   namespace filter{

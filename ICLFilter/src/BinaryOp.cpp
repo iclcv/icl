@@ -55,7 +55,7 @@ namespace icl{
       ICL_DELETE(m_buf);
     }
   
-    const ImgBase *BinaryOp::apply(const ImgBase *a, const ImgBase *b){
+    const core::ImgBase *BinaryOp::apply(const core::ImgBase *a, const core::ImgBase *b){
       apply(a,b,&m_buf);
       return m_buf;
     }

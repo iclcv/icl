@@ -77,48 +77,48 @@ namespace icl {
           @param oROIsize    new ROI size
           @return whether a valid ROI remains
           */
-      bool computeROI(const ImgBase *poSrc, Point& oROIoffset, Size& oROIsize);
+      bool computeROI(const core::ImgBase *poSrc, utils::Point& oROIoffset, utils::Size& oROIsize);
   
       /// *NEW* apply function for multithreaded filtering (reimplemented here for special roi handling!)
-      virtual void applyMT(const ImgBase *operand1, ImgBase **dst, unsigned int nThreads);
+      virtual void applyMT(const core::ImgBase *operand1, core::ImgBase **dst, unsigned int nThreads);
       
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
       
       protected:
       NeighborhoodOp() : m_oMaskSize(1,1), m_oAnchor (0,0) {}
-      NeighborhoodOp(const Size &size) {
+      NeighborhoodOp(const utils::Size &size) {
         setMask (size);
       }
       
-      void setMask(const Size &size) {
+      void setMask(const utils::Size &size) {
           m_oMaskSize = adaptSize(size);
-          m_oAnchor   = Point (m_oMaskSize.width/2, m_oMaskSize.height/2);
+          m_oAnchor   = utils::Point (m_oMaskSize.width/2, m_oMaskSize.height/2);
       }
-      void setMask(const Size &size, const Point &anchor){
+      void setMask(const utils::Size &size, const utils::Point &anchor){
         m_oMaskSize = adaptSize(size);
         m_oAnchor = anchor;
       }
-      void setROIOffset(const Point &offs){
+      void setROIOffset(const utils::Point &offs){
         m_oROIOffset = offs;
       }
       public:
-      const Size &getMaskSize() const{
+      const utils::Size &getMaskSize() const{
         return m_oMaskSize;
       } 
-      const Point &getAnchor() const {
+      const utils::Point &getAnchor() const {
         return m_oAnchor;
       }
-      const Point &getROIOffset() const{
+      const utils::Point &getROIOffset() const{
         return m_oROIOffset;
       }
       protected:
   
       /// prepare filter operation: ensure compatible image format and size
-      virtual bool prepare (ImgBase **ppoDst, const ImgBase *poSrc);
+      virtual bool prepare (core::ImgBase **ppoDst, const core::ImgBase *poSrc);
       
       /// prepare filter operation: as above, but with depth parameter
-      virtual bool prepare (ImgBase **ppoDst, const ImgBase *poSrc, depth eDepht);
+      virtual bool prepare (core::ImgBase **ppoDst, const core::ImgBase *poSrc, core::depth eDepht);
       
       /// this function can be reimplemented e.g to enshure an odd mask width and height
        /** E.g. some implementations of Neighborhood-operation could demand odd or even
@@ -127,13 +127,13 @@ namespace icl {
            @param size size to ajust
            @return the given size in this base implementation
            **/
-      virtual Size adaptSize(const Size &size){ return size; }
+      virtual utils::Size adaptSize(const utils::Size &size){ return size; }
        
       protected:
        ///TODO: later private with getter and setter functions
-       Size  m_oMaskSize;  ///< size of filter mask
-       Point m_oAnchor;    ///< anchor of filter mask
-       Point m_oROIOffset; ///< to-be-used ROI offset for source image
+      utils::Size  m_oMaskSize;  ///< size of filter mask
+      utils::Point m_oAnchor;    ///< anchor of filter mask
+      utils::Point m_oROIOffset; ///< to-be-used ROI offset for source image
     };
   } // namespace filter
 }

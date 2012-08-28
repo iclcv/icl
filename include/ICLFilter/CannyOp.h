@@ -78,7 +78,7 @@ namespace icl {
         
   
     */
-    class CannyOp : public UnaryOp, public Uncopyable{
+    class CannyOp : public UnaryOp, public utils::Uncopyable{
       public:
         /// Constructor
         /**
@@ -127,7 +127,7 @@ namespace icl {
           @param src the source image
           @param dst pointer to the destination image
       */
-      virtual void apply(const ImgBase *src, ImgBase **dst);
+      virtual void apply(const core::ImgBase *src, core::ImgBase **dst);
           
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
@@ -151,12 +151,12 @@ namespace icl {
       
       /// buffer for ippiCanny
       std::vector<icl8u> m_cannyBuf;
-      ImgBase *m_derivatives[2];
+      core::ImgBase *m_derivatives[2];
       UnaryOp *m_ops[2];
       UnaryOp *m_preBlurOp;
       icl32f m_lowT,m_highT;
       bool m_ownOps;
-      Img32f m_buffer;
+      core::Img32f m_buffer;
       int m_preBlurRadius;
     };
   } // namespace filter
