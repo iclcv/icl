@@ -248,11 +248,11 @@ namespace icl{
            one can easily create video textures. */
     struct TexturePrimitive : public QuadPrimitive, public AlphaFuncProperty{
       GLImg texture;         //!<< internal texture
-      const ImgBase *image;  //!<< set if the texture shall be updated every time it is drawn
+      const core::ImgBase *image;  //!<< set if the texture shall be updated every time it is drawn
   
       /// create with given texture that is either copied once or everytime the primitive is rendered
       TexturePrimitive(int a, int b, int c, int d, 
-                       const ImgBase *image=0, bool createTextureOnce=true, 
+                       const core::ImgBase *image=0, bool createTextureOnce=true, 
                        int na=-1, int nb=-1, int nc=-1, int nd=-1, scalemode sm=interpolateLIN):
       QuadPrimitive(a,b,c,d,na,nb,nc,nd), texture(image,sm),
         image(createTextureOnce ? 0 : image){
@@ -261,7 +261,7 @@ namespace icl{
   
       /// create with given texture, that is copied once
       TexturePrimitive(int a, int b, int c, int d, 
-                       const Img8u &image,
+                       const core::Img8u &image,
                        int na=-1, int nb=-1, int nc=-1, int nd=-1, scalemode sm=interpolateLIN):
       QuadPrimitive(a,b,c,d,na,nb,nc,nd), texture(&image,sm), 
         image(0){
@@ -292,10 +292,10 @@ namespace icl{
       GLImg texture;
       const icl32f *px, *py, *pz, *pnx,  *pny, *pnz;
       int stride;
-      const ImgBase *image;
+      const core::ImgBase *image;
       
       public:
-      TextureGridPrimitive(int w, int h, const ImgBase *image,
+      TextureGridPrimitive(int w, int h, const core::ImgBase *image,
                            const icl32f *px, const icl32f *py, const icl32f *pz,
                            const icl32f *pnx=0, const icl32f *pny=0, const icl32f *pnz=0,
                            int stride = 1,bool createTextureOnce=true,scalemode sm=interpolateLIN):
@@ -309,7 +309,7 @@ namespace icl{
                                         px,py,pz,pnx,pny,pnz,stride,!image,
                                         texture.getScaleMode()); 
       }
-      void getAABB(Range32f aabb[3]);
+      void getAABB(utils::Range32f aabb[3]);
       
       inline Vec getPos(int x, int y) const {
         const int idx = stride*(x + w*y);
@@ -319,9 +319,9 @@ namespace icl{
   
     class TwoSidedTextureGridPrimitive : public TextureGridPrimitive{
       GLImg back;
-      const ImgBase *iback;
+      const core::ImgBase *iback;
       public:
-      TwoSidedTextureGridPrimitive(int w, int h, const ImgBase *front, const ImgBase *back,
+      TwoSidedTextureGridPrimitive(int w, int h, const core::ImgBase *front, const core::ImgBase *back,
                                    const icl32f *px, const icl32f *py, const icl32f *pz,
                                    const icl32f *pnx=0, const icl32f *pny=0, const icl32f *pnz=0,
                                    int stride = 1,bool createFrontOnce=true,
@@ -358,10 +358,10 @@ namespace icl{
     /// Texture Primitive for rendering textures with arbitrary texture coordinates
     struct GenericTexturePrimitive : public Primitive, public AlphaFuncProperty{
       SmartPtr<GLImg> texture;
-      const ImgBase *image;
+      const core::ImgBase *image;
   
       std::vector<Vec> ps;
-      std::vector<Point32f> texCoords;
+      std::vector<utils::Point32f> texCoords;
       std::vector<Vec> normals;
       
       /// if these are given (size > 0), ps and normals are not used!
@@ -369,14 +369,14 @@ namespace icl{
       std::vector<int> normalIndices;
   
       /// Generic version, where the given values are copied deeply into the internal buffers for rendering
-      GenericTexturePrimitive(const ImgBase *image, int numPoints,
+      GenericTexturePrimitive(const core::ImgBase *image, int numPoints,
                               const float *xs, const float *ys, const float *zs, int xyzStride,
-                              const Point32f *texCoords, const float *nxs=0, const float *nys=0,
+                              const utils::Point32f *texCoords, const float *nxs=0, const float *nys=0,
                               const float *nzs=0, int nxyzStride=1, bool createTextureOnce=true);
       
       /// less generic Constructor, that uses index-pointers for referencing vertices and normals of the parent SceneObject
-      GenericTexturePrimitive(const ImgBase *image, int numPoints, const int *vertexIndices,
-                              const Point32f *texCoords, const int *normalIndices = 0,
+      GenericTexturePrimitive(const core::ImgBase *image, int numPoints, const int *vertexIndices,
+                              const utils::Point32f *texCoords, const int *normalIndices = 0,
                               bool createTextureOnce=true);
       
       //// custom render implementation
@@ -400,7 +400,7 @@ namespace icl{
       GeomColor textColor;
       
       /// utility method to creat a text texture
-      static Img8u create_texture(const std::string &text, const GeomColor &color, int textSize);
+      static core::Img8u create_texture(const std::string &text, const GeomColor &color, int textSize);
       
       /// used for billboard text
       /** if the value is > 0, the text-texture will always be oriented towards the camera.
@@ -428,7 +428,7 @@ namespace icl{
   
       /// sets new text
       inline void updateText(const std::string &newText){
-        Img8u t = create_texture(newText,textColor,textSize);
+        core::Img8u t = create_texture(newText,textColor,textSize);
         texture.update(&t);
       }
   

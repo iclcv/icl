@@ -116,14 +116,14 @@ namespace icl{
         
         public:
         /// extracts the objects euler angles from the internal matrix 
-        FixedColVector<float,3> getAngles() const;
+        math::FixedColVector<float,3> getAngles() const;
         
         /// extracts the objects translation vector (last column) form the internal matrix
-        FixedColVector<float,3> getTranslation() const;
+        math::FixedColVector<float,3> getTranslation() const;
       };
       
       /// main function to obtain an objects pose from given image points and camera
-      const Result &findPose(const std::vector<Point32f> &imagePoints, const Camera &cam) throw (ICLException);
+      const Result &findPose(const std::vector<utils::Point32f> &imagePoints, const Camera &cam) throw (utils::ICLException);
   
       /// utility wrapper if no whole camera is available
       /** Please note, that the focal lenghts have to be combined with a cameras
@@ -134,19 +134,19 @@ namespace icl{
   
           For ICL's icl::Camera type, the focal length values are computed as follows:
           \code
-          Point32f principlePointOffset = cam.getPrincipalPointOffset();
+          utils::Point32f principlePointOffset = cam.getPrincipalPointOffset();
           float focalLengthX = cam.getFocalLength()*cam.getSamplingResolutionX();
           float focalLEngthY = cam.getFocalLength()*cam.getSamplingResolutionY();
           \endcode
           
           However, if you already have an instance of icl::Camera in your code, you can simply
-          use Posit::findPose(const std::vector<Point32f> &, const icl::Camera&), which
+          use Posit::findPose(const std::vector<utils::Point32f> &, const icl::Camera&), which
           automatically extracts the correct focal length and principal point offset values
           from the given icl::Camera instance.
       */
-      const Result &findPose(const std::vector<Point32f> &imagePoints, 
-                             const Point &principlePointOffset,
-                             float focalLengthX, float focalLengthY) throw (ICLException);
+      const Result &findPose(const std::vector<utils::Point32f> &imagePoints, 
+                             const utils::Point &principlePointOffset,
+                             float focalLengthX, float focalLengthY) throw (utils::ICLException);
     };
     
   } // namespace geom

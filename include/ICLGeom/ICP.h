@@ -35,18 +35,18 @@
 
 #include <ICLMath/DynMatrix.h>
 #include <ICLUtils/Macros.h>
-#include <ICLUtils/Uncopyable.h>
+#include <ICLUtils/utils::Uncopyable.h>
 #include <ICLUtils/KDTree.h>
 #include <ICLGeom/PoseEstimator.h>
 
 namespace icl{
   namespace geom{
   
-    /// Implementaiton of the Iterator Closest Point (ICP) Algorithm
+    /// Implementaiton of the Iterator Closest utils::Point (ICP) Algorithm
     /** TODO: Add Documentation 
         What about a fixed 3D-Version that uses 3D-Fixed Matrix data?
     */
-    class ICP : public Uncopyable{
+    class ICP : public utils::Uncopyable{
       public:
       /// Simple result structure
       struct Result{

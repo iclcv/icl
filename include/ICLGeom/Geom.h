@@ -48,7 +48,7 @@
     - camera calibration
     - 3D/6D pose estimation
     - 3D visualization
-    - Point Cloud Processing and visualization
+    - utils::Point Cloud Processing and visualization
 
     \section _CALIB_ Camera Calibration 
 
@@ -72,7 +72,7 @@
     -# Posit (icl::Posit)
     -# SoftPosit (icl::SoftPosit)
     -# Pose estimation for coplanar points (icl::CoplanarPointPoseEstimator)
-    -# ICP (Iterative Closest Point) (icl:ICP)
+    -# ICP (Iterative Closest utils::Point) (icl:ICP)
     
     
     \section _3D_VIS_ 3D Visualization

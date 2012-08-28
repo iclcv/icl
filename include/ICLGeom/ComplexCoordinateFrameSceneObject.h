@@ -53,7 +53,7 @@ namespace icl{
         that is not alligned with the scene's origin, you can use this class. */
     class ComplexCoordinateFrameSceneObject : public SceneObject{
       /// internally used mutex
-      Mutex mutex;
+      utils::Mutex mutex;
   
       /// length of each axis
       float axisLength;

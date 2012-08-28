@@ -103,7 +103,7 @@ namespace icl{
         look like this:
         \code
         class MySceneObject : public SceneObject{
-          Mutex mutex;
+          utils::Mutex mutex;
           public:
           void lock() { mutex.lock(); }
           void unlock() { mutex.unlock(); }
@@ -190,7 +190,7 @@ namespace icl{
   
       
       /// creates a scene object from given .obj file
-      SceneObject(const std::string &objFileName) throw (ICLException);
+      SceneObject(const std::string &objFileName) throw (utils::ICLException);
   
       /// deep copy of SceneObject instance
       /** The new instance's parent is set to null, i.e. it must
@@ -246,8 +246,8 @@ namespace icl{
       /// adds a GLImg as shared texture
       void addSharedTexture(SmartPtr<GLImg> gli);
       
-      /// adds an ImgBase * as shared texutre
-      void addSharedTexture(const ImgBase *image, scalemode sm=interpolateLIN);
+      /// adds an core::ImgBase * as shared texutre
+      void addSharedTexture(const core::ImgBase *image, scalemode sm=interpolateLIN);
   
   
       /// adds a new normal to this object
@@ -286,14 +286,14 @@ namespace icl{
       
       /** If the given normal indices (na,nb,nc and nd) are -1, auto-normal are computed using cross-product */
       void addTexture(int a, int b, int c, int d, 
-                      const ImgBase *texture, 
+                      const core::ImgBase *texture, 
                       int na, int nb, int nc, int nd,
                       bool createTextureOnce=true,
                       scalemode sm = interpolateLIN);
   
       /// convenience method for creation of a texture with auto-normals
       inline void addTexture(int a, int b, int c, int d, 
-                             const ImgBase *texture, 
+                             const core::ImgBase *texture, 
                              bool createTextureOnce=true,
                              scalemode sm = interpolateLIN){
         addTexture(a,b,c,d,texture,-1,-1,-1,-1,createTextureOnce,sm);
@@ -307,20 +307,20 @@ namespace icl{
                       int na=-1, int nb=-1, int nc=-1, int nd=-1);
   
       /// adds a GenericTexturePrimitive for custom texCoords
-      void addTexture(const ImgBase *image, int numPoints, const int *vertexIndices,
-                      const Point32f *texCoords, const int *normalIndices = 0,
+      void addTexture(const core::ImgBase *image, int numPoints, const int *vertexIndices,
+                      const utils::Point32f *texCoords, const int *normalIndices = 0,
                       bool createTextureOnce=true);
                  
   
       /// adds a texture that is drawn on a 2D grid of vertices in 3D space
-      void addTextureGrid(int w, int h, const ImgBase *image,
+      void addTextureGrid(int w, int h, const core::ImgBase *image,
                           const icl32f *px, const icl32f *py, const icl32f *pz,
                           const icl32f *pnx=0, const icl32f *pny=0, const icl32f *pnz=0,
                           int stride = 1,bool createTextureOnce=true,scalemode sm=interpolateLIN);
   
       /// adds a texture grid that has two different texture for the two faces
       /** Internally, the TwoSidedTextureGridPrimitive is used */
-      void addTwoSidedTextureGrid(int w, int h, const ImgBase *front, const ImgBase *back,
+      void addTwoSidedTextureGrid(int w, int h, const core::ImgBase *front, const core::ImgBase *back,
                              const icl32f *px, const icl32f *py, const icl32f *pz,
                              const icl32f *pnx=0, const icl32f *pny=0, const icl32f *pnz=0,
                              int stride = 1,bool createFrontOnce=true,
@@ -547,7 +547,7 @@ namespace icl{
       /// returns the vertex, that is closest to the given point in wold coordinates
       /** If relative is true, the vertex is returned in object-coordinates, otherwise
           it is returned in world coordinates */
-      Vec getClosestVertex(const Vec &pWorld, bool relative=false) throw (ICLException);
+      Vec getClosestVertex(const Vec &pWorld, bool relative=false) throw (utils::ICLException);
       
       /// sets the visibility of this object
       void setVisible(bool visible, bool recursive=true);
@@ -672,7 +672,7 @@ namespace icl{
       SceneObject *m_parent;
       std::vector<SmartPtr<SceneObject> > m_children;
   
-      Mutex m_mutex; //!< for asynchronous updates
+      utils::Mutex m_mutex; //!< for asynchronous updates
       bool m_enableLocking; //!< can be enabled
   
       bool m_pointSmoothingEnabled;

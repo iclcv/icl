@@ -35,16 +35,11 @@
 #include <ICLGeom/ConvexHullMonotoneChain.h>
 #include <algorithm>
 #include <vector>
-using namespace std;
 
+using namespace icl::utils;
 
 namespace icl{
-  namespace geom{
-    // Implementation was found here: http://www.algorithmist.com/index.php/Monotone_Chain_Convex_Hull.cpp
-    // 2D cross product.
-    // Return a positive value, if OAB makes a counter-clockwise turn,
-    // negative for clockwise turn, and zero if the points are collinear.
-    
+  namespace utils{
     static inline bool operator <(const Point &a, const Point &p){
       return a.x < p.x || (a.x == p.x && a.y < p.y);
     }
@@ -58,12 +53,19 @@ namespace icl{
     static inline float cross(const Point32f &O, const Point32f &A, const Point32f &B){
       return (A.x - O.x) * (B.y - O.y) - (A.y - O.y) * (B.x - O.x);
     }
-    
+  }
+
+  namespace geom{
+    // Implementation was found here: http://www.algorithmist.com/index.php/Monotone_Chain_Convex_Hull.cpp
+    // 2D cross product.
+    // Return a positive value, if OAB makes a counter-clockwise turn,
+    // negative for clockwise turn, and zero if the points are collinear.
+      
     // Returns a list of points on the convex hull in counter-clockwise order.
     // Note: the last point in the returned list is the same as the first one.
-    vector<Point> convexHull(vector<Point> P){
+    std::vector<Point> convexHull(std::vector<Point> P){
       int n = P.size(), k = 0;
-      vector<Point> H(2*n);
+      std::vector<Point> H(2*n);
       
       // Sort points lexicographically
       sort(P.begin(), P.end());
@@ -87,10 +89,10 @@ namespace icl{
   
     std::vector<Point32f> convexHull(std::vector<Point32f> P){
       int n = P.size(), k = 0;
-      vector<Point32f> H(2*n);
+      std::vector<Point32f> H(2*n);
       
       // Sort points lexicographically
-      sort(P.begin(), P.end());
+      std::sort(P.begin(), P.end());
       
       // Build lower hull
       for (int i = 0; i < n; i++) {

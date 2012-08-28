@@ -213,8 +213,8 @@ int main(){
   /** \cond */
   template<class T, int N>
   const DataSegment<T,N> &DataSegmentBase::as() const{
-    if(dataDepth != icl::getDepth<T>()) throw ICLException("invalid cast of data segment (depth is wrong)");
-    if(elemDim != N) throw ICLException("invalid cast of data segment (dimension is wrong)");
+    if(dataDepth != icl::getDepth<T>()) throw utils::ICLException("invalid cast of data segment (core::depth is wrong)");
+    if(elemDim != N) throw utils::ICLException("invalid cast of data segment (dimension is wrong)");
     return (DataSegment<T,N> &)(*this);
   }
   /** \endcond */

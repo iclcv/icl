@@ -38,7 +38,7 @@
 #include <ICLMath/DynMatrix.h>
 
 #include <ICLUtils/Macros.h>
-#include <ICLUtils/Uncopyable.h>
+#include <ICLUtils/utils::Uncopyable.h>
 
 #include <ICLCore/OpenCV.h>
 
@@ -51,7 +51,7 @@ namespace icl{
   /**
    Cameracalibration using OpenCV functions.
    */
-  class OpenCVCamCalib : public Uncopyable{
+  class OpenCVCamCalib : public utils::Uncopyable{
   
   	struct Data;
   	///Class for internal params and buffers.
@@ -73,14 +73,14 @@ namespace icl{
   	/*@param img image to be searched for chessboard and points
   	  @return overall current number of found chessboard for calibration
   	 */
-  	int addPoints(const ImgBase *img);
+  	int addPoints(const core::ImgBase *img);
   
   	///Tries to calibrates the camera, if minimal number of found and valid chessboards  is greater zero
   	void calibrateCam();
   
   	///Computes the undistorted image.
   	/*@return the new undistorted image*/
-  	ImgBase *undisort(const ImgBase *img);
+  	core::ImgBase *undisort(const core::ImgBase *img);
   
   	///resets internal data and sets given params
   	/*@param width of the chessboard

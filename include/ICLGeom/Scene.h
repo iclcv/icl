@@ -86,7 +86,7 @@ namespace icl{
     gui.show();
     
     // defines the scene's viewport
-    (**gui.getValue<DrawHandle3D>("draw")).setDefaultImageSize(Size(640,480));
+    (**gui.getValue<DrawHandle3D>("draw")).setDefaultImageSize(utils::Size(640,480));
   
     // create camera and add to scene instance
     Camera cam(Vec(0,0,-10), // position
@@ -218,11 +218,11 @@ int main(int n, char**ppc){
     
     /// returns contained object at given index
     /** If the index is not valid, an exception is thrown */
-    SceneObject *getObject(int index) throw (ICLException);
+    SceneObject *getObject(int index) throw (utils::ICLException);
 
     /// returns contained object at given index (const)
     /** If the index is not valid, an exception is thrown */
-    const SceneObject *getObject(int index) const throw (ICLException);
+    const SceneObject *getObject(int index) const throw (utils::ICLException);
     
     /// returns a child that is deeper in the scene graph
     /** e.g. if recursiveIndices is [1,2,3], then first, the Scene's object at 
@@ -230,7 +230,7 @@ int main(int n, char**ppc){
         objects child at index 3 is returned. 
         An exception is thrown if one of the indices is wrong.
     */
-    SceneObject *getObject(const std::vector<int> recursiveIndices) throw (ICLException);
+    SceneObject *getObject(const std::vector<int> recursiveIndices) throw (utils::ICLException);
 
     /// returns a child that is deeper in the scene graph (const)
     /** e.g. if recursiveIndices is [1,2,3], then first, the Scene's object at 
@@ -238,12 +238,12 @@ int main(int n, char**ppc){
         objects child at index 3 is returned. 
         An exception is thrown if one of the indices is wrong.
     */
-    SceneObject *getObject(const std::vector<int> recursiveIndices) const throw (ICLException);
+    SceneObject *getObject(const std::vector<int> recursiveIndices) const throw (utils::ICLException);
     
     /// finds the recursive indices for a given object. 
     /** If no exceptions are thrown, getObject(findPath(o)) is always o.
         throws ans exception if the given object cannot be found. */
-    std::vector<int> findPath(const SceneObject *o) const throw (ICLException);
+    std::vector<int> findPath(const SceneObject *o) const throw (utils::ICLException);
     
     /// deletes and removes all objects, handlers and callbacks
     /** If camerasToo is set to true, also all cameras are removed */
@@ -262,9 +262,9 @@ int main(int n, char**ppc){
     
 #ifdef HAVE_GLX
     enum DepthBufferMode{
-      RawDepth01,      //!< raw depth buffer in range [0,1]
-      DistToCamPlane,  //!< depth buffer values define distance to the camera's z=0 plane
-      DistToCamCenter  //!< depth buffer values define distanct to the camera center
+      RawDepth01,      //!< raw core::depth buffer in range [0,1]
+      DistToCamPlane,  //!< core::depth buffer values define distance to the camera's z=0 plane
+      DistToCamCenter  //!< core::depth buffer values define distanct to the camera center
     };
     
     
@@ -303,27 +303,27 @@ int main(int n, char**ppc){
         will remain allocated for later use. If you need to render images of different sizes
         (the output image is rendered to the image size that the camera at given index has), you should
         free the pbuffers from time to time using 
-        Scene::freeAllPBuffers and Scene::freePBuffer(const Size&).
+        Scene::freeAllPBuffers and Scene::freePBuffer(const utils::Size&).
         
-        If a non-null depthBuffer parameter is provided, it is filled with data from the scene depth buffer
-        usually, the raw depth buffer does not provide useful information for further processing. 
-        In OpenGL, the standard depth buffer values are highly non-linearily distributed within the
-        near and far clipping plane. If the depth buffer mode is not RawDepth01, this is compensated
-        and the depth buffer is filled with (metric) depth values that denote either a pixel's distance
+        If a non-null depthBuffer parameter is provided, it is filled with data from the scene core::depth buffer
+        usually, the raw core::depth buffer does not provide useful information for further processing. 
+        In OpenGL, the standard core::depth buffer values are highly non-linearily distributed within the
+        near and far clipping plane. If the core::depth buffer mode is not RawDepth01, this is compensated
+        and the core::depth buffer is filled with (metric) core::depth values that denote either a pixel's distance
         to the z=0 plane in camera space or the distance to the camera center. For correcting the
-        linearized depth buffer values that are computed for the DistToCamPlane mode, a set of correction 
+        linearized core::depth buffer values that are computed for the DistToCamPlane mode, a set of correction 
         coefficients has to be computed, which entails creation of all camera viewrays. This can last
         about a second in the first call. In later calls, the values are just re-used. 
         
     */
-    const Img8u &render(int camIndx, const ImgBase *background=0, Img32f *depthBuffer=0, 
-                        DepthBufferMode mode=DistToCamCenter) const throw (ICLException);
+    const core::Img8u &render(int camIndx, const core::ImgBase *background=0, core::Img32f *depthBuffer=0, 
+                        DepthBufferMode mode=DistToCamCenter) const throw (utils::ICLException);
     
     /// frees all pbuffers allocated before
     void freeAllPBuffers();
     
     /// frees the pbffer associated with given size (if there is one)
-    void freePBuffer(const Size &size);
+    void freePBuffer(const utils::Size &size);
 #endif
 #endif
 
@@ -345,12 +345,12 @@ int main(int n, char**ppc){
     /** The returned reference cam be used to set lighting parameters.
         Since OpenGL does only support 8 lights, allowed indices are 0-7.
         If another index is passed, an exception is thrown. */
-    SceneLight &getLight(int index) throw (ICLException);
+    SceneLight &getLight(int index) throw (utils::ICLException);
 
     /// returns a const reference to a light with given index
     /** Since OpenGL does only support 8 lights, allowed indices are 0-7.
         If another index is passed, an exception is thrown. */
-    const SceneLight &getLight(int index) const throw (ICLException);
+    const SceneLight &getLight(int index) const throw (utils::ICLException);
 
     
     /// sets whether OpenGL's lighting is globally activated
@@ -361,7 +361,7 @@ int main(int n, char**ppc){
     /** returns 0 if no object was hit, if contactPos is not 0, the 3D-contact position
         is stored there. */
     inline Hit findObject(int camIndex, int xScreen, int yScreen){
-      return findObject(getCamera(camIndex).getViewRay(Point(xScreen,yScreen)));
+      return findObject(getCamera(camIndex).getViewRay(utils::Point(xScreen,yScreen)));
     }
     
     /// picks the first object that is hit by the given viewray
@@ -375,7 +375,7 @@ int main(int n, char**ppc){
     
     /// retunrs all objects on that are intersected by the defined cameras viewray through given x and y
     inline std::vector<Hit> findObjects(int camIndex, int xScreen, int ySceen){
-      return findObjects(getCamera(camIndex).getViewRay(Point(xScreen,ySceen)));
+      return findObjects(getCamera(camIndex).getViewRay(utils::Point(xScreen,ySceen)));
     }
     
     /// sets the expected bounds of contained objects
@@ -435,9 +435,9 @@ int main(int n, char**ppc){
     /// internal class for offscreen rendering
     struct PBuffer;
     
-    struct PBufferIndex : public Size{
+    struct PBufferIndex : public utils::Size{
       unsigned int threadID;
-      PBufferIndex(const Size &size);
+      PBufferIndex(const utils::Size &size);
       bool operator<(const PBufferIndex &other) const;
     };
     
@@ -460,7 +460,7 @@ int main(int n, char**ppc){
     SmartPtr<SceneLight> m_lights[8];
     
     /// optionally given bounds of the scene
-    SmartArray<Range32f> m_bounds;
+    SmartArray<utils::Range32f> m_bounds;
 
     private:
     /// called from the SceneObject class

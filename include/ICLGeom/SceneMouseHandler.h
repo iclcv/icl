@@ -54,15 +54,15 @@ namespace icl{
   /** Mouse action function pointer
   * parameters:
   *   const MouseEvent&                   pMouseEvent,
-  *   const Point32f&                     pCurrentMousePosition,
-  *   const Point32f&                     pDeltaMousePosition,
+  *   const utils::Point32f&                     pCurrentMousePosition,
+  *   const utils::Point32f&                     pDeltaMousePosition,
   *   Camera&                             pCamera,
   *   void*                               pData
   */
   typedef void                            (*MouseActionCallback)(
       const MouseEvent&,
-      const Point32f&,
-      const Point32f&,
+      const utils::Point32f&,
+      const utils::Point32f&,
       Camera&,
       void* );
   
@@ -153,7 +153,7 @@ protected:
     Camera                              mCameraBackup;
 
     /// starting mouse position for dragging
-    Point32f                            mAnchor;
+    utils::Point32f                            mAnchor;
 
     /// pointer to parent scene
     Scene*                              mParentScene;
@@ -310,8 +310,8 @@ public:
     */
     static void                         freeView(
         const MouseEvent&               pMouseEvent,
-        const Point32f&                 pCurrentMousePosition,
-        const Point32f&                 pDeltaMousePosition,
+        const utils::Point32f&                 pCurrentMousePosition,
+        const utils::Point32f&                 pDeltaMousePosition,
         Camera&                         pCamera,
         void*                           pData,
         bool                            pInverseX,
@@ -330,8 +330,8 @@ public:
     */
     static void                         freeView(
         const MouseEvent&               pMouseEvent,
-        const Point32f&                 pCurrentMousePosition,
-        const Point32f&                 pDeltaMousePosition,
+        const utils::Point32f&                 pCurrentMousePosition,
+        const utils::Point32f&                 pDeltaMousePosition,
         Camera&                         pCamera,
         void*                           pData )
     {
@@ -353,8 +353,8 @@ public:
     */
     static void                         freeViewInverseMouseX(
         const MouseEvent&               pMouseEvent,
-        const Point32f&                 pCurrentMousePosition,
-        const Point32f&                 pDeltaMousePosition,
+        const utils::Point32f&                 pCurrentMousePosition,
+        const utils::Point32f&                 pDeltaMousePosition,
         Camera&                         pCamera,
         void*                           pData )
     {
@@ -376,8 +376,8 @@ public:
     */
     static void                         freeViewInverseMouseY(
         const MouseEvent&               pMouseEvent,
-        const Point32f&                 pCurrentMousePosition,
-        const Point32f&                 pDeltaMousePosition,
+        const utils::Point32f&                 pCurrentMousePosition,
+        const utils::Point32f&                 pDeltaMousePosition,
         Camera&                         pCamera,
         void*                           pData )
     {
@@ -399,8 +399,8 @@ public:
     */
     static void                         freeViewInverseBoth(
         const MouseEvent&               pMouseEvent,
-        const Point32f&                 pCurrentMousePosition,
-        const Point32f&                 pDeltaMousePosition,
+        const utils::Point32f&                 pCurrentMousePosition,
+        const utils::Point32f&                 pDeltaMousePosition,
         Camera&                         pCamera,
         void*                           pData )
     {
@@ -420,8 +420,8 @@ public:
     */
     static void                         rotateAroundOrigin(
         const MouseEvent&               pMouseEvent,
-        const Point32f&                 pCurrentMousePosition,
-        const Point32f&                 pDeltaMousePosition,
+        const utils::Point32f&                 pCurrentMousePosition,
+        const utils::Point32f&                 pDeltaMousePosition,
         Camera&                         pCamera,
         void*                           pData );
 
@@ -438,8 +438,8 @@ public:
     */
     static void                         strafe(
         const MouseEvent&               pMouseEvent,
-        const Point32f&                 pCurrentMousePosition,
-        const Point32f&                 pDeltaMousePosition,
+        const utils::Point32f&                 pCurrentMousePosition,
+        const utils::Point32f&                 pDeltaMousePosition,
         Camera&                         pCamera,
         void*                           pData );
 
@@ -456,8 +456,8 @@ public:
     */
     static void                         rollAndDistance(
         const MouseEvent&               pMouseEvent,
-        const Point32f&                 pCurrentMousePosition,
-        const Point32f&                 pDeltaMousePosition,
+        const utils::Point32f&                 pCurrentMousePosition,
+        const utils::Point32f&                 pDeltaMousePosition,
         Camera&                         pCamera,
         void*                           pData );
 

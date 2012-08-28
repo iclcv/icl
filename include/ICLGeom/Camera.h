@@ -107,7 +107,7 @@ namespace icl {
         \f]
   
         Together, <b>P</b> and <b>C</b> are used to describe the projection model of the camera.
-        A 3D Point <b>p<sub>w</sub></b> in the world is projected to the camera screen <b>p<sub>s</sub></b> by
+        A 3D utils::Point <b>p<sub>w</sub></b> in the world is projected to the camera screen <b>p<sub>s</sub></b> by
         
         \f[
         p_s' = homogenize(P C p_w)
@@ -136,26 +136,26 @@ namespace icl {
       public:
   
       struct RenderParams {
-        Size chipSize;    //!< chip size in [pixels] for transformation to chip coordinates
+        utils::Size chipSize;    //!< chip size in [pixels] for transformation to chip coordinates
         float clipZNear;  //!< position of the near clipping plane in [mm]
         float clipZFar;   //!< position of the far clipping plane in [mm]
-        Rect viewport;    //!< in [pixel]
+        utils::Rect viewport;    //!< in [pixel]
         float viewportZMin, viewportZMax; //!< interval for the z coordinates in viewport
   
-        RenderParams(const Size &chipSize=Size::VGA, float clipZNear=1.0, float clipZFar=10000.,
-          const Rect &viewport=Rect(0,0,640,480), float viewportZMin=0.,
+        RenderParams(const utils::Size &chipSize=utils::Size::VGA, float clipZNear=1.0, float clipZFar=10000.,
+          const utils::Rect &viewport=utils::Rect(0,0,640,480), float viewportZMin=0.,
           float viewportZMax=1.):
           chipSize(chipSize), clipZNear(clipZNear), clipZFar(clipZFar), viewport(viewport),
           viewportZMin(viewportZMin), viewportZMax(viewportZMax) {}
       };
   
       /// We need at least 6 Data points in general positions
-      struct NotEnoughDataPointsException  : public ICLException{
-        NotEnoughDataPointsException():ICLException(__FUNCTION__){}
+      struct NotEnoughDataPointsException  : public utils::ICLException{
+        NotEnoughDataPointsException():utils::ICLException(__FUNCTION__){}
       };
   
       /// internal typedef
-      typedef FixedMatrix<icl32f,3,3> Mat3x3;
+      typedef math::FixedMatrix<icl32f,3,3> Mat3x3;
   
       /** @{ @name constructors */
   
@@ -164,7 +164,7 @@ namespace icl {
                const Vec &norm=Vec(0,0,-1,1),
                const Vec &up=Vec(1,0,0,1),
                float f=3,
-               const Point32f &principalPointOffset=Point32f(320,240),
+               const utils::Point32f &principalPointOffset=utils::Point32f(320,240),
                float sampling_res_x = 200,
                float sampling_res_y = 200,
                float skew = 0,
@@ -173,22 +173,22 @@ namespace icl {
              m_mx(sampling_res_x), m_my(sampling_res_y), m_skew(skew), m_renderParams(renderParams) {}
   
       /// loads a camera from given file
-      /** @param filename file name of valid configuration file (in ICL's ConfigFile format)
+      /** @param filename file name of valid configuration file (in ICL's ConfigFile core::format)
           @param prefix valid prefix that determines wheret to find the camera within the
                  given config file (note, that this prefix must end with '.')
           */
-      Camera(const std::string &filename, const std::string &prefix="config.")  throw (ParseException);
+      Camera(const std::string &filename, const std::string &prefix="config.")  throw (utils::ParseException);
       /// loads a camera from given input stream
-      /** @param filename file name of valid configuration file (in ICL's ConfigFile format)
+      /** @param filename file name of valid configuration file (in ICL's ConfigFile core::format)
           @param prefix valid prefix that determines wheret to find the camera within the
                  given config file (note, that this prefix must end with '.')
           */
-      Camera(std::istream &configDataStream, const std::string &prefix="config.")  throw (ParseException);
+      Camera(std::istream &configDataStream, const std::string &prefix="config.")  throw (utils::ParseException);
   
   
       /** @} @{ @name static creation functions */
       /// Compute all camera parameters from the 4x3 projection matrix.
-      static Camera createFromProjectionMatrix(const FixedMatrix<icl32f,4,3> &Q, float focalLength=1);
+      static Camera createFromProjectionMatrix(const math::FixedMatrix<icl32f,4,3> &Q, float focalLength=1);
   
       /// Uses the passed world point -- image point references to estimate the projection parameters.
       /** At least 6 data points references are needed. It is not possible to estimate the
@@ -197,26 +197,26 @@ namespace icl {
           function.
           The method minimizes the algebraic error with the direct linear transform algorithm in
           which a SVD is used.
-          If IPP is not available, this function uses calibrate_pinv(std::vector<Vec>,std::vector<Point32f>,float)
+          If IPP is not available, this function uses calibrate_pinv(std::vector<Vec>,std::vector<utils::Point32f>,float)
       */
-      static Camera calibrate(std::vector<Vec> Xws, std::vector<Point32f> xis, float focalLength=1)
-      throw (NotEnoughDataPointsException,SingularMatrixException);
+      static Camera calibrate(std::vector<Vec> Xws, std::vector<utils::Point32f> xis, float focalLength=1)
+      throw (NotEnoughDataPointsException,math::SingularMatrixException);
   
       /// Uses the passed world point -- image point references to estimate the projection parameters.
       /** Same as the method calibrate, but using a pseudoinvers instead of the SVD for the estimation.
           This method is less stable and less exact. */
-      static Camera calibrate_pinv(std::vector<Vec> Xws, std::vector<Point32f> xis, float focalLength=1)
-      throw (NotEnoughDataPointsException,SingularMatrixException);
+      static Camera calibrate_pinv(std::vector<Vec> Xws, std::vector<utils::Point32f> xis, float focalLength=1)
+      throw (NotEnoughDataPointsException,math::SingularMatrixException);
   
-      /** @} @{ @name projection functions */
+      /** @} @{ @name putils::rojection functions */
   
       // projections normal
       /// Project a world point onto the image plane. Caution: Set last component of world points to 1.
-      Point32f project(const Vec &Xw) const;
+      utils::Point32f project(const Vec &Xw) const;
       /// Project a vector of world points onto the image plane.  Caution: Set last component of world points to 1.
-      void project(const std::vector<Vec> &Xws, std::vector<Point32f> &dst) const;
+      void project(const std::vector<Vec> &Xws, std::vector<utils::Point32f> &dst) const;
       /// Project a vector of world points onto the image plane. Caution: Set last component of world points to 1.
-      const std::vector<Point32f> project(const std::vector<Vec> &Xws) const;
+      const std::vector<utils::Point32f> project(const std::vector<Vec> &Xws) const;
   
   
   
@@ -231,24 +231,24 @@ namespace icl {
   
       // projection magic
       /// Returns a view-ray equation of given pixel location
-      ViewRay getViewRay(const Point32f &pixel) const;
+      ViewRay getViewRay(const utils::Point32f &pixel) const;
   
       /// returns a list of viewrays corresponding to a given set of pixels
       /** This method is much faster than using getViewRay several times since the
           projection matrix inversion that is necessary must only be done once */
-      std::vector<ViewRay> getViewRays(const std::vector<Point32f> &pixels) const;
+      std::vector<ViewRay> getViewRays(const std::vector<utils::Point32f> &pixels) const;
   
       /// returns a 2D array of all viewrays
       /** This method is much faster than using getViewRay several times since the
           projection matrix inversion that is necessary must only be done once */
-      Array2D<ViewRay> getAllViewRays() const;
+      utils::Array2D<ViewRay> getAllViewRays() const;
       
       /// Returns a view-ray equation of given point in the world
       ViewRay getViewRay(const Vec &Xw) const;
       /// returns estimated 3D point for given pixel and plane equation
-      Vec estimate3DPosition(const Point32f &pixel, const PlaneEquation &plane) const throw (ICLException);
+      Vec estimate3DPosition(const utils::Point32f &pixel, const PlaneEquation &plane) const throw (utils::ICLException);
       /// calculates the intersection point between this view ray and a given plane
-      /** Throws an ICLException in case of parallel plane and line
+      /** Throws an utils::ICLException in case of parallel plane and line
           A ViewRay is defined by  \f$V: \mbox{offset} + \lambda \cdot \mbox{direction} \f$
           A Plane is given by \f$ P: < (X - \mbox{planeOffset}), \mbox{planeNormal}> = 0 \f$
           Intersection is described by
@@ -258,7 +258,7 @@ namespace icl {
           and .. obviously, we get no intersection if direction is parallel to planeNormal
       */
       static Vec getIntersection(const ViewRay &v,
-                                 const PlaneEquation &plane) throw (ICLException);
+                                 const PlaneEquation &plane) throw (utils::ICLException);
   
       /** @} @{ @name complex setter and getter functions */
   
@@ -282,10 +282,10 @@ namespace icl {
       Mat getViewportMatrixGL() const;
   
       /// returns the common 4x3 camera matrix
-      FixedMatrix<icl32f,4,3> getQMatrix() const;
+      math::FixedMatrix<icl32f,4,3> getQMatrix() const;
       
       /// returns the inverse QMatrix
-      FixedMatrix<icl32f,3,4> getInvQMatrix() const;
+      math::FixedMatrix<icl32f,3,4> getInvQMatrix() const;
   
       /// translates the current position vector
       inline void translate(const Vec &d) { m_pos += d; }
@@ -300,7 +300,7 @@ namespace icl {
       const Vec &getUp() const { return m_up; }
       Vec getHoriz() const { return cross(m_up, m_norm); }
       float getFocalLength() const { return m_f; }
-      Point32f getPrincipalPointOffset() const { return Point32f(m_px, m_py); }
+      utils::Point32f getPrincipalPointOffset() const { return utils::Point32f(m_px, m_py); }
       float getPrincipalPointOffsetX() const { return m_px; }
       float getPrincipalPointOffsetY() const { return m_py; }
       float getSamplingResolutionX() const { return m_mx; }
@@ -317,7 +317,7 @@ namespace icl {
       void setUp(const Vec &up) { m_up = up; m_up[3] = 0; m_up.normalize(); m_up[3] = 1; } //!< gets automatically normalized
       void setFocalLength(float value) { m_f = value; }
       void setPrincipalPointOffset(float px, float py) { m_px = px; m_py = py; }
-      void setPrincipalPointOffset(const Point32f &p) { m_px = p.x; m_py = p.y; }
+      void setPrincipalPointOffset(const utils::Point32f &p) { m_px = p.x; m_py = p.y; }
       void setSamplingResolutionX(float value) { m_mx = value; }
       void setSamplingResolutionY(float value) { m_my = value; }
       void setSamplingResolution(float x, float y) { m_mx = x; m_my = y; }
@@ -332,16 +332,16 @@ namespace icl {
           Furthermore, the prinizipal-point-offset is automatically set to the center of
           the new screen
       */
-      void setResolution(const Size &newScreenSize);
+      void setResolution(const utils::Size &newScreenSize);
   
       /// Changes the camera resolution and adapts dependent values
       /** Internally, this function also adapts the render parameters chipSize and viewport
           Furthermore, the prinizipal-point-offset is set to the new given value
       */
-      void setResolution(const Size &newScreenSize, const Point &newPrincipalPointOffset);
+      void setResolution(const utils::Size &newScreenSize, const utils::Point &newPrincipalPointOffset);
   
       /// returns the current chipSize (camera resolution in pixels)
-      inline const Size &getResolution() const { return m_renderParams.chipSize; }
+      inline const utils::Size &getResolution() const { return m_renderParams.chipSize; }
       /** @} @{ @name 3D-position estimation */
   
       /// computes the 3D position of a n view from n cameras
@@ -424,14 +424,14 @@ namespace icl {
           where 'A+' means the pseudo-inverse of A
       */
       static Vec estimate_3D(const std::vector<Camera*> cams,
-                             const std::vector<Point32f> &UVs,
-                             bool removeInvalidPoints=false) throw (ICLException);
+                             const std::vector<utils::Point32f> &UVs,
+                             bool removeInvalidPoints=false) throw (utils::ICLException);
   
       /// multiview 3D point estimation using svd-based linear optimization (should not be used)
       /** This functions seems to provide false results for more than 2 views:
           use estimate_3D instead*/
       static Vec estimate_3D_svd(const std::vector<Camera*> cams,
-                                 const std::vector<Point32f> &UVs);
+                                 const std::vector<utils::Point32f> &UVs);
   
       /** @}*/
   
@@ -460,7 +460,7 @@ namespace icl {
       ////////////////////////////////////////////////////////////////////////////
   
       /// internally used utility function
-      static void checkAndFixPoints(std::vector<Vec> &worldPoints, std::vector<Point32f> &imagePoints)
+      static void checkAndFixPoints(std::vector<Vec> &worldPoints, std::vector<utils::Point32f> &imagePoints)
         throw (NotEnoughDataPointsException);
       /// intenal helper function
       static void load_camera_from_stream(std::istream &is,
@@ -468,11 +468,11 @@ namespace icl {
                                           Camera &cam);
     };
   
-    /// ostream operator (writes camera in XML format)
+    /// ostream operator (writes camera in XML core::format)
     std::ostream &operator<<(std::ostream &os, const Camera &cam);
   
     /// istream operator parses a camera from an XML-string
-    std::istream &operator>>(std::istream &is, Camera &cam) throw (ParseException);
+    std::istream &operator>>(std::istream &is, Camera &cam) throw (utils::ParseException);
   
   } // namespace geom
 } // namespace icl

@@ -55,7 +55,7 @@ namespace icl{
         expression here, to avoid misconceptions with the PCL
         nomenclature. Organized point clouds are assumed to have a 2D
         row-major data layout, which is usually the case for point clouds
-        acquired form 3D cameras such as kinect. Point clouds whose height
+        acquired form 3D cameras such as kinect. utils::Point clouds whose height
         is less than 1 are assumed to be just 1D, i.e. they contain just an
         unordered set of 3D points and features.
         
@@ -102,14 +102,14 @@ namespace icl{
       
       /// internally used utility method that throws verbose exceptions
       template<class T, int N>
-      DataSegment<T,N> &error(const std::string &fname) throw (ICLException){
-        throw ICLException("static feature "+fname+" is not supported by this PointCloudObjectBase instance");
+      DataSegment<T,N> &error(const std::string &fname) throw (utils::ICLException){
+        throw utils::ICLException("static feature "+fname+" is not supported by this PointCloudObjectBase instance");
         static DataSegment<T,N> dummy; return dummy;
       }
   
       /// internally used utility method that throws verbose exceptions
-      DataSegmentBase &error_dyn(const std::string &featureName) throw (ICLException){
-        throw ICLException("dynamic feature "+featureName+" is not supported by this PointCloudObjectBase instance");
+      DataSegmentBase &error_dyn(const std::string &featureName) throw (utils::ICLException){
+        throw utils::ICLException("dynamic feature "+featureName+" is not supported by this PointCloudObjectBase instance");
         static DataSegmentBase dummy; return dummy;
       }
   
@@ -146,7 +146,7 @@ namespace icl{
       virtual bool isOrganized() const = 0;
   
       /// returns the 2D size of the pointcloud (throws exception if not ordered)
-      virtual Size getSize() const throw (ICLException) = 0;
+      virtual utils::Size getSize() const throw (utils::ICLException) = 0;
       
       /// return the linearily ordered number of point in the point cloud
       virtual int getDim() const = 0;
@@ -158,11 +158,11 @@ namespace icl{
           Furthermore, if the given width is 0 or smaller, the point-cloud
           should be set to the un-organized mode
       */
-      virtual void setSize(const Size &size) = 0;
+      virtual void setSize(const utils::Size &size) = 0;
   
       /// sets the number of contained points (and enables the unorganized mode)
       inline void setDim(int dim){
-        setSize(Size(dim,-1));
+        setSize(utils::Size(dim,-1));
       }
   
       /// well know features XYZ (three floats, this feature must usually be available)
@@ -221,7 +221,7 @@ namespace icl{
       const std::map<std::string,std::string> &getMetaData() const;
       
       /// returns the meta data associated with a given key
-      const std::string &getMetaData(const std::string &key) const throw (ICLException);
+      const std::string &getMetaData(const std::string &key) const throw (utils::ICLException);
   
       /// returns whether meta data to the given key is associated
       bool hasMetaData(const std::string &key) const;

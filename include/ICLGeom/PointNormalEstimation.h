@@ -44,7 +44,7 @@
 namespace icl{
   namespace geom{
     /**
-       This class is a normal estimator and edge detector for depth images. It uses OpenCL for hardware parallelization if a compatible GPU is found. The input is a depth image and the output a binarized edge image.
+       This class is a normal estimator and edge detector for core::depth images. It uses OpenCL for hardware parallelization if a compatible GPU is found. The input is a core::depth image and the output a binarized edge image.
        All interim results can be accessed (e.g. point normals) or set to use only a part of the processing pipeline.*/
     class PointNormalEstimation{
   	
@@ -61,26 +61,26 @@ namespace icl{
         
       ///Constructor
       /** Constructs an object of this class. All default parameters are set. Use setters for desired values.
-          @param size size of the input depth image */
-      PointNormalEstimation(Size size); 
+          @param size size of the input core::depth image */
+      PointNormalEstimation(utils::Size size); 
   	
       ///Destructor
       ~PointNormalEstimation();
   	
-      /// Sets the input depth image (input for median filter).
-      /**       @param depthImg the input depth image */
-      void setDepthImage(const Img32f &depthImg);
+      /// Sets the input core::depth image (input for median filter).
+      /**       @param depthImg the input core::depth image */
+      void setDepthImage(const core::Img32f &depthImg);
   	
       /// Calculates a filtered image using a median filter. The mask size is set by setMedianFilterSize(int size).
       void medianFilter();
   	
-      /// Returns the filtered depth image.
-      /**        @return the filtered depth image */
-      Img32f getFilteredImage();
+      /// Returns the filtered core::depth image.
+      /**        @return the filtered core::depth image */
+      core::Img32f getFilteredImage();
   	
-      /// Sets the (filtered) depth image (input for normal calculation). This call is not necessary if medianFilter() is executed before.
-      /**        @param filteredImg the (filtered) depth image */
-      void setFilteredImage(Img32f &filteredImg); 
+      /// Sets the (filtered) core::depth image (input for normal calculation). This call is not necessary if medianFilter() is executed before.
+      /**        @param filteredImg the (filtered) core::depth image */
+      void setFilteredImage(core::Img32f &filteredImg); 
   	
       /// Calculates the point normals. The range for calculation is set by setNormalCalculationRange(int range). 
       void normalCalculation();
@@ -101,21 +101,21 @@ namespace icl{
   	
       /// Returns the angle image.
       /**        @return the angle image */
-      Img32f getAngleImage();
+      core::Img32f getAngleImage();
   	
       /// Sets the angle image (input for image binarization). This call is not necessary if angleImageCalculation() is executed before.
       /**        @param angleImg the angle image */
-      void setAngleImage(Img32f &angleImg);
+      void setAngleImage(core::Img32f &angleImg);
   	
       /// Binarizes the angle image to detect edges. The threshold is set by setBinarizationThreshold(float threshold).
       void imageBinarization();
   	
       /// Returns the binarized angle image (final output).
       /**        @return the (final) binarized angle image */
-      Img32f getBinarizedImage();
+      core::Img32f getBinarizedImage();
   	
   	
-      /// Sets the mask size for medianFilter(). Size n corresponds to mask size n x n. (default 3, min 3, max 9, odd only)
+      /// Sets the mask size for medianFilter(). utils::Size n corresponds to mask size n x n. (default 3, min 3, max 9, odd only)
       /**        @param size the mask size */
       void setMedianFilterSize(int size);
   	
@@ -157,10 +157,10 @@ namespace icl{
   	
   	
       /// One call function for calculation of the complete pipeline ((filter)->normals->(normalAvg)->angles->binarization)
-      /**        @param depthImage the input depth image
+      /**        @param depthImage the input core::depth image
   	       @param filter enable/disable filtering
   	       @param average enable/disable normal averaging */
-      Img32f calculate(const Img32f &depthImage, bool filter, bool average);
+      core::Img32f calculate(const core::Img32f &depthImage, bool filter, bool average);
   	
      private:
   	
@@ -176,10 +176,10 @@ namespace icl{
       bool useNormalAveraging;
       Vec4* normals;
       Vec4* avgNormals;
-      Img32f rawImage;
-      Img32f filteredImage;
-      Img32f angleImage;
-      Img32f binarizedImage;
+      core::Img32f rawImage;
+      core::Img32f filteredImage;
+      core::Img32f angleImage;
+      core::Img32f binarizedImage;
   	
     #ifdef HAVE_OPENCL
       //OpenCL data

@@ -54,35 +54,35 @@ namespace icl{
       
       /// defines on what data the mapping is applied
       /** The RGBD-Mapping can either be created using point-correspondances 
-          from the depth and the RGB-Image. This is exactly, what the demo
+          from the core::depth and the RGB-Image. This is exactly, what the demo
           application icl-kinect-rgbd-calib provides. In this case, the 
-          projective transform for the mapping gets the depth-images
-          x- and y- pixel coordinate and it's (corrected) depth value
+          projective transform for the mapping gets the core::depth-images
+          x- and y- pixel coordinate and it's (corrected) core::depth value
           at (x,y). \n
           Alternatively, the mapping can also be applied on the x-, y-
           and z- world coordinates. That are created by using the depth
-          images camera-viewrays and it's depth values. 
+          images camera-viewrays and it's core::depth values. 
       */
       enum MappingMode{
-        XY_PIX_D,  //!< the mapping is applied on the x- and y- pixel coordinate and on the depth value
+        XY_PIX_D,  //!< the mapping is applied on the x- and y- pixel coordinate and on the core::depth value
         XYZ_WORLD, //!< the mapping is applied on the xyz- world coordinates
       };
       
       /// returns a default camera model for VGA and QVGA kinect cameras
       /** If the default camera model does not work well for your application, you
           can calibrate your kinect device using the icl-cam-calib-2 tool */
-      static Camera get_default_kinect_camera(const Size &size);
+      static Camera get_default_kinect_camera(const utils::Size &size);
       
-      /// returns a default rgb to depth mapping for VGA and QVGA kinect cameras
+      /// returns a default rgb to core::depth mapping for VGA and QVGA kinect cameras
       /** if the default mapping does not work for your kinect device, you can 
           create a new mapping using the icl-kinect-rgbd-calib tool */
-      static RGBDMapping get_default_kinect_rgbd_mapping(const Size &size);
+      static RGBDMapping get_default_kinect_rgbd_mapping(const utils::Size &size);
   
       /// creates an RGBDImageSceneObject with given size which uses the default mapping and camera
-      RGBDImageSceneObject(const Size &size = Size::VGA, MappingMode mode=XY_PIX_D);
+      RGBDImageSceneObject(const utils::Size &size = utils::Size::VGA, MappingMode mode=XY_PIX_D);
       
       /// creates and RGBDImageSceneObject with given mapping and camera
-      RGBDImageSceneObject(const Size &size, const RGBDMapping &mapping, 
+      RGBDImageSceneObject(const utils::Size &size, const RGBDMapping &mapping, 
                            const Camera &cam,MappingMode mode=XY_PIX_D);
       
       /// Destructor
@@ -95,30 +95,30 @@ namespace icl{
       void setMapping(const RGBDMapping &mapping);
       
       /// returns the current size
-      const Size &getSize() const;
+      const utils::Size &getSize() const;
   
       /// returns the camera's viewray directions
       const std::vector<Vec3> &getViewRayDirs() const;
       
-      /// depth value correction factors
+      /// core::depth value correction factors
       const std::vector<float> &getCorrectionFactors() const;
       
-      /// returns the last corrected depth image
-      /** the result image contains the corrected depth image from the last update call */
-      const Img32f &getCorrectedDepthImage() const;
+      /// returns the last corrected core::depth image
+      /** the result image contains the corrected core::depth image from the last update call */
+      const core::Img32f &getCorrectedDepthImage() const;
   
-      /// updates the scene object from new kinect depth and optionally also color image
-      /** the internal point-cloud image is created using the given depth image.
-          @param depthImage kinect depth image, whose values are assumed to be in [mm] units
+      /// updates the scene object from new kinect core::depth and optionally also color image
+      /** the internal point-cloud image is created using the given core::depth image.
+          @param depthImage kinect core::depth image, whose values are assumed to be in [mm] units
           @param optionally given RGB image. If this is not null, its values are mapped to the 
-                 depth-image point cloud using the current mapping
+                 core::depth-image point cloud using the current mapping
           */
-      virtual void update(const Img32f &depthImage, const Img8u *rgbImage=0);
+      virtual void update(const core::Img32f &depthImage, const core::Img8u *rgbImage=0);
   
       
       /// maps another given image just like the rgbImage would be mapped
       /** This method uses the last depthImage that was passed to RGBDImageSceneObject::update */
-      void mapImage(const ImgBase *src, ImgBase **dst);
+      void mapImage(const core::ImgBase *src, core::ImgBase **dst);
   
       /// returns the objects 3D points as Array2D<Vec>
       /** The returned Array2D<Vec> is just a shallow wrapper around the internal data pointer. */

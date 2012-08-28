@@ -41,10 +41,10 @@ namespace icl{
     
     //// RGB to Depth image mapping e.g. for Kinect Cameras
     /** The mappoing algorithm using a projective camera transform to 
-        implement the mapping between a depth camera and a common 2D 
+        implement the mapping between a core::depth camera and a common 2D 
         (color) camera. For the creation of the mapping one needs a 
-        set of 3D reference points in the depth image where x and y are
-        pixel positions while z is the depth cameras depth value that
+        set of 3D reference points in the core::depth image where x and y are
+        pixel positions while z is the core::depth cameras core::depth value that
         corresponts to the (x,y) position. In addition corresponding
         reference points in the RGB image are needed. The 3D reference
         points must be scattered in 3D (i.e. they must not be coplanar).
@@ -63,20 +63,20 @@ namespace icl{
       RGBDMapping();
   
       /// creates a mapping using the given set of landmark points for calibration
-      /** @param depthImagePointsAndDepths the i-th component Vi contains the depth image
+      /** @param depthImagePointsAndDepths the i-th component Vi contains the core::depth image
                  reference point position (Vi[0]=x, Vi[1]=y), and the corresponding normalized
-                 depth values [in mm] at Vi[2]. Vi[3] must be 1. 
+                 core::depth values [in mm] at Vi[2]. Vi[3] must be 1. 
           @param rgbImagePoints the i-th component is the corresponding landmark calibration point
                  in the rgb image.
       */
       RGBDMapping(const std::vector<Vec> &depthImagePointsAndDepths,
-                  const std::vector<Point32f> &rgbImagePoints);
+                  const std::vector<utils::Point32f> &rgbImagePoints);
       
       /// creates mapping from a given camera
       RGBDMapping(const Camera &cam);
       
       /// loads a mapping from given xml filename
-      /** The xml-file format can either contain just the matrix,
+      /** The xml-file core::format can either contain just the matrix,
           or a whole camera definition */
       RGBDMapping(const std::string &filename);
       
@@ -84,16 +84,16 @@ namespace icl{
       RGBDMapping(const Mat &M);
       
       /// applies the mapping
-      /** @param x depth image x coordinate
-          @param y depth image y coordinate
-          @param depthValue the depth images depth value at position (x,y) (in mm) 
+      /** @param x core::depth image x coordinate
+          @param y core::depth image y coordinate
+          @param depthValue the core::depth images core::depth value at position (x,y) (in mm) 
           @return rgb-image position
       */
-      inline Point apply(float x, float y, float depthValue) const {
+      inline utils::Point apply(float x, float y, float depthValue) const {
         const float phInv = 1.0/ ((*this)(0,3) * x + (*this)(1,3) * y + (*this)(2,3) * depthValue + (*this)(3,3));
         const int px = phInv * ( (*this)(0,0) * x + (*this)(1,0) * y + (*this)(2,0) * depthValue + (*this)(3,0) );
         const int py = phInv * ( (*this)(0,1) * x + (*this)(1,1) * y + (*this)(2,1) * depthValue + (*this)(3,1) );
-        return Point(px,py);
+        return utils::Point(px,py);
       }
       
       /// saves the mapping using a given xml filename

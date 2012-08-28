@@ -35,9 +35,13 @@
 #include <ICLUtils/ConfigFile.h>
 #include <ICLMath/DynMatrixUtils.h>
 #include <ICLUtils/XML.h>
-#include <ICLIO/File.h>
+#include <ICLUtils/File.h>
 #include <ICLGeom/Camera.h>
 #include <fstream>
+
+using namespace icl::utils;
+using namespace icl::core;
+using namespace icl::math;
 
 namespace icl {
   namespace geom{

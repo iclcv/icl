@@ -76,30 +76,32 @@ namespace icl{
           - row-cout 3 or 4 (if it is 4, the last row is not used at all)
           - at least one column (however you'll need 3 columns for 6D mapping */
       template<class T>
-      static FixedMatrix<T,4,4> map(const DynMatrix<T> &Xs, const DynMatrix<T> &Ys, MapMode mode=RigidBody) 
-      throw (IncompatibleMatrixDimensionException,SingularMatrixException);
+      static math::FixedMatrix<T,4,4> map(const math::DynMatrix<T> &Xs, const math::DynMatrix<T> &Ys, MapMode mode=RigidBody) 
+      throw (math::IncompatibleMatrixDimensionException,math::SingularMatrixException);
   
       /// Convenienc template that uses FixedMatrix inputs (available for T=icl32f and T=icl64f)
       /** The inputs's data points are passes to the main map-function using a shallow DynMatrix<T> wrappter*/
       template<class T, unsigned int NUM_POINTS>
-      static FixedMatrix<T,4,4> map(const FixedMatrix<T,NUM_POINTS,3> &Xs, const FixedMatrix<T,NUM_POINTS,3> &Ys, MapMode mode=RigidBody)
-        throw (IncompatibleMatrixDimensionException,SingularMatrixException){
+      static math::FixedMatrix<T,4,4> map(const math::FixedMatrix<T,NUM_POINTS,3> &Xs, 
+                                          const math::FixedMatrix<T,NUM_POINTS,3> &Ys, MapMode mode=RigidBody)
+        throw (math::IncompatibleMatrixDimensionException,math::SingularMatrixException){
         return map(Xs.dyn(),Ys.dyn(), mode);
       }
   
       /// Convenienc template that uses FixedMatrix inputs (available for T=icl32f and T=icl64f)
       /** The inputs's data points are passes to the main map-function using a shallow DynMatrix<T> wrappter*/
       template<class T, unsigned int NUM_POINTS>
-      static FixedMatrix<T,4,4> map(const FixedMatrix<T,NUM_POINTS,4> &Xs, const FixedMatrix<T,NUM_POINTS,4> &Ys, MapMode mode=RigidBody) 
-        throw (IncompatibleMatrixDimensionException,SingularMatrixException){
+      static math::FixedMatrix<T,4,4> map(const math::FixedMatrix<T,NUM_POINTS,4> &Xs,
+                                    const math::FixedMatrix<T,NUM_POINTS,4> &Ys, MapMode mode=RigidBody) 
+        throw (math::IncompatibleMatrixDimensionException,math::SingularMatrixException){
         return map(Xs.dyn(),Ys.dyn(), mode);
       }
   
       /// Convenience function that passes std::vector<Vec> data as DynMatrix<T> to other map function
       static Mat map(const std::vector<Vec> &Xs, const std::vector<Vec> &Ys, MapMode mode=RigidBody) 
-      throw (ICLException,SingularMatrixException,IncompatibleMatrixDimensionException){
-        ICLASSERT_THROW(Xs.size() == Ys.size(), ICLException("PoseEstimator::map: need same number of input- and output-points"));
-        DynMatrix<float> XsD(Xs.size(),3),YsD(Ys.size(),3);
+      throw (utils::ICLException,math::SingularMatrixException,math::IncompatibleMatrixDimensionException){
+        ICLASSERT_THROW(Xs.size() == Ys.size(), utils::ICLException("PoseEstimator::map: need same number of input- and output-points"));
+        math::DynMatrix<float> XsD(Xs.size(),3),YsD(Ys.size(),3);
         for(unsigned int i=0;i<Xs.size();++i){
           std::copy(Xs[i].begin(),Xs[i].begin()+3, XsD.col_begin(i));
           std::copy(Ys[i].begin(),Ys[i].begin()+3, YsD.col_begin(i));
@@ -109,7 +111,7 @@ namespace icl{
   
       /// utility function (instantiated for depth32f and depth64f)
       template<class T>
-      static FixedMatrix<T,3,3> quaternion_to_rotation_matrix(T w, T x, T y, T z);
+      static math::FixedMatrix<T,3,3> quaternion_to_rotation_matrix(T w, T x, T y, T z);
     };
   
   } // namespace geom

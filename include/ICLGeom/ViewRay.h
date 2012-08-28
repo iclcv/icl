@@ -60,13 +60,13 @@ namespace icl{
       
       /// calculates line-plane intersection 
       /** @see static Camera::getIntersection function */
-      Vec getIntersection(const PlaneEquation &plane) const throw (ICLException);
+      Vec getIntersection(const PlaneEquation &plane) const throw (utils::ICLException);
       
       /// calculates the closest distance to the given 3D-Point
       /** for following formula is used:
           <pre>
           ViewRay: o + lambda * v;
-          3D-Point: p
+          3D-utils::Point: p
           
           distance = sqrt( |p-o|^2 - |(p-o).v|^2 )
           </pre>

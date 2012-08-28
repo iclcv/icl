@@ -43,7 +43,7 @@
 namespace icl{
   namespace geom{
     /// color for geometry primitives
-    typedef Color4D32f GeomColor;
+    typedef core::Color4D32f GeomColor;
   
     /// inline utililty function to create a white color instance
     inline GeomColor geom_white(float alpha=255) { return GeomColor(255,255,255,alpha); }
@@ -73,16 +73,16 @@ namespace icl{
     inline GeomColor geom_invisible() { return GeomColor(0,0,0,0); }
   
     /// Matrix Typedef of float matrices
-    typedef FixedMatrix<icl32f,4,4> Mat4D32f;
+    typedef math::FixedMatrix<icl32f,4,4> Mat4D32f;
   
     /// Matrix Typedef of double matrices
-    typedef FixedMatrix<icl64f,4,4> Mat4D64f;
+    typedef math::FixedMatrix<icl64f,4,4> Mat4D64f;
   
     /// Vector typedef of float vectors
-    typedef FixedColVector<icl32f,4> Vec4D32f;
+    typedef math::FixedColVector<icl32f,4> Vec4D32f;
   
     /// Vector typedef of double vectors
-    typedef FixedColVector<icl64f,4> Vec4D64f;
+    typedef math::FixedColVector<icl64f,4> Vec4D64f;
   
     /// Short typedef for 4D float vectors
     typedef Vec4D32f Vec;
@@ -91,18 +91,18 @@ namespace icl{
     typedef Mat4D32f Mat;
   
     /// another shortcut for 3D vectors
-    typedef FixedColVector<icl32f,3> Vec3;
+    typedef math::FixedColVector<icl32f,3> Vec3;
     
     /// normalize a vector to length 1
     template<class T>
-    inline FixedColVector<T,4> normalize(const FixedMatrix<T,1,4> &v) { 
+    inline math::FixedColVector<T,4> normalize(const math::FixedMatrix<T,1,4> &v) { 
       double l = v.length();
       ICLASSERT_RETURN_VAL(l,v);
       return v/l;
     }
     /// normalize a vector to length 1
     template<class T>
-    inline FixedColVector<T,4> normalize3(const FixedMatrix<T,1,4> &v,const double& h=1) { 
+    inline math::FixedColVector<T,4> normalize3(const math::FixedMatrix<T,1,4> &v,const double& h=1) { 
       double l = ::sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
       ICLASSERT_RETURN_VAL(l,v);
       Vec n = v/l;
@@ -129,13 +129,13 @@ namespace icl{
   
     /// homogenize a vector be normalizing 4th component to 1
     template<class T>
-    inline FixedColVector<T,4> homogenize(const FixedMatrix<T,1,4> &v){
+    inline math::FixedColVector<T,4> homogenize(const math::FixedMatrix<T,1,4> &v){
       ICLASSERT_RETURN_VAL(v[3],v); return v/v[3];
     }
   
     /// perform perspective projection
     template<class T>
-    inline FixedColVector<T,4> project(FixedMatrix<T,1,4> v, T z){
+    inline math::FixedColVector<T,4> project(math::FixedMatrix<T,1,4> v, T z){
       T zz = z*v[2];
       v[0]/=zz;
       v[1]/=zz;
@@ -146,8 +146,8 @@ namespace icl{
     
     /// homogeneous 3D cross-product
     template<class T>
-    inline FixedColVector<T,4> cross(const FixedMatrix<T,1,4> &v1, const FixedMatrix<T,1,4> &v2){
-      return FixedColVector<T,4>(v1[1]*v2[2]-v1[2]*v2[1],
+    inline math::FixedColVector<T,4> cross(const math::FixedMatrix<T,1,4> &v1, const math::FixedMatrix<T,1,4> &v2){
+      return math::FixedColVector<T,4>(v1[1]*v2[2]-v1[2]*v2[1],
                                  v1[2]*v2[0]-v1[0]*v2[2],
                                  v1[0]*v2[1]-v1[1]*v2[0],
                                  1 );
@@ -159,7 +159,7 @@ namespace icl{
     
     /// rotates a vector around a given axis
     inline Vec rotate_vector(const Vec &axis, float angle, const Vec &vec){
-      return create_rot_4x4(axis[0],axis[1],axis[2],angle)*vec;
+      return math::create_rot_4x4(axis[0],axis[1],axis[2],angle)*vec;
       /*
           angle /= 2;
           float a = cos(angle);

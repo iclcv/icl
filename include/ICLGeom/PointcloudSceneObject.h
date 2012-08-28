@@ -46,62 +46,62 @@
 namespace icl{
   namespace geom{
     /**
-       This class visualize 2.5D grids as a 3D pointcloud including 2.5D to 3D projection and different color visualizations (e.g. point normals, color, depth).*/
+       This class visualize 2.5D grids as a 3D pointcloud including 2.5D to 3D projection and different color visualizations (e.g. point normals, color, core::depth).*/
     class PointcloudSceneObject : public SceneObject{
   	
     public:
       ///Constructor
       /** Constructs an object of this class. All default parameters are set. Use setters for desired values.
-          @param size size of the input depth image */
-      PointcloudSceneObject(Size size, const Camera &cam); 
+          @param size size of the input core::depth image */
+      PointcloudSceneObject(utils::Size size, const Camera &cam); 
   	
       ///Destructor
       ~PointcloudSceneObject();
   	    
-      /// Calculates a depth image in pseudocolors (heatmap).
-      /**        @return depth image in pseudocolors 
-                 @param depthImg the input depth image
+      /// Calculates a core::depth image in pseudocolors (heatmap).
+      /**        @return core::depth image in pseudocolors 
+                 @param depthImg the input core::depth image
                  @param vSync enable/disable vSync (for openCL read)*/
-      Img8u calculatePseudocolorDepthImage(const Img32f &depthImg, bool vSync);
+      core::Img8u calculatePseudocolorDepthImage(const core::Img32f &depthImg, bool vSync);
       
       /// Calculates a pointcloud in a single color.
-      /**        @param depthImg the input depth image
+      /**        @param depthImg the input core::depth image
                  @param color the pointcloud color
                  @param vSync enable/disable vSync (for openCL read)*/ 
-      void calculateUniColor(const Img32f &depthImg, GeomColor color, bool vSync);
+      void calculateUniColor(const core::Img32f &depthImg, GeomColor color, bool vSync);
       
       /// Calculates a pointcloud colored with the RGB image.
-      /**        @param depthImg the input depth image
+      /**        @param depthImg the input core::depth image
                  @param colorImg the input color image
                  @param homogeneity the homogeneity matrix for mapping of the rgb colors to the points
                  @param vSync enable/disable vSync (for openCL read)*/ 
-      void calculateRGBColor(const Img32f &depthImg, const Img8u &colorImg, FixedMatrix<float,3,3> homogeneity, bool vSync);
+      void calculateRGBColor(const core::Img32f &depthImg, const core::Img8u &colorImg, FixedMatrix<float,3,3> homogeneity, bool vSync);
       
-      /// Calculates a pointcloud colored with the pseudocolor depth map (use if pseudocolor image is already calculated).
-      /**        @param depthImg the input depth image
-                 @param pseudoImg the pseudocolor image calculated by calculatePseudocolorDepthImage(const Img32f &depthImg, bool vSync) or another color mapping
+      /// Calculates a pointcloud colored with the pseudocolor core::depth map (use if pseudocolor image is already calculated).
+      /**        @param depthImg the input core::depth image
+                 @param pseudoImg the pseudocolor image calculated by calculatePseudocolorDepthImage(const core::Img32f &depthImg, bool vSync) or another color mapping
                  @param vSync enable/disable vSync (for openCL read)*/ 
-      void calculatePseudoColor(const Img32f &depthImg, Img8u &pseudoImg, bool vSync);
+      void calculatePseudoColor(const core::Img32f &depthImg, core::Img8u &pseudoImg, bool vSync);
       
-      /// Calculates a pointcloud colored with the pseudocolor depth map (use if no previous pseudocolor image is calculated).
-      /**        @param depthImg the input depth image
+      /// Calculates a pointcloud colored with the pseudocolor core::depth map (use if no previous pseudocolor image is calculated).
+      /**        @param depthImg the input core::depth image
                  @param vSync enable/disable vSync (for openCL read)*/ 
-      void calculatePseudoColor(const Img32f &depthImg, bool vSync);
+      void calculatePseudoColor(const core::Img32f &depthImg, bool vSync);
       
       /// Calculates a pointcloud colored with normal directions xyz->RGB in camera space (normals from PointNormalEstimation class).
-      /**        @param depthImg the input depth image
+      /**        @param depthImg the input core::depth image
                  @param depthImg the input point normals
                  @param vSync enable/disable vSync (for openCL read)*/ 
-      void calculateNormalDirectionColor(const Img32f &depthImg, PointNormalEstimation::Vec4* pNormals, bool vSync);
+      void calculateNormalDirectionColor(const core::Img32f &depthImg, PointNormalEstimation::Vec4* pNormals, bool vSync);
       
       /// Calculates a pointcloud colored with normal directions xyz->RGB in world space (normals from PointNormalEstimation class).
-      /**        @param depthImg the input depth image
+      /**        @param depthImg the input core::depth image
                  @param depthImg the input point normals
                  @param cam the input camera device
                  @param vSync enable/disable vSync (for openCL read)*/ 
-      void calculateNormalDirectionColor(const Img32f &depthImg, PointNormalEstimation::Vec4* pNormals, Camera cam, bool vSync);
+      void calculateNormalDirectionColor(const core::Img32f &depthImg, PointNormalEstimation::Vec4* pNormals, Camera cam, bool vSync);
       
-      /// Sets the depth scaling for the pointclouds.
+      /// Sets the core::depth scaling for the pointclouds.
       /**        @param scaling the scale factor*/
       void setDepthScaling(float scaling);
   	
@@ -143,12 +143,12 @@ namespace icl{
   	  void clearNormalLines();  
   	  
       int w,h,dim;
-      Size s;
+      utils::Size s;
       std::vector<ViewRay> rays;
       std::vector<float> norms;
       FixedMatrix<float,3,3> H;
       Mat inverseCamCSMatrix;
-      Mutex mutex;
+      utils::Mutex mutex;
       int highlightedIdx;
       float depthScaling;
       bool clReady;

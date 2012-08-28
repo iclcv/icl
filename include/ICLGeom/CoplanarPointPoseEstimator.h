@@ -153,7 +153,7 @@ namespace icl{
           
           note: the camera class is only forward-declared for this file
       */
-      FixedMatrix<float,4,4> getPose(int n, const Point32f *modelPoints, const Point32f *imagePoints, const Camera &cam);
+      FixedMatrix<float,4,4> getPose(int n, const utils::Point32f *modelPoints, const utils::Point32f *imagePoints, const Camera &cam);
     };
   } // namespace geom
 }

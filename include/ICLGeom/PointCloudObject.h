@@ -51,7 +51,7 @@ namespace icl{
     class PointCloudObject : public PointCloudObjectBase{
       protected:
       bool m_organized; //!< internal 2D organized flag
-      Size m_dim2D;     //!< 2D dimension
+      utils::Size m_dim2D;     //!< 2D dimension
       
       public:
       
@@ -69,14 +69,14 @@ namespace icl{
       virtual bool isOrganized() const;
   
       /// returns the 2D size of the pointcloud (throws exception if not ordered)
-      virtual Size getSize() const throw (ICLException);
+      virtual utils::Size getSize() const throw (utils::ICLException);
       
       /// return the linearily ordered number of point in the point cloud
       virtual int getDim() const;
   
       /// adapts the point cloud size
       /** if the sizes height is smaller than 1, the cloud becomes un-organized*/
-      virtual void setSize(const Size &size);
+      virtual void setSize(const utils::Size &size);
   
       /// returns XYZ data segment
       virtual DataSegment<float,3> selectXYZ();

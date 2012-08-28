@@ -100,8 +100,8 @@ namespace icl{
       friend class PointCloudObjectBase;
       
     protected:
-      /// associcates a depth values and the (byte)-size of the corresponding type
-      static inline int getSizeOf(depth d){
+      /// associcates a core::depth values and the (byte)-size of the corresponding type
+      static inline int getSizeOf(core::depth d){
         static const int lens[] = { 1, 2, 4, 4, 8 };
         return lens[(int)d];
       }
@@ -125,7 +125,7 @@ namespace icl{
       icl32s organizedWidth; // -1 if unorganized 
   
       /// underlying data depth
-      depth dataDepth;
+      core::depth dataDepth;
       
       /// vector element dim
       size_t elemDim;     // number of elements (in Type units)
@@ -136,10 +136,10 @@ namespace icl{
         return organizedWidth > 0;
       }
       
-      /// returns the ordred size of the segment of Size::null if it's not organized
-      inline Size getSize() const {
-        if(!isOrganized()) return Size::null;
-        else return Size(organizedWidth, numElements/organizedWidth);
+      /// returns the ordred size of the segment of utils::Size::null if it's not organized
+      inline utils::Size getSize() const {
+        if(!isOrganized()) return utils::Size::null;
+        else return utils::Size(organizedWidth, numElements/organizedWidth);
       }
       
       /// returns the internal stride used
@@ -153,8 +153,8 @@ namespace icl{
         return numElements;
       }    
       
-      /// returns the actual depth (data type) of the entries
-      inline depth getDepth() const{
+      /// returns the actual core::depth (data type) of the entries
+      inline core::depth getDepth() const{
         return dataDepth;
       }
       
@@ -166,13 +166,13 @@ namespace icl{
       /// Constructor with given parameters
       inline DataSegmentBase(void *data=0, size_t stride=0, 
                              size_t numElements=0, icl32s organizedWidth=-1, 
-                             depth dataDepth=depth8u, size_t elemDim=0):
+                             core::depth dataDepth=depth8u, size_t elemDim=0):
         data((icl8u*)data),stride(stride),numElements(numElements),
         organizedWidth(organizedWidth),dataDepth(dataDepth),elemDim(elemDim){}
       
       /// shallow and save cast from data segment base to special data segment version
-      /** This function performs a save shallow cast, by evaluating runtime depth and dim parameters
-          to throw an instance of ICLException if the targetet type is not compatible
+      /** This function performs a save shallow cast, by evaluating runtime core::depth and dim parameters
+          to throw an instance of utils::ICLException if the targetet type is not compatible
         
           <b>Please note:</b> this function can only be defined after
           the DataSegment template class definition is available, so you
@@ -203,9 +203,9 @@ namespace icl{
         
         /// deep copy assignment operator 
         /** if source and destination lengths differ, an exception is thrown */
-        inline Bytes &operator=(const Bytes &other) throw (ICLException){
+        inline Bytes &operator=(const Bytes &other) throw (utils::ICLException){
           if(len != other.len){
-            throw ICLException("unable to assign DataSegmentBase::Bytes: lenghts differ!");
+            throw utils::ICLException("unable to assign DataSegmentBase::Bytes: lenghts differ!");
           }
           std::copy(other.data,other.data+len,data);
           return *this;
