@@ -34,6 +34,9 @@
 
 #include <ICLCore/ImgBuffer.h>
 
+using namespace icl::utils;
+using namespace icl::math;
+
 namespace icl{
   namespace core{
     struct ImgBuffer::Data{

@@ -146,8 +146,8 @@ namespace icl{
     template<class T>
     class Channel{
       mutable T *m_data;   
-      mutable Size m_size;
-      mutable Rect m_roi;
+      mutable utils::Size m_size;
+      mutable utils::Rect m_roi;
       
       public:
       /// Empty constructor (create an invalid Channel object)
@@ -295,20 +295,20 @@ namespace icl{
       inline int getHeight() const { return m_size.height; }
   
       /// retusn the wrapped images size
-      inline const Size& getSize() const { return m_size; }
+      inline const utils::Size& getSize() const { return m_size; }
       
       /// returns the wrapped images dim = width*height
       /** @return wrapped images pixel count */
       inline int getDim() const { return m_size.getDim(); }
       
       /// returns the channel ROI
-      inline const Rect &getROI() const { return m_roi; }
+      inline const utils::Rect &getROI() const { return m_roi; }
   
       /// returns the channel ROI offset
-      inline Point getROIOffset() const { return m_roi.ul(); }
+      inline utils::Point getROIOffset() const { return m_roi.ul(); }
   
       /// returns the channel ROI size
-      inline Size getROISize() const { return m_roi.getSize(); }
+      inline utils::Size getROISize() const { return m_roi.getSize(); }
   
       /// returns the channel ROI width
       inline int getROIWidth() const { return m_roi.width; }
@@ -324,7 +324,7 @@ namespace icl{
   
       /// Sets a new ROI to this image channel (this does not affect the underlying images ROI)
       /** @param newROI new channel roi */
-      void redefineROI(const Rect &newROI) const{
+      void redefineROI(const utils::Rect &newROI) const{
         m_roi = newROI;
       }
       
@@ -335,10 +335,10 @@ namespace icl{
       /// private constructor
       /** @param image image wich's channel should be wrapped 
           @param channelIndex index of the channel */
-      inline Channel(const T *data, const Size &size, const Rect &roi):
+      inline Channel(const T *data, const utils::Size &size, const utils::Rect &roi):
       m_data(data),m_size(size),m_roi(roi){}
   
-      inline Channel(T *data, const Size &size, const Rect &roi):
+      inline Channel(T *data, const utils::Size &size, const utils::Rect &roi):
       m_data(data),m_size(size),m_roi(roi){}
   
     };

@@ -35,15 +35,18 @@
 #ifndef ICL_CORE_FUNCTIONS_H
 #define ICL_CORE_FUNCTIONS_H
 
-#include <ICLUtils/Macros.h>
-#include <ICLCore/Types.h>
-#include <ICLCore/ImgParams.h>
 #include <string>
 #include <cstring>
 #include <iostream>
+#include <vector>
+
+#include <ICLUtils/Macros.h>
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/ClippedCast.h>
 #include <ICLUtils/PThreadFix.h>
+
+#include <ICLCore/Types.h>
+#include <ICLCore/ImgParams.h>
 
 /// The ICL-namespace
 /** This namespace is dedicated for ICLCore- and all additional Computer-Vision

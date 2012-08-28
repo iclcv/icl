@@ -81,7 +81,7 @@ namespace icl {
       /* {{{ open */
   
       /// internally used storage for the image channels
-      std::vector<SmartArray<Type> > m_vecChannels;
+      std::vector<utils::SmartArray<Type> > m_vecChannels;
       /// @}
   
       /* }}} */
@@ -93,7 +93,7 @@ namespace icl {
       /** if the give Type* ptDataToCopy is not NULL, the data addressed from it, 
           is copied deeply into the new created data pointer
           **/
-      SmartArray<Type> createChannel(Type *ptDataToCopy=0) const;
+      utils::SmartArray<Type> createChannel(Type *ptDataToCopy=0) const;
   
       /// returns the start index for a channel loop
       /** In some functions to cases must be regarded:
@@ -149,7 +149,9 @@ namespace icl {
   
           performed on all channels)
           **/
-      void normalize(int iChannel, const Range<Type> &srcRange, const Range<Type> &dstRange);
+      void normalize(int iChannel, 
+                     const utils::Range<Type> &srcRange, 
+                     const utils::Range<Type> &dstRange);
   
       /// in-place mirror operation on the given image rect (for internal use)
       /** @param eAxis axis for the mirror operation
@@ -157,12 +159,14 @@ namespace icl {
           @param oOffset image rects offset to use
           @param oSize image rects size to use
       **/
-      void mirror(axis eAxis, int iChannel,const Point& oOffset, const Size& oSize);
+      void mirror(axis eAxis, int iChannel,
+                  const utils::Point& oOffset,
+                  const utils::Size& oSize);
       /// @}
       /* }}} */
-  
+      
       public:
-  
+      
       /// null sized and null channel image
       static const Img<Type> null;
       
@@ -178,13 +182,13 @@ namespace icl {
           @param size image size
           @param channels Number of Channels 
           **/
-      Img(const Size &size, int channels);
+      Img(const utils::Size &size, int channels);
    
       /// Creates an image with specified size, number of channels and format
       /** @param s size of the new image
           @param fmt (color)-format of the image
           **/
-      Img(const Size &s, format fmt);
+      Img(const utils::Size &s, format fmt);
    
       /// Crates an image with given size, channel count and format
       /** Note: channel count and format depend on each other, so if
@@ -194,7 +198,7 @@ namespace icl {
           @param channels channel count of the image (must be compatible to fmt)
           @param fmt format of the image (must be compatible to channels)
           */
-      Img(const Size &s, int channels, format fmt);
+      Img(const utils::Size &s, int channels, format fmt);
     
       /// Creates an image with specified size and format, using shared data pointers as channel data
       /** The channel count is set to the channel count that is associated with given the format
@@ -207,7 +211,8 @@ namespace icl {
           Call detach after the constructor call, to induce the Img to 
           allocate own memory for the image data if ownership cannot be passed.
           **/
-      Img(const Size &size, format format, const std::vector<Type*>& vptData, bool passOwnerShip=false);
+      Img(const utils::Size &size, format format, const std::vector<Type*>& vptData, 
+          bool passOwnerShip=false);
     
       /// Creates an image with specified size and channel count, using shared data pointers as channel data
       /** the format is set to formatMatrix
@@ -220,7 +225,8 @@ namespace icl {
           Call detach after the constructor call, to induce the Img to 
           allocate own memory for the image data if ownership cannot be passed.
           **/
-      Img(const Size &size, int channels, const std::vector<Type*>& vptData, bool passOwnerShip=false);
+      Img(const utils::Size &size, int channels, 
+          const std::vector<Type*>& vptData, bool passOwnerShip=false);
   
       /// Crates an image with given size, channel count and format
       /** Note: channel count and format depend on each other, so if
@@ -235,7 +241,8 @@ namespace icl {
           passOwnerShip to true, or call detach, to
           make the image allocate it own memory for the data
           */
-      Img(const Size &size, int channels, format fmt, const std::vector<Type*>& vptData, bool passOwnerShip=false);
+      Img(const utils::Size &size, int channels, format fmt, 
+          const std::vector<Type*>& vptData, bool passOwnerShip=false);
   
       /// Copy constructor WARNING: Violates const concept
       /** Creates a flat copy of the source image. The new image will contain a
@@ -269,11 +276,11 @@ namespace icl {
           @param c4 optional 4th image channel. Must have the same size as c1 - c3.
           @param c5 optional 5th image channel. Must have the same size as c1 - c4.
       */
-      Img(const DynMatrix<Type> &c1, 
-          const DynMatrix<Type> &c2=DynMatrix<Type>(), 
-          const DynMatrix<Type> &c3=DynMatrix<Type>(), 
-          const DynMatrix<Type> &c4=DynMatrix<Type>(), 
-          const DynMatrix<Type> &c5=DynMatrix<Type>()) throw (InvalidMatrixDimensionException);
+      Img(const math::DynMatrix<Type> &c1, 
+          const math::DynMatrix<Type> &c2=math::DynMatrix<Type>(), 
+          const math::DynMatrix<Type> &c3=math::DynMatrix<Type>(), 
+          const math::DynMatrix<Type> &c4=math::DynMatrix<Type>(), 
+          const math::DynMatrix<Type> &c5=math::DynMatrix<Type>()) throw (math::InvalidMatrixDimensionException);
   
       
       /// Destructor
@@ -281,7 +288,7 @@ namespace icl {
   
       /// null check : null images have 0-Channels and null-size
       bool isNull() const{
-        return getSize()==Size::null && getChannels() == 0;
+        return getSize()==utils::Size::null && getChannels() == 0;
       }
       
   
@@ -428,13 +435,15 @@ namespace icl {
       
       /// extracts given channel as DynMatrix<Type>
       /* This function cannot be called on (0,x) or (x,0)-sized images */
-      inline DynMatrix<Type> extractDynMatrix(int channel) throw (InvalidMatrixDimensionException){ 
-        return DynMatrix<Type>(getWidth(),getHeight(),begin(channel),false);
+      inline math::DynMatrix<Type> extractDynMatrix(int channel) 
+        throw (math::InvalidMatrixDimensionException){ 
+        return math::DynMatrix<Type>(getWidth(),getHeight(),begin(channel),false);
       }
       /// extracts given channel as DynMatrix<Type> const
       /* This function cannot be called on (0,x) or (x,0)-sized images */
-      inline const DynMatrix<Type> extractDynMatrix(int channel) const throw (InvalidMatrixDimensionException){ 
-        return DynMatrix<Type>(getWidth(),getHeight(),const_cast<Type*>(begin(channel)),false);
+      inline const math::DynMatrix<Type> extractDynMatrix(int channel) const 
+        throw (math::InvalidMatrixDimensionException){ 
+        return math::DynMatrix<Type>(getWidth(),getHeight(),const_cast<Type*>(begin(channel)),false);
       }
       
       /// extracts all image channels at once into given channel pointer
@@ -491,10 +500,10 @@ namespace icl {
       /** @{ @name shallow/deepCopy  functions */
       /* {{{ open  */
                     
-      virtual Img<Type> *shallowCopy(const Rect &roi, 
+      virtual Img<Type> *shallowCopy(const utils::Rect &roi, 
                                      const std::vector<int> &channelIndices,
                                      format fmt,
-                                     Time time =Time::null,
+                                     utils::Time time = utils::Time::null,
                                      ImgBase **ppoDst = NULL);
   
         /** Create a shallow copy of an image with given (const version)
@@ -508,11 +517,11 @@ namespace icl {
                        the vector channelIndices
             @param time new timestamp for the returned image
             @return shallow-copied image
-        **/
-        const Img<Type> *shallowCopy(const Rect &roi, 
+            **/
+        const Img<Type> *shallowCopy(const utils::Rect &roi, 
                                      const std::vector<int> &channelIndices,
                                      format fmt, 
-                                     Time time=Time::null) const{
+                                     utils::Time time=utils::Time::null) const{
           // casting constness away is safe, because we effectively return a const Img<Type>*
           return const_cast<Img<Type>*>(this)->shallowCopy(roi,channelIndices,fmt,time,0);
         }
@@ -550,7 +559,7 @@ namespace icl {
                        is used.
             @return shallow copy of this image
         **/
-        Img<Type>* shallowCopy(const Rect &roi,Img<Type>* poDst = NULL){
+        Img<Type>* shallowCopy(const utils::Rect &roi,Img<Type>* poDst = NULL){
           ImgBase *poDstBase = poDst;
           return shallowCopy(roi,std::vector<int>(),getFormat(),getTime(),&poDstBase);
         }
@@ -565,7 +574,7 @@ namespace icl {
             @param roi ROI of the returned image (Rect::null is not allowed!)
             @return shallow copy of this image with specified ROI
         */
-        const Img<Type>* shallowCopy(const Rect& roi) const {
+        const Img<Type>* shallowCopy(const utils::Rect& roi) const {
            // casting constness away is safe, because we effectively return a const Img<Type>*
            return const_cast<Img<Type>*>(this)->shallowCopy(roi,0);
         }
@@ -668,7 +677,7 @@ namespace icl {
      
       /// create a scaled copy of this image
       /** \copydoc icl::ImgBase::scaledCopy(const icl::Size&,icl::scalemode)const */
-      virtual Img<Type> *scaledCopy(const Size &newSize, scalemode eScaleMode=interpolateNN) const;
+      virtual Img<Type> *scaledCopy(const utils::Size &newSize, scalemode eScaleMode=interpolateNN) const;
       
       /// create a scaled copy of this image
       /** \copydoc icl::ImgBase::scaledCopy(icl::ImgBase**,icl::scalemode)const */
@@ -686,7 +695,7 @@ namespace icl {
       
       /// create a scaled copy of an images ROI with given size
       /** \copydoc icl::ImgBase::scaledCopyROI(const icl::Size&,icl::scalemode)const */
-      virtual Img<Type> *scaledCopyROI(const Size &newSize, scalemode eScaleMode=interpolateNN) const;
+      virtual Img<Type> *scaledCopyROI(const utils::Size &newSize, scalemode eScaleMode=interpolateNN) const;
       
       /// create a scaled copy of an images ROI with given destination image
       /** \copydoc icl::ImgBase::scaledCopyROI(icl::ImgBase**,icl::scalemode)const*/
@@ -792,7 +801,7 @@ namespace icl {
   
       /// resizes the image to new values
       /** \copydoc icl::ImgBase::setSize(const icl::Size&) */
-      virtual void setSize(const Size &s);
+      virtual void setSize(const utils::Size &s);
     
       /// @}
   
@@ -806,14 +815,14 @@ namespace icl {
           @param coords (optinal) if not null, the pixel position of the max is 
                  written into this argument
           **/
-      Type getMax(int iChannel, Point *coords=0) const;
+      Type getMax(int iChannel, utils::Point *coords=0) const;
     
       /// Returns min pixel value of channel iChannel within ROI
       /** @param iChannel Index of channel
           @param coords (optinal) if not null, the pixel position of the min is 
                  written into this argument
           **/
-      Type getMin(int iChannel, Point *coords=0) const;
+      Type getMin(int iChannel, utils::Point *coords=0) const;
     
   
       /// return maximal pixel value over all channels (restricted to ROI)
@@ -829,10 +838,12 @@ namespace icl {
           @param maxCoords (optinal) if not null, the pixel position of the max is 
                  written into this argument
       **/
-      const Range<Type> getMinMax(int iChannel, Point *minCoords=0, Point *maxCoords=0) const;
+      const utils::Range<Type> getMinMax(int iChannel, 
+                                         utils::Point *minCoords=0, 
+                                         utils::Point *maxCoords=0) const;
   
       /// return minimal and maximal pixel values over all channels (restricted to ROI)
-      const Range<Type> getMinMax() const;
+      const utils::Range<Type> getMinMax() const;
   
       /// Returns the width of an image line in bytes
       /** \copydoc icl::ImgBase::getLineStep()const **/
@@ -900,12 +911,12 @@ namespace icl {
           @param p notional ROI offset
           @return data pointer with notional ROI offset p
           **/
-      Type* getROIData(int iChannel, const Point &p) {
+      Type* getROIData(int iChannel, const utils::Point &p) {
         return const_cast<Type*>(static_cast<const Img<Type>*>(this)->getROIData(iChannel, p));
       } 
       /// returns the data pointer to a pixel with defined offset (const)
       /** \copydoc getROIData(int,const icl::Point&) */
-      const Type* getROIData(int iChannel, const Point &p) const {
+      const Type* getROIData(int iChannel, const utils::Point &p) const {
         FUNCTION_LOG("");
         ICLASSERT_RETURN_VAL(validChannel(iChannel),0);
         return getData(iChannel) + p.x + (p.y * getWidth());
@@ -1273,7 +1284,7 @@ namespace icl {
       
       /// perform an in-place resize of the image (keeping the data) 
       /** \copydoc icl::ImgBase::scale(const icl::Size&,icl::scalemode)*/
-      virtual void scale(const Size &s, scalemode eScaleMode=interpolateNN);
+      virtual void scale(const utils::Size &s, scalemode eScaleMode=interpolateNN);
   
       /// perform an in-place mirror operation on the image
       /** \copydoc icl::ImgBase::mirror(icl::axis,bool) */
@@ -1337,14 +1348,15 @@ namespace icl {
           <b>separately</b> for each channel.
           @param dstRange new image range
       **/
-      void normalizeAllChannels(const Range<Type> &dstRange);
+      void normalizeAllChannels(const utils::Range<Type> &dstRange);
   
       /// Normalize the channel from a given min/max range to the new range 
       /** @param iChannel channel index
           @param srcRange notional image range befor this function call
           @param dstRange image range after this function call
       **/
-      void normalizeChannel(int iChannel, const Range<Type> &srcRange, const Range<Type> &dstRange);
+      void normalizeChannel(int iChannel, const utils::Range<Type> &srcRange, 
+                            const utils::Range<Type> &dstRange);
   
       /// Normalize the channel from a given min/max range to the new range 
       /** The min/ max range from the source channel is automatically detected,
@@ -1352,20 +1364,21 @@ namespace icl {
           @param iChannel channel index
           @param dstRange destination image range
       **/
-      void normalizeChannel(int iChannel,const Range<Type> &dstRange);
+      void normalizeChannel(int iChannel,const utils::Range<Type> &dstRange);
   
       /// Normalize the image from a given min/max range to the new range 
       /** @param srcRange notional image range befor this function call
           @param dstRange image range after this function call
       **/
-      void normalizeImg(const Range<Type> &srcRange, const Range<Type> &dstRange);
+      void normalizeImg(const utils::Range<Type> &srcRange, 
+                        const utils::Range<Type> &dstRange);
     
       /// Normalize the image from a min/max range to the new range 
       /** The min/ max range from the image is automatically detected, combined 
           over all image channels.
           @param dstRange destination image range
       **/
-      void normalizeImg(const Range<Type> &dstRange);
+      void normalizeImg(const utils::Range<Type> &dstRange);
     
       /// @}
   
@@ -1447,7 +1460,7 @@ namespace icl {
           </code>
           Optionally, returned point can be calculated w.r.t. the images roi offset.
       **/
-      Point getLocation(const Type *p, int channel, bool relToROI=false) const;
+      utils::Point getLocation(const Type *p, int channel, bool relToROI=false) const;
       
       /// shows the image value by value at std::out
       /** Warning: <b>SLOW</b>
@@ -1620,7 +1633,7 @@ namespace icl {
      */
     template<class T>
     static inline T p2o(T *ptr){
-      return *SmartPtr<T>(ptr);
+      return *utils::SmartPtr<T>(ptr);
     }
   
     /// Combine several images using shallow copy. \ingroup IMAGE 
@@ -1642,7 +1655,7 @@ namespace icl {
       ICLASSERT_RETURN( src->getSize() == dst->getSize() );
       ICLASSERT_RETURN( src->validChannel(srcC) );
       ICLASSERT_RETURN( dst->validChannel(dstC) );
-      icl::copy<T>(src->getData(srcC),src->getData(srcC)+src->getDim(),dst->getData(dstC));
+      icl::core::copy<T>(src->getData(srcC),src->getData(srcC)+src->getDim(),dst->getData(dstC));
     }
   
     /* }}} */
@@ -1665,7 +1678,7 @@ namespace icl {
       ICLASSERT_RETURN( src->getSize() == dst->getSize() );
       ICLASSERT_RETURN( src->validChannel(srcC) );
       ICLASSERT_RETURN( dst->validChannel(dstC) );
-      icl::convert<S,D>(src->getData(srcC),src->getData(srcC)+src->getDim(),dst->getData(dstC));
+      icl::core::convert<S,D>(src->getData(srcC),src->getData(srcC)+src->getDim(),dst->getData(dstC));
     }
   
     /* }}} */
@@ -1682,61 +1695,68 @@ namespace icl {
         @param size size of the to-be-cleared region
         */ 
     template<class T>
-    inline void clearChannelROI(Img<T> *im, int c, T clearVal, const Point &offs, const Size &size) {
+    inline void clearChannelROI(Img<T> *im, int c, T clearVal, const utils::Point &offs, 
+                                const utils::Size &size) {
       FUNCTION_LOG("");
       ICLASSERT_RETURN( im );
   
-      ImgIterator<T> it(im->getData(c),im->getSize().width,Rect(offs,size));
-      const ImgIterator<T> itEnd = ImgIterator<T>::create_end_roi_iterator(im->getData(c),im->getWidth(),Rect(offs,size));
+      ImgIterator<T> it(im->getData(c),im->getSize().width,utils::Rect(offs,size));
+      const ImgIterator<T> itEnd = ImgIterator<T>::create_end_roi_iterator(im->getData(c),
+                                                                           im->getWidth(),
+                                                                           utils::Rect(offs,size));
       std::fill(it,itEnd,clearVal);
     }
   
     /** \cond */
-  #ifdef HAVE_IPP
+#ifdef HAVE_IPP
     /// IPP-OPTIMIZED specialization for icl8u clearing (using ippiSet)
     template <>
-    inline void clearChannelROI(Img<icl8u> *im, int c, icl8u clearVal, const Point &offs, const Size &size){
+    inline void clearChannelROI(Img<icl8u> *im, int c, icl8u clearVal, const utils::Point &offs, 
+                                const utils::Size &size){
       FUNCTION_LOG("");
       ICLASSERT_RETURN( im );
       ippiSet_8u_C1R(clearVal,im->getROIData(c,offs),im->getLineStep(),size);
     }
     /// IPP-OPTIMIZED specialization for icl16s clearing (using ippiSet)
     template <>
-    inline void clearChannelROI(Img<icl16s> *im, int c, icl16s clearVal, const Point &offs, const Size &size){
+    inline void clearChannelROI(Img<icl16s> *im, int c, icl16s clearVal, const utils::Point &offs, 
+                                const utils::Size &size){
       FUNCTION_LOG("");
       ICLASSERT_RETURN( im );
       ippiSet_16s_C1R(clearVal,im->getROIData(c,offs),im->getLineStep(),size);
     }
     /// IPP-OPTIMIZED specialization for icl32s clearing (using ippiSet)
     template <>
-    inline void clearChannelROI(Img<icl32s> *im, int c, icl32s clearVal, const Point &offs, const Size &size){
+    inline void clearChannelROI(Img<icl32s> *im, int c, icl32s clearVal, 
+                                const utils::Point &offs, const utils::Size &size){
       FUNCTION_LOG("");
       ICLASSERT_RETURN( im );
       ippiSet_32s_C1R(clearVal,im->getROIData(c,offs),im->getLineStep(),size);
     }
     /// IPP-OPTIMIZED specialization for icl32f clearing (using ippiSet)
     template <>
-    inline void clearChannelROI(Img<icl32f> *im, int c, icl32f clearVal, const Point &offs, const Size &size){
+    inline void clearChannelROI(Img<icl32f> *im, int c, icl32f clearVal, 
+                                const utils::Point &offs, const utils::Size &size){
       FUNCTION_LOG("");
       ICLASSERT_RETURN( im );
       ippiSet_32f_C1R(clearVal,im->getROIData(c,offs),im->getLineStep(),size);
     }
-  #endif
+#endif
     /** \endcond */
-  
+    
     /* }}} */
-  
+    
     /** {{{  check function */
-  #define CHECK_VALUES(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize)                                             \
-    FUNCTION_LOG("");                                                                                                 \
-    ICLASSERT_RETURN( src && dst );                                                                                   \
-    ICLASSERT_RETURN( srcSize == dstSize );                                                                           \
-    ICLASSERT_RETURN( src->validChannel(srcC) );                                                                      \
-    ICLASSERT_RETURN( dst->validChannel(dstC) );                                                                      \
-    ICLASSERT_RETURN( srcOffs.x >= 0 && srcOffs.y >= 0 && dstOffs.x >= 0 && dstOffs.y >= 0);                          \
-    ICLASSERT_RETURN( srcOffs.x+srcSize.width <= src->getWidth() && srcOffs.y+srcSize.height <= src->getHeight() );   \
+#define CHECK_VALUES(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize) \
+    FUNCTION_LOG("");                                                   \
+    ICLASSERT_RETURN( src && dst );                                     \
+    ICLASSERT_RETURN( srcSize == dstSize );                             \
+    ICLASSERT_RETURN( src->validChannel(srcC) );                        \
+    ICLASSERT_RETURN( dst->validChannel(dstC) );                        \
+    ICLASSERT_RETURN( srcOffs.x >= 0 && srcOffs.y >= 0 && dstOffs.x >= 0 && dstOffs.y >= 0); \
+    ICLASSERT_RETURN( srcOffs.x+srcSize.width <= src->getWidth() && srcOffs.y+srcSize.height <= src->getHeight() ); \
     ICLASSERT_RETURN( dstOffs.x+dstSize.width <= dst->getWidth() && dstOffs.y+dstSize.height <= dst->getHeight() );   
-  
+    
     /** }}} */
     
   
@@ -1755,19 +1775,25 @@ namespace icl {
         @param dstSize destination images ROI size (must be equal to srcSize) 
     **/
     template <class T>
-    inline void deepCopyChannelROI(const Img<T> *src,int srcC, const Point &srcOffs, const Size &srcSize,
-                                   Img<T> *dst,int dstC, const Point &dstOffs, const Size &dstSize) {
+    inline void deepCopyChannelROI(const Img<T> *src,int srcC, const utils::Point &srcOffs, 
+                                   const utils::Size &srcSize,
+                                   Img<T> *dst,int dstC, const utils::Point &dstOffs, 
+                                   const utils::Size &dstSize) {
       CHECK_VALUES(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
-    
-      const ImgIterator<T> itSrc(const_cast<T*>(src->getData(srcC)),src->getSize().width,Rect(srcOffs,srcSize));
-      ImgIterator<T> itDst(dst->getData(dstC),dst->getSize().width,Rect(dstOffs,dstSize));
-      const ImgIterator<T> itSrcEnd = ImgIterator<T>::create_end_roi_iterator(src->getData(srcC),src->getWidth(),Rect(srcOffs,srcSize));
-  
+      
+      const ImgIterator<T> itSrc(const_cast<T*>(src->getData(srcC)),
+                                 src->getSize().width,
+                                 utils::Rect(srcOffs,srcSize));
+      ImgIterator<T> itDst(dst->getData(dstC),dst->getSize().width,utils::Rect(dstOffs,dstSize));
+      const ImgIterator<T> itSrcEnd = ImgIterator<T>::create_end_roi_iterator(src->getData(srcC),
+                                                                              src->getWidth(),
+                                                                              utils::Rect(srcOffs,srcSize));
+      
       for(;itSrc != itSrcEnd;itSrc.incRow(),itDst.incRow()){
-        icl::copy<T>(&*itSrc,&*itSrc+srcSize.width,&*itDst);
+        icl::core::copy<T>(&*itSrc,&*itSrc+srcSize.width,&*itDst);
       }
     }
-  
+    
     /* }}} */
   
     /* {{{   convertChannelROI */
@@ -1790,20 +1816,27 @@ namespace icl {
         @param dstSize destination images ROI-size (dst->getROISize() is <b>not</b> regarded)
      **/
     template <class S,class D>
-    inline void convertChannelROI(const Img<S> *src,int srcC, const Point &srcOffs, const Size &srcROISize,
-                                  Img<D> *dst,int dstC, const Point &dstOffs, const Size &dstROISize)
+    inline void convertChannelROI(const Img<S> *src,int srcC, const utils::Point &srcOffs, 
+                                  const utils::Size &srcROISize,
+                                  Img<D> *dst,int dstC, const utils::Point &dstOffs, 
+                                  const utils::Size &dstROISize)
     {
       FUNCTION_LOG("");
       CHECK_VALUES(src,srcC,srcOffs,srcROISize,dst,dstC,dstOffs,dstROISize);
       
-      const ImgIterator<S> itSrc(const_cast<S*>(src->getData(srcC)),src->getSize().width,Rect(srcOffs,srcROISize));
-      ImgIterator<D> itDst(dst->getData(dstC),dst->getSize().width,Rect(dstOffs,dstROISize));
-      const ImgIterator<S> itSrcEnd = ImgIterator<S>::create_end_roi_iterator(src->getData(srcC),src->getWidth(),Rect(srcOffs,srcROISize));
+      const ImgIterator<S> itSrc(const_cast<S*>(src->getData(srcC)),
+                                 src->getSize().width,
+                                 utils::Rect(srcOffs,srcROISize));
+      ImgIterator<D> itDst(dst->getData(dstC),dst->getSize().width,
+                           utils::Rect(dstOffs,dstROISize));
+      const ImgIterator<S> itSrcEnd = ImgIterator<S>::create_end_roi_iterator(src->getData(srcC),
+                                                                              src->getWidth(),
+                                                                              utils::Rect(srcOffs,srcROISize));
       for(;itSrc != itSrcEnd ;itSrc.incRow(),itDst.incRow()){
-        icl::convert<S,D>(&*itSrc,&*itSrc+srcROISize.width,&*itDst);
+        icl::core::convert<S,D>(&*itSrc,&*itSrc+srcROISize.width,&*itDst);
       }
     }
-   
+    
     /// @}
   
     /* }}} */
@@ -1826,13 +1859,13 @@ namespace icl {
         @param eScaleMode scaling mode to use (nearest neighbor, linear, or region-average)
      **/
     template<class T> 
-    void scaledCopyChannelROI(const Img<T> *src,int srcC, const Point &srcOffs, const Size &srcSize,
-                              Img<T> *dst,int dstC, const Point &dstOffs, const Size &dstSize,
+    void scaledCopyChannelROI(const Img<T> *src,int srcC, 
+                              const utils::Point &srcOffs, 
+                              const utils::Size &srcSize,
+                              Img<T> *dst,int dstC, 
+                              const utils::Point &dstOffs,
+                              const utils::Size &dstSize,
                               scalemode eScaleMode);
-  
-  
-  
-  
   
     /* }}} */
   
@@ -1853,8 +1886,10 @@ namespace icl {
      **/
     template <class T>
     void flippedCopyChannelROI(axis eAxis,
-                               const Img<T> *src,int srcC, const Point &srcOffs, const Size &srcSize,
-                               Img<T> *dst,int dstC, const Point &dstOffs, const Size &dstSize);
+                               const Img<T> *src,int srcC, const utils::Point &srcOffs,
+                               const utils::Size &srcSize,
+                               Img<T> *dst,int dstC, const utils::Point &dstOffs, 
+                               const utils::Size &dstSize);
     
     
     /// mirror copy of an image from source to destination image (1:1 copy) \ingroup IMAGE

@@ -58,7 +58,8 @@ namespace icl{
       /** @param start start point
           @param end end point 
       */
-      Line(Point start=Point::null, Point end=Point::null):
+      Line(utils::Point start=utils::Point::null,
+           utils::Point end=utils::Point::null):
       start(start),end(end){}
       
       /// Creates a new line by given polar coordinates
@@ -66,19 +67,19 @@ namespace icl{
           @param angle angle of the line 
           @param length length of the line 
       */
-      Line(Point start, float angle, float length);
+      Line(utils::Point start, float angle, float length);
       
       /// translates a line by a given vector
       /** @param p translation vector
           @return the translated line
       */
-      Line operator+(const Point &p) const { return Line(start+p,end+p); }
+      Line operator+(const utils::Point &p) const { return Line(start+p,end+p); }
       
       /// translates a line by a given vector (negative direction)
       /** @param p translation vector
           @return the translated line
       */
-      Line operator-(const Point &p) const { return Line(start-p,end-p); }
+      Line operator-(const utils::Point &p) const { return Line(start-p,end-p); }
       
       /// calculates the euclidean norm of this line
       /** @return length of the line */
@@ -91,7 +92,7 @@ namespace icl{
                         are not regarded.
           @return vector of line Points 
       */
-      std::vector<Point> sample( const Rect &limits=Rect::null ) const;
+      std::vector<utils::Point> sample( const utils::Rect &limits=utils::Rect::null ) const;
       
       /// samples this line from start to end point regarding the given limiting rect
       /** This function works essentially like the above function. In this case, the
@@ -100,16 +101,17 @@ namespace icl{
                     it is not cleared before it is filled) 
           @param ys as xs but for the y-coordinates 
           @param limits (see above)*/
-      void sample(std::vector<int> &xs,std::vector<int> &ys, const Rect &limits=Rect::null ) const;
+      void sample(std::vector<int> &xs,std::vector<int> &ys,
+                  const utils::Rect &limits=utils::Rect::null ) const;
   
       /// swaps the lines start and end point internally
-      void swap() { Point x=start; start=end; end=x; }
+      void swap() { utils::Point x=start; start=end; end=x; }
       
       /// start point of this line
-      Point start;
+      utils::Point start;
   
       /// end point of this line
-      Point end;
+      utils::Point end;
     };
   
     /// ostream operator (start-x,start-y)(end-x,end-y)

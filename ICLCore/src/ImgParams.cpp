@@ -36,6 +36,8 @@
 #include <ICLCore/CoreFunctions.h>
 #include <ICLUtils/StringUtils.h>
 
+using namespace icl::utils;
+
 namespace icl{
   namespace core{
     const ImgParams ImgParams::null(0,0,0,formatMatrix,0,0,0,0);

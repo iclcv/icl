@@ -58,7 +58,8 @@ namespace icl{
       /** @param start start point
           @param end end point 
       */
-      Line32f(Point32f start=Point::null, Point32f end=Point::null):
+      Line32f(utils::Point32f start=utils::Point::null, 
+              utils::Point32f end=utils::Point::null):
       start(start),end(end){}
       
       /// Creates a new line by given polar coordinates
@@ -66,7 +67,7 @@ namespace icl{
           @param angle angle of the line 
           @param length length of the line 
       */
-      Line32f(Point32f start, float angle, float length);
+      Line32f(utils::Point32f start, float angle, float length);
       
       /// Creates a line by a given integer line
       /** @param l interger line*/
@@ -76,13 +77,13 @@ namespace icl{
       /** @param p translation vector
           @return the translated line
       */
-      Line32f operator+(const Point32f &p) const { return Line32f(start+p,end+p); }
+      Line32f operator+(const utils::Point32f &p) const { return Line32f(start+p,end+p); }
       
       /// translates a line by a given vector (negative direction)
       /** @param p translation vector
           @return the translated line
       */
-      Line32f operator-(const Point32f &p) const { return Line32f(start-p,end-p); }
+      Line32f operator-(const utils::Point32f &p) const { return Line32f(start-p,end-p); }
       
       /// calculates the euclidean norm of this line
       /** @return length of the line */
@@ -92,7 +93,7 @@ namespace icl{
       float getAngle() const;
       
       /// returns the lines center point [ (start+end)/2 ] 
-      Point32f getCenter() const;
+      utils::Point32f getCenter() const;
       
       /// samples this line from start to end point regarding the given limiting rect
       /** @param limits each line point is check for being inside of this rect
@@ -101,7 +102,7 @@ namespace icl{
                         are not regarded.
           @return vector of line Points 
       */
-      std::vector<Point> sample( const Rect &limits=Rect::null ) const;
+      std::vector<utils::Point> sample(const utils::Rect &limits=utils::Rect::null ) const;
       
       /// samples this line from start to end point regarding the given limiting rect
       /** This function works essentially like the above function. In this case, the
@@ -110,16 +111,16 @@ namespace icl{
                     it is not cleared before it is filled) 
           @param ys as xs but for the y-coordinates 
           @param limits (see above)*/
-      void sample(std::vector<int> &xs,std::vector<int> &ys, const Rect &limits=Rect::null ) const;
+      void sample(std::vector<int> &xs,std::vector<int> &ys, const utils::Rect &limits=utils::Rect::null ) const;
   
       /// swaps the lines start and end point internally
-      void swap() { Point32f x=start; start=end; end=x; }
+      void swap() { utils::Point32f x=start; start=end; end=x; }
       
       /// start point of this line
-      Point32f start;
+      utils::Point32f start;
   
       /// end point of this line
-      Point32f end;
+      utils::Point32f end;
     };
   
     /// ostream operator (start-x,start-y)(end-x,end-y)

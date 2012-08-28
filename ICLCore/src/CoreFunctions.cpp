@@ -33,6 +33,7 @@
 *********************************************************************/
 
 #include <ICLCore/CoreFunctions.h>
+#include <ICLMath/MathFunctions.h>
 #include <ICLUtils/Exception.h>
 #include <ICLCore/Img.h>
 #include <ICLUtils/StringUtils.h>
@@ -40,7 +41,8 @@
 #include <vector>
 #include <numeric>
 
-using namespace std;
+using namespace icl::utils;
+using namespace icl::math;
 
 namespace icl{
   namespace core{
@@ -297,9 +299,9 @@ namespace icl{
       template<class T>
       double channel_mean(const Img<T> &image, int channel, bool roiOnly){
         if(roiOnly && !image.hasFullROI()){
-          return mean(image.beginROI(channel),image.endROI(channel));
+          return math::mean(image.beginROI(channel),image.endROI(channel));
         }else{
-          return mean(image.begin(channel),image.end(channel));
+          return math::mean(image.begin(channel),image.end(channel));
         }
       }
   #ifdef HAVE_IPP
@@ -324,9 +326,9 @@ namespace icl{
   #endif
     }
   
-    vector<double> mean(const ImgBase *poImg, int iChannel, bool roiOnly){
+    std::vector<double> mean(const ImgBase *poImg, int iChannel, bool roiOnly){
       FUNCTION_LOG("");
-      vector<double> vecMean;
+      std::vector<double> vecMean;
       ICLASSERT_RETURN_VAL(poImg,vecMean);
   
       int firstChannel = iChannel<0 ? 0 : iChannel;
@@ -355,17 +357,17 @@ namespace icl{
       template<class T>
       double channel_var_with_mean(const Img<T> &image, int channel,double mean,bool empiricMean, bool roiOnly){
         if(roiOnly && !image.hasFullROI()){
-          return variance(image.beginROI(channel),image.endROI(channel),mean,empiricMean);
+          return math::variance(image.beginROI(channel),image.endROI(channel),mean,empiricMean);
         }else{
-          return variance(image.begin(channel),image.end(channel),mean,empiricMean);
+          return math::variance(image.begin(channel),image.end(channel),mean,empiricMean);
         }
       }
       // no IPP function available with given mean
     }
   
-    vector<double> variance(const ImgBase *poImg, const vector<double> &mean, bool empiricMean,  int iChannel, bool roiOnly){
+    std::vector<double> variance(const ImgBase *poImg, const std::vector<double> &mean, bool empiricMean,  int iChannel, bool roiOnly){
       FUNCTION_LOG("");
-      vector<double> vecVar;
+      std::vector<double> vecVar;
       ICLASSERT_RETURN_VAL(poImg,vecVar);
   
       int firstChannel = iChannel<0 ? 0 : iChannel;
@@ -392,15 +394,15 @@ namespace icl{
         @param iChannel channel index (-1 for all channels)
         @return The variance value form the vector
         */
-    vector<double> variance(const ImgBase *poImg, int iChannel, bool roiOnly){
+    std::vector<double> variance(const ImgBase *poImg, int iChannel, bool roiOnly){
       return variance(poImg,mean(poImg,iChannel,roiOnly),true,iChannel,roiOnly);
     }
     // }}}
     
     // {{{ std-deviation
   
-    vector<double> stdDeviation(const ImgBase *poImage, int iChannel, bool roiOnly){
-      vector<double> v = variance(poImage,iChannel,roiOnly);
+    std::vector<double> stdDeviation(const ImgBase *poImage, int iChannel, bool roiOnly){
+      std::vector<double> v = variance(poImage,iChannel,roiOnly);
       for(unsigned int i=0;i<v.size();++i){
         v[i] = ::sqrt(v[i]);
       }
@@ -411,8 +413,8 @@ namespace icl{
     /** @param poImage input image
         @param iChannel channel index (all channels if -1)
     */
-    vector<double> stdDeviation(const ImgBase *poImage, const vector<double> mean, bool empiricMean, int iChannel, bool roiOnly){
-      vector<double> v = variance(poImage,mean,empiricMean, iChannel,roiOnly);
+    std::vector<double> stdDeviation(const ImgBase *poImage, const std::vector<double> mean, bool empiricMean, int iChannel, bool roiOnly){
+      std::vector<double> v = variance(poImage,mean,empiricMean, iChannel,roiOnly);
   
       for(unsigned int i=0;i<v.size();++i){
         v[i] = ::sqrt(v[i]);
@@ -422,11 +424,13 @@ namespace icl{
     // }}}
   
     // {{{ mean-and-std-deviation
-    vector< pair<double,double> > meanAndStdDev(const ImgBase *image, int iChannel, bool roiOnly){
-      vector<double> channelMeans = mean(image,iChannel,roiOnly);
-      vector<double> channelStdDevs = stdDeviation(image,channelMeans,true,iChannel,roiOnly);
-  
-      vector< pair<double,double> > md(channelMeans.size());
+    std::vector< std::pair<double,double> > meanAndStdDev(const ImgBase *image,
+                                                          int iChannel,
+                                                          bool roiOnly){
+      std::vector<double> channelMeans = mean(image,iChannel,roiOnly);
+      std::vector<double> channelStdDevs = stdDeviation(image,channelMeans,true,iChannel,roiOnly);
+      
+      std::vector<std::pair<double,double> > md(channelMeans.size());
       for(unsigned int i=0;i<channelMeans.size();++i){
         md[i].first = channelMeans[i];
         md[i].second = channelStdDevs[i];
@@ -440,7 +444,7 @@ namespace icl{
     namespace{
   
       template<class T>
-      void compute_default_histo_256(const Img<T> &image, int c, vector<int> &h, bool roiOnly){
+      void compute_default_histo_256(const Img<T> &image, int c, std::vector<int> &h, bool roiOnly){
         ICLASSERT_RETURN(h.size() == 256);
         if(roiOnly && !image.hasFullROI()){
           const ImgIterator<T> it = image.beginROI(c);
@@ -459,14 +463,14 @@ namespace icl{
       
      
       template<class T>
-      inline void histo_entry(T v, double m, vector<int> &h, unsigned int n, double r){
+      inline void histo_entry(T v, double m, std::vector<int> &h, unsigned int n, double r){
         // todo check 1000 times
         h[ floor( n*(v-m)/(r+1)) ]++;
         //      h[ ceil( n*(v-m)/r) ]++; problem at v=255
       }
       
       template<class T>
-      void compute_complex_histo(const Img<T> &image, int c, vector<int> &h, bool roiOnly){
+      void compute_complex_histo(const Img<T> &image, int c, std::vector<int> &h, bool roiOnly){
         const Range<T> range = image.getMinMax(c);
         double r = range.getLength();
         unsigned int n = h.size();
@@ -489,7 +493,7 @@ namespace icl{
   #ifdef HAVE_IPP
       
   #define COMPUTE_DEFAULT_HISTO_256_TEMPLATE(D)                                                                                \
-      template<> void compute_default_histo_256<icl##D>(const Img##D &image, int c, vector<int> &h, bool roiOnly){             \
+      template<> void compute_default_histo_256<icl##D>(const Img##D &image, int c, std::vector<int> &h, bool roiOnly){             \
         ICLASSERT_RETURN(h.size() == 256);                                                                                     \
         static icl32s levels[257];                                                                                             \
         static bool first = true;                                                                                              \
@@ -509,10 +513,10 @@ namespace icl{
       
   
   #define COMPUTE_COMPLEX_HISTO_TEMPLATE(D)                                                                                    \
-      template<> void compute_complex_histo(const Img##D &image, int c, vector<int> &h, bool roiOnly){                         \
+      template<> void compute_complex_histo(const Img##D &image, int c, std::vector<int> &h, bool roiOnly){                         \
         Range<icl##D> range = image.getMinMax(c);                                                                              \
         double l = range.getLength();                                                                                          \
-        vector<int> levels(h.size()+1);                                                                                        \
+        std::vector<int> levels(h.size()+1);                                                                                        \
         for(unsigned int i=0;i<levels.size();i++){                                                                             \
           levels[i] = i*l/h.size() + range.minVal;                                                                             \
         }                                                                                                                      \
@@ -534,7 +538,7 @@ namespace icl{
   
   
       template<class T>
-      void compute_channel_histo(const Img<T> &image, int c, vector<int> &h, bool roiOnly){
+      void compute_channel_histo(const Img<T> &image, int c, std::vector<int> &h, bool roiOnly){
         if(image.getFormat() != formatMatrix && h.size() == 256){
           compute_default_histo_256(image,c,h,roiOnly);
         }else{
@@ -543,11 +547,11 @@ namespace icl{
       }
     }
     
-    vector<int> channelHisto(const ImgBase *image,int channel, int levels, bool roiOnly){
-      ICLASSERT_RETURN_VAL(image && image->getChannels()>channel, vector<int>());
-      ICLASSERT_RETURN_VAL(levels > 1,vector<int>());
+    std::vector<int> channelHisto(const ImgBase *image,int channel, int levels, bool roiOnly){
+      ICLASSERT_RETURN_VAL(image && image->getChannels()>channel, std::vector<int>());
+      ICLASSERT_RETURN_VAL(levels > 1,std::vector<int>());
       
-      vector<int> h(levels);
+      std::vector<int> h(levels);
       switch(image->getDepth()){
   #define ICL_INSTANTIATE_DEPTH(D) case depth##D: compute_channel_histo(*image->asImg<icl##D>(),channel,h,roiOnly); break;
         ICL_INSTANTIATE_ALL_DEPTHS;
@@ -557,9 +561,9 @@ namespace icl{
     }
     
     
-    vector<vector<int> > hist(const ImgBase *image, int levels, bool roiOnly){
-      ICLASSERT_RETURN_VAL(image && image->getChannels(), vector<vector<int> >());
-      vector<vector<int> > h(image->getChannels());
+    std::vector<std::vector<int> > hist(const ImgBase *image, int levels, bool roiOnly){
+      ICLASSERT_RETURN_VAL(image && image->getChannels(), std::vector<std::vector<int> >());
+      std::vector<std::vector<int> > h(image->getChannels());
       for(int i=0;i<image->getChannels();i++){
         h[i] = channelHisto(image,i,levels,roiOnly);
       }

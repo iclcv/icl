@@ -37,6 +37,9 @@
 #include <ICLUtils/Rect32f.h>
 #include <ICLUtils/StringUtils.h>
 
+using namespace icl::utils;
+using namespace icl::math;
+
 namespace icl {
   namespace core{
     
@@ -47,7 +50,7 @@ namespace icl {
     Img<Type>::Img(const ImgParams &params):
       // {{{ open
   
-      ImgBase(icl::getDepth<Type>(),params){
+      ImgBase(icl::core::getDepth<Type>(),params){
       FUNCTION_LOG("Img(params)");
     
       for(int i=0;i<getChannels();i++) {
@@ -62,7 +65,7 @@ namespace icl {
     Img<Type>::Img(const Size &s,int iChannels):
       // {{{ open
   
-      ImgBase(icl::getDepth<Type>(),ImgParams(s,iChannels)){
+      ImgBase(icl::core::getDepth<Type>(),ImgParams(s,iChannels)){
       FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," << iChannels << ")  this:" << this );
     
       for(int i=0;i<getChannels();i++) {
@@ -76,7 +79,7 @@ namespace icl {
     template<class Type>
     Img<Type>::Img(const Size& s, format eFormat):
       // {{{ open
-      ImgBase(icl::getDepth<Type>(),ImgParams(s,eFormat)){
+      ImgBase(icl::core::getDepth<Type>(),ImgParams(s,eFormat)){
       FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," << translateFormat(eFormat) << ")  this:" << this );
     
       for(int i=0;i<getChannels();i++) {
@@ -91,7 +94,7 @@ namespace icl {
     Img<Type>::Img(const Size &s,int iChannels, format fmt):
       // {{{ open
   
-      ImgBase(icl::getDepth<Type>(),ImgParams(s,iChannels,fmt)){
+      ImgBase(icl::core::getDepth<Type>(),ImgParams(s,iChannels,fmt)){
       FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," << 
                    iChannels << "," << translateFormat(fmt) << ")  this:" << this );
     
@@ -107,7 +110,7 @@ namespace icl {
     Img<Type>::Img(const Size &s, int channels, const std::vector<Type*>& vptData, bool passOwnerShip) :
       // {{{ open
   
-      ImgBase(icl::getDepth<Type>(),ImgParams(s,channels)) {
+      ImgBase(icl::core::getDepth<Type>(),ImgParams(s,channels)) {
       ICLASSERT_THROW (getChannels () <= (int) vptData.size(), InvalidImgParamException("channels"));
       FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," <<  channels << ",Type**)  this:" << this);
     
@@ -123,7 +126,7 @@ namespace icl {
     template<class Type>
     Img<Type>::Img(const Size &s, int channels, format fmt, const std::vector<Type*>& vptData, bool passOwnerShip) :
       // {{{ open
-      ImgBase(icl::getDepth<Type>(),ImgParams(s,channels,fmt)){
+      ImgBase(icl::core::getDepth<Type>(),ImgParams(s,channels,fmt)){
       ICLASSERT_THROW (getChannels () <= (int) vptData.size(), InvalidImgParamException("channels"));
       FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," <<  channels << 
                    "," << translateFormat(fmt) << ",Type**)  this:" << this);
@@ -140,7 +143,7 @@ namespace icl {
     template<class Type>
     Img<Type>::Img(const Size &s, format eFormat, const std::vector<Type*>& vptData, bool passOwnerShip) :
       // {{{ open
-      ImgBase(icl::getDepth<Type>(),ImgParams(s,eFormat)){
+      ImgBase(icl::core::getDepth<Type>(),ImgParams(s,eFormat)){
       ICLASSERT_THROW (getChannels () <= (int) vptData.size(), InvalidImgParamException("channels"));
       FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," << translateFormat(eFormat) << ",Type**)  this:" << this);
      
@@ -193,7 +196,7 @@ namespace icl {
                    const DynMatrix<Type> &c3, 
                    const DynMatrix<Type> &c4, 
                    const DynMatrix<Type> &c5) throw (InvalidMatrixDimensionException):
-      ImgBase(icl::getDepth<Type>(),ImgParams(Size(c1.cols(),c1.rows()),get_channel_count(c1,c2,c3,c4,c5))){
+      ImgBase(icl::core::getDepth<Type>(),ImgParams(Size(c1.cols(),c1.rows()),get_channel_count(c1,c2,c3,c4,c5))){
       
       if(c1.isNull()) return;
       m_vecChannels.reserve(getChannels());
@@ -258,7 +261,7 @@ namespace icl {
     // {{{ open
     {
       if (!ppoDst) return new Img<Type>(p);
-      icl::ensureCompatible (ppoDst, icl::getDepth<Type>(), p);
+      icl::core::ensureCompatible (ppoDst, icl::core::getDepth<Type>(), p);
       return (*ppoDst)->asImg<Type>();
     }
     // }}}
@@ -266,7 +269,7 @@ namespace icl {
     template<class Type>
     Img<Type>* ensureDepth(ImgBase **ppoDst){
       // {{{ open
-      ImgBase *poDst = icl::ensureDepth(ppoDst,getDepth<Type>());
+      ImgBase *poDst = icl::core::ensureDepth(ppoDst,getDepth<Type>());
       return poDst->asImg<Type>();  
     }
     // }}}
@@ -1223,7 +1226,7 @@ namespace icl {
         icl64f fShift  = (icl64f)(srcRange.maxVal * dstRange.minVal - srcRange.minVal * dstRange.maxVal) / srcRange.getLength();
         const_roi_iterator e = endROI(c);
         for(roi_iterator p=beginROI(c);p!=e; ++p) {
-          *p = clipped_cast<icl64f,Type>( icl::clip( fShift + (icl64f)(*p) * fScale, icl64f(dstRange.minVal),icl64f(dstRange.maxVal) ) );
+          *p = clipped_cast<icl64f,Type>( icl::utils::clip( fShift + (icl64f)(*p) * fScale, icl64f(dstRange.minVal),icl64f(dstRange.maxVal) ) );
         }
       }
     }
@@ -1283,12 +1286,12 @@ namespace icl {
       if (first == vec.end()) return 0;
   
       // create image with parameters of first image in vector
-      icl::ensureCompatible (ppoDst, *first);
+      icl::core::ensureCompatible (ppoDst, *first);
       ImgType* poDst = static_cast<ImgType*>(*ppoDst);
       // some cache variables
       const Size& dstSize = poDst->getSize();
       const Rect& dstROI  = poDst->getROI();
-      icl::format fmt = (*first)->getFormat();
+      icl::core::format fmt = (*first)->getFormat();
       bool bKeepROI=true;
       unsigned int nCount = 0;
       for (; first != end; ++first) {
@@ -1315,7 +1318,7 @@ namespace icl {
       for (std::vector<const ImgBase*>::const_iterator it=vec.begin(), end=vec.end();
            it != end; ++it) {
         const ImgBase *pImgBase = *it;
-        if (pImgBase->getDepth () == icl::getDepth<T>())
+        if (pImgBase->getDepth () == icl::core::getDepth<T>())
           vecTyped.push_back (pImgBase->asImg<T>());
         else ERROR_LOG ("image depth doesn't match");
       }
@@ -1333,7 +1336,7 @@ namespace icl {
       std::vector<const ImgBase*>::const_iterator 
       first = std::find_if (vec.begin(), vec.end(), 
                             std::bind2nd(std::not_equal_to<const ImgBase*>(), 
-                                         reinterpret_cast<const icl::ImgBase*>(0)));
+                                         reinterpret_cast<const icl::core::ImgBase*>(0)));
       // check for empty vector
       if (first == vec.end()) { 
         // remove all channels from *ppoDst
@@ -1557,7 +1560,7 @@ namespace icl {
         //     int nBytes = sizeof(T) * srcSize.width;
         // line-wise memcpy is possible
         for (; s != e; s += iSrcStep, d -= iDstStep)
-          icl::copy<T>(s,s+srcSize.width,d);//memcpy (d, s, nBytes);
+          icl::core::copy<T>(s,s+srcSize.width,d);//memcpy (d, s, nBytes);
         return;
       }
   

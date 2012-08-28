@@ -76,7 +76,8 @@ namespace icl{
   
       /// single constructor to create a pixelref instance
       /** This should not be used manually. Rather you should use Img<T>'s operator()(int x, int y) */
-      inline PixelRef(int x, int y, int width, std::vector<SmartArray<T> > &data):m_data(data.size()){
+      inline PixelRef(int x, int y, int width, std::vector<utils::SmartArray<T> > &data):
+      m_data(data.size()){
         int offs = x+width*y;
         for(unsigned int i=0;i<data.size();++i){
           this->m_data[i] = data[i].get()+offs;
@@ -92,8 +93,8 @@ namespace icl{
           imageA(x,y) = imageB(a,b);
           </code>
       */
-      inline PixelRef &operator=(const PixelRef &other)throw (ICLException){
-        ICLASSERT_THROW(other.m_data.size() == m_data.size(),ICLException("incompatible channel count"));
+      inline PixelRef &operator=(const PixelRef &other)throw (utils::ICLException){
+        ICLASSERT_THROW(other.m_data.size() == m_data.size(),utils::ICLException("incompatible channel count"));
         for(unsigned int i=0;i<m_data.size();++i){
           *m_data[i] = *other.m_data[i];
         }
@@ -101,8 +102,8 @@ namespace icl{
       }
       
       /// assigns reference pixel values from vector data
-      inline PixelRef &operator=(const std::vector<T> &vec)throw (ICLException){
-        ICLASSERT_THROW(vec.size() == m_data.size(),ICLException("incompatible channel count"));
+      inline PixelRef &operator=(const std::vector<T> &vec)throw (utils::ICLException){
+        ICLASSERT_THROW(vec.size() == m_data.size(),utils::ICLException("incompatible channel count"));
         for(unsigned int i=0;i<m_data.size();++i){
           *m_data[i] = vec[i];
         }
@@ -119,10 +120,10 @@ namespace icl{
           </code>
       */
       template<class MT,unsigned int COLS,unsigned int ROWS>
-      inline PixelRef &operator=(const FixedMatrix<MT,COLS,ROWS> &mat)throw (ICLException){
-        ICLASSERT_THROW((m_data.size() == FixedMatrix<MT,COLS,ROWS>::DIM), ICLException("channel count and matrix dim are incompatible"));
+      inline PixelRef &operator=(const math::FixedMatrix<MT,COLS,ROWS> &mat)throw (utils::ICLException){
+        ICLASSERT_THROW((m_data.size() == math::FixedMatrix<MT,COLS,ROWS>::DIM), utils::ICLException("channel count and matrix dim are incompatible"));
         for(unsigned int i=0;i<m_data.size();++i){
-          *m_data[i] = clipped_cast<MT,T>(mat[i]);
+          *m_data[i] = utils::clipped_cast<MT,T>(mat[i]);
         }
         return *this;
       }
@@ -151,22 +152,22 @@ namespace icl{
       /// assigns a ranges contents to the pixel data
       /** An exception is only thrown of the given range is too short*/
       template<class ForwardIterator>
-      inline void setFromRange(ForwardIterator begin, ForwardIterator end) throw (ICLException){
+      inline void setFromRange(ForwardIterator begin, ForwardIterator end) throw (utils::ICLException){
         for(unsigned int i=0;i<m_data.size();++i,++begin){
-          if(begin == end) throw ICLException("Range is longer then channel count");
+          if(begin == end) throw utils::ICLException("Range is longer then channel count");
           *m_data[i] = *begin;
         }
       }
       
       /// references a single element (safe)
-      T &operator[](unsigned int channel) throw (ICLException){
-        ICLASSERT_THROW(channel < m_data.size(),ICLException("invalid channel index"));
+      T &operator[](unsigned int channel) throw (utils::ICLException){
+        ICLASSERT_THROW(channel < m_data.size(),utils::ICLException("invalid channel index"));
         return *m_data[channel];
       }
       
       /// references a single element (const) (safe)
-      const T &operator[](unsigned int channel) const throw (ICLException){
-        ICLASSERT_THROW(channel < m_data.size(),ICLException("invalid channel index"));
+      const T &operator[](unsigned int channel) const throw (utils::ICLException){
+        ICLASSERT_THROW(channel < m_data.size(),utils::ICLException("invalid channel index"));
         return *m_data[channel];
       }
       

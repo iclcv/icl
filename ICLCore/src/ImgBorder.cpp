@@ -34,6 +34,9 @@
 
 #include <ICLCore/ImgBorder.h>
 
+using namespace icl::utils;
+using namespace icl::math;
+
 namespace icl{
   namespace core{
   

@@ -53,7 +53,7 @@ namespace icl{
           would mean, that this sampling buffers was either used by several instances, or that each
           instance would need an own buffer, which would nullify all the performance benefits, we got
           before
-        - limiting the maximum line length: by this means, we can use a fixed size data buffer
+        - limiting the maximum line length: by these means, we can use a fixed size data buffer
         - internally we use a lot of templates, to suppress if-then statements if possible
         
         The facilitate buffer allocation and things like that, the SampledLine class should be used. 

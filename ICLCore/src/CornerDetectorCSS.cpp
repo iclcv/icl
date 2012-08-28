@@ -33,10 +33,10 @@
 *********************************************************************/
 
 #include <ICLCore/CornerDetectorCSS.h>
-#include <ICLCore/Mathematics.h>
 #include <ICLUtils/StringUtils.h>
+#include <cstring>
 
-using namespace std;
+using namespace icl::utils;
 
 namespace icl{
   namespace core{
@@ -74,7 +74,7 @@ namespace icl{
       float ssq = sigma*sigma;
       int width;
       for (width=1; exp(-(width*width)/(2*ssq)) > cutoff; width++);
-      width = max(1, width-1);
+      width = iclMax(1, width-1);
       gauss.width = width;
       float sum = 0;
       // first free the old memory
@@ -89,7 +89,7 @@ namespace icl{
       return width;
     }
   
-    void CornerDetectorCSS::findExtrema(vector<int> &extrema, icl32f* x, int length) {
+    void CornerDetectorCSS::findExtrema(std::vector<int> &extrema, icl32f* x, int length) {
       extrema.clear();
       float search = 1; // 1...pos. slope becomes neg. slope, 0... neg. slope becomes pos. slope
   
@@ -102,8 +102,8 @@ namespace icl{
       if (extrema.size() % 2 == 0) extrema.push_back(length-1);
     }
   
-    void CornerDetectorCSS::removeRoundCorners(float rc_coeff, icl32f* k, vector<int> &extrema) {
-      vector<int> new_extrema;
+    void CornerDetectorCSS::removeRoundCorners(float rc_coeff, icl32f* k, std::vector<int> &extrema) {
+      std::vector<int> new_extrema;
       float mean;
       int n;
       for (unsigned i=1; i<extrema.size()-1; i+=2) {
@@ -154,7 +154,7 @@ namespace icl{
   
           diff_angle = modulo((atan2(y3-y1,x3-x1) - atan2(y2-y1,x2-x1)), 2*M_PI);
           if (diff_angle>M_PI) diff_angle = 2*M_PI-diff_angle;
-          if (diff_angle*180/M_PI < max(straight_line_thresh, 0.01f)) { // fit straight line
+          if (diff_angle*180/M_PI < iclMax(straight_line_thresh, 0.01f)) { // fit straight line
             tangent_direction = atan2(y[last]-y[first], x[last]-x[first]);
           } else { // fit a circle
             x0 = 0.5*((x1*x1+y1*y1)*(y2-y3) + (x2*x2+y2*y2)*(y3-y1) + (x3*x3+y3*y3)*(y1-y2)) /
@@ -175,9 +175,10 @@ namespace icl{
     }
   
     void CornerDetectorCSS::removeFalseCorners(float angle_thresh, icl32f* x, icl32f* y, icl32f* k, 
-                                               int length, vector<int> &maxima, vector<float> &corner_angles, 
+                                               int length, std::vector<int> &maxima, 
+                                               std::vector<float> &corner_angles, 
                                                float straight_line_thresh) {
-      vector<int> new_maxima;
+      std::vector<int> new_maxima;
       bool has_changed;
       float angle;
       int i_0; // start index of boundary segment
@@ -221,12 +222,12 @@ namespace icl{
       return detectCorners(inputBuffer);
     }
     
-    void atov(vector<Point32f> &v, icl32f *x, icl32f *y, int length) {
+    void atov(std::vector<Point32f> &v, icl32f *x, icl32f *y, int length) {
     	v.clear();
     	for (int i=0; i < length; i++) v.push_back(Point32f(x[i],y[i]));
     }
   
-    const vector<Point32f> &CornerDetectorCSS::detectCorners(const vector<Point32f> &boundary) {
+    const std::vector<Point32f> &CornerDetectorCSS::detectCorners(const std::vector<Point32f> &boundary) {
       //debug_output = true;
       if (debug_mode) {
       	debug_inf.boundary = boundary;
@@ -338,7 +339,7 @@ namespace icl{
       
       // extract the coordinates of the detected corners
       corners.clear();
-      vector<float> angles_tmp;
+      std::vector<float> angles_tmp;
       for (unsigned i=0; i<extrema.size(); i++) {
         if (extrema[i] >= offset+W and extrema[i] < L-offset+W) {
           corners.push_back(Point32f(x_in[extrema[i]-W], y_in[extrema[i]-W]));

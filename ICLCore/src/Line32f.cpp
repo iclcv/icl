@@ -37,7 +37,7 @@
 #include <math.h>
 #include <algorithm>
 
-using namespace std;
+using namespace icl::utils;
 
 namespace icl{
   namespace core{
@@ -66,7 +66,7 @@ namespace icl{
       Point endInt = Point( (int)round(end.x), (int)round(end.y) );
       return Line(startInt,endInt).sample(limits);
     }
-    void Line32f::sample(vector<int> &xs, vector<int> &ys, const Rect &limits ) const{
+    void Line32f::sample(std::vector<int> &xs, std::vector<int> &ys, const Rect &limits ) const{
       Point startInt = Point( (int)round(start.x), (int)round(start.y) );
       Point endInt = Point( (int)round(end.x), (int)round(end.y) );
       return Line(startInt,endInt).sample(xs,ys,limits);

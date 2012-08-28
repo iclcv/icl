@@ -94,7 +94,7 @@ namespace icl{
         const std::vector<Point32f> &corners = css.detectCorners(boundary);
         \endcode
     **/
-    class CornerDetectorCSS : public Configurable{
+    class CornerDetectorCSS : public utils::Configurable{
       public:
       /// 1 dim gaussian kernel
       struct GaussianKernel {
@@ -108,14 +108,14 @@ namespace icl{
       /// Detailed information about one corner detection run.
       struct DebugInformation {
         GaussianKernel gk;
-        std::vector<Point32f> boundary;
-        std::vector<Point32f> smoothed_boundary;
+        std::vector<utils::Point32f> boundary;
+        std::vector<utils::Point32f> smoothed_boundary;
         std::vector<float> kurvature;
         std::vector<int> extrema;
         std::vector<int> maxima;
         std::vector<int> maxima_without_round_corners;
         std::vector<int> maxima_without_false_corners;
-        std::vector<Point32f> corners;
+        std::vector<utils::Point32f> corners;
         std::vector<float> angles;
         int offset; // the number of additional points at begin and end of
         // smoothed_boundary and kurvature
@@ -135,7 +135,8 @@ namespace icl{
       debug_mode(false) {};
   
       /// sets value of a property (always call call_callbacks(propertyName) or Configurable::setPropertyValue)
-      virtual void setPropertyValue(const std::string &propertyName, const Any &value) throw (ICLException);
+      virtual void setPropertyValue(const std::string &propertyName, 
+                                    const utils::Any &value) throw (utils::ICLException);
       
       /// returns Configurable property list
       virtual std::vector<std::string> getPropertyList();
@@ -147,7 +148,7 @@ namespace icl{
       virtual std::string getPropertyInfo(const std::string &propertyName);
       
       /// returns value for given property
-      virtual Any getPropertyValue(const std::string &propertyName);
+      virtual utils::Any getPropertyValue(const std::string &propertyName);
         
       /// returns volatileness for given property
       virtual inline int getPropertyVolatileness(const std::string &propertyName) { return 0; }
@@ -176,14 +177,14 @@ namespace icl{
           xooo                xooo
           </pre>
           */
-      const std::vector<Point32f> &detectCorners(const std::vector<Point32f> &boundary);
+      const std::vector<utils::Point32f> &detectCorners(const std::vector<utils::Point32f> &boundary);
       
       /// detects corners on int-points
-      const std::vector<Point32f> &detectCorners(const std::vector<Point> &boundary);
+      const std::vector<utils::Point32f> &detectCorners(const std::vector<utils::Point> &boundary);
       
       /// returns the result of last detectCorners call
       /** This function can be used as optimization e.g. whithin ICLCV::Region implementation */
-      inline const std::vector<Point32f> &getLastCorners() const {
+      inline const std::vector<utils::Point32f> &getLastCorners() const {
         return corners;
       }
       
@@ -203,8 +204,8 @@ namespace icl{
       inline float getStraightLineThreshold() const { return straight_line_thresh;}
   
       inline void setDebugMode(bool value) { debug_mode = value; }
-      const DebugInformation &getDebugInformation() const throw (ICLException){ 
-        if(!debug_mode) throw ICLException("CornerDetectorCSS::getDebugInformation: not possible: debug mode is off");
+      const DebugInformation &getDebugInformation() const throw (utils::ICLException){ 
+        if(!debug_mode) throw utils::ICLException("CornerDetectorCSS::getDebugInformation: not possible: debug mode is off");
         return debug_inf; 
       } 
   
@@ -274,10 +275,10 @@ namespace icl{
       static float tangentAngle(icl32f* x, icl32f* y, int length, int center, float straight_line_thresh);
   
       // result lists
-      std::vector<Point32f> corners;
+      std::vector<utils::Point32f> corners;
       std::vector<float> corner_angles;
       std::vector<int> extrema;
-      std::vector<Point32f> inputBuffer;
+      std::vector<utils::Point32f> inputBuffer;
       DebugInformation debug_inf;
     };
   } // namespace core
