@@ -42,6 +42,9 @@
 #include <QtGui/QHBoxLayout>
 #include <ICLUtils/StringUtils.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
   namespace qt{
     
@@ -66,7 +69,7 @@ namespace icl{
         m_poFormatCombo->addItem(str(f).c_str());
       }
       
-      for(icl::depth d=icl::depth8u; d<=depthLast; d=(icl::depth)(d+1)){
+      for(core::depth d=core::depth8u; d<=core::depthLast; d=(core::depth)(d+1)){
         m_poDepthCombo->addItem(str(d).c_str());
       }
       
@@ -151,7 +154,7 @@ namespace icl{
         m_poSizeCombo->setCurrentIndex(sizeIdx);
       }
       
-      QString depthText = str((icl::depth)dth).c_str();
+      QString depthText = str((core::depth)dth).c_str();
       int depthIdx = getIndex(depthText,m_poDepthCombo);
       if(depthIdx == -1){
         ERROR_LOG("invalid depth \"" << depthText.toLatin1().data() << "\""); 
@@ -186,7 +189,7 @@ namespace icl{
     
     void ImgParamWidget::depthChanged(const QString &val){
       std::string x = str(val.toLatin1().data());
-      icl::depth d = parse<icl::depth>(x);
+      core::depth d = parse<core::depth>(x);
       m_iDepth = (int)d;
       emit somethingChanged(m_iWidth,m_iHeight, m_iDepth, m_iFormat);
     }

@@ -86,7 +86,7 @@
 
 
 #include <ICLUtils/Rect32f.h>
-#include <ICLIO/File.h>
+#include <ICLUtils/File.h>
 #include <ICLIO/FileWriter.h>
 #include <ICLUtils/Range.h>
 #include <ICLCore/Types.h>
@@ -94,8 +94,11 @@
 #include <ICLQt/ThreadedUpdatableSlider.h>
 #include <ICLQt/HistogrammWidget.h>
 
-
 using namespace std;
+using namespace icl::utils;
+using namespace icl::core;
+using namespace icl::io;
+
 namespace icl{
   namespace qt{
   
@@ -268,21 +271,21 @@ namespace icl{
   
     struct ImageInfoIndicator : public ThreadedUpdatableWidget{
       ImgParams p;
-      icl::depth d;
+      core::depth d;
       Point mousePos;
       Size viewPort;
       bool haveImage;
       
       ImageInfoIndicator(QWidget *parent):
         ThreadedUpdatableWidget(parent),haveImage(false){
-        d = (icl::depth)(-2);
+        d = (core::depth)(-2);
         setBackgroundRole(QPalette::Window);
         //#if (QT_VERSION >= QT_VERSION_CHECK(4, 5, 0))
         //setAttribute(Qt::WA_TranslucentBackground);
         //#endif
       }
   
-      void update(const ImgParams p, icl::depth d){
+      void update(const ImgParams p, core::depth d){
         this->p = p;
         this->d = d;
         haveImage = true;
@@ -564,7 +567,7 @@ namespace icl{
       }
       
       bool startRecording(CaptureTarget t, const std::string &device, std::string params, int frameSkip,
-                          bool forceParams, const Size &dstSize, icl::format dstFmt,  icl::depth dstDepth){
+                          bool forceParams, const Size &dstSize, core::format dstFmt,  core::depth dstDepth){
         Mutex::Locker l(mutex);
       
         ICL_DELETE(converter);
@@ -1313,26 +1316,26 @@ namespace icl{
       static const int y = GL_BUTTON_Y, w = GL_BUTTON_W, h = GL_BUTTON_H;
       int &x = m_data->nextButtonX;
       m_data->glbuttons.push_back(new OSDGLButton(this,"show/hide menu","",x,y,w,h,OSDGLButton::Tool,
-                                                  icl::function(this,&ICLWidget::showHideMenu)));
+                                                  utils::function(this,&ICLWidget::showHideMenu)));
       x+=GL_BUTTON_X_INC;
       m_data->glbuttons.push_back(new OSDGLButton(this,"popup/embedded menu","",x,y,w,h,OSDGLButton::Unlock,OSDGLButton::Lock,
-                                                  icl::function(this,&ICLWidget::setMenuEmbedded),true));
+                                                  utils::function(this,&ICLWidget::setMenuEmbedded),true));
       x+=GL_BUTTON_X_INC;
       m_data->glbuttons.push_back(new OSDGLButton(this,"interpolation mode","",x,y,w,h,OSDGLButton::NNInter,OSDGLButton::LINInter,
-                                                  icl::function(this,&ICLWidget::setLinInterpolationEnabled),false));
+                                                  utils::function(this,&ICLWidget::setLinInterpolationEnabled),false));
       x+=GL_BUTTON_X_INC;
       m_data->glbuttons.push_back(new OSDGLButton(this,"zoom (left button drag)","",x,y,w,h,OSDGLButton::Zoom,OSDGLButton::RedZoom,
-                                                  icl::function(this,&ICLWidget::setEmbeddedZoomModeEnabled),false));
+                                                  utils::function(this,&ICLWidget::setEmbeddedZoomModeEnabled),false));
       x+=GL_BUTTON_X_INC;
       m_data->glbuttons.push_back(new OSDGLButton(this,"scale value range","",x,y,w,h,OSDGLButton::RangeNormal,OSDGLButton::RangeScaled,
-                                                  icl::function(this,&ICLWidget::setRangeModeNormalOrScaled),false));
+                                                  utils::function(this,&ICLWidget::setRangeModeNormalOrScaled),false));
       x+=GL_BUTTON_X_INC;
       m_data->glbuttons.push_back(new OSDGLButton(this,"enter/leave fullscreen (F11)","",x,y,w,h,OSDGLButton::EnterFullScreen,
                                                   OSDGLButton::LeaveFullScreen,
-                                                  icl::function(m_data,&ICLWidget::Data::changeFullScreenMode)));
+                                                  utils::function(m_data,&ICLWidget::Data::changeFullScreenMode)));
       x+=GL_BUTTON_X_INC;
       m_data->glbuttons.push_back(new OSDGLButton(this,"press to stop recording","",x,y,w,h,OSDGLButton::RedCam,
-                                                  icl::function(this,&ICLWidget::stopButtonClicked)));
+                                                  utils::function(this,&ICLWidget::stopButtonClicked)));
       x+=GL_BUTTON_X_INC;
   
       m_data->imageInfoIndicator = new ImageInfoIndicator(this);
@@ -1533,8 +1536,8 @@ namespace icl{
         
         bool forceParams = m_data->menu.get<bool>("auto-cap-force");
         Size dstSize = parse<Size>(m_data->menu.get<ComboHandle>("auto-cap-size").getSelectedItem());
-        icl::format dstFmt = parse<icl::format>(m_data->menu.get<ComboHandle>("auto-cap-format").getSelectedItem());
-        icl::depth dstDepth = parse<icl::depth>(m_data->menu.get<ComboHandle>("auto-cap-depth").getSelectedItem());
+        core::format dstFmt = parse<core::format>(m_data->menu.get<ComboHandle>("auto-cap-format").getSelectedItem());
+        core::depth dstDepth = parse<core::depth>(m_data->menu.get<ComboHandle>("auto-cap-depth").getSelectedItem());
   
         bool ok = m_data->outputCap->startRecording(t,device,params,frameSkip,forceParams,dstSize,dstFmt,dstDepth);
         if(!ok){
@@ -2471,7 +2474,7 @@ namespace icl{
         bool m_all;
         CallbackHandler(const GUI::Callback &cb ,const std::string &eventList):
           cb(cb),m_all(false){
-          std::vector<std::string> eventVec = icl::tok(eventList,",");
+          std::vector<std::string> eventVec = utils::tok(eventList,",");
           for(unsigned int i=0;i<eventVec.size();++i){
             const std::string &e = eventVec[i];
             if(e == "all"){

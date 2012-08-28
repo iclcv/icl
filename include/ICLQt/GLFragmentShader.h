@@ -34,7 +34,7 @@
 
 #pragma once
 
-#include <ICLUtils/utils::Uncopyable.h>
+#include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/Exception.h>
 
 namespace icl{

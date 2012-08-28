@@ -35,6 +35,9 @@
 #include <ICLQt/ColorLabel.h>
 #include <QtGui/QPainter>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
   namespace qt{
   

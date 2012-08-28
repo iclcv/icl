@@ -35,6 +35,9 @@
 #include <ICLQt/DrawHandle3D.h>
 #include <ICLQt/DrawWidget3D.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
   namespace qt{
     void DrawHandle3D::setImage(const ImgBase *image){

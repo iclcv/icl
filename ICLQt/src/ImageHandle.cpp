@@ -35,6 +35,9 @@
 #include <ICLQt/ImageHandle.h>
 #include <ICLQt/Widget.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
   namespace qt{
     void ImageHandle::setImage(const ImgBase *image){

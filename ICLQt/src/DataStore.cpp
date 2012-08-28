@@ -88,8 +88,10 @@
 #include <ICLQt/ThreadedUpdatableTextView.h>
 #include <ICLQt/MouseHandler.h>
 
-using namespace icl;
-
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
+using namespace icl::qt;
 namespace{
   
   struct Assign{

@@ -55,12 +55,12 @@
 #include <QtGui/QPushButton>
 
 
-
+using namespace icl::utils;
+using namespace icl::core;
+using namespace icl::io;
 
 namespace icl{
   namespace qt{
-    
-  
     struct VolatileUpdater : public QTimer{
       std::string prop;
       GUI &gui;
@@ -76,9 +76,9 @@ namespace icl{
         QApplication::processEvents();
       }
     };
-      
+    
     class CamCfgWidget::Data{
-      public:
+    public:
       bool complex;
       std::string deviceFilter;
       GUI gui;
@@ -89,7 +89,7 @@ namespace icl{
       bool grabbing;
       bool loadParamsScope;
       
-  
+      
       Data(bool complex):complex(complex),mutex(QMutex::Recursive),fps(5),fpsLimiter(10,10){
         scanScope = false;
         settingUpDevice = false;
@@ -108,16 +108,13 @@ namespace icl{
       FPSLimiter fpsLimiter;
       bool useFPSLimiter;
       bool end;
-      
-      
     };
-  
     
     CamCfgWidget::CamCfgWidget(const std::string &deviceFilter,QWidget *parent):
       QWidget(parent), data(new Data(true)){
       
       data->deviceFilter = deviceFilter;
-        
+      
       data->gui = HSplit(this);
       data->gui <<  ( VSplit()
                       << Image().handle("image").minSize(8,6).label("preview")
@@ -157,7 +154,7 @@ namespace icl{
       layout()->setContentsMargins(2,2,2,2);
       layout()->addWidget(data->gui.getRootWidget());
   
-      data->gui.registerCallback(function(this,&icl::CamCfgWidget::callback),"device,scan,format,size,capture,fps,load,save,"
+      data->gui.registerCallback(function(this,&icl::qt::CamCfgWidget::callback),"device,scan,format,size,capture,fps,load,save,"
                                  "desired-size,desired-depth,desired-format,hz");
       
       QWidget *w = (*data->gui.get<BoxHandle>("props"));
@@ -225,9 +222,9 @@ namespace icl{
       layout()->addWidget(data->gui.getRootWidget());
   
       if(needDeviceCombo){
-        data->gui.registerCallback(function(this,&icl::CamCfgWidget::callback),"load,save,device");
+        data->gui.registerCallback(function(this,&icl::qt::CamCfgWidget::callback),"load,save,device");
       }else{
-        data->gui.registerCallback(function(this,&icl::CamCfgWidget::callback),"load,save");
+        data->gui.registerCallback(function(this,&icl::qt::CamCfgWidget::callback),"load,save");
       }
       
       QWidget *w = (*data->gui.get<BoxHandle>("props"));
@@ -416,7 +413,7 @@ namespace icl{
             }
           }
           
-          create_property_gui(data->propGUI,data->grabber,function(this,&icl::CamCfgWidget::callback), data->timers);
+          create_property_gui(data->propGUI,data->grabber,function(this,&icl::qt::CamCfgWidget::callback), data->timers);
           data->scroll->setWidget(data->propGUI.getRootWidget());
   
           if(data->complex){
@@ -491,9 +488,9 @@ namespace icl{
       }else if(source == "desired-depth"){
         std::string d = data->gui[source];
         if(d == "default"){
-          data->grabber.ignoreDesired<icl::depth>();
+          data->grabber.ignoreDesired<core::depth>();
         }else{
-          data->grabber.useDesired(icl::parse<icl::depth>(d));
+          data->grabber.useDesired(utils::parse<core::depth>(d));
         }
       }else if(source == "save"){
         if(data->grabber.isNull()){

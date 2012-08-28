@@ -37,11 +37,14 @@
 #include <ICLCore/Img.h>
 #include <QtGui/QFontMetrics>
 #include <QtGui/QPainter>
-#include <ICLCore/Mathematics.h>
 #include <ICLCore/CCFunctions.h>
 #include <ICLQt/GLImg.h>
 
-using std::string; using std::min;
+using std::string; 
+using std::min;
+using namespace icl::utils;
+using namespace icl::core;
+
 
 namespace icl{
   namespace qt{

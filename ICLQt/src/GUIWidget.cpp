@@ -48,6 +48,9 @@
 #include <ICLQt/IconFactory.h>
 #include <ICLUtils/StringUtils.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
   namespace qt{
     

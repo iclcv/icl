@@ -49,6 +49,8 @@
 #include <ICLQt/GLContext.h>
 #include <map>
 
+using namespace icl::utils;
+
 namespace icl{
   namespace qt{
     static std::string shader_info(GLuint obj){

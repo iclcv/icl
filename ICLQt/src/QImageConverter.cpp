@@ -38,6 +38,8 @@
 #include <ICLCore/Img.h>
 #include <ICLCore/CCFunctions.h>
 
+using namespace icl::utils;
+using namespace icl::core;
 
 namespace icl{
   namespace qt{
@@ -114,220 +116,220 @@ namespace icl{
         break;
       }
     }
-  } // namespace qt
-}
-
-  // }}}
-
-template<class T>
-void qimage_to_img(const QImage *src, Img<T> **ppDst){
-  // {{{ open
-  Img<T> *&dst = *ppDst;
+  }
+    
+    // }}}
+    
+    template<class T>
+    void qimage_to_img(const QImage *src, Img<T> **ppDst){
+      // {{{ open
+      Img<T> *&dst = *ppDst;
   
-  ICLASSERT_RETURN(src);
-  ICLASSERT_RETURN(!src->isNull());
-  if(!dst) dst = new Img<T>(Size(1,1),1);
+      ICLASSERT_RETURN(src);
+      ICLASSERT_RETURN(!src->isNull());
+      if(!dst) dst = new Img<T>(Size(1,1),1);
   
-  if(src->format() == QImage::Format_Indexed8){
-    dst->setFormat(formatGray);
-  }else{
-    dst->setFormat(formatRGB);
-  }
-  dst->setSize(Size(src->width(),src->height()));
-  //append temporarily a white image channel
-  static Img<T> wBuf(Size(1,1),formatGray);
-  if(wBuf.getDim() < src->width()*src->height()){
-    wBuf.setSize(Size(src->width(),src->height()));
-  }
-  std::vector<T*> vecChannels;
-  vecChannels.push_back(dst->getData(2));
-  vecChannels.push_back(dst->getData(1));
-  vecChannels.push_back(dst->getData(0));
-  vecChannels.push_back(wBuf.getData(0));
-  Img<T> tmp(dst->getSize(),4,vecChannels);
+      if(src->format() == QImage::Format_Indexed8){
+        dst->setFormat(formatGray);
+      }else{
+        dst->setFormat(formatRGB);
+      }
+      dst->setSize(Size(src->width(),src->height()));
+      //append temporarily a white image channel
+      static Img<T> wBuf(Size(1,1),formatGray);
+      if(wBuf.getDim() < src->width()*src->height()){
+        wBuf.setSize(Size(src->width(),src->height()));
+      }
+      std::vector<T*> vecChannels;
+      vecChannels.push_back(dst->getData(2));
+      vecChannels.push_back(dst->getData(1));
+      vecChannels.push_back(dst->getData(0));
+      vecChannels.push_back(wBuf.getData(0));
+      Img<T> tmp(dst->getSize(),4,vecChannels);
 
-  interleavedToPlanar(src->bits(),&tmp);
-}
-
-  // }}}
-
-QImageConverter::QImageConverter(){
-  // {{{ open
-
-  for(int i=0;i<5;i++){
-    m_aeStates[i]=undefined;
-    m_apoBuf[i]=0;
-  }
-  m_poQBuf = 0;
-  m_eQImageState=undefined;
-}
-
-// }}}
-
-QImageConverter::QImageConverter(const ImgBase *image){
-  // {{{ open
-
-  for(int i=0;i<5;i++){
-    m_aeStates[i]=undefined;
-    m_apoBuf[i]=0;
-  }
-  m_poQBuf = 0;
-  m_eQImageState=undefined;
-  setImage(image);
-}
-
-// }}}
-
-QImageConverter::QImageConverter(const QImage *qimage){
-  // {{{ open
-
-  for(int i=0;i<5;i++){
-    m_aeStates[i]=undefined;
-    m_apoBuf[i]=0;
-  }
-  m_poQBuf = 0;
-  m_eQImageState=undefined;
-  setQImage(qimage);
-  
-}
-
-// }}}
-
-QImageConverter::~QImageConverter(){
-  // {{{ open
-
-  if(m_poQBuf && m_eQImageState != given){
-    delete m_poQBuf;
-  }
-  for(int i=0;i<5;i++){
-    if(m_apoBuf[i] && m_aeStates[i] != given){
-      delete m_apoBuf[i];
+      interleavedToPlanar(src->bits(),&tmp);
     }
-  }
-}
 
-// }}}
+    // }}}
+
+    QImageConverter::QImageConverter(){
+      // {{{ open
+
+      for(int i=0;i<5;i++){
+        m_aeStates[i]=undefined;
+        m_apoBuf[i]=0;
+      }
+      m_poQBuf = 0;
+      m_eQImageState=undefined;
+    }
+
+    // }}}
+
+    QImageConverter::QImageConverter(const ImgBase *image){
+      // {{{ open
+
+      for(int i=0;i<5;i++){
+        m_aeStates[i]=undefined;
+        m_apoBuf[i]=0;
+      }
+      m_poQBuf = 0;
+      m_eQImageState=undefined;
+      setImage(image);
+    }
+
+    // }}}
+
+    QImageConverter::QImageConverter(const QImage *qimage){
+      // {{{ open
+
+      for(int i=0;i<5;i++){
+        m_aeStates[i]=undefined;
+        m_apoBuf[i]=0;
+      }
+      m_poQBuf = 0;
+      m_eQImageState=undefined;
+      setQImage(qimage);
+  
+    }
+
+    // }}}
+
+    QImageConverter::~QImageConverter(){
+      // {{{ open
+
+      if(m_poQBuf && m_eQImageState != given){
+        delete m_poQBuf;
+      }
+      for(int i=0;i<5;i++){
+        if(m_apoBuf[i] && m_aeStates[i] != given){
+          delete m_apoBuf[i];
+        }
+      }
+    }
+
+    // }}}
     
 
-const QImage *QImageConverter::getQImage(){
-  // {{{ open
+    const QImage *QImageConverter::getQImage(){
+      // {{{ open
 
-  if(m_eQImageState < 2) return m_poQBuf;
-  for(int i=0;i<5;i++){
-    if(m_aeStates[i] < 2){
-      switch((depth)i){
-        case depth8u:{
-          img_to_qimage(m_apoBuf[i]->asImg<icl8u>(), m_poQBuf); 
-          break;
+      if(m_eQImageState < 2) return m_poQBuf;
+      for(int i=0;i<5;i++){
+        if(m_aeStates[i] < 2){
+          switch((depth)i){
+            case depth8u:{
+              img_to_qimage(m_apoBuf[i]->asImg<icl8u>(), m_poQBuf); 
+              break;
+            }
+            case depth16s: img_to_qimage(m_apoBuf[i]->asImg<icl16s>(), m_poQBuf); break;
+            case depth32s: img_to_qimage(m_apoBuf[i]->asImg<icl32s>(), m_poQBuf); break;
+            case depth32f: img_to_qimage(m_apoBuf[i]->asImg<icl32f>(), m_poQBuf); break;
+            case depth64f: img_to_qimage(m_apoBuf[i]->asImg<icl64f>(), m_poQBuf); break;
+            default: ICL_INVALID_DEPTH;
+          }          
+          m_eQImageState = uptodate;
+          return  m_poQBuf;
         }
-        case depth16s: img_to_qimage(m_apoBuf[i]->asImg<icl16s>(), m_poQBuf); break;
-        case depth32s: img_to_qimage(m_apoBuf[i]->asImg<icl32s>(), m_poQBuf); break;
-        case depth32f: img_to_qimage(m_apoBuf[i]->asImg<icl32f>(), m_poQBuf); break;
-        case depth64f: img_to_qimage(m_apoBuf[i]->asImg<icl64f>(), m_poQBuf); break;
-        default: ICL_INVALID_DEPTH;
-      }          
-      m_eQImageState = uptodate;
-      return  m_poQBuf;
-    }
-  }
-  WARNING_LOG("could not create a QImage because no image/qimage was given yet!");
-  return 0;
-}
-
-// }}}
-
-const ImgBase *QImageConverter::getImgBase(depth d){
-  // {{{ open
-
-  switch(d){
-    case depth8u:  return getImg<icl8u>();
-    case depth16s: return getImg<icl16s>();
-    case depth32s: return getImg<icl32s>();
-    case depth32f: return getImg<icl32f>();
-    case depth64f: return getImg<icl64f>();
-    default:
-      ICL_INVALID_DEPTH;
-  }
-  return 0;
-}
-
-// }}}
-
-template<class T>
-const Img<T> *QImageConverter::getImg(){
-  // {{{ open
-
-  depth d = getDepth<T>();
-  if(m_aeStates[d] < 2) return m_apoBuf[d]->asImg<T>();
-  // else find a given image
-  for(int i=0;i<5;i++){
-    if(i!=d && m_aeStates[i] < 2){
-      //      m_apoBuf[d] = m_apoBuf[i]->deepCopy(m_apoBuf[d]);
-      m_apoBuf[d] = m_apoBuf[i]->convert(m_apoBuf[d]->asImg<T>());
-      m_aeStates[d] = uptodate;
-      return m_apoBuf[d]->asImg<T>();
-    }
-  }
-  // check if the qimage was given
-  if(m_eQImageState < 2){
-    qimage_to_img(m_poQBuf,reinterpret_cast<Img<T>**>(&m_apoBuf[d]));
-    m_aeStates[d] = uptodate;
-    return m_apoBuf[d]->asImg<T>();
-  }
-  WARNING_LOG("could not create an Image because no image/qimage was given yet!");
-  return 0;
-}
-
-// }}}
-
-void QImageConverter::setImage(const ImgBase *image){
-  // {{{ open
-
-  ICLASSERT_RETURN( image );
-  depth d = image->getDepth();
-
-  for(int i=0;i<5;i++){
-    if(i==d){
-      if(m_apoBuf[i] && m_aeStates[i] != given){
-        delete m_apoBuf[i];
       }
-      m_aeStates[i] = given;
-      m_apoBuf[i] = const_cast<ImgBase*>(image);
-    }else{
-      if(m_aeStates[i] == given){
-        m_apoBuf[i] = 0;
-      }
-      m_aeStates[i] = undefined;
+      WARNING_LOG("could not create a QImage because no image/qimage was given yet!");
+      return 0;
     }
-  }  
-  if(m_eQImageState == given){
-    m_poQBuf = 0;
-  }
-  m_eQImageState = undefined;
-}
 
-// }}}
+    // }}}
 
-void QImageConverter::setQImage(const QImage *qimage){
-  // {{{ open
+    const ImgBase *QImageConverter::getImgBase(depth d){
+      // {{{ open
 
-  ICLASSERT_RETURN( qimage );
-  ICLASSERT_RETURN( !qimage->isNull() );
+      switch(d){
+        case depth8u:  return getImg<icl8u>();
+        case depth16s: return getImg<icl16s>();
+        case depth32s: return getImg<icl32s>();
+        case depth32f: return getImg<icl32f>();
+        case depth64f: return getImg<icl64f>();
+        default:
+          ICL_INVALID_DEPTH;
+      }
+      return 0;
+    }
+
+    // }}}
+
+    template<class T>
+    const Img<T> *QImageConverter::getImg(){
+      // {{{ open
+
+      depth d = getDepth<T>();
+      if(m_aeStates[d] < 2) return m_apoBuf[d]->asImg<T>();
+      // else find a given image
+      for(int i=0;i<5;i++){
+        if(i!=d && m_aeStates[i] < 2){
+          //      m_apoBuf[d] = m_apoBuf[i]->deepCopy(m_apoBuf[d]);
+          m_apoBuf[d] = m_apoBuf[i]->convert(m_apoBuf[d]->asImg<T>());
+          m_aeStates[d] = uptodate;
+          return m_apoBuf[d]->asImg<T>();
+        }
+      }
+      // check if the qimage was given
+      if(m_eQImageState < 2){
+        qimage_to_img(m_poQBuf,reinterpret_cast<Img<T>**>(&m_apoBuf[d]));
+        m_aeStates[d] = uptodate;
+        return m_apoBuf[d]->asImg<T>();
+      }
+      WARNING_LOG("could not create an Image because no image/qimage was given yet!");
+      return 0;
+    }
+
+    // }}}
+
+    void QImageConverter::setImage(const ImgBase *image){
+      // {{{ open
+
+      ICLASSERT_RETURN( image );
+      depth d = image->getDepth();
+
+      for(int i=0;i<5;i++){
+        if(i==d){
+          if(m_apoBuf[i] && m_aeStates[i] != given){
+            delete m_apoBuf[i];
+          }
+          m_aeStates[i] = given;
+          m_apoBuf[i] = const_cast<ImgBase*>(image);
+        }else{
+          if(m_aeStates[i] == given){
+            m_apoBuf[i] = 0;
+          }
+          m_aeStates[i] = undefined;
+        }
+      }  
+      if(m_eQImageState == given){
+        m_poQBuf = 0;
+      }
+      m_eQImageState = undefined;
+    }
+
+    // }}}
+
+    void QImageConverter::setQImage(const QImage *qimage){
+      // {{{ open
+
+      ICLASSERT_RETURN( qimage );
+      ICLASSERT_RETURN( !qimage->isNull() );
   
-  for(int i=0;i<5;i++){
-    if(m_apoBuf[i] && m_aeStates[i] == given){
-      m_apoBuf[i] = 0;
+      for(int i=0;i<5;i++){
+        if(m_apoBuf[i] && m_aeStates[i] == given){
+          m_apoBuf[i] = 0;
+        }
+        m_aeStates[i] = undefined;
+      }
+      if(m_poQBuf && m_eQImageState != given){
+        delete m_poQBuf;
+      }
+      m_poQBuf = const_cast<QImage*>(qimage);
+      m_eQImageState = given;
     }
-    m_aeStates[i] = undefined;
-  }
-  if(m_poQBuf && m_eQImageState != given){
-    delete m_poQBuf;
-  }
-  m_poQBuf = const_cast<QImage*>(qimage);
-  m_eQImageState = given;
-}
 
-// }}}
+    // }}}
+  } // namespace qt
 
  
 } // namespace icl

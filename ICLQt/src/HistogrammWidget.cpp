@@ -37,6 +37,9 @@
 
 #include <QtGui/QPainter>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
   namespace qt{
     static inline float median_of_5(const float *p){

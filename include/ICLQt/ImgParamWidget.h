@@ -59,10 +59,10 @@ namespace icl{
       void formatChanged(const QString &val);
       void depthChanged(const QString &val);
   
-      void setup(int width, int height, int d, int core::format);
+      void setup(int width, int height, int d, int format);
       
       signals:
-      void somethingChanged(int width, int height, int d, int core::format);
+      void somethingChanged(int width, int height, int d, int format);
   
       
       private:

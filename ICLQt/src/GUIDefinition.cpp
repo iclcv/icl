@@ -44,6 +44,8 @@
 #include <list>
 
 using namespace std;
+using namespace icl::utils;
+using namespace icl::core;
 
 namespace icl{
   namespace qt{
@@ -101,7 +103,7 @@ namespace icl{
     
     
     
-    GUIDefinition::GUIDefinition(const std::string &def, GUI *gui, QLayout *parentLayout, icl::ProxyLayout *proxyLayout, QWidget *parentWidget)
+    GUIDefinition::GUIDefinition(const std::string &def, GUI *gui, QLayout *parentLayout, icl::qt::ProxyLayout *proxyLayout, QWidget *parentWidget)
       // {{{ open
       :m_sDefinitionString(def),m_iMargin(2),m_iSpacing(2),m_poGUI(gui),m_poParentLayout(parentLayout),
        m_poParentWidget(parentWidget),m_poParentProxyLayout(proxyLayout){

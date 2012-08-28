@@ -37,6 +37,8 @@
 #include <ICLUtils/ThreadUtils.h>
 #include <ICLUtils/ProgArg.h>
 
+using namespace icl::utils;
+
 namespace icl{
   namespace qt{
   

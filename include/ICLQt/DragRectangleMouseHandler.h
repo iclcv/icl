@@ -74,7 +74,7 @@ namespace icl{
         minimum rectangle dimension is only used for the 'real' 
         rectangle, not for the dragged one.
     */
-    class DragRectangleMouseHandler : public MouseHandler, public Lockable{
+    class DragRectangleMouseHandler : public MouseHandler, public utils::Lockable{
       protected:
       utils::Point m_origin; //!< point where the drag gesture started
       utils::Point m_curr;   //!< current mouse-position while dragging
@@ -82,13 +82,13 @@ namespace icl{
       utils::Rect m_rect;    //!< last defined rectangle
   
       public:
-      Color4D m_edge; //!< edge color for the defined rectangle
-      Color4D m_fill; //!< fill color for the defined rectangle
-      Color4D m_outer;//!< color that is used for everything outside the rectangle
+      core::Color4D m_edge; //!< edge color for the defined rectangle
+      core::Color4D m_fill; //!< fill color for the defined rectangle
+      core::Color4D m_outer;//!< color that is used for everything outside the rectangle
   
-      Color4D m_edgeWhileDrag; //!< edge color for the dragged rectangle
-      Color4D m_fillWhileDrag; //!< fill color for the dragged rectangle
-      Color4D m_outerWhileDrag;//!< as m_outer, but for the dragged rectangle
+      core::Color4D m_edgeWhileDrag; //!< edge color for the dragged rectangle
+      core::Color4D m_fillWhileDrag; //!< fill color for the dragged rectangle
+      core::Color4D m_outerWhileDrag;//!< as m_outer, but for the dragged rectangle
   
       /// Default constructor with optionally given minimum dimension
       /** \see \ref MD */

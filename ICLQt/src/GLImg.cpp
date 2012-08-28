@@ -44,8 +44,6 @@
 #endif
 
 #include <ICLUtils/Array2D.h>
-
-#include <ICLCV/Quick.h>
 #include <ICLUtils/Rect32f.h>
 #include <ICLUtils/Lockable.h>
 
@@ -55,6 +53,9 @@
 #include <QtCore/QMutex>
 #include <QtOpenGL/QGLContext>
 #endif
+
+using namespace icl::utils;
+using namespace icl::core;
 
 namespace icl{
   namespace qt{
@@ -212,7 +213,7 @@ namespace icl{
   #endif
     
     template<class T>
-    static inline void histo_entry(T v, double m, vector<int> &h, unsigned int n, double r){
+    static inline void histo_entry(T v, double m, std::vector<int> &h, unsigned int n, double r){
       // todo check 1000 times +5 times (3Times done!)
       ++h[ floor( n*(v-m)/(r+1)) ];
     }
@@ -384,11 +385,11 @@ namespace icl{
         const int w = src.getWidth(), h = src.getHeight(), c = src.getChannels();
         const int M = maxCellSize, nx = ceil(float(w)/M), ny = ceil(float(h)/M);
         
-        if(imageSize != Size(nx,ny) || imageChannels != c || imageDepth != icl::getDepth<InternalType>()
+        if(imageSize != Size(nx,ny) || imageChannels != c || imageDepth != core::getDepth<InternalType>()
            || maxCellSize != this->maxCellSize){
           this->maxCellSize = maxCellSize;
           imageSize = Size(w,h);
-          imageDepth = icl::getDepth<InternalType>();
+          imageDepth = core::getDepth<InternalType>();
           imageChannels  = c;
           imageFormat = src.getFormat();
           

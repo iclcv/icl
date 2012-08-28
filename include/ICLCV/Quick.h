@@ -39,7 +39,27 @@
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Exception.h>
 
+namespace icl{
+  namespace utils{}
+  namespace math{}
+  namespace core{}
+  namespace filter{}
+  namespace io{}
+  namespace qt{}
+  namespace geom{}
+  namespace cv{}
+  namespace markers{}
+}
 using namespace icl;
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
+using namespace icl::filter;
+using namespace icl::io;
+using namespace icl::qt;
+using namespace icl::geom;
+using namespace icl::cv;
+using namespace icl::markers;
 
 /// just used by default
 using namespace std;
@@ -54,14 +74,14 @@ namespace icl{
     std::string openFileDialog(const std::string &filter="", 
                                const std::string &caption="open file",
                                const std::string &initialDirectory="", 
-                               void *parentWidget=0) throw (ICLException);
+                               void *parentWidget=0) throw (utils::ICLException);
   
     /// uses Qt to spawn a save-file dialog with given filter
     /** throws an exception if cancel was pressed */
     std::string saveFileDialog(const std::string &filter="", 
                                const std::string &caption="save file",
                                const std::string &initialDirectory="", 
-                               void *parentWidget=0) throw (ICLException);
+                               void *parentWidget=0) throw (utils::ICLException);
   
     /// executes the given command as a child process and returns it output
     /** Internally, popen is used */
@@ -280,7 +300,7 @@ namespace icl{
     
     /** \cond affinity version */
     inline ImgQ filter(const ImgQ &image, const std::string &filter){
-      return icl::filter<float>(image,filter);
+      return icl::qt::filter<float>(image,filter);
     }
     /** \endcond */
   

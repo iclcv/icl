@@ -113,12 +113,12 @@ namespace icl{
           Images can be set by calling setImage, setQImage, or by using
           one of the not empty constructors.    
       */
-      const core::ImgBase *getImgBase(core::depth d=depth8u);
+      const core::ImgBase *getImgBase(core::depth d=core::depth8u);
   
   
       /// template returing an image of given datatype
       template<class T>
-      const core::core::Img<T> *getImg();
+      const core::Img<T> *getImg();
   
       /// sets the current source image of type core::Img8u or Img32f
       /** All further set images get the state "outdated". Hence all later

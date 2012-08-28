@@ -36,6 +36,9 @@
 #include <ICLQt/DrawWidget.h>
 #include <ICLCore/ImgBase.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
   namespace qt{
      MultiDrawHandle::MultiDrawHandle():

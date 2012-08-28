@@ -77,8 +77,12 @@ namespace icl{
       
       virtual void line(const utils::Point32f &a, const utils::Point32f &b);
       virtual void point(const utils::Point32f &p);
-      virtual void image(const utils::Rect32f &r,core::ImgBase *image, PaintEngine::AlignMode mode = PaintEngine::Justify, scalemode sm=interpolateNN);
-      virtual void image(const utils::Rect32f &r,const QImage &image, PaintEngine::AlignMode mode = PaintEngine::Justify, scalemode sm=interpolateNN);
+      virtual void image(const utils::Rect32f &r,core::ImgBase *image, 
+                         PaintEngine::AlignMode mode = PaintEngine::Justify, 
+                         core::scalemode sm=core::interpolateNN);
+      virtual void image(const utils::Rect32f &r,const QImage &image, 
+                         PaintEngine::AlignMode mode = PaintEngine::Justify, 
+                         core::scalemode sm=core::interpolateNN);
       virtual void rect(const utils::Rect32f &r);
       virtual void triangle(const utils::Point32f &a, const utils::Point32f &b, const utils::Point32f &c);
       virtual void quad(const utils::Point32f &a, const utils::Point32f &b, const utils::Point32f &c, const utils::Point32f &d);

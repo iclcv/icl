@@ -35,6 +35,9 @@
 #include <ICLQt/MouseEvent.h>
 #include <QtGui/QApplication>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
   namespace qt{
     

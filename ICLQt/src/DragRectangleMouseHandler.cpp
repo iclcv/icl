@@ -35,6 +35,9 @@
 #include <ICLQt/DragRectangleMouseHandler.h>
 #include <ICLQt/DrawWidget.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
   namespace qt{
   

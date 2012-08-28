@@ -37,6 +37,9 @@
 #include <ICLQt/QImageConverter.h>
 
 #include <map>
+using namespace icl::utils;
+using namespace icl::core;
+using namespace icl::qt;
 
 namespace icl{
   namespace qt{

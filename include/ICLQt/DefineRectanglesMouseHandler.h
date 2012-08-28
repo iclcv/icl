@@ -101,16 +101,16 @@ namespace icl{
         All methods of this class are implemented in a thread-saft manner. Therefore
         no additional locking is neccessary (and Lockable is inherited protectedly)
     */
-    class DefineRectanglesMouseHandler :  public MouseHandler, protected Lockable{
+    class DefineRectanglesMouseHandler :  public MouseHandler, protected utils::Lockable{
       public:
       /// Cummulative Options structure
       class Options{
         friend class DefineRectanglesMouseHandler;
         /// Constructor showing default options
-        Options(const Color4D &edgeColor=Color4D(0,255,0,255), 
-                const Color4D &fillColor=Color4D(0,255,0,50), 
-                const Color4D &centerColor=Color4D(0,255,0,255),
-                const Color4D &metaColor=Color4D(0,255,0,255),
+        Options(const core::Color4D &edgeColor=core::Color4D(0,255,0,255), 
+                const core::Color4D &fillColor=core::Color4D(0,255,0,50), 
+                const core::Color4D &centerColor=core::Color4D(0,255,0,255),
+                const core::Color4D &metaColor=core::Color4D(0,255,0,255),
                 int handleWidth=3, bool visualizeCenter=false,
                 bool visualizeHovering=true,
                 bool showOffsetText=false, 
@@ -120,10 +120,10 @@ namespace icl{
                 int lineWidth=1,
                 float textSize=9);
         public:
-        Color4D edgeColor;     //!< edge color for rect visualization
-        Color4D fillColor;     //!< fill color for rect visualization (set alpha to 0 to have no fill)
-        Color4D centerColor;   //!< edge color used for the center visualization
-        Color4D metaColor;     //!< text color for visualization of meta-data
+        core::Color4D edgeColor;     //!< edge color for rect visualization
+        core::Color4D fillColor;     //!< fill color for rect visualization (set alpha to 0 to have no fill)
+        core::Color4D centerColor;   //!< edge color used for the center visualization
+        core::Color4D metaColor;     //!< text color for visualization of meta-data
         int handleWidth;       //!< handle width (amount of pixels, you can be of an edge and still drag it)
         bool visualizeCenter;  //!< if true, the center of each rectangle is visualized
         bool visualizeHovering;//!< if true, the rects boundary are drawn thicker if they are hovered
@@ -190,7 +190,7 @@ namespace icl{
         void visualize(ICLDrawWidget &w);
   
         /// this can be used to attach meta data to rectangles
-        Any meta;
+        utils::Any meta;
       };
     
       
@@ -268,16 +268,16 @@ namespace icl{
       int getMaxRects() const;
       
       /// gets the meta data associated with rect at given index
-      const Any &getMetaData(int index) const;
+      const utils::Any &getMetaData(int index) const;
       
       /// gets the meta data associated with rect at given index
-      const Any &getMetaDataAt(int x, int y) const;
+      const utils::Any &getMetaDataAt(int x, int y) const;
       
       /// associates some meta data with rect at given index
-      void setMetaData(int index, const Any &data);
+      void setMetaData(int index, const utils::Any &data);
   
       /// sets the meta data at the rect at given x,y-position
-      void setMetaDataAt(int x, int y, const Any &data);
+      void setMetaDataAt(int x, int y, const utils::Any &data);
   
       /// brings one rectangle to the front internally
       void bringToFront(int idx);
