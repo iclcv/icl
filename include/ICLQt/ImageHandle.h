@@ -56,13 +56,13 @@ namespace icl{
       ImageHandle(ICLWidget *w, GUIWidget *guiw):GUIHandle<ICLWidget>(w,guiw){}
       
       /// make the wrapped ICLWidget show a given image
-      void setImage(const ImgBase *image);
+      void setImage(const core::ImgBase *image);
       
       /// make the wrapped ICLWidget show a given image (as set Image)
-      void operator=(const ImgBase *image) { setImage(image); }
+      void operator=(const core::ImgBase *image) { setImage(image); }
   
       /// make the wrapped ICLWidget show a given image (as set Image)
-      void operator=(const ImgBase &image) { setImage(&image); }
+      void operator=(const core::ImgBase &image) { setImage(&image); }
       
       /// calles updated internally
       void render();
@@ -73,7 +73,7 @@ namespace icl{
   
       /// complex callbacks are not allowed for image-components (this method will throw an exception)
       virtual void registerCallback(const GUI::ComplexCallback&, const std::string &){
-        throw ICLException("ImageHandle::registerCallback: you cannot register "
+        throw utils::ICLException("ImageHandle::registerCallback: you cannot register "
                            "GUI::ComplexCallback instances to an image GUI component");
       }
       

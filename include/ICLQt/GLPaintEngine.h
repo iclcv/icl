@@ -75,15 +75,15 @@ namespace icl{
       virtual void linewidth(float w);
       virtual void pointsize(float s);
       
-      virtual void line(const Point32f &a, const Point32f &b);
-      virtual void point(const Point32f &p);
-      virtual void image(const Rect32f &r,ImgBase *image, PaintEngine::AlignMode mode = PaintEngine::Justify, scalemode sm=interpolateNN);
-      virtual void image(const Rect32f &r,const QImage &image, PaintEngine::AlignMode mode = PaintEngine::Justify, scalemode sm=interpolateNN);
-      virtual void rect(const Rect32f &r);
-      virtual void triangle(const Point32f &a, const Point32f &b, const Point32f &c);
-      virtual void quad(const Point32f &a, const Point32f &b, const Point32f &c, const Point32f &d);
-      virtual void ellipse(const Rect32f &r);
-      virtual void text(const Rect32f &r, const std::string text, PaintEngine::AlignMode mode = PaintEngine::Centered);
+      virtual void line(const utils::Point32f &a, const utils::Point32f &b);
+      virtual void point(const utils::Point32f &p);
+      virtual void image(const utils::Rect32f &r,core::ImgBase *image, PaintEngine::AlignMode mode = PaintEngine::Justify, scalemode sm=interpolateNN);
+      virtual void image(const utils::Rect32f &r,const QImage &image, PaintEngine::AlignMode mode = PaintEngine::Justify, scalemode sm=interpolateNN);
+      virtual void rect(const utils::Rect32f &r);
+      virtual void triangle(const utils::Point32f &a, const utils::Point32f &b, const utils::Point32f &c);
+      virtual void quad(const utils::Point32f &a, const utils::Point32f &b, const utils::Point32f &c, const utils::Point32f &d);
+      virtual void ellipse(const utils::Rect32f &r);
+      virtual void text(const utils::Rect32f &r, const std::string text, PaintEngine::AlignMode mode = PaintEngine::Centered);
   
       /// brightness-constrast intensity adjustment (for images only)
       virtual void bci(float brightness=0, float contrast=0, float intensity=0);
@@ -102,13 +102,13 @@ namespace icl{
         return m_pointsize;
       }
       // estimates the size of a given text
-      Size estimateTextBounds(const std::string &text) const;
+      utils::Size estimateTextBounds(const std::string &text) const;
   
   
       protected:
-      void setupRasterEngine(const Rect32f& r, const Size32f &s, PaintEngine::AlignMode mode);
-      void setPackAlignment(depth d, int linewidth);
-      void setupPixelTransfer(depth d, float brightness, float contrast, float intensity);
+      void setupRasterEngine(const utils::Rect32f& r, const utils::Size32f &s, PaintEngine::AlignMode mode);
+      void setPackAlignment(core::depth d, int linewidth);
+      void setupPixelTransfer(core::depth d, float brightness, float contrast, float intensity);
   
       QGLWidget *m_widget;
       
@@ -122,7 +122,7 @@ namespace icl{
       QFont m_font;
   
       private:
-      ImgBase *m_incompDepthBuf;
+      core::ImgBase *m_incompDepthBuf;
     };
   } // namespace qt
 }// namespace

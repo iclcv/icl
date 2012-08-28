@@ -262,12 +262,12 @@ namespace icl{
       void scatter(const T *xs, const T *ys, int num, int xStride = 1, int yStride=1, bool connect=false);
   
       /// adds a scatter plot from given vector of points
-      inline void scatter(const std::vector<Point32f> &ps, bool connect=false){
+      inline void scatter(const std::vector<utils::Point32f> &ps, bool connect=false){
         scatter(&ps[0].x, &ps[0].y, ps.size(), 2, 2, connect);
       }
       
       /// adds a scatter plot from given vector of points
-      inline void scatter(const std::vector<Point> &ps, bool connect=false){
+      inline void scatter(const std::vector<utils::Point> &ps, bool connect=false){
         scatter(&ps[0].x, &ps[0].y, ps.size(), 2, 2, connect);
       }
   
@@ -307,42 +307,42 @@ namespace icl{
       }
       
       /// draws a line annotation using the current color
-      void line(const Point32f &a, const Point32f &b);
+      void line(const utils::Point32f &a, const utils::Point32f &b);
       
       /// draws a line  annotation given 4 coordinates
       inline void line(float x1, float y1, float x2, float y2){
-        line(Point32f(x1,y1),Point32f(x2,y2));
+        line(utils::Point32f(x1,y1),utils::Point32f(x2,y2));
       }
   
       /// draws a line strip annotation
-      void linestrip(const std::vector<Point32f> &ps, bool closedLoop=true);
+      void linestrip(const std::vector<utils::Point32f> &ps, bool closedLoop=true);
   
       /// draws a line strip annotation
-      void linestrip(const std::vector<Point> &ps, bool closedLoop=true);
+      void linestrip(const std::vector<utils::Point> &ps, bool closedLoop=true);
   
       /// draws a line strip annotation
-      void linestrip(const Point32f *ps, int num, bool closedLoop=true);
+      void linestrip(const utils::Point32f *ps, int num, bool closedLoop=true);
   
       /// draws a line strip annotation
-      void linestrip(const Point *ps, int num, bool closedLoop=true);
+      void linestrip(const utils::Point *ps, int num, bool closedLoop=true);
   
       /// draws a line strip annotation
       void linestrip(const float *xs, const float *ys, int num, bool closedLoop=true, int stride = 1);
   
       /// draws a rectangle annotation with given upper left and lower right coordinate
-      void rect(const Point32f &ul, const Point32f &lr);
+      void rect(const utils::Point32f &ul, const utils::Point32f &lr);
   
       /// draws a rectangle annotation
-      void rect(const Rect &r);
+      void rect(const utils::Rect &r);
   
       /// draws a rectangle annotation
-      void rect(const Rect32f &r);
+      void rect(const utils::Rect32f &r);
   
       /// draws a rectangle annotation
       void rect(float x, float y, float w, float h);
   
       /// draws a circle annotation
-      void circle(const Point32f &c, float r);
+      void circle(const utils::Point32f &c, float r);
   
       /// draws a circle annotation
       void circle(float cx, float cy, float r);
@@ -353,16 +353,16 @@ namespace icl{
   
       /// draws a text annotation
       /** Note.: the text anchor is always centered) */
-      void text(const Point32f &p, const std::string &text);
+      void text(const utils::Point32f &p, const std::string &text);
   
       /// draws a grid-annoation
       void grid(int nX, int nY, const float *xs, const float *ys, int stride=1);
   
       /// draws a grid-annoation
-      void grid(const Array2D<Point> &data);
+      void grid(const Array2D<utils::Point> &data);
       
       /// draws a grid-annoation
-      inline void grid(const Array2D<Point32f> &data){
+      inline void grid(const Array2D<utils::Point32f> &data){
         grid(data.getWidth(), data.getHeight(), &data(0,0).x, &data(0,0).y, 2);
       }
   
@@ -372,23 +372,23 @@ namespace icl{
       }
   
       /// draws a grid-annoation
-      inline void grid(int nX, int nY, const Point *ps){
-        grid(Array2D<Point>(nX,nY,const_cast<Point*>(ps),false));
+      inline void grid(int nX, int nY, const utils::Point *ps){
+        grid(Array2D<utils::Point>(nX,nY,const_cast<utils::Point*>(ps),false));
       }
   
       /// draws a grid-annoation
-      inline void grid(int nX, int nY, const Point32f *ps){
+      inline void grid(int nX, int nY, const utils::Point32f *ps){
         grid(nX, nY, &ps[0].x, &ps[0].y, 2);
       }
   
       /// draws a grid-annoation
-      inline void grid(int nX, int nY, const std::vector<Point32f> &ps){
+      inline void grid(int nX, int nY, const std::vector<utils::Point32f> &ps){
         grid(nX, nY, &ps[0].x, &ps[0].y, 2);
       }
   
       /// draws a grid-annoation
-      inline void grid(int nX, int nY, const std::vector<Point> &ps){
-        grid(Array2D<Point>(nX,nY, const_cast<Point*>(ps.data()), false));    
+      inline void grid(int nX, int nY, const std::vector<utils::Point> &ps){
+        grid(Array2D<utils::Point>(nX,nY, const_cast<utils::Point*>(ps.data()), false));    
       }
   
       /// draws a grid-annoation

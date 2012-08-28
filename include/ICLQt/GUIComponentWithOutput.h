@@ -59,33 +59,33 @@ namespace icl{
       }
   
       /// sets the component initial size
-      const GUIComponentWithOutput &size(const Size &size) const {
+      const GUIComponentWithOutput &size(const utils::Size &size) const {
         m_options.size = size; return *this;
       }
   
       /// sets the component initial size
       const GUIComponentWithOutput &size(int w, int h) const {
-        return size(Size(w,h));
+        return size(utils::Size(w,h));
       }
   
       /// sets the component minimum size constraint
-      const GUIComponentWithOutput &minSize(const Size &minSize) const {
+      const GUIComponentWithOutput &minSize(const utils::Size &minSize) const {
         m_options.minSize = minSize; return *this;
       }
         
       /// sets the component minimum size constraint
       const GUIComponentWithOutput &minSize(int w, int h) const {
-        return minSize(Size(w,h));
+        return minSize(utils::Size(w,h));
       }
       
       /// sets the component maximum size constraint
-      const GUIComponentWithOutput &maxSize(const Size &maxSize) const {
+      const GUIComponentWithOutput &maxSize(const utils::Size &maxSize) const {
         m_options.maxSize = maxSize; return *this;
       }
   
       /// sets the component maximum size constraint
       const GUIComponentWithOutput &maxSize(int w, int h) const {
-        return maxSize(Size(w,h));
+        return maxSize(utils::Size(w,h));
       }
   
       /// hides the component if the given flag is true
@@ -115,33 +115,33 @@ namespace icl{
       }
       
       /// sets the component initial size
-      GUIComponentWithOutput &size(Size &size)  {
+      GUIComponentWithOutput &size(utils::Size &size)  {
         m_options.size = size; return *this;
       }
       
       /// sets the component initial size
       GUIComponentWithOutput &size(int w, int h)  {
-        m_options.size = Size(w,h); return *this;
+        m_options.size = utils::Size(w,h); return *this;
       }
       
       /// sets the component minimum size constraint
-      GUIComponentWithOutput &minSize(Size &minSize)  {
+      GUIComponentWithOutput &minSize(utils::Size &minSize)  {
         m_options.minSize = minSize; return *this;
       }
   
       /// sets the component minimum size constraint
       GUIComponentWithOutput &minSize(int w, int h)  {
-        m_options.minSize = Size(w,h); return *this;
+        m_options.minSize = utils::Size(w,h); return *this;
       }
       
       /// sets the component maximum size constraint
-      GUIComponentWithOutput &maxSize(Size &maxSize)  {
+      GUIComponentWithOutput &maxSize(utils::Size &maxSize)  {
         m_options.maxSize = maxSize; return *this;
       }
       
       /// sets the component maximum size constraint
       GUIComponentWithOutput &maxSize(int w, int h)  {
-        m_options.maxSize = Size(w,h); return *this;
+        m_options.maxSize = utils::Size(w,h); return *this;
       }
   
       /// hides the component if the given flag is true

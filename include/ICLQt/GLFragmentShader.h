@@ -34,7 +34,7 @@
 
 #pragma once
 
-#include <ICLUtils/Uncopyable.h>
+#include <ICLUtils/utils::Uncopyable.h>
 #include <ICLUtils/Exception.h>
 
 namespace icl{
@@ -43,14 +43,14 @@ namespace icl{
     /** The GLFragmentShader class can be used to create simple fragment shader programs.
         
     */
-    class GLFragmentShader : public Uncopyable{
+    class GLFragmentShader : public utils::Uncopyable{
       struct Data;
       Data *m_data;
       
       void create();
       
       public:
-      GLFragmentShader(const std::string &program, bool createOnFirstActivate=true) throw (ICLException);
+      GLFragmentShader(const std::string &program, bool createOnFirstActivate=true) throw (utils::ICLException);
       ~GLFragmentShader();
       
       void activate();

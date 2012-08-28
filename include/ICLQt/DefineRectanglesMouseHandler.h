@@ -137,8 +137,8 @@ namespace icl{
   
       protected:
       
-      /// Internally used Rect structure
-      struct DefinedRect : public Rect{
+      /// Internally used utils::Rect structure
+      struct DefinedRect : public utils::Rect{
         /// grant private member access to DefineRectanglesMouseHandler
         friend class DefineRectanglesMouseHandler;
   
@@ -160,19 +160,19 @@ namespace icl{
         State states[4];
   
         /// Internal help variable for smooth shifting of the whole rectangle
-        Point allDragOffs;
+        utils::Point allDragOffs;
   
         /// a pointer to the parent DefineRectanglesMouseHandler's Option structure
         DefineRectanglesMouseHandler::Options *options;
         
         /// internal helper method
-        Rect edge(Edge e) const;
+        utils::Rect edge(Edge e) const;
         /// internal helper method
-        Rect edgei(int i) const;
+        utils::Rect edgei(int i) const;
         /// internal helper method
-        Rect inner() const;
+        utils::Rect inner() const;
         /// internal helper method
-        Rect outer() const;
+        utils::Rect outer() const;
         /// internal helper method
         bool allHovered() const;
         /// internal helper method
@@ -181,7 +181,7 @@ namespace icl{
         bool anyDragged() const;
   
         /// Constructor
-        DefinedRect(const Rect &r=Rect::null, DefineRectanglesMouseHandler::Options *options=0);
+        DefinedRect(const utils::Rect &r=utils::Rect::null, DefineRectanglesMouseHandler::Options *options=0);
   
         /// event processing if the rectangle was hit
         State event(const MouseEvent &e);
@@ -197,8 +197,8 @@ namespace icl{
       int maxRects; //!< maximum count of rectangles
       int minDim;   //!< minimum dimension of rectangles
       std::vector<DefinedRect> rects; //!< list of defined rectanges
-      Point currBegin; //!< used for the currently defined rectangle
-      Point currCurr;  //!< used for the currently defined rectangle
+      utils::Point currBegin; //!< used for the currently defined rectangle
+      utils::Point currCurr;  //!< used for the currently defined rectangle
       DefinedRect *draggedRect; //!< use if any rectangle is currently moved or manipulated
       Options options;  //!< options structure
       public:
@@ -233,7 +233,7 @@ namespace icl{
       
       /// Adds a new rectangels to the internal list 
       /** The new rectangle becomes manipulatable automatically and immediately */
-      void addRect(const Rect &rect);
+      void addRect(const utils::Rect &rect);
       
       /// sets the maximum number of possible rects (more rectangles cannot be added or defined)
       /** @see \ref MRC */
@@ -246,20 +246,20 @@ namespace icl{
       int getNumRects() const;
       
       /// returns the rectangle at given index
-      /** If index is < 0 or >= getNumRects(), Rect::null is returned */
-      Rect getRectAtIndex(int index) const;
+      /** If index is < 0 or >= getNumRects(), utils::Rect::null is returned */
+      utils::Rect getRectAtIndex(int index) const;
       
       /// returns all current rects
-      std::vector<Rect> getRects() const;
+      std::vector<utils::Rect> getRects() const;
       
       /// returns the rectangle at given x/y location
       /** Here only the top-most rectangle is returned.
           If you want to obtain all rectangles, that contain the given
           position, you have to use the getAllRects-method */
-      Rect getRectAt(int x, int y) const;
+      utils::Rect getRectAt(int x, int y) const;
       
       /// returns all rectangles that contain the given location
-      std::vector<Rect> getAllRectsAt(int x, int y) const;
+      std::vector<utils::Rect> getAllRectsAt(int x, int y) const;
       
       /// returns the current minimun rectangle dimension
       int getMinDim() const;

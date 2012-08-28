@@ -84,7 +84,7 @@ namespace icl{
         The annotaiton iterface is hold very low-level. Perhaps extending classes
         provide simpler interfaces.
     */
-    class AbstractPlotWidget : public ThreadedUpdatableWidget, public Configurable{
+    class AbstractPlotWidget : public ThreadedUpdatableWidget, public utils::Configurable{
       struct Data; //!< pimpl
       Data *data;  //!< pimpl pointer
   
@@ -168,7 +168,7 @@ namespace icl{
         QBrush fillBrush; //!< fill brush (this is e.g. used to fill the area beyond a function graph)
       };
       /// typedef for managed row-style pointers
-      typedef SmartPtr<Pen> PenPtr;
+      typedef utils::SmartPtr<Pen> PenPtr;
   
   
       /// updates the screen
@@ -177,7 +177,7 @@ namespace icl{
   
       /// returns the given data vieport
       /** in subclasses, the data viewport can be estimated from the given data dynamically  */
-      virtual Rect32f getDataViewPort() const;
+      virtual utils::Rect32f getDataViewPort() const;
       
       /// sets the default dataviewport
       /** if width is 0, the xrange is taken from the data
@@ -188,13 +188,13 @@ namespace icl{
           - viewport.right() is maxX
           - viewport.bottom() is maxY
           */
-      void setDataViewPort(const Rect32f &viewPort);
+      void setDataViewPort(const utils::Rect32f &viewPort);
   
       /// sets the default viewport
-      /** @see setDAtaViewPort(const Rect32f&) 
+      /** @see setDAtaViewPort(const utils::Rect32f&) 
           <b>Important:</b> The range length' must be positive (otherwise, they are swapped)
           */
-      void setDataViewPort(const Range32f &xrange, const Range32f &yrange);
+      void setDataViewPort(const utils::Range32f &xrange, const utils::Range32f &yrange);
   
       /// locks drawing / data updates in subclasses
       void lock() const;
@@ -269,11 +269,11 @@ namespace icl{
       virtual bool drawData(QPainter &p) = 0;
       
       /// draws the ledgend
-      virtual void drawLegend(QPainter &p,const Rect &where, bool horizontal);
+      virtual void drawLegend(QPainter &p,const utils::Rect &where, bool horizontal);
   
   
       /// draws a default ledgen into the given quad
-      void drawDefaultLedgend(QPainter &p,const Rect &where, bool horizontal, 
+      void drawDefaultLedgend(QPainter &p,const utils::Rect &where, bool horizontal, 
                               const std::vector<std::string> &rowNames,
                               const std::vector<PenPtr> &pens);
   
@@ -292,7 +292,7 @@ namespace icl{
       float winToDrawY(int winY) const;
   
       /// converts a window coordinates to logical drawing coordinates
-      Point32f winToDraw(const Point &p) const;
+      utils::Point32f winToDraw(const utils::Point &p) const;
       
       /// convert logical drawing x coordinate to window coordinate
       int drawToWinX(float drawX) const;
@@ -301,10 +301,10 @@ namespace icl{
       int drawToWinY(float drawY) const;
   
       /// convert logical drawing coordinates to window coordinates
-      Point drawToWin(const Point32f &p) const;
+      utils::Point drawToWin(const utils::Point32f &p) const;
   
       /// returns the current data viewport w.r.t. the current zoom
-      Rect32f getDynamicDataViewPort() const;
+      utils::Rect32f getDynamicDataViewPort() const;
       
       /// utility class for scoped locking
       struct Locker{

@@ -98,7 +98,7 @@ void init(){
 
 void run(){
   static GenericGrabber g(FROM_PROGARG("-input"));
-  g.setDesiredSize(Size::VGA);
+  g.setDesiredSize(utils::Size::VGA);
   
   // extract "draw" component as DrawHandle from "gui" the
   // DrawHandle provides direct access to the underlying 
@@ -117,8 +117,8 @@ void run(){
   
 
   // detect connected components
-  vector<vector<Point> > pxs = pixels(lm,0,1<<20,255);
-  vector<vector<Point> > bds = boundaries(lm,0,1<<20,255);
+  vector<vector<utils::Point> > pxs = pixels(lm,0,1<<20,255);
+  vector<vector<utils::Point> > bds = boundaries(lm,0,1<<20,255);
 
   // visualize selected image 
   ImgQ *ims[3] = { &im, &cm, &lm};
@@ -223,10 +223,10 @@ int main(int n, char **ppc){
         <b>note:</b> If image has four channels, the last channel is used as alpha channel
         where a pixel value of 0 means invisible=100%transparent and 255 means no transparency
     */
-    void image(ImgBase *image, float x, float y, float w, float h);
+    void image(core::ImgBase *image, float x, float y, float w, float h);
     
     /// convenience function for image using an image rect 
-    inline void image(ImgBase *image, const Rect &r){
+    inline void image(core::ImgBase *image, const utils::Rect &r){
       this->image(image,r.x,r.y,r.width,r.height);
     }
     
@@ -240,7 +240,7 @@ int main(int n, char **ppc){
                ---___c  
         </pre>
     */
-    void image(const ImgBase *image, const float a[2], const float b[2],
+    void image(const core::ImgBase *image, const float a[2], const float b[2],
                const float c[2], const float d[2]);
     
     /// draws a string into the given rect
@@ -261,20 +261,20 @@ int main(int n, char **ppc){
     }
     
     /// draws the text at given position p
-    void text(const std::string &text, const Point32f &p, float fontsize=10){
+    void text(const std::string &text, const utils::Point32f &p, float fontsize=10){
       this->text(text,p.x,p.y,-1,-1,fontsize);
     }
 
     /// draws a point at the given location
     void point(float x, float y); 
 
-    /// convenience wrapper for Point types
-    void point(const Point &p){
+    /// convenience wrapper for utils::Point types
+    void point(const utils::Point &p){
       this->point(p.x,p.y);
     }
 
-    /// convenience wrapper for Point32f types
-    void point(const Point32f &p){
+    /// convenience wrapper for utils::Point32f types
+    void point(const utils::Point32f &p){
       this->point(p.x,p.y);
     }
 
@@ -286,39 +286,39 @@ int main(int n, char **ppc){
     }
     
     /// draws a set of points
-    /** for relative Point coordinates the factors can be set
+    /** for relative utils::Point coordinates the factors can be set
         point i is drawn at pts[i].x/xfac and pts[i].y/yfac
     **/
-    void points(const std::vector<Point> &pts, int xfac=1, int yfac=1);
+    void points(const std::vector<utils::Point> &pts, int xfac=1, int yfac=1);
 
     /// draws a set of points
-    void points(const std::vector<Point32f> &pts);
+    void points(const std::vector<utils::Point32f> &pts);
     
     /// convenience wrapper for arbitrary types, that provide an index operator [int]
     template<class VectorType>
     void point(const std::vector<VectorType> &points){
       icl_given_type_has_no_int_index_operator(points[0]);
-      std::vector<Point32f> tmp(points.size());
-      for(unsigned int i=0;i<points.size();++i) tmp[i] = Point32f(points[i][0],points[i][1]);
+      std::vector<utils::Point32f> tmp(points.size());
+      for(unsigned int i=0;i<points.size();++i) tmp[i] = utils::Point32f(points[i][0],points[i][1]);
       this->points(tmp);
     }
     
     
     /// draws a set of connected points
-    /** for relative Point coordinates the factors can be set
+    /** for relative utils::Point coordinates the factors can be set
         point i is drawn at pts[i].x/xfac and pts[i].y/yfac
     **/
-    void linestrip(const std::vector<Point> &pts, bool closeLoop=true, int xfac=1, int yfac=1);
+    void linestrip(const std::vector<utils::Point> &pts, bool closeLoop=true, int xfac=1, int yfac=1);
 
     /// draws a set of connected points
-    void linestrip(const std::vector<Point32f> &pts, bool closeLoop=true);
+    void linestrip(const std::vector<utils::Point32f> &pts, bool closeLoop=true);
     
     
     /// draws a line from point (x1,y1) to point (x2,y2)
     void line(float x1, float y1, float x2, float y2);
     
     /// convenience function for drawing lines between two points
-    void line(const Point32f &a, const Point32f &b);
+    void line(const utils::Point32f &a, const utils::Point32f &b);
 
     /// convenience wrapper for arbitrary types, that provide an index operator [int]
     template<class VectorTypeA, class VectorTypeB>
@@ -332,59 +332,59 @@ int main(int n, char **ppc){
     void arrow(float ax, float ay, float bx, float by, float capsize=10);
     
     /// draws an arrow from a to b (arrow cap is at b)
-    void arrow(const Point32f &a, const Point32f &b, float capsize=10);
+    void arrow(const utils::Point32f &a, const utils::Point32f &b, float capsize=10);
     
     /// draws a rect with given parameters
     void rect(float x, float y, float w, float h);
 
     /// convenience function for drawing float rects
-    void rect(const Rect32f &r);
+    void rect(const utils::Rect32f &r);
 
-    /// draws a rect from a icl Rect structure
-    void rect(const Rect &r);
+    /// draws a rect from a icl utils::Rect structure
+    void rect(const utils::Rect &r);
 
     /// draws a triangle defined by 3 points
     void triangle(float x1, float y1, float x2, float y2, float x3, float y3); 
     
     /// draws a triangle defined by 3 points
-    void triangle(const Point32f &a, const Point32f &b, const Point32f &c);
+    void triangle(const utils::Point32f &a, const utils::Point32f &b, const utils::Point32f &c);
     
     /// draws a quad with given 4 points 
     void quad(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4); 
 
     /// draws a quad with given 4 points 
-    void quad(const Point32f &a, const Point32f &b, const Point32f &c, const Point32f &d);
+    void quad(const utils::Point32f &a, const utils::Point32f &b, const utils::Point32f &c, const utils::Point32f &d);
 
     /// draws an ellipse with given parameters (w==H --> circle)
     void ellipse(float x, float y, float w, float h);
     
     /// draws an ellipse into given rectangle
-    void ellipse(const Rect &r);
+    void ellipse(const utils::Rect &r);
     
     /// draws an ellipse into given rectangle
-    void ellipse(const Rect32f &r);
+    void ellipse(const utils::Rect32f &r);
     
     /// draws a circle with given center and radius
     void circle(float cx, float cy, float r);
     
     /// draws a circle with given center and radius
-    void circle(const Point32f &center, float radius);
+    void circle(const utils::Point32f &center, float radius);
     
     /// draws a convex polygon
-    void polygon(const std::vector<Point32f> &ps);
+    void polygon(const std::vector<utils::Point32f> &ps);
 
     /// draws a convex polygon (int-points)
-    void polygon(const std::vector<Point> &ps);
+    void polygon(const std::vector<utils::Point> &ps);
 
     /// draws a regular grid between given points
-    void grid(const Point32f *points, int nx, int ny, bool rowMajor=true);
+    void grid(const utils::Point32f *points, int nx, int ny, bool rowMajor=true);
 
     /// draws a predefined symbol at the given location
     /** The symbols size can be set using symsize */
     void sym(float x, float y, Sym s);
 
     /// convenience wrapper for sym(float,float,Sym)
-    void sym(const Point32f &p, Sym s){
+    void sym(const utils::Point32f &p, Sym s){
       sym(p.x,p.y,s);
     }
     
@@ -412,7 +412,7 @@ int main(int n, char **ppc){
     }
 
     /// convenicence wrapper for sym(float,flota,char)
-    void sym(const Point32f &p, char sym){
+    void sym(const utils::Point32f &p, char sym){
       this->sym(p.x,p.y,sym);
     }
     
@@ -509,7 +509,7 @@ int main(int n, char **ppc){
     /// Data of the "State Machine"
     State *m_poState;
 
-    /// Mutex for a thread save event queue
+    /// utils::Mutex for a thread save event queue
     QMutex m_oCommandMutex;
     
     /// internal flag

@@ -39,10 +39,10 @@
 namespace icl{ 
   namespace qt{
     /// Internally used and caught exception class for the GUI API \ingroup UNCOMMON
-    class GUISyntaxErrorException : public ICLException {
+    class GUISyntaxErrorException : public utils::ICLException {
       public:
       GUISyntaxErrorException(const std::string &guidef, const std::string &problem) throw():
-      ICLException(std::string("Syntax Error while parsing:\n\"")+guidef+"\"\n("+problem+")\n") {}
+      utils::ICLException(std::string("Syntax Error while parsing:\n\"")+guidef+"\"\n("+problem+")\n") {}
       virtual ~GUISyntaxErrorException() throw() {}
     };
   } // namespace qt

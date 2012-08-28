@@ -58,7 +58,7 @@ namespace icl{
       MultiDrawHandle();
   
       /// create a new ImageHandel
-      MultiDrawHandle(ICLDrawWidget *w, QTabBar *t,std::vector<ImgBase*> *imageBuffer,  bool bufferAll, bool bufferDeeply, GUIWidget *guiw);
+      MultiDrawHandle(ICLDrawWidget *w, QTabBar *t,std::vector<core::ImgBase*> *imageBuffer,  bool bufferAll, bool bufferDeeply, GUIWidget *guiw);
   
       /// explicit copy constructor
       MultiDrawHandle(const MultiDrawHandle &other);
@@ -70,9 +70,9 @@ namespace icl{
         MultiDrawHandle *d;
         int idx;
   
-        void setImage(const ImgBase *image);
-        void operator=(const ImgBase *image){ setImage(image); }
-        void operator=(const ImgBase &image){ setImage(&image); }
+        void setImage(const core::ImgBase *image);
+        void operator=(const core::ImgBase *image){ setImage(image); }
+        void operator=(const core::ImgBase &image){ setImage(&image); }
       };
       
       Assigner operator[](int idx);
@@ -91,7 +91,7 @@ namespace icl{
   
       private:
   
-      std::vector<ImgBase*> *m_imageBuffer;
+      std::vector<core::ImgBase*> *m_imageBuffer;
       QTabBar *m_tabBar;
       std::map<std::string,int> m_map;
       bool m_bufferAll;

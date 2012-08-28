@@ -53,7 +53,7 @@ namespace icl{
     /** \endcond */
   
     /// Abstract class for GUI components \ingroup UNCOMMON
-    class GUIWidget : public QWidget, public Uncopyable{
+    class GUIWidget : public QWidget, public utils::Uncopyable{
       Q_OBJECT;
       public:
       enum layoutType{
@@ -74,7 +74,7 @@ namespace icl{
                 int minParamCount, 
                 int maxParamCount=-1,
                 layoutType lt=gridLayout, 
-                const Size &defMinSize=Size(0,0));
+                const utils::Size &defMinSize=utils::Size(0,0));
   
   
       /// Destructor
@@ -134,7 +134,7 @@ namespace icl{
       std::string *m_handle;
       std::vector<GUI::Callback> m_vecCallbacks;
       std::vector<GUI::ComplexCallback> m_vecComplexCallbacks;
-      Size m_preferredSize;
+      utils::Size m_preferredSize;
     };
   } // namespace qt
 }

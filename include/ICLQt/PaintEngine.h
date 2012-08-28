@@ -64,15 +64,15 @@ namespace icl{
   
       virtual void linewidth(float w)=0;
       virtual void pointsize(float s)=0;
-      virtual void line(const Point32f &a, const Point32f &b)=0;
-      virtual void point(const Point32f &p)=0;
-      virtual void image(const Rect32f &r,ImgBase *image, AlignMode mode = Justify, scalemode sm=interpolateNN)=0;
-      virtual void image(const Rect32f &r,const QImage &image, AlignMode mode = Justify, scalemode sm=interpolateNN)=0;
-      virtual void rect(const Rect32f &r)=0;
-      virtual void triangle(const Point32f &a, const Point32f &b, const Point32f &c)=0;
-      virtual void quad(const Point32f &a, const Point32f &b, const Point32f &c, const Point32f &d)=0;
-      virtual void ellipse(const Rect32f &r)=0;
-      virtual void text(const Rect32f &r, const std::string text, AlignMode mode = Centered)=0;
+      virtual void line(const utils::Point32f &a, const utils::Point32f &b)=0;
+      virtual void point(const utils::Point32f &p)=0;
+      virtual void image(const utils::Rect32f &r,core::ImgBase *image, AlignMode mode = Justify, scalemode sm=interpolateNN)=0;
+      virtual void image(const utils::Rect32f &r,const QImage &image, AlignMode mode = Justify, scalemode sm=interpolateNN)=0;
+      virtual void rect(const utils::Rect32f &r)=0;
+      virtual void triangle(const utils::Point32f &a, const utils::Point32f &b, const utils::Point32f &c)=0;
+      virtual void quad(const utils::Point32f &a, const utils::Point32f &b, const utils::Point32f &c, const utils::Point32f &d)=0;
+      virtual void ellipse(const utils::Rect32f &r)=0;
+      virtual void text(const utils::Rect32f &r, const std::string text, AlignMode mode = Centered)=0;
   
       /// brightness-constrast intensity adjustment (for images only)
       virtual void bci(float brightness=0, float contrast=0, float floatensity=0)=0;

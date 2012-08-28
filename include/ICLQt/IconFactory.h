@@ -48,7 +48,7 @@ namespace icl{
       static const QIcon &create_icl_window_icon_as_qicon();
   
       static const QIcon &create_icon(const std::string &id);
-      static const Img8u &create_image(const std::string &id);
+      static const core::Img8u &create_image(const std::string &id);
     };
     
   } // namespace qt

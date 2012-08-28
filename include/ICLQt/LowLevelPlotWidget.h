@@ -200,7 +200,7 @@ namespace icl{
         \subsection _EX_5_ Scatter Data (one or two data sets)
         \code
         /// interleaved data
-        static std::vector<Point32f> scatterData1(10000); // fill it!
+        static std::vector<utils::Point32f> scatterData1(10000); // fill it!
         
         /// planar data order
         static std::vector<float> scatterData2(20000); // fill it!
@@ -223,10 +223,10 @@ namespace icl{
         
         \subsection _EX_6_ Connected Scatter Data and annotations
         \code
-        static std::vector<Point32f> scatterData3(1000);
+        static std::vector<utils::Point32f> scatterData3(1000);
         /// here, we fill it!
-        static Time t = Time::now();
-        float dtSec = (Time::now()-t).toSecondsDouble();
+        static utils::Time t = utils::Time::now();
+        float dtSec = (utils::Time::now()-t).toSecondsDouble();
         for(unsigned int i=0;i<scatterData3.size();++i){
           float rel = float(i)/(scatterData3.size()-1) * 2 * M_PI;
           float r = 2 + 3 * sin(4*rel+dtSec);
@@ -254,7 +254,7 @@ namespace icl{
       protected:
   
       /// draws the ledgend
-      virtual void drawLegend(QPainter &p,const Rect &where, bool horizontal);
+      virtual void drawLegend(QPainter &p,const utils::Rect &where, bool horizontal);
   
       /// draws the series data
       virtual bool drawSeriesData(QPainter &p, const DrawState &state); 
@@ -284,7 +284,7 @@ namespace icl{
       
       /// returns the data viewport 
       /** If the data viewport is not given using AbstractPlotWidget::setDataViewPort */
-      virtual Rect32f getDataViewPort() const;
+      virtual utils::Rect32f getDataViewPort() const;
       
       /// adds series data
       /** @param data data pointer

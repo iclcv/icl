@@ -52,7 +52,7 @@ namespace icl{
     /** \endcond */
    
     /// Class for openGL-based image visualization components \ingroup COMMON
-    /** The ICLWidget class provide basic abilities for displaying ICL images (ImgBase) on embedded 
+    /** The ICLWidget class provide basic abilities for displaying ICL images (core::ImgBase) on embedded 
         Qt GUI components. Its is fitted out with a responsive OpenGL-Overlay On-Screen-Display (OSD),
         which can be used to adapt some ICLWidget specific settings, and which is partitioned into several
         sub menus:
@@ -207,13 +207,13 @@ int main(int n, char **args){
 
     
     /// returns the widgets size as icl::Size
-    Size getSize() { return Size(width(),height()); }
+    utils::Size getSize() { return utils::Size(width(),height()); }
     
     /// returns the current images size
-    Size getImageSize(bool fromGUIThread=false);
+    utils::Size getImageSize(bool fromGUIThread=false);
 
     /// returns the rect, that is currently used to draw the image into
-    Rect getImageRect(bool fromGUIThread=false);
+    utils::Rect getImageRect(bool fromGUIThread=false);
 
     /// returns current fit-mode
     fitmode getFitMode();
@@ -270,8 +270,8 @@ int main(int n, char **args){
     
     /// Sets a viewport size that is used if no image was set
     /** if no image was set, then the OpenGL viewport is adapted as if there was an image with this size.
-        If the given size is Size::null  the viewport is not adated */
-    void setViewPort(const Size &size);
+        If the given size is utils::Size::null  the viewport is not adated */
+    void setViewPort(const utils::Size &size);
 
     /// Adds a new toggle-button to the OSD-button bar on the upper widget edge
     /** Special buttons can directly be attached to specific ICLWidget slots, 
@@ -292,8 +292,8 @@ int main(int n, char **args){
                slot.
     */
     void addSpecialToggleButton(const std::string &id, 
-                                const ImgBase* untoggledIcon = 0, 
-                                const ImgBase *toggledIcon = 0, 
+                                const core::ImgBase* untoggledIcon = 0, 
+                                const core::ImgBase *toggledIcon = 0, 
                                 bool initiallyToggled = 0, 
                                 const Function<void,bool> &cb=(FunctionImpl<void,bool>*)0,//Function<void,bool>(), fix for clang
                                 const std::string &toolTipText="");
@@ -301,7 +301,7 @@ int main(int n, char **args){
     /// Adds a new toggle-button to the OSD-button bar on the upper widget edge
     /** @see addSpecialToggleButton */
     void addSpecialButton(const std::string &id, 
-                          const ImgBase* icon = 0, 
+                          const core::ImgBase* icon = 0, 
                           const Function<void> &cb=(FunctionImpl<void>*)0,//Function<void>(), fix for clang
                           const std::string &toolTipText="");
 
@@ -316,7 +316,7 @@ int main(int n, char **args){
     
     public slots:
     /// sets up the current image
-    void setImage(const ImgBase *image);
+    void setImage(const core::ImgBase *image);
 
     signals:
     /// invoked when any mouse interaction was performed
@@ -385,8 +385,8 @@ int main(int n, char **args){
     void setGridGray();
     
     private:
-    /// internally used, grabs the current framebuffer as Img8u 
-    const Img8u &grabFrameBufferICL();
+    /// internally used, grabs the current framebuffer as core::Img8u 
+    const core::Img8u &grabFrameBufferICL();
     
     /// internal utility function
     std::string getImageCaptureFileName();

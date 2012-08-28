@@ -59,7 +59,7 @@ namespace icl{
       GUIComponentWithOutput("slider",form_args_4(min,max,curr,vertical?"vertical":"horizontal")){}
   
       /// creates a slider from given int-range
-      Slider(const Range32f &r, int curr, bool vertical=false):
+      Slider(const utils::Range32f &r, int curr, bool vertical=false):
       GUIComponentWithOutput("slider",form_args_4(r.minVal,r.maxVal,curr,vertical?"vertical":"horizontal")){}
     };
   
@@ -72,7 +72,7 @@ namespace icl{
       GUIComponentWithOutput("fslider",form_args_4(min,max,curr,vertical?"vertical":"horizontal")){}
       
       /// creates a FSlider from given float-range
-      FSlider(const Range32f &r, float curr=0.5, bool vertical=false):
+      FSlider(const utils::Range32f &r, float curr=0.5, bool vertical=false):
       GUIComponentWithOutput("fslider",form_args_4(r.minVal,r.maxVal,curr,vertical?"vertical":"horizontal")){}
     };
   
@@ -96,14 +96,14 @@ namespace icl{
     /** Creates an StringHandle (but no output) */
     struct String : public GUIComponent{
       /// create string input compoent with given max length
-      String(const std::string &initText, int maxLen=100):GUIComponent("string",initText+','+str(maxLen)){}
+      String(const std::string &initText, int maxLen=100):GUIComponent("string",initText+','+utils::str(maxLen)){}
     };
   
     /// Display component for a 2D Array of labels
     /** Creates a DispHandle that provides access to each label */
     struct Disp : public GUIComponent{
       Disp(int nxCells, int nyCells):
-      GUIComponent("disp",str(nxCells)+','+str(nyCells)){}
+      GUIComponent("disp",utils::str(nxCells)+','+utils::str(nyCells)){}
     };
   
     /// Image visualization component
@@ -119,7 +119,7 @@ namespace icl{
       /// create draw component with given default view port size
       /** The defaultViewPortsize is uses as annotation coordinate frame as long as not image
           is provided */
-      Draw(const Size &defaultViewPortsize=Size::VGA):
+      Draw(const utils::Size &defaultViewPortsize=utils::Size::VGA):
       GUIComponent("draw",str(defaultViewPortsize)){}
     };
   
@@ -131,7 +131,7 @@ namespace icl{
       /// create Draw3D component with given defaultViewPortsize
       /** The given defaultViewPortsize is to create an OpenGL viewport as long as no
           backgrond image is given. */
-      Draw3D(const Size &defaultViewPortsize=Size::VGA):
+      Draw3D(const utils::Size &defaultViewPortsize=utils::Size::VGA):
       GUIComponent("draw3D",str(defaultViewPortsize)){}
     };
   
@@ -140,7 +140,8 @@ namespace icl{
     struct Plot : public GUIComponent{
       private:
       /// utility method
-      static std::string form_args(const Range32f xRange, const Range32f yRange, bool useOpenGL,
+      static std::string form_args(const utils::Range32f xRange, 
+                                   const utils::Range32f yRange, bool useOpenGL,
                                    const std::string &xLabel,  const std::string &yLabel){
         std::ostringstream str;
         str << xRange.minVal << ',' << xRange.maxVal << ',' << yRange.minVal << ',' << xRange.maxVal << ','
@@ -162,8 +163,8 @@ namespace icl{
           @param xLabel x-axis label 
           @param yLabel y-axis label 
       */
-      Plot(const Range32f xRange=Range32f(0,0),
-           const Range32f yRange=Range32f(0,0),
+      Plot(const utils::Range32f xRange=utils::Range32f(0,0),
+           const utils::Range32f yRange=utils::Range32f(0,0),
            bool useOpenGL=false,
            const std::string &xLabel="",
            const std::string &yLabel=""): 
@@ -175,7 +176,7 @@ namespace icl{
            bool useOpenGL=false,
            const std::string &xLabel="",
            const std::string &yLabel=""): 
-      GUIComponent("plot",form_args(Range32f(minX,maxX),Range32f(minY,maxY), useOpenGL, xLabel, yLabel)){}
+      GUIComponent("plot",form_args(utils::Range32f(minX,maxX),utils::Range32f(minY,maxY), useOpenGL, xLabel, yLabel)){}
     };
       
     /// ComboBox GUI component 
@@ -185,12 +186,12 @@ namespace icl{
       /// utility method
       static std::string form_args(const std::string &entries, int initialIndex){
         if(!initialIndex) return entries;
-        std::vector<std::string> ls = tok(entries,",");
+        std::vector<std::string> ls = utils::tok(entries,",");
         if(initialIndex < 0 || initialIndex >= (int)ls.size()){
-          throw ICLException("Combo::Combo(entries,initialIndex): initialIndex is invalid");
+          throw utils::ICLException("Combo::Combo(entries,initialIndex): initialIndex is invalid");
         }
         ls[initialIndex] = '!' + ls[initialIndex];
-        return cat(ls,",");
+        return utils::cat(ls,",");
       }
       public:
       /// Constructor with given comma separated list of initial entries
@@ -213,7 +214,7 @@ namespace icl{
     struct Fps : public GUIComponent{
       /// creates fps component with given time window for estimating a running-average of the computed FPS-values
       Fps(int timeWindowSize=10):
-      GUIComponent("fps",str(timeWindowSize)){}
+      GUIComponent("fps",utils::str(timeWindowSize)){}
     };
       
     /// camera configuration component
@@ -264,7 +265,7 @@ namespace icl{
     /** Creates a complex compoment that lists online-process information, such as processor usage, memory consumption and curren thread count */
     struct Ps : public GUIComponent{
       /// create ps component with given update rate
-      Ps(int updatePFS=10):GUIComponent("ps",str(updatePFS)){}
+      Ps(int updatePFS=10):GUIComponent("ps",utils::str(updatePFS)){}
     };
   
     /// Creates not component

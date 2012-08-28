@@ -56,13 +56,13 @@ namespace icl{
   
       /// callback registration is not supported for this compoment
       virtual void registerCallback(const GUI::Callback &cb, const std::string &events="all"){
-        throw ICLException("PlotHandle::registerCallback: you cannot register" 
+        throw utils::ICLException("PlotHandle::registerCallback: you cannot register" 
                            " Callbacks to this component");
       }
   
       /// complex callbacks are not allowed for image-components (this method will throw an exception)
       virtual void registerCallback(const GUI::ComplexCallback&, const std::string &){
-        throw ICLException("PlotHandle::registerCallback: you cannot register "
+        throw utils::ICLException("PlotHandle::registerCallback: you cannot register "
                            "GUI::ComplexCallback instances to an image GUI component");
       }
     };

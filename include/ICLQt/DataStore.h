@@ -47,18 +47,18 @@ namespace icl{
     /// Extension of the associative container MultiTypeMap \ingroup UNCOMMON
     /** Adds an index operator[string] for direct access to contained values
      */
-    class DataStore : public MultiTypeMap{
+    class DataStore : public utils::MultiTypeMap{
       public:
   
       /// Internal Exception type thrown if operator[] is given an unknown index string
-      struct KeyNotFoundException : public ICLException{
-        KeyNotFoundException(const std::string &key):ICLException("Key not found: " + key){}
+      struct KeyNotFoundException : public utils::ICLException{
+        KeyNotFoundException(const std::string &key):utils::ICLException("Key not found: " + key){}
       };
       
       /// Internal Exception type thrown if Data::operator= is called for incompatible values
-      struct UnassignableTypesException : public ICLException{
+      struct UnassignableTypesException : public utils::ICLException{
         UnassignableTypesException(const std::string &tSrc, const std::string &tDst):
-        ICLException("Unable to assign "+ tDst+ " = "+ tSrc){}
+        utils::ICLException("Unable to assign "+ tDst+ " = "+ tSrc){}
       };
       
       
@@ -80,12 +80,12 @@ namespace icl{
         /// Internally used Data- Structure
         struct Event{
           Event(const std::string &msg="", void *data=0):message(msg),data(data){}
-          Event(const std::string &msg, const Function<void> &cb): message(msg),data(0),cb(cb){}
-          Event(const std::string &msg, const Function<void,const std::string&> &cb2): message(msg),data(0),cb2(cb2){}
+        Event(const std::string &msg, const utils::Function<void> &cb): message(msg),data(0),cb(cb){}
+        Event(const std::string &msg, const utils::Function<void,const std::string&> &cb2): message(msg),data(0),cb2(cb2){}
           std::string message;
           void *data;
-          Function<void> cb;
-          Function<void,const std::string&> cb2;
+          utils::Function<void> cb;
+          utils::Function<void,const std::string&> cb2;
         };
         
         friend class DataStore;
@@ -134,7 +134,7 @@ namespace icl{
         }
         
         /// installs a function directly
-        void install(Function<void,const MouseEvent &> f);
+        void install(utils::Function<void,const MouseEvent &> f);
   
         // installs a global function (should be implicit)
         //void install(void (*f)(const MouseEvent &)){
@@ -142,12 +142,12 @@ namespace icl{
         //}
         
         /// register simple callback type
-        void registerCallback(const Function<void> &cb){
+        void registerCallback(const utils::Function<void> &cb){
           *this = Event("register",cb);
         }
   
         /// register simple callback type
-        void registerCallback(const Function<void,const std::string&> &cb){
+        void registerCallback(const utils::Function<void,const std::string&> &cb){
           *this = Event("register-complex",cb);
         }
         

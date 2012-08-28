@@ -53,7 +53,7 @@ namespace icl{
       
       /// spedical constructor template with given source and destination range
       template<class T>
-      inline LinearTransform1D(const Range<T> &s, const Range<T> &d):
+      inline LinearTransform1D(const utils::Range<T> &s, const utils::Range<T> &d):
         m(d.getLength()/s.getLength()), b(-m*s.minVal + d.minVal){
       }
       

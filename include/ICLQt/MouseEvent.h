@@ -88,19 +88,19 @@ namespace icl{
     */
     class MouseEvent{
       /// event location in widget coordinates
-      Point m_widgetPos;
+      utils::Point m_widgetPos;
       
       /// event location in image coordinates (common)
-      Point m_imagePos;
+      utils::Point m_imagePos;
       
       /// event location in image coordinates in float
-      Point32f m_imagePos32f;
+      utils::Point32f m_imagePos32f;
       
       /// relative image coordinates
-      Point32f m_relImagePos;
+      utils::Point32f m_relImagePos;
       
       /// wheel delta (x: horizontal wheel, y: vertical wheel)
-      Point m_wheelDelta;
+      utils::Point m_wheelDelta;
      
       /// button downMask
       bool m_downMask[3];
@@ -119,13 +119,13 @@ namespace icl{
       
       
       /// private constructor, mouse events are created by the ICLWidget only
-      MouseEvent(const Point &widgetPos,
-                 const Point &imagePos,
-                 const Point32f &imagePos32f,
-                 const Point32f &relImagePos,
+      MouseEvent(const utils::Point &widgetPos,
+                 const utils::Point &imagePos,
+                 const utils::Point32f &imagePos32f,
+                 const utils::Point32f &relImagePos,
                  const bool downMask[3],
                  const std::vector<double> &color,
-  	       const Point &wheelDelta,
+  	       const utils::Point &wheelDelta,
                  MouseEventType type,
   	       ICLWidget *widget);
       
@@ -143,7 +143,7 @@ namespace icl{
       inline int getWidgetY() const { return m_widgetPos.y; }
   
       /// returns event's location wrt. widget frame
-      inline const Point &getWidgetPos() const { return m_widgetPos; }
+      inline const utils::Point &getWidgetPos() const { return m_widgetPos; }
   
       /// returns event's x coordinate wrt. image frame
       inline int getX() const { return m_imagePos.x; }
@@ -152,7 +152,7 @@ namespace icl{
       inline int getY() const { return m_imagePos.y; }
   
       /// returns event's location wrt. image frame
-      inline const Point &getPos() const { return m_imagePos; }
+      inline const utils::Point &getPos() const { return m_imagePos; }
   
       /// returns event's x coordinate wrt. image frame
       inline float getX32f() const { return m_imagePos32f.x; }
@@ -161,7 +161,7 @@ namespace icl{
       inline float getY32f() const { return m_imagePos32f.y; }
   
       /// returns event's location wrt. image frame
-      inline const Point32f &getPos32f() const { return m_imagePos32f; }
+      inline const utils::Point32f &getPos32f() const { return m_imagePos32f; }
       
       /// wheel delta (x: horizontal wheel, y: vertical wheel (common))
       /** We use the unit of Qt's QWheelEvent's delta:
@@ -172,7 +172,7 @@ namespace icl{
       \endcode
       A positive delta value means that the wheel was rotated forward (for y) 
       and to the right (for x) */
-      inline const Point &getWheelDelta() const { return m_wheelDelta; }
+      inline const utils::Point &getWheelDelta() const { return m_wheelDelta; }
       
       /// returns event's relative x coordinate wrt. image frame
       inline float getRelX() const { return m_relImagePos.x; }
@@ -181,7 +181,7 @@ namespace icl{
       inline float getRelY() const { return m_relImagePos.y; }
   
       /// returns event's relative location wrt. image frame
-      inline const Point32f getRelPos() const { return m_relImagePos; }
+      inline const utils::Point32f getRelPos() const { return m_relImagePos; }
   
       /// returns clicked pixels color (or a zero length vector, if there was no pixel)
       inline const std::vector<double> &getColor() const { return m_color; }

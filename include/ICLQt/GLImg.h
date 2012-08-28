@@ -35,7 +35,7 @@
 #pragma once
 
 #include <ICLCore/ImgBase.h>
-#include <ICLUtils/Uncopyable.h>
+#include <ICLUtils/utils::Uncopyable.h>
 #include <ICLMath/FixedVector.h>
 #include <ICLUtils/Function.h>
 #include <ICLUtils/Range.h>
@@ -61,8 +61,8 @@ namespace icl{
         simpler to align the buffered data in image tiles. In order to minimize the amount
         of glTexImage2D calls, the data is furthermore buffered in interleaved data order.
         Here, byte-, short- and float- typed images (icl8u, icl16s and icl32f) are supported
-        natively, i.e. they are buffered and uploaded in their native format. The other depths
-        (icl32s and icl64f) are not supported natively, i.e. image of this depth are already
+        natively, i.e. they are buffered and uploaded in their native core::format. The other depths
+        (icl32s and icl64f) are not supported natively, i.e. image of this core::depth are already
         buffered as floats. For int-typed images (icl32s) this, means, that very high image
         values cannot be represented correctly. And double typed images are also clipped to 
         the float range and accuracy.
@@ -81,7 +81,7 @@ namespace icl{
         the buffered data is automatically uploaded to the graphics hardware <b> if this is
         necessary</b>.
     */
-    class GLImg : public Uncopyable{
+    class GLImg : public utils::Uncopyable{
       struct Data;  //!< internal data structure
       Data *m_data; //!< internal data pointer
       
@@ -115,14 +115,14 @@ namespace icl{
           @param sm texture interpolation mode (either interpolateNN or interpolateLIN)
           @param maxCellSize the cells size (see \ref _BUF_)
           */
-      GLImg(const ImgBase *src=0, scalemode sm=interpolateNN, int maxCellSize=4096);
+      GLImg(const core::ImgBase *src=0, scalemode sm=interpolateNN, int maxCellSize=4096);
       
       /// destructor
       ~GLImg();
       
       /// set new texture data
       /** if source is null, the texture handle is deleted and isNull() will return true */
-      void update(const ImgBase *src, int maxCellSize=4096);
+      void update(const core::ImgBase *src, int maxCellSize=4096);
       
       /// sets the texture interpolation mode
       void setScaleMode(scalemode sm);
@@ -132,11 +132,11 @@ namespace icl{
       
       /// draws the image to the given 2D rect
       /** This method is optimized for the OpenGL parameters set by the ICLQt::Widget class */
-      void draw2D(const Rect &r, const Size &windowSize);
+      void draw2D(const utils::Rect &r, const utils::Size &windowSize);
   
       /// draws the image to the given quadrangle
       /** This method is optimized for the OpenGL parameters set by the ICLQt::Widget class */
-      void draw2D(const float a[2], const float b[2], const float c[2],const float e[2], const Size &windowSize);
+      void draw2D(const float a[2], const float b[2], const float c[2],const float e[2], const utils::Size &windowSize);
       
       /// draws the texture to the given nodes quad in 3D space
       /** the point order is 
@@ -154,17 +154,17 @@ namespace icl{
       */
       void draw3D(const float a[3],const float b[3],const float c[3],const float d[3],
                   const float na[3]=0, const float nb[3]=0, const float nc[3]=0, const float nd[3]=0,
-                  const Point32f &texCoordsA=Point32f(0,0),
-                  const Point32f &texCoordsB=Point32f(1,0),
-                  const Point32f &texCoordsC=Point32f(0,1),
-                  const Point32f &texCoordsD=Point32f(1,1));     
+                  const utils::Point32f &texCoordsA=utils::Point32f(0,0),
+                  const utils::Point32f &texCoordsB=utils::Point32f(1,0),
+                  const utils::Point32f &texCoordsC=utils::Point32f(0,1),
+                  const utils::Point32f &texCoordsD=utils::Point32f(1,1));     
   
       /// draws the texture using the given 3D Points, texture coordinates and optionally given normals
       /** The strides are given in float-units. If normals are not given (i.e. at least one of the points
           nxs, nys or nzs is null, no normals will be set. */
       void draw3DGeneric(int numPoints,
                          const float *xs, const float *ys, const float *zs, int xyzStride,
-                         const Point32f *texCoords, const float *nxs=0, const float *nys=0,
+                         const utils::Point32f *texCoords, const float *nxs=0, const float *nys=0,
                          const float *nzs=0, int nxyzStride=1);
   
       /// draws the texture to given quad that is spanned by two vectors
@@ -228,8 +228,8 @@ namespace icl{
           
           void renderGrid(){
              GLImg gli(&image);
-             static Time first = Time::now();
-             float t = (Time::now() - first).toSecondsDouble();
+             static utils::Time first = utils::Time::now();
+             float t = (utils::Time::now() - first).toSecondsDouble();
              gli.drawToGrid(30,20,grid_func);
           }
           \endcode
@@ -242,13 +242,13 @@ namespace icl{
       static int getMaxTextureSize();
       
       /// returns the number of internal cells used for the texture
-      Size getCells() const;
+      utils::Size getCells() const;
       
       /// binds the given texture cell using glBindTexture(...)
       void bind(int xCell=0, int yCell=0);
   
       /// returns the image size
-      inline Size getSize() const { return Size(getWidth(), getHeight()); }
+      inline utils::Size getSize() const { return utils::Size(getWidth(), getHeight()); }
   
        /// returns current image height
       int getWidth() const;
@@ -260,16 +260,16 @@ namespace icl{
       int getChannels() const;
       
       /// returns the image depth
-      depth getDepth() const;
+      core::depth getDepth() const;
       
       /// returns the image format
-      format getFormat() const;
+      core::format getFormat() const;
       
       /// returns the image roi
-      Rect getROI() const;
+      utils::Rect getROI() const;
   
       /// returns the current images time stamp
-      Time getTime() const;
+      utils::Time getTime() const;
   
       /// sets up current brightness contrast and intensity
       /** if b=c=i=-1 then, brightness is adapted automatically */
@@ -281,9 +281,9 @@ namespace icl{
       /// retuns the color at a given image location or a zero sized vector, (x,y) is outside the image
       std::vector<icl64f> getColor(int x, int y)const;
   
-      /// creates ImgBase version of the currently buffered images
+      /// creates core::ImgBase version of the currently buffered images
       /** Please note, that the ownership is not passed to the caller! */
-      const ImgBase *extractImage() const;
+      const core::ImgBase *extractImage() const;
   
       /// returns statistics of the currently buffered image
       const ImageStatistics &getStats() const;

@@ -78,33 +78,33 @@ namespace icl{
       }
         
       /// sets the component's initial size
-      const ContainerGUIComponent &size(const Size &size) const {
+      const ContainerGUIComponent &size(const utils::Size &size) const {
         component.size(size); return *this;
       }
         
       /// sets the component's initial size
       const ContainerGUIComponent &size(int w, int h) const {
-        return size(Size(w,h));
+        return size(utils::Size(w,h));
       }
   
       /// sets the component's minimum size constraint
-      const ContainerGUIComponent &minSize(const Size &minSize) const {
+      const ContainerGUIComponent &minSize(const utils::Size &minSize) const {
         component.minSize(minSize); return *this;
       }
         
       /// sets the component's minimum size constraint
       const ContainerGUIComponent &minSize(int w, int h) const {
-        return minSize(Size(w,h));
+        return minSize(utils::Size(w,h));
       }
         
       /// sets the component's maximum size constraint
-      const ContainerGUIComponent &maxSize(const Size &maxSize) const {
+      const ContainerGUIComponent &maxSize(const utils::Size &maxSize) const {
         component.maxSize(maxSize); return *this;
       }
         
       /// sets the component's maximum size constraint
       const ContainerGUIComponent &maxSize(int w, int h) const {
-        return maxSize(Size(w,h));
+        return maxSize(utils::Size(w,h));
       }
         
       /// sets the component's layout margin
@@ -128,33 +128,33 @@ namespace icl{
       }
         
       /// sets the component's initial size
-      ContainerGUIComponent &size(const Size &size){
+      ContainerGUIComponent &size(const utils::Size &size){
         component.size(size); return *this;
       }
         
       /// sets the component's initial size
       ContainerGUIComponent &size(int w, int h){
-        return size(Size(w,h));
+        return size(utils::Size(w,h));
       }
   
       /// sets the component's minimum size constraint
-      ContainerGUIComponent &minSize(const Size &minSize){
+      ContainerGUIComponent &minSize(const utils::Size &minSize){
         component.minSize(minSize); return *this;
       }
         
       /// sets the component's minimum size constraint
       ContainerGUIComponent &minSize(int w, int h){
-        return minSize(Size(w,h));
+        return minSize(utils::Size(w,h));
       }
         
       /// sets the component's maximum size constraint
-      ContainerGUIComponent &maxSize(const Size &maxSize){
+      ContainerGUIComponent &maxSize(const utils::Size &maxSize){
         component.maxSize(maxSize); return *this;
       }
         
       /// sets the component's maximum size constraint
       ContainerGUIComponent &maxSize(int w, int h){
-        return maxSize(Size(w,h));
+        return maxSize(utils::Size(w,h));
       }
         
       /// sets the component's layout margin

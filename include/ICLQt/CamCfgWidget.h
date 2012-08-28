@@ -72,8 +72,8 @@ namespace icl{
           does also contain these components:
           - The device selection combo-box is always enabled here
           - A preview-component, that shows the currently grabbed image
-          - A format and a size combo-box. These two allow to adjust the 
-            special grabber properties 'format' and 'size', which change the actual
+          - A core::format and a size combo-box. These two allow to adjust the 
+            special grabber properties 'core::format' and 'size', which change the actual
             image acquisition from the camera
           - a start/stop grabbing button. As long as this button is toggled, 
             the grabber is used in order to visualize preview-images in the image
@@ -81,7 +81,7 @@ namespace icl{
           - An FPS limiter that can be used to limit the maximum number of 
             frames per second captured.
           - Some components, that allow to ajust the grabbers desired parameters
-            (depth, format and size) and wheter these are used or ignored.
+            (core::depth, core::format and size) and wheter these are used or ignored.
           - a 'rescan' button that allows for rescanning devices at run-time. However,
             it's worse mention that this feature heavily depends on the used devices'
             underlying libraries. I.e. this might sometimes not show new devices and
@@ -103,7 +103,7 @@ namespace icl{
       ~CamCfgWidget();
       
       /// returns the current image 
-      virtual const ImgBase *getCurrentImage();
+      virtual const core::ImgBase *getCurrentImage();
       
       /// reimplemented
       virtual void setVisible (bool visible);

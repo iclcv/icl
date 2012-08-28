@@ -160,13 +160,13 @@ namespace icl{
       
       /// simple callback, that can be registered at GUI components
       /** Simple callback methods don't get any information about the source */
-      typedef Function<void> Callback;
+      typedef utils::Function<void> Callback;
       
       /// complex callback type that can be registered at GUI components
       /** Complex callback methods get the GUI components handle name as
           parameters. By these means, single callbacks can be registered
           to several components and still be able to handle events differently */
-      typedef Function<void,const std::string&> ComplexCallback;
+      typedef utils::Function<void,const std::string&> ComplexCallback;
       
       
       /// registers a callback function on each component 

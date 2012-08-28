@@ -68,14 +68,14 @@ namespace icl{
       /// return the handle id string
       const std::string &handle() const { return m_sHandle; }
       
-      /// return this size (or Size::null)
-      const Size &size() const { return m_oSize; }
+      /// return this size (or utils::Size::null)
+      const utils::Size &size() const { return m_oSize; }
       
       /// retunrs the minimum size of the widget or size::null
-      const Size &minSize() const { return m_oMinSize; }
+      const utils::Size &minSize() const { return m_oMinSize; }
   
       /// returns the maxinum size of the widget or size::null
-      const Size &maxSize() const { return m_oMaxSize; }
+      const utils::Size &maxSize() const { return m_oMaxSize; }
       
       /// returns the layout margin
       int margin() const { return m_iMargin; }
@@ -146,9 +146,9 @@ namespace icl{
       std::vector<std::string> m_vecInputs;  //<! vector of input names
       std::string m_sLabel;                  //<! parsed label (unused this time)
       std::string m_sHandle;                 //<! parsed handle id string
-      Size m_oSize;                          //<! parsed size
-      Size m_oMinSize;                       //<! parsed minimal size
-      Size m_oMaxSize;                       //<! parsed maximum size
+      utils::Size m_oSize;                          //<! parsed size
+      utils::Size m_oMinSize;                       //<! parsed minimal size
+      utils::Size m_oMaxSize;                       //<! parsed maximum size
       int m_iMargin;                         //<! parsed layout margin
       int m_iSpacing;                        //<! parsed layout spacing
       GUI *m_poGUI;                          //<! parent GUI

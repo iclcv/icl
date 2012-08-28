@@ -49,10 +49,13 @@
 #include <QtGui/QMouseEvent>
 #include <QtGui/QMessageBox>
 
+
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
+
 namespace icl{
   namespace qt{
-  
-    
   
     struct AbstractPlotWidget::Data{
       struct Annotation{

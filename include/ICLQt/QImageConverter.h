@@ -42,9 +42,9 @@ class QImage;
 namespace icl{
   namespace qt{
   
-    /// class for conversion between QImage and ImgBase/Img\<T\> \ingroup COMMON
+    /// class for conversion between QImage and core::ImgBase/Img\<T\> \ingroup COMMON
     /** The QImageConverter class provides functionality for conversion
-        between the QImage class and the Img\<T\> classes.
+        between the QImage class and the core::Img\<T\> classes.
         It provides an internal buffer handling for the destination images, 
         so that the user does not have to care about memory handling. The 
         user must only take care, that the given image is persistent.
@@ -52,12 +52,12 @@ namespace icl{
         <h2>Use cases</h2>
         The basic use case is just to convert one Image into another:
         <pre>       
-        ImgBase *i = imgNew(...);
+        core::ImgBase *i = imgNew(...);
         QImage *q = QImageConverter(i).getImage();
         </pre>
         This will temporarily create a converter object on the stack,
         that converts the given image <em>i</em> into a qimage. 
-        The opposite direction (QImage to ImgBase) behaves identically.
+        The opposite direction (QImage to core::ImgBase) behaves identically.
         <b>Note:</b> that the converted image is only persistent as long
         as the QImageConverter object is.
         
@@ -67,19 +67,19 @@ namespace icl{
         QImageConverter c;
         while(true){
            ...
-           ImgBase *i = ...
+           core::ImgBase *i = ...
            c.setImage(i);
            QImage *q = q.getQImage();
            ...
         }
         </pre>
         The converter will internally adapt itself to this use-case
-        (getting pointers to ImgBase objects and returning pointers to
+        (getting pointers to core::ImgBase objects and returning pointers to
         QImages) that no memory allocation must be performed during the
         iteration. Only if several use cases are performed alternating, it
         might be necessary to allocate and release memory during lifetime.
        
-        <b>Note:</b> If you call setImage(Img8u* xxx) before calling
+        <b>Note:</b> If you call setImage(core::Img8u* xxx) before calling
         getImage8u() you will get a <em> copy of the pointer xxx</em>. This
         is essentially, as you will not have a 2nd instance of the image.
     */
@@ -90,7 +90,7 @@ namespace icl{
       QImageConverter();
   
       /// creates a QImageConverter object with given ImgBase
-      QImageConverter(const ImgBase *image);
+      QImageConverter(const core::ImgBase *image);
   
       /// creates a QImageConverter object with given QImage
       QImageConverter(const QImage *qimage);
@@ -108,23 +108,23 @@ namespace icl{
       */
       const QImage *getQImage();
   
-      /// returns converted ImgBase (of given depth")
+      /// returns converted core::ImgBase (of given core::depth")
       /** This function will cause an error if no images were set before.
           Images can be set by calling setImage, setQImage, or by using
           one of the not empty constructors.    
       */
-      const ImgBase *getImgBase(icl::depth d=depth8u);
+      const core::ImgBase *getImgBase(core::depth d=depth8u);
   
   
       /// template returing an image of given datatype
       template<class T>
-      const Img<T> *getImg();
+      const core::core::Img<T> *getImg();
   
-      /// sets the current source image of type Img8u or Img32f
+      /// sets the current source image of type core::Img8u or Img32f
       /** All further set images get the state "outdated". Hence all later
           <em>getImg[Base]-calls</em> must perform a deep conversion first
       */
-      void setImage(const ImgBase *image);
+      void setImage(const core::ImgBase *image);
       
       /// sets the current source image of type QImage
       /** All further set images get the state "outdated". Hence all later
@@ -142,7 +142,7 @@ namespace icl{
       };
       
       /// internal buffer for Imgs of all depths
-      ImgBase *m_apoBuf[5];
+      core::ImgBase *m_apoBuf[5];
       
       /// internal qimage buffer
       QImage *m_poQBuf;

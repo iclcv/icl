@@ -105,9 +105,9 @@ namespace icl{
       typedef void (*callback)(void);
       
       /// Such an exception is returned if a 2nd instance of ICLApplication is created
-      struct SecondSingeltonException : public ICLException{
+      struct SecondSingeltonException : public utils::ICLException{
         /// Basic constructor
-        SecondSingeltonException(const std::string &reason):ICLException(reason){}
+        SecondSingeltonException(const std::string &reason):utils::ICLException(reason){}
       };
   
       /// Constructor

@@ -108,14 +108,14 @@ namespace icl{
       ICL_DEPRECATED void supercube3D(float cx, float cy, float cz, float d);
   
       /// draws a 3D cube with size d at given location (x,y,z) (deprecated)
-      ICL_DEPRECATED void imagecube3D(float cx, float cy, float cz, float d, const ImgBase *image);
+      ICL_DEPRECATED void imagecube3D(float cx, float cy, float cz, float d, const core::ImgBase *image);
   
       /// draws a 3D cube with size d at given location (x,y,z) (deprecated)
       /** @param images array of images to draw on each face of the cube*/
-      ICL_DEPRECATED void imagecube3D(float cx, float cy, float cz, float d, const ImgBase *images[6]);
+      ICL_DEPRECATED void imagecube3D(float cx, float cy, float cz, float d, const core::ImgBase *images[6]);
   
       /// draw a 3D image texture into the parallelogram defined by the base vector c and two direction vector a and b (deprecated)
-      ICL_DEPRECATED void image3D(float cX,float cY,float cZ,float aX, float aY,float aZ,float bX,float bY,float bZ, const ImgBase *image);
+      ICL_DEPRECATED void image3D(float cX,float cY,float cZ,float aX, float aY,float aZ,float bX,float bY,float bZ, const core::ImgBase *image);
   
       /// sets the current color to (r,g,b,a) (deprecated)
       ICL_DEPRECATED void color3D(float r, float g, float b, float a);
@@ -210,7 +210,7 @@ namespace icl{
           - property: "light-X-specular" value "{r,g,b,factor}"
           - property: "lighting" value "on|off" (default on) 
           - property: "color-material" value "on|off" (default on)
-          - property: "depth-test" value "on|off" (default on)
+          - property: "core::depth-test" value "on|off" (default on)
           
           Further properties will follow!
           

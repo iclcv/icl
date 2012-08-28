@@ -49,9 +49,9 @@ namespace icl{
     
     /// Utility class for referencing runtime-dynamic ConfigFile entries
     /** Note, that there's a list of typedef's, to facilitate handling of CfgEntry vaklues :
-        - typedef ConfigEntry<Point> CfgPoint;
-        - typedef ConfigEntry<Size> CfgSize;
-        - typedef ConfigEntry<Rect> CfgRect;
+        - typedef ConfigEntry<utils::Point> CfgPoint;
+        - typedef ConfigEntry<utils::Size> CfgSize;
+        - typedef ConfigEntry<utils::Rect> CfgRect;
         - typedef ConfigEntry<Range32s> CfgRange32s;
         - typedef ConfigEntry<Range32f> CfgRange32f;
         - typedef ConfigEntry<std::string> CfgString;
@@ -94,7 +94,7 @@ namespace icl{
       /// returns reference value
       operator T() const{
         ICLASSERT_RETURN_VAL(m_config,T());
-        Mutex::Locker l(*m_config);
+        utils::Mutex::Locker l(*m_config);
         return m_key.size() ? (*m_config)[m_key] : m_def;
       }
       void debug_show(const std::string &key="any name"){
@@ -111,12 +111,12 @@ namespace icl{
     ICL_INSTANTIATE_ALL_DEPTHS;
   #undef ICL_INSTANTIATE_DEPTH
   
-    typedef  ConfigEntry<Point> CfgPoint;
-    typedef  ConfigEntry<Point32f> CfgPoint32f;
-    typedef  ConfigEntry<Size> CfgSize;
-    typedef  ConfigEntry<Size32f> CfgSize32f;
-    typedef  ConfigEntry<Rect> CfgRect;
-    typedef  ConfigEntry<Rect32f> CfgRect32f;
+    typedef  ConfigEntry<utils::Point> CfgPoint;
+    typedef  ConfigEntry<utils::Point32f> CfgPoint32f;
+    typedef  ConfigEntry<utils::Size> CfgSize;
+    typedef  ConfigEntry<utils::Size32f> CfgSize32f;
+    typedef  ConfigEntry<utils::Rect> CfgRect;
+    typedef  ConfigEntry<utils::Rect32f> CfgRect32f;
     typedef  ConfigEntry<Range32s> CfgRange32s;
     typedef  ConfigEntry<Range32f> CfgRange32f;
   

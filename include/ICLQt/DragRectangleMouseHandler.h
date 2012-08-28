@@ -76,10 +76,10 @@ namespace icl{
     */
     class DragRectangleMouseHandler : public MouseHandler, public Lockable{
       protected:
-      Point m_origin; //!< point where the drag gesture started
-      Point m_curr;   //!< current mouse-position while dragging
+      utils::Point m_origin; //!< point where the drag gesture started
+      utils::Point m_curr;   //!< current mouse-position while dragging
       int m_minDim;   //!< minimum rectangle size
-      Rect m_rect;    //!< last defined rectangle
+      utils::Rect m_rect;    //!< last defined rectangle
   
       public:
       Color4D m_edge; //!< edge color for the defined rectangle
@@ -105,13 +105,13 @@ namespace icl{
       bool hasRect() const;
   
       /// returns the currrent rectangle
-      Rect getRect() const;
+      utils::Rect getRect() const;
   
       /// returns whether the user currently defines a rectangle (using a drag gesture)
       bool hasDraggedRect() const;
   
       /// returns the currently dragged rectangle
-      Rect getDragggedRect() const;
+      utils::Rect getDragggedRect() const;
   
       /// sets the minimum rectangle size
       inline void setMinDim(int minDim) { m_minDim = minDim; }

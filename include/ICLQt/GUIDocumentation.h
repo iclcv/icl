@@ -90,7 +90,7 @@
       #include <ICLQuick/Quick.h>
       
       // create a nice image, which should be shown (using iclQuick)
-      Img8u image = cvt8u(scale(create("parrot"),0.2));
+      core::Img8u image = cvt8u(scale(create("parrot"),0.2));
       
       int main(int n, char**ppc){
         QApplication app(n,ppc);
@@ -399,7 +399,7 @@
       - <b>draw(VIEW_PORT_SIZE=VGA)</b>\n
         The given viewport size is only used, if no background image was set. In this case, 
         the draw-coordinate frame is set as if a black background image with this size was given. The
-        view-port size can later be adapted using DrawWidget::setViewPort(Size)
+        view-port size can later be adapted using DrawWidget::setViewPort(utils::Size)
       - <b>draw3D(VIEW_PORT_SIZE=VGA)</b>\n
         As for the draw-component, also here the given viewport size is only used if no image was set.
         The viewport is used to hold the 3D-context's aspect ratio and for zooming. Usually the default
@@ -577,7 +577,7 @@
       the GUIHandle<QPushButton> i.e., it wraps a QPushButton* internally. For a more
       convenient use, each handle has some special functions that provide
       an abstracted direct access to the underlying class without knowing it. E.g. the image handle
-      provides a 'setImage(ImgBase*)'-function and an 'update()'-function, which are sufficient to 
+      provides a 'setImage(core::ImgBase*)'-function and an 'update()'-function, which are sufficient to 
       make the underlying widget display a new image. All functions of the wrapped Qt-data type
       can also be accessed directly using the operator '->'
       
@@ -735,7 +735,7 @@ void run(){
    draw->color(255,0,0);
    draw->fill(255,0,0,100);
    draw->line(10,10,20,20);
-   draw->rect(Rect(0,0,100,100));
+   draw->rect(utils::Rect(0,0,100,100));
     
    // post an update event through Qt
    // and swap draw command queues internally
@@ -874,7 +874,7 @@ GUI gui;
 // Our working thread, calling it's run function 
 // asynchronously to the GUI Thread
 void run(){
-  gui["currentTimeLabel"] = Time::now().toString();
+  gui["currentTimeLabel"] = utils::Time::now().toString();
   Thread::sleep(1);
 }
 
@@ -901,7 +901,7 @@ void init(){
       << "!show";
   
   /// assign text to a label
-  gui["currentTimeLabel"] = Time::now().toString();
+  gui["currentTimeLabel"] = utils::Time::now().toString();
   
   // register callbacks (on the specific handles)
   gui["exit"].registerCallback(exit_callback);
@@ -1072,7 +1072,7 @@ int main(int n, char **ppc){
 GUI gui;
 
 void run(){
-  Img8u image = cvt8u(scale(create("parrot"),0.2));
+  core::Img8u image = cvt8u(scale(create("parrot"),0.2));
   ImageHandle *ws[3] = {
     &gui.getValue<ImageHandle>("image1"),
     &gui.getValue<ImageHandle>("image2"),
@@ -1180,7 +1180,7 @@ int main(int n, char **ppc){
       it costs some processor cycles to pick a value of a specific component. Internally
       all values are stored in a large hash-map, which allows the getValue<T> template
       function to find a specific entry quickly (even if the GUI consist of 100 components
-      which is not realistic). If a value is found, the RTTI (c++ Run-Time Type 
+      which is not realistic). If a value is found, the RTTI (c++ Run-utils::Time Type 
       identification) interface is used, to decide whether the correct template parameter
       was used, otherwise an error occurs, and the program is aborted.\n
       So it is much faster to extract a value from a gui only once (at reference or pointer) and

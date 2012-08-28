@@ -45,11 +45,11 @@ namespace icl{
     
     struct ImageStatistics{
       ImgParams params;
-      depth d;
+      core::depth d;
       std::vector<Range64f> ranges;
       std::vector<std::vector<int> > histos;
       bool isNull;
-      Time time;
+      utils::Time time;
     };
   } // namespace qt
 }

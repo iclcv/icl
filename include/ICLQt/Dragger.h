@@ -79,20 +79,20 @@ namespace icl{
           @param d relative dimension in each direction (0.1 -> 10% of widget size)
           @param c color of the dragger
       **/
-      Dragger(const Point32f &p=Point32f::null, float d=0.02,const Color &c=Color(255,0,0)):
-        p(p),d(d),r(Rect32f(p.x-d,p.y-d,2*d,2*d)),dr(false),c(c),ov(false){}
+      Dragger(const utils::Point32f &p=utils::Point32f::null, float d=0.02,const Color &c=Color(255,0,0)):
+        p(p),d(d),r(utils::Rect32f(p.x-d,p.y-d,2*d,2*d)),dr(false),c(c),ov(false){}
   
       /// returns whether a given relative position is inside the dragger
-      bool hit(const Point32f &x) const{ return r.contains(x.x,x.y); }
+      bool hit(const utils::Point32f &x) const{ return r.contains(x.x,x.y); }
       
       /// returns the draggers relative rect
-      const Rect32f &rect() const { return r; }
+      const utils::Rect32f &rect() const { return r; }
       
       /// returns the current dim variable
       float dim() const { return d; }
       
       /// returns the current center position
-      const Point32f &pos() const { return p; }
+      const utils::Point32f &pos() const { return p; }
       
       /// returns the current color
       const Color &col() const { return c; }
@@ -116,7 +116,7 @@ namespace icl{
       
       /// sets the current position (which is clipped to [0,1])
       /** @param x new center position of the dragger */
-      void setPos(const Point32f &x){
+      void setPos(const utils::Point32f &x){
         p = x;
         p.x = clip(p.x,float(0.0),float(1.0));
         p.y = clip(p.y,float(0.0),float(1.0));
@@ -127,7 +127,7 @@ namespace icl{
       /** The resulting position is clipped to [0,1]
           @param dist distance to move 
       **/
-      void move(const Point32f &dist){
+      void move(const utils::Point32f &dist){
         setPos(p+dist);
       }
       
@@ -135,7 +135,7 @@ namespace icl{
       /** @param x mouse grip point which is used to calculate the
                    offset to the draggers center called "dragOffs"
       **/
-      void drag(const Point32f &x) { 
+      void drag(const utils::Point32f &x) { 
         dr = true; 
         dragOffs = p - x;
       }
@@ -144,7 +144,7 @@ namespace icl{
       /** The new position is clip( x+dragOffs, [0,1])
           @param x new position (result is clipped to [0,1]
       **/
-      void dragTo(const Point32f &x){
+      void dragTo(const utils::Point32f &x){
         setPos(x+dragOffs);
       }
   
@@ -181,13 +181,13 @@ namespace icl{
   
       private:
      
-      Point32f p; /**!< current center position (relative to the parent widgets size) */
+      utils::Point32f p; /**!< current center position (relative to the parent widgets size) */
       float d;    /**!< relative dimension of this dragger in each direction */
-      Rect32f r;  /**!< current relative rect of this dragger (p.x-d,p.y-d,2*d,2*d) */
+      utils::Rect32f r;  /**!< current relative rect of this dragger (p.x-d,p.y-d,2*d,2*d) */
       bool dr;    /**!< flag to indicate whether this dragger is currently dragged */
       Color c;    /**!< current color of this dragger */
       bool ov;    /**!< flag to indicate whether this mouse is currently over this dragger */
-      Point32f dragOffs; /** offset from the draggers center to the location where it was dragged by the mouse */
+      utils::Point32f dragOffs; /** offset from the draggers center to the location where it was dragged by the mouse */
     };
     
   } // namespace qt
