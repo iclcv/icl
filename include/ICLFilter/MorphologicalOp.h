@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef MORPHOLOGICAL_OP_H
-#define MORPHOLOGICAL_OP_H
+#pragma once
 
 #include <ICLFilter/NeighborhoodOp.h>
 #include <ICLCore/Img.h>
@@ -201,4 +200,3 @@ namespace icl {
   } // namespace filter
 } // namespace icl
 
-#endif

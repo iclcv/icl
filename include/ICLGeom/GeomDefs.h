@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_GEOM_DEFS_H
-#define ICL_GEOM_DEFS_H
+#pragma once
 
 #include <ICLCore/Types.h>
 #include <ICLMath/FixedMatrix.h>
@@ -185,4 +184,3 @@ namespace icl{
 }
 
 
-#endif

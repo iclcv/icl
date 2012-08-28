@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef MIRROR_OP_H
-#define MIRROR_OP_H
+#pragma once
 
 #include <ICLFilter/BaseAffineOp.h>
 #include <ICLUtils/Uncopyable.h>
@@ -71,4 +70,3 @@ namespace icl{
 }
 
 
-#endif

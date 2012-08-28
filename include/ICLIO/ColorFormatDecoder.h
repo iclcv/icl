@@ -31,8 +31,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_COLOR_FORMAT_DECODER_H
-#define ICL_COLOR_FORMAT_DECODER_H
+#pragma once
 
 #include <ICLCore/Img.h>
 #include <ICLIO/FourCC.h>
@@ -91,4 +90,3 @@ namespace icl{
   } // namespace io
 }
 
-#endif

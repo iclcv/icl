@@ -31,8 +31,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_VIDEO_4_LINUX_2_GRABBER_H
-#define ICL_VIDEO_4_LINUX_2_GRABBER_H
+#pragma once
 
 #include <ICLIO/GrabberHandle.h>
 #include <ICLUtils/Mutex.h>
@@ -107,4 +106,3 @@ namespace icl{
   } // namespace io
 }
 
-#endif

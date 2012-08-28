@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FILE_GRABBER_PLUGIN_H
-#define ICL_FILE_GRABBER_PLUGIN_H
+#pragma once
 
 #include <ICLIO/File.h>
 #include <ICLCore/Img.h>
@@ -66,4 +65,3 @@ namespace icl{
   } // namespace io
 }
 
-#endif

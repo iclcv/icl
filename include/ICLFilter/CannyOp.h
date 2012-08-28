@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef CANNY_H
-#define CANNY_H
+#pragma once
 
 #ifdef HAVE_IPP
 
@@ -165,8 +164,4 @@ namespace icl {
 
 #endif 
 // HAVE_IPP
-
-#endif 
-// guard
-
 

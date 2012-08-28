@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_GENERIC_GRABBER_H
-#define ICL_GENERIC_GRABBER_H
+#pragma once
 
 #include <ICLIO/Grabber.h>
 #include <string>
@@ -330,4 +329,3 @@ namespace icl {
   } // namespace io
 } 
 
-#endif

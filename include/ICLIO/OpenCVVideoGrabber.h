@@ -31,8 +31,7 @@
  ** Excellence Initiative.                                          **
  **                                                                 **
  *********************************************************************/
-#ifndef ICL_OPENCV_VIDEO_GRABBER_H
-#define ICL_OPENCV_VIDEO_GRABBER_H
+#pragma once
 
 #include <ICLCore/OpenCV.h>
 #include <ICLIO/Grabber.h>
@@ -113,4 +112,3 @@ namespace icl{
   
   } // namespace io
 }
-#endif /* ICL_OPENCVVIDEOGRABBER_H */

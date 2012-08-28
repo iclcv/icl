@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FILE_H
-#define ICL_FILE_H
+#pragma once
 
 #include <ICLUtils/ShallowCopyable.h>
 #include <ICLCore/Types.h>
@@ -212,4 +211,3 @@ namespace icl{
   } // namespace io
 }
 
-#endif

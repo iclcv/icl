@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_CONVOLUTIONOP_H
-#define ICL_CONVOLUTIONOP_H
+#pragma once
 
 #include <ICLFilter/NeighborhoodOp.h>
 #include <ICLUtils/Uncopyable.h>
@@ -133,4 +132,3 @@ namespace icl {
    
   } // namespace filter
 }
-#endif

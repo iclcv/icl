@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_SIZE_32F_H
-#define ICL_SIZE_32F_H
+#pragma once
 
 #include <iostream>
 #include <ICLUtils/Size.h>
@@ -108,4 +107,3 @@ namespace icl{
   } // namespace utils
 }// namespace icl
 
-#endif // ICL_SIZE_H

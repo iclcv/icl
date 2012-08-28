@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_PYLON_UTILS_H
-#define ICL_PYLON_UTILS_H
+#pragma once
 
 #include <pylon/PylonIncludes.h>
 #include <ICLUtils/Mutex.h>
@@ -275,6 +274,4 @@ namespace icl {
     } //namespace pylon
   } // namespace io
 } //namespace icl
-
-#endif
 

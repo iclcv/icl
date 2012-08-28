@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_CORE_H
-#define ICL_CORE_H
+#pragma once
 
 #include <ICLCore/Img.h>
 #include <ICLCore/CornerDetectorCSS.h>
@@ -326,4 +325,4 @@
     The list of 3rd party dependencies is given on <a href="http://www.iclcv.org>ICL's website</a>
 
 
-    **/ #endif
+    **/ 

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FILE_WRITER_PLUGIN_BICL_H
-#define ICL_FILE_WRITER_PLUGIN_BICL_H
+#pragma once
 
 #include <ICLIO/FileWriterPlugin.h>
 #include <ICLUtils/Mutex.h>
@@ -59,4 +58,3 @@ namespace icl{
     };
   } // namespace io
 }
-#endif

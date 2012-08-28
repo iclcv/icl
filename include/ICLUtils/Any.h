@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_ANY_H
-#define ICL_ANY_H
+#pragma once
 
 #include <ICLUtils/StringUtils.h>
 
@@ -169,4 +168,3 @@ namespace icl{
   } // namespace utils
 }
 
-#endif

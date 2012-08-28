@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_GRABBER_DEVICE_DESCRIPTION_H
-#define ICL_GRABBER_DEVICE_DESCRIPTION_H
+#pragma once
 
 #include <string>
 #include <iostream>
@@ -70,4 +69,3 @@ namespace icl{
 
 
 
-#endif

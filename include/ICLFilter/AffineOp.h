@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef AFFINE_OP_H
-#define AFFINE_OP_H
+#pragma once
 
 #include <ICLFilter/BaseAffineOp.h>
 #include <ICLUtils/Uncopyable.h>
@@ -161,4 +160,3 @@ namespace icl{
 }
 
 
-#endif

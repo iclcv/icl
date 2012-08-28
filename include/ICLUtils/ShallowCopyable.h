@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_SHALLOW_COPYABLE_H
-#define ICL_SHALLOW_COPYABLE_H
+#pragma once
 
 #include <ICLUtils/SmartPtr.h>
 namespace icl{
@@ -148,4 +147,3 @@ namespace icl{
     };
   } // namespace utils
 }
-#endif

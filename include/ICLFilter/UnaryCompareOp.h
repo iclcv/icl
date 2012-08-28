@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef UNARY_COMPARE_OP_H
-#define UNARY_COMPARE_OP_H
+#pragma once
 
 #include <ICLFilter/UnaryOp.h>
 
@@ -153,4 +152,3 @@ namespace icl {
   } // namespace filter
 } // namespace icl
 
-#endif

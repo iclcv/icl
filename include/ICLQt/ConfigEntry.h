@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_CONFIG_ENTRY_H
-#define ICL_CONFIG_ENTRY_H
+#pragma once
 
 #include <ICLUtils/ConfigFile.h>
 #include <ICLUtils/Point.h>
@@ -145,4 +144,3 @@ namespace icl{
 }
 
 
-#endif

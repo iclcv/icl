@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_WIDGET_H
-#define ICL_WIDGET_H
+#pragma once
 
 #include <QtOpenGL/QGLWidget>
 #include <ICLCore/ImgBase.h>
@@ -406,4 +405,3 @@ int main(int n, char **args){
   };
   
 }
-#endif

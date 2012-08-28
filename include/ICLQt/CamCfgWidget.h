@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_CAM_CFG_WIDGET_H
-#define ICL_CAM_CFG_WIDGET_H
+#pragma once
 
 #include <ICLCore/ImgBase.h>
 #include <ICLQt/GUI.h>
@@ -123,4 +122,3 @@ namespace icl{
   } // namespace qt
 }
 
-#endif

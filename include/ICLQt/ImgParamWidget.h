@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_IMG_PARAM_WIDGET_H
-#define ICL_IMG_PARAM_WIDGET_H
+#pragma once
 
 #include <QtGui/QWidget>
 #include <QtCore/QString>
@@ -76,4 +75,3 @@ namespace icl{
   } // namespace qt
 }
 
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_TAB_HANDLE_H
-#define ICL_TAB_HANDLE_H
+#pragma once
 
 #include <QtGui/QTabWidget>
 #include <QtGui/QLayout>
@@ -64,4 +63,3 @@ namespace icl{
   } // namespace qt
 }
 
-#endif

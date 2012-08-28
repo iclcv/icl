@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_GUI_WIDGET_H
-#define ICL_GUI_WIDGET_H
+#pragma once
 
 #include <QtGui/QWidget>
 #include <ICLUtils/Size.h>
@@ -139,4 +138,3 @@ namespace icl{
     };
   } // namespace qt
 }
-#endif

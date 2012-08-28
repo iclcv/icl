@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_IMAGE_COMPRESSOR_H
-#define ICL_IMAGE_COMPRESSOR_H
+#pragma once
 
 #include <ICLCore/Img.h>
 #include <ICLUtils/Uncopyable.h>
@@ -249,4 +248,3 @@ namespace icl{
   
   } // namespace io
 }
-#endif

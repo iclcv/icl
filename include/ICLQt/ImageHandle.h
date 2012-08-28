@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_IMAGE_HANDLE_H
-#define ICL_IMAGE_HANDLE_H
+#pragma once
 
 
 #include <ICLQt/GUIHandle.h>
@@ -86,4 +85,3 @@ namespace icl{
   } // namespace qt
 }
 
-#endif

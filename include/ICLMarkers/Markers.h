@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_MARKERS_H
-#define ICL_MARKERS_H
+#pragma once
 
 #include <ICLMarkers/FiducialDetector.h>
 
@@ -186,4 +185,3 @@ int main(int n, char **ppc){
 }
 \endcode
 */
-#endif

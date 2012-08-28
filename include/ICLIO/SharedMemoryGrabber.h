@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_SHARED_MEMORY_GRABBER_H
-#define ICL_SHARED_MEMORY_GRABBER_H
+#pragma once
 
 #include <ICLIO/GrabberHandle.h>
 
@@ -147,4 +146,3 @@ namespace icl{
   } // namespace io
 }
 
-#endif

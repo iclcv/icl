@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_GABOR_OP
-#define ICL_GABOR_OP
+#pragma once
 
 #include <ICLFilter/UnaryOp.h>
 #include <ICLCore/Img.h>
@@ -219,4 +218,3 @@ namespace icl{
 
 
 
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef IMG_PARAMS_H
-#define IMG_PARAMS_H
+#pragma once
 
 #include <ICLUtils/Point.h>
 #include <ICLUtils/Size.h>
@@ -294,4 +293,3 @@ namespace icl{
   } // namespace core
 }
 
-#endif

@@ -32,8 +32,7 @@
  **                                                                 **
  *********************************************************************/
 
-#ifndef ICL_SOFTPOSIT_H_
-#define ICL_SOFTPOSIT_H_
+#pragma once
 
 #include <ICLMath/DynMatrix.h>
 #include <ICLMath/FixedVector.h>
@@ -213,4 +212,3 @@ namespace icl{
 
 }
 
-#endif /* ICL_SOFTPOSIT_H_ */

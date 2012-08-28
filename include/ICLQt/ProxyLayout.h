@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_PROXY_LAYOUT_H
-#define ICL_PROXY_LAYOUT_H
+#pragma once
 
 #include <ICLQt/GUIWidget.h>
 
@@ -54,4 +53,3 @@ namespace icl{
 
 
 
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_PLOT_HANDLE_H
-#define ICL_PLOT_HANDLE_H
+#pragma once
 
 #include <ICLQt/GUIHandle.h>
 #include <ICLQt/PlotWidget.h>
@@ -71,4 +70,3 @@ namespace icl{
   } // namespace qt
 }
 
-#endif

@@ -31,8 +31,7 @@
 ** Excellence Initiative.                                          **
 **                                                                 **
 *********************************************************************/
-#ifndef ICL_COLOR_SEGMENTATION_OP_H
-#define ICL_COLOR_SEGMENTATION_OP_H
+#pragma once
 
 #include <ICLFilter/UnaryOp.h>
 #include <ICLCore/Img.h>
@@ -214,4 +213,3 @@ namespace icl{
   } // namespace filter
 }
 
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_LOW_LEVEL_PLOT_WIDGET_H
-#define ICL_LOW_LEVEL_PLOT_WIDGET_H
+#pragma once
 
 #include <ICLQt/AbstractPlotWidget.h>
 
@@ -358,4 +357,3 @@ namespace icl{
   } // namespace qt
 }
 
-#endif

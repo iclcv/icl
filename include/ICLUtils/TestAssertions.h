@@ -35,8 +35,7 @@
 /// Provide several functions for conviently testing if two matrices / vectors
 /// are (almost) equal with GTest.
 
-#ifndef ICL_TEST_ASSERTIONS_H
-#define ICL_TEST_ASSERTIONS_H
+#pragma once
 
 #ifdef HAVE_GTEST
 
@@ -136,5 +135,3 @@ testing::AssertionResult isNear(const Point32f &p,
 }
 
 #endif
-#endif
-

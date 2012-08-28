@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_WIDGET_CAPTURE_MODE_H
-#define ICL_WIDGET_CAPTURE_MODE_H
+#pragma once
 
 namespace icl{
   namespace qt{
@@ -45,4 +44,3 @@ namespace icl{
   } // namespace qt
 }
 
-#endif

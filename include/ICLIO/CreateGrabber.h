@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_CREATE_GRABBER_H
-#define ICL_CREATE_GRABBER_H
+#pragma once
 
 #include <ICLCore/Color.h>
 #include <ICLUtils/Time.h>
@@ -86,4 +85,3 @@ namespace icl{
   } // namespace io
 }
 
-#endif

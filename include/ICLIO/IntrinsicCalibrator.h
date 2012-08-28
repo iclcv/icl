@@ -31,8 +31,7 @@
  ** Excellence Initiative.                                          **
  **                                                                 **
  *********************************************************************/
-#ifndef ICL_IntrinsicCalibrator_H_
-#define ICL_IntrinsicCalibrator_H_
+#pragma once
 
 #include <ICLCore/Img.h>
 #include <ICLUtils/BasicTypes.h>
@@ -351,4 +350,3 @@ namespace icl{
   } // namespace io
 }
 
-#endif /* ICL_IntrinsicCalibrator_H_ */

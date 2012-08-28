@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef THRESHOLD_OP_H
-#define THRESHOLD_OP_H
+#pragma once
 
 #include <ICLFilter/UnaryOp.h>
 
@@ -193,4 +192,3 @@ namespace icl {
   } // namespace filter
 } // namespace icl
 
-#endif

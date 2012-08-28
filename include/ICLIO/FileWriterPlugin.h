@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FILE_WRITER_PLUGIN_H
-#define ICL_FILE_WRITER_PLUGIN_H
+#pragma once
 
 #include <ICLCore/Img.h>
 #include <ICLIO/File.h>
@@ -50,4 +49,3 @@ namespace icl{
     };
   } // namespace io
 }
-#endif

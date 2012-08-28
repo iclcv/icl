@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_DATA_SEGMENT_H
-#define ICL_DATA_SEGMENT_H
+#pragma once
 
 #include <ICLMath/FixedVector.h>
 #include <ICLCore/CoreFunctions.h>
@@ -221,6 +220,4 @@ int main(){
   /** \endcond */
 
 }
-
-#endif
 

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_STRING_HANDLE_H
-#define ICL_STRING_HANDLE_H
+#pragma once
 
 #include <string>
 #include <QtCore/QString>
@@ -77,4 +76,3 @@ namespace icl{
   } // namespace qt
 }
 
-#endif

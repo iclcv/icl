@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_COLOR_DISTANCE_OP_H
-#define ICL_COLOR_DISTANCE_OP_H
+#pragma once
 
 #include <ICLFilter/UnaryOp.h>
 
@@ -103,4 +102,3 @@ namespace icl {
    
   } // namespace filter
 }
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_STACKTIMER_H
-#define ICL_STACKTIMER_H
+#pragma once
 
 
 #include <ICLUtils/Timer.h>
@@ -204,4 +203,3 @@ namespace icl{
     StackTimer __stacktimer(&__notifier);
   } // namespace utils
 }
-#endif

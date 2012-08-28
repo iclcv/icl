@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_PRIMITIVE_TYPE_H
-#define ICL_PRIMITIVE_TYPE_H
+#pragma once
 
 namespace icl{
   namespace geom{
@@ -52,4 +51,3 @@ namespace icl{
   } // namespace geom
 }
 
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_WARP_OP_H
-#define ICL_WARP_OP_H
+#pragma once
 
 #include <ICLFilter/UnaryOp.h>
 #include <ICLCore/Img.h>
@@ -146,4 +145,3 @@ namespace icl{
   } // namespace filter
 }
 
-#endif

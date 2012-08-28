@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_DC_FRAME_QUEUE_H
-#define ICL_DC_FRAME_QUEUE_H
+#pragma once
 
 #include <ICLIO/DC.h>
 #include <ICLIO/DCDeviceOptions.h>
@@ -127,4 +126,3 @@ namespace icl{
   } // namespace io
 }
 
-#endif

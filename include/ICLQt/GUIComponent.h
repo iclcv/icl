@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_GUI_COMPONENT_H
-#define ICL_GUI_COMPONENT_H
+#pragma once
 
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Range.h>
@@ -252,4 +251,3 @@ namespace icl{
   } // namespace qt
 }
 
-#endif

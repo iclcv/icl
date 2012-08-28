@@ -31,8 +31,7 @@
  ** Excellence Initiative.                                          **
  **                                                                 **
  *********************************************************************/
-#ifndef ICL_OPENCVCAMCALIB_H_
-#define ICL_OPENCVCAMCALIB_H_
+#pragma once
 
 #include <ICLCore/Img.h>
 #include <ICLUtils/BasicTypes.h>
@@ -107,4 +106,3 @@ namespace icl{
 };
 }
 
-#endif /* ICL_OPENCVCAMCALIB_H_ */

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_COLOR_LABEL_H
-#define ICL_COLOR_LABEL_H
+#pragma once
 
 #include <ICLQt/ThreadedUpdatableWidget.h>
 #include <QtCore/QMutex>
@@ -99,4 +98,3 @@ namespace icl{
   } // namespace qt
 }
 
-#endif

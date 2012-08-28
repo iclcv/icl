@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef BCH_CODE_H
-#define BCH_CODE_H
+#pragma once
 
 #include <bitset>
 #include <ICLUtils/BasicTypes.h>
@@ -158,4 +157,3 @@ namespace icl{
     };
   } // namespace markers
 } 
-#endif

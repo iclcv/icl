@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_DC_DEVICE_H
-#define ICL_DC_DEVICE_H
+#pragma once
 
 #include <ICLIO/DC.h>
 #include <string>
@@ -200,4 +199,3 @@ namespace icl{
   } // namespace io
 }
 
-#endif

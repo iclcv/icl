@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FASTMEDIANLIST_H
-#define ICL_FASTMEDIANLIST_H
+#pragma once
 
 #include <string.h>
 #include <cmath>
@@ -220,4 +219,3 @@ namespace icl{
   } // namespace utils
 }
 
-#endif

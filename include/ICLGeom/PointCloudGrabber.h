@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_POINT_CLOUD_GRABBER_H
-#define ICL_POINT_CLOUD_GRABBER_H
+#pragma once
 
 #include <ICLGeom/PointCloudObjectBase.h>
 
@@ -48,4 +47,3 @@ namespace icl{
   } // namespace geom
 }
 
-#endif

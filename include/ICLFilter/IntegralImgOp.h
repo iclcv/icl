@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef INTEGRALIMG_OP_H
-#define INTEGRALIMG_OP_H
+#pragma once
 
 #include <ICLCore/Img.h>
 #include <vector>
@@ -137,4 +136,3 @@ namespace icl{
   } // namespace filter
 }
 
-#endif

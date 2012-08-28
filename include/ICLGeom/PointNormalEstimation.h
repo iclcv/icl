@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_POINT_NORMAL_ESTIMATION_H
-#define ICL_POINT_NORMAL_ESTIMATION_H
+#pragma once
 
 #include <ICLCV/Quick.h>
 #include <ICLGeom/GeomDefs.h>
@@ -216,4 +215,3 @@ namespace icl{
     };
   } // namespace geom
 }
-#endif

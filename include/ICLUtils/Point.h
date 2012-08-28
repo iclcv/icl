@@ -32,8 +32,8 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_POINT_H
-#define ICL_POINT_H
+#pragma once
+
 #ifdef HAVE_IPP
 #include <ipp.h>
 #endif
@@ -125,4 +125,3 @@ namespace icl{
   } // namespace utils
 } // namespace icl
 
-#endif // ICLPOINT_H

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_IMG_H
-#define ICL_IMG_H
+#pragma once
 
 #include <ICLCore/ImgBase.h>
 #include <ICLCore/ImgIterator.h>
@@ -1937,4 +1936,3 @@ namespace icl {
 
 #undef CHECK_VALUES
 
-#endif //Img_H

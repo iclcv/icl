@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_MULTICAM_FIDUCIAL_H
-#define ICL_MULTICAM_FIDUCIAL_H
+#pragma once
 
 #include <ICLMarkers/FiducialDetector.h>
 #include <ICLGeom/GeomDefs.h>
@@ -115,4 +114,3 @@ namespace icl{
   } // namespace markers
 }
 
-#endif

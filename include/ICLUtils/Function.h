@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FUNCTION_H
-#define ICL_FUNCTION_H
+#pragma once
 
 #include <ICLUtils/SmartPtr.h>
 #include <functional>
@@ -637,4 +636,3 @@ namespace icl{
   } // namespace utils
 }
 
-#endif

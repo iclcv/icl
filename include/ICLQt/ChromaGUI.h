@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_CHROMA_GUI_H
-#define ICL_CHROMA_GUI_H
+#pragma once
 
 #include <ICLQt/GUI.h>
 #include <ICLCore/ChromaClassifier.h>
@@ -101,4 +100,3 @@ namespace icl{
   } // namespace qt
 }
 
-#endif

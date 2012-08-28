@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_COMBO_HANDLE_H
-#define ICL_COMBO_HANDLE_H
+#pragma once
 
 #include <string>
 #include <ICLQt/GUIHandle.h>
@@ -105,4 +104,3 @@ namespace icl{
 }
 
 
-#endif

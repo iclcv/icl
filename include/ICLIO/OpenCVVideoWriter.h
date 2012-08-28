@@ -32,8 +32,7 @@
  **                                                                 **
  *********************************************************************/
 
-#ifndef ICL_OPENCVVIDEOWRITER_H
-#define ICL_OPENCVVIDEOWRITER_H
+#pragma once
 
 #include <string>
 
@@ -94,4 +93,3 @@ namespace icl{
 
 }
 
-#endif

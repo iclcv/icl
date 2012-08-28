@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_DEPTH_CAMERA_POINT_CLOUD_GRABBER_H
-#define ICL_DEPTH_CAMERA_POINT_CLOUD_GRABBER_H
+#pragma once
 
 #include <ICLGeom/PointCloudGrabber.h>
 
@@ -95,4 +94,3 @@ namespace icl{
   } // namespace geom
 }
 
-#endif

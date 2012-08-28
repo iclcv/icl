@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_APPLICATION_H
-#define ICL_APPLICATION_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -173,4 +172,3 @@ namespace icl{
   } // namespace qt
 }
 
-#endif

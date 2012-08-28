@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_SkinOp_H
-#define ICL_SkinOp_H
+#pragma once
 
 #include <ICLFilter/UnaryOp.h>
 #include <ICLUtils/Uncopyable.h>
@@ -167,4 +166,3 @@ namespace icl {
 
 } //namespace icl
 
-#endif //Skin_H

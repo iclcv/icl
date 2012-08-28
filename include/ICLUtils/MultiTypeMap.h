@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_MULTI_TYPE_MAP_H
-#define ICL_MULTI_TYPE_MAP_H
+#pragma once
 
 #include <string>
 #include <map>
@@ -302,4 +301,3 @@ namespace icl{
 }
 
 
-#endif

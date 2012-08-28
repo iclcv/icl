@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_SPLITTER_HANDLE_H
-#define ICL_SPLITTER_HANDLE_H
+#pragma once
 
 #include <QtGui/QSplitter>
 #include <ICLQt/GUIHandle.h>
@@ -66,4 +65,3 @@ namespace icl{
   } // namespace qt
 }
 
-#endif

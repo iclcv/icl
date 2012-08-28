@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_CORNER_DETECTOR_CSS_H
-#define ICL_CORNER_DETECTOR_CSS_H
+#pragma once
 
 #include <ICLUtils/Point32f.h>
 #include <ICLCore/Types.h>
@@ -284,4 +283,3 @@ namespace icl{
   } // namespace core
 }
 
-#endif

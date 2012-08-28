@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FIDUCIAL_DETECTOR_PLUGING_AMOEBA_H
-#define ICL_FIDUCIAL_DETECTOR_PLUGING_AMOEBA_H
+#pragma once
 
 #include <ICLMarkers/FiducialDetectorPluginHierarchical.h>
 
@@ -81,4 +80,3 @@ namespace icl{
   } // namespace markers
 }
 
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FILE_GRABBER_H
-#define ICL_FILE_GRABBER_H
+#pragma once
 
 #include <ICLIO/FileGrabberPlugin.h>
 #include <ICLIO/GrabberHandle.h>
@@ -254,4 +253,3 @@ namespace icl{
   } // namespace io
 }
 
-#endif

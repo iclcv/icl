@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_COLOR_HANDLE_H
-#define ICL_COLOR_HANDLE_H
+#pragma once
 
 #include <ICLQt/GUIHandle.h>
 #include <ICLQt/ColorLabel.h>
@@ -87,4 +86,3 @@ namespace icl{
   } // namespace qt
 }                               
 
-#endif

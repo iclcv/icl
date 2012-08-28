@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_MARKER_METRIC_ICL1_H
-#define ICL_MARKER_METRIC_ICL1_H
+#pragma once
 
 #include <ICLMarkers/MarkerCodeICL1.h>
 #include <ICLUtils/Rect32f.h>
@@ -99,4 +98,3 @@ namespace icl{
   } // namespace markers
 }
 
-#endif

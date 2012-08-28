@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_XML_H
-#define ICL_XML_H
+#pragma once
 
 #include <ICLUtils/PugiXML.h>
 
@@ -108,4 +107,3 @@ namespace icl{
   } // namespace utils
 }
 
-#endif

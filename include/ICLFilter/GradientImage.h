@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_GRADIENT_IMAGE_H
-#define ICL_GRADIENT_IMAGE_H
+#pragma once
 
 #include <ICLCore/ImgBase.h>
 #include <ICLCore/Img.h>
@@ -99,4 +98,3 @@ namespace icl{
   } // namespace filter
 }
 
-#endif

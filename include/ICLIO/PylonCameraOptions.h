@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_PYLON_CAMERA_OPTIONS_H
-#define ICL_PYLON_CAMERA_OPTIONS_H
+#pragma once
 
 #include <pylon/PylonIncludes.h>
 
@@ -224,6 +223,4 @@ namespace icl {
     } //namespace pylon
   } // namespace io
 } //namespace icl
-
-#endif
 

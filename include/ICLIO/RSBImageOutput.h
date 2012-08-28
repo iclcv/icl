@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_RSB_IMAGE_OUTPUT_H
-#define ICL_RSB_IMAGE_OUTPUT_H
+#pragma once
 
 #include <ICLIO/GenericImageOutput.h>
 
@@ -77,4 +76,3 @@ namespace icl{
   } // namespace io
 }
 
-#endif

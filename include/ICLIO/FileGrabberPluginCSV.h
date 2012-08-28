@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FILE_GRABBER_PLUGIN_CSV_H
-#define ICL_FILE_GRABBER_PLUGIN_CSV_H
+#pragma once
 
 #include <ICLIO/FileGrabberPlugin.h>
 
@@ -83,4 +82,3 @@ namespace icl{
   } // namespace io
 }
 
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FLOAT_HANDLE_H
-#define ICL_FLOAT_HANDLE_H
+#pragma once
 
 #include <ICLQt/GUIHandle.h>
 /** \cond */
@@ -62,4 +61,3 @@ namespace icl{
   } // namespace qt
 }
 
-#endif

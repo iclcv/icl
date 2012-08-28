@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_PROGARG_H
-#define ICL_PROGARG_H
+#pragma once
 
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Exception.h>
@@ -476,4 +475,3 @@ namespace icl{
   } // namespace utils
 }
 
-#endif

@@ -33,8 +33,7 @@
 *********************************************************************/
 
 
-#ifndef ICL_RSB_GRABBER_H
-#define ICL_RSB_GRABBER_H
+#pragma once
 
 #include <ICLIO/GrabberHandle.h>
 
@@ -145,4 +144,3 @@ namespace icl{
   } // namespace io
 }
 
-#endif

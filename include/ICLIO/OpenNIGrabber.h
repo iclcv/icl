@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_OPENNI_GRABBER_H
-#define ICL_OPENNI_GRABBER_H
+#pragma once
 
 #include <ICLIO/GrabberHandle.h>
 #include <ICLUtils/Time.h>
@@ -177,4 +176,3 @@ namespace icl {
   } // namespace io
 } //namespace icl
 
-#endif

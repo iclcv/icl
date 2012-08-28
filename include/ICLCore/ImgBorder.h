@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef IMG_BORDER_H
-#define IMG_BORDER_H
+#pragma once
 
 #include <ICLCore/Img.h>
 
@@ -107,4 +106,3 @@ namespace icl{
   } // namespace core
 }
 
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef LUT_OP_3C_H
-#define LUT_OP_3C_H
+#pragma once
 
 #include <ICLFilter/UnaryOp.h>
 #include <ICLCore/Img.h>
@@ -259,4 +258,3 @@ namespace icl {
   } // namespace filter
 } // namespace icl
 
-#endif

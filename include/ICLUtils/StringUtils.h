@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_STRING_UTILS_H
-#define ICL_STRING_UTILS_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -277,7 +276,4 @@ namespace icl{
     
   } // namespace utils
 }
-
-#endif
-
 

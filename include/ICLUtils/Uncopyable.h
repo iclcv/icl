@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_UNCOPYABLE_H
-#define ICL_UNCOPYABLE_H
+#pragma once
 
 namespace icl{
   namespace utils{
@@ -83,4 +82,3 @@ namespace icl{
   } // namespace utils
 }
 
-#endif

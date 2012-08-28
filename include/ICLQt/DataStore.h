@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_DATA_STORE_H
-#define ICL_DATA_STORE_H
+#pragma once
 
 #include <ICLUtils/MultiTypeMap.h>
 #include <ICLUtils/Exception.h>
@@ -225,4 +224,3 @@ namespace icl{
 }
 
 
-#endif

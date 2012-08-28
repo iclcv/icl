@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_JPEG_DECODER_H
-#define ICL_JPEG_DECODER_H
+#pragma once
 
 #include <ICLIO/File.h>
 #include <ICLCore/Types.h>
@@ -67,6 +66,4 @@ namespace icl{
     };
   } // namespace io
 }
-
-#endif // GUARD
 

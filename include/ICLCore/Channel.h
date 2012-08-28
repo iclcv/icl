@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_CHANNEL_H
-#define ICL_CHANNEL_H
+#pragma once
 
 #include <ICLCore/Types.h>
 #include <ICLUtils/Size.h>
@@ -350,4 +349,3 @@ namespace icl{
     /** \endcond */
   } // namespace core
 }
-#endif

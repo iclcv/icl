@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_GUI_HANDLE_H
-#define ICL_GUI_HANDLE_H
+#pragma once
 
 #include <ICLQt/GUIHandleBase.h>
 
@@ -81,4 +80,3 @@ namespace icl{
   } // namespace qt
 }
 
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_JPEG_ENCODER_H
-#define ICL_JPEG_ENCODER_H
+#pragma once
 
 #include <ICLCore/ImgBase.h>
 #include <ICLUtils/Uncopyable.h>
@@ -77,5 +76,3 @@ namespace icl{
     
   } // namespace io
 }
-
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_DRAW_WIDGET_H
-#define ICL_DRAW_WIDGET_H
+#pragma once
 
 #include <ICLQt/Widget.h>
 #include <QtCore/QMutex>
@@ -518,4 +517,3 @@ int main(int n, char **ppc){
   };
 }
 
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_DC_GRABBER_THREAD_H
-#define ICL_DC_GRABBER_THREAD_H
+#pragma once
 
 #include <ICLIO/DC.h>
 #include <ICLIO/DCDeviceOptions.h>
@@ -166,4 +165,3 @@ namespace icl{
   } // namespace io
 }
 
-#endif

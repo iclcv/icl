@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_MULTI_CAM_FIDUCIAL_IMPL_H
-#define ICL_MULTI_CAM_FIDUCIAL_IMPL_H
+#pragma once
 
 #include <ICLMarkers/Fiducial.h>
 #include <ICLGeom/Camera.h>
@@ -83,4 +82,3 @@ namespace icl{
   
   } // namespace markers
 }
-#endif 

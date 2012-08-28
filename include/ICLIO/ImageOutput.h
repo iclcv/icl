@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_IMAGE_OUTPUT_H
-#define ICL_IMAGE_OUTPUT_H
+#pragma once
 
 #include <ICLCore/ImgBase.h>
 #include <ICLIO/ImageCompressor.h>
@@ -71,4 +70,3 @@ namespace icl{
   } // namespace io
 }
 
-#endif

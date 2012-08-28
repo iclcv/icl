@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_IMAGE_RECTIFICATION_H
-#define ICL_IMAGE_RECTIFICATION_H
+#pragma once
 
 #include <ICLCore/Img.h>
 #include <ICLMath/FixedMatrix.h>
@@ -89,6 +88,4 @@ namespace icl{
   
   } // namespace markers
 }
-
-#endif
 

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef RANGE_H
-#define RANGE_H
+#pragma once
 
 #include <ICLUtils/BasicTypes.h>
 #include <ICLUtils/ClippedCast.h>
@@ -142,4 +141,3 @@ namespace icl{
   
   } // namespace utils
 }
-#endif

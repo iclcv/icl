@@ -34,8 +34,7 @@
 
 
 
-#ifndef ICL_FUDUCIAL_DETECTOR_PLUGIN_ART_H
-#define ICL_FUDUCIAL_DETECTOR_PLUGIN_ART_H
+#pragma once
 
 #include <ICLMarkers/FiducialDetectorPluginForQuads.h>
 
@@ -98,4 +97,3 @@ namespace icl{
   } // namespace markers
 }
 
-#endif

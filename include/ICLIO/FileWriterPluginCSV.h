@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FILE_WRITER_PLUGIN_CSV_H
-#define ICL_FILE_WRITER_PLUGIN_CSV_H
+#pragma once
 
 #include <ICLIO/FileWriterPlugin.h>
 
@@ -60,4 +59,3 @@ namespace icl{
     };
   } // namespace io
 }
-#endif

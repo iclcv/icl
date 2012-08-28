@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_GUI_DOCUMENTATION_H
-#define ICL_GUI_DOCUMENTATION_H
+#pragma once
 
 
 //    The GUI documentation is outsourced to decouple it from dependency-checks during build
@@ -1188,4 +1187,3 @@ int main(int n, char **ppc){
       to work with this reference later on.
   */
 
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_GUI_LABEL_H
-#define ICL_GUI_LABEL_H
+#pragma once
 
 #include <string>
 #include <QtCore/QString>
@@ -90,4 +89,3 @@ namespace icl{
   } // namespace qt
 }                               
 
-#endif

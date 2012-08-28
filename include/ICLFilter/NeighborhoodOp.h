@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef NEIGHBORHOOD_OP_H
-#define NEIGHBORHOOD_OP_H
+#pragma once
 
 #include <ICLFilter/UnaryOp.h>
 
@@ -137,4 +136,3 @@ namespace icl {
     };
   } // namespace filter
 }
-#endif

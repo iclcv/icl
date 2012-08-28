@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_INPLACE_LOGICAL_OP
-#define ICL_INPLACE_LOGICAL_OP
+#pragma once
 
 #include <ICLFilter/InplaceOp.h>
 
@@ -117,4 +116,3 @@ namespace icl{
   } // namespace filter
 }
 
-#endif

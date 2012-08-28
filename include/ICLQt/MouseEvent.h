@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef MOUSE_EVENT_H
-#define MOUSE_EVENT_H
+#pragma once
 
 #include <vector>
 #include <QtCore/Qt>
@@ -253,4 +252,3 @@ namespace icl{
   } // namespace qt
 }
 
-#endif

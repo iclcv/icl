@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_CONFIGURABLE_H
-#define ICL_CONFIGURABLE_H
+#pragma once
 
 #include <vector>
 #include <string>
@@ -477,4 +476,3 @@ namespace icl{
   } // namespace utils
 }
 
-#endif

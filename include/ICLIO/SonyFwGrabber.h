@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICLSONYFWGRABBER_H
-#define ICLSONYFWGRABBER_H
+#pragma once
 
 #ifdef WIN32
 #ifdef WITH_SONYIIDC
@@ -123,4 +122,3 @@ namespace icl {
 
 #endif //SONYIIDC
 #endif //WIN32
-#endif //SONYFWGRABBER_H

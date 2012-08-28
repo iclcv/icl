@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_INPLACE_ARITHMETICAL_OP
-#define ICL_INPLACE_ARITHMETICAL_OP
+#pragma once
 
 #include <ICLFilter/InplaceOp.h>
 
@@ -93,4 +92,3 @@ namespace icl{
   } // namespace filter
 }
 
-#endif

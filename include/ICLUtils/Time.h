@@ -43,8 +43,7 @@
 //
 // **********************************************************************
 
-#ifndef ICL_UTILS_TIME_H
-#define ICL_UTILS_TIME_H
+#pragma once
 
 
 namespace icl{
@@ -281,4 +280,3 @@ namespace icl{
   } // namespace utils
 } // End namespace icl
 
-#endif

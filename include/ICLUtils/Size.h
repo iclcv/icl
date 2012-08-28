@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_SIZE_H
-#define ICL_SIZE_H
+#pragma once
 
 #ifdef HAVE_IPP
 #include <ipp.h>
@@ -222,4 +221,3 @@ namespace icl {
   } // namespace utils
 }// namespace icl
 
-#endif // ICL_SIZE_H

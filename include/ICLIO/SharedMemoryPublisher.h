@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_SHARED_MEMORY_PUBLISHER_H
-#define ICL_SHARED_MEMORY_PUBLISHER_H
+#pragma once
 
 #include <ICLCore/ImgBase.h>
 #include <ICLIO/ImageOutput.h>
@@ -76,4 +75,3 @@ namespace icl{
     };
   } // namespace io
 }
-#endif

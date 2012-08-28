@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef QIMAGE_CONVERTER_H
-#define QIMAGE_CONVERTER_H
+#pragma once
 
 #include <ICLCore/Types.h>
 
@@ -157,4 +156,3 @@ namespace icl{
   } // namespace qt
 }
 
-#endif

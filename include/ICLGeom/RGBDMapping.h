@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_RGBD_MAPPING_H
-#define ICL_RGBD_MAPPING_H
+#pragma once
 
 #include <ICLGeom/Camera.h>
 
@@ -107,4 +106,3 @@ namespace icl{
   } // namespace geom
 }
 
-#endif

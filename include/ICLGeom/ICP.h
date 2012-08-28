@@ -31,8 +31,7 @@
  ** Excellence Initiative.                                          **
  **                                                                 **
  *********************************************************************/
-#ifndef ICL_ICP_H_
-#define ICL_ICP_H_
+#pragma once
 
 #include <ICLMath/DynMatrix.h>
 #include <ICLUtils/Macros.h>
@@ -114,4 +113,3 @@ namespace icl{
   } // namespace geom
 }
 
-#endif /* ICL_ICP_H_ */

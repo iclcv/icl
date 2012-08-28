@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_SEMAPHORE_H
-#define ICL_SEMAPHORE_H
+#pragma once
 
 #include <ICLUtils/ShallowCopyable.h>
 
@@ -89,4 +88,3 @@ namespace icl{
   } // namespace utils
 }
 
-#endif

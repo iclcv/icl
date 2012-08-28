@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef UNARY_OP_H
-#define UNARY_OP_H
+#pragma once
 
 #include <ICLFilter/OpROIHandler.h>
 #include <ICLUtils/Configurable.h>
@@ -184,4 +183,3 @@ namespace icl{
 }
 
 
-#endif

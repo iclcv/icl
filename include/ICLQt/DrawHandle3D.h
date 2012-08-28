@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_DRAW_HANDLE_3D_H
-#define ICL_DRAW_HANDLE_3D_H
+#pragma once
 
 #include <ICLQt/GUIHandle.h>
 
@@ -81,4 +80,3 @@ namespace icl{
   } // namespace qt
 }
 
-#endif

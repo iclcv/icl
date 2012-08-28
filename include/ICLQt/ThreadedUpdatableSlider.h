@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_THREADED_UPDATABLE_SLIDER_H
-#define ICL_THREADED_UPDATABLE_SLIDER_H
+#pragma once
 
 #include <QtGui/QSlider>
 #include <QtGui/QApplication>
@@ -120,4 +119,3 @@ namespace icl{
   } // namespace qt
 }
 
-#endif

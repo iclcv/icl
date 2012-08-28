@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_QT_H
-#define ICL_QT_H
+#pragma once
 
 #include <ICLQt/Widget.h>
 #include <ICLQt/DrawWidget.h>
@@ -205,4 +204,3 @@
     
 */
 
-#endif

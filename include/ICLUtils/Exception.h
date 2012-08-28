@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICLEXCEPTION_H
-#define ICLEXCEPTION_H
+#pragma once
 
 #include <iostream>
 #include <exception>
@@ -142,4 +141,3 @@ namespace icl {
   } // namespace utils
 }
 
-#endif // ICLEXCEPTION

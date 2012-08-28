@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef BINARY_OP_H
-#define BINARY_OP_H
+#pragma once
 
 #include <ICLFilter/OpROIHandler.h>
 
@@ -133,4 +132,3 @@ namespace icl{
   } // namespace filter
 }
 
-#endif

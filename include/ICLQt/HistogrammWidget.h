@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_HISTOGRAMM_WIDGET_H
-#define ICL_HISTOGRAMM_WIDGET_H
+#pragma once
 
 #include <ICLQt/PlotWidget.h>
 #include <ICLQt/ImageStatistics.h>
@@ -73,4 +72,3 @@ namespace icl{
 }
 
 
-#endif

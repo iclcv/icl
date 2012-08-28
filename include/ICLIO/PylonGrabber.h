@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_PYLON_GRABBER_H
-#define ICL_PYLON_GRABBER_H
+#pragma once
 
 #include <pylon/PylonIncludes.h>
 
@@ -219,6 +218,4 @@ namespace icl {
   
   } // namespace io
 } //namespace icl
-
-#endif
 

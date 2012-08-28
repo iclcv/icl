@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_POINT_CLOUD_OBJECT_BASE_H
-#define ICL_POINT_CLOUD_OBJECT_BASE_H
+#pragma once
 
 #include <ICLGeom/SceneObject.h>
 #include <ICLGeom/DataSegment.h>
@@ -248,4 +247,3 @@ namespace icl{
   } // namespace geom
 }
 
-#endif

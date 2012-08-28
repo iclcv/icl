@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FIDUCIAL_DETECTOR_H
-#define ICL_FIDUCIAL_DETECTOR_H
+#pragma once
 
 #include <ICLUtils/Configurable.h>
 #include <ICLUtils/Uncopyable.h>
@@ -208,4 +207,3 @@ namespace icl{
   } // namespace markers
 }
 
-#endif

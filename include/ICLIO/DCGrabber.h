@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_DC_GRABBER_H
-#define ICL_DC_GRABBER_H
+#pragma once
 
 
 #include <ICLIO/DC.h>
@@ -233,4 +232,3 @@ namespace icl{
   } // namespace io
 }
   
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_DC_DEVICE_FEATURES_H
-#define ICL_DC_DEVICE_FEATURES_H
+#pragma once
 
 #include <ICLIO/DCDevice.h>
 #include <ICLUtils/ShallowCopyable.h>
@@ -116,4 +115,3 @@ namespace icl{
     };
   } // namespace io
 }
-#endif

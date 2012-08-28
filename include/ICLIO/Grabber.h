@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICLGRABBER_H
-#define ICLGRABBER_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -443,4 +442,3 @@ namespace icl {
   } // namespace io
 } // namespace icl
 
-#endif

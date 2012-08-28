@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FFTOP_H_
-#define ICL_FFTOP_H_
+#pragma once
 #include <ICLMath/FFTUtils.h>
 #include <ICLCore/ImgBase.h>
 #include <ICLCore/Img.h>
@@ -227,4 +226,3 @@ namespace icl{
   } // namespace filter
 }
 
-#endif /* ICL_FFTOP_H_ */

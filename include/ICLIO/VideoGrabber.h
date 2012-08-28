@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_VIDEO_GRABBER_H
-#define ICL_VIDEO_GRABBER_H
+#pragma once
 
 #include <ICLIO/Grabber.h>
 #include <ICLUtils/Exception.h>
@@ -140,4 +139,3 @@ namespace icl{
   } // namespace io
 }
 
-#endif

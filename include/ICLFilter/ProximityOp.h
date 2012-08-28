@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef PROXIMITY_OP_H
-#define PROXIMITY_OP_H
+#pragma once
 
 #include <ICLFilter/BinaryOp.h>
 #include <ICLFilter/NeighborhoodOp.h>
@@ -186,6 +185,3 @@ namespace icl {
     };
   } // namespace filter
 } // namespace icl
-#endif
-
-

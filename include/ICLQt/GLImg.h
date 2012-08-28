@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_GL_IMG_H
-#define ICL_GL_IMG_H
+#pragma once
 
 #include <ICLCore/ImgBase.h>
 #include <ICLUtils/Uncopyable.h>
@@ -314,4 +313,3 @@ namespace icl{
 
 
 
-#endif

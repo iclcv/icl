@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_MULTI_DRAW_HANDLE_H
-#define ICL_MULTI_DRAW_HANDLE_H
+#pragma once
 
 #include <ICLQt/GUIHandle.h>
 #include <QtGui/QTabBar>
@@ -102,4 +101,3 @@ namespace icl{
   } // namespace qt
 }
 
-#endif

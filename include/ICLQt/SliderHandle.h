@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_SLIDER_HANDLE_H
-#define ICL_SLIDER_HANDLE_H
+#pragma once
 
 #include <ICLQt/GUIHandle.h>
 #include <ICLQt/ThreadedUpdatableSlider.h>
@@ -125,4 +124,3 @@ namespace icl{
   } // namespace qt
 }
 
-#endif

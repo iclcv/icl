@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_CLIPPED_CAST_H
-#define ICL_CLIPPED_CAST_H
+#pragma once
 
 #include <limits>
 
@@ -91,4 +90,3 @@ namespace icl{
 }
 
 
-#endif

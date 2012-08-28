@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_GUI_DEFINITION_H
-#define ICL_GUI_DEFINITION_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -161,4 +160,3 @@ namespace icl{
   } // namespace qt
 }
 
-#endif

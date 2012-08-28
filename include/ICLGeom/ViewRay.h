@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_VIEW_RAY_H
-#define ICL_VIEW_RAY_H
+#pragma once
 
 #include <ICLGeom/GeomDefs.h>
 #include <ICLUtils/Exception.h>
@@ -97,4 +96,3 @@ namespace icl{
   } // namespace geom
 }
 
-#endif

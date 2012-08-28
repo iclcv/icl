@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_MULTI_THREADER_H
-#define ICL_MULTI_THREADER_H
+#pragma once
 
 #include <ICLUtils/Semaphore.h>
 #include <ICLUtils/Mutex.h>
@@ -192,4 +191,3 @@ namespace icl{
     };
   } // namespace utils
 }
-#endif

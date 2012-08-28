@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_CONVOLUTION_KERNEL_H
-#define ICL_CONVOLUTION_KERNEL_H
+#pragma once
 
 #include <ICLUtils/Size.h>
 #include <ICLUtils/Exception.h>
@@ -218,4 +217,3 @@ namespace icl{
   } // namespace filter
 }
 
-#endif

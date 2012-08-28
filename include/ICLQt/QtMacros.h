@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_QT_MACROS_H
-#define ICL_QT_MACROS_H
+#pragma once
 
 
 #ifdef OLD_GUI_WITH_OLD_MACROS
@@ -121,4 +120,3 @@
 
 #endif
 
-#endif

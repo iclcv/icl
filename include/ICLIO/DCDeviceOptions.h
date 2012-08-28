@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_DCDEVICE_OPTIONS_H
-#define ICL_DCDEVICE_OPTIONS_H
+#pragma once
 
 #include <ICLIO/DC.h>
 
@@ -65,4 +64,3 @@ namespace icl{
   } // namespace io
 }
 
-#endif

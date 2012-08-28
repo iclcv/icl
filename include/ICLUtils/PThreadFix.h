@@ -33,8 +33,7 @@
 *********************************************************************/
 
 
-#ifndef ICL_PTHREAD_FIX_H
-#define ICL_PTHREAD_FIX_H
+#pragma once
 
 #if 0
 #if   defined(HAVE_IPP) || defined(HAVE_MKL)
@@ -63,4 +62,3 @@ namespace icl{
 
 #endif
 
-#endif

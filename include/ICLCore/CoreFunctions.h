@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_CORE_FUNCTIONS_H
-#define ICL_CORE_FUNCTIONS_H
+#pragma once
 
 #include <string>
 #include <cstring>
@@ -388,4 +387,3 @@ namespace icl {
   
   } // namespace core
 } // namespace icl
-#endif

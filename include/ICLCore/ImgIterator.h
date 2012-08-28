@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_IMG_ITERATOR_H
-#define ICL_IMG_ITERATOR_H
+#pragma once
 
 #include <ICLCore/CoreFunctions.h>
 #include <ICLMath/MatrixSubRectIterator.h>
@@ -319,4 +318,3 @@ namespace icl{
     };
   } // namespace core
 } // namespace icl
-#endif

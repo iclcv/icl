@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_POSIT_H
-#define ICL_POSIT_H
+#pragma once
 
 #include <ICLGeom/GeomDefs.h>
 #include <ICLUtils/Exception.h>
@@ -153,4 +152,3 @@ namespace icl{
   } // namespace geom
 }
 
-#endif

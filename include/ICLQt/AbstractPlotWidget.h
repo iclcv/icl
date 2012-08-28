@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_ABSTRACT_PLOT_WIDGET_H
-#define ICL_ABSTRACT_PLOT_WIDGET_H
+#pragma once
 
 #include <ICLMath/DynMatrix.h>
 #include <ICLUtils/Range.h>
@@ -362,6 +361,4 @@ namespace icl{
     /** \endcond **/
   } // namespace qt
 }
-
-#endif
 

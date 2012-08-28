@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_SAMPLED_LINE_H
-#define ICL_SAMPLED_LINE_H
+#pragma once
 
 #include <ICLUtils/Point.h>
 #include <ICLUtils/Rect.h>
@@ -141,4 +140,3 @@ Point &operator*() const { return *m_cur; }
   } // namespace core
 }
 
-#endif
