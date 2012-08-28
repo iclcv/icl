@@ -51,7 +51,7 @@ namespace icl{
       ~FileGrabberPluginImageMagick();
       
       /// grab implementation
-      virtual void grab(File &file, ImgBase **dest);
+      virtual void grab(utils::File &file, core::ImgBase **dest);
       
       /// Internal data storage class
       struct InternalData;

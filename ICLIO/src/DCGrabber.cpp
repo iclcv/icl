@@ -41,7 +41,9 @@
 namespace icl{
   namespace io{
     using namespace std;
-    using namespace icl::dc;
+    using namespace icl::io::dc;
+    using namespace icl::utils;
+    using namespace icl::core;
     
     DCGrabberImpl::DCGrabberImpl(const DCDevice &dev, int isoMBits):
       // {{{ open

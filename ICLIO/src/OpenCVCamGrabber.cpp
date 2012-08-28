@@ -32,6 +32,10 @@
 **                                                                 **
 *********************************************************************/
 #include <ICLIO/OpenCVCamGrabber.h>
+
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
   namespace io{
   
@@ -97,7 +101,7 @@ namespace icl{
     const ImgBase *OpenCVCamGrabberImpl::acquireImage(){
       ICLASSERT_RETURN_VAL( !(cvc==0), 0);
       Mutex::Locker lock(m_mutex);
-      icl::ipl_to_img(cvQueryFrame(cvc),&m_buffer);
+      core::ipl_to_img(cvQueryFrame(cvc),&m_buffer);
       return m_buffer;
     }
   

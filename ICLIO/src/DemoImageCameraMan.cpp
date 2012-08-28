@@ -35,7 +35,9 @@
 #include <ICLIO/FileGrabber.h>
 #include <ICLCore/Img.h>
 
-using namespace icl;
+using namespace icl::utils;
+using namespace icl::core;
+
 using namespace std;
 namespace icl{
   namespace io{
@@ -2232,41 +2234,40 @@ namespace icl{
     {205,127,211, 61, 49,  2, 28,189, 67,168,140,137, 19,162,190,150, 90, 17, 94,216,208, 65,238, 54,213,138,228,157, 31, 30},
     {195,113,127, 76, 89, 31,131, 38, 59,225,161,177, 97, 45, 45, 68,125,202, 72,239, 70,233,166,147, 98,255,  0, 17,235,254},
     {184,109,137,173, 67, 62, 91,173, 52,216, 10, 81, 57, 57, 79,197, 93,218,134, 61,130, 14,145, 67,154,126,216, 89,100,145}
+};
+  // }}}
+  unsigned char auc_ExtraData_cameraman[NEXTRA] = {
+    // {{{ open
+    228,161,210,  9,  3,254,239,147, 95,255,217
+  };
+  // }}}
+  
+  }//end namespace
+    ImgBase* createImage_cameraman(){
+      // {{{ open
+      static ImgBase *image = 0;
+      if(image) return image->deepCopy();
+      FILE *f = fopen("./.tmp_image_buffer.jpg","wb");
+      const int DIM = NROWS*NCOLS+NEXTRA;
+      char *buf= new char[DIM];
+      int j=0;
+      for(int i=0;i<NROWS;++i){
+        for(int k=0;k<NCOLS;k++,j++){
+          buf[j] = aauc_Data_cameraman[i][k];
+        }
+      }
+      for(int i=0;i<NEXTRA;i++,j++){
+        buf[j] = auc_ExtraData_cameraman[i];
+      }
+      fwrite(buf,1,DIM,f);
+      fclose(f);
+      delete [] buf;
+      image = FileGrabber("./.tmp_image_buffer.jpg",false,true).grab()->deepCopy();
+      remove("./.tmp_image_buffer.jpg");
+      return image->deepCopy();
+    }
+    // }}}
   } // namespace io
-};
-// }}}
-unsigned char auc_ExtraData_cameraman[NEXTRA] = {
-  // {{{ open
-228,161,210,  9,  3,254,239,147, 95,255,217
-};
-// }}}
-
-}//end namespace
-ImgBase* createImage_cameraman(){
-  // {{{ open
-  static ImgBase *image = 0;
-  if(image) return image->deepCopy();
-  FILE *f = fopen("./.tmp_image_buffer.jpg","wb");
-  const int DIM = NROWS*NCOLS+NEXTRA;
-  char *buf= new char[DIM];
-  int j=0;
-  for(int i=0;i<NROWS;++i){
-     for(int k=0;k<NCOLS;k++,j++){
-        buf[j] = aauc_Data_cameraman[i][k];
-     }
-  }
-  for(int i=0;i<NEXTRA;i++,j++){
-     buf[j] = auc_ExtraData_cameraman[i];
-  }
-  fwrite(buf,1,DIM,f);
-  fclose(f);
-  delete [] buf;
-  image = FileGrabber("./.tmp_image_buffer.jpg",false,true).grab()->deepCopy();
-  remove("./.tmp_image_buffer.jpg");
-  return image->deepCopy();
-}
-// }}}
-
 } // end namespace icl
 
 

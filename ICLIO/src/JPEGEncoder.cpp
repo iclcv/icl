@@ -36,8 +36,10 @@
 #include <ICLIO/JPEGHandle.h>
 #include <ICLCore/Img.h>
 #include <ICLUtils/StringUtils.h>
-#include <ICLIO/File.h>
+#include <ICLUtils/File.h>
 
+using namespace icl::utils;
+using namespace icl::core;
 namespace icl{
   namespace io{
   

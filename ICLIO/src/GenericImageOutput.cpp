@@ -52,6 +52,9 @@
 
 #include <ICLUtils/StringUtils.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
   namespace io{
     
@@ -65,7 +68,7 @@ namespace icl{
     }
     
     void GenericImageOutput::init(const ProgArg &pa){
-      init(*pa,icl::pa(pa.getID(),1));
+      init(*pa,utils::pa(pa.getID(),1));
     }
   
     void GenericImageOutput::init(const std::string &type, const std::string &description){

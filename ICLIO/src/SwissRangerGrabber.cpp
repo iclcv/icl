@@ -55,6 +55,9 @@
 #include <asm/ioctls.h>
 #include <sys/select.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 inline int set_canon(int flag){
   struct termios t;
   tcgetattr( fileno(stdin), &t);

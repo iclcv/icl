@@ -51,7 +51,7 @@ namespace icl {
         is restricted to a single line, which is cropped, if the label would
         overlap with the right or bottom  image border.
     */ 
-    void labelImage(ImgBase *image,const std::string &label);
+    void labelImage(core::ImgBase *image,const std::string &label);
   
   } // namespace io
 } //namespace icl

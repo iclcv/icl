@@ -38,6 +38,9 @@
 #include <ICLIO/FileGrabberPlugin.h>
 #include <ICLUtils/StrTok.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
   namespace io{
   

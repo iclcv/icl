@@ -48,7 +48,7 @@ namespace icl{
         \code
         FileGrabber g("image/image*.jpg"); // 
         while(true){
-          const ImgBase *image = g.grab();
+          const core::ImgBase *image = g.grab();
           ...
         }
         \endcode
@@ -64,7 +64,7 @@ namespace icl{
       
       /// Create a file grabber with given pattern and parameters
       /** \section BUF Buffering
-          Images are buffered internally using the original image format i.e. most images are
+          Images are buffered internally using the original image core::format i.e. most images are
           stored as icl8u images. At first during the grab(..) call, the images are converted
           automatically to the desired parameters (dependent on the desired params flag)
   
@@ -89,13 +89,13 @@ namespace icl{
   
           */
       FileGrabberImpl(const std::string &pattern, bool buffer=false, bool ignoreDesiredParams=false) 
-        throw(FileNotFoundException);
+      throw(utils::FileNotFoundException);
   
       /// Destructor
       virtual ~FileGrabberImpl();
       
       /// grab implementation
-      virtual const ImgBase *acquireImage();
+      virtual const core::ImgBase *acquireImage();
       
       /// returns the count of files that are available
       unsigned int getFileCount() const;
@@ -109,7 +109,7 @@ namespace icl{
           FileList. During this procedure, some exception may occur:
           - <b>FileNotFoundException</b>, if a file list entry references a non-existing file
           - <b>InvalidFileException</b>, if no FileGrabberPlugin can be found to read files
-            of the given format (determined by the file postfix e.g. ".icl" or ".ppm")
+            of the given core::format (determined by the file postfix e.g. ".icl" or ".ppm")
           - <b>InvalidFileFormatException</b>, if the FileGrabberPlugin encounters a file section
             with invalid contents (e.g. if a file header is corrupted, or if the file contains
             not enough data elements to fill an image with size determined by the file header)
@@ -209,42 +209,42 @@ namespace icl{
       /// returns number of image files available
       /** @see FileGrabberImpl::getFileCount */
       inline unsigned int getFileCount() const{
-        Mutex::Locker l(m_instance->mutex);
+        utils::Mutex::Locker l(m_instance->mutex);
         return m_instance.get()->ptr->getFileCount();
       }
   
       /// returns nextFileName that will be grabbed
       /** @see FileGrabberImpl::getNextFileName */
       inline const std::string &getNextFileName() const{
-        Mutex::Locker l(m_instance->mutex);
+        utils::Mutex::Locker l(m_instance->mutex);
         return m_instance.get()->ptr->getNextFileName();
       }
   
       /// makes the grabber buffer all images internally
       /** @see FileGrabberImpl::bufferImages(bool) */
       inline void bufferImages(bool omitExceptions=true){
-        Mutex::Locker l(m_instance->mutex);
+        utils::Mutex::Locker l(m_instance->mutex);
         m_instance.get()->ptr->bufferImages(omitExceptions);
       }
   
       /// skips the next to-be-grabbed image
       /** @see FileGrabberImpl::next() */
       inline void next(){
-        Mutex::Locker l(m_instance->mutex);
+        utils::Mutex::Locker l(m_instance->mutex);
         return m_instance.get()->ptr->next();
       }
   
       /// makes the grabber grab the last image again
       /** @see FileGrabberImpl::prev() */
       inline void prev(){
-        Mutex::Locker l(m_instance->mutex);
+        utils::Mutex::Locker l(m_instance->mutex);
         return m_instance.get()->ptr->prev();  
       }
   
       /// forces a certain plugin type
       /** @see FileGrabberImpl::forcePluginType(const std::string&)() */
       inline void forcePluginType(const std::string &suffix){
-        Mutex::Locker l(m_instance->mutex);
+        utils::Mutex::Locker l(m_instance->mutex);
         return m_instance.get()->ptr->forcePluginType(suffix); 
       }
   

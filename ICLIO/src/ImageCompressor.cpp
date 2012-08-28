@@ -39,8 +39,11 @@
 #include <ICLIO/JPEGDecoder.h>
 #endif
 #include <ICLCV/RegionDetectorTools.h>
-#include <ICLIO/File.h>
+#include <ICLUtils/File.h>
 #include <ICLUtils/StringUtils.h>
+
+using namespace icl::utils;
+using namespace icl::core;
 
 namespace icl{
   namespace io{

@@ -73,7 +73,7 @@ namespace icl {
           *         can safely be used until the next call to
           *         getCurrentImage() or resetBuffer().
           */
-          ImgBase* getCurrentImage();
+          core::ImgBase* getCurrentImage();
         private:
           /// A pointer to the image-providing StreamGrabber.
           Pylon::IStreamGrabber* m_Grabber;

@@ -55,24 +55,24 @@ namespace icl{
           - flowers
           @param name name identifier of the image
           @param size destination size of the image
-          @param f format of the image
-          @param d depth of the image
+          @param f core::format of the image
+          @param d core::depth of the image
           @return new image (ownership is passed to the caller!)
       */
-      static ImgBase* create(const std::string& name, 
-                             const Size &size,
-                             format f=formatRGB, 
-                             depth d=depth8u);
+      static core::ImgBase* create(const std::string& name, 
+                                   const utils::Size &size,
+                                   core::format f=core::formatRGB, 
+                                   core::depth d=core::depth8u);
       
       /// creats testimages in original size
       /** @param name name identifier of the image 
-          @param f format of the image
-          @param d depth of the image 
+          @param f core::format of the image
+          @param d core::depth of the image 
           @return new image (ownership is passed to the caller!)
       **/
-      static ImgBase *create(const std::string& name, 
-                             format f=formatRGB, 
-                             depth d=depth8u);
+      static core::ImgBase *create(const std::string& name, 
+                                   core::format f=core::formatRGB, 
+                                   core::depth d=core::depth8u);
   
       /// writes the image to the disc an shows it using xv.
       /** @param image image to write and to show
@@ -80,7 +80,7 @@ namespace icl{
           @param msec_to_rm_call this time in msec is waited for
                                  xv to come up and to read the tmp image
       **/
-      static void xv(const ImgBase *image, 
+      static void xv(const core::ImgBase *image, 
                      const std::string& tmpName="./tmp_image.ppm",
                      long msec_to_rm_call=1000);
   
@@ -99,38 +99,38 @@ namespace icl{
                                  before the rmCommand is called.
           @param rmCommand command to remove the temporary image (something like
                            "rm -rf %s" */
-      static void show(const ImgBase *image, 
+      static void show(const core::ImgBase *image, 
                        const std::string &showCommand="icl-xv -input %s -delete",
                        long msec_to_rm_call=0,
                        const std::string &rmCommand="");
       private:
       /// internal creation funtion for image
-      static Img8u *internalCreate(const std::string &name);
+      static core::Img8u *internalCreate(const std::string &name);
     };
     
     /// shortcurt function to create the "macaw"-image
     /** @return new image (ownership is passed to the caller!) */
-    ImgBase *createImage_macaw();
+    core::ImgBase *createImage_macaw();
   
     /// shortcurt function to create the "windows"-image
     /** @return new image (ownership is passed to the caller!) */
-    ImgBase *createImage_windows();
+    core::ImgBase *createImage_windows();
     
     /// shortcurt function to create the "flowers"-image
     /** @return new image (ownership is passed to the caller!) */
-    ImgBase *createImage_flowers();
+    core::ImgBase *createImage_flowers();
   
     /// shortcurt function to create the famous "lena"-image
     /** @return new image (ownership is passed to the caller!) */
-    ImgBase *createImage_lena();
+    core::ImgBase *createImage_lena();
   
     /// shortcurt function to create the famous "cameraman"-image
     /** @return new image (ownership is passed to the caller!) */
-    ImgBase *createImage_cameraman();
+    core::ImgBase *createImage_cameraman();
   
     /// shortcurt function to create the "mandril"-image
     /** @return new image (ownership is passed to the caller!) */
-    ImgBase *createImage_mandril();
+    core::ImgBase *createImage_mandril();
   
   
   

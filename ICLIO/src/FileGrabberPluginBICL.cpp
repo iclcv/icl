@@ -35,6 +35,9 @@
 #include <ICLIO/FileGrabberPluginBICL.h>
 #include <ICLIO/ImageCompressor.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
   namespace io{
   

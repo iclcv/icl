@@ -39,6 +39,10 @@
 #include <ICLCore/Img.h>
 #include <ICLIO/ImageCompressor.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+
+
 namespace icl{
   namespace io{
     #define MIN_MEMORY_SEGMENT_SIZE 5000000

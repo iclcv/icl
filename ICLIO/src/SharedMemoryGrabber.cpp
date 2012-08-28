@@ -43,6 +43,9 @@
 #include <QtCore/QThread>
 #include <QtCore/QMutexLocker>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
   namespace io{
     

@@ -34,7 +34,7 @@
 
 #pragma once
 
-#include <ICLIO/File.h>
+#include <ICLUtils/File.h>
 #include <ICLCore/Img.h>
 
 namespace icl{
@@ -48,16 +48,16 @@ namespace icl{
   
       virtual ~FileGrabberPlugin() {}
       /// pure virtual grab function
-      virtual void grab(File &file, ImgBase **dest)=0;
+      virtual void grab(utils::File &file, core::ImgBase **dest)=0;
   
       protected:
       /// Internally used collection of image parameters
       struct HeaderInfo{
-        format imageFormat; ///!< format
-        depth imageDepth;   ///!< depth
-        Rect roi;           ///!< roi rect
-        Time time;          ///!< time stamp
-        Size size;          ///!< image size
+        core::format imageFormat; ///!< format
+        core::depth imageDepth;   ///!< depth
+        utils::Rect roi;           ///!< roi rect
+        utils::Time time;          ///!< time stamp
+        utils::Size size;          ///!< image size
         int channelCount;   ///!< image channel count
         int imageCount;     ///!< image count (e.g. when writing color images as .pgm gray-scale images)
       };

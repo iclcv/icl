@@ -34,10 +34,13 @@
 
 #include <ICLIO/FilenameGenerator.h>
 #include <sstream>
+#include <cstdio>
 #include <ICLUtils/Exception.h>
-#include <ICLIO/IOUtils.h>
+#include <ICLUtils/StringUtils.h>
 
+using namespace icl::utils;
 using namespace std;
+
 namespace icl{
   namespace io{
     namespace{
@@ -69,7 +72,7 @@ namespace icl{
         
         m_eMode = hashPatterns;
         string::size_type postfixpos=0;
-        ioutils::analyseHashes(pattern,m_uiNumHashes,postfixpos);
+        analyseHashes(pattern,m_uiNumHashes,postfixpos);
         m_sPraefix = pattern.substr(0,postfixpos-m_uiNumHashes);
         m_sPostfix = pattern.substr(postfixpos);
         m_iCurrIdx = 0;

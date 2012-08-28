@@ -38,7 +38,6 @@
 #include <ICLIO/FileList.h>
 #include <ICLIO/FilenameGenerator.h>
 #include <ICLUtils/Exception.h>
-#include <ICLIO/IOUtils.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Thread.h>
 // plugins
@@ -61,6 +60,9 @@
 #include <string>
 #include <map>
 #include <ICLIO/FileList.h>
+
+using namespace icl::utils;
+using namespace icl::core;
 
 namespace icl{
   namespace io{

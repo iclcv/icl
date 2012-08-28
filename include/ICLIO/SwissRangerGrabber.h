@@ -53,9 +53,11 @@ namespace icl{
                  if < 0 open selection dialog (windows: gui, linux: shell input)
                  if > 0 specify serial number of device
       */
-      SwissRangerGrabberImpl(int serialNumber=0, depth bufferDepth=depth32f, int pickChannel=-1) 
-        throw (ICLException);
-  
+      SwissRangerGrabberImpl(int serialNumber=0, 
+                             core::depth bufferDepth=core::depth32f, 
+                             int pickChannel=-1) 
+      throw (utils::ICLException);
+      
       /// Destructor
       ~SwissRangerGrabberImpl();
       
@@ -63,7 +65,7 @@ namespace icl{
       static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
       
       /// grab an undistorted image 
-      const ImgBase *acquireImage();
+      const core::ImgBase *acquireImage();
   
       /** Sets a property */
       virtual void setProperty(const std::string &property, const std::string &value);
@@ -82,7 +84,7 @@ namespace icl{
       virtual std::string getValue(const std::string &name);
       
       /// Internally used utility function, that might be interesting elsewhere
-      static float getMaxRangeMM(const std::string &modulationFreq) throw (ICLException);
+      static float getMaxRangeMM(const std::string &modulationFreq) throw (utils::ICLException);
   
   
       private:
@@ -93,7 +95,7 @@ namespace icl{
       SwissRanger *m_sr; 
       
       /// Internally used mutex locks grabbing and setting of properties
-      Mutex m_mutex;
+      utils::Mutex m_mutex;
     };
   
     
@@ -104,12 +106,12 @@ namespace icl{
       public:
       /// ID-creation function for the GrabberHandles internal unique ID
       static inline std::string create_id(int dev){
-        return std::string("device-")+str(dev);
+        return std::string("device-")+utils::str(dev);
       }
   
       /// Constructor 
       /** see SwissRangerGrabberImpl::SwissRangerGrabberImpl for details */
-      SwissRangerGrabber(int serialNumber=0, depth bufferDepth=depth32f, int pickChannel=-1) throw (ICLException){
+      SwissRangerGrabber(int serialNumber=0, core::depth bufferDepth=core::depth32f, int pickChannel=-1) throw (utils::ICLException){
         std::string id = create_id(serialNumber);
         if(isNew(id)){
           initialize(new SwissRangerGrabberImpl(serialNumber,bufferDepth,pickChannel),id);
@@ -124,7 +126,7 @@ namespace icl{
       }
   
       /// Utility function
-      static inline float getMaxRangeMM(const std::string &modulationFreq) throw (ICLException){
+      static inline float getMaxRangeMM(const std::string &modulationFreq) throw (utils::ICLException){
         return SwissRangerGrabberImpl::getMaxRangeMM(modulationFreq);
       }
     };

@@ -37,12 +37,12 @@
 #include <ICLIO/FileGrabberPlugin.h>
 
 namespace icl{
+  /** \cond */
+  namespace utils {class Mutex;}
+  /** \endcond */
+
   namespace io{
-    
-    /** \cond */
-    class Mutex;
-    /** \endcond */
-    
+       
     /// FileGrabber plugins for writing ".csv" files (<b>C</b>omma-<b>S</b>eparated <b>V</b>alues) \ingroup FILEIO_G
     /** image parameters can be found by three different means:
         -# <b>Encoded into the file name.</b> When using the ICLFileWriter to write
@@ -69,15 +69,15 @@ namespace icl{
       ~FileGrabberPluginCSV();
       
       /// grab implementation
-      virtual void grab(File &file, ImgBase **dest);
+      virtual void grab(utils::File &file, core::ImgBase **dest);
       
       private:
   
       /// internally used reading buffer
-      Img64f *m_poReadBuffer;
+      core::Img64f *m_poReadBuffer;
       
       /// internally used mutex to protect the reading buffer
-      Mutex *m_poReadBufferMutex;
+      utils::Mutex *m_poReadBufferMutex;
     };  
   } // namespace io
 }

@@ -35,7 +35,6 @@
 #include <ICLIO/FileWriterPluginJPEG.h>
 #include <ICLCore/Types.h>
 #include <ICLUtils/StringUtils.h>
-#include <ICLIO/IOUtils.h>
 #include <cstring>
 using std::strlen;
 
@@ -44,6 +43,8 @@ using std::strlen;
 #endif
 
 using namespace std;
+using namespace icl::utils;
+using namespace icl::core;
 
 namespace icl{
   namespace io{

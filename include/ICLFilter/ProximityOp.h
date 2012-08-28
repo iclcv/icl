@@ -115,7 +115,7 @@ namespace icl {
        
         
     */
-    class ProximityOp : public BinaryOp, public Uncopyable, public Configurable{
+    class ProximityOp : public BinaryOp, public utils::Uncopyable, public utils::Configurable{
       public:
       
       /// enum to specify the current apply mode of a ProximityOp
@@ -154,7 +154,7 @@ namespace icl {
           @param poSrc2 template 
           @param ppoDst destination image (apated automatically)        
       **/
-      virtual void apply(const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst);
+      virtual void apply(const core::ImgBase *poSrc1, const core::ImgBase *poSrc2, core::ImgBase **ppoDst);
   
       /// import apply symbol from parent class
       using BinaryOp::apply;
@@ -178,10 +178,10 @@ namespace icl {
       private:
       
       /// internal used buffer for handling unsupported formats
-      Img32f *m_poImageBuffer;
+      core::Img32f *m_poImageBuffer;
   
       /// internal used buffer for handling unsupported formats
-      Img32f *m_poTemplateBuffer;
+      core::Img32f *m_poTemplateBuffer;
     };
   } // namespace filter
 } // namespace icl

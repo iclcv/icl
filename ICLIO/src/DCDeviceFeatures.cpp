@@ -36,6 +36,9 @@
 #include <map>
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/SteppingRange.h>
+
+using namespace icl::utils;
+
 namespace icl{
   namespace io{
     
@@ -159,10 +162,11 @@ namespace icl{
         }
       }
     }
-    
+  }
+  namespace utils{
     std::string str(dc1394feature_t t){
       // {{{ open
-  
+      
   #define X(x) if(t==DC1394_FEATURE_##x) return #x;
       X(BRIGHTNESS);X(EXPOSURE);X(SHARPNESS);X(WHITE_BALANCE);X(HUE);
       X(SATURATION);X(GAMMA);X(SHUTTER);X(GAIN);X(IRIS);X(FOCUS);
@@ -188,7 +192,9 @@ namespace icl{
     }
   #undef X
   
-    // }}}
+    //}}}
+  }
+  namespace io{
   
     class DCDeviceFeaturesImpl{
     public:

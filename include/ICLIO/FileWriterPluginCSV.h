@@ -44,7 +44,7 @@ namespace icl{
       public:
       
       /// write implementation
-      virtual void write(File &file, const ImgBase *image);
+      virtual void write(utils::File &file, const core::ImgBase *image);
   
       /// static feature adaption function
       /** if the flag is set to true, the writer will encode image

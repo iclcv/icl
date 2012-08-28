@@ -44,7 +44,7 @@ namespace icl{
     class V4L2GrabberImpl : public Grabber{
       class Impl; //!< internal implementation
       Impl *impl; //!< internal data structure
-      Mutex implMutex; //!< protects the impl which is reallocated when the format is changed
+      utils::Mutex implMutex; //!< protects the impl which is reallocated when the core::format is changed
       public:
       
       /// create a new grabbers instance, with given device name (
@@ -54,7 +54,7 @@ namespace icl{
       ~V4L2GrabberImpl();
       
       /// obtains the next image
-      virtual const ImgBase *acquireImage();
+      virtual const core::ImgBase *acquireImage();
   
       /// returns the device property list
       virtual std::vector<std::string> getPropertyList();    

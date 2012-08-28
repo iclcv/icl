@@ -52,9 +52,10 @@
 #include <ICLIO/FileList.h>
 #include <ICLIO/ColorFormatDecoder.h>
 #include <ICLIO/V4L2Grabber.h>
-#include <ICLIO/File.h>
+#include <ICLUtils/File.h>
 
-
+using namespace icl::utils;
+using namespace icl::core;
 
 namespace icl{
   namespace io{

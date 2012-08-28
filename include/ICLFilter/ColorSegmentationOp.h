@@ -118,11 +118,11 @@ namespace icl{
       class LUT3D; 
   
       private:
-      format m_segFormat;       //!< format, that is used for internal segmentation
-      Img8u m_inputBuffer;      //!< internal image in depth8u and segmentation format
-      Img8u m_outputBuffer;     //!< internal buffer holding the output image
-      Img8u m_segPreview;       //!< internal buffer for providing a preview of the current segmentation 
-      Img8u m_lastDst;          //!< last used destination image
+      core::format m_segFormat;       //!< format, that is used for internal segmentation
+      core::Img8u m_inputBuffer;      //!< internal image in depth8u and segmentation format
+      core::Img8u m_outputBuffer;     //!< internal buffer holding the output image
+      core::Img8u m_segPreview;       //!< internal buffer for providing a preview of the current segmentation 
+      core::Img8u m_lastDst;          //!< last used destination image
       icl8u m_bitShifts[3];     //!< bit shifts for all 8-Bit channels
       LUT3D *m_lut;             //!< color classification lookup table
   
@@ -134,13 +134,13 @@ namespace icl{
           @param c2shift number of least significant bits that are removed from channel2 
           @param fmt internally used segmentation format (needs to have 3 channels)
           */
-      ColorSegmentationOp(icl8u c0shift=2, icl8u c1shift=2, icl8u c2shift=2,format fmt=formatYUV) throw (ICLException);
+      ColorSegmentationOp(icl8u c0shift=2, icl8u c1shift=2, icl8u c2shift=2,core::format fmt=core::formatYUV) throw (utils::ICLException);
   
       /// Destructor
       ~ColorSegmentationOp();
       
       /// main apply function
-      virtual void apply(const ImgBase *src, ImgBase **dst);
+      virtual void apply(const core::ImgBase *src, core::ImgBase **dst);
       
       /// Imported apply from parent UnaryOp class
       using UnaryOp::apply;
@@ -155,25 +155,25 @@ namespace icl{
       void setSegmentationShifts(icl8u c0shift, icl8u c1shift, icl8u c2shift);
       
       /// sets the internally used segmentation format
-      void setSegmentationFormat(format fmt) throw (ICLException);
+      void setSegmentationFormat(core::format fmt) throw (utils::ICLException);
   
       /// returns the pointer to the 3 internally used segmentation shifts
       const icl8u *getSegmentationShifts() const { return m_bitShifts; }
       
       /// returns the current internally used segmentation format
-      format getSegmentationFormat() const { return m_segFormat; }
+      core::format getSegmentationFormat() const { return m_segFormat; }
       
       /// returns in internally managed image of the segmentation result
       /** The image has the dimensions 2^(8-shift0) x 2^(8-shift1) and it
           has 2^(8-shift3) channels */
-      const Img8u &getSegmentationPreview();
+      const core::Img8u &getSegmentationPreview();
       
   
       /// given a,b and c in segFormat, this function fills the LUT within a sub-volume with given radii
       void lutEntry(icl8u a, icl8u b, icl8u c, icl8u rA, icl8u rB, icl8u rC, icl8u value);
       
       /// given a,b and c in format fmt, this function fills the LUT within a sub-volume with given radii
-      void lutEntry(format fmt, int a, int b, int c, int rA, int rB, int rC, icl8u value) throw (ICLException);
+      void lutEntry(core::format fmt, int a, int b, int c, int rA, int rB, int rC, icl8u value) throw (utils::ICLException);
       
       /// loads the segmentation LUT only (no other parameters)
       void load(const std::string &filename);
@@ -185,15 +185,15 @@ namespace icl{
       /** Here, you can choose, which dimension shall become the resulting images
           with and height. The remaining 3rd dimension is slices with given zValue 
       */
-      const Img8u &getLUTPreview(int xDim, int yDim, icl8u zValue);
+      const core::Img8u &getLUTPreview(int xDim, int yDim, icl8u zValue);
   
       /// this also creates a colored preview for the current segmentation LUT
       /** the method behaves like getLUTPreview, except, it tints the resulting
           lut-slice with mean colors of that class */
-      const Img8u &getColoredLUTPreview(int xDim, int yDim, icl8u zValue);
+      const core::Img8u &getColoredLUTPreview(int xDim, int yDim, icl8u zValue);
       
       /// returns a mean color for all used class labels (in rgb format)
-      const std::vector<Color> &getClassMeanColors();
+      const std::vector<core::Color> &getClassMeanColors();
       
       /// returs the internal lut data
       /** The data order is depth-major row-major

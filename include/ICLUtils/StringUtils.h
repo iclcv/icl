@@ -43,6 +43,7 @@
 
 #include <ICLUtils/BasicTypes.h>
 #include <ICLUtils/Exception.h>
+#include <ICLUtils/Time.h>
 
 namespace icl{
   namespace utils{
@@ -273,6 +274,29 @@ namespace icl{
         */
     MatchResult match(const std::string &text, const std::string &regex, int numSubMatches=0)
       throw (InvalidRegularExpressionException);
+    
+    
+    /// converts a Time::value_type (long int) into a string
+    std::string time2str(Time::value_type x);
+    
+    /// crops trailing whitespaces of a string
+    std::string skipWhitespaces(const std::string &s);
+      
+    
+    /// returns whether a given string ends with a given suffix
+    bool endsWith(const std::string &s,const std::string &suffix);
+    
+    /// returns whether a given string begins with a given prefix
+    bool startsWith(const std::string &s, const std::string &prefix);
+    
+    /// analyses a file pattern with hash-characters
+    /** This function is e.g. used by the FilennameGenerator to extract a patterns hash count
+        e.g. the pattern "image_###.ppm" shall be used to generate filenames like 
+        "image_000.ppm", "image_001.ppm" and so on. This function returns the count of found
+        hashes and the position in the string where the suffix begins. E.g. if the pattern is
+        "image_##.ppm.gz", the hash-count is 2 and the suffix-pos becomes 8.
+        **/
+    void analyseHashes (const std::string &sFileName, unsigned int& nHashes, std::string::size_type& iPostfixPos);
     
   } // namespace utils
 }

@@ -36,13 +36,19 @@
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLCore/CCFunctions.h>
-#include <ICLIO/IOUtils.h>
 
 using namespace std;
-using namespace icl::ioutils;
+using namespace icl::utils;
+using namespace icl::core;
 
 namespace icl{
   namespace io{
+    
+    static int ti(const std::string &t) { return parse<int>(t); }
+    static std::vector<int> vec3(int a, int b, int c){
+      int abc[] = {a,b,c};
+      return std::vector<int>(abc,abc+3);
+    }
   
     void FileGrabberPluginPNM::grab(File &file, ImgBase **dest){
       ICLASSERT_RETURN(dest);
@@ -75,7 +81,7 @@ namespace icl{
   
       
       do {
-        nextLine = ioutils::skipWhitespaces(file.readLine());
+        nextLine = skipWhitespaces(file.readLine());
         vector<string> ts = tok(nextLine," ");
         
         if(ts.size() < 3) continue;

@@ -40,11 +40,11 @@
 #include <ICLCore/Converter.h>
 
 using namespace std;
+using namespace icl::utils;
+using namespace icl::core;
 
 namespace icl{
   namespace io{
-  
-  
     namespace {
       inline bool inList(const string &s, const std::vector<string> &vec){
         return find(vec.begin(),vec.end(),s) != vec.end();
@@ -57,7 +57,7 @@ namespace icl{
       depth desiredDepth;
       Converter converter;
       ImgBase  *image;
-      WarpOp *warp;
+      filter::WarpOp *warp;
       
       Mutex callbackMutex;
       std::vector<Grabber::callback> callbacks;
@@ -197,7 +197,7 @@ namespace icl{
     }
     
     void Grabber::enableUndistortion(const ProgArg &pa){
-      enableUndistortion(icl::pa(pa.getID(),0).as<std::string>());
+      enableUndistortion(utils::pa(pa.getID(),0).as<std::string>());
     }
   
     void Grabber::setUndistortionInterpolationMode(scalemode mode){
@@ -215,7 +215,7 @@ namespace icl{
     
     void Grabber::enableUndistortion(const Img32f &warpMap){
       if(!data->warp){
-        data->warp = new WarpOp;
+        data->warp = new filter::WarpOp;
       }
       data->warp->setWarpMap(warpMap);
       data->warp->setScaleMode(interpolateLIN);

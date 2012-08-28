@@ -42,7 +42,7 @@
 #endif
 
 #include <string>
-#include <ICLIO/File.h>
+#include <ICLUtils/File.h>
 namespace icl{
   namespace io{
   
@@ -80,8 +80,8 @@ namespace icl{
       virtual std::string getValue(const std::string &name);
       
       /// grab function grabs an image (destination image is adapted on demand)
-      /** @copydoc icl::Grabber::grab(ImgBase**) **/
-      virtual const ImgBase *acquireImage();
+      /** @copydoc icl::Grabber::grab(core::ImgBase**) **/
+      virtual const core::ImgBase *acquireImage();
       
       /// Sets a property to a new value
       /** call getPropertyList() to see which properties are supported
@@ -104,7 +104,7 @@ namespace icl{
       
       /// Constructor creates a new OpenCVVideoGrabber instance
       /** @param filename name of file to use */
-      OpenCVVideoGrabber(const std::string &fileName) throw (FileNotFoundException);
+      OpenCVVideoGrabber(const std::string &fileName) throw (utils::FileNotFoundException);
       
       /// Destructor
       ~OpenCVVideoGrabber();

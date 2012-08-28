@@ -54,8 +54,8 @@ namespace icl{
         or use the optimze call where world points are generated automatically and
         layout of image points must be rowwise.
         */
-    class IntrinsicCalibrator : public Uncopyable{
-  
+    class IntrinsicCalibrator : public utils::Uncopyable{
+      
       public:
       ///Simple struct for handle result of computation of intrinsics
       struct Result : public ImageUndistortion{
@@ -64,22 +64,19 @@ namespace icl{
         Result(){}
         
         /// create a result with given parameters
-        Result(const std::vector<double> &params, const Size &size):
-          ImageUndistortion("MatlabModel5Params",params,size){}
-  
+        Result(const std::vector<double> &params, const utils::Size &size):
+        ImageUndistortion("MatlabModel5Params",params,size){}
+        
         ///returns focal length for x direction
-        /**
-            * return x component of focal length
+        /** return x component of focal length
             */
         double getFocalLengthX() const { return getParams()[0]; }
         ///returns focal length for y direction
-        /**
-            * return y component of focal length
+        /** return y component of focal length
             */
         double getFocalLengthY() const { return getParams()[1]; }
         ///returns new computed principal point x component
-        /**
-            * return x component of principal point
+        /** return x component of principal point
             */
         double getPrincipalX() const { return getParams()[2]; }
         ///returns new computed principal point y component
@@ -135,8 +132,10 @@ namespace icl{
           *@param dYdom Derivative of Y with respect to om
           *@param dYdT Derivative of Y with respect to T
           */
-      void rigid_motion(const DynMatrix<icl64f> &X, const DynMatrix<icl64f> &om, const DynMatrix<icl64f> &T,
-                        DynMatrix<icl64f> &Y, DynMatrix<icl64f> &dYdom, DynMatrix<icl64f> &dYdT);
+      void rigid_motion(const math::DynMatrix<icl64f> &X, 
+                        const math::DynMatrix<icl64f> &om, 
+                        const math::DynMatrix<icl64f> &T,
+                        math::DynMatrix<icl64f> &Y, math::DynMatrix<icl64f> &dYdom, math::DynMatrix<icl64f> &dYdT);
   
       ///Projects a 3D structure onto the image plane.
       /**
@@ -154,10 +153,10 @@ namespace icl{
           * @param dxpdc Derivative of xp with respect to c
           * @param dxpdk Derivative of xp with respect to k
           */
-      void project_points2(const DynMatrix<icl64f> &X, const DynMatrix<icl64f> &om, const DynMatrix<icl64f> &T,
-                           const DynMatrix<icl64f> &f, const DynMatrix<icl64f> &c, const DynMatrix<icl64f> &k, const double alpha,
-                           DynMatrix<icl64f> &xp, DynMatrix<icl64f> &dxpdom, DynMatrix<icl64f> &dxpdT, DynMatrix<icl64f> &dxpdf,
-                           DynMatrix<icl64f> &dxpdc, DynMatrix<icl64f> &dxpdk, DynMatrix<icl64f> &dxpdalpha);
+      void project_points2(const math::DynMatrix<icl64f> &X, const math::DynMatrix<icl64f> &om, const math::DynMatrix<icl64f> &T,
+                           const math::DynMatrix<icl64f> &f, const math::DynMatrix<icl64f> &c, const math::DynMatrix<icl64f> &k, const double alpha,
+                           math::DynMatrix<icl64f> &xp, math::DynMatrix<icl64f> &dxpdom, math::DynMatrix<icl64f> &dxpdT, math::DynMatrix<icl64f> &dxpdf,
+                           math::DynMatrix<icl64f> &dxpdc, math::DynMatrix<icl64f> &dxpdk, math::DynMatrix<icl64f> &dxpdalpha);
   
       ///Compensates for radial and tangential distortion (Model From Oulu university)
       /**
@@ -165,7 +164,7 @@ namespace icl{
           * @param k distortion coefficients
           * @param x undistorted, normalized image coordinates
           */
-      void comp_distortion_oulu(const DynMatrix<icl64f> xd,const DynMatrix<icl64f> k, DynMatrix<icl64f> &x);
+      void comp_distortion_oulu(const math::DynMatrix<icl64f> xd,const math::DynMatrix<icl64f> k, math::DynMatrix<icl64f> &x);
   
       ///Computes the planar homography between the point coordinates on the plane (M) and the image point coordinates (m).
       /**
@@ -173,7 +172,7 @@ namespace icl{
           * @param M homogeneous world coordinates
           * @param H Homography matrix
           */
-      void compute_homography(const DynMatrix<icl64f> &m, const DynMatrix<icl64f> &M, DynMatrix<icl64f> &H);
+      void compute_homography(const math::DynMatrix<icl64f> &m, const math::DynMatrix<icl64f> &M, math::DynMatrix<icl64f> &H);
   
       ///Levenberg-Marquardt sparse algorithm optimizes all parameters
       /**
@@ -181,7 +180,7 @@ namespace icl{
           * @param worldpoints world coordinates
           * @param params parameters to be optimized
           */
-      void optimize(const DynMatrix<icl64f> &impoints, const DynMatrix<icl64f> &worldPoints, double *params);
+      void optimize(const math::DynMatrix<icl64f> &impoints, const math::DynMatrix<icl64f> &worldPoints, double *params);
   
       ///Initialization of the intrinsic parameters.
       /**
@@ -192,8 +191,8 @@ namespace icl{
           * @param kc distortion coefficients
           * @param alpha_c: skew coefficient
           */
-      void init_intrinsic_param(const DynMatrix<icl64f> &x, const DynMatrix<icl64f> &X,
-                                DynMatrix<icl64f> &fc, DynMatrix<icl64f> &cc, DynMatrix<icl64f> &kc, double &alpha_c);
+      void init_intrinsic_param(const math::DynMatrix<icl64f> &x, const math::DynMatrix<icl64f> &X,
+                                math::DynMatrix<icl64f> &fc, math::DynMatrix<icl64f> &cc, math::DynMatrix<icl64f> &kc, double &alpha_c);
   
       /// Computes the extrinsic parameters
       /**
@@ -208,9 +207,9 @@ namespace icl{
           * @param Tckk translation vector
           * @param Rckk rotation matrix
           */
-      void comp_ext_calib(const DynMatrix<icl64f> &x_kk, const DynMatrix<icl64f> &X_kk, const DynMatrix<icl64f> &fc,
-  			const DynMatrix<icl64f> &cc, const DynMatrix<icl64f> &kc, const double alpha_c, const double thresh_cond,
-  			DynMatrix<icl64f> &omckk, DynMatrix<icl64f> &Tckk, DynMatrix<icl64f> &Rckk);
+      void comp_ext_calib(const math::DynMatrix<icl64f> &x_kk, const math::DynMatrix<icl64f> &X_kk, const math::DynMatrix<icl64f> &fc,
+  			const math::DynMatrix<icl64f> &cc, const math::DynMatrix<icl64f> &kc, const double alpha_c, const double thresh_cond,
+  			math::DynMatrix<icl64f> &omckk, math::DynMatrix<icl64f> &Tckk, math::DynMatrix<icl64f> &Rckk);
   
       ///Computes the normalized coordinates xn given the pixel coordinates x_kk and the intrinsic camera parameters fc, cc and kc.
       /**
@@ -221,8 +220,8 @@ namespace icl{
           * @param alpha_c skew
           * @param xn normalized image coordinates
           */
-      void normalize_pixel(const DynMatrix<icl64f> x_kk, const DynMatrix<icl64f> fc, const DynMatrix<icl64f> cc,
-                           const DynMatrix<icl64f> kc,const double alpha_c, DynMatrix<icl64f> &xn);
+      void normalize_pixel(const math::DynMatrix<icl64f> x_kk, const math::DynMatrix<icl64f> fc, const math::DynMatrix<icl64f> cc,
+                           const math::DynMatrix<icl64f> kc,const double alpha_c, math::DynMatrix<icl64f> &xn);
   
       ///Computes the mean of each col of x_k
       /**
@@ -230,7 +229,7 @@ namespace icl{
           * @param x_k Inputmatrix
           * @param res resultmatrix
           */
-      void mean(const DynMatrix<icl64f> &x_k, DynMatrix<icl64f> &res);
+      void mean(const math::DynMatrix<icl64f> &x_k, math::DynMatrix<icl64f> &res);
   
       ///Computes the rodrigues transformation and derivative
       /*
@@ -239,7 +238,7 @@ namespace icl{
           *@param dout derivative of rotation
           */
   
-      void rodrigues(const DynMatrix<icl64f> &in,DynMatrix<icl64f> &out, DynMatrix<icl64f> &dout);
+      void rodrigues(const math::DynMatrix<icl64f> &in,math::DynMatrix<icl64f> &out, math::DynMatrix<icl64f> &dout);
   
       ///Computes extrinsic initial parameters
       /**
@@ -253,9 +252,9 @@ namespace icl{
           * @param Tckk: translation vector
           * @param Rckk: rotation matrix
           */
-      void compute_extrinsic_init(const DynMatrix<icl64f> &x_kk, const DynMatrix<icl64f> &X_kk, const DynMatrix<icl64f> &fc,
-                                  const DynMatrix<icl64f> &cc, const DynMatrix<icl64f> &kc, const double &alpha_c,
-                                  DynMatrix<icl64f> &omckk, DynMatrix<icl64f> &Tckk, DynMatrix<icl64f> &Rckk);
+      void compute_extrinsic_init(const math::DynMatrix<icl64f> &x_kk, const math::DynMatrix<icl64f> &X_kk, const math::DynMatrix<icl64f> &fc,
+                                  const math::DynMatrix<icl64f> &cc, const math::DynMatrix<icl64f> &kc, const double &alpha_c,
+                                  math::DynMatrix<icl64f> &omckk, math::DynMatrix<icl64f> &Tckk, math::DynMatrix<icl64f> &Rckk);
   
       ///optimizes precomputed extrinsic parameters
       /*
@@ -270,10 +269,10 @@ namespace icl{
           * @param Tckk translation vector
           * @param Rckk rotation matricx
           */
-      void compute_extrinsic_refine(const DynMatrix<icl64f> &omc_init, const DynMatrix<icl64f> &Tc_init,
-                                    const DynMatrix<icl64f> &x_kk, const DynMatrix<icl64f> &X_kk, const DynMatrix<icl64f> &fc,const DynMatrix<icl64f> &cc,
-                                    const DynMatrix<icl64f> &kc,const double alpha_c, const int MaxIter, double thresh_cond,
-                                    DynMatrix<icl64f> &omckk, DynMatrix<icl64f> &Tckk, DynMatrix<icl64f> &Rckk, DynMatrix<icl64f> &JJ);
+      void compute_extrinsic_refine(const math::DynMatrix<icl64f> &omc_init, const math::DynMatrix<icl64f> &Tc_init,
+                                    const math::DynMatrix<icl64f> &x_kk, const math::DynMatrix<icl64f> &X_kk, const math::DynMatrix<icl64f> &fc,const math::DynMatrix<icl64f> &cc,
+                                    const math::DynMatrix<icl64f> &kc,const double alpha_c, const int MaxIter, double thresh_cond,
+                                    math::DynMatrix<icl64f> &omckk, math::DynMatrix<icl64f> &Tckk, math::DynMatrix<icl64f> &Rckk, math::DynMatrix<icl64f> &JJ);
   
       public:
   
@@ -297,7 +296,7 @@ namespace icl{
           * @param all image coordinates
           * @param world coordinates for the first image, sorting depends on image coordinates
           */
-      Result calibrate(const DynMatrix<icl64f> &impoints, const DynMatrix<icl64f> &worldpoints);
+      Result calibrate(const math::DynMatrix<icl64f> &impoints, const math::DynMatrix<icl64f> &worldpoints);
   
       ///saves computed/current intrinsics to xml-file
       /**
@@ -329,15 +328,15 @@ namespace icl{
       }
   
       //2d coordinates in picture
-      typedef FixedMatrix<double,1,2> Pos2D;
+      typedef math::FixedMatrix<double,1,2> Pos2D;
       //grid of 2d coords in picture
-      typedef Array2D<Pos2D> DetectedGrid;
+      typedef utils::Array2D<Pos2D> DetectedGrid;
   
       struct CalibrationData{
         // list of detected images (row-major order of points)
         std::vector<DetectedGrid> data;
         //imagesize of data
-        Size imageSize;
+        utils::Size imageSize;
       };
   
       ///computes the calibration for given CalibrationData

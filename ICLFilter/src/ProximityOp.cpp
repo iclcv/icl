@@ -36,71 +36,74 @@
 #include <ICLCore/Img.h>
 #include <ICLUtils/StringUtils.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl {
-  namespace filter{
-  #ifdef HAVE_IPP
-  
-      
-    template<> inline std::string str(const ProximityOp::optype &t){
-      return (t == ProximityOp::sqrDistance ? "sqrDistance" :
-              t == ProximityOp::crossCorr ? "crossCorr" :
+  namespace utils{
+
+#ifdef HAVE_IPP
+    
+    template<> inline std::string str(const filter::ProximityOp::optype &t){
+      return (t == filter::ProximityOp::sqrDistance ? "sqrDistance" :
+              t == filter::ProximityOp::crossCorr ? "crossCorr" :
               "crossCorrCoeff");
     }
     
-    template<> inline ProximityOp::optype parse(const std::string &s){
-        return (s == "sqrDistance" ? ProximityOp::sqrDistance :
-                s == "crossCorr" ? ProximityOp::crossCorr :
-                ProximityOp::crossCorrCoeff);
+    template<> inline filter::ProximityOp::optype parse(const std::string &s){
+      return (s == "sqrDistance" ? filter::ProximityOp::sqrDistance :
+                s == "crossCorr" ? filter::ProximityOp::crossCorr :
+              filter::ProximityOp::crossCorrCoeff);
     }
-    template<> std::string str(const ProximityOp::applymode &t){
-      return (t == ProximityOp::full ? "full" :
-              t == ProximityOp::valid ? "valid" :
+    template<> std::string str(const filter::ProximityOp::applymode &t){
+      return (t == filter::ProximityOp::full ? "full" :
+              t == filter::ProximityOp::valid ? "valid" :
               "same");
     }
     
-    template<> ProximityOp::applymode parse(const std::string &s){
-      return (s == "full" ? ProximityOp::full :
-              s == "valid" ? ProximityOp::valid :
-              ProximityOp::same);
+    template<> filter::ProximityOp::applymode parse(const std::string &s){
+      return (s == "full" ? filter::ProximityOp::full :
+              s == "valid" ? filter::ProximityOp::valid :
+              filter::ProximityOp::same);
     }
-      
-  
-  
-      ProximityOp::ProximityOp(optype ot, applymode am):
-        m_poImageBuffer(0),m_poTemplateBuffer(0){
-        addProperty("operation type","menu","sqrDistance,crossCorr,crossCorrCoeff",ot,0,
-                    "Proximity measurement type (square distance, cross correlation,\n"
-                    "and cross correlation coefficient)");
-        addProperty("apply mode","menu","full,valid,same",am,0,
-                    "Defines on what part of the input image the proximity\n"
-                    "measurement is applied:\n"
-                    "'full':  means, the images are compared in every configuration,\n"
-                    "         where the two images have at least one pixel overlap.\n"
-                    "         (the result image becomes larger)\n"
-                    "'same':  the pattern is centered at every pixel of the\n"
-                    "         source image. (The result image size is identical to\n"
-                    "'valid': the pattern is only matched agains the source\n"
-                    "         image where the full pattern fits into it.\n"
-                    "         (The result image becomes smaller than the\n"
-                    "         source image");
-      }
-  
-      void ProximityOp::setOpType(optype ot){
-        setPropertyValue("operation type",ot);
-      }
-      
-      void ProximityOp::setApplyMode(applymode am){
-        setPropertyValue("apply mode",am);
-      }
-      
-      ProximityOp::optype ProximityOp::getOpType() const{
-        return const_cast<ProximityOp*>(this)->getPropertyValue("operation type");
-      }
-      
-      ProximityOp::applymode ProximityOp::getApplyMode() const{
-        return const_cast<ProximityOp*>(this)->getPropertyValue("apply mode");
-      }
-  
+  }
+
+  namespace filter{
+    ProximityOp::ProximityOp(optype ot, applymode am):
+      m_poImageBuffer(0),m_poTemplateBuffer(0){
+      addProperty("operation type","menu","sqrDistance,crossCorr,crossCorrCoeff",ot,0,
+                  "Proximity measurement type (square distance, cross correlation,\n"
+                  "and cross correlation coefficient)");
+      addProperty("apply mode","menu","full,valid,same",am,0,
+                  "Defines on what part of the input image the proximity\n"
+                  "measurement is applied:\n"
+                  "'full':  means, the images are compared in every configuration,\n"
+                  "         where the two images have at least one pixel overlap.\n"
+                  "         (the result image becomes larger)\n"
+                  "'same':  the pattern is centered at every pixel of the\n"
+                  "         source image. (The result image size is identical to\n"
+                  "'valid': the pattern is only matched agains the source\n"
+                  "         image where the full pattern fits into it.\n"
+                  "         (The result image becomes smaller than the\n"
+                  "         source image");
+    }
+    
+    void ProximityOp::setOpType(optype ot){
+      setPropertyValue("operation type",ot);
+    }
+    
+    void ProximityOp::setApplyMode(applymode am){
+      setPropertyValue("apply mode",am);
+    }
+    
+    ProximityOp::optype ProximityOp::getOpType() const{
+      return const_cast<ProximityOp*>(this)->getPropertyValue("operation type");
+    }
+    
+    ProximityOp::applymode ProximityOp::getApplyMode() const{
+      return const_cast<ProximityOp*>(this)->getPropertyValue("apply mode");
+    }
+    
     namespace{
   
       template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, IppiSize, const T*, int, IppiSize, icl32f*, int)>

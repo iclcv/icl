@@ -37,16 +37,21 @@
 #include <vector>
 #include <ICLCore/CCFunctions.h>
 #include <ICLUtils/Time.h>
-#include <ICLIO/IOUtils.h>
 #include <ICLUtils/StringUtils.h>
 
 using namespace std;
-using namespace icl::ioutils;
+using namespace icl::utils;
+using namespace icl::core;
+
 
 namespace icl{
   namespace io{
     
     namespace{
+      static std::vector<int> vec3(int a, int b, int c){
+        int abc[] = {a,b,c};
+        return std::vector<int>(abc,abc+3);
+      }
   
       void pnm_write_gray2rgb(File &file, const ImgBase *poSrc, vector<icl8u> &buffer){
         int dim = poSrc->getDim();
@@ -89,7 +94,7 @@ namespace icl{
       void pnm_write3(File &file,const ImgBase *image, int channeloffs, vector<icl8u> &buffer){
         Rect fullROI(Point::null,image->getSize());
         format fmt = image->getFormat();
-        const ImgBase *img = image->shallowCopy(fullROI,ioutils::vec3(channeloffs,channeloffs+1,channeloffs+2),fmt);
+        const ImgBase *img = image->shallowCopy(fullROI,vec3(channeloffs,channeloffs+1,channeloffs+2),fmt);
         buffer.resize(3*image->getDim());
         switch(img->getDepth()){
   

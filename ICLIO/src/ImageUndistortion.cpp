@@ -36,6 +36,10 @@
 #include <ICLUtils/XML.h>
 #include <fstream>
 
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
+
 namespace icl{
   namespace io{
   

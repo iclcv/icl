@@ -91,10 +91,10 @@ namespace icl{
           <b>Note:</b> As it is strongly recommended <b>not</b> to create an own DCGrabberThread, but
           to use an instance of the DCGrabber instead, the DCGrabberThread has no public constructor.
       */
-      class DCGrabberThread : public Thread{
+      class DCGrabberThread : public utils::Thread{
         public: 
         /// A DCGrabberThread can only be instantiated by a DCGrabber
-        friend class icl::DCGrabberImpl;
+        friend class icl::io::DCGrabberImpl;
   
         /// the thread function (moved frames) 
         virtual void run();
@@ -116,30 +116,30 @@ namespace icl{
         ~DCGrabberThread();
   
         /// private image access function
-        //void getCurrentImage(ImgBase **ppoDst,dc1394color_filter_t bayerLayout);
+        //void getCurrentImage(core::ImgBase **ppoDst,dc1394color_filter_t bayerLayout);
         
         /// complex function to get the next image
         /** The function gets all desired params from the top level grabber, which it
             should fullfill. But in some cases it's not possible to satisfy all 
             desired params constraints. In this case, this function will use the
-            second given ImgBase** (ppoDstTmp) as destination image and it will set
+            second given core::ImgBase** (ppoDstTmp) as destination image and it will set
             the boolean reference named desiredParamsFullfilled to false. The parent
             grabber can check this variable, to decide whether to use the original
             destination pointer (ppoDst) or to use the ppoDstTmp pointer temporarily
             and convert is into ppoDst by itself, using the desired params for ppoDst.
             <b>TODO: some more text here !</b>
         */
-        void getCurrentImage(ImgBase **ppoDst, 
-                             ImgBase **ppoDstTmp,
+        void getCurrentImage(core::ImgBase **ppoDst, 
+                             core::ImgBase **ppoDstTmp,
                              bool &desiredParamsFullfilled, 
-                             const Size &desiredSizeHint, 
-                             format desiredFormatHint,
-                             depth desiredDepthHint,
+                             const utils::Size &desiredSizeHint, 
+                             core::format desiredFormatHint,
+                             core::depth desiredDepthHint,
                              dc1394color_filter_t bayerLayout,
                              dc1394bayer_method_t bayerMethod=DC1394_BAYER_METHOD_BILINEAR);
   
         /// returns the current image directly (if no desried parameters are set)
-        void getCurrentImage(ImgBase **ppoDst, 
+        void getCurrentImage(core::ImgBase **ppoDst, 
                              dc1394color_filter_t bayerLayout,
                              dc1394bayer_method_t bayerMethod=DC1394_BAYER_METHOD_BILINEAR);
   
@@ -159,7 +159,7 @@ namespace icl{
         DCDeviceOptions *m_poOptions;
   
         /// to remember the time stamp of the last frame grabbed
-        Time m_lastFramesTimeStamp;
+        utils::Time m_lastFramesTimeStamp;
       };
     }
   } // namespace io

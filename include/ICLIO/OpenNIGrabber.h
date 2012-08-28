@@ -85,8 +85,8 @@ namespace icl {
         ~OpenNIGrabberImpl();
   
         /// grab function grabs an image (destination image is adapted on demand)
-        /** @copydoc icl::Grabber::grab(ImgBase**) **/
-        virtual const ImgBase* acquireImage();
+        /** @copydoc icl::Grabber::grab(core::ImgBase**) **/
+        virtual const core::ImgBase* acquireImage();
   
         /**
             returns the underlying handle of the grabber.
@@ -123,7 +123,7 @@ namespace icl {
         /// pointer to the currently used image generator
         icl_openni::OpenNIMapGenerator* m_Generator;
         /// internally used ReadWriteBuffer
-        icl_openni::ReadWriteBuffer<ImgBase>* m_Buffer;
+        icl_openni::ReadWriteBuffer<core::ImgBase>* m_Buffer;
         /// a thread continuously grabbing images
         OpenNIGrabberThread* m_GrabberThread;
         /// whether double frames should be omited

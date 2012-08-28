@@ -69,13 +69,13 @@ namespace icl{
       public:
       
       /// Create video grabber with given video-file name
-      VideoGrabber(const std::string &fileName) throw (FileNotFoundException,InvalidFileException);
+      VideoGrabber(const std::string &fileName) throw (utils::FileNotFoundException,utils::InvalidFileException);
       
       /// Destructor
       ~VideoGrabber();
   
       /// grab function
-      virtual const ImgBase *acquireImage();
+      virtual const core::ImgBase *acquireImage();
       
       /// direct access to pause video playback (grab will block then)
       void pause();

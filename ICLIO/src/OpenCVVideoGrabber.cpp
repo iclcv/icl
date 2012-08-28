@@ -33,6 +33,9 @@
  *********************************************************************/
 #include <ICLIO/OpenCVVideoGrabber.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
   namespace io{
   
@@ -111,7 +114,7 @@ namespace icl{
   
     const ImgBase *OpenCVVideoGrabber::acquireImage(){
       ICLASSERT_RETURN_VAL( !(data->cvc==0), 0);
-      icl::ipl_to_img(cvQueryFrame(data->cvc),&data->m_buffer);
+      core::ipl_to_img(cvQueryFrame(data->cvc),&data->m_buffer);
       if(data->use_video_fps){
         data->fpslimiter->wait();
       }

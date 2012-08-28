@@ -70,11 +70,11 @@ namespace icl {
       bool initTrigger();
   
       /// grabbing function  
-      /** \copydoc icl::Grabber::grab(icl::ImgBase**)  **/    
-      virtual const ImgBase* grabUD(ImgBase **poDst=0);
+      /** \copydoc icl::Grabber::grab(icl::core::ImgBase**)  **/    
+      virtual const core::ImgBase* grabUD(core::ImgBase **poDst=0);
   
-      void grabStereo (ImgBase*& ppoDstLeft, ImgBase*& ppoDstRight);
-      void grabStereoTrigger (ImgBase*& leftImage, ImgBase*& rightImage);
+      void grabStereo (core::ImgBase*& ppoDstLeft, core::ImgBase*& ppoDstRight);
+      void grabStereoTrigger (core::ImgBase*& leftImage, core::ImgBase*& rightImage);
   
       /** @{ @name properties and parameters */
       
@@ -94,7 +94,7 @@ namespace icl {
         if ((dev <= m_lNumCameras) && (dev >=0))
           m_iDevice = dev; 
       }
-      inline icl::Size getSize() { return icl::Size(m_iWidth, m_iHeight); }
+      inline icl::utils::Size getSize() { return icl::utils::Size(m_iWidth, m_iHeight); }
   
       private:
       /// current grabbing width
@@ -113,7 +113,7 @@ namespace icl {
       HIIDC m_hCamera[10];
   
       void GetCamAllString(long camIndex, char *strCamera);
-      void copyGrabbingBuffer (int iDevice, ImgBase *poDst);
+      void copyGrabbingBuffer (int iDevice, core::ImgBase *poDst);
   
     };
   

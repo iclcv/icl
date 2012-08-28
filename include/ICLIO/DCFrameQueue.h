@@ -111,7 +111,7 @@ namespace icl{
         std::queue<dc1394video_frame_t*> q;
         
         /// queue mutex
-        Mutex mutex;
+        utils::Mutex mutex;
         
         /// associated camera
         dc1394camera_t *m_poCam;

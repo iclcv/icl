@@ -38,10 +38,13 @@
 
 #include <string>
 #include <vector>
-#include <ICLIO/IOUtils.h>
 #include <ICLUtils/StringUtils.h>
 
 using namespace std;
+
+using namespace icl::utils;
+using namespace icl::core;
+
 
 namespace icl{
   namespace io{
@@ -138,7 +141,7 @@ namespace icl{
         }
         line = file.readLine();
       }else do{
-        line = ioutils::skipWhitespaces(file.readLine());
+        line = skipWhitespaces(file.readLine());
         if(line.length() && line[0] == '#'){
           vector<string> ts = tok(line," ");
           if(ts.size() < 3) continue;

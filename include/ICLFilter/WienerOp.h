@@ -63,13 +63,13 @@ namespace icl {
           Even width or height is increased to next higher odd value.
           @param noise nois factor
       **/
-      WienerOp (const Size &maskSize, icl32f noise=0): NeighborhoodOp(maskSize),m_fNoise(noise){}
+      WienerOp (const utils::Size &maskSize, icl32f noise=0): NeighborhoodOp(maskSize),m_fNoise(noise){}
   
       /// Filters an image using the Wiener algorithm.
       /** @param poSrc Source image
           @param ppoDst Destination image
       **/
-      void apply (const ImgBase *poSrc, ImgBase **ppoDst);
+      void apply (const core::ImgBase *poSrc, core::ImgBase **ppoDst);
   
       /// Import unaryOps apply function without destination image
       using NeighborhoodOp::apply;

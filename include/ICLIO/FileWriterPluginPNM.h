@@ -46,11 +46,11 @@ namespace icl{
     class FileWriterPluginPNM : public FileWriterPlugin{
       public:
       /// write implementation
-      virtual void write(File &file, const ImgBase *image);
+      virtual void write(utils::File &file, const core::ImgBase *image);
       
       private:
       /// internal mutex to protect the buffer
-      Mutex m_oBufferMutex;
+      utils::Mutex m_oBufferMutex;
       
       /// internal data conversion buffer
       std::vector<icl8u> m_vecBuffer;

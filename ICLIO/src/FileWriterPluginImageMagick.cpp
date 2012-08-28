@@ -51,6 +51,9 @@
 #include <ICLCore/Converter.h>
 #include <ICLUtils/Exception.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
   namespace io{
     
@@ -98,9 +101,9 @@ namespace icl{
         case 1:{
           const ImgBase *useImage = image;
           if(image->getDepth() == depth32f || image->getDepth() == depth64f){
-            icl::ensureCompatible(&m_data->buffer,image->getDepth(),image->getParams());
+            core::ensureCompatible(&m_data->buffer,image->getDepth(),image->getParams());
             image->deepCopy(&m_data->buffer);
-            m_data->buffer->normalizeAllChannels(icl::Range64f(0,1));
+            m_data->buffer->normalizeAllChannels(utils::Range64f(0,1));
             useImage = m_data->buffer;
           }
           try{
@@ -120,19 +123,19 @@ namespace icl{
             ensureCompatible(&m_data->buffer,image->getDepth(),image->getSize(),formatRGB);
             cc(image,m_data->buffer);
             if(m_data->buffer->getDepth() == depth32f || m_data->buffer->getDepth() == depth64f){
-              m_data->buffer->normalizeAllChannels(icl::Range64f(0,1));
+              m_data->buffer->normalizeAllChannels(utils::Range64f(0,1));
             }
             useImage = m_data->buffer;
           }else if(useImage->getDepth() == depth32f || useImage->getDepth() == depth64f){
             ensureCompatible(&m_data->buffer,image->getDepth(),image->getSize(),formatRGB);
             image->deepCopy(&m_data->buffer);
-            m_data->buffer->normalizeAllChannels(icl::Range64f(0,1));
+            m_data->buffer->normalizeAllChannels(utils::Range64f(0,1));
             useImage = m_data->buffer;
           }
           
           
           try{
-            unsigned int minsize = useImage->getDim()*icl::getSizeOf(useImage->getDepth())*3;
+            unsigned int minsize = useImage->getDim()*core::getSizeOf(useImage->getDepth())*3;
             if(m_data->interleavedBuffer.size() < minsize){
               m_data->interleavedBuffer.resize(minsize);
             }
@@ -140,8 +143,8 @@ namespace icl{
             switch(useImage->getDepth()){
   #define ICL_INSTANTIATE_DEPTH(D)                                        \
               case depth##D:                                              \
-              icl::planarToInterleaved(useImage->asImg<icl##D>(),         \
-                                       reinterpret_cast<icl##D*>(data));  \
+              core::planarToInterleaved(useImage->asImg<icl##D>(),         \
+                                        reinterpret_cast<icl##D*>(data)); \
               break;
               ICL_INSTANTIATE_ALL_DEPTHS;
               default:
@@ -164,16 +167,16 @@ namespace icl{
           const ImgBase *useImage = image;
           
           try{
-            unsigned int minsize = useImage->getDim()*icl::getSizeOf(useImage->getDepth())*4;
+            unsigned int minsize = useImage->getDim()*core::getSizeOf(useImage->getDepth())*4;
             if(m_data->interleavedBuffer.size() < minsize){
               m_data->interleavedBuffer.resize(minsize);
             }
             void *data = m_data->interleavedBuffer.data();
             switch(useImage->getDepth()){
-  #define ICL_INSTANTIATE_DEPTH(D)                                        \
-              case depth##D:                                              \
-              icl::planarToInterleaved(useImage->asImg<icl##D>(),         \
-                                       reinterpret_cast<icl##D*>(data));  \
+#define ICL_INSTANTIATE_DEPTH(D)                                        \
+              case depth##D:                                            \
+                core::planarToInterleaved(useImage->asImg<icl##D>(),    \
+                                          reinterpret_cast<icl##D*>(data)); \
               break;
               ICL_INSTANTIATE_ALL_DEPTHS;
               default:

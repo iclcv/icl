@@ -65,7 +65,7 @@ namespace icl{
       void init(const std::string &scope, const std::string &transportList="spread");
       
       /// sender method
-      virtual void send(const ImgBase *image);
+      virtual void send(const core::ImgBase *image);
       
       /// returns whether this is a null instance
       inline bool isNull() const { return !m_data; }

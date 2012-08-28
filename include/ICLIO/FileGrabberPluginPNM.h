@@ -43,7 +43,7 @@ namespace icl{
     class FileGrabberPluginPNM : public FileGrabberPlugin{
       public:
       /// grab implementation
-      virtual void grab(File &file, ImgBase **dest);
+      virtual void grab(utils::File &file, core::ImgBase **dest);
     };  
   } // namespace io
 }

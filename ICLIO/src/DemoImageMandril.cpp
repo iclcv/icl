@@ -35,7 +35,9 @@
 #include <ICLIO/FileGrabber.h>
 #include <ICLCore/Img.h>
 
-using namespace icl;
+using namespace icl::utils;
+using namespace icl::core;
+
 using namespace std;
 namespace icl{
   namespace io{
@@ -1967,40 +1969,40 @@ namespace icl{
     { 58, 49, 59,241,233, 76, 67, 32,138,220, 55,  3, 52, 27,147, 24,185,214,118,223, 62,244, 85,  1,118, 68, 69, 99, 98, 91},
     {124,112,106,100,153, 39, 66,184,221, 73,192,206, 40, 23, 77,133, 36, 13,143, 74, 20, 82,133, 77,120,216,122, 83, 88,107},
     {216,102, 82,196,  0,124,186,230,135, 44, 65,  8, 60,251, 10,171,204,217,212, 14, 58,209, 90, 64,209, 13,127,165,  0,159}
-  } // namespace io
 };
-// }}}
-unsigned char auc_ExtraData_mandril[NEXTRA] = {
-  // {{{ open
-255,217
-};
-// }}}
+  // }}}
+  unsigned char auc_ExtraData_mandril[NEXTRA] = {
+    // {{{ open
+    255,217
+  };
+  // }}}
 
-}//end namespace
-ImgBase* createImage_mandril(){
-  // {{{ open
-  static ImgBase *image = 0;
-  if(image) return image->deepCopy();
-  FILE *f = fopen("./.tmp_image_buffer.jpg","wb");
-  const int DIM = NROWS*NCOLS+NEXTRA;
-  char *buf= new char[DIM];
-  int j=0;
-  for(int i=0;i<NROWS;++i){
-     for(int k=0;k<NCOLS;k++,j++){
-        buf[j] = aauc_Data_mandril[i][k];
-     }
-  }
-  for(int i=0;i<NEXTRA;i++,j++){
-     buf[j] = auc_ExtraData_mandril[i];
-  }
-  fwrite(buf,1,DIM,f);
-  fclose(f);
-  delete [] buf;
-  image = FileGrabber("./.tmp_image_buffer.jpg",false,true).grab()->deepCopy();
-  remove("./.tmp_image_buffer.jpg");
-  return image->deepCopy();
-}
-// }}}
+  }//end namespace
+    ImgBase* createImage_mandril(){
+      // {{{ open
+      static ImgBase *image = 0;
+      if(image) return image->deepCopy();
+      FILE *f = fopen("./.tmp_image_buffer.jpg","wb");
+      const int DIM = NROWS*NCOLS+NEXTRA;
+      char *buf= new char[DIM];
+      int j=0;
+      for(int i=0;i<NROWS;++i){
+        for(int k=0;k<NCOLS;k++,j++){
+          buf[j] = aauc_Data_mandril[i][k];
+        }
+      }
+      for(int i=0;i<NEXTRA;i++,j++){
+        buf[j] = auc_ExtraData_mandril[i];
+      }
+      fwrite(buf,1,DIM,f);
+      fclose(f);
+      delete [] buf;
+      image = FileGrabber("./.tmp_image_buffer.jpg",false,true).grab()->deepCopy();
+      remove("./.tmp_image_buffer.jpg");
+      return image->deepCopy();
+    }
+    // }}}
+  } // namespace io
 
 } // end namespace icl
 

@@ -36,8 +36,8 @@
 
 #include <pylon/PylonIncludes.h>
 
-#include <ICLCore/ImgBase.h>
-#include <ICLCore/Img.h>
+#include <ICLCore/core::ImgBase.h>
+#include <ICLCore/core::Img.h>
 #include <ICLUtils/Mutex.h>
 #include <ICLIO/PylonUtils.h>
 #include <ICLCore/BayerConverter.h>
@@ -73,7 +73,7 @@ namespace icl {
         /**
         * @return a pointer to the converted image.
         */
-        icl::ImgBase* convert(const void *imgBuffer, ConvBuffers* b);
+        icl::core::ImgBase* convert(const void *imgBuffer, ConvBuffers* b);
   
         private:
         /// A mutex lock for concurrency.
@@ -147,11 +147,11 @@ namespace icl {
           Pylon::PixelType m_PixelType;
           int m_PixelSize;
           long m_BufferSize;
-          /// Pylon color format converter
+          /// Pylon color core::format converter
           Pylon::CPixelFormatConverter* m_ColorConverter;
-          /// Pylon color format converter input format
+          /// Pylon color core::format converter input format
           Pylon::SImageFormat* m_InputFormat;
-          /// Pylon color format converter output format
+          /// Pylon color core::format converter output format
           Pylon::SOutputImageFormat* m_OutputFormat;
       };
   
@@ -188,11 +188,11 @@ namespace icl {
           Pylon::PixelType m_PixelType;
           int m_PixelSize;
           long m_BufferSize;
-          /// Pylon color format converter
+          /// Pylon color core::format converter
           Pylon::CPixelFormatConverter* m_ColorConverter;
-          /// Pylon color format converter input format
+          /// Pylon color core::format converter input format
           Pylon::SImageFormat* m_InputFormat;
-          /// Pylon color format converter output format
+          /// Pylon color core::format converter output format
           Pylon::SOutputImageFormat* m_OutputFormat;
       };
   
@@ -202,7 +202,7 @@ namespace icl {
           /// Constructor initializes conversion
           BayerToRgb8Icl(BayerConverter::bayerConverterMethod method,
                          BayerConverter::bayerPattern pattern,
-                         Size s);
+                         utils::Size s);
           /// frees allocated ressources
           ~BayerToRgb8Icl();
           /// initializes buffers in b as needed for color conversion.
@@ -212,7 +212,7 @@ namespace icl {
         private:
           BayerConverter m_Conv;
           std::vector<icl8u*> m_Channels;
-          Size m_Size;
+          utils::Size m_Size;
       };
   
   #ifdef HAVE_IPP
@@ -228,7 +228,7 @@ namespace icl {
           /// writes image from imgBuffer to b using appropriate conversion.
           void convert(const void *imgBuffer, ConvBuffers* b);
         private:
-          Size m_Size;
+          utils::Size m_Size;
           icl8u* m_ConvBuffer;
       };
   
@@ -244,7 +244,7 @@ namespace icl {
           /// writes image from imgBuffer to b using appropriate conversion.
           void convert(const void *imgBuffer, ConvBuffers* b);
         private:
-          Size m_Size;
+          utils::Size m_Size;
           icl8u* m_ConvBuffer;
       };
   #endif

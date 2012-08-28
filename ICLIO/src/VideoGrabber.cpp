@@ -38,7 +38,7 @@
 #define XINE_ENABLE_EXPERIMENTAL_FEATURES
 #include <xine.h>
 #include <xine/xineutils.h>
-#include <ICLIO/File.h>
+#include <ICLUtils/File.h>
 #include <ICLCore/Img.h>
 #include <vector>
 #include <ICLCore/CCFunctions.h>
@@ -46,6 +46,9 @@
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLUtils/Mutex.h>
+
+using namespace icl::utils;
+using namespace icl::core;
 
 namespace icl{
   namespace io{

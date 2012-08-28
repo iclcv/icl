@@ -59,14 +59,14 @@ namespace icl{
         
         Only a few backends do actually support sending also image meta data. So far,
         this is only supported by the RSB and by the shared memory backend, however, 
-        we plan to add this feature at least for the .icl-file format. The corresponding
+        we plan to add this feature at least for the .icl-file core::format. The corresponding
         GenericGrabber backends for these types are also able to deserialize the images meta data
     */
     
     class GenericImageOutput : public ImageOutput{
       std::string type;
       std::string description;
-      SmartPtr<ImageOutput> impl;
+      utils::SmartPtr<ImageOutput> impl;
   
       public:
       
@@ -78,17 +78,17 @@ namespace icl{
       GenericImageOutput(const std::string &type, const std::string &description);
       
       /// Create from given program argument
-      GenericImageOutput(const ProgArg &pa);
+      GenericImageOutput(const utils::ProgArg &pa);
       
       /// initialize this instance
       void init(const std::string &type, const std::string &description);
   
       /// initialization method (from given progarg)
-      void init(const ProgArg &pa);
+      void init(const utils::ProgArg &pa);
   
       
       /// sends a new image
-      virtual void send(const ImgBase *image){
+      virtual void send(const core::ImgBase *image){
         if(impl) impl->send(image);
         else{
           ERROR_LOG("unable to send image with a NULL output");
@@ -106,13 +106,13 @@ namespace icl{
   
       /// sets the implementations compression options
       virtual void setCompression(const ImageCompressor::CompressionSpec &spec){
-        ICLASSERT_THROW(impl,ICLException("GenericImageOutput:setCompression: impl was null"));
+        ICLASSERT_THROW(impl,utils::ICLException("GenericImageOutput:setCompression: impl was null"));
         impl->setCompression(spec);
       }
       
       /// returns the implementation's current compression type (result.first) and quality (result.second)
       virtual CompressionSpec getCompression() const{
-        ICLASSERT_THROW(impl,ICLException("GenericImageOutput:getCompression: impl was null"));
+        ICLASSERT_THROW(impl,utils::ICLException("GenericImageOutput:getCompression: impl was null"));
         return impl->getCompression();
       }
     };

@@ -41,7 +41,7 @@ namespace icl{
     /// Interface class for writing images using an ImageMagick++ wrapper  \ingroup FILEIO_G
     /** ImageMagick provides reading and writing routines for many file formats: The following
         list shows all formats currently implemented for ICL's FileWriter.
-        Notify ICL's support if a common format, supported by ImageMagick is missing!
+        Notify ICL's support if a common core::format, supported by ImageMagick is missing!
         
         <pre>
         "png", "gif", "pdf",  "ps",  "avs", "bmp", "cgm",  "cin",   "cur",  "cut", "dcx",
@@ -72,7 +72,7 @@ namespace icl{
       virtual ~FileWriterPluginImageMagick();
       
       /// pure virtual writing function
-      virtual void write(File &file, const ImgBase *image);
+      virtual void write(utils::File &file, const core::ImgBase *image);
   
       /// InternalData storage class
       class InternalData;

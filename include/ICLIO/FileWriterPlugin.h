@@ -35,7 +35,7 @@
 #pragma once
 
 #include <ICLCore/Img.h>
-#include <ICLIO/File.h>
+#include <ICLUtils/File.h>
 
 
 namespace icl{
@@ -43,9 +43,9 @@ namespace icl{
     /// Interface class for writer plugins writing images in different file formats \ingroup FILEIO_G
     class FileWriterPlugin{
       public:
-       virtual ~FileWriterPlugin() {}
+      virtual ~FileWriterPlugin() {}
       /// pure virtual writing function
-      virtual void write(File &file, const ImgBase *image)=0;
+      virtual void write(utils::File &file, const core::ImgBase *image)=0;
     };
   } // namespace io
 }

@@ -72,8 +72,8 @@ namespace icl {
           ~PylonGrabberImpl();
            
           /// grab function grabs an image (destination image is adapted on demand)
-          /** @copydoc icl::Grabber::grab(ImgBase**) **/
-          virtual const ImgBase* acquireImage();
+          /** @copydoc icl::Grabber::grab(core::ImgBase**) **/
+          virtual const core::ImgBase* acquireImage();
   
           /// Prints information about the startup argument options
           static void printHelp();
@@ -111,7 +111,7 @@ namespace icl {
           /// A list of used buffers.
           std::vector<PylonGrabberBuffer<uint16_t>*> m_BufferList;
           /// A pointer to the last used buffer.
-          ImgBase* m_LastBuffer;
+          core::ImgBase* m_LastBuffer;
       
           /// starts the acquisition of pictures by the camera
           void acquisitionStart();

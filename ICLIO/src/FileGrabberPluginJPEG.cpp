@@ -38,6 +38,8 @@
 #include <ICLIO/JPEGDecoder.h>
 
 using namespace std;
+using namespace icl::utils;
+using namespace icl::core;
 
 namespace icl{
   namespace io{

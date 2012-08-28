@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLIO/src/File.cpp                                     **
-** Module : ICLIO                                                  **
+** File   : ICLUtils/src/File.cpp                                  **
+** Module : ICLUtils                                               **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -32,26 +32,25 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLIO/File.h>
-#include <stdio.h>
+#include <ICLUtils/File.h>
 #include <ICLUtils/Macros.h>
-#include <ICLIO/IOUtils.h>
+#include <ICLUtils/StringUtils.h>
 #include <sys/stat.h>
 #include <cstring>
-using std::memcpy;
+#include <stdio.h>
 
 #ifdef HAVE_LIBZ
 #include <zlib.h>
 #endif
 
-using namespace std;
 
 namespace icl{
-  namespace io{
+  namespace utils{
+
     namespace{
       static const char DIR_SEPERATOR = '/';
       static const char NEW_LINE = '\n';
-  
+      
       std::string toString(File::OpenMode om){
         switch(om){
           case File::writeBinary: return "Write Binary";
@@ -62,13 +61,13 @@ namespace icl{
         }
       }
       
-      void break_apart(string s, string &dir, string &basename, string &suffix, string &filename){
+      void break_apart(std::string s, std::string &dir, std::string &basename, std::string &suffix, std::string &filename){
         // {{{ open
   
         size_t p = s.rfind(DIR_SEPERATOR);
         
         /// split directory xxx/filename.suffix
-        if(p==string::npos){
+        if(p==std::string::npos){
           dir = "";
           filename = s;
         }else{
@@ -78,7 +77,7 @@ namespace icl{
         
         // split suffix
         p = filename.rfind('.');
-        if(p == string::npos){
+        if(p == std::string::npos){
           suffix = "";
           basename = filename;
         }else{
@@ -86,7 +85,7 @@ namespace icl{
           basename = filename.substr(0,p);
           if(suffix == ".gz"){
             p = basename.rfind('.');                   ;
-            if(p != string::npos){
+            if(p != std::string::npos){
               suffix = basename.substr(p)+suffix;
               basename = basename.substr(0,p-1);
             }
@@ -95,12 +94,12 @@ namespace icl{
       }
   
       // }}}
-      void buffer_file(FILE *fp, vector<unsigned char> &data){
+      void buffer_file(FILE *fp, std::vector<unsigned char> &data){
         // {{{ open
   
         int len = 0;
         static const int LEN = 1024;
-        vector<unsigned char *> buf(1,new unsigned char[LEN]);
+        std::vector<unsigned char *> buf(1,new unsigned char[LEN]);
         int curlen = fread(buf[0],1,LEN,fp);
         if(curlen == -1) ERROR_LOG("error reading file");
         while(curlen==LEN){
@@ -119,12 +118,12 @@ namespace icl{
       // }}}
   
   #ifdef HAVE_LIBZ
-      void buffer_file_gz(gzFile fp, vector<unsigned char> &data){
+      void buffer_file_gz(gzFile fp, std::vector<unsigned char> &data){
         // {{{ open
   
         int len = 0;
         static const int LEN = 1024;
-        vector<unsigned char *> buf(1,new unsigned char[LEN]);
+        std::vector<unsigned char *> buf(1,new unsigned char[LEN]);
         int curlen = gzread(fp,buf[0],LEN);
         if(curlen == -1) ERROR_LOG("error reading file");
         while(curlen==LEN){
@@ -145,7 +144,7 @@ namespace icl{
   
       static const char *s_apcOpenModes[4] = { "rb","r","wb","w" };
   
-      bool file_exists(const string &filename){
+      bool file_exists(const std::string &filename){
         struct stat stFileInfo;
         return stat(filename.c_str(),&stFileInfo)==0;
       }
@@ -158,7 +157,7 @@ namespace icl{
   
         name(name),handle(0),
   #ifdef HAVE_LIBZ
-        gzipped(ioutils::endsWith(name,".gz")),
+        gzipped(endsWith(name,".gz")),
   #endif
         bufferoffset(0),
         binary(false),
@@ -252,20 +251,20 @@ namespace icl{
   
       // }}}
   
-      string name;
-      string dir;
-      string suffix;
-      string basename;
-      string filename;
+      std::string name;
+      std::string dir;
+      std::string suffix;
+      std::string basename;
+      std::string filename;
   
       void *handle;
   #ifdef HAVE_LIBZ
       bool gzipped;
   #endif
-      vector<icl8u> buffer;
+      std::vector<icl8u> buffer;
       mutable int bufferoffset;
       bool binary;
-      string precision;
+      std::string precision;
       char writebuf[100];
       File::OpenMode openmode;
     };
@@ -333,7 +332,7 @@ namespace icl{
   
     // }}}
   
-    string File::getDir() const{
+    std::string File::getDir() const{
       // {{{ open
   
       ICLASSERT_RETURN_VAL(!isNull(),"");
@@ -341,7 +340,7 @@ namespace icl{
     }
   
     // }}}
-    string File::getBaseName() const{
+    std::string File::getBaseName() const{
       // {{{ open
   
       ICLASSERT_RETURN_VAL(!isNull(),"");
@@ -349,7 +348,7 @@ namespace icl{
     }
   
     // }}}
-    string File::getSuffix() const{
+    std::string File::getSuffix() const{
       // {{{ open
   
       ICLASSERT_RETURN_VAL(!isNull(),"");
@@ -357,7 +356,7 @@ namespace icl{
     }
   
     // }}}
-    string File::getName() const{
+    std::string File::getName() const{
       // {{{ open
   
       ICLASSERT_RETURN_VAL(!isNull(),"");
@@ -400,7 +399,7 @@ namespace icl{
     }
   
     // }}}
-    void File::write(const string &text){
+    void File::write(const std::string &text){
       // {{{ open
       if(isBinary()){
         write(text.c_str(),text.length());
@@ -542,7 +541,7 @@ namespace icl{
       // {{{ open
       ICLASSERT_RETURN_VAL(!isNull(),0);    
       ICLASSERT_RETURN_VAL(isOpen(),0);
-      const vector<icl8u> &data = readAll();
+      const std::vector<icl8u> &data = readAll();
       int offs = impl->bufferoffset;
       return std::max<unsigned int>(0,data.size()-offs);
     }
@@ -558,19 +557,19 @@ namespace icl{
   
     // }}}
     
-    string File::readLine() const{
+    std::string File::readLine() const{
       // {{{ open
   
       ICLASSERT_RETURN_VAL(!isNull(),"");
       ICLASSERT_RETURN_VAL(isOpen(),"");
       ICLASSERT_RETURN_VAL(hasMoreLines(),"");
       
-      const vector<icl8u> &data = readAll();
+      const std::vector<icl8u> &data = readAll();
       unsigned int i=impl->bufferoffset;
       while(i<data.size()&& data[i] != NEW_LINE){
         i++;
       }
-      string s(data.begin()+impl->bufferoffset,data.begin()+i);
+      std::string s(data.begin()+impl->bufferoffset,data.begin()+i);
       if(isBinary()){
         i++;
       }else{
@@ -584,16 +583,16 @@ namespace icl{
     }
   
     // }}}
-    string &File::readLine(string &dst) const{
+    std::string &File::readLine(std::string &dst) const{
       // {{{ open
   
-      static string _null;
+      static std::string _null;
       ICLASSERT_RETURN_VAL(!isNull(),_null);
       ICLASSERT_RETURN_VAL(isOpen(),_null);
       ICLASSERT_RETURN_VAL(hasMoreLines(),_null);
       ICLASSERT_RETURN_VAL(!isBinary(),_null);
   
-      const vector<icl8u> &data = readAll();
+      const std::vector<icl8u> &data = readAll();
       unsigned int i=impl->bufferoffset;
       while(i<data.size()&& data[i] != NEW_LINE){
         i++;
@@ -610,15 +609,15 @@ namespace icl{
     }
   
     // }}}
-    vector<icl8u> File::read(int len) const{
+    std::vector<icl8u> File::read(int len) const{
       // {{{ open
   
-      static vector<icl8u> vec;
+      static std::vector<icl8u> vec;
       ICLASSERT_RETURN_VAL(!isNull(),vec);
       ICLASSERT_RETURN_VAL(isOpen(),vec);
       ICLASSERT_RETURN_VAL(len <= bytesAvailable(),vec);
       vec.resize(len);
-      const vector<icl8u> &data = readAll();
+      const std::vector<icl8u> &data = readAll();
       std::copy(&data[0]+impl->bufferoffset,&data[0]+impl->bufferoffset+len,&vec[0]);
       impl->bufferoffset+=len;
       return data;
@@ -634,7 +633,7 @@ namespace icl{
   
       len = iclMin(len,bytesAvailable());
       
-      const vector<icl8u> &data = readAll();
+      const std::vector<icl8u> &data = readAll();
       std::copy(&data[0]+impl->bufferoffset,&data[0]+impl->bufferoffset+len,(icl8u*)dst);
       impl->bufferoffset+=len;
       
@@ -643,9 +642,9 @@ namespace icl{
   
     // }}}
     
-    const vector<icl8u> &File::readAll() const{
+    const std::vector<icl8u> &File::readAll() const{
       // {{{ open
-      static vector<icl8u> _null;
+      static std::vector<icl8u> _null;
       ICLASSERT_RETURN_VAL(!isNull(),_null);
       ICLASSERT_RETURN_VAL(isOpen(),_null);
       const_cast<FileImpl*>(impl.get())->bufferData();

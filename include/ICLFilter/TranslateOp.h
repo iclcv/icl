@@ -45,7 +45,7 @@ namespace icl{
     class TranslateOp : public AffineOp {
       public:
       /// Constructor
-      TranslateOp (double dX=0.0, double dY=0.0, scalemode eInterpolate=interpolateLIN) :
+      TranslateOp (double dX=0.0, double dY=0.0, core::scalemode eInterpolate=core::interpolateLIN) :
         AffineOp (eInterpolate) {
           setTranslation(dX,dY);
           setAdaptResultImage(false);

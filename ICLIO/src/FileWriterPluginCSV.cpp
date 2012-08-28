@@ -35,7 +35,9 @@
 #include <ICLIO/FileWriterPluginCSV.h>
 #include <ICLCore/Types.h>
 #include <ICLUtils/StringUtils.h>
-#include <ICLIO/IOUtils.h>
+
+using namespace icl::utils;
+using namespace icl::core;
 
 using namespace std;
 

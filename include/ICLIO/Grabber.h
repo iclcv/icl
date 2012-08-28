@@ -51,15 +51,15 @@ namespace icl {
     /** \cond */
     namespace{
       template <class T> inline T grabber_get_null(){ return 0; }
-      template <> inline icl::format grabber_get_null<icl::format>(){ return (icl::format)-1; }
-      template <> inline icl::depth grabber_get_null<icl::depth>(){ return (icl::depth)-1; }
-      template <> inline icl::Size grabber_get_null<icl::Size>(){ return icl::Size::null; }
+      template <> inline core::format grabber_get_null<core::format>(){ return (core::format)-1; }
+      template <> inline core::depth grabber_get_null<core::depth>(){ return (core::depth)-1; }
+      template <> inline icl::utils::Size grabber_get_null<icl::utils::Size>(){ return icl::utils::Size::null; }
   
       struct grabber_get_xxx_dummy{
         grabber_get_xxx_dummy(){
-          grabber_get_null<icl::format>();
-          grabber_get_null<icl::depth>();
-          grabber_get_null<icl::Size>();
+          grabber_get_null<core::format>();
+          grabber_get_null<core::depth>();
+          grabber_get_null<icl::utils::Size>();
         }
       };
     }
@@ -91,11 +91,11 @@ namespace icl {
         are not suitable for an algorithm. If this is the case, the
         Grabber's desired parameters can be set using the
         Grabber::setDesired-template.\n
-        Currently, the image parameters 'depth', 'size' and 'format'
+        Currently, the image parameters 'core::depth', 'size' and 'core::format'
         can be adapted seperately by setting desired parameters. Once
         desired parameters are set, the can be reset to the grabber's
         default by calling grabber::ignoreDesired<T> where one of the
-        types icl::depth, icl::format or icl::Size is used as type T.
+        types core::depth, core::format or icl::utils::Size is used as type T.
         
         
         \section UND Image Undistortion
@@ -115,7 +115,7 @@ namespace icl {
         First, the new Grabber needs to be implemented. This must
         implement the Grabber::acquireImage method, that uses an underlying
         image source to acquire a single new image. This can have any
-        parameters and depth (usually, the image parameters are somehow
+        parameters and core::depth (usually, the image parameters are somehow
         related to the output of the underlying image source).
         If the grabber is available, one should think about adapting
         the grabber to inherit the icl::GrabberHandle class that adds
@@ -127,7 +127,7 @@ namespace icl {
         
         The Grabber implements the Configurable interface that is used
         to implement dynamically settable properties. Each Grabber
-        must have at least the two properties 'format' and 'size'. These
+        must have at least the two properties 'core::format' and 'size'. These
         are handled in a special way by the automatically created Grabber-
         property-GUIs available in the ICLQt package.
   
@@ -149,7 +149,7 @@ namespace icl {
         So far only a few grabbers provide this feature at all. If it
         is not provided, the registered callbacks will never be called.
     */
-    class Grabber : public Uncopyable{
+    class Grabber : public utils::Uncopyable{
       /// internal data class
       struct Data;
       
@@ -158,22 +158,22 @@ namespace icl {
   
       protected:
       /// internally set a desired format
-      virtual void setDesiredFormatInternal(format fmt);
+      virtual void setDesiredFormatInternal(core::format fmt);
   
       /// internally set a desired format
-      virtual void setDesiredSizeInternal(const Size &size);
+      virtual void setDesiredSizeInternal(const utils::Size &size);
   
       /// internally set a desired format
-      virtual void setDesiredDepthInternal(depth d);
+      virtual void setDesiredDepthInternal(core::depth d);
   
       /// returns the desired format
-      virtual format getDesiredFormatInternal() const;
+      virtual core::format getDesiredFormatInternal() const;
   
       /// returns the desired format
-      virtual depth getDesiredDepthInternal() const;
+      virtual core::depth getDesiredDepthInternal() const;
   
       /// returns the desired format
-      virtual Size getDesiredSizeInternal() const;
+      virtual utils::Size getDesiredSizeInternal() const;
   
       public:
   
@@ -191,22 +191,22 @@ namespace icl {
   
       /// grab function calls the Grabber-specific acquireImage-method and applies distortion if necessary
       /** If dst is not NULL, it is exploited and filled with image data **/
-      const ImgBase *grab(ImgBase **dst=0);
+      const core::ImgBase *grab(core::ImgBase **dst=0);
       
       /// returns whether the desired parameter for the given type is used
-      /** This method is only available for the type icl::depth,icl::Size and icl::format*/
+      /** This method is only available for the type core::depth,icl::utils::Size and core::format*/
       template<class T>
       bool desiredUsed() const{ return false; }
   
-      /// sets desired parameters (only available for depth,Size and format)
+      /// sets desired parameters (only available for core::depth,utils::Size and core::format)
       template<class T>
       void useDesired(const T &t){ (void)t;}
       
       /// sets up the grabber to use all given desired parameters
-      void useDesired(depth d, const Size &size, format fmt);
+      void useDesired(core::depth d, const utils::Size &size, core::format fmt);
       
       /// set the grabber to ignore the desired param of type T
-      /** This method is only available for depth,Size and format */
+      /** This method is only available for core::depth,utils::Size and core::format */
       template<class T>
       void ignoreDesired() { 
         useDesired<T>(grabber_get_null<T>());
@@ -216,7 +216,7 @@ namespace icl {
       void ignoreDesired();
   
       /// returns the desired value for the given type T
-      /** This method is only available for depth,Size and format */
+      /** This method is only available for core::depth,utils::Size and core::format */
       template<class T>
       T getDesired() const { return T(); }
        
@@ -229,9 +229,9 @@ namespace icl {
           call \code getPropertyList()  and getInfo() \endcode
            Yet, the following properties are compulsory for grabbers:
            - size (syntax for value: e.g. "320x240")
-           - format (value depends on the underlying devices formats specifications) 
-           (If your grabber does only provided one format, e.g. RGB24 or one specifiy size, you
-           should create a menu property for format and for size, where each menu has only one 
+           - core::format (value depends on the underlying devices formats specifications) 
+           (If your grabber does only provided one core::format, e.g. RGB24 or one specifiy size, you
+           should create a menu property for core::format and for size, where each menu has only one 
            valid entry.
   
            Other parameters, implemented for most video devices are: 
@@ -338,10 +338,10 @@ namespace icl {
        /// @{ @name static string conversion functions 
   
        /// translates a SteppingRange into a string representation
-       static std::string translateSteppingRange(const SteppingRange<double>& range);
+       static std::string translateSteppingRange(const utils::SteppingRange<double>& range);
   
        /// creates a SteppingRange out of a string representation
-       static SteppingRange<double> translateSteppingRange(const std::string &rangeStr);
+       static utils::SteppingRange<double> translateSteppingRange(const std::string &rangeStr);
   
        /// translates a vector of doubles into a string representation
        static std::string translateDoubleVec(const std::vector<double> &doubleVec);
@@ -367,16 +367,16 @@ namespace icl {
   
        /// enables undistortion from given programm argument. 
        /** where first argument is the filename of the xml file and second is the size of picture*/
-       void enableUndistortion(const ProgArg &pa);
+       void enableUndistortion(const utils::ProgArg &pa);
   
        /// enables undistortion for given warp map
-       void enableUndistortion(const Img32f &warpMap);
+       void enableUndistortion(const core::Img32f &warpMap);
        
        /// sets how undistortion is interpolated (supported modes are interpolateNN and interpolateLIN)
        /** Please note, that this method has no effect if the undistortion was not enabled before
            using one of the Grabber::enableUndistortion methods. Furthermore, the setting is lost
            if the undistortion is deactivated using Grabber::disableUndistortion */
-       void setUndistortionInterpolationMode(scalemode mode);
+       void setUndistortionInterpolationMode(core::scalemode mode);
        
        /// disables distortion
        void disableUndistortion();
@@ -385,11 +385,11 @@ namespace icl {
        bool isUndistortionEnabled() const;
        
        /// returns the internal warp map or NULL if undistortion is not enabled
-       const Img32f *getUndistortionWarpMap() const;
+       const core::Img32f *getUndistortionWarpMap() const;
        /// @}
   
        /// new image callback type
-       typedef Function<void,const ImgBase*> callback;
+       typedef utils::Function<void,const core::ImgBase*> callback;
        
        /// registers a callback that is called each time, a new image is available
        /** This feature must not be implemented by specific grabber implementations. And
@@ -404,18 +404,18 @@ namespace icl {
        
        /// this function can be implemented by subclasses in order to notify, that a new image is available
        /** When this function is called, it will automatically call all callbacks with the given image. */
-       virtual void notifyNewImageAvailable(const ImgBase *image);
+       virtual void notifyNewImageAvailable(const core::ImgBase *image);
       protected:
   
   
        /// main interface method, that is implemented by the actual grabber instances
        /** This method is defined in the grabber implementation. It acquires a new image
            using the grabbers specific image acquisition back-end */
-       virtual const ImgBase *acquireImage() = 0;
+       virtual const core::ImgBase *acquireImage() = 0;
   
        /// Utility function that allows for much easier implementation of grabUD
        /** called by the grabbers grab() method **/
-       const ImgBase *adaptGrabResult(const ImgBase *src, ImgBase **dst); 
+       const core::ImgBase *adaptGrabResult(const core::ImgBase *src, core::ImgBase **dst); 
   
        /// internally used by the load- and saveProperties
        /** If any property shall not be save or loaded from configuration file, it must be filtered out by this f*/
@@ -423,17 +423,17 @@ namespace icl {
     }; 
     
     /** \cond */
-    template<> inline void Grabber::useDesired<format>(const format &t) { setDesiredFormatInternal(t); }
-    template<> inline void Grabber::useDesired<depth>(const depth &t) { setDesiredDepthInternal(t); }
-    template<> inline void Grabber::useDesired<Size>(const Size &t) { setDesiredSizeInternal(t); }
+    template<> inline void Grabber::useDesired<core::format>(const core::format &t) { setDesiredFormatInternal(t); }
+    template<> inline void Grabber::useDesired<core::depth>(const core::depth &t) { setDesiredDepthInternal(t); }
+    template<> inline void Grabber::useDesired<utils::Size>(const utils::Size &t) { setDesiredSizeInternal(t); }
   
-    template<> inline depth Grabber::getDesired<depth>() const { return getDesiredDepthInternal(); }
-    template<> inline Size Grabber::getDesired<Size>() const { return getDesiredSizeInternal(); }
-    template<> inline format Grabber::getDesired<format>() const { return getDesiredFormatInternal(); }
+    template<> inline core::depth Grabber::getDesired<core::depth>() const { return getDesiredDepthInternal(); }
+    template<> inline utils::Size Grabber::getDesired<utils::Size>() const { return getDesiredSizeInternal(); }
+    template<> inline core::format Grabber::getDesired<core::format>() const { return getDesiredFormatInternal(); }
   
-    template<> inline bool Grabber::desiredUsed<format>() const{ return (int)getDesired<format>() != -1; }
-    template<> inline bool Grabber::desiredUsed<depth>() const{ return (int)getDesired<depth>() != -1; }
-    template<> inline bool Grabber::desiredUsed<Size>() const{ return getDesired<Size>() != Size::null; }
+    template<> inline bool Grabber::desiredUsed<core::format>() const{ return (int)getDesired<core::format>() != -1; }
+    template<> inline bool Grabber::desiredUsed<core::depth>() const{ return (int)getDesired<core::depth>() != -1; }
+    template<> inline bool Grabber::desiredUsed<utils::Size>() const{ return getDesired<utils::Size>() != utils::Size::null; }
   
     /** \endcond */
    

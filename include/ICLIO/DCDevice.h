@@ -67,10 +67,10 @@ namespace icl{
       static const DCDevice null;
       
       /// DCDevices may only be created by the DCGrabbers private function
-      friend class icl::DCGrabberImpl;
+      friend class icl::io::DCGrabberImpl;
   
       /// DCDevices may only be created by the DCGrabbers private function
-      friend class icl::dc::DCGrabberThread;
+      friend class icl::io::dc::DCGrabberThread;
       
       /// save version to call dc1394_reset_bus (after call all other cams become useless)
       static void dc1394_reset_bus(bool verbose=false);

@@ -50,7 +50,7 @@ namespace icl{
       friend class CreateGrabber;
   
       /// default grab function
-      virtual const ImgBase* acquireImage();
+      virtual const core::ImgBase* acquireImage();
   
       /// Destructor
       ~CreateGrabberImpl();
@@ -60,7 +60,7 @@ namespace icl{
       CreateGrabberImpl(const std::string &what);
   
       /// internal image
-      const ImgBase *m_image;
+      const core::ImgBase *m_image;
     };  
     /** \endcond */
   

@@ -49,6 +49,8 @@
 #endif
 #endif
 
+using namespace icl::utils;
+using namespace icl::core;
 
 namespace icl{
   namespace io{
@@ -98,7 +100,7 @@ namespace icl{
       **/
   
       const Magick::PixelPacket *pix = image->getConstPixels(0,0,size.width,size.height);
-      icl::ensureCompatible(dest,depth8u,size,formatRGB);
+      core::ensureCompatible(dest,depth8u,size,formatRGB);
   
       icl8u *r = (*dest)->asImg<icl8u>()->begin(0);
       icl8u *g = (*dest)->asImg<icl8u>()->begin(1);

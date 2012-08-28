@@ -38,8 +38,8 @@
 #include <ICLUtils/Mutex.h>
 #include <ICLUtils/Exception.h>
 #include <ICLCore/CoreFunctions.h>
-#include <ICLCore/ImgBase.h>
-#include <ICLCore/Img.h>
+#include <ICLCore/core::ImgBase.h>
+#include <ICLCore/core::Img.h>
 
 namespace icl {
   namespace io{
@@ -117,13 +117,13 @@ namespace icl {
           /// deletes Objects pointed at, when pointer != NULL
           void free();
           /// To this ImageBase the converted image is written.
-          icl::ImgBase* m_Image;
+          icl::core::ImgBase* m_Image;
           /// Buffer für color conversion
           icl8u* m_ImageBuff;
           /// Buffer für 16 bit mono copy
           icl16s* m_ImageBuff16;
           /// Buffer for interlieved-to-planar conversion
-          icl::Img8u* m_ImageRGBA;
+          icl::core::Img8u* m_ImageRGBA;
           /// Vector for channels
           std::vector<icl8u*>* m_Channels;
           /// Vector for 16bit mono-channel

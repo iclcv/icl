@@ -44,7 +44,7 @@
 namespace icl{
   namespace io{
     /// encoding class for data-to-data jpeg compression
-    class JPEGEncoder : public Uncopyable{
+    class JPEGEncoder : public utils::Uncopyable{
       struct Data;  //!< pimpl type
       Data *m_data; //!< pimpl pointer
   
@@ -65,13 +65,13 @@ namespace icl{
         int len;      //!< number of bytes used
       };
       
-      /// encodes a given ImgBase * (only depth8u is supported natively)
+      /// encodes a given core::ImgBase * (only depth8u is supported natively)
       /** non-depth8u images are automatically converted before compression.
           This might lead to loss of data*/
-      const EncodedData &encode(const ImgBase *image);    
+      const EncodedData &encode(const core::ImgBase *image);    
       
       /// first encodes the jpeg in memory and then write the whole memory chunk to disc
-      void writeToFile(const ImgBase *image, const std::string &filename);
+      void writeToFile(const core::ImgBase *image, const std::string &filename);
     };
     
   } // namespace io

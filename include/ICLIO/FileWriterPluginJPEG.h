@@ -44,7 +44,7 @@ namespace icl{
     class FileWriterPluginJPEG : public FileWriterPlugin{
       public:
       /// write implementation
-      virtual void write(File &file, const ImgBase *image);
+      virtual void write(utils::File &file, const core::ImgBase *image);
       
       /// sets the currently used jped quality (0-100) (by default 90%)
       static void setQuality(int value);
@@ -55,10 +55,10 @@ namespace icl{
       static int s_iQuality;
       
       /// (static!) internal buffer for Any-to-icl8u conversion
-      static Img8u s_oBufferImage;
+      static core::Img8u s_oBufferImage;
       
       /// mutex to protect the static buffer
-      static Mutex s_oBufferImageMutex;
+      static utils::Mutex s_oBufferImageMutex;
     };
   } // namespace io
 }

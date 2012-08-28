@@ -88,6 +88,9 @@
 #include <ICLIO/RSBGrabber.h>
 #endif
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
   namespace io{
     static std::vector<GrabberDeviceDescription> deviceList;
@@ -104,7 +107,7 @@ namespace icl{
     }
     
     void GenericGrabber::init(const ProgArg &pa) throw (ICLException){
-      init(*pa,(*pa) + "=" + *icl::pa(pa.getID(),1));
+      init(*pa,(*pa) + "=" + *utils::pa(pa.getID(),1));
     }
   
     struct SpecifiedDevice{
@@ -460,7 +463,7 @@ namespace icl{
               ADD_ERR("file");
               continue;
             }
-          }catch(icl::FileNotFoundException &ex){
+          }catch(utils::FileNotFoundException &ex){
             ADD_ERR("file");
             continue;
           }

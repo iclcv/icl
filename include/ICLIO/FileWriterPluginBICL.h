@@ -42,7 +42,7 @@ namespace icl{
   namespace io{
     
     /// Writer plugin to write binary icl image (extension bicl / bicl.gz)
-    /** The bicl-format does also support saving image meta data */
+    /** The bicl-core::format does also support saving image meta data */
     class FileWriterPluginBICL : public FileWriterPlugin{
       public:
       
@@ -50,11 +50,11 @@ namespace icl{
                            const std::string &quality="none");
       
       /// write implementation
-      virtual void write(File &file, const ImgBase *image);
+      virtual void write(utils::File &file, const core::ImgBase *image);
       
       private:
       ImageCompressor compressor;
-      Mutex mutex;
+      utils::Mutex mutex;
     };
   } // namespace io
 }

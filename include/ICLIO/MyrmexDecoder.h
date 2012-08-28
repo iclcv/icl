@@ -58,7 +58,7 @@ namespace icl{
    
     public:
       MyrmexDecoder();
-      void decode(const icl16s *data, const Size &size, ImgBase **dst);
+      void decode(const icl16s *data, const utils::Size &size, core::ImgBase **dst);
   
     private:
       char attachedPosition; //store position of central unit
@@ -75,8 +75,8 @@ namespace icl{
       unsigned short swap16(unsigned short a);
       void parseConnections( std::vector<char> connections, char* attached, int* weite, int* hoehe );
       std::vector<char> makeConversiontable( int width, int height, std::vector<char> connections, char attached, char viewpoint );//generate conversiontable to match real world layout + using our viewpoint 
-      int convertImage(const icl16s *data, icl16s *outputImageData, const Size &size);
-      void init(const icl16s *data, const Size &size,char viewpoint,unsigned char speed, unsigned char compression);
+      int convertImage(const icl16s *data, icl16s *outputImageData, const utils::Size &size);
+      void init(const icl16s *data, const utils::Size &size,char viewpoint,unsigned char speed, unsigned char compression);
     };
   
   } // namespace io

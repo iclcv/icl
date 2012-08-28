@@ -57,7 +57,7 @@ namespace icl {
       
       std::string m_sType; //!< type of current grabber implementation
       
-      mutable Mutex m_mutex; //! << internal protection for re-initialization
+      mutable utils::Mutex m_mutex; //! << internal protection for re-initialization
       public:
       
       /// Empty default constructor, which creates a null-instance
@@ -66,13 +66,13 @@ namespace icl {
       
       /// Initialized the grabber from given prog-arg 
       /** The progarg needs two sub-parameters */
-      GenericGrabber(const ProgArg &pa) throw (ICLException);
+      GenericGrabber(const utils::ProgArg &pa) throw (utils::ICLException);
   
       /// Create a generic grabber instance with given device priority list
       /** internally this function calls the init function immediately*/
       GenericGrabber(const std::string &devicePriorityList,
                      const std::string &params,
-                     bool notifyErrors = true) throw (ICLException);
+                     bool notifyErrors = true) throw (utils::ICLException);
       
       /// initialization function to change/initialize the grabber back-end
       /** @param devicePriorityList Comma separated list of device tokens (no white spaces).
@@ -92,7 +92,7 @@ namespace icl {
                                     - <b>cvvideo</b> OpenCV based video grabber 
                                     - <b>sm</b> Qt-based Shared-Memory grabber (using QSharedMemoryInstance)
                                     - <b>myr</b> Uses Myrmex tactile input device as image source
-                                    - <b>kinectd</b> Uses libfreenect to grab Microsoft-Kinect's depth images
+                                    - <b>kinectd</b> Uses libfreenect to grab Microsoft-Kinect's core::depth images
                                     - <b>kinectc</b> Uses libfreenect to grab Microsoft-Kinect's rgb color images
                                     - <b>kinecti</b> Uses libfreenect to grab Microsoft-Kinect's IR images
                                     - <b>rsb</b> Robotics Service Bus Source 
@@ -105,7 +105,7 @@ namespace icl {
                                     set after device instantiation. E.g. demo=0@size=QVGA@blob-red=128, instantiates
                                     a demo-grabber, where the two additionally given properties (size and blob-red) 
                                     are set immediately after grabber instantiation. By these means particularly a 
-                                    grabber's format can be set in the grabber instantiation call. Furthermore, three
+                                    grabber's core::format can be set in the grabber instantiation call. Furthermore, three
                                     special \@-tokens are possible: \@info (e.g. dc=0\@info) lists the 0th dc device's
                                     available properties. \@load=filename loads a given property filename directly. 
                                     \@udist=filename loads a given undistortion parameter filename directly and therefore
@@ -134,7 +134,7 @@ namespace icl {
                                     - sr=device-serial-number (-1 -> menu, 0 -> auto-select)
                                       <b>or</b>
                                       sr=NcC where N is the device numer as above, c is the character 'c' and C is
-                                      the channel index to pick (0: depth-map, 1: confidence map, 2: intensity image
+                                      the channel index to pick (0: core::depth-map, 1: confidence map, 2: intensity image
                                     - video=video-filename (string)
                                     - cvcam=camera index (0=first device,1=2nd device, ...) here, you can also use
                                       opencv's so called 'domain offsets': current values are: 
@@ -158,23 +158,23 @@ namespace icl {
       **/
       void init(const std::string &devicePriorityList,
                 const std::string &params,
-                bool notifyErrors = true) throw (ICLException);
+                bool notifyErrors = true) throw (utils::ICLException);
   
       /// this method works just like the other init method
-      void init(const ProgArg &pa) throw (ICLException);
+      void init(const utils::ProgArg &pa) throw (utils::ICLException);
   
       /// resets resource on given devices (e.g. firewire bus)
       static void resetBus(const std::string &deviceList="dc", bool verbose=false);
      
       /// return the actual grabber type
       std::string getType() const { 
-        Mutex::Locker __lock(m_mutex);
+        utils::Mutex::Locker __lock(m_mutex);
         return m_sType; 
       }
       
       /// returns the wrapped grabber itself
       Grabber *getGrabber() const {
-        Mutex::Locker __lock(m_mutex); 
+        utils::Mutex::Locker __lock(m_mutex); 
         return m_poGrabber; 
       }
       
@@ -185,57 +185,57 @@ namespace icl {
       }
       
       /// grabbing function
-      virtual const ImgBase* acquireImage(){
-        Mutex::Locker __lock(m_mutex);
+      virtual const core::ImgBase* acquireImage(){
+        utils::Mutex::Locker __lock(m_mutex);
         ICLASSERT_RETURN_VAL(!isNull(),0);
         return m_poGrabber->acquireImage();
       }
   
       /// returns a list of all properties, that can be set
       virtual std::vector<std::string> getPropertyList(){
-        Mutex::Locker __lock(m_mutex);
+        utils::Mutex::Locker __lock(m_mutex);
         ICLASSERT_RETURN_VAL(!isNull(),std::vector<std::string>());
         return m_poGrabber->getPropertyList();
       }
   
       /// setting up properties of underlying grabber
       virtual void setProperty(const std::string &property, const std::string &value){
-        Mutex::Locker __lock(m_mutex);
+        utils::Mutex::Locker __lock(m_mutex);
         ICLASSERT_RETURN(!isNull());
         m_poGrabber->setProperty(property,value);
       }
   
       /// returns whether property is supported by underlying grabber
       virtual bool supportsProperty(const std::string &property){
-        Mutex::Locker __lock(m_mutex);
+        utils::Mutex::Locker __lock(m_mutex);
         ICLASSERT_RETURN_VAL(!isNull(),false);
         return m_poGrabber->supportsProperty(property);
       }
       
       /// returns the property type of given property
       virtual std::string getType(const std::string &name){
-        Mutex::Locker __lock(m_mutex);
+        utils::Mutex::Locker __lock(m_mutex);
         ICLASSERT_RETURN_VAL(!isNull(),"");
         return m_poGrabber->getType(name);
       }
        
       /// retuns property information
       virtual std::string getInfo(const std::string &name){
-        Mutex::Locker __lock(m_mutex);
+        utils::Mutex::Locker __lock(m_mutex);
         ICLASSERT_RETURN_VAL(!isNull(),"");
         return m_poGrabber->getInfo(name);
       }
       
       /// returns the current value of a property or a parameter
       virtual std::string getValue(const std::string &name){
-        Mutex::Locker __lock(m_mutex);
+        utils::Mutex::Locker __lock(m_mutex);
         ICLASSERT_RETURN_VAL(!isNull(),"");
         return m_poGrabber->getValue(name);
       }
   
       /// returns volatileness of given property
       virtual int isVolatile(const std::string &propertyName){
-        Mutex::Locker __lock(m_mutex);
+        utils::Mutex::Locker __lock(m_mutex);
         ICLASSERT_RETURN_VAL(!isNull(),0);
         return m_poGrabber->isVolatile(propertyName);
       }
@@ -248,58 +248,58 @@ namespace icl {
   
   
     /// internally set a desired format
-      virtual void setDesiredFormatInternal(format fmt){
+      virtual void setDesiredFormatInternal(core::format fmt){
         ICLASSERT_RETURN(!isNull());
-        Mutex::Locker l(m_mutex);
+        utils::Mutex::Locker l(m_mutex);
         m_poGrabber->setDesiredFormatInternal(fmt);
       }
   
       /// internally set a desired format
-      virtual void setDesiredSizeInternal(const Size &size){
+      virtual void setDesiredSizeInternal(const utils::Size &size){
         ICLASSERT_RETURN(!isNull());
-        Mutex::Locker l(m_mutex);
+        utils::Mutex::Locker l(m_mutex);
         m_poGrabber->setDesiredSizeInternal(size);
       }
   
       /// internally set a desired format
-      virtual void setDesiredDepthInternal(depth d){
+      virtual void setDesiredDepthInternal(core::depth d){
         ICLASSERT_RETURN(!isNull());
-        Mutex::Locker l(m_mutex);
+        utils::Mutex::Locker l(m_mutex);
         m_poGrabber->setDesiredDepthInternal(d);
       }
   
       /// returns the desired format
-      virtual format getDesiredFormatInternal() const{
-        ICLASSERT_RETURN_VAL(!isNull(),(format)-1);
-        Mutex::Locker l(m_mutex);
+      virtual core::format getDesiredFormatInternal() const{
+        ICLASSERT_RETURN_VAL(!isNull(),(core::format)-1);
+        utils::Mutex::Locker l(m_mutex);
         return m_poGrabber->getDesiredFormatInternal();
       }
   
       /// returns the desired format
-      virtual depth getDesiredDepthInternal() const{
-        ICLASSERT_RETURN_VAL(!isNull(),(depth)-1);
-        Mutex::Locker l(m_mutex);
+      virtual core::depth getDesiredDepthInternal() const{
+        ICLASSERT_RETURN_VAL(!isNull(),(core::depth)-1);
+        utils::Mutex::Locker l(m_mutex);
         return m_poGrabber->getDesiredDepthInternal();
       }
   
       /// returns the desired format
-      virtual Size getDesiredSizeInternal() const{
-        ICLASSERT_RETURN_VAL(!isNull(),Size::null);
-        Mutex::Locker l(m_mutex);
+      virtual utils::Size getDesiredSizeInternal() const{
+        ICLASSERT_RETURN_VAL(!isNull(),utils::Size::null);
+        utils::Mutex::Locker l(m_mutex);
         return m_poGrabber->getDesiredSizeInternal();
       }
   
       /// passes registered callback to the internal pointer
       virtual void registerCallback(callback cb){
         ICLASSERT_RETURN(!isNull());
-        Mutex::Locker l(m_mutex);
+        utils::Mutex::Locker l(m_mutex);
         return m_poGrabber->registerCallback(cb);
       }
   
       /// passes registered callback to the internal pointer
       virtual void removeAllCallbacks(){
         ICLASSERT_RETURN(!isNull());
-        Mutex::Locker l(m_mutex);
+        utils::Mutex::Locker l(m_mutex);
         return m_poGrabber->removeAllCallbacks();
       }
   
@@ -307,9 +307,9 @@ namespace icl {
        /// returns a list of all currently available devices (according to the filter-string)
        /** The filter-string is a comma separated list of single filters like
            <pre> dc=0,unicap </pre>
-           If a single token has the format deviceType=deviceID, then only not only the
+           If a single token has the core::format deviceType=deviceID, then only not only the
            device type but also a specific ID is used for the filtering operation. If, otherwise,
-           a token has the format deviceType, then all possible devices for this device type are
+           a token has the core::format deviceType, then all possible devices for this device type are
            listed.
        */
        static const std::vector<GrabberDeviceDescription> &getDeviceList(const std::string &filter, bool rescan=true);

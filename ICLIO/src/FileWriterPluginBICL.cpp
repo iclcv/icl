@@ -34,6 +34,9 @@
 
 #include <ICLIO/FileWriterPluginBICL.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
   namespace io{
     FileWriterPluginBICL::FileWriterPluginBICL(const std::string &compressionType,

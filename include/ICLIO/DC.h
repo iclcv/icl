@@ -42,9 +42,12 @@
 
 
 namespace icl{
+  /** \cond */
+  namespace core{ class ImgBase; }
+  /** \endcond */
+
   namespace io{
     /** \cond */
-    class ImgBase;
     class DCDevice;
     class DCDeviceOptions;
     /** \endcond */
@@ -109,10 +112,10 @@ namespace icl{
           regarded !! */
       void extract_image_to(dc1394video_frame_t *f,
                             dc1394color_filter_t bayerLayout, 
-                            ImgBase **ppoDst, 
-                            const Size &desiredSizeHint, 
-                            format desiredFormatHint,
-                            depth desiredDepthHint,
+                            core::ImgBase **ppoDst, 
+                            const utils::Size &desiredSizeHint, 
+                            core::format desiredFormatHint,
+                            core::depth desiredDepthHint,
                             std::vector<icl8u> &dataBuffer,
                             dc1394bayer_method_t bayerMethod);
       
@@ -120,16 +123,16 @@ namespace icl{
       /** here, no desired params are necessary */
       void extract_image_to_2(dc1394video_frame_t *f,
                               dc1394color_filter_t bayerLayout,
-                              ImgBase **ppoDst, 
+                              core::ImgBase **ppoDst, 
                               std::vector<icl8u> &dataBuffer,
                               dc1394bayer_method_t bayerMethod);
   
       /// determins if the desired parameters can be fullfilled by extract_image_to(..) \ingroup DC_G
       /** TODO !!*/
       bool can_extract_image_to(dc1394video_frame_t *f,
-                                const Size &desiredSizeHint, 
-                                format desiredFormatHint,
-                                depth desiredDepthHint);
+                                const utils::Size &desiredSizeHint, 
+                                core::format desiredFormatHint,
+                                core::depth desiredDepthHint);
   
       /// creates a signal handler for the SIGINT signal \ingroup DC_G
       /** The signal handler will enshure, that the SIGINT-signal,

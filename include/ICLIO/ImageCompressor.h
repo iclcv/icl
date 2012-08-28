@@ -55,7 +55,7 @@ namespace icl{
           The "rlen" plugin supports four different quality settings, where each setting
           determines the number of bits, that are used for the <em>value</em> and 
           for <em>lenght</em> tokens.
-          - Quality 1: value: 1Bit, length 7Bit. This format is most appropriate for
+          - Quality 1: value: 1Bit, length 7Bit. This core::format is most appropriate for
             binary images with low noise. Here, a compression to 1% of the original size
             can easily be reached. Please note, that the binarization threshold is explicitly
             set to 127 for this quality level. For the other quality levels, only the
@@ -76,10 +76,10 @@ namespace icl{
           However, please note that even a quality setting of 100 does not lead to lossless 
           compression.
         - "none" Uncompressed image serialization. This is the only compression mode, that
-          can be used for non-Img8u images.
+          can be used for non-core::Img8u images.
         
         \section DEPTH Depth Support
-        Only Img8u-images can be compressed. For all other formats, the compression 
+        Only core::Img8u-images can be compressed. For all other formats, the compression 
         mode "none" (with quality setting "none") has to be chosen.
   
         \section SERIALIZATION Serialization Structure
@@ -126,15 +126,15 @@ namespace icl{
         + header size of 37 + N bytes (N is meta data size)\n
         for JPEG data, 2x the raw image data is allocated
     */
-    class ImageCompressor : public Uncopyable{
+    class ImageCompressor : public utils::Uncopyable{
       struct Data;  //!< pimpl type
       Data *m_data; //!< pimpl pointer
   
       /// internal utlity function
-      int estimateEncodedBufferSize(const ImgBase *image, bool skipMetaData);
+      int estimateEncodedBufferSize(const core::ImgBase *image, bool skipMetaData);
       
       /// internal utlity function
-      int estimateRawDataSize(const ImgBase *image, bool skipMetaData);
+      int estimateRawDataSize(const core::ImgBase *image, bool skipMetaData);
       
       public:
       /// compression specification
@@ -173,7 +173,7 @@ namespace icl{
         inline std::string getMagickCode() const { return std::string(params.magick,params.magick+4); }
         inline std::string getCompressionMode() const { return std::string(params.compressionMode,params.compressionMode+4); }
         CompressionSpec compressionSpec() const;
-        void setupImage(ImgBase **image);  //!< sets up a given image for beeing compatible the the header
+        void setupImage(core::ImgBase **image);  //!< sets up a given image for beeing compatible the the header
       };
       
       
@@ -183,7 +183,7 @@ namespace icl{
       Header uncompressHeader(const icl8u *compressedData, int len);
       
       /// creates a header for a given image (not data will be null)
-      Header createHeader(const ImgBase *image, bool skipMetaData);
+      Header createHeader(const core::ImgBase *image, bool skipMetaData);
   
       public:
   
@@ -236,14 +236,14 @@ namespace icl{
   
       /// this can help to find out wheter the data is new and must be encoded
       /** not supported for jpeg data */
-      Time pickTimeStamp(const icl8u *compressedData); 
+      utils::Time pickTimeStamp(const icl8u *compressedData); 
       
       /// encodes a given image into the compressed code
       /** JPEG compression does not yet meta data */
-      const CompressedData compress(const ImgBase *image, bool skipMetaData=false);
+      const CompressedData compress(const core::ImgBase *image, bool skipMetaData=false);
   
       /// decodes the given byte segment
-      const ImgBase *uncompress(const icl8u *compressedData, int len, ImgBase **dst=0);
+      const core::ImgBase *uncompress(const icl8u *compressedData, int len, core::ImgBase **dst=0);
     };
   
   } // namespace io

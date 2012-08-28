@@ -34,11 +34,13 @@
 
 #include <ICLCore/CCFunctions.h>
 #include <ICLUtils/Macros.h>
+#include <ICLUtils/File.h>
 #include <ICLUtils/Uncopyable.h>
-#include <ICLIO/FileWriter.h>
-#include <ICLIO/FileGrabber.h>
 #include <ICLFilter/ColorSegmentationOp.h>
 #include <ICLCore/Color.h>
+
+using namespace icl::utils;
+using namespace icl::core;
 
 namespace icl{
   namespace filter{

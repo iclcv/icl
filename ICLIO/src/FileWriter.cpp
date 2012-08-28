@@ -33,8 +33,6 @@
 *********************************************************************/
 
 #include <ICLIO/FileWriter.h>
-#include <ICLIO/File.h>
-#include <ICLIO/IOUtils.h>
 #include <ICLUtils/StringUtils.h>
 
 // plugins
@@ -51,8 +49,10 @@
 #ifdef HAVE_LIBPNG
 #include <ICLIO/FileWriterPluginPNG.h>
 #endif
+
+using namespace icl::utils;
+using namespace icl::core;
 using namespace std;
-using namespace icl::ioutils;
 
 namespace icl{
   namespace io{

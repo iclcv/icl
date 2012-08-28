@@ -152,8 +152,8 @@ namespace icl{
       virtual std::string getValue(const std::string &name);
         
       /// grab function grabs an image (destination image is adapted on demand)
-      /** @copydoc icl::Grabber::grab(ImgBase**) **/
-      virtual const ImgBase *acquireImage();
+      /** @copydoc icl::Grabber::grab(core::ImgBase**) **/
+      virtual const core::ImgBase *acquireImage();
       
       /// Returns a list of all connected DCDevices
       static std::vector<DCDevice> getDCDeviceList(bool resetBusFirst=false);
@@ -180,12 +180,12 @@ namespace icl{
       dc::DCGrabberThread *m_poGT;    
       
       /// Internally used buffer images
-      ImgBase *m_poImage, *m_poImageTmp;
+      core::ImgBase *m_poImage, *m_poImageTmp;
     
       /// Internally used image converter
       /** This converter is used, if the wrapped DCGrabberThread
           was not able to satisfy all desired parameter claims.*/
-      Converter m_oConverter;
+      core::Converter m_oConverter;
   
       /// Internal DCDeviceOptions struct
       DCDeviceOptions m_oOptions;
@@ -226,7 +226,7 @@ namespace icl{
         return DCGrabberImpl::dc1394_reset_bus(verbose);
       }   
       
-      /// filters out the size property, as it is set by the format property
+      /// filters out the size property, as it is set by the core::format property
       virtual std::vector<std::string> get_io_property_list();
     };
   } // namespace io

@@ -171,7 +171,7 @@
     icl-camviewer -input dc 0\@load=my-file.xml
     
     # set several options at once
-    icl-camviewer -input kinectc '0\@LED=green\@format=IR Image (10Bit)'
+    icl-camviewer -input kinectc '0\@LED=green\@core::format=IR Image (10Bit)'
 
     # enable image undistortion according to undistortion parameters stored in an appropriate** xml file.
     icl-camviewer -input dc 0@udist=my-udist-properties.xml
@@ -237,7 +237,7 @@
     - <b>icl::OpenCVVideoGrabber</b> OpenCV based video grabber (needs opencv 2)    
     - <b>icl::SharedMemoryGrabber</b> Uses QSharedMemory to grab images that were send via icl::SharedMemoryPublisher (needs Qt)
     - <b>icl::OpenCVCamGrabber</b> OpenCV based camera grab that grabs image using an opencv backend (needs OpenCV)
-    - <b>icl::KinectGrabber</b> libfreenect based Grabber for Microsoft's Kinect Camera (supports color-, depth and IR-camera)
+    - <b>icl::KinectGrabber</b> libfreenect based Grabber for Microsoft's Kinect Camera (supports color-, core::depth and IR-camera)
     - <b>icl::MyrmexGrabber</b> v4l2-based grabber for the Myrmex tactile device developed by Carsten Schürman
     - <b>icl::RSBGrabber</b> Robotics Service Bus based grabber 
       (Supports different transport-layers, such as inprocess, spread and socket)

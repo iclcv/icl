@@ -69,7 +69,7 @@ namespace icl{
       G *ptr;
       
       /// mutex protecting ptr
-      mutable Mutex mutex;
+      mutable utils::Mutex mutex;
     };
   
   
@@ -127,7 +127,7 @@ namespace icl{
   
       public:
   
-      typedef SmartPtr<GrabberHandleInstance<G> > InstancePtr;
+      typedef utils::SmartPtr<GrabberHandleInstance<G> > InstancePtr;
       typedef std::map<std::string,InstancePtr> InstanceMap;
   
       protected:
@@ -139,20 +139,20 @@ namespace icl{
       
       /// used in derived classes to determine wheter device is shared or new
       static inline bool isNew(const std::string &id){
-        Mutex::Locker l(s_mutex);
+        utils::Mutex::Locker l(s_mutex);
         return s_instances.find(id) == s_instances.end();
       }
   
       /// used in derived classes to initialize itself as a shared copy 
       inline void initialize(const std::string &id){
-        Mutex::Locker l(s_mutex);
+        utils::Mutex::Locker l(s_mutex);
         m_instance = s_instances[id];
       }
       
       /// used inderived classes to initialize itself as brand new instance
       inline void initialize(G* g, const std::string &id){
         ICLASSERT_RETURN(isNew(id));
-        Mutex::Locker l(s_mutex);
+        utils::Mutex::Locker l(s_mutex);
         m_instance = s_instances[id] = InstancePtr(new GrabberHandleInstance<G>(id,g));
       }
       public:
@@ -160,7 +160,7 @@ namespace icl{
       /// Destructor
       inline ~GrabberHandle(){
         if(isNull()) return;
-        Mutex::Locker l(s_mutex);
+        utils::Mutex::Locker l(s_mutex);
         
         if(m_instance.use_count() == 2){
           // only two remaining instances: m_instance and s_instances[getID()]
@@ -180,108 +180,108 @@ namespace icl{
       }
      
       /// calles underlying grabber's grab function
-      virtual inline const ImgBase* acquireImage(){
+      virtual inline const core::ImgBase* acquireImage(){
         ICLASSERT_RETURN_VAL(!isNull(),0);
-        Mutex::Locker l(m_instance->mutex);
+        utils::Mutex::Locker l(m_instance->mutex);
         return m_instance->ptr->acquireImage();
       }
       /// calles underlying grabber's setProperty function
       virtual inline void setProperty(const std::string &property, const std::string &value){      
         ICLASSERT_RETURN(!isNull());
-        Mutex::Locker l(m_instance->mutex);
+        utils::Mutex::Locker l(m_instance->mutex);
         m_instance->ptr->setProperty(property,value);
       }
       /// calles underlying grabber's getPropertyList function
       virtual inline std::vector<std::string> getPropertyList(){
         ICLASSERT_RETURN_VAL(!isNull(),std::vector<std::string>());
-        Mutex::Locker l(m_instance->mutex);
+        utils::Mutex::Locker l(m_instance->mutex);
         return m_instance->ptr->getPropertyList();
       }
       /// calles underlying grabber's supportsProperty function
       virtual inline  bool supportsProperty(const std::string &property){
         ICLASSERT_RETURN_VAL(!isNull(),false);
-        Mutex::Locker l(m_instance->mutex);
+        utils::Mutex::Locker l(m_instance->mutex);
         return m_instance->ptr->supportsProperty(property);
       }
       /// calles underlying grabber's getType function
       virtual inline std::string getType(const std::string &name){
         ICLASSERT_RETURN_VAL(!isNull(),"undefined");
-        Mutex::Locker l(m_instance->mutex);
+        utils::Mutex::Locker l(m_instance->mutex);
         return m_instance->ptr->getType(name);
       }
       /// calles underlying grabber's getInfo function
       virtual inline std::string getInfo(const std::string &name){
         ICLASSERT_RETURN_VAL(!isNull(),"undefined");
-        Mutex::Locker l(m_instance->mutex);
+        utils::Mutex::Locker l(m_instance->mutex);
         return m_instance->ptr->getInfo(name);
       }
       /// calles underlying grabber's getValue function
       virtual inline std::string getValue(const std::string &name){
         ICLASSERT_RETURN_VAL(!isNull(),"undefined");
-        Mutex::Locker l(m_instance->mutex);
+        utils::Mutex::Locker l(m_instance->mutex);
         return m_instance->ptr->getValue(name);
       }
   
       virtual inline int isVolatile(const std::string &propertyName){
         ICLASSERT_RETURN_VAL(!isNull(),0);
-        Mutex::Locker l(m_instance->mutex);
+        utils::Mutex::Locker l(m_instance->mutex);
         return m_instance->ptr->isVolatile(propertyName);
       }
   
   
       /// internally set a desired format
-      virtual void setDesiredFormatInternal(format fmt){
+      virtual void setDesiredFormatInternal(core::format fmt){
         ICLASSERT_RETURN(!isNull());
-        Mutex::Locker l(m_instance->mutex);
+        utils::Mutex::Locker l(m_instance->mutex);
         m_instance->ptr->setDesiredFormatInternal(fmt);
       }
   
       /// internally set a desired format
-      virtual void setDesiredSizeInternal(const Size &size){
+      virtual void setDesiredSizeInternal(const utils::Size &size){
         ICLASSERT_RETURN(!isNull());
-        Mutex::Locker l(m_instance->mutex);
+        utils::Mutex::Locker l(m_instance->mutex);
         m_instance->ptr->setDesiredSizeInternal(size);
       }
   
       /// internally set a desired format
-      virtual void setDesiredDepthInternal(depth d){
+      virtual void setDesiredDepthInternal(core::depth d){
         ICLASSERT_RETURN(!isNull());
-        Mutex::Locker l(m_instance->mutex);
+        utils::Mutex::Locker l(m_instance->mutex);
         m_instance->ptr->setDesiredDepthInternal(d);
       }
   
       /// returns the desired format
-      virtual format getDesiredFormatInternal() const{
-        ICLASSERT_RETURN_VAL(!isNull(),(format)-1);
-        Mutex::Locker l(m_instance->mutex);
+      virtual core::format getDesiredFormatInternal() const{
+        ICLASSERT_RETURN_VAL(!isNull(),(core::format)-1);
+        utils::Mutex::Locker l(m_instance->mutex);
         return m_instance->ptr->getDesiredFormatInternal();
       }
   
       /// returns the desired format
-      virtual depth getDesiredDepthInternal() const{
-        ICLASSERT_RETURN_VAL(!isNull(),(depth)-1);
-        Mutex::Locker l(m_instance->mutex);
+      virtual core::depth getDesiredDepthInternal() const{
+        ICLASSERT_RETURN_VAL(!isNull(),(core::depth)-1);
+        utils::Mutex::Locker l(m_instance->mutex);
         return m_instance->ptr->getDesiredDepthInternal();
       }
   
       /// returns the desired format
-      virtual Size getDesiredSizeInternal() const{
-        ICLASSERT_RETURN_VAL(!isNull(),Size::null);
-        Mutex::Locker l(m_instance->mutex);
+      virtual utils::Size getDesiredSizeInternal() const{
+        ICLASSERT_RETURN_VAL(!isNull(),utils::Size::null);
+        utils::Mutex::Locker l(m_instance->mutex);
         return m_instance->ptr->getDesiredSizeInternal();
       }
   
       /// passes registered callback to the internal pointer
       virtual void registerCallback(callback cb){
         ICLASSERT_RETURN(!isNull());
-        Mutex::Locker l(m_instance->mutex);
+        utils::Mutex::Locker l(m_instance->mutex);
         return m_instance->ptr->registerCallback(cb);
       }
        
       /// passes registered callback to the internal pointer
       virtual void removeAllCallbacks(){
         ICLASSERT_RETURN(!isNull());
-        Mutex::Locker l(m_instance->mutex);
+        utils::Mutex::Locker l(m_instance->mutex);
         return m_instance->ptr->removeAllCallbacks();
       }
   
@@ -304,12 +304,12 @@ namespace icl{
       static InstanceMap s_instances;
       
       /// static mutex protecting the instance map
-      static Mutex s_mutex;
+      static utils::Mutex s_mutex;
     };
   
     /** \cond */
-    template<class G> std::map<std::string,icl::SmartPtr<GrabberHandleInstance<G> > > GrabberHandle<G>::s_instances;
-    template<class G> Mutex GrabberHandle<G>::s_mutex; 
+    template<class G> std::map<std::string,utils::SmartPtr<GrabberHandleInstance<G> > > GrabberHandle<G>::s_instances;
+    template<class G> utils::Mutex GrabberHandle<G>::s_mutex; 
     /** \endcond */
   } // namespace io
 }

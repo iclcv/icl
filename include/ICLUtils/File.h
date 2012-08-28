@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLIO/File.h                                   **
-** Module : ICLIO                                                  **
+** File   : include/ICLUtils/File.h                                **
+** Module : ICLUtils                                               **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -41,7 +41,7 @@
 
 
 namespace icl{
-  namespace io{
+  namespace utils{
     
     /** \cond */
     class FileImpl;
@@ -61,7 +61,7 @@ namespace icl{
         by shallow copied instances using the ICL SmartPtr class. This mechanism
         provides save shallow copies using reference counting.
     **/
-    class File  : public ShallowCopyable<FileImpl,FileImplDelOp>{
+    class File  : public utils::ShallowCopyable<FileImpl,FileImplDelOp>{
       public:
       
       /// mode to open files
@@ -208,6 +208,6 @@ namespace icl{
       OpenMode getOpenMode() const;
     
     };
-  } // namespace io
+  } // namespace utils
 }
 

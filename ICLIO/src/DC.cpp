@@ -49,6 +49,9 @@
 using std::string;
 using std::vector;
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
   namespace io{
     namespace dc{
@@ -534,7 +537,7 @@ namespace icl{
                 if(f->data_depth == 8){
                   memcpy(dstData,f->image,frameSize.getDim());
                 }else{
-                  icl::convert((icl16s*)f->image,((icl16s*)f->image)+frameSize.getDim(),dstData);
+                  core::convert((icl16s*)f->image,((icl16s*)f->image)+frameSize.getDim(),dstData);
                 }
                 break;
               case DC1394_COLOR_CODING_YUV411:

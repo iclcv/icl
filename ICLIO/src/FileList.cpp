@@ -41,15 +41,18 @@
 #include <glob.h>
 #endif
 
-#include <ICLIO/File.h>
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/Exception.h>
+#include <ICLUtils/StringUtils.h>
+#include <ICLUtils/File.h>
+
 #include <algorithm>
 #include <sstream>
 #include <set>
-#include <ICLIO/IOUtils.h>
+#include <cstring>
 
 using namespace std;
+using namespace icl::utils;
 
 namespace icl{
   namespace io{
@@ -156,7 +159,7 @@ namespace icl{
       // }}}
       void add(const string &filename){
         // {{{ open
-        if(ioutils::endsWith(filename,".seq")){
+        if(endsWith(filename,".seq")){
           addSequence(filename);
         }else{
           if(m_bNoDoubledFiles){
@@ -177,7 +180,7 @@ namespace icl{
         if(m_setSequenceFiles.find(filename) != m_setSequenceFiles.end()){
           return; // this sequnce was already added (abort to avoid infinite loops)
         }
-        File seqFile(filename);
+        utils::File seqFile(filename);
         ICLASSERT_RETURN(seqFile.exists());
         m_setSequenceFiles.insert(filename);
         
@@ -266,7 +269,7 @@ namespace icl{
     void FileList::toSequenceFile(const std::string &seqFileName) const{
       // {{{ open
   
-      ICLASSERT_RETURN(ioutils::endsWith(seqFileName,".seq"));
+      ICLASSERT_RETURN(endsWith(seqFileName,".seq"));
       File seqFile(seqFileName);
       ICLASSERT_RETURN(!seqFile.exists());
       seqFile.open(File::writeText);
@@ -281,12 +284,12 @@ namespace icl{
       // {{{ open
   
       if(isNull()){
-        printf("FileList: NULL\n");
+        std::cout << "FileList: NULL" << std::endl;
         return;
       }
-      printf("FileList: %d files \n",size());
+      std::cout << "FileList: " << size() << " files" << std::endl;
       for(int i=0;i<size();i++){
-        printf("%d: %s\n",i,(*this)[i].c_str());
+        std::cout << i << ": " << (*this)[i] << std::endl;
       }
     }
   
@@ -299,7 +302,7 @@ namespace icl{
       unsigned int nHashes=0;
       
       // count number of hashes directly before file suffix
-      ioutils::analyseHashes (sFileName, nHashes, iSuffixPos);
+      analyseHashes (sFileName, nHashes, iSuffixPos);
       if (nHashes) {
         // and replace them by [0-9] regular expressions
         ostringstream oss;

@@ -48,11 +48,11 @@ namespace icl{
       std::vector<unsigned char*> rows;
   
       /// ensures, that data and rows is not used from several threads
-      Mutex mutex; 
+      utils::Mutex mutex; 
       
       public:
       /// grab implementation
-      virtual void grab(File &file, ImgBase **dest); 
+      virtual void grab(utils::File &file, core::ImgBase **dest); 
     };  
   } // namespace io
 }

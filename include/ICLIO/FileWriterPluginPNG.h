@@ -42,13 +42,13 @@ namespace icl{
     
     /// A Writer Plugin for writing ".png" images \ingroup FILEIO_G
     class FileWriterPluginPNG : public FileWriterPlugin{
-      icl::Mutex mutex;
+      utils::Mutex mutex;
       std::vector<unsigned char> data;
       std::vector<unsigned char*> rows;
       
       public:
       /// write implementation
-      virtual void write(File &file, const ImgBase *image);
+      virtual void write(utils::File &file, const core::ImgBase *image);
     };
   } // namespace io
 }

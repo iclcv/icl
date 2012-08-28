@@ -34,7 +34,7 @@
 
 #pragma once
 
-#include <ICLCore/ImgBase.h>
+#include <ICLCore/core::ImgBase.h>
 #include <ICLUtils/Mutex.h>
 #include <ICLUtils/Thread.h>
 
@@ -49,15 +49,15 @@ namespace icl {
   
     namespace icl_openni {
   
-      /// fills an Img<T> from OpenNI DepthMetaData
+      /// fills an core::core::Img<T> from OpenNI DepthMetaData
       template<class T>
-      Img<T>* convertDepthImg(xn::DepthMetaData* src, Img<T>* dst){
+      core::core::Img<T>* convertDepthImg(xn::DepthMetaData* src, core::core::Img<T>* dst){
         float max = 0;
         if (std::numeric_limits<T>::max() < src -> ZRes()){
           max = ((float) std::numeric_limits<T>::max()) / ((float) src -> ZRes());
         }
   
-        dst -> setSize(Size(src -> XRes(), src -> YRes()));
+        dst -> setSize(utils::Size(src -> XRes(), src -> YRes()));
         T* data = dst -> getData(0);
         // draw DEPTH image
         const XnDepthPixel* pDepthRow = src -> Data();
@@ -77,9 +77,9 @@ namespace icl {
         return dst;
       }
   
-      /// fills an Img16s from OpenNI IRMetaData
-      static Img16s* convertIRImg(xn::IRMetaData* src, Img16s* dst){
-        dst -> setSize(Size(src -> XRes(), src -> YRes()));
+      /// fills an core::Img16s from OpenNI IRMetaData
+      static core::Img16s* convertIRImg(xn::IRMetaData* src, core::Img16s* dst){
+        dst -> setSize(utils::Size(src -> XRes(), src -> YRes()));
         icl16s* data = dst -> getData(0);
         const XnIRPixel* pIRRow = src -> Data();
         // draw grayscale image
@@ -92,11 +92,11 @@ namespace icl {
       }
   
       /**
-        fills a three channel Img8u from OpenNI ImageMetaData expecting
+        fills a three channel core::Img8u from OpenNI ImageMetaData expecting
         the Generator to generate RGB24 Data.
       **/
-      static Img8u* convertRGBImg(xn::ImageMetaData* src, Img8u* dst){
-        dst -> setSize(Size(src -> XRes(), src -> YRes()));
+      static core::Img8u* convertRGBImg(xn::ImageMetaData* src, core::Img8u* dst){
+        dst -> setSize(utils::Size(src -> XRes(), src -> YRes()));
         // draw RGB image
         icl8u* rChannel = dst -> getData(0);
         icl8u* gChannel = dst -> getData(1);
@@ -356,7 +356,7 @@ namespace icl {
       };
   
       /// abstract super-class of all Image generators
-      class OpenNIMapGenerator : public ReadWriteBufferHandler<ImgBase> {
+      class OpenNIMapGenerator : public ReadWriteBufferHandler<core::ImgBase> {
         public:
   
           /// an enum listing all supported data generators
@@ -368,13 +368,13 @@ namespace icl {
           };
   
           /// grab function grabs an image returns whether grabbing worked
-          virtual bool acquireImage(ImgBase* dest) = 0;
+          virtual bool acquireImage(core::ImgBase* dest) = 0;
           /// tells the type of the Generator
           virtual Generators getGeneratorType() = 0;
           /// returns underlying xn::MapGenerator instance
           virtual xn::MapGenerator* getMapGenerator() = 0;
-          /// Creates an ImgBase for ReadWriteBuffer
-          virtual ImgBase* initBuffer() = 0;
+          /// Creates an core::ImgBase for ReadWriteBuffer
+          virtual core::ImgBase* initBuffer() = 0;
           /// getter for MapGeneratorOptions
           virtual MapGeneratorOptions* getMapGeneratorOptions() = 0;
   
@@ -393,20 +393,20 @@ namespace icl {
           ~OpenNIDepthGenerator();
   
           /// grab function grabs an image returns whether grabbing worked
-          bool acquireImage(ImgBase* dest);
+          bool acquireImage(core::ImgBase* dest);
           /// tells the type of the Generator
           Generators getGeneratorType();
           /// returns underlying xn::MapGenerator instance
           xn::MapGenerator* getMapGenerator();
-          /// Creates an Img16s for ReadWriteBuffer
-          ImgBase* initBuffer();
+          /// Creates an core::Img16s for ReadWriteBuffer
+          core::ImgBase* initBuffer();
           /// getter for MapGeneratorOptions
           MapGeneratorOptions* getMapGeneratorOptions();
   
         private:
           /// the OpenNI context
           xn::Context* m_Context;
-          /// the underlying depth generator
+          /// the underlying core::depth generator
           xn::DepthGenerator* m_DepthGenerator;
           /// a DepthMetaData object holding image information
           xn::DepthMetaData m_DepthMD;
@@ -423,13 +423,13 @@ namespace icl {
           ~OpenNIRgbGenerator();
   
           /// grab function grabs an image returns whether grabbing worked
-          bool acquireImage(ImgBase* dest);
+          bool acquireImage(core::ImgBase* dest);
           /// tells the type of the Generator
           Generators getGeneratorType();
           /// returns underlying xn::MapGenerator instance
           xn::MapGenerator* getMapGenerator();
-          /// Creates an Img8u for ReadWriteBuffer
-          Img8u* initBuffer();
+          /// Creates an core::Img8u for ReadWriteBuffer
+          core::Img8u* initBuffer();
           /// getter for MapGeneratorOptions
           MapGeneratorOptions* getMapGeneratorOptions();
   
@@ -440,7 +440,7 @@ namespace icl {
           xn::NodeInfo* m_DeviceInfo;
           /// the underlying rgb-image generator
           xn::ImageGenerator* m_RgbGenerator;
-          /// the underlying depth generator
+          /// the underlying core::depth generator
           /**
             The Xtion cam does not provide rgb images without depthGenerator
             being created.
@@ -462,13 +462,13 @@ namespace icl {
           ~OpenNIIRGenerator();
   
           /// grab function grabs an image returns whether grabbing worked
-          bool acquireImage(ImgBase* dest);
+          bool acquireImage(core::ImgBase* dest);
           /// tells the type of the Generator
           Generators getGeneratorType();
           /// returns underlying xn::MapGenerator instance
           xn::MapGenerator* getMapGenerator();
-          /// Creates an Img8u for ReadWriteBuffer
-          Img16s* initBuffer();
+          /// Creates an core::Img8u for ReadWriteBuffer
+          core::Img16s* initBuffer();
           /// getter for MapGeneratorOptions
           MapGeneratorOptions* getMapGeneratorOptions();
   

@@ -50,30 +50,30 @@ namespace icl{
         The implementation has been re-designed to provide a structured more flexible
         plugin based interface for writing images using most different file formats.
         Currently the following formats are supported:
-        - <b>ppm</b> (8 Bit 3-channel interleaved color image format - 24Bit per pixel ) 
+        - <b>ppm</b> (8 Bit 3-channel interleaved color image core::format - 24Bit per pixel ) 
           multi channel images must have a channel count which is a multiple of 3. The
           original channel information is encoded into the header. Other image viewers
           will show e.g. a 6 channel image as a default 3 channel image where the channels
           3,4 and 5 are put <b>under</b> the channels 0, 1 and 2 (<b>vertical extended</b>)
-        - <b>pgm</b> ( 8 Bit mono format ) Multi channel images are written by a vertical 
+        - <b>pgm</b> ( 8 Bit mono core::format ) Multi channel images are written by a vertical 
           of the image
         - <b>pnm</b> on of ppm or pgm (the viewer or grabber will determine the actual format
           by parsing the first line of the image file
-        - <b>icl</b> icl file format . For best compatibility the icl format includes a header
+        - <b>icl</b> icl file core::format . For best compatibility the icl core::format includes a header
           which is denoted by trailing '#' characters and which determines the images
           parameters. In the data section, the channel-data is put planar into the file
-          channel by channel. Apart from the ".csv"-format, the ICL format is the only
-          format, which provides different data types (in particular floats and doubles).
-        - <b>csv</b> Comma Separated Values format. To provide a convenient interface to
-          math-programs as gnuplot, matlab or maple this format can be use. In contrast 
-          to all the other formats, the csv-format is <em>human readable</em>, which means,
+          channel by channel. Apart from the ".csv"-core::format, the ICL core::format is the only
+          core::format, which provides different data types (in particular floats and doubles).
+        - <b>csv</b> Comma Separated Values core::format. To provide a convenient interface to
+          math-programs as gnuplot, matlab or maple this core::format can be use. In contrast 
+          to all the other formats, the csv-core::format is <em>human readable</em>, which means,
           that each value is written as ASCII text.
         - <b>jpg</b> Format of the <b>J</b>oint <b>P</b>hotographic <b>E</b>xperts <b>G</b>roup.
-          Loss-full compressed image format (libjpeg required and -DWITH_JPEG_SUPPORT must be
+          Loss-full compressed image core::format (libjpeg required and -DWITH_JPEG_SUPPORT must be
           defined, which is performed automatically by the makefile system)
-        - <b>bicl</b> ICL's built-in binary format. This format does also support loading
+        - <b>bicl</b> ICL's built-in binary core::format. This core::format does also support loading
           and saving of image meta data
-        - <b>rle1</b> for run-length encoded binary images (best format for low-noise
+        - <b>rle1</b> for run-length encoded binary images (best core::format for low-noise
           binary images, does also support writing and reading of image meta data)
         - <b>rle4,rle6,rle8</b> for non-binary images with run-length encoding (other than this,
           as rle1
@@ -88,12 +88,12 @@ namespace icl{
           just have to add an additional ".gz"-suffix to the file name.
         
         \section SPEED IO-Speed
-          Dependent on the particular format, the IO process needs a larger or smaller
+          Dependent on the particular core::format, the IO process needs a larger or smaller
           amount of time. The following table shows a summary of the I/O Times. The times
           are taken on a 1.6GHz pentium-m notebook, so the actual times may fluctuate:
         
         <table>
-        <tr> <td>          </td>  <td><b>Writing (gz)</b></td>  <td><b>Reading (gz)</b></td>  <td><b>File-Size (640x480-Parrot) (gz)</b></td></tr>
+        <tr> <td>          </td>  <td><b>Writing (gz)</b></td>  <td><b>Reading (gz)</b></td>  <td><b>File-utils::Size (640x480-Parrot) (gz)</b></td></tr>
         <tr> <td><b>ppm</b></td>  <td>10ms (100ms)</td>         <td>6ms (25ms)</td>           <td>901K (545K)</td> </tr>
         <tr> <td><b>pnm</b></td>  <td>10ms (100ms)</td>         <td>6ms (25ms)</td>           <td>901K (545K)</td> </tr>
         <tr> <td><b>pgm</b></td>  <td>7ms (120ms)</td>          <td>7ms (25ms)</td>           <td>901K (562K)</td> </tr>
@@ -117,7 +117,7 @@ namespace icl{
   
         int main(){
            // create an image
-           Img8u a = cvt8u(scale(create("parrot"),640,480));
+           core::Img8u a = cvt8u(scale(create("parrot"),640,480));
   
            // create the file writer
            FileWriter writer("image_####.jpg");
@@ -151,15 +151,15 @@ namespace icl{
       const FilenameGenerator &getFilenameGenerator() const;
   
       /// writes the next image
-      void write(const ImgBase *image);
+      void write(const core::ImgBase *image);
   
       /// wraps write to implement ImageOutput interface
-      virtual void send(const ImgBase *image) { write(image); }
+      virtual void send(const core::ImgBase *image) { write(image); }
       
       /// as write but in stream manner
-      FileWriter &operator<<(const ImgBase *image);
+      FileWriter &operator<<(const core::ImgBase *image);
   
-      /// sets a format specific option
+      /// sets a core::format specific option
       /** currently allowed options are:
           - "jpg:quality"  values of type int in range [0,100] 
           - "csv:extend-file-name" value of type bool ("true" or "false")

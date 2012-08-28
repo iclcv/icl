@@ -54,7 +54,9 @@
 using std::vector;
 using std::string;
 using std::map;
-using namespace icl;
+
+using namespace icl::utils;
+using namespace icl::core;
 
 namespace {
   struct XPMColor{

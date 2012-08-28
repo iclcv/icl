@@ -49,6 +49,9 @@ using namespace boost;
 using namespace rsb;
 using namespace rsb::converter;
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
   namespace io{
   

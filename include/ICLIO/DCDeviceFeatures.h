@@ -76,7 +76,7 @@ namespace icl{
         The class interface is adapted to the get/set Property interface of the ICL Grabber interface.
         In addition, it is derived from the ShallowCopyable interface to allow cheap copying.
     */
-    class DCDeviceFeatures : public ShallowCopyable<DCDeviceFeaturesImpl,DCDeviceFeaturesImplDelOp> {
+    class DCDeviceFeatures : public utils::ShallowCopyable<DCDeviceFeaturesImpl,DCDeviceFeaturesImplDelOp> {
       public:
       /// Base constructor create a null Object
       DCDeviceFeatures();

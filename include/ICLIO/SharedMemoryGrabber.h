@@ -54,10 +54,10 @@ namespace icl{
   
   
       /// Creates a new SharedMemoryGrabber instance (please use the GenericGrabber instead)
-      SharedMemoryGrabberImpl(const std::string &sharedMemorySegmentID="") throw(ICLException);
+      SharedMemoryGrabberImpl(const std::string &sharedMemorySegmentID="") throw(utils::ICLException);
       
       /// Connects an unconnected grabber to given shared memory segment
-      void init(const std::string &sharedMemorySegmentID) throw (ICLException);
+      void init(const std::string &sharedMemorySegmentID) throw (utils::ICLException);
       
       public:
       
@@ -75,8 +75,8 @@ namespace icl{
       static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
   
       /// grabbing function  
-      /** \copydoc icl::Grabber::grab(ImgBase**)  **/    
-      virtual const ImgBase* acquireImage();
+      /** \copydoc icl::Grabber::grab(core::ImgBase**)  **/    
+      virtual const core::ImgBase* acquireImage();
   
       /** @{ @name properties and parameters */
       
@@ -129,7 +129,7 @@ namespace icl{
       
       /// for deferred connection to (other) shared memory segment
       /** @see SharedMemoryGrabberImpl for more details */
-      inline void init(const std::string &memorySegmentName) throw (ICLException){
+      inline void init(const std::string &memorySegmentName) throw (utils::ICLException){
         if(isNew(memorySegmentName)){
           initialize(new SharedMemoryGrabberImpl(memorySegmentName),memorySegmentName);
         }else{

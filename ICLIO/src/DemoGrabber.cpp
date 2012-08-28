@@ -34,9 +34,11 @@
 
 #include <ICLIO/DemoGrabber.h>
 #include <ICLUtils/Thread.h>
-#include <ICLCore/Mathematics.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Random.h>
+
+using namespace icl::utils;
+using namespace icl::core;
 
 namespace icl{
   namespace io{
@@ -84,7 +86,7 @@ namespace icl{
       Mutex::Locker __lock(m_mutex);
       ensureCompatible(&m_drawBuffer,m_drawDepth,m_drawSize,m_drawFormat);
   
-      m_v += Point32f(icl::random(-0.001, 0.001),icl::random(-0.001, 0.001));
+      m_v += Point32f(utils::random(-0.001, 0.001),utils::random(-0.001, 0.001));
   
       m_v.x = clip(m_v.x,-m_maxV.x,m_maxV.x); 
       m_v.y = clip(m_v.y,-m_maxV.y,m_maxV.y); 

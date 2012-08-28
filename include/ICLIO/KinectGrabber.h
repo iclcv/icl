@@ -46,21 +46,21 @@ namespace icl{
       enum Mode{
         GRAB_RGB_IMAGE,       //!< grabs rgb images form the kinects rgb camera
         GRAB_BAYER_IMAGE,     //!< not supported yet
-        GRAB_DEPTH_IMAGE,     //!< grabs the depth image from kinect
+        GRAB_DEPTH_IMAGE,     //!< grabs the core::depth image from kinect
         GRAB_IR_IMAGE_8BIT,   //!< grabs the kinects IR-image in most common 8Bit depth
-        GRAB_IR_IMAGE_10BIT,  //!< grabs the kinects IR-image in 10Bit depth (use depth16s at least)
+        GRAB_IR_IMAGE_10BIT,  //!< grabs the kinects IR-image in 10Bit core::depth (use depth16s at least)
       };
       
       /// returns a list of attached kinect devices
       static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
   
-      KinectGrabber(Mode mode = GRAB_DEPTH_IMAGE, int deviceID=0, const Size &size=Size::VGA) throw (ICLException);
+      KinectGrabber(Mode mode = GRAB_DEPTH_IMAGE, int deviceID=0, const utils::Size &size=utils::Size::VGA) throw (utils::ICLException);
   
       /// Destructor
       ~KinectGrabber();
       
       /// grabs a new image
-      virtual const ImgBase* acquireImage();
+      virtual const core::ImgBase* acquireImage();
   
       /// get type of property 
       virtual std::string getType(const std::string &name);

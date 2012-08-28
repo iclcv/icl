@@ -52,9 +52,9 @@ namespace icl{
       ///number of device
       int device;
       ///
-      Mutex m_mutex;
+      utils::Mutex m_mutex;
       ///Buffer for imagescaling
-      ImgBase *m_buffer;
+      core::ImgBase *m_buffer;
       public:
       
       /// returns a list of properties, that can be set using setProperty
@@ -83,8 +83,8 @@ namespace icl{
       virtual std::string getValue(const std::string &name);
       
       /// grab function grabs an image (destination image is adapted on demand)
-      /** @copydoc icl::Grabber::grab(ImgBase**) **/
-      virtual const ImgBase *acquireImage();
+      /** @copydoc icl::Grabber::grab(core::ImgBase**) **/
+      virtual const core::ImgBase *acquireImage();
       
       /// Sets a property to a new value
       /** call getPropertyList() to see which properties are supported
@@ -98,7 +98,7 @@ namespace icl{
       /// Constructor creates a new OpenCVCamGrabber instance from a given device
       /** @param device device to use
           */
-      OpenCVCamGrabberImpl(int dev=0) throw (ICLException);
+      OpenCVCamGrabberImpl(int dev=0) throw (utils::ICLException);
   
       /// Destructor
       ~OpenCVCamGrabberImpl();
@@ -123,7 +123,7 @@ namespace icl{
           (e.g. device ID 301 selects the 2nd firewire device)
        */
       inline OpenCVCamGrabber(int dev){
-        std::string id = str(dev);
+        std::string id = utils::str(dev);
         if(isNew(id)){
           initialize(new OpenCVCamGrabberImpl(dev),id);
         }else{

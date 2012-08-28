@@ -50,7 +50,7 @@ namespace icl{
       friend class DemoGrabber;
   
       /// default grab function
-      virtual const ImgBase* acquireImage();
+      virtual const core::ImgBase* acquireImage();
   
       /// Destructor
       ~DemoGrabberImpl();
@@ -60,40 +60,40 @@ namespace icl{
       DemoGrabberImpl(float maxFPS=30);
       
       /// Current rel. location of the rect
-      Point32f m_x; 
+      utils::Point32f m_x; 
       
       /// Current rel. velocity of the rect
-      Point32f m_v;
+      utils::Point32f m_v;
   
       /// maximum velocity of the rect
-      Point32f m_maxV;
+      utils::Point32f m_maxV;
   
       /// relative size of the rect
-      Size32f m_size;
+      utils::Size32f m_size;
   
       /// Color of the rect (light red)
-      Color m_color;
+      core::Color m_color;
       
       /// max. fpsCount for this grabber instance
       float m_maxFPS;
       
       /// time variable to ensure max. fpsCount
-      Time m_lastTime;
+      utils::Time m_lastTime;
   
       /// extra buffer for the output image
-      ImgBase *m_drawBuffer;
+      core::ImgBase *m_drawBuffer;
       
       /// current output format
-      format m_drawFormat;
+      core::format m_drawFormat;
   
       /// current output depth
-      depth m_drawDepth;
+      core::depth m_drawDepth;
       
       /// current output size
-      Size m_drawSize;
+      utils::Size m_drawSize;
       
       /// mutex for locking properties and grabbing
-      Mutex m_mutex;
+      utils::Mutex m_mutex;
       
       public:
       /// the demo-grabber provides some demo properties
@@ -123,7 +123,7 @@ namespace icl{
     class DemoGrabber : public GrabberHandle<DemoGrabberImpl>{
       public:
       inline DemoGrabber(float maxFPS=30){
-        std::string id = str(maxFPS);
+        std::string id = utils::str(maxFPS);
         if(isNew(id)){
           initialize(new DemoGrabberImpl(maxFPS),id);
         }else{

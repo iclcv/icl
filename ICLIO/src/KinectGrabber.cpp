@@ -45,6 +45,11 @@
 
 #include <libfreenect.h>
 #include <map>
+
+using namespace icl::utils;
+using namespace icl::core;
+using namespace icl::filter;
+
 namespace icl{
   namespace io{
   

@@ -59,7 +59,7 @@ namespace icl{
       virtual ~ImageOutput() {}
   
       /// ImageOutput instances must implement this method
-      virtual void send(const ImgBase *image) = 0;
+      virtual void send(const core::ImgBase *image) = 0;
   
       /// provide the protectedly inherited image compressor options here
       using ImageCompressor::getCompression;

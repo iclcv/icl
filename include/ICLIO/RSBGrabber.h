@@ -68,7 +68,7 @@ namespace icl{
       void init(const std::string &scope, const std::string &transportList="spread");
       
       /// grabber-interface 
-      virtual const ImgBase *acquireImage();
+      virtual const core::ImgBase *acquireImage();
       
       /// returns whether this grabber has not jet been initialized
       inline bool isNull() const { return !m_data; }
@@ -128,7 +128,7 @@ namespace icl{
       
       /// for deferred connection to (other) shared memory segment
       /** @see RSBGrabberImpl for more details */
-      inline void init(const std::string &scope, const std::string &transportList="spread") throw (ICLException){
+      inline void init(const std::string &scope, const std::string &transportList="spread") throw (utils::ICLException){
         std::string uid = transportList+":"+scope;
         if(isNew(uid)){
           initialize(new RSBGrabberImpl(scope, transportList),uid);
