@@ -35,6 +35,8 @@
 #include <ICLCore/ImageSerializer.h>
 #include <ICLUtils/StringUtils.h>
 
+using namespace icl::utils;
+
 namespace icl{
   namespace core{
     namespace{

@@ -72,65 +72,66 @@ namespace icl{
   
       private:
       /// Internel data pointers (wrapped shallowly)
-      static Point *cur, *end;
+      static utils::Point *cur, *end;
       
       /// internal initialization function
-      static inline void init(Point *cur, Point *end){
+      static inline void init(utils::Point *cur, utils::Point *end){
         LineSampler::cur = cur;
         LineSampler::end = end;
       }
       
       /// internal sampling function using bresenham line sampling algorithm
       template<bool steep, bool steep2, int ystep>
-      static void bresenham_templ_2(int x0, int x1, int y0, int y1, Point *p, int bufSize);
+      static void bresenham_templ_2(int x0, int x1, int y0, int y1, utils::Point *p, int bufSize);
   
       /// internal sampling function using bresenham line sampling algorithm
       template<bool steep, bool steep2, int ystep>
-      static void bresenham_templ(int x0, int x1, int y0, int y1, int minX, int maxX, int minY, int maxY, Point *p, int bufSize);
+      static void bresenham_templ(int x0, int x1, int y0, int y1, int minX, int maxX, int minY, int maxY, utils::Point *p, int bufSize);
   
       /// internal sampling function using bresenham line sampling algorithm
-      static void bresenham(int x0, int x1, int y0, int y1, int minX, int maxX, int minY, int maxY, Point *p, int bufSize) throw (ICLException);
+      static void bresenham(int x0, int x1, int y0, int y1, int minX, int maxX, int minY, int maxY, utils::Point *p, int bufSize) throw (utils::ICLException);
   
       /// internal sampling function using bresenham line sampling algorithm
-      static void bresenham(int x0, int x1, int y0, int y1, Point *p, int bufSize) throw (ICLException);
+      static void bresenham(int x0, int x1, int y0, int y1, utils::Point *p, int bufSize) throw (utils::ICLException);
   
       /// internal point buffer
-      static Point buf[MAX_LINE_LENGTH];
+      static utils::Point buf[MAX_LINE_LENGTH];
       
-      static Point *get_buf(Point *userBuf){
+      static utils::Point *get_buf(utils::Point *userBuf){
         return userBuf ? userBuf : LineSampler::buf;
       }
       LineSampler(){}
       
       public:
       
-      static void getPointers(Point **cur, Point **end){
+      static void getPointers(utils::Point **cur, utils::Point **end){
         *cur = LineSampler::cur;
         *end = LineSampler::end;
       }
   
       /// create a SampledLine instance (only one instance is valid at a time)
-      static void init(int aX, int aY, int bX, int bY, Point *userBuf=0, int bufSize=0) throw (ICLException){ 
+      static void init(int aX, int aY, int bX, int bY, utils::Point *userBuf=0, int bufSize=0) throw (utils::ICLException){ 
         bresenham(aX,bX,aY,bY,get_buf(userBuf),bufSize); 
       }
   
       /// create a SampledLine instance (only one instance is valid at a time) with given boundig rect parameters
-      static void init(int aX, int aY, int bX, int bY, int minX, int minY, int maxX, int maxY, Point *userBuf=0, int bufSize=0) throw (ICLException){
+      static void init(int aX, int aY, int bX, int bY, int minX, int minY, int maxX, int maxY, utils::Point *userBuf=0, int bufSize=0) throw (utils::ICLException){
         bresenham(aX,bX,aY,bY,minX,maxX,minY,maxY,get_buf(userBuf),bufSize);
       }
       /// create a SampledLine instance (only one instance is valid at a time)
-      static void init(const Point &a, const Point &b, Point *userBuf=0, int bufSize=0) throw (ICLException){ 
+      static void init(const utils::Point &a, const utils::Point &b, utils::Point *userBuf=0, int bufSize=0) throw (utils::ICLException){ 
         bresenham(a.x,b.x,a.y,b.y,get_buf(userBuf),bufSize); 
       }
   
       /// create a SampledLine instance (only one instance is valid at a time) with given boundig rect parameters
-      static void init(const Point &a, const Point &b, const Rect &bounds, Point *userBuf=0, int bufSize=0) throw (ICLException){
+      static void init(const utils::Point &a, const utils::Point &b, 
+                       const utils::Rect &bounds, utils::Point *userBuf=0, int bufSize=0) throw (utils::ICLException){
         bresenham(a.x,b.x,a.y,b.y,bounds.x,bounds.y,bounds.right(),bounds.bottom(), get_buf(userBuf),bufSize);
       }
       
       /// gets the next valid point (this function is not overflow-safe)
       /** calls to next must be protected by using hasNext() before*/
-      static inline const Point &next(){ return *cur++; }
+      static inline const utils::Point &next(){ return *cur++; }
       
       /// returns whether this line has remaining points, that have not yet been extracted using next()
       static inline bool hasNext() { return cur != end; }

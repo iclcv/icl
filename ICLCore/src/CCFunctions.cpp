@@ -37,6 +37,7 @@
 #include <map>
 #include <ICLCore/CCLUT.h>
 
+using namespace icl::utils;
 
 namespace icl{
   namespace core{
@@ -195,9 +196,9 @@ namespace icl{
       g = (y2 - 1652556 * u2 - 2436891 *v2 ) >> 22;
       b = (y2 + 8522826 * u2 ) >> 22;
       
-      r = clip(r,0,255);
-      g = clip(g,0,255);
-      b = clip(b,0,255);
+      r = utils::clip(r,0,255);
+      g = utils::clip(g,0,255);
+      b = utils::clip(b,0,255);
   #endif
     } 
     // }}}
@@ -658,7 +659,7 @@ namespace icl{
           convertChannelROI(src,1,src->getROIOffset(),src->getROISize(), 
                             dst,0,dst->getROIOffset(),dst->getROISize());
         }else{
-          icl::convert(src->getData(1),src->getData(1)+src->getDim(), dst->getData(0));
+          icl::core::convert(src->getData(1),src->getData(1)+src->getDim(), dst->getData(0));
         }
       }
       
@@ -717,7 +718,7 @@ namespace icl{
           convertChannelROI(src,0,src->getROIOffset(),src->getROISize(), 
                             dst,0,dst->getROIOffset(),dst->getROISize());
         }else{
-          icl::convert(src->getData(0),src->getData(0)+src->getDim(), dst->getData(0));        
+          icl::core::convert(src->getData(0),src->getData(0)+src->getDim(), dst->getData(0));        
         }
       }
       
@@ -777,7 +778,7 @@ namespace icl{
           convertChannelROI(src,0,src->getROIOffset(),src->getROISize(), 
                             dst,0,dst->getROIOffset(),dst->getROISize());
         }else{
-          icl::convert(src->getData(0),src->getData(0)+src->getDim(), dst->getData(0));        
+          icl::core::convert(src->getData(0),src->getData(0)+src->getDim(), dst->getData(0));        
         }
       }    
     };

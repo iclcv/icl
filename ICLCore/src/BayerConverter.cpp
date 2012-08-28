@@ -36,6 +36,8 @@
 #include <ICLCore/CCFunctions.h>
 #include <ICLUtils/Exception.h>
 
+using namespace icl::utils;
+
 namespace icl {
   namespace core{
     

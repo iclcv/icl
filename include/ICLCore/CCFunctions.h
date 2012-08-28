@@ -483,7 +483,7 @@ namespace icl{
     has half X- and half Y-resolution. The data pointer has iW*iH*1.5 elements)
     @param s image size 
     */
-    void convertYUV420ToRGB8(const unsigned char *pucSrc, const Size &s, Img8u* poDst);
+    void convertYUV420ToRGB8(const unsigned char *pucSrc, const utils::Size &s, Img8u* poDst);
   
     /// Convert an 4 channel Img8u into Qts ARGB32 interleaved format 
     /** @param pucDst destination data pointer of size

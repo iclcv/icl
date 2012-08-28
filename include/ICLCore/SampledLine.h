@@ -48,10 +48,10 @@ namespace icl{
     */
     class SampledLine{
       /// Internel data pointers (wrapped shallowly)
-      Point *m_cur;
-      Point *m_end;
-      Point *m_bufBegin;
-      Point *m_bufEnd;
+      utils::Point *m_cur;
+      utils::Point *m_end;
+      utils::Point *m_bufBegin;
+      utils::Point *m_bufEnd;
       
       /// internal initialization function
       void init(int aX, int aY, int bX, int bY);
@@ -84,12 +84,12 @@ namespace icl{
         init(aX,aY,bX,bY,minX,maxX,minY,maxY);
       }
       /// create a SampledLine instance (only one instance is valid at a time)
-      SampledLine(const Point &a, const Point &b) { 
+      SampledLine(const utils::Point &a, const utils::Point &b) { 
         init(a.x,a.y,b.x,b.y); 
       }
   
       /// create a SampledLine instance (only one instance is valid at a time) with given boundig rect parameters
-      SampledLine(const Point &a, const Point &b, const Rect &bounds){
+      SampledLine(const utils::Point &a, const utils::Point &b, const utils::Rect &bounds){
         init(a.x,a.y,b.x,b.y,bounds.x,bounds.y,bounds.right(),bounds.bottom());
       }
       
@@ -109,10 +109,10 @@ namespace icl{
       }
       
       /// returns the next point of this line
-      inline const Point &next() { return *m_cur++; }
+      inline const utils::Point &next() { return *m_cur++; }
       
       /// returns a former point
-      inline const Point &getPrev(int nBack=1) const { return *(m_cur-nBack); }
+      inline const utils::Point &getPrev(int nBack=1) const { return *(m_cur-nBack); }
       
       /// returns whether this line has remaining points, that have not yet been extracted using next()
       inline bool hasNext() const { return m_cur != m_end; }
@@ -124,7 +124,8 @@ namespace icl{
       inline bool isNull() const { return !m_bufBegin; }
       
       // returns current point
-      inline const Point &operator*() const { return *m_cur; }
+      inline const utils::
+Point &operator*() const { return *m_cur; }
   
       // pre-increment operator (jumps to the next point of this line)
       inline SampledLine &operator++() { ++m_cur; return *this; }

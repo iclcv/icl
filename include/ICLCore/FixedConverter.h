@@ -48,7 +48,7 @@ namespace icl{
         the FixedConverter.
         @see icl::Converter
     **/
-    class FixedConverter : public Uncopyable{
+    class FixedConverter : public utils::Uncopyable{
       public:
       /// Create a new FixedConverter Object with given destination params and depth
       /** @param p output image parameters

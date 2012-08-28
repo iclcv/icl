@@ -33,6 +33,8 @@
 *********************************************************************/
 #include <ICLCore/OpenCV.h>
 
+using namespace icl::utils;
+
 namespace icl{
   namespace core{
   
@@ -93,9 +95,9 @@ namespace icl{
       return *dst;
     }
   
-    ImgBase *ipl_to_img(CvArr *src,ImgBase **dst,DepthPreference e) throw (icl::ICLException){
+    ImgBase *ipl_to_img(CvArr *src,ImgBase **dst,DepthPreference e) throw (utils::ICLException){
       if(!src){
-        throw icl::ICLException("Source is NULL");
+        throw ICLException("Source is NULL");
       }
       IplImage imageHeader;
       IplImage* image = cvGetImage(src, &imageHeader);
@@ -109,7 +111,7 @@ namespace icl{
   #undef ICL_INSTANTIATE_DEPTH
         }
       } else if(e==PREFERE_DST_DEPTH){
-        throw icl::ICLException("Cannot determine depth of destinationimage");
+        throw ICLException("Cannot determine depth of destinationimage");
       } else { // DepthPreference == PREFERE_SRC_DEPTH
         ImgBase *temp=0;
         switch(image->depth){
@@ -268,7 +270,7 @@ namespace icl{
       return dst;
     }
   
-    CvMat* img_to_cvmat(const ImgBase *src, CvMat *dst,int channel) throw (icl::ICLException){
+    CvMat* img_to_cvmat(const ImgBase *src, CvMat *dst,int channel) throw (ICLException){
       if(!src){
         throw ICLException("Source is NULL");
       }
@@ -335,10 +337,10 @@ namespace icl{
   
     CvMat *img_to_cvmat_shallow(const ImgBase *src,CvMat *dst) throw (ICLException){
       if(!src){
-        throw icl::ICLException("Source is NULL");
+        throw ICLException("Source is NULL");
       }
       if(src->getChannels()>1){
-        throw icl::ICLException("to many channels for shallow copy");
+        throw ICLException("to many channels for shallow copy");
       }
       switch(src->getDepth()){
         case depth8u:{
@@ -376,10 +378,10 @@ namespace icl{
   
     IplImage *img_to_ipl_shallow(ImgBase *src,IplImage *dst)throw (ICLException){
       if(!src){
-        throw icl::ICLException("Source is NULL");
+        throw ICLException("Source is NULL");
       }
       if(src->getChannels()>1){
-        throw icl::ICLException("to many channels for shallow copy");
+        throw ICLException("to many channels for shallow copy");
       }
       switch(src->getDepth()){
         case depth8u:{

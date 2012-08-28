@@ -50,7 +50,7 @@ namespace icl{
         If demanded, the converter provides an interface to specify the order
         of the different operations.
     **/
-    class Converter : public Uncopyable{
+    class Converter : public utils::Uncopyable{
       public:
       /// enum to define internal used operation order
       enum oporder{

@@ -59,7 +59,7 @@ namespace icl{
         @param *src pointer to sourceimage (IplImage)
         @param **dst pointer to pointer to destinationimage (ICLimage)
         @param e depthpreference*/
-    ImgBase *ipl_to_img(CvArr *src,ImgBase **dst=0,DepthPreference e=PREFERE_SRC_DEPTH) throw (icl::ICLException);
+    ImgBase *ipl_to_img(CvArr *src,ImgBase **dst=0,DepthPreference e=PREFERE_SRC_DEPTH) throw (utils::ICLException);
   
     ///Convert ICLimage to OpenCV IplImage
     /**Converts ICLimage to IplImage. If dst is NULL, the sourceimagedepth
@@ -67,7 +67,7 @@ namespace icl{
         @param *src pointer to sourceimage
         @param **dst pointer to pointer to destinationimage (IplImage)
         @param e depthpreference*/
-    IplImage *img_to_ipl(const ImgBase *src, IplImage **dst=0,DepthPreference e=PREFERE_SRC_DEPTH)throw (icl::ICLException);
+    IplImage *img_to_ipl(const ImgBase *src, IplImage **dst=0,DepthPreference e=PREFERE_SRC_DEPTH)throw (utils::ICLException);
   
     ///Copy single ICLimage channel to OpenCV single channel CvMat
     /**Copy single ICLimage channel to single channel CvMat. If dst is NULL, the sourceimagedepth
@@ -75,7 +75,7 @@ namespace icl{
         @param *src pointer to sourceimage
         @param **dst pointer to pointer to destinationmatrix
         @param channel channel to use*/
-    CvMat* img_to_cvmat(const ImgBase *src, CvMat *dst=0,int channel=0) throw (icl::ICLException);
+    CvMat* img_to_cvmat(const ImgBase *src, CvMat *dst=0,int channel=0) throw (utils::ICLException);
   
     ///Convert single channel ICLimage to OpenCV IplImage
     /**Converts single channel ICLimage to IplImage. Data is shared by source and destination.
@@ -84,7 +84,7 @@ namespace icl{
         Be careful when releasig (data)pointers.
         @param *src pointer to sourceimage
         @param *dst pointer to destinationimage (IplImage)*/
-    IplImage *img_to_ipl_shallow(ImgBase *src,IplImage *dst=0)throw (ICLException);
+    IplImage *img_to_ipl_shallow(ImgBase *src,IplImage *dst=0)throw (utils::ICLException);
   
     ///Convert single channel ICLimage to OpenCV CvMat
     /**Converts single channel ICLimage to a single channel CvMat. Data is shared by
@@ -92,7 +92,7 @@ namespace icl{
         Be careful when releasig (data)pointers.
         @param *src pointer to sourceimage
         @param *dst pointer to destinationmatrix (IplImage)*/
-    CvMat *img_to_cvmat_shallow(const ImgBase *src,CvMat *dst=0) throw (ICLException);
+    CvMat *img_to_cvmat_shallow(const ImgBase *src,CvMat *dst=0) throw (utils::ICLException);
   } // namespace core
 }
 #endif

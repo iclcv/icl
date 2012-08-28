@@ -234,7 +234,7 @@ namespace icl{
       }else{
         SECTION_LOG("passing directly icl::cc");
         
-        icl::cc(src,dst);
+        icl::core::cc(src,dst);
       }
   
       if(srcIn != src){

@@ -44,7 +44,7 @@ namespace icl {
     /// Utiltity class for bayer pattern conversion
     /** The internal implementation was basically taken from
         the libdc files */
-    class BayerConverter : public Uncopyable{
+    class BayerConverter : public utils::Uncopyable{
       public:
       
       enum bayerConverterMethod {
@@ -68,7 +68,7 @@ namespace icl {
           the internal working buffer's size is adapted on demand */
       BayerConverter(bayerConverterMethod eConvMethod, 
                      bayerPattern eBayerPattern, 
-                     Size sizeHint = Size::null);
+                     utils::Size sizeHint = utils::Size::null);
       ~BayerConverter();
       
       /// converts the source image with bayer pattern into the

@@ -34,6 +34,8 @@
 
 #include <ICLCore/LineSampler.h>
 
+using namespace icl::utils;
+
 namespace icl{
   namespace core{
   
