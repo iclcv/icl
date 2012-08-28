@@ -180,12 +180,10 @@ namespace icl {
     ICL_INSTANTIATE_ALL_INT_DEPTHS \
     ICL_INSTANTIATE_ALL_FLOAT_DEPTHS
   
-  } // namespace utils
-}// namespace icl
 
-/** Utility macros and defines */
-
-// ?? why not as macro? -> no type problems
+    /** Utility macros and defines */
+    
+    // ?? why not as macro? -> no type problems
 #ifdef ICL_SYSTEM_LINUX
 #define iclMin(A,B) std::min(A,B)
 #define iclMax(A,B) std::max(A,B)
@@ -193,17 +191,15 @@ namespace icl {
 #define iclMin(A,B) ((A)<(B)?(A):(B))
 #define iclMax(A,B) ((A)>(B)?(A):(B))
 #endif
-
+    
 #ifndef iclMin
 #define iclMin(A,B) ((A)<(B)?(A):(B))
 #endif
 #ifndef iclMax
 #define iclMax(A,B) ((A)>(B)?(A):(B))
 #endif
-
-
-namespace icl{
-  namespace utils{
+    
+    
     /// square template (faster than pow(x,2)
     template<class T> static inline T sqr(const T &x) { return x*x; }
     

@@ -34,6 +34,8 @@
 
 #include <ICLMath/StraightLine2D.h>
 
+using namespace icl::utils;
+
 namespace icl{
   namespace math{
   

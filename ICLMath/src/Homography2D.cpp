@@ -37,6 +37,8 @@
 
 #include <ICLMath/FixedVector.h>
 
+using namespace icl::utils;
+
 namespace icl{
   namespace math{
     template<class T>

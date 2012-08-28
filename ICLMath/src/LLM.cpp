@@ -33,7 +33,13 @@
 *********************************************************************/
 
 #include <ICLMath/LLM.h>
+#include <ICLUtils/Random.h>
 #include <ICLUtils/StringUtils.h>
+#include <cstring>
+#include <cstdio>
+
+using namespace icl::utils;
+
 namespace icl{
   namespace math{
     namespace{
@@ -257,7 +263,7 @@ namespace icl{
       for(unsigned int i=0;i<numCenters;++i){
         centers[i] = new float[m_inputDim];
         for(unsigned int j=0;j<m_inputDim;++j){
-          centers[i][j] = icl::random((double)ranges[j].minVal, (double)ranges[j].maxVal);
+          centers[i][j] = icl::utils::random((double)ranges[j].minVal, (double)ranges[j].maxVal);
         }
       }    
       init(centers,var);

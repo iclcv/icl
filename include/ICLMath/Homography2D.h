@@ -171,30 +171,30 @@ namespace icl{
       GenericHomography2D(){}
       
       /// Constructor from given two point sets of size n>=4
-      GenericHomography2D(const Point32f *pAs, const Point32f *pBs, int n=4, Algorithm algo = Advanced);
+      GenericHomography2D(const utils::Point32f *pAs, const utils::Point32f *pBs, int n=4, Algorithm algo = Advanced);
   
   
       /// applies a given homography matrix
-      static inline Point32f apply_homography(const FixedMatrix<float,3,3> &H, const Point32f &p){
+      static inline utils::Point32f apply_homography(const FixedMatrix<float,3,3> &H, const utils::Point32f &p){
         float az = H(0,2)*p.x + H(1,2) * p.y + H(2,2);
-        return Point32f(( H(0,0)*p.x + H(1,0) * p.y + H(2,0) ) / az,
-                        ( H(0,1)*p.x + H(1,1) * p.y + H(2,1) ) / az );
+        return utils::Point32f(( H(0,0)*p.x + H(1,0) * p.y + H(2,0) ) / az,
+                               ( H(0,1)*p.x + H(1,1) * p.y + H(2,1) ) / az );
       }
   
       /// applies the homography 
-      inline Point32f apply(const Point32f &p) const{
+      inline utils::Point32f apply(const utils::Point32f &p) const{
         return apply_homography(*this,p);
       }
   
       /// applies a given homography matrix
-      static inline Point apply_homography_int(const FixedMatrix<float,3,3> &H, const Point &p){
+      static inline utils::Point apply_homography_int(const FixedMatrix<float,3,3> &H, const utils::Point &p){
         float az = H(0,2)*p.x + H(1,2) * p.y + H(2,2);
-        return Point(round(( H(0,0)*p.x + H(1,0) * p.y + H(2,0) ) / az),
+        return utils::Point(round(( H(0,0)*p.x + H(1,0) * p.y + H(2,0) ) / az),
                      round(( H(0,1)*p.x + H(1,1) * p.y + H(2,1) ) / az) );
       }
   
       /// applies the homography 
-      inline Point32f apply_int(const Point32f &p) const{
+      inline utils::Point32f apply_int(const utils::Point32f &p) const{
         return apply_homography_int(*this, p);
       }
     };

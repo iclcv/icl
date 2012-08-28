@@ -35,7 +35,9 @@
 #include <ICLMath/LevenbergMarquardtFitter.h>
 #include <ICLUtils/Random.h>
 
-using namespace icl;
+using namespace icl::utils;
+using namespace icl::math;
+
 typedef float real;
 typedef LevenbergMarquardtFitter<real> LM;
 typedef LM::Function LMFunction;

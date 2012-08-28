@@ -192,13 +192,15 @@ namespace icl{
           @param ranges ranges for uniform distributed prototypes (ranges.size must be equal to the input dimension of the LLM)
           @param var variance for the new created Gaussians (var.size must be equal to the input dimension of the LLM)
       **/
-      void init(unsigned int numCenters, const std::vector<Range<icl32f> > &ranges, const std::vector<float> &var=std::vector<float>(1,1));
+      void init(unsigned int numCenters, const std::vector<utils::Range<icl32f> > &ranges, 
+                const std::vector<float> &var=std::vector<float>(1,1));
       
       /// initializes the LLM prototypes with given set of kernels
       /** Internall all centers.size() vectors are used to create that many prototypes. The given vectors are deeply copied and not released
           internally. Initialization is performend as described in the above function.
       **/
-      void init(const std::vector<float*> &centers, const std::vector<float> &var=std::vector<float>(1,1));
+      void init(const std::vector<float*> &centers, 
+                const std::vector<float> &var=std::vector<float>(1,1));
   
       /// applies the LLM and returns current NET output vector 
       /** the ownership of the returnd float * is not passed to the caller. The output remains valid until

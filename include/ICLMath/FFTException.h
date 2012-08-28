@@ -38,10 +38,11 @@
 
 namespace icl{
   namespace math{
-  class FFTException : public ICLException{
-  public:
-  	FFTException(const std::string &msg):ICLException(msg){}
-  } // namespace math
-};
+    /// Special exception implementation for the FFT package
+    class FFTException : public utils::ICLException{
+      public:
+      FFTException(const std::string &msg):utils::ICLException(msg){}
+    }; 
+  }// namespace math
 }
 #endif /* FFTEXCEPTION_H_ */

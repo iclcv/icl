@@ -474,7 +474,7 @@ namespace icl{
         @param V is filled column-wise with the eigenvectors of A'A (in V, V is stored not V')
     */
     template<class T>
-    void svd_dyn(const DynMatrix<T> &A, DynMatrix<T> &U, DynMatrix<T> &s, DynMatrix<T> &V) throw (ICLException);
+    void svd_dyn(const DynMatrix<T> &A, DynMatrix<T> &U, DynMatrix<T> &s, DynMatrix<T> &V) throw (utils::ICLException);
     
   
   #if 0  

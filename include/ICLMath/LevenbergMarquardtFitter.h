@@ -106,30 +106,29 @@ namespace icl{
         \f[ ( 1, x, x^2, x^3 ) \f]
   
         \code
-  #include <ICLMath/LevenbergMarquardtFitter.h>
-  
-  typedef icl::LevenbergMarquardtFitter<float> LM;
-  
-  float f(const LM::Params &p, const LM::Vector &vx){
-    const float x = vx[0];
-    return p[0] + p[1]*x + p[2]*x*x + p[3] * x*x*x;
-  } // namespace math
-}
+        #include <ICLMath/LevenbergMarquardtFitter.h>
+        
+        typedef icl::LevenbergMarquardtFitter<float> LM;
+        
+        float f(const LM::Params &p, const LM::Vector &vx){
+          const float x = vx[0];
+          return p[0] + p[1]*x + p[2]*x*x + p[3] * x*x*x;
+        }
 
-void j(const LM::Params &p, const LM::Vector &vx, LM::Vector &dst){
-  float x = vx[0];
-  const float Ji[] = { 1, x, x*x, x*x*x };
-  std::copy(Ji,Ji+4,dst.begin());
-}
+        void j(const LM::Params &p, const LM::Vector &vx, LM::Vector &dst){
+          float x = vx[0];
+          const float Ji[] = { 1, x, x*x, x*x*x };
+          std::copy(Ji,Ji+4,dst.begin());
+        }
 
-int main(){
-  LM lm(f); // use analytic jacobian LM lm(f,j)
-  const float p[4] = { 1,2,3,4 };
-  LM::Params realParams(4,p), startParams(4,1);
-  LM::Data data = LM::create_data(realParams,f,1);
-  LM::Result result = lm.fit(data.x,data.y,startParams);
-  SHOW(result);
-}
+        int main(){
+          LM lm(f); // use analytic jacobian LM lm(f,j)
+          const float p[4] = { 1,2,3,4 };
+          LM::Params realParams(4,p), startParams(4,1);
+          LM::Data data = LM::create_data(realParams,f,1);
+          LM::Result result = lm.fit(data.x,data.y,startParams);
+          SHOW(result);
+        }
       \endcode
       
       In this example, the optimization takes 11 iterations
@@ -164,176 +163,176 @@ int main(){
       Jacobian needs to be given in order to get convergence:
       
       \code
-#include <ICLMath/LevenbergMarquardtFitter.h>
+        #include <ICLMath/LevenbergMarquardtFitter.h>
+        
+        typedef float real;
+        typedef icl::LevenbergMarquardtFitter<real> LM;
+        
+        real f(const LM::Params &p, const LM::Vector &vx){
+          real x = vx[0], y=vx[1], z=vx[2];
+          real a = p[0], b=p[1], c=p[2], d=p[3], e=p[4], f=p[5];
+          return x*y*a*b + y*z*d*d*c - z*x*f*e*b + icl::sqr(a + b + c + d);
+        }
+        
+        void j(const LM::Params &p, const LM::Vector &vx, LM::Vector &dst){
+          real x = vx[0], y=vx[1], z=vx[2];
+          real a = p[0], b=p[1], c=p[2], d=p[3], e=p[4], f=p[5];
+          real k = 2 * (a+b+c+d);
+          dst[0] = x*y*b + k;
+          dst[1] = x*y*a  - z*x*f*e + k;
+          dst[2] = y*z*d*d + k;
+          dst[3] = 2*d*y*z*c + k;
+          dst[4] = -z*x*f*b;
+          dst[5] = -z*x*e*b;
+        }
 
-typedef float real;
-typedef icl::LevenbergMarquardtFitter<real> LM;
-
-real f(const LM::Params &p, const LM::Vector &vx){
-  real x = vx[0], y=vx[1], z=vx[2];
-  real a = p[0], b=p[1], c=p[2], d=p[3], e=p[4], f=p[5];
-  return x*y*a*b + y*z*d*d*c - z*x*f*e*b + icl::sqr(a + b + c + d);
-}
-
-void j(const LM::Params &p, const LM::Vector &vx, LM::Vector &dst){
-  real x = vx[0], y=vx[1], z=vx[2];
-  real a = p[0], b=p[1], c=p[2], d=p[3], e=p[4], f=p[5];
-  real k = 2 * (a+b+c+d);
-  dst[0] = x*y*b + k;
-  dst[1] = x*y*a  - z*x*f*e + k;
-  dst[2] = y*z*d*d + k;
-  dst[3] = 2*d*y*z*c + k;
-  dst[4] = -z*x*f*b;
-  dst[5] = -z*x*e*b;
-}
-
-int main(){
-  LM lm(f,j); // use numerical jacobian LM lm(f);
-  const real p[6] = { 1,2,3,4,5,6 };
-  LM::Params realParams(6,p), startParams(6,3);
-  LM::Data data = LM::create_data(realParams,f,3);
-  LM::Result result = lm.fit(data.x,data.y,startParams);
-  SHOW(result);
-}
-\endcode
-  */
-  
-  template<class Scalar>
-  class LevenbergMarquardtFitter{
-    public:
-      
-    typedef DynColVector<Scalar> Vector; //!< vector type
-    typedef DynColVector<Scalar> Params; //!< parameter vector type
-    typedef DynMatrix<Scalar> Matrix;    //!< matrix type (used for input data)
-    
-    /// Utility structure, that represents a fitting result
-    struct Result{ 
-      int iteration;  //!< number of iterations needed
-      Scalar error;   //!< reached error
-      Scalar lambda;  //!< last lambda
-      Params params;  //!< final parameters
-      
-      /// overloaded ostream-operator
-      friend inline std::ostream &operator<<(std::ostream &str, const Result &d){
-        return str << "iteration: " << d.iteration << "  error:" << d.error 
-                   << "  lambda:" << d.lambda << "  params:" << d.params.transp();
-      }
-    };
-
-    /// utility structure that is used in the static create_data utlity method
-    struct Data{
-      Matrix x;  //!< input (each row is a data sample)
-      Vector y;  //!< outputs
-    };
-
-    /// Function f that is optimized
-    typedef icl::Function<Scalar,const Params&,const Vector&> Function;
-    
-    /// Optionally given analytical Jacobian of F
-    /** \see \ref _J_ */
-    typedef icl::Function<void,const Params&, const Vector&, Vector &> Jacobian;
-    
-    /// Optionally given debug callback, that is called in every iterations
-    typedef icl::Function<void,const Result&> DebugCallback;
-    
-    
-
-    protected:
-    Function f;  //!< Function f
-    Jacobian j;  //!< Jacobian (either analytical or numerical)
-
-    Scalar initialLambda;     //!< initial damping parameter lambda
-    int maxIterations;        //!< maximum number of iterations
-    Scalar minError;          //!< minimum error threshold
-    Scalar lambdaMultiplier;  //!< mulitplier that is used to increase/decreas lambda
-    std::string linSolver;    //!< linear solver that is used @see icl::DynMatrix::solve
-
-    Vector y_est;      //!< last output estimate
-    Vector y_est_new;  //!< current output estimate
-    Vector dst;        //!< b in Mx=b of linear system solved internally
-    Matrix J;          //!< Jacobian Matrix (rows are Ji)
-    Matrix H;          //!< Hessian Matrix (J^T J) 
-    Matrix H_damped;   //!< Damped Hessian (H + diag(diag(H))*lambda)
-    DebugCallback dbg; //!< debug callback
-    Params params_new; //!< new parameters (after update step)
-
-    public:
-    
-    /// creates a dummy (null instance)
-    LevenbergMarquardtFitter();
-    
-    /// create an instance with given parameters
-    /** @param f function to be optimized 
-        @param j optionally given Jacobian of f. If j is null (e.g. an empty Jacobian() is passed),
-                 a numerical jacobian is created automatically. This will use a numerical delta of 
-                 1e-5, which is the default parameter for the static 
-                 LevenbergMarquardtFitter::create_numerical_jacobian method. If a numerical Jacobian
-                 with another delta shall be used, create_numerical_jacobian has to be called manually.
-        @param initialLambda initial damping parameter (usually 1e-6 ist not the worst choice)
-        @param maxIterations maximum number of iterations (usually, LMA will converge fast, or not at all.
-               Therefore, the default argument of 10000 iterations somehow assumes, that the minError
-               criterion is met much earlier.
-        @param lambdaMultiplier mulitiplyer used for increasing/decreasing the damping parameter lambda
-        @param linSolver linear solver that is used to estimate a local step internally possible values
-               are documented in icl::DynMatrix::solve
-        */
-    LevenbergMarquardtFitter(Function f, Jacobian j=Jacobian(),
-                            Scalar initialLambda=1.e-8, int maxIterations=10000,
-                            Scalar minError = 1.e-6, Scalar lambdaMultiplier=10,
-                            const std::string &linSolver="lu");
-    
-    /// (re)-initialization method
-    /** \copydoc LevenbergMarquardtFitter::LevenbergMarquardtFitter(Function,Jacobian,Scalar,int,Scalar,Scalar,const std::string &)*/
-    void init(Function f, Jacobian j=Jacobian(),
-              Scalar initialLambda=1.e-8, int maxIterations=10000,
-              Scalar minError = 1.e-6, Scalar lambdaMultiplier=10,
-              const std::string &linSolver="lu");
-    
-    /// actual parameter fitting with given data and start parameters
-    /** This method actually fits the internal function model to the given data. The fitting
-        procedure starts at the given set of initial parameters.
-    
-        @param xs input data matrix, where each data point is one row. Please note, that
-                  you can shallowly wrap a Matrix instance around existing other data types.
-        @param ys output data (Scalar) ys[i] belongs to the ith row of xs
-        @param initParams initial parameters for starting optimizaiton
-    */
-    Result fit(const Matrix &xs, const Vector &ys, Params initParams);
-    
-    
-    /// creates a numerical Jacobian for a given function f
-    /** The Jacobian will evaluate f twice for each parameter in \f$ \beta \f$. 
-        Here is the internal implementation snippet:
-        \code
-        jacobian(const Params &params, const Vector &x, Vector &target) const{
-           Vector p = params;
-           for(unsigned int i=0;i<params.dim();++i){
-              p[i] = params[i] + delta/2;
-              Scalar f1 = f(p,x);
-              p[i] = params[i] - delta/2;
-              Scalar f2 = f(p,x);
-              p[i] = params[i];
-              target[i] = ( f1 - f2 ) / delta;
-           }
+        int main(){
+          LM lm(f,j); // use numerical jacobian LM lm(f);
+          const real p[6] = { 1,2,3,4,5,6 };
+          LM::Params realParams(6,p), startParams(6,3);
+          LM::Data data = LM::create_data(realParams,f,3);
+          LM::Result result = lm.fit(data.x,data.y,startParams);
+          SHOW(result);
         }
         \endcode
-    */
-    static Jacobian create_numerical_jacobian(Function f, float delta=1.E-5);
-
-    /// creates test data using a given function
-    /** @param p real function parameters
-        @param f function
-        @param xDim input dimension of function f
-        @param num number of samples
-        @param minX the function input values are randomly drawn from a uniform
-                    distribution in range [minX,maxX] 
-        @param maxX see minX */
-    static Data create_data(const Params &p, Function f, int xDim, 
-                            int num=1000, Scalar minX=-5, Scalar maxX=5);
+        */
     
-    /// sets a debug callback method, which is called automatically in every interation
-    void setDebugCallback(DebugCallback dbg);
-  };
-}
+    template<class Scalar>
+    class LevenbergMarquardtFitter{
+      public:
+      
+      typedef DynColVector<Scalar> Vector; //!< vector type
+      typedef DynColVector<Scalar> Params; //!< parameter vector type
+      typedef DynMatrix<Scalar> Matrix;    //!< matrix type (used for input data)
+    
+      /// Utility structure, that represents a fitting result
+      struct Result{ 
+        int iteration;  //!< number of iterations needed
+        Scalar error;   //!< reached error
+        Scalar lambda;  //!< last lambda
+        Params params;  //!< final parameters
+      
+        /// overloaded ostream-operator
+        friend inline std::ostream &operator<<(std::ostream &str, const Result &d){
+          return str << "iteration: " << d.iteration << "  error:" << d.error 
+                     << "  lambda:" << d.lambda << "  params:" << d.params.transp();
+        }
+      };
 
+      /// utility structure that is used in the static create_data utlity method
+      struct Data{
+        Matrix x;  //!< input (each row is a data sample)
+        Vector y;  //!< outputs
+      };
+
+      /// Function f that is optimized
+      typedef icl::utils::Function<Scalar,const Params&,const Vector&> Function;
+    
+      /// Optionally given analytical Jacobian of F
+      /** \see \ref _J_ */
+      typedef icl::utils::Function<void,const Params&, const Vector&, Vector &> Jacobian;
+    
+      /// Optionally given debug callback, that is called in every iterations
+      typedef icl::utils::Function<void,const Result&> DebugCallback;
+    
+    
+
+      protected:
+      Function f;  //!< Function f
+      Jacobian j;  //!< Jacobian (either analytical or numerical)
+
+      Scalar initialLambda;     //!< initial damping parameter lambda
+      int maxIterations;        //!< maximum number of iterations
+      Scalar minError;          //!< minimum error threshold
+      Scalar lambdaMultiplier;  //!< mulitplier that is used to increase/decreas lambda
+      std::string linSolver;    //!< linear solver that is used @see icl::DynMatrix::solve
+
+      Vector y_est;      //!< last output estimate
+      Vector y_est_new;  //!< current output estimate
+      Vector dst;        //!< b in Mx=b of linear system solved internally
+      Matrix J;          //!< Jacobian Matrix (rows are Ji)
+      Matrix H;          //!< Hessian Matrix (J^T J) 
+      Matrix H_damped;   //!< Damped Hessian (H + diag(diag(H))*lambda)
+      DebugCallback dbg; //!< debug callback
+      Params params_new; //!< new parameters (after update step)
+
+      public:
+    
+      /// creates a dummy (null instance)
+      LevenbergMarquardtFitter();
+    
+      /// create an instance with given parameters
+      /** @param f function to be optimized 
+          @param j optionally given Jacobian of f. If j is null (e.g. an empty Jacobian() is passed),
+          a numerical jacobian is created automatically. This will use a numerical delta of 
+          1e-5, which is the default parameter for the static 
+          LevenbergMarquardtFitter::create_numerical_jacobian method. If a numerical Jacobian
+          with another delta shall be used, create_numerical_jacobian has to be called manually.
+          @param initialLambda initial damping parameter (usually 1e-6 ist not the worst choice)
+          @param maxIterations maximum number of iterations (usually, LMA will converge fast, or not at all.
+          Therefore, the default argument of 10000 iterations somehow assumes, that the minError
+          criterion is met much earlier.
+          @param lambdaMultiplier mulitiplyer used for increasing/decreasing the damping parameter lambda
+          @param linSolver linear solver that is used to estimate a local step internally possible values
+          are documented in icl::DynMatrix::solve
+          */
+      LevenbergMarquardtFitter(Function f, Jacobian j=Jacobian(),
+                               Scalar initialLambda=1.e-8, int maxIterations=10000,
+                               Scalar minError = 1.e-6, Scalar lambdaMultiplier=10,
+                               const std::string &linSolver="lu");
+    
+      /// (re)-initialization method
+      /** \copydoc LevenbergMarquardtFitter::LevenbergMarquardtFitter(Function,Jacobian,Scalar,int,Scalar,Scalar,const std::string &)*/
+      void init(Function f, Jacobian j=Jacobian(),
+                Scalar initialLambda=1.e-8, int maxIterations=10000,
+                Scalar minError = 1.e-6, Scalar lambdaMultiplier=10,
+                const std::string &linSolver="lu");
+    
+      /// actual parameter fitting with given data and start parameters
+      /** This method actually fits the internal function model to the given data. The fitting
+          procedure starts at the given set of initial parameters.
+    
+          @param xs input data matrix, where each data point is one row. Please note, that
+          you can shallowly wrap a Matrix instance around existing other data types.
+          @param ys output data (Scalar) ys[i] belongs to the ith row of xs
+          @param initParams initial parameters for starting optimizaiton
+          */
+      Result fit(const Matrix &xs, const Vector &ys, Params initParams);
+    
+    
+      /// creates a numerical Jacobian for a given function f
+      /** The Jacobian will evaluate f twice for each parameter in \f$ \beta \f$. 
+          Here is the internal implementation snippet:
+          \code
+          jacobian(const Params &params, const Vector &x, Vector &target) const{
+          Vector p = params;
+          for(unsigned int i=0;i<params.dim();++i){
+          p[i] = params[i] + delta/2;
+          Scalar f1 = f(p,x);
+          p[i] = params[i] - delta/2;
+          Scalar f2 = f(p,x);
+          p[i] = params[i];
+          target[i] = ( f1 - f2 ) / delta;
+          }
+          }
+          \endcode
+          */
+      static Jacobian create_numerical_jacobian(Function f, float delta=1.E-5);
+
+      /// creates test data using a given function
+      /** @param p real function parameters
+          @param f function
+          @param xDim input dimension of function f
+          @param num number of samples
+          @param minX the function input values are randomly drawn from a uniform
+          distribution in range [minX,maxX] 
+          @param maxX see minX */
+      static Data create_data(const Params &p, Function f, int xDim, 
+                              int num=1000, Scalar minX=-5, Scalar maxX=5);
+    
+      /// sets a debug callback method, which is called automatically in every interation
+      void setDebugCallback(DebugCallback dbg);
+    };
+  } // namespace math
+} // namespace icl
 #endif

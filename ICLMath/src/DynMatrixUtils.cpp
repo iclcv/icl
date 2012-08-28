@@ -47,6 +47,8 @@
   #include <Eigen/SVD>
 #endif
 
+using namespace icl::utils;
+
 // check matrix dimensions: (m1.cols == m2.cols) and (m1.rows == m2.rows)
 //#define CHECK_DIM(m1,m2,RET)
 //  ICLASSERT_RETURN_VAL( (m1.cols() == m2.cols()) && (m1.rows() == m2.rows()), RET)
@@ -144,7 +146,7 @@ namespace icl{
     ICL_UNARY_HELP_FUNC(Tan_icl,::tan)
     ICL_UNARY_HELP_FUNC(Arcsin_icl,::asin)
     ICL_UNARY_HELP_FUNC(Arccos_icl,::acos)
-    ICL_UNARY_HELP_FUNC(Reciprocal_icl,icl::reciprocal)
+    ICL_UNARY_HELP_FUNC(Reciprocal_icl,icl::math::reciprocal)
   
   #undef ICL_UNARY_HELP_FUNC
   

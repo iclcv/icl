@@ -36,6 +36,9 @@
 #include <ICLMath/DynMatrixUtils.h>
 #include <ICLUtils/Random.h>
 
+
+using namespace icl::utils;
+
 namespace icl{
   namespace math{
     template<class Scalar>
@@ -155,7 +158,9 @@ namespace icl{
   
     
     template<class Scalar>
-    struct NumericJacobian : public FunctionImpl<void,const DynColVector<Scalar>&,const DynColVector<Scalar>&,DynColVector<Scalar>&>{
+    struct NumericJacobian : public FunctionImpl<void,const DynColVector<Scalar>&,
+                                                 const DynColVector<Scalar>&,
+                                                 DynColVector<Scalar>&>{
       typedef typename LevenbergMarquardtFitter<Scalar>::Function Function;
       typedef typename LevenbergMarquardtFitter<Scalar>::Params Params;
       typedef typename LevenbergMarquardtFitter<Scalar>::Vector Vector;

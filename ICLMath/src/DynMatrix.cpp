@@ -48,6 +48,8 @@
 #include <ICLMath/DynMatrixUtils.h>
 #include <ICLUtils/StringUtils.h>
 
+using namespace icl::utils;
+
 namespace icl{
   namespace math{
   
@@ -211,7 +213,7 @@ namespace icl{
         // remove components parallel to q(*,i)
         for (unsigned int j=i+1;j<cols();j++) {
           a = A.col(j);
-          R(j,i) = icl::dot(q, a);
+          R(j,i) = icl::math::dot(q, a);
           A.col(j) = a - q * R(j,i);
         }
       }
@@ -855,7 +857,7 @@ namespace icl{
       while(!s.eof()){
         std::getline(s,line);
         if(!line.length() || line[0] == '#' || line[0] == ' ') continue;
-        std::vector<T> v = icl::parseVecStr<T>(line,","); 
+        std::vector<T> v = icl::utils::parseVecStr<T>(line,","); 
         int cLen = (int)v.size();
         if(lineLen == -1) lineLen = cLen;
         else if(lineLen != cLen){

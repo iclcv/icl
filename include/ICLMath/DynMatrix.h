@@ -1115,123 +1115,123 @@ namespace icl{
     std::istream &operator>>(std::istream &s,DynMatrix<T> &m);
   
   
-  #ifdef HAVE_IPP
+#ifdef HAVE_IPP
     /** \cond */
   
-  #define DYN_MATRIX_MULT_SPECIALIZE(IPPT)                                                                \
-    template<>	    							                                \
-      inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::mult(                                            \
-        const DynMatrix<Ipp##IPPT> &m, DynMatrix<Ipp##IPPT> &dst) const	                                \
-      throw (IncompatibleMatrixDimensionException){			                                \
-      if(cols() != m.rows() ) throw IncompatibleMatrixDimensionException("A*B : cols(A) must be row(B)");	\
-      dst.setBounds(m.cols(),rows());					                                \
-      ippmMul_mm_##IPPT(data(),sizeof(Ipp##IPPT)*cols(),sizeof(Ipp##IPPT),cols(),rows(),                  \
-  		      m.data(),sizeof(Ipp##IPPT)*m.cols(),sizeof(Ipp##IPPT),m.cols(),m.rows(),          \
-  		      dst.data(),m.cols()*sizeof(Ipp##IPPT),sizeof(Ipp##IPPT));	                        \
-      return dst;					\
+#define DYN_MATRIX_MULT_SPECIALIZE(IPPT)                                \
+    template<>                                                          \
+    inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::mult(            \
+                                                            const DynMatrix<Ipp##IPPT> &m, DynMatrix<Ipp##IPPT> &dst) const \
+    throw (IncompatibleMatrixDimensionException){                       \
+      if(cols() != m.rows() ) throw IncompatibleMatrixDimensionException("A*B : cols(A) must be row(B)"); \
+      dst.setBounds(m.cols(),rows());                                   \
+      ippmMul_mm_##IPPT(data(),sizeof(Ipp##IPPT)*cols(),sizeof(Ipp##IPPT),cols(),rows(), \
+                        m.data(),sizeof(Ipp##IPPT)*m.cols(),sizeof(Ipp##IPPT),m.cols(),m.rows(), \
+                        dst.data(),m.cols()*sizeof(Ipp##IPPT),sizeof(Ipp##IPPT)); \
+      return dst;                                                       \
     }
   
     DYN_MATRIX_MULT_SPECIALIZE(32f)
     DYN_MATRIX_MULT_SPECIALIZE(64f)
-  #undef DYN_MATRIX_MULT_SPECIALIZE
+#undef DYN_MATRIX_MULT_SPECIALIZE
   
   
-  #define DYN_MATRIX_ELEMENT_WISE_DIV_SPECIALIZE(IPPT)	                      \
-      template<>								      \
-      inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::elementwise_div(      \
-            const DynMatrix<Ipp##IPPT> &m, DynMatrix<Ipp##IPPT> &dst) const     \
-        throw (IncompatibleMatrixDimensionException){                           \
-      if((m.cols() != cols()) || (m.rows() != rows())){                         \
-        throw IncompatibleMatrixDimensionException("A./B dimension mismatch");  \
-      }                                                                         \
-      dst.setBounds(cols(),rows());                                             \
-      ippsDiv_##IPPT(data(),m.data(),dst.data(),dim());                         \
-      return dst;                                                               \
+#define DYN_MATRIX_ELEMENT_WISE_DIV_SPECIALIZE(IPPT)                    \
+    template<>                                                          \
+    inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::elementwise_div( \
+                                                                       const DynMatrix<Ipp##IPPT> &m, DynMatrix<Ipp##IPPT> &dst) const \
+    throw (IncompatibleMatrixDimensionException){                       \
+      if((m.cols() != cols()) || (m.rows() != rows())){                 \
+        throw IncompatibleMatrixDimensionException("A./B dimension mismatch"); \
+      }                                                                 \
+      dst.setBounds(cols(),rows());                                     \
+      ippsDiv_##IPPT(data(),m.data(),dst.data(),dim());                 \
+      return dst;                                                       \
     }
   
     DYN_MATRIX_ELEMENT_WISE_DIV_SPECIALIZE(32f)
     DYN_MATRIX_ELEMENT_WISE_DIV_SPECIALIZE(64f)
   
-  #undef DYN_MATRIX_ELEMENT_WISE_DIV_SPECIALIZE
+#undef DYN_MATRIX_ELEMENT_WISE_DIV_SPECIALIZE
   
   
   
   
   
   
-  #define DYN_MATRIX_MULT_BY_CONSTANT(IPPT)	             \
-      template<>						     \
-      inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::mult( \
-        Ipp##IPPT f, DynMatrix<Ipp##IPPT> &dst) const{         \
-      dst.setBounds(cols(),rows());                            \
-      ippsMulC_##IPPT(data(),f, dst.data(),dim());             \
-      return dst;                                              \
+#define DYN_MATRIX_MULT_BY_CONSTANT(IPPT)                               \
+    template<>                                                          \
+    inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::mult(            \
+                                                            Ipp##IPPT f, DynMatrix<Ipp##IPPT> &dst) const{ \
+      dst.setBounds(cols(),rows());                                     \
+      ippsMulC_##IPPT(data(),f, dst.data(),dim());                      \
+      return dst;                                                       \
     }
   
-  DYN_MATRIX_MULT_BY_CONSTANT(32f)
-  DYN_MATRIX_MULT_BY_CONSTANT(64f)
+    DYN_MATRIX_MULT_BY_CONSTANT(32f)
+    DYN_MATRIX_MULT_BY_CONSTANT(64f)
   
-  #undef DYN_MATRIX_MULT_BY_CONSTANT
+#undef DYN_MATRIX_MULT_BY_CONSTANT
   
-  #define DYN_MATRIX_NORM_SPECIALZE(T,IPPT)                  \
-    template<>                                               \
-    inline T DynMatrix<T> ::norm(double l) const{            \
-      if(l==1){                                              \
-        T val;                                               \
-        ippsNorm_L1_##IPPT(m_data,dim(),&val);               \
-        return val;                                          \
-      }else if(l==2){                                        \
-        T val;                                               \
-        ippsNorm_L2_##IPPT(m_data,dim(),&val);               \
-        return val;                                          \
-      }                                                      \
-      double accu = 0;                                       \
-      for(unsigned int i=0;i<dim();++i){                     \
-        accu += ::pow(double(m_data[i]),l);                  \
-      }                                                      \
-      return ::pow(accu,1.0/l);                              \
+#define DYN_MATRIX_NORM_SPECIALZE(T,IPPT)               \
+    template<>                                          \
+    inline T DynMatrix<T> ::norm(double l) const{       \
+      if(l==1){                                         \
+        T val;                                          \
+        ippsNorm_L1_##IPPT(m_data,dim(),&val);          \
+        return val;                                     \
+      }else if(l==2){                                   \
+        T val;                                          \
+        ippsNorm_L2_##IPPT(m_data,dim(),&val);          \
+        return val;                                     \
+      }                                                 \
+      double accu = 0;                                  \
+      for(unsigned int i=0;i<dim();++i){                \
+        accu += ::pow(double(m_data[i]),l);             \
+      }                                                 \
+      return ::pow(accu,1.0/l);                         \
     }
   
-   DYN_MATRIX_NORM_SPECIALZE(float,32f)
-   // DYN_MATRIX_NORM_SPECIALZE(double,64f)
+    DYN_MATRIX_NORM_SPECIALZE(float,32f)
+    // DYN_MATRIX_NORM_SPECIALZE(double,64f)
   
-  #undef DYN_MATRIX_NORM_SPECIALZE
+#undef DYN_MATRIX_NORM_SPECIALZE
   
-   /** \endcond */
+    /** \endcond */
   
-  #endif // HAVE_IPP
+#endif // HAVE_IPP
+   
+    /// vertical concatenation of matrices
+    /** missing elementes are padded with 0 */
+    template<class T>
+    inline DynMatrix<T> operator,(const DynMatrix<T> &left, const DynMatrix<T> &right){
+      int w = left.cols() + right.cols();
+      int h = iclMax(left.rows(),right.rows());
+      DynMatrix<T> result(w,h,float(0));
+      for(unsigned int y=0;y<left.rows();++y){
+        std::copy(left.row_begin(y), left.row_end(y), result.row_begin(y));
+      }
+      for(unsigned int y=0;y<right.rows();++y){
+        std::copy(right.row_begin(y), right.row_end(y), result.row_begin(y) + left.cols());
+      }
+      return result;
+    }
   
-   /// vertical concatenation of matrices
-   /** missing elementes are padded with 0 */
-   template<class T>
-   inline DynMatrix<T> operator,(const DynMatrix<T> &left, const DynMatrix<T> &right){
-     int w = left.cols() + right.cols();
-     int h = iclMax(left.rows(),right.rows());
-     DynMatrix<T> result(w,h,float(0));
-     for(unsigned int y=0;y<left.rows();++y){
-       std::copy(left.row_begin(y), left.row_end(y), result.row_begin(y));
-     }
-     for(unsigned int y=0;y<right.rows();++y){
-       std::copy(right.row_begin(y), right.row_end(y), result.row_begin(y) + left.cols());
-     }
-     return result;
-   }
-  
-   /// horizontal concatenation of matrices
-   /** missing elementes are padded with 0 */
-   template<class T>
-   inline DynMatrix<T> operator%(const DynMatrix<T> &top, const DynMatrix<T> &bottom){
-     int w = iclMax(top.cols(),bottom.cols());
-     int h = top.rows() + bottom.rows();
-     DynMatrix<T> result(w,h,float(0));
-     for(unsigned int y=0;y<top.rows();++y){
-       std::copy(top.row_begin(y), top.row_end(y), result.row_begin(y));
-     }
-     for(unsigned int y=0;y<bottom.rows();++y){
-       std::copy(bottom.row_begin(y), bottom.row_end(y), result.row_begin(y+top.rows()));
-     }
-     return result;
-   }
+    /// horizontal concatenation of matrices
+    /** missing elementes are padded with 0 */
+    template<class T>
+    inline DynMatrix<T> operator%(const DynMatrix<T> &top, const DynMatrix<T> &bottom){
+      int w = iclMax(top.cols(),bottom.cols());
+      int h = top.rows() + bottom.rows();
+      DynMatrix<T> result(w,h,float(0));
+      for(unsigned int y=0;y<top.rows();++y){
+        std::copy(top.row_begin(y), top.row_end(y), result.row_begin(y));
+      }
+      for(unsigned int y=0;y<bottom.rows();++y){
+        std::copy(bottom.row_begin(y), bottom.row_end(y), result.row_begin(y+top.rows()));
+      }
+      return result;
+    }
   } // namespace math
 }
 

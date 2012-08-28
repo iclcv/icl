@@ -63,7 +63,7 @@ namespace icl{
       StraightLine2D(const Pos &o=Pos(0,0), const Pos &v=Pos(0,0));
   
       /// creates a straight line from given point32f
-      StraightLine2D(const Point32f &o, const Point32f &v);
+      StraightLine2D(const utils::Point32f &o, const utils::Point32f &v);
       
       /// 2D offset vector
       Pos o;
@@ -80,16 +80,20 @@ namespace icl{
       float signedDistance(const Pos &p) const;
   
       /// computes closest distance to given 2D point
-      inline float distance(const Point32f &p) const { return distance(Pos(p.x,p.y)); }
+      inline float distance(const utils::Point32f &p) const {
+        return distance(Pos(p.x,p.y)); 
+      }
       
       /// computes closest distance to given 2D point
       /* result is positive if p is left of this->v
           and negative otherwise */
-      float signedDistance(const Point32f &p) const { return signedDistance(Pos(p.x,p.y)); }
+      float signedDistance(const utils::Point32f &p) const { 
+        return signedDistance(Pos(p.x,p.y)); 
+      }
       
       /// computes intersection with given other straight line
       /** if lines are parallel, an ICLException is thrown */
-      Pos intersect(const StraightLine2D &o) const throw(ICLException);
+      Pos intersect(const StraightLine2D &o) const throw(utils::ICLException);
       
       /// returns current angle and distance
       PointPolar getAngleAndDistance() const;

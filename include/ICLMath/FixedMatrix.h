@@ -120,7 +120,7 @@ namespace icl{
           RangeSize must be equal */
       template<class OtherIterator, class OtherT>
       FixedMatrixPart& operator=(const FixedMatrixPart<OtherT,N,OtherIterator> &other){
-        std::transform(other.begin,other.end,begin,clipped_cast<OtherT,T>);
+        std::transform(other.begin,other.end,begin,utils::clipped_cast<OtherT,T>);
         return *this;
       }
       
@@ -248,7 +248,7 @@ namespace icl{
       // Explicit Copy template based constructor (deep copy)
       template<class otherT>
       FixedMatrix(const FixedMatrix<otherT,COLS,ROWS> &other){
-        std::transform(other.begin(),other.end(),begin(),clipped_cast<otherT,T>);
+        std::transform(other.begin(),other.end(),begin(),utils::clipped_cast<otherT,T>);
       }
   
       /// Create matrix of a sub-part of another matrix (identical types)
@@ -260,7 +260,7 @@ namespace icl{
       /// Create matrix of a sub-part of another matrix (compatible types)
       template<class otherT, class Iterator>
       FixedMatrix(const FixedMatrixPart<otherT,DIM,Iterator> &r){ 
-        std::transform(r.begin,r.end,begin(),clipped_cast<otherT,T>);
+        std::transform(r.begin,r.end,begin(),utils::clipped_cast<otherT,T>);
       }
       
       /// Assignment operator (with compatible data type) (deep copy)
@@ -276,7 +276,7 @@ namespace icl{
       template<class otherT>
       FixedMatrix &operator=(const FixedMatrix<otherT,COLS,ROWS> &other){
         if(this == &other) return *this;
-        std::transform(other.begin(),other.end(),begin(),clipped_cast<otherT,T>);
+        std::transform(other.begin(),other.end(),begin(),utils::clipped_cast<otherT,T>);
         return *this;
       }
       
@@ -297,7 +297,7 @@ namespace icl{
       /// Assign matrix elements with sup-part of another matrix (compatible types)
       template<class otherT, class Iterator>
       FixedMatrix &operator=(const FixedMatrixPart<otherT,DIM,Iterator> &r){ 
-        std::transform(r.begin,r.end,begin(),clipped_cast<otherT,T>);
+        std::transform(r.begin,r.end,begin(),utils::clipped_cast<otherT,T>);
         return *this;
       }
   
@@ -1057,7 +1057,7 @@ namespace icl{
     }
     template<class T,unsigned int N, class Iterator> template<class T2, unsigned int COLS>
     inline FixedMatrixPart<T,N,Iterator>& FixedMatrixPart<T,N,Iterator>::operator=(const FixedMatrix<T2,COLS,N/COLS> &m){
-      std::transform(m.begin(),m.end(),begin,clipped_cast<T2,T>);
+      std::transform(m.begin(),m.end(),begin,utils::clipped_cast<T2,T>);
       return *this;
     }
     /** \endcond */
