@@ -39,6 +39,9 @@
 
 #include <QtGui/QPainter>
 
+using namespace icl::utils;
+using namespace icl::math;
+
 namespace icl{
   namespace qt{
   

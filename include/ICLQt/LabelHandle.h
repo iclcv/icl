@@ -82,10 +82,7 @@ namespace icl{
       /// utitlity function
       const CompabilityLabel *lab() const { return **this; }
     };
-  
-   
-    
-   
+
   } // namespace qt
 }                               
 

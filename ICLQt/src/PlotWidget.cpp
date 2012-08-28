@@ -35,6 +35,9 @@
 #include <ICLQt/PlotWidget.h>
 #include <ICLUtils/SmartArray.h>
 
+using namespace icl::utils;
+using namespace icl::math;
+
 namespace icl{
   namespace qt{
     

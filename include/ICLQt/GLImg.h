@@ -35,7 +35,7 @@
 #pragma once
 
 #include <ICLCore/ImgBase.h>
-#include <ICLUtils/utils::Uncopyable.h>
+#include <ICLUtils/Uncopyable.h>
 #include <ICLMath/FixedVector.h>
 #include <ICLUtils/Function.h>
 #include <ICLUtils/Range.h>
@@ -115,7 +115,7 @@ namespace icl{
           @param sm texture interpolation mode (either interpolateNN or interpolateLIN)
           @param maxCellSize the cells size (see \ref _BUF_)
           */
-      GLImg(const core::ImgBase *src=0, scalemode sm=interpolateNN, int maxCellSize=4096);
+      GLImg(const core::ImgBase *src=0, core::scalemode sm=core::interpolateNN, int maxCellSize=4096);
       
       /// destructor
       ~GLImg();
@@ -125,7 +125,7 @@ namespace icl{
       void update(const core::ImgBase *src, int maxCellSize=4096);
       
       /// sets the texture interpolation mode
-      void setScaleMode(scalemode sm);
+      void setScaleMode(core::scalemode sm);
       
       /// returns whether a non-null images was buffered
       bool isNull() const;
@@ -209,10 +209,10 @@ namespace icl{
                       const int stride = 1);
       
       /// 3D vector type
-      typedef FixedColVector<float,3> Vec3;
+      typedef math::FixedColVector<float,3> Vec3;
       
       /// a grid function returns a 3D pos from given 2D grid position
-      typedef Function<Vec3,int,int> grid_function; 
+      typedef utils::Function<Vec3,int,int> grid_function; 
       
       /// draws the texture to an nx x ny grid whose positions and normals are defined by functions
       /** The grid results are buffered internally in order to avoid extra function evaluations.
@@ -276,7 +276,7 @@ namespace icl{
       void setBCI(int b=-1, int c=-1, int i=-1);
   
       /// returns the current minimun and maximum values for all channels
-      std::vector<Range64f> getMinMax() const;
+      std::vector<utils::Range64f> getMinMax() const;
       
       /// retuns the color at a given image location or a zero sized vector, (x,y) is outside the image
       std::vector<icl64f> getColor(int x, int y)const;
@@ -298,7 +298,7 @@ namespace icl{
       const float *getGridColor() const;
       
       /// returns the current scalemode
-      scalemode getScaleMode() const;
+      core::scalemode getScaleMode() const;
       
       /// locks the texture buffer
       void lock() const;

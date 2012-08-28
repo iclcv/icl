@@ -61,8 +61,8 @@ namespace icl{
         **/
         static void xyb_to_rg(icl8u &r, icl8u &g, float b, float x, float y){
           float k = x/(1.0-x);
-          g = clipped_cast<icl32f,icl8u>((b*(k+1.0))/(1.0/y-1.0-k));
-          r = clipped_cast<icl32f,icl8u>(g/y-g-b);
+          g = utils::clipped_cast<icl32f,icl8u>((b*(k+1.0))/(1.0/y-1.0-k));
+          r = utils::clipped_cast<icl32f,icl8u>(g/y-g-b);
         }
         /// Create a new color with given red, green, blue and alpha value
         Color(icl8u r=0, icl8u g=0, icl8u b=0, icl8u a=255):
@@ -103,7 +103,9 @@ namespace icl{
           @param b blue value
       **/
       void setColor(float r,float g, float b){
-        c = Color(clipped_cast<icl32f,icl8u>(r),clipped_cast<icl32f,icl8u>(g),clipped_cast<icl32f,icl8u>(b));
+        c = Color(utils::clipped_cast<icl32f,icl8u>(r),
+                  utils::clipped_cast<icl32f,icl8u>(g),
+                  utils::clipped_cast<icl32f,icl8u>(b));
       }
       
       /// sets the current dim
@@ -118,8 +120,8 @@ namespace icl{
       /** @param x new center position of the dragger */
       void setPos(const utils::Point32f &x){
         p = x;
-        p.x = clip(p.x,float(0.0),float(1.0));
-        p.y = clip(p.y,float(0.0),float(1.0));
+        p.x = utils::clip(p.x,float(0.0),float(1.0));
+        p.y = utils::clip(p.y,float(0.0),float(1.0));
         r.x = p.x-d;
         r.y = p.y-d;
       }

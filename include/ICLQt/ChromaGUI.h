@@ -74,10 +74,10 @@ namespace icl{
       ChromaGUI(QWidget *parent=0);
       
       /// retuns a ChomaClassifier with current parameters
-      ChromaClassifier getChromaClassifier();
+      core::ChromaClassifier getChromaClassifier();
   
       /// retuns a CombiClassifier with current parameters
-      ChromaAndRGBClassifier getChromaAndRGBClassifier();
+      core::ChromaAndRGBClassifier getChromaAndRGBClassifier();
       
       public slots:
       /// used for the blue-value visualization slider

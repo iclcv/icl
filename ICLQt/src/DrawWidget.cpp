@@ -40,6 +40,10 @@
 #include <QtCore/QMutexLocker>
 
 using std::string;
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
+
 namespace icl{
   namespace qt{
     

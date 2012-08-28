@@ -273,7 +273,7 @@ namespace icl{
   
       /// adds a scatter plot from given set of of fixed vectors
       template<class T, int WIDTH>
-      inline void scatter(const FixedMatrix<T,WIDTH,3-WIDTH> *ps, int num, bool connect=false){
+      inline void scatter(const math::FixedMatrix<T,WIDTH,3-WIDTH> *ps, int num, bool connect=false){
         scatter(&ps[0][0],&ps[0][1], num, 2, 2, connect);
       }
   
@@ -359,10 +359,10 @@ namespace icl{
       void grid(int nX, int nY, const float *xs, const float *ys, int stride=1);
   
       /// draws a grid-annoation
-      void grid(const Array2D<utils::Point> &data);
+      void grid(const utils::Array2D<utils::Point> &data);
       
       /// draws a grid-annoation
-      inline void grid(const Array2D<utils::Point32f> &data){
+      inline void grid(const utils::Array2D<utils::Point32f> &data){
         grid(data.getWidth(), data.getHeight(), &data(0,0).x, &data(0,0).y, 2);
       }
   
@@ -373,7 +373,7 @@ namespace icl{
   
       /// draws a grid-annoation
       inline void grid(int nX, int nY, const utils::Point *ps){
-        grid(Array2D<utils::Point>(nX,nY,const_cast<utils::Point*>(ps),false));
+        grid(utils::Array2D<utils::Point>(nX,nY,const_cast<utils::Point*>(ps),false));
       }
   
       /// draws a grid-annoation
@@ -388,7 +388,7 @@ namespace icl{
   
       /// draws a grid-annoation
       inline void grid(int nX, int nY, const std::vector<utils::Point> &ps){
-        grid(Array2D<utils::Point>(nX,nY, const_cast<utils::Point*>(ps.data()), false));    
+        grid(utils::Array2D<utils::Point>(nX,nY, const_cast<utils::Point*>(ps.data()), false));    
       }
   
       /// draws a grid-annoation
@@ -421,7 +421,6 @@ namespace icl{
       }
       
     };
-  
   } // namespace qt
-};
+}
 

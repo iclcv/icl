@@ -51,23 +51,23 @@ namespace icl{
       ColorHandle(ColorLabel *l, GUIWidget *w):GUIHandle<ColorLabel>(l,w){}
       
       /// sets new rgb color
-      inline void operator=(const Color &rgb){
+      inline void operator=(const core::Color &rgb){
         lab()->setColor(rgb);
       }
   
       /// sets new rgba color (alpha is only used if alpha is enabled for the gui component)
-      void operator=(const Color4D &rgba){
+      void operator=(const core::Color4D &rgba){
         lab()->setColor(rgba);
       }
       
       /// returns current rgb color
-      inline Color getRGB() const { return lab()->getRGB(); }
+      inline core::Color getRGB() const { return lab()->getRGB(); }
   
       /// convenienc function that is the same as getRGBA()
-      inline Color4D getColor() const { return lab()->getRGBA(); }
+      inline core::Color4D getColor() const { return lab()->getRGBA(); }
       
       /// returns current rgba color
-      inline Color4D getRGBA() const { return lab()->getRGBA(); }
+      inline core::Color4D getRGBA() const { return lab()->getRGBA(); }
       
       /// return whether wrapped ColorLabel supports alpha
       inline bool hasAlpha() const { return lab()->hasAlpha(); }

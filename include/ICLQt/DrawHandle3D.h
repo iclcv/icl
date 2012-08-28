@@ -37,11 +37,14 @@
 #include <ICLQt/GUIHandle.h>
 
 namespace icl{
+  /** \cond */
+  namespace core{ class ImgBase; }
+  /** \endcond */
+
   namespace qt{
     
     /** \cond */
     class ICLDrawWidget3D;
-    class ImgBase;
     /** \endcond */
   
     /// Handle class for image components \ingroup HANDLES

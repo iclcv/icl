@@ -46,7 +46,7 @@
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Array2D.h>
 #include <ICLQt/Widget.h>
-#include <ICLIO/File.h>
+#include <ICLUtils/File.h>
 
 #include <QtGui/QColorDialog>
 #include <QtGui/QHBoxLayout>
@@ -126,7 +126,10 @@
 #include <set>
 
 using namespace std;
-using namespace icl;
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
+
 
 namespace icl{
   namespace qt{
@@ -455,13 +458,13 @@ namespace icl{
         
         std::string cblist = ostr.str();
         if(cblist.size() > 1){
-          gui.registerCallback(function(this,&icl::ConfigurableGUIWidget::exec),cblist.substr(1),'\1');
+          gui.registerCallback(function(this,&icl::qt::ConfigurableGUIWidget::exec),cblist.substr(1),'\1');
         }
         for(unsigned int i=0;i<timers.size();++i){
           timers[i]->start();
         }
         
-        conf->registerCallback(function(this,&icl::ConfigurableGUIWidget::propertyChanged));
+        conf->registerCallback(function(this,&icl::qt::ConfigurableGUIWidget::propertyChanged));
       }
   
       /// Called if a property is changed from somewhere else

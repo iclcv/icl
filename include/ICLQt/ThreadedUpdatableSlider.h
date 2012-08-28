@@ -59,7 +59,7 @@ namespace icl{
       struct CB{
         /// associated event 
         enum Event{ press,release,move,value,all } event;
-        Function<void> f; //!< associated 'void f()' -function
+        utils::Function<void> f; //!< associated 'void f()' -function
       };
       
       /// internal list of callbacks
@@ -96,7 +96,7 @@ namespace icl{
           - value (when the value is changed)
           - all (for all events)
       */
-      void registerCallback(const Function<void> &cb, const std::string &events="value");
+      void registerCallback(const utils::Function<void> &cb, const std::string &events="value");
   
       /// removes all callbacks associated to this slider component
       void removeCallbacks();

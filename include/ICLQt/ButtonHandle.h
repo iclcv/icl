@@ -82,7 +82,7 @@ namespace icl{
       
       private:
       
-      SmartPtr<bool> m_triggered; //!< internal boolean variable
+      utils::SmartPtr<bool> m_triggered; //!< internal boolean variable
       std::string m_sID; //!< corresponding id
     };  
   } // namespace qt

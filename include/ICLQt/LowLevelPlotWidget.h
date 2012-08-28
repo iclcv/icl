@@ -269,10 +269,10 @@ namespace icl{
       virtual bool drawData(QPainter &p); 
   
       /// estimates the data xrange (for automatic viewport adaption)
-      virtual Range32f estimateDataXRange() const;
+      virtual utils::Range32f estimateDataXRange() const;
       
       /// estimates the data yrange (for automatic viewport adaption)
-      virtual Range32f estimateDataYRange() const;
+      virtual utils::Range32f estimateDataYRange() const;
       
       public:
   

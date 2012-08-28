@@ -52,22 +52,22 @@ namespace icl{
     class ColorLabel : public ThreadedUpdatableWidget{
       public:
       /// Create a new label with given text and given parent widget
-      ColorLabel(Color4D &color, bool useAlpha, QWidget *parent=0);
+      ColorLabel(core::Color4D &color, bool useAlpha, QWidget *parent=0);
   
       /// reimplemented drawin function (draw the current text centered)
       virtual void paintEvent(QPaintEvent *evt);
   
       /// sets new color rgb
-      void setColor(const Color &color);
+      void setColor(const core::Color &color);
   
       /// sets new color rgba
-      void setColor(const Color4D &color);
+      void setColor(const core::Color4D &color);
   
       /// returns current color
-      Color getRGB() const;
+      core::Color getRGB() const;
       
       /// returns current rgba color
-      Color4D getRGBA() const;
+      core::Color4D getRGBA() const;
       
       /// returns current red value
       int getRed() const;
@@ -87,7 +87,7 @@ namespace icl{
       private:
   
       /// shallowly wrapped color
-      Color4D &m_color; 
+      core::Color4D &m_color; 
   
       /// indicator wheter alpha is used
       bool m_hasAlpha; 

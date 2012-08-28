@@ -211,10 +211,6 @@ namespace icl{
       bool m_bCreated;
       QWidget *m_poParent;
     };  
-  
-  
-   
-  
   } // namespace qt
 }
 

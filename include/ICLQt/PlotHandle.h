@@ -66,7 +66,6 @@ namespace icl{
                            "GUI::ComplexCallback instances to an image GUI component");
       }
     };
-    
   } // namespace qt
 }
 

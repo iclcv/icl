@@ -32,27 +32,32 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQt/ChromaGUI.h>
-#include <ICLQt/ContainerGUIComponents.h>
+#include <QtCore/QFile>
+#include <QtCore/QTextStream>
 #include <QtGui/QFileDialog>
-#include <vector>
+#include <QtGui/QPushButton>
 
 #include <ICLCore/Parable.h>
+#include <ICLCore/Img.h>
+
+#include <ICLQt/ChromaGUI.h>
+#include <ICLQt/ContainerGUIComponents.h>
 #include <ICLQt/Dragger.h>
 #include <ICLQt/DrawWidget.h>
 #include <ICLQt/MouseHandler.h>
-#include <ICLCore/Img.h>
-#include <QtCore/QFile>
-#include <QtCore/QTextStream>
+
 #include <ICLQt/BoxHandle.h>
 #include <ICLQt/ButtonHandle.h>
-#include <QtGui/QPushButton>
 #include <ICLQt/ChromaClassifierIO.h>
+
+using namespace icl::utils;
+using namespace icl::core;
 
 using namespace std;
 namespace icl{
   namespace qt{
-  
+
+    
     class ChromaWidget : public ICLDrawWidget, public MouseHandler{
       public:
       ChromaWidget(QWidget *parent = 0):ICLDrawWidget(parent){
@@ -154,7 +159,7 @@ namespace icl{
       }
   
       // }}}
-      const Parable* getParables() const{
+      const core::Parable* getParables() const{
         // {{{ open
   
         return P;

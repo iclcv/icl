@@ -52,9 +52,9 @@ namespace icl{
       virtual ~GUIHandleBase(){}
   
       /** \cond */
-      friend class icl::GUI;
-      friend class icl::DataStore;
-      friend class icl::MultiTypeMap;
+      friend class icl::qt::GUI;
+      friend class icl::qt::DataStore;
+      friend class icl::utils::MultiTypeMap;
       /** \endcond */
       
       /// returns parent GUIWidget pointer

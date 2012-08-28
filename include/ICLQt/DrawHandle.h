@@ -38,10 +38,13 @@
 #include <ICLUtils/Exception.h>
 
 namespace icl{
+  /** \cond */
+  namespace core{ class ImgBase; }
+  /** \endcond */
+
   namespace qt{
     /** \cond */
     class ICLDrawWidget;
-    class ImgBase;
     /** \endcond */
   
     /// Handle class for image components \ingroup HANDLES

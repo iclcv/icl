@@ -69,7 +69,7 @@ namespace icl{
       /// utitlity function
       CompabilityLabel *lab() { return **this; }
       
-      FPSEstimator m_oFpsEstimator;
+      utils::FPSEstimator m_oFpsEstimator;
     };
   
    

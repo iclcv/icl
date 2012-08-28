@@ -65,7 +65,7 @@ namespace icl{
           much less resolution 
           
       **/
-      Parable(Point32f p1,Point32f p2,Point32f p3){
+      Parable(utils::Point32f p1,utils::Point32f p2,utils::Point32f p3){
         p1.x+=0.00000001; // avoid numerical problems
         p2.x+=0.00000002;
         p3.x+=0.00000003;

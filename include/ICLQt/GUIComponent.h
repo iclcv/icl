@@ -246,8 +246,6 @@ namespace icl{
         return str.str();
       }
     };
-  
-      
   } // namespace qt
 }
 

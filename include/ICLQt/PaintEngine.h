@@ -43,12 +43,11 @@
 #include <QtGui/QImage>
 
 namespace icl{
+  /** \cond */
+  namespace core{ class ImgBase; }
+  /** \endcond */
+
   namespace qt{
-  
-    /** \cond */
-    class ImgBase;
-    /** \endcond */  
-    
     /// pure virtual Paint engine interface \ingroup UNCOMMON
     class PaintEngine{
       public:
@@ -66,8 +65,10 @@ namespace icl{
       virtual void pointsize(float s)=0;
       virtual void line(const utils::Point32f &a, const utils::Point32f &b)=0;
       virtual void point(const utils::Point32f &p)=0;
-      virtual void image(const utils::Rect32f &r,core::ImgBase *image, AlignMode mode = Justify, scalemode sm=interpolateNN)=0;
-      virtual void image(const utils::Rect32f &r,const QImage &image, AlignMode mode = Justify, scalemode sm=interpolateNN)=0;
+      virtual void image(const utils::Rect32f &r,core::ImgBase *image, AlignMode mode = Justify, 
+                         core::scalemode sm=core::interpolateNN)=0;
+      virtual void image(const utils::Rect32f &r,const QImage &image, AlignMode mode = Justify, 
+                         core::scalemode sm=core::interpolateNN)=0;
       virtual void rect(const utils::Rect32f &r)=0;
       virtual void triangle(const utils::Point32f &a, const utils::Point32f &b, const utils::Point32f &c)=0;
       virtual void quad(const utils::Point32f &a, const utils::Point32f &b, const utils::Point32f &c, const utils::Point32f &d)=0;
