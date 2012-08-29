@@ -66,7 +66,7 @@ namespace icl{
       /// defines how to detect markers from a given image
       /** In this case, regions are detected using the internal region detector.
           The regions are then passed to the other detect method */
-      virtual void detect(std::vector<FiducialImpl*> &dst, const Img8u &image);
+      virtual void detect(std::vector<FiducialImpl*> &dst, const core::Img8u &image);
   
       /// defines how to find makers in the given vector of regions
       virtual void detect(std::vector<FiducialImpl*> &dst, const std::vector<ImageRegion> &regions) = 0;

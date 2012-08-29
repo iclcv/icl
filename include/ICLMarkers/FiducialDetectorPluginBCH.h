@@ -64,7 +64,7 @@ namespace icl{
       /// loads markers ID's
       /** @param def this any instance can be ...
           * of type int (then, only the corresponding marker ID is loaded) 
-          * of type Range32s "[a,b]", (then all markers within the range are loaded)
+          * of type utils::Range32s "[a,b]", (then all markers within the range are loaded)
           * of something like {a,b,c,d,...} then all marker IDs in the list are loaded
   
           Please note that other types might be interpreted in the wrong way.
@@ -77,14 +77,14 @@ namespace icl{
       void prepareForPatchClassification();
   
       /// Identifies the given image patch using bch decoding
-      virtual FiducialImpl *classifyPatch(const Img8u &image, int *rot, bool returnRejectedQuads, ImageRegion r);
+      virtual FiducialImpl *classifyPatch(const core::Img8u &image, int *rot, bool returnRejectedQuads, ImageRegion r);
   
       /// describes the marker rectification parameters
-      virtual void getQuadRectificationParameters(Size &markerSizeWithBorder,
-                                                  Size &markerSizeWithoutBorder);        
+      virtual void getQuadRectificationParameters(utils::Size &markerSizeWithBorder,
+                                                  utils::Size &markerSizeWithoutBorder);        
   
       /// creates bch marker image
-      virtual Img8u createMarker(const Any &whichOne,const Size &size, const ParamList &params);
+      virtual core::Img8u createMarker(const Any &whichOne,const utils::Size &size, const ParamList &params);
   
     };
   } // namespace markers

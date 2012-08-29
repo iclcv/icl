@@ -45,7 +45,7 @@ namespace icl{
         If this behaviour is disabled, the given points are not checked for their correct order. */
     template<class T>
     class ImageRectification{
-      Img<T> buffer; //!< internal image buffer
+      core::Img<T> buffer; //!< internal image buffer
       bool validateAndSortPoints; //!< internal flag
       
       public:
@@ -54,7 +54,7 @@ namespace icl{
       ImageRectification(bool validateAndSortPoints=true):validateAndSortPoints(validateAndSortPoints){}
       
       /** \cond  this method is not implemented yet!*/
-      const Img<T> &apply(const FixedMatrix<float,3,3> &transform, const Img<T> &src, const Size &resultSize);
+      const core::Img<T> &apply(constmath::FixedMatrix<float,3,3> &transform, const core::Img<T> &src, const utils::Size &resultSize);
       /** \endcond */
       
       /// applies the image rectification from given source image quadrangle into a rectangular image
@@ -76,11 +76,11 @@ namespace icl{
           @param resultROI if this parameter is given, the final homography is only evaluated within
                            the resulting images ROI
           */
-      const Img<T> &apply(const Point32f ps[4], const Img<T> &src,
-                          const Size &resultSize, FixedMatrix<float,3,3> *hom=0,
-                          FixedMatrix<float,2,2> *Q=0, FixedMatrix<float,2,2> *R=0,
+      const core::Img<T> &apply(const utils::Point32f ps[4], const core::Img<T> &src,
+                          const utils::Size &resultSize,math::FixedMatrix<float,3,3> *hom=0,
+                         math::FixedMatrix<float,2,2> *Q=0,math::FixedMatrix<float,2,2> *R=0,
                           float maxTilt=0, bool advanedAlgorithm=true, 
-                          const Rect *resultROI=0);
+                          const utils::Rect *resultROI=0);
   
   
       //    TODO: use result roi in order to speed up

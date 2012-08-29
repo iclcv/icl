@@ -76,7 +76,7 @@ namespace icl{
   
     /// Main class for BCH encoding/decoding
     /** Due to some internal buffers, this must be implemented as a class */
-    class BCHCoder : public Uncopyable{
+    class BCHCoder : public utils::Uncopyable{
       class Impl; //!< internal implementation structure
       Impl *impl; //!< implementation pointer
       
@@ -95,10 +95,10 @@ namespace icl{
           @param border amount of border pixels (here, we use the unit of marker pixels,
           the maker code is always 6x6 marker pixels)
           @param resultSize first a (2*border+6)x(2*border+6) image of the marker is created.
-          Then it is upscaled to the given Size using nearest neighbour interpolation.
+          Then it is upscaled to the given utils::Size using nearest neighbour interpolation.
           If resultSize is null, the (2*border+6)x(2*border+6) image is returned
           directly without upscaling */
-      static Img8u createMarkerImage(int idx, int border=2, const Size &resultSize=Size::null);
+      static core::Img8u createMarkerImage(int idx, int border=2, const utils::Size &resultSize=utils::Size::null);
   
       /// interpretes the given 36Bit as 6x6 image and rotates it by clock wise by 90 degree
       static BCHCode rotateCode(const BCHCode &in);
@@ -133,10 +133,10 @@ namespace icl{
       /// decodes given (correctly oriented) byte image patch
       DecodedBCHCode decode(const icl8u data[36]);
       
-      /// decodes given (correctly oriented) Img8u (optionally using its ROI or not)
-      DecodedBCHCode decode(const Img8u &image, bool useROI=true) throw (ICLException);
+      /// decodes given (correctly oriented) core::Img8u (optionally using its ROI or not)
+      DecodedBCHCode decode(const core::Img8u &image, bool useROI=true) throw (utils::ICLException);
       
-      /// decodes given Img8u (optionally using its ROI or not)
+      /// decodes given core::Img8u (optionally using its ROI or not)
       /** Internally, this methods checks for all 4 possible image rotations and returns
           the most plausible result.
           
@@ -152,7 +152,7 @@ namespace icl{
           
           <b>please note</b> that it's best to use the first N IDs if you want to use N markers
           */
-      DecodedBCHCode2D decode2D(const Img8u &image, int maxID=4095, bool useROI=true) throw (ICLException);
+      DecodedBCHCode2D decode2D(const core::Img8u &image, int maxID=4095, bool useROI=true) throw (utils::ICLException);
       
     };
   } // namespace markers

@@ -97,11 +97,11 @@ namespace icl{
         inline KeyPoint(){}
         
         /// Special constructor with given params
-        inline KeyPoint(const Point32f &imagePos, const Point32f &markerPos, int ID):
+        inline KeyPoint(const utils::Point32f &imagePos, const utils::Point32f &markerPos, int ID):
         imagePos(imagePos),markerPos(markerPos),ID(ID){}
   
-        Point32f imagePos;  //!< key point in image space
-        Point32f markerPos; //!< key point in marker space
+        utils::Point32f imagePos;  //!< key point in image space
+        utils::Point32f markerPos; //!< key point in marker space
         int ID;             //!< key point ID
       };
       
@@ -118,28 +118,28 @@ namespace icl{
       bool supports(Feature f) const;
       
       /// returns the marker'S center in the image
-      const Point32f &getCenter2D() const;
+      const utils::Point32f &getCenter2D() const;
       
       /// retrurs the marker's rotation in the image plain
       const float &getRotation2D() const;
       
       /// returns the markers corners
-      const std::vector<Point32f> &getCorners2D() const;
+      const std::vector<utils::Point32f> &getCorners2D() const;
   
       /// returns key points in the marker
       const std::vector<KeyPoint> &getKeyPoints2D() const;
   
       /// returns the associated image region
-      const icl::ImageRegion getImageRegion() const;
+      const cv::ImageRegion getImageRegion() const;
   
       /// returns the markers
-      const Vec &getCenter3D() const;
+      const geom::Vec &getCenter3D() const;
       
       /// returns the markers
-      const Vec &getRotation3D() const;
+      const geom::Vec &getRotation3D() const;
       
       /// returns the markers
-      const Mat &getPose3D() const;    
+      const geom::Mat &getPose3D() const;    
   
       /// returns whether is marker has been initialized
       inline operator bool() const { return impl; }

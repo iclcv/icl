@@ -34,8 +34,8 @@
 
 #pragma once
 
-#include <ICLUtils/Configurable.h>
-#include <ICLUtils/Uncopyable.h>
+#include <ICLUtils/utils::Configurable.h>
+#include <ICLUtils/utils::Uncopyable.h>
 #include <ICLCore/ImgBase.h>
 
 #include <ICLMarkers/TiltedQuad.h>
@@ -54,13 +54,13 @@ namespace icl{
         operations with an icl::RegionDetector based search for
         regions with 4 corners.
         
-        \section CONF Configurable interface
+        \section CONF utils::Configurable interface
         The QuadDetector forwards the local-threshold and the 
         RegionDetector options. It also adds some extra properties
         for the post-processing the local-threshold result image before
         it's passed to the region detector internally
     */
-    class QuadDetector : public Configurable, public Uncopyable{
+    class QuadDetector : public utils::Configurable, public utils::Uncopyable{
       
       /// Internal Data class
       class Data;
@@ -93,10 +93,10 @@ namespace icl{
       /** This method first applys a local threshold to the given input image, 
           which results in a binary icl8u-image. This image is then optionally
           processed by a median and/or by some morphological operations */
-      const std::vector<TiltedQuad> &detect(const ImgBase *image);
+      const std::vector<TiltedQuad> &detect(const core::ImgBase *image);
   
       /// returns the last binary image that was produced internally
-      const Img8u &getLastBinaryImage() const;
+      const core::Img8u &getLastBinaryImage() const;
     };
     
     

@@ -82,17 +82,17 @@ namespace icl{
       virtual void addOrRemoveMarkers(bool add, const Any &which, const ParamList &params);
   
       /// Identifies the given image patch using bch decoding
-      virtual FiducialImpl *classifyPatch(const Img8u &image, int *rot, bool returnRejectedQuads,ImageRegion r);
+      virtual FiducialImpl *classifyPatch(const core::Img8u &image, int *rot, bool returnRejectedQuads,ImageRegion r);
       
       /// this method is reimplemented here; it returns the impl's file-basename
       std::string getName(const FiducialImpl *impl);
   
       /// describes the special marker image rectificatio parameters
-      virtual void getQuadRectificationParameters(Size &markerSizeWithBorder,
-                                                  Size &markerSizeWithoutBorder);
+      virtual void getQuadRectificationParameters(utils::Size &markerSizeWithBorder,
+                                                  utils::Size &markerSizeWithoutBorder);
   
       /// creates marker image from given parameters (see FiducialDetector for more details)
-      virtual Img8u createMarker(const Any &whichOne,const Size &size, const ParamList &params);
+      virtual core::Img8u createMarker(const Any &whichOne,const utils::Size &size, const ParamList &params);
     };
   } // namespace markers
 }

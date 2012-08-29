@@ -42,6 +42,9 @@
 
 #include <ICLMarkers/BCHCode.h>
 
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
 
 
 namespace icl {

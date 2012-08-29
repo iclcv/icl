@@ -79,19 +79,19 @@ namespace icl{
     struct MarkerMetricsICL1 : public MarkerCodeICL1 {
   
       /// real dimension of the root region
-      Size32f root;
+      utils::Size32f root;
       
       /// child region struct
-      struct CR : public Rect32f{
+      struct CR : public utils::Rect32f{
         /// list of child child regions
-        std::vector<Rect32f> ccrs;
+        std::vector<utils::Rect32f> ccrs;
       };
       
       /// child regions
       CR crs[4];
       
       /// creates a metric instance from given code and real size in mm
-      MarkerMetricsICL1(const MarkerCodeICL1 &c, const Size32f &markerSizeMM);
+      MarkerMetricsICL1(const MarkerCodeICL1 &c, const utils::Size32f &markerSizeMM);
       
     };
     

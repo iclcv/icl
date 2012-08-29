@@ -35,6 +35,11 @@
 #include <ICLMarkers/FiducialImpl.h>
 #include <ICLMarkers/FiducialDetectorPlugin.h>
 
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::geom;
+using namespace icl::cv;
+
 namespace icl{
   namespace markers{
   

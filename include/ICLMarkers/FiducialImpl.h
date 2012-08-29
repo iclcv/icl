@@ -99,18 +99,18 @@ namespace icl{
       /// real marker size in millimeters
       /** This information is neccessary for creation of feature points and
           for most 3D pose detection stuff */
-      Size32f realSizeMM;
+      utils::Size32f realSizeMM;
   
       /// most plugins can provide an image region
-      ImageRegion imageRegion;
+      cv::ImageRegion imageRegion;
       
       /// set of 2D features
       /* this pointer and its members <b>can</b> be instantiated by 
           parent FiduicalDetectorImpl instance */
       struct Info2D{
-        Point32f infoCenter;
+        utils::Point32f infoCenter;
         float infoRotation;
-        std::vector<Point32f> infoCorners;
+        std::vector<utils::Point32f> infoCorners;
         std::vector<Fiducial::KeyPoint> infoKeyPoints;
       } *info2D;
   
@@ -118,9 +118,9 @@ namespace icl{
       /* this pointer and its members <b>can</b> be instantiated by 
           parent FiduicalDetectorImpl instance */
       struct Info3D{
-        Vec infoCenter;
-        Vec infoRotation;
-        Mat infoPose;
+        geom::Vec infoCenter;
+        geom::Vec infoRotation;
+        geom::Mat infoPose;
       } *info3D;
   
       /// base constructor initializing index with -1 and all other stuff with 0
@@ -131,7 +131,7 @@ namespace icl{
                           Fiducial::FeatureSet supported,
                           Fiducial::FeatureSet computed,
                           int id, int index,
-                          const Size32f &realSizeMM):
+                          const utils::Size32f &realSizeMM):
         parent(parent),supported(supported),
         computed(computed),id(id),index(index),
         realSizeMM(realSizeMM),info2D(0),info3D(0){}

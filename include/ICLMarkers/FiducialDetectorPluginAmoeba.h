@@ -58,7 +58,7 @@ namespace icl{
       
       /// this is the only feature that is computed in a deferred way
       /** Returns the region boundary */
-      virtual void getCorners2D(std::vector<Point32f> &dst, FiducialImpl &impl);
+      virtual void getCorners2D(std::vector<utils::Point32f> &dst, FiducialImpl &impl);
   
       /// deferred rotation calculation
       virtual void getRotation2D(float &dst, FiducialImpl &impl);

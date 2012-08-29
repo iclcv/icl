@@ -115,7 +115,7 @@
     We did not speed up the algorithms using multithreading techniques since usually
     the provided methods are fast enough using a single thread. "Fast enough" means, that the
     detection is faster than the amount of data, that is usually provided by common cameras.
-    Perhaps, multithreading will added later as a 'Configurable' property.
+    Perhaps, multithreading will added later as a 'utils::Configurable' property.
 
     \section EX Example
 
@@ -152,7 +152,7 @@ void run(){
   static DrawHandle draw = gui["draw"];
 
   // grab the next image
-  const ImgBase *image = grabber.grab();
+  const core::ImgBase *image = grabber.grab();
     
   // detect markers
   const std::vector<Fiducial> &fids = fid.detect(image);
@@ -163,13 +163,13 @@ void run(){
   // draw marker detection results
   draw->linewidth(2);
   for(unsigned int i=0;i<fids.size();++i){
-    Point32f c = fids[i].getCenter2D();
+    utils::Point32f c = fids[i].getCenter2D();
     float rot = fids[i].getRotation2D();
     
     draw->color(0,100,255,255);
     draw->text(fids[i].getName(),c.x,c.y,10);
     draw->color(0,255,0,255);
-    draw->line(c,c+Point32f( cos(rot), sin(rot))*100 );
+    draw->line(c,c+utils::Point32f( cos(rot), sin(rot))*100 );
 
     draw->color(255,0,0,255);
     draw->linestrip(fids[i].getCorners2D());

@@ -50,7 +50,7 @@ namespace icl{
     class TiltedQuad{
       
       /// list of points (usually sorted in clock-wise order)
-      Point32f ps[4];
+      utils::Point32f ps[4];
       
       /// associated image region
       ImageRegion region;
@@ -61,22 +61,22 @@ namespace icl{
       inline TiltedQuad():region(0){}
       
       /// creates a TiltedQuad instance with given 4 corners and given ImageRegion
-      inline TiltedQuad(const Point32f &a, const Point32f &b, 
-                        const Point32f &c, const Point32f &d, 
+      inline TiltedQuad(const utils::Point32f &a, const utils::Point32f &b, 
+                        const utils::Point32f &c, const utils::Point32f &d, 
                         const ImageRegion r): region(r){
         ps[0]=a; ps[1]=b; ps[2]=c; ps[3]=d; 
       }
       
       /// creates a TiltedQuad instance with given 4D array of points and image region
-      inline TiltedQuad(const Point32f *ps, ImageRegion r): region(r){
+      inline TiltedQuad(const utils::Point32f *ps, ImageRegion r): region(r){
         std::copy(ps,ps+4,this->ps);
       }
         
       /// accesses the i-th corner point
-      inline Point32f &operator[](int i){ return ps[i]; }
+      inline utils::Point32f &operator[](int i){ return ps[i]; }
         
       /// accesses the i-th corner point (const)
-      inline const Point32f &operator[](int i) const{ return ps[i]; }
+      inline const utils::Point32f &operator[](int i) const{ return ps[i]; }
       
       /// returns the associated image region (always const)
       ImageRegion getRegion() const { return region; }
@@ -87,8 +87,8 @@ namespace icl{
       /// returns whether the image region had been set before
       operator bool() const { return region; }
       
-      /// returns the internal Point-data pointer
-      const Point32f *data() const { return ps; }
+      /// returns the internal utils::Point-data pointer
+      const utils::Point32f *data() const { return ps; }
     };
   } // namespace markers
 }

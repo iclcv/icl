@@ -49,14 +49,14 @@ namespace icl{
   namespace markers{
     
     /// Generic Interface class for FiducialDetector plugins \ingroup PLUGINS
-    struct FiducialDetectorPlugin : public Configurable{
+    struct FiducialDetectorPlugin : public utils::Configurable{
       /// Camera structure for 3D feature estimation
       /** The actual camera instance is managed by the parent
           FiducialDetector instance */
-      Camera *camera;
+      geom::Camera *camera;
   
       /// for 3D pose estimation
-      CoplanarPointPoseEstimator poseEst;
+      geom::CoplanarPointPoseEstimator poseEst;
           
       
       /// initializes the plugin with a 0-camera
@@ -73,7 +73,7 @@ namespace icl{
           wrapper (that wraps the FiducialImpl) will simple return the already available
           result from the corresponding FiducialImpl's info structure
       */
-      virtual void getCenter2D(Point32f &dst, FiducialImpl &impl);
+      virtual void getCenter2D(utils::Point32f &dst, FiducialImpl &impl);
       
       /// returns how to compute the markers 2D rotation
       virtual void getRotation2D(float &dst, FiducialImpl &impl);
@@ -81,7 +81,7 @@ namespace icl{
       /// returns how to compute the markers 2D corners (or significant points on its edges
       /** The corners can also be whole line-strips, usually, these are used for visualization
           only */
-      virtual void getCorners2D(std::vector<Point32f> &dst, FiducialImpl &impl);
+      virtual void getCorners2D(std::vector<utils::Point32f> &dst, FiducialImpl &impl);
       
       /// returns how to compute a list of image-position/marker-position correspondences
       /** The 2D-keypoints are the most common information that is use to compute a markers
@@ -96,7 +96,7 @@ namespace icl{
           Note: 3D information are usually only available if a camera was given to the parent
           FiducialDetector class
       */
-      virtual void getCenter3D(Vec &dst, FiducialImpl &impl);
+      virtual void getCenter3D(geom::Vec &dst, FiducialImpl &impl);
   
       /// computes a markers 3D rotation euler angles
       /** The defalut implementation uses getKeyPoints2D for planar pose estimation.
@@ -105,7 +105,7 @@ namespace icl{
           Note: 3D information are usually only available if a camera was given to the parent
           FiducialDetector class
       */
-      virtual void getRotation3D(Vec &dst, FiducialImpl &impl);
+      virtual void getRotation3D(geom::Vec &dst, FiducialImpl &impl);
   
       /// computes a markers 3D position and rotation euler angles
       /** The defalut implementation uses getKeyPoints2D for planar pose estimation.
@@ -114,7 +114,7 @@ namespace icl{
           Note: 3D information are usually only available if a camera was given to the parent
           FiducialDetector class
       */
-      virtual void getPose3D(Mat &dst, FiducialImpl &impl);
+      virtual void getPose3D(geom::Mat &dst, FiducialImpl &impl);
       
       /// Enumeration for differnt source image types
       enum SourceImageType{
@@ -132,10 +132,10 @@ namespace icl{
       virtual void getFeatures(Fiducial::FeatureSet &dst)=0;
       
       /// defines how to detect markers from a given image
-      virtual void detect(std::vector<FiducialImpl*> &dst, const Img8u &image)=0;
+      virtual void detect(std::vector<FiducialImpl*> &dst, const core::Img8u &image)=0;
       
       /// defines how to load/remove marker definitions
-      virtual void addOrRemoveMarkers(bool add, const Any &which, const ParamList &params)=0;
+      virtual void addOrRemoveMarkers(bool add, const utils::Any &which, const utils::ParamList &params)=0;
   
       /// creates a human readable name for the given impl
       /** Per default, this returns a string repesentation of the FiducialImpl's id */
@@ -153,19 +153,19 @@ namespace icl{
           intermediate images with names "input" and "pp" must not be checked here. But in
           turn, these two names must not be used for intermediate image names in the
           plugin implementation */
-      virtual const ImgBase *getIntermediateImage(const std::string &name) const throw (ICLException){
-        throw ICLException("FiducialDetectorPlugin: no intermediate image is associated with givne name '" + name + "'");
+      virtual const core::ImgBase *getIntermediateImage(const std::string &name) const throw (utils::ICLException){
+        throw utils::ICLException("FiducialDetectorPlugin: no intermediate image is associated with givne name '" + name + "'");
         return 0;
       }
       
       /// parses an any instance that is either an int-value, or a range or a list of int-values
-      /** The format is "int" | or "{int,int,int}" etc. or "[min,max]" */
-      static std::vector<int> parse_list_str(const Any &s);
+      /** The core::format is "int" | or "{int,int,int}" etc. or "[min,max]" */
+      static std::vector<int> parse_list_str(const utils::Any &s);
       
       /// interface for creating an image of a specific marker
-      virtual Img8u createMarker(const Any&,const Size &, const ParamList &){
-        throw ICLException("FiducialDetectorPlugin::createMarker seems to be not implemented for this marker type");
-        return Img8u();
+      virtual core::Img8u createMarker(const utils::Any&,const utils::Size &, const utils::ParamList &){
+        throw utils::ICLException("FiducialDetectorPlugin::createMarker seems to be not implemented for this marker type");
+        return core::Img8u();
       }
   
     };

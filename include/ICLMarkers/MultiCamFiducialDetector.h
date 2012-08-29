@@ -35,7 +35,7 @@
 #pragma once
 
 #include <ICLMarkers/MultiCamFiducial.h>
-#include <ICLUtils/Configurable.h>
+#include <ICLUtils/utils::Configurable.h>
 
 
 namespace icl{
@@ -63,7 +63,7 @@ namespace icl{
         @see MultiCamFiducial
         @see FiducialDetector
     */
-    class MultiCamFiducialDetector : public Configurable{
+    class MultiCamFiducialDetector : public utils::Configurable{
       struct Data;  //!< internal data structure
       Data *m_data; //!< internal data pointer
       
@@ -82,7 +82,7 @@ namespace icl{
                                const ParamList &params,
                                const std::vector<Camera*> &cams,
                                bool syncProperties=true,
-                               bool deepCopyCams=false) throw (ICLException);
+                               bool deepCopyCams=false) throw (utils::ICLException);
   
       /// (re-)initializes the detector with given parameters
       /** @param pluginType this option directly passed to all internal 2D FiducialDetector instances
@@ -103,13 +103,13 @@ namespace icl{
                 const ParamList &params,
                 const std::vector<Camera*> &cams,
                 bool syncProperties=true,
-                bool deepCopyCams=false) throw (ICLException);
+                bool deepCopyCams=false) throw (utils::ICLException);
       
       
       /// detects fiducials in all images and returns the combined results
       /** Please note, that images[i] must correspond to cams[i] in the constructor/init method*/
-      const std::vector<MultiCamFiducial> &detect(const std::vector<ImgBase*> &images, 
-                                                  int minCamsFound=1) throw (ICLException);
+      const std::vector<MultiCamFiducial> &detect(const std::vector<core::ImgBase*> &images, 
+                                                  int minCamsFound=1) throw (utils::ICLException);
       
       /// returns the internal number of cameras
       int getNumCameras() const;
@@ -121,7 +121,7 @@ namespace icl{
       FiducialDetector &getFiducialDetector(int idx);
       
       /// loads additional markers (passed to all 2D detectors)
-      void loadMarkers(const Any &which, const ParamList &params) throw (ICLException);
+      void loadMarkers(const Any &which, const ParamList &params) throw (utils::ICLException);
   
       /// unloads markers (passed to all 2D detectors)
       void unloadMarkers(const Any &which);
@@ -146,7 +146,7 @@ namespace icl{
       std::string getIntermediateImageNames() const;
       
       /// returns a named intermeted image
-      const ImgBase *getIntermediateImage(const std::string &name) const throw (ICLException);
+      const core::ImgBase *getIntermediateImage(const std::string &name) const throw (utils::ICLException);
       
       /// extract the current camera from the given intermediate image name
       static int getCameraIDFromIntermediteImageName(const std::string &name);

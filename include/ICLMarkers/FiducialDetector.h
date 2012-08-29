@@ -48,7 +48,7 @@ namespace icl{
   namespace markers{
     
     /// Main Fiducial Detector class
-    class FiducialDetector : public Uncopyable, public Configurable{
+    class FiducialDetector : public utils::Uncopyable, public utils::Configurable{
       
       /// hidden data class
       struct Data;
@@ -99,9 +99,9 @@ namespace icl{
           TODO
       */
       FiducialDetector(const std::string &plugin="bch", 
-                       const Any &markersToLoad=Any(),
-                       const ParamList &params=ParamList(),
-                       const Camera *camera=0) throw (ICLException);
+                       const utils::Any &markersToLoad=utils::Any(),
+                       const utils::ParamList &params=utils::ParamList(),
+                       const geom::Camera *camera=0) throw (utils::ICLException);
   
       /// Destructor
       virtual ~FiducialDetector();
@@ -114,10 +114,10 @@ namespace icl{
           information. After setting a camera, some already existent
           Fiducials might become out of date. Therefore, detect
           must be called again when the camera was changed. */
-      void setCamera(const Camera &camera);
+      void setCamera(const geom::Camera &camera);
       
       /// returns the current camera (or throws an exception if no camera is available)
-      const Camera &getCamera() const throw (ICLException);
+      const geom::Camera &getCamera() const throw (utils::ICLException);
       
       /// loads markers according to the current plugin type
       /** - "bch":\n
@@ -127,7 +127,7 @@ namespace icl{
             Please note that angular braces define a range, while curly
             braces define a list here.\n
             Artoolkit markers need extra param in the param list which is the real marker size (in mm)
-            An example param list is <tt>ParamList("size",Size(50,50));</tt>
+            An example param list is <tt>ParamList("size",utils::Size(50,50));</tt>
           - "art":\n
             here, an image file-name or file-pattern is required. This image is automatically
             converted into an appropriate matching representation
@@ -146,20 +146,20 @@ namespace icl{
             add all markers. Actually if you load a marker ID x, also the inverted marker
             (that has a white root-region) with ID -x is added.
       */
-      void loadMarkers(const Any &which, const ParamList &params=ParamList()) throw (ICLException);
+      void loadMarkers(const utils::Any &which, const utils::ParamList &params=utils::ParamList()) throw (utils::ICLException);
   
       
       /// unloads all already defined markers
       /** usually, markers are unloaded with the same pattern that was
           also used for loading the markers before */
-      void unloadMarkers(const Any &which);
+      void unloadMarkers(const utils::Any &which);
    
       /// detects markers in the given and returns all found markers
-      /** Please note, the preferred input format is Img8u. Other formats
+      /** Please note, the preferred input core::format is core::Img8u. Other formats
           are converted to depth8u internally. Usually, your 
           plugin will use gray images as input. You can query this information
           by calling getPropertyValue("preferred image type") */
-      const std::vector<Fiducial> &detect(const ImgBase *image) throw (ICLException);
+      const std::vector<Fiducial> &detect(const core::ImgBase *image) throw (utils::ICLException);
       
       /// returns the list of supported features
       Fiducial::FeatureSet getFeatures() const;
@@ -175,7 +175,7 @@ namespace icl{
       /** If no image is associated with this name, an exception is thrown. Note,
           the image might be associated, but still be null, in particular if detect
           was not called one before */
-      const ImgBase *getIntermediateImage(const std::string &name) const throw (ICLException);
+      const core::ImgBase *getIntermediateImage(const std::string &name) const throw (utils::ICLException);
       
       
       /// creates an image of a given markers
@@ -201,7 +201,7 @@ namespace icl{
           * <b>icl1</b> does not need extra parameters
           * <b>amoeba</b> is not supported
       */
-      Img8u createMarker(const Any &whichOne,const Size &size, const ParamList &params);
+      core::Img8u createMarker(const utils::Any &whichOne,const utils::Size &size, const utils::ParamList &params);
     };
     
   } // namespace markers
