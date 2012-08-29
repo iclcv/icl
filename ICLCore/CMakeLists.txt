@@ -70,7 +70,6 @@ add_gtest (${PROJECT_NAME} "converter-test" "${CONDITIONLIST}" ICLLibsToLinkAgai
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_OPENGL_COND)
 set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}" ICLQt)
 add_example (${PROJECT_NAME} "colorspace-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}" ICLCV)
 add_example (${PROJECT_NAME} "pseudo-color-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 

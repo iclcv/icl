@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLCV/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLFilter/BinaryArithmeticalOp.h>
 #include <ICLFilter/BinaryCompareOp.h>
 

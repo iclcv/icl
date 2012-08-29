@@ -41,6 +41,9 @@
 #include <ICLMarkers/Fiducial.h>
 #include <bitset>
 
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
 
 namespace icl{
   namespace markers{

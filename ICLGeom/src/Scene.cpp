@@ -48,7 +48,7 @@
 #endif
 
 
-#include <ICLCV/Quick.h>
+#include <ICLQt/Quick.h>
 #include <ICLGeom/GeomDefs.h>
 #include <ICLUtils/StringUtils.h>
 

@@ -35,6 +35,11 @@
 #include <ICLMarkers/TwoLevelRegionStructure.h>
 #include <ICLCV/ImageRegion.h>
 
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
+using namespace icl::cv;
+
 namespace icl{
   namespace markers{
     TwoLevelRegionStructure::TwoLevelRegionStructure(const std::string &code) throw (ICLException) : color(0), code(code){

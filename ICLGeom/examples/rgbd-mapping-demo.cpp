@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLCV/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLGeom/Geom.h>
 #ifdef HAVE_PCL
 #include <ICLGeom/PCLPointCloudObject.h>

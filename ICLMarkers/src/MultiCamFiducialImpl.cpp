@@ -35,6 +35,11 @@
 #include <ICLMarkers/MultiCamFiducialImpl.h>
 #include <ICLGeom/PoseEstimator.h>
 
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
+using namespace icl::geom;
+
 namespace icl{
   namespace markers{
     MultiCamFiducialImpl::MultiCamFiducialImpl(){}

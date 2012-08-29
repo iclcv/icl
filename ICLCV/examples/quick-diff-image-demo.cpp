@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLCV/Common.h>
+#include <ICLQt/Common.h>
 
 GUI gui;
 GenericGrabber grabber;

@@ -33,8 +33,8 @@
 *********************************************************************/
 
 #include <ICLMath/LLM.h>
-#include <ICLCV/Common.h>
-#include <ICLCore/Mathematics.h>
+#include <ICLQt/Common.h>
+#include <ICLUtils/Random.h>
 
 static LLM llm(1,1);
 static const float MINX = 0;
@@ -87,7 +87,7 @@ void run(){
     int I = 1000;
     float mse = 0;
     for(int i=0;i<I;i++){
-      float x = icl::random(MINX,MAXX);
+      float x = utils::random(MINX,MAXX);
       float y = func(x);
       llm.train(&x,&y,LLM::TRAIN_ALL);
       mse += pow((*llm.apply(&x))-(y),2);

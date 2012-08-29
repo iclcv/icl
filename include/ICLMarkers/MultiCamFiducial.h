@@ -90,25 +90,25 @@ namespace icl{
       /// returns the idx-th associated camera
       /** Note, the camera can also be accessed from the
           idx-th Fiducial*/
-      Camera &getCamera(int idx);
+      geom::Camera &getCamera(int idx);
       
       /// returns the idx-th associated camera (const version)
-      const Camera &getCamera(int idx) const;
+      const geom::Camera &getCamera(int idx) const;
       
       /// returns the associated marker ID
       int getID() const;
       
       /// returns the 3D center of the marker
       /** @see \ref __3D_EST__ */
-      const FixedColVector<float,3> &getCenter3D() const;
+      const math::FixedColVector<float,3> &getCenter3D() const;
       
       /// returns the 3D orientation of the marker
       /** @see \ref __3D_EST__ */
-      const FixedColVector<float,3> &getOrientation3D() const;
+      const math::FixedColVector<float,3> &getOrientation3D() const;
       
       /// returns the 6D-pose (in shape of a homogeneous transform) of the marker
       /** @see \ref __3D_EST__ */
-      const Mat &getPose3D() const;
+      const geom::Mat &getPose3D() const;
     };
   
   } // namespace markers

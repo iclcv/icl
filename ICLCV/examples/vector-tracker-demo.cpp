@@ -32,10 +32,10 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLCV/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLUtils/FPSEstimator.h>
+#include <ICLUtils/Random.h>
 #include <ICLCV/RegionDetector.h>
-#include <ICLCore/Mathematics.h>
 #include <ICLUtils/Lockable.h>
 #include <ICLCV/VectorTracker.h>
 
@@ -131,7 +131,7 @@ struct InputGrabber : public MouseHandler, public Grabber, public Lockable {
  
   
   InputGrabber(unsigned int nBlobs=10){
-    randomSeed();
+    utils::randomSeed();
     useDesired(Size::VGA);
     image.setSize(Size::VGA);
 

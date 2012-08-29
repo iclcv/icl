@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLMath/LLM.h>
-#include <ICLCV/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLCore/Mathematics.h>
 
 

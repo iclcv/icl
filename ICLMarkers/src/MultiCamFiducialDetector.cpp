@@ -35,6 +35,11 @@
 #include <ICLMarkers/MultiCamFiducialDetector.h>
 #include <ICLMarkers/MultiCamFiducialImpl.h>
 
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
+using namespace icl::geom;
+
 namespace icl{
   namespace markers{
   

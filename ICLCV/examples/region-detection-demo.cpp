@@ -31,7 +31,7 @@
 ** Excellence Initiative.                                          **
 **                                                                 **
 *********************************************************************/
-#include <ICLCV/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLCV/RegionDetector.h>
 #include <ICLFilter/ColorDistanceOp.h>
 

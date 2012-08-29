@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLCV/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLGeom/Geom.h>
 
 GUI gui;
@@ -41,7 +41,7 @@ Scene scene;
 float cubep[] = {0,0,0,7};
 struct TextureCube : public SceneObject{
   TextureCube():SceneObject("cube",cubep){
-    Img8u image = cvt8u(icl::scale(create("lena"),300,300));
+    Img8u image = cvt8u(icl::qt::scale(create("lena"),300,300));
     
 #if DO_NOT_USE_SHARED_TEXTURE
     addTexture(0,1,2,3,&image,0,0,0,0);

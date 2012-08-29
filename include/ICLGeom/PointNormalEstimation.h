@@ -34,8 +34,8 @@
 
 #pragma once
 
-#include <ICLCV/Quick.h>
 #include <ICLGeom/GeomDefs.h>
+#include <ICLCore/Img.h>
 
 #ifdef HAVE_OPENCL    
 #include <CL/cl.hpp>

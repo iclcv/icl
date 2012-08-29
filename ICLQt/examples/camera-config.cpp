@@ -39,7 +39,9 @@
 
 #include <sstream>
 
-using namespace icl;
+using namespace icl::utils;
+using namespace icl::io;
+using namespace icl::qt;
 using namespace std;
 
 int main(int n, char **ppc){

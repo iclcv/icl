@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLCV/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLCV/GenericSurfDetector.h>
 
 using namespace icl;
@@ -226,13 +226,19 @@ void run(){
 
   if(sf_handle.isChecked()){
     const std::vector<GenericSurfDetector::GenericPoint> features = surf->extractFeatures(image);
-    surf->visualizeFeatures(**draw_image,features);
+    //    surf->visualizeFeatures(**draw_image,features);
+    //VisualizationDescription vis;
+    //surf->visualizualizePoints(features);
+    draw_image->draw(GenericSurfDetector::visualizePoints(features));
   }
   
   if(sm_handle.isChecked()){
     const std::vector<std::pair<GenericSurfDetector::GenericPoint,
     GenericSurfDetector::GenericPoint> > &matches = surf->match(image);
-    surf->visualizeMatches(**draw_object,**draw_result,matches);
+    
+    std::pair<VisualizationDescription,VisualizationDescription> vis = GenericSurfDetector::visualizeMatches(matches);
+    draw_object->draw(vis.first);
+    draw_image->draw(vis.second);
 
     std::vector<Point32f> ps = get_transformed_rect(objRect, matches);
     draw_image->color(0,100,255,255);

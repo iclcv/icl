@@ -36,8 +36,8 @@
 #include <ICLUtils/ProgArg.h>
 
 int main(int n, char **args){
-  icl::painit(n,args,"-src-type|-s(name) -dst-type|-d(mame)");
+  icl::utils::painit(n,args,"-src-type|-s(name) -dst-type|-d(mame)");
   
-  icl::DataStore::list_possible_assignments(icl::pa("-s") ? *icl::pa("-s") : icl::str(""),
-                                            icl::pa("-d") ? *icl::pa("-d") : icl::str("") );
+  icl::qt::DataStore::list_possible_assignments(icl::utils::pa("-s") ? *icl::utils::pa("-s") : icl::utils::str(""),
+                                                icl::utils::pa("-d") ? *icl::utils::pa("-d") : icl::utils::str("") );
 }

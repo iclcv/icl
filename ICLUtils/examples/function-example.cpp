@@ -37,7 +37,9 @@
 #include <algorithm>
 #include <vector>
 
-using namespace icl;
+
+using namespace icl::utils;
+
 void global_foo(){
   std::cout << "void global_foo()" << std::endl;
 }

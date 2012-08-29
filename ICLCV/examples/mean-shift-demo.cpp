@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLCV/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLCV/MeanShiftTracker.h>
 #include <ICLQt/MouseHandler.h>
 

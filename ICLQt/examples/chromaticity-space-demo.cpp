@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLQt/ChromaGUI.h>
-#include <ICLCV/Common.h>
+#include <ICLQt/Common.h>
 
 using namespace icl;
 using namespace std;

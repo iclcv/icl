@@ -35,7 +35,7 @@
 #include <ICLIO/FileGrabber.h>
 #include <ICLIO/FileList.h>
 #include <ICLUtils/File.h>
-#include <ICLCV/Quick.h>
+#include <ICLQt/Quick.h>
 
 #include <ICLMarkers/FiducialDetectorPluginART.h>
 

@@ -34,7 +34,7 @@
 
 #pragma once
 
-#include <ICLCV/Quick.h>
+#include <ICLQt/Quick.h>
 #include <ICLGeom/Geom.h>
 
 #include <ICLGeom/PointNormalEstimation.h>

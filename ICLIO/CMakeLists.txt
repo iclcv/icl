@@ -120,7 +120,7 @@ set(ICLLibsToLinkAgainst ${PROJECT_NAME})
 add_example (${PROJECT_NAME} "jpg2cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "convert" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLCV)
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQt)
 add_example (${PROJECT_NAME} "create" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 set(CONDITIONLIST HAVE_RSB_COND HAVE_PROTOBUF_COND)
 add_example (${PROJECT_NAME} "rsb-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
@@ -134,16 +134,16 @@ add_example (${PROJECT_NAME} "reset-dc-bus" "${CONDITIONLIST}" ICLLibsToLinkAgai
 
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_LIBDC_COND HAVE_QT_COND)
-set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLIO ICLQt)
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQt)
 add_example (${PROJECT_NAME} "multi-cam-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 #set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND) should be possible even without GUI
 # Christian: How to make icl-pipe not be built but not link against Qt if this is not available
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)
 if(HAVE_QT_COND)
-  set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLFilter ICLIO ICLQt)
+  set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQt)
 else()
-  set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLFilter ICLIO)
+  set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLCV)
 endif()
 add_example (${PROJECT_NAME} "pipe" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 

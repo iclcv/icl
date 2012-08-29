@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLCV/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLCV/RegionDetector.h>
 #include <ICLUtils/Time.h>
 #include <ICLFilter/MedianOp.h>
@@ -154,7 +154,7 @@ void run(){
     useImage = grabbedImage;
     
     if(levels != 256){
-      reducedLevels = cvt8u(icl::levels(cvt(grabbedImage),levels));
+      reducedLevels = cvt8u(icl::qt::levels(cvt(grabbedImage),levels));
       useImage = &reducedLevels;
     }
 
@@ -178,7 +178,7 @@ void run(){
     rdUpdated = true;
   }else if(lastLevels != levels || ms != lastMedianSize){
     if(levels != 256){
-      reducedLevels = cvt8u(icl::levels(cvt(grabbedImage),levels));
+      reducedLevels = cvt8u(icl::qt::levels(cvt(grabbedImage),levels));
       useImage = &reducedLevels;
       if(ms){
         mo = SmartPtr<MedianOp>(new MedianOp(Size(ms,ms)));

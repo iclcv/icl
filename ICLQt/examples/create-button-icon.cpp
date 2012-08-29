@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLCV/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLQt/IconFactory.h>
 #include <ICLIO/GenericImageOutput.h>
 

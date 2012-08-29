@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLCV/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLCore/CCFunctions.h>
 #include <ICLUtils/Thread.h>
 

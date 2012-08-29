@@ -33,7 +33,7 @@
 *********************************************************************/
 
 
-#include <ICLCV/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLGeom/PointNormalEstimation.h>
 #include <sys/time.h>
 

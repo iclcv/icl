@@ -37,7 +37,7 @@
 #include <string>
 #include <cstdio>
 
-using namespace icl;
+using namespace icl::utils;
 
 int main(int n, char **ppc){
   

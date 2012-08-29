@@ -35,7 +35,7 @@
 #include <ICLIO/FileGrabber.h>
 #include <ICLIO/FileWriter.h>
 #include <ICLCore/FixedConverter.h>
-#include <ICLCV/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLUtils/Size32f.h>
 #include <ICLFilter/RotateOp.h>
 
@@ -130,7 +130,7 @@ int main(int n, char **ppc){
   
   if(pa("-flip")){
     std::string axis = pa("-flip");
-    icl::axis a = axisHorz;
+    core::axis a = axisHorz;
     if(axis == "horz"){}
     else if(axis == "vert") a = axisVert;
     else if(axis == "both") a = axisBoth;

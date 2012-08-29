@@ -37,7 +37,9 @@
 
 #include <ICLMarkers/FiducialDetector.h>
 
-using namespace icl;
+
+using namespace icl::markers;
+using namespace icl::utils;
 
 // include some static instances to ensure, that the linker
 // does not purge the linked libraries because no symbols of these

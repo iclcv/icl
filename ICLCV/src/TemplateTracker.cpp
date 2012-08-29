@@ -35,7 +35,7 @@
 
 #include <ICLFilter/ProximityOp.h>
 #include <ICLFilter/RotateOp.h>
-#include <ICLCV/Quick.h>
+#include <ICLQt/Quick.h>
 
 using namespace icl::utils;
 using namespace icl::core;

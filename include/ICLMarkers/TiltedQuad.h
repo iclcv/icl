@@ -53,7 +53,7 @@ namespace icl{
       utils::Point32f ps[4];
       
       /// associated image region
-      ImageRegion region;
+      cv::ImageRegion region;
   
       public:
   
@@ -63,12 +63,12 @@ namespace icl{
       /// creates a TiltedQuad instance with given 4 corners and given ImageRegion
       inline TiltedQuad(const utils::Point32f &a, const utils::Point32f &b, 
                         const utils::Point32f &c, const utils::Point32f &d, 
-                        const ImageRegion r): region(r){
+                        const cv::ImageRegion r): region(r){
         ps[0]=a; ps[1]=b; ps[2]=c; ps[3]=d; 
       }
       
       /// creates a TiltedQuad instance with given 4D array of points and image region
-      inline TiltedQuad(const utils::Point32f *ps, ImageRegion r): region(r){
+      inline TiltedQuad(const utils::Point32f *ps, cv::ImageRegion r): region(r){
         std::copy(ps,ps+4,this->ps);
       }
         
@@ -79,10 +79,10 @@ namespace icl{
       inline const utils::Point32f &operator[](int i) const{ return ps[i]; }
       
       /// returns the associated image region (always const)
-      ImageRegion getRegion() const { return region; }
+      cv::ImageRegion getRegion() const { return region; }
       
       /// sets the image region (this is usually not used explicitly)
-      void setRegion(ImageRegion region){ this->region = region; }
+      void setRegion(cv::ImageRegion region){ this->region = region; }
       
       /// returns whether the image region had been set before
       operator bool() const { return region; }

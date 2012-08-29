@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLCV/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLMath/RansacFitter.h>
 #include <ICLUtils/Random.h>
 #include <ICLUtils/Point32f.h>

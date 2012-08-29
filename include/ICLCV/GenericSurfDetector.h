@@ -336,6 +336,13 @@ namespace icl{
 
       /// for feature visualization
       static void visualizePoints(utils::VisualizationDescription &target, const std::vector<GenericPoint> &ps);
+
+      /// feature visualization with return value
+      static inline utils::VisualizationDescription visualizePoints(const std::vector<GenericPoint> &ps){
+        utils::VisualizationDescription d;
+        visualizePoints(d,ps);
+        return d;
+      }
       
       /// returns 2 visualization descriptions (first for the object, second for the result)
       static std::pair<utils::VisualizationDescription,utils::VisualizationDescription>

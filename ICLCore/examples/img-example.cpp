@@ -35,7 +35,8 @@
 #include <ICLCore/Img.h>
 #include <algorithm>
 
-using namespace icl;
+using namespace icl::utils;
+using namespace icl::core;
 
 int main(){
    // create an empty image with byte pixels

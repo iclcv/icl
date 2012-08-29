@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLCV/Common.h                                 **
-** Module : ICLCV                                                  **
+** File   : include/ICLQt/Common.h                                 **
+** Module : ICLQt                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -41,7 +41,7 @@
 
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/StringUtils.h>
-#include <ICLCV/Quick.h>
+#include <ICLQt/Quick.h>
 #include <ICLIO/GenericGrabber.h>
 #include <ICLUtils/ProgArg.h>
 #include <ICLUtils/Mutex.h>

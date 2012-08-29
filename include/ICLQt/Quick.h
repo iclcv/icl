@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLCV/Quick.h                                  **
-** Module : ICLCV                                                  **
+** File   : include/ICLQt/Quick.h                                  **
+** Module : ICLQt                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_QUICK_H
-#define ICL_QUICK_H
+#pragma once
 
 #include <ICLCore/Img.h>
 #include <ICLUtils/StringUtils.h>
@@ -66,7 +65,7 @@ using namespace std;
 
 /// all ICLQuick functions are placed here
 namespace icl{
-  namespace cv{
+  namespace qt{
   
   #ifdef HAVE_QT
     /// uses Qt to spawn an open-file dialog with given filter
@@ -300,7 +299,7 @@ namespace icl{
     
     /** \cond affinity version */
     inline ImgQ filter(const ImgQ &image, const std::string &filter){
-      return icl::cv::filter<float>(image,filter);
+      return icl::qt::filter<float>(image,filter);
     }
     /** \endcond */
   
@@ -311,7 +310,7 @@ namespace icl{
     
     /** \cond */
     inline ImgQ blur(const ImgQ &image, int maskRadius=1){
-      return icl::cv::blur<float>(image,maskRadius);
+      return icl::qt::blur<float>(image,maskRadius);
     }
     /** \endcond */
     
@@ -865,8 +864,6 @@ namespace icl{
     /** @} **/
     /* }}} */
                   
-  } // namespace cv
+  } // namespace qt
 }
 
-
-#endif

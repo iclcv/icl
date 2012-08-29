@@ -1,4 +1,4 @@
-#include <ICLCV/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLMarkers/FiducialDetector.h>
 
 int main(int n, char **ppc){

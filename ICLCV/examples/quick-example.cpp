@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLCV/Quick.h>
+#include <ICLQt/Quick.h>
 
 int main(int nargs, char **ppc){
 

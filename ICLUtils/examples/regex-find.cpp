@@ -35,7 +35,7 @@
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Macros.h>
 
-using namespace icl;
+using namespace icl::utils;
 
 int main(int n, char **ppc){
   if(n<3){

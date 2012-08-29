@@ -38,10 +38,16 @@
 #include <ICLFilter/LocalThresholdOp.h>
 #include <ICLFilter/MorphologicalOp.h>
 #include <ICLFilter/MedianOp.h>
-#include <ICLCore/CornerDetectorCSS.h>
+#include <ICLCV/CornerDetectorCSS.h>
 #include <ICLMath/StraightLine2D.h>
 
 #include <ICLIO/FileWriter.h>
+
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
+using namespace icl::filter;
+using namespace icl::cv;
 
 namespace icl{
   namespace markers{

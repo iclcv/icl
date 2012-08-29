@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLIO/GenericImageOutput.h>
-#include <ICLCV/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLUtils/FPSEstimator.h>
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLUtils/ConsoleProgress.h>

@@ -35,7 +35,7 @@
 #pragma once
 
 #include <ICLMarkers/MultiCamFiducial.h>
-#include <ICLUtils/utils::Configurable.h>
+#include <ICLUtils/Configurable.h>
 
 
 namespace icl{
@@ -78,9 +78,9 @@ namespace icl{
       /// creates an initialized instance with given parameters
       /** @see MultiCamFiducialDetector::init */
       MultiCamFiducialDetector(const std::string &pluginType,
-                               const Any &markersToLoad,
-                               const ParamList &params,
-                               const std::vector<Camera*> &cams,
+                               const utils::Any &markersToLoad,
+                               const utils::ParamList &params,
+                               const std::vector<geom::Camera*> &cams,
                                bool syncProperties=true,
                                bool deepCopyCams=false) throw (utils::ICLException);
   
@@ -99,9 +99,9 @@ namespace icl{
                  <b>Please Note:</b> you can obtain all cameras of a scene using Scene::getAllCameras()
       */
       void init(const std::string &pluginType,
-                const Any &markersToLoad,
-                const ParamList &params,
-                const std::vector<Camera*> &cams,
+                const utils::Any &markersToLoad,
+                const utils::ParamList &params,
+                const std::vector<geom::Camera*> &cams,
                 bool syncProperties=true,
                 bool deepCopyCams=false) throw (utils::ICLException);
       
@@ -121,10 +121,10 @@ namespace icl{
       FiducialDetector &getFiducialDetector(int idx);
       
       /// loads additional markers (passed to all 2D detectors)
-      void loadMarkers(const Any &which, const ParamList &params) throw (utils::ICLException);
+      void loadMarkers(const utils::Any &which, const utils::ParamList &params) throw (utils::ICLException);
   
       /// unloads markers (passed to all 2D detectors)
-      void unloadMarkers(const Any &which);
+      void unloadMarkers(const utils::Any &which);
       
       /// provides a comma separated list of intermediate images
       /** The returned list can simply be added to a view-selection combo box.

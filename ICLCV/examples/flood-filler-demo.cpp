@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLCV/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLCV/FloodFiller.h>
 #include <ICLCore/Color.h>
 //TODO: crashes in the destructor

@@ -40,7 +40,7 @@
 #include <CL/cl.hpp>
 #endif
 
-#include <ICLCV/Quick.h>
+#include <ICLQt/Quick.h>
 #include <ICLGeom/GeomDefs.h>
 
 namespace icl{

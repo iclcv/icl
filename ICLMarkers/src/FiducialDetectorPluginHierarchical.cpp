@@ -35,6 +35,11 @@
 #include <ICLMarkers/FiducialDetectorPluginHierarchical.h>
 #include <ICLCV/RegionDetector.h>
 
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
+using namespace icl::cv;
+
 namespace icl{
   namespace markers{
     struct FiducialDetectorPluginHierarchical::Data{

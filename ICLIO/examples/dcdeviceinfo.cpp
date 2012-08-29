@@ -35,7 +35,7 @@
 #include <ICLIO/DCGrabber.h>
 
 using namespace std;
-using namespace icl;
+using namespace icl::io;
 
 
 int main(int n, char **ppc){

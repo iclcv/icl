@@ -6,9 +6,9 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLCV/examples/corner-detection-css-demo.cpp         **
-** Module : ICLCV                                                **
-** Authors: Christof Elbrechter                                    **
+** File   : ICLCV/examples/corner-detection-css-demo.cpp           **
+** Module : ICLCV                                                  **
+** Authors: Erik Weitnauer                                         **
 **                                                                 **
 **                                                                 **
 ** Commercial License                                              **
@@ -32,10 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-// Copyright 2009 Erik Weitnauer
-/// Visulalization of the CSS corner detection algorithm.
-
-#include <ICLCV/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLCore/Color.h>
 #include <ICLCV/RegionDetector.h>
 #include <ICLCore/Line.h>
@@ -230,12 +227,6 @@ void run(){
     const vector<Point> &boundary = rs[i].getBoundary();
     css.detectCorners(boundary);
     const CornerDetectorCSS::DebugInformation &css_inf = css.getDebugInformation();
-//    cout << "contour points: " << boundary.size() << endl;
-//    cout << "extrema: " << css_inf.extrema.size() << endl;
-//    cout << "maxima: " << css_inf.maxima.size() << endl;
-//    cout << "maxima_without_round_corners: " << css_inf.maxima_without_round_corners.size() << endl;
-//    cout << "maxima_without_false_corners: " << css_inf.maxima_without_false_corners.size() << endl;
-//    cout << "corners: " << css_inf.corners.size() << endl;
     drawInput(w, css_inf);
     drawStep1(w1, css_inf);
     drawStep2(w2, css_inf);
@@ -246,7 +237,7 @@ void run(){
     w->ellipse(cog.x-1, cog.y-1,2,2);  
   }
 	
-	// update the draw widgets
+  // update the draw widgets
   h.render(); 
   h1.render();
   h2.render();

@@ -54,7 +54,7 @@ namespace icl{
       ImageRectification(bool validateAndSortPoints=true):validateAndSortPoints(validateAndSortPoints){}
       
       /** \cond  this method is not implemented yet!*/
-      const core::Img<T> &apply(constmath::FixedMatrix<float,3,3> &transform, const core::Img<T> &src, const utils::Size &resultSize);
+      const core::Img<T> &apply(const math::FixedMatrix<float,3,3> &transform, const core::Img<T> &src, const utils::Size &resultSize);
       /** \endcond */
       
       /// applies the image rectification from given source image quadrangle into a rectangular image
