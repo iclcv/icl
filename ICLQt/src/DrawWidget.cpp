@@ -1087,6 +1087,48 @@ namespace icl{
       clear_queue(*m_queues[0]);
       clear_queue(*m_queues[1]);
     }
-  
+    void ICLDrawWidget::draw(const VisualizationDescription &d){
+      const std::vector<VisualizationDescription::Part> &parts = d.getParts();
+      for(size_t i=0;i<parts.size();++i){
+        switch(parts[i].type){
+          case 'c': {
+            VisualizationDescription::Color c = parts[i].content;
+            this->color(c.r,c.g,c.b,c.a);
+            break;
+          }
+          case 'f':{
+            VisualizationDescription::Color c = parts[i].content;
+            this->fill(c.r,c.g,c.b,c.a);
+            break;
+          }
+          case 'r':
+            this->rect(parts[i].content.as<Rect32f>());
+            break;
+          case 'e':
+            this->ellipse(parts[i].content.as<Rect32f>());
+            break;
+          case 'l':{
+            Rect32f r = parts[i].content.as<Rect32f>();
+            this->line(r.ul(),r.lr());
+            break;
+          }
+          case 't':{
+            VisualizationDescription::Text t = parts[i].content;
+            this->text(t.text,t.pos);
+            break;
+          }
+          case '+':
+          case 'x':
+          case 'o':{
+            Point32f pos = parts[i].content;
+            sym(pos,parts[i].type);
+            break;
+          }
+          default:
+            WARNING_LOG("unable to render VisualizationDescription::Part with type '" << parts[i].type << "'");
+            break;
+        }
+      }
+    }
   } // namespace qt
 }

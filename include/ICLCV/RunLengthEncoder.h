@@ -69,7 +69,7 @@ namespace icl {
           that use the RunLengthEncoder class
   
         \section USAGE Usage
-        The RunLengthEncoder's main function is RunLengthEncoder::encode(const Img<T>&, const Point&).
+        The RunLengthEncoder's main function is RunLengthEncoder::encode(const core::core::Img<T>&, const utils::Point&).
         After encode was called, the run-length-encoded representation of each image line can be accessed
         using RunLengthEncoder::begin(int) and RunLengthEncoder::end(int).
         
@@ -112,14 +112,14 @@ namespace icl {
       std::vector<WLS*> m_ends;
       
       /// current image ROI, the RunLengthEncoder is optimized for (adatped automatically)
-      Rect m_imageROI;
+      utils::Rect m_imageROI;
   
       /// internal run-length-encoding template
       template<class T>
-      void encode_internal(const Img<T> &image);
+      void encode_internal(const core::Img<T> &image);
   
       /// internal preparation function (automatically called)
-      void prepare(const Rect &roi);
+      void prepare(const utils::Rect &roi);
       
       /// resets all formerly used line segments (automatically called)
       void resetLineSegments();
@@ -127,7 +127,7 @@ namespace icl {
       public:
       
       /// main encoding function
-      void encode(const ImgBase *image);
+      void encode(const core::ImgBase *image);
       
       /// Returns a begin()-pointer for the first encoded image line
       /** row-indices are always relative to the image ROI's offset (see \ref ROI) */

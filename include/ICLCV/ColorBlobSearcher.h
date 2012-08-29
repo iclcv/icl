@@ -125,7 +125,7 @@ namespace icl{
       virtual ~ColorBlobSearcher();
       
       /// extracts all blobs
-      virtual const FoundBlobVector &search(Img<PixelType> *poImage, Img8u *poMask);
+      virtual const FoundBlobVector &search(core::Img<PixelType> *poImage, core::Img8u *poMask);
   
       /// inserts a new  pixel rating a last index (passing ownership of p to this class)
       virtual void addPR(pixelrating *p);
@@ -135,7 +135,7 @@ namespace icl{
       
       protected:
       /// internally used function ( can be reimplemented )
-      virtual void prepareForNewImage(Img<PixelType> *poImage, Img8u *poMask);
+      virtual void prepareForNewImage(core::Img<PixelType> *poImage, core::Img8u *poMask);
   
       /// internally used function ( can be reimplemented )
       virtual void storeResult(int iPRIndex, int x, int y, RatingType rating)=0;
@@ -144,7 +144,7 @@ namespace icl{
       virtual void evaluateResults(FoundBlobVector &destination)=0;
   
       /// internally used function ( can be reimplemented )
-      virtual void feedback(const FoundBlobVector &results, Img<PixelType> *poImage);
+      virtual void feedback(const FoundBlobVector &results, core::Img<PixelType> *poImage);
       
       /// internally used function ( can be reimplemented )
       virtual void pixelRatingAdded(pixelrating *pr);

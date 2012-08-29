@@ -61,13 +61,13 @@ namespace icl{
       };
   
       /// Default constructor with given image size
-      DefaultColorBlobSearcher(const Size &imageSize);
+      DefaultColorBlobSearcher(const utils::Size &imageSize);
       
       /// Destructor
       virtual ~DefaultColorBlobSearcher();
       
       /// internal type definition
-      typedef vector<FastMedianList> fmlVec;
+      typedef vector<utils::FastMedianList> fmlVec;
   
       /// internal type definition
       typedef vector<CenterEstimationType> cetVec;
@@ -100,17 +100,17 @@ namespace icl{
                          CenterEstimationType cet=cetMedian);
   
       /// just passing to the parent class
-      virtual const FoundBlobVector &search(Img8u *poImage, Img8u *poMask);
+      virtual const FoundBlobVector &search(core::Img8u *poImage, core::Img8u *poMask);
   
       /// returns the current image size of this 
-      const Size &getImageSize() const;
+      const utils::Size &getImageSize() const;
   
       /// sets the current image size
-      void setImageSize(const Size &size);
+      void setImageSize(const utils::Size &size);
       protected:
       
       /// internally used function
-      virtual void prepareForNewImage(Img8u *poImage, Img8u *poMask);
+      virtual void prepareForNewImage(core::Img8u *poImage, core::Img8u *poMask);
   
       /// internally used function
       virtual void storeResult(int iPRIndex, int x, int y, bool rating);
@@ -126,7 +126,7 @@ namespace icl{
       
       private:
       /// internal storage of the current image size    
-      Size m_oImageSize;
+      utils::Size m_oImageSize;
   
       /// internally used median list 
       fmlVec m_vecXMedianLists;

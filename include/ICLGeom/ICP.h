@@ -33,10 +33,10 @@
  *********************************************************************/
 #pragma once
 
-#include <ICLMath/DynMatrix.h>
 #include <ICLUtils/Macros.h>
-#include <ICLUtils/utils::Uncopyable.h>
-#include <ICLUtils/KDTree.h>
+#include <ICLUtils/Uncopyable.h>
+#include <ICLMath/DynMatrix.h>
+#include <ICLMath/KDTree.h>
 #include <ICLGeom/PoseEstimator.h>
 
 namespace icl{
@@ -51,8 +51,8 @@ namespace icl{
       /// Simple result structure
       struct Result{
         Result();
-        DynMatrix<icl64f> rotation;    //!< Model rotation matrix
-        DynMatrix<icl64f> translation; //!< Model translation matrix
+        math::DynMatrix<icl64f> rotation;    //!< Model rotation matrix
+        math::DynMatrix<icl64f> translation; //!< Model translation matrix
         double error;                  //!< Error value
       };
   
@@ -61,22 +61,22 @@ namespace icl{
       Result m_result;
       
       /// internal data structure for efficient search
-      KDTree kdt;
+      math::KDTree kdt;
       
       /// internally used utility function
-      DynMatrix<icl64f> *compute(const std::vector<DynMatrix<icl64f>* > &data,
-                                 const std::vector<DynMatrix<icl64f>* > &model);
+      math::DynMatrix<icl64f> *compute(const std::vector<math::DynMatrix<icl64f>* > &data,
+                                 const std::vector<math::DynMatrix<icl64f>* > &model);
       public:
       
     
       
       /// constructor with given model data
       /** TODO is the data passed shallowly or deeply */ 
-      ICP(std::vector<DynMatrix<icl64f> > &model);
+      ICP(std::vector<math::DynMatrix<icl64f> > &model);
       
       /// constructor with given model data
       /** TODO is the data passed shallowly or deeply */ 
-      ICP(std::vector<DynMatrix<icl64f>* > &model);
+      ICP(std::vector<math::DynMatrix<icl64f>* > &model);
       
       /// Empty constructor without given model data
       ICP();
@@ -86,11 +86,11 @@ namespace icl{
       
       
       /// applies the ICP on given point cloude
-      const Result &apply(const std::vector<DynMatrix<icl64f>* > &pointlist);
+      const Result &apply(const std::vector<math::DynMatrix<icl64f>* > &pointlist);
       
       /// computes th error between given model and data cloude
-      static double error(const std::vector<DynMatrix<icl64f>* > &dat,
-                          const std::vector<DynMatrix<icl64f>* > &mod);
+      static double error(const std::vector<math::DynMatrix<icl64f>* > &dat,
+                          const std::vector<math::DynMatrix<icl64f>* > &mod);
   
   #if 0
       // hope we dont need that anymore ...
@@ -100,12 +100,12 @@ namespace icl{
       }
       
       /// returns the resulting rotation matrix from the last icp(..) call
-      inline const DynMatrix<icl64f>& getRotation() const{
+      inline const math::DynMatrix<icl64f>& getRotation() const{
         return m_result.rotation;
       }
       
       /// returns the resulting translation matrix from the last icp(..) call
-      inline const DynMatrix<icl64f>& getTranslation() const{
+      inline const math::DynMatrix<icl64f>& getTranslation() const{
         return m_result.translation;
       }
   #endif

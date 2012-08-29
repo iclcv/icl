@@ -61,9 +61,14 @@ Data[0] Data[1] ...      |  Dist[0], Dist[1], ...
                       /\
                    vecPredict
 */
+
+using namespace std;
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
   namespace cv{
-    using namespace std;
+
     namespace positiontracker{
       const int X = 0;
       const int Y = 1;
@@ -223,7 +228,7 @@ namespace icl{
     // }}}
   
     
-    inline vector<int> get_n_new_ids(const vector<int> &currentIDS, int n, icl::IDAllocationMode iaMode, int& lowestUnusedID){
+    inline vector<int> get_n_new_ids(const vector<int> &currentIDS, int n, icl::cv::IDAllocationMode iaMode, int& lowestUnusedID){
      // {{{ open 
       vector<int> ids;
       set<int> lut;
@@ -419,7 +424,7 @@ namespace icl{
                                    vector<int>               &assignment,  
                                    vector<valueType>         newData[2],
                                    vector<int>               &good,
-                                   icl::IDAllocationMode iaMode,
+                                   icl::cv::IDAllocationMode iaMode,
                                    int                       &lowestUnusedID){
       // {{{ open
   

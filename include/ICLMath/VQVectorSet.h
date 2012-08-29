@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLCV/VQVectorSet.h                            **
-** Module : ICLCV                                                  **
+** File   : include/ICLMath/VQVectorSet.h                          **
+** Module : ICLMath                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -32,15 +32,13 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef VQVECTOR_SET_H
-#define VQVECTOR_SET_H
+#pragma once
 
 #include <ICLUtils/Macros.h>
 #include <cstring>
-using std::memcpy;
 
 namespace icl{
-  namespace cv{
+  namespace math{
     
     /// Utility class for 2D Vector quantisation \ingroup G_UTILS
     class VQVectorSet{
@@ -100,5 +98,4 @@ namespace icl{
   } // namespace cv
 }
 
-#endif
 

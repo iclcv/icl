@@ -36,6 +36,9 @@
 #include <ICLCV/ImageRegionData.h>
 #include <ICLCV/ImageRegionPart.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
   namespace cv{
   

@@ -61,18 +61,18 @@ namespace icl{
     template<class real>
     class HungarianAlgorithm {
       /// Internal used cost matrix type
-      typedef Array2D<real> mat;
+      typedef utils::Array2D<real> mat;
       public:
       
       /// calculate best assignment given cost matrix m
       /** if isCostMatrix is false, its elements are internally multiplied by -1 */
-      static std::vector<int> apply(const Array2D<real> &m, bool isCostMatrix=true);
+      static std::vector<int> apply(const utils::Array2D<real> &m, bool isCostMatrix=true);
   
       /// visualized the assignment with given cost matrix and assignment vector
-      static void visualizeAssignment(const Array2D<real> &cost, const std::vector<int> &assignment);
+      static void visualizeAssignment(const utils::Array2D<real> &cost, const std::vector<int> &assignment);
   
       /// calculates the error made by a given const matrix and assignment vector
-      static real calculateError(const Array2D<real> &cost, const std::vector<int> &assignement);
+      static real calculateError(const utils::Array2D<real> &cost, const std::vector<int> &assignement);
     };
   
   } // namespace cv

@@ -76,18 +76,18 @@ namespace icl{
       void setClipBuffersToROI(bool flag);
       
       /// apply matching with given image and template (optionally image and template masks can be given)
-      const std::vector<Rect> &match(const Img8u &image, const Img8u &templ, const Img8u &imageMask=Img8u::null, const Img8u &templMask=Img8u::null);
+      const std::vector<utils::Rect> &match(const core::Img8u &image, const core::Img8u &templ, const core::Img8u &imageMask=core::Img8u::null, const core::Img8u &templMask=core::Img8u::null);
       
       /// returns the interanly used binary buffer buffer
-      const Img8u getBuffer() { return p2o(m_aoBuffers[2].selectChannel(0)); }
+      const core::Img8u getBuffer() { return p2o(m_aoBuffers[2].selectChannel(0)); }
   
       private:
       float m_fSignificance;          ///< significance level
       mode m_eMode;                   ///< matching mode
       bool m_bClipBuffersToROI;       ///< buffer clipping mode
-      UncopiedInstance<RegionDetector> m_oRD;           ///< internally recycled RegionDetector instance
-      UncopiedInstance<Img8u> m_aoBuffers[3];           ///< interanlly used buffers
-      std::vector<Rect> m_vecResults; ///< internal result buffer
+      utils::UncopiedInstance<RegionDetector> m_oRD;           ///< internally recycled RegionDetector instance
+      utils::UncopiedInstance<core::Img8u> m_aoBuffers[3];           ///< interanlly used buffers
+      std::vector<utils::Rect> m_vecResults; ///< internal result buffer
     };
     
   } // namespace cv

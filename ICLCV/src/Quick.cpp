@@ -68,7 +68,11 @@
 #include <fstream>
 #include <cstdio>
 
-
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
+using namespace icl::filter;
+using namespace icl::io;
 
 namespace icl{
   namespace cv{
@@ -1324,7 +1328,7 @@ namespace icl{
     void rect(ImgQ &image, int x_in, int y_in, int w_in, int h_in, int r){
       // {{{ open
       if(!r){
-        icl::simple_rect(image,x_in,y_in,w_in,h_in);
+        icl::cv::simple_rect(image,x_in,y_in,w_in,h_in);
         return;
       }
       const Rect rect(x_in,y_in,w_in,h_in);
@@ -1337,10 +1341,10 @@ namespace icl{
         r = iclMin(rect.width/2,rect.height/2);
       }
       
-      icl::simple_rect(image,rect.x+r,rect.y, rect.width-2*r, rect.height);
-      icl::simple_rect(image,rect.x,rect.y+r,r,rect.height-2*r);
-      icl::simple_rect(image,rect.x+rect.width-r,rect.y+r,
-                       r,rect.height-2*r);
+      icl::cv::simple_rect(image,rect.x+r,rect.y, rect.width-2*r, rect.height);
+      icl::cv::simple_rect(image,rect.x,rect.y+r,r,rect.height-2*r);
+      icl::cv::simple_rect(image,rect.x+rect.width-r,rect.y+r,
+                           r,rect.height-2*r);
       
       color(f[0],f[1],f[2],f[3]);
       
@@ -1354,28 +1358,28 @@ namespace icl{
         ybry = yb+(r-y);
         x = r - s;
         
-        icl::line(image,x+rect.x,y+rect.y,r+rect.x,y+rect.y);
+        icl::cv::line(image,x+rect.x,y+rect.y,r+rect.x,y+rect.y);
         
         // upper right
         x = s;
-        icl::line(image,xr,y+rect.y,xr+x-1,y+rect.y);
+        icl::cv::line(image,xr,y+rect.y,xr+x-1,y+rect.y);
         
         // lower left
         x = r - s;
-        icl::line(image,rect.x+x,ybry,rect.x+r,ybry);
+        icl::cv::line(image,rect.x+x,ybry,rect.x+r,ybry);
         
         // lower right
         x = s;
-        icl::line(image,xr,ybry,xr+x-1,ybry);
+        icl::cv::line(image,xr,ybry,xr+x-1,ybry);
       }
       
       // Draw Boundary ...
       color(c[0],c[1],c[2],c[3]);
       
-      icl::line(image,rect.x+r, rect.y, xr, rect.y);
-      icl::line(image,rect.x+r, yb+r, xr, yb+r);
-      icl::line(image,rect.x, rect.y+r, rect.x, yb);
-      icl::line(image,rect.x+rect.width-1, rect.y+r, rect.x+rect.width-1, yb);
+      icl::cv::line(image,rect.x+r, rect.y, xr, rect.y);
+      icl::cv::line(image,rect.x+r, yb+r, xr, yb+r);
+      icl::cv::line(image,rect.x, rect.y+r, rect.x, yb);
+      icl::cv::line(image,rect.x+rect.width-1, rect.y+r, rect.x+rect.width-1, yb);
       
       for(int y=0;y<r;++y){
         // upper left
@@ -1384,24 +1388,24 @@ namespace icl{
         ybry = yb+(r-y);
         x = r - s;
         
-        icl::pix(image, x+rect.x, y+rect.y);
-        icl::pix(image, y+rect.x, x+rect.y);
+        icl::cv::pix(image, x+rect.x, y+rect.y);
+        icl::cv::pix(image, y+rect.x, x+rect.y);
         
         // upper right
         x = s;
-        icl::pix(image,xr+x-1,y+rect.y);
-        if(y!=r-1) icl::pix(image,xr+(r-y-1),(r-x)+rect.y);
+        icl::cv::pix(image,xr+x-1,y+rect.y);
+        if(y!=r-1) icl::cv::pix(image,xr+(r-y-1),(r-x)+rect.y);
         
         
         // lower left
         x = r - s;
-        icl::pix(image,rect.x+x,ybry);
-        icl::pix(image,rect.x+y,yb+(r-x));
+        icl::cv::pix(image,rect.x+x,ybry);
+        icl::cv::pix(image,rect.x+y,yb+(r-x));
         
         // lower right
         x = s;
-        icl::pix(image,xr+x-1,ybry);
-        if(y!=r-1) icl::pix(image,xr+(r-y)-1,yb+x);
+        icl::cv::pix(image,xr+x-1,ybry);
+        if(y!=r-1) icl::cv::pix(image,xr+(r-y)-1,yb+x);
       }
     }
     // }}}
@@ -1742,10 +1746,10 @@ namespace icl{
       COLOR[3]=255;
   
       std::fill(COLOR,COLOR+3,float(1.0));
-      icl::text(image,6,6,text);
+      icl::cv::text(image,6,6,text);
       
       std::fill(COLOR,COLOR+3,float(255.0));
-      icl::text(image,5,5,text);    
+      icl::cv::text(image,5,5,text);    
       
       std::copy((float*)_COLOR,_COLOR+4,COLOR);
       FONTSIZE = _FONTSIZE;

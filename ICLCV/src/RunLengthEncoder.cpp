@@ -36,6 +36,8 @@
 #include <ICLCV/RunLengthEncoder.h>
 #include <ICLCV/RegionDetectorTools.h>
 
+using namespace icl::utils;
+using namespace icl::core;
 
 namespace icl{
   namespace cv{

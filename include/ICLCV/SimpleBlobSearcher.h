@@ -73,19 +73,19 @@ namespace icl{
           - for all \f$r_j \in \mbox{Regions}_i\f$
             - OUTPUT_DATA.add(SimpleBlobSearcher::Blob(\f$r_j\f$, \f$RC_i\f$, i)
     */
-    class SimpleBlobSearcher : public Uncopyable{
+    class SimpleBlobSearcher : public utils::Uncopyable{
       public:
       
       /// Internal blob-result type
       struct Blob{
         Blob():region(0),refColorIndex(-1){}
-        Blob(const ImageRegion *region, const Color &refColor, int refColorIndex);
+        Blob(const ImageRegion *region, const core::Color &refColor, int refColorIndex);
         
         /// corresponding regions (provides access to region features)
         const ImageRegion *region;
         
         /// corresponding reference color
-        Color refColor;
+        core::Color refColor;
         
         /// corresponding ref color index
         int refColorIndex;
@@ -98,13 +98,13 @@ namespace icl{
       ~SimpleBlobSearcher();
       
       /// Adds a new reference color, with threshold and size range
-      void add(const Color &color, 
+      void add(const core::Color &color, 
                float thresh, 
-               const Range32s &sizeRange);
+               const utils::Range32s &sizeRange);
   
       /// Updates data for given index
-      void adapt(int index, const Color &color, 
-                 float thresh, const Range32s &sizeRange);
+      void adapt(int index, const core::Color &color, 
+                 float thresh, const utils::Range32s &sizeRange);
   
       /// removes reference color at given index
       void remove(int index);
@@ -113,7 +113,7 @@ namespace icl{
       /// Actual detection function (no ROI support yet!)
       /** detects blobs in given image*/
   
-      const std::vector<Blob> &detect(const Img8u &image);
+      const std::vector<Blob> &detect(const core::Img8u &image);
       
     private:
       /// Internal data representation (hidden)

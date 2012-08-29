@@ -269,7 +269,7 @@ namespace icl{
       void pushData(const std::vector<valueType> &xs, const std::vector<valueType> &ys);
   
       /// as above
-      void pushData(const std::vector<Point32f> points);
+      void pushData(const std::vector<utils::Point32f> points);
       
       /** Switch between continuous and restocking ID allocation. Restocking means, that a new object 
           will get the smallest avialable ID (formerly used by an older object which is no longer existing), instead of a brand new.

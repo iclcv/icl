@@ -39,6 +39,10 @@
 #include <ICLCore/Img.h>
 #include <cmath>
 
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
+
 namespace icl{
   namespace cv{
   

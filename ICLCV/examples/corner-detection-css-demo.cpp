@@ -39,7 +39,7 @@
 #include <ICLCore/Color.h>
 #include <ICLCV/RegionDetector.h>
 #include <ICLCore/Line.h>
-#include <ICLCore/CornerDetectorCSS.h>
+#include <ICLCV/CornerDetectorCSS.h>
 
 HBox gui;
 

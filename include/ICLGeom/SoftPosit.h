@@ -6,8 +6,8 @@
  ** Website: www.iclcv.org and                                      **
  **          http://opensource.cit-ec.de/projects/icl               **
  **                                                                 **
- ** File   : include/ICLMath/SoftPosit.h                      **
- ** Module : ICLMath                                          **
+ ** File   : include/ICLGeom/SoftPosit.h                            **
+ ** Module : ICLGeom                                                **
  ** Authors: Christian Groszewski                                   **
  **                                                                 **
  **                                                                 **

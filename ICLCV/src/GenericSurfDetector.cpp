@@ -48,6 +48,8 @@
 
 #include <ICLUtils/StringUtils.h>
 
+using namespace icl::core;
+using namespace icl::utils;
 
 namespace icl{
   namespace cv{
@@ -504,20 +506,52 @@ namespace icl{
       return 0;
     }
     
-  
-  #ifdef HAVE_QT
+    
+      /// for feature visualization
+    void GenericSurfDetector::visualizePoint(VisualizationDescription &target, const GenericPoint &p){
+      THROW_NO_BACKEND;
+#ifdef HAVE_OPENCV2
+      const CVGenP *cvpoint = dynamic_cast<const CVGenP*>(p.impl.get());
+      if(cvpoint) OpenCVSurfDetector::visualizeFeature(target,*(cvpoint->p));
+#endif
+      
+#ifdef HAVE_OPENSURF
+      const SurfGenP *surfpoint = dynamic_cast<const SurfGenP*> (p.impl.get());
+      if(surfpoint) OpenSurfDetector::visualizeFeature(target,*(surfpoint->p));
+#endif
+    }
+
+      /// for feature visualization
+    void GenericSurfDetector::visualizePoints(VisualizationDescription &target, const std::vector<GenericPoint> &ps){
+      for(unsigned int i=0;i<ps.size();++i){
+        visualizePoint(target,ps[i]);
+      }
+    }
+      
+    /// returns 2 visualization descriptions (first for the object, second for the result)
+    std::pair<VisualizationDescription,VisualizationDescription>
+    GenericSurfDetector::visualizeMatches(const std::vector<std::pair<GenericPoint,GenericPoint> > &matches){
+      std::pair<VisualizationDescription,VisualizationDescription> d;
+      for(unsigned int i=0;i<matches.size();++i){
+        visualizePoint(d.first, matches[i].second);
+        visualizePoint(d.second,matches[i].first);
+      }
+      return d;
+    }
+    
+#if 0
     void GenericSurfDetector::visualizeFeature(ICLDrawWidget &w,const GenericSurfDetector::GenericPoint &p){
       THROW_NO_BACKEND;
       
-  #ifdef HAVE_OPENCV2
+#ifdef HAVE_OPENCV2
       const CVGenP *cvpoint = dynamic_cast<const CVGenP*>(p.impl.get());
       if(cvpoint) OpenCVSurfDetector::visualizeFeature(w,*(cvpoint->p));
-  #endif
+#endif
       
-  #ifdef HAVE_OPENSURF
+#ifdef HAVE_OPENSURF
       const SurfGenP *surfpoint = dynamic_cast<const SurfGenP*> (p.impl.get());
       if(surfpoint) OpenSurfDetector::visualizeFeature(w,*(surfpoint->p));
-  #endif
+#endif
       
     }
     void GenericSurfDetector::visualizeFeatures(ICLDrawWidget &w, const std::vector<GenericSurfDetector::GenericPoint> &features){

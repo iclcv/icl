@@ -248,7 +248,61 @@ namespace icl{
       return m_data->m_ojb_ipts;
     }
   
-  #ifdef HAVE_QT
+
+    void OpenSurfDetector::visualizePoint(VisualizationDescription &target, const Ipoint &p){
+      float s = (2.5f * p.scale);
+      int r1 = fRound(p.y);
+      int c1 = fRound(p.x);
+      
+      int alpha = 200;
+
+      target.color(0,255,0,alpha);
+      
+      if (p.orientation){ // Green line indicates orientation
+        w.linewidth(2);
+        int c2 = fRound(s * cos(p.orientation)) + c1;
+        int r2 = fRound(s * sin(p.orientation)) + r1;
+        target.line(c1, r1, c2, r2);
+      }else{  // Green dot if using upright version
+        target.sym('.',c1,r1);
+      }
+      if (p.laplacian == 1){ // Blue circles indicate dark blobs on light backgrounds
+        target.color(0,0,255,alpha);
+        target.circle(c1,r1,fRound(s));
+      }else if (p.laplacian == 0){ // Red circles indicate light blobs on dark backgrounds
+        target.color(255,0,0,alpha);
+        target.circle(c1,r1,fRound(s));
+      }else if (p.laplacian == 9){ // Red circles indicate light blobs on dark backgrounds
+        target.color(0,255,0,alpha);
+        target.circle(c1,r1,fRound(s));
+      }
+      
+      int tailSize = 0;
+      //not used until now
+      // Draw motion from ipoint dx and dy
+      if (tailSize){
+        target.color(255,255,255,alpha);
+        target.line(c1, r1, int(c1+p.dx*tailSize), int(r1+p.dy*tailSize));
+      }
+    }
+    
+    void OpenSurfDetector::visualizePoints(VisualizationDescription &target, const std::vector<Ipoint> &ps){
+      for(size t i=0;i<ps.size();++i){
+        visualizePoint(target,ps[i]);
+      }
+    }
+    
+    std::pair<VisualizationDescription,VisualizationDescription>
+    visualizeMatches(const std::vector<std::pair<Ipoint,Ipoint> > &matches){
+      std::pair<VisualizationDescription,VisualizationDescription> d;
+      for(unsigned int i=0;i<matches.size();++i){
+        visualizeFeature(d.first,matches[i].first);
+        visualizeFeature(d.second,matches[i].second); // here, first and second were swapped
+      }
+
+    }
+
+#if 0
     void OpenSurfDetector::visualizeFeature(ICLDrawWidget &w,const Ipoint &p){
       float s = (2.5f * p.scale);
       int r1 = fRound(p.y);

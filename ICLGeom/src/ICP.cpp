@@ -33,7 +33,9 @@
 *********************************************************************/
 #include <ICLGeom/ICP.h>
 
-using namespace icl;
+using namespace icl::utils;
+using namespace icl::math;
+
 namespace icl{
   namespace geom{
   

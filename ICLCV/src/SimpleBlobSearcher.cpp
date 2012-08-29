@@ -35,6 +35,9 @@
 #include <ICLCV/SimpleBlobSearcher.h>
 #include <ICLCV/RegionDetector.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
   namespace cv{
   

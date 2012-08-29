@@ -115,14 +115,14 @@ namespace icl {
       /** An image of the kernel used for the MeanShift. Stored is only the second 
           quadrant of the image, as the values are the same for absolute coordinates.
           */
-      Img32f m_kernelImage;
+      core::Img32f m_kernelImage;
       
       /// Applies a single step of the mean shift algorithm
       /** 
           @param pos start original position
           @return new center	
           */
-      Point32f applyMeanShiftStep(const Img32f &image, const Point32f &pos);
+      utils::Point32f applyMeanShiftStep(const core::Img32f &image, const utils::Point32f &pos);
   
       public:
   
@@ -130,14 +130,14 @@ namespace icl {
       /** 
           @param a kernel bandwidth
           */
-      static Img32f generateEpanechnikov(int bandwidth);
+      static core::Img32f generateEpanechnikov(int bandwidth);
   
       /// Generates a Gauss Kernel
       /** Generates the internal m_opKernelImage using the Gauss profile
           @param a i dont know
           @param stdDev profiles the standard deviation.
           */
-      static Img32f generateGauss(int bandwidth,float stdDev);
+      static core::Img32f generateGauss(int bandwidth,float stdDev);
   
       /// Constructor with only the most needed parameters
       /** The basic constructor with only the most needed parameters.
@@ -157,7 +157,7 @@ namespace icl {
       int getKernel() const { return m_kernelType;  }
       
       /// returns current kernel image
-      const Img32f &getKernelImage() const { return m_kernelImage; }
+      const core::Img32f &getKernelImage() const { return m_kernelImage; }
       
       /// Returns current kernel bandwidth
       int getBandwidth() const { return m_bandwidth; }
@@ -172,7 +172,7 @@ namespace icl {
           the caller whether actually maxCycles iteration steps were used or the 
           convergence criterion was reached
           */
-      const Point32f step(const Img32f &weigthImage, const Point32f &initialPoint,  int maxCycles=-1, float convergenceCriterion=1.0, bool *converged=0);
+      const utils::Point32f step(const core::Img32f &weigthImage, const utils::Point32f &initialPoint,  int maxCycles=-1, float convergenceCriterion=1.0, bool *converged=0);
   
     };
   } // namespace cv

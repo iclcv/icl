@@ -39,12 +39,14 @@
 #include <ICLUtils/StackTimer.h>
 #include <list>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
   namespace cv{
+
     typedef Array2D<int> imat;
     typedef std::vector<int> vec;
-   
-  
      
     //#define BEGIN_METHOD(X) counter_##X++; MethodTimer __timer(&timer_##X)
     

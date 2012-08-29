@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLCV/src/VQ2D.cpp                                     **
-** Module : ICLCV                                                  **
+** File   : ICLMath/src/VQ2D.cpp                                   **
+** Module : ICLMath                                                **
 ** Authors: Christof Elbrechter, Robert Haschke                    **
 **                                                                 **
 **                                                                 **
@@ -32,11 +32,14 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLCV/VQ2D.h>
+#include <ICLMath/VQ2D.h>
+#include <ICLUtils/Random.h>
 #include <math.h>
 
+using namespace icl::utils;
+
 namespace icl{
-  namespace cv{
+  namespace math{
     
     inline float distance(float *a, float *b){
       // {{{ open

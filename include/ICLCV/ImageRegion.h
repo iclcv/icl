@@ -106,13 +106,13 @@ namespace icl{
       ImageRegionData *m_data;
       
       /// internal utility function
-      template<class T> void calculateBoundaryIntern(const Img<T> &image) const;
+      template<class T> void calculateBoundaryIntern(const core::Img<T> &image) const;
   
       /// another utility function
       void calculateThinnedBoundaryIntern() const;
   
       /// utility function that returns the upper left pixel of the region
-      Point getUpperLeftPixel()const;
+      utils::Point getUpperLeftPixel()const;
       
       public:
   
@@ -134,10 +134,10 @@ namespace icl{
       const ImageRegionData *data() const { return m_data; }
   
       /// samples the region into a given image
-      void sample(ImgBase *image, int color);
+      void sample(core::ImgBase *image, int color);
   
       /// samples the region into a given image
-      void sample(ImgBase *image, const std::vector<int> &channelColors);
+      void sample(core::ImgBase *image, const std::vector<int> &channelColors);
       
       /// returns the pixel count of the Region
       int getSize() const;
@@ -149,19 +149,19 @@ namespace icl{
       int getID() const;
   
       /// returns the region's center of gravity
-      Point32f getCOG() const;
+      utils::Point32f getCOG() const;
   
       /// retuns the internal list of line segments
       const std::vector<LineSegment> &getLineSegments() const;
       
       /// returns the region's bounding box
-      const Rect &getBoundingBox() const;
+      const utils::Rect &getBoundingBox() const;
   
       /// returns information about the regions spacial PCA
       const RegionPCAInfo &getPCAInfo() const;
   
       /// returns all boundary pixels of this region
-      const std::vector<Point> &getBoundary(bool thinned=true) const;
+      const std::vector<utils::Point> &getBoundary(bool thinned=true) const;
   
       /// returns the size of boundary pixel array of the ImageRegion
       int getBoundaryPointCount(bool thinned) const;
@@ -180,10 +180,10 @@ namespace icl{
           *NEW* parameters can now be adjusted by the configurable interface of the
           parent RegionDetector instance
       */
-      const std::vector<Point32f> &getBoundaryCorners() const;
+      const std::vector<utils::Point32f> &getBoundaryCorners() const;
   
       
-      /// returns the Form-Factor of the Region (Boundary²/4PI*Size)
+      /// returns the Form-Factor of the Region (Boundary²/4PI*utils::Size)
       /** Please note that the formfactor for smaller regions is 
           always a bit higher as expected for an ideal regions. 
           This problem occurs due to using a 4-neighbourhood for 
@@ -202,14 +202,14 @@ namespace icl{
       /// returns a list of all pixels, of this regions
       /** Most of the time, this is very unefficient. It is strongly recommended to use
           getLineSegments() instead */
-      const std::vector<Point> &getPixels() const;
+      const std::vector<utils::Point> &getPixels() const;
       
       /// sets all pixel positions in given image to val in channel 0 of image
-      void drawTo(const ImgBase *image, icl64f val) const;
+      void drawTo(const core::ImgBase *image, icl64f val) const;
       
       /// highlights the region in the image using the given color
       /** please note, that color must contain at least one element for each channel in the given image */
-      void drawToColor(const ImgBase *image, const icl64f *color) const;
+      void drawToColor(const core::ImgBase *image, const icl64f *color) const;
   
       /// returns a list of all fully contained image regions 
       /** This function is only provided if region graph information is available (see \ref GRAPH) 
@@ -221,27 +221,27 @@ namespace icl{
           -# There is no path from B (from ImageRegion to adjacent ImageRegion) 
              to a border-region that does not cross A
       */
-      const std::vector<ImageRegion> &getSubRegions(bool directOnly=true) const throw (ICLException);
+      const std::vector<ImageRegion> &getSubRegions(bool directOnly=true) const throw (utils::ICLException);
       
       /// returns the parent regions (which might be NULL)
       /** This function is only provided if region graph information is available (see \ref GRAPH) */
-      const ImageRegion &getParentRegion() const throw (ICLException);
+      const ImageRegion &getParentRegion() const throw (utils::ICLException);
       
       /// returns the parent region and the parent's parent and so on
       /** If a parent is null, the list ends immediately. In particular, this list can be empty
           This function is only provided if region graph information is available (see \ref GRAPH) 
       */
-      const std::vector<ImageRegion> &getParentTree() const throw (ICLException);
+      const std::vector<ImageRegion> &getParentTree() const throw (utils::ICLException);
   
       /// returns a list of all adjacent regions
       /** This function is only provided if region graph information is available (see \ref GRAPH) **/
-      const std::vector<ImageRegion> &getNeighbours() const throw (ICLException);
+      const std::vector<ImageRegion> &getNeighbours() const throw (utils::ICLException);
       
       /// returns whether this ImageRegion is adjacent to the image border
-      bool isBorderRegion() const throw (ICLException);
+      bool isBorderRegion() const throw (utils::ICLException);
   
       /// returns whether a given pixel position is part of the image region
-      bool contains(const Point &p) const;
+      bool contains(const utils::Point &p) const;
       
       /// shows the region tree and neighbours (for debugging)
       void showTree() const;
@@ -254,10 +254,10 @@ namespace icl{
           also the meta-data is hold in the internally managed and shallowly
           copied data structure.
       */
-      void setMetaData(const Any &any) const;
+      void setMetaData(const utils::Any &any) const;
       
       /// returns the meta data associated with this region
-      const Any &getMetaData() const;
+      const utils::Any &getMetaData() const;
    };
     
   } // namespace cv

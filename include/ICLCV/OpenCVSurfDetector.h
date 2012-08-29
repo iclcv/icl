@@ -37,9 +37,7 @@
 
 #include <ICLCore/ImgBase.h>
 #include <ICLCore/Img.h>
-#ifdef HAVE_QT
-#include <ICLQt/DrawWidget.h>
-#endif
+#include <ICLUtils/VisualizationDescription.h>
 #include <ICLCore/OpenCV.h>
 
 #ifdef HAVE_OPENCV
@@ -88,7 +86,7 @@ namespace icl{
           @param extended
           @param octaves
           @param octavelayer*/
-      OpenCVSurfDetector(const ImgBase *obj=0, double threshold=500, int extended=1,
+      OpenCVSurfDetector(const core::ImgBase *obj=0, double threshold=500, int extended=1,
                          int octaves=3, int octavelayer=4);
   
       /**Destructor*/
@@ -99,14 +97,14 @@ namespace icl{
       /**
           If the parameter objectImg is null an Exception is thrown.
           @param objectImg the image to be set as new reference image*/
-      void setObjectImg(const ImgBase *objectImg) throw (ICLException);
+      void setObjectImg(const core::ImgBase *objectImg) throw (utils::ICLException);
   
       ///returns a copy of the reference image
       /**
           Return a copy of the original reference image. If the reference image
           was not set, the method throws an Exception.
           @return copy reference image*/
-      const ImgBase *getObjectImg() throw (ICLException);
+      const core::ImgBase *getObjectImg() throw (utils::ICLException);
   
       ///returns the surf of the reference image.
       /**
@@ -163,7 +161,7 @@ namespace icl{
           an empty vector is returned.
           @param src source image
           @return computed features*/
-      const std::vector<CvSURFPoint> &extractFeatures(const ImgBase *src) throw (ICLException);
+      const std::vector<CvSURFPoint> &extractFeatures(const core::ImgBase *src) throw (utils::ICLException);
   
       ///computes matches between reference image and passed image.
       /** If the passed image or the reference image is null an
@@ -171,7 +169,7 @@ namespace icl{
           second for the reference image.
           @param image
           @return matches as std::pair in vector*/
-      const std::vector<std::pair<CvSURFPoint, CvSURFPoint> > &match(const ImgBase *image) throw (ICLException);
+      const std::vector<std::pair<CvSURFPoint, CvSURFPoint> > &match(const core::ImgBase *image) throw (utils::ICLException);
   
       ///sets new newObjImage as new reference image and computes matches between passed reference image and passed image.
       /** If one of the passed images null an exception is thrown.
@@ -179,13 +177,23 @@ namespace icl{
           @param image
           @param newObjImage the new reference image
           @return matches as std::pair in vector*/
-      const std::vector<std::pair<CvSURFPoint, CvSURFPoint> > &match(const ImgBase *currentImage,
-                                                                     const ImgBase *newObjImage) throw (ICLException){
+      const std::vector<std::pair<CvSURFPoint, CvSURFPoint> > &match(const core::ImgBase *currentImage,
+                                                                     const core::ImgBase *newObjImage) throw (utils::ICLException){
         setObjectImg(newObjImage);
         return match(currentImage);
       }
   
-  #ifdef HAVE_QT
+      /// for feature visualization
+      static void visualizePoint(utils::VisualizationDescription &target, const CvSURFPoint &p);
+
+      /// for feature visualization
+      static void visualizePoints(utils::VisualizationDescription &target, const std::vector<CvSURFPoint> &ps);
+      
+      /// returns 2 visualization descriptions (first for the object, second for the result)
+      static std::pair<utils::VisualizationDescription,utils::VisualizationDescription>
+      visualizeMatches(const std::vector<std::pair<CvSURFPoint,CvSURFPoint> > &matches);
+      
+  #if 0
       ///draws a point on a widget
       /** @param w drawwidget
           @param p point to be drawn*/

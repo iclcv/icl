@@ -35,11 +35,15 @@
 #include <ICLCV/VectorTracker.h>
 #include <ICLCV/Extrapolator.h>
 #include <ICLCV/HungarianAlgorithm.h>
-#include <ICLCore/Mathematics.h>
 #include <ICLUtils/Exception.h>
 #include <ICLMath/DynMatrix.h>
+
 #include <set>
 #include <limits>
+
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
 
 namespace icl{
   namespace cv{
@@ -169,9 +173,9 @@ namespace icl{
         }
         for(unsigned int y=0;y<a[0].size();++y){
           for(unsigned int x=0;x<a.size();++x){
-            printf("%4.3f  ",a[x][y]);
+            std::cout << a[x][y] << " ";
           }
-          printf("\n");
+          std::cout << std::endl;
         }
       }
   #define SHOW_VEC(x) showVec(x,#x)

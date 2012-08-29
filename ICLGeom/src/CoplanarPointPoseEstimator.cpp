@@ -41,6 +41,9 @@
 #include <ICLUtils/ProgArg.h>
 #include <ICLMath/SimplexOptimizer.h>
 
+using namespace icl::utils;
+using namespace icl::math;
+
 namespace icl{
   namespace geom{
     typedef DynMatrix<float> DMat;

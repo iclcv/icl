@@ -192,11 +192,11 @@ configure_file(${PROJECT_SOURCE_DIR}/include/ICLUtils/config.h.cmake ${PROJECT_S
 
 #set the internal and external deps of the ICL
 #if an entry is not available, it will be empty
-set(ICLUtils_external_dependencies IPP MKL OPENCL)
+set(ICLUtils_external_dependencies IPP MKL OPENCL LIBZ)
 set(ICLMath_external_dependencies EIGEN3)
 set(ICLCore_external_dependencies OPENCV)
 set(ICLFilter_external_dependencies "")
-set(ICLIO_external_dependencies LIBZ LIBJPEG LIBMESASR LIBDC XINE UNICAP IMAGEMAGICK XCF VIDEODEV VIDEODEV2 QT LIBFREENECT LIBPNG PYLON GENICAM OPENNI RSB PROTOBUF)
+set(ICLIO_external_dependencies LIBJPEG LIBMESASR LIBDC XINE UNICAP IMAGEMAGICK XCF VIDEODEV VIDEODEV2 QT LIBFREENECT LIBPNG PYLON GENICAM OPENNI RSB PROTOBUF)
 set(ICLQt_external_dependencies QT OPENGL GLX)
 set(ICLGeom_external_dependencies PCL)
 set(ICLCV_external_dependencies OPENSURF)
@@ -208,9 +208,9 @@ set(ICLMath_internal_dependencies ICLUtils)
 set(ICLCore_internal_dependencies ICLMath)
 set(ICLFilter_internal_dependencies ICLCore)
 set(ICLIO_internal_dependencies ICLFilter)
-set(ICLQt_internal_dependencies ICLIO) # todo: do some have_qt switches ... (we need IO for the camcfg-stuff)
+set(ICLCV_internal_dependencies ICLIO)
+set(ICLQt_internal_dependencies ICLCV) # todo: do some have_qt switches ... (we need IO for the camcfg-stuff)
 set(ICLGeom_internal_dependencies ICLQt)
-set(ICLCV_internal_dependencies ICLGeom)
 set(ICLMarkers_internal_dependencies ICLCV)
 
 

@@ -93,7 +93,7 @@ namespace icl{
         Simple Pose estimation with 4 points needs about 80 ns on an Intel(R) Xeon(R) E5530
         (2.40GHz). If 9 points are used, it needs about 110 ns.
     */
-    class CoplanarPointPoseEstimator : public Configurable{
+    class CoplanarPointPoseEstimator : public utils::Configurable{
   
       /// Internal data structure
       struct Data;
@@ -153,7 +153,8 @@ namespace icl{
           
           note: the camera class is only forward-declared for this file
       */
-      FixedMatrix<float,4,4> getPose(int n, const utils::Point32f *modelPoints, const utils::Point32f *imagePoints, const Camera &cam);
+      math::FixedMatrix<float,4,4> getPose(int n, const utils::Point32f *modelPoints, 
+                                           const utils::Point32f *imagePoints, const Camera &cam);
     };
   } // namespace geom
 }

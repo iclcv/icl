@@ -41,7 +41,7 @@
 #include <ICLCV/ImageRegion.h>
 #include <ICLUtils/StackTimer.h>
 #include <ICLCV/RegionPCAInfo.h>
-#include <ICLCore/CornerDetectorCSS.h>
+#include <ICLCV/CornerDetectorCSS.h>
 
 #include <set>
 
@@ -60,7 +60,7 @@ namespace icl{
       friend bool region_search_border(std::set<IRD*>&,IRD*); 
       friend void collect_subregions_recursive(std::set<IRD*>&,IRD*);
       friend bool is_region_contained(IRD*,IRD*);
-      friend bool region_search_outer_bb(const Rect&,std::set<IRD*>&,IRD*);
+      friend bool region_search_outer_bb(const utils::Rect&,std::set<IRD*>&,IRD*);
     
     private:
       /// image pixle value
@@ -73,13 +73,13 @@ namespace icl{
       mutable int size;
   
       /// underlying image
-      const ImgBase *image;
+      const core::ImgBase *image;
   
       /// list of line segments
       std::vector<LineSegment> segments;
       
       /// meta data, that can be associated with a region structure
-      Any meta;
+      utils::Any meta;
   
       /// structure for representing region-graph information
       struct RegionGraphInfo{
@@ -113,14 +113,14 @@ namespace icl{
           if(thinned_boundary) delete thinned_boundary;
           if(pixels) delete pixels;
         }
-        Rect *boundingBox;      //!< bounding rectangle
-        Point32f *cog;          //!< center of gravity
+        utils::Rect *boundingBox;      //!< bounding rectangle
+        utils::Point32f *cog;          //!< center of gravity
         RegionPCAInfo *pcainfo; //!< spacial PCA information
         int boundaryLength;     //!< length of the region boundary
   
-        std::vector<Point> *boundary;         //!< all boundary pixels
-        std::vector<Point> *thinned_boundary; //!< thinned boundary pixels
-        std::vector<Point> *pixels;           //!< all pixels
+        std::vector<utils::Point> *boundary;         //!< all boundary pixels
+        std::vector<utils::Point> *thinned_boundary; //!< thinned boundary pixels
+        std::vector<utils::Point> *pixels;           //!< all pixels
   
       } *simple; //!< simple image region information
   
@@ -130,7 +130,7 @@ namespace icl{
         float sigma;
         float curvature_cutoff;
         float straight_line_thresh;
-        std::vector<Point32f> resultBuffer;
+        std::vector<utils::Point32f> resultBuffer;
   
         bool isOk(CornerDetectorCSS *css) const{
           return css->getAngleThreshold() == angle_thresh &&
@@ -174,10 +174,10 @@ namespace icl{
       CornerDetectorCSS *css; //!< for corner detection
   
       /// Utility factory function
-      static ImageRegionData *createInstance(CornerDetectorCSS *css, ImageRegionPart *topRegionPart, int id, bool createGraphInfo, const ImgBase *image);
+      static ImageRegionData *createInstance(CornerDetectorCSS *css, ImageRegionPart *topRegionPart, int id, bool createGraphInfo, const core::ImgBase *image);
   
       /// Constructor
-      inline ImageRegionData(CornerDetectorCSS *css, int value, int id, unsigned int segmentSize, bool createGraph,const ImgBase *image):
+      inline ImageRegionData(CornerDetectorCSS *css, int value, int id, unsigned int segmentSize, bool createGraph,const core::ImgBase *image):
         value(value),id(id),size(0),image(image),segments(segmentSize),graph(createGraph ? new RegionGraphInfo : 0),
       simple(0),complex(0),css(css){}
       

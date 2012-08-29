@@ -37,6 +37,9 @@
 #include <ICLFilter/RotateOp.h>
 #include <ICLCV/Quick.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
   namespace cv{
   

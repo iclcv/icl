@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLCV/VQ2D.h                                   **
-** Module : ICLCV                                                  **
+** File   : include/ICLMath/VQ2D.h                                 **
+** Module : ICLMath                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -32,17 +32,15 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef VQ2D_H
-#define VQ2D_H
+#pragma once
 
 #include <stdlib.h>
-#include <ICLCV/VQVectorSet.h>
-#include <ICLCV/VQClusterInfo.h>
-#include <ICLCore/Mathematics.h>
+#include <ICLMath/VQVectorSet.h>
+#include <ICLMath/VQClusterInfo.h>
 #include <ICLUtils/Time.h>
 
 namespace icl{
-  namespace cv{
+  namespace math{
     /// Support class for 2-Dimensional vector quatisation using KMeans \ingroup G_UTILS
     /** Vector Quantisation is internally applied using the <b>KMeans</b> algorithm
         which can be defines as follows:
@@ -102,4 +100,3 @@ namespace icl{
   } // namespace cv
 }
 
-#endif

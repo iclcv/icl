@@ -51,6 +51,7 @@ HSplit gui;
 Rect r = Rect::null;
 Rect objRect;
 
+
 void gui_cb(const std::string &handle){
   Mutex::Locker lock(mutex);
   if(!handle.find("os")){

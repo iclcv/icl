@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLCore/CornerDetectorCSS.h                    **
-** Module : ICLCore                                                **
+** File   : include/ICLCV/CornerDetectorCSS.h                      **
+** Module : ICLCV                                                  **
 ** Authors: Erik Weitnauer                                         **
 **                                                                 **
 **                                                                 **
@@ -40,7 +40,7 @@
 #include <ICLUtils/Configurable.h>
 
 namespace icl{
-  namespace core{
+  namespace cv{
   
     /// Curvature Corner Detector
     /** Implementation of the Curvature Scale Space corner detection algorithm

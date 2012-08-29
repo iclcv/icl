@@ -63,7 +63,7 @@ namespace icl{
            BinaryMap(x,y) = \bigvee\limits_{channels\;\; c} ProximityMap(x,y,c) > significance*255
            \f]
         -# detect connected region in the binary map
-        -# for each detected region with value 1, put a Rect centered at
+        -# for each detected region with value 1, put a utils::Rect centered at
            the region center with size of the template (and cropped to the
            image rect) into the result list
         -# return the result list
@@ -95,23 +95,23 @@ namespace icl{
                this region detector is used, which can speed up Performance in successive calls
                to iclMatchTemplate
     **/
-    std::vector<Rect> iclMatchTemplate(const Img8u &src, 
-                                       const Img8u &templ, 
+    std::vector<utils::Rect> iclMatchTemplate(const core::Img8u &src, 
+                                       const core::Img8u &templ, 
                                        float significance,
-                                       Img8u *buffer=0,
+                                       core::Img8u *buffer=0,
                                        bool clipBuffersToROI=true,
                                        RegionDetector *rd=0,
                                        bool useCrossCorrCoeffInsteadOfSqrDistance=false);
   
     
-    std::vector<Rect> iclMatchTemplate(const Img8u &src, 
-                                       const Img8u *srcMask,
-                                       const Img8u &templ, 
-                                       const Img8u *templMask,
+    std::vector<utils::Rect> iclMatchTemplate(const core::Img8u &src, 
+                                       const core::Img8u *srcMask,
+                                       const core::Img8u &templ, 
+                                       const core::Img8u *templMask,
                                        float significance,
-                                       Img8u *srcBuffer=0,
-                                       Img8u *templBuffer=0,
-                                       Img8u *buffer=0,
+                                       core::Img8u *srcBuffer=0,
+                                       core::Img8u *templBuffer=0,
+                                       core::Img8u *buffer=0,
                                        bool clipBuffersToROI=true,
                                        RegionDetector *rd=0,
                                        bool useCrossCorrCoeffInsteadOfSqrDistance=false);

@@ -180,7 +180,7 @@ namespace icl{
         Lastly, all ImageRegionData structures are filtered w.r.t. the given size and
         value constraints.
     */
-    class RegionDetector : public Uncopyable, public Configurable{
+    class RegionDetector : public utils::Uncopyable, public utils::Configurable{
       
       struct Data;  //!< internal data structure
       Data *m_data; //!< internal data pointer
@@ -216,17 +216,17 @@ namespace icl{
   
       /// main apply function that is used to detect an images image-regions
       /** As explained in \ref DEPTHS, this function is only valid for icl8u, icl16s and icl32s images */
-      const std::vector<ImageRegion> &detect(const ImgBase *image);
+      const std::vector<ImageRegion> &detect(const core::ImgBase *image);
       
       /// Utility function that returns the image regions that contains a given position (e.g. from mouse input)
       /** click always refers to the last detect call. If no region contains the given point (e.g. because
           it is outside the image rectangle), a null-region is returned. */
-      const ImageRegion click(const Point &pos);
+      const ImageRegion click(const utils::Point &pos);
   
       private:
       
       /// Internally used utility function that extracts the input images ROI if necessary
-      void useImage(const ImgBase *image) throw (ICLException);
+      void useImage(const core::ImgBase *image) throw (utils::ICLException);
       
       /// creates region-parts 
       /** see \ref RA */

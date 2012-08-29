@@ -33,7 +33,11 @@
 *********************************************************************/
 
 #include <ICLCV/OpenCVSurfDetector.h>
-using namespace icl;
+#include <ICLCore/OpenCV.h>
+
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
   namespace cv{
   
@@ -120,7 +124,7 @@ namespace icl{
       if(m_data->m_tmp_ipl_img)
         cvReleaseImage(&(m_data->m_tmp_ipl_img));
       if(objectImage){
-        icl::img_to_ipl(objectImage,&(m_data->m_objectImg_org));
+        icl::core::img_to_ipl(objectImage,&(m_data->m_objectImg_org));
         //only on greyscale
         (m_data->m_objectImg) = cvCreateImage(cvGetSize(m_data->m_objectImg_org), IPL_DEPTH_8U, 1);
         if((m_data->m_objectImg_org)->nChannels > 1){
@@ -152,7 +156,7 @@ namespace icl{
   
     const ImgBase *OpenCVSurfDetector::getObjectImg() throw (ICLException){
       if(m_data->m_objectImg_org)
-        return icl::ipl_to_img(m_data->m_objectImg_org);
+        return icl::core::ipl_to_img(m_data->m_objectImg_org);
       else
         throw ICLException("Object image is null");
     }
@@ -231,7 +235,7 @@ namespace icl{
       (m_data->m_ipts).clear();
       if(src){
         IplImage *ipl = 0;
-        icl::img_to_ipl(src,&ipl);
+        icl::core::img_to_ipl(src,&ipl);
         //only on greyscale
         (m_data->m_tmp_ipl_img) = cvCreateImage(cvGetSize(ipl), IPL_DEPTH_8U, 1);
         if(ipl->nChannels > 1){
@@ -328,7 +332,37 @@ namespace icl{
       return m_data->m_obj_ipts;
     }
   
-  #ifdef HAVE_QT
+    void OpenCVSurfDetector::visualizePoint(VisualizationDescription &target, const CvSURFPoint &p){
+      target.color(0,255,0);
+      target.circle(cvRound(p.pt.x),cvRound(p.pt.y),cvRound(p.size*1.2/9.*2));
+    }
+    void OpenCVSurfDetector::visualizePoints(VisualizationDescription &target, const std::vector<CvSURFPoint> &ps){
+      target.color(0,255,0);
+      for(unsigned int i=0;i<ps.size();++i){
+        const CvSURFPoint &p = ps[i];
+        target.circle(cvRound(p.pt.x),cvRound(p.pt.y),cvRound(p.size*1.2/9.*2));
+      }
+    }
+    std::pair<VisualizationDescription,VisualizationDescription>
+    OpenCVSurfDetector::visualizeMatches(const std::vector<std::pair<CvSURFPoint,CvSURFPoint> > &matches){
+      std::pair<VisualizationDescription,VisualizationDescription> d;
+      d.first.color(0,255,0);
+      d.second.color(0,255,0);
+      for(size_t i=0;i<matches.size();++i){
+        { 
+          const CvSURFPoint &p = matches[i].first;
+          d.first.circle(cvRound(p.pt.x),cvRound(p.pt.y),cvRound(p.size*1.2/9.*2));
+        }
+        { 
+          const 
+CvSURFPoint &p = matches[i].second;
+          d.second.circle(cvRound(p.pt.x),cvRound(p.pt.y),cvRound(p.size*1.2/9.*2));
+        }
+      }
+      return d;
+    }
+
+  #if 0
     void OpenCVSurfDetector::visualizeFeature(ICLDrawWidget &w,const CvSURFPoint &p){
       CvPoint center;
       int radius;

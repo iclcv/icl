@@ -57,7 +57,7 @@ namespace icl{
         equation \f$r = x\cdot cos(rho) + y\cdot sin(rho)\f$. Each pixel (x,y) belongs potentially
         to a all lines (rho,r) where this equation is true. 
         Internally, the space of possible lines (sometimes referred a the hough-space) is sampled 
-        (internally we use an instance of Img32s).
+        (internally we use an instance of core::Img32s).
         Rho is mapped to the x-axis (x=0 -> rho=0, x=width-1 -> rho = 2*M_PI) and r is mapped to
         the y-axis (y=0 -> r=minR, y=height-1 -> r=maxR).
         So the size of the internal hough-space becomes 2*M_PI/dRho x (rRange.max-rRange.min)/dR.
@@ -110,7 +110,7 @@ namespace icl{
         to the other two optizations.
         
     */
-    class HoughLineDetector : public Uncopyable{
+    class HoughLineDetector : public utils::Uncopyable{
       public:
   
       /// Create a new HoughLineDetectorInstance
@@ -123,7 +123,7 @@ namespace icl{
           @param blurHoughSpace enables hough space blurring
           @param dilateEntries enables entry dilatation
           @param blurredSampling enables blurred sampling */
-      HoughLineDetector(float dRho, float dR, const Range32f rRange, 
+      HoughLineDetector(float dRho, float dR, const utils::Range32f rRange, 
                         float rInhibitionRange, float rhoInhibitionRange,
                         bool gaussianInhibition=true,
                         bool blurHoughSpace=true,
@@ -131,53 +131,53 @@ namespace icl{
                         bool blurredSampling=false);
   
       /// adds a new point
-      inline void add(const Point &p){ 
+      inline void add(const utils::Point &p){ 
         add_intern(p.x,p.y); 
       }
   
       /// adds new points
-      inline void add(const std::vector<Point> &ps){
+      inline void add(const std::vector<utils::Point> &ps){
         for(unsigned int i=0;i<ps.size();++i) add(ps[i]);
       }
       
       /// adds a new point
-      inline void add(const Point32f &p){ 
+      inline void add(const utils::Point32f &p){ 
         add_intern(p.x,p.y); 
       }
   
       /// adds new points
-      inline void add(const std::vector<Point32f> &ps){
+      inline void add(const std::vector<utils::Point32f> &ps){
         for(unsigned int i=0;i<ps.size();++i) add(ps[i]);
       }
   
       /// adds a new point
       template<class T>
-      inline void add(const FixedColVector<T,2> &p){ 
+      inline void add(const math::FixedColVector<T,2> &p){ 
         add_intern(p[0],p[1]); 
       }    
       
       /// adds new points
       template<class T>
-      inline void add(const std::vector<const FixedColVector<T,2> > &ps){
+      inline void add(const std::vector<const math::FixedColVector<T,2> > &ps){
         for(unsigned int i=0;i<ps.size();++i) add(ps[i]);
       }
   
   
       /// returns current hough-table image
-      const Img32s &getImage() const { return m_image; }
+      const core::Img32s &getImage() const { return m_image; }
   
       /// returns current gaussian inhibition map
-      const Img32f &getInhibitionMap() const { return m_inhibitImage; }
+      const core::Img32f &getInhibitionMap() const { return m_inhibitImage; }
   
       /// sets all hough table entries to 0
       void clear();
       
       /// detects up to max lines
-      std::vector<StraightLine2D> getLines(int max);
+      std::vector<math::StraightLine2D> getLines(int max);
   
       /// detects up to max lines and pushes the line significances into given destination vector
       /** significances are relative to the first line match, which's significance is always 1.0*/
-      std::vector<StraightLine2D> getLines(int max, std::vector<float> &significances);
+      std::vector<math::StraightLine2D> getLines(int max, std::vector<float> &significances);
       
       private:
   
@@ -232,7 +232,7 @@ namespace icl{
       }
     
       /// internal utility function
-      void apply_inhibition(const Point &p);
+      void apply_inhibition(const utils::Point &p);
   
       /// internal utility function
       void add_intern(float x, float y);
@@ -245,7 +245,7 @@ namespace icl{
       
   
       float m_dRho;
-      Range32f m_rRange;
+      utils::Range32f m_rRange;
       int m_w;
       int m_h;
   
@@ -261,9 +261,9 @@ namespace icl{
       bool m_dilateEntries;
       bool m_blurredSampling;
       
-      Channel32s m_lut;
-      Img32s m_image;
-      Img32f m_inhibitImage;
+      core::Channel32s m_lut;
+      core::Img32s m_image;
+      core::Img32f m_inhibitImage;
     };
     
   } // namespace cv

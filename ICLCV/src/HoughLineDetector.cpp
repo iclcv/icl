@@ -36,6 +36,11 @@
 #include <ICLMath/DynMatrixUtils.h>
 #include <ICLFilter/ConvolutionOp.h>
 
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
+using namespace icl::filter;
+
 namespace icl{
   namespace cv{
   

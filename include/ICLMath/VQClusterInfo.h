@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLCV/VQClusterInfo.h                          **
-** Module : ICLCV                                                  **
+** File   : include/ICLMath/VQClusterInfo.h                        **
+** Module : ICLMath                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -32,13 +32,12 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef VQCLUSTERINFO_H
-#define VQCLUSTERINFO_H
+#pragma once
 
 #include <vector>
 
 namespace icl{
-  namespace cv{
+  namespace math{
   
     /// Utiltiy class for accessing meta-information about VQClusters \ingroup G_UTILS
     /** The dimension of a VQCluster info is equal to the center/
@@ -190,5 +189,3 @@ namespace icl{
     };
   } // namespace cv
 }
-
-#endif

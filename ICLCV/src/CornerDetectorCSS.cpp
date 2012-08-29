@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLCore/src/CornerDetectorCSS.cpp                      **
-** Module : ICLCore                                                **
+** File   : ICLCV/src/CornerDetectorCSS.cpp                        **
+** Module : ICLCV                                                  **
 ** Authors: Erik Weitnauer                                         **
 **                                                                 **
 **                                                                 **
@@ -32,14 +32,14 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLCore/CornerDetectorCSS.h>
+#include <ICLCV/CornerDetectorCSS.h>
 #include <ICLUtils/StringUtils.h>
 #include <cstring>
 
 using namespace icl::utils;
 
 namespace icl{
-  namespace core{
+  namespace cv{
     template<class T> inline static float sign(T x){
       return (x<0) ? -1 : (x>0) ? 1 : 0;
     }

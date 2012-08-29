@@ -58,7 +58,7 @@ namespace icl{
       /** @param offs offset vector 
           @param dir direction vector
       */
-      HoughLine(const Point32f &offs, const Point32f &dir);
+      HoughLine(const utils::Point32f &offs, const utils::Point32f &dir);
       
       /// create a line by given distance and angle
       /** @param distance distance from the origin
@@ -66,7 +66,7 @@ namespace icl{
       HoughLine(icl32f distance, icl32f angle);
   
       /// draws the line into an image
-      void sample(ImgBase *image, icl32f r, icl32f g, icl32f b, icl32f alpha=255) const;
+      void sample(core::ImgBase *image, icl32f r, icl32f g, icl32f b, icl32f alpha=255) const;
       
       /// Computes the intersection between two lines
       /** Assuming two lines given in polar coordinates
@@ -123,13 +123,13 @@ namespace icl{
           \f$M\f$ becomes singular and it's inverse cannot be calculated. This function 
           returns NO_INTERSECTION in this case.
       */
-      static Point32f getIntersection(const HoughLine &a, const HoughLine &b);
+      static utils::Point32f getIntersection(const HoughLine &a, const HoughLine &b);
       
       /// calculates all pairwise intersection within a set of lines
-      static std::vector<Point32f> getPairwiseIntersections(const std::vector<HoughLine> &lines);
+      static std::vector<utils::Point32f> getPairwiseIntersections(const std::vector<HoughLine> &lines);
   
       /// indicator for no found intersection (lines intersect in infinity -- max-float)
-      static const Point32f NO_INTERSECTION;
+      static const utils::Point32f NO_INTERSECTION;
       
       /// convenence function for transf. into IppPointPolar
       float rho() const { return m_distance; }
@@ -140,8 +140,8 @@ namespace icl{
     private:
       float m_distance;
       float m_angle;
-      Point32f m_offset;
-      Point32f m_direction;
+      utils::Point32f m_offset;
+      utils::Point32f m_direction;
     };
   } // namespace cv
 }

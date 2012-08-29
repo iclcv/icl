@@ -39,6 +39,7 @@
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/Rect32f.h>
 #include <ICLMath/FixedMatrix.h>
+#include <ICLUtils/VisualizationDescription.h>
 
 namespace icl{
   /** \cond */
@@ -471,18 +472,10 @@ int main(int n, char **ppc){
       /// disables filling primitives
       void nofill();
 
-#if 0    
-      /// fills the whole image area with the given color
-      void clear(float r=0, float g=0, float b=0, float alpha = 255);
-
-      note: this is done automatically now
-      /// clears the drawing command queue 
-      /** When drawing in a real-time systems working thread, do not forget to
-          call reset before drawing a new frame 
-          */
-      void reset();
-#endif
-    
+      /// draws a VisualizationDescription instance
+      /** Internally, the description is decomposed to normal function calls*/
+      void draw(const utils::VisualizationDescription &d);
+      
       /// this function can be reimplemented in derived classes to perform some custom drawing operations
       virtual void customPaintEvent(PaintEngine *e);
 

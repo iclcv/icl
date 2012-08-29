@@ -92,8 +92,8 @@ namespace icl{
   #define ICL_QUICK_TYPE icl32f
     
       
-    /// typedef for the quick images type (this time Img<icl32f>)
-    typedef Img<ICL_QUICK_TYPE> ImgQ;
+    /// typedef for the quick images type (this time core::Img<icl32f>)
+    typedef core::Img<ICL_QUICK_TYPE> ImgQ;
   
     /** @{ @name creator functions **/
     /* {{{ open */
@@ -104,7 +104,7 @@ namespace icl{
         @param channels image channel count
     **/
     template<class T>
-    Img<T> zeros(int width, int height, int channels=1);
+    core::Img<T> zeros(int width, int height, int channels=1);
     
     /***/
     inline ImgQ zeros(int width, int height, int channels=1){ 
@@ -119,7 +119,7 @@ namespace icl{
         @param channels image channel count      
     **/
     template<class T>
-    Img<T> ones(int width, int height, int channels=1);
+    core::Img<T> ones(int width, int height, int channels=1);
   
     /** \cond affinity version */
     inline ImgQ ones(int width, int height, int channels=1){ return ones<ICL_QUICK_TYPE>(width,height,channels);  }
@@ -130,76 +130,76 @@ namespace icl{
         @param filename filename/pattern to read 
     **/
     template<class T>
-    Img<T> load(const std::string &filename);
+    core::Img<T> load(const std::string &filename);
   
      /** \cond affinity version */
     inline ImgQ load(const std::string &filename) { return load<ICL_QUICK_TYPE>(filename); }
     /** \endcond */
     
-    /// loads an image file and returns image in given format (affinity for floats)
+    /// loads an image file and returns image in given core::format (affinity for floats)
     /** see \ref AFFINITY
         @param filename filename to read (*.jpg, *.ppm, *.pgm)
-        @param fmt image format to convert the result to
+        @param fmt image core::format to convert the result to
     **/
     template<class T>
-    Img<T> load(const std::string &filename, format fmt);
+    core::Img<T> load(const std::string &filename, core::format fmt);
   
     /** \cond affinity version */
-    inline ImgQ load(const std::string &filename, format fmt) { return load<ICL_QUICK_TYPE>(filename,fmt); }
+    inline ImgQ load(const std::string &filename, core::format fmt) { return load<ICL_QUICK_TYPE>(filename,fmt); }
     /** \endcond */
     
-    /// create a test image (converted to destination format) (affinity for floats)
+    /// create a test image (converted to destination core::format) (affinity for floats)
     /** see \ref AFFINITY
         @param name identifier for the image:
                     names are: parrot, lena, cameraman, mandril, 
                     windows, flowers, women, house and tree 
-        @param fmt image format to convert the result to
+        @param fmt image core::format to convert the result to
     **/
     template<class T>
-    Img<T> create(const std::string &name, format fmt=formatRGB);
+    core::Img<T> create(const std::string &name, core::format fmt=formatRGB);
   
     /** \cond affinity version */
-    inline ImgQ create(const std::string &name, format fmt=formatRGB) { return create<ICL_QUICK_TYPE>(name,fmt); }
+    inline ImgQ create(const std::string &name, core::format fmt=formatRGB) { return create<ICL_QUICK_TYPE>(name,fmt); }
     /** \endcond */
     
     /// grabs a new image from given device (affinity for floats) 
     /** see \ref AFFINITY
         @param dev device driver type (see Generic Grabber for more details)
         @param devSpec device specifier
-        @param size output image size (grabbers size if Size::null)
+        @param size output image size (grabbers size if utils::Size::null)
         @param fmt output format
         @param releaseGrabber if set to true, the 
                correspondig grabbers are deleted 
                immediately */
     template<class T>
-    Img<T> grab(const std::string &dev, const std::string &devSpec, 
-                const Size &size=Size::null, format fmt=formatRGB,
+    core::Img<T> grab(const std::string &dev, const std::string &devSpec, 
+                const utils::Size &size=utils::Size::null, core::format fmt=formatRGB,
                 bool releaseGrabber=false);
   
     /** \cond affinity version */
     inline ImgQ grab(const std::string &dev, const std::string &devSpec, 
-                     const Size &size=Size::null, format fmt=formatRGB,
+                     const utils::Size &size=utils::Size::null, core::format fmt=formatRGB,
                      bool releaseGrabber=false){
       return grab<ICL_QUICK_TYPE>(dev,devSpec,size,fmt,releaseGrabber);
     }
     /** \endcond */
   
-    /// read an image for pwc webcam with given size, and format (affinity for float)
+    /// read an image for pwc webcam with given size, and core::format (affinity for float)
     /** see \ref AFFINITY
         if releaseGrabber is set to 1, the internal used PWCGrabber is released after this call 
         @param device device for this grabbin call (0,1,2 or 3)
         @param size size of the returned image
-        @param fmt format of the returned image
+        @param fmt core::format of the returned image
         @param releaseGrabber indicates whether the internal grabber object should be released
                               after this pwc call
     **/
     template<class T>
-    inline Img<T> pwc(int device=0, const Size &size=Size(640,480), format fmt=formatRGB, bool releaseGrabber=false){
+    inline core::Img<T> pwc(int device=0, const utils::Size &size=utils::Size(640,480), core::format fmt=formatRGB, bool releaseGrabber=false){
       return grab<T>("pwc",str(device),size,fmt,releaseGrabber);
     }
     
     /** \cond affinity version */
-    inline ImgQ pwc(int device=0, const Size &size=Size(640,480), format fmt=formatRGB, bool releaseGrabber=false){
+    inline ImgQ pwc(int device=0, const utils::Size &size=utils::Size(640,480), core::format fmt=formatRGB, bool releaseGrabber=false){
       return grab<ICL_QUICK_TYPE>("pwc",str(device),size,fmt,releaseGrabber);
     }
     /** \endcond */
@@ -214,74 +214,74 @@ namespace icl{
     /** @param image source image 
         @return converted image 
     **/
-    Img8u cvt8u(const ImgQ &image);
+    core::Img8u cvt8u(const ImgQ &image);
   
     /// Converts the image into depth16
     /** @param image source image 
         @return converted image 
     **/
-    Img16s cvt16s(const ImgQ &image);
+    core::Img16s cvt16s(const ImgQ &image);
   
     /// Converts the image into depth32s
     /** @param image source image 
         @return converted image 
     **/
-    Img32s cvt32s(const ImgQ &image);
+    core::Img32s cvt32s(const ImgQ &image);
   
     /// Converts the image into depth32f
     /** @param image source image 
         @return converted image 
     **/
-    Img32f cvt32f(const ImgQ &image);
+    core::Img32f cvt32f(const ImgQ &image);
   
     /// Converts the image into depth64f
     /** @param image source image 
         @return converted image 
     **/
-    Img64f cvt64f(const ImgQ &image);
+    core::Img64f cvt64f(const ImgQ &image);
   
-    /// Converts a given Img8u into an ImgQ
+    /// Converts a given core::Img8u into an ImgQ
     /** @param image source image 
         @return converted image 
     **/
-    ImgQ cvt(const Img8u &image);
+    ImgQ cvt(const core::Img8u &image);
   
-    /// Converts a given Img16s into an ImgQ
+    /// Converts a given core::Img16s into an ImgQ
     /** @param image source image 
         @return converted image 
     **/
-    ImgQ cvt(const Img16s &image);
+    ImgQ cvt(const core::Img16s &image);
   
-    /// Converts a given Img32s into an ImgQ
+    /// Converts a given core::Img32s into an ImgQ
     /** @param image source image 
         @return converted image 
     **/
-    ImgQ cvt(const Img32s &image);
+    ImgQ cvt(const core::Img32s &image);
   
-    /// Converts a given Img32f into an ImgQ
+    /// Converts a given core::Img32f into an ImgQ
     /** @param image source image 
         @return converted image 
     **/
-    ImgQ cvt(const Img32f &image);
+    ImgQ cvt(const core::Img32f &image);
   
-    /// Converts a given Img64f into an ImgQ
+    /// Converts a given core::Img64f into an ImgQ
     /** @param image source image 
         @return converted image 
     **/
-    ImgQ cvt(const Img64f &image);
+    ImgQ cvt(const core::Img64f &image);
   
-    /// Converts a given ImgBase into an ImgQ
+    /// Converts a given core::ImgBase into an ImgQ
     /** @param image source image 
         @return conveted image 
     **/
-    ImgQ cvt(const ImgBase *image);
+    ImgQ cvt(const core::ImgBase *image);
   
   
-    /// Converts a given ImgBase into an ImgQ
+    /// Converts a given core::ImgBase into an ImgQ
     /** @param image source image 
         @return conveted image 
     **/
-    ImgQ cvt(const ImgBase &image);
+    ImgQ cvt(const core::ImgBase &image);
     /** @} **/
     /* }}} */
   
@@ -296,22 +296,22 @@ namespace icl{
                       closing 
     **/
     template<class T>
-    Img<T> filter(const Img<T> &image, const std::string &filter);
+    core::Img<T> filter(const core::Img<T> &image, const std::string &filter);
     
     /** \cond affinity version */
     inline ImgQ filter(const ImgQ &image, const std::string &filter){
-      return icl::qt::filter<float>(image,filter);
+      return icl::cv::filter<float>(image,filter);
     }
     /** \endcond */
   
     /// applies gaussian blur to a given image (using a maskRadius*2+1-sized gaussian filter)
     /** affinity for floats (see @ref AFFINITY)*/
     template<class T>
-    Img<T> blur(const Img<T> &image, int maskRadius=1);
+    core::Img<T> blur(const core::Img<T> &image, int maskRadius=1);
     
     /** \cond */
     inline ImgQ blur(const ImgQ &image, int maskRadius=1){
-      return icl::blur<float>(image,maskRadius);
+      return icl::cv::blur<float>(image,maskRadius);
     }
     /** \endcond */
     
@@ -319,7 +319,7 @@ namespace icl{
     /** @param image source image*
         @param fmt destination image format
     **/
-    ImgQ cc(const ImgQ& image, format fmt);
+    ImgQ cc(const ImgQ& image, core::format fmt);
     
     /// converts a given image to formatRGB
     /** @param image source image **/
@@ -357,7 +357,7 @@ namespace icl{
     ImgQ channel(const ImgQ &image,int channel);
   
     /// reduces an images quantisation levels
-    /** Internally the image is coverted to Img8u and back to
+    /** Internally the image is coverted to core::Img8u and back to
         apply this operation.
         @param image source image
         @param levels gray level count for each channel of the 
@@ -374,17 +374,17 @@ namespace icl{
     /// deep copy for an image
     /** @param image source image **/
     template<class T>
-    Img<T> copy(const Img<T> &image);
+    core::Img<T> copy(const core::Img<T> &image);
     
     /// deep copy of an images roi
     /** @param image source image **/
     template <class T>
-    Img<T> copyroi(const Img<T> &image);
+    core::Img<T> copyroi(const core::Img<T> &image);
     
     /// normalize an images range to [0,255]
     /** @param image source image **/
     template<class T>
-    Img<T> norm(const Img<T> &image);
+    core::Img<T> norm(const core::Img<T> &image);
     
     /// horizontal flip of an image
     /** @param image source image **/
@@ -405,7 +405,7 @@ namespace icl{
         @param filename filename to write the image to.
     **/
     template<class T>
-    void save(const Img<T> &image, const std::string &filename);
+    void save(const core::Img<T> &image, const std::string &filename);
     
     /// shows an image using TestImages::show
     /** The image is wrote to disk into a temporary file. Then it
@@ -416,7 +416,7 @@ namespace icl{
         @see showSetput(const string&, const stirng&, int)
     **/
     template<class T>
-    void show(const Img<T> &image);
+    void show(const core::Img<T> &image);
     
     
     /// setup image visualisation programm
@@ -436,7 +436,7 @@ namespace icl{
     /// print the images parameters to std::out
     /** @param image image to print to std::out **/
     template<class T>
-    void print(const Img<T> &image);
+    void print(const core::Img<T> &image);
   
     /** @} **/
     /* }}} */
@@ -624,7 +624,7 @@ namespace icl{
   
   
     /// internal stuct, used for deep image copies
-    /** @see icl::roi(Img<icl32f> &)*/
+    /** @see icl::roi(core::Img<icl32f> &)*/
     struct ImgROI{
       /// image data
       ImgQ image;
@@ -731,7 +731,7 @@ namespace icl{
     /** @param image destination image 
         @param p position 
     **/
-    inline void cross(ImgQ &image, const Point &p) { cross(image,p.x,p.y); }
+    inline void cross(ImgQ &image, const utils::Point &p) { cross(image,p.x,p.y); }
   
     /// draws a rect into an image
     /** @param image destination image
@@ -748,14 +748,14 @@ namespace icl{
         @param r rect to draw
         @param rounding rounded corners (in pixels)
     **/
-    inline void rect(ImgQ &image, const Rect &r, int rounding=0){ rect(image,r.x,r.y,r.width,r.height,rounding); }
+    inline void rect(ImgQ &image, const utils::Rect &r, int rounding=0){ rect(image,r.x,r.y,r.width,r.height,rounding); }
     
     /// draws a triangle into an image
     /** given 3 points (x1,y1),(x2,y2),(x3,y3) */
     void triangle(ImgQ &image, int x1,int y1, int x2, int y2, int x3, int y3);
   
     /// draws a triangle into an image
-    inline void triangle(ImgQ &image, const Point &a, const Point &b, const Point &c){
+    inline void triangle(ImgQ &image, const utils::Point &a, const utils::Point &b, const utils::Point &c){
       triangle(image,a.x,a.y,b.x,b.y,c.x,c.y);
     }
     
@@ -773,13 +773,13 @@ namespace icl{
         @param p1 fist point
         @param p2 second point
     **/
-    inline void line(ImgQ &image, const Point &p1, const Point &p2){ line(image,p1.x,p1.y, p2.x,p2.y); }
+    inline void line(ImgQ &image, const utils::Point &p1, const utils::Point &p2){ line(image,p1.x,p1.y, p2.x,p2.y); }
   
     /// draws a strip of connected lines
     /** @param image destination image
         @param pts list of points
         @param closeLoop if true, then also the first and the last point is connected */
-    void linestrip(ImgQ &image, const std::vector<Point> &pts, bool closeLoop=true);
+    void linestrip(ImgQ &image, const std::vector<utils::Point> &pts, bool closeLoop=true);
     
     /// draw a single pixel into an image
     /** @param image destination image 
@@ -792,19 +792,19 @@ namespace icl{
     /** @param image destination image 
         @param p pos of the pixel
     **/
-    inline void pix(ImgQ &image, const Point &p){ pix(image,p.x,p.y); }
+    inline void pix(ImgQ &image, const utils::Point &p){ pix(image,p.x,p.y); }
     
     /// draws a set of points into an image
     /** @param image destination image
         @param pts vector of points
     **/
-    void pix(ImgQ &image, const vector<Point> &pts);
+    void pix(ImgQ &image, const vector<utils::Point> &pts);
   
     /// draws a set of point sets into an image
     /** @param image destination image
         @param pts vector of vector of points to draw
     **/
-    void pix(ImgQ &image, const vector<vector<Point> > &pts);
+    void pix(ImgQ &image, const vector<vector<utils::Point> > &pts);
     
     /// renders a filled circle into an image
     /** This function renders a filled circle into a 3 or 1 channel image (only with fill color!)
@@ -833,7 +833,7 @@ namespace icl{
         @param p pos of the lower left corner of the text
         @param sText text to render
     **/
-    inline void text(ImgQ &image, const Point &p,const string &sText){ text(image,p.x,p.y,sText); }
+    inline void text(ImgQ &image, const utils::Point &p,const string &sText){ text(image,p.x,p.y,sText); }
   
     /// labels an image in the upper left corner (only available with Qt-Support)
     /** @param image image to label

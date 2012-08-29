@@ -166,7 +166,7 @@ void init(){
 
 void run(){
   DrawHandle draw = gui["image"];
-  const ImgBase *I = grabber.grab();
+  const core::ImgBase *I = grabber.grab();
 
   draw = I;
 

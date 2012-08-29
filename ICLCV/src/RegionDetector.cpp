@@ -48,6 +48,8 @@
 
 #include <ICLUtils/StackTimer.h>
 
+using namespace icl::utils;
+using namespace icl::core;
 namespace icl{
   namespace cv{
   
