@@ -34,6 +34,11 @@
 
 #include <ICLGeom/GridSceneObject.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+using namespace icl::math;
+using namespace icl::qt;
+
 namespace icl{
   namespace geom{
     void GridSceneObject::init(int nXCells, int nYCells, const std::vector<Vec> &allGridPoints, bool lines, bool quads) throw (ICLException){

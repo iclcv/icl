@@ -41,6 +41,7 @@
 namespace icl{
   namespace geom{
     
+#if 0
     /// Utility Structure used for the Convex-Hull Algorithm
     struct CHPoint{
       CHPoint(float x=0, float y=0, Vec *v=0):x(x),y(y),v(v){}
@@ -86,6 +87,8 @@ namespace icl{
     **/
     int chainHull_2D(CHPoint* P, int n, CHPoint* H);
   
+#endif
+
     /// New implementation of convex hull monotone chain algorithm!
     /** @param P list of utils::Point (input) call-by-value, as we need an inplace-sort
                  internally
@@ -102,9 +105,5 @@ namespace icl{
     */
     std::vector<utils::Point32f> convexHull(std::vector<utils::Point32f> P);
   
-  
-    
-  
-    
   } // namespace geom
 }

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_OPENCVSURFDETECTOR_H_
-#define ICL_OPENCVSURFDETECTOR_H_
+#pragma once
 
 #include <ICLCore/ImgBase.h>
 #include <ICLCore/Img.h>
@@ -63,8 +62,7 @@ namespace icl{
       Data *m_data;
   
       ///internal match function
-      /**
-          Finds matches between surf of object image and passed
+      /** Finds matches between surf of object image and passed
           surf of given image.
           @param vector of surfpoints*/
       void match(std::vector<CvSURFPoint> *ipts);
@@ -78,8 +76,7 @@ namespace icl{
       public:
   
       ///Creates a new OpenSurfDetector object with standard parameters.
-      /**
-          Creates a new OpenSurfDetector object. Standard parameters are
+      /** Creates a new OpenSurfDetector object. Standard parameters are
           are set, but one can change these later.
           @param obj the object image
           @param threshold
@@ -94,21 +91,18 @@ namespace icl{
   
   
       ///sets a new image as reference image und  computes surf for it
-      /**
-          If the parameter objectImg is null an Exception is thrown.
+      /** If the parameter objectImg is null an Exception is thrown.
           @param objectImg the image to be set as new reference image*/
       void setObjectImg(const core::ImgBase *objectImg) throw (utils::ICLException);
   
       ///returns a copy of the reference image
-      /**
-          Return a copy of the original reference image. If the reference image
+      /** Return a copy of the original reference image. If the reference image
           was not set, the method throws an Exception.
           @return copy reference image*/
       const core::ImgBase *getObjectImg() throw (utils::ICLException);
   
       ///returns the surf of the reference image.
-      /**
-          If the reference image was not set, the returned vector is empty.
+      /** If the reference image was not set, the returned vector is empty.
           @return found features*/
       const std::vector<CvSURFPoint> &getObjectImgFeatures();
   
@@ -193,24 +187,7 @@ namespace icl{
       static std::pair<utils::VisualizationDescription,utils::VisualizationDescription>
       visualizeMatches(const std::vector<std::pair<CvSURFPoint,CvSURFPoint> > &matches);
       
-  #if 0
-      ///draws a point on a widget
-      /** @param w drawwidget
-          @param p point to be drawn*/
-      static void visualizeFeature(ICLDrawWidget &w,const CvSURFPoint &p);
-      ///draws all points in vector on a widget
-      /** @param w drawwidget
-          @param features vector of points to be drawn*/
-      static void visualizeFeatures(ICLDrawWidget &w, const std::vector<CvSURFPoint> &features);
-      ///draws matches on widgets
-      /** @param w_object drawwidget for the reference image
-          @param w_result drawwidget for image
-          @param matches vector of matches to be drawn*/
-      static void visualizeMatches(ICLDrawWidget &w_object,ICLDrawWidget &w_result, std::vector<std::pair<CvSURFPoint, CvSURFPoint> > &matches);
-  #endif
-  
     };
   } // namespace cv
 }
 
-#endif /* ICL_OPENCVSURFDETECTOR_H_ */

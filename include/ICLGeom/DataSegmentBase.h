@@ -166,7 +166,7 @@ namespace icl{
       /// Constructor with given parameters
       inline DataSegmentBase(void *data=0, size_t stride=0, 
                              size_t numElements=0, icl32s organizedWidth=-1, 
-                             core::depth dataDepth=depth8u, size_t elemDim=0):
+                             core::depth dataDepth=core::depth8u, size_t elemDim=0):
         data((icl8u*)data),stride(stride),numElements(numElements),
         organizedWidth(organizedWidth),dataDepth(dataDepth),elemDim(elemDim){}
       

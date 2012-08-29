@@ -34,10 +34,16 @@
 
 #include <ICLGeom/SceneObject.h>
 #include <fstream>
-#include <ICLIO/File.h>
+#include <ICLUtils/File.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLGeom/PlaneEquation.h>
 #include <ICLGeom/Scene.h>
+
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
+using namespace icl::qt;
+
 
 namespace icl{
   namespace geom{
@@ -955,9 +961,9 @@ namespace icl{
       if(!ts.size()) throw ICLException("getClosestVertex called on an object that has not vertices");
       std::vector<float> distances(ts.size());
       for(unsigned int i=0;i<ts.size();++i){
-        distances[i] = (icl::sqr(pWorld[0]-ts[i][0]) + 
-                        icl::sqr(pWorld[1]-ts[i][1]) + 
-                        icl::sqr(pWorld[2]-ts[i][2]) ); // no sqrt(..) neccessary since we need to find the max. only
+        distances[i] = (utils::sqr(pWorld[0]-ts[i][0]) + 
+                        utils::sqr(pWorld[1]-ts[i][1]) + 
+                        utils::sqr(pWorld[2]-ts[i][2]) ); // no sqrt(..) neccessary since we need to find the max. only
       }
       int idx = (int)(std::min_element(distances.begin(),distances.end()) - distances.begin());
       if(relative) return m_vertices[idx];

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_OPENSURFDETECTOR_H_
-#define ICL_OPENSURFDETECTOR_H_
+#pragma once
 
 #include <ICLUtils/VisualizationDescription.h>
 #include <ICLCore/ImgBase.h>
@@ -190,29 +189,7 @@ namespace icl{
       static std::pair<utils::VisualizationDescription,utils::VisualizationDescription>
       visualizeMatches(const std::vector<std::pair<Ipoint,Ipoint> > &matches);
  
-#if 0
-  	///draws a point on a widget
-  	/**
-  	 @param w drawwidget
-  	 @param p point to be drawn*/
-  	static void visualizeFeature(ICLDrawWidget &w,const Ipoint &p);
-  
-  	///draws all points in vector on a widget
-  	/**
-  	 @param w drawwidget
-  	 @param features vector of points to be drawn*/
-  	static void visualizeFeatures(ICLDrawWidget &w, const std::vector<Ipoint> &features);
-  
-  	///draws matches on widgets
-  	/**
-  	 @param w_object drawwidget for the reference image
-  	 @param w_result drawwidget for image
-  	 @param matches vector of matches to be drawn*/
-  	static void visualizeMatches(ICLDrawWidget &w_object,ICLDrawWidget &w_result, std::vector<std::pair<Ipoint, Ipoint> > &matches);
-  #endif
-  
-  } // namespace cv
-};
+    } // namespace cv
+  };
 }
 
-#endif /* ICL_OPENSURFDETECTOR_H_ */

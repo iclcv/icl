@@ -41,6 +41,7 @@
 namespace icl{
   namespace utils{
     
+
     /// Abstract class for visualization tasks
     /** The visualization class provides an interface for tools
         to provide visualization information. It's idea is

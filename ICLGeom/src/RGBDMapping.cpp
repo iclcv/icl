@@ -36,6 +36,10 @@
 #include <ICLGeom/Camera.h>
 #include <ICLUtils/ConfigFile.h>
 
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
+
 namespace icl{
   namespace geom{
     

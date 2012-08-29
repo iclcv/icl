@@ -43,7 +43,7 @@
 
 namespace icl{
   namespace geom{
-    class RGBDImageSceneObject : public SceneObject, public Configurable{
+    class ICL_DEPRECATED RGBDImageSceneObject : public SceneObject, public utils::Configurable{
       /// internal data structure
       struct Data;
       
@@ -122,22 +122,22 @@ namespace icl{
   
       /// returns the objects 3D points as Array2D<Vec>
       /** The returned Array2D<Vec> is just a shallow wrapper around the internal data pointer. */
-      Array2D<Vec> getPoints();
+      utils::Array2D<Vec> getPoints();
   
       
       /// returns the objects 3D points as Array2D<Vec> (const version)
       /** The returned Array2D<Vec> is just a shallow wrapper around the internal data pointer. */
-      const Array2D<Vec> getPoints() const;
+      const utils::Array2D<Vec> getPoints() const;
         
       /// returns the objects point colors Array2D<Vec>
       /** The returned Array2D<GeomColor> is just a shallow wrapper around the internal data pointer. 
           The color data is just valid if RGBDImageSceneObject::update was called with a non-null rgbImage. */
-      Array2D<GeomColor> getColors();
+      utils::Array2D<GeomColor> getColors();
   
       /// returns the objects point colors Array2D<Vec> (const version)
       /** The returned Array2D<GeomColor> is just a shallow wrapper around the internal data pointer. 
           The color data is just valid if RGBDImageSceneObject::update was called with a non-null rgbImage. */
-      const Array2D<GeomColor> getColors() const;
+      const utils::Array2D<GeomColor> getColors() const;
   
       /// prepares the object for rendering
       virtual void prepareForRendering();

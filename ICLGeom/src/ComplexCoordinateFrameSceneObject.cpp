@@ -33,6 +33,11 @@
 *********************************************************************/
 #include <ICLGeom/ComplexCoordinateFrameSceneObject.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+using namespace icl::math;
+using namespace icl::qt;
+
 namespace icl{
   namespace geom{
     ComplexCoordinateFrameSceneObject::ComplexCoordinateFrameSceneObject(float axisLength,float axisThickness, bool withLabels){

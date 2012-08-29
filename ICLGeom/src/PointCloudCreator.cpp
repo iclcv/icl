@@ -35,6 +35,11 @@
 #include <ICLGeom/PointCloudCreator.h>
 #include <ICLCore/Img.h>
 
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
+using namespace icl::qt;
+
 namespace icl{
   namespace geom{
     struct PointCloudCreator::Data{

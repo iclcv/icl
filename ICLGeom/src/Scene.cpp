@@ -63,6 +63,11 @@
 #include <set>
 #include <ICLUtils/Time.h>
 
+
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
+
 namespace icl{
   namespace geom{
   
@@ -1104,7 +1109,7 @@ namespace icl{
       }
       
       GLContext::unset_current_glx_context();
-      p.buf.setTime(Time::now());
+      p.buf.setTime(icl::utils::Time::now());
       if(depthBuffer) depthBuffer->setTime(p.buf.getTime());
       return p.buf;
     }

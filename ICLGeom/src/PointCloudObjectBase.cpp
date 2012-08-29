@@ -45,6 +45,11 @@
 #include <GL/glu.h>
 #endif
 
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
+using namespace icl::qt;
+
 namespace icl{
   namespace geom{
   

@@ -34,9 +34,9 @@
 
 #pragma once
 
-#pragma onceer must not be included if HAVE_OPENGL is not defined"
+#ifndef HAVE_OPENGL
+#warning "this header must not be included if HAVE_OPENGL is not defined"
 #else
-
 
 #include <ICLGeom/GeomDefs.h>
 #include <ICLCore/Img.h>
@@ -93,7 +93,7 @@ namespace icl{
         const std::vector<Vec> &vertices;            //!< list of shared vertices
         const std::vector<Vec> &normals;             //!< list of shared normals
         const std::vector<GeomColor> &vertexColors;  //!< list of vertex colors
-        const std::vector<SmartPtr<GLImg> > &sharedTextures; //!< list of shared textures
+        const std::vector<utils::SmartPtr<qt::GLImg> > &sharedTextures; //!< list of shared textures
         bool lineColorsFromVertices;                 //!< line coloring
         bool triangleColorsFromVertices;             //!< triangle coloring
         bool quadColorsFromVertices;                 //!< quad coloring
@@ -115,7 +115,7 @@ namespace icl{
     };
     
     /// line primitive (the line references 2 vertices)
-    struct LinePrimitive : public FixedColVector<int,2>, public Primitive{
+    struct LinePrimitive : public math::FixedColVector<int,2>, public Primitive{
       /// super type
       typedef  FixedColVector<int,2> super; 
       
@@ -134,7 +134,7 @@ namespace icl{
     };
   
     /// triangle primitive
-    struct TrianglePrimitive : public FixedColVector<int,6>, public Primitive{
+    struct TrianglePrimitive : public math::FixedColVector<int,6>, public Primitive{
       /// super type
       typedef  FixedColVector<int,6> super; 
       
@@ -153,7 +153,7 @@ namespace icl{
     };
   
     /// quad primitive
-    struct QuadPrimitive : public FixedColVector<int,8>, public Primitive{
+    struct QuadPrimitive : public math::FixedColVector<int,8>, public Primitive{
       /// super type
       typedef  FixedColVector<int,8> super; 
       
@@ -184,7 +184,7 @@ namespace icl{
           - first row: column i -> vertex index i
           - 2nd row: (optional) column i -> normal index i
       */
-      Array2D<int> idx;
+      utils::Array2D<int> idx;
       
       /// constructor
       PolygonPrimitive(int n,const int *vidx, const GeomColor &color,const int *nidx=0):
@@ -247,13 +247,13 @@ namespace icl{
            will always be updated before the texture is drawn. In this way,
            one can easily create video textures. */
     struct TexturePrimitive : public QuadPrimitive, public AlphaFuncProperty{
-      GLImg texture;         //!<< internal texture
+      qt::GLImg texture;         //!<< internal texture
       const core::ImgBase *image;  //!<< set if the texture shall be updated every time it is drawn
   
       /// create with given texture that is either copied once or everytime the primitive is rendered
       TexturePrimitive(int a, int b, int c, int d, 
                        const core::ImgBase *image=0, bool createTextureOnce=true, 
-                       int na=-1, int nb=-1, int nc=-1, int nd=-1, scalemode sm=interpolateLIN):
+                       int na=-1, int nb=-1, int nc=-1, int nd=-1, core::scalemode sm=core::interpolateLIN):
       QuadPrimitive(a,b,c,d,na,nb,nc,nd), texture(image,sm),
         image(createTextureOnce ? 0 : image){
         type = Primitive::texture;
@@ -262,7 +262,7 @@ namespace icl{
       /// create with given texture, that is copied once
       TexturePrimitive(int a, int b, int c, int d, 
                        const core::Img8u &image,
-                       int na=-1, int nb=-1, int nc=-1, int nd=-1, scalemode sm=interpolateLIN):
+                       int na=-1, int nb=-1, int nc=-1, int nd=-1, core::scalemode sm=core::interpolateLIN):
       QuadPrimitive(a,b,c,d,na,nb,nc,nd), texture(&image,sm), 
         image(0){
         type = Primitive::texture;
@@ -289,7 +289,7 @@ namespace icl{
       protected:
       friend class SceneObject;
       int w,h;
-      GLImg texture;
+      qt::GLImg texture;
       const icl32f *px, *py, *pz, *pnx,  *pny, *pnz;
       int stride;
       const core::ImgBase *image;
@@ -298,7 +298,7 @@ namespace icl{
       TextureGridPrimitive(int w, int h, const core::ImgBase *image,
                            const icl32f *px, const icl32f *py, const icl32f *pz,
                            const icl32f *pnx=0, const icl32f *pny=0, const icl32f *pnz=0,
-                           int stride = 1,bool createTextureOnce=true,scalemode sm=interpolateLIN):
+                           int stride = 1,bool createTextureOnce=true,core::scalemode sm=core::interpolateLIN):
       Primitive(Primitive::texture),w(w),h(h),texture(image,sm),px(px),py(py),pz(pz),
       pnx(pnx),pny(pny),pnz(pnz),stride(stride),image(createTextureOnce ? 0 : image){}
   
@@ -318,14 +318,14 @@ namespace icl{
     };
   
     class TwoSidedTextureGridPrimitive : public TextureGridPrimitive{
-      GLImg back;
+      qt::GLImg back;
       const core::ImgBase *iback;
       public:
       TwoSidedTextureGridPrimitive(int w, int h, const core::ImgBase *front, const core::ImgBase *back,
                                    const icl32f *px, const icl32f *py, const icl32f *pz,
                                    const icl32f *pnx=0, const icl32f *pny=0, const icl32f *pnz=0,
                                    int stride = 1,bool createFrontOnce=true,
-                                   bool createBackOnce=true, scalemode sm=interpolateLIN):
+                                   bool createBackOnce=true, core::scalemode sm=core::interpolateLIN):
       TextureGridPrimitive(w,h,front,px,py,pz,pnx,pny,pnz,stride,createFrontOnce,sm),back(back,sm),
       iback(createBackOnce ? 0 : back){}
       
@@ -357,7 +357,7 @@ namespace icl{
   
     /// Texture Primitive for rendering textures with arbitrary texture coordinates
     struct GenericTexturePrimitive : public Primitive, public AlphaFuncProperty{
-      SmartPtr<GLImg> texture;
+      utils::SmartPtr<qt::GLImg> texture;
       const core::ImgBase *image;
   
       std::vector<Vec> ps;
@@ -385,7 +385,7 @@ namespace icl{
       /// deep copy method
       virtual Primitive *copy() const {
         GenericTexturePrimitive *cpy = new GenericTexturePrimitive(*this);
-        cpy->texture = new GLImg(image ? image : texture->extractImage());
+        cpy->texture = new qt::GLImg(image ? image : texture->extractImage());
         return cpy;
       }
     };
@@ -414,7 +414,7 @@ namespace icl{
                     const GeomColor &textColor=GeomColor(255,255,255,255),
                     int na=-1, int nb=-1, int nc=-1, int nd=-1,
                     int billboardHeight=0,
-                    scalemode sm=interpolateLIN);
+                    core::scalemode sm=core::interpolateLIN);
       
       /// render method
       virtual void render(const Primitive::RenderContext &ctx);
@@ -438,3 +438,4 @@ namespace icl{
   } // namespace geom
 }
 
+#endif

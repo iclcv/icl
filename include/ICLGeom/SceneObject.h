@@ -34,7 +34,8 @@
 
 #pragma once
 
-#pragma onceer must not be included if HAVE_OPENGL is not defined"
+#ifndef HAVE_OPENGL
+#warning "this header must not be included if HAVE_OPENGL is not defined"
 #else
 
 #include <ICLUtils/Mutex.h>
@@ -244,10 +245,10 @@ namespace icl{
       void addVertex(const Vec &p, const GeomColor &color=GeomColor(255,0,0,255));
   
       /// adds a GLImg as shared texture
-      void addSharedTexture(SmartPtr<GLImg> gli);
+      void addSharedTexture(utils::SmartPtr<qt::GLImg> gli);
       
       /// adds an core::ImgBase * as shared texutre
-      void addSharedTexture(const core::ImgBase *image, scalemode sm=interpolateLIN);
+      void addSharedTexture(const core::ImgBase *image, core::scalemode sm=core::interpolateLIN);
   
   
       /// adds a new normal to this object
@@ -289,13 +290,13 @@ namespace icl{
                       const core::ImgBase *texture, 
                       int na, int nb, int nc, int nd,
                       bool createTextureOnce=true,
-                      scalemode sm = interpolateLIN);
+                      core::scalemode sm = core::interpolateLIN);
   
       /// convenience method for creation of a texture with auto-normals
       inline void addTexture(int a, int b, int c, int d, 
                              const core::ImgBase *texture, 
                              bool createTextureOnce=true,
-                             scalemode sm = interpolateLIN){
+                             core::scalemode sm = core::interpolateLIN){
         addTexture(a,b,c,d,texture,-1,-1,-1,-1,createTextureOnce,sm);
       }
   
@@ -316,7 +317,7 @@ namespace icl{
       void addTextureGrid(int w, int h, const core::ImgBase *image,
                           const icl32f *px, const icl32f *py, const icl32f *pz,
                           const icl32f *pnx=0, const icl32f *pny=0, const icl32f *pnz=0,
-                          int stride = 1,bool createTextureOnce=true,scalemode sm=interpolateLIN);
+                          int stride = 1,bool createTextureOnce=true,core::scalemode sm=core::interpolateLIN);
   
       /// adds a texture grid that has two different texture for the two faces
       /** Internally, the TwoSidedTextureGridPrimitive is used */
@@ -324,7 +325,7 @@ namespace icl{
                              const icl32f *px, const icl32f *py, const icl32f *pz,
                              const icl32f *pnx=0, const icl32f *pny=0, const icl32f *pnz=0,
                              int stride = 1,bool createFrontOnce=true,
-                             bool createBackOnce=true, scalemode sm=interpolateLIN);
+                                  bool createBackOnce=true, core::scalemode sm=core::interpolateLIN);
   
   
       /// adds text-texture quad -primitive to this object
@@ -334,13 +335,13 @@ namespace icl{
       void addTextTexture(int a, int b, int c, int d, const std::string &text,
                           const GeomColor &color, 
                           int na, int nb, int nc, int nd,
-                          int textSize,scalemode sm = interpolateLIN);
+                          int textSize,core::scalemode sm = core::interpolateLIN);
                           
   
       /// convenience method for creation of a text-texture with auto-normals
       inline void addTextTexture(int a, int b, int c, int d, const std::string &text,
                           const GeomColor &color=GeomColor(255,255,255,255), 
-                                 int textSize=30, scalemode sm = interpolateLIN){
+                                 int textSize=30, core::scalemode sm = core::interpolateLIN){
         addTextTexture(a,b,c,d,text,color,-1,-1,-1,-1,textSize, sm);
       }
       
@@ -352,7 +353,7 @@ namespace icl{
       */
       void addText(int a, const std::string &text, float billboardHeight=10, 
                    const GeomColor &color=GeomColor(255,255,255,255),
-                   int textRenderSize=30, scalemode sm=interpolateLIN);
+                   int textRenderSize=30, core::scalemode sm=core::interpolateLIN);
   
       /// adds a custom primitive
       /** This should only be used for non-directly supported primitives 
@@ -633,13 +634,13 @@ namespace icl{
       
       /// sets a fragment shader to use for this object
       /** use set fragment shader (0) in order to delete the fragment shader */
-      void setFragmentShader(GLFragmentShader *shader);
+      void setFragmentShader(qt::GLFragmentShader *shader);
       
       /// returns the current fragment shader (or NULL if non was given)
-      inline GLFragmentShader *getFragmentShader() { return m_fragmentShader; }
+      inline qt::GLFragmentShader *getFragmentShader() { return m_fragmentShader; }
       
       /// returns the current fragment shader (or NULL if non was given, const version)
-      inline const GLFragmentShader *getFragmentShader() const{ return m_fragmentShader; }
+      inline const qt::GLFragmentShader *getFragmentShader() const{ return m_fragmentShader; }
       
       protected:
       /// recursive picking method
@@ -652,7 +653,7 @@ namespace icl{
       
       std::vector<GeomColor> m_vertexColors;
       std::vector<Primitive*> m_primitives;
-      std::vector<SmartPtr<GLImg> > m_sharedTextures;
+      std::vector<utils::SmartPtr<qt::GLImg> > m_sharedTextures;
       int m_visibleMask;
   
       bool m_lineColorsFromVertices;
@@ -670,7 +671,7 @@ namespace icl{
       Mat m_transformation;
       bool m_hasTransformation;
       SceneObject *m_parent;
-      std::vector<SmartPtr<SceneObject> > m_children;
+      std::vector<utils::SmartPtr<SceneObject> > m_children;
   
       utils::Mutex m_mutex; //!< for asynchronous updates
       bool m_enableLocking; //!< can be enabled
@@ -691,9 +692,10 @@ namespace icl{
       int m_createDisplayListNextTime;
   
       /// internal optionally given fragment shader
-      GLFragmentShader *m_fragmentShader;
+      qt::GLFragmentShader *m_fragmentShader;
   
     };
   } // namespace geom
 }
 
+#endif

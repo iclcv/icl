@@ -47,7 +47,7 @@ namespace icl{
   namespace geom{
     /**
        This class visualize 2.5D grids as a 3D pointcloud including 2.5D to 3D projection and different color visualizations (e.g. point normals, color, core::depth).*/
-    class PointcloudSceneObject : public SceneObject{
+    class ICL_DEPRECATED PointcloudSceneObject : public SceneObject{
   	
     public:
       ///Constructor

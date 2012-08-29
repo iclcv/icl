@@ -34,7 +34,8 @@
 
 #pragma once
 
-#pragma onceeader must not be included without HAVE_PCL defined"
+#ifndef HAVE_OPENGL
+#warning "this header must not be included without HAVE_PCL defined"
 #else
 
 #include <ICLGeom/PointCloudObjectBase.h>
@@ -174,3 +175,4 @@ namespace icl{
   } // namespace geom
 }
 
+#endif

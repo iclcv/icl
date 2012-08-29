@@ -31,8 +31,8 @@
 ** Excellence Initiative.                                          **
 **                                                                 **
 *********************************************************************/
-#ifndef ICL_GENERICSURFDETECTOR_H_
-#define ICL_GENERICSURFDETECTOR_H_
+
+#pragma once
 
 #include <ICLCore/ImgBase.h>
 #include <ICLUtils/SmartPtr.h>
@@ -341,26 +341,7 @@ namespace icl{
       static std::pair<utils::VisualizationDescription,utils::VisualizationDescription>
       visualizeMatches(const std::vector<std::pair<GenericPoint,GenericPoint> > &matches);
       
-#if 0
-      ///draws a point on a widget
-      /** @param w drawwidget
-          @param p point to be drawn */
-  	static void visualizeFeature(ICLDrawWidget &w,const GenericPoint &p);
-  
-  	///draws all points in vector on a widget
-  	/** @param w drawwidget
-              @param features vector of points to be drawn */
-  	static void visualizeFeatures(ICLDrawWidget &w, const std::vector<GenericPoint> &features);
-  
-  	///draws matches on widgets
-  	/** @param w_object drawwidget for the reference image
-              @param w_result drawwidget for image
-              @param matches vector of matches to be drawn */
-  	static void visualizeMatches(ICLDrawWidget &w_object,ICLDrawWidget &w_result,
-  			const std::vector<std::pair<GenericPoint, GenericPoint> > &matches);
-  #endif
     };
   } // namespace cv
 }
 
-#endif /* ICL_GENERICSURFDETECTOR_H_ */

@@ -52,6 +52,10 @@
 #include <ICLGeom/Primitive.h>
 #include <ICLGeom/SceneObject.h>
 
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
+using namespace icl::qt;
 
 namespace icl{
   namespace geom{
@@ -297,7 +301,7 @@ namespace icl{
         Vec p4 = a + R*Vec(-rx,ry,0,1);
                 
         /// -normal as we draw the backface
-        glNormal3fv(icl::normalize(-(cross(p2-p3,p4-p3))).data());
+        glNormal3fv(geom::normalize(-(cross(p2-p3,p4-p3))).data());
                 
         /// draw the backface to flip x direction
         texture.draw3D(p2.begin(),p1.begin(),p4.begin(),p3.begin());

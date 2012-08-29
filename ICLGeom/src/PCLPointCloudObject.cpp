@@ -40,6 +40,10 @@
 #include <pcl/point_types.h>
 #include <pcl/io/file_io.h>
 
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
+
 namespace icl{
   namespace geom{
   
@@ -62,7 +66,7 @@ namespace icl{
       /// creates a data segment for a given feature type
     template<class PCLPointType> template<class T, int N, PointCloudObjectBase::FeatureType t>
     inline DataSegment<T,N>  PCLPointCloudObject<PCLPointType>::createSegment() {
-      ICLASSERT_THROW(supports(t),ICLException("the given feature type " + str(t) + 
+      ICLASSERT_THROW(supports(t),utils::ICLException("the given feature type " + str(t) + 
                                                " is not supported by this PCLPointCloudObject"));
       return DataSegment<T,N>((T*)(data()+offset(t)),sizeof(Entry),
                               isOrganized() ? m_pcl->width * m_pcl->height : m_pcl->width,
@@ -83,7 +87,7 @@ namespace icl{
       }else{
         m_pcl = new pcl::PointCloud<PCLPointType>;
         if( pcl::io::loadPCDFile<PCLPointType>(filename, *m_pcl) == -1){
-          throw ICLException("unable to load \"pcl\" point cloud file " + filename);
+          throw utils::ICLException("unable to load \"pcl\" point cloud file " + filename);
         }
       }
     }
@@ -124,14 +128,14 @@ namespace icl{
     }
     
     template<class PCLPointType>
-    pcl::PointCloud<PCLPointType> & PCLPointCloudObject<PCLPointType>::pcl() throw (ICLException){
+    pcl::PointCloud<PCLPointType> & PCLPointCloudObject<PCLPointType>::pcl() throw (utils::ICLException){
       if(isNull()) throw ICLException("PCLPointCloudObject::pcl(): instance is null");
       return *m_pcl;
     }
     
     
     template<class PCLPointType>
-    const pcl::PointCloud<PCLPointType> & PCLPointCloudObject<PCLPointType>::pcl() const throw (ICLException){
+    const pcl::PointCloud<PCLPointType> & PCLPointCloudObject<PCLPointType>::pcl() const throw (utils::ICLException){
       return const_cast<PCLPointCloudObject<PCLPointType>*>(this)->pcl();
     }
       
@@ -157,26 +161,26 @@ namespace icl{
   
     template<class PCLPointType>
     bool  PCLPointCloudObject<PCLPointType>::supports(FeatureType t){
-      if(isNull()) throw ICLException("PCLPointCloudObject:supports(t): instance is null");
+      if(isNull()) throw utils::ICLException("PCLPointCloudObject:supports(t): instance is null");
       return (offset(t) >= 0);
     }
   
     template<class PCLPointType>
     bool  PCLPointCloudObject<PCLPointType>::isOrganized() const {
-      if(isNull()) throw ICLException("PCLPointCloudObject:isOrganized(): instance is null");
+      if(isNull()) throw utils::ICLException("PCLPointCloudObject:isOrganized(): instance is null");
       return m_pcl->isOrganized();
     }
     
     template<class PCLPointType>
-    Size  PCLPointCloudObject<PCLPointType>::getSize() const throw (ICLException){
-      if(isNull()) throw ICLException("PCLPointCloudObject:getSize(): instance is null");
-      if(!isOrganized()) throw ICLException("PCLPointCloud::getSize(): instance is not 2D-ordered");
+    Size  PCLPointCloudObject<PCLPointType>::getSize() const throw (utils::ICLException){
+      if(isNull()) throw utils::ICLException("PCLPointCloudObject:getSize(): instance is null");
+      if(!isOrganized()) throw utils::ICLException("PCLPointCloud::getSize(): instance is not 2D-ordered");
       return Size(m_pcl->width, m_pcl->height);
     }
       
     template<class PCLPointType>
     int  PCLPointCloudObject<PCLPointType>::getDim() const{
-      if(isNull()) throw ICLException("PCLPointCloudObject:getDim(): instance is null");
+      if(isNull()) throw utils::ICLException("PCLPointCloudObject:getDim(): instance is null");
       return isOrganized() ? m_pcl->width * m_pcl->height : m_pcl->width;
     }
   
@@ -193,7 +197,7 @@ namespace icl{
   
     template<class PCLPointType>
     DataSegmentBase PCLPointCloudObject<PCLPointType>::select(const std::string &featureName) {
-      if(isNull()) throw ICLException("PCLPointCloudObject:select(" + featureName + "): instance is null");
+      if(isNull()) throw utils::ICLException("PCLPointCloudObject:select(" + featureName + "): instance is null");
       if(featureName == "all"){
         return DataSegmentBase(data(),
                                sizeof(Entry),

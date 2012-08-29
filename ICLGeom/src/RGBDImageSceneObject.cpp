@@ -46,6 +46,10 @@
 #endif
 
 
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
+
 namespace icl{
   namespace geom{
     static inline float compute_depth_norm(const Vec &dir, const Vec &centerDir){

@@ -109,7 +109,8 @@ namespace icl{
       H.resize(k);
       return H;
     }
-    
+   
+#if 0 
     int chainHull_2D(CHPoint* P, int n, CHPoint* H){
       ERROR_LOG("do not use the implementation of monotone chain algorithm!");
       // the output array H[] will be used as the stack
@@ -179,5 +180,6 @@ namespace icl{
       
       return top+1;
     }
+#endif
   } // namespace geom
 }
