@@ -97,7 +97,7 @@ namespace icl{
       TwoLevelRegionStructure(const std::string &code) throw (utils::ICLException);
       
       /// match implementation
-      virtual bool match(const ImageRegion &r) const;
+      virtual bool match(const cv::ImageRegion &r) const;
       
       /// comparison operator (compares the code-strings)
       inline bool operator==(const TwoLevelRegionStructure &s) const { return code == s.code; }

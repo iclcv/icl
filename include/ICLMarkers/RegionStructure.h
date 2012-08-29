@@ -38,10 +38,11 @@
 #include <string>
 
 namespace icl{
+  /** \cond */
+  namespace cv{ struct ImageRegion; }
+  /** \encond */
+
   namespace markers{
-    /** \cond */
-    struct ImageRegion;
-    /** \encond */
     
     /// region structure interface class
     /** A region structure can be defined arbitrarily, It defines
@@ -53,11 +54,11 @@ namespace icl{
           a particular match-implementation should try to reject a match as fast 
           as possible. E.g. by first checking whether the root region has a 
           correct color value */
-      virtual bool match(const ImageRegion &r) const = 0;
+      virtual bool match(const cv::ImageRegion &r) const = 0;
     };
     
     /// Managed pointer type definition
-    typedef SmartPtr<RegionStructure> RegionStructurePtr;
+    typedef utils::SmartPtr<RegionStructure> RegionStructurePtr;
     
     
     

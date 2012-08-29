@@ -34,6 +34,11 @@
 #include <ICLMarkers/FiducialDetectorPlugin.h>
 #include <ICLUtils/Range.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+using namespace icl::geom;
+
+
 namespace icl{
   namespace markers{
     FiducialDetectorPlugin::FiducialDetectorPlugin():camera(0){

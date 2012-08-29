@@ -36,6 +36,9 @@
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/StringUtils.h>
 
+using namespace icl::utils;
+
+
 namespace icl{
   namespace markers{
     

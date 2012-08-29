@@ -44,6 +44,11 @@
 #include <ICLMarkers/FiducialDetectorPluginAmoeba.h>
 #include <ICLMarkers/FiducialDetectorPluginICL1.h>
 
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
+using namespace icl::filter;
+using namespace icl::geom;
 
 namespace icl{
   namespace markers{

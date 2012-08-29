@@ -32,9 +32,15 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLIO/File.h>
+#include <ICLUtils/File.h>
 #include <ICLMarkers/FiducialDetectorPluginAmoeba.h>
 #include <ICLMarkers/TwoLevelRegionStructure.h>
+
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
+using namespace icl::geom;
+using namespace icl::cv;
 
 namespace icl{
   namespace markers{

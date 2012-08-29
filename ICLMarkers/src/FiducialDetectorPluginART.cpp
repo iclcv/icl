@@ -34,10 +34,16 @@
 
 #include <ICLIO/FileGrabber.h>
 #include <ICLIO/FileList.h>
-#include <ICLIO/File.h>
+#include <ICLUtils/File.h>
 #include <ICLCV/Quick.h>
 
 #include <ICLMarkers/FiducialDetectorPluginART.h>
+
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
+using namespace icl::geom;
+using namespace icl::cv;
 
 namespace icl{
   namespace markers{

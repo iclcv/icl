@@ -69,10 +69,10 @@ namespace icl{
       virtual void detect(std::vector<FiducialImpl*> &dst, const core::Img8u &image);
   
       /// defines how to find makers in the given vector of regions
-      virtual void detect(std::vector<FiducialImpl*> &dst, const std::vector<ImageRegion> &regions) = 0;
+      virtual void detect(std::vector<FiducialImpl*> &dst, const std::vector<cv::ImageRegion> &regions) = 0;
       
       /// defines how to load/remove marker definitions
-      virtual void addOrRemoveMarkers(bool add, const Any &which, const ParamList &params)=0;
+      virtual void addOrRemoveMarkers(bool add, const utils::Any &which, const utils::ParamList &params)=0;
     };
     
   } // namespace markers

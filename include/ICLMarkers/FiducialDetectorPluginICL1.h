@@ -56,7 +56,7 @@ namespace icl{
       public:
   
       /// This class cannot be used 
-      friend class icl::FiducialDetector;
+      friend class icl::markers::FiducialDetector;
       
       /** \cond **/
       // for static initialization
@@ -77,7 +77,7 @@ namespace icl{
       virtual void getFeatures(Fiducial::FeatureSet &dst);
   
       /// defines how to find makers in the given vector of regions
-      virtual void detect(std::vector<FiducialImpl*> &dst, const std::vector<ImageRegion> &regions);
+      virtual void detect(std::vector<FiducialImpl*> &dst, const std::vector<cv::ImageRegion> &regions);
       
       /// defines how to load/remove marker definitions
       /** The Any paramter 'which' can either be a filename to a file that contains
@@ -85,7 +85,7 @@ namespace icl{
           or a newline or comma or space separated list of 
           TwoLevelRegionStructure codes. The ParamList params is not used here.
       */
-      virtual void addOrRemoveMarkers(bool add, const Any &which, const ParamList &params);
+      virtual void addOrRemoveMarkers(bool add, const utils::Any &which, const utils::ParamList &params);
   
       /// returns how to compute a list of image-position/marker-position correspondences
       /** The 2D-keypoints are the most common information that is use to compute a markers
@@ -94,7 +94,7 @@ namespace icl{
       virtual void getKeyPoints2D(std::vector<Fiducial::KeyPoint> &dst, FiducialImpl &impl);
   
       /// creates an image of a given marker
-      virtual core::Img8u createMarker(const Any &whichOne,const utils::Size &size, const ParamList &params);
+      virtual core::Img8u createMarker(const utils::Any &whichOne,const utils::Size &size, const utils::ParamList &params);
       
   
     };

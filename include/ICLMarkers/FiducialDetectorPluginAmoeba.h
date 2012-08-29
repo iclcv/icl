@@ -67,7 +67,7 @@ namespace icl{
       virtual void getFeatures(Fiducial::FeatureSet &dst);
   
       /// defines how to find makers in the given vector of regions
-      virtual void detect(std::vector<FiducialImpl*> &dst, const std::vector<ImageRegion> &regions);
+      virtual void detect(std::vector<FiducialImpl*> &dst, const std::vector<cv::ImageRegion> &regions);
       
       /// defines how to load/remove marker definitions
       /** The Any paramter 'which' can either be a filename to a file that contains
@@ -75,7 +75,7 @@ namespace icl{
           or a newline or comma or space separated list of 
           TwoLevelRegionStructure codes. The ParamList params is not used here.
       */
-      virtual void addOrRemoveMarkers(bool add, const Any &which, const ParamList &params);
+      virtual void addOrRemoveMarkers(bool add, const utils::Any &which, const utils::ParamList &params);
     };
   } // namespace markers
 }

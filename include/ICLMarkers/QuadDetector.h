@@ -34,8 +34,8 @@
 
 #pragma once
 
-#include <ICLUtils/utils::Configurable.h>
-#include <ICLUtils/utils::Uncopyable.h>
+#include <ICLUtils/Configurable.h>
+#include <ICLUtils/Uncopyable.h>
 #include <ICLCore/ImgBase.h>
 
 #include <ICLMarkers/TiltedQuad.h>

@@ -56,7 +56,7 @@ namespace icl{
       public:
   
       /// This class cannot be used 
-      friend class icl::FiducialDetector;
+      friend class icl::markers::FiducialDetector;
   
       /// Destructor
       ~FiducialDetectorPluginBCH();
@@ -71,20 +71,20 @@ namespace icl{
           Mandatory parameter is "size". Please refer to the 
           documentation of icl::FiducialDetector::loadMarkers for more details
       */
-      virtual void addOrRemoveMarkers(bool add, const Any &which, const ParamList &params);
+      virtual void addOrRemoveMarkers(bool add, const utils::Any &which, const utils::ParamList &params);
   
       /// extracts and stores some properties locally to speed up classifyPatch 
       void prepareForPatchClassification();
   
       /// Identifies the given image patch using bch decoding
-      virtual FiducialImpl *classifyPatch(const core::Img8u &image, int *rot, bool returnRejectedQuads, ImageRegion r);
+      virtual FiducialImpl *classifyPatch(const core::Img8u &image, int *rot, bool returnRejectedQuads, cv::ImageRegion r);
   
       /// describes the marker rectification parameters
       virtual void getQuadRectificationParameters(utils::Size &markerSizeWithBorder,
                                                   utils::Size &markerSizeWithoutBorder);        
   
       /// creates bch marker image
-      virtual core::Img8u createMarker(const Any &whichOne,const utils::Size &size, const ParamList &params);
+      virtual core::Img8u createMarker(const utils::Any &whichOne,const utils::Size &size, const utils::ParamList &params);
   
     };
   } // namespace markers

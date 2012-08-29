@@ -58,7 +58,7 @@ namespace icl{
       public:
   
       /// This class cannot be used 
-      friend class icl::FiducialDetector;
+      friend class icl::markers::FiducialDetector;
   
       /// Destructor
       ~FiducialDetectorPluginART();
@@ -79,10 +79,10 @@ namespace icl{
                        loaded markers.\n
                        The parameter list params must contain the real markers 'size' in mm
       */
-      virtual void addOrRemoveMarkers(bool add, const Any &which, const ParamList &params);
+      virtual void addOrRemoveMarkers(bool add, const utils::Any &which, const utils::ParamList &params);
   
       /// Identifies the given image patch using bch decoding
-      virtual FiducialImpl *classifyPatch(const core::Img8u &image, int *rot, bool returnRejectedQuads,ImageRegion r);
+      virtual FiducialImpl *classifyPatch(const core::Img8u &image, int *rot, bool returnRejectedQuads,cv::ImageRegion r);
       
       /// this method is reimplemented here; it returns the impl's file-basename
       std::string getName(const FiducialImpl *impl);
@@ -92,7 +92,7 @@ namespace icl{
                                                   utils::Size &markerSizeWithoutBorder);
   
       /// creates marker image from given parameters (see FiducialDetector for more details)
-      virtual core::Img8u createMarker(const Any &whichOne,const utils::Size &size, const ParamList &params);
+      virtual core::Img8u createMarker(const utils::Any &whichOne,const utils::Size &size, const utils::ParamList &params);
     };
   } // namespace markers
 }
