@@ -85,6 +85,9 @@ add_example (${PROJECT_NAME} "function-example" "${CONDITIONLIST}" ICLLibsToLink
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLMarkers)
 add_example (${PROJECT_NAME} "configurable-info" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLGeom)
+add_example (${PROJECT_NAME} "config-file-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+
 set(CONDITIONLIST HAVE_GTEST_COND)
 set(ICLLibsToLinkAgainst ICLUtils)
 add_gtest (${PROJECT_NAME} "matrix-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)

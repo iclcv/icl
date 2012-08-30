@@ -60,8 +60,12 @@ using namespace std;
 namespace icl{
   namespace utils{
   
-    std::map<std::string,std::string> ConfigFile::s_typeMap;
-    std::map<std::string,std::string> ConfigFile::s_typeMapReverse;
+    ConfigFile::Maps *ConfigFile::getMapsInstance(){
+      static SmartPtr<Maps> typeMap = new Maps;
+      return typeMap.get();
+    }
+    //    std::map<std::string,std::string> ConfigFile::s_typeMap;
+    //std::map<std::string,std::string> ConfigFile::s_typeMapReverse;
     
     void XMLDocumentDelOp::delete_func(XMLDocument *h){
       ICL_DELETE(h);
@@ -145,9 +149,6 @@ namespace icl{
                                 const std::string &type, 
                                 const std::string &value,
                                 const ConfigFile::KeyRestriction *restr){
-      
-      //    DEBUG_LOG("adding name:" << name << "  type:" << type << "  value:" << value);
-  
       std::vector<std::string> t = tok(name,".");
       ICLASSERT_RETURN(t.size()>1);
       ICLASSERT_RETURN(t[0]=="config");
@@ -204,67 +205,6 @@ namespace icl{
           WARNING_LOG("NULL KeyRestriction detected (this is ignored)");
         }
       }
-      
-     /*
-         std::vector<XMLNode*> sn = n->getAllChildNodes(XMLNodeFilterByType(XMLNode::NODE) & 
-                                                        XMLNodeFilterByTag("section") &
-                                                        XMLNodeFilterByAttrib("id",t[i]));
-       
-        switch(sn.size()){
-          case 0:
-            n->addNode("section");
-            n = &n->getLastChildNode();
-            (*n)("id")=t[i];
-            break;
-          case 1:
-            n = sn[0];
-            break;
-          default:
-            ERROR_LOG("Warning more then one sub-path found for key \"" << name << "\" [using first!]");
-            n = sn[0];
-            break;
-        }
-  
-         std::vector<XMLNode*> sn = n->getAllChildNodes(XMLNodeFilterByType(XMLNode::NODE) &
-                                                     XMLNodeFilterByTag("data") &
-                                                     XMLNodeFilterByAttrib("id",t.back()));
-      XMLNode *data = 0;
-      switch(sn.size()){
-        case 0:
-          n->addNodeWithTextContent("data",value);
-          n->getLastChildNode()("type") = type;
-          n->getLastChildNode()("id") = t.back();
-          break;
-        case 1:
-          (*sn[0])("type") = type;
-          data = sn[0];
-          break;
-        default:
-          ERROR_LOG("Warning more than one sub-path found for key \"" << name << "\" (data tag doubled) [using first!]");
-          (*sn[0])("type") = type;
-          data = sn[0];
-          break;
-      }
-      if(data){
-        if(!data->hasChildren()){
-          data->addText(value);
-          return;
-        }
-        std::vector<XMLNode*> sn = data->getAllChildNodes(XMLNodeFilterByType(XMLNode::TEXT));
-        switch(sn.size()){
-          case 0:
-            data->addText(value,0);
-            break;
-          case 1:
-            (*sn[0]) = value;
-            break;
-          default:
-            ERROR_LOG("Warning more than one (" << sn.size() << ") text sub-node found in node " + data->toString(false) + "[using first!]");
-            (*sn[0]) = value;
-            break;
-        }
-      }
-          */
     }
     
     static std::string get_id_path(XMLNode n){
@@ -307,8 +247,9 @@ namespace icl{
         e.parent = this;
         e.id = key;
         e.value = n.first_child().value();
-        std::map<std::string,std::string>::const_iterator jt = s_typeMapReverse.find(n.attribute("type").value());
-        if(jt == s_typeMapReverse.end()) throw UnregisteredTypeException(n.attribute("type").value());
+        Maps &maps  = getMapsInstanceRef();
+        std::map<std::string,std::string>::const_iterator jt = maps.typeMapReverse.find(n.attribute("type").value());
+        if(jt == maps.typeMapReverse.end()) throw UnregisteredTypeException(n.attribute("type").value());
         e.rttiType = jt->second;
         
         XMLAttribute rangeAtt = n.attribute("range");
@@ -332,44 +273,6 @@ namespace icl{
           setRestriction(key,vl.substr(1,vl.size()-2));
         }
       }
-  
-      /*
-      const std::vector<XMLNode*> ns = m_doc->getRootNode()->getAllChildNodes( XMLNodeFilterByTag("data") &
-                                                                               XMLNodeFilterByType(XMLNode::NODE) &
-                                                                               XMLNodeFilterByAttrib("id") &
-                                                                               XMLNodeFilterByAttrib("type") &
-                                                                               XMLNodeFilterByHasAnyChildOfType(XMLNode::TEXT));
-      std::string pfx = m_sDefaultPrefix;
-      if(pfx.length() && pfx[pfx.length()-1] != '.') pfx+='.';
-      
-      for(unsigned int i=0;i<ns.size();++i){
-        const XMLNode &n = *ns[i];
-  
-        const std::string key = pfx+get_id_path(ns[i]);
-  
-        /// add data to config file
-        if(contains(key)) throw InvalidFileFormatException("Key: '" + key + "' was found at least twice!");
-        Entry &e = m_entries[key];
-        e.parent = this;
-        e.id = key;
-        e.value = n.getFirstChildNode(XMLNode::TEXT).getText();
-        std::map<std::string,std::string>::const_iterator it = s_typeMapReverse.find(n("type"));
-        if(it == s_typeMapReverse.end()) throw UnregisteredTypeException(n("type"));
-        e.rttiType = it->second;
-        
-        
-        if(n.hasAttribute("range")){
-          std::string mm = n("range");
-          if(mm.size()<5 || mm[0]!='[' || mm[mm.length()-1] != ']') throw InvalidFileFormatException("unable to parse range attribute: syntax [min,max]");
-          std::vector<double> mmv = parseVecStr<double>(mm.substr(1,mm.size()-2),",");
-          if(mmv.size() != 2) throw InvalidFileFormatException("unable to parse range attribute: syntax [min,max]");
-          setRestriction(key,KeyRestriction(mmv[0],mmv[1])); 
-        }else if(n.hasAttribute("values")){
-          std::string vl = n("values");
-          setRestriction(key,vl.substr(1,vl.size()-2));
-        }
-      }
-      */
     }
     
     void ConfigFile::load(const std::string &filename) throw(FileNotFoundException,InvalidFileFormatException,UnregisteredTypeException){
@@ -492,8 +395,9 @@ namespace icl{
     
     void ConfigFile::set_internal(const std::string &idIn, const std::string &val, const std::string &type) 
       throw (UnregisteredTypeException){
-      std::map<std::string,std::string>::iterator it = s_typeMap.find(type);
-      if(it == s_typeMap.end()) throw UnregisteredTypeException(type);
+      Maps &maps = getMapsInstanceRef();
+      std::map<std::string,std::string>::iterator it = maps.typeMap.find(type);
+      if(it == maps.typeMap.end()) throw UnregisteredTypeException(type);
       std::string id=m_sDefaultPrefix + idIn;  
       Entry &e = m_entries[id];
       e.parent = this;

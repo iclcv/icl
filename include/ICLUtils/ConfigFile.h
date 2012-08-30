@@ -199,18 +199,31 @@ namespace icl{
   
       private:
       
-      /// key: rttiType (e.g. i), value: written type (e.g. int)
-      static std::map<std::string,std::string> s_typeMap;
+      /// internally used type map class
+      struct Maps{
+        /// key: rttiType (e.g. i), value: written type (e.g. int)
+        std::map<std::string,std::string> typeMap;
+        
+        /// reverse ordered map here, key is written type, and value is rtti-type
+        std::map<std::string,std::string> typeMapReverse;
+      };
       
-      /// reverse ordered map here, key is written type, and value is rtti-type
+      /// returns a singelton instance of type Maps
+      static Maps *getMapsInstance();
+      
+      /// returns a singelton instance of type Maps as reference
+      static Maps &getMapsInstanceRef() { return *getMapsInstance(); }
+#if 0
+      static std::map<std::string,std::string> s_typeMap;
       static std::map<std::string,std::string> s_typeMapReverse;
-  
+#endif
+
       /// internally used utitlity function
       template<class T>
       static const std::string &get_type_name() throw (UnregisteredTypeException){
         static const std::string &rttiID = get_rtti_type_id<T>();
         if(!type_registered_by_rtti(rttiID)) throw UnregisteredTypeException(rttiID);
-        static const std::string &name = s_typeMap[rttiID];
+        static const std::string &name = getMapsInstanceRef().typeMap[rttiID];
         return name;
       }
   
@@ -233,13 +246,14 @@ namespace icl{
   
       /// internally used utitlity function
       static bool type_registered_by_rtti(const std::string &rttiID){
-        return (s_typeMap.find(rttiID) != s_typeMap.end());
+        Maps &maps = getMapsInstanceRef();
+        return (maps.typeMap.find(rttiID) != maps.typeMap.end());
       }
       
       public:
   
       /// this macro can be used to register new types to the data store
-  #define REGISTER_CONFIG_FILE_TYPE(T) ConfigFile::register_type<T>(#T)
+#define REGISTER_CONFIG_FILE_TYPE(T) ::icl::utils::ConfigFile::register_type<T>(#T)
   
       /// registers a new type in the data store parsing engine
       /** Note: only registered types can be loaded from an xml-file 
@@ -270,8 +284,14 @@ namespace icl{
        */
       template<class T>
       static void register_type(const std::string &id){
+        Maps &maps = getMapsInstanceRef();
+        std::string rtti = get_rtti_type_id<T>();
+        maps.typeMap[rtti] = id;
+        maps.typeMapReverse[id] = rtti;
+#if 0
         s_typeMap[get_rtti_type_id<T>()] = id;
         s_typeMapReverse[id] = get_rtti_type_id<T>();
+#endif
       }
       
       /// Default constructor creating an empty ConfigFile instance
@@ -502,7 +522,7 @@ namespace icl{
         SmartPtr<KeyRestriction> restr;  /// optional restriction pointer
   
         /// returns the written type name that is associated with rttiType internally
-        const std::string &getTypeName() const { return s_typeMap[rttiType]; }
+        const std::string &getTypeName() const { return getMapsInstanceRef().typeMap[rttiType]; }
   
         /// returns this entries id relatively to the parent ConfigFiles prefix
         std::string getRelID() const {

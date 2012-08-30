@@ -39,7 +39,6 @@
 #else
 
 #include <ICLGeom/PointCloudObjectBase.h>
-
 #include <pcl/point_types.h>
 
 /** \cond */

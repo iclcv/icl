@@ -33,6 +33,8 @@
 *********************************************************************/
 
 #include <ICLMath/FixedMatrix.h>
+#include <ICLMath/FixedVector.h>
+#include <ICLUtils/ConfigFile.h>
 #include <cmath>
 #include <string>
 
@@ -270,5 +272,43 @@ namespace icl{
     template FixedMatrix<float,3,3> create_rot_3D(float,float,float,float);
     template FixedMatrix<double,3,3> create_rot_3D(double,double,double,double);
   
+
+
+    struct FixedMatrixConfigFileStaticRegistration{
+      FixedMatrixConfigFileStaticRegistration(){
+        // todo:: move this to core!
+        // copied from ICLCore/Color.h
+        typedef FixedColVector<icl8u,3> Color;
+        typedef FixedColVector<icl32f,3> Color32f;
+        typedef FixedColVector<icl8u,4> Color4D;
+        typedef FixedColVector<icl32f,4> Color4D32f;
+        
+        REGISTER_CONFIG_FILE_TYPE(Color);
+        REGISTER_CONFIG_FILE_TYPE(Color32f);
+        REGISTER_CONFIG_FILE_TYPE(Color4D);
+        REGISTER_CONFIG_FILE_TYPE(Color4D32f);
+        
+        typedef  FixedRowVector<float,3> RVec3;
+        typedef  FixedRowVector<float,4> RVec;
+  
+        REGISTER_CONFIG_FILE_TYPE(RVec3);
+        REGISTER_CONFIG_FILE_TYPE(RVec);
+
+        typedef  FixedMatrix<float,3,3> Mat3x3;
+        typedef  FixedMatrix<float,3,4> Mat3x4;
+        typedef  FixedMatrix<float,4,3> Mat4x3;
+        typedef  FixedMatrix<float,4,4> Mat;
+  
+        REGISTER_CONFIG_FILE_TYPE(Mat3x3);
+        REGISTER_CONFIG_FILE_TYPE(Mat3x4);
+        REGISTER_CONFIG_FILE_TYPE(Mat4x3);
+        REGISTER_CONFIG_FILE_TYPE(Mat);
+
+        typedef  FixedColVector<float,3> Vec3;
+        typedef  FixedColVector<float,4> Vec;
+        REGISTER_CONFIG_FILE_TYPE(Vec3);
+        REGISTER_CONFIG_FILE_TYPE(Vec);
+      }
+    } FixedMatrixConfigFileStaticRegistration__Instance;
   } // namespace math
 }

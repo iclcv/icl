@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLCore/Color.h                                **
-** Module : ICLCore                                                **
+** File   : ICLUtils/test/config-file-example.cpp                  **
+** Module : ICLUtils                                               **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -32,66 +32,55 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_COLOR_H
-#define ICL_COLOR_H
+#include <ICLUtils/ProgArg.h>
+#include <ICLUtils/StringUtils.h>
+#include <ICLUtils/ConfigFile.h>
 
-#include <ICLUtils/BasicTypes.h>
-#include <ICLMath/FixedVector.h>
-#include <string>
+#include <ICLCore/Color.h>
+#include <ICLGeom/GeomDefs.h>
+#include <ICLMath/DynMatrix.h>
+#include <ICLMath/DynVector.h>
 
-namespace icl{
-  namespace core{
-  
-    /// Default color type of the ICL
-    typedef math::FixedColVector<icl8u,3> Color;
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
+using namespace icl::geom;
 
-    /// RGB Color
-    typedef math::FixedColVector<icl8u,3> RGB;
 
-    /// RGBA Color
-    typedef math::FixedColVector<icl8u,4> RGBA;
+int main(int n, char **ppc){
+  painit(n,ppc,"-config|-c(filename)");
+
+  if(pa("-c")){
+    ConfigFile f(*pa("-c"));
+    std::cout << "parsed and serialized file:" << std::endl;
+    std::cout << f << std::endl;
+    std::cout << "----------------------------------"<< 
+    std::endl <<"config file content:" << std::endl;
+    f.listContents();
+  }else{
+    ConfigFile f;
+    f.setPrefix("config.");
     
-    /// Special color type for float valued colors
-    typedef math::FixedColVector<icl32f,3> Color32f;
-  
-  
-    /// Special color type for e.g. rgba color information
-    typedef math::FixedColVector<icl8u,4> Color4D;
-  
-    /// Special color type for e.g. rgba color information (float)
-    typedef math::FixedColVector<icl32f,4> Color4D32f;
+    f["section-1.subsection-1.val1"] = 5;
+    f["section-2.subsection-1.val1"] = 5.4;
+    f["section-1.subsection-2.val1"] = 544.f;
+    f["section-2.subsection-1.val2"] = 'c';
+    f["section-3.subsection-1.val3"] = str("22test");
+    f["type-tests.color"] = Color(2,3,4);
+    f["type-tests.matrix"] = Mat::id();
+    f["type-tests.vector"] = Vec(0,0,0,1);
+
+    std::cout << "parsed and serialized file:" << std::endl;
+    std::cout << f << std::endl;
+    std::cout << "----------------------------------"<< 
+    std::endl <<"config file content:" << std::endl;
+    f.listContents();
     
-    // Create a color by given name (see GeneralColor Constructor)
-    const Color &iclCreateColor(std::string name);
-    
-    /// Creates a (by default 20 percent) darker color 
-    inline Color darker(const Color &c, double factor=0.8){
-      return c*factor;
-    }
-    
-    /// Creates a (by default 20 percent) lighter color 
-    inline Color lighter(const Color &c,double factor=0.8){
-      return c/factor;
-    }
-  
-    /// Parses a color string representation into a color structur
-    /** If an error occurs, a warning is shown and black color is returned 
-        first checks for some default color names:
-        - black
-        - white
-        - red
-        - green
-        - blue
-        - cyan
-        - magenta
-        - yellow
-        - gray50
-        - gray100
-        - gray150
-        - gray200
-    */
-    Color color_from_string(const std::string &name);
-  
-  } // namespace core
+    Color c = f["type-tests.color"];
+    SHOW(c);
+
+    Mat M = f["type-tests.matrix"];
+    SHOW(M);
+  }
+  std::cout << std::endl;
 }
-#endif
