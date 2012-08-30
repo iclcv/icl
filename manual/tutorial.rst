@@ -1,4 +1,4 @@
-Tutorials
+Tutorial
 =========
 
 .. toctree::
@@ -8,3 +8,4 @@ Tutorials
    tutorials/hello-icl
    tutorials/using-images
    tutorials/pixel-access
+   tutorials/gui-apps

@@ -1,14 +1,15 @@
 Hello ICL
 =========
 
-This is a very short example, which simply visualizes a demo image.
+Let's start with a very simple example, which visualizes a demo image
+only. The basic Idea for this chapter is to help you to set up all
+you environment variables to easily compile and run your example code.
 
 +--------------------------------------------+----------------------------------+
 | .. literalinclude:: examples/hello-icl.cpp | .. figure:: images/hello-icl.png |
 |    :language: c++                          |    :scale: 60%                   |
 |    :linenos:                               |    :alt: shown image             |
 +--------------------------------------------+----------------------------------+   
-
 
 In order to make this demo work, you have to apply the following steps (linux/mac):
 
@@ -35,7 +36,7 @@ In order to make this demo work, you have to apply the following steps (linux/ma
 
 The example code contains actually two nested function calls: The
 inner **create** function and the outer **show** function. Actually,
-you will find these functions the the namespace **icl::qt**, however
+you will find these functions in the namespace **icl::qt**, however
 these are not needed here because the header **ICLQt/Quick.h** is
 included. This header is meant for rapid prototyping and therefore it
 will automatically use all ICL-namespaces and the **std**-namespace

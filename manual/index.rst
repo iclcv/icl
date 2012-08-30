@@ -13,7 +13,7 @@ Contents:
 
    about
    modules
-   tutorials
+   tutorial
    howtos
 
 
