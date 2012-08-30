@@ -35,6 +35,10 @@
 #include <ICLCV/OpenSurfDetector.h>
 
 using namespace std;
+using namespace icl::utils;
+using namespace icl::core;
+using namespace icl::math;
+
 
 namespace icl{
   namespace cv{
@@ -105,8 +109,8 @@ namespace icl{
           }
       */
     
-      icl::img_to_ipl(objectImage,&(m_data->m_objectImg_org));
-      icl::img_to_ipl(objectImage,&(m_data->m_objectImg));
+      core::img_to_ipl(objectImage,&(m_data->m_objectImg_org));
+      core::img_to_ipl(objectImage,&(m_data->m_objectImg));
     
       /*
           m_data->m_objectImg = cvCreateImage(cvGetSize(m_data->m_objectImg_org),
@@ -129,7 +133,7 @@ namespace icl{
   
     const ImgBase *OpenSurfDetector::getObjectImg() throw (ICLException){
       if(m_data->m_objectImg_org)
-        return icl::ipl_to_img(m_data->m_objectImg_org);
+        return core::ipl_to_img(m_data->m_objectImg_org);
       else
         throw ICLException("Object image is null");
   
@@ -219,7 +223,7 @@ namespace icl{
     const std::vector<Ipoint> &OpenSurfDetector::extractFeatures(const ImgBase *src){
       ICLASSERT_THROW(src,ICLException("OpenSurfDetector::extractFeatures: source image was null"));
       
-      icl::img_to_ipl(src,&(m_data->m_tmp_ipl_img));
+      core::img_to_ipl(src,&(m_data->m_tmp_ipl_img));
       m_data->m_ipts.clear();
       
       surfDetDes(m_data->m_tmp_ipl_img, m_data->m_ipts, m_data->m_upright,
@@ -259,7 +263,6 @@ namespace icl{
       target.color(0,255,0,alpha);
       
       if (p.orientation){ // Green line indicates orientation
-        w.linewidth(2);
         int c2 = fRound(s * cos(p.orientation)) + c1;
         int r2 = fRound(s * sin(p.orientation)) + r1;
         target.line(c1, r1, c2, r2);
@@ -287,19 +290,19 @@ namespace icl{
     }
     
     void OpenSurfDetector::visualizePoints(VisualizationDescription &target, const std::vector<Ipoint> &ps){
-      for(size t i=0;i<ps.size();++i){
+      for(size_t i=0;i<ps.size();++i){
         visualizePoint(target,ps[i]);
       }
     }
     
     std::pair<VisualizationDescription,VisualizationDescription>
-    visualizeMatches(const std::vector<std::pair<Ipoint,Ipoint> > &matches){
+    OpenSurfDetector::visualizeMatches(const std::vector<std::pair<Ipoint,Ipoint> > &matches){
       std::pair<VisualizationDescription,VisualizationDescription> d;
       for(unsigned int i=0;i<matches.size();++i){
-        visualizeFeature(d.first,matches[i].first);
-        visualizeFeature(d.second,matches[i].second); // here, first and second were swapped
+        visualizePoint(d.first,matches[i].first);
+        visualizePoint(d.second,matches[i].second); // here, first and second were swapped
       }
-
+      return d;
     }
 
 #if 0

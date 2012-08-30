@@ -46,7 +46,7 @@ namespace icl {
     namespace pylon {
   
       /// Internally spawned thread class for continuous grabbing \ingroup GIGE_G
-      class PylonGrabberThread : public Thread {
+      class PylonGrabberThread : public utils::Thread {
         public:
           /// Constructor sets all internal fields and allocates memory
           /**

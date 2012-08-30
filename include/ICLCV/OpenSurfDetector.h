@@ -188,8 +188,7 @@ namespace icl{
       /// returns 2 visualization descriptions (first for the object, second for the result)
       static std::pair<utils::VisualizationDescription,utils::VisualizationDescription>
       visualizeMatches(const std::vector<std::pair<Ipoint,Ipoint> > &matches);
- 
-    } // namespace cv
-  };
+    };
+  } // namespace cv
 }
 

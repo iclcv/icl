@@ -199,20 +199,20 @@ namespace icl {
       RET getParameterValueOf(SOURCE* source, std::string param){
         GenApi::INode* node = source -> GetNodeMap() -> GetNode(param.c_str());
         if(!node){
-          throw icl::ICLException("parameter of this type not found");
+          throw utils::ICLException("parameter of this type not found");
         }
         //dynamic cast to needed node-type
         try{
           NODE* node2 = dynamic_cast<NODE*>(node);
           if(!node2){
-            throw icl::ICLException("Could not cast " + param + " to desired type");
+            throw utils::ICLException("Could not cast " + param + " to desired type");
           }
           if(!GenApi::IsReadable(node2)){
-            throw icl::ICLException("The node " + param + " is not Readable");
+            throw utils::ICLException("The node " + param + " is not Readable");
           }
           return getNodeValue<NODE, RET>(node2);
         } catch (std::exception &e){
-          throw icl::ICLException(e.what());
+          throw utils::ICLException(e.what());
         }
       }
   

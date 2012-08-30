@@ -82,7 +82,7 @@ namespace icl {
           * @param args The arguments provided to this grabber.
           * @throw ICLException when no suitable device exists.
           */
-          static Pylon::CDeviceInfo getDeviceFromArgs(std::string args) throw(ICLException);
+          static Pylon::CDeviceInfo getDeviceFromArgs(std::string args) throw(utils::ICLException);
   
         private:
           /// The constructor is private so only the friend class can create instances
@@ -93,7 +93,7 @@ namespace icl {
           PylonGrabberImpl(const Pylon::CDeviceInfo &dev, const std::string args);
   
           /// A mutex lock to synchronize buffer and color converter access.
-          Mutex m_ImgMutex;
+          utils::Mutex m_ImgMutex;
           /// The PylonEnvironment automation.
           PylonAutoEnv m_PylonEnv;
           /// Count of buffers for grabbing
@@ -172,7 +172,7 @@ namespace icl {
   
         /// create a new PylonGrabber
         /** @see PylonGrabberImpl for more details*/
-        inline PylonGrabber(const std::string args="") throw(ICLException) {
+        inline PylonGrabber(const std::string args="") throw(utils::ICLException) {
         /// looking for Pylon device compatible to args
         Pylon::CDeviceInfo dev = getDeviceFromArgs(args);
           if(isNew(dev.GetFullName().c_str())){
@@ -185,7 +185,7 @@ namespace icl {
         /// Returns a list of detected pylon devices
         static Pylon::DeviceInfoList_t
         getPylonDeviceList(Pylon::DeviceInfoList_t* filter=NULL){
-          return icl::pylon::getPylonDeviceList();
+          return icl::io::pylon::getPylonDeviceList();
         }
       
         /// Prints information about the startup argument options of PylonGrabberImpl
@@ -202,7 +202,7 @@ namespace icl {
               deviceList.push_back(
                 GrabberDeviceDescription(
                   "pylon",
-                  str(i) + "|||" + devs.at(i).GetFullName().c_str(),
+                  utils::str(i) + "|||" + devs.at(i).GetFullName().c_str(),
                   devs.at(i).GetFullName().c_str()
                 )
               );

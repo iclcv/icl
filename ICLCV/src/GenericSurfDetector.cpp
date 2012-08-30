@@ -517,7 +517,7 @@ namespace icl{
       
 #ifdef HAVE_OPENSURF
       const SurfGenP *surfpoint = dynamic_cast<const SurfGenP*> (p.impl.get());
-      if(surfpoint) OpenSurfDetector::visualizeFeature(target,*(surfpoint->p));
+      if(surfpoint) OpenSurfDetector::visualizePoint(target,*(surfpoint->p));
 #endif
     }
 

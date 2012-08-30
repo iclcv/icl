@@ -36,8 +36,8 @@
 
 #include <pylon/PylonIncludes.h>
 
-#include <ICLCore/core::ImgBase.h>
-#include <ICLCore/core::Img.h>
+#include <ICLCore/ImgBase.h>
+#include <ICLCore/Img.h>
 #include <ICLUtils/Mutex.h>
 #include <ICLIO/PylonUtils.h>
 #include <ICLCore/BayerConverter.h>
@@ -77,7 +77,7 @@ namespace icl {
   
         private:
         /// A mutex lock for concurrency.
-        Mutex m_Mutex;
+        utils::Mutex m_Mutex;
         /// A pointer to the currently used converter.
         ColorConverter* m_Converter;
         /// field for error message
@@ -200,9 +200,9 @@ namespace icl {
       class BayerToRgb8Icl : public ColorConverter{
         public:
           /// Constructor initializes conversion
-          BayerToRgb8Icl(BayerConverter::bayerConverterMethod method,
-                         BayerConverter::bayerPattern pattern,
-                         utils::Size s);
+        BayerToRgb8Icl(core::BayerConverter::bayerConverterMethod method,
+                       core::BayerConverter::bayerPattern pattern,
+                       utils::Size s);
           /// frees allocated ressources
           ~BayerToRgb8Icl();
           /// initializes buffers in b as needed for color conversion.
@@ -210,7 +210,7 @@ namespace icl {
           /// writes image from imgBuffer to b using appropriate conversion.
           void convert(const void *imgBuffer, ConvBuffers* b);
         private:
-          BayerConverter m_Conv;
+          core::BayerConverter m_Conv;
           std::vector<icl8u*> m_Channels;
           utils::Size m_Size;
       };

@@ -37,7 +37,9 @@
 #include <ICLUtils/StringUtils.h>
 
 using namespace icl;
-using namespace icl::pylon;
+using namespace icl::utils;
+using namespace icl::core;
+using namespace icl::io::pylon;
 
 // This enum is a helper to get the correct icl-value-type strings
 enum icl_val_type {
@@ -529,7 +531,7 @@ std::string PylonCameraOptions::getFormatString(){
 }
 
 // returns a string representation of the value of a parameter of the camera.
-std::string icl::pylon::getParameterValueString(
+std::string icl::io::pylon::getParameterValueString(
         Pylon::IPylonDevice* device, std::string parameter)
 {
   GenApi::INode* node = device -> GetNodeMap() -> GetNode(parameter.c_str());

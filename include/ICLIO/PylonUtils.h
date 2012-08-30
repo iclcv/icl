@@ -38,8 +38,8 @@
 #include <ICLUtils/Mutex.h>
 #include <ICLUtils/Exception.h>
 #include <ICLCore/CoreFunctions.h>
-#include <ICLCore/core::ImgBase.h>
-#include <ICLCore/core::Img.h>
+#include <ICLCore/ImgBase.h>
+#include <ICLCore/Img.h>
 
 namespace icl {
   namespace io{
@@ -56,7 +56,7 @@ namespace icl {
           PylonGrabberBuffer(size_t size) : m_pBuffer(NULL) {
             m_pBuffer = new T[size];
             if (!m_pBuffer)
-              throw icl::ICLException("Not enough memory to allocate image buffer");
+              throw utils::ICLException("Not enough memory to allocate image buffer");
           }
           ~PylonGrabberBuffer(){
             if (m_pBuffer)
@@ -88,7 +88,7 @@ namespace icl {
           TsBuffer(size_t size)  : m_Timestamp(0), m_Size(size){
             m_Buffer = new T[m_Size];
             if (!m_Buffer)
-              throw icl::ICLException("Not enough memory to allocate image buffer");
+              throw utils::ICLException("Not enough memory to allocate image buffer");
           }
           /// Frees allocated memory
           ~TsBuffer(){
@@ -103,7 +103,7 @@ namespace icl {
           */
           void copy(void* buffer){
             T* tmp = (T*) buffer;
-            icl::copy(tmp, tmp + m_Size, m_Buffer);
+            core::copy(tmp, tmp + m_Size, m_Buffer);
           }
       };
   
@@ -165,7 +165,7 @@ namespace icl {
           /// current objects which alternately are read and written.
           ConvBuffers*  m_Buffers[3];
           /// the Mutex is used for concurrent reading and writing.
-          Mutex m_Mutex;
+          utils::Mutex m_Mutex;
           /// The object currently written to.
           int m_Write;
           /// The write object currently not written to.
@@ -263,7 +263,7 @@ namespace icl {
       /// Prints help-information to std::cout
       void printHelp();
       /// Uses args to find demanded device
-      Pylon::CDeviceInfo getDeviceFromArgs(std::string args) throw(ICLException);
+      Pylon::CDeviceInfo getDeviceFromArgs(std::string args) throw(utils::ICLException);
       /// Uses args to find out which BufferChannel to use.
       int channelFromArgs(std::string args);
       /// Returns a list of available Pylon devices.
