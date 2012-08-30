@@ -4,4 +4,7 @@ Tutorials
 .. toctree::
    :maxdepth: 1
 
+   tutorials/about
    tutorials/hello-icl
+   tutorials/using-images
+   tutorials/pixel-access
