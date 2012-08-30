@@ -1,0 +1,49 @@
+Hello ICL
+=========
+
+This is a very short example, which simply visualizes a demo image.
+
+.. literalinclude:: hello-icl-1.cpp
+   :language: c++
+   :linenos:      
+
+In order to make this demo work, you have to apply the following steps (linux/mac):
+
+* ensure you have all necessary build tools like g++, make and
+  pkg-config installed and available on you system
+
+* adapt you :command:`PKG_CONFIG_PATH` environment variable by adding
+  :command:`$ICL_PREFIX/lib/pkgconfig`
+
+* now, typing :command:`pkg-config --libs --cflags ICL` in your bash should
+  provide you some useful compiler and linker flags add ICL's
+  bin-directory to your PATH environment variable. This is necessary
+  for the show-function, which starts an external process to for image
+  visualization.
+
+  Addittionally e.g. :command:`which icl-xv` should print you the
+  complete path to ICL's image-viewer application
+  
+* furthermore you can now compile every foo.cpp file into an
+  executable that links against ICL by using the script :program:`icl-make`
+  
+* simply save the example above as example.cpp in your current
+  directory and type :command:`icl-make example`
+ 
+* this should invoke c++ with all necessary compiler and linker flags
+
+* once your demo application is built, you can run it by typing 
+  :program:`./example` 
+
+The example code contains actually two nested function calls: The
+inner :icl:`icl::qt::create` function and the outer
+:icl:`icl::qt::show` function. create creates a demo image that is
+specified by the given string value. show is a very special
+function. It saves the given image to a temporary file, and starts the
+application icl-xv in order to display this image. icl-xv can be set
+up to delete the visualized image-file. This helps to avoid having to
+delete all temporary files manually. Furthermore, by using the
+external application icl-xv, the current application does not have to
+implement GUI- and event handling itself. (Note: it is also possible
+to set up the show function to use a custom image-viewer
+application. This is documented ICLQuick-package.)
