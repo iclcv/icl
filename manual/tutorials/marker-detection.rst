@@ -2,8 +2,13 @@ Fiducial Marker Detection
 =========================
 
 In this demo application, we will try to detect markers in real-time
-in an input image stream. The main class for this demo is the
-**markers::FiducialDetector**, which implements the **Configurable**
+in an input image stream. 
+
+.. image:: images/marker-detection.png
+   :scale: 80%
+
+The main class for this demo is the
+**icl::markers::FiducialDetector**, which implements the **Configurable**
 interface [#f1]_ for dynamic property handling. The
 **FiducialDetector** is instantiated with a marker type string. In the
 example, we use "bch" markers. Once, the marker type is defined,
@@ -19,18 +24,45 @@ access to all marker features, such as ID, position, boundary and even
 3D pose.
 
 
-Configurables
-"""""""""""""
+.. literalinclude:: examples/marker-detection-2.cpp
+   :language: c++
+   :linenos:
 
-Configurable instances usually provide a huge set of properties, that
-can be manipulated using an automatically generated GUI. Each
-Configurable instance has a unique static ID (of type string). Once,
-this ID is defined, the "prop" GUI component can be used to embed a
-property control widget (**TODO:** add configurables tutorial).
+Step by Step
+""""""""""""
+
+After including the headers needed, the global application data is
+instantiated. This time, we use a special top level **GUI** container
+of type **HSplit** which is a horizontal split widget. The
+**FidudicalDetector** is directly set up to track "bch"-markers with
+IDs in range 100 to 200.
+
+.. literalinclude:: examples/marker-detection-2.cpp
+   :language: c++
+   :lines: 1-6
+
+In the initialization method the fiducial detector is set up with a
+configurable ID ("fid"), which is used to link the **Prop** GUI
+component to the fiducial detector's properties.
+
+.. literalinclude:: examples/marker-detection-2.cpp
+   :language: c++
+   :lines: 8-16
+
+
+In **run**, the fiducials are detected and then visualized. The
+visualization part demonstrates some extra abilities of the **Draw()**
+component as well as some of the fiducial features. For each detected
+marker, the outline, the ID and an arrow to indicate the marker
+rotation is drawn.
+
+.. literalinclude:: examples/marker-detection-2.cpp
+   :language: c++
+   :lines: 18-38
 
 
 
 .. rubric:: Footnotes
 
 .. [#f1]
-   The configurable interfaces is described in an extra tutorial
+   as shown in an extra chapter of the tutorial

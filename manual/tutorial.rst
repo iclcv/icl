@@ -11,4 +11,5 @@ Tutorial
    tutorials/gui-apps
    tutorials/interactive-gui-apps
    tutorials/mouse-and-vis
+   tutorials/configurables
    tutorials/marker-detection
