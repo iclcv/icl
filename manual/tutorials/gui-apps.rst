@@ -12,4 +12,40 @@ displays the image.
    :linenos:                              
 
 
-A basic ICL GUI-application can be structured into three major functions:
+A basic ICL GUI-application can be structured into three major
+functions: **main**, **init** and **run**
+
+**main**
+  This function simply creates an instance of type
+  **ICLApplication** (or short ICLApp). The ICLApp instance always
+  gets the following arguments: 
+
+  * the program argument count the program
+
+  * argument list the program
+
+  * argument definition string (which can be set to **""**, if program
+    argument support shall not be supported)
+
+  * an initialization function
+
+  * further functions, that are automatically distributed to extra threads
+
+  In fact, The **ICLApp** instances does a lot of work for you.
+
+  * it creates a **QApplication**
+
+  * it calls your initialization function before the QApplications
+    event-loop is entered
+
+  * it parses all program arguments (and notifies errors)
+
+  * it creates working threads for each given **run**-function
+
+  * it joins all threads before the internal Qt-event loop is shut
+    down.
+
+
+  
+  
+  
