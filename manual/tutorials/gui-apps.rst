@@ -82,8 +82,8 @@ Documented Example
    :language: c++                         
    :linenos:                              
 
-Compiling
-"""""""""
+Compiling and Running
+"""""""""""""""""""""
 
 Again, you can set up you build-environment as described :ref:`before
 <hello-icl>`. If your used ICL build does at least support Qt and
