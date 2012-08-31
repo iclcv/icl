@@ -93,3 +93,13 @@ image-processing-related functions and tools. A fundamental part of
 ICL's support functions is it's GUI-creation toolkit, that allows for
 creating and layouting most complex and interactive graphical user
 interfaces within only a few lines of code.
+
+
+License
+-------
+
+TODO
+
+
+What's New
+----------

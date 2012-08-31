@@ -1,7 +1,7 @@
 .. _modules:
 
 Modules
-===========
+=======
 
 .. toctree::
    :maxdepth: 1

@@ -1,4 +1,10 @@
 Howtos
-==========
+======
 
-Here, some howtow of special topics
+.. toctree::
+   :maxdepth: 1
+
+   howtos/installation
+   howtos/generic-grabber-backends
+   howtos/camera-calibration
+   howtos/porting-7to8
