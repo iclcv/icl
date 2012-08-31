@@ -11,7 +11,8 @@ set of simple-to-use classes and functions to facilitate development
 of complex computer vision applications.
 
 A simple application for image acquisition and visualization can be
-written in less than 15 lines of C++ code (see example).
+written in less than 15 lines of C++ code (see
+:ref:`example<simple-example>`).
 
 During the design and development process, the following main goals
 took center stage:

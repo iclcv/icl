@@ -7,6 +7,7 @@ GUI-applications. In this section we will develop a simple viewer
 application that grabs images from arbitrary image sources and
 displays the image.
 
+.. _simple-example:
 
 Simple Example
 """"""""""""""
