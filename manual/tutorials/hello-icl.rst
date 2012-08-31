@@ -1,3 +1,5 @@
+.. _hello-icl:
+
 Hello ICL
 =========
 
