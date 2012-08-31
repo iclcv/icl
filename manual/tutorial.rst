@@ -10,3 +10,4 @@ Tutorial
    tutorials/pixel-access
    tutorials/gui-apps
    tutorials/interactive-gui-apps
+   tutorials/mouse-and-vis

@@ -90,7 +90,8 @@ add_example (${PROJECT_NAME} "config-file-example" "${CONDITIONLIST}" ICLLibsToL
 
 set(CONDITIONLIST HAVE_GTEST_COND)
 set(ICLLibsToLinkAgainst ICLUtils)
-add_gtest (${PROJECT_NAME} "matrix-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+#add_gtest (${PROJECT_NAME} "matrix-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+# must be moved to math
 
 # todo rewrite these apps as gtests
 #add_gtest (${PROJECT_NAME} "config-file-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)

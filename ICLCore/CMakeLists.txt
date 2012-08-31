@@ -62,9 +62,9 @@ add_example (${PROJECT_NAME} "img-example" "${CONDITIONLIST}" ICLLibsToLinkAgain
 
 set(CONDITIONLIST HAVE_GTEST_COND)
 set(ICLLibsToLinkAgainst ICLCore)
-add_gtest (${PROJECT_NAME} "test-image.cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}" ICLQt)
-add_gtest (${PROJECT_NAME} "converter-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+#add_gtest (${PROJECT_NAME} "test-image.cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+#set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}" ICLQt)
+#add_gtest (${PROJECT_NAME} "converter-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_OPENGL_COND)

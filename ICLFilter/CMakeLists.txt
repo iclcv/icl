@@ -98,8 +98,8 @@ set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLGeom)
 add_example (${PROJECT_NAME} "color-segmentation" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST HAVE_GTEST_COND)
-set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}")
-#add_gtest (${PROJECT_NAME} "inplace-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+set(ICLLibsToLinkAgainst ICLFilter ICLCore)
+add_gtest (${PROJECT_NAME} "unary-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 #add_gtest (${PROJECT_NAME} "morphological-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 #add_gtest (${PROJECT_NAME} "champfer-op-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
