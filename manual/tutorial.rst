@@ -9,3 +9,4 @@ Tutorial
    tutorials/using-images
    tutorials/pixel-access
    tutorials/gui-apps
+   tutorials/interactive-gui-apps
