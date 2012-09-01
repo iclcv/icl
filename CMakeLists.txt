@@ -323,7 +323,7 @@ exec_program(mkdir ARGS -p "\"${CMAKE_CURRENT_BINARY_DIR}/alldoc/html\"")
 set(ENTRY "<tr><td> <a href=\"../ALL/index.html\" target=\"MainFrame\">All Packages</a></td>\n")
 set(INPUT_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/alldoc")
 # prepare doxygen configuration file
-set(ICL_SUB_PACKAGES ICLUtils ICLCore ICLFilter ICLCV ICLIO ICLQt ICLQuick ICLGeom ICLMarkers ICLMath)
+set(ICL_SUB_PACKAGES ICLUtils ICLMath ICLCore ICLFilter ICLIO ICLQt ICLCV ICLGeom ICLMarkers)
 foreach(ICL_SUB_PACKAGE_PLACEHOLDER ${ICL_SUB_PACKAGES})
 	#replacement in doxyfile, DO NOT EDIT
 	set(INPUT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/include/${ICL_SUB_PACKAGE_PLACEHOLDER}")
@@ -395,6 +395,8 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/doc/
 set(OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/alldoc/html")
 #all pathes to all subdir of project
 set(INPUT_PATH "${INPUT_PATHS}")
+set(ICL_DOXYGEN_TAGFILE "${CMAKE_CURRENT_BINARY_DIR}/alldoc/alldoc.tag")
+
 #prepares doxyfile for doxygen
 configure_file(doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/alldoc/doxyfile @ONLY)
 

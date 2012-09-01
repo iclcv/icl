@@ -120,15 +120,16 @@ Exceptions Types
   either **ICLException** or a direct child-class instance is thrown.
   
 
-
-TODO
-
 .. _utils.threading:
+
 
 Support Functions and Classes for Multi-Threading
 """""""""""""""""""""""""""""""""""""""""""""""""
 
-TODO
+Here, the two fundamental classes are **icl::utils::Thread** and **
+icl::utils::Mutex** which are basically simple wrappers of the
+corresponding PThread-types. Most of the time, threading must not be
+implemented. 
 
 
 

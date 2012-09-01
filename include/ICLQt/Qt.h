@@ -42,7 +42,6 @@
 
 #include <QtGui/QApplication>
 #include <ICLUtils/Thread.h>
-#include <ICLUtils/ThreadUtils.h>
 #include <ICLUtils/Mutex.h>
 
 #include <ICLQt/ButtonHandle.h>

@@ -56,6 +56,10 @@ namespace icl{
         the computation loop into N parts (Work-Packages or short Work). Each of this
         Works will be computed in a single thread internally when given to the apply
         operator of the MultiThreader. \n
+
+        <b>Please note</b> This tool was written before openmp became popular
+        and part of compilers. Today we recommend to use openmp rather then the
+        Multithreader class.
         
         \section __EX Example
         The following example explains how to parallelize a simple function-call

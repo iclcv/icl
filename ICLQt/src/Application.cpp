@@ -34,13 +34,26 @@
 
 #include <ICLQt/Application.h>
 #include <QtCore/QLocale>
-#include <ICLUtils/ThreadUtils.h>
 #include <ICLUtils/ProgArg.h>
+#include <ICLUtils/Thread.h>
 
 using namespace icl::utils;
 
 namespace icl{
   namespace qt{
+    struct ExecThread : public Uncopyable, public Thread{
+      typedef void (*callback)(void);
+      callback cb;
+      ExecThread(callback cb):cb(cb){
+        if(!cb) throw ICLException("ExecThread called with NULL function!");
+      }
+      virtual void run(){
+        while(true){
+          cb();
+          usleep(0);
+        }
+      }
+    };
   
     typedef ICLApplication::callback callback;
    
@@ -155,7 +168,7 @@ namespace icl{
         s_threads.push_back(new ExecThread(s_callbacks[i]));
       }
       for(unsigned int i=0;i<s_threads.size();++i){
-        s_threads[i]->run();
+        s_threads[i]->start();
       }
       return app->exec();
     }

@@ -44,6 +44,7 @@
 #endif
 
 #include <stdint.h>
+#include <complex>
 
 
 namespace icl {
@@ -84,10 +85,26 @@ namespace icl {
   
 #endif
   
+  /// 8bit signed integer
+  typedef int8_t icl8s;
+
   /// 32bit unsigned integer type for the ICL \ingroup TYPES
   typedef uint32_t icl32u;
   
   /// 16bit unsigned integer type for the ICL \ingroup TYPES
   typedef uint16_t icl16u;
+
+  /// 64bit signed integer type for the ICL \ingroup TYPES
+  typedef int64_t icl64s;
+
+  /// 64bit unsigned integer type for the ICL \ingroup TYPES
+  typedef uint64_t icl64u;
+
+  /// float comples type \ingroup TYPES
+  typedef std::complex<icl32f> icl32c;
+
+  /// float comples type \ingroup TYPES
+  typedef std::complex<icl64f> icl64c;
+
 }
 

@@ -40,11 +40,13 @@
 #include <QtGui/QApplication>
 
 namespace icl{
-  /** \cond */
-  namespace utils { struct ExecThread; }
-  /** \endcond */
 
   namespace qt{
+
+    /** \cond */
+    struct ExecThread;
+    /** \endcond */
+
     /// QApplication extension for ICL based applications
     /** After the 100th time of writing 
         \code
@@ -153,7 +155,7 @@ namespace icl{
       static ICLApplication *s_app;
       
       /// list of threads
-      static std::vector<utils::ExecThread*> s_threads;
+      static std::vector<ExecThread*> s_threads;
       
       /// list of initialization functions
       static std::vector<callback> s_inits;

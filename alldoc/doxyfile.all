@@ -81,7 +81,7 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = . ../include/ICLUtils ../include/ICLCore ../include/ICLCC ../include/ICLIO ../include/ICLFilter ../include/ICLQt ../include/ICLBlob ../include/ICLGeom ../include/ICLQuick ../include/ICLAlgorithm ../include/ICLOpenCV
+INPUT                  = . ../include/ICLUtils ../include/ICLMath ../include/ICLCore ../include/ICLFilter ../include/ICLIO ../include/ICLQt ../include/ICLCV ../include/ICLGeom ../include/ICLMarkers
 
 FILE_PATTERNS          = *.h
 RECURSIVE              = NO
@@ -196,7 +196,7 @@ SKIP_FUNCTION_MACROS   = YES
 #---------------------------------------------------------------------------
 # Configuration::additions related to external references   
 #---------------------------------------------------------------------------
-TAGFILES               = 
+TAGFILES               = icl.tag
 GENERATE_TAGFILE       = 
 ALLEXTERNALS           = NO
 EXTERNAL_GROUPS        = YES
