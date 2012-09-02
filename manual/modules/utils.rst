@@ -62,8 +62,8 @@ The **core::depth** value is used for run-time type-inference
 
 .. _utils.pa:
 
-Programm Argument Evaluation Functions
-""""""""""""""""""""""""""""""""""""""
+Program Argument Evaluation
+"""""""""""""""""""""""""""
 
 The program argument evaluation toolkit is used in most ICL-based
 applications. It provides
@@ -89,20 +89,20 @@ in an extra chapter of the tutorial (see :ref:`progarg-tutorial`)
 
 .. _utils.time:
 
-Time and Timer Support Classes and Functions
-""""""""""""""""""""""""""""""""""""""""""""
+Time and Timer Support
+""""""""""""""""""""""
 
-**Time** 
+**utils::Time** 
 
   Here, the main utility class is **utils::Time**, which was
-  originally copied from **libiceutils**. The **Time** class provides
+  originally copied from **libiceutils**. The **utils::Time** class provides
   microsecond resolutions internally represented as an
-  icl64s. **Time::now()** returns the current system time. **Time**
+  icl64s. **utils::Time::now()** returns the current system time. **utils::Time**
   instances can easily be added, subtracted and compared. In contrast
-  to e.g. the boost-libraries, the **time** class represents absolute
+  to e.g. the boost-libraries, the time class represents absolute
   times and time intervalls at once.
 
-**FPSEstimator**
+**uitls::FPSEstimator**
 
   This class can be used to estimate the average frames-per-second
   count of a running application::
@@ -112,14 +112,14 @@ Time and Timer Support Classes and Functions
       std::cout << fps.getFPSString() << std::endl;
     }
   
-**FPSLimiter**
+**utils::FPSLimiter**
 
-  The limiter inherits the **FPSEstimator** class. It's **wait()** method will
+  The limiter inherits the **utils::FPSEstimator** class. It's **wait()** method will
   wait long enough to ensure, the desired FPS-limit is not overshot.
 
-**StackTimer**
+**utils::StackTimer**
 
-  The **StackTimer** is a very special tool, that can be used for
+  The **utils::StackTimer** is a very special tool, that can be used for
   coarse profiling. The header **ICLUtils/StackTimer.h** provides the
   *magic*-macros **BENCHMARK_THIS_FUNCTION** and
   BENCHMARK_THIS_SCOPE(STRING)::
@@ -143,14 +143,14 @@ Exceptions Types
   other exception types either implemented in the
   **ICLUtils/Exception.h** header or within one of the other ICL
   modules. ICL's exception hierarchy is rather flat; most of the time
-  either **ICLException** or a direct child-class instance is thrown.
+  either **utils::ICLException** or a direct child-class instance is thrown.
   
 
 .. _utils.threading:
 
 
-Support Functions and Classes for Multi-Threading
-"""""""""""""""""""""""""""""""""""""""""""""""""
+Multi-Threading Tools
+"""""""""""""""""""""
 
 Here, the two fundamental classes are **icl::utils::Thread** and 
 **icl::utils::Mutex** which are basically simple wrappers of the
@@ -175,10 +175,59 @@ of the tutorial (see :ref:`config-file-tutorial`)
 
 .. _utils.string:
 
-String Manipuation Functions
-""""""""""""""""""""""""""""
+String Manipulation
+"""""""""""""""""""
 
-TODO
+**utils::str** and **utils::parse**
+
+  Since C++'s support for string manipulation is a bit weak, ICL
+  supports a set of support functions for intuitive and easy-to use
+  string manipulation. Most important are the two function templates::
+
+    template<class T>
+    std::string str(const T &instance);
+
+    template<class T>
+    T parse(const std::string &text);
+  
+  where **str** converts a type instance into a string, and **parse**
+  converts a string into a type instance. Internally, these functions
+  make use of the in- and output stream-operators (**<<** and **>>**).
+  Therefore, **str** is automatically supported for each type that
+  supports the **std::ostream**-operator and **parse** for each type
+  that supports the **std::istream**-operator. For most of the common
+  ICL-types, this is true.
+
+
+**utils::Any**
+
+  **utils::Any** is a utility class that defines a string-serialized
+  object. **Any** is derived from the **std::string**, and extends
+  it's functionality by easy to use serialization and de-serialization
+  functions. An **Any** instance can be created from every type that
+  is supported by the **str**-template (see above). And it can be
+  converted to any type that is supported by the **parse**-template
+  
+  .. literalinclude:: examples/any.cpp
+    :language: c++
+    :linenos:
+
+**utils::tok** and **utils::cat**
+
+  The two support functions are used for tokenization and concatination
+  of string. **tok** can tokenize strings an std::vector<string> tokens.
+  It can either use a set of single allowed **char**-delimiters, or
+  a delimiting **std::string**. Furthermore, an escape-character can
+  be defined for also being able to use the delimiting characters.
+  
+  The opposite of **tok** is **cat**, which concatenate the elements
+  of an **std::vector<std::string>**. Optionally a delimiter can be
+  inserted between the elements here.
+
+**utils::match**
+
+  Is a regular expression matching function. It also supports accessing
+  sub-matches.
 
 
 .. _utils.function:
@@ -191,8 +240,8 @@ TODO
 
 .. _utils.random:
 
-Functions and classes for Random Number Generation
-""""""""""""""""""""""""""""""""""""""""""""""""""
+Random Number Generation
+""""""""""""""""""""""""
 
 TODO
 
@@ -243,10 +292,17 @@ Support Macros
     void ICL_DEPRECATED foo(){ .. }
     class ICL_DEPRECATED Bar { ...};
     
-**sqr**
+**utils::sqr**
 
-  Is a generic power-of-two template, that is sometimes very useful
-
+  Is a generic power-of-two template, that is sometimes very useful.
+  
+  .. note::
+     
+    **utils::sqr** is a function rather than a macro and therefore
+    is lies within the **icl::utils**-namespace
+     
+     
+  
 
 **iclMin** and **iclMax**
   
