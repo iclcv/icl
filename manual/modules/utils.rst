@@ -9,7 +9,9 @@ contain classes or functions that are related to image processing.
 Table of Contents
 """""""""""""""""
 * :ref:`utils.basic-types`
+* :ref:`utils.support-types`
 * :ref:`utils.pa`
+* :ref:`utils.smart-ptr`
 * :ref:`utils.time`
 * :ref:`utils.exceptions`
 * :ref:`utils.threading`
@@ -59,6 +61,62 @@ alternatives for the enumeration **core::depth** which are
 
 The **core::depth** value is used for run-time type-inference
 
+.. _utils.support-types:
+
+Support Types
+"""""""""""""
+
+**utils::Point** and **utils::Point32f**
+
+  A simple 2D point class with **int** (**float** for **Point32f**)
+  elements **x** and **y**. Other than this, points behave like
+  built-in types. They are serialized as and de-serialized from "(x,y)"
+  
+  .. note:: 
+    in case of Intel IPP Support, **Point** is derived from it's
+    IPP-counter-part **IppiPoint**
+  
+**utils::Size** and **utils::Size32f**
+
+  Like the **Point** classes, but with members **width** and **height**.
+  Serialized and de-serialized from "WxH".
+
+  .. note:: 
+    in case of Intel IPP Support, **Size** is derived from it's
+    IPP-counter-part **IppiSize**
+
+ 
+**utils::Rect** and utils::Rect32f
+ 
+  Defines a rectangle by given **x**, **y**, **width** and **height**.
+  Serialization: "(x,y)WxH"
+  
+  .. note:: 
+    in case of Intel IPP Support, **Rect** is derived from it's
+    IPP-counter-part **IppiRect**
+  
+**utils::Range<T>** and **utils::SteppingRange<T>**
+
+  A template class for ranges, described by **minVal** and **maxVal**.
+  **utils::SteppingRange** extends the **Range** template by a **stepping**
+  member variable of the same type
+
+**utils::Uncopyable** and **utils::Lockable**
+  
+  Two straight-forward to use interfaces. **Uncopyable** just declares
+  copy constructor and assignment operators in a private scope to
+  avoid copying instances of classes that are derived from it. The
+  **Lockable** interfaces contains a **utils::Mutex** and provides a
+  **lock** and **unlock** method. **utils::Mutex** and
+  **utils::Lockable** instances can be *scope-locked* using an instance of
+  **utils::Mutex::Locker**.
+
+**utils::VisualizationDescription**
+ 
+  Utility class for describing visualizations in a state-machine manner.
+  With this tool, classes can e.g. provide a visualization of something,
+  that can then be rendered generically
+  
 
 .. _utils.pa:
 
@@ -85,6 +143,18 @@ applications. It provides
 
 The usage of the program argument evaluation toolkit is explain
 in an extra chapter of the tutorial (see :ref:`progarg-tutorial`)
+
+
+.. _utils.smart-ptr:
+
+Smart-Pointer and Smart-Array
+"""""""""""""""""""""""""""""
+
+ICL provides a very simple, yet powerful reference counting
+smart-pointer implementation **utils::SmartPtr** that basically
+behaves like the **boost::shared_ptr**. For array-pointers (where the
+data was created using **new []**), the **utils::SmartArray** can be
+used.
 
 
 .. _utils.time:
@@ -235,22 +305,82 @@ String Manipulation
 The Generic Function Class 
 """""""""""""""""""""""""""
 
-TODO
+The **utils::Function** class and it's heavily overloaded creator
+function **utils::function**, is a simplification of the well known
+**boost::function** type.  The **Function** defines a generic
+interface for
 
+* global functions
+* static functions (in classes, that are basically global)
+* member functions
+* functors
+
+.. literalinclude:: examples/function.cpp
+  :linenos:
+  :language: c++
 
 .. _utils.random:
 
 Random Number Generation
 """"""""""""""""""""""""
 
-TODO
+Even though, creation of random numbers is supported sufficiently in
+C++, ICL provides some extra functions and classes here. In particular
+creation of Gaussian distributed random numbers usually requires some
+extra work. In addition to the normal random number generation
+functions **random(min,max)** and **gaussRandom(mean,variance)**, few
+special *classes* are provided, that can be created with the random
+number generation properties, and that will draw a new random number, 
+*whenever they are assigned to something*.
+
+.. literalinclude:: examples/random.cpp
+  :linenos:
+  :language: c++
+
+
+.. _utils.file:
+
+The **File** class
+""""""""""""""""""
+
+The **utils::File** class is a simple, yet powerful wrapper of a
+default C-Style **FILE**-pointer. In case of zlib-support, it provides
+built-in abilities for *gzipped* file I/O. I.e. as soon as a file-ending
+".gz" is detected, the file will be written and read using zlib-functions.
+
+In addition to this it supports
+
+* buffered reading
+* decomposition of file names into *directory*, *basename* and *suffix*
+* several reading and writing functions
+* **File.exists()**
 
 .. _utils.others:
 
 Others
 """"""
 
-TODO
+**utils::MultiTypeMap**
+
+  Abstract map implementation, that can hold entries of different types
+
+**utils::ProcessMonitor**
+
+  Grants process information at run-time such as the current memory consumption,
+  the application's thread-count or the average processor usage of the system
+  and the current process.
+
+**utils::ShallowCopyable**
+
+  A generic, but difficult to use utility class for the creation of shallow-
+  copyable classes
+  
+**utils::SignalHandler**
+
+  C++-based wrapper of the C-functions around *sigaction* for process signal
+  handling
+
+
 
 .. _utils.macros:
 
