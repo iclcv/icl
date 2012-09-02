@@ -384,14 +384,14 @@ namespace icl{
       result.setChannels((m_sr->pickChannel<0) ? (num +(m_sr->createXYZ*3)) : 1);
   
       
-      ImgEntry *im_DISTANCE = 0;
-      int DISTANCE_idx = -1;
+      //      ImgEntry *im_DISTANCE = 0;
+      //int DISTANCE_idx = -1;
       ImgEntry *im_AMPLITUDE = 0;
       int AMPLITUDE_idx = -1;
-      ImgEntry *im_INTENSITY = 0;
-      int INTENSITY_idx = -1;
+      //ImgEntry *im_INTENSITY = 0;
+      //int INTENSITY_idx = -1;
       ImgEntry *im_CONF_MAP = 0;
-      int CONF_MAP_idx = -1;
+      //int CONF_MAP_idx = -1;
       
       for(int i=0;i<num;++i){
         if(imgs[i].width != result.getWidth()){
@@ -405,11 +405,13 @@ namespace icl{
         ImgEntry::ImgType t = imgs[i].imgType;
         std::string info = "";
         switch(t){
-  #define CASE(X) case ImgEntry::IT_##X: info = #X ; im_##X = imgs+i; X##_idx = i; break;
-          CASE(DISTANCE);
-          CASE(AMPLITUDE);
-          CASE(INTENSITY);
-          CASE(CONF_MAP);
+  #define CASE_0(X) case ImgEntry::IT_##X: info = #X ; break;
+  #define CASE_1(X) case ImgEntry::IT_##X: info = #X ; im_##X = imgs+i; break;
+  #define CASE_2(X) case ImgEntry::IT_##X: info = #X ; im_##X = imgs+i; X##_idx = i; break;
+          CASE_0(DISTANCE);
+          CASE_2(AMPLITUDE);
+          CASE_0(INTENSITY);
+          CASE_1(CONF_MAP);
   #undef CASE
           default: info = "unknown"; break;
         }

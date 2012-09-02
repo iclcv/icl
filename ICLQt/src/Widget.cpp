@@ -1266,14 +1266,14 @@ namespace icl{
         QTextEdit *lic = new QTextEdit(*h);
         lic->setReadOnly(true);
         lic->setWordWrapMode(QTextOption::QTextOption::NoWrap);
-        lic->setText(pagetlic().c_str());
+        lic->setText(pa_get_license().c_str());
         h.add(lic,"License Information");
       }{
         BoxHandle &h = data->menu.get<BoxHandle>("help");
         QTextEdit *help = new QTextEdit(*h);
         help->setReadOnly(true);
         help->setWordWrapMode(QTextOption::QTextOption::NoWrap);
-        std::string text = pagethelp();
+        std::string text = pa_get_help_text();
         help->setText(text.length() ? text.c_str() : 
                      "no help information available\n"
                      "applications can set a help text\n"

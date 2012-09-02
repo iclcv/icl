@@ -41,18 +41,18 @@ using namespace icl::utils;
 
 int main(int n, char **ppc){
   
-  paex("-s","defines image size")
-      ("-f","defines image foramt (RGB,Gray or HLS)")
-      ("-c","defines channel count to use")
-      ("-fast","enables a 'fast'-mode");
+  pa_explain("-s","defines image size")
+            ("-f","defines image foramt (RGB,Gray or HLS)")
+            ("-c","defines channel count to use")
+            ("-fast","enables a 'fast'-mode");
 
-  painit(n,ppc,"-size|-s(Size=VGA) -format|-f(format=RGB) -channels|-c(int) -fast",true);
+  pa_init(n,ppc,"-size|-s(Size=VGA) -format|-f(format=RGB) -channels|-c(int) -fast",true);
 
   // program name
-  SHOW(paprogname());
+  SHOW(pa_get_progname());
 
   // number of all arguments
-  SHOW(pacount(false));
+  SHOW(pa_get_count(false));
   
   SHOW(!!pa("-c"));
 
@@ -72,7 +72,7 @@ int main(int n, char **ppc){
   SHOW(pa("-fast"));
     
   
-  for(unsigned int i=0;i<pacount();i++){
+  for(unsigned int i=0;i<pa_get_count();i++){
     std::cout << "dangling argument " << i << " is:'" 
               << pa(i) << "'" << std::endl;
   }

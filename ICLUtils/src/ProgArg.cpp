@@ -252,13 +252,13 @@ namespace icl{
       
       /// returns the static instance (must not be called before createInstace was called)
       static ProgArgContext *getInstance(const char *function){
-        if(!s_context)throw ProgArgException(function,"this function is not available before 'painit' was called");
+        if(!s_context)throw ProgArgException(function,"this function is not available before 'pa_init' was called");
         return s_context;
       }
       
       /// creates the static instance (must not be called twice)
       static ProgArgContext* createInstance(){
-        if(s_context) THROW_ProgArgException("painit must not be called twice!");
+        if(s_context) THROW_ProgArgException("pa_init must not be called twice!");
         static SmartPtr<ProgArgContext> instance;
         s_context = new ProgArgContext;
         instance = SmartPtr<ProgArgContext>(s_context);
@@ -278,7 +278,7 @@ namespace icl{
       
       void showUsage(const std::string &msg){
         if(msg != "") std::cout << msg <<std::endl;
-        std::cout << "usage:\n\t" << paprogname() << " [ARGS]" << std::endl;
+        std::cout << "usage:\n\t" << pa_get_progname() << " [ARGS]" << std::endl;
         
         std::string help = getHelpText();
         if(help.length()){
@@ -354,7 +354,7 @@ namespace icl{
     ProgArgContext *ProgArgContext::s_context = 0;
     std::map<std::string,std::string> ProgArgContext::explanations;
   
-    void painit_internal(const std::string &sIn, ProgArgContext &context) throw (ProgArgException){
+    void pa_init_internal(const std::string &sIn, ProgArgContext &context) throw (ProgArgException){
   
       
       std::string s = sIn;
@@ -404,30 +404,30 @@ namespace icl{
       context.add(arg);
     }
     
-    void pasetlic(const std::string &newLicenseText){
+    void pa_set_license(const std::string &newLicenseText){
       ProgArgContext::setLicenseText(newLicenseText);
     }
     
-    std::string pagetlic(){
+    std::string pa_get_license(){
       std::ostringstream str;
       std::string progname;
       try{
-        progname = paprogname();
+        progname = pa_get_progname();
       }catch(...){
-        progname = "program name is not available (painit was not called)";
+        progname = "program name is not available (pa_init was not called)";
       }
       str << progname << " " << VERSION << std::endl << std::endl << ProgArgContext::getLicenseText() << std::endl;
       return str.str();
     }
     
-    void painit(int n, char **ppc,const std::string &init, bool allowDanglingArgs){
+    void pa_init(int n, char **ppc,const std::string &init, bool allowDanglingArgs){
       try{
         ProgArgContext &context = *ProgArgContext::createInstance();
         
         StrTok tok(init," ",true,'\\');
         while(tok.hasMoreTokens()){
           const std::string &t = tok.nextToken();
-          painit_internal(t,context);
+          pa_init_internal(t,context);
         }
         
         // processing actually given arguments 
@@ -435,12 +435,12 @@ namespace icl{
         for(int i=1;i<n;){
           if(std::string("--help") == ppc[i] ||
              std::string("-help") == ppc[i] ){
-            pausage();
+            pa_show_usage();
             ::exit(0);
           }
           if(std::string("--version") == ppc[i] ||
              std::string("-version") == ppc[i]){
-            std::cout << paprogname() << " " << VERSION << std::endl << std::endl << ProgArgContext::getLicenseText() << std::endl;
+            std::cout << pa_get_progname() << " " << VERSION << std::endl << std::endl << ProgArgContext::getLicenseText() << std::endl;
             ::exit(0);
           }
              
@@ -488,21 +488,21 @@ namespace icl{
           THROW_ProgArgException("the following mandatory arguments are missing: '" + m +"'");
         }
       }catch(ProgArgException &e){
-        pausage(e.what());
+        pa_show_usage(e.what());
         ::exit(-1);
       }
     }
   
-    void paex_internal(const std::string &pa, const std::string &ex){
+    void pa_explain_internal(const std::string &pa, const std::string &ex){
       ProgArgContext::explanations[pa] = ex;
     }
   
-    void pausage(const std::string &msg){
+    void pa_show_usage(const std::string &msg){
       ProgArgContext &context = *ProgArgContext::getInstance(__FUNCTION__);
       context.showUsage(msg);
     }
     
-    const std::string &paprogname(bool fullpath){
+    const std::string &pa_get_progname(bool fullpath){
       ProgArgContext &context = *ProgArgContext::getInstance(__FUNCTION__);
   
       if(fullpath){
@@ -513,20 +513,20 @@ namespace icl{
       }
     }
   
-    void pashow(){
+    void pa_show(){
       ProgArgContext &context = *ProgArgContext::getInstance(__FUNCTION__);
       std::cout << "allowed arguments (pausage()):" << std::endl;
-      pausage();
+      pa_show_usage();
       std::cout << std::endl << "given arguments:" << std::endl;
       context.showGiven();
     }
   
-    unsigned int pacount(bool danglingOnly){
+    unsigned int pa_get_count(bool danglingOnly){
       const ProgArgContext &context = *ProgArgContext::getInstance(__FUNCTION__);
       return danglingOnly ? context.dangling.size() : context.all.size();
     }
   
-    const std::string &pasubarg_internal(const ProgArgData &pa) throw (ProgArgException){
+    const std::string &pa_subarg_internal(const ProgArgData &pa) throw (ProgArgException){
       ProgArgContext &context = *ProgArgContext::getInstance(__FUNCTION__);
       if(!pa.id.length()){
         const std::vector<std::string> &l = pa.danglingOnly ? context.dangling : context.all;
@@ -582,8 +582,13 @@ namespace icl{
       GivenArg *g = ProgArgContext::getInstance(__FUNCTION__)->findGivenArg(id);
       return g ? (int)g->subargs.size() : 0;
     }
+
+    Any ProgArg::operator[](int idx) const throw (ProgArgException){
+      return *pa(id,idx);
+    }
+
   
-    bool padefined_internal(const ProgArgData &pa) throw (ProgArgException){
+    bool pa_defined_internal(const ProgArgData &pa) throw (ProgArgException){
       ProgArgContext &context = *ProgArgContext::getInstance(__FUNCTION__);
       if(!pa.id.length()){
         const std::vector<std::string> &l = pa.danglingOnly ? context.dangling : context.all;
@@ -595,11 +600,11 @@ namespace icl{
       }
     }
     
-    void pasethelp(const std::string &newHelpText){
+    void pa_set_help_text(const std::string &newHelpText){
       ProgArgContext::setHelpText(newHelpText);
     }
     
-    std::string pagethelp(){
+    std::string pa_get_help_text(){
       return ProgArgContext::getHelpText();
     }
   } // namespace utils

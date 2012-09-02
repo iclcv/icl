@@ -9,10 +9,10 @@ contain classes or functions that are related to image processing.
 Table of Contents
 """""""""""""""""
 * :ref:`utils.basic-types`
+* :ref:`utils.pa`
 * :ref:`utils.time`
 * :ref:`utils.exceptions`
 * :ref:`utils.threading`
-* :ref:`utils.pa`
 * :ref:`utils.xml`
 * :ref:`utils.string`
 * :ref:`utils.function`
@@ -25,7 +25,7 @@ Table of Contents
 Basic Types
 """""""""""
 
-ICL's basic data types are defined in :icl:`BasicTypes.h`
+ICL's basic data types are defined in
 **ICLUtils/BasicTypes.h**. Unlike all other classes, types and
 functions, the basic types are defined directly in the
 **icl**-namespace. The type syntax is copied from the Intel IPP
@@ -58,6 +58,30 @@ alternatives for the enumeration **core::depth** which are
 * **core::depth64f**
 
 The **core::depth** value is used for run-time type-inference
+
+
+.. _utils.pa:
+
+Programm Argument Evaluation Functions
+""""""""""""""""""""""""""""""""""""""
+
+The program argument evaluation toolkit is used in most ICL-based
+applications. It provides
+
+* a simple and intuitive string-based description of allowed program
+  arguments
+
+* an easy to use way to describe program arguments
+
+* a efficient parser for program arguments, that provides
+  human-readable error messages
+
+* an automatically supported set of common default program
+  arguments, such as **-version** or **-help**
+
+* a concise method **utils::pa** that can be use to query whether 
+  a specific program argument has been given and what it's sub 
+  arguments where
 
 
 
@@ -129,19 +153,9 @@ Support Functions and Classes for Multi-Threading
 Here, the two fundamental classes are **icl::utils::Thread** and **
 icl::utils::Mutex** which are basically simple wrappers of the
 corresponding PThread-types. Most of the time, threading must not be
-implemented. 
+implemented explicitly. Instead the **icl::qt::ICLApplication**
+can be used for multi-threaded (interactive) applications.
 
-
-
-
-
-
-.. _utils.pa:
-
-Programm Argument Evaluation Functions
-""""""""""""""""""""""""""""""""""""""
-
-TODO
 
 
 .. _utils.xml:

@@ -47,7 +47,7 @@ using namespace icl::utils;
 static FiducialDetector fid; // includes lots of additional stuff such as ICLFilter, ICLCV and ICLMarkers
 
 int main(int n, char **ppc){
-  painit(n,ppc,"-list|-ls|-l "
+  pa_init(n,ppc,"-list|-ls|-l "
          "-create-default-property-file|-o|-c(ConfigurableName,FileName) "
          "-show-properties|-s|-i(ConfigurableName)");
   

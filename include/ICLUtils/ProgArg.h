@@ -34,7 +34,7 @@
 
 #pragma once
 
-#include <ICLUtils/StringUtils.h>
+#include <ICLUtils/Any.h>
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Macros.h>
 
@@ -52,8 +52,8 @@ namespace icl{
     // internally used programm argument data type
     class ProgArgData{
       protected:
-      friend const std::string &pasubarg_internal(const ProgArgData &pa) throw (ProgArgException);
-      friend bool padefined_internal(const ProgArgData &pa) throw (ProgArgException);
+      friend const std::string &pa_subarg_internal(const ProgArgData &pa) throw (ProgArgException);
+      friend bool pa_defined_internal(const ProgArgData &pa) throw (ProgArgException);
       std::string id;
       int subargidx;
       bool danglingOnly;
@@ -69,13 +69,13 @@ namespace icl{
     
     /** \cond */
     // internal function for program argument explanation
-    void paex_internal(const std::string &pa, const std::string &ex);
+    void pa_explain_internal(const std::string &pa, const std::string &ex);
     
     // internal sub-argument access function
-    const std::string &pasubarg_internal(const ProgArgData &pa) throw (ProgArgException);
+    const std::string &pa_subarg_internal(const ProgArgData &pa) throw (ProgArgException);
   
     // another internal helper function
-    bool padefined_internal(const ProgArgData &pa) throw (ProgArgException);
+    bool pa_defined_internal(const ProgArgData &pa) throw (ProgArgException);
     /** \endcond */
     
     /// Programm argument utility class \ingroup PA
@@ -100,32 +100,35 @@ namespace icl{
       // undocumented friend
       friend const ProgArg pa(unsigned int,bool);
       // yet another one
-      friend bool padefined_internal(const ProgArgData &pa) throw (ProgArgException);
+      friend bool pa_defined_internal(const ProgArgData &pa) throw (ProgArgException);
       /** \endcond */
       
       /// returns the count of actually given sub arguments
       /** If this argument was not given, this function returns 0.*/
       int n() const throw (ProgArgException);
+
+      /// returns the given sub-argument in shape of an utils::Any
+      Any operator[](int subArgIdx) const throw (ProgArgException);
   
       /// this is the main conversion function. It returns the associated sub argument as given T
       /** If T is bool, this operator returns whether the arg was given rather than
           its value */
       template<class T>
       inline operator T() const throw (ProgArgException){
-        return parse<T>(pasubarg_internal(*this));
+        return parse<T>(pa_subarg_internal(*this));
       }
   
       /// this template function can be used to explicitly cast a program argument into a given type
       template<class T>
       inline T as() const throw (ProgArgException){
-        return parse<T>(pasubarg_internal(*this));
+        return parse<T>(pa_subarg_internal(*this));
       }
       
       /// important convenience operator for using a ProgArg instance as string 
       /** <tt>*pa("-x")</tt> is the same as <tt>pa("-x").as<std::string>()</tt>.
           However, the first version is much shorter.*/
       inline std::string operator*() const throw (ProgArgException){
-        return pasubarg_internal(*this);
+        return pa_subarg_internal(*this);
       }
       
       /// returns the prog-arg id
@@ -143,13 +146,13 @@ namespace icl{
     // explicit specialization for bool types (returns whether the arg was actually given)
     template<>
     inline ProgArg::operator bool() const throw(utils::ProgArgException){
-      return padefined_internal(*this);
+      return pa_defined_internal(*this);
     }
   
     // explicit specialization for bool types (returns whether the arg was actually given)
     template<>
     inline bool ProgArg::as() const throw (ProgArgException){
-      return padefined_internal(*this);
+      return pa_defined_internal(*this);
     }
   
     /** \endcond */
@@ -290,7 +293,7 @@ namespace icl{
   
         \endcode
   
-        @see icl::painit(int,char**,const std::string&,bool)
+        @see icl::pa_init(int,char**,const std::string&,bool)
     */
     inline const ProgArg pa(const std::string &id, unsigned int subargidx=0) throw (ProgArgException){
       if(!id.length()) THROW_ProgArgException("invalid programm argument id ''");
@@ -306,14 +309,14 @@ namespace icl{
     
     /// utility function that allows to use a default value, if given argument was not defined \ingroup PA
     template<class T>
-    inline const T padef(const std::string &id, unsigned int subargidx, const T &def) throw (ProgArgException){
+    inline const T pa_def(const std::string &id, unsigned int subargidx, const T &def) throw (ProgArgException){
       const ProgArg p = pa(id,subargidx);
       return p ? parse<T>(p) : def;
     }
   
     /// utility function that allows to use a default value, if given argument was not defined \ingroup PA
     template<class T>
-    inline const T padef(const std::string &id, const T &def) throw (ProgArgException){
+    inline const T pa_def(const std::string &id, const T &def) throw (ProgArgException){
       return padef(id,0,def);
     }
   
@@ -321,7 +324,7 @@ namespace icl{
     
     /// returns number of actually given args given \ingroup PA
     /** @see icl::pa(const std::string&,unsigned int) */
-    unsigned int pacount(bool danglingOnly=true);
+    unsigned int pa_get_count(bool danglingOnly=true);
   
     /// returns application name (full command line)
     /** @param fullpath if this is set to true, the complete
@@ -330,10 +333,10 @@ namespace icl{
                If fullpath is false, which is default, 
                just the program name is returned.
         @see icl::pa(const std::string&,unsigned int) */
-    const std::string &paprogname(bool fullpath=false);
+    const std::string &pa_get_progname(bool fullpath=false);
   
     /// shows current available programm arguments \ingroup PA
-    void pausage(const std::string &msg="");
+    void pa_show_usage(const std::string &msg="");
     
     /** \cond */
     // utility class which allows the user to call the paex-function in a 'stacked' manner
@@ -352,15 +355,15 @@ namespace icl{
             ("-format","define input image format");
         \endcode
         @see icl::pa(const std::string&,unsigned int) */
-    inline PAEX paex(const std::string &pa, const std::string &ex){
-      paex_internal(pa,ex);
+    inline PAEX pa_explain(const std::string &pa, const std::string &ex){
+      pa_explain_internal(pa,ex);
       return PAEX();
     }
   
     /** \cond */
     // deferred implementation of stacking operator
     inline PAEX PAEX::operator()(const std::string &pa, const std::string &ex){
-      return paex(pa,ex);
+      return pa_explain(pa,ex);
     }
     /** \endcond */
   
@@ -453,25 +456,25 @@ namespace icl{
         mandatory arguments must have sub-arguments (which is also
         sensible if you think about it). 
     */
-    void painit(int n,char **ppc,const std::string &init, bool allowDanglingArgs=false);
+    void pa_init(int n,char **ppc,const std::string &init, bool allowDanglingArgs=false);
   
   
     /// shows all given program arguments \ingroup PA
-    void pashow();
+    void pa_show();
   
     /// Sets a license text, that is used when applications are run with --version or -v
     /** pasetlic has to be called before painit is called. Otherwise, only the default licese text is shown. */
-    void pasetlic(const std::string &newLicenseText);
+    void pa_set_license(const std::string &newLicenseText);
     
     /// Sets a applications help text that is used when applications are run with --help or with unknown arguments
     /** pasethelp has to be called before painit is called. */
-    void pasethelp(const std::string &newHelpText);
+    void pa_set_help_text(const std::string &newHelpText);
     
     /// returns the current license text
-    std::string pagetlic();
+    std::string pa_get_license();
     
     /// returns the current help text (which is empty, if it was not set)
-    std::string pagethelp();
+    std::string pa_get_help_text();
   } // namespace utils
 }
 

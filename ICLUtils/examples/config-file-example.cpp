@@ -48,7 +48,7 @@ using namespace icl::geom;
 
 
 int main(int n, char **ppc){
-  painit(n,ppc,"-config|-c(filename)");
+  pa_init(n,ppc,"-config|-c(filename)");
 
   if(pa("-c")){
     ConfigFile f(*pa("-c"));

@@ -72,7 +72,7 @@ namespace icl{
       throw (SecondSingeltonException){
       if(s_app) throw SecondSingeltonException("only one instance is allowed!");
       if(paInitString != ""){
-        painit(n,ppc,paInitString);
+        pa_init(n,ppc,paInitString);
       }
       
       /* QApplication uses argv and argc internally, both are passed via reference to
