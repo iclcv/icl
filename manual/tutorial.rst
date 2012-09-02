@@ -9,6 +9,8 @@ Tutorial
    tutorials/using-images
    tutorials/pixel-access
    tutorials/gui-apps
+   tutorials/program-arguments
+   tutorials/config-files
    tutorials/interactive-gui-apps
    tutorials/mouse-and-vis
    tutorials/configurables

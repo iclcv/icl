@@ -263,3 +263,5 @@ texinfo_documents = [
 doxylink = {
         'icl' : ('/home/celbrech/projects/ICL/build/debug/alldoc/alldoc.tag', '/home/celbrech/projects/ICL/build/debug/alldoc/html/')
 }
+
+todo_include_todos = True;

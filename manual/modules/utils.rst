@@ -83,6 +83,8 @@ applications. It provides
   a specific program argument has been given and what it's sub 
   arguments where
 
+The usage of the program argument evaluation toolkit is explain
+in an extra chapter of the tutorial (see :ref:`progarg-tutorial`)
 
 
 .. _utils.time:
@@ -150,8 +152,8 @@ Exceptions Types
 Support Functions and Classes for Multi-Threading
 """""""""""""""""""""""""""""""""""""""""""""""""
 
-Here, the two fundamental classes are **icl::utils::Thread** and **
-icl::utils::Mutex** which are basically simple wrappers of the
+Here, the two fundamental classes are **icl::utils::Thread** and 
+**icl::utils::Mutex** which are basically simple wrappers of the
 corresponding PThread-types. Most of the time, threading must not be
 implemented explicitly. Instead the **icl::qt::ICLApplication**
 can be used for multi-threaded (interactive) applications.
@@ -163,7 +165,11 @@ can be used for multi-threaded (interactive) applications.
 XML-based Configuration Files
 """""""""""""""""""""""""""""
 
-TODO
+We included the Pugi-XML parsing framework into the ICL source
+tree. Even though, this can be uses for XML file parsing and creation,
+ICL provides a much simpler tool for XML-based configuration files,
+the **utils::ConfigFile** class. This is documented in an extra chapter
+of the tutorial (see :ref:`config-file-tutorial`)
 
 
 

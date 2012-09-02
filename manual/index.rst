@@ -17,11 +17,17 @@ Contents:
    howtos
 
 
+Internal
+========
+
+.. toctree::
+   :maxdepth: 1
+
+   todolist
 
 .. Indices and tables
    ==================
-   x
-   * :ref:`genindex`
-   * :ref:`modindex`
-   * :ref:`search`
+     * :ref:`genindex`
+     * :ref:`modindex`
+     * :ref:`search`
 
