@@ -92,6 +92,6 @@ void run(){
 }
 
 int main(int n, char **ppc){
-  paex("-i","defines input device to use");
+  pa_explain("-i","defines input device to use");
   return ICLApplication(n,ppc,"[m]-input|-i(device,device-params)",init,run).exec();
 }

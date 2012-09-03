@@ -2,7 +2,7 @@
 #include <ICLMarkers/FiducialDetector.h>
 
 int main(int n, char **ppc){
-  paex
+  pa_explain
   ("-i","the first sub-argument defines the marker type (one of bch, icl1 and art). The 2nd sub-argument "
    "defines which marker to create (this is the marker ID in case of type bch and icl1 and "
    "in case of makrer type art, an image filename is expected")
@@ -12,7 +12,9 @@ int main(int n, char **ppc){
   ("-s","output size of the marker image");
   
 
-  painit(n,ppc,"[m]-id|-i(type,int) -border-size|-b(int=2) -border-ration|-r(float=0.4) -output|-o(filename) -size|-s(size=300x300)");
+  pa_init(n,ppc,"[m]-id|-i(type,int) -border-size|-b(int=2) "
+          "-border-ration|-r(float=0.4) -output|-o(filename) "
+          "-size|-s(size=300x300)");
 
   
   FiducialDetector d(*pa("-i"));

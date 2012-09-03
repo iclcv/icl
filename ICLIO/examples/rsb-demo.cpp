@@ -128,7 +128,7 @@ void run2(){
 }
 
 int main(int n, char **v){
-  paex("-what","possible values are 'send', 'receive' and 'both'")
+  pa_explain("-what","possible values are 'send', 'receive' and 'both'")
   ("-v","verbose mode, prints received strings to std::out");
   app = *v;
   return ICLApp(n,v,"-what(what-to-do=both) -transfer-type|-t(type=rsb) "

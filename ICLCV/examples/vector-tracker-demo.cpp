@@ -421,7 +421,7 @@ void run(){
 
 
 int main(int n, char  **ppc){
-  paex
+  pa_explain
   ("-nblobs","number of blobs to use")
   ("-sleeptime","initial sleeptime value")
   ("-mingap","minimal distance between two blobs")
@@ -433,9 +433,9 @@ int main(int n, char  **ppc){
   ("-iam","one of {new,or free}")
   ("-norm","give norm factors for x and y distances and for the region size");
 
-  return ICLApplication(n,ppc,"-norm(x-norm=1,y-norm=1,size-norm=1000) "
-                        "-id-generation-mode|-iam(mode=free) -nblobs|-n(int=30) -sleeptime|-s(msec=20) "
-                        "-mingap(int=3) -minr(int=10) -maxr(int=20) -maxv(int=10) -maxdv(int=2) "
-                        "-thresh(int=5)",init,run).exec();
+  return ICLApp(n,ppc,"-norm(x-norm=1,y-norm=1,size-norm=1000) "
+                "-id-generation-mode|-iam(mode=free) -nblobs|-n(int=30) -sleeptime|-s(msec=20) "
+                "-mingap(int=3) -minr(int=10) -maxr(int=20) -maxv(int=10) -maxdv(int=2) "
+                "-thresh(int=5)",init,run).exec();
 }
  

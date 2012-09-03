@@ -247,7 +247,7 @@ void run(){
 
 
 int main(int n, char **ppc){
-  paex
+  pa_explain
   ("-i","defines input device and parameters")
   ("-s","defines image size to use")
   ("-r","if given, the dc-bus is resetted automatically before use");

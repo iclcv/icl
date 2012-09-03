@@ -36,6 +36,6 @@
 #include <ICLUtils/ProgArg.h>
 
 int main(int n, char **ppc){
-  icl::utils::painit(n,ppc,"-quiet|-q");
+  icl::utils::pa_init(n,ppc,"-quiet|-q");
   icl::io::DCDevice::dc1394_reset_bus(!icl::utils::pa("-q"));
 }

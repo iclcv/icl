@@ -149,7 +149,7 @@ void run(){
 
 
 int main(int n, char **ppc){
-  paex
+  pa_explain
   ("-i","defines input device and params that should be used")
   ("-s","defines image size");
   return ICLApplication(n,ppc,"[m]-input|-i(device,device-params) -size|-s(Size=VGA)",init,run).exec();

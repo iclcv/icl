@@ -317,7 +317,7 @@ namespace icl{
     /// utility function that allows to use a default value, if given argument was not defined \ingroup PA
     template<class T>
     inline const T pa_def(const std::string &id, const T &def) throw (ProgArgException){
-      return padef(id,0,def);
+      return pa_def(id,0,def);
     }
   
   

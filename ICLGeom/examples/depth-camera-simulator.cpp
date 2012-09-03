@@ -133,7 +133,8 @@ void run() {
 
 
 int main(int n, char **v){
-  paex("-d","depth image output stream (if given, depth image is exported)")
+  pa_explain
+  ("-d","depth image output stream (if given, depth image is exported)")
   ("-c","color image output stream (if given, the color image is exported)")
   ("-o","if given, the given obj-file is loaded into the scene")
   ("-cam","camera for depth rendering (also used for\n"

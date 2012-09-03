@@ -40,7 +40,7 @@
 #include <ICLFilter/RotateOp.h>
 
 int main(int n, char **ppc){
-  paex("-i","specify input file (type by filename extension)\n\t[also as 1st unspecified arg]")
+  pa_explain("-i","specify input file (type by filename extension)\n\t[also as 1st unspecified arg]")
       ("-o","specify output file (type by filename extension)\n\t[also as 2nd unspecified arg]")
       ("-depth","define output file depth")
       ("-format","define output file format")
@@ -49,13 +49,13 @@ int main(int n, char **ppc){
       ("-scale","define size scaling factor")
       ("-flip","flips the image (allowed values are horz, vert, or both")
       ("-scalemode", "defines scalemode to use (one of NN, LIN, or RA)");
-  painit(n,ppc,"-input|-i(filename) -output|-o(filename) -depth|-d(depth) -format|-f(format) -size|-s(Size) -scale(factor) -scalemode(scalemode) -rotate(angle) -flip(axis)",true);
+  pa_init(n,ppc,"-input|-i(filename) -output|-o(filename) -depth|-d(depth) -format|-f(format) -size|-s(Size) -scale(factor) -scalemode(scalemode) -rotate(angle) -flip(axis)",true);
   
   std::string inFileName,outFileName;
 
   if(!pa("-i")){
     if(!pa(0)) { 
-      pausage("please define input filename"); 
+      pa_show_usage("please define input filename"); 
       exit(-1); 
     }else{
       inFileName = *pa(0);
@@ -66,7 +66,7 @@ int main(int n, char **ppc){
 
   if(!pa("-o")){
     if(!pa(1)) { 
-      pausage("please define output filename"); 
+      pa_show_usage("please define output filename"); 
       exit(-1); 
     }else{
       outFileName = *pa(1);

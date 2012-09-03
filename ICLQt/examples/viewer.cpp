@@ -61,7 +61,7 @@ void init(){
 }
 
 int main(int n, char**ppc){
-  paex
+  pa_explain
   ("-input","define input grabber parameters\ne.g. -dc 0 or -file *.ppm")
   ("-size","desired image size of grabber");
   return ICLApp(n,ppc,"[m]-input|-i(device,device-params) "

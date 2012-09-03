@@ -37,10 +37,10 @@
 #include <ICLFilter/BinaryCompareOp.h>
 
 int main(int n, char **ppc){
-  painit(n,ppc,"[m]-input-1|-1|-a(device,device-params) "
-         "[m]-input-2|-2|-b(device,device-params) "
-         "-seclect-channel-a|-ca(int) "
-         "-select-channel-b|-cb(int)");
+  pa_init(n,ppc,"[m]-input-1|-1|-a(device,device-params) "
+          "[m]-input-2|-2|-b(device,device-params) "
+          "-seclect-channel-a|-ca(int) "
+          "-select-channel-b|-cb(int)");
   
   GenericGrabber ga(pa("-a"));
   GenericGrabber gb(pa("-b"));

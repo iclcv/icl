@@ -314,7 +314,6 @@ void run(){
 
 
 int main(int n, char **ppc){
-  paex
-  ("-i","for input device selection");
+  pa_explain("-i","for input device selection");
   return ICLApplication(n,ppc,"[m]-input|-i(device,device-params,camera-xml-file)",init,run).exec();
 }

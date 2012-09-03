@@ -107,12 +107,14 @@ void run(){
 }
 
 int main(int n, char **args){
-  paex("-i","list of inputs in order deviceType1 device1 deviceType2 device2 ...")
+  pa_explain
+  ("-i","list of inputs in order deviceType1 device1 deviceType2 device2 ...")
   ("-c", "associated list of camera calibratio files (in the same order as -i")
   ("-m", "markers to load (type can be e.g. bch or art, \n"
    "which are the bch-indices/ or artoolkit pattern images\n"
    "(e.g. [0-100]) and size are the real sizes in mm of the markers");
-   return ICLApp(n,args,"[m]-input|-i(...) [m]-cameras|-c(...) "
+   
+  return ICLApp(n,args,"[m]-input|-i(...) [m]-cameras|-c(...) "
                  "[m]-markers-to-load|-m(type,which,size) "
                  "-do-not-sync-2D-detectors|-nosync",init,run).exec();
 }

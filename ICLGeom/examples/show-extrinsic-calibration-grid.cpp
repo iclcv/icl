@@ -91,7 +91,7 @@ void run(){
 }
 
 int main(int n, char **ppc){
-  paex
+  pa_explain
   ("-input","like default ICL -input argument,\n"
    "but 3rd subargument is camera-calibration-xml file\n"
    "which can be created with the icl-cam-calib tool")
@@ -104,6 +104,7 @@ int main(int n, char **ppc){
    "\t NXCells and NYCells grid cell count\n"
    "\t CellW and CellH grid cell size\n"
    );
-  return ICLApplication(n,ppc,"[m]-input|-i(device,device-prams,camera-xml-file) "
-                        "-grid|-g(Px=-800,Py=1600,Pz=0,V1x=50,V1y=0,V1z=0,V2x=0,V2y=-50,V2z=0,NXCells=32,NYCells=32)",init,run).exec();
+  return ICLApp(n,ppc,"[m]-input|-i(device,device-prams,camera-xml-file) "
+                "-grid|-g(Px=-800,Py=1600,Pz=0,V1x=50,V1y=0,V1z=0,V2x=0,"
+                "V2y=-50,V2z=0,NXCells=32,NYCells=32)",init,run).exec();
 }

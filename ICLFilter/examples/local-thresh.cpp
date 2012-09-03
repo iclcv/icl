@@ -250,17 +250,16 @@ void run(){
 }
 
 int main (int argc, char **argv) {
-  paex
-  ("-input","generic-grabbers generic grabbers params")
-  ("-config","config file input")
-  ("-size","grabbers desired image size")
-  ("-nogui","start without gui")
-  ("-output","for no gui batchmode: define output-image pattern\n"
-   "use ##### for the image index in this pattern");
+  pa_explain("-input","generic-grabbers generic grabbers params")
+            ("-config","config file input")
+            ("-size","grabbers desired image size")
+            ("-nogui","start without gui")
+            ("-output","for no gui batchmode: define output-image pattern\n"
+             "use ##### for the image index in this pattern");
 
-  painit(argc,argv,"[m]-input|-i(device,device-params) "
-         "-output|-o(output-file-pattern) -config|-c(cfg-filename) "
-         " -nogui|-n -color -size|-s(size=VGA)");
+  pa_init(argc,argv,"[m]-input|-i(device,device-params) "
+          "-output|-o(output-file-pattern) -config|-c(cfg-filename) "
+          " -nogui|-n -color -size|-s(size=VGA)");
   
   
   if(pa("-nogui")){

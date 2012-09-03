@@ -294,7 +294,7 @@ void run(){
 
 
 int main(int n, char **ppc){
-  paex("-input","define device parameters (e.g. -d dc 0 or -d file image/*.ppm)");
+  pa_explain("-input","define device parameters (e.g. -d dc 0 or -d file image/*.ppm)");
   return ICLApp(n,ppc,"-size|-s(size=VGA) [m]-input|-i(device,device-params)",
                 init,run).exec();
 }
