@@ -1,3 +1,5 @@
+.. _tut.pixel-access:
+
 Accessing Pixel Data
 ====================
 
