@@ -51,86 +51,11 @@ namespace icl{
         \section ALG RANSAC Algorithm
         The RANSAC Algorithm is well described on Wikipedia 
         @see http://de.wikipedia.org/wiki/RANSAC-Algorithmus
-        
+    
         \section EX Example
-        We will here show an example application that is used
-        for fitting a simple 2D line: The example code is also available
-        as an example application: ICL/ICLMath/examples/ransac-test.cpp
-       
-        \code
-        #include <ICLMath/ProgArg.h>
-        #include <ICLMath/StringUtils.h>
-        #include <ICLMath/FixedVector.h>
-        #include <ICLMath/RansacFitter.h>
-        #include <ICLMath/Random.h>
-        #include <ICLMath/Point32f.h>
-        
-        using namespace icl;
-        
-        // the line model (y=mx+b) is defined by two values
-        typedef FixedColVector<float,2> Line;
-  
-        // the fitting is done using standard least squares approach
-        Line fit_line(const std::vector<Point32f> &pts){
-          int n = pts.size();
-          DynMatrix<float> xs(n,2), ys(n,1);
-          for(int i=0;i<n;++i){
-            xs(i,0) = 1;
-            xs(i,1) = pts[i].x;
-            ys(i,0) = pts[i].y;
-          } 
-          DynMatrix<float> fit = ys * xs.pinv(true);
-          return Line(fit[0],fit[1]);
-        }
-        
-        // distance function for single points (y-distance here)
-        double line_dist(const Line &line, const Point32f &p){
-          return sqr(line[0] + line[1]*p.x - p.y);
-        }
-  
-        // the original line
-        static const Line THE_LINE(1.23456, 7.89);
-  
-        // create test data:
-        // 50% noisy point on the line
-        // 50% random outliers
-        const std::vector<Point32f> get_line_points(){
-          Line l = THE_LINE;
-          std::vector<Point32f> pts(100);
-          URand r(-100,100);
-          GRand gr(0,1);
-          for(int i=0;i<50;++i){
-            pts[i].x = r;
-            pts[i].y = l[0] + l[1]* pts[i].x + gr;
-          }
-          for(int i=0;i<50;++i){
-            pts[i+50] = Point32f(r,r);
-          }
-          return pts;
-        }
-  
-        int main(int n, char **ppc){
-          randomSeed();
-        
-          // create the fitter
-          RansacFitter<Point32f,Line> fitLine(2,1000,fit_line,line_dist,1.5,30);
-        
-          // fit ...
-          RansacFitter<Point32f,Line>::Result r = fitLine.fit(get_line_points());
-  
-          // show results
-          std::cout << "original line was " << THE_LINE.transp() << std::endl;
-          std::cout << "fitted result was " << r.model.transp() << std::endl;
-          std::cout << "fitting error was " << r.error << std::endl;
-        }
-        
-        // output could be something like:
-        // original line was | 1.23456 7.89 |
-        // fitted result was | 1.3565 7.88645 |
-        // fitting error was 0.188892
-  
-        \endcode
-  
+
+        An example is given in the ICL Manual
+    
         \section TEM Template Parameters
         The two tempalte parameters are kept very general. Therefore, there
         are just a few restrictions for the DataPoint and Model classes.
@@ -145,10 +70,10 @@ namespace icl{
       typedef std::vector<DataPoint> DataSet;
       
       /// Function for the fitting module (gets a dataset and returns the fitted model)
-      typedef Function<Model,const DataSet&> ModelFitting;
+      typedef utils::Function<Model,const DataSet&> ModelFitting;
       
       /// Error function for single points
-      typedef Function<icl64f,const Model&,const DataPoint&> PointError;
+      typedef utils::Function<icl64f,const Model&,const DataPoint&> PointError;
       
       private:
       /// minimum points that are used to create a coarse model
@@ -206,7 +131,7 @@ namespace icl{
                                      const DataSet &allPoints,
                                      std::vector<int> &usedIndices){
         const int n = currConsensusSet.size();
-        URandI r(allPoints.size()-1);
+        utils::URandI r(allPoints.size()-1);
         
         for(int i=0;i<n;++i){
           do { usedIndices[i] = r; } while ( find_in(usedIndices, usedIndices[i], i-1) );
@@ -240,7 +165,7 @@ namespace icl{
       const Result &fit(const DataSet &allPoints){
         m_result.model = Model();
         m_result.consensusSet.clear();
-        m_result.error = Range64f::limits().maxVal;
+        m_result.error = utils::Range64f::limits().maxVal;
         m_result.iterationCount = 0;
         std::vector<DataPoint> consensusSet(m_minPointsForModel);
         std::vector<int> usedIndices(m_minPointsForModel);

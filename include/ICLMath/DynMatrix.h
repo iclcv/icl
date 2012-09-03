@@ -54,7 +54,6 @@
 #include "mkl_cblas.h"
 #endif
 
-
 namespace icl{
   namespace math{
   
