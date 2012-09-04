@@ -32,51 +32,54 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_DRAW_HANDLE_3D_H
-#define ICL_DRAW_HANDLE_3D_H
+#pragma once
 
 #include <ICLQt/GUIHandle.h>
 
 namespace icl{
-  
   /** \cond */
-  class ICLDrawWidget3D;
-  class ImgBase;
+  namespace core{ class ImgBase; }
   /** \endcond */
 
-  /// Handle class for image components \ingroup HANDLES
-  class DrawHandle3D : public GUIHandle<ICLDrawWidget3D>{
-    public:
+  namespace qt{
     
-    /// Create an empty handle
-    DrawHandle3D(){}
-    
-    /// create a new ImageHandel
-    DrawHandle3D(ICLDrawWidget3D *w, GUIWidget *guiw):GUIHandle<ICLDrawWidget3D>(w,guiw){}
-    
-    /// make the wrapped ICLWidget show a given image
-    void setImage(const ImgBase *image);
-    
-    /// make the wrapped ICLWidget show a given image (as set Image)
-    void operator=(const ImgBase *image) { setImage(image); }
-    
-    /// re-renders the widget
-    void render();
-
-    /// passes callback registration to wrapped ICLWidget instance)
-    virtual void registerCallback(const GUI::Callback &cb, const std::string &events="all");
-
-    /// complex callbacks are not allowed for image-components (this method will throw an exception)
-    virtual void registerCallback(const GUI::ComplexCallback&, const std::string &){
-      throw ICLException("ImageHandle::registerCallback: you cannot register "
-                         "GUI::ComplexCallback instances to an image GUI component");
-    }
-    
-    /// passes callback registration to wrapped ICLWidget instance)
-    virtual void removeCallbacks();
-
-  };
+    /** \cond */
+    class ICLDrawWidget3D;
+    /** \endcond */
   
+    /// Handle class for image components \ingroup HANDLES
+    class DrawHandle3D : public GUIHandle<ICLDrawWidget3D>{
+      public:
+      
+      /// Create an empty handle
+      DrawHandle3D(){}
+      
+      /// create a new ImageHandel
+      DrawHandle3D(ICLDrawWidget3D *w, GUIWidget *guiw):GUIHandle<ICLDrawWidget3D>(w,guiw){}
+      
+      /// make the wrapped ICLWidget show a given image
+      void setImage(const core::ImgBase *image);
+      
+      /// make the wrapped ICLWidget show a given image (as set Image)
+      void operator=(const core::ImgBase *image) { setImage(image); }
+      
+      /// re-renders the widget
+      void render();
+  
+      /// passes callback registration to wrapped ICLWidget instance)
+      virtual void registerCallback(const GUI::Callback &cb, const std::string &events="all");
+  
+      /// complex callbacks are not allowed for image-components (this method will throw an exception)
+      virtual void registerCallback(const GUI::ComplexCallback&, const std::string &){
+        throw utils::ICLException("ImageHandle::registerCallback: you cannot register "
+                           "GUI::ComplexCallback instances to an image GUI component");
+      }
+      
+      /// passes callback registration to wrapped ICLWidget instance)
+      virtual void removeCallbacks();
+  
+    };
+    
+  } // namespace qt
 }
 
-#endif

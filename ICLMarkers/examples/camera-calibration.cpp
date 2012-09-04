@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLGeom/Scene.h>
 #include <ICLMarkers/FiducialDetector.h>
 #include <ICLGeom/GridSceneObject.h>
@@ -379,7 +379,7 @@ void init(){
   bestOfNSaver = new BestOfNSaver;
 
   if( !pa("-c") || !pa("-c").n() ){
-    pausage("program argument -c must be given with at least one sub-argument");
+    pa_show_usage("program argument -c must be given with at least one sub-argument");
     ::exit(0); 
   }
 

@@ -32,155 +32,155 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_GEOM_DEFS_H
-#define ICL_GEOM_DEFS_H
+#pragma once
 
 #include <ICLCore/Types.h>
-#include <ICLUtils/FixedMatrix.h>
-#include <ICLUtils/FixedVector.h>
+#include <ICLMath/FixedMatrix.h>
+#include <ICLMath/FixedVector.h>
 #include <vector>
 #include <ICLCore/Color.h>
 
 namespace icl{
-  /// color for geometry primitives
-  typedef Color4D32f GeomColor;
-
-  /// inline utililty function to create a white color instance
-  inline GeomColor geom_white(float alpha=255) { return GeomColor(255,255,255,alpha); }
-
-  /// inline utililty function to create a red color instance
-  inline GeomColor geom_red(float alpha=255) { return GeomColor(255,0,0,alpha); }
-
-  /// inline utililty function to create a blue color instance
-  inline GeomColor geom_blue(float alpha=255) { return GeomColor(0,100,255,alpha); }
-
-  /// inline utililty function to create a green color instance
-  inline GeomColor geom_green(float alpha=255) { return GeomColor(0,255,0,alpha); }
-
-  /// inline utililty function to create a yellow color instance
-  inline GeomColor geom_yellow(float alpha=255) { return GeomColor(255,255,0,alpha); }
-
-  /// inline utililty function to create a magenta color instance
-  inline GeomColor geom_magenta(float alpha=255) { return GeomColor(255,0,255,alpha); }
-
-  /// inline utililty function to create a cyan color instance
-  inline GeomColor geom_cyan(float alpha=255) { return GeomColor(0,255,255,alpha); }
-
-  /// inline utililty function to create a cyan color instance
-  inline GeomColor geom_black(float alpha=255) { return GeomColor(0,0,0,alpha); }
-
-  /// inline utililty function to create an invisible color instance (alpha is 0.0f)
-  inline GeomColor geom_invisible() { return GeomColor(0,0,0,0); }
-
-  /// Matrix Typedef of float matrices
-  typedef FixedMatrix<icl32f,4,4> Mat4D32f;
-
-  /// Matrix Typedef of double matrices
-  typedef FixedMatrix<icl64f,4,4> Mat4D64f;
-
-  /// Vector typedef of float vectors
-  typedef FixedColVector<icl32f,4> Vec4D32f;
-
-  /// Vector typedef of double vectors
-  typedef FixedColVector<icl64f,4> Vec4D64f;
-
-  /// Short typedef for 4D float vectors
-  typedef Vec4D32f Vec;
-
-  /// Short typedef for 4D float matrices
-  typedef Mat4D32f Mat;
-
-  /// another shortcut for 3D vectors
-  typedef FixedColVector<icl32f,3> Vec3;
+  namespace geom{
+    /// color for geometry primitives
+    typedef core::Color4D32f GeomColor;
   
-  /// normalize a vector to length 1
-  template<class T>
-  inline FixedColVector<T,4> normalize(const FixedMatrix<T,1,4> &v) { 
-    double l = v.length();
-    ICLASSERT_RETURN_VAL(l,v);
-    return v/l;
-  }
-  /// normalize a vector to length 1
-  template<class T>
-  inline FixedColVector<T,4> normalize3(const FixedMatrix<T,1,4> &v,const double& h=1) { 
-    double l = ::sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
-    ICLASSERT_RETURN_VAL(l,v);
-    Vec n = v/l;
-    // XXX 
-    n[3]=h;
-    return n;
-  }
-
-  /// 3D scalar (aka dot-) product for 4D homogeneous vectors (ignoring the homegeneous component)
-  inline float sprod3(const Vec &a, const Vec &b){
-    return a[0]*b[0] + a[1]*b[1]+ a[2]*b[2];
-  }
+    /// inline utililty function to create a white color instance
+    inline GeomColor geom_white(float alpha=255) { return GeomColor(255,255,255,alpha); }
   
-  /// sqared norm for 4D homogeneous vectors (ignoring the homegeneous component)
-  inline float sqrnorm3(const Vec &a){
-    return sprod3(a,a);
-  }
+    /// inline utililty function to create a red color instance
+    inline GeomColor geom_red(float alpha=255) { return GeomColor(255,0,0,alpha); }
+  
+    /// inline utililty function to create a blue color instance
+    inline GeomColor geom_blue(float alpha=255) { return GeomColor(0,100,255,alpha); }
+  
+    /// inline utililty function to create a green color instance
+    inline GeomColor geom_green(float alpha=255) { return GeomColor(0,255,0,alpha); }
+  
+    /// inline utililty function to create a yellow color instance
+    inline GeomColor geom_yellow(float alpha=255) { return GeomColor(255,255,0,alpha); }
+  
+    /// inline utililty function to create a magenta color instance
+    inline GeomColor geom_magenta(float alpha=255) { return GeomColor(255,0,255,alpha); }
+  
+    /// inline utililty function to create a cyan color instance
+    inline GeomColor geom_cyan(float alpha=255) { return GeomColor(0,255,255,alpha); }
+  
+    /// inline utililty function to create a cyan color instance
+    inline GeomColor geom_black(float alpha=255) { return GeomColor(0,0,0,alpha); }
+  
+    /// inline utililty function to create an invisible color instance (alpha is 0.0f)
+    inline GeomColor geom_invisible() { return GeomColor(0,0,0,0); }
+  
+    /// Matrix Typedef of float matrices
+    typedef math::FixedMatrix<icl32f,4,4> Mat4D32f;
+  
+    /// Matrix Typedef of double matrices
+    typedef math::FixedMatrix<icl64f,4,4> Mat4D64f;
+  
+    /// Vector typedef of float vectors
+    typedef math::FixedColVector<icl32f,4> Vec4D32f;
+  
+    /// Vector typedef of double vectors
+    typedef math::FixedColVector<icl64f,4> Vec4D64f;
+  
+    /// Short typedef for 4D float vectors
+    typedef Vec4D32f Vec;
+  
+    /// Short typedef for 4D float matrices
+    typedef Mat4D32f Mat;
+  
+    /// another shortcut for 3D vectors
+    typedef math::FixedColVector<icl32f,3> Vec3;
     
-  /// 3D- euclidian norm for 4D homogeneous vectors (ignoring the homegeneous component)
-  inline float norm3(const Vec &a){
-    return ::sqrt(sqrnorm3(a));
-  }
-
-
-  /// homogenize a vector be normalizing 4th component to 1
-  template<class T>
-  inline FixedColVector<T,4> homogenize(const FixedMatrix<T,1,4> &v){
-    ICLASSERT_RETURN_VAL(v[3],v); return v/v[3];
-  }
-
-  /// perform perspective projection
-  template<class T>
-  inline FixedColVector<T,4> project(FixedMatrix<T,1,4> v, T z){
-    T zz = z*v[2];
-    v[0]/=zz;
-    v[1]/=zz;
-    v[2]=0;
-    v[3]=1;
-    return v;
-  }
+    /// normalize a vector to length 1
+    template<class T>
+    inline math::FixedColVector<T,4> normalize(const math::FixedMatrix<T,1,4> &v) { 
+      double l = v.length();
+      ICLASSERT_RETURN_VAL(l,v);
+      return v/l;
+    }
+    /// normalize a vector to length 1
+    template<class T>
+    inline math::FixedColVector<T,4> normalize3(const math::FixedMatrix<T,1,4> &v,const double& h=1) { 
+      double l = ::sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+      ICLASSERT_RETURN_VAL(l,v);
+      Vec n = v/l;
+      // XXX 
+      n[3]=h;
+      return n;
+    }
   
-  /// homogeneous 3D cross-product
-  template<class T>
-  inline FixedColVector<T,4> cross(const FixedMatrix<T,1,4> &v1, const FixedMatrix<T,1,4> &v2){
-    return FixedColVector<T,4>(v1[1]*v2[2]-v1[2]*v2[1],
-                               v1[2]*v2[0]-v1[0]*v2[2],
-                               v1[0]*v2[1]-v1[1]*v2[0],
-                               1 );
-  }
-
-  /// typedef for vector of Vec instances
-  typedef std::vector<Vec> VecArray;
-
+    /// 3D scalar (aka dot-) product for 4D homogeneous vectors (ignoring the homegeneous component)
+    inline float sprod3(const Vec &a, const Vec &b){
+      return a[0]*b[0] + a[1]*b[1]+ a[2]*b[2];
+    }
+    
+    /// sqared norm for 4D homogeneous vectors (ignoring the homegeneous component)
+    inline float sqrnorm3(const Vec &a){
+      return sprod3(a,a);
+    }
+      
+    /// 3D- euclidian norm for 4D homogeneous vectors (ignoring the homegeneous component)
+    inline float norm3(const Vec &a){
+      return ::sqrt(sqrnorm3(a));
+    }
   
-  /// rotates a vector around a given axis
-  inline Vec rotate_vector(const Vec &axis, float angle, const Vec &vec){
-    return create_rot_4x4(axis[0],axis[1],axis[2],angle)*vec;
-    /*
-        angle /= 2;
-        float a = cos(angle);
-        float sa = sin(angle);
-        float b = axis[0] * sa;
-        float c = axis[1] * sa;
-        float d = axis[2] * sa;
-        
-        float a2=a*a, b2=b*b, c2=c*c, d2=d*d;
-        float ab=a*b, ac=a*c, ad=a*d, bc=b*c, bd=b*d, cd=c*d;
-        
-        Mat X(a2+b2-c2-d2,  2*bc-2*ad,   2*ac+2*bd,   0,
-        2*ad+2*bd,    a2-b2+c2-d2, 2*cd-2*ab,   0,
-        2*bd-2*ac,    2*ab+2*cd,   a2-b2-c2+d2, 0,
-        0,            0,           0,           1);
-        
-        return X * vec;
-    */
-  }
-
+  
+    /// homogenize a vector be normalizing 4th component to 1
+    template<class T>
+    inline math::FixedColVector<T,4> homogenize(const math::FixedMatrix<T,1,4> &v){
+      ICLASSERT_RETURN_VAL(v[3],v); return v/v[3];
+    }
+  
+    /// perform perspective projection
+    template<class T>
+    inline math::FixedColVector<T,4> project(math::FixedMatrix<T,1,4> v, T z){
+      T zz = z*v[2];
+      v[0]/=zz;
+      v[1]/=zz;
+      v[2]=0;
+      v[3]=1;
+      return v;
+    }
+    
+    /// homogeneous 3D cross-product
+    template<class T>
+    inline math::FixedColVector<T,4> cross(const math::FixedMatrix<T,1,4> &v1, const math::FixedMatrix<T,1,4> &v2){
+      return math::FixedColVector<T,4>(v1[1]*v2[2]-v1[2]*v2[1],
+                                 v1[2]*v2[0]-v1[0]*v2[2],
+                                 v1[0]*v2[1]-v1[1]*v2[0],
+                                 1 );
+    }
+  
+    /// typedef for vector of Vec instances
+    typedef std::vector<Vec> VecArray;
+  
+    
+    /// rotates a vector around a given axis
+    inline Vec rotate_vector(const Vec &axis, float angle, const Vec &vec){
+      return math::create_rot_4x4(axis[0],axis[1],axis[2],angle)*vec;
+      /*
+          angle /= 2;
+          float a = cos(angle);
+          float sa = sin(angle);
+          float b = axis[0] * sa;
+          float c = axis[1] * sa;
+          float d = axis[2] * sa;
+          
+          float a2=a*a, b2=b*b, c2=c*c, d2=d*d;
+          float ab=a*b, ac=a*c, ad=a*d, bc=b*c, bd=b*d, cd=c*d;
+          
+          Mat X(a2+b2-c2-d2,  2*bc-2*ad,   2*ac+2*bd,   0,
+          2*ad+2*bd,    a2-b2+c2-d2, 2*cd-2*ab,   0,
+          2*bd-2*ac,    2*ab+2*cd,   a2-b2-c2+d2, 0,
+          0,            0,           0,           1);
+          
+          return X * vec;
+      */
+    }
+  
+  } // namespace geom
 }
 
 
-#endif

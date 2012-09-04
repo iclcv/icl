@@ -40,8 +40,9 @@
 
 //#define SPEED_TEST
 
-using namespace icl;
-using namespace icl::pylon;
+using namespace icl::core;
+using namespace icl::utils;
+using namespace icl::io::pylon;
 using namespace Pylon;
 
 #ifdef SPEED_TEST
@@ -193,8 +194,7 @@ void PylonColorConverter::resetConversion(
 }
 
 // Converts pImageBuffer to correct type and writes it into m_Image
-icl::ImgBase* PylonColorConverter::convert(
-                                const void *pImageBuffer, ConvBuffers* b){
+ImgBase* PylonColorConverter::convert(const void *pImageBuffer, ConvBuffers* b){
 #ifdef SPEED_TEST
   Time t = Time::now();
 #endif
@@ -243,7 +243,7 @@ void Mono8uToMono8u::initBuffers(ConvBuffers* b){
     b -> m_ImageBuff = new icl8u[m_Width*m_Height];
     b -> m_Channels = new std::vector<icl8u*>();
     b -> m_Channels -> push_back(b -> m_ImageBuff);
-    b -> m_Image = new Img8u(Size(m_Width, m_Height), icl::formatGray, *b -> m_Channels);
+    b -> m_Image = new Img8u(Size(m_Width, m_Height), core::formatGray, *b -> m_Channels);
 }
 
 // writes image from imgBuffer to b using appropriate conversion.
@@ -251,7 +251,7 @@ void Mono8uToMono8u::convert(const void *imgBuffer, ConvBuffers* b){
 // no conversion just copy values from buffer to m_Image
   icl8u* imgBuffer8 = (icl8u*) imgBuffer;
   // m_ImageBuff is the channel of m_Image
-  icl::copy(imgBuffer8, imgBuffer8 + (m_Width*m_Height), b -> m_ImageBuff);
+  core::copy(imgBuffer8, imgBuffer8 + (m_Width*m_Height), b -> m_ImageBuff);
 }
 
 // Constructor initializes conversion
@@ -267,7 +267,7 @@ void Mono16sToMono16s::initBuffers(ConvBuffers* b){
     b -> m_Channels16 -> push_back(b -> m_ImageBuff16);
     b -> m_Image = new Img16s(
                               Size(m_Width, m_Height),
-                              icl::formatGray,
+                              core::formatGray,
                               *b -> m_Channels16
                               );
 }
@@ -277,7 +277,7 @@ void Mono16sToMono16s::convert(const void *imgBuffer, ConvBuffers* b){
   // no conversion just copy values from buffer to m_Image
   int16_t* imgBuffer16 = (int16_t*) imgBuffer;
   // m_ImageBuff16 is the channel of m_Image
-  icl::copy(imgBuffer16, imgBuffer16 + (m_Width*m_Height), b -> m_ImageBuff16);
+  core::copy(imgBuffer16, imgBuffer16 + (m_Width*m_Height), b -> m_ImageBuff16);
 }
 
 // Constructor initializes conversion
@@ -326,7 +326,7 @@ void MonoToMono8u::initBuffers(ConvBuffers* b){
 
   // m_Image uses m_ImageBuffer directly as channel
   b -> m_Image = new Img8u(Size(m_Width, m_Height),
-                            icl::formatGray, *b -> m_Channels, false);
+                            core::formatGray, *b -> m_Channels, false);
 }
 
 // writes image from imgBuffer to b using appropriate conversion.
@@ -350,7 +350,7 @@ Rgb8uToRgb8u::Rgb8uToRgb8u(int width, int height)
 
 // initializes buffers in b as needed for color conversion.
 void Rgb8uToRgb8u::initBuffers(ConvBuffers* b){
-    b -> m_Image = new Img8u(Size(m_Width, m_Height), icl::formatRGB);
+    b -> m_Image = new Img8u(Size(m_Width, m_Height), core::formatRGB);
 }
 
 // writes image from imgBuffer to b using appropriate conversion.
@@ -418,7 +418,7 @@ void PylonColorToRgb::initBuffers(ConvBuffers* b){
   b -> m_Channels -> push_back((icl8u*) (b -> m_ImageRGBA->getDataPtr(0)));
 
   // m_Image gets the RGB channels from m_ImageRGBA
-  b -> m_Image = new Img8u(Size(m_Width, m_Height), icl::formatRGB, *b -> m_Channels);
+  b -> m_Image = new Img8u(Size(m_Width, m_Height), core::formatRGB, *b -> m_Channels);
 }
 
 // writes image from imgBuffer to b using appropriate conversion.
@@ -455,14 +455,14 @@ BayerToRgb8Icl::~BayerToRgb8Icl(){
 // initializes buffers in b as needed for color conversion.
 void BayerToRgb8Icl::initBuffers(ConvBuffers* b){
   // just an rgb image
-  b -> m_Image = new Img8u(m_Size, icl::formatRGB);
+  b -> m_Image = new Img8u(m_Size, core::formatRGB);
 }
 
 // writes image from imgBuffer to b using appropriate conversion.
 void BayerToRgb8Icl::convert(const void *imgBuffer, ConvBuffers* b){
   // set buffer as channels of source image
   m_Channels[0] = (icl8u*) imgBuffer;
-  Img8u tmp = Img8u(m_Size, icl::formatGray, m_Channels);
+  Img8u tmp = Img8u(m_Size, core::formatGray, m_Channels);
   m_Conv.apply(&tmp, &(b -> m_Image));
 }
 
@@ -482,7 +482,7 @@ Yuv422ToRgb8Icl::~Yuv422ToRgb8Icl(){
 // initializes buffers in b as needed for color conversion.
 void Yuv422ToRgb8Icl::initBuffers(ConvBuffers* b){
   // just an rgb image
-  b -> m_Image = new Img8u(m_Size, icl::formatRGB);
+  b -> m_Image = new Img8u(m_Size, core::formatRGB);
 }
 
 // writes image from imgBuffer to b using appropriate conversion.
@@ -513,7 +513,7 @@ Yuv422YUYVToRgb8Icl::~Yuv422YUYVToRgb8Icl(){
 // initializes buffers in b as needed for color conversion.
 void Yuv422YUYVToRgb8Icl::initBuffers(ConvBuffers* b){
   // just an rgb image
-  b -> m_Image = new Img8u(m_Size, icl::formatRGB);
+  b -> m_Image = new Img8u(m_Size, core::formatRGB);
 }
 
 // writes image from imgBuffer to b using appropriate conversion.

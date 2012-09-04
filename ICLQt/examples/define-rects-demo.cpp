@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLGeom/GeomDefs.h>
 #include <QtGui/QMenu>
 #include <QtGui/QActionEvent>

@@ -32,15 +32,15 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_WIDGET_CAPTURE_MODE_H
-#define ICL_WIDGET_CAPTURE_MODE_H
+#pragma once
 
 namespace icl{
-  enum ICLWidgetCaptureMode{
-    capturingStarted,
-    capturingStopped,
-    capturingPaused
-  };  
+  namespace qt{
+    enum ICLWidgetCaptureMode{
+      capturingStarted,
+      capturingStopped,
+      capturingPaused
+    };  
+  } // namespace qt
 }
 
-#endif

@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLGeom/Geom.h>
 #include <ICLIO/GenericImageOutput.h>
 GUI gui;
@@ -120,7 +120,8 @@ void init(){
 
 
 int main(int n, char **ppc){
-  paex("-i","icl typical input specification")
+  pa_explain
+  ("-i","icl typical input specification")
   ("-o","generic image output output specification (e.g. -o sm xyz) writes images to shared memory segment \"xyz\"")
   ("-s","if given, the image will only be grabbed once");
 

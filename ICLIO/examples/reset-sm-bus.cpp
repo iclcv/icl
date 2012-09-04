@@ -35,5 +35,5 @@
 #include <ICLIO/SharedMemoryGrabber.h>
 
 int main(){
-  icl::SharedMemoryGrabber::resetBus();
+  icl::io::SharedMemoryGrabber::resetBus();
 }

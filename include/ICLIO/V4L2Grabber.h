@@ -31,78 +31,78 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_VIDEO_4_LINUX_2_GRABBER_H
-#define ICL_VIDEO_4_LINUX_2_GRABBER_H
+#pragma once
 
 #include <ICLIO/GrabberHandle.h>
 #include <ICLUtils/Mutex.h>
 
 namespace icl{
+  namespace io{
+    
+    /// The Video for Linux 2 Grabber uses the v4l2-api to access video capturing devices \ingroup GRABBER_G \ingroup V4L_G
+    /** This grabber backend is usually used for USB-Webcams as well as for Grabber cards */
+    class V4L2GrabberImpl : public Grabber{
+      class Impl; //!< internal implementation
+      Impl *impl; //!< internal data structure
+      utils::Mutex implMutex; //!< protects the impl which is reallocated when the core::format is changed
+      public:
+      
+      /// create a new grabbers instance, with given device name (
+      V4L2GrabberImpl(const std::string &device="/dev/video0");
   
-  /// The Video for Linux 2 Grabber uses the v4l2-api to access video capturing devices \ingroup GRABBER_G \ingroup V4L_G
-  /** This grabber backend is usually used for USB-Webcams as well as for Grabber cards */
-  class V4L2GrabberImpl : public Grabber{
-    class Impl; //!< internal implementation
-    Impl *impl; //!< internal data structure
-    Mutex implMutex; //!< protects the impl which is reallocated when the format is changed
-    public:
-    
-    /// create a new grabbers instance, with given device name (
-    V4L2GrabberImpl(const std::string &device="/dev/video0");
-
-    /// Destruktoer
-    ~V4L2GrabberImpl();
-    
-    /// obtains the next image
-    virtual const ImgBase *acquireImage();
-
-    /// returns the device property list
-    virtual std::vector<std::string> getPropertyListC();    
-    
-    /// sets a specific property
-    virtual void setProperty(const std::string &property, const std::string &value);
-    
-    /// returns a property's type
-    virtual std::string getType(const std::string &name);
-
-    /// returns information about possible property values
-    virtual std::string getInfo(const std::string &name);
-    
-    /// returns a current property value
-    virtual std::string getValue(const std::string &name);
-    
-    /// returns a properties 'volatileness' (this is acutally not supported by this Grabber type)
-    virtual int isVolatile(const std::string &propertyName);
-    
-    /// returns a list of all supported video devices
-    static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
-  };
-
-
-  /// Video4Linux2 based grabber \ingroup GRABBER_G
-  /** for more details: @see V4L2GrabberImpl */
-  class V4L2Grabber : public GrabberHandle<V4L2GrabberImpl>{
-    public:
-    /// returns a list of available pwc devices 
-    /** @see V4L2GrabberImpl for more details*/
-    static inline const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan){
-      return V4L2GrabberImpl::getDeviceList(rescan);
-    }
-    
-    /// creates a new V4L2Grabber instance
-    /** @see V4L2GrabberImpl for more details */
-    inline V4L2Grabber(const std::string &device="/dev/video0"){
-      if(isNew(device)){
-        initialize(new V4L2GrabberImpl(device), device);
-      }else{
-        initialize(device);
+      /// Destruktoer
+      ~V4L2GrabberImpl();
+      
+      /// obtains the next image
+      virtual const core::ImgBase *acquireImage();
+  
+      /// returns the device property list
+      virtual std::vector<std::string> getPropertyList();    
+      
+      /// sets a specific property
+      virtual void setProperty(const std::string &property, const std::string &value);
+      
+      /// returns a property's type
+      virtual std::string getType(const std::string &name);
+  
+      /// returns information about possible property values
+      virtual std::string getInfo(const std::string &name);
+      
+      /// returns a current property value
+      virtual std::string getValue(const std::string &name);
+      
+      /// returns a properties 'volatileness' (this is acutally not supported by this Grabber type)
+      virtual int isVolatile(const std::string &propertyName);
+      
+      /// returns a list of all supported video devices
+      static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
+    };
+  
+  
+    /// Video4Linux2 based grabber \ingroup GRABBER_G
+    /** for more details: @see V4L2GrabberImpl */
+    class V4L2Grabber : public GrabberHandle<V4L2GrabberImpl>{
+      public:
+      /// returns a list of available pwc devices 
+      /** @see V4L2GrabberImpl for more details*/
+      static inline const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan){
+        return V4L2GrabberImpl::getDeviceList(rescan);
       }
-    }
-    /// empty constructor (initialize late using init())
-    /** @see V4L2GrabberImpl for more details */
-    inline V4L2Grabber(){}
-  };
-
+      
+      /// creates a new V4L2Grabber instance
+      /** @see V4L2GrabberImpl for more details */
+      inline V4L2Grabber(const std::string &device="/dev/video0"){
+        if(isNew(device)){
+          initialize(new V4L2GrabberImpl(device), device);
+        }else{
+          initialize(device);
+        }
+      }
+      /// empty constructor (initialize late using init())
+      /** @see V4L2GrabberImpl for more details */
+      inline V4L2Grabber(){}
+    };
+  
+  } // namespace io
 }
 
-#endif

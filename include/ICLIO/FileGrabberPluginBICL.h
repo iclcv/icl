@@ -32,19 +32,19 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FILE_GRABBER_PLUGIN_BICL_H
-#define ICL_FILE_GRABBER_PLUGIN_BICL_H
+#pragma once
 
 #include <ICLIO/FileGrabberPlugin.h>
 
 namespace icl{
-  
-  /// Plugin to grab binary icl image (.bicl or .bicl.gz) \ingroup GRABBER_G
-  class FileGrabberPluginBICL : public FileGrabberPlugin{
-    public:
-    /// grab implementation
-    virtual void grab(File &file, ImgBase **dest);
-  };  
+  namespace io{
+    
+    /// Plugin to grab binary icl image (.bicl or .bicl.gz) \ingroup GRABBER_G
+    class FileGrabberPluginBICL : public FileGrabberPlugin{
+      public:
+      /// grab implementation
+      virtual void grab(utils::File &file, core::ImgBase **dest);
+    };  
+  } // namespace io
 }
 
-#endif

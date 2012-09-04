@@ -32,84 +32,85 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_DATA_SEGMENT_H
-#define ICL_DATA_SEGMENT_H
+#pragma once
 
-#include <ICLUtils/FixedVector.h>
+#include <ICLMath/FixedVector.h>
 #include <ICLCore/CoreFunctions.h>
 #include <ICLGeom/DataSegmentBase.h>
 
 namespace icl{
+  namespace geom{
+    
   
-
-  /// The DataSegment class defines a strided data segment (or 1D or 2D ordred array of vectors)
-  /** Each data segment is defined by 
-      - the type of it's elements (template parameter T)
-      - the dimension of single vectors
-      - the number of vector elements 
-      - a flag, whether the the elements are 2D organized or not 
+    /// The DataSegment class defines a strided data segment (or 1D or 2D ordred array of vectors)
+    /** Each data segment is defined by 
+        - the type of it's elements (template parameter T)
+        - the dimension of single vectors
+        - the number of vector elements 
+        - a flag, whether the the elements are 2D organized or not 
+    
+        Each single vector is assumed to be packed in memory (e.g. the vector element 
+        stride is always <tt>sizeof(T)</tt>) the distance between two vector entries
+        can be set to an arbitrary constant value (stride). Optionally, an organizedWidth
+        value > 0 can be given, which set up the DataSegement to be 2D-organized.
+        
+        \section _IN_ Integration with the DataSegment base class
+        
+        The DataSegmentBase class is used as a generic interface for
+        arbitrary DataSegment implementations. Since the DataSegment templates have no
+        own data, a DataSegmentBase instance can simply be reinterpreted as a specific
+        DataSegment-template version. For type-safe converions, the DataSegmentBase::as
+        method can be used. This will reinterpret itself as a special DataSegment-template
+        version and it will also use the runtime-information of the DataSegmentBase to
+        check whether this conversion is allowed.
+        
+        \section _1D_ 1D Vector types
+        
+        The DataSegment class is specialized for 1D-vector types. In
+        this case the access operators (index-operator for linear
+        access, the (x,y)-operator for 2D-organized access), are
+        adapted to not return T-references directly rather than
+        <tt>FixedColVector<T,1></tt> references.
+        
+        \section _EX_ Examples
+        
+        Here are two examples that show some basic use of the DataSegment class.
+        Please note, that usually, the programmes does not need to create DataSegments
+        manually. Instead, e.g. the PointCloudObject-classes provide select-methods,
+        that automatically create DataSegment instances.
   
-      Each single vector is assumed to be packed in memory (e.g. the vector element 
-      stride is always <tt>sizeof(T)</tt>) the distance between two vector entries
-      can be set to an arbitrary constant value (stride). Optionally, an organizedWidth
-      value > 0 can be given, which set up the DataSegement to be 2D-organized.
-      
-      \section _IN_ Integration with the DataSegment base class
-      
-      The DataSegmentBase class is used as a generic interface for
-      arbitrary DataSegment implementations. Since the DataSegment templates have no
-      own data, a DataSegmentBase instance can simply be reinterpreted as a specific
-      DataSegment-template version. For type-safe converions, the DataSegmentBase::as
-      method can be used. This will reinterpret itself as a special DataSegment-template
-      version and it will also use the runtime-information of the DataSegmentBase to
-      check whether this conversion is allowed.
-      
-      \section _1D_ 1D Vector types
-      
-      The DataSegment class is specialized for 1D-vector types. In
-      this case the access operators (index-operator for linear
-      access, the (x,y)-operator for 2D-organized access), are
-      adapted to not return T-references directly rather than
-      <tt>FixedColVector<T,1></tt> references.
-      
-      \section _EX_ Examples
-      
-      Here are two examples that show some basic use of the DataSegment class.
-      Please note, that usually, the programmes does not need to create DataSegments
-      manually. Instead, e.g. the PointCloudObject-classes provide select-methods,
-      that automatically create DataSegment instances.
-
-      \code
-#include <ICLQuick/Common.h>
-#include <ICLGeom/GeomDefs.h>
-#include <DataSegment.h>
-
-
-int main(){
-  Vec data[5]; // linear data xyzh,xyzh,...
+        \code
+  #include <ICLCV/Common.h>
+  #include <ICLGeom/GeomDefs.h>
+  #include <DataSegment.h>
   
-  // wrapper segment for the first 3 floats of every entry/row
-  DataSegment<float,3> xyz(&data[0][0], sizeof(Vec), 5);
-
-  // special segment for the last float of the segments
-  DataSegment<float,1> h(&data[0][3], sizeof(Vec), 5);
   
-  // xyz.getDim() returns the number of wrapped elements
-  for(int i=0;i<xyz.getDim();++i){
-    xyz[i] = FixedColVector<float,3>(1,2,3); // vector based assginment
-    h[i] = 1;       // vector dim. is 1 -> scalar assignment
+  int main(){
+    Vec data[5]; // linear data xyzh,xyzh,...
+    
+    // wrapper segment for the first 3 floats of every entry/row
+    DataSegment<float,3> xyz(&data[0][0], sizeof(Vec), 5);
+  
+    // special segment for the last float of the segments
+    DataSegment<float,1> h(&data[0][3], sizeof(Vec), 5);
+    
+    // xyz.getDim() returns the number of wrapped elements
+    for(int i=0;i<xyz.getDim();++i){
+      xyz[i] = FixedColVector<float,3>(1,2,3); // vector based assginment
+      h[i] = 1;       // vector dim. is 1 -> scalar assignment
+    }
+    
+    for(int i=0;i<5;++i){
+      std::cout << "data[" << i << "]: " << data[i].transp() << std::endl;
+    }
+        
   }
-  
-  for(int i=0;i<5;++i){
-    std::cout << "data[" << i << "]: " << data[i].transp() << std::endl;
-  }
-}
       \endcode 
       Here is a more complex example, that shows how to use
       2D-organized data segments:
       
       \code
-#include <ICLQuick/Common.h>
+#include <ICLCV/Common.h>
 #include <ICLGeom/GeomDefs.h>
 #include <DataSegment.h>
 
@@ -144,81 +145,79 @@ int main(){
       
       
   */
-  template<class T,int N>
-  struct DataSegment : public DataSegmentBase{
-    /// vector typedef
-    typedef FixedColVector<T,N> VectorType;
+    template<class T,int N>
+    struct DataSegment : public DataSegmentBase{
+      /// vector typedef
+      typedef math::FixedColVector<T,N> VectorType;
+      
+      /// Constructor (basically passes all parameters to the Base class)
+      inline DataSegment(T *data=0, size_t stride=0, size_t numElements=0, icl32s organizedWidth=-1):
+      DataSegmentBase(data,stride,numElements,organizedWidth,icl::core::getDepth<T>(),N){}
+      
+      /// linear index operator
+      inline math::FixedColVector<T,N> &operator[](int idx) {
+        return *reinterpret_cast<math::FixedColVector<T,N>*>(data +idx*stride);
+      }
     
-    /// Constructor (basically passes all parameters to the Base class)
-    inline DataSegment(T *data=0, size_t stride=0, size_t numElements=0, icl32s organizedWidth=-1):
-    DataSegmentBase(data,stride,numElements,organizedWidth,icl::getDepth<T>(),N){}
+      /// linear index operator (const)
+      inline const math::FixedColVector<T,N> &operator[](int idx) const{
+        return const_cast<DataSegment<T,N> *>(this)->operator[](idx);
+      }
     
-    /// linear index operator
-    inline FixedColVector<T,N> &operator[](int idx) {
-      return *reinterpret_cast<FixedColVector<T,N>*>(data +idx*stride);
-    }
+      /// 2D-index operator (only for organized data segments)
+      inline math::FixedColVector<T,N> &operator()(int x, int y) {
+        return operator[](x + organizedWidth * y );
+      }
     
-    /// linear index operator (const)
-    inline const FixedColVector<T,N> &operator[](int idx) const{
-      return const_cast<DataSegment<T,N> *>(this)->operator[](idx);
-    }
-    
-    /// 2D-index operator (only for organized data segments)
-    inline FixedColVector<T,N> &operator()(int x, int y) {
-     return operator[](x + organizedWidth * y );
-    }
-    
-    /// 2D-index operator (only for organized data segments, const)
-    inline const FixedColVector<T,N> &operator()(int x, int y) const{
-      return operator[](x + organizedWidth * y );
-    }
-  };
+      /// 2D-index operator (only for organized data segments, const)
+      inline const math::FixedColVector<T,N> &operator()(int x, int y) const{
+        return operator[](x + organizedWidth * y );
+      }
+    };
 
-  /// template specialization for data-segments, where each entry is just 1D
-  /** If the vector entries are 1D only, no extra vector struct is
-      created and returned for the single vector elements. Instead,
-      all access functions <tt>operator[idx]</tt> and <tt>operator(x,y)</tt> are
-      will just return T-references instead of FixedColVector<T,1> */
-  template<class T>
-  struct DataSegment<T,1> : public DataSegmentBase{
-    /// vector typedef
-    typedef T VectorType;
+    /// template specialization for data-segments, where each entry is just 1D
+    /** If the vector entries are 1D only, no extra vector struct is
+        created and returned for the single vector elements. Instead,
+        all access functions <tt>operator[idx]</tt> and <tt>operator(x,y)</tt> are
+        will just return T-references instead of math::FixedColVector<T,1> */
+    template<class T>
+    struct DataSegment<T,1> : public DataSegmentBase{
+      /// vector typedef
+      typedef T VectorType;
 
-    /// Constructor (basically passes all parameters to the Base class)
-    inline DataSegment(T *data=0, size_t stride=0, size_t numElements=0, icl32s organizedWidth=-1):
-    DataSegmentBase(data,stride,numElements,organizedWidth,icl::getDepth<T>(),1){}
+      /// Constructor (basically passes all parameters to the Base class)
+      inline DataSegment(T *data=0, size_t stride=0, size_t numElements=0, icl32s organizedWidth=-1):
+      DataSegmentBase(data,stride,numElements,organizedWidth,icl::core::getDepth<T>(),1){}
 
-    /// linear index operator (specialized to return a T& directly)
-    inline T &operator[](int idx) {
-      return *reinterpret_cast<T*>(data +idx*stride);
-    }
+      /// linear index operator (specialized to return a T& directly)
+      inline T &operator[](int idx) {
+        return *reinterpret_cast<T*>(data +idx*stride);
+      }
     
-    /// linear index operator (specialized to return a T& directly, const)
-    inline const T &operator[](int idx) const{
-      return const_cast<DataSegment<T,1> &>(this)->operator[](idx);
-    }
+      /// linear index operator (specialized to return a T& directly, const)
+      inline const T &operator[](int idx) const{
+        return const_cast<DataSegment<T,1> &>(this)->operator[](idx);
+      }
 
-    /// 2D-index operator (only for organized data segments, specialized to return a T& directly)
-    inline T &operator()(int x, int y) {
-     return operator[](x + organizedWidth * y );
-    }
+      /// 2D-index operator (only for organized data segments, specialized to return a T& directly)
+      inline T &operator()(int x, int y) {
+        return operator[](x + organizedWidth * y );
+      }
     
-    /// 2D-index operator (only for organized data segments, specialized to return a T& directly, const)
-    inline const T &operator()(int x, int y) const{
-      return operator[](x + organizedWidth * y );
+      /// 2D-index operator (only for organized data segments, specialized to return a T& directly, const)
+      inline const T &operator()(int x, int y) const{
+        return operator[](x + organizedWidth * y );
+      }
+    };
+
+    /** \cond */
+    template<class T, int N>
+    const DataSegment<T,N> &DataSegmentBase::as() const{
+      if(dataDepth != icl::core::getDepth<T>()) throw utils::ICLException("invalid cast of data segment (core::depth is wrong)");
+      if(elemDim != N) throw utils::ICLException("invalid cast of data segment (dimension is wrong)");
+      return (DataSegment<T,N> &)(*this);
     }
-  };
-
-  /** \cond */
-  template<class T, int N>
-  const DataSegment<T,N> &DataSegmentBase::as() const{
-    if(dataDepth != icl::getDepth<T>()) throw ICLException("invalid cast of data segment (depth is wrong)");
-    if(elemDim != N) throw ICLException("invalid cast of data segment (dimension is wrong)");
-    return (DataSegment<T,N> &)(*this);
-  }
-  /** \endcond */
-
+    /** \endcond */
+  } // namespace geom
 }
-
-#endif
 

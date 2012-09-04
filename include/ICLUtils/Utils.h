@@ -32,16 +32,15 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_UTILS_H
-#define ICL_UTILS_H
+#pragma once
 
-#include <ICLUtils/FixedMatrix.h>
+#include <ICLMath/FixedMatrix.h>
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/ConfigFile.h>
 #include <ICLUtils/ConsoleProgress.h>
-#include <ICLUtils/DynMatrixUtils.h>
-#include <ICLUtils/DynVector.h>
-#include <ICLUtils/FixedVector.h>
+#include <ICLMath/DynMatrixUtils.h>
+#include <ICLMath/DynVector.h>
+#include <ICLMath/FixedVector.h>
 #include <ICLUtils/FastMedianList.h>
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLUtils/Timer.h>
@@ -53,17 +52,17 @@
 #include <ICLUtils/Rect.h>
 #include <ICLUtils/Semaphore.h>
 #include <ICLUtils/SignalHandler.h>
-#include <ICLUtils/SimpleMatrix.h>
+#include </SimpleMatrix.h>
 #include <ICLUtils/StackTimer.h>
 #include <ICLUtils/SteppingRange.h>
-#include <ICLUtils/StochasticOptimizer.h>
-#include <ICLUtils/StraightLine2D.h>
+#include <ICLMath/StochasticOptimizer.h>
+#include <ICLMath/StraightLine2D.h>
 #include <ICLUtils/StrTok.h>
 #include <ICLUtils/ThreadUtils.h>
 
-#include <ICLUtils/XMLDocument.h>
+#include </XMLDocument.h>
 #include <ICLUtils/XML.h>
-#include <ICLUtils/XMLNodeFilter.h>
+#include </XMLNodeFilter.h>
 
 /** 
     \defgroup TIME Time and Timer Support Classes and Functions
@@ -337,4 +336,3 @@ int main(){
     */
 
 
-#endif

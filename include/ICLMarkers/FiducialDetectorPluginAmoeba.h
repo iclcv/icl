@@ -7,7 +7,7 @@
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
 ** File   : include/ICLMarkers/FiducialDetectorPluginAmoeba.h      **
-** Module : ICLBlob                                                **
+** Module : ICLCV                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -32,51 +32,51 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FIDUCIAL_DETECTOR_PLUGING_AMOEBA_H
-#define ICL_FIDUCIAL_DETECTOR_PLUGING_AMOEBA_H
+#pragma once
 
 #include <ICLMarkers/FiducialDetectorPluginHierarchical.h>
 
 namespace icl{
+  namespace markers{
+    
+    /// FiducialDetectorPlugin for reacTIVision's 'amoeba' markers\ingroup PLUGINS
+    class FiducialDetectorPluginAmoeba : public FiducialDetectorPluginHierarchical{
+      /// internal data class
+      class Data;
+      
+      /// hidden data pointers
+      Data *data;
+      
+      /// avoid instantiation except for friends
+      FiducialDetectorPluginAmoeba();
+      public:
+      /// this class can only be instantiated by the FiducialDetector class
+      friend class FiducialDetector;
   
-  /// FiducialDetectorPlugin for reacTIVision's 'amoeba' markers\ingroup PLUGINS
-  class FiducialDetectorPluginAmoeba : public FiducialDetectorPluginHierarchical{
-    /// internal data class
-    class Data;
-    
-    /// hidden data pointers
-    Data *data;
-    
-    /// avoid instantiation except for friends
-    FiducialDetectorPluginAmoeba();
-    public:
-    /// this class can only be instantiated by the FiducialDetector class
-    friend class FiducialDetector;
-
-    /// Destructor
-    ~FiducialDetectorPluginAmoeba();
-    
-    /// this is the only feature that is computed in a deferred way
-    /** Returns the region boundary */
-    virtual void getCorners2D(std::vector<Point32f> &dst, FiducialImpl &impl);
-
-    /// deferred rotation calculation
-    virtual void getRotation2D(float &dst, FiducialImpl &impl);
-
-    /// defines which features are supported
-    virtual void getFeatures(Fiducial::FeatureSet &dst);
-
-    /// defines how to find makers in the given vector of regions
-    virtual void detect(std::vector<FiducialImpl*> &dst, const std::vector<ImageRegion> &regions);
-    
-    /// defines how to load/remove marker definitions
-    /** The Any paramter 'which' can either be a filename to a file that contains
-        TwoLevelRegionStructure codes per row,
-        or a newline or comma or space separated list of 
-        TwoLevelRegionStructure codes. The ParamList params is not used here.
-    */
-    virtual void addOrRemoveMarkers(bool add, const Any &which, const ParamList &params);
-  };
+      /// Destructor
+      ~FiducialDetectorPluginAmoeba();
+      
+      /// this is the only feature that is computed in a deferred way
+      /** Returns the region boundary */
+      virtual void getCorners2D(std::vector<utils::Point32f> &dst, FiducialImpl &impl);
+  
+      /// deferred rotation calculation
+      virtual void getRotation2D(float &dst, FiducialImpl &impl);
+  
+      /// defines which features are supported
+      virtual void getFeatures(Fiducial::FeatureSet &dst);
+  
+      /// defines how to find makers in the given vector of regions
+      virtual void detect(std::vector<FiducialImpl*> &dst, const std::vector<cv::ImageRegion> &regions);
+      
+      /// defines how to load/remove marker definitions
+      /** The Any paramter 'which' can either be a filename to a file that contains
+          TwoLevelRegionStructure codes per row,
+          or a newline or comma or space separated list of 
+          TwoLevelRegionStructure codes. The ParamList params is not used here.
+      */
+      virtual void addOrRemoveMarkers(bool add, const utils::Any &which, const utils::ParamList &params);
+    };
+  } // namespace markers
 }
 
-#endif

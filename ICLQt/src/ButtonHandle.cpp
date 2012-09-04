@@ -36,26 +36,28 @@
 #include <algorithm>
 
 namespace icl{
-  ButtonHandle::ButtonHandle(){}
-  
-  ButtonHandle::ButtonHandle(QPushButton *b, GUIWidget *w):
-    GUIHandle<QPushButton>(b,w),m_triggered(new bool(false)){
-  }
-
-  bool ButtonHandle::wasTriggered(bool reset) {
-    if(*m_triggered){
-      if(reset) *m_triggered = false;
-      return true;
+  namespace qt{
+    ButtonHandle::ButtonHandle(){}
+    
+    ButtonHandle::ButtonHandle(QPushButton *b, GUIWidget *w):
+      GUIHandle<QPushButton>(b,w),m_triggered(new bool(false)){
     }
-    return false;
-  }
-
-  void ButtonHandle::reset() { 
-    *m_triggered = false; 
-  }
-  const std::string &ButtonHandle::getID() const { 
-    return m_sID; 
-  }
-
-
+  
+    bool ButtonHandle::wasTriggered(bool reset) {
+      if(*m_triggered){
+        if(reset) *m_triggered = false;
+        return true;
+      }
+      return false;
+    }
+  
+    void ButtonHandle::reset() { 
+      *m_triggered = false; 
+    }
+    const std::string &ButtonHandle::getID() const { 
+      return m_sID; 
+    }
+  
+  
+  } // namespace qt
 }

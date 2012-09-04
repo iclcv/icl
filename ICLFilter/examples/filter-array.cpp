@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
+#include <ICLQt/Common.h>
 
 #include <ICLFilter/UnaryOp.h>
 #include <ICLFilter/ConvolutionOp.h>
@@ -134,8 +134,8 @@ void run(){
 }
 
 int main(int n, char **ppc){
-  paex("-input","image source definition like -input dc 0")
-      ("-n","number of filter instances in a row (3 by default)");
+  pa_explain("-input","image source definition like -input dc 0")
+            ("-n","number of filter instances in a row (3 by default)");
   
   return ICLApplication(n,ppc,"[m]-input|-i(2) -num-filters|-n(int=3)",init,run).exec();
 }

@@ -32,14 +32,14 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLQt/IconFactory.h>
 #include <ICLIO/GenericImageOutput.h>
 
 int main(int n, char **a){
-  paex("-o","output filename (should be some format, that supports alpha channel such as png)\n"
-       "or, if no output is given, the image is just show");
-  painit(n,a,"-icon-name|-i(iconname=empty) -output|-o(2) -image-file-to-c++-array|-ita(input-file-name)");
+  pa_explain("-o","output filename (should be some format, that supports alpha channel such as png)\n"
+             "or, if no output is given, the image is just show");
+  pa_init(n,a,"-icon-name|-i(iconname=empty) -output|-o(2) -image-file-to-c++-array|-ita(input-file-name)");
   
   if(pa("-ita")){
     Img8u image = load<icl8u>(pa("-ita"));

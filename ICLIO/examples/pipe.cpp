@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLIO/GenericImageOutput.h>
-#include <ICLQuick/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLUtils/FPSEstimator.h>
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLUtils/ConsoleProgress.h>
@@ -79,7 +79,7 @@ void init_grabber(){
 
   
   if(pa("-camera-config")){
-    grabber->loadPropertiesC(pa("-camera-config"),false);
+    grabber->loadProperties(pa("-camera-config"),false);
   }  
 }
 
@@ -274,7 +274,7 @@ void init_gui(){
 
 
 int main(int n, char **ppc){
-  paex
+  pa_explain
   ("-input","for sender application only allowed ICL default\n"
    " input specification e.g. -input pwc 0 or -input file bla/*.ppm")
   ("-single-shot","no loop application")
@@ -313,7 +313,7 @@ int main(int n, char **ppc){
    "the icl-camcfg tool. Please note: some grabber parameters might cause an internal grabber crash, "
    "so e.g. trigger setup parameters or the isospeed parameters must be removed from this file");
 
-  painit(n,ppc,"[m]-output|-o(output-type-string,output-parameters) "
+  pa_init(n,ppc,"[m]-output|-o(output-type-string,output-parameters) "
          "-flip|-f(string) -single-shot [m]-input|-i(device,device-params) "
          "-size|(Size) -no-gui -pp(1) "
 	 //-dist|-d(float,float,float,float) -reset|-r "

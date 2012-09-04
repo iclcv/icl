@@ -32,23 +32,23 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FILE_WRITER_PLUGIN_PNG_H
-#define ICL_FILE_WRITER_PLUGIN_PNG_H
+#pragma once
 
 #include <ICLIO/FileWriterPlugin.h>
 #include <ICLUtils/Mutex.h>
 
 namespace icl{
-  
-  /// A Writer Plugin for writing ".png" images \ingroup FILEIO_G
-  class FileWriterPluginPNG : public FileWriterPlugin{
-    icl::Mutex mutex;
-    std::vector<unsigned char> data;
-    std::vector<unsigned char*> rows;
+  namespace io{
     
-    public:
-    /// write implementation
-    virtual void write(File &file, const ImgBase *image);
-  };
+    /// A Writer Plugin for writing ".png" images \ingroup FILEIO_G
+    class FileWriterPluginPNG : public FileWriterPlugin{
+      utils::Mutex mutex;
+      std::vector<unsigned char> data;
+      std::vector<unsigned char*> rows;
+      
+      public:
+      /// write implementation
+      virtual void write(utils::File &file, const core::ImgBase *image);
+    };
+  } // namespace io
 }
-#endif

@@ -7,7 +7,7 @@
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
 ** File   : include/ICLMarkers/RegionStructure.h                   **
-** Module : ICLBlob                                                **
+** Module : ICLCV                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -32,35 +32,36 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_REGION_STRUCTURE_H
-#define ICL_REGION_STRUCTURE_H
+#pragma once
 
 #include <ICLUtils/SmartPtr.h>
 #include <string>
 
 namespace icl{
   /** \cond */
-  struct ImageRegion;
+  namespace cv{ struct ImageRegion; }
   /** \encond */
-  
-  /// region structure interface class
-  /** A region structure can be defined arbitrarily, It defines
-      how a single image region is matched agains a given structure
-      instance */
-  struct RegionStructure{
-    /// answers the question whether a given region matches a region structure
-    /** Usually, this method is called for every region in an image. Therefore,
-        a particular match-implementation should try to reject a match as fast 
-        as possible. E.g. by first checking whether the root region has a 
-        correct color value */
-    virtual bool match(const ImageRegion &r) const = 0;
-  };
-  
-  /// Managed pointer type definition
-  typedef SmartPtr<RegionStructure> RegionStructurePtr;
-  
-  
-  
+
+  namespace markers{
+    
+    /// region structure interface class
+    /** A region structure can be defined arbitrarily, It defines
+        how a single image region is matched agains a given structure
+        instance */
+    struct RegionStructure{
+      /// answers the question whether a given region matches a region structure
+      /** Usually, this method is called for every region in an image. Therefore,
+          a particular match-implementation should try to reject a match as fast 
+          as possible. E.g. by first checking whether the root region has a 
+          correct color value */
+      virtual bool match(const cv::ImageRegion &r) const = 0;
+    };
+    
+    /// Managed pointer type definition
+    typedef utils::SmartPtr<RegionStructure> RegionStructurePtr;
+    
+    
+    
+  } // namespace markers
 }
 
-#endif

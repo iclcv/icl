@@ -38,13 +38,15 @@
 
 
 namespace icl{
-  
-  void IntHandle::operator=(int i){
-    (**this)->setText(QString::number(i));
-  }
-  int IntHandle::getValue() const{
-    return atoi((**this)->text().toLatin1().data());
-  }
+  namespace qt{
+    
+    void IntHandle::operator=(int i){
+      (**this)->setText(QString::number(i));
+    }
+    int IntHandle::getValue() const{
+      return atoi((**this)->text().toLatin1().data());
+    }
+  } // namespace qt
 }
 
 

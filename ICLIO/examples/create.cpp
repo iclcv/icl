@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Quick.h>
+#include <ICLQt/Quick.h>
 #include <ICLUtils/ProgArg.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLCore/FixedConverter.h>
@@ -40,7 +40,7 @@
 #include <ICLUtils/Size32f.h>
 
 int main(int n, char **ppc){
-  paex
+  pa_explain
   ("-p","specifies image to create.\n"
    "Also possible: first unspecified argument.\n"
    "One of house,tree,parrot,windows, or flowers")
@@ -50,41 +50,41 @@ int main(int n, char **ppc){
   ("-f","defines output image format")
   ("-s","defines output image size (incompatible to -scale)")
   ("-sc","defines output scale factor (incompatibel to -size)");
-  painit(n,ppc,"-o|-output(filename) -pattern|-p(pattern=parrot) "
-         "-size|-s(Size) -depth|-d(depth=depth8u) -format|-f(format=rgb) "
-         "-scale|-sc(scalefactor=1.0)",true);
+  pa_init(n,ppc,"-o|-output(filename) -pattern|-p(pattern=parrot) "
+          "-size|-s(Size) -depth|-d(depth=depth8u) -format|-f(format=rgb) "
+          "-scale|-sc(scalefactor=1.0)",true);
 
   std::string patternName,outFileName;
 
   
-  if( pa("-p") && pacount()){
-    pausage("if patterns are defined using -p or -pattern, dangling arguments are not allowed");
+  if( pa("-p") && pa_get_count()){
+    pa_show_usage("if patterns are defined using -p or -pattern, dangling arguments are not allowed");
     exit(-1);
   }
-  patternName = pacount() ? *pa(0) : *pa("-p");
+  patternName = pa_get_count() ? *pa(0) : *pa("-p");
 
-  if(pacount() > 2){
-    pausage("only two dangling arguments are allowed");
+  if(pa_get_count() > 2){
+    pa_show_usage("only two dangling arguments are allowed");
   }  
-  if(!pa("-o") && pacount() < 2){
-    pausage("-output or two dangling arguments are mandatory");
+  if(!pa("-o") && pa_get_count() < 2){
+    pa_show_usage("-output or two dangling arguments are mandatory");
     exit(-1);
   }
-  if(pa("-o") && pacount() == 2){
-    pausage("if output filename is defined using -o, dangling arguments are not allowed");
+  if(pa("-o") && pa_get_count() == 2){
+    pa_show_usage("if output filename is defined using -o, dangling arguments are not allowed");
     exit(-1);
   }
   if(pa("-s") && pa("-sc")){
-    pausage("arguments -size and -scale cannot be combined");
+    pa_show_usage("arguments -size and -scale cannot be combined");
     exit(-1);
   }
-  outFileName = pacount()==2 ? *pa(1) : *pa("-o");
+  outFileName = pa_get_count()==2 ? *pa(1) : *pa("-o");
   
   ImgBase *image = new ImgQ(create(patternName));
   
   format fmt = pa("-f");
   int channels = image->getChannels();
-  Size size = padef("-s",image->getSize());
+  Size size = pa_def("-s",image->getSize());
   if(pa("-sc")){
     Size32f s32(size.width,size.height);
     s32 = s32 * (float)pa("-sc");
@@ -92,7 +92,7 @@ int main(int n, char **ppc){
     size.height = round(s32.height);
   }
   ImgParams p(size,channels,fmt);
-  depth d = padef("-d",image->getDepth());
+  depth d = pa_def("-d",image->getDepth());
               
   FixedConverter conv(p,d);
   

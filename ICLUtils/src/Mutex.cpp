@@ -36,12 +36,14 @@
 #include <ICLUtils/Lockable.h>
 
 namespace icl{
-
-  Mutex::Locker::Locker(const Lockable *l):m(&l->getMutex()){
-    m->lock();
-  }
-  Mutex::Locker::Locker(const Lockable &l):m(&l.getMutex()){
-    m->lock();
-  }
+  namespace utils{
   
+    Mutex::Locker::Locker(const Lockable *l):m(&l->getMutex()){
+      m->lock();
+    }
+    Mutex::Locker::Locker(const Lockable &l):m(&l.getMutex()){
+      m->lock();
+    }
+    
+  } // namespace utils
 }

@@ -32,15 +32,12 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_GEOM_H
-#define ICL_GEOM_H
+#pragma once
 
 #include <ICLGeom/GeomDefs.h>
 #include <ICLGeom/Scene.h>
 #include <ICLGeom/SceneObject.h>
 #include <ICLGeom/Camera.h>
-
-
 
 /** \mainpage ICLGeom Package for Handling 3D Geometry (Page under construction!)
 
@@ -49,7 +46,7 @@
     - camera calibration
     - 3D/6D pose estimation
     - 3D visualization
-    - Point Cloud Processing and visualization
+    - utils::Point Cloud Processing and visualization
 
     \section _CALIB_ Camera Calibration 
 
@@ -73,7 +70,7 @@
     -# Posit (icl::Posit)
     -# SoftPosit (icl::SoftPosit)
     -# Pose estimation for coplanar points (icl::CoplanarPointPoseEstimator)
-    -# ICP (Iterative Closest Point) (icl:ICP)
+    -# ICP (Iterative Closest utils::Point) (icl:ICP)
     
     
     \section _3D_VIS_ 3D Visualization
@@ -90,7 +87,7 @@
 
     <table border=0><tr><td>
     \code
-#include <ICLQuick/Common.h>
+#include <ICLCV/Common.h>
 #include <ICLGeom/Geom.h>
 #include <ICLUtils/FPSLimiter.h>
 
@@ -129,4 +126,3 @@ int main(int n, char**ppc){
 
 
 
-#endif

@@ -50,18 +50,22 @@ add_example (${PROJECT_NAME} "define-rects-demo" "${CONDITIONLIST}" ICLLibsToLin
 #add_example (${PROJECT_NAME} "3D-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)
-set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick)
-add_example (${PROJECT_NAME} "gui-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-add_example (${PROJECT_NAME} "xv" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-add_example (${PROJECT_NAME} "onscreen-button-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQt)
 add_example (${PROJECT_NAME} "configurable-gui-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "plot-component-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-add_example (${PROJECT_NAME} "create-button-icon" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "model-fitting-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLCV)
+add_example (${PROJECT_NAME} "create-button-icon" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "gui-test" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "onscreen-button-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "xv" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+
 
 set(CONDITIONLIST "")
 #sources for lib
 set(LIB_SOURCES "")
+add_libsource (${PROJECT_NAME} "src/Qt.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/AbstractPlotWidget.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/LowLevelPlotWidget.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/PlotWidget.cpp" "${CONDITIONLIST}" LIB_SOURCES)
@@ -117,6 +121,7 @@ add_libsource (${PROJECT_NAME} "src/DrawWidget3D.cpp" "${CONDITIONLIST}" LIB_SOU
 add_libsource (${PROJECT_NAME} "src/DrawHandle3D.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/GLFragmentShader.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/GLContext.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/Quick.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
 SET(HWQ_Qt4_SRC
 	"../include/ICLQt/Widget.h"

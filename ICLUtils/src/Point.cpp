@@ -35,31 +35,31 @@
 #include <ICLUtils/Point.h>
 #include <math.h>
 #include <ICLUtils/Point32f.h>
-#include <ICLUtils/FixedMatrix.h>
 
 namespace icl{
-  const Point Point::null(0,0);
-
-  float Point::distanceTo(const Point &p) const{
-    return sqrt(pow((float) (p.x-x), 2) + pow((float) (p.y-y), 2));
-  }
+  namespace utils{
+    const Point Point::null(0,0);
   
-  Point::Point(const Point32f &p){
-    x = (int)::round(p.x);
-    y = (int)::round(p.y);
-  }
-
-  std::ostream &operator<<(std::ostream &s, const Point &p){
-    return s << "(" << p.x << ',' << p.y << ")";
-  }
+    float Point::distanceTo(const Point &p) const{
+      return sqrt(pow((float) (p.x-x), 2) + pow((float) (p.y-y), 2));
+    }
+    
+    Point::Point(const Point32f &p){
+      x = (int)::round(p.x);
+      y = (int)::round(p.y);
+    }
   
-  std::istream &operator>>(std::istream &s, Point &p){
-    FixedMatrix<int,2,1> m;
-    s >> m;
-    p.x = m[0]; 
-    p.y = m[1];
-    return s;
-  }
-
+    std::ostream &operator<<(std::ostream &s, const Point &p){
+      return s << "(" << p.x << ',' << p.y << ")";
+    }
+    
+    std::istream &operator>>(std::istream &s, Point &p){
+      Point32f p32;
+      s >> p32;
+      p = Point(p32);
+      return s;
+    }
   
+    
+  } // namespace utils
 }

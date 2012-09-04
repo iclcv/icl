@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_QT_H
-#define ICL_QT_H
+#pragma once
 
 #include <ICLQt/Widget.h>
 #include <ICLQt/DrawWidget.h>
@@ -43,7 +42,6 @@
 
 #include <QtGui/QApplication>
 #include <ICLUtils/Thread.h>
-#include <ICLUtils/ThreadUtils.h>
 #include <ICLUtils/Mutex.h>
 
 #include <ICLQt/ButtonHandle.h>
@@ -130,8 +128,8 @@
     creation of an embedded OpenGL context and viewport. The ICLWidget provides a software interface for 
     setting different visualisation parameters (explained in the icl::ICLWidget documentation)  as well as 
     an embedded user interface for interactive adaption of these parameters. Furthermore, the ICLWidgets 
-    provides a function <tt>setImage(ImgBase*)</tt> to make it show a new image. Internally, the image
-    is buffered into a mutex-protected interleaved intermediate format, which can more easily be transferred
+    provides a function <tt>setImage(core::ImgBase*)</tt> to make it show a new image. Internally, the image
+    is buffered into a mutex-protected interleaved intermediate core::format, which can more easily be transferred
     to the graphics buffer. By these means, <tt>setImage</tt> can simply be called from the application's
     working thread without any explicit synchronization. Once an new image is given, the icl::ICLWidget will
     automatically post a Qt-update event by calling the ICLWidget::render() method. In this way, the used OpenGL
@@ -205,4 +203,3 @@
     
 */
 
-#endif

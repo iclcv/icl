@@ -32,7 +32,7 @@
  **                                                                 **
  *********************************************************************/
 
-#include <ICLQuick/Common.h>
+#include <ICLQt/Common.h>
 
 //
 // Simple example how to undistort a picture given xml-file with undistortion parameters.
@@ -65,10 +65,10 @@ void run(){
   
 }
 int main(int argc, char** argv){
-  paex("-d","given xml file with distortion and "
-       "intrinsic parameters computed with")
-  ("-wm","show warpmap as well")
-  ("-i","input devide and parameters");
+  pa_explain("-d","given xml file with distortion and "
+             "intrinsic parameters computed with")
+            ("-wm","show warpmap as well")
+            ("-i","input devide and parameters");
 
   std::cout << "Please note, that \"icl-undistortion-demo -input dc 0 -udist params.xml\" is equivalent to"
             <<" \"icl-undistortion-demo -input dc 0@udist=params.xml\". This feature is available for"

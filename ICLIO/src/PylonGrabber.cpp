@@ -39,7 +39,7 @@
 #include <ICLUtils/Macros.h>
 
 using namespace icl;
-using namespace icl::pylon;
+using namespace icl::io::pylon;
 
 // Constructor of PylonGrabberImpl
 PylonGrabberImpl::PylonGrabberImpl(
@@ -47,17 +47,17 @@ PylonGrabberImpl::PylonGrabberImpl(
     : m_ImgMutex(), m_PylonEnv(), m_LastBuffer(NULL)
 {
   FUNCTION_LOG("args: " << args)
-  icl::Mutex::Locker l(m_ImgMutex);
+  utils::Mutex::Locker l(m_ImgMutex);
   // Initialization of the pylon Runtime Library
   m_Camera = Pylon::CTlFactory::GetInstance().CreateDevice(dev);
 
   unsigned int channel = channelFromArgs(args);
   if(m_Camera -> GetNumStreamGrabberChannels() == 0){
-    throw icl::ICLException("No stream grabber channels avaliable.");
+    throw utils::ICLException("No stream grabber channels avaliable.");
   } else if(m_Camera -> GetNumStreamGrabberChannels() < channel){
     DEBUG_LOG("From args='" << args << "' demanded channel=" << channel <<
               "but available=" << m_Camera -> GetNumStreamGrabberChannels())
-    throw icl::ICLException("Demanded StreamGrabberChannel not avaliable.");
+    throw utils::ICLException("Demanded StreamGrabberChannel not avaliable.");
   }
 
   m_Camera -> Open();
@@ -184,8 +184,8 @@ void PylonGrabberImpl::cameraDefaultSettings(){
     //(m_Camera, "GevSCPSPacketSize", 8192);
 }
 
-const icl::ImgBase* PylonGrabberImpl::acquireImage(){
-  ImgBase* ret = NULL;
+const core::ImgBase* PylonGrabberImpl::acquireImage(){
+  core::ImgBase* ret = NULL;
   int counter = 0;
   while(1){
     // lock image lock so buffers are safe till release.
@@ -199,7 +199,7 @@ const icl::ImgBase* PylonGrabberImpl::acquireImage(){
       m_ImgMutex.unlock();
       ret = NULL;
       ++counter;
-      Thread::msleep(1);
+      utils::Thread::msleep(1);
     } else {
       m_ImgMutex.unlock();
       break;

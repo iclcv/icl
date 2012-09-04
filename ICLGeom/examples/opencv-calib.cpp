@@ -33,7 +33,7 @@
  *********************************************************************/
 #include <ICLGeom/OpenCVCamCalib.h>
 #include <ICLUtils/FPSLimiter.h>
-#include <ICLQuick/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLCore/OpenCV.h>
 
 #include <ICLUtils/ConfigFile.h>
@@ -242,14 +242,15 @@ void finalize(){
 }
 
 int main(int n, char **args){
-	paex
+	pa_explain
 	("-i","defines input device and parameters")
 	("-s","defines image size to use")
 	("-cbs","defines number of checkerboard fields (XxY) to use")
+
 	("-m","minimal count of pics of success");
-	ICLApp app(n,args,"[m]-input|-i(device,device-params) -size|-s(Size) -checkerboardsize|-cbs(Size=7x9) -minImg|-m(int)",init,run);
+	ICLApp app(n,args,"[m]-input|-i(device,device-params) -size|-s(Size) "
+                   "-checkerboardsize|-cbs(Size=7x9) -minImg|-m(int)",init,run);
 	app.addFinalization(finalize);
 	return app.exec();
-	//return ICLApp(n,args,"-size|-s(Size=256x256) -minImg|-m",init,run).exec();
 }
 

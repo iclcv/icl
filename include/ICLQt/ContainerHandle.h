@@ -32,35 +32,35 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_CONTAINTER_HANDLE_H
-#define ICL_CONTAINTER_HANDLE_H
+#pragma once
 
 #include <ICLUtils/Macros.h>
 #include <QtGui/QWidget>
 #include <QtCore/QString>
 
 namespace icl{
-  /// Base class for Container like GUI handles as Box- or Tab widgets
-  class ContainerHandle{
-    protected:
-    /// must be subclassed
-    ContainerHandle(){}
-    
-    public:
-
-    /// virtual destructor
-    virtual ~ContainerHandle(){}
-
-    /// pure virtual interface
-    virtual void add(QWidget *component, const QString &name=""){
-      ERROR_LOG("unable to add components to this widget (name was: " << name.toLatin1().data()  << ")");
-    }
-
-    /// pure virtual interface
-    virtual void insert(int idx, QWidget *component, const QString &name=""){
-      ERROR_LOG("unable to insert components into this widget (name was: " << name.toLatin1().data() << ", id was: " << idx << ")");
-    }
-
-  };
+  namespace qt{
+    /// Base class for Container like GUI handles as Box- or Tab widgets
+    class ContainerHandle{
+      protected:
+      /// must be subclassed
+      ContainerHandle(){}
+      
+      public:
+  
+      /// virtual destructor
+      virtual ~ContainerHandle(){}
+  
+      /// pure virtual interface
+      virtual void add(QWidget *component, const QString &name=""){
+        ERROR_LOG("unable to add components to this widget (name was: " << name.toLatin1().data()  << ")");
+      }
+  
+      /// pure virtual interface
+      virtual void insert(int idx, QWidget *component, const QString &name=""){
+        ERROR_LOG("unable to insert components into this widget (name was: " << name.toLatin1().data() << ", id was: " << idx << ")");
+      }
+  
+    };
+  } // namespace qt
 }
-#endif

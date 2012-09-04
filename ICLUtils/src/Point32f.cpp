@@ -33,30 +33,42 @@
 *********************************************************************/
 
 #include <ICLUtils/Point32f.h>
-#include <ICLUtils/FixedMatrix.h>
 
 namespace icl{
-  const Point32f Point32f::null(0.0,0.0);
-
-  float Point32f::norm(float p) const{
-    return pow( pow(x,p)+ pow(y,p), float(1)/p);
-  }
+  namespace utils{
+    const Point32f Point32f::null(0.0,0.0);
   
-  float Point32f::distanceTo(const Point32f &p) const{
-    return sqrt(pow((float) (p.x-x), 2) + pow((float) (p.y-y), 2));
-  }
-
-  std::ostream &operator<<(std::ostream &s, const Point32f &p){
-    return s << "(" << p.x << ',' << p.y << ")";
-  }
+    float Point32f::norm(float p) const{
+      return pow( pow(x,p)+ pow(y,p), float(1)/p);
+    }
+    
+    float Point32f::distanceTo(const Point32f &p) const{
+      return sqrt(pow((float) (p.x-x), 2) + pow((float) (p.y-y), 2));
+    }
   
-
-  std::istream &operator>>(std::istream &s, Point32f &p){
-    FixedMatrix<float,2,1> m;
-    s >> m;
-    p.x = m[0]; 
-    p.y = m[1];
-    return s;
-  }
-
+    std::ostream &operator<<(std::ostream &s, const Point32f &p){
+      return s << "(" << p.x << ',' << p.y << ")";
+    }
+    
+  
+    std::istream &operator>>(std::istream &s, Point32f &p){
+      char c,d;
+      s >> c;
+      if ( ((c >= '0') && (c <= '9')) || c=='-' ){
+        s.unget();
+      }
+      s >> p.x;
+      s >> d; // anything delimiting ...
+      s >> p.y;
+      if (!( ((c >= '0') && (c <= '9')) || c=='-' )){
+        s >> d;
+        if(c == '|' && d != '|') s.unget();
+        if(c == '(' && d != ')') s.unget();
+        if(c == '[' && d != ']') s.unget();
+        if(c == '{' && d != '}') s.unget();
+      }
+      return s;
+    }
+  
+  } // namespace utils
 }

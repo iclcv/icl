@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLGeom/Geom.h>
 #include <ICLUtils/FPSLimiter.h>
 
@@ -73,7 +73,7 @@ void init(){
   }
   
   if(!nCams){
-    pausage("no cameras were specified! (use either -i or -c)");
+    pa_show_usage("no cameras were specified! (use either -i or -c)");
   }
   
   scene.addCamera(scene.getCamera(nCams-1));
@@ -117,10 +117,12 @@ void run(){
 
 
 int main(int n, char**ppc){
-  paex("-o","optionally given list of .obj files, that are loaded into the scene")
+  pa_explain
+  ("-o","optionally given list of .obj files, that are loaded into the scene")
   ("-c","optionally list of camera files that are loaded into the scene")
   ("-i","optionally given input camera that is used as background image");
   
-  return ICLApplication(n,ppc,"-o(...) -input|-i(input-type,input-specifier,camera-file) -c(...)",init,run).exec();
+  return ICLApp(n,ppc,"-o(...) -input|-i(input-type,"
+                "input-specifier,camera-file) -c(...)",init,run).exec();
 }
 

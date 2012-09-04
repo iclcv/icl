@@ -32,13 +32,13 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLFilter/ColorSegmentationOp.h>
 #include <ICLFilter/MedianOp.h>
 #include <ICLFilter/MorphologicalOp.h>
 #include <ICLCore/CCFunctions.h>
 #include <ICLCore/Color.h>
-#include <ICLBlob/RegionDetector.h>
+#include <ICLCV/RegionDetector.h>
 
 #include <ICLGeom/Scene.h>
 #include <ICLGeom/GeomDefs.h>

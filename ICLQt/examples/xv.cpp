@@ -35,7 +35,7 @@
 #include <iostream>
 #include <iterator>
 #include <ICLIO/FileGrabber.h>
-#include <ICLQuick/Common.h>
+#include <ICLQt/Common.h>
 #include <QtGui/QDesktopWidget>
 
 //#include <QScreen>
@@ -54,18 +54,18 @@ Size compute_image_size(const std::vector<const ImgBase*> &is, QDesktopWidget *d
 }
 
 int main (int n, char **ppc){
-  pasethelp("icl-xv is ICL's simple image viewer.\n"
-            "It can display images of all supported file formats.\n"
-            "Furthermore, icl-xv is used for ICLQuick's\n"
-            "global icl::show(image) function. Here, the -delete\n"
-            "flag is used in order to delete a temporary image\n"
-            "after loading it.");
+  pa_set_help_text("icl-xv is ICL's simple image viewer.\n"
+                   "It can display images of all supported file formats.\n"
+                   "Furthermore, icl-xv is used for ICLQuick's\n"
+                   "global icl::show(image) function. Here, the -delete\n"
+                   "flag is used in order to delete a temporary image\n"
+                   "after loading it.");
   QApplication app(n,ppc);
-  paex
+  pa_explain
   ("-input","define image to read")
   ("-delete","delete image file after reading")
   ("-roi","if set, image roi is visualized");
-  painit(n,ppc,"-input|-i(filename) -delete|-d -roi|-r",true);
+  pa_init(n,ppc,"-input|-i(filename) -delete|-d -roi|-r",true);
 
   const ImgBase *image = 0;
   if(pa("-input")){
@@ -87,7 +87,7 @@ int main (int n, char **ppc){
       text(o, 90,90,"image not found!");
       image = &o;
     }
-    if(pacount()){
+    if(pa_get_count()){
       std::cout << "Warning if called with -input, all extra given filenames are omitted!" << std::endl;
     }
 
@@ -98,7 +98,7 @@ int main (int n, char **ppc){
     gui["draw"] = image;
     gui["draw"].render();
 
-  }else if(pacount()){
+  }else if(pa_get_count()){
     if(pa("-delete")){
       std::cout << "-delete flag is not supported when running in multi image mode" << std::endl;
       std::cout << "call iclxv -input ImageName -delete instead (for single images only)" << std::endl;
@@ -108,7 +108,7 @@ int main (int n, char **ppc){
     std::vector<std::string> imageVecStrs;
     
     Size maxSize;
-    for(unsigned int i=0;i<pacount();++i){
+    for(unsigned int i=0;i<pa_get_count();++i){
       std::string s = pa(i);
       try{
         FileGrabber grabber(s,false,true);

@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLIO/FileWriter.h>
 
 VSplit gui;
@@ -83,7 +83,7 @@ void run(){
 
 
 int main(int n, char **ppc){
-  paex
+  pa_explain
   ("-size","grabbing size")
   ("-t","use external trigger (only for devices that support this)")
   ("-r","reset dc-bus before instantiating grabbers")

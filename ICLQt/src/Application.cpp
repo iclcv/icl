@@ -34,129 +34,146 @@
 
 #include <ICLQt/Application.h>
 #include <QtCore/QLocale>
-#include <ICLUtils/ThreadUtils.h>
 #include <ICLUtils/ProgArg.h>
+#include <ICLUtils/Thread.h>
+
+using namespace icl::utils;
 
 namespace icl{
-
-  typedef ICLApplication::callback callback;
- 
-  ICLApplication *ICLApplication::s_app(0);
-  std::vector<ExecThread*> ICLApplication::s_threads;
-  std::vector<callback> ICLApplication::s_inits;
-  std::vector<callback> ICLApplication::s_callbacks;
-  std::vector<callback> ICLApplication::s_finalizes;
-
+  namespace qt{
+    struct ExecThread : public Uncopyable, public Thread{
+      typedef void (*callback)(void);
+      callback cb;
+      ExecThread(callback cb):cb(cb){
+        if(!cb) throw ICLException("ExecThread called with NULL function!");
+      }
+      virtual void run(){
+        while(true){
+          cb();
+          usleep(0);
+        }
+      }
+    };
   
-  ICLApplication::ICLApplication(int n, char **ppc, 
-                                 const std::string &paInitString,
-                                 callback init, callback run,
-                                 callback run2, callback run3,
-                                 callback run4, callback run5)
-    throw (SecondSingeltonException){
-    if(s_app) throw SecondSingeltonException("only one instance is allowed!");
-    if(paInitString != ""){
-      painit(n,ppc,paInitString);
+    typedef ICLApplication::callback callback;
+   
+    ICLApplication *ICLApplication::s_app(0);
+    std::vector<ExecThread*> ICLApplication::s_threads;
+    std::vector<callback> ICLApplication::s_inits;
+    std::vector<callback> ICLApplication::s_callbacks;
+    std::vector<callback> ICLApplication::s_finalizes;
+  
+    
+    ICLApplication::ICLApplication(int n, char **ppc, 
+                                   const std::string &paInitString,
+                                   callback init, callback run,
+                                   callback run2, callback run3,
+                                   callback run4, callback run5)
+      throw (SecondSingeltonException){
+      if(s_app) throw SecondSingeltonException("only one instance is allowed!");
+      if(paInitString != ""){
+        pa_init(n,ppc,paInitString);
+      }
+      
+      /* QApplication uses argv and argc internally, both are passed via reference to
+         constructor and we must make sure those references stay valid for the entire
+         lifetime of the QApplication object.
+  
+         Excerpt from the Qt documentation:
+         "Warning: The data referred to by argc and argv must stay valid for the entire
+         lifetime of the QApplication object. In addition, argc must be greater than
+         zero and argv must contain at least one valid character string."
+  
+         We declare both as static variables before passing them to QApplication for
+         this reason. 
+     */
+  #if 0
+      app = new QApplication(n,ppc);
+  #else
+      
+      // For some reason,  passing argv and argc to the QApplication leads
+      // to a seg-fault because of reading a NULL string internally ??
+      // Therefore we simply pass this static empty parameter list
+      static int static_n = 1;
+      static char *static_ppc[] = { ppc[0], NULL };
+      app = new QApplication(static_n, static_ppc);
+  #endif
+  
+      QLocale::setDefault(QLocale::C);
+  
+  #ifdef ICL_SYSTEM_LINUX
+      /* From the Qt 4.7 documentation:
+          Locale Settings:
+          On Unix/Linux Qt is configured to use the system
+          locale settings by default. This can cause a conflict
+          when using POSIX functions, for instance, when
+          converting between data types such as floats and
+          trings, since the notation may differ between locales.
+          To get around this problem, call the POSIX function
+          setlocale(LC_NUMERIC,"C") right after initializing
+          QApplication or QCoreApplication to reset the locale
+          that is used for number formatting to "C"-locale.    
+      */
+      setlocale(LC_NUMERIC,"C");
+  #endif
+  
+      s_app = this;
+      if(init) addInit(init);
+      
+      if(run) s_callbacks.push_back(run);
+      if(run2) s_callbacks.push_back(run2);
+      if(run3) s_callbacks.push_back(run3);
+      if(run4) s_callbacks.push_back(run4);
+      if(run5) s_callbacks.push_back(run5);
     }
     
-    /* QApplication uses argv and argc internally, both are passed via reference to
-       constructor and we must make sure those references stay valid for the entire
-       lifetime of the QApplication object.
-
-       Excerpt from the Qt documentation:
-       "Warning: The data referred to by argc and argv must stay valid for the entire
-       lifetime of the QApplication object. In addition, argc must be greater than
-       zero and argv must contain at least one valid character string."
-
-       We declare both as static variables before passing them to QApplication for
-       this reason. 
-   */
-#if 0
-    app = new QApplication(n,ppc);
-#else
+    ICLApplication::~ICLApplication(){
+      for(unsigned int i=0;i<s_threads.size();++i){
+        delete s_threads[i];
+      }
+      s_app = 0;
+      s_threads.clear();
+      s_inits.clear();
+      s_callbacks.clear();
+      delete app;
+   
+      for(unsigned int i=0;i<s_finalizes.size();++i){
+      	s_finalizes[i](); 
+      }   
+      s_finalizes.clear();
+    }
     
-    // For some reason,  passing argv and argc to the QApplication leads
-    // to a seg-fault because of reading a NULL string internally ??
-    // Therefore we simply pass this static empty parameter list
-    static int static_n = 1;
-    static char *static_ppc[] = { ppc[0], NULL };
-    app = new QApplication(static_n, static_ppc);
-#endif
-
-    QLocale::setDefault(QLocale::C);
-
-#ifdef ICL_SYSTEM_LINUX
-    /* From the Qt 4.7 documentation:
-        Locale Settings:
-        On Unix/Linux Qt is configured to use the system
-        locale settings by default. This can cause a conflict
-        when using POSIX functions, for instance, when
-        converting between data types such as floats and
-        trings, since the notation may differ between locales.
-        To get around this problem, call the POSIX function
-        setlocale(LC_NUMERIC,"C") right after initializing
-        QApplication or QCoreApplication to reset the locale
-        that is used for number formatting to "C"-locale.    
-    */
-    setlocale(LC_NUMERIC,"C");
-#endif
-
-    s_app = this;
-    if(init) addInit(init);
+    void ICLApplication::addThread(callback cb){
+      ICLASSERT_RETURN(cb);
+      s_callbacks.push_back(cb);
+    }
+    void ICLApplication::addInit(callback cb){
+      ICLASSERT_RETURN(cb);
+      s_inits.push_back(cb);
+    }
+  
+    void ICLApplication::addFinalization(callback cb){
+      ICLASSERT_RETURN(cb);
+      s_finalizes.push_back(cb);
+    }
+  
+  
+  
     
-    if(run) s_callbacks.push_back(run);
-    if(run2) s_callbacks.push_back(run2);
-    if(run3) s_callbacks.push_back(run3);
-    if(run4) s_callbacks.push_back(run4);
-    if(run5) s_callbacks.push_back(run5);
-  }
-  
-  ICLApplication::~ICLApplication(){
-    for(unsigned int i=0;i<s_threads.size();++i){
-      delete s_threads[i];
+    int ICLApplication::exec(){
+      for(unsigned int i=0;i<s_inits.size();++i){
+        s_inits[i]();
+      }
+      for(unsigned int i=0;i<s_callbacks.size();++i){
+        s_threads.push_back(new ExecThread(s_callbacks[i]));
+      }
+      for(unsigned int i=0;i<s_threads.size();++i){
+        s_threads[i]->start();
+      }
+      return app->exec();
     }
-    s_app = 0;
-    s_threads.clear();
-    s_inits.clear();
-    s_callbacks.clear();
-    delete app;
- 
-    for(unsigned int i=0;i<s_finalizes.size();++i){
-    	s_finalizes[i](); 
-    }   
-    s_finalizes.clear();
-  }
+    
+    
   
-  void ICLApplication::addThread(callback cb){
-    ICLASSERT_RETURN(cb);
-    s_callbacks.push_back(cb);
-  }
-  void ICLApplication::addInit(callback cb){
-    ICLASSERT_RETURN(cb);
-    s_inits.push_back(cb);
-  }
-
-  void ICLApplication::addFinalization(callback cb){
-    ICLASSERT_RETURN(cb);
-    s_finalizes.push_back(cb);
-  }
-
-
-
-  
-  int ICLApplication::exec(){
-    for(unsigned int i=0;i<s_inits.size();++i){
-      s_inits[i]();
-    }
-    for(unsigned int i=0;i<s_callbacks.size();++i){
-      s_threads.push_back(new ExecThread(s_callbacks[i]));
-    }
-    for(unsigned int i=0;i<s_threads.size();++i){
-      s_threads[i]->run();
-    }
-    return app->exec();
-  }
-  
-  
-
+  } // namespace qt
 }

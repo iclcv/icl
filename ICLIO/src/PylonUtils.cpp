@@ -38,14 +38,16 @@
 #include <pylon/gige/BaslerGigEDeviceInfo.h>
 
 using namespace icl;
-using namespace icl::pylon;
+using namespace icl::utils;
+using namespace icl::core;
+using namespace icl::io::pylon;
 
-static int inits = 0;
+//static int inits = 0;
 
 // Static mutex and counter for clean initialising
 // and deleting of Pylon environment
 static unsigned int pylon_env_inits = 0;
-static icl::Mutex* env_mutex = new icl::Mutex();
+static utils::Mutex* env_mutex = new icl::utils::Mutex();
 
 // Constructor sets all pointers to NULL
 ConvBuffers::ConvBuffers(){
@@ -138,7 +140,7 @@ PylonAutoEnv::~PylonAutoEnv(){
 // initializes the Pylon environment
 // (returns whether PylonInitialize() was called)
 bool PylonAutoEnv::initPylonEnv(){
-  icl::Mutex::Locker l(env_mutex);
+  icl::utils::Mutex::Locker l(env_mutex);
   ICLASSERT(pylon_env_inits >= 0)
   pylon_env_inits++;
   if(pylon_env_inits == 1){
@@ -164,7 +166,7 @@ bool PylonAutoEnv::initPylonEnv(){
 // terminates the Pylon environment
 // (returns whether PylonTerminate() was called).
 bool PylonAutoEnv::termPylonEnv(){
-  icl::Mutex::Locker l(env_mutex);
+  utils::Mutex::Locker l(env_mutex);
   ICLASSERT(pylon_env_inits > 0)
   pylon_env_inits--;
   if(pylon_env_inits == 0){
@@ -215,7 +217,7 @@ GrabbingInterruptor::~GrabbingInterruptor(){
   }
 }
 
-void icl::pylon::printHelp(){
+void icl::io::pylon::printHelp(){
   std::cout << std::endl;
   std::cout << "The pylon grabber can be called with" << std::endl;
   std::cout << "     -i pylon [CAM]:[BUFFER]" << std::endl << std::endl;
@@ -243,16 +245,16 @@ void icl::pylon::printHelp(){
   std::cout << std::endl;
 }
 
-Pylon::CDeviceInfo icl::pylon::getDeviceFromArgs(std::string args) throw(ICLException) {
+Pylon::CDeviceInfo icl::io::pylon::getDeviceFromArgs(std::string args) throw(utils::ICLException) {
   if(args.find("h")!=std::string::npos){
     printHelp();
     throw ICLException("Help called");
   }
 
-  std::vector<std::string> 	argvec = icl::tok(args, ":");
+  std::vector<std::string> 	argvec = icl::utils::tok(args, ":");
   ICLASSERT(argvec.size() <= 2)
   if(argvec.at(0).find('.') == std::string::npos){
-    unsigned int nr = icl::parse<int>(argvec.at(0));
+    unsigned int nr = icl::utils::parse<int>(argvec.at(0));
     Pylon::DeviceInfoList_t devices = getPylonDeviceList();
     if(devices.size() < nr + 1){
       std::cout << "Demanded device Nr. " << nr << " but only "
@@ -276,17 +278,17 @@ Pylon::CDeviceInfo icl::pylon::getDeviceFromArgs(std::string args) throw(ICLExce
   throw ICLException("PylonDevice not found");
 }
 
-int icl::pylon::channelFromArgs(std::string args){
-  std::vector<std::string> 	argvec = icl::tok(args, ",");
+int icl::io::pylon::channelFromArgs(std::string args){
+  std::vector<std::string> 	argvec = icl::utils::tok(args, ",");
   if(argvec.size() < 2){
       return 0;
   } else {
-    return icl::parse<int>(argvec.at(1));
+    return icl::utils::parse<int>(argvec.at(1));
   }
 }
 
 Pylon::DeviceInfoList_t
-icl::pylon::getPylonDeviceList(Pylon::DeviceInfoList_t* filter){
+icl::io::pylon::getPylonDeviceList(Pylon::DeviceInfoList_t* filter){
   // Initialization and auto termination of pylon runtime library
   PylonAutoEnv();
 

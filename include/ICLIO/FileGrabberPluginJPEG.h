@@ -32,20 +32,20 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FILE_READER_PLUGIN_JPEG_H
-#define ICL_FILE_READER_PLUGIN_JPEG_H
+#pragma once
 
 #include <ICLIO/FileGrabberPlugin.h>
 
 namespace icl{
+  namespace io{
+    
   
-
-  /// Plugin class to read "jpeg" and "jpg" images \ingroup FILEIO_G
-  class FileGrabberPluginJPEG : public FileGrabberPlugin {
-    public:
-    /// grab implementation
-    virtual void grab(File &file, ImgBase **dest); 
-  };  
+    /// Plugin class to read "jpeg" and "jpg" images \ingroup FILEIO_G
+    class FileGrabberPluginJPEG : public FileGrabberPlugin {
+      public:
+      /// grab implementation
+      virtual void grab(utils::File &file, core::ImgBase **dest); 
+    };  
+  } // namespace io
 }
 
-#endif

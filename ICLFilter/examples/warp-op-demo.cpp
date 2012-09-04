@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLFilter/WarpOp.h>
 
 GUI gui;
@@ -54,7 +54,7 @@ void init(){
 }
 
 void run(){
-  static WarpOp op(icl::load(pa("-w")));
+  static WarpOp op(icl::qt::load(pa("-w")));
   grabber.useDesired(parse<depth>(gui["depth"]));
 
   const ImgBase *image = grabber.grab();

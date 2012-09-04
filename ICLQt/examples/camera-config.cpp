@@ -39,12 +39,14 @@
 
 #include <sstream>
 
-using namespace icl;
+using namespace icl::utils;
+using namespace icl::io;
+using namespace icl::qt;
 using namespace std;
 
 int main(int n, char **ppc){
   
-  paex
+  pa_explain
   ("r","resets the dc bus on startup")
   ("8","scan for dc800 devices")
   ("u","scan for unicap devices")
@@ -59,9 +61,9 @@ int main(int n, char **ppc){
   ("-i","ICL's default device specification")
   ("-l","if this flag is passed, no GUI is created, "
    "but all available devices are listed on stdout");
-  painit(n,ppc,"-dc|d -dc800|8 -demo -unicap|u -mry|y -pwc|p -sr|s -cvcam|c -sm|m -v4l2|v"
-         " -reset-bus|-r|r -kinect|k "
-         "-input|-i(device-type,device-ID) -list-devices-only|-l");
+  pa_init(n,ppc,"-dc|d -dc800|8 -demo -unicap|u -mry|y -pwc|p -sr|s -cvcam|c -sm|m -v4l2|v"
+          " -reset-bus|-r|r -kinect|k "
+          "-input|-i(device-type,device-ID) -list-devices-only|-l");
 
   
   std::ostringstream str;
@@ -80,7 +82,7 @@ int main(int n, char **ppc){
   
   std::string devlist = str.str();
   if(!devlist.length()){
-    pausage("no devices selected!");
+    pa_show_usage("no devices selected!");
     exit(-1);
   }
   devlist = devlist.substr(1); // removes the trailing comma!

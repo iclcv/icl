@@ -1,7 +1,7 @@
 #!/bin/bash
 
-RESOURCE_DIR=@ICL_RESOURCE_DIR_PLACEHOLDER@
-PGK_CFG_NAME=@ICL_PKG_CFG_PLACEHOLDER@
+RESOURCE_DIR=/vol/nivision/etc/icl-7.8.0-debug
+PGK_CFG_NAME=icl-7.8.0-debug
 
 if [ $# -ne 1 ] ; then
   echo -e "usage:\n\ticl-create-project PROJECT_FOLDER_NAME"

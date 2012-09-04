@@ -35,39 +35,44 @@
 #include <ICLGeom/ViewRay.h>
 #include <ICLGeom/Camera.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
-  
-  ViewRay::ViewRay(const Vec &offset, const Vec &direction,bool autoNormalizeDirection):
-    offset(offset),direction(direction){
-    if(autoNormalizeDirection){
-      this->direction *= 1.0f/norm3(direction);
+  namespace geom{
+    
+    ViewRay::ViewRay(const Vec &offset, const Vec &direction,bool autoNormalizeDirection):
+      offset(offset),direction(direction){
+      if(autoNormalizeDirection){
+        this->direction *= 1.0f/norm3(direction);
+      }
+      this->offset[3]=this->direction[3]=1;
     }
-    this->offset[3]=this->direction[3]=1;
-  }
+    
+    Vec ViewRay::getIntersection(const PlaneEquation &plane) const throw (ICLException){
+      return Camera::getIntersection(*this,plane);
+    }
+    
+    Vec ViewRay::operator()(float lambda) const { 
+      Vec r = offset + direction*lambda; 
+      r[3] = 1;
+      return r;
+    }
   
-  Vec ViewRay::getIntersection(const PlaneEquation &plane) const throw (ICLException){
-    return Camera::getIntersection(*this,plane);
-  }
+    float ViewRay::closestDistanceTo(const Vec &p) const{
+      const Vec x = p-offset;
+      return ::sqrt(sqrnorm3(x)-sqr(sprod3(x,direction)));
+    }
+    
+    float ViewRay::closestDistanceTo(const ViewRay &vr) const{
+      Vec c = cross(direction,vr.direction);
+      return fabs(sprod3(offset - vr.offset, c) / norm3(c));
+    }
   
-  Vec ViewRay::operator()(float lambda) const { 
-    Vec r = offset + direction*lambda; 
-    r[3] = 1;
-    return r;
-  }
-
-  float ViewRay::closestDistanceTo(const Vec &p) const{
-    const Vec x = p-offset;
-    return ::sqrt(sqrnorm3(x)-sqr(sprod3(x,direction)));
-  }
   
-  float ViewRay::closestDistanceTo(const ViewRay &vr) const{
-    Vec c = cross(direction,vr.direction);
-    return fabs(sprod3(offset - vr.offset, c) / norm3(c));
-  }
-
-
-  std::ostream &operator<<(std::ostream &s, const ViewRay &vr){
-    return s << "ViewRay(" << vr.offset.transp() << " + lambda * " << vr.direction.transp() << ")";
-  }
-
+    std::ostream &operator<<(std::ostream &s, const ViewRay &vr){
+      return s << "ViewRay(" << vr.offset.transp() << " + lambda * " << vr.direction.transp() << ")";
+    }
+  
+  } // namespace geom
 }

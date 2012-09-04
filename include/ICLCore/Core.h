@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_CORE_H
-#define ICL_CORE_H
+#pragma once
 
 #include <ICLCore/Img.h>
 #include <ICLCore/CornerDetectorCSS.h>
@@ -42,7 +41,7 @@
 #include <ICLCore/Line.h>
 #include <ICLCore/LineSampler.h>
 #include <ICLCore/Mathematics.h>
-#include <ICLCore/Random.h>
+#include <ICLUtils/Random.h>
 #include <ICLCore/SampledLine.h>
 
 /** 
@@ -111,14 +110,14 @@
     - <b>ICLCC</b> provides functions and classes for color conversion.
     - <b>ICLIO</b> extends the range of functions by input and output classes. Camera grabbers different camera 
       types (e.g. IEEE-1394 or Video-4-Linux) can be found     here as well a video file grabber or a file writer class.
-    - <b>ICLBlob</b> contains classes for blob detection and tracking and for connected component analysis.
+    - <b>ICLCV</b> contains classes for blob detection and tracking and for connected component analysis.
     - <b>ICLFilter</b> provides classes for most common image filters like linear filters and morphological operators.
     - <b>ICLQuick</b> provides almost 100 functions and functors for rapid prototyping
     - <b>ICLGeom</b> contains classes for 3D-modelling and camera calibration. 
     - <b>ICLQt*</b> contains a Qt-4 based GUI-API that facilitates creation of simple and complex GUI 
       applications significantly. And of course a powerful image visualisation widget called ICLWidget is provided.
     - <b>ICLMarkers</b> contains a generic Fiducial Marker detection framework
-    - <b>ICLAlgorithms</b> contains high level classes like a hough-transformation-based line detector or generic self organizing map (SOM) implementation. 
+    - <b>ICLMath</b> contains high level classes like a hough-transformation-based line detector or generic self organizing map (SOM) implementation. 
     - <b>ICLOpenCV*</b> offers functions for shallow and deep copies from ICL-images types into OpenCV's images types and v.v.
     
     (*) The packages ICLQt and ICLOpenCV depend compulsorily on the corresponding external software dependencies Qt4 and OpenCV. 
@@ -326,4 +325,4 @@
     The list of 3rd party dependencies is given on <a href="http://www.iclcv.org>ICL's website</a>
 
 
-    **/ #endif
+    **/ 

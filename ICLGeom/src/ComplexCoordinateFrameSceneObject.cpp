@@ -33,62 +33,69 @@
 *********************************************************************/
 #include <ICLGeom/ComplexCoordinateFrameSceneObject.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+using namespace icl::math;
+using namespace icl::qt;
+
 namespace icl{
-  ComplexCoordinateFrameSceneObject::ComplexCoordinateFrameSceneObject(float axisLength,float axisThickness, bool withLabels){
-    setParams(axisLength,axisThickness,withLabels);
-  }
-  
-  void ComplexCoordinateFrameSceneObject::setParams(float axisLength, float axisThickness, bool withLabels){
-    Mutex::Locker lock(mutex);
+  namespace geom{
+    ComplexCoordinateFrameSceneObject::ComplexCoordinateFrameSceneObject(float axisLength,float axisThickness, bool withLabels){
+      setParams(axisLength,axisThickness,withLabels);
+    }
     
-    m_vertices.clear();
-    m_normals.clear();
-    m_vertexColors.clear();
-    m_primitives.clear();
-    m_children.clear();
-    
-    const float l=axisLength, d=axisThickness;
-    const float p = M_PI_2;
-    const float rxs[3]={0,p,0},rys[3]={p,0,0},rzs[3]={0,0,0};
-    const GeomColor cs[]={geom_red(),geom_green(),geom_blue() };
-    for(int i=0;i<3;++i){
-      SceneObject *o = addCylinder(0,0,i==2 ? l/2 : -l/2,d,d,l,20);
-      o->rotate(rxs[i],rys[i],rzs[i]);
-      o->setVisible(Primitive::line,false);
-      o->setVisible(Primitive::vertex,false);
-      o->setColor(Primitive::quad,cs[i]);
-      o->setColor(Primitive::polygon,cs[i]);
-      switch(i){
-        case 0:
-          o = addCone(0,0,l,2*d,2*d,3*d,20);
-          o->rotate(M_PI,0,0);
-          break;
-        case 1:
-          o = addCone(0,0,l,2*d,2*d,3*d,20);
-          o->rotate(M_PI,0,0);
-          break;
-        case 2:
-          o = addCone(0,0,l,2*d,2*d,3*d,20);
-          o->rotate(0,0,0);
-          break;
+    void ComplexCoordinateFrameSceneObject::setParams(float axisLength, float axisThickness, bool withLabels){
+      Mutex::Locker lock(mutex);
+      
+      m_vertices.clear();
+      m_normals.clear();
+      m_vertexColors.clear();
+      m_primitives.clear();
+      m_children.clear();
+      
+      const float l=axisLength, d=axisThickness;
+      const float p = M_PI_2;
+      const float rxs[3]={0,p,0},rys[3]={p,0,0},rzs[3]={0,0,0};
+      const GeomColor cs[]={geom_red(),geom_green(),geom_blue() };
+      for(int i=0;i<3;++i){
+        SceneObject *o = addCylinder(0,0,i==2 ? l/2 : -l/2,d,d,l,20);
+        o->rotate(rxs[i],rys[i],rzs[i]);
+        o->setVisible(Primitive::line,false);
+        o->setVisible(Primitive::vertex,false);
+        o->setColor(Primitive::quad,cs[i]);
+        o->setColor(Primitive::polygon,cs[i]);
+        switch(i){
+          case 0:
+            o = addCone(0,0,l,2*d,2*d,3*d,20);
+            o->rotate(M_PI,0,0);
+            break;
+          case 1:
+            o = addCone(0,0,l,2*d,2*d,3*d,20);
+            o->rotate(M_PI,0,0);
+            break;
+          case 2:
+            o = addCone(0,0,l,2*d,2*d,3*d,20);
+            o->rotate(0,0,0);
+            break;
+        }
+        
+        o->rotate(rxs[i],rys[i],rzs[i]);
+        o->setVisible(Primitive::line,false);
+        o->setVisible(Primitive::vertex,false);
+        o->setColor(Primitive::triangle,cs[i]);
+        o->setColor(Primitive::polygon,cs[i]);
       }
       
-      o->rotate(rxs[i],rys[i],rzs[i]);
-      o->setVisible(Primitive::line,false);
-      o->setVisible(Primitive::vertex,false);
-      o->setColor(Primitive::triangle,cs[i]);
-      o->setColor(Primitive::polygon,cs[i]);
+      addVertex(Vec(l+3*d,0,0,1),GeomColor(0,0,0,0));
+      addVertex(Vec(0,l+3*d,0,1),GeomColor(0,0,0,0));
+      addVertex(Vec(0,0,l+3*d,1),GeomColor(0,0,0,0));
+  
+      if(withLabels){
+        addText(0,"x");
+        addText(1,"y");
+        addText(2,"z");
+      }
     }
-    
-    addVertex(Vec(l+3*d,0,0,1),GeomColor(0,0,0,0));
-    addVertex(Vec(0,l+3*d,0,1),GeomColor(0,0,0,0));
-    addVertex(Vec(0,0,l+3*d,1),GeomColor(0,0,0,0));
-
-    if(withLabels){
-      addText(0,"x");
-      addText(1,"y");
-      addText(2,"z");
-    }
-  }
-
+  
+  } // namespace geom
 }

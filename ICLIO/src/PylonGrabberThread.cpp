@@ -38,7 +38,7 @@
 #include <ICLUtils/Time.h>
 
 using namespace icl;
-using namespace icl::pylon;
+using namespace icl::io::pylon;
 
 // Constructor sets all internal fields and allocates memory
 PylonGrabberThread::PylonGrabberThread(Pylon::IStreamGrabber* grabber,
@@ -116,7 +116,7 @@ void PylonGrabberThread::grab(){
   }
 }
 
-ImgBase* PylonGrabberThread::getCurrentImage(){
+core::ImgBase* PylonGrabberThread::getCurrentImage(){
   // just return the buffered readimage.
   return m_Buffers.getNextReadBuffer() -> m_Image;
 }

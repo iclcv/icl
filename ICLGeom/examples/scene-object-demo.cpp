@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLGeom/Geom.h>
 #include <ICLUtils/FPSLimiter.h>
 
@@ -113,7 +113,7 @@ void init(){
       scene.addObject(o,true);
       
     }else{
-      pausage("invalid shape arg for -s");
+      pa_show_usage("invalid shape arg for -s");
       ::exit(-1);
     }
   }
@@ -140,8 +140,8 @@ void run(){
 
 
 int main(int n, char**ppc){
-  paex("-o","loads a given opengl .obj file  (if -o and -s is given, -o is used)");
-  paex("-s","visualizes one of the shape types (cyliner,spheroid, cuboid, cone, point-cloud)");
+  pa_explain("-o","loads a given opengl .obj file  (if -o and -s is given, -o is used)");
+  pa_explain("-s","visualizes one of the shape types (cyliner,spheroid, cuboid, cone, point-cloud)");
   /// create a whole application 
   return ICLApplication(n,ppc,"-obj|-o(.obj-filename) -shape|-s(shape=cuboid) -create-display-list|-dl",init,run).exec();
 }

@@ -45,7 +45,6 @@ add_libsource (${PROJECT_NAME} "src/Posit.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/SoftPosit.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/CoplanarPointPoseEstimator.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/ICP.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-add_libsource (${PROJECT_NAME} "src/SuperQuadric.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/PointNormalEstimation.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
 set(CONDITIONLIST HAVE_OPENGL_COND)
@@ -78,13 +77,15 @@ set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_OPENGL_COND)
 add_example (${PROJECT_NAME} "camera-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "scene-object-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "superquadric-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-add_example (${PROJECT_NAME} "swiss-ranger-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-add_example (${PROJECT_NAME} "texture-cube-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "show-scene" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "kinect-normals-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "generic-texture-coords-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLCV)
 add_example (${PROJECT_NAME} "simplex-2D-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "simplex-3D-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-add_example (${PROJECT_NAME} "generic-texture-coords-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "swiss-ranger-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "texture-cube-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_OPENGL_COND HAVE_GLX_COND)
 add_example (${PROJECT_NAME} "offscreen-rendering-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
@@ -100,11 +101,11 @@ set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_OPENGL_COND HAVE_GLX_
 add_example (${PROJECT_NAME} "rgbd-mapping-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_OPENCV_COND)
-set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick ICLQt ICLCore ICLUtils ${QT_LIBS_l})
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLCV)
 add_example (${PROJECT_NAME} "opencv-calib" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST "HAVE_GTEST_COND")
-set(ICLLibsToLinkAgainst ICLGeom ICLUtils ICLCore)
+set(ICLLibsToLinkAgainst ICLGeom)
 add_gtest (${PROJECT_NAME} "test-camera" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 #create lib

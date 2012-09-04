@@ -32,18 +32,9 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_SCENE_MOUSE_HANDLER_H
-#define ICL_SCENE_MOUSE_HANDLER_H
+#pragma once
 
-
-#ifndef HAVE_OPENGL
-#define HAVE_OPENGL_OR_HAVE_QT_MISSING
-#endif
-#ifndef HAVE_QT
-#define HAVE_OPENGL_OR_HAVE_QT_MISSING
-#endif
-
-#ifdef HAVE_OPENGL_OR_HAVE_QT_MISSING
+#if !defined(HAVE_OPENGL) || !defined(HAVE_QT)
 #warning "this header must not be included if HAVE_OPENGL or HAVE_QT is not defined"
 #else
 
@@ -52,187 +43,157 @@
 #include <ICLQt/MouseHandler.h>
 
 namespace icl{
-
-/** Mouse action function pointer
-* parameters:
-*   const MouseEvent&                   pMouseEvent,
-*   const Point32f&                     pCurrentMousePosition,
-*   const Point32f&                     pDeltaMousePosition,
-*   Camera&                             pCamera,
-*   void*                               pData
-*/
-typedef void                            (*MouseActionCallback)(
-    const MouseEvent&,
-    const Point32f&,
-    const Point32f&,
-    Camera&,
-    void* );
-
-
-/// forward declaration of scene class
-class Scene;
-
-
-/// mouse mapping table entry
-struct MouseMappingTableEntry
-{
-    /// pointer to mouse action function
-    MouseActionCallback                 mMouseAction;
-
-    /// pointer to additional data
-    void*                               mData;
-};
-
-
-/// mouse sensitivities
-struct MouseSensitivities
-{
-    /// sensitivity factor for translation (e.g. mParentScene->getMaxSceneDim())
-    float                               mTranslation;
-
-    /// sensitivity factor for rotations (e.g. 1.0)
-    float                               mRotation;
-
-    /// sensitivity of mouse movements (e.g. 1.0)
-    float                               mMouse;
-
-    /// sensitivity of mouse wheel (e.g. 0.001)
-    float                               mWheel;
-};
-
-
-/// mouse sensitivities modifier
-enum MouseSensitivitiesModifier
-{
-    LowMouseSensitivity    = 0,
-    NormalMouseSensitivity = 1,
-    HighMouseSensitivity   = 2,
-    MAX_MOUSE_SENSITIVITY  = HighMouseSensitivity
-};
-
-
-/// Class providing a mouse handler for class scene. Create your own mouse handler by inherting from this class and overloading function setMouseMappings().
-/**
-* Default mouse mappings for scene objects
-* - left mouse button: free view
-* - middle mouse button: strafe
-* - right mouse button: rotation around origin
-* - mouse wheel: roll and camera movement forward / backward
-* - left + right mouse button: same as mouse wheel
-*
-* Mouse sensitivity modifiers in combination with mouse actions
-* - Shift: low sensitivity
-* - Control: high sensitivity
-*
-* New mouse mappings
-* - inherit a mouse handler from SceneMouseHandler class
-* - if desired, define new static mouse action functions (like strafe)
-* - overload function setMouseMappings() to bind mouse action functions to mouse actions
-* - mouse action functions can be assigned to all combinations of
-*   - mouse events (mouse move, button pressed down and held, button pressed, button released, area entered, area left, mouse wheel)
-*   - mouse buttons (left, middle, right),
-*   - keyboard modifiers (shift, control, alt)
-* - mouse action functions will be called with an additional data pointer (void*)
-*   to grant access to all kind of desired data.
-*/
-class SceneMouseHandler : public MouseHandler
-{
-
-protected:
-
-    /** Mouse mapping table:
-    * array dimensions: [MouseEventType] [LeftMouseButton] [MiddleMouseButton] [RightMouseButton] [Shift] [Control] [Alt]
-    * MouseEventType: MouseMoveEvent, MouseDragEvent, MousePressEvent, MouseReleaseEvent, MouseEnterEvent, MouseLeaveEvent
-    * Mouse buttons, keyboard modifiers: true, false
-    */
-    MouseMappingTableEntry              mMouseMappingTable[MAX_MOUSE_EVENT + 1][2][2][2][2][2][2];
-
+  namespace geom{
+    
+    /// Mouse action function pointer
+    /** parameters:
+        const qt::MouseEvent&                   pMouseEvent,
+        const utils::Point32f&              pCurrentMousePosition,
+        const utils::Point32f&              pDeltaMousePosition,
+        Camera&                             pCamera,
+        void*                               pData
+        **/
+    typedef void (*MouseActionCallback)(const qt::MouseEvent&,const utils::Point32f&,
+                                        const utils::Point32f&,Camera&,void* );
+    
+    
+    /// forward declaration of scene class
+    class Scene;
+    
+    
+    /// mouse mapping table entry
+    struct MouseMappingTableEntry{
+      /// pointer to mouse action function
+      MouseActionCallback mMouseAction;
+      
+      /// pointer to additional data
+      void* mData;
+    };
+    
+    
     /// mouse sensitivities
-    MouseSensitivities                  mMouseSensitivities[MAX_MOUSE_SENSITIVITY + 1];
-
-    /// backup of old camera
-    Camera                              mCameraBackup;
-
-    /// starting mouse position for dragging
-    Point32f                            mAnchor;
-
-    /// pointer to parent scene
-    Scene*                              mParentScene;
-
-    /// index of camera in scene
-    int                                 mCameraIndex;
-
-    /// backup of old keyboard modifiers
-    int                                 mKeyboardModifiersBackup;
-
-
-public:
-
-    /// Constructor.
-    /**
-    * @param pCameraIndex index of camera in scene
-    * @param pParentScene pointer to parent scene
-    * @param Sensitivity
-    */
-                                        SceneMouseHandler(
-        const int                       pCameraIndex,
-        Scene*                          pParentScene );
-
-
-    /// Copy constructor.
-    /**
-    * @param pSceneMouseHandler source
-    */
-                                        SceneMouseHandler(
-        const SceneMouseHandler&        pSceneMouseHandler )
-    {
+    struct MouseSensitivities{
+      /// sensitivity factor for translation (e.g. mParentScene->getMaxSceneDim())
+      float mTranslation;
+      
+      /// sensitivity factor for rotations (e.g. 1.0)
+      float mRotation;
+      
+      /// sensitivity of mouse movements (e.g. 1.0)
+      float mMouse;
+      
+      /// sensitivity of mouse wheel (e.g. 0.001)
+      float mWheel;
+    };
+    
+    
+    /// mouse sensitivities modifier
+    enum MouseSensitivitiesModifier{
+      LowMouseSensitivity    = 0,
+      NormalMouseSensitivity = 1,
+      HighMouseSensitivity   = 2,
+      MAX_MOUSE_SENSITIVITY  = HighMouseSensitivity
+    };
+    
+    
+    /// Class providing a mouse handler for class scene. Create your own mouse handler by inherting from this class and overloading function setMouseMappings().
+    /** Default mouse mappings for scene objects
+        - left mouse button: free view
+        - middle mouse button: strafe
+        - right mouse button: rotation around origin
+        - mouse wheel: roll and camera movement forward / backward
+        - left + right mouse button: same as mouse wheel
+        
+        Mouse sensitivity modifiers in combination with mouse actions
+        - Shift: low sensitivity
+        - Control: high sensitivity
+        
+        New mouse mappings
+        - inherit a mouse handler from SceneMouseHandler class
+        - if desired, define new static mouse action functions (like strafe)
+        - overload function setMouseMappings() to bind mouse action functions to mouse actions
+        - mouse action functions can be assigned to all combinations of
+        - mouse events (mouse move, button pressed down and held, 
+        button pressed, button released, area entered, area left, mouse wheel)
+        - mouse buttons (left, middle, right),
+        - keyboard modifiers (shift, control, alt)
+        - mouse action functions will be called with an additional data pointer (void*)
+        to grant access to all kind of desired data.
+        */
+    class SceneMouseHandler : public qt::MouseHandler{
+      protected:
+      
+      ///  Mouse mapping table:
+      /** - array dimensions: [MouseEventType] [LeftMouseButton]
+            [MiddleMouseButton] [RightMouseButton] [Shift] [Control] [Alt]
+          - qt::MouseEventType: MouseMoveEvent, MouseDragEvent,
+            MousePressEvent, MouseReleaseEvent, MouseEnterEvent, MouseLeaveEvent
+          - Mouse buttons, keyboard modifiers: true, false
+          */
+      MouseMappingTableEntry mMouseMappingTable[qt::MAX_MOUSE_EVENT + 1][2][2][2][2][2][2];
+      
+      /// mouse sensitivities
+      MouseSensitivities mMouseSensitivities[MAX_MOUSE_SENSITIVITY + 1];
+      
+      /// backup of old camera
+      Camera mCameraBackup;
+      
+      /// starting mouse position for dragging
+      utils::Point32f mAnchor;
+      
+      /// pointer to parent scene
+      Scene* mParentScene;
+      
+      /// index of camera in scene
+      int mCameraIndex;
+      
+      /// backup of old keyboard modifiers
+      int mKeyboardModifiersBackup;
+      
+      
+      public:
+      
+      /// Constructor.
+      /** @param pCameraIndex index of camera in scene
+          @param pParentScene pointer to parent scene
+          @param Sensitivity
+          */
+      SceneMouseHandler(const int pCameraIndex, Scene* pParentScene );
+      
+      
+      /// Copy constructor.
+      /** @param pSceneMouseHandler source */
+      SceneMouseHandler(const SceneMouseHandler& pSceneMouseHandler){
         *this = pSceneMouseHandler;
-    }
-
-    /// Assignment operator.
-    /**
-    * @param pSceneMouseHandler source
-    */
-    SceneMouseHandler&                  operator=(
-        const SceneMouseHandler&        pSceneMouseHandler );
-
-
-    /// Set parent scene.
-    /**
-    * @param pParentScene new parent scene
-    */
-    void                                setParentScene(
-        Scene*                          pParentScene )
-    {
+      }
+      
+      /// Assignment operator.
+      SceneMouseHandler& operator=(const SceneMouseHandler& pSceneMouseHandler);
+      
+      
+      /// Set parent scene.
+      void setParentScene(Scene* pParentScene){
         mParentScene = pParentScene;
-    }
+      }
 
-
-    /// Get parent scene.
-    /**
-    * @return parent scene
-    */
-    Scene*                              getParentScene()
-    {
+      
+      /// Get parent scene.
+      Scene* getParentScene(){
         return mParentScene;
-    }
-
-
-    /// Set mouse & wheel sensitivities, modifier factor and factors for rotation and translation
-    /**
-    * @param pTranslation sensitivity factor for translation (e.g. mParentScene->getMaxSceneDim())
-    * @param pRotation sensitivity factor for rotations (e.g. 1.0)
-    * @param pMouse sensitivity of mouse movements (e.g. 1.0)
-    * @param pWheel sensitivity of mouse wheel (e.g. 0.001)
-    * @param pModifier factor to modify sensitivity (e.g. 10.0)
-    */
-    void                                setSensitivities(
-        const float                     pTranslation,
-        const float                     pRotation = 1.0,
-        const float                     pMouse = 1.0,
-        const float                     pWheel = 0.001,
-        const float                     pModifier = 10.0 );
-
+      }
+      
+      
+      /// Set mouse & wheel sensitivities, modifier factor and factors for rotation and translation
+      /** @param pTranslation sensitivity factor for translation (e.g. mParentScene->getMaxSceneDim())
+          @param pRotation sensitivity factor for rotations (e.g. 1.0)
+          @param pMouse sensitivity of mouse movements (e.g. 1.0)
+          @param pWheel sensitivity of mouse wheel (e.g. 0.001)
+          @param pModifier factor to modify sensitivity (e.g. 10.0)
+          */
+      void setSensitivities(const float pTranslation, const float pRotation = 1.0,
+                            const float pMouse = 1.0, const float pWheel = 0.001,
+                            const float pModifier = 10.0 );
+      
 
     /// Get mouse and wheel sensitivities (low, normal, high).
     /**
@@ -286,7 +247,7 @@ public:
     * @param pData pointer to additional data
     */
     void                                setMouseMapping(
-        const MouseEventType            pMouseEventType,
+                                                        const qt::MouseEventType            pMouseEventType,
         const bool                      pLeftMouseButton,
         const bool                      pMiddleMouseButton,
         const bool                      pRightMouseButton,
@@ -310,9 +271,9 @@ public:
     * @param pInverseY inverse y-axis
     */
     static void                         freeView(
-        const MouseEvent&               pMouseEvent,
-        const Point32f&                 pCurrentMousePosition,
-        const Point32f&                 pDeltaMousePosition,
+                                                 const qt::MouseEvent&               pMouseEvent,
+        const utils::Point32f&                 pCurrentMousePosition,
+        const utils::Point32f&                 pDeltaMousePosition,
         Camera&                         pCamera,
         void*                           pData,
         bool                            pInverseX,
@@ -330,9 +291,9 @@ public:
     * @param pData pointer for additional data used to set sensitivity
     */
     static void                         freeView(
-        const MouseEvent&               pMouseEvent,
-        const Point32f&                 pCurrentMousePosition,
-        const Point32f&                 pDeltaMousePosition,
+                                                 const qt::MouseEvent&               pMouseEvent,
+        const utils::Point32f&                 pCurrentMousePosition,
+        const utils::Point32f&                 pDeltaMousePosition,
         Camera&                         pCamera,
         void*                           pData )
     {
@@ -353,9 +314,9 @@ public:
     * @param pInverseY inverse y-axis
     */
     static void                         freeViewInverseMouseX(
-        const MouseEvent&               pMouseEvent,
-        const Point32f&                 pCurrentMousePosition,
-        const Point32f&                 pDeltaMousePosition,
+                                                              const qt::MouseEvent&               pMouseEvent,
+        const utils::Point32f&                 pCurrentMousePosition,
+        const utils::Point32f&                 pDeltaMousePosition,
         Camera&                         pCamera,
         void*                           pData )
     {
@@ -376,9 +337,9 @@ public:
     * @param pInverseY inverse y-axis
     */
     static void                         freeViewInverseMouseY(
-        const MouseEvent&               pMouseEvent,
-        const Point32f&                 pCurrentMousePosition,
-        const Point32f&                 pDeltaMousePosition,
+                                                              const qt::MouseEvent&               pMouseEvent,
+        const utils::Point32f&                 pCurrentMousePosition,
+        const utils::Point32f&                 pDeltaMousePosition,
         Camera&                         pCamera,
         void*                           pData )
     {
@@ -399,9 +360,9 @@ public:
     * @param pInverseY inverse y-axis
     */
     static void                         freeViewInverseBoth(
-        const MouseEvent&               pMouseEvent,
-        const Point32f&                 pCurrentMousePosition,
-        const Point32f&                 pDeltaMousePosition,
+        const qt::MouseEvent&               pMouseEvent,
+        const utils::Point32f&                 pCurrentMousePosition,
+        const utils::Point32f&                 pDeltaMousePosition,
         Camera&                         pCamera,
         void*                           pData )
     {
@@ -420,9 +381,9 @@ public:
     * @param pData pointer for additional data used to set sensitivity
     */
     static void                         rotateAroundOrigin(
-        const MouseEvent&               pMouseEvent,
-        const Point32f&                 pCurrentMousePosition,
-        const Point32f&                 pDeltaMousePosition,
+        const qt::MouseEvent&               pMouseEvent,
+        const utils::Point32f&                 pCurrentMousePosition,
+        const utils::Point32f&                 pDeltaMousePosition,
         Camera&                         pCamera,
         void*                           pData );
 
@@ -438,9 +399,9 @@ public:
     * @param pData pointer for additional data used to set sensitivity
     */
     static void                         strafe(
-        const MouseEvent&               pMouseEvent,
-        const Point32f&                 pCurrentMousePosition,
-        const Point32f&                 pDeltaMousePosition,
+        const qt::MouseEvent&               pMouseEvent,
+        const utils::Point32f&                 pCurrentMousePosition,
+        const utils::Point32f&                 pDeltaMousePosition,
         Camera&                         pCamera,
         void*                           pData );
 
@@ -455,25 +416,22 @@ public:
     * @param pCamera camera
     * @param pData pointer for additional data used to set sensitivity
     */
-    static void                         rollAndDistance(
-        const MouseEvent&               pMouseEvent,
-        const Point32f&                 pCurrentMousePosition,
-        const Point32f&                 pDeltaMousePosition,
-        Camera&                         pCamera,
-        void*                           pData );
-
+    static void rollAndDistance(const qt::MouseEvent&               pMouseEvent,
+                                const utils::Point32f&                 pCurrentMousePosition,
+                                const utils::Point32f&                 pDeltaMousePosition,
+                                Camera&                         pCamera,
+                                void*                           pData );
+    
 
     /// Process mouse event using mouse mapping table.
     /**
     * @param pMouseEvent mouse event
     */
     virtual void                        process(
-        const MouseEvent&               pMouseEvent );
-
-
-};
-//#endif
-
+                                                const qt::MouseEvent&               pMouseEvent );
+    };
+    
+  } // namespace geom
 }
-#endif
+
 #endif

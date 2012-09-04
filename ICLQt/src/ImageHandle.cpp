@@ -35,21 +35,26 @@
 #include <ICLQt/ImageHandle.h>
 #include <ICLQt/Widget.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
-  void ImageHandle::setImage(const ImgBase *image){
-    (**this)->setImage(image);
-  }
-  void ImageHandle::render(){
-    (**this)->render();
-  }
-
-  void ImageHandle::registerCallback(const GUI::Callback &cb, const std::string &events){
-    (**this)->registerCallback(cb,events);
-  }
-
-  void ImageHandle::removeCallbacks(){
-    (**this)->removeCallbacks();
-  }
-
+  namespace qt{
+    void ImageHandle::setImage(const ImgBase *image){
+      (**this)->setImage(image);
+    }
+    void ImageHandle::render(){
+      (**this)->render();
+    }
   
+    void ImageHandle::registerCallback(const GUI::Callback &cb, const std::string &events){
+      (**this)->registerCallback(cb,events);
+    }
+  
+    void ImageHandle::removeCallbacks(){
+      (**this)->removeCallbacks();
+    }
+  
+    
+  } // namespace qt
 }

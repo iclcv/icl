@@ -35,19 +35,23 @@
 #include <ICLQt/DrawHandle.h>
 #include <ICLQt/DrawWidget.h>
 
-namespace icl{
-  void DrawHandle::setImage(const ImgBase *image){
-    (**this)->setImage(image);
-  }
-  void DrawHandle::render(){
-    (**this)->render();
-  }
-  void DrawHandle::registerCallback(const GUI::Callback &cb, const std::string &events){
-    (**this)->registerCallback(cb,events);
-  }
+using namespace icl::core;
 
-  void DrawHandle::removeCallbacks(){
-    (**this)->removeCallbacks();
-  }
+namespace icl{
+  namespace qt{
+    void DrawHandle::setImage(const ImgBase *image){
+      (**this)->setImage(image);
+    }
+    void DrawHandle::render(){
+      (**this)->render();
+    }
+    void DrawHandle::registerCallback(const GUI::Callback &cb, const std::string &events){
+      (**this)->registerCallback(cb,events);
+    }
   
+    void DrawHandle::removeCallbacks(){
+      (**this)->removeCallbacks();
+    }
+    
+  } // namespace qt
 }

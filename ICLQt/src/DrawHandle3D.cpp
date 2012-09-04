@@ -35,19 +35,24 @@
 #include <ICLQt/DrawHandle3D.h>
 #include <ICLQt/DrawWidget3D.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
-  void DrawHandle3D::setImage(const ImgBase *image){
-    (**this)->setImage(image);
-  }
-  void DrawHandle3D::render(){
-    (**this)->render();
-  }
-  void DrawHandle3D::registerCallback(const GUI::Callback &cb, const std::string &events){
-    (**this)->registerCallback(cb,events);
-  }
-  
-  void DrawHandle3D::removeCallbacks(){
-    (**this)->removeCallbacks();
-  }
-  
+  namespace qt{
+    void DrawHandle3D::setImage(const ImgBase *image){
+      (**this)->setImage(image);
+    }
+    void DrawHandle3D::render(){
+      (**this)->render();
+    }
+    void DrawHandle3D::registerCallback(const GUI::Callback &cb, const std::string &events){
+      (**this)->registerCallback(cb,events);
+    }
+    
+    void DrawHandle3D::removeCallbacks(){
+      (**this)->removeCallbacks();
+    }
+    
+  } // namespace qt
 }

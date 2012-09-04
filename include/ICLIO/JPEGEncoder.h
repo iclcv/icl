@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_JPEG_ENCODER_H
-#define ICL_JPEG_ENCODER_H
+#pragma once
 
 #include <ICLCore/ImgBase.h>
 #include <ICLUtils/Uncopyable.h>
@@ -43,37 +42,37 @@
 #endif
 
 namespace icl{
-  /// encoding class for data-to-data jpeg compression
-  class JPEGEncoder : public Uncopyable{
-    struct Data;  //!< pimpl type
-    Data *m_data; //!< pimpl pointer
-
-    public:
-    /// constructor with given jpeg quality
-    /** The quality value is always given in percet (1-100)*/
-    JPEGEncoder(int quality=90);
-    
-    /// Destructor
-    ~JPEGEncoder();
-
-    /// sets the compression quality level
-    void setQuality(int quality);
-    
-    /// encoded data type
-    struct EncodedData{
-      icl8u *bytes; //!< byte pointer
-      int len;      //!< number of bytes used
+  namespace io{
+    /// encoding class for data-to-data jpeg compression
+    class JPEGEncoder : public utils::Uncopyable{
+      struct Data;  //!< pimpl type
+      Data *m_data; //!< pimpl pointer
+  
+      public:
+      /// constructor with given jpeg quality
+      /** The quality value is always given in percet (1-100)*/
+      JPEGEncoder(int quality=90);
+      
+      /// Destructor
+      ~JPEGEncoder();
+  
+      /// sets the compression quality level
+      void setQuality(int quality);
+      
+      /// encoded data type
+      struct EncodedData{
+        icl8u *bytes; //!< byte pointer
+        int len;      //!< number of bytes used
+      };
+      
+      /// encodes a given core::ImgBase * (only depth8u is supported natively)
+      /** non-depth8u images are automatically converted before compression.
+          This might lead to loss of data*/
+      const EncodedData &encode(const core::ImgBase *image);    
+      
+      /// first encodes the jpeg in memory and then write the whole memory chunk to disc
+      void writeToFile(const core::ImgBase *image, const std::string &filename);
     };
     
-    /// encodes a given ImgBase * (only depth8u is supported natively)
-    /** non-depth8u images are automatically converted before compression.
-        This might lead to loss of data*/
-    const EncodedData &encode(const ImgBase *image);    
-    
-    /// first encodes the jpeg in memory and then write the whole memory chunk to disc
-    void writeToFile(const ImgBase *image, const std::string &filename);
-  };
-  
+  } // namespace io
 }
-
-#endif

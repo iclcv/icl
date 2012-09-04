@@ -47,29 +47,31 @@
 #endif
 
 namespace icl{
+  namespace qt{
+    
+    GLContext GLContext::current_glx_context(0,false,0,0);
+    
+    void GLContext::set_current_glx_context(Handle handle, long unsigned int pbuffer, Handle display){
+      current_glx_context = GLContext(handle,true,pbuffer,display);
+    }
   
-  GLContext GLContext::current_glx_context(0,false,0,0);
+    void GLContext::unset_current_glx_context(){
+      current_glx_context = GLContext(0,false,0,0);
+    }
   
-  void GLContext::set_current_glx_context(Handle handle, long unsigned int pbuffer, Handle display){
-    current_glx_context = GLContext(handle,true,pbuffer,display);
-  }
-
-  void GLContext::unset_current_glx_context(){
-    current_glx_context = GLContext(0,false,0,0);
-  }
-
-  GLContext GLContext::currentContext(){
-    const QGLContext *ctx = QGLContext::currentContext();
-    if(!ctx) return current_glx_context;
-    return GLContext((void*)ctx,false);
-  }
+    GLContext GLContext::currentContext(){
+      const QGLContext *ctx = QGLContext::currentContext();
+      if(!ctx) return current_glx_context;
+      return GLContext((void*)ctx,false);
+    }
+    
+    void GLContext::makeCurrent() const{
+      if(isNull()) return;
+      if(isGLX) glXMakeCurrent((Display*)display,(GLXPbuffer)pbuffer, (GLXContext) handle);
+      else ((QGLContext*)handle)->makeCurrent();
+    }
   
-  void GLContext::makeCurrent() const{
-    if(isNull()) return;
-    if(isGLX) glXMakeCurrent((Display*)display,(GLXPbuffer)pbuffer, (GLXContext) handle);
-    else ((QGLContext*)handle)->makeCurrent();
-  }
-
+    
   
-
+  } // namespace qt
 }

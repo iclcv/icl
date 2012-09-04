@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_IMAGE_SERIALIZER_H
-#define ICL_IMAGE_SERIALIZER_H
+#pragma once
 
 #include <ICLCore/ImgBase.h>
 #include <ICLCore/Types.h>
@@ -42,64 +41,64 @@
 #include <vector>
 
 namespace icl{
+  namespace core{
+    
+    /// Utility class for binary Image Serialization
+    /** Images are serialized into one binary data block as follows:
+        <pre>
+        Whole-Image:
+        [Header-Block][Channel-0-Data][Channel-1-Data][  ... ][Meta-Data]
+        <- 44 Bytes -><- #Channels x dim x sizeof(datatype) -> 
+        </pre>
+        The Header-Block contains a binary representation of all image properties:
+        <pre>
+        Header-Block:
+        [depth][width][height][format][channels][roi.x][roi.y][roi.width][roi.height][time-stamp]
+        <- 4 -><- 4 -><- 4  -><- 4  -><-   4  -><- 4 -><- 4 -><-   4   -><-   4    -><-    8   ->
+        (in Bytes)
+        </pre>
+        Finally the optional meta-data block can be used to attach additional information to
+        images:
+        <pre>
+        Meta-Data-Block:
+        [size][Meta-Data]
+        <-4 -><- size  ->
+        </pre>
+    */
+    struct ImageSerializer{
+      
+      /// Internally used type for image headers
+      typedef std::vector<icl8u> ImageHeader;
+      
+      /// returns the size of an image header (in Bytes)
+      static int getHeaderSize();
+      
+      /// estimates the size for the image data of an serialized image
+      static int estimateImageDataSize(const ImgBase *image) throw (utils::ICLException);
   
-  /// Utility class for binary Image Serialization
-  /** Images are serialized into one binary data block as follows:
-      <pre>
-      Whole-Image:
-      [Header-Block][Channel-0-Data][Channel-1-Data][  ... ][Meta-Data]
-      <- 44 Bytes -><- #Channels x dim x sizeof(datatype) -> 
-      </pre>
-      The Header-Block contains a binary representation of all image properties:
-      <pre>
-      Header-Block:
-      [depth][width][height][format][channels][roi.x][roi.y][roi.width][roi.height][time-stamp]
-      <- 4 -><- 4 -><- 4  -><- 4  -><-   4  -><- 4 -><- 4 -><-   4   -><-   4    -><-    8   ->
-      (in Bytes)
-      </pre>
-      Finally the optional meta-data block can be used to attach additional information to
-      images:
-      <pre>
-      Meta-Data-Block:
-      [size][Meta-Data]
-      <-4 -><- size  ->
-      </pre>
-  */
-  struct ImageSerializer{
-    
-    /// Internally used type for image headers
-    typedef std::vector<icl8u> ImageHeader;
-    
-    /// returns the size of an image header (in Bytes)
-    static int getHeaderSize();
-    
-    /// estimates the size for the image data of an serialized image
-    static int estimateImageDataSize(const ImgBase *image) throw (ICLException);
-
-    /// estimates the full size of an serialized image
-    static int estimateSerializedSize(const ImgBase *image, bool skipMetaData=false) throw (ICLException);
-    
-    /// creates an image header from given image
-    static ImageHeader createHeader(const ImgBase *image) throw (ICLException);
-
-    /// serializes an image into given destination data-points (which has to be long enough)
-    static void serialize(const ImgBase *image, icl8u *dst, 
-                          const ImageHeader &header=ImageHeader(),
-                          bool skipMetaData=false) throw (ICLException);
-    
-    /// serializes an image into given vector (the vector size is adapted automatically)
-    static void serialize(const ImgBase *image, std::vector<icl8u> &data,
-                          const ImageHeader &header=ImageHeader(),
-                          bool skipMetaData=false) throw (ICLException);
-    
-    /// deserializes an image (and optionally also the meta-data) from given icl8u data block
-    static void deserialize(const icl8u *data, ImgBase **dst) throw (ICLException);
-
-    /// extracts only an images TimeStamp from it's serialized form
-    static Time deserializeTimeStamp(const icl8u *data) throw (ICLException);
-
-  };
+      /// estimates the full size of an serialized image
+      static int estimateSerializedSize(const ImgBase *image, bool skipMetaData=false) throw (utils::ICLException);
+      
+      /// creates an image header from given image
+      static ImageHeader createHeader(const ImgBase *image) throw (utils::ICLException);
+  
+      /// serializes an image into given destination data-points (which has to be long enough)
+      static void serialize(const ImgBase *image, icl8u *dst, 
+                            const ImageHeader &header=ImageHeader(),
+                            bool skipMetaData=false) throw (utils::ICLException);
+      
+      /// serializes an image into given vector (the vector size is adapted automatically)
+      static void serialize(const ImgBase *image, std::vector<icl8u> &data,
+                            const ImageHeader &header=ImageHeader(),
+                            bool skipMetaData=false) throw (utils::ICLException);
+      
+      /// deserializes an image (and optionally also the meta-data) from given icl8u data block
+      static void deserialize(const icl8u *data, ImgBase **dst) throw (utils::ICLException);
+  
+      /// extracts only an images TimeStamp from it's serialized form
+      static utils::Time deserializeTimeStamp(const icl8u *data) throw (utils::ICLException);
+  
+    };
+  } // namespace core
 }
-
-#endif
 

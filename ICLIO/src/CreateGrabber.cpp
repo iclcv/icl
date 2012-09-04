@@ -35,19 +35,24 @@
 #include <ICLIO/CreateGrabber.h>
 #include <ICLIO/TestImages.h>
 
+using namespace icl::utils;
+using namespace icl::core;
+
 namespace icl{
-
-  const ImgBase* CreateGrabberImpl::acquireImage(){
-    return m_image;
-  }
-
-  CreateGrabberImpl::CreateGrabberImpl(const std::string &what){
-    m_image = TestImages::create(what);
-    if(!m_image) throw ICLException("unable to create a 'CreateGrabber' from given description '"+what+"'");
-  }
-  CreateGrabberImpl::~CreateGrabberImpl(){
-    ICL_DELETE(m_image);
-  }
-
+  namespace io{
+  
+    const ImgBase* CreateGrabberImpl::acquireImage(){
+      return m_image;
+    }
+  
+    CreateGrabberImpl::CreateGrabberImpl(const std::string &what){
+      m_image = TestImages::create(what);
+      if(!m_image) throw ICLException("unable to create a 'CreateGrabber' from given description '"+what+"'");
+    }
+    CreateGrabberImpl::~CreateGrabberImpl(){
+      ICL_DELETE(m_image);
+    }
+  
+  } // namespace io
 }
     

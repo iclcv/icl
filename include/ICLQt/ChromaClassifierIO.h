@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_CHROMA_CLASSIFIER_IO_H
-#define ICL_CHROMA_CLASSIFIER_IO_H
+#pragma once
 
 #include <ICLCore/Parable.h>
 #include <ICLCore/ChromaClassifier.h>
@@ -42,21 +41,22 @@
 #include <ICLUtils/StringUtils.h>
 
 namespace icl{
+  namespace qt{
+    
+    class ChromaClassifierIO{
+      public:
+      static void save(const core::ChromaClassifier &cc, 
+                       const std::string &filename, 
+                       const std::string &name="chroma-classifier");
   
-  class ChromaClassifierIO{
-    public:
-    static void save(const ChromaClassifier &cc, 
-                     const std::string &filename, 
-                     const std::string &name="chroma-classifier");
-
-    static void save(const ChromaAndRGBClassifier &carc, 
-                     const std::string &filename);
-    
-    static ChromaClassifier load(const std::string &filename, 
-                                 const std::string &name="chroma-classifier");
-    
-    static ChromaAndRGBClassifier loadRGB(const std::string &filename);
-  };
+      static void save(const core::ChromaAndRGBClassifier &carc, 
+                       const std::string &filename);
+      
+      static core::ChromaClassifier load(const std::string &filename, 
+                                   const std::string &name="chroma-classifier");
+      
+      static core::ChromaAndRGBClassifier loadRGB(const std::string &filename);
+    };
+  } // namespace qt
 }
 
-#endif

@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLFilter/AffineOp.h>
 #include <ICLUtils/StackTimer.h>
 

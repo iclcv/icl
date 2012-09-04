@@ -1,6 +1,6 @@
 
 
-package icl;
+package icl.io;
 
 message RSBImage {
     required uint32 width    = 1;

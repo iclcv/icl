@@ -32,8 +32,8 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
-#include <ICLUtils/SimplexOptimizer.h>
+#include <ICLQt/Common.h>
+#include <ICLMath/SimplexOptimizer.h>
 
 
 GUI gui;

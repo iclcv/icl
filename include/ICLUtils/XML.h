@@ -32,78 +32,78 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_XML_H
-#define ICL_XML_H
+#pragma once
 
 #include <ICLUtils/PugiXML.h>
 
 namespace icl{
+  namespace utils{
+    
+    // note: this file basically contains ICL-specific typedefs for
+    // The included PugiXML backend
+    
+    /// Node type \ingroup XML
+    typedef pugi::xml_node_type XMLNodeType;
+    
+    /// XML encoding type \ingroup XML
+    typedef pugi::xml_encoding XMLEncoding;
+    
+    /// XML writer interface \ingroup XML
+    typedef pugi::xml_writer XMLWriter;
+    
+    /// XML writer implementation for streams \ingroup XML
+    typedef pugi::xml_writer_stream XMLStreamWriter;
+    
+    /// XML writer implementation for files \ingroup XML
+    typedef pugi::xml_writer_file XMLFileWriter;
+    
+    /// XML Attribute class \ingroup XML
+    typedef pugi::xml_attribute XMLAttribute;
+    
+    /// XML Node class \ingroup XML
+    typedef pugi::xml_node XMLNode;
+    
+    /// Iterator for XMLNodes \ingroup XML
+    typedef pugi::xml_node_iterator XMLNodeIterator;
+    
+    /// Iterator for XMLAttributes \ingroup XML
+    typedef pugi::xml_attribute_iterator XMLAttributeIterator;
+    
+    /// XML-Treewalker class \ingroup XML
+    typedef pugi::xml_tree_walker XMLTreeWalker;
   
-  // note: this file basically contains ICL-specific typedefs for
-  // The included PugiXML backend
+    /// Parsing status enumeration \ingroup XML
+    typedef pugi::xml_parse_status XMLParseStatus;
+    
+    /// Parsing status class \ingroup XML
+    typedef pugi::xml_parse_result XMLParseResult;
   
-  /// Node type \ingroup XML
-  typedef pugi::xml_node_type XMLNodeType;
+    /// Main XML Document class \ingroup XML
+    typedef pugi::xml_document XMLDocument;
+    
+    /// Type enumeration for xpath values \ingroup XML
+    typedef pugi::xpath_value_type XPathValueType;
   
-  /// XML encoding type \ingroup XML
-  typedef pugi::xml_encoding XMLEncoding;
+    /// Parse Result class for XPath expressions\ingroup XML
+    typedef pugi::xpath_parse_result XPathParseResult;
   
-  /// XML writer interface \ingroup XML
-  typedef pugi::xml_writer XMLWriter;
+    /// Variable Type for XPath expressions \ingroup XML
+    typedef pugi::xpath_variable XPathVariable;
   
-  /// XML writer implementation for streams \ingroup XML
-  typedef pugi::xml_writer_stream XMLStreamWriter;
+    /// Set of XPathVariables \ingroup XML
+    typedef pugi::xpath_variable_set XPathVariableSet;
   
-  /// XML writer implementation for files \ingroup XML
-  typedef pugi::xml_writer_file XMLFileWriter;
+    /// Precompiled XPath expression \ingroup XML
+    typedef pugi::xpath_query XPathQuery;
   
-  /// XML Attribute class \ingroup XML
-  typedef pugi::xml_attribute XMLAttribute;
+    /// Exception type for xpath expressions \ingroup XML
+    typedef pugi::xpath_exception XPathException;
   
-  /// XML Node class \ingroup XML
-  typedef pugi::xml_node XMLNode;
+    /// Special node type for XPath query results \ingroup XML
+    typedef pugi::xpath_node XPathNode;
   
-  /// Iterator for XMLNodes \ingroup XML
-  typedef pugi::xml_node_iterator XMLNodeIterator;
-  
-  /// Iterator for XMLAttributes \ingroup XML
-  typedef pugi::xml_attribute_iterator XMLAttributeIterator;
-  
-  /// XML-Treewalker class \ingroup XML
-  typedef pugi::xml_tree_walker XMLTreeWalker;
-
-  /// Parsing status enumeration \ingroup XML
-  typedef pugi::xml_parse_status XMLParseStatus;
-  
-  /// Parsing status class \ingroup XML
-  typedef pugi::xml_parse_result XMLParseResult;
-
-  /// Main XML Document class \ingroup XML
-  typedef pugi::xml_document XMLDocument;
-  
-  /// Type enumeration for xpath values \ingroup XML
-  typedef pugi::xpath_value_type XPathValueType;
-
-  /// Parse Result class for XPath expressions\ingroup XML
-  typedef pugi::xpath_parse_result XPathParseResult;
-
-  /// Variable Type for XPath expressions \ingroup XML
-  typedef pugi::xpath_variable XPathVariable;
-
-  /// Set of XPathVariables \ingroup XML
-  typedef pugi::xpath_variable_set XPathVariableSet;
-
-  /// Precompiled XPath expression \ingroup XML
-  typedef pugi::xpath_query XPathQuery;
-
-  /// Exception type for xpath expressions \ingroup XML
-  typedef pugi::xpath_exception XPathException;
-
-  /// Special node type for XPath query results \ingroup XML
-  typedef pugi::xpath_node XPathNode;
-
-  /// Set of XPath nodes \ingroup XML
-  typedef pugi::xpath_node_set XPathNodeSet;
+    /// Set of XPath nodes \ingroup XML
+    typedef pugi::xpath_node_set XPathNodeSet;
+  } // namespace utils
 }
 
-#endif

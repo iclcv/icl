@@ -32,23 +32,23 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_CONSOLE_PROGRESS_H
-#define ICL_CONSOLE_PROGRESS_H
+#pragma once
 
 #include <string>
 
 namespace icl{
+  namespace utils{
+    
+    /// static utility function for displaying some progress information in console
+    void progress_init(const std::string &text="Creating LUT");
+    
+    /// static utility function for displaying some progress information in console
+    void progress_finish();
   
-  /// static utility function for displaying some progress information in console
-  void progress_init(const std::string &text="Creating LUT");
+    /// static utility function for displaying some progress information in console
+    /** Extra text is show behind the progress bar */
+    void progress(int curr, int max, const std::string &extraText="");
   
-  /// static utility function for displaying some progress information in console
-  void progress_finish();
-
-  /// static utility function for displaying some progress information in console
-  /** Extra text is show behind the progress bar */
-  void progress(int curr, int max, const std::string &extraText="");
-
+  } // namespace utils
 }
 
-#endif

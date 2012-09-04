@@ -32,7 +32,7 @@
  **                                                                 **
  *********************************************************************/
 
-#include <ICLQuick/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLGeom/Geom.h>
 
 GenericGrabber  grabber;

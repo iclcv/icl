@@ -33,7 +33,7 @@
 *********************************************************************/
 
 
-#include <ICLQuick/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLCore/PseudoColorConverter.h>
 
 HSplit gui;
@@ -116,9 +116,9 @@ void init(){
       << colors 
       << Show();
   
-  gui.registerCallback(icl::function(step),"customH,load,save");
+  gui.registerCallback(utils::function(step),"customH,load,save");
   for(int i=0;i<6;++i){
-    gui.registerCallback(icl::function(step),str(i)+",c"+str(i)+",p"+str(i));
+    gui.registerCallback(utils::function(step),str(i)+",c"+str(i)+",p"+str(i));
   }
   
   step("");

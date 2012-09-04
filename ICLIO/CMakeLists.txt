@@ -42,7 +42,6 @@ add_libsource (${PROJECT_NAME} "src/DemoImageWindows.cpp" "${CONDITIONLIST}" LIB
 add_libsource (${PROJECT_NAME} "src/DemoImageLena.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/DemoImageCameraMan.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/DemoImageMandril.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-add_libsource (${PROJECT_NAME} "src/File.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/FileGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/CreateGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/FileGrabberPluginCSV.cpp" "${CONDITIONLIST}" LIB_SOURCES)
@@ -58,7 +57,6 @@ add_libsource (${PROJECT_NAME} "src/GenericGrabber.cpp" "${CONDITIONLIST}" LIB_S
 add_libsource (${PROJECT_NAME} "src/Grabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/ImageUndistortion.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/IOFunctions.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-add_libsource (${PROJECT_NAME} "src/IOUtils.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/TestImages.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/DemoGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/GenericImageOutput.cpp" "${CONDITIONLIST}" LIB_SOURCES)
@@ -122,7 +120,7 @@ set(ICLLibsToLinkAgainst ${PROJECT_NAME})
 add_example (${PROJECT_NAME} "jpg2cpp" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "convert" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
-set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick)
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQt)
 add_example (${PROJECT_NAME} "create" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 set(CONDITIONLIST HAVE_RSB_COND HAVE_PROTOBUF_COND)
 add_example (${PROJECT_NAME} "rsb-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
@@ -136,22 +134,26 @@ add_example (${PROJECT_NAME} "reset-dc-bus" "${CONDITIONLIST}" ICLLibsToLinkAgai
 
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_LIBDC_COND HAVE_QT_COND)
-set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick)
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQt)
 add_example (${PROJECT_NAME} "multi-cam-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 #set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND) should be possible even without GUI
 # Christian: How to make icl-pipe not be built but not link against Qt if this is not available
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)
-set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick ICLUtils ICLFilter)
+if(HAVE_QT_COND)
+  set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQt)
+else()
+  set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLCV)
+endif()
 add_example (${PROJECT_NAME} "pipe" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND)
-set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQt ICLFilter ICLUtils)
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQt)
 add_example (${PROJECT_NAME} "reset-sm-bus" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "undistortion-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_XINE_COND)
-set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQuick)
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLQt)
 add_example (${PROJECT_NAME} "video-player" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST HAVE_GTEST_COND)

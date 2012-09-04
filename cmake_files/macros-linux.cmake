@@ -215,11 +215,11 @@ macro(add_gtest PROJECT_N FILE CONDITIONLIST ICLLibsToLinkAgainst)
     foreach(l ${${ICLLibsToLinkAgainst}})
       set(lLIBS ${lLIBS} -l${l})
       #set(lLIBDIRS ${lLIBDIRS} -L${CMAKE_BINARY_DIR}/${l}/lib -Wl,-rpath -Wl,${CMAKE_BINARY_DIR}/${l}/lib)
-      set(lLIBDIRS ${lLIBDIRS} -L${CMAKE_BINARY_DIR}/${l}/lib -Wl,-rpath,${CMAKE_BINARY_DIR}/${l}/lib)
+      set(lLIBDIRS ${lLIBDIRS} -L${CMAKE_BINARY_DIR}/${l}/${LIBRARY_OUTPUT_PATH} -Wl,-rpath,${CMAKE_BINARY_DIR}/${l}/${LIBRARY_OUTPUT_PATH})
     endforeach()
     add_custom_target(check 
       COMMAND 
-      g++ -O0 -DHAVE_GTEST ${lLIBDIRS} ${lLIBS} -pthread ${lINCLUDES} "${FILE}.cpp" runner.cpp -o icl-${FILE}
+      g++ "${FILE}.cpp" runner.cpp -O0 -DHAVE_GTEST ${lLIBDIRS} ${lLIBS} -pthread ${lINCLUDES}  -o icl-${FILE}
       COMMAND ./icl-${FILE}
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/${PROJECT_N}/test 
       VERBATIM)

@@ -35,90 +35,97 @@
 #include <ICLMarkers/MultiCamFiducialImpl.h>
 #include <ICLGeom/PoseEstimator.h>
 
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::core;
+using namespace icl::geom;
+
 namespace icl{
-  MultiCamFiducialImpl::MultiCamFiducialImpl(){}
-  MultiCamFiducialImpl::MultiCamFiducialImpl(int id,
-                                             const std::vector<Fiducial> &fids,
-                                             const std::vector<Camera*> cams):id(id),numFound(0),
-                                                                              fids(fids),cams(cams),
-                                                                              haveCenter(false),
-                                                                              haveOrientation(false),
-                                                                              havePose(false){}
-  
-  void MultiCamFiducialImpl::init(int id){
-    this->numFound = 0;
-    this->id = id;
-    this->fids.clear();
-    this->cams.clear();
-    this->haveCenter = this->haveOrientation = this->havePose = false;
-  }
+  namespace markers{
+    MultiCamFiducialImpl::MultiCamFiducialImpl(){}
+    MultiCamFiducialImpl::MultiCamFiducialImpl(int id,
+                                               const std::vector<Fiducial> &fids,
+                                               const std::vector<Camera*> cams):id(id),numFound(0),
+                                                                                fids(fids),cams(cams),
+                                                                                haveCenter(false),
+                                                                                haveOrientation(false),
+                                                                                havePose(false){}
     
-  const FixedColVector<float,3> &MultiCamFiducialImpl::estimateCenter3D(){
-    if(haveCenter) return center;
-    if(numFound == 1){
-      center = fids[0].getCenter3D().part<0,0,1,3>();
-    }else{
-      std::vector<Point32f> centerPoints(numFound);
-      for(int i=0;i<numFound;++i){
-        centerPoints[i] = fids[i].getCenter2D();
-      }
-      center = Camera::estimate_3D(cams,centerPoints).part<0,0,1,3>();
+    void MultiCamFiducialImpl::init(int id){
+      this->numFound = 0;
+      this->id = id;
+      this->fids.clear();
+      this->cams.clear();
+      this->haveCenter = this->haveOrientation = this->havePose = false;
     }
-    haveCenter = true;
-    return center;
-  }    
-    
-  const Mat &MultiCamFiducialImpl::estimatePose3D(){
-    if(havePose) return pose;
       
-    if(numFound == 1){
-      pose = fids[0].getPose3D();
-    }else{        
-      int n = fids[0].getKeyPoints2D().size();
-      // assumtion keypoints are ordered and identical ...
+    const FixedColVector<float,3> &MultiCamFiducialImpl::estimateCenter3D(){
+      if(haveCenter) return center;
+      if(numFound == 1){
+        center = fids[0].getCenter3D().part<0,0,1,3>();
+      }else{
+        std::vector<Point32f> centerPoints(numFound);
+        for(int i=0;i<numFound;++i){
+          centerPoints[i] = fids[i].getCenter2D();
+        }
+        center = Camera::estimate_3D(cams,centerPoints).part<0,0,1,3>();
+      }
+      haveCenter = true;
+      return center;
+    }    
+      
+    const Mat &MultiCamFiducialImpl::estimatePose3D(){
+      if(havePose) return pose;
         
-      DynMatrix<float> W(n,3),O(n,3);      
-      for(int i=0;i<n;++i){
-        std::vector<Point32f> pI(numFound);
-        for(int j=0;j<numFound; ++j){
-          pI[j] = fids[j].getKeyPoints2D()[i].imagePos;
-        }
-        Vec pW = Camera::estimate_3D(cams,pI);
-        std::copy(pW.begin(),pW.begin()+3,W.col_begin(i));
-          
-        Point32f p = fids[0].getKeyPoints2D()[i].markerPos;
-        O(i,0) = p.x;
-        O(i,1) = p.y;
-        O(i,2) = 0;
-      }
-      try{
-        pose = PoseEstimator::map(O,W);
-          
-        /// invert y and z axis!
-        for(int x=1;x<3;++x){
-          for(int y=0;y<3;++y){
-            pose(x,y) *= -1;
-          }
-        }
-      }catch(ICLException &e){
-        // pose estimation did not converge while trying to find eigenvectors ...
+      if(numFound == 1){
         pose = fids[0].getPose3D();
+      }else{        
+        int n = fids[0].getKeyPoints2D().size();
+        // assumtion keypoints are ordered and identical ...
+          
+        DynMatrix<float> W(n,3),O(n,3);      
+        for(int i=0;i<n;++i){
+          std::vector<Point32f> pI(numFound);
+          for(int j=0;j<numFound; ++j){
+            pI[j] = fids[j].getKeyPoints2D()[i].imagePos;
+          }
+          Vec pW = Camera::estimate_3D(cams,pI);
+          std::copy(pW.begin(),pW.begin()+3,W.col_begin(i));
+            
+          Point32f p = fids[0].getKeyPoints2D()[i].markerPos;
+          O(i,0) = p.x;
+          O(i,1) = p.y;
+          O(i,2) = 0;
+        }
+        try{
+          pose = PoseEstimator::map(O,W);
+            
+          /// invert y and z axis!
+          for(int x=1;x<3;++x){
+            for(int y=0;y<3;++y){
+              pose(x,y) *= -1;
+            }
+          }
+        }catch(ICLException &e){
+          // pose estimation did not converge while trying to find eigenvectors ...
+          pose = fids[0].getPose3D();
+        }
       }
+      havePose = true;
+  
+      center = FixedColVector<float,3>(pose(3,0), pose(3,1), pose(3,2));
+      haveCenter = true;
+        
+      return pose;
     }
-    havePose = true;
-
-    center = FixedColVector<float,3>(pose(3,0), pose(3,1), pose(3,2));
-    haveCenter = true;
       
-    return pose;
-  }
-    
-  const FixedColVector<float,3> &MultiCamFiducialImpl::estimateOrientation3D(){
-    if(haveOrientation) return orientation;
-    estimatePose3D();
-    orientation = extract_euler_angles(pose);
-    haveOrientation = true;
-    return orientation;
-  }
-
+    const FixedColVector<float,3> &MultiCamFiducialImpl::estimateOrientation3D(){
+      if(haveOrientation) return orientation;
+      estimatePose3D();
+      orientation = extract_euler_angles(pose);
+      haveOrientation = true;
+      return orientation;
+    }
+  
+  } // namespace markers
 }

@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLUtils/FPSLimiter.h>
 
 GUI gui;
@@ -49,7 +49,7 @@ void run(){
 void init(){
   grabber.init(pa("-i"));
   gui << Image().handle("image").minSize(16,12);
-  grabber.setConfigurableID("grabcfg");
+  //grabber.setConfigurableID("grabcfg");
   gui << Prop("grabcfg").label("Grabber Configurable").minSize(14,12);
   gui << ( HBox().maxSize(100,2) 
            << Fps(10).handle("fps").maxSize(100,2).minSize(5,2)
@@ -63,7 +63,7 @@ void init(){
 }
 
 int main(int n, char**ppc){
-  paex
+  pa_explain
   ("-input","define input grabber parameters\ne.g. -dc 0 or -file *.ppm")
   ("-size","desired image size of grabber");
   return ICLApp(n,ppc,"[m]-input|-i(device,device-params) "

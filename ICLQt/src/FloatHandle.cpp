@@ -38,13 +38,15 @@
 
 
 namespace icl{
-  
-  void FloatHandle::operator=(float f){
-    (**this)->setText(QString::number(f));
-  }
-  float FloatHandle::getValue() const{
-    return (float)atof((**this)->text().toLatin1().data());
-  }
+  namespace qt{
+    
+    void FloatHandle::operator=(float f){
+      (**this)->setText(QString::number(f));
+    }
+    float FloatHandle::getValue() const{
+      return (float)atof((**this)->text().toLatin1().data());
+    }
+  } // namespace qt
 }
 
 

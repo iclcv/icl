@@ -32,7 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLQuick/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLUtils/FPSLimiter.h>
 
 #include <ICLUtils/Random.h>

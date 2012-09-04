@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_PYLON_GRABBER_THREAD_H
-#define ICL_PYLON_GRABBER_THREAD_H
+#pragma once
 
 #include <ICLUtils/Thread.h>
 #include <ICLIO/PylonUtils.h>
@@ -43,57 +42,58 @@
 #include <queue>
 
 namespace icl {
-  namespace pylon {
-
-    /// Internally spawned thread class for continuous grabbing \ingroup GIGE_G
-    class PylonGrabberThread : public Thread {
-      public:
-        /// Constructor sets all internal fields and allocates memory
-        /**
-        * @param grabber The IStreamGrabber providing the images.
-        * @param camMutex The Camera mutex
-        * @param bufferCount The number of buffers the Grabber should queue.
-        * @param bufferSize The size a buffer needs to hold a single image.
-        */
-        PylonGrabberThread(Pylon::IStreamGrabber* grabber,
-                                PylonColorConverter* converter,
-                                PylonCameraOptions* options);
-        /// Destructor frees all allocated memory
-        ~PylonGrabberThread();
-        /// acquires images and writes them into an internal queue
-        void run();
-        /// reinitializes buffer
-        /**
-        * @param bufferSize The size a buffer needs to hold a single image.
-        */
-        void resetBuffer();
-        /// getter for the most current image
-        /**
-        * @return a pointer to an internally used TsBuffer the buffer
-        *         can safely be used until the next call to
-        *         getCurrentImage() or resetBuffer().
-        */
-        ImgBase* getCurrentImage();
-      private:
-        /// A pointer to the image-providing StreamGrabber.
-        Pylon::IStreamGrabber* m_Grabber;
-        /// A pointer to the ColorConverter.
-        PylonColorConverter* m_Converter;
-        /// A pointer to the CameraOptions.
-        PylonCameraOptions* m_Options;
-        /// A buffer holding read and write buffers
-        ConcGrabberBuffer m_Buffers;
-        /// A counter for acquisition errors.
-        int m_Error;
-        /// A counter for acquisition timeouts.
-        int m_Timeout;
-        /// A counter for correct acquisitions.
-        int m_Acquired;
-
-        /// grabs a single image into m_BufferQueue.
-        void grab();
-  };
-
-  }//namespace pylon
+  namespace io{
+    namespace pylon {
+  
+      /// Internally spawned thread class for continuous grabbing \ingroup GIGE_G
+      class PylonGrabberThread : public utils::Thread {
+        public:
+          /// Constructor sets all internal fields and allocates memory
+          /**
+          * @param grabber The IStreamGrabber providing the images.
+          * @param camMutex The Camera mutex
+          * @param bufferCount The number of buffers the Grabber should queue.
+          * @param bufferSize The size a buffer needs to hold a single image.
+          */
+          PylonGrabberThread(Pylon::IStreamGrabber* grabber,
+                                  PylonColorConverter* converter,
+                                  PylonCameraOptions* options);
+          /// Destructor frees all allocated memory
+          ~PylonGrabberThread();
+          /// acquires images and writes them into an internal queue
+          void run();
+          /// reinitializes buffer
+          /**
+          * @param bufferSize The size a buffer needs to hold a single image.
+          */
+          void resetBuffer();
+          /// getter for the most current image
+          /**
+          * @return a pointer to an internally used TsBuffer the buffer
+          *         can safely be used until the next call to
+          *         getCurrentImage() or resetBuffer().
+          */
+          core::ImgBase* getCurrentImage();
+        private:
+          /// A pointer to the image-providing StreamGrabber.
+          Pylon::IStreamGrabber* m_Grabber;
+          /// A pointer to the ColorConverter.
+          PylonColorConverter* m_Converter;
+          /// A pointer to the CameraOptions.
+          PylonCameraOptions* m_Options;
+          /// A buffer holding read and write buffers
+          ConcGrabberBuffer m_Buffers;
+          /// A counter for acquisition errors.
+          int m_Error;
+          /// A counter for acquisition timeouts.
+          int m_Timeout;
+          /// A counter for correct acquisitions.
+          int m_Acquired;
+  
+          /// grabs a single image into m_BufferQueue.
+          void grab();
+    };
+  
+    }//namespace pylon
+  } // namespace io
 }//namespace icl
-#endif
