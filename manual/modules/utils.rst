@@ -48,9 +48,9 @@ The most common types are
 * **icl32f** for floats
 * **icl64f** for doubles
 
-ICL's image classes (provided by the ICLCore module) are implemented
-for these common types
-**Note:**  Please ensure not to mix up the basic data types with the
+ICL's :ref:`image classes<core.image>` (provided by the
+:ref:`ICLCore<core>` module) are implemented for these common types
+**Note:** Please ensure not to mix up the basic data types with the
 alternatives for the enumeration **core::depth** which are
 
 * **core::depth8u**

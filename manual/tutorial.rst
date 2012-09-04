@@ -15,3 +15,5 @@ Tutorial
    tutorials/mouse-and-vis
    tutorials/configurables
    tutorials/marker-detection
+   tutorials/using-imgbase
+   tutorials/imgbase-ptrptrs

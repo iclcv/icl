@@ -1,3 +1,5 @@
+.. _core:
+
 **Core** (Basic Types for Image Processing)
 ===========================================
 
@@ -8,22 +10,34 @@ pixel data type.
 
 
 Table of Contents
-"""""""""""""""""
+^^^^^^^^^^^^^^^^^
 * :ref:`core.image`
+  
+  * :ref:`core.image.types`
+  * :ref:`core.image.pixel-access`
+  * :ref:`core.image.shallow-copy`
+  * :ref:`core.image.data-origin`
+  * :ref:`core.image.channel-concept`
+  * :ref:`core.image.roi`
+  * :ref:`core.image.format`
+  * :ref:`core.image.convert`
+  * :ref:`core.image.const`
+    
+* :ref:`core.global-functions`
 * :ref:`core.types`
 * :ref:`core.color`
 
 .. _core.image:
 
-The Image classes
-"""""""""""""""""
+The Image Classes
+^^^^^^^^^^^^^^^^^
 
 +-------------------------------------------------------------------------+------------------------------------+
 | For the implementation of the image classes, we combined inheritance    | .. image:: images/image-sketch.png |
-| and class-templating: The **core::ImgBase** class defines an abstract   |                                    |
+| and class-templates: The **core::ImgBase** class defines an abstract    |                                    |
 | interface, that manages all image information except for the actual     |                                    |
-| image pixel data. The **ImgBase** class works as generic interface for  |                                    |
-| the several versions of the **Img<T>**-template. It provides access to  |                                    |
+| image pixel data. It works as generic interface for                     |                                    |
+| the several versions of the **Img<T>**-template and provides access to  |                                    |
 |                                                                         |                                    |
 | * image size (in pixels, as **utils::Size**)                            |                                    |
 | * channel count (as **int**)                                            |                                    |
@@ -34,178 +48,835 @@ The Image classes
 | * a time stamp (as **utils::Time**)                                     |                                    |
 | * a single meta data string (as **std::string**)                        |                                    |
 |                                                                         |                                    |
+| .. note::                                                               |                                    |
+|                                                                         |                                    |
+|   All provided setter functions for these parameters work in a lazy     |                                    | 
+|   fashion. I.e. they will only actually do something if necessary       |                                    |
+|                                                                         |                                    |
+|                                                                         |                                    |
 | The derived class **Img<T>** adds a **std::vector** of typed            |                                    |
 | data-pointers -- one for each image channel. These channel data         |                                    |
 | pointers use reference counting to allow for copying images shallowly.  |                                    |
+|                                                                         |                                    |
+| We provide extra tutorial chapters for the image classes:               |                                    |
+|                                                                         |                                    |
+| * :ref:`tut.using-images`                                               |                                    |
+| * :ref:`tut.pixel-access`                                               |                                    |
+| * :ref:`tut.using-imgbase`                                              |                                    |
+|                                                                         |                                    |
 +-------------------------------------------------------------------------+------------------------------------+
+
+.. _core.image.types:
+
+Supported Image Types
+"""""""""""""""""""""
+
+The **Img<T>** class is **not** implemented in a completely **inline**
+fashion, which significantly improves the build-times for ICL and for
+other libraries, that depend on it. Furthermore, we preferred to
+provide a smaller set of possible image classes that is completely
+supported by our algorithms, rather than an infinite set. We chose to
+support images for pixel types
+
+* **icl8u** (usually **unsigned char**)
+* **icl16s** (usually **short**)
+* **icl32s** (usually **int**)
+* **icl32f** (**float**)
+* **icl64f** (**double**)
+
+defined in **ICLUtils/BasicTypes.h**, directly in the
+**icl**-namespace (see also :ref:`utils.basic-types`)
+
+
+Each of these data types has it's own advantages and
+disadvantages. The greatest disadvantage of the integer types, is
+their bounded range (e.g. 0-255 for icl8u), which has the effect, that
+all information has to be scaled to this range. Furthermore, all image
+processing functions must take care that no range-overflow occurs
+during calculation. The limited range may also cause loss of
+information -- particularly in complex systems. However integer types
+can often be processed significantly faster, and the use of 8 or 16
+bit integers leads to less memory usage in comparison to floats
 
 .. note::
 
-  **Img<T>**-instances are copied shallowly if the copy
-  constructor or the assignment operator is used
+ A nice rule of thumb is: If processing speed matters, use **icl8u**
+ pixels whenever it's possible and avoid Img64f because double
+ processing is much slower on (still common) 32 bit machines (as long
+ as you do not really need double precision)
 
-In addition, the **Img<T>** template provides several methods for 
-type-safe pixel data access (see :ref:`tutorial<tut.pixel-access>`)
 
+For the supported types convenience **typedef**\ s are
+supported. Whenever one gets an **ImgBase** instance, it's
+**getDepth()**-method can be used to query it's actual run-time type
+in oder to perform a type-safe down-cast. The **core::depth**
+enumeration provides alternatives for each of the supported image
+types.
+
+=====================  =================  ====================
+      Full Type             typedef          **depth**-value
+=====================  =================  ====================
+**core::Img<icl8u>**    **core::Img8u**    **core::depth8u**
+**core::Img<icl16s>**   **core::Img16s**   **core::depth16s**
+**core::Img<icl32s>**   **core::Img32s**   **core::depth32s**
+**core::Img<icl32f>**   **core::Img32f**   **core::depth32f**
+**core::Img<icl64f>**   **core::Img64**    **core::depth64f**
+=====================  =================  ====================
+
+Here is a minimal example:
+
+.. literalinclude:: examples/imgbase.cpp
+  :language: c++
+  :linenos:
+  
+  
+.. _core.image.pixel-access:
+
+Pixel Access
+""""""""""""
+
+The **ImgBase** class provides only raw-data access (in shape of a **void***);
+for type-safe pixel access, an **ImgBase**-instance must be casted into
+it's actual **Img<T>**-type. The different techniques for pixel-access
+are also discussed in the :ref:`tutorial<tut.pixel-access>`
+
+.. _core.image.shallow-copy:
+
+Shallow Copy Concept
+""""""""""""""""""""
+
+It is very important to know that **ImgBase** and **Img<T>**-instances
+are copied shallowly. This means that, whenever an image is copied using 
+either a the copy constructor or the assignment operator, the two images
+will share their image data pointers:
+
+.. literalinclude:: examples/shallow-copy.cpp
+  :language: c++
+  :linenos:
+
+   
+.. _core.image.data-origin:
 
 Data Origin
+"""""""""""
 
-  As most common image formats image processing use the upper left
-  image corner as data origen, ICL follows this convention as
-  well. Howerver, many image operation like filtering or thresholding
-  works without regarding the image contents at all. Nonetheless, we
-  suggest to use this standard, as it is particularly important for
-  I/O-routines or image visualization and - not at least - whenever
-  discussing about ICL images.
+Just like most of the common image formats, we also defined the upper
+left image corner as data origin. Actually, many image operations,
+such as filtering or thresholding, do not even use this information at
+all. However, as soon as it comes to image visualization and
+annotation, the definition of the origin is crucial.
+
+.. _core.image.channel-concept:
 
 Channel-Concept
+"""""""""""""""
 
-  The Img treats images as a stack of image slices --
-  channels. Channels can be shared by multiple Img instances, which is
-  especially important for fast shallow images copies. Actually, it is
-  possible to freely compose existing channels (within several "parent
-  images") to another new image.
+The **Img** class manages images as a stack of image slices --
+channels. Channels can be shared by multiple **Img** instances, which
+is especially important for fast shallow images copies (see also
+:ref::`core.shallow-copy`). Actually, it is possible to freely compose
+images from channels of different images. The composed image then
+shares it's channel data with the original images, such that
+modifications will effect all images equally. In order to get an
+independent image a *deep-copy* as well as the **detach**-method are
+provided. The latter replaces the *shared* image channel(s) with new
+independent ones. Shared channel data are stored using the boost-like
+shared pointer class **icl::utils::SmartArray**, which uses reference
+counting for autonomous garbage collection.
 
-.. note:: 
-
-  The newly composed image shares its channel data with the original
-  images, such that modifications will effect all images equally. In
-  order to get an independent image a deep-copy as well as a so called
-  detach method are provided. The latter replaces the "shared" image
-  channel(s) with new independent ones. Shared channel data are stored
-  using the boost-like shared pointer class SmartPtr, which uses
-  reference counting for autonomous garbage collection in order to
-  realease unused image channels.
-
-Data-Types
-
-  The Img template is not implemented completely inline to reduce
-  compilation expense. Therefore, the Img template is instantiated for
-  the following types Types
-
-.. comment 
-
-  icl8u 8bit unsigned char
-  icl16s 16bit signed integer (short)
-  icl32s 32bit signed integer (int)
-  icl32f 32bit single precision float (float)
-  icl64f 64bit double precision float (double)
-  Derived from this types, Img-classes are predefined as follows
-
-  Img<icl8u> : public ImgBase typedef'd to Img8u
-  Img<icl16s> : public ImgBase typedef'd to Img16s
-  Img<icl32s> : public ImgBase typedef'd to Img32s
-  Img<icl32f> : public ImgBase typedef'd to Img32f
-  Img<icl64f> : public ImgBase typedef'd to Img64f
-  
-  Each of these data types has several advantages/disadvantages. The
-  greatest disadvantage of the integer types, is their bounded range
-  (e.g. 0-255 for icl8u), which has the effect, that all information
-  has to be scaled to this range, and all image processing functions
-  must take care that no range-overflow occurs during
-  calculation. Furthermore the limited range may cause loss of
-  information - particular in complex systems. However integer types
-  can often be processed significantly faster. In particular the use
-  of 8-bit unsigned integer images relieves the the memory interface
-  due to it's lower memory usage.
-
-  A nice rule of thumb is: If processing speed matters, use Img8u
-  images whenever it's possible and avoid Img64f because double
-  processing is much slower on (still common) 32 bit machines (as long
-  as you do not really need double precision)
+.. _core.image.roi:
 
 
-ROI-Support
+Regions of Interest (ROI)
+"""""""""""""""""""""""""
 
-  Each image can be set up with a rectangular region of
-  interest. Nearly all algorithms work only on the pixels within the
-  ROI. If a function does not support ROI handling it will be noticed
-  in the documentation. There are several ways to realize ROI handling
-  in functions. The most common way is to use the ImgIterator with can
-  be accessed using the STL-style functions beginROI(channel) and
-  endROI(channel).
+Each image can be set up with a rectangular region of interest (short
+**ROI**). Most support this feature, i.e. they process only the pixels
+within the ROI. If a function does not support ROI handling, it's
+documentation will announce this.  Providing ROI support for custom
+algorithms, can be achieved in different ways. In general, we
+distinguish between *native* and *non-native* ROI support.  If
+algorithms extract an images ROI before the actual processing takes
+place, we name this *non-native* support. Usually, this is slightly
+slower, then actually implementing an algorithms, that works directly
+on an image ROI. However, there are several pixel accessing techniques
+that provide implicit ROI handling (see
+:ref:`tutorial<tut.pixel-access>`).
 
-Formats
 
-  An ImgBase image provides information about the (color) format, that
-  is associated with the image data represented by the images
-  channels. Color is written in brackets, as not all available formats
-  imply color-information. The most known color space is probably the
-  RGB color space. If an ImgBase image has the format formatRGB, than
-  this implies the following:
+.. _core.image.format:
+
+Formats and Ranges
+""""""""""""""""""
+
+An **ImgBase** instance provides information about the (color) format
+(in shape of an **icl::core::format** value), that is associated with
+the image data represented by the images channels. The word *color*
+was embraced as not all available formats imply color-information. The
+most commonly known color space is probably the RGB color space. If an
+**ImgBase** image has the **core::format** **core::formatRGB**
 
 * the image has exactly 3 channels
 * the first channel contains RED-Data in range [0,255]
 * the second channel contains GREEN-Data in range [0,255]
 * the third channel contains BLUE-Data in range [0,255]
-* All additional implemented functions and classes regard this
-  information. The currently available Img formats are member of the
-  enum Format. A special format: formatMatrix can be used for
-  arbitrary purpose.
+
+.. note::
+
+   The range of all possible color format components is always
+   assumed to be in range [0,255].
+
+As soon as the channel count of the image is altered, it's format will
+automatically be set to **core::formatMatrix**, which is used for
+unspecified color formats. 
+
+
+.. _core.image.convert:
+
+Deep Copies and Depth Conversion
+""""""""""""""""""""""""""""""""
+
+Deep Copies 
+ 
+  Images cannot only be copied shallowly, but also in a *deep copy*
+  manner. In particular, if the source- and destination-image's depth
+  is not identical, the data types have to be converted *deeply*
+  (i.e. pixel by pixel). Even though, the **Img<T>::detached** method
+  can be used for copying an image *deeply*, we strongly recommend to
+  use image's **deepCopy** methods. In contrast to the *detached**
+  method, no temporary object needs to be created for using the
+  **deepCopy** method. Actually there are two different versions of
+  *deepCopy**:
+
+  * **ImgBase::deepCopy(ImgBase **dst)**
+  * **Img<T>::deepCopy(Img<T> *dst)**
+
+  The **ImgBase**-method uses a pointer-pointer to be able to adapt
+  the destination images **depth** if necessary (see also
+  :ref:`core::ensureCompatible<core.global.image.ensureCompatible>`,
+  :ref:`core::bpp<core.global.image.bpp>` and
+  :ref:`tut.imgbase-ptrptrs`). For the **Img<T>**-version, the
+  destination image depth is restricted to the source depth by the
+  function interface, which is why a *normal* pointer-interface is
+  sufficient here. Both deep copy functions will always ensure,
+  that the source and the destination image are equal in all it's
+  parameters.
+
+  .. note::
+     
+     There are dedicated methods **deepCopyROI** that provide ROI
+     support for deeply copying images. These will always use both,
+     the source and the destination image ROI.
+
+  
+
+Depth Conversion
+
+  Converting an images **depth** even simpler to understand than the
+  deep-copy procedure, because there is just one version of
+  **ImgBase::covert(ImgBase*)**. This method, will keep the destination
+  image's format, but adapt all other image parameters, such as size
+  channel count and color format to the source image before converting
+  the image pixels element-wise
+
+
+.. _core.image.const:
 
 Const-Concept
+""""""""""""" 
 
-  ICL Images use the const concept of C++ to ensure pixel data of
-  const Images (of type const ImgBase or more precisely const Img<T>)
-  is not changed, i.e. it is only accessible for
-  reading. Unfortunately this leads to a conflict with the
-  "shallow-copy" concept of ICL images::
+ICL images use the const concept of C++ to
+ensure the pixel data of const images (of type **const ImgBase** or
+more precisely **const Img<T>**) can not be altered/can only be accessed
+for reading. Unfortunately this leads to a conflict with
+our *shallow-copy* concept in the example::
 
-    void func(const Img8u &image){
-      // given image is const -> data must not be changed
-      Img8u x = image;
-      // x is a shallow copy of image (data is shared)
-      x.clear();
-      // this affects also the data of image (which shall not
-      // be permitted
-    }
+  void func(const Img8u &a){
+    Img8u b = a;
+    b.clear();
+  }
 
-To avoid this conflict, we tried to forbid creating un-const shallow
-copies of const images by implementing no default copy constructor::
-
-    Img<T>(const Img<T> &other) {... }
-
-but an un-const version of this::
-
-    Img<T>(Img<T> &other) {... }
-
-Here we face some GCC related problem, because gcc is not able for an
-implicit cast of an Img<T> to an Img<T>& in constructor calls::
-
-    template<class T> class Img<T>{ ... };
-
-    Img8u create_image(){ 
-      return Img8u(); 
-    }
-
-    int main(){
-      Img8u a = create_image();
-    }
-
-Here, the compiler gives error: "Can't find constructor
-Img<T>(Img<T>)". In fact, this constructor can not exist: it must have
-the following syntax: Img<T>(Img<T>&)
-
-Probably further gcc versions will fix this problem!
-
-Until then, we accept the const leak at constructor and assignment
-operator and reimplemented them as ..(const Img<T> &other)
+The originally **const** image **a** is shallowly copied to **b**, and
+clearing **b** does also clear **a**. Even though this could lead to
+really unexpected results, we decided to stick to this behavior since
+a fix would either entail to disable the *shallow copy on default*
+property, or deeply- and shallowly copied images would have to be
+represented by wrapper-classes, which would make the whole library
+much more difficult to understand.
 
 
 
 .. _core.types:
 
 Image Processing related Types
-""""""""""""""""""""""""""""""
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+**core::depth**
+
+  Run-time type for different image pixel types (see :ref:`core.image.types`)
+
+**core::format**
+
+  Color format type (see :ref:`core.color`)
+
+**core::scalemode** 
+
+  Scaling and sampling interpolation mode. Supported values
+  are 
+  
+  * **core::interpolateNN** for nearest neighbor interpolation
+  * **core::interpolateLIN** for linear interpolation
+  * **core::interpolateRA** for region average interpolation, which provides much 
+    better results in case of downscaling images (Only supported with Intel IPP)
+    
+  .. todo::
+
+    consider implementing super-sampling (RA) for or even lanczos for scaled copy roi
+
+**core::axis**
+
+  Either **core::axisHorz**, **core::axisVert** or **core::axisBoth**. This defines
+  image axes for mirroring and other operations.
+
+
+**Line Sampling**
+
+  For efficient line sampling using the *Bresenham* algorithm, a set
+  of classes is provided. **core::Line**, **core::Line32f** (easy to
+  use class), **core::LineSampler** (more efficient, but static memory
+  model) and **core::SampledLine** (wrapps the **core::LineSampler**)
+  for while providing an object oriented memory model.
+
+**Color Typedefs**
+  
+  Even though not used for color conversion, the ICLCore package provides some 
+  default type-names for different color types. All of these typedefs have
+  special **Utils::FixedMatrix<T,COLS,ROWS>** as origin
+
+  * **core::Color**
+  * **core::Color4D**
+  * **core::Color32f**
+  * **core::Color4D32f**
+  * **core::RGB**
+  * **core::RGBA**
+
+.. _core.global-functions:
+
+Global Functions
+^^^^^^^^^^^^^^^^
+
+The core package provides a set of global support functions, that can be split into 
+functions for 
+
+* :ref:`core.color`
+* :ref:`core.global.image`
+* :ref:`core.global.opencv`
+* :ref:`core.global.statistic`
+
+
+.. _core.global.image:
+
+Image Class Support Functions
+"""""""""""""""""""""""""""""
+
+**core::interleavedToPlanar**
+
+  Can be use to efficiently transform externally acquire interleaved pixel data
+  into an ICL image. This function works very fast, in particular in case of
+  having Intel IPP support.
+
+**core::planarToInterleaved**
+
+  Just the other way around: this function can be used to transform the planar 
+  ICL image data into an externally needed interleaved data layout
+
+**core::imgNew**
+
+  This function is provided in many different versions. It can be used as 
+  factory functions for creating correct **core::Img<T>**-instances from given 
+  **core::depth** values
+  
+.. _core.global.image.ensureCompatible:
+
+**core::ensureCompatible**
+
+  This set of functions are even more complex then the **imgNew**
+  function. A specific issue of ICL image class structure is, that we
+  use an *is-a* relation between the interface class **core::ImgBase**
+  and the actual image instances **core::Img<T>**. Whenever we face a
+  situation, where we already have an existing **ImgBase**-instance
+  (that obviously has a fixed **depth**), but we need an **ImgBase**
+  instance of a different depth, we have to do the following. Our only
+  options is to allocate a new **Img<T>** where T is the desired type,
+  and to replace the old instance with the new one (e.g. the old-one
+  has to be deleted). In order to tell the caller-scope that an image
+  was actually re-allocated, functions need to provide an
+  **ImgBase****-interaface. This is also discussed more in detail in 
+  the tutorial chapter :ref:`tut.imgbase-ptrptrs`.
+
+.. _core.global.image.bpp:  
+
+**core::bpp**
+
+  This global function is strongly correlated to the
+  **ImgBase****-issue stated with the explanation of
+  **core::ensureCompatible**. Many ICL operators, in particular all
+  filters in the **ICLFilter** package, provide an
+  **ImgBase****-interface to allow filters to even adapt the **depth**
+  of given destination images. In a few situation, we know however the
+  correct depth however in advance. Here, the **bpp**-function (which
+  is abbreviation for **ImgBase**-pointer-pointer can be used, to avoid
+  having to allocate a temporary object
+
+  .. literalinclude:: examples/imgbase-ptrptr.cpp
+    :language: c++
+    :linenos:
+  
+
+
+
+.. _core.global.opencv:
+
+OpenCV Image Conversion Functions
+"""""""""""""""""""""""""""""""""
+
+The ICLCore module also provides a set of compatibility functions for
+converting ICL images into OpenCVs **IplImage** and **CvMat** types
+and vice versa.
+
+* **core::ipl_to_img** 
+* **core::img_to_ipl**
+* **core::img_to_cvmat**
+* **core::img_to_ipl_shallow** (for shallow copies)
+* **core::img_to_cvmat_shallow** (for shallow copies)
+
+
+
+
+
+
+
+.. _core.global.statistic:
+
+Image Statistic Functions
+"""""""""""""""""""""""""
+
+**core::hist** and **core::channelHisto**
+
+  creates an image histogram with a user defined number of bins for a
+  single or all channels of an image. Please note that ICL's default
+  image displaying GUI component is also able to show the histogram of
+  the currently shown image
+
+**core::mean**
+
+  computes the mean value for one or all given channels of an image
+
+**core::variance**
+
+  computes the variance for one or all given channels of an image
+  
+**core::stdDeviation**
+
+  computes the standard deviation for one or all given channels of an
+  image. Here, two versions, one with given mean-values and one that
+  uses an empiric mean are provided.
+  
+**core::meanAndStdDev**
+
+  computes mean and standard deviation at once
 
 
 
 .. _core.color:
 
-Color Conversion Functions
+
+
+Color Formats and Color Conversion
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Table of Contents
+"""""""""""""""""
+* :ref:`core.color.lut`
+* :ref:`core.color.ranges`
+* :ref:`core.color.video-formats`
+* :ref:`core.color.rgb`
+* :ref:`core.color.yuv`
+* :ref:`core.color.hls`
+* :ref:`core.color.lab`
+* :ref:`core.color.gray`
+* :ref:`core.color.rg`
+* :ref:`core.color.matrix`
+* :ref:`core.color.benchmark`
+
+By now, ICL supports 7 different color formats. For each of these
+formats, an **core::format** value is provided.
+
+===================  ===================================
+ **core::format**                   meaning
+===================  ===================================
+  formatRGB            sRGB color format
+  formatHLS            Hue Lightness Intensity
+  formatYUV            Luminance Y and Chrominance U/V
+  formatChroma         R/G-Chromaticity space
+  formatLAB            CIE-L\*a\*b\* space
+  formatGray           simple gray scale
+  formatMatrix         unspecified color format
+===================  ===================================
+
+
+The main function for color format conversion is **core::cc**.  **cc**
+uses the source and the destination **format** to pick the desired
+format conversion function internally.  If the **roiOnly**-flag given
+to **cc** function is set to true, the source image's ROI is converted
+into the destination image's ROI. In this case, the destination image
+is not adapted to the source image. Instead, a single test is
+performed to ensure, that the source image's ROI has the same size as
+the destination image's ROI. If the test fails, an error occurs and the
+function returns immediately.  
+
+.. note::
+   
+   Internally all functions are optimized for running without ROI
+   support (in this case, the images data arrays are 1D). Thus, the
+   ROI-Support mode (roiOnly = true) runs approx. 20% (2%-50%) slower
+   depended on the specific source and destination format.
+
+The **cc** function uses Intel IPP to speed up the conversion
+performance for the conversions
+
+* RGB -> YUV
+* YUV -> RGB
+* RGB -> HLS
+* HLS -> RGB
+
+.. _core.color.lut:
+
+Creating LUT-Acceleration
+"""""""""""""""""""""""""
+
+All color conversion methods can be statically accelerated by creating
+a lookup table for the color conversion. This is done by calling
+**core::createLUT** with the to-be-accelerated source and destination
+format. Performance comparisons are provided in the
+:ref:`core.color.benchmark` section.
+
+
+.. _core.color.ranges:
+
+Color Ranges
+""""""""""""
+
+As a default, all ICL color spaces are represented in the full range
+of [0,255] in all depths. By these means, we get the advantage of being able
+to treat all color images in the same way. The disadvantage is, that
+already existing color conversion routines needed to be adapted to scale
+each color component to that range automatically.
+
+
+.. _core.color.video-formats:
+
+Special Video Coding Color Formats
+""""""""""""""""""""""""""""""""""
+
+In video coding, usually certain YUV sub-formats are used, that use
+different horizontal and vertical resolutions for the Y and the U/V
+channels. Even though these format provide an objectively loss-less
+reduction of the image data size, they are, due to the more complex
+data layout, not appropriate for digital image processing.  For a very
+few of these YUV sub-formats, ICL provides efficient conversion
+routines, however these must usually not be used manually because the
+image acquisition framework provides implicitly converted ICL-images
+directly. A more general tool for video-color format conversion is
+provided by the **io::ColorFormatDecoder** (see
+:ref:`io.color-format-decoder`)
+
+
+.. _core.color.rgb:
+
+sRGB (Most Common and Default)
+""""""""""""""""""""""""""""""
+
+Obviously, the RGB Color Model (or its absolute Version sRGB ->
+standard RGB) is the most commonly known color space. Even though many
+computer vision approaches use other color spaces, such as HLS or LAB,
+the sRGB color space defines a an *anchor* for most other color
+conversion functions. So in most cases, the sRGB format defines a bridge
+format for conversion from one to another format:
+
+* X -> Y
+* X -> RGB
+* RGB -> Y
+
+Another bridge color space (XYZ) is not considered here, because it 
+usually not used in digital image processing. For ICL's color conversion
+functions we can say:
+
+* Converting from or to RGB is fast
+* other conversion may be much slower.
+* In particular the L*a*b* space is supported only very slowly
+
+
+.. _core.color.yuv:
+
+YUV Space Color Conversion
 """"""""""""""""""""""""""
 
-TODO
+The literature for the YUV color model conversion is a bit confusing
+and far away from a kind of pseudocode, that can easily be converted
+to *fast* C++ code. The YUV Color model divides an incoming RGB signal
+into its luminance component (Y) and two chrominance components (U and
+V). The common YUV-color holds Y in the range [0,1], u in range
+[-0.436,0.436] and v in range [-0.615,0,615]. Hence ICL's color
+conversion functions are adapted to scale the resulting values to the
+range [0,255] in all channels. Outgoing from the basic equation for
+converting rgb to yuv and back::
+
+        Y = 0.299*R + 0.587*G + 0.114*B
+        U = -0.147*R - 0.289*G + 0.436*B = 0.492*(B- Y)
+        V = 0.615*R - 0.515*G - 0.100*B = 0.877*(R- Y)
+        R = Y + 1.140*V
+        G = Y - 0.394*U - 0.581*V
+        B = Y + 2.032*U
+        
+The formulas are adapted for using ranges [0,255]::
+
+        Y = (0.299*R + 0.587*G + 0.114*B);  
+        U = 0.56433408*(B-Y) + 127.5;
+        V = 0.71326676*(R-Y) + 127.5;
+        R = Y +               290.7   * v2;
+        G = Y - 100.47 * u2 - 148.155 * v2;   with: u2 = 0.0034196078*U - 0.436;
+        B = Y + 518.16 * u2;                   and  v2 = 0.0048235294*V - 0.615;
+        
+To avoid expensive floating point operations, the conversions can be
+optimized by creating a so called fixed point approximation of the
+above code::
+
+        Y = ( 1254097*R + 2462056*G + 478151*B ) >> 22;  
+        U = ( 2366989*(B-Y) + 534773760        ) >> 22;
+        V = ( 2991658*(R-Y) + 534773760        ) >> 22;
+        R = Y +  ( ( 290 * V2 ) >> 22 );
+        G = Y -  ( ( 100  * U2 + 148 * V2) >> 22 ); with: U2 = 14343*U - 1828717; 
+        B = Y +  ( ( 518 * U2 ) >> 22 );             and  V2 = 20231*v - 2579497; 
+        
+This approximation produces errors less 3/255, and runs up to 20%
+faster. A further optimization can be implemented using lookup tables.
+
+
+IPP Compatibility
+
+  In order to achieve compatibility with the yuv color conversion
+  provided by intel IPP (which is used if IPP is available), also
+  ICL's color conversion methods were slightly adapted. We again used
+  fixed point approximations for the algorithms described in the IPP
+  manual::
+
+        rgb-to-yuv:
+        y = ( 1254097*r + 2462056*g + 478151*b ) >> 22;  
+        u = (2063598*(b-y) >> 22) + 128;
+        v = (3678405*(r-y) >> 22) + 128;
+        if(v<0) v=0;
+        else if(v > 255) v = 255;
+        
+        yuv-to-rgb:
+        icl32s u2 = u-128;
+        icl32s v2 = v-128;
+        icl32s y2 = y<<22;
+        r = (y2 + 4781506 * v2 ) >> 22;
+        g = (y2 - 1652556 * u2 - 2436891 *v2 ) >> 22;
+        b = (y2 + 8522826 * u2 ) >> 22;
+        
+  .. note::
+     
+     Due to the clipping process of 'v' in **rgb_to_yuv**, this method
+     cannot restore an original rgb value completetly. Since we lost
+     some information in v, the resulting r and g values are differ as
+     follows: r-r' in [-32,35], and g-g' in [-17,18], However, this is
+     usually only an issue when exchanging image between ICL
+     applications that used Intel IPP and others that did not.
+
+
+.. _core.color.hls:
+
+HLS Color Space Conversion
+""""""""""""""""""""""""""
+
+The HLS color space, also known as the HSI color space with different
+channel order describes colors in more independent components. The Hue
+component can be understood as an angle and is as well as all other color
+information scaled to the range [0,254]. The value H=255 is identical
+to H=0 (red). Independent from the color's *hue*, it's *lightness* is
+defined by the second component. Basic colors as red (r=255,g=0,b=0)
+have a lightness of 127; lighter colors have a higher L value; darker
+colors have a lower one. The last component is the *saturation* of the
+color. The color model can be drawn as a double (hex)cone . Note that
+the HLS color spaces resolution is higher in it's center (L near
+127). The following formulas describe the conversion from and to the
+RGB format::
+
+        (H,L,S) RGBToHLS(R,G,B)
+        (r,g,b) = (R,G,B)/255;
+        m = min(r,g,b)
+        v = max(r,g,b)
+        l = (m+v)/2
+        if(l <= 0){
+          (H,L,S) = (0,0,0)
+          return
+        }
+        vm = v-m
+        if ( vm > 0 ) {
+          if(l<=0.5){
+            s=vm/(v+m)
+          }else{
+            s=vm/(2.0-v-m)
+          }
+        }else{
+          (H,L,S)=(0,l*255,0)
+          return
+        }
+        r2 = (v - r) / vm
+        g2 = (v - g) / vm
+        b2 = (v - b) / vm
+        if (r == v)
+          h = (g == m ? 5.0 + b2 : 1.0 - g2)
+        else if (g == v)
+          h = (b == m ? 1.0 + r2 : 3.0 - b2)
+        else
+          h = (r == m ? 3.0 + g2 : 5.0 - r2)
+        if(h == 255) h = 0
+          (H,L,S) = (h*255/6,l*255,s*255)
+        
+An optimization, that allows conversion directly with (r,g,b) values
+in range [0,255] is not yet implemented::
+
+        (R,G,B) HLSToRGB(H,L,S)
+        (h,l,s) = (H,L,S)/255;
+        v = (l <= 0.5) ? (l * (1.0 + sl)) : (l + sl - l * sl)
+        if (v <= 0 ) {
+          R = G = B = 0;
+          return;
+        }
+        m = l + l - v;
+        sv = (v - m ) / v;
+        h *= 6.0;
+        int sextant = (int)h;
+        fract = h - sextant;
+        vsf = v * sv * fract;
+        mid1 = m + vsf;
+        mid2 = v - vsf;
+        switch (sextant) {
+          case 0: r = v;    g = mid1; b = m;    break;
+          case 1: r = mid2; g = v;    b = m;    break;
+          case 2: r = m;    g = v;    b = mid1; break;
+          case 3: r = m;    g = mid2; b = v;    break;
+          case 4: r = mid1; g = m;    b = v;    break;
+          case 5: r = v;    g = m;    b = mid2; break;
+        }
+        (R,G,B) = (r,g,b)*255;
+        
+An additional optimization can be implemented using lookup tables
+
+
+.. _core.color.lab:
+
+Lab Color Space Conversion
+""""""""""""""""""""""""""
+
+The LAB color space (strictly CIE L*a*b*), was designed to describe
+the complete range of colors, that can be seen by the human eye. It
+must not be mixed up with the "Hunter Lab" color space, that is sure
+related to the CIE L*a*b*, but in detail much different: "The three
+parameters in the model represent the lightness of the color (L*, L*=0
+yields black and L*=100 indicates white), its position between magenta
+and green (a*, negative values indicate green while positive values
+indicate magenta) and its position between yellow and blue (b*,
+negative values indicate blue and positive values indicate
+yellow) [...] CIE 1976 L*a*b* is based directly on the CIE
+1931 XYZ color space as an attempt to linearize the perceptibility of
+color differences, using the color difference metric described by the
+MacAdam ellipse"(wikipedia). So an euclidian (linear) color difference
+metric can be used here. The following code show the formulas
+LabToXYZ, XYZToLab, RGBToXYZ and XYZToRGB::
+
+        RGBToXYZ
+        static icl32f m[3][3] = {{ 0.412453, 0.35758 , 0.180423},
+                                 { 0.212671, 0.71516 , 0.072169},
+                                 { 0.019334, 0.119193, 0.950227}};
+        X = m[0][0] * R + m[0][1] * G + m[0][2] * B;
+        Y = m[1][0] * R + m[1][1] * G + m[1][2] * B;
+        Z = m[2][0] * R + m[2][1] * G + m[2][2] * B;
+        XYZToRGB
+        static icl32f m[3][3] = {{ 3.2405, -1.5372,-0.4985},
+                                 {-0.9693,  1.8760, 0.0416},
+                                 { 0.0556, -0.2040, 1.0573}};
+        R = m[0][0] * x + m[0][1] * y + m[0][2] * z;
+        G = m[1][0] * x + m[1][1] * y + m[1][2] * z;
+        B = m[2][0] * x + m[2][1] * y + m[2][2] * z;
+        XYZToLAB
+        wX = 95.0456;
+        wY = 100.0;
+        wZ = 108.8754;
+        _13 = 1.0/3.0;
+        XXn = X / wX;
+        YYn = Y / wY;
+        ZZn = Z / wZ;
+        L = (YYn > 0.008856) ? ((116 * pow (YYn, _13))-16) : (903.3 * YYn);
+        fX = (XXn > 0.008856) ? pow (XXn, _13) : 7.787 * XXn + (16 / 116);
+        fY = (YYn > 0.008856) ? pow (YYn, _13) : 7.787 * YYn + (16 / 116); 
+        fZ = (ZZn > 0.008856) ? pow (ZZn, _13) : 7.787 * ZZn + (16 / 116);
+        a = 500.0 * (fX - fY);
+        b = 200.0 * (fY - fZ);
+        LABToXYZ
+        d = 6.0/29.0;
+        n = 16.0/116.0;
+        f = 3*d*d;
+        wX = 95.0456;
+        wY = 100.0;
+        wZ = 108.8754;
+        fy = (l+16)/116;
+        fx = fy+a/500;
+        fz = fy-b/200;
+        X = (fx>d) ?  wX*pow(fx,3) : (fx-n)*f*wX;
+        Y = (fy>d) ?  wY*pow(fy,3) : (fy-n)*f*wY;
+        Z = (fz>d) ?  wZ*pow(fz,3) : (fz-n)*f*wZ;
+        
+.. _core.color.gray:
+
+Gray Scale Conversion
+"""""""""""""""""""""
+
+The gray scale conversion is optimized for speed.  Although, L of Lab
+is not equal to the Y of YUV, color formats, that have an
+brightness-like component are converted to gray scale by simply
+picking this channel. RGB is converted to gray by the simple channel
+mean (r+g+b)/3.
+
+.. _core.color.rg:
+
+r-g-Chromaticity Color Space Conversion
+"""""""""""""""""""""""""""""""""""""""
+
+The chromaticity space r,g,b divides the R,G,B components by the city
+block norm of the according color r=R/(R+G+B), g=G/(R+G+B), b=
+B/(R+G+B). By these means, the b-component becomes redundant, and can
+be left out, which leads to the r-g-chromaticity space. Conversions
+from the r-g-Chromaticity space to other formats are not possible, as
+r-g-pixels to not carry enough information for this.
+
+.. _core.color.matrix:
+
+formatMatrix Conversion
+"""""""""""""""""""""""
+
+As the matrix image format offers no color information, matrix image
+data is just copied from the source image channels to the destination
+image channels. If the source image has more channels, the remaining
+channels are left unregarded. If otherwise the destination image has
+more channels, this channels are left unchanged
+
+
+.. _core.color.benchmark:
+
+Benchmarks
+""""""""""
 
