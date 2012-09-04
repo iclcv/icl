@@ -192,10 +192,10 @@ namespace icl {
     }
 
     /// returns a list of all properties, that can be set
-    virtual std::vector<std::string> getPropertyList(){
+    virtual std::vector<std::string> getPropertyListC(){
       Mutex::Locker __lock(m_mutex);
       ICLASSERT_RETURN_VAL(!isNull(),std::vector<std::string>());
-      return m_poGrabber->getPropertyList();
+      return m_poGrabber->getPropertyListC();
     }
 
     /// setting up properties of underlying grabber
@@ -206,10 +206,10 @@ namespace icl {
     }
 
     /// returns whether property is supported by underlying grabber
-    virtual bool supportsProperty(const std::string &property){
+    virtual bool supportsPropertyC(const std::string &property){
       Mutex::Locker __lock(m_mutex);
       ICLASSERT_RETURN_VAL(!isNull(),false);
-      return m_poGrabber->supportsProperty(property);
+      return m_poGrabber->supportsPropertyC(property);
     }
     
     /// returns the property type of given property
@@ -238,6 +238,76 @@ namespace icl {
       Mutex::Locker __lock(m_mutex);
       ICLASSERT_RETURN_VAL(!isNull(),0);
       return m_poGrabber->isVolatile(propertyName);
+    }
+
+    /// sets a property value of underlying grabber
+    virtual void setPropertyValue(const std::string &propertyName, const Any &value) throw (ICLException){
+      Mutex::Locker __lock(m_mutex);
+      ICLASSERT_RETURN(!isNull());
+      m_poGrabber->setPropertyValue(propertyName,value);
+    }
+
+    /// returns a list of All properties of underlying grabber, that can be set using setProperty
+    virtual std::vector<std::string> getPropertyList(){
+      Mutex::Locker __lock(m_mutex);
+      ICLASSERT_RETURN_VAL(!isNull(),std::vector<std::string>());
+      return m_poGrabber->getPropertyList();
+    }
+
+    /// property check on underlying grabber
+    virtual bool supportsProperty(const std::string &propertyName){
+      Mutex::Locker __lock(m_mutex);
+      ICLASSERT_RETURN_VAL(!isNull(),false);
+      return m_poGrabber->supportsProperty(propertyName);
+    }
+
+    /// writes all available properties of underlying grabber into a file
+    virtual void saveProperties(const std::string &filename, const std::vector<std::string> &propertiesToSkip=EMPTY_VEC){
+      Mutex::Locker __lock(m_mutex);
+      ICLASSERT_RETURN(!isNull());
+      return m_poGrabber->saveProperties(filename,propertiesToSkip);
+    }
+
+    /// reads a config file from disc, sets on underlying grabber
+    virtual void loadProperties(const std::string &filename,const std::vector<std::string> &propertiesToSkip=EMPTY_VEC){
+      Mutex::Locker __lock(m_mutex);
+      ICLASSERT_RETURN(!isNull());
+      return m_poGrabber->loadProperties(filename,propertiesToSkip);
+    }
+
+    /// get type of property of underlying grabber
+    virtual std::string getPropertyType(const std::string &propertyName){
+      Mutex::Locker __lock(m_mutex);
+      ICLASSERT_RETURN_VAL(!isNull(),std::string());
+      return m_poGrabber->getPropertyType(propertyName);
+    }
+
+    /// get information of the underlying grabbers properties valid values
+    virtual std::string getPropertyInfo(const std::string &propertyName){
+      Mutex::Locker __lock(m_mutex);
+      ICLASSERT_RETURN_VAL(!isNull(),std::string());
+      return m_poGrabber->getPropertyInfo(propertyName);
+    }
+
+    /// returns the current value of a property or a parameter of underlying grabber
+    virtual Any getPropertyValue(const std::string &propertyName){
+      Mutex::Locker __lock(m_mutex);
+      ICLASSERT_RETURN_VAL(!isNull(),Any());
+      return m_poGrabber->getPropertyValue(propertyName);
+    }
+
+    /// returns the underlying grabbers tooltip description for a given property
+    virtual std::string getPropertyToolTip(const std::string &propertyName) {
+      Mutex::Locker __lock(m_mutex);
+      ICLASSERT_RETURN_VAL(!isNull(),std::string());
+      return m_poGrabber->getPropertyToolTip(propertyName);
+    }
+
+    /// Returns whether this property may be changed internally
+    virtual int getPropertyVolatileness(const std::string &propertyName){
+      Mutex::Locker __lock(m_mutex);
+      ICLASSERT_RETURN_VAL(!isNull(),0);
+      return m_poGrabber->getPropertyVolatileness(propertyName);
     }
 
     /// returns wheter an underlying grabber could be created

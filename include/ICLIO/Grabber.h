@@ -43,6 +43,7 @@
 #include <ICLUtils/Function.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/ProgArg.h>
+#include <ICLUtils/Configurable.h>
 #include <ICLIO/GrabberDeviceDescription.h>
 #include <ICLIO/ImageUndistortion.h>
 
@@ -149,7 +150,7 @@ namespace icl {
       So far only a few grabbers provide this feature at all. If it
       is not provided, the registered callbacks will never be called.
   */
-  class Grabber : public Uncopyable{
+  class Grabber : public Uncopyable, public Configurable {
     /// internal data class
     struct Data;
     
@@ -250,17 +251,17 @@ namespace icl {
      virtual void setProperty(const std::string &property, const std::string &value){
        (void)property; (void)value;
      }
-     
+
      /// returns a list of properties, that can be set using setProperty
      /** @return list of supported property names **/
-     virtual std::vector<std::string> getPropertyList(){
+     virtual std::vector<std::string> getPropertyListC(){
        return std::vector<std::string>();
      }
      
      /// base implementation for property check (seaches in the property list)
      /** This function may be reimplemented in an optimized way in
          particular subclasses.**/
-     virtual bool supportsProperty(const std::string &property);
+     virtual bool supportsPropertyC(const std::string &property);
 
      
      /// writes all available properties into a file
@@ -269,11 +270,11 @@ namespace icl {
                                    config file as well 
          @param skipUnstable some common grabber parameters e.g. trigger-settings cause problems when
                              they are read from configuration files, hence these parameters are skipped at default*/
-     virtual void saveProperties(const std::string &filename, bool writeDesiredParams=true, bool skipUnstable=true);
+     virtual void savePropertiesC(const std::string &filename, bool writeDesiredParams=true, bool skipUnstable=true);
 
      /// reads a camera config file from disc
      /** @ see saveProperties */
-     virtual void loadProperties(const std::string &filename, bool loadDesiredParams=true, bool skipUnstable=true);
+     virtual void loadPropertiesC(const std::string &filename, bool loadDesiredParams=true, bool skipUnstable=true);
 
      /// get type of property 
      /** This is a new minimal configuration interface: When implementing generic
@@ -362,7 +363,7 @@ namespace icl {
      /// enables the undistorion
      void enableUndistortion(const std::string &filename);
      
-     ///enables the undistortion plugin for the grabber using radial and tangential distortion parameters
+     /// enables the undistortion plugin for the grabber using radial and tangential distortion parameters
      void enableUndistortion(const ImageUndistortion &udist);
 
      /// enables undistortion from given programm argument. 
@@ -411,7 +412,7 @@ namespace icl {
      /// main interface method, that is implemented by the actual grabber instances
      /** This method is defined in the grabber implementation. It acquires a new image
          using the grabbers specific image acquisition back-end */
-     virtual const ImgBase *acquireImage() = 0;
+     virtual const ImgBase *acquireImage(){ return NULL; };
 
      /// Utility function that allows for much easier implementation of grabUD
      /** called by the grabbers grab() method **/
@@ -419,7 +420,7 @@ namespace icl {
 
      /// internally used by the load- and saveProperties
      /** If any property shall not be save or loaded from configuration file, it must be filtered out by this f*/
-     virtual std::vector<std::string> get_io_property_list() { return getPropertyList(); }
+     virtual std::vector<std::string> get_io_property_list() { return getPropertyListC(); }
   }; 
   
   /** \cond */

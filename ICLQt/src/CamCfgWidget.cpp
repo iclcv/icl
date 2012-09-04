@@ -303,7 +303,7 @@ namespace icl{
                                   std::vector<SmartPtr<VolatileUpdater> > &timers){
     gui = VBox();
     std::ostringstream ostr;
-    std::vector<std::string> propertyList = grabber.getPropertyList();
+    std::vector<std::string> propertyList = grabber.getPropertyListC();
     
     
     for(unsigned int i=0;i<propertyList.size();++i){
@@ -502,7 +502,7 @@ namespace icl{
       QString s = QFileDialog::getSaveFileName(this,"Save device properties ...","","XML-files (*.xml)");
       if(s.isNull() || s=="")return;
       try{
-        data->grabber.saveProperties(s.toLatin1().data(),false);
+        data->grabber.savePropertiesC(s.toLatin1().data(),false);
       }catch(ICLException &e){
         ERROR_LOG(e.what());
       }
@@ -513,7 +513,7 @@ namespace icl{
       }
       QString s = QFileDialog::getOpenFileName(this,"Load device properties ...","","XML-files (*.xml)");
       if(s.isNull() || s == "") return;
-      data->grabber.loadProperties(s.toLatin1().data(),false);
+      data->grabber.loadPropertiesC(s.toLatin1().data(),false);
       data->loadParamsScope = true;
       callback("device");
       data->loadParamsScope = false;

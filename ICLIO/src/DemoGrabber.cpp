@@ -139,7 +139,7 @@ namespace icl{
   }
 
 
-  std::vector<std::string> DemoGrabberImpl::getPropertyList(){
+  std::vector<std::string> DemoGrabberImpl::getPropertyListC(){
     std::vector<std::string> ps;
     ps.push_back("blob-size");
     ps.push_back("blob-red");

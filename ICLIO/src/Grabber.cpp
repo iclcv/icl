@@ -109,8 +109,8 @@ namespace icl{
   }
 
   
-  bool Grabber::supportsProperty(const std::string &property){
-    return inList(property,getPropertyList());
+  bool Grabber::supportsPropertyC(const std::string &property){
+    return inList(property,getPropertyListC());
   }
 
   string Grabber::translateSteppingRange(const SteppingRange<double>& range){
@@ -269,7 +269,7 @@ namespace icl{
     return fs;
   }
 
-  void Grabber::saveProperties(const std::string &filename, bool writeDesiredParams, bool skipUnstable){
+  void Grabber::savePropertiesC(const std::string &filename, bool writeDesiredParams, bool skipUnstable){
     ConfigFile f;
     f["config.title"] = std::string("Camera Configuration File");
     std::vector<std::string> ps = get_io_property_list();
@@ -302,7 +302,7 @@ namespace icl{
     f.save(filename);
   }
   
-  void Grabber::loadProperties(const std::string &filename, bool loadDesiredParams, bool skipUnstable){
+  void Grabber::loadPropertiesC(const std::string &filename, bool loadDesiredParams, bool skipUnstable){
     ConfigFile f(filename);
     std::vector<std::string> psSupported = get_io_property_list();
     if(skipUnstable){
@@ -384,4 +384,5 @@ namespace icl{
     }
   }
 
+   REGISTER_CONFIGURABLE_DEFAULT(Grabber);
 }

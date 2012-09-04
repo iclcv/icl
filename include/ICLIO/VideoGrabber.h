@@ -108,7 +108,7 @@ namespace icl{
           an appropriate GUI 
         - volume sets up audio volume to a value from (0: mute to 100:max volume)
     */
-    virtual std::vector<std::string> getPropertyList();
+    virtual std::vector<std::string> getPropertyListC();
 
     /// get type of property 
     virtual std::string getType(const std::string &name);

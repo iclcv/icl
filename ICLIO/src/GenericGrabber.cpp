@@ -505,10 +505,10 @@ namespace icl{
         std::pair<std::string,std::string> p = split_at_first('=',options[i]);
         if(p.second.length()) p.second = p.second.substr(1);
         if(p.first == "load"){
-          m_poGrabber->loadProperties(p.second);
+          m_poGrabber->loadPropertiesC(p.second);
         }else if(p.first == "info"){
           std::cout << "Property list for " << d << std::endl;
-          std::vector<std::string> ps = m_poGrabber->getPropertyList();
+          std::vector<std::string> ps = m_poGrabber->getPropertyListC();
           TextTable t(4,ps.size()+1,35);
           t[0] = tok("property,type,allowed values,current value",",");
           for(unsigned int j=0;j<ps.size();++j){

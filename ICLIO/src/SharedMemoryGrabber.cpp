@@ -263,7 +263,7 @@ namespace icl{
     }
   }
   
-  std::vector<std::string> SharedMemoryGrabberImpl::getPropertyList(){
+  std::vector<std::string> SharedMemoryGrabberImpl::getPropertyListC(){
     static const std::string ps[1] = {"omit-doubled-frames,enable-callbacks"};
     return std::vector<std::string>(ps,ps+1);
   }

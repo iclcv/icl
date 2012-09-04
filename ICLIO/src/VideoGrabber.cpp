@@ -284,7 +284,7 @@ namespace icl{
     return m_data->outputBuffer;
   }
   
-  std::vector<std::string> VideoGrabber::getPropertyList(){
+  std::vector<std::string> VideoGrabber::getPropertyListC(){
     static const std::string ps="speed-mode speed stream-pos stream-length volume is-seekable";
     return tok(ps," ");
   }

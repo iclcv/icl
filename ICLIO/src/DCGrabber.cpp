@@ -195,7 +195,7 @@ namespace icl{
         m_oOptions.isoMBits = 400;
       }
     }else if(property == "all manual"){
-      std::vector<std::string> l = getPropertyList();
+      std::vector<std::string> l = getPropertyListC();
       for(unsigned int i=0;i<l.size();++i){
         if(getType(l[i]) == "menu" && getInfo(l[i]) == "{\"manual\",\"auto\"}"){
           setProperty(l[i],"manual");
@@ -229,7 +229,7 @@ namespace icl{
       ERROR_LOG("unsupported property " << property);
     }
   }
-  std::vector<std::string> DCGrabberImpl::getPropertyList(){
+  std::vector<std::string> DCGrabberImpl::getPropertyListC(){
     std::vector<std::string> v;
     if(m_oDev.isNull()) return v;
     
@@ -337,7 +337,7 @@ namespace icl{
   }
 
   std::vector<std::string> DCGrabber::get_io_property_list(){
-    std::vector<std::string> v = getPropertyList();
+    std::vector<std::string> v = getPropertyListC();
     vector<string> r;
     for(unsigned int i=0;i<v.size();++i){
       if(v[i] != "size") r.push_back(v[i]);

@@ -192,16 +192,16 @@ namespace icl{
       m_instance->ptr->setProperty(property,value);
     }
     /// calles underlying grabber's getPropertyList function
-    virtual inline std::vector<std::string> getPropertyList(){
+    virtual inline std::vector<std::string> getPropertyListC(){
       ICLASSERT_RETURN_VAL(!isNull(),std::vector<std::string>());
       Mutex::Locker l(m_instance->mutex);
-      return m_instance->ptr->getPropertyList();
+      return m_instance->ptr->getPropertyListC();
     }
     /// calles underlying grabber's supportsProperty function
-    virtual inline  bool supportsProperty(const std::string &property){
+    virtual inline  bool supportsPropertyC(const std::string &property){
       ICLASSERT_RETURN_VAL(!isNull(),false);
       Mutex::Locker l(m_instance->mutex);
-      return m_instance->ptr->supportsProperty(property);
+      return m_instance->ptr->supportsPropertyC(property);
     }
     /// calles underlying grabber's getType function
     virtual inline std::string getType(const std::string &name){
@@ -228,6 +228,75 @@ namespace icl{
       return m_instance->ptr->isVolatile(propertyName);
     }
 
+    /// sets a property value of underlying grabber
+    virtual void setPropertyValue(const std::string &propertyName, const Any &value) throw (ICLException){
+      Mutex::Locker __lock(m_mutex);
+      ICLASSERT_RETURN(!isNull());
+      m_instance->ptr->setPropertyValue(propertyName,value);
+    }
+
+    /// returns a list of All properties of underlying grabber, that can be set using setProperty
+    virtual std::vector<std::string> getPropertyList(){
+      Mutex::Locker __lock(m_mutex);
+      ICLASSERT_RETURN_VAL(!isNull(),std::vector<std::string>());
+      return m_instance->ptr->getPropertyList();
+    }
+
+    /// property check on underlying grabber
+    virtual bool supportsProperty(const std::string &propertyName){
+      Mutex::Locker __lock(m_mutex);
+      ICLASSERT_RETURN_VAL(!isNull(),false);
+      return m_instance->ptr->supportsProperty(propertyName);
+    }
+
+    /// writes all available properties of underlying grabber into a file
+    virtual void saveProperties(const std::string &filename, const std::vector<std::string> &propertiesToSkip=EMPTY_VEC){
+      Mutex::Locker __lock(m_mutex);
+      ICLASSERT_RETURN(!isNull());
+      return m_instance->ptr->saveProperties(filename,propertiesToSkip);
+    }
+
+    /// reads a config file from disc, sets on underlying grabber
+    virtual void loadProperties(const std::string &filename,const std::vector<std::string> &propertiesToSkip=EMPTY_VEC){
+      Mutex::Locker __lock(m_mutex);
+      ICLASSERT_RETURN(!isNull());
+      return m_instance->ptr->loadProperties(filename,propertiesToSkip);
+    }
+
+    /// get type of property of underlying grabber
+    virtual std::string getPropertyType(const std::string &propertyName){
+      Mutex::Locker __lock(m_mutex);
+      ICLASSERT_RETURN_VAL(!isNull(),std::string());
+      return m_instance->ptr->getPropertyType(propertyName);
+    }
+
+    /// get information of the underlying grabbers properties valid values
+    virtual std::string getPropertyInfo(const std::string &propertyName){
+      Mutex::Locker __lock(m_mutex);
+      ICLASSERT_RETURN_VAL(!isNull(),std::string());
+      return m_instance->ptr->getPropertyInfo(propertyName);
+    }
+
+    /// returns the current value of a property or a parameter of underlying grabber
+    virtual Any getPropertyValue(const std::string &propertyName){
+      Mutex::Locker __lock(m_mutex);
+      ICLASSERT_RETURN_VAL(!isNull(),Any());
+      return m_instance->ptr->getPropertyValue(propertyName);
+    }
+
+    /// returns the underlying grabbers tooltip description for a given property
+    virtual std::string getPropertyToolTip(const std::string &propertyName) {
+      Mutex::Locker __lock(m_mutex);
+      ICLASSERT_RETURN_VAL(!isNull(),std::string());
+      return m_instance->ptr->getPropertyToolTip(propertyName);
+    }
+
+    /// Returns whether this property may be changed internally
+    virtual int getPropertyVolatileness(const std::string &propertyName){
+      Mutex::Locker __lock(m_mutex);
+      ICLASSERT_RETURN_VAL(!isNull(),0);
+      return m_instance->ptr->getPropertyVolatileness(propertyName);
+    }
 
     /// internally set a desired format
     virtual void setDesiredFormatInternal(format fmt){
@@ -309,7 +378,7 @@ namespace icl{
 
   /** \cond */
   template<class G> std::map<std::string,icl::SmartPtr<GrabberHandleInstance<G> > > GrabberHandle<G>::s_instances;
-  template<class G> Mutex GrabberHandle<G>::s_mutex; 
+  template<class G> Mutex GrabberHandle<G>::s_mutex;
   /** \endcond */
 }
 

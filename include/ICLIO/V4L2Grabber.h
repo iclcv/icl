@@ -57,7 +57,7 @@ namespace icl{
     virtual const ImgBase *acquireImage();
 
     /// returns the device property list
-    virtual std::vector<std::string> getPropertyList();    
+    virtual std::vector<std::string> getPropertyListC();    
     
     /// sets a specific property
     virtual void setProperty(const std::string &property, const std::string &value);

@@ -55,6 +55,8 @@ add_libsource (${PROJECT_NAME} "src/Color.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/Converter.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/FixedConverter.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/PseudoColorConverter.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+
+set(CONDITIONLIST HAVE_OPENCV_COND)
 add_libsource (${PROJECT_NAME} "src/OpenCV.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)

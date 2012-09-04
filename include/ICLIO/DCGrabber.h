@@ -137,7 +137,7 @@ namespace icl{
     
     /// returns a list of properties, that can be set using setProperty
     /** @return list of supported property names **/
-    virtual std::vector<std::string> getPropertyList();
+    virtual std::vector<std::string> getPropertyListC();
 
     /// get type of property
     /** \copydoc icl::Grabber::getType(const std::string &)*/

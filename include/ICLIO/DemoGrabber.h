@@ -97,7 +97,7 @@ namespace icl{
     
     public:
     /// the demo-grabber provides some demo properties
-    virtual std::vector<std::string> getPropertyList();
+    virtual std::vector<std::string> getPropertyListC();
     
     /// the demo-grabber provides some demo properties
     virtual void setProperty(const std::string &property, const std::string &value);

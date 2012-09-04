@@ -368,7 +368,7 @@ namespace icl{
         they are read from configuration files, hence these parameters are skipped at default*/
     virtual void saveProperties(const std::string &filename, const std::vector<std::string> &propertiesToSkip=EMPTY_VEC);
 
-    /// reads a camera config file from disc
+    /// reads a config file from disc
     /** @ see saveProperties */
     virtual void loadProperties(const std::string &filename,const std::vector<std::string> &propertiesToSkip=EMPTY_VEC);
 

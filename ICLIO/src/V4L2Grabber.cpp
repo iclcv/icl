@@ -698,7 +698,7 @@ namespace icl{
 
 
 
-   std::vector<std::string> V4L2GrabberImpl::getPropertyList(){
+   std::vector<std::string> V4L2GrabberImpl::getPropertyListC(){
      Mutex::Locker lock(implMutex);
      std::vector<std::string> all;
      all.push_back("avoid doubled frames");

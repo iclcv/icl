@@ -53,7 +53,7 @@ namespace icl{
       }
       \endcode
   **/
-  class FileGrabberImpl : public Grabber{
+  class FileGrabberImpl : public Grabber {
     public:
     
     /// for the internal plugin concept
@@ -160,14 +160,14 @@ namespace icl{
     */
     void forcePluginType(const std::string &suffix);
     
-    
+
     /// interface for the setter function for video device properties 
     /** \copydoc icl::Grabber::setProperty(const std::string&,const std::string&) **/
     virtual void setProperty(const std::string &property, const std::string &value);
     
     /// returns a list of properties, that can be set usingsetProperty
     /** @return list of supported property names **/
-    virtual std::vector<std::string> getPropertyList();
+    virtual std::vector<std::string> getPropertyListC();
     
     /// get type of property
     /** \copydoc icl::Grabber::getType(const std::string &)*/
@@ -182,8 +182,11 @@ namespace icl{
 
     /// returns whether property is volatile
     virtual int isVolatile(const std::string &propertyName);
-    
+
     private:
+    /// used by constructor to add properties
+    void addProperties();
+
     struct Data;  
     Data *m_data;
   };
