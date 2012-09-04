@@ -192,10 +192,10 @@ namespace icl {
       }
   
       /// returns a list of all properties, that can be set
-      virtual std::vector<std::string> getPropertyList(){
+      virtual std::vector<std::string> getPropertyListC(){
         utils::Mutex::Locker __lock(m_mutex);
         ICLASSERT_RETURN_VAL(!isNull(),std::vector<std::string>());
-        return m_poGrabber->getPropertyList();
+        return m_poGrabber->getPropertyListC();
       }
   
       /// setting up properties of underlying grabber
@@ -206,10 +206,10 @@ namespace icl {
       }
   
       /// returns whether property is supported by underlying grabber
-      virtual bool supportsProperty(const std::string &property){
+      virtual bool supportsPropertyC(const std::string &property){
         utils::Mutex::Locker __lock(m_mutex);
         ICLASSERT_RETURN_VAL(!isNull(),false);
-        return m_poGrabber->supportsProperty(property);
+        return m_poGrabber->supportsPropertyC(property);
       }
       
       /// returns the property type of given property

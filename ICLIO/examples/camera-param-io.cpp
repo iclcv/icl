@@ -71,12 +71,12 @@ int main(int n, char **ppc){
   }else if(g){
     std::cout << grabber.getValue(pa("-g")) << std::endl;
   }else if(i){
-    grabber.loadProperties(pa("-i"),false,true);
+    grabber.loadPropertiesC(pa("-i"),false,true);
   }else if(o){
-    grabber.saveProperties(pa("-o"),false,true);
+    grabber.savePropertiesC(pa("-o"),false,true);
   }else{
     static const int w = 35;
-    std::vector<std::string> l = grabber.getPropertyList();
+    std::vector<std::string> l = grabber.getPropertyListC();
     std::cout << "camera interface provides " << l.size() << " features" << std::endl;
     std::cout << "feature";
     write_spaces(w-strlen("feature"));

@@ -147,6 +147,7 @@ namespace icl{
       inline void initialize(const std::string &id){
         utils::Mutex::Locker l(s_mutex);
         m_instance = s_instances[id];
+        addChildConfigurable(m_instance->ptr);
       }
       
       /// used inderived classes to initialize itself as brand new instance
@@ -154,6 +155,7 @@ namespace icl{
         ICLASSERT_RETURN(isNew(id));
         utils::Mutex::Locker l(s_mutex);
         m_instance = s_instances[id] = InstancePtr(new GrabberHandleInstance<G>(id,g));
+        addChildConfigurable(m_instance->ptr);
       }
       public:
   
@@ -192,16 +194,16 @@ namespace icl{
         m_instance->ptr->setProperty(property,value);
       }
       /// calles underlying grabber's getPropertyList function
-      virtual inline std::vector<std::string> getPropertyList(){
+      virtual inline std::vector<std::string> getPropertyListC(){
         ICLASSERT_RETURN_VAL(!isNull(),std::vector<std::string>());
         utils::Mutex::Locker l(m_instance->mutex);
-        return m_instance->ptr->getPropertyList();
+        return m_instance->ptr->getPropertyListC();
       }
       /// calles underlying grabber's supportsProperty function
-      virtual inline  bool supportsProperty(const std::string &property){
+      virtual inline  bool supportsPropertyC(const std::string &property){
         ICLASSERT_RETURN_VAL(!isNull(),false);
         utils::Mutex::Locker l(m_instance->mutex);
-        return m_instance->ptr->supportsProperty(property);
+        return m_instance->ptr->supportsPropertyC(property);
       }
       /// calles underlying grabber's getType function
       virtual inline std::string getType(const std::string &name){

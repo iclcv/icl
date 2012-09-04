@@ -79,7 +79,7 @@ void init_grabber(){
 
   
   if(pa("-camera-config")){
-    grabber->loadProperties(pa("-camera-config"),false);
+    grabber->loadPropertiesC(pa("-camera-config"),false);
   }  
 }
 

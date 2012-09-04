@@ -180,6 +180,7 @@ namespace icl{
       m_data->loop = true;
       m_data->poBufferImage = 0;
       m_data->useTimeStamps = false;
+      addProperties();
     }
     
     FileGrabberImpl::FileGrabberImpl(const std::string &pattern, 
@@ -202,7 +203,8 @@ namespace icl{
       
       if(buffer){
         bufferImages(false);
-      }    
+      }
+      addProperties();
     }
   
     // }}}
@@ -416,7 +418,7 @@ namespace icl{
       }
     }
     
-    std::vector<std::string> FileGrabberImpl::getPropertyList(){
+    std::vector<std::string> FileGrabberImpl::getPropertyListC(){
       static const std::string ps[12] = {
         "next","prev","use-time-stamps","next filename","current filename","jump-to-start",
         "relative progress","absolute progress","auto-next","loop","file-count","frame-index"
@@ -486,7 +488,21 @@ namespace icl{
       }
     }
   
-  
+    void FileGrabberImpl::addProperties(){
+      addProperty("next","command","",Any(),0,"Increments the file counter for the grabber");
+      addProperty("prev","command","",Any(),0,"Decrements the file counter for the grabber");
+      addProperty("use-time-stamps","flag","",m_data->useTimeStamps,0,"Whether to use timestamps"); //TODO: what is this?
+      addProperty("next filename","info","",getNextFileName(),20,"Name of the next file to grab");
+      addProperty("current filename","info","",m_data->oFileList[iclMax(m_data->iCurrIdx-1,0)],20,"Name of the last grabbed file");
+      addProperty("jump-to-start","command","",Any(),0,"Reset the file counter to 0");
+      addProperty("relative progress","info","",str((100* (m_data->iCurrIdx+1)) / float(m_data->oFileList.size()))+" %",20,"The relative progress through the files in percent");
+      addProperty("absolute progress","info","",str(m_data->iCurrIdx+1) + " / " + str(m_data->oFileList.size()),20,"The absolute progress through the files. 'current nunmber/total number'");
+      addProperty("auto-next","flag","",m_data->bAutoNext,0,"Whether to automatically grab the next file for every frame");
+      addProperty("loop","flag","",m_data->loop,0,"Whether to reset the file counter to zero after reaching the last");
+      addProperty("file-count","info","",str(m_data->oFileList.size()),0,"Total count of files the grabber will show");
+      addProperty("frame-index","range:spinbox","[0," + str(m_data->oFileList.size()-1) + "]",m_data->iCurrIdx,20,"Currently grabbed frame");
+    }
+
   
   
   } // namespace io

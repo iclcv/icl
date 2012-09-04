@@ -495,13 +495,15 @@ namespace icl{
         std::string errMsg("generic grabber was not able to find any suitable device\ntried:");
         throw ICLException(errMsg+errStr);
       }else{
+        // add internal grabber as child-configurable
+        addChildConfigurable(m_poGrabber);
+
         GrabberDeviceDescription d(m_sType,pmap[m_sType].id,"any device");
   
         for(unsigned int i=0;i<deviceList.size();++i){
           if(deviceList[i].type == d.type && deviceList[i].id == d.id) return;
         }
-        deviceList.push_back(d);
-        
+        deviceList.push_back(d);       
   
         const std::vector<std::string> &options = pmap[m_sType].options;
         /// setting extra properties ...
@@ -509,10 +511,10 @@ namespace icl{
           std::pair<std::string,std::string> p = split_at_first('=',options[i]);
           if(p.second.length()) p.second = p.second.substr(1);
           if(p.first == "load"){
-            m_poGrabber->loadProperties(p.second);
+            m_poGrabber->loadPropertiesC(p.second);
           }else if(p.first == "info"){
             std::cout << "Property list for " << d << std::endl;
-            std::vector<std::string> ps = m_poGrabber->getPropertyList();
+            std::vector<std::string> ps = m_poGrabber->getPropertyListC();
             TextTable t(4,ps.size()+1,35);
             t[0] = tok("property,type,allowed values,current value",",");
             for(unsigned int j=0;j<ps.size();++j){

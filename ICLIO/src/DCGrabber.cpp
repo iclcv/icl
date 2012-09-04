@@ -340,7 +340,7 @@ namespace icl{
     }
   
     std::vector<std::string> DCGrabber::get_io_property_list(){
-      std::vector<std::string> v = getPropertyList();
+      std::vector<std::string> v = getPropertyListC();
       vector<string> r;
       for(unsigned int i=0;i<v.size();++i){
         if(v[i] != "size") r.push_back(v[i]);
