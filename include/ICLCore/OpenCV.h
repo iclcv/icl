@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_OPEN_CV_H
-#define ICL_OPEN_CV_H
+#pragma once
 
 #ifndef HAVE_OPENCV
 #warning "this header should not be included if HAVE_OPENCV is not defined"
@@ -95,7 +94,6 @@ namespace icl{
     CvMat *img_to_cvmat_shallow(const ImgBase *src,CvMat *dst=0) throw (utils::ICLException);
   } // namespace core
 }
-#endif
 #endif
 
 

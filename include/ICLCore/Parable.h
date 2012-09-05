@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_PARABLE_H
-#define ICL_PARABLE_H
+#pragma once
 
 #include <ICLUtils/Point32f.h>
 #include <stdio.h>
@@ -98,5 +97,3 @@ namespace icl{
   } // namespace core
 }
 
-
-#endif
