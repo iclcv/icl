@@ -19,9 +19,11 @@ Table of Contents
    * :ref:`io.grabbers.device-selection`
    * :ref:`io.grabbers.properties`
    * :ref:`io.grabber-backends`
+   * :ref:`io.file-types`
 
 * :ref:`io.generic-image-output`
 
+   * :ref:`io.grabbers.output-device-selection`
    * :ref:`io.output-backends`
 
 * :ref:`io.color-format-decoder`
@@ -198,6 +200,65 @@ dependencies are not part of automatically created list.
 +-------+---------+------------------------------------------+-----------------------------------------------------------+-------------------------------+
 
 
+.. _io.file-types:
+
+Supported Image File Types
+""""""""""""""""""""""""""
+
+ICL supports a huge variety of image file types. Some of them are
+supported natively, i.e. no extra library is necessary. Most of the
+formats do not support to load and save image meta data and
+icl-specific image features such as the region of interest.
+
+**Natively supported Image Types**
+
+  * **ppm, pgm and pnm** are supported as a common, simple and
+    uncompressed image format
+  * **csv** comma separated value files can also be read natively
+  * **icl** a first **pnm**-like data format
+  * **bicl** and **jicl** the *new* common icl-specific data types,
+    which supports all image properties, including image meta-data.  The
+    **jicl** format is uses jpeg-compression internally, while **bicl**
+    stored the image data in a binary manner, but uncompressed
+    
+  * **rle1**, **rle4**, **rle6**, and **rle8** is also an icl-specific
+    format that is in particular well suited for binary images. The
+    formats use run length encoding, where for each format, a certain
+    number of bits is used for encoding a pixel value. I.e. **rle1**
+    uses 1 bit for the pixel value, and is therefore only able to
+    represent binary images. However in case of binary images, the
+    maximum run length is defined by the remaining 7 bits (128), which
+    usually leads to a very high loss-less compression ratio.  The
+    **rle4** format is able to represent 16 different gray-values,
+    however its theoretical maximum compression is much less, and this
+    effect is even stronger for **rle6**, which can distinguish up to
+    64 gray values, which is usually enough for visualization.  The
+    **rle8** format works slightly differently, because it uses two
+    bytes -- 16bits -- for each run-token. Therefore, it is loss-less
+    for common **Img8u** source images, but still providing a maximum
+    run length of 256, which leads to a very high compression for
+    homogeneous binary image regions. The **rle**-type also support
+    loading and saving of all other image properties, including
+    meta-data.
+  
+
+**Image Files that need External Libraries**
+
+  * **.gz** for each natively supported file suffix also a suffix.gz-
+    version is supported, which simply writes the files with zlib.
+    Even though, this is rather slow, it can sometimes provide good
+    loss-less image compression
+  
+  * **jpeg** is supported if ICL has libjpeg or image-magick support, or
+
+  * **png** is supported if ICL has png or image-magick support
+
+  * if image-magick is supported, also all file-types are supported,
+    that can be tacked by image magick. A list of file types supported
+    by image magick can be obtained from command line using::
+      
+      identify -list format
+
 
 
 .. _io.generic-image-output:
@@ -206,8 +267,21 @@ The Generic Image Output
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 The **io::GenericImageOutput** works very similar to the
-**io::GenericGrabber**, however in an opposite direction.  Since
-almost all ICL-applications use the **io::GenericGrabber** in
+**io::GenericGrabber**, however in an opposite direction. It has a single
+method called **send**: 
+
+.. literalinclude:: examples/generic-image-output.cpp
+   :linenos:
+   :language: c++
+
+
+.. _io.grabbers.output-device-selection:
+
+Output Selection from Command Line
+""""""""""""""""""""""""""""""""""
+
+
+Since almost all ICL-applications use the **io::GenericGrabber** in
 combination with ICL's programm argument evaluation toolbox, nearly
 all ICL applications can be set up to grab their source images from an
 arbitrary image source. In this context, the application
@@ -256,15 +330,8 @@ stream the grabbed images *somewhere else*. Here are some examples:
   publish the image via spread and socket simultaneously::
 
     icl-pipe -input cvvideo myfile.avi -o rsb spread,socket:/foo/bar
+
     
-
-For further details and a complete list of possible image outputs see
-:ref:`io.output-backends`.
-
-
-
-
-
 .. _io.output-backends:
 
 
@@ -281,17 +348,17 @@ with ICL's program argument evaluation environtment, such as **icl-pipe**::
 A complete list looks like this, and again, we added a column for the
 library dependency:
 
-+----+-------+--------------------------------+--------------------------------+
-| nr |  id   |          explanation           |      library dependency        |
-+====+=======+================================+================================+
-| 0  | video | OpenCV based video file writer |          OpenCV >= 2.3         | 
-+----+-------+--------------------------------+--------------------------------+
-| 1  |  sm   | Qt based shared memory writer  |             Qt                 | 
-+----+-------+--------------------------------+--------------------------------+
-| 2  |  rsb  |     Network output stream      |      librsbcore, librsc        | 
-+----+-------+--------------------------------+--------------------------------+
-| 3  | file  |          File Writer           | optionally, libjpeg, ...       | 
-+----+-------+--------------------------------+--------------------------------+
++----+-------+-----------------------------+--------------------------------+--------------------------------+
+| nr |  id   |     parameters              |          explanation           |      library dependency        |
++====+=======+=============================+================================+================================+
+| 0  | video |   video filename            | OpenCV based video file writer |          OpenCV >= 2.3         | 
++----+-------+-----------------------------+--------------------------------+--------------------------------+
+| 1  |  sm   |  shared memory segment ID   | Qt based shared memory writer  |             Qt                 | 
++----+-------+-----------------------------+--------------------------------+--------------------------------+
+| 2  |  rsb  | [transports=spread]:scope   |     Network output stream      |      librsbcore, librsc        | 
++----+-------+-----------------------------+--------------------------------+--------------------------------+
+| 3  | file  |   file pattern in tics ''   |          File Writer           | optionally, libjpeg, ...       | 
++----+-------+-----------------------------+--------------------------------+--------------------------------+
 
 
 
@@ -300,10 +367,34 @@ library dependency:
 The ColorFormatDecoder
 ^^^^^^^^^^^^^^^^^^^^^^
 
-TEXT
+The **io::ColorFormatDecoder** is closely connected to the
+**io::FourCC** utility class. Its **decode** function is able to
+decode commonly encoded images. Here, the data is represented by
+a single data pointer (in shape of a **const icl8u***), and the
+color format is specified by an also passed **FourCC** instance.
+Currently, the following FourCC codes are supported
 
+**GRAY**, **GREY** and **Y800**
 
+   are all the same simple row-major byte gray scale images
 
+**YUYV**, **Y444**, **YU12**
+   
+   YUV sub-formats
+
+**MJPE**
+
+   Motion jpeg
+
+**MYRM**
+
+   Customly defined fourcc value for the Myrmex tactile device
+   designed by Carsten Schürmann
+
+.. note::
+
+   Whenever a new V4L2 camera provides an unrecognized color format, 
+   support for this format must be added to the **ColorFormatDecoder**
 
 
 .. _io.intrinsic-calibrator:
@@ -311,6 +402,10 @@ TEXT
 Intrinsic Camera Calibration (*will be moved*)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+ICL's intrinsic camera calibration framework is currently not properly
+supported and maintained. The application for camera calibration is
+not working properly and its OpenCV-based parameters are not supported
+by ICL's image undistortion!
 
 .. todo::
    
@@ -325,9 +420,35 @@ Intrinsic Camera Calibration (*will be moved*)
 Other Classes
 ^^^^^^^^^^^^^
 
-* JPEGEncoder and JPEGDecoder
-* FileList
-* FileNameGenerator
-* FourCC
-* ImageCompressor
+**JPEGEncoder** and **JPEGDecoder**
+
+  These are used at several locations. First of all for reading and
+  writing jpeg images, but also shared-memory- and rsb-based inter
+  process communication can be optimized using jpeg compression.  The
+  decoder is also used for motion-jpeg decoding.
+
+
+**FileList**
+
+  The file list can be used to expand bash-style file patterns, such
+  as "images/\*.png". Once instantiated, the file list provides
+  lexicographically ordered random access to the matching
+  files. Usually, this must not be used manually, as it is automatically
+  used if the **GenericGrabber** is instantiated with a "file" 
+  *backend  selector*. 
+  
+**FileNameGenerator**
+  
+  The **FileNameGenerator** allows for creating incremental file-names
+  such as "image-001.png", "image-002.png", etc. For this, a given
+  pattern string must contain a connected set of hashes
+  (e.g. "image-###.png"). The more hashes are used, the more trailing 
+  zeros are inserted
+  
+**ImageCompressor**
+  
+  The image compressor is used to create the binary ICL image formats
+  **bicl**, **jicl** and also the **rleX**-formats. Actually its 
+  image serialization is also used for shared-memory- and rsb-based
+  network communication
 
