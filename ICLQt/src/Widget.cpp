@@ -1709,27 +1709,8 @@ namespace icl{
   
     
     void ICLWidget::rebufferImageInternal(){
-      /*
-          THIS is no longer needed: rebuffering is done automatically
-          using the dirty flag of the GLImg
-  
-          m_data->mutex.lock();
-          if(m_data-m_data->image && m_data->image->hasImage()){
-          if(m_data->channelSelBuf){
-          m_data->mutex.unlock();
-          setImage(m_data->channelSelBuf);
-          }else{
-          ImgBase *tmpImage = m_data->image->deepCopy();
-          m_data->mutex.unlock();
-          setImage(tmpImage);
-          delete tmpImage;
-          }
-          }else{
-          m_data->mutex.unlock();
-          }
-          WARNING_LOG("rebuffering was disabled!");
-      */
-  
+      // for rebuffering here!
+      m_data->image.setBCI(m_data->bci[0], m_data->bci[1],m_data->bci[2]+1);
       m_data->image.setBCI(m_data->bci[0], m_data->bci[1],m_data->bci[2]);
       update();
     }
@@ -1902,6 +1883,7 @@ namespace icl{
   
     void ICLWidget::setRangeMode(rangemode rm){
       m_data->rm = rm;
+      rebufferImageInternal();
     }
   
   
@@ -2211,7 +2193,6 @@ namespace icl{
   
     void ICLWidget::setRangeModeNormalOrScaled(bool enabled){
       setRangeMode(enabled?rmAuto:rmOff);
-      rebufferImageInternal();
       if(!m_data->menuptr){
         create_menu(this,m_data);
         showHideMenu();

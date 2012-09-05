@@ -1013,7 +1013,16 @@ namespace icl{
   
       ICLASSERT_RETURN( src );
       ICLASSERT_RETURN( dst );
-      
+
+      if(src->getFormat() == dst->getFormat()){
+        if(roiOnly){
+          src->convertROI(dst);
+        }else{
+          src->convert(dst);
+        }
+        return;
+      }
+
       dst->setTime(src->getTime());
   
       if(roiOnly){

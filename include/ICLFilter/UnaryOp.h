@@ -72,14 +72,31 @@ namespace icl{
       /// pure virtual apply function, that must be implemented in all derived classes
       virtual void apply(const core::ImgBase *operand1, core::ImgBase **dst)=0;
   
-      /// *NEW* apply function for multithreaded filtering (currently even slower than using one thread)
-      virtual void applyMT(const core::ImgBase *operand1, core::ImgBase **dst, unsigned int nThreads);
+      /// apply function for multithreaded filtering (currently even slower than using one thread)
+      virtual ICL_DEPRECATED void applyMT(const core::ImgBase *operand1, 
+                                          core::ImgBase **dst, unsigned int nThreads);
   
       /// applys the filter usign an internal buffer as output image 
       /** Normally, this function must not be reimplemented, because it's default implementation
           will call apply(const ImgBase *,ImgBase**) using an internal buffer as destination image.
           This destination image is returned. */
       virtual const core::ImgBase *apply(const core::ImgBase *src);
+      
+      /// function operator (alternative for apply(src,dst)
+      inline void operator()(const core::ImgBase *src, core::ImgBase **dst){
+        apply(src,dst);
+      }
+
+      /// function operator for the implicit destination apply(src) call
+      inline const core::ImgBase *operator()(const core::ImgBase *src){
+        return apply(src);
+      }
+
+      /// reference based function operator
+      inline const core::ImgBase &operator()(const core::ImgBase &src){
+        return *apply(&src);
+      }
+
       
       /// sets if the image should be clip to ROI or not
       /**

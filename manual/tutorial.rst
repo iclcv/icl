@@ -17,3 +17,4 @@ Tutorial
    tutorials/marker-detection
    tutorials/using-imgbase
    tutorials/imgbase-ptrptrs
+   tutorials/using-filters

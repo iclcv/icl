@@ -414,9 +414,7 @@ namespace icl{
         @param image image to show
         @see showSetput(const string&, const stirng&, int)
     **/
-    template<class T>
-    void show(const core::Img<T> &image);
-    
+    void show(const ImgBase &image);
     
     /// setup image visualisation programm
     /** when images are shown using an extrenal viewer like gnu's xv, the image is temporarily 

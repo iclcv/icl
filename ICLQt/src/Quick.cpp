@@ -688,7 +688,7 @@ namespace icl{
     }  
     
     template<class T>
-    void show(const Img<T> &image){
+    static void show_internal(const Img<T> &image){
       // {{{ open
       
       if(image.hasFullROI()){
@@ -723,6 +723,16 @@ namespace icl{
       }
     }
   
+    void show(const ImgBase &image){
+      switch(image.getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: show_internal(*image.as##D()); break;
+        ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
+        default:
+        ICL_INVALID_DEPTH;
+      }
+    }
+
   
   
     // }}}
@@ -749,7 +759,6 @@ namespace icl{
     template Img<icl##D> blur(const Img<icl##D>&,int);               \
     template Img<icl##D> copy(const Img<icl##D>&);                   \
     template Img<icl##D> copyroi(const Img<icl##D>&);                \
-    template void show(const Img<icl##D>&);                          \
     template void save(const Img<icl##D>&,const string&);            \
     template void print(const Img<icl##D>&);                         \
     template Img<icl##D> norm(const Img<icl##D>&);

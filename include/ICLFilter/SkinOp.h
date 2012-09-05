@@ -60,7 +60,7 @@ namespace icl {
       
       author Michael Götting (mgoettin@techfak.uni-bielefeld.de)
   **/
-  class SkinOp : public UnaryOp, public Uncopyable{
+  class ICL_DEPRECATED SkinOp : public UnaryOp, public Uncopyable{
     public:
     ///Empty Constructor
     SkinOp () : m_poChromaApply(0), m_poChromaTrain(0) {}
