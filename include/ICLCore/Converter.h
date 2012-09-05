@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICLCONVERTER_H
-#define ICLCONVERTER_H
+#pragma once
 
 #include <ICLCore/Img.h>
 #include <ICLUtils/Uncopyable.h>
@@ -168,5 +167,3 @@ namespace icl{
     };
   } // namespace core
 }
-
-#endif
