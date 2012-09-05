@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef FIXED_CONVERTER_H
-#define FIXED_CONVERTER_H
+#pragma once
 
 #include <ICLCore/Converter.h>
 #include <ICLUtils/Uncopyable.h>
@@ -100,5 +99,3 @@ namespace icl{
   
   } // namespace core
 }
-
-#endif 
