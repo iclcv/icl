@@ -445,8 +445,27 @@ to one of the other section.
 
 **icl::filter::WeightChannelsOp**
 
+  Multiplies each image channel with a different constant
 
-icl::filter::WeightedSumOp
+**icl::filter::WeightedSumOp**
+
+  Multiplies each image channel with a different constant
+  and sums up the result. Mathematically, this is indentical to the
+  computation of the scalar product of each pixel color vector with
+  a given constant vector.
+
+**icl::filter::GradientImage**
+  Does not extend the **UnaryOp** interface, but it somehow works
+  similar to the **UnaryOp**. The **GradientImage** can be used
+  to determine an image gradient image 
+  
+  * intensity
+  * angle
+  * x- and y-component
+
+  Internally, sobel filters are used
+  
+
 
 
 .. _filter.binary:
@@ -454,22 +473,76 @@ icl::filter::WeightedSumOp
 Binary Operators
 ^^^^^^^^^^^^^^^^
 
-icl::filter::BinaryArithmeticalOp
-icl::filter::BinaryCompareOp
-icl::filter::BinaryLogicalOp
-icl::filter::BinaryOp
-icl::filter::ProximityOp
+  **BinaryOp** instances behave very similar to the already presented
+  unary operators, except for the fact, that their **apply** method get
+  two instead of one source image arguments::
 
+     void apply(const core::ImgBase *src1, const core::ImgBase *src2,core::ImgBase **dst)
+
+  Binary operators also provide a function operator interface for are
+  more intuitive use.
+
+
+**icl::filter::BinaryOp**
+
+  Base class interface
+
+**icl::filter::BinaryArithmeticalOp**
+
+  This operator implements binary arithmetical operations such as pixel-wise
+  addition of two image.
+
+**icl::filter::BinaryCompareOp**
+  
+  Pixel-wise logical comparison of two image, always resulting in a
+  **Img8u**-binary image
+
+**icl::filter::BinaryLogicalOp**
+
+  Pixel-wise logical operation
+
+**icl::filter::ProximityOp**
+
+  This class is used for proximity measurement, that defines a
+  pixel-wise similarity of two image. Here, the operand is always
+  referred to as the source image, while the second operand is
+  referred to as the pattern image.  Internally, the pattern image
+  is centered at every pixel location for a local comparison.
+  
+  The class provides three *apply modes* that determines how to
+  deal with overlap of the pattern and the source image borders,
+  and also three different distance measurement metrics:
+  
+  * square distance
+  * cross correlation
+  * normalized cross correlation
+
+  The operator is only supported with Intel IPP, but here,
+  it is incredibly fast!
 
 
 .. _filter.tools:
 
 Other Utility Classes
 ^^^^^^^^^^^^^^^^^^^^^
+In this final section, the remaining tools are listed
 
-icl::filter::ConvolutionKernel
-icl::filter::OpROIHandler
-icl::filter::GradientImage
-icl::filter::ImageSplitter
-icl::filter::UnaryOpWork
-icl::filter::LUT2D<t>
+**icl::filter::ConvolutionKernel**
+
+  Utility class for the **ConvolutionOp**
+  
+**icl::filter::OpROIHandler**
+ 
+  Utility class for implementing the **UnaryOp** featuers
+  :ref:`filter.cliptoroi` and :ref:`filter.checkonly`.
+
+
+**icl::filter::ImageSplitter**
+
+  Splits image horizontally into a set of shared-copies
+  for mutli threading (not well supported)
+ 
+**icl::filter::UnaryOpWork**
+
+  Utility class for the deprecated **UnaryOp::applyMT**-function
+  
