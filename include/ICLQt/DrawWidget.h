@@ -92,7 +92,10 @@ if(e.isLeft() && !gui["vis"].as<int>()){
 }
 
 void init(){
-  gui << Draw().handle("draw").minSize(32,24) << (HBox().maxSize(100,3) << Combo("image,levelmap").handle("vis")) << Slider(2,10,5).out("levels").label("levels");
+  gui << Draw().handle("draw").minSize(32,24)
+      << (HBox().maxSize(100,3)
+         << Combo("image,levelmap").handle("vis")
+         << Slider(2,10,5).out("levels").label("levels"));
 
   gui.show();
   gui["draw"].install(new MouseHandler(click));
