@@ -84,7 +84,8 @@ namespace icl{
       std::ostringstream out;
       while( !feof(f) ){
         memset(buf,0,128);
-        fread(buf,1,127,f);
+        size_t res = fread(buf,1,127,f);
+        (void)res;
         out << buf;
       }
       fclose(f);

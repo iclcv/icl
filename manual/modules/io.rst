@@ -14,15 +14,19 @@ not discussed.
 Table of Contents
 ^^^^^^^^^^^^^^^^^
 
-.. * :ref:`io.generic-grabber`
+* :ref:`io.generic-grabber`
+
    * :ref:`io.grabbers.device-selection`
    * :ref:`io.grabbers.properties`
    * :ref:`io.grabber-backends`
-   * :ref:`io.generic-image-output`
+
+* :ref:`io.generic-image-output`
+
    * :ref:`io.output-backends`
-   * :ref:`io.color-format-decoder`
-   * :ref:`io.intrinsic-calibrator`
-   * :ref:`io.others`
+
+* :ref:`io.color-format-decoder`
+* :ref:`io.intrinsic-calibrator`
+* :ref:`io.others`
 
 
 .. _io.generic-grabber:
@@ -41,10 +45,10 @@ applications that are able to acquire images from all available image
 sources without having to check possibly supported back-ends
 manually. Furthermore, your application will also benefit from
 ICL-updates, which provide further grabber-implementations
-automatically, and the string-based devide selection mechanism does also
-provide an elegant way to set grabber-properties from the command-line.
-
-Here is a small example for a dynamic-source grab example
+automatically, and the string-based devide selection mechanism does
+also provide an elegant way to set grabber-properties from the
+command-line.  Here is a small example for a dynamic-source grab
+example
 
 
 +---------------------------------------------------+----------------------------------------+
@@ -63,13 +67,14 @@ A minimally adapted version of this application is available as an
 example application called 'icl-viewer'. The program argument -input
 expects two sub-arguments, the *backend-selector* and the *device
 selector* In following examples you will see synergy of ICL's program
-argument evaluation toolbox and the **io::GenericGrabber**:
+argument evaluation toolbox and the **io::GenericGrabber**
+
 
 * grab from the first fire-wire device available::
 
     icl-viewer -input dc 0
 
-* grab from a file::
+* grab from a file ::
 
     icl-viewer -input file my-image.png
 
@@ -266,8 +271,28 @@ For further details and a complete list of possible image outputs see
 List of Supported Output Backends
 """""""""""""""""""""""""""""""""
 
+Just like the **GenericGrabber** also the **GenericImageOutput** can be used
+to query a list of supported backends from the command line. Of course,
+we need an application, that uses the **GenericImageOutput** in combination
+with ICL's program argument evaluation environtment, such as **icl-pipe**::
 
-TEXT
+  icl-pipe -i demo 0 -o list all
+
+A complete list looks like this, and again, we added a column for the
+library dependency:
+
++----+-------+--------------------------------+--------------------------------+
+| nr |  id   |          explanation           |      library dependency        |
++====+=======+================================+================================+
+| 0  | video | OpenCV based video file writer |          OpenCV >= 2.3         | 
++----+-------+--------------------------------+--------------------------------+
+| 1  |  sm   | Qt based shared memory writer  |             Qt                 | 
++----+-------+--------------------------------+--------------------------------+
+| 2  |  rsb  |     Network output stream      |      librsbcore, librsc        | 
++----+-------+--------------------------------+--------------------------------+
+| 3  | file  |          File Writer           | optionally, libjpeg, ...       | 
++----+-------+--------------------------------+--------------------------------+
+
 
 
 .. _io.color-format-decoder:
