@@ -113,15 +113,15 @@ namespace icl{
         \code
         
         #include <ICLIO/FileWriter.h>
-        #include <ICLQuick/Quick.h>
-  
+        #include <ICLQt/Quick.h>
+
         int main(){
            // create an image
-           core::Img8u a = cvt8u(scale(create("parrot"),640,480));
-  
+           icl::core::Img8u a = cvt8u(scale(create("parrot"),640,480));
+
            // create the file writer
-           FileWriter writer("image_####.jpg");
-  
+           icl::io::FileWriter writer("image_####.jpg");
+
            // write the file
            writer.write(&a);
         }
