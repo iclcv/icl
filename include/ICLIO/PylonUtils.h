@@ -96,7 +96,7 @@ namespace icl {
               delete[] m_Buffer;
             }
           }
-          /// uses icl::copy to write buffer-data to m_Buffer
+          /// uses icl::io::pylon::TsBuffer::copy to write buffer-data to m_Buffer
           /**
           * casts buffer to internal type and copies m_Size blocks
           * to m_Buffer.
