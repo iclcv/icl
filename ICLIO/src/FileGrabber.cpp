@@ -503,11 +503,11 @@ namespace icl{
       addProperty("next","command","",Any(),0,"Increments the file counter for the grabber");
       addProperty("prev","command","",Any(),0,"Decrements the file counter for the grabber");
       addProperty("use-time-stamps","flag","",m_data->useTimeStamps,0,"Whether to use timestamps"); //TODO: what is this?
-      addProperty("next filename","info","",getNextFileName(),20,"Name of the next file to grab");
-      addProperty("current filename","info","",m_data->oFileList[iclMax(m_data->iCurrIdx-1,0)],20,"Name of the last grabbed file");
+      addProperty("next filename","info","",getNextFileName(),0,"Name of the next file to grab");
+      addProperty("current filename","info","",m_data->oFileList[iclMax(m_data->iCurrIdx-1,0)],0,"Name of the last grabbed file");
       addProperty("jump-to-start","command","",Any(),0,"Reset the file counter to 0");
-      addProperty("relative progress","info","",str((100* (m_data->iCurrIdx+1)) / float(m_data->oFileList.size()))+" %",20,"The relative progress through the files in percent");
-      addProperty("absolute progress","info","",str(m_data->iCurrIdx+1) + " / " + str(m_data->oFileList.size()),20,"The absolute progress through the files. 'current nunmber/total number'");
+      addProperty("relative progress","info","",str((100* (m_data->iCurrIdx+1)) / float(m_data->oFileList.size()))+" %",0,"The relative progress through the files in percent");
+      addProperty("absolute progress","info","",str(m_data->iCurrIdx+1) + " / " + str(m_data->oFileList.size()),0,"The absolute progress through the files. 'current nunmber/total number'");
       addProperty("auto-next","flag","",m_data->bAutoNext,0,"Whether to automatically grab the next file for every frame");
       addProperty("loop","flag","",m_data->loop,0,"Whether to reset the file counter to zero after reaching the last");
       addProperty("file-count","info","",str(m_data->oFileList.size()),0,"Total count of files the grabber will show");
@@ -562,7 +562,7 @@ namespace icl{
       setPropertyValue("current filename", m_data->oFileList[iclMax(m_data->iCurrIdx-1,0)]);
       setPropertyValue("relative progress", str((100* (m_data->iCurrIdx+1)) / float(m_data->oFileList.size()))+" %");
       setPropertyValue("absolute progress", str(m_data->iCurrIdx+1) + " / " + str(m_data->oFileList.size()));
-      setPropertyValue("frame-index", m_data->iCurrIdx);
+      //setPropertyValue("frame-index", m_data->iCurrIdx);
       m_updatingProperties = false;
     }
   

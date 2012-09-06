@@ -200,6 +200,9 @@ namespace icl{
       
       /// internal list of child configurables
       std::vector<Configurable*> m_childConfigurables;
+
+      /// internal pointer to elder configurable
+      Configurable* m_elderConfigurable;
       
       /// internal ID, that is used to provide global access to all instantiated configurables at runtime by given ID;
       std::string m_ID;
@@ -212,7 +215,7 @@ namespace icl{
       
       protected:
   
-      /// locks all accesses to propertie values
+      /// locks all accesses to property values
       /** adding and adapting properties is not thread safe! */
       UncopiedInstance<Mutex> m_mutex;
       
@@ -252,7 +255,7 @@ namespace icl{
       public:
       
       /// virtual destructor 
-      ~Configurable() {}
+      ~Configurable(){}
   
       /// Copy constructor
       /** the configurable ID is not copied. Use setConfigurableID afterwards */
@@ -317,6 +320,7 @@ namespace icl{
       /// add a callback for changed properties
       void registerCallback(const Callback &cb){
         callbacks.push_back(cb);
+        DEBUG_LOG("register " << this)
       }
       
       /// removes a callback that was registered before 

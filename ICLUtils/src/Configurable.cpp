@@ -76,6 +76,7 @@ namespace icl{
         if(it != m_properties.end()) throw ICLException("Property " + str(p.name) + "cannot be added from child configurable due to name conflicts");
         m_properties[p.name] = p;
       }
+      configurable -> m_elderConfigurable = this;
     }
   
     const Configurable::Property &Configurable::prop(const std::string &propertyName) const throw (ICLException){
@@ -116,7 +117,7 @@ namespace icl{
       }
     }
   
-    Configurable::Configurable(const std::string &ID) throw (ICLException) : m_ID(ID){
+    Configurable::Configurable(const std::string &ID) throw (ICLException) : m_elderConfigurable(NULL), m_ID(ID){
       if(ID.length()){
         if(get(ID)) throw ICLException(str("Configurable(")+ID+"): given ID is already used");
       }
@@ -131,6 +132,7 @@ namespace icl{
         }
       }
       m_childConfigurables = other.m_childConfigurables;
+      m_elderConfigurable = other.m_elderConfigurable;
       m_ID = "";
     }
     
@@ -143,6 +145,7 @@ namespace icl{
         }
       }
       m_childConfigurables = other.m_childConfigurables;
+      m_elderConfigurable = other.m_elderConfigurable;
       return *this;
     }
   
@@ -162,10 +165,14 @@ namespace icl{
     }
   
     void Configurable::call_callbacks(const std::string &propertyName){
-      if(!callbacks.size()) return;
-      const Property &p = prop(propertyName);
-      for(std::vector<Callback>::iterator it=callbacks.begin();it!=callbacks.end();++it){
-        (*it)(p);
+      if(callbacks.size()){
+        const Property &p = prop(propertyName);
+        for(std::vector<Callback>::iterator it=callbacks.begin();it!=callbacks.end();++it){
+          (*it)(p);
+        }
+      }
+      if(m_elderConfigurable){
+        m_elderConfigurable -> call_callbacks(propertyName);
       }
     }
   

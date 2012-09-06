@@ -232,7 +232,7 @@ namespace icl{
         ERROR_LOG("unsupported property " << property);
       }
     }
-    std::vector<std::string> DCGrabberImpl::getPropertyList(){
+    std::vector<std::string> DCGrabberImpl::getPropertyListC(){
       std::vector<std::string> v;
       if(m_oDev.isNull()) return v;
       
@@ -367,11 +367,103 @@ namespace icl{
       }
       return deviceList;
     }
-  
-  
+
+    void DCGrabberImpl::addProperties(){
+      /*if(m_oDev.isNull()) return v;
+
+      addProperty("", "", "", , 0, "");
+      addProperty("", "", "", , 0, "");
+      addProperty("", "", "", , 0, "");
+      addProperty("", "", "", , 0, "");
+      addProperty("", "", "", , 0, "");
+      addProperty("", "", "", , 0, "");
+      v.push_back("omit-doubled-frames");
+      v.push_back("enable-image-labeling");
+      v.push_back("iso-speed");
+      if((int)(m_oDev.getBayerFilterLayout()) == 1){
+        v.push_back("bayer-layout");
+        v.push_back("bayer-quality");
+      }
+      v.push_back("all manual");
+
+      std::vector<std::string> v3 = m_oDeviceFeatures.getPropertyList();
+      std::copy(v3.begin(),v3.end(),back_inserter(v));
+
+      return v;
+
+      addProperty("next","command","",Any(),0,"Increments the file counter for the grabber");
+      addProperty("prev","command","",Any(),0,"Decrements the file counter for the grabber");
+      addProperty("use-time-stamps","flag","",m_data->useTimeStamps,0,"Whether to use timestamps"); //TODO: what is this?
+      addProperty("next filename","info","",getNextFileName(),20,"Name of the next file to grab");
+      addProperty("current filename","info","",m_data->oFileList[iclMax(m_data->iCurrIdx-1,0)],20,"Name of the last grabbed file");
+      addProperty("jump-to-start","command","",Any(),0,"Reset the file counter to 0");
+      addProperty("relative progress","info","",str((100* (m_data->iCurrIdx+1)) / float(m_data->oFileList.size()))+" %",20,"The relative progress through the files in percent");
+      addProperty("absolute progress","info","",str(m_data->iCurrIdx+1) + " / " + str(m_data->oFileList.size()),20,"The absolute progress through the files. 'current nunmber/total number'");
+      addProperty("auto-next","flag","",m_data->bAutoNext,0,"Whether to automatically grab the next file for every frame");
+      addProperty("loop","flag","",m_data->loop,0,"Whether to reset the file counter to zero after reaching the last");
+      addProperty("file-count","info","",str(m_data->oFileList.size()),0,"Total count of files the grabber will show");
+      addProperty("frame-index","range:spinbox","[0," + str(m_data->oFileList.size()-1) + "]",m_data->iCurrIdx,20,"Currently grabbed frame");
+      Configurable::registerCallback(utils::function(this,&FileGrabberImpl::processPropertyChange));
+      */
+    }
+
+    void DCGrabberImpl::processPropertyChange(const utils::Configurable::Property &prop){
+    /*
+      utils::Mutex::Locker l(m_propertyMutex);
+      if (m_updatingProperties) return;
+      if(prop.name == "next") {
+        next();
+      }else if(prop.name == "prev"){
+        prev();
+      }else if(prop.name == "loop"){
+        m_data->loop = parse<bool>(prop.value);
+      }else if(prop.name == "use-time-stamps"){
+        bool val = parse<bool>(prop.value);
+        if(val != m_data->useTimeStamps){
+          m_data->useTimeStamps = val;
+          m_data->referenceTime = Time(0);
+          m_data->referenceTimeReal = Time(0);
+        }
+      }else if(prop.name == "jump-to-start"){
+        m_data->iCurrIdx = 0;
+      }else if(prop.name == "auto-next"){
+        m_data->bAutoNext = parse<bool>(prop.value);
+      }else if(prop.name ==  "frame-index"){
+        if(m_data->bAutoNext){
+          WARNING_LOG("the \"frame-index\" property cannot be set if \"auto-next\" is on");
+        }else{
+          int idx = parse<int>(prop.value);
+          if(idx < 0 || idx >= m_data->oFileList.size()){
+            if(idx < 0){
+              idx = 0;
+            }else{
+              idx = m_data->oFileList.size()-1;
+            }
+            WARNING_LOG("given frame-index was not within the valid range (given value was clipped)");
+          }
+          m_data->iCurrIdx = parse<int>(prop.value) % (m_data->oFileList.size()-1);
+        }
+      }else{
+        ERROR_LOG("property \"" << prop.name << "\" is not available of cannot be set");
+      }
+      */
+    }
+
+    void DCGrabberImpl::updateProperties(){
+    /*
+      utils::Mutex::Locker l(m_propertyMutex);
+      m_updatingProperties = true;
+      setPropertyValue("next filename", getNextFileName());
+      setPropertyValue("current filename", m_data->oFileList[iclMax(m_data->iCurrIdx-1,0)]);
+      setPropertyValue("relative progress", str((100* (m_data->iCurrIdx+1)) / float(m_data->oFileList.size()))+" %");
+      setPropertyValue("absolute progress", str(m_data->iCurrIdx+1) + " / " + str(m_data->oFileList.size()));
+      setPropertyValue("frame-index", m_data->iCurrIdx);
+      m_updatingProperties = false;
+      */
+    }
     
     
   } // namespace io
 }
-  
+
 

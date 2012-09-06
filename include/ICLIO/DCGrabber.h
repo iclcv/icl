@@ -137,7 +137,7 @@ namespace icl{
       
       /// returns a list of properties, that can be set using setProperty
       /** @return list of supported property names **/
-      virtual std::vector<std::string> getPropertyList();
+      virtual std::vector<std::string> getPropertyListC();
   
       /// get type of property
       /** \copydoc icl::Grabber::getType(const std::string &)*/
@@ -169,6 +169,12 @@ namespace icl{
           to update some internal properties 
       */
       void restartGrabberThread();
+      /// adds FileGrabbers properties to Configurable.
+      void addProperties();
+      /// callback function for property changes.
+      void processPropertyChange(const utils::Configurable::Property &p);
+      /// updates properties values.
+      void updateProperties();
       
       /// Wrapped DCDevice struct
       DCDevice m_oDev;
