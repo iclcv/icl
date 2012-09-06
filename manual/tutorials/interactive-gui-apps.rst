@@ -1,3 +1,5 @@
+.. _tut.interactive-gui-apps:
+
 Interactive GUI Applications
 ============================
 

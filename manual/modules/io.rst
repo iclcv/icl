@@ -16,15 +16,15 @@ Table of Contents
 
 * :ref:`io.generic-grabber`
 
-   * :ref:`io.grabbers.device-selection`
-   * :ref:`io.grabbers.properties`
-   * :ref:`io.grabber-backends`
-   * :ref:`io.file-types`
+  * :ref:`io.grabbers.device-selection`
+  * :ref:`io.grabbers.properties`
+  * :ref:`io.grabber-backends`
+  * :ref:`io.file-types`
 
 * :ref:`io.generic-image-output`
 
-   * :ref:`io.grabbers.output-device-selection`
-   * :ref:`io.output-backends`
+  * :ref:`io.grabbers.output-device-selection`
+  * :ref:`io.output-backends`
 
 * :ref:`io.color-format-decoder`
 * :ref:`io.intrinsic-calibrator`
