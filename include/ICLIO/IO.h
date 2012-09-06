@@ -102,14 +102,14 @@
 
     <TABLE border=0><TR><TD>
     \code
-    #include <ICLQuick/Common.h>
+    #include <ICLQt/Common.h>
 
-    GUI gui;
+    icl::qt::GUI gui;
     GenericGrabber grabber;
 
     void init(){
       grabber.init(pa("-i"));
-      gui << "image[@handle=image]" << "!show";
+      gui << Image().handle("image") << Show();
     }
 
     void run(){
