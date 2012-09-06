@@ -71,38 +71,37 @@ namespace icl{
         scene graph can be found at ICLGeom/examples/scene-graph-demo.cpp
   
         \code
-  #include <ICLCV/Common.h>
+  #include <ICLQt/Common.h>
   #include <ICLGeom/Geom.h>
   #include <ICLUtils/FPSLimiter.h>
-  
+
   // global data
-  GUI gui;
+  icl::qt::GUI gui;
   Scene scene;
-  
+
   void init(){
     // create graphical user interface
-    gui << "draw3D[@minsize=16x12@handle=draw@label=scene view]"
-        << "fslider(0.5,20,3)[@out=f@handle=focal"
-           "@label=focal length@maxsize=100x3]";
+    gui << Draw3D().minSize(16,12).handle("draw").label("scene view")
+        << FSlider(0.5,20,3).out("f").handle("focal").label("focal length").maxSize(100,3);
     gui.show();
-    
+
     // defines the scene's viewport
-    (**gui.getValue<DrawHandle3D>("draw")).setDefaultImageSize(utils::Size(640,480));
-  
+    (**gui.get<DrawHandle3D>("draw")).setDefaultImageSize(utils::Size(640,480));
+
     // create camera and add to scene instance
     Camera cam(Vec(0,0,-10), // position
                Vec(0,0,1),   // view-direction
                Vec(1,0,0));   // up-direction
     scene.addCamera(cam);
-  
-    
+
+
     if(pa("-o")){ // either load an .obj file
       scene.addObject(new SceneObject(*pa("-o")));
     }else{ // or create a simple cube
       float data[] = {0,0,0,7,3,2};
       scene.addObject(new SceneObject("cuboid",data));
     }
-  
+
     // link the scene's first camera with mouse gestures in the draw-GUI-component
     gui["draw"].install(scene.getMouseHandler(0));
   }
@@ -126,7 +125,7 @@ namespace icl{
 
 
   int main(int n, char**ppc){
-    /// create a whole application 
+    /// create a whole application
     return ICLApplication(n,ppc,"-obj|-o(.obj-filename)",init,run).exec();
   }
       \endcode
