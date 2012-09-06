@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_STOCHASTIC_OPTIMIZER_H
-#define ICL_STOCHASTIC_OPTIMIZER_H
+#pragma once
 
 namespace icl{
   namespace math{
@@ -110,4 +109,3 @@ namespace icl{
   } // namespace math
 }
 
-#endif

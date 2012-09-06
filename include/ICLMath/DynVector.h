@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_DYN_VECTOR_H
-#define ICL_DYN_VECTOR_H
+#pragma once
 
 #include <ICLMath/DynMatrix.h>
 
@@ -141,4 +140,3 @@ namespace icl{
   } // namespace math
 }
 
-#endif

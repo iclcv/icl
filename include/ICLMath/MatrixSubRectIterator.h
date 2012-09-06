@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_MATRIX_SUB_RECT_ITERATOR_H
-#define ICL_MATRIX_SUB_RECT_ITERATOR_H
+#pragma once
 
 #include <iterator>
 
@@ -289,4 +288,3 @@ namespace icl{
     };
   } // namespace math
 }
-#endif

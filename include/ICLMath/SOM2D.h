@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_SOM2D_H
-#define ICL_SOM2D_H
+#pragma once
 
 #include <ICLMath/SOM.h>
 
@@ -86,4 +85,3 @@ namespace icl{
   } // namespace math
 }
 
-#endif

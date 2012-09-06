@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_STRAIGHT_LINE_2D_H
-#define ICL_STRAIGHT_LINE_2D_H
+#pragma once
 
 #include <ICLMath/FixedVector.h>
 #include <ICLUtils/Point32f.h>
@@ -104,4 +103,3 @@ namespace icl{
   } // namespace math
 }
 
-#endif

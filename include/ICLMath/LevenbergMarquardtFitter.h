@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_LEVENBERG_MARQUARDT_FITTER_H
-#define ICL_LEVENBERG_MARQUARDT_FITTER_H
+#pragma once
 
 #include <ICLMath/DynVector.h>            
 #include <ICLUtils/Function.h>
@@ -335,4 +334,3 @@ namespace icl{
     };
   } // namespace math
 } // namespace icl
-#endif

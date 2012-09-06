@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_LLM_H
-#define ICL_LLM_H
+#pragma once
 
 #include <vector>
 #include <ICLUtils/Range.h>
@@ -329,4 +328,3 @@ namespace icl{
   
   } // namespace math
 }
-#endif

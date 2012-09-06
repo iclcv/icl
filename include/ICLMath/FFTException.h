@@ -32,8 +32,8 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef FFTEXCEPTION_H_
-#define FFTEXCEPTION_H_
+#pragma once
+
 #include<ICLUtils/Exception.h>
 
 namespace icl{
@@ -45,4 +45,3 @@ namespace icl{
     }; 
   }// namespace math
 }
-#endif /* FFTEXCEPTION_H_ */
