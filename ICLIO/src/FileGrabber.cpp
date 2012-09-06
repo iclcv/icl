@@ -40,6 +40,7 @@
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Thread.h>
+#include <ICLUtils/Function.h>
 // plugins
 #include <ICLIO/FileGrabberPluginPNM.h>
 #include <ICLIO/FileGrabberPluginBICL.h>
@@ -173,7 +174,9 @@ namespace icl{
       else return it->second.get();
     }
     
-    FileGrabberImpl::FileGrabberImpl():m_data(new Data){
+    FileGrabberImpl::FileGrabberImpl()
+      :  m_data(new Data), m_propertyMutex(utils::Mutex::mutexTypeRecursive), m_updatingProperties(false)
+    {
       m_data->iCurrIdx  = 0;
       m_data->bBufferImages = false;
       m_data->bAutoNext = true;
@@ -185,7 +188,9 @@ namespace icl{
     
     FileGrabberImpl::FileGrabberImpl(const std::string &pattern, 
                                      bool buffer, 
-                                     bool ignoreDesired) throw(FileNotFoundException):m_data(new Data){
+                                     bool ignoreDesired) throw(FileNotFoundException)
+      : m_data(new Data), m_propertyMutex(utils::Mutex::mutexTypeRecursive), m_updatingProperties(false)
+    {
       // {{{ open
   
       m_data->oFileList = pattern;
@@ -294,8 +299,14 @@ namespace icl{
     // }}}
     
     const ImgBase *FileGrabberImpl::acquireImage(){
+      const ImgBase* img = grabImage();
+      updateProperties();
+      return img;
+    }
+
+    const core::ImgBase *FileGrabberImpl::grabImage(){
       // {{{ open
-  
+
       if(m_data->bBufferImages){
         if(m_data->useTimeStamps) {
           ERROR_LOG("buffering images and using timestamps cannot be used in parallel! (deactivating use of timestamps)");
@@ -307,7 +318,7 @@ namespace icl{
         if(m_data->iCurrIdx >= (int)m_data->vecImageBuffer.size()) m_data->iCurrIdx = 0;
         return p;
       }
-  
+
       ICLASSERT_RETURN_VAL(!m_data->oFileList.isNull(),NULL);
       File f(m_data->oFileList[m_data->iCurrIdx]);
       if(m_data->bAutoNext) ++m_data->iCurrIdx;
@@ -319,13 +330,13 @@ namespace icl{
           throw ICLException("No more files available");
         }
       }
-      
+
       FileGrabberPlugin *p = find_plugin(m_data->forcedPluginType == "" ? f.getSuffix() : m_data->forcedPluginType);
       if(!p){
         throw InvalidFileException(str("file type (filename was \"")+f.getName()+"\")");
         return 0;
       }
-      
+
       try{
         p->grab(f,&m_data->poBufferImage);
       }catch(ICLException&){
@@ -487,7 +498,7 @@ namespace icl{
         return 0;
       }
     }
-  
+
     void FileGrabberImpl::addProperties(){
       addProperty("next","command","",Any(),0,"Increments the file counter for the grabber");
       addProperty("prev","command","",Any(),0,"Decrements the file counter for the grabber");
@@ -501,9 +512,59 @@ namespace icl{
       addProperty("loop","flag","",m_data->loop,0,"Whether to reset the file counter to zero after reaching the last");
       addProperty("file-count","info","",str(m_data->oFileList.size()),0,"Total count of files the grabber will show");
       addProperty("frame-index","range:spinbox","[0," + str(m_data->oFileList.size()-1) + "]",m_data->iCurrIdx,20,"Currently grabbed frame");
+      Configurable::registerCallback(utils::function(this,&FileGrabberImpl::processPropertyChange));
     }
 
-  
+    void FileGrabberImpl::processPropertyChange(const utils::Configurable::Property &prop){
+      utils::Mutex::Locker l(m_propertyMutex);
+      if (m_updatingProperties) return;
+      if(prop.name == "next") {
+        next();
+      }else if(prop.name == "prev"){
+        prev();
+      }else if(prop.name == "loop"){
+        m_data->loop = parse<bool>(prop.value);
+      }else if(prop.name == "use-time-stamps"){
+        bool val = parse<bool>(prop.value);
+        if(val != m_data->useTimeStamps){
+          m_data->useTimeStamps = val;
+          m_data->referenceTime = Time(0);
+          m_data->referenceTimeReal = Time(0);
+        }
+      }else if(prop.name == "jump-to-start"){
+        m_data->iCurrIdx = 0;
+      }else if(prop.name == "auto-next"){
+          m_data->bAutoNext = parse<bool>(prop.value);
+      }else if(prop.name ==  "frame-index"){
+        if(m_data->bAutoNext){
+          WARNING_LOG("the \"frame-index\" property cannot be set if \"auto-next\" is on");
+        }else{
+          int idx = parse<int>(prop.value);
+          if(idx < 0 || idx >= m_data->oFileList.size()){
+            if(idx < 0){
+              idx = 0;
+            }else{
+              idx = m_data->oFileList.size()-1;
+            }
+            WARNING_LOG("given frame-index was not within the valid range (given value was clipped)");
+          }
+          m_data->iCurrIdx = parse<int>(prop.value) % (m_data->oFileList.size()-1);
+        }
+      }else{
+        ERROR_LOG("property \"" << prop.name << "\" is not available of cannot be set");
+      }
+    }
+
+    void FileGrabberImpl::updateProperties(){
+      utils::Mutex::Locker l(m_propertyMutex);
+      m_updatingProperties = true;
+      setPropertyValue("next filename", getNextFileName());
+      setPropertyValue("current filename", m_data->oFileList[iclMax(m_data->iCurrIdx-1,0)]);
+      setPropertyValue("relative progress", str((100* (m_data->iCurrIdx+1)) / float(m_data->oFileList.size()))+" %");
+      setPropertyValue("absolute progress", str(m_data->iCurrIdx+1) + " / " + str(m_data->oFileList.size()));
+      setPropertyValue("frame-index", m_data->iCurrIdx);
+      m_updatingProperties = false;
+    }
   
   } // namespace io
 }

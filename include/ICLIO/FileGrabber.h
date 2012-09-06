@@ -39,7 +39,7 @@
 
 namespace icl{
   namespace io{
-    
+
     /// Grabber implementation to grab from files \ingroup FILEIO_G \ingroup GRABBER_G
     /** This implementation of a file grabber class provides an internally used
         and expendable plugin-based interface for reading files of different types.
@@ -182,14 +182,21 @@ namespace icl{
   
       /// returns whether property is volatile
       virtual int isVolatile(const std::string &propertyName);
-      
-      private:
 
-      /// used by constructor to add properties
+      private:
+      /// grab implementation called bz acquireImage().
+      const core::ImgBase *grabImage();
+      /// adds FileGrabbers properties to Configurable.
       void addProperties();
+      /// callback function for property changes.
+      void processPropertyChange(const utils::Configurable::Property &p);
+      /// updates properties values.
+      void updateProperties();
 
       struct Data;  
       Data *m_data;
+      utils::Mutex m_propertyMutex;
+      bool m_updatingProperties;
     };
     
   
