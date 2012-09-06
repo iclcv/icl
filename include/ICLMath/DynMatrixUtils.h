@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_DYN_MATRIX_UTILS_H
-#define ICL_DYN_MATRIX_UTILS_H
+#pragma once
 
 #include <ICLMath/DynMatrix.h>
 #include <ICLUtils/BasicTypes.h>
@@ -508,6 +507,3 @@ namespace icl{
   
   } // namespace math
 }
-
-#endif
-
