@@ -79,7 +79,7 @@ namespace icl {
       /** @{ @name properties and parameters */
       
       /// interface for the setter function for video device properties 
-      /** \copydoc icl::Grabber::setProperty(const std::string&,const std::string&) **/
+      /** \copydoc icl::io::Grabber::setProperty(const std::string&,const std::string&) **/
       virtual void setProperty(const std::string &property, const std::string &value);
   
       /// returns a list of properties, that can be set using setProperty
