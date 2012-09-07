@@ -51,7 +51,7 @@ namespace icl{
   
         The QuadDetector combines a local threshold preprocessor, optional
         further preprocessing steps such as median or morphological
-        operations with an icl::RegionDetector based search for
+        operations with an icl::cv::RegionDetector based search for
         regions with 4 corners.
         
         \section CONF utils::Configurable interface
