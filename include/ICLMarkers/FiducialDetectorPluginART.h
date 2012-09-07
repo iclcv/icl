@@ -48,7 +48,7 @@ namespace icl{
     
     /// FiducialDetectorPlugin for ARToolkit like markers using binary image patches as marker IDs \ingroup PLUGINS
     /** This is just a plugin class that is used by the FiducialDetector. Please
-        refer the icl::FiducialDetector class documentation for more details. */
+        refer the icl::markers::FiducialDetector class documentation for more details. */
     class FiducialDetectorPluginART : public FiducialDetectorPluginForQuads{
       struct Data;
       Data *data;
