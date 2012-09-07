@@ -43,8 +43,8 @@
     
     The ICLMarkers package defines general interfaces for most different types of 
     marker detection methods. The essential classes of this package are
-    - icl::FiducialDetector (for detection different types of markers in images)
-    - icl::Fiduical (a list of instances of this type is returned by the fiducial
+    - icl::markers::FiducialDetector (for detection different types of markers in images)
+    - icl::markers::Fiduical (a list of instances of this type is returned by the fiducial
       detection step
     
     <b>Note:</b> We use the words "fiducial" and "marker" or "image marker" as
@@ -120,16 +120,17 @@
     \section EX Example
 
     \code
-#include <ICLCV/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLMarkers/FiducialDetector.h>
 
 // static application data
-GUI gui("hsplit");  
+HSplit hsplit;
+GUI gui(hsplit);
 GenericGrabber grabber;
 
 // the global detector class
 // here, using the first 100 "bch"-markers
-icl::FiducialDetector fid("bch","[0-100]","size=30x30");
+icl::markers::FiducialDetector fid("bch","[0-100]","size=30x30");
 
 // initialization function (called once after start)
 void init(){
@@ -137,12 +138,12 @@ void init(){
   fid.setConfigurableID("fid");
 
   // create the GUI
-  gui << "draw[@handle=draw]"           // create drawing component
-      << "prop(fid)[@maxsize=18x100]"   // create the propery widged for 'fid'
-      << "!show";                       // show the main widget
+  gui << Draw().handle("draw")        // create drawing component
+      << Prop("fid").maxSize(18,100)  // create the propery widged for 'fid'
+      << Show();                      // show the main widget
 
   // initialize the grabber from given program argument
-  grabber.init(pa("-input")); 
+  grabber.init(pa("-input"));
 }
 
 
@@ -153,19 +154,19 @@ void run(){
 
   // grab the next image
   const core::ImgBase *image = grabber.grab();
-    
+
   // detect markers
   const std::vector<Fiducial> &fids = fid.detect(image);
 
   // visualize the image
   draw = image;
-  
+
   // draw marker detection results
   draw->linewidth(2);
   for(unsigned int i=0;i<fids.size();++i){
     utils::Point32f c = fids[i].getCenter2D();
     float rot = fids[i].getRotation2D();
-    
+
     draw->color(0,100,255,255);
     draw->text(fids[i].getName(),c.x,c.y,10);
     draw->color(0,255,0,255);
@@ -179,7 +180,7 @@ void run(){
   draw.render();
 }
 
-// main method 
+// main method
 int main(int n, char **ppc){
   return ICLApp(n,ppc,"[m]-input|-i(2)",init,run).exec();
 }
