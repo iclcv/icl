@@ -107,7 +107,7 @@ namespace icl{
         \code
         #include <ICLMath/LevenbergMarquardtFitter.h>
         
-        typedef icl::LevenbergMarquardtFitter<float> LM;
+        typedef icl::math::LevenbergMarquardtFitter<float> LM;
         
         float f(const LM::Params &p, const LM::Vector &vx){
           const float x = vx[0];
@@ -162,15 +162,16 @@ namespace icl{
       Jacobian needs to be given in order to get convergence:
       
       \code
+
         #include <ICLMath/LevenbergMarquardtFitter.h>
         
         typedef float real;
-        typedef icl::LevenbergMarquardtFitter<real> LM;
+        typedef icl::math::LevenbergMarquardtFitter<real> LM;
         
         real f(const LM::Params &p, const LM::Vector &vx){
           real x = vx[0], y=vx[1], z=vx[2];
           real a = p[0], b=p[1], c=p[2], d=p[3], e=p[4], f=p[5];
-          return x*y*a*b + y*z*d*d*c - z*x*f*e*b + icl::sqr(a + b + c + d);
+          return x*y*a*b + y*z*d*d*c - z*x*f*e*b + icl::utils::sqr(a + b + c + d);
         }
         
         void j(const LM::Params &p, const LM::Vector &vx, LM::Vector &dst){
