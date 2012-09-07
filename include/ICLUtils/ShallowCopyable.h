@@ -50,7 +50,7 @@ namespace icl{
         #include <stdio.h>
         #include <ICLUtils/ShallowCopyable.h>
         
-        using namespace icl;
+        using namespace icl::utils;
         
         // forward declaration of the implementation class 
         // this class can be implemented in the ".cpp"-file
@@ -92,7 +92,7 @@ namespace icl{
         }
         
         
-        Quadruple::Quadruple(int a, int b, int c, int d) : ShallowCopyable<QuadrupleImpl>(new QuadrupleImpl){
+        Quadruple::Quadruple(int a, int b, int c, int d) : ShallowCopyable<QuadrupleImpl,QuadrupleImplDelOp>(new QuadrupleImpl){
           impl->data[0] = a;
           impl->data[1] = b;
           impl->data[2] = c;
