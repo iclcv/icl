@@ -59,7 +59,7 @@ void init(){
     << Combo("entry1,entry2,entry3").label("the-combobox")
     << Spinner(-50,100,20).out("the-spinner").label("a spin-box")
     << Button("click me").handle("click")
-    << CheckBox("hello,off").out("cb");
+    << CheckBox("hello").out("cb");
   gui << v << Show();
 }
 

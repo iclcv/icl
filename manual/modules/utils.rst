@@ -11,6 +11,7 @@ Table of Contents
 * :ref:`utils.basic-types`
 * :ref:`utils.support-types`
 * :ref:`utils.pa`
+* :ref:`utils.configurable`
 * :ref:`utils.smart-ptr`
 * :ref:`utils.time`
 * :ref:`utils.exceptions`
@@ -143,6 +144,21 @@ applications. It provides
 
 The usage of the program argument evaluation toolkit is explain
 in an extra chapter of the tutorial (see :ref:`progarg-tutorial`)
+
+
+.. _utils.configurable:
+
+The **Configurable** interface
+""""""""""""""""""""""""""""""
+
+The Configurable-interface can be used to define a classes
+parameters/properties that shall be changed at runtime. The
+Configurable-subclasses can define properties that can be accessed by
+string identifiers. Each property has a type, a type-dependend
+description of possible values, a current value and a so called
+volatileness. Further details and examples are given in the 
+tutorial :ref:`tut.configurable`.
+
 
 
 .. _utils.smart-ptr:

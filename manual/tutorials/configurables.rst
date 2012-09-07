@@ -1,7 +1,11 @@
+.. _tut.configurable:
+
 The Configurable Interface
 ==========================
 
-TODO write this
+.. todo::
+   
+   Write configurable tutorial
 
 Configurables
 """""""""""""

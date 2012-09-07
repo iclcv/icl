@@ -11,11 +11,37 @@ concise overview of ICL's GUI create framework. Step by step examples
 are given in the tutorial chapters (:ref:`tut.gui` and
 :ref:`tut.interactive-gui-apps`)
 
-Table of Contents
-^^^^^^^^^^^^^^^^^
 
-* :ref:`qt.motivation`
-* :ref:`qt.gui-creation-framework`
+
+.. _qt.gui-creation-framework:
+
+The **GUI** Creation Framework
+------------------------------
+
+* :ref:`qt.gui-creation-framework-intro`
+* :ref:`qt.gui-first-steps`
+
+  * :ref:`qt.gui-creation-framework-simple-slider`
+  * :ref:`qt.gui-creation-framework-iclapp`
+  * :ref:`qt.gui-creation-framework-defexpr`
+  * :ref:`qt.gui-creation-framework-hierarchical`
+
+* :ref:`qt.gui-creation-framework-accessinggui`
+
+  * :ref:`qt.gui-creation-framework-handles`
+  * :ref:`qt.gui-creation-framework-index`
+  * :ref:`qt.gui-index-operator-benchmark`
+  * :ref:`qt.callbacks`
+
+* :ref:`qt.component-table`
+
+  * :ref:`qt.common-controls`
+  * :ref:`qt.image-and-vis`
+  * :ref:`qt.complex-components`
+  * :ref:`qt.other-components`
+  * :ref:`qt.container-components`
+
+* :ref:`qt.special-components`
 * :ref:`qt.image-vis-framework`
 
   * :ref:`qt.glimg`            
@@ -23,10 +49,28 @@ Table of Contents
   * :ref:`qt.icldrawwidget`  
   * :ref:`qt.icldrawwidget3d` 
 
-.. _qt.motivation:
 
-Motivation
-^^^^^^^^^^
+There are most different approaches for the creation of graphical user
+interfaces -- short GUI's. ICL follows the idea of the Qt-library,
+that uses a object oriented class tree whose nodes describe
+GUI-interfaces and classes. Actually, ICL's GUI creation framework is
+a shallow wrapper around the Qt library, that always preserves
+accessibility to its internally used Qt *Widgets*.
+
+We basically distinguish between two different types of GUI
+components: *normal components*, represented by the
+**qt::GUIComponent** class interface and *container components*,
+represented by the **qt::ContainerGUIComponent** class interface. Each
+container type provides a special layout for its contained components,
+which can either be normal- or other container components. By these
+means it allows for creating very complex and hierarchical GUI
+layouts.
+
+
+.. _qt.gui-creation-framework-intro:
+
+Introduction
+^^^^^^^^^^^^
 
 **A fundamental question could be:**
 
@@ -50,34 +94,6 @@ Motivation
   * provides implicit and standardized layout handling
   * always provides access to the wrapper Qt-components
   
-  .. todo:: more?
-
-.. _qt.gui-creation-framework:
-
-The **GUI** Creation Framework
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-
-There are most different approaches for the creation of graphical user
-interfaces -- short GUI's. ICL follows the idea of the Qt-library,
-that uses a object oriented class tree whose nodes describe
-GUI-interfaces and classes. Actually, ICL's GUI creation framework is
-a shallow wrapper around the Qt library, that always preserves
-accessibility to its internally used Qt *Widgets*.
-
-We basically distinguish between two different types of GUI
-components: *normal components*, represented by the
-**qt::GUIComponent** class interface and *container components*,
-represented by the **qt::ContainerGUIComponent** class interface. Each
-container type provides a special layout for its contained components,
-which can either be normal- or other container components. By these
-means it allows for creating very complex and hierarchical GUI
-layouts.
-
-
-
-Introduction
-""""""""""""
 
 During the implementation of computer vision applications, the
 programmer does usually not want to spend many resources for the
@@ -105,6 +121,17 @@ however, there are many issues, that have to be solved manually
   this can be a difficult and time consuming task
 
 
+  
+.. _qt.gui-first-steps:
+
+First Steps
+^^^^^^^^^^^
+
+Let's get a first glance at how things are connected. A more detail
+impression can be obtained by working though the :ref:`tutorial<tut>`.
+
+.. _qt.gui-creation-framework-simple-slider:
+
 A Simple Slider
 """""""""""""""
 
@@ -121,6 +148,7 @@ layout a slider using a single line of code.
 +----------------------------------------------+-----------------------------------+  
 
 
+.. _qt.gui-creation-framework-iclapp:
 
 The **ICLApplication** class
 """"""""""""""""""""""""""""
@@ -140,8 +168,104 @@ not used and therefore left out in the example above. Its
 6. entering the Qt event loop
 
 
+.. _qt.gui-creation-framework-defexpr:
+
+
+**GUI** Definition Expressions
+""""""""""""""""""""""""""""""
+
+An expression that defines a GUI usually consists of several
+stream-operator-based statements, each defining a single
+GUI-component. Each component provides one or more constructors the
+get component-related parameters, such as the minimum, maximum and
+initial value of a slider. Additionally, a set of general options can
+be added::
+  
+  gui << Slider(0,100,255).handle("slider").label(threshold).maxSize(100,2);
+
+**handle(string)**
+
+  defines the component's ID, which can later be used to access the GUI
+  component to either read-out its current value, or to adapt its state
+
+**label(string)**
+
+  defines a component label, which is used to create a labeled border
+  around the GUI component. 
+
+**tooltip(string)**
+
+  adds a component tooltip (this feature is not supported for container
+  components
+
+**minSize(xCells,yCells)**
+
+  defines the minimum size of the component, given in units of 20 pixels
+
+**maxSize(xCells,yCells)**
+
+  defines the minimum size of the component, given in units of 20
+  pixels. In combination with **minSize**, complex size-constraints
+  can be created
+
+**size(xCells,yCells)**
+
+  defines the initial size of the component
+  
+**out(string)**
+
+  this feature only provides for some of the components (see
+  :ref:`qt.component-table`). It makes the component also register a
+  single **int** or **float** variable, liked to the component value,
+  which can be extracted by reference. Usually, declaring a **handle**
+  is more recommended.
+
+**hideIf(bool)**
+
+  this is a very special options, that can be used to conditionally
+  create GUI-components. If the boolean parameter is true, the
+  component gets a dummy-status and is not translated into an actual
+  Qt component at all
+
+**margin(int)**
+
+  This is only supported for container components and defines
+  the layout's outer margin
+
+**spacing(int)**
+
+  This is only supported for container components and defines
+  the layout's component spacing
+
+.. _qt.gui-creation-framework-hierarchical:
+
+Complex Hierarchical **GUI**\ s
+"""""""""""""""""""""""""""""""
+
+Using a single GUI container component does usually lead to
+ill-layouted GUIs. In order to avoid this, ICL's GUI creation
+framework allows for nesting hierarchical GUI creation expressions,
+leading to advanced GUI layouts. A very common layout for simple
+interactive image processing applications is to have a main image view
+plus a simple vertical list of controls, which is usually at the right
+hand side of the main window. In this case we recommend to use e.g. a
+horizontal splitting component that contains the image view on the
+left and a vertically layouted container containing the controls on
+the right. The *control panel* can then again be layouted using
+nested sub-containers:
+
++---------------------------------------------------+----------------------------------------+  
+| .. literalinclude:: examples/qt-hierarchical.cpp  | .. image:: images/qt-hierarchical.png  |
+|    :linenos:                                      |                                        |
+|    :language: c++                                 | started with **appname -input create   |
+|                                                   | mandril**                              |  
++---------------------------------------------------+----------------------------------------+
+
+.. _qt.gui-creation-framework-accessinggui:
+
+
 Accessing the GUI from the Working Thread
-"""""""""""""""""""""""""""""""""""""""""
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 As soon as our application needs a working loop, e.g. for image
 processing, a **run** method can be passed to the **ICLApp**
@@ -164,7 +288,382 @@ expression.
 |    :emphasize-lines: 9,10,17,20              |                                   |
 +----------------------------------------------+-----------------------------------+  
 
+.. _qt.gui-creation-framework-handles:
 
+Handles vs Outputs
+""""""""""""""""""
+
+For a some of the components (see :ref:`qt.component-table`) also an
+*output* is provided. E.g. a slider component can be set up with an
+output ID, which can then later be used for extracting an
+*int*-reference, which is directly linked to the
+slider-value. Accessing this *int*-reference is usually a little bit
+faster than using the **GUI**'s index operator, which has to perform a
+map-lookup internally. Actually, a
+:ref:`benchmark<qt.gui-index-operator-benchmark>` showed, that the
+performance loss is completely negligible for 99.9% of all
+applications developed. Therefore, we strongly recommend to use the
+**GUI**'s index operator for accessing GUI-components.
+
+.. literalinclude:: examples/qt-access-out.cpp
+   :linenos:
+   :language: c++
+   :emphasize-lines: 5,12,14
+
+.. _qt.gui-creation-framework-index:
+
+The **GUI**'s Index Operator
+""""""""""""""""""""""""""""
+
+The index operator uses a smart utility class of type
+**qt::DataStore::Data**, which allows for direct and internally
+type-checked assignment. For this, the **DataStore::Data** instance
+returned by the index operator provides template-based assignment and
+implicit cast operators::
+  
+  template<class T> void operator=(const T &t) throw (UnassignableTypeException);
+
+  template<class T> operator T() const throw (UnassignableTypeException);
+  
+Internally, contained GUI entries, such as a slider value, are
+registered with an RTTI-type, which is checked whenever one of these
+operators is used. For each pair of *assignable* types, an
+*assign*-method is registered internally. For transparency reasons,
+the application **icl-gui-assignment-info** is provided, which is able
+to list all supported assignment-rules, each defined by a source
+(*rvalue*) and destination (*lvalue*) type, e.g.::
+  
+   icl-gui-assignment-info -s int
+
+lists all assignment rules, that have an **int**-typed lvalue. The
+source instance can be either part of the GUI, such as a slider-value
+or an external integer variable that is assigned to an GUI component.
+Here are some typical examples:
+
+.. literalinclude:: examples/qt-gui-assignment.cpp
+   :language: c++
+   :linenos:
+
+  
+.. note::
+   
+   In a few cases, C++ cannot automatically infer the desired lvalue
+   type of an assignment expression. For these cases the explicit
+   template-based **as<T>** method is provided::
+     
+     gui << Slider(0,100,50).handle("test") << Show();
+     
+     int i = gui["test"]; // works
+     int j = 0;
+     j = gui["test"]; // error: ambiguous assignment
+     j = gui["test"].as<int>(); // works
+  
+
+  
+
+  
+
+.. _qt.gui-index-operator-benchmark:
+
+Performance of the GUI-Index Operator
+"""""""""""""""""""""""""""""""""""""
+
+As mentioned above, the GUI index operator needs to perform a
+map-lookup in order to locate the value of an actual component. The
+following benchmark however proofs the negligibility of the time
+consumption used for the index operator in common applications.
+
+**System**
+
+  2,4 GHz Intel Core2Duo, 4 GB Ram, Ubuntu 12.04 32 bit
+
+**Setup**
+
+  We used a complex GUI containing 10, 30, 50 and even 100
+  GUI-components, which is usually much more then one would expect in
+  a real-world example. The GUIs internal map contains twice as may
+  entries, one for each component handle and one for the corresponding
+  output. We also used extraordinary long output-names, build from
+  random strings of length 30. For measurement accuracy, we took the
+  time for 1000 uses of the index operator
+
+**Results**
+
+  ========================  ======  ========  ========  ========
+  Number of Components:       10       30        50       100
+  ========================  ======  ========  ========  ========
+  Times for 1000 accesses   0.30ms   0.32ms    0.35ms    0.37ms 
+  ========================  ======  ========  ========  ========
+
+**Evaluation**
+
+  As one can easily see, the used **std::map** is very fast. The
+  performed benchmark also demonstrates the logarithmic search
+  behavior of the map. In real-world applications, the time
+  consumption all uses of the **GUI**'s index operator in total will
+  never take more than a 10th of a millisecond -- usually even
+  magnitudes less.
+
+.. _qt.callbacks:
+
+Callback Registration
+"""""""""""""""""""""
+
+Most GUI components support the ability to register callbacks to them
+that are executed immediately when the component state is
+changed. *Immediately* means that the callback is executed **in the
+GUI-thread**. This is particularly necessary when the callback needs
+to do Qt-GUI stuff, such as showing a dialog. There are two types of
+possible callbacks, simple ones of type::
+  
+  utils::Function<void,void> 
+  
+  e.g. void myCallback(){...}
+
+, or so called *complex* ones ::
+  
+  utils::Function<void,const std::string&>
+  
+  e.g. void myComplexCallback(const std::string &)
+
+Simple callbacks are just executed, however, if registered to more
+than one component, it is not possible to identify the source of the
+component. The complex callback type has a single **std::string**
+argument, that is filled with the source component's handle-name.
+
+Due to the fact that callbacks are executed in the applications
+GUI-thread, the results must be explicitly synchronized with the
+working thread. Therefore, callbacks should only be used
+*economically*. Callbacks can be registered directly to the
+return-type of the **GUI**'s index operator. The callbacks are always
+executed *after* the component state has been changed, the callback
+trigger is always the most trivial action, such as *moving a slider* or
+*clicking a button*.
+
++------------------------------------------------+-------------------------------------+  
+| .. literalinclude:: examples/qt-callbacks.cpp  | .. image:: images/qt-callbacks.png  |
+|    :linenos:                                   |                                     |
+|    :language: c++                              |                                     |
++------------------------------------------------+-------------------------------------+  
+
+
+.. _qt.component-table:
+
+Overview of all GUI Components
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. _qt.common-controls:
+
+Common Controls
+"""""""""""""""
+
++---------------------+-----------------------------------+------------------------+-----------------------------------+---------------------------------+
+|  Component          | Corresonding Handle Type          |  Wrapped Qt-Component  | Description                       | Output                          |
++=====================+===================================+========================+===================================+=================================+
+| **qt::Combo**       | **qt::ComboHandle**               | QComboBox              |  combo box                        | --                              |
++---------------------+-----------------------------------+------------------------+-----------------------------------+---------------------------------+
+| **qt::Label**       | **qt::LabelHandle**               | QLabel                 |  text label                       | --                              |
++---------------------+-----------------------------------+------------------------+-----------------------------------+---------------------------------+
+| **qt::String**      | **qt::StringHandle**              | QTextInput             | input field for text              | --                              |
++---------------------+-----------------------------------+------------------------+-----------------------------------+---------------------------------+
+| **qt::Float**       | **qt::FloatHandle**               | QTextInput             | input field for floats            | current value, **float**        |
++---------------------+-----------------------------------+------------------------+-----------------------------------+---------------------------------+
+| **qt::Int**         | **qt::IntHandle**                 | QTextInput             | input field for integers          | current value, **int**          |
++---------------------+-----------------------------------+------------------------+-----------------------------------+---------------------------------+
+| **qt::Button**      | **qt::ButtonHandle**              | QPushButton            | push- or toggle button            | toggled state, **bool** [#f1]_  |
++---------------------+-----------------------------------+------------------------+-----------------------------------+---------------------------------+
+| **qt::ButtonGroup** | **qt::ButtonGroupHandle**         | QButtonGroup           | list of exclusive radio buttons   | current selcted intex, **int**  |
++---------------------+-----------------------------------+------------------------+-----------------------------------+---------------------------------+
+| **qt::CheckBox**    | **qt::CheckBoxHandle**            | QCheckBox              | check box                         | check state, **bool**           |
++---------------------+-----------------------------------+------------------------+-----------------------------------+---------------------------------+
+| **qt::Slider**      | **qt::SliderHandle**              | QSlider                | simple integer-valued slider      | current value, **int**          |
++---------------------+-----------------------------------+------------------------+-----------------------------------+---------------------------------+
+| **qt::FSlider**     | **qt::FSliderHandle**             | QSlider (*adapted*)    | float valued slider               | current value, **float**        |
++---------------------+-----------------------------------+------------------------+-----------------------------------+---------------------------------+
+| **qt::Spinner**     | **qt::SpinnerHandle**             | QSpinBox               | a spin box component              | current vlaue, **int**          |
++---------------------+-----------------------------------+------------------------+-----------------------------------+---------------------------------+
+
+.. [#f1] only for in case of toogle buttons
+
+
+.. _qt.image-and-vis:
+
+Image and Data Visualization Components
+"""""""""""""""""""""""""""""""""""""""
+
+
++---------------------+-----------------------------------+------------------------+-----------------------------------+---------------------------------+
+|  Component          | Corresonding Handle Type          |  Wrapped Qt-Component  | Description                       | Output                          |
++=====================+===================================+========================+===================================+=================================+
+| **qt::Image**       | **qt::ImageHandle**               | **qt::ICLWidget**      | ICL's image display               | --                              |
++---------------------+-----------------------------------+------------------------+-----------------------------------+---------------------------------+
+| **qt::Draw**        | **qt::DrawHandle**                | **qt::ICLDrawWidget**  | Image display for image annotation| --                              |
++---------------------+-----------------------------------+------------------------+-----------------------------------+---------------------------------+
+| **qt::Draw3D**      | **qt::Draw3DHandle**              | **qt::ICLDrawWidget3D**| Image display with 3D overlay     | --                              |
++---------------------+-----------------------------------+------------------------+-----------------------------------+---------------------------------+
+| **qt::Plot**        | **qt::PlotHandle**                | **qt::PlotWidget**     | 2D scatter and function plotting  | --                              |
++---------------------+-----------------------------------+------------------------+-----------------------------------+---------------------------------+
+
+.. _qt.complex-components:
+
+Complex GUI Components
+""""""""""""""""""""""
+
++---------------------+-----------------------------------+------------------------+-----------------------------------+---------------------------------+
+|  Component          | Corresonding Handle Type          |  Wrapped Qt-Component  | Description                       | Output                          |
++=====================+===================================+========================+===================================+=================================+
+| **qt::CamCfg**      | --                                | **qt::CamCfgWidget**   | ICL's image display               | --                              |
++---------------------+-----------------------------------+------------------------+-----------------------------------+---------------------------------+
+| **qt::ColorSelect** | **qt::ColorHandle**               | **qt::ColorLabel**     | RGB or RGBA color selection       | current color, **core::Color4D**|
++---------------------+-----------------------------------+------------------------+-----------------------------------+---------------------------------+
+| **qt::Disp**        | **qt::DispHandle**                | **qt::LabelMatrix**    | 2D array of float labels          | --                              |
++---------------------+-----------------------------------+------------------------+-----------------------------------+---------------------------------+
+| **qt::Fps**         | **qt::FpsHandle**                 | QLabel (*adapted*)     | shows the application's FPS count | --                              |
++---------------------+-----------------------------------+------------------------+-----------------------------------+---------------------------------+
+| **qt::Prop**        | --                                | only internally used   | GUI for **utils::Configurable**\ s| --                              |
++---------------------+-----------------------------------+------------------------+-----------------------------------+---------------------------------+
+| **qt::Ps**          | --                                | only internally used   | shows process information         | --                              |
++---------------------+-----------------------------------+------------------------+-----------------------------------+---------------------------------+
+
+.. _qt.other-components:
+
+Other GUI Components
+""""""""""""""""""""
+
++---------------------+---------------------------------------------------------------------+
+|  Component          | Description                                                         |
++=====================+=====================================================================+
+| **qt::Dummy**       | Non visible dummy instance (not created)                            |
++---------------------+---------------------------------------------------------------------+
+| **qt::Create**      | Finalizes the GUI definition and actually *creates* the GUI [#f2]_  |
++---------------------+---------------------------------------------------------------------+
+| **qt::Show**        | Finalizes the GUI definition and *creates* and shows the GUI [#f2]_ |
++---------------------+---------------------------------------------------------------------+
+
+.. [#f2] 
+   
+   The actual GUI does not exist, before either **qt::Create** or
+   **qt::Show** was streamed into it (alternatively the top level
+   GUI's **create** and **show** methods can be used). After this, the
+   GUI is created, its definition phase is ended and the stream
+   operators **<<** wont work anymore. Please note, that *create*
+   means, that the GUI is created only, while *show* means, that the
+   GUI is created and shown. Additional calls to **create** will not
+   do anything, a *created* GUI instance can be shown using **show**.
+
+.. _qt.container-components:
+
+Container GUI Components
+""""""""""""""""""""""""
+
++---------------------+-----------------------------------+------------------------------------------------------------+
+|  Component          | Corresponding Handle Type         | Description                                                |
++=====================+===================================+============================================================+
+| **qt::HBox**        | **qt::HBoxHandle**                | horizontally alligned box layout                           |
++---------------------+-----------------------------------+------------------------------------------------------------+
+| **qt::VBox**        | **qt::VBoxHandle**                | vertically alligned box layout                             |
++---------------------+-----------------------------------+------------------------------------------------------------+
+| **qt::HSplit**      | **qt::HSplitHandle**              | horizonatal splitting component                            |
++---------------------+-----------------------------------+------------------------------------------------------------+
+| **qt::VSplit**      | **qt::VSplitHandle**              | vertical splitting component                               |
++---------------------+-----------------------------------+------------------------------------------------------------+
+| **qt::HScroll**     | **qt::HScrollHandle**             | like a HBox, but within a scrollable area                  |
++---------------------+-----------------------------------+------------------------------------------------------------+
+| **qt::VScroll**     | **qt::VScrollHandle**             | like a VBox, but within a scrollable area                  |
++---------------------+-----------------------------------+------------------------------------------------------------+
+| **qt::Tab**         | **qt::TabHandle**                 | *tab'ed* widget                                            |
++---------------------+-----------------------------------+------------------------------------------------------------+
+
+.. note::
+   
+   All container components can be filled successively with an
+   arbitrary number of components. This is also true for the **Tab**
+   component, however the tab-labels are given to the
+   **Tab**-constructor. Therefore if more components are streamed into
+   a **Tab** container, dummy labels are created
+
+.. _qt.special-components:
+
+Special GUI components
+^^^^^^^^^^^^^^^^^^^^^^
+
+Most GUI-components are now sufficiently described. However, some of
+the components require some extra knowledge in order to use them
+correctly and efficiently. These special components are listed and
+explained here.
+
+**qt::Int**, **qt::Float** and **qt::String**
+
+  These components are translated into simple text-input fields. The
+  different possible input types are implemented using special
+  *Qt-validators*. The components will only allow for writing
+  *validated* text. **The input must always be confirmed by pressing
+  enter** before, the last valid entry is returned
+
+**qt::Button**
+
+  The button has two special properties, that need to be
+  explained. First, if it's constructor gets two string parameters,
+  the created button becomes a toggle-button, that has two states,
+  indicated by the two button texts. Only in case of creating a
+  toggle-button, an **bool** typed output can be created.  The other
+  special property is, how we recommend to process button
+  clicks. Here, it is suggested to extract a **ButtonHandle** instance
+  and to use it's **wasTriggered** method directly in the working
+  thread, which returns whether the button has been clicked between
+  the last call to **wasTriggered** and now. An example is given 
+  in the tutorial chapter :ref:`tut.buttons`
+
+**qt::CamCfg**
+
+  This camera property configuration component is also very
+  special. It can either be instantiated with a given input device
+  filter, such as e.g. "dc" and "0", which will allow for configuring
+  the first dc camera device only or it can be instantiated without
+  any parameters. If no parameters are given, it will automatically
+  query a list of currently instantiated **io::GenericGrabber**
+  instances (see :ref:`io.generic-grabber`) and prepare the property
+  widget for these instances. However, this does only work if the
+  **io::GenericGrabber** was initialized (using its **init**-method)
+  *before* the GUI is actually created.
+
+**qt::Ps**
+
+  The **Ps** component creates a small info widget, that visualizes
+  current process information. Right now, we use QProgressBars
+  here, but we plan to use a real plot that shows the processor
+  and memory usage history. In addition, the component shows 
+  the applications thread count. The additional processor usage
+  consumed by the widget itself is usually less than 1%.
+
+**qt::Prop**
+
+  The **Prop** component also provides a very powerful addition to the
+  whole GUI framework. It is tightly integrated with the
+  **utils::Configurable** -interface (see :ref:`utils.configurable`
+  and the :ref:`tutorial<tut.configurable>`). The GUI component will
+  read out the properties of a **utils::Configurable** instance
+  and then create a complex widget for the real-time adjustment
+  of these properties
+
+**qt::Fps**
+
+  The **Fps** component is rather simple. Once embedded into GUI, it
+  must be manually updated once in every cycle of the working thread::
+    
+    void init(){
+      gui << Fps().handle("fps") << Show();
+    }
+    void run(){
+      gui["fps"].render();
+    }
+
+**qt::Image**, **qt::Draw** and **qt::Draw3D**
+
+  These are the main classes for image visualization and annotation. The wrapped
+  QWidget-classes are explained in :ref:`qt.image-vis-framework`. Their usage 
+  is demonstrated in several tutorials (see :ref:`tut`)
+  
 
 
 .. _qt.image-vis-framework:
@@ -210,8 +709,8 @@ The Image Visualization and Annotation Framework
 
 .. _qt.glimg:
 
-The **qt::GLImg** class
-"""""""""""""""""""""""
+**GLImg**
+"""""""""""
 
   At the lowest layer, the **qt::GLImg** provides an interfaces for
   converting **core::ImgBase** instances into an OpenGL texture (if
@@ -229,8 +728,8 @@ The **qt::GLImg** class
 
 .. _qt.iclwidget:
 
-The **qt::ICLWidget** class
-"""""""""""""""""""""""""""
+**ICLWidget**
+"""""""""""""
 
   The next layer is implemented by the **qt::ICLWidget** class, which
   inherits Qt's QGLWidget class for the creation of an embedded OpenGL
@@ -255,8 +754,8 @@ The **qt::ICLWidget** class
 
 .. _qt.icldrawwidget:
 
-The **qt::ICLDrawWidget** class
-"""""""""""""""""""""""""""""""
+**ICLDrawWidget**
+"""""""""""""""""
 
   For image annotation, such as rendering box- or symbol-overlay for
   the visualization of current image processing results, the
@@ -272,16 +771,17 @@ The **qt::ICLDrawWidget** class
   adapts the behavior of the parent **qt::ICLWidget** class, by not
   automatically calling **render** when a new background image is
   given. Since usually setting the background image is followed by
-  posting a set of *draw-commands*, the **render**-method must be called
-  later manually when the image annotation is finished.
+  posting a set of *draw-commands*, the **render**-method must be
+  called later manually when the image annotation is finished. Image
+  visualization is part of several tutorial chapters (see
+  :ref:`tut.mouse-and-vis`)
+  
 
-  .. todo:: add example code or link to example code
 
 .. _qt.icldrawwidget3d:
 
-The qt::ICLDrawWidget3D class
-"""""""""""""""""""""""""""""
-
+**ICLDrawWidget**
+"""""""""""""""""
 
   At the last level, the **qt::ICLDrawWidget3D**, which again extends
   the **qt::ICLDrawWidget** class, provides an interfaces for

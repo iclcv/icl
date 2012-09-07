@@ -1,3 +1,5 @@
+.. _tut:
+
 Tutorial
 =========
 
@@ -9,6 +11,7 @@ Tutorial
    tutorials/using-images
    tutorials/pixel-access
    tutorials/gui-apps
+   tutorials/gui-buttons
    tutorials/program-arguments
    tutorials/config-files
    tutorials/interactive-gui-apps

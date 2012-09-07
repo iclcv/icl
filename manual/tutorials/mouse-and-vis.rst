@@ -1,3 +1,5 @@
+.. _tut.mouse-and-vis:
+
 Visualization and Mouse Interaction
 ===================================
 
