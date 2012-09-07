@@ -64,7 +64,7 @@ namespace icl{
         \section __EX Example
         The following example explains how to parallelize a simple function-call
         \code
-        #include <ICLQuick/Quick.h>
+        #include <ICLQt/Quick.h>
         #include <math.h>
         #include <ICLUtils/MultiThreader.h>
         
