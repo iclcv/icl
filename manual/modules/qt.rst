@@ -7,10 +7,12 @@ of Qt-based GUI applications. The main class of this package is the
 wrapper components for all common *Qt-Widgets*, such as sliders,
 buttons and check-boxes, we provide a set of highly optimized image
 and data visualization *Widgets*. We will here give a complete but
-concise overview of ICL's GUI create framework. Step by step examples
+concise overview of ICL's GUI creation framework. Step by step examples
 are given in the tutorial chapters (:ref:`tut.gui` and
 :ref:`tut.interactive-gui-apps`)
 
+In additions, the **ICLQt** modules provides :ref:`qt.quick`
+for rapid prototyping.
 
 
 .. _qt.gui-creation-framework:
@@ -801,5 +803,169 @@ The Image Visualization and Annotation Framework
 
   .. todo:: add references and link to the ICLGeom package and the
             Scene class
+
+
+
+
+
+
+.. _qt.quick:
+
+The **Quick** Framework
+-----------------------
+
+In contrast to the other modules, the **Quick** framework focuses
+mainly the programmer's convenience rather than on efficiency. It is
+meant to be used for rapid prototyping or for test applications.
+However, also in real-time applications, there are commonly parts,
+that are not strongly restricted to real-time constraints, in
+particular a locations where user interactions are processed.
+
+The framework is basically available directly by including the
+**ICLQt/Quick.h** header, which is automatically included by the
+*commonly* used header **ICLQt/Common.h**. This header contains a huge
+set of global functions that simplify some things significantly --
+however sometimes a little bit less efficient. Most of these functions
+are right now implemented for the **core::Img32f** type only. The
+Quick-header uses a typedef to **qt::ImgQ** to underline the fact that
+we are working with this framework. Furthermore, the Quick header does
+also automatically use all icl-namespaces and also the std::namespace,
+which is why it should never be included by other header files.
+Here is an example for a simple *difference image*-application:
+
++----------------------------------------------+-----------------------------------+  
+| .. literalinclude:: examples/qt-quick.cpp    | .. image:: images/qt-quick.png    |
+|    :linenos:                                 |                                   |
+|    :language: c++                            |                                   |
++----------------------------------------------+-----------------------------------+  
+
+Affinity to **ImgQ**
+^^^^^^^^^^^^^^^^^^^^
+
+Many of the global functions are implemented twice, as template and
+as normal function for the **ImgQ** (aka **core::Img32f**)-type e.g.::
+  
+  load("myimage"); 
+
+returns an **ImgQ**, while::
+
+  load<icl8u>("myimage");
+  
+returns the image as **Img8u**.
+
+The Very Special Function **show**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**qt::show**
+
+  shows an image using an external viewer application. TODO
+
+Image Creation Tools
+^^^^^^^^^^^^^^^^^^^^
+
+**qt::zeros** and **qt::ones**
+
+  create images in *matlab*-manner. **zeros(100,100,3)** creates an
+  empty 3-channel image of size 100x100. **ones** behave equally, but
+  set all pixel values to 1
+
+
+**qt::load**
+
+  just loads an image from a file, which is usually much easier than
+  using an **io::Grabber** for this. However, please note that the
+  **load** function does not preserve the image depth, which is
+  **core::depth32f** by default, or must be explicitly given using
+  **load<target-pixel-type>("filename")**.
+
+**qt::create**
+
+  creates test image, that is hard-coded within the ICLIO-library.
+  supported test images are "lena", "cameraman", "mandril", "parrot",
+  and a few others.
+   
+**qt::grab**
+
+  just grabs an image using an internal grabber handling
+
+
+Image Filtering and Conversion Functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**qt::filer** 
+
+  applies one of a set of predefined image filters
+
+**qt::scale**
+
+  scales an image by either a factor or a target size
+  
+**qt::levels**
+  
+  re-quantifies an images value domain to a given number of levels
+ 
+**qt::copy** 
+
+  performs a deep copy of an image::
+    
+    ImgQ a = zeros(100,100,1);
+    ImgQ b = copy(a);
+
+**qt::flipx** and **qt::flipy**
+
+  flips an image
+
+**qt::cvt**
+  
+  converts images of any type to **ImgQ**
+  
+**qt::cvt8u**, **qt::cvt16s**, ...
+
+  convert images to target depth
+
+**qt::blur**
+
+  blurs an image by given mask radius using a separatale Gaussian filter
+
+**qt::rgb**, **qt::hsl**, **qt::gray**, ...
+
+  converts a given image to target format
+
+**qt::channel**
+
+  extract a single channel from an image
+  
+**qt::thresh**
+
+  applies a threshold operation 
+
+**roi**
+
+  allows for copying/extracting an image ROI::
+
+    ImgQ a = ones(100,100,5);
+    a.setROI(Rect(10,10,30,30));
+    ImgQ b = roi(a);
+    roi(a) = 255;
+
+
+Arithmetical and Logical Operators
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+arithmetical operators +,-,*,/
+
+Math Functions
+^^^^^^^^^^^^^^
+
+arithmetical functions sqr, sqrt, exp, ln, and abs 
+
+
+Image Concatenation Operators
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+concatenation operators "," and "%" 
+the ","-operator concatenates images horizontally, the "%"-operator concatenates images vertically.
+
+  
 
 
