@@ -52,8 +52,9 @@ namespace icl{
         \section EX Example
         \code
   #include <ICLUtils/TextTable.h>
+  #inclue <iostream>
   
-  using namespace icl;
+  using namespace icl::utils;
   
   int main(int n, char **ppc){
     TextTable t;
@@ -69,7 +70,7 @@ namespace icl{
     t[2] = tok("gotting,michael,??,Somewhere else",",");
   
     std::cout << t << std::endl;
-  } // namespace utils
+  } 
 
         
         //  output
@@ -169,6 +170,6 @@ namespace icl{
     inline std::ostream &operator<<(std::ostream &stream, const TextTable &t){
       return stream << t.toString();
     }
-  } // utils
+  } // // namespace utils
 }
 
