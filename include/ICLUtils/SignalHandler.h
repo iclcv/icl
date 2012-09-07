@@ -47,7 +47,7 @@ namespace icl{
         
         example:
         \code
-        class MySignalHandler : public SignalHandler{
+        class MySignalHandler : public icl::utils::SignalHandler{
           public:
           MySignalHandler():SignalHandler("SIGINT,SIGSEGV"){}
           virtual void handleSignals(const string &signal){
