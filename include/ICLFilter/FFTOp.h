@@ -55,13 +55,17 @@ namespace icl{
       <TABLE border=0><TR><TD>
       \code
       #include <ICLQuick/Common.h>
+      #include <ICLFilter/FFTOp.h>
+      using namespace icl;
   
       GUI gui;
-  
+
+      void init(){...}
+
       int main(int n, char **args){
-  	painit(n,args,"-input|-i(filename)",init);
-  	Img32 src = load(*pa("-i"));
-      FFTOp fftop(FFTOp::LOG_POWER_SPECTRUM,FFTOp::NO_SCALE);
+  	pa_init(n,args,"-input|-i(filename)",init);
+  	Img32f src = load(*pa("-i"));
+        FFTOp fftop(FFTOp::LOG_POWER_SPECTRUM,FFTOp::NO_SCALE);
   	const ImgBase *dst = fftop.apply(&src);
       // note: icl-xv must be within your PATH
   	show(norm(cvt(dst)));
@@ -86,11 +90,11 @@ namespace icl{
   	The sourceimage can be scaled up, so that the datasize is a power of 2
   	(this is needed if you want to use the IPP acceleration or the faster
   	part of the fallback). You can also scale the image down, leave it as it is
-  	or create a border and fill it with several methods. (see icl::FFTOp::SizeAdaptionMode)
+  	or create a border and fill it with several methods. (see icl::filter::FFTOp::SizeAdaptionMode)
   
   	\section IPP_MKL_ACCEL Intel Ipp/Intel MKL acceleration
   	If you own the Intel IPP or MKL library, the computation of the fft
-  	can be accelarated by using it. The IPP functions assume a datasize of power of 2 (see icl::FFTOp::SizeAdaptionMode).
+  	can be accelarated by using it. The IPP functions assume a datasize of power of 2 (see icl::filter::FFTOp::SizeAdaptionMode).
   	If IPP is available on you system and the datasize is a power of 2, it will be used
   	automatacally. If MKL is available on your system, it will be used if IPP is not available or
   	the datasize is not a power of 2. If IPP and MKL are not available, the fallback
