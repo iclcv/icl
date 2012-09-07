@@ -817,9 +817,27 @@ The **Quick** Framework
 In contrast to the other modules, the **Quick** framework focuses
 mainly the programmer's convenience rather than on efficiency. It is
 meant to be used for rapid prototyping or for test applications.
-However, also in real-time applications, there are commonly parts,
-that are not strongly restricted to real-time constraints, in
-particular a locations where user interactions are processed.
+However, also in real-time applications some parts are usually not
+strongly restricted to real-time constraints, in particular where user
+interactions are processed. Most functions do what is usually
+completely forbidden in real-time applications: *they return newly
+created results images*. This of course usually leads to performance
+issues due to run-time memory allocation. However this is not the case
+for the **Quick** framework functions that use an internal memory
+manager, which reuses no-longer needed temporary images. Even though,
+image are returned by instance, due to the **core::Img**'s *shallow
+copy*-property, no deep copies are performed.
+
+
+**Overview**
+
+  * :ref:`qt.quick.affinity`
+  * :ref:`qt.quick.show`
+  * :ref:`qt.quick.image-creation`
+  * :ref:`qt.quick.filtering`
+  * :ref:`qt.quick.operators-1`
+  * :ref:`qt.quick.math`
+  * :ref:`qt.quick.operators-2`
 
 The framework is basically available directly by including the
 **ICLQt/Quick.h** header, which is automatically included by the
@@ -839,6 +857,8 @@ Here is an example for a simple *difference image*-application:
 |    :language: c++                            |                                   |
 +----------------------------------------------+-----------------------------------+  
 
+.. _qt.quick.affinity:
+
 Affinity to **ImgQ**
 ^^^^^^^^^^^^^^^^^^^^
 
@@ -853,12 +873,25 @@ returns an **ImgQ**, while::
   
 returns the image as **Img8u**.
 
+
+.. _qt.quick.show:
+
 The Very Special Function **show**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **qt::show**
 
-  shows an image using an external viewer application. TODO
+  shows an image using an external viewer application. In order to
+  avoid complex GUI handling and thread synchronization issues, the
+  **show** function simply writes the given image to a temporary image
+  file, that is then opened using the **icl-xv**
+  application. **icl-xv** is called with the **-d** flag, which lets
+  **show** delete the temporary image immediately when loaded. This
+  does of course only work if **icl-xv** can be found in the users
+  **PATH** variable. Alternatively the function **showSetup** can be
+  used to define a custom image viewer command
+
+.. _qt.quick.image-creation:
 
 Image Creation Tools
 ^^^^^^^^^^^^^^^^^^^^
@@ -866,8 +899,8 @@ Image Creation Tools
 **qt::zeros** and **qt::ones**
 
   create images in *matlab*-manner. **zeros(100,100,3)** creates an
-  empty 3-channel image of size 100x100. **ones** behave equally, but
-  set all pixel values to 1
+  empty 3-channel image of size 100x100. **ones** behaves equally, but
+  sets all pixel values to 1
 
 
 **qt::load**
@@ -881,13 +914,14 @@ Image Creation Tools
 **qt::create**
 
   creates test image, that is hard-coded within the ICLIO-library.
-  supported test images are "lena", "cameraman", "mandril", "parrot",
+  Supported test images are "lena", "cameraman", "mandril", "parrot",
   and a few others.
    
 **qt::grab**
 
   just grabs an image using an internal grabber handling
 
+.. _qt.quick.filtering:
 
 Image Filtering and Conversion Functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -898,7 +932,7 @@ Image Filtering and Conversion Functions
 
 **qt::scale**
 
-  scales an image by either a factor or a target size
+  scales an image by either a factor or to a target size
   
 **qt::levels**
   
@@ -925,7 +959,8 @@ Image Filtering and Conversion Functions
 
 **qt::blur**
 
-  blurs an image by given mask radius using a separatale Gaussian filter
+  blurs an image by given mask radius using a separatale Gaussian
+  filter
 
 **qt::rgb**, **qt::hsl**, **qt::gray**, ...
 
@@ -939,6 +974,16 @@ Image Filtering and Conversion Functions
 
   applies a threshold operation 
 
+**qt::label**
+
+  adds a simple text-label to the top left corner of an image.
+
+  .. note::
+     
+     This function does not create a new image, but it works on the
+     given image (of which a shallow copy is also returned)
+
+
 **roi**
 
   allows for copying/extracting an image ROI::
@@ -948,23 +993,60 @@ Image Filtering and Conversion Functions
     ImgQ b = roi(a);
     roi(a) = 255;
 
+.. _qt.quick.operators-1:
 
 Arithmetical and Logical Operators
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-arithmetical operators +,-,*,/
+The **Quick**-header also provides simple to use C++ operators for the
+**qt::ImgQ** (aka **core::Img32f**) class. The binary operators **+**,
+**-**, ***** and **/** are defined for pixel-wise operations on two 
+images and pixel-wise operations with a scalar:
+  
++--------------------------------------------------+---------------------------------------+  
+| .. literalinclude:: examples/quick-operators.cpp | .. image:: images/quick-operators.png |
+|    :linenos:                                     |    :scale: 60%                        |
+|    :language: c++                                |                                       |
++--------------------------------------------------+---------------------------------------+  
+
+The same is true for the logical operators **&&** and **||**, which
+perform a pixel-wise logical combination of two images.
+
+
+.. _qt.quick.math:
 
 Math Functions
 ^^^^^^^^^^^^^^
 
-arithmetical functions sqr, sqrt, exp, ln, and abs 
+In addition to the mathematical operators, also some mathematical
+standard functions are overloaded for the **ImgQ** type: **sqr**,
+**sqrt**, **exp**, **ln**, and **abs** are performed pixel-wise.
 
+
+.. _qt.quick.operators-2:
 
 Image Concatenation Operators
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-concatenation operators "," and "%" 
-the ","-operator concatenates images horizontally, the "%"-operator concatenates images vertically.
+As it could be seen in the example above, also the three operators
+**,**, **%** and **|** are implemented. However, it is important to
+mention that we strongly adapted the expected default behavior of
+these operators:
+
+**The ,-Operator**
+
+  is used to concatenate image horizontally. If the image heights are
+  not equal, the smaller image is just made higher (without scaling the
+  contents)
+  
+**The %-Operator**
+
+  performs a vertical image concatenation
+  
+**The |-Operator**
+
+  stacks the channels of two images.
+
 
   
 
