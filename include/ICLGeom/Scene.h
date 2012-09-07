@@ -80,13 +80,10 @@ namespace icl{
   Scene scene;
 
   void init(){
-    // create graphical user interface
-    gui << Draw3D().minSize(16,12).handle("draw").label("scene view")
+    // create graphical user interface with a scene's viewport set of size 640x480
+    gui << Draw3D(utils::Size(640,480)).minSize(16,12).handle("draw").label("scene view")
         << FSlider(0.5,20,3).out("f").handle("focal").label("focal length").maxSize(100,3);
     gui.show();
-
-    // defines the scene's viewport
-    (**gui.get<DrawHandle3D>("draw")).setDefaultImageSize(utils::Size(640,480));
 
     // create camera and add to scene instance
     Camera cam(Vec(0,0,-10), // position
@@ -112,11 +109,8 @@ namespace icl{
     scene.getCamera(0).setFocalLength(gui["f"]); // update the camera's focal length
 
     // now simply copy and past this block ...
-    draw->lock();    // lock the internal drawing queue
-    draw->reset3D(); // remove former drawing commands
-    draw->callback(scene.getGLCallback(0)); // render the whole scene
-    draw->unlock();  // unlock the internal drawin queue
-    draw.update();   // post an update-event (don't use draw->update() !!)
+    draw->link(scene.getGLCallback(0)); // render the whole scene
+    draw.render();   // post an update-event (don't use draw->render() !!)
 
     /// limit drawing speed to 25 fps
     static FPSLimiter limiter(25);
@@ -128,6 +122,7 @@ namespace icl{
     /// create a whole application
     return ICLApplication(n,ppc,"-obj|-o(.obj-filename)",init,run).exec();
   }
+
       \endcode
 
     
