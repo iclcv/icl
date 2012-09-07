@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_REGION_DETECTOR_H
-#define ICL_REGION_DETECTOR_H
+#pragma once
 
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/Configurable.h>
@@ -254,4 +253,3 @@ namespace icl{
 }
 
 
-#endif

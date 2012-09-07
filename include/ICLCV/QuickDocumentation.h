@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_QUICK_DOCUMENTATION_H
-#define ICL_QUICK_DOCUMENTATION_H
+#pragma once
 
 /** 
     H1 ICLQuick - an ICLPackage for rapid prototyping 
@@ -183,4 +182,3 @@ int main(int n, char **ppc){
 
 
 
-#endif

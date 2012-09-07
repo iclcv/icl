@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_CV_H
-#define ICL_CV_H
+#pragma once
 
 #include <ICLCV/DefaultColorBlobSearcher.h>
 #include <ICLCV/Extrapolator.h>
@@ -188,4 +187,3 @@ int main(int n,char **v){
 
 
 
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_IMAGE_REGION_DATA_H
-#define ICL_IMAGE_REGION_DATA_H
+#pragma once
 
 #include <ICLCore/Img.h>
 #include <ICLUtils/Any.h>
@@ -231,4 +230,3 @@ namespace icl{
   } // namespace cv
 }
 
-#endif

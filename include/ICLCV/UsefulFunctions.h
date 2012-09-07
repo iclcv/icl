@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_USEFUL_FUNCTIONS_H
-#define ICL_USEFUL_FUNCTIONS_H
+#pragma once
 
 #include <ICLCore/Img.h>
 #include <ICLCV/RegionDetector.h>
@@ -124,4 +123,3 @@ namespace icl{
   } // namespace cv
 }
 
-#endif

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_VECTOR_TRACKER_H 
-#define ICL_VECTOR_TRACKER_H 
+#pragma once
 
 #include <vector>
 
@@ -136,4 +135,3 @@ namespace icl{
     
   } // namespace cv
 }
-#endif

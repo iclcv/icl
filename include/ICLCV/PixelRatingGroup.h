@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef PIXEL_RATING_GROUP_H
-#define PIXEL_RATING_GROUP_H
+#pragma once
 
 #include <ICLCV/PixelRating.h>
 #include <vector>
@@ -112,4 +111,3 @@ namespace icl{
   } // namespace cv
 }
 
-#endif
