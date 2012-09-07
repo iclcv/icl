@@ -80,7 +80,7 @@ namespace icl{
   
           Please note that other types might be interpreted in the wrong way.
           Mandatory parameter is "size". Please refer to the 
-          documentation of icl::FiducialDetector::loadMarkers for more details
+          documentation of icl::markers::FiducialDetector::loadMarkers for more details
       */
       virtual void addOrRemoveMarkers(bool add, const utils::Any &which, const utils::ParamList &params) = 0;
   
