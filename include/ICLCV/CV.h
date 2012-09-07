@@ -142,11 +142,11 @@
     \section REGION_DETECTOR_EXAMPLE Region Detection Example
     <table border=0><tr><td>
     \code
-#include <ICLCV/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLCV/RegionDetector.h>
 #include <ICLFilter/ColorDistanceOp.h>
 
-GUI gui;
+icl::qt::GUI gui;
 GenericGrabber grabber;
 RegionDetector rd(100,1E9,255,255);
 ColorDistanceOp cd(Color(0,120,240),100);
@@ -159,7 +159,7 @@ void mouse(const MouseEvent &e){
 
 void init(){
   grabber.init(pa("-i"));
-  gui << "draw[@handle=image]" << "!show";
+  gui << Draw().handle("image") << Show();
   gui["image"].install(mouse);
 }
 
@@ -178,6 +178,7 @@ void run(){
 int main(int n,char **v){
   return ICLApp(n,v,"-input|-i(2)",init,run).exec();
 }
+
     \endcode
     </td><td valign=top>
     \image html icl-online-region-detection-demo-screenshot.png "icl-online-region-detection-demo screenshot"
