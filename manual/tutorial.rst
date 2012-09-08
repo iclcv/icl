@@ -17,6 +17,7 @@ Tutorial
    tutorials/interactive-gui-apps
    tutorials/mouse-and-vis
    tutorials/configurables
+   tutorials/region-detection
    tutorials/marker-detection
    tutorials/using-imgbase
    tutorials/imgbase-ptrptrs

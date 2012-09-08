@@ -174,7 +174,7 @@ Channel-Concept
 The **Img** class manages images as a stack of image slices --
 channels. Channels can be shared by multiple **Img** instances, which
 is especially important for fast shallow images copies (see also
-:ref::`core.shallow-copy`). Actually, it is possible to freely compose
+:ref:`core.image.shallow-copy`). Actually, it is possible to freely compose
 images from channels of different images. The composed image then
 shares it's channel data with the original images, such that
 modifications will effect all images equally. In order to get an

@@ -183,26 +183,6 @@ namespace icl{
     }
     /** \endcond */
   
-    /// read an image for pwc webcam with given size, and core::format (affinity for float)
-    /** see \ref AFFINITY
-        if releaseGrabber is set to 1, the internal used PWCGrabber is released after this call 
-        @param device device for this grabbin call (0,1,2 or 3)
-        @param size size of the returned image
-        @param fmt core::format of the returned image
-        @param releaseGrabber indicates whether the internal grabber object should be released
-                              after this pwc call
-    **/
-    template<class T>
-    inline core::Img<T> pwc(int device=0, const utils::Size &size=utils::Size(640,480), core::format fmt=formatRGB, bool releaseGrabber=false){
-      return grab<T>("pwc",str(device),size,fmt,releaseGrabber);
-    }
-    
-    /** \cond affinity version */
-    inline ImgQ pwc(int device=0, const utils::Size &size=utils::Size(640,480), core::format fmt=formatRGB, bool releaseGrabber=false){
-      return grab<ICL_QUICK_TYPE>("pwc",str(device),size,fmt,releaseGrabber);
-    }
-    /** \endcond */
-    
     /** @} **/
     /* }}} */
   

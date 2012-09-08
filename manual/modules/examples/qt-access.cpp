@@ -7,7 +7,8 @@ UnaryCompareOp cmp(">");
 
 void init(){
   gui << Image().handle("image")
-      << Slider(0,255,127).handle("thresh").label("threshold").maxSize(100,2)
+      << Slider(0,255,127).handle("thresh")
+         .label("threshold").maxSize(100,2)
       << Show();
   grabber.init(pa("-i"));
 }

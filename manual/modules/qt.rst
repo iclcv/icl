@@ -1,3 +1,5 @@
+.. _qt:
+
 **Qt** (GUI Creation and Visualization Framework)
 =================================================
 
@@ -258,8 +260,9 @@ nested sub-containers:
 
 +---------------------------------------------------+----------------------------------------+  
 | .. literalinclude:: examples/qt-hierarchical.cpp  | .. image:: images/qt-hierarchical.png  |
-|    :linenos:                                      |                                        |
-|    :language: c++                                 | started with **appname -input create   |
+|    :linenos:                                      |    :scale: 50%                         |
+|    :language: c++                                 |                                        |
+|                                                   | started with **appname -input create   |
 |                                                   | mandril**                              |  
 +---------------------------------------------------+----------------------------------------+
 
