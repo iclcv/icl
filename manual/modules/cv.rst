@@ -57,6 +57,7 @@ steps. More details to the algorithm are given in the
 **cv::RegionDetector**'s documentation. An step by step tutorial can
 be found in :ref:`tut.regiondetector`.
 
+.. todo:: mention that also a region-graph can be created!
 
 .. _cv.image-region:
 
