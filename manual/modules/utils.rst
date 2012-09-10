@@ -6,6 +6,15 @@ classes. Due to the library dependency order, these classes have no
 internal dependencies. In particular, the utils package does not
 contain classes or functions that are related to image processing.
 
+:icl:`Array2D`
+
+:icl:`Any`
+
+:icl:`SmartPtrBase`
+
+:dox:`ClassA`
+
+:dox:`StructC`
 
 Table of Contents
 """""""""""""""""
@@ -66,7 +75,6 @@ The **core::depth** value is used for run-time type-inference
 .. _utils.support-types:
 
 
-
 Support Types
 """""""""""""
 
@@ -99,7 +107,7 @@ Support Types
     in case of Intel IPP Support, :icl:`Rect` is derived from it's
     IPP-counter-part **IppiRect**
   
-:icl:`Range\<T>` and :icl:`SteppingRange\<T>`
+:icl:`Range` and :icl:`SteppingRange`
 
   A template class for ranges, described by **minVal** and **maxVal**.
   :icl:`SteppingRange\<T>` extends the :icl:`Range\<T>` template by a **stepping**
@@ -288,8 +296,9 @@ String Manipulation
   that supports the **std::istream**-operator. For most of the common
   ICL-types, this is true.
 
+:icl:`Array2D`
 
-:icl:`utils::Any`
+:icl:`Any`
 
   :icl:`Any` is a utility class that defines a string-serialized
   object. :icl:`Any` is derived from the :icl:`std::string`, and extends

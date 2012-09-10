@@ -121,7 +121,7 @@ def parse_tag_file(doc):
 	function_list = [] #This is a list of function to be parsed and inserted into mapping at the end of the function.
 	for compound in doc.findall("./compound"):
 		compound_kind = compound.get('kind')
-		if compound_kind != 'namespace' and compound_kind != 'class':
+		if compound_kind != 'namespace' and compound_kind != 'class' and compound_kind != 'struct':
 			continue #Skip everything that isn't a namespace or class
 		
 		compound_name = compound.findtext('name')
@@ -137,6 +137,11 @@ def parse_tag_file(doc):
 			anchorfile = member.findtext('anchorfile') or compound_filename
 			member_symbol = join(compound_name, '::', member.findtext('name'))
 			member_kind = member.get('kind')
+
+                        # ce otherwise, friends overwrote members (and even constructors)
+                        if member_kind == 'friend':
+                                continue # ce hmmmm
+
 			arglist_text = member.findtext('./arglist') #If it has an <arglist> then we assume it's a function. Empty <arglist> returns '', not None. Things like typedefs and enums can have empty arglists
 			
 			if arglist_text and member_kind != 'variable' and member_kind != 'typedef' and member_kind != 'enumeration':
@@ -148,6 +153,7 @@ def parse_tag_file(doc):
 		member_symbol = old_tuple[0]
 		original_arglist = old_tuple[1]
 		kind = old_tuple[2]
+
 		anchor_link = old_tuple[3]
 		normalised_arglist = normalised_tuple[1]
 		if normalised_tuple[1] is not None: #This is a 'flag' for a ParseException having happened
@@ -157,7 +163,9 @@ def parse_tag_file(doc):
                                 try:
                                         mapping[member_symbol]['arglist'][normalised_arglist] = anchor_link
                                 except KeyError:
-                                        print('error parsing entry: ' + member_symbol) 
+                                        print('error parsing entry: ' + member_symbol)
+                                        print(mapping[member_symbol])
+                                        
 			else:
 				mapping[member_symbol] = {'kind' : kind, 'arglist' : {normalised_arglist : anchor_link}}
 		else:
