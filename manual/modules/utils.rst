@@ -6,16 +6,6 @@ classes. Due to the library dependency order, these classes have no
 internal dependencies. In particular, the utils package does not
 contain classes or functions that are related to image processing.
 
-:icl:`Array2D`
-
-:icl:`Any`
-
-:icl:`SmartPtrBase`
-
-:dox:`ClassA`
-
-:dox:`StructC`
-
 Table of Contents
 """""""""""""""""
 * :ref:`utils.basic-types`
@@ -110,7 +100,7 @@ Support Types
 :icl:`Range` and :icl:`SteppingRange`
 
   A template class for ranges, described by **minVal** and **maxVal**.
-  :icl:`SteppingRange\<T>` extends the :icl:`Range\<T>` template by a **stepping**
+  :icl:`SteppingRange` extends the :icl:`Range` template by a **stepping**
   member variable of the same type
 
 :icl:`Uncopyable` and :icl:`Lockable`
@@ -178,9 +168,9 @@ Smart-Pointer and Smart-Array
 """""""""""""""""""""""""""""
 
 ICL provides a very simple, yet powerful reference counting
-smart-pointer implementation :icl:`SmartPtr\<T>` that basically
+smart-pointer implementation :icl:`SmartPtr` that basically
 behaves like the **boost::shared_ptr**. For array-pointers (where the
-data was created using **new []**), the :icl:`SmartArray\<T>` can be
+data was created using **new []**), the :icl:`SmartArray` can be
 used.
 
 
@@ -301,7 +291,7 @@ String Manipulation
 :icl:`Any`
 
   :icl:`Any` is a utility class that defines a string-serialized
-  object. :icl:`Any` is derived from the :icl:`std::string`, and extends
+  object. :icl:`Any` is derived from the **std::string**, and extends
   it's functionality by easy to use serialization and de-serialization
   functions. An :icl:`Any` instance can be created from every type that
   is supported by the :icl:`str`-template (see above). And it can be
@@ -335,8 +325,8 @@ The Generic Function Class
 """""""""""""""""""""""""""
 
 The :icl:`Function` class and it's heavily overloaded creator
-function **utils::function**, is a simplification of the well known
-**boost::function** type.  The **Function** defines a generic
+function :icl:`function`, is a simplification of the well known
+**boost::function** type.  The :icl:`Function` defines a generic
 interface for
 
 * global functions
@@ -357,10 +347,11 @@ Even though, creation of random numbers is supported sufficiently in
 C++, ICL provides some extra functions and classes here. In particular
 creation of Gaussian distributed random numbers usually requires some
 extra work. In addition to the normal random number generation
-functions **random(min,max)** and **gaussRandom(mean,variance)**, few
-special *classes* are provided, that can be created with the random
-number generation properties, and that will draw a new random number, 
-*whenever they are assigned to something*.
+functions :icl:`random(min,max)<random>` and
+:icl:`gaussRandom(mean,variance)<gaussRandom>`, few special *classes*
+are provided, that can be created with the random number generation
+properties, and that will draw a new random number, *whenever they are
+assigned to something*.
 
 .. literalinclude:: examples/random.cpp
   :linenos:
@@ -372,7 +363,7 @@ number generation properties, and that will draw a new random number,
 The **File** class
 """"""""""""""""""
 
-The **utils::File** class is a simple, yet powerful wrapper of a
+The :icl:`File` class is a simple, yet powerful wrapper of a
 default C-Style **FILE**-pointer. In case of zlib-support, it provides
 built-in abilities for *gzipped* file I/O. I.e. as soon as a file-ending
 ".gz" is detected, the file will be written and read using zlib-functions.
@@ -382,29 +373,29 @@ In addition to this it supports
 * buffered reading
 * decomposition of file names into *directory*, *basename* and *suffix*
 * several reading and writing functions
-* **File.exists()**
+* :icl:`File::exists()`
 
 .. _utils.others:
 
 Others
 """"""
 
-**utils::MultiTypeMap**
+:icl:`MultiTypeMap`
 
   Abstract map implementation, that can hold entries of different types
 
-**utils::ProcessMonitor**
+:icl:`ProcessMonitor`
 
   Grants process information at run-time such as the current memory consumption,
   the application's thread-count or the average processor usage of the system
   and the current process.
 
-**utils::ShallowCopyable**
+:icl:`ShallowCopyable`
 
   A generic, but difficult to use utility class for the creation of shallow-
   copyable classes
   
-**utils::SignalHandler**
+:icl:`SignalHandler`
 
   C++-based wrapper of the C-functions around *sigaction* for process signal
   handling
@@ -451,7 +442,7 @@ Support Macros
     void ICL_DEPRECATED foo(){ .. }
     class ICL_DEPRECATED Bar { ...};
     
-**utils::sqr**
+:icl:`sqr`
 
   Is a generic power-of-two template, that is sometimes very useful.
   
