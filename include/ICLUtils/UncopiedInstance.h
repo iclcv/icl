@@ -68,7 +68,7 @@ namespace icl{
            void unlock() { mutex.unlock(); }
            ...
         };
-        
+        \endcode
     */
     template<class T>
     class UncopiedInstance : public T{

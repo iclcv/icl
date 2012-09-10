@@ -56,7 +56,8 @@ namespace icl{
     class ProxyLayout;
     /** \endcond */
   
-    // documentation in GUIDocumentation.h !
+    /// Main Class of ICL's GUI creation framework
+    /** Please refer to the ICL manual for details */
     class GUI{
       private:
       /// stream operator to add new widgets

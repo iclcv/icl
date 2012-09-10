@@ -32,15 +32,19 @@
 **                                                                 **
 *********************************************************************/
 
+
+#include <ICLQt/SliderHandle.h>
+
 #include <QtCore/QFile>
 #include <QtCore/QTextStream>
 #include <QtGui/QFileDialog>
 #include <QtGui/QPushButton>
 
+#include <ICLQt/ChromaGUI.h>
+
 #include <ICLCore/Parable.h>
 #include <ICLCore/Img.h>
 
-#include <ICLQt/ChromaGUI.h>
 #include <ICLQt/ContainerGUIComponents.h>
 #include <ICLQt/Dragger.h>
 #include <ICLQt/DrawWidget.h>

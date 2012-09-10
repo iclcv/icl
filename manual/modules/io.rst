@@ -5,8 +5,8 @@ The ICLIO module contains functions and classes that support image in-
 and output. The package contains a large set of classes, that are
 actually not interesting for users. Therefore, only the relevant
 classes will be mentioned here. In particular, the IO module contains
-almost 40 implementations for the **io::Grabber** interface, but since
-only the **io::GenericGrabber** is to be used, all other classes are
+almost 40 implementations for the :icl:`io::Grabber` interface, but since
+only the :icl:`io::GenericGrabber` is to be used, all other classes are
 not discussed.
 
 
@@ -37,14 +37,14 @@ The Generic Grabber
 ^^^^^^^^^^^^^^^^^^^
 
 Even though, a large set of Grabber implementations is available, we
-strongly recommend to use instances of the **io::GenericGrabber**
-only. The **GenericGrabber** wraps all other supported Grabber
+strongly recommend to use instances of the :icl:`io::GenericGrabber`
+only. The :icl:`GenericGrabber` wraps all other supported Grabber
 implementations internally. At construction time, the
-**GenericGrabber** is set up with a pair of string parameters (usually
-specified on the application's command line) that select which device
-has to use internally. By these means, you can simply write
-applications that are able to acquire images from all available image
-sources without having to check possibly supported back-ends
+:icl:`GenericGrabber` is set up with a pair of string parameters
+(usually specified on the application's command line) that select
+which device has to use internally. By these means, you can simply
+write applications that are able to acquire images from all available
+image sources without having to check possibly supported back-ends
 manually. Furthermore, your application will also benefit from
 ICL-updates, which provide further grabber-implementations
 automatically, and the string-based devide selection mechanism does
@@ -152,7 +152,7 @@ List of Supported Grabber Backends
 """"""""""""""""""""""""""""""""""
 
 Each ICL-application that is implemented using a combination of program
-argument and the **GenericGrabber**, is able to provide a list of
+argument and the :icl:`GenericGrabber`, is able to provide a list of
 all currently supported backends and how to understand their specific
 *device-selector*. Simple write e.g.::
 
@@ -235,11 +235,11 @@ icl-specific image features such as the region of interest.
     64 gray values, which is usually enough for visualization.  The
     **rle8** format works slightly differently, because it uses two
     bytes -- 16bits -- for each run-token. Therefore, it is loss-less
-    for common **Img8u** source images, but still providing a maximum
-    run length of 256, which leads to a very high compression for
-    homogeneous binary image regions. The **rle**-type also support
-    loading and saving of all other image properties, including
-    meta-data.
+    for common :icl:`Img8u` source images, but still providing a
+    maximum run length of 256, which leads to a very high compression
+    for homogeneous binary image regions. The **rle**-type also
+    support loading and saving of all other image properties,
+    including meta-data.
   
 
 **Image Files that need External Libraries**
@@ -266,9 +266,9 @@ icl-specific image features such as the region of interest.
 The Generic Image Output
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-The **io::GenericImageOutput** works very similar to the
-**io::GenericGrabber**, however in an opposite direction. It has a single
-method called **send**: 
+The :icl:`io::GenericImageOutput` works very similar to the
+:icl:`io::GenericGrabber`, however in an opposite direction. It has a
+single method called :icl:`GenericImageOutput::send`:
 
 .. literalinclude:: examples/generic-image-output.cpp
    :linenos:
@@ -281,12 +281,12 @@ Output Selection from Command Line
 """"""""""""""""""""""""""""""""""
 
 
-Since almost all ICL-applications use the **io::GenericGrabber** in
+Since almost all ICL-applications use the :icl:`io::GenericGrabber` in
 combination with ICL's programm argument evaluation toolbox, nearly
 all ICL applications can be set up to grab their source images from an
 arbitrary image source. In this context, the application
 **icl-pipe** might be very useful: **icl-pipe** does not only have a generic
-image souce, but is does also uses the **io::GenericImageOutput** to
+image souce, but is does also uses the :icl:`io::GenericImageOutput` to
 stream the grabbed images *somewhere else*. Here are some examples:
 
 * grab images from dc camera and dump the results into files (#### is
@@ -338,10 +338,11 @@ stream the grabbed images *somewhere else*. Here are some examples:
 List of Supported Output Backends
 """""""""""""""""""""""""""""""""
 
-Just like the **GenericGrabber** also the **GenericImageOutput** can be used
-to query a list of supported backends from the command line. Of course,
-we need an application, that uses the **GenericImageOutput** in combination
-with ICL's program argument evaluation environtment, such as **icl-pipe**::
+Just like the :icl:`GenericGrabber` also the :icl:`GenericImageOutput`
+can be used to query a list of supported backends from the command
+line. Of course, we need an application, that uses the
+:icl:`GenericImageOutput` in combination with ICL's program argument
+evaluation environtment, such as **icl-pipe**::
 
   icl-pipe -i demo 0 -o list all
 
@@ -367,12 +368,13 @@ library dependency:
 The ColorFormatDecoder
 ^^^^^^^^^^^^^^^^^^^^^^
 
-The **io::ColorFormatDecoder** is closely connected to the
-**io::FourCC** utility class. Its **decode** function is able to
-decode commonly encoded images. Here, the data is represented by
-a single data pointer (in shape of a **const icl8u***), and the
-color format is specified by an also passed **FourCC** instance.
-Currently, the following FourCC codes are supported
+The :icl:`io::ColorFormatDecoder` is closely connected to the
+:icl:`io::FourCC` utility class. Its :icl:`ColorFormatDecoder::decode`
+function is able to decode commonly encoded images. Here, the data is
+represented by a single data pointer (in shape of a **const**
+:icl:`icl8u` *****), and the color format is specified by an also
+passed :icl:`FourCC` instance.  Currently, the following FourCC codes
+are supported
 
 **GRAY**, **GREY** and **Y800**
 
@@ -393,8 +395,9 @@ Currently, the following FourCC codes are supported
 
 .. note::
 
-   Whenever a new V4L2 camera provides an unrecognized color format, 
-   support for this format must be added to the **ColorFormatDecoder**
+   Whenever a new V4L2 camera provides an unrecognized color format,
+   support for this format must be added to the
+   :icl:`ColorFormatDecoder`
 
 
 .. _io.intrinsic-calibrator:
@@ -420,7 +423,7 @@ by ICL's image undistortion!
 Other Classes
 ^^^^^^^^^^^^^
 
-**JPEGEncoder** and **JPEGDecoder**
+:icl:`JPEGEncoder` and :icl:`JPEGDecoder`
 
   These are used at several locations. First of all for reading and
   writing jpeg images, but also shared-memory- and rsb-based inter
@@ -428,24 +431,24 @@ Other Classes
   decoder is also used for motion-jpeg decoding.
 
 
-**FileList**
+:icl:`FileList`
 
   The file list can be used to expand bash-style file patterns, such
   as "images/\*.png". Once instantiated, the file list provides
   lexicographically ordered random access to the matching
   files. Usually, this must not be used manually, as it is automatically
-  used if the **GenericGrabber** is instantiated with a "file" 
+  used if the :icl:`GenericGrabber` is instantiated with a "file" 
   *backend  selector*. 
   
-**FileNameGenerator**
+:icl:`FilenameGenerator`
   
-  The **FileNameGenerator** allows for creating incremental file-names
+  The :icl:`FilenameGenerator` allows for creating incremental file-names
   such as "image-001.png", "image-002.png", etc. For this, a given
   pattern string must contain a connected set of hashes
   (e.g. "image-###.png"). The more hashes are used, the more trailing 
   zeros are inserted
   
-**ImageCompressor**
+:icl:`ImageCompressor`
   
   The image compressor is used to create the binary ICL image formats
   **bicl**, **jicl** and also the **rleX**-formats. Actually its 

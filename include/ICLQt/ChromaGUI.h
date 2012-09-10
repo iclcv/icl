@@ -34,7 +34,6 @@
 
 #pragma once
 
-#include <ICLQt/GUI.h>
 #include <ICLCore/ChromaClassifier.h>
 #include <ICLCore/ChromaAndRGBClassifier.h>
 #include <ICLQt/SliderHandle.h>

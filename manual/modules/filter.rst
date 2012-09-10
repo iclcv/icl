@@ -55,9 +55,9 @@ overhead arising of a *too general interface*, ICL basically supports
 two dedicated image filter interfaces for the above mentioned *1 to 1*
 and *2 to 1* input-output combinations. To obviate further
 misunderstandings, we call these filter sets *Unary-* and *Binary*
-operators -- or short, **UnaryOp** and **BinaryOp**.  Each of these
-sets is represented by an equally named C++-class-interface, which is
-inherited by all implemented filters in that group.
+operators -- or short, :icl:`UnaryOp` and :icl:`BinaryOp`.  Each of
+these sets is represented by an equally named C++-class-interface,
+which is inherited by all implemented filters in that group.
 
 
 .. _filter.cliptoroi:
@@ -65,13 +65,13 @@ inherited by all implemented filters in that group.
 The *Clip To ROI* Property
 """"""""""""""""""""""""""
 
-Each **UnaryOp** instance can be set up with this boolean flag. If
+Each :icl:`UnaryOp` instance can be set up with this boolean flag. If
 *clip to ROI* is active, the result images will always be adapted to
 the size of the source images ROI -- or, in case of
 :ref:`neighborhood operations<filter.neighbor>` even slightly smaller.
 If *clip to ROI* is  deactivated, the result image will become
 as large as the source image, but only its ROI pixels will be set. 
-
+(see :icl:`UnaryOp::setClipToROI` and :icl:`UnaryOp::getClipToROI`)
 
 
 .. _filter.checkonly:
@@ -79,9 +79,10 @@ as large as the source image, but only its ROI pixels will be set.
 The *Check Only* Property
 """""""""""""""""""""""""
 
-This property can also be set of each **UnaryOp** instance. If it is 
-activated, the destination image will only be checked for compatible
-parameters rather then adapted. 
+This property can also be set of each :icl:`UnaryOp` instance. If it
+is activated, the destination image will only be checked for
+compatible parameters rather then adapted.  (see
+:icl:`UnaryOp::setCheckOnly` and :icl:`UnaryOp::getCheckOnly`)
 
 
 .. _filter.unary:
@@ -91,7 +92,7 @@ Unary Operators
 
 As discussed in :ref:`filter.what`, unary operators have use a single
 input and a single output image for their operation. The
-**filter::UnaryOp** class interface required the purely virtual
+:icl:`filter::UnaryOp` class interface required the purely virtual
 method::
   
   void apply(const core::ImgBase *source, ImgBase **destination)
@@ -99,15 +100,16 @@ method::
 to be implemented. The method must applied the operation on the given
 source image and writes the result to the given destination image,
 whose parameters, such as size, number of channels and also its
-**depth**, is always automatically adapted by the filter. The
+:icl:`core::depth`, is always automatically adapted by the filter. The
 destination image is passed as *pointer-pointer* to enable the filter
 to even adapt its depth by reallocation (see also
 :ref:`core::ensureCompatible<core.global.image.ensureCompatible>`,
 :ref:`core::bpp<core.global.image.bpp>` and
-:ref:`tut.imgbase-ptrptrs`).  The **apply** method is kept as general
-as possible, leaving the managing of the destination image to the
-user. However, this is usually very easy, since **apply** is able
-to automatically instantiate a destination image at the given address
+:ref:`tut.imgbase-ptrptrs`).  The :icl:`UnaryOp::apply` method is kept
+as general as possible, leaving the managing of the destination image
+to the user. However, this is usually very easy, since
+:icl:`UnaryOp::apply` is able to automatically instantiate a
+destination image at the given address
 
 +-------------------------------------------+----------------------------------+
 |.. literalinclude:: examples/filters-1.cpp | .. image:: images/filters-1.png  |
@@ -118,12 +120,13 @@ to automatically instantiate a destination image at the given address
 
 In order to simplify the use of filters, an extra apply function is
 provided, that uses an internally managed destination image for
-calling **apply(src,dst)**, which is returned by the method. The
-allows us to also nest several filters by just passing the result of
-one filter to the apply method of another one. Additionally, the
-**UnaryOp** function operator can also be used instead of apply. The
-following example demonstrates how to concatenate filters and it 
-also gives an example for a custom filter.
+calling :icl:`UnaryOp::apply(const core::ImgBase *operand1,
+core::ImgBase **dst)`, which is returned by the method. The allows us
+to also nest several filters by just passing the result of one filter
+to the apply method of another one. Additionally, the :icl:`UnaryOp`
+function operator can also be used instead of apply. The following
+example demonstrates how to concatenate filters and it also gives an
+example for a custom filter.
 
 
 +-------------------------------------------+----------------------------------+
@@ -143,11 +146,11 @@ In this section, we grouped unary operators, that *move* pixels in general. In
 particular, the list contains so called *affine operators* that use an affine
 3x3 matrix to estimate how pixels are to be moved.
 
-**icl::filter::BaseAffineOp** 
+:icl:`filter::BaseAffineOp` 
 
   Base class interface
 
-**icl::filter::AffineOp**
+:icl:`filter::AffineOp`
   
   General affine operator. Here, several affine operation can be concatenated
   resulting, due to the associative property of the operations, in a single 
@@ -155,28 +158,28 @@ particular, the list contains so called *affine operators* that use an affine
   anchor positions can be realized.
   
 
-**icl::filter::MirrorOp**
+:icl:`filter::MirrorOp`
 
   This operator allows for mirroring images along horizontal, vertical or both
   axes at once
 
-**icl::filter::RotateOp**
+:icl:`filter::RotateOp`
 
-  Restricts the generic **AffineOp** to allow rotations only
+  Restricts the generic :icl:`AffineOp` to allow rotations only
 
-**icl::filter::ScaleOp**
+:icl:`filter::ScaleOp`
 
-  Restricts the generic **AffineOp** to allow scaling only
+  Restricts the generic :icl:`AffineOp` to allow scaling only
 
-**icl::filter::TranslateOp**
+:icl:`filter::TranslateOp`
 
-  Restricts the generic **AffineOp** to allow translations only
+  Restricts the generic :icl:`AffineOp` to allow translations only
 
-**icl::filter::WarpOp**
+:icl:`filter::WarpOp`
 
-  The **WarpOp** uses a *warp-table* for estimating the pixel
+  The :icl:`WarpOp` uses a *warp-table* for estimating the pixel
   displacement rather than an affine matrix. The warp-table is a
-  **core::Img32f** image with two channels *Cx* and *Cy*. Cx(x,y)
+  :icl:`core::Img32f` image with two channels *Cx* and *Cy*. Cx(x,y)
   contains the source X-position of the resulting images pixel (x,y),
   Cy the Y-position resp. Image warping is used, when a functional
   description of the pixel displacement is not given, or to complex to
@@ -198,21 +201,21 @@ Neighborhood Operators
 Neighborhood operators are filters, that use not only one, but also
 the neighbor pixels of in the source image to estimate the pixel value
 of the destination image. A very prominent example are linear filter
--- here called **ConvolutionOp**. A very important aspect for the
+-- here called :icl:`ConvolutionOp`. A very important aspect for the
 neighborhood operators is how the image border pixels, for which no
 complete neighborhood exists, are handled. Dependent on the setting of
 the :ref:`filter.cliptoroi`, the destination image will either become
 smaller or the border pixels will not be processed.
 
-**icl::filter::NeighborhoodOp**
+:icl:`filter::NeighborhoodOp`
 
   Base class interface, that overwrites. e.g. the destination image adation
   methods.
 
-**icl::filter::ConvolutionOp**
+:icl:`filter::ConvolutionOp`
   
-  The **ConvolutionOp** implements general image convolution. The
-  image is convolved with a so called **filter::ConvolutionKernel**,
+  The :icl:`ConvolutionOp` implements general image convolution. The
+  image is convolved with a so called :icl:`filter::ConvolutionKernel`,
   which is represented by an extra class. The Kernel can either be
   a common predefined one or an arbitrarily custom one. The predefined
   kernels, such as e.g. a *sobel X* kernel are internally hard-coded and
@@ -223,11 +226,11 @@ smaller or the border pixels will not be processed.
      The IPP library provides a very high performace optimization here
 
 
-**icl::filter::DynamicConvolutionOp**
+:icl:`filter::DynamicConvolutionOp`
 
-  Uses an **Img<T>**-ROI as convolution kernel
+  Uses an :icl:`core::Img`-ROI as convolution kernel
 
-**icl::filter::MorphologicalOp**
+:icl:`filter::MorphologicalOp`
 
   Morphological or Hit-or-Miss transformations are also very common in
   digital image processing. It implements a set of common operations,
@@ -240,18 +243,18 @@ smaller or the border pixels will not be processed.
      The IPP library provides a very high performace optimization here
   
 
-**icl::filter::WienerOp**
+:icl:`filter::WienerOp`
 
   The wiener image operator is defined as optimal de-noise filter.
   It is only provided in case of having Intel IPP support.
   
 
-**icl::filter::GaborOp**
+:icl:`filter::GaborOp`
 
   Gabor-filter and *Gabor jets* are very commonly used in image
   processing, for several proofs.
 
-**icl::filter::MedianOp**
+:icl:`filter::MedianOp`
 
   The median filter is known as an edge preserving filter for noise
   reduction. It basically sorts all neighborhood source pixels values
@@ -276,19 +279,19 @@ is not feasible for each operation. So far, we implemented this feature
 for the following operators.
 
 **icl::filter::InplaceOp**
-  
-  General interface class. The **apply** method gets an un**const**
-  **ImgBase***::
+ 
+  General interface class. The :icl:`InplaceOp::apply` method gets an un**const**
+  :icl:`core::ImgBase`\ *****::
 
     void apply(core::ImageBase *srcDst);
   
 
-**icl::filter::InplaceArithmeticalOp**
+:icl:`filter::InplaceArithmeticalOp`
  
   Aritmetical operations, such like each pixel plus 5 or divide each
   by 2.
 
-**icl::filter::InplaceLogicalOp**
+:icl:`filter::InplaceLogicalOp`
 
   Logical operations, such as each pixel is binary *ored* with a mask.
 
@@ -303,14 +306,14 @@ Lookup-Table Operators
 
 Here, a lookup table is used to assign each pixel a new
 value.un-const**. In order to limit the lookup table size, this is
-however only supported for **core::Img8u** images.
+however only supported for :icl:`core::Img8u` images.
 
-**icl::filter::LUTOp**
+:icl:`filter::LUTOp`
 
   Basic LUT-operation implementation, that uses a simple
   **std::vector<icl8u>** as LUT.
 
-**icl::filter::LUTOp3Channel<T>**
+:icl:`filter::LUTOp3Channel<T>`
  
   This operator creates a 24bit LUT-index by combining a 3-channel
   image's pixels. It also allows for using less the 8bit per channel
@@ -323,12 +326,12 @@ however only supported for **core::Img8u** images.
 Color Related Operators
 """""""""""""""""""""""
 
-**icl::filter::ColorDistanceOp**
+:icl:`filter::ColorDistanceOp`
 
   This operator creates a distance map to a given reference color.
   Optionally, the distance map can be binarized internally.
 
-**icl::filter::ColorSegmentationOp**
+:icl:`filter::ColorSegmentationOp`
 
   This is a very complex operator that allows for high-performance
   LUT base color segmentation. It is used as fundamental component
@@ -336,7 +339,7 @@ Color Related Operators
   API documentation for more details.
 
 
-**icl::filter::SkinOp**
+:icl:`filter::SkinOp`
 
   This class is deprecated and no longer part of the library
   
@@ -355,21 +358,21 @@ General Operators
 This section contains all operators, that did not obviously belong
 to one of the other section.
 
-**icl::filter::UnaryOpPipe**
+:icl:`filter::UnaryOpPipe`
 
   Rather old utility class, that can be used create a list of
   filters where each filter uses its predecessors output as input.
-  The **UnaryOpPipe** also implements the **UnaryOp** interface
+  The :icl:`UnaryOpPipe` also implements the :icl:`UnaryOp` interface
   and it provides access to all intermediate images.
 
 
-**icl::filter::CannyOp**
+:icl:`filter::CannyOp`
 
   IPP based implementation of the canny edge detector. Here, no
   C++ fallback is available (IPP only)
 
 
-**icl::filter::ChamferOp**
+:icl:`filter::ChamferOp`
   
   *Chamfering* is used for approximating the creation of *Euclidean
   Distance Maps (EDMs)*. Here, an image is originally filled with
@@ -380,16 +383,16 @@ to one of the other section.
   this class.
   
 
-**icl::filter::FFTOp**
+:icl:`filter::FFTOp`
 
   Fast Fourier Transform operator
 
 
-**icl::filter::IFFTOp**
+:icl:`filter::IFFTOp`
 
   Inverse Fast Fourier Transform operator
 
-**icl::filter::IntegralImgOp**
+:icl:`filter::IntegralImgOp`
   
   Integral images, originally introduced by Viola and Jones define
   the numerical 2D integral of the image function. The integral 
@@ -398,7 +401,7 @@ to one of the other section.
   The integral image can be used to compute *Haar-Like-Features*, but
   also for efficient real-time local thresholding.
   
-**icl::filter::LocalThresholdOp**
+:icl:`filter::LocalThresholdOp`
 
   This local threshold operator implements three different local threshold
   operations
@@ -412,7 +415,7 @@ to one of the other section.
   pixel neighborhood.
     
 
-**icl::filter::ThresholdOp**
+:icl:`filter::ThresholdOp`
 
   This operator is the origin for a strong misconception: When we usually
   talk about image thresholding we think of an operation like::
@@ -427,37 +430,38 @@ to one of the other section.
   comparison*-operations. The threshold operator clips the image's
   value range to a given interval
 
-**icl::filter::UnaryArithmeticalOp**
+:icl:`filter::UnaryArithmeticalOp`
    
-  Here, basic aritmetical operations with constant values are implemented
+  Here, basic aritmetical operations with constant values are
+  implemented
   
-**icl::filter::UnaryCompareOp**
+:icl:`filter::UnaryCompareOp`
 
   Actually, this is the operation, we most of the time think of, when
   talking about image thresholding. It always results in a binary
-  **Img8u**-image.
+  :icl:`Img8u`-image.
 
-**icl::filter::UnaryLogicalOp**
+:icl:`filter::UnaryLogicalOp`
   
-  Here, pixel-wise logical operations are provided for the integer image
-  types **Img8u** and **Img32s**. (**Img16s** is provided using conversion
-  to **Img32f**).
+  Here, pixel-wise logical operations are provided for the integer
+  image types :icl:`Img8u` and :icl:`Img32s`. (:icl:`Img16s` is
+  provided using conversion to :icl:`Img32f`).
 
-**icl::filter::WeightChannelsOp**
+:icl:`filter::WeightChannelsOp`
 
   Multiplies each image channel with a different constant
 
-**icl::filter::WeightedSumOp**
+:icl:`filter::WeightedSumOp`
 
   Multiplies each image channel with a different constant
   and sums up the result. Mathematically, this is indentical to the
   computation of the scalar product of each pixel color vector with
   a given constant vector.
 
-**icl::filter::GradientImage**
-  Does not extend the **UnaryOp** interface, but it somehow works
-  similar to the **UnaryOp**. The **GradientImage** can be used
-  to determine an image gradient image 
+:icl:`filter::GradientImage` Does not extend the :icl:`UnaryOp`
+  interface, but it somehow works similar to the :icl:`UnaryOp`. The
+  :icl:`GradientImage` can be used to determine an image gradient
+  image
   
   * intensity
   * angle
@@ -473,9 +477,10 @@ to one of the other section.
 Binary Operators
 ^^^^^^^^^^^^^^^^
 
-  **BinaryOp** instances behave very similar to the already presented
-  unary operators, except for the fact, that their **apply** method get
-  two instead of one source image arguments::
+  :icl:`BinaryOp` instances behave very similar to the already
+  presented unary operators, except for the fact, that their
+  :icl:`BinaryOp::apply` method get two instead of one source image
+  arguments::
 
      void apply(const core::ImgBase *src1, const core::ImgBase *src2,core::ImgBase **dst)
 
@@ -483,25 +488,25 @@ Binary Operators
   more intuitive use.
 
 
-**icl::filter::BinaryOp**
+:icl:`filter::BinaryOp`
 
   Base class interface
 
-**icl::filter::BinaryArithmeticalOp**
+:icl:`filter::BinaryArithmeticalOp`
 
   This operator implements binary arithmetical operations such as pixel-wise
   addition of two image.
 
-**icl::filter::BinaryCompareOp**
+:icl:`filter::BinaryCompareOp`
   
   Pixel-wise logical comparison of two image, always resulting in a
-  **Img8u**-binary image
+  :icl:`Img8u`-binary image
 
-**icl::filter::BinaryLogicalOp**
+:icl:`filter::BinaryLogicalOp`
 
   Pixel-wise logical operation
 
-**icl::filter::ProximityOp**
+:icl:`filter::ProximityOp`
 
   This class is used for proximity measurement, that defines a
   pixel-wise similarity of two image. Here, the operand is always
@@ -527,22 +532,22 @@ Other Utility Classes
 ^^^^^^^^^^^^^^^^^^^^^
 In this final section, the remaining tools are listed
 
-**icl::filter::ConvolutionKernel**
+:icl:`filter::ConvolutionKernel`
 
-  Utility class for the **ConvolutionOp**
+  Utility class for the :icl:`ConvolutionOp`
   
-**icl::filter::OpROIHandler**
+:icl:`filter::OpROIHandler`
  
-  Utility class for implementing the **UnaryOp** featuers
+  Utility class for implementing the :icl:`UnaryOp` featuers
   :ref:`filter.cliptoroi` and :ref:`filter.checkonly`.
 
 
-**icl::filter::ImageSplitter**
+:icl:`filter::ImageSplitter`
 
   Splits image horizontally into a set of shared-copies
   for mutli threading (not well supported)
  
-**icl::filter::UnaryOpWork**
+:icl:`filter::UnaryOpWork`
 
-  Utility class for the deprecated **UnaryOp::applyMT**-function
+  Utility class for the deprecated :icl:`UnaryOp::applyMT`-function
   
