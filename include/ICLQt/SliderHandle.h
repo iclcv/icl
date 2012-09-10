@@ -40,7 +40,7 @@
 
 /** \cond */
 class QLCDNumber;
-/** \encond */
+/** \endcond */
 
 namespace icl{
   namespace qt{

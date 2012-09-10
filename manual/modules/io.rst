@@ -69,7 +69,7 @@ A minimally adapted version of this application is available as an
 example application called 'icl-viewer'. The program argument -input
 expects two sub-arguments, the *backend-selector* and the *device
 selector* In following examples you will see synergy of ICL's program
-argument evaluation toolbox and the **io::GenericGrabber**
+argument evaluation toolbox and the :icl:`io::GenericGrabber`
 
 
 * grab from the first fire-wire device available::
