@@ -28,10 +28,10 @@ Table of Contents
 The **DynMatrix** class
 """""""""""""""""""""""
 
-The **DynMatrix<T>** template is one of ICL' fundamental utlity
+The :icl:`DynMatrix` template is one of ICL' fundamental utlity
 classes for linear algebra. It provides an intuitive object-based
 interface for handling 2D matrices with a *templated* element type.
-**DynMatrix** instances provide 1D and 2D element access (using the
+:icl:`DynMatrix` instances provide 1D and 2D element access (using the
 index or 2D-function operator) and also the ability to shallowly
 wrapping around existing data-pointers.
 
@@ -45,39 +45,43 @@ wrapping around existing data-pointers.
 In addition to the standard mathematical operators, such as +,-,*=,
 \... we support a large set of higher level functions:
 
-* QR and RQ decomposition
-* LU decomposition
-* matrix inverse
-* matrix pseudo-inverse (
-* eigenvalue decomposition
-* singular value decomposition (SVD)
-* linear equation solving
+* QR and RQ decomposition (:icl:`DynMatrix::decompose_QR` and :icl:`DynMatrix::decompose_RQ`) 
+* LU decomposition (:icl:`DynMatrix::decompose_LU`)
+* matrix inverse (:icl:`DynMatrix::inv`)
+* matrix pseudo-inverse (:icl:`DynMatrix::pinv`)
+* eigenvalue decomposition (:icl:`DynMatrix::eigen`)
+* singular value decomposition (SVD) (:icl:`DynMatrix::svd`)
+* linear equation solving (:icl:`DynMatrix::solve`)
 
   * LU decomposition  based
   * SVD based
   * matrix inverse based
   * QR decomposition  based
 
-* matrix trace
-* matrix condition
+* matrix trace (:icl:`DynMatrix::trace`)
+* matrix condition (:icl:`DynMatrix::cond`)
+* matrix determinant (:icl:`DynMatrix::det`)
 
-**DynRowVector**
+:icl:`DynRowVector`
 
-  extends the **DynMatrix** class by restricting instances to one row
+  due to the row-major data layout of the :icl:`DynMatrix` class, the
+  :icl:`DynRowVector` was realized by a simple type-def, to 
+  :icl:`DynMatrix` instances, that shallowly wraps the matrix's row
+  data pointer
 
-**DynColVector**
+:icl:`DynColVector`
 
-  extends the **DynMatrix** class by restricting instances to one column
+  extends the :icl:`DynMatrix` class by restricting instances to one column
 
 .. _math.fixed:
 
 The **FixedMatrix** class
 """""""""""""""""""""""""
 
-The **math::FixedMatrix<Type,WIDTH,HEIGHT>** template shows the same
-behavior as the **DynMatrix<T>** template, except for the fact, that
+The :icl:`FixedMatrix` template shows the same
+behavior as the :icl:`DynMatrix<T>` template, except for the fact, that
 it uses a fixed data-array instead of a dynamic on. By these means,
-**FixedMatrix** instances can be created on the stack without the need
+:icl:`FixedMatrix` instances can be created on the stack without the need
 for allocating dynamic data from the heap. Even though C++ allows for
 implementing abstract matrix classes that use template parameters to
 switch between static and dynamic data handling (as e.g. done in the
@@ -85,15 +89,15 @@ Eigen matrix library), we decided to keep things simpler for the user
 by providing two separate matrix classes.
 
 Again, also vector classes are derived from this matrix class.
-**FixedColVector** and **FixedRowVector** are defined in
+:icl:`FixedColVector` and :icl:`FixedRowVector` are defined in
 **ICLUtils/FixedVector.h**
 
-The **FixedMatrix** class is used for *typedefs* in several other
+The :icl:`FixedMatrix` class is used for *typedefs* in several other
 packages. I.e.:
 
-* **core::Color** is a *typedef* to **FixedColVector<icl8u,3>**
-* **geom::Vec** is a *typedef* to **FixedColVector<float,4>**
-* **geom::Mat** is a *typedef* to **FixedMatrix<float,4,4>**
+* :icl:`core::Color` is a *typedef* to **FixedColVector<icl8u,3>**
+* :icl:`geom::Vec` is a *typedef* to **FixedColVector<float,4>**
+* :icl:`geom::Mat` is a *typedef* to **FixedMatrix<float,4,4>**
 
 
 .. _math.lma:
@@ -101,7 +105,7 @@ packages. I.e.:
 Levenberg Marquard Optimizer
 """"""""""""""""""""""""""""
 
-The **LevenbergMarquardtFitter<Scalar>** is a generic implementation
+The :icl:`LevenbergMarquardtFitter` is a generic implementation
 of the Levenberg Marquardt algorithm for non-linear parameter fitting.
 The implementation can either use an analytic Jacobian or can be told
 to derive a numerical Jacobinan automatically. The class documentation
@@ -119,12 +123,12 @@ Fourier Transformation and several support functions for vectors and
 matrices with real and even complex data types. Internally, the
 FFT-framework uses Intel IPP and the Intel MKL if available for a
 significant speed up. All FFT support functions and classes are 
-in the inner namespace **icl::math::fft**.
+in the inner namespace :icl:`math::fft`.
 
 .. note:: 
    
    For image-FFT, a less general, but easier to use FFT-Filter is
-   provided in the ICLFilter module: **filter::FFTOp**
+   provided in the ICLFilter module: :icl:`FFTOp`
 
 
 
@@ -135,7 +139,7 @@ in the inner namespace **icl::math::fft**.
 Generic RANSAC Optimization
 """""""""""""""""""""""""""
 
-The **math::RansacFitter** can be used for RANSAC based function
+The :icl:`RansacFitter` can be used for RANSAC based function
 fitting and optimization. It is implemented with template parameters
 for the vector-types for sample points and for the model parameter
 set. Here is an example
@@ -161,8 +165,8 @@ Local Linear Maps Network (LLM)
 """""""""""""""""""""""""""""""
 
 The Local Linear Map algorithm can be used for general regression
-tasks.  ICL provides two sample applications that use the LLM network
-for 1D to 1D and from 2D to 3D regression tasks.
+tasks.  ICL provides two sample applications that use the icl::`LLM`
+network for 1D to 1D and from 2D to 3D regression tasks.
 
 
 .. _math.simplex:
@@ -172,7 +176,7 @@ Simplex Optimizer
 
 The Simplex (Downhill) algorithm is a very concise, yet powerful
 search algorithm, that can be used to minimize arbitrary well shaped
-functions. Our implementation, the **math::SimplexOptimizer** is
+functions. Our implementation, the :icl:`SimplexOptimizer` is
 implemented as a generic template that abstracts from the used scalar
 and vector types. Except for some optimization parameters, it can be
 instantiated by just passing an arbitrary error-function and an
@@ -183,7 +187,7 @@ initial position in the search space.
 Stochastic Optimizer
 """"""""""""""""""""
 
-The **math::SochasticOptimizer** is a rather old implementation for 
+The :icl:`StochasticOptimizer` is a rather old implementation for 
 stochastic search processes. It defines a virtual class interface, that
 can be implemented for specific optimization tasks.
 
@@ -193,7 +197,7 @@ can be implemented for specific optimization tasks.
 2D Vector Quantisation
 """"""""""""""""""""""
 
-The 2D vector quantization **math::VQ2D** implements the K-Means algorithm
+The 2D vector quantization :icl:`VQ2D` implements the K-Means algorithm
 
 .. note::
    
@@ -205,7 +209,7 @@ The 2D vector quantization **math::VQ2D** implements the K-Means algorithm
 Least-Square based Model Fitting
 """"""""""""""""""""""""""""""""
 
-The **math::LeastSquareModelFitting<Scalar,DataPointVector>** is a
+The :icl:`LeastSquareModelFitting` is a
 generic implementation of the direct-least-square fitting approach
 presented in the paper *Direct Least Square Fitting of Ellipses* by
 *Andrew W. Fitzgibbon et. al.*.

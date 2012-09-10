@@ -5,8 +5,8 @@
 
 The Core modules provides basic types, classes and functions for image
 processing. In particular it introduces ICL's image classes
-**ImgBase** and the derived templates **Img<T>**, where *T* defines the
-pixel data type.
+:icl:`ImgBase` and the derived templates :icl:`Img`, where its
+template parameter *T* defines the pixel data type.
 
 Table of Contents
 ^^^^^^^^^^^^^^^^^
@@ -33,18 +33,18 @@ The Image Classes
 
 +-------------------------------------------------------------------------+------------------------------------+
 | For the implementation of the image classes, we combined inheritance    | .. image:: images/image-sketch.png |
-| and class-templates: The **core::ImgBase** class defines an abstract    |                                    |
+| and class-templates: The :icl:`ImgBase` class defines an abstract       |                                    |
 | interface, that manages all image information except for the actual     |                                    |
 | image pixel data. It works as generic interface for                     |                                    |
-| the several versions of the **Img<T>**-template and provides access to  |                                    |
+| the several versions of the :icl:`Img`-template and provides access to  |                                    |
 |                                                                         |                                    |
-| * image size (in pixels, as **utils::Size**)                            |                                    |
+| * image size (in pixels, as :icl:`utils::Size`)                         |                                    |
 | * channel count (as **int**)                                            |                                    |
-| * run-time-identifiable data type of pixels (as **core::depth**)        |                                    |
-| * color format (as **core::format**)                                    |                                    |
+| * run-time-identifiable data type of pixels (as :icl:`core::depth`)     |                                    |
+| * color format (as :icl:`core::format`)                                 |                                    |
 | * raw image data access                                                 |                                    |
-| * region of interest (as **utils::Rect**)                               |                                    |
-| * a time stamp (as **utils::Time**)                                     |                                    |
+| * region of interest (as :icl:`Rect`)                                   |                                    |
+| * a time stamp (as :icl:`Time`)                                         |                                    |
 | * a single meta data string (as **std::string**)                        |                                    |
 |                                                                         |                                    |
 | .. note::                                                               |                                    |
@@ -53,7 +53,7 @@ The Image Classes
 |   fashion. I.e. they will only actually do something if necessary       |                                    |
 |                                                                         |                                    |
 |                                                                         |                                    |
-| The derived class **Img<T>** adds a **std::vector** of typed            |                                    |
+| The derived class :icl:`Img` adds a **std::vector** of typed            |                                    |
 | data-pointers -- one for each image channel. These channel data         |                                    |
 | pointers use reference counting to allow for copying images shallowly.  |                                    |
 |                                                                         |                                    |
@@ -70,21 +70,21 @@ The Image Classes
 Supported Image Types
 """""""""""""""""""""
 
-The **Img<T>** class is **not** implemented in a completely **inline**
-fashion, which significantly improves the build-times for ICL and for
-other libraries, that depend on it. Furthermore, we preferred to
-provide a smaller set of possible image classes that is completely
-supported by our algorithms, rather than an infinite set. We chose to
-support images for pixel types
+The :icl:`Img` template class is **not** implemented in a completely
+**inline** fashion, which significantly improves the build-times for
+ICL and for other libraries, that depend on it. Furthermore, we
+preferred to provide a smaller set of possible image classes that is
+completely supported by our algorithms, rather than an infinite
+set. We chose to support images for pixel types
 
-* **icl8u** (usually **unsigned char**)
-* **icl16s** (usually **short**)
-* **icl32s** (usually **int**)
-* **icl32f** (**float**)
-* **icl64f** (**double**)
+* :icl:`icl8u` (usually **unsigned char**)
+* :icl:`icl16s` (usually **short**)
+* :icl:`icl32s` (usually **int**)
+* :icl:`icl32f` (**float**)
+* :icl:`icl64f` (**double**)
 
 defined in **ICLUtils/BasicTypes.h**, directly in the
-**icl**-namespace (see also :ref:`utils.basic-types`)
+:icl:`icl`-namespace (see also :ref:`utils.basic-types`)
 
 
 Each of these data types has it's own advantages and
@@ -106,21 +106,21 @@ bit integers leads to less memory usage in comparison to floats
 
 
 For the supported types convenience **typedef**\ s are
-supported. Whenever one gets an **ImgBase** instance, it's
-**getDepth()**-method can be used to query it's actual run-time type
-in oder to perform a type-safe down-cast. The **core::depth**
-enumeration provides alternatives for each of the supported image
-types.
+supported. Whenever one gets an :icl:`ImgBase` instance, it's
+:icl:`ImgBase::getDepth`-method can be used to query it's actual
+run-time type in oder to perform a type-safe down-cast. The
+:icl:`core::depth` enumeration provides alternatives for each of the
+supported image types.
 
-=====================  =================  ====================
-      Full Type             typedef          **depth**-value
-=====================  =================  ====================
-**core::Img<icl8u>**    **core::Img8u**    **core::depth8u**
-**core::Img<icl16s>**   **core::Img16s**   **core::depth16s**
-**core::Img<icl32s>**   **core::Img32s**   **core::depth32s**
-**core::Img<icl32f>**   **core::Img32f**   **core::depth32f**
-**core::Img<icl64f>**   **core::Img64**    **core::depth64f**
-=====================  =================  ====================
+=====================  ===================  ======================
+      Full Type              typedef            **depth**-value
+=====================  ===================  ======================
+**core::Img<icl8u>**   :icl:`core::Img8u`    :icl:`core::depth8u`
+**core::Img<icl16s>**  :icl:`core::Img16s`   :icl:`core::depth16s`
+**core::Img<icl32s>**  :icl:`core::Img32s`   :icl:`core::depth32s`
+**core::Img<icl32f>**  :icl:`core::Img32f`   :icl:`core::depth32f`
+**core::Img<icl64f>**  :icl:`core::Img64f`   :icl:`core::depth64f`
+=====================  ===================  ======================
 
 Here is a minimal example:
 
@@ -134,20 +134,22 @@ Here is a minimal example:
 Pixel Access
 """"""""""""
 
-The **ImgBase** class provides only raw-data access (in shape of a **void***);
-for type-safe pixel access, an **ImgBase**-instance must be casted into
-it's actual **Img<T>**-type. The different techniques for pixel-access
-are also discussed in the :ref:`tutorial<tut.pixel-access>`
+The :icl:`ImgBase` class provides only raw-data access (in shape of a
+**void***); for type-safe pixel access, an :icl:`ImgBase`-instance
+must be casted into it's actual :icl:`Img`-type. The different
+techniques for pixel-access are also discussed in the
+:ref:`tutorial<tut.pixel-access>`
 
 .. _core.image.shallow-copy:
 
 Shallow Copy Concept
 """"""""""""""""""""
 
-It is very important to know that **ImgBase** and **Img<T>**-instances
-are copied shallowly. This means that, whenever an image is copied using 
-either a the copy constructor or the assignment operator, the two images
-will share their image data pointers:
+It is very important to know that :icl:`ImgBase` and
+:icl:`Img`-instances are copied shallowly. This means that, whenever
+an image is copied using either a the copy constructor or the
+assignment operator, the two images will share their image data
+pointers:
 
 .. literalinclude:: examples/shallow-copy.cpp
   :language: c++
@@ -170,18 +172,19 @@ annotation, the definition of the origin is crucial.
 Channel-Concept
 """""""""""""""
 
-The **Img** class manages images as a stack of image slices --
-channels. Channels can be shared by multiple **Img** instances, which
-is especially important for fast shallow images copies (see also
-:ref:`core.image.shallow-copy`). Actually, it is possible to freely compose
-images from channels of different images. The composed image then
-shares it's channel data with the original images, such that
+The :icl:`Img` class manages images as a stack of image slices --
+channels. Channels can be shared by multiple :icl:`Img` instances,
+which is especially important for fast shallow images copies (see also
+:ref:`core.image.shallow-copy`). Actually, it is possible to freely
+compose images from channels of different images. The composed image
+then shares it's channel data with the original images, such that
 modifications will effect all images equally. In order to get an
-independent image a *deep-copy* as well as the **detach**-method are
-provided. The latter replaces the *shared* image channel(s) with new
-independent ones. Shared channel data are stored using the boost-like
-shared pointer class **icl::utils::SmartArray**, which uses reference
-counting for autonomous garbage collection.
+independent image a *deep-copy* as well as the
+:icl:`ImgBase::detach`-method are provided. The latter replaces the
+*shared* image channel(s) with new independent ones. Shared channel
+data are stored using the boost-like shared pointer class
+:icl:`utils::SmartArray`, which uses reference counting for
+autonomous garbage collection.
 
 .. _core.image.roi:
 
@@ -208,12 +211,12 @@ that provide implicit ROI handling (see
 Formats and Ranges
 """"""""""""""""""
 
-An **ImgBase** instance provides information about the (color) format
-(in shape of an **icl::core::format** value), that is associated with
+An :icl:`ImgBase` instance provides information about the (color) format
+(in shape of an :icl:`core::format` value), that is associated with
 the image data represented by the images channels. The word *color*
 was embraced as not all available formats imply color-information. The
 most commonly known color space is probably the RGB color space. If an
-**ImgBase** image has the **core::format** **core::formatRGB**
+:icl:`ImgBase` image has the :icl:`core::format` :icl:`core::formatRGB`
 
 * the image has exactly 3 channels
 * the first channel contains RED-Data in range [0,255]
@@ -226,7 +229,7 @@ most commonly known color space is probably the RGB color space. If an
    assumed to be in range [0,255].
 
 As soon as the channel count of the image is altered, it's format will
-automatically be set to **core::formatMatrix**, which is used for
+automatically be set to :icl:`core::formatMatrix`, which is used for
 unspecified color formats. 
 
 
@@ -240,21 +243,20 @@ Deep Copies
   Images cannot only be copied shallowly, but also in a *deep copy*
   manner. In particular, if the source- and destination-image's depth
   is not identical, the data types have to be converted *deeply*
-  (i.e. pixel by pixel). Even though, the **Img<T>::detached** method
+  (i.e. pixel by pixel). Even though, the :icl:`Img::detached` method
   can be used for copying an image *deeply*, we strongly recommend to
-  use image's **deepCopy** methods. In contrast to the *detached**
-  method, no temporary object needs to be created for using the
-  **deepCopy** method. Actually there are two different versions of
-  *deepCopy**:
+  use image's :icl:`ImgBase::deepCopy` methods, since in contrast to
+  the :icl:`Img::detached` no temporary object needs to be created
+  here. Actually there are two different versions of **deepCopy**:
 
-  * **ImgBase::deepCopy(ImgBase **dst)**
-  * **Img<T>::deepCopy(Img<T> *dst)**
+  * **ImgBase::deepCopy(ImgBase **dst)** (see :icl:`ImgBase::deepCopy`)
+  * **Img<T>::deepCopy(Img<T> *dst)** (see :icl:`Img::deepCopy`)
 
   The **ImgBase**-method uses a pointer-pointer to be able to adapt
   the destination images **depth** if necessary (see also
   :ref:`core::ensureCompatible<core.global.image.ensureCompatible>`,
   :ref:`core::bpp<core.global.image.bpp>` and
-  :ref:`tut.imgbase-ptrptrs`). For the **Img<T>**-version, the
+  :ref:`tut.imgbase-ptrptrs`). For the :icl:`Img`-version, the
   destination image depth is restricted to the source depth by the
   function interface, which is why a *normal* pointer-interface is
   sufficient here. Both deep copy functions will always ensure,
@@ -263,17 +265,17 @@ Deep Copies
 
   .. note::
      
-     There are dedicated methods **deepCopyROI** that provide ROI
-     support for deeply copying images. These will always use both,
-     the source and the destination image ROI.
+     There are dedicated methods :icl:`ImgBase::deepCopyROI` that
+     provide ROI support for deeply copying images. These will always
+     use both, the source and the destination image ROI.
 
   
 
 Depth Conversion
 
-  Converting an images **depth** even simpler to understand than the
-  deep-copy procedure, because there is just one version of
-  **ImgBase::covert(ImgBase*)**. This method, will keep the destination
+  Converting an images :icl:`depth` is even simpler to understand than
+  the deep-copy procedure, because there is just one version of
+  :icl:`core::ImgBase::convert`. This method, will keep the destination
   image's format, but adapt all other image parameters, such as size
   channel count and color format to the source image before converting
   the image pixels element-wise
@@ -284,11 +286,11 @@ Depth Conversion
 Const-Concept
 """"""""""""" 
 
-ICL images use the const concept of C++ to
-ensure the pixel data of const images (of type **const ImgBase** or
-more precisely **const Img<T>**) can not be altered/can only be accessed
-for reading. Unfortunately this leads to a conflict with
-our *shallow-copy* concept in the example::
+ICL images use the const concept of C++ to ensure the pixel data of
+const images (of type **const** :icl:`ImgBase` or more precisely
+**const** :icl:`Img` can not be altered/can only be accessed for
+reading. Unfortunately this leads to a conflict with our
+*shallow-copy* concept in the example::
 
   void func(const Img8u &a){
     Img8u b = a;
@@ -310,62 +312,64 @@ much more difficult to understand.
 Image Processing related Types
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**core::depth**
+:icl:`core::depth`
 
   Run-time type for different image pixel types (see :ref:`core.image.types`)
 
-**core::format**
+:icl:`core::format`
 
   Color format type (see :ref:`core.color`)
 
-**core::scalemode** 
+:icl:`core::scalemode` 
 
   Scaling and sampling interpolation mode. Supported values
   are 
   
-  * **core::interpolateNN** for nearest neighbor interpolation
-  * **core::interpolateLIN** for linear interpolation
-  * **core::interpolateRA** for region average interpolation, which provides much 
-    better results in case of downscaling images (Only supported with Intel IPP)
+  * :icl:`core::interpolateNN` for nearest neighbor interpolation
+  * :icl:`core::interpolateLIN` for linear interpolation
+  * :icl:`core::interpolateRA` for region average interpolation, which
+    provides much better results in case of downscaling images (Only
+    supported with Intel IPP)
     
   .. todo::
 
     consider implementing super-sampling (RA) for or even lanczos for scaled copy roi
 
-**core::axis**
+:icl:`core::axis`
 
-  Either **core::axisHorz**, **core::axisVert** or **core::axisBoth**. This defines
-  image axes for mirroring and other operations.
+  Either :icl:`core::axisHorz`, :icl:`core::axisVert` or
+  :icl:`core::axisBoth`. This defines image axes for mirroring and
+  other operations.
 
 
 **Line Sampling**
 
   For efficient line sampling using the *Bresenham* algorithm, a set
-  of classes is provided. **core::Line**, **core::Line32f** (easy to
-  use class), **core::LineSampler** (more efficient, but static memory
-  model) and **core::SampledLine** (wrapps the **core::LineSampler**)
+  of classes is provided. :icl:`core::Line`, :icl:`core::Line32f` (easy to
+  use class), :icl:`core::LineSampler` (more efficient, but static memory
+  model) and :icl:`core::SampledLine` (wrapps the :icl:`core::LineSampler`)
   for while providing an object oriented memory model.
 
 **Color Typedefs**
   
-  Even though not used for color conversion, the ICLCore package provides some 
-  default type-names for different color types. All of these typedefs have
-  special **Utils::FixedMatrix<T,COLS,ROWS>** as origin
+  Even though not used for color conversion, the ICLCore package
+  provides some default type-names for different color types. All of
+  these typedefs have special :icl:`math::FixedMatrix` as origin
 
-  * **core::Color**
-  * **core::Color4D**
-  * **core::Color32f**
-  * **core::Color4D32f**
-  * **core::RGB**
-  * **core::RGBA**
+  * :icl:`core::Color`
+  * :icl:`core::Color4D`
+  * :icl:`core::Color32f`
+  * :icl:`core::Color4D32f`
+  * :icl:`core::RGB`
+  * :icl:`core::RGBA`
 
 .. _core.global-functions:
 
 Global Functions
 ^^^^^^^^^^^^^^^^
 
-The core package provides a set of global support functions, that can be split into 
-functions for 
+The core package provides a set of global support functions, that can
+be split into functions for
 
 * :ref:`core.color`
 * :ref:`core.global.image`
@@ -378,54 +382,56 @@ functions for
 Image Class Support Functions
 """""""""""""""""""""""""""""
 
-**core::interleavedToPlanar**
+:icl:`core::interleavedToPlanar`
 
   Can be use to efficiently transform externally acquire interleaved pixel data
   into an ICL image. This function works very fast, in particular in case of
   having Intel IPP support.
 
-**core::planarToInterleaved**
+:icl:`core::planarToInterleaved`
 
   Just the other way around: this function can be used to transform the planar 
   ICL image data into an externally needed interleaved data layout
 
-**core::imgNew**
+:icl:`core::imgNew`
 
   This function is provided in many different versions. It can be used as 
-  factory functions for creating correct **core::Img<T>**-instances from given 
-  **core::depth** values
+  factory functions for creating correct :icl:`core::Img`-instances from given 
+  :icl:`core::depth` values
   
 .. _core.global.image.ensureCompatible:
 
-**core::ensureCompatible**
+:icl:`core::ensureCompatible`
 
-  This set of functions are even more complex then the **imgNew**
+  This set of functions are even more complex then the :icl:`imgNew`
   function. A specific issue of ICL image class structure is, that we
-  use an *is-a* relation between the interface class **core::ImgBase**
-  and the actual image instances **core::Img<T>**. Whenever we face a
-  situation, where we already have an existing **ImgBase**-instance
-  (that obviously has a fixed **depth**), but we need an **ImgBase**
-  instance of a different depth, we have to do the following. Our only
-  options is to allocate a new **Img<T>** where T is the desired type,
-  and to replace the old instance with the new one (e.g. the old-one
-  has to be deleted). In order to tell the caller-scope that an image
-  was actually re-allocated, functions need to provide an
-  **ImgBase****-interaface. This is also discussed more in detail in 
-  the tutorial chapter :ref:`tut.imgbase-ptrptrs`.
+  use an *is-a* relation between the interface class
+  :icl:`core::ImgBase` and the actual image instances
+  :icl:`core::Img`. Whenever we face a situation, where we already
+  have an existing :icl:`ImgBase`-instance (that obviously has a fixed
+  :icl:`core::depth`), but we need an :icl:`ImgBase` instance of a
+  different depth, we have to do the following. Our only options is to
+  allocate a new :icl:`Img` where T is the desired type, and to
+  replace the old instance with the new one (e.g. the old-one has to
+  be deleted). In order to tell the caller-scope that an image was
+  actually re-allocated, functions need to provide an
+  :icl:`ImgBase`\ ******-interaface. This is also discussed more in detail
+  in the tutorial chapter :ref:`tut.imgbase-ptrptrs`.
 
 .. _core.global.image.bpp:  
 
-**core::bpp**
+:icl:`core::bpp`
 
-  This global function is strongly correlated to the
-  **ImgBase****-issue stated with the explanation of
-  **core::ensureCompatible**. Many ICL operators, in particular all
-  filters in the **ICLFilter** package, provide an
-  **ImgBase****-interface to allow filters to even adapt the **depth**
-  of given destination images. In a few situation, we know however the
-  correct depth however in advance. Here, the **bpp**-function (which
-  is abbreviation for **ImgBase**-pointer-pointer can be used, to avoid
-  having to allocate a temporary object
+  This global function is strongly correlated to the :icl:`ImgBase`\
+  ******-issue stated with the explanation of
+  :icl:`core::ensureCompatible`. Many ICL operators, in particular all
+  filters in the **ICLFilter** package, provide an :icl:`ImgBase`\
+  ******-interface to allow filters to even adapt the
+  :icl:`core::depth` of given destination images. In a few situation,
+  we know however the correct depth however in advance. Here, the
+  :icl:`bpp`-function (which is abbreviation for
+  :icl:`ImgBase`-pointer-pointer can be used, to avoid having to
+  allocate a temporary object
 
   .. literalinclude:: examples/imgbase-ptrptr.cpp
     :language: c++
@@ -443,11 +449,11 @@ The ICLCore module also provides a set of compatibility functions for
 converting ICL images into OpenCVs **IplImage** and **CvMat** types
 and vice versa.
 
-* **core::ipl_to_img** 
-* **core::img_to_ipl**
-* **core::img_to_cvmat**
-* **core::img_to_ipl_shallow** (for shallow copies)
-* **core::img_to_cvmat_shallow** (for shallow copies)
+* :icl:`core::ipl_to_img` 
+* :icl:`core::img_to_ipl`
+* :icl:`core::img_to_cvmat`
+* :icl:`core::img_to_ipl_shallow` (for shallow copies)
+* :icl:`core::img_to_cvmat_shallow` (for shallow copies)
 
 
 
@@ -460,28 +466,28 @@ and vice versa.
 Image Statistic Functions
 """""""""""""""""""""""""
 
-**core::hist** and **core::channelHisto**
+:icl:`core::hist` and :icl:`core::channelHisto`
 
   creates an image histogram with a user defined number of bins for a
   single or all channels of an image. Please note that ICL's default
   image displaying GUI component is also able to show the histogram of
   the currently shown image
 
-**core::mean**
+:icl:`core::mean`
 
   computes the mean value for one or all given channels of an image
 
-**core::variance**
+:icl:`core::variance`
 
   computes the variance for one or all given channels of an image
   
-**core::stdDeviation**
+:icl:`core::stdDeviation`
 
   computes the standard deviation for one or all given channels of an
   image. Here, two versions, one with given mean-values and one that
   uses an empiric mean are provided.
   
-**core::meanAndStdDev**
+:icl:`core::meanAndStdDev`
 
   computes mean and standard deviation at once
 
@@ -509,30 +515,30 @@ Table of Contents
 * :ref:`core.color.benchmark`
 
 By now, ICL supports 7 different color formats. For each of these
-formats, an **core::format** value is provided.
+formats, an :icl:`core::format` value is provided.
 
-===================  ===================================
- **core::format**                   meaning
-===================  ===================================
-  formatRGB            sRGB color format
-  formatHLS            Hue Lightness Intensity
-  formatYUV            Luminance Y and Chrominance U/V
-  formatChroma         R/G-Chromaticity space
-  formatLAB            CIE-L\*a\*b\* space
-  formatGray           simple gray scale
-  formatMatrix         unspecified color format
-===================  ===================================
+=============================  =====================================
+   :icl:`core::format`                      meaning
+=============================  =====================================
+  :icl:`core::formatRGB`          sRGB color format
+  :icl:`core::formatHLS`          Hue Lightness Intensity
+  :icl:`core::formatYUV`          Luminance Y and Chrominance U/V
+  :icl:`core::formatChroma`       R/G-Chromaticity space
+  :icl:`core::formatLAB`          CIE-L\*a\*b\* space
+  :icl:`core::formatGray`         simple gray scale
+  :icl:`core::formatMatrix`       unspecified color format
+=============================  =====================================
 
 
-The main function for color format conversion is **core::cc**.  **cc**
-uses the source and the destination **format** to pick the desired
-format conversion function internally.  If the **roiOnly**-flag given
-to **cc** function is set to true, the source image's ROI is converted
-into the destination image's ROI. In this case, the destination image
-is not adapted to the source image. Instead, a single test is
-performed to ensure, that the source image's ROI has the same size as
-the destination image's ROI. If the test fails, an error occurs and the
-function returns immediately.  
+The main function for color format conversion is :icl:`core::cc`.
+:icl:`core::cc` uses the source and the destination :icl:`format` to pick
+the desired format conversion function internally.  If the
+**roiOnly**-flag given to :icl:`core::cc` function is set to true, the source
+image's ROI is converted into the destination image's ROI. In this
+case, the destination image is not adapted to the source
+image. Instead, a single test is performed to ensure, that the source
+image's ROI has the same size as the destination image's ROI. If the
+test fails, an error occurs and the function returns immediately.
 
 .. note::
    
@@ -541,7 +547,7 @@ function returns immediately.
    ROI-Support mode (roiOnly = true) runs approx. 20% (2%-50%) slower
    depended on the specific source and destination format.
 
-The **cc** function uses Intel IPP to speed up the conversion
+The :icl:`core::cc` function uses Intel IPP to speed up the conversion
 performance for the conversions
 
 * RGB -> YUV
@@ -556,7 +562,7 @@ Creating LUT-Acceleration
 
 All color conversion methods can be statically performed using a
 global lookup table for the color conversion. This is done by calling
-**core::createLUT** with the to-be-accelerated source and destination
+:icl:`core::createLUT` with the to-be-accelerated source and destination
 format. **We do not recommend to use this features because it usually makes
 the color conversion significantly slower**
 
@@ -587,7 +593,7 @@ few of these YUV sub-formats, ICL provides efficient conversion
 routines, however these must usually not be used manually because the
 image acquisition framework provides implicitly converted ICL-images
 directly. A more general tool for video-color format conversion is
-provided by the **io::ColorFormatDecoder** (see
+provided by the :icl:`io::ColorFormatDecoder` (see
 :ref:`io.color-format-decoder`)
 
 
@@ -885,7 +891,7 @@ Benchmarks
 Reference System: Core 2 Duo 2.4GHz,  32Bit Ubuntu 12.04, 4GB RAM, IPP active
 Images VGA (640x480) varying source and destination depths
 
-**Img8u** --> **Img8u** 
+:icl:`Img8u` --> :icl:`Img8u` 
 
   +--------------+-----------+-----------+-----------+--------------+-----------+------------+
   | src \\ dst   | formatRGB | formatHLS | formatYUV | formatChroma | formatLAB | formatGray | 
@@ -904,7 +910,7 @@ Images VGA (640x480) varying source and destination depths
   +--------------+-----------+-----------+-----------+--------------+-----------+------------+
 
 
-**Img32f** --> **Img32f**
+:icl:`Img32f` --> :icl:`Img32f`
 
   +--------------+-----------+-----------+-----------+--------------+-----------+------------+
   | src \\ dst   | formatRGB | formatHLS | formatYUV | formatChroma | formatLAB | formatGray | 
@@ -923,7 +929,7 @@ Images VGA (640x480) varying source and destination depths
   +--------------+-----------+-----------+-----------+--------------+-----------+------------+
   
 
-**Img8u** --> **Img32f**
+:icl:`Img8u` --> :icl:`Img32f`
 
   +--------------+-----------+-----------+-----------+--------------+-----------+------------+
   | src \\ dst   | formatRGB | formatHLS | formatYUV | formatChroma | formatLAB | formatGray | 
