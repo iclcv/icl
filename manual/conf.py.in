@@ -261,8 +261,19 @@ texinfo_documents = [
 # Example configuration for intersphinx: refer to the Python standard library.
 # intersphinx_mapping = {'http://docs.python.org/': None}
 
+#doxylink = {
+#        'icl' : ('/home/celbrech/Desktop/ICLUtils.tag', '/home/celbrech/projects/ICL/build/debug/ICLUtils/doc/html')
+#}
+
+#doxylink = {
+#        'dox' : ('/home/celbrech/projects/ICL/manual/testdoxy/testdoxy.tag', '/home/celbrech/projects/ICL/manual/testdoxy/html')
+#}
+
 doxylink = {
-        'icl' : ('/home/celbrech/Desktop/ICLUtils.tag', '/home/celbrech/projects/ICL/build/debug/ICLUtils/doc/html')
+        'icl' : ('/home/celbrech/projects/ICL/manual/icldoxy/icldoxy.tag', '/home/celbrech/projects/ICL/manual/icldoxy/html')
+#        'dox' : ('/home/celbrech/projects/ICL/manual/testdoxy/testdoxy.tag', '/home/celbrech/projects/ICL/manual/testdoxy/html') 
 }
+add_function_parentheses = False;
+
 todo_include_todos = True;
 

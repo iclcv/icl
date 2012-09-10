@@ -6,6 +6,7 @@ classes. Due to the library dependency order, these classes have no
 internal dependencies. In particular, the utils package does not
 contain classes or functions that are related to image processing.
 
+
 Table of Contents
 """""""""""""""""
 * :ref:`utils.basic-types`
@@ -31,7 +32,7 @@ Basic Types
 ICL's basic data types are defined in
 **ICLUtils/BasicTypes.h**. Unlike all other classes, types and
 functions, the basic types are defined directly in the
-**icl**-namespace. The type syntax is copied from the Intel IPP
+:icl:`icl` -namespace. The type syntax is copied from the Intel IPP
 library: All types have an *icl*-prefix, an integer-value that
 describes the number of bits used, and a suffix
 
@@ -42,77 +43,79 @@ describes the number of bits used, and a suffix
 
 The most common types are
 
-* **icl8u** for 8 bit unsigned integers (commonly known as **unsigned
+* :icl:`icl8u` for 8 bit unsigned integers (commonly known as **unsigned
   char**)
-* **icl16s** for 16 bit signed integers (commonly known as **short**)
-* **icl32s** for 32 bit signed integers (usually **int**)
-* **icl32f** for floats
-* **icl64f** for doubles
+* :icl:`icl16s` for 16 bit signed integers (commonly known as **short**)
+* :icl:`icl32s` for 32 bit signed integers (usually **int**)
+* :icl:`icl32f` for floats
+* :icl:`icl64f` for doubles
 
 ICL's :ref:`image classes<core.image>` (provided by the
 :ref:`ICLCore<core>` module) are implemented for these common types
 **Note:** Please ensure not to mix up the basic data types with the
-alternatives for the enumeration **core::depth** which are
+alternatives for the enumeration :icl:`depth` which are
 
-* **core::depth8u**
-* **core::depth16s**
-* **core::depth32s**
-* **core::depth32f**
-* **core::depth64f**
+* :icl:`depth8u`
+* :icl:`depth16s`
+* :icl:`depth32s`
+* :icl:`depth32f`
+* :icl:`depth64f`
 
 The **core::depth** value is used for run-time type-inference
 
 .. _utils.support-types:
 
+
+
 Support Types
 """""""""""""
 
-**utils::Point** and **utils::Point32f**
+:icl:`Point` and :icl:`Point32f`
 
-  A simple 2D point class with **int** (**float** for **Point32f**)
+  A simple 2D point class with **int** (**float** for :icl:`Point32f`)
   elements **x** and **y**. Other than this, points behave like
   built-in types. They are serialized as and de-serialized from "(x,y)"
   
   .. note:: 
-    in case of Intel IPP Support, **Point** is derived from it's
+    in case of Intel IPP Support, :icl:`Point` is derived from it's
     IPP-counter-part **IppiPoint**
   
-**utils::Size** and **utils::Size32f**
+:icl:`Size` and :icl:`Size32f`
 
-  Like the **Point** classes, but with members **width** and **height**.
+  Like the :icl:`Point` classes, but with members **width** and **height**.
   Serialized and de-serialized from "WxH".
 
   .. note:: 
-    in case of Intel IPP Support, **Size** is derived from it's
+    in case of Intel IPP Support, :icl:`Size` is derived from it's
     IPP-counter-part **IppiSize**
 
  
-**utils::Rect** and utils::Rect32f
+:icl:`Rect` and :icl:`Rect32f`
  
   Defines a rectangle by given **x**, **y**, **width** and **height**.
   Serialization: "(x,y)WxH"
   
   .. note:: 
-    in case of Intel IPP Support, **Rect** is derived from it's
+    in case of Intel IPP Support, :icl:`Rect` is derived from it's
     IPP-counter-part **IppiRect**
   
-**utils::Range<T>** and **utils::SteppingRange<T>**
+:icl:`Range\<T>` and :icl:`SteppingRange\<T>`
 
   A template class for ranges, described by **minVal** and **maxVal**.
-  **utils::SteppingRange** extends the **Range** template by a **stepping**
+  :icl:`SteppingRange\<T>` extends the :icl:`Range\<T>` template by a **stepping**
   member variable of the same type
 
-**utils::Uncopyable** and **utils::Lockable**
+:icl:`Uncopyable` and :icl:`Lockable`
   
-  Two straight-forward to use interfaces. **Uncopyable** just declares
+  Two straight-forward to use interfaces. :icl:`Uncopyable` just declares
   copy constructor and assignment operators in a private scope to
   avoid copying instances of classes that are derived from it. The
-  **Lockable** interfaces contains a **utils::Mutex** and provides a
-  **lock** and **unlock** method. **utils::Mutex** and
-  **utils::Lockable** instances can be *scope-locked* using an instance of
-  **utils::Mutex::Locker**.
+  :icl:`Lockable` interfaces contains a :icl:`Mutex` and provides a
+  **lock** and **unlock** method. :icl:`Mutex` and
+  :icl:`Lockable` instances can be *scope-locked* using an instance of
+  :icl:`Mutex::Locker`.
 
-**utils::VisualizationDescription**
+:icl:`VisualizationDescription`
  
   Utility class for describing visualizations in a state-machine manner.
   With this tool, classes can e.g. provide a visualization of something,
@@ -138,7 +141,7 @@ applications. It provides
 * an automatically supported set of common default program
   arguments, such as **-version** or **-help**
 
-* a concise method **utils::pa** that can be use to query whether 
+* a concise method :icl:`pa` that can be use to query whether 
   a specific program argument has been given and what it's sub 
   arguments where
 
@@ -148,8 +151,8 @@ in an extra chapter of the tutorial (see :ref:`progarg-tutorial`)
 
 .. _utils.configurable:
 
-The **Configurable** interface
-""""""""""""""""""""""""""""""
+The :icl:`Configurable` interface
+"""""""""""""""""""""""""""""""""
 
 The Configurable-interface can be used to define a classes
 parameters/properties that shall be changed at runtime. The
@@ -167,9 +170,9 @@ Smart-Pointer and Smart-Array
 """""""""""""""""""""""""""""
 
 ICL provides a very simple, yet powerful reference counting
-smart-pointer implementation **utils::SmartPtr** that basically
+smart-pointer implementation :icl:`SmartPtr\<T>` that basically
 behaves like the **boost::shared_ptr**. For array-pointers (where the
-data was created using **new []**), the **utils::SmartArray** can be
+data was created using **new []**), the :icl:`SmartArray\<T>` can be
 used.
 
 
@@ -178,17 +181,17 @@ used.
 Time and Timer Support
 """"""""""""""""""""""
 
-**utils::Time** 
+:icl:`utils::Time` 
 
-  Here, the main utility class is **utils::Time**, which was
-  originally copied from **libiceutils**. The **utils::Time** class provides
+  Here, the main utility class is :icl:`Time`, which was
+  originally copied from **libiceutils**. The :icl:`Time` class provides
   microsecond resolutions internally represented as an
-  icl64s. **utils::Time::now()** returns the current system time. **utils::Time**
+  icl64s. :icl:`Time::now()` returns the current system time. :icl:`Time`
   instances can easily be added, subtracted and compared. In contrast
   to e.g. the boost-libraries, the time class represents absolute
   times and time intervalls at once.
 
-**uitls::FPSEstimator**
+:icl:`FPSEstimator`
 
   This class can be used to estimate the average frames-per-second
   count of a running application::
@@ -198,14 +201,15 @@ Time and Timer Support
       std::cout << fps.getFPSString() << std::endl;
     }
   
-**utils::FPSLimiter**
+:icl:`FPSLimiter`
 
-  The limiter inherits the **utils::FPSEstimator** class. It's **wait()** method will
+  The limiter inherits the :icl:`FPSEstimator` class. It's
+  :icl:`FPSLimiter::wait()` method will
   wait long enough to ensure, the desired FPS-limit is not overshot.
 
-**utils::StackTimer**
+:icl:`StackTimer`
 
-  The **utils::StackTimer** is a very special tool, that can be used for
+  The :icl:`StackTimer` is a very special tool, that can be used for
   coarse profiling. The header **ICLUtils/StackTimer.h** provides the
   *magic*-macros **BENCHMARK_THIS_FUNCTION** and
   BENCHMARK_THIS_SCOPE(STRING)::
@@ -224,12 +228,12 @@ Time and Timer Support
 Exceptions Types
 """"""""""""""""
 
-  ICL's basic exception type is *icl::utils::ICLException** that
+  ICL's basic exception type is :icl:`ICLException` that
   inherits **std::runtime_error**. In addition, there are several
   other exception types either implemented in the
   **ICLUtils/Exception.h** header or within one of the other ICL
   modules. ICL's exception hierarchy is rather flat; most of the time
-  either **utils::ICLException** or a direct child-class instance is thrown.
+  either :icl:`ICLException` or a direct child-class instance is thrown.
   
 
 .. _utils.threading:
@@ -238,10 +242,10 @@ Exceptions Types
 Multi-Threading Tools
 """""""""""""""""""""
 
-Here, the two fundamental classes are **icl::utils::Thread** and 
-**icl::utils::Mutex** which are basically simple wrappers of the
+Here, the two fundamental classes are :icl:`Thread` and 
+:icl:`Mutex` which are basically simple wrappers of the
 corresponding PThread-types. Most of the time, threading must not be
-implemented explicitly. Instead the **icl::qt::ICLApplication**
+implemented explicitly. Instead the :icl:`ICLApplication`
 can be used for multi-threaded (interactive) applications.
 
 
@@ -254,7 +258,7 @@ XML-based Configuration Files
 We included the Pugi-XML parsing framework into the ICL source
 tree. Even though, this can be uses for XML file parsing and creation,
 ICL provides a much simpler tool for XML-based configuration files,
-the **utils::ConfigFile** class. This is documented in an extra chapter
+the :icl:`ConfigFile` class. This is documented in an extra chapter
 of the tutorial (see :ref:`config-file-tutorial`)
 
 
@@ -264,7 +268,7 @@ of the tutorial (see :ref:`config-file-tutorial`)
 String Manipulation
 """""""""""""""""""
 
-**utils::str** and **utils::parse**
+:icl:`str` and :icl:`parse`
 
   Since C++'s support for string manipulation is a bit weak, ICL
   supports a set of support functions for intuitive and easy-to use
@@ -276,41 +280,41 @@ String Manipulation
     template<class T>
     T parse(const std::string &text);
   
-  where **str** converts a type instance into a string, and **parse**
+  where :icl:`str` converts a type instance into a string, and :icl:`parse`
   converts a string into a type instance. Internally, these functions
   make use of the in- and output stream-operators (**<<** and **>>**).
-  Therefore, **str** is automatically supported for each type that
-  supports the **std::ostream**-operator and **parse** for each type
+  Therefore, :icl:`str` is automatically supported for each type that
+  supports the **std::ostream**-operator and :icl:`parse` for each type
   that supports the **std::istream**-operator. For most of the common
   ICL-types, this is true.
 
 
-**utils::Any**
+:icl:`utils::Any`
 
-  **utils::Any** is a utility class that defines a string-serialized
-  object. **Any** is derived from the **std::string**, and extends
+  :icl:`Any` is a utility class that defines a string-serialized
+  object. :icl:`Any` is derived from the :icl:`std::string`, and extends
   it's functionality by easy to use serialization and de-serialization
-  functions. An **Any** instance can be created from every type that
-  is supported by the **str**-template (see above). And it can be
-  converted to any type that is supported by the **parse**-template
+  functions. An :icl:`Any` instance can be created from every type that
+  is supported by the :icl:`str`-template (see above). And it can be
+  converted to any type that is supported by the :icl:`parse`-template
   
   .. literalinclude:: examples/any.cpp
     :language: c++
     :linenos:
 
-**utils::tok** and **utils::cat**
+:icl:`tok` and :icl:`cat`
 
   The two support functions are used for tokenization and concatination
-  of string. **tok** can tokenize strings an std::vector<string> tokens.
+  of string. :icl:`tok` can tokenize strings an std::vector<string> tokens.
   It can either use a set of single allowed **char**-delimiters, or
   a delimiting **std::string**. Furthermore, an escape-character can
   be defined for also being able to use the delimiting characters.
   
-  The opposite of **tok** is **cat**, which concatenate the elements
+  The opposite of :icl:`tok` is :icl:`cat`, which concatenate the elements
   of an **std::vector<std::string>**. Optionally a delimiter can be
   inserted between the elements here.
 
-**utils::match**
+:icl:`match`
 
   Is a regular expression matching function. It also supports accessing
   sub-matches.
@@ -321,7 +325,7 @@ String Manipulation
 The Generic Function Class 
 """""""""""""""""""""""""""
 
-The **utils::Function** class and it's heavily overloaded creator
+The :icl:`Function` class and it's heavily overloaded creator
 function **utils::function**, is a simplification of the well known
 **boost::function** type.  The **Function** defines a generic
 interface for

@@ -152,7 +152,12 @@ def parse_tag_file(doc):
 		normalised_arglist = normalised_tuple[1]
 		if normalised_tuple[1] is not None: #This is a 'flag' for a ParseException having happened
 			if mapping.get(member_symbol):
-				mapping[member_symbol]['arglist'][normalised_arglist] = anchor_link
+                                # ce: added try except here in order to avoid exit
+                                # what is wrong with SmartPtrBase?
+                                try:
+                                        mapping[member_symbol]['arglist'][normalised_arglist] = anchor_link
+                                except KeyError:
+                                        print('error parsing entry: ' + member_symbol) 
 			else:
 				mapping[member_symbol] = {'kind' : kind, 'arglist' : {normalised_arglist : anchor_link}}
 		else:
@@ -401,9 +406,15 @@ def create_role(app, tag_filename, rootdir):
 		app.warn(standout('Could not open tag file %s. Make sure your `doxylink` config variable is set correctly.' % tag_filename))
 	
 	def find_doxygen_link(name, rawtext, text, lineno, inliner, options={}, content=[]):
+
+
 		text = utils.unescape(text)
 		# from :name:`title <part>`
 		has_explicit_title, title, part = split_explicit_title(text)
+
+#                print('find_doxygen_link name=%s rawtext=%s text=%s lineno=%d' % (name, rawtext, text, lineno))
+#                print('find_doxygen_link title=%s part=%s' % (title, part))
+                
 		warning_messages = []
 		if tag_file:
 			url = find_url(tag_file, part)

@@ -8,7 +8,6 @@ processing. In particular it introduces ICL's image classes
 **ImgBase** and the derived templates **Img<T>**, where *T* defines the
 pixel data type.
 
-
 Table of Contents
 ^^^^^^^^^^^^^^^^^
 * :ref:`core.image`
