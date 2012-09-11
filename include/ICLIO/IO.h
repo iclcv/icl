@@ -70,7 +70,6 @@
     \defgroup MOVIE_FILE_G grabbers for movie file sources
     \defgroup V4L_G Video 4 Linux based grabbesr
     \defgroup GIGE_G Gigabit Ethernet (GIG-E) based grabber
-    \mainpage ICLIO (Input/Ouput) package
     
     \section Overview
     The ICLIO Package encloses a wide range of images sources that are all
