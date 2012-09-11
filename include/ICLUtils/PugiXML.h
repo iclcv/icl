@@ -107,7 +107,7 @@ namespace pugi{
   enum xml_node_type{
     node_null,          //!< Empty (null) node handle
     node_document,	//!< A document tree's absolute root
-    node_element,	//!< Element tag, i.e. '<node/>'
+    node_element,	//!< Element tag, i.e. "<node>"
     node_pcdata,	//!< Plain character data, i.e. 'text'
     node_cdata,		//!< Character data, i.e. '<![CDATA[text]]>'
     node_comment,	//!< Comment tag, i.e. '<!-- text -->'
@@ -142,7 +142,7 @@ namespace pugi{
   /** This flag is on by default. **/
   const unsigned int parse_escapes = 0x0010;
   
-  /// This flag determines if EOL characters are normalized (converted to #xA) during parsing. 
+  /// This flag determines if EOL characters are normalized (converted to \link #xA xA \endlink) during parsing. 
   /** This flag is on by default. **/
   const unsigned int parse_eol = 0x0020;
 	
