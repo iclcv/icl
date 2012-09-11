@@ -75,8 +75,6 @@
     \defgroup STRUTILS String Manipuation Functions
     \defgroup FUNCTION ICL's Function Class and Creation Functions
     
-    \mainpage ICLUtils package
-    
     \section OV Overview
     
     The ICLUtils package contains C++ support functions and classes that do no depend on the
