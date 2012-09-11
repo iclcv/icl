@@ -41,7 +41,6 @@
     \defgroup INPLACE Collection of Inplace Operations
     \defgroup OTHER Other Classes    
     
-    \mainpage ICLFilter package
     
     \section OVERVIEW Overview
     
