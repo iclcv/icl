@@ -75,8 +75,6 @@
     \defgroup HANDLES "GUI Component Handle classes"
     \defgroup UNCOMMON "Uncommon classes (internally used)"
     
-    \mainpage ICLQt For Rapid Development of GUI-based Computer-Vision Applications
-    
     As it's core, this package provides a wrapper API for Qt-based GUI components. The main class of this
     package is the icl::GUI class (documentation: \ref GUI_INTRO) . Further essential components are located in
     the \ref IVF .
