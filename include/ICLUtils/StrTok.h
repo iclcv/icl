@@ -50,7 +50,7 @@ namespace icl{
           @param singleCharDelims if this is true (default), each character of delims
                                   is treated a single possible delimiter. Otherwise,
                                   the delims string is used as a delimiter sequence
-          @param escapeChar if this char is not '\0', delimiter occurences are skipped,
+          @param escapeChar if this char is not '\\0', delimiter occurences are skipped,
                             if this char is found directly before the delimiter. (Often
                             the '\\' char is used here)
       */
