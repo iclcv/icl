@@ -39,8 +39,7 @@
 #include <ICLGeom/SceneObject.h>
 #include <ICLGeom/Camera.h>
 
-/** \mainpage ICLGeom Package for Handling 3D Geometry (Page under construction!)
-
+/** 
     The ICLGeom package provides functions and classes for handling 3D-geometry related problems. 
     This includes
     - camera calibration
