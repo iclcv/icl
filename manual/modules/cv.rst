@@ -11,10 +11,11 @@ better suited for further processing steps. By definition, the ICLCV
 package does not include 3D computer vision algorithms, which are
 located in the :ref:`ICLGeom<geom>` package.
 
-**Table of Contents**
-
+Table of Contents
+^^^^^^^^^^^^^^^^^
   * :ref:`cv.cca`
 
+    * :ref:`cv.region-inspector`
     * :ref:`cv.image-region`
     * :ref:`cv.css`
 
@@ -53,11 +54,28 @@ faster than any camera device can provide data and we did not even
 make use of SIMD-instructions or multi-threading. This is possible due
 to initially transforming the image using an efficient
 run-length-encoder, whose output is used for all further processing
-steps. More details to the algorithm are given in the
-:icl:`cv::RegionDetector`'s documentation. An step by step tutorial can
-be found in :ref:`tut.regiondetector`.
+steps. In addition to the region detection also a region adjacency and
+containment graph can be created if necessary. This feature needs to
+be activated explicitly in the :icl:`RegionDetector`'s constructor as
+it slightly slows down the processing speed. If the region-graph was
+created, each :icl:`ImageRegion` can also be asked for it's adjacent
+regions, it's child regions and it's parent region.  More details to
+the algorithm are given in the :icl:`cv::RegionDetector`'s
+documentation. An step by step tutorial can be found in
+:ref:`tut.regiondetector`.
 
-.. todo:: mention that also a region-graph can be created!
+.. _cv.region-inspector:
+
+The **icl-region-inspector** Application
+""""""""""""""""""""""""""""""""""""""""
+
+The application **icl-region-inspector** is a very powerful tool for
+the demonstration of ICL's region detection framework. It provides an
+interactive GUI-interface for the selection of computed and visualized
+region features.
+
+
+.. image:: images/region-inspector.png
 
 .. _cv.image-region:
 
@@ -229,13 +247,21 @@ image pixel. The maximum of the resulting distance image defines the
 optimal match of the pattern. As distance metrics usually
 (normalized) cross-correlation is used.
 
+.. note::
+   
+   Since the template matching and tracking bases on normalized
+   cross-correlation, for which right now, not C++-fallback
+   implementation is available, the whole template tracking
+   framework is only available in case of having Intel IPP support
+   
+.. todo::
 
+   Provide Fallback-Implementation for Cross-Correlation
 
 .. _cv.matching:
 
 Simple Matching
 """""""""""""""
-
 
 The header **ICLCV/CV.h** provides the :icl:`cv::matchTemplate`
 functions that can simply be used. An object oriented interface is

@@ -236,28 +236,29 @@ namespace icl{
                are adapted automatically
         @param rd Optionally exploited ImgRegionDetector object pointer. If given, 
                this region detector is used, which can speed up Performance in successive calls
-               to iclMatchTemplate
+               to matchTemplate
     **/
-    std::vector<utils::Rect> iclMatchTemplate(const core::Img8u &src, 
-                                       const core::Img8u &templ, 
-                                       float significance,
-                                       core::Img8u *buffer=0,
-                                       bool clipBuffersToROI=true,
-                                       RegionDetector *rd=0,
-                                       bool useCrossCorrCoeffInsteadOfSqrDistance=false);
+    std::vector<utils::Rect> matchTemplate(const core::Img8u &src, 
+                                           const core::Img8u &templ, 
+                                           float significance,
+                                           core::Img8u *buffer=0,
+                                           bool clipBuffersToROI=true,
+                                           RegionDetector *rd=0,
+                                           bool useCrossCorrCoeffInsteadOfSqrDistance=false);
   
     
-    std::vector<utils::Rect> iclMatchTemplate(const core::Img8u &src, 
-                                       const core::Img8u *srcMask,
-                                       const core::Img8u &templ, 
-                                       const core::Img8u *templMask,
-                                       float significance,
-                                       core::Img8u *srcBuffer=0,
-                                       core::Img8u *templBuffer=0,
-                                       core::Img8u *buffer=0,
-                                       bool clipBuffersToROI=true,
-                                       RegionDetector *rd=0,
-                                       bool useCrossCorrCoeffInsteadOfSqrDistance=false);
+    /// more general matchTemplate implementation
+    std::vector<utils::Rect> matchTemplate(const core::Img8u &src, 
+                                           const core::Img8u *srcMask,
+                                           const core::Img8u &templ, 
+                                           const core::Img8u *templMask,
+                                           float significance,
+                                           core::Img8u *srcBuffer=0,
+                                           core::Img8u *templBuffer=0,
+                                           core::Img8u *buffer=0,
+                                           bool clipBuffersToROI=true,
+                                           RegionDetector *rd=0,
+                                           bool useCrossCorrCoeffInsteadOfSqrDistance=false);
     
 
 

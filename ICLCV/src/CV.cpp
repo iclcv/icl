@@ -93,13 +93,13 @@ namespace icl{
       }
     }
     
-    std::vector<Rect> iclMatchTemplate(const Img8u &src, 
-                                       const Img8u &templ, 
-                                       float significance,
-                                       Img8u *bufferGiven,
-                                       bool clipBuffersToROI,
-                                       RegionDetector *rdGiven,
-                                       bool useCrossCorrCoeffInsteadOfSqrDistance){    
+    std::vector<Rect> matchTemplate(const Img8u &src, 
+                                    const Img8u &templ, 
+                                    float significance,
+                                    Img8u *bufferGiven,
+                                    bool clipBuffersToROI,
+                                    RegionDetector *rdGiven,
+                                    bool useCrossCorrCoeffInsteadOfSqrDistance){    
   
       //DEBUG_LOG("src:" << src << "\ntempl:" << templ);
       Size bufSize = src.getROISize()-templ.getROISize()+Size(1,1);
@@ -220,17 +220,17 @@ namespace icl{
                   
   
   
-    std::vector<Rect> iclMatchTemplate(const Img8u &src, 
-                                       const Img8u *srcMask,
-                                       const Img8u &templ, 
-                                       const Img8u *templMask,
-                                       float significance,
-                                       Img8u *srcBuffer,
-                                       Img8u *templBuffer,
-                                       Img8u *buffer,
-                                       bool clipBuffersToROI,
-                                       RegionDetector *rd,
-                                       bool useCrossCorrCoeffInsteadOfSqrDistance){
+    std::vector<Rect> matchTemplate(const Img8u &src, 
+                                    const Img8u *srcMask,
+                                    const Img8u &templ, 
+                                    const Img8u *templMask,
+                                    float significance,
+                                    Img8u *srcBuffer,
+                                    Img8u *templBuffer,
+                                    Img8u *buffer,
+                                    bool clipBuffersToROI,
+                                    RegionDetector *rd,
+                                    bool useCrossCorrCoeffInsteadOfSqrDistance){
       Img8u *useSrcBuffer = 0;
       Img8u *useTemplBuffer = 0;
       if(srcMask){
@@ -260,13 +260,13 @@ namespace icl{
         useTemplBuffer = const_cast<Img8u*>(&templ);
       }
       
-      std::vector<Rect> results = iclMatchTemplate(*useSrcBuffer,
-                                                   *useTemplBuffer,
-                                                   significance,
-                                                   buffer,
-                                                   clipBuffersToROI,
-                                                   rd,
-                                                   useCrossCorrCoeffInsteadOfSqrDistance);
+      std::vector<Rect> results = matchTemplate(*useSrcBuffer,
+                                                *useTemplBuffer,
+                                                significance,
+                                                buffer,
+                                                clipBuffersToROI,
+                                                rd,
+                                                useCrossCorrCoeffInsteadOfSqrDistance);
       
       if(clipBuffersToROI && srcMask){
         DEBUG_LOG("");
