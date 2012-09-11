@@ -52,7 +52,6 @@
     \defgroup G_PT Position Tracker template class
     \defgroup G_UTILS Utility classes and Functions
     
-    \mainpage ICLCV - A package for Computer Vision Functions and Classes
 
     TODO!!!
     The ICLCV package contains functions and classes for region and blob detection and
