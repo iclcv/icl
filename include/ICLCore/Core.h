@@ -51,7 +51,6 @@
     \defgroup STRUTILS Utiltiy functions for std::string conversions
     \defgroup MATH Mathematical Utiltiy functions
 
-    \mainpage Image Component Library (ICL) 
 
     ICL is a C++ image processing library, developed in the 
     <a href="www.ni.www.techfak.uni-bielefeld.de"> Neuroinformatics Group</a> at the 
