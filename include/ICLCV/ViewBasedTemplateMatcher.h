@@ -34,7 +34,7 @@
 
 #pragma once
 
-#include <ICLCV/UsefulFunctions.h>
+#include <ICLCV/CV.h>
 #include <ICLUtils/UncopiedInstance.h>
 
 namespace icl{

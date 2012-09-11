@@ -53,7 +53,6 @@ add_libsource (${PROJECT_NAME} "src/FloodFiller.cpp" "${CONDITIONLIST}" LIB_SOUR
 add_libsource (${PROJECT_NAME} "src/CornerDetectorCSS.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
 set(CONDITIONLIST HAVE_IPP_COND)
-add_libsource (${PROJECT_NAME} "src/UsefulFunctions.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/ViewBasedTemplateMatcher.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/HoughLineDetector.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/HoughLine.cpp" "${CONDITIONLIST}" LIB_SOURCES)

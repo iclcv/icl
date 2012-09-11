@@ -27,11 +27,11 @@ located in the :ref:`ICLGeom<geom>` package.
 
     * :ref:`cv.hungarian`
 
-  * Mean Shift Tracking
-  * Template Matching and Tracking
-
-    * View Based Template Matcher
-
+  * :ref:`cv.mean-shift`
+  * :ref:`cv.template-matching`
+    
+    * :ref:`cv.matching`
+    * :ref:`cv.tracking`
 
 .. _cv.cca:
 
@@ -150,17 +150,124 @@ to the :icl:`cv::HoughLineDetector` documentation or take a look at
 the interactive demo application **icl-hough-line-demo**.
 
 
+
+
 .. _cv.vector-tracker:
 
 The Vector Tracker
 ^^^^^^^^^^^^^^^^^^
 
-TODO
+Tracking *things* in images is complex task, that is usually closely
+connected to a detection framework. In gernaral, tracking allows for
+narrowing the search window for the detection if we assume a maximum
+speed of the object moving in the image space.  However most of the
+time, also a fallback is needed for the case that the tracked object
+is lost, which can also be described by using a search window that has
+image size.
 
+In situations, where several objects, each described by a feature
+vector, are to be tracked, we face an assignment problem: 
+
+* Which object instance in the current time step belongs to which
+  object in the previous time step
+* How can we particularly solve the problem if a new object enters
+  *the scene*
+* How can we particularly solve the problem if a new object leaves
+  *the scene*
+
+These issues are tackled by the :icl:`cv::VectorTracker` that is a
+generalization of the :icl:`cv::PositionTracker` class, which is
+restricted to 2D feature vectors. In both cases, the tracking problem
+is reformulated as a linear assignment problem, that can be solved
+optimally, w.r.t. a cost matrix derived from a given feature distance
+metrics by the *Hungarian Method*. If the available object-count
+differs from one frame to another, the internal cost-matrix is 
+smartly extended in order to identify new objects and objects that
+were lost.
 
 .. _cv.hungarian:
 
 The Hungarian Algorithm
 """""""""""""""""""""""
 
-TODO
+The *Hungarian Method* is implemented by the
+:icl:`cv::HungarianAlgorithm` class template. Usually this is used in
+the :icl:`VectorTracker` only.
+
+
+
+.. _cv.mean-shift:
+
+Mean Shift Tracking
+^^^^^^^^^^^^^^^^^^^
+
+Mean-Shift based tracking is also a very common standard technique in
+computer vision. A kernel, initially centered at the last frame's
+position estimate, is locally combined with the image pixels resulting
+in a position update for the kernel. This procedure is iterated a few
+time until convergence is reached. For the algorithm, a single channel
+image is used that has high pixel values where the object is. Usually
+an inverted color distance map is used here. There are several
+extensions that suggest certain choices of kernels, or feature
+images. Other extension generalize the mean shift algorithm for an
+automatic adaption of the kernel size (*mean shift through scale
+space*). By now, only the standard method is supported. A demo
+application called **icl-mean-shift-demo** is provided as well.
+
+
+
+
+.. _cv.template-matching:
+
+Template Matching and Tracking
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Template matching is a basic image processing technique, where a
+usually small pattern image is searched in a larger image. For the
+matching the pattern is compared with the image once centered at each
+image pixel. The maximum of the resulting distance image defines the
+optimal match of the pattern. As distance metrics usually
+(normalized) cross-correlation is used.
+
+
+
+.. _cv.matching:
+
+Simple Matching
+"""""""""""""""
+
+
+The header **ICLCV/CV.h** provides the :icl:`cv::matchTemplate`
+functions that can simply be used. An object oriented interface is
+provided with the :icl:`cv::ViewBasedTemplateMatcher` class.  The
+corresponding demo application is named **icl-template-matching-demo**
+
+.. _cv.tracking:
+
+Tracking
+""""""""
+
+Since usually, naive *matching* is too slow and not robust enough in
+particular not in presence of more than marginal object rotations, a
+tracking framework is of great use. ICL provides with simple yet
+powerful implementation: the :icl:`cv::TemplateTracker`. This class uses
+a set of heuristics to
+
+1. use the existing detection technique for implementing tracking
+2. provide rotation invariance
+
+Tracking is realized by using a locally centered search window of a
+custom definable size. For providing rotation invariance, the searched
+pattern image is pre-rotated from 0 to 360 degree using an adaptable
+step size. In each tracking step, the searched pattern is matched
+within search window for each available rotation within a given
+rotation-search window size. A coarse to fine search is present in
+the method and constructor interfaced, but not implemented yet. 
+
+A demo application will be provided soon.
+
+.. todo::
+
+   implement a demo application for the :icl:`cv::TemplateTracker`
+   developed with Eckard
+
