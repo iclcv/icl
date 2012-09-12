@@ -171,12 +171,10 @@ namespace icl{
         data->lt->apply(image,&data->lastBinImage);
       }
       
-      // data->lastBinImage->print("last-bin-image");
-      //    FileWriter("test.ppm").write(data->lastBinImage);
-      
       data->quads.clear();    
+      
       const std::vector<ImageRegion> &rs = data->rd->detect(data->lastBinImage);
-        
+
       const bool dynCSSSigma = getPropertyValue("css.dynamic sigma");
       const bool optEdges = getPropertyValue("optimize edges");
       for(unsigned int i=0;i<rs.size();++i){
@@ -186,7 +184,9 @@ namespace icl{
           data->css.setSigma(iclMin(7.,boundary.size() * (3.2/60) - 0.5));
         }
         const std::vector<Point32f> &corners = data->css.detectCorners(boundary);
+        
         if( corners.size() == 4 ){ 
+
           if(optEdges){
             std::vector<Point32f> cornersCopy = corners;
             try{

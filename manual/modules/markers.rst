@@ -150,7 +150,10 @@ results.
 
 An Easy Example
 ^^^^^^^^^^^^^^^
-
+.. literalinclude:: examples/markers.cpp
+   :linenos:
+   :language: c++
+   :emphasize-lines: 9,23           
 
 
 .. _markers.creating-markers:
@@ -165,3 +168,68 @@ Creating Marker Images
 
 Benchmarks
 ^^^^^^^^^^
+
+The benchmarks were applied on 1000x1000 images of type
+:icl:`core::Img8u` showing regular grid or markers. Between the
+markers, a single pixel line of white pixels was added, so the actual
+image size was exactly 1020x1020 (in case of 50x50 pixel marker size)
+and 1010x1010 (in case of 100x100 pixel marker size) pixels. The
+benchmark system was a Core 2 Duo 2.4GHz, 4GB RAM, Ubuntu 12.04
+32bit. For BCH Markers, we used different marker sizes of 50x50 and
+100x100 pixels. For all other marker types, only 100x100 pixel markers
+were used. The hierarchical methods ("icl1" and "amoeba") should be
+independent from the marker size, because their identification
+algorithms runs on the image's region graph rather than on its
+pixels. We did not run tests on the "amoeba"-style markers, because
+these mare are difficult to generate and their detection speed should
+be very similar to the "icl1"-type markers. For the ARToolKit
+markers, an unrealistic count of 100 reference markers (much more that
+it could realistically distinguish) were loaded, and it is worth mention
+that the "art" marker detector did usually not find and identify all
+marker correctly.
+
++------------------+---------+---------+-----------+
+| Markers/Plugin   |  "bch"  | "icl1"  |   "art"   |
++==================+=========+=========+===========+
+| 400 (50x50 px)   |  50ms   |         |           |
++------------------+---------+---------+-----------+
+| 144 (50x50 px)   |  22ms   |         |           |
++------------------+---------+---------+-----------+
+|  64 (50x50 px)   |  13ms   |         |           |
++------------------+---------+---------+-----------+
+|  16 (50x50 px)   |   7ms   |         |           |
++------------------+---------+---------+-----------+
+| 100 (100x100 px) |  23ms   |   20ms  |   56ms    |
++------------------+---------+---------+-----------+
+|  36 (100x100 px) |  13ms   |   10ms  |   25ms    |
++------------------+---------+---------+-----------+
+|  16 (100x100 px) |   8ms   |    7ms  |   14ms    |
++------------------+---------+---------+-----------+
+|   4 (100x100 px) |   6ms   |    5ms  |   10ms    |
++------------------+---------+---------+-----------+
+
+The results demonstrate the outstanding performance of the detection
+system. With a realistically visible 64 of size 50x50 pixels, the
+theoretical framerate is about 76Hz. A single Fire-Wire 800 bus
+reaches a maximum theoretical framerate of 63Hz at this image size
+(1020x1020).
+
+.. note::
+
+   The whole detection system runs single-threaded and is mainly
+   limited by the connected component analysis of the binarized image.
+
+.. BCH 1020x1020, 400 markers (50x50 each) 49.4ms
+   BCH 1020x1020, 144 markers (50x50 each) 22.3ms
+   BCH 1020x1020, 64 markers (50x50 each) 13.0ms
+   BCH 1020x1020, 16 markers (50x50 each) 7ms
+   BCH 1010x1010, 100, (100x100 each) 23ms   (icl1 20ms) (art 56ms)
+   BCH 1010x1010, 36, (100x100 each) 12.7ms  (icl1 10.3ms) (art 25 ms)
+   BCH 1010x1010, 16, (100x100 each) 8.5ms  (icl1 7.1ms) (art 14ms)
+   BCH 1010x1010, 4, (100x100 each) 6.5ms   (icl1 5.1ms) (art 10ms)
+
+
+
+
+
+ 
