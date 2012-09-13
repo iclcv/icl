@@ -34,7 +34,7 @@
 
 #pragma once
 
-#include <ICLCore/core::ImgBase.h>
+#include <ICLCore/ImgBase.h>
 #include <ICLUtils/Mutex.h>
 #include <ICLUtils/Thread.h>
 
@@ -51,7 +51,7 @@ namespace icl {
   
       /// fills an core::core::Img<T> from OpenNI DepthMetaData
       template<class T>
-      core::core::Img<T>* convertDepthImg(xn::DepthMetaData* src, core::core::Img<T>* dst){
+      core::Img<T>* convertDepthImg(xn::DepthMetaData* src, core::Img<T>* dst){
         float max = 0;
         if (std::numeric_limits<T>::max() < src -> ZRes()){
           max = ((float) std::numeric_limits<T>::max()) / ((float) src -> ZRes());
@@ -134,7 +134,7 @@ namespace icl {
           ReadWriteBuffer(ReadWriteBufferHandler<T>* buffer_handler)
             : m_Mutex(), m_Write(0), m_Next(1), m_Read(2)
           {
-            Mutex::Locker l(m_Mutex);
+            utils::Mutex::Locker l(m_Mutex);
             m_BufferHandler = buffer_handler;
             m_Buffers[0] = m_BufferHandler -> initBuffer();
             m_Buffers[1] = m_BufferHandler -> initBuffer();
@@ -146,7 +146,7 @@ namespace icl {
   
           /// Destructor frees allocated memory.
           ~ReadWriteBuffer(){
-            Mutex::Locker l(m_Mutex);
+            utils::Mutex::Locker l(m_Mutex);
             ICL_DELETE(m_Buffers[0]);
             ICL_DELETE(m_Buffers[1]);
             ICL_DELETE(m_Buffers[2]);
@@ -158,7 +158,7 @@ namespace icl {
             next call to getNextReadBuffer()
         **/
           T* getNextReadBuffer(){
-            Mutex::Locker l(m_Mutex);
+            utils::Mutex::Locker l(m_Mutex);
             if(m_Avail){
               // new buffer is available.
               std::swap(m_Next, m_Read);
@@ -186,7 +186,7 @@ namespace icl {
                                int omit_max_wait_millis=1000,
                                int omit_sleep_micros=1000){
             T* tmp = NULL;
-            Time t = Time::now();
+            utils::Time t = utils::Time::now();
             while (true){
               m_Mutex.lock();
               if(m_Avail){
@@ -205,7 +205,7 @@ namespace icl {
               if(t.age().toMilliSeconds() > omit_max_wait_millis){
                 break;
               }
-              icl::Thread::usleep(omit_sleep_micros);
+              utils::Thread::usleep(omit_sleep_micros);
             }
             return tmp;
           }
@@ -216,7 +216,7 @@ namespace icl {
             the old writeable as new.
         **/
           T* getNextWriteBuffer(){
-            Mutex::Locker l(m_Mutex);
+            utils::Mutex::Locker l(m_Mutex);
             // swap write buffer and next buffer.
             std::swap(m_Next, m_Write);
             // new buffer is available for reading.
@@ -233,7 +233,7 @@ namespace icl {
   
           /// mark buffers to be reset on next write-access.
           void setReset(){
-            Mutex::Locker l(m_Mutex);
+            utils::Mutex::Locker l(m_Mutex);
             m_ResetBuffers[0] = true;
             m_ResetBuffers[1] = true;
             m_ResetBuffers[2] = true;
@@ -241,7 +241,7 @@ namespace icl {
   
           /// switches the handler
           void switchHandler(ReadWriteBufferHandler<T>* new_handler){
-            Mutex::Locker l(m_Mutex);
+            utils::Mutex::Locker l(m_Mutex);
             m_BufferHandler = new_handler;
             m_ResetBuffers[0] = true;
             m_ResetBuffers[1] = true;
@@ -250,7 +250,7 @@ namespace icl {
   
           /// tells whether a new ConvBuffers is available
           bool newAvailable(){
-            Mutex::Locker l(m_Mutex);
+            utils::Mutex::Locker l(m_Mutex);
             return m_Avail;
           }
   
@@ -262,7 +262,7 @@ namespace icl {
           /// a bool for every buffer telling whether it needs a reset
           bool  m_ResetBuffers[3];
           /// the mutex is used for concurrent reading and writing.
-          Mutex m_Mutex;
+          utils::Mutex m_Mutex;
           /// the object currently written to.
           int m_Write;
           /// the write object currently not written to.

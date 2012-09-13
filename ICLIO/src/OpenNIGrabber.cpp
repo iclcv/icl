@@ -40,6 +40,9 @@
 
 using namespace xn;
 using namespace icl;
+using namespace core;
+using namespace utils;
+using namespace io;
 using namespace icl_openni;
 
 // checks whether status is OK. else throws an Exception.
@@ -87,7 +90,7 @@ void OpenNIGrabberThread::run(){
 OpenNIGrabberImpl::OpenNIGrabberImpl(std::string args)
   : m_Id(args), m_OmitDoubleFrames(true)
 {
-  icl::Mutex::Locker lock(m_Mutex);
+  Mutex::Locker lock(m_Mutex);
 
   XnStatus rc;
   DEBUG_LOG2("init " << m_Id);
@@ -110,7 +113,7 @@ OpenNIGrabberImpl::~OpenNIGrabberImpl(){
   // stop grabbing
   m_GrabberThread -> stop();
 
-  icl::Mutex::Locker lock(m_Mutex);
+  Mutex::Locker lock(m_Mutex);
   // free all
   ICL_DELETE(m_Generator);
   ICL_DELETE(m_Buffer);
@@ -118,7 +121,7 @@ OpenNIGrabberImpl::~OpenNIGrabberImpl(){
   m_Context.Release();
 }
 
-const icl::ImgBase* OpenNIGrabberImpl::acquireImage(){
+const ImgBase* OpenNIGrabberImpl::acquireImage(){
   // get image from buffer
   ImgBase* img = m_Buffer -> getNextReadBuffer(m_OmitDoubleFrames);
   if(img && !(img -> getDim())){ // catch empty images
