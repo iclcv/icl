@@ -167,7 +167,8 @@ namespace icl{
     void Configurable::call_callbacks(const std::string &propertyName){
       if(callbacks.size()){
         const Property &p = prop(propertyName);
-        for(std::vector<Callback>::iterator it=callbacks.begin();it!=callbacks.end();++it){
+        int i = 0;
+        for(std::vector<Callback>::iterator it=callbacks.begin();it!=callbacks.end();++it,++i){
           (*it)(p);
         }
       }

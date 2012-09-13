@@ -173,8 +173,6 @@ namespace icl{
       void addProperties();
       /// callback function for property changes.
       void processPropertyChange(const utils::Configurable::Property &p);
-      /// updates properties values.
-      void updateProperties();
       
       /// Wrapped DCDevice struct
       DCDevice m_oDev;

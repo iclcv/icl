@@ -469,6 +469,7 @@ namespace icl{
   
       /// Called if a property is changed from somewhere else
       void propertyChanged(const Configurable::Property &p){
+        if(deactivateExec) return;
         const std::string &name = p.name;
         const std::string &type = p.type;
         //const std::string &value = p.value;
@@ -507,6 +508,7 @@ namespace icl{
         if(deactivateExec) return;
         if(handle.length()<3 || handle[0] != '#') throw ICLException("invalid callback (this should not happen)");
         std::string prop = handle.substr(3);
+        deactivateExec = true;
         switch(handle[1]){
           case 'r': 
           case 'R': 
@@ -538,6 +540,7 @@ namespace icl{
           default:
             ERROR_LOG("invalid callback ID " << handle);
         }
+        deactivateExec = false;
       }
   
       static string getSyntax(){
@@ -1204,7 +1207,7 @@ namespace icl{
           }else{
             addToGrid(m_poLCD,1,0,4,1);
           }
-          connect(m_poSlider,SIGNAL(valueChanged(int)),m_poLCD,SLOT(display(int)));
+          //connect(m_poSlider,SIGNAL(valueChanged(int)),m_poLCD,SLOT(display(int)));
         }
   
         connect(m_poSlider,SIGNAL(valueChanged(int)),this,SLOT(ioSlot()));
@@ -1233,6 +1236,8 @@ namespace icl{
         //cb();
         //iStep is handled as a value that must '%' the slider to 0
         *m_piValue = m_poSlider->value();
+        Thread::msleep(100);
+        if(m_poLCD) m_poLCD->display(*m_piValue);
       }
     private:
       ThreadedUpdatableSlider *m_poSlider;

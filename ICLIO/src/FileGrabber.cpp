@@ -511,6 +511,7 @@ namespace icl{
       addProperty("auto-next","flag","",m_data->bAutoNext,0,"Whether to automatically grab the next file for every frame");
       addProperty("loop","flag","",m_data->loop,0,"Whether to reset the file counter to zero after reaching the last");
       addProperty("file-count","info","",str(m_data->oFileList.size()),0,"Total count of files the grabber will show");
+      //addProperty("frame-index","range","[0," + str(m_data->oFileList.size()-1) + "]1",m_data->iCurrIdx,20,"Currently grabbed frame");
       addProperty("frame-index","range:spinbox","[0," + str(m_data->oFileList.size()-1) + "]",m_data->iCurrIdx,20,"Currently grabbed frame");
       Configurable::registerCallback(utils::function(this,&FileGrabberImpl::processPropertyChange));
     }
@@ -549,6 +550,7 @@ namespace icl{
             WARNING_LOG("given frame-index was not within the valid range (given value was clipped)");
           }
           m_data->iCurrIdx = parse<int>(prop.value) % (m_data->oFileList.size()-1);
+          Thread::sleep(0.2);
         }
       }else{
         ERROR_LOG("property \"" << prop.name << "\" is not available of cannot be set");

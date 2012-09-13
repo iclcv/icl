@@ -320,7 +320,6 @@ namespace icl{
       /// add a callback for changed properties
       void registerCallback(const Callback &cb){
         callbacks.push_back(cb);
-        DEBUG_LOG("register " << this)
       }
       
       /// removes a callback that was registered before 

@@ -36,6 +36,7 @@
 #include <ICLUtils/StrTok.h>
 #include <ICLUtils/Macros.h>
 #include <ICLIO/DC.h>
+#include <ICLIO/Grabber.h>
 #include <stdio.h>
 #include <ICLUtils/Thread.h>
 
@@ -336,6 +337,20 @@ namespace icl{
         }
       }
       return v;
+    }
+
+    std::string DCDevice::getModesInfo() const {
+      std::vector<DCDevice::Mode> mv= getModes();
+        //std::vector<string> v;
+        //for(unsigned int i=0;i<mv.size();i++){
+        //  v.push_back(mv[i].toString());
+        //}
+        //return io::Grabber::translateStringVec(v);
+      std::stringstream s;
+      for(unsigned int i=0;i<mv.size();i++){
+        s << mv[i].toString() << ",";
+      }
+      return s.str();
     }
 
     // }}}
