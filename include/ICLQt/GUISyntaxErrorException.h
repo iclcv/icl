@@ -32,6 +32,8 @@
 **                                                                 **
 *********************************************************************/
 
+#pragma once
+
 #include <ICLUtils/Exception.h>
 
 #include <string>

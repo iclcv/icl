@@ -40,7 +40,7 @@ namespace icl{
   namespace io{
   
     /// Interface class for reading images using an ImageMagick++ wrapper  \ingroup FILEIO_G
-    /** @copydoc icl::FileWriterPluginImageMagick
+    /** @copydoc icl::io::FileWriterPluginImageMagick
     */
     class FileGrabberPluginImageMagick : public FileGrabberPlugin{
       public:

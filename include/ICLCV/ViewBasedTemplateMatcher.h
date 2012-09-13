@@ -32,10 +32,9 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_VIEW_BASED_TEMPLATE_MATCHER_H
-#define ICL_VIEW_BASED_TEMPLATE_MATCHER_H
+#pragma once
 
-#include <ICLCV/UsefulFunctions.h>
+#include <ICLCV/CV.h>
 #include <ICLUtils/UncopiedInstance.h>
 
 namespace icl{
@@ -93,4 +92,3 @@ namespace icl{
   } // namespace cv
 }
 
-#endif

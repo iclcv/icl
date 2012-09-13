@@ -72,7 +72,7 @@ namespace icl {
           ~PylonGrabberImpl();
            
           /// grab function grabs an image (destination image is adapted on demand)
-          /** @copydoc icl::Grabber::grab(core::ImgBase**) **/
+          /** @copydoc icl::io::Grabber::grab(core::ImgBase**) **/
           virtual const core::ImgBase* acquireImage();
   
           /// Prints information about the startup argument options

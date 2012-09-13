@@ -47,7 +47,7 @@ namespace icl{
     
     /// Mouse action function pointer
     /** parameters:
-        const qt::MouseEvent&                   pMouseEvent,
+        const qt::MouseEvent&               pMouseEvent,
         const utils::Point32f&              pCurrentMousePosition,
         const utils::Point32f&              pDeltaMousePosition,
         Camera&                             pCamera,

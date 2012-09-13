@@ -1,3 +1,5 @@
+.. _tut.gui:
+
 GUI-Applications
 ================
 

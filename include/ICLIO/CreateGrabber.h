@@ -67,13 +67,13 @@ namespace icl{
     /// Create Grabber class that provides an image from ICL's create function
     /** This grabber can be used as placeholder whenever no senseful Grabber
         is available. It provides an instance of an image that is created with 
-        the icl::TestImages::create function */
+        the icl::io::TestImages::create function */
     class CreateGrabber : public GrabberHandle<CreateGrabberImpl>{
       public:
       
       /// Creates a CreateGrabber instance
       /** allowed values for what can be found in the documentation of
-          icl::TestImages::create */
+          icl::io::TestImages::create */
       inline CreateGrabber(const std::string &what="parrot"){
         if(isNew(what)){
           initialize(new CreateGrabberImpl(what),what);

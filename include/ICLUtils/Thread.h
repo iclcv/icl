@@ -61,7 +61,7 @@ namespace icl{
         stop() function.
         Here is an example of a counter thread!
         \code
-        class CounterThread : public Thread{
+        class CounterThread : public utils::Thread{
           public:
           CounterThread(int n):n(n){}
           virtual void run(){

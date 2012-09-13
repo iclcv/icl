@@ -49,7 +49,7 @@ namespace icl {
     class OpenNIGrabberImpl;
   
     /// Internally spawned thread class for continuous grabbing
-    class OpenNIGrabberThread : public Thread {
+    class OpenNIGrabberThread : public utils::Thread {
       public:
         /// Constructor sets used grabber
         OpenNIGrabberThread(OpenNIGrabberImpl* grabber);
@@ -85,7 +85,7 @@ namespace icl {
         ~OpenNIGrabberImpl();
   
         /// grab function grabs an image (destination image is adapted on demand)
-        /** @copydoc icl::Grabber::grab(core::ImgBase**) **/
+        /** @copydoc icl::io::Grabber::grab(core::ImgBase**) **/
         virtual const core::ImgBase* acquireImage();
   
         /**
@@ -115,7 +115,7 @@ namespace icl {
         std::string getName();
   
         /// Mutex used for concurrency issues.
-        icl::Mutex m_Mutex;
+        utils::Mutex m_Mutex;
         /// a grabber id
         std::string m_Id;
         /// the OpenNI context
@@ -138,7 +138,7 @@ namespace icl {
   
         /// create a new OpenNIGrabber
         /** @see OpenNIGrabber for more details*/
-        inline OpenNIGrabber(const std::string args="") throw(ICLException) {
+        inline OpenNIGrabber(const std::string args="") throw(utils::ICLException) {
           /// looking for OpenNI device compatible to args
           if(isNew(args)){
             OpenNIGrabberImpl* tmp = new OpenNIGrabberImpl(args);
@@ -164,7 +164,7 @@ namespace icl {
             int i = 0;
             for (xn::NodeInfoList::Iterator it = nodes.Begin(); it != nodes.End(); ++it, ++i){
               deviceList.push_back(
-                    GrabberDeviceDescription("oni", str(i) + "|||" + str(i), str(i))
+                    GrabberDeviceDescription("oni", utils::str(i) + "|||" + utils::str(i), utils::str(i))
                     );
             }
             context.Release();

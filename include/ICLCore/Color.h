@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_COLOR_H
-#define ICL_COLOR_H
+#pragma once
 
 #include <ICLUtils/BasicTypes.h>
 #include <ICLMath/FixedVector.h>
@@ -94,4 +93,3 @@ namespace icl{
   
   } // namespace core
 }
-#endif

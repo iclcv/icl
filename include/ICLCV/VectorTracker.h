@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_VECTOR_TRACKER_H 
-#define ICL_VECTOR_TRACKER_H 
+#pragma once
 
 #include <vector>
 
@@ -42,7 +41,7 @@ namespace icl{
   
     /// Extension of the position tracker class for N-dimensional positions
     /** Here's a copy of the PositionTracker documentation, which assumes 2D-input data:
-        \copydoc icl::PositionTracker
+        \copydoc icl::cv::PositionTracker
     */
     class VectorTracker{
       public:
@@ -136,4 +135,3 @@ namespace icl{
     
   } // namespace cv
 }
-#endif

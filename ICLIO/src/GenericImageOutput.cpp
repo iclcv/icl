@@ -51,6 +51,7 @@
 #include <ICLIO/FileWriter.h>
 
 #include <ICLUtils/StringUtils.h>
+#include <ICLUtils/TextTable.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -88,8 +89,10 @@ namespace icl{
         };
         o = new NullOutput;
       }
+      std::vector<std::string> plugins;
       
   #ifdef HAVE_OPENCV
+      plugins.push_back("video~Video File~OpenCV based video file writer");
       if(type == "video"){
         try{
           std::vector<std::string> t = tok(d,",");
@@ -107,12 +110,14 @@ namespace icl{
       
   
   #ifdef HAVE_QT
+      plugins.push_back("sm~Shared Memory Segment ID~Qt based shared memory writer");
       if(type == "sm"){
         o = new SharedMemoryPublisher(d);
       }
   #endif
       
   #if defined(HAVE_RSB) && defined(HAVE_PROTOBUF)
+      plugins.push_back("rsb~[transport:]/scope~Network output stream");
       if(type == "rsb"){
         try{
           std::vector<std::string> ts = tok(d,":");
@@ -122,7 +127,7 @@ namespace icl{
           }else if(ts.size() == 2){
             o = new RSBImageOutput(ts[1],ts[0]);
           }else{
-            throw ICLException("invalid definition string (exptected: [transport-list]:scope");
+            throw ICLException("invalid definition string (exptected: [transport-list:]scope");
           }
   
         }catch(std::exception &e){
@@ -130,16 +135,31 @@ namespace icl{
         }
       }
   #endif
+      plugins.push_back("file~File Pattern~File Writer");
       
       if(type == "file"){
         o = new FileWriter(d);
       }
       
-      if(type == "null"){
-        struct DummyOutput : public ImageOutput{
-          virtual void send(const ImgBase *image){ (void)image; }
-        };
-        o = new DummyOutput;
+      if(type == "list"){
+        int numPlugins = plugins.size();
+        TextTable t(4,numPlugins+1,50);
+        t(0,0) = "nr";
+        t(1,0) = "id";
+        t(2,0) = "parameter";
+        t(3,0) = "explanation";
+        for(size_t i=0;i<plugins.size();++i){
+          t(0,i+1) = str(i);
+          std::vector<std::string> ts = tok(plugins[i],"~");
+          t(1,i+1) = ts[0];
+          t(2,i+1) = ts[1];
+          t(3,i+1) = ts[2];
+        }     
+        
+        std::cout << "Supported Image Output Devices: "<< std::endl
+                  << std::endl << t << std::endl;
+        
+        std::terminate();
       }
       
       if(!o){

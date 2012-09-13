@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_RANSAC_FITTER_H
-#define ICL_RANSAC_FITTER_H
+#pragma once
 
 #include <ICLMath/DynVector.h>
 #include <ICLMath/FixedVector.h>
@@ -209,4 +208,3 @@ namespace icl{
   } // namespace math
 }
 
-#endif

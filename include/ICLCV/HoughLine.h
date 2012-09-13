@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_HOUGH_LINE_H
-#define ICL_HOUGH_LINE_H
+#pragma once
 
 #include <ICLUtils/Point32f.h>
 #include <ICLCore/ImgBase.h>
@@ -146,4 +145,3 @@ namespace icl{
   } // namespace cv
 }
 
-#endif

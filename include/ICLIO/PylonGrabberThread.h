@@ -6,9 +6,9 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLIO/PylonGrabberThread.h                        **
+** File   : include/ICLIO/PylonGrabberThread.h                     **
 ** Module : ICLIO                                                  **
-** Authors: Viktor Richter                                    **
+** Authors: Viktor Richter                                         **
 **                                                                 **
 **                                                                 **
 ** Commercial License                                              **

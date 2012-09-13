@@ -1,3 +1,5 @@
+.. _tut.interactive-gui-apps:
+
 Interactive GUI Applications
 ============================
 
@@ -18,6 +20,7 @@ used to define the current threshold value at run-time.
 |   :language: c++                                        |                                            |
 |   :linenos:                                             | .. image:: images/interactive-gui-apps.png |
 +---------------------------------------------------------+--------------------------------------------+
+
 
 Step by Step
 """"""""""""

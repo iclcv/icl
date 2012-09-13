@@ -82,8 +82,8 @@ namespace icl{
     /** @see icl::pa(const std::string&,unsigned int) */
     class ProgArg : public ProgArgData{
       /// private constructor
-      /** Use the functions icl::pa(const std::string&,unsigned int) and
-          icl::pa(unsigned int,bool) to create an instance of this 
+      /** Use the functions icl::utils::pa(const std::string&,unsigned int) and
+          icl::utils::pa(unsigned int,bool) to create an instance of this 
           class in order to access program arguments*/
       inline ProgArg(const std::string &id, unsigned int subargidx):
         ProgArgData(id,subargidx){
@@ -293,7 +293,7 @@ namespace icl{
   
         \endcode
   
-        @see icl::pa_init(int,char**,const std::string&,bool)
+        @see icl::utils::pa_init(int,char**,const std::string&,bool)
     */
     inline const ProgArg pa(const std::string &id, unsigned int subargidx=0) throw (ProgArgException){
       if(!id.length()) THROW_ProgArgException("invalid programm argument id ''");
@@ -301,7 +301,7 @@ namespace icl{
     }
     
     /// returns given program argument at given index \ingroup PA
-    /** @see icl::pa(const std::string&,unsigned int) */
+    /** @see icl::utils::pa(const std::string&,unsigned int) */
     inline const ProgArg pa(unsigned int idx, bool danglingOnly=true){
       return ProgArg(idx,danglingOnly);
     }
@@ -323,7 +323,7 @@ namespace icl{
   
     
     /// returns number of actually given args given \ingroup PA
-    /** @see icl::pa(const std::string&,unsigned int) */
+    /** @see icl::utils::pa(const std::string&,unsigned int) */
     unsigned int pa_get_count(bool danglingOnly=true);
   
     /// returns application name (full command line)
@@ -332,7 +332,7 @@ namespace icl{
                may be something like <tt>/usr/bin/icl-create</tt>.
                If fullpath is false, which is default, 
                just the program name is returned.
-        @see icl::pa(const std::string&,unsigned int) */
+        @see icl::utils::pa(const std::string&,unsigned int) */
     const std::string &pa_get_progname(bool fullpath=false);
   
     /// shows current available programm arguments \ingroup PA
@@ -354,7 +354,7 @@ namespace icl{
             ("-input","defines input device id and parameters")
             ("-format","define input image format");
         \endcode
-        @see icl::pa(const std::string&,unsigned int) */
+        @see icl::utils::pa(const std::string&,unsigned int) */
     inline PAEX pa_explain(const std::string &pa, const std::string &ex){
       pa_explain_internal(pa,ex);
       return PAEX();
@@ -406,12 +406,12 @@ namespace icl{
         Here are some further complete example calls for painit.
         \code
         int main(int n, char **ppc){
-          painit(n,ppc,"-size|-s(Size=VGA) -format|-f(format-string)");
+          icl::utils::pa_init(n,ppc,"-size|-s(Size=VGA) -format|-f(format-string)");
         }
         \endcode
         \code
         int main(int n, char **ppc){
-          painit(n,ppc,"-input|-i(device-type=dc,device-params=0)");
+          icl::utils::pa_init(n,ppc,"-input|-i(device-type=dc,device-params=0)");
         }
         \endcode
   
@@ -428,12 +428,12 @@ namespace icl{
         You can explicitly allow these <em>dangling</em> arguments by setting
         allowDanglingArgs to 'true'. \n
         Dangling arguments can then be obtained simply using the functions
-        icl::pacount and icl::pa(unsigned int,bool).
+        icl::utils::pa_get_count and icl::utils::pa(unsigned int,bool).
   
         To list all dangling arguments, the followed code can be used:
         \code
-        for(unsigned int i=0;i<pacount();++i){
-          std::cout << pa(i) << std::endl;
+        for(unsigned int i=0;i<icl::utils::pa_get_count();++i){
+          std::cout << icl::utils::pa(i) << std::endl;
         }
         \endcode
   
@@ -445,7 +445,7 @@ namespace icl{
         Example:
         \code
         // -size and -format are optional; -input or -i is mandatory
-        painit(n,ppc,"-size(Size=VGA) -format(format=RGB) "
+        icl::utils::pa_init(n,ppc,"-size(Size=VGA) -format(format=RGB) "
                     "[m]-input|-i(string,string)");
         \endcode
         

@@ -60,7 +60,7 @@ namespace icl{
         
         Take a look on the following example:
         \code
-        #include <ICLQuick/Quick.h>
+        #include <ICLQt/Quick.h>
         #include <ICLFilter/UnaryOpPipe.h>
         #include <ICLFilter/ScaleOp.h>
         #include <ICLFilter/WeightedSumOp.h>

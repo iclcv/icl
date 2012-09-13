@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_MATH_FUNCTIONS_H
-#define ICL_MATH_FUNCTIONS_H
+#pragma once
 
 #include <vector>
 #include <algorithm>
@@ -176,4 +175,3 @@ namespace icl {
   } // namespace math
 } //namespace icl
 
-#endif

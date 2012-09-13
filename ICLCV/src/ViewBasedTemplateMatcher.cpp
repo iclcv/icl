@@ -60,17 +60,17 @@ namespace icl{
                                                              const Img8u &imageMask,
                                                              const Img8u &templMask){
       
-      m_vecResults =  iclMatchTemplate(image,
-                                       imageMask.isNull() ? 0 : &imageMask,
-                                       templ,
-                                       templMask.isNull() ? 0 : &templMask,
-                                       m_fSignificance,
-                                       m_aoBuffers,
-                                       m_aoBuffers+1,
-                                       m_aoBuffers+2,
-                                       m_bClipBuffersToROI,
-                                       &m_oRD,
-                                       m_eMode == sqrtDistance ? false : true);
+      m_vecResults =  matchTemplate(image,
+                                    imageMask.isNull() ? 0 : &imageMask,
+                                    templ,
+                                    templMask.isNull() ? 0 : &templMask,
+                                    m_fSignificance,
+                                    m_aoBuffers,
+                                    m_aoBuffers+1,
+                                    m_aoBuffers+2,
+                                    m_bClipBuffersToROI,
+                                    &m_oRD,
+                                    m_eMode == sqrtDistance ? false : true);
       
       return m_vecResults;
     }

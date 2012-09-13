@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_BAYER_CONVERTER_H
-#define ICL_BAYER_CONVERTER_H
+#pragma once
 
 #include <ICLCore/Img.h>
 #include <ICLUtils/Uncopyable.h>
@@ -119,4 +118,3 @@ namespace icl {
   } // namespace core
 } // namespace icl
 
-#endif

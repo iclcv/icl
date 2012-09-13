@@ -51,7 +51,6 @@
     \defgroup STRUTILS Utiltiy functions for std::string conversions
     \defgroup MATH Mathematical Utiltiy functions
 
-    \mainpage Image Component Library (ICL) 
 
     ICL is a C++ image processing library, developed in the 
     <a href="www.ni.www.techfak.uni-bielefeld.de"> Neuroinformatics Group</a> at the 
@@ -69,14 +68,14 @@
 
     <TABLE border=0><TR><TD>
     \code
-    #include <ICLQuick/Common.h>
+    #include <ICLQt/Common.h>
 
     GUI gui;
     GenericGrabber grabber;
 
     void init(){
       grabber.init(pa("-i"));
-      gui << "image[@handle=image]" << "!show";
+      gui << Image().handle("image") << Show();
     }
 
     void run(){
@@ -112,7 +111,7 @@
       types (e.g. IEEE-1394 or Video-4-Linux) can be found     here as well a video file grabber or a file writer class.
     - <b>ICLCV</b> contains classes for blob detection and tracking and for connected component analysis.
     - <b>ICLFilter</b> provides classes for most common image filters like linear filters and morphological operators.
-    - <b>ICLQuick</b> provides almost 100 functions and functors for rapid prototyping
+    - <b>ICLQuick</b> provides almost 100 functions and functors for rapid prototyping (no longer exists)
     - <b>ICLGeom</b> contains classes for 3D-modelling and camera calibration. 
     - <b>ICLQt*</b> contains a Qt-4 based GUI-API that facilitates creation of simple and complex GUI 
       applications significantly. And of course a powerful image visualisation widget called ICLWidget is provided.

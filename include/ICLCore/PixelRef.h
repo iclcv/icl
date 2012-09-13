@@ -111,7 +111,7 @@ namespace icl{
   
       /// assigns reference pixel values from FixedMatrix data
       /** This can e.g. be used to assign an icl::Color value to an image pixel
-          (Color is a part of the ICLCC package, and it is typedef'ed to some
+          (Color is a part of the ICLCore package, and it is typedef'ed to some
           FixedMatrix type)
           
           <code>

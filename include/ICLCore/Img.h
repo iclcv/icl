@@ -945,7 +945,7 @@ namespace icl {
       /** Internally this function uses std::for_each
           Example:\n
           \code
-          #include <ICLQuick/Quick.h>
+          #include <ICLQt/Quick.h>
   
           struct Thresh{
             inline void operator()(float &f){ f = f>128 ? 0 : 255; }
@@ -986,7 +986,7 @@ namespace icl {
       /** Internally using std::for_each by calling Img<T>::forEach_C for all channels
           Example:\n
           \code
-          #include <ICLQuick/Quick.h>
+          #include <ICLQt/Quick.h>
   
           struct Thresh{
             inline void operator()(float &f){ f = f>128 ? 0 : 255; }
@@ -1014,7 +1014,7 @@ namespace icl {
       /** Internally this function uses std::transform.         
           Example:\n
           \code
-          #include <ICLQuick/Quick.h>
+          #include <ICLQt/Quick.h>
           
           struct Thresh{
             inline float operator()(const float &f){ return f>128 ? 0 : 255; }
@@ -1056,7 +1056,7 @@ namespace icl {
       /** Internally this function uses std::transform.         
           Example:\n
           \code
-          #include <ICLQuick/Quick.h>
+          #include <ICLQt/Quick.h>
           
           inline icl8u t_func(const float &f){ 
             return f>128 ? 0 : 255; 
@@ -1089,7 +1089,7 @@ namespace icl {
       /** Internally this function uses std::transform.         
           Example:
           \code
-          #include <ICLQuick/Quick.h>
+          #include <ICLQt/Quick.h>
           
           inline bool gt_func(const float &a,const float &b){
             return a > b;
@@ -1157,7 +1157,7 @@ namespace icl {
           A: pixel of this image and B: pixel of other given src image. Internally this function uses std::transform
           Beispiel:
           \code
-          #include <ICLQuick/Quick.h>
+          #include <ICLQt/Quick.h>
           
           int main(){
             ImgQ a = scale(create("parrot"),640,480);
@@ -1304,7 +1304,7 @@ namespace icl {
           \code
           #include <ICLCore/Img.h>
           #include <ICLCore/Random.h>
-          #include <ICLQuick/Quick.h>
+          #include <ICLQt/Quick.h>
           void foo(){
              Img8u image(Size::QQVGA,3);
              image.fill(URandI(255));

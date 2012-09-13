@@ -75,8 +75,6 @@
     \defgroup STRUTILS String Manipuation Functions
     \defgroup FUNCTION ICL's Function Class and Creation Functions
     
-    \mainpage ICLUtils package
-    
     \section OV Overview
     
     The ICLUtils package contains C++ support functions and classes that do no depend on the
@@ -215,11 +213,12 @@
 #include <ICLUtils/Function.h>
 #include <iostream>
 #include <algorithm>
+#include <vector>
 
 // first, we need some global functions and class definitions
 // whose methods can be wrapped later on.
 
-using namespace icl;
+using namespace icl::utils;
 void global_foo(){
   std::cout << "void global_foo()" << std::endl;
 }

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_LINEAR_TRANSFORM_1D_H
-#define ICL_LINEAR_TRANSFORM_1D_H
+#pragma once
 
 #include <ICLUtils/Range.h>
 
@@ -64,4 +63,3 @@ namespace icl{
   } // namespace math
 }
 
-#endif

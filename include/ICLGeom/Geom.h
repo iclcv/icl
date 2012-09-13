@@ -39,8 +39,7 @@
 #include <ICLGeom/SceneObject.h>
 #include <ICLGeom/Camera.h>
 
-/** \mainpage ICLGeom Package for Handling 3D Geometry (Page under construction!)
-
+/** 
     The ICLGeom package provides functions and classes for handling 3D-geometry related problems. 
     This includes
     - camera calibration
@@ -87,16 +86,16 @@
 
     <table border=0><tr><td>
     \code
-#include <ICLCV/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLGeom/Geom.h>
 #include <ICLUtils/FPSLimiter.h>
 
-GUI gui;
+icl::qt::GUI gui;
 Scene scene;
 
 void init(){
   // create graphical user interface
-  gui << "draw3D[@handle=draw]" << "!show";
+  gui << Draw3D().handle("draw") << Show();
 
   // create camera and add to scene instance
   Camera cam(Vec(0,0,-10), // position
@@ -109,7 +108,7 @@ void init(){
 
   // use mouse events for camera movement
   gui["draw"].install(scene.getMouseHandler(0));
-  
+
   // link the visualization
   gui["draw"].link(scene.getGLCallback(0));
 }

@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_LINE_SEGMENT_H
-#define ICL_LINE_SEGMENT_H
+#pragma once
 
 #include <iostream>
 
@@ -70,4 +69,3 @@ namespace icl{
     
   } // namespace cv
 }
-#endif

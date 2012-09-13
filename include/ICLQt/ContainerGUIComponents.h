@@ -86,7 +86,7 @@ namespace icl{
     
     /** \cond */
     struct Border : public ContainerGUIComponent{
-      friend class GUI;
+      friend class ::icl::qt::GUI;
       private:
       /// create HBox with optionally given parent
       Border(const std::string &label, QWidget *parent=0):

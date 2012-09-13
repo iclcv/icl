@@ -16,8 +16,8 @@
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#import sys, os
-#sys.path.append(os.path.abspath('exts'))
+import sys, os
+sys.path.append(os.path.abspath('exts'))
 
 # -- General configuration -----------------------------------------------------
 
@@ -28,8 +28,9 @@
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 # extensions = ['sphinx.ext.intersphinx', 
 #               'sphinx.ext.todo']
-#extensions = ['sphinx.ext.todo','doxylink']
-extensions = ['sphinx.ext.todo']
+extensions = ['sphinx.ext.todo','doxylink']
+
+#extensions = ['sphinx.ext.todo']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['@CMAKE_SOURCE_DIR@/_templates',
@@ -260,9 +261,19 @@ texinfo_documents = [
 # Example configuration for intersphinx: refer to the Python standard library.
 # intersphinx_mapping = {'http://docs.python.org/': None}
 
+#doxylink = {
+#        'icl' : ('/home/celbrech/Desktop/ICLUtils.tag', '/home/celbrech/projects/ICL/build/debug/ICLUtils/doc/html')
+#}
+
+#doxylink = {
+#        'dox' : ('/home/celbrech/projects/ICL/manual/testdoxy/testdoxy.tag', '/home/celbrech/projects/ICL/manual/testdoxy/html')
+#}
+
 doxylink = {
-        'icl' : ('/home/celbrech/projects/ICL/build/debug/alldoc/alldoc.tag', '/home/celbrech/projects/ICL/build/debug/alldoc/html/')
+        'icl' : ('/home/celbrech/projects/ICL/manual/icldoxy/icldoxy.tag', '/home/celbrech/projects/ICL/manual/icldoxy/html'),
+        'dox' : ('/home/celbrech/projects/ICL/manual/testdoxy/testdoxy.tag', '/home/celbrech/projects/ICL/manual/testdoxy/html') 
 }
+add_function_parentheses = False;
 
 todo_include_todos = True;
 

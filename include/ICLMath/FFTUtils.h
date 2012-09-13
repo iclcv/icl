@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FFTUTILS_H_
-#define ICL_FFTUTILS_H_
+#pragma once
 
 #include <complex>
 #include <ICLCore/Types.h>
@@ -327,4 +326,3 @@ namespace icl{
   } // namespace math
 }
 }
-#endif /* ICL_FFTUTILS_H_ */

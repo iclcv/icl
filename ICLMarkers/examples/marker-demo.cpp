@@ -52,7 +52,18 @@ struct Obj : public SceneObject{
   }
 } *obj = 0;
 
+#if 0
+void bench();
+#endif
 void init(){
+
+#if 0
+  if(pa("-bench")){
+    bench();
+    ::exit(0);
+  }
+#endif
+
   fid = new FiducialDetector(pa("-m").as<std::string>(), 
                              pa("-m",1).as<std::string>(), 
                              ParamList("size",(*pa("-m",2)) ) );
@@ -156,3 +167,53 @@ int main(int n, char **ppc){
 }
 
 
+#if 0
+
+/// marker detection benchmark
+void bench(){
+  FiducialDetector d("art");
+  d.setPropertyValue("matching algorithm", "gray sqrdist");
+  
+  ImgQ rows;
+  int i=0;
+
+  int s = 2;
+  for(int y=0;y<20/s;++y){
+    ImgQ line;
+    for(int x=0;x<20/s;++x, ++i){
+      line = (line,ones(1,50*s,1)*255,cvt(d.createMarker("bch/bch"+str(i)+".png",Size(50*s,50*s),ParamList("size","50x50","border ratio",0.4))));
+      d.loadMarkers("bch/bch"+str(i)+".png",ParamList("size","50x50","border ratio",0.4));
+      std::cout << "marker " << i<< "loaded" << std::endl;
+    } 
+    rows = rows % ones(1000+20/s,1,1)*255 % line;
+  }
+  rows = (ones(2,rows.getHeight(),1)*255,rows,ones(2,rows.getHeight(),1)*255);
+  rows = (ones(rows.getWidth(),2,1)*255 % rows % ones(rows.getWidth(),2,1)*255);
+  
+  Img8u image = cvt8u(rows);
+
+  //image.setROI(Rect(200,200,620,620)); //144 / 36 markers
+
+  image.setROI(Rect(300,300,420,420)); // 64 /16 markers
+
+  image.setROI(Rect(400,400,220,220)); // 16 markers
+
+  image.fillBorder(255.0);
+  image.setFullROI();
+  show(image);
+  
+  Thread::sleep(4);
+
+  std::vector<int> found;
+  found.reserve(1000);
+  Time t = Time::now();
+  for(int i=0;i<100;++i){
+    const std::vector<Fiducial> &ms = d.detect(&image);
+    found.push_back(ms.size());
+  }
+  std::cout << "time for art:" << t.age().toSecondsDouble()*10 <<  "ms (" << found.back() << ")" << std::endl;
+   
+
+}
+
+#endif

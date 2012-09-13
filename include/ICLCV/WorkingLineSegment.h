@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_WORKING_LINE_SEGMENT_H
-#define ICL_WORKING_LINE_SEGMENT_H
+#pragma once
 
 #include <ICLCV/LineSegment.h>
 
@@ -86,4 +85,3 @@ namespace icl{
     
   } // namespace cv
 }
-#endif

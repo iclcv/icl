@@ -130,17 +130,16 @@ namespace icl{
       /** The returned list can simply be added to a view-selection combo box.
           e.g.
           <pre>
-          MultiCamFiducialDetector fd;
-          fd.init(...);        
-          gui << "combo(" + fd.getIntermediateImageNames() + ")[@label=current image@handle=vis]"
-              << draw3D()[@handle=image]
-              << "!show";
+          icl::markers::MultiCamFiducialDetector fd;
+          fd.init(...); 
+          gui << Combo(fd.getIntermediateImageNames()).label("current image").handle("vis")
+              << Draw3D().handle("image")
+              << Show();
           
           ...
           
-          
           gui["image"] = fd.getIntermediateImage( gui["vis"] );
-          gui["image"].update();
+          gui["image"].render();
           </pre>
           */
       std::string getIntermediateImageNames() const;

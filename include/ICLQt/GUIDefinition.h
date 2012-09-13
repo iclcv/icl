@@ -45,6 +45,7 @@ class QWidget;
 
 namespace icl{
   namespace qt{
+
     /** \cond */
     class GUI;
     class ProxyLayout;

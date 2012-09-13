@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLQt/Common.h>
-#include <ICLCV/UsefulFunctions.h>
+#include <ICLCV/CV.h>
 #include <ICLCV/RegionDetector.h>
 #include <ICLCV/ViewBasedTemplateMatcher.h>
 

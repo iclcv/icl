@@ -37,8 +37,6 @@ set(CONDITIONLIST "")
 #sources for lib
 set(LIB_SOURCES "")
 add_libsource (${PROJECT_NAME} "src/CV.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-add_libsource (${PROJECT_NAME} "src/ColorBlobSearcher.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-add_libsource (${PROJECT_NAME} "src/DefaultColorBlobSearcher.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/Extrapolator.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/HungarianAlgorithm.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/PositionTracker.cpp" "${CONDITIONLIST}" LIB_SOURCES)
@@ -55,7 +53,6 @@ add_libsource (${PROJECT_NAME} "src/FloodFiller.cpp" "${CONDITIONLIST}" LIB_SOUR
 add_libsource (${PROJECT_NAME} "src/CornerDetectorCSS.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
 set(CONDITIONLIST HAVE_IPP_COND)
-add_libsource (${PROJECT_NAME} "src/UsefulFunctions.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/ViewBasedTemplateMatcher.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/HoughLineDetector.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/HoughLine.cpp" "${CONDITIONLIST}" LIB_SOURCES)
@@ -80,7 +77,6 @@ add_example (${PROJECT_NAME} "mean-shift-demo" "${CONDITIONLIST}" ICLLibsToLinkA
 add_example (${PROJECT_NAME} "corner-detection-css-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "region-detection-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "flood-filler-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-add_example (${PROJECT_NAME} "quick-diff-image-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_IPP_COND HAVE_QT_COND)
 add_example (${PROJECT_NAME} "template-matching-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)

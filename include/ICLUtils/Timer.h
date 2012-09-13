@@ -36,9 +36,7 @@
 #include <vector>
 #include <string>
 #include <ICLUtils/Macros.h>
-#ifndef ICL_TIMER_H
-#define ICL_TIMER_H
-
+#pragma once
 
 namespace icl {
   namespace utils{
@@ -83,5 +81,3 @@ namespace icl {
   
 } //namespace ICL
 
-
-#endif 

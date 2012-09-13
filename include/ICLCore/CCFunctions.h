@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_CC_FUNCTIONS_H  
-#define ICL_CC_FUNCTIONS_H
+#pragma once
 
 #include <ICLCore/Types.h>
 #include <ICLUtils/Size.h>
@@ -540,5 +539,3 @@ namespace icl{
     void cc_util_rgb_to_chroma(const icl32f r, const icl32f g, const icl32f b, icl32f &chromaR, icl32f &chromaG);
   } // namespace core
 }
-
-#endif

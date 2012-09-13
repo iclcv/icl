@@ -80,9 +80,9 @@ namespace icl{
         that automatically create DataSegment instances.
   
         \code
-  #include <ICLCV/Common.h>
+  #include <ICLQt/Common.h>
   #include <ICLGeom/GeomDefs.h>
-  #include <DataSegment.h>
+  #include <ICLGeom/DataSegment.h>
   
   
   int main(){
@@ -110,9 +110,9 @@ namespace icl{
       2D-organized data segments:
       
       \code
-#include <ICLCV/Common.h>
+#include <ICLQt/Common.h>
 #include <ICLGeom/GeomDefs.h>
-#include <DataSegment.h>
+#include <ICLGeom/DataSegment.h>
 
 // utility structure used for demonstration
 struct DataPoint{

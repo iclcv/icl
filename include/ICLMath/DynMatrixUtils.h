@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_DYN_MATRIX_UTILS_H
-#define ICL_DYN_MATRIX_UTILS_H
+#pragma once
 
 #include <ICLMath/DynMatrix.h>
 #include <ICLUtils/BasicTypes.h>
@@ -48,13 +47,13 @@ namespace icl{
     /** This function can e.g. be used to initialize a matrix with random values
         \code
         #include <ICLMath/DynMatrixUtils.h>
-        #include <ICLCore/Random.h>
-  
+        #include <ICLUtils/Random.h>
+
         int main(){
-           DynMatrix<float> M(10,10);
-  
+           icl::math::DynMatrix<float> M(10,10);
+
            // initialize all entries with a uniform random number
-           matrix_init(M,URand(0,1));
+           matrix_init(M,icl::utils::URand(0,1));
         }
         \endcode
         @param m matrix to initialize
@@ -508,6 +507,3 @@ namespace icl{
   
   } // namespace math
 }
-
-#endif
-

@@ -41,27 +41,26 @@
     \defgroup INPLACE Collection of Inplace Operations
     \defgroup OTHER Other Classes    
     
-    \mainpage ICLFilter package
     
     \section OVERVIEW Overview
     
     The ICLFilter package provides a large variety of image filtering classes. Here's is an incomplete list:
     <table border=0><tr><td>
-    - Generic and fixed size convolution (see icl::ConvolutionOp)
+    - Generic and fixed size convolution (see icl::filter::ConvolutionOp)
     - Median operator (see icl::MedianOp)
-    - Morphological operations (see icl::MorphologicalOp)
-    - Affine operation (see icl::AffineOp)
-    - General Gabor-filters (see icl::GaborOp)
-    - Image chamfering filters (see icl::ChamferOp)
-    - Threshold operations (see icl::ThresholdOp)
+    - Morphological operations (see icl::filter::MorphologicalOp)
+    - Affine operation (see icl::filter::AffineOp)
+    - General Gabor-filters (see icl::filter::GaborOp)
+    - Image chamfering filters (see icl::filter::ChamferOp)
+    - Threshold operations (see icl::filter::ThresholdOp)
     </td><td>
-    - Lookup-table filters (see icl::LUTOp)
-    - Arithmetical operations (see icl::UnaryArithmeticalOp)
-    - Logical operations (see icl::UnaryLogicalOp)
-    - Filters for combining image channels (see icl::WeightChannelsOp)
-    - Wiener filer (see icl::WienerOp)
-    - Local threshold operations (see icl::LocalThresholdOp)
-    - Image proximity measurement (see icl::ProximityOp)
+    - Lookup-table filters (see icl::filter::LUTOp)
+    - Arithmetical operations (see icl::filter::UnaryArithmeticalOp)
+    - Logical operations (see icl::filter::UnaryLogicalOp)
+    - Filters for combining image channels (see icl::filter::WeightChannelsOp)
+    - Wiener filer (see icl::filter::WienerOp)
+    - Local threshold operations (see icl::filter::LocalThresholdOp)
+    - Image proximity measurement (see icl::filter::ProximityOp)
     </td></tr></table>
 
     When talking about <em>image filters</em> some misapprehensions can arise. To prevent this, the following section

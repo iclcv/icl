@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_QUICK_DOCUMENTATION_H
-#define ICL_QUICK_DOCUMENTATION_H
+#pragma once
 
 /** 
     H1 ICLQuick - an ICLPackage for rapid prototyping 
@@ -63,7 +62,7 @@
     The ICLQuick functions are, if no real-time performance is
     required:
     \code
-    #include <ICLQuick/Quick.h>
+    #include <ICLQt/Quick.h>
     // no using namespace etc, ICLQuick automatically 
     // uses namespace icl and std
     int main(){
@@ -150,16 +149,16 @@
     
     
 \code
-#include <ICLCV/Common.h>
+#include <ICLQt/Common.h>
 
 GUI gui;
 GenericGrabber grabber;
 ImgQ last;  // last image
 
 void init(){
-  gui << "image[@handle=image]"
-      << "slider(0,255,127)[@out=thresh]"
-      << "!show";
+  gui << Image().handle("image")
+      << Slider(0,255,127).out("thresh")
+      << Show();
   grabber.init(pa("-i"));
 }
 
@@ -174,6 +173,7 @@ void run(){
 int main(int n, char **ppc){
   return ICLApplication(n,ppc,"-input|-i(2)",init,run).exec();
 }
+
 \endcode
     
     </td><td>
@@ -183,4 +183,3 @@ int main(int n, char **ppc){
 
 
 
-#endif

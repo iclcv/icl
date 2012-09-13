@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_REGION_DETECTOR_H
-#define ICL_REGION_DETECTOR_H
+#pragma once
 
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/Configurable.h>
@@ -192,7 +191,7 @@ namespace icl{
       RegionDetector(bool createRegionGraph, const std::string &configurableID=Configurable::create_default_ID("region-detector-"));
   
       /// 2nd constructor with given constraints and region-graph creation flag
-      RegionDetector(int minSize=1, int maxSize=2<<28, int minVal=0, int maxVal=255, bool createRegionGraph=false,
+      RegionDetector(int minSize=1, int maxSize=400000000, int minVal=0, int maxVal=255, bool createRegionGraph=false,
                      const std::string &configurableID=Configurable::create_default_ID("region-detector-"));
   
       /// Destructor
@@ -254,4 +253,3 @@ namespace icl{
 }
 
 
-#endif

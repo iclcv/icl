@@ -32,8 +32,7 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_LEAST_SQUARE_MODEL_FITTING_2D_H
-#define ICL_LEAST_SQUARE_MODEL_FITTING_2D_H
+#pragma once
 
 #include <ICLMath/LeastSquareModelFitting.h>
 
@@ -105,4 +104,3 @@ namespace icl{
   } // namespace math
 }
 
-#endif

@@ -65,6 +65,21 @@ namespace icl{
       /** Usually this function must not be reimplemented, because it's default operation does simply use
           an internal buffer to call apply(const ImgBase*,const ImgBase*,ImgBase**). */
       virtual const core::ImgBase *apply(const core::ImgBase *operand1, const core::ImgBase *operand2);
+      
+      /// function operator (alternative for apply(src1,src2,dst)
+      inline void operator()(const core::ImgBase *src1,const core::ImgBase *src2, core::ImgBase **dst){
+        apply(src1,src2,dst);
+      }
+
+      /// function operator for the implicit destination apply(a,b) call
+      inline const core::ImgBase *operator()(const core::ImgBase *src1,const core::ImgBase *src2){
+        return apply(src1,src2);
+      }
+
+      /// reference based function operator
+      inline const core::ImgBase &operator()(const core::ImgBase &sr1,const core::ImgBase &src2){
+        return *apply(&sr1,&src2);
+      }
   
       /// sets if the image should be clip to ROI or not
       /**

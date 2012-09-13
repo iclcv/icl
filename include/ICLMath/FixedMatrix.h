@@ -32,8 +32,8 @@
 **                                                                 **
 *********************************************************************/
 
-#ifndef ICL_FIXED_MATRIX_H
-#define ICL_FIXED_MATRIX_H
+#pragma once
+
 #include <iterator>
 #include <algorithm>
 #include <numeric>
@@ -1143,4 +1143,3 @@ namespace icl{
   } // namespace math
 }
 
-#endif

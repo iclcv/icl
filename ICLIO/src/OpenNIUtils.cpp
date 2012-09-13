@@ -45,6 +45,9 @@
 
 using namespace xn;
 using namespace icl;
+using namespace utils;
+using namespace core;
+using namespace io;
 using namespace icl_openni;
 
 //##############################################################################
@@ -66,7 +69,7 @@ OpenNIMapGenerator* OpenNIMapGenerator::createGenerator(
 
   // create generator from string with index
   std::string type = id.substr(0,id.size()-1);
-  int num = icl::parse<int>(id.substr(id.size()-1, id.npos));
+  int num = utils::parse<int>(id.substr(id.size()-1, id.npos));
   if(type == "depth"){
     return new OpenNIDepthGenerator(context, num);
   } else if(type == "rgb"){
@@ -575,7 +578,7 @@ bool setGeneralIntCapability(xn::MapGenerator* gen,
                              const std::string &value){
   // set when its a GeneralIntCapability
   if(isGeneralIntCapability(property)){
-    getGeneralIntCapability(gen, property).Set(icl::parse<int>(value));
+    getGeneralIntCapability(gen, property).Set(parse<int>(value));
     return true;
   }
   // when its an auto-capability set accordingly
@@ -654,7 +657,7 @@ void setCropping(xn::MapGenerator* gen,
       crop.bEnabled = false;
     }
   } else {
-    unsigned int val = icl::parse<int>(value);
+    unsigned int val = parse<int>(value);
     XnMapOutputMode mode;
     gen -> GetMapOutputMode(mode);
     if (property == "Cropping offset X"){
@@ -689,13 +692,13 @@ std::string getCroppingValue(xn::MapGenerator* gen, const std::string &name){
       return "Off";
     }
   } else  if (name == "Cropping offset X"){
-    return icl::toStr(crop.nXOffset);
+    return toStr(crop.nXOffset);
   } else if (name == "Cropping offset Y"){
-    return icl::toStr(crop.nYOffset);
+    return toStr(crop.nYOffset);
   } else if (name == "Cropping size X"){
-    return icl::toStr(crop.nXSize);
+    return toStr(crop.nXSize);
   } else if (name == "Cropping size Y"){
-    return icl::toStr(crop.nYSize);
+    return toStr(crop.nYSize);
   }
   DEBUG_LOG("unknown cropping type " << name);
   throw ICLException("unknown cropping type");

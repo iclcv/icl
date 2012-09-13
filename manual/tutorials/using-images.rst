@@ -1,3 +1,5 @@
+.. _tut.using-images:
+
 Using the Image Class
 =====================
 

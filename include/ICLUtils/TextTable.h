@@ -50,27 +50,27 @@ namespace icl{
         The table data can be set using the (x,y)-function-
         call operator.
         \section EX Example
-        \code
-  #include <ICLUtils/TextTable.h>
-  
-  using namespace icl;
-  
-  int main(int n, char **ppc){
-    TextTable t;
-    
-    t(0,0) = "name";
-  
-    t(1,0) = "forename";
-  
-    t(2,0) = "age";
-    t(3,0) = "address";
-  
-    t[1] = tok("elbrechter,christof,34,Some Street in Oerlinghausen (close to Bielefeld)",",");
-    t[2] = tok("gotting,michael,??,Somewhere else",",");
-  
-    std::cout << t << std::endl;
-  } // namespace utils
 
+        \code
+        #include <ICLUtils/TextTable.h>
+        #inclue <iostream>
+        
+        using namespace icl::utils;
+        
+        int main(int n, char **ppc){
+          TextTable t;
+        
+          t(0,0) = "name";
+          t(1,0) = "forename";
+          t(2,0) = "age";
+          t(3,0) = "address";
+        
+          t[1] = tok("elbrechter,christof,34,Some Street in Oerlinghausen (close to Bielefeld)",",");
+          t[2] = tok("gotting,michael,??,Somewhere else",",");
+        
+          std::cout << t << std::endl;
+        } 
+        
         
         //  output
         //  +------------+----------+-----+----------------------+
@@ -84,7 +84,7 @@ namespace icl{
         //  +------------+----------+-----+----------------------+
 
       \encode
-  */
+    */
     class TextTable{
       std::vector<std::string> m_texts; //!< internal text data
       Size m_size;  //!< current size
@@ -161,7 +161,7 @@ namespace icl{
       std::string toString() const;
     
       /// clears all current existing table cells
-      /** Please note: the table size is not changed here.*/
+      /** Please note: the table size is not changed here. */
       void clear();
     };
   
@@ -169,6 +169,6 @@ namespace icl{
     inline std::ostream &operator<<(std::ostream &stream, const TextTable &t){
       return stream << t.toString();
     }
-  } // utils
+  } // namespace utils
 }
 

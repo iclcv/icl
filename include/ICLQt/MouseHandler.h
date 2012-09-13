@@ -43,7 +43,7 @@ namespace icl{
     /// MouseEvent Handler  \ingroup COMMON
     /** Here's a short example:
         \code
-        #include <ICLCV/Common.h>
+        #include <ICLQt/Common.h>
         #include <iterator>
         
         GenericGrabber *grabber;

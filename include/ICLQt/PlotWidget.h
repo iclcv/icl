@@ -137,7 +137,7 @@ namespace icl{
         }
   
         GUI gui;
-        gui << "plot(0,6.283,-1.1,1.1)[@handle=plot@minsize=20x20]" << "!show";
+        gui << Plot(0,6.283,-1.1,1.1).handle("plot").minSize(20,20) << Show();
   
         // extract the handle
         PlotHandle plot = gui["plot"];
