@@ -33,11 +33,11 @@ module in the following list depends on all modules above it.
 * **ICLIO** provides classes for image in- and output. In particular
   the generic grabber and image-output classes are to be mentioned
   here.
+* **ICLQt** adds functions for image visualization and it provides
+  an extremely power-full GUI-creation framework
 * **ICLCV** contains all medium- and higher-level computer-vision
   algorithms such as feature detectors, blob trackers and very
   efficient connected component analysis
-* **ICLQt** adds functions for image visualization and it provides
-  an extremely power-full GUI-creation framework
 * **ICLGeom** provides functions and classes for 3D-geometry and
   point-cloud processing. It also comes up with a lightweight
   scene-graph implementation for built-in hardware accelerated

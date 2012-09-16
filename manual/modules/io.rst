@@ -1,5 +1,9 @@
-**IO** (Image In- and Output)
-=============================
+.. _io:
+
+.. image:: /icons/185px/io.png
+
+Image In- and Output
+====================
 
 The ICLIO module contains functions and classes that support image in-
 and output. The package contains a large set of classes, that are

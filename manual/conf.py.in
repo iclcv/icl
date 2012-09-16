@@ -47,7 +47,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'ICL (Image Component Library)'
-copyright = u'2012, Michael Goetting, Christof Elbrechter'
+copyright = u'2012, Christof Elbrechter, Michael Goetting, Robert Haschke'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -203,7 +203,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'ICL.tex', u'ICL Documentation', u'Michael Goetting', 'manual'),
+  ('index', 'ICL.tex', u'ICL Documentation', 'Christof Elbrechter, Michael Goetting and Robert Haschke', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -232,7 +232,7 @@ latex_logo = './logo.png'
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'icl', u'ICL Documentation', [u'Michael Goetting'], 1)
+    ('index', 'icl', u'ICL Documentation', [u'Christof Elbrechter', u'Michael Goetting', u'Robert Haschke'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -245,7 +245,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'ICL', u'ICL Documentation', u'Michael Goetting', 'ICL', 'One line description of project.', 'Miscellaneous'),
+  ('index', 'ICL', u'ICL Documentation', u'Christof Elbrechter, Michael Goetting and Robert Haschke', 'ICL', 'One line description of project.', 'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.

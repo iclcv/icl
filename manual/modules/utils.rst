@@ -1,5 +1,63 @@
-**Utils** (General Support Types and Functions)
-===============================================
+.. raw:: html
+  
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+  <script src="http://cdn.jquerytools.org/1.2.7/tiny/jquery.tools.min.js"></script>
+  <script>
+  $(document).ready(function() {
+    // works  $('a').after('<div class="tooltip"> Hello World </div>')
+    $('.reference.external').after(function() {
+      var href = this.href;
+      var package = 'unknown';
+      var type = 'unknown';
+      var packages = [ 'utils', 'math', 'core', 'filter', 'io', 'qt', 'cv', 'geom', 'markers' ];
+      for(var i=0;i<9;++i){
+        if( href.match('.*icl_1_1'+packages[i]+'.*') ){
+        //if( href.match('.*icl_1_1utils.*') ){
+          package = packages[i]; // add symbol TODO!
+          break;
+        }
+      }
+      if(href.match('.*classicl.*')){
+         type = 'class';
+      }else if(href.match('.*structicl.*')){
+         type = 'struct';
+      }
+
+      return '<div class="tooltip">' + 'Package: ' + package + '<p/>' + 'Type:   ' + type + '</div>';
+
+      //return '<div class="tooltip">' + 'TEST TEST TEST' + '</div>';
+    });
+
+    $('.reference.external').tooltip({
+      position: "top center", 
+      opacity: 0.95, 
+      effect: 'fade'
+    });
+  });
+  </script>
+  <style type="text/css">
+    .tooltip {
+      border: 1px solid #999;
+      border-radius:5px;
+      display:none;
+      background: rgb(255,255,255); /*transparent url(images/white_arrow.png);*/
+      font-size:12px;
+      height:70px;
+      width:160px;
+      padding:15px;
+      color: #555;
+      box-shadow: 4px 4px 12px rgba(0,0,0,0.5);
+    }
+  </style>
+
+
+.. _utils:
+
+.. image:: /icons/185px/utils.png
+
+General Support Types and Functions
+===================================
+
 
 The Utils package contains a set of C++ support functions and
 classes. Due to the library dependency order, these classes have no

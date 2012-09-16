@@ -1,7 +1,9 @@
 .. _geom:
 
-**Geom** (3D Vision and Visualization)
-======================================
+.. image:: /icons/185px/geom.png
+
+3D Vision and Visualization
+===========================
 
 The ICLGeom module provides algorithms for 3D computer-vision, point
 cloud processing and 3D visualization. Its components are tightly

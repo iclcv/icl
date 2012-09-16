@@ -1,7 +1,9 @@
 .. _cv:
 
-**CV** (Computer Vision Algorithms)
-===================================
+.. image:: /icons/185px/cv.png
+
+Computer Vision Algorithms
+==========================
 
 The ICLCV package contains classes and function that realize general
 computer vision algorithms, that are not assignable to one of the
