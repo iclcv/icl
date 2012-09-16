@@ -18,12 +18,30 @@
         }
       }
       if(href.match('.*classicl.*')){
-         type = 'class';
+         if(href.match('.*#\[0-9a-f\]*')){
+           type = 'class: method';
+         }else{
+           type = 'class';
+         }
       }else if(href.match('.*structicl.*')){
-         type = 'struct';
+         if(href.match('.*#\[0-9a-f\]*')){
+           type = 'struct: method';
+         }else{
+           type = 'struct';
+         }
       }
 
-      return '<div class="tooltip">' + 'Package: ' + package + '<p/>' + 'Type:   ' + type + '</div>';
+      if(package != "unknown"){
+        return '<div class="tooltip">' 
+           + '<img width="110px" src="../_images/'+package+'1.png"></img>'
+           + '<br/>' + 'Type:   <b>' + type + '</b>' 
+           + '</div>';
+      }else{
+        return '<div class="tooltip">' 
+           + 'Unable to locate package'
+           + '<br/>' + 'Type:   <b>' + type + '</b>' 
+           + '</div>';
+      }
 
       //return '<div class="tooltip">' + 'TEST TEST TEST' + '</div>';
     });
@@ -41,12 +59,13 @@
       border-radius:5px;
       display:none;
       background: rgb(255,255,255); /*transparent url(images/white_arrow.png);*/
-      font-size:12px;
-      height:70px;
-      width:160px;
-      padding:15px;
+      font-size:13px;
+      height:60px;
+      width:130px;
+      padding:5px;
       color: #555;
       box-shadow: 4px 4px 12px rgba(0,0,0,0.5);
+      line-height: 20px;
     }
   </style>
 
@@ -217,8 +236,6 @@ string identifiers. Each property has a type, a type-dependend
 description of possible values, a current value and a so called
 volatileness. Further details and examples are given in the 
 tutorial :ref:`tut.configurable`.
-
-
 
 .. _utils.smart-ptr:
 
