@@ -29,6 +29,8 @@ Welcome to the ICL Manual
 .. |I| image:: icons/92px/markers.png
        :target: modules/markers.html
 
+.. |TT| image:: icons/tooltip.png
+
 .. we force the 3 column layout here!
 
 | |A| |B| |C|
@@ -49,6 +51,11 @@ Contents
 
 Internal
 ********
+
+.. toctree::
+   :hidden:
+      
+   js.rst
 
 .. toctree::
    :maxdepth: 1
