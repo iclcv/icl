@@ -1,3 +1,5 @@
+.. include:: ../js.rst
+
 .. _math:
 
 .. image:: /icons/185px/math.png

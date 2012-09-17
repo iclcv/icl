@@ -1,3 +1,5 @@
+.. include:: ../js.rst
+
 .. _core:
 
 .. image:: /icons/185px/core.png

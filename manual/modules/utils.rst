@@ -7,7 +7,6 @@
 General Support Types and Functions
 ===================================
 
-
 The Utils package contains a set of C++ support functions and
 classes. Due to the library dependency order, these classes have no
 internal dependencies. In particular, the utils package does not
@@ -35,12 +34,13 @@ Table of Contents
 Basic Types
 """""""""""
 
+
 ICL's basic data types are defined in
 **ICLUtils/BasicTypes.h**. Unlike all other classes, types and
-functions, the basic types are defined directly in the
-:icl:`icl` -namespace. The type syntax is copied from the Intel IPP
-library: All types have an *icl*-prefix, an integer-value that
-describes the number of bits used, and a suffix
+functions, the basic types are defined directly in the :icl:`icl`
+-namespace. The type syntax is copied from the Intel IPP library: All
+types have an *icl*-prefix, an integer-value that describes the number
+of bits used, and a suffix
 
 * **u** for unsigned integers
 * **s** for signed integers
@@ -49,25 +49,25 @@ describes the number of bits used, and a suffix
 
 The most common types are
 
-* :icl:`icl8u` for 8 bit unsigned integers (commonly known as **unsigned
+* :icl:`icl::icl8u` for 8 bit unsigned integers (commonly known as **unsigned
   char**)
-* :icl:`icl16s` for 16 bit signed integers (commonly known as **short**)
-* :icl:`icl32s` for 32 bit signed integers (usually **int**)
-* :icl:`icl32f` for floats
-* :icl:`icl64f` for doubles
+* :icl:`icl::icl16s` for 16 bit signed integers (commonly known as **short**)
+* :icl:`icl::icl32s` for 32 bit signed integers (usually **int**)
+* :icl:`icl::icl32f` for floats
+* :icl:`icl::icl64f` for doubles
 
 ICL's :ref:`image classes<core.image>` (provided by the
 :ref:`ICLCore<core>` module) are implemented for these common types
 **Note:** Please ensure not to mix up the basic data types with the
 alternatives for the enumeration :icl:`depth` which are
 
-* :icl:`depth8u`
-* :icl:`depth16s`
-* :icl:`depth32s`
-* :icl:`depth32f`
-* :icl:`depth64f`
+* :icl:`core::depth8u`
+* :icl:`core::depth16s`
+* :icl:`core::depth32s`
+* :icl:`core::depth32f`
+* :icl:`core::depth64f`
 
-The **core::depth** value is used for run-time type-inference
+The :icl:`core::depth` value is used for run-time type-inference
 
 .. _utils.support-types:
 
