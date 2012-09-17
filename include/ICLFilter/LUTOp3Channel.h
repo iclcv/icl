@@ -157,7 +157,7 @@ namespace icl {
     class LUTOp3Channel : public UnaryOp, public utils::Uncopyable {
       public:
       
-      /// Internal plugin class for the LUTOp3Channel \ingroup OTHER
+      /// Internal plugin class for the LUTOp3Channel 
       /** The Plugin class can be reimplemented to create custom LUTOp3Channel
           functions. The basic implementation realized a default color distance 
           map on source images.

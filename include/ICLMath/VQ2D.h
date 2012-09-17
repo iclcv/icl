@@ -41,7 +41,7 @@
 
 namespace icl{
   namespace math{
-    /// Support class for 2-Dimensional vector quatisation using KMeans \ingroup G_UTILS
+    /// Support class for 2-Dimensional vector quatisation using KMeans
     /** Vector Quantisation is internally applied using the <b>KMeans</b> algorithm
         which can be defines as follows:
         

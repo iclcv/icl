@@ -38,7 +38,7 @@
 
 namespace icl {
   namespace filter{
-    /// Utility base class for Image Operators \ingroup OTHER
+    /// Utility base class for Image Operators
     /** The OpROIHandler class builds a utility base class for ICL unary and binary
         operator classes. Each Operator is performed on the ROI of the source image(s) 
         only. The destination image is <em> always </em> adapted in its parameters to the

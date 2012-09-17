@@ -39,7 +39,7 @@
 namespace icl{
   namespace math{
   
-    /// Utiltiy class for accessing meta-information about VQClusters \ingroup G_UTILS
+    /// Utiltiy class for accessing meta-information about VQClusters
     /** The dimension of a VQCluster info is equal to the center/
         prototype/cluster-count of the top-level VQ2D object. For each 
         prototype/center/cluster the cluster info provides some meta

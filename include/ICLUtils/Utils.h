@@ -68,12 +68,13 @@
     \defgroup TIME Time and Timer Support Classes and Functions
     \defgroup EXCEPT Special Exceptions
     \defgroup THREAD Support Functions for Multi-Threading 
-    \defgroup LINALG Linear algebra classes and functions
+    \defgroup RANDOM Random Number Generation fuctions and classes
     \defgroup UTILS General purpose Utiltiy Classes and Functions
     \defgroup PA Programm Argument Evaluation Functions
     \defgroup XML XML Pasing and Creation Environment
     \defgroup STRUTILS String Manipuation Functions
     \defgroup FUNCTION ICL's Function Class and Creation Functions
+    \defgroup BASIC_TYPES Fundamental Data Type Definitions
     
     \section OV Overview
     
@@ -84,7 +85,7 @@
     -# \ref TIME
     -# \ref EXCEPT
     -# \ref THREAD
-    -# \ref LINALG
+    -# \ref RANDOM
     -# \ref UTILS
     -# \ref PA
     -# \ref XML

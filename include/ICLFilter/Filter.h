@@ -39,8 +39,6 @@
     \defgroup AFFINE Collection of Affine Image Operations
     \defgroup NBH Collection of Neighborhood Operations
     \defgroup INPLACE Collection of Inplace Operations
-    \defgroup OTHER Other Classes    
-    
     
     \section OVERVIEW Overview
     
