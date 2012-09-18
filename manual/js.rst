@@ -1,9 +1,16 @@
 .. raw:: html
   
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
-  <script src="http://cdn.jquerytools.org/1.2.7/tiny/jquery.tools.min.js"></script>
+  <script src="../js/jquery.min.js"></script>
+  <script src="../js/jquery.tools.min.js"></script>
+  <!--script src="../_static/underscore.js"></script-->
+         <!--script src="../_static/doctools.js"></script-->
+
+
   <script>
   $(document).ready(function() {
+ 
+    console.log('Im being executed!');
+
     // works  $('a').after('<div class="tooltip"> Hello World </div>')
     $('.reference.external').after(function() {
       var href = this.href;
@@ -55,7 +62,7 @@
          }
       }
       
-      if(href.match('.*namespaceicl.*')){
+      if(package == "unknown" && href.match('.*namespaceicl.*')){
         // very special treatment
         return '<div class="tooltip">the <b>icl</b> namespace is used for all '
               +'modules.</div>';
@@ -81,7 +88,7 @@
       position: "top center", 
       opacity: 0.95, 
       effect: 'fade',
-      offset: [15,26]
+      offset: [7,33]
     });
   });
   </script>
@@ -93,7 +100,7 @@
       /*background: rgb(255,255,255); /*transparent url(images/white_arrow.png);*/
       background: transparent url(../_images/tooltip.png);
       font-size:13px;
-      height:78px;
+      height:80px;
       width:131px;
       padding:10px;
       color: #555;

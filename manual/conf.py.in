@@ -116,6 +116,7 @@ html_theme_options = {
      "sidebarlinkcolor" : "rgb(50,130,235)",
      "visitedlinkcolor" : "rgb(50,130,235)",
      "linkcolor" : "rgb(50,130,235)",
+     "textcolor" : "rgb(50,50,50)"
 }
 
 # Add any paths that contain custom themes here, relative to this directory.

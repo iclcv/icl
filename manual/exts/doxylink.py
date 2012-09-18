@@ -145,10 +145,12 @@ def parse_tag_file(doc):
 			member_kind = member.get('kind')
 			arglist_text = member.findtext('./arglist') #If it has an <arglist> then we assume it's a function. Empty <arglist> returns '', not None. Things like typedefs and enums can have empty arglists
 			
-			if arglist_text and member_kind != 'variable' and member_kind != 'typedef' and member_kind != 'enumeration':
-				function_list.append((member_symbol, arglist_text, member_kind, join(anchorfile,'#',member.findtext('anchor'))))
-			else:
-				mapping[member_symbol] = {'kind' : member.get('kind'), 'file' : join(anchorfile,'#',member.findtext('anchor'))}
+                        # ce added this
+                        if member_kind != 'variable':
+                                if arglist_text and member_kind != 'variable' and member_kind != 'typedef' and member_kind != 'enumeration':
+                                        function_list.append((member_symbol, arglist_text, member_kind, join(anchorfile,'#',member.findtext('anchor'))))
+                                else:
+                                        mapping[member_symbol] = {'kind' : member.get('kind'), 'file' : join(anchorfile,'#',member.findtext('anchor'))}
 	
 	for old_tuple, normalised_tuple in zip(function_list, itertools.imap(normalise, (member_tuple[1] for member_tuple in function_list))):
 		member_symbol = old_tuple[0]
@@ -248,7 +250,33 @@ def find_url2(mapping, symbol):
 	
 	#If not found by now, just return the first one in the list
 	if len(no_templates_list) != 0:
-		#TODO return a warning here?
+
+                noclass = re.compile("^class");
+                nostruct = re.compile("^struct");
+
+		#ce: added warning here!
+                #print("warning: symbol %s yields ambiguity!"%symbol);
+                #for i in no_templates_list.values():
+                #        print("-->%s"%i)
+                # search_order struct class enumeration function
+                for i in no_templates_list.values():
+                        if i['kind'] == 'struct' or i['kind'] == 'class':
+                                return return_from_mapping(i, normalised_arglist)
+                for i in no_templates_list.values():
+                        if i['kind'] == 'enumeration':
+                                return return_from_mapping(i, normalised_arglist)
+                # 1st function search for non class/struct members
+                for i in no_templates_list.values():
+                        if i['kind'] == 'function':
+                                ver = i['arglist'];
+                                for j in ver:
+                                        if not noclass.match(ver[j]) and not nostruct.match(ver[j]):
+                                                   return return_from_mapping(i, normalised_arglist)
+                # 1st function search class/struct members as well
+                for i in no_templates_list.values():
+                        if i['kind'] == 'function':
+                               return return_from_mapping(i, normalised_arglist)
+
 		return return_from_mapping(no_templates_list.values()[0], normalised_arglist)
 	#Else return None if the list is empty
 	else:

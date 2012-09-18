@@ -37,5 +37,6 @@ add_custom_target(pdf
                   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/latex"
                   DEPENDS           latex)
 
-install(DIRECTORY "${CMAKE_BINARY_DIR}/html"
-        DESTINATION "share/doc/rsb-manual/")
+install(DIRECTORY "${CMAKE_BINARY_DIR}/html" DESTINATION "share/doc/icl-manual/")
+install(DIRECTORY "js" DESTINATION "share/doc/icl-manual/html")
+

@@ -19,6 +19,17 @@
   <defs
      id="defs4">
     <linearGradient
+       id="linearGradient3014">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0;"
+         offset="0"
+         id="stop3016" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1"
+         offset="1"
+         id="stop3018" />
+    </linearGradient>
+    <linearGradient
        id="linearGradient3756">
       <stop
          style="stop-color:#ede6d3;stop-opacity:1;"
@@ -38,14 +49,6 @@
        x2="342.94678"
        y2="566.52881"
        gradientUnits="userSpaceOnUse" />
-    <filter
-       inkscape:collect="always"
-       id="filter3788">
-      <feGaussianBlur
-         inkscape:collect="always"
-         stdDeviation="5.5800472"
-         id="feGaussianBlur3790" />
-    </filter>
     <linearGradient
        inkscape:collect="always"
        xlink:href="#linearGradient3756"
@@ -55,6 +58,43 @@
        y1="359.90262"
        x2="342.94678"
        y2="566.52881" />
+    <filter
+       inkscape:collect="always"
+       id="filter3812">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="6.0700459"
+         id="feGaussianBlur3814" />
+    </filter>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3014"
+       id="linearGradient3020"
+       x1="186.87392"
+       y1="-144.1635"
+       x2="453.56726"
+       y2="-144.1635"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-4.9240938e-7,-4.9620468e-6)" />
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath3043">
+      <path
+         style="color:#000000;fill:#ffffff;stroke:#000000;stroke-width:1.25;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+         d="m 145.75018,356.28396 0,221.1102 408.5625,0 0,-221.1102 -408.5625,0 z m 37.4375,8.01332 292.34375,0 c 16.28388,0 29.40625,13.1078 29.40625,29.39168 l 0,102.74212 c 0,16.28388 -13.12237,29.39169 -29.40625,29.39169 l -224.40625,0 -31.75,0 -36.1875,0 c -16.28388,0 -29.40625,-13.10781 -29.40625,-29.39169 l 0,-102.74212 c 0,-16.28388 13.12237,-29.39168 29.40625,-29.39168 z"
+         id="path3045"
+         inkscape:connector-curvature="0" />
+    </clipPath>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3014"
+       id="linearGradient3055"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.75624936,0,0,1,131.63759,-4.9620468e-6)"
+       x1="186.87392"
+       y1="-144.1635"
+       x2="453.56726"
+       y2="-144.1635" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -63,9 +103,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.4"
-     inkscape:cx="385.14861"
-     inkscape:cy="590.33181"
+     inkscape:zoom="0.98994949"
+     inkscape:cx="624.11954"
+     inkscape:cy="1054.7167"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -94,15 +134,15 @@
        sodipodi:nodetypes="ssssscccssss"
        inkscape:connector-curvature="0"
        id="path3764"
-       d="m 198.64313,378.74468 292.35627,0 c 16.28388,0 29.39329,13.10941 29.39329,29.39329 l 0,102.7409 c 0,16.28388 -13.10941,29.39329 -29.39329,29.39329 l -224.41702,0 c -14.42219,10.30465 -17.73124,23.57864 -19.7903,38.63833 -8.96362,-10.29289 -11.93316,-19.16663 -11.93316,-38.63833 l -36.21579,0 c -16.28388,0 -29.39329,-13.10941 -29.39329,-29.39329 l 0,-102.7409 c 0,-16.28388 13.10941,-29.39329 29.39329,-29.39329 z"
-       style="opacity:0.76543214;color:#000000;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1;marker:none;visibility:visible;display:inline;overflow:visible;filter:url(#filter3788);enable-background:accumulate"
+       d="m 198.64313,378.74468 292.35627,0 c 16.28388,0 29.39329,13.10941 29.39329,29.39329 l 0,102.7409 c 0,16.28388 -13.10941,29.39329 -29.39329,29.39329 l -224.41702,0 -16.75984,38.63833 -14.96362,-38.63833 -36.21579,0 c -16.28388,0 -29.39329,-13.10941 -29.39329,-29.39329 l 0,-102.7409 c 0,-16.28388 13.10941,-29.39329 29.39329,-29.39329 z"
+       style="opacity:0.76543214;color:#000000;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1;marker:none;visibility:visible;display:inline;overflow:visible;filter:url(#filter3812);enable-background:accumulate"
        inkscape:export-filename="/home/celbrech/projects/ICL/manual/icons/tooltip.png"
        inkscape:export-xdpi="35.69067"
        inkscape:export-ydpi="35.69067"
-       transform="matrix(1,0,0,1.0919329,0,-33.690513)" />
+       transform="matrix(1,0,0,1.0919329,0.50507628,-30.660056)" />
     <path
-       style="color:#000000;fill:#ffffff;fill-opacity:1;stroke:#999999;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
-       d="m 195.1076,377.11572 292.35627,0 c 16.28388,0 29.39329,14.31459 29.39329,32.0955 l 0,112.18617 c 0,17.7809 -13.10941,32.0955 -29.39329,32.0955 l -224.41702,0 c -14.42219,11.25198 -17.73124,25.74629 -19.7903,42.19046 -8.96362,-11.23914 -11.93316,-20.92867 -11.93316,-42.19046 l -36.21579,0 c -16.28388,0 -29.39329,-14.3146 -29.39329,-32.0955 l 0,-112.18617 c 0,-17.78091 13.10941,-32.0955 29.39329,-32.0955 z"
+       style="color:#000000;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:1.25;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;stroke-dasharray:none"
+       d="m 195.1076,377.11572 292.35627,0 c 16.28388,0 29.39329,14.31459 29.39329,32.0955 l 0,112.18617 c 0,17.7809 -13.10941,32.0955 -29.39329,32.0955 l -224.41702,0 -16.5073,42.19046 -15.21616,-42.19046 -36.21579,0 c -16.28388,0 -29.39329,-14.3146 -29.39329,-32.0955 l 0,-112.18617 c 0,-17.78091 13.10941,-32.0955 29.39329,-32.0955 z"
        id="rect2985"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="ssssscccssss"
@@ -121,5 +161,33 @@
        inkscape:export-filename="/home/celbrech/projects/ICL/manual/icons/tooltip.png"
        inkscape:export-xdpi="35.69067"
        inkscape:export-ydpi="35.69067" />
+    <g
+       id="g3051"
+       inkscape:export-filename="/home/celbrech/projects/ICL/manual/icons/index-tip.png"
+       inkscape:export-xdpi="51.592136"
+       inkscape:export-ydpi="51.592136"
+       transform="matrix(1.3223152,0,0,1,-174.06639,0)"
+       style="stroke:#666666">
+      <path
+         clip-path="url(#clipPath3043)"
+         sodipodi:nodetypes="sssssccssss"
+         inkscape:connector-curvature="0"
+         id="path2992"
+         d="m 198.64313,378.74468 292.35627,0 c 16.28388,0 29.39329,13.10941 29.39329,29.39329 l 0,102.7409 c 0,16.28388 -13.10941,29.39329 -29.39329,29.39329 l -224.41702,0 -31.72346,0 -36.21579,0 c -16.28388,0 -29.39329,-13.10941 -29.39329,-29.39329 l 0,-102.7409 c 0,-16.28388 13.10941,-29.39329 29.39329,-29.39329 z"
+         style="opacity:0.76543214000000004;color:#000000;fill:#000000;fill-opacity:1;stroke:#666666;stroke-width:1;marker:none;visibility:visible;display:inline;overflow:visible;filter:url(#filter3812);enable-background:accumulate"
+         inkscape:export-filename="/home/celbrech/projects/ICL/manual/icons/tooltip.png"
+         inkscape:export-xdpi="35.69067"
+         inkscape:export-ydpi="35.69067"
+         transform="matrix(1,0,0,1.0919329,90.930928,-621.4763)" />
+      <path
+         style="color:#000000;fill:url(#linearGradient3055);fill-opacity:1;stroke:#666666;stroke-width:1.08703255999999993;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+         d="m 274.31898,-223.85941 292.35627,0 c 16.28388,0 29.39329,14.31459 29.39329,32.0955 l 0,112.186164 c 0,17.7809 -13.10941,32.0955 -29.39329,32.0955 l -224.41702,0 -31.72346,0 -36.21579,0 c -16.28388,0 -29.39329,-14.3146 -29.39329,-32.0955 l 0,-112.186164 c 0,-17.78091 13.10941,-32.0955 29.39329,-32.0955 z"
+         id="path2994"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="sssssccssss"
+         inkscape:export-filename="/home/celbrech/projects/ICL/manual/icons/tooltip.png"
+         inkscape:export-xdpi="35.69067"
+         inkscape:export-ydpi="35.69067" />
+    </g>
   </g>
 </svg>
