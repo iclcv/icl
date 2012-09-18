@@ -32,12 +32,35 @@ Welcome to the ICL Manual
 .. |TT| image:: icons/tooltip.png
 .. |ITT| image:: icons/index-tip.png
 
+.. |ABOUT| image:: icons/about.png
+             :target: about.html
+
+.. |DOWNLOAD| image:: icons/download.png
+                :target: download.html
+
+.. |HOWTOS| image:: icons/howtos.png
+              :target: howtos.html
+
+.. |INSTALL| image:: icons/install.png
+               :target: install.html
+
+.. |TUTORIAL| image:: icons/tutorial.png
+                :target: tutorial.png
+
+
 .. we force the 3 column layout here!
+
+Modules
+#######
 
 | |A| |B| |C|
 | |D| |E| |F|
 | |G| |H| |I|
 
+Anchors
+#######
+
+| |ABOUT| |DOWNLOAD| |INSTALL| |TUTORIAL| |HOWTOS|
 
 Contents
 ********
@@ -48,6 +71,8 @@ Contents
    modules
    tutorial
    howtos
+   download
+   install
 
 
 Internal
@@ -84,31 +109,41 @@ Internal
   $(document).ready(function() {
     $('.reference.external').after(function() {
        var href = this.href;
+       var id = "";
        var text = "not defined yet";
        if(href.match('.*utils.*')){
+         id = "module-utils";
          text = "the <b>utils</b> module provides basic data type definitions as well as general support types and functions";
        }else if(href.match('.*math.*')){
+         id = "module-math";
          text = "the <b>math</b> module provides fixed- and dynamic sized matrix classes and several machine learning tools";
        }else if(href.match('.*core.*')){
+         id = "module-core";
          text = "the <b>core</b> module provides the basic image classes <b>ImgBase</b> and <b>Img</b>, basic types and functions";
        }else if(href.match('.*filter.*')){
+         id = "module-filter";
          text = "the <b>filter</b> module provides a huge set of unary- and binary image filters for low level image processing";
        }else if(href.match('.*qt.*')){
+         id = "module-qt";
          text = "the <b>qt</b> module provides a powerfull GUI creation framework including high-speed visualization tools";
        }else if(href.match('.*cv.*')){
+         id = "module-cv";
          text = "the <b>cv</b> module provides a huge set of medium level classes and functions for computer vision";
        }else if(href.match('.*geom.*')){
+         id = "module-geom";
          text = "the <b>geom</b> module provides 3D-vision and point-cloud processig tools including 3D-visualization";
        }else if(href.match('.*markers.*')){
+         id = "module-markers";
          text = "the <b>markers</b> module provides a generic fiducial marker detection frameworks for common marker types";
        }else if(href.match('.*io.*')){
+         id = "module-io";
          text = "the <b>io</b> module provides an image acquisition  and output framework for most differnt in- and output types";
        }
-       return '<div class="tooltip">'+text+'</div>';
+       return '<div id="'+id+'"class="tooltip">'+text+'</div>';
     });
 
     
-    $('.reference.external ').tooltip({
+    $('.reference.external').tooltip({
       position: "top center", 
       opacity: 1,
       effect: 'fade',
@@ -118,19 +153,29 @@ Internal
       offset: [36,10]
     });
 
+    $('#module-utils').bind('click',function(e){ location = 'modules/utils.html';  });
+    $('#module-math').bind('click',function(e){ location = 'modules/math.html';  });
+    $('#module-core').bind('click',function(e){ location = 'modules/core.html';  });
+    $('#module-filter').bind('click',function(e){ location = 'modules/filter.html';  });
+    $('#module-io').bind('click',function(e){ location = 'modules/io.html';  });
+    $('#module-qt').bind('click',function(e){ location = 'modules/qt.html';  });
+    $('#module-cv').bind('click',function(e){ location = 'modules/cv.html';  });
+    $('#module-geom').bind('click',function(e){ location = 'modules/geom.html';  });
+    $('#module-markers').bind('click',function(e){ location = 'modules/markers.html';  });
+
   });
   </script>
   <style type="text/css"> 
     .tooltip {
       display:none;
        background: transparent url(_images/index-tip.png);
-      font-size:13px;
+      font-size:12px;
       height:100px;
       width:160px;
       padding: 10px;
       padding-right:30px;
       padding-left:100px;
       line-height: 20px;
-      color: rgb(50,50,50);
+      color: rgb(70,70,70);
     }
   </style>
