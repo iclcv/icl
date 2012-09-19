@@ -14,8 +14,20 @@
     // works  $('a').after('<div class="tooltip"> Hello World </div>')
     $('.reference.external').after(function() {
       var href = this.href;
+      var text = this.text;
+
       var package = 'unknown';
       var type = 'other';
+
+
+      if( this.text.match('^ICL.*\.h$') ){ // we have a header file
+         var m = this.text.match('ICL(\[^/\]*)/.*');
+         if( m ){
+            package = m[1].toLowerCase();
+            type = "header";
+         }
+      }
+      
       var packages = [ 'utils', 'math', 'core', 'filter', 'io', 'qt', 'cv', 'geom', 'markers' ];
       var groupLUT = [ ['TIME', 'EXCEPT', 'THREAD', 'RANDOM', 'UTILS' , 'PA', 'XML', 'STRUTILS', 'FUNCTION', 'BASIC__TYPES'],
                        ['LINALG'],
@@ -28,11 +40,24 @@
                        ['PLUGINS']
                      ];
 
-
-      for(var i=0;i<9;++i){
-        if( href.match('.*icl_1_1'+packages[i]+'.*') ){
-          package = packages[i]; 
-          break;
+      if(package == 'unknown'){
+        for(var i=0;i<9;++i){
+          if( href.match('.*/namespaceicl_1_1'+packages[i]+'\.html') ){
+            package = packages[i];
+            // could be a function or a namespace
+            if(this.text.match('.*'+packages[i]+'$')){
+               type = 'namespace';
+            }else if(this.text[0] > 'A' && this.text[0] < 'Z'){
+               type = 'global type';
+            }else{
+               type = 'global function';
+            }
+            break;
+          }
+          if( href.match('.*icl_1_1'+packages[i]+'.*') ){
+            package = packages[i]; 
+            break;
+          }
         }
       }
       if(package == 'unknown'){
@@ -45,7 +70,25 @@
                   break;
               }
            }
-        }
+           var res2 = this.text.match('.*::(\[^:\]*)$');
+           var t = "???";
+           if(res2){
+              t = res2[1];
+           }else{
+              t = this.text;
+           }
+           if(t[0] > 'A' && t[0] < 'Z'){
+              type = "grouped type";
+           }else{
+              if(groupName == "TYPES"){
+                type = "core type";
+              }else if(groupName == "BASIC__TYPES"){
+                type = "basic type";
+              }else{
+                type = "grouped function";
+              }
+           }
+         }
       }
       
       if(href.match('.*classicl.*')){
@@ -145,5 +188,13 @@
     }
     div.sphinxsidebar{
       font-size: 80%;
+    }
+
+    table.docutils td, table.docutils th{
+      border: 0px;
+    }
+    th {
+       background-color: #0F67A1;
+       color: rgb(220,220,220);
     }
   </style>

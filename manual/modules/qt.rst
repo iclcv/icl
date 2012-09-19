@@ -1,3 +1,5 @@
+.. include:: ../js.rst
+
 .. _qt:
 
 
@@ -452,6 +454,7 @@ executed *after* the component state has been changed, the callback
 trigger is always the most trivial action, such as *moving a slider* or
 *clicking a button*.
 
+
 +------------------------------------------------+-------------------------------------+  
 | .. literalinclude:: examples/qt-callbacks.cpp  | .. image:: images/qt-callbacks.png  |
 |    :linenos:                                   |                                     |
@@ -572,28 +575,28 @@ Container GUI Components
 +---------------------+-----------------------------------+------------------------------------------------------------+
 |  Component          | Corresponding Handle Type         | Description                                                |
 +=====================+===================================+============================================================+
-| **qt::HBox**        | **qt::HBoxHandle**                | horizontally alligned box layout                           |
+| :icl:`qt::HBox`     | :icl:`qt::BoxHandle`              | horizontally alligned box layout                           |
 +---------------------+-----------------------------------+------------------------------------------------------------+
-| **qt::VBox**        | **qt::VBoxHandle**                | vertically alligned box layout                             |
+| :icl:`qt::VBox`     | :icl:`qt::BoxHandle`              | vertically alligned box layout                             |
 +---------------------+-----------------------------------+------------------------------------------------------------+
-| **qt::HSplit**      | **qt::HSplitHandle**              | horizonatal splitting component                            |
+| :icl:`qt::HSplit`   | :icl:`qt::BoxHandle`              | horizonatal splitting component                            |
 +---------------------+-----------------------------------+------------------------------------------------------------+
-| **qt::VSplit**      | **qt::VSplitHandle**              | vertical splitting component                               |
+| :icl:`qt::VSplit`   | :icl:`qt::BoxHandle`              | vertical splitting component                               |
 +---------------------+-----------------------------------+------------------------------------------------------------+
-| **qt::HScroll**     | **qt::HScrollHandle**             | like a HBox, but within a scrollable area                  |
+| :icl:`qt::HScroll`  | :icl:`qt::BoxHandle`              | like a HBox, but within a scrollable area                  |
 +---------------------+-----------------------------------+------------------------------------------------------------+
-| **qt::VScroll**     | **qt::VScrollHandle**             | like a VBox, but within a scrollable area                  |
+| :icl:`qt::VScroll`  | :icl:`qt::BoxHandle`              | like a VBox, but within a scrollable area                  |
 +---------------------+-----------------------------------+------------------------------------------------------------+
-| **qt::Tab**         | **qt::TabHandle**                 | *tab'ed* widget                                            |
+| :icl:`qt::Tab`      | :icl:`qt::TabHandle`              | *tab'ed* widget                                            |
 +---------------------+-----------------------------------+------------------------------------------------------------+
 
 .. note::
    
    All container components can be filled successively with an
-   arbitrary number of components. This is also true for the **Tab**
+   arbitrary number of components. This is also true for the :icl:`Tab`
    component, however the tab-labels are given to the
-   **Tab**-constructor. Therefore if more components are streamed into
-   a **Tab** container, dummy labels are created
+   :icl:`Tab`-constructor. Therefore if more components are streamed into
+   a :icl:`Tab` container, dummy labels are created
 
 .. _qt.special-components:
 
