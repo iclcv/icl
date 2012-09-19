@@ -1,6 +1,6 @@
-#########################
-Welcome to the ICL Manual
-#########################
+####################################
+Image Component Library (ICL) Manual
+####################################
 
 .. |A| image:: icons/92px/utils.png
        :target: modules/utils.html
@@ -45,22 +45,20 @@ Welcome to the ICL Manual
                :target: install.html
 
 .. |TUTORIAL| image:: icons/tutorial.png
-                :target: tutorial.png
+                :target: tutorial.html
 
 
 .. we force the 3 column layout here!
 
-Modules
-#######
+**Modules**
 
-| |A| |B| |C|
-| |D| |E| |F|
-| |G| |H| |I|
+  | |A| |B| |C|
+  | |D| |E| |F|
+  | |G| |H| |I|
 
-Anchors
-#######
+**Getting Started**
 
-| |ABOUT| |DOWNLOAD| |INSTALL| |TUTORIAL| |HOWTOS|
+  | |ABOUT|   |DOWNLOAD|   |INSTALL|   |TUTORIAL|   |HOWTOS|
 
 Contents
 ********
@@ -107,7 +105,41 @@ Internal
   <script>
 
   $(document).ready(function() {
-    $('.reference.external').after(function() {
+
+    var f = function(){
+
+       var href = this.href;
+       var id = "";
+       if(href.match('\.*about.html$')){
+          id='extras-about';
+       }else if(href.match('.*download\.html$')){
+          id='extras-download';
+       }else if(href.match('.*install\.html$')){
+          id='extras-install';
+       }else if(href.match('.*tutorial\.html$')){
+          id='extras-tutorial';
+       }else if(href.match('.*howtos\.html$')){
+          id='extras-howtos';
+       }
+       return '<div id="'+id+'" class="tooltip extras"></div>'
+    }
+  
+    var extras = [ 'about', 'download', 'install', 'tutorial', 'howtos' ];
+    for(var i=0;i<5;++i){
+      var e = $('.reference.external[href="'+extras[i]+'.html"]');
+      e.after(f);
+      e.tooltip({
+        position: "top center",
+        opacity: 0.95,
+        effect: 'fade',
+        predelay: 1,
+        delay: 10,
+        fadeInSpeed: 300,
+        offset: [5,-5]
+      });
+    }
+
+    $('.reference.external[href^="modules"]').after(function() {
        var href = this.href;
        var id = "";
        var text = "not defined yet";
@@ -139,11 +171,11 @@ Internal
          id = "module-io";
          text = "the <b>io</b> module provides an image acquisition  and output framework for most differnt in- and output types";
        }
-       return '<div id="'+id+'"class="tooltip">'+text+'</div>';
+       return '<div id="'+id+'"class="tooltip modules">'+text+'</div>';
     });
 
     
-    $('.reference.external').tooltip({
+    $('.reference.external[href^="modules"]').tooltip({
       position: "top center", 
       opacity: 1,
       effect: 'fade',
@@ -163,12 +195,18 @@ Internal
     $('#module-geom').bind('click',function(e){ location = 'modules/geom.html';  });
     $('#module-markers').bind('click',function(e){ location = 'modules/markers.html';  });
 
+    $('#extras-about').bind('click',function(e){ location = 'about.html';  });
+    $('#extras-download').bind('click',function(e){ location = 'download.html';  });
+    $('#extras-install').bind('click',function(e){ location = 'install.html';  });
+    $('#extras-tutorial').bind('click',function(e){ location = 'tutorial.html';  });
+    $('#extras-howtos').bind('click',function(e){ location = 'howtos.html';  });
+
   });
   </script>
   <style type="text/css"> 
-    .tooltip {
+    .tooltip.modules {
       display:none;
-       background: transparent url(_images/index-tip.png);
+      background: transparent url(_images/index-tip.png);
       font-size:12px;
       height:100px;
       width:160px;
@@ -178,4 +216,39 @@ Internal
       line-height: 20px;
       color: rgb(70,70,70);
     }
-  </style>
+    
+    .tooltip.extras {
+      display:none;
+      background: rgba(0,100,255,0.2);
+      font-size:13px;
+      height:88px;
+      width:99px;
+      padding:1px;
+      color: #555;
+      line-height: 20px;
+      border-radius: 17px;
+    }
+
+    div.body{
+      border-radius: 10px;
+      box-shadow: 0px 0px 50px rgba(0,0,0,0.7);
+    }
+
+    div.body h1{
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+      box-shadow: 0px 2px 0px rgba(0,0,0,0.4);
+    }
+
+    div.body h2{
+      box-shadow: 0px 2px 0px rgba(0,0,0,0.4);
+    }
+
+    div.body h3{
+      box-shadow: 0px 2px 0px rgba(0,0,0,0.4);
+    }
+
+    div.sphinxsidebar{
+      font-size: 80%;
+    }
+    </style>

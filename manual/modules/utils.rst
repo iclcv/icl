@@ -2,10 +2,12 @@
 
 .. _utils:
 
+###################################
+General Support Types and Functions
+###################################
+
 .. image:: /icons/185px/utils.png
 
-General Support Types and Functions
-===================================
 
 The Utils package contains a set of C++ support functions and
 classes. Due to the library dependency order, these classes have no

@@ -123,4 +123,25 @@
       padding-right: 4px;
       text-decoration: none;
     }
+    div.body{
+      border-radius: 10px;
+      box-shadow: 0px 0px 50px rgba(0,0,0,0.7);
+    }
+
+    div.body h1{
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+      box-shadow: 0px 2px 0px rgba(0,0,0,0.4);
+    }
+
+    div.body h2{
+      box-shadow: 0px 2px 0px rgba(0,0,0,0.4);
+    }
+
+    div.body h3{
+      box-shadow: 0px 2px 0px rgba(0,0,0,0.4);
+    }
+    div.sphinxsidebar{
+      font-size: 80%;
+    }
   </style>
