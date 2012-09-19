@@ -33,19 +33,19 @@ Image Component Library (ICL) Manual
 .. |ITT| image:: icons/index-tip.png
 
 .. |ABOUT| image:: icons/about.png
-             :target: about.html
+             :target: extras/about.html
 
 .. |DOWNLOAD| image:: icons/download.png
-                :target: download.html
+                :target: extras/download.html
 
 .. |HOWTOS| image:: icons/howtos.png
-              :target: howtos.html
+              :target: extras/howtos.html
 
 .. |INSTALL| image:: icons/install.png
-               :target: install.html
+               :target: extras/install.html
 
 .. |TUTORIAL| image:: icons/tutorial.png
-                :target: tutorial.html
+                :target: extras/tutorial.html
 
 
 .. we force the 3 column layout here!
@@ -62,15 +62,15 @@ Image Component Library (ICL) Manual
 
 Contents
 ********
+
 .. toctree::
    :maxdepth: 1
 
-   about
-   modules
-   tutorial
-   howtos
-   download
-   install
+   extras/about
+   extras/tutorial
+   extras/howtos
+   extras/download
+   extras/install
 
 
 Internal
@@ -80,11 +80,20 @@ Internal
    :hidden:
       
    js.rst
+   modules/utils.rst
+   modules/math.rst
+   modules/core.rst
+   modules/filter.rst
+   modules/io.rst
+   modules/qt.rst
+   modules/cv.rst
+   modules/geom.rst
+   modules/markers.rst
 
 .. toctree::
    :maxdepth: 1
 
-   todolist
+   extras/todolist
 
 .. Indices and tables
    ==================
@@ -126,7 +135,7 @@ Internal
   
     var extras = [ 'about', 'download', 'install', 'tutorial', 'howtos' ];
     for(var i=0;i<5;++i){
-      var e = $('.reference.external[href="'+extras[i]+'.html"]');
+      var e = $('.reference.external[href="extras/'+extras[i]+'.html"]');
       e.after(f);
       e.tooltip({
         position: "top center",
@@ -195,11 +204,11 @@ Internal
     $('#module-geom').bind('click',function(e){ location = 'modules/geom.html';  });
     $('#module-markers').bind('click',function(e){ location = 'modules/markers.html';  });
 
-    $('#extras-about').bind('click',function(e){ location = 'about.html';  });
-    $('#extras-download').bind('click',function(e){ location = 'download.html';  });
-    $('#extras-install').bind('click',function(e){ location = 'install.html';  });
-    $('#extras-tutorial').bind('click',function(e){ location = 'tutorial.html';  });
-    $('#extras-howtos').bind('click',function(e){ location = 'howtos.html';  });
+    $('#extras-about').bind('click',function(e){ location = 'extras/about.html';  });
+    $('#extras-download').bind('click',function(e){ location = 'extras/download.html';  });
+    $('#extras-install').bind('click',function(e){ location = 'extras/install.html';  });
+    $('#extras-tutorial').bind('click',function(e){ location = 'extras/tutorial.html';  });
+    $('#extras-howtos').bind('click',function(e){ location = 'extras/howtos.html';  });
 
   });
   </script>
@@ -230,13 +239,14 @@ Internal
     }
 
     div.body{
-      border-radius: 10px;
+      border-top-left-radius: 15px;
+      border-bottom-left-radius: 15px;
+      border: 1px solid rgb(110,110,110);
       box-shadow: 0px 0px 50px rgba(0,0,0,0.7);
     }
 
     div.body h1{
-      border-top-left-radius: 10px;
-      border-top-right-radius: 10px;
+      border-top-left-radius: 15px;
       box-shadow: 0px 2px 0px rgba(0,0,0,0.4);
     }
 

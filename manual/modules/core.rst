@@ -2,10 +2,11 @@
 
 .. _core:
 
-.. image:: /icons/185px/core.png
+################################
+Basic Types for Image Processing
+################################
 
-Basic Types for Image Processing)
-=================================
+.. image:: /icons/185px/core.png
 
 The Core modules provides basic types, classes and functions for image
 processing. In particular it introduces ICL's image classes

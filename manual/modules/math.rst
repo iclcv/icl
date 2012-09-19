@@ -2,11 +2,13 @@
 
 .. _math:
 
+###################################
+Linear Algebra and Machine Learning
+###################################
+
 .. image:: /icons/185px/math.png
 
 
-Linear Algebra and Machine Learning
-===================================
 
 The Math module provides support classes for linear algebra as well as
 some basic machine learning tools. Like the Utils module, Math is

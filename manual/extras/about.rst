@@ -1,5 +1,8 @@
+.. include:: ../js.rst
+
+#########
 About ICL
-=========
+#########
 
 What is ICL
 -----------

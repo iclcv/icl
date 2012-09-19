@@ -1,10 +1,13 @@
 .. _qt:
 
+
+########################################
+GUI Creation and Visualization Framework
+########################################
+
 .. image:: /icons/185px/qt.png
 
 
-GUI Creation and Visualization Framework
-========================================
 
 As it's core, this package provides a wrapper API for the development
 of Qt-based GUI applications. The main class of this package is the

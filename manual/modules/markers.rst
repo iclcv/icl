@@ -1,9 +1,12 @@
 .. _markers:
 
+#########################
+Fiducial Marker Detection
+#########################
+
 .. image:: /icons/185px/markers.png
 
-Fiducial Marker Detection
-=========================
+
 
 The ICLMarkers package provides a general interfaces for most
 different types of fiducial marker detection methods. The essential

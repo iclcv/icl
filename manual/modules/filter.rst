@@ -1,9 +1,10 @@
 .. _filter:
 
-.. image:: /icons/185px/filter.png
-
+###############################
 Unary- and Binary Image Filters
-===============================
+###############################
+
+.. image:: /icons/185px/filter.png
 
 The **ICLFilter** package provides a large variety of set classes for
 image filtering. First of all, we recommend to start with

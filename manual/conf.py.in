@@ -104,11 +104,12 @@ html_theme = 'default'
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-     "footerbgcolor" : "rgb(150,150,150)",
+     #0F67A1
+     "footerbgcolor" : "rgb(210,210,210)",
      "footertextcolor" : "rgb(50,50,50)",
-     "sidebarbgcolor" : "rgb(150,150,150)", 
+     "sidebarbgcolor" : "rgb(210,210,210)", 
      "sidebartextcolor" : "rgb(50,50,50)",
-     "relbarbgcolor" : "rgb(130,130,130)",
+     "relbarbgcolor" : "rgb(170,170,170)",
      "relbartextcolor" : "rgb(50,50,50)",      
      "relbarlinkcolor" : "rgb(50,50,50)",
      "headtextcolor" : "rgb(80,80,80)",
@@ -117,21 +118,6 @@ html_theme_options = {
      "visitedlinkcolor" : "rgb(50,130,235)",
      "linkcolor" : "rgb(50,130,235)",
      "textcolor" : "rgb(60,60,60)"
-
-#     "footerbgcolor" : "rgb(200,200,200)",
-#     "footertextcolor" : "rgb(100,100,100)",
-#     "sidebarbgcolor" : "rgb(220,220,220)", 
-#     "sidebartextcolor" : "rgb(100,100,100)",
-#     "relbarbgcolor" : "rgb(100,100,100)",
-#     "relbartextcolor" : "rgb(200,200,200)",      
-#     "relbarlinkcolor" : "rgb(200,200,200)",
-#     "headtextcolor" : "rgb(100,100,100)",
-#     "codebgcolor" : "rgb(240,240,240)",
-#     "sidebarlinkcolor" : "rgb(50,130,235)",
-#     "visitedlinkcolor" : "rgb(50,130,235)",
-#     "linkcolor" : "rgb(50,130,235)",
-#     "textcolor" : "rgb(50,50,50)"
-
 }
 
 # Add any paths that contain custom themes here, relative to this directory.

@@ -46,10 +46,6 @@ module in the following list depends on all modules above it.
   independent fiducial-marker detection library, which defines 
   a generic interface for all common fiducial marker types.
 
-This is just a very concise overview over the package contents. A more
-detailed overview plus an introduction to the main ideas for each
-package is given :ref:`here <modules>`
-
 Namespaces
 """"""""""
 
