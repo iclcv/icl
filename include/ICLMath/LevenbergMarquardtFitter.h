@@ -272,6 +272,7 @@ namespace icl{
           @param maxIterations maximum number of iterations (usually, LMA will converge fast, or not at all.
           Therefore, the default argument of 10000 iterations somehow assumes, that the minError
           criterion is met much earlier.
+          @param minError 
           @param lambdaMultiplier mulitiplyer used for increasing/decreasing the damping parameter lambda
           @param linSolver linear solver that is used to estimate a local step internally possible values
           are documented in icl::DynMatrix::solve
