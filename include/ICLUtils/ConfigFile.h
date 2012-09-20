@@ -85,7 +85,7 @@ namespace icl{
         \</config\> 
         </pre>
         
-        \subsection RANGES Data Ranges and Value lists
+        \section RANGES Data Ranges and Value lists
         
         In addition to the syntax above, each data-tag can be set up with a range property or a value list. <b>Currently
         data ranges are only used for int- and float- typed data elements</b>. If a range property is defined like this
@@ -107,7 +107,7 @@ namespace icl{
         ranged float- or int-entry restriction.
         
   
-        \subsection OTHERS Other Information
+        \section OTHERS Other Information
   
         When accessing ConfigFile data members, each hierarchy level must be
         separated using the '.' character. So e.g. the entry 'filename' of the example above can 
