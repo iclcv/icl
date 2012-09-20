@@ -207,7 +207,7 @@ namespace icl{
       }
   
       /// hides the component if the given flag is true
-      /** \copydoc icl::GUIComponent::hideIf(bool)const */
+      /** \copydoc icl::qt::GUIComponent::hideIf(bool)const */
       GUIComponent &hideIf(bool flag)  {
         if(flag) m_options.hide = true; return *this;
       }
