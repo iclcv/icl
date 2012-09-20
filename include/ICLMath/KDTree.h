@@ -111,8 +111,7 @@ namespace icl{
       KDTree(std::vector<math::DynMatrix<icl64f>* > &list);
   
       ///Constructor
-      /** Creates a new KDTree object, with data from list.
-       * @param list list of points for  the kd-tree
+      /** Creates a new KDTree object. Default constructor
        */
       KDTree(){}
      
