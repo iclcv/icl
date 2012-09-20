@@ -290,13 +290,14 @@ namespace icl{
       /** @param data data pointer
           @param len number of elements in the data pointer 
           @param style draw style
-          @param stride data stride (in units of sizeof(float))
+          @param name 
+	  @param stride data stride (in units of sizeof(float))
           @param deepCopy if true, the data is copied into the drawer, otherwise, it is just
                  linked. If the data is linked, it must remain valid until the seriesData is
                  removed using LowLevelPlotWidget::clearSeriesData or LowLevelPlotWidget::clear.
-          @param passOwnerShip. This flag is only used if deepCopy is false. If passOwnerShip
-                 is true, the LowLevelPlotWidget will delete the data at deletion or when clear/
-                 clearSeriesData is called.
+          @param passOwnerShip This flag is only used if deepCopy is false. If passOwnerShip
+                 is true, the LowLevelPlotWidget will delete the data at deletion or when LowLevelPlotWidget::clearSeriesData or LowLevelPlotWidget::clear
+                 is called.
           */
       void addSeriesData(const float *data, int len, 
                          const AbstractPlotWidget::PenPtr &style = new AbstractPlotWidget::Pen(QColor(255,0,0)),
@@ -312,22 +313,23 @@ namespace icl{
                           const std::string &name="", int stride=1, bool deepCopy=true, bool passOwnerShip=false);
   
         /// adds a list of symbols 
-      /** @param sym symbol type 
+      /** @param symbol symbol type 
           @param xs x-coordinate pointer (using xStride as stride)
           @param ys y-coordinate pointer (using yStride as stride)
           @param num number of symbols (i.e. xs and ys have xStride * num elements
+          @param name 
           @param r symbol red component
           @param g symbol green component
           @param b symbol blue component
           @param size symbol size (in screen pixels)
-          @param filled defines whether the symbol must be filled (for triangle, circle, rect and diamond only)
+          @param connectingLine draw a line that connects successive symbols 
           @param xStride stride for xs-data (in units of sizeof(float), i.e. if the underlying data is
                  interleaved (x,y)-data, the strides are 2 )
           @param yStride stride for ys-data (in units of sizeof(float))
-          @param connectingLine draw a line that connects successive symbols
+          @param filled defines whether the symbol must be filled (for triangle, circle, rect and diamond only)
           @param deepCopyData if set to true, xs, and ys are copied deeply
                  otherwise, they are just linked (via pointer)
-          @param passOwnerShip if set to true, the plot widget will take the ownership
+          @param passDataOwnerShip if set to true, the plot widget will take the ownership
                  of the given data
           
           @see AbstractPlotWidget::Pen::Pen for allowed symbols 
