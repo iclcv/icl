@@ -202,10 +202,9 @@ namespace icl{
           @param toggledIcon optional button icon (recommeded: use buttons from the
           ICLQt::IconFactory class)
 
-          @param ICLWidgetSlot here you can direcly define a slot from ICLWidget
-          class, the button is attached to. Note, if toggable is true,
-          it has to be a foo(bool)-slot, otherwise you'll need a foo(void)
-          slot.
+	  @param initiallyToggled
+	  @param cb
+	  @param toolTipText
           */
       void addSpecialToggleButton(const std::string &id, 
                                   const core::ImgBase* untoggledIcon = 0, 
