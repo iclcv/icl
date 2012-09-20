@@ -64,7 +64,8 @@ namespace icl{
       ~FiducialDetectorPluginART();
       
       /// loads markers ID's
-      /** @param which this instance of Type icl::Any can be any image filename or filename pattern
+      /** @param add  
+          @param which this instance of Type icl::Any can be any image filename or filename pattern
                        <b>Please note:</b> internally, all loaded patterns are stored
                        by a unique ID. The unique ID is computed from the image filename by
                        removing the file postfix (e.g. .png) and the files folder prefix (e.g. ./patterns/)
@@ -78,6 +79,7 @@ namespace icl{
                        that have to be removed. The special Token '*' is used to remove <b>all</b>
                        loaded markers.\n
                        The parameter list params must contain the real markers 'size' in mm
+         @param params
       */
       virtual void addOrRemoveMarkers(bool add, const utils::Any &which, const utils::ParamList &params);
   
