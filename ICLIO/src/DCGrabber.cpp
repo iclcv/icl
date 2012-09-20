@@ -48,10 +48,9 @@ namespace icl{
     DCGrabberImpl::DCGrabberImpl(const DCDevice &dev, int isoMBits):
       // {{{ open
   
-      m_oDev(dev),m_oDeviceFeatures(dev),m_poGT(0),m_poImage(0),
+      m_oDev(dev),m_oDeviceFeatures(dev),m_poGT(0),m_GrabberThreadMutex(Mutex::mutexTypeRecursive),m_poImage(0),
       m_poImageTmp(0)
     {
-      
       dc::install_signal_handler();
   
       m_oOptions.bayermethod = DC1394_BAYER_METHOD_BILINEAR;
@@ -75,9 +74,8 @@ namespace icl{
     
     const ImgBase *DCGrabberImpl::acquireImage(){
       // {{{ open
-  
       ICLASSERT_RETURN_VAL( !m_oDev.isNull(), 0);
-  
+      utils::Mutex::Locker l(m_GrabberThreadMutex);
       if(!m_poGT){
         restartGrabberThread();
       }
@@ -86,8 +84,8 @@ namespace icl{
       if((int)bayerLayout == 1){
         std::string s = getValue("bayer-layout");
         if(s == "RGGB") bayerLayout = DC1394_COLOR_FILTER_RGGB;
-        else if(s == "GBRG")bayerLayout = DC1394_COLOR_FILTER_GBRG;
-        else if(s == "GRBG")bayerLayout = DC1394_COLOR_FILTER_GRBG;
+        else if(s == "GBRG") bayerLayout = DC1394_COLOR_FILTER_GBRG;
+        else if(s == "GRBG") bayerLayout = DC1394_COLOR_FILTER_GRBG;
         else if(s == "BGGR") bayerLayout = DC1394_COLOR_FILTER_BGGR;
         else if(s == "NONE") bayerLayout = (dc1394color_filter_t)(0);
         else bayerLayout = (dc1394color_filter_t)0;
@@ -98,11 +96,12 @@ namespace icl{
       if(m_oOptions.enable_image_labeling){
         labelImage(m_poImage,m_oDev.getModelID());
       }
+
       return m_poImage;
     }
-  
+
     // }}}
-    
+
     DCGrabberImpl::~DCGrabberImpl(){
       // {{{ open
       if(m_poGT){
@@ -162,6 +161,7 @@ namespace icl{
     // }}}
     
     void DCGrabberImpl::restartGrabberThread(){
+      Mutex::Locker l (m_GrabberThreadMutex);
       if(m_poGT){
         m_poGT->stop();
         //      m_poGT->waitFor();
@@ -389,7 +389,7 @@ namespace icl{
       addProperty("enable-image-labeling", "flag", "",
                   m_oOptions.enable_image_labeling, 0, ""); //TODO: tooltip
       addProperty("iso-speed", "menu",
-                  m_oDev.getCam()->bmode_capable == DC1394_TRUE ? "400,800" : "400",
+                  (dc::is_dc800_capable(m_oDev.getCam())) ? "400,800" : "400", //m_oDev.getCam()->bmode_capable == DC1394_TRUE ? "400,800" : "400",
                   m_oOptions.isoMBits == 400 ? "400" : "800" , 0,
                   "Switches the cameraas iso-speed between 400 and 800.");
       if((int)(m_oDev.getBayerFilterLayout()) == 1){

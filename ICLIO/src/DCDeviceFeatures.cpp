@@ -213,9 +213,8 @@ namespace icl{
       }
     }
 
-    DCDeviceFeaturesImpl::DCDeviceFeaturesImpl(const DCDevice &dev):dev(dev){
+    DCDeviceFeaturesImpl::DCDeviceFeaturesImpl(const DCDevice &dev):dev(dev),ignorePropertyChange(false){
       // {{{ open
-
       dc1394_feature_get_all(this->dev.getCam(),&features);
 
       for(int i=0;i<DC1394_FEATURE_NUM;++i){
@@ -237,48 +236,43 @@ namespace icl{
       addProperty("all manual", "command", "", Any(), 0, "Sets all auto adjustment-supporting options to manual adjustment.");
       for(std::map<std::string,dc1394feature_info_t*>::iterator it = featureMap.begin(); it != featureMap.end(); ++it){
         std::string name = it->first;
-        if(isSpecialInfo(it->second)){
+        dc1394feature_info_t* info = it->second;
+        if(isSpecialInfo(info)){
           // e.g. for trigger related features
-          // v.push_back(name);
           std::string value;
           if(is_trigger_name(name,true)){
             value = get_trigger_feature_value(dev.getCam(),name);
           } else {
-            value = str(it->second->value);
+            value = str(info->value);
           }
           addProperty(name, "menu", getSpecialInfoString(name), value, 0, "");
         }else{
-          dc1394feature_modes_t &modes = it->second->modes;
+          dc1394feature_modes_t &modes = info->modes;
           for(unsigned int i=0;i<modes.num;++i){
             if(modes.modes[i] == DC1394_FEATURE_MODE_MANUAL){
               if(name == "WHITE_BALANCE"){
                 addProperty(name+"_BU", "range",
-                            str(SteppingRange<int>(it->second->min, it->second->max,1)),
-                            it->second->BU_value, 0, "");
+                            str(SteppingRange<int>(info->min, info->max,1)),
+                            info->BU_value, 0, "");
                 addProperty(name+"_RV", "range",
-                            str(SteppingRange<int>(it->second->min, it->second->max,1)),
-                            it->second->RV_value, 0, "");
-              }else{
-                if(name.length() > 5 && name.substr(name.length()-5)=="-mode"){
-                  std::string value;
-                  if(it->second->current_mode == DC1394_FEATURE_MODE_AUTO) {
-                    value = "auto";
-                  } else if (it->second->current_mode == DC1394_FEATURE_MODE_MANUAL){
-                    value = "manual";
-                  } else {
-                    value = "one-push-auto";
-                  }
-                  addProperty(name, "menu", "manual,auto", value, 0, "");
-                } else {
-                  addProperty(name, "range",
-                              str(SteppingRange<int>(it->second->min, it->second->max,1)),
-                              it->second->RV_value, 0, "");
-                }
+                            str(SteppingRange<int>(info->min, info->max,1)),
+                            info->RV_value, 0, "");
+              } else {
+                addProperty(name, "range",
+                            str(SteppingRange<int>(info->min, info->max,1)),
+                            info->value, 0, "");
               }
-            }else if(modes.modes[i] == DC1394_FEATURE_MODE_AUTO){
-              // this is a hack -> we should ensure that mode manual is available too
-              DEBUG_LOG("unsure what to do.")
-              addProperty(it->first+"-mode", "menu", "auto,manual", Any(), 0, "");
+            } else if(modes.modes[i] == DC1394_FEATURE_MODE_AUTO){
+              std::string value;
+              if(info->current_mode == DC1394_FEATURE_MODE_AUTO){
+                value = "auto";
+              } else if (info->current_mode == DC1394_FEATURE_MODE_MANUAL){
+                value = "manual";
+              } else {
+                value = "one-push-auto";
+              }
+              //TODO: one-push-auto could be implememted as well.
+              addProperty(name+"-mode", "menu", "auto,manual", value, 0, "");
             }
           }
         }
@@ -286,17 +280,15 @@ namespace icl{
       Configurable::registerCallback(utils::function(this,&DCDeviceFeaturesImpl::processPropertyChange));
     }
 
-
     void DCDeviceFeaturesImpl::processPropertyChange(const utils::Configurable::Property &prop){
-      //std::vector<std::string> pl = Configurable::getPropertyList();
-      //ICLASSERT_RETURN(find(pl.begin(),pl.end(),prop.name) != pl.end());
+      if(ignorePropertyChange) return;
       if(prop.name == "all manual"){
         std::vector<std::string> l = Configurable::getPropertyList();
         for(unsigned int i=0;i<l.size();++i){
-          dc1394feature_info_t *info = getInfoPtr(l[i]);
-          if(!info) continue;
-          dc1394_feature_set_mode(dev.getCam(),info->id,DC1394_FEATURE_MODE_MANUAL);
-          info->current_mode = DC1394_FEATURE_MODE_MANUAL;
+          if(l.at(i).length() > 5 && l.at(i).substr(l.at(i).length()-5)=="-mode"
+             && l.at(i) != "trigger-mode"){
+            Configurable::setPropertyValue(l.at(i),"manual");
+          }
         }
       }else if(is_trigger_name(prop.name,true)){
         set_trigger_feature_value(dev.getCam(),prop.name,prop.value);
@@ -313,7 +305,6 @@ namespace icl{
           newMode = DC1394_FEATURE_MODE_ONE_PUSH_AUTO;
         }
         dc1394_feature_set_mode(dev.getCam(),info->id,newMode);
-
         info->current_mode = newMode;
       }else if(prop.name == "WHITE_BALANCE_BU"){
         dc1394feature_info_t *info = getInfoPtr("WHITE_BALANCE");
@@ -538,10 +529,10 @@ namespace icl{
     DCDeviceFeatures::DCDeviceFeatures():
       // {{{ open
   
-       ParentSC(0){DEBUG_LOG("called this. configurable ot this will not work")}
+       ParentSC(0){DEBUG_LOG("called this. configurable of this will not work")}
   
     // }}}
-  
+
     void DCDeviceFeatures::show() const{
       // {{{ open
   

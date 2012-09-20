@@ -65,6 +65,7 @@ namespace icl{
       DCDevice dev;
       dc1394featureset_t features;
       std::map<std::string,dc1394feature_info_t*> featureMap;
+      bool ignorePropertyChange;
     };
 
     struct DCDeviceFeaturesImplDelOp{

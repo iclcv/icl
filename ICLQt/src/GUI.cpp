@@ -278,7 +278,7 @@ namespace icl{
       Configurable *conf;
       GUI gui;
       bool deactivateExec;
-      
+      std::string processingProperty;
   
       struct StSt{
         std::string full,half;
@@ -400,7 +400,7 @@ namespace icl{
         }
        }
   
-      ConfigurableGUIWidget(const GUIDefinition &def):GUIWidget(def,1,1,GUIWidget::gridLayout, Size(8,12)),deactivateExec(false){
+      ConfigurableGUIWidget(const GUIDefinition &def):GUIWidget(def,1,1,GUIWidget::gridLayout, Size(8,12)),deactivateExec(false), processingProperty(""){
         conf = Configurable::get(def.param(0));
         if(!conf) throw GUISyntaxErrorException(def.defString(),"No Configurable with ID "+def.param(0)+" registered");
         
@@ -466,15 +466,15 @@ namespace icl{
         
         conf->registerCallback(function(this,&icl::qt::ConfigurableGUIWidget::propertyChanged));
       }
-  
+
       /// Called if a property is changed from somewhere else
       void propertyChanged(const Configurable::Property &p){
-        if(deactivateExec) return;
+        if(p.name == processingProperty) return;
         const std::string &name = p.name;
         const std::string &type = p.type;
         //const std::string &value = p.value;
         
-        deactivateExec = true;
+        //deactivateExec = true;
   
         if(type == "range" || type == "range:slider"){
           SteppingRange<float> r = parse<SteppingRange<float> >(conf->getPropertyInfo(name));
@@ -500,8 +500,7 @@ namespace icl{
         }else if(type == "string"){
           gui["#S#"+name] = conf->getPropertyValue(name).as<std::string>();
         }
-        
-        deactivateExec = false;
+        //deactivateExec = false;
       }
       
       void exec(const std::string &handle){
@@ -509,6 +508,7 @@ namespace icl{
         if(handle.length()<3 || handle[0] != '#') throw ICLException("invalid callback (this should not happen)");
         std::string prop = handle.substr(3);
         deactivateExec = true;
+        processingProperty = prop;
         switch(handle[1]){
           case 'r': 
           case 'R': 

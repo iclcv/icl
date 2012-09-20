@@ -181,7 +181,10 @@ namespace icl{
       DCDeviceFeatures m_oDeviceFeatures;
       
       /// Wrapped DCGrabberThread struct
-      dc::DCGrabberThread *m_poGT;    
+      dc::DCGrabberThread *m_poGT;
+
+      /// Mutex for clean restarting of GrabberThread
+      utils::Mutex m_GrabberThreadMutex;
       
       /// Internally used buffer images
       core::ImgBase *m_poImage, *m_poImageTmp;
