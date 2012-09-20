@@ -99,8 +99,11 @@ namespace icl{
       
        /** 2nd Constructor creates an MatrixSubRectIterator object with Type "Type"
            @param ptData pointer to the corresponding channel data
-           @param iImageWidth width of the corresponding image
-           @param roROI ROI rect for the iterator
+           @param matrixWidth width of the corresponding image
+           @param subRectX ROI upper-left X-coordinate
+           @param subRectY ROI upper-left Y-coordinate
+           @param subRectWidth ROI width
+           @param subRectHeight ROI height 
        */
       inline MatrixSubRectIterator(Type *ptData,int matrixWidth,int subRectX, int subRectY, int subRectWidth, int subRectHeight):
          m_matrixWidth(matrixWidth),m_subRectWidth(subRectWidth),m_subRectHeight(subRectHeight),
@@ -244,7 +247,7 @@ namespace icl{
       /// move the pixel vertically forward
       /** current x value is hold, the current y-value is
           incremented by iLines
-          @param iLines amount of lines to jump over
+          @param numLines amount of lines to jump over
       */
       inline void incRow(int numLines=1) const {
         m_dataCurr += numLines * m_matrixWidth;
@@ -252,13 +255,13 @@ namespace icl{
       }
   
       /// returns the current x position of the iterator (wrt matrix origin);
-      /** @returna current x position*/
+      /** @return current x position*/
       inline int x(){
         return (m_dataCurr-m_dataOrigin) % m_matrixWidth;
       }
   
       /// returns the current y position of the iterator (wrt matrix origin)
-      /** @returna current y position*/
+      /** @return current y position*/
       inline int y(){
         return (m_dataCurr-m_dataOrigin) / m_matrixWidth;
       }       
