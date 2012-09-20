@@ -63,7 +63,7 @@ example
 
 +---------------------------------------------------+----------------------------------------+
 | .. literalinclude:: examples/generic-grabber.cpp  | .. image:: images/generic-grabber.png  |
-|    :linenos:                                      |                                        |
+|    :linenos:                                      |      :alt: shadow                      |
 |    :language: c++                                 |                                        |
 +---------------------------------------------------+----------------------------------------+
 

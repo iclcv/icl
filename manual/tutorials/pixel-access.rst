@@ -152,6 +152,8 @@ so that
 | **source image**                       | **result image**                       |
 |                                        |                                        |
 | .. image:: images/pixel-access-4-a.png | .. image:: images/pixel-access-4-b.png |
+|      :alt: shadow                      |      :alt: shadow                      |
+|                                        |                                        |
 +----------------------------------------+----------------------------------------+
 
 

@@ -13,9 +13,10 @@ detection. Finally, result regions are highlighted graphically.
 
 
 +--------------------------------------------------+--------------------------------------------+
-| .. literalinclude:: examples/mouse-and-vis-2.cpp | **screenshot**                             |
-|   :language: c++                                 |                                            |
-|   :linenos:                                      | .. image:: images/mouse-and-vis.png        |
+| .. literalinclude:: examples/mouse-and-vis-2.cpp | .. image:: images/mouse-and-vis.png        |
+|   :language: c++                                 |      :alt: shadow                          |
+|   :linenos:                                      |                                            |
+|                                                  |                                            |
 |                                                  |                                            |
 |                                                  | The left mouse button can be used to       |
 |                                                  | define a reference color. The slider       |

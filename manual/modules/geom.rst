@@ -184,7 +184,7 @@ GUI-thread, which is necessary due to OpenGL's lack of thread-safety.
 
 +----------------------------------------------+-----------------------------------+  
 | .. literalinclude:: examples/scene-graph.cpp | .. image:: images/scene-graph.png |
-|    :linenos:                                 |                                   |
+|    :linenos:                                 |      :alt: shadow                 |
 |    :language: c++                            |                                   |
 +----------------------------------------------+-----------------------------------+  
 

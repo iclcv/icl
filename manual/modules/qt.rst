@@ -155,7 +155,7 @@ layout a slider using a single line of code.
 
 +----------------------------------------------+-----------------------------------+  
 | .. literalinclude:: examples/qt-slider.cpp   | .. image:: images/qt-slider.png   |
-|    :linenos:                                 |                                   |
+|    :linenos:                                 |      :alt: shadow                 |
 |    :language: c++                            |                                   |
 +----------------------------------------------+-----------------------------------+  
 
@@ -269,7 +269,8 @@ nested sub-containers:
 +---------------------------------------------------+----------------------------------------+  
 | .. literalinclude:: examples/qt-hierarchical.cpp  | .. image:: images/qt-hierarchical.png  |
 |    :linenos:                                      |    :scale: 50%                         |
-|    :language: c++                                 |                                        |
+|    :language: c++                                 |    :alt: shadow                        |
+|                                                   |                                        |
 |                                                   | started with **appname -input create   |
 |                                                   | mandril**                              |  
 +---------------------------------------------------+----------------------------------------+
@@ -297,7 +298,7 @@ expression.
 
 +----------------------------------------------+-----------------------------------+  
 | .. literalinclude:: examples/qt-access.cpp   | .. image:: images/qt-access.png   |
-|    :linenos:                                 |                                   |
+|    :linenos:                                 |      :alt: shadow                 |
 |    :language: c++                            |                                   |
 |    :emphasize-lines: 9,10,17,20              |                                   |
 +----------------------------------------------+-----------------------------------+  
@@ -457,7 +458,7 @@ trigger is always the most trivial action, such as *moving a slider* or
 
 +------------------------------------------------+-------------------------------------+  
 | .. literalinclude:: examples/qt-callbacks.cpp  | .. image:: images/qt-callbacks.png  |
-|    :linenos:                                   |                                     |
+|    :linenos:                                   |      :alt: shadow                   |
 |    :language: c++                              |                                     |
 +------------------------------------------------+-------------------------------------+  
 
@@ -720,7 +721,7 @@ The Image Visualization and Annotation Framework
 | four classes:**                  |                                            |
 |                                  |                                            |
 | * :ref:`qt.glimg`                | .. image:: images/qt-drawing-layers.png    |
-| * :ref:`qt.iclwidget`            |                                            |
+| * :ref:`qt.iclwidget`            |      :alt: shadow                          |
 | * :ref:`qt.icldrawwidget`        |                                            |
 | * :ref:`qt.icldrawwidget3d`      |                                            |
 +----------------------------------+--------------------------------------------+
@@ -870,7 +871,7 @@ Here is an example for a simple *difference image*-application:
 
 +----------------------------------------------+-----------------------------------+  
 | .. literalinclude:: examples/qt-quick.cpp    | .. image:: images/qt-quick.png    |
-|    :linenos:                                 |                                   |
+|    :linenos:                                 |      :alt: shadow                 |
 |    :language: c++                            |                                   |
 +----------------------------------------------+-----------------------------------+  
 
@@ -1024,7 +1025,7 @@ two images and pixel-wise operations with a scalar:
 +--------------------------------------------------+---------------------------------------+  
 | .. literalinclude:: examples/quick-operators.cpp | .. image:: images/quick-operators.png |
 |    :linenos:                                     |    :scale: 60%                        |
-|    :language: c++                                |                                       |
+|    :language: c++                                |    :alt: shadow                       |
 +--------------------------------------------------+---------------------------------------+  
 
 The same is true for the logical operators **&&** and **||**, which

@@ -13,7 +13,7 @@ you environment variables to easily compile and run your example code.
 +--------------------------------------------+----------------------------------+
 | .. literalinclude:: examples/hello-icl.cpp | .. figure:: images/hello-icl.png |
 |    :language: c++                          |    :scale: 60%                   |
-|    :linenos:                               |    :alt: shown image             |
+|    :linenos:                               |    :alt: shadow                  |
 +--------------------------------------------+----------------------------------+   
 
 In order to make this demo work, you have to apply the following steps (linux/mac):

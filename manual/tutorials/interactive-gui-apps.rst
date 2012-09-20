@@ -13,12 +13,11 @@ Let's start with a very simple interactive application. Consider a
 simple online image thresholding application, where a slider is to be
 used to define the current threshold value at run-time.
 
-.. ugly!!
 
 +---------------------------------------------------------+--------------------------------------------+
-| .. literalinclude:: examples/interactive-gui-apps-2.cpp | **screenshot**                             |
-|   :language: c++                                        |                                            |
-|   :linenos:                                             | .. image:: images/interactive-gui-apps.png |
+| .. literalinclude:: examples/interactive-gui-apps-2.cpp | .. image:: images/interactive-gui-apps.png |
+|   :language: c++                                        |      :alt: shadow                          |
+|   :linenos:                                             |                                            |
 +---------------------------------------------------------+--------------------------------------------+
 
 

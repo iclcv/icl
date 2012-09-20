@@ -6,6 +6,7 @@ in an input image stream.
 
 .. image:: images/marker-detection.png
    :scale: 80%
+   :alt: shadow
 
 The main class for this demo is the
 **icl::markers::FiducialDetector**, which implements the **Configurable**

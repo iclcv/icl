@@ -1,12 +1,272 @@
 .. raw:: html
-  
   <script src="../js/jquery.min.js"></script>
   <script src="../js/jquery.tools.min.js"></script>
   <!--script src="../_static/underscore.js"></script-->
-         <!--script src="../_static/doctools.js"></script-->
+   <!--script src="../_static/doctools.js"></script-->
 
+  <div id="sticky"> 
+    <table class="sticky-table">
+    <tr><td><div class="sticky-entry "id="sticky-1"/><a class="sticky-link" href="../modules/utils.html">utils</a></td></tr>
+    <tr><td><div class="sticky-entry "id="sticky-2"/><a class="sticky-link" href="../modules/math.html">math</a></td></tr>
+    <tr><td><div class="sticky-entry "id="sticky-3"/><a class="sticky-link" href="../modules/core.html">core</a></td></tr>
+    <tr><td><div class="sticky-entry "id="sticky-4"/><a class="sticky-link" href="../modules/filter.html">filter</a></td></tr>
+    <tr><td><div class="sticky-entry "id="sticky-5"/><a class="sticky-link"href="../modules/io.html">io</a></td></tr>
+    <tr><td><div class="sticky-entry "id="sticky-6"/><a class="sticky-link"href="../modules/qt.html">qt</a></td></tr>
+    <tr><td><div class="sticky-entry "id="sticky-7"/><a class="sticky-link"href="../modules/cv.html">cv</a></td></tr>
+    <tr><td><div class="sticky-entry "id="sticky-8"/><a class="sticky-link"href="../modules/geom.html">geom</a></td></tr>
+    <tr><td><div class="sticky-entry "id="sticky-9"/><a class="sticky-link"href="../modules/markers.html">marker</a></td></tr>
+    </tr>
+    </table>
+  </div>
+  <style type="text/css">
+    .sticky-table{
+       float: right;
+    }
 
+    a.sticky-link{
+       color: inherit;
+       font-size: 12px;
+    }
+
+    a.sticky-link:hover{
+       text-decoration: none;
+       color: inherit;
+    }
+
+    
+    .sticky-entry{
+       width: 10px;
+       height: 10px;
+       float: right;
+       border-left: 1px solid rgb(200,200,200);
+       border-top: 1px solid rgb(200,200,200);
+       border-right: 1px solid rgb(100,100,100);
+       border-bottom: 1px solid rgb(100,100,100);
+
+       border-radius: 4px;
+       box-shadow: 2px 2px 5px rgba(0,0,0,0.6);
+       border: 1px solid blue;
+       background-color: white;
+       color: transparent;
+    }
+    .sticky-entry:hover{
+       width: 40px;
+       color: rgb(100,100,100);
+    }
+    .sticky-entry:active{
+       box-shadow: 0px 0px 0px transparent;
+       border-left: 1px solid rgb(70,70,70);
+       border-top: 1px solid rgb(70,70,70);
+       border-right: 1px solid white;
+       border-bottom: 1px solid white;
+    }
+
+    #sticky-1{ border: 2px solid rgb(255,0,255); } 
+    #sticky-2{ border: 2px solid rgb(255,0,0); } 
+    #sticky-3{ border: 2px solid rgb(255,128,0); } 
+    #sticky-4{ border: 2px solid rgb(255,255,0); } 
+    #sticky-5{ border: 2px solid rgb(168,255,0); } 
+    #sticky-6{ border: 2px solid rgb(0,255,0); } 
+    #sticky-7{ border: 2px solid rgb(0,200,255); } 
+    #sticky-8{ border: 2px solid rgb(0,50,255); } 
+    #sticky-9{ border: 2px solid rgb(128,0,255); } 
+
+    #sticky{
+      line-height: 8px;
+      margin-left:auto;
+      position:absolute;
+      width:18px;
+      height:167px;
+      right:0px;
+      top:50px;
+      padding:2px;
+      padding-right:0px;
+      padding-left:1px;
+      background: white;
+      border: 1px solid rgb(150,150,150);
+      border-top-left-radius: 3px;
+      border-bottom-left-radius: 3px;
+      box-shadow: 0px 0px 15px rgba(0,0,0,0.5);
+    }
+
+  </style>
+  
+  <script type="text/javascript">
+
+  $('#sticky-1').bind('click',function(e){ location = '../modules/utils.html';  });
+  $('#sticky-2').bind('click',function(e){ location = '../modules/math.html';  });
+  $('#sticky-3').bind('click',function(e){ location = '../modules/core.html';  });
+  $('#sticky-4').bind('click',function(e){ location = '../modules/filter.html';  });
+  $('#sticky-5').bind('click',function(e){ location = '../modules/io.html';  });
+  $('#sticky-6').bind('click',function(e){ location = '../modules/qt.html';  });
+  $('#sticky-7').bind('click',function(e){ location = '../modules/cv.html';  });
+  $('#sticky-8').bind('click',function(e){ location = '../modules/geom.html';  });
+  $('#sticky-9').bind('click',function(e){ location = '../modules/markers.html';  });
+
+  /* Script by: www.jtricks.com
+   * Version: 20071127
+   * Latest version:
+   * www.jtricks.com/javascript/navigation/fixed_menu.html
+   */
+  fixedMenuId = 'sticky';
+  
+  var fixedMenu = {
+      hasInner: typeof(window.innerWidth) == 'number',
+      hasElement: document.documentElement != null
+         && document.documentElement.clientWidth,
+  
+      menu: document.getElementById
+          ? document.getElementById(fixedMenuId)
+          : document.all
+            ? document.all[fixedMenuId]
+            : document.layers[fixedMenuId]
+  };
+  
+  fixedMenu.computeShifts = function(){
+      fixedMenu.shiftX = fixedMenu.hasInner
+          ? pageXOffset
+          : fixedMenu.hasElement
+            ? document.documentElement.scrollLeft
+            : document.body.scrollLeft;
+      if (fixedMenu.targetLeft > 0){
+          fixedMenu.shiftX += fixedMenu.targetLeft;
+      }else{
+          fixedMenu.shiftX += 
+              (fixedMenu.hasElement
+                ? document.documentElement.clientWidth
+                : fixedMenu.hasInner
+                  ? window.innerWidth - 20
+                  : document.body.clientWidth)
+              - fixedMenu.targetRight
+              - fixedMenu.menu.offsetWidth;
+      }
+  
+      fixedMenu.shiftY = fixedMenu.hasInner
+          ? pageYOffset
+          : fixedMenu.hasElement
+            ? document.documentElement.scrollTop
+            : document.body.scrollTop;
+      if (fixedMenu.targetTop > 0){
+          fixedMenu.shiftY += fixedMenu.targetTop;
+      }else{
+          fixedMenu.shiftY += 
+              (fixedMenu.hasElement
+              ? document.documentElement.clientHeight
+              : fixedMenu.hasInner
+                ? window.innerHeight - 20
+                : document.body.clientHeight)
+              - fixedMenu.targetBottom
+              - fixedMenu.menu.offsetHeight;
+      }
+  };
+  
+  fixedMenu.moveMenu = function(){
+      fixedMenu.computeShifts();
+  
+      if (fixedMenu.currentX != fixedMenu.shiftX
+          || fixedMenu.currentY != fixedMenu.shiftY){
+          fixedMenu.currentX = fixedMenu.shiftX;
+          fixedMenu.currentY = fixedMenu.shiftY;
+  
+          if (document.layers){
+              fixedMenu.menu.left = fixedMenu.currentX;
+              fixedMenu.menu.top = fixedMenu.currentY;
+          }else{
+              fixedMenu.menu.style.left = fixedMenu.currentX + 'px';
+              fixedMenu.menu.style.top = fixedMenu.currentY + 'px';
+          }
+      }
+  
+      fixedMenu.menu.style.right = '';
+      fixedMenu.menu.style.bottom = '';
+  };
+  
+  fixedMenu.floatMenu = function(){
+      fixedMenu.moveMenu();
+      setTimeout('fixedMenu.floatMenu()', 20);
+  };
+  
+  // addEvent designed by Aaron Moore
+  fixedMenu.addEvent = function(element, listener, handler){
+      if(typeof element[listener] != 'function' || 
+         typeof element[listener + '_num'] == 'undefined'){
+          element[listener + '_num'] = 0;
+          if (typeof element[listener] == 'function'){
+              element[listener + 0] = element[listener];
+              element[listener + '_num']++;
+          }
+          element[listener] = function(e){
+              var r = true;
+              e = (e) ? e : window.event;
+              for(var i = 0; i < element[listener + '_num']; i++)
+                  if(element[listener + i](e) === false)
+                      r = false;
+              return r;
+          }
+      }
+  
+      //if handler is not already stored, assign it
+      for(var i = 0; i < element[listener + '_num']; i++)
+          if(element[listener + i] == handler)
+              return;
+      element[listener + element[listener + '_num']] = handler;
+      element[listener + '_num']++;
+  };
+  
+  fixedMenu.supportsFixed = function(){
+      var testDiv = document.createElement("div");
+      testDiv.id = "testingPositionFixed";
+      testDiv.style.position = "fixed";
+      testDiv.style.top = "0px";
+      testDiv.style.right = "0px";
+      document.body.appendChild(testDiv);
+      var offset = 1;
+      if (typeof testDiv.offsetTop == "number"
+          && testDiv.offsetTop != null 
+          && testDiv.offsetTop != "undefined")
+      {
+          offset = parseInt(testDiv.offsetTop);
+      }
+      if (offset == 0)
+      {
+          return true;
+      }
+  
+      return false;
+  };
+  
+  fixedMenu.init = function(){
+      if (fixedMenu.supportsFixed())
+          fixedMenu.menu.style.position = "fixed";
+      else
+      {
+          var ob = 
+              document.layers 
+              ? fixedMenu.menu 
+              : fixedMenu.menu.style;
+  
+          fixedMenu.targetLeft = parseInt(ob.left);
+          fixedMenu.targetTop = parseInt(ob.top);
+          fixedMenu.targetRight = parseInt(ob.right);
+          fixedMenu.targetBottom = parseInt(ob.bottom);
+  
+          if (document.layers)
+          {
+              menu.left = 0;
+              menu.top = 0;
+          }
+          fixedMenu.addEvent(window, 'onscroll', fixedMenu.moveMenu);
+          fixedMenu.floatMenu();
+      }
+  };
+  
+  fixedMenu.addEvent(window, 'onload', fixedMenu.init);
+  
+  </script>
+  <script src="../js/jquery.min.js"></script>
+  <script src="../js/jquery.tools.min.js"></script>
   <script>
+
   $(document).ready(function() {
  
     console.log('Im being executed!');
@@ -133,21 +393,19 @@
       effect: 'fade',
       offset: [7,33]
     });
+
   });
   </script>
   <style type="text/css">
+
     .tooltip {
-      /*border: 1px solid #999; */
-      /*border-radius:5px; */
       display:none;
-      /*background: rgb(255,255,255); /*transparent url(images/white_arrow.png);*/
       background: transparent url(../_images/tooltip.png);
       font-size:13px;
       height:80px;
       width:131px;
       padding:10px;
       color: #555;
-      /*box-shadow: 4px 4px 12px rgba(0,0,0,0.5); */
       line-height: 20px;
     }
     a.reference.external {
@@ -196,5 +454,9 @@
     th {
        background-color: #0F67A1;
        color: rgb(220,220,220);
+    }
+
+    img[alt="shadow"]{
+       box-shadow: 5px 5px 12px rgba(0,0,0,0.3);
     }
   </style>

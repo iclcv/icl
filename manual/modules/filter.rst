@@ -120,7 +120,7 @@ destination image at the given address
 +-------------------------------------------+----------------------------------+
 |.. literalinclude:: examples/filters-1.cpp | .. image:: images/filters-1.png  |
 |   :language: c++                          |     :scale: 60%                  |
-|   :linenos:                               |                                  |
+|   :linenos:                               |     :alt: shadow                 |
 |                                           |                                  |
 +-------------------------------------------+----------------------------------+
 
@@ -138,7 +138,7 @@ example for a custom filter.
 +-------------------------------------------+----------------------------------+
 |.. literalinclude:: examples/filters-2.cpp | .. image:: images/filters-2.png  |
 |   :language: c++                          |   :scale: 60%                    |
-|   :linenos:                               |                                  |
+|   :linenos:                               |   :alt: shadow                   |
 |                                           |                                  |
 +-------------------------------------------+----------------------------------+
 

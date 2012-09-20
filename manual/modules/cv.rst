@@ -83,6 +83,7 @@ region features.
 
 
 .. image:: images/region-inspector.png
+     :alt: shadow
 
 .. _cv.image-region:
 

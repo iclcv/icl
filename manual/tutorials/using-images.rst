@@ -23,12 +23,11 @@ them.
    :language: c++
    :linenos:      
 
-.. figure:: images/using-images.png
+.. image:: images/using-images.png
    :scale: 80%
-   :alt: resulting image
-   
-   Result Image
+   :alt: shadow
 
-.. note:: 
+.. note::
+ 
    the image is still in RGB colorspace. The value domain of
    each channel is restricted to {0,255}.
