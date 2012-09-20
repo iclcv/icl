@@ -117,8 +117,11 @@ namespace icl{
           @param paInitString if not equal to "", pa_init is called with this string
           @param init initialization function pointer. Which is just called once when
                       exec() is called
-          @param run threaded function which is called in a loop before the QApplication is
-                     started using QApplication::exec();
+          @param run first threaded function which is called in a loop before the QApplication is started using QApplication::exec();
+          @param run2 second threaded function which is called in a loop before the QApplication is started using QApplication::exec();
+          @param run3 third threaded function which is called in a loop before the QApplication is started using QApplication::exec();
+          @param run4 fourth threaded function which is called in a loop before the QApplication is started using QApplication::exec();
+          @param run5 fifth threaded function which is called in a loop before the QApplication is started using QApplication::exec();
   
           */
       ICLApplication(int argc, char **argv, const std::string &paInitString="", 
