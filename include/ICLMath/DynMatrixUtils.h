@@ -468,12 +468,13 @@ namespace icl{
   
     /// SVD function - decomposes A into USV' (only icl32f and icl64f)
     /** Internaly, this function will always use double values. Other types are converted internally.
+        @param A to decomposed matrix
         @param U is filled column-wise with the eigenvectors of AA'
         @param S is filled with the singular values of A (s is ColumnVector and not diagonal matrix)
         @param V is filled column-wise with the eigenvectors of A'A (in V, V is stored not V')
     */
     template<class T>
-    void svd_dyn(const DynMatrix<T> &A, DynMatrix<T> &U, DynMatrix<T> &s, DynMatrix<T> &V) throw (utils::ICLException);
+    void svd_dyn(const DynMatrix<T> &A, DynMatrix<T> &U, DynMatrix<T> &S, DynMatrix<T> &V) throw (utils::ICLException);
     
   
   #if 0  
