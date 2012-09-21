@@ -102,7 +102,7 @@ namespace icl {
           @param params comma separated device depend parameter list: e.g.
                                     "v4l=0,file=images//image*.ppm,dc=0" with self-explaining syntax\n
                                     Additionally, each token a=b can be extended by device property that are directly
-                                    set after device instantiation. E.g. demo=0@size=QVGA@blob-red=128, instantiates
+                                    set after device instantiation. E.g. demo=0\@size=QVGA\@blob-red=128, instantiates
                                     a demo-grabber, where the two additionally given properties (size and blob-red) 
                                     are set immediately after grabber instantiation. By these means particularly a 
                                     grabber's core::format can be set in the grabber instantiation call. Furthermore, three
@@ -154,7 +154,7 @@ namespace icl {
                                     - kinecti=device-index (int) 
                                     - rsb=[comma-sep. transport-list=spread]:scope)
   
-          @param notifiyErrors if set to false, no exception is thrown if no suitable device was found
+          @param notifyErrors if set to false, no exception is thrown if no suitable device was found
       **/
       void init(const std::string &devicePriorityList,
                 const std::string &params,
