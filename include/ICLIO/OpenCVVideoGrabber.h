@@ -103,7 +103,7 @@ namespace icl{
       virtual int isVolatile(const std::string &propertyName);
       
       /// Constructor creates a new OpenCVVideoGrabber instance
-      /** @param filename name of file to use */
+      /** @param fileName name of file to use */
       OpenCVVideoGrabber(const std::string &fileName) throw (utils::FileNotFoundException);
       
       /// Destructor
