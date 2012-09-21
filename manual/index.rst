@@ -47,6 +47,12 @@ Image Component Library (ICL) Manual
 .. |TUTORIAL| image:: icons/tutorial.png
                 :target: extras/tutorial.html
 
+.. |H2| image:: icons/h2.png
+
+.. |H3| image:: icons/h3.png
+
+.. |H4| image:: icons/h4.png
+
 
 .. we force the 3 column layout here!
 
@@ -59,6 +65,7 @@ Image Component Library (ICL) Manual
 **Getting Started**
 
   | |ABOUT|   |DOWNLOAD|   |INSTALL|   |TUTORIAL|   |HOWTOS|
+
 
 Contents
 ********
@@ -260,6 +267,66 @@ Internal
 
     div.sphinxsidebar{
       font-size: 80%;
+    }
+    div.body h2, div.body h3, div.body h4{
+      margin-bottom: 0px;
+      background-repeat: no-repeat;
+      margin-left: -41px;
+      box-shadow: none;
+      border: none;
+      opacity: 1;
+      color: rgb(230,230,230);
+      height: 44px;
+      padding-top: 4px;
+    }
+
+    div.body h2{
+      padding-top: 7px;
+      background: transparent url(_images/h2.png);
+      height: 52px;
+    }
+
+    div.body h3{
+      background: transparent url(_images/h3.png);
+      color: rgb(230,230,230);
+    }
+
+    div.body h4{
+      padding-top: 5px;
+      height: 42px;
+      background: transparent url(_images/h4.png);
+      color: rgb(60,60,60);
+    }
+
+    div.sphinxsidebar{
+      font-size: 80%;
+    }
+
+    table.docutils td, table.docutils th{
+      border: 0px;
+    }
+    th {
+       background-color: #0F67A1;
+       color: rgb(220,220,220);
+    }
+
+    img[alt="shadow"]{
+       box-shadow: 5px 5px 12px rgba(0,0,0,0.3);
+    }
+
+    a.headerlink {
+       color: rgb(230,230,230);
+    }
+    a.headerlink:hover{
+       color: white;
+       background: transparent;
+    }
+
+    h4:hover > a.headerlink {
+       color: rgb(60,60,60);
+    }
+    h4 > a.headerlink {
+       color: rgb(90,90,90);
     }
   
     </style>

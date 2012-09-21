@@ -449,26 +449,25 @@
       border: none;
       opacity: 1;
       color: rgb(230,230,230);
-      height: 45px;
+      height: 44px;
       padding-top: 4px;
     }
 
     div.body h2{
       padding-top: 7px;
-      /*background-image: url(/home/celbrech/Desktop/test8.png); */
-      background: transparent url(/home/celbrech/Desktop/test8.png);
-      height: 53px;
+      background: transparent url(../_images/h2.png);
+      height: 52px;
     }
 
     div.body h3{
-      background: transparent url(/home/celbrech/Desktop/test9.png);
+      background: transparent url(../_images/h3.png);
       color: rgb(230,230,230);
     }
 
     div.body h4{
       padding-top: 5px;
       height: 42px;
-      background: transparent url(/home/celbrech/Desktop/test10.png);
+      background: transparent url(../_images/h4.png);
       color: rgb(60,60,60);
     }
 
