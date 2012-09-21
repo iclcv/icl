@@ -55,18 +55,18 @@ Image Component Library (ICL) Manual
 
 .. |H4| image:: icons/h4.png
 
+.. |S1| image:: icons/stripes1.png
+
+.. |S2| image:: icons/stripes2.png
+
 
 .. we force the 3 column layout here!
 
-**Modules**
+| |A| |B| |C|
+| |D| |E| |F|
+| |G| |H| |I|
 
-  | |A| |B| |C|
-  | |D| |E| |F|
-  | |G| |H| |I|
-
-**Getting Started**
-
-  | |ABOUT|   |DOWNLOAD|   |INSTALL|   |TUTORIAL|   |HOWTOS|
+| |ABOUT|   |DOWNLOAD|   |INSTALL|   |TUTORIAL|   |HOWTOS|
 
 
 Contents
@@ -338,5 +338,12 @@ Internal
     h4 > a.headerlink {
        color: rgb(90,90,90);
     }
-  
+    div.related ul{
+       background: rgba(60, 60, 60, 0);
+       background-image: url(_images/stripes2.png);
+       background-position-x: 2px;
+    }
+    div.documentwrapper, div.footer {
+       background-image: url(_images/stripes1.png);
+    }
     </style>
