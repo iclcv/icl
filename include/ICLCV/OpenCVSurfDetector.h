@@ -64,7 +64,7 @@ namespace icl{
       ///internal match function
       /** Finds matches between surf of object image and passed
           surf of given image.
-          @param ipts of surfpoints*/
+          @param ipts vector of surfpoints*/
       void match(std::vector<CvSURFPoint> *ipts);
   
       ///computes surf
@@ -168,7 +168,7 @@ namespace icl{
       ///sets new newObjImage as new reference image and computes matches between passed reference image and passed image.
       /** If one of the passed images null an exception is thrown.
           First point of the pair is the point for the image, second for the reference image.
-          @param currentImage
+          @param currentImage the current image
           @param newObjImage the new reference image
           @return matches as std::pair in vector*/
       const std::vector<std::pair<CvSURFPoint, CvSURFPoint> > &match(const core::ImgBase *currentImage,
