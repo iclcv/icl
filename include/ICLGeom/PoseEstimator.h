@@ -64,7 +64,7 @@ namespace icl{
       /// The MapMode determines, how the point-to-point transformation is computed
       enum MapMode {
         Translation,  //!< returns a transformation for the mean translation between the point-sets
-        RigidBody,    //!< \textbf{most common} RigidBody mapping (using eigenvector analysis and quaternion representation)
+        RigidBody,    //!< <B>most common</B> RigidBody mapping (using eigenvector analysis and quaternion representation)
         Similarity,   //!< as RigidBody, but with additional scaling
         Affine        //!< affine mapping: (XX^-1 * XY)^T (here, at least 4 points are needed)
       }; 
