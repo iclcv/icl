@@ -62,9 +62,6 @@ namespace icl {
           /// acquires images and writes them into an internal queue
           void run();
           /// reinitializes buffer
-          /**
-          * @param bufferSize The size a buffer needs to hold a single image.
-          */
           void resetBuffer();
           /// getter for the most current image
           /**
