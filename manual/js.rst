@@ -15,6 +15,7 @@
     <tr><td><div class="sticky-entry "id="sticky-7"/><a class="sticky-link"href="../modules/cv.html">cv</a></td></tr>
     <tr><td><div class="sticky-entry "id="sticky-8"/><a class="sticky-link"href="../modules/geom.html">geom</a></td></tr>
     <tr><td><div class="sticky-entry "id="sticky-9"/><a class="sticky-link"href="../modules/markers.html">marker</a></td></tr>
+    <tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../extras/tutorial.html">tutorial</a></td></tr>
     </tr>
     </table>
   </div>
@@ -70,13 +71,14 @@
     #sticky-7{ border: 2px solid rgb(0,200,255); } 
     #sticky-8{ border: 2px solid rgb(0,50,255); } 
     #sticky-9{ border: 2px solid rgb(128,0,255); } 
+    #sticky-10{ border: 2px solid rgb(100,100,100); }
 
     #sticky{
       line-height: 8px;
       margin-left:auto;
       position:absolute;
       width:18px;
-      height:167px;
+      height:182px;
       right:0px;
       top:50px;
       padding:2px;
@@ -102,6 +104,7 @@
   $('#sticky-7').bind('click',function(e){ location = '../modules/cv.html';  });
   $('#sticky-8').bind('click',function(e){ location = '../modules/geom.html';  });
   $('#sticky-9').bind('click',function(e){ location = '../modules/markers.html';  });
+  $('#sticky-10').bind('click',function(e){ location = '../extras/tutorial.html';  });
 
   /* Script by: www.jtricks.com
    * Version: 20071127
@@ -437,13 +440,38 @@
       box-shadow: 0px 2px 0px rgba(0,0,0,0.4);
     }
 
+
+    div.body h2, div.body h3, div.body h4{
+      margin-bottom: 0px;
+      background-repeat: no-repeat;
+      margin-left: -41px;
+      box-shadow: none;
+      border: none;
+      opacity: 1;
+      color: rgb(230,230,230);
+      height: 45px;
+      padding-top: 4px;
+    }
+
     div.body h2{
-      box-shadow: 0px 2px 0px rgba(0,0,0,0.4);
+      padding-top: 7px;
+      /*background-image: url(/home/celbrech/Desktop/test8.png); */
+      background: transparent url(/home/celbrech/Desktop/test8.png);
+      height: 53px;
     }
 
     div.body h3{
-      box-shadow: 0px 2px 0px rgba(0,0,0,0.4);
+      background: transparent url(/home/celbrech/Desktop/test9.png);
+      color: rgb(230,230,230);
     }
+
+    div.body h4{
+      padding-top: 5px;
+      height: 42px;
+      background: transparent url(/home/celbrech/Desktop/test10.png);
+      color: rgb(60,60,60);
+    }
+
     div.sphinxsidebar{
       font-size: 80%;
     }
@@ -459,4 +487,20 @@
     img[alt="shadow"]{
        box-shadow: 5px 5px 12px rgba(0,0,0,0.3);
     }
+
+    a.headerlink {
+       color: rgb(230,230,230);
+    }
+    a.headerlink:hover{
+       color: white;
+       background: transparent;
+    }
+
+    h4:hover > a.headerlink {
+       color: rgb(60,60,60);
+    }
+    h4 > a.headerlink {
+       color: rgb(90,90,90);
+    }
+
   </style>

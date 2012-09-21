@@ -261,4 +261,5 @@ Internal
     div.sphinxsidebar{
       font-size: 80%;
     }
+  
     </style>
