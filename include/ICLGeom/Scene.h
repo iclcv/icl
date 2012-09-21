@@ -148,7 +148,7 @@ namespace icl{
       Scene &operator=(const Scene &scene);
 
       /// Adds a new Camera to the scene
-      /** @param camera which is copied into the scene
+      /** @param cam which is copied into the scene
           @param visSize this parameter determines the size of the
           3D visualized cameras in the scene. If visSize is
           1.0, The camera coordinate system is visualized with size
