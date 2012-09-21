@@ -118,6 +118,7 @@ namespace icl {
       
       /// Applies a single step of the mean shift algorithm
       /** 
+          @param image image with which the mean shift step will be performed
           @param pos start original position
           @return new center	
           */
@@ -127,21 +128,22 @@ namespace icl {
   
       /// Generates an Epanechnikov Kernel
       /** 
-          @param a kernel bandwidth
+          @param bandwidth kernel bandwidth
           */
       static core::Img32f generateEpanechnikov(int bandwidth);
   
       /// Generates a Gauss Kernel
       /** Generates the internal m_opKernelImage using the Gauss profile
-          @param a i dont know
+          @param bandwidth kernel bandwidth
           @param stdDev profiles the standard deviation.
           */
       static core::Img32f generateGauss(int bandwidth,float stdDev);
   
       /// Constructor with only the most needed parameters
       /** The basic constructor with only the most needed parameters.
+          @param type The desired kernel type
           @param bandwidth The desired kernel bandwidth
-          @param kernelType The desired kernel type
+          @param stdDev profiles the standard deviation.
           */
       MeanShiftTracker(kernelType type, int bandwidth, float stdDev=1);
   
@@ -149,6 +151,7 @@ namespace icl {
       /// sets new kernel type (with params)
       /** @param type kernel type
           @param bandwidth new bandwidth
+          @param stdDev profiles the standard deviation.
           */
       void setKernel(kernelType type, int bandwidth, float stdDev=1);
   
@@ -162,7 +165,7 @@ namespace icl {
       int getBandwidth() const { return m_bandwidth; }
       
       /// This function returns a new center after the MeanShift algorithm is applied
-      /** @param weightImage gray level input image
+      /** @param weigthImage gray level input image
           @param initialPoint starting point for meanshift loop
           @param maxCycles A treshold for the maximum iteration coutn if (-1, 10000 is used as upper limit)
           @param convergenceCriterion position difference (in pixels) of consecutive steps that is used as threshold
