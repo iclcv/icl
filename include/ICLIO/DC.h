@@ -158,7 +158,8 @@ namespace icl{
       bool is_dc800_capable(dc1394camera_t *cam);
       
       /// sets iso transmission speed for the wrapped dc1394 context
-      /** @param mbits mbits value (usefull might be 800 whereby 400 is default)
+      /** @param cam The dc camera
+          @param mbits mbits value (usefull might be 800 whereby 400 is default)
                        values that do not make sense are ignored.
                        The current libdc library documentation lists the following
                        available speed values: 100, 200, 400, 800, 1600, 3200. But 
