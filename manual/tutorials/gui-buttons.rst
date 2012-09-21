@@ -2,9 +2,9 @@
 
 .. _tut.buttons:
 
-#################
-Using GUI Buttons
-#################
+#####################################
+Buttons: Callbacks vs. wasTriggered()
+#####################################
 
 
 The :icl:`Button` component behaves slightly different from most of
@@ -42,7 +42,7 @@ three buttons:
 
 1. use next filter
 2. save current result image
-3. show an extra property GUI
+3. show an extra GUI for the input image
 
 For the the buttons 1. and 2. we will use the :icl:`ButtonHandle`
 and its :icl:`wasTriggered<ButtonHandle::wasTriggered>`. Since button 3.

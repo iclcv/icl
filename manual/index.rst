@@ -47,6 +47,8 @@ Image Component Library (ICL) Manual
 .. |TUTORIAL| image:: icons/tutorial.png
                 :target: extras/tutorial.html
 
+.. |H1| image:: icons/h1.png
+
 .. |H2| image:: icons/h2.png
 
 .. |H3| image:: icons/h3.png
@@ -268,7 +270,7 @@ Internal
     div.sphinxsidebar{
       font-size: 80%;
     }
-    div.body h2, div.body h3, div.body h4{
+    div.body h1, div.body h2, div.body h3, div.body h4{
       margin-bottom: 0px;
       background-repeat: no-repeat;
       margin-left: -41px;
@@ -280,6 +282,15 @@ Internal
       padding-top: 4px;
     }
 
+    div.body h1{
+      padding-top: 7px;
+      background: transparent url(_images/h1.png);
+      margin-top: 8px;
+      border-radius: 0px;
+      height: 57px;
+      padding-top: 3px;
+    }
+
     div.body h2{
       padding-top: 7px;
       background: transparent url(_images/h2.png);
@@ -288,7 +299,6 @@ Internal
 
     div.body h3{
       background: transparent url(_images/h3.png);
-      color: rgb(230,230,230);
     }
 
     div.body h4{

@@ -441,7 +441,7 @@
     }
 
 
-    div.body h2, div.body h3, div.body h4{
+    div.body h1, div.body h2, div.body h3, div.body h4{
       margin-bottom: 0px;
       background-repeat: no-repeat;
       margin-left: -41px;
@@ -453,6 +453,15 @@
       padding-top: 4px;
     }
 
+    div.body h1{
+      padding-top: 7px;
+      background: transparent url(../_images/h1.png);
+      margin-top: 8px;
+      border-radius: 0px;
+      height: 57px;
+      padding-top: 3px;
+    }
+
     div.body h2{
       padding-top: 7px;
       background: transparent url(../_images/h2.png);
@@ -461,7 +470,6 @@
 
     div.body h3{
       background: transparent url(../_images/h3.png);
-      color: rgb(230,230,230);
     }
 
     div.body h4{
