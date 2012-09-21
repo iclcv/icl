@@ -19,13 +19,13 @@ to use the image classes in the next steps of the tutorial. As soon as
 we need more advanced features of the image class, we will introduce
 them.
 
-.. literalinclude:: examples/using-images.cpp
-   :language: c++
-   :linenos:      
++-------------------------------------------------+----------------------------------------+
+|                                                 |                                        |
+| .. literalinclude:: examples/using-images.cpp   | .. image:: images/using-images.png     |
+|    :language: c++                               |      :scale: 80%                       |
+|    :linenos:                                    |      :alt: shadow                      |
++-------------------------------------------------+----------------------------------------+
 
-.. image:: images/using-images.png
-   :scale: 80%
-   :alt: shadow
 
 .. note::
  
