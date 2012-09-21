@@ -51,9 +51,8 @@ namespace icl {
           /// Constructor sets all internal fields and allocates memory
           /**
           * @param grabber The IStreamGrabber providing the images.
-          * @param camMutex The Camera mutex
-          * @param bufferCount The number of buffers the Grabber should queue.
-          * @param bufferSize The size a buffer needs to hold a single image.
+          * @param converter 
+          * @param options 
           */
           PylonGrabberThread(Pylon::IStreamGrabber* grabber,
                                   PylonColorConverter* converter,
