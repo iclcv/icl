@@ -64,7 +64,7 @@ namespace icl{
       ///internal match function
       /** Finds matches between surf of object image and passed
           surf of given image.
-          @param vector of surfpoints*/
+          @param ipts of surfpoints*/
       void match(std::vector<CvSURFPoint> *ipts);
   
       ///computes surf
@@ -119,7 +119,7 @@ namespace icl{
       void setExtended(int extended);
   
       ///sets the threshold
-      /** @param thresh the threshold*/
+      /** @param threshold the threshold*/
       void setThreshold(double threshold);
   
       //getter
@@ -143,7 +143,7 @@ namespace icl{
       /** Sets desired parameters and computes surf, but only if the
           parameters have really changed and if a reference image is
           available.
-          @param thresh
+          @param threshold
           @param extended
           @param octaves
           @param octavelayer*/
@@ -168,7 +168,7 @@ namespace icl{
       ///sets new newObjImage as new reference image and computes matches between passed reference image and passed image.
       /** If one of the passed images null an exception is thrown.
           First point of the pair is the point for the image, second for the reference image.
-          @param image
+          @param currentImage
           @param newObjImage the new reference image
           @return matches as std::pair in vector*/
       const std::vector<std::pair<CvSURFPoint, CvSURFPoint> > &match(const core::ImgBase *currentImage,
