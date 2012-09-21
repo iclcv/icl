@@ -88,25 +88,25 @@ namespace icl{
       bool supportsProperty(const std::string &name) const;
   
       /// Sets a property to a new value
-      /** call getPropertyList() to see which properties are supported 
-          @copydoc icl::Grabber::setProperty(const std::string&, const std::string&)
+      /** call \code getPropertyList() \endcode to see which properties are supported 
+          @copydoc icl::io::Grabber::setProperty(const std::string&, const std::string&)
       **/
-      void setProperty(const std::string &name, const std::string &value);
+      void setProperty(const std::string &property, const std::string &value);
       
       /// returns a list of properties, that can be set using setProperty
       /** @return list of supported property names **/
       std::vector<std::string> getPropertyList();
    
       /// get type of property
-      /** \copydoc icl::Grabber::getType(const std::string &)*/
+      /** \copydoc icl::io::Grabber::getType(const std::string &)*/
       std::string getType(const std::string &name);
       
       /// get information of a properties valid values values
-      /** \copydoc icl::Grabber::getInfo(const std::string &)*/
+      /** \copydoc icl::io::Grabber::getInfo(const std::string &)*/
       std::string getInfo(const std::string &name);
       
       /// returns the current value of a given property
-      /** \copydoc icl::Grabber::getValue(const std::string &)*/
+      /** \copydoc icl::io::Grabber::getValue(const std::string &)*/
       std::string getValue(const std::string &name);
       
       /// shows all available features and current values to std::out

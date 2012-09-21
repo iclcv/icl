@@ -97,7 +97,7 @@ namespace icl {
       private:
         /// The constructor is private so only the friend class can create instances
         /**
-        * @param device NodeInfo of the device to use.
+        * @param args NodeInfo of the device to use.
         */
         OpenNIGrabberImpl(std::string args);
   
