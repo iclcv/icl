@@ -331,7 +331,19 @@ namespace icl{
       /// adds text-texture quad -primitive to this object
       /** If the given normal indices (na,nb,nc and nd) are -1, auto-normal are computed using cross-product.
           Please note, that the text aspect ratio might not be preserved 
-          @param holdTextAR not supported yet! */
+	  @param a
+	  @param b
+	  @param c
+	  @param d
+	  @param text
+	  @param color
+	  @param na
+	  @param nb
+	  @param nc
+	  @param nd
+	  @param textSize the text size
+	  @param sm the scale mode
+*/
       void addTextTexture(int a, int b, int c, int d, const std::string &text,
                           const GeomColor &color, 
                           int na, int nb, int nc, int nd,
