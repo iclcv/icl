@@ -45,7 +45,7 @@ namespace icl{
       public:
       /// Decode JPEG-File (E.g. used for FileGrabberPluginJPEG)
       /** @param file must be opened in mode readBinary or not opend 
-          @param destination image, which is adapted to the found image parameters
+          @param dst image, which is adapted to the found image parameters
       */
       static void decode(utils::File &file, core::ImgBase **dst) throw (utils::InvalidFileFormatException);
       
