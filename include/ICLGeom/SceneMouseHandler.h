@@ -156,7 +156,6 @@ namespace icl{
       /// Constructor.
       /** @param pCameraIndex index of camera in scene
           @param pParentScene pointer to parent scene
-          @param Sensitivity
           */
       SceneMouseHandler(const int pCameraIndex, Scene* pParentScene );
       
@@ -310,8 +309,6 @@ namespace icl{
     * @param pDeltaMousePosition delta compared to last mouse position
     * @param pCamera camera
     * @param pData pointer for additional data used to set sensitivity
-    * @param pInverseX inverse x-axis
-    * @param pInverseY inverse y-axis
     */
     static void                         freeViewInverseMouseX(
                                                               const qt::MouseEvent&               pMouseEvent,
@@ -333,8 +330,6 @@ namespace icl{
     * @param pDeltaMousePosition delta compared to last mouse position
     * @param pCamera camera
     * @param pData pointer for additional data used to set sensitivity
-    * @param pInverseX inverse x-axis
-    * @param pInverseY inverse y-axis
     */
     static void                         freeViewInverseMouseY(
                                                               const qt::MouseEvent&               pMouseEvent,
@@ -356,8 +351,6 @@ namespace icl{
     * @param pDeltaMousePosition delta compared to last mouse position
     * @param pCamera camera
     * @param pData pointer for additional data used to set sensitivity
-    * @param pInverseX inverse x-axis
-    * @param pInverseY inverse y-axis
     */
     static void                         freeViewInverseBoth(
         const qt::MouseEvent&               pMouseEvent,
