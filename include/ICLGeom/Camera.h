@@ -179,8 +179,8 @@ namespace icl {
           */
       Camera(const std::string &filename, const std::string &prefix="config.")  throw (utils::ParseException);
       /// loads a camera from given input stream
-      /** @param filename file name of valid configuration file (in ICL's ConfigFile core::format)
-          @param prefix valid prefix that determines wheret to find the camera within the
+      /** @param configDataStream stream object to read and interpret input file name of valid configuration file (in ICL's ConfigFile core::format)
+          @param prefix valid prefix that determines where to find the camera within the
                  given config file (note, that this prefix must end with '.')
           */
       Camera(std::istream &configDataStream, const std::string &prefix="config.")  throw (utils::ParseException);
