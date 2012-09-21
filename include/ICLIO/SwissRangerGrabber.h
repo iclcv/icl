@@ -49,9 +49,11 @@ namespace icl{
       class SwissRanger;
       
       /// Create interface to device with given serial number:
-      /** @param if 0 -> automatic select\n
-                 if < 0 open selection dialog (windows: gui, linux: shell input)
-                 if > 0 specify serial number of device
+      /** @param serialNumber if 0 -> automatic select\n
+                              if < 0 open selection dialog (windows: gui, linux: shell input)
+                              if > 0 specify serial number of device
+         @param bufferDepth
+         @param pickChannel
       */
       SwissRangerGrabberImpl(int serialNumber=0, 
                              core::depth bufferDepth=core::depth32f, 
