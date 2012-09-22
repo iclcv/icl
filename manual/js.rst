@@ -62,33 +62,32 @@
        border-bottom: 1px solid white;
     }
 
-    #sticky-1{ border: 2px solid rgb(255,0,255); } 
-    #sticky-2{ border: 2px solid rgb(255,0,0); } 
-    #sticky-3{ border: 2px solid rgb(255,128,0); } 
-    #sticky-4{ border: 2px solid rgb(255,255,0); } 
-    #sticky-5{ border: 2px solid rgb(168,255,0); } 
-    #sticky-6{ border: 2px solid rgb(0,255,0); } 
-    #sticky-7{ border: 2px solid rgb(0,200,255); } 
-    #sticky-8{ border: 2px solid rgb(0,50,255); } 
-    #sticky-9{ border: 2px solid rgb(128,0,255); } 
-    #sticky-10{ border: 2px solid rgb(100,100,100); }
+    #sticky-1{ border: 1px solid rgb(255,0,255); } 
+    #sticky-2{ border: 1px solid rgb(255,0,0); } 
+    #sticky-3{ border: 1px solid rgb(255,128,0); } 
+    #sticky-4{ border: 1px solid rgb(255,255,0); } 
+    #sticky-5{ border: 1px solid rgb(168,255,0); } 
+    #sticky-6{ border: 1px solid rgb(0,255,0); } 
+    #sticky-7{ border: 1px solid rgb(0,200,255); } 
+    #sticky-8{ border: 1px solid rgb(0,50,255); } 
+    #sticky-9{ border: 1px solid rgb(128,0,255); } 
+    #sticky-10{ border: 1px solid rgb(100,100,100); }
 
     #sticky{
       line-height: 8px;
       margin-left:auto;
       position:absolute;
-      width:18px;
-      height:182px;
       right:0px;
-      top:50px;
+      top:100px;
       padding:2px;
       padding-right:0px;
       padding-left:1px;
-      background: white;
-      border: 1px solid rgb(150,150,150);
-      border-top-left-radius: 3px;
-      border-bottom-left-radius: 3px;
-      box-shadow: 0px 0px 15px rgba(0,0,0,0.5);
+      position: fixed;
+      background: transparent url(../_images/dash.png);
+      width: 33px;
+      height: 193px;
+      top: 99px;
+      padding-top: 12px;
     }
 
   </style>

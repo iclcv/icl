@@ -61,6 +61,8 @@ Image Component Library (ICL) Manual
 
 .. |S3| image:: icons/stripes3.png
 
+.. |DASH| image:: icons/dash.png
+
 
 .. we force the 3 column layout here!
 
