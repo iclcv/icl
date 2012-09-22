@@ -509,5 +509,25 @@
     h4 > a.headerlink {
        color: rgb(90,90,90);
     }
+    div.related ul{
+       background: rgba(60, 60, 60, 0);
+       background-image: url(../_images/stripes3.png);
+       background-position-x: 2px;
+    }
+    div.documentwrapper, div.footer {
+       background-image: url(../_images/stripes1.png);
+    }
+
+    img.logo{
+       background-color: white;
+       border-radius: 8px;
+       border: 1px solid #A0A0A0;
+       box-shadow: 5px 5px 20px rgba(0,0,0,0.4);
+       padding: 8px;
+    }
+    
+    div.sphinxsidebar #searchbox input[type="text"] {
+       width: 160px;
+    }
 
   </style>

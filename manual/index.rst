@@ -59,6 +59,8 @@ Image Component Library (ICL) Manual
 
 .. |S2| image:: icons/stripes2.png
 
+.. |S3| image:: icons/stripes3.png
+
 
 .. we force the 3 column layout here!
 
@@ -340,10 +342,23 @@ Internal
     }
     div.related ul{
        background: rgba(60, 60, 60, 0);
-       background-image: url(_images/stripes2.png);
+       background-image: url(_images/stripes3.png);
        background-position-x: 2px;
     }
     div.documentwrapper, div.footer {
        background-image: url(_images/stripes1.png);
     }
+
+    img.logo{
+       background-color: white;
+       border-radius: 8px;
+       border: 1px solid #A0A0A0;
+       box-shadow: 5px 5px 20px rgba(0,0,0,0.4);
+       padding: 8px;
+    }
+
+    div.sphinxsidebar #searchbox input[type="text"] {
+       width: 160px;
+    }
+
     </style>
