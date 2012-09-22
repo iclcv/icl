@@ -120,18 +120,6 @@
        gradientUnits="userSpaceOnUse" />
     <filter
        inkscape:collect="always"
-       id="filter3966"
-       x="-0.11763026"
-       width="1.2352605"
-       y="-0.016636196"
-       height="1.0332724">
-      <feGaussianBlur
-         inkscape:collect="always"
-         stdDeviation="0.71831578"
-         id="feGaussianBlur3968" />
-    </filter>
-    <filter
-       inkscape:collect="always"
        id="filter4002"
        x="-0.41326217"
        width="1.8265243"
@@ -151,7 +139,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="3.959798"
-     inkscape:cx="264.87157"
+     inkscape:cx="220.42486"
      inkscape:cy="478.11994"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -178,7 +166,7 @@
      inkscape:groupmode="layer"
      id="layer1">
     <rect
-       style="opacity:0.53909465;color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.34999998999999998;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;filter:url(#filter4002)"
+       style="opacity:0.22633745;color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.34999998999999998;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;filter:url(#filter4002)"
        id="rect3956"
        width="14.655735"
        height="103.62693"
