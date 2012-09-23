@@ -36,8 +36,8 @@
 
     
     .sticky-entry{
-       width: 10px;
-       height: 10px;
+       width: 12px;
+       height: 12px;
        float: right;
        border-left: 1px solid rgb(200,200,200);
        border-top: 1px solid rgb(200,200,200);
@@ -47,12 +47,15 @@
        border-radius: 4px;
        box-shadow: 2px 2px 5px rgba(0,0,0,0.6);
        border: 1px solid blue;
-       background-color: white;
+       background-color: transparent; /* white; */
        color: transparent;
     }
     .sticky-entry:hover{
        width: 40px;
        color: rgb(100,100,100);
+       background-color: white;
+       padding-left: 2px;
+       box-shadow: 5px 5px 10px rgba(0,0,0,0.6);
     }
     .sticky-entry:active{
        box-shadow: 0px 0px 0px transparent;
