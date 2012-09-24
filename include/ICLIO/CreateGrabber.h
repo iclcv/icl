@@ -62,7 +62,6 @@ namespace icl{
       /// internal image
       const core::ImgBase *m_image;
     };  
-    /** \endcond */
   
     /// Create Grabber class that provides an image from ICL's create function
     /** This grabber can be used as placeholder whenever no senseful Grabber
