@@ -48,7 +48,9 @@
 
 /** 
     \defgroup G_RD Region Detection Package
-
+    \defgroup G_CBS Color Blob Searcher API (template based)
+    \defgroup G_PT Position Tracker template class
+    \defgroup G_UTILS Utility classes and Functions
     TODO!!!
     The ICLCV package contains functions and classes for region and blob detection and
     for tracking. However, the most common component is the icl::RegionDetector class, 
