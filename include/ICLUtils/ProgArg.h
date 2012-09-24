@@ -230,8 +230,7 @@ namespace icl{
         The returned icl::utils::ProgArg instance is always automatically
         parsed from its internal string representation into the expressions
         lvalue-type (this can easily be implemented with a <em>templated</em>
-        version of the implicit cast operator of a class). Here are some 
-        examples:
+        version of the implicit cast operator of a class). Here are some examples:
         
         \code
         
@@ -291,10 +290,10 @@ namespace icl{
         Test t(*pa("-x")); // much shorter, but only for using
         // a program argument as std::string
   
-        \endcode
+        \endcode 
   
-        @see icl::utils::pa_init(int,char**,const std::string&,bool)
-    */
+        @see icl::utils::pa_init(int,char**,const std::string&,bool)*/
+
     inline const ProgArg pa(const std::string &id, unsigned int subargidx=0) throw (ProgArgException){
       if(!id.length()) THROW_ProgArgException("invalid programm argument id ''");
       return ProgArg(id,subargidx);
