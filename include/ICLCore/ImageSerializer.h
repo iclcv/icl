@@ -48,7 +48,7 @@ namespace icl{
         <pre>
         Whole-Image:
         [Header-Block][Channel-0-Data][Channel-1-Data][  ... ][Meta-Data]
-        <- 44 Bytes -><- #Channels x dim x sizeof(datatype) -> 
+        <- 44 Bytes -><- Channels x dim x sizeof(datatype) -> 
         </pre>
         The Header-Block contains a binary representation of all image properties:
         <pre>
