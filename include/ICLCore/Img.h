@@ -1749,6 +1749,7 @@ namespace icl {
     /* }}} */
     
     /** {{{  check function */
+/// \cond
 #define CHECK_VALUES(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize) \
     FUNCTION_LOG("");                                                   \
     ICLASSERT_RETURN( src && dst );                                     \
@@ -1758,7 +1759,7 @@ namespace icl {
     ICLASSERT_RETURN( srcOffs.x >= 0 && srcOffs.y >= 0 && dstOffs.x >= 0 && dstOffs.y >= 0); \
     ICLASSERT_RETURN( srcOffs.x+srcSize.width <= src->getWidth() && srcOffs.y+srcSize.height <= src->getHeight() ); \
     ICLASSERT_RETURN( dstOffs.x+dstSize.width <= dst->getWidth() && dstOffs.y+dstSize.height <= dst->getHeight() );   
-    
+/// \endcond   
     /** }}} */
     
   
