@@ -1,11 +1,12 @@
 .. include:: ../js.rst
 
-#########
-About ICL
-#########
+.. _about:
 
-What is ICL
------------
+#############
+What is ICL ?
+#############
+
+.. image:: /icons/185px/about.png
 
 ICL is a novel C++ computer-vision library developed in the
 neuroinformatics group of the university of Bielefeld and in CITEC. It
@@ -21,7 +22,7 @@ During the design and development process, the following main goals
 took center stage:
 
 Design Principles
------------------
+*****************
 
 Rich set of Support Functions
 """""""""""""""""""""""""""""
@@ -98,11 +99,3 @@ creating and layouting most complex and interactive graphical user
 interfaces within only a few lines of code.
 
 
-License
--------
-
-TODO
-
-
-What's New
-----------

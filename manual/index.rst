@@ -248,11 +248,11 @@ Internal
     $('#module-geom').bind('click',function(e){ location = 'modules/geom.html';  });
     $('#module-markers').bind('click',function(e){ location = 'modules/markers.html';  });
 
-    $('#extras-about').bind('click',function(e){ location = 'extras/about.html';  });
-    $('#extras-download').bind('click',function(e){ location = 'extras/download.html';  });
-    $('#extras-install').bind('click',function(e){ location = 'extras/install.html';  });
-    $('#extras-tutorial').bind('click',function(e){ location = 'extras/tutorial.html';  });
-    $('#extras-howtos').bind('click',function(e){ location = 'extras/howtos.html';  });
+    $('#extra-about').bind('click',function(e){ location = 'extras/about.html';  });
+    $('#extra-download').bind('click',function(e){ location = 'extras/download.html';  });
+    $('#extra-install').bind('click',function(e){ location = 'extras/install.html';  });
+    $('#extra-tutorial').bind('click',function(e){ location = 'extras/tutorial.html';  });
+    $('#extra-howtos').bind('click',function(e){ location = 'extras/howtos.html';  });
 
   });
   </script>
@@ -306,7 +306,7 @@ Internal
       font-size: 80%;
     }
     div.body h1, div.body h2, div.body h3, div.body h4{
-      margin-bottom: 0px;
+      margin-bottom: -8px;
       background-repeat: no-repeat;
       margin-left: -41px;
       box-shadow: none;

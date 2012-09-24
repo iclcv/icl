@@ -1,6 +1,11 @@
 .. include:: ../js.rst
 
+.. _download:
 
-###################
-How To Download ICL
-###################
+########################
+Downloading Instructions
+########################
+
+.. image:: /icons/185px/download.png
+
+

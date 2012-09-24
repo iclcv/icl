@@ -444,7 +444,7 @@
 
 
     div.body h1, div.body h2, div.body h3, div.body h4{
-      margin-bottom: 0px;
+      margin-bottom: -8px;
       background-repeat: no-repeat;
       margin-left: -41px;
       box-shadow: none;

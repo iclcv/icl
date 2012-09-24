@@ -6,6 +6,8 @@
 Tutorials
 #########
 
+.. image:: /icons/185px/tutorial.png
+
 .. toctree::
    :maxdepth: 1
 
