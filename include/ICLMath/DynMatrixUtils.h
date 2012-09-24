@@ -431,7 +431,7 @@ namespace icl{
         \code src1.transp().mult( src2.transp(),dst) ) \endcode in case of having transpDef == BOTH_T
         @param src1 left operand
         @param src2 right operand
-        @param dst1 destination matrix (adapted on demand)
+        @param dst destination matrix (adapted on demand)
         @param transpDef or-ed list of transposedDef values e.g. (SRC1_T | SRC2_T) mean both matrices are transposed.
     */
     template<class T>
@@ -447,7 +447,7 @@ namespace icl{
         If Intel MKL is not available, function matrix_mult_t is used as fallback.
         @param src1 left operand
         @param src2 right operand
-        @param dst1 destination matrix (adapted on demand)
+        @param dst destination matrix (adapted on demand)
         @param transpDef or-ed list of transposedDef values e.g. (SRC1_T | SRC2_T) mean both matrices are transposed.
     */
     template<class T>
