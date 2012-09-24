@@ -1810,12 +1810,11 @@ namespace icl {
         @param src source image
         @param srcC source image channel
         @param srcOffs source images ROI-offset (src->getROIOffset() is <b>not</b> regarded)
-        @param srcSize source images ROI-size (src->getROISize() is <b>not</b> regarded)
+        @param srcROISize source images ROI-size (src->getROISize() is <b>not</b> regarded)
         @param dst destination image      
         @param dstC destination image channel
         @param dstOffs destination images ROI-offset (dst->getROIOffset() is <b>not</b> regarded)
-        @param dstSize destination images ROI-size (dst->getROISize() is <b>not</b> regarded)
-        @param dstSize destination images ROI-size (dst->getROISize() is <b>not</b> regarded)
+        @param dstROISize destination images ROI-size (dst->getROISize() is <b>not</b> regarded)
      **/
     template <class S,class D>
     inline void convertChannelROI(const Img<S> *src,int srcC, const utils::Point &srcOffs, 
