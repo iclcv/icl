@@ -313,7 +313,6 @@
     -# \ref GENERAL
     -# \ref IMAGE 
     -# \ref STRUTILS
-    -# \ref MATH 
 
 
     \section EXTERNAL_DEPS Optional 3rd Party Dependencies
