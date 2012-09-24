@@ -332,8 +332,9 @@ namespace icl{
   
       private:    
       /// private constructor
-      /** @param image image wich's channel should be wrapped 
-          @param channelIndex index of the channel */
+      /** @param data data pointer (image) wich's channel should be wrapped 
+          @param size size of the data
+	  @param roi roi of the data (image)*/
       inline Channel(const T *data, const utils::Size &size, const utils::Rect &roi):
       m_data(data),m_size(size),m_roi(roi){}
   
