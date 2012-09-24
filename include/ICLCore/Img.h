@@ -209,6 +209,7 @@ namespace icl {
           is passed to the Img instance by setting passOwnerShip to true. 
           Call detach after the constructor call, to induce the Img to 
           allocate own memory for the image data if ownership cannot be passed.
+          @param passOwnerShip flag to specify the passed ownership
           **/
       Img(const utils::Size &size, format format, const std::vector<Type*>& vptData, 
           bool passOwnerShip=false);
@@ -223,6 +224,7 @@ namespace icl {
           is passed to the Img instance by setting passOwnerShip to true. 
           Call detach after the constructor call, to induce the Img to 
           allocate own memory for the image data if ownership cannot be passed.
+          @param passOwnerShip flag to specify the passed ownership
           **/
       Img(const utils::Size &size, int channels, 
           const std::vector<Type*>& vptData, bool passOwnerShip=false);
@@ -239,6 +241,7 @@ namespace icl {
           during the lifetime of the image unless ownership is passed by setting
           passOwnerShip to true, or call detach, to
           make the image allocate it own memory for the data
+          @param passOwnerShip flag to specify the passed ownership
           */
       Img(const utils::Size &size, int channels, format fmt, 
           const std::vector<Type*>& vptData, bool passOwnerShip=false);
@@ -637,7 +640,7 @@ namespace icl {
   
   
       /// Perform a deep copy of an image
-      /** \copydoc icl::ImgBase::deepCopy(icl::ImgBase**)const */
+      /** \copydoc icl::core::ImgBase::deepCopy(icl::core::ImgBase**)const */
       virtual Img<Type>* deepCopy(ImgBase** ppoDst=0) const;
   
       /// Perform a deep copy of an image
@@ -651,7 +654,7 @@ namespace icl {
       Img<Type> *deepCopy(Img<Type> *poDst) const;
   
       /// Perform a deep copy of an images ROI
-      /** \copydoc icl::ImgBase::deepCopyROI(icl::ImgBase**)const */
+      /** \copydoc icl::core::ImgBase::deepCopyROI(icl::core::ImgBase**)const */
       virtual Img<Type> *deepCopyROI(ImgBase **ppoDst=0) const;
   
       
@@ -675,11 +678,11 @@ namespace icl {
       /* {{{ open */
      
       /// create a scaled copy of this image
-      /** \copydoc icl::ImgBase::scaledCopy(const icl::Size&,icl::scalemode)const */
+      /** \copydoc icl::core::ImgBase::scaledCopy(const icl::utils::Size&,icl::core::scalemode)const */
       virtual Img<Type> *scaledCopy(const utils::Size &newSize, scalemode eScaleMode=interpolateNN) const;
       
       /// create a scaled copy of this image
-      /** \copydoc icl::ImgBase::scaledCopy(icl::ImgBase**,icl::scalemode)const */
+      /** \copydoc icl::core::ImgBase::scaledCopy(icl::core::ImgBase**,icl::core::scalemode)const */
       virtual Img<Type> *scaledCopy(ImgBase **ppoDst=0, scalemode eScaleMode=interpolateNN) const;
   
      
@@ -693,11 +696,11 @@ namespace icl {
       Img<Type> *scaledCopy(Img<Type> *poDst, scalemode eScaleMode=interpolateNN) const;
       
       /// create a scaled copy of an images ROI with given size
-      /** \copydoc icl::ImgBase::scaledCopyROI(const icl::Size&,icl::scalemode)const */
+      /** \copydoc icl::core::ImgBase::scaledCopyROI(const icl::utils::Size&,icl::core::scalemode)const */
       virtual Img<Type> *scaledCopyROI(const utils::Size &newSize, scalemode eScaleMode=interpolateNN) const;
       
       /// create a scaled copy of an images ROI with given destination image
-      /** \copydoc icl::ImgBase::scaledCopyROI(icl::ImgBase**,icl::scalemode)const*/
+      /** \copydoc icl::core::ImgBase::scaledCopyROI(icl::core::ImgBase**,icl::core::scalemode)const*/
       virtual Img<Type> *scaledCopyROI(ImgBase **ppoDst=0, scalemode eScaleMode=interpolateNN) const;
       
       /// create a scaled copy of this images ROI
@@ -716,7 +719,7 @@ namespace icl {
       /* {{{ open */
   
       /// Makes the image channels inside the Img independent from other Img.
-      /** \copydoc icl::ImgBase::detach(int) */
+      /** \copydoc icl::core::ImgBase::detach(int) */
       virtual void detach(int iIndex = -1);
       
       /// Utility method, that returns a detached version of this image
@@ -734,7 +737,7 @@ namespace icl {
       }
     
       /// Removes a specified channel.
-      /** \copydoc icl::ImgBase::removeChannel(int) */
+      /** \copydoc icl::core::ImgBase::removeChannel(int) */
       virtual void removeChannel(int iChannel);
     
       /// Append channels of external Img to the existing Img. 
@@ -783,7 +786,7 @@ namespace icl {
   
       
       /// Swap channel A and B
-      /** \copydoc icl::ImgBase::swapChannels(int,int) */
+      /** \copydoc icl::core::ImgBase::swapChannels(int,int) */
       virtual void swapChannels(int iIndexA, int iIndexB);
     
       /// Replace the channel A of this image with the channel B another image. 
@@ -795,11 +798,11 @@ namespace icl {
       void replaceChannel(int iThisIndex, Img<Type> *poOtherImg, int iOtherIndex);
   
       /// sets the channel count to a new value
-      /** \copydoc icl::ImgBase::setChannels(int) */
+      /** \copydoc icl::core::ImgBase::setChannels(int) */
       virtual void setChannels(int iNewNumChannels);
   
       /// resizes the image to new values
-      /** \copydoc icl::ImgBase::setSize(const icl::Size&) */
+      /** \copydoc icl::core::ImgBase::setSize(const icl::utils::Size&) */
       virtual void setSize(const utils::Size &s);
     
       /// @}
@@ -845,7 +848,7 @@ namespace icl {
       const utils::Range<Type> getMinMax() const;
   
       /// Returns the width of an image line in bytes
-      /** \copydoc icl::ImgBase::getLineStep()const **/
+      /** \copydoc icl::core::ImgBase::getLineStep()const **/
       virtual int getLineStep() const{
         return getSize().width*sizeof(Type);
       }
@@ -914,7 +917,7 @@ namespace icl {
         return const_cast<Type*>(static_cast<const Img<Type>*>(this)->getROIData(iChannel, p));
       } 
       /// returns the data pointer to a pixel with defined offset (const)
-      /** \copydoc getROIData(int,const icl::Point&) */
+      /** \copydoc icl::core::Img::getROIData(int,const utils::Point&) */
       const Type* getROIData(int iChannel, const utils::Point &p) const {
         FUNCTION_LOG("");
         ICLASSERT_RETURN_VAL(validChannel(iChannel),0);
@@ -922,13 +925,13 @@ namespace icl {
       }
   
       /// returns the raw- data pointer of an image channel
-      /** \copydoc icl::ImgBase::getDataPtr(int) **/
+      /** \copydoc icl::core::ImgBase::getDataPtr(int) **/
       virtual void* getDataPtr(int iChannel){
         return getData(iChannel);
       }
         
       /// returns the raw- data pointer of an image channel (const)
-      /** \copydoc icl::ImgBase::getDataPtr(int)const **/
+      /** \copydoc icl::core::ImgBase::getDataPtr(int)const **/
       virtual const void* getDataPtr(int iChannel) const{
         return getData(iChannel); 
       }
@@ -1282,11 +1285,11 @@ namespace icl {
       Img<Type> *lut(const Type *lut, Img<Type> *dst = 0,int bits=8) const;
       
       /// perform an in-place resize of the image (keeping the data) 
-      /** \copydoc icl::ImgBase::scale(const icl::Size&,icl::scalemode)*/
+      /** \copydoc icl::core::ImgBase::scale(const icl::utils::Size&,icl::core::scalemode)*/
       virtual void scale(const utils::Size &s, scalemode eScaleMode=interpolateNN);
   
       /// perform an in-place mirror operation on the image
-      /** \copydoc icl::ImgBase::mirror(icl::axis,bool) */
+      /** \copydoc icl::core::ImgBase::mirror(icl::core::axis,bool) */
       virtual void mirror(axis eAxis, bool bOnlyROI=false);
     
       /// Sets the ROI pixels of one or all channels to a specified value
@@ -1471,7 +1474,7 @@ namespace icl {
       void printAsMatrix(const std::string &format="5.3", bool visROI=true) const;
   
       /// shows wheter all image channels are currently not share with another image
-      /** @copydoc bool ImgBase::isIndependent() const */
+      /** @\copydoc bool icl::core::ImgBase::isIndependent() const */
       virtual bool isIndependent() const;
       /// @}
   
