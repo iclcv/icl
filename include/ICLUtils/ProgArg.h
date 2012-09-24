@@ -227,7 +227,7 @@ namespace icl{
     /** The pa-function is the main interface for extracting information 
         about given program arguments and/or their default values at run-time.
         
-        The returned icl::ProgArg instance is always automatically
+        The returned icl::utils::ProgArg instance is always automatically
         parsed from its internal string representation into the expressions
         lvalue-type (this can easily be implemented with a <em>templated</em>
         version of the implicit cast operator of a class). Here are some 
