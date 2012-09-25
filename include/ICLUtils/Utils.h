@@ -107,7 +107,7 @@
     \section STRING String manipulation functions
     
     String manipulation is always a bit complicated in C++, even though C++'s
-    <tt><string></tt>-header provides the powerful <tt>std::string</tt>-class.
+    <tt>&lt;string&gt;</tt>-header provides the powerful <tt>std::string</tt>-class.
     The header file <tt>ICLUtils/StringUtils.h</tt> provides some additional 
     utility functions and function-template that facilitate string manipulation
     significantly:
