@@ -18,11 +18,12 @@ A simple application for image acquisition and visualization can be
 written in less than 15 lines of C++ code (see
 :ref:`example<simple-example>`).
 
-During the design and development process, the following main goals
-took center stage:
 
 Design Principles
 *****************
+
+During the design and development process, the following main goals
+took center stage:
 
 Rich set of Support Functions
 """""""""""""""""""""""""""""

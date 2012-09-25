@@ -253,6 +253,7 @@ Internal
     $('#extra-install').bind('click',function(e){ location = 'extras/install.html';  });
     $('#extra-tutorial').bind('click',function(e){ location = 'extras/tutorial.html';  });
     $('#extra-howtos').bind('click',function(e){ location = 'extras/howtos.html';  });
+    $('#extra-license').bind('click',function(e){ location = 'extras/license.html';  });
 
   });
   </script>

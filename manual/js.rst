@@ -350,7 +350,7 @@
               }else if(groupName == "BASIC__TYPES"){
                 type = "basic type";
               }else{
-                type = "grouped function";
+                type = "grouped func.";
               }
            }
          }
