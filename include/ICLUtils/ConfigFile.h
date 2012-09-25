@@ -252,7 +252,7 @@ namespace icl{
       
       public:
   
-      /// the macro <tt>REGISTER_CONFIG_FILE_TYPE(T)</tt> can be used to register new types to the data store. This macro is defined as  ::icl::utils::ConfigFile::register_type<T>(T)<br><br>
+      /// the macro <tt>REGISTER_CONFIG_FILE_TYPE(T)</tt> can be used to register new types to the data store. This macro is defined as  <b>::icl::utils::ConfigFile::register_type<T>(T)</b><br><br>
 /// \cond
 #define REGISTER_CONFIG_FILE_TYPE(T) ::icl::utils::ConfigFile::register_type<T>(#T)
 /// \endcond
