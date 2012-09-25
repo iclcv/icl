@@ -108,7 +108,7 @@ namespace icl {
                                     grabber's core::format can be set in the grabber instantiation call. Furthermore, three
                                     special \@-tokens are possible: \@info (e.g. dc=0\@info) lists the 0th dc device's
                                     available properties. \@load=filename loads a given property filename directly. 
-                                    \@udist=filename loads a given undistortion parameter filename directly and therefore
+				    \@udist=filename loads a given undistortion parameter filename directly and therefore
                                     makes the grabber grab undistorted images according to the undistortion parameters
                                     and model type (either 3 or 5 parameters) that is found in the given xml-file. 
                                     <b>todo fix this sentence according to the fixed application names</b>
