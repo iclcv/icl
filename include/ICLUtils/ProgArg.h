@@ -285,7 +285,7 @@ namespace icl{
         Test t((std::string)pa("-x")); // also ambiguous 
         // due to different available std::string constructors
         
-        Test t(pa("-x").as<std::string>()); // works, but long code
+        Test t(pa("-x").as<std::string>()); // works, but long 
         
         Test t(*pa("-x")); // much shorter, but only for using
         // a program argument as std::string
@@ -331,6 +331,7 @@ namespace icl{
                may be something like <tt>/usr/bin/icl-create</tt>.
                If fullpath is false, which is default, 
                just the program name is returned.
+      
         @see icl::utils::pa(const std::string&,unsigned int) */
     const std::string &pa_get_progname(bool fullpath=false);
   
