@@ -219,6 +219,7 @@ namespace icl{
     **/
     ImgQ cvt(const core::Img8u &image);
   
+    /** \cond */
     /// Converts a given core::Img16s into an ImgQ
     /** @param image source image 
         @return converted image 
@@ -235,14 +236,16 @@ namespace icl{
     /** @param image source image 
         @return converted image 
     **/
+
     ImgQ cvt(const core::Img32f &image);
-  
+
     /// Converts a given core::Img64f into an ImgQ
     /** @param image source image 
         @return converted image 
     **/
     ImgQ cvt(const core::Img64f &image);
-  
+    /** \endcond */
+
     /// Converts a given core::ImgBase into an ImgQ
     /** @param image source image 
         @return conveted image 
