@@ -1100,13 +1100,15 @@ namespace icl{
       bool m_ownData;
     };
   
+    /** \cond */
     /// creates a dyn-matrix from given matrix column
     template<class T>
     DynMatrix<T>::DynMatrix(const DynMatrix<T>::DynMatrixColumn &column):
     m_rows(column.dim()),m_cols(1),m_data(new T[column.dim()]),m_ownData(true){
       std::copy(column.begin(),column.end(),begin());
     }
-  
+    /** \endcond */
+
     /// ostream operator implemented for uchar, short, int, float and double matrices  \ingroup LINALG
     template<class T>
     std::ostream &operator<<(std::ostream &s,const DynMatrix<T> &m);
