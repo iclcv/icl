@@ -302,7 +302,6 @@ namespace icl{
       
       m_doc->load("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
                   "<config>\n"
-                  "   <data id=\"title\" type=\"string\">no title defined</data>\n"
                   "</config>\n");
     }
     
