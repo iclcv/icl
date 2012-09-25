@@ -379,8 +379,7 @@ namespace icl{
     /** @param image source image
         @param filename filename to write the image to.
     **/
-    template<class T>
-    void save(const core::Img<T> &image, const std::string &filename);
+    void save(const core::ImgBase &image, const std::string &filename);
     
     /// shows an image using TestImages::show
     /** The image is wrote to disk into a temporary file. Then it

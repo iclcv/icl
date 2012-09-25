@@ -54,23 +54,24 @@ defined ones. Furthermore, arguments can be mandatory or optional.
 
 .. note::
    
-   Dangling arguments must be allowed explicitly by adding a boolean
-   flag to the call to the program argument initialization function
-   `:icl:pa_init`.Since it turned out that usually applications have
-   no *dangling* arguments, this feature is deactivated by default in
-   order to avoid wrongly given program arguments are not detected
-   because they are interpreted as dangling arguments.
+   The support for dangling arguments must be enabled explicitly by
+   adding a boolean flag to the call to the program argument
+   initialization function :icl:`pa_init`. Since it turned out that
+   usually applications have no *dangling* arguments, this feature is
+   deactivated by default in order to avoid that erroneously given
+   program arguments are not detected because they are interpreted as
+   dangling arguments.
 
 Defining allowed program arguments
 **********************************
 
 Program arguments are defined by using the :icl:`pa_init`
-function. Usually, this function must not be called explicitly, but it
-called indirectly by the :icl:`ICLApplication` (or short:
-:icl:`ICLApp`) constructor. Actually the parameters simply passed to
-:icl:`pa_init` if an :icl:`ICLApp` is used.
+function. Usually, this function must not be called explicitly because
+it is called indirectly by the :icl:`ICLApplication` (or short:
+:icl:`ICLApp`) constructor. Actually the parameters are simply passed
+to :icl:`pa_init` if an :icl:`ICLApp` is used.
 
-:icl:`pa_init` always receives the main functions program argument and
+:icl:`pa_init` always receives the main function's program argument and
 count and a single definition string::
 
   int main(int n, char **args){
@@ -85,13 +86,13 @@ be escaped using a trailing backslash character (please note, that one
 has to use a double backslash within a c++-string to create a
 backslash character). Each single argument definition token consists
 of a pipe-symbol separated list of argument name alternatives,
-followed by an optional parameter list in round braces, e.g.:
+followed by an optional parameter list in round braces, e.g.::
 
   pa_init(n,args,"-input|-i(filename) -size(outputsize)");
 
 Each *defined* argument may have 0, n, or an arbitrary number of
-sub-arguments. If the argument has no arguments -- in this case one
-can even leave out the braches -- it becomes a flag, that is
+sub-arguments. If the argument has no arguments -- in this case the
+empty brace can also be left out -- it becomes a *flag*, that is
 internally represented by a boolean value that defines whether it was
 given (then the value is **true**) or not (the value is **false**).
 An arbitrary sub-argument count can be achieved by using the intuitive
@@ -99,9 +100,9 @@ string "..." as parameter list::
 
   pa_init(n,ppc,"-enable-preprocessing|-pp -input|-i(...) -output(filename)");
 
-In general, the the parameter-list is a comma separated list tokens that can
-be a type name, a type name followed by "=" and a default value or an integer token.
-Here are some examples:
+In general, each parameter-list is a comma separated list of tokens that
+can be a type name, a type name followed by "=" and a default value or
+an integer token, or the special token "...".  Here are some examples:
 
 two integer sub-arguments::
 
@@ -124,8 +125,12 @@ of type **Size** with default argument "VGA"::
 
 .. note::
 
-   in case of using just a number of sub-arguments, no default value
-   can be given
+   1. in case of using just a number of sub-arguments, no default value
+      can be given
+
+   2. It is either possible to provide default values for all arguments
+      or for non of them. So far there is no C++-like mechanism for this.
+
 
 
 Types
@@ -158,7 +163,7 @@ properly. If you access program arguments or sub-arguments, that have
 no default value and are not given, an exception is thrown. Since in
 this case, the retrieved error message could be difficult to analyze,
 certain arguments can be set up to be mandatory. This is done by
-adding a "[m]" (for *mandatory*) in front of the program argument
+adding an "[m]"-token (for *mandatory*) in front of the program argument
 definition token::
 
   pa_init(n,ppc,"-size(Size=VGA) -pp [m]-input|-i(2)");
@@ -174,10 +179,11 @@ Accessing Program Arguments
 ***************************
 
 Given program arguments can be retrieved using the :icl:`pa` function
-that returns an instance of :icl:`ProgArg`, however the :icl:`ProgArg`
-is usually not used explicitly. Instead, the :icl:`ProgArg` type provides
-many useful operators that allows for using it in a very convenient manner.
-The following source code shows some usage examples:
+that returns an instance of :icl:`ProgArg`, however :icl:`ProgArg`
+instances is most of the time not used explicitly. Instead, the
+:icl:`ProgArg` type provides many useful operators that allows for
+using it in a very convenient manner.  The following source code shows
+some usage examples:
 
 .. literalinclude:: examples/pa.cpp
    :language: c++

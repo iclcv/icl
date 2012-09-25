@@ -462,18 +462,18 @@ namespace icl{
     /// shows all given program arguments \ingroup PA
     void pa_show();
   
-    /// Sets a license text, that is used when applications are run with --version or -v
+    /// Sets a license text, that is used when applications are run with --version or -v \ingroup PA
     /** pasetlic has to be called before painit is called. Otherwise, only the default licese text is shown. */
     void pa_set_license(const std::string &newLicenseText);
     
-    /// Sets a applications help text that is used when applications are run with --help or with unknown arguments
+    /// Sets a applications help text that is used when applications are run with --help or with unknown arguments \ingroup PA
     /** pasethelp has to be called before painit is called. */
     void pa_set_help_text(const std::string &newHelpText);
     
-    /// returns the current license text
+    /// returns the current license text \ingroup PA
     std::string pa_get_license();
     
-    /// returns the current help text (which is empty, if it was not set)
+    /// returns the current help text (which is empty, if it was not set) \ingroup PA
     std::string pa_get_help_text();
   } // namespace utils
 }

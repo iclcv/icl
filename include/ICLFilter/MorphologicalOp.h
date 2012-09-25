@@ -115,6 +115,10 @@ namespace icl {
                        are used       
       */
     MorphologicalOp (optype t, const utils::Size &maskSize=utils::Size(3,3), const icl8u *mask=0);
+
+    /// constructor with given optype as string
+    /** The string ids are identical to the optype enumeration value names */
+    MorphologicalOp (const std::string &optype="erode", const utils::Size &maskSize=utils::Size(3,3), const icl8u *mask=0);
       
       /// Destructor
       ~MorphologicalOp ();
