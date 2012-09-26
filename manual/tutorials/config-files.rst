@@ -156,8 +156,14 @@ an example:
 Use the :icl:`ConfigFile` for (De)serialization
 ***********************************************
 
+For complex types it is usually quite difficult to find a nice way to
+implement C++-'s **istream**- and **ostream**-operators. In particular
+the implementation if the **istream**-operator is usually very
+difficult because it should usually also detect parsing errors. Using the
+:icl:`ConfigFile` class for this has two advantages: first, it solves
+all serialization and deserialization issues, and second, it also leads
+to a human readable and well defined XML-based serialization string.
 
-
-
-.. todo::
-  write this tutorial
+.. literalinclude:: examples/config-file-5.cpp
+   :language: c++
+   :linenos:

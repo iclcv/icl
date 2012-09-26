@@ -316,7 +316,12 @@ namespace icl{
       /// Creates a ConfigFile from given handle instance
       /** Note: Ownership is passed to this ConfigFile instance here */
       ConfigFile(pugi::xml_document *handle) throw (UnregisteredTypeException);
-  
+
+      /// creates a ConfigFile instance from given istream.
+      /** The constructor will only read the stream until the 
+          first opening tag is closed */
+      ConfigFile(std::istream &stream) throw(FileNotFoundException,InvalidFileFormatException,UnregisteredTypeException);
+      
       /// loads the ConfigFile from given filename and updates internal filename variable
       /** Warning: old data content is lost! */
       void load(const std::string &filename) throw(FileNotFoundException,InvalidFileFormatException,UnregisteredTypeException);

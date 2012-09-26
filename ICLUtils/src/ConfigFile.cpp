@@ -306,6 +306,14 @@ namespace icl{
     }
     
     // }}}
+
+    ConfigFile::ConfigFile(std::istream &stream) throw(FileNotFoundException,InvalidFileFormatException,UnregisteredTypeException){
+      
+      XMLDocument *doc = new XMLDocument;
+      doc->loadNext(stream);
+      *this = ConfigFile(doc);
+    }
+
   
     void ConfigFile::setRestriction(const std::string &id, const ConfigFile::KeyRestriction &r) throw (EntryNotFoundException){
       // {{{ open
