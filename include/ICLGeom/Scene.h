@@ -352,6 +352,11 @@ namespace icl{
       /** by default, lighting is activated */
       void setLightingEnabled(bool flag);
 
+      /// this can be used to change OpenGL's global ambient light color
+      /** by default, we use a very weak white ambient background light of
+          [255,255,255,20]. The color values are given in ranges [0,255]*/
+      void setGlobalAmbientLight(const GeomColor &color);
+      
       /// picks the closest contained scene-object clicked at given ScreenPosition
       /** returns 0 if no object was hit, if contactPos is not 0, the 3D-contact position
           is stored there. */
@@ -456,6 +461,9 @@ namespace icl{
     
       /// optionally given bounds of the scene
       utils::SmartArray<utils::Range32f> m_bounds;
+      
+      /// global ambient light
+      math::FixedColVector<int,4> m_globalAmbientLight;
 
       private:
       /// called from the SceneObject class

@@ -213,6 +213,7 @@ namespace icl{
                    m_drawCoordinateFrameEnabled(false),
                    m_lightingEnabled(true){
       m_lights[0] = SmartPtr<SceneLight>(new SceneLight(0));
+      m_globalAmbientLight = FixedColVector<int,4>(255,255,255,20);
     }
     Scene::~Scene(){
   #ifdef HAVE_GLX
@@ -273,6 +274,7 @@ namespace icl{
       }else{
         m_bounds = 0;
       }
+      m_globalAmbientLight = scene.m_globalAmbientLight;
       
       return *this;
     }
@@ -327,6 +329,10 @@ namespace icl{
         WARNING_LOG("unable to remove given object " << (void*) obj << " from scene: Object not found!");
       }
       m_objects.erase(it);
+    }
+
+    void Scene::setGlobalAmbientLight(const GeomColor &color){
+      std::copy(color.begin(),color.end(), m_globalAmbientLight.begin());
     }
     
   
@@ -537,6 +543,8 @@ namespace icl{
       }else{
         glDisable(GL_LIGHTING);
       }
+
+      glLightModeliv(GL_LIGHT_MODEL_AMBIENT, m_globalAmbientLight.begin());
       
       if(widget){
         if (widget->getFitMode() == ICLWidget::fmZoom) {
