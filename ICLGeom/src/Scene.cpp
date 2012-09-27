@@ -527,9 +527,12 @@ namespace icl{
   
       glLightModeli(GL_LIGHT_MODEL_TWO_SIDE,GL_TRUE);
       // specular lighting is still not working ..
-      //glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER,GL_TRUE);
-      //static GLfloat full_specular_reflectance[]={0.4,0.4,0.4,1};
-      //glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR, full_specular_reflectance);
+      glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER,GL_TRUE);
+      static GLfloat full_specular_reflectance[]={1,1,1,1}; //0.4,0.4,0.4,1};
+      static GLfloat half_shininess[] = {128};
+
+      glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR, full_specular_reflectance);
+      glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, half_shininess);
   
       if(m_lightingEnabled){
         glEnable(GL_LIGHTING);

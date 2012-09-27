@@ -114,7 +114,33 @@ namespace icl{
       const Vec &vb = ctx.vertices[b];
       const Vec &vc = ctx.vertices[c];
       
-      glNormal3fv(normalize(cross(va-vc,vb-vc)).data());
+      Vec ac = va - vc;
+      Vec bc = vb - vc;
+      
+      const float lac = sqrt (sqr(ac[0]) + sqr(ac[1]) +  sqr(ac[2]) );
+      const float lbc = sqrt (sqr(bc[0]) + sqr(bc[1]) +  sqr(bc[2]) );
+
+      if(lac == 0 || lbc == 0) return;
+      
+      const float ilac = 1.0f/lac;
+      const float ilbc = 1.0f/lbc;
+      
+      for(int i=0;i<3;++i){
+        ac[i] *= ilac;
+        bc[i] *= ilbc;
+      }
+      
+      Vec normal = cross(ac,bc);
+
+      const float lnormal = sqrt (sqr(normal[0]) + sqr(normal[1]) +  sqr(normal[2]) );
+      if(lnormal == 0) return;
+      const float ilnormal = 1.0f/lnormal;
+      
+      for(int i=0;i<3;++i){
+        normal[i] *= ilnormal;
+      }
+
+      glNormal3fv(normal.data());
     }
   
     void LinePrimitive::render(const Primitive::RenderContext &ctx){
