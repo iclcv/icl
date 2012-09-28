@@ -150,6 +150,11 @@ namespace icl{
       
       /// deep copy implementation (trivial)
       virtual Primitive *copy() const { return new TrianglePrimitive(*this); }
+
+      /// computes the normal for this triangle
+      /** Given the parent SceneObject's vertex vector*/
+      Vec computeNormal(const std::vector<Vec> &vertices) const;
+
     };
   
     /// quad primitive
@@ -173,6 +178,10 @@ namespace icl{
   
       /// deep copy implementation (trivial)
       virtual Primitive *copy() const { return new QuadPrimitive(*this); }
+      
+      /// computes the normal for this quad
+      /** Given the parent SceneObject's vertex vector*/
+      Vec computeNormal(const std::vector<Vec> &vertices) const;
     };
   
     /// polygon primitive
@@ -405,7 +414,7 @@ namespace icl{
       /// used for billboard text
       /** if the value is > 0, the text-texture will always be oriented towards the camera.
           the billboardHeight value is used as text-height (in scene units) */
-      int billboardHeight; 
+      float billboardHeight; 
       
       /// constructor
       TextPrimitive(int a, int b, int c, int d, 
@@ -413,7 +422,7 @@ namespace icl{
                     int textSize=20,
                     const GeomColor &textColor=GeomColor(255,255,255,255),
                     int na=-1, int nb=-1, int nc=-1, int nd=-1,
-                    int billboardHeight=0,
+                    float billboardHeight=0,
                     core::scalemode sm=core::interpolateLIN);
       
       /// render method

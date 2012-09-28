@@ -101,6 +101,8 @@ namespace icl{
       m_pointSmoothingEnabled(true),
       m_lineSmoothingEnabled(true),
       m_polygonSmoothingEnabled(true),
+      m_shininess(128),
+      m_specularReflectance(GeomColor(0.5,0.5,0.5,0.5)),
       m_displayListHandle(0),
       m_createDisplayListNextTime(0),
       m_fragmentShader(0)
@@ -264,6 +266,8 @@ namespace icl{
       m_enableLocking(false),
       m_pointSmoothingEnabled(true),
       m_lineSmoothingEnabled(true),
+      m_shininess(128),
+      m_specularReflectance(GeomColor(0.5,0.5,0.5,0.5)),
       m_polygonSmoothingEnabled(true),
       m_displayListHandle(0),
       m_createDisplayListNextTime(0),
@@ -581,6 +585,8 @@ namespace icl{
       m_pointSmoothingEnabled(true),
       m_lineSmoothingEnabled(true),
       m_polygonSmoothingEnabled(true),
+      m_shininess(128),
+      m_specularReflectance(GeomColor(0.5,0.5,0.5,0.5)),
       m_displayListHandle(0),
       m_createDisplayListNextTime(0),
       m_fragmentShader(0)
@@ -890,7 +896,9 @@ namespace icl{
       m_pointSmoothingEnabled = other.m_pointSmoothingEnabled;
       m_lineSmoothingEnabled  = other.m_lineSmoothingEnabled;
       m_polygonSmoothingEnabled = other.m_polygonSmoothingEnabled;
-  
+      m_shininess = other.m_shininess;
+      m_specularReflectance = other.m_specularReflectance;
+      
       setLockingEnabled(other.getLockingEnabled());
       m_visibleMask = other.m_visibleMask;
       m_children.clear();
@@ -1344,7 +1352,74 @@ namespace icl{
       ICL_DELETE(m_fragmentShader);
       m_fragmentShader = shader;
     }
-    
-    
+
+    void SceneObject::createAutoNormals(bool smooth){
+      if(smooth){
+        /// list of faces that use each vertex
+        std::vector<std::vector<Vec> > graph(m_vertices.size());
+        
+        for(size_t i=0;i<m_primitives.size();++i){
+          Primitive *p = m_primitives[i];
+          switch(p->type){
+            case Primitive::triangle:{
+              TrianglePrimitive &t = (TrianglePrimitive&)*p;
+              Vec n = t.computeNormal(m_vertices);
+              for(int i=0;i<3;++i){
+                graph[t[i]].push_back(n);
+                t[i+3] = t[i];
+              }
+              break;
+              
+            }
+            case Primitive::quad:
+            case Primitive::texture:{
+              if(dynamic_cast<QuadPrimitive*>(p)){
+                QuadPrimitive &q = (QuadPrimitive&)*p;
+                Vec n = q.computeNormal(m_vertices);
+                for(int i=0;i<4;++i){
+                  graph[q[i]].push_back(n);
+                  q[i+4] = q[i];
+                }
+              }
+              break;
+            }
+          }
+        }
+        m_normals.resize(m_vertices.size());
+        for(size_t i=0;i<m_vertices.size();++i){
+          int n = graph[i].size();
+          if(!n) continue;
+          m_normals[i] = std::accumulate(graph[i].begin(),graph[i].end(), Vec(0,0,0,0)) * (1./n);
+          m_normals[i][3] = 1;
+        }
+      }else{
+        m_normals.resize(m_primitives.size());
+        
+        for(size_t i=0;i<m_primitives.size();++i){
+          Primitive *p = m_primitives[i];
+          switch(p->type){
+            case Primitive::triangle:{
+              TrianglePrimitive &t = (TrianglePrimitive&)*p;
+              m_normals[i] = t.computeNormal(m_vertices);
+              for(int j=0;j<3;++j){
+                t[j+3] = i;
+              }
+              break;
+            }
+            case Primitive::quad:
+            case Primitive::texture:{
+              if(dynamic_cast<QuadPrimitive*>(p)){
+                QuadPrimitive &q = (QuadPrimitive&)*p;
+                m_normals[i] = q.computeNormal(m_vertices);
+                for(int j=0;j<4;++j){
+                  q[j+4] = i;
+                }
+              }
+              break;
+            }
+          }
+        }
+      }
+    }
   } // namespace geom
 }

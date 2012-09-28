@@ -325,8 +325,14 @@ namespace icl{
       /** This means, that you will be able to see e.g. camera 1 in the view of camera 0 */
       void setDrawCamerasEnabled(bool enabled);
     
-      /// returns wether cameras are visualized
+      /// returns whether cameras are visualized
       bool getDrawCamerasEnabled() const;
+
+      /// sets wheter lights are also visualized in scenes.
+      void setDrawLightsEnabled(bool enabled);
+    
+      /// returns whether lights are visualized
+      bool getDrawLightsEnabled() const;
     
       /// sets wheter a coordinate frame is automatically inserted into the scene
       void setDrawCoordinateFrameEnabled(bool enabled, float axisLength=100, 
@@ -446,6 +452,9 @@ namespace icl{
 
       /// internally used flag
       bool m_drawCamerasEnabled;
+      
+      /// internally used flag
+      bool m_drawLightsEnabled;
     
       /// internally used flag
       bool m_drawCoordinateFrameEnabled;

@@ -47,6 +47,7 @@ namespace icl{
     class SceneObject;
     class Scene;
     class Camera;
+    class SceneLightObject;
     /** \endcond */
   
     /// Wrapper class for OpenGL lights
@@ -115,11 +116,23 @@ namespace icl{
       /// for the object anchor mode
       SceneObject *objectAnchor;
   
+      /// associated scene light Object
+      SceneLightObject *lightObject;
+      
       /// private constructor -> only Scene's can create lights
-      SceneLight(int index);
+      SceneLight(Scene *parent, int index);
       
       public:
   
+      /// Destructor
+      ~SceneLight();
+      
+      /// returns the associated light object
+      inline SceneLightObject *getLightObject(){ return lightObject; }
+
+      /// returns the associated light object (const)
+      inline const SceneLightObject *getLightObject() const { return lightObject; }
+      
       /// for tight integration with the Scene class
       friend class Scene;
   

@@ -33,7 +33,7 @@
 *********************************************************************/
 
 #include <ICLGeom/SceneLight.h>
-#include <ICLGeom/SceneObject.h>
+#include <ICLGeom/SceneLightObject.h>
 #include <ICLGeom/Scene.h>
 
 #ifdef HAVE_OPENGL
@@ -59,6 +59,8 @@ namespace icl{
         glDisable(l);
         return;
       }else{
+        Mat T = Mat::id();
+        
         static const GLfloat off[] = {0,0,0,0};
         // note: specular light is not working -> needs to be enabled explicitly
         // since 100% realistic visualization is not our focus, we skip this for now
@@ -74,18 +76,25 @@ namespace icl{
           case CamAnchor:
             if(camAnchor < 0){
               glLoadIdentity();
+              T = cam.getCSTransformationMatrix().inv();
             }else{
-              glMultMatrixf(scene.getCamera(camAnchor).getCSTransformationMatrix().inv().transp().data()); 
+              T = scene.getCamera(camAnchor).getCSTransformationMatrix().inv();
+              glMultMatrixf(T.transp().data()); 
             }
             break;
           case ObjectAnchor:{
-            glMultMatrixf( objectAnchor->getTransformation(false).transp().data());
+            T = objectAnchor->getTransformation(false);
+            glMultMatrixf(T.transp().data());
             break;
           }
           default:
             break;
         }
-            
+
+        Vec currPos = lightObject->getTransformation().part<3,0,1,4>();
+        Vec targetPos = T*position;
+        lightObject->translate(targetPos - currPos);
+
         glLightfv(l,GL_POSITION,position.begin());
         
         glLightfv(l,GL_SPOT_DIRECTION,spotDirection.begin());
@@ -99,8 +108,13 @@ namespace icl{
       }
   #endif
     }
-    SceneLight::SceneLight(int index):index(index){
+    SceneLight::SceneLight(Scene *scene, int index):index(index){
+      lightObject = new SceneLightObject(scene,index);
       reset();
+    }
+
+    SceneLight::~SceneLight(){
+      delete lightObject;
     }
       
     void SceneLight::setOn(bool on){
