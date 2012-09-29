@@ -132,6 +132,9 @@ namespace icl{
 
       /// returns the associated light object (const)
       inline const SceneLightObject *getLightObject() const { return lightObject; }
+
+      /// sets the light objects scaling (default is 1)
+      void setObjectSize(float size);
       
       /// for tight integration with the Scene class
       friend class Scene;

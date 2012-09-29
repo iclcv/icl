@@ -91,12 +91,20 @@ namespace icl{
             break;
         }
 
+        lightObject->lock();
         Vec currPos = lightObject->getTransformation().part<3,0,1,4>();
         Vec targetPos = T*position;
+        if(index == 0){
+          SHOW(position);
+          SHOW(T);
+          SHOW(targetPos);
+          SHOW(currPos);
+        }
         lightObject->translate(targetPos - currPos);
+        lightObject->unlock();
 
         glLightfv(l,GL_POSITION,position.begin());
-        
+
         glLightfv(l,GL_SPOT_DIRECTION,spotDirection.begin());
         glLightf(l,GL_SPOT_EXPONENT,spotExponent);
         glLightf(l,GL_SPOT_CUTOFF,spotCutoff);
@@ -110,6 +118,7 @@ namespace icl{
     }
     SceneLight::SceneLight(Scene *scene, int index):index(index){
       lightObject = new SceneLightObject(scene,index);
+      lightObject->setLockingEnabled(true);
       reset();
     }
 
@@ -137,6 +146,7 @@ namespace icl{
     
     void SceneLight::setPosition(const Vec &position){
       this->position = position;
+      this->position[3] = 1;
     }
       
     void SceneLight::setAmbient(const GeomColor &color){
@@ -186,7 +196,7 @@ namespace icl{
     
     void SceneLight::reset(){
       on = !index;
-      position = Vec(0,0,1,0);
+      position = Vec(0,0,-2,1);
       ambientOn = false;
       diffuseOn = true;
       specularOn = false;
@@ -204,5 +214,14 @@ namespace icl{
       camAnchor = -1;
       objectAnchor = 0;
     }
+    
+    void SceneLight::setObjectSize(float size){
+      lightObject->lock();
+      // todo: perhaps, we can extract the light's current scale using QR-decomposition?
+      lightObject->removeTransformation();
+      lightObject->scale(size,size,size);
+      lightObject->unlock();
+    }
+    
   } // namespace geom
 }

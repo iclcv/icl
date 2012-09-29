@@ -595,8 +595,17 @@ namespace icl{
   
     }
 
-    void Scene::setDrawLightsEnabled(bool enabled){
+    void Scene::setDrawLightsEnabled(bool enabled, float lightSize){
+      lock();
       m_drawLightsEnabled = enabled;
+      if(enabled){
+        for(int i=0;i<8;++i){
+          if(m_lights[i]){
+            m_lights[i]->setObjectSize(lightSize);
+          }
+        }
+      }
+      unlock();
     }
     
     bool Scene::getDrawLightsEnabled() const {

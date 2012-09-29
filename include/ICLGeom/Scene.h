@@ -329,7 +329,7 @@ namespace icl{
       bool getDrawCamerasEnabled() const;
 
       /// sets wheter lights are also visualized in scenes.
-      void setDrawLightsEnabled(bool enabled);
+      void setDrawLightsEnabled(bool enabled, float lightSize=1);
     
       /// returns whether lights are visualized
       bool getDrawLightsEnabled() const;
