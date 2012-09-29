@@ -43,6 +43,13 @@
 #include <ICLQt/MouseHandler.h>
 
 namespace icl{
+
+  /** \cond */
+  namespace qt{
+    class GUI;
+  }
+  /** \endcond */
+  
   namespace geom{
     
     /// Mouse action function pointer
@@ -96,8 +103,12 @@ namespace icl{
     };
     
     
-    /// Class providing a mouse handler for class scene. Create your own mouse handler by inherting from this class and overloading function setMouseMappings().
-    /** Default mouse mappings for scene objects
+    /// Class providing a mouse handler for class scene. 
+        
+    /** Create your own mouse handler by inherting from this class and 
+        overloading function setMouseMappings().
+        
+        Default mouse mappings for scene objects
         - left mouse button: free view
         - middle mouse button: strafe
         - right mouse button: rotation around origin
@@ -114,7 +125,7 @@ namespace icl{
         - overload function setMouseMappings() to bind mouse action functions to mouse actions
         - mouse action functions can be assigned to all combinations of
         - mouse events (mouse move, button pressed down and held, 
-        button pressed, button released, area entered, area left, mouse wheel)
+          button pressed, button released, area entered, area left, mouse wheel)
         - mouse buttons (left, middle, right),
         - keyboard modifiers (shift, control, alt)
         - mouse action functions will be called with an additional data pointer (void*)
@@ -150,6 +161,8 @@ namespace icl{
       /// backup of old keyboard modifiers
       int mKeyboardModifiersBackup;
       
+      /// GUI for the adaption of scene properties
+      qt::GUI *mGUI;
       
       public:
       
@@ -159,28 +172,27 @@ namespace icl{
           */
       SceneMouseHandler(const int pCameraIndex, Scene* pParentScene );
       
-      
       /// Copy constructor.
       /** @param pSceneMouseHandler source */
       SceneMouseHandler(const SceneMouseHandler& pSceneMouseHandler){
         *this = pSceneMouseHandler;
       }
+
+      /// Destructor
+      ~SceneMouseHandler();
       
       /// Assignment operator.
       SceneMouseHandler& operator=(const SceneMouseHandler& pSceneMouseHandler);
-      
       
       /// Set parent scene.
       void setParentScene(Scene* pParentScene){
         mParentScene = pParentScene;
       }
-
       
       /// Get parent scene.
       Scene* getParentScene(){
         return mParentScene;
       }
-      
       
       /// Set mouse & wheel sensitivities, modifier factor and factors for rotation and translation
       /** @param pTranslation sensitivity factor for translation (e.g. mParentScene->getMaxSceneDim())
@@ -194,234 +206,187 @@ namespace icl{
                             const float pModifier = 10.0 );
       
 
-    /// Get mouse and wheel sensitivities (low, normal, high).
-    /**
-    * @return sensitivity
-    */
-    MouseSensitivities                  getSensitivities(
-        MouseSensitivitiesModifier      pMouseSensitivitiesModifier )
-    {
+      /// Get mouse and wheel sensitivities (low, normal, high).
+      /** * @return sensitivity */
+      MouseSensitivities getSensitivities(MouseSensitivitiesModifier pMouseSensitivitiesModifier){
         return mMouseSensitivities[pMouseSensitivitiesModifier];
-    };
-
-
-    /// Set camera index.
-    /**
-    * @param pCameraIndex new camera index
-    */
-    void                                setCameraIndex(
-        const int                       pCameraIndex )
-    {
+      };
+      
+      
+      /// Set camera index.
+      /** @param pCameraIndex new camera index */
+      
+      void setCameraIndex(const int pCameraIndex){
         mCameraIndex = pCameraIndex;
-    }
-
-
-    /// Get camera index.
-    /**
-    * @return camera index
-    */
-    int                                 getCameraIndex()
-    {
+      }
+      
+      
+      /// Get camera index.
+      /** @return camera index */
+      int getCameraIndex(){
         return mCameraIndex;
-    }
+      }
 
 
-    /// Set mouse mappings.
-    /**
-    * Inherit from this class and overload this function to define new mouse mappings.
-    */
-    virtual void                        setMouseMappings();
+      /// Set mouse mappings.
+      /** Inherit from this class and overload this function to define new mouse mappings. */
+      virtual void setMouseMappings();
+      
+      
+      /// Set one mouse mapping.
+      /** @param pMouseEventType type of mouse event
+          @param pLeftMouseButton left mouse button
+          @param pMiddleMouseButton middle mouse button
+          @param pRightMouseButton right mouse button
+          @param pShift shift
+          @param pControl control
+          @param pAlt alt
+          @param pMouseActionCallback function pointer that should be called
+          @param pData pointer to additional data */
+      void setMouseMapping(const qt::MouseEventType pMouseEventType,
+                           const bool pLeftMouseButton,
+                           const bool pMiddleMouseButton,
+                           const bool pRightMouseButton,
+                           const bool pShift,
+                           const bool pControl,
+                           const bool pAlt,
+                           MouseActionCallback pMouseActionCallback,
+                           void* pData=0);
 
 
-    /// Set one mouse mapping.
-    /**
-    * @param pMouseEventType type of mouse event
-    * @param pLeftMouseButton left mouse button
-    * @param pMiddleMouseButton middle mouse button
-    * @param pRightMouseButton right mouse button
-    * @param pShift shift
-    * @param pControl control
-    * @param pAlt alt
-    * @param pMouseActionCallback function pointer that should be called
-    * @param pData pointer to additional data
-    */
-    void                                setMouseMapping(
-                                                        const qt::MouseEventType            pMouseEventType,
-        const bool                      pLeftMouseButton,
-        const bool                      pMiddleMouseButton,
-        const bool                      pRightMouseButton,
-        const bool                      pShift,
-        const bool                      pControl,
-        const bool                      pAlt,
-        MouseActionCallback             pMouseActionCallback,
-        void*                           pData = 0 );
-
-
-    /// Free view
-    /**
-    * Vertical mouse movement: pitch.
-    * Horizontal mouse movement: yaw.
-    * @param pMouseEvent mouse event
-    * @param pCurrentMousePosition current mouse position
-    * @param pDeltaMousePosition delta compared to last mouse position
-    * @param pCamera camera
-    * @param pData pointer for additional data used to set sensitivity
-    * @param pInverseX inverse x-axis
-    * @param pInverseY inverse y-axis
-    */
-    static void                         freeView(
-                                                 const qt::MouseEvent&               pMouseEvent,
-        const utils::Point32f&                 pCurrentMousePosition,
-        const utils::Point32f&                 pDeltaMousePosition,
-        Camera&                         pCamera,
-        void*                           pData,
-        bool                            pInverseX,
-        bool                            pInverseY );
+      /// Free view
+      /** Vertical mouse movement: pitch.
+          Horizontal mouse movement: yaw.
+          @param pMouseEvent mouse event
+          @param pCurrentMousePosition current mouse position
+          @param pDeltaMousePosition delta compared to last mouse position
+          @param pCamera camera
+          @param pData pointer for additional data used to set sensitivity
+          @param pInverseX inverse x-axis
+          @param pInverseY inverse y-axis */
+      
+      static void freeView(const qt::MouseEvent &pMouseEvent,
+                           const utils::Point32f &pCurrentMousePosition,
+                           const utils::Point32f &pDeltaMousePosition,
+                           Camera &pCamera, void *pData,
+                           bool pInverseX, bool pInverseY);
 
 
     /// Free view with normal axes.
-    /**
-    * Vertical mouse movement: pitch.
-    * Horizontal mouse movement: yaw.
-    * @param pMouseEvent mouse event
-    * @param pCurrentMousePosition current mouse position
-    * @param pDeltaMousePosition delta compared to last mouse position
-    * @param pCamera camera
-    * @param pData pointer for additional data used to set sensitivity
-    */
-    static void                         freeView(
-                                                 const qt::MouseEvent&               pMouseEvent,
-        const utils::Point32f&                 pCurrentMousePosition,
-        const utils::Point32f&                 pDeltaMousePosition,
-        Camera&                         pCamera,
-        void*                           pData )
-    {
+    /** Vertical mouse movement: pitch.
+        Horizontal mouse movement: yaw.
+        @param pMouseEvent mouse event
+        @param pCurrentMousePosition current mouse position
+        @param pDeltaMousePosition delta compared to last mouse position
+        @param pCamera camera
+        @param pData pointer for additional data used to set sensitivity */
+      static void freeView(const qt::MouseEvent &pMouseEvent,
+                           const utils::Point32f &pCurrentMousePosition,
+                           const utils::Point32f &pDeltaMousePosition,
+                           Camera &pCamera, void *pData){
         freeView( pMouseEvent, pCurrentMousePosition, pDeltaMousePosition, pCamera, pData, false, false );
-    };
-
-
-    /// Free view with inversed x-axis.
-    /**
-    * Vertical mouse movement: pitch.
-    * Horizontal mouse movement: yaw.
-    * @param pMouseEvent mouse event
-    * @param pCurrentMousePosition current mouse position
-    * @param pDeltaMousePosition delta compared to last mouse position
-    * @param pCamera camera
-    * @param pData pointer for additional data used to set sensitivity
-    */
-    static void                         freeViewInverseMouseX(
-                                                              const qt::MouseEvent&               pMouseEvent,
-        const utils::Point32f&                 pCurrentMousePosition,
-        const utils::Point32f&                 pDeltaMousePosition,
-        Camera&                         pCamera,
-        void*                           pData )
-    {
+      }
+      
+      
+      /// Free view with inversed x-axis.
+      /** Vertical mouse movement: pitch.
+          Horizontal mouse movement: yaw.
+          @param pMouseEvent mouse event
+          @param pCurrentMousePosition current mouse position
+          @param pDeltaMousePosition delta compared to last mouse position
+          @param pCamera camera
+          @param pData pointer for additional data used to set sensitivity */
+      static void freeViewInverseMouseX(const qt::MouseEvent &pMouseEvent,
+                                        const utils::Point32f &pCurrentMousePosition,
+                                        const utils::Point32f &pDeltaMousePosition,
+                                        Camera &pCamera, void *pData){
         freeView( pMouseEvent, pCurrentMousePosition, pDeltaMousePosition, pCamera, pData, true, false );
-    };
+      }
 
 
-    /// Free view with inversed y-axis.
-    /**
-    * Vertical mouse movement: pitch.
-    * Horizontal mouse movement: yaw.
-    * @param pMouseEvent mouse event
-    * @param pCurrentMousePosition current mouse position
-    * @param pDeltaMousePosition delta compared to last mouse position
-    * @param pCamera camera
-    * @param pData pointer for additional data used to set sensitivity
-    */
-    static void                         freeViewInverseMouseY(
-                                                              const qt::MouseEvent&               pMouseEvent,
-        const utils::Point32f&                 pCurrentMousePosition,
-        const utils::Point32f&                 pDeltaMousePosition,
-        Camera&                         pCamera,
-        void*                           pData )
-    {
+      /// Free view with inversed y-axis.
+      /** Vertical mouse movement: pitch.
+          Horizontal mouse movement: yaw.
+          @param pMouseEvent mouse event
+          @param pCurrentMousePosition current mouse position
+          @param pDeltaMousePosition delta compared to last mouse position
+          @param pCamera camera
+          @param pData pointer for additional data used to set sensitivity */
+      static void freeViewInverseMouseY(const qt::MouseEvent &pMouseEvent,
+                                        const utils::Point32f &pCurrentMousePosition,
+                                        const utils::Point32f &pDeltaMousePosition,
+                                        Camera &pCamera, void *pData){
         freeView( pMouseEvent, pCurrentMousePosition, pDeltaMousePosition, pCamera, pData, false, true );
-    };
-
-
-    /// Free view with inversed axes.
-    /**
-    * Vertical mouse movement: pitch.
-    * Horizontal mouse movement: yaw.
-    * @param pMouseEvent mouse event
-    * @param pCurrentMousePosition current mouse position
-    * @param pDeltaMousePosition delta compared to last mouse position
-    * @param pCamera camera
-    * @param pData pointer for additional data used to set sensitivity
-    */
-    static void                         freeViewInverseBoth(
-        const qt::MouseEvent&               pMouseEvent,
-        const utils::Point32f&                 pCurrentMousePosition,
-        const utils::Point32f&                 pDeltaMousePosition,
-        Camera&                         pCamera,
-        void*                           pData )
-    {
+      }
+      
+      
+      /// Free view with inversed axes.
+      /** Vertical mouse movement: pitch.
+          Horizontal mouse movement: yaw.
+          @param pMouseEvent mouse event
+          @param pCurrentMousePosition current mouse position
+          @param pDeltaMousePosition delta compared to last mouse position
+          @param pCamera camera
+          @param pData pointer for additional data used to set sensitivity */
+      
+      static void freeViewInverseBoth(const qt::MouseEvent &pMouseEvent,
+                                      const utils::Point32f &pCurrentMousePosition,
+                                      const utils::Point32f &pDeltaMousePosition,
+                                      Camera &pCamera, void *pData){
         freeView( pMouseEvent, pCurrentMousePosition, pDeltaMousePosition, pCamera, pData, true, true );
-    };
+      }
+      
+      
+      /// Rotate around origin and correct camera orientation.
+      /** Vertical mouse movement: vertical rotation.
+          Horizontal mouse movement: horizontal rotation.
+          @param pMouseEvent mouse event
+          @param pCurrentMousePosition current mouse position
+          @param pDeltaMousePosition delta compared to last mouse position
+          @param pCamera camera
+          @param pData pointer for additional data used to set sensitivity */
+      static void rotateAroundOrigin(const qt::MouseEvent &pMouseEvent,
+                                     const utils::Point32f &pCurrentMousePosition,
+                                     const utils::Point32f &pDeltaMousePosition,
+                                     Camera &pCamera, void *pData);
+      
+      /// Strafe (camera movement up, down, left, right).
+      /** Vertical mouse movement: move camera along right vector.
+          Horizontal mouse movement: move camera along up vector.
+          @param pMouseEvent mouse event
+          @param pCurrentMousePosition current mouse position
+          @param pDeltaMousePosition delta compared to last mouse position
+          @param pCamera camera
+          @param pData pointer for additional data used to set sensitivity */
+      static void strafe(const qt::MouseEvent &pMouseEvent,
+                         const utils::Point32f &pCurrentMousePosition,
+                         const utils::Point32f &pDeltaMousePosition,
+                         Camera &pCamera, void *pData);
+      
+      /// Roll and distance (camera movement forward and backward).
+      /** Vertical mouse movement: move camera along front vector.
+          Horizontal mouse movement: roll camera.
+          @param pMouseEvent mouse event
+          @param pCurrentMousePosition current mouse position
+          @param pDeltaMousePosition delta compared to last mouse position
+          @param pCamera camera
+          @param pData pointer for additional data used to set sensitivity */
+      static void rollAndDistance(const qt::MouseEvent &pMouseEvent,
+                                  const utils::Point32f &pCurrentMousePosition,
+                                  const utils::Point32f &pDeltaMousePosition,
+                                  Camera &pCamera, void *pData);
+      
+      
+      /// Process mouse event using mouse mapping table.
+      /** @param pMouseEvent mouse event */
+      virtual void process(const qt::MouseEvent &pMouseEvent);
+      
+      
+      /// registers an extra button to the ICLWidget for adjusting scene Properties
+      void link(qt::ICLWidget *widget);
 
-
-    /// Rotate around origin and correct camera orientation.
-    /**
-    * Vertical mouse movement: vertical rotation.
-    * Horizontal mouse movement: horizontal rotation.
-    * @param pMouseEvent mouse event
-    * @param pCurrentMousePosition current mouse position
-    * @param pDeltaMousePosition delta compared to last mouse position
-    * @param pCamera camera
-    * @param pData pointer for additional data used to set sensitivity
-    */
-    static void                         rotateAroundOrigin(
-        const qt::MouseEvent&               pMouseEvent,
-        const utils::Point32f&                 pCurrentMousePosition,
-        const utils::Point32f&                 pDeltaMousePosition,
-        Camera&                         pCamera,
-        void*                           pData );
-
-
-    /// Strafe (camera movement up, down, left, right).
-    /**
-    * Vertical mouse movement: move camera along right vector.
-    * Horizontal mouse movement: move camera along up vector.
-    * @param pMouseEvent mouse event
-    * @param pCurrentMousePosition current mouse position
-    * @param pDeltaMousePosition delta compared to last mouse position
-    * @param pCamera camera
-    * @param pData pointer for additional data used to set sensitivity
-    */
-    static void                         strafe(
-        const qt::MouseEvent&               pMouseEvent,
-        const utils::Point32f&                 pCurrentMousePosition,
-        const utils::Point32f&                 pDeltaMousePosition,
-        Camera&                         pCamera,
-        void*                           pData );
-
-
-    /// Roll and distance (camera movement forward and backward).
-    /**
-    * Vertical mouse movement: move camera along front vector.
-    * Horizontal mouse movement: roll camera.
-    * @param pMouseEvent mouse event
-    * @param pCurrentMousePosition current mouse position
-    * @param pDeltaMousePosition delta compared to last mouse position
-    * @param pCamera camera
-    * @param pData pointer for additional data used to set sensitivity
-    */
-    static void rollAndDistance(const qt::MouseEvent&               pMouseEvent,
-                                const utils::Point32f&                 pCurrentMousePosition,
-                                const utils::Point32f&                 pDeltaMousePosition,
-                                Camera&                         pCamera,
-                                void*                           pData );
-    
-
-    /// Process mouse event using mouse mapping table.
-    /**
-    * @param pMouseEvent mouse event
-    */
-    virtual void                        process(
-                                                const qt::MouseEvent&               pMouseEvent );
+      /// un-registers from the parent widget
+      void unlink(qt::ICLWidget *widget);
     };
     
   } // namespace geom
