@@ -86,24 +86,30 @@ struct PositionIndicator : public SceneObject{
 
 
 MouseHandler *sceneHandler = 0;
-void mouse(const MouseEvent &evt){
-  if(evt.isModifierActive(ShiftModifier) || 
-     evt.isModifierActive(AltModifier) ||
-     evt.isModifierActive(ControlModifier)){
-    if(evt.isLeft() && evt.isPressEvent()){
-      scene.lock();
-      Hit h = scene.findObject(0, evt.getX(), evt.getY());
-      if(h){
-        Vec p = h.pos;
-        Mat T = scene.getCamera(0).getCSTransformationMatrix();
-        pos->update(p,T*p);
+
+struct Handler : public MouseHandler{
+  void process(const MouseEvent &evt){
+    if(evt.isModifierActive(ShiftModifier) || 
+       evt.isModifierActive(AltModifier) ||
+       evt.isModifierActive(ControlModifier)){
+      if(evt.isLeft() && evt.isPressEvent()){
+        scene.lock();
+        Hit h = scene.findObject(0, evt.getX(), evt.getY());
+        if(h){
+          Vec p = h.pos;
+          Mat T = scene.getCamera(0).getCSTransformationMatrix();
+          pos->update(p,T*p);
+        }
+        scene.unlock();
       }
-      scene.unlock();
+    }else{
+      sceneHandler->process(evt);
     }
-  }else{
-    sceneHandler->process(evt);
   }
-}
+  void link(ICLWidget *w){ sceneHandler->link(w); }
+  void unlink(ICLWidget *w){ sceneHandler->unlink(w); }
+};
+
 void mouse_2(const MouseEvent &evt){
   static DrawHandle draw = gui["image"];
   if(evt.isLeft() && evt.isPressEvent()){
@@ -155,7 +161,7 @@ void init(){
   scene.addObject(pos);
 
   sceneHandler = scene.getMouseHandler(0);
-  gui["view"].install(new MouseHandler(mouse));
+  gui["view"].install(new Handler);
   gui["image"].install(new MouseHandler(mouse_2));
   
   scene.getLight(0).setDiffuse(GeomColor(10,10,255,100));
@@ -172,7 +178,7 @@ void init(){
   scene.getLight(2).setPosition(Vec(0,0,-60,1));
   scene.getLight(2).setAnchor(p);
 
-  scene.setDrawCoordinateFrameEnabled(true,400,10);
+  scene.setDrawCoordinateFrameEnabled(true,400);
 
   
   DrawHandle ih = gui["image"];

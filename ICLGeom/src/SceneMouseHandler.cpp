@@ -389,10 +389,16 @@ namespace icl{
     void SceneMouseHandler::link(ICLWidget *widget){
       ICLASSERT_RETURN(widget);
       
+      
+      const std::string save = mParentScene->getConfigurableID();
+      const std::string id = "scene"+str(mParentScene)+str(Time::now().toMicroSeconds());
+      
+      mParentScene->setConfigurableID(id);
+      
       if(!mGUI){
         // create GUI
         mGUI = new VBox();
-        *mGUI << Button("test") << Create();
+        *mGUI << Prop(id) << Create();
 
         ImgQ icon = cvt(IconFactory::create_image("scene-props"));
         
@@ -400,6 +406,7 @@ namespace icl{
                                  function(mGUI,&GUI::switchVisibility),
                                  "3D scene properties  ");
       }
+      mParentScene->setConfigurableID(save);
     }
 
 #endif
