@@ -567,7 +567,9 @@ namespace icl{
       //setPropertyValue("frame-index", m_data->iCurrIdx);
       m_updatingProperties = false;
     }
-  
+
+    REGISTER_CONFIGURABLE(FileGrabber, return new FileGrabber("*", false, false));
+
   } // namespace io
 }
 

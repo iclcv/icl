@@ -457,7 +457,7 @@ namespace icl{
         }
       }
     }
-
+    REGISTER_CONFIGURABLE(DCGrabber, return new DCGrabber(DCDevice::null,0));
   } // namespace io
 }
 
