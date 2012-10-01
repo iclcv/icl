@@ -152,6 +152,7 @@ namespace icl{
           * @param dxpdf Derivative of xp with respect to f
           * @param dxpdc Derivative of xp with respect to c
           * @param dxpdk Derivative of xp with respect to k
+          * @param dxpdalpha Derivative of xp with respect to alpha
           */
       void project_points2(const math::DynMatrix<icl64f> &X, const math::DynMatrix<icl64f> &om, const math::DynMatrix<icl64f> &T,
                            const math::DynMatrix<icl64f> &f, const math::DynMatrix<icl64f> &c, const math::DynMatrix<icl64f> &k, const double alpha,
@@ -177,7 +178,7 @@ namespace icl{
       ///Levenberg-Marquardt sparse algorithm optimizes all parameters
       /**
           * @param impoints image coordinates
-          * @param worldpoints world coordinates
+          * @param worldPoints world coordinates
           * @param params parameters to be optimized
           */
       void optimize(const math::DynMatrix<icl64f> &impoints, const math::DynMatrix<icl64f> &worldPoints, double *params);
@@ -203,7 +204,7 @@ namespace icl{
           * @param kc distortion coefficients
           * @param alpha_c the skew
           * @param thresh_cond number of iterations for optimization
-          * @param omcck rotation vector
+          * @param omckk rotation vector
           * @param Tckk translation vector
           * @param Rckk rotation matrix
           */
@@ -293,15 +294,14 @@ namespace icl{
       ///calibrates the camera
       /**Since for each image the worldcoordinates are/look exactly the same,
           * just pass the worldcoordinates for the first image. This will be used for all computations.
-          * @param all image coordinates
-          * @param world coordinates for the first image, sorting depends on image coordinates
+          * @param impoints image coordinates
+          * @param worldpoints coordinates for the first image, sorting depends on image coordinates
           */
       Result calibrate(const math::DynMatrix<icl64f> &impoints, const math::DynMatrix<icl64f> &worldpoints);
   
       ///saves computed/current intrinsics to xml-file
       /**
           * @param filename name of xml-file for saving
-          * @param size picturesize
           */
       void saveIntrinsics(const std::string &filename);
   

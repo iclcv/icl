@@ -171,7 +171,8 @@ namespace icl{
       }
      
       /// get a T reference that is associated with the given id
-      /** @param id name of the entry to get 
+      /** @param id name of the entry to get
+	  @param checkType  
           @return reference to the value that is associated with the given id
       */
       template<class T>

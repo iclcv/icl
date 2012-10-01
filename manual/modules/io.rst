@@ -1,5 +1,13 @@
-**IO** (Image In- and Output)
-=============================
+.. include:: ../js.rst
+
+.. _io:
+
+####################
+Image In- and Output
+####################
+
+.. image:: /icons/185px/io.png
+
 
 The ICLIO module contains functions and classes that support image in-
 and output. The package contains a large set of classes, that are
@@ -55,7 +63,7 @@ example
 
 +---------------------------------------------------+----------------------------------------+
 | .. literalinclude:: examples/generic-grabber.cpp  | .. image:: images/generic-grabber.png  |
-|    :linenos:                                      |                                        |
+|    :linenos:                                      |      :alt: shadow                      |
 |    :language: c++                                 |                                        |
 +---------------------------------------------------+----------------------------------------+
 

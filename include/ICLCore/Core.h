@@ -48,9 +48,6 @@
     \defgroup TYPES Common Data Type Definitions
     \defgroup GENERAL General Utility and Support Functions
     \defgroup IMAGE Image Classes and Support Functions
-    \defgroup STRUTILS Utiltiy functions for std::string conversions
-    \defgroup MATH Mathematical Utiltiy functions
-
 
     ICL is a C++ image processing library, developed in the 
     <a href="www.ni.www.techfak.uni-bielefeld.de"> Neuroinformatics Group</a> at the 
@@ -316,7 +313,6 @@
     -# \ref GENERAL
     -# \ref IMAGE 
     -# \ref STRUTILS
-    -# \ref MATH 
 
 
     \section EXTERNAL_DEPS Optional 3rd Party Dependencies

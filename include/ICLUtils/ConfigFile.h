@@ -85,7 +85,7 @@ namespace icl{
         \</config\> 
         </pre>
         
-        \subsection RANGES Data Ranges and Value lists
+        \section RANGES Data Ranges and Value lists
         
         In addition to the syntax above, each data-tag can be set up with a range property or a value list. <b>Currently
         data ranges are only used for int- and float- typed data elements</b>. If a range property is defined like this
@@ -107,7 +107,7 @@ namespace icl{
         ranged float- or int-entry restriction.
         
   
-        \subsection OTHERS Other Information
+        \section OTHERS Other Information
   
         When accessing ConfigFile data members, each hierarchy level must be
         separated using the '.' character. So e.g. the entry 'filename' of the example above can 
@@ -252,8 +252,10 @@ namespace icl{
       
       public:
   
-      /// this macro can be used to register new types to the data store
+      /// the macro <tt>REGISTER_CONFIG_FILE_TYPE(T)</tt> can be used to register new types to the data store. This macro is defined as  <b>::icl::utils::ConfigFile::register_type<T>(T)</b><br><br>
+/// \cond
 #define REGISTER_CONFIG_FILE_TYPE(T) ::icl::utils::ConfigFile::register_type<T>(#T)
+/// \endcond
   
       /// registers a new type in the data store parsing engine
       /** Note: only registered types can be loaded from an xml-file 
@@ -314,7 +316,12 @@ namespace icl{
       /// Creates a ConfigFile from given handle instance
       /** Note: Ownership is passed to this ConfigFile instance here */
       ConfigFile(pugi::xml_document *handle) throw (UnregisteredTypeException);
-  
+
+      /// creates a ConfigFile instance from given istream.
+      /** The constructor will only read the stream until the 
+          first opening tag is closed */
+      ConfigFile(std::istream &stream) throw(FileNotFoundException,InvalidFileFormatException,UnregisteredTypeException);
+      
       /// loads the ConfigFile from given filename and updates internal filename variable
       /** Warning: old data content is lost! */
       void load(const std::string &filename) throw(FileNotFoundException,InvalidFileFormatException,UnregisteredTypeException);

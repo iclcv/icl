@@ -102,8 +102,7 @@ namespace icl{
       public:
   
       /// Constructor
-      /** @param borderSize the border size
-          @param integralImageDepth the depth of the integralImage (depth8u etc)
+      /** @param integralImageDepth the depth of the integralImage (depth8u etc)
       */
       IntegralImgOp(core::depth integralImageDepth=core::depth32s);
   
@@ -121,8 +120,8 @@ namespace icl{
       core::depth getIntegralImageDepth() const;
       
       /// applies the integralimage Operaor
-      /** @param posrc The source image
-        @param ppoDst Pointer to the destination image
+      /** @param src The source image
+        @param dst Pointer to the destination image
       */
       void apply(const core::ImgBase *src, core::ImgBase **dst); 
   

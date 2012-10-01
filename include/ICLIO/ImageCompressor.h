@@ -107,7 +107,7 @@ namespace icl{
         the image pixel count, while extremely vertical images provide
         in slower results. Also the image fragmentation is important for
         the en-/de-coding speed. Benchmarks were take on an 
-        Intel (R) Xeon E5530  @2.40GHz CPU, only single channel images were
+        Intel (R) Xeon E5530  \@2.40GHz CPU, only single channel images were
         used.      
         
         - VGA image, high noise: compression to 20%: encoding 3msec, decoding 2msec
@@ -217,8 +217,8 @@ namespace icl{
       ~ImageCompressor();
       
       /// string based interface for setting the compression mode
-      /** @param compression defines the compression type (e.g. rle, jpg, or none)
-          @param quality defines the compression quality, which might depend on the set type 
+      /** @param spec (e.g. CompressionSpec("mode") with mode = rle, jpg, or none)
+          the compression quality, which might depend on the set type 
                  (e.g. 1 Bit for binary rle, or 90 for 90% jpeg compression) 
           Current valid compression modes are
           - "none" no compression (default, possible for all data types)

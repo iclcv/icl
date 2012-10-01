@@ -142,7 +142,7 @@ namespace pugi{
   /** This flag is on by default. **/
   const unsigned int parse_escapes = 0x0010;
   
-  /// This flag determines if EOL characters are normalized (converted to \link #xA xA \endlink) during parsing. 
+  /// This flag determines if EOL characters are normalized
   /** This flag is on by default. **/
   const unsigned int parse_eol = 0x0020;
 	

@@ -38,9 +38,10 @@
 #include <string>
 
 namespace icl{
-  /** \cond */
+  ///@cond
   namespace cv{ struct ImageRegion; }
-  /** \encond */
+  ///@endcond
+
 
   namespace markers{
     

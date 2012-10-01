@@ -108,13 +108,56 @@ namespace icl{
     static void gl_normal(const Primitive::RenderContext &ctx, int normalIndex){
       if(normalIndex >= 0) glNormal3fv(ctx.normals[normalIndex].data());
     }
+    
+    static inline Vec compute_normal(const Vec &va, const Vec &vb, const Vec &vc, bool *ok=0){
+      Vec ac = va - vc;
+      Vec bc = vb - vc;
+      
+      const float lac = sqrt (sqr(ac[0]) + sqr(ac[1]) +  sqr(ac[2]) );
+      const float lbc = sqrt (sqr(bc[0]) + sqr(bc[1]) +  sqr(bc[2]) );
+      
+      if(lac == 0 || lbc == 0){
+        if(ok) *ok = false;
+        return Vec(0,0,0,0);
+      }
+      
+      const float ilac = 1.0f/lac;
+      const float ilbc = 1.0f/lbc;
+      
+      for(int i=0;i<3;++i){
+        ac[i] *= ilac;
+        bc[i] *= ilbc;
+      }
+      
+      Vec normal = cross(ac,bc);
+
+      const float lnormal = sqrt (sqr(normal[0]) + sqr(normal[1]) +  sqr(normal[2]) );
+      if(lnormal == 0){
+        if(ok) *ok = false;
+        return Vec(0,0,0,0);
+      }
+        
+      const float ilnormal = 1.0f/lnormal;
+      
+      for(int i=0;i<3;++i){
+        normal[i] *= ilnormal;
+      }
+      
+      return normal;
+    }
+    
     static void gl_auto_normal(const Primitive::RenderContext &ctx, int a, int b, int c, bool condition=true){
       if(!condition) return;
       const Vec &va = ctx.vertices[a];
       const Vec &vb = ctx.vertices[b];
       const Vec &vc = ctx.vertices[c];
       
-      glNormal3fv(normalize(cross(va-vc,vb-vc)).data());
+      bool ok = true;
+      Vec n = compute_normal(va, vb, vc, &ok);
+     
+      if(ok){
+        glNormal3fv(n.data());
+      }
     }
   
     void LinePrimitive::render(const Primitive::RenderContext &ctx){
@@ -151,6 +194,11 @@ namespace icl{
       }
       glEnd();
     }
+
+    Vec TrianglePrimitive::computeNormal(const std::vector<Vec> &vertices) const{
+      return compute_normal(vertices[i(0)],vertices[i(1)], vertices[i(2)]);
+    }
+
   
     void QuadPrimitive::render(const Primitive::RenderContext &ctx){
       if(trySurfaceOptimization){
@@ -190,6 +238,11 @@ namespace icl{
       }
       glEnd();
     }
+
+    Vec QuadPrimitive::computeNormal(const std::vector<Vec> &vertices) const{
+      return compute_normal(vertices[i(3)],vertices[i(1)], vertices[i(2)]);
+    }
+
   
     void PolygonPrimitive::render(const Primitive::RenderContext &ctx){
       glBegin(GL_POLYGON);
@@ -261,7 +314,7 @@ namespace icl{
                                  int textSize,
                                  const GeomColor &textColor,
                                  int na, int nb, int nc, int nd,
-                                 int billboardHeight,
+                                 float billboardHeight,
                                  scalemode sm):
       TexturePrimitive(a,b,c,d,create_texture(text,textColor,textSize),na,nb,nc,nd, sm),
       textSize(textSize), textColor(textColor), billboardHeight(billboardHeight){

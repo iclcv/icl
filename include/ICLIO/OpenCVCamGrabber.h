@@ -71,32 +71,32 @@ namespace icl{
       virtual std::vector<std::string> getPropertyList();
       
       /// get type of property
-      /** \copydoc icl::Grabber::getType(const std::string &)*/
+      /** \copydoc icl::io::Grabber::getType(const std::string &)*/
       virtual std::string getType(const std::string &name);
       
       /// get information of a properties valid values values
-      /** \copydoc icl::Grabber::getInfo(const std::string &)*/
+      /** \copydoc icl::io::Grabber::getInfo(const std::string &)*/
       virtual std::string getInfo(const std::string &name);
       
       /// returns the current value of a given property
-      /** \copydoc icl::Grabber::getValue(const std::string &)*/
+      /** \copydoc icl::io::Grabber::getValue(const std::string &)*/
       virtual std::string getValue(const std::string &name);
       
       /// grab function grabs an image (destination image is adapted on demand)
-      /** @copydoc icl::Grabber::grab(core::ImgBase**) **/
+      /** @copydoc icl::io::Grabber::grab(core::ImgBase**) **/
       virtual const core::ImgBase *acquireImage();
       
       /// Sets a property to a new value
       /** call getPropertyList() to see which properties are supported
           make sure that m__bIgnoreDesiredParams is set to true
-          @copydoc icl::Grabber::setProperty(const std::string&, const std::string&)
+          @copydoc icl::io::Grabber::setProperty(const std::string&, const std::string&)
           @param property name of the property
           @param value new property value
           */
       virtual void setProperty(const std::string &property, const std::string &value);
       
       /// Constructor creates a new OpenCVCamGrabber instance from a given device
-      /** @param device device to use
+      /** @param dev device to use
           */
       OpenCVCamGrabberImpl(int dev=0) throw (utils::ICLException);
   
@@ -135,7 +135,7 @@ namespace icl{
       /** Internally, for each device index i=0,1,2,..., 
           a grabber-instance is created. If any of these creation trys returns an error,
           no further devices are tested. 
-          @param lastToTest if this params is a positive or zero integer, it defines the
+          @param rescan if this params is a positive or zero integer, it defines the
           last device ID that is tried internally */
       
       /// simpler version of getDeviceListN detecting a maxinum of 100 devices

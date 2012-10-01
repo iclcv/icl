@@ -196,6 +196,33 @@ namespace icl {
       setMask (maskSize,pcMask);
       m_eType = eOptype;    
     }
+
+    MorphologicalOp::MorphologicalOp (const std::string &o, const Size &maskSize,const icl8u *pcMask):
+      m_openingAndClosingBuffer(0),m_gradientBorderBuffer_1(0),m_gradientBorderBuffer_2(0)
+    {
+      ICLASSERT_RETURN(maskSize.getDim());
+      m_pcMask = 0;
+      setMask (maskSize,pcMask);
+
+#define CHECK_OPTYPE(X) else if(o == #X) { m_eType = X; }
+      if(o == "dilate") { m_eType = dilate; }
+      CHECK_OPTYPE(erode)
+      CHECK_OPTYPE(dilate3x3)
+      CHECK_OPTYPE(erode3x3)
+      CHECK_OPTYPE(dilateBorderReplicate)
+      CHECK_OPTYPE(erodeBorderReplicate)
+      CHECK_OPTYPE(openBorder)
+      CHECK_OPTYPE(closeBorder)
+      CHECK_OPTYPE(tophatBorder)
+      CHECK_OPTYPE(blackhatBorder)
+      CHECK_OPTYPE(gradientBorder)
+#undef CHECK_OPTYPE
+      else{
+        throw ICLException("MorphologicalOp::MorphologicalOp: invalid optype string!");
+      }
+    }
+
+
     MorphologicalOp::~MorphologicalOp(){
       ICL_DELETE(m_pcMask);
       ICL_DELETE(m_openingAndClosingBuffer);
@@ -225,6 +252,44 @@ namespace icl {
       m_pAdvState8u = 0;
       m_pAdvState32f = 0;
     }
+    
+    MorphologicalOp::MorphologicalOp (const std::string &o, const Size &maskSize,const icl8u *pcMask){
+      ICLASSERT_RETURN(maskSize.getDim());
+      m_pcMask = 0;
+      setMask (maskSize,pcMask);
+
+    m_bMorphState8u=false;
+      m_bMorphState32f=false;
+      m_bMorphAdvState8u=false;
+      m_bMorphAdvState32f=false;
+      m_bHas_changed=true;
+      m_bHas_changedAdv=true;
+  
+      m_pState8u = 0;
+      m_pState32f = 0;
+      m_pAdvState8u = 0;
+      m_pAdvState32f = 0;
+
+#define CHECK_OPTYPE(X) else if(o == #X) { m_eType = X; }
+      if(o == "dilate") { m_eType = dilate; }
+      CHECK_OPTYPE(erode)
+      CHECK_OPTYPE(dilate3x3)
+      CHECK_OPTYPE(erode3x3)
+      CHECK_OPTYPE(dilateBorderReplicate)
+      CHECK_OPTYPE(erodeBorderReplicate)
+      CHECK_OPTYPE(openBorder)
+      CHECK_OPTYPE(closeBorder)
+      CHECK_OPTYPE(tophatBorder)
+      CHECK_OPTYPE(blackhatBorder)
+      CHECK_OPTYPE(gradientBorder)
+#undef CHECK_OPTYPE
+      else{
+        throw ICLException("MorphologicalOp::MorphologicalOp: invalid optype string!");
+      }
+    }
+
+
+
     MorphologicalOp::~MorphologicalOp(){
       deleteMorphStates();
       ICL_DELETE(m_pcMask);

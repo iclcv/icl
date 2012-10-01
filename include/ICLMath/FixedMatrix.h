@@ -209,7 +209,7 @@ namespace icl{
       /// Create matrix with given data pointer (const version)
       /** As given data pointer is const, no shallow pointer copies are
           allowed here 
-          @params srcdata const source data pointer copied deeply
+          @param srcdata const source data pointer copied deeply
       */
       FixedMatrix(const T *srcdata){
         FixedMatrixBase::optimized_copy<const T*,T*,DIM>(srcdata,srcdata+dim(),begin());
@@ -670,7 +670,7 @@ namespace icl{
           TODO: These results differ from the general matrix benchmarks ??
           
           @param m right matrix multiplication operand
-          @dst destination of matrix multiplication
+          @param dst destination of matrix multiplication
           @see operator*(const FixedMatrix<T,MCOLS,COLS>&) 
       */
       template<unsigned int MCOLS>

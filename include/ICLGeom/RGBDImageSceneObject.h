@@ -110,7 +110,7 @@ namespace icl{
       /// updates the scene object from new kinect core::depth and optionally also color image
       /** the internal point-cloud image is created using the given core::depth image.
           @param depthImage kinect core::depth image, whose values are assumed to be in [mm] units
-          @param optionally given RGB image. If this is not null, its values are mapped to the 
+          @param rgbImage given RGB image. If this is not null, its values are mapped to the 
                  core::depth-image point cloud using the current mapping
           */
       virtual void update(const core::Img32f &depthImage, const core::Img8u *rgbImage=0);

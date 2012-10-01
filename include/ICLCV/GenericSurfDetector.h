@@ -241,7 +241,7 @@ namespace icl{
       ///Sets the initsamples (opensurf only)
       /** Throws Exception if opencv is used, since this function is only for opencv.
           @param init_samples number of initsamples */
-      void setInitSamples(int init_samplex) throw (utils::ICLException);
+      void setInitSamples(int init_samples) throw (utils::ICLException);
   
       ///Sets the threshold
       /** @param threshold */
@@ -323,7 +323,7 @@ namespace icl{
       ///sets new newObjImage as new reference image and computes matches between passed reference image and passed image.
       /** If one of the passed images null an exception is thrown.
   	  First point of the pair is the point for the image, second for the reference image.
-  	  @param image
+  	  @param currentImage
   	  @param newObjImage the new reference image
   	  @return matches as std::pair in vector */
       const std::vector<Match> &match(const core::ImgBase *currentImage,const core::ImgBase *newObjImage) throw (utils::ICLException){

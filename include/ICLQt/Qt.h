@@ -76,7 +76,7 @@
     \defgroup UNCOMMON "Uncommon classes (internally used)"
     
     As it's core, this package provides a wrapper API for Qt-based GUI components. The main class of this
-    package is the icl::GUI class (documentation: \ref GUI_INTRO) . Further essential components are located in
+    package is the icl::GUI class. Further essential components are located in
     the \ref IVF .
 
     \section _GENERAL_ General Idea of this Package
@@ -187,7 +187,7 @@
     The rightmost button is only visible if the widget's content is currently recorded
     from the widgets menu. It can be used as a shotcut to stop recording even if the
     menu is currently not visible. A detailed explanation of the on-screen-menu itself
-    is provided in the icl::ICLWidget's documentation section \ref ICLWIDGET_OSM.
+    is provided in the icl::ICLWidget's documentation.
     
     </TD><TD>
     \image html osm-1.png "Widget control buttons"

@@ -339,6 +339,7 @@ namespace icl {
     /** IPP-Optimized for icl32f and icl64f
         @param poImg input image
         @param iChannel channel index (-1 for all channels)
+	@param roiOnly
         @return mean value of image or image channel (optionally: roi)
     */
     std::vector<double> mean(const ImgBase *poImg, int iChannel=-1, bool roiOnly=false);
@@ -346,8 +347,9 @@ namespace icl {
     /// Compute the variance value of an image a with given mean \ingroup MATH
     /** @param poImg input imge
         @param mean vector with channel means
-        @param empiricMean if true, sum of square distances is devidec by n-1 else by n
+        @param empiricMean if true, sum of square distances is devided by n-1 else by n
         @param iChannel channel index (-1 for all channels)
+	@param roiOnly
         @return The variance value form the vector
     */
     std::vector<double> variance(const ImgBase *poImg, const std::vector<double> &mean, bool empiricMean=true,  int iChannel=-1, bool roiOnly=false);
@@ -355,6 +357,7 @@ namespace icl {
     /// Compute the variance value of an image a \ingroup MATH
     /** @param poImg input imge
         @param iChannel channel index (-1 for all channels)
+	@param roiOnly 
         @return The variance value form the vector
         */
     std::vector<double> variance(const ImgBase *poImg, int iChannel=-1, bool roiOnly=false); 
@@ -362,18 +365,23 @@ namespace icl {
     /// Compute the std::deviation of an image
     /** @param poImage input image
         @param iChannel channel index (all channels if -1)
+        @param roiOnly
         */
     std::vector<double> stdDeviation(const ImgBase *poImage, int iChannel=-1, bool roiOnly = false);
     
     /// Compute the std::deviation of an image with given channel means
     /** @param poImage input image
+	@param mean vector with channel means
+	@param empiricMean if true, sum of square distances is devided by n-1 else by n
         @param iChannel channel index (all channels if -1)
+	@param roiOnly
     */
     std::vector<double> stdDeviation(const ImgBase *poImage, const std::vector<double> mean, bool empiricMean=true, int iChannel=-1, bool roiOnly = false);
   
     /// Calculates mean and standard deviation of given image simultanously
     /** @param image input image
         @param iChannel image channel if < 0 all channels are used
+	@param roiOnly
         @return vector v of pairs p with p.first = mean and p.second = stdDev v[i] containing i-th channel's results
     */
     std::vector< std::pair<double,double> > meanAndStdDev(const ImgBase *image, int iChannel=-1, bool roiOnly = false);

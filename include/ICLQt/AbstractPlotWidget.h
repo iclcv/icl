@@ -222,12 +222,17 @@ namespace icl{
               rectangles and circles can optionally be labelled with text labels
               The text labels are displayed centered at the annotations, but the
               text is not scaled. For text primitives, a non-""-text is mandatory.
-          @param  data packed data that is used to draw 'num' primitives. I.e.
+          @param data packed data that is used to draw 'num' primitives. I.e.
               for rectangles, data contains num * 4 floats
   
           This is not the way, data shall be visualized, the method is
           not optimized for speed and rendering and it will always copy
           the given data deeply.
+          @param num
+          @param linePen 
+          @param brush
+          @param text
+          @param textDelim
       */
       void addAnnotations(const char type,const float *data, int num=1, 
                           const QPen &linePen = QColor(255,0,0),

@@ -52,7 +52,9 @@ namespace icl{
     public:
       ///Constructor
       /** Constructs an object of this class. All default parameters are set. Use setters for desired values.
-          @param size size of the input core::depth image */
+          @param size size of the input core::depth image 
+      	  @param cam the input camera device
+      */
       PointcloudSceneObject(utils::Size size, const Camera &cam); 
   	
       ///Destructor
@@ -90,13 +92,13 @@ namespace icl{
       
       /// Calculates a pointcloud colored with normal directions xyz->RGB in camera space (normals from PointNormalEstimation class).
       /**        @param depthImg the input core::depth image
-                 @param depthImg the input point normals
+               	 @param pNormals the input point normals
                  @param vSync enable/disable vSync (for openCL read)*/ 
       void calculateNormalDirectionColor(const core::Img32f &depthImg, PointNormalEstimation::Vec4* pNormals, bool vSync);
       
       /// Calculates a pointcloud colored with normal directions xyz->RGB in world space (normals from PointNormalEstimation class).
       /**        @param depthImg the input core::depth image
-                 @param depthImg the input point normals
+                 @param pNormals the input point normals
                  @param cam the input camera device
                  @param vSync enable/disable vSync (for openCL read)*/ 
       void calculateNormalDirectionColor(const core::Img32f &depthImg, PointNormalEstimation::Vec4* pNormals, Camera cam, bool vSync);

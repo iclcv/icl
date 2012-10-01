@@ -195,7 +195,7 @@ namespace icl{
   	int getResultMode();
   
   	///Sets the sizeadaptionmode.
-  	/**@param sm the sizeadaptionmode to be set*/
+  	/**@param sam the sizeadaptionmode to be set*/
   	void setSizeAdaptionMode(SizeAdaptionMode sam);
   
   	///Returns the sizeadaptionmode.

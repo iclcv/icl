@@ -148,7 +148,7 @@ namespace icl{
       Scene &operator=(const Scene &scene);
 
       /// Adds a new Camera to the scene
-      /** @param camera which is copied into the scene
+      /** @param cam which is copied into the scene
           @param visSize this parameter determines the size of the
           3D visualized cameras in the scene. If visSize is
           1.0, The camera coordinate system is visualized with size
@@ -325,8 +325,14 @@ namespace icl{
       /** This means, that you will be able to see e.g. camera 1 in the view of camera 0 */
       void setDrawCamerasEnabled(bool enabled);
     
-      /// returns wether cameras are visualized
+      /// returns whether cameras are visualized
       bool getDrawCamerasEnabled() const;
+
+      /// sets wheter lights are also visualized in scenes.
+      void setDrawLightsEnabled(bool enabled, float lightSize=1);
+    
+      /// returns whether lights are visualized
+      bool getDrawLightsEnabled() const;
     
       /// sets wheter a coordinate frame is automatically inserted into the scene
       void setDrawCoordinateFrameEnabled(bool enabled, float axisLength=100, 
@@ -352,6 +358,11 @@ namespace icl{
       /** by default, lighting is activated */
       void setLightingEnabled(bool flag);
 
+      /// this can be used to change OpenGL's global ambient light color
+      /** by default, we use a very weak white ambient background light of
+          [255,255,255,20]. The color values are given in ranges [0,255]*/
+      void setGlobalAmbientLight(const GeomColor &color);
+      
       /// picks the closest contained scene-object clicked at given ScreenPosition
       /** returns 0 if no object was hit, if contactPos is not 0, the 3D-contact position
           is stored there. */
@@ -441,6 +452,9 @@ namespace icl{
 
       /// internally used flag
       bool m_drawCamerasEnabled;
+      
+      /// internally used flag
+      bool m_drawLightsEnabled;
     
       /// internally used flag
       bool m_drawCoordinateFrameEnabled;
@@ -456,6 +470,9 @@ namespace icl{
     
       /// optionally given bounds of the scene
       utils::SmartArray<utils::Range32f> m_bounds;
+      
+      /// global ambient light
+      math::FixedColVector<int,4> m_globalAmbientLight;
 
       private:
       /// called from the SceneObject class

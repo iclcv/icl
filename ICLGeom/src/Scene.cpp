@@ -211,8 +211,10 @@ namespace icl{
    
     Scene::Scene():m_drawCamerasEnabled(true),
                    m_drawCoordinateFrameEnabled(false),
+                   m_drawLightsEnabled(false),
                    m_lightingEnabled(true){
-      m_lights[0] = SmartPtr<SceneLight>(new SceneLight(0));
+      m_lights[0] = SmartPtr<SceneLight>(new SceneLight(this,0));
+      m_globalAmbientLight = FixedColVector<int,4>(255,255,255,20);
     }
     Scene::~Scene(){
   #ifdef HAVE_GLX
@@ -250,6 +252,7 @@ namespace icl{
   
       m_drawCamerasEnabled = scene.m_drawCamerasEnabled;
       m_drawCoordinateFrameEnabled = scene.m_drawCoordinateFrameEnabled;
+      m_drawLightsEnabled = scene.m_drawLightsEnabled;
       m_coordinateFrameObject = scene.m_coordinateFrameObject->copy();
       
       for(unsigned int i=0;i<8;++i){
@@ -273,6 +276,7 @@ namespace icl{
       }else{
         m_bounds = 0;
       }
+      m_globalAmbientLight = scene.m_globalAmbientLight;
       
       return *this;
     }
@@ -327,6 +331,10 @@ namespace icl{
         WARNING_LOG("unable to remove given object " << (void*) obj << " from scene: Object not found!");
       }
       m_objects.erase(it);
+    }
+
+    void Scene::setGlobalAmbientLight(const GeomColor &color){
+      std::copy(color.begin(),color.end(), m_globalAmbientLight.begin());
     }
     
   
@@ -422,6 +430,11 @@ namespace icl{
       if(o->getFragmentShader()){
         o->getFragmentShader()->activate();
       }
+
+      glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, o->m_specularReflectance.data());
+
+      float shininess[] = { o->m_shininess };
+      glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
       
       glPointSize(o->m_pointSize);
       glLineWidth(o->m_lineWidth);
@@ -512,6 +525,8 @@ namespace icl{
       if(widget){
         cam.getRenderParams().viewport = currentImageRect;
       }
+
+      glEnable(GL_NORMALIZE);
       
       glMatrixMode(GL_MODELVIEW);
       glLoadMatrixf(GLMatrix(cam.getCSTransformationMatrixGL()));
@@ -521,9 +536,8 @@ namespace icl{
   
       glLightModeli(GL_LIGHT_MODEL_TWO_SIDE,GL_TRUE);
       // specular lighting is still not working ..
-      //glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER,GL_TRUE);
-      //static GLfloat full_specular_reflectance[]={0.4,0.4,0.4,1};
-      //glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR, full_specular_reflectance);
+      glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER,GL_TRUE);
+      
   
       if(m_lightingEnabled){
         glEnable(GL_LIGHTING);
@@ -537,6 +551,8 @@ namespace icl{
       }else{
         glDisable(GL_LIGHTING);
       }
+
+      glLightModeliv(GL_LIGHT_MODEL_AMBIENT, m_globalAmbientLight.begin());
       
       if(widget){
         if (widget->getFitMode() == ICLWidget::fmZoom) {
@@ -560,6 +576,15 @@ namespace icl{
           allObjects.push_back(m_cameraObjects[i]);
         }
       }
+      if(m_drawLightsEnabled){
+        for(int i=0;i<8;++i){
+          if(m_lights[i] && m_lights[i]->on){
+            SmartPtr<SceneObject> l((SceneObject*)m_lights[i]->getLightObject(),false);
+            allObjects.push_back(l);
+          }
+        }
+      }
+      
       if(m_drawCoordinateFrameEnabled){
         allObjects.push_back(m_coordinateFrameObject);
       }
@@ -568,6 +593,23 @@ namespace icl{
         renderSceneObjectRecursive(allObjects[i].get());
       }
   
+    }
+
+    void Scene::setDrawLightsEnabled(bool enabled, float lightSize){
+      lock();
+      m_drawLightsEnabled = enabled;
+      if(enabled){
+        for(int i=0;i<8;++i){
+          if(m_lights[i]){
+            m_lights[i]->setObjectSize(lightSize);
+          }
+        }
+      }
+      unlock();
+    }
+    
+    bool Scene::getDrawLightsEnabled() const {
+      return m_drawLightsEnabled;
     }
   
     MouseHandler *Scene::getMouseHandler(int camIndex){
@@ -743,7 +785,7 @@ namespace icl{
     SceneLight &Scene::getLight(int index) throw (ICLException){
       if(index < 0 || index > 7) throw ICLException("invalid light index");
       if(!m_lights[index]){
-        m_lights[index] = SmartPtr<SceneLight>(new SceneLight(index));
+        m_lights[index] = SmartPtr<SceneLight>(new SceneLight(this,index));
       }
       return *m_lights[index];
     }

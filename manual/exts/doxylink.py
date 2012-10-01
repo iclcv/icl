@@ -69,10 +69,10 @@ def find_url(doc, symbol):
 					if member.find('name').text == endsymbol:
 						return {'file':(member.findtext('anchorfile') or compound.findtext('filename')) + '#' + member.find('anchor').text, 'kind':member.get('kind')}
 	
-	#Then we'll look at unqualified members
-	for member in doc.findall('.//member'):
-		if member.find('name').text == symbol:
-			return {'file':(member.findtext('anchorfile') or compound.findtext('filename')) + '#' + member.find('anchor').text, 'kind':member.get('kind')}
+	#Then we'll look at unqualified members ce: unqualified members are bad!
+	#for member in doc.findall('.//member'):
+        # if member.find('name').text == symbol:
+	#		return {'file':(member.findtext('anchorfile') or compound.findtext('filename')) + '#' + member.find('anchor').text, 'kind':member.get('kind')}
 	
 	return None
 
@@ -121,11 +121,17 @@ def parse_tag_file(doc):
 	function_list = [] #This is a list of function to be parsed and inserted into mapping at the end of the function.
 	for compound in doc.findall("./compound"):
 		compound_kind = compound.get('kind')
-		if compound_kind != 'namespace' and compound_kind != 'class' and compound_kind != 'struct':
-			continue #Skip everything that isn't a namespace or class
+		if compound_kind != 'namespace' and compound_kind != 'class' and compound_kind!= 'struct' and compound_kind != 'file':
+			continue #Skip everything that isn't a namespace, class, struct or file
 		
 		compound_name = compound.findtext('name')
 		compound_filename = compound.findtext('filename')
+		
+		#TODO The following is a hack bug fix I think
+		#Doxygen doesn't seem to include the file extension to <compound kind="file"><filename> entries
+		#If it's a 'file' type, check if it _does_ have an extension, if not append '.html'
+		if compound_kind == 'file' and not os.path.splitext(compound_filename)[1]:
+			compound_filename = join(compound_filename, '.html')
 		
 		#If it's a compound we can simply add it
 		mapping[compound_name] = {'kind' : compound_kind, 'file' : compound_filename}
@@ -137,35 +143,24 @@ def parse_tag_file(doc):
 			anchorfile = member.findtext('anchorfile') or compound_filename
 			member_symbol = join(compound_name, '::', member.findtext('name'))
 			member_kind = member.get('kind')
-
-                        # ce otherwise, friends overwrote members (and even constructors)
-                        if member_kind == 'friend':
-                                continue # ce hmmmm
-
 			arglist_text = member.findtext('./arglist') #If it has an <arglist> then we assume it's a function. Empty <arglist> returns '', not None. Things like typedefs and enums can have empty arglists
 			
-			if arglist_text and member_kind != 'variable' and member_kind != 'typedef' and member_kind != 'enumeration':
-				function_list.append((member_symbol, arglist_text, member_kind, join(anchorfile,'#',member.findtext('anchor'))))
-			else:
-				mapping[member_symbol] = {'kind' : member.get('kind'), 'file' : join(anchorfile,'#',member.findtext('anchor'))}
+                        # ce added this
+                        if member_kind != 'variable':
+                                if arglist_text and member_kind != 'variable' and member_kind != 'typedef' and member_kind != 'enumeration':
+                                        function_list.append((member_symbol, arglist_text, member_kind, join(anchorfile,'#',member.findtext('anchor'))))
+                                else:
+                                        mapping[member_symbol] = {'kind' : member.get('kind'), 'file' : join(anchorfile,'#',member.findtext('anchor'))}
 	
 	for old_tuple, normalised_tuple in zip(function_list, itertools.imap(normalise, (member_tuple[1] for member_tuple in function_list))):
 		member_symbol = old_tuple[0]
 		original_arglist = old_tuple[1]
 		kind = old_tuple[2]
-
 		anchor_link = old_tuple[3]
 		normalised_arglist = normalised_tuple[1]
 		if normalised_tuple[1] is not None: #This is a 'flag' for a ParseException having happened
-			if mapping.get(member_symbol):
-                                # ce: added try except here in order to avoid exit
-                                # what is wrong with SmartPtrBase?
-                                try:
-                                        mapping[member_symbol]['arglist'][normalised_arglist] = anchor_link
-                                except KeyError:
-                                        print('error parsing entry: ' + member_symbol)
-                                        print(mapping[member_symbol])
-                                        
+			if mapping.get(member_symbol) and mapping[member_symbol]['kind'] == 'function':
+				mapping[member_symbol]['arglist'][normalised_arglist] = anchor_link
 			else:
 				mapping[member_symbol] = {'kind' : kind, 'arglist' : {normalised_arglist : anchor_link}}
 		else:
@@ -255,7 +250,33 @@ def find_url2(mapping, symbol):
 	
 	#If not found by now, just return the first one in the list
 	if len(no_templates_list) != 0:
-		#TODO return a warning here?
+
+                noclass = re.compile("^class");
+                nostruct = re.compile("^struct");
+
+		#ce: added warning here!
+                #print("warning: symbol %s yields ambiguity!"%symbol);
+                #for i in no_templates_list.values():
+                #        print("-->%s"%i)
+                # search_order struct class enumeration function
+                for i in no_templates_list.values():
+                        if i['kind'] == 'struct' or i['kind'] == 'class':
+                                return return_from_mapping(i, normalised_arglist)
+                for i in no_templates_list.values():
+                        if i['kind'] == 'enumeration':
+                                return return_from_mapping(i, normalised_arglist)
+                # 1st function search for non class/struct members
+                for i in no_templates_list.values():
+                        if i['kind'] == 'function':
+                                ver = i['arglist'];
+                                for j in ver:
+                                        if not noclass.match(ver[j]) and not nostruct.match(ver[j]):
+                                                   return return_from_mapping(i, normalised_arglist)
+                # 1st function search class/struct members as well
+                for i in no_templates_list.values():
+                        if i['kind'] == 'function':
+                               return return_from_mapping(i, normalised_arglist)
+
 		return return_from_mapping(no_templates_list.values()[0], normalised_arglist)
 	#Else return None if the list is empty
 	else:
@@ -414,18 +435,12 @@ def create_role(app, tag_filename, rootdir):
 		app.warn(standout('Could not open tag file %s. Make sure your `doxylink` config variable is set correctly.' % tag_filename))
 	
 	def find_doxygen_link(name, rawtext, text, lineno, inliner, options={}, content=[]):
-
-
 		text = utils.unescape(text)
 		# from :name:`title <part>`
 		has_explicit_title, title, part = split_explicit_title(text)
-
-#                print('find_doxygen_link name=%s rawtext=%s text=%s lineno=%d' % (name, rawtext, text, lineno))
-#                print('find_doxygen_link title=%s part=%s' % (title, part))
-                
 		warning_messages = []
 		if tag_file:
-			url = find_url(tag_file, part)
+			# ?? url = find_url(tag_file, part)
 			try:
 				url = find_url2(app.env.doxylink_cache[cache_name]['mapping'], part)
 			except LookupError as error:

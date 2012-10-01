@@ -97,8 +97,7 @@ namespace icl{
     /** @{ @name creator functions **/
     /* {{{ open */
     /// create an empty (black) ImgQ (affinity for floats)
-    /** see \ref AFFINITY
-        @param width image width
+    /** @param width image width
         @param height image height
         @param channels image channel count
     **/
@@ -112,8 +111,7 @@ namespace icl{
     
     
     /// create an ImgQ that is pre-initialized with ones (affinity for floats)
-    /** see \ref AFFINITY
-        @param width image width
+    /** @param width image width
         @param height image height
         @param channels image channel count      
     **/
@@ -125,8 +123,7 @@ namespace icl{
     /** \endcond */
     
     /// load an image file read file (affinity for floats) 
-    /** see \ref AFFINITY
-        @param filename filename/pattern to read 
+    /** @param filename filename/pattern to read 
     **/
     template<class T>
     core::Img<T> load(const std::string &filename);
@@ -136,8 +133,7 @@ namespace icl{
     /** \endcond */
     
     /// loads an image file and returns image in given core::format (affinity for floats)
-    /** see \ref AFFINITY
-        @param filename filename to read (*.jpg, *.ppm, *.pgm)
+    /** @param filename filename to read (*.jpg, *.ppm, *.pgm)
         @param fmt image core::format to convert the result to
     **/
     template<class T>
@@ -148,8 +144,7 @@ namespace icl{
     /** \endcond */
     
     /// create a test image (converted to destination core::format) (affinity for floats)
-    /** see \ref AFFINITY
-        @param name identifier for the image:
+    /** @param name identifier for the image:
                     names are: parrot, lena, cameraman, mandril, 
                     windows, flowers, women, house and tree 
         @param fmt image core::format to convert the result to
@@ -162,8 +157,7 @@ namespace icl{
     /** \endcond */
     
     /// grabs a new image from given device (affinity for floats) 
-    /** see \ref AFFINITY
-        @param dev device driver type (see Generic Grabber for more details)
+    /** @param dev device driver type (see Generic Grabber for more details)
         @param devSpec device specifier
         @param size output image size (grabbers size if utils::Size::null)
         @param fmt output format
@@ -225,6 +219,7 @@ namespace icl{
     **/
     ImgQ cvt(const core::Img8u &image);
   
+    /** \cond */
     /// Converts a given core::Img16s into an ImgQ
     /** @param image source image 
         @return converted image 
@@ -241,14 +236,16 @@ namespace icl{
     /** @param image source image 
         @return converted image 
     **/
+
     ImgQ cvt(const core::Img32f &image);
-  
+
     /// Converts a given core::Img64f into an ImgQ
     /** @param image source image 
         @return converted image 
     **/
     ImgQ cvt(const core::Img64f &image);
-  
+    /** \endcond */
+
     /// Converts a given core::ImgBase into an ImgQ
     /** @param image source image 
         @return conveted image 
@@ -268,8 +265,7 @@ namespace icl{
     /* {{{ open */
   
     /// applies a filter operation on the source image (affinity for float)
-    /** see \ref AFFINITY
-        @param image source image
+    /** @param image source image
         @param filter filter name, possible: sobelx, sobely, gauss, 
                       laplacs, median, dilation,erosion, opening and
                       closing 
@@ -284,7 +280,7 @@ namespace icl{
     /** \endcond */
   
     /// applies gaussian blur to a given image (using a maskRadius*2+1-sized gaussian filter)
-    /** affinity for floats (see @ref AFFINITY)*/
+    /** affinity for floats */
     template<class T>
     core::Img<T> blur(const core::Img<T> &image, int maskRadius=1);
     
@@ -383,8 +379,7 @@ namespace icl{
     /** @param image source image
         @param filename filename to write the image to.
     **/
-    template<class T>
-    void save(const core::Img<T> &image, const std::string &filename);
+    void save(const core::ImgBase &image, const std::string &filename);
     
     /// shows an image using TestImages::show
     /** The image is wrote to disk into a temporary file. Then it

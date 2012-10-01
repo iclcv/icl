@@ -365,9 +365,7 @@ namespace icl{
        
       /// writes all available properties into a file
       /** @param filename destination xml-filename
-          @param writeDesiredParams if this flag is true, current grabbers desired params are written to the
-          config file as well 
-          @param skipUnstable some common grabber parameters e.g. trigger-settings cause problems when
+          @param propertiesToSkip some common grabber parameters e.g. trigger-settings cause problems when
           they are read from configuration files, hence these parameters are skipped at default*/
       virtual void saveProperties(const std::string &filename, const std::vector<std::string> &propertiesToSkip=EMPTY_VEC);
   

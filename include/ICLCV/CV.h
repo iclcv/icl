@@ -47,12 +47,10 @@
 
 
 /** 
-    \defgroup G_CBS Color Blob Searcher API (template based)
     \defgroup G_RD Region Detection Package
+    \defgroup G_CBS Color Blob Searcher API (template based)
     \defgroup G_PT Position Tracker template class
     \defgroup G_UTILS Utility classes and Functions
-    
-
     TODO!!!
     The ICLCV package contains functions and classes for region and blob detection and
     for tracking. However, the most common component is the icl::RegionDetector class, 
@@ -232,10 +230,12 @@ namespace icl{
                0.8 to 0.95)
         @param buffer temporary image buffer (this buffer can be given to the function optionally)
                if given this buffer is exploited internally. The buffers size and channel count
+	@param clipBuffersToROI 
                are adapted automatically
         @param rd Optionally exploited ImgRegionDetector object pointer. If given, 
                this region detector is used, which can speed up Performance in successive calls
                to matchTemplate
+	@param useCrossCorrCoeffInsteadOfSqrDistance
     **/
     std::vector<utils::Rect> matchTemplate(const core::Img8u &src, 
                                            const core::Img8u &templ, 

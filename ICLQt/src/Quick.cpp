@@ -668,8 +668,7 @@ namespace icl{
   
     // }}}
     
-    template<class T>
-    void save(const Img<T> &image,const string &filename){
+    void save(const ImgBase &image,const string &filename){
       // {{{ open
       FileWriter(filename).write(&image);
     }
@@ -760,7 +759,6 @@ namespace icl{
     template Img<icl##D> blur(const Img<icl##D>&,int);               \
     template Img<icl##D> copy(const Img<icl##D>&);                   \
     template Img<icl##D> copyroi(const Img<icl##D>&);                \
-    template void save(const Img<icl##D>&,const string&);            \
     template void print(const Img<icl##D>&);                         \
     template Img<icl##D> norm(const Img<icl##D>&);
     ICL_INSTANTIATE_ALL_DEPTHS

@@ -302,11 +302,18 @@ namespace icl{
       
       m_doc->load("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
                   "<config>\n"
-                  "   <data id=\"title\" type=\"string\">no title defined</data>\n"
                   "</config>\n");
     }
     
     // }}}
+
+    ConfigFile::ConfigFile(std::istream &stream) throw(FileNotFoundException,InvalidFileFormatException,UnregisteredTypeException){
+      
+      XMLDocument *doc = new XMLDocument;
+      doc->loadNext(stream);
+      *this = ConfigFile(doc);
+    }
+
   
     void ConfigFile::setRestriction(const std::string &id, const ConfigFile::KeyRestriction &r) throw (EntryNotFoundException){
       // {{{ open

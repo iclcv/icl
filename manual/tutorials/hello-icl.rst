@@ -1,7 +1,10 @@
+.. include:: ../js.rst
+
 .. _hello-icl:
 
+#########
 Hello ICL
-=========
+#########
 
 Let's start with a very simple example, which visualizes a demo image
 only. The basic Idea for this chapter is to help you to set up all
@@ -10,7 +13,7 @@ you environment variables to easily compile and run your example code.
 +--------------------------------------------+----------------------------------+
 | .. literalinclude:: examples/hello-icl.cpp | .. figure:: images/hello-icl.png |
 |    :language: c++                          |    :scale: 60%                   |
-|    :linenos:                               |    :alt: shown image             |
+|    :linenos:                               |    :alt: shadow                  |
 +--------------------------------------------+----------------------------------+   
 
 In order to make this demo work, you have to apply the following steps (linux/mac):
@@ -37,15 +40,16 @@ In order to make this demo work, you have to apply the following steps (linux/ma
   **./example**
 
 The example code contains actually two nested function calls: The
-inner **create** function and the outer **show** function. Actually,
-you will find these functions in the namespace **icl::qt**, however
-these are not needed here because the header **ICLQt/Quick.h** is
-included. This header is meant for rapid prototyping and therefore it
-will automatically use all ICL-namespaces and the **std**-namespace
+inner :icl:`create` function and the outer :icl:`show`
+function. Actually, you will find these functions in the namespace
+:icl:`icl::qt`, however these are not needed here because the header
+:icl:`ICLQt/Quick.h<Quick.h>` is included. This header is meant for
+rapid prototyping and therefore it will automatically use all
+ICL-namespaces and the **std**-namespace
 
-* **icl::qt::create** creates a demo image that is specified by
+* :icl:`qt::create` creates a demo image that is specified by
   the given string value. 
-* **icl::qt::show** is a very special function. It saves the given
+* :icl:`qt::show` is a very special function. It saves the given
   image to a temporary file, and starts the application **icl-xv** in
   order to display this image. **icl-xv** can be set up to delete the
   visualized image-file. This helps to avoid having to delete all
@@ -53,6 +57,6 @@ will automatically use all ICL-namespaces and the **std**-namespace
   application **icl-xv**, the current application does not have to
   implement GUI- and event handling itself. (Note: it is also possible
   to set up the show function to use a custom image-viewer
-  application. This is documented **TODO Where**)
+  application, see :icl:`showSetup`).
 
 

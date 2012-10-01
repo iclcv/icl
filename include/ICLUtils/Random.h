@@ -42,7 +42,7 @@
 
 namespace icl{
   namespace utils{
-    /// Initilaize the random number generator. \ingroup MATH
+    /// Initilaize the random number generator. \ingroup RANDOM
     /** @param seedval The seed value (e.g. time(0) ...)
     */
     inline void randomSeed(long int seedval) {
@@ -53,16 +53,16 @@ namespace icl{
   #endif
     }
   
-    /// Initilaize the random number generator (with Time::now().toMicroSeconds()).\ingroup MATH 
+    /// Initilaize the random number generator (with Time::now().toMicroSeconds()).\ingroup RANDOM 
     inline void randomSeed() {randomSeed(Time::now().toMicroSeconds());}
   
-    /// Object based random seed caller \ingroup MATH
+    /// Object based random seed caller \ingroup RANDOM
     /** Calls randomSeed() at construction time */
     struct RandomSeeder{
       inline RandomSeeder(){randomSeed();}
     };
   
-    /// Generates random numbers in range [0,1]  \ingroup MATH
+    /// Generates random numbers in range [0,1]  \ingroup RANDOM
     inline double random(double max=1) {
   #ifdef WIN32
       // this generates quite poor random numbers, because RAND_MAX = 32767
@@ -72,7 +72,7 @@ namespace icl{
   #endif
     }
     
-    /// Generate a random number in range [min,max] \ingroup MATH
+    /// Generate a random number in range [min,max] \ingroup RANDOM
     /** @param min a float argument. The lower intervall bound
         @param max a float argument. The upper interval bound
     */
@@ -86,7 +86,7 @@ namespace icl{
       return random((double)r.minVal,(double)r.maxVal);
     }
    
-    ///Creates a non-negative random number in range [0,max] \ingroup MATH
+    ///Creates a non-negative random number in range [0,max] \ingroup RANDOM
     /** @param max The upper limit for the returned number
     */
     inline unsigned int random(unsigned int max) {
@@ -97,14 +97,14 @@ namespace icl{
   #if 0
     // removed due to lack of usebility: use std::fill(i.begin(c),i.end(c),URand(range)) instead
     
-    /// fill an image with uniform distributed random values in the given range \ingroup MATH
+    /// fill an image with uniform distributed random values in the given range \ingroup RANDOM
     /** @param poImage image to fill with random values (NULL is not allowed) 
         @param range for the random value 
         @param roiOnly decides whether to apply the operation on the whole image or on its ROI only 
     **/
     void random(ImgBase *poImage, const Range<double> &range=Range<double>(0,255), bool roiOnly=true);
   
-    /// fill an image with gauss-distributed random values with given mean, variance and min/max value \ingroup MATH
+    /// fill an image with gauss-distributed random values with given mean, variance and min/max value \ingroup RANDOM
     /** @param poImage image to fill with random values (NULL is not allowed) 
         @param mean mean value for all gauss distributed random variables
         @param var variance for all gauss distributed random variables
@@ -113,7 +113,7 @@ namespace icl{
     **/
     void gaussRandom(ImgBase *poImage, double mean, double var, const Range<double> &minAndMax, bool roiOnly=true);
   #endif
-    /// Generate a gaussian random number with given mean and variance \ingroup MATH
+    /// Generate a gaussian random number with given mean and variance \ingroup RANDOM
     /** @param mean mode of the gaussian
         @param var variance of the gaussian
         @return gaussian distributed variable
@@ -121,7 +121,7 @@ namespace icl{
     **/
     double gaussRandom(double mean, double var);
   
-    /// Generate a gaussian random number with given mean and variance and clips the result to a range \ingroup MATH
+    /// Generate a gaussian random number with given mean and variance and clips the result to a range \ingroup RANDOM
     /** @param mean mode of the gaussian
         @param var variance of the gaussian
         @param range clipping range for the returned value

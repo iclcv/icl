@@ -1,7 +1,12 @@
+.. include:: ../js.rst
+
 .. _geom:
 
-**Geom** (3D Vision and Visualization)
-======================================
+###########################
+3D Vision and Visualization
+###########################
+
+.. image:: /icons/185px/geom.png
 
 The ICLGeom module provides algorithms for 3D computer-vision, point
 cloud processing and 3D visualization. Its components are tightly
@@ -179,7 +184,7 @@ GUI-thread, which is necessary due to OpenGL's lack of thread-safety.
 
 +----------------------------------------------+-----------------------------------+  
 | .. literalinclude:: examples/scene-graph.cpp | .. image:: images/scene-graph.png |
-|    :linenos:                                 |                                   |
+|    :linenos:                                 |      :alt: shadow                 |
 |    :language: c++                            |                                   |
 +----------------------------------------------+-----------------------------------+  
 

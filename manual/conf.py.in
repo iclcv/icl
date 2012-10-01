@@ -47,7 +47,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'ICL (Image Component Library)'
-copyright = u'2012, Michael Goetting, Christof Elbrechter'
+copyright = u'2012, Christof Elbrechter, Michael Goetting, Robert Haschke'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -104,18 +104,20 @@ html_theme = 'default'
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-     "footerbgcolor" : "rgb(200,200,200)",
-     "footertextcolor" : "rgb(100,100,100)",
-     "sidebarbgcolor" : "rgb(220,220,220)", 
-     "sidebartextcolor" : "rgb(100,100,100)",
-     "relbarbgcolor" : "rgb(100,100,100)",
-     "relbartextcolor" : "rgb(200,200,200)",      
-     "relbarlinkcolor" : "rgb(200,200,200)",
-     "headtextcolor" : "rgb(100,100,100)",
+     
+     "footerbgcolor" : "rgb(210,210,210)",
+     "footertextcolor" : "rgb(50,50,50)",
+     "sidebarbgcolor" : "rgb(210,210,210)", 
+     "sidebartextcolor" : "rgb(50,50,50)",
+     "relbarbgcolor" : "rgb(170,170,170)",
+     "relbartextcolor" : "rgb(50,50,50)",      
+     "relbarlinkcolor" : "rgb(50,50,50)",
+     "headtextcolor" : "rgb(80,80,80)",
      "codebgcolor" : "rgb(240,240,240)",
-     "sidebarlinkcolor" : "rgb(50,130,235)",
-     "visitedlinkcolor" : "rgb(50,130,235)",
-     "linkcolor" : "rgb(50,130,235)",
+     "sidebarlinkcolor" : "rgb(50,50,50)",
+     "visitedlinkcolor" : "#0F67A1",  #"rgb(50,130,235)",
+     "linkcolor" : "#0F67A1",#"rgb(50,130,235)",
+     "textcolor" : "rgb(60,60,60)"
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
@@ -203,7 +205,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'ICL.tex', u'ICL Documentation', u'Michael Goetting', 'manual'),
+  ('index', 'ICL.tex', u'ICL Documentation', 'Christof Elbrechter, Michael Goetting and Robert Haschke', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -232,7 +234,7 @@ latex_logo = './logo.png'
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'icl', u'ICL Documentation', [u'Michael Goetting'], 1)
+    ('index', 'icl', u'ICL Documentation', [u'Christof Elbrechter', u'Michael Goetting', u'Robert Haschke'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -245,7 +247,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'ICL', u'ICL Documentation', u'Michael Goetting', 'ICL', 'One line description of project.', 'Miscellaneous'),
+  ('index', 'ICL', u'ICL Documentation', u'Christof Elbrechter, Michael Goetting and Robert Haschke', 'ICL', 'One line description of project.', 'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.

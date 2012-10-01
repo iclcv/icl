@@ -1,7 +1,12 @@
+.. include:: ../js.rst
+
 .. _core:
 
-**Core** (Basic Types for Image Processing)
-===========================================
+################################
+Basic Types for Image Processing
+################################
+
+.. image:: /icons/185px/core.png
 
 The Core modules provides basic types, classes and functions for image
 processing. In particular it introduces ICL's image classes
@@ -33,7 +38,7 @@ The Image Classes
 
 +-------------------------------------------------------------------------+------------------------------------+
 | For the implementation of the image classes, we combined inheritance    | .. image:: images/image-sketch.png |
-| and class-templates: The :icl:`ImgBase` class defines an abstract       |                                    |
+| and class-templates: The :icl:`ImgBase` class defines an abstract       |      :alt: shadow                  |
 | interface, that manages all image information except for the actual     |                                    |
 | image pixel data. It works as generic interface for                     |                                    |
 | the several versions of the :icl:`Img`-template and provides access to  |                                    |

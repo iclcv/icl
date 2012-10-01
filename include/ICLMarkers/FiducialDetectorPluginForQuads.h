@@ -73,7 +73,8 @@ namespace icl{
       virtual SourceImageType getPreProcessing() const {  return Gray;  }
       
       /// loads markers ID's (also implemented in the subclasses)
-      /** @param def this any instance can be ...
+      /** @param add
+          @param which this any instance can be ...
           * of type int (then, only the corresponding marker ID is loaded) 
           * of type utils::Range32s "[a,b]", (then all markers within the range are loaded)
           * of something like {a,b,c,d,...} then all marker IDs in the list are loaded
@@ -81,6 +82,7 @@ namespace icl{
           Please note that other types might be interpreted in the wrong way.
           Mandatory parameter is "size". Please refer to the 
           documentation of icl::markers::FiducialDetector::loadMarkers for more details
+         @param params
       */
       virtual void addOrRemoveMarkers(bool add, const utils::Any &which, const utils::ParamList &params) = 0;
   

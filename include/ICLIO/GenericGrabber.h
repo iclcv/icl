@@ -102,13 +102,13 @@ namespace icl {
           @param params comma separated device depend parameter list: e.g.
                                     "v4l=0,file=images//image*.ppm,dc=0" with self-explaining syntax\n
                                     Additionally, each token a=b can be extended by device property that are directly
-                                    set after device instantiation. E.g. demo=0@size=QVGA@blob-red=128, instantiates
+                                    set after device instantiation. E.g. demo=0\@size=QVGA\@blob-red=128, instantiates
                                     a demo-grabber, where the two additionally given properties (size and blob-red) 
                                     are set immediately after grabber instantiation. By these means particularly a 
                                     grabber's core::format can be set in the grabber instantiation call. Furthermore, three
                                     special \@-tokens are possible: \@info (e.g. dc=0\@info) lists the 0th dc device's
                                     available properties. \@load=filename loads a given property filename directly. 
-                                    \@udist=filename loads a given undistortion parameter filename directly and therefore
+				    \@udist=filename loads a given undistortion parameter filename directly and therefore
                                     makes the grabber grab undistorted images according to the undistortion parameters
                                     and model type (either 3 or 5 parameters) that is found in the given xml-file. 
                                     <b>todo fix this sentence according to the fixed application names</b>
@@ -154,7 +154,7 @@ namespace icl {
                                     - kinecti=device-index (int) 
                                     - rsb=[comma-sep. transport-list=spread]:scope)
   
-          @param notifiyErrors if set to false, no exception is thrown if no suitable device was found
+          @param notifyErrors if set to false, no exception is thrown if no suitable device was found
       **/
       void init(const std::string &devicePriorityList,
                 const std::string &params,

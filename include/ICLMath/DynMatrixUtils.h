@@ -431,7 +431,7 @@ namespace icl{
         \code src1.transp().mult( src2.transp(),dst) ) \endcode in case of having transpDef == BOTH_T
         @param src1 left operand
         @param src2 right operand
-        @param dst1 destination matrix (adapted on demand)
+        @param dst destination matrix (adapted on demand)
         @param transpDef or-ed list of transposedDef values e.g. (SRC1_T | SRC2_T) mean both matrices are transposed.
     */
     template<class T>
@@ -447,7 +447,7 @@ namespace icl{
         If Intel MKL is not available, function matrix_mult_t is used as fallback.
         @param src1 left operand
         @param src2 right operand
-        @param dst1 destination matrix (adapted on demand)
+        @param dst destination matrix (adapted on demand)
         @param transpDef or-ed list of transposedDef values e.g. (SRC1_T | SRC2_T) mean both matrices are transposed.
     */
     template<class T>
@@ -468,12 +468,13 @@ namespace icl{
   
     /// SVD function - decomposes A into USV' (only icl32f and icl64f)
     /** Internaly, this function will always use double values. Other types are converted internally.
+        @param A to decomposed matrix
         @param U is filled column-wise with the eigenvectors of AA'
         @param S is filled with the singular values of A (s is ColumnVector and not diagonal matrix)
         @param V is filled column-wise with the eigenvectors of A'A (in V, V is stored not V')
     */
     template<class T>
-    void svd_dyn(const DynMatrix<T> &A, DynMatrix<T> &U, DynMatrix<T> &s, DynMatrix<T> &V) throw (utils::ICLException);
+    void svd_dyn(const DynMatrix<T> &A, DynMatrix<T> &U, DynMatrix<T> &S, DynMatrix<T> &V) throw (utils::ICLException);
     
   
   #if 0  

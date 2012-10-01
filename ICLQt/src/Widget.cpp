@@ -2425,6 +2425,7 @@ namespace icl{
     void ICLWidget::install(MouseHandler *h){
       connect(this,SIGNAL(mouseEvent(const MouseEvent&)),
               h,SLOT(handleEvent(const MouseEvent&)));  
+      h->link(this);
     }
   
   
@@ -2432,6 +2433,7 @@ namespace icl{
     void ICLWidget::uninstall(MouseHandler *h){
       disconnect(this,SIGNAL(mouseEvent(const MouseEvent &)),
                  h,SLOT(handleEvent(const MouseEvent &)));  
+      h->unlink(this);
     }
   
   

@@ -1,5 +1,13 @@
-**Utils** (General Support Types and Functions)
-===============================================
+.. include:: ../js.rst
+
+.. _utils:
+
+###################################
+General Support Types and Functions
+###################################
+
+.. image:: /icons/185px/utils.png
+
 
 The Utils package contains a set of C++ support functions and
 classes. Due to the library dependency order, these classes have no
@@ -27,18 +35,19 @@ Table of Contents
 
 Basic Types
 """""""""""
-
+ 
 ICL's basic data types are defined in
 **ICLUtils/BasicTypes.h**. Unlike all other classes, types and
-functions, the basic types are defined directly in the
-:icl:`icl` -namespace. The type syntax is copied from the Intel IPP
-library: All types have an *icl*-prefix, an integer-value that
-describes the number of bits used, and a suffix
+functions, the basic types are defined directly in the :icl:`icl`
+-namespace. The type syntax is copied from the Intel IPP library: All
+types have an *icl*-prefix, an integer-value that describes the number
+of bits used, and a suffix
 
-* **u** for unsigned integers
+* **u** for unsigned integers 
 * **s** for signed integers
 * **f** for floating point numbers
 * **c** for complex floating point numbers
+
 
 The most common types are
 
@@ -52,7 +61,7 @@ The most common types are
 ICL's :ref:`image classes<core.image>` (provided by the
 :ref:`ICLCore<core>` module) are implemented for these common types
 **Note:** Please ensure not to mix up the basic data types with the
-alternatives for the enumeration :icl:`depth` which are
+alternatives for the enumeration :icl:`core::depth` which are
 
 * :icl:`depth8u`
 * :icl:`depth16s`
@@ -60,7 +69,7 @@ alternatives for the enumeration :icl:`depth` which are
 * :icl:`depth32f`
 * :icl:`depth64f`
 
-The **core::depth** value is used for run-time type-inference
+The :icl:`core::depth` value is used for run-time type-inference
 
 .. _utils.support-types:
 
@@ -159,8 +168,6 @@ string identifiers. Each property has a type, a type-dependend
 description of possible values, a current value and a so called
 volatileness. Further details and examples are given in the 
 tutorial :ref:`tut.configurable`.
-
-
 
 .. _utils.smart-ptr:
 

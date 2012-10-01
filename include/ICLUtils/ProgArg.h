@@ -227,11 +227,10 @@ namespace icl{
     /** The pa-function is the main interface for extracting information 
         about given program arguments and/or their default values at run-time.
         
-        The returned icl::ProgArg instance is always automatically
+        The returned icl::utils::ProgArg instance is always automatically
         parsed from its internal string representation into the expressions
         lvalue-type (this can easily be implemented with a <em>templated</em>
-        version of the implicit cast operator of a class). Here are some 
-        examples:
+        version of the implicit cast operator of a class). Here are some examples:
         
         \code
         
@@ -286,15 +285,15 @@ namespace icl{
         Test t((std::string)pa("-x")); // also ambiguous 
         // due to different available std::string constructors
         
-        Test t(pa("-x").as<std::string>()); // works, but long code
+        Test t(pa("-x").as<std::string>()); // works, but long 
         
         Test t(*pa("-x")); // much shorter, but only for using
         // a program argument as std::string
   
-        \endcode
+        \endcode 
   
-        @see icl::utils::pa_init(int,char**,const std::string&,bool)
-    */
+        @see icl::utils::pa_init(int,char**,const std::string&,bool)*/
+
     inline const ProgArg pa(const std::string &id, unsigned int subargidx=0) throw (ProgArgException){
       if(!id.length()) THROW_ProgArgException("invalid programm argument id ''");
       return ProgArg(id,subargidx);
@@ -332,6 +331,7 @@ namespace icl{
                may be something like <tt>/usr/bin/icl-create</tt>.
                If fullpath is false, which is default, 
                just the program name is returned.
+      
         @see icl::utils::pa(const std::string&,unsigned int) */
     const std::string &pa_get_progname(bool fullpath=false);
   
@@ -462,18 +462,18 @@ namespace icl{
     /// shows all given program arguments \ingroup PA
     void pa_show();
   
-    /// Sets a license text, that is used when applications are run with --version or -v
+    /// Sets a license text, that is used when applications are run with --version or -v \ingroup PA
     /** pasetlic has to be called before painit is called. Otherwise, only the default licese text is shown. */
     void pa_set_license(const std::string &newLicenseText);
     
-    /// Sets a applications help text that is used when applications are run with --help or with unknown arguments
+    /// Sets a applications help text that is used when applications are run with --help or with unknown arguments \ingroup PA
     /** pasethelp has to be called before painit is called. */
     void pa_set_help_text(const std::string &newHelpText);
     
-    /// returns the current license text
+    /// returns the current license text \ingroup PA
     std::string pa_get_license();
     
-    /// returns the current help text (which is empty, if it was not set)
+    /// returns the current help text (which is empty, if it was not set) \ingroup PA
     std::string pa_get_help_text();
   } // namespace utils
 }

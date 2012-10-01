@@ -97,7 +97,7 @@ namespace icl{
       /// Constructor creates a new DCGrabberImpl instance from a given DCDevice
       /** @param dev DCDevice to use (this device can only be created by the
                      static function getDeviceList() 
-          @param iclMBits give the initializer a hint to set instantiated
+          @param isoMBits give the initializer a hint to set instantiated
                           grabber to a specific iso mode by default
                           allowed values are 
                           - 400 -> IEEE-1394-A (400MBit)
@@ -118,7 +118,7 @@ namespace icl{
       
       /// Sets a property to a new value
       /** call getPropertyList() to see which properties are supported 
-          @copydoc icl::Grabber::setProperty(const std::string&, const std::string&)
+          @copydoc icl::io::Grabber::setProperty(const std::string&, const std::string&)
           additional properties are:
           - enable-image-labeling (nice, but very useless function)
           - bayer-quality (sets up which bayer decoding quality to use:
@@ -140,19 +140,19 @@ namespace icl{
       virtual std::vector<std::string> getPropertyListC();
   
       /// get type of property
-      /** \copydoc icl::Grabber::getType(const std::string &)*/
+      /** \copydoc icl::io::Grabber::getType(const std::string &)*/
       virtual std::string getType(const std::string &name);
   
       /// get information of a properties valid values values
-      /** \copydoc icl::Grabber::getInfo(const std::string &)*/
+      /** \copydoc icl::io::Grabber::getInfo(const std::string &)*/
       virtual std::string getInfo(const std::string &name);
   
       /// returns the current value of a given property
-      /** \copydoc icl::Grabber::getValue(const std::string &)*/
+      /** \copydoc icl::io::Grabber::getValue(const std::string &)*/
       virtual std::string getValue(const std::string &name);
         
       /// grab function grabs an image (destination image is adapted on demand)
-      /** @copydoc icl::Grabber::grab(core::ImgBase**) **/
+      /** @copydoc icl::io::Grabber::grab(core::ImgBase**) **/
       virtual const core::ImgBase *acquireImage();
       
       /// Returns a list of all connected DCDevices

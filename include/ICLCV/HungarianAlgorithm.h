@@ -40,7 +40,7 @@
 namespace icl{
   namespace cv{
     
-    /// Implementation of the Hungarian Algorithm to solve Linear Assignment problems \ingroup G_PT \ingroup G_UTILS
+    /// Implementation of the Hungarian Algorithm to solve Linear Assignment problems
     /** @see PositionTracker
         
         \section Linear Assignment Problems (LAP)

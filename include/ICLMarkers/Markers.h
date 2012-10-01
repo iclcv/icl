@@ -39,7 +39,6 @@
 /** 
     \defgroup PLUGINS FiducialDetector plugins
     
-    \mainpage ICLMarkers - A package for general Marker Detection
     
     The ICLMarkers package defines general interfaces for most different types of 
     marker detection methods. The essential classes of this package are

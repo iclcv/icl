@@ -81,6 +81,7 @@ namespace icl{
   
           @param pattern the file pattern Either something like
                          images/ *.p[gnp]m or a seqence file name
+          @param omitDoubledFiles flag to control the creation of double file names. Double file names creation is not allowed at default.
       **/
       FileList(const std::string &pattern, bool omitDoubledFiles=false);
   

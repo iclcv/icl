@@ -272,7 +272,7 @@ namespace icl{
       
       /** Switch between continuous and restocking ID allocation. Restocking means, that a new object 
           will get the smallest avialable ID (formerly used by an older object which is no longer existing), instead of a brand new.
-          @param on if true IDs will we be allocated continuously
+          @param mode on if true IDs will we be allocated continuously
       */
       void setIDAllocationMode(IDAllocationMode mode){
         m_IDAllocationMode = mode;

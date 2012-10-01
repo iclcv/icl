@@ -108,7 +108,7 @@ namespace icl{
     std::string toStr(int i, const char* format, char *buf=0);
     
     /// creates a string from a given double/float \ingroup STRUTILS
-    /** @param i to be converted double/float value
+    /** @param d to be converted double/float value
         @param format format string as %ff or %3.5f 
         @param buf optinal dest buffer (used if not NULL)
     */
@@ -266,7 +266,7 @@ namespace icl{
     /// Applies a regular expression match on given text and regex pattern (internally using regex.h) \ingroup STRUTILS
     /** @param text source string 
         @param regex regular expression to search in text 
-        @param numMatchesToList If 0 (which is default, result contains only an information
+        @param numSubMatches If 0 (which is default, result contains only an information
                                 whether the match was successful or not. Sub matches can be recorded optionally
                                 using a numSubMatches value > 0. Please note, that
                                 the whole pattern match is submatches[0] in the resulting MatchResult

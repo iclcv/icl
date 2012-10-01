@@ -1,7 +1,14 @@
+.. include:: ../js.rst
+
 .. _markers:
 
-**Markers** (Fiducial Marker Detection)
-=======================================
+#########################
+Fiducial Marker Detection
+#########################
+
+.. image:: /icons/185px/markers.png
+
+
 
 The ICLMarkers package provides a general interfaces for most
 different types of fiducial marker detection methods. The essential
@@ -54,6 +61,7 @@ ARToolkit Markers ("art")
 
 .. image:: images/art-marker.jpg
    :scale: 65%
+   :alt: shadow
 
 One of the first freely available marker detection library is the
 `ARToolKit`_. The original framework was mainly developed as toolkit
@@ -81,6 +89,7 @@ BCH Markers ("bch")
 
 .. image:: images/bch-marker.png
    :scale: 35%
+   :alt: shadow
 
 These fiducial markers are probably the best available so far. The
 idea of using a self-error-correcting 2D binary BCH-coded pattern for
@@ -115,12 +124,26 @@ Hierarchical ("Amoeba") Markers
 
 .. image:: images/amoeba-marker.png
    :scale: 60%
+   :alt: shadow
 
 The amoeba style hierarchical markers provided by the `reactivision`_
-software. Amoeba fiducial markers cannot be detected in 3D. They do only
-provide 2D center and rotation and the 2D boundary. However, their
-detection is very fast and robust, as long as each marker region
-is not smaller than a pixel.
+software. Amoeba fiducial markers cannot be detected in 3D. They do
+only provide 2D center and rotation and the 2D boundary. However,
+their detection is very fast and robust, as long as each marker region
+is not smaller than a pixel. Actually, the original "amoeba" markers
+must not be used with other marker detection libraries. However, since
+the actual marker detection and ID encoding is just performed on the
+basis of the markers hierarchical region structure (in the example
+image, a black region, surrounding a white region containing 4 black
+regions with no sub-regions, 2 black regions with one sub-region, one
+black region with two sub-regions and one black regions with six sub
+regions). Whenever the detection system detects such a region
+structure in the binarized image's region graph, it will be detected
+and identified as this marker. For the original "amoeba"-markers, a
+genetic algorithm was used to minimize the marker size while
+preserving a given optimal region-width. The region structure is
+implemented and explained with the :icl:`TwoLevelRegionStructure`
+class.
 
 .. _reactivision: http://reactivision.sourceforge.net/
 
@@ -132,6 +155,7 @@ Special Markers of Type ("icl1")
 
 .. image:: images/icl1-marker.png
    :scale: 35%
+   :alt: shadow
 
 Originally these markers were developed for tracking the deformation
 of a sheet of paper in real time [#f1]_ The markers consist of 4
@@ -161,8 +185,29 @@ An Easy Example
 Creating Marker Images
 ^^^^^^^^^^^^^^^^^^^^^^
 
+We also provide an easy to use application that allows for the
+creation of marker images. **icl-create-marker** is able to create
+marker images for "bch", "art" and "icl1" markers. The original
+"amoeba" markers are not free and cannot be published as part of the
+library. For "bch" markers, the *icl-create-marker** application ca be
+set up to use a certain *border width*, which is given in units of the
+6 by 6 bch pattern in the center of the marker. The default value of 2
+mean, that the whole marker consists of 10 by 10 cells, where the
+outer two cells are the marker border and the inner 6 by 6 cells carry
+the markers bch binary pattern. Even though for certain cases or a
+given set of markers, this can be adapted, we strongly recommend to
+use the default setting which provides the best compromise between
+detectability and marker size. While for "bch" type markers, a given
+integer id (in range [0,4095]) is sufficient, for "art" markers, a
+center image must be provided (as a file-name). Here, the markers
+border width is given as a real valued *border ratio* which defines
+the ratio between border and center image pixels. For the detection is
+is very important that the used :icl:`FiducialDetector` instance is
+set up with the correct values for *border ratio* (and *border width*
+in case of using "bch" markers). Creating a set of 10 bch markers
+could e.g. be realized via command line in the **bash**::
 
-
+  for (( i=0 ; $i<10 ; i++ )) ; do icl-create-marker -i bch $i -o bch$i.png ; done
 
 .. _markers.benchmarks:
 

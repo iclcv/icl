@@ -114,7 +114,6 @@ namespace icl{
       /// the demo-grabber provides some demo properties
       virtual int isVolatile(const std::string &propertyName);
     };  
-    /** \endcond */
   
     /// Demo Grabber class providing am image with a moving rect
     /** This grabber can be used as placeholder whenever no senseful Grabber

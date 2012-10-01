@@ -1,5 +1,14 @@
-**Math** (Linear Algebra and Machine Learning)
-==============================================
+.. include:: ../js.rst
+
+.. _math:
+
+###################################
+Linear Algebra and Machine Learning
+###################################
+
+.. image:: /icons/185px/math.png
+
+
 
 The Math module provides support classes for linear algebra as well as
 some basic machine learning tools. Like the Utils module, Math is

@@ -58,6 +58,7 @@ add_libsource (${PROJECT_NAME} "src/ComplexCoordinateFrameSceneObject.cpp" "${CO
 add_libsource (${PROJECT_NAME} "src/PointcloudSceneObject.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/RGBDImageSceneObject.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/RGBDMapping.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/SceneLightObject.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
 add_libsource (${PROJECT_NAME} "src/DepthCameraPointCloudGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/PointCloudCreator.cpp" "${CONDITIONLIST}" LIB_SOURCES)

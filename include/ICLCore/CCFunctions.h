@@ -485,9 +485,9 @@ namespace icl{
     void convertYUV420ToRGB8(const unsigned char *pucSrc, const utils::Size &s, Img8u* poDst);
   
     /// Convert an 4 channel Img8u into Qts ARGB32 interleaved format 
-    /** @param pucDst destination data pointer of size
+    /** \@param pucDst destination data pointer of size
     poSrc->getDim()*4
-    @param poSrc source image with 4 channels
+    \@param poSrc source image with 4 channels
     */ 
     //void convertToARGB32Interleaved(const Img8u *poSrc, unsigned char *pucDst);
     
@@ -496,10 +496,10 @@ namespace icl{
     buffer image poBuffer. Then it will call the above method, to convert the
     buffer data into pucDst. If the buffer is not valid, the method will
     return immediately.
-    @param pucDst destination data pointer of size
+    \@param pucDst destination data pointer of size
     poSrc->getDim()*4
-    @param poSrc source image with 4 channels
-    @param poBuffer buffer to use for internal depth conversion.
+    \@param poSrc source image with 4 channels
+    \@param poBuffer buffer to use for internal depth conversion.
     */ 
     //void convertToARGB32Interleaved(const Img32f *poSrc, Img8u *poBuffer, unsigned char *pucDst);
     

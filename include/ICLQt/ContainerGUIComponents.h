@@ -83,8 +83,8 @@ namespace icl{
       Tab(const std::string &commaSepTitles,QWidget *parent=0):
       ContainerGUIComponent("tab",commaSepTitles, parent){}
     };
-    
-    /** \cond */
+
+    /// internally used component
     struct Border : public ContainerGUIComponent{
       friend class ::icl::qt::GUI;
       private:
@@ -92,7 +92,6 @@ namespace icl{
       Border(const std::string &label, QWidget *parent=0):
       ContainerGUIComponent("border",label,parent){}
     };
-    /** \encond */
   } // namespace qt
 }
 

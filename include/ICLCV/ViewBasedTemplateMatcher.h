@@ -53,7 +53,7 @@ namespace icl{
       /// Create a new ViewBasedTemplateMatcher instance with given matching significance and mode
       /** @param significance significance level for matching
                               appropriate range depends on matching mode
-          @param mode matching mode:
+          @param m matching mode:
                       - sqrtDistance (better mode for good matching) appropriate range; [0.5,...]
                       - crossCorrelation appropriate range: [0.92, ...]
           @param clipBuffersToROI if set, internally all buffers are clipped to ROI. This might be usefull,
@@ -64,7 +64,7 @@ namespace icl{
       ViewBasedTemplateMatcher(float significance=0.9, mode m=sqrtDistance, bool clipBuffersToROI = false);
       
       /// set significance level
-      /** @params significance significance level (apropriate range depends on matching mode
+      /** @param significance significance level (apropriate range depends on matching mode
           @see class constructor for more detail*/
       void setSignificance(float significance);
       

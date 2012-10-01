@@ -57,10 +57,11 @@ namespace icl{
                           color images will be grabbed and only xyz point cloud data
                           is created (all other fiels are just left untouched)
           
-          depthDeviceType and ID: device type (e.g. kinectd for Kinect source of file 
+          @param depthDeviceType, depthDeviceID: device type (e.g. kinectd for Kinect source of file 
           filepattern for using a list of source files that contained
-          core::depth images) Analogously for colorDeviceType and ID, however the latter two
+          core::depth images) Analogously for <b>colorDeviceType</b> and <b>colorDeviceID</b>, however the latter two
           are ignored if not colorCam was passed.
+          @param colorDeviceType, colorDeviceID (See <b>depthDeviceType</b> and <b>depthDeviceID</b>)
       */
       DepthCameraPointCloudGrabber(const Camera &depthCam=get_default_depth_cam(),
                                    const Camera &colorCam=get_null_color_cam(),

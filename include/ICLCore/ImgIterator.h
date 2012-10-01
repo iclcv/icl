@@ -76,7 +76,7 @@ namespace icl{
     The example can be found in 
     "ICLCore/examples/img-iterator-benchmark.cpp"
     
-    \subsection IPP IPP-Performance
+    \section IPP IPP-Performance
         Ok, not very meaningful, but state of the art!
         If ICL is compiled without IPP the builtin-getMin()-
         function uses std::min_element instead. By the way, 
@@ -106,7 +106,7 @@ namespace icl{
         }
         \endcode
         
-        \subsection CPP1 C++ pointer version 
+        \section CPP1 C++ pointer version 
         This is just a reimplementation of std::min_element,
         so it's performance is comparable
         \code
@@ -121,7 +121,7 @@ namespace icl{
         }
         \endcode
 
-        \subsection CPP2 C++ Iterator Version
+        \section CPP2 C++ Iterator Version
         This is slightly slower than std::min_element because
         stl uses loop unrolling.
         \code
@@ -136,7 +136,7 @@ namespace icl{
         }
         \endcode
         
-        \subsection CC2 C++ Iterator Version using inRegionSubROI() (OLD-Style)
+        \section CC2 C++ Iterator Version using inRegionSubROI() (OLD-Style)
         To compare performance with older iterator use, this 
         function version is also listed here.
         \code
@@ -259,9 +259,9 @@ namespace icl{
       inline ImgIterator(){}
 
       /** 2nd Constructor creates an ImgIterator object with Type "Type"
-          @param ptData pointer to the corresponding channel data
-          @param iImageWidth width of the corresponding image
-          @param roROI ROI rect for the iterator
+          @param data pointer to the corresponding channel data
+          @param imageWidth width of the corresponding image
+          @param roi ROI rect for the iterator
           */
       inline ImgIterator(Type *data,int imageWidth,const utils::Rect &roi):
       math::MatrixSubRectIterator<Type>(data,imageWidth,roi.x,roi.y,roi.width,roi.height){}
@@ -271,7 +271,7 @@ namespace icl{
           used e.g. for arbitrary neighborhood operations like 
           linear filters, medians, ...
           See the ImgIterator description for more detail.        
-          @param roOrigin reference to source Iterator Object
+          @param origin reference to source Iterator Object
           @param s mask size
           @param a mask anchor
           */

@@ -339,7 +339,7 @@ namespace icl{
           @param model second point set setB
           @param modelImageSize the size of the chamfering image which is created to represent setB
           @param modelImageROI the ROI of the chamfering image which is created to represent setB
-          @param bufferImage image buffer to exploit to chamfer setB
+          @param bufferImageA, bufferImageB image buffer to exploit to chamfer setA and setB
           @param m hausforffMetric to use
           @param pm penaltyMode to use
           @param penaltyValue penalty value to use (if pm is not noPenalty)

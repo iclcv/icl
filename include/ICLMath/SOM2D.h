@@ -63,9 +63,9 @@ namespace icl{
       /// Wrapper constructor for 2D SOMs
       /** @param dataDim dimension of data elements and therewith dimension of prototype vectors
           @param nXCells cell count of the SOM in x-direction
-          @param yXCells cell count of the SOM in y-direction
+          @param nYCells cell count of the SOM in y-direction
           @param prototypeBounds @see SOM
-          @param epslion @see SOM
+          @param epsilon @see SOM
           @param sigma @see SOM
       */
       SOM2D(unsigned int dataDim, 

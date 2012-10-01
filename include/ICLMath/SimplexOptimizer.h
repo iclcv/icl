@@ -162,7 +162,7 @@ namespace icl{
                                        this must still be set to the right value)
           @param iterations maximum iteration count 
           @param minError minimum error termination criterion 
-          @param minDelta, minimum center movement termination criterion 
+          @param minDelta minimum center movement termination criterion 
           @param a reflection factor (default 1.0)
           @param b expansion factor (default 1.0)
           @param g contration factor (default 0.5)

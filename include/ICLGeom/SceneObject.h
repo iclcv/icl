@@ -331,7 +331,19 @@ namespace icl{
       /// adds text-texture quad -primitive to this object
       /** If the given normal indices (na,nb,nc and nd) are -1, auto-normal are computed using cross-product.
           Please note, that the text aspect ratio might not be preserved 
-          @param holdTextAR not supported yet! */
+	  @param a
+	  @param b
+	  @param c
+	  @param d
+	  @param text
+	  @param color
+	  @param na
+	  @param nb
+	  @param nc
+	  @param nd
+	  @param textSize the text size
+	  @param sm the scale mode
+*/
       void addTextTexture(int a, int b, int c, int d, const std::string &text,
                           const GeomColor &color, 
                           int na, int nb, int nc, int nd,
@@ -522,7 +534,22 @@ namespace icl{
       const SceneObject *getChild(int index) const;
       
       /** @} **/
-  
+
+      /// automatically creates precomputed normals
+      /** in smooth mode, for each vertex a surface normal is created.
+          The normals are defined by the mean normal of all adjacent
+          faces (triangles and quads). This does only work for
+          sphere-like object, where a "mean normal" makes sense.
+          This does not make sense for a cube.
+          
+          The non-smooth mode pre-computes normals for each 
+          face, but here, each face-vertex uses the same normal
+          leading to a flat-shaded result. The non-smooth-mode
+          looks identical to the Primitives automatically created
+          online normals, but reduces processor load.
+      */
+      void createAutoNormals(bool smooth=true);
+      
       /// returns whether this object is hit by the given viewray
       /** Please note: only faces (i.e. quads, triangles and polygons
           are checked)
@@ -641,7 +668,17 @@ namespace icl{
       
       /// returns the current fragment shader (or NULL if non was given, const version)
       inline const qt::GLFragmentShader *getFragmentShader() const{ return m_fragmentShader; }
+
+      /// sets the material shininess (default is 128)
+      inline void setShininess(icl8u value){
+        m_shininess = value;
+      }
       
+      /// sets the materials specular reflectance
+      /** given color ranges are expected in range [0,255] */
+      inline void setSpecularReflectance(const GeomColor &values){
+        m_specularReflectance = values*(1.0/255);
+      }
       protected:
       /// recursive picking method
       static void collect_hits_recursive(SceneObject *obj, const ViewRay &v, 
@@ -680,6 +717,9 @@ namespace icl{
       bool m_lineSmoothingEnabled;
       bool m_polygonSmoothingEnabled;
       
+      
+      icl8u m_shininess;
+      GeomColor m_specularReflectance;
       
       private:
   

@@ -40,13 +40,13 @@
 namespace icl{
   namespace math{
     
-    /// Utility class for 2D Vector quantisation \ingroup G_UTILS
+    /// Utility class for 2D Vector quantisation
     class VQVectorSet{
       public:
       /// Create a new vector set with given data,and data dimension 
       /** @param data data pointer
           @param dim number of data elements data.size = 2*dim
-          @param deepCopy if set to true, the given data is copied deeply
+          @param deepCopyData if set to true, the given data is copied deeply
       **/
       VQVectorSet(float *data, int dim, bool deepCopyData):m_iDim(dim){
         if(deepCopyData){

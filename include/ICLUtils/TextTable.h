@@ -83,7 +83,7 @@ namespace icl{
         //  |  gotting   | michael  | ??  |    Somewhere else    | 
         //  +------------+----------+-----+----------------------+
 
-      \encode
+      \endcode
     */
     class TextTable{
       std::vector<std::string> m_texts; //!< internal text data

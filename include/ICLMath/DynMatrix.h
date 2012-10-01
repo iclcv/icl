@@ -848,6 +848,7 @@ namespace icl{
   
       /// solves Mx=b for M=*this (only for icl32f and icl64f)
       /** solves Mx=b using one of the following algorithms
+          @param b 
           @param method "lu" (default) using LU-decomposition
                         "svd" (using svd-based pseudo-inverse)
                         "qr" (using QR-decomposition based pseudo-inverse)
@@ -891,6 +892,7 @@ namespace icl{
             * lu 2.5 ms
             * qr 4.6 s
             * svd 23.4 ms
+          @param zeroThreshold 
       */
       DynMatrix solve(const DynMatrix &b, const std::string &method="lu",T zeroThreshold=1E-16)
         throw(InvalidMatrixDimensionException,  utils::ICLException, SingularMatrixException);
@@ -923,7 +925,7 @@ namespace icl{
           @param V is filled column-wise with the eigenvectors of A'A (in V, V is stored not V')
           @see icl::svd_dyn
       */
-      void svd(DynMatrix &U, DynMatrix &s,  DynMatrix &V) const throw (utils::ICLException);
+      void svd(DynMatrix &U, DynMatrix &S,  DynMatrix &V) const throw (utils::ICLException);
   
       /// calculates the Moore-Penrose pseudo-inverse (only implemented for icl32f and icl64f)
       /** Internally, this functions can use either a QR-decomposition based approach, or it can use
@@ -1098,13 +1100,15 @@ namespace icl{
       bool m_ownData;
     };
   
+    /** \cond */
     /// creates a dyn-matrix from given matrix column
     template<class T>
     DynMatrix<T>::DynMatrix(const DynMatrix<T>::DynMatrixColumn &column):
     m_rows(column.dim()),m_cols(1),m_data(new T[column.dim()]),m_ownData(true){
       std::copy(column.begin(),column.end(),begin());
     }
-  
+    /** \endcond */
+
     /// ostream operator implemented for uchar, short, int, float and double matrices  \ingroup LINALG
     template<class T>
     std::ostream &operator<<(std::ostream &s,const DynMatrix<T> &m);

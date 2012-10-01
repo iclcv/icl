@@ -209,7 +209,11 @@ namespace icl{
       } 
   
       /// Small wrapper for ippsConv_32f
-      /** @param dst destination data pointer of size dim+kernelDim -1
+      /** @param vec
+	  @param dim
+	  @param kernel
+	  @param kernelDim
+	  @param dst destination data pointer of size dim+kernelDim -1
   
           Performs the following operation
   
@@ -244,7 +248,7 @@ namespace icl{
           * The round corner coefficient denotes the minimum ratio of major axis to minor
           * axis of an ellipse, whose vertex could be detected as a corner by proposed detector.
           * @param rc_coeff round corner coefficient
-          * @param k curvature function
+	  * @param k curvature function
           * @param extrema indicies of extrem points in curvature function k
           */
       static void removeRoundCorners( float rc_coeff, icl32f* k, std::vector<int> &extrema);
@@ -258,6 +262,8 @@ namespace icl{
           * @param k curvature function
           * @param length number of points in smoothed contour (and curvature function)
           * @param maxima indicies of maximum points in curvature function k
+          * @param corner_angles 
+	  * @param straight_line_thresh
           */
       static void removeFalseCorners(float angle_thresh, icl32f* xx, icl32f* yy, icl32f* k, 
                                      int length, std::vector<int> &maxima, std::vector<float> &corner_angles,
@@ -270,6 +276,7 @@ namespace icl{
           * @param x,y x,y dimension of the contour segment around the corner
           * @param length number of points in contour segment
           * @param center position of corner in contour segment
+          * @param straight_line_thresh 
           */
       static float tangentAngle(icl32f* x, icl32f* y, int length, int center, float straight_line_thresh);
   
