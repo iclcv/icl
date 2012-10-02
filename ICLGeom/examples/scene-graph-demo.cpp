@@ -106,8 +106,6 @@ struct Handler : public MouseHandler{
       sceneHandler->process(evt);
     }
   }
-  void link(ICLWidget *w){ sceneHandler->link(w); }
-  void unlink(ICLWidget *w){ sceneHandler->unlink(w); }
 };
 
 void mouse_2(const MouseEvent &evt){

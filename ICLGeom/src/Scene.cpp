@@ -39,6 +39,9 @@
 #ifdef HAVE_QT
 #include <ICLQt/DrawWidget.h>
 #include <ICLQt/GLImg.h>
+#include <ICLQt/GUI.h>
+#include <ICLQt/ContainerGUIComponents.h>
+#include <ICLQt/IconFactory.h>
 #endif
 
 #ifdef HAVE_GLX
@@ -62,6 +65,7 @@
 
 #include <set>
 #include <ICLUtils/Time.h>
+#include <ICLQt/Quick.h>
 
 
 using namespace icl::utils;
@@ -199,11 +203,50 @@ namespace icl{
     struct Scene::GLCallback : public ICLDrawWidget3D::GLCallback{
       int cameraIndex;
       Scene *parent;
+      GUI *gui;
+      bool needLink;
+
+      void performLink(ICLDrawWidget *widget){
+        DEBUG_LOG("performLink called");
+
+        const std::string save = parent->getConfigurableID();
+        const std::string id = "scene"+str(parent)+str(utils::Time::now().toMicroSeconds());
+        
+        parent->setConfigurableID(id);
+        
+        if(!gui){
+          // create GUI
+          gui = new VBox();
+          *gui << Prop(id) << Create();
+        }
+        
+        static ImgQ icon = cvt(IconFactory::create_image("scene-props"));
+        icl::qt::save(icon,"test.png");
+        
+        widget->addSpecialButton("mousehandler"+str(this),&icon,
+                                 function(gui,&GUI::switchVisibility),
+                                 "3D scene properties  ");
+        parent->setConfigurableID(save);
+      }
+      
       GLCallback(int cameraIndex,Scene *parent):
-        cameraIndex(cameraIndex),parent(parent){}
-      virtual void draw(){}
-      virtual void drawSpecial(ICLDrawWidget3D *widget){
+        cameraIndex(cameraIndex),parent(parent),gui(0), needLink(false){}
+      
+      virtual void draw(ICLDrawWidget3D *widget){
+        if(needLink){
+          performLink(widget);
+          needLink = false;
+        }
         parent->renderScene(cameraIndex, widget);
+      }
+
+      virtual void link(ICLDrawWidget3D *widget){
+        needLink = true;
+      }
+      
+      virtual void unlink(ICLDrawWidget3D *widget){
+        TODO_LOG("implement unlink");
+        //widget->removeSpecialButton("mousehandler"+str(this));      
       }
     };
   #endif
