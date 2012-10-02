@@ -137,15 +137,6 @@ namespace icl{
           **/
       virtual void process(const MouseEvent &event);
 
-      /// this function can be implemented to access the widget the handler is installed to
-      /** The method is automatically called, whenever a MouseHandler is installed
-          to an ICLWidget instance. Here, the mouse handler can e.g. add custom
-          osd-buttons to the Widget */
-      virtual void link(ICLWidget *widget){ (void) widget; }
-
-      /// the function can be implemented for an inverse behaviour than link
-      virtual void unlink(ICLWidget *widget){ (void) widget; }
-    
       private:
       /// internal mouse handler function
       mouse_handler m_handler;

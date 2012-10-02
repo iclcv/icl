@@ -380,13 +380,6 @@ namespace icl{
       /// Process mouse event using mouse mapping table.
       /** @param pMouseEvent mouse event */
       virtual void process(const qt::MouseEvent &pMouseEvent);
-      
-      
-      /// registers an extra button to the ICLWidget for adjusting scene Properties
-      void link(qt::ICLWidget *widget);
-
-      /// un-registers from the parent widget
-      void unlink(qt::ICLWidget *widget);
     };
     
   } // namespace geom

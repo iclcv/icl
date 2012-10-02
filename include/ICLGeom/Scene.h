@@ -50,6 +50,7 @@
 #endif
 
 #include <ICLUtils/Lockable.h>
+#include <ICLUtils/Configurable.h>
 #include <ICLUtils/SmartArray.h>
 
 
@@ -127,7 +128,7 @@ namespace icl{
 
     
         */
-    class Scene : public utils::Lockable{
+    class Scene : public utils::Lockable, public utils::Configurable{
       public:
 
       /// make SceneObject friend of Scene
@@ -335,13 +336,17 @@ namespace icl{
       bool getDrawLightsEnabled() const;
     
       /// sets wheter a coordinate frame is automatically inserted into the scene
-      void setDrawCoordinateFrameEnabled(bool enabled, float axisLength=100, 
-                                         float axisThickness=5, bool simpleGeometry=false);
+      void setDrawCoordinateFrameEnabled(bool enabled, float size=120);
     
       /// returns wheter a coordinate frame is automatically shown in the scene
-      /** Optionally, destination pointers can be given to query the current coordinate frames parameters */
-      bool getDrawCoordinateFrameEnabled(float *axisLength=0,float *axisThickness=0) const;
+      bool getDrawCoordinateFrameEnabled() const;
 
+      /// sets whether all object frames are visualized
+      void setDrawObjectFramesEnabled(bool enabled, float size);
+      
+      /// returns whether object frames are visualized
+      bool getDrawObjectFramesEnabled() const;
+      
       /// returns a reference to a light with given index
       /** The returned reference cam be used to set lighting parameters.
           Since OpenGL does only support 8 lights, allowed indices are 0-7.
@@ -406,8 +411,12 @@ namespace icl{
       /// internally used rendering method
       void renderScene(int camIndex, qt::ICLDrawWidget3D *widget=0) const;
 #endif
+
       /// internally used rendering method for recursive rendering of the scene graph
       void renderSceneObjectRecursive(SceneObject *o) const;
+
+      /// recursively renders object frames for all scene objects
+      void renderObjectFramesRecursive(SceneObject *o, SceneObject *cs) const;
 
       /// internally used utility method that computes the extend of the Scene content
       /** The extend is used when scene mouse handlers are created. Here, it will e.g. 
@@ -450,21 +459,12 @@ namespace icl{
       /// intenal list of of offscreen rendering buffers
       mutable std::map<PBufferIndex,PBuffer*> m_pbuffers;
 
-      /// internally used flag
-      bool m_drawCamerasEnabled;
-      
-      /// internally used flag
-      bool m_drawLightsEnabled;
-    
-      /// internally used flag
-      bool m_drawCoordinateFrameEnabled;
-
       /// internally used scene object
-      utils::SmartPtr<SceneObject> m_coordinateFrameObject;
+      mutable utils::SmartPtr<SceneObject> m_coordinateFrameObject;
 
-      /// internally used flag that indicates whether lighting is globally activated or not
-      bool m_lightingEnabled;
-    
+      /// also internally used object frame object
+      mutable utils::SmartPtr<SceneObject> m_objectFrameObject;
+      
       /// internal list of lights
       utils::SmartPtr<SceneLight> m_lights[8];
     

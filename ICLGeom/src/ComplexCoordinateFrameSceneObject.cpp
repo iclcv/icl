@@ -91,9 +91,9 @@ namespace icl{
       addVertex(Vec(0,0,l+3*d,1),GeomColor(0,0,0,0));
   
       if(withLabels){
-        addText(0,"x");
-        addText(1,"y");
-        addText(2,"z");
+        addText(0,"x",axisThickness*3);
+        addText(1,"y",axisThickness*3);
+        addText(2,"z",axisThickness*3);
       }
     }
   

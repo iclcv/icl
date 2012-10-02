@@ -60,7 +60,7 @@ void init(){
 
   scene.addCamera(Camera(Vec(-250,0,1000,1),Vec(0,0,-1,1),Vec(0,1,0,1)));
   scene.addCamera(Camera(Vec(200,0,200,1),Vec(-1,0,0,1),Vec(0,1,0,1)));
-  scene.setDrawCoordinateFrameEnabled(true,120,10);
+  scene.setDrawCoordinateFrameEnabled(true,120);
 
   gui["w1"].install(scene.getMouseHandler(0));
   gui["w2"].install(scene.getMouseHandler(1));

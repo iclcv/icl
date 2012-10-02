@@ -39,6 +39,9 @@
 #ifdef HAVE_QT
 #include <ICLQt/DrawWidget.h>
 #include <ICLQt/GLImg.h>
+#include <ICLQt/GUI.h>
+#include <ICLQt/ContainerGUIComponents.h>
+#include <ICLQt/IconFactory.h>
 #endif
 
 #ifdef HAVE_GLX
@@ -62,6 +65,7 @@
 
 #include <set>
 #include <ICLUtils/Time.h>
+#include <ICLQt/Quick.h>
 
 
 using namespace icl::utils;
@@ -199,22 +203,66 @@ namespace icl{
     struct Scene::GLCallback : public ICLDrawWidget3D::GLCallback{
       int cameraIndex;
       Scene *parent;
+      GUI *gui;
+      bool needLink;
+
+      void performLink(ICLDrawWidget *widget){
+        DEBUG_LOG("performLink called");
+
+        const std::string save = parent->getConfigurableID();
+        const std::string id = "scene"+str(parent)+str(utils::Time::now().toMicroSeconds());
+        
+        parent->setConfigurableID(id);
+        
+        if(!gui){
+          // create GUI
+          gui = new VBox();
+          *gui << Prop(id) << Create();
+        }
+        
+        static ImgQ icon = cvt(IconFactory::create_image("scene-props"));
+        icl::qt::save(icon,"test.png");
+        
+        widget->addSpecialButton("mousehandler"+str(this),&icon,
+                                 function(gui,&GUI::switchVisibility),
+                                 "3D scene properties  ");
+        parent->setConfigurableID(save);
+      }
+      
       GLCallback(int cameraIndex,Scene *parent):
-        cameraIndex(cameraIndex),parent(parent){}
-      virtual void draw(){}
-      virtual void drawSpecial(ICLDrawWidget3D *widget){
+        cameraIndex(cameraIndex),parent(parent),gui(0), needLink(false){}
+      
+      virtual void draw(ICLDrawWidget3D *widget){
+        if(needLink){
+          performLink(widget);
+          needLink = false;
+        }
         parent->renderScene(cameraIndex, widget);
+      }
+
+      virtual void link(ICLDrawWidget3D *widget){
+        needLink = true;
+      }
+      
+      virtual void unlink(ICLDrawWidget3D *widget){
+        TODO_LOG("implement unlink");
+        //widget->removeSpecialButton("mousehandler"+str(this));      
       }
     };
   #endif
   
    
-    Scene::Scene():m_drawCamerasEnabled(true),
-                   m_drawCoordinateFrameEnabled(false),
-                   m_drawLightsEnabled(false),
-                   m_lightingEnabled(true){
+    Scene::Scene(){
       m_lights[0] = SmartPtr<SceneLight>(new SceneLight(this,0));
       m_globalAmbientLight = FixedColVector<int,4>(255,255,255,20);
+
+      addProperty("visualize cameras","flag","",false);
+      addProperty("visualize world frame","flag","",false);
+      addProperty("visualize object frames","flag","",false);
+      addProperty("visualize lights","flag","",false);
+      addProperty("enable lighting","flag","",true);
+      addProperty("object frame size","float","[0,100000000]",1);
+      addProperty("world frame size","float","[0,100000000]",1);
     }
     Scene::~Scene(){
   #ifdef HAVE_GLX
@@ -250,11 +298,6 @@ namespace icl{
       
   #endif
   
-      m_drawCamerasEnabled = scene.m_drawCamerasEnabled;
-      m_drawCoordinateFrameEnabled = scene.m_drawCoordinateFrameEnabled;
-      m_drawLightsEnabled = scene.m_drawLightsEnabled;
-      m_coordinateFrameObject = scene.m_coordinateFrameObject->copy();
-      
       for(unsigned int i=0;i<8;++i){
         if(scene.m_lights[i]){
           m_lights[i] = SmartPtr<SceneLight>(new SceneLight(*scene.m_lights[i]));
@@ -388,6 +431,7 @@ namespace icl{
       };
     }
   #ifdef HAVE_QT
+
     void Scene::renderSceneObjectRecursive(SceneObject *o) const{
       if(!creatingDisplayList){
         if(o->m_createDisplayListNextTime == 1){
@@ -448,8 +492,10 @@ namespace icl{
       glPushMatrix();
       const Mat &T = o->getTransformation(true);
       glMultMatrixf(T.transp().data());
+
+
       if(o->isVisible()){
-  
+        
         o->customRender();
         if(o->m_primitives.size()){
           const Primitive::RenderContext ctx = { o->m_vertices, o->m_normals, o->m_vertexColors, 
@@ -508,6 +554,7 @@ namespace icl{
       if(o->getFragmentShader()){
         o->getFragmentShader()->deactivate();
       }
+      
   
       o->unlock();
     }
@@ -539,7 +586,7 @@ namespace icl{
       glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER,GL_TRUE);
       
   
-      if(m_lightingEnabled){
+      if( ((Configurable*)this)->getPropertyValue("enable lighting")){
         glEnable(GL_LIGHTING);
         for(int i=0;i<8;++i){
           if(m_lights[i]) {
@@ -568,15 +615,40 @@ namespace icl{
       }
       
       glEnable(GL_DEPTH_TEST);
-  
+
+#if 1
+      for(size_t i=0;i<m_objects.size();++i){
+        renderSceneObjectRecursive((SceneObject*)m_objects[i].get());
+      }
+      
+      if(((Configurable*)this)->getPropertyValue("visualize cameras")){
+        for(unsigned int i=0;i<m_cameraObjects.size();++i){
+          if((int)i == camIndex) continue;
+          renderSceneObjectRecursive((SceneObject*)m_cameraObjects[i].get());
+        }
+      }
+
+      glPushAttrib(GL_ENABLE_BIT);
+      
+      if(((Configurable*)this)->getPropertyValue("visualize lights")){
+        for(int i=0;i<8;++i){
+          if(m_lights[i] && m_lights[i]->on){
+            renderSceneObjectRecursive((SceneObject*)m_lights[i]->getLightObject());
+          }
+        }
+      }
+
+      glPopAttrib();
+
+#else  
       std::vector<SmartPtr<SceneObject> > allObjects(m_objects);
-      if(m_drawCamerasEnabled){
+      if(((Configurable*)this)->getPropertyValue("visualize cameras")){
         for(unsigned int i=0;i<m_cameraObjects.size();++i){
           if((int)i == camIndex) continue;
           allObjects.push_back(m_cameraObjects[i]);
         }
       }
-      if(m_drawLightsEnabled){
+      if(((Configurable*)this)->getPropertyValue("visualize lights")){
         for(int i=0;i<8;++i){
           if(m_lights[i] && m_lights[i]->on){
             SmartPtr<SceneObject> l((SceneObject*)m_lights[i]->getLightObject(),false);
@@ -585,19 +657,72 @@ namespace icl{
         }
       }
       
-      if(m_drawCoordinateFrameEnabled){
-        allObjects.push_back(m_coordinateFrameObject);
-      }
-  
       for(unsigned int i=0;i<allObjects.size();++i){
         renderSceneObjectRecursive(allObjects[i].get());
+      }
+#endif
+
+
+      if(getDrawObjectFramesEnabled()){
+        float size = ((Configurable*)this)->getPropertyValue("object frame size");
+        if(!m_objectFrameObject){
+          m_objectFrameObject = new ComplexCoordinateFrameSceneObject(size,size/20);
+          //m_objectFrameObject->createDisplayList();
+        }else{
+          float currSize = ((ComplexCoordinateFrameSceneObject*)m_objectFrameObject.get())->getAxisLength();
+          if(size != currSize){
+            m_objectFrameObject = new ComplexCoordinateFrameSceneObject(size,size/20);
+            //m_objectFrameObject->createDisplayList();
+          }
+        }
+        for(size_t i=0;i<m_objects.size();++i){
+          renderObjectFramesRecursive((SceneObject*)m_objects[i].get(), (SceneObject*)m_objectFrameObject.get());
+        }
+      }
+
+      if(getDrawCoordinateFrameEnabled()){
+        float size = ((Configurable*)this)->getPropertyValue("world frame size");
+        if(!m_coordinateFrameObject){
+          m_coordinateFrameObject = new ComplexCoordinateFrameSceneObject(size,size/20);
+          //m_coordinateFrameObject->createDisplayList();
+        }else{
+          float currSize = ((ComplexCoordinateFrameSceneObject*)m_coordinateFrameObject.get())->getAxisLength();
+          if(size != currSize){
+            m_coordinateFrameObject = new ComplexCoordinateFrameSceneObject(size,size/20);
+            //m_coordinateFrameObject->createDisplayList();
+          }
+        }
+        int minumum_ambience[] = {
+          iclMax(m_globalAmbientLight[0],250),
+          iclMax(m_globalAmbientLight[1],250),
+          iclMax(m_globalAmbientLight[2],250),
+          iclMax(m_globalAmbientLight[3],250),
+        };
+        glLightModeliv(GL_LIGHT_MODEL_AMBIENT, minumum_ambience);
+        renderSceneObjectRecursive((SceneObject*)m_coordinateFrameObject.get());
       }
   
     }
 
+    void Scene::renderObjectFramesRecursive(SceneObject *o, SceneObject *cs) const{
+      glMatrixMode(GL_MODELVIEW);
+      glPushMatrix();
+      const Mat &T = o->getTransformation(true);
+      glMultMatrixf(T.transp().data());
+      
+      renderSceneObjectRecursive(cs);
+      
+      for(unsigned int i=0;i<o->m_children.size();++i){
+        renderObjectFramesRecursive(o->m_children[i].get(),cs);
+      }
+
+      glPopMatrix();
+      
+    }
+
     void Scene::setDrawLightsEnabled(bool enabled, float lightSize){
       lock();
-      m_drawLightsEnabled = enabled;
+      setPropertyValue("visualize lights",enabled);
       if(enabled){
         for(int i=0;i<8;++i){
           if(m_lights[i]){
@@ -609,7 +734,7 @@ namespace icl{
     }
     
     bool Scene::getDrawLightsEnabled() const {
-      return m_drawLightsEnabled;
+      return ((Configurable*)this)->getPropertyValue("visualize lights");
     }
   
     MouseHandler *Scene::getMouseHandler(int camIndex){
@@ -675,60 +800,20 @@ namespace icl{
   #endif // QT
   
     void Scene::setDrawCamerasEnabled(bool enabled){
-      m_drawCamerasEnabled = enabled;
+      setPropertyValue("visualize cameras",enabled);
     }
   
-    void Scene::setDrawCoordinateFrameEnabled(bool enabled, float axisLength, float axisThickness, bool simpleGeometry){
-      m_drawCoordinateFrameEnabled = enabled;
-      if(enabled){
-        SceneObject *cs = m_coordinateFrameObject.get();
-        if(dynamic_cast<ComplexCoordinateFrameSceneObject*>(cs)){
-          if(simpleGeometry){
-            m_coordinateFrameObject = SmartPtr<SceneObject>(new CoordinateFrameSceneObject(axisLength,axisThickness));
-          }else{
-            if(cs){
-              ((ComplexCoordinateFrameSceneObject*)cs)->setParams(axisLength,axisThickness);
-            }else{
-              m_coordinateFrameObject = SmartPtr<SceneObject>(new ComplexCoordinateFrameSceneObject(axisLength,axisThickness));
-            }
-          }
-        }else{
-          if(!simpleGeometry){
-            m_coordinateFrameObject = SmartPtr<SceneObject>(new ComplexCoordinateFrameSceneObject(axisLength,axisThickness));
-          }else{
-            if(cs){
-              ((CoordinateFrameSceneObject*)cs)->setParams(axisLength,axisThickness);
-            }else{
-              m_coordinateFrameObject = SmartPtr<SceneObject>(new CoordinateFrameSceneObject(axisLength,axisThickness));
-            }
-          }
-        }
-      }
+    void Scene::setDrawCoordinateFrameEnabled(bool enabled, float size){
+      setPropertyValue("visualize world frame",enabled);
+      setPropertyValue("world frame size",size);
     }
   
     bool Scene::getDrawCamerasEnabled() const{
-      return m_drawCamerasEnabled;
+      return ((Configurable*)this)->getPropertyValue("visualize cameras");
     }
     
-    bool Scene::getDrawCoordinateFrameEnabled(float *axisLength,float *axisThickness) const{
-      if(!m_drawCoordinateFrameEnabled){
-        return false;
-      }else{
-        const SceneObject *cs = m_coordinateFrameObject.get();    
-        const CoordinateFrameSceneObject *csSimple = dynamic_cast<const CoordinateFrameSceneObject*>(cs);
-        const ComplexCoordinateFrameSceneObject *csComplex = dynamic_cast<const ComplexCoordinateFrameSceneObject*>(cs);
-        if(csSimple){
-          if(axisLength) *axisLength = csSimple->getAxisLength();
-          if(axisThickness) *axisThickness = csSimple->getAxisThickness();
-        }else if(csComplex){
-          if(axisLength) *axisLength = csComplex->getAxisLength();
-          if(axisThickness) *axisThickness = csComplex->getAxisThickness();
-        }else{
-          ERROR_LOG("drawing the coordinate frame is enabled, but no SceneObject could be found (this should not happen)");
-          return false;
-        }
-        return true;
-      }
+    bool Scene::getDrawCoordinateFrameEnabled() const{
+      return ((Configurable*)this)->getPropertyValue("visualize world frame");
     }
   
     void Scene::extendMaxSceneDimRecursive(float &minX, float &maxX, 
@@ -764,7 +849,7 @@ namespace icl{
                                    rangeXYZ[2].minVal,rangeXYZ[2].maxVal,
                                    const_cast<SceneObject*>(m_objects[i].get()));
       }
-      if(m_drawCamerasEnabled){
+      if(getDrawCamerasEnabled()){
         for(unsigned i=0;i<m_cameraObjects.size();++i){
           extendMaxSceneDimRecursive(rangeXYZ[0].minVal,rangeXYZ[0].maxVal, 
                                      rangeXYZ[1].minVal,rangeXYZ[1].maxVal, 
@@ -772,7 +857,7 @@ namespace icl{
                                      const_cast<SceneObject*>(m_cameraObjects[i].get()));
         }
       }
-      if(m_drawCoordinateFrameEnabled){
+      if(getDrawCoordinateFrameEnabled()){
         extendMaxSceneDimRecursive(rangeXYZ[0].minVal,rangeXYZ[0].maxVal, 
                                    rangeXYZ[1].minVal,rangeXYZ[1].maxVal, 
                                    rangeXYZ[2].minVal,rangeXYZ[2].maxVal,
@@ -796,8 +881,18 @@ namespace icl{
   
       
     void Scene::setLightingEnabled(bool flag){
-      m_lightingEnabled = flag;
+      setPropertyValue("visualize lights",flag);
     }
+
+    void Scene::setDrawObjectFramesEnabled(bool enabled, float size){
+      setPropertyValue("visualize object frames",enabled);
+      setPropertyValue("object frame size",size);
+    }
+    
+    bool Scene::getDrawObjectFramesEnabled() const{
+      return ((Configurable*)this)->getPropertyValue("visualize object frames");
+    }
+
   
     SceneObject *Scene::getObject(int index) throw (ICLException){
       if(index < 0 || index >= (int)m_objects.size()) throw ICLException("Scene::getObject: invalid index");

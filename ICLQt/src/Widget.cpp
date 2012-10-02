@@ -101,6 +101,11 @@ using namespace icl::io;
 
 namespace icl{
   namespace qt{
+  #define GL_BUTTON_Y 2
+  #define GL_BUTTON_W 20
+  #define GL_BUTTON_H 20
+  #define GL_BUTTON_SPACE 2
+  #define GL_BUTTON_X_INC (GL_BUTTON_W+GL_BUTTON_SPACE)
   
   #define LOCK_SECTION QMutexLocker SECTION_LOCKER(&m_data->mutex)
   
@@ -165,6 +170,7 @@ namespace icl{
         }else{
           this->icon = get_icon(CustomIcon);
         }
+        this->icon.scale(Size(GL_BUTTON_W, GL_BUTTON_H),interpolateRA);
       }
     
       
@@ -183,6 +189,9 @@ namespace icl{
         toggled(toggled),visible(false),bcb(cb),toolTipText(toolTipText){
         this->icon = get_icon(icon);
         this->downIcon = get_icon(downIcon);
+        
+        this->icon.scale(Size(GL_BUTTON_W, GL_BUTTON_H),interpolateRA);
+        this->downIcon.scale(Size(GL_BUTTON_W, GL_BUTTON_H),interpolateRA);
       }
   
       OSDGLButton(ICLWidget *parent, const std::string &toolTipText, const std::string &id, int x, int y, int w, int h, 
@@ -205,6 +214,11 @@ namespace icl{
             downIcon = get_icon(CustomIcon);
           }
         }
+        this->icon.scale(Size(GL_BUTTON_W, GL_BUTTON_H),interpolateRA);
+        if(downIcon.getDim()){
+          this->downIcon.scale(Size(GL_BUTTON_W, GL_BUTTON_H),interpolateRA);
+        }
+
       }
   
   
@@ -1301,11 +1315,6 @@ namespace icl{
   
     // ------------ ICLWidget ------------------------------
   
-  #define GL_BUTTON_Y 2
-  #define GL_BUTTON_W 20
-  #define GL_BUTTON_H 20
-  #define GL_BUTTON_SPACE 2
-  #define GL_BUTTON_X_INC (GL_BUTTON_W+GL_BUTTON_SPACE)
   
     ICLWidget::ICLWidget(QWidget *parent) : 
       m_data(new ICLWidget::Data(this)){
@@ -2425,7 +2434,6 @@ namespace icl{
     void ICLWidget::install(MouseHandler *h){
       connect(this,SIGNAL(mouseEvent(const MouseEvent&)),
               h,SLOT(handleEvent(const MouseEvent&)));  
-      h->link(this);
     }
   
   
@@ -2433,7 +2441,6 @@ namespace icl{
     void ICLWidget::uninstall(MouseHandler *h){
       disconnect(this,SIGNAL(mouseEvent(const MouseEvent &)),
                  h,SLOT(handleEvent(const MouseEvent &)));  
-      h->unlink(this);
     }
   
   

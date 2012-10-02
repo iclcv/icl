@@ -37,9 +37,6 @@
 
 #include <ICLQt/Quick.h>
 #include <ICLQt/Widget.h>
-#include <ICLQt/GUI.h>
-#include <ICLQt/ContainerGUIComponents.h>
-#include <ICLQt/IconFactory.h>
 
 #include <ICLGeom/GeomDefs.h>
 #include <ICLGeom/Scene.h>
@@ -380,26 +377,6 @@ namespace icl{
 
       // save keyboard modifiers for later comparison
       mKeyboardModifiersBackup = tKeyboardModifiers;
-    }
-
-    void SceneMouseHandler::unlink(ICLWidget *widget){
-      widget->removeSpecialButton("mousehandler"+str(this));
-    }
-    
-    void SceneMouseHandler::link(ICLWidget *widget){
-      ICLASSERT_RETURN(widget);
-      
-      if(!mGUI){
-        // create GUI
-        mGUI = new VBox();
-        *mGUI << Button("test") << Create();
-
-        ImgQ icon = cvt(IconFactory::create_image("scene-props"));
-        
-        widget->addSpecialButton("mousehandler"+str(this),&icon,
-                                 function(mGUI,&GUI::switchVisibility),
-                                 "3D scene properties  ");
-      }
     }
 
 #endif

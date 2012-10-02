@@ -94,12 +94,6 @@ namespace icl{
         lightObject->lock();
         Vec currPos = lightObject->getTransformation().part<3,0,1,4>();
         Vec targetPos = T*position;
-        if(index == 0){
-          SHOW(position);
-          SHOW(T);
-          SHOW(targetPos);
-          SHOW(currPos);
-        }
         lightObject->translate(targetPos - currPos);
         lightObject->unlock();
 
