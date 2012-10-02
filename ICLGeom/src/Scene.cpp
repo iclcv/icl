@@ -207,8 +207,6 @@ namespace icl{
       bool needLink;
 
       void performLink(ICLDrawWidget *widget){
-        DEBUG_LOG("performLink called");
-
         const std::string save = parent->getConfigurableID();
         const std::string id = "scene"+str(parent)+str(utils::Time::now().toMicroSeconds());
         
@@ -263,6 +261,7 @@ namespace icl{
       addProperty("enable lighting","flag","",true);
       addProperty("object frame size","float","[0,100000000]",1);
       addProperty("world frame size","float","[0,100000000]",1);
+      addProperty("light object size","float","[0,100000000]",1);
     }
     Scene::~Scene(){
   #ifdef HAVE_GLX
@@ -494,6 +493,7 @@ namespace icl{
       glMultMatrixf(T.transp().data());
 
 
+
       if(o->isVisible()){
         
         o->customRender();
@@ -587,9 +587,11 @@ namespace icl{
       
   
       if( ((Configurable*)this)->getPropertyValue("enable lighting")){
+        float size = ((Configurable*)this)->getPropertyValue("light object size");
         glEnable(GL_LIGHTING);
         for(int i=0;i<8;++i){
           if(m_lights[i]) {
+            ((SceneLight*)m_lights[i].get())->setObjectSize(size);
             m_lights[i]->setupGL(*this,getCamera(camIndex));
           }else{
             glDisable(GL_LIGHT0+i);
@@ -721,16 +723,8 @@ namespace icl{
     }
 
     void Scene::setDrawLightsEnabled(bool enabled, float lightSize){
-      lock();
       setPropertyValue("visualize lights",enabled);
-      if(enabled){
-        for(int i=0;i<8;++i){
-          if(m_lights[i]){
-            m_lights[i]->setObjectSize(lightSize);
-          }
-        }
-      }
-      unlock();
+      setPropertyValue("light object size",lightSize);
     }
     
     bool Scene::getDrawLightsEnabled() const {
