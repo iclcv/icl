@@ -78,7 +78,7 @@ namespace icl {
       }
   
       /// fills an core::Img16s from OpenNI IRMetaData
-      static core::Img16s* convertIRImg(xn::IRMetaData* src, core::Img16s* dst){
+      inline core::Img16s* convertIRImg(xn::IRMetaData* src, core::Img16s* dst){
         dst -> setSize(utils::Size(src -> XRes(), src -> YRes()));
         icl16s* data = dst -> getData(0);
         const XnIRPixel* pIRRow = src -> Data();
@@ -95,7 +95,7 @@ namespace icl {
         fills a three channel core::Img8u from OpenNI ImageMetaData expecting
         the Generator to generate RGB24 Data.
       **/
-      static core::Img8u* convertRGBImg(xn::ImageMetaData* src, core::Img8u* dst){
+      inline core::Img8u* convertRGBImg(xn::ImageMetaData* src, core::Img8u* dst){
         dst -> setSize(utils::Size(src -> XRes(), src -> YRes()));
         // draw RGB image
         icl8u* rChannel = dst -> getData(0);
@@ -126,7 +126,7 @@ namespace icl {
       /**
         This class holds three pointers to T of which one is the
         currently read and the other two are alternately written to.
-    **/
+      **/
       template<typename T>
       class ReadWriteBuffer {
         public:

@@ -169,7 +169,7 @@ namespace icl{
           to update some internal properties 
       */
       void restartGrabberThread();
-      /// adds FileGrabbers properties to Configurable.
+      /// adds DCGrabbers properties to Configurable.
       void addProperties();
       /// callback function for property changes.
       void processPropertyChange(const utils::Configurable::Property &p);

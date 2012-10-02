@@ -57,7 +57,7 @@ namespace icl{
       virtual const core::ImgBase *acquireImage();
   
       /// returns the device property list
-      virtual std::vector<std::string> getPropertyList();    
+      virtual std::vector<std::string> getPropertyListC();
       
       /// sets a specific property
       virtual void setProperty(const std::string &property, const std::string &value);
@@ -76,6 +76,11 @@ namespace icl{
       
       /// returns a list of all supported video devices
       static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
+
+      /// adds properties to Configurable
+      void addProperties();
+      /// callback for changed configurable properties
+      void processPropertyChange(const utils::Configurable::Property &prop);
     };
   
   

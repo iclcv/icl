@@ -65,7 +65,7 @@ namespace icl{
       return std::string((char*)tmp);
     }
   
-    class V4L2GrabberImpl::Impl : public Thread{
+    class V4L2GrabberImpl::Impl : public Thread {
       public:
       struct V4L2Buffer{
         void *data;
@@ -105,7 +105,7 @@ namespace icl{
       ImgBase *imageOut;
       std::vector<icl8u> convertBuffer;
       ColorFormatDecoder decoder;
-  
+
       Impl(const std::string &deviceName, const std::string &initialFormat="", bool startGrabbing=true):
         deviceName(deviceName),isGrabbing(startGrabbing),avoidDoubleFrames(true),lastTime(Time::now()),image(0),imageOut(0){
         
@@ -123,7 +123,6 @@ namespace icl{
                                +" were not found");
           }
         }
-  
         open_device();
         init_device(initialFormat);
         find_supported_properties();
@@ -131,7 +130,6 @@ namespace icl{
           init_mmap();
           start_capturing();
         }
-        
       }
   
       ~Impl(){
@@ -469,7 +467,7 @@ namespace icl{
   	fourcc = FourCC("MYRM");
         }
         decoder.decode(fourcc,p, currentSize, &image);
-        image->setTime(t);
+        if(image) image->setTime(t);
       }
   
        const ImgBase *acquireImage(){
@@ -682,8 +680,11 @@ namespace icl{
   
   
   
-     V4L2GrabberImpl::V4L2GrabberImpl(const std::string &device){
+     V4L2GrabberImpl::V4L2GrabberImpl(const std::string &device)
+       : implMutex(utils::Mutex::mutexTypeRecursive)
+     {
        impl = new Impl(device);
+       addProperties();
      }
   
      V4L2GrabberImpl::~V4L2GrabberImpl(){
@@ -697,10 +698,78 @@ namespace icl{
        do{ image = impl->acquireImage(); } while(!image || !image->getDim() );
        return image;
      }
-  
-  
-  
-     std::vector<std::string> V4L2GrabberImpl::getPropertyList(){
+
+     // removes braces and quotation marks from format string
+     // replaces simple braces by -
+     std::string clearFormatString(std::string format) {
+       std::ostringstream ret;
+       for (unsigned int j = 0; j < format.length(); ++j){
+         switch (format[j]){
+           case '"':
+           case '{':
+           case '}':
+             break;
+           case '(':
+           case ')':
+             ret << '-';
+             break;
+           default:
+             ret << format[j];
+         }
+      }
+      return ret.str();
+     }
+
+     // replaces - by braces.
+     std::string addBraces(const std::string source){
+       std::string ret(source);
+       bool first = true;
+       for (unsigned int j = 0; j < ret.length(); ++j){
+         if(ret[j] == '-'){
+           ret[j] = first ? '(' : ')';
+           first = false;
+         }
+       }
+       return ret;
+     }
+
+     // adds properties to Configurable
+     void V4L2GrabberImpl::addProperties(){
+       addProperty("avoid doubled frames", "flag", "", impl->avoidDoubleFrames, 0, "");
+       addProperty("format", "menu", clearFormatString(impl->getSupportedFormats()), impl->get_current_format(), 0, "The image format.");
+       addProperty("size", "menu", "ajusted by format", Any(), 0, "This is set by the format-property.");
+       for(Impl::PMap::const_iterator it=impl->supportedProperties.begin();
+           it != impl->supportedProperties.end();++it){
+         Impl::SupportedPropertyPtr p = it -> second;
+         addProperty(it->first,p -> getType(), p -> getInfo(), p -> getValue(), 0,"");
+       }
+       Configurable::registerCallback(utils::function(this,&V4L2GrabberImpl::processPropertyChange));
+     }
+
+     // callback for changed configurable properties
+     void V4L2GrabberImpl::processPropertyChange(const utils::Configurable::Property &prop){
+       Mutex::Locker lock(implMutex);
+       if(prop.name == "format"){
+         std::string oldDeviceName = impl->deviceName;
+         impl->stop();
+         delete impl;
+         impl = new Impl(oldDeviceName,addBraces(prop.value));
+         setPropertyValue("avoid doubled frames",impl->avoidDoubleFrames);
+         for(Impl::PMap::const_iterator it=impl->supportedProperties.begin();
+           it != impl->supportedProperties.end();++it){
+           Impl::SupportedPropertyPtr p = it -> second;
+           setPropertyValue(it->first, p->getValue());
+         }
+       }else if(prop.name == "size"){
+         // this is adjusted by the format
+       }else if(prop.name == "avoid doubled frames"){
+         impl->avoidDoubleFrames = parse<bool>(prop.value);
+       }else{
+         impl->findProperty(prop.name)->setValue(prop.value);
+       }
+     }
+
+     std::vector<std::string> V4L2GrabberImpl::getPropertyListC(){
        Mutex::Locker lock(implMutex);
        std::vector<std::string> all;
        all.push_back("avoid doubled frames");
@@ -768,7 +837,8 @@ namespace icl{
       }
       return last;
     }
-    
+
+    REGISTER_CONFIGURABLE(V4L2Grabber, return new V4L2Grabber("/dev/video0"));
     
   } // namespace io
 }

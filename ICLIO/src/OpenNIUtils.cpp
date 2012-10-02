@@ -180,7 +180,7 @@ OpenNIRgbGenerator::OpenNIRgbGenerator(Context* context, int num)
   // create DepthGenerator. The Kinect rgb-generator did not work without
   // a depth generator being initialized beforehand.
   m_DepthGenerator = new DepthGenerator();
-  if (XN_STATUS_OK != m_DepthGenerator -> Create(*m_Context)){
+  if (XN_STATUS_OK != (status = m_DepthGenerator -> Create(*m_Context))){
     std::string error =  xnGetStatusString(status);
     DEBUG_LOG("DepthGenerator init error '" << error << "'");
     throw new ICLException(error);
@@ -424,7 +424,6 @@ std::string getCurrentMapOutputMode(MapGenerator* gen){
 void setCurrentMapOutputmode(MapGenerator* gen, const std::string &value){
   // fill XnMapOutputMode instance from string
   char delimiter;
-  int val = 0;
   XnMapOutputMode mode;
   std::stringstream t;
   t << value;
@@ -435,9 +434,9 @@ void setCurrentMapOutputmode(MapGenerator* gen, const std::string &value){
   t >> mode.nFPS;
   // when supported, set to new mode.
   if(isSupportedMapOutputMode(gen, &mode)){
-    XnStatus st;
-    st = gen -> SetMapOutputMode(mode);
-    DEBUG_LOG2(xnGetStatusString(st));
+    //XnStatus st = gen -> SetMapOutputMode(mode);
+    //DEBUG_LOG2(xnGetStatusString(st));
+    gen -> SetMapOutputMode(mode);
   } else {
     DEBUG_LOG2("mode " << value << " not supported.");
   }
@@ -729,7 +728,7 @@ std::string getCroppingInfo(xn::MapGenerator* gen, const std::string &property){
     return "{On,Off}";
   } else {
     // get max map output in every for x and y
-    int x = 0; int y = 0;
+    unsigned int x = 0; unsigned int y = 0;
     XnUInt32 count = gen -> GetSupportedMapOutputModesCount();
     XnMapOutputMode* modes = new XnMapOutputMode[count];
     gen -> GetSupportedMapOutputModes(modes, count);
@@ -1064,6 +1063,7 @@ bool DepthGeneratorOptions::supportsProperty(const std::string &property){
   } else if (property == "field of view Y"){
     return true;
   }
+  return false;
 }
 
 // get type of property
@@ -1094,6 +1094,8 @@ std::string DepthGeneratorOptions::getInfo(const std::string &name){
   } else if (name == "field of view Y"){
     return "";
   }
+  DEBUG_LOG("unknown property " << name);
+  throw ICLException("unknown property");
 }
 
 // returns the current value of a property or a parameter
@@ -1116,6 +1118,8 @@ std::string DepthGeneratorOptions::getValue(const std::string &name){
     s << fov.fVFOV;
     return s.str();
   }
+  DEBUG_LOG("unknown property " << name);
+  throw ICLException("unknown property");
 }
 
 // Returns whether this property may be changed internally.
@@ -1139,7 +1143,6 @@ ImageGeneratorOptions::ImageGeneratorOptions(xn::ImageGenerator* generator)
 // interface for the setter function for video device properties
 void ImageGeneratorOptions::setProperty(const std::string &property, const std::string &value){
   MapGeneratorOptions::setProperty(property, value);
-  XnStatus status = XN_STATUS_OK;
   if(property == "Pixel Format"){
     if (value == "rgb24"){
       if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_RGB24)){
@@ -1148,7 +1151,7 @@ void ImageGeneratorOptions::setProperty(const std::string &property, const std::
     }
     if (value == "yuv422"){
       if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_YUV422)){
-        status = m_ImageGenerator -> SetPixelFormat(XN_PIXEL_FORMAT_YUV422);
+        m_ImageGenerator -> SetPixelFormat(XN_PIXEL_FORMAT_YUV422);
       }
     }
     if (value == "grayscale8"){
@@ -1183,6 +1186,8 @@ bool ImageGeneratorOptions::supportsProperty(const std::string &property){
   if(property == "Pixel Format"){
     return true;
   }
+  DEBUG_LOG("unknown property " << property);
+  throw ICLException("unknown property");
 }
 
 // get type of property
@@ -1223,6 +1228,8 @@ std::string ImageGeneratorOptions::getInfo(const std::string &name){
     s << "}";
     return s.str();
   }
+  DEBUG_LOG("unknown property " << name);
+  throw ICLException("unknown property");
 }
 
 // returns the current value of a property or a parameter
@@ -1248,6 +1255,8 @@ std::string ImageGeneratorOptions::getValue(const std::string &name){
             return "rgb24";
     }
   }
+  ERROR_LOG("unknown property " << name);
+  return "";
 }
 
 // Returns whether this property may be changed internally.
@@ -1258,4 +1267,5 @@ int ImageGeneratorOptions::isVolatile(const std::string &propertyName){
   if (propertyName == "Pixel Format"){
     return 1000;
   }
+  return 0;
 }
