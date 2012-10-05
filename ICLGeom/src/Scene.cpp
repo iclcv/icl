@@ -646,7 +646,7 @@ namespace icl{
         for(int i=0;i<8;++i){
           if(m_lights[i] && m_lights[i]->on){
             if((m_lights[i]->anchor != SceneLight::CamAnchor) ||
-               (m_lights[i]->camAnchor != camIndex)){
+               (m_lights[i]->camAnchor != camIndex && m_lights[i]->camAnchor != -1)){
               renderSceneObjectRecursive((SceneObject*)m_lights[i]->getLightObject());
             }
           }
