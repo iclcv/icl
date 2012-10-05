@@ -398,7 +398,15 @@ namespace icl{
           If the resulting x-range has still zero length, the bounds are deleted
           internally */
       void setBounds(float minX, float maxX=0, float minY=0, float mayY=0, float minZ=0, float maxZ=0);
+      
+      /// sets the scene's background color (alpha is not used)
+      /** channel ranges are assumed to be in [0,255]. The default 
+          background color is black */
+      void setBackgroundColor(const GeomColor &color);
 
+      /// returns the current background colo
+      GeomColor getBackgroundColor() const;
+      
       protected:
 
       /// creates a displaylist for the given object
@@ -473,6 +481,9 @@ namespace icl{
       
       /// global ambient light
       math::FixedColVector<int,4> m_globalAmbientLight;
+
+      /// current scene background color
+      GeomColor m_backgroundColor;
 
       private:
       /// called from the SceneObject class

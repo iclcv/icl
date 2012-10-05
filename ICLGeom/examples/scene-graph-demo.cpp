@@ -123,7 +123,6 @@ void mouse_2(const MouseEvent &evt){
 
 void init(){
   Scene::enableSharedOffscreenRendering();
-  
 
   gui << Draw3D().handle("view")
       << Draw().handle("image")
@@ -181,13 +180,14 @@ void init(){
   
   DrawHandle ih = gui["image"];
   ih->setAutoResetQueue(false);
+  
+  gui["view"].link(scene.getGLCallback(0));
 }
 
 void run(){
   ICLDrawWidget3D *d = gui["view"];
   static FPSLimiter fps(100,10);
   std::string fpsString = fps.getFPSString(); 
-  d->link(scene.getGLCallback(0));
   d->color(255,0,0,255);
   d->text(fpsString,550,10,8);
   d->render();

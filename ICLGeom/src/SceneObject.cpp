@@ -266,9 +266,9 @@ namespace icl{
       m_enableLocking(false),
       m_pointSmoothingEnabled(true),
       m_lineSmoothingEnabled(true),
+      m_polygonSmoothingEnabled(true),
       m_shininess(128),
       m_specularReflectance(GeomColor(0.5,0.5,0.5,0.5)),
-      m_polygonSmoothingEnabled(true),
       m_displayListHandle(0),
       m_createDisplayListNextTime(0),
       m_fragmentShader(0)
@@ -1383,6 +1383,8 @@ namespace icl{
               }
               break;
             }
+            default:
+              break;
           }
         }
         m_normals.resize(m_vertices.size());
@@ -1417,6 +1419,8 @@ namespace icl{
               }
               break;
             }
+            default:
+              break;
           }
         }
       }

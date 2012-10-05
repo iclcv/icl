@@ -312,6 +312,8 @@ namespace icl{
             gui["#F#"+p] = parse<float>(conf->getPropertyValue(p));
           }else if( t == "string"){
             gui["#S#"+p] = conf->getPropertyValue(p);
+          }else if( t == "color"){
+            gui["#C#"+p] = parse<Color>(conf->getPropertyValue(p));
           }
   
         }
@@ -393,6 +395,11 @@ namespace icl{
           std::string value = conf->getPropertyValue(p.full);
           if(!value.length()) value = " ";
           gui << String(value, max_len).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
+        }else if(t =="color"){
+          std::string handle = "#C#"+p.full;
+          ostr << '\1' << handle;
+          Color c = parse<Color>(conf->getPropertyValue(p.full));
+          gui << ColorSelect(c[0],c[1],c[2]).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
         }
         
         else{
@@ -498,6 +505,8 @@ namespace icl{
           gui["#F#"+name] = conf->getPropertyValue(name).as<float>();
         }else if(type == "string"){
           gui["#S#"+name] = conf->getPropertyValue(name).as<std::string>();
+        }else if(type == "color"){
+          gui["#C#"+name] = conf->getPropertyValue(name).as<Color>();
         }
         
         deactivateExec = false;
@@ -517,7 +526,10 @@ namespace icl{
           case 'F':
           case 'S':
             conf->setPropertyValue(prop,gui[handle].as<Any>());
-          break;
+            break;
+          case 'C':
+            conf->setPropertyValue(prop,gui[handle].as<Color>());
+            break;
           case 'c': 
             conf->setPropertyValue(prop,"");
             break;

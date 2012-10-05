@@ -50,41 +50,61 @@ namespace icl{
   namespace utils{
   
     /// Interface for classes that can be configured from configuration-files and GUI-Components
-    /** The Configurable-interface can be used to define a classes parameters/properties 
-        that shall be changed at runtime. The Configurable-subclasses can define properties that can
-        be accessed by string identifiers. Each property has a type, a type-dependend description
-        of possible values, a current value and a so called volatileness. Please see class interface
-        and it's function descriptions for more details. A list of supported property types is provided
-        in the documentation of the method icl::Configurable::getPropertyType
+    /** The Configurable-interface can be used to define a classes
+        parameters/properties that shall be changed at runtime. The
+        Configurable-subclasses can define properties that can be
+        accessed by string identifiers. Each property has a type, a
+        type-dependend description of possible values, a current value
+        and a so called volatileness. Please see class interface and
+        it's function descriptions for more details. A list of
+        supported property types is provided in the documentation of
+        the method icl::Configurable::getPropertyType
   
         \section IMPL Implementing the Configurable Interface
-        It is strongly recommended to use the Configurable's property storage mechanism to 
-        manage a classes properties. Special behaviour to the adaption of certain properties can 
-        easily be added by registering a callback to an own member function. Alternatively, all
-        Configurable's virtual methods can be reimplemented to obtain special behaviour. In this case
-        the programmer himself can provide storage for the classes properties, but this is -- as said above -- 
-        not recommended due to the complex interface. 
+
+        It is strongly recommended to use the Configurable's property
+        storage mechanism to manage a classes properties. Special
+        behaviour to the adaption of certain properties can easily be
+        added by registering a callback to an own member
+        function. Alternatively, all Configurable's virtual methods
+        can be reimplemented to obtain special behaviour. In this case
+        the programmer himself can provide storage for the classes
+        properties, but this is -- as said above -- not recommended
+        due to the complex interface.
         
         
         \section CP Child Configurables
-        Configurables can not only have a list of properties that can be got and set, but also a list
-        of chlidren. All child-properties will also become properties of it's parent. However, the 
-        first section prefix (which is used for the property-tab's label) can be adapted. <b>Note</b> that
-        this behaviour must be preserved if the virtual functions setPropertyValue and getPropertyValue are
-        reimplemented. Usually, you can simply call Configurable::[set/get]PropertyValue(...) at the
-        end of you versions of these methods.
+
+        Configurables can not only have a list of properties that can
+        be got and set, but also a list of chlidren. All
+        child-properties will also become properties of it's
+        parent. However, the first section prefix (which is used for
+        the property-tab's label) can be adapted. <b>Note</b> that
+        this behaviour must be preserved if the virtual functions
+        setPropertyValue and getPropertyValue are
+        reimplemented. Usually, you can simply call
+        Configurable::[set/get]PropertyValue(...) at the end of you
+        versions of these methods.
         
         \section REG Configurable Registration
-        Configurable class should be registered statically using one of the two registration macros REGISTER_CONFIGURABLE 
-        or REGISTER_CONFIGURABLE_DEFAULT. This is strongly recommended since the class interface of a configurable class
-        does not give information about the properties that are provided by a specific Configurable class. Instead, all
-        classes, that implement the Configurable interface, can be registered statically, which allows for runtime exploration
-        of possible Configurable classes and their supported properties. 
+
+        Configurable class should be registered statically using one
+        of the two registration macros REGISTER_CONFIGURABLE or
+        REGISTER_CONFIGURABLE_DEFAULT. This is strongly recommended
+        since the class interface of a configurable class does not
+        give information about the properties that are provided by a
+        specific Configurable class. Instead, all classes, that
+        implement the Configurable interface, can be registered
+        statically, which allows for runtime exploration of possible
+        Configurable classes and their supported properties.
         
-        The example application <b>icl-configurable-info</b> can be used to explore allowed properties.
+        The example application <b>icl-configurable-info</b> can be
+        used to explore allowed properties.
         
   
-        In order to make the static registration process as easy as possible, special macros are provided. Example:
+        In order to make the static registration process as easy as
+        possible, special macros are provided. Example:
+
         \code
         namespace icl{
           // MyConfigurable.h
@@ -108,8 +128,9 @@ namespace icl{
         }
         \endcode
         
-        If no default constructor is available, the macro REGISTER_CONFIGURABLE can be used. Here, 
-        you can also specify how an instance of that class is created. Example:
+        If no default constructor is available, the macro
+        REGISTER_CONFIGURABLE can be used. Here, you can also specify
+        how an instance of that class is created. Example:
   
         \code
         namespace icl{
@@ -134,10 +155,11 @@ namespace icl{
         }
         \endcode
   
-        For classes with pure-virtual methods, it is recommended to provide a dummy non-virtual
-        extension of that class whose name is extended by a _VIRTUAL postfix. In this case,
-        listing the Configurable classnames shows explicitly, that a class is a virtual interface.
-        Example:
+        For classes with pure-virtual methods, it is recommended to
+        provide a dummy non-virtual extension of that class whose name
+        is extended by a _VIRTUAL postfix. In this case, listing the
+        Configurable classnames shows explicitly, that a class is a
+        virtual interface.  Example:
   
         \code
         namespace icl{
@@ -166,8 +188,11 @@ namespace icl{
         \endcode
   
         \section EX Examples
-        There are several examples available in the ICL-source try. Use the ICL-tool <b>icl-configurable-info -list</b> to
-        obtain a list of all Configurable implementations and their supported properties.
+
+        There are several examples available in the ICL-source
+        try. Use the ICL-tool <b>icl-configurable-info -list</b> to
+        obtain a list of all Configurable implementations and their
+        supported properties.
     */
     class Configurable{
       public:
@@ -389,6 +414,7 @@ namespace icl{
           - "float" the property value can be any valid float value within a given range
           - "int" the property value can be any valid int value within a given range
           - "string" the property is a string value with a given maximum length
+          - "color" the property has RGBA values in range 0-255 
           used e.g. for triggered abilities of grabbing devices, like 
           "save user settings" for the PWCGrabber 
           - "info" the property is an unchangable internal value (it cannot be set actively)
@@ -407,7 +433,7 @@ namespace icl{
           - "[A,B]" for float- and int-properties with min=A and max=B 
           - ",A,B,C,..." for a value-list and A,B,C are ascii doubles (real commas can be escaped using \)
           - ",A,B,C,..." for a menu and A,B,C are strings (real commas can be escaped using \)
-          - nothing for "info"-typed properties
+          - nothing for "info"- and "color"-typed properties
           - MAX_LENGTH for string typed properties
           - flag-properties always have the possible values "on|1|true" or "off|0|false"
           <b>Note:</b> The received string can be translated into C++ data

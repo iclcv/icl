@@ -447,6 +447,7 @@ namespace icl{
       Size defaultViewPort;
       QWidget *parentBeforeFullScreen;
       bool autoRender;
+      ICLWidget::BGColorSource bcSrc;
       
       bool event(int x, int y, OSDGLButton::Event evt){
         bool any = false;
@@ -1756,15 +1757,21 @@ namespace icl{
       //    m_data->mutex.lock();
       
       LOCK_SECTION;
-      glClearColor(m_data->backgroundColor[0],m_data->backgroundColor[1],
-                   m_data->backgroundColor[2],1);
+      if(! m_data->bcSrc ){
+        glClearColor(m_data->backgroundColor[0],m_data->backgroundColor[1],
+                     m_data->backgroundColor[2],1);
+      }else{
+        core::Color c = m_data->bcSrc();
+        glClearColor(c[0]/255.,c[1]/255.,c[2]/255.,1);
+      }
+
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
       GLPaintEngine *pe = 0;
       if(!m_data->image.isNull()){
         Rect r;
         if(m_data->fm == fmZoom){
           QMutexLocker locker(&m_data->menuMutex);
-          r = computeRect(m_data->image.getSize(),getSize(),fmZoom,m_data->zoomRect);//zoomAdjuster->aw->r);
+          r = computeRect(m_data->image.getSize(),getSize(),fmZoom,m_data->zoomRect);
         }else{
           r = computeRect(m_data->image.getSize(),getSize(),m_data->fm);
         }
@@ -1772,8 +1779,6 @@ namespace icl{
         m_data->image.draw2D(r,getSize());
       }else{
         pe = new GLPaintEngine(this);
-        pe->fill(0,0,0,255);
-        pe->rect(Rect(0,0,width(),height()));
         
         if(m_data->showNoImageWarnings){
           pe->color(0,100,255,230);
@@ -1785,6 +1790,7 @@ namespace icl{
       if(!pe) pe = new GLPaintEngine(this);
       pe->color(255,255,255,255);
       pe->fill(255,255,255,255);
+
       customPaintEvent(pe);
       
       if(m_data->outputCap){
@@ -2510,6 +2516,10 @@ namespace icl{
       m_data->deleteAllCallbacks();
     }
   
+    void ICLWidget::setBackgroundColorSource(BGColorSource src){
+      m_data->bcSrc = src;
+    }
+
   } // namespace qt
 }
 
