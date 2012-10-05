@@ -208,12 +208,15 @@ namespace icl{
     }
   
     void SceneObject::setColor(Primitive::Type t,const GeomColor &color, bool recursive){
+  
       GeomColor colorScaled = color * COLOR_FACTOR;
-      if(t == Primitive::vertex){
+
+      if(t == Primitive::vertex || t == Primitive::all){
         std::fill(m_vertexColors.begin(),m_vertexColors.end(),color);
-      }else{
+      }
+      if(t != Primitive::vertex){
         for(unsigned int i=0;i<m_primitives.size();++i){
-          if(m_primitives[i]->type == t){
+          if(t == Primitive::all || m_primitives[i]->type == t){
             m_primitives[i]->color = colorScaled;
           }
         }

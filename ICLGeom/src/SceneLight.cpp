@@ -190,7 +190,7 @@ namespace icl{
     
     void SceneLight::reset(){
       on = !index;
-      position = Vec(0,0,-200,1);
+      position = Vec(0,0,2,1);
       ambientOn = false;
       diffuseOn = true;
       specularOn = false;
