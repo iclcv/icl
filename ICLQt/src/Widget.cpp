@@ -2369,59 +2369,37 @@ namespace icl{
         m_data->downMask[m_data->lastMouseReleaseButton] = true;
       }
   
-  #if 0
-      if(!m_data->image || !m_data->image->hasImage()){
-        const Point &wheelDelta = (type == MouseWheelEvent) ? m_data->wheelDelta : Point::null;
-        evt = MouseEvent(Point(m_data->mouseX,m_data->mouseY),
-                         Point(-1,-1),
-                         Point32f(-1,-1),
-                         Point32f((float)m_data->mouseX/float(width()),(float)m_data->mouseY/float(height())),
-                         m_data->downMask,
-                         std::vector<double>(),
-  		       wheelDelta,
-                         type,this);
-        if(type == MouseReleaseEvent){
-          m_data->downMask[m_data->lastMouseReleaseButton] = false;
-        }
-        return evt;
+      Rect r = getImageRect();
+      int iw = !m_data->image.isNull() ? m_data->image.getWidth() : m_data->defaultViewPort.width;
+      int ih = !m_data->image.isNull() ? m_data->image.getHeight() : m_data->defaultViewPort.height;
+      float boxX = m_data->mouseX - r.x;
+      float boxY = m_data->mouseY - r.y;
+      float imageX32f = (boxX*iw)/float(r.width);
+      float imageY32f = (boxY*ih)/float(r.height);
+      int imageX = (int) rint(-0.5+(boxX*iw)/r.width);
+      int imageY = (int) rint(-0.5+(boxY*ih)/r.height);
       
-      }else{
-  #endif
-        
-        Rect r = getImageRect();
-        int iw = !m_data->image.isNull() ? m_data->image.getWidth() : m_data->defaultViewPort.width;
-        int ih = !m_data->image.isNull() ? m_data->image.getHeight() : m_data->defaultViewPort.height;
-        float boxX = m_data->mouseX - r.x;
-        float boxY = m_data->mouseY - r.y;
-        float imageX32f = (boxX*iw)/float(r.width);
-        float imageY32f = (boxY*ih)/float(r.height);
-        int imageX = (int) rint(-0.5+(boxX*iw)/r.width);
-        int imageY = (int) rint(-0.5+(boxY*ih)/r.height);
-  
-        float relImageX = float(imageX)/iw;
-        float relImageY = float(imageY)/ih;
-  
-        std::vector<double> color;
-        if(!m_data->image.isNull() && r.contains(m_data->mouseX,m_data->mouseY)){
-          color = m_data->image.getColor(imageX,imageY);
-        }
-        
-        const Point &wheelDelta = (type == MouseWheelEvent) ? m_data->wheelDelta : Point::null;
-        evt = MouseEvent(Point(m_data->mouseX,m_data->mouseY),
-                         Point(imageX,imageY),
-                         Point32f(imageX32f,imageY32f),
-                         Point32f(relImageX,relImageY),
-                         m_data->downMask,
-                         color,
-                         wheelDelta,
-                         type,this);
-        if(type == MouseReleaseEvent){
-          m_data->downMask[m_data->lastMouseReleaseButton] = false;
-        }
-        return evt;
-  #if 0
+      float relImageX = float(imageX)/iw;
+      float relImageY = float(imageY)/ih;
+      
+      std::vector<double> color;
+      if(!m_data->image.isNull() && r.contains(m_data->mouseX,m_data->mouseY)){
+        color = m_data->image.getColor(imageX,imageY);
       }
-  #endif
+      
+      const Point &wheelDelta = (type == MouseWheelEvent) ? m_data->wheelDelta : Point::null;
+      evt = MouseEvent(Point(m_data->mouseX,m_data->mouseY),
+                       Point(imageX,imageY),
+                       Point32f(imageX32f,imageY32f),
+                       Point32f(relImageX,relImageY),
+                       m_data->downMask,
+                       color,
+                       wheelDelta,
+                       type,this);
+      if(type == MouseReleaseEvent){
+        m_data->downMask[m_data->lastMouseReleaseButton] = false;
+      }
+      return evt;
     }
   
   
