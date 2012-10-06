@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLMath/VectorQuantisation.h                   **
+** File   : include/ICLMath/KMeans.h                               **
 ** Module : ICLMath                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -40,35 +40,63 @@
 namespace icl{
   namespace math{
     
+    
+    /// Generic Implementation of the K-Means algorithm
+    /** The K-Means algorithms performs vector quantisation in a very
+        simple way. Given a set of data pointers xi, and starting with
+        a fixed given number of initial centroids, randomly drawn from
+        the given data points, it iterates two steps:
+        
+        -# assign each data point to it's closest centroid 
+           (winnter takes all association)
+        -# move centroids to the mean of it's associated data points
+    */
     template<class Vector, class Scalar>
-    class GenericVectorQuantisation{
+    class KMeans{
       
+      /// internal list of centroids
       std::vector<Vector> m_centers;
+      
+      /// internal buffer
       std::vector<Vector> m_means;
+      
+      /// numbers of points associated to each centroid
       std::vector<int> m_nums;
+      
+      /// averate quantisation error for each centroid
       std::vector<Scalar> m_errors;
 
+      /// internal utility function
       static Scalar diff_power_two(const Scalar &a, const Scalar &b){
         Scalar d = a-b;
         return d*d;
       }
       
+      /// utility function computing the vector distance
       static inline Scalar dist(const Vector &a, const Vector &b){
         return ::sqrt( std::inner_product(a.begin(),a.end(),b.begin(),Scalar(0), std::plus<Scalar>(), diff_power_two) );
       }
       
+      /// sets a vector to null
+      static inline void setVectorNull(Vector &v){
+        std::fill(v.begin(),v.end(),Scalar(0));
+      }
+      
       public:
 
+      /// restult type
       struct Result{
-        const std::vector<Vector> &centers;
-        const std::vector<int> &nums;
-        const std::vector<Scalar> &errors;
+        const std::vector<Vector> &centers; //!< final list of centroids
+        const std::vector<int> &nums;       //!< final number of points for each centroid
+        const std::vector<Scalar> &errors;  //!< average quantisation errors
       };
       
-      inline GenericVectorQuantisation(int numCenters=0){
+      /// constructor with optionally given number of centers
+      inline KMeans(int numCenters=0){
         init(numCenters);
       }
       
+      /// deferred intitialization with number of centers
       inline void init(int numCenters){
         m_centers.resize(numCenters);
         m_means.resize(numCenters);
@@ -76,6 +104,7 @@ namespace icl{
         m_errors.resize(numCenters);
       }
 
+      /// finds the nearest centroid for a given data pointer
       inline int findNN(const Vector &v, Scalar &minDist){
         int minIdx = 0;
         minDist = dist(v,m_centers[0]);
@@ -89,8 +118,11 @@ namespace icl{
         return minIdx;
       }
       
+      /// runs the KMeans algorithms on the given data 
+      /** if reinitCenters is set to false, the centers of the last
+          call to this method are reused */
       template<class RandomAcessIterator>
-      Result run(RandomAcessIterator begin, RandomAcessIterator end, int numSteps = 1000, bool reinitCenters=true){
+      Result apply(RandomAcessIterator begin, RandomAcessIterator end, int numSteps = 1000, bool reinitCenters=true){
         Scalar minDist = 0;
         
         if(reinitCenters){
@@ -104,7 +136,7 @@ namespace icl{
         for(int step=0;step<numSteps;++step){
           // empty accumulators
           for(size_t i=0;i<m_means.size();++i){
-            std::fill(m_means[i].begin(),m_means[i].end(),Scalar(0));
+            setVectorNull(m_means[i]);
             m_nums[i] = Scalar(0);
             m_errors[i] = Scalar(0);
           }
@@ -129,5 +161,17 @@ namespace icl{
         return r;
       }
     };
+
+    template<>
+    float KMeans<Point32f,float>::dist(const Point32f &a, const Point32f &b){
+      return a.distanceTo(b);
+    }
+      
+    template<>
+    void KMeans<Point32f,float>::setVectorNull(Point32f &p){
+      p = Point32f::null;
+    }
+
+
   }
 }

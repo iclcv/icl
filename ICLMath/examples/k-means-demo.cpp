@@ -1,11 +1,11 @@
 #include <ICLQt/Common.h>
-#include <ICLMath/VectorQuantisation.h>
+#include <ICLMath/KMeans.h>
 #include <ICLMath/FixedVector.h>
 
 VBox gui;
 
 typedef FixedColVector<float,2> V2;
-typedef GenericVectorQuantisation<V2,float> VQ;
+typedef KMeans<V2,float> VQ;
 
 VQ vq;
 std::vector<V2> D;
@@ -18,7 +18,7 @@ void run(){
   
   static PlotHandle plot = gui["plot"];
   for(int i=0;i<100;++i){
-    VQ::Result r = vq.run(D.begin(),D.end(), 1, !i);
+    VQ::Result r = vq.apply(D.begin(),D.end(), 1, !i);
     
     plot->clear();
     plot->linewidth(2);
