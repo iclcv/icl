@@ -4,7 +4,7 @@
 
 VBox gui;
 
-typedef FixedColVector<float,2> V2;
+typedef Point32f V2; //FixedColVector<float,2> V2;
 typedef KMeans<V2,float> VQ;
 
 VQ vq;
@@ -30,6 +30,7 @@ void run(){
     plot->color(0,100,255);
     plot->label("centers");
     plot->sym('x');
+    //    plot->scatter(&r.centers[0][0],&r.centers[0][1],r.centers.size(),2,2);
     plot->scatter(&r.centers[0][0],&r.centers[0][1],r.centers.size(),2,2);
     
     plot->render();

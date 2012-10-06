@@ -50,6 +50,11 @@ namespace icl{
         -# assign each data point to it's closest centroid 
            (winnter takes all association)
         -# move centroids to the mean of it's associated data points
+        
+        \section TYPES Vector Types
+        
+        Supported Vector Types are FixedColVector, FixedRowVector, 
+        DynColVector, DynRowVector and Point32f
     */
     template<class Vector, class Scalar>
     class KMeans{
@@ -162,6 +167,7 @@ namespace icl{
       }
     };
 
+    /** \cond */
     template<>
     float KMeans<Point32f,float>::dist(const Point32f &a, const Point32f &b){
       return a.distanceTo(b);
@@ -171,6 +177,7 @@ namespace icl{
     void KMeans<Point32f,float>::setVectorNull(Point32f &p){
       p = Point32f::null;
     }
+    /** \endcond */
 
 
   }
