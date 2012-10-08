@@ -37,6 +37,7 @@
 #include <ICLCore/ImgBase.h>
 #include <ICLUtils/Mutex.h>
 #include <ICLUtils/Thread.h>
+#include <ICLUtils/Configurable.h>
 
 #include <XnOS.h>
 #include <XnCppWrapper.h>
@@ -274,7 +275,7 @@ namespace icl {
       };
   
       /// this class interprets and sets Properties of OpenNI MapGenerators
-      class MapGeneratorOptions {
+      class MapGeneratorOptions : public utils::Configurable {
         public:
           /// constructor
           MapGeneratorOptions(xn::MapGenerator* generator);
@@ -293,6 +294,12 @@ namespace icl {
           virtual std::string getValue(const std::string &name);
           /// Returns whether this property may be changed internally.
           virtual int isVolatile(const std::string &propertyName);
+
+          /// callback for changed configurable properties
+          void processPropertyChange(const utils::Configurable::Property &prop);
+
+          /// adds a general int capability as property
+          void addGeneralIntProperty(const std::string name);
   
         private:
           /// the used MapGenerator
@@ -349,6 +356,9 @@ namespace icl {
           std::string getValue(const std::string &name);
           /// Returns whether this property may be changed internally.
           int isVolatile(const std::string &propertyName);
+
+          /// callback for changed configurable properties
+          void processPropertyChange(const utils::Configurable::Property &prop);
   
         private:
           /// the used ImageGenerator

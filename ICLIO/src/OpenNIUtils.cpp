@@ -38,6 +38,7 @@
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/Mutex.h>
 #include <ICLUtils/StringUtils.h>
+#include <ICLUtils/SteppingRange.h>
 #include <ICLIO/OpenNIUtils.h>
 #include <limits>
 
@@ -211,7 +212,7 @@ OpenNIRgbGenerator::OpenNIRgbGenerator(Context* context, int num)
   }
 
   // create generator options
-  m_Options = new MapGeneratorOptions(m_RgbGenerator);
+  m_Options = new ImageGeneratorOptions(m_RgbGenerator);
   m_RgbGenerator -> StartGenerating();
   DEBUG_LOG2("done creating OpenNIRgbGenerator");
 }
@@ -295,8 +296,6 @@ OpenNIIRGenerator::OpenNIIRGenerator(Context* context, int num)
     throw new ICLException(error);
   }
 
-  // create generator options
-  m_Options = new MapGeneratorOptions(m_IrGenerator);
   // somehow my kinect did not create the ir images before setting it to
   // this MapOutputMode.
   XnMapOutputMode mo;
@@ -304,6 +303,9 @@ OpenNIIRGenerator::OpenNIIRGenerator(Context* context, int num)
   mo.nXRes = 640;
   mo.nYRes = 480;
   m_IrGenerator -> SetMapOutputMode(mo);
+
+  // create generator options
+  m_Options = new MapGeneratorOptions(m_IrGenerator);
   status = m_IrGenerator -> StartGenerating();
   DEBUG_LOG2("startgenerating: " << xnGetStatusString(status));
 }
@@ -378,7 +380,6 @@ std::string getMapOutputModeInfo(MapGenerator* gen){
 
   // create info-string
   std::ostringstream ret;
-  ret << "{";
   for(unsigned int i = 0; i < cleaned.size(); ++i){
     ret << cleaned.at(i) -> nXRes << "x";
     ret << cleaned.at(i) -> nYRes << "@";
@@ -520,7 +521,7 @@ void addGeneralIntCapability(xn::MapGenerator* gen,
                              std::vector<std::string> &properties,
                              const std::string &name)
 {
-  // only add iff supported
+  // only add if supported
   if(!gen -> IsCapabilitySupported(name.c_str())){
     return;
   }
@@ -800,7 +801,7 @@ std::string alternativeViewPiontCapabilityInfo(xn::MapGenerator* gen,
 {
   AlternativeViewPointCapability avc = gen -> GetAlternativeViewPointCap();
   std::ostringstream ret;
-  ret << "{self,";
+  ret << "self,";
   std::map<std::string, xn::ProductionNode>::iterator it;
   for(it = pn_map.begin(); it != pn_map.end(); ++it){
     if(avc.IsViewPointSupported((*it).second)){
@@ -883,8 +884,9 @@ void fillProductionNodeMap(Context context,
 MapGeneratorOptions::MapGeneratorOptions(xn::MapGenerator* generator)
   : m_Generator(generator)
 {
-  m_Capabilities.push_back("map output mode");
   fillProductionNodeMap(m_Generator -> GetContext(), m_ProductionNodeMap);
+  // old camcfg
+  m_Capabilities.push_back("map output mode");
   if(m_Generator -> IsCapabilitySupported(XN_CAPABILITY_CROPPING)){
     addCroppingCapability(m_Capabilities);
   }
@@ -914,7 +916,106 @@ MapGeneratorOptions::MapGeneratorOptions(xn::MapGenerator* generator)
   addGeneralIntCapability(m_Generator, m_Capabilities, XN_CAPABILITY_IRIS);
   addGeneralIntCapability(m_Generator, m_Capabilities, XN_CAPABILITY_FOCUS);
   addGeneralIntCapability(m_Generator, m_Capabilities, XN_CAPABILITY_LOW_LIGHT_COMPENSATION);
+
+  //Configurable
+  addProperty("map output mode", "menu", getMapOutputModeInfo(m_Generator),
+              getCurrentMapOutputMode(m_Generator), 0,
+              "The map output mode of the used MapGenerator");
+  //fillProductionNodeMap(m_Generator -> GetContext(), m_ProductionNodeMap);
+  if(m_Generator -> IsCapabilitySupported(XN_CAPABILITY_CROPPING)){
+    // get max map output in every for x and y
+    unsigned int x = 0; unsigned int y = 0;
+    XnUInt32 count = m_Generator -> GetSupportedMapOutputModesCount();
+    XnMapOutputMode* modes = new XnMapOutputMode[count];
+    m_Generator -> GetSupportedMapOutputModes(modes, count);
+    for(unsigned int i = 0; i < count; ++i){
+      x = (modes[i].nXRes > x) ? modes[i].nXRes : x;
+      y = (modes[i].nYRes > y) ? modes[i].nYRes : y;
+    }
+    // cropping info
+    XnCropping crop;
+    m_Generator -> GetCroppingCap().GetCropping(crop);
+
+    addProperty("Cropping Enabled", "flag", "", crop.bEnabled, 0,
+                "Whether cropping should be used."
+                );
+    addProperty("Cropping offset X", "range", str(SteppingRange<int>(0, x, 1)),
+                crop.nXOffset, 0, "The X offset of the cropping from (0,0)."
+                "Needs to be set regarding cropping size and image size."
+                );
+    addProperty("Cropping offset Y", "range", str(SteppingRange<int>(0, y, 1)),
+                crop.nYOffset, 0, "The Y offset of the cropping from (0,0). "
+                "Needs to be set regarding cropping size and image size."
+                );
+    addProperty("Cropping size X", "range", str(SteppingRange<int>(0, x, 1)),
+                crop.nXSize, 0, "The X size cropped image. Needs to be set "
+                "regarding cropping size and image size."
+                );
+    addProperty("Cropping size Y", "range", str(SteppingRange<int>(0, y, 1)),
+                crop.nYSize, 0, "The Y size cropped image. Needs to be set "
+                "regarding cropping size and image size."
+                );
+  }
+  if(m_Generator -> IsCapabilitySupported(XN_CAPABILITY_ANTI_FLICKER)){
+    addProperty(XN_CAPABILITY_ANTI_FLICKER, "menu", "Power line frequency OFF,"
+                "Power line frequency 50Hz,Power line frequency 60Hz",
+                antiFlickerCapabilityValue(m_Generator), 0, ""
+                );
+  }
+  if(m_Generator -> IsCapabilitySupported(XN_CAPABILITY_ALTERNATIVE_VIEW_POINT)){
+    addProperty(XN_CAPABILITY_ALTERNATIVE_VIEW_POINT, "menu",
+                alternativeViewPiontCapabilityInfo(m_Generator, m_ProductionNodeMap),
+                alternativeViewPiontCapabilityValue(m_Generator, m_ProductionNodeMap),
+                0, ""
+                );
+  }
+  if(m_Generator -> IsCapabilitySupported(XN_CAPABILITY_MIRROR)){
+    addProperty(XN_CAPABILITY_MIRROR, "flag", "",
+                m_Generator -> GetMirrorCap().IsMirrored(), 0,
+                "Flips the image vertically."
+                );
+  }
+  addGeneralIntProperty(XN_CAPABILITY_BRIGHTNESS);
+  addGeneralIntProperty(XN_CAPABILITY_CONTRAST);
+  addGeneralIntProperty(XN_CAPABILITY_HUE);
+  addGeneralIntProperty(XN_CAPABILITY_SATURATION);
+  addGeneralIntProperty(XN_CAPABILITY_SHARPNESS);
+  addGeneralIntProperty(XN_CAPABILITY_GAMMA);
+  addGeneralIntProperty(XN_CAPABILITY_COLOR_TEMPERATURE);
+  addGeneralIntProperty(XN_CAPABILITY_BACKLIGHT_COMPENSATION);
+  addGeneralIntProperty(XN_CAPABILITY_GAIN);
+  addGeneralIntProperty(XN_CAPABILITY_PAN);
+  addGeneralIntProperty(XN_CAPABILITY_TILT);
+  addGeneralIntProperty(XN_CAPABILITY_ROLL);
+  addGeneralIntProperty(XN_CAPABILITY_ZOOM);
+  addGeneralIntProperty(XN_CAPABILITY_EXPOSURE);
+  addGeneralIntProperty(XN_CAPABILITY_IRIS);
+  addGeneralIntProperty(XN_CAPABILITY_FOCUS);
+  addGeneralIntProperty(XN_CAPABILITY_LOW_LIGHT_COMPENSATION);
+
+  Configurable::registerCallback(
+        utils::function(this,&MapGeneratorOptions::processPropertyChange));
 }
+
+// callback for changed configurable properties
+void MapGeneratorOptions::processPropertyChange(
+    const utils::Configurable::Property &prop)
+{
+  if(isCropping(prop.name)){
+    setCropping(m_Generator, prop.name, prop.value);
+  } else if (prop.name == XN_CAPABILITY_ANTI_FLICKER){
+    antiFlickerCapabilitySet(m_Generator, prop.value);
+  } else if (prop.name == XN_CAPABILITY_ALTERNATIVE_VIEW_POINT){
+    alternativeViewPiontCapabilitySet(m_Generator, prop.value, m_ProductionNodeMap);
+  } else if (prop.name == XN_CAPABILITY_MIRROR){
+    m_Generator -> GetMirrorCap().SetMirror(parse<bool>(prop.value));
+  } else if (setGeneralIntCapability(m_Generator, prop.name, prop.value)){
+    // nothing to do setting is done in condition
+  } else if (prop.name == "map output mode"){
+    setCurrentMapOutputmode(m_Generator, prop.value);
+  }
+}
+
 
 // adds properties to propertylist
 void MapGeneratorOptions::addPropertiesToList(
@@ -1022,6 +1123,29 @@ int MapGeneratorOptions::isVolatile(const std::string &propertyName){
   return 0;
 }
 
+// adds a GeneralIntCapability as property
+void MapGeneratorOptions::addGeneralIntProperty(const std::string name) {
+  // only add if supported
+  if(!m_Generator -> IsCapabilitySupported(name.c_str())){
+    return;
+  }
+  GeneralIntCapability cap = getGeneralIntCapability(m_Generator, name);
+  // when auto is supported add the auto-version too.
+  if(isGeneralIntAutoSupported(cap)){
+    std::ostringstream tmp;
+    tmp << "Auto" << name;
+    addProperty(tmp.str(),"flag", "", generalIntCapabilityValue(cap),
+                0, "Automaticly set corresponding porperty.");
+  }
+  // get info
+  XnInt32 min, max, step, def;
+  XnBool sauto;
+  cap.GetRange(min, max, step, def, sauto);
+  std::ostringstream inf;
+  inf << "[" << min << "," << max << "]:" << step;
+  addProperty(name, "range", inf.str(), cap.Get(), 0, "");
+}
+
 //##############################################################################
 //############################# DepthGeneratorOptions ##########################
 //##############################################################################
@@ -1029,7 +1153,17 @@ int MapGeneratorOptions::isVolatile(const std::string &propertyName){
 // constructor
 DepthGeneratorOptions::DepthGeneratorOptions(xn::DepthGenerator* generator)
   : MapGeneratorOptions(generator), m_DepthGenerator(generator)
-{/* nothing to do */}
+{
+  addProperty("max depth", "info", "", m_DepthGenerator -> GetDeviceMaxDepth(),
+              0, "The maximum depth value of this grabber.");
+  // field of view
+  XnFieldOfView fov;
+  m_DepthGenerator -> GetFieldOfView(fov);
+  addProperty("field of view X", "info", "", fov.fHFOV, 0,
+              "Horizontal field of view.");
+  addProperty("field of view Y", "info", "", fov.fVFOV, 0,
+              "Vertical field of view.");
+}
 
 // interface for the setter function for video device properties
 void DepthGeneratorOptions::setProperty(const std::string &property, const std::string &value){
@@ -1132,13 +1266,85 @@ int DepthGeneratorOptions::isVolatile(const std::string &propertyName){
 
 //##############################################################################
 //############################# ImageGeneratorOptions ##########################
-//#### abandoned for now because the kinect freezes after changing to yuv422 ###
 //##############################################################################
 
 // constructor
 ImageGeneratorOptions::ImageGeneratorOptions(xn::ImageGenerator* generator)
   : MapGeneratorOptions(generator), m_ImageGenerator(generator)
-{/* nothing to do */}
+{
+  // construnct Pixel Format - format string
+  std::ostringstream format;
+  if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_RGB24)){
+    format << "rgb24,";
+  }
+  if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_YUV422)){
+    format << "yuv422,";
+  }
+  if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_GRAYSCALE_8_BIT)){
+    format << "grayscale8,";
+  }
+  if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_GRAYSCALE_16_BIT)){
+    format << "grayscale16,";
+  }
+  if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_MJPEG)){
+    format << "mjpeg,";
+  }
+
+  std::string value = "";
+  switch(m_ImageGenerator -> GetPixelFormat()){
+    case XN_PIXEL_FORMAT_RGB24:
+      value = "rgb24";
+    case XN_PIXEL_FORMAT_YUV422:
+      value = "yuv422";
+    case XN_PIXEL_FORMAT_GRAYSCALE_8_BIT:
+      value = "grayscale8";
+    case XN_PIXEL_FORMAT_GRAYSCALE_16_BIT:
+      value = "grayscale16";
+    case XN_PIXEL_FORMAT_MJPEG:
+      value = "mjpeg";
+    default:
+      DEBUG_LOG("Unknown Pixel Format " << m_ImageGenerator -> GetPixelFormat());
+      value = "rgb24";
+  }
+
+  addProperty("Pixel Format", "menu", format.str(), value,
+              0, "The pixel format of the aquired image.");
+
+  Configurable::registerCallback(
+        utils::function(this,&ImageGeneratorOptions::processPropertyChange));
+}
+
+// callback for changed configurable properties
+void ImageGeneratorOptions::processPropertyChange(const utils::Configurable::Property &prop){
+  DEBUG_LOG("imgem process")
+  if(prop.name == "Pixel Format"){
+    if (prop.value == "rgb24"){
+      if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_RGB24)){
+        m_ImageGenerator -> SetPixelFormat(XN_PIXEL_FORMAT_RGB24);
+      }
+    }
+    if (prop.value == "yuv422"){
+      if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_YUV422)){
+        m_ImageGenerator -> SetPixelFormat(XN_PIXEL_FORMAT_YUV422);
+      }
+    }
+    if (prop.value == "grayscale8"){
+      if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_GRAYSCALE_8_BIT)){
+        m_ImageGenerator -> SetPixelFormat(XN_PIXEL_FORMAT_GRAYSCALE_8_BIT);
+      }
+    }
+    if (prop.value == "grayscale16"){
+      if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_GRAYSCALE_16_BIT)){
+        m_ImageGenerator -> SetPixelFormat(XN_PIXEL_FORMAT_GRAYSCALE_16_BIT);
+      }
+    }
+    if (prop.value == "mjpeg"){
+      if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_MJPEG)){
+        m_ImageGenerator -> SetPixelFormat(XN_PIXEL_FORMAT_MJPEG);
+      }
+    }
+  }
+}
 
 // interface for the setter function for video device properties
 void ImageGeneratorOptions::setProperty(const std::string &property, const std::string &value){

@@ -102,6 +102,7 @@ OpenNIGrabberImpl::OpenNIGrabberImpl(std::string args)
   m_Generator = OpenNIMapGenerator::createGenerator(&m_Context, m_Id);
   m_Buffer = new ReadWriteBuffer<ImgBase>(m_Generator);
   m_Generator -> getMapGenerator()->StartGenerating();
+  addChildConfigurable(m_Generator->getMapGeneratorOptions());
   // create grabber-thread
   m_GrabberThread = new OpenNIGrabberThread(this);
   m_GrabberThread -> start();
@@ -167,7 +168,7 @@ void OpenNIGrabberImpl::setProperty(const std::string &property, const std::stri
 }
 
 // returns a list of properties, that can be set using setProperty
-std::vector<std::string> OpenNIGrabberImpl::getPropertyList(){
+std::vector<std::string> OpenNIGrabberImpl::getPropertyListC(){
   DEBUG_LOG2("");
   std::vector<std::string> ps;
   ps.push_back("size");
@@ -252,3 +253,28 @@ int OpenNIGrabberImpl::isVolatile(const std::string &propertyName){
   }
   return true;
 }
+
+// adds properties to Configurable
+void OpenNIGrabberImpl::addProperties(){
+  addProperty("omit double frames", "flag", "", m_OmitDoubleFrames, 0, "");
+  addProperty("format", "menu", m_Generator -> getMapGeneratorOptions() -> getInfo("map output mode"), m_Generator -> getMapGeneratorOptions() -> getValue("map output mode"), 0, "The image format.");
+  addProperty("size", "info", "", "adjusted by format", 0, "This is set by the format-property.");
+  addChildConfigurable(m_Generator -> getMapGeneratorOptions());
+
+  Configurable::registerCallback(utils::function(this,&OpenNIGrabberImpl::processPropertyChange));
+}
+
+// callback for changed configurable properties
+void OpenNIGrabberImpl::processPropertyChange(const utils::Configurable::Property &prop){
+  DEBUG_LOG2(prop.name << " := " << prop.value);
+  if (prop.name == "format"){
+    setPropertyValue("map output mode", prop.value);
+  }
+  if (prop.name == "omit double frames"){
+    m_OmitDoubleFrames = parse<bool>(prop.value);
+    return;
+  }
+  // "size" is ignored
+}
+
+REGISTER_CONFIGURABLE(OpenNIGrabber, return new OpenNIGrabber(""));

@@ -69,7 +69,7 @@ namespace icl {
         /// interface for the setter function for video device properties
         virtual void setProperty(const std::string &property, const std::string &value);
         /// returns a list of properties, that can be set using setProperty
-        virtual std::vector<std::string> getPropertyList();
+        virtual std::vector<std::string> getPropertyListC();
         /// checks if property supported
         virtual bool supportsProperty(const std::string &property);
         /// get type of property
@@ -93,6 +93,11 @@ namespace icl {
             In this case the corresponding MapGenerator.
         **/
         virtual void* getHandle();
+
+        /// adds properties to Configurable
+        void addProperties();
+        /// callback for changed configurable properties
+        void processPropertyChange(const utils::Configurable::Property &prop);
   
       private:
         /// The constructor is private so only the friend class can create instances
