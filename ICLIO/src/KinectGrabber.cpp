@@ -671,7 +671,7 @@ namespace icl{
     }
     
     /// returns a list of properties, that can be set using setProperty
-    std::vector<std::string> KinectGrabber::getPropertyList(){
+    std::vector<std::string> KinectGrabber::getPropertyListC(){
       Mutex::Locker lock(m_impl->mutex);
       static std::string props[] = { "format","size","LED","Desired-Tilt-Angle",
                                      "Current-Tilt-Angle","Accelerometers",

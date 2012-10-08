@@ -65,7 +65,7 @@ namespace icl{
           -frame_count framecount
           -use_video_fps forces to use fps from file
           @return list of supported property names **/
-      virtual std::vector<std::string> getPropertyList();
+      virtual std::vector<std::string> getPropertyListC();
       
       /// get type of property
       /** \copydoc icl::io::Grabber::getType(const std::string &)*/

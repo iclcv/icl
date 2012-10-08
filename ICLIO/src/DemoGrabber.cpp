@@ -57,7 +57,9 @@ namespace icl{
     }
     
   
-    DemoGrabberImpl::DemoGrabberImpl(float maxFPS){
+    DemoGrabberImpl::DemoGrabberImpl(float maxFPS)
+      : m_mutex(Mutex::mutexTypeRecursive)
+    {
       m_x = Point32f(0.5,0.5);
       m_v = Point32f(0.01, 0.01);
       m_color = Color(255,50,10);
@@ -70,6 +72,46 @@ namespace icl{
       m_drawFormat = formatRGB;
       m_drawSize = Size::VGA;
       m_drawDepth = depth8u;
+
+      // Configurable
+      std::string blobvalue;
+      if(fabs(m_size.width-0.05 < 1E-5)){
+        blobvalue = "5% of image size";
+      } else if (fabs(m_size.width-0.10 < 1E-5)){
+        blobvalue = "10% of image size";
+      } else if (fabs(m_size.width-0.20 < 1E-5)){
+        blobvalue = "20% of image size";
+      }
+      std::string sizevalue;
+      if(m_drawSize == Size::QVGA) sizevalue = "QVGA";
+      if(m_drawSize == Size::VGA) sizevalue = "VGA";
+      if(m_drawSize == Size::SVGA) sizevalue = "SVGA";
+      addProperty("blob-size", "menu",
+                  "5% of image size,10% of image size,20% of image size",
+                   blobvalue, 0, "The size of the blob.");
+      addProperty("blob-red", "range", "[0,255]:1", m_color[0], 0,
+                  "The amount of red color in the blob.");
+      addProperty("blob-green", "range", "[0,255]:1", m_color[1], 0,
+                  "The amount of green color in the blob.");
+      addProperty("blob-blue", "range", "[0,255]:1", m_color[2], 0,
+                  "The amount of blue color in the blob.");
+      addProperty("max-speed", "value-list", "0.1,0.2,0.3,0.4", m_maxV.x, 0,
+                  "The blobs maximum speed.");
+      addProperty("set-to-center", "command", "", "", 0,
+                  "Resets the blob to the image center.");
+      addProperty("current-pos", "info", "",
+                  "x:" + str(m_x.x*m_drawSize.width) + " y:"
+                    + str(m_x.y*m_drawSize.height),
+                  0, "The current position of the blob.");
+      addProperty("format", "menu",
+                  "formatRGB-depth8u,formatRGB-depth32f,formatGray-depth8u,"
+                    "formatGray-depth32f,formatYUV-depth8u",
+                  str(m_drawFormat) + "-" + str(m_drawDepth), 0,
+                  "The image format.");
+      addProperty("size", "menu", "VGA,SVGA,QVGA", sizevalue, 0,
+                  "The image size.");
+      Configurable::registerCallback(
+        utils::function(this,&DemoGrabberImpl::processPropertyChange));
     }
   
     DemoGrabberImpl::~DemoGrabberImpl(){
@@ -138,11 +180,48 @@ namespace icl{
       m_drawBuffer->setTime(now);
       m_lastTime = now;
   
+      setPropertyValue("current-pos", "x:" + str(m_x.x*m_drawSize.width) + " y:"
+                    + str(m_x.y*m_drawSize.height));
+
       return m_drawBuffer;
+    }
+
+    // callback for changed configurable properties
+    void DemoGrabberImpl::processPropertyChange(const utils::Configurable::Property &prop){
+      if(prop.name == "current-pos"){
+        return;
+      }
+      Mutex::Locker __lock(m_mutex);
+      if(prop.name == "blob-size"){
+        int percent = parse<int>(prop.value);
+        m_size = Size32f(percent/100.,percent/100.);
+      }else if(prop.name == "format"){
+        std::vector<std::string> x = tok(prop.value,"-");
+        if(x.size() != 2){
+          ERROR_LOG("invalid value for prorerty \"format\"" << prop.value);
+        }else{
+          m_drawFormat = parse<format>(x[0]);
+          m_drawDepth = parse<depth>(x[1]);
+        }
+      }else if(prop.name == "size"){
+        m_drawSize = parse<Size>(prop.value);
+      }else if(prop.name == "blob-red"){
+        m_color[0] = parse<int>(prop.value);
+      }else if(prop.name == "blob-green"){
+        m_color[1] = parse<int>(prop.value);
+      }else if(prop.name == "blob-blue"){
+        m_color[2] = parse<int>(prop.value);
+      }else if(prop.name == "max-speed"){
+        float m = parse<float>(prop.value);
+        m_maxV.x = m_maxV.y = m;
+      }else if(prop.name == "set-to-center"){
+        m_x.x = 0.5;
+        m_x.y = 0.5;
+      }
     }
   
   
-    std::vector<std::string> DemoGrabberImpl::getPropertyList(){
+    std::vector<std::string> DemoGrabberImpl::getPropertyListC(){
       std::vector<std::string> ps;
       ps.push_back("blob-size");
       ps.push_back("blob-red");
@@ -267,7 +346,7 @@ namespace icl{
       return "undefined";
     }
   
-    
+    REGISTER_CONFIGURABLE(DemoGrabber, return new DemoGrabber(30));
   
   } // namespace io
 }

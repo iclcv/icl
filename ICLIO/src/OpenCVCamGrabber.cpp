@@ -52,7 +52,7 @@ namespace icl{
     }
   
   
-    std::vector<std::string> OpenCVCamGrabberImpl::getPropertyList(){
+    std::vector<std::string> OpenCVCamGrabberImpl::getPropertyListC(){
       static const std::string ps="size brightness contrast saturation hue format";
       return tok(ps," ");
     }

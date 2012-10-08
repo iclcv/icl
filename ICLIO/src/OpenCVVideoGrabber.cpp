@@ -55,7 +55,7 @@ namespace icl{
     };
   
   
-    std::vector<std::string> OpenCVVideoGrabber::getPropertyList(){
+    std::vector<std::string> OpenCVVideoGrabber::getPropertyListC(){
       static const std::string ps="pos_msec pos_frames pos_avi_ratio size format fourcc frame_count use_video_fps video_fps";
       return tok(ps," ");
     }

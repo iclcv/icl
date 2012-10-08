@@ -97,7 +97,7 @@ namespace icl{
       
       public:
       /// the demo-grabber provides some demo properties
-      virtual std::vector<std::string> getPropertyList();
+      virtual std::vector<std::string> getPropertyListC();
       
       /// the demo-grabber provides some demo properties
       virtual void setProperty(const std::string &property, const std::string &value);
@@ -113,6 +113,9 @@ namespace icl{
   
       /// the demo-grabber provides some demo properties
       virtual int isVolatile(const std::string &propertyName);
+
+      /// callback for changed configurable properties
+      void processPropertyChange(const utils::Configurable::Property &prop);
     };  
   
     /// Demo Grabber class providing am image with a moving rect
