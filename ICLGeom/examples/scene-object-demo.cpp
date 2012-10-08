@@ -88,15 +88,21 @@ void init(){
   
   if(pa("-o")){ // either load an .obj file
     SceneObject *o = new SceneObject(*pa("-o")); 
+    if(pa("-n")){
+      o->createAutoNormals();
+    }
     o->setColor(Primitive::line,GeomColor(255,0,0,255));
     o->setVisible(Primitive::line,true);
-
     scene.addObject(o);
   }else{ // or create a simple cube
     std::string shape=pa("-s");
     const float data[] = {0,0,0,7,3,2, 30, 30};
     if(shape == "cylinder" || shape == "cone" || shape == "spheroid" || shape == "cuboid"){
-      scene.addObject(new SceneObject(shape,data));
+      SceneObject *o = new SceneObject(shape,data);
+      if(pa("-n")){
+        o->createAutoNormals();
+      }
+      scene.addObject(o);
     }else if(shape == "point-cloud"){
       SceneObject *o = new SceneObject;
       LorenzAttractor lorenz;
@@ -143,6 +149,7 @@ int main(int n, char**ppc){
   pa_explain("-o","loads a given opengl .obj file  (if -o and -s is given, -o is used)");
   pa_explain("-s","visualizes one of the shape types (cyliner,spheroid, cuboid, cone, point-cloud)");
   /// create a whole application 
-  return ICLApplication(n,ppc,"-obj|-o(.obj-filename) -shape|-s(shape=cuboid) -create-display-list|-dl",init,run).exec();
+  return ICLApplication(n,ppc,"-obj|-o(.obj-filename) -shape|-s(shape=cuboid) "
+                        "-create-auto-normals|-n -create-display-list|-dl",init,run).exec();
 }
 

@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLMath/VQVectorSet.h                          **
+** File   : ICLMath/examples/k-means-demo.cpp                      **
 ** Module : ICLMath                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -32,70 +32,79 @@
 **                                                                 **
 *********************************************************************/
 
-#pragma once
+#include <ICLQt/Common.h>
+#include <ICLMath/KMeans.h>
+#include <ICLMath/FixedVector.h>
 
-#include <ICLUtils/Macros.h>
-#include <cstring>
+VBox gui;
 
-namespace icl{
-  namespace math{
-    
-    /// Utility class for 2D Vector quantisation
-    class VQVectorSet{
-      public:
-      /// Create a new vector set with given data,and data dimension 
-      /** @param data data pointer
-          @param dim number of data elements data.size = 2*dim
-          @param deepCopyData if set to true, the given data is copied deeply
-      **/
-      VQVectorSet(float *data, int dim, bool deepCopyData):m_iDim(dim){
-        if(deepCopyData){
-          m_pfData = new float[2*dim];
-          memcpy(m_pfData,data,2*dim*sizeof(float));
-          m_bDeleteDataFlag = true;
-        }else{
-          m_pfData = data;
-          m_bDeleteDataFlag = false;
-        }
-      }
-      /// Empty Constructor
-      VQVectorSet():
-        m_pfData(0),m_iDim(0),m_bDeleteDataFlag(0){}
-      
-      /// Default constructor (data is allocated internally)
-      VQVectorSet(int dim):
-        m_pfData(new float[2*dim]),m_iDim(dim),m_bDeleteDataFlag(true){}
+typedef Point32f V2; //FixedColVector<float,2> V2;
+typedef KMeans<V2,float> VQ;
+
+VQ vq;
+std::vector<V2> D;
+
+void run(){
+  static ButtonHandle b = gui["run"];
+  while(!b.wasTriggered()){
+    Thread::msleep(10);
+  }
   
-      /// Destructor
-      ~VQVectorSet(){
-        if(m_bDeleteDataFlag) delete [] m_pfData;
-      }
-      
-      /// data access operator
-      float *operator[](int index) const {return m_pfData+2*index;}
-      
-      /// returns the internal data pointer
-      float *data() const {return m_pfData;}
-      
-      /// returns the data element count
-      int dim() const { return m_iDim;}
-      
-      /// resizes this vectorset to given dim (data content is lost)
-      void resize(int dim){
-        ICLASSERT_RETURN( dim );
-        if(dim !=m_iDim || !m_bDeleteDataFlag){
-          if(m_bDeleteDataFlag && m_pfData) delete [] m_pfData;
-          m_pfData = new float[2*dim];
-          m_iDim = dim;
-          m_bDeleteDataFlag = true;
-        }
-      }
-      private:
-      float *m_pfData; /**!< xyxyx.. data array */
-      int m_iDim;     /**!< count of data points */    
-      bool m_bDeleteDataFlag;/**!< flag to indicate wheather data must be deleted in the destructor */
-    };
-  } // namespace cv
+  static PlotHandle plot = gui["plot"];
+  for(int i=0;i<100;++i){
+    VQ::Result r = vq.apply(D.begin(),D.end(), 1, !i);
+    
+    plot->clear();
+    plot->linewidth(2);
+    plot->color(255,0,0);
+    plot->label("data");
+    plot->sym('.');
+    plot->scatter(&D[0][0],&D[0][1],D.size(),2,2);
+    
+    plot->color(0,100,255);
+    plot->label("centers");
+    plot->sym('x');
+    //    plot->scatter(&r.centers[0][0],&r.centers[0][1],r.centers.size(),2,2);
+    plot->scatter(&r.centers[0][0],&r.centers[0][1],r.centers.size(),2,2);
+    
+    plot->render();
+    Thread::msleep(25);
+  }
+}
+
+void init(){
+  gui << Plot().handle("plot")
+      << Button("run").handle("run") 
+      << Show();
+
+  vq.init(pa("-n"));
+  
+  URand cs(-5,5);
+  GRand gr(0,pa("-v"));
+  int n=pa("-s");
+
+  for(int i=pa("-c");i>=0;--i){
+    V2 c(cs,cs);
+    for(int j=0;j<n;++j){
+      D.push_back(c + V2(gr,gr));
+    }
+  }
+  
+  PlotHandle plot = gui["plot"];
+  plot->setPropertyValue("tics.y-distance",2);
+  plot->setPropertyValue("tics.x-distance",2);
+
+  plot->label("data");
+  plot->scatter(&D[0][0],&D[0][1],D.size(),2,2);
+  plot->linewidth(2);
 }
 
 
+
+
+int main(int n, char **ppc){
+  return ICLApp(n,ppc,"-num-centers|-n(int=5) "
+                "-num-clusters|-c(int=5) "
+                "-cluster-size|-s(int=1000) "
+                "-cluster-var|-v(float=1) ",init,run).exec();
+}

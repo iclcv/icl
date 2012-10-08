@@ -208,12 +208,15 @@ namespace icl{
     }
 
     void SceneObject::setColor(Primitive::Type t,const GeomColor &color, bool recursive){
+  
       GeomColor colorScaled = color * COLOR_FACTOR;
-      if(t == Primitive::vertex){
+
+      if(t == Primitive::vertex || t == Primitive::all){
         std::fill(m_vertexColors.begin(),m_vertexColors.end(),color);
-      }else{
+      }
+      if(t != Primitive::vertex){
         for(unsigned int i=0;i<m_primitives.size();++i){
-          if(m_primitives[i]->type == t){
+          if(t == Primitive::all || m_primitives[i]->type == t){
             m_primitives[i]->color = colorScaled;
           }
         }
@@ -266,9 +269,9 @@ namespace icl{
       m_enableLocking(false),
       m_pointSmoothingEnabled(true),
       m_lineSmoothingEnabled(true),
+      m_polygonSmoothingEnabled(true),
       m_shininess(128),
       m_specularReflectance(GeomColor(0.5,0.5,0.5,0.5)),
-      m_polygonSmoothingEnabled(true),
       m_displayListHandle(0),
       m_createDisplayListNextTime(0),
       m_fragmentShader(0)
@@ -1383,6 +1386,8 @@ namespace icl{
               }
               break;
             }
+            default:
+              break;
           }
         }
         m_normals.resize(m_vertices.size());
@@ -1417,6 +1422,8 @@ namespace icl{
               }
               break;
             }
+            default:
+              break;
           }
         }
       }

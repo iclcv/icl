@@ -42,6 +42,7 @@
 #include <ICLQt/WidgetCaptureMode.h>
 #include <ICLQt/GUI.h>
 #include <ICLUtils/Function.h>
+#include <ICLCore/Color.h>
 
 namespace icl{
   namespace qt{
@@ -237,9 +238,22 @@ namespace icl{
       /// invoked when any mouse interaction was performed
       void mouseEvent(const MouseEvent &event);
 
-    
+      /// synchronizes special button clicks with GUI thread
       void specialButtonClicked(const std::string &id);
+
+      /// synchronizes special toggle button clicks with GUI thread
       void specialButtonToggled(const std::string &id, bool down);
+
+      public:
+      /// generic background color creator plugin
+      typedef utils::Function<core::Color> BGColorSource;
+
+      /// can be used to replace the default OSD-GUI based background color source
+      /** The background color source can e.g. be adapted by higher level
+          visualization tool, such as the geom::Scene. In this case, the
+          default background color source (background color can be adjusted
+          by the widget's OSD-menu cannot be used any more */
+      void setBackgroundColorSource(BGColorSource src);
 
       protected:
 

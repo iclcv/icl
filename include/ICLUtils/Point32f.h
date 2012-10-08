@@ -125,7 +125,7 @@ namespace icl{
       float &operator[](int i) { return i?y:x; }
   
       /// index based interface, const (returns i?y:x)
-      float operator[](int i) const { return i?y:x; }
+      const float &operator[](int i) const { return i?y:x; }
     };
   
     /// ostream operator (x,y)

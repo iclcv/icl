@@ -58,9 +58,11 @@ namespace icl{
       
       setPropertyValue("labels.x-precision",0);
       setPropertyValue("labels.y-precision",0);
-      setPropertyValue("tics.x-distance",32);
+     
       setPropertyValue("tics.y-distance",1000);
       setPropertyValue("borders.left",50);
+      
+      deactivateProperty("tics.x-distance");
     }
       
     void HistogrammWidget::setFeatures(bool logOn, bool meanOn, bool medianOn, int selChannel){
@@ -75,13 +77,15 @@ namespace icl{
     void HistogrammWidget::updateData(const ImageStatistics &s){
       lock();
       clear();
+
       if(!s.isNull){
         float maxY = 0;
-        float minX = 0, maxX = 255; // TODO this must be adapted dynamically
+        /*float minX = 0, maxX = 255; // TODO this must be adapted dynamically
                                     // the histo contians 256 bins between
                                     // minVal and maxVal, but what if
                                     // the min- and max vals are not identical in
                                     // all channels ??
+            */
         
         bool haveData = false;
         for(size_t i=0;i<s.histos.size();++i){
@@ -136,7 +140,9 @@ namespace icl{
                            maxY > 100 ? int(maxY/100)*20 :
                            20);
           setPropertyValue("labels.y-axis",logOn ? "log(number of pixels)" : "number of pixels");
-          setDataViewPort(Range32f(minX,maxX), Range32f(0,maxY));
+          Range32f rx = Range32f(s.globalRange.minVal,s.globalRange.maxVal);
+          setDataViewPort(rx,Range32f(0,maxY));
+          setPropertyValue("tics.x-distance",(int)iclMax(4.0,round(rx.getLength()/8)));
         }
       }    
       unlock();

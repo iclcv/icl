@@ -121,6 +121,7 @@ void run(){
 }
 
 void init(){
+  scene.setBounds(100);
   scene.setDrawCamerasEnabled(false);
   Scene::enableSharedOffscreenRendering();
   

@@ -207,8 +207,6 @@ namespace icl{
       bool needLink;
 
       void performLink(ICLDrawWidget *widget){
-        DEBUG_LOG("performLink called");
-
         const std::string save = parent->getConfigurableID();
         const std::string id = "scene"+str(parent)+str(utils::Time::now().toMicroSeconds());
         
@@ -240,14 +238,22 @@ namespace icl{
         parent->renderScene(cameraIndex, widget);
       }
 
+      Color bgfunc(){
+        GeomColor c = parent->getBackgroundColor();
+        return Color(c[0],c[1],c[2]);
+      }
+
       virtual void link(ICLDrawWidget3D *widget){
         needLink = true;
+        widget->setBackgroundColorSource(function(this,&Scene::GLCallback::bgfunc));
       }
       
       virtual void unlink(ICLDrawWidget3D *widget){
         TODO_LOG("implement unlink");
+        widget->setBackgroundColorSource(ICLWidget::BGColorSource());
         //widget->removeSpecialButton("mousehandler"+str(this));      
       }
+      
     };
   #endif
   
@@ -255,7 +261,8 @@ namespace icl{
     Scene::Scene(){
       m_lights[0] = SmartPtr<SceneLight>(new SceneLight(this,0));
       m_globalAmbientLight = FixedColVector<int,4>(255,255,255,20);
-
+      m_backgroundColor = GeomColor(0,0,0,255);
+      
       addProperty("visualize cameras","flag","",false);
       addProperty("visualize world frame","flag","",false);
       addProperty("visualize object frames","flag","",false);
@@ -263,6 +270,8 @@ namespace icl{
       addProperty("enable lighting","flag","",true);
       addProperty("object frame size","float","[0,100000000]",1);
       addProperty("world frame size","float","[0,100000000]",1);
+      addProperty("light object size","float","[0,100000000]",1);
+      addProperty("background color","color","",Color(0,0,0));
     }
     Scene::~Scene(){
   #ifdef HAVE_GLX
@@ -278,6 +287,7 @@ namespace icl{
     Scene &Scene::operator=(const Scene &scene){
       m_cameras = scene.m_cameras;
       m_objects.resize(scene.m_objects.size());
+      m_backgroundColor = scene.m_backgroundColor;
       for(unsigned int i=0;i<m_objects.size();++i){
         m_objects[i] = scene.m_objects[i]->copy();
       }
@@ -494,6 +504,7 @@ namespace icl{
       glMultMatrixf(T.transp().data());
 
 
+
       if(o->isVisible()){
         
         o->customRender();
@@ -585,11 +596,13 @@ namespace icl{
       // specular lighting is still not working ..
       glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER,GL_TRUE);
       
-  
-      if( ((Configurable*)this)->getPropertyValue("enable lighting")){
+      bool lightingEnabled = ((Configurable*)this)->getPropertyValue("enable lighting");
+      if( lightingEnabled){
+        float size = ((Configurable*)this)->getPropertyValue("light object size");
         glEnable(GL_LIGHTING);
         for(int i=0;i<8;++i){
           if(m_lights[i]) {
+            ((SceneLight*)m_lights[i].get())->setObjectSize(size);
             m_lights[i]->setupGL(*this,getCamera(camIndex));
           }else{
             glDisable(GL_LIGHT0+i);
@@ -616,7 +629,6 @@ namespace icl{
       
       glEnable(GL_DEPTH_TEST);
 
-#if 1
       for(size_t i=0;i<m_objects.size();++i){
         renderSceneObjectRecursive((SceneObject*)m_objects[i].get());
       }
@@ -630,38 +642,18 @@ namespace icl{
 
       glPushAttrib(GL_ENABLE_BIT);
       
-      if(((Configurable*)this)->getPropertyValue("visualize lights")){
+      if(lightingEnabled && ((Configurable*)this)->getPropertyValue("visualize lights")){
         for(int i=0;i<8;++i){
           if(m_lights[i] && m_lights[i]->on){
-            renderSceneObjectRecursive((SceneObject*)m_lights[i]->getLightObject());
+            if((m_lights[i]->anchor != SceneLight::CamAnchor) ||
+               (m_lights[i]->camAnchor != camIndex && m_lights[i]->camAnchor != -1)){
+              renderSceneObjectRecursive((SceneObject*)m_lights[i]->getLightObject());
+            }
           }
         }
       }
 
       glPopAttrib();
-
-#else  
-      std::vector<SmartPtr<SceneObject> > allObjects(m_objects);
-      if(((Configurable*)this)->getPropertyValue("visualize cameras")){
-        for(unsigned int i=0;i<m_cameraObjects.size();++i){
-          if((int)i == camIndex) continue;
-          allObjects.push_back(m_cameraObjects[i]);
-        }
-      }
-      if(((Configurable*)this)->getPropertyValue("visualize lights")){
-        for(int i=0;i<8;++i){
-          if(m_lights[i] && m_lights[i]->on){
-            SmartPtr<SceneObject> l((SceneObject*)m_lights[i]->getLightObject(),false);
-            allObjects.push_back(l);
-          }
-        }
-      }
-      
-      for(unsigned int i=0;i<allObjects.size();++i){
-        renderSceneObjectRecursive(allObjects[i].get());
-      }
-#endif
-
 
       if(getDrawObjectFramesEnabled()){
         float size = ((Configurable*)this)->getPropertyValue("object frame size");
@@ -721,16 +713,8 @@ namespace icl{
     }
 
     void Scene::setDrawLightsEnabled(bool enabled, float lightSize){
-      lock();
       setPropertyValue("visualize lights",enabled);
-      if(enabled){
-        for(int i=0;i<8;++i){
-          if(m_lights[i]){
-            m_lights[i]->setObjectSize(lightSize);
-          }
-        }
-      }
-      unlock();
+      setPropertyValue("light object size",lightSize);
     }
     
     bool Scene::getDrawLightsEnabled() const {
@@ -815,6 +799,16 @@ namespace icl{
     bool Scene::getDrawCoordinateFrameEnabled() const{
       return ((Configurable*)this)->getPropertyValue("visualize world frame");
     }
+
+    void Scene::setBackgroundColor(const GeomColor &color){
+      setPropertyValue("background color",Color(color[0],color[1],color[2]));
+    }
+    
+    GeomColor Scene::getBackgroundColor() const{
+      Color c = ((Configurable*)this)->getPropertyValue("background color");
+      return GeomColor(c[0],c[1],c[2],255);
+    }
+
   
     void Scene::extendMaxSceneDimRecursive(float &minX, float &maxX, 
                                            float &minY, float &maxY, 
@@ -864,7 +858,8 @@ namespace icl{
                                    const_cast<SceneObject*>(m_coordinateFrameObject.get()));
       }
   
-      return iclMax(iclMax(rangeXYZ[1].getLength(),rangeXYZ[2].getLength()),rangeXYZ[0].getLength());
+      float r = iclMax(iclMax(rangeXYZ[1].getLength(),rangeXYZ[2].getLength()),rangeXYZ[0].getLength());
+      return r ? r : 1;
     }
   
     SceneLight &Scene::getLight(int index) throw (ICLException){
@@ -1009,7 +1004,11 @@ namespace icl{
           return;
         }
       }
-      m_bounds[0] = Range32f(minX,maxX);
+      if(minX > maxX){
+        m_bounds[0] = Range32f(maxX,minX);
+      }else{
+        m_bounds[0] = Range32f(minX,maxX);
+      }
       if(minY == maxY){
         m_bounds[1] = Range32f(minX,maxX);
       }else{
@@ -1183,7 +1182,8 @@ namespace icl{
   
       p.makeCurrent();
   
-      glClearColor(0,0,0,0);
+      GeomColor c = getBackgroundColor();
+      glClearColor(c[0]/255.,c[1]/255.,c[2]/255.,1);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );    
       glEnable(GL_TEXTURE_2D);
       glEnable(GL_BLEND);

@@ -121,6 +121,7 @@ namespace icl{
   
       template<class T, int C>
       std::vector<Range64f> findMinMax() const{
+        DEBUG_LOG("depth is " << getDepth<T>() << " channel count is " << C);
         const T *p = (const T*) data.data();
         const int dim = size.getDim();
         Range64f rs[C];
@@ -139,6 +140,7 @@ namespace icl{
     };
     typedef SmartPtr<TextureElement> TextureElementPtr;
   
+    
   #ifdef HAVE_IPP
   
     // ipp optimization for 1 channel data
@@ -163,7 +165,7 @@ namespace icl{
     /// ipp optimization for 3 channel data
     template<> std::vector<Range64f> TextureElement::findMinMax<icl8u,3>() const{
       icl8u mins[3],maxs[3];
-      ippiMinMax_8u_C3R(data.data(), size.width, size, mins, maxs);
+      ippiMinMax_8u_C3R(data.data(), size.width*3, size, mins, maxs);
       std::vector<Range64f> r(3); 
       for(int i=0;i<3;++i) { r[i].minVal = mins[i]; r[i].maxVal = maxs[i]; }
       return r;
@@ -171,7 +173,7 @@ namespace icl{
   
     template<> std::vector<Range64f> TextureElement::findMinMax<icl16s,3>() const{
       icl16s mins[3],maxs[3];
-      ippiMinMax_16s_C3R(reinterpret_cast<const icl16s*>(data.data()), size.width*sizeof(icl16s), size, mins, maxs);
+      ippiMinMax_16s_C3R(reinterpret_cast<const icl16s*>(data.data()), size.width*sizeof(icl16s)*3, size, mins, maxs);
       std::vector<Range64f> r(3); 
       for(int i=0;i<3;++i) { r[i].minVal = mins[i]; r[i].maxVal = maxs[i]; }
       return r;
@@ -179,7 +181,7 @@ namespace icl{
   
     template<> std::vector<Range64f> TextureElement::findMinMax<icl32f,3>() const{
       icl32f mins[3],maxs[3];
-      ippiMinMax_32f_C3R(reinterpret_cast<const icl32f*>(data.data()), size.width*sizeof(icl32f), size, mins, maxs);
+      ippiMinMax_32f_C3R(reinterpret_cast<const icl32f*>(data.data()), size.width*sizeof(icl32f)*3, size, mins, maxs);
       std::vector<Range64f> r(3); 
       for(int i=0;i<3;++i) { r[i].minVal = mins[i]; r[i].maxVal = maxs[i]; }
       return r;
@@ -188,7 +190,7 @@ namespace icl{
     /// ipp optimization for 4 channel data
     template<> std::vector<Range64f> TextureElement::findMinMax<icl8u,4>() const{
       icl8u mins[4],maxs[4];
-      ippiMinMax_8u_C4R(data.data(), size.width, size, mins, maxs);
+      ippiMinMax_8u_C4R(data.data(), size.width*4, size, mins, maxs);
       std::vector<Range64f> r(4); 
       for(int i=0;i<4;++i) { r[i].minVal = mins[i]; r[i].maxVal = maxs[i]; }
       return r;
@@ -196,7 +198,7 @@ namespace icl{
   
     template<> std::vector<Range64f> TextureElement::findMinMax<icl16s,4>() const{
       icl16s mins[4],maxs[4];
-      ippiMinMax_16s_C4R(reinterpret_cast<const icl16s*>(data.data()), size.width*sizeof(icl16s), size, mins, maxs);
+      ippiMinMax_16s_C4R(reinterpret_cast<const icl16s*>(data.data()), size.width*sizeof(icl16s)*4, size, mins, maxs);
       std::vector<Range64f> r(4); 
       for(int i=0;i<4;++i) { r[i].minVal = mins[i]; r[i].maxVal = maxs[i]; }
       return r;
@@ -204,18 +206,29 @@ namespace icl{
   
     template<> std::vector<Range64f> TextureElement::findMinMax<icl32f,4>() const{
       icl32f mins[4],maxs[4];
-      ippiMinMax_32f_C4R(reinterpret_cast<const icl32f*>(data.data()), size.width*sizeof(icl32f), size, mins, maxs);
+      ippiMinMax_32f_C4R(reinterpret_cast<const icl32f*>(data.data()), size.width*sizeof(icl32f)*4, size, mins, maxs);
       std::vector<Range64f> r(4); 
       for(int i=0;i<4;++i) { r[i].minVal = mins[i]; r[i].maxVal = maxs[i]; }
       return r;
     }
-  
-  #endif
+    
+#endif
     
     template<class T>
     static inline void histo_entry(T v, double m, std::vector<int> &h, unsigned int n, double r){
       // todo check 1000 times +5 times (3Times done!)
       ++h[ floor( n*(v-m)/(r+1)) ];
+      /*
+      try{
+        ++h.at(floor( n*(double(v)-m)/(r+1)) );
+      }catch(...){
+        DEBUG_LOG("accessed lut at " << (floor( n*(double(v)-m)/(r+1))) );
+        SHOW((int)m); // 55
+        SHOW((int)v); // 55
+        SHOW((int)n); // 256
+        SHOW((int)r); // 113
+      }
+      */
     }
     template<class T>
     static void histo_interleaved(const void *vdata,
@@ -417,32 +430,35 @@ namespace icl{
       }
   
       
-      const ImageStatistics &updateStats() const {
+     const ImageStatistics &updateStats() const {
         textureBufferMutex.lock();
         stats.params = ImgParams(imageSize,imageChannels);
         stats.time = timeStamp;
         stats.d = origImageDepth;
-        stats.ranges = findMinMaxGeneric();
+        stats.ranges = findMinMaxGeneric(stats.globalRange);
         stats.histos.resize(imageChannels);
         stats.isNull = false;
         for(int i=0;i<imageChannels;++i){ 
           stats.histos[i].resize(256);
           std::fill(stats.histos[i].begin(), stats.histos[i].end(), 0);
         }
+        
+        std::vector<Range64f> grs(stats.ranges.size(),stats.globalRange);
+        
         for(int x=0;x<data.getWidth();++x){
           for(int y=0;y<data.getHeight();++y){
             const TextureElement &t = *data(x,y);
             if(imageDepth == depth8u){
               histo_interleaved<icl8u>(t.data.data(),t.size.getDim(),
-                                       imageChannels, stats.ranges,
+                                       imageChannels, grs,
                                        stats.histos);
             }else if(imageDepth == depth16s){
               histo_interleaved<icl16s>(t.data.data(),t.size.getDim(),
-                                        imageChannels, stats.ranges,
+                                        imageChannels, grs,
                                         stats.histos);
             }else{
               histo_interleaved<icl32f>(t.data.data(),t.size.getDim(),
-                                        imageChannels, stats.ranges,
+                                        imageChannels, grs,
                                         stats.histos);
             }
           }
@@ -454,7 +470,7 @@ namespace icl{
       }
   
       template<class T, int C>
-      std::vector<Range64f> findMinMax() const{
+      std::vector<Range64f> findMinMax(Range64f &global) const{
         textureBufferMutex.lock();
         std::vector<Range64f> all;
         for(int y=0;y<data.getHeight();++y){
@@ -470,30 +486,41 @@ namespace icl{
           }
         }
         textureBufferMutex.unlock();
+        
+        // updated here: instead of using on particular range for each
+        // channel, which screws make the histogram widget finall display
+        // wrong x-tic labels, we use the min- and max values over all channels
+        
+        global = all[0];
+        for(int i=1;i<C;++i){
+          if(all[i].minVal < global.minVal) global.minVal = all[i].minVal;
+          if(all[i].maxVal > global.maxVal) global.maxVal = all[i].maxVal;
+        }
+        
         return all;
       }
-      std::vector<Range64f> findMinMaxGeneric() const{
+      std::vector<Range64f> findMinMaxGeneric(Range64f &global) const{
         const int c = imageChannels;
         if(imageDepth == depth8u){
           switch(c){
-            case 1: return findMinMax<icl8u,1>();
-            case 2: return findMinMax<icl8u,2>();
-            case 3: return findMinMax<icl8u,3>();
-            case 4: return findMinMax<icl8u,4>();
+            case 1: return findMinMax<icl8u,1>(global);
+            case 2: return findMinMax<icl8u,2>(global);
+            case 3: return findMinMax<icl8u,3>(global);
+            case 4: return findMinMax<icl8u,4>(global);
           }
         }else if(imageDepth == depth16s){
           switch(c){
-            case 1: return findMinMax<icl16s,1>();
-            case 2: return findMinMax<icl16s,2>();
-            case 3: return findMinMax<icl16s,3>();
-            case 4: return findMinMax<icl16s,4>();
+            case 1: return findMinMax<icl16s,1>(global);
+            case 2: return findMinMax<icl16s,2>(global);
+            case 3: return findMinMax<icl16s,3>(global);
+            case 4: return findMinMax<icl16s,4>(global);
           }
         }else{
           switch(c){
-            case 1: return findMinMax<icl32f,1>();
-            case 2: return findMinMax<icl32f,2>();
-            case 3: return findMinMax<icl32f,3>();
-            case 4: return findMinMax<icl32f,4>();
+            case 1: return findMinMax<icl32f,1>(global);
+            case 2: return findMinMax<icl32f,2>(global);
+            case 3: return findMinMax<icl32f,3>(global);
+            case 4: return findMinMax<icl32f,4>(global);
           }
         }
         return std::vector<Range64f>();
@@ -581,12 +608,8 @@ namespace icl{
         icl32f fScaleRGB(0),fBiasRGB(0);
         if( (bci[0] < 0)  && (bci[1] < 0) && (bci[2] < 0)){
           // auto adaption
-          std::vector<Range64f> rs = findMinMaxGeneric();
-          Range64f all  = rs[0];
-          for(unsigned int i=1;i<rs.size();i++){
-            if(rs[i].minVal < all.minVal) all.minVal = rs[i].minVal;
-            if(rs[i].maxVal > all.maxVal) all.maxVal = rs[i].maxVal;
-          }
+          Range64f all;
+          findMinMaxGeneric(all);
           
           icl64f l = iclMax(double(1),all.getLength());
           
@@ -1121,7 +1144,9 @@ namespace icl{
     
     std::vector<Range64f> GLImg::getMinMax() const{
       ICLASSERT_RETURN_VAL(!isNull(),std::vector<Range64f>());
-      return m_data->findMinMaxGeneric();
+      Range64f global;
+      return m_data->findMinMaxGeneric(global);
+      (void)global;
     }
   
     

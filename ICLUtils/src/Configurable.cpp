@@ -260,6 +260,8 @@ namespace icl{
           f[prop] = val;
         }else if(type == "flag"){
           f[prop] = parse<bool>(val) ? (bool)1 : (bool)0; 
+        }else if(type == "color"){
+          f[prop] = val;
         }
       }
       f.save(filename);
@@ -301,6 +303,10 @@ namespace icl{
         }else if(type == "flag"){
           try{
             setPropertyValue(prop,f[prop].as<bool>());
+          }catch(...){}
+        }else if(type == "color"){
+          try{
+            setPropertyValue(prop,f[prop].as<std::string>());
           }catch(...){}
         }
       }
