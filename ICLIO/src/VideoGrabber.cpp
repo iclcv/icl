@@ -116,7 +116,9 @@ namespace icl{
       
       float ar;
       
-      Data(const std::string &filename, VideoGrabber::XineHandle* xine){
+      Data(const std::string &filename, VideoGrabber::XineHandle* xine)
+        : mutex(Mutex::mutexTypeRecursive)
+      {
         fileName = filename;
         
         int w = xine_get_stream_info (xine->stream, XINE_STREAM_INFO_VIDEO_WIDTH);
@@ -217,7 +219,7 @@ namespace icl{
     
     
     VideoGrabber::VideoGrabber(const std::string &filename) throw (FileNotFoundException,InvalidFileException):
-      m_xine(0),m_data(0),m_params(0){
+      m_xine(0),m_data(0),m_params(0), m_adapting_stream_position(false){
       
       if(!File(filename).exists()){
         throw FileNotFoundException(filename);
@@ -226,6 +228,15 @@ namespace icl{
       m_xine = new XineHandle(filename);
       m_data = new Data(filename,m_xine);
       m_params = new Params(m_data->fps);
+
+      addProperty("speed-mode", "menu", "auto,manual,unlimited", m_params->speedMode, 0, "The speed mode of the stream.");
+      addProperty("speed", "range", "[0,100]:1", m_params->speed, 0, "The stream replay speed.The speed variable is used as follows: range 0..100 | (0-49 means slower) | 0 = 1/10 speed | 50  = normal speed | (51-100 means faster) | 100 = 10x speed.");
+      addProperty("stream-pos", "range", "[0," + str(m_data->streamLengthMS) + "]:1", m_params->streamOffs, 0, "The stream position in miliseconds.");
+      addProperty("stream-length", "info", "", str(m_data->streamLengthMS)+" ms", 0, "The stream length in miliseconds.");
+      addProperty("volume", "range", "[0,100]:1", xine_get_param(m_xine->stream,XINE_PARAM_AUDIO_VOLUME), 0, "The streams audio volume.");
+      addProperty("is-seekable", "info", "", m_data->isSeekable ? "yes" : "no", 0, "Whether the stream is seekable.");
+
+      Configurable::registerCallback(utils::function(this,&VideoGrabber::processPropertyChange));
     }
   
     VideoGrabber::~VideoGrabber(){
@@ -279,6 +290,9 @@ namespace icl{
       }
       
       m_params->streamOffs = f.pos_time;
+      m_adapting_stream_position = true;
+      setPropertyValue("stream-pos", Any(f.pos_time));
+      m_adapting_stream_position = false;
       Size size(f.width,f.height);    
   
       ensureCompatible(&m_data->outputBuffer,depth8u,size,formatRGB);
@@ -288,7 +302,7 @@ namespace icl{
       return m_data->outputBuffer;
     }
     
-    std::vector<std::string> VideoGrabber::getPropertyList(){
+    std::vector<std::string> VideoGrabber::getPropertyListC(){
       static const std::string ps="speed-mode speed stream-pos stream-length volume is-seekable";
       return tok(ps," ");
     }
@@ -377,6 +391,47 @@ namespace icl{
     int VideoGrabber::isVolatile(const std::string &propertyName){
       return propertyName == "stream-pos" ? (int)(1000.0*m_data->frameDuration) : 0;
     }
+
+    // callback for changed configurable properties
+    void VideoGrabber::processPropertyChange(const utils::Configurable::Property &prop){
+      Mutex::Locker l(m_data->mutex);
+      if(prop.name == "speed-mode"){
+        m_params->speedMode = prop.value;
+      }else if(prop.name == "speed"){
+        m_params->setUserSpeed(parse<int>(prop.value));
+      }else if(prop.name == "stream-pos"){
+        if(m_adapting_stream_position) return;
+        int streamPos = parse<int>(prop.value);
+        xine_stop(m_xine->stream);
+        int success = xine_play(m_xine->stream,0,streamPos);
+        if(!success){
+          int err = xine_get_error (m_xine->stream);
+          /*
+              switch(err){
+              case XINE_ERROR_NONE:
+              break;
+              case
+              case
+              #define XINE_ERROR_NO_INPUT_PLUGIN         1
+              #define XINE_ERROR_NO_DEMUX_PLUGIN         2
+              #define XINE_ERROR_DEMUX_FAILED            3
+              #define XINE_ERROR_MALFORMED_MRL           4
+              #define XINE_ERROR_INPUT_FAILED            5
+              }
+           */
+          ERROR_LOG("found this xine error code: " << err);
+        }
+      }else if(prop.name == "stream-length"){
+        ERROR_LOG("stream-length is an info-variable, that cannot be set up externally!");
+      }else if(prop.name == "volume"){
+        int vol = parse<int>(prop.value);
+        ICLASSERT_RETURN(vol >= 0);
+        ICLASSERT_RETURN(vol <= 100);
+        xine_set_param (m_xine->stream,XINE_PARAM_AUDIO_VOLUME,vol);
+      }
+    }
+
+    REGISTER_CONFIGURABLE(VideoGrabber, return new VideoGrabber(""));
   } // namespace io
 }
 

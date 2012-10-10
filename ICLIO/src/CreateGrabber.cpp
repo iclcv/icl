@@ -52,6 +52,8 @@ namespace icl{
     CreateGrabberImpl::~CreateGrabberImpl(){
       ICL_DELETE(m_image);
     }
+
+    REGISTER_CONFIGURABLE(CreateGrabber, return new CreateGrabber("parrot"));
   
   } // namespace io
 }

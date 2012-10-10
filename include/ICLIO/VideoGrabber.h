@@ -108,7 +108,7 @@ namespace icl{
             an appropriate GUI 
           - volume sets up audio volume to a value from (0: mute to 100:max volume)
       */
-      virtual std::vector<std::string> getPropertyList();
+      virtual std::vector<std::string> getPropertyListC();
   
       /// get type of property 
       virtual std::string getType(const std::string &name);
@@ -122,6 +122,9 @@ namespace icl{
       
       /// here only the 'stream-pos' is volatile
       virtual int isVolatile(const std::string &propertyName);
+
+      /// callback for changed configurable properties
+      void processPropertyChange(const utils::Configurable::Property &prop);
       
       
       protected:
@@ -134,6 +137,7 @@ namespace icl{
       XineHandle *m_xine; //!< internal data belonging to the xine library
       Data *m_data;       //!< internal data
       Params *m_params;   //!< property values 
+      bool m_adapting_stream_position; //!< used for position update
     };
   
   } // namespace io
