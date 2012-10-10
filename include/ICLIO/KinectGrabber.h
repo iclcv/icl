@@ -78,7 +78,7 @@ namespace icl{
       virtual void setProperty(const std::string &property, const std::string &value);
       
       /// returns a list of properties, that can be set using setProperty
-      virtual std::vector<std::string> getPropertyList();
+      virtual std::vector<std::string> getPropertyListC();
   
       protected:
       struct Impl; //!< internal hidden implementation class

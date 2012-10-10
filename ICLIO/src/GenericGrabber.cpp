@@ -377,6 +377,7 @@ namespace icl{
             m_sType = "sm";
             break;
           }catch(ICLException &e){
+            e.report();
             ADD_ERR("sm");
             continue;
           }

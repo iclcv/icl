@@ -64,7 +64,7 @@ namespace icl{
       bool isNew(const Time &t, Grabber &g){
         if(t == Time::null){
           WARNING_LOG("SharedMemoryGrabber received image with null-TimeStamp while \"omit-doubled-frames\" feature was activated. Deactivating \"omit-doubled-frames\"-feature to avoid dead-locks!");
-          omitDoubledFrames = false;
+          g.setPropertyValue("omit-doubled-frames", false);
           lastValidImageGrabbed = Time::now();
           return true;
         }else if(lastImageTimeStamp == Time::null){
@@ -77,7 +77,7 @@ namespace icl{
           return true;
         }else if( (Time::now() - lastValidImageGrabbed).toSeconds() > 5){
           WARNING_LOG("SharedMemoryGrabber alread waited 5 seconds for a new image which might be caused by an image source that does not provide usefull timestamps. Therefore the 'omit-doubled-frames'-property is deactivated automatically!");
-          g.setProperty("omit-doubled-frames","off");
+          g.setPropertyValue("omit-doubled-frames",false);
           return false;
         }else if(t == lastImageTimeStamp){
           return false;
@@ -127,6 +127,11 @@ namespace icl{
           throw ICLException(str(__FUNCTION__)+": unable to connect to shared memory segment \"" + sharedMemorySegmentID + "\"");
         }
       }
+
+      addProperty("omit-doubled-frames", "flag", "", m_data->omitDoubledFrames, 0, "");
+      addProperty("enable-callbacks", "flag", "", m_data->callbacksEnabled, 0, "");
+
+      Configurable::registerCallback(utils::function(this,&SharedMemoryGrabberImpl::processPropertyChange));
     }
   
     void SharedMemoryGrabberImpl::init(const std::string &sharedMemorySegmentID) throw (ICLException){
@@ -267,9 +272,9 @@ namespace icl{
       }
     }
     
-    std::vector<std::string> SharedMemoryGrabberImpl::getPropertyList(){
-      static const std::string ps[1] = {"omit-doubled-frames,enable-callbacks"};
-      return std::vector<std::string>(ps,ps+1);
+    std::vector<std::string> SharedMemoryGrabberImpl::getPropertyListC(){
+      static const std::string ps="omit-doubled-frames enable-callbacks";
+      return tok(ps," ");
     }
     
     std::string SharedMemoryGrabberImpl::getType(const std::string &name){
@@ -301,7 +306,26 @@ namespace icl{
       }
     
     }
-    
+
+    // callback for changed configurable properties
+    void SharedMemoryGrabberImpl::processPropertyChange(const utils::Configurable::Property &prop){
+      if(prop.name == "omit-doubled-frames"){
+        m_data->omitDoubledFrames = parse<bool>(prop.value);
+        if(!m_data->omitDoubledFrames && m_data->callbacksEnabled){
+          WARNING_LOG("setting omitDoubledFrames to false will also set callbacksEnabled to false");
+          setPropertyValue("enable-callbacks", false);
+        }
+      } else if(prop.name == "enable-callbacks"){
+        if(parse<bool>(prop.value) && !m_data->omitDoubledFrames) {
+            WARNING_LOG("enabling enable-callbacks will also enabled omitDoubledFrames");
+            setPropertyValue("omit-doubled-frames", true);
+        } else {
+          m_data->callbacksEnabled = parse<bool>(prop.value);
+        }
+      }
+    }
+
+    REGISTER_CONFIGURABLE(SharedMemoryGrabber, return new SharedMemoryGrabber(""));
     
   } // namespace io
 }
