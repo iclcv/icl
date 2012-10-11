@@ -187,7 +187,63 @@ namespace icl{
       const float data[] = { a.x, a.y, b.x, b.y };
       addAnnotations('l',data, 1, m_data->state.linePen, Qt::NoBrush);
     }
-  
+
+    void PlotWidget::draw(const VisualizationDescription &d){
+      const std::vector<VisualizationDescription::Part> &parts = d.getParts();
+      for(size_t i=0;i<parts.size();++i){
+        switch(parts[i].type){
+          case 'c': {
+            VisualizationDescription::Color c = parts[i].content;
+            this->color(c.r,c.g,c.b,c.a);
+            break;
+          }
+          case 'f':{
+            VisualizationDescription::Color c = parts[i].content;
+            this->fill(c.r,c.g,c.b,c.a);
+            break;
+          }
+          case 'r':
+            this->rect(parts[i].content.as<Rect32f>());
+            break;
+          case 'e':{
+            const Rect32f r = parts[i].content.as<Rect32f>();
+            const float cx = r.x+r.width/2, cy = r.y+r.height/2;
+            const float rx = r.width/2, ry = r.height/2;
+            
+            std::vector<Point32f> ps(100,Point32f(cx,cy));
+            for(float i=0;i<100;++i){
+              float a = i/100.0f * 2.0f * M_PI;
+              ps[i].x += cos(a) * rx;
+              ps[i].y += sin(a) * ry;
+            }
+            this->linestrip(ps);
+            break;
+          }
+          case 'l':{
+            Rect32f r = parts[i].content.as<Rect32f>();
+            this->line(r.ul(),r.lr());
+            break;
+          }
+          case 't':{
+            VisualizationDescription::Text t = parts[i].content;
+            this->text(t.pos,t.text);
+            break;
+          }
+          case '+':
+          case 'x':
+          case 'o':{
+            Point32f pos = parts[i].content;
+            this->sym(parts[i].type);
+            this->scatter(&pos.x,&pos.y,1,2,2);
+            break;
+          }
+          default:
+            WARNING_LOG("unable to render VisualizationDescription::Part with type '" << parts[i].type << "'");
+            break;
+        }
+      }
+    }
+    
     void PlotWidget::linestrip(const std::vector<Point32f> &ps, bool closedLoop){
       linestrip(&ps[0].x, &ps[0].y, ps.size(), closedLoop,2);
     }
