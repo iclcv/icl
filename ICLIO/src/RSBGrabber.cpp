@@ -56,6 +56,9 @@ namespace icl{
   namespace io{
   
     struct RSBGrabberImpl::Data {
+
+      Data() : mutex(Mutex::mutexTypeRecursive){}
+
       ListenerPtr listener;
       Informer<std::string>::Ptr propertyInformer;
       std::string propertyScopeName;
@@ -161,6 +164,14 @@ namespace icl{
   
       m_data->lastImageDataSize = 0;
       m_data->lastCompressionRatio = 0;
+
+      // Configurable
+      addProperty("compression-type", "menu", "none,rlen,jpeg", m_data->receivedCompressionMode, 0, "");
+      addProperty("RLE-quality", "menu", "1 Bit,4 Bit,6 Bit,8 Bit", m_data->receivedRLEQuality, 0, "");
+      addProperty("JPEG-quality", "range", "[1,100]:1", m_data->receivedJPEGQuality, 0, "");
+      addProperty("image data size", "info", "", m_data->lastImageDataSize, 0, "");
+      addProperty("compression ratio", "info", "", str(m_data->lastCompressionRatio) + "%", 0, "");
+      Configurable::registerCallback(utils::function(this,&RSBGrabberImpl::processPropertyChange));
     }
     
     RSBGrabberImpl::~RSBGrabberImpl(){
@@ -182,6 +193,8 @@ namespace icl{
       }
       m_data->bufferImage->deepCopy(&m_data->outputImage);
       m_data->hasNewImage = false;
+      setPropertyValue("image data size", m_data->lastImageDataSize);
+      setPropertyValue("compression ratio", str(m_data->lastCompressionRatio) + "%");
       return m_data->outputImage;
     }
   
@@ -220,7 +233,7 @@ namespace icl{
     }
   
     
-    std::vector<std::string> RSBGrabberImpl::getPropertyList(){
+    std::vector<std::string> RSBGrabberImpl::getPropertyListC(){
       static std::vector<std::string> ps = tok("compression-type,RLE-quality,JPEG-quality,image data size,compression ratio",",");
       return ps;
     }
@@ -275,7 +288,28 @@ namespace icl{
       }
       return "unknown";
     }
-  
+
+    // callback for changed configurable properties
+    void RSBGrabberImpl::processPropertyChange(const utils::Configurable::Property &prop){
+      Mutex::Locker lock(m_data->mutex);
+      if(prop.name == "compression-type"){
+        m_data->setRLEQuality = m_data->receivedRLEQuality;
+        m_data->setJPEGQuality = m_data->receivedJPEGQuality;
+        m_data->setCompressionMode = prop.value;
+        m_data->sendUpdateToSource();
+      }else if(prop.name == "RLE-quality"){
+        m_data->setCompressionMode = m_data->receivedCompressionMode;
+        m_data->setRLEQuality = parse<int>(prop.value);
+        m_data->sendUpdateToSource();
+      }else if(prop.name == "JPEG-quality"){
+        m_data->setCompressionMode = m_data->receivedCompressionMode;
+        m_data->setRLEQuality = m_data->receivedRLEQuality;
+        m_data->setJPEGQuality = parse<int>(prop.value);
+        m_data->sendUpdateToSource();
+      }
+    }
+
+    REGISTER_CONFIGURABLE(RSBGrabber, return new RSBGrabber("/icl/foo", "spread"));
   
   } // namespace io
 }

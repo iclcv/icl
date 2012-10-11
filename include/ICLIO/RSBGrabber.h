@@ -82,7 +82,7 @@ namespace icl{
       
       /// returns a list of properties, that can be set usingsetProperty
       /** @return list of supported property names **/
-      virtual std::vector<std::string> getPropertyList();
+      virtual std::vector<std::string> getPropertyListC();
       
       /// get type of property
       /** \copydoc icl::io::Grabber::getType(const std::string &)*/
@@ -98,6 +98,9 @@ namespace icl{
   
       /// volatileness
       virtual int isVolatile(const std::string &name);
+
+      /// callback for changed configurable properties
+      void processPropertyChange(const utils::Configurable::Property &prop);
   
     };
   
