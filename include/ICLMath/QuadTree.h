@@ -36,6 +36,7 @@
 
 #include <ICLMath/FixedVector.h>
 #include <ICLUtils/VisualizationDescription.h>
+#include <set>
 
 namespace icl{
 
@@ -72,12 +73,14 @@ namespace icl{
 
         * insertion
         * nearest neighbor search of 1000 random points
+        * approximate nearest neighbor search of 1000 random points
         * query a huge region: Rect(100,100,500,350), containing 57% of all points
         
         \subsection E1 Experiment 1 (Base line results)
 
-        * insertion: 6ms
-        * nn-search: 4ms
+        * insertion: 5.8ms
+        * nn-search: 3.6ms
+        * approx. nn: 0.19ms 
         * query: 1.7ms
 
         \subsection E2 Experiment 2 (Using smaller Nodes of CAPACITY 4)
@@ -88,7 +91,8 @@ namespace icl{
         which is very time consuming.
 
         * insertion: 9.6ms
-        * nn-search: 17ms
+        * nn-search: 16.7ms
+        * approx. nn: 0.16ms
         * query: 2.3ms
         
         \subsection E2b Experiment 2b (Using larger Nodes of CAPACITY 128)
@@ -96,9 +100,10 @@ namespace icl{
         Here, again, we can see that larger nodes speed up the insertion part, while
         the nn-search optimization is already saturated here.
         
-        * insertion: 5.7ms
-        * nn-search: 5ms
-        * query: 1.7ms
+        * insertion: 4.5ms
+        * nn-search: 6.5ms
+        * approx nn: 0.31ms
+        * query: 1.73ms
         
 
         \subsection E3 Experiment 3 (Using 10K Points only)
@@ -107,19 +112,22 @@ namespace icl{
         and query is more then 10-times as fast which can be explained by better caching properties.
         The nearest neighbour search has a logarithmic complexity and is sped up least.
 
-        * insertion: 0.38ms
-        * nn-search: 3ms
-        * query: 0.15ms
+        * insertion: 0.4ms
+        * nn-search: 2.4ms
+        * approx. nn: 0.16ms
+        * query: 0.16ms
 
         \subsection E4 Experiment 4 (Using 1000K Points)
         
         Obviously, we face caching issues here: While 10K and even 100K points could easily be cached,
         the whole structure cannot be cached with 1000K points. Therefore, insertion gets
         significantly slower. The logarithmic complexity of the nn-search stays valid and make
-        this part not become that much slower.
+        this part not become that much slower. The approximate nn-search is not affected so strongly
+        because it majorly depends on the node capacity.
 
-        * insertion: 126ms
+        * insertion: 130ms
         * nn-search: 8ms
+        * approx. nn: 0.33ms
         * query: 26ms
 
         \subsection E5 Experiment 5 (Using 1000K Points, but with Node CAPACITY 128)
@@ -128,15 +136,19 @@ namespace icl{
         On the other hand, the nn-search takes slightly longer
         
         * insertion: 87ms
-        * nn-search: 9ms
+        * nn-search: 9.8ms
+        * approx. nn: 0.3ms
         * query: 23ms
 
         \subsection E6 Experiment 6 (Using 1000K Points, but with Node CAPACITY 1024)
 
-        Same effect as before, but much stronger. 
+        Same effect as before, but much stronger. The approximate nn-search becomes
+        alot slower, because all CAPACITY points in the best matching cell must be checked.
+        However, the approximate results are usually more accurate here
         
         * insertion: 55ms
         * nn-search: 41ms
+        * approx. nn: 2.7ms
         * query: 22.8ms
     */
     template<class Scalar, int CAPACITY=4, int ALLOC_CHUNK_SIZE=1024>
@@ -191,20 +203,22 @@ namespace icl{
         Pt points[CAPACITY];   //!< contained nodes
         Pt *next;              //!< next node to fill 
         Node *children;        //!< pointer to four child-nodes
+        Node *parent;
 
         /// empty default constructor (does nothing)
         Node(){}
         
         /// constructor from given AABB-boundary
         Node(const AABB &boundary){
-          init(boundary);
+          init(0,boundary);
         }
         /// initialization methods (with given boundary)
         /** sets next to points-begin and children to NULL */
-        void init(const AABB &boundary){
+        void init(Node *parent, const AABB &boundary){
           this->boundary = boundary;
           this->next = this->points;
           this->children = 0;
+          this->parent = parent;
         }
     
         /// recursive getter function that queries all nodes within a given bounding box
@@ -236,10 +250,10 @@ namespace icl{
           const Pt half = boundary.halfSize*0.5;
           const Pt &c = boundary.center;
           this->children = children;
-          this->children[0].init(AABB(Pt(c[0]-half[0],c[1]-half[1]),half));
-          this->children[1].init(AABB(Pt(c[0]+half[0],c[1]-half[1]),half));
-          this->children[2].init(AABB(Pt(c[0]-half[0],c[1]+half[1]),half));
-          this->children[3].init(AABB(Pt(c[0]+half[0],c[1]+half[1]),half));
+          this->children[0].init(this,AABB(Pt(c[0]-half[0],c[1]-half[1]),half));
+          this->children[1].init(this,AABB(Pt(c[0]+half[0],c[1]-half[1]),half));
+          this->children[2].init(this,AABB(Pt(c[0]-half[0],c[1]+half[1]),half));
+          this->children[3].init(this,AABB(Pt(c[0]+half[0],c[1]+half[1]),half));
         }
         
         /// recursively grabs visualizations commands
@@ -355,10 +369,65 @@ namespace icl{
         delete root;
       }
   
+      protected:
+      
+      /// internal utility method that is used to find an approximated nearest neighbour
+      const Pt &nn_approx_internal(const Pt &p, double &currMinDist, const Pt *&currNN) const throw (ICLException){
+        // 1st find cell, that continas p
+        const Node *n = root;
+        while(n->children){
+          n = (n->children + (p[0] > n->boundary.center[0]) + 2 * (p[1] > n->boundary.center[1]));
+        }
+        
+        // this cell could be empty, in this case, the parent must contain good points
+        if(n->next == n->points){
+          n = n->parent;
+          if(!n) throw ICLException("no nn found for given point " + str(p));
+        }
+        
+        double sqrMinDist = sqr(currMinDist);
+
+        for(const Pt *x=n->points; x < n->next; ++x){
+          Scalar dSqr = sqr(x->operator[](0)-p[0]) + sqr(x->operator[](1)-p[1]);
+          if(dSqr < sqrMinDist){
+            sqrMinDist = dSqr;
+            currNN = x; 
+          }
+        }
+        currMinDist = sqrt(sqrMinDist);
+
+        if(!currNN){
+          throw ICLException("no nn found for given point " + str(p));
+        }
+      }
+      public:
+      
+      
+      /// returns an approximated nearst neighbour
+      /** While the real nearst neighbour must not neccessarily be
+          in the cell that would theoretically contain p, The approximated
+          one is always assumed to be in that bottom layer cell. If, by chance,
+          the optimal leaf node does not contain any points (because it was just
+          created as empty leaf), the leaf's parent node, which must actually contain
+          CAPACITY points, is used instead. The approximate nearest neighbour search
+          can easily be 5 times as fast as the real nearest neighbor search.
+          The result quality depends on the number of contained points, and
+          on the QuadTree's template parameters */
+      const Pt &nn_approx(const Pt &p) const throw (ICLException){
+        double currMinDist = sqrt(Range<Scalar>::limits().maxVal-1);
+        const Pt *currNN  = 0;
+        nn_approx_internal(p,currMinDist,currNN);
+        return *currNN;
+      }
+
       /// finds the nearest neighbor to the given node
       /** The implementation of this method explicitly avoids recursion by using
           a run-time stack. This leads to a 4x speed factor in comparison to
           the recursive implementaiton of this function.
+          
+          As an extra accelleration, the method initializes it's frist nearest
+          neighbor guess using the nn_approx method, which gives an approximate
+          speed up of factor two to four.
           
           As a 2nd accelleration heuristic, all CAPACITY nodes'
           distances are are first calculated and compared in a squared
@@ -375,8 +444,10 @@ namespace icl{
         stack.reserve(128);
         stack.push_back(root);
         double currMinDist = sqrt(Range<Scalar>::limits().maxVal-1);
-        
         const Pt *currNN  = 0;
+        
+        // nn_approx_internal(p,currMinDist,currNN);
+        
         while(stack.size()){
           const Node *n = stack.back();
           stack.pop_back();
@@ -398,10 +469,9 @@ namespace icl{
           }
           currMinDist = sqrt(sqrMinDist);
         }
-        if(!currNN) throw ICLException("no nn found for given point " + str(p));
         return *currNN;
       }
-      
+
       /// convenience wrapper for the Point32f type
       const Point32f nn(const Point32f &p) const throw (ICLException){
         Pt n = nn(Pt(p.x,p.y));

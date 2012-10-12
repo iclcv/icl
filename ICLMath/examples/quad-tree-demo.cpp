@@ -37,6 +37,17 @@
 #include <ICLUtils/Random.h>
 #include <ICLMath/QuadTree.h>
 
+Time t;
+std::string what;
+inline void tic(const std::string &what){
+  ::what = what;
+  t = Time::now();
+}
+
+inline void toc(){
+  std::cout << "Time for " << what << ": " << t.age().toMilliSecondsDouble() << "ms" << std::endl;
+}
+
 void init(){
   HBox gui;
   
@@ -48,23 +59,24 @@ void init(){
   //GRandClip ry(240,3*24, Range64f(0,480));
   URand rx(0,639), ry(0,479);
   
-  typedef QuadTree<float,64,1024> QT;
+  typedef QuadTree<float,1024,1024> QT;
   typedef QT::Pt Pt;
   QT t(Size::VGA);
 
   
   // create data
-  std::vector<Pt> ps(100*1000);
+  std::vector<Pt> ps(1000*1000);
   for(size_t i=0;i<ps.size();++i){
     ps[i] = Pt(rx,ry);
   }
   
   // insert data into the QuadTree
-  Time tt = Time::now();
+  ::tic("insertion");
   for(size_t i=0;i<ps.size();++i){
     t.insert(ps[i]);
   }
-  SHOW(tt.age().toMilliSecondsDouble());
+  ::toc();
+
   
   plot->sym('x');  
   plot->scatter(ps.data(),ps.size());
@@ -72,11 +84,11 @@ void init(){
   
   /// Query a huge rectangular region with 57% coverage
   Rect r(100,100,500,350);
-  tic();
+  ::tic("query");
   for(int i=0;i<100;++i){
     ps = t.query(r);
   }
-  toc();
+  ::toc();
 
 
   // visualize
@@ -101,12 +113,25 @@ void init(){
   }
   std::vector<Pt> nn(ps.size());
 
-  /// for each seed point: find nn
-  tic();
+  // precaching ...
   for(size_t i=0;i<ps.size();++i){
     nn[i] = t.nn(ps[i]);
   }
-  toc();
+
+  /// for each seed point: find nn
+  ::tic("nearest neighbor search");
+  for(size_t i=0;i<ps.size();++i){
+    nn[i] = t.nn(ps[i]);
+  }
+  ::toc();
+
+  /// for each seed point: find nn
+  ::tic("approx nearest neighbor search");
+  for(size_t i=0;i<ps.size();++i){
+    nn[i] = t.nn_approx(ps[i]);
+  }
+  ::toc();
+
 
   // visualize nn-search results
   plot->sym('o');
