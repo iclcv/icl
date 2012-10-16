@@ -117,6 +117,10 @@ namespace icl{
       }
       return *m_data->lastColorImage;
     }
+
+    void DepthCameraPointCloudGrabber::mapImage(const core::ImgBase *src, core::ImgBase **dst, const core::Img32f *depthImageMM){
+      m_data->creator.mapImage(src,dst,depthImageMM);
+    }
   
   } // namespace geom
 }

@@ -309,7 +309,8 @@ namespace icl{
   
       // }}}
   
-      Timer *TIMER=0;      
+      Timer *TIMER=0;
+      std::string TIMER_LABEL;
     }
   
     using namespace std;
@@ -1785,15 +1786,17 @@ namespace icl{
   
     // }}}
     
-    void tic(){
+    void tic(const std::string &label){
       // {{{ open
-  
+      std::string lastTimerLabel = TIMER_LABEL;
+      TIMER_LABEL = label;
+      
       if(!TIMER){
         TIMER = new Timer();
         TIMER->start();
       }else{
         printf("timer was already running: \n");
-        TIMER->stop();
+        TIMER->stop(lastTimerLabel);
         delete TIMER;
         TIMER = new Timer();
         TIMER->start();
@@ -1807,7 +1810,7 @@ namespace icl{
       if(!TIMER){
         printf("could not stop timer: call tic first! \n");
       }else{
-        TIMER->stop();
+        TIMER->stop(TIMER_LABEL);
         delete TIMER;
         TIMER = 0;
       }

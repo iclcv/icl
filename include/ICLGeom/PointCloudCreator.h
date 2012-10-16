@@ -101,7 +101,13 @@ namespace icl{
       
       /// returns whether a color camera was given (and therefore whether RGBD-mapping is supported)
       bool hasColorCamera() const;
-  
+
+      /// maps another given image just like the rgbImage would be mapped
+      /** @param src image assumed to be captured from the perspective of the color camera
+          @param dst destimation image (automatically adapted)
+          @param depthImageMM optionally given depth image (if NULL, then the last
+          depthImage passed to the "create"-is used, which should usually be the right one) */
+      void mapImage(const core::ImgBase *src, core::ImgBase **dst, const core::Img32f *depthImageMM=0);
     };
   
   } // namespace geom

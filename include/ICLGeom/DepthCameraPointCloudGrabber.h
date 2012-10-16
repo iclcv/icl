@@ -91,6 +91,13 @@ namespace icl{
       /** The camera is never really used, only it's address is used to decide
           whether it is the static null-color-camera or not */
       static const Camera &get_null_color_cam();
+
+      /// maps another given image just like the rgbImage would be mapped
+      /** @param src image assumed to be captured from the perspective of the color camera
+          @param dst destimation image (automatically adapted)
+          @param depthImageMM optionally given depth image (if NULL, then the last
+          depthImage passed to the "create"-is used, which should usually be the right one) */
+      void mapImage(const core::ImgBase *src, core::ImgBase **dst, const core::Img32f *depthImageMM=0);
     };
   } // namespace geom
 }
