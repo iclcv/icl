@@ -830,7 +830,7 @@ namespace icl{
     /* {{{ open */
   
     /// starts a timer
-    void tic();
+    void tic(const std::string &label="");
     
     /// stops a timer started with tic()
     void toc();

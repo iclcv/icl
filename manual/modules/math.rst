@@ -26,6 +26,7 @@ Table of Contents
 * :ref:`math.ransac`
 * :ref:`math.som`
 * :ref:`math.llm`
+* :ref:`math.quadtree`
 * :ref:`math.simplex`
 * :ref:`math.stochastic`
 * :ref:`math.vq2d`
@@ -177,6 +178,22 @@ The Local Linear Map algorithm can be used for general regression
 tasks.  ICL provides two sample applications that use the icl::`LLM`
 network for 1D to 1D and from 2D to 3D regression tasks.
 
+
+.. _math.quadtree:
+
+Generic QuadTree implementation
+"""""""""""""""""""""""""""""""
+
+The :icl:`QuadTree` class is a generic QuadTree implementation based
+on the pseudo code, that can be found on wikipedia. The
+:icl:`QuadTree` is implemented as a template for **float** and
+**double** point types and it uses an extra template parameter
+**CAPACITY** that defines the number of points, that can be stored in
+each node of the tree. It basically provides functions for
+
+* point insertion
+* nearest neighbor search
+* querying a rectangular sub-region
 
 .. _math.simplex:
 

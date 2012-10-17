@@ -36,8 +36,9 @@
 
 namespace icl{
   namespace qt{
-    void ensure_proper_linkage_against_iclcv(){
-      icl::cv::RegionDetector rd;
-    }
+    // no longer allowed because CV depends on Qt now and not vice versa
+    //void ensure_proper_linkage_against_iclcv(){
+    //  icl::cv::RegionDetector rd;
+    //}
   }
 }

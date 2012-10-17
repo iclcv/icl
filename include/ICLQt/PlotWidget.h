@@ -35,8 +35,9 @@
 #pragma once
 
 #include <ICLQt/LowLevelPlotWidget.h>
-#include <ICLMath/FixedMatrix.h>
+#include <ICLMath/FixedVector.h>
 #include <ICLUtils/Array2D.h>
+#include <ICLUtils/VisualizationDescription.h>
 
 namespace icl{
   namespace qt{
@@ -272,11 +273,21 @@ namespace icl{
       }
   
       /// adds a scatter plot from given set of of fixed vectors
-      template<class T, int WIDTH>
-      inline void scatter(const math::FixedMatrix<T,WIDTH,3-WIDTH> *ps, int num, bool connect=false){
+      template<class T>
+      inline void scatter(const math::FixedMatrix<T,1,2> *ps, int num, bool connect=false){
         scatter(&ps[0][0],&ps[0][1], num, 2, 2, connect);
       }
-  
+
+      template<class T>
+      inline void scatter(const math::FixedMatrix<T,2,1> *ps, int num, bool connect=false){
+        scatter(&ps[0][0],&ps[0][1], num, 2, 2, connect);
+      }
+
+      /// adds a scatter plot from given vector of fixed vectors
+      inline void scatter(const std::vector<math::FixedColVector<float,2> >&ps, bool connect=false){
+        scatter((const math::FixedMatrix<float,2,1>*)ps.data(),ps.size(),connect);
+      }
+
       /// adds series data 
       /** @param data data pointer
           @param num number of elements
@@ -400,6 +411,10 @@ namespace icl{
       inline void grid(int nX, int nY, const std::vector<float> &xs, const std::vector<float> &ys){
         grid(nX, nY, xs.data(), ys.data());
       }
+      
+      /// draws a VisualizationDescription instance
+      /** Internally, the description is decomposed to normal function calls*/
+      void draw(const utils::VisualizationDescription &d);
   
       /// sets the diagram title
       /** Please note, that usually the property 

@@ -208,9 +208,9 @@ set(ICLMath_internal_dependencies ICLUtils)
 set(ICLCore_internal_dependencies ICLMath)
 set(ICLFilter_internal_dependencies ICLCore)
 set(ICLIO_internal_dependencies ICLFilter)
-set(ICLCV_internal_dependencies ICLIO)
-set(ICLQt_internal_dependencies ICLCV) # todo: do some have_qt switches ... (we need IO for the camcfg-stuff)
-set(ICLGeom_internal_dependencies ICLQt)
+set(ICLQt_internal_dependencies ICLIO) # todo: do some have_qt switches ... (we need IO for the camcfg-stuff)
+set(ICLCV_internal_dependencies ICLQt)
+set(ICLGeom_internal_dependencies ICLCV)
 set(ICLMarkers_internal_dependencies ICLGeom)
 
 

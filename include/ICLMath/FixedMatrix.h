@@ -336,12 +336,15 @@ namespace icl{
   
       /// Divide all elements by a scalar
       FixedMatrix operator/(T f) const{
-        return this->operator*(1/f);
+        FixedMatrix d;
+        std::transform(begin(),end(),d.begin(),std::bind2nd(std::divides<T>(),f));
+        return d;
       }
   
       /// Divide all elements by a scalar
       FixedMatrix &operator/=(T f){
-        return this->operator*=(1/f);
+        std::transform(begin(),end(),begin(),std::bind2nd(std::divides<T>(),f));
+        return *this;
       }
   
       /// Add a scalar to each element

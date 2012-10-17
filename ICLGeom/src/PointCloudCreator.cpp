@@ -47,33 +47,39 @@ namespace icl{
       
       SmartPtr<Mat>rgbdMapping;
       SmartPtr<Camera> depthCamera, colorCamera; // memorized for easy copying
-      Size imageSize;
+      Size depthImageSize;
+      Size colorImageSize;
       Vec viewRayOffset;
       Array2D<Vec3> viewRayDirections;
       PointCloudCreator::DepthImageMode mode;    // memorized for easy copying
-  
+      const Img32f *lastDepthImageMM;
+      
       static inline float compute_depth_norm(const Vec &dir, const Vec &centerDir){
         return sprod3(dir,centerDir)/(norm3(dir)*norm3(centerDir));
       }
   
       void init(Camera *depthCam, Camera *colorCam, PointCloudCreator::DepthImageMode mode){
+        this->lastDepthImageMM = 0;
         this->mode = mode;
         depthCamera = depthCam;
         colorCamera = colorCam;
-        imageSize = depthCam->getRenderParams().chipSize;
+        depthImageSize = depthCam->getRenderParams().chipSize;
+        colorImageSize = colorCam->getRenderParams().chipSize;
         
         if(colorCam){
-          this->rgbdMapping = new Mat(colorCam->getProjectionMatrix()*colorCam->getCSTransformationMatrix());
+          this->rgbdMapping = new Mat(colorCam->getProjectionMatrix()*
+                                      colorCam->getCSTransformationMatrix());
         }
         
         Array2D<ViewRay> viewRays = depthCam->getAllViewRays();
         viewRayOffset = viewRays(0,0).offset;
-        viewRayDirections = Array2D<Vec3>(imageSize);
-        const Vec centerViewRayDir = viewRays(imageSize.width/2-1, imageSize.height/2-1).direction;
+        viewRayDirections = Array2D<Vec3>(depthImageSize);
+        const Vec centerViewRayDir = viewRays(depthImageSize.width/2-1, 
+                                              depthImageSize.height/2-1).direction;
       
-        for(int y=0;y<imageSize.height;++y){
-          for(int x=0;x<imageSize.width;++x){
-            const int idx = x + imageSize.width * y;
+        for(int y=0;y<depthImageSize.height;++y){
+          for(int x=0;x<depthImageSize.width;++x){
+            const int idx = x + depthImageSize.width * y;
             const Vec &d = viewRays[idx].direction;
             if(mode == PointCloudCreator::DistanceToCamPlane){
               const float corr = 1.0/compute_depth_norm(d,centerViewRayDir);
@@ -173,14 +179,14 @@ namespace icl{
   
     template<bool HAVE_RGBD_MAPPING, class RGBA_DATA_SEGMENT_TYPE>
     static void point_loop(const icl32f *depthValues, const Mat M, 
-                           const Vec O, const unsigned int W, const unsigned int H, const int DIM, 
+                           const Vec O, const unsigned int COLOR_W, const unsigned int COLOR_H, const int DEPTH_DIM, 
                            DataSegment<float,3> xyz, 
                            RGBA_DATA_SEGMENT_TYPE rgba,
                            const Channel8u rgbIn[3],
                            const Array2D<Vec3> &dirs){
       
       const Channel8u rgb[3] = { rgbIn[0], rgbIn[1], rgbIn[2] };
-      for(int i=0;i<DIM;++i){
+      for(int i=0;i<DEPTH_DIM;++i){
         const Vec3 &dir = dirs[i];
         const float d = depthValues[i];
         
@@ -192,8 +198,8 @@ namespace icl{
         
         if(HAVE_RGBD_MAPPING){ // optimized as template parameter
           Point p = map_rgbd(M,dstXYZ);
-          if( ((unsigned int)p.x) < W && ((unsigned int)p.y) < H){ 
-            const int idx = p.x + W * p.y;
+          if( ((unsigned int)p.x) < COLOR_W && ((unsigned int)p.y) < COLOR_H){ 
+            const int idx = p.x + COLOR_W * p.y;
             assign_rgba(rgba[i], rgb[0][idx], rgb[1][idx], rgb[2][idx], 255);
           }else{
             assign_rgba(rgba[i], 0,0,0,0);
@@ -203,9 +209,11 @@ namespace icl{
     }
   
     void PointCloudCreator::create(const Img32f &depthImageMM, PointCloudObjectBase &destination, const Img8u *rgbImage){
+      m_data->lastDepthImageMM = &depthImageMM;
+      
       static_cam  = m_data->colorCamera.get();
   
-      if(depthImageMM.getSize() != m_data->imageSize){
+      if(depthImageMM.getSize() != m_data->depthImageSize){
         throw ICLException("PointCloudCreator::create: depthImage's size is not equal to the camera size");
       }
       if(!destination.supports(PointCloudObjectBase::XYZ)){
@@ -221,19 +229,24 @@ namespace icl{
           throw ICLException("PointCloudCreator::create: depthImage's size is not equal to the point-cloud size");
         }
       }
-      if(rgbImage && !m_data->rgbdMapping){
-        throw ICLException("PointCloudCreator::create rgbImage to map was given, but no color camera calibration data is available");
+      if(rgbImage){
+        if(!m_data->rgbdMapping){
+          throw ICLException("PointCloudCreator::create rgbImage to map was given, but no color camera calibration data is available");
+        }
+        if(m_data->colorImageSize != rgbImage->getSize()){
+          throw ICLException("PointCloudCreator::create rgbImage size is not compatible to the given color camera calibration data");
+        }
       } 
    
       /// precaching variables ...
       const icl32f *dv = depthImageMM.begin(0);
       const Array2D<Data::Vec3> &dirs = m_data->viewRayDirections;
       const bool X = m_data->rgbdMapping;
-      const Mat M = m_data->rgbdMapping ? *m_data->rgbdMapping : Mat(0.0f);
+      const Mat M = X ? *m_data->rgbdMapping : Mat(0.0f);
       const Vec O = m_data->viewRayOffset;
-      const int W = m_data->imageSize.width;
-      const int H = m_data->imageSize.height;
-      const int DIM = W*H;
+      const int W = m_data->colorImageSize.width;
+      const int H = m_data->colorImageSize.height;
+      const int DIM = m_data->depthImageSize.getDim();
       
   
       const Channel8u rgb[3];
@@ -272,7 +285,97 @@ namespace icl{
     bool PointCloudCreator::hasColorCamera() const{
       return m_data->colorCamera;
     }
-  
+
+    template<class T, int NUM_CHANNELS>
+    void map_image(const Img<T> &src, const Img<T> &dst, const icl32f *depthValues, 
+                   const Mat M, const Vec O, const unsigned int COLOR_W, const unsigned int COLOR_H,
+                   const int DEPTH_DIM,const Array2D<Vec3> &dirs){
+      
+      const Channel<T> csrc[NUM_CHANNELS];
+      Channel<T> cdst[NUM_CHANNELS];
+      for(int i=0;i<NUM_CHANNELS;++i){
+        csrc[i] = src[i];
+        cdst[i] = dst[i];
+      }
+
+      for(int i=0;i<DEPTH_DIM;++i){
+        const Vec3 &dir = dirs[i];
+        const float d = depthValues[i];
+        
+        const FixedColVector<float,3> xyz(O[0] + d * dir[0],
+                                          O[1] + d * dir[1],                
+                                          O[2] + d * dir[2]);
+        
+        Point p = map_rgbd(M,xyz);
+        if( ((unsigned int)p.x) < COLOR_W && ((unsigned int)p.y) < COLOR_H){ 
+          const int idx = p.x + COLOR_W * p.y;
+          
+          switch(NUM_CHANNELS){ // should be optimized out by the compiler
+            case 1: 
+              cdst[0][i] = csrc[0][idx]; 
+              break;
+            case 2: 
+              cdst[0][i] = csrc[0][idx]; 
+              cdst[1][i] = csrc[1][idx]; 
+              break;
+            case 3: 
+              cdst[0][i] = csrc[0][idx]; 
+              cdst[1][i] = csrc[1][idx]; 
+              cdst[2][i] = csrc[2][idx]; 
+              break;
+            case 4: 
+              cdst[0][i] = csrc[0][idx]; 
+              cdst[1][i] = csrc[1][idx]; 
+              cdst[2][i] = csrc[2][idx]; 
+              cdst[3][i] = csrc[3][idx]; 
+              break;
+            default:
+              ERROR_LOG("PointCloudCreator::mapImage: only 1-,2-,3- and 4-channel images are supported");
+              break;
+          }
+        }
+      }
+    }
+                   
+    void PointCloudCreator::mapImage(const core::ImgBase *src, core::ImgBase **dst, const core::Img32f *depthImageMM){
+      if(!depthImageMM) depthImageMM = m_data->lastDepthImageMM;
+      if(!depthImageMM) throw ICLException("PointCloudCreator::mapImage: no depthImage given and not depth image "
+                                           "from preceding 'create' method call available");
+      ICLASSERT_THROW(src,ICLException("PointCloudCreator::mapImage: source image is null"));
+      ICLASSERT_THROW(dst,ICLException("PointCloudCreator::mapImage: destination image-ptr-ptr is null"));
+      ICLASSERT_THROW(hasColorCamera(),ICLException("PointCloudCreator::mapImage: no color camera parameters available"));
+
+      const Size s = getDepthCamera().getRenderParams().chipSize;
+      const int c = src->getChannels();
+
+      const icl32f *dv = depthImageMM->begin(0);
+      const Array2D<Data::Vec3> &dirs = m_data->viewRayDirections;
+      const Mat M = *m_data->rgbdMapping;
+      const Vec O = m_data->viewRayOffset;
+      const int COLOR_W = m_data->colorImageSize.width;
+      const int COLOR_H = m_data->colorImageSize.height;
+      const int DEPTH_DIM = m_data->depthImageSize.getDim();
+
+      ensureCompatible(dst,src->getDepth(), s, c); 
+
+      switch(src->getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D)                                                                                            \
+        case depth##D:                                                                                                      \
+        switch(c){                                                                                                          \
+          case 1: map_image<icl##D,1>(*src->as##D(), *(*dst)->as##D(), dv, M, O, COLOR_W, COLOR_H, DEPTH_DIM, dirs); break; \
+          case 2: map_image<icl##D,2>(*src->as##D(), *(*dst)->as##D(), dv, M, O, COLOR_W, COLOR_H, DEPTH_DIM, dirs); break; \
+          case 3: map_image<icl##D,3>(*src->as##D(), *(*dst)->as##D(), dv, M, O, COLOR_W, COLOR_H, DEPTH_DIM, dirs); break; \
+          case 4: map_image<icl##D,4>(*src->as##D(), *(*dst)->as##D(), dv, M, O, COLOR_W, COLOR_H, DEPTH_DIM, dirs); break; \
+          default: throw ICLException("PointCloudCreator::mapImage: only 1-,2-,3- and 4-channel images are supported");     \
+        }                                                                                                                   \
+        break;
+        ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
+        default:
+        ICL_INVALID_DEPTH;
+      }
+    }
+    
   } // namespace geom
 }
 
