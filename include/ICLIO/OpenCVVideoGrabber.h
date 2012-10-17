@@ -43,6 +43,7 @@
 
 #include <string>
 #include <ICLUtils/File.h>
+#include <ICLUtils/Mutex.h>
 namespace icl{
   namespace io{
   
@@ -50,6 +51,8 @@ namespace icl{
     class OpenCVVideoGrabber : public Grabber{
       struct Data; //!< pimpl type
       Data *data; //!< pimpl pointer
+      utils::Mutex mutex; //! locking
+      bool updating; //! used while updating configurable
       public:
       
       /// returns a list of properties, that can be set using setProperty
@@ -101,6 +104,9 @@ namespace icl{
           this function must not be adapted at all. "info"-typed Properties might be
           volatile as well */
       virtual int isVolatile(const std::string &propertyName);
+
+      /// callback for changed configurable properties
+      void processPropertyChange(const utils::Configurable::Property &prop);
       
       /// Constructor creates a new OpenCVVideoGrabber instance
       /** @param fileName name of file to use */

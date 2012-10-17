@@ -32,6 +32,7 @@
  **                                                                 **
  *********************************************************************/
 #include <ICLIO/OpenCVVideoGrabber.h>
+#include <ICLUtils/Time.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -54,6 +55,11 @@ namespace icl{
       Size size;
     };
   
+    std::string fourCCStringFromDouble(double value){
+      int fourInt = (int) value;
+      std::string ret((char*) (&fourInt), 4);
+      return ret;
+    }
   
     std::vector<std::string> OpenCVVideoGrabber::getPropertyListC(){
       static const std::string ps="pos_msec pos_frames pos_avi_ratio size format fourcc frame_count use_video_fps video_fps";
@@ -113,16 +119,22 @@ namespace icl{
     }
   
     const ImgBase *OpenCVVideoGrabber::acquireImage(){
+      utils::Mutex::Locker l(mutex);
       ICLASSERT_RETURN_VAL( !(data->cvc==0), 0);
       core::ipl_to_img(cvQueryFrame(data->cvc),&data->m_buffer);
       if(data->use_video_fps){
         data->fpslimiter->wait();
       }
+      updating = true;
+      //setPropertyValue("pos_msec", cvGetCaptureProperty(data->cvc,CV_CAP_PROP_POS_MSEC));
+      //setPropertyValue("pos_frames", cvGetCaptureProperty(data->cvc,CV_CAP_PROP_POS_FRAMES));
+      setPropertyValue("pos_avi_ratio", cvGetCaptureProperty(data->cvc,CV_CAP_PROP_POS_AVI_RATIO));
+      updating = false;
       return data->m_buffer;
     }
   
     OpenCVVideoGrabber::OpenCVVideoGrabber(const std::string &fileName)
-      throw (FileNotFoundException):data(new Data){
+      throw (FileNotFoundException) : data(new Data), mutex(Mutex::mutexTypeRecursive), updating(false){
       data->m_buffer = 0;
       data->use_video_fps = true;
       data->filename = fileName;
@@ -137,6 +149,19 @@ namespace icl{
   
       data->size.width = cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FRAME_WIDTH);
       data->size.height = cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FRAME_HEIGHT);
+
+      // Configurable
+      addProperty("pos_msec", "range", "[0," + str(1000*((cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FRAME_COUNT) / cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FPS))) ) + "]:1", cvGetCaptureProperty(data->cvc,CV_CAP_PROP_POS_MSEC), 0, "");
+      addProperty("pos_frames", "range", "[0,"+str(cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FRAME_COUNT))+"]:1", cvGetCaptureProperty(data->cvc,CV_CAP_PROP_POS_FRAMES), 0, "");
+      addProperty("pos_avi_ratio", "info", "[0,1]:"+str(cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FRAME_COUNT) / cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FPS)), cvGetCaptureProperty(data->cvc,CV_CAP_PROP_POS_AVI_RATIO), 0, "");
+      addProperty("size", "info", "", str(data->size), 0, "");
+      addProperty("format", "menu", "RGB", "RGB", 0, "");
+      addProperty("fourcc", "info", "", fourCCStringFromDouble(cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FOURCC)), 0, "");
+      addProperty("frame_count", "info", "", str(cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FRAME_COUNT)), 0, "");
+      addProperty("use_video_fps", "flag", "", data->use_video_fps, 0, "");
+      addProperty("video_fps", "info", "", str(cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FPS)), 0, "");
+
+      Configurable::registerCallback(utils::function(this,&OpenCVVideoGrabber::processPropertyChange));
     }
   
     OpenCVVideoGrabber::~OpenCVVideoGrabber(){
@@ -171,5 +196,23 @@ namespace icl{
       }
       (void)i;
     }
+
+    // callback for changed configurable properties
+    void OpenCVVideoGrabber::processPropertyChange(const utils::Configurable::Property &prop){
+      utils::Mutex::Locker l(mutex);
+      if(updating) return;
+      if(prop.name == "pos_msec"){
+        cvSetCaptureProperty(data->cvc,CV_CAP_PROP_POS_MSEC,parse<double>(prop.value));
+      }else if(prop.name == "pos_frames"){
+        cvSetCaptureProperty(data->cvc,CV_CAP_PROP_POS_FRAMES,parse<double>(prop.value));
+      }else if(prop.name == "pos_avi_ratio"){
+        cvSetCaptureProperty(data->cvc,CV_CAP_PROP_POS_AVI_RATIO,parse<double>(prop.value));
+      }else if(prop.name  == "use_video_fps"){
+        data->use_video_fps = parse<bool>(prop.value);
+      }
+    }
+
+    REGISTER_CONFIGURABLE(OpenCVVideoGrabber, return new OpenCVVideoGrabber(""));
+
   } // namespace io
 }
