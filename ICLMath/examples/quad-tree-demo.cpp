@@ -59,7 +59,7 @@ void init(){
   //GRandClip ry(240,3*24, Range64f(0,480));
   URand rx(0,639), ry(0,479);
   
-  typedef QuadTree<float,32,1024> QT;
+  typedef QuadTree<icl32s,32,1,1024> QT;
   typedef QT::Pt Pt;
   QT t(Size::VGA);
 
@@ -77,6 +77,7 @@ void init(){
   }
   ::toc();
 
+  //  t.printStructure();
   
   plot->sym('x');  
   plot->scatter(ps.data(),ps.size());
@@ -118,19 +119,22 @@ void init(){
     nn[i] = t.nn(ps[i]);
   }
 
+ /// for each seed point: find nn
+  ::tic("approx nearest neighbor search");
+  for(size_t i=0;i<ps.size();++i){
+    nn[i] = t.nn_approx(ps[i]);
+  }
+  ::toc();
+
+#if 1
   /// for each seed point: find nn
   ::tic("nearest neighbor search");
   for(size_t i=0;i<ps.size();++i){
     nn[i] = t.nn(ps[i]);
   }
   ::toc();
-
-  /// for each seed point: find nn
-  ::tic("approx nearest neighbor search");
-  for(size_t i=0;i<ps.size();++i){
-    nn[i] = t.nn_approx(ps[i]);
-  }
-  ::toc();
+#endif
+ 
 
 
   // visualize nn-search results
