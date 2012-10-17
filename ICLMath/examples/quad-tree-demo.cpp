@@ -59,13 +59,13 @@ void init(){
   //GRandClip ry(240,3*24, Range64f(0,480));
   URand rx(0,639), ry(0,479);
   
-  typedef QuadTree<float,1024,1024> QT;
+  typedef QuadTree<float,32,1024> QT;
   typedef QT::Pt Pt;
   QT t(Size::VGA);
 
   
   // create data
-  std::vector<Pt> ps(1000*1000);
+  std::vector<Pt> ps(100*1000);
   for(size_t i=0;i<ps.size();++i){
     ps[i] = Pt(rx,ry);
   }

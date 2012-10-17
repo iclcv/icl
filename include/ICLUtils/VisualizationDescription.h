@@ -98,7 +98,7 @@ namespace icl{
       struct Color{
         /// color union
         union{
-          icl8u r,g,b,a;
+          icl8u comp[4];
           icl32s rgba; /// rgba color value
         };
         /// Empty default constructor
@@ -106,11 +106,35 @@ namespace icl{
         
         /// Constructor with given color values
         Color(icl8u r, icl8u g, icl8u b, icl8u a=255){
-          this->r = r;
-          this->g = g;
-          this->b = b;
-          this->a = a;
+          this->r() = r;
+          this->g() = g;
+          this->b() = b;
+          this->a() = a;
         }
+        /// accesses red value
+        inline icl8u &r() { return comp[0]; }
+
+        /// accesses green value
+        inline icl8u &g() { return comp[1]; }
+
+        /// accesses blue value
+        inline icl8u &b() { return comp[2]; }
+
+        /// accesses alpha value
+        inline icl8u &a() { return comp[3]; }
+
+        /// accesses red value (const)
+        inline const icl8u &r() const { return comp[0]; }
+
+        /// accesses green value (const)
+        inline const icl8u &g() const { return comp[1]; }
+
+        /// accesses blue value (const)
+        inline const icl8u &b() const { return comp[2]; }
+
+        /// accesses alpha value (const)
+        inline const icl8u &a() const { return comp[3]; }
+
       };
       
       protected:
@@ -201,7 +225,7 @@ namespace icl{
 
       /// adds a line (intnerally represented by bounding rectangle)      
       inline void line(const Point32f &a, const Point32f &b){
-        addPart('l',Rect32f(a.x,a.y,b.x,b.y));
+        addPart('l',Rect32f(a.x,a.y,b.x-a.x,b.y-a.y));
       }
 
       /// adds a symbol (supported types are +*x and .)

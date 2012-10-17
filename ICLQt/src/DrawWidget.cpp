@@ -1093,12 +1093,12 @@ namespace icl{
         switch(parts[i].type){
           case 'c': {
             VisualizationDescription::Color c = parts[i].content;
-            this->color(c.r,c.g,c.b,c.a);
+            this->color(c.r(),c.g(),c.b(),c.a());
             break;
           }
           case 'f':{
             VisualizationDescription::Color c = parts[i].content;
-            this->fill(c.r,c.g,c.b,c.a);
+            this->fill(c.r(),c.g(),c.b(),c.a());
             break;
           }
           case 'r':

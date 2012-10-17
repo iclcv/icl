@@ -37,6 +37,7 @@
 #include <ICLMath/FixedVector.h>
 #include <ICLUtils/VisualizationDescription.h>
 #include <set>
+#include <ICLUtils/Rect32f.h>
 
 namespace icl{
 
@@ -54,6 +55,12 @@ namespace icl{
           that are stored in each node. Due to an internal optimization, best performace
           in terms insertion and nearest-neighbor search is given for CAPACITIES in the
           range of 32 to 128 entries.
+        * <b>SF</b> the internal data scale factor. This can be used to reach a higher
+          exact integer resolution when splitting regions. The scale factor should usually
+          be a power of two. In our benchmarks, it turned out, that using a non-1 scalefactor
+          does not affect the speed of the quadtree's methods. We recommend to use
+          a scalefactor of 32, which ensures at least 5 quad-tree levels can be split
+          perfectly, while still allowing a data range of [-67M,67M] (2^(31-5)). 
         * <b>ALLOC_CHUNK_SIZE</b> This parameters does actually not alter the performance
           very much. It defines the size of memory blocks allocated by the internal block
           allocator
@@ -68,7 +75,11 @@ namespace icl{
         
         Experiment base line:
 
-        QuadTree<float,32,1024> with VGA bounds, containing 100K points uniformly distributed.
+        QuadTree<float,32,1,1024> with VGA bounds, containing 100K points uniformly distributed.
+        for integers an upscaling factor of 32 is used:
+        QuadTree<int,32,32,1024> with VGA bounds, containing 100K points uniformly distributed.
+        Using no scale factor (SF = 1) does not lead to faster processing!
+        
         Tasks are:
 
         * insertion
@@ -77,11 +88,16 @@ namespace icl{
         * query a huge region: Rect(100,100,500,350), containing 57% of all points
         
         \subsection E1 Experiment 1 (Base line results)
+        
+        (numbers in round braces refer to the integer quadtree performance)
+        
+        In particular the nearest neighbour search, that is dominated by
+        comparing nodes and distances runs about 3 time faster for integers.
 
-        * insertion: 5.8ms
-        * nn-search: 3.6ms
-        * approx. nn: 0.19ms 
-        * query: 1.7ms
+        * insertion: 5.8ms (5.4ms)
+        * nn-search: 3.6ms (1.2ms)
+        * approx. nn: 0.19ms  (0.15ms)
+        * query: 1.7ms (1.7ms)
 
         \subsection E2 Experiment 2 (Using smaller Nodes of CAPACITY 4)
 
@@ -89,21 +105,23 @@ namespace icl{
         all parts significantly slower. In particular the nn-search is affecter. Here,
         the list of points in each node can be compared without using the square-root function,
         which is very time consuming.
+        
+        The nearest neighbor search performance for integer processing is still about two times faster
 
-        * insertion: 9.6ms
-        * nn-search: 16.7ms
-        * approx. nn: 0.16ms
-        * query: 2.3ms
+        * insertion: 9.6ms (9.6ms)
+        * nn-search: 1.7ms (0.9ms)
+        * approx. nn: 0.16ms (0.12ms)
+        * query: 2.3ms (2.3ms)
         
         \subsection E2b Experiment 2b (Using larger Nodes of CAPACITY 128)
 
         Here, again, we can see that larger nodes speed up the insertion part, while
         the nn-search optimization is already saturated here.
         
-        * insertion: 4.5ms
-        * nn-search: 6.5ms
-        * approx nn: 0.31ms
-        * query: 1.73ms
+        * insertion: 4.5ms (4.6ms)
+        * nn-search: 6.5ms (2.5ms)
+        * approx nn: 0.31ms (0.31ms)
+        * query: 1.73ms (1.72ms)
         
 
         \subsection E3 Experiment 3 (Using 10K Points only)
@@ -112,10 +130,10 @@ namespace icl{
         and query is more then 10-times as fast which can be explained by better caching properties.
         The nearest neighbour search has a logarithmic complexity and is sped up least.
 
-        * insertion: 0.4ms
-        * nn-search: 2.4ms
-        * approx. nn: 0.16ms
-        * query: 0.16ms
+        * insertion: 0.4ms (0.34ms)
+        * nn-search: 2.4ms (1.07ms)
+        * approx. nn: 0.16ms (0.287ms)
+        * query: 0.16ms (0.17ms)
 
         \subsection E4 Experiment 4 (Using 1000K Points)
         
@@ -125,20 +143,20 @@ namespace icl{
         this part not become that much slower. The approximate nn-search is not affected so strongly
         because it majorly depends on the node capacity.
 
-        * insertion: 130ms
-        * nn-search: 8ms
-        * approx. nn: 0.33ms
-        * query: 26ms
+        * insertion: 130ms (123ms)
+        * nn-search: 8ms (1.5ms)
+        * approx. nn: 0.33ms (0.18ms)
+        * query: 26ms (27ms)
 
         \subsection E5 Experiment 5 (Using 1000K Points, but with Node CAPACITY 128)
 
         Here, the insertion time gets smaller, because less nodes have to be created.
         On the other hand, the nn-search takes slightly longer
         
-        * insertion: 87ms
-        * nn-search: 9.8ms
-        * approx. nn: 0.3ms
-        * query: 23ms
+        * insertion: 87ms (85ms)
+        * nn-search: 9.8ms (3ms)
+        * approx. nn: 0.3ms (0.23ms)
+        * query: 23ms (24ms) 
 
         \subsection E6 Experiment 6 (Using 1000K Points, but with Node CAPACITY 1024)
 
@@ -146,12 +164,12 @@ namespace icl{
         alot slower, because all CAPACITY points in the best matching cell must be checked.
         However, the approximate results are usually more accurate here
         
-        * insertion: 55ms
-        * nn-search: 41ms
-        * approx. nn: 2.7ms
-        * query: 22.8ms
+        * insertion: 55ms (54ms)
+        * nn-search: 41ms (17ms)
+        * approx. nn: 2.7ms (2.7ms)
+        * query: 22.8ms (22.8ms)
     */
-    template<class Scalar, int CAPACITY=4, int ALLOC_CHUNK_SIZE=1024>
+    template<class Scalar, int CAPACITY=4, int SF=1, int ALLOC_CHUNK_SIZE=1024>
     class QuadTree{
       public:
       
@@ -189,9 +207,9 @@ namespace icl{
         }
 
         
-        Rect32f rect() const {
-          return Rect32f(center[0] - halfSize[0], center[1] - halfSize[1],
-                         halfSize[0]*2, halfSize[1]*2);
+        utils::Rect32f rect() const {
+          return Rect32f(double(center[0])/SF - double(halfSize[0])/SF, double(center[1])/SF - double(halfSize[1])/SF,
+                         double(halfSize[0])/SF*2, double(halfSize[1])/SF*2);
         }
       };
       
@@ -231,7 +249,7 @@ namespace icl{
           }
           for(const Pt *p=points; p<next ; ++p){
             if(boundary.contains(*p)){
-              found.push_back(*p);
+              found.push_back(Pt((*p)[0]/SF,(*p)[1]/SF));
             }
           }
           if(!children) return;
@@ -247,7 +265,8 @@ namespace icl{
             are created by the top-level QuadTree's allocator and passed
             to this function. 'split' initializes the four given children */
         void split(Node *children){
-          const Pt half = boundary.halfSize*0.5;
+          const Pt half = boundary.halfSize/2;//*0.5;
+
           const Pt &c = boundary.center;
           this->children = children;
           this->children[0].init(this,AABB(Pt(c[0]-half[0],c[1]-half[1]),half));
@@ -257,7 +276,7 @@ namespace icl{
         }
         
         /// recursively grabs visualizations commands
-        void vis(VisualizationDescription &d) const{
+        void vis(utils::VisualizationDescription &d) const{
           d.rect(boundary.rect());
           if(children){
             children[0].vis(d);
@@ -266,6 +285,30 @@ namespace icl{
             children[3].vis(d);
           }
         }
+
+        void printStructure(int indent){
+          for(int i=0;i<indent;++i) std::cout << "  ";
+          if(children){
+            std::cout << "Branch (";
+          }else{
+            std::cout << "Leaf (";
+          }
+          std::cout << "AABB=" << boundary.rect() << ", ";
+          std::cout << "Content=" <<(int)(next-points) << "/" << CAPACITY;
+          std::cout <<  ")";
+          if(children){
+            std::cout << " {" << std::endl;
+            children[0].printStructure(indent+1);
+            children[1].printStructure(indent+1);
+            children[2].printStructure(indent+1);
+            children[3].printStructure(indent+1);
+            for(int i=0;i<indent;++i) std::cout << "  ";
+            std::cout << "}" << std::endl;;
+          }
+          else std::cout << std::endl;
+
+        }
+
       };
       
       /// Inernally used block allocator
@@ -288,6 +331,15 @@ namespace icl{
           curr = 0;
         }
       
+        /// deletes all allocated data chunks (except for the first)
+        void clear(){
+          for(size_t i=1;i<allocated.size();++i){
+            delete [] allocated[i];
+          }
+          allocated.resize(1);
+          curr = 0;
+        }
+        
         /// returns the next four Node instances (allocates new data on demand)
         Node *next(){
           if(curr == ALLOC_CHUNK_SIZE) grow();
@@ -307,12 +359,12 @@ namespace icl{
           for(size_t i=0;i<allocated.size()-1;++i){
             const Node *ns = allocated[i];
             for(int j=0;j<allocated.size();++j){
-              std::copy(ns[j].points,ns[j].next,std::back_inserter(pts));
+              std::transform(ns[j].points,ns[j].next,std::back_inserter(pts),std::bind2nd(std::divides<Scalar>(),SF));
             }
           }
           const Node *ns = allocated.back();
           for(int i=0;i<curr*4;++i){
-            std::copy(ns[i].points,ns[i].next,std::back_inserter(pts));
+            std::transform(ns[i].points,ns[i].next,std::back_inserter(pts),std::bind2nd(std::divides<Scalar>(),SF));
           }
           return pts;
         }
@@ -328,38 +380,38 @@ namespace icl{
       public:
       /// creates a QuadTree for the given 2D rectangle
       QuadTree(const Scalar &minX, const Scalar &minY, const Scalar &width, const Scalar &height){
-        this->root = new Node(AABB(Pt(minX+width/2, minY+height/2),
-                                   Pt(width/2,height/2)));
+        this->root = new Node(AABB(Pt(SF*minX+SF*width/2, SF*minY+SF*height/2),
+                                   Pt(SF*width/2,SF*height/2)));
       }
 
       /// convenience constructor wrapper for given Rect32f bounds
-      QuadTree(const Rect32f &bounds){
-        this->root = new Node(AABB(Pt(bounds.x+bounds.width/2, bounds.y+bounds.height/2),
-                                   Pt(bounds.width/2,bounds.height/2)));
+      QuadTree(const utils::Rect32f &bounds){
+        this->root = new Node(AABB(Pt(SF*bounds.x+SF*bounds.width/2, SF*bounds.y+SF*bounds.height/2),
+                                   Pt(SF*bounds.width/2,SF*bounds.height/2)));
       }
 
       /// convenience constructor wrapper for given Rect32f bounds
-      QuadTree(const Rect &bounds){
-        this->root = new Node(AABB(Pt(bounds.x+bounds.width/2, bounds.y+bounds.height/2),
-                                   Pt(bounds.width/2,bounds.height/2)));
+      QuadTree(const utils::Rect &bounds){
+        this->root = new Node(AABB(Pt(SF*bounds.x+SF*bounds.width/2, SF*bounds.y+SF*bounds.height/2),
+                                   Pt(SF*bounds.width/2,SF*bounds.height/2)));
       }
 
       /// creates a QuadTree for the given 2D Size (minX and minY are set to 0 here)
       QuadTree(const Scalar &width, const Scalar &height){
-        this->root = new Node(AABB(Pt(width/2,height/2), 
-                                   Pt(width/2,height/2)));
+        this->root = new Node(AABB(Pt(SF*width/2,SF*height/2), 
+                                   Pt(SF*width/2,SF*height/2)));
       }
 
       /// convenience wrapper for given Size32f bounds
-      QuadTree(const Size32f &size){
-        this->root = new Node(AABB(Pt(size.width/2,size.height/2), 
-                                   Pt(size.width/2,size.height/2)));
+      QuadTree(const utils::Size32f &size){
+        this->root = new Node(AABB(Pt(SF*size.width/2,SF*size.height/2), 
+                                   Pt(SF*size.width/2,SF*size.height/2)));
       }
  
       /// convenience wrapper for given Size bounds
-      QuadTree(const Size &size){
-        this->root = new Node(AABB(Pt(size.width/2,size.height/2), 
-                                   Pt(size.width/2,size.height/2)));
+      QuadTree(const utils::Size &size){
+        this->root = new Node(AABB(Pt(SF*size.width/2,SF*size.height/2), 
+                                   Pt(SF*size.width/2,SF*size.height/2)));
       }
 
       /// destructor
@@ -372,7 +424,7 @@ namespace icl{
       protected:
       
       /// internal utility method that is used to find an approximated nearest neighbour
-      const Pt &nn_approx_internal(const Pt &p, double &currMinDist, const Pt *&currNN) const throw (ICLException){
+      const Pt &nn_approx_internal(const Pt &p, double &currMinDist, const Pt *&currNN) const throw (utils::ICLException){
         // 1st find cell, that continas p
         const Node *n = root;
         while(n->children){
@@ -399,6 +451,7 @@ namespace icl{
         if(!currNN){
           throw ICLException("no nn found for given point " + str(p));
         }
+        return *currNN;
       }
       public:
       
@@ -413,11 +466,11 @@ namespace icl{
           can easily be 5 times as fast as the real nearest neighbor search.
           The result quality depends on the number of contained points, and
           on the QuadTree's template parameters */
-      const Pt &nn_approx(const Pt &p) const throw (ICLException){
+      Pt nn_approx(const Pt &p) const throw (utils::ICLException){
         double currMinDist = sqrt(Range<Scalar>::limits().maxVal-1);
         const Pt *currNN  = 0;
-        nn_approx_internal(p,currMinDist,currNN);
-        return *currNN;
+        nn_approx_internal(Pt(SF*p[0],SF*p[1]),currMinDist,currNN);
+        return Pt((*currNN)[0]/SF,(*currNN)[1]/SF) ;
       }
 
       /// finds the nearest neighbor to the given node
@@ -439,14 +492,15 @@ namespace icl{
           If no neighbour could be found, an exception is thown. This should
           actually only happen when nn is called on an empty QuadTree
       */
-      const Pt &nn(const Pt &p) const throw (ICLException){
+      Pt nn(const Pt &pIn) const throw (utils::ICLException){
+        const Pt p(SF*pIn[0],SF*pIn[1]);
         std::vector<const Node*> stack;
         stack.reserve(128);
         stack.push_back(root);
         double currMinDist = sqrt(Range<Scalar>::limits().maxVal-1);
         const Pt *currNN  = 0;
         
-        // nn_approx_internal(p,currMinDist,currNN);
+        nn_approx_internal(p,currMinDist,currNN);
         
         while(stack.size()){
           const Node *n = stack.back();
@@ -469,17 +523,17 @@ namespace icl{
           }
           currMinDist = sqrt(sqrMinDist);
         }
-        return *currNN;
+        return Pt((*currNN)[0]/SF, (*currNN)[1]/SF);
       }
 
       /// convenience wrapper for the Point32f type
-      const Point32f nn(const Point32f &p) const throw (ICLException){
+      const utils::Point32f nn(const utils::Point32f &p) const throw (utils::ICLException){
         Pt n = nn(Pt(p.x,p.y));
         return Point32f(n[0],n[1]);
       }
 
       /// convenience wrapper for the Point32f type
-      const Point nn(const Point &p) const throw (ICLException){
+      const utils::Point nn(const utils::Point &p) const throw (utils::ICLException){
         Pt n = nn(Pt(p.x,p.y));
         return Point(n[0],n[1]);
       }
@@ -489,7 +543,8 @@ namespace icl{
       /** This method is also implemented in an iterative fashion for 
           performance issues. 'insert' automatically uses the internal allocator
           if new nodes are needed. */ 
-      void insert(const Pt &p){
+      void insert(const Pt &pIn){
+        const Pt p(SF*pIn[0],SF*pIn[1]);
         Node *n = root;
         while(true){
           if(n->next != n->points+CAPACITY){
@@ -502,30 +557,30 @@ namespace icl{
       }
       
       /// convenience wrapper for the Point32f instances
-      void insert(const Point32f &p){
+      void insert(const utils::Point32f &p){
         insert(Pt(p.x,p.y));
       }
 
       /// convenience wrapper for the Point instances
-      void insert(const Point &p){
+      void insert(const utils::Point &p){
         insert(Pt(p.x,p.y));
       }
 
       /// returns all contained points within the given rectangle
       std::vector<Pt> query(const Scalar &minX, const Scalar &minY, 
                             const Scalar &width, const Scalar &height) const{
-        AABB range(Pt(minX+width/2, minY+height/2),
-                   Pt(width/2,height/2));
+        AABB range(Pt(SF*minX+SF*width/2, SF*minY+SF*height/2),
+                   Pt(SF*width/2,SF*height/2));
         std::vector<Pt> found;
         root->query(range,found);
         return found;
       }
 
       /// convenience wrapper for Rect class
-      std::vector<Pt> query(const Rect &r) const {  return query(r.x,r.y,r.width,r.height);  }
+      std::vector<Pt> query(const utils::Rect &r) const {  return query(r.x,r.y,r.width,r.height);  }
 
       /// convenience wrapper for Rect32f class
-      std::vector<Pt> query(const Rect32f &r) const {  return query(r.x,r.y,r.width,r.height);  }
+      std::vector<Pt> query(const utils::Rect32f &r) const {  return query(r.x,r.y,r.width,r.height);  }
       
       /// returns all contained points
       std::vector<Pt> queryAll() const {
@@ -533,13 +588,25 @@ namespace icl{
       }
 
       /// returns a visualization description for QuadTree structure (not for the contained points)
-      VisualizationDescription vis() const{
-        VisualizationDescription d;
+      utils::VisualizationDescription vis() const{
+        utils::VisualizationDescription d;
         root->vis(d);
         return d;
       }
       
+      /// removes all contained points and nodes
+      /** The allocator will free all memory except for the first CHUNK */
+      void clear(){
+        root->next = root->points;
+        root->children = 0;
+        alloc.clear();
+      }
       
+      void printStructure(){
+        std::cout << "QuadTree{" << std::endl;
+        root->printStructure(1);
+        std::cout << "}" << std::endl;
+      }
     };
 
   } // namespace math
