@@ -42,6 +42,7 @@
 #include <ICLUtils/Thread.h>
 #include <ICLFilter/TranslateOp.h>
 #include <ICLFilter/MedianOp.h>
+#include <ICLUtils/Time.h>
 
 #include <libfreenect.h>
 #include <map>
@@ -439,8 +440,11 @@ namespace icl{
       float desiredTiltDegrees;
       bool avoidDoubleFrames;
       Mutex mutex;
+      Time lastupdate;
       
-      Impl(KinectGrabber::Mode mode, int index, const Size &size){
+      Impl(KinectGrabber::Mode mode, int index, const Size &size)
+        : mutex(Mutex::mutexTypeRecursive), lastupdate(Time::now())
+      {
         Mutex::Locker lock(mutex);
   
         bool createdContextHere = false;
@@ -477,10 +481,49 @@ namespace icl{
     SmartPtr<FreenectContext> KinectGrabber::Impl::context;
   
     KinectGrabber::KinectGrabber(KinectGrabber::Mode mode, int deviceID, const Size &size) throw (ICLException):
-      m_impl(new Impl(mode,deviceID,size)){
+      m_impl(new Impl(mode,deviceID,size))
+
+    {
       m_impl->ledColor = 0;
       m_impl->desiredTiltDegrees = 0;
       m_impl->avoidDoubleFrames  = true;
+
+      // Configurable
+      static const std::string formats[] = {
+        "Color Image {24Bit RGB}",
+        "Bayer Image {8Bit}",
+        "Depth Image {float}",
+        "IR Image {8Bit}",
+        "IR Image {10Bit}"
+      };
+
+      static const std::string values[] = {
+        "off",
+        "fast",
+        "accurate"
+      };
+
+      try{m_impl->device->used->updateState();}catch(...){}
+      double degs = m_impl->device->used->getState().getTiltDegs();
+      std::string angleval = (degs == -64) ? "moving" : str(degs);
+      double a[3]={0,0,0};
+      m_impl->device->used->getState().getAccelerometers(a,a+1,a+2);
+      std::string accelval = str(a[0]) + "-" + str(a[1]) + "-" + str(a[2]);
+      std::string diunit = (m_impl->device->used->depthImageUnitMM) ? "mm" : "raw";
+      const int r  = m_impl->device->used->depthImagePostProcessingMedianRadius;
+      std::string ppvalue = (r == 3) ? "median 3x3" : ((r == 5) ? "median 5x4" : "off");
+
+      addProperty("format", "menu", "Color Image {24Bit RGB},Depth Image {float},IR Image {8Bit},IR Image {10Bit}", formats[m_impl->device->mode], 0, "");
+      addProperty("size", "menu", "VGA {640x480}", "VGA {640x480}", 0, "");
+      addProperty("LED", "menu", "off,green,red,yellow,blink yellow,blink green,blink red/yellow", m_impl->ledColor, 0, "");
+      addProperty("Desired-Tilt-Angle", "range", "[-35,25]", m_impl->desiredTiltDegrees, 0, "");
+      addProperty("Current-Tilt-Angle", "info", "", angleval, 200, "");
+      addProperty("Accelerometers", "info", "", accelval, 200, "");
+      addProperty("shift-IR-image", "menu", "off,fast,accurate", values[(int)(m_impl->device->used->irShift)], 0, "");
+      addProperty("depth-image-unit", "menu", "raw,mm", diunit, 0, "");
+      addProperty("depth-image-post-processing", "menu", "off,median 3x3,median 5x5", ppvalue, 0, "");
+
+      Configurable::registerCallback(utils::function(this,&KinectGrabber::processPropertyChange));
     }
     
     KinectGrabber::~KinectGrabber(){
@@ -489,12 +532,102 @@ namespace icl{
     
     const ImgBase* KinectGrabber::acquireImage(){
       Mutex::Locker lock(m_impl->mutex);
+      // update current angle and accelometers every 200ms
+      if(m_impl -> lastupdate.age() > 200000){
+        Time t = Time::now();
+        try{m_impl->device->used->updateState();}catch(...){DEBUG_LOG("could not update")}
+        double degs = m_impl->device->used->getState().getTiltDegs();
+        std::string angleval = (degs == -64) ? "moving" : str(degs);
+        double a[3]={0,0,0};
+        m_impl->device->used->getState().getAccelerometers(a,a+1,a+2);
+        std::string accelval = str(a[0]) + "-" + str(a[1]) + "-" + str(a[2]);
+        setPropertyValue("Current-Tilt-Angle", angleval);
+        setPropertyValue("Accelerometers", accelval);
+        m_impl -> lastupdate = Time::now();
+      }
+
       if(m_impl->device->mode != GRAB_DEPTH_IMAGE){
         return &m_impl->getLastColorImage();
       }else{
         return &m_impl->getLastDepthImage();
       }
     }
+
+    /// callback for changed configurable properties
+    void KinectGrabber::processPropertyChange(const utils::Configurable::Property &prop){
+      Mutex::Locker lock(m_impl->mutex);
+
+      if(prop.name == "format"){
+        static const std::string formats[] = {
+          "Color Image {24Bit RGB}",
+          "Bayer Image {8Bit}",
+          "Depth Image {float}",
+          "IR Image {8Bit}",
+          "IR Image {10Bit}"
+        };
+        int idx = (int)(std::find(formats, formats+5, prop.value) - formats);
+        if(idx == 5){
+          ERROR_LOG("invalid property value for property 'format'");
+          return;
+        }
+        m_impl->switchMode((Mode)idx, m_impl->device->used->size);
+
+      } else if(prop.name == "size"){
+        /*
+            if(value != "VGA {640x480}" && value != "QVGA {320x240}"){
+              ERROR_LOG("invalid property value for property 'size'");
+            }else{
+             m_impl->switchMode(m_impl->device->mode,value == "VGA {640x480}" ?
+             Size::VGA : Size::QVGA);
+            }
+        */
+      }else if(prop.name == "LED"){
+        if(prop.value == "off"){
+          m_impl->device->used->setLed((freenect_led_options)0);
+        }else if(prop.value == "green"){
+          m_impl->device->used->setLed((freenect_led_options)1);
+        }else if(prop.value == "red"){
+          m_impl->device->used->setLed((freenect_led_options)2);
+        }else if(prop.value == "yellow"){
+          m_impl->device->used->setLed((freenect_led_options)3);
+        }else if(prop.value == "blink yellow"){
+          m_impl->device->used->setLed((freenect_led_options)4);
+        }else if(prop.value == "blink green"){
+          m_impl->device->used->setLed((freenect_led_options)5);
+        }else if(prop.value == "blink red/yellow"){
+          m_impl->device->used->setLed((freenect_led_options)6);
+        }else{
+          ERROR_LOG("invalid property value for property 'LED'" << prop.value);
+        }
+      }else if(prop.name == "Desired-Tilt-Angle"){
+        m_impl->device->used->setTiltDegrees(parse<double>(prop.value));
+      }else if(prop.name == "shift-IR-image"){
+        if(prop.value == "off"){
+          m_impl->device->used->irShift = FreenectDevice::Used::Off;
+        }else if(prop.value == "fast"){
+          m_impl->device->used->irShift = FreenectDevice::Used::Fast;
+        }else if(prop.value == "accurate"){
+          m_impl->device->used->irShift = FreenectDevice::Used::Accurate;
+        }else{
+          ERROR_LOG("invalid property value for property 'shift-IR-image':" << prop.value);
+        }
+      }else if(prop.name == "depth-image-unit"){
+        if(prop.value == "mm") m_impl->device->used->depthImageUnitMM = true;
+        else if(prop.value == "raw") m_impl->device->used->depthImageUnitMM = false;
+        else{
+          ERROR_LOG("invalid property value for property 'depth-image-unit':" << prop.value);
+        }
+      }else if(prop.name == "depth-image-post-processing"){
+        if(prop.value == "off") m_impl->device->used->depthImagePostProcessingMedianRadius = 0;
+        else if(prop.value == "median 3x3") m_impl->device->used->depthImagePostProcessingMedianRadius = 3;
+        else if(prop.value == "median 5x5") m_impl->device->used->depthImagePostProcessingMedianRadius = 5;
+        else{
+          ERROR_LOG("invalid property value for property 'depth-image-post-processing':" << prop.value);
+        }
+      }
+    }
+
+    REGISTER_CONFIGURABLE(KinectGrabber, return new KinectGrabber(KinectGrabber::GRAB_DEPTH_IMAGE, 0, utils::Size::VGA));
     
     /// get type of property 
     std::string KinectGrabber::getType(const std::string &name){
@@ -942,8 +1075,7 @@ namespace icl{
         colorImage.deepCopy(&colorImageOut);
         return colorImageOut;
       }
-    };
-  
+    };  
   } // anonymos namespace
 #endif
  

@@ -79,6 +79,9 @@ namespace icl{
       
       /// returns a list of properties, that can be set using setProperty
       virtual std::vector<std::string> getPropertyListC();
+
+      /// callback for changed configurable properties
+      void processPropertyChange(const utils::Configurable::Property &prop);
   
       protected:
       struct Impl; //!< internal hidden implementation class
