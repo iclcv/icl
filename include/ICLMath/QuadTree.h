@@ -37,6 +37,7 @@
 #include <ICLMath/FixedVector.h>
 #include <ICLUtils/VisualizationDescription.h>
 #include <set>
+#include <algorithm>
 #include <ICLUtils/Rect32f.h>
 
 namespace icl{
@@ -358,13 +359,17 @@ namespace icl{
           std::vector<Pt> pts;
           for(size_t i=0;i<allocated.size()-1;++i){
             const Node *ns = allocated[i];
-            for(int j=0;j<allocated.size();++j){
-              std::transform(ns[j].points,ns[j].next,std::back_inserter(pts),std::bind2nd(std::divides<Scalar>(),SF));
+            for(size_t j=0;j<allocated.size();++j){
+              for(const Pt* p = ns[j].points; p != ns[j].next;++p){
+                pts.push_back(Pt((*p)[0]/SF,(*p)[1]/SF));
+              }
             }
           }
           const Node *ns = allocated.back();
           for(int i=0;i<curr*4;++i){
-            std::transform(ns[i].points,ns[i].next,std::back_inserter(pts),std::bind2nd(std::divides<Scalar>(),SF));
+            for(const Pt* p = ns[i].points; p != ns[i].next;++p){
+              pts.push_back(Pt((*p)[0]/SF,(*p)[1]/SF));
+            }
           }
           return pts;
         }
@@ -375,41 +380,43 @@ namespace icl{
       
       /// memory allocator for all children except for the root node
       Allocator alloc;
-  
+
+      /// internal counter for the number of contained points
+      int num;
 
       public:
       /// creates a QuadTree for the given 2D rectangle
-      QuadTree(const Scalar &minX, const Scalar &minY, const Scalar &width, const Scalar &height){
+      QuadTree(const Scalar &minX, const Scalar &minY, const Scalar &width, const Scalar &height):num(0){
         this->root = new Node(AABB(Pt(SF*minX+SF*width/2, SF*minY+SF*height/2),
                                    Pt(SF*width/2,SF*height/2)));
       }
 
       /// convenience constructor wrapper for given Rect32f bounds
-      QuadTree(const utils::Rect32f &bounds){
+      QuadTree(const utils::Rect32f &bounds):num(0){
         this->root = new Node(AABB(Pt(SF*bounds.x+SF*bounds.width/2, SF*bounds.y+SF*bounds.height/2),
                                    Pt(SF*bounds.width/2,SF*bounds.height/2)));
       }
 
       /// convenience constructor wrapper for given Rect32f bounds
-      QuadTree(const utils::Rect &bounds){
+      QuadTree(const utils::Rect &bounds):num(0){
         this->root = new Node(AABB(Pt(SF*bounds.x+SF*bounds.width/2, SF*bounds.y+SF*bounds.height/2),
                                    Pt(SF*bounds.width/2,SF*bounds.height/2)));
       }
 
       /// creates a QuadTree for the given 2D Size (minX and minY are set to 0 here)
-      QuadTree(const Scalar &width, const Scalar &height){
+      QuadTree(const Scalar &width, const Scalar &height):num(0){
         this->root = new Node(AABB(Pt(SF*width/2,SF*height/2), 
                                    Pt(SF*width/2,SF*height/2)));
       }
 
       /// convenience wrapper for given Size32f bounds
-      QuadTree(const utils::Size32f &size){
+      QuadTree(const utils::Size32f &size):num(0){
         this->root = new Node(AABB(Pt(SF*size.width/2,SF*size.height/2), 
                                    Pt(SF*size.width/2,SF*size.height/2)));
       }
  
       /// convenience wrapper for given Size bounds
-      QuadTree(const utils::Size &size){
+      QuadTree(const utils::Size &size):num(0){
         this->root = new Node(AABB(Pt(SF*size.width/2,SF*size.height/2), 
                                    Pt(SF*size.width/2,SF*size.height/2)));
       }
@@ -544,6 +551,7 @@ namespace icl{
           performance issues. 'insert' automatically uses the internal allocator
           if new nodes are needed. */ 
       void insert(const Pt &pIn){
+        ++num;
         const Pt p(SF*pIn[0],SF*pIn[1]);
         Node *n = root;
         while(true){
@@ -590,6 +598,8 @@ namespace icl{
       /// returns a visualization description for QuadTree structure (not for the contained points)
       utils::VisualizationDescription vis() const{
         utils::VisualizationDescription d;
+        d.color(0,100,255,255);
+        d.fill(0,0,0,0);
         root->vis(d);
         return d;
       }
@@ -600,8 +610,15 @@ namespace icl{
         root->next = root->points;
         root->children = 0;
         alloc.clear();
+        num = 0;
       }
-      
+
+      /// number of elments inserted
+      int size() const {
+        return num;
+      }
+
+      /// prints the quad-tree structure hierachically (for debug purpose)
       void printStructure(){
         std::cout << "QuadTree{" << std::endl;
         root->printStructure(1);
