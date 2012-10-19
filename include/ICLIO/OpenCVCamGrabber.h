@@ -94,6 +94,9 @@ namespace icl{
           @param value new property value
           */
       virtual void setProperty(const std::string &property, const std::string &value);
+
+      /// callback for changed configurable properties
+      void processPropertyChange(const utils::Configurable::Property &prop);
       
       /// Constructor creates a new OpenCVCamGrabber instance from a given device
       /** @param dev device to use
