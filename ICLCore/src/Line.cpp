@@ -35,6 +35,7 @@
 #include <ICLCore/Line.h>
 #include <math.h>
 #include <algorithm>
+#include <ICLUtils/Point32f.h>
 
 using namespace icl::utils;
 
@@ -195,6 +196,17 @@ namespace icl{
     std::istream &operator>>(std::istream &s, Line &l){
       return s >> l.start >> l.end;
     }
-  
+
+    Point Line::findClosestPoint(const utils::Point &p) const{
+      if(start == end) return start;
+      Point x = p - start;
+      Point32f v = Point32f(end) - Point32f(start);
+      float l = v.norm();
+      v *= 1./l;
+      float a = (v[0]*x[0]+v[1]*x[1]);
+      if(a > l) return end;
+      else if(a < 0) return start;
+      else return Point(Point32f(start) + v*a);
+    }
   } // namespace core
 }

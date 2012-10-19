@@ -1117,6 +1117,27 @@ namespace icl{
             this->text(t.text,t.pos);
             break;
           }
+          case 'L':
+            this->linewidth(parts[i].content.as<float>());
+            break;
+          case 'P':
+            this->pointsize(parts[i].content.as<float>());
+            break;
+          case 'p':{
+            std::vector<float> v = parts[i].content;
+            Point32f *p = (Point32f*)v.data();
+            this->points(std::vector<Point32f>(p,p+v.size()/2));
+            break;
+          }
+          case 'y':{
+            std::vector<float> v = parts[i].content;
+            Point32f *p = (Point32f*)v.data();
+            this->polygon(std::vector<Point32f>(p,p+v.size()/2));
+            break;
+          }
+          case '.':
+            this->point(parts[i].content.as<Point32f>());
+            break;
           case '+':
           case 'x':
           case 'o':{

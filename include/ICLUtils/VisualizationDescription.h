@@ -60,10 +60,16 @@ namespace icl{
         - e ellipse (serialized as Rect32f, cicles are also ellipses)
         - l line (serialized as Rect32f)#
         - t text (serialized as VisualizationDescription::Text)
-        - +xo for symbols (serialized as Point32f)
+        - y polygon (serialized as binary float vector)
+        - p points (serialized as binary float vector)
+        - P point size (serialized as float)
+        - L line width (serialized as float)
+        
+        - +xo. for symbols (serialized as Point32f)
           - +: plus symbols
           - x: x-symbols
           - o: little circles
+          - .: point
     */
     class VisualizationDescription{
       public:
@@ -244,6 +250,54 @@ namespace icl{
       /// adds text
       /** note that the text must be single lined */
       void text(const Point32f &pos, const std::string &text);
+      
+      /// adds a point (internally handles as a sym of type '.')
+      void point(const Point32f &p){
+        sym('.',p);
+      }
+      
+      /// adds points (data is in order [x1,y1,x2,y2]
+      template<class Iterator>
+      void points(Iterator begin, Iterator end){
+        addPart('p',std::vector<float>(begin,end));
+      }
+      
+      /// adds points from given float vector
+      void points(const std::vector<Point32f> &ps){
+        points(&ps[0].x,&ps[0].x + ps.size() * 2);
+      }
+
+      /// adds points from given vector of Points
+      void points(const std::vector<Point> &ps){
+        points(&ps[0].x,&ps[0].x + ps.size() * 2);
+      }
+
+      /// template based creation of a polygon 
+      template<class Iterator>
+      void polygon(Iterator begin, Iterator end){
+        addPart('y',std::vector<float>(begin,end));
+      }
+      
+      /// adds polygon from given float vector
+      void polygon(const std::vector<Point32f> &ps){
+        polygon(&ps[0].x,&ps[0].x + ps.size() * 2);
+      }
+
+      /// adds polygon from given vector of Points
+      void polygon(const std::vector<Point> &ps){
+        polygon(&ps[0].x,&ps[0].x + ps.size() * 2);
+      }
+      
+      /// defines the linewidth
+      void linewidth(float w){
+        addPart('L',w);
+      }
+      
+      /// defines the point size
+      void pointsize(float s){
+        addPart('P',s);
+      }
+
     };
     
     /// overloaded ostream operator for VisualizationDescription::Text
