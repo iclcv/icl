@@ -34,17 +34,18 @@
 
 #pragma once
 
-#include <pylon/PylonIncludes.h>
+#include <ICLIO/PylonIncludes.h>
 
 #include <ICLUtils/Macros.h>
 #include <ICLIO/PylonUtils.h>
+#include <ICLUtils/Configurable.h>
 
 namespace icl {
   namespace io{
     namespace pylon {
   
       /// This is a helper class for Pylon camera settings \ingroup GIGE_G
-      class PylonCameraOptions {
+      class PylonCameraOptions : public utils::Configurable{
         public:
           /// Constructor
           /**
@@ -60,7 +61,7 @@ namespace icl {
           /// interface for the setter function for video device properties.
           virtual void setProperty(const std::string &property, const std::string &value);
           /// returns a list of properties, that can be set using setProperty.
-          virtual std::vector<std::string> getPropertyList();
+          virtual std::vector<std::string> getPropertyListC();
           /// checks if property is returned, implemented, available and of processable GenApi::EInterfaceType
           virtual bool supportsProperty(const std::string &property);
           /// get type of property.
@@ -71,6 +72,8 @@ namespace icl {
           virtual std::string getValue(const std::string &name);
           /// Returns whether this property may be changed internally.
           virtual int isVolatile(const std::string &propertyName);
+          /// callback for changed configurable properties
+          void processPropertyChange(const utils::Configurable::Property &prop);
   
           /// convenience function to get the cameras PixelType
           Pylon::PixelType getCameraPixelType();
@@ -105,22 +108,7 @@ namespace icl {
           void addToPropertyList(std::vector<std::string> &ps, const GenApi::CNodePtr& node);
           /// setter function options of PylonGrabber (device-independent)
           void setPropertyExtra(const std::string &property, const std::string &value);
-          /// adds PylonGrabber properties to property list
-          void addPropertiesExtra(std::vector<std::string> &ps);
-          /// checks whether property is from PylonGrabber (always supported)
-          bool supportsPropertyExtra(const std::string &property);
-          /// get type of PylonGrabber property
-          /** @return null when not PylonGrabber property **/
-          std::string getTypeExtra(const std::string &name);
-          /// get information of a PylonGrabber properties valid values.
-          /** @return null when not PylonGrabber property **/
-          std::string getInfoExtra(const std::string &name);
-          /// returns the current value of a property or a parameter.
-          /** @return null when not PylonGrabber property **/
-          std::string getValueExtra(const std::string &name);
-          /// Returns whether a PylonGrabber-property may be changed internally.
-          int isVolatileExtra(const std::string &propertyName);
-  
+
           /// gets the corresponding CValuePtr to the passed name.
           GenApi::INode *getNode(std::string name);
       };

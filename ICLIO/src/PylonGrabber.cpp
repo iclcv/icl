@@ -67,6 +67,7 @@ PylonGrabberImpl::PylonGrabberImpl(
   m_Grabber -> Open();
 
   m_CameraOptions = new PylonCameraOptions(m_Camera, this);
+  Configurable::addChildConfigurable(m_CameraOptions);
   m_ColorConverter = new PylonColorConverter();
   m_GrabberThread = new PylonGrabberThread(
                             m_Grabber, m_ColorConverter, m_CameraOptions);

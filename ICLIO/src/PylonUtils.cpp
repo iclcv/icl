@@ -35,8 +35,6 @@
 #include <ICLIO/PylonUtils.h>
 #include <ICLUtils/StringUtils.h>
 
-#include <pylon/gige/BaslerGigEDeviceInfo.h>
-
 using namespace icl;
 using namespace icl::utils;
 using namespace icl::core;
