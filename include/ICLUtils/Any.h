@@ -199,7 +199,7 @@ namespace icl{
     }
 
     template<>
-    inline Any::Any<std::vector<float> >(const std::vector<float> &v){
+    inline Any::Any(const std::vector<float> &v){
       std::string::resize(sizeof(int) + v.size() * sizeof(float));
       icl8u *p = (icl8u*)&std::string::operator[](0);
       *((int*)p) = v.size();
@@ -220,7 +220,7 @@ namespace icl{
     }
 
     template<>
-    inline Any::Any<std::vector<int> >(const std::vector<int> &v){
+    inline Any::Any(const std::vector<int> &v){
       std::string::resize(sizeof(int) + v.size() * sizeof(int));
       icl8u *p = (icl8u*)&std::string::operator[](0);
       *((int*)p) = v.size();
