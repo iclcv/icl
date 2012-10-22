@@ -366,7 +366,7 @@ namespace icl{
     INST(2);
     INST(3); 
     INST(4);
-    //INST(5); 
+    INST(5); 
     INST(6);
     //INST(7); 
     //INST(8);
