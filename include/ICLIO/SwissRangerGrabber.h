@@ -74,7 +74,7 @@ namespace icl{
        
       /// returns a list of properties, that can be set using setProperty
       /** @return list of supported property names **/
-      virtual std::vector<std::string> getPropertyList();
+      virtual std::vector<std::string> getPropertyListC();
   
       /** returs the type of a property */
       virtual std::string getType(const std::string &name);
@@ -87,6 +87,12 @@ namespace icl{
       
       /// Internally used utility function, that might be interesting elsewhere
       static float getMaxRangeMM(const std::string &modulationFreq) throw (utils::ICLException);
+
+      /// adds properties to Configurable
+      void addProperties();
+
+      /// callback for changed configurable properties
+      void processPropertyChange(const utils::Configurable::Property &prop);
   
   
       private:

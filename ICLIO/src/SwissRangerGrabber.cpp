@@ -187,7 +187,7 @@ namespace icl{
       }
     } g_props_initializer_instance;
     
-    static int prop(const std::string &x){
+    static int propNr(const std::string &x){
       std::map<std::string,int>::iterator it = g_props.find(x);
       if(it != g_props.end()){
         return it->second;
@@ -195,7 +195,7 @@ namespace icl{
       return -1;
     }
     
-    /*static std::string prop(int v){
+    /*static std::string propNr(int v){
       for(std::map<std::string,int>::iterator it = g_props.begin();it!=g_props.end();++it){
         if(it->second == v){
           return it->first;
@@ -340,6 +340,7 @@ namespace icl{
       m_sr->createXYZ = true;
       
       SR_SetMode(m_sr->cam,AM_COR_FIX_PTRN|AM_CONV_GRAY|AM_DENOISE_ANF|AM_CONF_MAP);
+      addProperties();
     }
     
   
@@ -355,6 +356,75 @@ namespace icl{
       }
     }
   
+    // adds properties to Configurable
+    void SwissRangerGrabberImpl::addProperties(){
+      Mutex::Locker l(m_mutex);
+      std::string imgmode;
+      if(m_sr->iim == iimUnknownPixelsMinusOne){
+        imgmode = "minus one";
+      } else if (m_sr->iim == iimUnknownPixelsZero){
+        imgmode = "zero";
+      } else {
+        imgmode = "unchanged";
+      }
+      ModulationFrq m =  SR_GetModulationFrequency(m_sr->cam);
+      std::string modfreq = translate_modulation_freq(m);
+      std::string currentrange = str(get_max_range_mm(m)) +"mm";
+      int id,curMode;
+      std::string props[8] = {"AM_COR_FIX_PTRN", "AM_MEDIAN", "AM_CONV_GRAY",
+                              "AM_SHORT_RANGE", "AM_CONF_MAP", "AM_HW_TRIGGER",
+                              "AM_SW_TRIGGER", "AM_DENOISE_ANF"};
+      for (int i = 0; i < 8; ++i){
+        id = propNr(props[i]);
+        curMode = SR_GetMode(m_sr->cam);
+        addProperty(props[i], "flag", "", (id & curMode), 0, "");
+      }
+      addProperty("intensity-image-mode", "menu", "zero,minus one,unchanged", imgmode, 0, "");
+      //TODO in current lib version, there is no possibility to find out camera type ??
+      addProperty("modulation-frequency", "menu", "40Mhz,30MHz,21MHz,20MHz,19"
+                  "MHz,60MHz,15MHz,10MHz,29MHz,31MHz,14_5MHz,15_5MHz", modfreq, 0, "");
+      addProperty("depth-map-unit", "menu", "16Bit,mm,cm,m", m_sr->depthMapUnit, 0, "");
+      addProperty("current-range", "info", "", currentrange, 0, "");
+      addProperty("create-xyz-channels", "flag", "", m_sr->createXYZ, 0, "");
+
+      Configurable::registerCallback(utils::function(this,&SwissRangerGrabberImpl::processPropertyChange));
+    }
+
+    // callback for changed configurable properties
+    void SwissRangerGrabberImpl::processPropertyChange(const utils::Configurable::Property &prop){
+      Mutex::Locker l(m_mutex);
+      if(prop.name == "intensity-image-mode"){
+        if(prop.value == "minus one") m_sr->iim = iimUnknownPixelsMinusOne;
+        else if(prop.value == "zero") m_sr->iim = iimUnknownPixelsZero;
+        else if(prop.value == "unchanged") m_sr->iim = iimUnknownPixelsUnchanged;
+        else ERROR_LOG("invalid value \"" << prop.value << "\" for property \"" << prop.name << "\"");
+      }else if(prop.name == "modulation-frequency"){
+        try{
+          SR_SetModulationFrequency(m_sr->cam, translate_modulation_freq(prop.value));
+        }catch(...){
+          ERROR_LOG("undefined modulation frequency value :" << prop.value);
+        }
+      }else if(prop.name == "depth-map-unit"){
+        if(prop.value != "16Bit" &&
+           prop.value != "mm" &&
+           prop.value != "cm" &&
+           prop.value != "m"){
+          ERROR_LOG("Unknown unit for depth map :" << prop.value);
+        }else{
+          m_sr->depthMapUnit = prop.value;
+        }
+      }else if(prop.name == "create-xyz-channels"){
+        m_sr->createXYZ = parse<bool>(prop.value);
+      } else {
+        int curMode = SR_GetMode(m_sr->cam);
+        int id = propNr(prop.name);
+        if(parse<bool>(prop.value)){
+          SR_SetMode(m_sr->cam, id | curMode);
+        }else{
+          SR_SetMode(m_sr->cam, curMode&~id);
+        }
+      }
+    }
   
     float SwissRangerGrabberImpl::getMaxRangeMM(const std::string &modulationFreq) throw (ICLException){
       return get_max_range_mm(translate_modulation_freq(modulationFreq));
@@ -510,7 +580,7 @@ namespace icl{
         ERROR_LOG("nothing known about a property " << property ); return;
       } else {
         int curMode = SR_GetMode(m_sr->cam);
-        int id = prop(property);
+        int id = propNr(property);
         if(value=="on"){
           SR_SetMode(m_sr->cam, id | curMode);
         }else{
@@ -518,10 +588,10 @@ namespace icl{
         }
       }
     }
-  
-  
+
+
        
-    std::vector<std::string> SwissRangerGrabberImpl::getPropertyList(){
+    std::vector<std::string> SwissRangerGrabberImpl::getPropertyListC(){
       std::vector<std::string> v;
       v.push_back("AM_COR_FIX_PTRN");
       v.push_back("AM_MEDIAN");
@@ -594,13 +664,14 @@ namespace icl{
       }else if(!supportsProperty(name)){
         ERROR_LOG("nothing known about a property " << name ); return "";
       }
-      int id = prop(name);
+      int id = propNr(name);
       int curMode = SR_GetMode(m_sr->cam);
       if(id & curMode) return "on";
       else return "off";
       
     }
-  
+
+    REGISTER_CONFIGURABLE(SwissRangerGrabber, return new SwissRangerGrabber(0, core::depth32f, -1));
     
   } // namespace io
 }
