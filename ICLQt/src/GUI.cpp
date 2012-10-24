@@ -148,7 +148,7 @@ namespace icl{
             l = &gui.get<LabelHandle>("#i#"+prop);
           }
           (***l).setText(conf.getPropertyValue(prop).c_str());
-          (***l).update(); 
+          (***l).update();
           QApplication::processEvents();
         }
       };
@@ -370,7 +370,7 @@ namespace icl{
           int volatileness = conf->getPropertyVolatileness(p.full);
           if(volatileness){
             timers.push_back(new VolatileUpdater(volatileness,p.full,timerGUI,*conf));
-          } 
+          }
         }else if(t == "flag"){
           std::string handle = "#f#"+p.full;
           ostr << '\1' << handle;
@@ -401,7 +401,7 @@ namespace icl{
           Color c = parse<Color>(conf->getPropertyValue(p.full));
           gui << ColorSelect(c[0],c[1],c[2]).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
         }
-        
+
         else{
           ERROR_LOG("unable to create GUI-component for property \"" << p.full << "\" (unsupported property type: \"" + t+ "\")");
         }

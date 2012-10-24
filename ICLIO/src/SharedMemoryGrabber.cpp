@@ -317,7 +317,7 @@ namespace icl{
         }
       } else if(prop.name == "enable-callbacks"){
         if(parse<bool>(prop.value) && !m_data->omitDoubledFrames) {
-            WARNING_LOG("enabling enable-callbacks will also enabled omitDoubledFrames");
+            WARNING_LOG("enabling enable-callbacks will also enable omitDoubledFrames");
             setPropertyValue("omit-doubled-frames", true);
         } else {
           m_data->callbacksEnabled = parse<bool>(prop.value);

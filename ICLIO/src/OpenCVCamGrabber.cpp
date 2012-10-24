@@ -46,10 +46,10 @@ namespace icl{
       }
       addProperty("size", "menu", "160x120,320x200,320x240,480x320,640x350,640x480,800x480,800x600,960x540,960x640,1024x768,1152x864,1200x800,1280x720,1280x800,1440x900,1280x960,1280x1024,1600x900,1400x1050,1600x1050,1600x1200",
       str(cvGetCaptureProperty(cvc,CV_CAP_PROP_FRAME_WIDTH))+"x"+str(cvGetCaptureProperty(cvc,CV_CAP_PROP_FRAME_HEIGHT)), 0, "");
-      addProperty("brightness", "range", "[0,1]:0.01", cvGetCaptureProperty(cvc,CV_CAP_PROP_BRIGHTNESS), 0, "");
-      addProperty("contrast", "range", "[0,1]:0.01", cvGetCaptureProperty(cvc,CV_CAP_PROP_CONTRAST), 0, "");
-      addProperty("saturation", "range", "[0,1]:0.01", cvGetCaptureProperty(cvc,CV_CAP_PROP_SATURATION), 0, "");
-      addProperty("hue", "range", "[0,1]:0.01", cvGetCaptureProperty(cvc,CV_CAP_PROP_HUE), 0, "");
+      addProperty("brightness", "range", "[0,100]:1", cvGetCaptureProperty(cvc,CV_CAP_PROP_BRIGHTNESS), 0, "");
+      addProperty("contrast", "range", "[0,100]:1", cvGetCaptureProperty(cvc,CV_CAP_PROP_CONTRAST), 0, "");
+      addProperty("saturation", "range", "[0,100]:1", cvGetCaptureProperty(cvc,CV_CAP_PROP_SATURATION), 0, "");
+      addProperty("hue", "range", "[0,100]:1", cvGetCaptureProperty(cvc,CV_CAP_PROP_HUE), 0, "");
       addProperty("format", "menu", "RGB", "RGB", 0, "");
       Configurable::registerCallback(utils::function(this,&OpenCVCamGrabberImpl::processPropertyChange));
     }
@@ -158,13 +158,13 @@ namespace icl{
             setDesiredSize(s);
         */
       }else if(prop.name == "brightness"){
-        cvSetCaptureProperty(cvc,CV_CAP_PROP_BRIGHTNESS,parse<double>(prop.value));
+        cvSetCaptureProperty(cvc,CV_CAP_PROP_BRIGHTNESS,parse<double>(prop.value)*0.01);
       }else if(prop.name == "contrast"){
-        cvSetCaptureProperty(cvc,CV_CAP_PROP_CONTRAST,parse<double>(prop.value));
+        cvSetCaptureProperty(cvc,CV_CAP_PROP_CONTRAST,parse<double>(prop.value)*0.01);
       }else if(prop.name == "saturation"){
-        cvSetCaptureProperty(cvc,CV_CAP_PROP_SATURATION,parse<double>(prop.value));
+        cvSetCaptureProperty(cvc,CV_CAP_PROP_SATURATION,parse<double>(prop.value)*0.01);
       }else if(prop.name == "hue"){
-        cvSetCaptureProperty(cvc,CV_CAP_PROP_HUE,parse<double>(prop.value));
+        cvSetCaptureProperty(cvc,CV_CAP_PROP_HUE,parse<double>(prop.value)*0.01);
       }
     }
     

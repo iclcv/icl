@@ -32,7 +32,6 @@
  **                                                                 **
  *********************************************************************/
 #include <ICLIO/OpenCVVideoGrabber.h>
-#include <ICLUtils/Time.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -126,8 +125,8 @@ namespace icl{
         data->fpslimiter->wait();
       }
       updating = true;
-      //setPropertyValue("pos_msec", cvGetCaptureProperty(data->cvc,CV_CAP_PROP_POS_MSEC));
-      //setPropertyValue("pos_frames", cvGetCaptureProperty(data->cvc,CV_CAP_PROP_POS_FRAMES));
+      setPropertyValue("pos_msec_current", cvGetCaptureProperty(data->cvc,CV_CAP_PROP_POS_MSEC));
+      setPropertyValue("pos_frames_current", cvGetCaptureProperty(data->cvc,CV_CAP_PROP_POS_FRAMES));
       setPropertyValue("pos_avi_ratio", cvGetCaptureProperty(data->cvc,CV_CAP_PROP_POS_AVI_RATIO));
       updating = false;
       return data->m_buffer;
@@ -151,9 +150,11 @@ namespace icl{
       data->size.height = cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FRAME_HEIGHT);
 
       // Configurable
+      addProperty("pos_msec_current", "info", "", cvGetCaptureProperty(data->cvc,CV_CAP_PROP_POS_MSEC), 0, "");
       addProperty("pos_msec", "range", "[0," + str(1000*((cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FRAME_COUNT) / cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FPS))) ) + "]:1", cvGetCaptureProperty(data->cvc,CV_CAP_PROP_POS_MSEC), 0, "");
+      addProperty("pos_frames_current", "info", "", cvGetCaptureProperty(data->cvc,CV_CAP_PROP_POS_FRAMES), 0, "");
       addProperty("pos_frames", "range", "[0,"+str(cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FRAME_COUNT))+"]:1", cvGetCaptureProperty(data->cvc,CV_CAP_PROP_POS_FRAMES), 0, "");
-      addProperty("pos_avi_ratio", "info", "[0,1]:"+str(cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FRAME_COUNT) / cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FPS)), cvGetCaptureProperty(data->cvc,CV_CAP_PROP_POS_AVI_RATIO), 0, "");
+      addProperty("pos_avi_ratio", "info", "[0,1]:"+str(cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FRAME_COUNT) / cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FPS)), cvGetCaptureProperty(data->cvc,CV_CAP_PROP_POS_AVI_RATIO), 100, "");
       addProperty("size", "info", "", str(data->size), 0, "");
       addProperty("format", "menu", "RGB", "RGB", 0, "");
       addProperty("fourcc", "info", "", fourCCStringFromDouble(cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FOURCC)), 0, "");
