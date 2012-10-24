@@ -34,11 +34,15 @@
 
 #pragma once
 
+
+#include <algorithm>
+#include <set>
+
 #include <ICLMath/FixedVector.h>
 #include <ICLUtils/VisualizationDescription.h>
-#include <set>
-#include <algorithm>
 #include <ICLUtils/Rect32f.h>
+#include <ICLUtils/Range.h>
+#include <ICLUtils/StringUtils.h>
 
 namespace icl{
 
@@ -209,8 +213,8 @@ namespace icl{
 
         
         utils::Rect32f rect() const {
-          return Rect32f(double(center[0])/SF - double(halfSize[0])/SF, double(center[1])/SF - double(halfSize[1])/SF,
-                         double(halfSize[0])/SF*2, double(halfSize[1])/SF*2);
+          return utils::Rect32f(double(center[0])/SF - double(halfSize[0])/SF, double(center[1])/SF - double(halfSize[1])/SF,
+                                double(halfSize[0])/SF*2, double(halfSize[1])/SF*2);
         }
       };
       
@@ -441,13 +445,13 @@ namespace icl{
         // this cell could be empty, in this case, the parent must contain good points
         if(n->next == n->points){
           n = n->parent;
-          if(!n) throw ICLException("no nn found for given point " + str(p));
+          if(!n) throw utils::ICLException("no nn found for given point " + utils::str(p));
         }
         
-        double sqrMinDist = sqr(currMinDist);
+        double sqrMinDist = utils::sqr(currMinDist);
 
         for(const Pt *x=n->points; x < n->next; ++x){
-          Scalar dSqr = sqr(x->operator[](0)-p[0]) + sqr(x->operator[](1)-p[1]);
+          Scalar dSqr = utils::sqr(x->operator[](0)-p[0]) + utils::sqr(x->operator[](1)-p[1]);
           if(dSqr < sqrMinDist){
             sqrMinDist = dSqr;
             currNN = x; 
@@ -456,7 +460,7 @@ namespace icl{
         currMinDist = sqrt(sqrMinDist);
 
         if(!currNN){
-          throw ICLException("no nn found for given point " + str(p));
+          throw utils::ICLException("no nn found for given point " + utils::str(p));
         }
         return *currNN;
       }
@@ -474,7 +478,7 @@ namespace icl{
           The result quality depends on the number of contained points, and
           on the QuadTree's template parameters */
       Pt nn_approx(const Pt &p) const throw (utils::ICLException){
-        double currMinDist = sqrt(Range<Scalar>::limits().maxVal-1);
+        double currMinDist = sqrt(utils::Range<Scalar>::limits().maxVal-1);
         const Pt *currNN  = 0;
         nn_approx_internal(Pt(SF*p[0],SF*p[1]),currMinDist,currNN);
         return Pt((*currNN)[0]/SF,(*currNN)[1]/SF) ;
@@ -504,7 +508,7 @@ namespace icl{
         std::vector<const Node*> stack;
         stack.reserve(128);
         stack.push_back(root);
-        double currMinDist = sqrt(Range<Scalar>::limits().maxVal-1);
+        double currMinDist = sqrt(utils::Range<Scalar>::limits().maxVal-1);
         const Pt *currNN  = 0;
         
         nn_approx_internal(p,currMinDist,currNN);
@@ -519,10 +523,10 @@ namespace icl{
             if(b.intersects(n->children[2].boundary)) stack.push_back(n->children+2);
             if(b.intersects(n->children[3].boundary)) stack.push_back(n->children+3);
           }
-          Scalar sqrMinDist = sqr(currMinDist);
+          Scalar sqrMinDist = utils::sqr(currMinDist);
 
           for(const Pt *x=n->points; x < n->next; ++x){
-            Scalar dSqr = sqr(x->operator[](0)-p[0]) + sqr(x->operator[](1)-p[1]);
+            Scalar dSqr = utils::sqr(x->operator[](0)-p[0]) + utils::sqr(x->operator[](1)-p[1]);
             if(dSqr < sqrMinDist){
               sqrMinDist = dSqr;
               currNN = x; 
@@ -536,13 +540,13 @@ namespace icl{
       /// convenience wrapper for the Point32f type
       const utils::Point32f nn(const utils::Point32f &p) const throw (utils::ICLException){
         Pt n = nn(Pt(p.x,p.y));
-        return Point32f(n[0],n[1]);
+        return utils::Point32f(n[0],n[1]);
       }
 
       /// convenience wrapper for the Point32f type
       const utils::Point nn(const utils::Point &p) const throw (utils::ICLException){
         Pt n = nn(Pt(p.x,p.y));
-        return Point(n[0],n[1]);
+        return utils::Point(n[0],n[1]);
       }
 
       

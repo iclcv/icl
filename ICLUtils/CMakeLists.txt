@@ -80,9 +80,11 @@ set(ICLLibsToLinkAgainst ${PROJECT_NAME})
 add_example (${PROJECT_NAME} "regex-find" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "progarg-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "function-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "any-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLMarkers)
 add_example (${PROJECT_NAME} "configurable-info" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+
 
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLGeom)
 add_example (${PROJECT_NAME} "config-file-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)

@@ -83,6 +83,16 @@ namespace icl{
       /// calculates the euclidean norm of this line
       /** @return length of the line */
       float length() const;
+
+      /// returns the point on the line closest to the given point
+      utils::Point findClosestPoint(const utils::Point &p) const;
+
+      /// returns the minimum distance of the line to a given point 
+      /** The distance can never be longer then the max-distance 
+          to start and end of the line */
+      inline float getMinDist(const utils::Point &p) const{
+        return findClosestPoint(p).distanceTo(p);
+      }
   
       /// samples this line from start to end point regarding the given limiting rect
       /** @param limits each line point is check for being inside of this rect

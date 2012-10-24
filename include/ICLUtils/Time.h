@@ -33,6 +33,8 @@
 *********************************************************************/
 
 #include <string>
+#include <iostream>
+
 #include <stdint.h>
 // **********************************************************************
 //
@@ -101,6 +103,23 @@ namespace icl{
            return Time::microSeconds(Time::now().m_usec - m_usec);
         }
   
+        /// returns string representation of the times age
+        inline std::string getAgeString() const{
+          return age().toString();
+        }
+        
+        /// common function for simple benchmarking
+        /** \code 
+            Time t = Time::now();
+            // some stuff that must be benchmarked
+            t.showAge("my stuff");
+            \endcode
+        **/
+        inline void showAge(const std::string &title="") const{
+          std::cout << title << ":" << age().toMilliSecondsDouble() << "ms" << std::endl;
+        }
+          
+        
         Time operator-() const
            {
               return Time(-m_usec);

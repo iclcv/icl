@@ -136,9 +136,9 @@ namespace icl{
         - icl::DynMatrix<float> and icl::DynMatrix<double> (the entries are used linearily)
         - std::vector<float> and std::vector<double>
         - FixedRowVector<float,D> and FixedRowVector<double,D> where D is 
-        - FixedColVector<float,D> and FixedColVector<double,D> where D is 2,3,4 or 6
-        - FixedMatrix<float,D,1> and FixedMatrix<double,D,1> where D is 2,3,4 or 6
-        - FixedMatrix<float,1,D> and FixedMatrix<double,1,D> where D is 2,3,4 or 6
+        - FixedColVector<float,D> and FixedColVector<double,D> where D is 2,3,4,5,6
+        - FixedMatrix<float,D,1> and FixedMatrix<double,D,1> where D is 2,3,4,5,6
+        - FixedMatrix<float,1,D> and FixedMatrix<double,1,D> where D is 2,3,4,5,6
   
         \section __DEMOS__ Demo Location
         There are two graphical demos located in the ICLGeom-package due to their dependencies

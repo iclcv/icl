@@ -267,7 +267,40 @@ namespace icl{
       f.save(filename);
     }
   
-    
+    void setOptions(Configurable* conf, ConfigFile &f, const std::vector<std::string> &supported){
+      for(unsigned int i=0;i<supported.size();++i){
+        const std::string &prop = supported[i];
+        std::string type = conf -> getPropertyType(prop);
+        if(type == "info") continue;
+        if(type == "command") continue;
+
+        if(type == "range" || type == "value-list" || type == "range:slider" || type == "range:spinbox" || type == "float"){
+          try{
+            conf -> setPropertyValue(prop,str(f[prop].as<float>()));
+          }catch(...){}
+        }else if(type == "int"){
+          try{
+            conf -> setPropertyValue(prop,str(f[prop].as<int>()));
+          }catch(...){}
+        }else if(type == "string"){
+          try{
+            conf -> setPropertyValue(prop,f[prop].as<std::string>());
+          }catch(...){}
+        }else if(type == "menu"){
+          try{
+            conf -> setPropertyValue(prop,f[prop].as<std::string>());
+          }catch(...){}
+        }else if(type == "flag"){
+          try{
+            conf -> setPropertyValue(prop,f[prop].as<bool>());
+          }catch(...){}
+        }else if(type == "color"){
+          try{
+            conf -> setPropertyValue(prop,f[prop].as<std::string>());
+          }catch(...){}
+        }
+      }
+    }
     
     void Configurable::loadProperties(const std::string &filename, const std::vector<std::string> &filterOUT){
       ConfigFile f(filename);
@@ -278,7 +311,7 @@ namespace icl{
         psSupported = remove_by_filter(psSupported,filterOUT);
       }
       f.setPrefix("config.");
-      for(unsigned int i=0;i<psSupported.size();++i){
+      /*for(unsigned int i=0;i<psSupported.size();++i){
         std::string &prop = psSupported[i];
         std::string type = getPropertyType(prop);
         if(type == "info") continue;
@@ -309,7 +342,10 @@ namespace icl{
             setPropertyValue(prop,f[prop].as<std::string>());
           }catch(...){}
         }
-      }
+      }*/
+      // set Options twice to ensure setting of dependent properties
+      setOptions(this, f, psSupported);
+      setOptions(this, f, psSupported);
     }
   
     void Configurable::deactivateProperty(const std::string &pattern){

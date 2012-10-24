@@ -9,7 +9,7 @@
 ** File   : include/ICLUtils/Any.h                                 **
 ** Module : ICLUtils                                               **
 ** Authors: Christof Elbrechter                                    **
-**                       q                                          **
+**                                                                 **
 **                                                                 **
 ** Commercial License                                              **
 ** ICL can be used commercially, please refer to our website       **
@@ -35,6 +35,7 @@
 #pragma once
 
 #include <ICLUtils/StringUtils.h>
+#include <cstring>
 
 namespace icl{
   namespace utils{
@@ -67,6 +68,18 @@ namespace icl{
         using ascii encoded pointers. The only drawback for the binary
         encoded pointers is that they cannot be used as std::string
         anymore.
+
+
+        \subsection VEC encoding vectors
+        
+        An a very few cases, one might want to encode vector data as an Any instance
+        This would, however entail having to concatenate the whole vector data
+        int a string first, and later having to perform an expensive string parsing.
+        To avoid this, the Any classe's "Constructor(T)" and "as<T>" are specialized
+        for the basic vector types "std::vector<float>" and "std::vector<int>". These
+        are simply encoded in a binary manner, leading to an incredible performance
+        boost of about factor 1000.
+
         \subsection BENCH Benchmarks:
         
         Times were taken on an Intel 1.6GHz Core2Duo (ULV) laptop on 32Bit ubuntu. 
@@ -88,6 +101,13 @@ namespace icl{
   
         * C++ Pointers: \n
           <b>Time: ~ 1/10000 ms</b>\n
+
+        Performance measurement for vector types (Core2Duo 2.4GHz, Ubuntu 12.04 32bit),
+        std::vector<float> V, with 1000 entries.
+        
+        * x = icl::utils::cat(V,","); icl::parseVecStr<float>(x); : 2.5ms
+        * Any a = v; std::vector<float> b = a; : 2.3 *10^3ms
+        
     */
     struct Any : public std::string{
       /// Empty constructor
@@ -163,6 +183,51 @@ namespace icl{
       }
       
     };
+    
+    /** \cond **/
+    template<> 
+    inline std::vector<float> Any::as<std::vector<float> >() const{
+      const size_t l = std::string::length();
+      if(l < sizeof(int)) throw ICLException("cannot convert Any to std::vector<float> size must be at least sizeof(int)");
+      const icl8u *p = (const icl8u*)&std::string::operator[](0);
+      int size = *((const int*)p);
+      p += sizeof(int);
+      if(l != sizeof(int) + sizeof(float) * size){
+        throw ICLException("error converting Any to std::vector<float> unexpected size");
+      }
+      return std::vector<float>((const float*)p, ((const float*)p) + size);
+    }
+
+    template<>
+    inline Any::Any(const std::vector<float> &v){
+      std::string::resize(sizeof(int) + v.size() * sizeof(float));
+      icl8u *p = (icl8u*)&std::string::operator[](0);
+      *((int*)p) = v.size();
+      memcpy(p+sizeof(int),v.data(), v.size()*sizeof(float));
+    }
+
+    template<> 
+    inline std::vector<int> Any::as<std::vector<int> >() const{
+      const size_t l = std::string::length();
+      if(l < sizeof(int)) throw ICLException("cannot convert Any to std::vector<int> size must be at least sizeof(int)");
+      const icl8u *p = (const icl8u*)&std::string::operator[](0);
+      int size = *((const int*)p);
+      p += sizeof(int);
+      if(l != sizeof(int) + sizeof(int) * size){
+        throw ICLException("error converting Any to std::vector<int> unexpected size");
+      }
+      return std::vector<int>((const int*)p, ((const int*)p) + size);
+    }
+
+    template<>
+    inline Any::Any(const std::vector<int> &v){
+      std::string::resize(sizeof(int) + v.size() * sizeof(int));
+      icl8u *p = (icl8u*)&std::string::operator[](0);
+      *((int*)p) = v.size();
+      memcpy(p+sizeof(int),v.data(), v.size()*sizeof(int));
+    }
+
+    /** \endcond */
         
       
   } // namespace utils
