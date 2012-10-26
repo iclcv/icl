@@ -560,7 +560,43 @@ namespace icl{
       }
   
     };
-  
+#if 1
+    struct CamCfgGUIWidget : public GUIWidget{
+      // {{{ open
+      static std::string create_tab_list(const GUIDefinition &def){
+        return def.param(0);
+      }
+      
+      CamCfgGUIWidget(const GUIDefinition &def):
+        GUIWidget(def,1,1),topLevelWidget(create_tab_list(def)){
+
+        topLevelWidget.minSize(32,24);
+        
+        topLevelWidget << ( HSplit() 
+                            << (VBox().label("general parameters")
+                                << Label(def.param(0))
+                                << Slider(0,255,10).label("test")
+                                )
+                            << Prop(def.param(0)).label("properties")
+                            )
+                       << Create();
+                            
+                            
+        addToGrid(topLevelWidget.getRootWidget());
+
+        if(def.hasToolTip()){
+          WARNING_LOG("tooltip is not supported for the Camera Configuration GUI component!");
+        }
+      }
+      virtual void processIO(){}
+
+      static string getSyntax(){
+        return string("camcfg()[general params]\n")+gen_params();
+      }
+      
+      Tab topLevelWidget;
+    };
+#else
     struct CamCfgGUIWidget : public GUIWidget{
       // {{{ open
       CamCfgGUIWidget(const GUIDefinition &def):GUIWidget(def,0,2){
@@ -595,6 +631,7 @@ namespace icl{
       QPushButton *m_button;
       std::string devType,devID;
     };
+#endif
   
     struct ScrollGUIWidgetBase : public GUIWidget, public ProxyLayout{
       // {{{ open

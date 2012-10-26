@@ -42,19 +42,21 @@ void run(){
   static FPSLimiter fps(pa("-maxfps"),10);
   
   gui["image"] = grabber.grab();
-  gui["fps"].render();
+  // gui["fps"].render();
   fps.wait();
 }
 
 void init(){
   grabber.init(pa("-i"));
+
   gui << Image().handle("image").minSize(16,12);
   grabber.setConfigurableID("grabcfg");
+
   gui << Prop("grabcfg").label("Grabber Configurable").minSize(14,12);
-  gui << ( HBox().maxSize(100,2) 
-           << Fps(10).handle("fps").maxSize(100,2).minSize(5,2)
-           << CamCfg("")
-           )
+  gui << //( HBox().maxSize(100,99) 
+           //           << Fps(10).handle("fps").maxSize(100,2).minSize(5,2)
+           CamCfg("grabcfg")
+  //)
       << Show();
 
   if(pa("-size")){
