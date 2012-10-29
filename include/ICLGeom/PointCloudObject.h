@@ -91,6 +91,14 @@ namespace icl{
       virtual PointCloudObject *copy() const {
         return new PointCloudObject(*this);
       }
+
+      /// just a simple wrapper for top-top level classe's addVertex method
+      /** This method does not work for organized point cloud objects. The
+          organized flag is not checked for performance reason. The behaviour
+          of calling push_back on ordered point clouds is undefined */
+      void push_back(const Vec &point, const GeomColor &color=GeomColor(0,100,255,255)){
+        addVertex(point,color);
+      }
   
     };
   

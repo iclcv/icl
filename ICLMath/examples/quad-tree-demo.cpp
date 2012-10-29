@@ -37,6 +37,55 @@
 #include <ICLUtils/Random.h>
 #include <ICLMath/QuadTree.h>
 
+#if 1
+template<int N>
+int p2() { return 2*p2<N-1>(); }
+template<> int p2<1>(){ return 2; }
+template<> int p2<0>(){ return 1; }
+
+/// Always uses 2^32 resolution
+template<int TREE_LEVELS=6,int LEAVE_LEVELS=4>
+struct QuadTree2{
+  typedef FixedColVector<int,2> Pt;
+  struct Node{
+    Node():children(0),on(0){}
+    Node *children;
+    bool *on;
+  };
+  
+  Node *root;
+
+  QuadTree2() { 
+    root = new Node;
+  }
+  
+  void insert(const Pt &p){
+    insert(p[0],p[1]);
+  }
+  
+  void insert(int x, int y){
+    Node *n = root;
+    for(int i=0;i<TREE_LEVELS;++i){
+      if(!n->children) n->children = new Node[4];
+      n = n->children + (x&1 + 2 * y&1);
+      x >>= 1;
+      y >>= 1;
+    }
+    static const int X = p2<LEAVE_LEVELS>();
+    
+    if(!n->on){
+      n->on = new bool[X*X];
+      memset(n->on,0,X*X);
+    }
+    n->on[x + X * y] = true;
+  }
+  
+  int nn(int x, int y){
+    // dunno!
+  }
+};
+#endif
+
 Time t;
 std::string what;
 inline void tic(const std::string &what){
@@ -62,7 +111,7 @@ void init(){
   typedef QuadTree<icl32s,32,1,1024> QT;
   typedef QT::Pt Pt;
   QT t(Size::VGA);
-
+  QuadTree2<> t2;
   
   // create data
   std::vector<Pt> ps(100*1000);
@@ -77,6 +126,12 @@ void init(){
   }
   ::toc();
 
+  ::tic("insertion t2");
+  for(size_t i=0;i<ps.size();++i){
+    t2.insert(ps[i]);
+  }
+  ::toc();
+  
   //  t.printStructure();
   
   plot->sym('x');  

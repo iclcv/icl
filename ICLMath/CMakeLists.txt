@@ -59,6 +59,11 @@ add_example (${PROJECT_NAME} "llm-1D-demo" "${CONDITIONLIST}" ICLLibsToLinkAgain
 add_example (${PROJECT_NAME} "llm-1D-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "k-means-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "quad-tree-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+#add_example (${PROJECT_NAME} "kd-tree-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLGeom)
+add_example (${PROJECT_NAME} "octree-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+
 set(CONDITIONLIST HAVE_GTEST_COND)
 set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}")
 #add_gtest (${PROJECT_NAME} "test-image" "${CONDITIONLIST}" ICLLibsToLinkAgainst)

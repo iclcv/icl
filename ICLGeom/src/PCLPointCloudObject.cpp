@@ -212,6 +212,13 @@ namespace icl{
   
   
     /// offset specifications for specific datatypes!
+    template<> int PCLPointCloudObject<pcl::PointXYZ>::offset(PointCloudObjectBase::FeatureType t) const {
+      switch(t){
+        case XYZ: return 0;
+        default: return -1;
+      }
+    }
+
     template<> int PCLPointCloudObject<pcl::PointXYZI>::offset(PointCloudObjectBase::FeatureType t) const {
       switch(t){
         case XYZ: return 0;
@@ -219,6 +226,7 @@ namespace icl{
         default: return -1;
       }
     }
+
   
     template<> int PCLPointCloudObject<pcl::PointXYZL>::offset(PointCloudObjectBase::FeatureType t) const {
       switch(t){
@@ -325,6 +333,7 @@ namespace icl{
   
   
   #define INSTANTIATE_CLASS(T) template class PCLPointCloudObject<T>
+    INSTANTIATE_CLASS(pcl::PointXYZ);
     INSTANTIATE_CLASS(pcl::PointXYZI);
     INSTANTIATE_CLASS(pcl::PointXYZL);
     INSTANTIATE_CLASS(pcl::PointXYZRGB);
