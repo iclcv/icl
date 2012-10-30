@@ -59,13 +59,8 @@ namespace icl{
         possible, that the octree is much faster then the pcl-octree!
         
     **/
-    template<class Scalar, int CAPACITY=16, int SF=1, int ALLOC_CHUNK_SIZE=1024>
+    template<class Scalar, int CAPACITY=16, int SF=1, class Pt=FixedColVector<Scalar,4>, int ALLOC_CHUNK_SIZE=1024>
     class Octree{
-      public:
-      
-      // 3D-point type, internally used
-      typedef FixedColVector<Scalar,4> Pt;
-      
       protected:
 
       /// internally used axis-aligned bounding box
@@ -101,6 +96,7 @@ namespace icl{
         }
       };
       
+      public:
       /// Internally used node structure
       /** Each node can contain up to CAPACITY elements. Further nodes
           are distributed to one of the four children */
@@ -268,6 +264,8 @@ namespace icl{
           return pts;
         }
       };
+
+      protected:
 
       /// root node pointer
       Node *root;
