@@ -211,7 +211,7 @@ namespace icl{
       DataStore m_oDataStore;
       bool m_bCreated;
       QWidget *m_poParent;
-    };  
+    };
   } // namespace qt
 }
 

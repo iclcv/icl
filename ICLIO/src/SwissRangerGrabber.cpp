@@ -299,19 +299,14 @@ namespace icl{
   
   
     SwissRangerGrabberImpl::SwissRangerGrabberImpl(int serialNumber, depth bufferDepth, int pickChannel) throw (ICLException):Grabber(){
-  
       g_swissranger_instance_count++;
-  
       if(g_swissranger_instance_count == 1){
         set_canon(0);
       }
-  
       SR_SetCallback(swiss_ranger_debug_callback);
-  
       m_sr = new SwissRanger;
       unsigned short version[4];
       SR_GetVersion(version);
-     
       if(serialNumber < 0){
         m_sr->id = SR_OpenDlg(&m_sr->cam,3,0);
         if(m_sr->id <= 0){

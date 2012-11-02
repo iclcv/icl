@@ -459,6 +459,8 @@ namespace icl{
             if(FileList(pmap["file"].id).size()){
               m_sType = "file";
               m_poGrabber = new FileGrabber(pmap["file"].id);
+              DEBUG_LOG("[file] " + pmap["file"].id);
+              m_poGrabber->setConfigurableID("[file] " + pmap["file"].id);
               break;
             }else{
               ADD_ERR("file");

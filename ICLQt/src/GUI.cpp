@@ -36,6 +36,7 @@
 #include <ICLUtils/SteppingRange.h>
 #include <ICLUtils/ProcessMonitor.h>
 #include <ICLUtils/Size.h>
+#include <ICLIO/GenericGrabber.h>
 #include <ICLCore/CoreFunctions.h>
 
 #include <ICLQt/GUI.h>
@@ -561,40 +562,85 @@ namespace icl{
   
     };
 #if 1
-    struct CamCfgGUIWidget : public GUIWidget{
-      // {{{ open
-      static std::string create_tab_list(const GUIDefinition &def){
-        return def.param(0);
-      }
-      
-      CamCfgGUIWidget(const GUIDefinition &def):
-        GUIWidget(def,1,1),topLevelWidget(create_tab_list(def)){
 
-        topLevelWidget.minSize(32,24);
-        
-        topLevelWidget << ( HSplit() 
-                            << (VBox().label("general parameters")
-                                << Label(def.param(0))
-                                << Slider(0,255,10).label("test")
-                                )
-                            << Prop(def.param(0)).label("properties")
-                            )
-                       << Create();
-                            
-                            
-        addToGrid(topLevelWidget.getRootWidget());
+    struct CamCfgWidget : public Tab {
+
+      static std::string create_tab_list(){
+         const std::vector<io::GrabberDeviceDescription> devs =
+                            io::GenericGrabber::getDeviceList("",false);
+         std::ostringstream ret;
+         for(unsigned int i = 0; i < devs.size(); ++i){
+            ret << "[" << devs.at(i).type << "] " << i << ",";
+         }
+        return ret.str();
+      }
+
+      CamCfgWidget(const std::string &deviceFilter, bool full=false)
+        : Tab(create_tab_list())
+      {
+        minSize(32,24);
+        const std::vector<io::GrabberDeviceDescription> devs =
+           io::GenericGrabber::getDeviceList(deviceFilter,false);
+        for(unsigned int i = 0; i < devs.size(); ++i){
+          std::string confname = devs.at(i).name();
+          if(full){
+            *this << ( HSplit()
+                  << (VBox().label("general parameters")
+                      << Label("def.param(0)")
+                      << Slider(0,255,10).label("test")
+                     )
+                  << Prop(confname).label(confname)
+                     );
+          } else {
+            minSize(32,24);
+            *this << Prop(confname).label(confname);
+          }
+        }
+      }
+    };
+
+
+    struct CamCfgGUIWidget : public GUIWidget {
+      // {{{ open
+
+      CamCfgGUIWidget(const GUIDefinition &def):
+        GUIWidget(def,0,0), m_cfg(NULL), m_button(NULL)
+      {
+        if(def.numParams() != 0){
+          throw GUISyntaxErrorException(def.defString(),"camcfg does not take parameters");
+        }
+        m_button = new QPushButton("camcfg",this);
+        connect(m_button,SIGNAL(clicked()),this,SLOT(ioSlot()));
+
+        if(def.hasToolTip()){
+          WARNING_LOG("tooltip is not supported for the Camera Configuration GUI component!");
+        }
+
+        if(def.numParams()){
+          devType = def.param(0);
+          devID = def.param(1);
+        }
+        addToGrid(m_button);
 
         if(def.hasToolTip()){
           WARNING_LOG("tooltip is not supported for the Camera Configuration GUI component!");
         }
       }
-      virtual void processIO(){}
+
+      virtual void processIO(){
+          if(!m_cfg) m_cfg = new GUI();
+          GUI g;
+          g << CamCfgWidget("");
+          g << Show();
+      }
 
       static string getSyntax(){
         return string("camcfg()[general params]\n")+gen_params();
       }
       
-      Tab topLevelWidget;
+      GUI *m_cfg;
+      QPushButton *m_button;
+      std::string devType,devID;
     };
 #else
     struct CamCfgGUIWidget : public GUIWidget{
@@ -2334,7 +2380,7 @@ namespace icl{
         ProxyLayout *proxy = m_poWidget->getProxyLayout();
   
         if(!layout && !proxy && m_children.size()){
-          ERROR_LOG("GUI widget has no layout, "<< m_children.size() <<" child components can't be added!");
+          ERROR_LOG("GUI widget has noGUI layout, "<< m_children.size() <<" child components can't be added!");
           return;
         }
         for(unsigned int i=0;i<m_children.size();i++){
