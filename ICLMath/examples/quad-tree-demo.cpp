@@ -37,7 +37,7 @@
 #include <ICLUtils/Random.h>
 #include <ICLMath/QuadTree.h>
 
-#if 1
+#if 0
 template<int N>
 int p2() { return 2*p2<N-1>(); }
 template<> int p2<1>(){ return 2; }
@@ -111,7 +111,7 @@ void init(){
   typedef QuadTree<icl32s,32,1,1024> QT;
   typedef QT::Pt Pt;
   QT t(Size::VGA);
-  QuadTree2<> t2;
+  //  QuadTree2<> t2;
   
   // create data
   std::vector<Pt> ps(100*1000);
@@ -126,11 +126,13 @@ void init(){
   }
   ::toc();
 
+#if 0
   ::tic("insertion t2");
   for(size_t i=0;i<ps.size();++i){
     t2.insert(ps[i]);
   }
   ::toc();
+#endif
   
   //  t.printStructure();
   

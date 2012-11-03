@@ -65,11 +65,9 @@ set(CONDITIONLIST HAVE_OPENSURF_COND HAVE_OPENCV_COND)
 add_libsource (${PROJECT_NAME} "src/OpenSurfDetector.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
 
-set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND)
 set(ICLLibsToLinkAgainst ICLCV)
 add_example (${PROJECT_NAME} "quick-example" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
-
-set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND)
 add_example (${PROJECT_NAME} "region-inspector" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "vector-tracker-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "simple-blob-searcher-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)

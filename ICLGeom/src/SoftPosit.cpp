@@ -38,7 +38,9 @@
 
 using namespace icl::utils;
 using namespace icl::math;
+#ifdef HAVE_QT
 using namespace icl::qt;
+#endif
 
 namespace icl{
   namespace geom{

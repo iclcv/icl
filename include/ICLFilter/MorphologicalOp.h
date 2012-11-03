@@ -171,9 +171,9 @@ namespace icl {
   #else
       typedef void ICLMorphState;
       typedef void ICLMorphAdvState;
-      ImgBase *m_openingAndClosingBuffer;
-      ImgBase *m_gradientBorderBuffer_1;
-      ImgBase *m_gradientBorderBuffer_2;
+      core::ImgBase *m_openingAndClosingBuffer;
+      core::ImgBase *m_gradientBorderBuffer_1;
+      core::ImgBase *m_gradientBorderBuffer_2;
   
       template<class T>
       void apply_t(const core::ImgBase *src, core::ImgBase **dst);
