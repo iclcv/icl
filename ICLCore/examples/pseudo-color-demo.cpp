@@ -45,6 +45,10 @@ void step(const std::string &handle){
   static Mutex mutex;
   Mutex::Locker lock(mutex);
 
+  const float mult = gui["mult"];
+  TODO_LOG("save last mult and update color if neccessary!");
+  const int maxVal = mult*256;
+
   if(handle == "load"){
     pcc.load(openFileDialog("XML Files (*.xml)"));
   }else if(handle == "save"){
@@ -57,14 +61,23 @@ void step(const std::string &handle){
           colors.push_back(PseudoColorConverter::Stop(gui["relPos"+str(i)],gui["color"+str(i)]));
         }
       }try{
-        pcc.setColorTable(PseudoColorConverter::Custom,colors);
+        pcc.setColorTable(PseudoColorConverter::Custom,colors,maxVal);
       }catch(...){}
     }else{
-      pcc.setColorTable(PseudoColorConverter::Default);
+      pcc.setColorTable(PseudoColorConverter::Default,std::vector<PseudoColorConverter::Stop>(),maxVal);
     }
   }
+
   gui["color"] = &pcc.apply(::color);
-  gui["image"] = &pcc.apply(::image);
+
+  if(mult == 1){
+    gui["image"] = &pcc.apply(::image);
+  }else{
+    ImgQ fim = cvt(image) * mult;
+    static ImgBase *result = 0;
+    pcc.apply(&fim,&result);
+    gui["image"] = result;
+  }
 }
 
 void stop_chooser(GUI &dst, int idx,float pos, float r, float g, float b){
@@ -107,7 +120,9 @@ void init(){
   colors << ( HBox() 
               << Button("load").handle("load")
               << Button("save").handle("save") 
-             ); 
+             ) 
+         << FSlider(0.1,10,1).handle("mult").label("range multiplier");
+                 
   
   gui << ( VBox() 
            << Image().handle("color").minSize(32,10) 

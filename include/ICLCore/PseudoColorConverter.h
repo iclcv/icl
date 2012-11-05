@@ -47,8 +47,8 @@ namespace icl{
     struct PseudoColorConverter{
       /// mode internally used
       enum ColorTable{
-        Default, //!< default mode using default gradient
-        Custom   //!< custom mode using a custom gradient
+        Default,         //!< default mode using default gradient
+        Custom           //!< custom mode using a custom gradient
       };
       
       /// This is for creation of color gradients
@@ -60,11 +60,12 @@ namespace icl{
       };
       
       /// creates instance with default color table
-      PseudoColorConverter();
+      /** The maxValue parameter defines the maximum expected value found in input images */
+      PseudoColorConverter(int maxValue=255);
   
       /// creates instance with custom mode
       /** @see setColorTable */
-      PseudoColorConverter(const std::vector<Stop> &stops) throw (utils::ICLException);
+      PseudoColorConverter(const std::vector<Stop> &stops, int maxValue=255) throw (utils::ICLException);
       
       /// sets the color table mode
       /** if mode is default, stops must be empty 
@@ -79,7 +80,8 @@ namespace icl{
           all pixels are set to the given color. However, there are simpler functions that
           have the same result and are less complex (like Img<T>::clear(channelIndx,color))
       */
-      void setColorTable(ColorTable t, const std::vector<Stop> &stops=std::vector<Stop>()) throw (utils::ICLException); 
+      void setColorTable(ColorTable t, const std::vector<Stop> &stops=std::vector<Stop>(), int maxValue=255) 
+        throw (utils::ICLException); 
       
       /// create a speudo color image from given source image
       void apply(const ImgBase *src, ImgBase **dst) throw (utils::ICLException);
