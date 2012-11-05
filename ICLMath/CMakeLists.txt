@@ -61,6 +61,7 @@ add_example (${PROJECT_NAME} "k-means-demo" "${CONDITIONLIST}" ICLLibsToLinkAgai
 add_example (${PROJECT_NAME} "quad-tree-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 #add_example (${PROJECT_NAME} "kd-tree-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_PCL_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLGeom)
 add_example (${PROJECT_NAME} "octree-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
