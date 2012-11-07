@@ -95,7 +95,7 @@ namespace icl{
       }
   #endif
       else{
-        glColor3f(0,100/255.,255/255.);
+        glColor3fv(m_defaultPointColor.data());
   
       }
       
@@ -168,6 +168,112 @@ namespace icl{
       }else{
         return s << "*unknown feature type*";
       }
+    }
+    
+    
+    namespace{
+      template<class T> T create_opaque_color() { return 255; }
+      template<> float create_opaque_color<float>() { return 1.0f; }
+      template<> double create_opaque_color<double>() { return 1.0; }
+      
+      
+      template<class S, class D>
+      struct ConvertColor{
+        static D cc(const S &s){   return s;  }
+      };
+      
+      template<class S>
+      struct ConvertColor<S,icl32f>{
+        static icl32f cc(const S &s){   return icl32f(s)/255;  }
+      };
+      
+      template<class S>
+      struct ConvertColor<S,icl64f>{
+        static icl64f cc(const S &s){   return icl64f(s)/255;  }
+      };
+      
+      template<class S, class D>
+      D ccc(const S &s){ return ConvertColor<S,D>::cc(s); }
+      
+      
+      template<class SRC_T, class DST_T, int SRC_C, int DST_C>
+      void assign_point_cloud_colors(const int dim, const SRC_T *src[SRC_C], DataSegment<DST_T,DST_C> dst){
+        switch(SRC_C){
+          case 1:{
+            const SRC_T *s = src[0];
+            for(int i=0;i<dim;++i){
+              DST_T sval = ccc<SRC_T,DST_T>(s[i]);
+              dst[i][0] = sval;
+              dst[i][1] = sval;
+              dst[i][2] = sval;
+              if(DST_C == 4) dst[i][3] = create_opaque_color<DST_T>();
+            }
+            break;
+          }
+          case 3:{
+            const SRC_T *r = src[0], *g = src[1], *b = src[2];
+            for(int i=0;i<dim;++i){
+              dst[i][0] = ccc<SRC_T,DST_T>(r[i]);
+              dst[i][1] = ccc<SRC_T,DST_T>(g[i]);
+              dst[i][2] = ccc<SRC_T,DST_T>(b[i]);
+              if(DST_C == 4) dst[i][3] = create_opaque_color<DST_T>();
+            }
+            break;
+          }
+          case 4:{
+            const SRC_T *r = src[0], *g = src[1], *b = src[2], *a = src[3];
+            for(int i=0;i<dim;++i){
+              dst[i][0] = ccc<SRC_T,DST_T>(r[i]);
+              dst[i][1] = ccc<SRC_T,DST_T>(g[i]);
+              dst[i][2] = ccc<SRC_T,DST_T>(b[i]);
+              if(DST_C == 4) dst[i][3] = ccc<SRC_T,DST_T>(a[i]); // otherwise color is skipped
+            }
+            break;
+          }
+        }
+      }
+      
+      
+      template<class T, int SRC_C>
+      void set_color_from_image(PointCloudObjectBase &pc,const Img<T> &image){
+        const T *src[SRC_C];
+        int dim = image.getDim();
+        for(int i=0;i<SRC_C;++i) src[i] = image.begin(i);
+        if(pc.supports(PointCloudObjectBase::BGR)){
+          std::swap(src[0],src[2]);
+          assign_point_cloud_colors<T,icl8u,SRC_C,3>(dim, src, pc.selectBGR());
+        }else if(pc.supports(PointCloudObjectBase::BGRA)){
+          std::swap(src[0],src[2]);
+          assign_point_cloud_colors<T,icl8u,SRC_C,4>(dim, src, pc.selectBGRA());
+        }else if(pc.supports(PointCloudObjectBase::RGBA32f)){
+          assign_point_cloud_colors<T,float,SRC_C,4>(dim, src, pc.selectRGBA32f());
+        }
+      }
+
+    } // end of anonymous namespace
+
+    void PointCloudObjectBase::setColorsFromImage(const ImgBase &image) throw (ICLException){
+      ICLASSERT_THROW(image.getSize() == getSize(), ICLException("PointCloudObjectBase::setColorsFromImage: image size and point cloud size differ!"));
+      int c = image.getChannels();
+      ICLASSERT_THROW(c==1 || c==3 || c==4,ICLException("PointCloudObjectBase::setColorsFromImage: image must have 1,3 or 4 channels"));
+
+      switch(image.getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D)                                        \
+        case depth##D:                                                  \
+          switch(image.getChannels()){                                  \
+            case 1: set_color_from_image<icl##D,1>(*this,*image.asImg<icl##D>()); break; \
+            case 3: set_color_from_image<icl##D,3>(*this,*image.asImg<icl##D>()); break; \
+            case 4: set_color_from_image<icl##D,4>(*this,*image.asImg<icl##D>()); break; \
+            default: break;                                             \
+          }
+          break;
+        ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
+      }
+    }
+
+    void PointCloudObjectBase::setDefaultPointColor(const GeomColor &color){
+      m_defaultPointColor = color/255;
     }
   
   } // namespace geom

@@ -125,7 +125,7 @@ namespace icl{
                  const utils::Point32f &relImagePos,
                  const bool downMask[3],
                  const std::vector<double> &color,
-  	       const utils::Point &wheelDelta,
+  	         const utils::Point &wheelDelta,
                  MouseEventType type,
   	       ICLWidget *widget);
       
@@ -248,6 +248,16 @@ namespace icl{
       
       /// returns whether a certain modifier is currently active
       inline bool isModifierActive(KeyboardModifier m) const { return m & m_keyboardModifiers; }
+
+      /// creates a new MouseEvent instance with a different image position
+      /** This method can be used to simulate normal mouse-events, acutally
+          received from another source, such as an 3D component */
+      inline MouseEvent remapEvent(const utils::Point32f &imagePos) const {
+        qt::MouseEvent cpy = *this;
+        cpy.m_imagePos32f = imagePos;
+        cpy.m_imagePos = imagePos;
+        return cpy;
+      }
     };
   } // namespace qt
 }

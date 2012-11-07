@@ -36,6 +36,7 @@
 
 #include <ICLGeom/SceneObject.h>
 #include <ICLGeom/DataSegment.h>
+#include <ICLCore/ImgBase.h>
 #include <map>
 
 namespace icl{
@@ -98,6 +99,11 @@ namespace icl{
     */
     class PointCloudObjectBase : public SceneObject{
       protected:
+      
+      /// default color used to render points that have no color information
+      GeomColor m_defaultPointColor;
+      
+      /// internal map of meta data 
       std::map<std::string,std::string> m_metaData;
       
       /// internally used utility method that throws verbose exceptions
@@ -137,6 +143,7 @@ namespace icl{
       /** Enables locking in the wrapped SceneObject class */
       PointCloudObjectBase(){
         setLockingEnabled(true);
+        m_defaultPointColor = GeomColor(0,0.5,1,1);
       }
   
       /// interface for supported features 
@@ -195,6 +202,13 @@ namespace icl{
           such as feature point descriptors */
       virtual DataSegmentBase select(const std::string &featureName) { return error_dyn(featureName); }
   
+      /// tints the point cloud pixel from the given image data
+      /** The image size must be equal to the point cloud size*/
+      void setColorsFromImage(const core::ImgBase &image) throw (utils::ICLException);
+      
+      /// sets the color that is used to render points if color information is available
+      void setDefaultPointColor(const GeomColor &color);
+      
       /// For subclasses that provide Dynamic features, this function must be implemented
       virtual std::vector<std::string> getSupportedDynamicFeatures() const { 
         return std::vector<std::string>();
