@@ -83,8 +83,8 @@ namespace icl{
                                      bool lines, bool quads)throw (ICLException){
       std::vector<Vec> allGridPoints; 
       allGridPoints.reserve(nXCells*nYCells);
-      for(int x=0;x<nXCells;++x){
-        for(int y=0;y<nYCells;++y){
+      for(int y=0;y<nYCells;++y){
+        for(int x=0;x<nXCells;++x){
           allGridPoints.push_back(origin+dx*float(x)+dy*float(y));
         }
       }
