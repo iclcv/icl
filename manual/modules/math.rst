@@ -224,12 +224,9 @@ can be implemented for specific optimization tasks.
 2D Vector Quantisation
 """"""""""""""""""""""
 
-The 2D vector quantization :icl:`VQ2D` implements the K-Means algorithm
-
-.. note::
-   
-   We are going to reimplement this class soon
-
+This algorithm is implemented by the :icl:`KMeans` class template.
+The class is implemented as a generic template, and can therefore
+be used for different Scalar and Vector types.
 
 .. _math.model:
 

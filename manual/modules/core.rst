@@ -30,6 +30,7 @@ Table of Contents
 * :ref:`core.global-functions`
 * :ref:`core.types`
 * :ref:`core.color`
+* :ref:`core.other`
 
 .. _core.image:
 
@@ -952,3 +953,16 @@ Images VGA (640x480) varying source and destination depths
   |  formatGray  |  1.59ms   |  1.58ms   |  1.62ms   |      --      |  1.65ms   |   0.12ms   | 
   +--------------+-----------+-----------+-----------+--------------+-----------+------------+
   
+
+.. _core.other:
+
+Rastarized Rendering into Images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The :icl:`ImageRenderer` will be designed in order to render graphical
+primitives into images. It will replace the global functions for
+primitive rendering that are right now still placed in the
+**Qt/Common.h** module. We also plan to create a more general interface
+for *image overlayed visualization*.
+
+.. todo:: write this, once it's implemented and tested
