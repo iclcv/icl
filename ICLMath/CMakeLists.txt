@@ -65,6 +65,8 @@ add_example (${PROJECT_NAME} "quad-tree-demo" "${CONDITIONLIST}" ICLLibsToLinkAg
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_PCL_COND)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLGeom)
 add_example (${PROJECT_NAME} "octree-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "polynomial-regression-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+
 
 set(CONDITIONLIST HAVE_GTEST_COND)
 set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}")

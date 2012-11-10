@@ -54,6 +54,7 @@ namespace icl{
       typedef DynMatrix<T> Matrix;
       typedef PolynomialRegressionAttrib<T> Attrib;
       
+      public:
       class Result{
         friend class PolynomialRegression;
 
@@ -77,6 +78,8 @@ namespace icl{
           - xi*xj
           - xi^e where e is the exponent
           */
+
+      public:
       PolynomialRegression(const std::string &function);
       
       

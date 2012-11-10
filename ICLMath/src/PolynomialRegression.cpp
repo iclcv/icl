@@ -159,12 +159,16 @@ namespace icl{
       std::vector<std::string> ts = icl::utils::tok(remove_spaces(function),"+");
       for(size_t i=0;i<ts.size();++i){
         const std::string &s =  ts[i];
+        //DEBUG_LOG("processing token " << s);
+
         if(s.find('^',0) != std::string::npos){
+          //DEBUG_LOG("   ^ found");
           std::vector<std::string> ab = icl::utils::tok(s,"^");
           ICLASSERT_THROW(ab.size() == 2, ICLException("PolynomialRegression: error in token: " + s));
           int idx = get_idx(ab[0]);
           float exponent = parse<float>(ab[1]);
           if(is_int(exponent) && exponent < 6){
+            //DEBUG_LOG("      int < 6 case");
             int e = exponent;
             switch(e){
               case 1: m_result.m_attribs.push_back(new PowerAttrib<T,1>(idx)); break;
@@ -175,25 +179,34 @@ namespace icl{
               default: m_result.m_attribs.push_back(new GenPowerAttrib<T>(idx,e)); break;
             }
           }else{
+            //DEBUG_LOG("      general case");
             m_result.m_attribs.push_back(new GenPowerAttrib<T>(idx,exponent)); break;
           }
         }else if(s.find('*') != std::string::npos){
+          //          DEBUG_LOG("   * found");
           std::vector<std::string> vars = tok(s,"*");
           std::vector<int> idxs(vars.size());
           for(size_t j=0;j<idxs.size();++j){
             idxs[j] = get_idx(vars[j]);
           }
+          //if(idxs.size() < 6){
+          //  DEBUG_LOG("      n < 6 case");
+          //}else{
+          //  DEBUG_LOG("      general case");
+          //}
           switch(idxs.size()){
-            case 2: m_result.m_attribs.push_back(new MixedAttrib<T,2>(&*idxs.begin()));
-            case 3: m_result.m_attribs.push_back(new MixedAttrib<T,3>(&*idxs.begin()));
-            case 4: m_result.m_attribs.push_back(new MixedAttrib<T,4>(&*idxs.begin()));
-            case 5: m_result.m_attribs.push_back(new MixedAttrib<T,5>(&*idxs.begin()));
-            default: m_result.m_attribs.push_back(new GenMixedAttrib<T>(idxs));
+            case 2: m_result.m_attribs.push_back(new MixedAttrib<T,2>(&*idxs.begin())); break;
+            case 3: m_result.m_attribs.push_back(new MixedAttrib<T,3>(&*idxs.begin())); break;
+            case 4: m_result.m_attribs.push_back(new MixedAttrib<T,4>(&*idxs.begin())); break;
+            case 5: m_result.m_attribs.push_back(new MixedAttrib<T,5>(&*idxs.begin())); break;
+            default: m_result.m_attribs.push_back(new GenMixedAttrib<T>(idxs)); break;
           }
         }else if(s[0] == 'x'){
+          //DEBUG_LOG("   x found at s[0]");
           int idx = get_idx(s);
           m_result.m_attribs.push_back(new MixedAttrib<T,1>(&idx));
         }else{
+          //DEBUG_LOG("   nothing found: const case");
           m_result.m_attribs.push_back(new ConstAttrib<T>(parse<int>(s)));
         }
       }
@@ -213,6 +226,8 @@ namespace icl{
       }
     
       m_buf.pinv().mult(ys, m_result.m_params);
+      //m_result.m_params.reshape(m_result.m_params.rows(), m_result.m_params.cols());
+      
       return m_result;
     }
 
@@ -225,9 +240,9 @@ namespace icl{
       for(unsigned i=0;i<xs.rows();++i){
         apply_params(m_attribs, xs.row_begin(i), m_xbuf.row_begin(i));
       }
-      
-      m_xbuf.mult(xs,m_resultBuf);
 
+      m_xbuf.mult(m_params,m_resultBuf);
+      
       return m_resultBuf;
     }
   
