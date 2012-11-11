@@ -11,19 +11,22 @@ typedef PolynomialRegression<Scalar> Reg;
 
 Scene scene;
 GenericGrabber grabber;
+Reg *reg = 0;
 
 ImgQ approx(const ImgQ &image){
-  static std::string lastF = gui["f"];
+  static std::string lastF;
   std::string currF = gui["f"];
-  static Reg *reg = new Reg(currF);
+  if(!reg) reg = new Reg(currF);
   gui["fused"] = reg->getFunctionString();
   gui["status"] = str("ok");
 
   static ImgQ rimage(image.getSize(),3);
+  rimage.setSize(image.getSize());
 
   if(lastF != currF){
     try{
       Reg *rnew = new Reg(currF);
+      if(reg) delete reg;
       reg = rnew;
       gui["fused"] = reg->getFunctionString();
       gui["status"] = str("ok");
@@ -49,7 +52,7 @@ ImgQ approx(const ImgQ &image){
       }
     }
     
-    const Reg::Result &result = reg->apply(xs,ys);
+    const Reg::Result &result = reg->apply(xs,ys,gui["use svd"]);
     
     const Matrix &z = result(xs);
     
@@ -73,10 +76,12 @@ void init_2D_demo(){
   gui << Image().handle("input")
       << Image().handle("result")
       << ( VBox().minSize(14,1)
-           << Slider(2,100,10,true).handle("cellsize").label("cell size")
+           << Slider(2,100,16).handle("cellsize").label("cell size")
+           << CheckBox("use svd").handle("use svd")
            << String("1 + x0 + x1 + x0*x1").handle("f").label("function")
            << Label("--").handle("fused").label("current function")
            << Label("--").handle("status").label("status")
+           << Label("--").handle("compression").label("compression")
            )
       << Show();
 }
@@ -168,24 +173,26 @@ void init(){
 void run_2D(){
   ImgQ image = *grabber.grab()->as32f();
   int cellsize = gui["cellsize"];
-  while(image.getWidth() % cellsize || image.getHeight() & cellsize) --cellsize;
+  while( (image.getWidth() % cellsize) || (image.getHeight() % cellsize)) --cellsize;
+
   static ImgQ result(image.getSize(),formatRGB);
   static ImgQ tmpa(Size(cellsize,cellsize),formatRGB);
   tmpa.setSize(Size(cellsize,cellsize));
-      
-  tic();
+  
   for(int y=0;y<image.getHeight()/cellsize;++y){
     for(int x=0;x<image.getWidth()/cellsize;++x){
       Rect r(x*cellsize,y*cellsize,cellsize,cellsize);
       image.setROI(r);
       result.setROI(r);
-      
       image.deepCopyROI(&tmpa);
       roi(result) = approx(tmpa);
     }
   }
-  toc();
 
+  int ts = tok(reg->getFunctionString(),"+").size();
+  int orig = cellsize * cellsize * 3;
+  int compr = ts * 3 * sizeof(float);
+  gui["compression"] = str((int)((float(compr)/orig)*100))+ "%";
   gui["input"] = &image;
   gui["result"] = &result;
   

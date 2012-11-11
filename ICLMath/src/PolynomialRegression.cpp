@@ -157,6 +157,7 @@ namespace icl{
     template<class T>
     PolynomialRegression<T>::PolynomialRegression(const std::string &function){
       std::vector<std::string> ts = icl::utils::tok(remove_spaces(function),"+");
+      int maxIdx = -1;
       for(size_t i=0;i<ts.size();++i){
         const std::string &s =  ts[i];
         //DEBUG_LOG("processing token " << s);
@@ -166,6 +167,8 @@ namespace icl{
           std::vector<std::string> ab = icl::utils::tok(s,"^");
           ICLASSERT_THROW(ab.size() == 2, ICLException("PolynomialRegression: error in token: " + s));
           int idx = get_idx(ab[0]);
+          if(idx > maxIdx) maxIdx = idx;
+          
           float exponent = parse<float>(ab[1]);
           if(is_int(exponent) && exponent < 6){
             //DEBUG_LOG("      int < 6 case");
@@ -188,6 +191,7 @@ namespace icl{
           std::vector<int> idxs(vars.size());
           for(size_t j=0;j<idxs.size();++j){
             idxs[j] = get_idx(vars[j]);
+            if(idxs[j] > maxIdx) maxIdx = idxs[j];
           }
           //if(idxs.size() < 6){
           //  DEBUG_LOG("      n < 6 case");
@@ -204,28 +208,32 @@ namespace icl{
         }else if(s[0] == 'x'){
           //DEBUG_LOG("   x found at s[0]");
           int idx = get_idx(s);
+          if(idx > maxIdx) maxIdx = idx;
           m_result.m_attribs.push_back(new MixedAttrib<T,1>(&idx));
         }else{
           //DEBUG_LOG("   nothing found: const case");
           m_result.m_attribs.push_back(new ConstAttrib<T>(parse<int>(s)));
         }
       }
+      m_result.m_attribMaxIndex = maxIdx;
     }
     
   
 
     template<class T>
-    const typename PolynomialRegression<T>::Result &PolynomialRegression<T>::apply(const typename PolynomialRegression<T>::Matrix &xs, 
-                                                                     const typename PolynomialRegression<T>::Matrix &ys){
+    const typename PolynomialRegression<T>::Result &
+    PolynomialRegression<T>::apply(const typename PolynomialRegression<T>::Matrix &xs, 
+                                   const typename PolynomialRegression<T>::Matrix &ys,bool useSVD){
       ICLASSERT_THROW(xs.rows() == ys.rows(),ICLException("PolynomialRegression::apply: xs.rows() must be equal to ys.rows()"));
-    
+      const int &M  = m_result.m_attribMaxIndex;
+      ICLASSERT_THROW(xs.cols() > M,ICLException("PolynomialRegression::apply: maximum attribute index found is " + str(M) + " but the given data matrix (xs) has only " + str(xs.cols()) + " columns"));
       m_buf.setBounds(m_result.m_attribs.size(), xs.rows());
     
       for(unsigned int i=0;i<xs.rows();++i){
         apply_params(m_result.m_attribs, xs.row_begin(i), m_buf.row_begin(i));
       }
     
-      m_buf.pinv().mult(ys, m_result.m_params);
+      m_buf.pinv(useSVD).mult(ys, m_result.m_params);
       //m_result.m_params.reshape(m_result.m_params.rows(), m_result.m_params.cols());
       
       return m_result;
