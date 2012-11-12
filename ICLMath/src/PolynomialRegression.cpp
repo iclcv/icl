@@ -226,7 +226,7 @@ namespace icl{
                                    const typename PolynomialRegression<T>::Matrix &ys,bool useSVD){
       ICLASSERT_THROW(xs.rows() == ys.rows(),ICLException("PolynomialRegression::apply: xs.rows() must be equal to ys.rows()"));
       const int &M  = m_result.m_attribMaxIndex;
-      ICLASSERT_THROW(xs.cols() > M,ICLException("PolynomialRegression::apply: maximum attribute index found is " + str(M) + " but the given data matrix (xs) has only " + str(xs.cols()) + " columns"));
+      ICLASSERT_THROW((int)xs.cols() > M,ICLException("PolynomialRegression::apply: maximum attribute index found is " + str(M) + " but the given data matrix (xs) has only " + str(xs.cols()) + " columns"));
       m_buf.setBounds(m_result.m_attribs.size(), xs.rows());
     
       for(unsigned int i=0;i<xs.rows();++i){
