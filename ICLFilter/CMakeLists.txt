@@ -71,6 +71,7 @@ add_libsource (${PROJECT_NAME} "src/WeightedSumOp.cpp" "${CONDITIONLIST}" LIB_SO
 add_libsource (${PROJECT_NAME} "src/WarpOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/FFTOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/IFFTOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/MotionSensitiveTemporalSmoothing.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 if(NOT APPLE)
 add_libsource (${PROJECT_NAME} "src/ColorSegmentationOp.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 endif()
@@ -93,6 +94,7 @@ add_example (${PROJECT_NAME} "warp-op-demo" "${CONDITIONLIST}" ICLLibsToLinkAgai
 add_example (${PROJECT_NAME} "affine-op-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "filter-array" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "fft-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "temporal-smoothing-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLGeom)
 add_example (${PROJECT_NAME} "color-segmentation" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
