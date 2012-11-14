@@ -65,6 +65,7 @@ add_libsource (${PROJECT_NAME} "src/PointCloudCreator.cpp" "${CONDITIONLIST}" LI
 add_libsource (${PROJECT_NAME} "src/PointCloudObject.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/PointCloudObjectBase.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/OctreeObject.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/PlotWidget3D.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
 set(CONDITIONLIST HAVE_OPENCV_COND HAVE_PCL_COND)
 add_libsource (${PROJECT_NAME} "src/PCLPointCloudObject.cpp" "${CONDITIONLIST}" LIB_SOURCES)
