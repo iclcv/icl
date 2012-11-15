@@ -94,16 +94,9 @@ using namespace icl::core;
 using namespace icl::qt;
 namespace{
   
-  struct Assign{
-    std::string srcType,dstType,srcRTTI,dstRTTI;
-    Assign(const std::string &srcType, const std::string &dstType, 
-           const std::string &srcRTTI, const std::string &dstRTTI):
-      srcType(srcType),dstType(dstType),srcRTTI(srcRTTI),dstRTTI(dstRTTI){}
-    virtual bool operator()(void *src, void *dst){ return false; }
-  };
-  
+ 
   template<class S, class D>
-  struct AssignSpecial : public Assign{
+  struct AssignSpecial : public DataStore::Assign{
     AssignSpecial(const std::string &srcType, const std::string &dstType):
       Assign(srcType,dstType,DataStore::get_type_name<S>(),DataStore::get_type_name<D>()){}
     bool apply(S &src, D &dst){ dst = static_cast<D>(src); return true; }
@@ -259,7 +252,7 @@ INST_OTHER_TYPES
     FROM_TO(Any,S,HOW_TO)       
 
 #define FROM_TO(S,D,HOW)                                                         \
-    template<> struct AssignSpecial<S,D> : public Assign{                        \
+    template<> struct AssignSpecial<S,D> : public DataStore::Assign{             \
         AssignSpecial(const std::string &srcType, const std::string &dstType):   \
           Assign(srcType,dstType,DataStore::get_type_name<S>(),                  \
                  DataStore::get_type_name<D>()){}                                \
@@ -467,7 +460,7 @@ INST_OTHER_TYPES
 }
 
 
-typedef std::map<const std::string, std::map< const std::string, Assign*> > AssignMap;
+typedef std::map<const std::string, std::map< const std::string, DataStore::Assign*> > AssignMap;
 
 namespace icl{
   namespace qt{
@@ -737,8 +730,14 @@ namespace icl{
       static AssignMap *am = create_assign_map();
       return am;
     }
+
+    void DataStore::register_assignment_rule(Assign *assign){
+      AssignMap &m = *create_singelton_assign_map();
+      m[assign->srcRTTI][assign->dstRTTI] = assign;
+    }
     
-    void DataStore::Data::assign(void *src, const std::string &srcType, void *dst, const std::string &dstType) throw (DataStore::UnassignableTypesException){
+    void DataStore::Data::assign(void *src, const std::string &srcType, 
+                                 void *dst, const std::string &dstType) throw (DataStore::UnassignableTypesException){
       AssignMap *am = create_singelton_assign_map();
       AssignMap::iterator it1 = am->find(srcType);
       if(it1 == am->end()){
@@ -774,13 +773,13 @@ namespace icl{
     }
   
     typedef AssignMap::const_iterator It;
-    typedef std::map<const std::string, Assign*>::const_iterator Jt;
+    typedef std::map<const std::string, DataStore::Assign*>::const_iterator Jt;
     
     AssignMap translate_assign_map(const AssignMap *m){
       AssignMap d;
       for(It it = m->begin(); it != m->end(); ++it){
         for(Jt jt = it->second.begin(); jt != it->second.end();++jt){
-          Assign *a = jt->second;
+          DataStore::Assign *a = jt->second;
           if(a) d[a->srcType][a->dstType] = a;
         }
       }

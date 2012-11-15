@@ -83,6 +83,7 @@ add_example (${PROJECT_NAME} "superquadric-demo" "${CONDITIONLIST}" ICLLibsToLin
 add_example (${PROJECT_NAME} "show-scene" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "kinect-normals-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "generic-texture-coords-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "plot-widget-3D-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLCV)
 add_example (${PROJECT_NAME} "simplex-2D-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)

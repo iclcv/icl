@@ -44,10 +44,80 @@ namespace icl{
     using namespace core;
     using namespace qt;
 
+    struct CoordinateFrameObject3D : public SceneObject{
+      PlotWidget3D *parent;
+      CoordinateFrameObject3D(PlotWidget3D *parent):parent(parent){
+        addVertex(Vec(1,-1,1,1));
+        addVertex(Vec(1,1,1,1));
+        addVertex(Vec(-1,1,1,1));
+        addVertex(Vec(-1,-1,1,1));
+
+        addVertex(Vec(1,-1,-1,1));
+        addVertex(Vec(1,1,-1,1));
+        addVertex(Vec(-1,1,-1,1));
+        addVertex(Vec(-1,-1,-1,1));
+
+        for(int i=0;i<4;++i){
+          addLine(i,(i+1)%4);
+          addLine(4+i,4+(i+1)%4);
+          addLine(i,i+4);
+        }
+
+      }
+      virtual void prepareForRendering(){
+        // todo obtain parent view-port (which could be dynamically computed)
+        // adapt tics and tic-labels (if neccessary)
+        
+        // perhaps, the cs-object could have 2 modes (either showing all 6 sides)
+        // or only the back-sides (which could be opaque or semitransparent then)
+        
+        // actually, what do we do with all the properties:
+        // IDEA: the PlotWidget3D could be configurable and add a new
+        // Special Button to itself (because it is actually also an ICLWidget)
+      }
+
+      // we do this in OpenGL directly
+      virtual void customRender(){
+        /*
+        float color[] = { 1,1,1,1 };
+        glColor4fv(color);
+        glBegin(GL_LINE_STRIP);
+        glVertex3f(-1,-1,-1);
+        glVertex3f(1,-1,-1);
+        glVertex3f(1,1,-1);
+        glVertex3f(-1,1,-1);
+        glVertex3f(-1,-1,-1);
+        glEnd();
+
+        glBegin(GL_LINE_STRIP);
+        glVertex3f(-1,-1,1);
+        glVertex3f(1,-1,1);
+        glVertex3f(1,1,1);
+        glVertex3f(-1,1,1);
+        glVertex3f(-1,-1,1);
+        glEnd();
+        
+        glBegin(GL_LINES);
+        glVertex3f(-1,-1,-1); glVertex3f(-1,-1,1);
+        glVertex3f(1,-1,-1); glVertex3f(1,-1,1);
+        glVertex3f(1,1,-1); glVertex3f(1,1,1);
+        glVertex3f(-1,1,-1); glVertex3f(-1,1,1);
+        glEnd();
+        */
+      }
+    };
 
     struct PlotWidget3D::Data{
       Scene scene;
       Range32f viewport[3];
+      
+      // TODO: all visible stuff is always added to the root object
+      // the root object is used to set the scale-part of it's transformation
+      // so that all scene objects (or more precisely the plot3D's 3D-viewport)
+      // is automatically fit into the [-1,1]^3 cube, which is the 3D coordinate frame
+      
+      SceneObject *rootObject;
+      CoordinateFrameObject3D *coordinateFrame;
     };
     
     PlotWidget3D::PlotWidget3D(QWidget *parent):ICLDrawWidget3D(parent),m_data(new Data){
@@ -58,6 +128,12 @@ namespace icl{
       
       install(m_data->scene.getMouseHandler(0));
       link(m_data->scene.getGLCallback(0));
+      
+      m_data->rootObject = new SceneObject;
+      m_data->scene.addObject(m_data->rootObject);
+      
+      m_data->coordinateFrame = new CoordinateFrameObject3D(this);
+      m_data->scene.addObject(m_data->coordinateFrame);
     }
 
 
@@ -80,15 +156,12 @@ namespace icl{
       return m_data->scene;
     }
     
-
-
-
-
-
-
-
-
-
+    SceneObject *PlotWidget3D::getRootObject(){
+      return m_data->rootObject;
+    }
+    const SceneObject *PlotWidget3D::getRootObject() const{
+      return m_data->rootObject;
+    }
 
     
 
@@ -97,9 +170,12 @@ namespace icl{
 
       struct Plot3DGUIWidget : public GUIWidget{
         PlotWidget3D *draw;
-        Plot3DGUIWidget(const GUIDefinition &def):GUIWidget(def,0,0){
+        Plot3DGUIWidget(const GUIDefinition &def):GUIWidget(def,6,6,GUIWidget::gridLayout,Size(16,12)){
           draw = new PlotWidget3D(this);
-          
+          draw->setViewPort(Range32f(def.floatParam(0),def.floatParam(1)),
+                            Range32f(def.floatParam(2),def.floatParam(3)),
+                            Range32f(def.floatParam(4),def.floatParam(5)));
+                            
           addToGrid(draw);
           
           if(def.handle() != ""){
@@ -123,10 +199,17 @@ namespace icl{
         }
         return w;
       }
-
+      
+      void assign_plot_handle_3D(const PlotHandle3D &src, PlotHandle3D &dst){
+        dst = src;
+      }
+      
       struct Plot3DGUIWidgetRegisterer{
         Plot3DGUIWidgetRegisterer(){ 
+          DEBUG_LOG("registering type plot3D");
           qt::GUI::register_widget_type("plot3D",create_plot_3D_widget_instance);
+          
+          qt::DataStore::register_trivial_assignment_rule<PlotHandle3D,PlotHandle3D>("PlotHandle3D","PlotHandle3D");
         }
       } plot3DWidgetRegisterer; 
     }

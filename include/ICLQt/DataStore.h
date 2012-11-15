@@ -219,6 +219,63 @@ namespace icl{
       /// gives a list of possible assignemts for optinally given src and dst Type
       static void list_possible_assignments(const std::string &srcType, const std::string &dstType);
       
+      /// internally used assignment structure
+      struct Assign{
+        std::string srcType,dstType,srcRTTI,dstRTTI;
+        Assign(const std::string &srcType, const std::string &dstType, 
+               const std::string &srcRTTI, const std::string &dstRTTI):
+        srcType(srcType),dstType(dstType),srcRTTI(srcRTTI),dstRTTI(dstRTTI){}
+
+        virtual bool operator()(void *src, void *dst){ return false; }
+      };
+  
+
+      private:
+      
+      /// internal assign method
+      static void register_assignment_rule(Assign *assign);
+      
+      public:
+      
+      /// registers a new assignment rule to the DataStore class
+      /** After the call, the two types can be assigned (for reading
+          and writing DataStore entries) */
+      template<class SRC, class DST>
+      static inline void register_assignment_rule(const std::string &srcTypeName,
+                                                  const std::string &dstTypeName,
+                                                  utils::Function<void,const SRC&,DST&> assign){
+        struct TypeDependentAssign : public Assign{
+          utils::Function<void,const SRC&,DST&> assign;
+          TypeDependentAssign(const std::string &srcTypeName, const std::string &dstTypeName,
+                              utils::Function<void,const SRC&,DST&> assign):
+          Assign(srcTypeName, dstType, get_type_name<SRC>(), get_type_name<DST>()),assign(assign){}
+          
+          virtual bool operator()(void *src, void *dst){ 
+            assign( *(const SRC*)src, *(DST*)dst );
+            return true;
+          }
+        };
+        register_assignment_rule(new TypeDependentAssign(srcTypeName,dstTypeName,assign));
+      }
+
+      /// registers trivial assignment rule to the DataStore class
+      /** Trivial assignments are performed using
+          dst = src */
+      template<class SRC, class DST>
+      static inline void register_trivial_assignment_rule(const std::string &srcTypeName,
+                                                          const std::string &dstTypeName){
+        struct TypeDependentTrivialAssign : public Assign{
+          TypeDependentTrivialAssign(const std::string &srcTypeName, const std::string &dstTypeName):
+          Assign(srcTypeName, dstTypeName, get_type_name<SRC>(),  get_type_name<DST>()){}
+          
+          virtual bool operator()(void *src, void *dst){ 
+            *(DST*)dst = *(const SRC*)src;
+            return true;
+          }
+        };
+        register_assignment_rule(new TypeDependentTrivialAssign(srcTypeName,dstTypeName));
+      }
+      
     };
   } // namespace qt
 }

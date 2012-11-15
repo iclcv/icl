@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLGeom/PlotWidget3D.h                         **
-** Module : ICLGeom                                                **
+** File   : include/ICLGeom/Plot3D.h                               **
+** Module : ICLQt                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -34,31 +34,45 @@
 
 #pragma once
 
-#include <ICLQt/DrawWidget3D.h>
-#include <ICLGeom/Scene.h>
-
+#include <ICLQt/GUIComponent.h>
+#include <ICLUtils/Range.h>
+#include <ICLGeom/PlotWidget3D.h>
+#include <ICLGeom/PlotHandle3D.h>
 
 namespace icl{
   namespace geom{
-
-    class PlotWidget3D : public qt::ICLDrawWidget3D{
-      struct Data;
-      Data *m_data;
+  
+    /// Specialized 3D visualization component intended for 3D-box plots (needs ICLGeom-library to be linked)
+    /** Creates a geom::PlotHandle3D, optimized for 3D-box plots. Internally, the created PlotWidget3D consists
+        of an inherited ICLDrawWidget3D, a geom::Scene and a geom::Camera that are autpmatically created and 
+        linked to the visualization and mouse interaction 
+        
+        \section INC Including
+        Please note, that including this class will automaticall also include the
+        dependent classes PlotWidget3D and PlotHandle3D for convenience reasons
+        */
+    struct Plot3D : public qt::GUIComponent{
+      private:
+      /// internally used utility method
+      static std::string form_args(const utils::Range32f &xrange,
+                                   const utils::Range32f &yrange,
+                                   const utils::Range32f &zrange){
+        std::ostringstream str;
+        str << xrange.minVal << ',' << xrange.maxVal << ',' 
+            << yrange.minVal << ',' << yrange.maxVal << ','
+            << zrange.minVal << ',' << zrange.maxVal;
+        return str.str();
+      }
 
       public:
-
-      PlotWidget3D(QWidget *parent=0);
-      ~PlotWidget3D();
-      
-      void setViewPort(const utils::Range32f &xrange,
-                       const utils::Range32f &yrange,
-                       const utils::Range32f &zrange);
-      
-      Scene &getScene();
-      const Scene &getScene() const;
-      
-      SceneObject *getRootObject();
-      const SceneObject *getRootObject() const;
+      /// create Plot3D component with given defaultViewPortsize
+      /** The given defaultViewPortsize is to create an OpenGL viewport as long as no
+          backgrond image is given. */
+      Plot3D(const utils::Range32f &xrange=utils::Range32f(-1,1), 
+             const utils::Range32f &yrange=utils::Range32f(-1,1), 
+             const utils::Range32f &zrange=utils::Range32f(-1,1)):
+      qt::GUIComponent("plot3D",form_args(xrange,yrange,zrange)){}
     };
+
   }
 }
