@@ -278,6 +278,7 @@ namespace icl{
       std::vector<SmartPtr<VolatileUpdater> > timers;
       Configurable *conf;
       GUI gui;
+      GUI sub_gui;
       bool deactivateExec;
       std::string processingProperty;
   
@@ -407,6 +408,30 @@ namespace icl{
           ERROR_LOG("unable to create GUI-component for property \"" << p.full << "\" (unsupported property type: \"" + t+ "\")");
         }
        }
+
+      bool isSpecialGrabberGrabberProperty(Configurable* c, const std::string &prop){
+        if(dynamic_cast<io::Grabber*>(conf)){
+          const unsigned int propcount = 5;
+          const std::string properties[propcount] = {"format", "size", "desired format", "desired size", "desired depth"};
+          for (unsigned int i = 0; i < propcount; ++i){
+            if(properties[i] == prop) return true;
+          }
+        }
+        return false;
+      }
+
+      StSt getStSt(std::map<std::string,std::vector<StSt> > &map, std::string name){
+        for(std::map<std::string,std::vector<StSt> >::iterator it=map.begin();it != map.end();++it){
+          for(unsigned int i=0;i<it->second.size();++i){
+            if((it->second[i]).full == name){
+              return it->second[i];
+            }
+          }
+        }
+
+        ERROR_LOG("Could not find " << name << "property in map.");
+        return StSt("error", "error");
+      }
   
       ConfigurableGUIWidget(const GUIDefinition &def):GUIWidget(def,1,1,GUIWidget::gridLayout, Size(8,12)),deactivateExec(false), processingProperty(""){
         conf = Configurable::get(def.param(0));
@@ -439,14 +464,33 @@ namespace icl{
           tablist += (tablist.length()?",":"")+it->first;
           ++i;
         }
-        
-        gui = Tab(tablist,this).handle("__the_tab__");
-  
+        gui = HSplit(this).handle("__the_root__");
+        bool use_tabs = sections.size() > 1;
+        if(use_tabs){
+          sub_gui = Tab(tablist,this).handle("__the_tab__");
+        } else {
+          sub_gui = VBox(this).handle("__the_tab__");
+        }
+
         std::ostringstream ostr;
+
+        // special treatment of grabbers
+        if(dynamic_cast<io::Grabber*>(conf)){
+          GUI general_box = VBox(this).handle("__the_box__").label("general parameters");
+          add_component(general_box,getStSt(sections, "format"),ostr,gui);
+          add_component(general_box,getStSt(sections, "size"),ostr,gui);
+          add_component(general_box,getStSt(sections, "desired format"),ostr,gui);
+          add_component(general_box,getStSt(sections, "desired size"),ostr,gui);
+          add_component(general_box,getStSt(sections, "desired depth"),ostr,gui);
+          gui << HSplit() <<  general_box;
+        }
+
         for(std::map<std::string,std::vector<StSt> >::iterator it=sections.begin();it != sections.end();++it){
           GUI tab = VScroll();
           for(unsigned int i=0;i<it->second.size();++i){
-            add_component(tab,it->second[i],ostr,gui);          
+            if(!isSpecialGrabberGrabberProperty(conf,(it->second[i]).full)){
+              add_component(tab,it->second[i],ostr,gui);
+            }
           }
           if(it->first == "general"){
             tab << ( HBox()
@@ -457,12 +501,14 @@ namespace icl{
             ostr <<  '\1' << "#X#load";
             ostr <<  '\1' << "#X#save";
           }
-          gui << tab;
+          sub_gui << tab;
         }
-        
+        gui << sub_gui;
         gui.create();
         
-        (**gui.get<TabHandle>("__the_tab__")).setCurrentIndex(generalIdx);
+        if(use_tabs){
+          (**gui.get<TabHandle>("__the_tab__")).setCurrentIndex(generalIdx);
+        }
         
         std::string cblist = ostr.str();
         if(cblist.size() > 1){
@@ -496,7 +542,8 @@ namespace icl{
         }else if( type == "menu" || type == "value-list" || type == "valueList"){
           std::string handle = (type == "menu" ? "#m#" : "#v#")+name;
           //     DEBUG_LOG("handle is " << handle << " value is " << conf->getPropertyValue(name));
-          gui.get<ComboHandle>(handle).setSelectedItem(conf->getPropertyValue(name));
+          ComboHandle c = gui.get<ComboHandle>(handle);
+          //c.setSelectedItem(conf->getPropertyValue(name));
         }else if( type == "info"){
           gui["#i#"+name] = conf->getPropertyValue(name);
         }else if( type == "flag"){
@@ -561,9 +608,8 @@ namespace icl{
       }
   
     };
-#if 1
 
-    struct CamCfgWidget : public Tab {
+    struct CamPropertyWidget : public Tab {
 
       static std::string create_tab_list(){
          const std::vector<io::GrabberDeviceDescription> devs =
@@ -575,27 +621,15 @@ namespace icl{
         return ret.str();
       }
 
-      CamCfgWidget(const std::string &deviceFilter, bool full=false)
+      CamPropertyWidget()
         : Tab(create_tab_list())
       {
         minSize(32,24);
-        const std::vector<io::GrabberDeviceDescription> devs =
-           io::GenericGrabber::getDeviceList(deviceFilter,false);
+        std::vector<io::GrabberDeviceDescription> devs = io::GenericGrabber::getDeviceList("",false);
         for(unsigned int i = 0; i < devs.size(); ++i){
-          std::string confname = devs.at(i).name();
-          if(full){
-            *this << ( HSplit()
-                  << (VBox().label("general parameters")
-                      << Label("def.param(0)")
-                      << Slider(0,255,10).label("test")
-                     )
-                  << Prop(confname).label(confname)
-                     );
-          } else {
-            minSize(32,24);
-            *this << Prop(confname).label(confname);
-          }
+          *this << Prop(devs.at(i).name()).label(devs.at(i).name());
         }
+        *this << Create();
       }
     };
 
@@ -606,21 +640,17 @@ namespace icl{
       CamCfgGUIWidget(const GUIDefinition &def):
         GUIWidget(def,0,0), m_cfg(NULL), m_button(NULL)
       {
-        if(def.numParams() != 0){
-          throw GUISyntaxErrorException(def.defString(),"camcfg does not take parameters");
+        if(def.numParams() != 0  && def.numParams() != 2){
+          throw GUISyntaxErrorException(def.defString(),"camcfg can take 0 or 2 parameters");
         }
-        m_button = new QPushButton("camcfg",this);
-        connect(m_button,SIGNAL(clicked()),this,SLOT(ioSlot()));
-
-        if(def.hasToolTip()){
-          WARNING_LOG("tooltip is not supported for the Camera Configuration GUI component!");
+        if(def.numParams() == 0){
+          m_button = new QPushButton("camcfg",this);
+          connect(m_button,SIGNAL(clicked()),this,SLOT(ioSlot()));
+          addToGrid(m_button);
+        } else {
+          if(!m_cfg) m_cfg = new CamPropertyWidget();
+          addToGrid(m_cfg -> getRootWidget());
         }
-
-        if(def.numParams()){
-          devType = def.param(0);
-          devID = def.param(1);
-        }
-        addToGrid(m_button);
 
         if(def.hasToolTip()){
           WARNING_LOG("tooltip is not supported for the Camera Configuration GUI component!");
@@ -628,57 +658,18 @@ namespace icl{
       }
 
       virtual void processIO(){
-          if(!m_cfg) m_cfg = new GUI();
-          GUI g;
-          g << CamCfgWidget("");
-          g << Show();
+          if(!m_cfg) m_cfg = new CamPropertyWidget();
+          m_cfg->show();
       }
 
       static string getSyntax(){
         return string("camcfg()[general params]\n")+gen_params();
       }
       
-      GUI *m_cfg;
+      CamPropertyWidget *m_cfg;
       QPushButton *m_button;
-      std::string devType,devID;
     };
-#else
-    struct CamCfgGUIWidget : public GUIWidget{
-      // {{{ open
-      CamCfgGUIWidget(const GUIDefinition &def):GUIWidget(def,0,2){
-        if(def.numParams() == 2){
-          throw GUISyntaxErrorException(def.defString(),"camcfg can take 0 or 2 parameters");
-        }
-        m_button = new QPushButton("camcfg",this);
-        connect(m_button,SIGNAL(clicked()),this,SLOT(ioSlot()));
-  
-        if(def.hasToolTip()){
-          WARNING_LOG("tooltip is not supported for the Camera Configuration GUI component!");
-        }
-        
-        if(def.numParams()){
-          devType = def.param(0);
-          devID = def.param(1);
-        }
-        m_cfg = 0;
-  
-        addToGrid(m_button);
-      }
-      virtual void processIO(){
-        if(!m_cfg){
-          m_cfg = new CamCfgWidget(devType,devID);
-        }
-        m_cfg->show();
-      }
-      static string getSyntax(){
-        return string("camcfg(devType="",devID="")[general params]\n")+gen_params();
-      }
-      CamCfgWidget *m_cfg;
-      QPushButton *m_button;
-      std::string devType,devID;
-    };
-#endif
-  
+
     struct ScrollGUIWidgetBase : public GUIWidget, public ProxyLayout{
       // {{{ open
   

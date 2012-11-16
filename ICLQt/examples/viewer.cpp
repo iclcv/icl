@@ -37,31 +37,28 @@
 
 GUI gui;
 GenericGrabber grabber;
-GenericGrabber grabber2;
 
 void run(){
   static FPSLimiter fps(pa("-maxfps"),10);
   
   gui["image"] = grabber.grab();
-  gui["image2"] = grabber2.grab();
   gui["fps"].render();
   fps.wait();
 }
 
 void init(){
-  grabber.init(pa("-i"));
-  grabber2.init("file", "file=/vol/isy/SS2012/TUMIT/media/Pictures/wallpapers/*.jpg");
-
   gui << Image().handle("image").minSize(16,12);
-  gui << Image().handle("image2").minSize(16,12);
-  grabber.setConfigurableID("grabcfg");
-  gui << Fps(10).handle("fps").maxSize(100,2).minSize(5,2);
-  gui << CamCfg() << Show();
+  gui << ( HBox().maxSize(100,2)
+           << Fps(10).handle("fps").maxSize(100,2).minSize(5,2)
+           << CamCfg("")
+           )
+      << Show();
 
+  grabber.init(pa("-i"));
   if(pa("-size")){
     grabber.useDesired<Size>(pa("-size"));
-    grabber2.useDesired<Size>(pa("-size"));
   }
+
 }
 
 int main(int n, char**ppc){

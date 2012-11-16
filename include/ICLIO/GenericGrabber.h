@@ -190,6 +190,9 @@ namespace icl {
         ICLASSERT_RETURN_VAL(!isNull(),0);
         return m_poGrabber->acquireImage();
       }
+
+      /// callback for changed configurable properties
+      void processPropertyChange(const utils::Configurable::Property &prop);
   
       /// returns a list of all properties, that can be set
       virtual std::vector<std::string> getPropertyListC(){

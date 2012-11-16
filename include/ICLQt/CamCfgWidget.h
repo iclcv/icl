@@ -42,11 +42,6 @@
 
 namespace icl{
   namespace qt{
-  
-#if 1
-
-
-#else
 
     /// Special QWidget implementation for configuring grabber properties
     /** \section GEN General Information
@@ -124,7 +119,7 @@ namespace icl{
       private:
       void scan();
     };
-#endif
+
   } // namespace qt
 }
 

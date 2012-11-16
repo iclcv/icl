@@ -119,12 +119,10 @@ int main(int n, char **ppc){
     }
   }else{
     QApplication a(n,ppc);
-    //CamCfgWidget w(devlist,0);
-    GUI g;
-    g << CamCfg() << Show();
-    //w.setGeometry(50,50,700,700);
-    //w.setWindowTitle("icl-camcfg (ICL' Camera Configuration Tool)");
-    //w.show();
+    CamCfgWidget w(devlist,0);
+    w.setGeometry(50,50,700,700);
+    w.setWindowTitle("icl-camcfg (ICL' Camera Configuration Tool)");
+    w.show();
     return a.exec();
   }
 }

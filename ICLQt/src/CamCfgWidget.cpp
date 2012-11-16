@@ -62,9 +62,6 @@ using namespace icl::io;
 namespace icl{
   namespace qt{
 
-#if 1
-
-#else
     struct VolatileUpdater : public QTimer{
       std::string prop;
       GUI &gui;
@@ -572,7 +569,6 @@ namespace icl{
         
       }
     }
-#endif
   } // namespace qt
 }
 

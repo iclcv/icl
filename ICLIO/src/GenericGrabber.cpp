@@ -179,7 +179,8 @@ namespace icl{
                      errStr += std::string(P)+"("+pmap[P].id+")" 
   
       std::vector<std::string> l = tok(desiredAPIOrder,",");
-      for(unsigned int i=0;i<l.size();++i){
+      unsigned int i;
+      for(i=0;i<l.size();++i){
         
         const bool createListOnly = (l[i] == "list");
         std::vector<std::string> supportedDevices;
@@ -459,8 +460,6 @@ namespace icl{
             if(FileList(pmap["file"].id).size()){
               m_sType = "file";
               m_poGrabber = new FileGrabber(pmap["file"].id);
-              DEBUG_LOG("[file] " + pmap["file"].id);
-              m_poGrabber->setConfigurableID("[file] " + pmap["file"].id);
               break;
             }else{
               ADD_ERR("file");
@@ -498,7 +497,12 @@ namespace icl{
         std::string errMsg("generic grabber was not able to find any suitable device\ntried:");
         throw ICLException(errMsg+errStr);
       }else{
+        setConfigurableID("[" + m_sType + "] " + pmap[m_sType].id);
         // add internal grabber as child-configurable
+        addProperty("desired size", "menu", "not used,QQVGA,QVGA,VGA,SVGA,XGA,XGAP,UXGA", "not used", 0, "");
+        addProperty("desired depth", "menu", "not used,depth8u,depth16s,depth32s,depth32f,depth64f", "not used", 0, "");
+        addProperty("desired format", "menu", "not used,formatGray,formatRGB,formatHLS,formatYUV,formatLAB,formatChroma,formatMatrix", "not used", 0, "");
+        Configurable::registerCallback(utils::function(this,&GenericGrabber::processPropertyChange));
         addChildConfigurable(m_poGrabber);
 
         GrabberDeviceDescription d(m_sType,pmap[m_sType].id,"any device");
@@ -542,6 +546,28 @@ namespace icl{
         }
       }
     }  
+
+    void GenericGrabber::processPropertyChange(const utils::Configurable::Property &prop){
+      if(prop.name == "desired size"){
+        if(prop.value == "not used"){
+          ignoreDesired<Size>();
+        } else {
+          setDesiredSizeInternal(Size(prop.value));
+        }
+      } else if (prop.name == "desired depth"){
+        if(prop.value == "not used"){
+          ignoreDesired<depth>();
+        } else {
+          setDesiredDepthInternal(parse<depth>(prop.value));
+        }
+      } else if (prop.name == "desired format"){
+        if(prop.value == "not used"){
+          ignoreDesired<format>();
+        } else {
+          setDesiredFormatInternal(parse<format>(prop.value));
+        }
+      }
+    }
     
     void GenericGrabber::resetBus(const std::string &deviceList, bool verbose){
       std::vector<std::string> ts = tok(deviceList,",");
