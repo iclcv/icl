@@ -39,11 +39,30 @@
 HSplit gui;
 GenericGrabber grabber;
 PseudoColorConverter pcc;
-Img8u color,image;
+Img8u image;
+Img32f color;
+void update_color(int maxSteps){
+  ::color = Img32f(Size(maxSteps+1,50),1);
+  Channel32f col = ::color[0];
+  for(int i=0;i<=maxSteps;++i){
+    for(unsigned int j=0;j<50;++j){
+      col(i,j) = i;
+    }
+  }
+}
 
 void step(const std::string &handle){
   static Mutex mutex;
   Mutex::Locker lock(mutex);
+
+  const float mult = gui["mult"];
+  static float lastMult = -1;
+  const int maxVal = mult*256;  
+  if(mult != lastMult){
+    update_color(maxVal);
+  }
+
+  lastMult = mult;
 
   if(handle == "load"){
     pcc.load(openFileDialog("XML Files (*.xml)"));
@@ -57,14 +76,30 @@ void step(const std::string &handle){
           colors.push_back(PseudoColorConverter::Stop(gui["relPos"+str(i)],gui["color"+str(i)]));
         }
       }try{
-        pcc.setColorTable(PseudoColorConverter::Custom,colors);
+        pcc.setColorTable(PseudoColorConverter::Custom,colors,maxVal);
       }catch(...){}
     }else{
-      pcc.setColorTable(PseudoColorConverter::Default);
+      pcc.setColorTable(PseudoColorConverter::Default,std::vector<PseudoColorConverter::Stop>(),maxVal);
     }
   }
-  gui["color"] = &pcc.apply(::color);
-  gui["image"] = &pcc.apply(::image);
+
+  static ImgBase *colorOut = 0;
+  pcc.apply(&::color,&colorOut);
+  gui["color"] = colorOut;
+
+  if(maxVal == 255){
+    Time t = Time::now();
+    const Img8u &res = pcc.apply(::image);
+    gui["dt"] = str(t.age().toMilliSecondsDouble()) + "ms";
+    gui["image"] = &res;
+  }else{
+    ImgQ fim = cvt(image) * mult;
+    static ImgBase *result = 0;
+    Time t = Time::now();
+    pcc.apply(&fim,&result);
+    gui["dt"] = str(t.age().toMilliSecondsDouble()) + "ms";
+    gui["image"] = result;
+  }
 }
 
 void stop_chooser(GUI &dst, int idx,float pos, float r, float g, float b){
@@ -84,14 +119,7 @@ void init(){
   grabber.init(pa("-i"));
   grabber.useDesired(formatGray);
   grabber.useDesired(depth8u);
-  
-  ::color = Img8u(Size(256,50),1);
-  ::image = *grabber.grab()->asImg<icl8u>();
-  for(unsigned int i=0;i<256;++i){
-    for(unsigned int j=0;j<50;++j){
-      ::color(i,j,0) = i;
-    }
-  }
+  grabber.grab();
   
   GUI colors = ( VBox().minSize(18,1)
                  << CheckBox("use custom gradient below").out("custom").handle("customH")
@@ -107,7 +135,9 @@ void init(){
   colors << ( HBox() 
               << Button("load").handle("load")
               << Button("save").handle("save") 
-             ); 
+             ) 
+         << FSlider(0.1,10,1).handle("mult").label("range multiplier")
+         << Label("--").handle("dt").label("time");    
   
   gui << ( VBox() 
            << Image().handle("color").minSize(32,10) 

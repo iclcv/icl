@@ -54,6 +54,7 @@ namespace icl{
     /** \cond */
     class GUIWidget;
     class ProxyLayout;
+    class GUIDefinition;
     /** \endcond */
   
     /// Main Class of ICL's GUI creation framework
@@ -70,6 +71,14 @@ namespace icl{
   
   
       public:
+      /// registered widget type creator function
+      typedef utils::Function<GUIWidget*,const GUIDefinition&> CreatorFunction;
+      
+      /// registers a new widget type
+      /** The registered widget can then be added using a corresponding extension
+          of the GUIComponent class */
+      static void register_widget_type(const std::string &tag, CreatorFunction f);
+      
       /// cell width (all sizes are given in this unit)
       static const int CELLW = 20;
       /// cell height (all sizes are given in this unit)

@@ -31,6 +31,7 @@ Table of Contents
 * :ref:`math.stochastic`
 * :ref:`math.vq2d`
 * :ref:`math.model`
+* :ref:`math.polyreg`
 
 
 .. _math.dyn:
@@ -223,12 +224,9 @@ can be implemented for specific optimization tasks.
 2D Vector Quantisation
 """"""""""""""""""""""
 
-The 2D vector quantization :icl:`VQ2D` implements the K-Means algorithm
-
-.. note::
-   
-   We are going to reimplement this class soon
-
+This algorithm is implemented by the :icl:`KMeans` class template.
+The class is implemented as a generic template, and can therefore
+be used for different Scalar and Vector types.
 
 .. _math.model:
 
@@ -239,6 +237,18 @@ The :icl:`LeastSquareModelFitting` is a
 generic implementation of the direct-least-square fitting approach
 presented in the paper *Direct Least Square Fitting of Ellipses* by
 *Andrew W. Fitzgibbon et. al.*.
+
+
+.. _math.polyreg:
+
+Generig Polynomial Regression
+"""""""""""""""""""""""""""""
+
+The :icl:`PolynomialRegression` is a
+generic template-based implementation for a polynomial regression
+network. It provides a string-based interface to define regression
+parameters.
+
 
 
 

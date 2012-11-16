@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLGeom/src/GridSceneObject.cpp                        **
-** Module : ICLGeom                                                **
+** File   : include/ICLCore/ImageRenderer.h                        **
+** Module : ICLCore                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -32,66 +32,41 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLGeom/GridSceneObject.h>
+#pragma once
 
-using namespace icl::utils;
-using namespace icl::core;
-using namespace icl::math;
-using namespace icl::qt;
+#include <ICLCore/Img.h>
+#include <ICLUtils/Uncopyable.h>
+
 
 namespace icl{
-  namespace geom{
-    void GridSceneObject::init(int nXCells, int nYCells, const std::vector<Vec> &allGridPoints, bool lines, bool quads) throw (ICLException){
-      this->nXCells = nXCells;
-      this->nYCells = nYCells;
-      
-      ICLASSERT_THROW((int)allGridPoints.size() == nXCells*nYCells,
-                      ICLException("GridSceneObject::Constructor: nXCells*nYCells differs from allGridPoints.size()!"));
-      for(int i=0;i<nXCells*nYCells;++i){
-        addVertex(allGridPoints[i]);
-        m_vertices.back()[3]=1;
-      }
-      for(int x=1;x<nXCells;++x){
-        for(int y=1;y<nYCells;++y){
-          int a = getIdx(x,y);
-          int b = getIdx(x-1,y);
-          int c = getIdx(x,y-1);
-          int d = getIdx(x-1,y-1);
-          if(lines) {
-            addLine(a,b);
-              addLine(a,c);
-          }
-          if(quads){
-            addQuad(a,b,d,c);
-          }
-        }
-      }
-      for(int x=1;x<nXCells;++x){
-        if(lines) addLine(getIdx(x,0),getIdx(x-1,0));
-      }
-      for(int y=1;y<nYCells;++y){
-        if(lines) addLine(getIdx(0,y),getIdx(0,y-1));
-      }
-    }
-  
-    GridSceneObject::GridSceneObject(int nXCells, int nYCells, const std::vector<Vec> &allGridPoints,
-                                     bool lines, bool quads) throw (ICLException){
-      init(nXCells,nYCells,allGridPoints,lines,quads);
-    }
-      
-    GridSceneObject::GridSceneObject(int nXCells, int nYCells, const Vec &origin, const Vec &dx, const Vec &dy,
-                                     bool lines, bool quads)throw (ICLException){
-      std::vector<Vec> allGridPoints; 
-      allGridPoints.reserve(nXCells*nYCells);
-      for(int y=0;y<nYCells;++y){
-        for(int x=0;x<nXCells;++x){
-          allGridPoints.push_back(origin+dx*float(x)+dy*float(y));
-        }
-      }
-      init(nXCells,nYCells,allGridPoints,lines,quads);
-    }
-  
+  namespace core{
     
-  
-  } // namespace geom
+    class ImageRenderer : public utils::Uncopyable{
+      struct Data;
+      Data *m_data;
+      
+      public:
+      ImageRenderer(ImgBase *image=0);
+      ~ImageRenderer();
+      
+      void setImage(ImgBase *image);
+      
+      void color(int r, int g, int b, int a);
+      void fill(int r, int g, int b, int a);
+      void symsize(float size);
+      void fontsize(float size);
+
+      void sym(char sym, int x, int y);
+      void rect(int x, int y, int w, int h);
+      void triangle(int x1, int y1, int x2, int y2, int x3, int y3);
+      void line(int x1, int y1, int x2, int y2);
+      void linestrip(int n, int *xs, int *ys, int xStride=1, int yStride=1);
+      void pix(int x1, int x2);
+      void pix(int n, int *xs, int *ys, int xStride=1, int yStride=1);
+      void circle(int cx, int cy, int r);
+      void ellipse(int x, int y, int w, int h);
+      void text(int x, int y, const std::string &text);
+    };
+    
+  }
 }

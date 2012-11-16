@@ -1988,43 +1988,8 @@ namespace icl{
       CompabilityLabel *m_poLabel;
     };
     
-    // }}}
-    /**
-        struct HContainerGUIWidget : public GUIWidget{
-        // {{{ open
-      HContainerGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::hboxLayout,2,0,0){
         
-        getGUI()->lockData();
-        getGUI()->allocValue<QWidget*>(def.input(0),def.parentWidget());
-        getGUI()->allocValue<QLayout*>(def.input(1),def.parentLayout());
-        getGUI()->unlockData();
-        
-        setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
-      }
-      static string getSyntax(){
-        return string("hcontainer()[general params]\n")+gen_params();
-      }
-    };
-    // }}}
-        struct VContainerGUIWidget : public GUIWidget{
-        // {{{ open
-      VContainerGUIWidget(const GUIDefinition &def):GUIWidget(def,GUIWidget::vboxLayout,2,0,0){
-        
-        getGUI()->lockData();
-        getGUI()->allocValue<QWidget*>(def.input(0),def.parentWidget());
-        getGUI()->allocValue<QLayout*>(def.input(1),def.parentLayout());
-        getGUI()->unlockData();
-        
-        setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
-      }
-      static string getSyntax(){
-        return string("vcontainer()[general params]\n")+gen_params();
-      }
-    };
-    // }}}
-    **/
-        
-        /// template for creating arbitrary GUIWidget's
+    /// template for creating arbitrary GUIWidget's
     template<class T>
     GUIWidget *create_widget_template(const GUIDefinition &def){
       // {{{ open
@@ -2040,12 +2005,55 @@ namespace icl{
   
     // }}}
     
-    /// Definition for an arbitrary GUIWidget creator function
-    typedef GUIWidget* (*gui_widget_creator_function)(const GUIDefinition &def);
+    static std::map<std::string,GUI::CreatorFunction> &get_registered_widget_types(){
+      static std::map<std::string,GUI::CreatorFunction> m;
+      return m;
+    }
     
-    // Type definition for a function map to accelerate the gui creation process
-    typedef std::map<string,gui_widget_creator_function> CreatorFuncMap;
+    void GUI::register_widget_type(const std::string &tag, GUI::CreatorFunction f){
+      get_registered_widget_types()[tag] = f;
+    }
     
+
+    struct DefaultWidgetTypeRegister{
+      DefaultWidgetTypeRegister(){
+        GUI::register_widget_type("hbox",create_widget_template<HBoxGUIWidget>);
+        GUI::register_widget_type("vbox",create_widget_template<VBoxGUIWidget>);
+        GUI::register_widget_type("hscroll",create_widget_template<HScrollGUIWidget>);
+        GUI::register_widget_type("vscroll",create_widget_template<VScrollGUIWidget>);
+        GUI::register_widget_type("button",create_widget_template<ButtonGUIWidget>);
+        GUI::register_widget_type("border",create_widget_template<BorderGUIWidget>);
+        GUI::register_widget_type("buttongroup",create_widget_template<ButtonGroupGUIWidget>);     
+        GUI::register_widget_type("togglebutton",create_widget_template<ToggleButtonGUIWidget>);
+        GUI::register_widget_type("checkbox",create_widget_template<CheckBoxGUIWidget>);
+        GUI::register_widget_type("label",create_widget_template<LabelGUIWidget>);
+        GUI::register_widget_type("slider",create_widget_template<SliderGUIWidget>);
+        GUI::register_widget_type("fslider",create_widget_template<FloatSliderGUIWidget>);
+        GUI::register_widget_type("int",create_widget_template<IntGUIWidget>);
+        GUI::register_widget_type("float",create_widget_template<FloatGUIWidget>);
+        GUI::register_widget_type("string",create_widget_template<StringGUIWidget>);
+        GUI::register_widget_type("disp",create_widget_template<DispGUIWidget>);
+        GUI::register_widget_type("image",create_widget_template<ImageGUIWidget>);
+        GUI::register_widget_type("state",create_widget_template<StateGUIWidget>);
+        GUI::register_widget_type("draw",create_widget_template<DrawGUIWidget>);
+  #ifdef HAVE_OPENGL
+        GUI::register_widget_type("draw3D",create_widget_template<DrawGUIWidget3D>);
+  #endif
+        GUI::register_widget_type("combo",create_widget_template<ComboGUIWidget>);
+        GUI::register_widget_type("spinner",create_widget_template<SpinnerGUIWidget>);
+        GUI::register_widget_type("fps",create_widget_template<FPSGUIWidget>);
+        GUI::register_widget_type("multidraw",create_widget_template<MultiDrawGUIWidget>);
+        GUI::register_widget_type("tab",create_widget_template<TabGUIWidget>);
+        GUI::register_widget_type("hsplit",create_widget_template<HSplitterGUIWidget>);
+        GUI::register_widget_type("vsplit",create_widget_template<VSplitterGUIWidget>);
+        GUI::register_widget_type("camcfg",create_widget_template<CamCfgGUIWidget>);
+        GUI::register_widget_type("prop",create_widget_template<ConfigurableGUIWidget>);
+        GUI::register_widget_type("color",create_widget_template<ColorGUIWidget>);
+        GUI::register_widget_type("ps",create_widget_template<ProcessMonitorGUIWidget>);
+        GUI::register_widget_type("plot",create_widget_template<PlotGUIWidget>);
+      }
+    } defaultWidgetTypeRegisterer;
+
     /// NEW CREATOR MAP ENTRIES HERE !!!
     /*  
         This function is called by the GUI::create function,
@@ -2054,61 +2062,14 @@ namespace icl{
         identifier to estimate which creation function must be called.         */
     GUIWidget *create_widget(const GUIDefinition &def){
       // {{{ open
-  
-      /// use a static map to accelerate the widget creation process
-      static bool first = true;
-      static CreatorFuncMap MAP_CREATOR_FUNCS;
-      if(first){
-        first = false;
-        /// Fill the map with creator function ( use the template if possible )
-        MAP_CREATOR_FUNCS["hbox"] = create_widget_template<HBoxGUIWidget>;
-        MAP_CREATOR_FUNCS["vbox"] = create_widget_template<VBoxGUIWidget>;
-        MAP_CREATOR_FUNCS["hscroll"] = create_widget_template<HScrollGUIWidget>;
-        MAP_CREATOR_FUNCS["vscroll"] = create_widget_template<VScrollGUIWidget>;
-        MAP_CREATOR_FUNCS["button"] = create_widget_template<ButtonGUIWidget>;
-        MAP_CREATOR_FUNCS["border"] = create_widget_template<BorderGUIWidget>;
-        MAP_CREATOR_FUNCS["buttongroup"] = create_widget_template<ButtonGroupGUIWidget>;     
-        MAP_CREATOR_FUNCS["togglebutton"] = create_widget_template<ToggleButtonGUIWidget>;
-        MAP_CREATOR_FUNCS["checkbox"] = create_widget_template<CheckBoxGUIWidget>;
-        MAP_CREATOR_FUNCS["label"] = create_widget_template<LabelGUIWidget>;
-        MAP_CREATOR_FUNCS["slider"] = create_widget_template<SliderGUIWidget>;
-        MAP_CREATOR_FUNCS["fslider"] = create_widget_template<FloatSliderGUIWidget>;
-        MAP_CREATOR_FUNCS["int"] = create_widget_template<IntGUIWidget>;
-        MAP_CREATOR_FUNCS["float"] = create_widget_template<FloatGUIWidget>;
-        MAP_CREATOR_FUNCS["string"] = create_widget_template<StringGUIWidget>;
-        MAP_CREATOR_FUNCS["disp"] = create_widget_template<DispGUIWidget>;
-        MAP_CREATOR_FUNCS["image"] = create_widget_template<ImageGUIWidget>;
-        MAP_CREATOR_FUNCS["state"] = create_widget_template<StateGUIWidget>;
-        MAP_CREATOR_FUNCS["draw"] = create_widget_template<DrawGUIWidget>;
-  #ifdef HAVE_OPENGL
-        MAP_CREATOR_FUNCS["draw3D"] = create_widget_template<DrawGUIWidget3D>;
-  #endif
-        MAP_CREATOR_FUNCS["combo"] = create_widget_template<ComboGUIWidget>;
-        MAP_CREATOR_FUNCS["spinner"] = create_widget_template<SpinnerGUIWidget>;
-        MAP_CREATOR_FUNCS["fps"] = create_widget_template<FPSGUIWidget>;
-        MAP_CREATOR_FUNCS["multidraw"] = create_widget_template<MultiDrawGUIWidget>;
-        MAP_CREATOR_FUNCS["tab"] = create_widget_template<TabGUIWidget>;
-        MAP_CREATOR_FUNCS["hsplit"] = create_widget_template<HSplitterGUIWidget>;
-        MAP_CREATOR_FUNCS["vsplit"] = create_widget_template<VSplitterGUIWidget>;
-        MAP_CREATOR_FUNCS["camcfg"] = create_widget_template<CamCfgGUIWidget>;
-        MAP_CREATOR_FUNCS["prop"] = create_widget_template<ConfigurableGUIWidget>;
-        MAP_CREATOR_FUNCS["color"] = create_widget_template<ColorGUIWidget>;
-        MAP_CREATOR_FUNCS["ps"] = create_widget_template<ProcessMonitorGUIWidget>;
-        MAP_CREATOR_FUNCS["plot"] = create_widget_template<PlotGUIWidget>;
-  
-        //      MAP_CREATOR_FUNCS["hcontainer"] = create_widget_template<HContainerGUIWidget>;
-        //      MAP_CREATOR_FUNCS["vcontainer"] = create_widget_template<VContainerGUIWidget>;
+      typedef std::map<std::string,GUI::CreatorFunction> tmap;
+      tmap &m = get_registered_widget_types();
+      tmap::iterator it = m.find(def.type());
+
+      if(it == m.end()){
+        throw ICLException("unable to create GUI component with type '" + def.type() + "' (unknown type)");
       }
-      
-      /// find the creator function
-      CreatorFuncMap::iterator it = MAP_CREATOR_FUNCS.find(def.type());
-      if(it != MAP_CREATOR_FUNCS.end()){
-        /// call the function if it could be found
-        return it->second(def);
-      }else{
-        ERROR_LOG("unknown type \""<< def.type() << "\"");
-        return 0;
-      }
+      return it->second(def);
     }
   
     // }}}

@@ -43,10 +43,14 @@ GenericGrabber grabDepth, grabColor;
 PointNormalEstimation *normalEstimator;
 
 ButtonGroupHandle usedFilterHandle;
+ButtonGroupHandle usedSmoothingHandle;
 ButtonGroupHandle usedAngleHandle;
 
 Img32f edgeImage(Size(320,240), formatGray);
 Img32f angleImage(Size(320,240), formatGray);
+Img8u normalImage(Size(320,240), formatRGB);
+
+Camera cam;
 
 void init(){
 
@@ -67,6 +71,7 @@ void init(){
            << ButtonGroup("unfiltered,median3x3,median5x5").handle("usedFilter")
            << Slider(1,15,2).out("normalrange").label("normal range").handle("normalrangeHandle")
            << Button("disable averaging","enable averaging").out("disableAveraging")
+           << ButtonGroup("linear,gauss").handle("usedSmoothing")
            << Slider(1,15,1).out("avgrange").label("averaging range").handle("avgrangeHandle")
            << ButtonGroup("max,mean").handle("usedAngle")
            << Slider(1,15,3).out("neighbrange").label("neighborhood range").handle("neighbrangeHandle")
@@ -76,15 +81,23 @@ void init(){
       << Image().handle("color").minSize(16,12)
       << Image().handle("angle").minSize(16,12)
       << Image().handle("edge").minSize(16,12)
+      << Image().handle("normal").minSize(16,12)
       << controls
       << Show();
+      
+  if(pa("-cam")){
+    string camname = pa("-cam");
+    cam=Camera(camname);
+    cam.setName("Depth Camera");
+  }
 
   usedFilterHandle= gui.get<ButtonGroupHandle>("usedFilter");
   usedFilterHandle.select(1);
+  usedSmoothingHandle= gui.get<ButtonGroupHandle>("usedSmoothing");
+  usedSmoothingHandle.select(0);
   usedAngleHandle= gui.get<ButtonGroupHandle>("usedAngle");
   usedAngleHandle.select(0);
 	
-
   gui.get<ImageHandle>("depth")->setRangeMode(ICLWidget::rmAuto);
   gui.get<ImageHandle>("angle")->setRangeMode(ICLWidget::rmAuto);
 }
@@ -117,12 +130,11 @@ void run(){
   else if(usedFilterHandle.getSelected()==2){ //median 5x5
     normalEstimator->setMedianFilterSize(5);
   }
-  else{
-    std::cout<<"FILTER NOT FOUND"<<std::endl;
-  }
 
   normalEstimator->setNormalCalculationRange(normalrange);	
   normalEstimator->setNormalAveragingRange(avgrange);	
+  
+  usedSmoothingHandle = gui.get<ButtonGroupHandle>("usedSmoothing");
   usedAngleHandle = gui.get<ButtonGroupHandle>("usedAngle");
   if(usedAngleHandle.getSelected()==0){//max
     normalEstimator->setAngleNeighborhoodMode(0);
@@ -139,21 +151,36 @@ void run(){
     
   if(usedFilterHandle.getSelected()==0){//unfiltered
     if(gui["disableAveraging"]){
-      edgeImage=normalEstimator->calculate(depthImage, false, false);
+      edgeImage=normalEstimator->calculate(depthImage, false, false, false);
     }
     else{//normal averaging
-      edgeImage=normalEstimator->calculate(depthImage, false, true);
+      if(usedSmoothingHandle.getSelected()==0){//linear
+        edgeImage=normalEstimator->calculate(depthImage, false, true, false);
+      }
+      else if(usedSmoothingHandle.getSelected()==1){//gauss
+        edgeImage=normalEstimator->calculate(depthImage, false, true, true);
+      }
     }
   }else{
     if(gui["disableAveraging"]){//filtered
-      edgeImage=normalEstimator->calculate(depthImage, true, false);
+      edgeImage=normalEstimator->calculate(depthImage, true, false, false);
     }else{//normal averaging
-      edgeImage=normalEstimator->calculate(depthImage, true, true);
+      if(usedSmoothingHandle.getSelected()==0){//linear
+        edgeImage=normalEstimator->calculate(depthImage, true, true, false);
+      }
+      else if(usedSmoothingHandle.getSelected()==1){//gauss
+        edgeImage=normalEstimator->calculate(depthImage, true, true, true);
+      }
     }
   }
     
   //access interim result
   angleImage=normalEstimator->getAngleImage();
+  
+  if(pa("-cam")){
+    normalEstimator->worldNormalCalculation(cam);
+    normalImage=normalEstimator->getNormalImage();
+  }
     
   gettimeofday(&end, 0);
   if(normalEstimator->isCLReady()==true && normalEstimator->isCLActive()==true){
@@ -168,10 +195,11 @@ void run(){
   gui["color"] = colorImage;
   gui["angle"] = angleImage;
   gui["edge"] = edgeImage;
+  gui["normal"] = normalImage;
 
   gui["fps"].render();
 }
 
 int main(int n, char **ppc){
-  return ICLApp(n,ppc,"-size|-s(Size=QVGA)",init,run).exec();
+  return ICLApp(n,ppc,"-size|-s(Size=QVGA) -cam|-c(file)",init,run).exec();
 }

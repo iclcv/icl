@@ -38,6 +38,8 @@
 #include <ICLGeom/Scene.h>
 #include <ICLGeom/SceneObject.h>
 #include <ICLGeom/Camera.h>
+#include <ICLGeom/Plot3D.h>
+#include <ICLGeom/PlotWidget3D.h>
 
 /** 
     The ICLGeom package provides functions and classes for handling 3D-geometry related problems. 

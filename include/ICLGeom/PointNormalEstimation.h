@@ -41,6 +41,8 @@
 #include <CL/cl.hpp>
 #endif
 
+#include <ICLGeom/Camera.h>
+
 namespace icl{
   namespace geom{
     /**
@@ -85,12 +87,27 @@ namespace icl{
       /// Calculates the point normals. The range for calculation is set by setNormalCalculationRange(int range). 
       void normalCalculation();
   	
-      /// Recalculates the normals by averaging the normals in a given range. This reduces the noise and is called from calculateNormals() if it is enabled width setUseNormalAveraging(bool use). The range is set by setNormalAveragingRange(int range).
+      /// Recalculates the normals by averaging the normals in a given range. This reduces the noise and is called from calculateNormals() if it is enabled width setUseNormalAveraging(bool use). The range is set by setNormalAveragingRange(int range). Alternative: normalGaussSmoothing() with setUseGaussSmoothing(true).
       void normalAveraging();
+  
+      /// Recalculates the normals by gaussian smoothing in a given range. This reduces the noise and is called from calculateNormals() if it is enabled width setUseNormalAveraging(bool use). The range is set by setNormalAveragingRange(int range). Alternative: normalAveraging() with setUseGaussSmoothing(false).
+      void normalGaussSmoothing();
   
       /// Returns the point normals.
       /**        @return the point normals */
       Vec4* getNormals();
+  	
+  	  /// Transforms the normals to the world space and calculates normal image.
+  	  /**       @param cam the camera of the depth image */
+  	  void worldNormalCalculation(Camera cam);
+  	  
+  	  /// Returns the point normals in world space.
+  	  /**       @return the point normals in world space */
+  	  Vec4* getWorldNormals();
+  	  
+  	  /// Returns the RGB normal image.
+  	  /**       @return the RGB normal image */
+  	  core::Img8u getNormalImage();
   	
       /// Sets the point normals (input for angle image calculation). This call is not necessary if normalCalculation() is executed before.
       /**        @param pNormals the point normals */
@@ -146,6 +163,10 @@ namespace icl{
       /// Sets normal averaging enabled/disabled. (default true=enabled)
       /**        @param use enable/disable normal averaging */
       void setUseNormalAveraging(bool use);
+      
+      /// Sets normal averaging by gauss smoothing enabled/disabled. (default false=linear smoothing if normal averaging enabled)
+      /**        @param use enable/disable gauss smoothing */
+      void setUseGaussSmoothing(bool use);
   	
       /// Returns the openCL status (true=openCL context ready, false=no openCL context available)
       /**        @return openCL context ready/unavailable */
@@ -159,8 +180,10 @@ namespace icl{
       /// One call function for calculation of the complete pipeline ((filter)->normals->(normalAvg)->angles->binarization)
       /**        @param depthImage the input core::depth image
   	       @param filter enable/disable filtering
-  	       @param average enable/disable normal averaging */
-      core::Img32f calculate(const core::Img32f &depthImage, bool filter, bool average);
+  	       @param average enable/disable normal averaging
+  	       @param gauss true=gauss smoothing, false=linear smoothing
+  	       @return the binarized angle image */
+      core::Img32f calculate(const core::Img32f &depthImage, bool filter, bool average, bool gauss);
   	
      private:
   	
@@ -174,16 +197,20 @@ namespace icl{
       bool clReady;
       bool useCL;
       bool useNormalAveraging;
+      bool useGaussSmoothing;
       Vec4* normals;
       Vec4* avgNormals;
+      Vec4* worldNormals;
       core::Img32f rawImage;
       core::Img32f filteredImage;
       core::Img32f angleImage;
       core::Img32f binarizedImage;
+      core::Img8u normalImage;
   	
     #ifdef HAVE_OPENCL
       //OpenCL data
       Vec4 * outputNormals;
+      Vec4 * outputWorldNormals;
       float* outputFilteredImage;//output of kernel for image
       float* outputAngleImage;
       float* outputBinarizedImage;
@@ -191,6 +218,9 @@ namespace icl{
       float* filteredImageArray;
       float* angleImageArray;
       float* binarizedImageArray;
+      cl_uchar* normalImageRArray;
+      cl_uchar* normalImageGArray;
+      cl_uchar* normalImageBArray;
   	
       //OpenCL    
       cl::Context context;
@@ -203,6 +233,8 @@ namespace icl{
       cl::Kernel kernelNormalAveraging;
       cl::Kernel kernelAngleImageCalculation;
       cl::Kernel kernelImageBinarization;
+      cl::Kernel kernelWorldNormalCalculation;
+      cl::Kernel kernelNormalGaussSmoothing;
       
       //OpenCL buffer
       cl::Buffer rawImageBuffer;
@@ -211,6 +243,12 @@ namespace icl{
       cl::Buffer avgNormalsBuffer;
       cl::Buffer angleImageBuffer;
       cl::Buffer binarizedImageBuffer;
+      cl::Buffer worldNormalsBuffer;
+      cl::Buffer normalImageRBuffer;
+      cl::Buffer normalImageGBuffer;
+      cl::Buffer normalImageBBuffer;
+      cl::Buffer camBuffer;
+      cl::Buffer gaussKernelBuffer;
     #endif
     };
   } // namespace geom

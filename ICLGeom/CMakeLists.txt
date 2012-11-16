@@ -64,6 +64,8 @@ add_libsource (${PROJECT_NAME} "src/DepthCameraPointCloudGrabber.cpp" "${CONDITI
 add_libsource (${PROJECT_NAME} "src/PointCloudCreator.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/PointCloudObject.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/PointCloudObjectBase.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/OctreeObject.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/PlotWidget3D.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
 set(CONDITIONLIST HAVE_OPENCV_COND HAVE_PCL_COND)
 add_libsource (${PROJECT_NAME} "src/PCLPointCloudObject.cpp" "${CONDITIONLIST}" LIB_SOURCES)
@@ -81,6 +83,7 @@ add_example (${PROJECT_NAME} "superquadric-demo" "${CONDITIONLIST}" ICLLibsToLin
 add_example (${PROJECT_NAME} "show-scene" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "kinect-normals-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "generic-texture-coords-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "plot-widget-3D-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLCV)
 add_example (${PROJECT_NAME} "simplex-2D-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)

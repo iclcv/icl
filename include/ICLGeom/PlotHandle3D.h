@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLGeom/src/GridSceneObject.cpp                        **
+** File   : include/ICLGeom/PlotHandle3D.h                         **
 ** Module : ICLGeom                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -32,66 +32,42 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLGeom/GridSceneObject.h>
+#pragma once
 
-using namespace icl::utils;
-using namespace icl::core;
-using namespace icl::math;
-using namespace icl::qt;
+#include <ICLQt/GUIHandle.h>
+#include <ICLQt/GUIWidget.h>
+#include <ICLGeom/PlotWidget3D.h>
 
 namespace icl{
   namespace geom{
-    void GridSceneObject::init(int nXCells, int nYCells, const std::vector<Vec> &allGridPoints, bool lines, bool quads) throw (ICLException){
-      this->nXCells = nXCells;
-      this->nYCells = nYCells;
-      
-      ICLASSERT_THROW((int)allGridPoints.size() == nXCells*nYCells,
-                      ICLException("GridSceneObject::Constructor: nXCells*nYCells differs from allGridPoints.size()!"));
-      for(int i=0;i<nXCells*nYCells;++i){
-        addVertex(allGridPoints[i]);
-        m_vertices.back()[3]=1;
-      }
-      for(int x=1;x<nXCells;++x){
-        for(int y=1;y<nYCells;++y){
-          int a = getIdx(x,y);
-          int b = getIdx(x-1,y);
-          int c = getIdx(x,y-1);
-          int d = getIdx(x-1,y-1);
-          if(lines) {
-            addLine(a,b);
-              addLine(a,c);
-          }
-          if(quads){
-            addQuad(a,b,d,c);
-          }
-        }
-      }
-      for(int x=1;x<nXCells;++x){
-        if(lines) addLine(getIdx(x,0),getIdx(x-1,0));
-      }
-      for(int y=1;y<nYCells;++y){
-        if(lines) addLine(getIdx(0,y),getIdx(0,y-1));
-      }
-    }
-  
-    GridSceneObject::GridSceneObject(int nXCells, int nYCells, const std::vector<Vec> &allGridPoints,
-                                     bool lines, bool quads) throw (ICLException){
-      init(nXCells,nYCells,allGridPoints,lines,quads);
-    }
-      
-    GridSceneObject::GridSceneObject(int nXCells, int nYCells, const Vec &origin, const Vec &dx, const Vec &dy,
-                                     bool lines, bool quads)throw (ICLException){
-      std::vector<Vec> allGridPoints; 
-      allGridPoints.reserve(nXCells*nYCells);
-      for(int y=0;y<nYCells;++y){
-        for(int x=0;x<nXCells;++x){
-          allGridPoints.push_back(origin+dx*float(x)+dy*float(y));
-        }
-      }
-      init(nXCells,nYCells,allGridPoints,lines,quads);
-    }
-  
     
+    /// Handle class for image components \ingroup HANDLES
+    class PlotHandle3D : public qt::GUIHandle<PlotWidget3D>{
+      public:
+      /// Create an empty handle
+      PlotHandle3D(){}
+      
+      /// create a new ImageHandel
+      PlotHandle3D(PlotWidget3D *w, qt::GUIWidget *guiw):qt::GUIHandle<PlotWidget3D>(w,guiw){}
+      
+      /// re-renders the widget
+      inline void render(){
+        (***this).render();
+      }
   
-  } // namespace geom
+      // todo: implement several set data method for more convenience
+  
+      /// callback registration is not supported for this compoment
+      virtual void registerCallback(const qt::GUI::Callback &cb, const std::string &events="all"){
+        throw utils::ICLException("PlotHandle3D::registerCallback: you cannot register" 
+                           " Callbacks to this component");
+      }
+  
+      /// complex callbacks are not allowed for image-components (this method will throw an exception)
+      virtual void registerCallback(const qt::GUI::ComplexCallback&, const std::string &){
+        throw utils::ICLException("PlotHandle3D::registerCallback: you cannot register "
+                           "GUI::ComplexCallback instances to a plot3D GUI component");
+      }
+    };
+  } // namespace qt
 }

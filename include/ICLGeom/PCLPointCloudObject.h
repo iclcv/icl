@@ -155,6 +155,7 @@ namespace icl{
       virtual DataSegment<icl32s,1> selectBGRA32s();
   
       virtual DataSegment<float,3> selectXYZ();
+      virtual DataSegment<float,4> selectXYZH();
       virtual DataSegment<float,4> selectNormal();
       virtual DataSegment<float,4> selectRGBA32f();
   

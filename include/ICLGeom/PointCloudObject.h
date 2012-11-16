@@ -44,14 +44,19 @@ namespace icl{
         - PointcloudSceneObject
         - RGBDImageSceneObject 
         
+        \section NORMALS Normals
+        
+        The PointCloudObject can be set up to have also normals in the constructor.
+        
         \section TODO
         - add optional color (perhaps not possible)
-        - add optional normals and may other useful fields
-    */
+        
+     */
     class PointCloudObject : public PointCloudObjectBase{
       protected:
-      bool m_organized; //!< internal 2D organized flag
-      utils::Size m_dim2D;     //!< 2D dimension
+      bool m_organized;       //!< internal 2D organized flag
+      utils::Size m_dim2D;    //!< 2D dimension
+      bool m_hasNormals;      //!< flag whether normals are given
       
       public:
       
@@ -59,15 +64,16 @@ namespace icl{
       /** @param width number of points per line (if unordered, number of points)
           @param height number of points per row (if unordered, height is not used)
           @param organized specifies whether there is a 2D data order or not
+          @params withNormals if true, also normals will be created for each point
           */
-      PointCloudObject(int width=0, int height=0, bool organized=true);
+      PointCloudObject(int width=0, int height=0, bool organized=true, bool withNormals=false);
   
       /// returns which features are supported (only XYZ and RGBA32f)
       virtual bool supports(FeatureType t);
       
       /// returns whether the points are 2D-ordered
       virtual bool isOrganized() const;
-  
+
       /// returns the 2D size of the pointcloud (throws exception if not ordered)
       virtual utils::Size getSize() const throw (utils::ICLException);
       
@@ -80,10 +86,17 @@ namespace icl{
   
       /// returns XYZ data segment
       virtual DataSegment<float,3> selectXYZ();
+
+      /// returns XYZH data segment
+      virtual DataSegment<float,4> selectXYZH();
       
       /// returns the RGBA data segment (4-floats)
       virtual DataSegment<float,4> selectRGBA32f();
-  
+
+      /// returns the Normals data segment (4-floats)
+      /** Only available if the constructor was called with "withNormals" set to true */
+      virtual DataSegment<float,4> selectNormal();
+      
       /// important, this is again, reimplemented in order to NOT draw the stuff manually here
       virtual void customRender();
   
@@ -91,6 +104,35 @@ namespace icl{
       virtual PointCloudObject *copy() const {
         return new PointCloudObject(*this);
       }
+
+      /// just a simple wrapper for top-top level classe's addVertex method
+      /** This method does not work for organized point cloud objects. The
+          organized flag is not checked for performance reason. The behaviour
+          of calling push_back on ordered point clouds is undefined */
+      void push_back(const Vec &point){
+        addVertex(point,GeomColor(0,100,255,255));
+        if(m_hasNormals) m_normals.push_back(Vec(0,0,0,1));
+      }
+      
+      /// adds xyz point with given color
+      /** @see push_back(const Vec&) */
+      void push_back(const Vec &point, const GeomColor &color){
+        addVertex(point,color);
+        if(m_hasNormals) m_normals.push_back(Vec(0,0,0,1));
+      }
+
+      /// adds xyz point with given normal and color
+      /** @see push_back(const Vec&) */
+      void push_back(const Vec &point, const Vec &normal, const GeomColor &color){
+        addVertex(point,color);
+        if(m_hasNormals) m_normals.push_back(Vec(0,0,0,1));
+      }
+      
+      private:
+      
+      /// hidden in this interface to avoid 
+      using SceneObject::addVertex;
+      using SceneObject::addNormal;
   
     };
   

@@ -52,7 +52,7 @@
 #include <ICLUtils/Lockable.h>
 #include <ICLUtils/Configurable.h>
 #include <ICLUtils/SmartArray.h>
-
+#include <map>
 
 namespace icl{
     /** \cond */

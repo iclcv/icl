@@ -412,8 +412,8 @@ namespace icl{
     INSTANTIATE_DYN_MATRIX_MATH_OP(log,::log)
     INSTANTIATE_DYN_MATRIX_MATH_OP(exp,::exp)
     INSTANTIATE_DYN_MATRIX_MATH_OP(sqrt,::sqrt)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(sqr,icl::sqr)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(reciprocal,icl::reciprocal)
+    INSTANTIATE_DYN_MATRIX_MATH_OP(sqr,icl::math::sqr)
+    INSTANTIATE_DYN_MATRIX_MATH_OP(reciprocal,icl::math::reciprocal)
     INSTANTIATE_DYN_MATRIX_MATH_OP(sin,::sin)
     INSTANTIATE_DYN_MATRIX_MATH_OP(cos,::cos)
     INSTANTIATE_DYN_MATRIX_MATH_OP(tan,::tan)
@@ -459,10 +459,10 @@ namespace icl{
     template <class T> static inline T mulc(const T &a, const T &b){ return a*b; }
   
     INSTANTIATE_DYN_MATRIX_MATH_OP(powc,::pow)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(addc,icl::addc)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(subc,icl::subc)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(mulc,icl::mulc)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(divc,icl::divc)
+    INSTANTIATE_DYN_MATRIX_MATH_OP(addc,icl::math::addc)
+    INSTANTIATE_DYN_MATRIX_MATH_OP(subc,icl::math::subc)
+    INSTANTIATE_DYN_MATRIX_MATH_OP(mulc,icl::math::mulc)
+    INSTANTIATE_DYN_MATRIX_MATH_OP(divc,icl::math::divc)
   
   #undef INSTANTIATE_DYN_MATRIX_MATH_OP
   
@@ -484,10 +484,10 @@ namespace icl{
        throw (IncompatibleMatrixDimensionException);
   
     INSTANTIATE_DYN_MATRIX_MATH_OP(pow,::pow)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(add,icl::addc<T>)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(sub,icl::subc<T>)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(mul,icl::mulc<T>)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(div,icl::divc<T>)
+    INSTANTIATE_DYN_MATRIX_MATH_OP(add,icl::math::addc<T>)
+    INSTANTIATE_DYN_MATRIX_MATH_OP(sub,icl::math::subc<T>)
+    INSTANTIATE_DYN_MATRIX_MATH_OP(mul,icl::math::mulc<T>)
+    INSTANTIATE_DYN_MATRIX_MATH_OP(div,icl::math::divc<T>)
     INSTANTIATE_DYN_MATRIX_MATH_OP(arctan2,::atan2)
   
   #undef INSTANTIATE_DYN_MATRIX_MATH_OP

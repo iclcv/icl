@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLGeom/src/GridSceneObject.cpp                        **
-** Module : ICLGeom                                                **
+** File   : include/ICLGeom/Plot3D.h                               **
+** Module : ICLQt                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -32,66 +32,47 @@
 **                                                                 **
 *********************************************************************/
 
-#include <ICLGeom/GridSceneObject.h>
+#pragma once
 
-using namespace icl::utils;
-using namespace icl::core;
-using namespace icl::math;
-using namespace icl::qt;
+#include <ICLQt/GUIComponent.h>
+#include <ICLUtils/Range.h>
+#include <ICLGeom/PlotWidget3D.h>
+#include <ICLGeom/PlotHandle3D.h>
 
 namespace icl{
   namespace geom{
-    void GridSceneObject::init(int nXCells, int nYCells, const std::vector<Vec> &allGridPoints, bool lines, bool quads) throw (ICLException){
-      this->nXCells = nXCells;
-      this->nYCells = nYCells;
-      
-      ICLASSERT_THROW((int)allGridPoints.size() == nXCells*nYCells,
-                      ICLException("GridSceneObject::Constructor: nXCells*nYCells differs from allGridPoints.size()!"));
-      for(int i=0;i<nXCells*nYCells;++i){
-        addVertex(allGridPoints[i]);
-        m_vertices.back()[3]=1;
-      }
-      for(int x=1;x<nXCells;++x){
-        for(int y=1;y<nYCells;++y){
-          int a = getIdx(x,y);
-          int b = getIdx(x-1,y);
-          int c = getIdx(x,y-1);
-          int d = getIdx(x-1,y-1);
-          if(lines) {
-            addLine(a,b);
-              addLine(a,c);
-          }
-          if(quads){
-            addQuad(a,b,d,c);
-          }
-        }
-      }
-      for(int x=1;x<nXCells;++x){
-        if(lines) addLine(getIdx(x,0),getIdx(x-1,0));
-      }
-      for(int y=1;y<nYCells;++y){
-        if(lines) addLine(getIdx(0,y),getIdx(0,y-1));
-      }
-    }
   
-    GridSceneObject::GridSceneObject(int nXCells, int nYCells, const std::vector<Vec> &allGridPoints,
-                                     bool lines, bool quads) throw (ICLException){
-      init(nXCells,nYCells,allGridPoints,lines,quads);
-    }
-      
-    GridSceneObject::GridSceneObject(int nXCells, int nYCells, const Vec &origin, const Vec &dx, const Vec &dy,
-                                     bool lines, bool quads)throw (ICLException){
-      std::vector<Vec> allGridPoints; 
-      allGridPoints.reserve(nXCells*nYCells);
-      for(int y=0;y<nYCells;++y){
-        for(int x=0;x<nXCells;++x){
-          allGridPoints.push_back(origin+dx*float(x)+dy*float(y));
-        }
+    /// Specialized 3D visualization component intended for 3D-box plots (needs ICLGeom-library to be linked)
+    /** Creates a geom::PlotHandle3D, optimized for 3D-box plots. Internally, the created PlotWidget3D consists
+        of an inherited ICLDrawWidget3D, a geom::Scene and a geom::Camera that are autpmatically created and 
+        linked to the visualization and mouse interaction 
+        
+        \section INC Including
+        Please note, that including this class will automaticall also include the
+        dependent classes PlotWidget3D and PlotHandle3D for convenience reasons
+        */
+    struct Plot3D : public qt::GUIComponent{
+      private:
+      /// internally used utility method
+      static std::string form_args(const utils::Range32f &xrange,
+                                   const utils::Range32f &yrange,
+                                   const utils::Range32f &zrange){
+        std::ostringstream str;
+        str << xrange.minVal << ',' << xrange.maxVal << ',' 
+            << yrange.minVal << ',' << yrange.maxVal << ','
+            << zrange.minVal << ',' << zrange.maxVal;
+        return str.str();
       }
-      init(nXCells,nYCells,allGridPoints,lines,quads);
-    }
-  
-    
-  
-  } // namespace geom
+
+      public:
+      /// create Plot3D component with given defaultViewPortsize
+      /** The given defaultViewPortsize is to create an OpenGL viewport as long as no
+          backgrond image is given. */
+      Plot3D(const utils::Range32f &xrange=utils::Range32f(-1,1), 
+             const utils::Range32f &yrange=utils::Range32f(-1,1), 
+             const utils::Range32f &zrange=utils::Range32f(-1,1)):
+      qt::GUIComponent("plot3D",form_args(xrange,yrange,zrange)){}
+    };
+
+  }
 }

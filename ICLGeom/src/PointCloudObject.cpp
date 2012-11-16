@@ -42,7 +42,7 @@ using namespace icl::core;
 namespace icl{
   namespace geom{
   
-    PointCloudObject::PointCloudObject(int width, int height, bool organized):
+    PointCloudObject::PointCloudObject(int width, int height, bool organized, bool withNormals):
       m_organized(organized){
       if(organized){
         m_dim2D = Size(width,height);
@@ -51,10 +51,16 @@ namespace icl{
       }
       m_vertices.resize(m_dim2D.getDim(),Vec(0,0,0,1));
       m_vertexColors.resize(m_dim2D.getDim(),Vec(0,0,0,1));
+      m_hasNormals = withNormals;
+
+      if(withNormals){
+        m_normals.resize(m_dim2D.getDim(),Vec(0,0,0,1));
+      }
     }
     
     bool PointCloudObject::supports(FeatureType t) {
-      return t == RGBA32f || t == XYZ;
+      if(t == Normal && m_hasNormals) return true;
+      else return (t == RGBA32f) || (t == XYZ) || t == (XYZH);
     }
     
     bool PointCloudObject::isOrganized() const{
@@ -73,6 +79,19 @@ namespace icl{
     DataSegment<float,3> PointCloudObject::selectXYZ(){
       return DataSegment<float,3>(&m_vertices[0][0],4*sizeof(float),m_vertices.size(),m_dim2D.width);  
     }
+
+    DataSegment<float,4> PointCloudObject::selectXYZH(){
+      return DataSegment<float,4>(&m_vertices[0][0],4*sizeof(float),m_vertices.size(),m_dim2D.width);  
+    }
+
+    DataSegment<float,4> PointCloudObject::selectNormal(){
+      if(m_hasNormals){
+        return DataSegment<float,4>(&m_normals[0][0],4*sizeof(float),m_normals.size(),m_dim2D.width);  
+      }else{
+        return error<float,4>(__FUNCTION__);        
+      }
+    }
+
     DataSegment<float,4> PointCloudObject::selectRGBA32f(){
       return DataSegment<float,4>(&m_vertexColors[0][0],4*sizeof(float),m_vertexColors.size(),m_dim2D.width);  
     }
@@ -83,6 +102,9 @@ namespace icl{
       m_vertices.resize(size.getDim(),Vec(0,0,0,1));
       m_vertexColors.resize(size.getDim(),Vec(0,0,0,1));
       m_organized = (size.height > 0);
+      if(m_hasNormals){
+        m_normals.resize(size.getDim(),Vec(0,0,0,1));
+      }
     }
   
   } // namespace geom

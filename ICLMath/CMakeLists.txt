@@ -48,6 +48,7 @@ add_libsource (${PROJECT_NAME} "src/SimplexOptimizer.cpp" "${CONDITIONLIST}" LIB
 add_libsource (${PROJECT_NAME} "src/Homography2D.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/StraightLine2D.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/KDTree.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/PolynomialRegression.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES)
 set(ICLLibsToLinkAgainst ${PROJECT_NAME})
@@ -59,6 +60,14 @@ add_example (${PROJECT_NAME} "llm-1D-demo" "${CONDITIONLIST}" ICLLibsToLinkAgain
 add_example (${PROJECT_NAME} "llm-1D-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "k-means-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 add_example (${PROJECT_NAME} "quad-tree-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+#add_example (${PROJECT_NAME} "kd-tree-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_PCL_COND)
+set(ICLLibsToLinkAgainst ${PROJECT_NAME} ICLGeom)
+add_example (${PROJECT_NAME} "octree-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+add_example (${PROJECT_NAME} "polynomial-regression-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+
+
 set(CONDITIONLIST HAVE_GTEST_COND)
 set(ICLLibsToLinkAgainst "${GTEST_LIBS_l}")
 #add_gtest (${PROJECT_NAME} "test-image" "${CONDITIONLIST}" ICLLibsToLinkAgainst)

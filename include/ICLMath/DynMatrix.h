@@ -985,6 +985,24 @@ namespace icl{
         }
         return d;
       }
+      
+      /// resets the matrix dimensions without changing the content
+      /** This methods can only be used in case of cols()*rows() equals to newCols*newRows. If
+          this dependency is fulfilled, only the matrix's m_cols and m_rows member
+          variables are adapted according to the new values. The internal data is not touched
+          at all, so the matrix's internal row-major data order is not affected.
+      
+          This method can particularly be used to cheaply convert a row-vector matrix
+          into a column vector matrix.
+
+      */
+      inline void reshape(int newCols, int newRows) throw (InvalidMatrixDimensionException){
+        if((cols() * rows()) != (newCols * newRows)){
+          throw InvalidMatrixDimensionException("DynMatrix<T>::reshape: source dimension and destination dimension differs!");
+        }
+        m_cols = newCols;
+        m_rows = newRows;
+      }
   
       /// inner product of data pointers (not matrix-mulitiplication)
       /** computes the inner-product of data vectors */
