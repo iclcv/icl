@@ -23,7 +23,7 @@
 ** following information to ensure the GNU General Public License  **
 ** version 3.0 requirements will be met:                           **
 ** http://www.gnu.org/copyleft/gpl.html.                           **
-**                                                                 **
+1**                                                                 **
 ** The development of this software was supported by the           **
 ** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
 ** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
@@ -214,14 +214,14 @@ namespace icl{
     /// offset specifications for specific datatypes!
     template<> int PCLPointCloudObject<pcl::PointXYZ>::offset(PointCloudObjectBase::FeatureType t) const {
       switch(t){
-        case XYZ: return 0;
+        case XYZ: case XYZH: return 0;
         default: return -1;
       }
     }
 
     template<> int PCLPointCloudObject<pcl::PointXYZI>::offset(PointCloudObjectBase::FeatureType t) const {
       switch(t){
-        case XYZ: return 0;
+        case XYZ: case XYZH: return 0;
         case Intensity: return 4*sizeof(float);
         default: return -1;
       }
@@ -230,7 +230,7 @@ namespace icl{
   
     template<> int PCLPointCloudObject<pcl::PointXYZL>::offset(PointCloudObjectBase::FeatureType t) const {
       switch(t){
-        case XYZ: return 0;
+        case XYZ: case XYZH: return 0;
         case Label: return 4*sizeof(float);
         default: return -1;
       }
@@ -239,7 +239,7 @@ namespace icl{
   
     template<> int PCLPointCloudObject<pcl::PointXYZRGB>::offset(PointCloudObjectBase::FeatureType t) const {
       switch(t){
-        case XYZ: return 0;
+        case XYZ: case XYZH: return 0;
         case BGR: return 4*sizeof(float);
         default: return -1; // case BGRA: case BGRA32s: is not available because an unused alpha value
                             // could mess up the visualization
@@ -248,7 +248,7 @@ namespace icl{
   
     template<> int PCLPointCloudObject<pcl::PointXYZRGBA>::offset(PointCloudObjectBase::FeatureType t) const {
       switch(t){
-        case XYZ: return 0;
+        case XYZ: case XYZH: return 0;
         case BGR: case BGRA: case BGRA32s: return 4*sizeof(float);
         default: return -1;
       }
@@ -256,7 +256,7 @@ namespace icl{
   
     template<> int PCLPointCloudObject<pcl::PointXYZRGBL>::offset(PointCloudObjectBase::FeatureType t) const {
       switch(t){
-        case XYZ: return 0;
+        case XYZ: case XYZH: return 0;
         case BGR: return 4*sizeof(float); // case BGRA: case BGRA32s: (not defined here)
         case Label: return 5*sizeof(float);
         default: return -1;
@@ -265,7 +265,7 @@ namespace icl{
   
     template<> int PCLPointCloudObject<pcl::InterestPoint>::offset(PointCloudObjectBase::FeatureType t) const {
       switch(t){
-        case XYZ: return 0;
+        case XYZ: case XYZH: return 0;
         case Intensity: return 4*sizeof(float);
         default: return -1;
       }
@@ -282,7 +282,7 @@ namespace icl{
   
     template<> int PCLPointCloudObject<pcl::PointXYZINormal>::offset(PointCloudObjectBase::FeatureType t) const {
       switch(t){
-        case XYZ: return 0;
+        case XYZ: case XYZH: return 0;
         case Intensity: return 8*sizeof(float);
         case Normal: return 4*sizeof(float);
         default: return -1;
@@ -326,6 +326,7 @@ namespace icl{
     ICL_IMPLEMENT_FUNCTION(icl8u,4,BGRA)
     ICL_IMPLEMENT_FUNCTION(icl32s,1,BGRA32s)
     ICL_IMPLEMENT_FUNCTION(float,3,XYZ);
+    ICL_IMPLEMENT_FUNCTION(float,4,XYZH);
     ICL_IMPLEMENT_FUNCTION(float,4,Normal);
     ICL_IMPLEMENT_FUNCTION(float,4,RGBA32f);
   

@@ -46,7 +46,9 @@ namespace icl{
 
     struct CoordinateFrameObject3D : public SceneObject{
       PlotWidget3D *parent;
-      CoordinateFrameObject3D(PlotWidget3D *parent):parent(parent){
+      SceneObject *tics;
+      
+      CoordinateFrameObject3D(PlotWidget3D *parent):parent(parent),tics(0){
         addVertex(Vec(1,-1,1,1));
         addVertex(Vec(1,1,1,1));
         addVertex(Vec(-1,1,1,1));
@@ -62,8 +64,23 @@ namespace icl{
           addLine(4+i,4+(i+1)%4);
           addLine(i,i+4);
         }
-
+        
+        updateTics();
       }
+      void updateTics(){
+        if(tics) removeChild(tics);
+        tics = new SceneObject;
+        const int N = 5;
+        const float len = 0.05;
+        for(int i=-N/2; i<= N/2;++i){
+          float r = float(i)/(N/2);
+        }
+        tics->addVertex(Vec(1,1,1,1));
+        
+        addChild(tics);
+      }
+
+
       virtual void prepareForRendering(){
         // todo obtain parent view-port (which could be dynamically computed)
         // adapt tics and tic-labels (if neccessary)
@@ -74,6 +91,8 @@ namespace icl{
         // actually, what do we do with all the properties:
         // IDEA: the PlotWidget3D could be configurable and add a new
         // Special Button to itself (because it is actually also an ICLWidget)
+
+        // perhaps: adapt the tics object (only if neccessary)
       }
 
       // we do this in OpenGL directly

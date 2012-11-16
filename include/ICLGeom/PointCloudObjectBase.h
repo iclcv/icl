@@ -133,6 +133,7 @@ namespace icl{
   
         // 4D vector components
         XYZ,            //!< [float x,y,z, padding]
+        XYZH,           //!< [float x,y,z, homogenous part]
         Normal,         //!< [float nx,ny,nz,curvature]
         RGBA32f,        //!< [float r,g,b,a ]
   
@@ -173,7 +174,10 @@ namespace icl{
       }
   
       /// well know features XYZ (three floats, this feature must usually be available)
-      virtual DataSegment<float,3> selectXYZ(){         return error<float,3>(__FUNCTION__);   }
+      virtual DataSegment<float,3> selectXYZ(){ return error<float,3>(__FUNCTION__);   }
+      
+      /// common way to store XYZ-data (4th float define homogeneous part)
+      virtual DataSegment<float,4> selectXYZH(){ return  error<float,4>(__FUNCTION__);   }
       
       /// well known feature Intensity (single float values)
       virtual DataSegment<float,1> selectIntensity(){   return error<float,1>(__FUNCTION__);   }
@@ -196,12 +200,46 @@ namespace icl{
   
       /// well known feature RGBA (4 float values, ordred RGBA)
       virtual DataSegment<float,4> selectRGBA32f(){     return error<float,4>(__FUNCTION__);   }
-  
+
       /// dynamic feature selection function
       /** This can be implemented in subclasses to grant access to less common feature types
           such as feature point descriptors */
       virtual DataSegmentBase select(const std::string &featureName) { return error_dyn(featureName); }
   
+      // const select methds
+
+      /// const xyz data
+      const DataSegment<float,3> selectXYZ() const { return const_cast<PointCloudObjectBase*>(this)->selectXYZ(); }
+      
+      /// const xyzh data
+      const DataSegment<float,4> selectXYZH() const { return const_cast<PointCloudObjectBase*>(this)->selectXYZH(); }
+  
+      /// const intensity data
+      const DataSegment<float,1> selectIntensity() const { return const_cast<PointCloudObjectBase*>(this)->selectIntensity(); }
+      
+      /// const label data
+      const DataSegment<icl32s,1> selectLabel() const { return const_cast<PointCloudObjectBase*>(this)->selectLabel(); }
+
+      /// const bgr data
+      const DataSegment<icl8u,3> selectBGR() const { return const_cast<PointCloudObjectBase*>(this)->selectBGR(); }
+
+      /// const rgba  data
+      const DataSegment<icl8u,4> selectBGRA() const { return const_cast<PointCloudObjectBase*>(this)->selectBGRA(); }
+  
+      /// const bgra32s data
+      const DataSegment<icl32s,1> selectBGRA32s() const { return const_cast<PointCloudObjectBase*>(this)->selectBGRA32s(); }
+      
+      /// const normals data
+      const DataSegment<float,4> selectNormal() const { return const_cast<PointCloudObjectBase*>(this)->selectNormal(); }
+      
+      /// const rgba32f data
+      const DataSegment<float,4> selectRGBA32f() const { return const_cast<PointCloudObjectBase*>(this)->selectRGBA32f(); }
+  
+      /// const dynamic/custom data
+      const DataSegmentBase select(const std::string &featureName) const { 
+        return const_cast<PointCloudObjectBase*>(this)->select(featureName); 
+      }
+      
       /// tints the point cloud pixel from the given image data
       /** The image size must be equal to the point cloud size*/
       void setColorsFromImage(const core::ImgBase &image) throw (utils::ICLException);
