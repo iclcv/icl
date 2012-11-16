@@ -48,6 +48,8 @@ namespace icl{
     CreateGrabberImpl::CreateGrabberImpl(const std::string &what){
       m_image = TestImages::create(what);
       if(!m_image) throw ICLException("unable to create a 'CreateGrabber' from given description '"+what+"'");
+      addProperty("format", "info", "", "RGB", 0, "");
+      addProperty("size", "info", "", "512x512", 0, "");
     }
     CreateGrabberImpl::~CreateGrabberImpl(){
       ICL_DELETE(m_image);

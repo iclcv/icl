@@ -300,7 +300,7 @@ namespace icl{
     
     const ImgBase *FileGrabberImpl::acquireImage(){
       const ImgBase* img = grabImage();
-      updateProperties();
+      updateProperties(img);
       return img;
     }
 
@@ -500,6 +500,8 @@ namespace icl{
     }
 
     void FileGrabberImpl::addProperties(){
+      addProperty("format","info","","unknown",0,"");
+      addProperty("size","info","","unknown",0,"");
       addProperty("next","command","",Any(),0,"Increments the file counter for the grabber");
       addProperty("prev","command","",Any(),0,"Decrements the file counter for the grabber");
       addProperty("use-time-stamps","flag","",m_data->useTimeStamps,0,"Whether to use timestamps"); //TODO: what is this?
@@ -557,13 +559,15 @@ namespace icl{
       }
     }
 
-    void FileGrabberImpl::updateProperties(){
+    void FileGrabberImpl::updateProperties(const ImgBase* img){
       utils::Mutex::Locker l(m_propertyMutex);
       m_updatingProperties = true;
       setPropertyValue("next filename", getNextFileName());
       setPropertyValue("current filename", m_data->oFileList[iclMax(m_data->iCurrIdx-1,0)]);
       setPropertyValue("relative progress", str((100* (m_data->iCurrIdx+1)) / float(m_data->oFileList.size()))+" %");
       setPropertyValue("absolute progress", str(m_data->iCurrIdx+1) + " / " + str(m_data->oFileList.size()));
+      setPropertyValue("format", Any(img -> getFormat()));
+      setPropertyValue("size", Any(img -> getSize()));
       //setPropertyValue("frame-index", m_data->iCurrIdx);
       m_updatingProperties = false;
     }

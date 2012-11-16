@@ -191,7 +191,7 @@ namespace icl{
       /// callback function for property changes.
       void processPropertyChange(const utils::Configurable::Property &p);
       /// updates properties values.
-      void updateProperties();
+      void updateProperties(const core::ImgBase* img);
 
       struct Data;  
       Data *m_data;
