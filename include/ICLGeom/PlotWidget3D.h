@@ -59,6 +59,8 @@ namespace icl{
       
       SceneObject *getRootObject();
       const SceneObject *getRootObject() const;
+      
+      const Camera &getCamera() const;
     };
   }
 }

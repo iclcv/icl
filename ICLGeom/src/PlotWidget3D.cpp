@@ -37,16 +37,53 @@
 #include <ICLQt/GUIDefinition.h>
 
 namespace icl{
+
+  using namespace utils;
+  using namespace math;
+  using namespace core;
+  using namespace qt;
+
   namespace geom{
 
-    using namespace utils;
-    using namespace math;
-    using namespace core;
-    using namespace qt;
+    static Range32f round_range(Range32f r){
+      if(r.minVal > r.maxVal) std::swap(r.minVal,r.maxVal);
+      const int signA = r.minVal<0?-1:1;
+      const int signB = r.maxVal<0?-1:1;
+      float a(0),b(0),f=1;
+      if(fabs(r.minVal) > fabs(r.maxVal)){
+        a = fabs(r.minVal);
+        b = fabs(r.maxVal);
+      }else{
+        a = fabs(r.maxVal);
+        b = fabs(r.minVal);
+      }
+      if(a > 1){
+        while(a > 100){
+          a *= 0.1; b *= 0.1; f *= 10;
+        }
+        if(a > 90) a = 100;
+        a = ceil(a) * f;
+        b = signB > 0 ? (ceil(b) * f) : (floor(b) * f);
+        
+      }else{
+        while(a < 10){
+          a *= 10;  b *= 10; f *= 0.1;
+        }
+        if ( a < 11) a = 10;
+        a = floor(a) * f;
+        b = signB > 0 ? (floor(b) * f) : (ceil(b) * f);
+      }
+      if(b < a){  
+        return Range32f(signA * a, signB * b);
+      }else{
+        return Range32f(signB * b, signA * a);
+      }
+    }
 
     struct CoordinateFrameObject3D : public SceneObject{
       PlotWidget3D *parent;
       SceneObject *tics;
+      std::vector<Primitive*> xlabels,ylabels,zlabels;
       
       CoordinateFrameObject3D(PlotWidget3D *parent):parent(parent),tics(0){
         addVertex(Vec(1,-1,1,1));
@@ -67,15 +104,68 @@ namespace icl{
         
         updateTics();
       }
+      
+      std::string create_label(float r){
+        return str(r); // todo rounding and stuff
+      }
       void updateTics(){
+        // propable better: crate axes seperately to used dynamic number of tics
+        // dependent on the axis ratio
+        
         if(tics) removeChild(tics);
         tics = new SceneObject;
         const int N = 5;
-        const float len = 0.05;
+        const float lenBase = 0.1;
+        int l = 0;
+        for(int i=-N/2; i<= N/2;++i, ++l){
+          float r = float(i)/(N/2);
+          float len = i ? lenBase : 2*lenBase;
+          tics->addVertex(Vec(-1,-r,-1,1));
+          tics->addVertex(Vec(len-1,-r,-1,1));
+          tics->addVertex(Vec(-1,-r,len-1,1));
+          tics->addLine(9*l,9*l+1);
+          tics->addLine(9*l,9*l+2);
+
+          tics->addVertex(Vec(-r,-1,-1,1));
+          tics->addVertex(Vec(-r,len-1,-1,1));
+          tics->addVertex(Vec(-r,-1,len-1,1));
+          tics->addLine(9*l+3,9*l+4);
+          tics->addLine(9*l+3,9*l+5);
+
+          tics->addVertex(Vec(-1,-1,-r,1));
+          tics->addVertex(Vec(len-1,-1,-r,1));
+          tics->addVertex(Vec(-1,len-1,-r,1));
+          tics->addLine(9*l+6,9*l+7);
+          tics->addLine(9*l+6,9*l+8);
+        }
+        
+        const float d = 0.1; // distance of lables to the tics
+        l = (int)tics->getVertices().size();
         for(int i=-N/2; i<= N/2;++i){
           float r = float(i)/(N/2);
+
+          {
+            tics->addVertex(Vec(-r,-1-d,-1,1));
+            Primitive *t = new TextPrimitive(l++,0,0,0,create_label(r),20,GeomColor(255,255,255,255),-1,-1,-1,-1,.1);
+            tics->addCustomPrimitive(t);
+            xlabels.push_back(t);
+          }
+          
+          {
+            tics->addVertex(Vec(-1-d,-r,-1,1));
+            Primitive *t = new TextPrimitive(l++,0,0,0,create_label(r),20,GeomColor(255,255,255,255),-1,-1,-1,-1,.1);
+            tics->addCustomPrimitive(t);
+            ylabels.push_back(t);
+          }
+          
+          {
+            tics->addVertex(Vec(-1,-1-d,-r,1));
+            Primitive *t = new TextPrimitive(l++,0,0,0,create_label(r),20,GeomColor(255,255,255,255),-1,-1,-1,-1,.1);
+            tics->addCustomPrimitive(t);
+            zlabels.push_back(t);
+          }
+
         }
-        tics->addVertex(Vec(1,1,1,1));
         
         addChild(tics);
       }
@@ -143,7 +233,16 @@ namespace icl{
       std::fill(m_data->viewport,m_data->viewport+3,Range32f(0,1));
       m_data->scene.setBounds(1);
 
-      m_data->scene.addCamera(Camera()); // todo:find good default 
+
+      Camera cam(Vec(8,1.5,1.5,1),
+                 -Vec(8,1.5,1.5,1).normalized(),
+                 Vec(0,0,-1,1),
+                 7, Point32f(320,240),200,200,
+                 0, Camera::RenderParams(Size(640,480),
+                                         1,10000, 
+                                         Rect(0,0,640,480),
+                                         0,1));
+      m_data->scene.addCamera(cam);
       
       install(m_data->scene.getMouseHandler(0));
       link(m_data->scene.getGLCallback(0));
@@ -159,6 +258,10 @@ namespace icl{
     PlotWidget3D::~PlotWidget3D(){
       delete m_data;
     }
+
+    const Camera &PlotWidget3D::getCamera() const{
+      return m_data->scene.getCamera(0);
+    }
     
     void PlotWidget3D::setViewPort(const Range32f &xrange,
                                    const Range32f &yrange,
@@ -166,6 +269,34 @@ namespace icl{
       m_data->viewport[0] = xrange;
       m_data->viewport[1] = yrange;
       m_data->viewport[2] = zrange;
+      
+      // compute an actual view-port used, that is slightly larger
+      // or equal to the given viewport. 
+      /** Strategy: use larger abs value of min,max A
+          A = XXX * 10^k (e.g. A = 122*10^0 -> 122
+                               A = 160*10^2 -> 16000
+                               A = 881*10-3 -> 0.881
+          
+          then set viewport to next higher multiple of 10
+          122 -> 130
+          16000 -> 16000
+          0.881 -> 0.89
+          
+          if this is only or or two away from the next multiple of 100 use this one
+          122 -> 130
+          16000 -> 16000
+          0.881 -> 0.9
+
+          use same strategy for minValue, but wrt. the quatisation of the max value
+          
+          max = 175*10^1 = 1750 -> use 180*10^1
+          min = 884*10^-2 = 8.84
+          
+          min is transfered and rounded to upper exponent first
+          min' = 0.884 * 10^1 
+          
+          which could be interpreted as 0 or 1, but the runding of max was done 
+      */
     }
       
     Scene &PlotWidget3D::getScene(){
