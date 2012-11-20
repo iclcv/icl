@@ -34,6 +34,7 @@
 
 #include <ICLGeom/PlotWidget3D.h>
 #include <ICLGeom/PlotHandle3D.h>
+#include <ICLGeom/GridSceneObject.h>
 #include <ICLQt/GUIDefinition.h>
 
 namespace icl{
@@ -79,13 +80,51 @@ namespace icl{
         return Range32f(signB * b, signA * a);
       }
     }
+    std::string create_label(float r){
+      return str(r < 0.00001 ? 0 : r); // todo rounding and stuff
+    }
+
+    struct Axis : public SceneObject{
+      PlotWidget3D *parent;
+      Range32f roundedRange;
+      std::vector<TextPrimitive*> labels;
+
+      Axis(PlotWidget3D *parent,const Range32f &range, bool invertLabels):parent(parent){
+        roundedRange = round_range(range);
+        const float min = roundedRange.minVal;
+        const float max = roundedRange.maxVal;
+        const int N = 10;  // todo find something better
+        const float step = (max - min)/N;
+        
+        const float lenBase = 0.1;
+        const float d = 0.1; // distance of lables to the tics
+
+        for(int i=-N/2,l=0; i<= N/2;++i, ++l){
+          float r = float(i)/(N/2);
+          float len = i ? lenBase : 2*lenBase;
+          addVertex(Vec(r,0,0,1));
+          addVertex(Vec(r,len,0,1));
+          addVertex(Vec(r,0,len,1));
+          
+          addVertex(Vec(invertLabels ? r : -r,-d,0,1));
+          
+          addLine(4*l,4*l+1);
+          addLine(4*l,4*l+2);
+
+          labels.push_back(new TextPrimitive(4*l+3,0,0,0,create_label(min + l*step),
+                                             20,GeomColor(255,255,255,255),
+                                             -1,-1,-1,-1,.1));
+          addCustomPrimitive(labels.back());
+        }
+      }
+    };
 
     struct CoordinateFrameObject3D : public SceneObject{
       PlotWidget3D *parent;
-      SceneObject *tics;
-      std::vector<Primitive*> xlabels,ylabels,zlabels;
+      Range32f ranges[3];
+      Axis *axes[3];
       
-      CoordinateFrameObject3D(PlotWidget3D *parent):parent(parent),tics(0){
+      CoordinateFrameObject3D(PlotWidget3D *parent):parent(parent){
         addVertex(Vec(1,-1,1,1));
         addVertex(Vec(1,1,1,1));
         addVertex(Vec(-1,1,1,1));
@@ -105,70 +144,36 @@ namespace icl{
         updateTics();
       }
       
-      std::string create_label(float r){
-        return str(r); // todo rounding and stuff
-      }
       void updateTics(){
-        // propable better: crate axes seperately to used dynamic number of tics
-        // dependent on the axis ratio
-        
-        if(tics) removeChild(tics);
-        tics = new SceneObject;
-        const int N = 5;
-        const float lenBase = 0.1;
-        int l = 0;
-        for(int i=-N/2; i<= N/2;++i, ++l){
-          float r = float(i)/(N/2);
-          float len = i ? lenBase : 2*lenBase;
-          tics->addVertex(Vec(-1,-r,-1,1));
-          tics->addVertex(Vec(len-1,-r,-1,1));
-          tics->addVertex(Vec(-1,-r,len-1,1));
-          tics->addLine(9*l,9*l+1);
-          tics->addLine(9*l,9*l+2);
+        const Range32f *pranges = parent->getViewPort();
+        if(ranges[0] == pranges[0] &&
+           ranges[1] == pranges[1] &&
+           ranges[2] == pranges[2] ){
+          return;
+        }
 
-          tics->addVertex(Vec(-r,-1,-1,1));
-          tics->addVertex(Vec(-r,len-1,-1,1));
-          tics->addVertex(Vec(-r,-1,len-1,1));
-          tics->addLine(9*l+3,9*l+4);
-          tics->addLine(9*l+3,9*l+5);
-
-          tics->addVertex(Vec(-1,-1,-r,1));
-          tics->addVertex(Vec(len-1,-1,-r,1));
-          tics->addVertex(Vec(-1,len-1,-r,1));
-          tics->addLine(9*l+6,9*l+7);
-          tics->addLine(9*l+6,9*l+8);
+        std::copy(pranges,pranges+3,ranges);
+           
+        for(int i=0;i<3;++i){
+          if(axes[i]) removeChild(axes[i]);
+          axes[i] = new Axis(parent,ranges[i],i==1);
+          addChild(axes[i]);
         }
         
-        const float d = 0.1; // distance of lables to the tics
-        l = (int)tics->getVertices().size();
-        for(int i=-N/2; i<= N/2;++i){
-          float r = float(i)/(N/2);
-
-          {
-            tics->addVertex(Vec(-r,-1-d,-1,1));
-            Primitive *t = new TextPrimitive(l++,0,0,0,create_label(r),20,GeomColor(255,255,255,255),-1,-1,-1,-1,.1);
-            tics->addCustomPrimitive(t);
-            xlabels.push_back(t);
-          }
-          
-          {
-            tics->addVertex(Vec(-1-d,-r,-1,1));
-            Primitive *t = new TextPrimitive(l++,0,0,0,create_label(r),20,GeomColor(255,255,255,255),-1,-1,-1,-1,.1);
-            tics->addCustomPrimitive(t);
-            ylabels.push_back(t);
-          }
-          
-          {
-            tics->addVertex(Vec(-1,-1-d,-r,1));
-            Primitive *t = new TextPrimitive(l++,0,0,0,create_label(r),20,GeomColor(255,255,255,255),-1,-1,-1,-1,.1);
-            tics->addCustomPrimitive(t);
-            zlabels.push_back(t);
-          }
-
-        }
         
-        addChild(tics);
+        axes[0]->translate(0,-1,-1);
+
+        axes[1]->rotate(0,0,M_PI/2);
+        axes[1]->translate(-1,0,-1);
+
+
+
+        axes[2]->rotate(-M_PI/2,0,0);
+        axes[2]->rotate(0,M_PI/2,0);
+        axes[2]->translate(-1,-1,0);
+
       }
+
 
 
       virtual void prepareForRendering(){
@@ -227,7 +232,59 @@ namespace icl{
       
       SceneObject *rootObject;
       CoordinateFrameObject3D *coordinateFrame;
+      
+      float pointsize;
+      float linewidth;
+      GeomColor color,fill;
+
+      void add(SceneObject *obj, bool passOwnership=false){
+        obj->setPointSize(pointsize);
+        obj->setLineWidth(linewidth);
+        if(!color[3]){
+          obj->setVisible(Primitive::vertex,false);
+          obj->setVisible(Primitive::line,false);
+        }else{
+          obj->setVisible(Primitive::vertex,true);
+          obj->setVisible(Primitive::line,true);
+          obj->setColor(Primitive::vertex,color);
+          obj->setColor(Primitive::line,color);
+        }
+
+        if(!fill[3]){
+          obj->setVisible(Primitive::triangle,false);
+          obj->setVisible(Primitive::quad,false);
+          obj->setVisible(Primitive::polygon,false);
+        }else{
+          obj->setVisible(Primitive::triangle,true);
+          obj->setVisible(Primitive::quad,true);
+          obj->setVisible(Primitive::polygon,true);
+
+          obj->setColor(Primitive::triangle,fill);
+          obj->setColor(Primitive::quad,fill);
+          obj->setColor(Primitive::polygon,fill);
+        }
+
+        rootObject->addChild(obj,passOwnership);
+        
+        updateBounds();
+      }
+      
+      Data(){
+        pointsize = linewidth = 1;
+        color = geom_red(255);
+        fill = geom_blue(255);
+      }
+      
+      void updateBounds(){
+        TODO_LOG("estimate all [0,0] bounds from all contained object's getTransformedVertices() ...");
+      }
     };
+
+    const Range32f *PlotWidget3D::getViewPort() const{
+      return m_data->viewport;
+    }
+
+
     
     PlotWidget3D::PlotWidget3D(QWidget *parent):ICLDrawWidget3D(parent),m_data(new Data){
       std::fill(m_data->viewport,m_data->viewport+3,Range32f(0,1));
@@ -313,11 +370,51 @@ namespace icl{
       return m_data->rootObject;
     }
 
-    
 
+    void PlotWidget3D::add(SceneObject *obj, bool passOwnerShip){
+      m_data->add(obj,passOwnerShip);
+    }
+    
+    void PlotWidget3D::remove(Handle h){
+      m_data->rootObject->removeChild(h);
+    }
+    
+    void PlotWidget3D::color(int r, int g, int b, int a){
+      m_data->color = GeomColor(r,g,b,a);
+    }
+    void PlotWidget3D::fill(int r, int g, int b, int a){
+      m_data->fill = GeomColor(r,g,b,a);
+    }
+    void PlotWidget3D::pointsize(float size){
+      m_data->pointsize = size;
+    }
+    void PlotWidget3D::linewidth(float width){
+      m_data->linewidth = width;
+    }
+    
+    PlotWidget3D::Handle PlotWidget3D::scatter(const std::vector<Vec> &points, bool connect){
+      SceneObject *obj = new SceneObject;
+      obj->getVertices() = points;
+      obj->getVertexColors().resize(points.size());
+      if(connect){
+        for(size_t i=1;i<points.size();++i){
+          obj->addLine(i-1,i);
+        }
+      }
+      m_data->add(obj);
+      return obj;
+    }
+    
+    PlotWidget3D::Handle PlotWidget3D::surf(const std::vector<Vec> &points, int nx, int ny, 
+                                            bool lines, bool fill, bool smoothfill){
+      SceneObject *grid = new GridSceneObject(nx,ny,points,lines, fill);
+      grid->createAutoNormals(smoothfill);
+      m_data->add(grid);
+      return grid;
+    }
     
     namespace{ // only for registering this class as a GUI component!
-
+      
       struct Plot3DGUIWidget : public GUIWidget{
         PlotWidget3D *draw;
         Plot3DGUIWidget(const GUIDefinition &def):GUIWidget(def,6,6,GUIWidget::gridLayout,Size(16,12)){
@@ -363,8 +460,5 @@ namespace icl{
         }
       } plot3DWidgetRegisterer; 
     }
-
-
-
   }
 }

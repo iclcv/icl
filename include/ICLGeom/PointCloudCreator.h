@@ -66,7 +66,8 @@ namespace icl{
           plane */
       enum DepthImageMode{
         DistanceToCamCenter, //!< distances are given w.r.t. the camera center
-        DistanceToCamPlane   //!< distances are given w.r.t. the camera plance
+        DistanceToCamPlane,  //!< distances are given w.r.t. the camera plance
+        KinectRAW11Bit       //!< default kinect raw values in range [0,2047]
       };
   
       /// creates a null instance
@@ -91,7 +92,7 @@ namespace icl{
       void init(const Camera &depthCam, const Camera &colorCam, DepthImageMode mode=DistanceToCamPlane);
       
       /// creates a point cloud
-      void create(const core::Img32f &depthImageMM, PointCloudObjectBase &destination, const core::Img8u *rgbImage = 0);
+      void create(const core::Img32f &depthImage, PointCloudObjectBase &destination, const core::Img8u *rgbImage = 0);
   
       /// returns the current core::depth camera
       const Camera &getDepthCamera() const;

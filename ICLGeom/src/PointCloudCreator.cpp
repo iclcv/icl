@@ -176,8 +176,12 @@ namespace icl{
   
     static Camera *static_cam = 0;
   
+    static inline float raw_to_mm(float d){
+      return 1.046 * (d==2047 ? 0 : 1000. / (d * -0.0030711016 + 3.3309495161));
+    }
+    
   
-    template<bool HAVE_RGBD_MAPPING, class RGBA_DATA_SEGMENT_TYPE>
+    template<bool HAVE_RGBD_MAPPING, bool NEEDS_RAW_TO_MM_MAPPING, class RGBA_DATA_SEGMENT_TYPE>
     static void point_loop(const icl32f *depthValues, const Mat M, 
                            const Vec O, const unsigned int COLOR_W, const unsigned int COLOR_H, const int DEPTH_DIM, 
                            DataSegment<float,3> xyz, 
@@ -188,7 +192,7 @@ namespace icl{
       const Channel8u rgb[3] = { rgbIn[0], rgbIn[1], rgbIn[2] };
       for(int i=0;i<DEPTH_DIM;++i){
         const Vec3 &dir = dirs[i];
-        const float d = depthValues[i];
+        const float d = NEEDS_RAW_TO_MM_MAPPING ? raw_to_mm(depthValues[i]) : depthValues[i];
         
         FixedColVector<float,3> &dstXYZ = xyz[i];
         
@@ -254,20 +258,38 @@ namespace icl{
   
       //Time t = Time::now();
       
-      if(destination.supports(PointCloudObjectBase::RGBA32f)){
-        if(X) point_loop<true>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs);
-        else point_loop<false>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs);
-      }else if(destination.supports(PointCloudObjectBase::BGRA)){
-        if(X) point_loop<true>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA(), rgb, dirs);
-        else point_loop<false>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA(), rgb, dirs);
-      }else if(destination.supports(PointCloudObjectBase::BGR)){
-        if(X) point_loop<true>(dv, M, O, W, H, DIM, xyz, destination.selectBGR(), rgb, dirs);
-        else point_loop<false>(dv, M, O, W, H, DIM, xyz, destination.selectBGR(), rgb, dirs);
-      }else if(destination.supports(PointCloudObjectBase::BGRA32s)){
-        if(X) point_loop<true>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA32s(), rgb, dirs);
-        else point_loop<false>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA32s(), rgb, dirs);
+      if(m_data->mode == KinectRAW11Bit){
+        if(destination.supports(PointCloudObjectBase::RGBA32f)){
+          if(X) point_loop<true,true>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs);
+          else point_loop<false,true>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs);
+        }else if(destination.supports(PointCloudObjectBase::BGRA)){
+          if(X) point_loop<true,true>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA(), rgb, dirs);
+          else point_loop<false,true>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA(), rgb, dirs);
+        }else if(destination.supports(PointCloudObjectBase::BGR)){
+          if(X) point_loop<true,true>(dv, M, O, W, H, DIM, xyz, destination.selectBGR(), rgb, dirs);
+          else point_loop<false,true>(dv, M, O, W, H, DIM, xyz, destination.selectBGR(), rgb, dirs);
+        }else if(destination.supports(PointCloudObjectBase::BGRA32s)){
+          if(X) point_loop<true,true>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA32s(), rgb, dirs);
+          else point_loop<false,true>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA32s(), rgb, dirs);
+        }else{
+          throw ICLException("unable to apply RGBD-Mapping given destination PointCloud type does not support rgb information");
+        }
       }else{
-        throw ICLException("unable to apply RGBD-Mapping given destination PointCloud type does not support rgb information");
+        if(destination.supports(PointCloudObjectBase::RGBA32f)){
+          if(X) point_loop<true,false>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs);
+        else point_loop<false,false>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs);
+        }else if(destination.supports(PointCloudObjectBase::BGRA)){
+          if(X) point_loop<true,false>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA(), rgb, dirs);
+          else point_loop<false,false>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA(), rgb, dirs);
+        }else if(destination.supports(PointCloudObjectBase::BGR)){
+          if(X) point_loop<true,false>(dv, M, O, W, H, DIM, xyz, destination.selectBGR(), rgb, dirs);
+          else point_loop<false,false>(dv, M, O, W, H, DIM, xyz, destination.selectBGR(), rgb, dirs);
+        }else if(destination.supports(PointCloudObjectBase::BGRA32s)){
+          if(X) point_loop<true,false>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA32s(), rgb, dirs);
+        else point_loop<false,false>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA32s(), rgb, dirs);
+        }else{
+          throw ICLException("unable to apply RGBD-Mapping given destination PointCloud type does not support rgb information");
+        }
       }
       
       //SHOW(t.age().toMilliSecondsDouble());

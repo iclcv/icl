@@ -6,7 +6,7 @@ GUI gui;
 Scene scene;
 
 void init(){
-  gui << Plot3D().handle("plot") << Show();
+  gui << Plot3D().handle("plot").minSize(32,24) << Show();
 }
 
 void run(){
