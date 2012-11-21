@@ -476,13 +476,13 @@ namespace icl{
 
         // special treatment of grabbers
         if(dynamic_cast<io::Grabber*>(conf)){
-          GUI general_box = VBox(this).handle("__the_box__").label("general parameters");
+          GUI general_box = VBox(this).handle("__the_box__");
           add_component(general_box,getStSt(sections, "format"),ostr,gui);
           add_component(general_box,getStSt(sections, "size"),ostr,gui);
           add_component(general_box,getStSt(sections, "desired format"),ostr,gui);
           add_component(general_box,getStSt(sections, "desired size"),ostr,gui);
           add_component(general_box,getStSt(sections, "desired depth"),ostr,gui);
-          gui << HSplit() <<  general_box;
+          gui <<  general_box;
         }
 
         for(std::map<std::string,std::vector<StSt> >::iterator it=sections.begin();it != sections.end();++it){
@@ -497,7 +497,7 @@ namespace icl{
                      << Button("load").handle("#X#load")
                      << Button("save").handle("#X#save")
                    );
-                     
+
             ostr <<  '\1' << "#X#load";
             ostr <<  '\1' << "#X#save";
           }
@@ -638,7 +638,7 @@ namespace icl{
       // {{{ open
 
       CamCfgGUIWidget(const GUIDefinition &def):
-        GUIWidget(def,0,0), m_cfg(NULL), m_button(NULL)
+        GUIWidget(def,0,2), m_cfg(NULL), m_button(NULL)
       {
         if(def.numParams() != 0  && def.numParams() != 2){
           throw GUISyntaxErrorException(def.defString(),"camcfg can take 0 or 2 parameters");

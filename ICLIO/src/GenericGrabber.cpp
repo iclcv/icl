@@ -497,7 +497,7 @@ namespace icl{
         std::string errMsg("generic grabber was not able to find any suitable device\ntried:");
         throw ICLException(errMsg+errStr);
       }else{
-        setConfigurableID("[" + m_sType + "] " + pmap[m_sType].id);
+        setConfigurableID("[" + m_sType + "]:" + pmap[m_sType].id);
         // add internal grabber as child-configurable
         addProperty("desired size", "menu", "not used,QQVGA,QVGA,VGA,SVGA,XGA,XGAP,UXGA", "not used", 0, "");
         addProperty("desired depth", "menu", "not used,depth8u,depth16s,depth32s,depth32f,depth64f", "not used", 0, "");

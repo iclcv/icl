@@ -59,7 +59,7 @@ namespace icl{
       std::string description;
 
       std::string name() const {
-        return "[" + type + "] " +  id;
+        return "[" + type + "]:" +  id;
       }
 
     };
