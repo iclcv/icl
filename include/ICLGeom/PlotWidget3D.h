@@ -47,6 +47,8 @@ namespace icl{
 
       public:
 
+      typedef SceneObject* Handle;
+
       PlotWidget3D(QWidget *parent=0);
       ~PlotWidget3D();
       
@@ -54,11 +56,29 @@ namespace icl{
                        const utils::Range32f &yrange,
                        const utils::Range32f &zrange);
       
+      const utils::Range32f *getViewPort() const;
+      
       Scene &getScene();
       const Scene &getScene() const;
       
       SceneObject *getRootObject();
       const SceneObject *getRootObject() const;
+      
+      const Camera &getCamera() const;
+      
+      void add(SceneObject *obj, bool passOwnerShip=true);
+      void remove(Handle h);
+      
+      void color(int r, int g, int b, int a);
+      void fill(int r, int g, int b, int a);
+      void pointsize(float size);
+      void linewidth(float width);
+      
+      Handle scatter(const std::vector<Vec> &points, bool connect=false);
+      
+      Handle surf(const std::vector<Vec> &points, int nx, int ny, bool lines=false, 
+                  bool fill=true, bool smoothfill=true);
+      
     };
   }
 }
