@@ -73,6 +73,8 @@ namespace icl{
       void fill(int r, int g, int b, int a);
       void pointsize(float size);
       void linewidth(float width);
+
+      void clear();
       
       Handle scatter(const std::vector<Vec> &points, bool connect=false);
       

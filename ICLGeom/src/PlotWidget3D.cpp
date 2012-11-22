@@ -36,6 +36,7 @@
 #include <ICLGeom/PlotHandle3D.h>
 #include <ICLGeom/GridSceneObject.h>
 #include <ICLQt/GUIDefinition.h>
+#include <ICLMath/LinearTransform1D.h>
 
 namespace icl{
 
@@ -121,10 +122,15 @@ namespace icl{
 
     struct CoordinateFrameObject3D : public SceneObject{
       PlotWidget3D *parent;
+      SceneObject *rootObject;
       Range32f ranges[3];
       Axis *axes[3];
       
-      CoordinateFrameObject3D(PlotWidget3D *parent):parent(parent){
+      CoordinateFrameObject3D(PlotWidget3D *parent, SceneObject *rootObject):
+        parent(parent),rootObject(rootObject){
+        
+        setLockingEnabled(true);
+        
         addVertex(Vec(1,-1,1,1));
         addVertex(Vec(1,1,1,1));
         addVertex(Vec(-1,1,1,1));
@@ -140,7 +146,7 @@ namespace icl{
           addLine(4+i,4+(i+1)%4);
           addLine(i,i+4);
         }
-        
+
         updateTics();
       }
       
@@ -173,10 +179,13 @@ namespace icl{
         axes[2]->translate(-1,-1,0);
 
       }
-
-
-
+     
       virtual void prepareForRendering(){
+       
+
+        //use ranges
+        
+        
         // todo obtain parent view-port (which could be dynamically computed)
         // adapt tics and tic-labels (if neccessary)
         
@@ -223,7 +232,8 @@ namespace icl{
 
     struct PlotWidget3D::Data{
       Scene scene;
-      Range32f viewport[3];
+      Range32f givenViewport[3];
+      Range32f computedViewport[3];
       
       // TODO: all visible stuff is always added to the root object
       // the root object is used to set the scale-part of it's transformation
@@ -237,36 +247,52 @@ namespace icl{
       float linewidth;
       GeomColor color,fill;
 
-      void add(SceneObject *obj, bool passOwnership=false){
-        obj->setPointSize(pointsize);
-        obj->setLineWidth(linewidth);
-        if(!color[3]){
-          obj->setVisible(Primitive::vertex,false);
-          obj->setVisible(Primitive::line,false);
-        }else{
-          obj->setVisible(Primitive::vertex,true);
-          obj->setVisible(Primitive::line,true);
-          obj->setColor(Primitive::vertex,color);
-          obj->setColor(Primitive::line,color);
+      void add(SceneObject *obj, bool passOwnership=false, bool addOnly=false){
+        if(!addOnly){
+          obj->setPointSize(pointsize);
+          obj->setLineWidth(linewidth);
+          if(!color[3]){
+            obj->setVisible(Primitive::vertex,false);
+            obj->setVisible(Primitive::line,false);
+          }else{
+            obj->setVisible(Primitive::vertex,true);
+            obj->setVisible(Primitive::line,true);
+            obj->setColor(Primitive::vertex,color);
+            obj->setColor(Primitive::line,color);
+          }
+          
+          if(!fill[3]){
+            obj->setVisible(Primitive::triangle,false);
+            obj->setVisible(Primitive::quad,false);
+            obj->setVisible(Primitive::polygon,false);
+          }else{
+            obj->setVisible(Primitive::triangle,true);
+            obj->setVisible(Primitive::quad,true);
+            obj->setVisible(Primitive::polygon,true);
+            
+            obj->setColor(Primitive::triangle,fill);
+            obj->setColor(Primitive::quad,fill);
+            obj->setColor(Primitive::polygon,fill);
+          }
         }
-
-        if(!fill[3]){
-          obj->setVisible(Primitive::triangle,false);
-          obj->setVisible(Primitive::quad,false);
-          obj->setVisible(Primitive::polygon,false);
-        }else{
-          obj->setVisible(Primitive::triangle,true);
-          obj->setVisible(Primitive::quad,true);
-          obj->setVisible(Primitive::polygon,true);
-
-          obj->setColor(Primitive::triangle,fill);
-          obj->setColor(Primitive::quad,fill);
-          obj->setColor(Primitive::polygon,fill);
-        }
-
+        rootObject->lock();
         rootObject->addChild(obj,passOwnership);
+
+        updateBounds(); // todo: only extend bounds by newly added object!!
         
-        updateBounds();
+        LinearTransform1D tx(computedViewport[0],Range32f(-1,1));
+        LinearTransform1D ty(computedViewport[1],Range32f(-1,1));
+        LinearTransform1D tz(computedViewport[2],Range32f(-1,1));
+        
+        rootObject->setTransformation(Mat(tx.m,0,0,tx.b,
+                                          0,ty.m,0,ty.b,
+                                          0,0,tz.m,tz.b,
+                                          0,0,0,1));
+        rootObject->unlock();
+        
+        coordinateFrame->lock();
+        coordinateFrame->updateTics();
+        coordinateFrame->unlock();
       }
       
       Data(){
@@ -275,21 +301,67 @@ namespace icl{
         fill = geom_blue(255);
       }
       
+      template<bool X, bool Y, bool Z>
+      void update_bounds(Range32f computedViewport[3], SceneObject *o){
+        DEBUG_LOG("updating bounds for object " << (void*)o << (rootObject ? "[root]" : "[other]"));
+        if(o != rootObject){
+          const std::vector<Vec> &vs = o->getVertices();
+          DEBUG_LOG("checking " << vs.size() << " nodes! [" << (X?"X":"") << (Y?"Y":"") << (Z?"Z":"") << "]" );
+          for(size_t i=0;i<vs.size();++i){
+            const Vec &v = vs[i];
+            if(X){
+              if(v[0] < computedViewport[0].minVal) computedViewport[0].minVal = v[0];
+              if(v[0] > computedViewport[0].maxVal) computedViewport[0].maxVal = v[0];
+            }
+            if(Y){
+              if(v[1] < computedViewport[1].minVal) computedViewport[1].minVal = v[1];
+              if(v[1] > computedViewport[1].maxVal) computedViewport[1].maxVal = v[1];
+            }
+            if(Z){
+              if(v[2] < computedViewport[2].minVal) computedViewport[2].minVal = v[2];
+              if(v[2] > computedViewport[2].maxVal) computedViewport[2].maxVal = v[2];
+            }
+          }
+        }
+        for(int i=0;i<o->getChildCount();++i){
+          update_bounds<X,Y,Z>(computedViewport,o->getChild(i));
+        }
+      }
+      
       void updateBounds(){
-        TODO_LOG("estimate all [0,0] bounds from all contained object's getTransformedVertices() ...");
+        const bool dyn[3] = {
+          !givenViewport[0].getLength(),
+          !givenViewport[1].getLength(),
+          !givenViewport[2].getLength() 
+        };
+        for(int i=0;i<3;++i){
+          computedViewport[i] = dyn[i] ? Range32f::inv_limits() : givenViewport[0];
+        }
+        
+        switch( dyn[0] + dyn[1]*2 + dyn[2]*4 ){
+          case 0: update_bounds<false,false,false>(computedViewport,rootObject); break;
+          case 1: update_bounds<true,false,false>(computedViewport,rootObject); break;
+          case 2: update_bounds<false,true,false>(computedViewport,rootObject); break;
+          case 3: update_bounds<true,true,false>(computedViewport,rootObject); break;
+          case 4: update_bounds<false,false,true>(computedViewport,rootObject); break;
+          case 5: update_bounds<true,false,true>(computedViewport,rootObject); break;
+          case 6: update_bounds<false,true,true>(computedViewport,rootObject); break;
+          case 7: update_bounds<true,true,true>(computedViewport,rootObject); break;
+          default: break;
+        }
+        
       }
     };
 
     const Range32f *PlotWidget3D::getViewPort() const{
-      return m_data->viewport;
+      return m_data->computedViewport;
     }
 
 
     
     PlotWidget3D::PlotWidget3D(QWidget *parent):ICLDrawWidget3D(parent),m_data(new Data){
-      std::fill(m_data->viewport,m_data->viewport+3,Range32f(0,1));
+      std::fill(m_data->givenViewport,m_data->givenViewport+3,Range32f(0,0));
       m_data->scene.setBounds(1);
-
 
       Camera cam(Vec(8,1.5,1.5,1),
                  -Vec(8,1.5,1.5,1).normalized(),
@@ -303,12 +375,14 @@ namespace icl{
       
       install(m_data->scene.getMouseHandler(0));
       link(m_data->scene.getGLCallback(0));
+
+      m_data->rootObject = new SceneObject;      
+      m_data->rootObject->setLockingEnabled(true);
+      m_data->coordinateFrame = new CoordinateFrameObject3D(this,m_data->rootObject);
       
-      m_data->rootObject = new SceneObject;
+      m_data->scene.addObject(m_data->coordinateFrame); // must be rendered first (adapts rootObj-transform)
       m_data->scene.addObject(m_data->rootObject);
-      
-      m_data->coordinateFrame = new CoordinateFrameObject3D(this);
-      m_data->scene.addObject(m_data->coordinateFrame);
+
     }
 
 
@@ -319,13 +393,15 @@ namespace icl{
     const Camera &PlotWidget3D::getCamera() const{
       return m_data->scene.getCamera(0);
     }
-    
+
     void PlotWidget3D::setViewPort(const Range32f &xrange,
                                    const Range32f &yrange,
                                    const Range32f &zrange){
-      m_data->viewport[0] = xrange;
-      m_data->viewport[1] = yrange;
-      m_data->viewport[2] = zrange;
+      m_data->givenViewport[0] = xrange;
+      m_data->givenViewport[1] = yrange;
+      m_data->givenViewport[2] = zrange;
+      
+      m_data->updateBounds();
       
       // compute an actual view-port used, that is slightly larger
       // or equal to the given viewport. 
@@ -403,6 +479,10 @@ namespace icl{
       }
       m_data->add(obj);
       return obj;
+    }
+
+    void PlotWidget3D::clear(){
+      m_data->rootObject->removeAllChildren();
     }
     
     PlotWidget3D::Handle PlotWidget3D::surf(const std::vector<Vec> &points, int nx, int ny, 

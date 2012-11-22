@@ -120,10 +120,10 @@ namespace icl{
   
       // *  the coordinates of vertices are (A.x,A.y), (B.x,B.y), (C.x,C.y); 
       //we assume that A.y<=B.y<=C.y (you should sort them first)
-      //* dx1,dx2,dx3 are deltas used in interpolation
-      //* horizline draws horizontal segment with coordinates (S.x,Y), (E.x,Y)
-      //* S.x, E.x are left and right x-coordinates of the segment we have to draw
-      //* S=A means that S.x=A.x; S.y=A.y; 
+      // * dx1,dx2,dx3 are deltas used in interpolation
+      // * horizline draws horizontal segment with coordinates (S.x,Y), (E.x,Y)
+      // * S.x, E.x are left and right x-coordinates of the segment we have to draw
+      // * S=A means that S.x=A.x; S.y=A.y; 
       if(FILL[3] != 0){
         if(x1==x2 && y1 == y2){ line(image,x1,y1,x3,y3); return; }
         if(x1==x3 && y1 == y3){ line(image,x1,y1,x2,y2); return; }
