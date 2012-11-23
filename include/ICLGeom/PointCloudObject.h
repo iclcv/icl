@@ -60,13 +60,16 @@ namespace icl{
       
       public:
       
-      /// creates a new ordered or unordered SimplePointCloudObject instance
+      /// create an un-organizied point cloud with N points
+      PointCloudObject(int numPoints, bool withNormals=false);
+      
+      /// creates a new organized or un-organized SimplePointCloudObject instance
       /** @param width number of points per line (if unordered, number of points)
           @param height number of points per row (if unordered, height is not used)
           @param organized specifies whether there is a 2D data order or not
           @params withNormals if true, also normals will be created for each point
           */
-      PointCloudObject(int width=0, int height=0, bool organized=true, bool withNormals=false);
+      PointCloudObject(int width, int height, bool organized=true, bool withNormals=false);
   
       /// returns which features are supported (only XYZ and RGBA32f)
       virtual bool supports(FeatureType t);

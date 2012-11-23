@@ -43,7 +43,7 @@ void init(){
     ps[i] = Vec3(r,r,r);
     cs[i] = GeomColor(0,100,255,255);
     
-    if(i < nn.size()){
+    if(i < (int)nn.size()){
       nn[i] = FixedColVector<int,4>(r,r,r);
     }
   }

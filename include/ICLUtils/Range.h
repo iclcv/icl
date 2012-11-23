@@ -74,6 +74,11 @@ namespace icl{
       static inline Range<Type> limits(){
         return Range<Type>(std::numeric_limits<Type>::min(),std::numeric_limits<Type>::max());
       }
+
+      /// returns inverted limits range [numeric-limits.max,numeric-limits.min]
+      static inline Range<Type> inv_limits(){
+        return Range<Type>(std::numeric_limits<Type>::max(),std::numeric_limits<Type>::min());
+      }
       
       /// estimate range of given iterator range (using std::for_each)
       static inline Range<Type> from(const Type *begin,const Type *end){

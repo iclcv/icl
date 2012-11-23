@@ -41,6 +41,18 @@ using namespace icl::core;
 
 namespace icl{
   namespace geom{
+
+    PointCloudObject::PointCloudObject(int numPoints, bool withNormals):
+      m_organized(false){
+      m_dim2D = Size(numPoints,1);
+      m_vertices.resize(m_dim2D.getDim(),Vec(0,0,0,1));
+      m_vertexColors.resize(m_dim2D.getDim(),Vec(0,0,0,1));
+      m_hasNormals = withNormals;
+
+      if(withNormals){
+        m_normals.resize(m_dim2D.getDim(),Vec(0,0,0,1));
+      }
+    }
   
     PointCloudObject::PointCloudObject(int width, int height, bool organized, bool withNormals):
       m_organized(organized){

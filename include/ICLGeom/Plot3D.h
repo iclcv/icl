@@ -68,9 +68,9 @@ namespace icl{
       /// create Plot3D component with given defaultViewPortsize
       /** The given defaultViewPortsize is to create an OpenGL viewport as long as no
           backgrond image is given. */
-      Plot3D(const utils::Range32f &xrange=utils::Range32f(-1,1), 
-             const utils::Range32f &yrange=utils::Range32f(-1,1), 
-             const utils::Range32f &zrange=utils::Range32f(-1,1)):
+      Plot3D(const utils::Range32f &xrange=utils::Range32f(0,0), 
+             const utils::Range32f &yrange=utils::Range32f(0,0), 
+             const utils::Range32f &zrange=utils::Range32f(0,0)):
       qt::GUIComponent("plot3D",form_args(xrange,yrange,zrange)){}
     };
 
