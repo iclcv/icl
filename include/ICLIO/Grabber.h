@@ -8,8 +8,8 @@
 **                                                                 **
 ** File   : include/ICLIO/Grabber.h                                **
 ** Module : ICLIO                                                  **
-** Authors: Christof Elbrechter, Michael Götting, Robert Haschke   **
-**                                                                 **
+** Authors: Christof Elbrechter, Michael Götting, Robert Haschke,  **
+**          Viktor Richter                                         **
 **                                                                 **
 ** Commercial License                                              **
 ** ICL can be used commercially, please refer to our website       **
@@ -48,30 +48,30 @@
 
 namespace icl {
   namespace io{
-  
+
     /** \cond */
     namespace{
       template <class T> inline T grabber_get_null(){ return 0; }
       template <> inline core::format grabber_get_null<core::format>(){ return (core::format)-1; }
       template <> inline core::depth grabber_get_null<core::depth>(){ return (core::depth)-1; }
       template <> inline icl::utils::Size grabber_get_null<icl::utils::Size>(){ return icl::utils::Size::null; }
-  
+
       struct grabber_get_xxx_dummy{
-        grabber_get_xxx_dummy(){
-          grabber_get_null<core::format>();
-          grabber_get_null<core::depth>();
-          grabber_get_null<icl::utils::Size>();
-        }
+          grabber_get_xxx_dummy(){
+            grabber_get_null<core::format>();
+            grabber_get_null<core::depth>();
+            grabber_get_null<icl::utils::Size>();
+          }
       };
     }
     template <class T> class GrabberHandle;
     class GenericGrabber;
     /** \endcond */
     
-   /// Common interface class for all grabbers \ingroup GRABBER_G
+    /// Common interface class for all grabbers \ingroup GRABBER_G
     /** The Grabber is ICL's common interface for image acquisition
         tools. A large set of Grabbers is available and wrapped
-        by the GenericGrabber class. We strongly recommend to 
+        by the GenericGrabber class. We strongly recommend to
         use the GenericGrabber class for image acquisition within
         applications.
         
@@ -81,8 +81,8 @@ namespace icl {
         
         
         \section DES Desired parameters
-  
-        In addition, the Grabber supports a set of so called 
+
+        In addition, the Grabber supports a set of so called
         'desired-parameters'. These can be set to overwrite the
         image parameters that are used by the underlying implementation.
         A FileGrabber e.g. will by default return images that have
@@ -101,14 +101,14 @@ namespace icl {
         
         \section UND Image Undistortion
         
-        The Grabber does also provide an interface to set up 
+        The Grabber does also provide an interface to set up
         image undistortion parameters. The can be estimated
         with ICL's distortion calibration tool. The undistortion
         operation is accelerated using an internal warp-table.
         By these means, image undistion is directly applied on the
-        grabbed images, which lets the user then work with 
+        grabbed images, which lets the user then work with
         undistored images.
-  
+
         
         \section IM Implementing Grabbers
         
@@ -131,18 +131,18 @@ namespace icl {
         must have at least the two properties 'core::format' and 'size'. These
         are handled in a special way by the automatically created Grabber-
         property-GUIs available in the ICLQt package.
-  
-  
+
+
         \section CB Callback Based Image Akquisition
         
         As a very new experimental features, ICL's Grabber interface provides
-        methods to register callback functions to the grabber that are 
+        methods to register callback functions to the grabber that are
         then called automatically whenever a new image is available. This
         feature needs to be implemented explicitly for each grabber backend and
-        does sometimes not even make sense. Furthermore, it' could lead to 
+        does sometimes not even make sense. Furthermore, it' could lead to
         some strange behaviour of the whole application, because the internal
         image akquisition process is suddenly linked to the further image
-        processing steps directly. This feature should not be used for 
+        processing steps directly. This feature should not be used for
         writing applications that are scheduled by the speed of the internal
         image aquisition loop. Therefore, images should never be processed
         in the callback functions that are registred.
@@ -151,295 +151,178 @@ namespace icl {
         is not provided, the registered callbacks will never be called.
     */
     class Grabber : public utils::Uncopyable, public utils::Configurable{
-      /// internal data class
-      struct Data;
-      
-      /// hidden data
-      Data *data;
-  
+        /// internal data class
+        struct Data;
+
+        /// hidden data
+        Data *data;
+
       protected:
-      /// internally set a desired format
-      virtual void setDesiredFormatInternal(core::format fmt);
-  
-      /// internally set a desired format
-      virtual void setDesiredSizeInternal(const utils::Size &size);
-  
-      /// internally set a desired format
-      virtual void setDesiredDepthInternal(core::depth d);
-  
-      /// returns the desired format
-      virtual core::format getDesiredFormatInternal() const;
-  
-      /// returns the desired format
-      virtual core::depth getDesiredDepthInternal() const;
-  
-      /// returns the desired format
-      virtual utils::Size getDesiredSizeInternal() const;
-  
+        /// internally set a desired format
+        virtual void setDesiredFormatInternal(core::format fmt);
+
+        /// internally set a desired format
+        virtual void setDesiredSizeInternal(const utils::Size &size);
+
+        /// internally set a desired format
+        virtual void setDesiredDepthInternal(core::depth d);
+
+        /// returns the desired format
+        virtual core::format getDesiredFormatInternal() const;
+
+        /// returns the desired format
+        virtual core::depth getDesiredDepthInternal() const;
+
+        /// returns the desired format
+        virtual utils::Size getDesiredSizeInternal() const;
+
       public:
-  
-      /// grant private method access to the grabber handle template
-      template<class X> friend class GrabberHandle;
-  
-      /// grant private method access to the GenericGrabber class
-      friend class GenericGrabber;
-      
-      ///
-      Grabber();
-      
-      /// Destructor
-      virtual ~Grabber();
-  
-      /// grab function calls the Grabber-specific acquireImage-method and applies distortion if necessary
-      /** If dst is not NULL, it is exploited and filled with image data **/
-      const core::ImgBase *grab(core::ImgBase **dst=0);
-      
-      /// returns whether the desired parameter for the given type is used
-      /** This method is only available for the type core::depth,icl::utils::Size and core::format*/
-      template<class T>
-      bool desiredUsed() const{ return false; }
-  
-      /// sets desired parameters (only available for core::depth,utils::Size and core::format)
-      template<class T>
-      void useDesired(const T &t){ (void)t;}
-      
-      /// sets up the grabber to use all given desired parameters
-      void useDesired(core::depth d, const utils::Size &size, core::format fmt);
-      
-      /// set the grabber to ignore the desired param of type T
-      /** This method is only available for core::depth,utils::Size and core::format */
-      template<class T>
-      void ignoreDesired() { 
-        useDesired<T>(grabber_get_null<T>());
-      }
-  
-      /// sets up the grabber to ignore all desired parameters
-      void ignoreDesired();
-  
-      /// returns the desired value for the given type T
-      /** This method is only available for core::depth,utils::Size and core::format */
-      template<class T>
-      T getDesired() const { return T(); }
-       
-      /// @{ @name get/set properties  
-      
-      /// interface for the setter function for video device properties 
-      /** All video device properties can be set using this function. As different video devices  
-          have different property sets, there are no specialized functions to set special parameters.
-          To get a list of all possible properties and their corresponding data ranges or value lists,
-          call \code getPropertyList()  and getInfo() \endcode
-           Yet, the following properties are compulsory for grabbers:
-           - size (syntax for value: e.g. "320x240")
-           - core::format (value depends on the underlying devices formats specifications) 
-           (If your grabber does only provided one core::format, e.g. RGB24 or one specifiy size, you
-           should create a menu property for core::format and for size, where each menu has only one 
-           valid entry.
-  
-           Other parameters, implemented for most video devices are: 
-           - "frame rate"
-           - "exposure"
-           - "shutter speed"
-           - "gain"
-           - ...
-           
-           Look into the documentation of the special grabber classes or explore the device paremeters
-           with the <em>camcfg</em> utility application, located in ICLQt/examples
-           
-           @param property identifier of the property
-           @param value value of the property (the value is parsed into the desired type)
-       */
-       virtual void setProperty(const std::string &property, const std::string &value){
-         (void)property; (void)value;
-       }
-       
-       /// returns a list of properties, that can be set using setProperty
-       /** @return list of supported property names **/
-       virtual std::vector<std::string> getPropertyListC(){
-         return std::vector<std::string>();
-       }
-       
-       /// base implementation for property check (seaches in the property list)
-       /** This function may be reimplemented in an optimized way in
-           particular subclasses.**/
-       virtual bool supportsPropertyC(const std::string &property);
-  
-       
-       /// writes all available properties into a file
-       /** @param filename destination xml-filename
-           @param writeDesiredParams if this flag is true, current grabbers desired params are written to the
-                                     config file as well 
-           @param skipUnstable some common grabber parameters e.g. trigger-settings cause problems when
-                               they are read from configuration files, hence these parameters are skipped at default*/
-       virtual void savePropertiesC(const std::string &filename, bool writeDesiredParams=true, bool skipUnstable=true);
-  
-       /// reads a camera config file from disc
-       /** @ see saveProperties */
-       virtual void loadPropertiesC(const std::string &filename, bool loadDesiredParams=true, bool skipUnstable=true);
-  
-       /// get type of property 
-       /** This is a new minimal configuration interface: When implementing generic
-           video device configuration utilities, the programmer needs information about
-           the properties received by getPropertyList(). With the getType(const string&)
-           function, you can explore
-           all possible params and properties, and receive a type string which defines
-           of which type the given property was: \n
-           (for detailed description of the types, see also the get Info function)
-           Types are:
-           - "range" the property is a double value in a given range 
-           - "value-list" the property is a double value in a list of possible values
-           - "menu" the property  is a string value in a list of possible values
-           - "command" property param has no additional parameters (this feature is 
-             used e.g. for triggered abilities of grabbing devices, like 
-             "save user settings" for the PWCGrabber 
-           - "info" the property is an unchangable internal value (it cannot be set actively)
-           - ... (propably some other types are defined later on)
-       */
-       virtual std::string getType(const std::string &name){
-         (void)name; return "undefined";
-       }
-       
-       /// get information of a properties valid values
-       /** This is the second function of the minimal configuration interface: If 
-           received a specific property type with getType(), it's
-           possible to get the corresponding range, value-list or menu with this
-           funcitons. The Syntax of the returned strings are:
-           - "[A,B]:C"  for a range with min=A, max=B and stepping = C
-           - "{A,B,C,...}" for a value-list and A,B,C are ascii doubles
-           - "{A,B,C,...}" for a menu and A,B,C are strings
-           - nothing for "info"-typed properties
-           <b>Note:</b> The received string can be translated into C++ data
-           with some static utility function in this Grabber class.
-           @see translateSteppingRange
-           @see translateDoubleVec
-           @see translateStringVec
-       */
-       virtual std::string getInfo(const std::string &name){
-         (void)name; return "undefined";
-       }
-  
-       /// returns the current value of a property or a parameter
-       virtual std::string getValue(const std::string &name){
-         (void)name; return "undefined";
-       }
-  
-       /// Returns whether this property may be changed internally
-       /** For example a video grabber's current stream position. This can be changed
-           from outside, but it is changed when the stream is played. The isVolatile
-           function should return a msec-value that describes how often the corresponding
-           feature might be updated internally or just 0, if the corresponding
-           feature is not volatile at all. The default implementation of isVolatile
-           returns 0 for all features. So if there is no such feature in your grabber,
-           this function must not be adapted at all. "info"-typed Properties might be
-           volatile as well */
-       virtual int isVolatile(const std::string &propertyName){
-         (void)propertyName; return false;
-       }
-       
-       /// @} 
-       /// @{ @name static string conversion functions 
-  
-       /// translates a SteppingRange into a string representation
-       static std::string translateSteppingRange(const utils::SteppingRange<double>& range);
-  
-       /// creates a SteppingRange out of a string representation
-       static utils::SteppingRange<double> translateSteppingRange(const std::string &rangeStr);
-  
-       /// translates a vector of doubles into a string representation
-       static std::string translateDoubleVec(const std::vector<double> &doubleVec);
-  
-       /// creates a vector of doubles out of a string representation
-       static std::vector<double> translateDoubleVec(const std::string &doubleVecStr);
-  
-       /// translates a vector of strings into a single string representation
-       static std::string translateStringVec(const std::vector<std::string> &stringVec);
-  
-       /// creates a vector of strins out of a single string representation
-       static std::vector<std::string> translateStringVec(const std::string &stringVecStr);
-  
-       /// @} 
-       
-       /// @{ @name distortion functions
-       
-       /// enables the undistorion
-       void enableUndistortion(const std::string &filename);
-       
-       ///enables the undistortion plugin for the grabber using radial and tangential distortion parameters
-       void enableUndistortion(const ImageUndistortion &udist);
-  
-       /// enables undistortion from given programm argument. 
-       /** where first argument is the filename of the xml file and second is the size of picture*/
-       void enableUndistortion(const utils::ProgArg &pa);
-  
-       /// enables undistortion for given warp map
-       void enableUndistortion(const core::Img32f &warpMap);
-       
-       /// sets how undistortion is interpolated (supported modes are interpolateNN and interpolateLIN)
-       /** Please note, that this method has no effect if the undistortion was not enabled before
+
+        /// grant private method access to the grabber handle template
+        template<class X> friend class GrabberHandle;
+
+        /// grant private method access to the GenericGrabber class
+        friend class GenericGrabber;
+
+        ///
+        Grabber();
+
+        /// Destructor
+        virtual ~Grabber();
+
+        /// grab function calls the Grabber-specific acquireImage-method and applies distortion if necessary
+        /** If dst is not NULL, it is exploited and filled with image data **/
+        const core::ImgBase *grab(core::ImgBase **dst=0);
+
+        /// returns whether the desired parameter for the given type is used
+        /** This method is only available for the type core::depth,icl::utils::Size and core::format*/
+        template<class T>
+        bool desiredUsed() const{ return false; }
+
+        /// sets desired parameters (only available for core::depth,utils::Size and core::format)
+        template<class T>
+        void useDesired(const T &t){ (void)t;}
+
+        /// sets up the grabber to use all given desired parameters
+        void useDesired(core::depth d, const utils::Size &size, core::format fmt);
+
+        /// set the grabber to ignore the desired param of type T
+        /** This method is only available for core::depth,utils::Size and core::format */
+        template<class T>
+        void ignoreDesired() {
+          useDesired<T>(grabber_get_null<T>());
+        }
+
+        /// sets up the grabber to ignore all desired parameters
+        void ignoreDesired();
+
+        /// returns the desired value for the given type T
+        /** This method is only available for core::depth,utils::Size and core::format */
+        template<class T>
+        T getDesired() const { return T(); }
+
+        /// @}
+        /// @{ @name static string conversion functions
+
+        /// translates a SteppingRange into a string representation
+        static std::string translateSteppingRange(const utils::SteppingRange<double>& range);
+
+        /// creates a SteppingRange out of a string representation
+        static utils::SteppingRange<double> translateSteppingRange(const std::string &rangeStr);
+
+        /// translates a vector of doubles into a string representation
+        static std::string translateDoubleVec(const std::vector<double> &doubleVec);
+
+        /// creates a vector of doubles out of a string representation
+        static std::vector<double> translateDoubleVec(const std::string &doubleVecStr);
+
+        /// translates a vector of strings into a single string representation
+        static std::string translateStringVec(const std::vector<std::string> &stringVec);
+
+        /// creates a vector of strins out of a single string representation
+        static std::vector<std::string> translateStringVec(const std::string &stringVecStr);
+
+        /// @}
+
+        /// @{ @name distortion functions
+
+        /// enables the undistorion
+        void enableUndistortion(const std::string &filename);
+
+        ///enables the undistortion plugin for the grabber using radial and tangential distortion parameters
+        void enableUndistortion(const ImageUndistortion &udist);
+
+        /// enables undistortion from given programm argument.
+        /** where first argument is the filename of the xml file and second is the size of picture*/
+        void enableUndistortion(const utils::ProgArg &pa);
+
+        /// enables undistortion for given warp map
+        void enableUndistortion(const core::Img32f &warpMap);
+
+        /// sets how undistortion is interpolated (supported modes are interpolateNN and interpolateLIN)
+        /** Please note, that this method has no effect if the undistortion was not enabled before
            using one of the Grabber::enableUndistortion methods. Furthermore, the setting is lost
            if the undistortion is deactivated using Grabber::disableUndistortion */
-       void setUndistortionInterpolationMode(core::scalemode mode);
-       
-       /// disables distortion
-       void disableUndistortion();
-       
-       /// returns whether distortion is currently enabled
-       bool isUndistortionEnabled() const;
-       
-       /// returns the internal warp map or NULL if undistortion is not enabled
-       const core::Img32f *getUndistortionWarpMap() const;
-       /// @}
-  
-       /// new image callback type
-       typedef utils::Function<void,const core::ImgBase*> callback;
-       
-       /// registers a callback that is called each time, a new image is available
-       /** This feature must not be implemented by specific grabber implementations. And
+        void setUndistortionInterpolationMode(core::scalemode mode);
+
+        /// disables distortion
+        void disableUndistortion();
+
+        /// returns whether distortion is currently enabled
+        bool isUndistortionEnabled() const;
+
+        /// returns the internal warp map or NULL if undistortion is not enabled
+        const core::Img32f *getUndistortionWarpMap() const;
+        /// @}
+
+        /// new image callback type
+        typedef utils::Function<void,const core::ImgBase*> callback;
+
+        /// registers a callback that is called each time, a new image is available
+        /** This feature must not be implemented by specific grabber implementations. And
            it is up to the implementation whether the image that is passed to the
            callback has the "desired parameters" or not. Most likely, an internal
            image buffer is passed, which does not have the desired paremters. The output image
            is also usually not undistorted. */
-       virtual void registerCallback(callback cb);
-       
-       /// removes all registered image callbacks
-       virtual void removeAllCallbacks();
-       
-       /// this function can be implemented by subclasses in order to notify, that a new image is available
-       /** When this function is called, it will automatically call all callbacks with the given image. */
-       virtual void notifyNewImageAvailable(const core::ImgBase *image);
+        virtual void registerCallback(callback cb);
+
+        /// removes all registered image callbacks
+        virtual void removeAllCallbacks();
+
+        /// this function can be implemented by subclasses in order to notify, that a new image is available
+        /** When this function is called, it will automatically call all callbacks with the given image. */
+        virtual void notifyNewImageAvailable(const core::ImgBase *image);
       protected:
-  
-  
-       /// main interface method, that is implemented by the actual grabber instances
-       /** This method is defined in the grabber implementation. It acquires a new image
+
+
+        /// main interface method, that is implemented by the actual grabber instances
+        /** This method is defined in the grabber implementation. It acquires a new image
            using the grabbers specific image acquisition back-end */
-       virtual const core::ImgBase *acquireImage(){ return NULL; }
-  
-       /// Utility function that allows for much easier implementation of grabUD
-       /** called by the grabbers grab() method **/
-       const core::ImgBase *adaptGrabResult(const core::ImgBase *src, core::ImgBase **dst); 
-  
-       /// internally used by the load- and saveProperties
-       /** If any property shall not be save or loaded from configuration file, it must be filtered out by this f*/
-       virtual std::vector<std::string> get_io_property_list() { return getPropertyListC(); }
-    }; 
+        virtual const core::ImgBase *acquireImage(){ return NULL; }
+
+        /// Utility function that allows for much easier implementation of grabUD
+        /** called by the grabbers grab() method **/
+        const core::ImgBase *adaptGrabResult(const core::ImgBase *src, core::ImgBase **dst);
+
+    };
     
     /** \cond */
     template<> inline void Grabber::useDesired<core::format>(const core::format &t) { setDesiredFormatInternal(t); }
     template<> inline void Grabber::useDesired<core::depth>(const core::depth &t) { setDesiredDepthInternal(t); }
     template<> inline void Grabber::useDesired<utils::Size>(const utils::Size &t) { setDesiredSizeInternal(t); }
-  
+
     template<> inline core::depth Grabber::getDesired<core::depth>() const { return getDesiredDepthInternal(); }
     template<> inline utils::Size Grabber::getDesired<utils::Size>() const { return getDesiredSizeInternal(); }
     template<> inline core::format Grabber::getDesired<core::format>() const { return getDesiredFormatInternal(); }
-  
+
     template<> inline bool Grabber::desiredUsed<core::format>() const{ return (int)getDesired<core::format>() != -1; }
     template<> inline bool Grabber::desiredUsed<core::depth>() const{ return (int)getDesired<core::depth>() != -1; }
     template<> inline bool Grabber::desiredUsed<utils::Size>() const{ return getDesired<utils::Size>() != utils::Size::null; }
-  
+
     /** \endcond */
-   
-  
-  
+
+
+
   } // namespace io
 } // namespace icl
 

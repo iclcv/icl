@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLIO/src/SwissRangerGrabber.cpp                       **
 ** Module : ICLIO                                                  **
-** Authors: Christof Elbrechter                                    **
+** Authors: Christof Elbrechter, Viktor Richter                    **
 **                                                                 **
 **                                                                 **
 ** Commercial License                                              **
@@ -65,38 +65,38 @@ inline int set_canon(int flag){
     t.c_lflag |= (ICANON|ECHO);
   else
     t.c_lflag &= ~(ICANON|ECHO);
-  tcsetattr( fileno(stdin), TCSANOW, &t); 
+  tcsetattr( fileno(stdin), TCSANOW, &t);
   
   return 1;
 }
 
 namespace icl{
   namespace io{
-  
+
     static std::string translate_modulation_freq(ModulationFrq m) throw (ICLException){
       switch(m){
-  #define CASE(X) case MF_##X##MHz: return #X+str("MHz");
+#define CASE(X) case MF_##X##MHz: return #X+str("MHz");
         CASE(40);CASE(30);CASE(21);CASE(20);CASE(19);CASE(60);
         CASE(15);CASE(10);CASE(29);CASE(31);CASE(14_5);CASE(15_5);
-  #undef CASE
+#undef CASE
         default:
           throw ICLException("..");
           return "";
       }
     }
     static ModulationFrq translate_modulation_freq(const std::string &m){
-  #define CASE(X) else if(m==(#X)+str("MHz")) {return MF_##X##MHz;}
+#define CASE(X) else if(m==(#X)+str("MHz")) {return MF_##X##MHz;}
       if(0){}
       CASE(40)CASE(30)CASE(21)CASE(20)CASE(19)CASE(60)
-      CASE(15)CASE(10)CASE(29)CASE(31)CASE(14_5)CASE(15_5)
-  #undef CASE
-      throw ICLException("..");
+          CASE(15)CASE(10)CASE(29)CASE(31)CASE(14_5)CASE(15_5)
+    #undef CASE
+          throw ICLException("..");
       return (ModulationFrq)-1;
     }
     
     static float get_max_range_mm(ModulationFrq m){
       switch(m){
-  #define CASE(X,R) case MF_##X##MHz: return R;
+#define CASE(X,R) case MF_##X##MHz: return R;
         CASE(40,3750);
         CASE(30,5000);
         CASE(21,7140);
@@ -109,72 +109,72 @@ namespace icl{
         CASE(31,4840);
         CASE(14_5,10340);
         CASE(15_5,9860);
-  #undef CASE
+#undef CASE
         default: return 0;
-      } 
+      }
     }
-  
+
     
-  
+
     /// crazy debug output method (taken from the libmesasr sample application)
     static int swiss_ranger_debug_callback(SRCAM srCam,
                                            unsigned int msg,
                                            unsigned int param,
                                            void* data){
       switch(msg)
+      {
+        case CM_MSG_DISPLAY: // redirects all output to console
         {
-          case CM_MSG_DISPLAY: // redirects all output to console
-            {
-              if (param==MC_ETH)
-                return 0;
-              char*p=(char*)data,*q;
-              while( (q=strchr(p,'\n')) )
-                {
-                  fputs(">>>>   >>>> ",stdout);
-                  fwrite(p,q-p+1,1,stdout);
-                  p=&q[1];
-                }
-              fputs(">>>>   >>>> ",stdout);
-              puts((char*)p);
-              return 0;
-            }
-          case CM_PROGRESS:
-            {
-  #ifndef HIWORD
-  # define HIWORD(X) ((unsigned short)((unsigned long)(X)>>16))
-  # define LOWORD(X) ((unsigned short)((unsigned long)(X)&0xFFFF))
-  #endif
-              int state   =LOWORD(param);
-              int progress=HIWORD(param);
-              switch(state)
-                {
-                  case CP_FLASH_ERASE:
-                    printf("Erasing flash (%d%%)...\n",progress);break;
-                  case CP_FLASH_WRITE:
-                    printf("Writing flash (%d%%)...\n",progress);break;
-                  case CP_FLASH_READ:
-                    printf("Reading flash (%d%%)...\n",progress);break;
-                  case CP_FPGA_BOOT:
-                    printf("Boot FPGA (%d%%)...\n",progress);break;
-                  case CP_CAM_REBOOT:
-                    printf("Reboot camera (%d%%)...\n",progress);break;
-                  case CP_DONE:
-                    puts("\ndone.");
-                }
-              return 0;
-            }
-          default:
-            {
-              //default handling
-              return SR_GetDefaultCallback()(0,msg,param,data);
-            }
+          if (param==MC_ETH)
+            return 0;
+          char*p=(char*)data,*q;
+          while( (q=strchr(p,'\n')) )
+          {
+            fputs(">>>>   >>>> ",stdout);
+            fwrite(p,q-p+1,1,stdout);
+            p=&q[1];
+          }
+          fputs(">>>>   >>>> ",stdout);
+          puts((char*)p);
+          return 0;
         }
+        case CM_PROGRESS:
+        {
+#ifndef HIWORD
+# define HIWORD(X) ((unsigned short)((unsigned long)(X)>>16))
+# define LOWORD(X) ((unsigned short)((unsigned long)(X)&0xFFFF))
+#endif
+          int state   =LOWORD(param);
+          int progress=HIWORD(param);
+          switch(state)
+          {
+            case CP_FLASH_ERASE:
+              printf("Erasing flash (%d%%)...\n",progress);break;
+            case CP_FLASH_WRITE:
+              printf("Writing flash (%d%%)...\n",progress);break;
+            case CP_FLASH_READ:
+              printf("Reading flash (%d%%)...\n",progress);break;
+            case CP_FPGA_BOOT:
+              printf("Boot FPGA (%d%%)...\n",progress);break;
+            case CP_CAM_REBOOT:
+              printf("Reboot camera (%d%%)...\n",progress);break;
+            case CP_DONE:
+              puts("\ndone.");
+          }
+          return 0;
+        }
+        default:
+        {
+          //default handling
+          return SR_GetDefaultCallback()(0,msg,param,data);
+        }
+      }
     }
-  
+
     static std::map<std::string,int> g_props;
     static struct g_props_initializer{
       g_props_initializer(){
-  #define ENTRY(X) g_props[#X] = X
+#define ENTRY(X) g_props[#X] = X
         ENTRY(AM_COR_FIX_PTRN);
         ENTRY(AM_MEDIAN);
         ENTRY(AM_CONV_GRAY);
@@ -183,7 +183,7 @@ namespace icl{
         ENTRY(AM_HW_TRIGGER);
         ENTRY(AM_SW_TRIGGER);
         ENTRY(AM_DENOISE_ANF);
-  #undef ENTRY
+#undef ENTRY
       }
     } g_props_initializer_instance;
     
@@ -203,27 +203,27 @@ namespace icl{
       }
       return "";
         }*/
-  
+
     
-  #define ICL_SR_SUCCESS 0
+#define ICL_SR_SUCCESS 0
     template<class T>
     void adapt_result_t(Img<T> &im,  int us_add){
       const unsigned int dim = (unsigned int)im.getDim();
       T *data = im.getData(0);
       for(unsigned int i=0;i<dim;++i){
         data[i] += us_add;
-      }    
+      }
     }
-  
+
     void adapt_result(ImgBase *image ,int us_add){
       ICLASSERT_RETURN(image);
       switch(image->getDepth()){
-  #define ICL_INSTANTIATE_DEPTH(D) case depth##D: adapt_result_t(*image->asImg<icl##D>(),us_add); break;
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: adapt_result_t(*image->asImg<icl##D>(),us_add); break;
         ICL_INSTANTIATE_ALL_DEPTHS;
-  #undef ICL_INSTANTIATE_DEPTH
+#undef ICL_INSTANTIATE_DEPTH
       }
     }
-  
+
     template<class srcT, class dstT>
     void copy_sr_data_src_dst(const srcT *src, dstT *dst, int dim){
       for(int i=0;i<dim;++i) dst[i] = (dstT)src[i];//clipped_cast<srcT,dstT>(src[i]);
@@ -242,16 +242,16 @@ namespace icl{
         default: ERROR_LOG("unknown ImgEntry::DataType value " << (int)t);
       }
     }
-  
+
     void copy_sr_data(const void *src, void *dst, int dim, ImgEntry::DataType t, depth d){
       switch(d){
-  #define ICL_INSTANTIATE_DEPTH(D) case depth##D: copy_sr_data_src(src,(icl##D*)dst,dim,t); break;
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: copy_sr_data_src(src,(icl##D*)dst,dim,t); break;
         ICL_INSTANTIATE_ALL_DEPTHS;
-  #undef ICL_INSTANTIATE_DEPTH
+#undef ICL_INSTANTIATE_DEPTH
         default: ICL_INVALID_DEPTH;
       }
     }
-  
+
     template<class T, class S>
     void fix_unknown_pixels_t(S *conv_map, Channel<T> c, T val){
       int dim = c.getDim();
@@ -259,7 +259,7 @@ namespace icl{
         if ( !conv_map[i]) c[i] = val;
       }
     }
-  
+
     template<class T>
     void fix_unknown_pixels(const void *conv_map, ImgEntry::DataType t, Channel<T> c, T val){
       switch(t){
@@ -274,8 +274,8 @@ namespace icl{
         default: ERROR_LOG("unknown ImgEntry::DataType value " << (int)t);
       }
     }
-  
-  
+
+
     enum IntensityImageMode{
       iimUnknownPixelsZero,
       iimUnknownPixelsMinusOne,
@@ -284,20 +284,20 @@ namespace icl{
     
     class SwissRangerGrabberImpl::SwissRanger{
       public:
-      SRCAM cam;
-      Size size;
-      Img32f buf;
-      ImgBase *image;
-      int id;
-      int pickChannel;
-      IntensityImageMode iim;
-      std::string depthMapUnit;
-      bool createXYZ;
+        SRCAM cam;
+        Size size;
+        Img32f buf;
+        ImgBase *image;
+        int id;
+        int pickChannel;
+        IntensityImageMode iim;
+        std::string depthMapUnit;
+        bool createXYZ;
     };
     
     static int g_swissranger_instance_count = 0;
-  
-  
+
+
     SwissRangerGrabberImpl::SwissRangerGrabberImpl(int serialNumber, depth bufferDepth, int pickChannel) throw (ICLException):Grabber(){
       g_swissranger_instance_count++;
       if(g_swissranger_instance_count == 1){
@@ -312,24 +312,24 @@ namespace icl{
         if(m_sr->id <= 0){
           ICL_DELETE(m_sr);
           throw ICLException("unable to open SwissRanger (SR_OpenDlg) device with serialNumber " + str(serialNumber));
-        }      
+        }
       }else{
         m_sr->id = SR_OpenUSB(&m_sr->cam,serialNumber);
         if(m_sr->id <= 0){
           ICL_DELETE(m_sr);
           throw ICLException("unable to open SwissRanger (SR_OpenUSB) device with serialNumber " + str(serialNumber));
-        }   
+        }
       }
       m_sr->iim = iimUnknownPixelsMinusOne;
-     
+
       m_sr->size.width = SR_GetCols(m_sr->cam);
       m_sr->size.height = SR_GetRows(m_sr->cam);
-  
+
       m_sr->buf = Img32f(m_sr->size,3);
       m_sr->image = imgNew(bufferDepth,m_sr->size,0);
       
       m_sr->pickChannel = pickChannel;
-   
+
       m_sr->depthMapUnit = "16Bit";
       
       m_sr->createXYZ = true;
@@ -338,19 +338,19 @@ namespace icl{
       addProperties();
     }
     
-  
+
     SwissRangerGrabberImpl::~SwissRangerGrabberImpl(){
       ICL_DELETE(m_sr->image);
       SR_Close(m_sr->cam);
       ICL_DELETE(m_sr);
-  
+
       --g_swissranger_instance_count;
       if(!g_swissranger_instance_count){
         SR_SetCallback(SR_GetDefaultCallback());//set default global callback
         set_canon(1);
       }
     }
-  
+
     // adds properties to Configurable
     void SwissRangerGrabberImpl::addProperties(){
       Mutex::Locker l(m_mutex);
@@ -420,7 +420,7 @@ namespace icl{
         }
       }
     }
-  
+
     float SwissRangerGrabberImpl::getMaxRangeMM(const std::string &modulationFreq) throw (ICLException){
       return get_max_range_mm(translate_modulation_freq(modulationFreq));
     }
@@ -430,7 +430,7 @@ namespace icl{
       if(u == "16Bit") return 65535;
       float unitFactor = (u=="mm")?1:(u=="cm")?0.1:0.001;
       float maxRange = get_max_range_mm(SR_GetModulationFrequency(m_sr->cam));
-  
+
       return unitFactor * maxRange;
     }
     
@@ -441,13 +441,13 @@ namespace icl{
       
       static const unsigned int SF = sizeof(float);
       SR_CoordTrfFlt(m_sr->cam, m_sr->buf.getData(0),m_sr->buf.getData(1),m_sr->buf.getData(2),SF,SF,SF);
-  
+
       ImgBase &result = *m_sr->image;
       
       ImgEntry *imgs = 0;
       int num = SR_GetImageList(m_sr->cam,&imgs);
       result.setChannels((m_sr->pickChannel<0) ? (num +(m_sr->createXYZ*3)) : 1);
-  
+
       
       //      ImgEntry *im_DISTANCE = 0;
       //int DISTANCE_idx = -1;
@@ -461,7 +461,7 @@ namespace icl{
       for(int i=0;i<num;++i){
         if(imgs[i].width != result.getWidth()){
           ERROR_LOG("grabbed image entry size was " << imgs[i].width << " but internal width was set to " << result.getWidth());
-          continue;      
+          continue;
         }
         if(imgs[i].height != result.getHeight()){
           ERROR_LOG("grabbed image entry size was " << imgs[i].height << " but internal height was set to " << result.getHeight());
@@ -470,14 +470,14 @@ namespace icl{
         ImgEntry::ImgType t = imgs[i].imgType;
         std::string info = "";
         switch(t){
-  #define CASE_0(X) case ImgEntry::IT_##X: info = #X ; break;
-  #define CASE_1(X) case ImgEntry::IT_##X: info = #X ; im_##X = imgs+i; break;
-  #define CASE_2(X) case ImgEntry::IT_##X: info = #X ; im_##X = imgs+i; X##_idx = i; break;
+#define CASE_0(X) case ImgEntry::IT_##X: info = #X ; break;
+#define CASE_1(X) case ImgEntry::IT_##X: info = #X ; im_##X = imgs+i; break;
+#define CASE_2(X) case ImgEntry::IT_##X: info = #X ; im_##X = imgs+i; X##_idx = i; break;
           CASE_0(DISTANCE);
           CASE_2(AMPLITUDE);
           CASE_0(INTENSITY);
           CASE_1(CONF_MAP);
-  #undef CASE
+#undef CASE
           default: info = "unknown"; break;
         }
         if(m_sr->pickChannel == -1){
@@ -494,18 +494,18 @@ namespace icl{
           }
         }
       }
-  
+
       if(m_sr->iim != iimUnknownPixelsUnchanged){
         if(im_CONF_MAP && im_AMPLITUDE){
           if( (m_sr->pickChannel == -1) || (m_sr->pickChannel == AMPLITUDE_idx) ){
             int ampChannelIdx = m_sr->pickChannel < 0 ? AMPLITUDE_idx : 0;
             switch(result.getDepth()){
-  #define ICL_INSTANTIATE_DEPTH(D) \
+#define ICL_INSTANTIATE_DEPTH(D) \
               case depth##D :fix_unknown_pixels<icl##D>(im_CONF_MAP->data, im_CONF_MAP->dataType, \
-                                                        (*result.asImg<icl##D>())[ampChannelIdx], \
-                                                        m_sr->iim == iimUnknownPixelsZero ? 0 : -1); break;
+  (*result.asImg<icl##D>())[ampChannelIdx], \
+  m_sr->iim == iimUnknownPixelsZero ? 0 : -1); break;
               ICL_INSTANTIATE_ALL_DEPTHS
-  #undef ICL_INSTANTIATE_DEPTH
+    #undef ICL_INSTANTIATE_DEPTH
             }
           }
         }
@@ -524,7 +524,7 @@ namespace icl{
       result.setTime(captureTime);
       return &result;
     }
-  
+
     const std::vector<GrabberDeviceDescription> &SwissRangerGrabberImpl::getDeviceList(bool rescan){
       static std::vector<GrabberDeviceDescription> deviceList;
       if(rescan){
@@ -539,131 +539,6 @@ namespace icl{
         }
       }
       return deviceList;
-    }
-  
-    void SwissRangerGrabberImpl::setProperty(const std::string &property, const std::string &value){
-      Mutex::Locker l(m_mutex);
-      if(property == "current-range"){
-        ERROR_LOG("unable to set info-properties");
-      }else if(property == "intensity-image-mode"){
-        if(value == "minus one") m_sr->iim = iimUnknownPixelsMinusOne;
-        else if(value == "zero") m_sr->iim = iimUnknownPixelsZero;
-        else if(value == "unchanged") m_sr->iim = iimUnknownPixelsUnchanged;
-        else ERROR_LOG("invalid value \"" << value << "\" for property \"" << property << "\"");
-      }else if(property == "modulation-frequency"){
-        try{
-          SR_SetModulationFrequency(m_sr->cam, translate_modulation_freq(value));
-        }catch(...){
-          ERROR_LOG("undefined modulation frequency value :" << value);
-        }
-      }else if(property == "depth-map-unit"){
-        if(value != "16Bit" && 
-           value != "mm" && 
-           value != "cm" && 
-           value != "m"){
-          ERROR_LOG("Unknown unit for depth map :" << value);
-        }else{
-          m_sr->depthMapUnit = value;
-        }
-      }else if(property == "create-xyz-channels"){
-        if(value == "on") m_sr->createXYZ = true;
-        else if(value == "off") m_sr->createXYZ = false;
-        else{
-           ERROR_LOG("undefined value for create-xyz-channels (allowed are on and off):" << value);
-        }
-      }else if(!supportsProperty(property)){
-        ERROR_LOG("nothing known about a property " << property ); return;
-      } else {
-        int curMode = SR_GetMode(m_sr->cam);
-        int id = propNr(property);
-        if(value=="on"){
-          SR_SetMode(m_sr->cam, id | curMode);
-        }else{
-          SR_SetMode(m_sr->cam, curMode&~id);
-        }
-      }
-    }
-
-
-       
-    std::vector<std::string> SwissRangerGrabberImpl::getPropertyListC(){
-      std::vector<std::string> v;
-      v.push_back("AM_COR_FIX_PTRN");
-      v.push_back("AM_MEDIAN");
-      v.push_back("AM_CONV_GRAY");
-      v.push_back("AM_SHORT_RANGE");
-      v.push_back("AM_CONF_MAP");
-      v.push_back("AM_HW_TRIGGER");
-      v.push_back("AM_SW_TRIGGER");
-      v.push_back("AM_DENOISE_ANF");
-      v.push_back("intensity-image-mode");
-      v.push_back("modulation-frequency");
-      v.push_back("depth-map-unit");
-      v.push_back("current-range");
-      v.push_back("create-xyz-channels");
-      return v;
-    }
-    
-    std::string SwissRangerGrabberImpl::getType(const std::string &name){
-      if(name ==  "current-range"){
-        return "info";
-      }else if(supportsProperty(name)){
-        return "menu";
-      }else{
-        return "undefined";
-      }
-    }
-    
-    std::string SwissRangerGrabberImpl::getInfo(const std::string &name){
-      if(name == "current-range"){
-        return "just an  info string";
-      }else if(name == "intensity-image-mode"){
-        return "{\"zero\",\"minus one\",\"unchanged\"}";
-      }else if(name == "modulation-frequency"){
-        //Mutex::Locker l(m_mutex);
-        //unsigned int serial = SR_ReadSerial(m_sr->cam);
-        // CamType t = {CT_UNKNOWN=0,CT_SR2A,CT_SR2B,CT_SR3K_USB,CT_SR3K_ETH,CT_SR4K_USB,CT_SR4K_ETH,CT_SR4K_B_GIG_E,CT_LAST};
-        //DEBUG_LOG("serial is " << serial);
-        
-        //TODO in current lib version, there is no possibility to find out camera type ??
-        return "{\"40Mhz\",\"30MHz\",\"21MHz\",\"20MHz\",\"19MHz\",\"60MHz\","
-        "\"15MHz\",\"10MHz\",\"29MHz\",\"31MHz\",\"14_5MHz\",\"15_5MHz\"}";
-      }else if(name == "depth-map-unit"){
-        return "{\"16Bit\",\"mm\",\"cm\",\"m\"}";
-      }else if(supportsProperty(name)){
-        return "{\"on\",\"off\"}";
-      }else{
-        return "undefined";
-      }
-    }
-    
-  
-  
-    std::string SwissRangerGrabberImpl::getValue(const std::string &name){
-      Mutex::Locker l(m_mutex);
-      if(name == "current-range"){
-        ModulationFrq m =  SR_GetModulationFrequency(m_sr->cam);
-        return str(get_max_range_mm(m)) +"mm";
-      }else if(name == "intensity-image-mode"){
-        return m_sr->iim == iimUnknownPixelsMinusOne ? "minus one" :
-               m_sr->iim == iimUnknownPixelsZero ? "zero" :
-               "unchanged";
-        
-      }else if(name == "depth-map-unit"){
-        return m_sr->depthMapUnit;
-      }else if(name == "modulation-frequency"){
-        ModulationFrq m =  SR_GetModulationFrequency(m_sr->cam);
-        return translate_modulation_freq(m);
-      }else if(name == "create-xyz-channels"){
-        return m_sr->createXYZ ? "on" : "off";
-      }else if(!supportsProperty(name)){
-        ERROR_LOG("nothing known about a property " << name ); return "";
-      }
-      int id = propNr(name);
-      int curMode = SR_GetMode(m_sr->cam);
-      if(id & curMode) return "on";
-      else return "off";
-      
     }
 
     REGISTER_CONFIGURABLE(SwissRangerGrabber, return new SwissRangerGrabber(0, core::depth32f, -1));

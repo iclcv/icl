@@ -47,9 +47,9 @@
 
 namespace icl {
   namespace io{
-  
+
     namespace icl_openni {
-  
+
       /// fills an core::core::Img<T> from OpenNI DepthMetaData
       template<class T>
       core::Img<T>* convertDepthImg(xn::DepthMetaData* src, core::Img<T>* dst){
@@ -57,7 +57,7 @@ namespace icl {
         if (std::numeric_limits<T>::max() < src -> ZRes()){
           max = ((float) std::numeric_limits<T>::max()) / ((float) src -> ZRes());
         }
-  
+
         dst -> setSize(utils::Size(src -> XRes(), src -> YRes()));
         T* data = dst -> getData(0);
         // draw DEPTH image
@@ -77,7 +77,7 @@ namespace icl {
         }
         return dst;
       }
-  
+
       /// fills an core::Img16s from OpenNI IRMetaData
       inline core::Img16s* convertIRImg(xn::IRMetaData* src, core::Img16s* dst){
         dst -> setSize(utils::Size(src -> XRes(), src -> YRes()));
@@ -91,7 +91,7 @@ namespace icl {
         }
         return dst;
       }
-  
+
       /**
         fills a three channel core::Img8u from OpenNI ImageMetaData expecting
         the Generator to generate RGB24 Data.
@@ -114,7 +114,7 @@ namespace icl {
         }
         return dst;
       }
-  
+
       /// A BufferHandlers only task is to create T's.
       template<typename T>
       class ReadWriteBufferHandler {
@@ -122,7 +122,7 @@ namespace icl {
           /// creates an instance of T and returns a pointer. passes ownership.
           virtual T* initBuffer() = 0;
       };
-  
+
       /// This is used for concurrent writing and reading of Buffers
       /**
         This class holds three pointers to T of which one is the
@@ -144,7 +144,7 @@ namespace icl {
             m_ResetBuffers[1] = false;
             m_ResetBuffers[2] = false;
           }
-  
+
           /// Destructor frees allocated memory.
           ~ReadWriteBuffer(){
             utils::Mutex::Locker l(m_Mutex);
@@ -152,7 +152,7 @@ namespace icl {
             ICL_DELETE(m_Buffers[1]);
             ICL_DELETE(m_Buffers[2]);
           }
-  
+
           /// returns a pointer to the most recent actualized buffer.
           /**
             Buffer will then be marked and not overwritten till the
@@ -167,14 +167,14 @@ namespace icl {
             }
             return m_Buffers[m_Read];
           }
-  
+
           /// returns pointer to most recent buffer.
           /**
             if omit_double_frames is true, this function will call sleep for
             omit_sleep_millis and retry until a new buffer is available or
             omit_max_wait_millis is reached. when no new buffer could be returned
             NULL will be returned.
-  
+
             @param omit_double_frames whether double frames should be omitted
                    default value is false.
             @param omit_max_wait_millis how long to wait for a new image before
@@ -210,7 +210,7 @@ namespace icl {
             }
             return tmp;
           }
-  
+
           /// returns a pointer to the next write Buffer.
           /**
             sets the returned Buffer as current writeable and marks
@@ -231,7 +231,7 @@ namespace icl {
             // return new write buffer.
             return m_Buffers[m_Write];
           }
-  
+
           /// mark buffers to be reset on next write-access.
           void setReset(){
             utils::Mutex::Locker l(m_Mutex);
@@ -239,7 +239,7 @@ namespace icl {
             m_ResetBuffers[1] = true;
             m_ResetBuffers[2] = true;
           }
-  
+
           /// switches the handler
           void switchHandler(ReadWriteBufferHandler<T>* new_handler){
             utils::Mutex::Locker l(m_Mutex);
@@ -248,13 +248,13 @@ namespace icl {
             m_ResetBuffers[1] = true;
             m_ResetBuffers[2] = true;
           }
-  
+
           /// tells whether a new ConvBuffers is available
           bool newAvailable(){
             utils::Mutex::Locker l(m_Mutex);
             return m_Avail;
           }
-  
+
         private:
           /// the handler used to create new buffers
           ReadWriteBufferHandler<T>* m_BufferHandler;
@@ -273,34 +273,19 @@ namespace icl {
           /// tells whether an actualized object was written.
           bool m_Avail;
       };
-  
+
       /// this class interprets and sets Properties of OpenNI MapGenerators
       class MapGeneratorOptions : public utils::Configurable {
         public:
           /// constructor
           MapGeneratorOptions(xn::MapGenerator* generator);
-  
-          /// interface for the setter function for video device properties
-          virtual void setProperty(const std::string &property, const std::string &value);
-          /// adds properties to propertylist
-          virtual void addPropertiesToList(std::vector<std::string> &properties);
-          /// checks if property is supported
-          virtual bool supportsProperty(const std::string &property);
-          /// get type of property
-          virtual std::string getType(const std::string &name);
-          /// get information of a properties valid values
-          virtual std::string getInfo(const std::string &name);
-          /// returns the current value of a property or a parameter
-          virtual std::string getValue(const std::string &name);
-          /// Returns whether this property may be changed internally.
-          virtual int isVolatile(const std::string &propertyName);
 
           /// callback for changed configurable properties
           void processPropertyChange(const utils::Configurable::Property &prop);
 
           /// adds a general int capability as property
           void addGeneralIntProperty(const std::string name);
-  
+
         private:
           /// the used MapGenerator
           xn::MapGenerator* m_Generator;
@@ -309,13 +294,13 @@ namespace icl {
           /// A Map Holding all used ProductionNodes
           std::map<std::string, xn::ProductionNode> m_ProductionNodeMap;
       };
-  
+
       /// this class interprets and sets Properties of OpenNI DepthGenerators
       class DepthGeneratorOptions : public MapGeneratorOptions {
         public:
           /// constructor
           DepthGeneratorOptions(xn::DepthGenerator* generator);
-  
+
           /// interface for the setter function for video device properties
           void setProperty(const std::string &property, const std::string &value);
           /// adds properties to propertylist
@@ -330,18 +315,18 @@ namespace icl {
           std::string getValue(const std::string &name);
           /// Returns whether this property may be changed internally.
           int isVolatile(const std::string &propertyName);
-  
+
         private:
           /// the used DepthGenerator
           xn::DepthGenerator* m_DepthGenerator;
       };
-  
+
       /// this class interprets and sets Properties of OpenNI ImageGenerators
       class ImageGeneratorOptions : public MapGeneratorOptions {
         public:
           /// constructor
           ImageGeneratorOptions(xn::ImageGenerator* generator);
-  
+
           /// interface for the setter function for video device properties
           void setProperty(const std::string &property, const std::string &value);
           /// adds properties to propertylist
@@ -359,16 +344,16 @@ namespace icl {
 
           /// callback for changed configurable properties
           void processPropertyChange(const utils::Configurable::Property &prop);
-  
+
         private:
           /// the used ImageGenerator
           xn::ImageGenerator* m_ImageGenerator;
       };
-  
+
       /// abstract super-class of all Image generators
       class OpenNIMapGenerator : public ReadWriteBufferHandler<core::ImgBase> {
         public:
-  
+
           /// an enum listing all supported data generators
           enum Generators {
             RGB,
@@ -376,7 +361,7 @@ namespace icl {
             IR,
             NOT_SPECIFIED = -1
           };
-  
+
           /// grab function grabs an image returns whether grabbing worked
           virtual bool acquireImage(core::ImgBase* dest) = 0;
           /// tells the type of the Generator
@@ -387,13 +372,13 @@ namespace icl {
           virtual core::ImgBase* initBuffer() = 0;
           /// getter for MapGeneratorOptions
           virtual MapGeneratorOptions* getMapGeneratorOptions() = 0;
-  
-  
+
+
           ///  Creates the corresponding Generator.
           static OpenNIMapGenerator* createGenerator(xn::Context* context,
                                                      std::string id);
       };
-  
+
       /// Depth Image Generator
       class OpenNIDepthGenerator : public OpenNIMapGenerator {
         public:
@@ -401,7 +386,7 @@ namespace icl {
           OpenNIDepthGenerator(xn::Context* context, int num);
           /// Destructor frees all resouurces
           ~OpenNIDepthGenerator();
-  
+
           /// grab function grabs an image returns whether grabbing worked
           bool acquireImage(core::ImgBase* dest);
           /// tells the type of the Generator
@@ -412,7 +397,7 @@ namespace icl {
           core::ImgBase* initBuffer();
           /// getter for MapGeneratorOptions
           MapGeneratorOptions* getMapGeneratorOptions();
-  
+
         private:
           /// the OpenNI context
           xn::Context* m_Context;
@@ -423,7 +408,7 @@ namespace icl {
           /// pointer to internally used MapGeneratorOptions
           MapGeneratorOptions* m_Options;
       };
-  
+
       /// RGB Image Generator
       class OpenNIRgbGenerator : public OpenNIMapGenerator {
         public:
@@ -431,7 +416,7 @@ namespace icl {
           OpenNIRgbGenerator(xn::Context* context, int num);
           /// Destructor frees all resouurces
           ~OpenNIRgbGenerator();
-  
+
           /// grab function grabs an image returns whether grabbing worked
           bool acquireImage(core::ImgBase* dest);
           /// tells the type of the Generator
@@ -442,7 +427,7 @@ namespace icl {
           core::Img8u* initBuffer();
           /// getter for MapGeneratorOptions
           MapGeneratorOptions* getMapGeneratorOptions();
-  
+
         private:
           /// the OpenNI context
           xn::Context* m_Context;
@@ -462,7 +447,7 @@ namespace icl {
           /// pointer to internally used MapGeneratorOptions
           MapGeneratorOptions* m_Options;
       };
-  
+
       /// IR Image Generator
       class OpenNIIRGenerator : public OpenNIMapGenerator {
         public:
@@ -470,7 +455,7 @@ namespace icl {
           OpenNIIRGenerator(xn::Context* context, int num);
           /// Destructor frees all resouurces
           ~OpenNIIRGenerator();
-  
+
           /// grab function grabs an image returns whether grabbing worked
           bool acquireImage(core::ImgBase* dest);
           /// tells the type of the Generator
@@ -481,7 +466,7 @@ namespace icl {
           core::Img16s* initBuffer();
           /// getter for MapGeneratorOptions
           MapGeneratorOptions* getMapGeneratorOptions();
-  
+
         private:
           /// the OpenNI context
           xn::Context* m_Context;
@@ -494,9 +479,9 @@ namespace icl {
           /// pointer to internally used MapGeneratorOptions
           MapGeneratorOptions* m_Options;
       };
-  
+
     } // namespace icl_openni
-  
+
   } // namespace io
 } // namespace icl
 

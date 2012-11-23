@@ -61,22 +61,6 @@ using namespace icl::io;
 
 namespace icl{
   namespace qt{
-
-    struct VolatileUpdater : public QTimer{
-      std::string prop;
-      GUI &gui;
-      Grabber &grabber;
-      VolatileUpdater(int msec, const std::string &prop, GUI &gui, Grabber &grabber):
-        prop(prop),gui(gui),grabber(grabber){
-        setInterval(msec);
-      }
-      virtual void timerEvent(QTimerEvent * e){
-        LabelHandle &l = gui.get<LabelHandle>("#i#"+prop);
-        (**l).setText(grabber.getValue(prop).c_str());
-        (**l).update(); 
-        QApplication::processEvents();
-      }
-    };
     
     class CamCfgWidget::Data{
     public:
@@ -104,7 +88,6 @@ namespace icl{
       
       QScrollArea *scroll;
       GUI propGUI; // contains the dataStore ...
-      std::vector<SmartPtr<VolatileUpdater> > timers;
       QMutex mutex;
       
       FPSEstimator fps;
@@ -176,28 +159,11 @@ namespace icl{
       }
       QWidget::setVisible(visible);
     }
-
-    static void process_callback(char t, const std::string &property, GenericGrabber &grabber, GUI &gui){
-      switch(t){
-        case 'r':
-        case 'm':
-        case 'v':
-          grabber.setProperty(property,gui[str("#")+t+"#"+property]);
-          break;
-        case 'c':
-          grabber.setProperty(property,"");
-          break;
-        default:
-          ERROR_LOG("invalid callback ID type char: \"" << t << "\"");
-      }
-    }
     
     void CamCfgWidget::callback(const std::string &source){
       QMutexLocker __lock(&data->mutex);
   
-      if(source.length()>3 && source[0] == '#'){
-        process_callback(source[1],source.substr(3),*data->grabber,data->propGUI);
-      }else if(source == "scan"){
+      if(source == "scan"){
         scan();
       }else if(data->scanScope || data->settingUpDevice){
         return;

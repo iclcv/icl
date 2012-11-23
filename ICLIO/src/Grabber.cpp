@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLIO/src/Grabber.cpp                                  **
 ** Module : ICLIO                                                  **
-** Authors: Christof Elbrechter                                    **
+** Authors: Christof Elbrechter, Viktor Richter                    **
 **                                                                 **
 **                                                                 **
 ** Commercial License                                              **
@@ -52,20 +52,20 @@ namespace icl{
     }
     
     struct Grabber::Data{
-      Size desiredSize;
-      format desiredFormat;
-      depth desiredDepth;
-      Converter converter;
-      ImgBase  *image;
-      filter::WarpOp *warp;
-      
-      Mutex callbackMutex;
-      std::vector<Grabber::callback> callbacks;
+        Size desiredSize;
+        format desiredFormat;
+        depth desiredDepth;
+        Converter converter;
+        ImgBase  *image;
+        filter::WarpOp *warp;
+
+        Mutex callbackMutex;
+        std::vector<Grabber::callback> callbacks;
     };
-  
+
     
-  
-  
+
+
     Grabber::Grabber():
       data(new Data){
       data->desiredSize = Size::null;
@@ -74,22 +74,22 @@ namespace icl{
       data->image = 0;
       data->warp = 0;
     }
-  
+
     Grabber::~Grabber() {
       ICL_DELETE( data->image );
       ICL_DELETE( data->warp );
       ICL_DELETE( data );
     }
-  
+
     void Grabber::useDesired(depth d, const Size &size, format fmt){
       useDesired(d); useDesired(size);useDesired(fmt);
     }
     void Grabber::ignoreDesired(){
-      ignoreDesired<depth>(); 
-      ignoreDesired<Size>(); 
+      ignoreDesired<depth>();
+      ignoreDesired<Size>();
       ignoreDesired<format>();
     }
-  
+
     void Grabber::setDesiredFormatInternal(format fmt){
       data->desiredFormat = fmt;
     }
@@ -108,20 +108,15 @@ namespace icl{
     Size Grabber::getDesiredSizeInternal() const{
       return data->desiredSize;
     }
-  
-    
-    bool Grabber::supportsPropertyC(const std::string &property){
-      return inList(property,getPropertyListC());
-    }
-  
+
     string Grabber::translateSteppingRange(const SteppingRange<double>& range){
       return str(range);
     }
-  
+
     SteppingRange<double> Grabber::translateSteppingRange(const string &rangeStr){
       return parse<SteppingRange<double> >(rangeStr);
     }
-  
+
     template <class T> static std::string translate_any_vec(const std::vector<T> &v){
       std::ostringstream s;
       s << "{";
@@ -166,7 +161,7 @@ namespace icl{
     vector<string> Grabber::translateStringVec(const string &v){
       return translate_any_string<std::string>(v);
     }
-  
+
     const ImgBase *Grabber::grab(ImgBase **ppoDst){
       const ImgBase *acquired = acquireImage();
       
@@ -187,19 +182,19 @@ namespace icl{
         return adapted;
       }
     }
-  
+
     void Grabber::enableUndistortion(const ImageUndistortion &udist){
       enableUndistortion(udist.createWarpMap());//warpMap);
     }
-  
+
     void Grabber::enableUndistortion(const std::string &filename){
-      enableUndistortion(ImageUndistortion(filename));    
+      enableUndistortion(ImageUndistortion(filename));
     }
     
     void Grabber::enableUndistortion(const ProgArg &pa){
       enableUndistortion(utils::pa(pa.getID(),0).as<std::string>());
     }
-  
+
     void Grabber::setUndistortionInterpolationMode(scalemode mode){
       if(data->warp){
         data->warp->setScaleMode(mode);
@@ -207,8 +202,8 @@ namespace icl{
         WARNING_LOG("cannot set undistortion interpolation mode if distortion was not disabled before (skipped)!");
       }
     }
-  
-  
+
+
     bool Grabber::isUndistortionEnabled() const{
       return data->warp;
     }
@@ -251,9 +246,9 @@ namespace icl{
       }
     }
     
-    static std::vector<std::string> filter_unstable_params(const std::vector<std::string> ps){
+    /*static std::vector<std::string> filter_unstable_params(const std::vector<std::string> ps){
       std::vector<std::string> fs; fs.reserve(ps.size());
-  
+
       static std::string unstable[6]={
         "trigger-from-software",
         "trigger-mode",
@@ -268,122 +263,29 @@ namespace icl{
         }
       }
       return fs;
-    }
-  
-    void Grabber::savePropertiesC(const std::string &filename, bool writeDesiredParams, bool skipUnstable){
-      ConfigFile f;
-      f["config.title"] = std::string("Camera Configuration File");
-      std::vector<std::string> ps = get_io_property_list();
-      
-      if(skipUnstable){
-        ps = filter_unstable_params(ps);
-      }
-  
-      // f["config.property-list"] = cat(ps,","); this is no longer needed!
-      
-      if(writeDesiredParams){
-        f.setPrefix("config.desired-params.");
-        f["size"] = desiredUsed<Size>() ? str(getDesired<Size>()) : str("any");
-        f["format"] = desiredUsed<format>() ? str(getDesired<format>()) : str("any");
-        f["depth"] = desiredUsed<depth>() ? str(getDesired<depth>()) : str("any");
-      }
-      
-      f.setPrefix("config.properties.");
-      
-      for(unsigned int i=0;i<ps.size();++i){
-        string &prop = ps[i];
-        string type = getType(prop); 
-  
-        if(type == "range" || type == "value-list"){
-          f[prop] = to32f(getValue(prop));
-        }else if(type == "menu"){
-          f[prop] = getValue(prop);
-        }// type command is skipped!
-      }
-      f.save(filename);
-    }
-    
-    void Grabber::loadPropertiesC(const std::string &filename, bool loadDesiredParams, bool skipUnstable){
-      ConfigFile f(filename);
-      std::vector<std::string> psSupported = get_io_property_list();
-      if(skipUnstable){
-        psSupported = filter_unstable_params(psSupported);
-      }
-      f.setPrefix("config.properties.");
-      for(int x=0;x<2;++x){ // do it twice for beeing shure all properties set correctly
-        for(unsigned int i=0;i<psSupported.size();++i){
-          std::string &prop = psSupported[i];
-          std::string type = getType(prop);
-          
-          if(type == "info") continue;
-          if(type == "command") continue;
-          
-          if(type == "range" || type == "value-list"){
-            try{
-              setProperty(prop,str((icl32f)f[prop]));
-            }catch(...){
-              std::cout << "Grabber::loadProperties: property '"  << prop << "' was not set" << std::endl;
-              std::cout << "(it was either not not found in the given property file or it or it's value is not"
-                        << " supported by the current grabber type)" << std::endl;
-            }
-          }else if(type == "menu"){
-            try{
-              std::string val = f[prop];
-              setProperty(prop,f[prop]); 
-            }catch(...){
-              std::cout << "Grabber::loadProperties: property '"  << prop << "' was not set" << std::endl;
-              std::cout << "(it was either not not found in the given property file or it or it's value is not"
-                        << " supported by the current grabber type)" << std::endl;
-            }
-          }
-        }
-      }
-  
-      if(loadDesiredParams){
-        f.setPrefix("config.desired-params.");
-        try{
-          if(f["size"].as<std::string>() == "any"){
-            useDesired<Size>(f["size"]);
-          }else{
-            ignoreDesired<Size>();
-          }
-          if(f["format"].as<std::string>() == "any"){
-            useDesired<format>(f["format"]);
-          }else{
-            ignoreDesired<format>();
-          }
-          if(f["depth"].as<std::string>() == "any"){
-            useDesired<depth>(f["depth"]);
-          }else{
-            ignoreDesired<depth>();
-          }
-        }catch(...){
-          std::cerr << "Warning: no desired params were found in given property file" << std::endl;
-        }
-      }
-    }
+    }*/
+
     const Img32f *Grabber::getUndistortionWarpMap() const{
       return data->warp ? &data->warp->getWarpMap() : 0;
     }
-  
-    
-    
+
+
     void Grabber::registerCallback(Grabber::callback cb){
       Mutex::Locker lock(data->callbackMutex);
       data->callbacks.push_back(cb);
     }
-       
+
     void Grabber::removeAllCallbacks(){
       Mutex::Locker lock(data->callbackMutex);
       data->callbacks.clear();
     }
-  
+
     void Grabber::notifyNewImageAvailable(const ImgBase *image){
       Mutex::Locker lock(data->callbackMutex);
       for(size_t i=0;i<data->callbacks.size();++i){
         data->callbacks[i](image);
       }
     }
-  REGISTER_CONFIGURABLE_DEFAULT(Grabber);
+    REGISTER_CONFIGURABLE_DEFAULT(Grabber);
   } // namespace io
 }

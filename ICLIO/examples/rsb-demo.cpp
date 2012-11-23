@@ -93,7 +93,7 @@ void init(){
 
     if(!pa("-no-callback")){
       if(t == "sm"){
-        receiver.setProperty("enable-callbacks","on");
+        receiver.setPropertyValue("enable-callbacks","on");
       }
       receiver.registerCallback(cb_func);
     }

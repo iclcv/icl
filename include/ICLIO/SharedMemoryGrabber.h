@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : include/ICLIO/SharedMemoryGrabber.h                    **
 ** Module : ICLIO                                                  **
-** Authors: Christof Elbrechter                                    **
+** Authors: Christof Elbrechter, Viktor Richter                    **
 **                                                                 **
 **                                                                 **
 ** Commercial License                                              **
@@ -40,110 +40,88 @@ namespace icl{
   namespace io{
     
     /// Grabber class that grabs images from QSharedMemory instances
-    /** Images that are published using the SharedMemoryPublisher can 
+    /** Images that are published using the SharedMemoryPublisher can
         be grabbed with this grabber type. Please don't use this
         Grabber class directly, but instantiate GenericGrabber with
         Devide type 'sm'.
     */
     class SharedMemoryGrabberImpl : public Grabber {
-      /// Internal Data storage class
-      struct Data;
-      
-      /// Hidden Data container
-      Data *m_data;
-  
-  
-      /// Creates a new SharedMemoryGrabber instance (please use the GenericGrabber instead)
-      SharedMemoryGrabberImpl(const std::string &sharedMemorySegmentID="") throw(utils::ICLException);
-      
-      /// Connects an unconnected grabber to given shared memory segment
-      void init(const std::string &sharedMemorySegmentID) throw (utils::ICLException);
-      
+        /// Internal Data storage class
+        struct Data;
+
+        /// Hidden Data container
+        Data *m_data;
+
+
+        /// Creates a new SharedMemoryGrabber instance (please use the GenericGrabber instead)
+        SharedMemoryGrabberImpl(const std::string &sharedMemorySegmentID="") throw(utils::ICLException);
+
+        /// Connects an unconnected grabber to given shared memory segment
+        void init(const std::string &sharedMemorySegmentID) throw (utils::ICLException);
+
       public:
-      
-      /// Only the 'real' graber can instantiate the -Impl
-      friend class SharedMemoryGrabber;
-      
-      /// Destructor
-      ~SharedMemoryGrabberImpl();
-      
-      /// returns a list of all available shared-memory image-streams
-      /** evaluates the special memory segment named 
-          'icl-shared-mem-grabbers' in order to find 
-          out which devices are available 
+
+        /// Only the 'real' graber can instantiate the -Impl
+        friend class SharedMemoryGrabber;
+
+        /// Destructor
+        ~SharedMemoryGrabberImpl();
+
+        /// returns a list of all available shared-memory image-streams
+        /** evaluates the special memory segment named
+          'icl-shared-mem-grabbers' in order to find
+          out which devices are available
       */
-      static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
-  
-      /// grabbing function  
-      /** \copydoc icl::io::Grabber::grab(core::ImgBase**)  **/    
-      virtual const core::ImgBase* acquireImage();
-  
-      /** @{ @name properties and parameters */
-      
-      /// interface for the setter function for video device properties 
-      /** \copydoc icl::io::Grabber::setProperty(const std::string&,const std::string&) **/
-      virtual void setProperty(const std::string &property, const std::string &value);
-      
-      /// returns a list of properties, that can be set usingsetProperty
-      /** @return list of supported property names **/
-      virtual std::vector<std::string> getPropertyListC();
-      
-      /// get type of property
-      /** \copydoc icl::io::Grabber::getType(const std::string &)*/
-      virtual std::string getType(const std::string &name);
-  
-      /// get information of a property valid values
-      /** \copydoc icl::io::Grabber::getInfo(const std::string &)*/
-      virtual std::string getInfo(const std::string &name);
-  
-      /// returns the current value of a property or a parameter
-      virtual std::string getValue(const std::string &name);
-      /** @} */
-  
-      /// callback for changed configurable properties
-      void processPropertyChange(const utils::Configurable::Property &prop);
+        static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
+
+        /// grabbing function
+        /** \copydoc icl::io::Grabber::grab(core::ImgBase**)  **/
+        virtual const core::ImgBase* acquireImage();
+
+        /// callback for changed configurable properties
+        void processPropertyChange(const utils::Configurable::Property &prop);
     };
-  
-  
+
+
     /// Grabber class that grabs images from QSharedMemory instances
     /** for more details: @see SharedMemoryGrabberImpl */
     class SharedMemoryGrabber : public GrabberHandle<SharedMemoryGrabberImpl>{
       public:
-      
-      /// returns a list of available pwc devices 
-      /** @see SharedMemoryGrabberImpl for more details*/
-      static inline const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan){
-        return SharedMemoryGrabberImpl::getDeviceList(rescan);
-      }
-      
-      /// creates a new PWCGrabber instance
-      /** @see SharedMemoryGrabberImpl for more details */
-      inline SharedMemoryGrabber(const std::string &memorySegmentName){
-        if(isNew(memorySegmentName)){
-          initialize(new SharedMemoryGrabberImpl(memorySegmentName),memorySegmentName);
-        }else{
-          initialize(memorySegmentName);
+
+        /// returns a list of available pwc devices
+        /** @see SharedMemoryGrabberImpl for more details*/
+        static inline const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan){
+          return SharedMemoryGrabberImpl::getDeviceList(rescan);
         }
-      }
-      /// empty constructor (initialize late using init())
-      /** @see SharedMemoryGrabberImpl for more details */
-      inline SharedMemoryGrabber(){}
-      
-      /// for deferred connection to (other) shared memory segment
-      /** @see SharedMemoryGrabberImpl for more details */
-      inline void init(const std::string &memorySegmentName) throw (utils::ICLException){
-        if(isNew(memorySegmentName)){
-          initialize(new SharedMemoryGrabberImpl(memorySegmentName),memorySegmentName);
-        }else{
-          initialize(memorySegmentName);
+
+        /// creates a new PWCGrabber instance
+        /** @see SharedMemoryGrabberImpl for more details */
+        inline SharedMemoryGrabber(const std::string &memorySegmentName){
+          if(isNew(memorySegmentName)){
+            initialize(new SharedMemoryGrabberImpl(memorySegmentName),memorySegmentName);
+          }else{
+            initialize(memorySegmentName);
+          }
         }
-      }
-      
-      /// resets the internal list of 'shared-grabbers'
-      static void resetBus();
+        /// empty constructor (initialize late using init())
+        /** @see SharedMemoryGrabberImpl for more details */
+        inline SharedMemoryGrabber(){}
+
+        /// for deferred connection to (other) shared memory segment
+        /** @see SharedMemoryGrabberImpl for more details */
+        inline void init(const std::string &memorySegmentName) throw (utils::ICLException){
+          if(isNew(memorySegmentName)){
+            initialize(new SharedMemoryGrabberImpl(memorySegmentName),memorySegmentName);
+          }else{
+            initialize(memorySegmentName);
+          }
+        }
+
+        /// resets the internal list of 'shared-grabbers'
+        static void resetBus();
     };
-  
-  
+
+
     
   } // namespace io
 }

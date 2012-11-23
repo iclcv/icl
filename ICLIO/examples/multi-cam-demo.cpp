@@ -47,7 +47,7 @@ void init(){
         gs.push_back(SmartPtr<GenericGrabber>(new GenericGrabber(pa(arg))));
         gs.back()->useDesired<Size>(pa("-size"));
         if(pa("-t")){
-          gs.back()->setProperty("trigger-power","on"); // or off?
+          gs.back()->setPropertyValue("trigger-power","on"); // or off?
         }
       }catch(const ICLException &ex){
         WARNING_LOG("unable to instantiate grabber from argument " << arg << "(skipping)");

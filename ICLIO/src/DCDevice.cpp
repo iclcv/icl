@@ -51,27 +51,27 @@ using namespace icl::utils;
 
 namespace icl{
   namespace io{
-  
+
     /** Have a NEW CAMERA ???
-  
+
         - add a new CameryTypeID to the DCDevice::enum
-   
+
         - edit the function trailed wiht token **NEW-CAM**
         - translate(CameraTypeID)
         - translate(std::string)
         - estimateCameraID
-        - bool DCDevice::needsBayerDecoding() const 
+        - bool DCDevice::needsBayerDecoding() const
         - dc1394color_filter_t DCDevice::getBayerFilterLayout() const
         
         **/
-  
+
     const DCDevice DCDevice::null = DCDevice(0);
-  
+
 #if 0
     // **NEW-CAM** (optional)
     std::string DCDevice::translate(DCDevice::CameraTypeID id){
       // {{{ open
-  
+
       switch(id){
 #define TRANSLATE(X) case X: return #X
         TRANSLATE(pointGrey_Fire_FlyMVMono);
@@ -86,15 +86,15 @@ namespace icl{
         TRANSLATE(pointGrey_Flea2G_13S2CC);
 #undef TRANSLATE
         default: return "unknownCameraType";
-      }    
+      }
     }
-  
+
     // }}}
-  
+
     // **NEW-CAM** (optional)
     DCDevice::CameraTypeID DCDevice::translate(const std::string &name){
       // {{{ open
-  
+
       if(name == "pointGrey_Fire_FlyMVMono" ) return pointGrey_Fire_FlyMVMono;
 #define TRANSLATE(X) else if( name == #X ) return X
       TRANSLATE(pointGrey_Fire_FlyMVColor);
@@ -111,30 +111,30 @@ namespace icl{
 #undef TRANSLATE 
       else return unknownCameraType;
     }
-  
+
     // }}}
 #endif
-  
+
     std::string DCDevice::getTypeID(const std::string &model, const std::string &vendor){
       // {{{ open
-  
+
       return vendor + " -- " + model;
     }
-  
+
     // }}}
-  
+
     std::string DCDevice::getTypeID(const dc1394camera_t *cam){
       // {{{ open
       if(!cam) return "";
       return getTypeID(cam->model, cam->vendor);
     }
-  
+
     // }}}
-  
-  
+
+
     /************************************* old *******************************
         DCDevice::CameraTypeID DCDevice::estimateCameraType(dc1394camera_t *cam){
-  
+
         if(!cam){
         return unknownCameraType;
         }else if( is_firefly_mono(cam) ){
@@ -164,12 +164,12 @@ namespace icl{
         ERROR_LOG("unknown camera model:" << cam->model);
         }
         return unknownCameraType;
-        }  
+        }
         }
         bool DCDevice::needsBayerDecoding() const{
-        if(isNull()) return false; 
+        if(isNull()) return false;
         switch(m_eCameraTypeID){
-        case pointGrey_Fire_FlyMVMono: 
+        case pointGrey_Fire_FlyMVMono:
         case apple_ISight:
         case sony_DFW_VL500_2_30:
         case fireI_1_2:
@@ -180,7 +180,7 @@ namespace icl{
         return false;
         case pointGrey_Fire_FlyMVColor:
         return true;
-        case imagingSource_DFx_21BF04:        
+        case imagingSource_DFx_21BF04:
         if(getMode().videomode == DC1394_VIDEO_MODE_640x480_YUV422){
         return false;
         }else{
@@ -203,12 +203,12 @@ namespace icl{
     // **NEW-CAM**
     dc1394color_filter_t DCDevice::getBayerFilterLayout() const{
       // {{{ open
-  
+
       switch(m_eBayerFilterMode){
         case BF_RGGB:
         case BF_GBRG:
         case BF_GRBG:
-        case BF_BGGR: 
+        case BF_BGGR:
           return (dc1394color_filter_t)m_eBayerFilterMode;
         case BF_FROM_FEATURE:
           return (dc1394color_filter_t)1;
@@ -220,15 +220,15 @@ namespace icl{
               return (dc1394color_filter_t)0;
             }
           }
-        case BF_NONE: 
+        case BF_NONE:
         default:
           return (dc1394color_filter_t)0;
       }
     }
-  
+
     // }}}
     
-    // **NEW-CAM**   
+    // **NEW-CAM**
     void DCDevice::estimateBayerFilterMode(){
       // {{{ open
       
@@ -244,7 +244,7 @@ namespace icl{
         m_eBayerFilterMode = BF_GBRG;
       }else{
         // this is a list of builtin cameras that dont't have
-        // a bayer filter 
+        // a bayer filter
         static std::set<std::string> builtin;
         if(!builtin.size()){
           builtin.insert("SONY -- DFW-VL500 2.30");
@@ -263,13 +263,13 @@ namespace icl{
         }
       }
     }
-  
+
     // }}}
-  
-  
+
+
     void DCDevice::dc1394_reset_bus(bool verbose){
       // {{{ open
-    
+
       dc1394_t * d;
       dc1394camera_t *camera;
       dc1394camera_list_t * list;
@@ -279,7 +279,7 @@ namespace icl{
       err=dc1394_camera_enumerate (d, &list);
       DC1394_ERR(err,"Failed to enumerate cameras");
       int num = list->num;
-      dc1394_camera_free_list (list);    
+      dc1394_camera_free_list (list);
       
       if(verbose){
         std::cout << "found " << num << " cameras" << std::endl;
@@ -289,7 +289,7 @@ namespace icl{
 
         err=dc1394_camera_enumerate (d, &list);
         DC1394_ERR(err,"Failed to enumerate cameras");
-      
+
         if (i >= (int)list->num) {
           ERROR_LOG("cameras have disappeared during bus reset procedure");
           return;
@@ -298,21 +298,21 @@ namespace icl{
           std::cout << "resetting bus for camera " << i << " ... " << std::flush;
         }
 
-      
+
         camera = dc1394_camera_new (d, list->ids[i].guid);
         if (!camera) {
           dc1394_log_error("Failed to initialize camera with guid %llx", list->ids[0].guid);
           return;
         }
         if(verbose){
-          std::cout << "(GUID " << camera->guid << ") ... done" << std::endl; 
+          std::cout << "(GUID " << camera->guid << ") ... done" << std::endl;
         }
         ::dc1394_reset_bus (camera);
         dc1394_camera_free (camera);
-        dc1394_camera_free_list (list);    
+        dc1394_camera_free_list (list);
       }
-    
-   
+
+
       dc1394_free (d);
 
       Thread::msleep(1000);
@@ -324,7 +324,7 @@ namespace icl{
 
       vector<DCDevice::Mode> v;
       ICLASSERT_RETURN_VAL( !isNull(), v);
-                 
+
       dc1394video_modes_t modeList;
       dc1394_video_get_supported_modes(m_poCam,&modeList);
       for(unsigned int i=0;i<modeList.num;i++){
@@ -341,11 +341,11 @@ namespace icl{
 
     std::string DCDevice::getModesInfo() const {
       std::vector<DCDevice::Mode> mv= getModes();
-        //std::vector<string> v;
-        //for(unsigned int i=0;i<mv.size();i++){
-        //  v.push_back(mv[i].toString());
-        //}
-        //return io::Grabber::translateStringVec(v);
+      //std::vector<string> v;
+      //for(unsigned int i=0;i<mv.size();i++){
+      //  v.push_back(mv[i].toString());
+      //}
+      //return io::Grabber::translateStringVec(v);
       std::stringstream s;
       for(unsigned int i=0;i<mv.size();i++){
         s << mv[i].toString() << ",";
@@ -357,7 +357,7 @@ namespace icl{
     string DCDevice::getVendorID() const{
       // {{{ open
 
-      if(isNull()) return "null";  
+      if(isNull()) return "null";
       return m_poCam->vendor;
     }
 
@@ -365,7 +365,7 @@ namespace icl{
     string DCDevice::getModelID() const{
       // {{{ open
 
-      if(isNull()) return "null";  
+      if(isNull()) return "null";
       return m_poCam->model;
     }
 
@@ -394,26 +394,26 @@ namespace icl{
     }
 
     // }}}
-  
+
     static std::string replace_spaces(std::string s, const char x='_'){
       for(unsigned int i=0;i<s.length();++i){
         if(s[i] == ' ') s[i] = x;
       }
       return s;
     }
-  
+
     std::string DCDevice::getUniqueStringIdentifier() const{
       // {{{ open
 
       if(isNull()) return "null";
       union GUID{
-        uint64_t t64;
-        uint32_t t32[2];
+          uint64_t t64;
+          uint32_t t32[2];
       } guid;
       guid.t64 = getGUID();
 
       return replace_spaces(getModelID()+"-"+str(guid.t32[0])+"."+str(guid.t32[1]));
-    
+
     }
 
     // }}}
@@ -455,7 +455,7 @@ namespace icl{
     }
 
     // }}}
- 
+
 
 
 
@@ -480,7 +480,7 @@ namespace icl{
       ICLASSERT(toks.size() == 2);
       videomode = dc::videomode_from_string(toks[0]);
       framerate = dc::framerate_from_string(toks[1]);
-    
+
     }
 
     // }}}
@@ -494,7 +494,7 @@ namespace icl{
     bool DCDevice::Mode::supportedBy(dc1394camera_t *cam) const{
       // {{{ open
 
-      dc1394video_modes_t modeList; 
+      dc1394video_modes_t modeList;
       dc1394_video_get_supported_modes(cam,&modeList);
       for(unsigned int i=0;i<modeList.num;i++){
         if(modeList.modes[i] == videomode){

@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLIO/src/CreateGrabber.cpp                            **
 ** Module : ICLIO                                                  **
-** Authors: Christof Elbrechter                                    **
+** Authors: Christof Elbrechter, Viktor Richter                    **
 **                                                                 **
 **                                                                 **
 ** Commercial License                                              **
@@ -40,11 +40,11 @@ using namespace icl::core;
 
 namespace icl{
   namespace io{
-  
+
     const ImgBase* CreateGrabberImpl::acquireImage(){
       return m_image;
     }
-  
+
     CreateGrabberImpl::CreateGrabberImpl(const std::string &what){
       m_image = TestImages::create(what);
       if(!m_image) throw ICLException("unable to create a 'CreateGrabber' from given description '"+what+"'");
@@ -56,7 +56,7 @@ namespace icl{
     }
 
     REGISTER_CONFIGURABLE(CreateGrabber, return new CreateGrabber("parrot"));
-  
+
   } // namespace io
 }
-    
+

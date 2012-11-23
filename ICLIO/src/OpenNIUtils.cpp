@@ -516,48 +516,12 @@ bool isGeneralIntAutoSupported(GeneralIntCapability &cap){
   return sauto;
 }
 
-// adds a GeneralIntCapability to properties vector
-void addGeneralIntCapability(xn::MapGenerator* gen,
-                             std::vector<std::string> &properties,
-                             const std::string &name)
-{
-  // only add if supported
-  if(!gen -> IsCapabilitySupported(name.c_str())){
-    return;
-  }
-  GeneralIntCapability cap = getGeneralIntCapability(gen, name);
-  // when auto is supported add the auto-version too.
-  if(isGeneralIntAutoSupported(cap)){
-    std::ostringstream tmp;
-    tmp << "Auto" << name;
-    properties.push_back(tmp.str());
-  }
-  properties.push_back(name);
-}
-
-// creates an info string for a GeneralIntCapability
-std::string generalIntCapabilityInfo(GeneralIntCapability cap){
-  XnInt32 min, max, step, def;
-  XnBool sauto;
-  cap.GetRange(min, max, step, def, sauto);
-  std::ostringstream ret;
-  ret << "[" << min << "," << max << "]:" << step;
-  return ret.str();
-}
-
 // sets a GeneralIntCapability to Default.
 void setGeneralIntCapabilityDefault(GeneralIntCapability cap){
   XnInt32 min, max, step, def;
   XnBool sauto;
   cap.GetRange(min, max, step, def, sauto);
   cap.Set(def);
-}
-
-// returns the string-value of a GeneralIntCapability
-std::string generalIntCapabilityValue(GeneralIntCapability cap){
-  std::ostringstream ret;
-  ret << cap.Get();
-  return ret.str();
 }
 
 // checks whether property is an auto-GeneralIntCapability
@@ -621,27 +585,6 @@ void antiFlickerCapabilitySet(xn::MapGenerator* gen, std::string value){
   }
 }
 
-// adds cropping properties to capability vector
-void addCroppingCapability(std::vector<std::string> &capabilities){
-  capabilities.push_back("Cropping Enabled");
-  capabilities.push_back("Cropping offset X");
-  capabilities.push_back("Cropping offset Y");
-  capabilities.push_back("Cropping size X");
-  capabilities.push_back("Cropping size Y");
-}
-
-// checks whether property is a cropping property
-bool isCropping(const std::string &property){
-  if (property == "Cropping Enabled"
-      || property == "Cropping offset X"
-      || property == "Cropping offset Y"
-      || property == "Cropping size X"
-      || property == "Cropping size Y"){
-    return true;
-  }
-  return false;
-}
-
 // sets a cropping property from name and value string
 void setCropping(xn::MapGenerator* gen,
                  const std::string &property,
@@ -679,77 +622,6 @@ void setCropping(xn::MapGenerator* gen,
     }
   }
   gen -> GetCroppingCap().SetCropping(crop);
-}
-
-// creates a value-string for cropping property named by name.
-std::string getCroppingValue(xn::MapGenerator* gen, const std::string &name){
-  XnCropping crop;
-  gen -> GetCroppingCap().GetCropping(crop);
-  if (name == "Cropping Enabled"){
-    if(crop.bEnabled){
-      return "On";
-    } else {
-      return "Off";
-    }
-  } else  if (name == "Cropping offset X"){
-    return toStr(crop.nXOffset);
-  } else if (name == "Cropping offset Y"){
-    return toStr(crop.nYOffset);
-  } else if (name == "Cropping size X"){
-    return toStr(crop.nXSize);
-  } else if (name == "Cropping size Y"){
-    return toStr(crop.nYSize);
-  }
-  DEBUG_LOG("unknown cropping type " << name);
-  throw ICLException("unknown cropping type");
-}
-
-// creates a type-string for cropping properties
-std::string getCroppingType(const std::string &property){
-  if (property == "Cropping Enabled"){
-    return "menu";
-  } else  if (property == "Cropping offset X"){
-    return "range";
-  } else if (property == "Cropping offset Y"){
-    return "range";
-  } else if (property == "Cropping size X"){
-    return "range";
-  } else if (property == "Cropping size Y"){
-    return "range";
-  }
-  DEBUG_LOG("unknown cropping type " << property);
-  throw ICLException("unknown cropping type");
-}
-
-// creates info strings for cropping properties.
-std::string getCroppingInfo(xn::MapGenerator* gen, const std::string &property){
-  XnCropping crop;
-  gen -> GetCroppingCap().GetCropping(crop);
-  if (property == "Cropping Enabled"){
-    return "{On,Off}";
-  } else {
-    // get max map output in every for x and y
-    unsigned int x = 0; unsigned int y = 0;
-    XnUInt32 count = gen -> GetSupportedMapOutputModesCount();
-    XnMapOutputMode* modes = new XnMapOutputMode[count];
-    gen -> GetSupportedMapOutputModes(modes, count);
-    for(unsigned int i = 0; i < count; ++i){
-      x = (modes[i].nXRes > x) ? modes[i].nXRes : x;
-      y = (modes[i].nYRes > y) ? modes[i].nYRes : y;
-    }
-    // write info
-    std::ostringstream tmp;
-    if (property == "Cropping offset X"){
-      tmp << "[0," << x << "]:1";
-    } else if (property == "Cropping offset Y"){
-      tmp << "[0," << y << "]:1";
-    } else if (property == "Cropping size X"){
-      tmp << "[0," << x << "]:1";
-    } else if (property == "Cropping size Y"){
-      tmp << "[0," << y << "]:1";
-    }
-    return tmp.str();
-  }
 }
 
 // sets alternative viewpoit
@@ -885,38 +757,6 @@ MapGeneratorOptions::MapGeneratorOptions(xn::MapGenerator* generator)
   : m_Generator(generator)
 {
   fillProductionNodeMap(m_Generator -> GetContext(), m_ProductionNodeMap);
-  // old camcfg
-  m_Capabilities.push_back("map output mode");
-  if(m_Generator -> IsCapabilitySupported(XN_CAPABILITY_CROPPING)){
-    addCroppingCapability(m_Capabilities);
-  }
-  if(m_Generator -> IsCapabilitySupported(XN_CAPABILITY_ANTI_FLICKER)){
-    m_Capabilities.push_back(XN_CAPABILITY_ANTI_FLICKER);
-  }
-  if(m_Generator -> IsCapabilitySupported(XN_CAPABILITY_ALTERNATIVE_VIEW_POINT)){
-    m_Capabilities.push_back(XN_CAPABILITY_ALTERNATIVE_VIEW_POINT);
-  }
-  if(m_Generator -> IsCapabilitySupported(XN_CAPABILITY_MIRROR)){
-    m_Capabilities.push_back(XN_CAPABILITY_MIRROR);
-  }
-  addGeneralIntCapability(m_Generator, m_Capabilities, XN_CAPABILITY_BRIGHTNESS);
-  addGeneralIntCapability(m_Generator, m_Capabilities, XN_CAPABILITY_CONTRAST);
-  addGeneralIntCapability(m_Generator, m_Capabilities, XN_CAPABILITY_HUE);
-  addGeneralIntCapability(m_Generator, m_Capabilities, XN_CAPABILITY_SATURATION);
-  addGeneralIntCapability(m_Generator, m_Capabilities, XN_CAPABILITY_SHARPNESS);
-  addGeneralIntCapability(m_Generator, m_Capabilities, XN_CAPABILITY_GAMMA);
-  addGeneralIntCapability(m_Generator, m_Capabilities, XN_CAPABILITY_COLOR_TEMPERATURE);
-  addGeneralIntCapability(m_Generator, m_Capabilities, XN_CAPABILITY_BACKLIGHT_COMPENSATION);
-  addGeneralIntCapability(m_Generator, m_Capabilities, XN_CAPABILITY_GAIN);
-  addGeneralIntCapability(m_Generator, m_Capabilities, XN_CAPABILITY_PAN);
-  addGeneralIntCapability(m_Generator, m_Capabilities, XN_CAPABILITY_TILT);
-  addGeneralIntCapability(m_Generator, m_Capabilities, XN_CAPABILITY_ROLL);
-  addGeneralIntCapability(m_Generator, m_Capabilities, XN_CAPABILITY_ZOOM);
-  addGeneralIntCapability(m_Generator, m_Capabilities, XN_CAPABILITY_EXPOSURE);
-  addGeneralIntCapability(m_Generator, m_Capabilities, XN_CAPABILITY_IRIS);
-  addGeneralIntCapability(m_Generator, m_Capabilities, XN_CAPABILITY_FOCUS);
-  addGeneralIntCapability(m_Generator, m_Capabilities, XN_CAPABILITY_LOW_LIGHT_COMPENSATION);
-
   //Configurable
   addProperty("map output mode", "menu", getMapOutputModeInfo(m_Generator),
               getCurrentMapOutputMode(m_Generator), 0,
@@ -1016,113 +856,6 @@ void MapGeneratorOptions::processPropertyChange(
   }
 }
 
-
-// adds properties to propertylist
-void MapGeneratorOptions::addPropertiesToList(
-    std::vector<std::string> &properties){
-  properties.insert(properties.end(),
-                    m_Capabilities.begin(),
-                    m_Capabilities.end());
-}
-
-// checks if property is supported
-bool MapGeneratorOptions::supportsProperty(const std::string &property){
-  for (unsigned int i = 0; i < m_Capabilities.size(); ++i){
-    if(m_Capabilities.at(i) == property) return true;
-  }
-  return false;
-}
-
-// interface for the setter function for video device properties
-void MapGeneratorOptions::setProperty(
-    const std::string &property, const std::string &value){
-  if(isCropping(property)){
-    setCropping(m_Generator, property, value);
-  } else if (property == XN_CAPABILITY_ANTI_FLICKER){
-    antiFlickerCapabilitySet(m_Generator, value);
-  } else if (property == XN_CAPABILITY_ALTERNATIVE_VIEW_POINT){
-    alternativeViewPiontCapabilitySet(m_Generator, value, m_ProductionNodeMap);
-  } else if (property == XN_CAPABILITY_MIRROR){
-    m_Generator -> GetMirrorCap().SetMirror(value == "On");
-  } else if (setGeneralIntCapability(m_Generator, property, value)){
-    // nothing to do setting is done in condition
-  } else if (property == "map output mode"){
-    setCurrentMapOutputmode(m_Generator, value);
-  }
-}
-
-// get type of property
-std::string MapGeneratorOptions::getType(const std::string &name){
-  if(isCropping(name)){
-    return getCroppingType(name);
-  } else if (name == XN_CAPABILITY_ANTI_FLICKER){
-    return "menu";
-  } else if (name == XN_CAPABILITY_ALTERNATIVE_VIEW_POINT){
-    return "menu";
-  } else if (name == XN_CAPABILITY_MIRROR){
-    return "menu";
-  } else if (isGeneralIntCapability(name)){
-    return "range";
-  } else if(name == "map output mode"){
-    return "menu";
-  }
-  DEBUG_LOG("unknown property " << name);
-  throw ICLException("unknown property");
-}
-
-// get information of a properties valid values
-std::string MapGeneratorOptions::getInfo(const std::string &name){
-  if(isCropping(name)){
-    return getCroppingInfo(m_Generator, name);
-  } else if (name == XN_CAPABILITY_ANTI_FLICKER){
-    return "{Power line frequency OFF,"
-        "Power line frequency 50Hz,"
-        "Power line frequency 60Hz}";
-  } else if (name == XN_CAPABILITY_ALTERNATIVE_VIEW_POINT){
-    return alternativeViewPiontCapabilityInfo(m_Generator, m_ProductionNodeMap);
-  } else if (name == XN_CAPABILITY_MIRROR){
-    return "{On,Off}";
-  } else if (isGeneralIntCapability(name)){
-    return generalIntCapabilityInfo(getGeneralIntCapability(m_Generator, name));
-  } else if (isGeneralIntAutoCapability(name)){
-    return "{On,Off}";
-  } else if(name == "map output mode"){
-    return getMapOutputModeInfo(m_Generator);
-  }
-  DEBUG_LOG("unknown property " << name);
-  throw ICLException("unknown property");
-}
-
-// returns the current value of a property or a parameter
-std::string MapGeneratorOptions::getValue(const std::string &name){
-  if(isCropping(name)){
-    return getCroppingValue(m_Generator, name);
-  } else if (name == XN_CAPABILITY_ANTI_FLICKER){
-    return antiFlickerCapabilityValue(m_Generator);
-  } else if (name == XN_CAPABILITY_ALTERNATIVE_VIEW_POINT){
-    return alternativeViewPiontCapabilityValue(m_Generator, m_ProductionNodeMap);
-  } else if (name == XN_CAPABILITY_MIRROR){
-    return (m_Generator -> GetMirrorCap().IsMirrored()) ? "On" : "Off";
-  } else if (isGeneralIntCapability(name)){
-    return generalIntCapabilityValue(getGeneralIntCapability(m_Generator, name));
-  } else if (isGeneralIntAutoCapability(name)){
-    std::string aname = name.substr(4);
-    return generalIntCapabilityValue(getGeneralIntCapability(m_Generator, aname));
-  } else if(name == "map output mode"){
-    return getCurrentMapOutputMode(m_Generator);
-  }
-  DEBUG_LOG("unknown property " << name);
-  throw ICLException("unknown property");
-}
-
-// Returns whether this property may be changed internally.
-int MapGeneratorOptions::isVolatile(const std::string &propertyName){
-  if(isCropping(propertyName)){
-    return 100;
-  }
-  return 0;
-}
-
 // adds a GeneralIntCapability as property
 void MapGeneratorOptions::addGeneralIntProperty(const std::string name) {
   // only add if supported
@@ -1163,105 +896,6 @@ DepthGeneratorOptions::DepthGeneratorOptions(xn::DepthGenerator* generator)
               "Horizontal field of view.");
   addProperty("field of view Y", "info", "", fov.fVFOV, 0,
               "Vertical field of view.");
-}
-
-// interface for the setter function for video device properties
-void DepthGeneratorOptions::setProperty(const std::string &property, const std::string &value){
-  MapGeneratorOptions::setProperty(property, value);
-  if(property == "max depth"){
-    return;
-  } else if (property == "field of view X"){
-    return;
-  } else if (property == "field of view Y"){
-    return;
-  }
-}
-
-// adds properties to propertylist
-void DepthGeneratorOptions::addPropertiesToList(std::vector<std::string> &properties){
-  MapGeneratorOptions::addPropertiesToList(properties);
-  properties.push_back("max depth");
-  properties.push_back("field of view X");
-  properties.push_back("field of view Y");
-}
-
-// checks if property is supported
-bool DepthGeneratorOptions::supportsProperty(const std::string &property){
-  if(MapGeneratorOptions::supportsProperty(property)){
-    return true;
-  }
-  if(property == "max depth"){
-    return true;
-  } else if (property == "field of view X"){
-    return true;
-  } else if (property == "field of view Y"){
-    return true;
-  }
-  return false;
-}
-
-// get type of property
-std::string DepthGeneratorOptions::getType(const std::string &name){
-  if(MapGeneratorOptions::supportsProperty(name)){
-    return MapGeneratorOptions::getType(name);
-  }
-  if(name == "max depth"){
-    return "info";
-  } else if (name == "field of view X"){
-    return "info";
-  } else if (name == "field of view Y"){
-    return "info";
-  }
-  DEBUG_LOG("unknown property " << name);
-  throw ICLException("unknown property");
-}
-
-// get information of a properties valid values
-std::string DepthGeneratorOptions::getInfo(const std::string &name){
-  if(MapGeneratorOptions::supportsProperty(name)){
-    return MapGeneratorOptions::getInfo(name);
-  }
-  if(name == "max depth"){
-    return "";
-  } else if (name == "field of view X"){
-    return "";
-  } else if (name == "field of view Y"){
-    return "";
-  }
-  DEBUG_LOG("unknown property " << name);
-  throw ICLException("unknown property");
-}
-
-// returns the current value of a property or a parameter
-std::string DepthGeneratorOptions::getValue(const std::string &name){
-  if(MapGeneratorOptions::supportsProperty(name)){
-    return MapGeneratorOptions::getValue(name);
-  }
-  std::ostringstream s;
-  if(name == "max depth"){
-    s << m_DepthGenerator -> GetDeviceMaxDepth();
-    return s.str();
-  } else if (name == "field of view X"){
-    XnFieldOfView fov;
-    m_DepthGenerator -> GetFieldOfView(fov);
-    s << fov.fHFOV;
-    return s.str();
-  } else if (name == "field of view Y"){
-    XnFieldOfView fov;
-    m_DepthGenerator -> GetFieldOfView(fov);
-    s << fov.fVFOV;
-    return s.str();
-  }
-  DEBUG_LOG("unknown property " << name);
-  throw ICLException("unknown property");
-}
-
-// Returns whether this property may be changed internally.
-int DepthGeneratorOptions::isVolatile(const std::string &propertyName){
-  if(MapGeneratorOptions::supportsProperty(propertyName)){
-    return MapGeneratorOptions::isVolatile(propertyName);
-  }
-  return 0;
 }
 
 //##############################################################################
@@ -1317,7 +951,7 @@ ImageGeneratorOptions::ImageGeneratorOptions(xn::ImageGenerator* generator)
 // callback for changed configurable properties
 void ImageGeneratorOptions::processPropertyChange(const utils::Configurable::Property &prop){
   DEBUG_LOG("imgem process")
-  if(prop.name == "Pixel Format"){
+      if(prop.name == "Pixel Format"){
     if (prop.value == "rgb24"){
       if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_RGB24)){
         m_ImageGenerator -> SetPixelFormat(XN_PIXEL_FORMAT_RGB24);
@@ -1344,134 +978,4 @@ void ImageGeneratorOptions::processPropertyChange(const utils::Configurable::Pro
       }
     }
   }
-}
-
-// interface for the setter function for video device properties
-void ImageGeneratorOptions::setProperty(const std::string &property, const std::string &value){
-  MapGeneratorOptions::setProperty(property, value);
-  if(property == "Pixel Format"){
-    if (value == "rgb24"){
-      if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_RGB24)){
-        m_ImageGenerator -> SetPixelFormat(XN_PIXEL_FORMAT_RGB24);
-      }
-    }
-    if (value == "yuv422"){
-      if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_YUV422)){
-        m_ImageGenerator -> SetPixelFormat(XN_PIXEL_FORMAT_YUV422);
-      }
-    }
-    if (value == "grayscale8"){
-      if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_GRAYSCALE_8_BIT)){
-        m_ImageGenerator -> SetPixelFormat(XN_PIXEL_FORMAT_GRAYSCALE_8_BIT);
-      }
-    }
-    if (value == "grayscale16"){
-      if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_GRAYSCALE_16_BIT)){
-        m_ImageGenerator -> SetPixelFormat(XN_PIXEL_FORMAT_GRAYSCALE_16_BIT);
-      }
-    }
-    if (value == "mjpeg"){
-      if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_MJPEG)){
-        m_ImageGenerator -> SetPixelFormat(XN_PIXEL_FORMAT_MJPEG);
-      }
-    }
-  }
-}
-
-// adds properties to propertylist
-void ImageGeneratorOptions::addPropertiesToList(std::vector<std::string> &properties){
-  MapGeneratorOptions::addPropertiesToList(properties);
-  properties.push_back("Pixel Format");
-}
-
-// checks if property is supported
-bool ImageGeneratorOptions::supportsProperty(const std::string &property){
-  if(MapGeneratorOptions::supportsProperty(property)){
-    return true;
-  }
-  if(property == "Pixel Format"){
-    return true;
-  }
-  DEBUG_LOG("unknown property " << property);
-  throw ICLException("unknown property");
-}
-
-// get type of property
-std::string ImageGeneratorOptions::getType(const std::string &name){
-  if(MapGeneratorOptions::supportsProperty(name)){
-    return MapGeneratorOptions::getType(name);
-  }
-  if(name == "Pixel Format"){
-    return "menu";
-  }
-  DEBUG_LOG("unknown property " << name);
-  throw ICLException("unknown property");
-}
-
-// get information of a properties valid values
-std::string ImageGeneratorOptions::getInfo(const std::string &name){
-  if(MapGeneratorOptions::supportsProperty(name)){
-    return MapGeneratorOptions::getInfo(name);
-  }
-  if(name == "Pixel Format"){
-    std::ostringstream s;
-    s << "{";
-    if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_RGB24)){
-      s << "rgb24,";
-    }
-    if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_YUV422)){
-      s << "yuv422,";
-    }
-    if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_GRAYSCALE_8_BIT)){
-      s << "grayscale8,";
-    }
-    if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_GRAYSCALE_16_BIT)){
-      s << "grayscale16,";
-    }
-    if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_MJPEG)){
-      s << "mjpeg,";
-    }
-    s << "}";
-    return s.str();
-  }
-  DEBUG_LOG("unknown property " << name);
-  throw ICLException("unknown property");
-}
-
-// returns the current value of a property or a parameter
-std::string ImageGeneratorOptions::getValue(const std::string &name){
-  if(MapGeneratorOptions::supportsProperty(name)){
-    return MapGeneratorOptions::getValue(name);
-  }
-  if(name == "Pixel Format"){
-    XnPixelFormat f = m_ImageGenerator -> GetPixelFormat();
-    switch(f){
-      case XN_PIXEL_FORMAT_RGB24:
-        return "rgb24";
-      case XN_PIXEL_FORMAT_YUV422:
-        return "yuv422";
-      case XN_PIXEL_FORMAT_GRAYSCALE_8_BIT:
-        return "grayscale8";
-      case XN_PIXEL_FORMAT_GRAYSCALE_16_BIT:
-        return "grayscale16";
-      case XN_PIXEL_FORMAT_MJPEG:
-        return "mjpeg";
-      default:
-        DEBUG_LOG("Unknown Pixel Format " << f)
-            return "rgb24";
-    }
-  }
-  ERROR_LOG("unknown property " << name);
-  return "";
-}
-
-// Returns whether this property may be changed internally.
-int ImageGeneratorOptions::isVolatile(const std::string &propertyName){
-  if(MapGeneratorOptions::supportsProperty(propertyName)){
-    return MapGeneratorOptions::isVolatile(propertyName);
-  }
-  if (propertyName == "Pixel Format"){
-    return 1000;
-  }
-  return 0;
 }
