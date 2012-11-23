@@ -323,6 +323,10 @@ namespace icl{
       alphaFunc = (int)GL_GREATER;
       alphaValue = 0.3;
     }
+
+    TextPrimitive::~TextPrimitive(){
+    }
+
     
   
     void TextPrimitive::render(const Primitive::RenderContext &ctx){

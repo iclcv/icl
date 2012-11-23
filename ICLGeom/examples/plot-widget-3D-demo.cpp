@@ -8,8 +8,6 @@ Scene scene;
 
 void init(){
   gui << Plot3D().handle("plot").minSize(32,24) << Show();
-  
-  
 }
 
 void run(){
@@ -33,7 +31,7 @@ void run(){
   plot->add(&o,false);
   plot->render();
   
-  Thread::msleep(10);
+  Thread::msleep(30);
 }
 
 int main(int n, char **a){

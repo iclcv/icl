@@ -48,48 +48,33 @@ namespace icl{
   namespace geom{
 
     static Range32f round_range(Range32f r){
-      if(r.minVal > r.maxVal) std::swap(r.minVal,r.maxVal);
-      const int signA = r.minVal<0?-1:1;
-      const int signB = r.maxVal<0?-1:1;
-      float a(0),b(0),f=1;
-      if(fabs(r.minVal) > fabs(r.maxVal)){
-        a = fabs(r.minVal);
-        b = fabs(r.maxVal);
-      }else{
-        a = fabs(r.maxVal);
-        b = fabs(r.minVal);
+      if(r.minVal > r.maxVal){
+        std::swap(r.minVal,r.maxVal);
       }
-      if(a > 1){
-        while(a > 100){
-          a *= 0.1; b *= 0.1; f *= 10;
+      float m = fmax(fabs(r.minVal),fabs(r.maxVal));
+      float f = 1;
+      if( m > 1 ){
+        while( m/f > 100){
+          f *= 10;
         }
-        if(a > 90) a = 100;
-        a = ceil(a) * f;
-        b = signB > 0 ? (ceil(b) * f) : (floor(b) * f);
-        
       }else{
-        while(a < 10){
-          a *= 10;  b *= 10; f *= 0.1;
+        while( m/f < 10){
+          f *= 0.1;
         }
-        if ( a < 11) a = 10;
-        a = floor(a) * f;
-        b = signB > 0 ? (floor(b) * f) : (ceil(b) * f);
       }
-      if(b < a){  
-        return Range32f(signA * a, signB * b);
-      }else{
-        return Range32f(signB * b, signA * a);
-      }
+      r.minVal = floor(r.minVal/f) * f;
+      r.maxVal = ceil(r.maxVal/f) * f;
+      return r;
     }
+    
     std::string create_label(float r){
-      return str(r < 0.00001 ? 0 : r); // todo rounding and stuff
+      return str(fabs(r) < 0.00001 ? 0 : r); // todo rounding and stuff
     }
 
     struct Axis : public SceneObject{
       PlotWidget3D *parent;
       Range32f roundedRange;
       std::vector<TextPrimitive*> labels;
-
       Axis(PlotWidget3D *parent,const Range32f &range, bool invertLabels):parent(parent){
         roundedRange = round_range(range);
         const float min = roundedRange.minVal;
@@ -128,7 +113,7 @@ namespace icl{
       
       CoordinateFrameObject3D(PlotWidget3D *parent, SceneObject *rootObject):
         parent(parent),rootObject(rootObject){
-        
+        axes[0] = axes[1] = axes[2] = 0;
         setLockingEnabled(true);
         
         addVertex(Vec(1,-1,1,1));
@@ -177,7 +162,7 @@ namespace icl{
         axes[2]->rotate(-M_PI/2,0,0);
         axes[2]->rotate(0,M_PI/2,0);
         axes[2]->translate(-1,-1,0);
-
+            
       }
      
       virtual void prepareForRendering(){
@@ -339,7 +324,7 @@ namespace icl{
         }
         
         switch( dyn[0] + dyn[1]*2 + dyn[2]*4 ){
-          case 0: update_bounds<false,false,false>(computedViewport,rootObject); break;
+          case 0: break; // nothing to do here!
           case 1: update_bounds<true,false,false>(computedViewport,rootObject); break;
           case 2: update_bounds<false,true,false>(computedViewport,rootObject); break;
           case 3: update_bounds<true,true,false>(computedViewport,rootObject); break;
@@ -349,7 +334,6 @@ namespace icl{
           case 7: update_bounds<true,true,true>(computedViewport,rootObject); break;
           default: break;
         }
-        
       }
     };
 
