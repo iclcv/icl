@@ -51,7 +51,7 @@ namespace icl{
       if(r.minVal > r.maxVal){
         std::swap(r.minVal,r.maxVal);
       }
-      float m = fmax(fabs(r.minVal),fabs(r.maxVal));
+      float m = fabs(r.maxVal - r.minVal);
       float f = 1;
       if( m > 1 ){
         while( m/f > 100){
@@ -68,14 +68,16 @@ namespace icl{
     }
     
     std::string create_label(float r){
-      return str(fabs(r) < 0.00001 ? 0 : r); // todo rounding and stuff
+      return str(fabs(r) < 0.0000001 ? 0 : r); // todo rounding and stuff
     }
 
     struct Axis : public SceneObject{
       PlotWidget3D *parent;
       Range32f roundedRange;
+      std::string label;
       std::vector<TextPrimitive*> labels;
-      Axis(PlotWidget3D *parent,const Range32f &range, bool invertLabels):parent(parent){
+      Axis(PlotWidget3D *parent,const Range32f &range, bool invertLabels, const std::string &label):
+        parent(parent),label(label){
         roundedRange = round_range(range);
         const float min = roundedRange.minVal;
         const float max = roundedRange.maxVal;
@@ -101,7 +103,15 @@ namespace icl{
                                              20,GeomColor(255,255,255,255),
                                              -1,-1,-1,-1,.1));
           addCustomPrimitive(labels.back());
+          
         }
+        addVertex(Vec((invertLabels ? -1 : 1) * (1+2*d),0,0,1));
+        labels.push_back(new TextPrimitive(m_vertices.size()-1,0,0,0,label,
+                                           25,GeomColor(255,255,255,255),
+                                           -1,-1,-1,-1,.13));
+        
+        addCustomPrimitive(labels.back());
+
       }
     };
 
@@ -144,10 +154,10 @@ namespace icl{
         }
 
         std::copy(pranges,pranges+3,ranges);
-           
+        static const std::string labels[3] = { "X", "Y", "Z" };
         for(int i=0;i<3;++i){
           if(axes[i]) removeChild(axes[i]);
-          axes[i] = new Axis(parent,ranges[i],i==1);
+          axes[i] = new Axis(parent,ranges[i],i==1,labels[i]);
           addChild(axes[i]);
         }
         
@@ -230,6 +240,7 @@ namespace icl{
       
       float pointsize;
       float linewidth;
+      bool smoothfill;
       GeomColor color,fill;
 
       void add(SceneObject *obj, bool passOwnership=false, bool addOnly=false){
@@ -281,17 +292,19 @@ namespace icl{
       }
       
       Data(){
-        pointsize = linewidth = 1;
+        pointsize = 1;
+        linewidth = 1;
+        smoothfill = true;
         color = geom_red(255);
         fill = geom_blue(255);
       }
       
       template<bool X, bool Y, bool Z>
       void update_bounds(Range32f computedViewport[3], SceneObject *o){
-        DEBUG_LOG("updating bounds for object " << (void*)o << (rootObject ? "[root]" : "[other]"));
+        //        DEBUG_LOG("updating bounds for object " << (void*)o << (rootObject ? "[root]" : "[other]"));
         if(o != rootObject){
           const std::vector<Vec> &vs = o->getVertices();
-          DEBUG_LOG("checking " << vs.size() << " nodes! [" << (X?"X":"") << (Y?"Y":"") << (Z?"Z":"") << "]" );
+          //DEBUG_LOG("checking " << vs.size() << " nodes! [" << (X?"X":"") << (Y?"Y":"") << (Z?"Z":"") << "]" );
           for(size_t i=0;i<vs.size();++i){
             const Vec &v = vs[i];
             if(X){
@@ -367,6 +380,9 @@ namespace icl{
       m_data->scene.addObject(m_data->coordinateFrame); // must be rendered first (adapts rootObj-transform)
       m_data->scene.addObject(m_data->rootObject);
 
+      SceneLight &l = m_data->scene.getLight(0);
+      l.setSpecularEnabled(true);
+      l.setSpecular(GeomColor(255,255,255,255));
     }
 
 
@@ -451,31 +467,82 @@ namespace icl{
     void PlotWidget3D::linewidth(float width){
       m_data->linewidth = width;
     }
+    void PlotWidget3D::clear(){
+      m_data->rootObject->removeAllChildren();
+    }
+
+    void PlotWidget3D::nocolor(){
+      m_data->color[3] = 0;
+    }
+
+    void PlotWidget3D::nofill(){
+      m_data->fill[3] = 0;
+    }
     
-    PlotWidget3D::Handle PlotWidget3D::scatter(const std::vector<Vec> &points, bool connect){
+    void PlotWidget3D::smoothfill(bool on){
+      m_data->smoothfill = on;
+    }
+    
+
+    PlotWidget3D::Handle PlotWidget3D::scatter(const std::vector<Vec> &points){
       SceneObject *obj = new SceneObject;
       obj->getVertices() = points;
       obj->getVertexColors().resize(points.size());
-      if(connect){
-        for(size_t i=1;i<points.size();++i){
-          obj->addLine(i-1,i);
-        }
+      m_data->add(obj);
+      return obj;
+    }
+
+    PlotWidget3D::Handle PlotWidget3D::linestrip(const std::vector<Vec> &points){
+      SceneObject *obj = new SceneObject;
+      obj->getVertices() = points;
+      obj->getVertexColors().resize(points.size());
+      for(size_t i=1;i<points.size();++i){
+        obj->addLine(i-1,i);
       }
       m_data->add(obj);
       return obj;
     }
 
-    void PlotWidget3D::clear(){
-      m_data->rootObject->removeAllChildren();
-    }
+
     
-    PlotWidget3D::Handle PlotWidget3D::surf(const std::vector<Vec> &points, int nx, int ny, 
-                                            bool lines, bool fill, bool smoothfill){
-      SceneObject *grid = new GridSceneObject(nx,ny,points,lines, fill);
-      grid->createAutoNormals(smoothfill);
+    PlotWidget3D::Handle PlotWidget3D::surf(const std::vector<Vec> &points, int nx, int ny){
+      SceneObject *grid = new GridSceneObject(nx,ny,points,m_data->color[3],m_data->fill[3]);
+      grid->createAutoNormals(m_data->smoothfill);
       m_data->add(grid);
       return grid;
     }
+
+    PlotWidget3D::Handle PlotWidget3D::surf(Function<float,float,float> fxy,
+                                            const Range32f &rx, const Range32f &ry,
+                                            int nx, int ny,
+                                            PlotWidget3D::Handle reuseObject){
+      std::vector<Vec> pointsVec;
+      std::vector<Vec> &points = reuseObject ? reuseObject->getVertices() : pointsVec;
+      points.resize(nx*ny);
+      if(reuseObject) reuseObject->getVertexColors().resize(nx*ny);
+      float dx = rx.getLength()/ (nx-1);
+      float dy = ry.getLength()/ (ny-1);
+      for(int y=0;y<ny;++y){
+        float yv = ry.minVal + y * dy;
+        for(int x=0;x<nx;++x){
+          float xv = rx.minVal + x * dx;
+          points[x + nx*y] = Vec(xv,yv,fxy(xv,yv),1);
+        }
+      }
+      if(reuseObject){
+        DEBUG_LOG("reuseObject " << reuseObject << " !! why is this not contained?");
+        if(m_data->rootObject->hasChild(reuseObject)){
+          SHOW((int)m_data->smoothfill);
+          reuseObject->createAutoNormals(m_data->smoothfill);
+        }else{
+          m_data->add(reuseObject);
+        }
+        return reuseObject;
+      }else{
+        return surf(points,nx,ny);
+      }
+    }
+
     
     namespace{ // only for registering this class as a GUI component!
       

@@ -533,6 +533,8 @@ namespace icl{
       /// returns child at given index (const)
       const SceneObject *getChild(int index) const;
       
+      /// returns whether the given object is a child of this one
+      bool hasChild(const SceneObject *o) const;
       /** @} **/
 
       /// automatically creates precomputed normals

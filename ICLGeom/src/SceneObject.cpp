@@ -831,6 +831,12 @@ namespace icl{
       m_children.push_back(SmartPtr<SceneObject>(child,passOwnerShip));
       child->m_parent = this;
     }
+    bool SceneObject::hasChild(const SceneObject *o) const{
+      for(size_t i=0;i<m_children.size();++i){
+        if(m_children[i].get() == o) return true;
+      }
+      return false;
+    }
       
     void SceneObject::removeChild(SceneObject *child){
       for(unsigned int i=0;i<m_children.size();++i){

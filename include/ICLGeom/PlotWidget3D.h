@@ -36,6 +36,7 @@
 
 #include <ICLQt/DrawWidget3D.h>
 #include <ICLGeom/Scene.h>
+#include <ICLUtils/Function.h>
 
 
 namespace icl{
@@ -70,17 +71,25 @@ namespace icl{
       void remove(Handle h);
       
       void color(int r, int g, int b, int a);
+      void nocolor();
       void fill(int r, int g, int b, int a);
+      void nofill();
+      void smoothfill(bool on);
       void pointsize(float size);
       void linewidth(float width);
 
       void clear();
       
-      Handle scatter(const std::vector<Vec> &points, bool connect=false);
+      Handle scatter(const std::vector<Vec> &points);
+
+      Handle linestrip(const std::vector<Vec> &points);
       
-      Handle surf(const std::vector<Vec> &points, int nx, int ny, bool lines=false, 
-                  bool fill=true, bool smoothfill=true);
-      
+      Handle surf(const std::vector<Vec> &points, int nx, int ny);
+
+      Handle surf(utils::Function<float,float,float> fxy,
+                  const utils::Range32f &rx=utils::Range32f(0,0),
+                  const utils::Range32f &ry=utils::Range32f(0,0),
+                  int nx=100, int ny=100, Handle reuseObj=0);
     };
   }
 }
