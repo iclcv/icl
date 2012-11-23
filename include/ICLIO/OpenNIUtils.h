@@ -39,8 +39,7 @@
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/Configurable.h>
 
-#include <XnOS.h>
-#include <XnCppWrapper.h>
+#include <ICLIO/OpenNIIncludes.h>
 
 #include <map>
 #include <limits>
@@ -301,21 +300,6 @@ namespace icl {
           /// constructor
           DepthGeneratorOptions(xn::DepthGenerator* generator);
 
-          /// interface for the setter function for video device properties
-          void setProperty(const std::string &property, const std::string &value);
-          /// adds properties to propertylist
-          void addPropertiesToList(std::vector<std::string> &properties);
-          /// checks if property is supported
-          bool supportsProperty(const std::string &property);
-          /// get type of property
-          std::string getType(const std::string &name);
-          /// get information of a properties valid values
-          std::string getInfo(const std::string &name);
-          /// returns the current value of a property or a parameter
-          std::string getValue(const std::string &name);
-          /// Returns whether this property may be changed internally.
-          int isVolatile(const std::string &propertyName);
-
         private:
           /// the used DepthGenerator
           xn::DepthGenerator* m_DepthGenerator;
@@ -326,21 +310,6 @@ namespace icl {
         public:
           /// constructor
           ImageGeneratorOptions(xn::ImageGenerator* generator);
-
-          /// interface for the setter function for video device properties
-          void setProperty(const std::string &property, const std::string &value);
-          /// adds properties to propertylist
-          void addPropertiesToList(std::vector<std::string> &properties);
-          /// checks if property is supported
-          bool supportsProperty(const std::string &property);
-          /// get type of property
-          std::string getType(const std::string &name);
-          /// get information of a properties valid values
-          std::string getInfo(const std::string &name);
-          /// returns the current value of a property or a parameter
-          std::string getValue(const std::string &name);
-          /// Returns whether this property may be changed internally.
-          int isVolatile(const std::string &propertyName);
 
           /// callback for changed configurable properties
           void processPropertyChange(const utils::Configurable::Property &prop);
@@ -377,6 +346,10 @@ namespace icl {
           ///  Creates the corresponding Generator.
           static OpenNIMapGenerator* createGenerator(xn::Context* context,
                                                      std::string id);
+          /// creates an info string for MapOutputModes of MapGenerator gen.
+          static std::string getMapOutputModeInfo(xn::MapGenerator* gen);
+          /// creates a string describing the current MapOutputMode
+          static std::string getCurrentMapOutputMode(xn::MapGenerator* gen);
       };
 
       /// Depth Image Generator

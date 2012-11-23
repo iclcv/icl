@@ -52,7 +52,7 @@ using namespace io;
 using namespace icl_openni;
 
 //##############################################################################
-//############################# OpenNIImageGenerator ###########################
+//############################# OpenNIMapGenerator #############################
 //##############################################################################
 
 //  Creates the corresponding Generator.
@@ -84,6 +84,55 @@ OpenNIMapGenerator* OpenNIMapGenerator::createGenerator(
     std::cout << "Supported generator types are: rgb, depth and ir" << std::endl;
     throw new ICLException(s.str());
   }
+}
+
+// creates an info string for MapOutputModes of MapGenerator gen.
+std::string OpenNIMapGenerator::getMapOutputModeInfo(MapGenerator* gen){
+  // list all MapOutputModes
+  XnUInt32 count = gen -> GetSupportedMapOutputModesCount();
+  XnMapOutputMode* modes = new XnMapOutputMode[count];
+  gen -> GetSupportedMapOutputModes(modes, count);
+
+  // remove double entries
+  std::vector<XnMapOutputMode*> cleaned;
+  for(unsigned int i = 0; i < count; ++i){
+    bool added = false;
+    for (unsigned int j = 0; j < cleaned.size(); ++j){
+      if(modes[i].nXRes == cleaned.at(j) -> nXRes &&
+         modes[i].nYRes == cleaned.at(j) -> nYRes &&
+         modes[i].nFPS == cleaned.at(j) -> nFPS){
+        added = true;
+        break;
+      }
+    }
+    if(!added) cleaned.push_back(modes + i);
+  }
+
+  // create info-string
+  std::ostringstream ret;
+  for(unsigned int i = 0; i < cleaned.size(); ++i){
+    ret << cleaned.at(i) -> nXRes << "x";
+    ret << cleaned.at(i) -> nYRes << "@";
+    ret << cleaned.at(i) -> nFPS << "fps";
+    if(i+1 < cleaned.size()){
+      ret << ",";
+    }
+  }
+  // free allocated memory
+  delete[] modes;
+  DEBUG_LOG2("supported map output modes: " << ret.str());
+  return ret.str();
+}
+
+
+// creates a string describing the current MapOutputMode
+std::string OpenNIMapGenerator::getCurrentMapOutputMode(MapGenerator* gen){
+  XnMapOutputMode mode;
+  gen -> GetMapOutputMode(mode);
+  std::ostringstream ret;
+  ret << mode.nXRes << "x" << mode.nYRes << "@" << mode.nFPS << "fps";
+  DEBUG_LOG2("Map output mode: " << ret.str());
+  return ret.str();
 }
 
 //##############################################################################
@@ -356,44 +405,6 @@ MapGeneratorOptions* OpenNIIRGenerator::getMapGeneratorOptions(){
 //############################# MapGeneratorOptions ############################
 //##############################################################################
 
-// creates an info string for MapOutputModes of MapGenerator gen.
-std::string getMapOutputModeInfo(MapGenerator* gen){
-  // list all MapOutputModes
-  XnUInt32 count = gen -> GetSupportedMapOutputModesCount();
-  XnMapOutputMode* modes = new XnMapOutputMode[count];
-  gen -> GetSupportedMapOutputModes(modes, count);
-
-  // remove double entries
-  std::vector<XnMapOutputMode*> cleaned;
-  for(unsigned int i = 0; i < count; ++i){
-    bool added = false;
-    for (unsigned int j = 0; j < cleaned.size(); ++j){
-      if(modes[i].nXRes == cleaned.at(j) -> nXRes &&
-         modes[i].nYRes == cleaned.at(j) -> nYRes &&
-         modes[i].nFPS == cleaned.at(j) -> nFPS){
-        added = true;
-        break;
-      }
-    }
-    if(!added) cleaned.push_back(modes + i);
-  }
-
-  // create info-string
-  std::ostringstream ret;
-  for(unsigned int i = 0; i < cleaned.size(); ++i){
-    ret << cleaned.at(i) -> nXRes << "x";
-    ret << cleaned.at(i) -> nYRes << "@";
-    ret << cleaned.at(i) -> nFPS << "fps";
-    if(i+1 < cleaned.size()){
-      ret << ",";
-    }
-  }
-  // free allocated memory
-  delete[] modes;
-  DEBUG_LOG2("supported map output modes: " << ret.str());
-  return ret.str();
-}
-
 // tells whether a MapOutputMode is supported by a MapGenerator
 bool isSupportedMapOutputMode(MapGenerator* gen, XnMapOutputMode* mode){
   // list modes
@@ -409,16 +420,6 @@ bool isSupportedMapOutputMode(MapGenerator* gen, XnMapOutputMode* mode){
     }
   }
   return false;
-}
-
-// creates a string describing the current MapOutputMode
-std::string getCurrentMapOutputMode(MapGenerator* gen){
-  XnMapOutputMode mode;
-  gen -> GetMapOutputMode(mode);
-  std::ostringstream ret;
-  ret << mode.nXRes << "x" << mode.nYRes << "@" << mode.nFPS << "fps";
-  DEBUG_LOG2("Map output mode: " << ret.str());
-  return ret.str();
 }
 
 // sets the current MapOutputMode from string.
@@ -524,6 +525,13 @@ void setGeneralIntCapabilityDefault(GeneralIntCapability cap){
   cap.Set(def);
 }
 
+// returns the string-value of a GeneralIntCapability
+std::string generalIntCapabilityValue(GeneralIntCapability cap){
+  std::ostringstream ret;
+  ret << cap.Get();
+  return ret.str();
+}
+
 // checks whether property is an auto-GeneralIntCapability
 bool isGeneralIntAutoCapability(const std::string &property){
   if (property.size() <= 4){ // Auto capabilities have 'Auto' prepended.
@@ -553,6 +561,18 @@ bool setGeneralIntCapability(xn::MapGenerator* gen,
       GeneralIntCapability cap = getGeneralIntCapability(gen, property);
       setGeneralIntCapabilityDefault(cap);
     }
+    return true;
+  }
+  return false;
+}
+
+// checks whether property is a cropping property
+bool isCropping(const std::string &property){
+  if (property == "Cropping Enabled"
+      || property == "Cropping offset X"
+      || property == "Cropping offset Y"
+      || property == "Cropping size X"
+      || property == "Cropping size Y"){
     return true;
   }
   return false;
@@ -758,8 +778,8 @@ MapGeneratorOptions::MapGeneratorOptions(xn::MapGenerator* generator)
 {
   fillProductionNodeMap(m_Generator -> GetContext(), m_ProductionNodeMap);
   //Configurable
-  addProperty("map output mode", "menu", getMapOutputModeInfo(m_Generator),
-              getCurrentMapOutputMode(m_Generator), 0,
+  addProperty("map output mode", "menu", OpenNIMapGenerator::getMapOutputModeInfo(m_Generator),
+              OpenNIMapGenerator::getCurrentMapOutputMode(m_Generator), 0,
               "The map output mode of the used MapGenerator");
   //fillProductionNodeMap(m_Generator -> GetContext(), m_ProductionNodeMap);
   if(m_Generator -> IsCapabilitySupported(XN_CAPABILITY_CROPPING)){
@@ -950,7 +970,6 @@ ImageGeneratorOptions::ImageGeneratorOptions(xn::ImageGenerator* generator)
 
 // callback for changed configurable properties
 void ImageGeneratorOptions::processPropertyChange(const utils::Configurable::Property &prop){
-  DEBUG_LOG("imgem process")
       if(prop.name == "Pixel Format"){
     if (prop.value == "rgb24"){
       if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_RGB24)){

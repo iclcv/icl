@@ -429,7 +429,7 @@ namespace icl{
           }
         }
 
-        ERROR_LOG("Could not find " << name << "property in map.");
+        ERROR_LOG("Could not find " << name << " property in map.");
         return StSt("error", "error");
       }
   

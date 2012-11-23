@@ -102,7 +102,15 @@ OpenNIGrabberImpl::OpenNIGrabberImpl(std::string args)
   m_Generator = OpenNIMapGenerator::createGenerator(&m_Context, m_Id);
   m_Buffer = new ReadWriteBuffer<ImgBase>(m_Generator);
   m_Generator -> getMapGenerator()->StartGenerating();
-  addChildConfigurable(m_Generator->getMapGeneratorOptions());
+
+  addProperty("omit double frames", "flag", "", m_OmitDoubleFrames, 0, "");
+  addProperty("format", "menu", m_Generator -> getMapOutputModeInfo(m_Generator->getMapGenerator()),
+              m_Generator -> getCurrentMapOutputMode(m_Generator->getMapGenerator()),
+              0, "The image format.");
+  addProperty("size", "info", "", "adjusted by format", 0, "This is set by the format-property.");
+  addChildConfigurable(m_Generator -> getMapGeneratorOptions());
+  Configurable::registerCallback(utils::function(this,&OpenNIGrabberImpl::processPropertyChange));
+
   // create grabber-thread
   m_GrabberThread = new OpenNIGrabberThread(this);
   m_GrabberThread -> start();
@@ -146,16 +154,6 @@ void OpenNIGrabberImpl::grabNextImage(){
 // Returns the string representation of the currently used device.
 std::string OpenNIGrabberImpl::getName(){
   return m_Id;
-}
-
-// adds properties to Configurable
-void OpenNIGrabberImpl::addProperties(){
-  addProperty("omit double frames", "flag", "", m_OmitDoubleFrames, 0, "");
-  addProperty("format", "menu", m_Generator -> getMapGeneratorOptions() -> getInfo("map output mode"), m_Generator -> getMapGeneratorOptions() -> getValue("map output mode"), 0, "The image format.");
-  addProperty("size", "info", "", "adjusted by format", 0, "This is set by the format-property.");
-  addChildConfigurable(m_Generator -> getMapGeneratorOptions());
-
-  Configurable::registerCallback(utils::function(this,&OpenNIGrabberImpl::processPropertyChange));
 }
 
 // callback for changed configurable properties

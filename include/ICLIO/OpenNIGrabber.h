@@ -38,9 +38,7 @@
 #include <ICLUtils/Time.h>
 #include <ICLIO/OpenNIUtils.h>
 #include <ICLUtils/Thread.h>
-
-#include <XnOS.h>
-#include <XnCppWrapper.h>
+#include <ICLIO/OpenNIIncludes.h>
 
 namespace icl {
   namespace io{
@@ -95,9 +93,6 @@ namespace icl {
             be refreshed.
         **/
         void setGeneratorTo(icl_openni::OpenNIMapGenerator::Generators desired);
-
-        /// adds properties to Configurable
-        void addProperties();
 
         /// callback for changed configurable properties
         void processPropertyChange(const utils::Configurable::Property &prop);
