@@ -304,6 +304,10 @@ namespace icl {
         /** called by the grabbers grab() method **/
         const core::ImgBase *adaptGrabResult(const core::ImgBase *src, core::ImgBase **dst);
 
+      private:
+        /// callback for changed configurable properties
+        void processPropertyChange(const utils::Configurable::Property &prop);
+
     };
     
     /** \cond */

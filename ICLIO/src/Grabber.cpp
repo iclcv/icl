@@ -225,7 +225,6 @@ namespace icl{
       bool adaptDepth = desiredUsed<depth>() && (getDesired<depth>() != src->getDepth());
       bool adaptSize = desiredUsed<Size>() && (getDesired<Size>() != src->getSize());
       bool adaptFormat = desiredUsed<format>() && (getDesired<format>() != src->getFormat());
-      
       if(adaptDepth || adaptSize || adaptFormat){
         if(!dst){
           dst = &data->image;
@@ -286,6 +285,29 @@ namespace icl{
         data->callbacks[i](image);
       }
     }
+
+    void Grabber::processPropertyChange(const utils::Configurable::Property &prop){
+      if(prop.name == "desired size"){
+        if(prop.value == "not used"){
+          ignoreDesired<Size>();
+        } else {
+          useDesired<Size>(parse<Size>(prop.value));
+        }
+      } else if (prop.name == "desired depth"){
+        if(prop.value == "not used"){
+          ignoreDesired<depth>();
+        } else {
+          useDesired<depth>(parse<depth>(prop.value));
+        }
+      } else if (prop.name == "desired format"){
+        if(prop.value == "not used"){
+          ignoreDesired<format>();
+        } else {
+          useDesired<format>(parse<format>(prop.value));
+        }
+      }
+    }
+
     REGISTER_CONFIGURABLE_DEFAULT(Grabber);
   } // namespace io
 }

@@ -191,9 +191,6 @@ namespace icl {
           return m_poGrabber->acquireImage();
         }
 
-        /// callback for changed configurable properties
-        void processPropertyChange(const utils::Configurable::Property &prop);
-
         /// returns wheter an underlying grabber could be created
         bool isNull() const { return m_poGrabber == 0; }
 

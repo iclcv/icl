@@ -68,7 +68,7 @@ namespace icl{
       std::string deviceFilter;
       GUI gui;
       GUI properties;
-      GenericGrabber* grabber;
+      GenericGrabber grabber;
       std::vector<GrabberDeviceDescription> foundDevices;
       bool scanScope;
       bool settingUpDevice;
@@ -77,7 +77,6 @@ namespace icl{
       
       
       Data(bool complex):complex(complex),mutex(QMutex::Recursive),fps(5),fpsLimiter(10,10){
-        grabber = NULL;
         scanScope = false;
         settingUpDevice = false;
         grabbing = false;
@@ -132,9 +131,9 @@ namespace icl{
   
     const ImgBase *CamCfgWidget::getCurrentImage(){
       QMutexLocker __lock(&data->mutex); 
-      if(data->grabber ->isNull()) return 0;
+      if(data->grabber.isNull()) return 0;
       
-      const ImgBase *image = data->grabber->grab();
+      const ImgBase *image = data->grabber.grab();
       
       if(data->complex){
         data->gui["image"] = image;
@@ -173,10 +172,8 @@ namespace icl{
 
         try{
           if(data->foundDevices.size() > 1){
-              ICL_DELETE(data->grabber);
-              data->grabber = new GenericGrabber();
-              data->grabber->init(data->foundDevices.at((int)data->gui["device"]));
-              if(data->grabber->isNull()){
+              data->grabber.init(data->foundDevices.at((int)data->gui["device"]));
+              if(data->grabber.isNull()){
                 ERROR_LOG("unable to initialize grabber");
               }
             }
@@ -237,8 +234,8 @@ namespace icl{
         }
         data->grabbing = true;
   
-        if(!data->grabber->isNull()){
-          data->gui["image"] = data->grabber->grab();
+        if(!data->grabber.isNull()){
+          data->gui["image"] = data->grabber.grab();
           data->gui["fps"] = data->fps.getFPSString();
           data->mutex.unlock();
           if(data->useFPSLimiter){

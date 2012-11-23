@@ -90,8 +90,8 @@ namespace icl{
         else if(s == "NONE") bayerLayout = (dc1394color_filter_t)(0);
         else bayerLayout = (dc1394color_filter_t)0;
       }
-      
-      m_poGT->getCurrentImage(&m_poImage,bayerLayout,bayermethod_from_string(getPropertyValue("bayer-quality")));
+
+      m_poGT->getCurrentImage(&m_poImage,bayerLayout,bayermethod_from_string(to_string(m_oOptions.bayermethod)));
 
       if(m_oOptions.enable_image_labeling){
         labelImage(m_poImage,m_oDev.getModelID());
