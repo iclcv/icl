@@ -333,7 +333,7 @@ namespace icl{
           !givenViewport[2].getLength() 
         };
         for(int i=0;i<3;++i){
-          computedViewport[i] = dyn[i] ? Range32f::inv_limits() : givenViewport[0];
+          computedViewport[i] = dyn[i] ? Range32f::inv_limits() : givenViewport[i];
         }
         
         switch( dyn[0] + dyn[1]*2 + dyn[2]*4 ){
@@ -380,8 +380,11 @@ namespace icl{
       m_data->scene.addObject(m_data->coordinateFrame); // must be rendered first (adapts rootObj-transform)
       m_data->scene.addObject(m_data->rootObject);
 
-      SceneLight &l = m_data->scene.getLight(0);
+      SceneLight &l = m_data->scene.getLight(1);
       l.setSpecularEnabled(true);
+      l.setOn();
+      l.setPosition(Vec(0,0,10,1));
+      l.setAnchorToWorld();
       l.setSpecular(GeomColor(255,255,255,255));
     }
 
@@ -507,6 +510,7 @@ namespace icl{
     
     PlotWidget3D::Handle PlotWidget3D::surf(const std::vector<Vec> &points, int nx, int ny){
       SceneObject *grid = new GridSceneObject(nx,ny,points,m_data->color[3],m_data->fill[3]);
+      grid->setLockingEnabled(true);
       grid->createAutoNormals(m_data->smoothfill);
       m_data->add(grid);
       return grid;
@@ -519,6 +523,7 @@ namespace icl{
       std::vector<Vec> pointsVec;
       std::vector<Vec> &points = reuseObject ? reuseObject->getVertices() : pointsVec;
       points.resize(nx*ny);
+      if(reuseObject) reuseObject->lock();
       if(reuseObject) reuseObject->getVertexColors().resize(nx*ny);
       float dx = rx.getLength()/ (nx-1);
       float dy = ry.getLength()/ (ny-1);
@@ -529,14 +534,14 @@ namespace icl{
           points[x + nx*y] = Vec(xv,yv,fxy(xv,yv),1);
         }
       }
+      
       if(reuseObject){
-        DEBUG_LOG("reuseObject " << reuseObject << " !! why is this not contained?");
         if(m_data->rootObject->hasChild(reuseObject)){
-          SHOW((int)m_data->smoothfill);
           reuseObject->createAutoNormals(m_data->smoothfill);
         }else{
           m_data->add(reuseObject);
         }
+        reuseObject->unlock();
         return reuseObject;
       }else{
         return surf(points,nx,ny);

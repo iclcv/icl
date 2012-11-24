@@ -67,7 +67,7 @@ float f(float x, float y){
 void add_function(PlotHandle3D &plot){
   TODO_LOG("setting the viewport explicitly seems to not work properly");
 
-  //  plot->setViewPort(Range32f(0,0),Range32f(0,0),Range32f(-3,3)); 
+  plot->setViewPort(Range32f(0,0),Range32f(0,0),Range32f(-3,3)); 
   plot->nocolor();
   t = tt.age().toSecondsDouble();
   static SceneObject *o = 0;
@@ -77,7 +77,7 @@ void add_function(PlotHandle3D &plot){
 void run(){
   PlotHandle3D plot = gui["plot"];
     
-  plot->clear();
+  //plot->clear();
   
   //add_scatter(plot);
   add_function(plot);
