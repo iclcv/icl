@@ -273,7 +273,7 @@ namespace icl{
   
     template<> int PCLPointCloudObject<pcl::PointXYZRGBNormal>::offset(PointCloudObjectBase::FeatureType t) const {
       switch(t){
-        case XYZ: return 0;
+        case XYZ: case XYZH: return 0;
         case BGR: return 8*sizeof(float);   // case BGRA: case BGRA32s: (not defined here)
         case Normal: return 4*sizeof(float);
         default: return -1;
@@ -339,6 +339,7 @@ namespace icl{
     INSTANTIATE_CLASS(pcl::PointXYZL);
     INSTANTIATE_CLASS(pcl::PointXYZRGB);
     INSTANTIATE_CLASS(pcl::PointXYZRGBA);
+    INSTANTIATE_CLASS(pcl::PointXYZRGBL);
     INSTANTIATE_CLASS(pcl::InterestPoint);
     INSTANTIATE_CLASS(pcl::PointXYZRGBNormal);
     INSTANTIATE_CLASS(pcl::PointXYZINormal);
