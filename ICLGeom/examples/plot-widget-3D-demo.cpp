@@ -39,8 +39,8 @@ void init(){
 
 void add_scatter(PlotHandle3D &plot){
   static const int N = 100000;
-  static PointCloudObject o(N);
-  DataSegment<float,3> s = o.selectXYZ();
+  static std::vector<Vec> ps(N);
+  static std::vector<GeomColor> cs(N);
   
   GRand r(0,4);
   FixedMatrix<float,3,3> T(0.000001,0,0,
@@ -49,10 +49,12 @@ void add_scatter(PlotHandle3D &plot){
   //  T *= create_rot_3D<float>(1,2,3);
   
   for(int i=0;i<N;++i){
-    s[i] =  Vec3(1,1,1) + T * Vec3(r,r,r);
+    Vec3 v = Vec3(1,1,1) + T * Vec3(r,r,r);
+    ps[i] = Vec(v[0],v[1],v[2],1);
+    cs[i] = GeomColor(ps[i][0]-1,ps[i][1]-1,ps[i][2]-1,0.0001);
   }
-  plot->add(&o,false);
   
+  plot->scatter(ps,cs,Range32f(-0.00001,0.00001));
 }
 
 
@@ -60,28 +62,39 @@ static Time tt = Time::now();
 static float t = 0;
 
 float f(float x, float y){
-  return sin(x/10 + 2*t ) * cos(y/20+ t);
+  float r = sqrt(sqr(x-50) + sqr(y-50));
+  return sin(0.2*r - 3*t) * exp(-(r*r)/800);
 }
 
 
 void add_function(PlotHandle3D &plot){
-  TODO_LOG("setting the viewport explicitly seems to not work properly");
-
   plot->setViewPort(Range32f(0,0),Range32f(0,0),Range32f(-3,3)); 
   plot->nocolor();
   t = tt.age().toSecondsDouble();
   static SceneObject *o = 0;
-  o = plot->surf(f,Range32f(0,100),Range32f(0,100), 100, 100, o);
+  o = plot->surf(f,Range32f(0,100),Range32f(0,100), 200, 200, o);
+}
+
+void add_label(PlotHandle3D &plot){
+  TODO_LOG("labels are distorted -> text-lables must be added to "
+           " an extra root-object, that moves the labels, but does not "
+           " scale each of these! or can we perhaps invert the scaling "
+           " of the text by setting up it's paricular transformation?");
+  plot->color(255,255,255,255);
+  plot->label(Vec(50,50,-3),"sin(r)");
 }
 
 void run(){
   PlotHandle3D plot = gui["plot"];
-    
-  //plot->clear();
+  plot->lock();
   
-  //add_scatter(plot);
+  plot->clear();
+  
+  add_scatter(plot);
   add_function(plot);
+  add_label(plot);
 
+  plot->unlock();
   plot->render();
   
   Thread::msleep(30);

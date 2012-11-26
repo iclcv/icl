@@ -358,7 +358,7 @@ namespace icl{
     
     PlotWidget3D::PlotWidget3D(QWidget *parent):ICLDrawWidget3D(parent),m_data(new Data){
       std::fill(m_data->givenViewport,m_data->givenViewport+3,Range32f(0,0));
-      m_data->scene.setBounds(1);
+      m_data->scene.setBounds(5);
 
       Camera cam(Vec(8,1.5,1.5,1),
                  -Vec(8,1.5,1.5,1).normalized(),
@@ -486,6 +486,13 @@ namespace icl{
       m_data->smoothfill = on;
     }
     
+    void PlotWidget3D::lock(){
+      m_data->scene.lock();
+    }
+    void PlotWidget3D::unlock(){
+      m_data->scene.unlock();
+    }
+
 
     PlotWidget3D::Handle PlotWidget3D::scatter(const std::vector<Vec> &points){
       SceneObject *obj = new SceneObject;
@@ -494,6 +501,36 @@ namespace icl{
       m_data->add(obj);
       return obj;
     }
+    
+    namespace{
+      struct scale_color_range{
+        LinearTransform1D t;
+        scale_color_range(const Range32f &r) : t(r,Range32f(0,1)){}
+        GeomColor operator()(const GeomColor &c) const{
+          return GeomColor(t(c[0]),t(c[1]),t(c[2]),t(c[3]));
+        }
+      };
+    }
+
+    PlotWidget3D::Handle PlotWidget3D::scatter(const std::vector<Vec> &points,
+                                               const std::vector<GeomColor> &colors,
+                                               const Range32f &colorRange){
+      ICLASSERT_THROW(points.size() == colors.size(), ICLException("PlotWidget3D::scatter(points,colors):"
+                                                                   " points.size() must be equal to colors.size()!"));
+      SceneObject *obj = new SceneObject;
+      obj->getVertices() = points;
+      obj->getVertexColors().resize(points.size());
+      if(colorRange == Range32f(0,1)){
+        std::copy(colors.begin(),colors.end(), obj->getVertexColors().begin());
+      }else{
+        std::transform(colors.begin(),colors.end(), obj->getVertexColors().begin(), scale_color_range(colorRange));
+      }
+      obj->setPointSize(m_data->pointsize);
+      m_data->add(obj,true,true);
+      return obj;
+    
+    }
+
 
     PlotWidget3D::Handle PlotWidget3D::linestrip(const std::vector<Vec> &points){
       SceneObject *obj = new SceneObject;
@@ -547,6 +584,20 @@ namespace icl{
         return surf(points,nx,ny);
       }
     }
+
+
+    PlotWidget3D::Handle PlotWidget3D::label(const Vec &p, const std::string &text){
+      SceneObject *obj = new SceneObject;
+
+      if(p[3]) obj->addVertex(p);
+      else obj->addVertex(Vec(p[0],p[1],p[2],1));
+      obj->addText(0,text,8,m_data->color,20);
+      obj->setVisible(Primitive::vertex,false);
+      m_data->add(obj,true,true);
+      return obj;
+    }
+    
+
 
     
     namespace{ // only for registering this class as a GUI component!

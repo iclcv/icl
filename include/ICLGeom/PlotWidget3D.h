@@ -77,10 +77,15 @@ namespace icl{
       void smoothfill(bool on);
       void pointsize(float size);
       void linewidth(float width);
-
+      void lock();
+      void unlock();
       void clear();
       
       Handle scatter(const std::vector<Vec> &points);
+
+      Handle scatter(const std::vector<Vec> &points,
+                     const std::vector<GeomColor> &colors,
+                     const utils::Range32f &colorRange=utils::Range32f(0,255));
 
       Handle linestrip(const std::vector<Vec> &points);
       
@@ -90,6 +95,8 @@ namespace icl{
                   const utils::Range32f &rx=utils::Range32f(0,0),
                   const utils::Range32f &ry=utils::Range32f(0,0),
                   int nx=100, int ny=100, Handle reuseObj=0);
+
+      Handle label(const Vec &p, const std::string &text);
     };
   }
 }
