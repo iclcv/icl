@@ -34,6 +34,9 @@
 
 #include <ICLQt/Common.h>
 #include <ICLGeom/Geom.h>
+
+#undef HAVE_PCL
+
 #ifdef HAVE_PCL
 #include <ICLGeom/PCLPointCloudObject.h>
 #else
@@ -44,6 +47,7 @@
 HSplit gui;
 Scene scene;
 
+
 #ifdef HAVE_PCL
 PCLPointCloudObject<pcl::PointXYZRGBA> obj(640,480);
 #else
@@ -53,9 +57,26 @@ PointCloudObject obj(640,480);
 SmartPtr<DepthCameraPointCloudGrabber> grabber;
 
 void init(){
-  grabber = new DepthCameraPointCloudGrabber(*pa("-d",2), *pa("-c",2),
-                                             *pa("-d",0), *pa("-d",1),
-                                             *pa("-c",0), *pa("-c",1) );
+  if(pa("-c")){
+    grabber = new DepthCameraPointCloudGrabber(*pa("-d",2), *pa("-c",2),
+                                               *pa("-d",0), *pa("-d",1),
+                                               *pa("-c",0), *pa("-c",1) );
+  }else{
+    grabber = new DepthCameraPointCloudGrabber(*pa("-d",2), DepthCameraPointCloudGrabber::get_null_color_cam(),
+                                               *pa("-d",0), *pa("-d",1),"","");
+#ifdef HAVE_PCL
+    DataSegment<icl8u,4> bgr = obj.selectBGRA();
+    for(int i=0;i<obj.getDim();++i){
+      bgr[i] = FixedColVector<icl8u,4>(255,0,0,255);
+    }
+#else
+    DataSegment<float,4> rgb = obj.selectRGBA32f();
+    for(int i=0;i<obj.getDim();++i){
+      rgb[i] = geom_red();
+    }
+#endif
+
+  }
 
 
   gui << ( VBox()
@@ -95,8 +116,9 @@ void run(){
   gui["overlay"].link( gui["showOverlay"] ? scene.getGLCallback(0) : 0);
 
   grabber->grab(obj);
-
-  gui["color"] = grabber->getLastColorImage();
+  if(pa("-c")){
+    gui["color"] = grabber->getLastColorImage();
+  }
   gui["depth"] = grabber->getLastDepthImage();
 
   // gui["overlay"] = 
@@ -107,7 +129,7 @@ void run(){
 
 
 int main(int n, char **ppc){
-  return ICLApp(n,ppc,"-depth-cam|-d(device-type,device-ID,calib-filename) "
+  return ICLApp(n,ppc,"[m]-depth-cam|-d(device-type,device-ID,calib-filename) "
                 "-color-cam|-c(device-type,device-ID,calib-filename)",init,run).exec();
 }
 

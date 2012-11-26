@@ -1,5 +1,6 @@
 #include <ICLQt/Common.h>
 #include <ICLGeom/Geom.h>
+#include <ICLUtils/FPSLimiter.h>
 #include <ICLIO/GenericImageOutput.h>
 Scene scene;
 HSplit gui;
@@ -86,9 +87,11 @@ void init(){
   scene.setDrawCamerasEnabled(false);
 
   scene.addCamera(scene.getCamera(0));
+
 }
 
 void run() {
+  static FPSLimiter *fpslimit = pa("-m") ? new FPSLimiter(pa("-m").as<float>()) : 0;
   static ButtonHandle resetView = gui["resetView"];
   if(resetView.wasTriggered()){
     scene.getCamera(0) = initDepthCam;
@@ -129,6 +132,8 @@ void run() {
     
   }
   gui["draw"].render();
+  
+  if(fpslimit) fpslimit->wait();
 }  
 
 
@@ -149,5 +154,6 @@ int main(int n, char **v){
   return ICLApp(n,v,"-depth-out|-d(2) -color-out|-c(2) "
 		"-object|-o(obj-filename) -camera|-cam(camerafile) "
                 "-color-camera|-ccam(camerafile) "
-                "-depth-map-dist-to-cam-center",init,run).exec();
+                "-depth-map-dist-to-cam-center "
+                "-max-fps|-m(float)",init,run).exec();
 }

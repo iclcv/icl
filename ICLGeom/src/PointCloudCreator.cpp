@@ -64,9 +64,8 @@ namespace icl{
         depthCamera = depthCam;
         colorCamera = colorCam;
         depthImageSize = depthCam->getRenderParams().chipSize;
-        colorImageSize = colorCam->getRenderParams().chipSize;
-        
         if(colorCam){
+          colorImageSize = colorCam->getRenderParams().chipSize;
           this->rgbdMapping = new Mat(colorCam->getProjectionMatrix()*
                                       colorCam->getCSTransformationMatrix());
         }
@@ -291,8 +290,7 @@ namespace icl{
           throw ICLException("unable to apply RGBD-Mapping given destination PointCloud type does not support rgb information");
         }
       }
-      
-      //SHOW(t.age().toMilliSecondsDouble());
+      //      t.showAge();
     }
   
     const Camera &PointCloudCreator::getDepthCamera() const{

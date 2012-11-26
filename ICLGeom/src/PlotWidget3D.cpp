@@ -396,6 +396,10 @@ namespace icl{
     const Camera &PlotWidget3D::getCamera() const{
       return m_data->scene.getCamera(0);
     }
+    
+    void PlotWidget3D::setCamera(const Camera &cam){
+      m_data->scene.getCamera(0) = cam;
+    }
 
     void PlotWidget3D::setViewPort(const Range32f &xrange,
                                    const Range32f &yrange,

@@ -66,6 +66,7 @@ namespace icl{
       const SceneObject *getRootObject() const;
       
       const Camera &getCamera() const;
+      void setCamera(const Camera &cam);
       
       void add(SceneObject *obj, bool passOwnerShip=true);
       void remove(Handle h);
