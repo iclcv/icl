@@ -644,7 +644,6 @@ namespace icl{
       
       struct Plot3DGUIWidgetRegisterer{
         Plot3DGUIWidgetRegisterer(){ 
-          DEBUG_LOG("registering type plot3D");
           qt::GUI::register_widget_type("plot3D",create_plot_3D_widget_instance);
           
           qt::DataStore::register_trivial_assignment_rule<PlotHandle3D,PlotHandle3D>("PlotHandle3D","PlotHandle3D");

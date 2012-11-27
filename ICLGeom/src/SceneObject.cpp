@@ -895,6 +895,7 @@ namespace icl{
   #define DEEP_COPY_2(X,Y) DEEP_COPY(X); DEEP_COPY(Y)
   #define DEEP_COPY_4(X,Y,A,B) DEEP_COPY_2(X,Y); DEEP_COPY_2(A,B)
       DEEP_COPY_2(m_vertices,m_vertexColors);
+      DEEP_COPY(m_normals);
       DEEP_COPY_4(m_primitives,m_lineColorsFromVertices,m_triangleColorsFromVertices,m_quadColorsFromVertices);
       DEEP_COPY_4(m_polyColorsFromVertices,m_pointSize,m_lineWidth,m_useSmoothShading);
       DEEP_COPY_2(m_transformation,m_hasTransformation);

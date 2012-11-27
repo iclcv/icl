@@ -244,7 +244,7 @@ namespace icl{
       /// precaching variables ...
       const icl32f *dv = depthImageMM.begin(0);
       const Array2D<Data::Vec3> &dirs = m_data->viewRayDirections;
-      const bool X = m_data->rgbdMapping;
+      const bool X = m_data->rgbdMapping && rgbImage;
       const Mat M = X ? *m_data->rgbdMapping : Mat(0.0f);
       const Vec O = m_data->viewRayOffset;
       const int W = m_data->colorImageSize.width;
@@ -253,7 +253,9 @@ namespace icl{
       
   
       const Channel8u rgb[3];
-      for(int i=0;rgbImage && i<3;++i) rgb[i] = (*rgbImage)[i];
+      if(X){
+        for(int i=0;rgbImage && i<3;++i) rgb[i] = (*rgbImage)[i];
+      }
   
       //Time t = Time::now();
       

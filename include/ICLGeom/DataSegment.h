@@ -173,6 +173,66 @@ int main(){
       inline const math::FixedColVector<T,N> &operator()(int x, int y) const{
         return operator[](x + organizedWidth * y );
       }
+      
+      /// copies the data segment to into another element-wise
+      template<class OtherT>
+      inline void deepCopy(DataSegment<OtherT,N> dst) const throw (utils::ICLException){
+        ICLASSERT_THROW(getDim() == dst.getDim(), 
+                        utils::ICLException("error in DataSegment::deepCopy "
+                                            "(source and destination dim differ)"));
+        const int dim = getDim();
+        for(int i=0;i<dim;++i){
+          dst[i] = operator[](i);
+        }
+      }
+      
+      /// compares two data segments element wise given given maximun tollerance
+      /** If the source and destination segments have different dimensions, isOrganized
+          flag or organized-size, the check returns always false*/
+      template<class OtherT>
+      inline bool equals(DataSegment<OtherT,N> dst, float tollerance = 1.0e-5) const {
+        if(getDim() != dst.getDim()) return false;
+        if(isOrganized() != dst.isOrganized()) return false;
+        if(isOrganized() && getSize() != dst.getSize()) return false;
+        const int dim = getDim();
+        for(int i=0;i<dim;++i){
+          for(int j=0;j<N;++j){
+            if(fabs(operator[](i)[j] - dst[i][j]) > tollerance) return false;
+          }
+        }
+        return true;
+      }
+      
+      /// fills each scalar value of each entry with given value
+      /** value is a template parameter, so it can also be a class that
+          can be converted to T elements 
+          \code
+          DataSegment<float,4> ds = ..;
+          fill(ds,URand(0,255));
+          \endcode
+      */
+      template<class Fill>
+      inline void fillScalar(Fill scalarValue){
+        const int dim = getDim();
+        for(int i=0;i<dim;++i){
+          for(int j=0;j<N;++j){
+            operator[](i)[j] = scalarValue;
+          }
+        }
+      }
+
+      /// fills each vector entry with given value
+      /** value is a template parameter, so it can also be a class that
+          can be converted to T elements.  */
+      template<class Fill>
+      inline void fill(Fill vecValue){
+        const int dim = getDim();
+        for(int i=0;i<dim;++i){
+          operator[](i) = vecValue;
+        }
+      }
+
+        
     };
 
     /// template specialization for data-segments, where each entry is just 1D
@@ -196,7 +256,7 @@ int main(){
     
       /// linear index operator (specialized to return a T& directly, const)
       inline const T &operator[](int idx) const{
-        return const_cast<DataSegment<T,1> &>(this)->operator[](idx);
+        return const_cast<DataSegment<T,1>*>(this)->operator[](idx);
       }
 
       /// 2D-index operator (only for organized data segments, specialized to return a T& directly)
@@ -208,6 +268,50 @@ int main(){
       inline const T &operator()(int x, int y) const{
         return operator[](x + organizedWidth * y );
       }
+
+      /// copies the data segment to into another element-wise
+      template<class OtherT>
+      inline void deepCopy(DataSegment<OtherT,1> dst) const throw (utils::ICLException){
+        ICLASSERT_THROW(getDim() == dst.getDim(), 
+                        utils::ICLException("error in DataSegment::deepCopy "
+                                            "(source and destination dim differ)"));
+        const int dim = getDim();
+        for(int i=0;i<dim;++i){
+          dst[i] = operator[](i);
+        }
+      }
+      template<class OtherT>
+      inline bool equals(DataSegment<OtherT,1> dst, float tollerance = 1.0e-5) const {
+        if(getDim() != dst.getDim()) return false;
+        if(isOrganized() != dst.isOrganized()) return false;
+        if(isOrganized() && getSize() != dst.getSize()) return false;
+        const int dim = getDim();
+        for(int i=0;i<dim;++i){
+          if(fabs(operator[](i) - dst[i]) > tollerance) return false;
+        }
+        return true;
+      }
+
+      /// fills each scalar value of each entry with given value
+      /** equal to fill in this specialization */
+      template<class Fill>
+      inline void fillScalar(Fill scalarValue){
+        const int dim = getDim();
+        for(int i=0;i<dim;++i){
+          operator[](i) = scalarValue;
+        }
+      }
+
+      /// fills each vector entry with given value
+      template<class Fill>
+      inline void fill(Fill vecValue){
+        const int dim = getDim();
+        for(int i=0;i<dim;++i){
+          operator[](i) = vecValue;
+        }
+      }
+
+
     };
 
     /** \cond */

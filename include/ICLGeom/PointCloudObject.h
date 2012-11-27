@@ -57,11 +57,12 @@ namespace icl{
       bool m_organized;       //!< internal 2D organized flag
       utils::Size m_dim2D;    //!< 2D dimension
       bool m_hasNormals;      //!< flag whether normals are given
+      bool m_hasColors;       //!< flag whether the point cloud has colors
       
       public:
       
       /// create an un-organizied point cloud with N points
-      PointCloudObject(int numPoints, bool withNormals=false);
+      PointCloudObject(int numPoints, bool withNormals=false, bool withColors=true);
       
       /// creates a new organized or un-organized SimplePointCloudObject instance
       /** @param width number of points per line (if unordered, number of points)
@@ -69,10 +70,10 @@ namespace icl{
           @param organized specifies whether there is a 2D data order or not
           @params withNormals if true, also normals will be created for each point
           */
-      PointCloudObject(int width, int height, bool organized=true, bool withNormals=false);
+      PointCloudObject(int width, int height, bool organized=true, bool withNormals=false, bool withColors=true);
   
       /// returns which features are supported (only XYZ and RGBA32f)
-      virtual bool supports(FeatureType t);
+      virtual bool supports(FeatureType t) const;
       
       /// returns whether the points are 2D-ordered
       virtual bool isOrganized() const;

@@ -42,19 +42,22 @@ using namespace icl::core;
 namespace icl{
   namespace geom{
 
-    PointCloudObject::PointCloudObject(int numPoints, bool withNormals):
+    PointCloudObject::PointCloudObject(int numPoints, bool withNormals, bool withColors):
       m_organized(false){
       m_dim2D = Size(numPoints,1);
       m_vertices.resize(m_dim2D.getDim(),Vec(0,0,0,1));
-      m_vertexColors.resize(m_dim2D.getDim(),Vec(0,0,0,1));
       m_hasNormals = withNormals;
+      m_hasColors = withColors;
 
+      if(withColors){
+        m_vertexColors.resize(m_dim2D.getDim(),Vec(0,0,0,1));
+      }
       if(withNormals){
         m_normals.resize(m_dim2D.getDim(),Vec(0,0,0,1));
       }
     }
   
-    PointCloudObject::PointCloudObject(int width, int height, bool organized, bool withNormals):
+    PointCloudObject::PointCloudObject(int width, int height, bool organized, bool withNormals, bool withColors):
       m_organized(organized){
       if(organized){
         m_dim2D = Size(width,height);
@@ -62,17 +65,22 @@ namespace icl{
         m_dim2D = Size(width,1);
       }
       m_vertices.resize(m_dim2D.getDim(),Vec(0,0,0,1));
-      m_vertexColors.resize(m_dim2D.getDim(),Vec(0,0,0,1));
-      m_hasNormals = withNormals;
 
+      m_hasNormals = withNormals;
+      m_hasColors = withColors;
+      
+      if(m_hasColors){
+        m_vertexColors.resize(m_dim2D.getDim(),Vec(0,0,0,1));
+      }
       if(withNormals){
         m_normals.resize(m_dim2D.getDim(),Vec(0,0,0,1));
       }
     }
     
-    bool PointCloudObject::supports(FeatureType t) {
+    bool PointCloudObject::supports(FeatureType t) const{
       if(t == Normal && m_hasNormals) return true;
-      else return (t == RGBA32f) || (t == XYZ) || t == (XYZH);
+      else if ( t == RGBA32f && m_hasColors) return true;
+      else return (t == XYZ) || (t == XYZH);
     }
     
     bool PointCloudObject::isOrganized() const{
@@ -105,15 +113,22 @@ namespace icl{
     }
 
     DataSegment<float,4> PointCloudObject::selectRGBA32f(){
-      return DataSegment<float,4>(&m_vertexColors[0][0],4*sizeof(float),m_vertexColors.size(),m_dim2D.width);  
+      if(m_hasColors){
+        return DataSegment<float,4>(&m_vertexColors[0][0],4*sizeof(float),m_vertexColors.size(),m_dim2D.width);  
+      }else{
+        return error<float,4>(__FUNCTION__);        
+      }
     }
     
     void PointCloudObject::customRender() {}
   
     void PointCloudObject::setSize(const Size &size){
-      m_vertices.resize(size.getDim(),Vec(0,0,0,1));
-      m_vertexColors.resize(size.getDim(),Vec(0,0,0,1));
       m_organized = (size.height > 0);
+      m_vertices.resize(size.getDim(),Vec(0,0,0,1));
+      
+      if(m_hasColors){
+        m_vertexColors.resize(size.getDim(),Vec(0,0,0,1));
+      }
       if(m_hasNormals){
         m_normals.resize(size.getDim(),Vec(0,0,0,1));
       }

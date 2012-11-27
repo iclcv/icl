@@ -148,7 +148,7 @@ namespace icl{
       }
   
       /// interface for supported features 
-      virtual bool supports(FeatureType t) = 0;
+      virtual bool supports(FeatureType t) const = 0;
   
       /// interface for supported features 
       virtual bool isOrganized() const = 0;
@@ -245,7 +245,10 @@ namespace icl{
       void setColorsFromImage(const core::ImgBase &image) throw (utils::ICLException);
       
       /// sets the color that is used to render points if color information is available
-      void setDefaultPointColor(const GeomColor &color);
+      void setDefaultVertexColor(const GeomColor &color);
+
+      /// implements the SceneObject's virtual getter function for this feature
+      virtual GeomColor getDefaultVertexColor() const{ return m_defaultPointColor*255; }
       
       /// For subclasses that provide Dynamic features, this function must be implemented
       virtual std::vector<std::string> getSupportedDynamicFeatures() const { 
@@ -265,6 +268,15 @@ namespace icl{
       virtual PointCloudObjectBase *copy() const {
         return 0;    
       }
+      
+      /// deeply copies all well-known features that are shared by this and dst
+      virtual void deepCopy(PointCloudObjectBase &dst) const;
+      
+      /// returns whether two points clouds are equal
+      virtual bool equals(const PointCloudObjectBase &dst, 
+                          bool compareOnlySharedFeatures=false, 
+                          bool allowDifferentColorTypes=true,
+                          float tollerance=1.0e-5) const;
   
       /// returns the meta data associated with this point cloud object
       std::map<std::string,std::string> &getMetaData();

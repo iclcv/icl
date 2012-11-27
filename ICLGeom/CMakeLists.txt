@@ -102,6 +102,9 @@ if(NOT APPLE)
 add_example (${PROJECT_NAME} "scene-graph-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 endif()
 
+set(CONDITIONLIST HAVE_OPENCV_COND HAVE_PCL_COND)
+add_example (${PROJECT_NAME} "point-cloud-tests" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
+
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_OPENGL_COND HAVE_GLX_COND HAVE_PCL_COND)
 add_example (${PROJECT_NAME} "rgbd-mapping-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
