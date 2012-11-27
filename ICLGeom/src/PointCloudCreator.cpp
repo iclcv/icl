@@ -99,7 +99,7 @@ namespace icl{
       m_data->init(new Camera(depthCam),0,mode);
     }
     
-    PointCloudCreator::PointCloudCreator(const Camera &depthCam, const Camera &colorCam, PointCloudCreator::DepthImageMode mode){
+    PointCloudCreator::PointCloudCreator(const Camera &depthCam, const Camera &colorCam, PointCloudCreator::DepthImageMode mode):m_data(new Data){
       m_data->init(new Camera(depthCam), new Camera(colorCam),mode);
     }
     
