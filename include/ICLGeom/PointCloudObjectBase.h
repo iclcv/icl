@@ -118,6 +118,13 @@ namespace icl{
         throw utils::ICLException("dynamic feature "+featureName+" is not supported by this PointCloudObjectBase instance");
         static DataSegmentBase dummy; return dummy;
       }
+      
+      /// draw normal lines
+      virtual void drawNormalLines();
+      
+      bool useDrawNormalLines;
+      float normalLineLength;
+      int normalLineGranularity;
   
       public:
   
@@ -263,6 +270,9 @@ namespace icl{
           rendered using an OpenGL fragment shaded to swap the
           transferred blue and red channels */
       virtual void customRender();
+      
+      /// set use draw normal lines
+      void setUseDrawNormalLines(float lineLength=40, int granularity=4);
       
       /// deep copy interface (needs to be implemented by subclasses)
       virtual PointCloudObjectBase *copy() const {

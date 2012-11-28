@@ -55,6 +55,8 @@ namespace icl{
   namespace geom{
   
     void PointCloudObjectBase::customRender(){
+      drawNormalLines();
+      
       if(!supports(XYZ)) return;
   
       const DataSegment<float,3> xyz = selectXYZ(); 
@@ -109,6 +111,37 @@ namespace icl{
       glDisableClientState(GL_COLOR_ARRAY);
       glEnable(GL_LIGHTING);
     }
+    
+    void PointCloudObjectBase::setUseDrawNormalLines(float lineLength, int granularity){
+      useDrawNormalLines=true;
+      normalLineLength=lineLength;
+      normalLineGranularity=granularity;
+    }
+    
+    void PointCloudObjectBase::drawNormalLines(){
+      if(!supports(XYZ) || !supports(Normal)) return;
+      
+      if(useDrawNormalLines){
+        const DataSegment<float,3> xyz = selectXYZ();
+        const DataSegment<float,4> normal = selectNormal();
+        size_t numElementsXYZ = xyz.numElements;
+        size_t numElementsNormal = normal.numElements;
+        utils::Size size = getSize();
+        glBegin(GL_LINES);
+          glColor4f(1.0f,1.0f,1.0f,1.0f);
+          for(int y=0; y<size.height; y+=normalLineGranularity){
+      	    for(int x=0; x<size.width; x+=normalLineGranularity){
+      	      int i=x+size.width*y;
+      	      glVertex3f(xyz[i][0],xyz[i][1],xyz[i][2]);
+      	      glVertex3f(xyz[i][0]+normalLineLength*normal[i][0], xyz[i][1]+normalLineLength*normal[i][1], xyz[i][2]+normalLineLength*normal[i][2]); 
+      	    }
+      	  }
+      	glEnd();
+      }
+      useDrawNormalLines=false;
+    }
+    
+    
     
     std::map<std::string,std::string> & PointCloudObjectBase::getMetaData(){
         return m_metaData;

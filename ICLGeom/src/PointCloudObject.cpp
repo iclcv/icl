@@ -120,7 +120,9 @@ namespace icl{
       }
     }
     
-    void PointCloudObject::customRender() {}
+    void PointCloudObject::customRender() {
+      drawNormalLines();
+    }
   
     void PointCloudObject::setSize(const Size &size){
       m_organized = (size.height > 0);
