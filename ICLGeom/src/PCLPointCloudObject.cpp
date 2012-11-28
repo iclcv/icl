@@ -82,10 +82,8 @@ namespace icl{
     
     template<class PCLPointType>
     PCLPointCloudObject<PCLPointType>::PCLPointCloudObject(const std::string &filename):m_ownPCL(true){
-      if(!filename.length()){ 
-        m_pcl = 0;
-      }else{
-        m_pcl = new pcl::PointCloud<PCLPointType>;
+      m_pcl = new pcl::PointCloud<PCLPointType>;
+      if(filename.length()){
         if( pcl::io::loadPCDFile<PCLPointType>(filename, *m_pcl) == -1){
           throw utils::ICLException("unable to load \"pcl\" point cloud file " + filename);
         }

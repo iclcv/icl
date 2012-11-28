@@ -514,8 +514,10 @@ namespace icl{
           bottom.push_back(2*i);
           top.push_back(2*i+1);
         }
-        addPolygon(steps,top.data());
-        addPolygon(steps,top.data());
+        addNormal(Vec(0,0,1,1));
+        addNormal(Vec(0,0,-1,1));
+        addPolygon(steps,top.data(),geom_blue(),std::vector<int>(top.size(),m_normals.size()-2).data());
+        addPolygon(steps,bottom.data(),geom_blue(),std::vector<int>(top.size(),m_normals.size()-1).data());
       }else{
         ERROR_LOG("unknown type:" << type);
       }

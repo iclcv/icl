@@ -94,7 +94,7 @@ namespace icl{
           addVertex(Vec(r,len,0,1));
           addVertex(Vec(r,0,len,1));
           
-          addVertex(Vec(invertLabels ? r : -r,-d,0,1));
+          addVertex(Vec(invertLabels ? -r : r,-d,0,1));
           
           addLine(4*l,4*l+1);
           addLine(4*l,4*l+2);
