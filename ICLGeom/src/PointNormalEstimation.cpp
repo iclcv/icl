@@ -363,6 +363,7 @@ namespace icl{
       outputFilteredImage=new float[w*h];
       outputAngleImage=new float[w*h];
       outputBinarizedImage=new float[w*h];
+      outputWorldNormals=new cl_float4[w*h];
          
       std::vector<cl::Platform> platformList;//get number of available openCL platforms
       int selectedDevice=0;//initially select platform 0
