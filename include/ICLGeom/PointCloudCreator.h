@@ -92,7 +92,7 @@ namespace icl{
       void init(const Camera &depthCam, const Camera &colorCam, DepthImageMode mode=DistanceToCamPlane);
       
       /// creates a point cloud
-      void create(const core::Img32f &depthImage, PointCloudObjectBase &destination, const core::Img8u *rgbImage = 0);
+      void create(const core::Img32f &depthImage, PointCloudObjectBase &destination, const core::Img8u *rgbImage = 0, float depthScaling=0);
   
       /// returns the current core::depth camera
       const Camera &getDepthCamera() const;
