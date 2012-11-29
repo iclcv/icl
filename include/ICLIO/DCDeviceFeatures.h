@@ -49,12 +49,6 @@ namespace icl{
       DCDeviceFeaturesImpl(const DCDevice &dev);
       ~DCDeviceFeaturesImpl(){}
 
-      bool supportsProperty(const std::string &name) const;
-      void setProperty(const std::string &name, const std::string &value);
-      std::vector<std::string> getPropertyListC();
-      std::string getType(const std::string &name);
-      std::string getInfo(const std::string &name);
-      std::string getValue(const std::string &name);
       void show();
       /// callback function for property changes.
       void processPropertyChange(const utils::Configurable::Property &p);
@@ -108,34 +102,6 @@ namespace icl{
   
       /// Default constructor with given DCDevice struct
       DCDeviceFeatures(const DCDevice &dev);
-  
-      /// returns whether given property is available
-      bool supportsProperty(const std::string &name) const;
-  
-      /// Sets a property to a new value
-      /** call \code getPropertyList() \endcode to see which properties are supported 
-          @copydoc icl::io::Grabber::setProperty(const std::string&, const std::string&)
-      **/
-      void setProperty(const std::string &property, const std::string &value);
-      
-      /// returns a list of properties, that can be set using setProperty
-      /** @return list of supported property names **/
-      std::vector<std::string> getPropertyListC();
-   
-      /// get type of property
-      /** \copydoc icl::io::Grabber::getType(const std::string &)*/
-      std::string getType(const std::string &name);
-      
-      /// get information of a properties valid values values
-      /** \copydoc icl::io::Grabber::getInfo(const std::string &)*/
-      std::string getInfo(const std::string &name);
-      
-      /// returns the current value of a given property
-      /** \copydoc icl::io::Grabber::getValue(const std::string &)*/
-      std::string getValue(const std::string &name);
-      
-      /// shows all available features and current values to std::out
-      void show() const;
       
     };
   } // namespace io
