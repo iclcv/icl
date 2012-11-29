@@ -82,10 +82,8 @@ namespace icl{
     
     template<class PCLPointType>
     PCLPointCloudObject<PCLPointType>::PCLPointCloudObject(const std::string &filename):m_ownPCL(true){
-      if(!filename.length()){ 
-        m_pcl = 0;
-      }else{
-        m_pcl = new pcl::PointCloud<PCLPointType>;
+      m_pcl = new pcl::PointCloud<PCLPointType>;
+      if(filename.length()){
         if( pcl::io::loadPCDFile<PCLPointType>(filename, *m_pcl) == -1){
           throw utils::ICLException("unable to load \"pcl\" point cloud file " + filename);
         }
@@ -98,7 +96,8 @@ namespace icl{
     }
     
     template<class PCLPointType>
-    PCLPointCloudObject<PCLPointType>::PCLPointCloudObject(const PCLPointCloudObject<PCLPointType> &other):m_ownPCL(true){
+    PCLPointCloudObject<PCLPointType>::PCLPointCloudObject(const PCLPointCloudObject<PCLPointType> &other)
+      :m_pcl(0),m_ownPCL(true){
       *this = other;
     }
     
@@ -160,7 +159,7 @@ namespace icl{
     }
   
     template<class PCLPointType>
-    bool  PCLPointCloudObject<PCLPointType>::supports(FeatureType t){
+    bool  PCLPointCloudObject<PCLPointType>::supports(FeatureType t) const{
       if(isNull()) throw utils::ICLException("PCLPointCloudObject:supports(t): instance is null");
       return (offset(t) >= 0);
     }
@@ -189,6 +188,19 @@ namespace icl{
       if(getSize() == size) return;
       *this = PCLPointCloudObject<PCLPointType>(size.width,(size.height == 0) ? -1 : size.height);
     }
+
+    template<class PCLPointType>
+    PCLPointCloudObject<PCLPointType> *PCLPointCloudObject<PCLPointType>::copy() const {
+      PCLPointCloudObject<PCLPointType> *p = new PCLPointCloudObject<PCLPointType>(*this);
+      if(supports(Normal)){ // little hack because pcl does in general not support a 4th-normal component
+        DataSegment<float,4> n = p->selectNormal();
+        for(int i=0;i<n.getDim();++i){
+          n[i][3] = 1;
+        }
+      }
+      return p;
+    }
+
   
   
     template<class PCLPointType>
@@ -214,14 +226,14 @@ namespace icl{
     /// offset specifications for specific datatypes!
     template<> int PCLPointCloudObject<pcl::PointXYZ>::offset(PointCloudObjectBase::FeatureType t) const {
       switch(t){
-        case XYZ: case XYZH: return 0;
+        case XYZ: return 0;
         default: return -1;
       }
     }
 
     template<> int PCLPointCloudObject<pcl::PointXYZI>::offset(PointCloudObjectBase::FeatureType t) const {
       switch(t){
-        case XYZ: case XYZH: return 0;
+        case XYZ: return 0;
         case Intensity: return 4*sizeof(float);
         default: return -1;
       }
@@ -230,7 +242,7 @@ namespace icl{
   
     template<> int PCLPointCloudObject<pcl::PointXYZL>::offset(PointCloudObjectBase::FeatureType t) const {
       switch(t){
-        case XYZ: case XYZH: return 0;
+        case XYZ: return 0;
         case Label: return 4*sizeof(float);
         default: return -1;
       }
@@ -239,7 +251,7 @@ namespace icl{
   
     template<> int PCLPointCloudObject<pcl::PointXYZRGB>::offset(PointCloudObjectBase::FeatureType t) const {
       switch(t){
-        case XYZ: case XYZH: return 0;
+        case XYZ: return 0;
         case BGR: return 4*sizeof(float);
         default: return -1; // case BGRA: case BGRA32s: is not available because an unused alpha value
                             // could mess up the visualization
@@ -248,7 +260,7 @@ namespace icl{
   
     template<> int PCLPointCloudObject<pcl::PointXYZRGBA>::offset(PointCloudObjectBase::FeatureType t) const {
       switch(t){
-        case XYZ: case XYZH: return 0;
+        case XYZ: return 0;
         case BGR: case BGRA: case BGRA32s: return 4*sizeof(float);
         default: return -1;
       }
@@ -256,7 +268,7 @@ namespace icl{
   
     template<> int PCLPointCloudObject<pcl::PointXYZRGBL>::offset(PointCloudObjectBase::FeatureType t) const {
       switch(t){
-        case XYZ: case XYZH: return 0;
+        case XYZ: return 0;
         case BGR: return 4*sizeof(float); // case BGRA: case BGRA32s: (not defined here)
         case Label: return 5*sizeof(float);
         default: return -1;
@@ -265,7 +277,7 @@ namespace icl{
   
     template<> int PCLPointCloudObject<pcl::InterestPoint>::offset(PointCloudObjectBase::FeatureType t) const {
       switch(t){
-        case XYZ: case XYZH: return 0;
+        case XYZ: return 0;
         case Intensity: return 4*sizeof(float);
         default: return -1;
       }
@@ -282,7 +294,7 @@ namespace icl{
   
     template<> int PCLPointCloudObject<pcl::PointXYZINormal>::offset(PointCloudObjectBase::FeatureType t) const {
       switch(t){
-        case XYZ: case XYZH: return 0;
+        case XYZ: return 0;
         case Intensity: return 8*sizeof(float);
         case Normal: return 4*sizeof(float);
         default: return -1;
@@ -339,6 +351,7 @@ namespace icl{
     INSTANTIATE_CLASS(pcl::PointXYZL);
     INSTANTIATE_CLASS(pcl::PointXYZRGB);
     INSTANTIATE_CLASS(pcl::PointXYZRGBA);
+    INSTANTIATE_CLASS(pcl::PointXYZRGBL);
     INSTANTIATE_CLASS(pcl::InterestPoint);
     INSTANTIATE_CLASS(pcl::PointXYZRGBNormal);
     INSTANTIATE_CLASS(pcl::PointXYZINormal);

@@ -130,7 +130,7 @@ namespace icl{
       void setPCL(pcl::PointCloud<PCLPointType> &pcl, bool deepCopy = true);
   
       /// generic version, that trys to get an offset (can be optimized with specialization)
-      virtual bool supports(FeatureType t);
+      virtual bool supports(FeatureType t) const;
   
       /// returns whether pointcloud is 2D organized
       virtual bool isOrganized() const;
@@ -166,9 +166,7 @@ namespace icl{
       virtual DataSegmentBase select(const std::string &featureName);
   
       /// deep copy interface
-      virtual PCLPointCloudObject<PCLPointType> *copy() const {
-        return new PCLPointCloudObject<PCLPointType>(*this);
-      }
+      virtual PCLPointCloudObject<PCLPointType> *copy() const;
   
     };
   

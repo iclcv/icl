@@ -205,7 +205,7 @@ namespace icl{
         /** if source and destination lengths differ, an exception is thrown */
         inline Bytes &operator=(const Bytes &other) throw (utils::ICLException){
           if(len != other.len){
-            throw utils::ICLException("unable to assign DataSegmentBase::Bytes: lenghts differ!");
+            throw utils::ICLException("unable to assign DataSegmentBase::Bytes: lengths differ!");
           }
           std::copy(other.data,other.data+len,data);
           return *this;

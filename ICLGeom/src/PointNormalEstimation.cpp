@@ -237,20 +237,21 @@ namespace icl{
       "worldNormalCalculation(__global float const * depth, __global uchar * outCR, __global uchar * outCG, __global uchar * outCB, __global float4 * normals, __global float const * cam, __global float4 * outNormals)                                                                                                              \n"
       "{                                                                                                                          \n"
       "   size_t id =  get_global_id(0);                                                                                          \n"
+      "   float4 pWN;                                                                                                             \n"
+      "   float4 n= normals[id];                                                                                                  \n"
+      "   pWN.x=-(n.x*cam[0]+n.y*cam[1]+n.z*cam[2]);                                                                              \n"
+      "   pWN.y=-(n.x*cam[4]+n.y*cam[5]+n.z*cam[6]);                                                                              \n"
+      "   pWN.z=-(n.x*cam[8]+n.y*cam[9]+n.z*cam[10]);                                                                             \n"
+      "   pWN.w=1;                                                                                                                \n"
       "   if(depth[id]==2047)                                                                                                     \n"
       "   {                                                                                                                       \n"
       "     outCR[id]=0;                                                                                                          \n"
       "     outCG[id]=0;                                                                                                          \n"
       "     outCB[id]=0;                                                                                                          \n"
+      "     outNormals[id]=(0,0,0,0);                                                                                             \n"
       "   }                                                                                                                       \n"
       "   else                                                                                                                    \n"
       "   {                                                                                                                       \n"
-      "     float4 pWN;                                                                                                           \n"
-      "     float4 n= normals[id];                                                                                                \n"
-      "     pWN.x=-(n.x*cam[0]+n.y*cam[1]+n.z*cam[2]);                                                                            \n"
-      "     pWN.y=-(n.x*cam[4]+n.y*cam[5]+n.z*cam[6]);                                                                            \n"
-      "     pWN.z=-(n.x*cam[8]+n.y*cam[9]+n.z*cam[10]);                                                                           \n"
-      "     pWN.w=1;                                                                                                              \n"
       "     uchar cx=(int)(fabs(pWN.x)*255.);                                                                                     \n"
       "     uchar cy=(int)(fabs(pWN.y)*255.);                                                                                     \n"
       "     uchar cz=(int)(fabs(pWN.z)*255.);                                                                                     \n"
@@ -363,6 +364,7 @@ namespace icl{
       outputFilteredImage=new float[w*h];
       outputAngleImage=new float[w*h];
       outputBinarizedImage=new float[w*h];
+      outputWorldNormals=new cl_float4[w*h];
          
       std::vector<cl::Platform> platformList;//get number of available openCL platforms
       int selectedDevice=0;//initially select platform 0
@@ -440,25 +442,25 @@ namespace icl{
                
           binarizedImageBuffer = cl::Buffer(
   					  context, 
-  					  CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 
+  					  CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, //
   					  w*h * sizeof(float), 
   					  (void *) &binarizedImageArray[0]);
   			
   			  normalImageRBuffer = cl::Buffer(
   					  context, 
-  					  CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 
+  					  CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, //
   					  w*h * sizeof(cl_uchar), 
   					  (void *) &normalImageRArray[0]);
   			
   			  normalImageGBuffer = cl::Buffer(
   					  context, 
-  					  CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 
+  					  CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, //
   					  w*h * sizeof(cl_uchar), 
   					  (void *) &normalImageGArray[0]);
   			
   			  normalImageBBuffer = cl::Buffer(
   					  context, 
-  					  CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 
+  					  CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, //
   					  w*h * sizeof(cl_uchar), 
   					  (void *) &normalImageBArray[0]);
   				
@@ -507,6 +509,7 @@ namespace icl{
       delete[] outputFilteredImage;
       delete[] outputAngleImage;
       delete[] outputBinarizedImage;
+      delete[] outputWorldNormals;
     #endif
     }
   

@@ -40,6 +40,12 @@
 #include <ICLGeom/Camera.h>
 #include <ICLGeom/Plot3D.h>
 #include <ICLGeom/PlotWidget3D.h>
+#include <ICLGeom/PointCloudObject.h>
+#include <ICLGeom/DepthCameraPointCloudGrabber.h>
+
+#ifdef HAVE_PCL
+#include <ICLGeom/PCLPointCloudObject.h>
+#endif
 
 /** 
     The ICLGeom package provides functions and classes for handling 3D-geometry related problems. 

@@ -34,6 +34,7 @@
 
 #include <ICLGeom/PointCloudObjectBase.h>
 #include <ICLQt/GLFragmentShader.h>
+#include <ICLUtils/StringUtils.h>
 
 #ifdef ICL_SYSTEM_APPLE
 #include <OpenGL/gl.h>
@@ -54,6 +55,8 @@ namespace icl{
   namespace geom{
   
     void PointCloudObjectBase::customRender(){
+      drawNormalLines();
+      
       if(!supports(XYZ)) return;
   
       const DataSegment<float,3> xyz = selectXYZ(); 
@@ -108,6 +111,37 @@ namespace icl{
       glDisableClientState(GL_COLOR_ARRAY);
       glEnable(GL_LIGHTING);
     }
+    
+    void PointCloudObjectBase::setUseDrawNormalLines(float lineLength, int granularity){
+      useDrawNormalLines=true;
+      normalLineLength=lineLength;
+      normalLineGranularity=granularity;
+    }
+    
+    void PointCloudObjectBase::drawNormalLines(){
+      if(!supports(XYZ) || !supports(Normal)) return;
+      
+      if(useDrawNormalLines){
+        const DataSegment<float,3> xyz = selectXYZ();
+        const DataSegment<float,4> normal = selectNormal();
+        size_t numElementsXYZ = xyz.numElements;
+        size_t numElementsNormal = normal.numElements;
+        utils::Size size = getSize();
+        glBegin(GL_LINES);
+          glColor4f(1.0f,1.0f,1.0f,1.0f);
+          for(int y=0; y<size.height; y+=normalLineGranularity){
+      	    for(int x=0; x<size.width; x+=normalLineGranularity){
+      	      int i=x+size.width*y;
+      	      glVertex3f(xyz[i][0],xyz[i][1],xyz[i][2]);
+      	      glVertex3f(xyz[i][0]+normalLineLength*normal[i][0], xyz[i][1]+normalLineLength*normal[i][1], xyz[i][2]+normalLineLength*normal[i][2]); 
+      	    }
+      	  }
+      	glEnd();
+      }
+      useDrawNormalLines=false;
+    }
+    
+    
     
     std::map<std::string,std::string> & PointCloudObjectBase::getMetaData(){
         return m_metaData;
@@ -253,28 +287,260 @@ namespace icl{
     } // end of anonymous namespace
 
     void PointCloudObjectBase::setColorsFromImage(const ImgBase &image) throw (ICLException){
-      ICLASSERT_THROW(image.getSize() == getSize(), ICLException("PointCloudObjectBase::setColorsFromImage: image size and point cloud size differ!"));
+      ICLASSERT_THROW(image.getSize() == getSize(), 
+                      ICLException("PointCloudObjectBase::setColorsFromImage: "
+                                   "image size and point cloud size differ!"));
       int c = image.getChannels();
-      ICLASSERT_THROW(c==1 || c==3 || c==4,ICLException("PointCloudObjectBase::setColorsFromImage: image must have 1,3 or 4 channels"));
-
+      ICLASSERT_THROW(c==1 || c==3 || c==4,
+                      ICLException("PointCloudObjectBase::setColorsFromImage: "
+                                   "image must have 1,3 or 4 channels"));
+      
       switch(image.getDepth()){
 #define ICL_INSTANTIATE_DEPTH(D)                                        \
         case depth##D:                                                  \
-          switch(image.getChannels()){                                  \
-            case 1: set_color_from_image<icl##D,1>(*this,*image.asImg<icl##D>()); break; \
-            case 3: set_color_from_image<icl##D,3>(*this,*image.asImg<icl##D>()); break; \
-            case 4: set_color_from_image<icl##D,4>(*this,*image.asImg<icl##D>()); break; \
-            default: break;                                             \
-          }
+          if(c==1) set_color_from_image<icl##D,1>(*this,*image.asImg<icl##D>()); \
+          else if(c == 3)set_color_from_image<icl##D,3>(*this,*image.asImg<icl##D>()); \
+          else set_color_from_image<icl##D,4>(*this,*image.asImg<icl##D>()); \
           break;
         ICL_INSTANTIATE_ALL_DEPTHS
 #undef ICL_INSTANTIATE_DEPTH
       }
     }
 
-    void PointCloudObjectBase::setDefaultPointColor(const GeomColor &color){
+    void PointCloudObjectBase::setDefaultVertexColor(const GeomColor &color){
       m_defaultPointColor = color/255;
     }
   
+
+    void PointCloudObjectBase::deepCopy(PointCloudObjectBase &dst) const{
+      dst.setSize(getSize());
+      const int dim = getDim();
+
+      bool intensity = supports(Intensity) && dst.supports(Intensity);
+      bool label = supports(Label) && dst.supports(Label);
+      bool color = ( (supports(BGR) || supports(BGRA) || supports(BGRA32s) || supports(RGBA32f) ) &&
+                     (dst.supports(BGR) || dst.supports(BGRA) || dst.supports(BGRA32s) || dst.supports(RGBA32f) ) );
+      bool xyz = ( supports(XYZ) || supports(XYZH) ) && ( dst.supports(XYZ) || dst.supports(XYZH) );
+      bool normal = supports(Normal) && dst.supports(Normal);
+      
+      /// simple version: copy element wise!
+      if(intensity) selectIntensity().deepCopy(dst.selectIntensity());
+      if(label) selectLabel().deepCopy(dst.selectLabel());
+      if(normal) selectNormal().deepCopy(dst.selectNormal());
+      
+      if(xyz){
+        if(supports(XYZH) && dst.supports(XYZH)) selectXYZH().deepCopy(dst.selectXYZH());
+        else selectXYZ().deepCopy(dst.selectXYZ());
+      }
+      
+      if(color){
+        if(supports(BGRA) && dst.supports(BGRA)) selectBGRA().deepCopy(dst.selectBGRA());
+        else if(supports(BGR) && dst.supports(BGR)) selectBGR().deepCopy(dst.selectBGR());
+        else if(supports(BGRA32s) && dst.supports(BGRA32s)) selectBGRA32s().deepCopy(dst.selectBGRA32s());
+        else if(supports(RGBA32f) && dst.supports(RGBA32f)) selectRGBA32f().deepCopy(dst.selectRGBA32f());
+        else{
+          const float f = 1./255;
+
+          if(supports(BGRA)){
+            const DataSegment<icl8u,4> s = selectBGRA();
+            if(dst.supports(BGR)){
+              DataSegment<icl8u,3> d = dst.selectBGR();
+              for(int i=0;i<dim;++i) d[i] = FixedColVector<icl8u,3>(s[i][0],s[i][1],s[i][2]);
+            }else if(dst.supports(RGBA32f)){
+              DataSegment<float,4> d = dst.selectRGBA32f();
+              for(int i=0;i<dim;++i) d[i] = FixedColVector<float,4>(s[i][2]*f,s[i][1]*f,s[i][0]*f,s[i][3]*f); //??
+            }
+          }else if(supports(BGR)){
+            const DataSegment<icl8u,3> s = selectBGR();
+            if(dst.supports(BGRA)){
+              DataSegment<icl8u,4> d = dst.selectBGRA();
+              for(int i=0;i<dim;++i) d[i] = FixedColVector<icl8u,4>(s[i][0],s[i][1],s[i][2],255);
+            }else if(dst.supports(RGBA32f)){
+              DataSegment<float,4> d = dst.selectRGBA32f();
+              for(int i=0;i<dim;++i) d[i] = FixedColVector<float,4>(s[i][2]*f,s[i][1]*f,s[i][0]*f,1);
+            }
+          }else if(supports(RGBA32f)){
+            const DataSegment<float,4> s = selectRGBA32f();
+            if(dst.supports(BGRA)){
+              DataSegment<icl8u,4> d = dst.selectBGRA();
+              for(int i=0;i<dim;++i) d[i] = FixedColVector<icl8u,4>(s[i][2]*255,s[i][1]*255,s[i][0]*255,s[i][3]*255);
+            }else if(dst.supports(BGR)){
+              DataSegment<icl8u,3> d = dst.selectBGR();
+              for(int i=0;i<dim;++i) d[i] = FixedColVector<icl8u,3>(s[i][2]*255,s[i][1]*255,s[i][0]*255);
+            }
+          }else if(supports(BGRA32s) || dst.supports(BGRA32s)){
+            throw ICLException("uncommon point cloud type that supports BGRA32s but not BGRA cannot be copied deeply!");
+          }
+        }
+      }
+
+    }
+
+#define SAY(X) std::cout << "equals: " << #X << " differs!" << std::endl;
+#define SAY2(X) std::cout << "equals: " << X << " differs!" << std::endl;
+
+    bool PointCloudObjectBase::equals(const PointCloudObjectBase &dst, 
+                                      bool compareOnlySharedFeatures,
+                                      bool allowDifferentColorTypes,
+                                      float tollerance) const{
+      if(getDim() != dst.getDim()){ SAY(dim);  return false; }
+      if(isOrganized() != dst.isOrganized()) { SAY(isOrganized); return false; } 
+      if(isOrganized() && getSize() != dst.getSize()) { SAY(size); return false; }
+      
+      if(!compareOnlySharedFeatures){
+        for(int i=0;i<NUM_FEATURES;++i){
+          FeatureType t = (FeatureType)i;
+          if(allowDifferentColorTypes){
+            if(t != BGR && t != BGRA && t != BGRA32s && t != RGBA32f){
+              if(supports(t) != dst.supports(t)) {
+                SAY2( ("support of feature type (" + str(i) + ")") );
+                return false;
+              }
+            }
+          }else{
+            if(supports(t) != dst.supports(t)) {
+              SAY2( ("support of feature type (" + str(i) + ")"));
+              return false;
+            }
+          }
+        }        
+      }
+      if(allowDifferentColorTypes && !compareOnlySharedFeatures){
+        if( (supports(BGR) || supports(BGRA) || supports(BGRA32s) || supports(RGBA32f)) !=
+            (dst.supports(BGR) || dst.supports(BGRA) || dst.supports(BGRA32s) || dst.supports(RGBA32f)) ){
+          SAY(color_support);
+          return false;
+        }
+      }
+      
+      if(supports(XYZH) && dst.supports(XYZH)){
+        if(!selectXYZH().equals(dst.selectXYZH(),tollerance)){
+          SAY(xyzh);
+          return false;
+        }
+      }else if(supports(XYZ) && dst.supports(XYZ)){
+        if(!selectXYZ().equals(dst.selectXYZ(),tollerance)){
+          SAY(xyz);
+          return false;
+        }
+      }
+      
+      if(supports(Label) && dst.supports(Label)){
+        if(!selectLabel().equals(dst.selectLabel(),tollerance)){
+          SAY(label);
+          return false;
+        }
+      }
+
+      if(supports(Intensity) && dst.supports(Intensity)){
+        if(!selectIntensity().equals(dst.selectIntensity(),tollerance)) {
+          SAY(intensity);
+          return false;
+        }
+      }
+
+      if(supports(Normal) && dst.supports(Normal)){
+        if(!selectNormal().equals(dst.selectNormal(),tollerance)){
+          SAY(normal);
+          return false;
+        }
+      }
+
+      if(!compareOnlySharedFeatures){
+        if(supports(BGRA) && dst.supports(BGRA)){
+          if(!selectBGRA().equals(dst.selectBGRA(),tollerance)) {
+            SAY(BGRA);
+            return false;
+          }
+        }
+        else if(supports(BGR) && dst.supports(BGR)){
+          if(!selectBGR().equals(dst.selectBGR(),tollerance)) {
+            SAY(BGR);
+            return false;
+          }
+        }
+        else if(supports(RGBA32f) && dst.supports(RGBA32f)){
+          if(!selectRGBA32f().equals(dst.selectRGBA32f(),tollerance)) {
+            SAY(RGBA32f);
+            return false;
+          }
+        }
+      }else{ // x-color-compare
+        if(supports(BGRA)){
+          if(dst.supports(BGRA)){
+            if(!selectBGRA().equals(dst.selectBGRA(),tollerance)) return false;
+          }else if(dst.supports(BGR)){
+            const DataSegment<icl8u,4> a = selectBGRA();
+            const DataSegment<icl8u,3> b = dst.selectBGR();
+            for(unsigned int i=0;i<a.getDim();++i){
+              if(fabs(a[i][0]-b[i][0]) > tollerance) return false;
+              if(fabs(a[i][1]-b[i][1]) > tollerance) return false;
+              if(fabs(a[i][2]-b[i][2]) > tollerance) return false;
+            }
+          }else if(dst.supports(RGBA32f)){
+            const DataSegment<icl8u,4> a = selectBGRA();
+            const DataSegment<float,4> b = dst.selectRGBA32f();
+            for(unsigned int i=0;i<a.getDim();++i){
+              if(fabs(a[i][2]-b[i][0]*255) > tollerance) return false;
+              if(fabs(a[i][1]-b[i][1]*255) > tollerance) return false;
+              if(fabs(a[i][0]-b[i][2]*255) > tollerance) return false;
+              if(fabs(a[i][3]-b[i][3]*255) > tollerance) return false;
+            }
+          }
+        }else if(supports(BGR)){
+          if(dst.supports(BGRA)){ 
+            const DataSegment<icl8u,4> a = dst.selectBGRA();
+            const DataSegment<icl8u,3> b = selectBGR();
+            for(unsigned int i=0;i<a.getDim();++i){
+              if(fabs(a[i][0]-b[i][0]) > tollerance) return false;
+              if(fabs(a[i][1]-b[i][1]) > tollerance) return false;
+              if(fabs(a[i][2]-b[i][2]) > tollerance) return false;
+            }
+          }else if(dst.supports(BGR)){
+            if(!selectBGR().equals(dst.selectBGR(),tollerance)) return false;
+          }else if(dst.supports(RGBA32f)){
+            const DataSegment<icl8u,3> a = selectBGR();
+            const DataSegment<float,4> b = dst.selectRGBA32f();
+            for(unsigned int i=0;i<a.getDim();++i){
+              if(fabs(a[i][2]-b[i][0]*255) > tollerance) return false;
+              if(fabs(a[i][1]-b[i][1]*255) > tollerance) return false;
+              if(fabs(a[i][0]-b[i][2]*255) > tollerance) return false;
+            }
+          }
+        }else if(supports(RGBA32f)){
+          if(dst.supports(BGR)){
+            const DataSegment<icl8u,3> a = dst.selectBGR();
+            const DataSegment<float,4> b = selectRGBA32f();
+            for(unsigned int i=0;i<a.getDim();++i){
+              if(fabs(a[i][2]-b[i][0]*255) > tollerance) { 
+                SAY2("found " + str(a[i].transp()) + " vs " + str((b[i]*255).transp())) ; return false; 
+              }
+              if(fabs(a[i][1]-b[i][1]*255) > tollerance) {
+                SAY2("found " + str(a[i].transp()) + " vs " + str((b[i]*255).transp())) ; return false; 
+                return false;
+              }
+              if(fabs(a[i][0]-b[i][2]*255) > tollerance){
+                SAY2("found " + str(a[i].transp()) + " vs " + str((b[i]*255).transp())) ; return false; 
+                return false;
+              }
+            }
+          }else if(dst.supports(BGRA)){
+            const DataSegment<icl8u,4> a = dst.selectBGRA();
+            const DataSegment<float,4> b = selectRGBA32f();
+            for(unsigned int i=0;i<a.getDim();++i){
+              if(fabs(a[i][2]-b[i][0]*255) > tollerance) return false;
+              if(fabs(a[i][1]-b[i][1]*255) > tollerance) return false;
+              if(fabs(a[i][0]-b[i][2]*255) > tollerance) return false;
+              if(fabs(a[i][3]-b[i][3]*255) > tollerance) return false;
+            }
+          }else if(dst.supports(RGBA32f)){
+            if(!dst.selectRGBA32f().equals(dst.selectRGBA32f(), tollerance)) return false;
+          }
+        }
+      }
+      return true;
+    
+    }
+
   } // namespace geom
 }

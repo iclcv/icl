@@ -197,6 +197,8 @@ namespace icl{
       /** The new instance's parent is set to null, i.e. it must
           be added to other's parent explicitly if this is necessary. */
       SceneObject(const SceneObject &other) { 
+        m_displayListHandle = 0;
+        m_fragmentShader = 0;
         *this = other; 
         m_parent = 0;
       }
@@ -533,6 +535,8 @@ namespace icl{
       /// returns child at given index (const)
       const SceneObject *getChild(int index) const;
       
+      /// returns whether the given object is a child of this one
+      bool hasChild(const SceneObject *o) const;
       /** @} **/
 
       /// automatically creates precomputed normals
@@ -549,6 +553,11 @@ namespace icl{
           online normals, but reduces processor load.
       */
       void createAutoNormals(bool smooth=true);
+      
+      /// can be reimplemented by subclass to provide and interface for setting default vertex color
+      /** The default vertex color is used if no color information is available (m_vertexColors.size()
+          is 0 */
+      virtual GeomColor getDefaultVertexColor() const{ return GeomColor(255,0,0,255); }
       
       /// returns whether this object is hit by the given viewray
       /** Please note: only faces (i.e. quads, triangles and polygons

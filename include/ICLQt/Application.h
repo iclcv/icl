@@ -97,7 +97,7 @@ namespace icl{
         \endcode
         I guess there's nothing more to explain, isn't it?
     */
-    class ICLApplication{
+    class ICLApplication : public QObject{
       
       public:
       QApplication *app;
@@ -152,6 +152,24 @@ namespace icl{
           * QApplication is executed and it's return code is f passed using 'return QApplication::exec();'
       */
       int exec();
+      
+      /// interface for events that must be executed in the GUI Thread
+      struct AsynchronousEvent{
+        /// pure virtual execution method
+        virtual void execute() = 0;
+      };
+      
+      /// internally posts the event to the GUI Thread
+      /** The event's ownwership is passed. It is deleted internally after 
+          it is processed (please note, that the deletion will also take place
+          within the GUI thread */
+      void executeInGUIThread(AsynchronousEvent *event);
+
+      /// overloaded event function
+      virtual bool event(QEvent *eIn);
+      
+      /// returns the singelton ICLApplication instance (or NULL if there is none)
+      static ICLApplication *instance();
       
       private:
       /// singelton instance

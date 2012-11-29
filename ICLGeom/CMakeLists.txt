@@ -69,6 +69,7 @@ add_libsource (${PROJECT_NAME} "src/PlotWidget3D.cpp" "${CONDITIONLIST}" LIB_SOU
 
 set(CONDITIONLIST HAVE_OPENCV_COND HAVE_PCL_COND)
 add_libsource (${PROJECT_NAME} "src/PCLPointCloudObject.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/PCDFileGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
 set(CONDITIONLIST HAVE_OPENCV_COND)
 add_libsource (${PROJECT_NAME} "src/OpenCVCamCalib.cpp" "${CONDITIONLIST}" LIB_SOURCES)
@@ -100,6 +101,9 @@ add_example (${PROJECT_NAME} "depth-camera-simulator" "${CONDITIONLIST}" ICLLibs
 if(NOT APPLE)
 add_example (${PROJECT_NAME} "scene-graph-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 endif()
+
+set(CONDITIONLIST HAVE_OPENCV_COND HAVE_PCL_COND)
+add_example (${PROJECT_NAME} "point-cloud-tests" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_OPENGL_COND HAVE_GLX_COND HAVE_PCL_COND)
 add_example (${PROJECT_NAME} "rgbd-mapping-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)

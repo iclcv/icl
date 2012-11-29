@@ -532,22 +532,39 @@ namespace icl{
   
           if(creatingDisplayList){
             glBegin(GL_POINTS);        
-            for(unsigned int j=0;j<ps.size();++j){
-              glColor4fv(((o->m_vertexColors[j])/255.0).data());
-              glVertex3fv(ps[j].data());
+            if(!o->m_vertexColors.size()){
+              GeomColor c = o->getDefaultVertexColor();
+              glColor4f(c[0]/255,c[1]/255,c[2]/255,c[3]/255);
+              for(unsigned int j=0;j<ps.size();++j){
+                glVertex3fv(ps[j].data());
+              }
+            }else{
+              for(unsigned int j=0;j<ps.size();++j){
+                glColor4fv(((o->m_vertexColors[j])/255.0).data());
+                glVertex3fv(ps[j].data());
+              }
             }
             glEnd();
           }else{
-            glEnableClientState(GL_VERTEX_ARRAY);
-            glEnableClientState(GL_COLOR_ARRAY);
-            
-            glVertexPointer(4,GL_FLOAT,0,o->m_vertices.data());
-            glColorPointer(4,GL_FLOAT,0,o->m_vertexColors.data());
-            
-            glDrawArrays(GL_POINTS, 0, o->m_vertices.size());
-            
-            glDisableClientState(GL_VERTEX_ARRAY);
-            glDisableClientState(GL_COLOR_ARRAY);
+            if(o->m_vertexColors.size()){
+              glEnableClientState(GL_VERTEX_ARRAY);
+              glEnableClientState(GL_COLOR_ARRAY);
+              
+              glVertexPointer(4,GL_FLOAT,0,o->m_vertices.data());
+              glColorPointer(4,GL_FLOAT,0,o->m_vertexColors.data());
+              
+              glDrawArrays(GL_POINTS, 0, o->m_vertices.size());
+              
+              glDisableClientState(GL_VERTEX_ARRAY);
+              glDisableClientState(GL_COLOR_ARRAY);
+            }else{
+              GeomColor c = o->getDefaultVertexColor();
+              glColor4f(c[0]/255,c[1]/255,c[2]/255,c[3]/255);
+              glEnableClientState(GL_VERTEX_ARRAY);
+              glVertexPointer(4,GL_FLOAT,0,o->m_vertices.data());
+              glDrawArrays(GL_POINTS, 0, o->m_vertices.size());
+              glDisableClientState(GL_VERTEX_ARRAY);
+            }
           }
           if(lightWasOn){
             glEnable(GL_LIGHTING);

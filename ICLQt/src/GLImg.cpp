@@ -35,6 +35,7 @@
 #include <ICLCore/Img.h>
 #include <ICLQt/GLImg.h>
 #include <ICLQt/GLContext.h>
+#include <ICLQt/Application.h>
 #include <ICLCore/CCFunctions.h>
 
 #ifdef ICL_SYSTEM_APPLE
@@ -46,6 +47,7 @@
 #include <ICLUtils/Array2D.h>
 #include <ICLUtils/Rect32f.h>
 #include <ICLUtils/Lockable.h>
+
 
 #ifdef HAVE_QT
 #include <QtCore/QObject>
@@ -75,27 +77,31 @@ namespace icl{
     }
   
   #ifdef HAVE_QT  
-    struct AsynchronousTextureDeleter : public QObject{
-      struct Event : public QEvent{
-        Event(const std::vector<GLuint> &del):
-          QEvent((QEvent::Type)QEvent::registerEventType()),del(del){
-          ctx = QGLContext::currentContext();
-        }
+    void freeTextures(const std::vector<GLuint> &del, const GLContext &ctx){
+      struct DelEvent : public ICLApplication::AsynchronousEvent{
         std::vector<GLuint> del;
-        const QGLContext *ctx;
+        GLContext ctx;
+        DelEvent(const std::vector<GLuint> &del,const GLContext &ctx):del(del),ctx(ctx){}
+        virtual void execute(){
+          ctx.makeCurrent();
+          glDeleteTextures(del.size(),del.data());
+        }
       };
-      virtual bool event(QEvent *eIn){
-        Event *e = dynamic_cast<Event*>(eIn);
-        if(!e) return false;
-        const_cast<QGLContext*>(e->ctx)->makeCurrent();
-        glDeleteTextures(e->del.size(), e->del.data());
-        return true;
+      ICLApplication *app = ICLApplication::instance();
+      if(!app){
+        static bool first = true;
+        if(first){
+          WARNING_LOG("The current program tryed to use in-thread created OpenGL textures without using\n"
+                      "an ICLApplication instance. Therefore, the texture's cannot\n"
+                      "be posted for deferred deletion in the GUI thread.\n"
+                      "To avoid a memory leak, the textures are now deleted in the\n"
+                      "working thread, which is very prone to seg-fault-like errors\n ");
+          first = false;
+        }
+        glDeleteTextures(del.size(),del.data());
+      }else{
+        app->executeInGUIThread(new DelEvent(del,ctx));
       }
-    };
-    
-    void freeTextures(const std::vector<GLuint> &del){
-      static SmartPtr<AsynchronousTextureDeleter> deleter(new AsynchronousTextureDeleter);
-      QCoreApplication::postEvent(deleter.get(), new AsynchronousTextureDeleter::Event(del));
     }
   #endif
   
@@ -121,7 +127,6 @@ namespace icl{
   
       template<class T, int C>
       std::vector<Range64f> findMinMax() const{
-        DEBUG_LOG("depth is " << getDepth<T>() << " channel count is " << C);
         const T *p = (const T*) data.data();
         const int dim = size.getDim();
         Range64f rs[C];
@@ -374,8 +379,9 @@ namespace icl{
           if(QCoreApplication::instance()){
             if(textureInfo == TextureInfo::getCurrentTextureInfo()){
               glDeleteTextures(textures.size(),textures.data());
+
             }else{
-              freeTextures(textures);
+              freeTextures(textures,textureInfo.ctx);
             }
           }else{
               glDeleteTextures(textures.size(),textures.data());

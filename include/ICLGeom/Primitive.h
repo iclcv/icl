@@ -424,7 +424,8 @@ namespace icl{
                     int na=-1, int nb=-1, int nc=-1, int nd=-1,
                     float billboardHeight=0,
                     core::scalemode sm=core::interpolateLIN);
-      
+      ~TextPrimitive();
+  
       /// render method
       virtual void render(const Primitive::RenderContext &ctx);
   

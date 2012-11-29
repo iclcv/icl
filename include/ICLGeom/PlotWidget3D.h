@@ -36,6 +36,7 @@
 
 #include <ICLQt/DrawWidget3D.h>
 #include <ICLGeom/Scene.h>
+#include <ICLUtils/Function.h>
 
 
 namespace icl{
@@ -65,22 +66,38 @@ namespace icl{
       const SceneObject *getRootObject() const;
       
       const Camera &getCamera() const;
+      void setCamera(const Camera &cam);
       
       void add(SceneObject *obj, bool passOwnerShip=true);
       void remove(Handle h);
       
       void color(int r, int g, int b, int a);
+      void nocolor();
       void fill(int r, int g, int b, int a);
+      void nofill();
+      void smoothfill(bool on);
       void pointsize(float size);
       void linewidth(float width);
-
+      void lock();
+      void unlock();
       void clear();
       
-      Handle scatter(const std::vector<Vec> &points, bool connect=false);
+      Handle scatter(const std::vector<Vec> &points);
+
+      Handle scatter(const std::vector<Vec> &points,
+                     const std::vector<GeomColor> &colors,
+                     const utils::Range32f &colorRange=utils::Range32f(0,255));
+
+      Handle linestrip(const std::vector<Vec> &points);
       
-      Handle surf(const std::vector<Vec> &points, int nx, int ny, bool lines=false, 
-                  bool fill=true, bool smoothfill=true);
-      
+      Handle surf(const std::vector<Vec> &points, int nx, int ny);
+
+      Handle surf(utils::Function<float,float,float> fxy,
+                  const utils::Range32f &rx=utils::Range32f(0,0),
+                  const utils::Range32f &ry=utils::Range32f(0,0),
+                  int nx=100, int ny=100, Handle reuseObj=0);
+
+      Handle label(const Vec &p, const std::string &text);
     };
   }
 }

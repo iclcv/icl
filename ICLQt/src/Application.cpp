@@ -156,10 +156,8 @@ namespace icl{
       ICLASSERT_RETURN(cb);
       s_finalizes.push_back(cb);
     }
-  
-  
-  
-    
+
+
     int ICLApplication::exec(){
       for(unsigned int i=0;i<s_inits.size();++i){
         s_inits[i]();
@@ -172,8 +170,33 @@ namespace icl{
       }
       return app->exec();
     }
-    
-    
   
+    namespace{
+      struct AsynchronousEventWrapper : public QEvent{
+        ICLApplication::AsynchronousEvent *ae;
+        AsynchronousEventWrapper(ICLApplication::AsynchronousEvent *ae):
+          QEvent((QEvent::Type)QEvent::registerEventType()),ae(ae){} 
+        ~AsynchronousEventWrapper(){
+          delete ae;
+        }
+      };
+    }
+
+    bool ICLApplication::event(QEvent *eIn){
+      AsynchronousEventWrapper *e = dynamic_cast<AsynchronousEventWrapper*>(eIn);
+      if(!e) return false;
+      e->ae->execute();
+      return true;
+    }
+    
+    
+    void ICLApplication::executeInGUIThread(ICLApplication::AsynchronousEvent *event){
+      QApplication::postEvent(this,new AsynchronousEventWrapper(event));
+    }
+  
+    ICLApplication *ICLApplication::instance(){
+      return s_app;
+    }
+
   } // namespace qt
 }
