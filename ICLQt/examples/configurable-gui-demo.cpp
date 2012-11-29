@@ -59,8 +59,7 @@ struct B : public Configurable, public Thread{
   virtual void run(){
     while(true){
       Thread::msleep(100);
-      SHOW(cat(getPropertyList(),";;"));
-      //      setPropertyValue("time",Time::now().toString());
+      setPropertyValue("time",Time::now().toString());
     }
   }
 };

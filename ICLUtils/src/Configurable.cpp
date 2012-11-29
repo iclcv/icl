@@ -54,7 +54,12 @@ namespace icl{
     
     Configurable::Property &Configurable::prop(const std::string &propertyName) throw (ICLException){
       std::map<std::string,Property>::iterator it = m_properties.find(propertyName);
-      if(it == m_properties.end()) throw ICLException("Property " + str(propertyName) + " is not supported");
+      //if(it == m_properties.end()) throw ICLException("Property " + str(propertyName) + " is not supported");
+      //TODO: this is a workaround because calling callbacks of elder configurables may break.
+      static Property *p = new Property();
+      if(it == m_properties.end()){
+        return *p;
+      }
       return it->second;
     }
   

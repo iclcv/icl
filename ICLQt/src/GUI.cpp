@@ -528,8 +528,8 @@ namespace icl{
         const std::string &type = p.type;
         //const std::string &value = p.value;
         
-        //deactivateExec = true;
-  
+        deactivateExec = true;
+        processingProperty = p.name;
         if(type == "range" || type == "range:slider"){
           SteppingRange<float> r = parse<SteppingRange<float> >(conf->getPropertyInfo(name));
           if(r.stepping == 1){
@@ -542,8 +542,7 @@ namespace icl{
         }else if( type == "menu" || type == "value-list" || type == "valueList"){
           std::string handle = (type == "menu" ? "#m#" : "#v#")+name;
           //     DEBUG_LOG("handle is " << handle << " value is " << conf->getPropertyValue(name));
-          ComboHandle c = gui.get<ComboHandle>(handle);
-          //c.setSelectedItem(conf->getPropertyValue(name));
+          gui.get<ComboHandle>(handle).setSelectedItem(conf->getPropertyValue(name));
         }else if( type == "info"){
           gui["#i#"+name] = conf->getPropertyValue(name);
         }else if( type == "flag"){
@@ -557,14 +556,18 @@ namespace icl{
         }else if(type == "color"){
           gui["#C#"+name] = conf->getPropertyValue(name).as<Color>();
         }
-        //deactivateExec = false;
+        deactivateExec = false;
+        processingProperty = "";
       }
       
       void exec(const std::string &handle){
-        if(deactivateExec) return;
         if(handle.length()<3 || handle[0] != '#') throw ICLException("invalid callback (this should not happen)");
         std::string prop = handle.substr(3);
-        deactivateExec = true;
+        if(deactivateExec || processingProperty == prop){
+          return;
+        } else {
+          deactivateExec = true;
+        }
         processingProperty = prop;
         switch(handle[1]){
           case 'r': 
@@ -601,6 +604,7 @@ namespace icl{
             ERROR_LOG("invalid callback ID " << handle);
         }
         deactivateExec = false;
+        processingProperty = "";
       }
   
       static string getSyntax(){
