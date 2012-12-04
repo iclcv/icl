@@ -472,7 +472,7 @@ namespace icl{
           }else if(dst.supports(BGR)){
             const DataSegment<icl8u,4> a = selectBGRA();
             const DataSegment<icl8u,3> b = dst.selectBGR();
-            for(unsigned int i=0;i<a.getDim();++i){
+            for(int i=0;i<a.getDim();++i){
               if(fabs(a[i][0]-b[i][0]) > tollerance) return false;
               if(fabs(a[i][1]-b[i][1]) > tollerance) return false;
               if(fabs(a[i][2]-b[i][2]) > tollerance) return false;
@@ -480,7 +480,7 @@ namespace icl{
           }else if(dst.supports(RGBA32f)){
             const DataSegment<icl8u,4> a = selectBGRA();
             const DataSegment<float,4> b = dst.selectRGBA32f();
-            for(unsigned int i=0;i<a.getDim();++i){
+            for(int i=0;i<a.getDim();++i){
               if(fabs(a[i][2]-b[i][0]*255) > tollerance) return false;
               if(fabs(a[i][1]-b[i][1]*255) > tollerance) return false;
               if(fabs(a[i][0]-b[i][2]*255) > tollerance) return false;
@@ -491,7 +491,7 @@ namespace icl{
           if(dst.supports(BGRA)){ 
             const DataSegment<icl8u,4> a = dst.selectBGRA();
             const DataSegment<icl8u,3> b = selectBGR();
-            for(unsigned int i=0;i<a.getDim();++i){
+            for(int i=0;i<a.getDim();++i){
               if(fabs(a[i][0]-b[i][0]) > tollerance) return false;
               if(fabs(a[i][1]-b[i][1]) > tollerance) return false;
               if(fabs(a[i][2]-b[i][2]) > tollerance) return false;
@@ -501,7 +501,7 @@ namespace icl{
           }else if(dst.supports(RGBA32f)){
             const DataSegment<icl8u,3> a = selectBGR();
             const DataSegment<float,4> b = dst.selectRGBA32f();
-            for(unsigned int i=0;i<a.getDim();++i){
+            for(int i=0;i<a.getDim();++i){
               if(fabs(a[i][2]-b[i][0]*255) > tollerance) return false;
               if(fabs(a[i][1]-b[i][1]*255) > tollerance) return false;
               if(fabs(a[i][0]-b[i][2]*255) > tollerance) return false;
@@ -511,23 +511,15 @@ namespace icl{
           if(dst.supports(BGR)){
             const DataSegment<icl8u,3> a = dst.selectBGR();
             const DataSegment<float,4> b = selectRGBA32f();
-            for(unsigned int i=0;i<a.getDim();++i){
-              if(fabs(a[i][2]-b[i][0]*255) > tollerance) { 
-                SAY2("found " + str(a[i].transp()) + " vs " + str((b[i]*255).transp())) ; return false; 
-              }
-              if(fabs(a[i][1]-b[i][1]*255) > tollerance) {
-                SAY2("found " + str(a[i].transp()) + " vs " + str((b[i]*255).transp())) ; return false; 
-                return false;
-              }
-              if(fabs(a[i][0]-b[i][2]*255) > tollerance){
-                SAY2("found " + str(a[i].transp()) + " vs " + str((b[i]*255).transp())) ; return false; 
-                return false;
-              }
+            for(int i=0;i<a.getDim();++i){
+              if(fabs(a[i][2]-b[i][0]*255) > tollerance ||
+                 fabs(a[i][1]-b[i][1]*255) > tollerance ||
+                 fabs(a[i][0]-b[i][2]*255) > tollerance ) return false;
             }
           }else if(dst.supports(BGRA)){
             const DataSegment<icl8u,4> a = dst.selectBGRA();
             const DataSegment<float,4> b = selectRGBA32f();
-            for(unsigned int i=0;i<a.getDim();++i){
+            for(int i=0;i<a.getDim();++i){
               if(fabs(a[i][2]-b[i][0]*255) > tollerance) return false;
               if(fabs(a[i][1]-b[i][1]*255) > tollerance) return false;
               if(fabs(a[i][0]-b[i][2]*255) > tollerance) return false;

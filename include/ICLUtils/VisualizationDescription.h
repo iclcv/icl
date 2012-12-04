@@ -184,7 +184,7 @@ namespace icl{
         sum.parts.resize(parts.size()+other.parts.size());
         std::copy(parts.begin(),parts.end(),sum.parts.begin());
         std::copy(other.parts.begin(),other.parts.end(),sum.parts.begin()+parts.size());
-        return other;
+        return sum;
       }
       
       /// sets the current draw color (no alpha)
@@ -226,7 +226,7 @@ namespace icl{
 
       /// adds a line (intnerally represented by bounding rectangle)
       inline void line(icl32f x1, icl32f y1, icl32f x2, icl32f y2){
-        addPart('l',Rect32f(x1,x2,x2-x1,y2-y1));
+        addPart('l',Rect32f(x1,y1,x2-x1,y2-y1));
       }
 
       /// adds a line (intnerally represented by bounding rectangle)      

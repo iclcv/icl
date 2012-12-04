@@ -162,6 +162,14 @@ namespace icl{
       inline int getElemDim() const{
         return elemDim;
       }
+      
+      /// returns the internal (strided) data pointer
+      /** only for those who know what they are doing */
+      icl8u *getDataPointer() { return data; }
+
+      /// returns the internal (strided) data pointer
+      /** only for those who know what they are doing */
+      const icl8u *getDataPointer() const { return data; }
   
       /// Constructor with given parameters
       inline DataSegmentBase(void *data=0, size_t stride=0, 

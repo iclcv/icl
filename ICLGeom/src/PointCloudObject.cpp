@@ -126,6 +126,7 @@ namespace icl{
   
     void PointCloudObject::setSize(const Size &size){
       m_organized = (size.height > 0);
+      m_dim2D = size;
       m_vertices.resize(size.getDim(),Vec(0,0,0,1));
       
       if(m_hasColors){

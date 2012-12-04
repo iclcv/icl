@@ -37,6 +37,7 @@
 #include <ICLMath/FixedVector.h>
 #include <ICLCore/CoreFunctions.h>
 #include <ICLGeom/DataSegmentBase.h>
+#include <ICLUtils/ClippedCast.h>
 
 namespace icl{
   namespace geom{
@@ -176,14 +177,11 @@ int main(){
       
       /// copies the data segment to into another element-wise
       template<class OtherT>
-      inline void deepCopy(DataSegment<OtherT,N> dst) const throw (utils::ICLException){
-        ICLASSERT_THROW(getDim() == dst.getDim(), 
-                        utils::ICLException("error in DataSegment::deepCopy "
-                                            "(source and destination dim differ)"));
-        const int dim = getDim();
-        for(int i=0;i<dim;++i){
-          dst[i] = operator[](i);
-        }
+      inline void deepCopy(DataSegment<OtherT,N> dst) const throw (utils::ICLException);
+
+      /// returns whether the data is packed in memory (stride is sizeof(T)*N)
+      inline bool isPacked() const{
+        return stride == sizeof(T)*N;
       }
       
       /// compares two data segments element wise given given maximun tollerance
@@ -231,22 +229,85 @@ int main(){
           operator[](i) = vecValue;
         }
       }
-
-        
+    };
+    
+    
+    /** \cond */
+    template<class T, class OtherT, int N>
+    struct DataSegmentDeepCopyUtil{
+      static void copy(const DataSegment<T,N> &src, DataSegment<OtherT,N> &dst){
+        const int dim = src.getDim();
+        const bool sp = src.isPacked(), dp = dst.isPacked();
+        if(sp && dp){
+          const T *s = (const T*)src.begin();
+          T *d = (T*)dst.begin();
+          std::transform(s,s+dim*N,d,icl::utils::clipped_cast<T,OtherT>);
+        }else if(sp){
+          const math::FixedColVector<T,N> *srcpacked = &src[0];
+          for(int i=0;i<dim;++i){
+            dst[i] = srcpacked[i];
+          }
+        }else if(dp){
+          math::FixedColVector<T,N> *dstpacked = &dst[0];
+          for(int i=0;i<dim;++i){
+            dstpacked[i] = src[i];
+          }
+        }else{
+          for(int i=0;i<dim;++i){
+            dst[i] = src[i];
+          }
+        }
+      }
+    };
+    
+    template<class T, int N>
+    struct DataSegmentDeepCopyUtil<T,T,N>{
+      static void copy(const DataSegment<T,N> &src, DataSegment<T,N> &dst){
+        const int dim = src.getDim();
+        const bool sp = src.isPacked(), dp = dst.isPacked();
+        if(sp && dp){
+          memcpy(dst.getDataPointer(),src.getDataPointer(),dim*sizeof(T)*N);
+        }else if(sp){
+          const math::FixedColVector<T,N> *srcpacked = &src[0];
+          for(int i=0;i<dim;++i){
+            dst[i] = srcpacked[i];
+          }
+        }else if(dp){
+          math::FixedColVector<T,N> *dstpacked = &dst[0];
+          for(int i=0;i<dim;++i){
+            dstpacked[i] = src[i];
+          }
+        }else{
+          for(int i=0;i<dim;++i){
+            dst[i] = src[i];
+          }
+        }
+      }
     };
 
-    /// template specialization for data-segments, where each entry is just 1D
-    /** If the vector entries are 1D only, no extra vector struct is
-        created and returned for the single vector elements. Instead,
-        all access functions <tt>operator[idx]</tt> and <tt>operator(x,y)</tt> are
-        will just return T-references instead of math::FixedColVector<T,1> */
-    template<class T>
-    struct DataSegment<T,1> : public DataSegmentBase{
-      /// vector typedef
-      typedef T VectorType;
-
-      /// Constructor (basically passes all parameters to the Base class)
-      inline DataSegment(T *data=0, size_t stride=0, size_t numElements=0, icl32s organizedWidth=-1):
+    template<class T, int N> template<class OtherT>
+    inline void DataSegment<T,N>::deepCopy(DataSegment<OtherT,N> dst) const throw (utils::ICLException){
+      ICLASSERT_THROW(getDim() == dst.getDim(), 
+                      utils::ICLException("error in DataSegment::deepCopy "
+                                          "(source and destination dim differ)"));
+      DataSegmentDeepCopyUtil<T,OtherT,N>::copy(*this,dst);
+    }
+      
+      
+      /** \endcond */
+      
+      /// template specialization for data-segments, where each entry is just 1D
+      /** If the vector entries are 1D only, no extra vector struct is
+          created and returned for the single vector elements. Instead,
+          all access functions <tt>operator[idx]</tt> and <tt>operator(x,y)</tt> are
+          will just return T-references instead of math::FixedColVector<T,1> */
+      template<class T>
+      struct DataSegment<T,1> : public DataSegmentBase{
+        /// vector typedef
+        typedef T VectorType;
+        
+        /// Constructor (basically passes all parameters to the Base class)
+        inline DataSegment(T *data=0, size_t stride=0, size_t numElements=0, icl32s organizedWidth=-1):
       DataSegmentBase(data,stride,numElements,organizedWidth,icl::core::getDepth<T>(),1){}
 
       /// linear index operator (specialized to return a T& directly)
@@ -310,18 +371,20 @@ int main(){
           operator[](i) = vecValue;
         }
       }
-
-
     };
+      
+      /** \cond */
+      template<class T, int N>
+      const DataSegment<T,N> &DataSegmentBase::as() const{
+        if(dataDepth != icl::core::getDepth<T>()) throw utils::ICLException("invalid cast of data segment (core::depth is wrong)");
+        if(elemDim != N) throw utils::ICLException("invalid cast of data segment (dimension is wrong)");
+        return (DataSegment<T,N> &)(*this);
+      }
 
-    /** \cond */
-    template<class T, int N>
-    const DataSegment<T,N> &DataSegmentBase::as() const{
-      if(dataDepth != icl::core::getDepth<T>()) throw utils::ICLException("invalid cast of data segment (core::depth is wrong)");
-      if(elemDim != N) throw utils::ICLException("invalid cast of data segment (dimension is wrong)");
-      return (DataSegment<T,N> &)(*this);
-    }
-    /** \endcond */
+      /** \endcond */
+
+
+
   } // namespace geom
 }
 
