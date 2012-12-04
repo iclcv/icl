@@ -33,6 +33,7 @@
 *********************************************************************/
 
 #include <ICLGeom/PointCloudCreator.h>
+#include <ICLGeom/PointCloudCreatorCL.h>
 #include <ICLCore/Img.h>
 
 using namespace icl::utils;
@@ -97,22 +98,46 @@ namespace icl{
   
     PointCloudCreator::PointCloudCreator(const Camera &depthCam, PointCloudCreator::DepthImageMode mode):m_data(new Data){
       m_data->init(new Camera(depthCam),0,mode);
+      clUse=true;
+      clReady=false;
+      #ifdef HAVE_OPENCL
+        creatorCL = new PointCloudCreatorCL(m_data->depthImageSize, m_data->viewRayDirections);
+        clReady = creatorCL->isCLReady();
+      #endif
     }
     
     PointCloudCreator::PointCloudCreator(const Camera &depthCam, const Camera &colorCam, PointCloudCreator::DepthImageMode mode):m_data(new Data){
       m_data->init(new Camera(depthCam), new Camera(colorCam),mode);
+      clUse=true;
+      clReady=false;
+      #ifdef HAVE_OPENCL
+        creatorCL = new PointCloudCreatorCL(m_data->depthImageSize, m_data->viewRayDirections);
+        clReady = creatorCL->isCLReady();
+      #endif
     }
     
     void PointCloudCreator::init(const Camera &depthCam,  PointCloudCreator::DepthImageMode mode){
       delete m_data;
       m_data = new Data;
       m_data->init(new Camera(depthCam),0,mode);
+      clUse=true;
+      clReady=false;
+      #ifdef HAVE_OPENCL
+        creatorCL = new PointCloudCreatorCL(m_data->depthImageSize, m_data->viewRayDirections);
+        clReady = creatorCL->isCLReady();
+      #endif
     }
     
     void PointCloudCreator::init(const Camera &depthCam, const Camera &colorCam,  PointCloudCreator::DepthImageMode mode){
       delete m_data;
       m_data = new Data;
       m_data->init(new Camera(depthCam), new Camera(colorCam), mode);
+      clUse=true;
+      clReady=false;
+      #ifdef HAVE_OPENCL
+        creatorCL = new PointCloudCreatorCL(m_data->depthImageSize, m_data->viewRayDirections);
+        clReady = creatorCL->isCLReady();
+      #endif
     }
     
     PointCloudCreator::PointCloudCreator(const PointCloudCreator &other):m_data(new Data){
@@ -261,8 +286,17 @@ namespace icl{
       
       if(m_data->mode == KinectRAW11Bit){
         if(destination.supports(PointCloudObjectBase::RGBA32f)){
-          if(X) point_loop<true,true>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling);
-          else point_loop<false,true>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling);
+          if(clReady && clUse){
+            if(X){ 
+              DataSegment<float,4> rgba = destination.selectRGBA32f();
+              creatorCL->createRGB(true,&depthImageMM, M, O, W, H, DIM, xyz, rgba, rgbImage, dirs, depthScaling);
+            }else{ 
+              creatorCL->create(true,&depthImageMM, O, DIM, xyz, dirs, depthScaling);
+            }
+          }else{
+            if(X) point_loop<true,true>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling);
+            else point_loop<false,true>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling);
+          }
         }else if(destination.supports(PointCloudObjectBase::BGRA)){
           if(X) point_loop<true,true>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA(), rgb, dirs, depthScaling);
           else point_loop<false,true>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA(), rgb, dirs, depthScaling);
@@ -277,8 +311,17 @@ namespace icl{
         }
       }else{
         if(destination.supports(PointCloudObjectBase::RGBA32f)){
-          if(X) point_loop<true,false>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling);
-        else point_loop<false,false>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling);
+          if(clReady && clUse){
+            if(X){ 
+              DataSegment<float,4> rgba = destination.selectRGBA32f();
+              creatorCL->createRGB(false,&depthImageMM, M, O, W, H, DIM, xyz, rgba, rgbImage, dirs, depthScaling);
+            }else{ 
+              creatorCL->create(false,&depthImageMM, O, DIM, xyz, dirs, depthScaling);
+            }
+          }else{
+            if(X) point_loop<true,false>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling);
+            else point_loop<false,false>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling);
+          }
         }else if(destination.supports(PointCloudObjectBase::BGRA)){
           if(X) point_loop<true,false>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA(), rgb, dirs, depthScaling);
           else point_loop<false,false>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA(), rgb, dirs, depthScaling);
@@ -396,6 +439,10 @@ namespace icl{
         default:
         ICL_INVALID_DEPTH;
       }
+    }
+    
+    void PointCloudCreator::setUseCL(bool use){
+      clUse=use;
     }
     
   } // namespace geom
