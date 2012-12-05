@@ -35,6 +35,8 @@
 #pragma once
 
 #include <ICLMath/DynMatrix.h>
+#include <vector>
+#include <string>
 
 namespace icl{
   
@@ -93,12 +95,14 @@ namespace icl{
       
       /// result type
       class Result{
-        
         /// parent class
         friend class PolynomialRegression;
 
         /// list of attribute functions
         std::vector<const Attrib*> m_attribs;
+        
+        /// function definition given
+        std::string m_function;
         
         /// set of estimated parameters
         mutable Matrix m_params; 
@@ -109,7 +113,16 @@ namespace icl{
         /// maximum x-row index used in the attribute list
         mutable int m_attribMaxIndex;
         
+        /// sets up the result by the given function
+        void setup(const std::string &function);
+        
         public:
+        
+        /// empty default constructor
+        inline Result(){}
+        
+        /// constructor with given xml file saved with the save method
+        Result(const std::string &xmlfilename);
         
         /// set of parameters (on row for each output dimension)
         const Matrix &getParams() const { return m_params; }
@@ -126,6 +139,15 @@ namespace icl{
             columns
         */
         const Matrix &operator()(const Matrix &xs) const;
+        
+        /// returns the dummy attrib instances
+        std::vector<const Attrib*> getAttribs() const { return m_attribs; }
+        
+        /// creates a human readable string representation of the result
+        std::string toString(const std::vector<std::string> &rowLabels=std::vector<std::string> ()) const;
+        
+        /// saves the result to an xml-file
+        void save(const std::string &xmlFileName) const;
       };
       
       protected:
@@ -160,5 +182,6 @@ namespace icl{
       /// returns the interpreted function string
       std::string getFunctionString() const;
     };
+
   }
 }

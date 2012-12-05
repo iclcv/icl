@@ -35,6 +35,7 @@
 
 #include <ICLMath/PolynomialRegression.h>
 #include <ICLUtils/StringUtils.h>
+#include <ICLUtils/ConfigFile.h>
 
 using namespace icl::utils;
 
@@ -156,66 +157,7 @@ namespace icl{
 
     template<class T>
     PolynomialRegression<T>::PolynomialRegression(const std::string &function){
-      std::vector<std::string> ts = icl::utils::tok(remove_spaces(function),"+");
-      int maxIdx = -1;
-      for(size_t i=0;i<ts.size();++i){
-        const std::string &s =  ts[i];
-        //DEBUG_LOG("processing token " << s);
-
-        if(s.find('^',0) != std::string::npos){
-          //DEBUG_LOG("   ^ found");
-          std::vector<std::string> ab = icl::utils::tok(s,"^");
-          ICLASSERT_THROW(ab.size() == 2, ICLException("PolynomialRegression: error in token: " + s));
-          int idx = get_idx(ab[0]);
-          if(idx > maxIdx) maxIdx = idx;
-          
-          float exponent = parse<float>(ab[1]);
-          if(is_int(exponent) && exponent < 6){
-            //DEBUG_LOG("      int < 6 case");
-            int e = exponent;
-            switch(e){
-              case 1: m_result.m_attribs.push_back(new PowerAttrib<T,1>(idx)); break;
-              case 2: m_result.m_attribs.push_back(new PowerAttrib<T,2>(idx)); break;
-              case 3: m_result.m_attribs.push_back(new PowerAttrib<T,3>(idx)); break;
-              case 4: m_result.m_attribs.push_back(new PowerAttrib<T,4>(idx)); break;
-              case 5: m_result.m_attribs.push_back(new PowerAttrib<T,5>(idx)); break;
-              default: m_result.m_attribs.push_back(new GenPowerAttrib<T>(idx,e)); break;
-            }
-          }else{
-            //DEBUG_LOG("      general case");
-            m_result.m_attribs.push_back(new GenPowerAttrib<T>(idx,exponent)); break;
-          }
-        }else if(s.find('*') != std::string::npos){
-          //          DEBUG_LOG("   * found");
-          std::vector<std::string> vars = tok(s,"*");
-          std::vector<int> idxs(vars.size());
-          for(size_t j=0;j<idxs.size();++j){
-            idxs[j] = get_idx(vars[j]);
-            if(idxs[j] > maxIdx) maxIdx = idxs[j];
-          }
-          //if(idxs.size() < 6){
-          //  DEBUG_LOG("      n < 6 case");
-          //}else{
-          //  DEBUG_LOG("      general case");
-          //}
-          switch(idxs.size()){
-            case 2: m_result.m_attribs.push_back(new MixedAttrib<T,2>(&*idxs.begin())); break;
-            case 3: m_result.m_attribs.push_back(new MixedAttrib<T,3>(&*idxs.begin())); break;
-            case 4: m_result.m_attribs.push_back(new MixedAttrib<T,4>(&*idxs.begin())); break;
-            case 5: m_result.m_attribs.push_back(new MixedAttrib<T,5>(&*idxs.begin())); break;
-            default: m_result.m_attribs.push_back(new GenMixedAttrib<T>(idxs)); break;
-          }
-        }else if(s[0] == 'x'){
-          //DEBUG_LOG("   x found at s[0]");
-          int idx = get_idx(s);
-          if(idx > maxIdx) maxIdx = idx;
-          m_result.m_attribs.push_back(new MixedAttrib<T,1>(&idx));
-        }else{
-          //DEBUG_LOG("   nothing found: const case");
-          m_result.m_attribs.push_back(new ConstAttrib<T>(parse<int>(s)));
-        }
-      }
-      m_result.m_attribMaxIndex = maxIdx;
+      m_result.setup(function);
     }
     
   
@@ -264,6 +206,118 @@ namespace icl{
       return stream.str();
     }
   
+    template<class T>
+    std::string PolynomialRegression<T>::Result::toString(const std::vector<std::string> &rowLabels) const {
+      std::ostringstream stream;
+      std::cout << "Polyonomial Regression Result:" << std::endl;
+      for(unsigned int y=0;y<getParams().cols();++y){
+        if(rowLabels.size() > y){
+          stream << rowLabels[y] << " = ";
+        }else{
+          stream << "y[" << y << "] = ";
+        }
+        std::vector<const PolynomialRegressionAttrib<T>*> atts = getAttribs();
+        for(size_t x=0;x<atts.size();++x){
+          if(atts[x]->toString() == "1"){
+            stream << (x ? fabs(getParams()(y,x)) : getParams()(x,y) )<< " ";
+          }else{
+            stream << (x ? fabs(getParams()(y,x)) : getParams()(x,y) )<< " * " << atts[x]->toString();
+          }
+          if(x < atts.size()-1){
+            if(getParams()(x,y) < 0){
+              stream << " - ";
+            }else{
+              stream << " - ";
+            }
+          }
+        }
+        stream << std::endl;
+      }
+      stream << std::endl;
+      return stream.str();
+    }
+
+
+    template<class T>
+    void PolynomialRegression<T>::Result::setup(const std::string &function){
+      m_function = function;
+      
+      std::vector<std::string> ts = icl::utils::tok(remove_spaces(function),"+");
+      int maxIdx = -1;
+      for(size_t i=0;i<ts.size();++i){
+        const std::string &s =  ts[i];
+        if(s.find('^',0) != std::string::npos){
+          std::vector<std::string> ab = icl::utils::tok(s,"^");
+          ICLASSERT_THROW(ab.size() == 2, ICLException("PolynomialRegression: error in token: " + s));
+          int idx = get_idx(ab[0]);
+          if(idx > maxIdx) maxIdx = idx;
+          
+          float exponent = parse<float>(ab[1]);
+          if(is_int(exponent) && exponent < 6){
+            int e = exponent;
+            switch(e){
+              case 1: m_attribs.push_back(new PowerAttrib<T,1>(idx)); break;
+              case 2: m_attribs.push_back(new PowerAttrib<T,2>(idx)); break;
+              case 3: m_attribs.push_back(new PowerAttrib<T,3>(idx)); break;
+              case 4: m_attribs.push_back(new PowerAttrib<T,4>(idx)); break;
+              case 5: m_attribs.push_back(new PowerAttrib<T,5>(idx)); break;
+              default: m_attribs.push_back(new GenPowerAttrib<T>(idx,e)); break;
+            }
+          }else{
+            m_attribs.push_back(new GenPowerAttrib<T>(idx,exponent)); break;
+          }
+        }else if(s.find('*') != std::string::npos){
+          std::vector<std::string> vars = tok(s,"*");
+          std::vector<int> idxs(vars.size());
+          for(size_t j=0;j<idxs.size();++j){
+            idxs[j] = get_idx(vars[j]);
+            if(idxs[j] > maxIdx) maxIdx = idxs[j];
+          }
+          switch(idxs.size()){
+            case 2: m_attribs.push_back(new MixedAttrib<T,2>(&*idxs.begin())); break;
+            case 3: m_attribs.push_back(new MixedAttrib<T,3>(&*idxs.begin())); break;
+            case 4: m_attribs.push_back(new MixedAttrib<T,4>(&*idxs.begin())); break;
+            case 5: m_attribs.push_back(new MixedAttrib<T,5>(&*idxs.begin())); break;
+            default: m_attribs.push_back(new GenMixedAttrib<T>(idxs)); break;
+          }
+        }else if(s[0] == 'x'){
+          int idx = get_idx(s);
+          if(idx > maxIdx) maxIdx = idx;
+          m_attribs.push_back(new MixedAttrib<T,1>(&idx));
+        }else{
+          m_attribs.push_back(new ConstAttrib<T>(parse<int>(s)));
+        }
+      }
+      m_attribMaxIndex = maxIdx;      
+    }    
+
+    template<class T>
+    void PolynomialRegression<T>::Result::save(const std::string &xmlFileName) const {
+      DEBUG_LOG(toString());
+      ConfigFile cfg;
+      cfg.setPrefix("config.polynomial-regression-result.");
+      cfg["function"] = m_function;
+      cfg["parameters.dim.cols"] = (int)m_params.cols();
+      cfg["parameters.dim.rows"] = (int)m_params.rows();
+      cfg["parameters.values"] = str(m_params);
+      
+      cfg.save(xmlFileName);
+     }
+    
+    template<class T>
+    PolynomialRegression<T>::Result::Result(const std::string &xmlFileName){
+      ConfigFile cfg(xmlFileName);
+      cfg.setPrefix("config.polynomial-regression-result.");
+      setup(cfg["function"].as<std::string>());
+      
+      m_params.setBounds(cfg["parameters.dim.cols"].as<int>(),
+                         cfg["parameters.dim.rows"].as<int>());
+
+
+      std::istringstream stream(cfg["parameters.values"].as<std::string>());
+      stream >> m_params;
+    }
+
     template class PolynomialRegression<float>;
     template class PolynomialRegression<double>;
   }
