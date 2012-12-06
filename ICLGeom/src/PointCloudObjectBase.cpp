@@ -124,8 +124,6 @@ namespace icl{
       if(useDrawNormalLines){
         const DataSegment<float,3> xyz = selectXYZ();
         const DataSegment<float,4> normal = selectNormal();
-        size_t numElementsXYZ = xyz.numElements;
-        size_t numElementsNormal = normal.numElements;
         utils::Size size = getSize();
         glBegin(GL_LINES);
           glColor4f(1.0f,1.0f,1.0f,1.0f);
@@ -376,94 +374,60 @@ namespace icl{
 
     }
 
-#define SAY(X) std::cout << "equals: " << #X << " differs!" << std::endl;
-#define SAY2(X) std::cout << "equals: " << X << " differs!" << std::endl;
-
     bool PointCloudObjectBase::equals(const PointCloudObjectBase &dst, 
                                       bool compareOnlySharedFeatures,
                                       bool allowDifferentColorTypes,
                                       float tollerance) const{
-      if(getDim() != dst.getDim()){ SAY(dim);  return false; }
-      if(isOrganized() != dst.isOrganized()) { SAY(isOrganized); return false; } 
-      if(isOrganized() && getSize() != dst.getSize()) { SAY(size); return false; }
+      if(getDim() != dst.getDim()) return false;
+      if(isOrganized() != dst.isOrganized()) return false;
+      if(isOrganized() && getSize() != dst.getSize()) return false;
       
       if(!compareOnlySharedFeatures){
         for(int i=0;i<NUM_FEATURES;++i){
           FeatureType t = (FeatureType)i;
           if(allowDifferentColorTypes){
             if(t != BGR && t != BGRA && t != BGRA32s && t != RGBA32f){
-              if(supports(t) != dst.supports(t)) {
-                SAY2( ("support of feature type (" + str(i) + ")") );
-                return false;
-              }
+              if(supports(t) != dst.supports(t)) return false;
             }
           }else{
-            if(supports(t) != dst.supports(t)) {
-              SAY2( ("support of feature type (" + str(i) + ")"));
-              return false;
-            }
+            if(supports(t) != dst.supports(t)) return false;
           }
         }        
       }
       if(allowDifferentColorTypes && !compareOnlySharedFeatures){
         if( (supports(BGR) || supports(BGRA) || supports(BGRA32s) || supports(RGBA32f)) !=
             (dst.supports(BGR) || dst.supports(BGRA) || dst.supports(BGRA32s) || dst.supports(RGBA32f)) ){
-          SAY(color_support);
           return false;
         }
       }
       
       if(supports(XYZH) && dst.supports(XYZH)){
-        if(!selectXYZH().equals(dst.selectXYZH(),tollerance)){
-          SAY(xyzh);
-          return false;
-        }
+        if(!selectXYZH().equals(dst.selectXYZH(),tollerance)) return false;
       }else if(supports(XYZ) && dst.supports(XYZ)){
-        if(!selectXYZ().equals(dst.selectXYZ(),tollerance)){
-          SAY(xyz);
-          return false;
-        }
+        if(!selectXYZ().equals(dst.selectXYZ(),tollerance)) return false;
       }
       
       if(supports(Label) && dst.supports(Label)){
-        if(!selectLabel().equals(dst.selectLabel(),tollerance)){
-          SAY(label);
-          return false;
-        }
+        if(!selectLabel().equals(dst.selectLabel(),tollerance)) return false;
       }
 
       if(supports(Intensity) && dst.supports(Intensity)){
-        if(!selectIntensity().equals(dst.selectIntensity(),tollerance)) {
-          SAY(intensity);
-          return false;
-        }
+        if(!selectIntensity().equals(dst.selectIntensity(),tollerance)) return false;
       }
 
       if(supports(Normal) && dst.supports(Normal)){
-        if(!selectNormal().equals(dst.selectNormal(),tollerance)){
-          SAY(normal);
-          return false;
-        }
+        if(!selectNormal().equals(dst.selectNormal(),tollerance)) return false;
       }
 
       if(!compareOnlySharedFeatures){
         if(supports(BGRA) && dst.supports(BGRA)){
-          if(!selectBGRA().equals(dst.selectBGRA(),tollerance)) {
-            SAY(BGRA);
-            return false;
-          }
+          if(!selectBGRA().equals(dst.selectBGRA(),tollerance)) return false;
         }
         else if(supports(BGR) && dst.supports(BGR)){
-          if(!selectBGR().equals(dst.selectBGR(),tollerance)) {
-            SAY(BGR);
-            return false;
-          }
+          if(!selectBGR().equals(dst.selectBGR(),tollerance)) return false;
         }
         else if(supports(RGBA32f) && dst.supports(RGBA32f)){
-          if(!selectRGBA32f().equals(dst.selectRGBA32f(),tollerance)) {
-            SAY(RGBA32f);
-            return false;
-          }
+          if(!selectRGBA32f().equals(dst.selectRGBA32f(),tollerance)) return false;
         }
       }else{ // x-color-compare
         if(supports(BGRA)){

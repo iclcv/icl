@@ -33,8 +33,12 @@
 *********************************************************************/
 
 #include <ICLGeom/PointCloudCreator.h>
-#include <ICLGeom/PointCloudCreatorCL.h>
 #include <ICLCore/Img.h>
+
+#ifdef HAVE_OPENCL
+#include <ICLGeom/PointCloudCreatorCL.h>
+#endif
+
 
 using namespace icl::utils;
 using namespace icl::math;
@@ -54,6 +58,12 @@ namespace icl{
       Array2D<Vec3> viewRayDirections;
       PointCloudCreator::DepthImageMode mode;    // memorized for easy copying
       const Img32f *lastDepthImageMM;
+ 
+#ifdef HAVE_OPENCL
+      bool clReady;
+      bool clUse;
+      PointCloudCreatorCL* creatorCL;
+#endif
       
       static inline float compute_depth_norm(const Vec &dir, const Vec &centerDir){
         return sprod3(dir,centerDir)/(norm3(dir)*norm3(centerDir));
@@ -89,6 +99,13 @@ namespace icl{
             }
           }
         }
+
+#ifdef HAVE_OPENCL
+        clUse=true;  
+        creatorCL = new PointCloudCreatorCL(depthImageSize, viewRayDirections);
+        clReady = creatorCL->isCLReady();
+
+#endif
       }
       
     };
@@ -98,46 +115,22 @@ namespace icl{
   
     PointCloudCreator::PointCloudCreator(const Camera &depthCam, PointCloudCreator::DepthImageMode mode):m_data(new Data){
       m_data->init(new Camera(depthCam),0,mode);
-      clUse=true;
-      clReady=false;
-      #ifdef HAVE_OPENCL
-        creatorCL = new PointCloudCreatorCL(m_data->depthImageSize, m_data->viewRayDirections);
-        clReady = creatorCL->isCLReady();
-      #endif
     }
     
     PointCloudCreator::PointCloudCreator(const Camera &depthCam, const Camera &colorCam, PointCloudCreator::DepthImageMode mode):m_data(new Data){
       m_data->init(new Camera(depthCam), new Camera(colorCam),mode);
-      clUse=true;
-      clReady=false;
-      #ifdef HAVE_OPENCL
-        creatorCL = new PointCloudCreatorCL(m_data->depthImageSize, m_data->viewRayDirections);
-        clReady = creatorCL->isCLReady();
-      #endif
     }
     
     void PointCloudCreator::init(const Camera &depthCam,  PointCloudCreator::DepthImageMode mode){
       delete m_data;
       m_data = new Data;
       m_data->init(new Camera(depthCam),0,mode);
-      clUse=true;
-      clReady=false;
-      #ifdef HAVE_OPENCL
-        creatorCL = new PointCloudCreatorCL(m_data->depthImageSize, m_data->viewRayDirections);
-        clReady = creatorCL->isCLReady();
-      #endif
     }
     
     void PointCloudCreator::init(const Camera &depthCam, const Camera &colorCam,  PointCloudCreator::DepthImageMode mode){
       delete m_data;
       m_data = new Data;
       m_data->init(new Camera(depthCam), new Camera(colorCam), mode);
-      clUse=true;
-      clReady=false;
-      #ifdef HAVE_OPENCL
-        creatorCL = new PointCloudCreatorCL(m_data->depthImageSize, m_data->viewRayDirections);
-        clReady = creatorCL->isCLReady();
-      #endif
     }
     
     PointCloudCreator::PointCloudCreator(const PointCloudCreator &other):m_data(new Data){
@@ -286,17 +279,22 @@ namespace icl{
       
       if(m_data->mode == KinectRAW11Bit){
         if(destination.supports(PointCloudObjectBase::RGBA32f)){
-          if(clReady && clUse){
+#ifdef HAVE_OPENCL
+          if(m_data->clReady && m_data->clUse){
             if(X){ 
               DataSegment<float,4> rgba = destination.selectRGBA32f();
-              creatorCL->createRGB(true,&depthImageMM, M, O, W, H, DIM, xyz, rgba, rgbImage, dirs, depthScaling);
+              m_data->creatorCL->createRGB(true,&depthImageMM, M, O, W, H, DIM, xyz, rgba, rgbImage, dirs, depthScaling);
             }else{ 
-              creatorCL->create(true,&depthImageMM, O, DIM, xyz, dirs, depthScaling);
+              m_data->creatorCL->create(true,&depthImageMM, O, DIM, xyz, dirs, depthScaling);
             }
           }else{
             if(X) point_loop<true,true>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling);
             else point_loop<false,true>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling);
           }
+#else
+          if(X) point_loop<true,true>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling);
+          else point_loop<false,true>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling);
+#endif
         }else if(destination.supports(PointCloudObjectBase::BGRA)){
           if(X) point_loop<true,true>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA(), rgb, dirs, depthScaling);
           else point_loop<false,true>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA(), rgb, dirs, depthScaling);
@@ -311,17 +309,22 @@ namespace icl{
         }
       }else{
         if(destination.supports(PointCloudObjectBase::RGBA32f)){
-          if(clReady && clUse){
+#ifdef HAVE_OPENCL
+          if(m_data->clReady && m_data->clUse){
             if(X){ 
               DataSegment<float,4> rgba = destination.selectRGBA32f();
-              creatorCL->createRGB(false,&depthImageMM, M, O, W, H, DIM, xyz, rgba, rgbImage, dirs, depthScaling);
+              m_data->creatorCL->createRGB(false,&depthImageMM, M, O, W, H, DIM, xyz, rgba, rgbImage, dirs, depthScaling);
             }else{ 
-              creatorCL->create(false,&depthImageMM, O, DIM, xyz, dirs, depthScaling);
+              m_data->creatorCL->create(false,&depthImageMM, O, DIM, xyz, dirs, depthScaling);
             }
           }else{
             if(X) point_loop<true,false>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling);
             else point_loop<false,false>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling);
           }
+#else
+          if(X) point_loop<true,false>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling);
+          else point_loop<false,false>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling);
+#endif
         }else if(destination.supports(PointCloudObjectBase::BGRA)){
           if(X) point_loop<true,false>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA(), rgb, dirs, depthScaling);
           else point_loop<false,false>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA(), rgb, dirs, depthScaling);
@@ -442,7 +445,11 @@ namespace icl{
     }
     
     void PointCloudCreator::setUseCL(bool use){
-      clUse=use;
+#ifdef HAVE_OPENCL
+      m_data->clUse=use;
+#else
+      (void)use;
+#endif
     }
     
   } // namespace geom

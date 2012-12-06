@@ -36,7 +36,6 @@
 
 #include <ICLGeom/RGBDImageSceneObject.h>
 #include <ICLGeom/PointCloudObjectBase.h>
-#include <ICLGeom/PointCloudCreatorCL.h>
 
 namespace icl{
   namespace geom{
@@ -111,12 +110,8 @@ namespace icl{
           depthImage passed to the "create"-is used, which should usually be the right one) */
       void mapImage(const core::ImgBase *src, core::ImgBase **dst, const core::Img32f *depthImageMM=0);
       
-      
-      bool clReady;
-      bool clUse;
-      PointCloudCreatorCL* creatorCL;
-      
       /// Enables/disables openCL accelaration
+      /** In case of having no opencl support, this function does nothing */
       void setUseCL(bool use);    
     };
   
