@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLQt/src/GUI.cpp                                      **
 ** Module : ICLQt                                                  **
-** Authors: Christof Elbrechter                                    **
+** Authors: Christof Elbrechter, Viktor Richter                    **
 **                                                                 **
 **                                                                 **
 ** Commercial License                                              **
