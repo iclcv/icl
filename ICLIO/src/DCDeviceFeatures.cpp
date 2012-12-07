@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLIO/src/DCDeviceFeatures.cpp                         **
 ** Module : ICLIO                                                  **
-** Authors: Christof Elbrechter                                    **
+** Authors: Christof Elbrechter, Viktor Richter                    **
 **                                                                 **
 **                                                                 **
 ** Commercial License                                              **
