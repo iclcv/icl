@@ -33,6 +33,7 @@
 *********************************************************************/
 
 #include <ICLQt/CamCfgWidget.h>
+#include <ICLQt/GUI.h>
 #include <QtGui/QApplication>
 #include <ICLUtils/ProgArg.h>
 #include <ICLIO/GenericGrabber.h>

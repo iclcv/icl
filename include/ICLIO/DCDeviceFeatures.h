@@ -35,6 +35,7 @@
 #pragma once
 
 #include <ICLIO/DCDevice.h>
+#include <ICLUtils/Configurable.h>
 #include <ICLUtils/ShallowCopyable.h>
 
 
@@ -42,7 +43,25 @@ namespace icl{
   namespace io{
     
     /** cond */
-    class DCDeviceFeaturesImpl;
+    class DCDeviceFeaturesImpl : public utils::Configurable {
+    public:
+
+      DCDeviceFeaturesImpl(const DCDevice &dev);
+      ~DCDeviceFeaturesImpl(){}
+
+      void show();
+      /// callback function for property changes.
+      void processPropertyChange(const utils::Configurable::Property &p);
+
+    private:
+      dc1394feature_info_t *getInfoPtr(const std::string &name) const;
+
+      DCDevice dev;
+      dc1394featureset_t features;
+      std::map<std::string,dc1394feature_info_t*> featureMap;
+      bool ignorePropertyChange;
+    };
+
     struct DCDeviceFeaturesImplDelOp{
       static void delete_func(DCDeviceFeaturesImpl *impl);
     };
@@ -76,41 +95,13 @@ namespace icl{
         The class interface is adapted to the get/set Property interface of the ICL Grabber interface.
         In addition, it is derived from the ShallowCopyable interface to allow cheap copying.
     */
-    class DCDeviceFeatures : public utils::ShallowCopyable<DCDeviceFeaturesImpl,DCDeviceFeaturesImplDelOp> {
+    class DCDeviceFeatures : public utils::ShallowCopyable<DCDeviceFeaturesImpl,DCDeviceFeaturesImplDelOp>, public utils::Configurable {
       public:
       /// Base constructor create a null Object
       DCDeviceFeatures();
   
       /// Default constructor with given DCDevice struct
       DCDeviceFeatures(const DCDevice &dev);
-  
-      // returns whether given property is available
-      bool supportsProperty(const std::string &name) const;
-  
-      /// Sets a property to a new value
-      /** call \code getPropertyList() \endcode to see which properties are supported 
-          @copydoc icl::io::Grabber::setProperty(const std::string&, const std::string&)
-      **/
-      void setProperty(const std::string &property, const std::string &value);
-      
-      /// returns a list of properties, that can be set using setProperty
-      /** @return list of supported property names **/
-      std::vector<std::string> getPropertyList();
-   
-      /// get type of property
-      /** \copydoc icl::io::Grabber::getType(const std::string &)*/
-      std::string getType(const std::string &name);
-      
-      /// get information of a properties valid values values
-      /** \copydoc icl::io::Grabber::getInfo(const std::string &)*/
-      std::string getInfo(const std::string &name);
-      
-      /// returns the current value of a given property
-      /** \copydoc icl::io::Grabber::getValue(const std::string &)*/
-      std::string getValue(const std::string &name);
-      
-      /// shows all available features and current values to std::out
-      void show() const;
       
     };
   } // namespace io

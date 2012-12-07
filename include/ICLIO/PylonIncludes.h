@@ -6,9 +6,9 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : include/ICLIO/CreateGrabber.h                          **
+** File   : include/ICLIO/PylonIncludes.h                          **
 ** Module : ICLIO                                                  **
-** Authors: Christof Elbrechter, Viktor Richter                    **
+** Authors: Viktor Richter                                         **
 **                                                                 **
 **                                                                 **
 ** Commercial License                                              **
@@ -34,53 +34,7 @@
 
 #pragma once
 
-#include <ICLCore/Color.h>
-#include <ICLUtils/Time.h>
-#include <ICLUtils/Size32f.h>
-
-#include <ICLIO/GrabberHandle.h>
-
-namespace icl{
-  namespace io{
-
-    
-    /// Implementation class for the CreateGrabber
-    class CreateGrabberImpl : public Grabber{
-      public:
-        friend class CreateGrabber;
-
-        /// default grab function
-        virtual const core::ImgBase* acquireImage();
-
-        /// Destructor
-        ~CreateGrabberImpl();
-
-      private:
-        /// Create a CreateGrabber with given max. fps count
-        CreateGrabberImpl(const std::string &what);
-
-        /// internal image
-        const core::ImgBase *m_image;
-    };
-
-    /// Create Grabber class that provides an image from ICL's create function
-    /** This grabber can be used as placeholder whenever no senseful Grabber
-        is available. It provides an instance of an image that is created with
-        the icl::io::TestImages::create function */
-    class CreateGrabber : public GrabberHandle<CreateGrabberImpl>{
-      public:
-
-        /// Creates a CreateGrabber instance
-        /** allowed values for what can be found in the documentation of
-          icl::io::TestImages::create */
-        inline CreateGrabber(const std::string &what="parrot"){
-          if(isNew(what)){
-            initialize(new CreateGrabberImpl(what),what);
-          }else{
-            initialize(what);
-          }
-        }
-    };
-  } // namespace io
-}
-
+// this is done to prevent gcc from throwing warnings caused in these headers
+#pragma GCC system_header
+#include <pylon/PylonIncludes.h>
+#include <pylon/gige/BaslerGigEDeviceInfo.h>

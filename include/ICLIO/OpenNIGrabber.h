@@ -38,82 +38,68 @@
 #include <ICLUtils/Time.h>
 #include <ICLIO/OpenNIUtils.h>
 #include <ICLUtils/Thread.h>
-
-#include <XnOS.h>
-#include <XnCppWrapper.h>
+#include <ICLIO/OpenNIIncludes.h>
 
 namespace icl {
   namespace io{
-  
+
     // Forward declaration of OpenNIGrabberImpl
     class OpenNIGrabberImpl;
-  
+
     /// Internally spawned thread class for continuous grabbing
     class OpenNIGrabberThread : public utils::Thread {
       public:
         /// Constructor sets used grabber
         OpenNIGrabberThread(OpenNIGrabberImpl* grabber);
-  
+
         /// constantly calls grabNextImage.
         void run();
       private:
         OpenNIGrabberImpl* m_Grabber;
     };
-  
+
     /// Actual implementation of the OpenNI based Grabber
     class OpenNIGrabberImpl : public Grabber {
       public:
         friend class OpenNIGrabber;
         friend class OpenNIGrabberThread;
-  
-        /// interface for the setter function for video device properties
-        virtual void setProperty(const std::string &property, const std::string &value);
-        /// returns a list of properties, that can be set using setProperty
-        virtual std::vector<std::string> getPropertyList();
-        /// checks if property supported
-        virtual bool supportsProperty(const std::string &property);
-        /// get type of property
-        virtual std::string getType(const std::string &name);
-        /// get information of a properties valid values
-        virtual std::string getInfo(const std::string &name);
-        /// returns the current value of a property or a parameter
-        virtual std::string getValue(const std::string &name);
-        /// Returns whether this property may be changed internally.
-        virtual int isVolatile(const std::string &propertyName);
-  
+
         /// Destructor
         ~OpenNIGrabberImpl();
-  
+
         /// grab function grabs an image (destination image is adapted on demand)
         /** @copydoc icl::io::Grabber::grab(core::ImgBase**) **/
         virtual const core::ImgBase* acquireImage();
-  
+
         /**
             returns the underlying handle of the grabber.
             In this case the corresponding MapGenerator.
         **/
         virtual void* getHandle();
-  
+
       private:
         /// The constructor is private so only the friend class can create instances
         /**
         * @param args NodeInfo of the device to use.
         */
         OpenNIGrabberImpl(std::string args);
-  
+
         /// makes the MapGenerator grab a new image. called repeatedly in thread.
         void grabNextImage();
-  
+
         /**
             switches the current generator to desired. this function works but
             after changing to another Generator the camcfg-properties will not
             be refreshed.
         **/
         void setGeneratorTo(icl_openni::OpenNIMapGenerator::Generators desired);
-  
+
+        /// callback for changed configurable properties
+        void processPropertyChange(const utils::Configurable::Property &prop);
+
         /// Returns the string representation of the currently used device.
         std::string getName();
-  
+
         /// Mutex used for concurrency issues.
         utils::Mutex m_Mutex;
         /// a grabber id
@@ -129,13 +115,13 @@ namespace icl {
         /// whether double frames should be omited
         bool m_OmitDoubleFrames;
     };
-  
+
     /// Grabber implementation for OpenNI based camera access.
     /**
         This is just a wrapper class of the underlying OpenNIGrabberImpl class
     **/
     struct OpenNIGrabber : public GrabberHandle<OpenNIGrabberImpl>{
-  
+
         /// create a new OpenNIGrabber
         /** @see OpenNIGrabber for more details*/
         inline OpenNIGrabber(const std::string args="") throw(utils::ICLException) {
@@ -147,12 +133,12 @@ namespace icl {
             initialize(args);
           }
         }
-  
+
         /// returns the underlying handle of the grabber. In this case the corresponding MapGenerator.
         virtual void* getHandle(){
           return m_instance -> ptr -> getHandle();
         }
-  
+
         static std::vector<GrabberDeviceDescription> getDeviceList(bool rescan){
           static std::vector<GrabberDeviceDescription> deviceList;
           if(rescan){
@@ -172,7 +158,7 @@ namespace icl {
           return deviceList;
         }
     };
-  
+
   } // namespace io
 } //namespace icl
 

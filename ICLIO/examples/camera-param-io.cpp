@@ -67,13 +67,14 @@ int main(int n, char **ppc){
   GenericGrabber grabber(pa("-d"));
 
   if(s){
-    grabber.setProperty(pa("-s",0),pa("-s",1));
+    std::string val = pa("-s",1);
+    grabber.setPropertyValue(pa("-s",0),val);
   }else if(g){
-    std::cout << grabber.getValue(pa("-g")) << std::endl;
+    std::cout << grabber.getPropertyValue(pa("-g")) << std::endl;
   }else if(i){
-    grabber.loadProperties(pa("-i"),false,true);
+    grabber.loadProperties(pa("-i"));
   }else if(o){
-    grabber.saveProperties(pa("-o"),false,true);
+    grabber.saveProperties(pa("-o"));
   }else{
     static const int w = 35;
     std::vector<std::string> l = grabber.getPropertyList();
@@ -88,12 +89,12 @@ int main(int n, char **ppc){
     
     for(unsigned int i=0;i<l.size();++i){
       const std::string &s = l[i];
-      std::string v = grabber.getValue(s);
+      std::string v = grabber.getPropertyValue(s);
       std::cout << s;
       write_spaces(w-s.length());
       std::cout << v;
       write_spaces(w-v.length());
-      std::cout << grabber.getInfo(s) << std::endl;
+      std::cout << grabber.getPropertyInfo(s) << std::endl;
     }
   }  
 }

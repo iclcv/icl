@@ -77,7 +77,7 @@ struct AdaptedSceneMouseHandler : public MouseHandler{
 
 void init(){
   grabDepth.init("kinectd","kinectd=0");
-  grabDepth.setProperty("depth-image-unit","raw");
+  grabDepth.setPropertyValue("depth-image-unit","raw");
   grabColor.init("kinectc","kinectc=0");
   
   grabDepth.useDesired(depth32f, pa("-size"), formatMatrix);

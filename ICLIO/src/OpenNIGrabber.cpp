@@ -102,6 +102,15 @@ OpenNIGrabberImpl::OpenNIGrabberImpl(std::string args)
   m_Generator = OpenNIMapGenerator::createGenerator(&m_Context, m_Id);
   m_Buffer = new ReadWriteBuffer<ImgBase>(m_Generator);
   m_Generator -> getMapGenerator()->StartGenerating();
+
+  addProperty("omit double frames", "flag", "", m_OmitDoubleFrames, 0, "");
+  addProperty("format", "menu", m_Generator -> getMapOutputModeInfo(m_Generator->getMapGenerator()),
+              m_Generator -> getCurrentMapOutputMode(m_Generator->getMapGenerator()),
+              0, "The image format.");
+  addProperty("size", "info", "", "adjusted by format", 0, "This is set by the format-property.");
+  addChildConfigurable(m_Generator -> getMapGeneratorOptions());
+  Configurable::registerCallback(utils::function(this,&OpenNIGrabberImpl::processPropertyChange));
+
   // create grabber-thread
   m_GrabberThread = new OpenNIGrabberThread(this);
   m_GrabberThread -> start();
@@ -147,108 +156,17 @@ std::string OpenNIGrabberImpl::getName(){
   return m_Id;
 }
 
-// interface for the setter function for video device properties
-void OpenNIGrabberImpl::setProperty(const std::string &property, const std::string &value){
-  DEBUG_LOG2(property << " := " << value);
-  if (property.compare("size") == 0){
+// callback for changed configurable properties
+void OpenNIGrabberImpl::processPropertyChange(const utils::Configurable::Property &prop){
+  DEBUG_LOG2(prop.name << " := " << prop.value);
+  if (prop.name == "format"){
+    setPropertyValue("map output mode", prop.value);
+  }
+  if (prop.name == "omit double frames"){
+    m_OmitDoubleFrames = parse<bool>(prop.value);
     return;
   }
-  if (property.compare("format") == 0){
-    m_Generator -> getMapGeneratorOptions() -> setProperty("map output mode", value);
-  }
-  if (property.compare("omit double frames") == 0){
-    m_OmitDoubleFrames = (value == "On");
-    return;
-  }
-  if (m_Generator -> getMapGeneratorOptions() -> supportsProperty(property)){
-    m_Generator -> getMapGeneratorOptions() -> setProperty(property, value);
-    return;
-  }
+  // "size" is ignored
 }
 
-// returns a list of properties, that can be set using setProperty
-std::vector<std::string> OpenNIGrabberImpl::getPropertyList(){
-  DEBUG_LOG2("");
-  std::vector<std::string> ps;
-  ps.push_back("size");
-  ps.push_back("format");
-  ps.push_back("omit double frames");
-  m_Generator -> getMapGeneratorOptions() -> addPropertiesToList(ps);
-  return ps;
-}
-
-// checks if property is returned, implemented, available and of processable GenApi::EInterfaceType
-bool OpenNIGrabberImpl::supportsProperty(const std::string &property){
-  DEBUG_LOG2("");
-  if (property.compare("size") == 0) return true;
-  if (property.compare("format") == 0) return true;
-  if (property.compare("omit double frames") == 0) return true;
-  if (m_Generator -> getMapGeneratorOptions() -> supportsProperty(property)){
-    return true;
-  }
-  return false;
-}
-
-// get type of property
-std::string OpenNIGrabberImpl::getType(const std::string &name){
-  DEBUG_LOG2("");
-  if(name.compare("size") == 0){
-    return "info";
-  }
-  if(name.compare("format") == 0){
-    return "menu";
-  }
-  if(name.compare("omit double frames") == 0){
-    return "menu";
-  }
-  if (m_Generator -> getMapGeneratorOptions() -> supportsProperty(name)){
-    return m_Generator -> getMapGeneratorOptions() -> getType(name);
-  }
-  DEBUG_LOG("unknown property " << name);
-  throw ICLException("unkown property");
-}
-
-// get information of a properties valid values
-std::string OpenNIGrabberImpl::getInfo(const std::string &name){
-  DEBUG_LOG2("");
-  if(name.compare("size") == 0){
-    return "";
-  }
-  if(name.compare("format") == 0){
-    return m_Generator -> getMapGeneratorOptions() -> getInfo("map output mode");
-  }
-  if(name.compare("omit double frames") == 0){
-    return "{On,Off}";
-  }
-  if (m_Generator -> getMapGeneratorOptions() -> supportsProperty(name)){
-    return m_Generator -> getMapGeneratorOptions() -> getInfo(name);
-  }
-  DEBUG_LOG("unknown property " << name);
-  throw ICLException("unkown property");
-}
-
-// returns the current value of a property or a parameter
-std::string OpenNIGrabberImpl::getValue(const std::string &name){
-  DEBUG_LOG2(name);
-  if(name.compare("size") == 0){
-    return "set by format";
-  }
-  if(name.compare("format") == 0){
-    return m_Generator -> getMapGeneratorOptions() -> getValue("map output mode");
-  }
-  if(name.compare("omit double frames") == 0){
-    return (m_OmitDoubleFrames) ? "On" : "Off";
-  }
-  if (m_Generator -> getMapGeneratorOptions() -> supportsProperty(name)){
-    return m_Generator -> getMapGeneratorOptions() -> getValue(name);
-  }
-  return "error: property not found";
-}
-
-// Returns whether this property may be changed internally.
-int OpenNIGrabberImpl::isVolatile(const std::string &propertyName){
-  if (m_Generator -> getMapGeneratorOptions() -> supportsProperty(propertyName)){
-    return m_Generator -> getMapGeneratorOptions() -> isVolatile(propertyName);
-  }
-  return true;
-}
+REGISTER_CONFIGURABLE(OpenNIGrabber, return new OpenNIGrabber(""));

@@ -116,6 +116,9 @@ namespace icl{
       
       /// returns a list of supported modes for this device
       std::vector<Mode> getModes() const ;
+
+      /// returns a list of supported modes for this device as info-string
+      std::string getModesInfo() const ;
   
       /// returns the vendor id string from the wrapped camera or "null" if the device is null
       std::string getVendorID() const;

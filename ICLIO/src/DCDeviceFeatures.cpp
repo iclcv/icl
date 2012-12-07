@@ -195,229 +195,154 @@ namespace icl{
     //}}}
   }
   namespace io{
-  
-    class DCDeviceFeaturesImpl{
-    public:
-      
-      DCDeviceFeaturesImpl(const DCDevice &dev):dev(dev){
-        // {{{ open
-  
-        dc1394_feature_get_all(this->dev.getCam(),&features);
-  
-        for(int i=0;i<DC1394_FEATURE_NUM;++i){
-          dc1394feature_info_t &info =  features.feature[i];
-          dc1394_feature_get(this->dev.getCam(),&info);
-          if(info.available){
-            featureMap[str(info.id)] = &info;
+
+    std::string getSpecialInfoString(std::string name){
+      const std::string f = name.substr(8);
+      if(f=="polarity"){
+        return "low,high";
+      }else if(f=="power"){
+        return "on,off}";
+      }else if(f=="mode"){
+        return "0,1,2,3,4,5,14,15";
+      }else if(f=="source"){
+        return "0,1,2,3";
+      }else if(f=="from-software"){
+        return "on,off";
+      }else{
+        return "";
+      }
+    }
+
+    DCDeviceFeaturesImpl::DCDeviceFeaturesImpl(const DCDevice &dev):dev(dev),ignorePropertyChange(false){
+      // {{{ open
+      dc1394_feature_get_all(this->dev.getCam(),&features);
+
+      for(int i=0;i<DC1394_FEATURE_NUM;++i){
+        dc1394feature_info_t &info =  features.feature[i];
+        dc1394_feature_get(this->dev.getCam(),&info);
+        if(info.available){
+          featureMap[str(info.id)] = &info;
+        }
+      }
+      if(has_trigger_polarity(dev.getCam())){
+        featureMap["trigger-polarity"] = getSpecialInfo();
+      }
+      featureMap["trigger-power"] = getSpecialInfo();
+      featureMap["trigger-mode"] = getSpecialInfo();
+      featureMap["trigger-source"] = getSpecialInfo();
+      featureMap["trigger-from-software"] = getSpecialInfo();
+
+      // Configurtable
+      addProperty("all manual", "command", "", Any(), 0, "Sets all auto adjustment-supporting options to manual adjustment.");
+      for(std::map<std::string,dc1394feature_info_t*>::iterator it = featureMap.begin(); it != featureMap.end(); ++it){
+        std::string name = it->first;
+        dc1394feature_info_t* info = it->second;
+        if(isSpecialInfo(info)){
+          // e.g. for trigger related features
+          std::string value;
+          if(is_trigger_name(name,true)){
+            value = get_trigger_feature_value(dev.getCam(),name);
+          } else {
+            value = str(info->value);
           }
-        }
-        if(has_trigger_polarity(dev.getCam())){
-          featureMap["trigger-polarity"] = getSpecialInfo();
-        }
-        featureMap["trigger-power"] = getSpecialInfo();
-        featureMap["trigger-mode"] = getSpecialInfo();
-        featureMap["trigger-source"] = getSpecialInfo();
-        featureMap["trigger-from-software"] = getSpecialInfo();
-        
-  
-      }
-  
-      // }}}
-      ~DCDeviceFeaturesImpl(){}
-  
-      bool supportsProperty(const std::string &name) const{
-        return getInfoPtr(name) != 0;
-      }
-  
-      void setProperty(const std::string &name, const std::string &value){
-        // {{{ open
-  
-        std::vector<std::string> pl = getPropertyList();
-        ICLASSERT_RETURN(find(pl.begin(),pl.end(),name) != pl.end());
-        
-        if(is_trigger_name(name,true)){
-          set_trigger_feature_value(dev.getCam(),name,value);
-        }else if(name.length() > 5 && name.substr(name.length()-5)=="-mode"){
-          dc1394feature_info_t *info = getInfoPtr(name);
-          ICLASSERT_RETURN(info);
-          
-          dc1394feature_mode_t newMode = value=="auto" ? DC1394_FEATURE_MODE_AUTO : 
-                                         value=="manual" ? DC1394_FEATURE_MODE_MANUAL :
-                                         DC1394_FEATURE_MODE_ONE_PUSH_AUTO;
-          dc1394_feature_set_mode(dev.getCam(),info->id,newMode);
-          
-          info->current_mode = newMode;
-        }else if(name == "WHITE_BALANCE_BU"){
-          dc1394feature_info_t *info = getInfoPtr("WHITE_BALANCE");
-          ICLASSERT_RETURN(info);
-          info->BU_value = parse<int>(value);
-          dc1394_feature_whitebalance_set_value(dev.getCam(),info->BU_value,info->RV_value);
-        }else if(name == "WHITE_BALANCE_RV"){
-          dc1394feature_info_t *info = getInfoPtr("WHITE_BALANCE");
-          ICLASSERT_RETURN(info);
-          info->RV_value = parse<int>(value);
-          dc1394_feature_whitebalance_set_value(dev.getCam(),info->BU_value,info->RV_value);
+          addProperty(name, "menu", getSpecialInfoString(name), value, 0, "");
         }else{
-          dc1394feature_info_t *info = getInfoPtr(name);
-          ICLASSERT_RETURN(info);
-          info->value = parse<int>(value);
-          dc1394_feature_set_value(dev.getCam(),info->id,info->value);
-        }
-      }
-  
-      // }}}
-      
-      std::vector<std::string> getPropertyList(){
-        // {{{ open
-  
-        std::vector<std::string> v;
-        for(std::map<std::string,dc1394feature_info_t*>::iterator it = featureMap.begin(); it != featureMap.end(); ++it){
-          std::string name = it->first;
-          if(isSpecialInfo(it->second)){
-            // e.g. for trigger related features
-            v.push_back(name);
-          }else{
-            dc1394feature_modes_t &modes = it->second->modes;
-            for(unsigned int i=0;i<modes.num;++i){
-              if(modes.modes[i] == DC1394_FEATURE_MODE_MANUAL){
-                if(name == "WHITE_BALANCE"){
-                  v.push_back(name+"_BU");
-                  v.push_back(name+"_RV");
-                }else{
-                  v.push_back(name);
-                }
-              }else if(modes.modes[i] == DC1394_FEATURE_MODE_AUTO){
-                // this is a hack -> we should ensure that mode manual is available too
-                v.push_back(it->first+"-mode");            
+          dc1394feature_modes_t &modes = info->modes;
+          for(unsigned int i=0;i<modes.num;++i){
+            if(modes.modes[i] == DC1394_FEATURE_MODE_MANUAL){
+              if(name == "WHITE_BALANCE"){
+                addProperty(name+"_BU", "range",
+                            str(SteppingRange<int>(info->min, info->max,1)),
+                            info->BU_value, 0, "");
+                addProperty(name+"_RV", "range",
+                            str(SteppingRange<int>(info->min, info->max,1)),
+                            info->RV_value, 0, "");
+              } else {
+                addProperty(name, "range",
+                            str(SteppingRange<int>(info->min, info->max,1)),
+                            info->value, 0, "");
               }
+            } else if(modes.modes[i] == DC1394_FEATURE_MODE_AUTO){
+              std::string value;
+              if(info->current_mode == DC1394_FEATURE_MODE_AUTO){
+                value = "auto";
+              } else if (info->current_mode == DC1394_FEATURE_MODE_MANUAL){
+                value = "manual";
+              } else {
+                value = "one-push-auto";
+              }
+              //TODO: one-push-auto could be implememted as well.
+              addProperty(name+"-mode", "menu", "auto,manual", value, 0, "");
             }
           }
         }
-        return v;
       }
-  
-      // }}}
-  
-   
-      std::string getType(const std::string &name){
-        // {{{ open
-  
-        dc1394feature_info_t *info = getInfoPtr(name);
-        ICLASSERT_RETURN_VAL(info,"");
-        if(isSpecialInfo(info)){
-          return "menu"; // currently all specials are trigger-xxx and threrewith menu type
-        }else{
-          if(name.length() > 5 && name.substr(name.length()-5)=="-mode"){
-            return "menu"; // this will contain "manual or auto"
-          }else{
-            return "range"; 
+      Configurable::registerCallback(utils::function(this,&DCDeviceFeaturesImpl::processPropertyChange));
+    }
+
+    void DCDeviceFeaturesImpl::processPropertyChange(const utils::Configurable::Property &prop){
+      if(ignorePropertyChange) return;
+      if(prop.name == "all manual"){
+        std::vector<std::string> l = Configurable::getPropertyList();
+        for(unsigned int i=0;i<l.size();++i){
+          if(l.at(i).length() > 5 && l.at(i).substr(l.at(i).length()-5)=="-mode"
+             && l.at(i) != "trigger-mode"){
+            Configurable::setPropertyValue(l.at(i),"manual");
           }
         }
-      }
-  
-      // }}}
-      
-      std::string getInfo(const std::string &name){
-        // {{{ open
-  
-        dc1394feature_info_t *info = getInfoPtr(name);
-        ICLASSERT_RETURN_VAL(info,"");
-        if(isSpecialInfo(info)){
-          const std::string f = name.substr(8);
-          if(f=="polarity"){
-            return "{\"low\",\"high\"}";
-          }else if(f=="power"){
-            return "{\"on\",\"off\"}";
-          }else if(f=="mode"){
-            return "{\"0\",\"1\",\"2\",\"3\",\"4\",\"5\",\"14\",\"15\"}";
-          }else if(f=="source"){
-            return "{\"0\",\"1\",\"2\",\"3\"}";
-          }else if(f=="from-software"){
-            return "{\"on\",\"off\"}";
-          }else{
-            return "";
-          }
-        }else if(name.length() > 5 && name.substr(name.length()-5)=="-mode"){
-          return "{\"manual\",\"auto\"}";
-        }else{
-          return str(SteppingRange<int>(info->min, info->max,1));
+      }else if(is_trigger_name(prop.name,true)){
+        set_trigger_feature_value(dev.getCam(),prop.name,prop.value);
+      }else if(prop.name.length() > 5 && prop.name.substr(prop.name.length()-5)=="-mode"){
+        dc1394feature_info_t *info = getInfoPtr(prop.name);
+        ICLASSERT_RETURN(info);
+
+        dc1394feature_mode_t newMode;
+        if(prop.value=="auto") {
+          newMode = DC1394_FEATURE_MODE_AUTO;
+        } else if(prop.value=="manual") {
+          newMode = DC1394_FEATURE_MODE_MANUAL;
+        } else {
+          newMode = DC1394_FEATURE_MODE_ONE_PUSH_AUTO;
         }
-        return "";
+        dc1394_feature_set_mode(dev.getCam(),info->id,newMode);
+        info->current_mode = newMode;
+      }else if(prop.name == "WHITE_BALANCE_BU"){
+        dc1394feature_info_t *info = getInfoPtr("WHITE_BALANCE");
+        ICLASSERT_RETURN(info);
+        info->BU_value = parse<int>(prop.value);
+        dc1394_feature_whitebalance_set_value(dev.getCam(),info->BU_value,info->RV_value);
+      }else if(prop.name == "WHITE_BALANCE_RV"){
+        dc1394feature_info_t *info = getInfoPtr("WHITE_BALANCE");
+        ICLASSERT_RETURN(info);
+        info->RV_value = parse<int>(prop.value);
+        dc1394_feature_whitebalance_set_value(dev.getCam(),info->BU_value,info->RV_value);
+      }else{
+        dc1394feature_info_t *info = getInfoPtr(prop.name);
+        ICLASSERT_RETURN(info);
+        info->value = parse<int>(prop.value);
+        dc1394_feature_set_value(dev.getCam(),info->id,info->value);
       }
-  
-      // }}}
-      
-      std::string getValue(const std::string &name){
-        // {{{ open
-        if(is_trigger_name(name,true)){
-          return get_trigger_feature_value(dev.getCam(),name);
-        }else if(name.length() > 5 && name.substr(name.length()-5)=="-mode"){
-          dc1394feature_info_t *info = getInfoPtr(name);
-          ICLASSERT_RETURN_VAL(info,"");
-          return info->current_mode == DC1394_FEATURE_MODE_AUTO ? "auto" :
-                 info->current_mode == DC1394_FEATURE_MODE_MANUAL ? "manual" :
-                 "one-push-auto";
-        }else if(name == "WHITE_BALANCE_BU"){
-          dc1394feature_info_t *info = getInfoPtr("WHITE_BALANCE");
-          ICLASSERT_RETURN_VAL(info,"");
-          return str(info->BU_value);
-        }else if(name == "WHITE_BALANCE_RV"){
-          dc1394feature_info_t *info = getInfoPtr("WHITE_BALANCE");
-          ICLASSERT_RETURN_VAL(info,"");
-          return str(info->RV_value);
-        }else{
-          dc1394feature_info_t *info = getInfoPtr(name);
-          ICLASSERT_RETURN_VAL(info,"");
-          return str(info->value);
-        }
-        return "";
-      }
-  
-      // }}}
-      
-      void show() {
-        // {{{ open
-  
-        std::vector<std::string> ps = getPropertyList();
-        for(unsigned int i=0;i<ps.size();++i){
-          std::string &name = ps[i];
-          printf("Feature:%20s  Type:%7s  Info:%20s  Value:%10s\n",
-                 name.c_str(),
-                 getType(name).c_str(),
-                 getInfo(name).c_str(),
-                 getValue(name).c_str());
+    }
+
+    // }}}
+
+    dc1394feature_info_t *DCDeviceFeaturesImpl::getInfoPtr(const std::string &name) const {
+      // {{{ open
+
+      unsigned int l = name.length();
+      if(l > 5 && name.substr(l-5)=="-mode" && name != "trigger-mode"){
+        return getInfoPtr(name.substr(0,l-5));
+      }else if(l > 3 && ((name.substr(l-3) == "_RV")||(name.substr(l-3)=="_BU"))){
+        return getInfoPtr(name.substr(0,l-3));
+      }else{
+        std::map<std::string,dc1394feature_info_t*>::const_iterator it = featureMap.find(name);
+        if(it != featureMap.end()){
+          return it->second;
         }
       }
-  
-      // }}}
-      
-  
-      
-    private:
-      dc1394feature_info_t *getInfoPtr(const std::string &name) const {
-        // {{{ open
-  
-        unsigned int l = name.length();
-        if(l > 5 && name.substr(l-5)=="-mode" && name != "trigger-mode"){
-          return getInfoPtr(name.substr(0,l-5));
-        }else if(l > 3 && ((name.substr(l-3) == "_RV")||(name.substr(l-3)=="_BU"))){
-          return getInfoPtr(name.substr(0,l-3));
-        }else{
-          std::map<std::string,dc1394feature_info_t*>::const_iterator it = featureMap.find(name);
-          if(it != featureMap.end()){
-            return it->second;
-          }
-        }
-        return 0;
-      }
-  
-      // }}}
-      
-      DCDevice dev;
-      dc1394featureset_t features;       
-      std::map<std::string,dc1394feature_info_t*> featureMap;
-    };
-  
+      return 0;
+    }
+
     void DCDeviceFeaturesImplDelOp::delete_func(DCDeviceFeaturesImpl *impl){
       // {{{ open
   
@@ -427,79 +352,22 @@ namespace icl{
     // }}}
     
     
-    DCDeviceFeatures::DCDeviceFeatures(const DCDevice &dev):
+    DCDeviceFeatures::DCDeviceFeatures(const DCDevice &dev)
       // {{{ open
   
-      ParentSC(dev.isNull() ? 0 : new DCDeviceFeaturesImpl(dev)){}
+      : ParentSC(dev.isNull() ? 0 : new DCDeviceFeaturesImpl(dev))
+    {
+      utils::Configurable::addChildConfigurable(impl.get());
+    }
   
     // }}}
     
     DCDeviceFeatures::DCDeviceFeatures():
       // {{{ open
   
-       ParentSC(0){}
+       ParentSC(0){DEBUG_LOG("called this. configurable of this will not work")}
   
-    // }}}
-  
-    void DCDeviceFeatures::show() const{
-      // {{{ open
-  
-      ICLASSERT_RETURN(!isNull());
-      const_cast<DCDeviceFeaturesImpl*>(impl.get())->show();
-    }
-  
-    // }}}
-  
-    bool DCDeviceFeatures::supportsProperty(const std::string &name) const{
-      ICLASSERT_RETURN_VAL(!isNull(),false);
-      return impl->supportsProperty(name);
-    }
-  
-    void DCDeviceFeatures::setProperty(const std::string &name, const std::string &value){
-      // {{{ open
-  
-      ICLASSERT_RETURN(!isNull());
-      impl->setProperty(name,value);
-    }
-  
-    // }}}
-    
-    std::vector<std::string> DCDeviceFeatures::getPropertyList(){
-      // {{{ open
-  
-      ICLASSERT_RETURN_VAL(!isNull(),std::vector<std::string>());
-      return impl->getPropertyList();
-    }
-  
-    // }}}
-    
-    std::string DCDeviceFeatures::getType(const std::string &name){
-      // {{{ open
-  
-      ICLASSERT_RETURN_VAL(!isNull(),"");
-      return impl->getType(name);
-    }
-  
-    // }}}
-    
-    std::string DCDeviceFeatures::getInfo(const std::string &name){
-      // {{{ open
-  
-      ICLASSERT_RETURN_VAL(!isNull(),"");
-      return impl->getInfo(name);
-    }
-  
-    // }}}
-    
-    std::string DCDeviceFeatures::getValue(const std::string &name){
-      // {{{ open
-  
-      ICLASSERT_RETURN_VAL(!isNull(),"");
-      return impl->getValue(name);
-    }
-  
-    // }}}
-    
+    // }}}    
   
   } // namespace io
 }

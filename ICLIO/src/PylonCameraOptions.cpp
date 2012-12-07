@@ -41,80 +41,71 @@ using namespace icl::utils;
 using namespace icl::core;
 using namespace icl::io::pylon;
 
-// This enum is a helper to get the correct icl-value-type strings
-enum icl_val_type {
-  range = 0,
-  value_list = 1,
-  menu = 2,
-  command = 3,
-  info = 4
-} icl_val_type;
-const char *icl_val_str[]={ "range", "value-list", "menu", "command", "info" };
-
 // This is a list of dafault sizes strings for
 // the 'size' parameter of the camera
 const std::string default_sizes =
-        "{128x96,176x144,160x120,320x200,320x240,352x288,360x240,480x320,"
-        "640x350,640x480,768x576,800x480,800x600,960x540,960x640,1024x768,"
-        "1152x864,1200x800,1280x720,1280x800,1440x900,1280x960,1280x1024,"
-        "1600x900,1400x1050,1600x1050,1600x1200,1920x1080,3840x2160}";
-
-const std::string size = "size";
-const std::string form = "format";
-const std::string omit = "OmitDoubleFrames";
+    "128x96,176x144,160x120,320x200,320x240,352x288,360x240,480x320,"
+    "640x350,640x480,768x576,800x480,800x600,960x540,960x640,1024x768,"
+    "1152x864,1200x800,1280x720,1280x800,1440x900,1280x960,1280x1024,"
+    "1600x900,1400x1050,1600x1050,1600x1200,1920x1080,3840x2160";
 
 PylonCameraOptions::PylonCameraOptions(
-        Pylon::IPylonDevice* camera, Interruptable* grabber){
-    m_Interu = grabber;
-    m_Camera = camera;
-    m_OmitDoubleFrames = true;
+    Pylon::IPylonDevice* camera, Interruptable* grabber){
+  m_Interu = grabber;
+  m_Camera = camera;
+  m_OmitDoubleFrames = true;
+
+  // Configurable
+  addProperty("size", "menu", default_sizes, getValue("Width") + "x" + getValue("Height"), 0, "");
+  addProperty("format", getType("PixelFormat"), getInfo("PixelFormat"), getValue("PixelFormat"), 0, "");
+  addProperty("OmitDoubleFrames", "flag", "", m_OmitDoubleFrames, 0, "");
+
+  // Cameras default options
+  std::vector<std::string> ps;
+  std::vector<std::string>::iterator it;
+  addToPropertyList(ps, getNode("Root"));
+  for(it = ps.begin(); it != ps.end(); ++it){
+    addProperty(*it, getType(*it), getInfo(*it), getValue(*it), isVolatile(*it), ""); //TODO getTooltip
+  }
+
+  Configurable::registerCallback(utils::function(this,&PylonCameraOptions::processPropertyChange));
 }
 
 PylonCameraOptions::~PylonCameraOptions(){
-    // nothing to do
+  // nothing to do
 }
 
-// interface for the setter function for video device properties
-void PylonCameraOptions::setProperty(
-        const std::string &property, const std::string &value)
-{
-  FUNCTION_LOG(property << ", " << value)
-  if(supportsPropertyExtra(property)){
-    setPropertyExtra(property, value);
-    return;
+// callback for changed configurable properties
+void PylonCameraOptions::processPropertyChange(const utils::Configurable::Property &prop){
+  //DEBUG_LOG(prop.name << " = " << prop.value);
+  if(prop.name == "size"){
+    Size size(prop.value);
+    setPropertyValue("Width", size.width);
+    setPropertyValue("Height", size.height);
+  } else if(prop.name == "format"){
+    setPropertyValue("PixelFormat", prop.value);
+  } else if(prop.name == "OmitDoubleFrames"){
+    m_OmitDoubleFrames = parse<bool>(prop.value);
+  } else {
+    GenApi::CValuePtr node = getNode(prop.name);
+    if (!node) return;
+    AcquisitionInterruptor a(m_Interu, GenApi::IsWritable(node));
+    GrabbingInterruptor g(m_Interu, GenApi::IsWritable(node));
+    if(!GenApi::IsWritable(node)){
+      DEBUG_LOG2("The parameter '" << prop.name << "' is not writable");
+      return;
+    }
+    try {
+      node -> FromString(prop.value.c_str(), true);
+    } catch (GenICam::GenericException &e) {
+      DEBUG_LOG2("catched exception: " << e.what());
+    }
   }
-  GenApi::CValuePtr node = getNode(property);
-  if (!node) {
-    DEBUG_LOG2("There is no parameter called '" << property << "'")
-    return;
-  }
-  AcquisitionInterruptor a(m_Interu, GenApi::IsWritable(node));
-  GrabbingInterruptor g(m_Interu, GenApi::IsWritable(node));
-
-  if(!GenApi::IsWritable(node)){
-    DEBUG_LOG2("The parameter '" << property << "' is not writable")
-    return;
-  }
-
-  try {
-  node -> FromString(value.c_str(), true);
-  } catch (GenICam::GenericException &e) {
-    DEBUG_LOG2("catched exception: " << e.what())
-  }
-}
-
-// returns a list of properties, that can be set using setProperty
-std::vector<std::string> PylonCameraOptions::getPropertyList(){
-  FUNCTION_LOG()
-  std::vector<std::string> ps;
-  addPropertiesExtra(ps);
-  addToPropertyList(ps, getNode("Root"));
-  return ps;
 }
 
 // helper function for getPropertyList, recursive
 void PylonCameraOptions::addToPropertyList(
-  std::vector<std::string> &ps, const GenApi::CNodePtr& node)
+    std::vector<std::string> &ps, const GenApi::CNodePtr& node)
 {
   GenApi::EInterfaceType type = node -> GetPrincipalInterfaceType();
   switch (type) {
@@ -136,13 +127,13 @@ void PylonCameraOptions::addToPropertyList(
         GenApi::FeatureList_t features;
         ptrCategory -> GetFeatures(features);
         GenApi::FeatureList_t::const_iterator it;
-          for (it = features.begin(); it != features.end(); ++it){
-            addToPropertyList(ps, *it);
+        for (it = features.begin(); it != features.end(); ++it){
+          addToPropertyList(ps, *it);
         }
       }
       return;
     }
-    // for now we ignore these nodes
+      // for now we ignore these nodes
     case GenApi::intfICommand:
     case GenApi::intfIEnumEntry:
     case GenApi::intfIString:
@@ -151,73 +142,34 @@ void PylonCameraOptions::addToPropertyList(
     case GenApi::intfIBase:
     default:
       return;
-  }
-}
-
-// checks if property is returned, implemented, available and of processable GenApi::EInterfaceType
-bool PylonCameraOptions::supportsProperty(const std::string &property){
-  FUNCTION_LOG(property)
-  if(supportsPropertyExtra(property)){
-    return true;
-  }
-  // Check whether node exists
-  GenApi::INode* node = getNode(property);
-  if(!node) return false;
-
-  // Check whether property is implemented
-  if(!GenApi::IsImplemented(node)) return false;
-  if(!GenApi::IsAvailable(node)) return false;
-
-  // check type
-  GenApi::EInterfaceType type = node -> GetPrincipalInterfaceType();
-  switch (type) {
-    case GenApi::intfIInteger:
-    case GenApi::intfIFloat:
-    case GenApi::intfIBoolean:
-    case GenApi::intfIEnumeration:
-    case GenApi::intfICommand:
-      return true;
-
-    case GenApi::intfICategory:
-    case GenApi::intfIEnumEntry:
-    case GenApi::intfIString:
-    case GenApi::intfIRegister:
-    case GenApi::intfIPort:
-    case GenApi::intfIBase:
-    default:
-      return false;
   }
 }
 
 // get type of property
 std::string PylonCameraOptions::getType(const std::string &name){
   FUNCTION_LOG(name)
-  if(supportsPropertyExtra(name)){
-    return getTypeExtra(name);
-  }
-
-  GenApi::INode* node = getNode(name);
+      GenApi::INode* node = getNode(name);
   if (!node) {
     DEBUG_LOG("There is no parameter called '" << name << "'")
-    return icl_val_str[info];
+        return "info";
   }
 
   GenApi::EInterfaceType type = node -> GetPrincipalInterfaceType();
   switch (type) {
     case GenApi::intfIInteger:
     case GenApi::intfIFloat:
-      return icl_val_str[range];
+      return "range";
 
     case GenApi::intfIBoolean:
-      return icl_val_str[value_list];
+      return "flag";
 
     case GenApi::intfIEnumeration:
-      return icl_val_str[menu];
+      return "menu";
 
     case GenApi::intfICommand:
-      return icl_val_str[command];
+      return "command";
 
-    // for now these stay info nodes
+      // for now these stay info nodes
     case GenApi::intfIEnumEntry:
     case GenApi::intfIString:
     case GenApi::intfIRegister:
@@ -225,44 +177,36 @@ std::string PylonCameraOptions::getType(const std::string &name){
     case GenApi::intfIPort:
     case GenApi::intfIBase:
     default:
-      return icl_val_str[info];
+      return "info";
   }
 }
 
 // creates an info string for integer-nodes when possible
 std::string intInfo(GenApi::INode* node){
-    GenApi::IInteger* inode = NULL;
-    if((inode = dynamic_cast<GenApi::IInteger*>(node))) {
-      std::ostringstream ret;
-      ret << "[" << inode -> GetMin() << "," << inode -> GetMax()
-          << "]:" << inode -> GetInc();
-          return ret.str();
-    } else {
-        return "";
-    }
+  GenApi::IInteger* inode = NULL;
+  if((inode = dynamic_cast<GenApi::IInteger*>(node))) {
+    std::ostringstream ret;
+    ret << "[" << inode -> GetMin() << "," << inode -> GetMax()
+        //<< "]:" << inode -> GetInc(); // gui does not support != 1
+        << "]:1";
+    return ret.str();
+  } else {
+    return "";
+  }
 }
 
 // creates an info string for float-nodes when possible
 std::string floatInfo(GenApi::INode* node){
-    GenApi::IFloat* fnode;
-    if((fnode = dynamic_cast<GenApi::IFloat*>(node))) {
-      std::ostringstream ret;
-      ret << "[" << fnode -> GetMin() << "," << fnode -> GetMax() << "]";
-      if(fnode -> HasInc()){
-        ret << ":" << fnode -> GetInc();
-      }
-      return ret.str();
-    } else {
-        return "";
-    }
-}
-
-// creates an info string for boolean-nodes when possible
-std::string boolInfo(GenApi::INode* node){
-  if(dynamic_cast<GenApi::IBoolean*>(node)) {
-    return "{true,false}";
+  GenApi::IFloat* fnode;
+  if((fnode = dynamic_cast<GenApi::IFloat*>(node))) {
+    std::ostringstream ret;
+    ret << "[" << fnode -> GetMin() << "," << fnode -> GetMax() << "]";
+    /*if(fnode -> HasInc()){
+      ret << ":" << fnode -> GetInc();
+    }*/ // gui does not support != 1
+    return ret.str();
   } else {
-      return "";
+    return "";
   }
 }
 
@@ -273,7 +217,6 @@ std::string enumInfo(GenApi::INode* node){
     std::ostringstream ret;
     Pylon::StringList_t symbols;
     enode -> GetSymbolics(symbols);
-    ret << "{";
     Pylon::StringList_t::iterator it;
     for (it = symbols.begin(); it != symbols.end(); ++it){
       ret << it -> c_str();
@@ -281,24 +224,19 @@ std::string enumInfo(GenApi::INode* node){
         ret << ",";
       }
     }
-    ret << "}";
     return ret.str();
   } else {
-      return "";
+    return "";
   }
 }
 
 // get information of a properties valid values
 std::string PylonCameraOptions::getInfo(const std::string &name){
   FUNCTION_LOG(name)
-  if(supportsPropertyExtra(name)){
-    return getInfoExtra(name);
-  }
-
-  GenApi::INode* node = getNode(name);
+      GenApi::INode* node = getNode(name);
   if (!node) {
     DEBUG_LOG("There is no parameter called '" << name << "'")
-    return "";
+        return "";
   }
   std::string ret = "";
   GenApi::EInterfaceType type = node -> GetPrincipalInterfaceType();
@@ -309,14 +247,12 @@ std::string PylonCameraOptions::getInfo(const std::string &name){
     case GenApi::intfIFloat:
       ret = floatInfo(node);
       break;
-    case GenApi::intfIBoolean:
-    case GenApi::intfICommand:
-      ret = boolInfo(node);
-      break;
     case GenApi::intfIEnumeration:
       ret = enumInfo(node);
       break;
-    // for now these stay info nodes
+      // no info needed
+    case GenApi::intfIBoolean:
+    case GenApi::intfICommand:
     case GenApi::intfIEnumEntry:
     case GenApi::intfIString:
     case GenApi::intfIRegister:
@@ -326,133 +262,18 @@ std::string PylonCameraOptions::getInfo(const std::string &name){
     default:
       break;
   }
-    return ret;
+  return ret;
 }
 
 // returns the current value of a property or a parameter
 std::string PylonCameraOptions::getValue(const std::string &name){
-  FUNCTION_LOG(name)
-  if(supportsPropertyExtra(name)){
-    return getValueExtra(name);
-  }
   return getParameterValueString(m_Camera, name);
 }
 
 // Returns whether this property may be changed internally.
 int PylonCameraOptions::isVolatile(const std::string &propertyName){
-  if(supportsPropertyExtra(propertyName)){
-    return isVolatileExtra(propertyName);
-  }
   // can't guarantee anything, sorry.
-  return true;
-}
-
-// adds PylonGrabber properties to property list
-void PylonCameraOptions::addPropertiesExtra(std::vector<std::string> &ps){
-  ps.push_back(size);
-  ps.push_back(form);
-  ps.push_back(omit);
-}
-
-// checks whether property is from PylonGrabber (always supported)
-bool PylonCameraOptions::supportsPropertyExtra(const std::string &property){
-  if (property.compare(size) == 0) return true;
-  if (property.compare(form) == 0) return true;
-  if (property.compare(omit) == 0) return true;
-  return false;
-}
-
-// setter function options of PylonGrabber (device-independent)
-void PylonCameraOptions::setPropertyExtra(
-                       const std::string &property, const std::string &value){
-  FUNCTION_LOG(value)
-  if(property.compare(size) == 0){
-    Size size(value);
-    setProperty("Width", toStr(size.width));
-    setProperty("Height", toStr(size.height));
-    return;
-  }
-  if(property.compare(form) == 0){
-    setProperty("PixelFormat", value);
-    return;
-  }
-  if(property.compare(omit) == 0){
-    m_OmitDoubleFrames = (value.compare("true") == 0);
-    return;
-  }
-  std::ostringstream a;
-  a << "PylonGrabber does not provide " << property;
-  throw ICLException(a.str());
-}
-
-// get type of PylonGrabber property
-std::string PylonCameraOptions::getTypeExtra(const std::string &name){
-  if(name.compare(size) == 0){
-    return icl_val_str[menu];
-  }
-  if(name.compare(form) == 0){
-    return getType("PixelFormat");
-  }
-  if(name.compare(omit) == 0){
-    return icl_val_str[value_list];
-  }
-  std::ostringstream a;
-  a << "PylonGrabber does not provide " << name;
-  throw ICLException(a.str());
-}
-
-// get information of a PylonGrabber properties valid values.
-std::string PylonCameraOptions::getInfoExtra(const std::string &name){
-  if(name.compare(size) == 0){
-    return default_sizes;
-  }
-  if(name.compare(form) == 0){
-    return getInfo("PixelFormat");
-  }
-    if(name.compare(omit) == 0){
-    return "{true,false}";
-  }
-  std::ostringstream a;
-  a << "PylonGrabber does not provide " << name;
-  throw ICLException(a.str());
-}
-
-// returns the current value of a property or a parameter.
-std::string PylonCameraOptions::getValueExtra(const std::string &name){
-  if(name.compare(size) == 0){
-    std::ostringstream ret;
-    ret << getValue("Width") << "x" << getValue("Height");
-    return ret.str();
-  }
-  if(name.compare(form) == 0){
-    return getValue("PixelFormat");
-  }
-  if(name.compare(omit) == 0){
-    if(m_OmitDoubleFrames){
-      return "true";
-    } else {
-      return "false";
-    }
-  }
-  std::ostringstream a;
-  a << "PylonGrabber does not provide " << name;
-  throw ICLException(a.str());
-}
-
-// Returns whether a PylonGrabber-property may be changed internally.
-int PylonCameraOptions::isVolatileExtra(const std::string &propertyName){
-  if(propertyName.compare(size) == 0){
-    return true;
-  }
-  if(propertyName.compare(form) == 0){
-    return true;
-  }
-  if(propertyName.compare(omit) == 0){
-    return false;
-  }
-  std::ostringstream a;
-  a << "PylonGrabber does not provide " << propertyName;
-  throw ICLException(a.str());
+  return 0;
 }
 
 // whether double frames should be omitted.
@@ -466,20 +287,19 @@ double PylonCameraOptions::getResultingFrameRateAbs(){
 }
 
 GenApi::INode *PylonCameraOptions::getNode(std::string name){
-    return m_Camera -> GetNodeMap() -> GetNode(name.c_str());
+  return m_Camera -> GetNodeMap() -> GetNode(name.c_str());
 }
 
 // returns the Pylon::PixelType enum describing the cameras current pixel type
 Pylon::PixelType PylonCameraOptions::getCameraPixelType(){
   std::string format = getFormatString();
   Pylon::PixelType type = Pylon::CPixelTypeMapper::GetPylonPixelTypeByName(
-              GenICam::gcstring(format.c_str()));
+        GenICam::gcstring(format.c_str()));
   if(type == Pylon::PixelType_Undefined){
     DEBUG_LOG("PixelType " << format << "=" << type << "' is not defined.");
   }
   return type;
 }
-
 
 // returns the expected pixel size.
 int PylonCameraOptions::getCameraPixelSize(){
@@ -491,11 +311,11 @@ int PylonCameraOptions::getCameraPixelSize(){
 long PylonCameraOptions::getNeededBufferSize(){
   try {
     return getParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>(
-                m_Camera, "PayloadSize");
+          m_Camera, "PayloadSize");
   } catch (ICLException &e){
     DEBUG_LOG("The camera does not have a parameter called PayloadSize.")
-    DEBUG_LOG("Assuming that the image size is width * height * pixelsize.")
-    return (long) ((getWidth() * getHeight() * getCameraPixelSize() / 8) + 0.5);
+        DEBUG_LOG("Assuming that the image size is width * height * pixelsize.")
+        return (long) ((getWidth() * getHeight() * getCameraPixelSize() / 8) + 0.5);
   }
 }
 
@@ -516,33 +336,33 @@ void PylonCameraOptions::acquisitionStop(){
 // getter for the camera image height.
 int PylonCameraOptions::getHeight(){
   return getParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>(
-              m_Camera, "Height");
+        m_Camera, "Height");
 }
 
 // getter for the camera image width.
 int PylonCameraOptions::getWidth(){
   return getParameterValueOf<Pylon::IPylonDevice, GenApi::IInteger, int>(
-              m_Camera, "Width");
+        m_Camera, "Width");
 }
 
 // returns the cameras PixelFormat as string
 std::string PylonCameraOptions::getFormatString(){
-    return getParameterValueString(m_Camera, "PixelFormat");
+  return getParameterValueString(m_Camera, "PixelFormat");
 }
 
 // returns a string representation of the value of a parameter of the camera.
 std::string icl::io::pylon::getParameterValueString(
-        Pylon::IPylonDevice* device, std::string parameter)
+    Pylon::IPylonDevice* device, std::string parameter)
 {
   GenApi::INode* node = device -> GetNodeMap() -> GetNode(parameter.c_str());
   if (!node) {
     DEBUG_LOG("There is no parameter called '" << parameter << "'")
-    return "";
+        return "";
   }
   GenApi::IValue* value = dynamic_cast<GenApi::IValue*>(node);
   if (!value) {
     DEBUG_LOG("Could not cast '" << parameter << "' node to IValue")
-    return "";
+        return "";
   }
   return (value -> ToString()).c_str();
 }

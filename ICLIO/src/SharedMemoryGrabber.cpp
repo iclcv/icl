@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLIO/src/SharedMemoryGrabber.cpp                      **
 ** Module : ICLIO                                                  **
-** Authors: Christof Elbrechter                                    **
+** Authors: Christof Elbrechter, Viktor Richter                    **
 **                                                                 **
 **                                                                 **
 ** Commercial License                                              **
@@ -50,66 +50,66 @@ namespace icl{
   namespace io{
     
     struct SharedMemoryGrabberImpl::Data{
-      
-      Data():acquireMutex(QMutex::Recursive){}
-      
-      QSharedMemory mem;
-      ImgBase *image;
-      ImgBase *converted_image;
-      bool omitDoubledFrames; // todo implement this feature!
-      Time lastImageTimeStamp;
-      Time lastValidImageGrabbed;
-      ImageCompressor compressor;
-      
-      bool isNew(const Time &t, Grabber &g){
-        if(t == Time::null){
-          WARNING_LOG("SharedMemoryGrabber received image with null-TimeStamp while \"omit-doubled-frames\" feature was activated. Deactivating \"omit-doubled-frames\"-feature to avoid dead-locks!");
-          omitDoubledFrames = false;
-          lastValidImageGrabbed = Time::now();
-          return true;
-        }else if(lastImageTimeStamp == Time::null){
-          lastImageTimeStamp = t;
-          lastValidImageGrabbed = Time::now();
-          return true;
-        }else if(lastImageTimeStamp > t){
-          WARNING_LOG("SharedMemoryGrabber received an image with an older timestamp than the last one. Deactivating \"omit-doubled-frames\"-feature to avoid dead-locks!");
-          lastValidImageGrabbed = Time::now();
-          return true;
-        }else if( (Time::now() - lastValidImageGrabbed).toSeconds() > 5){
-          WARNING_LOG("SharedMemoryGrabber alread waited 5 seconds for a new image which might be caused by an image source that does not provide usefull timestamps. Therefore the 'omit-doubled-frames'-property is deactivated automatically!");
-          g.setProperty("omit-doubled-frames","off");
-          return false;
-        }else if(t == lastImageTimeStamp){
-          return false;
-        }else{
-          lastValidImageGrabbed = Time::now();
-          lastImageTimeStamp = t;
-          return true;
-        }
-      }
-      
-      QMutex acquireMutex;
-      bool callbacksEnabled;
-      
-      struct CallbackCaller : public QThread{
-        SharedMemoryGrabberImpl *impl;
-        SharedMemoryGrabberImpl::Data *data;
-        CallbackCaller(SharedMemoryGrabberImpl *impl, SharedMemoryGrabberImpl::Data *data):
-          impl(impl),data(data){
-          start();
-        }
-        virtual void run(){
-          while(true){
-            while(!data->callbacksEnabled){
-              Thread::sleep(100);
-            }
-            impl->notifyNewImageAvailable(impl->acquireImage());
+
+        Data():acquireMutex(QMutex::Recursive){}
+
+        QSharedMemory mem;
+        ImgBase *image;
+        ImgBase *converted_image;
+        bool omitDoubledFrames; // todo implement this feature!
+        Time lastImageTimeStamp;
+        Time lastValidImageGrabbed;
+        ImageCompressor compressor;
+
+        bool isNew(const Time &t, Grabber &g){
+          if(t == Time::null){
+            WARNING_LOG("SharedMemoryGrabber received image with null-TimeStamp while \"omit-doubled-frames\" feature was activated. Deactivating \"omit-doubled-frames\"-feature to avoid dead-locks!");
+            g.setPropertyValue("omit-doubled-frames", false);
+            lastValidImageGrabbed = Time::now();
+            return true;
+          }else if(lastImageTimeStamp == Time::null){
+            lastImageTimeStamp = t;
+            lastValidImageGrabbed = Time::now();
+            return true;
+          }else if(lastImageTimeStamp > t){
+            WARNING_LOG("SharedMemoryGrabber received an image with an older timestamp than the last one. Deactivating \"omit-doubled-frames\"-feature to avoid dead-locks!");
+            lastValidImageGrabbed = Time::now();
+            return true;
+          }else if( (Time::now() - lastValidImageGrabbed).toSeconds() > 5){
+            WARNING_LOG("SharedMemoryGrabber alread waited 5 seconds for a new image which might be caused by an image source that does not provide usefull timestamps. Therefore the 'omit-doubled-frames'-property is deactivated automatically!");
+            g.setPropertyValue("omit-doubled-frames",false);
+            return false;
+          }else if(t == lastImageTimeStamp){
+            return false;
+          }else{
+            lastValidImageGrabbed = Time::now();
+            lastImageTimeStamp = t;
+            return true;
           }
         }
-      } *caller;
-      
-     
-      
+
+        QMutex acquireMutex;
+        bool callbacksEnabled;
+
+        struct CallbackCaller : public QThread{
+            SharedMemoryGrabberImpl *impl;
+            SharedMemoryGrabberImpl::Data *data;
+            CallbackCaller(SharedMemoryGrabberImpl *impl, SharedMemoryGrabberImpl::Data *data):
+              impl(impl),data(data){
+              start();
+            }
+            virtual void run(){
+              while(true){
+                while(!data->callbacksEnabled){
+                  Thread::sleep(100);
+                }
+                impl->notifyNewImageAvailable(impl->acquireImage());
+              }
+            }
+        } *caller;
+
+
+
     };
     
     SharedMemoryGrabberImpl::SharedMemoryGrabberImpl(const std::string &sharedMemorySegmentID) throw(ICLException):
@@ -120,15 +120,22 @@ namespace icl{
       m_data->omitDoubledFrames = true;
       m_data->callbacksEnabled = false;
       m_data->caller = new Data::CallbackCaller(this,m_data);
-  
+
       if(sharedMemorySegmentID.length()){
         m_data->mem.setKey(sharedMemorySegmentID.c_str());
         if(!m_data->mem.attach(QSharedMemory::ReadOnly)){
           throw ICLException(str(__FUNCTION__)+": unable to connect to shared memory segment \"" + sharedMemorySegmentID + "\"");
         }
       }
+
+      addProperty("format", "info", "RGB", "", 0, "");
+      addProperty("size", "info", "", "", 0, "");
+      addProperty("omit-doubled-frames", "flag", "", m_data->omitDoubledFrames, 0, "");
+      addProperty("enable-callbacks", "flag", "", m_data->callbacksEnabled, 0, "");
+
+      Configurable::registerCallback(utils::function(this,&SharedMemoryGrabberImpl::processPropertyChange));
     }
-  
+
     void SharedMemoryGrabberImpl::init(const std::string &sharedMemorySegmentID) throw (ICLException){
       if(m_data->mem.isAttached()){
         m_data->mem.lock();
@@ -157,7 +164,7 @@ namespace icl{
     
     const std::vector<GrabberDeviceDescription> &SharedMemoryGrabberImpl::getDeviceList(bool rescan){
       static std::vector<GrabberDeviceDescription> deviceList;
-        
+
       if(rescan){
         deviceList.clear();
         QSharedMemory mem("icl-shared-mem-grabbers");
@@ -184,9 +191,9 @@ namespace icl{
     
     const ImgBase* SharedMemoryGrabberImpl::acquireImage(){
       QMutexLocker lock(&m_data->acquireMutex);
-  
+
       if(!m_data->mem.isAttached()) throw ICLException(str(__FUNCTION__)+": grabber is currently not attached to shared memory segment");
-     
+
       m_data->mem.lock();
       while(m_data->omitDoubledFrames && // WAIT FOR NEW IMAGE LOOP
             !m_data->isNew(m_data->compressor.pickTimeStamp((const icl8u*)m_data->mem.constData()),*this) ){
@@ -197,10 +204,11 @@ namespace icl{
       
       m_data->compressor.uncompress((const icl8u*)m_data->mem.constData(), m_data->mem.size(), &m_data->image);
       m_data->mem.unlock();
+      setPropertyValue("size", m_data->image->getSize());
       return m_data->image;
-  
+
     }
-  
+
     void SharedMemoryGrabber::resetBus(){
       QSharedMemory mem("icl-shared-mem-grabbers");
       if(mem.attach(QSharedMemory::ReadWrite)) {
@@ -210,11 +218,11 @@ namespace icl{
       }else{
         WARNING_LOG("No shared memory segment named 'icl-shared-mem-grabbers' found");
       }
-  
-  #ifdef SYSTEM_LINUX
+
+#ifdef SYSTEM_LINUX
       static const std::string QT_SHARED_MEM_PREFIX = "0x51";
-    
-      QStringList l; l << "-m"; 
+
+      QStringList l; l << "-m";
       QProcess ipcs;
       ipcs.start("ipcs",l);
       bool ok = ipcs.waitForFinished();
@@ -229,80 +237,37 @@ namespace icl{
         
         if(ts.size() > 3 && ts[3] == "666" && ts[0].substr(0,4) == QT_SHARED_MEM_PREFIX){
           QProcess ipcrm;
-          QStringList l2; l2 << "-m" << ts[1].c_str(); 
+          QStringList l2; l2 << "-m" << ts[1].c_str();
           std::cout << "releasing shared memory segment key:" << ts[0] << " shmid:" << ts[1] << std::endl;
           ipcrm.start("ipcrm",l2);
           bool ok = ipcrm.waitForFinished();
           if(!ok) throw icl::ICLException("unable to call ipcrm -m");
         }
       }
-  #endif
-  
+#endif
+
     }
-  
-  
-    void SharedMemoryGrabberImpl::setProperty(const std::string &property, const std::string &value){
-      if(property == "omit-doubled-frames"){
-        if(value == "on") m_data->omitDoubledFrames = true;
-        else if(value == "off") {
-          m_data->omitDoubledFrames = false;
-          if(m_data->callbacksEnabled){
-            WARNING_LOG("setting omitDoubledFrames to false will also set callbacksEnabled to false");
-            m_data->callbacksEnabled = false;
-          }
+
+    // callback for changed configurable properties
+    void SharedMemoryGrabberImpl::processPropertyChange(const utils::Configurable::Property &prop){
+      if(prop.name == "omit-doubled-frames"){
+        m_data->omitDoubledFrames = parse<bool>(prop.value);
+        if(!m_data->omitDoubledFrames && m_data->callbacksEnabled){
+          WARNING_LOG("setting omitDoubledFrames to false will also set callbacksEnabled to false");
+          setPropertyValue("enable-callbacks", false);
         }
-        else ERROR_LOG("unable to set property 'omit-doubled-frames' to " << value << " (allowed values are 'on' and 'off')");
-      }if(property == "enable-callbacks"){
-        if(value == "on"){
-          if(!m_data->omitDoubledFrames){
-            WARNING_LOG("enabling enable-callbacks will also enabled omitDoubledFrames");
-          }
-          m_data->omitDoubledFrames = true;
-          m_data->callbacksEnabled = true;
-        }else if(value == "off"){
-          m_data->callbacksEnabled = false;
-        }else ERROR_LOG("unable to set property 'enable-callbacks' to " << value << " (allowed values are 'on' and 'off')");
-      }else{
-        ERROR_LOG("unable to set unsupported property " << property);
+      } else if(prop.name == "enable-callbacks"){
+        if(parse<bool>(prop.value) && !m_data->omitDoubledFrames) {
+          WARNING_LOG("enabling enable-callbacks will also enable omitDoubledFrames");
+          setPropertyValue("omit-doubled-frames", true);
+        } else {
+          m_data->callbacksEnabled = parse<bool>(prop.value);
+        }
       }
     }
-    
-    std::vector<std::string> SharedMemoryGrabberImpl::getPropertyList(){
-      static const std::string ps[1] = {"omit-doubled-frames,enable-callbacks"};
-      return std::vector<std::string>(ps,ps+1);
-    }
-    
-    std::string SharedMemoryGrabberImpl::getType(const std::string &name){
-      if(name == "omit-doubled-frames" || name == "enable-callbacks") {
-        return "menu";
-      }else{
-        ERROR_LOG("invalid property name " << name);
-        return "undefined";
-      }
-    }
-    
-    std::string SharedMemoryGrabberImpl::getInfo(const std::string &name){
-      if(name == "omit-doubled-frames" || name == "enable-callbacks") {
-        return "{\"on\",\"off\"}";
-      }else{
-        ERROR_LOG("invalid property name " << name);
-        return "undefined";
-      }
-    }
-    
-    std::string SharedMemoryGrabberImpl::getValue(const std::string &name){
-      if(name == "omit-doubled-frames") {
-        return m_data->omitDoubledFrames ? "true" : "false";
-      }else if(name == "enable-callbacks"){
-        return m_data->callbacksEnabled ? "true" : "false";
-      }else{
-        ERROR_LOG("invalid property name " << name);
-        return "undefined";
-      }
-    
-    }
-    
+
+    REGISTER_CONFIGURABLE(SharedMemoryGrabber, return new SharedMemoryGrabber(""));
     
   } // namespace io
 }
-  
+

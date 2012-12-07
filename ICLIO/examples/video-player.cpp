@@ -64,7 +64,7 @@ void stream_pos(){
     case press: paused = true; break;
     case release:{
       paused = false; 
-      grabber.setProperty(pos,str(posVal));
+      grabber.setPropertyValue(pos,str(posVal));
       break;
     }
   }
@@ -72,7 +72,7 @@ void stream_pos(){
 
 void init(){
   grabber.init(type,type+"="+filename);
-  int len = parse<int>(grabber.getValue("len"));
+  int len = parse<int>(grabber.getPropertyValue("len"));
   gui << Image().minSize(32,24).handle("image")
       << Slider(0,len,0).label("stream position in "+unit).out("posVal").handle("pos").maxSize(1000,2)
       << ( HBox().maxSize(1000,3) 
@@ -112,7 +112,7 @@ void run(){
   image = grabber.grab();
   gui["fps"].render();
 
-  int p = parse<int>(grabber.getValue(::pos));
+  int p = parse<int>(grabber.getPropertyValue(::pos));
   disableNextUpdate = true;
   if(pos.getValue() != p) pos.setValue(p);
 #ifndef HAVE_OPENCV

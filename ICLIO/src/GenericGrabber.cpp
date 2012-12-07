@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLIO/src/GenericGrabber.cpp                           **
 ** Module : ICLIO                                                  **
-** Authors: Christof Elbrechter                                    **
+** Authors: Christof Elbrechter, Viktor Richter                    **
 **                                                                 **
 **                                                                 **
 ** Commercial License                                              **
@@ -94,14 +94,14 @@ using namespace icl::core;
 namespace icl{
   namespace io{
     static std::vector<GrabberDeviceDescription> deviceList;
-  
-  
-    GenericGrabber::GenericGrabber(const std::string &desiredAPIOrder, 
-                                   const std::string &params, 
+
+
+    GenericGrabber::GenericGrabber(const std::string &desiredAPIOrder,
+                                   const std::string &params,
                                    bool notifyErrors) throw(ICLException):m_poGrabber(0){
       init(desiredAPIOrder,params,notifyErrors);
     }
-  
+
     GenericGrabber::GenericGrabber(const ProgArg &pa) throw (ICLException):m_poGrabber(0){
       init(pa);
     }
@@ -109,13 +109,13 @@ namespace icl{
     void GenericGrabber::init(const ProgArg &pa) throw (ICLException){
       init(*pa,(*pa) + "=" + *utils::pa(pa.getID(),1));
     }
-  
+
     struct SpecifiedDevice{
-      std::string type;
-      std::string id;
-      std::vector<std::string> options;
+        std::string type;
+        std::string id;
+        std::vector<std::string> options;
     };
-  
+
     static std::pair<std::string,std::string> split_at_first(char c, const std::string &s){
       size_t pAt = s.find(c);
       if(pAt != std::string::npos){
@@ -124,27 +124,27 @@ namespace icl{
         return std::pair<std::string,std::string>(s,"");
       }
     }
-  
+
     typedef std::map<std::string,SpecifiedDevice> ParamMap;
     
     static ParamMap create_param_map(const std::string &filter){
       std::vector<std::string> ts = tok(filter,",");
-  
+
       ParamMap pmap;
-  
+
       static const char *plugins[] = { "pwc","dc","dc800","file","demo","create",
                                        "mv","sr","xine","cvvideo", "v4l"
                                        "cvcam","sm","kinectd","kinectc","kinecti",
                                        "pylon","rsb"};
       static const int NUM_PLUGINS=sizeof(plugins)/sizeof(char*);
-  
+
       for(unsigned int i=0;i<ts.size();++i){
-        std::pair<std::string,std::string> tsi = split_at_first('@',ts[i]); 
-  
+        std::pair<std::string,std::string> tsi = split_at_first('@',ts[i]);
+
         std::vector<std::string> ab = tok(tsi.first,"=");
         //SHOW(ab[0]);
         //if(ab.size() > 1) SHOW(ab[1]);
-  
+
         unsigned int S = ab.size();
         switch(S){
           case 1: case 2:
@@ -158,46 +158,47 @@ namespace icl{
             }
             break;
           default:
-            ERROR_LOG("GenericGrabber: invalid device filter token: [" << ts[i] << "] (skipping)"); 
+            ERROR_LOG("GenericGrabber: invalid device filter token: [" << ts[i] << "] (skipping)");
         }
       }
       return pmap;
     }
     
-    void GenericGrabber::init(const std::string &desiredAPIOrder, 
-                                   const std::string &params, 
-                                   bool notifyErrors) throw(ICLException){
+    void GenericGrabber::init(const std::string &desiredAPIOrder,
+                              const std::string &params,
+                              bool notifyErrors) throw(ICLException){
       Mutex::Locker __lock(m_mutex);
       ICL_DELETE(m_poGrabber);
       m_sType = "";
-  
+
       ParamMap pmap = create_param_map(params);
       
       std::string errStr;
-  
-  #define ADD_ERR(P) errStr += errStr.size() ? std::string(",") : ""; \
-                     errStr += std::string(P)+"("+pmap[P].id+")" 
-  
+
+#define ADD_ERR(P) errStr += errStr.size() ? std::string(",") : ""; \
+  errStr += std::string(P)+"("+pmap[P].id+")"
+
       std::vector<std::string> l = tok(desiredAPIOrder,",");
-      for(unsigned int i=0;i<l.size();++i){
+      unsigned int i;
+      for(i=0;i<l.size();++i){
         
         const bool createListOnly = (l[i] == "list");
         std::vector<std::string> supportedDevices;
         
-  #ifdef HAVE_LIBFREENECT
+#ifdef HAVE_LIBFREENECT
         if(createListOnly){
           supportedDevices.push_back("kinectd:device ID:kinect depth camera source:");
           supportedDevices.push_back("kinectc:device ID:kinect color camera source");
           supportedDevices.push_back("kinecti:devide ID:kinect IR camera source");
         }
         if(l[i] == "kinectd" || l[i] == "kinectc" || l[i] == "kinecti"){
-          KinectGrabber::Mode mode = KinectGrabber::GRAB_DEPTH_IMAGE;        
+          KinectGrabber::Mode mode = KinectGrabber::GRAB_DEPTH_IMAGE;
           switch(l[i][6]){
             case 'd': mode = KinectGrabber::GRAB_DEPTH_IMAGE; break;
             case 'c': mode = KinectGrabber::GRAB_RGB_IMAGE; break;
             case 'i': mode = KinectGrabber::GRAB_IR_IMAGE_8BIT; break;
             default: break;
-          }            
+          }
           try{
             // new KinectGrabber *kin = new KinectGrabber(format,to32s(pmap[l[i]]));
             KinectGrabber *kin = new KinectGrabber(mode,to32s(pmap[l[i]].id));
@@ -209,16 +210,16 @@ namespace icl{
             continue;
           }
         }
-  
-  #endif
-  
-  
+
+#endif
+
+
         
-  #ifdef HAVE_VIDEODEV
+#ifdef HAVE_VIDEODEV
         if(createListOnly){
           supportedDevices.push_back("v4l:/dev/videoX index or device-file:V4l2 based camera source");
         }
-  
+
         if(l[i] == "v4l"){
           try{
             V4L2Grabber *g = new V4L2Grabber(pmap["v4l"].id);
@@ -230,9 +231,9 @@ namespace icl{
             continue;
           }
         }
-  #endif
+#endif
         
-  #ifdef HAVE_LIBDC
+#ifdef HAVE_LIBDC
         if(createListOnly){
           supportedDevices.push_back("dc:camera ID or unique ID:IEEE-1394a based camera source (FireWire 400)");
           supportedDevices.push_back("dc:camera ID or unique ID:IEEE-1394b based camera source (FireWire 800)");
@@ -259,7 +260,7 @@ namespace icl{
             //"something very long" -> this is a unique ID then
             uniqueID = d;
           }
-  
+
           if(index < 0){
             for(unsigned int j=0;j<devs.size();++j){
               if(devs[j].getUniqueStringIdentifier() == uniqueID){
@@ -288,16 +289,16 @@ namespace icl{
               m_poGrabber = new DCGrabber(devs[index], l[i]=="dc"?400:800);
               m_sType = l[i];
               break;
-            }        
+            }
           }
         }
-  #endif
-  
-  #ifdef HAVE_LIBMESASR
+#endif
+
+#ifdef HAVE_LIBMESASR
         if(createListOnly){
           supportedDevices.push_back("sr:device Index or -1 for auto select:Mesa Imaging SwissRanger depth camera source");
         }
-  
+
         if(l[i] == "sr"){
           std::vector<std::string> srts = tok(pmap["sr"].id,"c");
           int device = 0;
@@ -309,7 +310,7 @@ namespace icl{
           }else{
             device = to32s(srts[0]);
           }
-  
+
           try{
             m_poGrabber = new SwissRangerGrabber(device,depth32f,channel);
           }catch(ICLException &e){
@@ -319,13 +320,13 @@ namespace icl{
           }
           break;
         }
-  #endif
-  
-  #ifdef HAVE_XINE
+#endif
+
+#ifdef HAVE_XINE
         if(createListOnly){
           supportedDevices.push_back("xine:video filename:Xine library based video file source");
         }
-  
+
         if(l[i] == "xine"){
           try{
             m_poGrabber = new VideoGrabber(pmap["xine"].id);
@@ -336,14 +337,14 @@ namespace icl{
           }
           break;
         }
-  #endif
-  
-  #ifdef HAVE_OPENCV
+#endif
+
+#ifdef HAVE_OPENCV
         if(createListOnly){
           supportedDevices.push_back("cvvideo:video filename:OpenCV based video file source");
           supportedDevices.push_back("cvcam:camera ID:OpenCV based camera source");
         }
-  
+
         if(l[i] == "cvvideo") {
           try{
             m_poGrabber = new OpenCVVideoGrabber(pmap["cvvideo"].id);
@@ -364,30 +365,31 @@ namespace icl{
             continue;
           }
         }
-  #endif
-  
-  #ifdef HAVE_QT
+#endif
+
+#ifdef HAVE_QT
         if(createListOnly){
           supportedDevices.push_back("sm:shared memory segment name:Qt-based shared memory source");
         }
-  
+
         if(l[i] == "sm") {
           try{
             m_poGrabber = new SharedMemoryGrabber(pmap["sm"].id);
             m_sType = "sm";
             break;
           }catch(ICLException &e){
+            e.report();
             ADD_ERR("sm");
             continue;
           }
         }
-  #endif
-  
-  #ifdef HAVE_PYLON
+#endif
+
+#ifdef HAVE_PYLON
         if(createListOnly){
           supportedDevices.push_back("pylon:camera ID ?? or IP-address:Basler Pylon based gigabit-ethernet (GIG-E) camera source");
         }
-  
+
         if(l[i] == "pylon"){
           if (pmap["pylon"].id == "-help"){
             pylon::PylonGrabber::printHelp();
@@ -403,13 +405,13 @@ namespace icl{
             continue;
           }
         }
-  #endif
-  
-  #ifdef HAVE_OPENNI
+#endif
+
+#ifdef HAVE_OPENNI
         if(createListOnly){
           supportedDevices.push_back("oni:camera ID");
         }
-  
+
         if(l[i] == "oni"){
           try{
             m_poGrabber = new OpenNIGrabber(pmap["oni"].id);
@@ -420,9 +422,9 @@ namespace icl{
             continue;
           }
         }
-  #endif
-  
-  #if defined(HAVE_RSB) && defined(HAVE_PROTOBUF)
+#endif
+
+#if defined(HAVE_RSB) && defined(HAVE_PROTOBUF)
         if(createListOnly){
           supportedDevices.push_back("rsb:[comma sep. transport list=spread]\\:scope:Robotics Service Bus based image source");
         }
@@ -444,8 +446,8 @@ namespace icl{
             continue;
           }
         }
-  #endif
-  
+#endif
+
         if(createListOnly){
           supportedDevices.push_back("file:file name or file-pattern (in ''):image source for single or a list of image files");
           supportedDevices.push_back("demo:0:demo image source");
@@ -453,7 +455,7 @@ namespace icl{
         }
         
         if(l[i] == "file"){
-  
+
           try{
             if(FileList(pmap["file"].id).size()){
               m_sType = "file";
@@ -472,13 +474,13 @@ namespace icl{
           m_poGrabber = new DemoGrabber(to32f(pmap["demo"].id));
           m_sType = "demo";
         }
-  
+
         if(l[i] == "create"){
           m_poGrabber = new CreateGrabber(pmap["create"].id);
           m_sType = "create";
         }
-  
-  
+
+
         if(createListOnly){
           std::cout << "the following generic grabber plugins are available:" << std::endl;
           
@@ -495,14 +497,20 @@ namespace icl{
         std::string errMsg("generic grabber was not able to find any suitable device\ntried:");
         throw ICLException(errMsg+errStr);
       }else{
+        m_poGrabber -> setConfigurableID("[" + m_sType + "]:" + pmap[m_sType].id);
+        // add internal grabber as child-configurable
+        m_poGrabber -> addProperty("desired size", "menu", "not used,QQVGA,QVGA,VGA,SVGA,XGA,XGAP,UXGA", "not used", 0, "");
+        m_poGrabber -> addProperty("desired depth", "menu", "not used,depth8u,depth16s,depth32s,depth32f,depth64f", "not used", 0, "");
+        m_poGrabber -> addProperty("desired format", "menu", "not used,formatGray,formatRGB,formatHLS,formatYUV,formatLAB,formatChroma,formatMatrix", "not used", 0, "");
+        m_poGrabber -> Configurable::registerCallback(utils::function(m_poGrabber,&Grabber::processPropertyChange));
+
         GrabberDeviceDescription d(m_sType,pmap[m_sType].id,"any device");
-  
+
         for(unsigned int i=0;i<deviceList.size();++i){
           if(deviceList[i].type == d.type && deviceList[i].id == d.id) return;
         }
         deviceList.push_back(d);
-        
-  
+
         const std::vector<std::string> &options = pmap[m_sType].options;
         /// setting extra properties ...
         for(unsigned int i=0;i<options.size();++i){
@@ -517,14 +525,14 @@ namespace icl{
             t[0] = tok("property,type,allowed values,current value",",");
             for(unsigned int j=0;j<ps.size();++j){
               const std::string &p2 = ps[j];
-              const std::string ty = m_poGrabber->getType(p2);
+              const std::string ty = m_poGrabber->getPropertyType(p2);
               const bool isCommand = ty == "command";
               const bool isInfo = ty == "info";
               
               t(0,j+1) = p2;
               t(1,j+1) = ty;
-              t(2,j+1) = (isInfo||isCommand) ? str("-") : m_poGrabber->getInfo(p2);
-              t(3,j+1) = isCommand ? "-" : m_poGrabber->getValue(p2);
+              t(2,j+1) = (isInfo||isCommand) ? str("-") : m_poGrabber->getPropertyInfo(p2);
+              t(3,j+1) = isCommand ? "-" : m_poGrabber->getPropertyValue(p2);
             }
             std::cout << t << std::endl;
             std::terminate();
@@ -532,11 +540,11 @@ namespace icl{
             this->enableUndistortion(p.second);
           }else{
             //  DEBUG_LOG("setting property -" << p.first << "- to value -" << p.second << "-");
-            m_poGrabber->setProperty(p.first,p.second);
+            m_poGrabber->setPropertyValue(p.first,p.second);
           }
         }
       }
-    }  
+    }
     
     void GenericGrabber::resetBus(const std::string &deviceList, bool verbose){
       std::vector<std::string> ts = tok(deviceList,",");
@@ -544,26 +552,26 @@ namespace icl{
       for(unsigned int i=0;i<ts.size();++i){
         const std::string &t = ts[i];
         (void)t; // to avoid warnings in case of no dc support
-  #ifdef HAVE_LIBDC
+#ifdef HAVE_LIBDC
         if(t == "dc" || t == "dc800"){
           DCGrabber::dc1394_reset_bus(verbose);
         }
-  #endif
-  #ifdef HAVE_QT
+#endif
+#ifdef HAVE_QT
         if( t == "sm" ){
           SharedMemoryGrabber::resetBus();
         }
-  #endif
+#endif
         // others are not supported yet
       }
-    
+
     }
-  
+
     template<class T>
     static inline bool contains(const std::map<std::string,T> &m,const std::string &t){
-        return m.find(t) != m.end();
+      return m.find(t) != m.end();
     }
-  
+
     static const GrabberDeviceDescription *find_description(const std::vector<GrabberDeviceDescription> &ds, const std::string &id){
       for(unsigned int i=0;i<ds.size();++i){
         std::vector<std::string> ts = tok(ds[i].id,"|||",false);
@@ -573,7 +581,7 @@ namespace icl{
       }
       return 0;
     }
-  #ifdef HAVE_LIBFREENECT
+#ifdef HAVE_LIBFREENECT
     static const GrabberDeviceDescription *find_description_2(const std::vector<GrabberDeviceDescription> &ds, const std::string &id,
                                                               const std::string &type){
       for(unsigned int i=0;i<ds.size();++i){
@@ -585,12 +593,12 @@ namespace icl{
       }
       return 0;
     }
-  #endif
-  
+#endif
+
     template<class T>
     static void add_devices(std::vector<GrabberDeviceDescription> &all,
-                            const std::string &dev, 
-                            bool useFilter, 
+                            const std::string &dev,
+                            bool useFilter,
                             ParamMap &pmap){
       
       if(!useFilter || contains(pmap,dev)){
@@ -604,55 +612,55 @@ namespace icl{
           }
           ds = newds;
         }
-  
+
         if(useFilter && pmap[dev].id.length()){
           const GrabberDeviceDescription *d = find_description(ds,pmap[dev].id);
           if(d){
             all.push_back(*d);
-          }    
+          }
         }else{
           std::copy(ds.begin(),ds.end(),std::back_inserter(all));
         }
       }
     }
     
-  #ifdef HAVE_LIBFREENECT
+#ifdef HAVE_LIBFREENECT
     template<>
     void add_devices<KinectGrabber>(std::vector<GrabberDeviceDescription> &all,
-                                    const std::string &dev, 
-                                    bool useFilter, 
+                                    const std::string &dev,
+                                    bool useFilter,
                                     ParamMap &pmap){
       if(!useFilter || contains(pmap,"kinectd") || contains(pmap,"kinectc") || contains(pmap,"kinecti")){
-        std::vector<GrabberDeviceDescription> ds = KinectGrabber::getDeviceList(true);    
+        std::vector<GrabberDeviceDescription> ds = KinectGrabber::getDeviceList(true);
         if(useFilter && (pmap["kinectd"].id.length() || pmap["kinectc"].id.length() || pmap["kinecti"].id.length())){
           if(pmap["kinectd"].id.length()){
             const GrabberDeviceDescription *d = find_description_2(ds,pmap["kinectd"].id,"kinectd");
             if(d){
               all.push_back(*d);
-            } 
+            }
           }
           if(pmap["kinectc"].id.length()){
-  
+
             const GrabberDeviceDescription *d = find_description_2(ds,pmap["kinectc"].id,"kinectc");
             if(d){
               all.push_back(*d);
-            } 
+            }
           }
           if(pmap["kinecti"].id.length()){
             const GrabberDeviceDescription *d = find_description_2(ds,pmap["kinecti"].id,"kinecti");
             if(d){
               all.push_back(*d);
-            } 
-          }        
+            }
+          }
         }else{
           std::copy(ds.begin(),ds.end(),std::back_inserter(all));
         }
       }
     }
-  #endif
+#endif
     
     const std::vector<GrabberDeviceDescription> &GenericGrabber::getDeviceList(const std::string &filter, bool rescan){
-  
+
       if(rescan){
         deviceList.clear();
         bool useFilter = filter.length();
@@ -665,44 +673,44 @@ namespace icl{
           deviceList.push_back(GrabberDeviceDescription("demo","0","Demo Grabber Device"));
         }
         
-  #ifdef HAVE_VIDEODEV
+#ifdef HAVE_VIDEODEV
         add_devices<V4L2Grabber>(deviceList,"v4l",useFilter,pmap);
-  #endif
+#endif
         
-  #ifdef HAVE_LIBDC
+#ifdef HAVE_LIBDC
         add_devices<DCGrabber>(deviceList,"dc",useFilter,pmap);
         add_devices<DCGrabber>(deviceList,"dc800",useFilter,pmap);
-  #endif
+#endif
         
         
-  #ifdef HAVE_LIBMESASR
+#ifdef HAVE_LIBMESASR
         add_devices<SwissRangerGrabber>(deviceList,"sr",useFilter,pmap);
-  #endif
+#endif
         
-  #ifdef HAVE_OPENCV
+#ifdef HAVE_OPENCV
         add_devices<OpenCVCamGrabber>(deviceList,"cvcam",useFilter,pmap);
-  #endif
-  
+#endif
+
         
-  #ifdef HAVE_QT
+#ifdef HAVE_QT
         add_devices<SharedMemoryGrabber>(deviceList,"sm",useFilter,pmap);
-  #endif
-  
-  #ifdef HAVE_LIBFREENECT
+#endif
+
+#ifdef HAVE_LIBFREENECT
         add_devices<KinectGrabber>(deviceList,"",useFilter,pmap);
-  #endif
-  
-  #ifdef HAVE_PYLON
+#endif
+
+#ifdef HAVE_PYLON
         add_devices<pylon::PylonGrabber>(deviceList,"pylon",useFilter,pmap);
-  #endif
-  
-  #ifdef HAVE_OPENNI
+#endif
+
+#ifdef HAVE_OPENNI
         add_devices<OpenNIGrabber>(deviceList,"oni",useFilter,pmap);
-  #endif
-  
-  #if defined(HAVE_RSB) && defined(HAVE_PROTOBUF)
+#endif
+
+#if defined(HAVE_RSB) && defined(HAVE_PROTOBUF)
         add_devices<RSBGrabber>(deviceList,"rsb",useFilter,pmap);
-  #endif
+#endif
       }
       return deviceList;
     }

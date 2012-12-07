@@ -36,6 +36,7 @@
 #include <ICLUtils/SteppingRange.h>
 #include <ICLUtils/ProcessMonitor.h>
 #include <ICLUtils/Size.h>
+#include <ICLIO/GenericGrabber.h>
 #include <ICLCore/CoreFunctions.h>
 
 #include <ICLQt/GUI.h>
@@ -148,7 +149,7 @@ namespace icl{
             l = &gui.get<LabelHandle>("#i#"+prop);
           }
           (***l).setText(conf.getPropertyValue(prop).c_str());
-          (***l).update(); 
+          (***l).update();
           QApplication::processEvents();
         }
       };
@@ -277,8 +278,9 @@ namespace icl{
       std::vector<SmartPtr<VolatileUpdater> > timers;
       Configurable *conf;
       GUI gui;
+      GUI sub_gui;
       bool deactivateExec;
-      
+      std::string processingProperty;
   
       struct StSt{
         std::string full,half;
@@ -370,7 +372,7 @@ namespace icl{
           int volatileness = conf->getPropertyVolatileness(p.full);
           if(volatileness){
             timers.push_back(new VolatileUpdater(volatileness,p.full,timerGUI,*conf));
-          } 
+          }
         }else if(t == "flag"){
           std::string handle = "#f#"+p.full;
           ostr << '\1' << handle;
@@ -401,13 +403,37 @@ namespace icl{
           Color c = parse<Color>(conf->getPropertyValue(p.full));
           gui << ColorSelect(c[0],c[1],c[2]).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
         }
-        
+
         else{
           ERROR_LOG("unable to create GUI-component for property \"" << p.full << "\" (unsupported property type: \"" + t+ "\")");
         }
        }
+
+      bool isSpecialGrabberGrabberProperty(Configurable* c, const std::string &prop){
+        if(dynamic_cast<io::Grabber*>(conf)){
+          const unsigned int propcount = 5;
+          const std::string properties[propcount] = {"format", "size", "desired format", "desired size", "desired depth"};
+          for (unsigned int i = 0; i < propcount; ++i){
+            if(properties[i] == prop) return true;
+          }
+        }
+        return false;
+      }
+
+      StSt getStSt(std::map<std::string,std::vector<StSt> > &map, std::string name){
+        for(std::map<std::string,std::vector<StSt> >::iterator it=map.begin();it != map.end();++it){
+          for(unsigned int i=0;i<it->second.size();++i){
+            if((it->second[i]).full == name){
+              return it->second[i];
+            }
+          }
+        }
+
+        ERROR_LOG("Could not find " << name << " property in map.");
+        return StSt("error", "error");
+      }
   
-      ConfigurableGUIWidget(const GUIDefinition &def):GUIWidget(def,1,1,GUIWidget::gridLayout, Size(8,12)),deactivateExec(false){
+      ConfigurableGUIWidget(const GUIDefinition &def):GUIWidget(def,1,1,GUIWidget::gridLayout, Size(8,12)),deactivateExec(false), processingProperty(""){
         conf = Configurable::get(def.param(0));
         if(!conf) throw GUISyntaxErrorException(def.defString(),"No Configurable with ID "+def.param(0)+" registered");
         
@@ -438,30 +464,51 @@ namespace icl{
           tablist += (tablist.length()?",":"")+it->first;
           ++i;
         }
-        
-        gui = Tab(tablist,this).handle("__the_tab__");
-  
+        gui = HSplit(this).handle("__the_root__");
+        bool use_tabs = sections.size() > 1;
+        if(use_tabs){
+          sub_gui = Tab(tablist,this).handle("__the_tab__");
+        } else {
+          sub_gui = VBox(this).handle("__the_tab__");
+        }
+
         std::ostringstream ostr;
+
+        // special treatment of grabbers
+        if(dynamic_cast<io::Grabber*>(conf)){
+          GUI general_box = VBox(this).handle("__the_box__");
+          add_component(general_box,getStSt(sections, "format"),ostr,gui);
+          add_component(general_box,getStSt(sections, "size"),ostr,gui);
+          add_component(general_box,getStSt(sections, "desired format"),ostr,gui);
+          add_component(general_box,getStSt(sections, "desired size"),ostr,gui);
+          add_component(general_box,getStSt(sections, "desired depth"),ostr,gui);
+          gui <<  general_box;
+        }
+
         for(std::map<std::string,std::vector<StSt> >::iterator it=sections.begin();it != sections.end();++it){
           GUI tab = VScroll();
           for(unsigned int i=0;i<it->second.size();++i){
-            add_component(tab,it->second[i],ostr,gui);          
+            if(!isSpecialGrabberGrabberProperty(conf,(it->second[i]).full)){
+              add_component(tab,it->second[i],ostr,gui);
+            }
           }
           if(it->first == "general"){
             tab << ( HBox()
                      << Button("load").handle("#X#load")
                      << Button("save").handle("#X#save")
                    );
-                     
+
             ostr <<  '\1' << "#X#load";
             ostr <<  '\1' << "#X#save";
           }
-          gui << tab;
+          sub_gui << tab;
         }
-        
+        gui << sub_gui;
         gui.create();
         
-        (**gui.get<TabHandle>("__the_tab__")).setCurrentIndex(generalIdx);
+        if(use_tabs){
+          (**gui.get<TabHandle>("__the_tab__")).setCurrentIndex(generalIdx);
+        }
         
         std::string cblist = ostr.str();
         if(cblist.size() > 1){
@@ -473,15 +520,15 @@ namespace icl{
         
         conf->registerCallback(function(this,&icl::qt::ConfigurableGUIWidget::propertyChanged));
       }
-  
+
       /// Called if a property is changed from somewhere else
       void propertyChanged(const Configurable::Property &p){
+        if(p.name == processingProperty || deactivateExec) return;
         const std::string &name = p.name;
         const std::string &type = p.type;
         //const std::string &value = p.value;
-        
         deactivateExec = true;
-  
+        processingProperty = p.name;
         if(type == "range" || type == "range:slider"){
           SteppingRange<float> r = parse<SteppingRange<float> >(conf->getPropertyInfo(name));
           if(r.stepping == 1){
@@ -508,14 +555,19 @@ namespace icl{
         }else if(type == "color"){
           gui["#C#"+name] = conf->getPropertyValue(name).as<Color>();
         }
-        
         deactivateExec = false;
+        processingProperty = "";
       }
       
       void exec(const std::string &handle){
-        if(deactivateExec) return;
         if(handle.length()<3 || handle[0] != '#') throw ICLException("invalid callback (this should not happen)");
         std::string prop = handle.substr(3);
+        if(deactivateExec || processingProperty == prop){
+          return;
+        } else {
+          deactivateExec = true;
+        }
+        processingProperty = prop;
         switch(handle[1]){
           case 'r': 
           case 'R': 
@@ -550,6 +602,8 @@ namespace icl{
           default:
             ERROR_LOG("invalid callback ID " << handle);
         }
+        deactivateExec = false;
+        processingProperty = "";
       }
   
       static string getSyntax(){
@@ -557,42 +611,68 @@ namespace icl{
       }
   
     };
-  
-    struct CamCfgGUIWidget : public GUIWidget{
+
+    struct CamPropertyWidget : public Tab {
+
+      static std::string create_tab_list(){
+         const std::vector<io::GrabberDeviceDescription> devs =
+                            io::GenericGrabber::getDeviceList("",false);
+         std::ostringstream ret;
+         for(unsigned int i = 0; i < devs.size(); ++i){
+            ret << "[" << devs.at(i).type << "] " << i << ",";
+         }
+        return ret.str();
+      }
+
+      CamPropertyWidget()
+        : Tab(create_tab_list())
+      {
+        minSize(32,24);
+        std::vector<io::GrabberDeviceDescription> devs = io::GenericGrabber::getDeviceList("",false);
+        for(unsigned int i = 0; i < devs.size(); ++i){
+          *this << Prop(devs.at(i).name()).label(devs.at(i).name());
+        }
+        *this << Create();
+      }
+    };
+
+
+    struct CamCfgGUIWidget : public GUIWidget {
       // {{{ open
-      CamCfgGUIWidget(const GUIDefinition &def):GUIWidget(def,0,2){
-        if(def.numParams() == 2){
+
+      CamCfgGUIWidget(const GUIDefinition &def):
+        GUIWidget(def,0,2), m_cfg(NULL), m_button(NULL)
+      {
+        if(def.numParams() != 0  && def.numParams() != 2){
           throw GUISyntaxErrorException(def.defString(),"camcfg can take 0 or 2 parameters");
         }
-        m_button = new QPushButton("camcfg",this);
-        connect(m_button,SIGNAL(clicked()),this,SLOT(ioSlot()));
-  
+        if(def.numParams() == 0){
+          m_button = new QPushButton("camcfg",this);
+          connect(m_button,SIGNAL(clicked()),this,SLOT(ioSlot()));
+          addToGrid(m_button);
+        } else {
+          if(!m_cfg) m_cfg = new CamPropertyWidget();
+          addToGrid(m_cfg -> getRootWidget());
+        }
+
         if(def.hasToolTip()){
           WARNING_LOG("tooltip is not supported for the Camera Configuration GUI component!");
         }
-        
-        if(def.numParams()){
-          devType = def.param(0);
-          devID = def.param(1);
-        }
-        m_cfg = 0;
-  
-        addToGrid(m_button);
       }
+
       virtual void processIO(){
-        if(!m_cfg){
-          m_cfg = new CamCfgWidget(devType,devID);
-        }
-        m_cfg->show();
+          if(!m_cfg) m_cfg = new CamPropertyWidget();
+          m_cfg->show();
       }
+
       static string getSyntax(){
-        return string("camcfg(devType="",devID="")[general params]\n")+gen_params();
+        return string("camcfg()[general params]\n")+gen_params();
       }
-      CamCfgWidget *m_cfg;
+      
+      CamPropertyWidget *m_cfg;
       QPushButton *m_button;
-      std::string devType,devID;
     };
-  
+
     struct ScrollGUIWidgetBase : public GUIWidget, public ProxyLayout{
       // {{{ open
   
@@ -1216,7 +1296,7 @@ namespace icl{
           }else{
             addToGrid(m_poLCD,1,0,4,1);
           }
-          connect(m_poSlider,SIGNAL(valueChanged(int)),m_poLCD,SLOT(display(int)));
+          //connect(m_poSlider,SIGNAL(valueChanged(int)),m_poLCD,SLOT(display(int)));
         }
   
         connect(m_poSlider,SIGNAL(valueChanged(int)),this,SLOT(ioSlot()));
@@ -1245,6 +1325,8 @@ namespace icl{
         //cb();
         //iStep is handled as a value that must '%' the slider to 0
         *m_piValue = m_poSlider->value();
+        Thread::msleep(100);
+        if(m_poLCD) m_poLCD->display(*m_piValue);
       }
     private:
       ThreadedUpdatableSlider *m_poSlider;
@@ -2253,7 +2335,7 @@ namespace icl{
         ProxyLayout *proxy = m_poWidget->getProxyLayout();
   
         if(!layout && !proxy && m_children.size()){
-          ERROR_LOG("GUI widget has no layout, "<< m_children.size() <<" child components can't be added!");
+          ERROR_LOG("GUI widget has noGUI layout, "<< m_children.size() <<" child components can't be added!");
           return;
         }
         for(unsigned int i=0;i<m_children.size();i++){

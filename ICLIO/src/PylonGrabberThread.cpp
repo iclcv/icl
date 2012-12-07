@@ -32,8 +32,6 @@
 **                                                                 **
 *********************************************************************/
 
-#include <pylon/PylonIncludes.h>
-
 #include <ICLIO/PylonGrabberThread.h>
 #include <ICLUtils/Time.h>
 

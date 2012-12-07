@@ -176,7 +176,7 @@ namespace icl{
     
     void SharedMemoryPublisher::publish(const ImgBase *image){
       QSharedMemory &mem = m_data->mem;
-  
+
       CompressedData data = compress(image);
       
       if(!mem.isAttached()){

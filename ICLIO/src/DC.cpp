@@ -821,7 +821,7 @@ namespace icl{
           ERROR_LOG("device does not support IEEE 1394-B mode");
           return;
         }
-  
+
         switch(mbits){
   #define CASE(X)                                                            \
           case X:                                                            \

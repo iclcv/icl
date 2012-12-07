@@ -147,6 +147,7 @@ namespace icl{
       inline void initialize(const std::string &id){
         utils::Mutex::Locker l(s_mutex);
         m_instance = s_instances[id];
+        addChildConfigurable(m_instance->ptr);
       }
       
       /// used inderived classes to initialize itself as brand new instance
@@ -154,6 +155,7 @@ namespace icl{
         ICLASSERT_RETURN(isNew(id));
         utils::Mutex::Locker l(s_mutex);
         m_instance = s_instances[id] = InstancePtr(new GrabberHandleInstance<G>(id,g));
+        addChildConfigurable(m_instance->ptr);
       }
       public:
   
@@ -185,50 +187,7 @@ namespace icl{
         utils::Mutex::Locker l(m_instance->mutex);
         return m_instance->ptr->acquireImage();
       }
-      /// calles underlying grabber's setProperty function
-      virtual inline void setProperty(const std::string &property, const std::string &value){      
-        ICLASSERT_RETURN(!isNull());
-        utils::Mutex::Locker l(m_instance->mutex);
-        m_instance->ptr->setProperty(property,value);
-      }
-      /// calles underlying grabber's getPropertyList function
-      virtual inline std::vector<std::string> getPropertyList(){
-        ICLASSERT_RETURN_VAL(!isNull(),std::vector<std::string>());
-        utils::Mutex::Locker l(m_instance->mutex);
-        return m_instance->ptr->getPropertyList();
-      }
-      /// calles underlying grabber's supportsProperty function
-      virtual inline  bool supportsProperty(const std::string &property){
-        ICLASSERT_RETURN_VAL(!isNull(),false);
-        utils::Mutex::Locker l(m_instance->mutex);
-        return m_instance->ptr->supportsProperty(property);
-      }
-      /// calles underlying grabber's getType function
-      virtual inline std::string getType(const std::string &name){
-        ICLASSERT_RETURN_VAL(!isNull(),"undefined");
-        utils::Mutex::Locker l(m_instance->mutex);
-        return m_instance->ptr->getType(name);
-      }
-      /// calles underlying grabber's getInfo function
-      virtual inline std::string getInfo(const std::string &name){
-        ICLASSERT_RETURN_VAL(!isNull(),"undefined");
-        utils::Mutex::Locker l(m_instance->mutex);
-        return m_instance->ptr->getInfo(name);
-      }
-      /// calles underlying grabber's getValue function
-      virtual inline std::string getValue(const std::string &name){
-        ICLASSERT_RETURN_VAL(!isNull(),"undefined");
-        utils::Mutex::Locker l(m_instance->mutex);
-        return m_instance->ptr->getValue(name);
-      }
-  
-      virtual inline int isVolatile(const std::string &propertyName){
-        ICLASSERT_RETURN_VAL(!isNull(),0);
-        utils::Mutex::Locker l(m_instance->mutex);
-        return m_instance->ptr->isVolatile(propertyName);
-      }
-  
-  
+
       /// internally set a desired format
       virtual void setDesiredFormatInternal(core::format fmt){
         ICLASSERT_RETURN(!isNull());

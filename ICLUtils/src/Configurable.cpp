@@ -54,7 +54,12 @@ namespace icl{
     
     Configurable::Property &Configurable::prop(const std::string &propertyName) throw (ICLException){
       std::map<std::string,Property>::iterator it = m_properties.find(propertyName);
-      if(it == m_properties.end()) throw ICLException("Property " + str(propertyName) + " is not supported");
+      //if(it == m_properties.end()) throw ICLException("Property " + str(propertyName) + " is not supported");
+      //TODO: this is a workaround because calling callbacks of elder configurables may break.
+      static Property *p = new Property();
+      if(it == m_properties.end()){
+        return *p;
+      }
       return it->second;
     }
   
@@ -76,6 +81,7 @@ namespace icl{
         if(it != m_properties.end()) throw ICLException("Property " + str(p.name) + "cannot be added from child configurable due to name conflicts");
         m_properties[p.name] = p;
       }
+      configurable -> m_elderConfigurable = this;
     }
   
     const Configurable::Property &Configurable::prop(const std::string &propertyName) const throw (ICLException){
@@ -116,7 +122,7 @@ namespace icl{
       }
     }
   
-    Configurable::Configurable(const std::string &ID) throw (ICLException) : m_ID(ID){
+    Configurable::Configurable(const std::string &ID) throw (ICLException) : m_elderConfigurable(NULL), m_ID(ID){
       if(ID.length()){
         if(get(ID)) throw ICLException(str("Configurable(")+ID+"): given ID is already used");
       }
@@ -131,6 +137,7 @@ namespace icl{
         }
       }
       m_childConfigurables = other.m_childConfigurables;
+      m_elderConfigurable = other.m_elderConfigurable;
       m_ID = "";
     }
     
@@ -143,6 +150,7 @@ namespace icl{
         }
       }
       m_childConfigurables = other.m_childConfigurables;
+      m_elderConfigurable = other.m_elderConfigurable;
       return *this;
     }
   
@@ -162,10 +170,15 @@ namespace icl{
     }
   
     void Configurable::call_callbacks(const std::string &propertyName){
-      if(!callbacks.size()) return;
-      const Property &p = prop(propertyName);
-      for(std::vector<Callback>::iterator it=callbacks.begin();it!=callbacks.end();++it){
-        (*it)(p);
+      if(callbacks.size()){
+        const Property &p = prop(propertyName);
+        int i = 0;
+        for(std::vector<Callback>::iterator it=callbacks.begin();it!=callbacks.end();++it,++i){
+          (*it)(p);
+        }
+      }
+      if(m_elderConfigurable){
+        m_elderConfigurable -> call_callbacks(propertyName);
       }
     }
   
@@ -259,7 +272,40 @@ namespace icl{
       f.save(filename);
     }
   
-    
+    void setOptions(Configurable* conf, ConfigFile &f, const std::vector<std::string> &supported){
+      for(unsigned int i=0;i<supported.size();++i){
+        const std::string &prop = supported[i];
+        std::string type = conf -> getPropertyType(prop);
+        if(type == "info") continue;
+        if(type == "command") continue;
+
+        if(type == "range" || type == "value-list" || type == "range:slider" || type == "range:spinbox" || type == "float"){
+          try{
+            conf -> setPropertyValue(prop,str(f[prop].as<float>()));
+          }catch(...){}
+        }else if(type == "int"){
+          try{
+            conf -> setPropertyValue(prop,str(f[prop].as<int>()));
+          }catch(...){}
+        }else if(type == "string"){
+          try{
+            conf -> setPropertyValue(prop,f[prop].as<std::string>());
+          }catch(...){}
+        }else if(type == "menu"){
+          try{
+            conf -> setPropertyValue(prop,f[prop].as<std::string>());
+          }catch(...){}
+        }else if(type == "flag"){
+          try{
+            conf -> setPropertyValue(prop,f[prop].as<bool>());
+          }catch(...){}
+        }else if(type == "color"){
+          try{
+            conf -> setPropertyValue(prop,f[prop].as<std::string>());
+          }catch(...){}
+        }
+      }
+    }
     
     void Configurable::loadProperties(const std::string &filename, const std::vector<std::string> &filterOUT){
       ConfigFile f(filename);
@@ -270,7 +316,7 @@ namespace icl{
         psSupported = remove_by_filter(psSupported,filterOUT);
       }
       f.setPrefix("config.");
-      for(unsigned int i=0;i<psSupported.size();++i){
+      /*for(unsigned int i=0;i<psSupported.size();++i){
         std::string &prop = psSupported[i];
         std::string type = getPropertyType(prop);
         if(type == "info") continue;
@@ -301,7 +347,10 @@ namespace icl{
             setPropertyValue(prop,f[prop].as<std::string>());
           }catch(...){}
         }
-      }
+      }*/
+      // set Options twice to ensure setting of dependent properties
+      setOptions(this, f, psSupported);
+      setOptions(this, f, psSupported);
     }
   
     void Configurable::deactivateProperty(const std::string &pattern){

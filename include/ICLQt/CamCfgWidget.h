@@ -35,13 +35,14 @@
 #pragma once
 
 #include <ICLCore/ImgBase.h>
-#include <ICLQt/GUI.h>
+#include <ICLQt/ContainerGUIComponents.h>
 #include <QtGui/QSplitter>
 #include <ICLUtils/Thread.h>
+#include <ICLIO/GenericGrabber.h>
 
 namespace icl{
   namespace qt{
-  
+
     /// Special QWidget implementation for configuring grabber properties
     /** \section GEN General Information
         The CamCfgWidget can be used if an application needs to configure
@@ -118,7 +119,7 @@ namespace icl{
       private:
       void scan();
     };
-  
+
   } // namespace qt
 }
 

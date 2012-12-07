@@ -57,6 +57,11 @@ namespace icl{
       
       /// additional description of the device (obtained by calling getUniqueID)
       std::string description;
+
+      std::string name() const {
+        return "[" + type + "]:" +  id;
+      }
+
     };
   
     /// ostream operator for GenericGrabber::FoundDevice instances
