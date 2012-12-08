@@ -202,7 +202,7 @@ namespace icl{
 
 #undef CAST_AND_ASSIGN
 
-      m_data->f->setProperty(m_data->properties, m_data->value);
+      m_data->f->setPropertyValue(m_data->properties, m_data->value);
       if(!m_data->loop && m_data->counter == (int)m_data->f->getFileCount()){
         m_data->properties = "loop";
         m_data->value = "false";

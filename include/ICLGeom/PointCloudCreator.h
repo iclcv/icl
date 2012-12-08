@@ -84,6 +84,10 @@ namespace icl{
   
       /// deep copy assginment operator
       PointCloudCreator &operator=(const PointCloudCreator &other);
+
+      
+      /// Destructor
+      ~PointCloudCreator();
       
       /// initializes with given core::depth camera (no rgbd mapping is available then)
       void init(const Camera &depthCam, DepthImageMode mode=DistanceToCamPlane);

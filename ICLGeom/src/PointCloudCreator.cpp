@@ -63,7 +63,13 @@ namespace icl{
       bool clReady;
       bool clUse;
       PointCloudCreatorCL* creatorCL;
+      
+      ~Data(){
+        ICL_DELETE(creatorCL);
+      }
 #endif
+      
+
       
       static inline float compute_depth_norm(const Vec &dir, const Vec &centerDir){
         return sprod3(dir,centerDir)/(norm3(dir)*norm3(centerDir));
@@ -109,8 +115,19 @@ namespace icl{
       }
       
     };
+
+    /// Destructor
+    PointCloudCreator::~PointCloudCreator(){
+      delete m_data;
+    }
+    
     
     PointCloudCreator::PointCloudCreator():m_data(new Data){
+#ifdef HAVE_OPENCL
+      m_data->clUse=true;  
+      m_data->creatorCL = 0;
+      m_data->clReady = false;
+#endif
     }
   
     PointCloudCreator::PointCloudCreator(const Camera &depthCam, PointCloudCreator::DepthImageMode mode):m_data(new Data){

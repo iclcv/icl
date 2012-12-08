@@ -169,22 +169,27 @@ namespace icl{
       }else if(source == "device"){
         data->settingUpDevice = true;
         if(data->properties.hasBeenCreated()) data->properties.hide();
-
+        
         try{
-          if(data->foundDevices.size() > 1){
-              data->grabber.init(data->foundDevices.at((int)data->gui["device"]));
-              if(data->grabber.isNull()){
-                ERROR_LOG("unable to initialize grabber");
-              }
+          if(data->foundDevices.size() == 1){
+            data->grabber.init(data->foundDevices[0]);
+            if(data->grabber.isNull()){
+              throw ICLException("unable to create device");
             }
-            BoxHandle b = data->gui.get<BoxHandle>("props");
-           data -> properties = Prop(data->foundDevices.at((int)data->gui["device"]).name()).handle("camcfg");
-           data -> properties.show();
-           b.add(data->properties.getRootWidget());
-         } catch(const std::exception &x){
-           DEBUG_LOG("error while initializing grabber: " << x.what());
-         }
-         data->settingUpDevice = false;
+          }else if(data->foundDevices.size() > 1){
+            data->grabber.init(data->foundDevices.at((int)data->gui["device"]));
+            if(data->grabber.isNull()){
+              throw ICLException("unable to create device");
+            }
+          }
+          BoxHandle b = data->gui.get<BoxHandle>("props");
+          data -> properties = Prop(data->foundDevices.at((int)data->gui["device"]).name()).handle("camcfg");
+          data -> properties.show();
+          b.add(data->properties.getRootWidget());
+        } catch(const std::exception &x){
+          DEBUG_LOG("error while initializing grabber: " << x.what());
+        }
+        data->settingUpDevice = false;
       }else if(source == "hz"){
         std::string v = data->gui["hz"];
         if(v.length() < 5) {
@@ -207,6 +212,7 @@ namespace icl{
       ComboHandle &devices = data->gui.get<ComboHandle>("device");
       devices.clear();
       data->foundDevices = GenericGrabber::getDeviceList(data->deviceFilter);
+
       if(data->foundDevices.size()){
         for(unsigned int i=0;i<data->foundDevices.size();++i){
           devices.add(data->foundDevices[i].name());

@@ -167,6 +167,8 @@ namespace icl{
     void GenericGrabber::init(const std::string &desiredAPIOrder,
                               const std::string &params,
                               bool notifyErrors) throw(ICLException){
+      
+      DEBUG_LOG("initializing generic Grabber");
       Mutex::Locker __lock(m_mutex);
       ICL_DELETE(m_poGrabber);
       m_sType = "";
@@ -494,10 +496,14 @@ namespace icl{
         }
       }
       if(!m_poGrabber && notifyErrors){
+        DEBUG_LOG("unable to instantiate grabber");
+        
         std::string errMsg("generic grabber was not able to find any suitable device\ntried:");
         throw ICLException(errMsg+errStr);
       }else{
-        m_poGrabber -> setConfigurableID("[" + m_sType + "]:" + pmap[m_sType].id);
+        std::string id = "[" + m_sType + "]:" + pmap[m_sType].id;
+        DEBUG_LOG("created grabber with configurable ID ");
+        m_poGrabber -> setConfigurableID(id);
         // add internal grabber as child-configurable
         m_poGrabber -> addProperty("desired size", "menu", "not used,QQVGA,QVGA,VGA,SVGA,XGA,XGAP,UXGA", "not used", 0, "");
         m_poGrabber -> addProperty("desired depth", "menu", "not used,depth8u,depth16s,depth32s,depth32f,depth64f", "not used", 0, "");
@@ -600,9 +606,9 @@ namespace icl{
                             const std::string &dev,
                             bool useFilter,
                             ParamMap &pmap){
-      
       if(!useFilter || contains(pmap,dev)){
         std::vector<GrabberDeviceDescription> ds = T::getDeviceList(true);
+
         if(dev.length() >= 2 && dev[0] == 'd' && dev[1] == 'c'){ // dirty hack for dc devices
           bool kick800 = dev.length()==2;
           std::vector<GrabberDeviceDescription> newds;
@@ -617,6 +623,16 @@ namespace icl{
           const GrabberDeviceDescription *d = find_description(ds,pmap[dev].id);
           if(d){
             all.push_back(*d);
+          }else if(dev == "v4l"){ // yet another hack here!
+            d = find_description(ds,"/dev/video"+pmap[dev].id);
+            if(d){
+              all.push_back(*d);
+            }else{
+              d = find_description(ds,"/dev/video/"+pmap[dev].id);
+              if(d){
+                all.push_back(*d);
+              }
+            }
           }
         }else{
           std::copy(ds.begin(),ds.end(),std::back_inserter(all));
