@@ -502,13 +502,16 @@ namespace icl{
         throw ICLException(errMsg+errStr);
       }else{
         std::string id = "[" + m_sType + "]:" + pmap[m_sType].id;
-        DEBUG_LOG("created grabber with configurable ID ");
+        DEBUG_LOG("created grabber with configurable ID " << id);
         m_poGrabber -> setConfigurableID(id);
         // add internal grabber as child-configurable
         m_poGrabber -> addProperty("desired size", "menu", "not used,QQVGA,QVGA,VGA,SVGA,XGA,XGAP,UXGA", "not used", 0, "");
         m_poGrabber -> addProperty("desired depth", "menu", "not used,depth8u,depth16s,depth32s,depth32f,depth64f", "not used", 0, "");
         m_poGrabber -> addProperty("desired format", "menu", "not used,formatGray,formatRGB,formatHLS,formatYUV,formatLAB,formatChroma,formatMatrix", "not used", 0, "");
         m_poGrabber -> Configurable::registerCallback(utils::function(m_poGrabber,&Grabber::processPropertyChange));
+
+        
+        addChildConfigurable(m_poGrabber);
 
         GrabberDeviceDescription d(m_sType,pmap[m_sType].id,"any device");
 
