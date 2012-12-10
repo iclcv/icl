@@ -46,7 +46,7 @@ ButtonGroupHandle usedFilterHandle;
 ButtonGroupHandle usedSmoothingHandle;
 ButtonGroupHandle usedAngleHandle;
 
-Img32f edgeImage(Size(320,240), formatGray);
+Img8u edgeImage(Size(320,240), formatGray);
 Img32f angleImage(Size(320,240), formatGray);
 Img8u normalImage(Size(320,240), formatRGB);
 

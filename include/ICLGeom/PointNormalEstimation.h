@@ -129,7 +129,7 @@ namespace icl{
   	
       /// Returns the binarized angle image (final output).
       /**        @return the (final) binarized angle image */
-      core::Img32f getBinarizedImage();
+      core::Img8u getBinarizedImage();
   	
   	
       /// Sets the mask size for medianFilter(). utils::Size n corresponds to mask size n x n. (default 3, min 3, max 9, odd only)
@@ -183,7 +183,7 @@ namespace icl{
   	       @param average enable/disable normal averaging
   	       @param gauss true=gauss smoothing, false=linear smoothing
   	       @return the binarized angle image */
-      core::Img32f calculate(const core::Img32f &depthImage, bool filter, bool average, bool gauss);
+      core::Img8u calculate(const core::Img32f &depthImage, bool filter, bool average, bool gauss);
   	
      private:
   	
@@ -204,7 +204,7 @@ namespace icl{
       core::Img32f rawImage;
       core::Img32f filteredImage;
       core::Img32f angleImage;
-      core::Img32f binarizedImage;
+      core::Img8u binarizedImage;
       core::Img8u normalImage;
   	
     #ifdef HAVE_OPENCL
@@ -213,11 +213,11 @@ namespace icl{
       Vec4 * outputWorldNormals;
       float* outputFilteredImage;//output of kernel for image
       float* outputAngleImage;
-      float* outputBinarizedImage;
+      cl_uchar* outputBinarizedImage;
       float* rawImageArray;//input for image to kernel
       float* filteredImageArray;
       float* angleImageArray;
-      float* binarizedImageArray;
+      cl_uchar* binarizedImageArray;
       cl_uchar* normalImageRArray;
       cl_uchar* normalImageGArray;
       cl_uchar* normalImageBArray;

@@ -221,7 +221,7 @@ namespace icl{
       "    }                                                                                                                      \n"
       "}                                                                                                                          \n"
       "__kernel void                                                                                                              \n"
-      "imageBinarization(__global float const * in, __global float * out, int const w, int const h, float const binarizationThreshold)\n"
+      "imageBinarization(__global float const * in, __global uchar * out, int const w, int const h, float const binarizationThreshold)\n"
       "{                                                                                                                          \n"
       "   size_t id =  get_global_id(0);                                                                                          \n"
       "   if(in[id]>binarizationThreshold)                                                                                        \n"
@@ -355,7 +355,7 @@ namespace icl{
       rawImageArray = new float[w*h];
       filteredImageArray = new float[w*h];
       angleImageArray = new float[w*h];
-      binarizedImageArray = new float[w*h];
+      binarizedImageArray = new cl_uchar[w*h];
       normalImageRArray = new cl_uchar[w*h];
       normalImageGArray = new cl_uchar[w*h];
       normalImageBArray = new cl_uchar[w*h];
@@ -363,7 +363,7 @@ namespace icl{
       outputNormals=new cl_float4[w*h];
       outputFilteredImage=new float[w*h];
       outputAngleImage=new float[w*h];
-      outputBinarizedImage=new float[w*h];
+      outputBinarizedImage=new cl_uchar[w*h];
       outputWorldNormals=new cl_float4[w*h];
          
       std::vector<cl::Platform> platformList;//get number of available openCL platforms
@@ -443,7 +443,7 @@ namespace icl{
           binarizedImageBuffer = cl::Buffer(
   					  context, 
   					  CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, //
-  					  w*h * sizeof(float), 
+  					  w*h * sizeof(cl_uchar), 
   					  (void *) &binarizedImageArray[0]);
   			
   			  normalImageRBuffer = cl::Buffer(
@@ -1241,7 +1241,7 @@ namespace icl{
     }
   
   
-    Img32f PointNormalEstimation::getBinarizedImage(){
+    Img8u PointNormalEstimation::getBinarizedImage(){
     #ifdef HAVE_OPENCL
       if(useCL==true && clReady==true){
         try{            
@@ -1249,10 +1249,10 @@ namespace icl{
   			        binarizedImageBuffer,
   			        CL_TRUE, // block 
   			        0,
-  			        w*h * sizeof(float),
-  			        (float*) outputBinarizedImage);
+  			        w*h * sizeof(cl_uchar),
+  			        (cl_uchar*) outputBinarizedImage);
                 
-          binarizedImage = Img32f(Size(w,h),1,std::vector<float*>(1,outputBinarizedImage),false);
+          binarizedImage = Img8u(Size(w,h),1,std::vector<cl_uchar*>(1,outputBinarizedImage),false);
         }
         catch (cl::Error err) {//catch openCL error
           std::cout<< "ERROR: "<< err.what()<< "("<< err.err()<< ")"<< std::endl;
@@ -1316,7 +1316,7 @@ namespace icl{
     }
   
   
-    Img32f PointNormalEstimation::calculate(const Img32f &depthImage, bool filter, bool average, bool gauss){
+    Img8u PointNormalEstimation::calculate(const Img32f &depthImage, bool filter, bool average, bool gauss){
       if(filter==false){
         setFilteredImage((Img32f&)depthImage);
       }
