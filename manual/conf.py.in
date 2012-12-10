@@ -272,8 +272,7 @@ texinfo_documents = [
 #}
 
 doxylink = {
-        'icl' : ('/home/celbrech/projects/ICL/manual/icldoxy/icldoxy.tag', '/home/celbrech/projects/ICL/manual/icldoxy/html'),
-        'dox' : ('/home/celbrech/projects/ICL/manual/testdoxy/testdoxy.tag', '/home/celbrech/projects/ICL/manual/testdoxy/html') 
+        'icl' : (os.path.abspath('icldoxy/icldoxy.tag'),os.path.abspath('icldoxy/html')),
 }
 add_function_parentheses = False;
 
