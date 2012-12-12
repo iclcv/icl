@@ -671,7 +671,7 @@ namespace icl{
             SmartPtr<Impl> test;
             try{
               test = new Impl(deviceName,"",false);
-              all.push_back(GrabberDeviceDescription("v4l2",deviceName,test->deviceNameInfo + " (" + deviceName + ")"));
+              all.push_back(GrabberDeviceDescription("v4l",deviceName,test->deviceNameInfo + " (" + deviceName + ")"));
             }catch(...){}
           }
           return all;

@@ -36,6 +36,7 @@
 
 #include <string>
 #include <iostream>
+#include <ICLUtils/Macros.h>
 
 namespace icl{ 
   namespace io{

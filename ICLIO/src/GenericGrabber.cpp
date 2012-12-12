@@ -167,8 +167,6 @@ namespace icl{
     void GenericGrabber::init(const std::string &desiredAPIOrder,
                               const std::string &params,
                               bool notifyErrors) throw(ICLException){
-      
-      DEBUG_LOG("initializing generic Grabber");
       Mutex::Locker __lock(m_mutex);
       ICL_DELETE(m_poGrabber);
       m_sType = "";
@@ -221,7 +219,6 @@ namespace icl{
         if(createListOnly){
           supportedDevices.push_back("v4l:/dev/videoX index or device-file:V4l2 based camera source");
         }
-
         if(l[i] == "v4l"){
           try{
             V4L2Grabber *g = new V4L2Grabber(pmap["v4l"].id);
@@ -501,8 +498,14 @@ namespace icl{
         std::string errMsg("generic grabber was not able to find any suitable device\ntried:");
         throw ICLException(errMsg+errStr);
       }else{
-        std::string id = "[" + m_sType + "]:" + pmap[m_sType].id;
-        DEBUG_LOG("created grabber with configurable ID " << id);
+        std::string id = "[" + m_sType + "]:";
+        std::string type_id = pmap[m_sType].id;
+        if(m_sType == "v4l"  && type_id.find("/dev/video") == type_id.npos){
+          id += "/dev/video" + pmap[m_sType].id;
+        } else {
+          id += pmap[m_sType].id;
+        }
+        //DEBUG_LOG("created grabber with configurable ID " << id);
         m_poGrabber -> setConfigurableID(id);
         // add internal grabber as child-configurable
         m_poGrabber -> addProperty("desired size", "menu", "not used,QQVGA,QVGA,VGA,SVGA,XGA,XGAP,UXGA", "not used", 0, "");
@@ -510,7 +513,6 @@ namespace icl{
         m_poGrabber -> addProperty("desired format", "menu", "not used,formatGray,formatRGB,formatHLS,formatYUV,formatLAB,formatChroma,formatMatrix", "not used", 0, "");
         m_poGrabber -> Configurable::registerCallback(utils::function(m_poGrabber,&Grabber::processPropertyChange));
 
-        
         addChildConfigurable(m_poGrabber);
 
         GrabberDeviceDescription d(m_sType,pmap[m_sType].id,"any device");
