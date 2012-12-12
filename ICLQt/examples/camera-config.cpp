@@ -58,12 +58,13 @@ int main(int n, char **ppc){
   ("k","scan for Kinect Devices")
   ("y","scan for Myrmex Devices")
   ("c","scan for OpenCV-based devices")
+  ("b","scan for Basler-Pylon-based devices")
   ("-demo","add a DemoGrabber device")
   ("-i","ICL's default device specification")
   ("-l","if this flag is passed, no GUI is created, "
    "but all available devices are listed on stdout");
   pa_init(n,ppc,"-dc|d -dc800|8 -demo -unicap|u -mry|y -pwc|p -sr|s -cvcam|c -sm|m -v4l|v"
-          " -reset-bus|-r|r -kinect|k "
+          " -reset-bus|-r|r -kinect|k -pylon|b "
           "-input|-i(device-type,device-ID) -list-devices-only|-l");
 
   
@@ -79,6 +80,7 @@ int main(int n, char **ppc){
   if(pa("m"))str << ",sm";
   if(pa("v"))str << ",v4l";
   if(pa("y"))str << ",myr";
+  if(pa("b"))str << ",pylon";
   if(pa("-i")) str << "," << pa("-i",0) << "=" << pa("-i",1);
   
   std::string devlist = str.str();

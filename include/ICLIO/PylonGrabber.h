@@ -188,7 +188,7 @@ namespace icl {
                 deviceList.push_back(
                       GrabberDeviceDescription(
                         "pylon",
-                        utils::str(i) + "|||" + devs.at(i).GetFullName().c_str(),
+                        utils::str(i), // + "|||" + devs.at(i).GetFullName().c_str(),
                         devs.at(i).GetFullName().c_str()
                         )
                       );
