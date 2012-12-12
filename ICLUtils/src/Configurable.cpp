@@ -54,12 +54,12 @@ namespace icl{
     
     Configurable::Property &Configurable::prop(const std::string &propertyName) throw (ICLException){
       std::map<std::string,Property>::iterator it = m_properties.find(propertyName);
-      //if(it == m_properties.end()) throw ICLException("Property " + str(propertyName) + " is not supported");
+      if(it == m_properties.end()) throw ICLException("Property " + str(propertyName) + " is not supported");
       //TODO: this is a workaround because calling callbacks of elder configurables may break.
-      static Property *p = new Property();
-      if(it == m_properties.end()){
-        return *p;
-      }
+      //static Property *p = new Property();
+      //if(it == m_properties.end()){
+      //  return *p;
+      //}
       return it->second;
     }
   
@@ -170,15 +170,20 @@ namespace icl{
     }
   
     void Configurable::call_callbacks(const std::string &propertyName){
-      if(callbacks.size()){
-        const Property &p = prop(propertyName);
-        int i = 0;
-        for(std::vector<Callback>::iterator it=callbacks.begin();it!=callbacks.end();++it,++i){
-          (*it)(p);
+      try{
+        if(callbacks.size()){
+          const Property &p = prop(propertyName);
+          int i = 0;
+          for(std::vector<Callback>::iterator it=callbacks.begin();it!=callbacks.end();++it,++i){
+            (*it)(p);
+          }
         }
-      }
-      if(m_elderConfigurable){
-        m_elderConfigurable -> call_callbacks(propertyName);
+        if(m_elderConfigurable){
+          m_elderConfigurable -> call_callbacks(propertyName);
+        }
+      }catch (ICLException &e){
+        DEBUG_LOG("caught");
+        return;
       }
     }
   
