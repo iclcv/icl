@@ -80,7 +80,7 @@ namespace icl{
   #ifdef HAVE_LIBJPEG
         FileWriter::s_mapPlugins[".jpeg"] = new FileWriterPluginJPEG;
         FileWriter::s_mapPlugins[".jpg"] = new FileWriterPluginJPEG;
-        FileWriter::s_mapPlugins[".jicl"] = new FileWriterPluginBICL("jpeg","40");
+        FileWriter::s_mapPlugins[".jicl"] = new FileWriterPluginBICL("jpeg","85");
   #elif HAVE_IMAGEMAGICK
         FileWriter::s_mapPlugins[".jpeg"] = new FileWriterPluginImageMagick;
         FileWriter::s_mapPlugins[".jpg"] = new FileWriterPluginImageMagick;
