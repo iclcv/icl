@@ -40,6 +40,7 @@
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Lockable.h>
 #include <ICLUtils/ProgArg.h>
+#include <ICLUtils/ConfigurableProxy.h>
 
 namespace icl {
   namespace io{
@@ -48,10 +49,10 @@ namespace icl {
     /** The generic grabber provides an interface for a multi-platform
         compatible grabber.
         Image processing applications should use this Grabber
-        class. The GenericGrabber is also integrated with the
-        "camcfg"-GUI component (see icl::GUI)
+        class. The GenericGrabber also provides camera
+        configuration via ConfigurableProxy interface.
     */
-    class GenericGrabber: public Grabber{
+    class GenericGrabber: public utils::ConfigurableProxy{
 
         Grabber *m_poGrabber; //!< internally wrapped grabber instance
 
@@ -184,11 +185,12 @@ namespace icl {
           ICL_DELETE(m_poGrabber);
         }
 
-        /// grabbing function
-        virtual const core::ImgBase* acquireImage(){
+        /// grab function calls the Grabber-specific acquireImage-method and applies distortion if necessary
+        /** If dst is not NULL, it is exploited and filled with image data **/
+        const core::ImgBase *grab(core::ImgBase **dst=0){
           utils::Mutex::Locker __lock(m_mutex);
           ICLASSERT_RETURN_VAL(!isNull(),0);
-          return m_poGrabber->acquireImage();
+          return m_poGrabber->grab(dst);
         }
 
         /// returns wheter an underlying grabber could be created
@@ -199,61 +201,169 @@ namespace icl {
 
 
         /// internally set a desired format
-        virtual void setDesiredFormatInternal(core::format fmt){
+        void setDesiredFormatInternal(core::format fmt){
           ICLASSERT_RETURN(!isNull());
           utils::Mutex::Locker l(m_mutex);
           m_poGrabber->setDesiredFormatInternal(fmt);
         }
 
         /// internally set a desired format
-        virtual void setDesiredSizeInternal(const utils::Size &size){
+        void setDesiredSizeInternal(const utils::Size &size){
           ICLASSERT_RETURN(!isNull());
           utils::Mutex::Locker l(m_mutex);
           m_poGrabber->setDesiredSizeInternal(size);
         }
 
         /// internally set a desired format
-        virtual void setDesiredDepthInternal(core::depth d){
+        void setDesiredDepthInternal(core::depth d){
           ICLASSERT_RETURN(!isNull());
           utils::Mutex::Locker l(m_mutex);
           m_poGrabber->setDesiredDepthInternal(d);
         }
 
         /// returns the desired format
-        virtual core::format getDesiredFormatInternal() const{
+        core::format getDesiredFormatInternal() const{
           ICLASSERT_RETURN_VAL(!isNull(),(core::format)-1);
           utils::Mutex::Locker l(m_mutex);
           return m_poGrabber->getDesiredFormatInternal();
         }
 
         /// returns the desired format
-        virtual core::depth getDesiredDepthInternal() const{
+        core::depth getDesiredDepthInternal() const{
           ICLASSERT_RETURN_VAL(!isNull(),(core::depth)-1);
           utils::Mutex::Locker l(m_mutex);
           return m_poGrabber->getDesiredDepthInternal();
         }
 
         /// returns the desired format
-        virtual utils::Size getDesiredSizeInternal() const{
+        utils::Size getDesiredSizeInternal() const{
           ICLASSERT_RETURN_VAL(!isNull(),utils::Size::null);
           utils::Mutex::Locker l(m_mutex);
           return m_poGrabber->getDesiredSizeInternal();
         }
 
         /// passes registered callback to the internal pointer
-        virtual void registerCallback(callback cb){
+        void registerCallback(Grabber::callback cb){
           ICLASSERT_RETURN(!isNull());
           utils::Mutex::Locker l(m_mutex);
-          return m_poGrabber->registerCallback(cb);
+          m_poGrabber->registerCallback(cb);
         }
 
         /// passes registered callback to the internal pointer
-        virtual void removeAllCallbacks(){
+        void removeAllCallbacks(){
           ICLASSERT_RETURN(!isNull());
           utils::Mutex::Locker l(m_mutex);
-          return m_poGrabber->removeAllCallbacks();
+          m_poGrabber->removeAllCallbacks();
         }
 
+        /// returns whether the desired parameter for the given type is used
+        /** This method is only available for the type core::depth,icl::utils::Size and core::format*/
+        template<class T>
+        bool desiredUsed() const{
+          ICLASSERT_RETURN_VAL(!isNull(),false);
+          utils::Mutex::Locker l(m_mutex);
+          return m_poGrabber->desiredUsed<T>();
+        }
+
+        /// sets desired parameters (only available for core::depth,utils::Size and core::format)
+        template<class T>
+        void useDesired(const T &t){
+          ICLASSERT_RETURN(!isNull());
+          utils::Mutex::Locker l(m_mutex);
+          m_poGrabber->useDesired<T>(t);
+        }
+
+        /// sets up the grabber to use all given desired parameters
+        void useDesired(core::depth d, const utils::Size &size, core::format fmt){
+          ICLASSERT_RETURN(!isNull());
+          utils::Mutex::Locker l(m_mutex);
+          m_poGrabber->useDesired(d, size, fmt);
+        }
+
+        /// set the grabber to ignore the desired param of type T
+        /** This method is only available for core::depth,utils::Size and core::format */
+        template<class T>
+        void ignoreDesired() {
+          ICLASSERT_RETURN(!isNull());
+          utils::Mutex::Locker l(m_mutex);
+          m_poGrabber->ignoreDesired<T>();
+        }
+
+        /// sets up the grabber to ignore all desired parameters
+        void ignoreDesired(){
+          ICLASSERT_RETURN(!isNull());
+          utils::Mutex::Locker l(m_mutex);
+          m_poGrabber->ignoreDesired();
+        }
+
+        /// returns the desired value for the given type T
+        /** This method is only available for core::depth,utils::Size and core::format */
+        template<class T>
+        T getDesired() const {
+          ICLASSERT_RETURN_VAL(!isNull(), T());
+          utils::Mutex::Locker l(m_mutex);
+          return m_poGrabber->getDesired<T>();
+        }
+
+        /// enables the undistorion
+        void enableUndistortion(const std::string &filename){
+          ICLASSERT_RETURN(!isNull());
+          utils::Mutex::Locker l(m_mutex);
+          m_poGrabber->enableUndistortion(filename);
+        }
+
+        /// enables the undistortion plugin for the grabber using radial and tangential distortion parameters
+        void enableUndistortion(const ImageUndistortion &udist){
+          ICLASSERT_RETURN(!isNull());
+          utils::Mutex::Locker l(m_mutex);
+          m_poGrabber->enableUndistortion(udist);
+        }
+
+        /// enables undistortion from given programm argument.
+        /** where first argument is the filename of the xml file and second is the size of picture*/
+        void enableUndistortion(const utils::ProgArg &pa){
+          ICLASSERT_RETURN(!isNull());
+          utils::Mutex::Locker l(m_mutex);
+          m_poGrabber->enableUndistortion(pa);
+        }
+
+        /// enables undistortion for given warp map
+        void enableUndistortion(const core::Img32f &warpMap){
+          ICLASSERT_RETURN(!isNull());
+          utils::Mutex::Locker l(m_mutex);
+          m_poGrabber->enableUndistortion(warpMap);
+        }
+
+        /// sets how undistortion is interpolated (supported modes are interpolateNN and interpolateLIN)
+        /** Please note, that this method has no effect if the undistortion was not enabled before
+           using one of the Grabber::enableUndistortion methods. Furthermore, the setting is lost
+           if the undistortion is deactivated using Grabber::disableUndistortion */
+        void setUndistortionInterpolationMode(core::scalemode mode){
+          ICLASSERT_RETURN(!isNull());
+          utils::Mutex::Locker l(m_mutex);
+          m_poGrabber->setUndistortionInterpolationMode(mode);
+        }
+
+        /// disables distortion
+        void disableUndistortion(){
+          ICLASSERT_RETURN(!isNull());
+          utils::Mutex::Locker l(m_mutex);
+          m_poGrabber->disableUndistortion();
+        }
+
+        /// returns whether distortion is currently enabled
+        bool isUndistortionEnabled() const{
+          ICLASSERT_RETURN_VAL(!isNull(),false);
+          utils::Mutex::Locker l(m_mutex);
+          return m_poGrabber->isUndistortionEnabled();
+        }
+
+        /// returns the internal warp map or NULL if undistortion is not enabled
+        const core::Img32f *getUndistortionWarpMap() const{
+          ICLASSERT_RETURN_VAL(!isNull(),0);
+          utils::Mutex::Locker l(m_mutex);
+          return m_poGrabber->getUndistortionWarpMap();
+        }
 
         /// returns a list of all currently available devices (according to the filter-string)
         /** The filter-string is a comma separated list of single filters like
@@ -270,12 +380,7 @@ namespace icl {
         inline void init(const GrabberDeviceDescription &dev){
           init(dev.type,dev.type+"="+dev.id,false);
         }
-
-
     };
-
-
-
 
   } // namespace io
 } 

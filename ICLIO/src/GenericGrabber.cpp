@@ -512,8 +512,7 @@ namespace icl{
         m_poGrabber -> addProperty("desired depth", "menu", "not used,depth8u,depth16s,depth32s,depth32f,depth64f", "not used", 0, "");
         m_poGrabber -> addProperty("desired format", "menu", "not used,formatGray,formatRGB,formatHLS,formatYUV,formatLAB,formatChroma,formatMatrix", "not used", 0, "");
         m_poGrabber -> Configurable::registerCallback(utils::function(m_poGrabber,&Grabber::processPropertyChange));
-
-        addChildConfigurable(m_poGrabber);
+        setInternalConfigurable(m_poGrabber);
 
         GrabberDeviceDescription d(m_sType,pmap[m_sType].id,"any device");
 
@@ -548,7 +547,7 @@ namespace icl{
             std::cout << t << std::endl;
             std::terminate();
           }else if(p.first == "udist"){
-            this->enableUndistortion(p.second);
+            m_poGrabber -> enableUndistortion(p.second);
           }else{
             //  DEBUG_LOG("setting property -" << p.first << "- to value -" << p.second << "-");
             m_poGrabber->setPropertyValue(p.first,p.second);

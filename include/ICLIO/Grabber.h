@@ -249,7 +249,7 @@ namespace icl {
         /// enables the undistorion
         void enableUndistortion(const std::string &filename);
 
-        ///enables the undistortion plugin for the grabber using radial and tangential distortion parameters
+        /// enables the undistortion plugin for the grabber using radial and tangential distortion parameters
         void enableUndistortion(const ImageUndistortion &udist);
 
         /// enables undistortion from given programm argument.

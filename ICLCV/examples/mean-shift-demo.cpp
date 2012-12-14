@@ -39,7 +39,7 @@
 
 Mutex m;
 HSplit gui;
-Grabber *grabber = 0;
+GenericGrabber *grabber = 0;
 Point32f *newPos = 0;
 Point32f pos;
 std::vector<double> COLOR(3,255);
