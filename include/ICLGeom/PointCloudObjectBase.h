@@ -152,6 +152,7 @@ namespace icl{
       PointCloudObjectBase(){
         setLockingEnabled(true);
         m_defaultPointColor = GeomColor(0,0.5,1,1);
+        useDrawNormalLines=false;
       }
   
       /// interface for supported features 
@@ -272,7 +273,7 @@ namespace icl{
       virtual void customRender();
       
       /// set use draw normal lines
-      void setUseDrawNormalLines(float lineLength=40, int granularity=4);
+      void setUseDrawNormalLines(bool use, float lineLength=40, int granularity=4);
       
       /// deep copy interface (needs to be implemented by subclasses)
       virtual PointCloudObjectBase *copy() const {

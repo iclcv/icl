@@ -112,8 +112,8 @@ namespace icl{
       glEnable(GL_LIGHTING);
     }
     
-    void PointCloudObjectBase::setUseDrawNormalLines(float lineLength, int granularity){
-      useDrawNormalLines=true;
+    void PointCloudObjectBase::setUseDrawNormalLines(bool use, float lineLength, int granularity){
+      useDrawNormalLines=use;
       normalLineLength=lineLength;
       normalLineGranularity=granularity;
     }
@@ -136,7 +136,6 @@ namespace icl{
       	  }
       	glEnd();
       }
-      useDrawNormalLines=false;
     }
     
     
