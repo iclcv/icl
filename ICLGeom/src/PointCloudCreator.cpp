@@ -35,6 +35,8 @@
 #include <ICLGeom/PointCloudCreator.h>
 #include <ICLCore/Img.h>
 
+#undef HAVE_OPENCL
+
 #ifdef HAVE_OPENCL
 #include <ICLGeom/PointCloudCreatorCL.h>
 #endif
@@ -47,15 +49,22 @@ using namespace icl::qt;
 
 namespace icl{
   namespace geom{
+    //#define USE_3D_VECS this is slower due to data alignment issues!
+
+#ifdef USE_3D_VECS
+    typedef FixedColVector<float,3> ViewRayDir;
+#else
+    typedef FixedColVector<float,4> ViewRayDir;
+#endif
+
+
     struct PointCloudCreator::Data{
-      typedef FixedColVector<float,3> Vec3;
-      
       SmartPtr<Mat>rgbdMapping;
       SmartPtr<Camera> depthCamera, colorCamera; // memorized for easy copying
       Size depthImageSize;
       Size colorImageSize;
       Vec viewRayOffset;
-      Array2D<Vec3> viewRayDirections;
+      Array2D<ViewRayDir> viewRayDirections;
       PointCloudCreator::DepthImageMode mode;    // memorized for easy copying
       const Img32f *lastDepthImageMM;
  
@@ -89,7 +98,7 @@ namespace icl{
         
         Array2D<ViewRay> viewRays = depthCam->getAllViewRays();
         viewRayOffset = viewRays(0,0).offset;
-        viewRayDirections = Array2D<Vec3>(depthImageSize);
+        viewRayDirections = Array2D<ViewRayDir>(depthImageSize);
         const Vec centerViewRayDir = viewRays(depthImageSize.width/2-1, 
                                               depthImageSize.height/2-1).direction;
       
@@ -99,9 +108,9 @@ namespace icl{
             const Vec &d = viewRays[idx].direction;
             if(mode == PointCloudCreator::DistanceToCamPlane || mode == KinectRAW11Bit){
               const float corr = 1.0/compute_depth_norm(d,centerViewRayDir);
-              viewRayDirections[idx] = Vec3(d[0]*corr, d[1]*corr, d[2]*corr);
+              viewRayDirections[idx] = ViewRayDir(d[0]*corr, d[1]*corr, d[2]*corr);
             }else{
-              viewRayDirections[idx] = Vec3(d[0],d[1],d[2]);
+              viewRayDirections[idx] = ViewRayDir(d[0],d[1],d[2]);
             }
           }
         }
@@ -167,7 +176,7 @@ namespace icl{
     
   
   
-    inline Point map_rgbd(const Mat &M, const Vec3 &v){
+    inline Point map_rgbd(const Mat &M, const ViewRayDir &v){
       const float phInv = 1.0/ ( M(0,3) * v[0] + M(1,3) * v[1] + M(2,3) * v[2] + M(3,3) );
       const int px = phInv * ( M(0,0) * v[0] + M(1,0) * v[1] + M(2,0) * v[2] + M(3,0) );
       const int py = phInv * ( M(0,1) * v[0] + M(1,1) * v[1] + M(2,1) * v[2] + M(3,1) );
@@ -221,14 +230,16 @@ namespace icl{
                            DataSegment<float,3> xyz, 
                            RGBA_DATA_SEGMENT_TYPE rgba,
                            const Channel8u rgbIn[3],
-                           const Array2D<Vec3> &dirs, float depthScaling){
+                           const Array2D<ViewRayDir> &dirs, float depthScaling){
       
       const Channel8u rgb[3] = { rgbIn[0], rgbIn[1], rgbIn[2] };
+
+#pragma openmp parallel for
       for(int i=0;i<DEPTH_DIM;++i){
-        const Vec3 &dir = dirs[i];
+        const ViewRayDir &dir = dirs[i];
         const float d = (NEEDS_RAW_TO_MM_MAPPING ? raw_to_mm(depthValues[i]) : depthValues[i])*depthScaling;
         
-        FixedColVector<float,3> &dstXYZ = xyz[i];
+        ViewRayDir &dstXYZ = (ViewRayDir&)xyz[i]; // keep in mind to nerver access 4th component!
         
         dstXYZ[0] = O[0] + d * dir[0]; // avoid 3-float temporary 
         dstXYZ[1] = O[1] + d * dir[1];
@@ -278,7 +289,7 @@ namespace icl{
    
       /// precaching variables ...
       const icl32f *dv = depthImageMM.begin(0);
-      const Array2D<Data::Vec3> &dirs = m_data->viewRayDirections;
+      const Array2D<ViewRayDir> &dirs = m_data->viewRayDirections;
       const bool X = m_data->rgbdMapping && rgbImage;
       const Mat M = X ? *m_data->rgbdMapping : Mat(0.0f);
       const Vec O = m_data->viewRayOffset;
@@ -292,7 +303,7 @@ namespace icl{
         for(int i=0;rgbImage && i<3;++i) rgb[i] = (*rgbImage)[i];
       }
   
-      //Time t = Time::now();
+      Time t = Time::now();
       
       if(m_data->mode == KinectRAW11Bit){
         if(destination.supports(PointCloudObjectBase::RGBA32f)){
@@ -355,7 +366,8 @@ namespace icl{
           throw ICLException("unable to apply RGBD-Mapping given destination PointCloud type does not support rgb information");
         }
       }
-      //      t.showAge();
+      
+      t.showAge();
     }
   
     const Camera &PointCloudCreator::getDepthCamera() const{
@@ -374,7 +386,7 @@ namespace icl{
     template<class T, int NUM_CHANNELS>
     void map_image(const Img<T> &src, const Img<T> &dst, const icl32f *depthValues, 
                    const Mat M, const Vec O, const unsigned int COLOR_W, const unsigned int COLOR_H,
-                   const int DEPTH_DIM,const Array2D<Vec3> &dirs){
+                   const int DEPTH_DIM,const Array2D<ViewRayDir> &dirs){
       
       const Channel<T> csrc[NUM_CHANNELS];
       Channel<T> cdst[NUM_CHANNELS];
@@ -384,12 +396,12 @@ namespace icl{
       }
 
       for(int i=0;i<DEPTH_DIM;++i){
-        const Vec3 &dir = dirs[i];
+        const ViewRayDir &dir = dirs[i];
         const float d = depthValues[i];
         
-        const FixedColVector<float,3> xyz(O[0] + d * dir[0],
-                                          O[1] + d * dir[1],                
-                                          O[2] + d * dir[2]);
+        const ViewRayDir xyz(O[0] + d * dir[0],
+                             O[1] + d * dir[1],                
+                             O[2] + d * dir[2]);
         
         Point p = map_rgbd(M,xyz);
         if( ((unsigned int)p.x) < COLOR_W && ((unsigned int)p.y) < COLOR_H){ 
@@ -434,7 +446,7 @@ namespace icl{
       const int c = src->getChannels();
 
       const icl32f *dv = depthImageMM->begin(0);
-      const Array2D<Data::Vec3> &dirs = m_data->viewRayDirections;
+      const Array2D<ViewRayDir> &dirs = m_data->viewRayDirections;
       const Mat M = *m_data->rgbdMapping;
       const Vec O = m_data->viewRayOffset;
       const int COLOR_W = m_data->colorImageSize.width;

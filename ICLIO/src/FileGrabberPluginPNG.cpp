@@ -55,7 +55,8 @@ namespace icl{
         ERROR_LOG("unable to open given file in read binary mode: " << file.getName());
         return;
       }
-      fread(header, 1, 8, cfile);
+      size_t res = fread(header, 1, 8, cfile);
+      (void)res;
       if (png_sig_cmp(header, 0, 8)){
         ERROR_LOG("given file's header " << file.getName() << " is not a valid png header");
         return;
