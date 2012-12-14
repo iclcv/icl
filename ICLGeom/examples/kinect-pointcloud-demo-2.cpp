@@ -358,11 +358,15 @@ void run(){
     PointNormalEstimation::Vec4* norms=normalEstimator->getWorldNormals(); //get world normals
     
     DataSegment<float,4>((float*)norms,sizeof(PointNormalEstimation::Vec4),normal.getDim()).deepCopy(normal); //set pointcloud normal data
-    
-    if(gui["drawLines"]){//draw normal lines
-      obj->setUseDrawNormalLines(lineLength, granularity);
-    }
   }
+  
+  bool drawLines=gui["drawLines"];
+  if(drawLines && usedVisualizationHandle.getSelected()==3){//draw normal lines
+    obj->setUseDrawNormalLines(true, lineLength, granularity);
+  }else{
+    obj->setUseDrawNormalLines(false, lineLength, granularity);
+  }
+  
   obj->unlock();
       
   hcolor = &colorImage;
