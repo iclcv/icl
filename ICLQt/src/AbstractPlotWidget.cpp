@@ -130,6 +130,37 @@ namespace icl{
       
       QRect zoomIndicatorRect;
       bool showZoomIndicator;
+      
+      Mutex mouseHandlerMutex;
+      std::vector<MouseHandler*> mouseHandlers;
+      
+      void call_mouse_handlers(const MouseEvent &e){
+        Mutex::Locker locker(mouseHandlerMutex);
+        for(size_t i=0;i<mouseHandlers.size();++i){
+          mouseHandlers[i]->process(e);
+        }
+      }
+      
+      bool sendMouseEvents(AbstractPlotWidget *w, QMouseEvent *event, MouseEventType t){
+        const bool d[] = {event->buttons() & Qt::LeftButton,
+                          event->buttons() & Qt::MidButton,
+                          event->buttons() & Qt::RightButton };
+        
+        if(t == MouseMoveEvent && (d[0] || d[1] || d[2])) t = MouseDragEvent;
+
+        const Point widgetPos(event->x(), event->y());
+        const Point32f renderPos = w->winToDraw(widgetPos);
+        const MouseEvent e(widgetPos, renderPos, renderPos,
+                           Point32f(0,0),d,std::vector<double>(),Point(),t,0);
+        if(e.isModifierActive(ShiftModifier) 
+           || e.isModifierActive(ControlModifier)
+           || e.isModifierActive(AltModifier)){
+          call_mouse_handlers(e);
+          return true;
+        }else{
+          return false;
+        }
+      }
     };
     
     bool AbstractPlotWidget::isZoomed() const{
@@ -807,7 +838,13 @@ namespace icl{
   
     void AbstractPlotWidget::mouseMoveEvent(QMouseEvent *event){
       data->mousePos = event->pos();
+
+      if(data->sendMouseEvents(this,event,MouseMoveEvent)){
+        return;
+      }
+      
       bool doUpdate = data->track_mouse;
+      
       if(data->mousePressCurr != QPoint(-1,-1)){
         data->mousePressCurr = event->pos();
         doUpdate = true;
@@ -817,6 +854,11 @@ namespace icl{
   
     void AbstractPlotWidget::mousePressEvent(QMouseEvent *event){
       setFocus();
+      
+      if(data->sendMouseEvents(this,event,MousePressEvent)){
+        return;
+      }
+
       switch(event->button()){
         case Qt::LeftButton:
           if(data->showZoomIndicator && data->viewPortStack.size() && 
@@ -849,6 +891,10 @@ namespace icl{
     }
   
     void AbstractPlotWidget::mouseReleaseEvent(QMouseEvent *event){
+      if(data->sendMouseEvents(this,event,MouseReleaseEvent)){
+        return;
+      }
+
       if(data->mousePressCurr != QPoint(-1,-1)){
         QPoint d = data->mousePressCurr - data->mousePressStart;
         if(abs(d.x()) > 2 && abs(d.y()) > 2){
@@ -886,6 +932,7 @@ namespace icl{
       }
     }
     void AbstractPlotWidget::enterEvent(QEvent *event){
+
     }
     void AbstractPlotWidget::leaveEvent(QEvent *event){
       data->mousePos = QPoint(-1,-1);
@@ -1024,6 +1071,20 @@ namespace icl{
     Point AbstractPlotWidget::drawToWin(const Point32f &p) const{
       return Point(drawToWinX(p.x), drawToWinY(p.y));
     }
+
+    void AbstractPlotWidget::install(MouseHandler *h){
+      Mutex::Locker locker(data->mouseHandlerMutex);
+      data->mouseHandlers.push_back(h);
+    }
+
+    void AbstractPlotWidget::uninstall(MouseHandler *h){
+      WARNING_LOG("removing mouse handlers is not supported yet");
+      (void)h;
+    }
+
+    
+
+
   
     struct AbstractPlotWidget_VIRTUAL : public AbstractPlotWidget{
       virtual bool drawData(QPainter&){ return false; }

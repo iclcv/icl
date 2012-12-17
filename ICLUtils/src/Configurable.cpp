@@ -52,7 +52,7 @@ namespace icl{
       return prefix+str(i.value++);
     }
     
-    Configurable::Property &Configurable::prop(const std::string &propertyName) throw (ICLException){
+     Configurable::Property &Configurable::prop(const std::string &propertyName) throw (ICLException){
       std::map<std::string,Property>::iterator it = m_properties.find(propertyName);
       if(it == m_properties.end()) throw ICLException("Property " + str(propertyName) + " is not supported");
       //TODO: this is a workaround because calling callbacks of elder configurables may break.

@@ -38,6 +38,8 @@
 #include <ICLUtils/Range.h>
 #include <ICLUtils/Rect32f.h>
 #include <ICLUtils/Configurable.h>
+#include <ICLQt/MouseEvent.h>
+#include <ICLQt/MouseHandler.h>
 
 #include <ICLQt/ThreadedUpdatableWidget.h>
 
@@ -92,6 +94,20 @@ namespace icl{
       void property_changed(const Property &);
   
       public:
+      
+      
+      /// adds a new mouse handler
+      /** Please note, the current implementation is not complete:
+          * only mouse press, release, move and drag-events are supported
+          * custom handlers are only triggered if one of CTRL, ALT or Shift
+            modifiers is active
+          * events cannot be removed
+      */
+      void install(MouseHandler *h);
+
+      /// removes a mouse handler 
+      /** not yet supported properly */
+      void uninstall(MouseHandler *h);
       
       /// different pen types
       enum PenType{

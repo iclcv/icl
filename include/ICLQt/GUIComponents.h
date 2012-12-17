@@ -178,7 +178,7 @@ namespace icl{
                                    const utils::Range32f yRange, bool useOpenGL,
                                    const std::string &xLabel,  const std::string &yLabel){
         std::ostringstream str;
-        str << xRange.minVal << ',' << xRange.maxVal << ',' << yRange.minVal << ',' << xRange.maxVal << ','
+        str << xRange.minVal << ',' << xRange.maxVal << ',' << yRange.minVal << ',' << yRange.maxVal << ','
             << (useOpenGL ? "gl" : "noGL");
         if(xLabel.length()){
           str << ',' << xLabel;

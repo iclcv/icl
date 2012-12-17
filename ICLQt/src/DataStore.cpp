@@ -368,6 +368,8 @@ INST_OTHER_TYPES
     FROM_TO(DataStore::Data::Event,PlotHandle,
             if(src.message=="render"){
               dst.render();
+            }else if(src.message=="install"){
+              (*dst)->install((MouseHandler*)src.data);
             });
     FROM_TO(PlotHandle,PlotWidget*,dst = *src);
 

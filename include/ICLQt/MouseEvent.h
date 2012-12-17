@@ -117,8 +117,9 @@ namespace icl{
       /// ored list of active keyboard modifiers
       int m_keyboardModifiers;
       
+      public:
       
-      /// private constructor, mouse events are created by the ICLWidget only
+      /// constructor with given parameters
       MouseEvent(const utils::Point &widgetPos,
                  const utils::Point &imagePos,
                  const utils::Point32f &imagePos32f,
@@ -129,13 +130,10 @@ namespace icl{
                  MouseEventType type,
   	       ICLWidget *widget);
       
-      public:
+
       /// Create an empty mouse event
       MouseEvent();
           
-      /// ICLWidget is allowed to create mouse events
-      friend class ICLWidget;
-      
       /// returns event's x coordinate wrt. widget frame
       inline int getWidgetX() const { return m_widgetPos.x; }
   

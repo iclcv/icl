@@ -413,7 +413,7 @@ add_custom_target(alldoc doxygen alldoc/doxyfile)
 #installs content of alldoc/html on make install
 #excludes .svn dir and doxyfile from installation
 
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/alldoc/html/
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/alldoc/html
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${DOC_DIR}/ALL
 		FILE_PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
 	  		GROUP_EXECUTE GROUP_WRITE GROUP_READ 
@@ -426,7 +426,7 @@ install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/alldoc/html/
       REGEX .svn* EXCLUDE)
 
 #remove build docs from alldoc on make clean
-set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES alldoc/html/.)
+set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES alldoc/html)
 
 get_target_property(DOC_TARGET doc TYPE)
 if(NOT DOC_TARGET)

@@ -40,6 +40,17 @@
 
 HBox gui;
 
+void mouse(const MouseEvent &e){
+  std::cout << "MouseEvent {";
+  if(e.isMoveEvent()) std::cout << "  move" << std::endl;
+  if(e.isPressEvent()) std::cout << "  press" << std::endl;
+  if(e.isReleaseEvent()) std::cout << "  release" << std::endl;
+  if(e.isDragEvent()) std::cout << "  drag" << std::endl;
+  std::cout << "  pos: " << e.getPos32f() << std::endl;
+  std::cout << "  widget pos: " << e.getWidgetPos() << std::endl;
+  std::cout << "}" << std::endl;
+}
+
 void init(){
   bool gl = pa("-gl");
   gui << ( VBox()
@@ -66,6 +77,8 @@ void init(){
       << Show();
 
       
+  
+  gui["plot1"].install(mouse);
 
 }
 
