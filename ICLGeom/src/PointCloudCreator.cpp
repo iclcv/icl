@@ -35,8 +35,6 @@
 #include <ICLGeom/PointCloudCreator.h>
 #include <ICLCore/Img.h>
 
-#undef HAVE_OPENCL
-
 #ifdef HAVE_OPENCL
 #include <ICLGeom/PointCloudCreatorCL.h>
 #endif
@@ -51,12 +49,7 @@ namespace icl{
   namespace geom{
     //#define USE_3D_VECS this is slower due to data alignment issues!
 
-#ifdef USE_3D_VECS
-    typedef FixedColVector<float,3> ViewRayDir;
-#else
     typedef FixedColVector<float,4> ViewRayDir;
-#endif
-
 
     struct PointCloudCreator::Data{
       SmartPtr<Mat>rgbdMapping;

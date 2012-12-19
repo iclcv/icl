@@ -60,13 +60,14 @@ namespace icl{
       "    {                                                                                                                      \n"
       "       d=depthValues[id] * depthScaling;                                                                                   \n"
       "    }                                                                                                                      \n"
-      "    float3 xyzM;                                                                                                           \n"
-      "    xyzM.x = o.x + d * dirs[id*3+0];                                                                                       \n" 
-      "    xyzM.y = o.y + d * dirs[id*3+1];                                                                                       \n"
-      "    xyzM.z = o.z + d * dirs[id*3+2];                                                                                       \n"
-      "    xyz[id*3+0] = xyzM.x;                                                                                                  \n"
-      "    xyz[id*3+1] = xyzM.y;                                                                                                  \n"
-      "    xyz[id*3+2] = xyzM.z;                                                                                                  \n"
+      "    float4 xyzM;                                                                                                           \n"
+      "    xyzM.x = o.x + d * dirs[id*4+0];                                                                                       \n" 
+      "    xyzM.y = o.y + d * dirs[id*4+1];                                                                                       \n"
+      "    xyzM.z = o.z + d * dirs[id*4+2];                                                                                       \n"
+      "    xyz[id*4+0] = xyzM.x;                                                                                                  \n"
+      "    xyz[id*4+1] = xyzM.y;                                                                                                  \n"
+      "    xyz[id*4+2] = xyzM.z;                                                                                                  \n"
+      "    xyz[id*4+3] = 1.0;                                                                                                     \n"
       "    float phInv = 1.0/ ( m[0+4*3] * xyzM.x + m[1+4*3] * xyzM.y + m[2+4*3] * xyzM.z + m[3+4*3] );                           \n"
       "    int px = phInv * ( m[0+4*0] * xyzM.x + m[1+4*0] * xyzM.y + m[2+4*0] * xyzM.z + m[3+4*0] );                             \n"
       "    int py = phInv * ( m[0+4*1] * xyzM.x + m[1+4*1] * xyzM.y + m[2+4*1] * xyzM.z + m[3+4*1] );                             \n"
@@ -101,14 +102,15 @@ namespace icl{
       "    {                                                                                                                      \n"
       "       d=depthValues[id] * depthScaling;                                                                                   \n"
       "    }                                                                                                                      \n"
-      "    xyz[id*3+0] = o.x + d * dirs[id*3+0];                                                                                  \n" 
-      "    xyz[id*3+1] = o.y + d * dirs[id*3+1];                                                                                  \n"
-      "    xyz[id*3+2] = o.z + d * dirs[id*3+2];                                                                                  \n"
+      "    xyz[id*4+0] = o.x + d * dirs[id*4+0];                                                                                  \n" 
+      "    xyz[id*4+1] = o.y + d * dirs[id*4+1];                                                                                  \n"
+      "    xyz[id*4+2] = o.z + d * dirs[id*4+2];                                                                                  \n"
+      "    xyz[id*4+3] = 1.0;                                                                                                     \n"
       "}                                                                                                                          \n"
       ;
   
                    
-    PointCloudCreatorCL::PointCloudCreatorCL(Size size, const Array2D<Vec3> &dirs){
+    PointCloudCreatorCL::PointCloudCreatorCL(Size size, const Array2D<Vec> &dirs){
       clReady=false;
     #ifdef HAVE_OPENCL
       //create openCL context
@@ -116,8 +118,8 @@ namespace icl{
   	  rInArray=new cl_uchar[size.width*size.height];
   	  gInArray=new cl_uchar[size.width*size.height];
   	  bInArray=new cl_uchar[size.width*size.height];
-  	  dirsArray=new float[size.width*size.height*3];
-  	  xyzData=new float[size.width*size.height*3];
+  	  dirsArray=new float[size.width*size.height*4];
+  	  xyzData=new float[size.width*size.height*4];
   	  rgbaData=new cl_float4[size.width*size.height];
   	  
       std::vector<cl::Platform> platformList;//get number of available openCL platforms
@@ -168,13 +170,13 @@ namespace icl{
           dirsBuffer = cl::Buffer(
       				         context, 
       				         CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, 
-      				         size.width*size.height * 3 * sizeof(float), 
+      				         size.width*size.height * 4 * sizeof(float), 
       				         (void *) &dirsArray[0]);  
       				           				         
           xyzBuffer = cl::Buffer(
       				         context, 
       				         CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, 
-      				         size.width*size.height * 3 * sizeof(float), 
+      				         size.width*size.height * 4 * sizeof(float), 
       				         (void *) &xyzData[0]);
       				         
           rgbaBuffer = cl::Buffer(
@@ -218,7 +220,7 @@ namespace icl{
     void PointCloudCreatorCL::createRGB(bool NEEDS_RAW_TO_MM_MAPPING,const Img32f *depthValues, const Mat M, 
                            const Vec O, const unsigned int COLOR_W, const unsigned int COLOR_H, const int DEPTH_DIM, 
                            DataSegment<float,3> xyz, DataSegment<float,4> rgba,
-                           const Img8u *rgbIn,const Array2D<Vec3> &dirs, float depthScaling){
+                           const Img8u *rgbIn,const Array2D<Vec> &dirs, float depthScaling){
       
       cl_uchar needsMapping;
       if(NEEDS_RAW_TO_MM_MAPPING){
@@ -285,24 +287,43 @@ namespace icl{
 				     cl::NDRange(DEPTH_DIM), //input size for get global id
 				     cl::NullRange);
 				  
-				  queue.enqueueReadBuffer(//read output from kernel
-  				  xyzBuffer,
-  				  CL_TRUE,
-  				  0,
-  				  DEPTH_DIM * 3 * sizeof(float),
-  				  (float*) xyzData);
-  				  
-  				DataSegment<float,3>((float*)xyzData,sizeof(float)*3,DEPTH_DIM).deepCopy(xyz); //copy pointcloud data
+				  if(xyz.getStride()==4*sizeof(float)){
+				    queue.enqueueReadBuffer(//read output from kernel
+    				  xyzBuffer,
+    				  CL_TRUE,
+    				  0,
+    				  DEPTH_DIM * 4 * sizeof(float),
+    				  (float*) &xyz[0][0]);
+				  }
+				  else{
+				    queue.enqueueReadBuffer(//read output from kernel
+    				  xyzBuffer,
+    				  CL_TRUE,
+    				  0,
+    				  DEPTH_DIM * 4 * sizeof(float),
+    				  (float*) xyzData);
+    				  
+    				DataSegment<float,3>((float*)xyzData,sizeof(float)*3,DEPTH_DIM).deepCopy(xyz); //copy pointcloud data
+    		  }
   	      
-  	      queue.enqueueReadBuffer(//read output from kernel
-  				  rgbaBuffer,
-  				  CL_TRUE,
-  				  0,
-  				  DEPTH_DIM * sizeof(cl_float4),
-  				  (cl_float4*)rgbaData);
-  		
-  			DataSegment<float,4>((float*)rgbaData,sizeof(cl_float4),DEPTH_DIM).deepCopy(rgba); //copy pointcloud color data
-      
+  	      if(rgba.isPacked()){
+  	        queue.enqueueReadBuffer(//read output from kernel
+    				  rgbaBuffer,
+    				  CL_TRUE,
+    				  0,
+    				  DEPTH_DIM * sizeof(cl_float4),
+    				  (cl_float4*) &rgba[0][0]);
+  	      }
+  	      else{
+    	      queue.enqueueReadBuffer(//read output from kernel
+    				  rgbaBuffer,
+    				  CL_TRUE,
+    				  0,
+    				  DEPTH_DIM * sizeof(cl_float4),
+    				  (cl_float4*)rgbaData);
+    		
+    			  DataSegment<float,4>((float*)rgbaData,sizeof(cl_float4),DEPTH_DIM).deepCopy(rgba); //copy pointcloud color data
+          }
         }catch (cl::Error err) {//catch openCL errors
           std::cout<< "ERROR: "<< err.what()<< "("<< err.err()<< ")"<<std::endl;
         }
@@ -311,7 +332,7 @@ namespace icl{
     
     void PointCloudCreatorCL::create(bool NEEDS_RAW_TO_MM_MAPPING,const Img32f *depthValues, 
                            const Vec O, const int DEPTH_DIM, 
-                           DataSegment<float,3> xyz,const Array2D<Vec3> &dirs, float depthScaling){
+                           DataSegment<float,3> xyz,const Array2D<Vec> &dirs, float depthScaling){
       
       cl_uchar needsMapping;
       if(NEEDS_RAW_TO_MM_MAPPING){
@@ -348,14 +369,25 @@ namespace icl{
 				     cl::NDRange(DEPTH_DIM), //input size for get global id
 				     cl::NullRange);
 				  
-				  queue.enqueueReadBuffer(//read output from kernel
-  				  xyzBuffer,
-  				  CL_TRUE,
-  				  0,
-  				  DEPTH_DIM * 3 * sizeof(float),
-  				  (float*) xyzData);
+				  if(xyz.getStride()==4*sizeof(float)){
+				    queue.enqueueReadBuffer(//read output from kernel
+    				  xyzBuffer,
+    				  CL_TRUE,
+    				  0,
+    				  DEPTH_DIM * 4 * sizeof(float),
+    				  (float*) &xyz[0][0]);
+				  }
+				  else{
+				    queue.enqueueReadBuffer(//read output from kernel
+    				  xyzBuffer,
+    				  CL_TRUE,
+    				  0,
+    				  DEPTH_DIM * 4 * sizeof(float),
+    				  (float*) xyzData);
+    				  
+    				DataSegment<float,3>((float*)xyzData,sizeof(float)*3,DEPTH_DIM).deepCopy(xyz); //copy pointcloud data
+    		  }
   				
-  				DataSegment<float,3>((float*)xyzData,sizeof(float)*3,DEPTH_DIM).deepCopy(xyz); //copy pointcloud data
         }catch (cl::Error err) {//catch openCL errors
           std::cout<< "ERROR: "<< err.what()<< "("<< err.err()<< ")"<<std::endl;
         }
