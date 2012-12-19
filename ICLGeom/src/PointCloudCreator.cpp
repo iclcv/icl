@@ -296,7 +296,7 @@ namespace icl{
         for(int i=0;rgbImage && i<3;++i) rgb[i] = (*rgbImage)[i];
       }
   
-      Time t = Time::now();
+      //Time t = Time::now();
       
       if(m_data->mode == KinectRAW11Bit){
         if(destination.supports(PointCloudObjectBase::RGBA32f)){
@@ -360,7 +360,7 @@ namespace icl{
         }
       }
       
-      t.showAge();
+      //t.showAge();
     }
   
     const Camera &PointCloudCreator::getDepthCamera() const{
