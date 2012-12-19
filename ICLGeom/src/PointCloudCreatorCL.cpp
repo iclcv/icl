@@ -48,7 +48,7 @@ namespace icl{
     //OpenCL kernel code
     static char pointCloudCreatorKernel[] =
       "__kernel void                                                                                                              \n"
-      "createRGB(__global float const * depthValues, __global uchar const * rIn, __global uchar const * gIn, __global uchar const * bIn, __global float const * dirs, __global float const * m, __global float4 * rgba, __global float * xyz, float4 const o, uint const colorW, uint const colorH, float const depthScaling, uchar const needsMapping) \n"
+      "createRGB(__global float const * depthValues, __global uchar const * rIn, __global uchar const * gIn, __global uchar const * bIn, __global float4 const * dirs, float4 const m0, float4 const m1, float4 const m2, __global float4 * rgba, __global float4 * xyz, float4 const o, uint const colorW, uint const colorH, float const depthScaling, uchar const needsMapping) \n"
       "{                                                                                                                          \n"
       "    size_t id =  get_global_id(0);                                                                                         \n"
       "    float d;                                                                                                               \n"
@@ -60,17 +60,12 @@ namespace icl{
       "    {                                                                                                                      \n"
       "       d=depthValues[id] * depthScaling;                                                                                   \n"
       "    }                                                                                                                      \n"
-      "    float4 xyzM;                                                                                                           \n"
-      "    xyzM.x = o.x + d * dirs[id*4+0];                                                                                       \n" 
-      "    xyzM.y = o.y + d * dirs[id*4+1];                                                                                       \n"
-      "    xyzM.z = o.z + d * dirs[id*4+2];                                                                                       \n"
-      "    xyz[id*4+0] = xyzM.x;                                                                                                  \n"
-      "    xyz[id*4+1] = xyzM.y;                                                                                                  \n"
-      "    xyz[id*4+2] = xyzM.z;                                                                                                  \n"
-      "    xyz[id*4+3] = 1.0;                                                                                                     \n"
-      "    float phInv = 1.0/ ( m[0+4*3] * xyzM.x + m[1+4*3] * xyzM.y + m[2+4*3] * xyzM.z + m[3+4*3] );                           \n"
-      "    int px = phInv * ( m[0+4*0] * xyzM.x + m[1+4*0] * xyzM.y + m[2+4*0] * xyzM.z + m[3+4*0] );                             \n"
-      "    int py = phInv * ( m[0+4*1] * xyzM.x + m[1+4*1] * xyzM.y + m[2+4*1] * xyzM.z + m[3+4*1] );                             \n"
+      "    float4 xyzM = o+d*dirs[id];                                                                                            \n"
+      "    xyzM.w=1.0;                                                                                                            \n"
+      "    xyz[id]=xyzM;                                                                                                          \n"
+      "    float phInv = 1.0/dot(m0,xyzM);                                                                                        \n"
+      "    int px = phInv * dot(m1,xyzM);                                                                                         \n"
+      "    int py = phInv * dot(m2,xyzM);                                                                                         \n"
       "    float4 rgbaD;                                                                                                          \n"
       "    if( ((uint)px) < colorW && ((uint)py) < colorH)                                                                        \n"
       "    {                                                                                                                      \n"
@@ -90,7 +85,7 @@ namespace icl{
       "    rgba[id]=rgbaD;                                                                                                        \n"
       "}                                                                                                                          \n"
       "__kernel void                                                                                                              \n"
-      "create(__global float const * depthValues, __global float const * dirs, __global float * xyz, float4 const o, float const depthScaling, uchar const needsMapping) \n"
+      "create(__global float const * depthValues, __global float4 const * dirs, __global float4 * xyz, float4 const o, float const depthScaling, uchar const needsMapping) \n"
       "{                                                                                                                          \n"
       "    size_t id =  get_global_id(0);                                                                                         \n"
       "    float d;                                                                                                               \n"
@@ -102,10 +97,9 @@ namespace icl{
       "    {                                                                                                                      \n"
       "       d=depthValues[id] * depthScaling;                                                                                   \n"
       "    }                                                                                                                      \n"
-      "    xyz[id*4+0] = o.x + d * dirs[id*4+0];                                                                                  \n" 
-      "    xyz[id*4+1] = o.y + d * dirs[id*4+1];                                                                                  \n"
-      "    xyz[id*4+2] = o.z + d * dirs[id*4+2];                                                                                  \n"
-      "    xyz[id*4+3] = 1.0;                                                                                                     \n"
+      "    float4 xyzM = o+d*dirs[id];                                                                                            \n"
+      "    xyzM.w=1.0;                                                                                                            \n"
+      "    xyz[id]=xyzM;                                                                                                          \n"
       "}                                                                                                                          \n"
       ;
   
@@ -230,18 +224,18 @@ namespace icl{
       }
       
       #ifdef HAVE_OPENCL
-        try{                             
+        try{      
+        
+          cl_float4 m0 = {M[0+4*3],M[1+4*3],M[2+4*3],M[3+4*3]};
+          cl_float4 m1 = {M[0+4*0],M[1+4*0],M[2+4*0],M[3+4*0]};
+          cl_float4 m2 = {M[0+4*1],M[1+4*1],M[2+4*1],M[3+4*1]};
+                                 
           depthValuesArray = (float*)depthValues->begin(0);
           depthValuesBuffer = cl::Buffer(//write new image to buffer
       				         context, 
       				         CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, 
       				         DEPTH_DIM * sizeof(float),
       				         (void *) &depthValuesArray[0]);
-          matrixBuffer = cl::Buffer(
-                       context, 
-      				         CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, 
-      				         16 * sizeof(float), 
-      				         (void *) &M[0]);
           rInArray = (cl_uchar*)rgbIn->begin(0);
           rInBuffer  = cl::Buffer(//write new image to buffer
       				         context, 
@@ -272,14 +266,16 @@ namespace icl{
           kernelCreateRGB.setArg(2, gInBuffer);
           kernelCreateRGB.setArg(3, bInBuffer);
           kernelCreateRGB.setArg(4, dirsBuffer);
-          kernelCreateRGB.setArg(5, matrixBuffer);
-          kernelCreateRGB.setArg(6, rgbaBuffer);
-          kernelCreateRGB.setArg(7, xyzBuffer);
-          kernelCreateRGB.setArg(8, oV);
-          kernelCreateRGB.setArg(9, COLOR_W);
-          kernelCreateRGB.setArg(10, COLOR_H);   
-          kernelCreateRGB.setArg(11, depthScaling);
-          kernelCreateRGB.setArg(12, needsMapping);
+          kernelCreateRGB.setArg(5, m0);
+          kernelCreateRGB.setArg(6, m1);
+          kernelCreateRGB.setArg(7, m2);
+          kernelCreateRGB.setArg(8, rgbaBuffer);
+          kernelCreateRGB.setArg(9, xyzBuffer);
+          kernelCreateRGB.setArg(10, oV);
+          kernelCreateRGB.setArg(11, COLOR_W);
+          kernelCreateRGB.setArg(12, COLOR_H);   
+          kernelCreateRGB.setArg(13, depthScaling);
+          kernelCreateRGB.setArg(14, needsMapping);
           
           queue.enqueueNDRangeKernel(//run kernel
 				     kernelCreateRGB, 
