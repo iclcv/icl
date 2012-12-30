@@ -126,6 +126,8 @@
 #include <map>
 #include <set>
 
+#include <unistd.h>
+
 using namespace std;
 using namespace icl::utils;
 using namespace icl::math;

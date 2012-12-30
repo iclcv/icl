@@ -35,6 +35,7 @@
 #include <ICLIO/DCFrameQueue.h>
 #include <ICLIO/DC.h>
 #include <ICLUtils/Macros.h>
+#include <unistd.h>
 
 namespace icl{
   namespace io{

@@ -426,7 +426,24 @@ namespace icl{
     }
   
     // }}}
-    
+   
+    template<class real>
+    real findSmallest(Array2D<real> &cost, vec &rowCover, vec &colCover, real maxCost){
+      // {{{ open
+  
+      real minval = maxCost;	   //There cannot be a larger cost than this.
+      for (int i=0; i<cost.getWidth(); i++){ //Now find the smallest uncovered value.
+        for (int j=0; j<cost.getHeight(); j++){
+          if (rowCover[i]==0 && colCover[j]==0 && (minval > cost(i,j))){
+            minval = cost(i,j);
+          }
+        }
+      }
+      return minval;
+    }
+  
+    // }}}
+ 
     template<class real>
     int hg_step6(int step, Array2D<real> &cost, vec &rowCover, vec &colCover, real maxCost){
       // {{{ open
@@ -451,22 +468,7 @@ namespace icl{
     }
   
     // }}}
-    template<class real>
-    real findSmallest(Array2D<real> &cost, vec &rowCover, vec &colCover, real maxCost){
-      // {{{ open
-  
-      real minval = maxCost;	   //There cannot be a larger cost than this.
-      for (int i=0; i<cost.getWidth(); i++){ //Now find the smallest uncovered value.
-        for (int j=0; j<cost.getHeight(); j++){
-          if (rowCover[i]==0 && colCover[j]==0 && (minval > cost(i,j))){
-            minval = cost(i,j);
-          }
-        }
-      }
-      return minval;
-    }
-  
-    // }}}
+   
      
     template<class real>
     vec HungarianAlgorithm<real>::apply(const Array2D<real> &m, bool isCostMatrix){
@@ -538,7 +540,8 @@ namespace icl{
   // }}}
      
   
-    template class HungarianAlgorithm<icl32s>;
+    template class 
+HungarianAlgorithm<icl32s>;
     template class HungarianAlgorithm<icl32f>;
     template class HungarianAlgorithm<icl64f>;
   

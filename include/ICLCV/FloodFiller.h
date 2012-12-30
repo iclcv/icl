@@ -215,7 +215,7 @@ namespace icl{
           refcol[2] = refb;
         }
         inline bool operator()( const T &r, const T &g, const T &b) const{
-          return sqr(r-refcol[0]) + sqr(g-refcol[1]) + sqr(b-refcol[2])  < maxSquaredEuklDist;
+          return utils::sqr(r-refcol[0]) + utils::sqr(g-refcol[1]) + utils::sqr(b-refcol[2])  < maxSquaredEuklDist;
         }
       };
     };

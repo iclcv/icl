@@ -37,6 +37,7 @@
 #include <ICLUtils/SignalHandler.h>
 #include <ICLIO/IOFunctions.h>
 #include <dc1394/iso.h>
+#include <unistd.h>
 
 namespace icl{
   namespace io{
