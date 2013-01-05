@@ -121,16 +121,18 @@ namespace icl{
                             src->getROISize(),0, ippDitherNone, n);
       }
   #else
-      std::vector<icl8u> lut(256),lv;
-      float range = 256.0/n;
-      for(int i=0;i<n;i++)lv.push_back((int)round(i*range));
-      for(int i=0;i<256;i++){
-        lut[i]=lv[(int)round((float)i/n)];
+      // n = nLevels
+      std::vector<icl8u> lut(256),lv(n);
+      float range = 255.0/(n-1);
+      for(int i=0;i<n;i++) {
+        lv[i] = round(iclMin(i*range,255.f)); //6 levels: [0,51,102,153,204,255]
       }
-      // calculate table
+      for(int i=0;i<256;i++){
+        float rel = i/256.f;
+        lut[i]=lv[(int)round(rel * (n-1))];
+      }
       simple(src,dst,lut);
   #endif
     }
-    
   } // namespace filter
 }

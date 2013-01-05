@@ -95,9 +95,11 @@ void run(){
     gui["plot11"], gui["plot12"],
   };
 
-  static std::vector<float> sinData(100);
-  static std::vector<float> cosData(100);
-  static std::vector<float> tanData(100);
+  //  static std::vector<float> sinData(100);
+  // static std::vector<float> cosData(100);
+  //static std::vector<float> tanData(100);
+  static PlotWidget::SeriesBuffer sinData(100),cosData(100),tanData(100);
+  
   static std::vector<Point32f> scatterData1(5000);
   static std::vector<Point32f> scatterData2(5000);
   static std::vector<Point32f> scatterData3(1000);
@@ -152,13 +154,10 @@ void run(){
     scatterData3[i].x  = r * cos(rel);
     scatterData3[i].y  = r * sin(rel);
   }
-
-  for(unsigned int i=0;i<sinData.size();++i){
-    float relI = float(i)/sinData.size();
-    sinData[i] = sin(relI * 2*M_PI + dtSec);
-    cosData[i] = cos(relI * 2*M_PI + dtSec);
-    tanData[i] = cosData[i] > 1.E-10 ? sinData[i]/cosData[i] : 1.E30;
-  }
+  
+  sinData << sin(2*M_PI + dtSec);
+  cosData << cos(2*M_PI + dtSec);
+  tanData << (cosData.back() > 1.E-10 ? sinData.back()/cosData.back() : 1.E30);
   
   static std::vector<float> fData(100);
   for(size_t xi=0;xi<fData.size();++xi){

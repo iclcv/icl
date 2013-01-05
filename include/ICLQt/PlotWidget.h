@@ -301,8 +301,25 @@ namespace icl{
       inline void series(const std::vector<T> &data){
         series(data.data(), data.size(), 1);
       }
+
+      /// Utility structure for easier series plots 
+      /** TODO: test test test */
+      struct SeriesBuffer : public std::vector<float>{
+        explicit SeriesBuffer(int size=0):std::vector<float>(size){}
+        inline void push(float f){
+          for(size_t i=1; i< size();++i){
+            this->operator[](i-1) = this->operator[](i);
+          }
+          this->back() = f;
+        }
+        /// equivalent to push
+        inline SeriesBuffer &operator<<(float f){
+          push(f);
+          return *this;
+        }
+        
+      };  
       
-  
       /// adds bar plot data
       /** @param data data pointer
           @param num number of elements
