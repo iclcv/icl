@@ -45,6 +45,25 @@ namespace icl{
   namespace io{
   
     namespace color_format_converter{
+
+      // can be used to grab kinect IR-image via V4L2
+      void y10b(const icl8u *rawData,const Size &size, ImgBase **dst, std::vector<icl8u> *buffer=0){
+        ensureCompatible(dst,depth16s,size,formatGray);
+        icl16s *d = (*dst)->as16s()->begin(0);
+        int dim = size.getDim()+1;
+
+	int mask = (1 << 10) - 1;
+	uint32_t buf = 0;
+	int bs = 0;
+	while(--dim) {
+          while (bs < 10) {
+            buf = (buf << 8) | *rawData++;
+            bs += 8;
+          }
+          bs -= 10;
+          *d++ = (buf >> bs) & 1023;
+	}
+      }
   
       void myrm(const icl8u *rawData,const Size &size, ImgBase **dst, std::vector<icl8u> *buffer=0){
         static MyrmexDecoder dec;
@@ -153,6 +172,7 @@ namespace icl{
       m_functions[FourCC("Y444").asInt()] = color_format_converter::y444;
       m_functions[FourCC("YU12").asInt()] = color_format_converter::yu12;
       m_functions[FourCC("MYRM").asInt()] = color_format_converter::myrm;
+      m_functions[FourCC("Y10B").asInt()] = color_format_converter::y10b;
   
   #ifdef HAVE_LIBJPEG
       m_functions[FourCC("MJPG").asInt()] = color_format_converter::mjpg;
