@@ -175,6 +175,10 @@ namespace icl{
 	    ///Sets the difference separating noise from movement (smaller=noise, bigger=movement)
 	    /**       @param difference the difference */
 	    void setDifference(int difference);
+	    
+	    ///Returns the motionImage (visualize the movement in the image, usable as motion detector)
+	    /**   @return the motion image */
+	    core::Img32f getMotionImage();
 	     
 	    /// Returns the openCL activation status (true=openCL enabled, false=openCL disabled). The status can be set by setUseCL(bool use).
       /**        @return openCL enabled/disabled */

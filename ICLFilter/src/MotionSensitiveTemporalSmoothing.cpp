@@ -218,6 +218,10 @@ namespace icl{
       }
     }
     
+    Img32f MotionSensitiveTemporalSmoothing::getMotionImage(){
+      return clPointer.at(0)->getMotionImage();
+    }
+      
   
 	  bool MotionSensitiveTemporalSmoothing::isCLActive(){
 	    return useCL;
