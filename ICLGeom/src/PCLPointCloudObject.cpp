@@ -36,10 +36,6 @@
 
 #include <ICLUtils/StringUtils.h>
 
-#include <pcl/io/pcd_io.h>
-#include <pcl/point_types.h>
-#include <pcl/io/file_io.h>
-
 using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::core;

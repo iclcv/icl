@@ -32,12 +32,6 @@
 **                                                                 **
 *********************************************************************/
 
-#include <pcl/point_cloud.h>
-#include <pcl/io/pcd_io.h>
-#include <pcl/point_types.h>
-#include <pcl/io/file_io.h>
-#include <pcl/io/pcd_grabber.h>
-
 #include <ICLGeom/PCDFileGrabber.h>
 #include <ICLIO/FileGrabber.h>
 #include <ICLGeom/PCLPointCloudObject.h>

@@ -39,7 +39,7 @@
 #else
 
 #include <ICLGeom/PointCloudObjectBase.h>
-#include <pcl/point_types.h>
+#include <ICLGeom/PCLIncludes.h>
 
 /** \cond */
 namespace pcl{

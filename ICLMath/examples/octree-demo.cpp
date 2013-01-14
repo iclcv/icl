@@ -11,13 +11,13 @@
 #define TRY_PCL_OCTREE
 
 #ifdef TRY_PCL_OCTREE
-#include <pcl/search/octree.h>
+#include <ICLMath/PCLOctree.h>
 typedef pcl::search::Octree<pcl::PointXYZ> PCL_OT;
 //#include <pcl/octree/octree_search.h>
 //typedef pcl::octree::OctreePointCloudSearch<pcl::PointXYZ> PCL_OT;
 
 #else
-#include <pcl/kdtree/kdtree_flann.h>
+#include <ICLMath/PCLKdtree.h>
 typedef pcl::KdTreeFLANN<pcl::PointXYZ> PCL_OT;
 #endif
 
