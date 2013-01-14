@@ -688,6 +688,15 @@ namespace icl{
       inline void setSpecularReflectance(const GeomColor &values){
         m_specularReflectance = values*(1.0/255);
       }
+      
+      /// returns whether depth test is enabled for this object
+      inline bool getDepthTestEnabled() const{ return m_depthTestEnabled;  }
+      
+      /// sets whether depth test is enabled for this object
+      inline void setDepthTestEnabled(bool enabled){
+        m_depthTestEnabled = enabled;
+      }
+
       protected:
       /// recursive picking method
       static void collect_hits_recursive(SceneObject *obj, const ViewRay &v, 
@@ -725,10 +734,12 @@ namespace icl{
       bool m_pointSmoothingEnabled;
       bool m_lineSmoothingEnabled;
       bool m_polygonSmoothingEnabled;
-      
+      bool m_depthTestEnabled; //!< default is true
       
       icl8u m_shininess;
       GeomColor m_specularReflectance;
+
+
       
       private:
   

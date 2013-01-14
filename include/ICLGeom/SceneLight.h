@@ -39,6 +39,7 @@
 #else
 
 #include <ICLGeom/GeomDefs.h>
+#include <ICLUtils/Uncopyable.h>
 
 namespace icl{
   namespace geom{
@@ -54,7 +55,7 @@ namespace icl{
     /** The light is integrated with the scene and is used to define
         lights in scenes. Each light is associated with one of the
         eight lights provided by OpenGL.*/
-    class SceneLight{
+    class SceneLight : public utils::Uncopyable{
       /// called by the scene 
       /** This method is called by the scene and sets up the
           light in OpenGL by using the instances parameters */
@@ -122,6 +123,11 @@ namespace icl{
       /// private constructor -> only Scene's can create lights
       SceneLight(Scene *parent, int index);
       
+      /// copies everything (overwrites uncopyable)
+      /** Only accessible by friends, object anchor must be tackled manually */
+      SceneLight(const SceneLight &other);
+     
+
       public:
   
       /// Destructor

@@ -101,6 +101,7 @@ namespace icl{
       m_pointSmoothingEnabled(true),
       m_lineSmoothingEnabled(true),
       m_polygonSmoothingEnabled(true),
+      m_depthTestEnabled(true),
       m_shininess(128),
       m_specularReflectance(GeomColor(0.5,0.5,0.5,0.5)),
       m_displayListHandle(0),
@@ -270,6 +271,7 @@ namespace icl{
       m_pointSmoothingEnabled(true),
       m_lineSmoothingEnabled(true),
       m_polygonSmoothingEnabled(true),
+      m_depthTestEnabled(true),
       m_shininess(128),
       m_specularReflectance(GeomColor(0.5,0.5,0.5,0.5)),
       m_displayListHandle(0),
@@ -590,6 +592,7 @@ namespace icl{
       m_pointSmoothingEnabled(true),
       m_lineSmoothingEnabled(true),
       m_polygonSmoothingEnabled(true),
+      m_depthTestEnabled(true),
       m_shininess(128),
       m_specularReflectance(GeomColor(0.5,0.5,0.5,0.5)),
       m_displayListHandle(0),
@@ -908,6 +911,7 @@ namespace icl{
       m_pointSmoothingEnabled = other.m_pointSmoothingEnabled;
       m_lineSmoothingEnabled  = other.m_lineSmoothingEnabled;
       m_polygonSmoothingEnabled = other.m_polygonSmoothingEnabled;
+      m_depthTestEnabled = other.m_depthTestEnabled;
       m_shininess = other.m_shininess;
       m_specularReflectance = other.m_specularReflectance;
       

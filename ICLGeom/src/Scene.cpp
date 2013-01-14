@@ -481,6 +481,14 @@ namespace icl{
         glDisable(GL_POLYGON_SMOOTH);
       }
       
+      
+      if(o->m_depthTestEnabled){
+        glEnable(GL_DEPTH_TEST);
+      }else{
+        glDisable(GL_DEPTH_TEST);
+      }
+
+      
       if(o->getFragmentShader()){
         o->getFragmentShader()->activate();
       }

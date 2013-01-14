@@ -51,6 +51,13 @@
 namespace icl{
   namespace geom{
     
+
+    SceneLight::SceneLight(const SceneLight &other):index(other.index){
+      memcpy(this,&other,sizeof(other));
+      objectAnchor = 0;
+      lightObject = 0;
+    }
+
     /// Cam is the Camera that is acutally used for rendering ...
     void SceneLight::setupGL(const Scene &scene, const Camera &cam) const{
   #ifdef HAVE_OPENGL

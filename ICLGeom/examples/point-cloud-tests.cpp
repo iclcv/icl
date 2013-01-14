@@ -38,7 +38,7 @@ std::vector<PointCloudObjectBase*> create_clouds(){
   clouds[11] = new PointCloudObject(size.width,size.height,true,false,true);
   clouds[12] = new PointCloudObject(size.width,size.height,true,true,true);
 
-  PointCloudObjectBase *copies[13];
+  //PointCloudObjectBase *copies[13];
   URand ra(0,255),rb(0,1),rc(-1000,1000);
   RandPos rp;
   RandNormal rn;
@@ -99,8 +99,8 @@ void test_point_cloud_deep_copy(){
 void test_point_cloud_cross_copy(){
   std::vector<PointCloudObjectBase*> clouds = create_clouds();
   std::vector<PointCloudObjectBase*> copies = create_clouds();
-  for(int i=0;i<clouds.size();++i){
-    for(int j=0;j<copies.size();++j){
+  for(size_t i=0;i<clouds.size();++i){
+    for(size_t j=0;j<copies.size();++j){
       std::cout << "  checking cross copy " << i << "-->" << j <<  " ...";
       clouds[i]->deepCopy(*copies[j]);
       if(clouds[i]->equals(*copies[j],true,true,1)){
