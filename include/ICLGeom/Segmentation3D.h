@@ -58,19 +58,19 @@ namespace icl{
       /// Destructor
       ~Segmentation3D();
   	
-  	  /// One line call for the complex segmentation using probabilitstic surface composition.
-  	  /**       @param xyz the xyzh DataSegment from the PointCloudObject class
-  	            @param edgeImg the edge image from the PointNormalEstimation class
-  	            @param depthImg the input depth image
-  	            @return the color image of the segments */
-  	  core::Img8u segmentation(DataSegment<float,4> xyz, const core::Img8u &edgeImg, const core::Img32f &depthImg);
-  		
-  		/// One line call for the simple support plane and blobs segmentation.
-  		/**       @param xyz the xyzh DataSegment from the PointCloudObject class
-  	            @param edgeImg the edge image from the PointNormalEstimation class
-  	            @param depthImg the input depth image
-  	            @return the color image of the segments */
-  		core::Img8u segmentationBlobs(DataSegment<float,4> xyz, const core::Img8u &edgeImg, const core::Img32f &depthImg);
+      /// One line call for the complex segmentation using probabilitstic surface composition.
+      /**       @param xyz the xyzh DataSegment from the PointCloudObject class
+          @param edgeImg the edge image from the PointNormalEstimation class
+          @param depthImg the input depth image
+          @return the color image of the segments */
+      core::Img8u segmentation(DataSegment<float,4> xyz, const core::Img8u &edgeImg, const core::Img32f &depthImg);
+      
+      /// One line call for the simple support plane and blobs segmentation.
+      /**       @param xyz the xyzh DataSegment from the PointCloudObject class
+          @param edgeImg the edge image from the PointNormalEstimation class
+          @param depthImg the input depth image
+          @return the color image of the segments */
+      core::Img8u segmentationBlobs(DataSegment<float,4> xyz, const core::Img8u &edgeImg, const core::Img32f &depthImg);
   	  		
       /// Sets openCL enabled/disabled. Enabling has no effect if no openCL context is available. (default true=enabled)
       /**        @param use enable/disable openCL */
@@ -87,28 +87,28 @@ namespace icl{
                 @param yMax yMax in mm */
       void setROI(float xMin, float xMax, float yMin, float yMax);
   		
-  		/// Sets the minimum cluster size for region growing (default 25)
-  		/**       @param size minimum cluster size in points */
-  		void setMinClusterSize(unsigned int size);
-  		
-  		/// Sets fast growing enabled/disabled. Fast growing uses the region detector, normal growing uses classical region growing. (default false=disabled)
-  		/**        @param use enable/disable fast growing */
-  		void setUseFastGrowing(bool use);
-  		
-  		/// Sets the assignment radius for the edge point assignment after region growing. (default 5)
-  		/**       @pram radius the assignment radius in points */
-  		void setAssignmentRadius(int radius);
-  		
-  		/// Sets the maximum distance for the edge point assignment after region growing. (default 15)
-  		/**       @param maxDistance maximum distance in mm */
-  		void setAssignmentMaxDistance(float maxDistance);
-  		
-  		/// Sets the maximum euclidean distance for RANSAC. (default 15)
-  		/**       @param distance the maximum euclidean distance for RANSAC in mm */
-  		void setRANSACeuclDistance(int distance);
-  		
-  		/// Sets the RANSAC passes (default 20)
-  		/**       @param passes the RANSAC passes */ 
+      /// Sets the minimum cluster size for region growing (default 25)
+      /**       @param size minimum cluster size in points */
+      void setMinClusterSize(unsigned int size);
+      
+      /// Sets fast growing enabled/disabled. Fast growing uses the region detector, normal growing uses classical region growing. (default false=disabled)
+      /**        @param use enable/disable fast growing */
+      void setUseFastGrowing(bool use);
+      
+      /// Sets the assignment radius for the edge point assignment after region growing. (default 5)
+      /**       @pram radius the assignment radius in points */
+      void setAssignmentRadius(int radius);
+      
+      /// Sets the maximum distance for the edge point assignment after region growing. (default 15)
+      /**       @param maxDistance maximum distance in mm */
+      void setAssignmentMaxDistance(float maxDistance);
+      
+      /// Sets the maximum euclidean distance for RANSAC. (default 15)
+      /**       @param distance the maximum euclidean distance for RANSAC in mm */
+      void setRANSACeuclDistance(int distance);
+      
+      /// Sets the RANSAC passes (default 20)
+      /**       @param passes the RANSAC passes */ 
       void setRANSACpasses(int passes); 
       
       /// Sets the RANSAC tolerance for the cutfree neighbours calculation. (default 30)
@@ -119,10 +119,10 @@ namespace icl{
       /**       @param subset the point subset for RANSAC */
       void setRANSACsubset(int subset);
   		
-  		/// Sets the minimum euclidean BLOB distance for remaining points or the blob segmentation
-  		/**       @param distance the minimum euclidean distance for blob segmentation */
-  		void setBLOBSeuclDistance(int distance);
-  		
+      /// Sets the minimum euclidean BLOB distance for remaining points or the blob segmentation
+      /**       @param distance the minimum euclidean distance for blob segmentation */
+      void setBLOBSeuclDistance(int distance);
+      
       /// Returns the openCL status (true=openCL context ready, false=no openCL context available)
       /**        @return openCL context ready/unavailable */
       bool isCLReady();
@@ -141,15 +141,15 @@ namespace icl{
       
       /// Returns the blobs of the complex segmentation.
       /**        @return a vector of blobs. Every entry contains a vector with the cluster indices */
-  		std::vector<std::vector<int> > getBlobs();
-  		
-  		/// Returns the boolean neighbourhood matrix.
-  		/**       @return the neighbourhood/adjacency matrix */
-  		math::DynMatrix<bool> getNeigboursMatrix();
-  		
-  		/// Returns the probability matrix.
-  		/**      @return returns the probability matrix for cluster composition */
-  		math::DynMatrix<float> getProbabilityMatrix();
+      std::vector<std::vector<int> > getBlobs();
+      
+      /// Returns the boolean neighbourhood matrix.
+      /**       @return the neighbourhood/adjacency matrix */
+      math::DynMatrix<bool> getNeigboursMatrix();
+      
+      /// Returns the probability matrix.
+      /**      @return returns the probability matrix for cluster composition */
+      math::DynMatrix<float> getProbabilityMatrix();
       
       /// Sets the xyzh DataSegment from the PointCloudObject class. (Use one line calls)
       /**       @param xyz the xyz DataSegment */
@@ -166,23 +166,23 @@ namespace icl{
       /// Clears the data. Must be called before every iteration. (Use one line calls)
       void clearData();
   		
-  		/// Region growing. (Use one line calls)
-  		void regionGrow();
+      /// Region growing. (Use one line calls)
+      void regionGrow();
 	  	
-	  	/// Calculates the edge point assignment and the neighbourhood matrix. (Use one line calls)
-	  	void calculatePointAssignmentAndAdjacency();
+      /// Calculates the edge point assignment and the neighbourhood matrix. (Use one line calls)
+      void calculatePointAssignmentAndAdjacency();
   		
-  		/// Calculates the cutfree neighbouring cluster. (Use one line calls)
-  		void calculateCutfreeMatrix();
+      /// Calculates the cutfree neighbouring cluster. (Use one line calls)
+      void calculateCutfreeMatrix();
   		
-  		/// Greedy composition with probability matrix. (Use one line calls)
-  		void greedyComposition();
+      /// Greedy composition with probability matrix. (Use one line calls)
+      void greedyComposition();
   		
-  		/// Calculates the assignment of the remaining points. (Use one line calls)
-  		void calculateRemainingPoints();
+      /// Calculates the assignment of the remaining points. (Use one line calls)
+      void calculateRemainingPoints();
   		
-  		/// Calculates the blob segmentation (support plane and blobs). (Use one line calls)
-  		void blobSegmentation();
+      /// Calculates the blob segmentation (support plane and blobs). (Use one line calls)
+      void blobSegmentation();
   		
       /// Calculates the color segment image. (Use one line calls)
       void colorPointcloud();
@@ -227,19 +227,19 @@ namespace icl{
    
       bool clReady;
       bool useCL;
-     
-     	void checkNeighbourGrayThreshold(int x, int y, int zuw, int threshold, std::vector<int> *data);
-  		
-  		void checkNeighbourDistanceRemaining(int x, int y, int zuw, std::vector<int> *data);
-  		
-  		void regionGrowBlobs();
-  		
-  		void checkNeighbourDistance(int x, int y, int zuw, std::vector<int> *data);
-  		
-  		bool checkNotExist(int zw, std::vector<int> &nb);
-  		
-  		float dist3(const Vec &a, const Vec &b);
-  	
+      
+      void checkNeighbourGrayThreshold(int x, int y, int zuw, int threshold, std::vector<int> *data);
+      
+      void checkNeighbourDistanceRemaining(int x, int y, int zuw, std::vector<int> *data);
+      
+      void regionGrowBlobs();
+      
+      void checkNeighbourDistance(int x, int y, int zuw, std::vector<int> *data);
+      
+      bool checkNotExist(int zw, std::vector<int> &nb);
+      
+      float dist3(const Vec &a, const Vec &b);
+      
     #ifdef HAVE_OPENCL
       //OpenCL data
       cl_uchar* segmentColorImageRArray;

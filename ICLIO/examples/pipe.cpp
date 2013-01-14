@@ -102,6 +102,23 @@ const ImgBase *grab_image(){
     }
     img = hack;
   }
+
+  /* this does not work in the intended way because the images are converted to dst-format by the
+     grabbers grab function using useDesired ...
+  static bool reint = pa("-reinterpret-input-format");
+  if(reint){
+    static SmartPtr<const ImgBase> re;
+    static format fmt = pa("-reinterpret-input-format");
+    format ifmt = img->getFormat();
+    if(fmt != formatMatrix && getChannelsOfFormat(fmt) != img->getChannels()){
+      ERROR_LOG("cannot reinterpret image format " << str(ifmt) 
+                << " to " << str(fmt) << " (cannel cout missmatch)");
+    }else{
+      re = img->reinterpretChannels(fmt);
+      img = re.get();
+    }
+  }
+   */
   
   if(!pa("-clip")){
     return img;
@@ -304,6 +321,7 @@ int main(int n, char **ppc){
   // "\tThis parameters can be obtained using ICL application\n"
   //"\ticl-calib-radial-distortion")
   ("-reset","reset bus on startup")
+  //("-reinterpret-input-format","can be used to e.g. reinterpret input matrix-format images as gray") 
   ("-progress","show progress bar (only used in -no-gui mode)")
   ("-idu","if this is given, image updates are initally switched off which means, that no"
    "image is visualized in the preview widget. This helps to reduce network traffic!")
@@ -316,6 +334,7 @@ int main(int n, char **ppc){
   pa_init(n,ppc,"[m]-output|-o(output-type-string,output-parameters) "
          "-flip|-f(string) -single-shot [m]-input|-i(device,device-params) "
          "-size|(Size) -no-gui -pp(1) "
+          //"-reinterpret-input-format(fmt) "
 	 //-dist|-d(float,float,float,float) -reset|-r "
 	 "-dist|-d(fn) -reset|-r "
          "-fps(float=15.0) -clip|-c(Rect) -camera-config(filename) -depth(depth) -format(format) -normalize|-n "

@@ -46,7 +46,6 @@ add_libsource (${PROJECT_NAME} "src/SoftPosit.cpp" "${CONDITIONLIST}" LIB_SOURCE
 add_libsource (${PROJECT_NAME} "src/CoplanarPointPoseEstimator.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/ICP.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/PointNormalEstimation.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-add_libsource (${PROJECT_NAME} "src/Segmentation3D.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
 set(CONDITIONLIST HAVE_OPENGL_COND)
 add_libsource (${PROJECT_NAME} "src/SceneObject.cpp" "${CONDITIONLIST}" LIB_SOURCES)
@@ -60,7 +59,7 @@ add_libsource (${PROJECT_NAME} "src/PointcloudSceneObject.cpp" "${CONDITIONLIST}
 add_libsource (${PROJECT_NAME} "src/RGBDImageSceneObject.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/RGBDMapping.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/SceneLightObject.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-
+add_libsource (${PROJECT_NAME} "src/Segmentation3D.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/DepthCameraPointCloudGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/PointCloudCreator.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/PointCloudObject.cpp" "${CONDITIONLIST}" LIB_SOURCES)
@@ -105,6 +104,9 @@ add_example (${PROJECT_NAME} "depth-camera-simulator" "${CONDITIONLIST}" ICLLibs
 if(NOT APPLE)
 add_example (${PROJECT_NAME} "scene-graph-demo" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 endif()
+
+set(CONDITIONLIST ICL_VAR_BUILD_EXAMPLES HAVE_QT_COND HAVE_OPENGL_COND HAVE_GLX_COND HAVE_LIBFREENECT_COND)
+add_example (${PROJECT_NAME} "kinect-recorder" "${CONDITIONLIST}" ICLLibsToLinkAgainst)
 
 set(CONDITIONLIST HAVE_OPENCV_COND HAVE_PCL_COND)
 add_example (${PROJECT_NAME} "point-cloud-tests" "${CONDITIONLIST}" ICLLibsToLinkAgainst)

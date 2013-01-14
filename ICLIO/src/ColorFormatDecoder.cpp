@@ -52,7 +52,6 @@ namespace icl{
         icl16s *d = (*dst)->as16s()->begin(0);
         int dim = size.getDim()+1;
 
-	int mask = (1 << 10) - 1;
 	uint32_t buf = 0;
 	int bs = 0;
 	while(--dim) {
