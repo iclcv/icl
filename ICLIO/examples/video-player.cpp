@@ -116,16 +116,16 @@ void run(){
   disableNextUpdate = true;
   if(pos.getValue() != p) pos.setValue(p);
 #ifndef HAVE_OPENCV
-  if(parse<int>(grabber.getValue("speed")) != speed){
+  if(parse<int>(grabber.getPropertyValue("speed")) != speed){
     if(speed == 50){
-      grabber.setProperty("speed-mode","auto");
+      grabber.setPropertyValue("speed-mode","auto");
     }else{
-      grabber.setProperty("speed-mode","manual");
-      grabber.setProperty("speed",str(speed));
+      grabber.setPropertyValue("speed-mode","manual");
+      grabber.setPropertyValue("speed",str(speed));
     }
   } 
-  if(volume != parse<int>(grabber.getValue("volume"))){
-    grabber.setProperty("volume",str(volume));
+  if(volume != parse<int>(grabber.getPropertyValue("volume"))){
+    grabber.setPropertyValue("volume",str(volume));
   }
 #endif
   
