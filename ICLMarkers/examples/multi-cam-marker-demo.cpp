@@ -49,7 +49,8 @@ void updateCube(int id, const Mat &T){
   SceneObject *&cube = (it == cubes.end() ? cubes[id] : it->second);
   if(it == cubes.end()){
     static Size ms = pa("-m",2);
-    static const float p[] = { 0,0,ms.width/2,ms.width,ms.height,ms.width };
+    static const float p[] = { (float)0,(float)0,(float)ms.width/2,(float)ms.width,
+                               (float)ms.height,(float)ms.width };
     cube = new SceneObject("cuboid",p);
     cube->setVisible(Primitive::quad,false);
     cube->addChild(new ComplexCoordinateFrameSceneObject);

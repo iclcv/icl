@@ -66,11 +66,11 @@ namespace icl{
       ICLASSERT_RETURN(src->getChannels() == 3);
       ICLASSERT_RETURN(m_refColor.size() == 3);
   
-      const icl8u ref8u [3] = { m_refColor[0], m_refColor[1], m_refColor[2] };
-      const icl16s ref16s[3] = { m_refColor[0], m_refColor[1], m_refColor[2] };
-      const icl32s ref32s[3] = { m_refColor[0], m_refColor[1], m_refColor[2] };
-      const icl32f ref32f[3] = { m_refColor[0], m_refColor[1], m_refColor[2] };
-      const icl64f ref64f[3] = { m_refColor[0], m_refColor[1], m_refColor[2] };
+      const icl8u ref8u [3] = { (icl8u)m_refColor[0], (icl8u)m_refColor[1], (icl8u)m_refColor[2] };
+      const icl16s ref16s[3] = { (icl16s)m_refColor[0], (icl16s)m_refColor[1], (icl16s)m_refColor[2] };
+      const icl32s ref32s[3] = { (icl32s)m_refColor[0], (icl32s)m_refColor[1], (icl32s)m_refColor[2] };
+      const icl32f ref32f[3] = { (icl32f)m_refColor[0], (icl32f)m_refColor[1], (icl32f)m_refColor[2] };
+      const icl64f ref64f[3] = { (icl64f)m_refColor[0], (icl64f)m_refColor[1], (icl64f)m_refColor[2] };
   
       if(m_threshold == -1){
         if (!UnaryOp::prepare (dst, src->getDepth() == depth64f ? depth64f : depth32f, src->getSize(), formatMatrix, 1, src->getImageRect(), src->getTime())) return;

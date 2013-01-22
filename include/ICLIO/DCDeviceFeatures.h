@@ -47,7 +47,7 @@ namespace icl{
     public:
 
       DCDeviceFeaturesImpl(const DCDevice &dev);
-      ~DCDeviceFeaturesImpl(){}
+      virtual ~DCDeviceFeaturesImpl(){}
 
       void show();
       /// callback function for property changes.

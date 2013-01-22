@@ -188,7 +188,8 @@ namespace icl{
         static std::string x[6] = {"xpos","ypos","dim","red","green","blue"};
         for(int i=0;i<6;i++){
           const Dragger &d = D[i];
-          float fs[6] = { d.pos().x, d.pos().y,d.dim(), d.col().r, d.col().g, d.col().b }; 
+          float fs[6] = { (float)d.pos().x, (float)d.pos().y,(float)d.dim(), 
+                          (float)d.col().r, (float)d.col().g, (float)d.col().b }; 
           for(int j=0;j<6;++j){
             f.set(std::string("config.gui-info.dragger-")+str(i)+"."+x[j],fs[j]);
           }

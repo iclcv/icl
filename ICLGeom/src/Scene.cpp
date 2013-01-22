@@ -495,7 +495,7 @@ namespace icl{
 
       glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, o->m_specularReflectance.data());
 
-      float shininess[] = { o->m_shininess };
+      float shininess[] = { (float)o->m_shininess };
       glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
       
       glPointSize(o->m_pointSize);

@@ -45,6 +45,8 @@
 
 namespace icl{
   namespace geom{
+
+#ifdef HAVE_OPENCL
     //OpenCL kernel code
     static char pointcloudViewerKernel[] = 
       "__kernel void                                                                                                                  \n"
@@ -208,7 +210,7 @@ namespace icl{
       "   }                                                                                                                           \n"
       "}                                                                                                                              \n"
       ;
-  
+  #endif
         
     PointcloudSceneObject::PointcloudSceneObject(Size size, const Camera &cam){
       H.id();

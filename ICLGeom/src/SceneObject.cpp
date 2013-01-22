@@ -951,21 +951,21 @@ namespace icl{
     }
   
     SceneObject *SceneObject::addSpheroid(float x, float y, float z, float rx, float ry, float rz, int rzSteps, int xySlices){
-      float params[] = {x,y,z,rx,ry,rz,rzSteps,xySlices};
+      float params[] = {x,y,z,rx,ry,rz,(float)rzSteps,(float)xySlices};
       SceneObject *o = new SceneObject("spheroid",params);
       addChild(o);
       return o;
     }
     
     SceneObject *SceneObject::addCylinder(float x, float y, float z, float rx, float ry, float h, int steps){
-      float params[] = {x,y,z,rx,ry,h,steps};
+      float params[] = {x,y,z,rx,ry,h,(float)steps};
       SceneObject *o = new SceneObject("cylinder",params);
       addChild(o);
       return o;
     }
     
     SceneObject *SceneObject::addCone(float x, float y, float z, float rx, float ry, float h, int steps){
-      float params[] = {x,y,z,rx,ry,h,steps};
+      float params[] = {x,y,z,rx,ry,h,(float)steps};
       SceneObject *o = new SceneObject("cone",params);
       addChild(o);
       return o;

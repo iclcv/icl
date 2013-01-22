@@ -44,6 +44,8 @@
 
 namespace icl{
   namespace geom{
+
+#ifdef HAVE_OPENCL
     //OpenCL kernel code
     static char segmentationKernel[] = 
       "  #pragma OPENCL EXTENSION cl_khr_global_int32_base_atomics : enable                                                           \n"
@@ -186,7 +188,7 @@ namespace icl{
 		  "  }                                                                                                                            \n"
 		  "}                                                                                                                              \n"
     ;
-  
+  #endif
                 
     Segmentation3D::Segmentation3D(Size size){
       //set default values
@@ -1355,23 +1357,26 @@ namespace icl{
         }
       }
      
+#ifdef HAVE_OPENCL
       int numPoints=cluster.at(maxID).size();
-      
-      Vec n0[RANSACpasses];
-      float dist[RANSACpasses];  
       int cAbove[RANSACpasses];
       int cBelow[RANSACpasses];
       int cOn[RANSACpasses];
       int cAboveRead[RANSACpasses];
       int cBelowRead[RANSACpasses];
+#endif
+      Vec n0[RANSACpasses];
+      float dist[RANSACpasses];  
       int cOnRead[RANSACpasses];
       
       for(int i=0; i<RANSACpasses; i++){
+#ifdef HAVE_OPENCL
         cAbove[i]=0;
         cBelow[i]=0;
         cOn[i]=0;   
         cAboveRead[i]=0;
         cBelowRead[i]=0;
+#endif
         cOnRead[i]=0;
         
         Vec rPoint1;

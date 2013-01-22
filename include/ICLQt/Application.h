@@ -157,6 +157,9 @@ namespace icl{
       struct AsynchronousEvent{
         /// pure virtual execution method
         virtual void execute() = 0;
+        
+        /// virtual destructor
+        virtual ~AsynchronousEvent(){}
       };
       
       /// internally posts the event to the GUI Thread

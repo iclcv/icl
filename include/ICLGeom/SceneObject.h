@@ -172,20 +172,20 @@ namespace icl{
   
       /// create a shere scene object
       static inline SceneObject *sphere(float x, float y, float z, float r, int rzSteps, int xySlices){
-        const float p[] = { x,y,z,r, rzSteps, xySlices };
+        const float p[] = { x,y,z,r, float(rzSteps), float(xySlices) };
         return new SceneObject("sphere",p);
       }
   
       /// create a shere scene object
       static inline SceneObject *spheroid(float x, float y, float z, float rx, float ry, float rz, int rzSteps, int xySlices){
-        const float p[] = { x,y,z,rx, ry, rz, rzSteps, xySlices };
+        const float p[] = { x,y,z,rx, ry, rz, float(rzSteps), float(xySlices) };
         return new SceneObject("spheroid",p);
       }
   
       /// create a superquadric scene object
       static inline SceneObject *superquadric(float x, float y, float z, float rx, float ry, float rz, 
                                               float dx, float dy, float dz, float e1, float e2, int rzSteps, int xySlices){
-        const float p[] = { x,y,z,rx, ry, rz, dx, dy, dz, e1, e2, rzSteps, xySlices };
+        const float p[] = { x,y,z,rx, ry, rz, dx, dy, dz, e1, e2, float(rzSteps), float(xySlices) };
         return new SceneObject("superquadric",p);
       }
   

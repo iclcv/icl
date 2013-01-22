@@ -208,10 +208,10 @@ namespace icl{
   
         double adMin[2], adMax[2], adCur[2];
         // compute corners of the ROI rectangle
-        double aadRect[4][2] = {{roi.x, roi.y},
-                                {roi.x + roi.width, roi.y},
-                                {roi.x + roi.width, roi.y + roi.height},
-                                {roi.x, roi.y + roi.height}};
+        double aadRect[4][2] = {{(double)roi.x, (double)roi.y},
+                                {(double)roi.x + (double)roi.width, (double)roi.y},
+                                {(double)roi.x + (double)roi.width, (double)roi.y + (double)roi.height},
+                                {(double)roi.x, (double)roi.y + (double)roi.height}};
   
         // apply transform to each corner off the ROI rectangle
         // shift is smallest x and y coordinate of this transform

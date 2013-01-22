@@ -47,6 +47,8 @@ using namespace icl::core;
 
 namespace icl{
   namespace filter{
+
+#ifdef HAVE_OPENCL
     static char timeSmoothingKernel[] = 
       "__kernel void                                                                                                                  \n"
       "temporalSmoothingFloat(__global float const * inputImages, __global float * outputImage, int const filterSize, int const imgCount, int const w, int const h, int const difference, int const nullvalue, __global float * motionImage)                                                                                              \n"
@@ -107,7 +109,7 @@ namespace icl{
     	"   }                                                                                                                           \n"
       "}                                                                                                                              \n"
       ;
-
+#endif
    
     MotionSensitiveTemporalSmoothing::MotionSensitiveTemporalSmoothing(int iNullValue, int iMaxFilterSize){
       //addProperty("use opencl","flag","",true);

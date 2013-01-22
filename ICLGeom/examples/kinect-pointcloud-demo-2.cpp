@@ -352,7 +352,7 @@ void run(){
 	  }
     obj->setColorsFromImage(normalsImage);
         
-    const DataSegment<float,3> xyz = obj->selectXYZ();//get pointcloud data
+    //const DataSegment<float,3> xyz = obj->selectXYZ();//get pointcloud data
     const DataSegment<float,4> normal = obj->selectNormal();//get pointcloud normal data 
     
     PointNormalEstimation::Vec4* norms=normalEstimator->getWorldNormals(); //get world normals
