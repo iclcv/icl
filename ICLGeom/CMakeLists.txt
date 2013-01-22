@@ -62,15 +62,16 @@ add_libsource (${PROJECT_NAME} "src/SceneLightObject.cpp" "${CONDITIONLIST}" LIB
 add_libsource (${PROJECT_NAME} "src/Segmentation3D.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/DepthCameraPointCloudGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/PointCloudCreator.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/PointCloudCreatorCL.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/PointCloudObject.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/PointCloudObjectBase.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/OctreeObject.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/PlotWidget3D.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
-set(CONDITIONLIST HAVE_OPENCV_COND HAVE_PCL_COND)
+set(CONDITIONLIST HAVE_PCL_COND)
 add_libsource (${PROJECT_NAME} "src/PCLPointCloudObject.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/PCDFileGrabber.cpp" "${CONDITIONLIST}" LIB_SOURCES)
-add_libsource (${PROJECT_NAME} "src/PointCloudCreatorCL.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+
 
 set(CONDITIONLIST HAVE_OPENCV_COND)
 add_libsource (${PROJECT_NAME} "src/OpenCVCamCalib.cpp" "${CONDITIONLIST}" LIB_SOURCES)
