@@ -1,6 +1,5 @@
 icl_check_external_package(QT "QtCore/QtCore;QtGui/QtGui;QtOpenGL/QtOpenGL" "QtCore;QtGui;QtOpenGL" lib include/qt4 FALSE FALSE)
 
-
 find_program(QT_MOC_EXECUTABLE moc-qt4 "${ICL_XDEP_QT_PATH}/bin" DOC "location of Qt's meta object compiler")
 if(NOT "${QT_MOC_EXECUTABLE}" STREQUAL "QT_MOC_EXECUTABLE-NOTFOUND") 
   message(STATUS "found (binary): moc-qt4")
