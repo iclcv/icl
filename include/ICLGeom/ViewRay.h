@@ -36,6 +36,7 @@
 
 #include <ICLGeom/GeomDefs.h>
 #include <ICLUtils/Exception.h>
+#include <ICLUtils/Point32f.h>
 #include <iostream>
 
 namespace icl{
@@ -61,7 +62,28 @@ namespace icl{
       /// calculates line-plane intersection 
       /** @see static Camera::getIntersection function */
       Vec getIntersection(const PlaneEquation &plane) const throw (utils::ICLException);
+
+      /// ray-triangle intersection results 
+      enum TriangleIntersection{
+        noIntersection,
+        foundIntersection,
+        wrongDirection,
+        degenerateTriangle,
+        rayIsCollinearWithTriangle
+      };
       
+      /// calculates intersection with given triangle
+      /** inspired by http://softsurfer.com/Archive/algorithm_0105/algorithm_0105.htm#intersect_RayTriangle() 
+          
+          The actual intersection point in 3D can optionally be stored into a non-null "intersectionPoint"
+          parameter. The parametric triangle coordinats can also optionally be stored in a non-null
+          "parametricCoords" parameter. "parametricCoords" is only written if it is not null and if
+          the returned intersection result is "foundIntersection"
+          */
+      TriangleIntersection getIntersectionWithTriangle(const geom::Vec &a, const geom::Vec &b, const geom::Vec &c, 
+                                                       geom::Vec *intersectionPoint=0, 
+                                                       utils::Point32f *parametricCoords=0) const;
+        
       /// calculates the closest distance to the given 3D-Point
       /** for following formula is used:
           <pre>

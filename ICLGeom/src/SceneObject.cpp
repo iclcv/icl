@@ -995,12 +995,17 @@ namespace icl{
     }
     
   
-    //Input:  a ray R, and a triangle T
-    //    Output: *I = intersection point (when it exists)
-    //    Return: -1 = triangle is degenerate (a segment or point)
-    //             0 = disjoint (no intersect)
-    //             1 = intersect in unique point I1
-    //             2 = are in the same plane
+
+    struct Triangle{
+      Triangle(const Vec &a, const Vec &b, const Vec &c):a(a),b(b),c(c){}
+      Vec a,b,c;
+    };
+    
+    ViewRay::TriangleIntersection compute_intersection(const ViewRay &r, const Triangle &t, Vec &intersection){
+      return r.getIntersectionWithTriangle(t.a,t.b,t.c,&intersection);
+    }
+
+#if 0
     enum RayTriangleIntersection{
       noIntersection,
       foundIntersection,
@@ -1009,10 +1014,7 @@ namespace icl{
       rayIsCollinearWithTriangle
     };
     
-    struct Triangle{
-      Triangle(const Vec &a, const Vec &b, const Vec &c):a(a),b(b),c(c){}
-      Vec a,b,c;
-    };
+   
     
     static inline float dot(const Vec &a, const Vec &b){
       return a[0]*b[0] +a[1]*b[1] +a[2]*b[2]; 
@@ -1020,7 +1022,6 @@ namespace icl{
     
   
     // inspired from http://softsurfer.com/Archive/algorithm_0105/algorithm_0105.htm#intersect_RayTriangle()
-  #if 1
     RayTriangleIntersection compute_intersection(const ViewRay &r, const Triangle &t, Vec &intersection){
       //Vector    u, v, n;             // triangle vectors
       //Vector    dir, w0, w;          // ray vectors
@@ -1072,72 +1073,7 @@ namespace icl{
       intersection[3] = 1;
       return foundIntersection;
     }
-  #else
-    // almost the same as above ...
-    // inspired from http://softsurfer.com/Archive/algorithm_0105/algorithm_0105.htm#intersect_RayTriangle()
-    RayTriangleIntersection compute_intersection(const ViewRay &r, const Triangle &t, Vec &intersection){
-      //Vector    u, v, n;             // triangle vectors
-      //Vector    dir, w0, w;          // ray vectors
-      //float     r, a, b;             // params to calc ray-plane intersect
-      static const float EPSILON = 0.00000001;
-      // get triangle edge vectors and plane normal
-      Vec u = t.b - t.a;
-      Vec v = t.c - t.a;
-      Vec n = cross(u,v);  // TEST maybe v,u ??
-      if (fabs(n[0]) < EPSILON && fabs(n[1]) < EPSILON && fabs(n[2]) < EPSILON){
-        return degenerateTriangle;
-      }
-  
-      const Vec dir = r.direction;  // dir = R.P1 - R.P0; // points from 0->1
-      Vec w0 = r.offset - t.a;      //R.P0 - T.V0;   
-      float a = -dot(n,w0);
-      float b = dot(n,dir);
-      if (fabs(b) < EPSILON) {     // ray is parallel to triangle plane
-        return a<EPSILON ? rayIsCollinearWithTriangle : noIntersection;
-      }
-   
-      
-      // get intersect point of ray with triangle plane
-      float rr = a / b;
-      if (rr < 0) {
-        return noIntersection;
-      }
-      // for a segment, also test if (r > 1.0) => no intersect 
-      // a segment meaning a line-segment between a and b
-  
-  
-      intersection = r.offset + dir * rr;
-  
-      // todo comment in again!! (oh noo! this was wrong)
-      //if(dot(dir,intersection-r.offset)<0) return wrongDirection;
-  
-      //*I = R.P0 + r * dir;           // intersect point of ray and plane
-  
-      // is I inside T?
-      //    float    uu, uv, vv, wu, wv, D;
-      float uu = dot(u,u);
-      float uv = dot(u,v);
-      float vv = dot(v,v);
-      Vec w = intersection - t.a; //T.V0;
-      float wu = dot(w,u);
-      float wv = dot(w,v);
-      float D = uv * uv - uu * vv;
-  
-      // get and test parametric coords
-      //float s, t;
-      float s = (uv * wv - vv * wu) / D;
-      if (s < 0.0 || s > 1.0){
-        // I is outside T
-        return noIntersection;
-      }
-      float tt = (uv * wu - uu * wv) / D;
-      if (tt < 0.0 || (s + tt) > 1.0){
-        // I is outside T
-        return noIntersection;
-      }
-      return foundIntersection; // I is in T
-    }
-  #endif
+#endif 
     
     static float l3(const Vec &a, const Vec &b){
       float l = sqrt( sqr(a[0]-b[0]) + sqr(a[1]-b[1]) + sqr(a[2]-b[2]) ); 
@@ -1221,18 +1157,18 @@ namespace icl{
           // important optimization check the 3D-bounding box for intersection with the
           // given ray first -> this is in particular very important for e.g. spheres
           // that have a lot of faces ..
-          aabbCheckOK = (compute_intersection(v,Triangle(v0,v1,v2),__) == foundIntersection ||
-                         compute_intersection(v,Triangle(v1,v3,v2),__) == foundIntersection ||
-                         compute_intersection(v,Triangle(v4,v5,v6),__) == foundIntersection ||
-                         compute_intersection(v,Triangle(v5,v6,v7),__) == foundIntersection ||
-                         compute_intersection(v,Triangle(v0,v1,v4),__) == foundIntersection ||
-                         compute_intersection(v,Triangle(v1,v4,v5),__) == foundIntersection ||
-                         compute_intersection(v,Triangle(v2,v3,v6),__) == foundIntersection ||
-                         compute_intersection(v,Triangle(v3,v6,v7),__) == foundIntersection ||
-                         compute_intersection(v,Triangle(v0,v4,v2),__) == foundIntersection ||
-                         compute_intersection(v,Triangle(v2,v4,v6),__) == foundIntersection ||
-                         compute_intersection(v,Triangle(v1,v5,v3),__) == foundIntersection ||
-                         compute_intersection(v,Triangle(v3,v5,v7),__) == foundIntersection );
+          aabbCheckOK = (compute_intersection(v,Triangle(v0,v1,v2),__) == ViewRay::foundIntersection ||
+                         compute_intersection(v,Triangle(v1,v3,v2),__) == ViewRay::foundIntersection ||
+                         compute_intersection(v,Triangle(v4,v5,v6),__) == ViewRay::foundIntersection ||
+                         compute_intersection(v,Triangle(v5,v6,v7),__) == ViewRay::foundIntersection ||
+                         compute_intersection(v,Triangle(v0,v1,v4),__) == ViewRay::foundIntersection ||
+                         compute_intersection(v,Triangle(v1,v4,v5),__) == ViewRay::foundIntersection ||
+                         compute_intersection(v,Triangle(v2,v3,v6),__) == ViewRay::foundIntersection ||
+                         compute_intersection(v,Triangle(v3,v6,v7),__) == ViewRay::foundIntersection ||
+                         compute_intersection(v,Triangle(v0,v4,v2),__) == ViewRay::foundIntersection ||
+                         compute_intersection(v,Triangle(v2,v4,v6),__) == ViewRay::foundIntersection ||
+                         compute_intersection(v,Triangle(v1,v5,v3),__) == ViewRay::foundIntersection ||
+                         compute_intersection(v,Triangle(v3,v5,v7),__) == ViewRay::foundIntersection );
           
           // ok, TextureGridPrimitives are not supported so far
           // However as long as their xs, ys, and zs, pointers point directly
@@ -1245,7 +1181,7 @@ namespace icl{
               case Primitive::triangle:{
                 Hit h;
                 const TrianglePrimitive *tp = reinterpret_cast<const TrianglePrimitive*>(p);
-                if(compute_intersection(v,Triangle(vs[tp->i(0)],vs[tp->i(1)],vs[tp->i(1)] ),h.pos) == foundIntersection){
+                if(compute_intersection(v,Triangle(vs[tp->i(0)],vs[tp->i(1)],vs[tp->i(1)] ),h.pos) == ViewRay::foundIntersection){
                   h.obj = obj;
                   h.dist = l3(v.offset,h.pos);
                   hits.push_back(h);
@@ -1264,11 +1200,11 @@ namespace icl{
                       Vec c = t->getPos(x,y);
                       Vec d = t->getPos(x-1,y);
                       
-                      if(compute_intersection(v, Triangle(a,d,b), h.pos) == foundIntersection){
+                      if(compute_intersection(v, Triangle(a,d,b), h.pos) == ViewRay::foundIntersection){
                         h.obj = obj;
                         h.dist = l3(v.offset,h.pos);
                         hits.push_back(h);
-                      }else if(compute_intersection(v, Triangle(c,b,d), h.pos) == foundIntersection){
+                      }else if(compute_intersection(v, Triangle(c,b,d), h.pos) == ViewRay::foundIntersection){
                         h.obj = obj;
                         h.dist = l3(v.offset,h.pos);
                         hits.push_back(h);
@@ -1283,11 +1219,11 @@ namespace icl{
                       */
   
                   const QuadPrimitive *qp = reinterpret_cast<const QuadPrimitive*>(p);
-                  if(compute_intersection(v, Triangle(vs[qp->i(0)],vs[qp->i(1)],vs[qp->i(2)] ),h.pos) == foundIntersection){
+                  if(compute_intersection(v, Triangle(vs[qp->i(0)],vs[qp->i(1)],vs[qp->i(2)] ),h.pos) == ViewRay::foundIntersection){
                     h.obj = obj;
                     h.dist = l3(v.offset,h.pos);
                     hits.push_back(h);
-                  }else if(compute_intersection(v,Triangle(vs[qp->i(0)],vs[qp->i(2)],vs[qp->i(3)]),h.pos) == foundIntersection){
+                  }else if(compute_intersection(v,Triangle(vs[qp->i(0)],vs[qp->i(2)],vs[qp->i(3)]),h.pos) == ViewRay::foundIntersection){
                     h.obj = obj;
                     h.dist = l3(v.offset,h.pos);
                     hits.push_back(h);
@@ -1310,7 +1246,7 @@ namespace icl{
                 for(int i=0;i<n-1;++i){
                   Hit h;
                   Triangle t(vs[pp->getVertexIndex(i)],vs[pp->getVertexIndex(i+1)],mean);
-                  if(compute_intersection(v,t,h.pos) == foundIntersection){
+                  if(compute_intersection(v,t,h.pos) == ViewRay::foundIntersection){
                     h.obj = obj;
                     h.dist = l3(v.offset,h.pos);
                     hits.push_back(h);
