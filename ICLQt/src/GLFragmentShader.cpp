@@ -102,12 +102,19 @@ namespace icl{
       GLContext ctx = GLContext::currentContext();
   
       if(ctx.isNull() || m_data->lut.find(ctx) != m_data->lut.end()) return;
+
+
+      static bool first = true;
+      if(first){
+        first = false;
+        glewInit();
+      }
+      
       Data::GLData & d = m_data->lut[ctx];
       
       const bool haveFragmentShader = m_data->fragmentProgramString.length();
       const bool haveVertexShader = m_data->vertexProgramString.length();
 
-      d.program = glCreateProgram();
 
       if(haveFragmentShader){
         d.fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -120,7 +127,6 @@ namespace icl{
         if(info.length()){
           throw ICLException("unable to compile fragment shader:[ \n" + info + "\n]");
         }
-        glAttachShader(d.program,d.fragmentShader);
       }
       
       if(haveVertexShader){
@@ -134,6 +140,15 @@ namespace icl{
         if(info.length()){
           throw ICLException("unable to compile vertex shader:[ \n" + info + "\n]");
         }
+      }
+
+      d.program = glCreateProgram();
+
+      if(haveFragmentShader) {
+        glAttachShader(d.program,d.fragmentShader);
+      }
+
+      if(haveVertexShader) {
         glAttachShader(d.program,d.vertexShader);
       }
 
@@ -157,11 +172,7 @@ namespace icl{
       m_data->fragmentProgramString = fragmentProgram;
       
 
-      static bool first = true;
-      if(first){
-        first = false;
-        glewInit();
-      }
+    
       
       if(!createOnFirstActivate){
         create();
