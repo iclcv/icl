@@ -50,7 +50,9 @@ namespace icl{
       void create();
       
       public:
-      GLFragmentShader(const std::string &program, bool createOnFirstActivate=true) throw (utils::ICLException);
+      GLFragmentShader(const std::string &vertexProgram, 
+                       const std::string &fragmentProgram,
+                       bool createOnFirstActivate=true) throw (utils::ICLException);
       ~GLFragmentShader();
       
       void activate();

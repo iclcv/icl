@@ -78,7 +78,7 @@ struct Grid : public SceneObject{
     setVisible(Primitive::vertex,false);
 
 
-    setFragmentShader(new GLFragmentShader( "uniform sampler2D texSampler;"
+    setFragmentShader(new GLFragmentShader( "","uniform sampler2D texSampler;"
                                             "void main(void){"
                                             "   vec4 tmp;"
                                             "   tmp = texture2D(texSampler, vec2(gl_TexCoord[0]));"

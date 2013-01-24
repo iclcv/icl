@@ -67,7 +67,7 @@ namespace icl{
       
       size_t numElements = xyz.numElements;
   
-      static GLFragmentShader swapRB( "void main(){\n"
+      static GLFragmentShader swapRB( "","void main(){\n"
                                       "  gl_FragColor = vec4(gl_Color[2],gl_Color[1],gl_Color[0],gl_Color[3]);\n"
                                       "}\n");
   
