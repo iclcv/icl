@@ -72,6 +72,21 @@ namespace icl{
         writeText = 3,   /**!< open file for reading writing ascii data */
         notOpen = 4      /**!< for error handling -> null-return value  */
       };
+
+      /// static utility method that reads a whole file as single string
+      static std::string read_file(const std::string &filename, bool textMode=true);
+
+      /// static utility method that reads a whole file as lines (text-mode only)
+      static std::vector<std::string> read_lines(const std::string &filename);
+
+      /// static utility method that writes a single string to a file
+      static void write_file(const std::string &filename, const std::string &text, 
+                             bool textMode=true);
+
+      /// static utility method that writes lines to a file (adding \n after each line)
+      static void write_lines(const std::string &filename, const std::vector<std::string> &lines);
+
+
       /// Create a null file
       File();
       

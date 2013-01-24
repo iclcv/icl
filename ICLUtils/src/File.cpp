@@ -743,5 +743,30 @@ namespace icl{
     }
   
     // }}}
+
+    std::string File::read_file(const std::string &filename, bool textMode){
+      File f(filename,textMode ? File::readText:File::readBinary);
+      const int len = f.getFileSize();
+      std::string s(len+1,'\0');
+      std::copy(f.getFileDataPointer(),f.getFileDataPointer()+len,&s[0]);
+      return s;
+    }
+    
+    std::vector<std::string> File::read_lines(const std::string &filename){
+      return tok(read_file(filename,true),"\\n");
+    }
+
+    void File::write_file(const std::string &filename, const std::string &text, bool textMode){
+      File f(filename,textMode ? File::writeText:File::writeBinary);
+      f.write(text);
+    }
+
+    void File::write_lines(const std::string &filename, const std::vector<std::string> &lines){
+      File f(filename,File::writeText);
+      for(size_t i=0;i<lines.size();++i){
+        f.writeLine(&lines[i],lines[i].length());
+      }
+    }
+
   } // namespace io
 }
