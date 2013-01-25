@@ -43,7 +43,7 @@ namespace icl{
     
     class SceneLightObject::ThreadPart : public SceneObject{
       public:
-
+      
       virtual void prepareForRendering(){
         glEnable(GL_LIGHTING);
       }
@@ -122,7 +122,7 @@ namespace icl{
       if(!m_hasText){
         m_hasText = true;
         addVertex(Vec(0,0,-3.0,1));
-        addText(m_vertices.size()-1, "light "+str(m_lightID), 0.5);
+        addText(m_vertices.size()-1, "light "+str(m_lightID), 0.05);
       }
     }
     
@@ -133,6 +133,7 @@ namespace icl{
       SceneObject *thread = new ThreadPart;
       thread->translate(0,0,-4*size);
       thread->scale(0.53,0.53,0.53);
+
       addChild(thread);
       
 

@@ -164,11 +164,17 @@ namespace icl{
       
       /// visualization optimization flag
       bool trySurfaceOptimization;
+      
+      /// number of sub-quads to render for better lighting
+      /** for non-texture quads only. Interferes with quadColorsFromVertices.
+          If both is activated, quadColorsFromVertices is not used!*/
+      int tesselationResolution;
   
       /// constructor
       QuadPrimitive(int a, int b, int c, int d, const GeomColor &color, int na=-1, int nb=-1, int nc=-1, int nd=-1, 
-                    bool trySurfaceOptimization=false):
-      super(a,b,c,d,na,nb,nc,nd),Primitive(Primitive::quad,color),trySurfaceOptimization(trySurfaceOptimization){}
+                    bool trySurfaceOptimization=false,int tesselationResolution=1):
+      super(a,b,c,d,na,nb,nc,nd),Primitive(Primitive::quad,color),trySurfaceOptimization(trySurfaceOptimization),
+      tesselationResolution(tesselationResolution){}
       
       /// render method
       virtual void render(const Primitive::RenderContext &ctx);

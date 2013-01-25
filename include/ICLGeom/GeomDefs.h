@@ -93,6 +93,30 @@ namespace icl{
     /// another shortcut for 3D vectors
     typedef math::FixedColVector<icl32f,3> Vec3;
     
+    
+    /// linearly interpolates between a, b (x must be in range [0,1])
+    /** if x is 0, a is returned and if x is 1, b is returned */
+    template<class T>
+    T linear_interpolate(const T &a, const T &b, float x){
+      return a * (1-x) + b*x;
+    }
+    
+    /// bilinear vector interpolation 
+    /** corner order ul, ur, ll, lr
+           0 ----- 1
+        |  |       |   --> x
+        |  2 ------3  
+        \/
+        y
+    */
+    inline Vec bilinear_interpolate(const Vec corners[4], float x, float y){
+      const Vec a = linear_interpolate(corners[0],corners[1],x);
+      const Vec b = linear_interpolate(corners[2],corners[3],x);
+      Vec c = linear_interpolate(a,b,y);
+      c[3] = 1;
+      return c;
+    }
+
     /// normalize a vector to length 1
     template<class T>
     inline math::FixedColVector<T,4> normalize(const math::FixedMatrix<T,1,4> &v) { 

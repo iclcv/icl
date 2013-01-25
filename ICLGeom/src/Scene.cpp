@@ -268,9 +268,9 @@ namespace icl{
       addProperty("visualize object frames","flag","",false);
       addProperty("visualize lights","flag","",false);
       addProperty("enable lighting","flag","",true);
-      addProperty("object frame size","float","[0,100000000]",1);
-      addProperty("world frame size","float","[0,100000000]",1);
-      addProperty("light object size","float","[0,100000000]",1);
+      addProperty("object frame size","float","[0,100000000]",100);
+      addProperty("world frame size","float","[0,100000000]",100);
+      addProperty("light object size","float","[0,100000000]",30);
       addProperty("background color","color","",Color(0,0,0));
     }
     Scene::~Scene(){

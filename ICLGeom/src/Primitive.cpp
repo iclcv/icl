@@ -199,6 +199,7 @@ namespace icl{
       return compute_normal(vertices[i(0)],vertices[i(1)], vertices[i(2)]);
     }
 
+
   
     void QuadPrimitive::render(const Primitive::RenderContext &ctx){
       if(trySurfaceOptimization){
@@ -225,18 +226,107 @@ namespace icl{
         }      
   #endif
       }
-      glBegin(GL_QUADS);
+
+      if(tesselationResolution <= 1){
+        glBegin(GL_QUADS);
+        gl_auto_normal(ctx, i(3), i(1), i(2), i(4)==-1);
+        glColor4fv(color.data());
+        for(int j=0;j<4;++j){
+          gl_normal(ctx,i(j+4));
+          gl_color(ctx,i(j),ctx.quadColorsFromVertices);
+          gl_vertex(ctx,i(j));
+        }
+        glEnd();
+      }else{
+        const int r = tesselationResolution+1; // num nodes
+        float d = 1./tesselationResolution;
+
+        gl_auto_normal(ctx, i(3), i(1), i(2), i(4)==-1);      
+        glColor4fv(color.data());  
+
+        const Vec corners[4] = { ctx.vertices[i(0)],
+                                 ctx.vertices[i(1)],
+                                 ctx.vertices[i(3)],
+                                 ctx.vertices[i(2)]   };
+
+        const Vec colors[4] = { ctx.vertexColors[i(0)],
+                                ctx.vertexColors[i(1)],
+                                ctx.vertexColors[i(3)],
+                                ctx.vertexColors[i(2)]   };
         
-      gl_auto_normal(ctx, i(3), i(1), i(2), i(4)==-1);
-      
-      glColor4fv(color.data());
-      
-      for(int j=0;j<4;++j){
-        gl_normal(ctx,i(j+4));
-        gl_color(ctx,i(j),ctx.quadColorsFromVertices);
-        gl_vertex(ctx,i(j));
+        
+        bool haveDifferentNormals = ( i(4)!=-1 &&
+                                      ( i(4) != i(5) || 
+                                        i(4) != i(6) ||
+                                        i(4) != i(6) ));
+        if(haveDifferentNormals){
+          DEBUG_LOG("tesselation with non-identical quad normals are not supported yet");
+        }
+        if(i(4) != -1){
+          glNormal3fv(ctx.normals[i(4)].data());
+        }
+        
+       
+        
+        Vec *vs[2] = { new Vec[r], new Vec[r] }, *cs[2] = {0,0};
+        
+        for(int x=0;x<r;++x){
+          vs[0][x] = bilinear_interpolate(corners,x*d,0);
+          vs[1][x] = bilinear_interpolate(corners,x*d,d);
+        }        
+        if(ctx.quadColorsFromVertices){
+          cs[0] = new Vec[r];
+          cs[1] = new Vec[r];
+
+          for(int x=0;x<r;++x){
+            vs[0][x] = bilinear_interpolate(colors,x*d,0);
+            vs[1][x] = bilinear_interpolate(colors,x*d,d);
+          }  
+        }
+
+
+        for(int y=1;y<r;++y){
+          glBegin(GL_QUAD_STRIP);
+          if(ctx.quadColorsFromVertices){
+            for(int x=0;x<r;++x){
+              glColor4fv(cs[1][x].data());
+              glVertex3fv(vs[1][x].data());
+              glColor4fv(cs[0][x].data());
+              glVertex3fv(vs[0][x].data());
+            }
+          }else{
+            for(int x=0;x<r;++x){
+              glVertex3fv(vs[1][x].data());
+              glVertex3fv(vs[0][x].data());
+            }
+          }
+          glEnd();
+          if(y != r-1){
+            std::swap(vs[0],vs[1]);
+            if(ctx.quadColorsFromVertices){
+              std::swap(cs[0],cs[1]);
+              for(int x=0;x<r;++x){
+                vs[1][x] = bilinear_interpolate(corners,x*d,(y+1)*d);
+                cs[1][x] = bilinear_interpolate(colors,x*d,(y+1)*d);
+              }
+
+            }else{
+              for(int x=0;x<r;++x){
+                vs[1][x] = bilinear_interpolate(corners,x*d,(y+1)*d);
+              }
+            }
+          }
+        }
+
+        
+        delete [] vs[0];
+        delete [] vs[1];
+        if(ctx.quadColorsFromVertices){
+          delete [] cs[0];
+          delete [] cs[1];
+        }
       }
-      glEnd();
+
     }
 
     Vec QuadPrimitive::computeNormal(const std::vector<Vec> &vertices) const{
