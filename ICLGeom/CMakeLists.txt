@@ -46,6 +46,7 @@ add_libsource (${PROJECT_NAME} "src/SoftPosit.cpp" "${CONDITIONLIST}" LIB_SOURCE
 add_libsource (${PROJECT_NAME} "src/CoplanarPointPoseEstimator.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/ICP.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 add_libsource (${PROJECT_NAME} "src/PointNormalEstimation.cpp" "${CONDITIONLIST}" LIB_SOURCES)
+add_libsource (${PROJECT_NAME} "src/GeomDefs.cpp" "${CONDITIONLIST}" LIB_SOURCES)
 
 set(CONDITIONLIST HAVE_OPENGL_COND)
 add_libsource (${PROJECT_NAME} "src/SceneObject.cpp" "${CONDITIONLIST}" LIB_SOURCES)

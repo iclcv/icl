@@ -39,6 +39,7 @@
 #include <ICLMath/FixedVector.h>
 #include <vector>
 #include <ICLCore/Color.h>
+#include <ICLUtils/Point32f.h>
 
 namespace icl{
   namespace geom{
@@ -100,6 +101,27 @@ namespace icl{
     T linear_interpolate(const T &a, const T &b, float x){
       return a * (1-x) + b*x;
     }
+
+    /// distance from point p to line segment (lineStart -> lineEnd)
+    /** The implementation is based on the code of http://www.geometrictools.com which is
+        povided under the terms of the "Boost Software License 1.0" 
+        (http://www.boost.org/LICENSE_1_0.txt) */
+    float dist_point_linesegment(const Vec &p,
+                                 const Vec &lineStart,
+                                 const Vec &lineEnd,
+                                 Vec *nearestPoint=0);
+    
+    
+    /// distance from point p to triangle (a - b - c)
+    /** The implementation is based on the code of http://www.geometrictools.com which is
+        povided under the terms of the "Boost Software License 1.0" 
+        (http://www.boost.org/LICENSE_1_0.txt) */
+    float dist_point_triangle(const Vec &p,
+                              const Vec &a,
+                              const Vec &b,
+                              const Vec &c,
+                              Vec *nearestPoint=0);
+    
     
     /// bilinear vector interpolation 
     /** corner order ul, ur, ll, lr
