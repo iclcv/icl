@@ -108,10 +108,7 @@ namespace icl{
       }
       
       Vec intersection = this->offset + dir * rr;
-      if(intersectionPoint) {
-        *intersectionPoint = intersection;
-        intersectionPoint[3] = 1;
-      }
+      
   
       // is I inside T?
       float uu = dot(u,u);
@@ -133,6 +130,10 @@ namespace icl{
       }
 
       if(parametricCoords) *parametricCoords = Point32f(s,tt);
+      if(intersectionPoint) {
+        *intersectionPoint = intersection;
+        (*intersectionPoint)[3] = 1;
+      }
       
       return foundIntersection;
 
