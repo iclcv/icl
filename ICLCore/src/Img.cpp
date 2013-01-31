@@ -37,6 +37,8 @@
 #include <ICLUtils/Rect32f.h>
 #include <ICLUtils/StringUtils.h>
 
+#define IPP_USE_DEPRICATED_RESIZE 1
+
 using namespace icl::utils;
 using namespace icl::math;
 
@@ -1440,7 +1442,7 @@ namespace icl {
     {
       CHECK_VALUES_NO_SIZE(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
   
-  #if 1
+  #if IPP_USE_DEPRICATED_RESIZE
   #warning "we are aware of the fact that ippiResize is deprecated, however the replacement seems to be buggy in case of LIN interpolation"
       //NOTE: this function has become deprecated
       // attention: for source image IPP wants indeed the *image* origin
@@ -1485,7 +1487,7 @@ namespace icl {
       FUNCTION_LOG("");
       CHECK_VALUES_NO_SIZE(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
       
-  #if 1
+  #if IPP_USE_DEPRICATED_RESIZE
   #warning "we are aware of the fact that ippiResize is deprecated, however the replacement seems to be buggy in case of LIN interpolation"
       //NOTE: this function has become deprecated
       // attention: for source image IPP wants indeed the *image* origin
