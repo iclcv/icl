@@ -37,7 +37,7 @@
 #include <ICLUtils/Rect32f.h>
 #include <ICLUtils/StringUtils.h>
 
-#define IPP_USE_DEPRICATED_RESIZE 1
+#define IPP_USE_DEPRICATED_RESIZE 0
 
 using namespace icl::utils;
 using namespace icl::math;
@@ -365,11 +365,7 @@ namespace icl {
       // {{{ open
   
       FUNCTION_LOG("new size:"<<newSize.width<<"x"<<newSize.height);
-      static Img<Type> * img = new Img<Type>();
-      img -> setSize(newSize);
-      img -> setChannels(getChannels());
-      img -> setFormat(getFormat());
-      return scaledCopyROI( img, eScaleMode );
+      return scaledCopyROI( new Img<Type>(newSize, getChannels(),getFormat()), eScaleMode );
     }
   
     // }}}
