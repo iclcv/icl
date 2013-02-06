@@ -365,7 +365,11 @@ namespace icl {
       // {{{ open
   
       FUNCTION_LOG("new size:"<<newSize.width<<"x"<<newSize.height);
-      return scaledCopyROI( new Img<Type>(newSize, getChannels(),getFormat()), eScaleMode );
+      static Img<Type> * img = new Img<Type>();
+      img -> setSize(newSize);
+      img -> setChannels(getChannels());
+      img -> setFormat(getFormat());
+      return scaledCopyROI( img, eScaleMode );
     }
   
     // }}}
