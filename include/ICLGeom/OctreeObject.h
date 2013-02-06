@@ -103,14 +103,17 @@ namespace icl{
       /// typedef to the parent class type
       typedef math::Octree<Scalar,CAPACITY,SF,Pt, ALLOC_CHUNK_SIZE> Parent;
       bool m_renderPoints;     //!< flag whether points are rendered as well
+      bool m_renderBoxes;      //!< flag whether aabb boxes are rendered 
       GeomColor m_pointColor;  //!< color used for the points (if rendered)
       GeomColor m_boxColor;    //!< color used for the aabb-boxes
 
       protected:
       void init(){
         m_renderPoints = false;
+        m_renderBoxes = true;
         m_pointColor = GeomColor(0,0.5,1,1);
         m_boxColor = GeomColor(0,1,0,0.3);
+        setLockingEnabled(true);
       }
       
       public:
@@ -139,6 +142,16 @@ namespace icl{
       bool getRenderPoints() const { 
         return m_renderPoints; 
       }
+
+      /// sets whether aabbs are to be rendered (default: true)
+      void setRenderBoxes(bool enabled) {
+        m_renderBoxes= enabled; 
+      }
+      
+      /// return whether aabbs are rendered
+      bool getRenderBoxes() const { 
+        return m_renderBoxes; 
+      }
       
       /// sets the color used for boxes (default is semi-transparent green)
       void setBoxColor(const GeomColor &color){
@@ -163,6 +176,7 @@ namespace icl{
 
       /// adapted customRenderMethod 
       virtual void customRender(){
+        if(!m_renderPoints && !m_renderBoxes) return;
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
         
@@ -198,8 +212,10 @@ namespace icl{
 
       /// recursive render function rendering a node's AABB and its points
       void renderNodeWithPoints(const typename Parent::Node *node) const  {
-        glColor4fv(m_boxColor.data());
-        box(node->boundary);
+        if(m_renderBoxes){
+          glColor4fv(m_boxColor.data());
+          box(node->boundary);
+        }
 
         glColor4fv(m_pointColor.data());
         OctreePointRenderer<Scalar,CAPACITY,SF,Pt,ALLOC_CHUNK_SIZE>::render(node);
