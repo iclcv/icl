@@ -43,6 +43,9 @@ namespace icl{
     struct PointCloudGrabber{
       /// fills the given point cloud with grabbed information
       virtual void grab(PointCloudObjectBase &dst) = 0;
+      
+      /// virtual, but empty destructor
+      virtual ~PointCloudGrabber(){}
     };
   } // namespace geom
 }
