@@ -251,6 +251,10 @@ namespace icl{
       /// tints the point cloud pixel from the given image data
       /** The image size must be equal to the point cloud size*/
       void setColorsFromImage(const core::ImgBase &image) throw (utils::ICLException);
+
+      /// extracts the color information and stores it into the given image
+      /** The image size and color format is adapted if necessary */
+      void extractColorsToImage(core::ImgBase &image, bool withAlpha=false) const throw (utils::ICLException);
       
       /// sets the color that is used to render points if color information is available
       void setDefaultVertexColor(const GeomColor &color);

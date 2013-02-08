@@ -303,6 +303,95 @@ namespace icl{
 #undef ICL_INSTANTIATE_DEPTH
       }
     }
+    
+    
+    template<class T, bool ALPHA>
+    static void extract_colors_to_image(const PointCloudObjectBase &pc, Img<T> &dsti){
+      T * dst[4] = { dsti.begin(0), dsti.begin(1), dsti.begin(2), ALPHA ? dsti.begin(3) : 0};
+      const int dim = dsti.getDim();
+      if(ALPHA){
+        if(pc.supports(PointCloudObjectBase::BGRA)){
+          const DataSegment<icl8u,4> src = pc.selectBGRA();
+          for(int i=0;i<dim;++i){
+            dst[2][i] = static_cast<T>(src[i][0]); // RB-swapped!
+            dst[1][i] = static_cast<T>(src[i][1]);
+            dst[0][i] = static_cast<T>(src[i][2]);
+            dst[3][i] = static_cast<T>(src[i][3]);
+          }
+        }else if(pc.supports(PointCloudObjectBase::RGBA32f)){
+          const DataSegment<float,4> src = pc.selectRGBA32f();
+          for(int i=0;i<dim;++i){
+            dst[0][i] = static_cast<T>(src[i][0]*255); // RB-swapped!
+            dst[1][i] = static_cast<T>(src[i][1]*255);
+            dst[2][i] = static_cast<T>(src[i][2]*255);
+            dst[3][i] = static_cast<T>(src[i][3]*255);
+          }
+        }
+      }else{
+        if(pc.supports(PointCloudObjectBase::BGRA)){
+          const DataSegment<icl8u,4> src = pc.selectBGRA();
+          for(int i=0;i<dim;++i){
+            dst[2][i] = static_cast<T>(src[i][0]); // RB-swapped!
+            dst[1][i] = static_cast<T>(src[i][1]);
+            dst[0][i] = static_cast<T>(src[i][2]);
+          }
+        }else if(pc.supports(PointCloudObjectBase::BGR)){
+          const DataSegment<icl8u,3> src = pc.selectBGR();
+          for(int i=0;i<dim;++i){
+            dst[2][i] = static_cast<T>(src[i][0]); // RB-swapped!
+            dst[1][i] = static_cast<T>(src[i][1]);
+            dst[0][i] = static_cast<T>(src[i][2]);
+          }
+
+        }else if(pc.supports(PointCloudObjectBase::RGBA32f)){
+          const DataSegment<float,4> src = pc.selectRGBA32f();
+          for(int i=0;i<dim;++i){
+            dst[0][i] = static_cast<T>(src[i][0]*255); // RB-swapped!
+            dst[1][i] = static_cast<T>(src[i][1]*255);
+            dst[2][i] = static_cast<T>(src[i][2]*255);
+          }
+        }
+      }
+    }
+
+    void PointCloudObjectBase::extractColorsToImage(core::ImgBase &image, bool withAlpha) const throw (utils::ICLException){
+      image.setSize(getSize());
+      if(withAlpha){
+        if(!supports(PointCloudObjectBase::BGRA) && !supports(PointCloudObjectBase::RGBA32f)){
+          throw ICLException("PointCloudObjectBase:extractColorsToImage: "
+                             "cannot create RGBA-image because alpha is not supported "
+                             "by this point cloud");
+        }
+      }else{
+        if(!supports(PointCloudObjectBase::BGRA) && 
+           !supports(PointCloudObjectBase::RGBA32f) && 
+           !supports(PointCloudObjectBase::BGR)){
+          throw ICLException("PointCloudObjectBase:extractColorsToImage: "
+                             "cannot create RGB-image because no color "
+                             "information available in this pointcloud");
+        }
+        
+      }
+      if(withAlpha){
+        image.setChannels(4);
+      }else{
+        image.setFormat(formatRGB);
+      }
+
+      switch(image.getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D)                                        \
+        case depth##D:                                                  \
+          if(withAlpha){                                                \
+            extract_colors_to_image<icl##D,true>(*this,*image.as##D()); \
+          }else{                                                        \
+            extract_colors_to_image<icl##D,false>(*this,*image.as##D()); \
+          }                                                             \
+          break;
+        ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
+      }
+    }
+
 
     void PointCloudObjectBase::setDefaultVertexColor(const GeomColor &color){
       m_defaultPointColor = color/255;
