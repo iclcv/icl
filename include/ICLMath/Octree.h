@@ -133,7 +133,7 @@ namespace icl{
           }
           for(const Pt *p=points; p<next ; ++p){
             if(boundary.contains(*p)){
-              found.push_back(Pt((*p)[0]/SF,(*p)[1]/SF, (*p)[2]/SF ));
+              found.push_back(scale_down(*p));
             }
           }
           if(!children) return;
@@ -163,43 +163,6 @@ namespace icl{
           this->children[7].init(this,AABB(Pt(c[0]+half[0],c[1]+half[1], c[2]+half[2]),half));
 
         }
-        
-#if 0
-        /// recursively grabs visualizations commands
-        void vis(utils::VisualizationDescription &d) const{
-          d.rect(boundary.rect());
-          if(children){
-            children[0].vis(d);
-            children[1].vis(d);
-            children[2].vis(d);
-            children[3].vis(d);
-          }
-        }
-
-        void printStructure(int indent){
-          for(int i=0;i<indent;++i) std::cout << "  ";
-          if(children){
-            std::cout << "Branch (";
-          }else{
-            std::cout << "Leaf (";
-          }
-          std::cout << "AABB=" << boundary.rect() << ", ";
-          std::cout << "Content=" <<(int)(next-points) << "/" << CAPACITY;
-          std::cout <<  ")";
-          if(children){
-            std::cout << " {" << std::endl;
-            children[0].printStructure(indent+1);
-            children[1].printStructure(indent+1);
-            children[2].printStructure(indent+1);
-            children[3].printStructure(indent+1);
-            for(int i=0;i<indent;++i) std::cout << "  ";
-            std::cout << "}" << std::endl;;
-          }
-          else std::cout << std::endl;
-
-        }
-#endif
-
       };
       
       /// Inernally used block allocator
@@ -251,14 +214,14 @@ namespace icl{
             const Node *ns = allocated[i];
             for(size_t j=0;j<allocated.size();++j){
               for(const Pt* p = ns[j].points; p != ns[j].next;++p){
-                pts.push_back(Pt((*p)[0]/SF,(*p)[1]/SF,(*p)[2]/SF),1);
+                pts.push_back(scale_down(*p));
               }
             }
           }
           const Node *ns = allocated.back();
           for(int i=0;i<curr*4;++i){
             for(const Pt* p = ns[i].points; p != ns[i].next;++p){
-              pts.push_back(Pt((*p)[0]/SF,(*p)[1]/SF,(*p)[2]/SF,1));
+              pts.push_back(scale_down(*p));
             }
           }
           return pts;
@@ -275,19 +238,44 @@ namespace icl{
 
       /// internal counter for the number of contained points
       int num;
+      
+      static inline Pt scale_up(const Pt &p){
+        if(SF == 1) return p;
+        Pt tmp = p;
+        tmp[0] *= SF;
+        tmp[1] *= SF;
+        tmp[2] *= SF;
+        return tmp;
+      }
+
+      static inline Pt scale_down(const Pt &p){
+        if(SF == 1) return p;
+        Pt tmp = p;
+        tmp[0] /= SF;
+        tmp[1] /= SF;
+        tmp[2] /= SF;
+        return tmp;
+      }
+      
+      static inline Pt scale_down_1(const Pt &p){
+        Pt sdp  =  scale_down(p);
+        sdp[3] = 1;
+        return sdp;
+      }
+
 
       public:
       /// creates a QuadTree for the given 2D rectangle
       Octree(const Scalar &minX, const Scalar &minY, const Scalar &minZ,
                const Scalar &width, const Scalar &height, const Scalar &depth):num(0){
-        this->root = new Node(AABB(Pt(SF*minX+SF*width/2, SF*minY+SF*height/2, SF*minZ+SF*depth/2),
-                                   Pt(SF*width/2,SF*height/2, SF*depth/2)));
+        this->root = new Node(AABB(scale_up(Pt(minX+width/2, minY+height/2, minZ+depth/2)),
+                                   scale_up(Pt(width/2,height/2, depth/2))));
       }
 
       /// creates a QuadTree for the given 2D rectangle
       Octree(const Scalar &min, const Scalar &len):num(0){
-        this->root = new Node(AABB(Pt(SF*min+SF*len/2, SF*min+SF*len/2, SF*min+SF*len/2),
-                                   Pt(SF*len/2,SF*len/2, SF*len/2)));
+        this->root = new Node(AABB(scale_up(Pt(min+len/2, min+len/2, min+len/2)),
+                                   scale_up(Pt(len/2,len/2, len/2))));
       }
 
       /// destructor
@@ -350,8 +338,8 @@ namespace icl{
       Pt nn_approx(const Pt &p) const throw (utils::ICLException){
         double currMinDist = sqrt(utils::Range<Scalar>::limits().maxVal-1);
         const Pt *currNN  = 0;
-        nn_approx_internal(Pt(SF*p[0],SF*p[1],SF*p[2]),currMinDist,currNN);
-        return Pt((*currNN)[0]/SF,(*currNN)[1]/SF,(*currNN)[2]/SF,1) ;
+        nn_approx_internal(scale_up(p),currMinDist,currNN);
+        return scale_down_1(*currNN);
       }
 
       /// finds the nearest neighbor to the given node
@@ -374,7 +362,7 @@ namespace icl{
           actually only happen when nn is called on an empty QuadTree
       */
       Pt nn(const Pt &pIn) const throw (utils::ICLException){
-        const Pt p(SF*pIn[0],SF*pIn[1],SF*pIn[2]);
+        const Pt p = scale_up(pIn);
         std::vector<const Node*> stack;
         stack.reserve(128);
         stack.push_back(root);
@@ -405,7 +393,7 @@ namespace icl{
           }
           currMinDist = sqrt(sqrMinDist);
         }
-        return Pt((*currNN)[0]/SF, (*currNN)[1]/SF, (*currNN)[2]/SF, 1 );
+        return scale_down_1(*currNN);
       }
 
       /// inserts a node into the QuadTree
@@ -415,7 +403,11 @@ namespace icl{
       template<class OtherVectorType>
       void insert(const OtherVectorType &pIn){
         ++num;
-        const Pt p(SF*pIn[0],SF*pIn[1],SF*pIn[2]);
+        Pt p = pIn;
+        p[0] *= SF;
+        p[1] *= SF;
+        p[2] *= SF;
+
         Node *n = root;
         while(true){
           if(n->next != n->points+CAPACITY){
@@ -433,8 +425,8 @@ namespace icl{
       /// returns all contained points within the given rectangle
       std::vector<Pt> query(const Scalar &minX, const Scalar &minY, const Scalar &minZ, 
                             const Scalar &width, const Scalar &height, const Scalar &depth) const{
-        AABB range(Pt(SF*minX+SF*width/2, SF*minY+SF*height/2, SF*minZ+SF*depth/2),
-                   Pt(SF*width/2,SF*height/2, SF*depth/2));
+        AABB range(scale_up(Pt(minX+width/2, minY+height/2, minZ+depth/2)),
+                   scale_up(Pt(width/2,height/2, depth/2)));
         std::vector<Pt> found;
         root->query(range,found);
         return found;
