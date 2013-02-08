@@ -326,7 +326,18 @@ namespace icl{
           if(X) point_loop<true,true>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA32s(), rgb, dirs, depthScaling);
           else point_loop<false,true>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA32s(), rgb, dirs, depthScaling);
         }else{
-          throw ICLException("unable to apply RGBD-Mapping given destination PointCloud type does not support rgb information");
+          // point cloud supports no color information: deactivate mapping
+          static DataSegment<float,4> dummy;
+#ifdef HAVE_OPENCL
+          if(m_data->clReady && m_data->clUse){
+            m_data->creatorCL->create(true,&depthImageMM, O, DIM, xyz, dirs, depthScaling);
+          }else{
+            point_loop<false,true>(dv, M, O, W, H, DIM, xyz, dummy, rgb, dirs, depthScaling);            
+          }
+#else
+          point_loop<false,true>(dv, M, O, W, H, DIM, xyz, dummy, rgb, dirs, depthScaling);
+#endif
+          //throw ICLException("unable to apply RGBD-Mapping given destination PointCloud type does not support rgb information");
         }
       }else{
         if(destination.supports(PointCloudObjectBase::RGBA32f)){
@@ -356,7 +367,17 @@ namespace icl{
           if(X) point_loop<true,false>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA32s(), rgb, dirs, depthScaling);
         else point_loop<false,false>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA32s(), rgb, dirs, depthScaling);
         }else{
-          throw ICLException("unable to apply RGBD-Mapping given destination PointCloud type does not support rgb information");
+          // point cloud supports no color information: deactivate mapping
+          static DataSegment<float,4> dummy;
+#ifdef HAVE_OPENCL
+          if(m_data->clReady && m_data->clUse){
+            m_data->creatorCL->create(false,&depthImageMM, O, DIM, xyz, dirs, depthScaling);
+          }else{
+            point_loop<false,false>(dv, M, O, W, H, DIM, xyz, dummy, rgb, dirs, depthScaling);            
+          }
+#else
+          point_loop<false,false>(dv, M, O, W, H, DIM, xyz, dummy, rgb, dirs, depthScaling);
+#endif
         }
       }
       
