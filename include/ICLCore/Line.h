@@ -98,20 +98,12 @@ namespace icl{
       /** @param limits each line point is check for being inside of this rect
                         the eases working e.g. on image planes, that have an finite
                         extend. If the limits rect has width*height == 0, the limits
-                        are not regarded.
+                        are not regarded. 
           @return vector of line Points 
+          
+          Please note: for more efficient line sampling, the core::LineSampler class can be used!
       */
       std::vector<utils::Point> sample( const utils::Rect &limits=utils::Rect::null ) const;
-      
-      /// samples this line from start to end point regarding the given limiting rect
-      /** This function works essentially like the above function. In this case, the
-          result is not returned, but it is stored into the given vector references.
-          @param xs destination vector for x-coordinates (filled using push_back, so
-                    it is not cleared before it is filled) 
-          @param ys as xs but for the y-coordinates 
-          @param limits (see above)*/
-      void sample(std::vector<int> &xs,std::vector<int> &ys,
-                  const utils::Rect &limits=utils::Rect::null ) const;
   
       /// swaps the lines start and end point internally
       void swap() { utils::Point x=start; start=end; end=x; }

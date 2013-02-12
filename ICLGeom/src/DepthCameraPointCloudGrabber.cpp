@@ -121,6 +121,10 @@ namespace icl{
     void DepthCameraPointCloudGrabber::mapImage(const core::ImgBase *src, core::ImgBase **dst, const core::Img32f *depthImageMM){
       m_data->creator.mapImage(src,dst,depthImageMM);
     }
+    
+    void DepthCameraPointCloudGrabber::setUseCL(bool enable){
+      m_data->creator.setUseCL(enable);
+    }
   
   } // namespace geom
 }

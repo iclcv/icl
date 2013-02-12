@@ -38,105 +38,70 @@
 #include <ICLUtils/Rect.h>
 #include <ICLUtils/Exception.h>
 
+#include <vector>
+
+
 namespace icl{
   namespace core{
-    /// Utility class for efficient line sampling (providing only static functions)
-    /** The LineSampler class is a bit different from the Line class, which is also provided 
-        in the ICLCore package. The Line class is a really basic line structure, that ALSO provides
-        a function to sample itsef into an image pixel grid. The LineSampler class uses a lot of
-        optimizations to enhance sampling performance. This is achieved by a set of optimizations:
+    /// Utility class for line sampling
+    /** The LineSampler class provides a generic framework for efficient line renderig into images.
+        It uses the Bresenham line sampling algorithm, that manages to render arbitray lines between 
+        two images points without any floating point operations. The LineSampler provides an internal
+        bounding box check for save line rendering into images
         
-        - avoid data copies and dynamic memory allocations: Internally, a static (of given) buffer is 
-          used to store the sampled point set. This provides a high performance benefit, however
-          it also entails the main drawback: The LineSampler class cannot be instatiated, as it this 
-          would mean, that this sampling buffers was either used by several instances, or that each
-          instance would need an own buffer, which would nullify all the performance benefits, we got
-          before
-        - limiting the maximum line length: by these means, we can use a fixed size data buffer
-        - internally we use a lot of templates, to suppress if-then statements if possible
+        \section FORMER Former Class Layout
+        The LineSampler replaces the former LineSampler class and the SampledLine class
+
+        \section OPT Optimizations
         
-        The facilitate buffer allocation and things like that, the SampledLine class should be used. 
-        This class provides an Object-oriented handling of sampled lines
+        The class uses several optimizations to speed up linesampling.
+        - compile-time switching about several parameters (such as line steepness, and use of boundingbox)
+        - bounding-box checks are ommitted if both start- and end-point are within the bounding box
+        - optimization of horizontal an vertical lines
         
         \section PERF Performance Comparison
-        In comparison to the Line.sample function, the LineSampler is nearly 30 times faster.
-        Sampling a short line (from (23,40) to (20,20)) with given bounding rect 1 Million times 
-        lasts about 120ms (compiled with -O4 and -march=native on a 2Ghz Core-2-duo)
+        The LineSampler works faster than the core::Line class, be cause it does not
+        have to allocate memory for the result. A test, conducted on a 2.4 GHz Core-2-Duo
+        with an optimized build (-04 -march=native) demonstrated the speed of the line sampler. 
+        Rendering all possible lines staring at any pixel and pointing to the center of a VGA image 
+        (640x480 lines), takes about 650 ms. This leads to an approximate time of 0.002ms per line
+        or in other words, 500 lines per millisecond;
     */
     class LineSampler{
-      public:
-      
-      // maximum number of line pixels
-      static const int MAX_LINE_LENGTH = 10000;
-  
-      private:
-      /// Internel data pointers (wrapped shallowly)
-      static utils::Point *cur, *end;
-      
-      /// internal initialization function
-      static inline void init(utils::Point *cur, utils::Point *end){
-        LineSampler::cur = cur;
-        LineSampler::end = end;
-      }
-      
-      /// internal sampling function using bresenham line sampling algorithm
-      template<bool steep, bool steep2, int ystep>
-      static void bresenham_templ_2(int x0, int x1, int y0, int y1, utils::Point *p, int bufSize);
-  
-      /// internal sampling function using bresenham line sampling algorithm
-      template<bool steep, bool steep2, int ystep>
-      static void bresenham_templ(int x0, int x1, int y0, int y1, int minX, int maxX, int minY, int maxY, utils::Point *p, int bufSize);
-  
-      /// internal sampling function using bresenham line sampling algorithm
-      static void bresenham(int x0, int x1, int y0, int y1, int minX, int maxX, int minY, int maxY, utils::Point *p, int bufSize) throw (utils::ICLException);
-  
-      /// internal sampling function using bresenham line sampling algorithm
-      static void bresenham(int x0, int x1, int y0, int y1, utils::Point *p, int bufSize) throw (utils::ICLException);
-  
-      /// internal point buffer
-      static utils::Point buf[MAX_LINE_LENGTH];
-      
-      static utils::Point *get_buf(utils::Point *userBuf){
-        return userBuf ? userBuf : LineSampler::buf;
-      }
-      LineSampler(){}
+      protected:
+      std::vector<utils::Point> m_buf; //!< internal buffer
+      std::vector<int> m_br;           //!< optionally given bounding rect
       
       public:
       
-      static void getPointers(utils::Point **cur, utils::Point **end){
-        *cur = LineSampler::cur;
-        *end = LineSampler::end;
-      }
-  
-      /// create a SampledLine instance (only one instance is valid at a time)
-      static void init(int aX, int aY, int bX, int bY, utils::Point *userBuf=0, int bufSize=0) throw (utils::ICLException){ 
-        bresenham(aX,bX,aY,bY,get_buf(userBuf),bufSize); 
-      }
-  
-      /// create a SampledLine instance (only one instance is valid at a time) with given boundig rect parameters
-      static void init(int aX, int aY, int bX, int bY, int minX, int minY, int maxX, int maxY, utils::Point *userBuf=0, int bufSize=0) throw (utils::ICLException){
-        bresenham(aX,bX,aY,bY,minX,maxX,minY,maxY,get_buf(userBuf),bufSize);
-      }
-      /// create a SampledLine instance (only one instance is valid at a time)
-      static void init(const utils::Point &a, const utils::Point &b, utils::Point *userBuf=0, int bufSize=0) throw (utils::ICLException){ 
-        bresenham(a.x,b.x,a.y,b.y,get_buf(userBuf),bufSize); 
-      }
-  
-      /// create a SampledLine instance (only one instance is valid at a time) with given boundig rect parameters
-      static void init(const utils::Point &a, const utils::Point &b, 
-                       const utils::Rect &bounds, utils::Point *userBuf=0, int bufSize=0) throw (utils::ICLException){
-        bresenham(a.x,b.x,a.y,b.y,bounds.x,bounds.y,bounds.right(),bounds.bottom(), get_buf(userBuf),bufSize);
-      }
+      /// result type providing a Point-pointer and number of sample points
+      struct Result{
+        const utils::Point *points; //!< sampled points data
+        int n;               //!< number of sampled points
+        
+        /// convenience inde operator to iterate over sampled points
+        const utils::Point &operator[](int idx) const { return points[idx]; }
+      };
+
+      /// create linesampler with given maximum number of  points
+      /** As long a no bounding rect is given, bound-checks are suppressed */
+      LineSampler(int maxLen=0);
       
-      /// gets the next valid point (this function is not overflow-safe)
-      /** calls to next must be protected by using hasNext() before*/
-      static inline const utils::Point &next(){ return *cur++; }
+      /// createe line sampler with given bounding rect
+      LineSampler(const utils::Rect &br);
       
-      /// returns whether this line has remaining points, that have not yet been extracted using next()
-      static inline bool hasNext() { return cur != end; }
-  
-      /// returns the number of remaining points in this line
-      static inline int remaining() { return (int)(end-cur); }
+      /// sets a bounding rect for line sampling
+      /** The result will only contain pixels that are within this rectangle */
+      void setBoundingRect(const utils::Rect &bb);
+      
+      /// removes the bouding rect and sets the internal buffer size
+      void removeBoundingBox(int bufferSize);
+      
+      /// samples a line between a and b
+      Result sample(const utils::Point &a, const utils::Point &b);
+      
+      /// samples the line into the given destination vector
+      void sample(const utils::Point &a, const utils::Point &b, std::vector<utils::Point> &dst);
     };
   
   } // namespace core

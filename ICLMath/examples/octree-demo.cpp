@@ -51,7 +51,7 @@ void init(){
   Time t = Time::now();
   for(int i=0;i<obj.getDim();++i){
     FixedColVector<float,3> p = ps[i];
-    ot.insert(FixedColVector<int,3>(p[0],p[1],p[2]));
+    ot.insert(FixedColVector<int,4>(p[0],p[1],p[2],1));
   }
   t.showAge("insertion time");
   

@@ -290,7 +290,9 @@ namespace icl{
       const int H = m_data->colorImageSize.height;
       const int DIM = m_data->depthImageSize.getDim();
       
-  
+      bool canUseOpenCL = m_data->clReady && m_data->clUse;
+      if(rgbImage) canUseOpenCL &= (depthImageMM.getSize() == rgbImage->getSize());
+      
       const Channel8u rgb[3];
       if(X){
         for(int i=0;rgbImage && i<3;++i) rgb[i] = (*rgbImage)[i];
@@ -301,7 +303,7 @@ namespace icl{
       if(m_data->mode == KinectRAW11Bit){
         if(destination.supports(PointCloudObjectBase::RGBA32f)){
 #ifdef HAVE_OPENCL
-          if(m_data->clReady && m_data->clUse){
+          if(canUseOpenCL){
             if(X){ 
               DataSegment<float,4> rgba = destination.selectRGBA32f();
               m_data->creatorCL->createRGB(true,&depthImageMM, M, O, W, H, DIM, xyz, rgba, rgbImage, dirs, depthScaling);
@@ -329,7 +331,7 @@ namespace icl{
           // point cloud supports no color information: deactivate mapping
           static DataSegment<float,4> dummy;
 #ifdef HAVE_OPENCL
-          if(m_data->clReady && m_data->clUse){
+          if(canUseOpenCL){
             m_data->creatorCL->create(true,&depthImageMM, O, DIM, xyz, dirs, depthScaling);
           }else{
             point_loop<false,true>(dv, M, O, W, H, DIM, xyz, dummy, rgb, dirs, depthScaling);            
@@ -342,7 +344,7 @@ namespace icl{
       }else{
         if(destination.supports(PointCloudObjectBase::RGBA32f)){
 #ifdef HAVE_OPENCL
-          if(m_data->clReady && m_data->clUse){
+          if(canUseOpenCL){
             if(X){ 
               DataSegment<float,4> rgba = destination.selectRGBA32f();
               m_data->creatorCL->createRGB(false,&depthImageMM, M, O, W, H, DIM, xyz, rgba, rgbImage, dirs, depthScaling);
@@ -370,7 +372,7 @@ namespace icl{
           // point cloud supports no color information: deactivate mapping
           static DataSegment<float,4> dummy;
 #ifdef HAVE_OPENCL
-          if(m_data->clReady && m_data->clUse){
+          if(canUseOpenCL){
             m_data->creatorCL->create(false,&depthImageMM, O, DIM, xyz, dirs, depthScaling);
           }else{
             point_loop<false,false>(dv, M, O, W, H, DIM, xyz, dummy, rgb, dirs, depthScaling);            

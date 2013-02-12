@@ -48,36 +48,27 @@ HSplit gui;
 Scene scene;
 
 
-#ifdef HAVE_PCL
-PCLPointCloudObject<pcl::PointXYZRGBA> obj(640,480);
-#else
-PointCloudObject obj(640,480);
-#endif
+SmartPtr<PointCloudObject> obj;
 
 SmartPtr<DepthCameraPointCloudGrabber> grabber;
 
 void init(){
+  const Camera cam(*pa("-d",2));
+  Size res = cam.getResolution();
+  
   if(pa("-c")){
     grabber = new DepthCameraPointCloudGrabber(*pa("-d",2), *pa("-c",2),
                                                *pa("-d",0), *pa("-d",1),
                                                *pa("-c",0), *pa("-c",1) );
+    obj = new PointCloudObject(res.width, res.height);
   }else{
     grabber = new DepthCameraPointCloudGrabber(*pa("-d",2), DepthCameraPointCloudGrabber::get_null_color_cam(),
                                                *pa("-d",0), *pa("-d",1),"","");
-#ifdef HAVE_PCL
-    DataSegment<icl8u,4> bgr = obj.selectBGRA();
-    for(int i=0;i<obj.getDim();++i){
-      bgr[i] = FixedColVector<icl8u,4>(255,0,0,255);
-    }
-#else
-    DataSegment<float,4> rgb = obj.selectRGBA32f();
-    for(int i=0;i<obj.getDim();++i){
-      rgb[i] = geom_red();
-    }
-#endif
-
+    obj = new PointCloudObject(res.width, res.height, true, false, false);
   }
-
+  if(pa("-no-cl")){
+    grabber->setUseCL(false);
+  }
 
   gui << ( VBox()
            << Image().handle("color").label("color image")
@@ -99,7 +90,7 @@ void init(){
   //  view camera
   scene.addCamera(scene.getCamera(0));
   scene.setDrawCamerasEnabled(false);
-  scene.addObject(&obj);
+  scene.addObject(obj.get(),false);
 
   gui["overlay"].link(scene.getGLCallback(0));
   gui["scene"].link(scene.getGLCallback(1));
@@ -115,7 +106,7 @@ void init(){
 void run(){
   gui["overlay"].link( gui["showOverlay"] ? scene.getGLCallback(0) : 0);
 
-  grabber->grab(obj);
+  grabber->grab(*obj);
   if(pa("-c")){
     gui["color"] = grabber->getLastColorImage();
   }
@@ -130,6 +121,6 @@ void run(){
 
 int main(int n, char **ppc){
   return ICLApp(n,ppc,"[m]-depth-cam|-d(device-type,device-ID,calib-filename) "
-                "-color-cam|-c(device-type,device-ID,calib-filename)",init,run).exec();
+                "-color-cam|-c(device-type,device-ID,calib-filename) -disable-open-cl|-no-cl ",init,run).exec();
 }
 

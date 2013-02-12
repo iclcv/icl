@@ -61,7 +61,7 @@
 #include <QtGui/QFileDialog>
 #endif
 
-#include <ICLCore/Line.h>
+#include <ICLCore/LineSampler.h>
 #include <ICLUtils/Point32f.h>
 #include <ICLCore/ImgBuffer.h>
 
@@ -1565,16 +1565,15 @@ namespace icl{
       // {{{ open
       if(x1 == x2) { vline(image,x1,y1,y2,false); return; }
       if(y1 == y2) { hline(image,x1,x2,y1,false); return; }
-      std::vector<int> xs,ys;
-      Line l(Point(x1,y1), Point(x2,y2));
-      l.sample(xs,ys,Rect(0,0,image.getWidth(), image.getHeight()));
+
+      LineSampler ls(image.getImageRect());
+      LineSampler::Result xys = ls.sample(Point(x1,y1),Point(x2,y2));
       float A = COLOR[3]/255.0;
-      for(vector<int>::iterator itX=xs.begin(), itY=ys.begin(); itX != xs.end(); ++itX, ++itY){
-        for(int c=0;c<image.getChannels() && c<3; ++c){
-          //        if(*itX >= 0 && *itX < image.getWidth() && *itY >= 0 && *itY <= image.getHeight()){
-          float &v = image(*itX,*itY,c);
+      for(int c=0;c<image.getChannels() && c<3; ++c){
+        Channel32f chan  = image[c];
+        for(int i=0;i<xys.n;++i){
+          float &v = chan(xys[i].x,xys[i].y);
           v=(1.0-A)*v + A*COLOR[c];
-          //      }
         }
       }
     }

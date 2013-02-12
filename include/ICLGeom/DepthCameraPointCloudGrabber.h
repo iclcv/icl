@@ -98,6 +98,14 @@ namespace icl{
           @param depthImageMM optionally given depth image (if NULL, then the last
           depthImage passed to the "create"-is used, which should usually be the right one) */
       void mapImage(const core::ImgBase *src, core::ImgBase **dst, const core::Img32f *depthImageMM=0);
+
+      /// defines whether opencl is to be used
+      /** Please note that OpenCL is only used if
+          * The graphics card supports OpenCL
+          * ICL is build with OpenCL support 
+          * for the most common point cloud types (i.e. color type is rgba32f)
+          * color- and depth-camera size are equal */
+      void setUseCL(bool enable);
     };
   } // namespace geom
 }

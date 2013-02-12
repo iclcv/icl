@@ -1,5 +1,5 @@
 #include <ICLCore/ImageRenderer.h>
-#include <ICLCore/SampledLine.h>
+//#include <ICLCore/SampledLine.h>
 
 using namespace icl::utils;
 using namespace icl::math;
@@ -57,6 +57,7 @@ namespace icl{
       
       const int rgb[] = { color[0], color[1], color[2] }, alpha = color[3], beta = 255 - alpha;
       const int rgb_premultiplied[] = { rgb[0]*alpha, rgb[1]*alpha, rgb[2]*alpha }; 
+      /*
       SampledLine l(x1,y1,x2,y2,0,0,dst->getWidth(),dst->getHeight());
       
       if(beta){
@@ -76,6 +77,7 @@ namespace icl{
           }
         }
       }
+     */
     } 
 
     template<class T>
