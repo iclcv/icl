@@ -74,6 +74,17 @@ namespace icl{
       t = (icl8u)tmp;
       return s;
     }
+
+    template<> inline std::ostream &icl_to_stream(std::ostream &s, bool b){
+      return s << (int)b;
+    }
+  
+    template<> inline std::istream &icl_from_stream(std::istream &s, bool &b){
+      int tmp;
+      s >> tmp;
+      b = (bool)tmp;
+      return s;
+    }
     /** \endcond */
   
     

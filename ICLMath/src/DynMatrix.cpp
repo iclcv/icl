@@ -769,30 +769,6 @@ namespace icl{
     template DynMatrix<double> DynMatrix<double>::pinv(bool,double) const
       throw (InvalidMatrixDimensionException,SingularMatrixException,ICLException);
   
-  #if 0
-    // this is already defined in string-utils
-    template<class T>
-    static inline std::ostream &icl_to_stream(std::ostream &s, T t){
-      return s << t;
-    }
-  
-    template<class T>
-    static inline std::istream &icl_from_stream(std::istream &s, T &t){
-      return s >> t;
-    }
-  
-    template<> inline std::ostream &icl_to_stream(std::ostream &s, uint8_t t){
-      return s << (int)t;
-    }
-  
-    template<> inline std::istream &icl_from_stream(std::istream &s, uint8_t &t){
-      int tmp;
-      s >> tmp;
-      t = (uint8_t)tmp;
-      return s;
-    }
-  #endif
-  
     template<class T>
     std::ostream &operator<<(std::ostream &s,const DynMatrix<T> &m){
       for(unsigned int i=0;i<m.rows();++i){
@@ -838,6 +814,7 @@ namespace icl{
     X(int32_t);
     X(float);
     X(double);
+    X(bool);
   
     X(std::complex<float>);
     X(std::complex<double>);
