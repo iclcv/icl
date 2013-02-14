@@ -417,9 +417,10 @@ void init(){
 
     File cff(cf.filename);
     std::string tt = "full path: " + cf.filename;
+    int initIdx = pa("-it");
     objGUI << ( HBox().label(cff.getBaseName()+cff.getSuffix()).minSize(1,3).maxSize(100,3)
                 << CheckBox("enable",true).out("enable-obj-"+str(c)).tooltip(tt)
-                << Combo(transformNameList.str() + (transformGiven?"":",id")).handle("transform-obj-"+str(c)).tooltip(tt)
+                << Combo(transformNameList.str() + (transformGiven?"":",id"),initIdx).handle("transform-obj-"+str(c)).tooltip(tt)
                 );
     
     try{
@@ -547,71 +548,11 @@ void init(){
 #endif
   gui << Draw3D().handle("draw").minSize(32,24);
   
-  //std::ostringstream tabs;
-  //for(unsigned int i=0;i<configurables.size();++i){
-  // tabs << configurables[i] << (i<configurables.size()-1 ? "," 
-  //}
-  //tabstr[tabstr.length()-1] = ')';
   markerDetectionOptionGUI = Tab(cat(configurables,","));
   for(unsigned int i=0;i<configurables.size();++i){
     markerDetectionOptionGUI << Prop(configurables[i]);
   }
-#ifdef OLD_GUI
-  gui << ( GUI("vbox[@minsize=16x1@maxsize=16x100]") 
-           << ( GUI("hbox[@maxsize=100x3@minsize=1x3]") 
-                << "combo(" +iin + ")[@handle=iin@label=visualized image]"
-                << "slider(0,255,128)[@out=objAlpha@label=object-alpha]"
-                )
-           << ( GUI("hbox[@maxsize=100x3]") 
-                << "checkbox(use corners,checked)[@out=useCorners]"
-                << "checkbox(show CS,checked)[@out=showCS]"
-                << "label( )[@handle=error@label=error]"
-                )
-           << ( GUI("hbox[@label=more options@minsize=1x3@maxsize=100x3]")
-                << "button(plane)[@handle=show-plane-options]" 
-                << "button(markers)[@handle=show-marker-detection-options]" 
-                << "button(rel. Transf.)[@handle=showRelTransGUI]"
-              )
-           << (GUI("vscroll[@label=calibration objects]") << objGUI)
-           << "label(ready..)[@minsize=1x3@maxsize=100x3@label=detection status@handle=status]"
-           << ( GUI("hbox[@maxsize=100x3@minsize=1x3]") 
-                << "button(save camera)[handle=save]"
-                << "button(save best of 10)[handle=save10]"
-               )
-           )
-      << "!show";
-  
-  planeOptionGUI << ( GUI("hbox")
-                     << "combo(none,x,y,z)[@label=normal@handle=planeDim]"
-                     << "float(-10000,10000,0)[@label=offset mm@handle=planeOffset]"
-                     )
-                << ( GUI("hbox")
-                     << "combo(100,200,500,!1000,2000,3000,5000,10000)"
-                        "[@label=radius mm@handle=planeRadius]"
-                     << "float(1,1000,10)[@label=tic distance mm@handle=planeTicDist]"
-                     )
-                << ( GUI("hbox")
-                     << "label( )[@handle=planeStatus@label=status]"
-                     << "color(40,40,40,255)[@handle=planeColor@label=color]"
-                     )
-                 << "!create";
 
-
-  relTransGUI << ( GUI("vbox[@label=rel-transformation]") 
-                   << ( GUI("hbox")
-                        << "spinner(0,8,0)[@label=x-rotation *pi/4@out=rx]"
-                        << "spinner(0,8,0)[@label=y-rotation *pi/4@out=ry]"
-                        << "spinner(0,8,0)[@label=z-rotation *pi/4@out=rz]"
-                        )
-                   << ( GUI("hbox")
-                        << "float(-100000,100000,0)[@label=x-offset@out=tx]"
-                        << "float(-100000,100000,0)[@label=y-offset@out=ty]"
-                        << "float(-100000,100000,0)[@label=z-offset@out=tz]"
-                        )
-                   )
-              << "button(show transformation matrix)[@handle=showRelTrans]" << "!create";
-#endif
-  
   gui << ( VBox().minSize(14,28).maxSize(14,100)
            << (VBox().label("visualization").minSize(1,5)
                << ( HBox().maxSize(100,3).minSize(1,3) 
@@ -980,6 +921,7 @@ int main(int n, char **ppc){
   return ICLApp(n,ppc,"[m]-input|-i(device,device-params) "
                 "-config|-c(...) "
                 "-camera|-cam(camera_file_to_load) "
+                "-initial-transform-id|-it(idx=0) "
                 "-create-empty-config-file|-cc "
                 "-force-size|-s|-size(WxH) "
                 "-output|-o(output-xml-file-name) "
