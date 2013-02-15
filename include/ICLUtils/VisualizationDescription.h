@@ -221,7 +221,7 @@ namespace icl{
 
       /// adds a circle (intnerally handeled as ellipse)
       inline void circle(icl32f cx, icl32f cy, icl32f radius){
-        addPart('e',Rect32f(cx-radius/2,cy-radius/2,2*radius,2*radius));
+        addPart('e',Rect32f(cx-radius,cy-radius,2*radius,2*radius));
       }
 
       /// adds a line (intnerally represented by bounding rectangle)
