@@ -75,7 +75,7 @@ int main(int n, char **args){
 
   return ICLApp(n,args,"-depth-input|-d(2) -color-input|-c(2) "
                 "-depth-size|-ds(size) -color-size|-cs(size) "
-                "-depth-output|-do(2) -color-output|-oc(2) "
+                "-depth-output|-do(2) -color-output|-co(2) "
                 "-simple-io-params|-s(output-file-base-name)",init,run).exec();
 }
 
