@@ -1,2 +1,0 @@
-Generic Grabber Backends
-========================
