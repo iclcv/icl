@@ -1,0 +1,10 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+libdir=${prefix}/lib
+includedir=${prefix}/include/@INSTALL_PATH_PREFIX@
+
+Name: @PKG_NAME@
+Description: Image component library
+Version: @SO_VERSION@
+Requires: @PKG_DEPENDS_ON@
+Libs: -L${libdir} -Wl,-rpath=${libdir} @PKG_LIB@ @LIB_DEPENDS_ON@ 
+Cflags: @ICL_DEFINITIONS@ -I${includedir} -I@INCLUDE_DIRS@

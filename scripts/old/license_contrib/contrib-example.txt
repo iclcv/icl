@@ -1,0 +1,1326 @@
+./ICLGeom/examples/intrinsic-camera-calibration-tools.h
+ce:4 mg:0 rh:0 aj:0 fr:0
+./include/ICLGeom/GeomDefs.h
+ce:8 mg:1 rh:0 aj:0 fr:0
+./include/ICLGeom/Camera.h
+ce:5 mg:0 rh:0 aj:0 fr:0
+./include/ICLGeom/Primitive.h
+ce:6 mg:1 rh:0 aj:0 fr:0
+./include/ICLGeom/Scene.h
+ce:3 mg:0 rh:0 aj:0 fr:0
+./include/ICLGeom/PlaneEquation.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLGeom/ConvexHullMonotoneChain.h
+ce:7 mg:1 rh:0 aj:0 fr:0
+./include/ICLGeom/ViewRay.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLGeom/SceneObject.h
+ce:9 mg:1 rh:0 aj:0 fr:0
+./include/ICLGeom/Geom.h
+ce:9 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/Lockable.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/Timer.h
+ce:10 mg:2 rh:4 aj:2 fr:1
+./include/ICLUtils/ProgArg.h
+ce:14 mg:1 rh:1 aj:3 fr:0
+./include/ICLUtils/SteppingRange.h
+ce:11 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/Point.h
+ce:18 mg:1 rh:2 aj:1 fr:1
+./include/ICLUtils/Thread.h
+ce:15 mg:2 rh:0 aj:0 fr:0
+./include/ICLUtils/FPSLimiter.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/Range.h
+ce:21 mg:1 rh:1 aj:1 fr:0
+./include/ICLUtils/UncopiedInstance.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/DynMatrixUtils.h
+ce:12 mg:1 rh:1 aj:0 fr:0
+./include/ICLUtils/Time.h
+ce:9 mg:2 rh:3 aj:0 fr:2
+./include/ICLUtils/Mutex.h
+ce:8 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/XMLDocument.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/XMLAttribRef.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/FastMedianList.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/Point32f.h
+ce:13 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/StringUtils.h
+ce:24 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/MatrixSubRectIterator.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/CompatMacros.h
+ce:6 mg:1 rh:2 aj:0 fr:2
+./include/ICLUtils/StrTok.h
+ce:9 mg:1 rh:1 aj:1 fr:0
+./include/ICLUtils/XMLNodeIdx.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/ThreadUtils.h
+ce:11 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/Size.h
+ce:16 mg:1 rh:3 aj:2 fr:0
+./include/ICLUtils/Macros.h
+ce:21 mg:10 rh:8 aj:2 fr:1
+./include/ICLUtils/SignalHandler.h
+ce:5 mg:1 rh:0 aj:1 fr:0
+./include/ICLUtils/XMLNode.h
+ce:6 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/XMLNodeConstIterator.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/FixedMatrix.h
+ce:32 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/FixedVector.h
+ce:9 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/Uncopyable.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/DynVector.h
+ce:6 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/FPSEstimator.h
+ce:6 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/ConfigFile.h
+ce:26 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/ClippedCast.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/DynMatrix.h
+ce:25 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/Semaphore.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/Rect.h
+ce:29 mg:1 rh:5 aj:1 fr:0
+./include/ICLUtils/Rect32f.h
+ce:14 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/XMLNodeFilter.h
+ce:7 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/StochasticOptimizer.h
+ce:6 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/Size32f.h
+ce:8 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/ShallowCopyable.h
+ce:6 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/Exception.h
+ce:17 mg:3 rh:4 aj:2 fr:1
+./include/ICLUtils/Utils.h
+ce:9 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/MultiTypeMap.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/SimpleMatrix.h
+ce:11 mg:1 rh:1 aj:1 fr:0
+./include/ICLUtils/SmartPtr.h
+ce:15 mg:1 rh:4 aj:1 fr:0
+./include/ICLUtils/ConsoleProgress.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/StackTimer.h
+ce:11 mg:2 rh:1 aj:1 fr:0
+./include/ICLUtils/BasicTypes.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/FixedMatrixUtils.h
+ce:9 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/XMLNodeIterator.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/FFTException.h
+ce:1 mg:0 rh:0 aj:0 fr:0
+./include/ICLUtils/StraightLine2D.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/MultiThreader.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLUtils/FFTUtils.h
+ce:1 mg:0 rh:0 aj:0 fr:0
+./include/ICLUtils/XML.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/ButtonHandle.h
+ce:12 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/LabelHandle.h
+ce:10 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/DrawHandle.h
+ce:8 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/ButtonGroupHandle.h
+ce:5 mg:1 rh:0 aj:1 fr:0
+./include/ICLQt/SplitterHandle.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/ImageStatistics.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/GLTextureMapBaseImage.h
+ce:16 mg:1 rh:0 aj:1 fr:0
+./include/ICLQt/QImageConverter.h
+ce:10 mg:1 rh:4 aj:2 fr:0
+./include/ICLQt/StringHandle.h
+ce:6 mg:1 rh:0 aj:1 fr:0
+./include/ICLQt/ImgParamWidget.h
+ce:7 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/DrawWidget3D.h
+ce:16 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/WidgetCaptureMode.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/DispHandle.h
+ce:6 mg:1 rh:0 aj:1 fr:0
+./include/ICLQt/BorderHandle.h
+ce:5 mg:1 rh:0 aj:1 fr:0
+./include/ICLQt/ThreadedUpdatableTextView.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/ChromaClassifierIO.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/ComboHandle.h
+ce:8 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/CamCfgWidget.h
+ce:27 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/CheckBoxHandle.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/GUISyntaxErrorException.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/GLTextureMapImage.h
+ce:16 mg:3 rh:0 aj:0 fr:0
+./include/ICLQt/ContainerHandle.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/CompabilityLabel.h
+ce:7 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/ThreadedUpdatableSlider.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/DrawHandle3D.h
+ce:6 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/Qt.h
+ce:23 mg:1 rh:1 aj:0 fr:0
+./include/ICLQt/Widget.h
+ce:16 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/SpinnerHandle.h
+ce:5 mg:1 rh:0 aj:1 fr:0
+./include/ICLQt/MouseHandler.h
+ce:11 mg:1 rh:2 aj:1 fr:0
+./include/ICLQt/GUIWidget.h
+ce:12 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/PaintEngine.h
+ce:14 mg:1 rh:2 aj:1 fr:0
+./include/ICLQt/BoxHandle.h
+ce:6 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/ConfigFileGUI.h
+ce:8 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/BorderBox.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/QtMacros.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/DrawWidget.h
+ce:26 mg:2 rh:2 aj:1 fr:0
+./include/ICLQt/SliderUpdateEvent.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/GLTextureMapPaintEngine.h
+ce:6 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/MouseEvent.h
+ce:12 mg:1 rh:1 aj:1 fr:0
+./include/ICLQt/ChromaGUI.h
+ce:7 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/ConfigEntry.h
+ce:12 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/Application.h
+ce:6 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/ToggleButton.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/DoubleSlider.h
+ce:6 mg:1 rh:0 aj:1 fr:1
+./include/ICLQt/ProxyLayout.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/GUI.h
+ce:41 mg:1 rh:0 aj:1 fr:0
+./include/ICLQt/IconFactory.h
+ce:7 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/GUIHandle.h
+ce:8 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/PlotWidget.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/DataStore.h
+ce:20 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/StringSignalButton.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/StateHandle.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/ImageHandle.h
+ce:7 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/FSliderHandle.h
+ce:6 mg:1 rh:0 aj:1 fr:0
+./include/ICLQt/FPSHandle.h
+ce:7 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/GUIDefinition.h
+ce:10 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/IntHandle.h
+ce:5 mg:1 rh:0 aj:1 fr:0
+./include/ICLQt/GLPaintEngine.h
+ce:21 mg:1 rh:3 aj:0 fr:0
+./include/ICLQt/ThreadedUpdatableWidget.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/GUIHandleBase.h
+ce:6 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/FloatHandle.h
+ce:5 mg:1 rh:0 aj:1 fr:0
+./include/ICLQt/GUIDocumentation.h
+ce:7 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/Dragger.h
+ce:6 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/MultiDrawHandle.h
+ce:6 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/CamThread.h
+ce:6 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/TabHandle.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLQt/SliderHandle.h
+ce:6 mg:1 rh:0 aj:1 fr:0
+./include/ICLBlob/PositionTracker.h
+ce:16 mg:1 rh:1 aj:1 fr:0
+./include/ICLBlob/DefaultColorBlobSearcher.h
+ce:12 mg:1 rh:3 aj:2 fr:0
+./include/ICLBlob/RegionPart.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLBlob/FoundBlob.h
+ce:7 mg:1 rh:1 aj:0 fr:0
+./include/ICLBlob/VectorTracker.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLBlob/RegionBasedBlobSearcher.h
+ce:18 mg:1 rh:2 aj:2 fr:0
+./include/ICLBlob/ColorBlobSearcher.h
+ce:9 mg:1 rh:3 aj:1 fr:0
+./include/ICLBlob/FMCreator.h
+ce:9 mg:1 rh:0 aj:2 fr:0
+./include/ICLBlob/SimpleBlobSearcher.h
+ce:6 mg:2 rh:0 aj:0 fr:0
+./include/ICLBlob/VQ2D.h
+ce:8 mg:1 rh:2 aj:2 fr:1
+./include/ICLBlob/VQClusterInfo.h
+ce:8 mg:1 rh:1 aj:1 fr:0
+./include/ICLBlob/HungarianAlgorithm.h
+ce:8 mg:1 rh:1 aj:1 fr:0
+./include/ICLBlob/Region.h
+ce:12 mg:1 rh:0 aj:0 fr:0
+./include/ICLBlob/RegionDetector.h
+ce:14 mg:1 rh:2 aj:1 fr:0
+./include/ICLBlob/PixelRatingGroup.h
+ce:9 mg:1 rh:2 aj:1 fr:1
+./include/ICLBlob/VQVectorSet.h
+ce:8 mg:1 rh:2 aj:1 fr:0
+./include/ICLBlob/Extrapolator.h
+ce:7 mg:1 rh:1 aj:2 fr:0
+./include/ICLBlob/RegionFilter.h
+ce:8 mg:1 rh:0 aj:1 fr:0
+./include/ICLBlob/Blob.h
+ce:11 mg:1 rh:1 aj:0 fr:0
+./include/ICLBlob/RegionPCAInfo.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLBlob/ScanLine.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLBlob/MeanShiftTracker.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLBlob/PixelRating.h
+ce:9 mg:1 rh:1 aj:1 fr:0
+./include/ICLQuick/QuickDocumentation.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLQuick/QuickRegions.h
+ce:6 mg:1 rh:0 aj:1 fr:0
+./include/ICLQuick/Common.h
+ce:8 mg:1 rh:0 aj:0 fr:0
+./include/ICLQuick/Quick.h
+ce:24 mg:1 rh:0 aj:2 fr:0
+./include/ICLCC/ChromaAndRGBClassifier.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLCC/ChromaClassifier.h
+ce:7 mg:1 rh:0 aj:0 fr:0
+./include/ICLCC/Bayer.h
+ce:5 mg:2 rh:1 aj:0 fr:2
+./include/ICLCC/FixedConverter.h
+ce:12 mg:1 rh:0 aj:1 fr:0
+./include/ICLCC/CCFunctions.h
+ce:20 mg:2 rh:1 aj:3 fr:0
+./include/ICLCC/Converter.h
+ce:12 mg:1 rh:2 aj:1 fr:0
+./include/ICLCC/Color.h
+ce:14 mg:1 rh:0 aj:0 fr:0
+./include/ICLCC/CCLUT.h
+ce:10 mg:1 rh:0 aj:1 fr:0
+./include/ICLCC/CC.h
+ce:21 mg:2 rh:1 aj:3 fr:0
+./include/ICLCC/Parable.h
+ce:8 mg:1 rh:0 aj:0 fr:0
+./include/ICLCore/Types.h
+ce:17 mg:1 rh:3 aj:2 fr:0
+./include/ICLCore/Core.h
+ce:8 mg:1 rh:0 aj:0 fr:0
+./include/ICLCore/ImgBorder.h
+ce:8 mg:2 rh:2 aj:2 fr:0
+./include/ICLCore/Line32f.h
+ce:8 mg:1 rh:0 aj:0 fr:0
+./include/ICLCore/CoreFunctions.h
+ce:48 mg:5 rh:21 aj:3 fr:0
+./include/ICLCore/Mathematics.h
+ce:18 mg:6 rh:7 aj:2 fr:1
+./include/ICLCore/SampledLine.h
+ce:8 mg:1 rh:0 aj:0 fr:0
+./include/ICLCore/ImgIterator.h
+ce:29 mg:3 rh:5 aj:1 fr:0
+./include/ICLCore/Channel.h
+ce:5 mg:2 rh:0 aj:0 fr:0
+./include/ICLCore/Random.h
+ce:8 mg:1 rh:0 aj:0 fr:0
+./include/ICLCore/Line.h
+ce:6 mg:1 rh:0 aj:0 fr:0
+./include/ICLCore/ImgBase.h
+ce:45 mg:9 rh:18 aj:5 fr:1
+./include/ICLCore/PixelRef.h
+ce:7 mg:1 rh:0 aj:0 fr:0
+./include/ICLCore/LineSampler.h
+ce:7 mg:1 rh:0 aj:0 fr:0
+./include/ICLCore/Img.h
+ce:82 mg:13 rh:27 aj:6 fr:2
+./include/ICLCore/CornerDetectorCSS.h
+ce:8 mg:1 rh:0 aj:0 fr:0
+./include/ICLCore/ImgParams.h
+ce:14 mg:1 rh:6 aj:2 fr:0
+./include/ICLOpenCV/OpenCV.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLFilter/LUTOp3Channel.h
+ce:9 mg:1 rh:0 aj:0 fr:1
+./include/ICLFilter/UnaryOp.h
+ce:16 mg:1 rh:1 aj:2 fr:0
+./include/ICLFilter/ImageSplitter.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLFilter/LocalThresholdOp.h
+ce:18 mg:1 rh:1 aj:4 fr:0
+./include/ICLFilter/NeighborhoodOp.h
+ce:13 mg:1 rh:1 aj:3 fr:0
+./include/ICLFilter/RotateOp.h
+ce:9 mg:1 rh:2 aj:2 fr:0
+./include/ICLFilter/MedianOp.h
+ce:17 mg:2 rh:9 aj:3 fr:1
+./include/ICLFilter/IntegralImgOp.h
+ce:15 mg:1 rh:1 aj:5 fr:0
+./include/ICLFilter/InplaceArithmeticalOp.h
+ce:6 mg:1 rh:0 aj:0 fr:0
+./include/ICLFilter/FFTOp.h
+ce:1 mg:0 rh:0 aj:0 fr:0
+./include/ICLFilter/WienerOp.h
+ce:11 mg:1 rh:3 aj:4 fr:1
+./include/ICLFilter/BaseAffineOp.h
+ce:9 mg:1 rh:1 aj:2 fr:0
+./include/ICLFilter/BinaryCompareOp.h
+ce:10 mg:1 rh:0 aj:2 fr:0
+./include/ICLFilter/ScaleOp.h
+ce:9 mg:1 rh:2 aj:2 fr:0
+./include/ICLFilter/SkinOp.h
+ce:11 mg:5 rh:5 aj:5 fr:0
+./include/ICLFilter/OpROIHandler.h
+ce:12 mg:1 rh:1 aj:2 fr:0
+./include/ICLFilter/UnaryLogicalOp.h
+ce:7 mg:1 rh:0 aj:4 fr:0
+./include/ICLFilter/ConvolutionOp.h
+ce:23 mg:1 rh:13 aj:5 fr:1
+./include/ICLFilter/DynamicConvolutionOp.h
+ce:9 mg:1 rh:1 aj:2 fr:0
+./include/ICLFilter/GradientImage.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLFilter/ThresholdOp.h
+ce:15 mg:1 rh:7 aj:8 fr:0
+./include/ICLFilter/UnaryOpWork.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLFilter/UnaryArithmeticalOp.h
+ce:9 mg:1 rh:1 aj:3 fr:0
+./include/ICLFilter/GaborOp.h
+ce:7 mg:1 rh:0 aj:0 fr:0
+./include/ICLFilter/AffineOp.h
+ce:11 mg:1 rh:1 aj:2 fr:0
+./include/ICLFilter/BinaryArithmeticalOp.h
+ce:10 mg:1 rh:0 aj:4 fr:0
+./include/ICLFilter/UnaryCompareOp.h
+ce:11 mg:1 rh:0 aj:2 fr:0
+./include/ICLFilter/InplaceLogicalOp.h
+ce:6 mg:1 rh:0 aj:0 fr:0
+./include/ICLFilter/LUT2D.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLFilter/IFFTOp.h
+ce:1 mg:0 rh:0 aj:0 fr:0
+./include/ICLFilter/WarpOp.h
+ce:6 mg:1 rh:0 aj:0 fr:0
+./include/ICLFilter/Filter.h
+ce:9 mg:1 rh:0 aj:0 fr:0
+./include/ICLFilter/InplaceOp.h
+ce:7 mg:1 rh:0 aj:0 fr:0
+./include/ICLFilter/ProximityOp.h
+ce:10 mg:1 rh:0 aj:3 fr:0
+./include/ICLFilter/MorphologicalOp.h
+ce:14 mg:1 rh:2 aj:11 fr:1
+./include/ICLFilter/MirrorOp.h
+ce:9 mg:1 rh:1 aj:3 fr:0
+./include/ICLFilter/WeightedSumOp.h
+ce:14 mg:1 rh:3 aj:4 fr:0
+./include/ICLFilter/WeightChannelsOp.h
+ce:5 mg:2 rh:0 aj:0 fr:0
+./include/ICLFilter/ChamferOp.h
+ce:17 mg:2 rh:0 aj:1 fr:0
+./include/ICLFilter/ConvolutionKernel.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLFilter/BinaryLogicalOp.h
+ce:7 mg:1 rh:0 aj:3 fr:0
+./include/ICLFilter/UnaryOpPipe.h
+ce:7 mg:1 rh:0 aj:0 fr:0
+./include/ICLFilter/TranslateOp.h
+ce:10 mg:1 rh:2 aj:2 fr:0
+./include/ICLFilter/BinaryOp.h
+ce:12 mg:2 rh:1 aj:3 fr:0
+./include/ICLFilter/CannyOp.h
+ce:14 mg:1 rh:2 aj:5 fr:0
+./include/ICLFilter/LUTOp.h
+ce:13 mg:1 rh:1 aj:3 fr:0
+./include/ICLAlgorithms/SOM2D.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLAlgorithms/HoughLineDetector.h
+ce:8 mg:1 rh:0 aj:0 fr:0
+./include/ICLAlgorithms/ViewBasedTemplateMatcher.h
+ce:7 mg:1 rh:0 aj:0 fr:0
+./include/ICLAlgorithms/SVS.h
+ce:5 mg:1 rh:0 aj:4 fr:0
+./include/ICLAlgorithms/SOM.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLAlgorithms/HoughLine.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLAlgorithms/UsefulFunctions.h
+ce:8 mg:1 rh:0 aj:0 fr:0
+./include/ICLIO/FileGrabberPlugin.h
+ce:5 mg:1 rh:1 aj:0 fr:0
+./include/ICLIO/JPEGHandle.h
+ce:5 mg:1 rh:0 aj:0 fr:1
+./include/ICLIO/DCDeviceFeatures.h
+ce:7 mg:1 rh:0 aj:0 fr:0
+./include/ICLIO/FileGrabberPluginCSV.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLIO/Grabber.h
+ce:23 mg:4 rh:7 aj:2 fr:0
+./include/ICLIO/XCFPublisher.h
+ce:5 mg:2 rh:0 aj:0 fr:0
+./include/ICLIO/DemoGrabber.h
+ce:8 mg:1 rh:0 aj:0 fr:0
+./include/ICLIO/CreateGrabber.h
+ce:2 mg:0 rh:0 aj:0 fr:0
+./include/ICLIO/TestImages.h
+ce:14 mg:1 rh:4 aj:1 fr:0
+./include/ICLIO/FileGrabberPluginPNM.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLIO/UnicapFormat.h
+ce:9 mg:1 rh:1 aj:0 fr:0
+./include/ICLIO/FilenameGenerator.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLIO/IOUtils.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLIO/FileList.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLIO/XCFServerGrabber.h
+ce:7 mg:1 rh:6 aj:2 fr:2
+./include/ICLIO/DCDeviceOptions.h
+ce:7 mg:1 rh:0 aj:0 fr:0
+./include/ICLIO/GenericGrabber.h
+ce:23 mg:2 rh:0 aj:0 fr:0
+./include/ICLIO/FileWriter.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLIO/FileWriterPluginCSV.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLIO/XCFUtils.h
+ce:9 mg:1 rh:1 aj:0 fr:0
+./include/ICLIO/FileWriterPluginJPEG.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLIO/SwissRangerGrabber.h
+ce:6 mg:1 rh:0 aj:0 fr:0
+./include/ICLIO/UnicapGrabEngine.h
+ce:14 mg:2 rh:1 aj:0 fr:0
+./include/ICLIO/DCDevice.h
+ce:18 mg:1 rh:0 aj:1 fr:0
+./include/ICLIO/DCGrabber.h
+ce:41 mg:3 rh:1 aj:0 fr:0
+./include/ICLIO/FileGrabber.h
+ce:10 mg:1 rh:0 aj:0 fr:0
+./include/ICLIO/PWCGrabber.h
+ce:24 mg:4 rh:5 aj:3 fr:0
+./include/ICLIO/DCGrabberThread.h
+ce:17 mg:1 rh:0 aj:1 fr:0
+./include/ICLIO/UnicapGrabber.h
+ce:24 mg:1 rh:3 aj:4 fr:0
+./include/ICLIO/XCFGrabberBase.h
+ce:5 mg:1 rh:1 aj:0 fr:0
+./include/ICLIO/FileWriterPluginPNM.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLIO/SonyFwGrabber.h
+ce:5 mg:2 rh:1 aj:0 fr:7
+./include/ICLIO/DefaultConvertEngine.h
+ce:9 mg:1 rh:1 aj:1 fr:0
+./include/ICLIO/DCFrameQueue.h
+ce:12 mg:1 rh:0 aj:1 fr:0
+./include/ICLIO/FileWriterPlugin.h
+ce:4 mg:1 rh:1 aj:0 fr:0
+./include/ICLIO/XCFMemoryGrabber.h
+ce:7 mg:1 rh:0 aj:0 fr:0
+./include/ICLIO/FileWriterPluginImageMagick.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLIO/IO.h
+ce:12 mg:9 rh:4 aj:2 fr:1
+./include/ICLIO/IOFunctions.h
+ce:10 mg:9 rh:4 aj:2 fr:1
+./include/ICLIO/JPEGDecoder.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLIO/UnicapDevice.h
+ce:16 mg:1 rh:1 aj:0 fr:0
+./include/ICLIO/DistFromProgArgUtil.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLIO/GrabberHandle.h
+ce:10 mg:1 rh:0 aj:0 fr:0
+./include/ICLIO/FileGrabberPluginJPEG.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLIO/VideoGrabber.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLIO/File.h
+ce:5 mg:1 rh:0 aj:0 fr:0
+./include/ICLIO/FileGrabberPluginImageMagick.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLIO/UnicapProperty.h
+ce:13 mg:1 rh:1 aj:0 fr:0
+./include/ICLIO/UnicapConvertEngine.h
+ce:10 mg:1 rh:1 aj:0 fr:0
+./include/ICLIO/XCFMemoryListener.h
+ce:4 mg:1 rh:0 aj:0 fr:0
+./include/ICLIO/XCFPublisherGrabber.h
+ce:4 mg:1 rh:2 aj:0 fr:0
+./include/ICLIO/DC.h
+ce:17 mg:1 rh:0 aj:0 fr:0
+./include/ICLIO/DefaultGrabEngine.h
+ce:10 mg:1 rh:1 aj:1 fr:0
+./scripts/compile_checker/types.h
+ce:1 mg:0 rh:0 aj:0 fr:0
+./scripts/compile_checker/show_arglists.h
+ce:1 mg:0 rh:0 aj:0 fr:0
+./scripts/compile_checker/create_combinations.h
+ce:1 mg:0 rh:0 aj:0 fr:0
+./scripts/compile_checker/config.h
+ce:2 mg:0 rh:0 aj:0 fr:0
+./alldoc/allmainpage.h
+ce:2 mg:0 rh:0 aj:0 fr:0
+./ICLGeom/src/Scene.cpp
+ce:4 mg:0 rh:0 aj:0 fr:0
+./ICLGeom/src/SceneObject.cpp
+ce:12 mg:1 rh:0 aj:0 fr:0
+./ICLGeom/src/ViewRay.cpp
+ce:5 mg:1 rh:0 aj:0 fr:0
+./ICLGeom/src/ConvexHullMonotoneChain.cpp
+ce:5 mg:1 rh:0 aj:0 fr:0
+./ICLGeom/src/Camera.cpp
+ce:9 mg:0 rh:0 aj:0 fr:0
+./ICLGeom/src/PlaneEquation.cpp
+ce:5 mg:1 rh:0 aj:0 fr:0
+./ICLGeom/examples/geom-demo.cpp
+ce:2 mg:0 rh:0 aj:0 fr:0
+./ICLGeom/examples/swiss-ranger-demo.cpp
+ce:5 mg:0 rh:0 aj:0 fr:0
+./ICLGeom/examples/show-extrinsic-calibration-grid.cpp
+ce:7 mg:0 rh:0 aj:0 fr:0
+./ICLGeom/examples/intrinsic-camera-calibration-tools.cpp
+ce:5 mg:0 rh:0 aj:0 fr:0
+./ICLGeom/examples/geom-demo-simple.cpp
+ce:5 mg:0 rh:0 aj:0 fr:0
+./ICLGeom/examples/intrinsic-camera-calibration.cpp
+ce:20 mg:0 rh:0 aj:0 fr:0
+./ICLGeom/examples/cam-calib.cpp
+ce:3 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/img-base-naive-depth-adaption.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/using-grabbed-images.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/using-a-grabber.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/templates-2.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/threshold-1b.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/generic-grabber-from-progarg.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/templates-1.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/threshold-7.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/ensure-depth-implementation.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/img-structure-with-params.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/unary-op-pipe-example.cpp
+ce:3 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/threshold-1.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/templates-4.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/channel-management.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/threshold-4.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/templates-3.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/threshold-3b.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/threshold-4b.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/pixel-access-check-list-pseudo-code.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/quick-copy-roi-example.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/config-file.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/threshold-2.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/threshold-3.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/cast-imgbase-to-img-threshold-example-macro.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/cast-imgbase-to-img-threshold-example-real.cpp
+ce:2 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/abs-diff-successive-ops.cpp
+ce:2 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/check-only-example.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/shallow-copied-imgs.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/cast-imgbase-to-img-threshold-example.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/icl-depth-enum.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/quick-drawing-example.cpp
+ce:2 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/img-D-typedefs.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/templates-5.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/unary-op-loop-example-no-dst.cpp
+ce:2 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/threshold-8.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/quick-cvt-example.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/threshold-5.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/image-class-scheme-1.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/threshold-6.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/fixed-matrix-demo-1.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/icl-D-typedefs.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/img-and-img-base-scheme.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./tutorial/media/code/unary-op-loop-example.cpp
+ce:3 mg:0 rh:0 aj:0 fr:0
+./scripts/compile_checker/create_combinations.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./scripts/compile_checker/main.cpp
+ce:3 mg:0 rh:0 aj:0 fr:0
+./scripts/compile_checker/show_arglists.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./ICLUtils/src/StrTok.cpp
+ce:9 mg:1 rh:2 aj:0 fr:1
+./ICLUtils/src/StraightLine2D.cpp
+ce:5 mg:1 rh:0 aj:0 fr:0
+./ICLUtils/src/Point.cpp
+ce:10 mg:1 rh:3 aj:0 fr:1
+./ICLUtils/src/Size.cpp
+ce:15 mg:1 rh:2 aj:0 fr:0
+./ICLUtils/src/StringUtils.cpp
+ce:11 mg:1 rh:0 aj:0 fr:0
+./ICLUtils/src/ThreadUtils.cpp
+ce:6 mg:1 rh:0 aj:0 fr:0
+./ICLUtils/src/SignalHandler.cpp
+ce:5 mg:2 rh:0 aj:0 fr:0
+./ICLUtils/src/Size32f.cpp
+ce:6 mg:1 rh:0 aj:0 fr:0
+./ICLUtils/src/MultiThreader.cpp
+ce:5 mg:1 rh:0 aj:0 fr:0
+./ICLUtils/src/XMLNode.cpp
+ce:7 mg:1 rh:0 aj:0 fr:0
+./ICLUtils/src/ConfigFile.cpp
+ce:31 mg:1 rh:1 aj:0 fr:0
+./ICLUtils/src/SmartPtr.cpp
+ce:8 mg:1 rh:2 aj:0 fr:0
+./ICLUtils/src/FPSEstimator.cpp
+ce:5 mg:1 rh:0 aj:0 fr:0
+./ICLUtils/src/Rect.cpp
+ce:9 mg:1 rh:2 aj:0 fr:0
+./ICLUtils/src/Time.cpp
+ce:8 mg:1 rh:4 aj:0 fr:2
+./ICLUtils/src/Mutex.cpp
+ce:4 mg:1 rh:0 aj:0 fr:0
+./ICLUtils/src/XML.cpp
+ce:4 mg:1 rh:0 aj:0 fr:0
+./ICLUtils/src/Rect32f.cpp
+ce:8 mg:1 rh:0 aj:0 fr:0
+./ICLUtils/src/DynMatrix.cpp
+ce:18 mg:1 rh:0 aj:0 fr:0
+./ICLUtils/src/FFTUtils.cpp
+ce:2 mg:0 rh:0 aj:0 fr:0
+./ICLUtils/src/Point32f.cpp
+ce:8 mg:1 rh:0 aj:0 fr:0
+./ICLUtils/src/XMLAttribRef.cpp
+ce:5 mg:1 rh:0 aj:0 fr:0
+./ICLUtils/src/Range.cpp
+ce:6 mg:1 rh:0 aj:0 fr:0
+./ICLUtils/src/DynMatrixUtils.cpp
+ce:11 mg:1 rh:1 aj:0 fr:0
+./ICLUtils/src/XMLNodeFilter.cpp
+ce:7 mg:1 rh:0 aj:0 fr:0
+./ICLUtils/src/ConsoleProgress.cpp
+ce:5 mg:1 rh:0 aj:0 fr:0
+./ICLUtils/src/Exception.cpp
+ce:7 mg:3 rh:3 aj:0 fr:0
+./ICLUtils/src/Semaphore.cpp
+ce:4 mg:1 rh:0 aj:0 fr:0
+./ICLUtils/src/ProgArg.cpp
+ce:19 mg:1 rh:4 aj:0 fr:1
+./ICLUtils/src/Thread.cpp
+ce:14 mg:2 rh:0 aj:0 fr:1
+./ICLUtils/src/FixedMatrix.cpp
+ce:11 mg:1 rh:0 aj:0 fr:0
+./ICLUtils/src/FPSLimiter.cpp
+ce:4 mg:1 rh:0 aj:0 fr:0
+./ICLUtils/src/Timer.cpp
+ce:9 mg:2 rh:6 aj:0 fr:0
+./ICLUtils/src/StochasticOptimizer.cpp
+ce:6 mg:1 rh:0 aj:0 fr:0
+./ICLUtils/src/XMLNodeIterator.cpp
+ce:4 mg:1 rh:0 aj:0 fr:0
+./ICLUtils/src/XMLDocument.cpp
+ce:8 mg:1 rh:0 aj:0 fr:0
+./ICLUtils/src/MultiTypeMap.cpp
+ce:4 mg:1 rh:0 aj:0 fr:0
+./ICLUtils/examples/progargdemo.cpp
+ce:10 mg:0 rh:1 aj:0 fr:0
+./ICLUtils/examples/regular-expression-test.cpp
+ce:3 mg:0 rh:0 aj:0 fr:0
+./ICLUtils/examples/matrix-stream-operator-test.cpp
+ce:3 mg:0 rh:0 aj:0 fr:0
+./ICLUtils/examples/config-file-test.cpp
+ce:5 mg:0 rh:0 aj:0 fr:0
+./ICLUtils/examples/fixed-matrix-test.cpp
+ce:3 mg:0 rh:0 aj:0 fr:0
+./ICLUtils/examples/dyn-matrix-test.cpp
+ce:7 mg:0 rh:0 aj:0 fr:0
+./ICLUtils/examples/xml-parser-test.cpp
+ce:3 mg:0 rh:0 aj:0 fr:0
+./ICLUtils/examples/dyn-matrix-utils-test.cpp
+ce:4 mg:0 rh:0 aj:0 fr:0
+./ICLQt/src/CheckBoxHandle.cpp
+ce:4 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/MouseHandler.cpp
+ce:8 mg:1 rh:2 aj:0 fr:0
+./ICLQt/src/PlotWidget.cpp
+ce:5 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/DrawHandle.cpp
+ce:6 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/DrawWidget3D.cpp
+ce:17 mg:2 rh:0 aj:0 fr:1
+./ICLQt/src/SliderHandle.cpp
+ce:5 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/Widget.cpp
+ce:41 mg:1 rh:1 aj:0 fr:0
+./ICLQt/src/DrawWidget.cpp
+ce:31 mg:2 rh:2 aj:0 fr:0
+./ICLQt/src/MouseEvent.cpp
+ce:5 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/ComboHandle.cpp
+ce:6 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/DataStore.cpp
+ce:10 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/StringHandle.cpp
+ce:5 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/CamThread.cpp
+ce:3 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/ToggleButton.cpp
+ce:4 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/ChromaGUI.cpp
+ce:12 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/ChromaClassifierIO.cpp
+ce:5 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/QImageConverter.cpp
+ce:16 mg:1 rh:6 aj:1 fr:1
+./ICLQt/src/ThreadedUpdatableTextView.cpp
+ce:4 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/ImageHandle.cpp
+ce:6 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/DoubleSlider.cpp
+ce:6 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/ButtonHandle.cpp
+ce:9 mg:1 rh:0 aj:0 fr:1
+./ICLQt/src/CompabilityLabel.cpp
+ce:9 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/IntHandle.cpp
+ce:4 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/ButtonGroupHandle.cpp
+ce:4 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/SpinnerHandle.cpp
+ce:4 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/LabelHandle.cpp
+ce:8 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/DrawHandle3D.cpp
+ce:6 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/CamCfgWidget.cpp
+ce:48 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/Dragger.cpp
+ce:4 mg:2 rh:0 aj:0 fr:0
+./ICLQt/src/GUIDefinition.cpp
+ce:11 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/GLPaintEngine.cpp
+ce:33 mg:1 rh:5 aj:1 fr:1
+./ICLQt/src/Application.cpp
+ce:9 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/FloatHandle.cpp
+ce:4 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/MultiDrawHandle.cpp
+ce:6 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/GUI.cpp
+ce:53 mg:1 rh:0 aj:0 fr:1
+./ICLQt/src/ImgParamWidget.cpp
+ce:8 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/IconFactory.cpp
+ce:9 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/GUIWidget.cpp
+ce:17 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/FSliderHandle.cpp
+ce:6 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/BorderHandle.cpp
+ce:4 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/GLTextureMapBaseImage.cpp
+ce:16 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/StateHandle.cpp
+ce:4 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/GLTextureMapPaintEngine.cpp
+ce:7 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/GLTextureMapImage.cpp
+ce:23 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/StringSignalButton.cpp
+ce:4 mg:1 rh:0 aj:0 fr:0
+./ICLQt/src/ConfigFileGUI.cpp
+ce:14 mg:1 rh:0 aj:0 fr:0
+./ICLQt/examples/xv.cpp
+ce:8 mg:0 rh:0 aj:0 fr:0
+./ICLQt/examples/camcfg.cpp
+ce:10 mg:0 rh:0 aj:0 fr:0
+./ICLQt/examples/interactive-filter-demo.cpp
+ce:22 mg:1 rh:4 aj:1 fr:0
+./ICLQt/examples/chroma-demo.cpp
+ce:12 mg:1 rh:0 aj:0 fr:0
+./ICLQt/examples/mouse-interaction-demo.cpp
+ce:11 mg:0 rh:2 aj:0 fr:0
+./ICLQt/examples/camviewer.cpp
+ce:12 mg:0 rh:0 aj:0 fr:0
+./ICLQt/examples/gui-test-2.cpp
+ce:5 mg:0 rh:0 aj:0 fr:0
+./ICLQt/examples/gui-test.cpp
+ce:10 mg:1 rh:0 aj:0 fr:0
+./ICLQt/examples/visualization-demo.cpp
+ce:13 mg:0 rh:2 aj:0 fr:0
+./ICLQt/examples/gui-callback-test.cpp
+ce:4 mg:0 rh:0 aj:0 fr:0
+./ICLQt/examples/datastore-test.cpp
+ce:3 mg:0 rh:0 aj:0 fr:0
+./ICLQt/examples/colorpicker.cpp
+ce:12 mg:0 rh:0 aj:0 fr:0
+./ICLQt/examples/config-gui-example.cpp
+ce:6 mg:0 rh:0 aj:0 fr:0
+./ICLQt/examples/3D-demo.cpp
+ce:13 mg:0 rh:0 aj:0 fr:0
+./ICLQt/examples/image-compare.cpp
+ce:4 mg:0 rh:0 aj:0 fr:0
+./ICLQt/examples/special-button-demo.cpp
+ce:3 mg:0 rh:0 aj:0 fr:0
+./ICLQt/examples/complex-gui-callback-test.cpp
+ce:3 mg:0 rh:0 aj:0 fr:0
+./ICLBlob/src/ColorBlobSearcher.cpp
+ce:9 mg:1 rh:3 aj:0 fr:0
+./ICLBlob/src/FMCreator.cpp
+ce:7 mg:1 rh:0 aj:0 fr:0
+./ICLBlob/src/VectorTracker.cpp
+ce:7 mg:1 rh:0 aj:0 fr:0
+./ICLBlob/src/Region.cpp
+ce:21 mg:1 rh:0 aj:0 fr:0
+./ICLBlob/src/RegionBasedBlobSearcher.cpp
+ce:18 mg:1 rh:2 aj:0 fr:0
+./ICLBlob/src/PositionTracker.cpp
+ce:18 mg:1 rh:3 aj:0 fr:1
+./ICLBlob/src/DefaultColorBlobSearcher.cpp
+ce:13 mg:1 rh:3 aj:0 fr:1
+./ICLBlob/src/MeanShiftTracker.cpp
+ce:5 mg:1 rh:0 aj:0 fr:0
+./ICLBlob/src/HungarianAlgorithm.cpp
+ce:10 mg:3 rh:1 aj:0 fr:0
+./ICLBlob/src/VQ2D.cpp
+ce:8 mg:1 rh:3 aj:0 fr:1
+./ICLBlob/src/Extrapolator.cpp
+ce:7 mg:1 rh:1 aj:0 fr:0
+./ICLBlob/src/RegionPCAInfo.cpp
+ce:4 mg:1 rh:0 aj:0 fr:0
+./ICLBlob/src/SimpleBlobSearcher.cpp
+ce:5 mg:2 rh:0 aj:0 fr:0
+./ICLBlob/src/RegionDetector.cpp
+ce:21 mg:1 rh:2 aj:0 fr:0
+./ICLBlob/src/RegionFilter.cpp
+ce:8 mg:2 rh:0 aj:0 fr:0
+./ICLBlob/examples/simple-blob-searcher-test.cpp
+ce:4 mg:0 rh:0 aj:0 fr:0
+./ICLBlob/examples/region-based-blob-finder-test.cpp
+ce:13 mg:0 rh:0 aj:0 fr:0
+./ICLBlob/examples/corner-detection-css-demo.cpp
+ce:8 mg:0 rh:0 aj:0 fr:0
+./ICLBlob/examples/vector-tracker-demo.cpp
+ce:6 mg:0 rh:1 aj:0 fr:0
+./ICLBlob/examples/blobtracker-benchmark.cpp
+ce:7 mg:0 rh:2 aj:0 fr:0
+./ICLBlob/examples/mean-shift-online-demo.cpp
+ce:4 mg:0 rh:0 aj:0 fr:0
+./ICLBlob/examples/interactive-vector-tracker-benchmark.cpp
+ce:3 mg:0 rh:0 aj:0 fr:0
+./ICLBlob/examples/region-inspector-demo.cpp
+ce:15 mg:0 rh:0 aj:0 fr:0
+./ICLBlob/examples/online-region-detection-demo.cpp
+ce:5 mg:0 rh:0 aj:0 fr:0
+./ICLBlob/examples/region-detector-test.cpp
+ce:5 mg:0 rh:0 aj:0 fr:0
+./ICLQuick/src/Quick.cpp
+ce:46 mg:4 rh:1 aj:0 fr:0
+./ICLQuick/src/QuickRegions.cpp
+ce:8 mg:1 rh:0 aj:0 fr:1
+./ICLQuick/examples/quick-benchmark.cpp
+ce:6 mg:0 rh:0 aj:0 fr:0
+./ICLQuick/examples/quick-test.cpp
+ce:14 mg:0 rh:0 aj:0 fr:0
+./ICLCC/src/Color.cpp
+ce:8 mg:1 rh:0 aj:0 fr:0
+./ICLCC/src/Converter.cpp
+ce:18 mg:1 rh:6 aj:0 fr:0
+./ICLCC/src/Bayer.cpp
+ce:4 mg:2 rh:1 aj:0 fr:3
+./ICLCC/src/CCFunctions.cpp
+ce:30 mg:3 rh:5 aj:0 fr:0
+./ICLCC/src/FixedConverter.cpp
+ce:9 mg:1 rh:0 aj:0 fr:0
+./ICLCC/src/CCLUT.cpp
+ce:13 mg:1 rh:0 aj:0 fr:0
+./ICLCC/examples/bayer-benchmark.cpp
+ce:5 mg:2 rh:1 aj:0 fr:0
+./ICLCC/examples/converter-test.cpp
+ce:11 mg:0 rh:0 aj:0 fr:0
+./ICLCC/examples/colorspace-online-demo.cpp
+ce:4 mg:0 rh:0 aj:0 fr:0
+./ICLCore/src/Img.cpp
+ce:73 mg:9 rh:33 aj:1 fr:2
+./ICLCore/src/ImgBase.cpp
+ce:36 mg:5 rh:14 aj:1 fr:1
+./ICLCore/src/CornerDetectorCSS.cpp
+ce:7 mg:1 rh:0 aj:0 fr:0
+./ICLCore/src/ImgBorder.cpp
+ce:17 mg:1 rh:3 aj:1 fr:0
+./ICLCore/src/Mathematics.cpp
+ce:20 mg:5 rh:3 aj:0 fr:1
+./ICLCore/src/CoreFunctions.cpp
+ce:33 mg:4 rh:13 aj:1 fr:0
+./ICLCore/src/ImgParams.cpp
+ce:12 mg:1 rh:6 aj:0 fr:0
+./ICLCore/src/Random.cpp
+ce:4 mg:1 rh:0 aj:0 fr:0
+./ICLCore/src/SampledLine.cpp
+ce:8 mg:1 rh:0 aj:0 fr:0
+./ICLCore/src/Line.cpp
+ce:9 mg:1 rh:0 aj:0 fr:1
+./ICLCore/src/LineSampler.cpp
+ce:7 mg:1 rh:0 aj:0 fr:0
+./ICLCore/src/Line32f.cpp
+ce:7 mg:1 rh:0 aj:0 fr:0
+./ICLCore/examples/img-example.cpp
+ce:4 mg:0 rh:0 aj:0 fr:0
+./ICLCore/examples/sampled-line-test.cpp
+ce:4 mg:0 rh:0 aj:0 fr:0
+./ICLCore/examples/img-iterator-benchmark.cpp
+ce:3 mg:0 rh:0 aj:0 fr:0
+./ICLCore/examples/reduce-channels-test.cpp
+ce:3 mg:0 rh:0 aj:0 fr:0
+./ICLCore/examples/copy-channel-roi-example.cpp
+ce:3 mg:0 rh:0 aj:0 fr:0
+./ICLOpenCV/src/OpenCV.cpp
+ce:4 mg:1 rh:0 aj:0 fr:0
+./ICLOpenCV/examples/dummy-app.cpp
+ce:2 mg:0 rh:0 aj:0 fr:0
+./doc/fix-doc-screen-shot-edges.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./ICLFilter/src/GradientImage.cpp
+ce:6 mg:1 rh:0 aj:0 fr:0
+./ICLFilter/src/NeighborhoodOp.cpp
+ce:14 mg:1 rh:1 aj:0 fr:0
+./ICLFilter/src/MorphologicalOp.cpp
+ce:14 mg:2 rh:2 aj:10 fr:1
+./ICLFilter/src/LocalThresholdOp.cpp
+ce:18 mg:1 rh:2 aj:2 fr:0
+./ICLFilter/src/InplaceArithmeticalOp.cpp
+ce:7 mg:1 rh:0 aj:0 fr:0
+./ICLFilter/src/ConvolutionKernel.cpp
+ce:6 mg:1 rh:0 aj:0 fr:0
+./ICLFilter/src/BinaryCompareOp.cpp
+ce:12 mg:1 rh:0 aj:0 fr:0
+./ICLFilter/src/UnaryArithmeticalOp.cpp
+ce:12 mg:2 rh:0 aj:0 fr:0
+./ICLFilter/src/UnaryCompareOp.cpp
+ce:13 mg:1 rh:0 aj:0 fr:0
+./ICLFilter/src/WarpOp.cpp
+ce:8 mg:1 rh:0 aj:0 fr:0
+./ICLFilter/src/DynamicConvolutionOp.cpp
+ce:9 mg:1 rh:1 aj:0 fr:0
+./ICLFilter/src/CannyOp.cpp
+ce:14 mg:2 rh:2 aj:6 fr:0
+./ICLFilter/src/InplaceLogicalOp.cpp
+ce:7 mg:1 rh:0 aj:0 fr:0
+./ICLFilter/src/ImageSplitter.cpp
+ce:5 mg:1 rh:0 aj:0 fr:0
+./ICLFilter/src/WeightedSumOp.cpp
+ce:14 mg:1 rh:5 aj:4 fr:1
+./ICLFilter/src/AffineOp.cpp
+ce:11 mg:1 rh:2 aj:1 fr:0
+./ICLFilter/src/LUTOp.cpp
+ce:12 mg:1 rh:2 aj:2 fr:1
+./ICLFilter/src/LUTOp3Channel.cpp
+ce:8 mg:1 rh:0 aj:0 fr:0
+./ICLFilter/src/FFTOp.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./ICLFilter/src/ThresholdOp.cpp
+ce:15 mg:1 rh:9 aj:7 fr:1
+./ICLFilter/src/ConvolutionOp.cpp
+ce:34 mg:2 rh:18 aj:5 fr:1
+./ICLFilter/src/BinaryLogicalOp.cpp
+ce:9 mg:1 rh:0 aj:2 fr:0
+./ICLFilter/src/SkinOp.cpp
+ce:10 mg:7 rh:4 aj:2 fr:0
+./ICLFilter/src/UnaryOpPipe.cpp
+ce:8 mg:1 rh:0 aj:0 fr:0
+./ICLFilter/src/WienerOp.cpp
+ce:9 mg:1 rh:4 aj:2 fr:1
+./ICLFilter/src/MirrorOp.cpp
+ce:7 mg:1 rh:1 aj:0 fr:0
+./ICLFilter/src/MedianOp.cpp
+ce:19 mg:1 rh:13 aj:5 fr:1
+./ICLFilter/src/OpROIHandler.cpp
+ce:11 mg:1 rh:1 aj:0 fr:0
+./ICLFilter/src/IntegralImgOp.cpp
+ce:19 mg:1 rh:2 aj:2 fr:0
+./ICLFilter/src/UnaryLogicalOp.cpp
+ce:8 mg:1 rh:0 aj:2 fr:0
+./ICLFilter/src/WeightChannelsOp.cpp
+ce:3 mg:2 rh:0 aj:0 fr:0
+./ICLFilter/src/ProximityOp.cpp
+ce:8 mg:1 rh:0 aj:1 fr:0
+./ICLFilter/src/UnaryOp.cpp
+ce:10 mg:1 rh:0 aj:0 fr:0
+./ICLFilter/src/IFFTOp.cpp
+ce:1 mg:0 rh:0 aj:0 fr:0
+./ICLFilter/src/BinaryArithmeticalOp.cpp
+ce:14 mg:1 rh:0 aj:0 fr:0
+./ICLFilter/src/ChamferOp.cpp
+ce:17 mg:2 rh:0 aj:0 fr:0
+./ICLFilter/src/BinaryOp.cpp
+ce:4 mg:1 rh:0 aj:0 fr:0
+./ICLFilter/src/GaborOp.cpp
+ce:10 mg:1 rh:0 aj:0 fr:0
+./ICLFilter/examples/warp-op-test.cpp
+ce:6 mg:0 rh:0 aj:0 fr:0
+./ICLFilter/examples/weight-channels-op-test.cpp
+ce:4 mg:1 rh:0 aj:0 fr:0
+./ICLFilter/examples/inplace-op-test.cpp
+ce:4 mg:0 rh:0 aj:0 fr:0
+./ICLFilter/examples/median-op-test.cpp
+ce:8 mg:0 rh:0 aj:0 fr:0
+./ICLFilter/examples/skin-op-test-no-build.cpp
+ce:7 mg:1 rh:2 aj:0 fr:0
+./ICLFilter/examples/convolution-op-test.cpp
+ce:8 mg:0 rh:0 aj:0 fr:0
+./ICLFilter/examples/wiener-op-test.cpp
+ce:11 mg:0 rh:5 aj:2 fr:0
+./ICLFilter/examples/morphological-op-test.cpp
+ce:8 mg:0 rh:0 aj:0 fr:0
+./ICLFilter/examples/filter-array.cpp
+ce:5 mg:0 rh:0 aj:0 fr:0
+./ICLFilter/examples/filter-demo-2.cpp
+ce:6 mg:0 rh:0 aj:0 fr:0
+./ICLFilter/examples/local-threshold-op-test.cpp
+ce:24 mg:2 rh:3 aj:0 fr:0
+./ICLFilter/examples/interactive-affine-op-example.cpp
+ce:4 mg:0 rh:0 aj:0 fr:0
+./ICLFilter/examples/weighted-sum-op-test.cpp
+ce:10 mg:0 rh:2 aj:3 fr:0
+./ICLFilter/examples/gabor-op-online-example.cpp
+ce:8 mg:0 rh:0 aj:0 fr:0
+./ICLFilter/examples/champfer-op-test.cpp
+ce:7 mg:0 rh:0 aj:0 fr:0
+./ICLFilter/examples/arithmetical-op-test.cpp
+ce:8 mg:0 rh:0 aj:1 fr:0
+./ICLFilter/examples/fft-demo.cpp
+ce:1 mg:1 rh:0 aj:0 fr:0
+./ICLFilter/examples/interactive-canny-demo.cpp
+ce:5 mg:0 rh:0 aj:0 fr:0
+./ICLFilter/examples/threshold-op-test.cpp
+ce:14 mg:2 rh:11 aj:2 fr:0
+./ICLAlgorithms/src/SVS.cpp
+ce:5 mg:1 rh:0 aj:3 fr:0
+./ICLAlgorithms/src/HoughLine.cpp
+ce:6 mg:1 rh:0 aj:0 fr:0
+./ICLAlgorithms/src/HoughLineDetector.cpp
+ce:7 mg:1 rh:0 aj:0 fr:0
+./ICLAlgorithms/src/ViewBasedTemplateMatcher.cpp
+ce:4 mg:1 rh:0 aj:0 fr:0
+./ICLAlgorithms/src/UsefulFunctions.cpp
+ce:10 mg:1 rh:0 aj:0 fr:0
+./ICLAlgorithms/src/SOM.cpp
+ce:5 mg:1 rh:0 aj:0 fr:0
+./ICLAlgorithms/examples/template-matching-test.cpp
+ce:10 mg:0 rh:0 aj:0 fr:0
+./ICLAlgorithms/examples/interactive-template-matching-demo.cpp
+ce:11 mg:0 rh:0 aj:0 fr:0
+./ICLAlgorithms/examples/svs-online-demo.cpp
+ce:5 mg:0 rh:0 aj:0 fr:0
+./ICLAlgorithms/examples/svs-test.cpp
+ce:6 mg:0 rh:0 aj:3 fr:0
+./ICLAlgorithms/examples/interactive-hough-line-demo.cpp
+ce:2 mg:0 rh:0 aj:0 fr:0
+./ICLIO/src/PWCGrabber.cpp
+ce:38 mg:5 rh:9 aj:1 fr:3
+./ICLIO/src/UnicapDevice.cpp
+ce:20 mg:1 rh:2 aj:0 fr:0
+./ICLIO/src/SwissRangerGrabber.cpp
+ce:9 mg:1 rh:0 aj:0 fr:0
+./ICLIO/src/FileWriterPluginImageMagick.cpp
+ce:7 mg:1 rh:0 aj:0 fr:0
+./ICLIO/src/JPEGHandle.cpp
+ce:5 mg:1 rh:0 aj:0 fr:0
+./ICLIO/src/FileList.cpp
+ce:6 mg:1 rh:0 aj:0 fr:0
+./ICLIO/src/FileGrabberPluginImageMagick.cpp
+ce:8 mg:1 rh:0 aj:0 fr:0
+./ICLIO/src/Grabber.cpp
+ce:14 mg:1 rh:2 aj:0 fr:0
+./ICLIO/src/XCFMemoryGrabber.cpp
+ce:7 mg:1 rh:1 aj:0 fr:0
+./ICLIO/src/FileWriterPluginCSV.cpp
+ce:6 mg:1 rh:0 aj:0 fr:0
+./ICLIO/src/SonyFwGrabber.cpp
+ce:4 mg:2 rh:1 aj:0 fr:10
+./ICLIO/src/DemoImageWindows.cpp
+ce:10 mg:1 rh:1 aj:0 fr:0
+./ICLIO/src/IOUtils.cpp
+ce:5 mg:1 rh:1 aj:0 fr:0
+./ICLIO/src/FileGrabberPluginPNM.cpp
+ce:9 mg:1 rh:0 aj:0 fr:0
+./ICLIO/src/FilenameGenerator.cpp
+ce:5 mg:1 rh:0 aj:0 fr:1
+./ICLIO/src/FileWriterPluginPNM.cpp
+ce:12 mg:1 rh:0 aj:0 fr:0
+./ICLIO/src/JPEGDecoder.cpp
+ce:4 mg:1 rh:0 aj:0 fr:0
+./ICLIO/src/UnicapFormat.cpp
+ce:9 mg:1 rh:1 aj:0 fr:0
+./ICLIO/src/DemoImageMandril.cpp
+ce:2 mg:0 rh:0 aj:0 fr:0
+./ICLIO/src/FileGrabberPluginJPEG.cpp
+ce:6 mg:1 rh:0 aj:0 fr:1
+./ICLIO/src/XCFUtils.cpp
+ce:20 mg:1 rh:6 aj:0 fr:0
+./ICLIO/src/FileGrabber.cpp
+ce:13 mg:2 rh:0 aj:0 fr:0
+./ICLIO/src/DemoImageFlowers.cpp
+ce:10 mg:1 rh:1 aj:0 fr:0
+./ICLIO/src/XCFGrabberBase.cpp
+ce:8 mg:1 rh:1 aj:0 fr:0
+./ICLIO/src/UnicapConvertEngine.cpp
+ce:6 mg:1 rh:0 aj:0 fr:0
+./ICLIO/src/UnicapGrabber.cpp
+ce:55 mg:2 rh:3 aj:0 fr:0
+./ICLIO/src/TestImages.cpp
+ce:20 mg:2 rh:5 aj:1 fr:1
+./ICLIO/src/File.cpp
+ce:8 mg:2 rh:0 aj:0 fr:0
+./ICLIO/src/XCFServerGrabber.cpp
+ce:9 mg:1 rh:8 aj:0 fr:3
+./ICLIO/src/GenericGrabber.cpp
+ce:28 mg:2 rh:0 aj:0 fr:0
+./ICLIO/src/UnicapProperty.cpp
+ce:10 mg:1 rh:2 aj:0 fr:0
+./ICLIO/src/FileWriter.cpp
+ce:6 mg:2 rh:0 aj:0 fr:0
+./ICLIO/src/DistFromProgArgUtil.cpp
+ce:4 mg:1 rh:0 aj:0 fr:0
+./ICLIO/src/CreateGrabber.cpp
+ce:3 mg:0 rh:0 aj:0 fr:0
+./ICLIO/src/DCGrabber.cpp
+ce:29 mg:1 rh:0 aj:0 fr:0
+./ICLIO/src/XCFPublisher.cpp
+ce:6 mg:2 rh:0 aj:0 fr:0
+./ICLIO/src/DCGrabberThread.cpp
+ce:17 mg:1 rh:0 aj:0 fr:0
+./ICLIO/src/DCDevice.cpp
+ce:24 mg:2 rh:0 aj:0 fr:0
+./ICLIO/src/DefaultConvertEngine.cpp
+ce:20 mg:1 rh:1 aj:0 fr:0
+./ICLIO/src/DemoImageMacaw.cpp
+ce:11 mg:1 rh:1 aj:0 fr:0
+./ICLIO/src/DCFrameQueue.cpp
+ce:13 mg:2 rh:0 aj:0 fr:0
+./ICLIO/src/DemoImageLena.cpp
+ce:2 mg:0 rh:0 aj:0 fr:0
+./ICLIO/src/XCFMemoryListener.cpp
+ce:4 mg:1 rh:0 aj:0 fr:0
+./ICLIO/src/XCFPublisherGrabber.cpp
+ce:5 mg:1 rh:1 aj:0 fr:0
+./ICLIO/src/FileGrabberPluginCSV.cpp
+ce:9 mg:2 rh:0 aj:0 fr:0
+./ICLIO/src/DemoImageCameraMan.cpp
+ce:2 mg:0 rh:0 aj:0 fr:0
+./ICLIO/src/IOFunctions.cpp
+ce:10 mg:6 rh:7 aj:0 fr:0
+./ICLIO/src/DC.cpp
+ce:29 mg:1 rh:0 aj:0 fr:0
+./ICLIO/src/DemoGrabber.cpp
+ce:8 mg:1 rh:0 aj:0 fr:0
+./ICLIO/src/VideoGrabber.cpp
+ce:8 mg:1 rh:1 aj:0 fr:0
+./ICLIO/src/DefaultGrabEngine.cpp
+ce:11 mg:1 rh:1 aj:0 fr:0
+./ICLIO/src/FileWriterPluginJPEG.cpp
+ce:7 mg:1 rh:1 aj:0 fr:0
+./ICLIO/src/DCDeviceFeatures.cpp
+ce:13 mg:1 rh:0 aj:0 fr:0
+./ICLIO/examples/sonygrabber-not-built-example.cpp
+ce:3 mg:1 rh:0 aj:0 fr:2
+./ICLIO/examples/unicap-grab-example.cpp
+ce:10 mg:0 rh:3 aj:0 fr:0
+./ICLIO/examples/convert.cpp
+ce:6 mg:0 rh:0 aj:0 fr:0
+./ICLIO/examples/reset-dc-bus.cpp
+ce:2 mg:0 rh:0 aj:0 fr:0
+./ICLIO/examples/multi-cam-example.cpp
+ce:15 mg:0 rh:0 aj:0 fr:0
+./ICLIO/examples/write-file-example.cpp
+ce:4 mg:0 rh:0 aj:0 fr:0
+./ICLIO/examples/xcf-publisher.cpp
+ce:26 mg:0 rh:0 aj:0 fr:0
+./ICLIO/examples/camera-param-io.cpp
+ce:4 mg:0 rh:0 aj:0 fr:0
+./ICLIO/examples/generic-grab-example.cpp
+ce:12 mg:0 rh:0 aj:0 fr:0
+./ICLIO/examples/jpg2cpp.cpp
+ce:7 mg:0 rh:0 aj:0 fr:0
+./ICLIO/examples/testimages-example.cpp
+ce:11 mg:0 rh:2 aj:0 fr:0
+./ICLIO/examples/memory-listener.cpp
+ce:5 mg:0 rh:0 aj:0 fr:0
+./ICLIO/examples/video-player.cpp
+ce:4 mg:0 rh:0 aj:0 fr:0
+./ICLIO/examples/create.cpp
+ce:5 mg:0 rh:0 aj:0 fr:0
+./ICLIO/examples/dcdeviceinfo.cpp
+ce:3 mg:0 rh:1 aj:0 fr:0
+./ICLIO/examples/xcf-grabber-benchmark.cpp
+ce:6 mg:0 rh:0 aj:0 fr:2
+./ICLIO/examples/dcclearisochannels.cpp
+ce:4 mg:0 rh:1 aj:0 fr:0

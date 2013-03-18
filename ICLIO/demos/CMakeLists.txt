@@ -1,0 +1,6 @@
+IF(QT4_FOUND)
+  ADD_SUBDIRECTORY(multi-cam)
+  ADD_SUBDIRECTORY(rsb)
+  ADD_SUBDIRECTORY(undistortion)
+ENDIF()
+

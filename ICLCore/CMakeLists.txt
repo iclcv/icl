@@ -1,0 +1,124 @@
+#*********************************************************************
+#**                Image Component Library (ICL)                    **
+#**                                                                 **
+#** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
+#**                         Neuroinformatics Group                  **
+#** Website: www.iclcv.org and                                      **
+#**          http://opensource.cit-ec.de/projects/icl               **
+#**                                                                 **
+#** File   : ICLCore/CMakeLists.txt                                 **
+#** Module : ICLCore                                                **
+#** Authors: Michael Goetting                                       **
+#**                                                                 **
+#**                                                                 **
+#** GNU LESSER GENERAL PUBLIC LICENSE                               **
+#** This file may be used under the terms of the GNU Lesser General **
+#** Public License version 3.0 as published by the                  **
+#**                                                                 **
+#** Free Software Foundation and appearing in the file LICENSE.GPL  **
+#** included in the packaging of this file.  Please review the      **
+#** following information to ensure the license requirements will   **
+#** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
+#**                                                                 **
+#** The development of this software was supported by the           **
+#** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
+#** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
+#** Forschungsgemeinschaft (DFG) in the context of the German       **
+#** Excellence Initiative.                                          **
+#**                                                                 **
+#*********************************************************************
+
+SET(SOURCES src/ICLCore/BayerConverter.cpp
+            src/ICLCore/CCFunctions.cpp
+	    src/ICLCore/CCLUT.cpp
+	    src/ICLCore/Color.cpp
+	    src/ICLCore/Converter.cpp
+	    src/ICLCore/CoreFunctions.cpp
+	    src/ICLCore/FixedConverter.cpp
+	    src/ICLCore/ImageRenderer.cpp
+	    src/ICLCore/ImageSerializer.cpp
+	    src/ICLCore/ImgBase.cpp
+	    src/ICLCore/ImgBorder.cpp
+	    src/ICLCore/ImgBuffer.cpp
+	    src/ICLCore/Img.cpp
+	    src/ICLCore/ImgParams.cpp
+	    src/ICLCore/Line32f.cpp
+	    src/ICLCore/Line.cpp
+	    src/ICLCore/LineSampler.cpp
+	    src/ICLCore/ConvexHull.cpp
+	    src/ICLCore/PseudoColorConverter.cpp)
+          
+SET(HEADERS src/ICLCore/BayerConverter.h
+            src/ICLCore/CCFunctions.h
+	    src/ICLCore/CCLUT.h
+	    src/ICLCore/Channel.h
+	    src/ICLCore/ChromaAndRGBClassifier.h
+	    src/ICLCore/ChromaClassifier.h
+	    src/ICLCore/Color.h
+	    src/ICLCore/Converter.h
+	    src/ICLCore/CoreFunctions.h
+	    src/ICLCore/Core.h
+	    src/ICLCore/FixedConverter.h
+	    src/ICLCore/ImageRenderer.h
+	    src/ICLCore/ImageSerializer.h
+	    src/ICLCore/ImgBase.h
+	    src/ICLCore/ImgBorder.h
+	    src/ICLCore/ImgBuffer.h
+	    src/ICLCore/Img.h
+	    src/ICLCore/ImgIterator.h
+	    src/ICLCore/ImgParams.h
+	    src/ICLCore/Line32f.h
+	    src/ICLCore/Line.h
+	    src/ICLCore/LineSampler.h
+	    src/ICLCore/Parable.h
+	    src/ICLCore/PixelRef.h
+	    src/ICLCore/ConvexHull.h
+	    src/ICLCore/PseudoColorConverter.h
+	    src/ICLCore/Types.h)
+
+IF(OpenCV_FOUND)
+  LIST(APPEND SOURCES src/ICLCore/OpenCV.cpp)
+  LIST(APPEND HEADERS src/ICLCore/OpenCV.h)
+ENDIF()
+
+# ---- Library build instructions ----
+INCLUDE_DIRECTORIES(BEFORE src
+                           ${ICL_SOURCE_DIR}/ICLUtils/src
+                           ${ICL_SOURCE_DIR}/ICLMath/src)
+	    
+ADD_LIBRARY(ICLCore SHARED ${SOURCES} ${HEADERS})
+
+# ---- 3rd party library handling ----
+TARGET_LINK_LIBRARIES(ICLCore ICLMath
+                              ${OpenCV_LIBRARIES})
+
+SET_TARGET_PROPERTIES(ICLCore
+                      PROPERTIES 
+		      VERSION ${SO_VERSION})
+
+# ---- Build examples ----
+IF(BUILD_EXAMPLES)
+  ADD_SUBDIRECTORY(examples)
+ENDIF()
+
+IF(BUILD_DEMOS)
+  ADD_SUBDIRECTORY(demos)
+ENDIF()
+
+# ---- Install specifications ----
+INSTALL(TARGETS ICLCore
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib)
+INSTALL_FILES_RECURSIVE("include/${INSTALL_PATH_PREFIX}" HEADERS)
+
+# ---- PKG-config ----
+#$(OpenCV_LIBS) contains the lib-names only -> prepend libdir
+#SET(OpenCV_PKG_LIBS "${OpenCV_")
+#FOREACH(L ${OpenCV_LIBRARIES})
+#  SET(OpenCV_PKG_LIBS "${OpenCV_PKG_LIBS} ${OpenCV_LIB_DIR}/lib${L}.so")
+#ENDFOREACH()
+
+CREATE_PKGCONFIG(NAME ICLCore
+                 LIBRARY_DEPS ${OpenCV_LIBRARIES}
+                 PKGCONFIG_DEPS ICLMath-${SO_VERSION})

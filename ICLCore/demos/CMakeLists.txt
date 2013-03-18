@@ -1,0 +1,4 @@
+IF(QT4_FOUND)
+  ADD_SUBDIRECTORY(colorspace)
+  ADD_SUBDIRECTORY(pseudo-color)
+ENDIF()

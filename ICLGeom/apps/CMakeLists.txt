@@ -1,0 +1,15 @@
+IF(QT4_FOUND)
+  ADD_SUBDIRECTORY(depth-camera-simulator)
+  ADD_SUBDIRECTORY(kinect-recorder)
+  ADD_SUBDIRECTORY(rotate-image-3D)
+  ADD_SUBDIRECTORY(show-extrinsic-calibration-grid)
+  ADD_SUBDIRECTORY(show-scene)
+ENDIF()
+
+IF(QT4_FOUND AND OpenCV_FOUND)
+  ADD_SUBDIRECTORY(opencv-calib)
+ENDIF()
+
+IF(QT4_FOUND AND PCL_FOUND)
+  ADD_SUBDIRECTORY(point-cloud-tests)
+ENDIF()

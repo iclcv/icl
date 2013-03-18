@@ -1,0 +1,144 @@
+#*********************************************************************
+#**                Image Component Library (ICL)                    **
+#**                                                                 **
+#** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
+#**                         Neuroinformatics Group                  **
+#** Website: www.iclcv.org and                                      **
+#**          http://opensource.cit-ec.de/projects/icl               **
+#**                                                                 **
+#** File   : ICLCV/CMakeLists.txt                                   **
+#** Module : ICLCV                                                  **
+#** Authors: Michael Goetting                                       **
+#**                                                                 **
+#**                                                                 **
+#** GNU LESSER GENERAL PUBLIC LICENSE                               **
+#** This file may be used under the terms of the GNU Lesser General **
+#** Public License version 3.0 as published by the                  **
+#**                                                                 **
+#** Free Software Foundation and appearing in the file LICENSE.GPL  **
+#** included in the packaging of this file.  Please review the      **
+#** following information to ensure the license requirements will   **
+#** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
+#**                                                                 **
+#** The development of this software was supported by the           **
+#** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
+#** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
+#** Forschungsgemeinschaft (DFG) in the context of the German       **
+#** Excellence Initiative.                                          **
+#**                                                                 **
+#*********************************************************************
+
+SET(SOURCES src/ICLCV/CornerDetectorCSS.cpp
+	    src/ICLCV/CV.cpp
+	    src/ICLCV/Extrapolator.cpp
+	    src/ICLCV/FloodFiller.cpp
+	    src/ICLCV/HungarianAlgorithm.cpp
+	    src/ICLCV/ImageRegion.cpp
+	    src/ICLCV/ImageRegionData.cpp
+	    src/ICLCV/MeanShiftTracker.cpp
+	    src/ICLCV/PositionTracker.cpp
+	    src/ICLCV/RegionDetector.cpp
+	    src/ICLCV/RegionPCAInfo.cpp
+	    src/ICLCV/RunLengthEncoder.cpp
+	    src/ICLCV/SimpleBlobSearcher.cpp
+	    src/ICLCV/SurfFeature.cpp
+	    src/ICLCV/SurfFeatureDetector.cpp
+	    src/ICLCV/VectorTracker.cpp)
+
+SET(HEADERS src/ICLCV/CornerDetectorCSS.h
+	    src/ICLCV/CV.h
+	    src/ICLCV/Extrapolator.h
+	    src/ICLCV/FloodFiller.h
+	    src/ICLCV/HungarianAlgorithm.h
+	    src/ICLCV/ImageRegionData.h
+	    src/ICLCV/ImageRegion.h
+	    src/ICLCV/ImageRegionPart.h
+	    src/ICLCV/LineSegment.h
+	    src/ICLCV/MeanShiftTracker.h
+	    src/ICLCV/PositionTracker.h
+	    src/ICLCV/QuickDocumentation.h
+	    src/ICLCV/RegionDetector.h
+	    src/ICLCV/RegionDetectorTools.h
+	    src/ICLCV/RegionPCAInfo.h
+	    src/ICLCV/RunLengthEncoder.h
+	    src/ICLCV/SimpleBlobSearcher.h
+	    src/ICLCV/VectorTracker.h
+	    src/ICLCV/SurfFeature.h
+	    src/ICLCV/SurfFeatureDetector.h
+	    src/ICLCV/WorkingLineSegment.h)
+	  
+IF(IPP_FOUND)
+  LIST(APPEND SOURCES src/ICLCV/ViewBasedTemplateMatcher.cpp
+		      src/ICLCV/HoughLineDetector.cpp
+		      src/ICLCV/HoughLine.cpp
+		      src/ICLCV/TemplateTracker.cpp)
+		    
+  LIST(APPEND HEADERS src/ICLCV/ViewBasedTemplateMatcher.h
+		      src/ICLCV/HoughLineDetector.h
+		      src/ICLCV/HoughLine.h
+		      src/ICLCV/TemplateTracker.h)
+ENDIF()
+
+IF(OpenCV_FOUND)
+  LIST(APPEND SOURCES src/ICLCV/OpenSurfLib.cpp)
+  LIST(APPEND HEADERS src/ICLCV/OpenSurfLib.h)
+ENDIF()
+
+
+IF(OPENCL_FOUND)
+  LIST(APPEND SOURCES src/ICLCV/CLSurfLib.cpp
+                      src/ICLCV/CLSurfLibKernels.cpp)
+  LIST(APPEND HEADERS src/ICLCV/CLSurfLib.h
+                      src/ICLCV/CLSurfLibKernels.h)
+ENDIF()
+
+# ---- Library build instructions ----
+INCLUDE_DIRECTORIES(BEFORE src
+                           ${ICL_SOURCE_DIR}/ICLUtils/src
+                           ${ICL_SOURCE_DIR}/ICLMath/src
+                           ${ICL_SOURCE_DIR}/ICLCore/src
+                           ${ICL_SOURCE_DIR}/ICLFilter/src
+                           ${ICL_SOURCE_DIR}/ICLIO/src
+                           ${ICL_SOURCE_DIR}/ICLQt/src)
+
+ADD_LIBRARY(ICLCV SHARED ${SOURCES} ${HEADERS})
+
+# ---- 3rd party library handling ----
+IF(QT4_FOUND)
+  TARGET_LINK_LIBRARIES(ICLCV ICLQt)
+ELSE()
+  TARGET_LINK_LIBRARIES(ICLCV ICLIO)
+ENDIF()
+
+SET_TARGET_PROPERTIES(ICLCV
+                      PROPERTIES 
+		      VERSION ${SO_VERSION})
+
+# ---- Build examples/ demos/ apps ----
+IF(BUILD_EXAMPLES)
+  ADD_SUBDIRECTORY(examples)
+ENDIF()
+
+IF(BUILD_DEMOS)
+  ADD_SUBDIRECTORY(demos)
+ENDIF()
+
+IF(BUILD_APPS)
+  ADD_SUBDIRECTORY(apps)
+ENDIF()
+
+# ---- Install specifications ----
+INSTALL(TARGETS ICLCV
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib)
+INSTALL_FILES_RECURSIVE("include/${INSTALL_PATH_PREFIX}" HEADERS)
+
+# ---- PKG-config ----
+IF(QT4_FOUND)
+  CREATE_PKGCONFIG(NAME ICLCV
+                   PKGCONFIG_DEPS ICLQt-${SO_VERSION})
+ELSE()
+  CREATE_PKGCONFIG(NAME ICLCV
+                   PKGCONFIG_DEPS ICLCV-${SO_VERSION})
+ENDIF()
