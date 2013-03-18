@@ -1,28 +1,36 @@
 #!/bin/bash
 
-rm -rf /media/local_data1/mgoettin/_temp_/*
-rm -rf /homes/mgoettin/src/cor-lab/icl/branches/icl_cmake_revise/build/*
+B=$HOME/projects/ICL/build
+if [ "$1" = "new" ] ; then
+    rm -rf ${B} ;
+    mkdir ${B} ;
+fi
+    
+cd ${B}
 
-cd /homes/mgoettin/src/cor-lab/icl/branches/icl_cmake_revise/build
-
-cmake -DBUILD_WITH_IPP=TRUE -DIPP_ROOT=/vol/nivision/share/IPP/7.0 \
-      -DBUILD_WITH_MKL=TRUE -DMKL_ROOT=/vol/nivision/share/MKL/10.3 \
+cmake -DBUILD_WITH_IPP=TRUE -DIPP_ROOT=/vol/nivision/share/IPP/7.07 \
+      -DBUILD_WITH_MKL=FALSE -DMKL_ROOT=/vol/nivision/share/MKL/10.3.11 \
       -DBUILD_WITH_EIGEN3=TRUE \
-      -DBUILD_WITH_OPENCV=TRUE -DOpenCV_DIR=/usr/share/OpenCV \
-      -DBUILD_WITH_OPENNI=TRUE -DOPENNI_ROOT=/vol/nivision/linx86_64_precise/usr \
-      -DBUILD_WITH_LIBDC=TRUE \
       -DBUILD_WITH_V4L=TRUE \
       -DBUILD_WITH_XINE=TRUE \
-      -DBUILD_WITH_QT=TRUE \
-      -DBUILD_WITH_MESASR=TRUE -DMESASR_ROOT=/vol/nivision/linx86_64_precise/usr \
-      -DBUILD_WITH_IMAGEMAGICK=TRUE \
       -DBUILD_WITH_LIBFREENECT=TRUE \
-      -DBUILD_WITH_PCL=TRUE -DPCL_SEARCH_PATH=/vol/nivision/linx86_64_precise/share/pcl-1.6 \
-      -DCMAKE_INSTALL_PREFIX=/media/local_data1/mgoettin/_temp_ \
-      -DBUILD_EXAMPLES=OFF \
-      -DBUILD_DEMOS=OFF \
-      -DBUILD_APPS=OFF \
+      -DBUILD_WITH_MESASR=TRUE \
+      -DBUILD_WITH_QT=TRUE \
+      -DBUILD_WITH_OPENCL=TRUE \
+      -DBUILD_WITH_LIBDC=TRUE \
+      -DBUILD_WITH_IMAGEMAGICK=TRUE \
+      -DCMAKE_INSTALL_PREFIX=/vol/nivision/share/ICL-8.0 \
+      -DBUILD_EXAMPLES=ON \
+      -DBUILD_DEMOS=ON \
+      -DBUILD_WITH_OPENCV=TRUE OpenCV_DIR=/usr \
+      -DBUILD_APPS=ON \
       ..
 
-make VERBOSE=1 -j10
-make install
+
+
+#      -DBUILD_WITH_PCL=TRUE -DPCL_DIR=/usr/local/share/pcl-1.6 \
+
+
+make -j6 install
+#make install
+#make manual
