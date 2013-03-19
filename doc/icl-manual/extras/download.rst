@@ -17,7 +17,7 @@ SVN Checkout
 
 Trunk: **https://opensource.cit-ec.de/svn/icl/trunk**
 
-Latest stable: **https://opensource.cit-ec.de/svn/icl/tags/8.0.0** (soon)
+Latest stable: **https://opensource.cit-ec.de/svn/icl/tags/8.0.0-first-8x** (soon)
 
 
 Binary Releases
