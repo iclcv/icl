@@ -31,6 +31,9 @@
 SET(SOURCES src/ICLUtils/ConfigFile.cpp
             src/ICLUtils/Configurable.cpp
 	    src/ICLUtils/ConsoleProgress.cpp
+	    src/ICLUtils/CLBuffer.cpp
+	    src/ICLUtils/CLKernel.cpp
+	    src/ICLUtils/CLProgram.cpp
 	    src/ICLUtils/Exception.cpp
 	    src/ICLUtils/File.cpp
 	    src/ICLUtils/FPSEstimator.cpp
@@ -64,10 +67,14 @@ SET(HEADERS src/ICLUtils/Any.h
             src/ICLUtils/Array2D.h
 	    src/ICLUtils/BasicTypes.h
 	    src/ICLUtils/ClippedCast.h
+	    src/ICLUtils/CLBuffer.h
+	    src/ICLUtils/CLException.h
+	    src/ICLUtils/CLKernel.h
+	    src/ICLUtils/CLProgram.h 
 	    src/ICLUtils/CompatMacros.h
-            src/ICLUtils/ConfigFile.h
-            src/ICLUtils/Configurable.h
-            src/ICLUtils/ConfigurableProxy.h
+        src/ICLUtils/ConfigFile.h
+        src/ICLUtils/Configurable.h
+        src/ICLUtils/ConfigurableProxy.h
 	    src/ICLUtils/ConsoleProgress.h
 	    src/ICLUtils/Exception.h
 	    src/ICLUtils/FastMedianList.h
