@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLGeom/demos/scene-shadows/scene-shadows.cpp          **
 ** Module : ICLGeom                                                **
-** Authors: Christof Elbrechter, Erik Weitnauer                    **
+** Authors: Christof Elbrechter, Erik Weitnauer, Matthias Esau     **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -142,7 +142,7 @@ void init(){
 float timer = 0.f;
 void run(){
   scene.lock();
-  timer += 0.01f;
+  timer += 0.05f;
   const float r = gui["r"];
   const float h = -10;
 

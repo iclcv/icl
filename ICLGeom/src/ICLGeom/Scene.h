@@ -327,6 +327,7 @@ namespace icl{
       
       /// the shader used for per pixel lighting and shadowmaps
       mutable icl::qt::GLFragmentShader* m_perPixelShader;
+      mutable icl::qt::GLFragmentShader* m_perPixelShaderTexture;
       
       /// creates the FBO and Texture
       void createShadowFBO(unsigned int size = 512, unsigned int lights = 8) const;

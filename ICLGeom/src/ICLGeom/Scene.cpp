@@ -277,6 +277,9 @@ namespace icl{
   #ifdef HAVE_GLX
   #ifdef HAVE_QT
       freeAllPBuffers();
+      delete m_perPixelShader;
+      delete m_perPixelShaderTexture;
+      freeShadowFBO();
   #endif
   #endif
     }
@@ -444,6 +447,7 @@ namespace icl{
 
     void Scene::recompilePerPixelShader() const {
       delete m_perPixelShader;
+      delete m_perPixelShaderTexture;
       std::stringstream fragmentBuffer;
       std::stringstream vertexBuffer;
       
@@ -469,6 +473,7 @@ namespace icl{
       <<"  V = gl_ModelViewMatrix * gl_Vertex;\n"
       <<"  vertex_normal = gl_NormalMatrix * gl_Normal;\n"
       <<"  gl_FrontColor = gl_Color;\n"
+      <<"  gl_TexCoord[0] = gl_MultiTexCoord0;\n"
       <<"  gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\n";
 
       //creating the fragment shader
@@ -481,16 +486,20 @@ namespace icl{
       }
       fragmentBuffer
       <<"vec3 N;\n"
+      <<"vec4 texture_Color;\n"
       <<"uniform sampler2D shadow_map;\n"
+      <<"uniform sampler2D image_map;\n"
       <<"void computeColors(int light, out vec3 ambient, out vec3 diffuse, out vec3 specular){\n"
       <<"  vec3 L = normalize(gl_LightSource[light].position.xyz - V.xyz);\n"
       <<"  vec3 E = normalize(-V.xyz);\n"
       <<"  vec3 R = normalize(-reflect(L, N));\n"
+      <<"  vec3 color = gl_Color.rgb;\n"
+      <<"  if(use_texture)color = gl_Color.rgb * texture_Color.rgb;\n"
       <<"  ambient = gl_LightSource[light].ambient.rgb\n"
-      <<"            * gl_Color.rgb;\n"
+      <<"            * color;\n"
       <<"  diffuse = gl_LightSource[light].diffuse.rgb\n"
       <<"            * max(dot(N,L),0.0)\n"
-      <<"            * gl_Color.rgb;\n"
+      <<"            * color;\n"
       <<"  specular = gl_LightSource[light].specular.rgb\n"
       <<"             * pow(max(0.0,dot(R,E)),gl_FrontMaterial.shininess)\n"
       <<"             * gl_FrontMaterial.specular.rgb;\n"
@@ -522,6 +531,7 @@ namespace icl{
       <<"}\n"
       <<"void main(void){\n"
       <<"  N = normalize(vertex_normal);\n"
+      <<"  texture_Color = texture2D(image_map, gl_TexCoord[0].st);\n"
       <<"  vec3 color = vec3(0,0,0);\n";
       
       
@@ -538,9 +548,12 @@ namespace icl{
         }
       }
       vertexBuffer << "}\n";
-      fragmentBuffer << "  gl_FragColor = vec4(color,gl_Color.a);\n}\n";
+      fragmentBuffer
+      <<"  gl_FragColor =  vec4(color,gl_Color.a);\n"
+      <<"  if(use_texture)gl_FragColor =  vec4(color,gl_Color.a * texture_Color.a);\n}\n";
       
-      m_perPixelShader = new GLFragmentShader( vertexBuffer.str(), fragmentBuffer.str());
+      m_perPixelShader = new GLFragmentShader( vertexBuffer.str(), "bool use_texture = false;\n" + fragmentBuffer.str());
+      m_perPixelShaderTexture = new GLFragmentShader( vertexBuffer.str(), "bool use_texture = true;\n" + fragmentBuffer.str());
     }
 
     void Scene::renderSceneObjectRecursive(const vector<Mat> *project2shadow, SceneObject *o) const{
@@ -588,23 +601,25 @@ namespace icl{
       }else{
         glDisable(GL_DEPTH_TEST);
       }
-      
-      //check if the matrices have been set(indicates if lighting is being used)
+      GLFragmentShader *activeShader = 0;
+      //check if the matrices have been set(indicates if improved lighting is being used)
       if(project2shadow) {
-        if(o->getFragmentShader()){  
+        if(o->getFragmentShader()){
+          activeShader = o->getFragmentShader();
           o->getFragmentShader()->activate();
           o->getFragmentShader()->setUniform("shadowMat", *project2shadow);
           o->getFragmentShader()->setUniform("shadow_map", 7);
+          o->getFragmentShader()->setUniform("image_map", 0);
         } 
         else {
+          activeShader = m_perPixelShader;
           m_perPixelShader->activate();
-          if(project2shadow){
-            m_perPixelShader->setUniform("shadowMat", *project2shadow);
-            m_perPixelShader->setUniform("shadow_map", 7);
-          }
+          m_perPixelShader->setUniform("shadowMat", *project2shadow);
+          m_perPixelShader->setUniform("shadow_map", 7);
         }
       }else {
         if(o->getFragmentShader()){  
+          activeShader = o->getFragmentShader();
           o->getFragmentShader()->activate();
         } 
       }
@@ -643,7 +658,17 @@ namespace icl{
           for(unsigned int j=0;j<o->m_primitives.size();++j){
             Primitive *p = o->m_primitives[j];
             if(o->isVisible(p->type)){
-              p->render(ctx);
+              if((p->type & (Primitive::text | Primitive::texture)) > 0 && project2shadow) {
+                m_perPixelShaderTexture->activate();
+                m_perPixelShaderTexture->setUniform("shadowMat", *project2shadow);
+                m_perPixelShaderTexture->setUniform("shadow_map", 7);
+                m_perPixelShaderTexture->setUniform("image_map", 0);
+                p->render(ctx);
+                m_perPixelShader->deactivate();
+                activeShader->activate();
+              } else {
+                p->render(ctx);
+              }
             }
           }
         }
@@ -702,13 +727,7 @@ namespace icl{
       }
       glMatrixMode(GL_MODELVIEW);
       glPopMatrix();
-      if(project2shadow) {
-        if(o->getFragmentShader()){
-          o->getFragmentShader()->deactivate();
-        }else {
-          m_perPixelShader->deactivate();
-        }
-      }
+      if(activeShader) activeShader->deactivate();
   
       o->unlock();
     }
