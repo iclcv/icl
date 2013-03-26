@@ -270,8 +270,10 @@ namespace icl{
       addProperty("world frame size","float","[0,100000000]",100);
       addProperty("light object size","float","[0,100000000]",30);
       addProperty("background color","color","",Color(0,0,0));
-      addProperty("use improved shading","flag","",false);
-      addProperty("set shadow resolution","menu","64,256,512,1024,2048",512);
+      addProperty("shadows.use improved shading","flag","",false);
+      addProperty("shadows.cull object front for shadows","flag","",true);
+      addProperty("shadows.shadow resolution","menu","64,256,512,1024,2048",512);
+      addProperty("shadows.shadow bias","float","[-0.1,0.1]",0.0001);
     }
     Scene::~Scene(){
   #ifdef HAVE_GLX
@@ -445,18 +447,11 @@ namespace icl{
     }
   #ifdef HAVE_QT
 
-    void Scene::recompilePerPixelShader() const {
+    void Scene::recompilePerPixelShader(int numShadowLights) const {
       delete m_perPixelShader;
       delete m_perPixelShaderTexture;
       std::stringstream fragmentBuffer;
       std::stringstream vertexBuffer;
-      
-      unsigned int numShadowLights = 8;
-      for(unsigned int i = 0; i < 8; i++) {
-        if(m_previousLightState[i] == 2) {
-          numShadowLights = i + 1;
-        }
-      }
       
       //creating the vertex shader
       vertexBuffer
@@ -482,13 +477,15 @@ namespace icl{
       <<"varying vec3 vertex_normal;\n";
       if(numShadowLights>0) {
         fragmentBuffer
-        <<"varying vec4 shadow_coord["<<numShadowLights<<"];\n";
+        <<"varying vec4 shadow_coord["<<numShadowLights<<"];\n"
+        <<"const int num_shadow_lights = " <<numShadowLights<<";\n";
       }
       fragmentBuffer
       <<"vec3 N;\n"
       <<"vec4 texture_Color;\n"
       <<"uniform sampler2D shadow_map;\n"
       <<"uniform sampler2D image_map;\n"
+      <<"uniform float bias;\n"
       <<"void computeColors(int light, out vec3 ambient, out vec3 diffuse, out vec3 specular){\n"
       <<"  vec3 L = normalize(gl_LightSource[light].position.xyz - V.xyz);\n"
       <<"  vec3 E = normalize(-V.xyz);\n"
@@ -503,26 +500,29 @@ namespace icl{
       <<"  specular = gl_LightSource[light].specular.rgb\n"
       <<"             * pow(max(0.0,dot(R,E)),gl_FrontMaterial.shininess)\n"
       <<"             * gl_FrontMaterial.specular.rgb;\n"
-      <<"}\n"
-      <<"vec3 computeLightWithShadow(int light){\n"
-      <<"  vec3 ambient, diffuse, specular;\n"
-      <<"  //compute phong lighting\n"
-      <<"  computeColors(light, ambient, diffuse, specular);\n"
-      <<"  //get screen space coordinates\n"
-      <<"  vec4 shadow_divided = shadow_coord[light] / shadow_coord[light].w;\n"
-      <<"  //check if the coordinate is out of bounds\n"
-      <<"  if(shadow_divided.s < -1.0 || shadow_divided.s > 1.0) return ambient + diffuse + specular;\n"
-      <<"  //transform to texture space coordinates\n"
-      <<"  shadow_divided = shadow_divided * 0.5 + 0.5;\n"
-      <<"  shadow_divided.s = (float(light) + shadow_divided.s) * 0.125;\n"
-      <<"  //get shadow depth + offset\n"
-      <<"  float bias = 0.0001;\n"
-      <<"  float shadow_depth = texture2D(shadow_map,shadow_divided.st).z + bias;\n"
-      <<"  //check if fragment is in shadow\n"
-      <<"  if(shadow_coord[light].w > 0.0)\n"
-      <<"    if(shadow_divided.z > shadow_depth) return ambient;\n"
-      <<"  return ambient + diffuse + specular;\n"
-      <<"}\n"
+      <<"}\n";
+      if(numShadowLights>0) {
+        fragmentBuffer
+        <<"vec3 computeLightWithShadow(int light, int shadow){\n"
+        <<"  vec3 ambient, diffuse, specular;\n"
+        <<"  //compute phong lighting\n"
+        <<"  computeColors(light, ambient, diffuse, specular);\n"
+        <<"  //get screen space coordinates\n"
+        <<"  vec4 shadow_divided = shadow_coord[shadow] / shadow_coord[shadow].w;\n"
+        <<"  //check if the coordinate is out of bounds\n"
+        <<"  if(shadow_divided.s < -1.0 || shadow_divided.s > 1.0) return ambient + diffuse + specular;\n"
+        <<"  //transform to texture space coordinates\n"
+        <<"  shadow_divided = shadow_divided * 0.5 + 0.5;\n"
+        <<"  shadow_divided.s = (float(shadow) + shadow_divided.s) / float(num_shadow_lights);\n"
+        <<"  //get shadow depth + offset\n"
+        <<"  float shadow_depth = texture2D(shadow_map,shadow_divided.st).z + bias;\n"
+        <<"  //check if fragment is in shadow\n"
+        <<"  if(shadow_coord[shadow].w > 0.0)\n"
+        <<"    if(shadow_divided.z > shadow_depth) return ambient;\n"
+        <<"  return ambient + diffuse + specular;\n"
+        <<"}\n";
+      }
+      fragmentBuffer
       <<"vec3 computeLight(int light){\n"
       <<"  vec3 ambient, diffuse, specular;\n"
       <<"  //compute phong lighting\n"
@@ -534,14 +534,16 @@ namespace icl{
       <<"  texture_Color = texture2D(image_map, gl_TexCoord[0].st);\n"
       <<"  vec3 color = vec3(0,0,0);\n";
       
-      
+      int currentShadow = 0;
       for(unsigned int i = 0; i < 8; i++) {
         switch(m_previousLightState[i]) {
           case 1:
             fragmentBuffer << "  color += computeLight("<<i<<");\n";
+            break;
           case 2:
-            vertexBuffer << "  shadow_coord["<<i<<"] = shadowMat["<<i<<"] * V;\n";
-            fragmentBuffer << "  color += computeLightWithShadow("<<i<<");\n";
+            vertexBuffer << "  shadow_coord["<<currentShadow<<"] = shadowMat["<<currentShadow<<"] * V;\n";
+            fragmentBuffer << "  color += computeLightWithShadow("<<i<<","<<currentShadow<<");\n";
+            currentShadow++;
             break;
           default:
             break;
@@ -601,12 +603,15 @@ namespace icl{
       }else{
         glDisable(GL_DEPTH_TEST);
       }
+      
+      float bias = ((Configurable*)this)->getPropertyValue("shadows.shadow bias");
       GLFragmentShader *activeShader = 0;
       //check if the matrices have been set(indicates if improved lighting is being used)
       if(project2shadow) {
         if(o->getFragmentShader()){
           activeShader = o->getFragmentShader();
           o->getFragmentShader()->activate();
+          o->getFragmentShader()->setUniform("bias", bias);
           o->getFragmentShader()->setUniform("shadowMat", *project2shadow);
           o->getFragmentShader()->setUniform("shadow_map", 7);
           o->getFragmentShader()->setUniform("image_map", 0);
@@ -614,6 +619,7 @@ namespace icl{
         else {
           activeShader = m_perPixelShader;
           m_perPixelShader->activate();
+          m_perPixelShader->setUniform("bias", bias);
           m_perPixelShader->setUniform("shadowMat", *project2shadow);
           m_perPixelShader->setUniform("shadow_map", 7);
         }
@@ -660,6 +666,7 @@ namespace icl{
             if(o->isVisible(p->type)){
               if((p->type & (Primitive::text | Primitive::texture)) > 0 && project2shadow) {
                 m_perPixelShaderTexture->activate();
+                m_perPixelShaderTexture->setUniform("bias", bias);
                 m_perPixelShaderTexture->setUniform("shadowMat", *project2shadow);
                 m_perPixelShaderTexture->setUniform("shadow_map", 7);
                 m_perPixelShaderTexture->setUniform("image_map", 0);
@@ -800,24 +807,14 @@ namespace icl{
       }
       
       bool lightingEnabled = ((Configurable*)this)->getPropertyValue("enable lighting");
-      bool improvedShadingEnabled = ((Configurable*)this)->getPropertyValue("use improved shading");
+      bool improvedShadingEnabled = ((Configurable*)this)->getPropertyValue("shadows.use improved shading");
       
-      vector<Mat> project2shadow(8);
+      vector<Mat> project2shadow;
       if(lightingEnabled && improvedShadingEnabled) {
-        ///for some reason for glGenFramebuffers to work a shader programm has to have been loaded once
-        if(!m_perPixelShader) {
-          recompilePerPixelShader();
-          m_perPixelShader->activate();
-          m_perPixelShader->deactivate();
-        }
         
-        unsigned int resolution = ((Configurable*)this)->getPropertyValue("set shadow resolution");
-        if(shadowResolution != resolution) {
-          freeShadowFBO();
-          createShadowFBO(resolution,8);
-        }
-        
+        //update cameras and check if the lightsetup has changed
         bool lightSetupChanged = false;
+        int numShadowLights = 0;
         for(int i=0;i<8;++i){
           if(m_lights[i]) {
             m_lights[i]->updatePositions(*this,getCamera(camIndex));
@@ -828,10 +825,7 @@ namespace icl{
                   lightSetupChanged = true;
                 }
                 m_previousLightState[i] = 2;
-                renderShadow(i,shadowResolution);
-                project2shadow.at(i) = m_lights[i]->getShadowCam().getProjectionMatrixGL() 
-                                * m_lights[i]->getShadowCam().getCSTransformationMatrixGL() 
-                                * cam.getCSTransformationMatrixGL().inv();
+                numShadowLights++;
               } else {
                 if(m_previousLightState[i] != 1) {
                   lightSetupChanged = true;
@@ -847,13 +841,36 @@ namespace icl{
           }
         }
         
-	      //bind texture
-        glActiveTextureARB(GL_TEXTURE7);
-        glBindTexture(GL_TEXTURE_2D,shadowTexture);
-        
         if(lightSetupChanged) {
-          recompilePerPixelShader();
+          recompilePerPixelShader(numShadowLights);
+          m_perPixelShader->activate();
+          m_perPixelShader->deactivate();
         }
+        
+        unsigned int resolution = ((Configurable*)this)->getPropertyValue("shadows.shadow resolution");
+        if(shadowResolution != resolution || lightSetupChanged) {
+          freeShadowFBO();
+          if(numShadowLights > 0) {
+            createShadowFBO(resolution,numShadowLights); 
+          }
+        }
+        
+        //bind texture
+        if(shadowResolution>0) {
+          glActiveTextureARB(GL_TEXTURE7);
+          glBindTexture(GL_TEXTURE_2D,shadowTexture);
+        }
+          
+        int currentShadow = 0;
+        for(int i = 0; i < 8; i++) {
+          if(m_previousLightState[i] == 2) {
+            renderShadow(i, currentShadow++, shadowResolution);
+            project2shadow.push_back(m_lights[i]->getShadowCam().getProjectionMatrixGL() 
+                            * m_lights[i]->getShadowCam().getCSTransformationMatrixGL() 
+                            * cam.getCSTransformationMatrixGL().inv());
+          }
+        }
+        
       }else {
         freeShadowFBO();
         if(lightingEnabled) {
@@ -982,18 +999,18 @@ namespace icl{
   
     }
     
-    void Scene::renderShadow(const unsigned int light, unsigned int size) const{
+    void Scene::renderShadow(const unsigned int light, const unsigned int shadow, unsigned int size) const{
 	    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, shadowFBO);
 	
-	    //Using the fixed pipeline to render to the depthbuffer
+	    //Using the fixed pipeline
 	    glUseProgram(0);
 	
-	    // In the case we render the shadowmap to a higher resolution, the viewport must be modified accordingly.
-	    glViewport(size * light,0,size,size);
-	    glScissor(size * light,0,size,size);
-	    glEnable(GL_SCISSOR_TEST);
+	    // Set the viewport to the slot in the buffer
+	    glViewport(size * shadow,0,size,size);
 	
 	    // Clear previous frame values
+	    glScissor(size * shadow,0,size,size);
+	    glEnable(GL_SCISSOR_TEST);
 	    glClear(GL_DEPTH_BUFFER_BIT);
 	
 	    //Disable color rendering, we only want to write to the Z-Buffer
@@ -1008,7 +1025,13 @@ namespace icl{
       glEnable(GL_DEPTH_TEST);
       
 	    glEnable(GL_CULL_FACE);
-	    glCullFace(GL_FRONT);
+	    
+      bool cullFront = ((Configurable*)this)->getPropertyValue("shadows.cull object front for shadows");
+	    if(cullFront) {
+	      glCullFace(GL_FRONT);
+      } else {
+	      glCullFace(GL_BACK);
+      }
 	    
       for(size_t i=0;i<m_objects.size();++i){
         renderSceneObjectRecursiveShadow((SceneObject*)m_objects[i].get());
@@ -1105,7 +1128,7 @@ namespace icl{
       return m_glCallbacks.back().get();
     }
     
-    void Scene::createShadowFBO(unsigned int size, unsigned int lights) const{
+    void Scene::createShadowFBO(unsigned int size, unsigned int shadows) const{
 	    GLenum FBOstatus;
 
 	    glGenTextures(1, &shadowTexture);
@@ -1117,7 +1140,7 @@ namespace icl{
 	    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
 	    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
 
-	    glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, size * lights, size, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
+	    glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, size * shadows, size, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
 	    glBindTexture(GL_TEXTURE_2D, 0);
 
 	    // create a framebuffer object

@@ -330,7 +330,7 @@ namespace icl{
       mutable icl::qt::GLFragmentShader* m_perPixelShaderTexture;
       
       /// creates the FBO and Texture
-      void createShadowFBO(unsigned int size = 512, unsigned int lights = 8) const;
+      void createShadowFBO(unsigned int size = 512, unsigned int shadows = 1) const;
       
       /// frees all resources that are needed by the shadowmap
       void freeShadowFBO() const;
@@ -435,10 +435,10 @@ namespace icl{
       void renderScene(int camIndex, qt::ICLDrawWidget3D *widget=0) const;
       
       /// renders the shadowmap
-      void renderShadow(const unsigned int light, unsigned int size = 512) const;
+      void renderShadow(const unsigned int light, const unsigned int shadow, unsigned int size = 512) const;
       
       /// recompiles the shader for the current light configuration
-      void recompilePerPixelShader() const;
+      void recompilePerPixelShader(int numShadowLights) const;
       
       //// internally used rendering method for recursive rendering of the scene graph of shadowcasting objects
       void renderSceneObjectRecursiveShadow(SceneObject *o) const;
