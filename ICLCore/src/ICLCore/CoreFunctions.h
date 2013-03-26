@@ -302,8 +302,38 @@ namespace icl {
       ippsConvert_64f32s_Sfs(poSrcStart,poDst,(poSrcEnd-poSrcStart),ippRndNear,0);
     }
     /** \endcond */
-  #endif 
+  #elif defined __SSE2__ || _MSC_VER >= 1300
+    /** \cond */ 
+    #include "emmintrin.h"
+    #if defined __SSE3__ || _MSC_VER >= 1500
+      #include "pmmintrin.h"
+    #endif
+
+    /// from icl8u functions
+    template<> void convert<icl8u,icl32f>(const icl8u *poSrcStart,const icl8u *poSrcEnd, icl32f *poDst);
+
+    /// from icl16s functions
+    template<> void convert<icl16s,icl32s>(const icl16s *poSrcStart,const icl16s *poSrcEnd, icl32s *poDst);
+    template<> void convert<icl16s,icl32f>(const icl16s *poSrcStart,const icl16s *poSrcEnd, icl32f *poDst);
+    template<> void convert<icl16s,icl64f>(const icl16s *poSrcStart,const icl16s *poSrcEnd, icl64f *poDst);
+    
+    // from icl32s functions
+    template<> void convert<icl32s,icl16s>(const icl32s *poSrcStart,const icl32s *poSrcEnd, icl16s *poDst);
+    template<> void convert<icl32s,icl32f>(const icl32s *poSrcStart,const icl32s *poSrcEnd, icl32f *poDst);
+    template<> void convert<icl32s,icl64f>(const icl32s *poSrcStart,const icl32s *poSrcEnd, icl64f *poDst);
   
+    // from icl32f functions
+    template <> void convert<icl32f,icl8u>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl8u *poDst);
+    template <> void convert<icl32f,icl16s>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl16s *poDst);
+    template <> void convert<icl32f,icl32s>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl32s *poDst);
+    template <> void convert<icl32f,icl64f>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl64f *poDst);
+  
+    // from icl64f functions 
+    template<> void convert<icl64f,icl32f>(const icl64f *poSrcStart,const icl64f *poSrcEnd, icl32f *poDst);
+    template <> void convert<icl64f,icl32s>(const icl64f *poSrcStart,const icl64f *poSrcEnd, icl32s *poDst);
+
+    /** \endcond */
+  #endif 
   
    
     /// function, that calculates the mininum and the maximum value of three value \ingroup GENERAL

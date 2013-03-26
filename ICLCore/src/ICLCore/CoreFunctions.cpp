@@ -291,6 +291,459 @@ namespace icl{
   
     // }}}
 
+
+    // {{{ convert
+
+  
+
+  #ifdef HAVE_IPP 
+  #elif defined __SSE2__
+    // from icl8u functions
+    template<> void convert<icl8u,icl32f>(const icl8u *poSrcStart,const icl8u *poSrcEnd, icl32f *poDst) {
+	// cast the first unaligned values
+	for(; (((uintptr_t)poDst) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
+		*poDst = static_cast<icl32f>(*poSrcStart);
+	}
+
+	// cast four values at the same time
+	for (; poSrcStart < poSrcEnd-15; poSrcStart += 16, poDst += 16) {
+		// zero vector
+		const __m128i vk0 = _mm_set1_epi8(0);
+
+		// load 8u values
+		__m128i v = _mm_loadu_si128((__m128i*)poSrcStart);
+
+		// convert to 16u values
+	        __m128i vl = _mm_unpacklo_epi8(v, vk0);
+	        __m128i vh = _mm_unpackhi_epi8(v, vk0);
+		// convert to 32u values
+	        __m128i vll = _mm_unpacklo_epi16(vl, vk0);
+	        __m128i vlh = _mm_unpackhi_epi16(vl, vk0);
+	        __m128i vhl = _mm_unpacklo_epi16(vh, vk0);
+	        __m128i vhh = _mm_unpackhi_epi16(vh, vk0);
+		// convert to 32f values
+		__m128 rvll = _mm_cvtepi32_ps(vll);
+		__m128 rvlh = _mm_cvtepi32_ps(vlh);
+		__m128 rvhl = _mm_cvtepi32_ps(vhl);
+		__m128 rvhh = _mm_cvtepi32_ps(vhh);
+
+		// store 32f values
+		_mm_store_ps(poDst, rvll);
+		_mm_store_ps(poDst+4, rvlh);
+		_mm_store_ps(poDst+8, rvhl);
+		_mm_store_ps(poDst+12, rvhh);
+	}
+
+	// cast the last values
+	for(; poSrcStart < poSrcEnd; ++poSrcStart, ++poDst) {
+		*poDst = static_cast<icl32f>(*poSrcStart);
+	}
+    }
+
+
+    /// from icl16s functions
+    template<> void convert<icl16s,icl32s>(const icl16s *poSrcStart,const icl16s *poSrcEnd, icl32s *poDst) {
+	// cast the first unaligned values
+	for(; (((uintptr_t)poDst) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
+		*poDst = static_cast<icl32f>(*poSrcStart);
+	}
+
+	// cast four values at the same time
+	for (; poSrcStart < poSrcEnd-7; poSrcStart += 8, poDst += 8) {
+		// zero vector
+		const __m128i vk0 = _mm_set1_epi16(0);
+
+		// load 16s values
+		__m128i v = _mm_loadu_si128((__m128i*)poSrcStart);
+
+		// convert to 32s values
+	        __m128i vl = _mm_unpacklo_epi16(v, vk0);
+	        __m128i vh = _mm_unpackhi_epi16(v, vk0);
+
+		// store 32s values
+		_mm_store_si128((__m128i*)poDst, vl);
+		_mm_store_si128((__m128i*)(poDst+4), vh);
+	}
+
+	// cast the last values
+	for(; poSrcStart < poSrcEnd; ++poSrcStart, ++poDst) {
+		*poDst = static_cast<icl32f>(*poSrcStart);
+	}
+    }
+
+    template<> void convert<icl16s,icl32f>(const icl16s *poSrcStart,const icl16s *poSrcEnd, icl32f *poDst) {
+	// cast the first unaligned values
+	for(; (((uintptr_t)poDst) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
+		*poDst = *poSrcStart < -std::numeric_limits<icl32f>::max() ? -std::numeric_limits<icl32f>::max() : 
+        		 *poSrcStart > std::numeric_limits<icl32f>::max() ? std::numeric_limits<icl32f>::max() :
+			 static_cast<icl32f>(*poSrcStart);
+	}
+
+	// cast four values at the same time
+	for (; poSrcStart < poSrcEnd-7; poSrcStart += 8, poDst += 8) {
+		// zero vector
+		const __m128i vk0 = _mm_set1_epi16(0);
+		// load 16s values
+		__m128i v = _mm_loadu_si128((__m128i*)poSrcStart);
+
+		// convert to 32s values
+	        __m128i vl = _mm_unpacklo_epi16(v, vk0);
+	        __m128i vh = _mm_unpackhi_epi16(v, vk0);
+
+		// convert to 32f values
+		__m128 rvl = _mm_cvtepi32_ps(vl);
+		__m128 rvh = _mm_cvtepi32_ps(vh);
+
+		// store 32f values
+		_mm_store_ps(poDst, rvl);
+		_mm_store_ps(poDst+4, rvh);
+	}
+
+	// cast the last values
+	for(; poSrcStart < poSrcEnd; ++poSrcStart, ++poDst) {
+		*poDst = *poSrcStart < -std::numeric_limits<icl32f>::max() ? -std::numeric_limits<icl32f>::max() : 
+        		 *poSrcStart > std::numeric_limits<icl32f>::max() ? std::numeric_limits<icl32f>::max() :
+			 static_cast<icl32f>(*poSrcStart);
+	}
+    }
+
+    template<> void convert<icl16s,icl64f>(const icl16s *poSrcStart,const icl16s *poSrcEnd, icl64f *poDst) {
+	// cast the first unaligned values
+	for(; (((uintptr_t)poDst) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
+		*poDst = *poSrcStart < -std::numeric_limits<icl64f>::max() ? -std::numeric_limits<icl64f>::max() : 
+        		 *poSrcStart > std::numeric_limits<icl64f>::max() ? std::numeric_limits<icl64f>::max() :
+			 static_cast<icl64f>(*poSrcStart);
+	}
+
+	// cast four values at the same time
+	for (; poSrcStart < poSrcEnd-7; poSrcStart += 8, poDst += 8) {
+		// zero vector
+		const __m128i vk0 = _mm_set1_epi16(0);
+
+		// load 16s values
+		__m128i v = _mm_loadu_si128((__m128i*)poSrcStart);
+
+		// convert to 32s values
+	        __m128i vl = _mm_unpacklo_epi16(v, vk0);
+	        __m128i vh = _mm_unpackhi_epi16(v, vk0);
+
+		// convert to 64f values
+		__m128d vll = _mm_cvtepi32_pd(vl);
+		__m128d vlh = _mm_cvtepi32_pd(_mm_shuffle_epi32(vl, _MM_SHUFFLE(1, 0, 3, 2)));
+		__m128d vhl = _mm_cvtepi32_pd(vh);
+		__m128d vhh = _mm_cvtepi32_pd(_mm_shuffle_epi32(vh, _MM_SHUFFLE(1, 0, 3, 2)));
+
+		// store 64f values
+		_mm_store_pd(poDst,   vll);
+		_mm_store_pd(poDst+2, vlh);
+		_mm_store_pd(poDst+4, vhl);
+		_mm_store_pd(poDst+6, vhh);
+	}
+
+	// cast the last values
+	for(; poSrcStart < poSrcEnd; ++poSrcStart, ++poDst) {
+		*poDst = *poSrcStart < -std::numeric_limits<icl64f>::max() ? -std::numeric_limits<icl64f>::max() : 
+        		 *poSrcStart > std::numeric_limits<icl64f>::max() ? std::numeric_limits<icl64f>::max() :
+			 static_cast<icl64f>(*poSrcStart);
+	}
+    }
+    
+
+    // from icl32s functions
+    template<> void convert<icl32s,icl16s>(const icl32s *poSrcStart,const icl32s *poSrcEnd, icl16s *poDst) {
+	// cast the first unaligned values
+	for(; (((uintptr_t)poSrcStart) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
+		*poDst = *poSrcStart < std::numeric_limits<icl16s>::min() ? std::numeric_limits<icl16s>::min() : 
+        		 *poSrcStart > std::numeric_limits<icl16s>::max() ? std::numeric_limits<icl16s>::max() :
+			 static_cast<icl16s>(*poSrcStart);
+	}
+
+	// cast four values at the same time
+	for (; poSrcStart < poSrcEnd-7; poSrcStart += 8, poDst += 8) {
+		// load 32s values
+		__m128i v1 = _mm_load_si128((__m128i*)poSrcStart);
+		__m128i v2 = _mm_load_si128((__m128i*)(poSrcStart+4));
+
+		// convert to 16s values; store 16s values
+		_mm_storeu_si128((__m128i*)poDst, _mm_packs_epi32(v1, v2));
+	}
+
+	// cast the last values
+	for(; poSrcStart < poSrcEnd; ++poSrcStart, ++poDst) {
+		*poDst = *poSrcStart < std::numeric_limits<icl16s>::min() ? std::numeric_limits<icl16s>::min() : 
+        		 *poSrcStart > std::numeric_limits<icl16s>::max() ? std::numeric_limits<icl16s>::max() :
+			 static_cast<icl16s>(*poSrcStart);
+	}
+    }
+
+    template<> void convert<icl32s,icl32f>(const icl32s *poSrcStart,const icl32s *poSrcEnd, icl32f *poDst) {
+	// cast the first unaligned values
+	for(; (((uintptr_t)poDst) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
+		*poDst = *poSrcStart < -std::numeric_limits<icl32f>::max() ? -std::numeric_limits<icl32f>::max() : 
+        		 *poSrcStart > std::numeric_limits<icl32f>::max() ? std::numeric_limits<icl32f>::max() :
+			 static_cast<icl32f>(*poSrcStart);
+	}
+
+	// cast four values at the same time
+	for (; poSrcStart < poSrcEnd-3; poSrcStart += 4, poDst += 4) {
+		// load 32s values
+		__m128i v = _mm_loadu_si128((__m128i*)poSrcStart);
+
+		// convert to 32f values; store 32f values
+		_mm_store_ps(poDst, _mm_cvtepi32_ps(v));
+	}
+
+	// cast the last values
+	for(; poSrcStart < poSrcEnd; ++poSrcStart, ++poDst) {
+		*poDst = *poSrcStart < -std::numeric_limits<icl32f>::max() ? -std::numeric_limits<icl32f>::max() : 
+        		 *poSrcStart > std::numeric_limits<icl32f>::max() ? std::numeric_limits<icl32f>::max() :
+			 static_cast<icl32f>(*poSrcStart);
+	}
+    }
+
+    template<> void convert<icl32s,icl64f>(const icl32s *poSrcStart,const icl32s *poSrcEnd, icl64f *poDst) {
+	// cast the first unaligned values
+	for(; (((uintptr_t)poDst) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
+		*poDst = *poSrcStart < -std::numeric_limits<icl64f>::max() ? -std::numeric_limits<icl64f>::max() : 
+        		 *poSrcStart > std::numeric_limits<icl64f>::max() ? std::numeric_limits<icl64f>::max() :
+			 static_cast<icl64f>(*poSrcStart);
+	}
+
+	// cast four values at the same time
+	for (; poSrcStart < poSrcEnd-3; poSrcStart += 4, poDst += 4) {
+		// load 32s values
+		__m128i v = _mm_loadu_si128((__m128i*)poSrcStart);
+
+		// convert to 64f values
+		__m128d vl = _mm_cvtepi32_pd(v);
+		__m128d vh = _mm_cvtepi32_pd(_mm_shuffle_epi32(v, _MM_SHUFFLE(1, 0, 3, 2)));
+
+		// store 64f values
+		_mm_store_pd(poDst,   vl);
+		_mm_store_pd(poDst+2, vh);
+	}
+
+	// cast the last values
+	for(; poSrcStart < poSrcEnd; ++poSrcStart, ++poDst) {
+		*poDst = *poSrcStart < -std::numeric_limits<icl64f>::max() ? -std::numeric_limits<icl64f>::max() : 
+        		 *poSrcStart > std::numeric_limits<icl64f>::max() ? std::numeric_limits<icl64f>::max() :
+			 static_cast<icl64f>(*poSrcStart);
+	}
+    }
+
+  
+    // from icl32f functions
+    template <> void convert<icl32f,icl8u>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl8u *poDst) {
+	// cast the first unaligned values
+	for(; (((uintptr_t)poSrcStart) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
+		*poDst = *poSrcStart < std::numeric_limits<icl8u>::min() ? std::numeric_limits<icl8u>::min() : 
+        		 *poSrcStart > std::numeric_limits<icl8u>::max() ? std::numeric_limits<icl8u>::max() :
+			 static_cast<icl8u>(*poSrcStart);
+	}
+
+        // save current rounding mode
+        unsigned int initial_mode = _MM_GET_ROUNDING_MODE();
+        // change rounding mode
+        _MM_SET_ROUNDING_MODE(_MM_ROUND_DOWN);
+	// cast four values at the same time
+	for (; poSrcStart < poSrcEnd-15; poSrcStart += 16, poDst += 16) {
+		// load 32f values
+		__m128 v0 = _mm_load_ps(poSrcStart);
+		__m128 v1 = _mm_load_ps(poSrcStart+4);
+		__m128 v2 = _mm_load_ps(poSrcStart+8);
+		__m128 v3 = _mm_load_ps(poSrcStart+12);
+
+		// convert to 32s values
+		__m128i v0i = _mm_cvttps_epi32(v0);
+		__m128i v1i = _mm_cvttps_epi32(v1);
+		__m128i v2i = _mm_cvttps_epi32(v2);
+		__m128i v3i = _mm_cvttps_epi32(v3);
+
+		// convert to 16s values
+		__m128i vl = _mm_packs_epi32(v0i, v1i);
+		__m128i vh = _mm_packs_epi32(v2i, v3i);
+
+		// convert to 8u values
+		_mm_storeu_si128((__m128i*)poDst, _mm_packus_epi16(vl, vh));
+	}
+        // restore initial rounding mode
+        _MM_SET_ROUNDING_MODE(initial_mode);
+
+	// cast the last values
+	for(; poSrcStart < poSrcEnd; ++poSrcStart, ++poDst) {
+		*poDst = *poSrcStart < std::numeric_limits<icl8u>::min() ? std::numeric_limits<icl8u>::min() : 
+        		 *poSrcStart > std::numeric_limits<icl8u>::max() ? std::numeric_limits<icl8u>::max() :
+			 static_cast<icl8u>(*poSrcStart);
+	}
+    } 
+
+    template <> void convert<icl32f,icl16s>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl16s *poDst) {
+	// cast the first unaligned values
+	for(; (((uintptr_t)poSrcStart) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
+		*poDst = *poSrcStart < std::numeric_limits<icl16s>::min() ? std::numeric_limits<icl16s>::min() : 
+        		 *poSrcStart > std::numeric_limits<icl16s>::max() ? std::numeric_limits<icl16s>::max() :
+			 static_cast<icl16s>(*poSrcStart);
+	}
+
+	// cast four values at the same time
+	for (; poSrcStart < poSrcEnd-7; poSrcStart += 8, poDst += 8) {
+		// min and max values of the destination data type
+		__m128 vMin = _mm_set1_ps(std::numeric_limits<icl16s>::min());
+		__m128 vMax = _mm_set1_ps(std::numeric_limits<icl16s>::max());
+
+		// load 32f values
+		__m128 v1  = _mm_load_ps(poSrcStart);
+		__m128 v2  = _mm_load_ps(poSrcStart+4);
+
+		// saturate
+		v1 = _mm_max_ps(v1, vMin);
+		v1 = _mm_min_ps(v1, vMax);
+		v2 = _mm_max_ps(v2, vMin);
+		v2 = _mm_min_ps(v2, vMax);
+
+		// convert to 32s values; convert to 16s values; store 16s values
+		_mm_storeu_si128((__m128i*)poDst, _mm_packs_epi32(_mm_cvttps_epi32(v1), _mm_cvttps_epi32(v2)));
+	}
+
+	// cast the last values
+	for(; poSrcStart < poSrcEnd; ++poSrcStart, ++poDst) {
+		*poDst = *poSrcStart < std::numeric_limits<icl16s>::min() ? std::numeric_limits<icl16s>::min() : 
+        		 *poSrcStart > std::numeric_limits<icl16s>::max() ? std::numeric_limits<icl16s>::max() :
+			 static_cast<icl16s>(*poSrcStart);
+	}
+    }
+
+    template <> void convert<icl32f,icl32s>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl32s *poDst) {
+	// cast the first unaligned values
+	for(; (((uintptr_t)poDst) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
+		*poDst = *poSrcStart < std::numeric_limits<icl32s>::min() ? std::numeric_limits<icl32s>::min() : 
+        		 *poSrcStart > std::numeric_limits<icl32s>::max() ? std::numeric_limits<icl32s>::max() :
+			 static_cast<icl32s>(*poSrcStart);
+	}
+
+	// cast four values at the same time
+	for (; poSrcStart < poSrcEnd-3; poSrcStart += 4, poDst += 4) {
+		// min and max values of the destination data type
+		__m128 vMin = _mm_set1_ps(std::numeric_limits<icl32s>::min());
+		__m128 vMax = _mm_set1_ps(std::numeric_limits<icl32s>::max());
+
+		// load 32f values
+		__m128 v  = _mm_loadu_ps(poSrcStart);
+
+		// saturate
+		v = _mm_max_ps(v, vMin);
+		v = _mm_min_ps(v, vMax);
+
+		// convert to 32s values; store 32s values
+		_mm_store_si128((__m128i*)poDst, _mm_cvttps_epi32(v));
+	}
+
+	// cast the last values
+	for(; poSrcStart < poSrcEnd; ++poSrcStart, ++poDst) {
+		*poDst = *poSrcStart < std::numeric_limits<icl32s>::min() ? std::numeric_limits<icl32s>::min() : 
+        		 *poSrcStart > std::numeric_limits<icl32s>::max() ? std::numeric_limits<icl32s>::max() :
+			 static_cast<icl32s>(*poSrcStart);
+	}
+    }
+
+    template <> void convert<icl32f,icl64f>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl64f *poDst) {
+	// cast the first unaligned values
+	for(; (((uintptr_t)poDst) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
+		*poDst = static_cast<icl64f>(*poSrcStart);
+	}
+
+	// cast four values at the same time
+	for (; poSrcStart < poSrcEnd-3; poSrcStart += 4, poDst += 4) {
+		// load 32f values
+		__m128 v  = _mm_loadu_ps(poSrcStart);
+
+		// convert to 64f
+		__m128d vl = _mm_cvtps_pd(v);
+		__m128d vh = _mm_cvtps_pd(_mm_movehl_ps(v, v));
+
+		// store 64f values
+		_mm_store_pd(poDst, vl);
+		_mm_store_pd(poDst+2, vh);
+	}
+
+	// cast the last values
+	for(; poSrcStart < poSrcEnd; ++poSrcStart, ++poDst) {
+		*poDst = static_cast<icl64f>(*poSrcStart);
+	}
+    }
+
+  
+    // from icl64f functions 
+    template<> void convert<icl64f,icl32f>(const icl64f *poSrcStart,const icl64f *poSrcEnd, icl32f *poDst) {
+	// cast the first unaligned values
+	for(; (((uintptr_t)poSrcStart) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
+		*poDst = static_cast<icl32f>(*poSrcStart);
+	}
+
+	// cast four values at the same time
+	for (; poSrcStart < poSrcEnd-3; poSrcStart += 4, poDst += 4) {
+		// load 64f values
+		__m128d v1 = _mm_load_pd(poSrcStart);
+		__m128d v2 = _mm_load_pd(poSrcStart+2);
+
+		// convert to 32f values
+		__m128 vl = _mm_cvtpd_ps(v1);
+		__m128 vh = _mm_cvtpd_ps(v2);
+
+		// store 32f values
+		_mm_storeu_ps(poDst, _mm_shuffle_ps(vl, vh, _MM_SHUFFLE(1, 0, 1, 0)));
+	}
+
+	// cast the last values
+	for(; poSrcStart < poSrcEnd; ++poSrcStart, ++poDst) {
+		*poDst = static_cast<icl32f>(*poSrcStart);
+	}
+    }
+
+    template <> void convert<icl64f,icl32s>(const icl64f *poSrcStart,const icl64f *poSrcEnd, icl32s *poDst) {
+	// cast the first unaligned values
+	for(; (((uintptr_t)poSrcStart) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
+		*poDst = *poSrcStart < std::numeric_limits<icl32s>::min() ? std::numeric_limits<icl32s>::min() : 
+        		 *poSrcStart > std::numeric_limits<icl32s>::max() ? std::numeric_limits<icl32s>::max() :
+			 static_cast<icl32s>(*poSrcStart);
+	}
+
+	// cast four values at the same time
+	for (; poSrcStart < poSrcEnd-3; poSrcStart += 4, poDst += 4) {
+		// min and max values of the destination data type
+		__m128d vMin = _mm_set1_pd(std::numeric_limits<icl32s>::min());
+		__m128d vMax = _mm_set1_pd(std::numeric_limits<icl32s>::max());
+
+		// load 64f values
+		__m128d v1 = _mm_load_pd(poSrcStart);
+		__m128d v2 = _mm_load_pd(poSrcStart+2);
+
+		// saturate
+		v1 = _mm_max_pd(v1, vMin);
+		v1 = _mm_min_pd(v1, vMax);
+		v2 = _mm_max_pd(v2, vMin);
+		v2 = _mm_min_pd(v2, vMax);
+
+		// convert to 32s values
+		__m128i vl = _mm_cvttpd_epi32(v1);
+		__m128i vh = _mm_cvttpd_epi32(v2);
+
+		// store 32s values
+		_mm_storeu_si128((__m128i*)poDst, _mm_add_epi32(vl, _mm_shuffle_epi32(vh, _MM_SHUFFLE(1, 0, 3, 2))));
+	}
+
+	// cast the last values
+	for(; poSrcStart < poSrcEnd; ++poSrcStart, ++poDst) {
+		*poDst = *poSrcStart < std::numeric_limits<icl32s>::min() ? std::numeric_limits<icl32s>::min() : 
+        		 *poSrcStart > std::numeric_limits<icl32s>::max() ? std::numeric_limits<icl32s>::max() :
+			 static_cast<icl32s>(*poSrcStart);
+	}
+    }
+  #endif
+
+    // }}}
+
+
   namespace{
       template<class T>
       double channel_mean(const Img<T> &image, int channel, bool roiOnly){
