@@ -64,13 +64,13 @@ namespace icl {
 					std::vector<cl::Platform> platformList; //get number of available openCL platforms
 					cl::Platform::get(&platformList);
 					selectFirstDevice(deviceType, platformList);
-					std::cout << "desired openCL device selected" << std::endl;
+					std::cout << "desired openCL " << deviceTypeToString(deviceType) << " device selected" << std::endl;
 					std::vector<cl::Device> deviceList;
 					deviceList.push_back(device);
 					context = cl::Context(deviceList);//select GPU device
 					cmdQueue = cl::CommandQueue(context, device, 0);//create command queue
 				} catch (cl::Error& error) { //catch openCL errors
-					throw CLInitException(error.what());
+					throw CLInitException(CLException::getMessage(error.err(), error.what()));
 				}
 			}
 
@@ -84,9 +84,9 @@ namespace icl {
 						platform = platformList[i];
 						return;
 					} catch(cl::Error &error) {
-						/*absichtliches Exception schlucken!
-						 gedtDevices schmeisst eine Exception wenn eine platform nicht über das gewünschte Device verfügt,
-						 es sollen allerdings dann die anderen platformen abgefragt werden.
+						/*explicit catching of exception!
+						 getDevices throws an exception when a platform doesn't provide the desired device,
+						 in this case the remaining platform should be asked.
 						 */
 					}
 				}
@@ -191,7 +191,7 @@ namespace icl {
 				sstr << value;
 				return sstr.str();
 			}
-			const CLBuffer createBuffer(const string &accessMode, size_t size,
+			CLBuffer createBuffer(const string &accessMode, size_t size,
 					void *src = 0) throw (CLBufferException) {
 				return CLBuffer(context, cmdQueue, accessMode, size, src);
 			}
@@ -222,11 +222,33 @@ namespace icl {
 			impl->initProgram(srcProg);
 		}
 
+		CLProgram::CLProgram(const CLProgram& other){
+			impl = new Impl();
+			impl->cmdQueue = other.impl->cmdQueue;
+			impl->platform = other.impl->platform;
+			impl->program = other.impl->program;
+			impl->context = other.impl->context;
+			impl->device = other.impl->device;
+		}
+
+		CLProgram const& CLProgram::operator=(CLProgram const& other){
+			impl->cmdQueue = other.impl->cmdQueue;
+			impl->platform = other.impl->platform;
+			impl->program = other.impl->program;
+			impl->context = other.impl->context;
+		    impl->device = other.impl->device;
+		  return *this;
+		}
+		CLProgram::CLProgram(){
+			impl = new Impl();
+		}
+
+
 		CLProgram::~CLProgram() {
 			delete impl;
 		}
 
-		const CLBuffer CLProgram::createBuffer(const string &accessMode, size_t size,
+		CLBuffer CLProgram::createBuffer(const string &accessMode, size_t size,
 				void *src) throw(CLBufferException) {
 			return impl->createBuffer(accessMode, size, src);
 		}

@@ -30,6 +30,7 @@
 #ifdef HAVE_OPENCL
 #pragma once
 #include <string>
+#include <sstream>
 #include <iostream>
 #include <ICLUtils/Exception.h>
 using namespace std;
@@ -38,6 +39,11 @@ namespace icl {
 	    /// Base class for an OpenCL Exception
 		class CLException: public ICLException {
 		public:
+			static string getMessage(const int errorCode, const string message){
+				std::stringstream sstr;
+				sstr << message << " clErrorCode " << errorCode << endl;
+				return sstr.str();
+			}
 			CLException(const std::string &msg) throw() : ICLException(msg) {}
 		};
 		/// Class for an OpenCL Exception during initialization

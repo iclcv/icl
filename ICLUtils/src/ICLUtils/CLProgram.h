@@ -76,16 +76,25 @@ namespace icl {
 			CLProgram(const string deviceType, const string &sourceCode) throw(CLInitException, CLBuildException);
 			CLProgram(const string deviceType, ifstream &fileStream) throw(CLInitException, CLBuildException);
 			~CLProgram();
+			CLProgram();
+			CLProgram(const CLProgram& other);
+			CLProgram const& operator=(CLProgram const& other);
 
 			//accessMode = "r" only read
 			//accessMode = "w" only write
 			//accessMode = "rw" read and write
-			const CLBuffer createBuffer(const string &accessMode, size_t size, void *src=0) throw(CLBufferException);
+			/// creates a buffer object
+			CLBuffer createBuffer(const string &accessMode, size_t size, void *src=0) throw(CLBufferException);
+			/// creates a kernel
 			CLKernel createKernel(const string &id) throw (CLKernelException);
 
+			/// lists various properties of the selected platform
 			void listSelectedPlatform();
+			/// lists various properties of the selected device
 			void listSelectedDevice();
+			/// lists various properties of all platforms and their devices
 			static void listAllPlatformsAndDevices();
+			/// lists various properties of all platforms
 			static void listAllPlatforms();
 		}
 		;

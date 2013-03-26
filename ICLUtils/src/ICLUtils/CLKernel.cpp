@@ -31,19 +31,23 @@
 #include <ICLUtils/CLKernel.h>
 #include <iostream>
 #include <sstream>
-
+//#include <ICLMath/FixedVector.h>
 namespace icl {
 	namespace utils {
 
 		struct CLKernel::Impl {
 			cl::Kernel kernel;
-			cl::CommandQueue& cmdQueue;
+			cl::CommandQueue cmdQueue;
+			Impl(){}
+			Impl(Impl& other):cmdQueue(other.cmdQueue){
+				kernel = other.kernel;
+			}
 			Impl(cl::Program& program, cl::CommandQueue& cmdQueue, const string &id)
 			throw (CLKernelException):cmdQueue(cmdQueue) {
 				try {
 					kernel = cl::Kernel(program, id.c_str());
 				} catch (cl::Error& error) {
-					throw CLKernelException(error.what());
+					throw CLKernelException(CLException::getMessage(error.err(), error.what()));
 				}
 			}
 			void apply(int w, int h, int c) throw (CLKernelException) {
@@ -59,14 +63,19 @@ namespace icl {
 					cmdQueue.enqueueNDRangeKernel(kernel, cl::NullRange, range,
 							cl::NullRange);
 				} catch (cl::Error& error) {
-					throw CLKernelException(error.what());
+					throw CLKernelException(CLException::getMessage(error.err(), error.what()));
 				}
 			}
 
 			template<class T>
 			void setArg(const unsigned idx, const T &value)
 			throw (CLKernelException) {
-				kernel.setArg(idx, value);
+				try
+				{
+				  kernel.setArg(idx, value);
+				} catch (cl::Error& error) {
+					throw CLKernelException(CLException::getMessage(error.err(), error.what()));
+				}
 			}
 
 		};
@@ -83,6 +92,20 @@ namespace icl {
 			delete impl;
 		}
 
+		CLKernel::CLKernel(){
+			impl = new Impl();
+		}
+		CLKernel::CLKernel(const CLKernel &other){
+			impl = new Impl(*(other.impl));
+		}
+
+		CLKernel const& CLKernel::operator=(CLKernel const& other){
+			impl->cmdQueue = other.impl->cmdQueue;
+			impl->kernel = other.impl->kernel;
+		  return *this;
+		}
+
+
 		template<class T>
 		void CLKernel::setArg(const unsigned idx, const T &value)
 		throw (CLKernelException) {
@@ -91,7 +114,7 @@ namespace icl {
 		template<>
 		void CLKernel::setArg<CLBuffer>(const unsigned idx, const CLBuffer &value)
 		throw (CLKernelException) {
-			impl->setArg(idx, *(value.getBuffer()));
+			impl->setArg(idx, value.getBuffer());
 		}
 
 #define INST_TEMPL(T) \
@@ -105,6 +128,11 @@ namespace icl {
 		INST_TEMPL(float);
 		INST_TEMPL(double);
 		INST_TEMPL(char);
+		INST_TEMPL(unsigned char);
+		INST_TEMPL(cl_float4);
+//		INST_TEMPL(FixedColVector);
+
+
 
 	}
 }

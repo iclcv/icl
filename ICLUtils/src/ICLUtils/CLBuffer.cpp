@@ -36,8 +36,8 @@ namespace icl {
 	namespace utils {
 
 		struct CLBuffer::Impl {
-			cl::Buffer* handle;
-			cl::CommandQueue& cmdQueue;
+			cl::Buffer buffer;
+			cl::CommandQueue cmdQueue;
 			static cl_mem_flags stringToMemFlags(const string &accessMode)
 			throw (CLBufferException) {
 				if (accessMode.find("w") != string::npos) {
@@ -54,8 +54,11 @@ namespace icl {
 				errorMsg = errorMsg.append(accessMode);
 				throw CLBufferException(errorMsg);
 			}
+			Impl(){}
 			~Impl() {
-				delete handle;
+			}
+			Impl(Impl& other):cmdQueue(other.cmdQueue){
+				buffer = other.buffer;
 			}
 			Impl(cl::Context &context, cl::CommandQueue &cmdQueue,
 					const string &accessMode, size_t size, void *src = 0)
@@ -66,9 +69,9 @@ namespace icl {
 				}
 
 				try {
-					handle = new cl::Buffer(context, memFlags, size, src);
+					buffer = cl::Buffer(context, memFlags, size, src);
 				} catch (cl::Error& error) {
-					throw CLBufferException(error.what());
+					throw CLBufferException(CLException::getMessage(error.err(), error.what()));
 				}
 
 			}
@@ -80,9 +83,9 @@ namespace icl {
 				else
 				blocking = CL_FALSE;
 				try {
-					cmdQueue.enqueueReadBuffer(*handle, blocking, offset, len, dst);
+					cmdQueue.enqueueReadBuffer(buffer, blocking, offset, len, dst);
 				} catch (cl::Error& error) {
-					throw CLBufferException(error.what());
+					throw CLBufferException(CLException::getMessage(error.err(), error.what()));
 				}
 			}
 
@@ -94,9 +97,9 @@ namespace icl {
 				else
 				blocking = CL_FALSE;
 				try {
-					cmdQueue.enqueueWriteBuffer(*handle, blocking, offset, len, src);
+					cmdQueue.enqueueWriteBuffer(buffer, blocking, offset, len, src);
 				} catch (cl::Error& error) {
-					throw CLBufferException(error.what());
+					throw CLBufferException(CLException::getMessage(error.err(), error.what()));
 				}
 			}
 
@@ -107,6 +110,19 @@ namespace icl {
 		throw (CLBufferException) {
 			impl = new Impl(context, cmdQueue, accessMode, size, src);
 
+		}
+
+		CLBuffer::CLBuffer(){
+			impl = new Impl();
+		}
+		CLBuffer::CLBuffer(const CLBuffer& other){
+		  impl = new Impl(*(other.impl));
+		}
+
+		CLBuffer const& CLBuffer::operator=(CLBuffer const& other){
+			impl->cmdQueue = other.impl->cmdQueue;
+			impl->buffer = other.impl->buffer;
+		  return *this;
 		}
 
 		CLBuffer::~CLBuffer() {
@@ -124,12 +140,12 @@ namespace icl {
 			impl->write(src, len, offset, block);
 		}
 
-		cl::Buffer* CLBuffer::getBuffer() {
-			return impl->handle;
+		cl::Buffer CLBuffer::getBuffer() {
+			return impl->buffer;
 		}
 
-		const cl::Buffer* CLBuffer::getBuffer() const {
-			return impl->handle;
+		const cl::Buffer CLBuffer::getBuffer() const {
+			return impl->buffer;
 		}
 	}
 }

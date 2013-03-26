@@ -33,7 +33,6 @@
 #include <CL/cl.hpp>
 #include <string.h>
 #include <ICLUtils/CLException.h>
-#include <ICLUtils/Uncopyable.h>
 using namespace std;
 namespace icl {
 	namespace utils {
@@ -41,22 +40,26 @@ namespace icl {
 	    /**
 	      Can only be created via CLProgram.
 	    */
-		class CLBuffer : public Uncopyable {
+		class CLBuffer{
 		public:
 			struct Impl;
 		private:
 			Impl *impl;
 			CLBuffer(cl::Context& context, cl::CommandQueue &cmdQueue, const string &accessMode, size_t size, void *src=NULL) throw (CLBufferException);
-			cl::Buffer* getBuffer();
-			const cl::Buffer* getBuffer() const;
-			CLBuffer(const CLBuffer &other);
+			cl::Buffer getBuffer();
+			const cl::Buffer getBuffer() const;
 		public:
 			~CLBuffer();
+			CLBuffer();
+			CLBuffer(const CLBuffer& other);
+			CLBuffer const& operator=(CLBuffer const& other);
 			friend class CLProgram;
 			friend class CLKernel;
 
+			/// reads buffer content in dst-Pointer
 			void read(void *dst, int len, int offset = 0, bool block = true) throw (CLBufferException);
 
+			/// writes content of src in the buffer
 			void write(void *src, int len, int offset = 0, bool block = true) throw (CLBufferException);
 
 			bool isNull() const {
