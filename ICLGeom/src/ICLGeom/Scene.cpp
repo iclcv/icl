@@ -8,7 +8,8 @@
 **                                                                 **
 ** File   : ICLGeom/src/ICLGeom/Scene.cpp                          **
 ** Module : ICLGeom                                                **
-** Authors: Christof Elbrechter, Erik Weitnauer, Daniel Dornbusch  **
+** Authors: Christof Elbrechter, Erik Weitnauer, Daniel Dornbusch, **
+**          Matthias Esau                                          **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -604,11 +605,18 @@ namespace icl{
         glDisable(GL_DEPTH_TEST);
       }
       
-      float bias = ((Configurable*)this)->getPropertyValue("shadows.shadow bias");
+      
       GLFragmentShader *activeShader = 0;
+      //check if the custom shader has been set
+      bool useCustomShader = o->getFragmentShader();
       //check if the matrices have been set(indicates if improved lighting is being used)
-      if(project2shadow) {
-        if(o->getFragmentShader()){
+      bool useImprovedShading = project2shadow;
+      //shadow offset for the fragmentshader
+      float bias;
+      
+      if(useImprovedShading) {
+        bias = ((Configurable*)this)->getPropertyValue("shadows.shadow bias");
+        if(useCustomShader){
           activeShader = o->getFragmentShader();
           o->getFragmentShader()->activate();
           o->getFragmentShader()->setUniform("bias", bias);
@@ -624,7 +632,7 @@ namespace icl{
           m_perPixelShader->setUniform("shadow_map", 7);
         }
       }else {
-        if(o->getFragmentShader()){  
+        if(useCustomShader){  
           activeShader = o->getFragmentShader();
           o->getFragmentShader()->activate();
         } 
@@ -664,7 +672,8 @@ namespace icl{
           for(unsigned int j=0;j<o->m_primitives.size();++j){
             Primitive *p = o->m_primitives[j];
             if(o->isVisible(p->type)){
-              if((p->type & (Primitive::text | Primitive::texture)) > 0 && project2shadow) {
+              //use the texture shader if the primitive is a texture or text
+              if((p->type & (Primitive::text | Primitive::texture)) && useImprovedShading && !useCustomShader) {
                 m_perPixelShaderTexture->activate();
                 m_perPixelShaderTexture->setUniform("bias", bias);
                 m_perPixelShaderTexture->setUniform("shadowMat", *project2shadow);
@@ -807,10 +816,10 @@ namespace icl{
       }
       
       bool lightingEnabled = ((Configurable*)this)->getPropertyValue("enable lighting");
-      bool improvedShadingEnabled = ((Configurable*)this)->getPropertyValue("shadows.use improved shading");
+      bool useImprovedShading = ((Configurable*)this)->getPropertyValue("shadows.use improved shading");
       
       vector<Mat> project2shadow;
-      if(lightingEnabled && improvedShadingEnabled) {
+      if(lightingEnabled && useImprovedShading) {
         
         //update cameras and check if the lightsetup has changed
         bool lightSetupChanged = false;
@@ -847,20 +856,23 @@ namespace icl{
           m_perPixelShader->deactivate();
         }
         
+        //recreate the shadowbuffer if the the lightsetup, or the resolution has changed
         unsigned int resolution = ((Configurable*)this)->getPropertyValue("shadows.shadow resolution");
         if(shadowResolution != resolution || lightSetupChanged) {
           freeShadowFBO();
+          //don"t create a shadowbuffer if there are no lights with shadows
           if(numShadowLights > 0) {
             createShadowFBO(resolution,numShadowLights); 
           }
         }
         
-        //bind texture
+        //bind texture if it has been created
         if(shadowResolution>0) {
           glActiveTextureARB(GL_TEXTURE7);
           glBindTexture(GL_TEXTURE_2D,shadowTexture);
         }
-          
+        
+        //render the shadows and create the projection matrices for the vertex shader
         int currentShadow = 0;
         for(int i = 0; i < 8; i++) {
           if(m_previousLightState[i] == 2) {
@@ -926,7 +938,7 @@ namespace icl{
       
       glEnable(GL_DEPTH_TEST);
       
-      if(lightingEnabled && improvedShadingEnabled){
+      if(lightingEnabled && useImprovedShading){
         for(size_t i=0;i<m_objects.size();++i){
           renderSceneObjectRecursive(&project2shadow, (SceneObject*)m_objects[i].get());
         }
@@ -1036,7 +1048,7 @@ namespace icl{
       for(size_t i=0;i<m_objects.size();++i){
         renderSceneObjectRecursiveShadow((SceneObject*)m_objects[i].get());
       }
-	    // switch back to window-system-provided framebuffer
+	    // enable the default framebuffer
 	    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 	    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	    glDisable(GL_CULL_FACE);
@@ -1130,7 +1142,8 @@ namespace icl{
     
     void Scene::createShadowFBO(unsigned int size, unsigned int shadows) const{
 	    GLenum FBOstatus;
-
+      
+      //create the shadow texture if simple filtering
 	    glGenTextures(1, &shadowTexture);
 	    glBindTexture(GL_TEXTURE_2D, shadowTexture);
 

@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLGeom/src/ICLGeom/SceneLight.cpp                     **
 ** Module : ICLGeom                                                **
-** Authors: Christof Elbrechter                                    **
+** Authors: Christof Elbrechter, Matthias Esau                     **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **

@@ -8,7 +8,8 @@
 **                                                                 **
 ** File   : ICLGeom/src/ICLGeom/Scene.h                            **
 ** Module : ICLGeom                                                **
-** Authors: Christof Elbrechter, Erik Weitnauer, Daniel Dornbusch  **
+** Authors: Christof Elbrechter, Erik Weitnauer, Daniel Dornbusch, **
+**          Matthias Esau                                          **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -327,6 +328,7 @@ namespace icl{
       
       /// the shader used for per pixel lighting and shadowmaps
       mutable icl::qt::GLFragmentShader* m_perPixelShader;
+      /// the shader used for per pixel lighting and shadowmaps with textures
       mutable icl::qt::GLFragmentShader* m_perPixelShaderTexture;
       
       /// creates the FBO and Texture

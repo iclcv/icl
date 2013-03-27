@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLQt/src/ICLQt/GLFragmentShader.h                     **
 ** Module : ICLQt                                                  **
-** Authors: Christof Elbrechter                                    **
+** Authors: Christof Elbrechter, Matthias Esau                     **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
