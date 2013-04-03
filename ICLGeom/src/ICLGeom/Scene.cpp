@@ -796,17 +796,17 @@ namespace icl{
           return;
         }
       }
-      o->prepareForRendering();
-  
-      o->lock();
-      
-      glMatrixMode(GL_MODELVIEW);
-      glPushMatrix();
-      const Mat &T = o->getTransformation(true);
-      glMultMatrixf(T.transp().data());
 
 
       if(o->getCastShadowsEnabled()){
+         o->prepareForRendering();
+     
+         o->lock();
+         
+         glMatrixMode(GL_MODELVIEW);
+         glPushMatrix();
+         const Mat &T = o->getTransformation(true);
+         glMultMatrixf(T.transp().data());
          if(o->isVisible()){
            
            o->customRender();
@@ -826,14 +826,14 @@ namespace icl{
              }
            }
          }
+         for(unsigned int i=0;i<o->m_children.size();++i){
+           renderSceneObjectRecursiveShadow(o->m_children[i].get());
+         }
+         glMatrixMode(GL_MODELVIEW);
+         glPopMatrix();
+     
+         o->unlock();
       }
-      for(unsigned int i=0;i<o->m_children.size();++i){
-        renderSceneObjectRecursiveShadow(o->m_children[i].get());
-      }
-      glMatrixMode(GL_MODELVIEW);
-      glPopMatrix();
-  
-      o->unlock();
    }
   
    void Scene::renderScene(int camIndex, ICLDrawWidget3D *widget) const{

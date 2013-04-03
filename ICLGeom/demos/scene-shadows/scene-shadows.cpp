@@ -38,6 +38,8 @@ Scene scene;
 
 struct FPSSceneObject : public SceneObject{
   virtual void prepareForRendering(){
+    setCastShadowsEnabled(false);
+    setReceiveShadowsEnabled(false);
     gui["fps"].render();
   }
 };
