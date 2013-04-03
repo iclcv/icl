@@ -722,6 +722,9 @@ namespace icl{
           GLboolean lightWasOn = true;
           glGetBooleanv(GL_LIGHTING,&lightWasOn);
           glDisable(GL_LIGHTING);
+          if(useImprovedShading) {
+            activeShader->deactivate();
+          }
   
           if(creatingDisplayList){
             glBegin(GL_POINTS);        
@@ -761,7 +764,10 @@ namespace icl{
           }
           if(lightWasOn){
             glEnable(GL_LIGHTING);
-          }   
+          }  
+          if(useImprovedShading) {
+            activeShader->activate();
+          } 
         }
   
       } // is visible
@@ -991,6 +997,7 @@ namespace icl{
           if(m_lights[i] && m_lights[i]->on){
             if((m_lights[i]->anchor != SceneLight::CamAnchor) ||
                (m_lights[i]->camAnchor != camIndex && m_lights[i]->camAnchor != -1)){
+              m_lights[i]->updatePositions(*this,getCamera(camIndex));
               renderSceneObjectRecursive((SceneObject*)m_lights[i]->getLightObject());
             }
           }
