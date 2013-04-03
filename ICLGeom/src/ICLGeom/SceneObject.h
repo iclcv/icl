@@ -674,6 +674,14 @@ namespace icl{
       /// returns the current fragment shader (or NULL if non was given, const version)
       inline const qt::GLFragmentShader *getFragmentShader() const{ return m_fragmentShader; }
 
+      inline void setCastShadowsEnabled(bool castShadows = true) { m_castShadows = castShadows; }
+
+      inline bool getCastShadowsEnabled() { return m_castShadows; }
+
+      inline void setReceiveShadowsEnabled(bool receiveShadows = true) { m_receiveShadows = receiveShadows; }
+
+      inline bool getReceiveShadowsEnabled() { return m_receiveShadows; }
+
       /// sets the material shininess (default is 128)
       inline void setShininess(icl8u value){
         m_shininess = value;
@@ -749,6 +757,9 @@ namespace icl{
   
       /// internal optionally given fragment shader
       qt::GLFragmentShader *m_fragmentShader;
+      
+      bool m_castShadows;
+      bool m_receiveShadows;
   
     };
   } // namespace geom

@@ -102,7 +102,9 @@ namespace icl{
       m_specularReflectance(GeomColor(0.5,0.5,0.5,0.5)),
       m_displayListHandle(0),
       m_createDisplayListNextTime(0),
-      m_fragmentShader(0)
+      m_fragmentShader(0),
+      m_castShadows(true),
+      m_receiveShadows(true)
     {
   
       m_visibleMask = Primitive::all;
@@ -272,7 +274,9 @@ namespace icl{
       m_specularReflectance(GeomColor(0.5,0.5,0.5,0.5)),
       m_displayListHandle(0),
       m_createDisplayListNextTime(0),
-      m_fragmentShader(0)
+      m_fragmentShader(0),
+      m_castShadows(true),
+      m_receiveShadows(true)
     {
       m_visibleMask = Primitive::all;
   
@@ -593,7 +597,9 @@ namespace icl{
       m_specularReflectance(GeomColor(0.5,0.5,0.5,0.5)),
       m_displayListHandle(0),
       m_createDisplayListNextTime(0),
-      m_fragmentShader(0)
+      m_fragmentShader(0),
+      m_castShadows(true),
+      m_receiveShadows(true)
     {
       File file(objFileName,File::readText);
       if(!file.exists()) throw ICLException("Error in SceneObject(objFilename): unable to open file " + objFileName);
