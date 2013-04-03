@@ -289,8 +289,12 @@ namespace icl{
       const int W = m_data->colorImageSize.width;
       const int H = m_data->colorImageSize.height;
       const int DIM = m_data->depthImageSize.getDim();
-      
+
+#ifdef HAVE_OPENCL      
       bool canUseOpenCL = m_data->clReady && m_data->clUse;
+#else
+      bool canUseOpenCL = false;
+#endif
       if(rgbImage) canUseOpenCL &= (depthImageMM.getSize() == rgbImage->getSize());
       
       const Channel8u rgb[3];
