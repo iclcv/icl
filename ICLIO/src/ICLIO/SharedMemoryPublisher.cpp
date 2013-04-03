@@ -145,6 +145,7 @@ namespace icl{
       mem.lock();
       if(mem.isAttached()){
         mem.detach();
+        unregister_grabber(m_data->listMem, m_data->name);
       }
       m_data->name = memorySegmentName;
       mem.unlock();
