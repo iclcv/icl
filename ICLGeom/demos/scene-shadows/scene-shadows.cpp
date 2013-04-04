@@ -36,14 +36,6 @@
 GUI gui;
 Scene scene;
 
-struct FPSSceneObject : public SceneObject{
-  virtual void prepareForRendering(){
-    setCastShadowsEnabled(false);
-    setReceiveShadowsEnabled(false);
-    gui["fps"].render();
-  }
-};
-
 void reload_obj(){
   scene.removeObject(0);
   SceneObject *o = new SceneObject(*pa("-o")); 
@@ -62,7 +54,6 @@ void init(){
            << FSlider(0.5,20,3).out("f").handle("focal").label("focal length").maxSize(100,3)
            << FSlider(1,100,15).out("r").label("light radius").maxSize(100,3)
            << Button("reload").handle("reload").hideIf(!pa("-o"))
-           << Fps(10).handle("fps").label("render fps").maxSize(6,3)
          )
       << Show();
   
@@ -79,7 +70,6 @@ void init(){
   SceneObject *plane = SceneObject::cuboid(4, 0, 0, 1, 30, 30);
   plane->setPolygonSmoothingEnabled(false);
   scene.addObject(plane, true);
-  scene.addObject(new FPSSceneObject);
   
   lights = pa("-l");
   for(unsigned int i = 0; i < lights; i++) {

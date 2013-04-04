@@ -39,6 +39,7 @@
 #include <ICLGeom/Camera.h>
 #include <ICLGeom/SceneLight.h>
 #include <ICLCore/Img.h>
+#include <ICLUtils/FPSEstimator.h>
 
 #ifdef HAVE_QT
 #include <ICLQt/MouseHandler.h>
@@ -328,12 +329,18 @@ namespace icl{
       
       /// the shader used for per pixel lighting and shadowmaps
       mutable icl::qt::GLFragmentShader* m_perPixelShader;
+      
       /// the shader used for per pixel lighting and shadowmaps with textures
       mutable icl::qt::GLFragmentShader* m_perPixelShaderTexture;
+      
       /// the shader used for per pixel lighting
       mutable icl::qt::GLFragmentShader* m_perPixelShaderNoShadow;
+      
       /// the shader used for per pixel lighting with textures
       mutable icl::qt::GLFragmentShader* m_perPixelShaderTextureNoShadow;
+      
+      /// defines the offset for the shadow
+      mutable float m_shadowBias;
       
       /// creates the FBO and Texture
       void createShadowFBO(unsigned int size = 512, unsigned int shadows = 1) const;
@@ -522,6 +529,8 @@ namespace icl{
 
       /// current scene background color
       GeomColor m_backgroundColor;
+      
+      utils::FPSEstimator m_fps;
 
       private:
       /// called from the SceneObject class

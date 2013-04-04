@@ -66,6 +66,7 @@
 #include <ICLQt/Quick.h>
 
 #include <vector>
+#include <sstream>
 
 
 using namespace icl::utils;
@@ -257,7 +258,8 @@ namespace icl{
   #endif
   
    
-    Scene::Scene(){
+    Scene::Scene():
+    m_fps(10){
       m_lights[0] = SmartPtr<SceneLight>(new SceneLight(this,0));
       m_globalAmbientLight = FixedColVector<int,4>(255,255,255,20);
       m_backgroundColor = GeomColor(0,0,0,255);
@@ -275,6 +277,8 @@ namespace icl{
       addProperty("shadows.cull object front for shadows","flag","",true);
       addProperty("shadows.shadow resolution","menu","64,256,512,1024,2048",512);
       addProperty("shadows.shadow bias","float","[-0.1,0.1]",0.0001);
+      addProperty("info.FPS","info","",0);
+      addProperty("info.Objects in the Scene","info","",0);
     }
     Scene::~Scene(){
   #ifdef HAVE_GLX
@@ -621,15 +625,12 @@ namespace icl{
       bool useCustomShader = o->getFragmentShader();
       //check if the matrices have been set(indicates if improved lighting is being used)
       bool useImprovedShading = project2shadow;
-      //shadow offset for the fragmentshader
-      float bias;
       
       if(useImprovedShading) {
-         bias = ((Configurable*)this)->getPropertyValue("shadows.shadow bias");
          if(useCustomShader){
             activeShader = o->getFragmentShader();
             o->getFragmentShader()->activate();
-            o->getFragmentShader()->setUniform("bias", bias);
+            o->getFragmentShader()->setUniform("bias", m_shadowBias);
             o->getFragmentShader()->setUniform("shadowMat", *project2shadow);
             o->getFragmentShader()->setUniform("shadow_map", 7);
             o->getFragmentShader()->setUniform("image_map", 0);
@@ -638,13 +639,12 @@ namespace icl{
             if(o->getReceiveShadowsEnabled()) {
                activeShader = m_perPixelShader;
                m_perPixelShader->activate();
-               m_perPixelShader->setUniform("bias", bias);
+               m_perPixelShader->setUniform("bias", m_shadowBias);
                m_perPixelShader->setUniform("shadowMat", *project2shadow);
                m_perPixelShader->setUniform("shadow_map", 7);
             } else {
                activeShader = m_perPixelShaderNoShadow;
                m_perPixelShaderNoShadow->activate();
-               m_perPixelShaderNoShadow->setUniform("bias", bias);
                m_perPixelShaderNoShadow->setUniform("shadowMat", *project2shadow);
                m_perPixelShaderNoShadow->setUniform("shadow_map", 7);
             }
@@ -694,7 +694,7 @@ namespace icl{
               if((p->type & (Primitive::text | Primitive::texture)) && useImprovedShading && !useCustomShader) {
                 if(o->getReceiveShadowsEnabled()) {
                    m_perPixelShaderTexture->activate();
-                   m_perPixelShaderTexture->setUniform("bias", bias);
+                   m_perPixelShaderTexture->setUniform("bias", m_shadowBias);
                    m_perPixelShaderTexture->setUniform("shadowMat", *project2shadow);
                    m_perPixelShaderTexture->setUniform("shadow_map", 7);
                    m_perPixelShaderTexture->setUniform("image_map", 0);
@@ -702,7 +702,6 @@ namespace icl{
                    m_perPixelShader->deactivate();
                 } else {
                    m_perPixelShaderTextureNoShadow->activate();
-                   m_perPixelShaderTextureNoShadow->setUniform("bias", bias);
                    m_perPixelShaderTextureNoShadow->setUniform("shadowMat", *project2shadow);
                    m_perPixelShaderTextureNoShadow->setUniform("shadow_map", 7);
                    m_perPixelShaderTextureNoShadow->setUniform("image_map", 0);
@@ -839,6 +838,13 @@ namespace icl{
    void Scene::renderScene(int camIndex, ICLDrawWidget3D *widget) const{
   
       Mutex::Locker l(this);
+      //update Sceneinfo
+      ((Configurable*)this)->setPropertyValue("info.FPS",m_fps.getFPSString());
+      
+      stringstream s;
+      s<<m_objects.size();
+      ((Configurable*)this)->setPropertyValue("info.Objects in the Scene",s.str());
+      
       ICLASSERT_RETURN(camIndex >= 0 && camIndex < (int)m_cameras.size());
   
       Rect currentImageRect = widget ? widget->getImageRect(true) : Rect::null;
@@ -855,7 +861,9 @@ namespace icl{
       
       vector<Mat> project2shadow;
       if(lightingEnabled && useImprovedShading) {
-        
+      //read the bias from the settings
+      m_shadowBias = ((Configurable*)this)->getPropertyValue("shadows.shadow bias");
+      
       //update cameras and check if the lightsetup has changed
       bool lightSetupChanged = false;
       int numShadowLights = 0;
