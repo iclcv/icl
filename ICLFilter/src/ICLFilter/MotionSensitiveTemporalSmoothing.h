@@ -36,7 +36,9 @@
 #include <ICLUtils/Uncopyable.h>
 
 #ifdef HAVE_OPENCL    
-#include <CL/cl.hpp>
+#include <ICLUtils/CLProgram.h>
+#include <ICLUtils/CLKernel.h>
+#include <ICLUtils/CLBuffer.h>
 #endif
 
 namespace icl{
@@ -116,26 +118,26 @@ namespace icl{
       float* inputImagesArrayF;
       float* outputImageArrayF;
       
-      cl_uchar* inputImage1ArrayC;
-      cl_uchar* inputImagesArrayC;
-      cl_uchar* outputImageArrayC;
+      unsigned char* inputImage1ArrayC;
+      unsigned char* inputImagesArrayC;
+      unsigned char* outputImageArrayC;
       
       float* motionImageArray;
       
-      cl::Context context;
-      std::vector<cl::Device> devices;
-      cl::Program program;
-      cl::CommandQueue queue;
-      
-      cl::Kernel kernelTemporalSmoothingFloat;
-      cl::Kernel kernelTemporalSmoothingChar;
-      
-      cl::Buffer inputImageBufferF;      
-      cl::Buffer outputImageBufferF;
-      cl::Buffer inputImageBufferC;
-      cl::Buffer outputImageBufferC;
-      cl::Buffer motionImageBuffer;
-      
+
+      //OpenCL
+      utils::CLProgram program;
+      utils::CLKernel kernelTemporalSmoothingFloat;
+      utils::CLKernel kernelTemporalSmoothingChar;
+      utils::CLKernel kernelCheckRANSAC;
+      utils::CLKernel kernelAssignRANSAC;
+
+      //OpenCL buffer
+      utils::CLBuffer inputImageBufferF;
+      utils::CLBuffer outputImageBufferF;
+      utils::CLBuffer inputImageBufferC;
+      utils::CLBuffer outputImageBufferC;
+      utils::CLBuffer motionImageBuffer;
     #endif
   
     };

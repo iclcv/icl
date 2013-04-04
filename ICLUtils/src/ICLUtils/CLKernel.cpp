@@ -105,33 +105,45 @@ namespace icl {
 		  return *this;
 		}
 
-
-		template<class T>
-		void CLKernel::setArg(const unsigned idx, const T &value)
-		throw (CLKernelException) {
+		void CLKernel::setArg(const unsigned idx, const unsigned int &value) throw (CLKernelException){
 			impl->setArg(idx, value);
 		}
-		template<>
-		void CLKernel::setArg<CLBuffer>(const unsigned idx, const CLBuffer &value)
-		throw (CLKernelException) {
+		void CLKernel::setArg(const unsigned idx, const int &value) throw (CLKernelException){
+			impl->setArg(idx, value);
+		}
+		void CLKernel::setArg(const unsigned idx, const short &value) throw (CLKernelException){
+			impl->setArg(idx, value);
+		}
+		void CLKernel::setArg(const unsigned idx, const long &value) throw (CLKernelException){
+			impl->setArg(idx, value);
+		}
+		void CLKernel::setArg(const unsigned idx, const unsigned long &value) throw (CLKernelException){
+			impl->setArg(idx, value);
+		}
+		void CLKernel::setArg(const unsigned idx, const float &value) throw (CLKernelException){
+			impl->setArg(idx, value);
+		}
+		void CLKernel::setArg(const unsigned idx, const double &value) throw (CLKernelException){
+			impl->setArg(idx, value);
+		}
+		void CLKernel::setArg(const unsigned idx, const char &value) throw (CLKernelException){
+			impl->setArg(idx, value);
+		}
+		void CLKernel::setArg(const unsigned idx, const unsigned char &value) throw (CLKernelException){
+			impl->setArg(idx, value);
+		}
+
+		void CLKernel::setArg(const unsigned idx, const CLBuffer &value) throw (CLKernelException){
 			impl->setArg(idx, value.getBuffer());
 		}
 
-#define INST_TEMPL(T) \
-	template void CLKernel::setArg<T>(const unsigned int idx, const T &value) throw (CLKernelException);
+		void CLKernel::setArg(const unsigned idx, const FixedArray<float,4> &value) throw (CLKernelException){
+			impl->setArg(idx, value);
+		}
 
-		INST_TEMPL(int);
-		INST_TEMPL(unsigned int);
-		INST_TEMPL(long);
-		INST_TEMPL(unsigned long);
-		INST_TEMPL(CLBuffer);
-		INST_TEMPL(float);
-		INST_TEMPL(double);
-		INST_TEMPL(char);
-		INST_TEMPL(unsigned char);
-		INST_TEMPL(cl_float4);
-//		INST_TEMPL(FixedColVector);
-
+		void CLKernel::setArg(const unsigned idx, const FixedArray<float,3> &value) throw (CLKernelException){
+			impl->setArg(idx, value);
+		}
 
 
 	}

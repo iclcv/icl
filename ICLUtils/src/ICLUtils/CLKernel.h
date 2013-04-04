@@ -34,6 +34,7 @@
 #include <string.h>
 #include <ICLUtils/CLBuffer.h>
 #include <ICLUtils/CLException.h>
+#include <ICLUtils/FixedArray.h>
 using namespace std;
 namespace icl {
 	namespace utils {
@@ -60,8 +61,18 @@ namespace icl {
 
 			CLKernel(const string &id, cl::Program & program, cl::CommandQueue& cmdQueue) throw (CLKernelException);
 		public:
-			template<typename T>
-			void setArg(const unsigned idx, const T &value) throw (CLKernelException);
+			void setArg(const unsigned idx, const unsigned int &value) throw (CLKernelException);
+			void setArg(const unsigned idx, const int &value) throw (CLKernelException);
+			void setArg(const unsigned idx, const short &value) throw (CLKernelException);
+			void setArg(const unsigned idx, const long &value) throw (CLKernelException);
+			void setArg(const unsigned idx, const unsigned long &value) throw (CLKernelException);
+			void setArg(const unsigned idx, const float &value) throw (CLKernelException);
+			void setArg(const unsigned idx, const double &value) throw (CLKernelException);
+			void setArg(const unsigned idx, const char &value) throw (CLKernelException);
+			void setArg(const unsigned idx, const unsigned char &value) throw (CLKernelException);
+			void setArg(const unsigned idx, const FixedArray<float,4> &value) throw (CLKernelException);
+			void setArg(const unsigned idx, const FixedArray<float,3> &value) throw (CLKernelException);
+			void setArg(const unsigned idx, const CLBuffer &value) throw (CLKernelException);
 
 			/// sets arguments of the kernel
 			template<typename A>

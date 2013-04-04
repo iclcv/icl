@@ -36,7 +36,9 @@
 #include <ICLCV/RegionDetector.h>
 
 #ifdef HAVE_OPENCL    
-#include <CL/cl.hpp>
+#include <ICLUtils/CLProgram.h>
+#include <ICLUtils/CLBuffer.h>
+#include <ICLUtils/CLKernel.h>
 #endif
 
 namespace icl{
@@ -238,32 +240,28 @@ namespace icl{
       
     #ifdef HAVE_OPENCL
       //OpenCL data
-      cl_uchar* segmentColorImageRArray;
-      cl_uchar* segmentColorImageGArray;
-      cl_uchar* segmentColorImageBArray;
+      unsigned char* segmentColorImageRArray;
+      unsigned char* segmentColorImageGArray;
+      unsigned char* segmentColorImageBArray;
       
       //OpenCL    
-      cl::Context context;
-      std::vector<cl::Device> devices;
-      cl::Program program;
-      cl::CommandQueue queue;
-      
-      cl::Kernel kernelSegmentColoring; 
-      cl::Kernel kernelPointAssignment; 
-      cl::Kernel kernelCheckRANSAC; 
-      cl::Kernel kernelAssignRANSAC; 
+      utils::CLProgram program;
+      utils::CLKernel kernelSegmentColoring;
+      utils::CLKernel kernelPointAssignment;
+      utils::CLKernel kernelCheckRANSAC;
+      utils::CLKernel kernelAssignRANSAC;
 
       //OpenCL buffer
-      cl::Buffer segmentColorImageRBuffer;
-      cl::Buffer segmentColorImageGBuffer;
-      cl::Buffer segmentColorImageBBuffer;
-      cl::Buffer assignmentBuffer;      
-      cl::Buffer neighboursBuffer;
-      cl::Buffer elementsBuffer;
-      cl::Buffer assignmentOutBuffer;
-      cl::Buffer xyzBuffer;
-      cl::Buffer assignmentBlobsBuffer;
-      cl::Buffer elementsBlobsBuffer;
+      utils::CLBuffer segmentColorImageRBuffer;
+      utils::CLBuffer segmentColorImageGBuffer;
+      utils::CLBuffer segmentColorImageBBuffer;
+      utils::CLBuffer assignmentBuffer;
+      utils::CLBuffer neighboursBuffer;
+      utils::CLBuffer elementsBuffer;
+      utils::CLBuffer assignmentOutBuffer;
+      utils::CLBuffer xyzBuffer;
+      utils::CLBuffer assignmentBlobsBuffer;
+      utils::CLBuffer elementsBlobsBuffer;
     #endif
     };
   } // namespace geom

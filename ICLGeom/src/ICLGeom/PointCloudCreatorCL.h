@@ -32,9 +32,12 @@
 
 #include <ICLGeom/PointCloudObjectBase.h>
 #include <ICLCore/Img.h>
+#include <ICLMath/FixedVector.h>
 
 #ifdef HAVE_OPENCL    
-#include <CL/cl.hpp>
+#include <ICLUtils/CLProgram.h>
+#include <ICLUtils/CLKernel.h>
+#include <ICLUtils/CLBuffer.h>
 #endif
 
 namespace icl{
@@ -74,31 +77,28 @@ namespace icl{
     #ifdef HAVE_OPENCL
       //OpenCL data
   	  float* depthValuesArray;
-  	  cl_uchar* rInArray;
-  	  cl_uchar* gInArray;
-  	  cl_uchar* bInArray;
+  	  unsigned char* rInArray;
+      unsigned char* gInArray;
+      unsigned char* bInArray;
   	  float* dirsArray;
   	  float* xyzData;
-  	  cl_float4* rgbaData;
+  	  math::FixedColVector<float, 4>* rgbaData;
   	
-      //OpenCL    
-      cl::Context context;
-      std::vector<cl::Device> devices;
-      cl::Program program;
-      cl::CommandQueue queue;
-        
-      cl::Kernel kernelCreate;
-      cl::Kernel kernelCreateRGB;
+      //OpenCL
+      utils::CLProgram program;
 
-      //OpenCL buffer      
-      cl::Buffer depthValuesBuffer;
-      cl::Buffer matrixBuffer;
-      cl::Buffer xyzBuffer;
-      cl::Buffer rgbaBuffer;                    
-      cl::Buffer rInBuffer;
-      cl::Buffer gInBuffer;
-      cl::Buffer bInBuffer;
-      cl::Buffer dirsBuffer;                       
+      utils::CLKernel kernelCreate;
+      utils::CLKernel kernelCreateRGB;
+
+      utils::CLBuffer depthValuesBuffer;
+      utils::CLBuffer matrixBuffer;
+      utils::CLBuffer xyzBuffer;
+      utils::CLBuffer rgbaBuffer;
+      utils::CLBuffer rInBuffer;
+      utils::CLBuffer gInBuffer;
+      utils::CLBuffer bInBuffer;
+      utils::CLBuffer dirsBuffer;
+
     #endif
     };
   } // namespace geom
