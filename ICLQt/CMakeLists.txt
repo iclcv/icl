@@ -81,8 +81,7 @@ SET(SOURCES src/ICLQt/AbstractPlotWidget.cpp
 	    src/ICLQt/ThreadedUpdatableSlider.cpp
 	    src/ICLQt/ThreadedUpdatableTextView.cpp
 	    src/ICLQt/ToggleButton.cpp
-	    src/ICLQt/Widget.cpp
-	    src/ICLQt/SharedMemorySegment.cpp)
+	    src/ICLQt/Widget.cpp)
 
 SET(HEADERS src/ICLQt/AbstractPlotWidget.h
 	    src/ICLQt/Application.h
@@ -158,8 +157,7 @@ SET(HEADERS src/ICLQt/AbstractPlotWidget.h
 	    src/ICLQt/DrawHandle3D.h
 	    src/ICLQt/GLFragmentShader.h
 	    src/ICLQt/GLContext.h
-	    src/ICLQt/Quick.h
-	    src/ICLQt/SharedMemorySegment.h)
+	    src/ICLQt/Quick.h)
 
 SET(ICL_MOC_HEADERS src/ICLQt/Widget.h
                     src/ICLQt/MouseHandler.h
