@@ -7,9 +7,9 @@ IF(QT4_FOUND)
 INCLUDE(ICLHelperMacros)
 
 # ---- Examples ----
-BUILD_DEMO(NAME shared-memory
-           SOURCES shared-memory.cpp
-           LIBRARIES ICLIO)
+#BUILD_DEMO(NAME shared-memory
+#           SOURCES shared-memory.cpp
+#           LIBRARIES ICLIO)
 
 
 ENDIF()
