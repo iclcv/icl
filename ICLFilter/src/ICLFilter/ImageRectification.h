@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLFilter/src/ICLFilter/ImageRectification.h           **
 ** Module : ICLFilter                                              **
-** Authors: Christof Elbrechter                                    **
+** Authors: Christof Elbrechter, Sergius Gaulik                    **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -32,6 +32,13 @@
 
 #include <ICLCore/Img.h>
 #include <ICLMath/FixedMatrix.h>
+
+#if defined __SSE2__ || _MSC_VER >= 1300
+  #include "emmintrin.h"
+  #if defined __SSE3__ || _MSC_VER >= 1500
+    #include "pmmintrin.h"
+  #endif
+#endif
 
 namespace icl{
   namespace filter{
@@ -82,7 +89,7 @@ namespace icl{
                           const utils::Size &resultSize,math::FixedMatrix<float,3,3> *hom=0,
                           math::FixedMatrix<float,2,2> *Q=0,math::FixedMatrix<float,2,2> *R=0,
                           float maxTilt=0, bool advanedAlgorithm=true, 
-                          const utils::Rect *resultROI=0);
+                          const utils::Rect *resultROI=0, const core::scalemode eScaleMode=core::interpolateLIN);
   
   
       //    TODO: use result roi in order to speed up

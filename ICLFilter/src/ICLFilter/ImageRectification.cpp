@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLFilter/src/ICLFilter/ImageRectification.cpp         **
 ** Module : ICLFilter                                              **
-** Authors: Christof Elbrechter                                    **
+** Authors: Christof Elbrechter, Sergius Gaulik                    **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -139,17 +139,34 @@ namespace icl{
       }
       return HOM;
     }
-    
-    
+
+    // image retification with nearest neighbor interpolation
     template<class T>
-    const Img<T> &ImageRectification<T>::apply(const Point32f ps[4], const Img<T> &src,
-                                               const Size &resultSize, FixedMatrix<float,3,3> *hom,
-                                               FixedMatrix<float,2,2> *Q, FixedMatrix<float,2,2> *R,
-                                               float maxTilt, bool advanedAlgorithm,
-                                               const Rect *resultROI){
+    const Img<T> &apply_nearest_neighbor(const Img<T> &src,
+                                         const Size &resultSize, const Homography2D &hom,
+                                         const Rect *resultROI, Img<T> &buffer){
       int W=resultSize.width,H=resultSize.height;
-      const Homography2D HOM = create_and_check_homography(validateAndSortPoints,ps,src,resultSize,hom,Q,R,maxTilt,buffer, advanedAlgorithm);
-  
+      int x;
+
+#if defined __SSE2__ || _MSC_VER >= 1300
+      // convert the values of the homography matrix in sse-types
+      __m128 hom00 = _mm_set1_ps(hom(0,0));
+      __m128 hom01 = _mm_set1_ps(hom(0,1));
+      __m128 hom02 = _mm_set1_ps(hom(0,2));
+      __m128 hom10 = _mm_set1_ps(hom(1,0));
+      __m128 hom11 = _mm_set1_ps(hom(1,1));
+      __m128 hom12 = _mm_set1_ps(hom(1,2));
+      __m128 hom20 = _mm_set1_ps(hom(2,0));
+      __m128 hom21 = _mm_set1_ps(hom(2,1));
+      __m128 hom22 = _mm_set1_ps(hom(2,2));
+      // constant for faster counting
+      __m128 r0123 = _mm_set_ps(3,2,1,0);
+
+      // memory for four x and y values
+      __attribute__ ((aligned (16))) float x4[4];
+      __attribute__ ((aligned (16))) float y4[4];
+#endif
+
       for(int c=0;c<src.getChannels();++c){
         Channel<T> r = buffer[c];
         const Channel<T> s = src[c];
@@ -157,18 +174,194 @@ namespace icl{
           const int xstart = resultROI->x, xend = resultROI->right(), 
                     ystart = resultROI->y, yend = resultROI->bottom();
           for(int y=ystart;y<yend;++y){
-            for(int x=xstart;x<xend;++x){
-              r(x,y) = s(HOM.apply(Point32f(x,y)));
+#if defined __SSE2__ || _MSC_VER >= 1300
+            __m128 ra = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom10), hom20);
+            __m128 rb = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom11), hom21);
+            __m128 rz = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom12), hom22);
+            // calculate 4 pixel at the same time
+            for(x=xstart;x<xend-3;x+=4){
+              // calculate position in the image
+              __m128 raa = _mm_add_ps(ra, _mm_mul_ps(hom00, _mm_add_ps(_mm_set1_ps(x), r0123)));
+              __m128 rbb = _mm_add_ps(rb, _mm_mul_ps(hom01, _mm_add_ps(_mm_set1_ps(x), r0123)));
+              __m128 rzz = _mm_add_ps(rz, _mm_mul_ps(hom02, _mm_add_ps(_mm_set1_ps(x), r0123)));
+              _mm_store_ps(x4, _mm_add_ps(_mm_div_ps(raa, rzz),_mm_set1_ps(0.5f)));
+              _mm_store_ps(y4, _mm_add_ps(_mm_div_ps(rbb, rzz),_mm_set1_ps(0.5f)));
+              // get the values from the image
+              r(x  ,y) = s(x4[0], y4[0]);
+              r(x+1,y) = s(x4[1], y4[1]);
+              r(x+2,y) = s(x4[2], y4[2]);
+              r(x+3,y) = s(x4[3], y4[3]);
             }
+            // calculate the last pixel
+            for(;x<xend;++x){
+              Point32f p = hom.apply(Point32f(x,y));
+              r(x,y) = s(p.x, p.y);
+            }
+#else
+            for(x=0;x<W;++x){
+              Point32f p = hom.apply(Point32f(x,y));
+              r(x,y) = s(p.x, p.y);
+            }
+#endif
           }
         }else{
           for(int y=0;y<H;++y){
-            for(int x=0;x<W;++x){
-              r(x,y) = s(HOM.apply(Point32f(x,y)));
+#if defined __SSE2__ || _MSC_VER >= 1300
+            __m128 ra = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom10), hom20);
+            __m128 rb = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom11), hom21);
+            __m128 rz = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom12), hom22);
+            // calculate 4 pixel at the same time
+            for(x=0;x<W-3;x+=4){
+              // calculate position in the image
+              __m128 raa = _mm_add_ps(ra, _mm_mul_ps(hom00, _mm_add_ps(_mm_set1_ps(x), r0123)));
+              __m128 rbb = _mm_add_ps(rb, _mm_mul_ps(hom01, _mm_add_ps(_mm_set1_ps(x), r0123)));
+              __m128 rzz = _mm_add_ps(rz, _mm_mul_ps(hom02, _mm_add_ps(_mm_set1_ps(x), r0123)));
+              _mm_store_ps(x4, _mm_add_ps(_mm_div_ps(raa, rzz),_mm_set1_ps(0.5f)));
+              _mm_store_ps(y4, _mm_add_ps(_mm_div_ps(rbb, rzz),_mm_set1_ps(0.5f)));
+              // get the values from the image
+              r(x  ,y) = s(x4[0], y4[0]);
+              r(x+1,y) = s(x4[1], y4[1]);
+              r(x+2,y) = s(x4[2], y4[2]);
+              r(x+3,y) = s(x4[3], y4[3]);
             }
+            // calculate the last pixel
+            for(;x<W;++x){
+              Point32f p = hom.apply(Point32f(x,y));
+              r(x,y) = s(p.x, p.y);
+            }
+#else
+            for(x=0;x<W;++x){
+              Point32f p = hom.apply(Point32f(x,y));
+              r(x,y) = s(p.x, p.y);
+            }
+#endif
           }
         }
       }
+
+      return buffer;
+    }
+
+    // image retification with linear interpolation
+    template<class T>
+    const Img<T> &apply_linear(const Img<T> &src,
+                               const Size &resultSize, const Homography2D &hom,
+                               const Rect *resultROI, Img<T> &buffer){
+      int W=resultSize.width,H=resultSize.height;
+      int x;
+
+#if defined __SSE2__ || _MSC_VER >= 1300
+      // convert the values of the homography matrix in sse-types
+      __m128 hom00 = _mm_set1_ps(hom(0,0));
+      __m128 hom01 = _mm_set1_ps(hom(0,1));
+      __m128 hom02 = _mm_set1_ps(hom(0,2));
+      __m128 hom10 = _mm_set1_ps(hom(1,0));
+      __m128 hom11 = _mm_set1_ps(hom(1,1));
+      __m128 hom12 = _mm_set1_ps(hom(1,2));
+      __m128 hom20 = _mm_set1_ps(hom(2,0));
+      __m128 hom21 = _mm_set1_ps(hom(2,1));
+      __m128 hom22 = _mm_set1_ps(hom(2,2));
+      // constant for faster counting
+      __m128 r0123 = _mm_set_ps(3,2,1,0);
+
+      // memory for four x and y values
+      __attribute__ ((aligned (16))) float x4[4];
+      __attribute__ ((aligned (16))) float y4[4];
+#endif
+
+      for(int c=0;c<src.getChannels();++c){
+        Channel<T> r = buffer[c];
+        const Channel<T> s = src[c];
+        if(resultROI){
+          const int xstart = resultROI->x, xend = resultROI->right(), 
+                    ystart = resultROI->y, yend = resultROI->bottom();
+          for(int y=ystart;y<yend;++y){
+#if defined __SSE2__ || _MSC_VER >= 1300
+            __m128 ra = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom10), hom20);
+            __m128 rb = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom11), hom21);
+            __m128 rz = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom12), hom22);
+            // calculate 4 pixel at the same time
+            for(x=xstart;x<xend-3;x+=4){
+              // calculate position in the image
+              __m128 raa = _mm_add_ps(ra, _mm_mul_ps(hom00, _mm_add_ps(_mm_set1_ps(x), r0123)));
+              __m128 rbb = _mm_add_ps(rb, _mm_mul_ps(hom01, _mm_add_ps(_mm_set1_ps(x), r0123)));
+              __m128 rzz = _mm_add_ps(rz, _mm_mul_ps(hom02, _mm_add_ps(_mm_set1_ps(x), r0123)));
+              _mm_store_ps(x4, _mm_div_ps(raa, rzz));
+              _mm_store_ps(y4, _mm_div_ps(rbb, rzz));
+              // get the values from the image
+              r(x  ,y) = s(Point32f(x4[0], y4[0]));
+              r(x+1,y) = s(Point32f(x4[1], y4[1]));
+              r(x+2,y) = s(Point32f(x4[2], y4[2]));
+              r(x+3,y) = s(Point32f(x4[3], y4[3]));
+            }
+            // calculate the last pixel
+            for(;x<xend;++x){
+              r(x,y) = s(hom.apply(Point32f(x,y)));
+            }
+#else
+            for(x=0;x<xend;++x){
+              r(x,y) = s(hom.apply(Point32f(x,y)));
+            }
+#endif
+          }
+        }else{
+          for(int y=0;y<H;++y){
+            __m128 ra = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom10), hom20);
+            __m128 rb = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom11), hom21);
+            __m128 rz = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom12), hom22);
+            // calculate 4 pixel at the same time
+            for(x=0;x<W-3;x+=4){
+#if defined __SSE2__ || _MSC_VER >= 1300
+              // calculate position in the image
+              __m128 raa = _mm_add_ps(ra, _mm_mul_ps(hom00, _mm_add_ps(_mm_set1_ps(x), r0123)));
+              __m128 rbb = _mm_add_ps(rb, _mm_mul_ps(hom01, _mm_add_ps(_mm_set1_ps(x), r0123)));
+              __m128 rzz = _mm_add_ps(rz, _mm_mul_ps(hom02, _mm_add_ps(_mm_set1_ps(x), r0123)));
+              _mm_store_ps(x4, _mm_div_ps(raa, rzz));
+              _mm_store_ps(y4, _mm_div_ps(rbb, rzz));
+              // get the values from the image
+              r(x  ,y) = s(Point32f(x4[0], y4[0]));
+              r(x+1,y) = s(Point32f(x4[1], y4[1]));
+              r(x+2,y) = s(Point32f(x4[2], y4[2]));
+              r(x+3,y) = s(Point32f(x4[3], y4[3]));
+            }
+            // calculate the last pixel
+            for(;x<W;++x){
+              r(x,y) = s(hom.apply(Point32f(x,y)));
+            }
+#else
+            for(x=0;x<xend;++x){
+              r(x,y) = s(hom.apply(Point32f(x,y)));
+            }
+#endif
+          }
+        }
+      }
+
+      return buffer;
+    }
+
+    template<class T>
+    const Img<T> &ImageRectification<T>::apply(const Point32f ps[4], const Img<T> &src,
+                                               const Size &resultSize, FixedMatrix<float,3,3> *hom,
+                                               FixedMatrix<float,2,2> *Q, FixedMatrix<float,2,2> *R,
+                                               float maxTilt, bool advanedAlgorithm,
+                                               const Rect *resultROI, const core::scalemode eScaleMode){
+      const Homography2D HOM = create_and_check_homography(validateAndSortPoints,ps,src,resultSize,hom,Q,R,maxTilt,buffer, advanedAlgorithm);
+Time t = Time::now();
+
+      switch (eScaleMode) {
+      case core::interpolateNN:
+        apply_nearest_neighbor(src, resultSize, HOM, resultROI, buffer);
+        break;
+      case core::interpolateLIN:
+        apply_linear(src, resultSize, HOM, resultROI, buffer);
+        break;
+      default:
+        WARNING_LOG("the given interpolation method is not supported");
+        WARNING_LOG("using linear interpolation as fallback!");
+        apply_linear(src, resultSize, HOM, resultROI, buffer);
+      }
+t.showAge("icl");
       return buffer;
     }
   
@@ -179,21 +372,22 @@ namespace icl{
                                                       const Point32f ps[4], const Img<T> &src,
                                                       const Size &resultSize, FixedMatrix<float,3,3> *hom,
                                                       FixedMatrix<float,2,2> *Q, FixedMatrix<float,2,2> *R,float maxTilt,
-                                                      Img<T> &buffer, IppFunc ippFunc){
+                                                      Img<T> &buffer, const core::scalemode eScaleMode, IppFunc ippFunc){
       const Homography2D HOM = create_and_check_homography(validateAndSortPoints,ps,src,resultSize,hom,Q,R,maxTilt,buffer,advanedAlgorithm);
       
       const double coeffs[3][3]={ {HOM(0,0),HOM(1,0),HOM(2,0)},
                                   {HOM(0,1),HOM(1,1),HOM(2,1)},
                                   {HOM(0,2),HOM(1,2),HOM(2,2)} };
-      
+Time t = Time::now();
       for(int c=0;c<src.getChannels();++c){
         IppStatus s = ippFunc(src.begin(c), src.getSize(), src.getLineStep(), src.getImageRect(),
                               buffer.begin(c),buffer.getLineStep(),resultROI ? *resultROI : buffer.getImageRect(), coeffs,
-                              IPPI_INTER_LINEAR);
+                              eScaleMode);
         if(s != ippStsNoErr){
           ERROR_LOG(ippGetStatusString(s));
         }
       }
+t.showAge("ipp");
       return buffer;
     }
     
@@ -201,16 +395,16 @@ namespace icl{
                                                              const Size &resultSize, FixedMatrix<float,3,3> *hom,
                                                              FixedMatrix<float,2,2> *Q, FixedMatrix<float,2,2> *R,
                                                              float maxTilt, bool advanedAlgorithm,
-                                                             const Rect *resultROI){
-      return apply_image_rectificaion_ipp(validateAndSortPoints,resultROI,advanedAlgorithm,ps,src,resultSize,hom,Q,R,maxTilt,buffer,ippiWarpPerspectiveBack_8u_C1R);
+                                                             const Rect *resultROI, const core::scalemode eScaleMode){
+      return apply_image_rectificaion_ipp(validateAndSortPoints,resultROI,advanedAlgorithm,ps,src,resultSize,hom,Q,R,maxTilt,buffer,eScaleMode,ippiWarpPerspectiveBack_8u_C1R);
     }
     
     template<> const Img32f &ImageRectification<icl32f>::apply(const Point32f ps[4], const Img32f &src,
                                                                const Size &resultSize, FixedMatrix<float,3,3> *hom,
                                                                FixedMatrix<float,2,2> *Q, FixedMatrix<float,2,2> *R,
                                                                float maxTilt, bool advanedAlgorithm,
-                                                               const Rect *resultROI){
-      return apply_image_rectificaion_ipp(validateAndSortPoints,resultROI,advanedAlgorithm,ps,src,resultSize,hom,Q,R,maxTilt,buffer,ippiWarpPerspectiveBack_32f_C1R);
+                                                               const Rect *resultROI, const core::scalemode eScaleMode){
+      return apply_image_rectificaion_ipp(validateAndSortPoints,resultROI,advanedAlgorithm,ps,src,resultSize,hom,Q,R,maxTilt,buffer,eScaleMode,ippiWarpPerspectiveBack_32f_C1R);
     }
   #endif
   
