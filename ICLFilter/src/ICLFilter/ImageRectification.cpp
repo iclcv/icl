@@ -145,22 +145,22 @@ namespace icl{
     const Img<T> &apply_nearest_neighbor(const Img<T> &src,
                                          const Size &resultSize, const Homography2D &hom,
                                          const Rect *resultROI, Img<T> &buffer){
-      int W=resultSize.width,H=resultSize.height;
+      const int W=resultSize.width,H=resultSize.height;
       int x;
 
 #if defined __SSE2__ || _MSC_VER >= 1300
       // convert the values of the homography matrix in sse-types
-      __m128 hom00 = _mm_set1_ps(hom(0,0));
-      __m128 hom01 = _mm_set1_ps(hom(0,1));
-      __m128 hom02 = _mm_set1_ps(hom(0,2));
-      __m128 hom10 = _mm_set1_ps(hom(1,0));
-      __m128 hom11 = _mm_set1_ps(hom(1,1));
-      __m128 hom12 = _mm_set1_ps(hom(1,2));
-      __m128 hom20 = _mm_set1_ps(hom(2,0));
-      __m128 hom21 = _mm_set1_ps(hom(2,1));
-      __m128 hom22 = _mm_set1_ps(hom(2,2));
+      const __m128 hom00 = _mm_set1_ps(hom(0,0));
+      const __m128 hom01 = _mm_set1_ps(hom(0,1));
+      const __m128 hom02 = _mm_set1_ps(hom(0,2));
+      const __m128 hom10 = _mm_set1_ps(hom(1,0));
+      const __m128 hom11 = _mm_set1_ps(hom(1,1));
+      const __m128 hom12 = _mm_set1_ps(hom(1,2));
+      const __m128 hom20 = _mm_set1_ps(hom(2,0));
+      const __m128 hom21 = _mm_set1_ps(hom(2,1));
+      const __m128 hom22 = _mm_set1_ps(hom(2,2));
       // constant for faster counting
-      __m128 r0123 = _mm_set_ps(3,2,1,0);
+      const __m128 r0123 = _mm_set_ps(3,2,1,0);
 
       // memory for four x and y values
       __attribute__ ((aligned (16))) float x4[4];
@@ -175,9 +175,9 @@ namespace icl{
                     ystart = resultROI->y, yend = resultROI->bottom();
           for(int y=ystart;y<yend;++y){
 #if defined __SSE2__ || _MSC_VER >= 1300
-            __m128 ra = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom10), hom20);
-            __m128 rb = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom11), hom21);
-            __m128 rz = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom12), hom22);
+            const __m128 ra = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom10), hom20);
+            const __m128 rb = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom11), hom21);
+            const __m128 rz = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom12), hom22);
             // calculate 4 pixel at the same time
             for(x=xstart;x<xend-3;x+=4){
               // calculate position in the image
@@ -207,9 +207,9 @@ namespace icl{
         }else{
           for(int y=0;y<H;++y){
 #if defined __SSE2__ || _MSC_VER >= 1300
-            __m128 ra = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom10), hom20);
-            __m128 rb = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom11), hom21);
-            __m128 rz = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom12), hom22);
+            const __m128 ra = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom10), hom20);
+            const __m128 rb = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom11), hom21);
+            const __m128 rz = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom12), hom22);
             // calculate 4 pixel at the same time
             for(x=0;x<W-3;x+=4){
               // calculate position in the image
@@ -247,22 +247,22 @@ namespace icl{
     const Img<T> &apply_linear(const Img<T> &src,
                                const Size &resultSize, const Homography2D &hom,
                                const Rect *resultROI, Img<T> &buffer){
-      int W=resultSize.width,H=resultSize.height;
+      const int W=resultSize.width,H=resultSize.height;
       int x;
 
 #if defined __SSE2__ || _MSC_VER >= 1300
       // convert the values of the homography matrix in sse-types
-      __m128 hom00 = _mm_set1_ps(hom(0,0));
-      __m128 hom01 = _mm_set1_ps(hom(0,1));
-      __m128 hom02 = _mm_set1_ps(hom(0,2));
-      __m128 hom10 = _mm_set1_ps(hom(1,0));
-      __m128 hom11 = _mm_set1_ps(hom(1,1));
-      __m128 hom12 = _mm_set1_ps(hom(1,2));
-      __m128 hom20 = _mm_set1_ps(hom(2,0));
-      __m128 hom21 = _mm_set1_ps(hom(2,1));
-      __m128 hom22 = _mm_set1_ps(hom(2,2));
+      const __m128 hom00 = _mm_set1_ps(hom(0,0));
+      const __m128 hom01 = _mm_set1_ps(hom(0,1));
+      const __m128 hom02 = _mm_set1_ps(hom(0,2));
+      const __m128 hom10 = _mm_set1_ps(hom(1,0));
+      const __m128 hom11 = _mm_set1_ps(hom(1,1));
+      const __m128 hom12 = _mm_set1_ps(hom(1,2));
+      const __m128 hom20 = _mm_set1_ps(hom(2,0));
+      const __m128 hom21 = _mm_set1_ps(hom(2,1));
+      const __m128 hom22 = _mm_set1_ps(hom(2,2));
       // constant for faster counting
-      __m128 r0123 = _mm_set_ps(3,2,1,0);
+      const __m128 r0123 = _mm_set_ps(3,2,1,0);
 
       // memory for four x and y values
       __attribute__ ((aligned (16))) float x4[4];
@@ -277,9 +277,9 @@ namespace icl{
                     ystart = resultROI->y, yend = resultROI->bottom();
           for(int y=ystart;y<yend;++y){
 #if defined __SSE2__ || _MSC_VER >= 1300
-            __m128 ra = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom10), hom20);
-            __m128 rb = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom11), hom21);
-            __m128 rz = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom12), hom22);
+            const __m128 ra = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom10), hom20);
+            const __m128 rb = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom11), hom21);
+            const __m128 rz = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom12), hom22);
             // calculate 4 pixel at the same time
             for(x=xstart;x<xend-3;x+=4){
               // calculate position in the image
@@ -306,9 +306,9 @@ namespace icl{
           }
         }else{
           for(int y=0;y<H;++y){
-            __m128 ra = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom10), hom20);
-            __m128 rb = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom11), hom21);
-            __m128 rz = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom12), hom22);
+            const __m128 ra = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom10), hom20);
+            const __m128 rb = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom11), hom21);
+            const __m128 rz = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom12), hom22);
             // calculate 4 pixel at the same time
             for(x=0;x<W-3;x+=4){
 #if defined __SSE2__ || _MSC_VER >= 1300
@@ -347,7 +347,6 @@ namespace icl{
                                                float maxTilt, bool advanedAlgorithm,
                                                const Rect *resultROI, const core::scalemode eScaleMode){
       const Homography2D HOM = create_and_check_homography(validateAndSortPoints,ps,src,resultSize,hom,Q,R,maxTilt,buffer, advanedAlgorithm);
-Time t = Time::now();
 
       switch (eScaleMode) {
       case core::interpolateNN:
@@ -361,7 +360,7 @@ Time t = Time::now();
         WARNING_LOG("using linear interpolation as fallback!");
         apply_linear(src, resultSize, HOM, resultROI, buffer);
       }
-t.showAge("icl");
+
       return buffer;
     }
   
@@ -378,7 +377,7 @@ t.showAge("icl");
       const double coeffs[3][3]={ {HOM(0,0),HOM(1,0),HOM(2,0)},
                                   {HOM(0,1),HOM(1,1),HOM(2,1)},
                                   {HOM(0,2),HOM(1,2),HOM(2,2)} };
-Time t = Time::now();
+
       for(int c=0;c<src.getChannels();++c){
         IppStatus s = ippFunc(src.begin(c), src.getSize(), src.getLineStep(), src.getImageRect(),
                               buffer.begin(c),buffer.getLineStep(),resultROI ? *resultROI : buffer.getImageRect(), coeffs,
@@ -387,7 +386,7 @@ Time t = Time::now();
           ERROR_LOG(ippGetStatusString(s));
         }
       }
-t.showAge("ipp");
+
       return buffer;
     }
     
