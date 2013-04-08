@@ -32,13 +32,7 @@
 
 #include <ICLCore/Img.h>
 #include <ICLMath/FixedMatrix.h>
-
-#if defined __SSE2__ || _MSC_VER >= 1300
-  #include "emmintrin.h"
-  #if defined __SSE3__ || _MSC_VER >= 1500
-    #include "pmmintrin.h"
-  #endif
-#endif
+#include <ICLUtils/SSEUtils.h>
 
 namespace icl{
   namespace filter{

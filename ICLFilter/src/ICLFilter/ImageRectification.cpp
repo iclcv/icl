@@ -148,7 +148,7 @@ namespace icl{
       const int W=resultSize.width,H=resultSize.height;
       int x;
 
-#if defined __SSE2__ || _MSC_VER >= 1300
+#ifdef __ICL_SSE2__
       // convert the values of the homography matrix in sse-types
       const __m128 hom00 = _mm_set1_ps(hom(0,0));
       const __m128 hom01 = _mm_set1_ps(hom(0,1));
@@ -174,7 +174,7 @@ namespace icl{
           const int xstart = resultROI->x, xend = resultROI->right(), 
                     ystart = resultROI->y, yend = resultROI->bottom();
           for(int y=ystart;y<yend;++y){
-#if defined __SSE2__ || _MSC_VER >= 1300
+#ifdef __ICL_SSE2__
             const __m128 ra = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom10), hom20);
             const __m128 rb = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom11), hom21);
             const __m128 rz = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom12), hom22);
@@ -206,7 +206,7 @@ namespace icl{
           }
         }else{
           for(int y=0;y<H;++y){
-#if defined __SSE2__ || _MSC_VER >= 1300
+#ifdef __ICL_SSE2__
             const __m128 ra = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom10), hom20);
             const __m128 rb = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom11), hom21);
             const __m128 rz = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom12), hom22);
@@ -250,7 +250,7 @@ namespace icl{
       const int W=resultSize.width,H=resultSize.height;
       int x;
 
-#if defined __SSE2__ || _MSC_VER >= 1300
+#ifdef __ICL_SSE2__
       // convert the values of the homography matrix in sse-types
       const __m128 hom00 = _mm_set1_ps(hom(0,0));
       const __m128 hom01 = _mm_set1_ps(hom(0,1));
@@ -276,7 +276,7 @@ namespace icl{
           const int xstart = resultROI->x, xend = resultROI->right(), 
                     ystart = resultROI->y, yend = resultROI->bottom();
           for(int y=ystart;y<yend;++y){
-#if defined __SSE2__ || _MSC_VER >= 1300
+#ifdef __ICL_SSE2__
             const __m128 ra = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom10), hom20);
             const __m128 rb = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom11), hom21);
             const __m128 rz = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom12), hom22);
@@ -311,7 +311,7 @@ namespace icl{
             const __m128 rz = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom12), hom22);
             // calculate 4 pixel at the same time
             for(x=0;x<W-3;x+=4){
-#if defined __SSE2__ || _MSC_VER >= 1300
+#ifdef __ICL_SSE2__
               // calculate position in the image
               __m128 raa = _mm_add_ps(ra, _mm_mul_ps(hom00, _mm_add_ps(_mm_set1_ps(x), r0123)));
               __m128 rbb = _mm_add_ps(rb, _mm_mul_ps(hom01, _mm_add_ps(_mm_set1_ps(x), r0123)));
