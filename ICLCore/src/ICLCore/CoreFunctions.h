@@ -9,7 +9,7 @@
 ** File   : ICLCore/src/ICLCore/CoreFunctions.h                    **
 ** Module : ICLCore                                                **
 ** Authors: Christof Elbrechter, Michael Goetting, Robert          **
-**          Haschke, Andre Justus                                  **
+**          Haschke, Andre Justus, Sergius Gaulik                  **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -40,6 +40,7 @@
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/ClippedCast.h>
 #include <ICLUtils/PThreadFix.h>
+#include <ICLUtils/SSEUtils.h>
 
 #include <ICLCore/Types.h>
 #include <ICLCore/ImgParams.h>
@@ -302,12 +303,8 @@ namespace icl {
       ippsConvert_64f32s_Sfs(poSrcStart,poDst,(poSrcEnd-poSrcStart),ippRndNear,0);
     }
     /** \endcond */
-  #elif defined __SSE2__ || _MSC_VER >= 1300
-    /** \cond */ 
-    #include "emmintrin.h"
-    #if defined __SSE3__ || _MSC_VER >= 1500
-      #include "pmmintrin.h"
-    #endif
+  #elif defined __ICL_SSE2__
+    /** \cond */
 
     /// from icl8u functions
     template<> void convert<icl8u,icl32f>(const icl8u *poSrcStart,const icl8u *poSrcEnd, icl32f *poDst);

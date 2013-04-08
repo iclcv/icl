@@ -9,7 +9,7 @@
 ** File   : ICLCore/src/ICLCore/Img.h                              **
 ** Module : ICLCore                                                **
 ** Authors: Christof Elbrechter, Michael Goetting, Robert          **
-**          Haschke, Andre Justus                                  **
+**          Haschke, Andre Justus, Sergius Gaulik                  **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **

@@ -8,7 +8,8 @@
 **                                                                 **
 ** File   : ICLCore/src/ICLCore/Img.cpp                            **
 ** Module : ICLCore                                                **
-** Authors: Christof Elbrechter, Michael Goetting, Robert Haschke  **
+** Authors: Christof Elbrechter, Michael Goetting, Robert Haschke, **
+**          Sergius Gaulik                                         **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -1581,7 +1582,7 @@ namespace icl {
           static bool first = true;
           if(first){
             first = false;
-            WARNING_LOG("the given interpolation method is not support without IPP");
+            WARNING_LOG("the given interpolation method is not supported without IPP");
             WARNING_LOG("using nearest neighbour interpolation as fallback!");
           }
           subPixelMethod = &Img<T>::subPixelNN;
