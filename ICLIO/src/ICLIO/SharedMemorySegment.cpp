@@ -31,10 +31,12 @@
 #include <ICLIO/SharedMemorySegment.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Exception.h>
+#include <ICLUtils/SignalHandler.h>
 
 #include <QtCore/QSharedMemory>
 
 #include <map>
+#include <stdio.h>
 
 using namespace icl;
 using namespace icl::utils;
@@ -52,54 +54,22 @@ namespace icl {
     std::string ICL_SHARED_MEMORY_INFO_PREFIX = "icl-shred-memory-segment_info.";
 
     //##########################################################################
-    //# helper functions #######################################################
-    //##########################################################################
-
-    std::vector<std::string> extract_string_vector(unsigned int count, const char* data){
-      std::vector<std::string> gs(count);
-      for(unsigned int i = 0; i < gs.size(); ++i){
-        gs[i] = data;
-        data += gs[i].length()+1;
-      }
-      return gs;
-    }
-
-    std::set<std::string> extract_string_set(unsigned int count, const char* data){
-      std::set<std::string> gs;
-      for(unsigned int i = 0; i < count; ++i){
-        std::string value = data;
-        gs.insert(value);
-        data += value.length()+1;
-      }
-      return gs;
-    }
-
-    void write_string_set(const std::set<std::string> &string_set, char* data){
-      std::set<std::string>::iterator it;
-      for(it = string_set.begin(); it != string_set.end(); ++it){
-        std::string value = *it;
-        std::copy(value.begin(),value.end(),data);
-        data += value.length();
-        *data++ = '\0';
-      }
-    }
-
-    //##########################################################################
     //# SharedMemoryLocker #####################################################
     //##########################################################################
 
     struct SharedMemoryLocker{
         QSharedMemory &memory;
+        bool locked;
         SharedMemoryLocker(QSharedMemory &mem):
           memory(mem){
-          memory.lock();
+          locked = memory.lock();
         }
         SharedMemoryLocker(QSharedMemory* mem):
           memory(*mem){
-          memory.lock();
+          locked = memory.lock();
         }
         ~SharedMemoryLocker(){
-          memory.unlock() ;
+          if(locked) memory.unlock();
         }
     };
 
@@ -107,14 +77,14 @@ namespace icl {
     //# SharedMemorySegmentLocker ##############################################
     //##########################################################################
 
-    SharedMemorySegmentLocker::SharedMemorySegmentLocker(SharedMemorySegment &seg):
+    SharedMemorySegmentLocker::SharedMemorySegmentLocker(SharedMemorySegment &seg, int minSize, bool reduce):
       segment(seg){
-      segment.lock();
+      segment.lock(minSize, reduce);
     }
 
-    SharedMemorySegmentLocker::SharedMemorySegmentLocker(SharedMemorySegment* seg):
+    SharedMemorySegmentLocker::SharedMemorySegmentLocker(SharedMemorySegment* seg, int minSize, bool reduce):
       segment(*seg){
-      segment.lock();
+      segment.lock(minSize, reduce);
     }
 
     SharedMemorySegmentLocker::~SharedMemorySegmentLocker(){
@@ -126,7 +96,8 @@ namespace icl {
     //##########################################################################
 
     struct SharedMemorySegment::Impl{
-      //friend class SharedMemorySegment;
+        class SharedMemorySignalHandler;
+        friend class SharedMemorySegment;
       private:
         static const int SEGMENT_INFO_SIZE = sizeof(int)
             + sizeof(bool);
@@ -135,28 +106,38 @@ namespace icl {
         std::string name;
         bool resize_requested;
         bool resize_own;
-        int resize_to;
+        int min_segment_size;
 
         static Mutex implMapMutex;
         static std::map<std::string,SharedMemorySegment::Impl*> implmap;
         int localInstances;
 
-        Impl(std::string key) : mutex(Mutex::mutexTypeRecursive),
-          segment_locked(0), name(key), resize_requested(false),
-          resize_own(false), resize_to(0), localInstances(0)
+        Impl(std::string key) :
+          mutex(Mutex::mutexTypeRecursive), segment_locked(0), name(key),
+          resize_requested(false), resize_own(false), min_segment_size(0),
+          localInstances(0)
         {
+          static SharedMemorySignalHandler handler;
           info_mem.setKey((str(ICL_SHARED_MEMORY_INFO_PREFIX) + name).c_str());
           data_mem.setKey((name).c_str());
         }
 
         ~Impl(){
           Mutex::Locker l(mutex);
+          DEBUG_LOG("Segment locked: " << segment_locked);
+          while(segment_locked){
+            DEBUG_LOG("unlocking: " << segment_locked);
+            unlock();
+            DEBUG_LOG("unlockced: " << segment_locked);
+          }
           DEBUG_LOG("deleting segment: " << name);
-          if(info_mem.isAttached()){
+          if(info_mem.isAttached() && data_mem.isAttached()){
             info_mem.lock();
             decObserversCount();
             info_mem.unlock();
           }
+          if(data_mem.isAttached()) data_mem.detach();
+          if(info_mem.isAttached()) info_mem.detach();
         }
 
         void createSegment(int size){
@@ -181,6 +162,7 @@ namespace icl {
             error << "SharedMemorySegment: Could not create data segment for '"
                   << name << "'. Error: " << data_mem.errorString().toStdString();
             DEBUG_LOG(error.str());
+            info_mem.detach();
             throw ICLException(error.str());
           }
 
@@ -200,8 +182,7 @@ namespace icl {
             DEBUG_LOG(error.str());
             throw ICLException(error.str());
           }
-          SharedMemoryLocker li(info_mem);
-
+          /*SharedMemoryLocker li(info_mem);
           // attach data segment
           data_mem.attach(QSharedMemory::ReadWrite);
           if(data_mem.error() != QSharedMemory::NoError){
@@ -214,6 +195,15 @@ namespace icl {
           }
           // successfully attached new segment
           incObserversCount();
+          */
+          while(update()) {DEBUG_LOG("needs update in attach"); Thread::msleep(1);}
+        }
+
+
+        // sets the segments value to 0
+        void clearSegment(){
+          char* data = (char*) data_mem.data();
+          std::fill(data, data + data_mem.size() ,(char) 0);
         }
 
       public:
@@ -268,29 +258,56 @@ namespace icl {
             if(name != ICL_SHARED_MEMORY_REGISTER_NAME){
               SharedMemorySegmentRegister::addSegment(name);
             }
+            clearSegment();
             return SharedMemorySegment::created;
           } catch (ICLException &e){
-            DEBUG_LOG("could not create. must already exist");
+            ERROR_LOG("Cant create segment '" << name << "' Error: " << e.what());
+          }
+          try{
             attachSegment();
+            DEBUG_LOG("attached segment '" << name);
             return SharedMemorySegment::attached;
+          } catch (ICLException &e){
+            ERROR_LOG("Cant attach segment '" << name << "' Error: " << e.what());
+          }
+          if(!size){
+            return SharedMemorySegment::emptyCreate;
+          }
+          return SharedMemorySegment::error;
+        }
+
+        // sets the minimum size of the segment
+        void setMinSize(int size){
+          Mutex::Locker l(mutex);
+          min_segment_size = size;
+        }
+
+        // sets the size of the segment
+        void setSize(int size){
+          Mutex::Locker l(mutex);
+          if(data_mem.size() != size){
+            min_segment_size = size;
+            resize_requested = true;
           }
         }
 
-        // marks segment to be resized
-        bool setResize(int size){
+        // returns the minimum segment size
+        int getMinSize(){
           Mutex::Locker l(mutex);
-          if(data_mem.size() != size){
-            resize_to = size;
-            resize_requested = true;
-          }
-          return resize_requested;
+          return min_segment_size;
         }
 
         // returns true when there is need of further calls to update
         bool update(){
           Mutex::Locker l(mutex);
+          // ensure min size
+          if(data_mem.size() < min_segment_size) resize_requested = true;
           // read info segment
           SharedMemoryLocker li(info_mem);
+          if(!li.locked){
+            DEBUG_LOG("could not lock info segment: " << info_mem.errorString().toStdString());
+            return true;
+          }
           if(resize_requested && isObservable()){
             // resize was requested and segment is observable. get it
             setObservable(false);
@@ -304,10 +321,15 @@ namespace icl {
           // owning reset and no observers
           if(!data_mem.isAttached() && resize_own && !getObserversCount()){
             // create with new size
-            while(!data_mem.isAttached() && !data_mem.create(resize_to, QSharedMemory::ReadWrite)){
-              DEBUG_LOG("could not create SharedMemorySegment in update: " << data_mem.errorString().toStdString());
+            int error = 100;
+            while(!data_mem.isAttached() && !data_mem.create(min_segment_size, QSharedMemory::ReadWrite)){
               Thread::msleep(POLLING_SLEEP_MSEC);
+              if(!--error){
+                DEBUG_LOG("Could not create SharedMemorySegment in update: " << data_mem.errorString().toStdString());
+                throw ICLException(str("Could not create SharedMemorySegment in update: ") + data_mem.errorString().toStdString());
+              }
             }
+            clearSegment();
             setObservable(true);
             incObserversCount();
             resize_requested = false;
@@ -315,9 +337,14 @@ namespace icl {
           }
           // can reattach
           if(!data_mem.isAttached() && isObservable()){
+            int error = 100;//TODO: does this realy loop non stop
             while(!data_mem.isAttached() && !data_mem.attach(QSharedMemory::ReadWrite)){
               DEBUG_LOG("could not attach SharedMemorySegment in update: " << data_mem.errorString().toStdString());
               Thread::msleep(POLLING_SLEEP_MSEC);
+              if(!--error){
+                DEBUG_LOG("Could not attach SharedMemorySegment in update: " << data_mem.errorString().toStdString());
+                throw ICLException(str("Could not attach SharedMemorySegment in update: ") + data_mem.errorString().toStdString());
+              }
             }
             incObserversCount();
           }
@@ -386,15 +413,46 @@ namespace icl {
             }
           }
         }
+
+        static std::map<std::string,SharedMemorySegment::Impl*>* getImplMap(){
+          return &implmap;
+        }
+
+        class SharedMemorySignalHandler : public SignalHandler{
+        public:
+          SharedMemorySignalHandler() : SignalHandler("SIGINT,SIGTERM,SIGSEGV"){
+            printf("[created signal handler for SharedMemory]\n");
+          }
+          virtual void handleSignals(const std::string &signal){
+            printf("[Unclean break detected. Signal \"%s\"]\n",signal.c_str());
+            m_oMutex.lock();
+            std::map<std::string,SharedMemorySegment::Impl*>* map =
+                SharedMemorySegment::Impl::getImplMap();
+            std::map<std::string,SharedMemorySegment::Impl*>::iterator it;
+            for(it = map->begin(); it != map->end(); ++it){
+              printf("[Deleting SharedMemorySegment \"%s\"]",(it->first).c_str());
+              ICL_DELETE(it->second);
+            }
+            m_oMutex.unlock();
+            killCurrentProcess();
+          }
+
+        private:
+          Mutex m_oMutex;
+        };
     };
 
     //##########################################################################
     //# SharedMemorySegment ####################################################
     //##########################################################################
 
-    SharedMemorySegment::SharedMemorySegment() :
-      m_Mutex(Mutex::mutexTypeRecursive), m_Impl(NULL)
-    {}
+    SharedMemorySegment::SharedMemorySegment(std::string name, int size) :
+      m_Mutex(Mutex::mutexTypeRecursive), m_Impl(NULL), m_Name(name)
+    {
+      if(m_Name.length()){
+        acquire(m_Name, size);
+      }
+    }
 
     SharedMemorySegment::~SharedMemorySegment(){
       Mutex::Locker l(m_Mutex);
@@ -403,15 +461,38 @@ namespace icl {
 
     SharedMemorySegment::AcquisitionCode SharedMemorySegment::acquire(std::string name, int size){
       Mutex::Locker l(m_Mutex);
+      if(name.length()){
+        m_Name = name;
+      }
+      if(!m_Name.length()){
+        throw ICLException("Can't acquire SharedMemorySegment with empty name.");
+      }
+      DEBUG_LOG("reset segment " << m_Name);
+      SharedMemorySegment::resetSegment(m_Name);
+      DEBUG_LOG("reset segment done" << m_Name);
       // when already exists
-      if(m_Impl && m_Impl->getName() != name){
+      if(m_Impl && m_Impl->getName() != m_Name){
         SharedMemorySegment::Impl::free(m_Impl->getName());
         m_Impl = NULL;
       }
       if(!m_Impl){
-        m_Impl = SharedMemorySegment::Impl::alloc(name);
+        m_Impl = SharedMemorySegment::Impl::alloc(m_Name);
       }
-      return m_Impl->acquireSegment(size);
+      SharedMemorySegment::AcquisitionCode code = m_Impl->acquireSegment(size);
+      switch(code){
+        case created:
+        case attached:
+        case existed:
+          return code;
+        case emptyCreate:
+          SharedMemorySegment::Impl::free(m_Impl->getName());
+          throw ICLException("Attaching SharedMemorySegment failed and can't create empty Segment.");
+        case error:
+          SharedMemorySegment::Impl::free(m_Impl->getName());
+          throw ICLException("Acquiring SharedMemorySegment failed.");
+        default:
+          return error;
+      }
     }
 
     void SharedMemorySegment::release(){
@@ -455,6 +536,19 @@ namespace icl {
       return m_Impl && m_Impl->isAttached();
     }
 
+    bool SharedMemorySegment::isEmpty() const{
+      Mutex::Locker l(m_Mutex);
+      if(m_Impl && m_Impl->isAttached()){
+        const char* data = (const char*) m_Impl->data_mem.constData();
+        for(int i = 0; i < m_Impl->data_mem.size(); ++i){
+          if(*(data + i) != (char) 0){
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+
     int SharedMemorySegment::size() const{
       Mutex::Locker l(m_Mutex);
       return (m_Impl) ? m_Impl->size() : 0;
@@ -473,21 +567,15 @@ namespace icl {
       ICL_DELETE(data);
     }
 
-    bool SharedMemorySegment::setResize(int size){
+    void SharedMemorySegment::setMinSize(int size){
       Mutex::Locker l(m_Mutex);
-      if(!m_Impl) return false;
-      return m_Impl->setResize(size);
+      if(m_Impl) m_Impl->setMinSize(size);
     }
 
-    bool SharedMemorySegment::update(bool poll){
-      if(!poll){
-        return m_Impl->update();
-      } else {
-        while(m_Impl->update()){
-          Thread::msleep(POLLING_SLEEP_MSEC);
-        }
-        return false;
-      }
+    int SharedMemorySegment::getMinSize(){
+      Mutex::Locker l(m_Mutex);
+      if(!m_Impl) return 0;
+      return m_Impl->getMinSize();
     }
 
     int SharedMemorySegment::getObserversCount(){
@@ -502,9 +590,41 @@ namespace icl {
       return m_Impl->isObservable();
     }
 
-    bool SharedMemorySegment::lock(){
+    bool SharedMemorySegment::lock(int minSize, bool reduce){
       Mutex::Locker l(m_Mutex);
-      return m_Impl->lock();
+      Mutex::Locker limpl(m_Impl->mutex);
+      if(reduce){
+        DEBUG_LOG2("enforce size " << getName() << " - " << m_Impl->size() << " -> " << minSize);
+        m_Impl->setSize(minSize);
+      } else {
+        DEBUG_LOG2("ensure min size " << getName() << " - " << m_Impl->size() << " -> " << getMinSize());
+        m_Impl->setMinSize(minSize);
+      }
+      while (true){
+        // update till segment is ready
+        while(true){
+          if(m_Impl->update()){
+            Thread::msleep(POLLING_SLEEP_MSEC);
+          } else {
+            break;
+          }
+        }
+        if(m_Impl->lock()){
+          if(reduce && (m_Impl->size() != minSize)){
+            DEBUG_LOG2("enforce size " << getName() << " - " << m_Impl->size() << " -> " << minSize);
+            m_Impl->unlock();
+          } else if(!reduce && (m_Impl->size() < minSize)){
+            DEBUG_LOG2("ensure min size " << getName() << " - " << m_Impl->size() << " -> " << getMinSize());
+            m_Impl->unlock();
+          } else {
+            break;
+          }
+        } else {
+          DEBUG_LOG2("could not get lock "<< getName());
+        }
+      }
+      DEBUG_LOG2("Segment info: \n\tObservable:\t" << m_Impl->isObservable() << "\n\tObservers:\t" << m_Impl->getObserversCount() << "\n");
+      return true;
     }
 
     bool SharedMemorySegment::unlock(){
@@ -512,22 +632,26 @@ namespace icl {
       return m_Impl->unlock();
     }
 
+    std::string SharedMemorySegment::getName(){
+      return m_Name;
+    }
+
     std::string SharedMemorySegment::errorToString(SharedMemorySegment::ErrorCode error){
-        switch(error){
-    #define CASE(X) case X: return #X
-          CASE(SharedMemorySegment::NoError);
-          CASE(SharedMemorySegment::PermissionDenied);
-          CASE(SharedMemorySegment::InvalidSize);
-          CASE(SharedMemorySegment::KeyError);
-          CASE(SharedMemorySegment::AlreadyExists);
-          CASE(SharedMemorySegment::NotFound);
-          CASE(SharedMemorySegment::LockError);
-          CASE(SharedMemorySegment::OutOfResources);
-          CASE(SharedMemorySegment::UnknownError);
-    #undef CASE
-          default: return "UnknownError";
-        }
-        return "";
+      switch(error){
+#define CASE(X) case X: return #X
+        CASE(SharedMemorySegment::NoError);
+        CASE(SharedMemorySegment::PermissionDenied);
+        CASE(SharedMemorySegment::InvalidSize);
+        CASE(SharedMemorySegment::KeyError);
+        CASE(SharedMemorySegment::AlreadyExists);
+        CASE(SharedMemorySegment::NotFound);
+        CASE(SharedMemorySegment::LockError);
+        CASE(SharedMemorySegment::OutOfResources);
+        CASE(SharedMemorySegment::UnknownError);
+#undef CASE
+        default: return "UnknownError";
+      }
+      return "";
     }
 
     Mutex SharedMemorySegment::Impl::implMapMutex(Mutex::mutexTypeRecursive);
@@ -543,7 +667,6 @@ namespace icl {
         Mutex mutex;
         SharedMemorySegment reg_segment;
 
-      public:
         // acquires special register segment
         SegmentRegisterData() : mutex(Mutex::mutexTypeRecursive) {
           DEBUG_LOG("register constr");
@@ -551,8 +674,8 @@ namespace icl {
           SharedMemorySegment::resetSegment(ICL_SHARED_MEMORY_REGISTER_NAME);
           // acquire segment
           if(SharedMemorySegment::created == reg_segment.acquire(
-                                              ICL_SHARED_MEMORY_REGISTER_NAME,
-                                              SEGMENT_REGISTER_SIZE))
+               ICL_SHARED_MEMORY_REGISTER_NAME,
+               SEGMENT_REGISTER_SIZE))
           {
             reg_segment.lock();
             std::set<std::string> empty;
@@ -561,14 +684,28 @@ namespace icl {
           }
         }
 
+      public:
+
+        static SegmentRegisterData* inst(){
+          static SegmentRegisterData segment_register_data;
+          return &segment_register_data;
+        }
+
+        static Mutex* regMutex(){
+          static Mutex segment_register_mutex;
+          return &segment_register_mutex;
+        }
+
         void lock(){
           Mutex::Locker l(mutex);
+          regMutex()->lock();
           reg_segment.lock();
         }
 
         void unlock(){
           Mutex::Locker l(mutex);
           reg_segment.unlock();
+          regMutex()->unlock();
         }
 
         SharedMemorySegment* getRegisterSegment(){
@@ -577,32 +714,41 @@ namespace icl {
 
         std::set<std::string> getSegmentSet(){
           Mutex::Locker l(mutex);
+          std::set<std::string> gs;
           const char* data = (const char*) reg_segment.constData();
-          int segmentCount = *((int*) data);
-          return extract_string_set(segmentCount, data + sizeof(int));
+          int count = *((int*) data);
+          data += sizeof(int);
+          for(int i = 0; i < count; ++i){
+            std::string value = data;
+            gs.insert(value);
+            data += value.length()+1;
+          }
+          return gs;
         }
 
         void setSegmentSet(std::set<std::string> set){
           Mutex::Locker l(mutex);
-          // check segment/set size
-          int setSize = sizeof(int) + set.size();
-          for(std::set<std::string>::iterator it = set.begin();
-              it != set.end(); ++it){
-            setSize += (*it).size();
-          }
-          DEBUG_LOG("calculated size for segment: " << setSize);
-          int resize = reg_segment.size();
-          while(resize < setSize){
-            resize += SEGMENT_REGISTER_SIZE;
-          }
-          DEBUG_LOG("resize to " << resize);
-          reg_segment.setResize(resize);
-          reg_segment.update(true);
-
-          // write set
           char* data = (char*) reg_segment.data();
-          *((int*)data) = (int) set.size();
-          write_string_set(set, data + sizeof(int));
+          int* setSize = (int*) data;
+          data += sizeof(int);
+          *setSize = 0;
+          std::set<std::string>::iterator it;
+          unsigned int size = 0;
+          for(it = set.begin(); it != set.end(); ++it){
+            std::string value = *it;
+            size += value.length() + 1;
+            if(size < reg_segment.size()-sizeof(int)){
+              std::copy(value.begin(),value.end(),data);
+              data += value.length();
+              *data++ = '\0';
+              (*setSize)++;
+            } else {
+              ERROR_LOG("\n Can't add '" << value << "' to full SharedMemorySeg"
+                        "mentRegister. \nThe size of SharedMemorySegmentRegiste"
+                        "r can only be changed in the source ccode. \n Please r"
+                        "efer to the developers if you experience this error.");
+            }
+          }
         }
 
         void addSegment(std::string name){
@@ -626,45 +772,45 @@ namespace icl {
         }
     };
 
-    static SegmentRegisterData segment_register_data;
-    static Mutex segment_register_mutex;
-
     //##########################################################################
     //# SharedMemorySegmentRegister ############################################
     //##########################################################################
 
     std::set<std::string> SharedMemorySegmentRegister::getSegmentSet(){
-      Mutex::Locker l(segment_register_mutex);
-      SharedMemorySegmentLocker(segment_register_data.getRegisterSegment());
-      return segment_register_data.getSegmentSet();
+      SegmentRegisterData* dat = SegmentRegisterData::inst();
+      dat->lock();
+      std::set<std::string> ret = dat->getSegmentSet();
+      dat->unlock();
+      return ret;
     }
 
     void SharedMemorySegmentRegister::addSegment(std::string name){
-      Mutex::Locker l(segment_register_mutex);
-      SharedMemorySegmentLocker(segment_register_data.getRegisterSegment());
-      segment_register_data.addSegment(name);
+      SegmentRegisterData* dat = SegmentRegisterData::inst();
+      dat->lock();
+      dat->addSegment(name);
+      dat->unlock();
     }
 
     void SharedMemorySegmentRegister::removeSegment(std::string name){
-      Mutex::Locker l(segment_register_mutex);
-      SharedMemorySegmentLocker(segment_register_data.getRegisterSegment());
-      segment_register_data.removeSegment(name);
+      SegmentRegisterData* dat = SegmentRegisterData::inst();
+      dat->lock();
+      dat->removeSegment(name);
+      dat->unlock();
     }
 
     void SharedMemorySegmentRegister::resetSegment(std::string name){
-      Mutex::Locker l(segment_register_mutex);
-      SharedMemorySegmentLocker(segment_register_data.getRegisterSegment());
       SharedMemorySegment::resetSegment(name);
     }
 
     void SharedMemorySegmentRegister::resetAllSegment(){
-      Mutex::Locker l(segment_register_mutex);
-      SharedMemorySegmentLocker(segment_register_data.getRegisterSegment());
-      std::set<std::string> set = segment_register_data.getSegmentSet();
+      SegmentRegisterData* dat = SegmentRegisterData::inst();
+      dat->lock();
+      std::set<std::string> set = dat->getSegmentSet();
       std::set<std::string>::iterator it;
       for(it = set.begin(); it != set.end(); ++it){
         SharedMemorySegment::resetSegment(*it);
       }
+      dat->unlock();
     }
 
   } // namespace io

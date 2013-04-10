@@ -44,49 +44,54 @@ namespace icl {
 
         enum ErrorCode{
           /// No error occurred.
-          NoError = 0,
+          NoError = 0x1,
           /// The operation failed because the caller didn't have the required permissions.
-          PermissionDenied = 1,
+          PermissionDenied,
           /// A create operation failed because the requested size was invalid.
-          InvalidSize = 2,
+          InvalidSize,
           /// The operation failed because of an invalid key.
-          KeyError = 3,
+          KeyError,
           /// A create() operation failed because an underlying shared memory segment with the specified key already existed.
-          AlreadyExists = 4,
+          AlreadyExists,
           /// An attach() failed because a shared memory segment with the specified key could not be found.
-          NotFound = 5,
+          NotFound,
           /// The attempt to lock() the shared memory segment failed because create() or attach() failed and returned false, or because a system error occurred in QSystemSemaphore::acquire().
-          LockError = 6,
+          LockError,
           /// A create() operation failed because there was not enough memory available to fill the request.
-          OutOfResources = 7,
+          OutOfResources,
           /// Something else happened and it was bad.
-          UnknownError = 8
+          UnknownError
         };
 
         enum AcquisitionCode{
-          created = 101,
-          attached = 102,
-          existed = 103
+          created = 0x101,
+          attached,
+          existed,
+          emptyCreate,
+          error
         };
 
-        SharedMemorySegment();
+        SharedMemorySegment(std::string name="", int size=0);
         ~SharedMemorySegment();
-        AcquisitionCode acquire(std::string name, int size);
+        AcquisitionCode acquire(std::string name="", int size=0);
         void release();
 
-        bool lock();
+        bool lock(int minSize=0, bool reduce=false);
         bool unlock();
 
         const void* constData() const;
         void* data();
         const void* data() const;
+        void clear();
 
         int size() const;
         bool isAttached() const;
-        bool setResize(int size);
-        bool update(bool poll = false);
+        bool isEmpty() const;
+        void setMinSize(int size);
+        int getMinSize();
         int getObserversCount();
         bool isObservable();
+        std::string getName();
 
         static void resetSegment(std::string name);
         static std::string errorToString(SharedMemorySegment::ErrorCode error);
@@ -95,13 +100,14 @@ namespace icl {
         struct Impl;
         mutable utils::Mutex m_Mutex;
         Impl* m_Impl;
+        std::string m_Name;
     };
 
 
     struct SharedMemorySegmentLocker{
         SharedMemorySegment &segment;
-        SharedMemorySegmentLocker(SharedMemorySegment &seg);
-        SharedMemorySegmentLocker(SharedMemorySegment* seg);
+        SharedMemorySegmentLocker(SharedMemorySegment &seg, int minSize=0, bool reduce=false);
+        SharedMemorySegmentLocker(SharedMemorySegment* seg, int minSize=0, bool reduce=false);
         ~SharedMemorySegmentLocker();
     };
 
