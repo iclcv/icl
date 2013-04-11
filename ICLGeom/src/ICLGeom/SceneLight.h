@@ -50,7 +50,15 @@ namespace icl{
     /// Wrapper class for OpenGL lights
     /** The light is integrated with the scene and is used to define
         lights in scenes. Each light is associated with one of the
-        eight lights provided by OpenGL.*/
+        eight lights provided by OpenGL.
+        
+        \section SHADOWS Shadows
+        The class allows casting shadows, which can be enabled by
+        using setShadowEnabled(). To change the direction of the 
+        shadow use getShadowCam() to get the shadow camera. Do not
+        change the position of the camera since it will be back
+        changed to the lights position every frame.
+        */
     class SceneLight : public utils::Uncopyable{
       /// called by the scene 
       /** This method is called by the scene and sets up the
@@ -213,10 +221,13 @@ namespace icl{
       void setShadowEnabled(bool on=true);
       
       /// returns the camera used for casting the shadows
-      const Camera& getShadowCam() const;
+      const Camera* getShadowCam() const;
       
       /// returns the camera used for casting the shadows
-      Camera& getShadowCam();
+      Camera* getShadowCam();
+      
+      /// changes the shadowcam to the provided camera
+      void setShadowCam(Camera* cam);
       
       /// sets all paramters to OpenGL's default values
       void reset();

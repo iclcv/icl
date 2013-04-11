@@ -143,6 +143,7 @@ namespace icl{
 
     SceneLight::~SceneLight(){
       delete lightObject;
+      delete shadowCam;
     }
       
     void SceneLight::setOn(bool on){
@@ -217,12 +218,17 @@ namespace icl{
       this->shadowOn = on;
     }
     
-    const Camera& SceneLight::getShadowCam() const{
-      return *shadowCam;
+    const Camera* SceneLight::getShadowCam() const{
+      return shadowCam;
     }
     
-    Camera& SceneLight::getShadowCam(){
-      return *shadowCam;
+    Camera* SceneLight::getShadowCam(){
+      return shadowCam;
+    }
+    
+    void SceneLight::setShadowCam(Camera* cam){
+      delete shadowCam;
+      shadowCam = cam;
     }
     
     void SceneLight::reset(){

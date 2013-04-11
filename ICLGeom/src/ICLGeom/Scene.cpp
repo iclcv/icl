@@ -499,8 +499,11 @@ namespace icl{
       <<"  vec3 L = normalize(gl_LightSource[light].position.xyz - V.xyz);\n"
       <<"  vec3 E = normalize(-V.xyz);\n"
       <<"  vec3 R = normalize(-reflect(L, N));\n"
+      <<"#ifdef USE_TEXTURE\n"
+      <<"  color = gl_Color.rgb * texture_Color.rgb;\n"
+      <<"#else\n"
       <<"  vec3 color = gl_Color.rgb;\n"
-      <<"  if(use_texture)color = gl_Color.rgb * texture_Color.rgb;\n"
+      <<"#endif\n"
       <<"  ambient = gl_LightSource[light].ambient.rgb\n"
       <<"            * color;\n"
       <<"  diffuse = gl_LightSource[light].diffuse.rgb\n"
@@ -550,27 +553,34 @@ namespace icl{
             fragmentBuffer << "  color += computeLight("<<i<<");\n";
             break;
           case 2:
-            vertexBuffer << "  shadow_coord["<<currentShadow<<"] = shadowMat["<<currentShadow<<"] * V;\n";
-            fragmentBuffer << "  if(render_shadow) {\n";
-            fragmentBuffer << "    color += computeLightWithShadow("<<i<<","<<currentShadow<<");\n";
-            fragmentBuffer << "  } else {\n";
-            fragmentBuffer << "    color += computeLight("<<i<<");\n";
-            fragmentBuffer << "  }\n";
+            vertexBuffer 
+            <<"  shadow_coord["<<currentShadow<<"] = shadowMat["<<currentShadow<<"] * V;\n";
+            fragmentBuffer
+            <<"#ifdef RENDER_SHADOW\n"
+            <<"  color += computeLightWithShadow("<<i<<","<<currentShadow<<");\n"
+            <<"#else\n"
+            <<"  color += computeLight("<<i<<");\n"
+            <<"#endif\n";
             currentShadow++;
             break;
           default:
             break;
         }
       }
-      vertexBuffer << "}\n";
+      vertexBuffer 
+      <<"}\n";
       fragmentBuffer
+      <<"#ifdef USE_TEXTURE\n"
+      <<"  gl_FragColor =  vec4(color,gl_Color.a * texture_Color.a);\n"
+      <<"#else\n"
       <<"  gl_FragColor =  vec4(color,gl_Color.a);\n"
-      <<"  if(use_texture)gl_FragColor =  vec4(color,gl_Color.a * texture_Color.a);\n}\n";
+      <<"#endif\n"
+      <<"}\n";
       
-      m_perPixelShader = new GLFragmentShader( vertexBuffer.str(), "bool use_texture = false;\nbool render_shadow = true;\n" + fragmentBuffer.str());
-      m_perPixelShaderTexture = new GLFragmentShader( vertexBuffer.str(), "bool use_texture = true;\nbool render_shadow = true;\n" + fragmentBuffer.str());
-      m_perPixelShaderNoShadow = new GLFragmentShader( vertexBuffer.str(), "bool use_texture = false;\nbool render_shadow = false;\n" + fragmentBuffer.str());
-      m_perPixelShaderTextureNoShadow = new GLFragmentShader( vertexBuffer.str(), "bool use_texture = true;\nbool render_shadow = false;\n" + fragmentBuffer.str());
+      m_perPixelShader = new GLFragmentShader( vertexBuffer.str(), "#define RENDER_SHADOW\n" + fragmentBuffer.str());
+      m_perPixelShaderTexture = new GLFragmentShader( vertexBuffer.str(), "#define USE_TEXTURE;\n#define RENDER_SHADOW\n" + fragmentBuffer.str());
+      m_perPixelShaderNoShadow = new GLFragmentShader( vertexBuffer.str(), fragmentBuffer.str());
+      m_perPixelShaderTextureNoShadow = new GLFragmentShader( vertexBuffer.str(), "#define USE_TEXTURE;\n" + fragmentBuffer.str());
     }
 
     void Scene::renderSceneObjectRecursive(const vector<Mat> *project2shadow, SceneObject *o) const{
@@ -920,8 +930,8 @@ namespace icl{
       for(int i = 0; i < 8; i++) {
        if(m_previousLightState[i] == 2) {
          renderShadow(i, currentShadow++, shadowResolution);
-         project2shadow.push_back(m_lights[i]->getShadowCam().getProjectionMatrixGL() 
-                         * m_lights[i]->getShadowCam().getCSTransformationMatrixGL() 
+         project2shadow.push_back(m_lights[i]->getShadowCam()->getProjectionMatrixGL() 
+                         * m_lights[i]->getShadowCam()->getCSTransformationMatrixGL() 
                          * cam.getCSTransformationMatrixGL().inv());
        }
       }
@@ -1073,10 +1083,10 @@ namespace icl{
       glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
       glMatrixMode(GL_MODELVIEW);
-      glLoadMatrixf(GLMatrix(m_lights[light]->getShadowCam().getCSTransformationMatrixGL()));
+      glLoadMatrixf(GLMatrix(m_lights[light]->getShadowCam()->getCSTransformationMatrixGL()));
   
       glMatrixMode(GL_PROJECTION);
-      glLoadMatrixf(GLMatrix(m_lights[light]->getShadowCam().getProjectionMatrixGL()));
+      glLoadMatrixf(GLMatrix(m_lights[light]->getShadowCam()->getProjectionMatrixGL()));
       
       glEnable(GL_DEPTH_TEST);
       
