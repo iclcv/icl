@@ -130,6 +130,9 @@ namespace icl {
             unlock();
             DEBUG_LOG("unlockced: " << segment_locked);
           }
+          if(info_mem.isAttached()){
+            while(update()) DEBUG_LOG("update on delete " << name);
+          }
           DEBUG_LOG("deleting segment: " << name);
           if(info_mem.isAttached() && data_mem.isAttached()){
             info_mem.lock();
@@ -138,6 +141,12 @@ namespace icl {
           }
           if(data_mem.isAttached()) data_mem.detach();
           if(info_mem.isAttached()) info_mem.detach();
+        }
+
+        // sets the segments value to 0
+        void clearSegment(){
+          char* data = (char*) data_mem.data();
+          std::fill(data, data + data_mem.size() ,(char) 0);
         }
 
         void createSegment(int size){
@@ -168,6 +177,8 @@ namespace icl {
 
           // successfully created new segment
           initInfoBlock();
+          SharedMemoryLocker ld(data_mem);
+          clearSegment();
         }
 
         void attachSegment(){
@@ -182,28 +193,7 @@ namespace icl {
             DEBUG_LOG(error.str());
             throw ICLException(error.str());
           }
-          /*SharedMemoryLocker li(info_mem);
-          // attach data segment
-          data_mem.attach(QSharedMemory::ReadWrite);
-          if(data_mem.error() != QSharedMemory::NoError){
-            // could not attach data segment
-            std::ostringstream error;
-            error << "SharedMemorySegment: Could not attach data segment for '"
-                  << name << "'. Error: " << data_mem.errorString().toStdString();
-            DEBUG_LOG(error.str());
-            throw ICLException(error.str());
-          }
-          // successfully attached new segment
-          incObserversCount();
-          */
           while(update()) {DEBUG_LOG("needs update in attach"); Thread::msleep(1);}
-        }
-
-
-        // sets the segments value to 0
-        void clearSegment(){
-          char* data = (char*) data_mem.data();
-          std::fill(data, data + data_mem.size() ,(char) 0);
         }
 
       public:
@@ -258,7 +248,6 @@ namespace icl {
             if(name != ICL_SHARED_MEMORY_REGISTER_NAME){
               SharedMemorySegmentRegister::addSegment(name);
             }
-            clearSegment();
             return SharedMemorySegment::created;
           } catch (ICLException &e){
             ERROR_LOG("Cant create segment '" << name << "' Error: " << e.what());
@@ -308,18 +297,21 @@ namespace icl {
             DEBUG_LOG("could not lock info segment: " << info_mem.errorString().toStdString());
             return true;
           }
-          if(resize_requested && isObservable()){
+          if(isAttached() && resize_requested && isObservable()){
             // resize was requested and segment is observable. get it
+            DEBUG_LOG("owning resize, setting !observable " << Time::now())
             setObservable(false);
             resize_own = true;
           }
           // segment is attached but not observable. need to detatch.
           if(data_mem.isAttached() && !isObservable()){
+            DEBUG_LOG("detatching from !observable " << Time::now())
             data_mem.detach();
             decObserversCount();
           }
           // owning reset and no observers
           if(!data_mem.isAttached() && resize_own && !getObserversCount()){
+            DEBUG_LOG("observers cleared try to recreate " << Time::now())
             // create with new size
             int error = 100;
             while(!data_mem.isAttached() && !data_mem.create(min_segment_size, QSharedMemory::ReadWrite)){
@@ -329,14 +321,28 @@ namespace icl {
                 throw ICLException(str("Could not create SharedMemorySegment in update: ") + data_mem.errorString().toStdString());
               }
             }
+            DEBUG_LOG("observers recreated " << Time::now())
+            // clear segment and set to observable
+            if(!data_mem.lock()){
+              // this should not happen
+              DEBUG_LOG("Can not lock SharedMemorySegment. Error: "
+                << data_mem.errorString().toStdString());
+              throw ICLException(str("Can not lock SharedMemorySegment. Error: ")
+                 + data_mem.errorString().toStdString());
+            }
+            DEBUG_LOG("clearing segment " << Time::now())
             clearSegment();
+            DEBUG_LOG("cleared segment " << Time::now())
+            data_mem.unlock();
             setObservable(true);
+            DEBUG_LOG("set observable " << Time::now())
             incObserversCount();
             resize_requested = false;
             resize_own = false;
           }
           // can reattach
           if(!data_mem.isAttached() && isObservable()){
+            DEBUG_LOG("reattach to observable " << Time::now())
             int error = 100;//TODO: does this realy loop non stop
             while(!data_mem.isAttached() && !data_mem.attach(QSharedMemory::ReadWrite)){
               DEBUG_LOG("could not attach SharedMemorySegment in update: " << data_mem.errorString().toStdString());
@@ -348,6 +354,7 @@ namespace icl {
             }
             incObserversCount();
           }
+          DEBUG_LOG("returning attached: " << data_mem.isAttached() << " - " << Time::now())
           return !data_mem.isAttached();
         }
 
@@ -617,6 +624,7 @@ namespace icl {
             DEBUG_LOG2("ensure min size " << getName() << " - " << m_Impl->size() << " -> " << getMinSize());
             m_Impl->unlock();
           } else {
+            // lock acquired with sufficient size
             break;
           }
         } else {
