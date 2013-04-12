@@ -198,7 +198,7 @@ namespace icl{
               r(x,y) = s(p.x, p.y);
             }
 #else
-            for(x=0;x<W;++x){
+            for(x=xstart;x<xend;++x){
               Point32f p = hom.apply(Point32f(x,y));
               r(x,y) = s(p.x, p.y);
             }
@@ -299,19 +299,19 @@ namespace icl{
               r(x,y) = s(hom.apply(Point32f(x,y)));
             }
 #else
-            for(x=0;x<xend;++x){
+            for(x=xstart;x<xend;++x){
               r(x,y) = s(hom.apply(Point32f(x,y)));
             }
 #endif
           }
         }else{
           for(int y=0;y<H;++y){
+#ifdef __ICL_SSE2__
             const __m128 ra = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom10), hom20);
             const __m128 rb = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom11), hom21);
             const __m128 rz = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom12), hom22);
             // calculate 4 pixel at the same time
             for(x=0;x<W-3;x+=4){
-#ifdef __ICL_SSE2__
               // calculate position in the image
               __m128 raa = _mm_add_ps(ra, _mm_mul_ps(hom00, _mm_add_ps(_mm_set1_ps(x), r0123)));
               __m128 rbb = _mm_add_ps(rb, _mm_mul_ps(hom01, _mm_add_ps(_mm_set1_ps(x), r0123)));
@@ -329,7 +329,7 @@ namespace icl{
               r(x,y) = s(hom.apply(Point32f(x,y)));
             }
 #else
-            for(x=0;x<xend;++x){
+            for(x=0;x<W;++x){
               r(x,y) = s(hom.apply(Point32f(x,y)));
             }
 #endif
