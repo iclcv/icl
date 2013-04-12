@@ -35,10 +35,17 @@
 #ifdef HAVE_IPP
 #include <ippi.h>
 #endif 
-
-#include <ICLQt/Quick.h>
+#include <ICLCore/Img.h>
+//#include <ICLQt/Quick.h>
 
 namespace icl{
+
+  using namespace core;
+  using namespace utils;
+  using namespace math;
+  using namespace filter;
+  using namespace io;
+
   namespace cv{
     // this function is only used here to ensure that
     // libICLCV.so links against libICLIO.so

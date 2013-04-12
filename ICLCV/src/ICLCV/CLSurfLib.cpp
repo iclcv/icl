@@ -83,7 +83,6 @@
 #include <ICLCV/CLSurfLibKernels.h>
 
 #include <ICLCore/CCFunctions.h>
-#include <ICLQt/Quick.h>
 
 #include <CL/cl.h>
 #include "cstdio"
@@ -119,6 +118,10 @@
 //#define OPTIMIZED_TRANSFERS
 
 namespace icl{
+  using namespace utils;
+  using namespace math;
+  using namespace core;
+  
   namespace cv{
     namespace clsurf{
 

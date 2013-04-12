@@ -72,6 +72,8 @@ namespace icl{
     }
   
     
+#if 0
+    // see header file for explanation!
     template<class PCLPointType>
     PCLPointCloudObject<PCLPointType>::PCLPointCloudObject(const std::string &filename):m_ownPCL(true){
       m_pcl = new pcl::PointCloud<PCLPointType>;
@@ -81,6 +83,7 @@ namespace icl{
         }
       }
     }
+#endif
     
     template<class PCLPointType>
     PCLPointCloudObject<PCLPointType>::PCLPointCloudObject(int width, int height, const PCLPointType &init):

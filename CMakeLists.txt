@@ -82,7 +82,7 @@ ENDIF()
 # ---- global definitions ----
 # todo: add "-debug" postfix here and there!
 SET(ICL_VERSION_MAJOR "8" CACHE STRING "Major project version part")
-SET(ICL_VERSION_MINOR "1" CACHE STRING "Minor project version part")
+SET(ICL_VERSION_MINOR "2" CACHE STRING "Minor project version part")
 SET(ICL_VERSION_PATCH "0" CACHE STRING "Patch project version part")
 
 
@@ -271,6 +271,7 @@ ENDIF()
 
 IF(BUILD_WITH_PCL)
   FIND_PACKAGE(PCL 1.6 REQUIRED COMPONENTS kdtree common octree)
+  # io requires openni aswell !!
   # FIND_PACKAGE(PCL REQUIRED) ??
   IF(PCL_FOUND)
     ADD_ICL_DEFINITIONS(-DHAVE_PCL)
@@ -319,10 +320,10 @@ ADD_SUBDIRECTORY(ICLMath)
 ADD_SUBDIRECTORY(ICLCore)
 ADD_SUBDIRECTORY(ICLFilter)
 ADD_SUBDIRECTORY(ICLIO)
+ADD_SUBDIRECTORY(ICLCV)
 IF(QT4_FOUND)
   ADD_SUBDIRECTORY(ICLQt)
 ENDIF()
-ADD_SUBDIRECTORY(ICLCV)
 ADD_SUBDIRECTORY(ICLGeom)
 ADD_SUBDIRECTORY(ICLMarkers)
 

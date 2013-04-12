@@ -76,7 +76,7 @@ namespace icl{
         evaluated at a given position in the input data space. For the LMA,
         the Jacobian is evaluated in each step at each given input data
         point \f$ x_i \f$ and for each output dimension. Therefore, the Jacobian 
-        J_o (for output dimension o) becomes a matrix, where each row \f$ J_{oi] \f$ 
+        J_o (for output dimension o) becomes a matrix, where each row \f$ J_{oi} \f$ 
         contains the partial derivations for all parameters beta for a sigle data
         point \f$ x_i \f$ \\
         

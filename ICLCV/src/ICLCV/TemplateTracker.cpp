@@ -31,12 +31,16 @@
 
 #include <ICLFilter/ProximityOp.h>
 #include <ICLFilter/RotateOp.h>
-#include <ICLQt/Quick.h>
+//#include <ICLQt/Quick.h>
+#include <ICLIO/TestImages.h>
 
-using namespace icl::utils;
-using namespace icl::core;
 
 namespace icl{
+  
+  using namespace utils;
+  using namespace core;
+  using namespace filter;
+  
   namespace cv{
   
     struct TemplateTracker::Data{
@@ -87,7 +91,9 @@ namespace icl{
     void TemplateTracker::setTemplateImage(const Img8u &templateImage, 
                                            float rotationStepSizeDegree){
       
-      Img8u test = cvt8u(scale(cvt(templateImage),4));
+      
+      Img8u test = templateImage;
+      test.scale(test.getSize()*4);
   
       RotateOp rot;    
       ICLASSERT_RETURN(rotationStepSizeDegree > 0.001);
@@ -116,10 +122,13 @@ namespace icl{
     }
   
     void TemplateTracker::showRotationLUT() const{
+      throw ICLException("TemplateTracker::showRotationLUT is not yet implemented!");
+#if 0
       ICLASSERT_RETURN(data->lut.size());
+
       static const int MAX_W = 2000;
-      ImgQ row;
-      ImgQ all;
+      Img32f row;
+      Img32f all;
       
       const int w = data->lut[0]->getWidth();
       for(unsigned int i=0;i<data->lut.size();++i){
@@ -129,7 +138,11 @@ namespace icl{
           row = ImgQ();
         }
       }
-      show(cvt8u(all));
+      Img8u tmp = cvt8u(all);
+      TestImage::show(tmp);
+#endif
+
+      
     }
   
     

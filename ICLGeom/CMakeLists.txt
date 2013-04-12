@@ -98,12 +98,12 @@ IF(QT_FOUND)
 		       src/ICLGeom/PlotWidget3D.h)
 ENDIF()
 
-IF(OpenCV_FOUND AND PCL_FOUND)
-  LIST (APPEND SOURCES src/ICLGeom/PCDFileGrabber.cpp
-                       src/ICLGeom/PCLPointCloudObject.cpp)
-		           
-  LIST (APPEND HEADERS src/ICLGeom/PCDFileGrabber.h
-                       src/ICLGeom/PCLPointCloudObject.h)
+IF(PCL_FOUND)
+  LIST (APPEND SOURCES src/ICLGeom/PCLPointCloudObject.cpp)
+  LIST (APPEND HEADERS src/ICLGeom/PCLPointCloudObject.h)
+  # requires pcl_io lib that depends on openni!!
+  # src/ICLGeom/PCDFileGrabber.cpp
+  # src/ICLGeom/PCDFileGrabber.h
 ENDIF()
 
 IF(OpenCV_FOUND)
@@ -154,6 +154,13 @@ INSTALL(TARGETS ICLGeom
 INSTALL_FILES_RECURSIVE("include/${INSTALL_PATH_PREFIX}" HEADERS)
 
 # ---- PKG-config ----
-CREATE_PKGCONFIG(NAME ICLGeom
-                 LIBRARY_DEPS ${PCL_LIBRARIES}
-                 PKGCONFIG_DEPS ICLCV-${SO_VERSION})
+
+IF(QT4_FOUND)
+  CREATE_PKGCONFIG(NAME ICLGeom
+                   LIBRARY_DEPS ${PCL_LIBRARIES}
+                   PKGCONFIG_DEPS ICLQt-${SO_VERSION})
+ELSE()
+  CREATE_PKGCONFIG(NAME ICLGeom
+                   LIBRARY_DEPS ${PCL_LIBRARIES}
+                   PKGCONFIG_DEPS ICLCV-${SO_VERSION})
+ENDIF()

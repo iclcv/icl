@@ -33,6 +33,9 @@
 #pragma GCC system_header
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
-#include <pcl/io/pcd_io.h>
-#include <pcl/io/file_io.h>
-#include <pcl/io/pcd_grabber.h>
+#include <pcl/common/io.h>
+
+// right now, we dont use pcl_io due to its extra dependency to openni
+//#include <pcl/io/pcd_io.h>
+//#include <pcl/io/file_io.h>
+//#include <pcl/io/pcd_grabber.h>

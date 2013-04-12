@@ -85,11 +85,15 @@ namespace icl{
   
       public:
       
+#if 0
+      // this is right now deactivated due to an extra dependency to libpcl_io
+      // which always depends on openni
+      
       /// creates a PCLPointCloudObject from given filename
       /** This is basically just a convenience function to circumvent using
           a PointCloudGrabber instance */
       PCLPointCloudObject(const std::string &filename="");
-      
+#endif 
       /// creates a PCLPointCloudObject with given width height and intial value
       /** If the height value is -1, the PointCloud instance is assumed to be not ordered,
           e.g. only a 1D set of points instead of a 2D array */

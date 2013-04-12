@@ -17,11 +17,11 @@ Image Component Library (ICL)
 .. |E| image:: icons/92px/io.png
        :target: modules/io.html
 
-.. |F| image:: icons/92px/qt.png
-       :target: modules/qt.html
-
-.. |G| image:: icons/92px/cv.png
+.. |F| image:: icons/92px/cv.png
        :target: modules/cv.html
+
+.. |G| image:: icons/92px/qt.png
+       :target: modules/qt.html
 
 .. |H| image:: icons/92px/geom.png
        :target: modules/geom.html
