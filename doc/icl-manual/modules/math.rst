@@ -26,12 +26,12 @@ Table of Contents
 * :ref:`math.ransac`
 * :ref:`math.som`
 * :ref:`math.llm`
-* :ref:`math.quadtree`
 * :ref:`math.simplex`
 * :ref:`math.stochastic`
-* :ref:`math.vq2d`
+* :ref:`math.vq`
 * :ref:`math.model`
 * :ref:`math.polyreg`
+* :ref:`math.trees`
 
 
 .. _math.dyn:
@@ -180,22 +180,6 @@ tasks.  ICL provides two sample applications that use the icl::`LLM`
 network for 1D to 1D and from 2D to 3D regression tasks.
 
 
-.. _math.quadtree:
-
-Generic QuadTree implementation
-"""""""""""""""""""""""""""""""
-
-The :icl:`QuadTree` class is a generic QuadTree implementation based
-on the pseudo code, that can be found on wikipedia. The
-:icl:`QuadTree` is implemented as a template for **float** and
-**double** point types and it uses an extra template parameter
-**CAPACITY** that defines the number of points, that can be stored in
-each node of the tree. It basically provides functions for
-
-* point insertion
-* nearest neighbor search
-* querying a rectangular sub-region
-
 .. _math.simplex:
 
 Simplex Optimizer
@@ -219,10 +203,10 @@ stochastic search processes. It defines a virtual class interface, that
 can be implemented for specific optimization tasks.
 
 
-.. _math.vq2d:
+.. _math.vq:
 
-2D Vector Quantisation
-""""""""""""""""""""""
+Vector Quantisation
+"""""""""""""""""""
 
 This algorithm is implemented by the :icl:`KMeans` class template.
 The class is implemented as a generic template, and can therefore
@@ -249,6 +233,26 @@ generic template-based implementation for a polynomial regression
 network. It provides a string-based interface to define regression
 parameters.
 
+.. _math.trees:
+
+QuadTree and Octree classes
+"""""""""""""""""""""""""""
+
+The :icl:`QuadTree` and the :icl:`Octree` class templates provides an
+extremly fast interface for inserting points, nearest-neighbor search
+and aproximate nearest-neighbor search. In benchmarks, the octree was
+magnitudes faster then a comparable pcl-octree implementation. However,
+we buy this speedup by the loss of the ability to check whether a newly
+added point is already contained in the octree. 
+
+The classes are implemented as a template for **float** and **double**
+point types and it uses an extra template parameter **CAPACITY** that
+defines the number of points, that can be stored in each node of the
+tree. It basically provides optimized functions for
+
+* point insertion
+* nearest neighbor search
+* querying a rectangular sub-region
 
 
 

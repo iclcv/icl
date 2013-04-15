@@ -30,7 +30,6 @@ Table of Contents
 * :ref:`utils.random`
 * :ref:`utils.others`
 * :ref:`utils.macros`
-* :ref:`utils.trees`
 
 .. _utils.basic-types:
 
@@ -475,16 +474,3 @@ Support Macros
   arrays, **ICL_DELETE_ARRAY(pointer)** has to be used.
 
 
-.. _utils.trees:
-
-QuadTree and Octree classes
-"""""""""""""""""""""""""""
-
-The :icl:`QuadTree` and the :icl:`Octree` class templates provides an
-extremly fast interface for inserting points, nearest-neighbor search
-and aproximate nearest-neighbor search. In benchmarks, the octree was
-magnitudes faster then a comparable pcl-octree implementation. However,
-we buy this speedup by the loss of the ability to check whether a newly
-added point is already contained in the octree. 
-
-.. todo:: write some more here!
