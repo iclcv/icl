@@ -130,8 +130,13 @@ INCLUDE_DIRECTORIES(BEFORE src
 ADD_LIBRARY(ICLGeom SHARED ${SOURCES} ${HEADERS})
 
 # ---- 3rd party library handling ----
-TARGET_LINK_LIBRARIES(ICLGeom ICLCV
-                              ${PCL_LIBRARIES})
+IF(QT4_FOUND)
+  TARGET_LINK_LIBRARIES(ICLGeom ICLQt
+                        ${PCL_LIBRARIES})
+ELSE()
+  TARGET_LINK_LIBRARIES(ICLGeom ICLCV
+                        ${PCL_LIBRARIES})
+ENDIF()
 
 SET_TARGET_PROPERTIES(ICLGeom
                       PROPERTIES 

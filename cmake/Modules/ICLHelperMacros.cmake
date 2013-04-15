@@ -110,7 +110,7 @@ FUNCTION(CREATE_PKGCONFIG)
   IF(${CONFIG_NAME} STREQUAL "ICL")
     SET(PKG_LIB "")
   ELSE()
-    SET(PKG_LIB "-l${PKG_NAME}")
+    SET(PKG_LIB "${CMAKE_INSTALL_PREFIX}/lib/lib${PKG_NAME}.so.${SO_VERSION}")
   ENDIF()
   
   # Prepare include paths
