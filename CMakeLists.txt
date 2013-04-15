@@ -272,8 +272,13 @@ ENDIF()
 IF(BUILD_WITH_PCL)
   FIND_PACKAGE(PCL 1.6 REQUIRED COMPONENTS kdtree common octree)
   # io requires openni aswell !!
-  # FIND_PACKAGE(PCL REQUIRED) ??
+  # FIND_PACKAGE(PCL REQUIRED) ?? 
   IF(PCL_FOUND)
+    # workaround aroud issue that PCL_LIBRARIES contains
+    # tokens optimized pthread and debug
+    SET(PCL_LIBRARIES_PC ${PCL_LIBRARIES})
+    list(REMOVE_DUPLICATES PCL_LIBRARIES_PC)
+    list(REMOVE_ITEM PCL_LIBRARIES_PC debug optimized pthread)
     ADD_ICL_DEFINITIONS(-DHAVE_PCL)
   ENDIF()  
 ENDIF()
