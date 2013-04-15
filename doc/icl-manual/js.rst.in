@@ -70,8 +70,8 @@
     #sticky-3{ border: 1px solid rgb(255,128,0); } 
     #sticky-4{ border: 1px solid rgb(255,255,0); } 
     #sticky-5{ border: 1px solid rgb(168,255,0); } 
-    #sticky-6{ border: 1px solid rgb(0,255,0); } 
-    #sticky-7{ border: 1px solid rgb(0,200,255); } 
+    #sticky-6{ border: 1px solid rgb(0,200,255); } 
+    #sticky-7{ border: 1px solid rgb(0,255,0); } 
     #sticky-8{ border: 1px solid rgb(0,50,255); } 
     #sticky-9{ border: 1px solid rgb(128,0,255); } 
     #sticky-10{ border: 1px solid rgb(100,100,100); }
@@ -102,8 +102,8 @@
   $('#sticky-3').bind('click',function(e){ location = '../modules/core.html';  });
   $('#sticky-4').bind('click',function(e){ location = '../modules/filter.html';  });
   $('#sticky-5').bind('click',function(e){ location = '../modules/io.html';  });
-  $('#sticky-6').bind('click',function(e){ location = '../modules/qt.html';  });
-  $('#sticky-7').bind('click',function(e){ location = '../modules/cv.html';  });
+  $('#sticky-6').bind('click',function(e){ location = '../modules/cv.html';  });
+  $('#sticky-7').bind('click',function(e){ location = '../modules/qt.html';  });
   $('#sticky-8').bind('click',function(e){ location = '../modules/geom.html';  });
   $('#sticky-9').bind('click',function(e){ location = '../modules/markers.html';  });
   $('#sticky-10').bind('click',function(e){ location = '../extras/tutorial.html';  });
