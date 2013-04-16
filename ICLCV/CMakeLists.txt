@@ -111,9 +111,9 @@ SET_TARGET_PROPERTIES(ICLCV
 		      VERSION ${SO_VERSION})
 
 # ---- Build examples/ demos/ apps ----
-IF(BUILD_EXAMPLES)
-  ADD_SUBDIRECTORY(examples)
-ENDIF()
+#IF(BUILD_EXAMPLES) no examples yet
+#  ADD_SUBDIRECTORY(examples)
+#ENDIF()
 
 IF(BUILD_DEMOS)
   ADD_SUBDIRECTORY(demos)
