@@ -4,6 +4,7 @@ IF(QT4_FOUND)
   ADD_SUBDIRECTORY(rotate-image-3D)
   ADD_SUBDIRECTORY(show-extrinsic-calibration-grid)
   ADD_SUBDIRECTORY(show-scene)
+  ADD_SUBDIRECTORY(surf-based-object-tracking)
 ENDIF()
 
 IF(QT4_FOUND AND OpenCV_FOUND)
