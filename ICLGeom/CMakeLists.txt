@@ -37,6 +37,7 @@ SET(SOURCES src/ICLGeom/Camera.cpp
 	    src/ICLGeom/PoseEstimator.cpp
 	    src/ICLGeom/Posit.cpp
 	    src/ICLGeom/SoftPosit.cpp
+	    src/ICLGeom/RansacBasedPoseEstimator.cpp
 	    src/ICLGeom/ViewRay.cpp)
 
 SET(HEADERS src/ICLGeom/Camera.h
@@ -60,7 +61,8 @@ SET(HEADERS src/ICLGeom/Camera.h
             src/ICLGeom/RGBDMapping.h
             src/ICLGeom/Plot3D.h 
 	    src/ICLGeom/DataSegment.h            
-            src/ICLGeom/PlotHandle3D.h)
+            src/ICLGeom/PlotHandle3D.h
+	    src/ICLGeom/RansacBasedPoseEstimator.h)
 
 IF(QT_FOUND)
   LIST (APPEND SOURCES src/ICLGeom/Scene.cpp
