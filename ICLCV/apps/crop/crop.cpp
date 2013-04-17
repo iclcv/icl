@@ -32,17 +32,13 @@
 #include <ICLFilter/ImageRectification.h>
 #include <ICLFilter/RotateOp.h>
 #include <ICLQt/DefineRectanglesMouseHandler.h>
+#include <ICLUtils/FPSLimiter.h>
+#include <ICLIO/FileList.h>
 
 GenericGrabber grabber;
-SmartPtr<SurfFeatureDetector> surf;
 HSplit gui;
-Img8u templ,vis(Size(1,1),formatRGB);
-int iH=0, iW=0, tH=0, tW=0;
-VisualizationDescription vdtempl;
-
-inline int fround(float flt) {  
-  return (int) floor(flt+0.5f); 
-}
+Img8u curr;
+Mutex currMutex;
 
 struct Mouse1 : public MouseHandler{
   std::vector<Point> ps;
@@ -51,7 +47,7 @@ struct Mouse1 : public MouseHandler{
   int dragged;
   Mouse1(const Size &maxSize):ps(4),bounds(Point::null,maxSize-Size(1,1)){
 
-    Rect r = bounds.enlarged(-20);
+    Rect r = bounds.enlarged(-iclMin(50,iclMax(maxSize.width,maxSize.height)/2));
     ps[0] = r.ul();
     ps[1] = r.ur();
     ps[2] = r.lr();
@@ -113,36 +109,55 @@ struct Mouse1 : public MouseHandler{
 
 struct Mouse2 : public DefineRectanglesMouseHandler{
   Mouse2(const Size &size) : DefineRectanglesMouseHandler(1,5){
-    getOptions().handleWidth = 6;
+    getOptions().handleWidth = 10;
     addRect(Rect(Point::null,size).enlarged(-5));
   }
   
   virtual void process(const MouseEvent &e){
-    if(gui["rect"].as<bool>() && !e.isMiddle() ){
+    if(gui["rect"].as<bool>() && !e.isRight()){
       DefineRectanglesMouseHandler::process(e);
     }
   }
 } *mouse_2 = 0;
 
+void rectangular_changed(){
+  if(gui["rect"]){
+    gui["s1"].disable();
+    gui["s2"].disable();
+  }else{
+    gui["s1"].enable();
+    gui["s2"].enable();
+  }
+}
+
+void save_as(){
+  Mutex::Locker lock(currMutex);
+  std::string filename = pa("-i",1);
+  save(curr,filename);
+}
+
+void overwrite(){
+  Mutex::Locker lock(currMutex);
+  try{
+    std::string filename = saveFileDialog();
+    save(curr,filename);
+  }catch(...){}
+}
+
 void init(){
   grabber.init(pa("-i"));
 
   gui << Draw().handle("draw").label("input image")
-      << Image().handle("cropped",!pa("-r")).label("cropped")
-      << ( VBox().maxSize(14,99).minSize(14,1)
+      << Image().handle("cropped").label("cropped")
+      << ( VBox().maxSize(12,99).minSize(12,1)
            << Button("save as ..").handle("saveAs")
            << Button("overwrite input").handle("overwrite")
-           << ComboBox("0,90,180,270").handle("rot").label("rotation")
-           << CheckBox("rectangular",true).handle("rect")
-           << ( HBox().label("rectification ratio")
-                << Spinner(1,32,4).handle("ar1")
-                << Label(":")
-                << Spinner(1,32,3).handle("ar2")
-                )
+           << Combo("0,90,180,270").handle("rot").label("rotation")
+           << CheckBox("rectangular",!pa("-r")).handle("rect")
            << ( HBox().label("rectification size")
                 << Spinner(1,4096,640).handle("s1")
                 << Label(":")
-                << Spinner(1,4096,480).handle("s")
+                << Spinner(1,4096,480).handle("s2")
                 )
            << (HBox() 
                << Fps().handle("fps")
@@ -154,57 +169,79 @@ void init(){
   const ImgBase *image = grabber.grab();
   
   mouse_1 = new Mouse1(image->getSize());
-  mouse_2 = new Mouse2;
+  mouse_2 = new Mouse2(image->getSize());
 
   gui["draw"].install(mouse_1);
   gui["draw"].install(mouse_2);
-}
-
-void extract_template(const Img8u &image){
-  Size32f ars(gui["ar1"],gui["ar2"]);
-  float ar = ars.width/ars.height;
-  static ImageRectification<icl8u> ir;
-
-  Point32f ps[4] = { mouse->ps[0],  mouse->ps[1],  mouse->ps[2],  mouse->ps[3] };
-  Rect r(ps[0],Size(1,1));
-  r |= Rect(ps[1],Size(1,1));
-  r |= Rect(ps[2],Size(1,1));
-  r |= Rect(ps[3],Size(1,1));
-  float dim = iclMax(r.width,r.height);
-  Size32f size(dim*ar,dim);
-  while(size.width > iW || size.height > iH
-        || size.width > iH || size.height > iW){
-    size.width = float(size.width) * 0.9;
-    size.height = float(size.height) * 0.9;
+  
+  DrawHandle draw = gui["draw"];
+  draw->setImageInfoIndicatorEnabled(false);
+  
+  gui["rect"].registerCallback(rectangular_changed);
+  rectangular_changed();
+  
+  
+  if(*pa("-i",0) != "file" || FileList(*pa("-i",1)).size() != 1){
+    gui["overwrite"].disable();
+  }else{
+    gui["overwrite"].registerCallback(overwrite);
   }
-  ir.apply(ps,image,Size(size.width,size.height)).deepCopy(&templ);
-  surf->setReferenceImage(&templ);
-  vdtempl = vis_surf(surf->getReferenceFeatures(),0,(iH-tH)/2);
-}
+  
+  gui["saveAs"].registerCallback(save_as);
 
-void rotate_template(){
-  RotateOp r(90);
-  r.apply(&templ)->deepCopy(bpp(templ));
-  surf->setReferenceImage(&templ);
-  vdtempl = vis_surf(surf->getReferenceFeatures(),0,(iH-tH)/2);
 }
-
 
 void run(){
+  static FPSLimiter fpsLimit(30);
+  fpsLimit.wait();
+
+  const ImgBase *image = grabber.grab();
   DrawHandle draw = gui["draw"];
   ImageHandle cropped = gui["cropped"];
 
-  if(gui["rect"]){
-    std::vector<utils::Rect> rs = mouse_2->getRects();
-    ICLASSER_THROW(
-  }else{
+  draw = image;
   
-  
-  }
-    
-   
- 
+  static RotateOp rot;
+  rot.setAngle(parse<int>(gui["rot"]));
 
+  const ImgBase *cro = 0;
+  if(gui["rect"]){
+    static Img8u roi;
+    std::vector<utils::Rect> rs = mouse_2->getRects();
+    ICLASSERT_THROW(rs.size() == 1, ICLException("expected exactly one rectangle"));
+    mouse_2->visualize(**draw);
+    SmartPtr<const ImgBase> tmp = image->shallowCopy(rs[0] & image->getImageRect());
+    roi.setChannels(tmp->getChannels());
+    roi.setFormat(tmp->getFormat());
+    roi.setSize(tmp->getROISize());
+    tmp->convertROI(&roi);
+    cro = rot.apply(&roi);
+  }else{
+    draw->draw(mouse_1->vis());
+    Size32f s(gui["s1"],gui["s2"]);
+    Point32f ps[4] = { mouse_1->ps[0],  mouse_1->ps[1],  mouse_1->ps[2],  mouse_1->ps[3] };
+    switch(image->getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D)                                \
+      case depth##D:{                                           \
+        static ImageRectification<icl##D> ir;                   \
+        try{                                                    \
+          cro = rot.apply(&ir.apply(ps,*image->as##D(),s));     \
+        }catch(...){}                                           \
+        break;                                                  \
+      }
+      ICL_INSTANTIATE_ALL_DEPTHS;
+#undef ICL_INSTANTIATE_DEPTH
+    }
+  }
+  if(cro){
+    cropped = cro;
+    currMutex.lock();
+    cro->convert(&curr);
+    currMutex.unlock();
+  }
+
+  gui["draw"].render();
+  gui["fps"].render();
 }
 
 
