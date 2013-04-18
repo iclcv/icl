@@ -383,6 +383,98 @@ exchange image data between different processes and PCs.
 Installaion from Source
 """""""""""""""""""""""
 
+ICL uses CMake as build system. After checking out the sources, 
+it is recommended to used an extra build folder in order keep the
+source tree clear of any build artifacts::
+
+   svn co https://opensource.cit-ec.de/svn/icl/trunk ICL
+   cd ICL
+   mkdir build
+   cd build
+
+Now you can either use cmake's Qt-gui to configure and to generate the
+build-system::
+
+   cmake-gui ..
+
+Or you can configure your ICL-build from command line using the cmake
+command. Each dependency **XXX** can manually be activated by adding a
+**-DBUILD_WITH_XXX=TRUE** command line option; by default, all
+dependencies are deactivated. If dependencies are not to be found in
+the system's default directories (e.g. not in /usr or in /) its root
+directory can be specified by also adding a command line token
+**-DXXX_ROOT=/foo/bar**. Please note that adding a root only does not 
+activate the dependency. Some dependencies, such as OpenCV or PCL,
+also provide an own FindXXX.cmake file, which is usually located in
+**SOMEWHERE/share/XXX**. If this is to be used, a token
+**-DXXX_DIR=SOMEWHERE/share/XXX** has to be passed instead of the
+**-DXXX_ROOT** one.  A list of supported dependencies can be obtained 
+by calling::
+   
+  cmake .. > /dev/null && cmake -L ..  | grep BUILD_WITH
+
+from the build folder, which will configure ICL without any
+dependencies before getting a list of the dependencies. The
+dependency-less configuration is automatically overwritten by later
+cmake-calls.
+
+In addition to the definition of dependencies and their root folder,
+further options are interesting, in particular, the installation
+prefix, which is set in cmake default manner by adding a
+**-DCMAKE_INSTALL_PREFIX=SOMEWHERE** token to the command line
+options. The build-type (release of debug) can be specified by adding
+**-DCMAKE_BUILD_TYPE=Release|Debug**, where by default, release is
+used. A release build will automatically set the optimization level to
+**-O3** and logically switch off debugging symbols. Debug switches off
+optimizations using **-O0** and enables full debugging symbols
+**-g3**.
+
+Further optimizations can be manually enabled. these can be listed by
+using::
+  
+  cmake .. > /dev/null && cmake -L ..  | grep ENABLE_
+
+Right now, this is::
+  
+  -DENABLE_FASTMATH_BUILD_OPTION=ON|OFF
+  -DENABLE_NATIVE_BUILD_OPTION=ON|OFF
+  -DENABLE_OPENMP_BUILD_OPTION=ON|OFF
+  -DENABLE_SSEFPMATH_BUILD_OPTION=ON|OFF
+
+
+Lastly one can define, whether applications, examples and demos are
+also compiled and installed. Here the options::
+
+  -DBUILD_EXAMPLES=ON|OFF
+  -DBUILD_APPS=ON|OFF 
+  -DBUILD_DEMOS=ON|OFF
+
+have to be used. A demo bash-script that enables some dependencies
+and defines some variables can be found
+*SOURCE_ROOT/scripts/compileICL.sh*. Here is an example ::
+
+  cmake -DBUILD_WITH_IPP=TRUE -DIPP_ROOT=/vol/nivision/share/IPP/7.06 \
+      -DBUILD_WITH_MKL=TRUE -DMKL_ROOT=/vol/nivision/share/MKL/10.3.11 \
+      -DBUILD_WITH_EIGEN3=TRUE \
+      -DBUILD_WITH_V4L=TRUE \
+      -DBUILD_WITH_XINE=TRUE \
+      -DBUILD_WITH_LIBFREENECT=TRUE \
+      -DBUILD_WITH_QT=TRUE \
+      -DBUILD_WITH_LIBDC=TRUE \
+      -DBUILD_WITH_OPENCL=TRUE \
+      -DBUILD_WITH_OPENCV=TRUE -DOpenCV_DIR=/usr/share/OpenCV \
+      -DBUILD_WITH_IMAGEMAGICK=TRUE \
+      -DBUILD_WITH_PCL=FALSE -DPCL_DIR=/usr/local/share/pcl-1.6 \
+      -DBUILD_EXAMPLES=ON \
+      -DBUILD_DEMOS=ON \
+      -DBUILD_APPS=ON \
+      -DCMAKE_INSTALL_PREFIX=/vol/nivision/ \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DENABLE_OPENMP_BUILD_OPTION=ON \
+      -DENABLE_NATIVE_BUILD_OPTION=ON \
+      -DENABLE_SSEFPMATH_BUILD_OPTION=ON \
+      -DENABLE_FASTMATH_BUILD_OPTION=ON \
+      ..
 
 
 
@@ -391,7 +483,8 @@ Installaion from Source
 Installaion using Binary Packages
 """""""""""""""""""""""""""""""""
 
-
+Binary packages are not yet supported, but we plan to support this as
+soon as possiblle.
 
 .. _install.special:
 
