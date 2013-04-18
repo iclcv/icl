@@ -132,16 +132,16 @@ void rectangular_changed(){
 
 void save_as(){
   Mutex::Locker lock(currMutex);
-  std::string filename = pa("-i",1);
-  save(curr,filename);
-}
-
-void overwrite(){
-  Mutex::Locker lock(currMutex);
   try{
     std::string filename = saveFileDialog();
     save(curr,filename);
   }catch(...){}
+}
+
+void overwrite(){
+  Mutex::Locker lock(currMutex);
+  std::string filename = pa("-i",1);
+  save(curr,filename);
 }
 
 void init(){
