@@ -1734,6 +1734,8 @@ namespace icl{
   #endif
   #endif
   
+    REGISTER_CONFIGURABLE(Scene, return new Scene);
+
   
   } // namespace geom
 }
