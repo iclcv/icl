@@ -98,6 +98,9 @@ namespace icl{
       /// returns whether the file is open, or can be opened for reading
       bool exists() const;
   
+      /// returns whether the file is a directory
+      bool isDirectory() const;
+      
       /// returns whether the file is already opened
       bool isOpen() const;
       

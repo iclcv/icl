@@ -144,6 +144,12 @@ namespace icl{
         struct stat stFileInfo;
         return stat(filename.c_str(),&stFileInfo)==0;
       }
+      
+      bool file_is_dir(const std::string &filename){
+        struct stat s;
+        if( stat(filename.c_str(),&s) != 0 ) return false; // dos not exist
+        else return s.st_mode & S_IFDIR;
+      }
     }
   
     class FileImpl{
@@ -317,6 +323,13 @@ namespace icl{
       ICLASSERT_RETURN_VAL(!isNull(),false);
       return file_exists(impl->name);
     }
+
+    bool File::isDirectory() const{
+      // {{{ open
+      ICLASSERT_RETURN_VAL(!isNull(),false);
+      return file_is_dir(impl->name);
+    }
+    // }}}
   
     // }}}
     bool File::isOpen() const{

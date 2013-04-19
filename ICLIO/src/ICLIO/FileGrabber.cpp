@@ -37,6 +37,7 @@
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/Function.h>
+#include <ICLUtils/File.h>
 // plugins
 #include <ICLIO/FileGrabberPluginPNM.h>
 #include <ICLIO/FileGrabberPluginBICL.h>
@@ -97,6 +98,7 @@ namespace icl{
 
         /// also for time stamp based image acquisition
         Time referenceTimeReal;
+      
     };
     
     static FileGrabberPlugin *find_plugin(const std::string &type){
@@ -189,7 +191,29 @@ namespace icl{
     {
       // {{{ open
 
-      m_data->oFileList = pattern;
+      if(File(pattern).isDirectory()){
+        m_data->oFileList = pattern+"/*";
+        if(!m_data->oFileList.size()){
+          throw FileNotFoundException(pattern);
+        }
+        std::vector<std::string> readable;
+        for(int i=0;i<m_data->oFileList.size();++i){
+          File f(m_data->oFileList[i]);
+          if(find_plugin(f.getSuffix())){
+            readable.push_back(m_data->oFileList[i]);
+          }
+        }
+        if(readable.size()){
+          m_data->oFileList = FileList(readable);
+        }else{
+          throw FileNotFoundException("didn't find any file whose format is supported");
+        }
+      }else{
+        m_data->oFileList = pattern;
+        if(!m_data->oFileList.size()){
+          throw FileNotFoundException(pattern);
+        }
+      }
       m_data->iCurrIdx  = 0;
       m_data->bBufferImages = false;
       m_data->bAutoNext = true;
@@ -197,10 +221,6 @@ namespace icl{
       m_data->poBufferImage = 0;
       m_data->useTimeStamps = false;
       
-      m_data->oFileList = FileList(pattern);
-      if(!m_data->oFileList.size()){
-        throw FileNotFoundException(pattern);
-      }
       
       if(buffer){
         bufferImages(false);
