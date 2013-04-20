@@ -32,6 +32,7 @@
 
 #include <ICLCore/Types.h>
 #include <ICLUtils/Size.h>
+#include <ICLUtils/Point.h>
 #include <ICLUtils/Rect.h>
 #include <ICLCore/ImgIterator.h>
 
@@ -179,6 +180,18 @@ namespace icl{
           @return reference to the Pixel at (x,y) */
       inline T &operator()(int x, int y){ 
         return m_data[x+m_size.width*y]; 
+      }
+
+      /// convenience function for point-based index access
+      /** calls operator()(p.x,p.y) */
+      inline T &operator()(const utils::Point &p){
+        return operator()(p.x,p.y);
+      }
+
+      /// convenience function for point-based index access (const)
+      /** calls operator()(p.x,p.y) const*/
+      inline const T &operator()(const utils::Point &p) const{
+        return operator()(p.x,p.y);
       }
       
       /// main working function: returns const a reference to the pixel at position (x,y)
