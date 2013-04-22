@@ -133,6 +133,10 @@ IF(IPP_FOUND)
   SET(IPP_INCLUDE_DIRS ${IPP_INCLUDE_DIR})
   SET(IPP_LIBRARIES ${_IPP_LIBRARIES_LIST})
 
+  STRING(REGEX REPLACE "[^/]*\\.so$" "" IPP_LIB_DIR ${ippcore_LIBRARY})
+  STRING(REGEX REPLACE "[^/]*\\.so$" "" IOMP_LIB_DIR ${iomp5_LIBRARY})
+
+  #  MESSAGE(STATUS "########################## ${_dir}")
   # for all IPP_LIBRARIES
   #   find library directory (by removing libname.so)
   #   add dir to list
