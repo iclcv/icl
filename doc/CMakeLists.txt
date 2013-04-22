@@ -61,7 +61,7 @@ IF(SPHINX_FOUND)
   ADD_CUSTOM_TARGET(manual ${SPHINXBUILD_EXECUTABLE} -b html -c "${CMAKE_BINARY_DIR}/doc/icl-manual" 
                     ${CMAKE_SOURCE_DIR}/doc/icl-manual "${CMAKE_BINARY_DIR}/doc/icl-manual/html")
 ELSE()
-  ADD_CUSTOM_TARGET(tutorial echo "tutorial cannot be build due to missing dependencies")
+  ADD_CUSTOM_TARGET(manual echo "tutorial cannot be build due to missing dependencies")
 ENDIF()
 
 IF(SPHINX_FOUND AND DOXYGEN_FOUND)
@@ -70,7 +70,7 @@ IF(SPHINX_FOUND AND DOXYGEN_FOUND)
                     ${CMAKE_SOURCE_DIR}/doc/icl-manual "${CMAKE_BINARY_DIR}/doc/icl-manual/html"  	
 		    DEPENDS api)
 ELSE()
-  ADD_CUSTOM_TARGET(manual echo "manual cannot be build due to missing dependencies")
+  ADD_CUSTOM_TARGET(doc echo "manual cannot be build due to missing dependencies")
 ENDIF()
 
 INSTALL(DIRECTORY "${CMAKE_BINARY_DIR}//doc/icl-api/html" DESTINATION "share/icl-${SO_VERSION}/doc/icl-api")
