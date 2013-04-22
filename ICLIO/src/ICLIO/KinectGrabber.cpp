@@ -42,6 +42,8 @@
 #include <libfreenect.h>
 #include <map>
 
+//#define FREENECT_DEBUG_LOGGING
+
 using namespace icl::utils;
 using namespace icl::core;
 using namespace icl::filter;
@@ -62,58 +64,64 @@ namespace icl{
         int started;
         int errors;
         Mutex startMutex;
+        Mutex *ctx_mutex;
+        freenect_context *ctx_ptr;
         static const int MAX_ERRORS = 100;
 
-        FreenectContext() : started(0), errors(0) {}
-
-        static freenect_context* getContext(){
+        FreenectContext() : started(0), errors(0) {
           static Mutex cMutex;
           static freenect_context *ctx = NULL;
           Mutex::Locker l(cMutex);
           if(!ctx && freenect_init(&ctx, NULL) < 0){
             throw ICLException("unable to create freenect_context");
           }
-          return ctx;
+#ifdef FREENECT_DEBUG_LOGGING
+          freenect_set_log_level(ctx, FREENECT_LOG_DEBUG);
+#endif
+          ctx_mutex = &cMutex;
+          ctx_ptr = ctx;
         }
+
+      public:
 
         static FreenectContext &getFreenectContext(){
           static FreenectContext context;
           return context;
         }
 
-      public:
-
-        static int processEvents(){
-          return freenect_process_events(getContext());
+        int processEvents(){
+          Mutex::Locker l(ctx_mutex);
+          return freenect_process_events(ctx_ptr);
         }
 
-        static int openDevice(freenect_device **dev, int index){
-          return freenect_open_device(getContext(), dev, index);
+        int openDevice(freenect_device **dev, int index){
+          Mutex::Locker l(ctx_mutex);
+          return freenect_open_device(ctx_ptr, dev, index);
         }
 
-        static int numDevices(){
-          return freenect_num_devices(getContext());
+        int numDevices(){
+          Mutex::Locker l(ctx_mutex);
+          return freenect_num_devices(ctx_ptr);
         }
 
-        static void start(){
-          FreenectContext& c = getFreenectContext();
-          Mutex::Locker l(c.startMutex);
-          if(!c.started++){
-            c.Thread::start();
+        void start(){
+          Mutex::Locker l(startMutex);
+          if(!started++){
+            Thread::start();
           }
         }
 
-        static void stop(){
-          FreenectContext& c = getFreenectContext();
-          Mutex::Locker l(c.startMutex);
-          if(!--c.started){
-            c.Thread::stop();
+        void stop(){
+          Mutex::Locker l(startMutex);
+          if(!--started){
+            Thread::stop();
           }
         }
 
         virtual void run(){
+          usleep(1000);
           while(true){
-            msleep(1);
+            usleep(1);
             if(!trylock()){
               if(processEvents() < 0){
                 errors++;
@@ -373,7 +381,7 @@ namespace icl{
             used->currentColorMode = mode;
             used->depthImagePostProcessingMedianRadius = 0;
 
-            if(FreenectContext::openDevice(&used->device, index) < 0){
+            if(FreenectContext::getFreenectContext().openDevice(&used->device, index) < 0){
               devices.erase(index);
               throw ICLException("FreenectDevice:: unable to open kinect device for device " + str(index));
             }
@@ -544,7 +552,7 @@ namespace icl{
     };
 
     KinectGrabber::KinectGrabber(KinectGrabber::Mode mode, int deviceID, const Size &size) throw (ICLException) {
-      FreenectContext::start();
+      FreenectContext::getFreenectContext().start();
       m_impl = new Impl(mode,deviceID,size);
       // Configurable
       static const std::string formats[] = {
@@ -587,7 +595,7 @@ namespace icl{
     
     KinectGrabber::~KinectGrabber(){
       ICL_DELETE(m_impl);
-      FreenectContext::stop();
+      FreenectContext::getFreenectContext().stop();
     }
     
     const ImgBase* KinectGrabber::acquireImage(){
@@ -729,7 +737,7 @@ namespace icl{
       static std::vector<GrabberDeviceDescription> devices;
       if(rescan){
         devices.clear();
-        int deviceCount = FreenectContext::numDevices();
+        int deviceCount = FreenectContext::getFreenectContext().numDevices();
         for(int i = 0; i < deviceCount; ++i){
           devices.push_back(GrabberDeviceDescription("kinectd",str(i),"Kinect Depth Camera (ID "+str(i)+")"));
         }
@@ -741,7 +749,7 @@ namespace icl{
       static std::vector<GrabberDeviceDescription> devices;
       if(rescan){
         devices.clear();
-        int deviceCount = FreenectContext::numDevices();
+        int deviceCount = FreenectContext::getFreenectContext().numDevices();
         for(int i = 0; i < deviceCount; ++i){
           devices.push_back(GrabberDeviceDescription("kinectc",str(i),"Kinect Color Camera RGB (ID "+str(i)+")"));
         }
@@ -753,7 +761,7 @@ namespace icl{
       static std::vector<GrabberDeviceDescription> devices;
       if(rescan){
         devices.clear();
-        int deviceCount = FreenectContext::numDevices();
+        int deviceCount = FreenectContext::getFreenectContext().numDevices();
         for(int i = 0; i < deviceCount; ++i){
           devices.push_back(GrabberDeviceDescription("kinecti",str(i),"Kinect Color Camera IR (ID "+str(i)+")"));
         }
