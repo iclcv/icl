@@ -237,7 +237,8 @@ namespace icl{
     LineSampler::Result LineSampler::sample(const Point &a, const Point &b){
       int dx = std::abs(a.x - b.x);
       int dy = std::abs(a.y - b.y);
-      if(!m_buf.size()) m_buf.resize(iclMax(dx,dy)+1); 
+      int lenNeeded = iclMax(dx,dy)+1;
+      if((int)m_buf.size() < lenNeeded) m_buf.resize(lenNeeded);
       if(!dx || !dy){
         std::pair<Point*,Point*> res = sample_simple_line_level_0(!dx, a.x, a.y, b.x, b.y, m_br.size() ? m_br.data() : 0, m_buf);
         Result r = { res.first, (int)(res.second - res.first) };
