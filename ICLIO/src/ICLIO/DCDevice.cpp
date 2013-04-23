@@ -228,34 +228,75 @@ namespace icl{
     void DCDevice::estimateBayerFilterMode(){
       // {{{ open
       
-      if(isNull()) m_eBayerFilterMode = BF_NONE;
+      if(isNull()) {
+        m_eBayerFilterMode = BF_NONE;
+        return;
+      }
+      
       std::string id = getTypeID(m_poCam);
-      // DEBUG_LOG("id is :-" << id << "-");
-      // "SONY -- XCD-V50CR"
-      if(id== "Point Grey Research -- Firefly MV FFMV-03MTC"){
-        m_eBayerFilterMode = BF_GBRG;
-      }else if(id == "Imaging Source -- DFx_21BF04"){
-        m_eBayerFilterMode = BF_FROM_MODE;
-      }else if(id == "SONY -- XCD-V50CR"){
-        m_eBayerFilterMode = BF_GBRG;
-      }else{
-        // this is a list of builtin cameras that dont't have
-        // a bayer filter
-        static std::set<std::string> builtin;
-        if(!builtin.size()){
-          builtin.insert("SONY -- DFW-VL500 2.30");
-          builtin.insert("Point Grey Research -- Firefly MV FFMV-03MTM");
-          builtin.insert("Apple Computer, Inc. -- iSight");
-          builtin.insert("Fire-i 1.2-Vendor -- Fire-i 1.2");
-          builtin.insert("Point Grey Research -- Flea2 FL2-08S2C");
-          builtin.insert("Point Grey Research -- Flea2 FL2-03S2M");
-          builtin.insert("Point Grey Research -- Flea2 FL2-03S2C");
-          builtin.insert("Point Grey Research -- Flea2 FL2G-13S2C");
-        }
-        if(std::find(builtin.begin(),builtin.end(),id) != builtin.end()){
+      
+      if(id.compare(0,19,"Point Grey Research") == 0){
+        // 1st: try to read control register
+        uint32_t value = 0;
+        // see Point Grey Digital Camera Register Reference 
+        // 7.5 BAYER_TILE_MAPPING: 1040h
+        // thanx to Alexander Neumann for this patch
+        dc1394error_t err = dc1394_get_control_register(m_poCam, 0x1040, &value);
+        //SHOW(err);
+        //SHOW(value);
+        if(err){
           m_eBayerFilterMode = BF_NONE;
         }else{
-          m_eBayerFilterMode = BF_FROM_FEATURE;
+          switch (value) {
+            case 0x52474742:
+              //DEBUG_LOG("set mode to rggb");
+              m_eBayerFilterMode = BF_RGGB;
+              break;
+            case 0x47425247:
+              m_eBayerFilterMode = BF_GBRG;
+              //DEBUG_LOG("set mode to gbrg");
+              break;
+            case 0x47524247:
+              m_eBayerFilterMode = BF_GRBG;
+              //DEBUG_LOG("set mode to grbg");
+            break;
+            case 0x42474752:
+              m_eBayerFilterMode = BF_BGGR;
+              //DEBUG_LOG("set mode to bggr");
+              break;
+            default: 
+              //DEBUG_LOG("set mode to none");
+              m_eBayerFilterMode = BF_NONE;
+          }
+        }
+      }else{
+        // DEBUG_LOG("id is :-" << id << "-");
+        // "SONY -- XCD-V50CR"
+        if(id== "Point Grey Research -- Firefly MV FFMV-03MTC"){
+          m_eBayerFilterMode = BF_GBRG;
+        }else if(id == "Imaging Source -- DFx_21BF04"){
+          m_eBayerFilterMode = BF_FROM_MODE;
+        }else if(id == "SONY -- XCD-V50CR"){
+          m_eBayerFilterMode = BF_GBRG;
+        }else{
+          // this is a list of builtin cameras that dont't have
+          // a bayer filter
+          static std::set<std::string> builtin;
+          if(!builtin.size()){
+            builtin.insert("SONY -- DFW-VL500 2.30");
+            builtin.insert("Point Grey Research -- Firefly MV FFMV-03MTM");
+            builtin.insert("Apple Computer, Inc. -- iSight");
+            builtin.insert("Fire-i 1.2-Vendor -- Fire-i 1.2");
+            builtin.insert("Point Grey Research -- Flea2 FL2-08S2C");
+            builtin.insert("Point Grey Research -- Flea2 FL2-03S2M");
+            builtin.insert("Point Grey Research -- Flea2 FL2-03S2C");
+            builtin.insert("Point Grey Research -- Flea2 FL2G-13S2C");
+          }
+          if(std::find(builtin.begin(),builtin.end(),id) != builtin.end()){
+            m_eBayerFilterMode = BF_NONE;
+          }else{
+            m_eBayerFilterMode = BF_FROM_FEATURE;
+          }
         }
       }
     }
