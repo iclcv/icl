@@ -85,8 +85,15 @@
 #include <ICLCore/Img.h>
 #include <ICLCV/SurfFeature.h>
 #include <vector>
+#ifdef HAVE_OPENCL
+#include <ICLUtils/CLProgram.h>
+#include <ICLUtils/CLKernel.h>
+#include <ICLUtils/CLBuffer.h>
+#endif
+using namespace icl::utils;
 
 namespace icl{
+
   namespace cv{
     namespace clsurf{
 
@@ -104,6 +111,7 @@ namespace icl{
       class Surf {
         struct Data;  //!< hidden implementation
         Data *m_data; //!< hidden data pointer
+        void createKernels();
 
         public:
     
@@ -117,6 +125,20 @@ namespace icl{
         const IpVec &detect(const core::ImgBase *image);
         
         private:
+
+        CLProgram program;
+        CLKernel createDescrtptorsKernel;
+        CLKernel getOrientationStep1Kernel;
+        CLKernel getOrientationStep2Kernel;
+        CLKernel hessian_detKernel;
+        CLKernel scanKernel;
+        CLKernel scan4Kernel;
+        CLKernel scanImageKernel;
+        CLKernel transposeKernel;
+        CLKernel transposeImageKernel;
+        CLKernel nearestNeighborKernel;
+        CLKernel non_max_supressionKernel;
+        CLKernel normalizeDescriptorsKernel;
         /// Compute the integral image
         void computeIntegralImage(const icl::core::Img32f &source);
     

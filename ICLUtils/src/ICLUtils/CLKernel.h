@@ -172,7 +172,8 @@ namespace icl {
 			Arg operator[](int idx) {return Arg(*this,idx);}
 
 			/// executes the kernel with given dimensions
-			void apply(int w, int h = 0, int c = 0) throw (CLKernelException);
+			void apply(int gloW, int gloH = 0, int gloC = 0,
+					int locW = 0, int locH = 0, int locC = 0) throw (CLKernelException);
 		};
 	}
 }

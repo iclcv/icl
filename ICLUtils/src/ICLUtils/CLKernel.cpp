@@ -50,18 +50,47 @@ namespace icl {
 					throw CLKernelException(CLException::getMessage(error.err(), error.what()));
 				}
 			}
-			void apply(int w, int h, int c) throw (CLKernelException) {
-				cl::NDRange range;
-				if (h > 0)
-				if (c > 0)
-				range = cl::NDRange(w, h, c);
+
+			void apply(int gloW, int gloH = 0, int gloC = 0,
+					int locW = 0, int locH = 0, int locC = 0) throw (CLKernelException){
+				cl::NDRange globRange;
+				if (gloH > 0)
+				{
+					if (gloC > 0)
+					{
+						globRange = cl::NDRange(gloW, gloH, gloC);
+					}
+					else
+					{
+						globRange = cl::NDRange(gloW, gloH);
+					}
+				}
 				else
-				range = cl::NDRange(w, h);
-				else
-				range = cl::NDRange(w);
+				{
+					globRange = cl::NDRange(gloW);
+				}
+
+				cl::NDRange locRange = cl::NullRange;
+				if (locW > 0)
+				{
+					if (locH > 0)
+					{
+						if (locC > 0){
+							locRange = cl::NDRange(locW, locH, locC);
+						}
+						else
+						{
+							locRange = cl::NDRange(locW, locH);
+						}
+					}
+					else
+					{
+						locRange = cl::NDRange(locW);
+					}
+				}
 				try {
-					cmdQueue.enqueueNDRangeKernel(kernel, cl::NullRange, range,
-							cl::NullRange);
+					cmdQueue.enqueueNDRangeKernel(kernel, cl::NullRange, globRange,
+							locRange);
 				} catch (cl::Error& error) {
 					throw CLKernelException(CLException::getMessage(error.err(), error.what()));
 				}
@@ -84,8 +113,9 @@ namespace icl {
 			impl = new Impl(program, cmdQueue, id);
 
 		}
-		void CLKernel::apply(int w, int h, int c) throw (CLKernelException) {
-			impl->apply(w, h, c);
+		void CLKernel::apply(int gloW, int gloH, int gloC,
+				int locW, int locH, int locC) throw (CLKernelException){
+			impl->apply(gloW, gloH, gloC, locW, locH, locC);
 		}
 
 		CLKernel::~CLKernel() {

@@ -36,7 +36,7 @@
 namespace icl{
   namespace cv{
     namespace clsurf{
-      
+      extern const char *utilityKernels;
       extern const char *normalizeDescriptors_kernel;
       extern const char *nonMaxSuppression_kernel;
       extern const char *nearestNeighbor_kernel;
