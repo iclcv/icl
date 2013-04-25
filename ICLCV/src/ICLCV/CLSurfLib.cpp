@@ -326,31 +326,6 @@ void* alloc(size_t size) {
 	return ptr;
 }
 
-//-------------------------------------------------------
-// Error handling
-//-------------------------------------------------------
-
-// Compare a status value to CL_SUCCESS and optionally exit on error
-int cl_errChk(const cl_int status, const char *msg, bool exitOnErr);
-
-//-------------------------------------------------------
-// Platform and device information
-//-------------------------------------------------------
-
-bool cl_deviceIsAMD(cl_device_id dev = NULL);
-char* cl_getDeviceVendor(cl_device_id dev = NULL);
-
-//////////////////////////////////////////////////////////////////////////////
-// cl_utils functions ////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
-
-//! The chosen OpenCL device
-static cl_device_id device = NULL;
-
-//-------------------------------------------------------
-//          Error handling
-//-------------------------------------------------------
-
 //! OpenCl error code list
 /*!
  An array of character strings used to give the error corresponding to the error code \n
@@ -421,71 +396,6 @@ const char *cl_errs[MAX_ERR_VAL] = { "CL_SUCCESS",                         // 0
 		"CL_INVALID_BUFFER_SIZE",             //-61
 		"CL_INVALID_MIP_LEVEL",               //-62
 		"CL_INVALID_GLOBAL_WORK_SIZE" };       //-63
-
-//! OpenCl Error checker
-/*!
- Checks for error code as per cl_int returned by OpenCl
- \param status Error value as cl_int
- \param msg User provided error message
- \return True if Error Seen, False if no error
- */
-int cl_errChk(const cl_int status, const char * msg, bool exitOnErr) {
-
-	if (status != CL_SUCCESS) {
-		printf("OpenCL Error: %d %s %s\n", status, cl_errs[-status], msg);
-
-		if (exitOnErr) {
-			exit(-1);
-		}
-
-		return true;
-	}
-	return false;
-}
-
-//-------------------------------------------------------
-//          Platform and device information
-//-------------------------------------------------------
-
-//! Returns true if AMD is the device vendor
-bool cl_deviceIsAMD(cl_device_id dev) {
-
-	bool retval = false;
-
-	char* vendor = cl_getDeviceVendor(dev);
-
-	if (strncmp(vendor, "Advanced", 8) == 0) {
-		retval = true;
-	}
-
-	free(vendor);
-
-	return retval;
-}
-
-//! Get the name of the vendor for a device
-char* cl_getDeviceVendor(cl_device_id dev) {
-	cl_int status;
-	size_t devInfoSize;
-	char* devInfoStr = NULL;
-
-	// If dev is NULL, set it to the default device
-	if (dev == NULL) {
-		dev = device;
-	}
-
-	// Print the vendor
-	status = clGetDeviceInfo(dev, CL_DEVICE_VENDOR, 0, NULL, &devInfoSize);
-	cl_errChk(status, "Getting vendor name", true);
-
-	devInfoStr = (char*) alloc(devInfoSize);
-
-	status = clGetDeviceInfo(dev, CL_DEVICE_VENDOR, devInfoSize, devInfoStr,
-			NULL);
-	cl_errChk(status, "Getting vendor name", true);
-
-	return devInfoStr;
-}
 
 //////////////////////////////////////////////////////////////////////////////
 // ResponseLayer Hessian class implementation ////////////////////////////////
@@ -968,16 +878,7 @@ void Surf::computeIntegralImage(const icl::core::Img32f &image) {
 		// Copy the data to the GPU
 		this->m_data->d_intImage.write(data, sizeof(float) * width * height);
 
-		// If it is possible to use the vector scan (scan4) use
-		// it, otherwise, use the regular scan
-		/*XXVL		if (cl_deviceIsAMD() && width % 4 == 0 && height % 4 == 0) {
-		 // NOTE Change this to KERNEL_SCAN when running verification code.
-		 //      The reference code doesn't use a vector type and
-		 //      scan4 produces a slightly different integral image
-		 scan_kernel = scan4Kernel;
-		 } else {*/
 		scan_kernel = scanKernel;
-//		}
 	}
 
 	// -----------------------------------------------------------------
