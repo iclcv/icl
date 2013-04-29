@@ -102,7 +102,6 @@ namespace icl {
     //##########################################################################
 
     struct SharedMemorySegment::Impl{
-        class SharedMemorySignalHandler;
         friend class SharedMemorySegment;
       private:
         static const int SEGMENT_INFO_SIZE = sizeof(int)
@@ -326,7 +325,6 @@ namespace icl {
           }
           if(segment_locked < 0){
             DEBUG_LOG("this should not become  < 0");
-            exit(-1);
           }
           return !segment_locked;
         }
@@ -362,12 +360,13 @@ namespace icl {
         }
 
         static void handleSignal(){
+        Mutex::Locker l(implMapMutex);
           std::map<std::string,SharedMemorySegment::Impl*>* map =
               SharedMemorySegment::Impl::getImplMap();
           std::map<std::string,SharedMemorySegment::Impl*>::iterator it;
           for(it = map->begin(); it != map->end(); ++it){
             if(it->first != ICL_SHARED_MEMORY_REGISTER_NAME){
-              printf("[Deleting SharedMemorySegment \"%s\"]",(it->first).c_str());
+              printf("[Deleting SharedMemorySegment \"%s\"]\n",(it->first).c_str());
               ICL_DELETE(it->second);
             }
           }
@@ -618,10 +617,9 @@ namespace icl {
               //printf("[created signal handler for SharedMemory]\n");
             }
             virtual void handleSignals(const std::string &signal){
-              printf("[Unclean break detected. Signal \"%s\"]\n",signal.c_str());
+              printf("[SharedMemorySegment signal handling called. Signal \"%s\"]\n",signal.c_str());
               SharedMemorySegment::Impl::handleSignal();
               inst()->release();
-              killCurrentProcess();
             }
         };
     };

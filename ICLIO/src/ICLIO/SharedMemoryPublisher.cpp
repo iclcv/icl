@@ -29,7 +29,6 @@
 ********************************************************************/
 
 #include <ICLIO/SharedMemoryPublisher.h>
-#include <QtCore/QSharedMemory>
 #include <ICLUtils/StringUtils.h>
 #include <ICLCore/ImageSerializer.h>
 #include <ICLCore/Img.h>
@@ -41,175 +40,47 @@ using namespace icl::core;
 
 namespace icl{
   namespace io{
-    #define MIN_MEMORY_SEGMENT_SIZE 5000000
-  
-    // extra amount of bytes, always allocated for image meta data (1MB)
-    #define MIN_EXTRA_PAYLOAD_SIZE  1000000
-  
-    struct SharedMemoryLocker{
-      QSharedMemory &mem;
-      SharedMemoryLocker(QSharedMemory &mem):
-        mem(mem){
-        mem.lock();
-      }
-      ~SharedMemoryLocker(){ 
-        mem.unlock() ; 
-      }
-    };
-    
-    std::vector<std::string> extract_grabber_list(QSharedMemory &mem){
-      ICLASSERT_THROW(mem.size() >= (int)sizeof(icl32s),ICLException("unable to extract list of shared memory grabbers (code 1)"));
-      const char* data = (const char*)mem.constData();
-      std::vector<std::string> gs(*(icl32s*)data);
-      data += sizeof(icl32s);
-      for(unsigned int i=0;i<gs.size();++i){
-        gs[i] = data;
-        data += gs[i].length()+1;
-      }
-      return gs;
-    }
-    
-    void set_grabber_list(QSharedMemory &mem,const std::vector<std::string> &gs){
-      char *data = (char*)mem.data();
-      *(icl32s*)data = gs.size();
-      data += sizeof(icl32s);
-      for(unsigned int i=0;i<gs.size();++i){
-        std::copy(&gs[i][0],&gs[i][0]+gs[i].length(),data);
-        data+= gs[i].length();
-        *data++ = '\0';
-      }
-    }
-  
-    static void register_grabber(QSharedMemory &mem,const std::string &s){
-      SharedMemoryLocker lock(mem);
-      if(!mem.attach(QSharedMemory::ReadWrite)){
-        if(!mem.create(100000)){
-          ERROR_LOG("unable to create or attach to shared memory segment 'icl-shared-mem-grabbers'");
-          return;
-        }
-      }
-      std::vector<std::string> grabbers = extract_grabber_list(mem);
-      
-      if(find(grabbers.begin(),grabbers.end(),s) != grabbers.end()){
-        ERROR_LOG("SharedMemoryGrabber with ID \"" << s << "\" was instantiated twice!");
-        return;
-      }
-      grabbers.push_back(s);
-  
-      set_grabber_list(mem,grabbers);
-    }
-    
-    static void unregister_grabber(QSharedMemory &mem,const std::string &s){
-      SharedMemoryLocker lock(mem);
-      if(!mem.attach(QSharedMemory::ReadWrite)){
-        ERROR_LOG("unable remove shared memory grabber instance \"" << s << "\" from device list (no connection to memory segment, code 3))");
-        return;
-      }
-      std::vector<std::string> grabbers = extract_grabber_list(mem);
-      
-      std::vector<std::string>::iterator it = find(grabbers.begin(),grabbers.end(),s);
-      if(it == grabbers.end()){
-        ERROR_LOG("SharedMemoryGrabber with ID \"" << s << "\" was not found in the list (code 4)");
-        return;
-      }
-      grabbers.erase(it);
-  
-      set_grabber_list(mem,grabbers);
-    }
+
+    static std::string ICL_IMGBASE_STREAM_PREPEND = "icl.core.imgbase.";
     
     struct SharedMemoryPublisher::Data{
-      QSharedMemory mem;
-      QSharedMemory listMem;
       std::string name;
+      SharedMemorySegment mem;
     };
     
     SharedMemoryPublisher::SharedMemoryPublisher(const std::string &memorySegmentName) throw (ICLException){
       m_data = new Data;
-      m_data->name = memorySegmentName;
-      m_data->listMem.setKey("icl-shared-mem-grabbers");
-  
-      Img8u image;
-      image.setTime();
-      publish(&image);
+      createPublisher(memorySegmentName);
     }
     
-    
     SharedMemoryPublisher::~SharedMemoryPublisher(){
-      unregister_grabber(m_data->listMem,m_data->name);
       delete m_data;
     }
       
-  
     void SharedMemoryPublisher::createPublisher(const std::string &memorySegmentName) throw (ICLException){
-      QSharedMemory &mem = m_data->mem;
-      mem.lock();
-      if(mem.isAttached()){
-        mem.detach();
-        unregister_grabber(m_data->listMem, m_data->name);
-      }
       m_data->name = memorySegmentName;
-      mem.unlock();
+      m_data->mem.reset(ICL_IMGBASE_STREAM_PREPEND + memorySegmentName);
       
       Img8u tmp;
       tmp.setTime();
       publish(&tmp);
     }
-      
-    static std::string translate_qsharedmemory_error(QSharedMemory::SharedMemoryError e){
-      switch(e){
-  #define CASE(X) case X: return #X
-        CASE(QSharedMemory::PermissionDenied);
-        CASE(QSharedMemory::InvalidSize);
-        CASE(QSharedMemory::KeyError);
-        CASE(QSharedMemory::AlreadyExists);
-        CASE(QSharedMemory::NotFound);
-        CASE(QSharedMemory::LockError);
-        CASE(QSharedMemory::OutOfResources);
-        CASE(QSharedMemory::UnknownError);
-  #undef CASE
-        default: return "NoError";
-      }
-      return "";
-    }
-  
     
     void SharedMemoryPublisher::publish(const ImgBase *image){
-      QSharedMemory &mem = m_data->mem;
-
-      CompressedData data = compress(image, false); // why was this set to true? 
+      if(!image) return;
+      CompressedData data = compress(image, false); // why was this set to true?
                                                     // why did we skip meta data?
-      if(!mem.isAttached()){
-        if(!m_data->name.length()) throw ICLException(str(__FUNCTION__)+": no memory segment name was defined yet!");
-        mem.setKey(m_data->name.c_str());
-        mem.lock();
-        if(m_data->mem.attach(QSharedMemory::ReadWrite)){
-          register_grabber(m_data->listMem,m_data->name);
-        }else{
-          if(mem.create(iclMax(MIN_MEMORY_SEGMENT_SIZE,data.len+MIN_EXTRA_PAYLOAD_SIZE))){
-            register_grabber(m_data->listMem,m_data->name);
-          }
-        }
-        mem.unlock();
+
+      SharedMemorySegmentLocker l(m_data->mem,data.len);
+      if(m_data->mem.getSize() < data.len){
+        DEBUG_LOG("segment too small " << m_data->mem.getSize() << "-" << data.len)
+            return;
       }
-      ICLASSERT_THROW(mem.isAttached(),ICLException(str(__FUNCTION__)+
-                                                    ": QSharedMemory is still not attached (this should not happen)" ));
-  
-  
-      if(mem.size() < data.len){
-        mem.detach();
-        if(!mem.create(iclMax(MIN_MEMORY_SEGMENT_SIZE,data.len+MIN_EXTRA_PAYLOAD_SIZE))){
-          throw ICLException(str(__FUNCTION__)+": unable to resize memory segment (" + 
-                             translate_qsharedmemory_error(mem.error()));
-        }
-      }
-  
-      mem.lock();    
-      std::copy(data.bytes, data.bytes+data.len,(icl8u*)mem.data());
-      mem.unlock();
+      std::copy(data.bytes, data.bytes+data.len,(icl8u*)m_data->mem.data());
     }
   
     std::string SharedMemoryPublisher::getMemorySegmentName() const throw (ICLException){
-      return m_data->name;
+      return m_data->mem.getName();
     }
   
   } // namespace io

@@ -28,6 +28,7 @@
 **                                                                 **
 ********************************************************************/
 
+
 #include <ICLIO/GenericImageOutput.h>
 #include <ICLQt/Common.h>
 #include <ICLUtils/FPSEstimator.h>
@@ -196,7 +197,6 @@ void send_app(){
     }else{
       normImage = ppImage;
     }
-
     output.send(normImage);
 #ifdef HAVE_QT
     if(!pa("-no-gui")){
@@ -341,7 +341,6 @@ int main(int n, char **ppc){
     GenericGrabber::resetBus();
   }
   
- 
   init_grabber();  
 
 #ifdef HAVE_QT

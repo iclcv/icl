@@ -32,8 +32,8 @@
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Thread.h>
 #include <ICLIO/ImageCompressor.h>
+#include <ICLIO/SharedMemorySegment.h>
 
-#include <QtCore/QSharedMemory>
 #include <QtCore/QProcess>
 #include <QtCore/QMutex>
 #include <QtCore/QThread>
@@ -45,11 +45,25 @@ using namespace icl::core;
 namespace icl{
   namespace io{
     
+    static std::string ICL_IMGBASE_STREAM_PREPEND = "icl.core.imgbase.";
+
+    static void addDevicesToList(std::vector<GrabberDeviceDescription> &deviceList){
+      std::set<std::string> set = SharedMemorySegmentRegister::getSegmentSet();
+      std::set<std::string>::iterator it;
+      for(it = set.begin(); it != set.end(); ++it){
+        std::string s = *it;
+        if(s.find(ICL_IMGBASE_STREAM_PREPEND) != s.npos){
+          std::string name = s.substr(ICL_IMGBASE_STREAM_PREPEND.size());
+          deviceList.push_back(GrabberDeviceDescription("sm",name,name));
+        }
+      }
+    }
+
     struct SharedMemoryGrabber::Data{
 
         Data():acquireMutex(QMutex::Recursive){}
 
-        QSharedMemory mem;
+        SharedMemorySegment mem;
         ImgBase *image;
         ImgBase *converted_image;
         bool omitDoubledFrames; // todo implement this feature!
@@ -99,7 +113,12 @@ namespace icl{
                 while(!data->callbacksEnabled){
                   Thread::sleep(100);
                 }
-                impl->notifyNewImageAvailable(impl->acquireImage());
+                try{
+                const ImgBase* ptr = impl->acquireImage();
+                impl->notifyNewImageAvailable(ptr);
+                } catch (ICLException &e){
+                  DEBUG_LOG("catched " << e.what());
+                }
               }
             }
         } *caller;
@@ -118,8 +137,10 @@ namespace icl{
       m_data->caller = new Data::CallbackCaller(this,m_data);
 
       if(sharedMemorySegmentID.length()){
-        m_data->mem.setKey(sharedMemorySegmentID.c_str());
-        if(!m_data->mem.attach(QSharedMemory::ReadOnly)){
+        try{
+          m_data->mem.reset(ICL_IMGBASE_STREAM_PREPEND+sharedMemorySegmentID, 0);
+        } catch (ICLException &e){
+          DEBUG_LOG("ERROR: " << e.what());
           throw ICLException(str(__FUNCTION__)+": unable to connect to shared memory segment \"" + sharedMemorySegmentID + "\"");
         }
       }
@@ -133,50 +154,26 @@ namespace icl{
     }
 
     void SharedMemoryGrabber::init(const std::string &sharedMemorySegmentID) throw (ICLException){
-      if(m_data->mem.isAttached()){
-        m_data->mem.lock();
-        m_data->mem.detach();
-        m_data->mem.setKey(sharedMemorySegmentID.c_str());
-        if(!m_data->mem.attach(QSharedMemory::ReadOnly)){
-          throw ICLException(str(__FUNCTION__)+": unable to connect to shared memory segment \"" + sharedMemorySegmentID + "\"");
-        }
-        m_data->mem.unlock();
-      }else{
-        m_data->mem.lock();
-        m_data->mem.setKey(sharedMemorySegmentID.c_str());
-        if(!m_data->mem.attach(QSharedMemory::ReadOnly)){
-          throw ICLException(str(__FUNCTION__)+": unable to connect to shared memory segment \"" + sharedMemorySegmentID + "\"");
-        }
-        m_data->mem.unlock();
+      try{
+        m_data->mem.reset(ICL_IMGBASE_STREAM_PREPEND+sharedMemorySegmentID, 0);
+      } catch (ICLException &e){
+        DEBUG_LOG("ERROR: " << e.what());
+        throw ICLException(str(__FUNCTION__)+": unable to connect to shared memory segment \"" + sharedMemorySegmentID + "\"");
       }
     }
-    
     
     SharedMemoryGrabber::~SharedMemoryGrabber(){
       ICL_DELETE(m_data->image);
       ICL_DELETE(m_data->converted_image);
       delete m_data;
     }
-    
+
     const std::vector<GrabberDeviceDescription> &SharedMemoryGrabber::getDeviceList(bool rescan){
       static std::vector<GrabberDeviceDescription> deviceList;
 
       if(rescan){
         deviceList.clear();
-        QSharedMemory mem("icl-shared-mem-grabbers");
-        if(!mem.attach(QSharedMemory::ReadOnly)) {
-          return deviceList;
-        }
-        
-        mem.lock();
-        const char* list = (const char*)mem.constData();
-        icl32s num = *(icl32s*)list;
-        list +=sizeof(icl32s);
-        for(icl32s i=0;i<num;++i){
-          deviceList.push_back(GrabberDeviceDescription("sm",list,list));
-          list += deviceList.back().id.length()+1;
-        }
-        mem.unlock();
+        addDevicesToList(deviceList);
       }
       return deviceList;
     }
@@ -188,60 +185,29 @@ namespace icl{
     const ImgBase* SharedMemoryGrabber::acquireImage(){
       QMutexLocker lock(&m_data->acquireMutex);
 
-      if(!m_data->mem.isAttached()) throw ICLException(str(__FUNCTION__)+": grabber is currently not attached to shared memory segment");
+      if(!m_data->mem.lock()) throw ICLException(str(__FUNCTION__)+": can't get lock for shared memory segment");
 
-      m_data->mem.lock();
       while(m_data->omitDoubledFrames && // WAIT FOR NEW IMAGE LOOP
-            !m_data->isNew(m_data->compressor.pickTimeStamp((const icl8u*)m_data->mem.constData()),*this) ){
+            !m_data->isNew(m_data->compressor.pickTimeStamp((const icl8u*)m_data->mem.constData()),*this)){
         m_data->mem.unlock();
         Thread::msleep(1);
         m_data->mem.lock();
       }
-      
-      m_data->compressor.uncompress((const icl8u*)m_data->mem.constData(), m_data->mem.size(), &m_data->image);
+
+      if(m_data->mem.isEmpty()){
+        m_data->mem.unlock();
+        return NULL;
+      }
+
+      m_data->compressor.uncompress((const icl8u*)m_data->mem.constData(), m_data->mem.getSize(), &m_data->image);
       m_data->mem.unlock();
       setPropertyValue("size", m_data->image->getSize());
-      return m_data->image;
 
+      return (m_data->image->getDim()) ? m_data->image : NULL;
     }
 
     void SharedMemoryGrabber::resetBus(bool verbose){
-      QSharedMemory mem("icl-shared-mem-grabbers");
-      if(mem.attach(QSharedMemory::ReadWrite)) {
-        mem.lock();
-        *(icl32s*)mem.data() = 0;
-        mem.unlock();
-      }else{
-        WARNING_LOG("No shared memory segment named 'icl-shared-mem-grabbers' found");
-      }
-
-#ifdef SYSTEM_LINUX
-      static const std::string QT_SHARED_MEM_PREFIX = "0x51";
-
-      QStringList l; l << "-m";
-      QProcess ipcs;
-      ipcs.start("ipcs",l);
-      bool ok = ipcs.waitForFinished();
-      if(!ok) throw icl::ICLException("unable to call ipcm -m");
-      QString stdout = ipcs.readAllStandardOutput();
-      
-      std::vector<std::string> lines = icl::tok(stdout.toLatin1().data(),"\n");
-      for(unsigned int i=0;i<lines.size();++i){
-        if(lines[i].substr(0,2) != "0x") continue;
-        
-        std::vector<std::string> ts = icl::tok(lines[i]," ");
-        
-        if(ts.size() > 3 && ts[3] == "666" && ts[0].substr(0,4) == QT_SHARED_MEM_PREFIX){
-          QProcess ipcrm;
-          QStringList l2; l2 << "-m" << ts[1].c_str();
-          std::cout << "releasing shared memory segment key:" << ts[0] << " shmid:" << ts[1] << std::endl;
-          ipcrm.start("ipcrm",l2);
-          bool ok = ipcrm.waitForFinished();
-          if(!ok) throw icl::ICLException("unable to call ipcrm -m");
-        }
-      }
-#endif
-
+      SharedMemorySegmentRegister::resetBus();
     }
 
     // callback for changed configurable properties
@@ -274,6 +240,7 @@ namespace icl{
       if(!rescan) return deviceList;
 
       deviceList.clear();
+      addDevicesToList(deviceList);
       // if filter exists, add grabber with filter
       if(hint.size()) deviceList.push_back(
         GrabberDeviceDescription("sm", hint, "A grabber for images published via SharedMemory.")

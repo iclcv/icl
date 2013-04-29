@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLUtils/src/ICLUtils/SignalHandler.cpp                **
 ** Module : ICLUtils                                               **
-** Authors: Christof Elbrechter                                    **
+** Authors: Christof Elbrechter, Viktor Richter                    **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -37,6 +37,7 @@
 #include <ICLUtils/Mutex.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <cstdio>
 
 #ifdef ICL_SYSTEM_APPLE
 #define SIGPOLL SIGIO
@@ -47,7 +48,7 @@ using namespace std;
 namespace icl{
   namespace utils{
     namespace {
-      static Mutex SignalHandlerMutex;
+      static Mutex SignalHandlerMutex(Mutex::mutexTypeRecursive);
       
 #ifdef ICL_SYSTEM_WINDOWS
       struct sigaction {
@@ -62,7 +63,7 @@ namespace icl{
       
       typedef map<string,int> stringSignalMap;
       typedef map<int,string> signalStringMap;
-      typedef map<int,SignalHandler*> shMap;
+      typedef multimap<int,SignalHandler*> shMap;
       typedef map<int,struct sigaction*> saMap;
 #define ADD_SIGNAL(S) add(#S,S) 
       
@@ -123,77 +124,114 @@ namespace icl{
       static saMap SAM;
     
       void signal_handler_function(int signal){
-        SignalHandlerMutex.lock();
+        Mutex::Locker l(SignalHandlerMutex);
+        while(SHM.count(signal)){
         shMap::iterator it = SHM.find(signal);
-        if(it != SHM.end()){
           SignalHandler *sh = (*it).second;
           sh->handleSignals(SSM.getString(signal));
-        }else{
-          ERROR_LOG("singnal_handler_function was called for \"" << SSM.getString(signal) << "\"");
+          sh->removeAllHandles();
         }
-        SignalHandlerMutex.unlock();
+#ifndef ICL_SYSTEM_WINDOWS
+        kill(getpid(),1);
+#else
+
+#endif
       }
     }
-  
-  
-  
-    SignalHandler::SignalHandler(const std::string &signals){
-      StrTok t(signals,",");
+
+    SignalHandler::SignalHandler(const std::string &signalsList){
+      Mutex::Locker l(SignalHandlerMutex);
+      StrTok t(signalsList,",");
       const vector<string> &toks = t.allTokens();
       for(unsigned int i=0;i<toks.size();i++){
         int signal = SSM.getSignal(toks[i]);
-    
+
         if(SHM.find(signal) != SHM.end()){
-          ERROR_LOG("this signal is already handled by another signal handler: \""<< toks[i]<<"\"");
-          continue;
-        }
-      
-        struct sigaction new_action;
-        struct sigaction *old_action = new struct sigaction;
-
-        new_action.sa_handler = signal_handler_function;
-        sigemptyset (&new_action.sa_mask);
-        new_action.sa_flags = 0;
-#ifndef ICL_SYSTEM_WINDOWS
-        sigaction (signal, NULL, old_action);
-#else
-      
-#endif
-        if (old_action->sa_handler != SIG_IGN){
-
-
-#ifndef ICL_SYSTEM_WINDOWS
-          sigaction (signal, &new_action, NULL);
-#else
-        
-#endif
-          SHM[signal]=this;    
-          SAM[signal]=old_action;
+          DEBUG_LOG2("handler already initialized. adding " << this << " as additinoal handler for " << toks[i] << "(" << signal << ")");
+          SHM.insert(pair<int,SignalHandler*>(signal,this));
           m_vecAssocitatedSignals.push_back(signal);
-        }else{
-          ERROR_LOG("this signal can not be handle because it was ignored before: \"" << toks[i] << "\"");
-          delete old_action;
-        
+        } else {
+          DEBUG_LOG2("initializing and adding " << this << " as handler for " << toks[i] << "(" << signal << ")");
+          struct sigaction new_action;
+          struct sigaction *old_action = new struct sigaction;
+
+          new_action.sa_handler = signal_handler_function;
+          sigemptyset (&new_action.sa_mask);
+          new_action.sa_flags = 0;
+#ifndef ICL_SYSTEM_WINDOWS
+          sigaction (signal, NULL, old_action);
+#else
+
+#endif
+          if (old_action->sa_handler != SIG_IGN){
+
+
+#ifndef ICL_SYSTEM_WINDOWS
+            sigaction (signal, &new_action, NULL);
+#else
+
+#endif
+            SHM.insert(pair<int,SignalHandler*>(signal,this));
+            SAM[signal]=old_action;
+            m_vecAssocitatedSignals.push_back(signal);
+          } else {
+            ERROR_LOG("this signal can not be handle because it was ignored before: \"" << toks[i] << "\"");
+            delete old_action;
+          }
+          /// sigaction code::
         }
-        /// sigaction code::
       }
     }
-    SignalHandler::~SignalHandler(){
-      SignalHandlerMutex.lock();
-      for(unsigned int i=0;i<m_vecAssocitatedSignals.size();i++){
-        int s = m_vecAssocitatedSignals[i];
-        SHM.erase(SHM.find(s));
-      
-        struct sigaction *old_action = SAM[s];
+
+    void SignalHandler::removeHandle(std::string signalName){
+      int signal = SSM.getSignal(signalName);
+      std::vector<int>::iterator it;
+      for(std::vector<int>::iterator it = m_vecAssocitatedSignals.begin();
+          it != m_vecAssocitatedSignals.end(); ++it){
+        if(*it == signal){
+          SignalHandlerMutex.lock();
+          // remove signal from list
+          m_vecAssocitatedSignals.erase(it);
+          // deregister from signal
+          int handlerCount = SHM.count(signal);
+          DEBUG_LOG2("associated: " << signal << " count: " << SHM.count(signal));
+          std::pair<shMap::iterator,shMap::iterator> handlers = SHM.equal_range(signal);
+          for(shMap::iterator it = handlers.first; it != handlers.second;){
+            if(it->second == this){
+              DEBUG_LOG2("found " << this << " in handler map. removing " << signal);
+              shMap::iterator save = it;
+              ++save;
+              SHM.erase(it);
+              it = save;
+            } else {
+              ++it;
+            }
+          }
+          if(handlerCount == 1){
+            DEBUG_LOG2("deleting system signal handler " << signal);
+            struct sigaction *old_action = SAM[signal];
 #ifndef ICL_SYSTEM_WINDOWS
-        sigaction (s, old_action, NULL);
+            sigaction (signal, old_action, NULL);
 #else
-	  
+
 #endif
-        delete old_action;
-        SAM.erase(SAM.find(s));
+            delete old_action;
+            SAM.erase(SAM.find(signal));
+          }
+          SignalHandlerMutex.unlock();
+          return;
+        }
       }
-      SignalHandlerMutex.unlock();
+    }
+
+    void SignalHandler::removeAllHandles(){
+      while(m_vecAssocitatedSignals.size()){
+        removeHandle(SSM.getString(m_vecAssocitatedSignals[0]));
+      }
+    }
+
+    SignalHandler::~SignalHandler(){
+      removeAllHandles();
     }
 
     void SignalHandler::oldAction(const std::string &signal){
@@ -211,13 +249,13 @@ namespace icl{
       }
     }
 		
-    void SignalHandler::killCurrentProcess() {
+    /*void SignalHandler::killCurrentProcess() {
 #ifndef ICL_SYSTEM_WINDOWS
       kill(getpid(),1);
 #else
 	
 #endif
-    }
+    }*/
   } // namespace utils
 
 }

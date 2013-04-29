@@ -35,7 +35,7 @@
 namespace icl{
   namespace io{
     
-    /// Grabber class that grabs images from QSharedMemory instances
+    /// Grabber class that grabs images from SharedMemorySegment instances
     /** Images that are published using the SharedMemoryPublisher can
         be grabbed with this grabber type. Please don't use this
         Grabber class directly, but instantiate GenericGrabber with
@@ -60,10 +60,6 @@ namespace icl{
         ~SharedMemoryGrabber();
 
         /// returns a list of all available shared-memory image-streams
-        /** evaluates the special memory segment named
-          'icl-shared-mem-grabbers' in order to find
-          out which devices are available
-      */
         static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
 
         /// grabbing function
@@ -73,7 +69,7 @@ namespace icl{
         /// callback for changed configurable properties
         void processPropertyChange(const utils::Configurable::Property &prop);
 
-        /// resets the internal list of 'shared-grabbers'
+        /// resets all 'shared-memory-segents and system-semaphores'
         static void resetBus(bool verbose);
     };
     

@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLUtils/src/ICLUtils/SignalHandler.h                  **
 ** Module : ICLUtils                                               **
-** Authors: Christof Elbrechter                                    **
+** Authors: Christof Elbrechter, Viktor Richter                    **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -28,7 +28,8 @@
 **                                                                 **
 ********************************************************************/
 
-//#include <signal.h>
+#pragma once
+
 #include <string>
 #include <vector>
 #include <ICLUtils/Mutex.h>
@@ -49,10 +50,12 @@ namespace icl{
           virtual void handleSignals(const string &signal){
              if(signal == "SIGINT") printf("application interrupted! \n");
              else printf("Oops something went wrong ...! \n");
-             killCurrentProcess();
           }
         };
         \endcode
+
+        The handleSignal() function must not exit the program. This will be
+        done auomatically.
     */
     class SignalHandler{
       public:
@@ -91,7 +94,7 @@ namespace icl{
           - <b>SIGXCPU</b> ( CPU time limit exceeded) 
           - <b>SIGXFSZ</b> ( File size limit exceeded)
       */
-      SignalHandler(const std::string &signals="SIGINT,SIGHUP,SIGTERM,SIGSEGV");
+      SignalHandler(const std::string &signalsList="SIGINT,SIGHUP,SIGTERM,SIGSEGV");
       
       /// Destructor
       /** When the destructor is called the system default signal handlers are
@@ -99,24 +102,35 @@ namespace icl{
       virtual ~SignalHandler();
       
       /// virtual signal handling function
+      /** The SignalHandler implementation will track all instantiated
+          subclassed and, on signal, call the handleSignals functions
+          and in the end kill the process with the Hangup-signal.
+      **/
       virtual void handleSignals(const std::string &signalAsString)=0;
   
+      /// removes the signal handle for this instance
+      /**
+        If this is the last instance registered to a certain signal, the
+        sygnal handle will be released and the default signal handlers are
+        registered.
+      **/
+      void removeHandle(std::string signalName);
+
+      /// removes all handles for this instance
+      /**
+        Basically calls removeHandle with all registeded handle names
+      **/
+      void removeAllHandles();
+
       /// calls the original action which was associated to the corresponding signal
       /** This seems to be not practible, as the old actions are not defined by
           callable functions in the old action sigaction struct. */
       void oldAction(const std::string &signal);
-  
-      /// kills the current process
-      /** internally this function calls kill(getpid(),1) which is mutch
-          stronger than calling exit(0)
-          (see the signal.h manpage)
-      */
-      static void killCurrentProcess();
-      
+        
       private:
       /// internal storage of associated signals
-      std::vector<int > m_vecAssocitatedSignals;
+      std::vector<int> m_vecAssocitatedSignals;
     };
   
   } // namespace utils
-}
+} // namespace icl

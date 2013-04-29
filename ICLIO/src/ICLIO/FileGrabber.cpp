@@ -315,9 +315,16 @@ namespace icl{
     // }}}
     
     const ImgBase *FileGrabber::acquireImage(){
-      const ImgBase* img = grabImage();
-      updateProperties(img);
-      return img;
+      try{
+        const ImgBase* img = grabImage();
+        updateProperties(img);
+        return img;
+      } catch (ICLException &e){
+        DEBUG_LOG("could not grab image. Name: "
+                  << m_data->oFileList[iclMax(m_data->iCurrIdx-1,0)]
+                  << " Error: " << e.what());
+        return NULL;
+      }
     }
 
     const core::ImgBase *FileGrabber::grabImage(){

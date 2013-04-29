@@ -33,17 +33,12 @@
 #include <ICLCore/ImgBase.h>
 #include <ICLIO/ImageOutput.h>
 #include <ICLUtils/Uncopyable.h>
+#include <ICLIO/SharedMemorySegment.h>
 
 namespace icl{
   namespace io{
   
-    /// Publisher, that can be used to publish images via Qt's QSharedMemory
-    /** The publisher automatically creates a 2nd memory segment named
-        'icl-shared-mem-grabbers' that is set up to contain a list of
-        all available ICL shared memory streams 
-        If two publishers are set up to publish to one memory, the result
-        is undetermined.
-    */
+    /// Publisher, that can be used to publish images via SharedMemorySegment
     class SharedMemoryPublisher : public ImageOutput{
       struct Data;  //!< intenal data
       Data *m_data; //!< intenal data

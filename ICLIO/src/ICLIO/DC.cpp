@@ -324,7 +324,6 @@ namespace icl{
           m_oMutex.unlock();
           // printf("done! (please ignore \"Hangup\" statement)\n");
           // 
-          killCurrentProcess();
         }
   
         // }}}
