@@ -72,9 +72,10 @@ SET(HEADERS src/ICLUtils/Any.h
 	    src/ICLUtils/CLKernel.h
 	    src/ICLUtils/CLProgram.h 
 	    src/ICLUtils/CompatMacros.h
-        src/ICLUtils/ConfigFile.h
-        src/ICLUtils/Configurable.h
-        src/ICLUtils/ConfigurableProxy.h
+            src/ICLUtils/ConfigFile.h
+            src/ICLUtils/Configurable.h
+            src/ICLUtils/ConfigurableProxy.h
+            src/ICLUtils/FixedArray.h
 	    src/ICLUtils/ConsoleProgress.h
 	    src/ICLUtils/Exception.h
 	    src/ICLUtils/FastMedianList.h
