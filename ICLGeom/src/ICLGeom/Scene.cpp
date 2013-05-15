@@ -500,7 +500,7 @@ namespace icl{
       <<"  vec3 E = normalize(-V.xyz);\n"
       <<"  vec3 R = normalize(-reflect(L, N));\n"
       <<"#ifdef USE_TEXTURE\n"
-      <<"  color = gl_Color.rgb * texture_Color.rgb;\n"
+      <<"  vec3 color = gl_Color.rgb * texture_Color.rgb;\n"
       <<"#else\n"
       <<"  vec3 color = gl_Color.rgb;\n"
       <<"#endif\n"
