@@ -29,46 +29,72 @@
 ********************************************************************/
 #ifdef HAVE_OPENCL
 #pragma once
-#define __CL_ENABLE_EXCEPTIONS
-#include <CL/cl.hpp>
-#include <string.h>
+
+#include <string>
 #include <ICLUtils/CLException.h>
-using namespace std;
+
+/** \cond */
+namespace cl{
+  class Buffer;
+  class Context;
+  class CommandQueue;
+}
+/** \endcond */
+
 namespace icl {
-	namespace utils {
-	/// Wrapper for an OpenCL Buffer
-	    /**
-	      Can only be created via CLProgram.
-	    */
-		class CLBuffer{
-		public:
-			struct Impl;
-		private:
-			Impl *impl;
-			CLBuffer(cl::Context& context, cl::CommandQueue &cmdQueue, const string &accessMode, size_t size, void *src=NULL) throw (CLBufferException);
-			cl::Buffer getBuffer();
-			const cl::Buffer getBuffer() const;
-		public:
-			~CLBuffer();
-			CLBuffer();
-			CLBuffer(const CLBuffer& other);
-			CLBuffer const& operator=(CLBuffer const& other);
-			friend class CLProgram;
-			friend class CLKernel;
+  namespace utils {
+    
+    /// Wrapper for an OpenCL Buffer
+    /** Valid CLBuffer instances can only be created by a CLProgram instance.
+        @see CLProgram for more details */
+    class CLBuffer{
+      struct Impl; //!< internal hidden implementation type
+      Impl *impl;  //!< internal implemetation
+      
+      /// private constructor (buffer can only be created by CLProgram instances)
+      CLBuffer(cl::Context& context, cl::CommandQueue &cmdQueue, 
+               const string &accessMode, size_t size, const void *src=NULL) throw (CLBufferException);
+      
+      
+      public:
+      friend class CLProgram; //!< for tight integration with CLProgram instances
+      friend class CLKernel;  //!< for tight integration with CLKernel instances
 
-			/// reads buffer content in dst-Pointer
-			void read(void *dst, int len, int offset = 0, bool block = true) throw (CLBufferException);
+      /// default constructor (creates null instance)
+      CLBuffer();
+      
+      /// copy constructor (always performs shallow copy)
+      CLBuffer(const CLBuffer& other);
 
-			/// writes content of src in the buffer
-			void write(void *src, int len, int offset = 0, bool block = true) throw (CLBufferException);
+      /// assignment operator (always performs a shallow copy)
+      CLBuffer& operator=(const CLBuffer& other);
 
-			bool isNull() const {
-				return !impl;
-			}
-			operator bool() const {
-				return impl;
-			}
-		};
-	}
+      /// destructor
+      ~CLBuffer();
+      
+      
+      /// reads buffer from graphics memory into given destination pointer
+      void read(void *dst, int len, int offset = 0, bool block = true) throw (CLBufferException);
+      
+      /// writes source data into the graphics memory
+      void write(const void *src, int len, int offset = 0, bool block = true) throw (CLBufferException);
+      
+      /// checks whether buffer is null
+      bool isNull() const {
+        return !impl;
+      }
+      
+      /// checks whether buffer is not null
+      operator bool() const {
+        return impl;
+      }
+  
+      /// provides access to the underlying cl-buffer
+      cl::Buffer getBuffer();
+      
+      const cl::Buffer getBuffer() const;
+      
+    };
+  }
 }
 #endif

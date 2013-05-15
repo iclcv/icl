@@ -27,78 +27,191 @@
 ** Excellence Initiative.                                          **
 **                                                                 **
 ********************************************************************/
-//XXVL Freigabe bei ImageUndistortion von Impl scheint zu fehlen...
+
+#pragma once
 
 #ifdef HAVE_OPENCL
-#pragma once
+
 #include <string.h>
 #include <ICLUtils/CLBuffer.h>
 #include <ICLUtils/CLKernel.h>
 #include <fstream>
 #include <ICLUtils/CLException.h>
 
-using namespace std;
 namespace icl {
-	namespace utils {
+  namespace utils {
+    
+    /// Main class for OpenCL based accelleration
+    /** The CLProgram is the based class for ICL's OpenCL support
+        framework. A Program instance can be used to create all other
+        neccessary OpenCL support types. In contrast to OpenCL's C++ framework,
+        ICL's framework is even settled on a higher level providing easier access
+        to the relavant functionality.
+        
+        \section NOM Nomenclature
+        
+        A <b>CLProgram</b> is -- as presented above -- the main class
+        for OpenCL acellerated implementations. It allows for selected
+        a particular device, i.e. "cpu" or "gpu" devices and it
+        automatically compiles the given OpenCL source code (either
+        passed as string or as an input stream)
+        
+        A <b>CLBuffer</b> is a memory segment located in the
+        graphics-card's memory. Buffers are associated with a certain
+        CLProgram and they can only be created by that
+        program. Buffers are either read-only, write-only or
+        read-write. This access mode always refers to how the buffer
+        can be accessed by the OpenCL source code, i.e. a "read-only"
+        buffer becomes a "const" data pointer in the corresponding
+        OpenCL kernel interface. And a "write only" buffer cannot be
+        written but not read by the OpenCL source code (?).
+        
+        TODO: what are the differences ? Why can i use "r" and "w" without
+              producing error messages? (seems to be an OpenCL bug/feature)
+        
+        A <b>CLKernel</b> is a callable OpenCL function. CLKernel instances
+        are also created by a program (see \ref EX) and each kernel
+        refers to a single function in the OpenCL source code that is 
+        declared as "__kernel".\n
+        Before a kernel is called, its arguments are given by using the
+        overloaded CLKernel::setArgs method.
+        
+        \section EX Example (Image Convolution)
+        
+        #include <ICLUtils/CLProgram.h>
+        #include <ICLQt/Common.h>
+        
+        
+        \code
+        struct Conv{
+          CLProgram program;          // main class
+          CLBuffer input,output,mask; // buffers for image input/output and the 3x3-convolution mask
+          CLKernel kernel;            // the OpenCL function
+          Size size;                  // ensure correct buffer sizes
+          Conv(const float m[9], const Size &s):size(s){
+            // source code
+            static const char *k = ("__kernel void convolve(constant float *m,                                \n"
+                                    "                        const __global unsigned char *in,                \n"
+                                    "                        __global unsigned char *out){                    \n"
+                                    "    const int w = get_global_size(0);                                    \n"
+                                    "    const int h = get_global_size(1);                                    \n"
+                                    "    const int x = get_global_id(0);                                      \n"
+                                    "    const int y = get_global_id(1);                                      \n"
+                                    "    if(x && y && x<w-1 && y<h-1){                                        \n"
+                                    "      const int idx = x+w*y;                                             \n"
+                                    "      out[idx] =  m[0]*in[idx-1-w] + m[1]*in[idx-w] + m[2]*in[idx-w+1]   \n"
+                                    "                + m[3]*in[idx-1]   + m[4]*in[idx]   + m[5]*in[idx+1]     \n"
+                                    "                + m[6]*in[idx-1+w] + m[7]*in[idx+w] + m[8]*in[idx+w+1];  \n"
+                                    "    }                                                                    \n"
+                                    "}                                                                        \n");
 
-	/// Wrapper for an OpenCL Program
-	    /**
-	      This class provides a simple initialization of OpenCL including platform
-	      and device selection. The kernel sources can be initialized by filestream
-	      or string. Platform and device various device informations may be listed.
+            program = CLProgram("gpu",k);                          // create program running on CPU-device
+            program.listSelectedDevice();                          // show device seledted
+            const int dim = s.getDim();                            // get image dimension
+            input = program.createBuffer("w",dim);                 // create input image buffer
+            output = program.createBuffer("r",dim);                // create output image buffer
+            mask = program.createBuffer("w",9*sizeof(float),m);    // create buffer for the 3x3 conv. mask
+            kernel = program.createKernel("convolve");             // create the OpenCL kernel
+          }
+          
+          void apply(const Img8u &src, Img8u &dst){
+            ICLASSERT_THROW(src.getSize() == size && dst.getSize() == size, ICLException("wrong size"));
+            input.write(src.begin(0),src.getDim());           // write input image to graphics memory
+            kernel.setArgs(mask, input, output);              // set kernel arguments
+            kernel.apply(src.getWidth(), src.getHeight(), 0); // apply the kernel (using WxH threads max.
+                                                              // i.e. one per pixel)
+            output.read(dst.begin(0),dst.getDim());           // read output buffer to destination image
+          }
+        } *conv = 0;
 
-	      example:
-          static char KernelText[] = "	__kernel void convolve(...)";
 
-	      CLProgram program("gpu", KernelText);
-		  program.listSelectedDevice();
-		  CLBuffer inputBuffer = program.createBuffer("r",
-				sizeof(sizeof(unsigned int)) * inputSignalHeight * inputSignalWidth,
-				inputSignal);
-		  CLBuffer outputSignalBuffer = program.createBuffer("w",
-				sizeof(unsigned int) * outputSignalHeight * outputSignalWidth);
-		  CLKernel kernel = program.createKernel("convolve");
-     	  kernel.setArgs(inputSignalBuffer, outputSignalBuffer, inputSignalWidth, maskWidth);
-		  kernel.apply(outputSignalWidth * outputSignalHeight, 0, 0);
-		  outputSignalBuffer.read(outputSignal,
-				outputSignalWidth * outputSignalHeight * sizeof(unsigned int));
-	     *
-	    **/
-		class CLProgram {
-		public:
-			struct Impl;
+        GUI gui;
+        GenericGrabber grabber;
+        
+        void init(){
+          grabber.init(pa("-i"));
+        
+          gui << Image().handle("image") << Show();
+          const ImgBase &image = *grabber.grab();
+          const float mask[] = { 0.25, 0, -0.25,
+                                 0.50, 0, -0.50,
+                                 0.25, 0, -0.25 };
+          grabber.useDesired(image.getSize());
+          grabber.useDesired(depth8u);
+          grabber.useDesired(formatGray);
+        
+          conv = new Conv(mask,image.getSize());
+        }
 
-		private:
-			Impl *impl;
-		public:
-			//deviceType = "gpu" only gpu devices
-			//deviceType = "cpu" only cpu devices
-			CLProgram(const string deviceType, const string &sourceCode) throw(CLInitException, CLBuildException);
-			CLProgram(const string deviceType, ifstream &fileStream) throw(CLInitException, CLBuildException);
-			~CLProgram();
-			CLProgram();
-			CLProgram(const CLProgram& other);
-			CLProgram const& operator=(CLProgram const& other);
+        void run(){
+          const Img8u &image = *grabber.grab()->as8u();
+          static Img8u res(image.getParams());
+        
+          conv->apply(image,res);
+          gui["image"] = res;
+        }
 
-			//accessMode = "r" only read
-			//accessMode = "w" only write
-			//accessMode = "rw" read and write
-			/// creates a buffer object
-			CLBuffer createBuffer(const string &accessMode, size_t size, void *src=0) throw(CLBufferException);
-			/// creates a kernel
-			CLKernel createKernel(const string &id) throw (CLKernelException);
+        int main(int n, char **args){
+          return ICLApp(n,args,"-input|-i(2)",init,run).exec();
+        }
 
-			/// lists various properties of the selected platform
-			void listSelectedPlatform();
-			/// lists various properties of the selected device
-			void listSelectedDevice();
-			/// lists various properties of all platforms and their devices
-			static void listAllPlatformsAndDevices();
-			/// lists various properties of all platforms
-			static void listAllPlatforms();
-		}
-		;
+        \endcode
+        **/
+    class CLProgram {
+      struct Impl;
+      Impl *impl;
+      
+      public:
 
-	}
+      /// Default constructor (creates dummy instance)
+      CLProgram();
+      
+      /// create CLProgram with given device type (either "gpu" or "cpu") and souce-code
+      CLProgram(const string deviceType, const string &sourceCode) throw(CLInitException, CLBuildException);
+
+      /// create CLProgram with given device type (either "gpu" or "cpu") and souce-code file
+      CLProgram(const string deviceType, ifstream &fileStream) throw(CLInitException, CLBuildException);
+
+      /// copy constructor (creating shallow copy)
+      CLProgram(const CLProgram& other);
+      
+      /// assignment operator (perorming shallow copy)
+      CLProgram const& operator=(CLProgram const& other);
+      
+      /// Destructor
+      ~CLProgram();
+      
+      
+      //accessMode = "r" only read
+      //accessMode = "w" only write
+      //accessMode = "rw" read and write
+      /// creates a buffer object for memory exchange with graphics card memory
+      /** acessMode can either be "r", "w" or "rw", which refers to the readibility of the data
+          by the OpenCL source code (actually this seems to be not relevant since all buffers
+          can be read and written).\n
+          Each buffer has a fixed size (given in bytes). Optionally an initial source
+          pointer can be passed that is then automatically uploaded to the buffer exisiting
+          in the graphics memory.*/
+      CLBuffer createBuffer(const string &accessMode, size_t size,const void *src=0) throw(CLBufferException);
+      
+      /// extract a kernel from the program
+      /** Kernels in the CLProgram's source code have to be qualified with the
+          __kernel qualifier. The kernel (aka function) name in the OpenCL source code
+          is used as id. */
+      CLKernel createKernel(const string &id) throw (CLKernelException);
+      
+      /// lists various properties of the selected platform
+      void listSelectedPlatform();
+      
+      /// lists various properties of the selected device
+      void listSelectedDevice();
+      /// lists various properties of all platforms and their devices
+
+      static void listAllPlatformsAndDevices();
+
+      /// lists various properties of all platforms
+      static void listAllPlatforms();
+    };
+  }
 }
 #endif

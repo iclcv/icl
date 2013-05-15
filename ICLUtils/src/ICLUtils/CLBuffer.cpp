@@ -28,125 +28,134 @@
 **                                                                 **
 ********************************************************************/
 #ifdef HAVE_OPENCL
+
+#define __CL_ENABLE_EXCEPTIONS
+#include <CL/cl.hpp>
+
 #include <iostream>
 #include <sstream>
 #include <ICLUtils/CLBuffer.h>
 
 namespace icl {
-	namespace utils {
+  namespace utils {
 
-		struct CLBuffer::Impl {
-			cl::Buffer buffer;
-			cl::CommandQueue cmdQueue;
-			static cl_mem_flags stringToMemFlags(const string &accessMode)
-			throw (CLBufferException) {
-				if (accessMode.find("w") != string::npos) {
-					if (accessMode.find("r") != string::npos) {
-						return CL_MEM_READ_WRITE;
-					} else {
-						return CL_MEM_WRITE_ONLY;
-					}
+    struct CLBuffer::Impl {
+      cl::Buffer buffer;
+      cl::CommandQueue cmdQueue;
+      
+      static cl_mem_flags stringToMemFlags(const string &accessMode)
+        throw (CLBufferException) {
+        switch(accessMode.length()){
+          case 1: 
+            if(accessMode[0] == 'w') return CL_MEM_WRITE_ONLY;
+            if(accessMode[1] == 'r') return CL_MEM_READ_ONLY;
+          case 2:
+            if( (accessMode[0] == 'r' && accessMode[1] == 'w') ||
+                (accessMode[0] == 'w' && accessMode[1] == 'r') ){
+              return CL_MEM_READ_WRITE;
+            }
+          default:
+            throw CLBufferException("undefined access-mode "+accessMode+"(allowed is 'r', 'w' and 'rw')");
+            return CL_MEM_READ_WRITE;
+        }
+      }
+      
+      Impl(){}
+      ~Impl() {
+      }
+      
+      Impl(Impl& other):cmdQueue(other.cmdQueue){
+        buffer = other.buffer;
+      }
+      
+      Impl(cl::Context &context, cl::CommandQueue &cmdQueue,
+           const string &accessMode, size_t size,const void *src = 0)
+        throw (CLBufferException):cmdQueue(cmdQueue) {
+        cl_mem_flags memFlags = stringToMemFlags(accessMode);
+        if (src) {
+          memFlags = memFlags | CL_MEM_COPY_HOST_PTR;
+        }
 
-				} else if (accessMode.find("r") != string::npos) {
-					return CL_MEM_READ_ONLY;
-				}
-				string errorMsg = "unknown access mode ";
-				errorMsg = errorMsg.append(accessMode);
-				throw CLBufferException(errorMsg);
-			}
-			Impl(){}
-			~Impl() {
-			}
-			Impl(Impl& other):cmdQueue(other.cmdQueue){
-				buffer = other.buffer;
-			}
-			Impl(cl::Context &context, cl::CommandQueue &cmdQueue,
-					const string &accessMode, size_t size, void *src = 0)
-			throw (CLBufferException):cmdQueue(cmdQueue) {
-				cl_mem_flags memFlags = stringToMemFlags(accessMode);
-				if (src) {
-					memFlags = memFlags | CL_MEM_COPY_HOST_PTR;
-				}
+        try {
+          buffer = cl::Buffer(context, memFlags, size, (void*)src);
+        } catch (cl::Error& error) {
+          throw CLBufferException(CLException::getMessage(error.err(), error.what()));
+        }
 
-				try {
-					buffer = cl::Buffer(context, memFlags, size, src);
-				} catch (cl::Error& error) {
-					throw CLBufferException(CLException::getMessage(error.err(), error.what()));
-				}
+      }
+      
+      void read(void *dst, int len, int offset = 0, bool block = true)
+        throw (CLBufferException) {
+        cl_bool blocking;
+        if (block)
+          blocking = CL_TRUE;
+        else
+          blocking = CL_FALSE;
+        try {
+          cmdQueue.enqueueReadBuffer(buffer, blocking, offset, len, dst);
+        } catch (cl::Error& error) {
+          throw CLBufferException(CLException::getMessage(error.err(), error.what()));
+        }
+      }
 
-			}
-			void read(void *dst, int len, int offset = 0, bool block = true)
-			throw (CLBufferException) {
-				cl_bool blocking;
-				if (block)
-				blocking = CL_TRUE;
-				else
-				blocking = CL_FALSE;
-				try {
-					cmdQueue.enqueueReadBuffer(buffer, blocking, offset, len, dst);
-				} catch (cl::Error& error) {
-					throw CLBufferException(CLException::getMessage(error.err(), error.what()));
-				}
-			}
+      void write(const void *src, int len, int offset = 0, bool block = true)
+        throw (CLBufferException) {
+        cl_bool blocking;
+        if (block)
+          blocking = CL_TRUE;
+        else
+          blocking = CL_FALSE;
+        try {
+          cmdQueue.enqueueWriteBuffer(buffer, blocking, offset, len, src);
+        } catch (cl::Error& error) {
+          throw CLBufferException(CLException::getMessage(error.err(), error.what()));
+        }
+      }
 
-			void write(void *src, int len, int offset = 0, bool block = true)
-			throw (CLBufferException) {
-				cl_bool blocking;
-				if (block)
-				blocking = CL_TRUE;
-				else
-				blocking = CL_FALSE;
-				try {
-					cmdQueue.enqueueWriteBuffer(buffer, blocking, offset, len, src);
-				} catch (cl::Error& error) {
-					throw CLBufferException(CLException::getMessage(error.err(), error.what()));
-				}
-			}
+    };
 
-		};
+    CLBuffer::CLBuffer(cl::Context &context, cl::CommandQueue &cmdQueue,
+                       const string &accessMode, size_t size,const void *src)
+      throw (CLBufferException) {
+      impl = new Impl(context, cmdQueue, accessMode, size, src);
 
-		CLBuffer::CLBuffer(cl::Context &context, cl::CommandQueue &cmdQueue,
-				const string &accessMode, size_t size, void *src)
-		throw (CLBufferException) {
-			impl = new Impl(context, cmdQueue, accessMode, size, src);
+    }
 
-		}
+    CLBuffer::CLBuffer(){
+      impl = new Impl();
+    }
+    CLBuffer::CLBuffer(const CLBuffer& other){
+      impl = new Impl(*(other.impl));
+    }
 
-		CLBuffer::CLBuffer(){
-			impl = new Impl();
-		}
-		CLBuffer::CLBuffer(const CLBuffer& other){
-		  impl = new Impl(*(other.impl));
-		}
+    CLBuffer& CLBuffer::operator=(CLBuffer const& other){
+      impl->cmdQueue = other.impl->cmdQueue;
+      impl->buffer = other.impl->buffer;
+      return *this;
+    }
 
-		CLBuffer const& CLBuffer::operator=(CLBuffer const& other){
-			impl->cmdQueue = other.impl->cmdQueue;
-			impl->buffer = other.impl->buffer;
-		  return *this;
-		}
+    CLBuffer::~CLBuffer() {
+      delete impl;
+    }
 
-		CLBuffer::~CLBuffer() {
-			delete impl;
-		}
+    void CLBuffer::read(void *dst, int len, int offset, bool block)
+      throw (CLBufferException) {
+      impl->read(dst, len, offset, block);
 
-		void CLBuffer::read(void *dst, int len, int offset, bool block)
-		throw (CLBufferException) {
-			impl->read(dst, len, offset, block);
+    }
 
-		}
+    void CLBuffer::write(const void *src, int len, int offset, bool block)
+      throw (CLBufferException) {
+      impl->write(src, len, offset, block);
+    }
 
-		void CLBuffer::write(void *src, int len, int offset, bool block)
-		throw (CLBufferException) {
-			impl->write(src, len, offset, block);
-		}
+    cl::Buffer CLBuffer::getBuffer() {
+      return impl->buffer;
+    }
 
-		cl::Buffer CLBuffer::getBuffer() {
-			return impl->buffer;
-		}
-
-		const cl::Buffer CLBuffer::getBuffer() const {
-			return impl->buffer;
-		}
-	}
+    const cl::Buffer CLBuffer::getBuffer() const {
+      return impl->buffer;
+    }
+  }
 }
 #endif

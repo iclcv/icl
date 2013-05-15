@@ -28,8 +28,9 @@ Table of Contents
 * :ref:`utils.string`
 * :ref:`utils.function`
 * :ref:`utils.random`
-* :ref:`utils.others`
+* :ref:`utils.opencl`
 * :ref:`utils.macros`
+* :ref:`utils.others`
 
 .. _utils.basic-types:
 
@@ -381,6 +382,32 @@ In addition to this it supports
 * decomposition of file names into *directory*, *basename* and *suffix*
 * several reading and writing functions
 * :icl:`File::exists()`
+
+
+.. _utils.opencl:
+
+OpenCL Support Framework
+""""""""""""""""""""""""
+
+ICL's OpenCL support framework is intendet to provide an even easier
+access to OpenCL based acceleration. The framework is even settled on
+a higher level then OpenCL's C++ front-end allowing to create and
+embed OpenCL code with only a few lines of support code. Relevant
+classes are:
+
+* :icl:`utils::CLProgram`, functioning as the main-class
+  and as a factory for instances of the other support classes
+
+* :icl:`utils::CLKernel`, referencing a callable OpenCL function 
+  usually called kernel. Kernels can be filled with arguments and
+  be called.
+
+* :icl:`utils::CLBuffer`, buffers are used to exchange memory with 
+  graphics card memory (i.e. uploading and downloading memory blocks
+  from and to the graphics card memory)
+
+An example for a simple 3x3 image convolution can be found in the 
+:icl:`utils::CLProgram` API documentation-
 
 .. _utils.others:
 
