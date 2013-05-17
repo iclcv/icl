@@ -53,7 +53,7 @@ SET (_LIB_SEARCH_PATH_SUFFIXES "/lib")
 # Try each search configuration
 FOREACH(_PATH ${_OPENCL_SEARCHES})
   FIND_PATH(OPENCL_INCLUDE_DIR 
-            NAMES opencl.h       
+            NAMES cl.hpp cl.h opencl.h      
 	    PATHS ${${_PATH}}
 	    PATH_SUFFIXES "include/CL" 	  
 	    DOC "The path to OPENCL header files"
@@ -75,6 +75,24 @@ FIND_PACKAGE_HANDLE_STANDARD_ARGS(OPENCL REQUIRED_VARS
 				  OPENCL_INCLUDE_DIR)
 
 IF(OPENCL_FOUND)
+  FILE(STRINGS ${OPENCL_INCLUDE_DIR}/cl.h HAVE_CL_1_0 REGEX "CL_VERSION_1_0")
+  FILE(STRINGS ${OPENCL_INCLUDE_DIR}/cl.h HAVE_CL_1_1 REGEX "CL_VERSION_1_1")
+  FILE(STRINGS ${OPENCL_INCLUDE_DIR}/cl.h HAVE_CL_1_2 REGEX "CL_VERSION_1_2")
+
+  
+  IF("${HAVE_CL_1_2}" STREQUAL "")
+    IF("${HAVE_CL_1_1}" STREQUAL "")
+      message(STATUS "Found OpenCL Version: 1.0 (adding compatibility definitions)")
+    ELSE()
+      message(STATUS "Found OpenCL Version: 1.1 (adding compatibility definitions)")
+    ENDIF()
+    ADD_DEFINITIONS( -DCL_USE_DEPRECATED_OPENCL_1_1_APIS)
+  ELSE()
+    message(STATUS "Found OpenCL Version: 1.2")
+  ENDIF()
+
+  
+  
   # HACK: Until FIND_LIBRARY could handle multiple libraries
   FOREACH(_lib ${_OPENCL_LIBRARIES})
     LIST(APPEND _OPENCL_LIBRARIES_LIST ${${_lib}_LIBRARY})
