@@ -82,13 +82,13 @@ IF(OPENCL_FOUND)
   
   IF("${HAVE_CL_1_2}" STREQUAL "")
     IF("${HAVE_CL_1_1}" STREQUAL "")
-      message(STATUS "Found OpenCL Version: 1.0 (adding compatibility definitions)")
+      message(STATUS "Found OpenCL Version: 1.0")
     ELSE()
-      message(STATUS "Found OpenCL Version: 1.1 (adding compatibility definitions)")
+      message(STATUS "Found OpenCL Version: 1.1")
     ENDIF()
-    ADD_DEFINITIONS( -DCL_USE_DEPRECATED_OPENCL_1_1_APIS)
   ELSE()
-    message(STATUS "Found OpenCL Version: 1.2")
+    message(STATUS "Found OpenCL Version: 1.2 (adding compatibility definition for 1.1)")
+    ADD_DEFINITIONS( -DCL_USE_DEPRECATED_OPENCL_1_1_APIS)
   ENDIF()
 
   
