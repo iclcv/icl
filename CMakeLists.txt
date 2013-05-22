@@ -284,12 +284,42 @@ IF(BUILD_WITH_PCL)
 ENDIF()
 
 IF(BUILD_WITH_RSB)
+  # What about PROTOBUF_ROOT ?
   FIND_PACKAGE(Protobuf REQUIRED)
-  FIND_PACKAGE(RSB REQUIRED
-               HINTS "${RSB_DIR}")
-  IF(RSB_FOUND)
+
+  # HACK HERE: What is the _REAL_ directory where we expect to find this
+  # Wouldn't it be better to have an RSB_DIR and an RSC_DIR?
+  IF(EXISTS "${RSB_DIR}/RSBConfig.cmake")  
+    INCLUDE("${RSB_DIR}/RSBConfig.cmake")
+    SET(RSB_FOUND TRUE)
+  ELSEIF(EXISTS "${RSB_DIR}/share/rsb/RSBConfig.cmake")  
+    INCLUDE("${RSB_DIR}/share/rsb/RSBConfig.cmake")
+    SET(RSB_FOUND TRUE)
+  ELSEIF(EXISTS "${RSB_DIR}/share/rsb0.9/RSBConfig.cmake")  
+    INCLUDE("${RSB_DIR}/share/rsb0.9/RSBConfig.cmake")
+    SET(RSB_FOUND TRUE)
+  ENDIF()
+
+  IF(EXISTS "${RSB_DIR}/RSCConfig.cmake")  
+    INCLUDE("${RSB_DIR}/RSCConfig.cmake")
+    SET(RSC_FOUND TRUE)
+  ELSEIF(EXISTS "${RSB_DIR}/share/rsc/RSCConfig.cmake")  
+    INCLUDE("${RSB_DIR}/share/rsc/RSCConfig.cmake")
+    SET(RSC_FOUND TRUE)
+  ENDIF()
+
+  IF(RSB_FOUND AND RSC_FOUND AND PROTOBUF_FOUND)
     ADD_ICL_DEFINITIONS(-DHAVE_RSB)
     ADD_ICL_DEFINITIONS(-DHAVE_PROTOBUF)
+    MESSAGE(STATUS "Found RSB: ${RSB_LIBRARIES}")
+    MESSAGE(STATUS "Found RSC: ${RSC_LIBRARIES}")
+  ELSE()
+    FIND_PACKAGE(RSB REQUIRED
+      HINTS ${RSB_DIR} ${RSB_ROOT})
+    IF(RSB_FOUND)
+      ADD_ICL_DEFINITIONS(-DHAVE_RSB)
+      ADD_ICL_DEFINITIONS(-DHAVE_PROTOBUF)
+    ENDIF()
   ENDIF()
 ENDIF()
 

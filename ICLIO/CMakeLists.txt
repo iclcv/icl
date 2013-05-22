@@ -191,6 +191,15 @@ IF(RSB_FOUND)
   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
   PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS src/ICLIO/proto/RSBImage.proto)
 
+  # the generated files happen to be in build/ICLIO directly, but here, the header file
+  # cannot be found by dependent files such as RSBGrabber.cpp. Therefore, we copy the
+  # RSBImage.pb.h to a new folder build/ICLIO/protobuf/ICLIO and add a -Ibuild/ICLIO/protobuf
+  # which allows RSBGrabber.cpp to find ICLIO/RSBImage.bp.h
+
+  FILE(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/protobuf/ICLIO)
+  FILE(COPY ${CMAKE_CURRENT_BINARY_DIR}/RSBImage.pb.h DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/protobuf/ICLIO)
+  INCLUDE_DIRECTORIES(BEFORE ${CMAKE_CURRENT_BINARY_DIR}/protobuf)
+
   LIST(APPEND SOURCES src/ICLIO/RSBGrabber.cpp
                       src/ICLIO/RSBImageOutput.cpp
 		      ${PROTO_SRCS})
