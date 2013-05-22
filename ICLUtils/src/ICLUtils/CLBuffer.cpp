@@ -35,6 +35,7 @@
 #include <iostream>
 #include <sstream>
 #include <ICLUtils/CLBuffer.h>
+#include <ICLUtils/Macros.h>
 
 namespace icl {
   namespace utils {
@@ -48,14 +49,14 @@ namespace icl {
         switch(accessMode.length()){
           case 1: 
             if(accessMode[0] == 'w') return CL_MEM_WRITE_ONLY;
-            if(accessMode[1] == 'r') return CL_MEM_READ_ONLY;
+            if(accessMode[0] == 'r') return CL_MEM_READ_ONLY;
           case 2:
             if( (accessMode[0] == 'r' && accessMode[1] == 'w') ||
                 (accessMode[0] == 'w' && accessMode[1] == 'r') ){
               return CL_MEM_READ_WRITE;
             }
           default:
-            throw CLBufferException("undefined access-mode "+accessMode+"(allowed is 'r', 'w' and 'rw')");
+            throw CLBufferException("undefined access-mode '"+accessMode+"' (allowed are 'r', 'w' and 'rw')");
             return CL_MEM_READ_WRITE;
         }
       }
