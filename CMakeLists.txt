@@ -321,6 +321,22 @@ IF(BUILD_WITH_RSB)
       ADD_ICL_DEFINITIONS(-DHAVE_PROTOBUF)
     ENDIF()
   ENDIF()
+
+  SET(TMP ${RSB_LIBRARIES} ${RSC_LIBBRARIES})
+  list(REMOVE_DUPLICATES TMP)
+  list(REMOVE_ITEM TMP debug optimized pthread)
+  SET(RSB_RSC_AND_PROTOBUF_LIBRARIES_PC)
+  FOREACH(L ${TMP})
+    # hack here using a fixed lib-rsb directory
+    LIST(APPEND RSB_RSC_AND_PROTOBUF_LIBRARIES_PC ${RSB_DIR}/lib/lib${L}.so)
+  ENDFOREACH()
+  SET(TMP ${PROTOBUF_LIBRARIES})
+  list(REMOVE_DUPLICATES TMP)
+  list(REMOVE_ITEM TMP debug optimized pthread)
+  FOREACH(L ${TMP})
+    LIST(APPEND RSB_RSC_AND_PROTOBUF_LIBRARIES_PC ${L})
+  ENDFOREACH()
+  
 ENDIF()
 
 # ---- OS system include directories ----
