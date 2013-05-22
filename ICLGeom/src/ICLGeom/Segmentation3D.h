@@ -140,6 +140,10 @@ namespace icl{
       /// Returns the blobs of the complex segmentation.
       /**        @return a vector of blobs. Every entry contains a vector with the cluster indices */
       std::vector<std::vector<int> > getBlobs();
+
+      /// Returns the internally used assignment array
+      /**        @return an integer per point, defining in which blob it lies. */
+      const int* getAssignment();
       
       /// Returns the boolean neighbourhood matrix.
       /**       @return the neighbourhood/adjacency matrix */

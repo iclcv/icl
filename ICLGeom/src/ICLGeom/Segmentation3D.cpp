@@ -365,6 +365,10 @@ std::vector<std::vector<int> > Segmentation3D::getBlobs() {
 	return blobs;
 }
 
+const int* Segmentation3D::getAssignment(){
+  return assignment;
+}
+
 DynMatrix<bool> Segmentation3D::getNeigboursMatrix() {
 	return neighbours;
 }
@@ -601,9 +605,12 @@ void Segmentation3D::calculateCutfreeMatrix() {
 
 	for (unsigned int a = 0; a < neighbours.rows(); a++) {
 #ifdef HAVE_OPENCL
-		int numPoints=cluster.at(a).size();
-		CLBuffer RANSACpointsBuffer = program.createBuffer("r", numPoints * sizeof(int), &cluster.at(a)[0]);
+      int numPoints=cluster.at(a).size();
+      CLBuffer RANSACpointsBuffer;
+      if (useCL == true && clReady == true)
+      CLBuffer RANSACpointsBuffer = program.createBuffer("r", numPoints * sizeof(int), &cluster.at(a)[0]);
 #endif
+
 		for (unsigned int b = 0; b < neighbours.cols(); b++) {
 			if (a == b) {
 				cutfree(a, b) = true;
@@ -1351,7 +1358,7 @@ void Segmentation3D::blobSegmentation() {
 	}
 
 	regionGrowBlobs();
-	assignment = assignmentBlobs;
+  assignment = assignmentBlobs;
 }
 
 void Segmentation3D::colorPointcloud() {
