@@ -195,10 +195,12 @@ IF(RSB_FOUND)
   # cannot be found by dependent files such as RSBGrabber.cpp. Therefore, we copy the
   # RSBImage.pb.h to a new folder build/ICLIO/protobuf/ICLIO and add a -Ibuild/ICLIO/protobuf
   # which allows RSBGrabber.cpp to find ICLIO/RSBImage.bp.h
+  # Update:
+  # The former copy and create-dir command did not work, because it is executed during
+  # CMake's configure step and not during the compile step. The new fix is to add
+  # build directly so that ICLIO/RSBImage.pb.h can be found as well
 
-  FILE(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/protobuf/ICLIO)
-  FILE(COPY ${CMAKE_CURRENT_BINARY_DIR}/RSBImage.pb.h DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/protobuf/ICLIO)
-  INCLUDE_DIRECTORIES(BEFORE ${CMAKE_CURRENT_BINARY_DIR}/protobuf)
+  INCLUDE_DIRECTORIES(BEFORE ${CMAKE_BINARY_DIR})
 
   LIST(APPEND SOURCES src/ICLIO/RSBGrabber.cpp
                       src/ICLIO/RSBImageOutput.cpp
