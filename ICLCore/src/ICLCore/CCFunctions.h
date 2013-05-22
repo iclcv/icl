@@ -112,8 +112,8 @@ namespace icl{
         R = Y +               290.7   * v2;
         G = Y - 100.47 * u2 - 148.155 * v2;   with: u2 = 0.0034196078*U - 0.436;
         B = Y + 518.16 * u2;                   and  v2 = 0.0048235294*V - 0.615;
-        
         </pre>
+
         To avoid <em>expensive</em> floating point operations, the 
         conversions can be optimized by creating a so called <b>fixed 
         point approximation</b> of the above code:
@@ -128,6 +128,24 @@ namespace icl{
         </pre>
         This approximation produces errors less 3/255, and runs up to 20% faster.
         A further optimization can be implemented using lookup tables.
+
+        The SSE-implementation uses the original floating point calculation,
+        that is extended to match the value range [0,255]:
+        <pre>
+        Y = 0.299f*R + 0.587f*G + 0.114*B
+        U = 0.492f*(B-Y) + 128.0f
+        V = 0.877f*(R-Y) + 128.0f
+        if(V < 0.0f) V = 0.0f;
+        else if(V > 255.0f) V = 255.0f;
+        
+        R = Y + 1.140*(V - 128)
+        G = Y - 0.394*(U - 128) - 0.581*(V - 128)
+        B = Y + 2.032*(U - 128)
+        R = clip(R, 0, 255);
+        G = clip(G, 0, 255);
+        B = clip(B, 0, 255);
+        </pre>
+
   
         
         \subsection IPPCOMPA_XYZ IPP Compatibility
@@ -291,9 +309,9 @@ namespace icl{
         B = m[2][0] * x + m[2][1] * y + m[2][2] * z;
         
         XYZToLAB
-        wX = 95.0456;
-        wY = 100.0;
-        wZ = 108.8754;
+        wX = 0.950455;
+        wY = 1.0;
+        wZ = 1.088753;
         _13 = 1.0/3.0;
         
         XXn = X / wX;
@@ -305,26 +323,25 @@ namespace icl{
         fX = (XXn > 0.008856) ? pow (XXn, _13) : 7.787 * XXn + (16 / 116);
         fY = (YYn > 0.008856) ? pow (YYn, _13) : 7.787 * YYn + (16 / 116); 
         fZ = (ZZn > 0.008856) ? pow (ZZn, _13) : 7.787 * ZZn + (16 / 116);
-        
+
+        L = 116 * fY - 16;
         a = 500.0 * (fX - fY);
         b = 200.0 * (fY - fZ);
-        
+
         LABToXYZ
-        d = 6.0/29.0;
         n = 16.0/116.0;
-        f = 3*d*d;
         
-        wX = 95.0456;
-        wY = 100.0;
-        wZ = 108.8754;
+        wX = 0.950455;
+        wY = 1.0;
+        wZ = 1.088754f;
         
         fy = (l+16)/116;
         fx = fy+a/500;
         fz = fy-b/200;
-        
-        X = (fx>d) ?  wX*pow(fx,3) : (fx-n)*f*wX;
-        Y = (fy>d) ?  wY*pow(fy,3) : (fy-n)*f*wY;
-        Z = (fz>d) ?  wZ*pow(fz,3) : (fz-n)*f*wZ;
+
+        X = (fx>0.206893f) ?  wX*pow(fx,3) : wX*(fx-n)/7.787f;
+        Y = (fy>0.206893f) ?  wY*pow(fy,3) : wY*(fy-n)/7.787f;
+        Z = (fz>0.206893f) ?  wZ*pow(fz,3) : wZ*(fz-n)/7.787f;
         </pre>
    
         
