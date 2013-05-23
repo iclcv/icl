@@ -265,10 +265,29 @@ namespace icl {
       void setRotation(const Vec &rot);
   
       /// sets the camera's rotation and position from given 4x4 homogeneous matrix
+      /** Note, that this function is designed to not change the camera
+          when calling cam.setTransfromation(cam.getCSTrannsformationMatrix()). 
+          In other words, this means, that it will use the given rotation part R,
+          as rotation matrix, but set the camera position to -R*t */
       void setTransformation(const Mat &m);
-  
+
+      /// this sets the camera to the given world tranformation
+      /** If m is [R|t], the function sets the camera rotation to R
+          and the position to t. Note that getRotation() will return R^-1 which is R^t */
+      void setWorldTransformation(const Mat &m);
+      
+      
+      /// adapts the camera transformation, so that the given frame becomes the world frame
+      /** To this end, the camera's world transform is set to 
+          m.inv() * cam.getInvCSTransformationMatrix() */
+      void setWorldFrame(const Mat &m);
+
       /// get world to image coordinate system transformation matrix
       Mat getCSTransformationMatrix() const;
+      
+      /// returns the transform of the camera wrt. world frame
+      Mat getInvCSTransformationMatrix() const;
+      
       /// get world to image coordinate system transformation matrix
       Mat getCSTransformationMatrixGL() const;
       /// get projection matrix

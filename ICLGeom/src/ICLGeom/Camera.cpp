@@ -83,6 +83,17 @@ namespace icl {
       return T;
     }
   
+    Mat Camera::getInvCSTransformationMatrix() const{
+      Vec hh = cross(m_up,m_norm);
+      Vec uu = cross(m_norm,hh);
+  
+      return Mat(hh[0], uu[0], m_norm[0], m_pos[0], 
+                 hh[1], uu[1], m_norm[1], m_pos[1], 
+                 hh[2], uu[2], m_norm[2], m_pos[2], 
+                 0,0,0,1);
+    }
+
+
     Mat Camera::getCSTransformationMatrix() const {
       return createTransformationMatrix(m_norm, m_up, m_pos);
     }
@@ -273,6 +284,21 @@ namespace icl {
         m_up *= -1; m_up[3] = 1;
       }
     }
+
+    void Camera::setWorldFrame(const Mat &m){
+      //setWorldTransformation(m.inv() * getCSTransformationMatrix().inv() );
+      setWorldTransformation(m.inv() * getInvCSTransformationMatrix() );
+    }    
+
+    void Camera::setWorldTransformation(const Mat &m){
+      FixedMatrix<float,3,3> R = m.part<0,0,3,3>();
+      setRotation(R.transp());
+      
+      m_pos[0] = m(3,0);
+      m_pos[1] = m(3,1);
+      m_pos[2] = m(3,2);
+    }
+
     
     void Camera::setTransformation(const Mat &m){
       FixedMatrix<float,3,3> R = m.part<0,0,3,3>();
