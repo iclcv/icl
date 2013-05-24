@@ -34,6 +34,7 @@
 #include <ICLUtils/StringUtils.h>
 
 #include <ICLIO/MyrmexDecoder.h>
+#include <ICLCore/BayerConverter.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -43,6 +44,15 @@ namespace icl{
   
     namespace color_format_converter{
 
+      template<BayerConverter::bayerPattern P>
+      void bayer(const icl8u *rawData,const Size &size, ImgBase **dst, std::vector<icl8u> *buffer=0){
+        ensureCompatible(dst,depth8u, size, formatRGB);
+        BayerConverter bc(BayerConverter::bilinear, P);
+        std::vector<icl8u*> cs(1,const_cast<icl8u*>(rawData));
+        Img8u src(size,1,cs);
+        bc.apply(&src, dst);
+      }
+      
       // can be used to grab kinect IR-image via V4L2
       void y10b(const icl8u *rawData,const Size &size, ImgBase **dst, std::vector<icl8u> *buffer=0){
         ensureCompatible(dst,depth16s,size,formatGray);
@@ -169,6 +179,10 @@ namespace icl{
       m_functions[FourCC("YU12").asInt()] = color_format_converter::yu12;
       m_functions[FourCC("MYRM").asInt()] = color_format_converter::myrm;
       m_functions[FourCC("Y10B").asInt()] = color_format_converter::y10b;
+      m_functions[FourCC("RGGB").asInt()] = color_format_converter::bayer<BayerConverter::bayerPattern_RGGB>;
+      m_functions[FourCC("GBRG").asInt()] = color_format_converter::bayer<BayerConverter::bayerPattern_GBRG>;
+      m_functions[FourCC("GRBG").asInt()] = color_format_converter::bayer<BayerConverter::bayerPattern_GRBG>;
+      m_functions[FourCC("BGGR").asInt()] = color_format_converter::bayer<BayerConverter::bayerPattern_BGGR>;
   
   #ifdef HAVE_LIBJPEG
       m_functions[FourCC("MJPG").asInt()] = color_format_converter::mjpg;

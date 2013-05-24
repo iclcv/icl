@@ -341,6 +341,9 @@ namespace icl{
       iback(createBackOnce ? 0 : back){}
       
       virtual void render(const Primitive::RenderContext &ctx);
+      
+      /// sets new textures
+      void setTextures(const core::ImgBase *front, const core::ImgBase *back);
     };
     
     /// The shared texture primitive references a texture from the parent SceneObject

@@ -492,6 +492,13 @@ namespace icl{
       
       restoreAlphaDefaults();
     }
+
+    void TwoSidedTextureGridPrimitive::setTextures(const core::ImgBase *front, 
+                                                   const core::ImgBase *back){
+      texture.update(front);
+      this->back.update(back);
+    }
+
   
     void TextureGridPrimitive::getAABB(Range32f aabb[3]){
       Range32f limits = Range32f::limits(); 

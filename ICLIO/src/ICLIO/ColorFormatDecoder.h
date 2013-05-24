@@ -46,6 +46,23 @@ namespace icl{
         <b>fourcc</b> color code (see: http://en.wikipedia.org/wiki/FourCC and 
         http://v4l2spec.bytesex.org/spec/c2030.htm for more details)
         
+        \section SUP Supported FourCC codes
+
+        * <b>GRAY, GREY or Y800</b> simple 8bit grayscale image (no version, copy only)
+        * <b>YUYV</b> encodes 2 rgb-pixels in 4 bytes, ordered Y_1UY_2V, so the first
+          pixel is created from Y_1, U and V and the 2nd pixel is created from Y_2, U, and V
+        * <b>Y444</b> Simple interleaved YUV-format, data order: U_1,Y_1,V_2,U_2, ...
+        * <b>YU12</b> Very common planar format where Y, U and V channels are packed
+          in order Y,U,V. The special thing is here, that U and V have only half x- and 
+          y-resolution
+        * <b>Y10B</b> packed 10 bit gray-scale format (result is put into a 16bit (Img16s) image
+        * <b>MYRM</b> Special non standard format used for the Myrmex Tactile Sensor
+        * <b>RGGB, GBRG, GRBG, BGGR</b> Bayer filter formats, uncommonly used for webcams
+          (note that bayer filters are often used with Firewire cameras, but in the DCGrabber
+          backend, the core::BayerConverter is used automatically)
+        * <b>MJPG</b> Motion jpeg. Here, each image frame actually contains binary encoded
+          jpeg data
+        
         \section EX ICL Specific Extensions
         For supporting the Myrmex Tactile Device, we added an extra
         FourCC code called "MYRM".
