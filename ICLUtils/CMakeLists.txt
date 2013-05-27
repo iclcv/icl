@@ -121,7 +121,8 @@ SET(HEADERS src/ICLUtils/Any.h
 	    src/ICLUtils/Utils.h
 	    src/ICLUtils/VisualizationDescription.h
 	    src/ICLUtils/XML.h
-            src/ICLUtils/SSEUtils.h)
+            src/ICLUtils/SSEUtils.h
+            src/ICLUtils/SSETypes.h)
 
 INCLUDE_DIRECTORIES(BEFORE src 
                            "${CMAKE_BINARY_DIR}/src")
