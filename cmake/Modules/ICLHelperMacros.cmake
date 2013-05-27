@@ -106,6 +106,8 @@ FUNCTION(CREATE_PKGCONFIG)
   # Set appropriate variables
   SET(PKG_NAME ${CONFIG_NAME} CACHE INTERNAL "Name of the pkg-config file")
   
+  MESSAGE(STATUS "Creatig Package Config file for ${PKG_NAME}")
+  
   # Link against specific library (if not ICL-meta package)
   IF(${CONFIG_NAME} STREQUAL "ICL")
     SET(PKG_LIB "")
@@ -116,6 +118,14 @@ FUNCTION(CREATE_PKGCONFIG)
   # Prepare include paths
   GET_PROPERTY(INCLUDE_DIRS DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
   LIST(REMOVE_DUPLICATES INCLUDE_DIRS)
+  
+  # remove local include dirs
+  FOREACH(M Utils Math Core Filter IO CV Qt Geom Markers)
+    LIST(REMOVE_ITEM INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/ICL${M}/src)
+  ENDFOREACH()
+  # remove build/src, added for the proto-buf files
+  LIST(REMOVE_ITEM INCLUDE_DIRS ${CMAKE_BINARY_DIR}/src)
+
   STRING(REPLACE ";" " -I" # first -I is in icl.pc.in
          INCLUDE_DIRS
          "${INCLUDE_DIRS}")
