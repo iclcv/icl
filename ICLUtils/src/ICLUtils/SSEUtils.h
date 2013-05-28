@@ -30,16 +30,22 @@
 
 #pragma once
 
-#if defined __SSE2__ || _MSC_VER >= 1300
-  #include "emmintrin.h"
-  #define __ICL_SSE2__
-  #define ICL_SSE2
-  #define HAVE_SSE2
-  #if defined __SSE3__ || _MSC_VER >= 1500
-    #include "pmmintrin.h"
-    #define __ICL_SSE3__
-    #define ICL_SSE3
-    #define HAVE_SSE3
+#ifdef USE_SSE
+  #ifdef __SSE2__
+    #include "emmintrin.h"
+    #define __ICL_SSE2__
+    #define ICL_SSE2
+    #define HAVE_SSE2
+    #ifdef __SSE3__
+      #include "pmmintrin.h"
+      #define __ICL_SSE3__
+      #define ICL_SSE3
+      #define HAVE_SSE3
+      #if defined __SSSE3__
+        #include "tmmintrin.h"
+        #define HAVE_SSSE3
+      #endif
+    #endif
   #endif
 #endif
 
@@ -48,7 +54,7 @@
 namespace icl{
   namespace utils{
 
-    #ifdef ICL_SSE2
+    #ifdef HAVE_SSE2
 
       // ++ rounding ++ //
 

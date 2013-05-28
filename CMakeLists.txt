@@ -136,6 +136,7 @@ OPTION(BUILD_WITH_OPENCL "Decide if the OpenCL library shall be used or not" OFF
 OPTION(BUILD_WITH_OPENNI "Decide if the OpenNI library shall be used or not" OFF)
 OPTION(BUILD_WITH_PCL "Decide if the PCL library shall be used or not" OFF)
 OPTION(BUILD_WITH_RSB "Decide if the RSB library shall be used or not" OFF)
+OPTION(BUILD_WITH_SSE "Decide if SSE intrinsics shall be used or not" ON)
 
 OPTION(BUILD_EXAMPLES "Decide if examples shall be build or not" OFF)
 OPTION(BUILD_DEMOS "Decide if demos shall be build or not" OFF)
@@ -337,6 +338,10 @@ IF(BUILD_WITH_RSB)
     LIST(APPEND RSB_RSC_AND_PROTOBUF_LIBRARIES_PC ${L})
   ENDFOREACH()
   
+ENDIF()
+
+IF(BUILD_WITH_SSE)
+  ADD_ICL_DEFINITIONS(-DUSE_SSE)
 ENDIF()
 
 # ---- OS system include directories ----

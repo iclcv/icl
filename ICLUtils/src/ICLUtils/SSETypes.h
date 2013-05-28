@@ -35,7 +35,7 @@
 namespace icl{
   namespace utils{
 
-    #ifdef ICL_SSE2
+    #ifdef HAVE_SSE2
 
       // ++ basic SSE types ++ //
 

@@ -4162,7 +4162,7 @@ namespace icl{
       if(src->hasFullROI() && ( dstLineStep == -1 || dstLineStep/((int)sizeof(D)) == src->getWidth())){
         planarToInterleaved_Generic_NO_ROI(src,dst);
       }else{
-        planarToInterleaved_Generic_WITH_ROI(src,dst,dstLineStep);
+        planarToInterleaved_Generic_WITH_ROI(src,dst,dstLineStep < 0 ? src->getLineStep()*src->getChannels()*sizeof(D)/sizeof(S) : dstLineStep);
       }
     }
     
@@ -4586,7 +4586,7 @@ namespace icl{
     icl8u *cB = poDst->getData(2);
 
     if (poDst->getDim() < w*h) {
-      // TODO: add an error or resize image
+      ERROR_LOG("the given size does not match size of the destination image"); 
     }
     const icl8u *end = cU;
     const icl8u *lEnd = cY + w;
