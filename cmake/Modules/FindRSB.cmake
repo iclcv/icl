@@ -40,13 +40,13 @@ ENDIF()
 
 FIND_PATH(RSB_INCLUDE_DIR 
   NAMES rsb/Factory.h rsb/Handler.h rsb/converter/Repository.h rsb/converter/ProtocolBufferConvert.h
-  PATHS ${RSB_ROOT}/include ${RSB_ROOT}/include/rsb
+  PATHS ${RSB_ROOT}/include ${RSB_ROOT}/include/rsb ${RSB_ROOT}/include/rsb0.9 
   DOC "The path to RSB header files"
   NO_DEFAULT_PATH)
 
 FIND_PATH(RSC_INCLUDE_DIR 
   NAMES rsc/logging/Logger.h
-  PATHS ${RSB_ROOT}/include ${RSB_ROOT}/include/rsc
+  PATHS ${RSB_ROOT}/include ${RSB_ROOT}/include/rsc ${RSB_ROOT}/include/rsc0.9
   DOC "The path to RSC header files"
   NO_DEFAULT_PATH)
 
@@ -65,12 +65,14 @@ FIND_LIBRARY(RSB_LIBRARY
   NO_DEFAULT_PATH)
 
 IF(NOT RSB_LIBRARY)
+  MESSAGE(STATUS "### here searching in ${RSB_ROOT}")
   # new library layout, we need to link against libspread as well
   FIND_LIBRARY(RSB_LIBRARY  
     NAMES rsb
     PATHS ${RSB_ROOT}
     PATH_SUFFIXES lib
     NO_DEFAULT_PATH)
+  MESSAGE(STATUS "resulting rsb-lib: ${RSB_LIBRARY}")
   IF(RSB_LIBRARY)
     FIND_LIBRARY(SPREAD_LIBRARY  
       NAMES spread
@@ -80,14 +82,16 @@ IF(NOT RSB_LIBRARY)
     IF(NOT SPREAD_LIBRARY)
       MESSAGE(FATAL_ERROR "Not Found: libspread.so in ${RSB_ROOT}/lib and /usr/lib (the new rsb-library layout that uses librsb.so needs explicit linkage against libspread.so)")
     ENDIF()
+    MESSAGE(STATUS "resulting spread: ${SPREAD_LIBRARY}")
   ENDIF()
 ENDIF()
 
 FIND_LIBRARY(RSC_LIBRARY  
-  NAMES rsc
+  NAMES rsc rsc0.9
   PATHS ${RSB_ROOT}
   PATH_SUFFIXES lib
   NO_DEFAULT_PATH)
+MESSAGE(STATUS "resulting rsc-lib: ${RSC_LIBRARY}")
 
 IF(RSB_LIBRARY AND RSC_LIBRARY)
   SET(RSB_LIBRARIES ${RSB_LIBRARY} ${RSC_LIBRARY} ${SPREAD_LIBRARY})
@@ -97,7 +101,7 @@ ENDIF()
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(RSB REQUIRED_VARS 
 				  RSB_LIBRARIES
 				  RSB_INCLUDE_DIR
-                                  RSB_INCLUDE_DIR)
+                                  RSC_INCLUDE_DIR)
 IF(RSB_FOUND)
   INCLUDE_DIRECTORIES(${RSB_INCLUDE_DIR} ${RSC_INCLUDE_DIR})
 ENDIF()
