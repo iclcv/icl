@@ -1052,11 +1052,11 @@ namespace icl{
 	for(unsigned int i=0;i<src.rows()*src.cols();++i){
           srcbuf[i] =T2(src.data()[i]);
 	}
-	MKL_LONG status, l[2]={dimy,dimx};
+	MKL_LONG status, l[2]={(MKL_LONG )dimy,(MKL_LONG )dimx};
 	DFTI_DESCRIPTOR_HANDLE my_desc1_handle=0;
 	status = DftiCreateDescriptor( &my_desc1_handle, getMKLDftiType<T2>(), DFTI_REAL, 2,l);
-	MKL_LONG strides_in[3]={0,dimx,1};
-	MKL_LONG strides_out[3]={0,dimx,1};
+	MKL_LONG strides_in[3]={(MKL_LONG )0,(MKL_LONG )dimx,(MKL_LONG )1};
+	MKL_LONG strides_out[3]={(MKL_LONG )0,(MKL_LONG )dimx,(MKL_LONG )1};
 	status = DftiSetValue(my_desc1_handle,DFTI_PLACEMENT, DFTI_NOT_INPLACE);
 	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
           throw FFTException("FFTException DftiSetValueError");
@@ -1140,8 +1140,8 @@ namespace icl{
 	FFT_DEBUG("using mkl fft2d_complex");
 
 	MKL_LONG status;
-	MKL_LONG strides_in[3]={0,dimx,1};
-	MKL_LONG strides_out[3]={0,dimx,1};
+	MKL_LONG strides_in[3]={(MKL_LONG )0,(MKL_LONG )dimx,(MKL_LONG )1};
+	MKL_LONG strides_out[3]={(MKL_LONG )0,(MKL_LONG )dimx,(MKL_LONG )1};
 	status = DftiSetValue(my_desc1_handle,DFTI_PLACEMENT, DFTI_NOT_INPLACE);
 	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
           throw FFTException("FFTException DftiSetValueError");
@@ -1183,7 +1183,7 @@ namespace icl{
 	for(unsigned int i=0;i<src.rows()*src.cols();++i){
           srcbuf[i] =*(reinterpret_cast<const _MKL_Complex8*>(&(src.data()[i])));
 	}
-	MKL_LONG status, l[2]={dimy,dimx};
+	MKL_LONG status, l[2]={(MKL_LONG )dimy,(MKL_LONG )dimx};
 	DFTI_DESCRIPTOR_HANDLE my_desc1_handle;
 	status = DftiCreateDescriptor( &my_desc1_handle, DFTI_SINGLE, DFTI_COMPLEX, 2,l);
         (void)status;
@@ -1200,7 +1200,7 @@ namespace icl{
 	for(unsigned int i=0;i<src.rows()*src.cols();++i){
           srcbuf[i] =*(reinterpret_cast<const _MKL_Complex16*>(&(src.data()[i])));
 	}
-	MKL_LONG status, l[2]={dimy,dimx};
+	MKL_LONG status, l[2]={(MKL_LONG )dimy,(MKL_LONG )dimx};
 	DFTI_DESCRIPTOR_HANDLE my_desc1_handle=0;
 	status = DftiCreateDescriptor( &my_desc1_handle, DFTI_DOUBLE, DFTI_COMPLEX, 2,l);
 	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
@@ -1734,11 +1734,11 @@ namespace icl{
 	int dim = src.cols()*src.rows();
 	unsigned int dimx = src.cols();
 	unsigned int dimy = src.rows();
-	MKL_LONG status, l[2]={dimy,dimx};
+	MKL_LONG status, l[2]={(MKL_LONG )dimy,(MKL_LONG )dimx};
 	DFTI_DESCRIPTOR_HANDLE my_desc1_handle=0;
 	status = DftiCreateDescriptor( &my_desc1_handle, getMKLDftiType<T2>(), DFTI_COMPLEX, 2,l);
-	MKL_LONG strides_in[3]={0,dimx,1};
-	MKL_LONG strides_out[3]={0,dimx,1};
+	MKL_LONG strides_in[3]={(MKL_LONG )0,(MKL_LONG )dimx,(MKL_LONG )1};
+	MKL_LONG strides_out[3]={(MKL_LONG )0,(MKL_LONG )dimx,(MKL_LONG )1};
 	status = DftiSetValue(my_desc1_handle,DFTI_PLACEMENT, DFTI_NOT_INPLACE);
 	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
           throw FFTException("FFTException DftiSetValueError");
@@ -1820,11 +1820,11 @@ namespace icl{
 	int dim = src.cols()*src.rows();
 	unsigned int dimx = src.cols();
 	unsigned int dimy = src.rows();
-	MKL_LONG status, l[2]={dimy,dimx};
+	MKL_LONG status, l[2]={(MKL_LONG )dimy,(MKL_LONG )dimx};
 	DFTI_DESCRIPTOR_HANDLE my_desc1_handle=0;
 	status = DftiCreateDescriptor( &my_desc1_handle, getMKLDftiType<T2>(), DFTI_COMPLEX, 2,l);
-	MKL_LONG strides_in[3]={0,dimx,1};
-	MKL_LONG strides_out[3]={0,dimx,1};
+	MKL_LONG strides_in[3]={(MKL_LONG )0,(MKL_LONG )dimx,(MKL_LONG )1};
+	MKL_LONG strides_out[3]={(MKL_LONG )0,(MKL_LONG )dimx,(MKL_LONG )1};
 	status = DftiSetValue(my_desc1_handle,DFTI_PLACEMENT, DFTI_NOT_INPLACE);
 	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
           throw FFTException("FFTException DftiSetValueError");
