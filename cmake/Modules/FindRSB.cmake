@@ -31,18 +31,31 @@
 INCLUDE(FindPackageHandleStandardArgs)
 
 IF(NOT RSB_ROOT)
-  SET(RSB_ROOT /usr)
+  IF(RSB_DIR)
+    SET(RSB_ROOT ${RSB_DIR})
+  ELSE()
+    SET(RSB_ROOT /usr)
+  ENDIF()
 ENDIF()
 
 FIND_PATH(RSB_INCLUDE_DIR 
   NAMES rsb/Factory.h rsb/Handler.h rsb/converter/Repository.h rsb/converter/ProtocolBufferConvert.h
-  PATHS ${RSB_ROOT}/include
+  PATHS ${RSB_ROOT}/include ${RSB_ROOT}/include/rsb
   DOC "The path to RSB header files"
   NO_DEFAULT_PATH)
 
-  
+FIND_PATH(RSC_INCLUDE_DIR 
+  NAMES rsc/logging/Logger.h
+  PATHS ${RSB_ROOT}/include ${RSB_ROOT}/include/rsc
+  DOC "The path to RSC header files"
+  NO_DEFAULT_PATH)
+
 IF(RSB_INCLUDE_DIR)
   MESSAGE(STATUS "Found RSB include dir: ${RSB_INCLUDE_DIR}")
+ENDIF()
+
+IF(RSC_INCLUDE_DIR)
+  MESSAGE(STATUS "Found RSC include dir: ${RSC_INCLUDE_DIR}")
 ENDIF()
 
 FIND_LIBRARY(RSB_LIBRARY  
@@ -51,6 +64,25 @@ FIND_LIBRARY(RSB_LIBRARY
   PATH_SUFFIXES lib
   NO_DEFAULT_PATH)
 
+IF(NOT RSB_LIBRARY)
+  # new library layout, we need to link against libspread as well
+  FIND_LIBRARY(RSB_LIBRARY  
+    NAMES rsb
+    PATHS ${RSB_ROOT}
+    PATH_SUFFIXES lib
+    NO_DEFAULT_PATH)
+  IF(RSB_LIBRARY)
+    FIND_LIBRARY(SPREAD_LIBRARY  
+      NAMES spread
+      PATHS ${RSB_ROOT} /usr
+      PATH_SUFFIXES lib
+      NO_DEFAULT_PATH)
+    IF(NOT SPREAD_LIBRARY)
+      MESSAGE(FATAL_ERROR "Not Found: libspread.so in ${RSB_ROOT}/lib and /usr/lib (the new rsb-library layout that uses librsb.so needs explicit linkage against libspread.so)")
+    ENDIF()
+  ENDIF()
+ENDIF()
+
 FIND_LIBRARY(RSC_LIBRARY  
   NAMES rsc
   PATHS ${RSB_ROOT}
@@ -58,15 +90,17 @@ FIND_LIBRARY(RSC_LIBRARY
   NO_DEFAULT_PATH)
 
 IF(RSB_LIBRARY AND RSC_LIBRARY)
-  SET(RSB_LIBRARIES ${RSB_LIBRARY} ${RSC_LIBRARY})
+  SET(RSB_LIBRARIES ${RSB_LIBRARY} ${RSC_LIBRARY} ${SPREAD_LIBRARY})
 ENDIF()
 
 # define mandatory arguments
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(RSB REQUIRED_VARS 
 				  RSB_LIBRARIES
-				  RSB_INCLUDE_DIR)
-IF(HAVE_RSB)
-  INCLUDE_DIRECTORIES(${RSB_INCLUDE_DIR})
+				  RSB_INCLUDE_DIR
+                                  RSB_INCLUDE_DIR)
+IF(RSB_FOUND)
+  INCLUDE_DIRECTORIES(${RSB_INCLUDE_DIR} ${RSC_INCLUDE_DIR})
 ENDIF()
 
 MARK_AS_ADVANCED(RSB_INCLUDE_DIR)
+MARK_AS_ADVANCED(RSC_INCLUDE_DIR)
