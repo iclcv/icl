@@ -186,14 +186,14 @@ void init(){
 
   rel << ( VBox().label("rel-transformation")
            << ( HBox()
-                << Spinner(0,8,0).label("x-rotation *pi/4").out("rx")
-                << Spinner(0,8,0).label("y-rotation *pi/4").out("ry")
-                << Spinner(0,8,0).label("z-rotation *pi/4").out("rz")
+                << Spinner(0,8,pa("-i",0)).label("x-rotation *pi/4").out("rx")
+                << Spinner(0,8,pa("-i",1)).label("y-rotation *pi/4").out("ry")
+                << Spinner(0,8,pa("-i",2)).label("z-rotation *pi/4").out("rz")
                 )
            << ( HBox()
-                << Float(-100000,100000,0).label("x-offset").out("tx")
-                        << Float(-100000,100000,0).label("y-offset").out("ty")
-                << Float(-100000,100000,0).label("z-offset").out("tz")
+                << Float(-100000,100000,pa("-i",3)).label("x-offset").out("tx")
+                << Float(-100000,100000,pa("-i",4)).label("y-offset").out("ty")
+                << Float(-100000,100000,pa("-i",5)).label("z-offset").out("tz")
                 )
            )
   //<< Button("show transformation matrix").handle("showRelTrans") 
@@ -328,9 +328,11 @@ void run(){
 
 int main(int n, char **a){
   pa_explain("-g","list of grid tokens 'ID-offset,nx,ny,marker-size,dx,dy' size units are in mm");
+  pa_explain("-t","gives initial transform paramters (rotation is given in integer units of PI/2)");
   return ICLApp(n,a,"[m]-input|-i(2) "
                 "[m]-initial-camera|-c(1) "
-                "[m]-grids|-g(...) -fiducial-detector-props|-p(filename)",init,run).exec();
+                "[m]-grids|-g(...) -fiducial-detector-props|-p(filename)"
+                "-initial-relative-transform|-t(rx=0,ry=0,rz=0,tx=0,ty=0,tz=0)",init,run).exec();
 }
 
 
