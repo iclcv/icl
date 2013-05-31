@@ -331,7 +331,7 @@ int main(int n, char **a){
   pa_explain("-t","gives initial transform paramters (rotation is given in integer units of PI/2)");
   return ICLApp(n,a,"[m]-input|-i(2) "
                 "[m]-initial-camera|-c(1) "
-                "[m]-grids|-g(...) -fiducial-detector-props|-p(filename)"
+                "[m]-grids|-g(...) -fiducial-detector-props|-p(filename) "
                 "-initial-relative-transform|-t(rx=0,ry=0,rz=0,tx=0,ty=0,tz=0)",init,run).exec();
 }
 
