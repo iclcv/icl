@@ -4028,8 +4028,413 @@ namespace icl{
     }
   
     // }}}
-  
-  
+
+    template<class S, class D>
+    void for_copy_p2c2(const S *s0, const S *s1, D *dst, const D *dstEnd) {
+      while (dst<dstEnd){
+        *dst++ = clipped_cast<S,D>(*s0++);
+        *dst++ = clipped_cast<S,D>(*s1++);
+      }
+    }
+
+    template<class S, class D>
+    void for_copy_p3c3(const S *s0, const S *s1, const S *s2, D *dst, const D *dstEnd) {
+      while (dst<dstEnd){
+        *dst++ = clipped_cast<S,D>(*s0++);
+        *dst++ = clipped_cast<S,D>(*s1++);
+        *dst++ = clipped_cast<S,D>(*s2++);
+      }
+    }
+
+    template<class S, class D>
+    void for_copy_p4c4(const S *s0, const S *s1, const S *s2, const S *s3, D *dst, const D *dstEnd) {
+      while (dst<dstEnd){
+        *dst++ = clipped_cast<S,D>(*s0++);
+        *dst++ = clipped_cast<S,D>(*s1++);
+        *dst++ = clipped_cast<S,D>(*s2++);
+        *dst++ = clipped_cast<S,D>(*s3++);
+      }
+    }
+
+  #ifdef HAVE_SSSE3
+
+      template<class S, class D>
+      inline void copy_p3c3(const S *src0, const S *src1, const S *src2, D *dst) {
+        *dst     = clipped_cast<S,D>(*src0);
+        *(dst+1) = clipped_cast<S,D>(*src1);
+        *(dst+2) = clipped_cast<S,D>(*src2);
+      }
+
+      inline void sse_copy_p3c3(const icl8u *src0, const icl8u *src1, const icl8u *src2, icl8u *dst) {
+        const icl128i mask = icl128i(0x04010200, 0x0A080506, 0x0D0E0C09, 0x80808080);
+
+        icl128i v0 = icl128i(src0);
+        icl128i v1 = icl128i(src1);
+        icl128i v2 = icl128i(src2);
+        icl128i v3 = icl128i(0);
+
+        __m128i vl0 = _mm_unpacklo_epi8(v0.v0, v2.v0);
+        __m128i vh0 = _mm_unpackhi_epi8(v0.v0, v2.v0);
+        __m128i vl1 = _mm_unpacklo_epi8(v1.v0, v3.v0);
+        __m128i vh1 = _mm_unpackhi_epi8(v1.v0, v3.v0);
+
+        v0.v0 = _mm_unpacklo_epi16(vl0, vl1);
+        v1.v0 = _mm_unpackhi_epi16(vl0, vl1);
+        v2.v0 = _mm_unpacklo_epi16(vh0, vh1);
+        v3.v0 = _mm_unpackhi_epi16(vh0, vh1);
+
+        v0.v0 = _mm_shuffle_epi8(v0.v0, mask.v0);
+        v1.v0 = _mm_shuffle_epi8(v1.v0, mask.v0);
+        v2.v0 = _mm_shuffle_epi8(v2.v0, mask.v0);
+        v3.v0 = _mm_shuffle_epi8(v3.v0, mask.v0);
+
+        v0.storeu(dst);
+        v1.storeu(dst+12);
+        v2.storeu(dst+24);
+        v3.storeu(dst+36);
+
+        /* this function can be improved with SSE4;
+           mask_0..mask_5 have to be defined
+
+        icl128i vR0 = icl128i(_mm_blendv_epi8(v0.v0, v1.v0, mask_0));
+        vR0 = icl128i(_mm_blendv_epi8(vR0.v0, v2.v0, mask_1));
+        icl128i vR1 = icl128i(_mm_blendv_epi8(v0.v0, v1.v0, mask_2));
+        vR0 = icl128i(_mm_blendv_epi8(vR1.v0, v2.v0, mask_3));
+        icl128i vR2 = icl128i(_mm_blendv_epi8(v0.v0, v1.v0, mask_4));
+        vR0 = icl128i(_mm_blendv_epi8(vR2.v0, v2.v0, mask_5));
+
+        vR0.storeu(dst);
+        vR1.storeu(dst+16);
+        vR2.storeu(dst+32);
+        */
+      }
+
+      inline void sse_copy_p3c3(const icl8u *src0, const icl8u *src1, const icl8u *src2, icl16s *dst) {
+        const icl128i mask = icl128i(0x04010200, 0x0A080506, 0x0D0E0C09, 0x80808080);
+        const __m128i vk0 = _mm_setzero_si128();
+
+        icl128i v0 = icl128i(src0);
+        icl128i v1 = icl128i(src1);
+        icl128i v2 = icl128i(src2);
+        icl128i v3 = icl128i(0);
+
+        __m128i vl0 = _mm_unpacklo_epi8(v0.v0, v2.v0);
+        __m128i vh0 = _mm_unpackhi_epi8(v0.v0, v2.v0);
+        __m128i vl1 = _mm_unpacklo_epi8(v1.v0, v3.v0);
+        __m128i vh1 = _mm_unpackhi_epi8(v1.v0, v3.v0);
+
+        v0.v0 = _mm_unpacklo_epi16(vl0, vl1);
+        v1.v0 = _mm_unpackhi_epi16(vl0, vl1);
+        v2.v0 = _mm_unpacklo_epi16(vh0, vh1);
+        v3.v0 = _mm_unpackhi_epi16(vh0, vh1);
+
+        v0.v0 = _mm_shuffle_epi8(v0.v0, mask.v0);
+        v1.v0 = _mm_shuffle_epi8(v1.v0, mask.v0);
+        v2.v0 = _mm_shuffle_epi8(v2.v0, mask.v0);
+        v3.v0 = _mm_shuffle_epi8(v3.v0, mask.v0);
+
+        __m128i vt1, vt3;
+
+        vt1 = _mm_unpacklo_epi8(v0.v0, vk0);
+        vt3 = _mm_unpackhi_epi8(v0.v0, vk0);
+
+        _mm_storeu_si128((__m128i*)dst,      vt1);
+        _mm_storeu_si128((__m128i*)(dst+8),  vt3);
+
+        vt1 = _mm_unpacklo_epi8(v1.v0, vk0);
+        vt3 = _mm_unpackhi_epi8(v1.v0, vk0);
+
+        _mm_storeu_si128((__m128i*)(dst+12), vt1);
+        _mm_storeu_si128((__m128i*)(dst+20), vt3);
+
+        vt1 = _mm_unpacklo_epi8(v2.v0, vk0);
+        vt3 = _mm_unpackhi_epi8(v2.v0, vk0);
+
+        _mm_storeu_si128((__m128i*)(dst+24), vt1);
+        _mm_storeu_si128((__m128i*)(dst+32), vt3);
+
+        vt1 = _mm_unpacklo_epi8(v3.v0, vk0);
+        vt3 = _mm_unpackhi_epi8(v3.v0, vk0);
+
+        _mm_storeu_si128((__m128i*)(dst+36), vt1);
+        _mm_storeu_si128((__m128i*)(dst+44), vt3);
+      }
+
+      inline void sse_copy_p3c3(const icl8u *src0, const icl8u *src1, const icl8u *src2, __m128i *dst) {
+        const icl128i mask = icl128i(0x04010200, 0x0A080506, 0x0D0E0C09, 0x80808080);
+        const __m128i vk0 = _mm_setzero_si128();
+
+        icl128i v0 = icl128i(src0);
+        icl128i v1 = icl128i(src1);
+        icl128i v2 = icl128i(src2);
+        icl128i v3 = icl128i(0);
+
+        __m128i vl0 = _mm_unpacklo_epi8(v0.v0, v2.v0);
+        __m128i vh0 = _mm_unpackhi_epi8(v0.v0, v2.v0);
+        __m128i vl1 = _mm_unpacklo_epi8(v1.v0, v3.v0);
+        __m128i vh1 = _mm_unpackhi_epi8(v1.v0, v3.v0);
+
+        v0.v0 = _mm_unpacklo_epi16(vl0, vl1);
+        v1.v0 = _mm_unpackhi_epi16(vl0, vl1);
+        v2.v0 = _mm_unpacklo_epi16(vh0, vh1);
+        v3.v0 = _mm_unpackhi_epi16(vh0, vh1);
+
+        v0.v0 = _mm_shuffle_epi8(v0.v0, mask.v0);
+        v1.v0 = _mm_shuffle_epi8(v1.v0, mask.v0);
+        v2.v0 = _mm_shuffle_epi8(v2.v0, mask.v0);
+        v3.v0 = _mm_shuffle_epi8(v3.v0, mask.v0);
+
+        __m128i vt0, vt1, vt2, vt3;
+
+        vt1 = _mm_unpacklo_epi8(v0.v0, vk0);
+        vt3 = _mm_unpackhi_epi8(v0.v0, vk0);
+
+        vt0 = _mm_unpacklo_epi16(vt1, vk0);
+        vt1 = _mm_unpackhi_epi16(vt1, vk0);
+        vt2 = _mm_unpacklo_epi16(vt3, vk0);
+
+        _mm_storeu_si128(dst++, vt0);
+        _mm_storeu_si128(dst++, vt1);
+        _mm_storeu_si128(dst++, vt2);
+
+        vt1 = _mm_unpacklo_epi8(v1.v0, vk0);
+        vt3 = _mm_unpackhi_epi8(v1.v0, vk0);
+
+        vt0 = _mm_unpacklo_epi16(vt1, vk0);
+        vt1 = _mm_unpackhi_epi16(vt1, vk0);
+        vt2 = _mm_unpacklo_epi16(vt3, vk0);
+
+        _mm_storeu_si128(dst++, vt0);
+        _mm_storeu_si128(dst++, vt1);
+        _mm_storeu_si128(dst++, vt2);
+
+        vt1 = _mm_unpacklo_epi8(v2.v0, vk0);
+        vt3 = _mm_unpackhi_epi8(v2.v0, vk0);
+
+        vt0 = _mm_unpacklo_epi16(vt1, vk0);
+        vt1 = _mm_unpackhi_epi16(vt1, vk0);
+        vt2 = _mm_unpacklo_epi16(vt3, vk0);
+
+        _mm_storeu_si128(dst++, vt0);
+        _mm_storeu_si128(dst++, vt1);
+        _mm_storeu_si128(dst++, vt2);
+
+        vt1 = _mm_unpacklo_epi8(v3.v0, vk0);
+        vt3 = _mm_unpackhi_epi8(v3.v0, vk0);
+
+        vt0 = _mm_unpacklo_epi16(vt1, vk0);
+        vt1 = _mm_unpackhi_epi16(vt1, vk0);
+        vt2 = _mm_unpacklo_epi16(vt3, vk0);
+
+        _mm_storeu_si128(dst++, vt0);
+        _mm_storeu_si128(dst++, vt1);
+        _mm_storeu_si128(dst++, vt2);
+      }
+
+      inline void sse_copy_p3c3(const icl8u *src0, const icl8u *src1, const icl8u *src2, icl32f *dst) {
+        const icl128i mask = icl128i(0x04010200, 0x0A080506, 0x0D0E0C09, 0x80808080);
+        const __m128i vk0 = _mm_setzero_si128();
+
+        icl128i v0 = icl128i(src0);
+        icl128i v1 = icl128i(src1);
+        icl128i v2 = icl128i(src2);
+        icl128i v3 = icl128i(0);
+
+        __m128i vl0 = _mm_unpacklo_epi8(v0.v0, v2.v0);
+        __m128i vh0 = _mm_unpackhi_epi8(v0.v0, v2.v0);
+        __m128i vl1 = _mm_unpacklo_epi8(v1.v0, v3.v0);
+        __m128i vh1 = _mm_unpackhi_epi8(v1.v0, v3.v0);
+
+        v0.v0 = _mm_unpacklo_epi16(vl0, vl1);
+        v1.v0 = _mm_unpackhi_epi16(vl0, vl1);
+        v2.v0 = _mm_unpacklo_epi16(vh0, vh1);
+        v3.v0 = _mm_unpackhi_epi16(vh0, vh1);
+
+        v0.v0 = _mm_shuffle_epi8(v0.v0, mask.v0);
+        v1.v0 = _mm_shuffle_epi8(v1.v0, mask.v0);
+        v2.v0 = _mm_shuffle_epi8(v2.v0, mask.v0);
+        v3.v0 = _mm_shuffle_epi8(v3.v0, mask.v0);
+
+        __m128i vt0, vt1, vt2, vt3;
+        __m128 vf0, vf1, vf2;
+
+        vt1 = _mm_unpacklo_epi8(v0.v0, vk0);
+        vt3 = _mm_unpackhi_epi8(v0.v0, vk0);
+
+        vt0 = _mm_unpacklo_epi16(vt1, vk0);
+        vt1 = _mm_unpackhi_epi16(vt1, vk0);
+        vt2 = _mm_unpacklo_epi16(vt3, vk0);
+
+        vf0 = _mm_cvtepi32_ps(vt0);
+        vf1 = _mm_cvtepi32_ps(vt1);
+        vf2 = _mm_cvtepi32_ps(vt2);
+
+        _mm_storeu_ps(dst,    vf0);
+        _mm_storeu_ps(dst+4,  vf1);
+        _mm_storeu_ps(dst+8,  vf2);
+
+        vt1 = _mm_unpacklo_epi8(v1.v0, vk0);
+        vt3 = _mm_unpackhi_epi8(v1.v0, vk0);
+
+        vt0 = _mm_unpacklo_epi16(vt1, vk0);
+        vt1 = _mm_unpackhi_epi16(vt1, vk0);
+        vt2 = _mm_unpacklo_epi16(vt3, vk0);
+
+        vf0 = _mm_cvtepi32_ps(vt0);
+        vf1 = _mm_cvtepi32_ps(vt1);
+        vf2 = _mm_cvtepi32_ps(vt2);
+
+        _mm_storeu_ps(dst+12, vf0);
+        _mm_storeu_ps(dst+16, vf1);
+        _mm_storeu_ps(dst+20, vf2);
+
+        vt1 = _mm_unpacklo_epi8(v2.v0, vk0);
+        vt3 = _mm_unpackhi_epi8(v2.v0, vk0);
+
+        vt0 = _mm_unpacklo_epi16(vt1, vk0);
+        vt1 = _mm_unpackhi_epi16(vt1, vk0);
+        vt2 = _mm_unpacklo_epi16(vt3, vk0);
+
+        vf0 = _mm_cvtepi32_ps(vt0);
+        vf1 = _mm_cvtepi32_ps(vt1);
+        vf2 = _mm_cvtepi32_ps(vt2);
+
+        _mm_storeu_ps(dst+24, vf0);
+        _mm_storeu_ps(dst+28, vf1);
+        _mm_storeu_ps(dst+32, vf2);
+
+        vt1 = _mm_unpacklo_epi8(v3.v0, vk0);
+        vt3 = _mm_unpackhi_epi8(v3.v0, vk0);
+
+        vt0 = _mm_unpacklo_epi16(vt1, vk0);
+        vt1 = _mm_unpackhi_epi16(vt1, vk0);
+        vt2 = _mm_unpacklo_epi16(vt3, vk0);
+
+        vf0 = _mm_cvtepi32_ps(vt0);
+        vf1 = _mm_cvtepi32_ps(vt1);
+        vf2 = _mm_cvtepi32_ps(vt2);
+
+        _mm_storeu_ps(dst+36, vf0);
+        _mm_storeu_ps(dst+40, vf1);
+        _mm_storeu_ps(dst+44, vf2);
+      }
+
+    void for_copy_p3c3(const icl8u *src0, const icl8u *src1, const icl8u *src2, icl8u *dst, icl8u *dstEnd) {
+      icl8u *dstSSEEnd = dstEnd - 55;
+
+      for (; dst<dstSSEEnd;) {
+          // convert 'rvalues' values at the same time
+          sse_copy_p3c3(src0, src1, src2, dst);
+
+          // increment pointers to the next values
+          src0 += 16;
+          src1 += 16;
+          src2 += 16;
+          dst += 48;
+      }
+
+      for (; dst<dstEnd; ++src0, ++src1, ++src2, dst += 3) {
+        // convert 1 value
+        copy_p3c3(src0, src1, src2, dst);
+      }
+    }
+
+    void for_copy_p3c3(const icl8u *src0, const icl8u *src1, const icl8u *src2, icl16s *dst, icl16s *dstEnd) {
+      icl16s *dstSSEEnd = dstEnd - 55;
+
+      for (; dst<dstSSEEnd;) {
+          // convert 'rvalues' values at the same time
+          sse_copy_p3c3(src0, src1, src2, dst);
+
+          // increment pointers to the next values
+          src0 += 16;
+          src1 += 16;
+          src2 += 16;
+          dst += 48;
+      }
+
+      for (; dst<dstEnd; ++src0, ++src1, ++src2, dst += 3) {
+        // convert 1 value
+        copy_p3c3(src0, src1, src2, dst);
+      }
+    }
+
+    void for_copy_p3c3(const icl8u *src0, const icl8u *src1, const icl8u *src2, icl32s *dst, icl32s *dstEnd) {
+      icl32s *dstSSEEnd = dstEnd - 49;
+
+      for (; dst<dstSSEEnd;) {
+          // convert 'rvalues' values at the same time
+          sse_copy_p3c3(src0, src1, src2, (__m128i*)dst);
+
+          // increment pointers to the next values
+          src0 += 16;
+          src1 += 16;
+          src2 += 16;
+          dst += 48;
+      }
+
+      for (; dst<dstEnd; ++src0, ++src1, ++src2, dst += 3) {
+        // convert 1 value
+        copy_p3c3(src0, src1, src2, dst);
+      }
+    }
+
+    void for_copy_p3c3(const icl8u *src0, const icl8u *src1, const icl8u *src2, icl32f *dst, icl32f *dstEnd) {
+      icl32f *dstSSEEnd = dstEnd - 49;
+
+      for (; dst<dstSSEEnd;) {
+          // convert 'rvalues' values at the same time
+          sse_copy_p3c3(src0, src1, src2, dst);
+
+          // increment pointers to the next values
+          src0 += 16;
+          src1 += 16;
+          src2 += 16;
+          dst += 48;
+      }
+
+      for (; dst<dstEnd; ++src0, ++src1, ++src2, dst += 3) {
+        // convert 1 value
+        copy_p3c3(src0, src1, src2, dst);
+      }
+    }
+
+      template<class S, class D>
+      inline void copy_p4c4(const S *src0, const S *src1, const S *src2, const S *src3, D *dst) {
+        *dst     = clipped_cast<S,D>(*src0);
+        *(dst+1) = clipped_cast<S,D>(*src1);
+        *(dst+2) = clipped_cast<S,D>(*src2);
+        *(dst+3) = clipped_cast<S,D>(*src3);
+      }
+
+      inline void sse_copy_p4c4(const icl8u *src0, const icl8u *src1, const icl8u *src2, const icl8u *src3, icl8u *dst) {
+        icl128i v0 = icl128i(src0);
+        icl128i v1 = icl128i(src1);
+        icl128i v2 = icl128i(src2);
+        icl128i v3 = icl128i(src3);
+
+        __m128i vl0 = _mm_unpacklo_epi8(v0.v0, v1.v0);
+        __m128i vh0 = _mm_unpackhi_epi8(v0.v0, v1.v0);
+        __m128i vl1 = _mm_unpacklo_epi8(v2.v0, v3.v0);
+        __m128i vh1 = _mm_unpackhi_epi8(v2.v0, v3.v0);
+
+        v0.v0 = _mm_unpacklo_epi16(vl0, vl1);
+        v1.v0 = _mm_unpackhi_epi16(vl0, vl1);
+        v2.v0 = _mm_unpacklo_epi16(vh0, vh1);
+        v3.v0 = _mm_unpackhi_epi16(vh0, vh1);
+
+        v0.storeu(dst);
+        v1.storeu(dst+16);
+        v2.storeu(dst+32);
+        v3.storeu(dst+48);
+      }
+
+    void for_copy_p4c4(const icl8u *s0, const icl8u *s1, const icl8u *s2, const icl8u *s3, icl8u *dst, icl8u *dstEnd) {
+      sse_for(s0, s1, s2, s3, dst, dstEnd, copy_p4c4, sse_copy_p4c4, 16, 64);
+    }
+
+  #endif
+
     /// additional misc (planar -> interleaved and interleaved -> planar)
     
     template<class S, class D>
@@ -4045,37 +4450,13 @@ namespace icl{
           convert<S,D>(*src,*src+len,dst);
           break;
         case 2:{
-          D* dstEnd=dst+channels*len;
-          const S* s0 = src[0];
-          const S* s1 = src[1];
-          while (dst<dstEnd){
-            *dst++ = clipped_cast<S,D>(*s0++);
-            *dst++ = clipped_cast<S,D>(*s1++);
-          }
+          for_copy_p2c2(src[0], src[1], dst, dst + channels*len);
           break;
         }case 3:{
-          D* dstEnd=dst+channels*len;
-          const S* s0 = src[0];
-          const S* s1 = src[1];
-          const S* s2 = src[2];
-          while (dst<dstEnd){
-            *dst++ = clipped_cast<S,D>(*s0++);
-            *dst++ = clipped_cast<S,D>(*s1++);
-            *dst++ = clipped_cast<S,D>(*s2++);
-          }
+          for_copy_p3c3(src[0], src[1], src[2], dst, dst + channels*len);
           break;
         }case 4:{
-          D* dstEnd=dst+channels*len;
-          const S* s0 = src[0];
-          const S* s1 = src[1];
-          const S* s2 = src[2];
-          const S* s3 = src[3];
-          while (dst<dstEnd){
-            *dst++ = clipped_cast<S,D>(*s0++);
-            *dst++ = clipped_cast<S,D>(*s1++);
-            *dst++ = clipped_cast<S,D>(*s2++);
-            *dst++ = clipped_cast<S,D>(*s3++);
-          }
+          for_copy_p4c4(src[0], src[1], src[2], src[3], dst, dst + channels*len);
           break;
         }default:{
           D* dstEnd=dst+channels*len;
@@ -4088,9 +4469,8 @@ namespace icl{
         }
       }
     }
-  
     // }}}
-    
+
     template<class S, class D>
     inline void planarToInterleaved_Generic_NO_ROI(const Img<S> *src, D*dst){
       // {{{ open
@@ -4167,33 +4547,302 @@ namespace icl{
     }
     
     // }}}
-/*
-    inline void copy_c3p3() {
-      const icl128i mask = icl128i(0x00040880, 0x01050980, 0x02060A80, 0x03070B80);
-      icl128i v0 = icl128i(src);
-      icl128i v1 = icl128i(src+12);
-      icl128i v2 = icl128i(src+24);
-      icl128i v3 = icl128i(src+36);
 
-      v0.v0 = _mm_shuffle_epi8(v0.v0, mask.v0);
-      v1.v0 = _mm_shuffle_epi8(v1.v0, mask.v0);
-      v2.v0 = _mm_shuffle_epi8(v2.v0, mask.v0);
-      v3.v0 = _mm_shuffle_epi8(v3.v0, mask.v0);
-
-      _m128i vl0 = _mm_unpacklo_epi8(v0.v0, v1.v0);
-      _m128i vh0 = _mm_unpacklo_epi8(v0.v0, v1.v0);
-      _m128i vl1 = _mm_unpacklo_epi8(v2.v0, v3.v0);
-      _m128i vh1 = _mm_unpacklo_epi8(v2.v0, v3.v0);
-
-      v0.v0 = _mm_unpacklo_epi16(vl0, vl1);
-      v1.v0 = _mm_unpackhi_epi16(vl0, vl1);
-      v2.v0 = _mm_unpacklo_epi16(vh0, vh1);
-
-      v0.store(dst0);
-      v1.store(dst1);
-      v2.store(dst2);
+    template<class S, class D>
+    void for_copy_c2p2(const S *src, D *d0, D *d1, const D *dstEnd) {
+      while (d0 < dstEnd) {
+        *d0++ = clipped_cast<S,D>(*src++);
+        *d1++ = clipped_cast<S,D>(*src++);
+      }
     }
-*/  
+
+    template<class S, class D>
+    void for_copy_c3p3(const S *src, D *d0, D *d1, D *d2, const D *dstEnd) {
+      while (d0 < dstEnd) {
+        *d0++ = clipped_cast<S,D>(*src++);
+        *d1++ = clipped_cast<S,D>(*src++);
+        *d2++ = clipped_cast<S,D>(*src++);
+      }
+    }
+
+    template<class S, class D>
+    void for_copy_c4p4(const S *src, D *d0, D *d1, D *d2, D *d3, const D *dstEnd) {
+      while (d0 < dstEnd) {
+        *d0++ = clipped_cast<S,D>(*src++);
+        *d1++ = clipped_cast<S,D>(*src++);
+        *d2++ = clipped_cast<S,D>(*src++);
+        *d3++ = clipped_cast<S,D>(*src++);
+      }
+    }
+
+  #ifdef HAVE_SSSE3
+
+      template<class S, class D>
+      inline void copy_c3p3(const S *src, D *dst0, D *dst1, D *dst2) {
+        *dst0 = clipped_cast<S,D>(*src);
+        *dst1 = clipped_cast<S,D>(*(src+1));
+        *dst2 = clipped_cast<S,D>(*(src+2));
+      }
+
+      inline void sse_copy_c3p3(const icl8u *src, icl8u *dst0, icl8u *dst1, icl8u *dst2) {
+        // this function can be improved with SSE4 using _mm_blendv_epi8;
+
+        const icl128i mask = icl128i(0x09060300, 0x0A070401, 0x0B080502, 0x80808080);
+
+        icl128i v0 = icl128i(src);
+        icl128i v1 = icl128i(src+12);
+        icl128i v2 = icl128i(src+24);
+        icl128i v3 = icl128i(src+36);
+
+        v0.v0 = _mm_shuffle_epi8(v0.v0, mask.v0);
+        v1.v0 = _mm_shuffle_epi8(v1.v0, mask.v0);
+        v2.v0 = _mm_shuffle_epi8(v2.v0, mask.v0);
+        v3.v0 = _mm_shuffle_epi8(v3.v0, mask.v0);
+
+        __m128i vl0 = _mm_unpacklo_epi32(v0.v0, v1.v0);
+        __m128i vh0 = _mm_unpackhi_epi32(v0.v0, v1.v0);
+        __m128i vl1 = _mm_unpacklo_epi32(v2.v0, v3.v0);
+        __m128i vh1 = _mm_unpackhi_epi32(v2.v0, v3.v0);
+
+        v0.v0 = _mm_unpacklo_epi64(vl0, vl1);
+        v1.v0 = _mm_unpackhi_epi64(vl0, vl1);
+        v2.v0 = _mm_unpacklo_epi64(vh0, vh1);
+
+        v0.storeu(dst0);
+        v1.storeu(dst1);
+        v2.storeu(dst2);
+      }
+
+      inline void sse_copy_c3p3(const icl8u *src, icl16s *dst0, icl16s *dst1, icl16s *dst2) {
+        // this function can be improved with SSE4 using _mm_blendv_epi8;
+
+        const icl128i mask = icl128i(0x09060300, 0x0A070401, 0x0B080502, 0x80808080);
+
+        icl128i v0 = icl128i(src);
+        icl128i v1 = icl128i(src+12);
+        icl128i v2 = icl128i(src+24);
+        icl128i v3 = icl128i(src+36);
+
+        v0.v0 = _mm_shuffle_epi8(v0.v0, mask.v0);
+        v1.v0 = _mm_shuffle_epi8(v1.v0, mask.v0);
+        v2.v0 = _mm_shuffle_epi8(v2.v0, mask.v0);
+        v3.v0 = _mm_shuffle_epi8(v3.v0, mask.v0);
+
+        __m128i vl0 = _mm_unpacklo_epi32(v0.v0, v1.v0);
+        __m128i vh0 = _mm_unpackhi_epi32(v0.v0, v1.v0);
+        __m128i vl1 = _mm_unpacklo_epi32(v2.v0, v3.v0);
+        __m128i vh1 = _mm_unpackhi_epi32(v2.v0, v3.v0);
+
+        v0.v0 = _mm_unpacklo_epi64(vl0, vl1);
+        v1.v0 = _mm_unpackhi_epi64(vl0, vl1);
+        v2.v0 = _mm_unpacklo_epi64(vh0, vh1);
+
+        icl256i(v0).storeu(dst0);
+        icl256i(v1).storeu(dst1);
+        icl256i(v2).storeu(dst2);
+      }
+
+      inline void sse_copy_c3p3(const icl8u *src, icl32s *dst0, icl32s *dst1, icl32s *dst2) {
+        // this function can be improved with SSE4 using _mm_blendv_epi8;
+
+        const icl128i mask = icl128i(0x09060300, 0x0A070401, 0x0B080502, 0x80808080);
+
+        icl128i v0 = icl128i(src);
+        icl128i v1 = icl128i(src+12);
+        icl128i v2 = icl128i(src+24);
+        icl128i v3 = icl128i(src+36);
+
+        v0.v0 = _mm_shuffle_epi8(v0.v0, mask.v0);
+        v1.v0 = _mm_shuffle_epi8(v1.v0, mask.v0);
+        v2.v0 = _mm_shuffle_epi8(v2.v0, mask.v0);
+        v3.v0 = _mm_shuffle_epi8(v3.v0, mask.v0);
+
+        __m128i vl0 = _mm_unpacklo_epi32(v0.v0, v1.v0);
+        __m128i vh0 = _mm_unpackhi_epi32(v0.v0, v1.v0);
+        __m128i vl1 = _mm_unpacklo_epi32(v2.v0, v3.v0);
+        __m128i vh1 = _mm_unpackhi_epi32(v2.v0, v3.v0);
+
+        v0.v0 = _mm_unpacklo_epi64(vl0, vl1);
+        v1.v0 = _mm_unpackhi_epi64(vl0, vl1);
+        v2.v0 = _mm_unpacklo_epi64(vh0, vh1);
+
+        icl512i(icl256i(v0)).storeu(dst0);
+        icl512i(icl256i(v1)).storeu(dst1);
+        icl512i(icl256i(v2)).storeu(dst2);
+      }
+
+      inline void sse_copy_c3p3(const icl8u *src, icl32f *dst0, icl32f *dst1, icl32f *dst2) {
+        // this function can be improved with SSE4 using _mm_blendv_epi8;
+
+        const icl128i mask = icl128i(0x09060300, 0x0A070401, 0x0B080502, 0x80808080);
+
+        icl128i v0 = icl128i(src);
+        icl128i v1 = icl128i(src+12);
+        icl128i v2 = icl128i(src+24);
+        icl128i v3 = icl128i(src+36);
+
+        v0.v0 = _mm_shuffle_epi8(v0.v0, mask.v0);
+        v1.v0 = _mm_shuffle_epi8(v1.v0, mask.v0);
+        v2.v0 = _mm_shuffle_epi8(v2.v0, mask.v0);
+        v3.v0 = _mm_shuffle_epi8(v3.v0, mask.v0);
+
+        __m128i vl0 = _mm_unpacklo_epi32(v0.v0, v1.v0);
+        __m128i vh0 = _mm_unpackhi_epi32(v0.v0, v1.v0);
+        __m128i vl1 = _mm_unpacklo_epi32(v2.v0, v3.v0);
+        __m128i vh1 = _mm_unpackhi_epi32(v2.v0, v3.v0);
+
+        v0.v0 = _mm_unpacklo_epi64(vl0, vl1);
+        v1.v0 = _mm_unpackhi_epi64(vl0, vl1);
+        v2.v0 = _mm_unpacklo_epi64(vh0, vh1);
+
+        icl512(icl512i(icl256i(v0))).storeu(dst0);
+        icl512(icl512i(icl256i(v1))).storeu(dst1);
+        icl512(icl512i(icl256i(v2))).storeu(dst2);
+      }
+
+      inline void sse_copy_c3p3(const icl32f *src, icl8u *dst0, icl8u *dst1, icl8u *dst2) {
+        icl128 v0 = icl128(src);
+        icl128 v1 = icl128(src+3);
+        icl128 v2 = icl128(src+6);
+        icl128 v3 = icl128(src+9);
+
+        __m128 vl0 = _mm_unpacklo_ps(v0.v0, v2.v0);
+        __m128 vh0 = _mm_unpackhi_ps(v0.v0, v2.v0);
+        __m128 vl1 = _mm_unpacklo_ps(v1.v0, v3.v0);
+        __m128 vh1 = _mm_unpackhi_ps(v1.v0, v3.v0);
+
+        icl512 vR0, vR1, vR2;
+        vR0.v0 = _mm_unpacklo_ps(vl0, vl1);
+        vR1.v0 = _mm_unpackhi_ps(vl0, vl1);
+        vR2.v0 = _mm_unpacklo_ps(vh0, vh1);
+
+        v0 = icl128(src+12);
+        v1 = icl128(src+15);
+        v2 = icl128(src+18);
+        v3 = icl128(src+21);
+
+        vl0 = _mm_unpacklo_ps(v0.v0, v2.v0);
+        vh0 = _mm_unpackhi_ps(v0.v0, v2.v0);
+        vl1 = _mm_unpacklo_ps(v1.v0, v3.v0);
+        vh1 = _mm_unpackhi_ps(v1.v0, v3.v0);
+
+        vR0.v1 = _mm_unpacklo_ps(vl0, vl1);
+        vR1.v1 = _mm_unpackhi_ps(vl0, vl1);
+        vR2.v1 = _mm_unpacklo_ps(vh0, vh1);
+
+        v0 = icl128(src+24);
+        v1 = icl128(src+27);
+        v2 = icl128(src+30);
+        v3 = icl128(src+33);
+
+        vl0 = _mm_unpacklo_ps(v0.v0, v2.v0);
+        vh0 = _mm_unpackhi_ps(v0.v0, v2.v0);
+        vl1 = _mm_unpacklo_ps(v1.v0, v3.v0);
+        vh1 = _mm_unpackhi_ps(v1.v0, v3.v0);
+
+        vR0.v2 = _mm_unpacklo_ps(vl0, vl1);
+        vR1.v2 = _mm_unpackhi_ps(vl0, vl1);
+        vR2.v2 = _mm_unpacklo_ps(vh0, vh1);
+
+        v0 = icl128(src+36);
+        v1 = icl128(src+39);
+        v2 = icl128(src+42);
+        v3 = icl128(src+45);
+
+        vl0 = _mm_unpacklo_ps(v0.v0, v2.v0);
+        vh0 = _mm_unpackhi_ps(v0.v0, v2.v0);
+        vl1 = _mm_unpacklo_ps(v1.v0, v3.v0);
+        vh1 = _mm_unpackhi_ps(v1.v0, v3.v0);
+
+        vR0.v3 = _mm_unpacklo_ps(vl0, vl1);
+        vR1.v3 = _mm_unpackhi_ps(vl0, vl1);
+        vR2.v3 = _mm_unpacklo_ps(vh0, vh1);
+
+        vR0.storeu(dst0);
+        vR1.storeu(dst1);
+        vR2.storeu(dst2);
+      }
+
+    void for_copy_c3p3(const icl8u *src, icl8u *d0, icl8u *d1, icl8u *d2, icl8u *dstEnd) {
+      sse_for(src, d0, d1, d2, dstEnd, copy_c3p3, sse_copy_c3p3, 48, 16);
+    }
+
+    void for_copy_c3p3(const icl8u *src, icl16s *d0, icl16s *d1, icl16s *d2, icl16s *dstEnd) {
+      sse_for(src, d0, d1, d2, dstEnd, copy_c3p3, sse_copy_c3p3, 48, 16);
+    }
+
+    void for_copy_c3p3(const icl8u *src, icl32s *d0, icl32s *d1, icl32s *d2, icl32s *dstEnd) {
+      sse_for(src, d0, d1, d2, dstEnd, copy_c3p3, sse_copy_c3p3, 48, 16);
+    }
+
+    void for_copy_c3p3(const icl8u *src, icl32f *d0, icl32f *d1, icl32f *d2, icl32f *dstEnd) {
+      sse_for(src, d0, d1, d2, dstEnd, copy_c3p3, sse_copy_c3p3, 48, 16);
+    }
+
+    void for_copy_c3p3(const icl32f *src, icl8u *dst0, icl8u *dst1, icl8u *dst2, icl8u *dstEnd) {
+      icl8u *dstSSEEnd = dstEnd - 20;
+
+      for (; dst0<dstSSEEnd;) {
+          // convert 'rvalues' values at the same time
+          sse_copy_c3p3(src, dst0, dst1, dst2);
+
+          // increment pointers to the next values
+          src  += 48;
+          dst0 += 16;
+          dst1 += 16;
+          dst2 += 16;
+      }
+
+      for (; dst0<dstEnd; src += 3, ++dst0, ++dst1, ++dst2) {
+        // convert 1 value
+        copy_c3p3(src, dst0, dst1, dst2);
+      }
+    }
+
+      inline void copy_c4p4(const icl8u *src, icl8u *dst0, icl8u *dst1, icl8u *dst2, icl8u *dst3) {
+        *dst0 = *src;
+        *dst1 = *(src+1);
+        *dst2 = *(src+2);
+        *dst3 = *(src+3);
+      }
+
+      inline void sse_copy_c4p4(const icl8u *src, icl8u *dst0, icl8u *dst1, icl8u *dst2, icl8u *dst3) {
+        // this function can be improved with SSE4 using _mm_blendv_epi8;
+
+        const icl128i mask = icl128i(0x0C080400, 0x0D090501, 0x0E0A0602, 0x0F0B0703);
+
+        icl128i v0 = icl128i(src);
+        icl128i v1 = icl128i(src+16);
+        icl128i v2 = icl128i(src+32);
+        icl128i v3 = icl128i(src+48);
+
+        v0.v0 = _mm_shuffle_epi8(v0.v0, mask.v0);
+        v1.v0 = _mm_shuffle_epi8(v1.v0, mask.v0);
+        v2.v0 = _mm_shuffle_epi8(v2.v0, mask.v0);
+        v3.v0 = _mm_shuffle_epi8(v3.v0, mask.v0);
+
+        __m128i vl0 = _mm_unpacklo_epi32(v0.v0, v1.v0);
+        __m128i vh0 = _mm_unpackhi_epi32(v0.v0, v1.v0);
+        __m128i vl1 = _mm_unpacklo_epi32(v2.v0, v3.v0);
+        __m128i vh1 = _mm_unpackhi_epi32(v2.v0, v3.v0);
+
+        v0.v0 = _mm_unpacklo_epi64(vl0, vl1);
+        v1.v0 = _mm_unpackhi_epi64(vl0, vl1);
+        v2.v0 = _mm_unpacklo_epi64(vh0, vh1);
+        v3.v0 = _mm_unpackhi_epi64(vh0, vh1);
+
+        v0.storeu(dst0);
+        v1.storeu(dst1);
+        v2.storeu(dst2);
+        v3.storeu(dst3);
+      }
+
+    void for_copy_c4p4(const icl8u *src, icl8u *d0, icl8u *d1, icl8u *d2, icl8u *d3, icl8u *dstEnd) {
+      sse_for(src, d0, d1, d2, d3, dstEnd, copy_c4p4, sse_copy_c4p4, 64, 16);
+    }
+
+  #endif
+
     template<class S, class D>
     inline void interleavedToPlanar_POD(int channels,int len, const S* src, D **dst){
       // {{{ open
@@ -4207,38 +4856,14 @@ namespace icl{
           convert<S,D>(src,src+len,*dst);
           break;
         case 2:{
-          const S* srcEnd=src+channels*len;
-          D* d0 = dst[0];
-          D* d1 = dst[1];
-          while (src<srcEnd){
-            *d0++ = clipped_cast<S,D>(*src++);
-            *d1++ = clipped_cast<S,D>(*src++);
-          }
+          for_copy_c2p2(src, dst[0], dst[1], dst[0] + len);
           break;
         }case 3:{
-          const S* srcEnd=src+channels*len;
-          D* d0 = dst[0];
-          D* d1 = dst[1];
-          D* d2 = dst[2];
-          while (src<srcEnd){
-            *d0++ = clipped_cast<S,D>(*src++);
-            *d1++ = clipped_cast<S,D>(*src++);
-            *d2++ = clipped_cast<S,D>(*src++);
-          }
+          for_copy_c3p3(src, dst[0], dst[1], dst[2], dst[0] + len);
           break;
         }
         case 4:{
-          const S* srcEnd=src+channels*len;
-          D* d0 = dst[0];
-          D* d1 = dst[1];
-          D* d2 = dst[2];      
-          D* d3 = dst[3];
-          while (src<srcEnd){
-            *d0++ = clipped_cast<S,D>(*src++);
-            *d1++ = clipped_cast<S,D>(*src++);
-            *d2++ = clipped_cast<S,D>(*src++);
-            *d3++ = clipped_cast<S,D>(*src++);
-          }
+          for_copy_c4p4(src, dst[0], dst[1], dst[2], dst[3], dst[0] + len);
           break;
         }
         default:{
@@ -4252,7 +4877,6 @@ namespace icl{
         }
       }
     }
-  
     // }}}
     
     template<class S, class D>

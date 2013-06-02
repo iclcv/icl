@@ -226,6 +226,10 @@ namespace icl{
           v0 = _mm_loadu_si128((__m128i*)v);
         }
 
+        inline icl128i(const icl32s i0, const icl32s i1, const icl32s i2, const icl32s i3) {
+          v0 = _mm_set_epi32(i3, i2, i1, i0);
+        }
+
         inline icl128i(const icl32u *v) {
           v0 = _mm_loadu_si128((__m128i*)v);
         }
