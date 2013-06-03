@@ -88,6 +88,9 @@ namespace icl{
       //flag weather the light casts a shadow
       bool shadowOn;
       
+      //flag weather the light casts a shadow
+      bool twoSidedOn;
+      
       /// ambient light color
       GeomColor ambient;
       
@@ -217,8 +220,17 @@ namespace icl{
       /// sets the attenuation factors of this light
       void setAttenuation(float constant=1, float linear=0, float quadratic=0);
       
-      /// sets wether the light casts shadows or not
+      /// sets whether the light casts shadows or not
       void setShadowEnabled(bool on=true);
+      
+      /// sets whether the light casts two-sided light or not
+      void setTwoSidedEnabled(bool on=true);
+      
+      /// returns whether the light casts shadows or not
+      bool getShadowEnabled() const;
+      
+      /// returns whether the light casts two-sided light or not
+      bool getTwoSidedEnabled() const;
       
       /// returns the camera used for casting the shadows
       const Camera* getShadowCam() const;

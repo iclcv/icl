@@ -217,18 +217,30 @@ namespace icl{
     void SceneLight::setShadowEnabled(bool on){
       this->shadowOn = on;
     }
+      
+    void SceneLight::setTwoSidedEnabled(bool on){
+      this->twoSidedOn = on;
+    }
+      
+    bool SceneLight::getShadowEnabled() const{
+      return this->shadowOn;
+    }
+      
+    bool SceneLight::getTwoSidedEnabled() const{
+      return this->twoSidedOn;
+    }
     
     const Camera* SceneLight::getShadowCam() const{
-      return shadowCam;
+      return this->shadowCam;
     }
     
     Camera* SceneLight::getShadowCam(){
-      return shadowCam;
+      return this->shadowCam;
     }
     
     void SceneLight::setShadowCam(Camera* cam){
-      delete shadowCam;
-      shadowCam = cam;
+      delete this->shadowCam;
+      this->shadowCam = cam;
     }
     
     void SceneLight::reset(){
@@ -238,6 +250,7 @@ namespace icl{
       diffuseOn = true;
       specularOn = false;
       shadowOn = false;
+      twoSidedOn = true;
   
       ambient = GeomColor(0,0,0,0);
       diffuse = GeomColor(1,1,1,1);

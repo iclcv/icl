@@ -80,16 +80,25 @@ namespace icl{
   
     struct CameraObject : public SceneObject{
       Scene *scene;
-      int cameraIndex;
+      const Camera* camera;
       std::vector<Vec> origVertices;
       float S;
       bool haveName;
       Mutex mutex;
       std::string lastName;
       Img8u nameTexture;
-  
-      CameraObject(Scene *parent, int cameraIndex, float camSize):
-        scene(parent),cameraIndex(cameraIndex), nameTexture(Size(1,1),4){
+      CameraObject(Scene *parent, int cameraIndex, const float camSize){
+        constructCameraObject(parent, &parent->getCamera(cameraIndex), camSize);
+      }
+      
+      CameraObject(Scene *parent, const Camera* cam, const float camSize){
+        constructCameraObject(parent, cam, camSize);
+      }
+      
+      void constructCameraObject(Scene *parent, const Camera* cam, const float camSize) {
+        scene = parent;
+        camera = cam;
+        nameTexture = Img8u(Size(1,1),4);
   
         S = camSize*50;
   
@@ -129,7 +138,7 @@ namespace icl{
       }
   
       virtual void prepareForRendering() {
-        const Camera &cam = scene->getCamera(cameraIndex);
+        const Camera &cam = *camera;
         int w = cam.getRenderParams().viewport.width;
         int h = cam.getRenderParams().viewport.height;
   
@@ -197,8 +206,7 @@ namespace icl{
       virtual void lock(){ mutex.lock(); }
       virtual void unlock(){ mutex.unlock(); }
   
-    };
-  
+    };  
   
   #ifdef HAVE_QT
     struct Scene::GLCallback : public ICLDrawWidget3D::GLCallback{
@@ -261,8 +269,14 @@ namespace icl{
     Scene::Scene():
     m_fps(10){
       m_lights[0] = SmartPtr<SceneLight>(new SceneLight(this,0));
+      m_shadowCameraObjects[0] = SmartPtr<SceneObject>(new CameraObject(this,m_lights[0]->getShadowCam(),1));
       m_globalAmbientLight = FixedColVector<int,4>(255,255,255,20);
       m_backgroundColor = GeomColor(0,0,0,255);
+      for(int i = 0; i < 8; i++) {
+        for(int j = 0; j < 3; j++) {
+          m_previousLightState[i][j] = false;
+        }
+      }
       
       addProperty("visualize cameras","flag","",false);
       addProperty("visualize world frame","flag","",false);
@@ -276,7 +290,7 @@ namespace icl{
       addProperty("shadows.use improved shading","flag","",false);
       addProperty("shadows.cull object front for shadows","flag","",true);
       addProperty("shadows.shadow resolution","menu","64,256,512,1024,2048",512);
-      addProperty("shadows.shadow bias","float","[-0.1,0.1]",0.0001);
+      addProperty("shadows.shadow bias","float","[-100,100]",1.0);
       addProperty("info.FPS","info","",0);
       addProperty("info.Objects in the Scene","info","",0);
     }
@@ -329,6 +343,7 @@ namespace icl{
         }else{
           m_lights[i] = SmartPtr<SceneLight>();
         }
+        m_shadowCameraObjects[i] = SmartPtr<SceneObject>(new CameraObject(this,m_lights[i]->getShadowCam(),1));
       }
       
       if(scene.m_bounds){
@@ -495,10 +510,11 @@ namespace icl{
       <<"uniform sampler2D shadow_map;\n"
       <<"uniform sampler2D image_map;\n"
       <<"uniform float bias;\n"
-      <<"void computeColors(int light, out vec3 ambient, out vec3 diffuse, out vec3 specular){\n"
+      <<"void computeColors(int light, out vec3 ambient, out vec3 diffuse, out vec3 specular, out float cos_light){\n"
       <<"  vec3 L = normalize(gl_LightSource[light].position.xyz - V.xyz);\n"
       <<"  vec3 E = normalize(-V.xyz);\n"
       <<"  vec3 R = normalize(-reflect(L, N));\n"
+      <<"  cos_light = max(dot(N,L),0.0);\n"
       <<"#ifdef USE_TEXTURE\n"
       <<"  vec3 color = gl_Color.rgb * texture_Color.rgb;\n"
       <<"#else\n"
@@ -507,7 +523,7 @@ namespace icl{
       <<"  ambient = gl_LightSource[light].ambient.rgb\n"
       <<"            * color;\n"
       <<"  diffuse = gl_LightSource[light].diffuse.rgb\n"
-      <<"            * max(dot(N,L),0.0)\n"
+      <<"            * cos_light\n"
       <<"            * color;\n"
       <<"  specular = gl_LightSource[light].specular.rgb\n"
       <<"             * pow(max(0.0,dot(R,E)),gl_FrontMaterial.shininess)\n"
@@ -515,10 +531,11 @@ namespace icl{
       <<"}\n";
 
       fragmentBuffer
-      <<"void computeColorsTwoSided(int light, out vec3 ambient, out vec3 diffuse, out vec3 specular){\n"
+      <<"void computeColorsTwoSided(int light, out vec3 ambient, out vec3 diffuse, out vec3 specular, float cos_light){\n"
       <<"  vec3 L = normalize(gl_LightSource[light].position.xyz - V.xyz);\n"
       <<"  vec3 E = normalize(-V.xyz);\n"
       <<"  vec3 R = normalize(-reflect(L, N));\n"
+      <<"  cos_light = abs(dot(N,L));\n"
       <<"#ifdef USE_TEXTURE\n"
       <<"  vec3 color = gl_Color.rgb * texture_Color.rgb;\n"
       <<"#else\n"
@@ -527,7 +544,7 @@ namespace icl{
       <<"  ambient = gl_LightSource[light].ambient.rgb\n"
       <<"            * color;\n"
       <<"  diffuse = gl_LightSource[light].diffuse.rgb\n"
-      <<"            * abs(dot(N,L))\n"
+      <<"            * cos_light\n"
       <<"            * color;\n"
       <<"  specular = gl_LightSource[light].specular.rgb\n"
       <<"             * pow(abs(dot(R,E)),gl_FrontMaterial.shininess)\n"
@@ -536,10 +553,12 @@ namespace icl{
 
       if(numShadowLights>0) {
         fragmentBuffer
-        <<"vec3 computeLightWithShadow(int light, int shadow){\n"
+        <<"vec3 computeLightWithShadow(int light, int shadow, bool isTwoSided){\n"
         <<"  vec3 ambient, diffuse, specular;\n"
+        <<"  float cos_light = 0.0;\n"
         <<"  //compute phong lighting\n"
-        <<"  computeColors(light, ambient, diffuse, specular);\n"
+        <<"  if(isTwoSided)computeColorsTwoSided(light, ambient, diffuse, specular, cos_light);\n"
+        <<"  else computeColors(light, ambient, diffuse, specular, cos_light);\n"
         <<"  //get screen space coordinates\n"
         <<"  vec4 shadow_divided = shadow_coord[shadow] / shadow_coord[shadow].w;\n"
         <<"  //check if the coordinate is out of bounds\n"
@@ -548,7 +567,10 @@ namespace icl{
         <<"  shadow_divided = shadow_divided * 0.5 + 0.5;\n"
         <<"  shadow_divided.s = (float(shadow) + shadow_divided.s) / float(num_shadow_lights);\n"
         <<"  //get shadow depth + offset\n"
-        <<"  float shadow_depth = texture2D(shadow_map,shadow_divided.st).z + bias;\n"
+        <<"  float d = length(gl_LightSource[light].position.xyz - V.xyz);\n"
+        <<"  //normalize bias over distance and try to remove artifacts very acute angles\n"
+        <<"  float normalized_bias = bias * 0.03 / ((d * d - 2.0 * d) * max(cos_light,0.1));\n"
+        <<"  float shadow_depth = texture2D(shadow_map,shadow_divided.st).z + normalized_bias;\n"
         <<"  //check if fragment is in shadow\n"
         <<"  if(shadow_coord[shadow].w > 0.0)\n"
         <<"    if(shadow_divided.z > shadow_depth) return ambient;\n"
@@ -560,10 +582,12 @@ namespace icl{
       //           for other lights, GL_LIGHT_MODEL_TWO_SIDE is emulated
       
       fragmentBuffer
-      <<"vec3 computeLight(int light){\n"
+      <<"vec3 computeLight(int light, bool isTwoSided){\n"
       <<"  vec3 ambient, diffuse, specular;\n"
+      <<"  float cos_light = 0.0;\n"
       <<"  //compute phong lighting\n"
-      <<"  computeColorsTwoSided(light, ambient, diffuse, specular);\n"
+      <<"  if(isTwoSided)computeColorsTwoSided(light, ambient, diffuse, specular, cos_light);\n"
+      <<"  else computeColors(light, ambient, diffuse, specular, cos_light);\n"
       <<"  return ambient + diffuse + specular;\n"
       <<"}\n"
       <<"void main(void){\n"
@@ -573,24 +597,46 @@ namespace icl{
       
       int currentShadow = 0;
       for(unsigned int i = 0; i < 8; i++) {
-        switch(m_previousLightState[i]) {
-          case 1:
-            fragmentBuffer << "  color += computeLight("<<i<<");\n";
-            break;
-          case 2:
+        if(m_lights[i] && m_lights[i]->on) {
+          string twoSided;
+          if(m_lights[i]->getTwoSidedEnabled()) {
+            twoSided = "true";
+          }else {
+            twoSided = "false";
+          }
+          if(m_lights[i]->getShadowEnabled()) {
             vertexBuffer 
             <<"  shadow_coord["<<currentShadow<<"] = shadowMat["<<currentShadow<<"] * V;\n";
             fragmentBuffer
             <<"#ifdef RENDER_SHADOW\n"
-            <<"  color += computeLightWithShadow("<<i<<","<<currentShadow<<");\n"
+            <<"  color += computeLightWithShadow("<<i<<","<<currentShadow<<","<<twoSided<<");\n"
             <<"#else\n"
             <<"  color += computeLight("<<i<<");\n"
             <<"#endif\n";
             currentShadow++;
-            break;
-          default:
-            break;
+          }else{
+            fragmentBuffer << "  color += computeLight("<<i<<","<<twoSided<<");\n";
+          }
+          
         }
+//        switch(m_previousLightState[i]) {
+//          case 1:
+//            fragmentBuffer << "  color += computeLight("<<i<<");\n";
+//            break;
+//          case 2:
+//            vertexBuffer 
+//            <<"  shadow_coord["<<currentShadow<<"] = shadowMat["<<currentShadow<<"] * V;\n";
+//            fragmentBuffer
+//            <<"#ifdef RENDER_SHADOW\n"
+//            <<"  color += computeLightWithShadow("<<i<<","<<currentShadow<<");\n"
+//            <<"#else\n"
+//            <<"  color += computeLight("<<i<<");\n"
+//            <<"#endif\n";
+//            currentShadow++;
+//            break;
+//          default:
+//            break;
+//        }
       }
       vertexBuffer 
       <<"}\n";
@@ -896,71 +942,97 @@ namespace icl{
       
       vector<Mat> project2shadow;
       if(lightingEnabled && useImprovedShading) {
-      //read the bias from the settings
-      m_shadowBias = ((Configurable*)this)->getPropertyValue("shadows.shadow bias");
-      
-      //update cameras and check if the lightsetup has changed
-      bool lightSetupChanged = false;
-      int numShadowLights = 0;
-      for(int i=0;i<8;++i){
-       if(m_lights[i]) {
-         m_lights[i]->updatePositions(*this,getCamera(camIndex));
-         if(m_lights[i]->on) {
-           if(m_lights[i]->shadowOn) {
-             
-             if(m_previousLightState[i] != 2) {
-               lightSetupChanged = true;
-             }
-             m_previousLightState[i] = 2;
-             numShadowLights++;
-           } else {
-             if(m_previousLightState[i] != 1) {
-               lightSetupChanged = true;
-             }
-             m_previousLightState[i] = 1;
-           }
-         } else {
-           if(m_previousLightState[i] != 0) {
-             lightSetupChanged = true;
-           }
-           m_previousLightState[i] = 0;
-         }
-       }
-      }
-
-      if(lightSetupChanged) {
-         recompilePerPixelShader(numShadowLights);
-         m_perPixelShader->activate();
-         m_perPixelShader->deactivate();
-      }
-
-      //recreate the shadowbuffer if the the lightsetup, or the resolution has changed
-      unsigned int resolution = ((Configurable*)this)->getPropertyValue("shadows.shadow resolution");
-      if(shadowResolution != resolution || lightSetupChanged) {
-       freeShadowFBO();
-       //don"t create a shadowbuffer if there are no lights with shadows
-       if(numShadowLights > 0) {
-         createShadowFBO(resolution,numShadowLights); 
-       }
-      }
-
-      //bind texture if it has been created
-      if(shadowResolution>0) {
-       glActiveTextureARB(GL_TEXTURE7);
-       glBindTexture(GL_TEXTURE_2D,shadowTexture);
-      }
-
-      //render the shadows and create the projection matrices for the vertex shader
-      int currentShadow = 0;
-      for(int i = 0; i < 8; i++) {
-       if(m_previousLightState[i] == 2) {
-         renderShadow(i, currentShadow++, shadowResolution);
-         project2shadow.push_back(m_lights[i]->getShadowCam()->getProjectionMatrixGL() 
-                         * m_lights[i]->getShadowCam()->getCSTransformationMatrixGL() 
-                         * cam.getCSTransformationMatrixGL().inv());
-       }
-      }
+        //read the bias from the settings
+        m_shadowBias = ((Configurable*)this)->getPropertyValue("shadows.shadow bias");
         
+        //update cameras and check if the lightsetup has changed
+        bool lightSetupChanged = false;
+        int numShadowLights = 0;
+        for(int i=0;i<8;++i){
+          if(m_lights[i]) {
+            m_lights[i]->updatePositions(*this,getCamera(camIndex));
+            if(m_lights[i]->on != m_previousLightState[i][0]) {
+              lightSetupChanged = true;
+            }
+            m_previousLightState[i][0] = m_lights[i]->on;
+            if(m_lights[i]->getShadowEnabled() != m_previousLightState[i][1]) {
+              lightSetupChanged = true;
+            }
+            m_previousLightState[i][1] = m_lights[i]->getShadowEnabled();
+            if(m_lights[i]->getTwoSidedEnabled() != m_previousLightState[i][2]) {
+              lightSetupChanged = true;
+            }
+            m_previousLightState[i][2] = m_lights[i]->getTwoSidedEnabled();
+            
+            if(m_lights[i]->getShadowEnabled()) {
+              numShadowLights++;
+            }
+          }
+//         
+//         
+//         
+//         
+//         if(m_lights[i]) {
+//           m_lights[i]->updatePositions(*this,getCamera(camIndex));
+//           if(m_lights[i]->on) {
+//             if(m_lights[i]->shadowOn) {
+//               
+//               if(m_previousLightState[i] != 2) {
+//                 lightSetupChanged = true;
+//               }
+//               m_previousLightState[i] = 2;
+//               numShadowLights++;
+//             } else {
+//               if(m_previousLightState[i] != 1) {
+//                 lightSetupChanged = true;
+//               }
+//               m_previousLightState[i] = 1;
+//             }
+//           } else {
+//             if(m_previousLightState[i] != 0) {
+//               lightSetupChanged = true;
+//             }
+//             m_previousLightState[i] = 0;
+//           }
+//         }
+        }
+
+        if(lightSetupChanged) {
+          recompilePerPixelShader(numShadowLights);
+          m_perPixelShader->activate();
+          m_perPixelShader->deactivate();
+        }
+
+        //recreate the shadowbuffer if the the lightsetup, or the resolution has changed
+        unsigned int resolution = ((Configurable*)this)->getPropertyValue("shadows.shadow resolution");
+        if(shadowResolution != resolution || lightSetupChanged) {
+         freeShadowFBO();
+         //don't create a shadowbuffer if there are no lights with shadows
+         cout<<numShadowLights<<endl;
+         if(numShadowLights > 0) {
+           createShadowFBO(resolution,numShadowLights); 
+         }
+        }
+
+        //bind texture if it has been created
+        if(shadowResolution>0) {
+         glActiveTextureARB(GL_TEXTURE7);
+         glBindTexture(GL_TEXTURE_2D,shadowTexture);
+        }
+
+        //render the shadows and create the projection matrices for the vertex shader
+        int currentShadow = 0;
+        for(int i = 0; i < 8; i++) {
+          if(m_lights[i]) {
+            if(m_lights[i]->on && m_lights[i]->getShadowEnabled()) {
+              renderShadow(i, currentShadow++, shadowResolution);
+              project2shadow.push_back(m_lights[i]->getShadowCam()->getProjectionMatrixGL() 
+                             * m_lights[i]->getShadowCam()->getCSTransformationMatrixGL() 
+                             * cam.getCSTransformationMatrixGL().inv());
+            }
+          }
+        }
+          
       }else {
         freeShadowFBO();
         if(lightingEnabled) {
@@ -984,7 +1056,7 @@ namespace icl{
       // specular lighting is still not working ..
       glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER,GL_TRUE);
       
-      if( lightingEnabled){
+      if(lightingEnabled){
         float size = ((Configurable*)this)->getPropertyValue("light object size");
         glEnable(GL_LIGHTING);
         for(int i=0;i<8;++i){
@@ -1042,6 +1114,9 @@ namespace icl{
                (m_lights[i]->camAnchor != camIndex && m_lights[i]->camAnchor != -1)){
               m_lights[i]->updatePositions(*this,getCamera(camIndex));
               renderSceneObjectRecursive((SceneObject*)m_lights[i]->getLightObject());
+              if(m_lights[i]->getShadowEnabled()) {
+                renderSceneObjectRecursive((SceneObject*)m_shadowCameraObjects[i].get());
+              }
             }
           }
         }
@@ -1353,6 +1428,7 @@ namespace icl{
       if(index < 0 || index > 7) throw ICLException("invalid light index");
       if(!m_lights[index]){
         m_lights[index] = SmartPtr<SceneLight>(new SceneLight(this,index));
+        m_shadowCameraObjects[index] = SmartPtr<SceneObject>(new CameraObject(this,m_lights[index]->getShadowCam(),1));
       }
       return *m_lights[index];
     }

@@ -518,8 +518,11 @@ namespace icl{
       /// internal list of lights
       utils::SmartPtr<SceneLight> m_lights[8];
       
+      ///list of cameras for visualisation of shadowcameras
+      utils::SmartPtr<SceneObject> m_shadowCameraObjects[8];
+      
       /// previous lightstate
-      mutable int m_previousLightState[8];
+      mutable bool m_previousLightState[8][3];
     
       /// optionally given bounds of the scene
       utils::SmartArray<utils::Range32f> m_bounds;
