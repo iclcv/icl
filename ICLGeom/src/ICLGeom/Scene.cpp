@@ -1008,7 +1008,6 @@ namespace icl{
         if(shadowResolution != resolution || lightSetupChanged) {
          freeShadowFBO();
          //don't create a shadowbuffer if there are no lights with shadows
-         cout<<numShadowLights<<endl;
          if(numShadowLights > 0) {
            createShadowFBO(resolution,numShadowLights); 
          }
