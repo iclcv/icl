@@ -507,16 +507,33 @@ namespace icl{
       <<"  ambient = gl_LightSource[light].ambient.rgb\n"
       <<"            * color;\n"
       <<"  diffuse = gl_LightSource[light].diffuse.rgb\n"
-      //<<"            * max(dot(N,L),0.0)\n"
-      // my try to get two sided light model for diffuse light
+      <<"            * max(dot(N,L),0.0)\n"
+      <<"            * color;\n"
+      <<"  specular = gl_LightSource[light].specular.rgb\n"
+      <<"             * pow(max(0.0,dot(R,E)),gl_FrontMaterial.shininess)\n"
+      <<"             * gl_FrontMaterial.specular.rgb;\n"
+      <<"}\n";
+
+      fragmentBuffer
+      <<"void computeColorsTwoSided(int light, out vec3 ambient, out vec3 diffuse, out vec3 specular){\n"
+      <<"  vec3 L = normalize(gl_LightSource[light].position.xyz - V.xyz);\n"
+      <<"  vec3 E = normalize(-V.xyz);\n"
+      <<"  vec3 R = normalize(-reflect(L, N));\n"
+      <<"#ifdef USE_TEXTURE\n"
+      <<"  vec3 color = gl_Color.rgb * texture_Color.rgb;\n"
+      <<"#else\n"
+      <<"  vec3 color = gl_Color.rgb;\n"
+      <<"#endif\n"
+      <<"  ambient = gl_LightSource[light].ambient.rgb\n"
+      <<"            * color;\n"
+      <<"  diffuse = gl_LightSource[light].diffuse.rgb\n"
       <<"            * abs(dot(N,L))\n"
       <<"            * color;\n"
       <<"  specular = gl_LightSource[light].specular.rgb\n"
-      //<<"             * pow(max(0.0,dot(R,E)),gl_FrontMaterial.shininess)\n"
-      // my try to get two sided light model for specular light
       <<"             * pow(abs(dot(R,E)),gl_FrontMaterial.shininess)\n"
       <<"             * gl_FrontMaterial.specular.rgb;\n"
       <<"}\n";
+
       if(numShadowLights>0) {
         fragmentBuffer
         <<"vec3 computeLightWithShadow(int light, int shadow){\n"
@@ -538,11 +555,15 @@ namespace icl{
         <<"  return ambient + diffuse + specular;\n"
         <<"}\n";
       }
+
+      // celbrech: note, for shadow lights, one-sided lighting is used
+      //           for other lights, GL_LIGHT_MODEL_TWO_SIDE is emulated
+      
       fragmentBuffer
       <<"vec3 computeLight(int light){\n"
       <<"  vec3 ambient, diffuse, specular;\n"
       <<"  //compute phong lighting\n"
-      <<"  computeColors(light, ambient, diffuse, specular);\n"
+      <<"  computeColorsTwoSided(light, ambient, diffuse, specular);\n"
       <<"  return ambient + diffuse + specular;\n"
       <<"}\n"
       <<"void main(void){\n"
