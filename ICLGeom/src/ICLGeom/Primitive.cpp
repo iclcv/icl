@@ -486,7 +486,7 @@ namespace icl{
   
       glFrontFace(GL_BACK);
       glCullFace(GL_BACK);
-      back.drawToGrid(w,h,px,py,pz,pnx,pny,pnz,stride);
+      back.drawToGrid(w,h,px,py,pz,pnx,pny,pnz,stride,true);
   
       glDisable(GL_CULL_FACE);
       

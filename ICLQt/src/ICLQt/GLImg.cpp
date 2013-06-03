@@ -972,7 +972,7 @@ namespace icl{
     void GLImg::draw3DGeneric(int numPoints,
                               const float *xs, const float *ys, const float *zs, int xyzStride,
                               const Point32f *texCoords, const float *nxs, const float *nys,
-                              const float *nzs, int nxyzStride){
+                              const float *nzs, int nxyzStride, bool invertNormals){
       if(numPoints < 3) throw ICLException("GImg::draw3DGeneric: numPoints must be at least 3");
       ICLASSERT_RETURN(!isNull());
       
@@ -990,11 +990,12 @@ namespace icl{
       
       glBegin(numPoints == 3 ? GL_TRIANGLES : numPoints == 4 ? GL_QUADS : GL_POLYGON);
       
+      const float nn = invertNormals ? -1 : 1;
       for(int i=0;i<numPoints;++i){
         glTexCoord2fv(&texCoords[i].x);
         glVertex3f(xs[i*xyzStride], ys[i*xyzStride], zs[i*xyzStride] );
         if(haveNormals){
-          glNormal3f(nxs[i*nxyzStride],nys[i*nxyzStride],nzs[i*nxyzStride]);
+          glNormal3f(nn*nxs[i*nxyzStride],nn*nys[i*nxyzStride],nn*nzs[i*nxyzStride]);
         }
       }
       
@@ -1006,7 +1007,8 @@ namespace icl{
   
   
     void GLImg::drawToGrid(int nx, int ny, const float *xs, const float *ys, const float *zs,
-                           const float *nxs, const float *nys, const float *nzs,const int stride){
+                           const float *nxs, const float *nys, const float *nzs,const int stride,
+                           bool invertNormals){
       if(m_data->isDirty()) m_data->uploadTextureData();
       
       if(m_data->data.getSize() != Size(1,1)){
@@ -1025,6 +1027,7 @@ namespace icl{
       if(!haveNormals) glDisable(GL_LIGHTING);
       const float nxf = nx-1, nyf = ny-1;
   
+      const float nn = invertNormals ? -1 : 1;
       
   #define AT(_p,_x,_y) _p[stride*(_x+_y*nx)]
   #define X(_x,_y) AT(xs,_x,_y)
@@ -1035,9 +1038,9 @@ namespace icl{
   #define NZ(_x,_y) AT(nzs,_x,_y)
   
   
-  #define PART(_x,_y)                                             \
-      glTexCoord2f((_x)/nxf, (_y)/nyf);                       \
-      if(haveNormals) glNormal3f(NX(_x,_y),NY(_x,_y), NZ(_x,_y)); \
+#define PART(_x,_y)                                                     \
+      glTexCoord2f((_x)/nxf, (_y)/nyf);                                 \
+      if(haveNormals)  glNormal3f(nn*NX(_x,_y),nn*NY(_x,_y), nn*NZ(_x,_y)); \
       glVertex3f(X(_x,_y), Y(_x,_y), Z(_x,_y));    
   
       glBegin(GL_QUADS);

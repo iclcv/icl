@@ -161,7 +161,7 @@ namespace icl{
       void draw3DGeneric(int numPoints,
                          const float *xs, const float *ys, const float *zs, int xyzStride,
                          const utils::Point32f *texCoords, const float *nxs=0, const float *nys=0,
-                         const float *nzs=0, int nxyzStride=1);
+                         const float *nzs=0, int nxyzStride=1, bool invertNormals=false);
   
       /// draws the texture to given quad that is spanned by two vectors
       inline void draw3D(const float a[3],const float b[3],const float c[3]){
@@ -198,11 +198,10 @@ namespace icl{
           std::vector<float> xs(dim), ys(dim), zs(dim);
           // (...) fill xs, ys and zs with data
           gli.drawToGrid(nx,ny,xs.data(), ys.data(), zs.data());
-          
       */
       void drawToGrid(int nx, int ny, const float *xs, const float *ys, const float *zs,
                       const float *nxs=0, const float *nys=0, const float *nzs=0,
-                      const int stride = 1);
+                      const int stride = 1, bool invertNormals=false);
       
       /// 3D vector type
       typedef math::FixedColVector<float,3> Vec3;
