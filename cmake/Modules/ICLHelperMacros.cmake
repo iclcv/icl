@@ -123,8 +123,10 @@ FUNCTION(CREATE_PKGCONFIG)
   FOREACH(M Utils Math Core Filter IO CV Qt Geom Markers)
     LIST(REMOVE_ITEM INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/ICL${M}/src)
   ENDFOREACH()
-  # remove build/src, added for the proto-buf files
+  # remove build-dir added in case of RSB-Support
+  LIST(REMOVE_ITEM INCLUDE_DIRS ${CMAKE_BINARY_DIR})
   LIST(REMOVE_ITEM INCLUDE_DIRS ${CMAKE_BINARY_DIR}/src)
+  LIST(REMOVE_ITEM INCLUDE_DIRS ${CMAKE_BINARY_DIR}/ICLIO)
 
   STRING(REPLACE ";" " -I" # first -I is in icl.pc.in
          INCLUDE_DIRS
