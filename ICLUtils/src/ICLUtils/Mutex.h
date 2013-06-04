@@ -63,13 +63,13 @@ namespace icl{
       #else
   
       #endif
-      };
+      } type;
   
       /// Create a mutex
       /**
            @param type The default MutexType is MutexType::mutexTypeNormal
       **/
-      Mutex(MutexType type = mutexTypeNormal){
+      Mutex(MutexType type = mutexTypeNormal):type(type){
   	  #ifndef ICL_SYSTEM_WINDOWS
         pthread_mutexattr_init(&a);
         pthread_mutexattr_settype(&a, type);

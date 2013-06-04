@@ -70,6 +70,9 @@ namespace icl{
     class UncopiedInstance : public T{
       public:
       
+      /// copy from parent constructor
+      inline UncopiedInstance(const T &t):T(t){}
+      
       /// default constructor calls T()
       inline UncopiedInstance():T(){}
       

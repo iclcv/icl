@@ -172,6 +172,9 @@ void init(){
   scene.getLight(2).setAnchor(p);
 
   scene.setDrawCoordinateFrameEnabled(true,400);
+  
+  scene.getLight(2).setShadowEnabled(true);
+
 
   
   DrawHandle ih = gui["image"];

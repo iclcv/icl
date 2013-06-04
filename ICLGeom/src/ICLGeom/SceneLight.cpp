@@ -250,7 +250,7 @@ namespace icl{
       diffuseOn = true;
       specularOn = false;
       shadowOn = false;
-      twoSidedOn = true;
+      twoSidedOn = false;
   
       ambient = GeomColor(0,0,0,0);
       diffuse = GeomColor(1,1,1,1);

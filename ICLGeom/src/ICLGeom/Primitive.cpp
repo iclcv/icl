@@ -517,7 +517,7 @@ namespace icl{
                                                      const float *xs, const float *ys, const float *zs, int xyzStride,
                                                      const Point32f *texCoords, const float *nxs, const float *nys,
                                                      const float *nzs, int nxyzStride, bool createTextureOnce):
-      texture(new GLImg(image)),image(createTextureOnce ? 0 : image){
+      Primitive(Primitive::texture), texture(new GLImg(image)),image(createTextureOnce ? 0 : image){
       ps.resize(numPoints);
       this->texCoords.resize(numPoints);
       normals.resize(nxs && nys && nzs ? numPoints : 0);
@@ -532,7 +532,7 @@ namespace icl{
     GenericTexturePrimitive::GenericTexturePrimitive(const ImgBase *image, int numPoints, const int *vertexIndices,
                                                      const Point32f *texCoords, const int *normalIndices,
                                                      bool createTextureOnce):
-      texture(new GLImg(image)),image(createTextureOnce ? 0 : image){
+      Primitive(Primitive::texture),texture(new GLImg(image)),image(createTextureOnce ? 0 : image){
     
       this->vertexIndices.assign(vertexIndices, vertexIndices+numPoints);
       if(normalIndices) this->normalIndices.assign(normalIndices,normalIndices+numPoints);

@@ -266,8 +266,7 @@ namespace icl{
   #endif
   
    
-    Scene::Scene():
-    m_fps(10){
+    Scene::Scene():Lockable(true),m_fps(10){
       m_lights[0] = SmartPtr<SceneLight>(new SceneLight(this,0));
       m_shadowCameraObjects[0] = SmartPtr<SceneObject>(new CameraObject(this,m_lights[0]->getShadowCam(),1));
       m_globalAmbientLight = FixedColVector<int,4>(255,255,255,20);
@@ -1728,6 +1727,9 @@ namespace icl{
     */
     const Img8u &Scene::render(int camIndex, const ImgBase *background, Img32f *depthBuffer,
                                DepthBufferMode mode) const throw (ICLException){
+      
+      lock();
+      
       ICLASSERT_THROW(camIndex < (int)m_cameras.size(),ICLException("Scene::render: invalid camera index"));
       const Camera &cam = getCamera(camIndex);
       int w = cam.getRenderParams().viewport.width;
@@ -1810,6 +1812,9 @@ namespace icl{
       GLContext::unset_current_glx_context();
       p.buf.setTime(icl::utils::Time::now());
       if(depthBuffer) depthBuffer->setTime(p.buf.getTime());
+      
+      unlock();
+
       return p.buf;
     }
   
