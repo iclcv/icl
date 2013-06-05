@@ -36,15 +36,56 @@ struct Input{
   std::string a,b;
   GenericGrabber grabber;
   ImageHandle handle;
+  const ImgBase *lastImage;
   std::string id;
   void operator()(){
-    handle = grabber.grab();
+    lastImage = grabber.grab();
+    handle = lastImage;
   }
 };
 
 int nInputs = -1;
 Array2D<Input> inputs;
 bool asyncMode = false;
+
+void save_all(){
+  std::string fn;
+  bool ok = false;
+  struct Evt : public ICLApp::AsynchronousEvent{
+    std::string &fn;
+    bool &ok;
+
+    Evt(std::string &fn, bool &ok):fn(fn),ok(ok){}
+    void execute(){
+      try{
+        static std::string lastDir;
+        fn = saveFileDialog("","save files (# is replaced by the input-ID)",lastDir);
+        if(fn.length()){
+          lastDir = File(fn).getDir();
+        }
+      }catch(...){ }
+      ok = true;
+    }
+  };
+  ICLApp::instance()->executeInGUIThread(new Evt(fn,ok));
+  while(!ok) Thread::msleep(10);
+  if(fn.length()){
+    MatchResult r = match(fn,"([^#]*)#([^#]*)",3);
+    if(r.matched && r.submatches.size()>2){
+      std::string pref  = r.submatches[1];
+      std::string suff  = r.submatches[2];
+      for(int i=0;i<nInputs;++i){
+        Input &in = inputs[i];
+        std::string fn = pref+"-"+in.a+"-"+in.b+suff;
+        save(*in.lastImage, fn);
+        std::cout << "saved file " << fn << std::endl;
+      }
+      std::cout << std::endl;
+    }else{
+      ERROR_LOG("the given filename must have a '#'-token, which can be replaced by the input ID");
+    }
+  }  
+}
 
 void init(){
   if(pa("-r")) GenericGrabber::resetBus("dc");
@@ -79,8 +120,10 @@ void init(){
     gui << rows[i];
   }
   gui << ( HBox().minSize(0,2).maxSize(99,2) 
+           << Button("stopped","running",true).handle("on")
            << CamCfg() 
            << Fps(10).handle("fps")
+           << Button("save").handle("save")
          ) 
       <<   Show();
 
@@ -94,11 +137,20 @@ void init(){
 
 template<int N>
 void run(){
+  while(!gui["on"].as<bool>()){
+    Thread::msleep(10);
+  }
   if(!N){
     gui["fps"].render();
     if(!asyncMode){
+      static ButtonHandle save = gui["save"];
+      
       for(int i=0;i<nInputs;++i){
         inputs[i]();
+      }
+      
+      if(save.wasTriggered()){
+        save_all();
       }
     }
   }
