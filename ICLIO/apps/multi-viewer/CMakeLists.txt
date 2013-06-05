@@ -2,7 +2,7 @@
 INCLUDE(ICLHelperMacros)
 
 # ---- Examples ----
-BUILD_DEMO(NAME multi-cam
-           SOURCES multi-cam.cpp
+BUILD_APP(NAME multi-viewer
+           SOURCES multi-viewer.cpp
            LIBRARIES ICLMarkers)
 
