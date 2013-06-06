@@ -76,7 +76,12 @@ void save_all(){
       std::string suff  = r.submatches[2];
       for(int i=0;i<nInputs;++i){
         Input &in = inputs[i];
-        std::string fn = pref+"-"+in.a+"-"+in.b+suff;
+        std::string part = in.a+"-"+in.b;
+        for(size_t i=0;i<part.length();++i){
+          char &c = part[i];
+          if(c == '/') c = '-';
+        }
+        std::string fn = pref+"-"+part+suff;
         save(*in.lastImage, fn);
         std::cout << "saved file " << fn << std::endl;
       }
@@ -119,9 +124,24 @@ void init(){
   for(int i=0;i<layout.height;++i){
     gui << rows[i];
   }
+  GUI camcfg;
+  if(pa("-sync")){
+    for(int i=1;i<nInputs;++i){
+      if(inputs[i].a != inputs[0].a) {
+        throw ICLException("option -s to synchronize all grabbers can "
+                           "only be used, if all input types are identical");
+      }
+      inputs[0].grabber.syncChangesTo(&inputs[i].grabber);
+    }
+    camcfg << CamCfg();//inputs[0].a+","+inputs[0].b);
+  }else{
+    camcfg << CamCfg();
+  }
+
+  
   gui << ( HBox().minSize(0,2).maxSize(99,2) 
            << Button("stopped","running",true).handle("on")
-           << CamCfg() 
+           << camcfg
            << Fps(10).handle("fps")
            << Button("save").handle("save")
          ) 
@@ -139,6 +159,12 @@ template<int N>
 void run(){
   while(!gui["on"].as<bool>()){
     Thread::msleep(10);
+    if(!N && !asyncMode){
+      static ButtonHandle save = gui["save"];
+      if(save.wasTriggered()){
+        save_all();
+      }
+    }
   }
   if(!N){
     gui["fps"].render();
@@ -172,6 +198,7 @@ int main(int n, char **ppc){
           "-reset-bus|-r "
           "-layout|-l(size) " 
           "-asynchronous|-a "
+          "-sync-all-grabbers|-sync "
           "-i(...)");
   ICLApp app(n,ppc,"",init);
 

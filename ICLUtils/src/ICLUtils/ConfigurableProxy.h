@@ -112,6 +112,16 @@ namespace icl{
         int getPropertyVolatileness(const std::string &propertyName) const{
           return getInternalConfigurable() -> getPropertyVolatileness(propertyName);
         }
+        
+        /// syncronzies all property changes to the given configurable
+        void syncChangesTo(Configurable *configurables, int num=1) {
+          getInternalConfigurable()->syncChangesTo(configurables,num);
+        }
+
+        /// syncronzies all property changes to the given configurable
+        void syncChangesTo(ConfigurableProxy *configurable){
+          getInternalConfigurable()->syncChangesTo(configurable->getInternalConfigurable());
+        }
     };
   } // namespace utils
 }
