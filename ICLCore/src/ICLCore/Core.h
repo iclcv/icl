@@ -35,9 +35,7 @@
 #include <ICLCore/Line32f.h>
 #include <ICLCore/Line.h>
 #include <ICLCore/LineSampler.h>
-#include <ICLCore/Mathematics.h>
 #include <ICLUtils/Random.h>
-#include <ICLCore/SampledLine.h>
 
 /** 
     \defgroup TYPES Common Data Type Definitions
