@@ -38,6 +38,8 @@
 #include <ICLCV/VectorTracker.h>
 #include <ICLCV/RegionDetector.h>
 
+
+#include <ICLCV/CornerDetectorCSS.h>
 #include <ICLCV/SimpleBlobSearcher.h>
 #include <ICLCore/Img.h>
 

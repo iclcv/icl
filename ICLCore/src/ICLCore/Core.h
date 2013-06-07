@@ -31,7 +31,6 @@
 #pragma once
 
 #include <ICLCore/Img.h>
-#include <ICLCore/CornerDetectorCSS.h>
 #include <ICLCore/ImgBorder.h>
 #include <ICLCore/Line32f.h>
 #include <ICLCore/Line.h>
