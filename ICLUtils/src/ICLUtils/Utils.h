@@ -48,17 +48,13 @@
 #include <ICLUtils/Rect.h>
 #include <ICLUtils/Semaphore.h>
 #include <ICLUtils/SignalHandler.h>
-#include </SimpleMatrix.h>
 #include <ICLUtils/StackTimer.h>
 #include <ICLUtils/SteppingRange.h>
 #include <ICLMath/StochasticOptimizer.h>
 #include <ICLMath/StraightLine2D.h>
 #include <ICLUtils/StrTok.h>
-#include <ICLUtils/ThreadUtils.h>
 
-#include </XMLDocument.h>
 #include <ICLUtils/XML.h>
-#include </XMLNodeFilter.h>
 
 /** 
     \defgroup TIME Time and Timer Support Classes and Functions
