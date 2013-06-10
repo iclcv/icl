@@ -618,24 +618,6 @@ namespace icl{
           }
           
         }
-//        switch(m_previousLightState[i]) {
-//          case 1:
-//            fragmentBuffer << "  color += computeLight("<<i<<");\n";
-//            break;
-//          case 2:
-//            vertexBuffer 
-//            <<"  shadow_coord["<<currentShadow<<"] = shadowMat["<<currentShadow<<"] * V;\n";
-//            fragmentBuffer
-//            <<"#ifdef RENDER_SHADOW\n"
-//            <<"  color += computeLightWithShadow("<<i<<","<<currentShadow<<");\n"
-//            <<"#else\n"
-//            <<"  color += computeLight("<<i<<");\n"
-//            <<"#endif\n";
-//            currentShadow++;
-//            break;
-//          default:
-//            break;
-//        }
       }
       vertexBuffer 
       <<"}\n";
@@ -967,33 +949,6 @@ namespace icl{
               numShadowLights++;
             }
           }
-//         
-//         
-//         
-//         
-//         if(m_lights[i]) {
-//           m_lights[i]->updatePositions(*this,getCamera(camIndex));
-//           if(m_lights[i]->on) {
-//             if(m_lights[i]->shadowOn) {
-//               
-//               if(m_previousLightState[i] != 2) {
-//                 lightSetupChanged = true;
-//               }
-//               m_previousLightState[i] = 2;
-//               numShadowLights++;
-//             } else {
-//               if(m_previousLightState[i] != 1) {
-//                 lightSetupChanged = true;
-//               }
-//               m_previousLightState[i] = 1;
-//             }
-//           } else {
-//             if(m_previousLightState[i] != 0) {
-//               lightSetupChanged = true;
-//             }
-//             m_previousLightState[i] = 0;
-//           }
-//         }
         }
 
         if(lightSetupChanged) {
