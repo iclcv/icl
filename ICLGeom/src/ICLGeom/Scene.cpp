@@ -1004,7 +1004,7 @@ namespace icl{
 
         //recreate the shadowbuffer if the the lightsetup, or the resolution has changed
         unsigned int resolution = ((Configurable*)this)->getPropertyValue("shadows.shadow resolution");
-        if(shadowResolution != resolution || lightSetupChanged) {
+        if(shadowResolution != resolution || lightSetupChanged || true) {
          freeShadowFBO();
          //don't create a shadowbuffer if there are no lights with shadows
          if(numShadowLights > 0) {
