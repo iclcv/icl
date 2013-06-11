@@ -31,17 +31,45 @@
 #include <ICLIO/UdpImageOutput.h>
 
 #include <QtNetwork/QUdpSocket>
+#include <ICLUtils/Thread.h>
+
+#include <QtCore/QCoreApplication>
 
 namespace icl{
   using namespace core;
   using namespace utils;
 
   namespace io{
-    struct UdpImageOutput::Data{
+
+    struct SendEvent : public QEvent{
+      SendEvent(UdpImageOutput::Data *data, const ImgBase *image, bool *done):
+        QEvent((QEvent::Type)QEvent::registerEventType()),data(data),image(image),done(done){}
+      UdpImageOutput::Data *data;
+      const ImgBase *image;
+      bool *done;
+    };
+
+    struct UdpImageOutput::Data : public QObject{
       QUdpSocket *socket;
       QHostAddress addr;
       quint16 port;
+      ImageCompressor *cmp;
+      
+      bool event(QEvent *e){
+        SendEvent *s = dynamic_cast<SendEvent*>(e);
+        if(s){
+          DEBUG_LOG("sending data");
+          const CompressedData data = s->data->cmp->compress(s->image);
+          s->data->socket->writeDatagram((char*)data.bytes, data.len, addr, port);
+          *s->done = true;
+          return true;
+        }
+        return false;
+      }
     };
+
+      
+
     
     UdpImageOutput::~UdpImageOutput(){
       if(isNull()) return;
@@ -63,13 +91,15 @@ namespace icl{
       }
       m_data->port = (quint16)port;
       m_data->addr = QHostAddress(QString(targetPC.c_str()));
+      m_data->cmp = this;
+      DEBUG_LOG("init(" << targetPC << ", " << port << ")");
     }
     
     void UdpImageOutput::send(const core::ImgBase *image){
       ICLASSERT_THROW(!isNull(), ICLException("UdpImageOutput::send: instance was null!"));
-      const CompressedData data = compress(image);
-      
-      m_data->socket->writeDatagram((char*)data.bytes, data.len, m_data->addr, m_data->port);
+      bool done = false;
+      QCoreApplication::postEvent(m_data,new SendEvent(m_data,image,&done));
+      while(!done) Thread::usleep(100);
     }
 
   }

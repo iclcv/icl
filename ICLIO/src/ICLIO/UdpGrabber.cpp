@@ -41,40 +41,21 @@ namespace icl{
   
   namespace io{
     
-    struct UdpGrabber::Data : public Thread{
+    struct UdpGrabber::Data{
       QUdpSocket *socket;
       std::vector<icl8u> receivedBuffer;
       int receivedSize;
       Mutex mutex;
-      bool running;
       ImageCompressor cmp;
-      
-      virtual void run(){
-        while(running){
-          while(!socket->hasPendingDatagrams()){
-            Thread::usleep(100);
-          }
-          while(socket->hasPendingDatagrams()){
-            mutex.lock();
-            size_t s = socket->pendingDatagramSize();
-            if(receivedBuffer.size() < s) {
-              receivedBuffer.resize(s);
-            }
-            receivedSize = s;
-            socket->readDatagram((char*)receivedBuffer.data(),s);
-            mutex.unlock();
-          }
-        }
-      }
     };
     
     void UdpGrabber::init(int port) throw (utils::ICLException){
       if(m_data) throw ICLException("UdpGrabber was tried to initialize twice!");
       m_data = new Data;
-      m_data->socket = new QUdpSocket(0);
+      m_data->socket = new QUdpSocket(this);
       m_data->socket->bind((quint16)port, QUdpSocket::ShareAddress);
-      m_data->running = true;
-      m_data->start();
+      //m_data->socket->bind(12345, QUdpSocket::ShareAddress);
+      connect(m_data->socket, SIGNAL(readyRead()), this, SLOT(processData()));
     }
     
     UdpGrabber::UdpGrabber(int port) throw(utils::ICLException):m_data(0){
@@ -84,13 +65,25 @@ namespace icl{
     
     UdpGrabber::~UdpGrabber(){
       if(m_data) {
-        m_data->running=false;
-        m_data->stop();
         delete m_data->socket;
         delete m_data;
       };
     }
     
+    void UdpGrabber::processData(){
+      while(m_data->socket->hasPendingDatagrams()){
+        DEBUG_LOG("UdpGrabber::grabber-thread: found pending event");
+        m_data->mutex.lock();
+        size_t s = m_data->socket->pendingDatagramSize();
+        if(m_data->receivedBuffer.size() < s) {
+          m_data->receivedBuffer.resize(s);
+        }
+        m_data->receivedSize = s;
+        m_data->socket->readDatagram((char*)m_data->receivedBuffer.data(),s);
+        m_data->mutex.unlock();
+      }
+    }
+
     const std::vector<GrabberDeviceDescription> &UdpGrabber::getDeviceList(bool rescan){
       (void)rescan;
       static std::vector<GrabberDeviceDescription> deviceList;
@@ -98,12 +91,17 @@ namespace icl{
     }
     
     const core::ImgBase* UdpGrabber::acquireImage(){
+      static Img8u bla(Size(100,100),1);
+      return &bla;
+
+      DEBUG_LOG("acquireImage called");
       while(true){
         m_data->mutex.lock();
         if(m_data->receivedBuffer.size()) break;
         m_data->mutex.unlock();
-        Thread::usleep(100);
+        Thread::msleep(10);
       }
+      DEBUG_LOG("data available: uncopressing");
       const ImgBase *image = m_data->cmp.uncompress(m_data->receivedBuffer.data(), m_data->receivedSize);
       m_data->mutex.unlock();
       return image;
@@ -122,7 +120,7 @@ namespace icl{
       deviceList.clear();
       // if filter exists, add grabber with filter
       if(filter.size()){
-        GrabberDeviceDescription d("upd", 
+        GrabberDeviceDescription d("udp", 
                                    filter, 
                                    "A grabber for images "
                                    "published via udp");

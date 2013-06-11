@@ -31,6 +31,7 @@
 #pragma once
 
 #include <ICLIO/Grabber.h>
+#include <QtCore/QObject>
 
 namespace icl{
   namespace io{
@@ -39,36 +40,36 @@ namespace icl{
     /** This class is only available if Qt is supported, because 
         QUdpSocket is used internally
     */
-    class UdpGrabber : public Grabber {
-        /// Internal Data storage class
-        struct Data;
-
-        /// Hidden Data container
-        Data *m_data;
-
-        /// Connects an unconnected grabber to given shared memory segment
-        void init(int port) throw (utils::ICLException);
+    class UdpGrabber : public QObject, public Grabber {
+      Q_OBJECT;
+      /// Internal Data storage class
+      struct Data;
+      
+      /// Hidden Data container
+      Data *m_data;
+      
+      /// Connects an unconnected grabber to given shared memory segment
+      void init(int port) throw (utils::ICLException);
+      
+      private slots:
+      
+      /// hand incomming data
+      void processData();
 
       public:
-
-        /// Creates a new SharedMemoryGrabber instance (please use the GenericGrabber instead)
-        UdpGrabber(int port=-1) throw(utils::ICLException);
-
-        /// Destructor
-        ~UdpGrabber();
-
-        /// returns a list of all available shared-memory image-streams
-        static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
-
-        /// grabbing function
-        /** \copydoc icl::io::Grabber::grab(core::ImgBase**)  **/
-        virtual const core::ImgBase* acquireImage();
-
-        /// callback for changed configurable properties
-        //        void processPropertyChange(const utils::Configurable::Property &prop);
-
-        /// dummy method (necessary?)
-        //static void resetBus(bool verbose);
+      
+      /// Creates a new SharedMemoryGrabber instance (please use the GenericGrabber instead)
+      UdpGrabber(int port=-1) throw(utils::ICLException);
+      
+      /// Destructor
+      ~UdpGrabber();
+      
+      /// returns a list of all available shared-memory image-streams
+      static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
+      
+      /// grabbing function
+      /** \copydoc icl::io::Grabber::grab(core::ImgBase**)  **/
+      virtual const core::ImgBase* acquireImage();
     };
     
   } // namespace io

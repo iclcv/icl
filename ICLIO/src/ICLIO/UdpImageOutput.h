@@ -37,7 +37,10 @@ namespace icl{
     
     /// image output implementation for Udp-based network transfer
     class UdpImageOutput : public ImageOutput{
+      public:
       struct Data;  //!< pimpl type
+
+      private:
       Data *m_data; //!< pimpl pointer
       
       public:

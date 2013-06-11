@@ -181,7 +181,8 @@ namespace icl{
         delete m_data;
       }
     }
-    
+
+     
     const ImgBase *RSBGrabber::acquireImage(){
       ICLASSERT_RETURN_VAL(!isNull(),0);
       Mutex::Locker lock(m_data->mutex);

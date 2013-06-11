@@ -146,9 +146,9 @@ const ImgBase *grab_image(){
   }
   return img;
 }
+GenericImageOutput output;
 
 void send_app(){
-  static GenericImageOutput output(pa("-o"));
 #ifdef HAVE_QT
   ImageHandle IH;
   FPSHandle FPS;
@@ -248,6 +248,8 @@ void send_app(){
 
 #ifdef HAVE_QT
 void init_gui(){
+  output.init(pa("-o"));
+
   bool idu = pa("-idu");
   
   if(pa("-pp")){

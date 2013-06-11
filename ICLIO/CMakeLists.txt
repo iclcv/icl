@@ -153,8 +153,11 @@ IF(QT4_FOUND)
   LIST(APPEND HEADERS src/ICLIO/SharedMemoryGrabber.h
                       src/ICLIO/SharedMemoryPublisher.h
                       src/ICLIO/SharedMemorySegment.h
-                      src/ICLIO/UdpImageOutput.h
-                      src/ICLIO/UdpGrabber.h)
+                      src/ICLIO/UdpImageOutput.h)
+                    
+  SET(ICL_MOC_HEADERS src/ICLIO/UdpGrabber.h)
+  
+  
 ENDIF()
 
 IF(XINE_FOUND)
@@ -224,7 +227,13 @@ INCLUDE_DIRECTORIES(BEFORE src
                            ${ICL_SOURCE_DIR}/ICLCore/src
                            ${ICL_SOURCE_DIR}/ICLFilter/src)
 
-ADD_LIBRARY(ICLIO SHARED ${SOURCES} ${HEADERS})
+IF(QT_FOUND)
+  QT4_WRAP_CPP(MOC_FILES ${ICL_MOC_HEADERS})
+  ADD_LIBRARY(ICLIO SHARED ${SOURCES} ${HEADERS} ${MOC_FILES})
+ELSE()
+  ADD_LIBRARY(ICLIO SHARED ${SOURCES} ${HEADERS})
+ENDIF()
+
 
 # ---- 3rd party library handling ----
 TARGET_LINK_LIBRARIES(ICLIO ICLFilter
@@ -264,6 +273,9 @@ INSTALL(TARGETS ICLIO
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
 INSTALL_FILES_RECURSIVE("include/${INSTALL_PATH_PREFIX}" HEADERS)
+IF(QT_FOUND)
+  INSTALL_FILES_RECURSIVE("include/${INSTALL_PATH_PREFIX}" ICL_MOC_HEADERS )
+ENDIF()
 
 # ---- PKG-config ----
 CREATE_PKGCONFIG(NAME ICLIO
