@@ -43,9 +43,11 @@ int main(int n, char **ppc){
       ("-size","define output file size")
       ("-rotate","rotate angle by given angle (clock-wise in deg)")
       ("-scale","define size scaling factor")
+      ("-crop","define crop-rect x y w h")
       ("-flip","flips the image (allowed values are horz, vert, or both")
       ("-scalemode", "defines scalemode to use (one of NN, LIN, or RA)");
-  pa_init(n,ppc,"-input|-i(filename) -output|-o(filename) -depth|-d(depth) -format|-f(format) -size|-s(Size) -scale(factor) -scalemode(scalemode) -rotate(angle) -flip(axis)",true);
+  pa_init(n,ppc,"-input|-i(filename) -output|-o(filename) -depth|-d(depth) "
+          "-format|-f(format) -c|-clip|-crop(x,y,width,height) -size|-s(Size) -scale(factor) -scalemode(scalemode) -rotate(angle) -flip(axis)",true);
   
   std::string inFileName,outFileName;
 
@@ -142,6 +144,21 @@ int main(int n, char **ppc){
     static ImgBase *dst2 = 0;
     rot.apply(dst,&dst2);
     dst = dst2;
+  }
+  
+  if(pa("-c")){
+    static ImgBase *tmp = 0;
+    Rect r(pa("-c",0), 
+           pa("-c",1), 
+           pa("-c",2), 
+           pa("-c",3));
+    if( (dst->getImageRect() | r) != dst->getImageRect()){
+      ERROR_LOG("wrong option -crop|-clip: given rectangle was " 
+                << r << " but the image rect is only " << dst->getImageRect() );
+    }
+    dst->setROI(r);
+    dst->deepCopyROI(&tmp);
+    dst = tmp;
   }
   
   FileWriter fw(outFileName);

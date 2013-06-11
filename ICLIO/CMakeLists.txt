@@ -146,10 +146,15 @@ ENDIF()
 IF(QT4_FOUND)
   LIST(APPEND SOURCES src/ICLIO/SharedMemoryGrabber.cpp
                       src/ICLIO/SharedMemoryPublisher.cpp
-                      src/ICLIO/SharedMemorySegment.cpp)
+                      src/ICLIO/SharedMemorySegment.cpp
+                      src/ICLIO/UdpImageOutput.cpp
+                      src/ICLIO/UdpGrabber.cpp)
+                      
   LIST(APPEND HEADERS src/ICLIO/SharedMemoryGrabber.h
                       src/ICLIO/SharedMemoryPublisher.h
-                      src/ICLIO/SharedMemorySegment.h)
+                      src/ICLIO/SharedMemorySegment.h
+                      src/ICLIO/UdpImageOutput.h
+                      src/ICLIO/UdpGrabber.h)
 ENDIF()
 
 IF(XINE_FOUND)

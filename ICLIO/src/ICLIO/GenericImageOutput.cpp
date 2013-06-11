@@ -34,6 +34,7 @@
 
 #ifdef HAVE_QT
 #include <ICLIO/SharedMemoryPublisher.h>
+#include <ICLIO/UdpImageOutput.h>
 #endif
 
 #ifdef HAVE_OPENCV
@@ -107,8 +108,16 @@ namespace icl{
   
   #ifdef HAVE_QT
       plugins.push_back("sm~Shared Memory Segment ID~Qt based shared memory writer");
+      plugins.push_back("udp~host:port~QUdpSocket-based udp network transfer");
       if(type == "sm"){
         o = new SharedMemoryPublisher(d);
+      }
+      if(type == "upd"){
+        std::vector<std::string> t = tok(d,":");
+        if(t.size() != 2) throw ICLException("unable to create UdpImageOutput due to "
+                                             "erroneous output description (required "
+                                             "syntax is 'host:port', found '"+d+"')");
+        o = new UdpImageOutput(t[0],parse<int>(t[1]));
       }
   #endif
       

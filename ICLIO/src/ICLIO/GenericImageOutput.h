@@ -50,7 +50,8 @@ namespace icl{
           - "sm" (SharedMemory output, description=memory-segment-ID)
           - "xcfp" (XCF Publisher output, description=stream-name)
           - "rsb" (Robotics Service Bus Output), description=[comma-sep. transport-list=spread]:scope)
-  
+          - "udp" QUdpSocket-based udp transfer, description=host:port
+
         \section META Image Meta Data
         
         Only a few backends do actually support sending also image meta data. So far,

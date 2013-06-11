@@ -82,7 +82,7 @@ ENDIF()
 # ---- global definitions ----
 # todo: add "-debug" postfix here and there!
 SET(ICL_VERSION_MAJOR "8" CACHE STRING "Major project version part")
-SET(ICL_VERSION_MINOR "2" CACHE STRING "Minor project version part")
+SET(ICL_VERSION_MINOR "3" CACHE STRING "Minor project version part")
 SET(ICL_VERSION_PATCH "0" CACHE STRING "Patch project version part")
 
 
@@ -248,7 +248,7 @@ ENDIF()
 IF(BUILD_WITH_QT)
   FIND_PACKAGE(OpenGL REQUIRED)
   FIND_PACKAGE(GLEW REQUIRED)
-  FIND_PACKAGE(Qt4 REQUIRED QtCore QtGui QtOpenGL)
+  FIND_PACKAGE(Qt4 REQUIRED QtCore QtGui QtOpenGL QtNetwork)
   IF(QT4_FOUND)
     INCLUDE(${QT_USE_FILE})
     ADD_ICL_DEFINITIONS(-DHAVE_QT)
