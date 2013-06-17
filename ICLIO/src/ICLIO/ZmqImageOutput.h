@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLIO/src/ICLIO/UdpGrabber.h                           **
+** File   : ICLIO/src/ICLIO/ZmqImageOutput.h                       **
 ** Module : ICLIO                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -30,48 +30,43 @@
 
 #pragma once
 
-#include <ICLIO/Grabber.h>
-#include <QtCore/QObject>
+#include <ICLIO/GenericImageOutput.h>
 
 namespace icl{
   namespace io{
     
-    /// Grabber class that grabs images from Udp-Network sockets
-    /** This class is only available if Qt is supported, because 
-        QUdpSocket is used internally
-    */
-    class UdpGrabber : public QObject, public Grabber {
-      Q_OBJECT;
-      /// Internal Data storage class
-      struct Data;
-      
-      /// Hidden Data container
-      Data *m_data;
-      
-      /// Connects an unconnected grabber to given shared memory segment
-      void init(int port) throw (utils::ICLException);
-      
-      private slots:
-      
-      /// hand incomming data
-      void processData();
-
+    /// image output implementation using the ZeroMQ (ZMQ) framwork
+    class ZmqImageOutput : public ImageOutput{
       public:
+      struct Data;  //!< pimpl type
+
+      private:
+      Data *m_data; //!< pimpl pointer
       
-      /// Creates a new SharedMemoryGrabber instance (please use the GenericGrabber instead)
-      UdpGrabber(int port=-1) throw(utils::ICLException);
+      public:
+  
       
+      /// Create UdpImageOutput with given targetPC and port
+      /** Of targetPC is "", a null output is created, that must be initialized
+          with init before send can be called */
+      ZmqImageOutput(int port=44444);
+
       /// Destructor
-      ~UdpGrabber();
+      ~ZmqImageOutput();
+
       
-      /// returns a list of all available shared-memory image-streams
-      static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
+      /// deferred initialization 
+      void init(int port=44444);
       
-      /// grabbing function
-      /** \copydoc icl::io::Grabber::grab(core::ImgBase**)  **/
-      virtual const core::ImgBase* acquireImage();
+      /// sender method
+      virtual void send(const core::ImgBase *image);
+      
+      /// returns whether this is a null instance
+      inline bool isNull() const { return !m_data; }
+      
+      /// returns whether this is not a null instance
+      inline operator bool() const { return static_cast<bool>(m_data); }
     };
-    
   } // namespace io
 }
 

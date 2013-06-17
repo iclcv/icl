@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLIO/src/ICLIO/UdpGrabber.cpp                         **
+** File   : ICLIO/src/ICLIO/ZmqGrabber.cpp                         **
 ** Module : ICLIO                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -28,11 +28,12 @@
 **                                                                 **
 ********************************************************************/
 
-#include <ICLIO/UdpGrabber.h>
+#include <ICLIO/ZmqGrabber.h>
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/Mutex.h>
+#include <ICLUtils/StringUtils.h>
 #include <ICLIO/ImageCompressor.h>
-#include <QtNetwork/QUdpSocket>
+#include <zmq.hpp>
 
 namespace icl{
   
@@ -41,96 +42,83 @@ namespace icl{
   
   namespace io{
     
-    struct UdpGrabber::Data{
-      QUdpSocket *socket;
-      std::vector<icl8u> receivedBuffer;
-      int receivedSize;
-      Mutex mutex;
+    struct ZmqGrabber::Data : public Thread{
       ImageCompressor cmp;
+      std::vector<icl8u> receivedBuffer;
+      Mutex mutex;
+      
+      SmartPtr<zmq::context_t> context;
+      SmartPtr<zmq::socket_t> subscriber;
+      SmartPtr<zmq::message_t> msg;
+      
+      virtual void run(){
+        subscriber->recv(msg.get());
+        mutex.lock();
+        receivedBuffer.resize(msg->size());
+        std::copy((icl8u*)msg->data(), ((icl8u*)msg->data())+msg->size(), receivedBuffer.begin());
+        mutex.unlock();
+      }
     };
     
-    void UdpGrabber::init(int port) throw (utils::ICLException){
-      if(m_data) throw ICLException("UdpGrabber was tried to initialize twice!");
+    
+    ZmqGrabber::ZmqGrabber(const std::string &host, int port) throw(utils::ICLException):m_data(0){
       m_data = new Data;
-      m_data->socket = new QUdpSocket(this);
-      m_data->socket->bind((quint16)port, QUdpSocket::ShareAddress);
-      //m_data->socket->bind(12345, QUdpSocket::ShareAddress);
-      connect(m_data->socket, SIGNAL(readyRead()), this, SLOT(processData()));
+      m_data->context = new zmq::context_t(1);
+      m_data->subscriber = new zmq::socket_t(*m_data->context, ZMQ_SUB);
+      m_data->subscriber->connect(("tcp://"+host+":"+str(port)).c_str());
+      m_data->msg = new zmq::message_t;
     }
     
-    UdpGrabber::UdpGrabber(int port) throw(utils::ICLException):m_data(0){
-      if(port < 0) return;
-      init(port);
-    }
-    
-    UdpGrabber::~UdpGrabber(){
+    ZmqGrabber::~ZmqGrabber(){
       if(m_data) {
-        delete m_data->socket;
         delete m_data;
       };
     }
     
-    void UdpGrabber::processData(){
-      while(m_data->socket->hasPendingDatagrams()){
-        DEBUG_LOG("UdpGrabber::grabber-thread: found pending event");
-        m_data->mutex.lock();
-        size_t s = m_data->socket->pendingDatagramSize();
-        if(m_data->receivedBuffer.size() < s) {
-          m_data->receivedBuffer.resize(s);
-        }
-        m_data->receivedSize = s;
-        m_data->socket->readDatagram((char*)m_data->receivedBuffer.data(),s);
-        m_data->mutex.unlock();
-      }
-    }
 
-    const std::vector<GrabberDeviceDescription> &UdpGrabber::getDeviceList(bool rescan){
+    const std::vector<GrabberDeviceDescription> &ZmqGrabber::getDeviceList(bool rescan){
       (void)rescan;
       static std::vector<GrabberDeviceDescription> deviceList;
       return deviceList;
     }
     
-    const core::ImgBase* UdpGrabber::acquireImage(){
-      static Img8u bla(Size(100,100),1);
-      return &bla;
-
-      DEBUG_LOG("acquireImage called");
-      while(true){
-        m_data->mutex.lock();
-        if(m_data->receivedBuffer.size()) break;
+    const core::ImgBase* ZmqGrabber::acquireImage(){
+      m_data->mutex.lock();
+      if(!m_data->receivedBuffer.size()){
         m_data->mutex.unlock();
-        Thread::msleep(10);
+        return 0;
       }
-      DEBUG_LOG("data available: uncopressing");
-      const ImgBase *image = m_data->cmp.uncompress(m_data->receivedBuffer.data(), m_data->receivedSize);
+      const ImgBase *image = m_data->cmp.uncompress(m_data->receivedBuffer.data(), m_data->receivedBuffer.size());
       m_data->mutex.unlock();
       return image;
     }
 
-    REGISTER_CONFIGURABLE(UdpGrabber, return new UdpGrabber(44444));
+    REGISTER_CONFIGURABLE(ZmqGrabber, return new ZmqGrabber("localhost",44444));
 
-    Grabber* createUdpGrabber(const std::string &param){
-      return new UdpGrabber(parse<int>(param));
+    Grabber* createZmqGrabber(const std::string &param){
+      std::vector<std::string> ts = tok(param,":");
+      if(ts.size() != 2) throw ICLException("unable to create Zmq-Grabber backend (expected host:port)");
+      return new ZmqGrabber(ts[0],parse<int>(ts[1]));
     }
 
-    const std::vector<GrabberDeviceDescription>& getUdpDeviceList(std::string filter, bool rescan){
+    const std::vector<GrabberDeviceDescription>& getZmqDeviceList(std::string filter, bool rescan){
       static std::vector<GrabberDeviceDescription> deviceList;
       if(!rescan) return deviceList;
 
       deviceList.clear();
       // if filter exists, add grabber with filter
       if(filter.size()){
-        GrabberDeviceDescription d("udp", 
+        GrabberDeviceDescription d("zmq", 
                                    filter, 
-                                   "A grabber for images "
-                                   "published via udp");
+                                   "A Zmq-based network grabber");
         deviceList.push_back(d);
       }
       return deviceList;
     }
 
 
-    REGISTER_GRABBER(udp,utils::function(createUdpGrabber), utils::function(getUdpDeviceList), "udp:port:QUdpSocket-based udp network transfer")
+    REGISTER_GRABBER(zmq,utils::function(createZmqGrabber), utils::function(getZmqDeviceList), 
+                     "zmq:host\\:port:Zmq-based network grabber")
     
   } // namespace io
 }

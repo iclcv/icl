@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLIO/src/ICLIO/UdpImageOutput.h                       **
+** File   : ICLIO/src/ICLIO/ZmqImageOutput.cpp                     **
 ** Module : ICLIO                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -28,45 +28,49 @@
 **                                                                 **
 ********************************************************************/
 
-#pragma once
-
-#include <ICLIO/GenericImageOutput.h>
+#include <ICLIO/ZmqImageOutput.h>
+#include <zmq.hpp>
+#include <ICLUtils/StringUtils.h>
 
 namespace icl{
+  using namespace core;
+  using namespace utils;
+
   namespace io{
-    
-    /// image output implementation for Udp-based network transfer
-    class UdpImageOutput : public ImageOutput{
-      public:
-      struct Data;  //!< pimpl type
 
-      private:
-      Data *m_data; //!< pimpl pointer
-      
-      public:
-  
-      
-      /// Create UdpImageOutput with given targetPC and port
-      /** Of targetPC is "", a null output is created, that must be initialized
-          with init before send can be called */
-      UdpImageOutput(const std::string &targetPC="", int port=44444);
 
-      /// Destructor
-      ~UdpImageOutput();
-
-      
-      /// deferred initialization 
-      void init(const std::string &targetPC, int port=44444);
-      
-      /// sender method
-      virtual void send(const core::ImgBase *image);
-      
-      /// returns whether this is a null instance
-      inline bool isNull() const { return !m_data; }
-      
-      /// returns whether this is not a null instance
-      inline operator bool() const { return static_cast<bool>(m_data); }
+    struct ZmqImageOutput::Data{
+      SmartPtr<zmq::context_t> context;
+      SmartPtr<zmq::socket_t> publisher;
+      SmartPtr<zmq::message_t> message;
     };
-  } // namespace io
+
+    
+    ZmqImageOutput::~ZmqImageOutput(){
+      if(isNull()) return;
+      delete m_data;
+    }
+    
+    ZmqImageOutput::ZmqImageOutput(int port):m_data(0){
+      init(port);
+    }
+    
+    void ZmqImageOutput::init(int port){
+      if(isNull()){
+        m_data = new Data;
+        m_data->context = new zmq::context_t(1);
+        m_data->message = new zmq::message_t; 
+      }
+      m_data->publisher = new zmq::socket_t(*m_data->context, ZMQ_PUB);
+      m_data->publisher->bind(("tcp://*:"+str(port)).c_str());
+    }
+    
+    void ZmqImageOutput::send(const core::ImgBase *image){
+      const CompressedData d = ImageCompressor::compress(image);
+      zmq::message_t m(d.bytes,d.len,0);
+      m_data->publisher->send(m);
+    }
+
+  }
 }
 

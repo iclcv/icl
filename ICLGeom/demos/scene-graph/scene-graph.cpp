@@ -118,7 +118,7 @@ void mouse_2(const MouseEvent &evt){
 }
 
 void init(){
-  Scene::enableSharedOffscreenRendering();
+  //  Scene::enableSharedOffscreenRendering();
 
   gui << Draw3D().handle("view")
       << Draw().handle("image")

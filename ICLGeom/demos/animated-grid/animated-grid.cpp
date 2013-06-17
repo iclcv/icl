@@ -119,7 +119,6 @@ void run(){
 void init(){
   scene.setBounds(100);
   scene.setDrawCamerasEnabled(false);
-  Scene::enableSharedOffscreenRendering();
   
   grabber.init(pa("-i"));
   if(pa("-b")){

@@ -146,23 +146,23 @@ ENDIF()
 IF(QT4_FOUND)
   LIST(APPEND SOURCES src/ICLIO/SharedMemoryGrabber.cpp
                       src/ICLIO/SharedMemoryPublisher.cpp
-                      src/ICLIO/SharedMemorySegment.cpp
-                      src/ICLIO/UdpImageOutput.cpp
-                      src/ICLIO/UdpGrabber.cpp)
+                      src/ICLIO/SharedMemorySegment.cpp)
                       
   LIST(APPEND HEADERS src/ICLIO/SharedMemoryGrabber.h
                       src/ICLIO/SharedMemoryPublisher.h
-                      src/ICLIO/SharedMemorySegment.h
-                      src/ICLIO/UdpImageOutput.h)
-                    
-  SET(ICL_MOC_HEADERS src/ICLIO/UdpGrabber.h)
-  
-  
+                      src/ICLIO/SharedMemorySegment.h)
 ENDIF()
 
 IF(XINE_FOUND)
   LIST(APPEND SOURCES src/ICLIO/VideoGrabber.cpp)
   LIST(APPEND HEADERS src/ICLIO/VideoGrabber.h)
+ENDIF()
+
+IF(ZMQ_FOUND)
+  LIST(APPEND SOURCES src/ICLIO/ZmqGrabber.cpp
+                      src/ICLIO/ZmqImageOutput.cpp)
+  LIST(APPEND HEADERS src/ICLIO/ZmqGrabber.h
+                      src/ICLIO/ZmqImageOutput.h)
 ENDIF()
 
 IF(LIBFREENECT_FOUND)
@@ -228,8 +228,7 @@ INCLUDE_DIRECTORIES(BEFORE src
                            ${ICL_SOURCE_DIR}/ICLFilter/src)
 
 IF(QT_FOUND)
-  QT4_WRAP_CPP(MOC_FILES ${ICL_MOC_HEADERS})
-  ADD_LIBRARY(ICLIO SHARED ${SOURCES} ${HEADERS} ${MOC_FILES})
+  ADD_LIBRARY(ICLIO SHARED ${SOURCES} ${HEADERS})
 ELSE()
   ADD_LIBRARY(ICLIO SHARED ${SOURCES} ${HEADERS})
 ENDIF()
@@ -248,6 +247,7 @@ TARGET_LINK_LIBRARIES(ICLIO ICLFilter
 			    ${OPENNI_LIBRARIES}
 			    ${QT_LIBRARIES}
 			    ${RSB_LIBRARIES}
+			    ${ZMQ_LIBRARIES}
 			    ${PROTOBUF_LIBRARIES}
 			    ${OpenCV_LIBS})
 
@@ -273,9 +273,6 @@ INSTALL(TARGETS ICLIO
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
 INSTALL_FILES_RECURSIVE("include/${INSTALL_PATH_PREFIX}" HEADERS)
-IF(QT_FOUND)
-  INSTALL_FILES_RECURSIVE("include/${INSTALL_PATH_PREFIX}" ICL_MOC_HEADERS )
-ENDIF()
 
 # ---- PKG-config ----
 CREATE_PKGCONFIG(NAME ICLIO
@@ -289,5 +286,6 @@ CREATE_PKGCONFIG(NAME ICLIO
 			      ${PYLON_LIBRARIES}
 			      ${OPENNI_LIBRARIES}
 			      ${QT_LIBRARIES}
+			      ${ZMQ_LIBRARIES}
 			      ${RSB_RSC_AND_PROTOBUF_LIBRARIES_PC}
                  PKGCONFIG_DEPS ICLFilter-${SO_VERSION})

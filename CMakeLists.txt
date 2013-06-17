@@ -131,6 +131,7 @@ OPTION(BUILD_WITH_QT "Provide GUI and image visualization framework (needs OPENG
 OPTION(BUILD_WITH_OPENGL "Linked to BUILD_WITH_QT" OFF)
 OPTION(BUILD_WITH_GLX "Linked to BUILD_WITH_QT" OFF)
 OPTION(BUILD_WITH_V4L "Provide V4L2 grabber backend for USB-Cameras" OFF)
+OPTION(BUILD_WITH_ZMQ "Provide Zero-MQ-based network grabber and image output" OFF)
 OPTION(BUILD_WITH_PYLON "Link against the basler Pylon package to support GIG-E cameras" OFF)
 OPTION(BUILD_WITH_OPENCL "Uses OpenCL to speed up several algorithms" OFF)
 OPTION(BUILD_WITH_OPENNI "Links against OpenNI to grab from Kinect devices" OFF)
@@ -238,6 +239,14 @@ IF(BUILD_WITH_V4L)
   ENDIF()
 ENDIF()
 
+IF(BUILD_WITH_ZMQ)
+  FIND_PACKAGE(ZMQ REQUIRED)
+  IF(ZMQ_FOUND)
+    ADD_ICL_DEFINITIONS(-DHAVE_ZMQ)
+  ENDIF()
+ENDIF()
+
+
 IF(BUILD_WITH_XINE)
   FIND_PACKAGE(Xine REQUIRED)
   IF(XINE_FOUND)
@@ -338,6 +347,7 @@ INCLUDE_DIRECTORIES(${IPP_INCLUDE_DIRS}
 		    ${PCL_INCLUDE_DIRS}
 		    ${OPENNI_INCLUDE_DIRS}
 		    ${RSB_INCLUDE_DIRS}
+		    ${ZMQ_INCLUDE_DIRS}
 		    ${PROTOBUF_INCLUDE_DIRS}
 		    )
 
