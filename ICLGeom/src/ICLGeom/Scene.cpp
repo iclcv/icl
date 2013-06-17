@@ -55,6 +55,7 @@
 #include <GL/glx.h>
 #include <ICLCore/CCFunctions.h>
 #include <ICLQt/GLContext.h>
+#include <ICLQt/Application.h>
 #endif
 
 #include <ICLQt/Quick.h>
@@ -80,27 +81,21 @@ namespace icl{
   
     struct CameraObject : public SceneObject{
       Scene *scene;
-      const Camera* camera;
+      int index;
       std::vector<Vec> origVertices;
       float S;
       bool haveName;
+      bool isShadowCam;
       Mutex mutex;
       std::string lastName;
       Img8u nameTexture;
-      CameraObject(Scene *parent, int cameraIndex, const float camSize){
-        constructCameraObject(parent, &parent->getCamera(cameraIndex), camSize);
-      }
-      
-      CameraObject(Scene *parent, const Camera* cam, const float camSize){
-        constructCameraObject(parent, cam, camSize);
-      }
-      
-      void constructCameraObject(Scene *parent, const Camera* cam, const float camSize) {
-        scene = parent;
-        camera = cam;
+      CameraObject(Scene *parent, int cameraIndex, const float camSize, bool isShadowCam = false):
+      scene(parent),
+      index(cameraIndex),
+      S(camSize*50),
+      isShadowCam(isShadowCam)
+      {
         nameTexture = Img8u(Size(1,1),4);
-  
-        S = camSize*50;
   
         addVertex(Vec(0,0,0,1),geom_white());
         addVertex(Vec(S,0,0,1),geom_red());
@@ -138,7 +133,7 @@ namespace icl{
       }
   
       virtual void prepareForRendering() {
-        const Camera &cam = *camera;
+        const Camera &cam = isShadowCam? *scene->getLight(index).getShadowCam() : scene->getCamera(index);
         int w = cam.getRenderParams().viewport.width;
         int h = cam.getRenderParams().viewport.height;
   
@@ -268,7 +263,7 @@ namespace icl{
    
     Scene::Scene():Lockable(true),m_fps(10){
       m_lights[0] = SmartPtr<SceneLight>(new SceneLight(this,0));
-      m_shadowCameraObjects[0] = SmartPtr<SceneObject>(new CameraObject(this,m_lights[0]->getShadowCam(),1));
+      m_shadowCameraObjects[0] = SmartPtr<SceneObject>(new CameraObject(this,0,1,true));
       m_globalAmbientLight = FixedColVector<int,4>(255,255,255,20);
       m_backgroundColor = GeomColor(0,0,0,255);
       for(int i = 0; i < 8; i++) {
@@ -342,7 +337,7 @@ namespace icl{
         }else{
           m_lights[i] = SmartPtr<SceneLight>();
         }
-        m_shadowCameraObjects[i] = SmartPtr<SceneObject>(new CameraObject(this,m_lights[i]->getShadowCam(),1));
+        m_shadowCameraObjects[i] = SmartPtr<SceneObject>(new CameraObject(this,i,1,true));
       }
       
       if(scene.m_bounds){
@@ -1381,7 +1376,7 @@ namespace icl{
       if(index < 0 || index > 7) throw ICLException("invalid light index");
       if(!m_lights[index]){
         m_lights[index] = SmartPtr<SceneLight>(new SceneLight(this,index));
-        m_shadowCameraObjects[index] = SmartPtr<SceneObject>(new CameraObject(this,m_lights[index]->getShadowCam(),1));
+        m_shadowCameraObjects[index] = SmartPtr<SceneObject>(new CameraObject(this,index,1,true));
       }
       return *m_lights[index];
     }
@@ -1682,95 +1677,117 @@ namespace icl{
     */
     const Img8u &Scene::render(int camIndex, const ImgBase *background, Img32f *depthBuffer,
                                DepthBufferMode mode) const throw (ICLException){
-      
-      lock();
-      
-      ICLASSERT_THROW(camIndex < (int)m_cameras.size(),ICLException("Scene::render: invalid camera index"));
-      const Camera &cam = getCamera(camIndex);
-      int w = cam.getRenderParams().viewport.width;
-      int h = cam.getRenderParams().viewport.height;
-      Size s(w,h);
-      PBufferIndex idx(s);
-  
-      Mutex::Locker lock(PBuffer::glxMutex);
-      //    PBuffer::glxMutex.lock();
-      std::map<PBufferIndex,PBuffer*>::iterator it = m_pbuffers.find(idx);
-      PBuffer &p = (it==m_pbuffers.end())?(*(m_pbuffers[idx] = new PBuffer(s))):(*it->second);
-      // PBuffer::glxMutex.unlock();
-  
-  
-      p.makeCurrent();
-  
-      GeomColor c = getBackgroundColor();
-      glClearColor(c[0]/255.,c[1]/255.,c[2]/255.,1);
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );    
-      glEnable(GL_TEXTURE_2D);
-      glEnable(GL_BLEND);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glEnable(GL_COLOR_MATERIAL);
-  
-      if(background){
-        glOrtho(0, w, h, 0, -999999, 999999);
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-        glDisable(GL_LIGHTING);
-        SmartPtr<GLImg> &bg = p.background;
-        if(!bg) bg = SmartPtr<GLImg>(new GLImg);
-        bg->update(background);
-        bg->draw2D(Rect(0,0,w,h),s);
-        glEnable(GL_LIGHTING);
-        glClear(GL_DEPTH_BUFFER_BIT );    
-      }
-  
-      renderScene(camIndex);
-      glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, p.rgbbuf.data());
-      interleavedToPlanar(p.rgbbuf.data(),&p.buf);
-      p.buf.mirror(axisHorz); // software mirroring takes only about 1ms (with ipp)
-      
-      if(depthBuffer){
-        depthBuffer->setSize(Size(w,h));
-        depthBuffer->setChannels(1);
-        glReadPixels(0,0,w,h, GL_DEPTH_COMPONENT, GL_FLOAT, depthBuffer->begin(0));
-        depthBuffer->mirror(axisHorz);
-  
-        if(mode != RawDepth01){
-          const float zNear = cam.getRenderParams().clipZNear;
-          const float zFar = cam.getRenderParams().clipZFar;
+      #ifdef HAVE_QT
+        struct RenderEvent : public ICLApplication::AsynchronousEvent{
+        const Scene *scene;
+        int camIndex;
+        const ImgBase *background;
+        Img32f *depthBuffer;
+        DepthBufferMode &mode;
+        Img8u **out;
+        RenderEvent(const Scene *scene, int camIndex, const ImgBase *background, Img32f *depthBuffer, DepthBufferMode &mode, Img8u **out):
+          scene(scene), 
+          camIndex(camIndex),
+          background(background),
+          depthBuffer(depthBuffer),
+          mode(mode),
+          out(out){}
           
-          icl32f *db = depthBuffer->begin(0);
-  
-          const int dim = w*h;
-          const float Q = zFar / ( zFar - zNear );
-          const float izFar = 1.0/zFar;
+        virtual void execute(){
+          ICLASSERT_THROW(camIndex < (int)scene->m_cameras.size(),ICLException("Scene::render: invalid camera index"));
+          const Camera &cam = scene->getCamera(camIndex);
+          int w = cam.getRenderParams().viewport.width;
+          int h = cam.getRenderParams().viewport.height;
+          Size s(w,h);
+          PBufferIndex idx(s);
+      
+          Mutex::Locker lock(PBuffer::glxMutex);
+          //    PBuffer::glxMutex.lock();
+          std::map<PBufferIndex,PBuffer*>::iterator it = scene->m_pbuffers.find(idx);
+          PBuffer &p = (it==scene->m_pbuffers.end())?(*(scene->m_pbuffers[idx] = new PBuffer(s))):(*it->second);
+          // PBuffer::glxMutex.unlock();
           
-          const float m = zFar-zNear;
-          const float b = zNear;
+          scene->lock();
+          p.makeCurrent();
+      
+          GeomColor c = scene->getBackgroundColor();
+          glClearColor(c[0]/255.,c[1]/255.,c[2]/255.,1);
+          glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );    
+          glEnable(GL_TEXTURE_2D);
+          glEnable(GL_BLEND);
+          glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+          glEnable(GL_COLOR_MATERIAL);
+      
+          if(background){
+            glOrtho(0, w, h, 0, -999999, 999999);
+            glMatrixMode(GL_PROJECTION);
+            glLoadIdentity();
+            glMatrixMode(GL_MODELVIEW);
+            glLoadIdentity();
+            glDisable(GL_LIGHTING);
+            SmartPtr<GLImg> &bg = p.background;
+            if(!bg) bg = SmartPtr<GLImg>(new GLImg);
+            bg->update(background);
+            bg->draw2D(Rect(0,0,w,h),s);
+            glEnable(GL_LIGHTING);
+            glClear(GL_DEPTH_BUFFER_BIT );    
+          }
+      
+          scene->renderScene(camIndex);
+          glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, p.rgbbuf.data());
+          interleavedToPlanar(p.rgbbuf.data(),&p.buf);
+          p.buf.mirror(axisHorz); // software mirroring takes only about 1ms (with ipp)
           
-          const float A = izFar * m;
-  
-          if(mode == DistToCamCenter){
-            p.depthCorr.update(cam);
-            const float *corr = p.depthCorr.factors.data();
-            for(int i=0;i<dim;++i){
-              db[i] = corr[i] * (A / (Q-db[i]) + b) - 1;
-            }
-          }else{
-            for(int i=0;i<dim;++i){
-              db[i] = (A / (Q-db[i]) + b) - 1;
+          if(depthBuffer){
+            depthBuffer->setSize(Size(w,h));
+            depthBuffer->setChannels(1);
+            glReadPixels(0,0,w,h, GL_DEPTH_COMPONENT, GL_FLOAT, depthBuffer->begin(0));
+            depthBuffer->mirror(axisHorz);
+      
+            if(mode != RawDepth01){
+              const float zNear = cam.getRenderParams().clipZNear;
+              const float zFar = cam.getRenderParams().clipZFar;
+              
+              icl32f *db = depthBuffer->begin(0);
+      
+              const int dim = w*h;
+              const float Q = zFar / ( zFar - zNear );
+              const float izFar = 1.0/zFar;
+              
+              const float m = zFar-zNear;
+              const float b = zNear;
+              
+              const float A = izFar * m;
+      
+              if(mode == DistToCamCenter){
+                p.depthCorr.update(cam);
+                const float *corr = p.depthCorr.factors.data();
+                for(int i=0;i<dim;++i){
+                  db[i] = corr[i] * (A / (Q-db[i]) + b) - 1;
+                }
+              }else{
+                for(int i=0;i<dim;++i){
+                  db[i] = (A / (Q-db[i]) + b) - 1;
+                }
+              }
             }
           }
+          
+          GLContext::unset_current_glx_context();
+          p.buf.setTime(icl::utils::Time::now());
+          if(depthBuffer) depthBuffer->setTime(p.buf.getTime());
+          
+          scene->unlock();
+          *out = &p.buf;
         }
-      }
+      };
+      #endif
       
-      GLContext::unset_current_glx_context();
-      p.buf.setTime(icl::utils::Time::now());
-      if(depthBuffer) depthBuffer->setTime(p.buf.getTime());
-      
-      unlock();
+      Img8u *out;
+      ICLApplication *app = ICLApplication::instance();
+      app->executeInGUIThread(new RenderEvent(this, camIndex, background, depthBuffer, mode, &out), true);
 
-      return p.buf;
+      return *out;
     }
   
     void Scene::freeAllPBuffers(){
