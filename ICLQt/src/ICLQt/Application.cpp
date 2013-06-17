@@ -32,6 +32,7 @@
 #include <QtCore/QLocale>
 #include <ICLUtils/ProgArg.h>
 #include <ICLUtils/Thread.h>
+#include <ICLUtils/Mutex.h>
 
 using namespace icl::utils;
 
@@ -170,8 +171,9 @@ namespace icl{
     namespace{
       struct AsynchronousEventWrapper : public QEvent{
         ICLApplication::AsynchronousEvent *ae;
-        AsynchronousEventWrapper(ICLApplication::AsynchronousEvent *ae):
-          QEvent((QEvent::Type)QEvent::registerEventType()),ae(ae){} 
+        Mutex *mutex;
+        AsynchronousEventWrapper(ICLApplication::AsynchronousEvent *ae, Mutex *mutex = 0):
+          QEvent((QEvent::Type)QEvent::registerEventType()),ae(ae),mutex(mutex){} 
         ~AsynchronousEventWrapper(){
           delete ae;
         }
@@ -182,12 +184,21 @@ namespace icl{
       AsynchronousEventWrapper *e = dynamic_cast<AsynchronousEventWrapper*>(eIn);
       if(!e) return false;
       e->ae->execute();
+      if(e->mutex)e->mutex->unlock();
       return true;
     }
     
     
-    void ICLApplication::executeInGUIThread(ICLApplication::AsynchronousEvent *event){
-      QApplication::postEvent(this,new AsynchronousEventWrapper(event));
+    void ICLApplication::executeInGUIThread(ICLApplication::AsynchronousEvent *event, bool blocking){
+      if(blocking) {
+        Mutex mutex;
+        mutex.lock();
+        QApplication::postEvent(this,new AsynchronousEventWrapper(event, &mutex));
+        mutex.lock();
+        mutex.unlock();
+      } else {
+        QApplication::postEvent(this,new AsynchronousEventWrapper(event));
+      }
     }
   
     ICLApplication *ICLApplication::instance(){

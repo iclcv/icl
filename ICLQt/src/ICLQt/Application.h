@@ -162,7 +162,7 @@ namespace icl{
       /** The event's ownwership is passed. It is deleted internally after 
           it is processed (please note, that the deletion will also take place
           within the GUI thread */
-      void executeInGUIThread(AsynchronousEvent *event);
+      void executeInGUIThread(AsynchronousEvent *event, bool blocking = false);
 
       /// overloaded event function
       virtual bool event(QEvent *eIn);
