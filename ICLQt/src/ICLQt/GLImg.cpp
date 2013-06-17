@@ -43,7 +43,7 @@
 #include <ICLUtils/Array2D.h>
 #include <ICLUtils/Rect32f.h>
 #include <ICLUtils/Lockable.h>
-
+#include <map>
 
 #ifdef HAVE_QT
 #include <QtCore/QObject>
@@ -54,6 +54,7 @@
 
 using namespace icl::utils;
 using namespace icl::core;
+using namespace std;
 
 namespace icl{
   namespace qt{
@@ -313,7 +314,6 @@ namespace icl{
       static bool useDirtyFlag;
       
       scalemode sm;
-      bool dirty;
       
       depth imageDepth;
       depth origImageDepth;
@@ -324,24 +324,13 @@ namespace icl{
       int bci[3];
       
       struct TextureInfo{
-        inline TextureInfo():threadID(0){}
-        inline TextureInfo(unsigned threadID, const GLContext &ctx):
-          threadID(threadID),ctx(ctx){}
-        
-        unsigned int threadID;
-        GLContext ctx;
-        
-        static inline TextureInfo getCurrentTextureInfo(){
-          return TextureInfo(pthread_self(), GLContext::currentContext());
-        }
-        inline bool operator==(const TextureInfo &other) const{
-          return threadID == other.threadID && ctx == other.ctx;
-        }
+        bool dirty;
+        std::vector<GLuint> textures;
+        inline TextureInfo():dirty(true){}
       };
         
-      TextureInfo textureInfo;
+      map<GLContext, TextureInfo> infos;
       
-      std::vector<GLuint> textures;
       Array2D<TextureElementPtr> data;
       mutable ImgBase *extractedImageBuffer;
   
@@ -365,28 +354,24 @@ namespace icl{
       }
       
       inline bool isDirty(){
-        return useDirtyFlag ? dirty : true;
+        return infos[GLContext::currentContext()].dirty;
+      }
+      
+      inline void setDirty(bool dirty = true){
+        infos[GLContext::currentContext()].dirty = dirty;
+      }
+      
+      inline void makeDirty(){
+        for(map<GLContext,TextureInfo>::iterator it = infos.begin(); it != infos.end(); it++) {
+          it->second.dirty = true;
+        }
       }
       
       void releaseTextures(){
-  
+        std::vector<GLuint> &textures = infos[GLContext::currentContext()].textures;
         if(textures.size()){
-  #ifdef HAVE_QT
-          if(QCoreApplication::instance()){
-            if(textureInfo == TextureInfo::getCurrentTextureInfo()){
-              glDeleteTextures(textures.size(),textures.data());
-
-            }else{
-              freeTextures(textures,textureInfo.ctx);
-            }
-          }else{
-              glDeleteTextures(textures.size(),textures.data());
-          }
+          glDeleteTextures(textures.size(), textures.data());
           textures.clear();
-  #else
-          glDeleteTextures(textures.size(),textures.data());
-  #endif
-  
         }
       }
   
@@ -426,8 +411,7 @@ namespace icl{
                                 t.size.width*imageChannels*sizeof(InternalType));
           }
         }
-        
-        dirty = true;
+        setDirty();
         textureBufferMutex.unlock();
       }
   
@@ -650,17 +634,14 @@ namespace icl{
   
       void uploadTextureData(){
         ICLASSERT_THROW(data.getDim(),ICLException("unable to draw GLImg: no texture data available"));
-  
         if(!isDirty()) return;
         setupPixelTransfer();
-        
+        std::vector<GLuint> &textures = infos[GLContext::currentContext()].textures;
         if(textures.size()){
           glDeleteTextures(textures.size(),textures.data());
         }
         textures.resize(data.getDim());
         glGenTextures(textures.size(), textures.data());
-        
-        textureInfo = TextureInfo::getCurrentTextureInfo();
         
         textureBufferMutex.lock();
         
@@ -690,27 +671,13 @@ namespace icl{
   
           }
         }
-        dirty = false;
+        setDirty(false);
         textureBufferMutex.unlock();
       }
-    };
-  
-    
-    bool GLImg::Data::useDirtyFlag = true;
-    
-    void GLImg::set_use_dirty_flag(bool useIt){
-      Data::useDirtyFlag = useIt;
-    }  
-    
-    bool GLImg::get_use_dirty_flag(){
-      return Data::useDirtyFlag;
-    }
-     
-  
+    }; 
     
     GLImg::GLImg(const ImgBase *src, scalemode sm, int maxCellSize):m_data(new Data){
       m_data->sm = sm;
-      m_data->dirty = true;
       m_data->extractedImageBuffer = 0;
       std::fill(m_data->bci,m_data->bci+3,0);
   
@@ -910,7 +877,9 @@ namespace icl{
                        const Point32f &texCoordsD){
       ICLASSERT_RETURN(!isNull());
       
-      if(m_data->isDirty()) m_data->uploadTextureData();
+      if(m_data->isDirty()) {
+        m_data->uploadTextureData();
+      }
       /**
           a -- b
           |    |
@@ -1145,7 +1114,7 @@ namespace icl{
       if(m_data->bci[0] != b ||
          m_data->bci[1] != c ||
          m_data->bci[2] != i ){
-        m_data->dirty = true;
+        m_data->makeDirty();
       }
       m_data->bci[0] = b;
       m_data->bci[1] = c;

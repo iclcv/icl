@@ -55,6 +55,11 @@ void init(){
            << FSlider(1,100,15).out("r").label("light radius").maxSize(100,3)
            << Button("reload").handle("reload").hideIf(!pa("-o"))
          )
+      << Draw().handle("image")
+      << (VBox() 
+          << Combo("none,rgb,depth").handle("capture").label("offscreen rendering")
+          << Combo("raw,dist. to z0,dist to cam center").handle("dmode").label("depth map mode")
+          )
       << Show();
   
 
@@ -68,14 +73,17 @@ void init(){
   
   // a plane to demonstrate the shadows
   SceneObject *plane = SceneObject::cuboid(4, 0, 0, 1, 30, 30);
+  SceneObject *random = SceneObject::cuboid(0, 6, 6, 10, 4, 4);
   plane->setPolygonSmoothingEnabled(false);
   scene.addObject(plane, true);
+  scene.addObject(random, true);
   
   lights = pa("-l");
   for(unsigned int i = 0; i < lights; i++) {
     scene.getLight(i).reset();
     scene.getLight(i).setOn();
     scene.getLight(i).setShadowEnabled();
+    scene.getLight(i).setTwoSidedEnabled(false);
     scene.getLight(i).setAnchorToWorld();
     scene.getLight(i).setAmbientEnabled();
     scene.getLight(i).setDiffuseEnabled();
@@ -146,6 +154,22 @@ void run(){
   
   scene.unlock();
   gui["draw"].render();
+  
+  int capture = gui["capture"];
+  static Img32f db;
+  switch(capture){
+    case 1:
+      gui["image"] = scene.render(0);
+      gui["image"].render();
+      break;
+    case 2:
+      scene.render(0,0,&db,(Scene::DepthBufferMode)gui["dmode"].as<int>());
+      gui["image"] = db;
+      gui["image"].render();
+      break;
+    default:
+      break;
+  }
 
   /// limit drawing speed to 25 fps
   static FPSLimiter limiter(pa("-fps").as<float>());

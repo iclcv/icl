@@ -170,6 +170,8 @@ void init(){
   scene.getLight(2).setDiffuseEnabled();
   scene.getLight(2).setPosition(Vec(0,0,-60,1));
   scene.getLight(2).setAnchor(p);
+  scene.getLight(2).setShadowEnabled();
+  scene.getLight(2).getShadowCam()->setNorm(-Vec(0,0,-60,1));
 
   scene.setDrawCoordinateFrameEnabled(true,400);
   

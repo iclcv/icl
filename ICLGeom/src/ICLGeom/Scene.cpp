@@ -409,21 +409,7 @@ namespace icl{
 
     void Scene::setGlobalAmbientLight(const GeomColor &color){
       std::copy(color.begin(),color.end(), m_globalAmbientLight.begin());
-    }
-    
-  
-    void Scene::enableSharedOffscreenRendering(){
-  #ifdef HAVE_QT
-      GLImg::set_use_dirty_flag(false);
-  #endif
-    }
-    
-    void Scene::disableSharedOffscreenRendering(){
-  #ifdef HAVE_QT
-      GLImg::set_use_dirty_flag(true);
-  #endif
-    }
-  
+    } 
   
     void Scene::removeObjects(int startIndex, int endIndex){
       if(endIndex < 0) endIndex = m_objects.size();

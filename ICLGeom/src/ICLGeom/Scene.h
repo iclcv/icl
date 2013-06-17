@@ -260,21 +260,6 @@ namespace icl{
         DistToCamCenter  //!< core::depth buffer values define distanct to the camera center
       };
     
-    
-      /// This function must be called when rendering a Scene from two different GLContexts
-      /** This does in particular happen, when a single Scene is rendered on a widget and into
-          an offsceen buffer. In this case, stored texture-ID's are only valid in a single thread,
-          which is why, textures need to be updated everytime, they are drawn. 
-        
-          \section FIX Possible Fix in the Future
-          We plan to fix this issue with a more elaborated texture ID handling in the ICLQt 
-          GLImg class.
-          */
-      static void enableSharedOffscreenRendering();
-    
-      /// re-enables the dirty flag in the GLImg class 
-      static void disableSharedOffscreenRendering();
-    
       /// renders the current scene using an instance of glx pbuffer
       /** This method is currently only supported on linux systems, since
           the used pbuffer (OpenGL offscreen framebuffer object) 
