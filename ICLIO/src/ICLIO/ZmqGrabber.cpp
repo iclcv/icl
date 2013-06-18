@@ -42,7 +42,7 @@ namespace icl{
   
   namespace io{
     
-    struct ZmqGrabber::Data{
+    struct ZmqGrabber::Data : public Thread{
       ImageCompressor cmp;
       
       SmartPtr<zmq::context_t> context;
@@ -51,13 +51,31 @@ namespace icl{
       bool running;
       std::string host;
       int port;
-
+      std::vector<icl8u> rbuf;
+      Mutex mutex;
+      
       Data(const std::string &host, int port):host(host),port(port){
         context = new zmq::context_t(1);
         subscriber = new zmq::socket_t(*context, ZMQ_SUB);
         subscriber->connect(("tcp://"+host+":"+str(port)).c_str());
         subscriber->setsockopt(ZMQ_SUBSCRIBE, 0,0); // subscribe to all messages (pass-all filter)
         msg = new zmq::message_t;
+        running = true;
+        start();
+      }
+      void run(){
+        while(running){
+          subscriber->recv(msg.get());
+          mutex.lock();
+          rbuf.resize(msg->size());
+          memcpy(&rbuf[0],msg->data(), msg->size());
+          mutex.unlock();
+        }
+      }
+      
+      ~Data(){
+        running = false;
+        stop();
       }
     };
     
@@ -81,8 +99,17 @@ namespace icl{
     }
     
     const core::ImgBase* ZmqGrabber::acquireImage(){
-      m_data->subscriber->recv(m_data->msg.get());
-      return m_data->cmp.uncompress((const icl8u*)m_data->msg->data(), m_data->msg->size());
+      m_data->mutex.lock();
+      while(!m_data->rbuf.size()){
+        m_data->mutex.unlock();
+        Thread::msleep(10);
+        m_data->mutex.lock();
+      }
+      const ImgBase *image = m_data->cmp.uncompress(m_data->rbuf.data(), m_data->rbuf.size());
+      m_data->mutex.unlock();
+      return image;
+      //      m_data->subscriber->recv(m_data->msg.get());
+      //return m_data->cmp.uncompress((const icl8u*)m_data->msg->data(), m_data->msg->size());
     }
 
     REGISTER_CONFIGURABLE(ZmqGrabber, return new ZmqGrabber("localhost",18243));
