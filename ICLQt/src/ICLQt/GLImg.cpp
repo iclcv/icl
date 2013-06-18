@@ -368,6 +368,7 @@ namespace icl{
       }
       
       void releaseTextures(){
+        // do we have to release the texture in all contexts?
         std::vector<GLuint> &textures = infos[GLContext::currentContext()].textures;
         if(textures.size()){
           glDeleteTextures(textures.size(), textures.data());
@@ -411,7 +412,8 @@ namespace icl{
                                 t.size.width*imageChannels*sizeof(InternalType));
           }
         }
-        setDirty();
+        makeDirty(); 
+        // here, the texture becomes dirty in all contexts, old: setDirty();
         textureBufferMutex.unlock();
       }
   
