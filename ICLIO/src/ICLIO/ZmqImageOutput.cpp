@@ -63,12 +63,16 @@ namespace icl{
       }
       m_data->publisher = new zmq::socket_t(*m_data->context, ZMQ_PUB);
       m_data->publisher->bind(("tcp://*:"+str(port)).c_str());
+      DEBUG_LOG("publishing to |" << ("tcp://*:"+str(port)).c_str() << "|");
     }
     
     void ZmqImageOutput::send(const core::ImgBase *image){
       const CompressedData d = ImageCompressor::compress(image);
       zmq::message_t m(d.bytes,d.len,0);
+      DEBUG_LOG("sending data via ZMQ: (len " << m.size() << ")" );
       m_data->publisher->send(m);
+      
+
     }
 
   }

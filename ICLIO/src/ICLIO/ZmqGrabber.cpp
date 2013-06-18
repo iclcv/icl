@@ -42,35 +42,33 @@ namespace icl{
   
   namespace io{
     
-    struct ZmqGrabber::Data : public Thread{
+    struct ZmqGrabber::Data{
       ImageCompressor cmp;
-      std::vector<icl8u> receivedBuffer;
-      Mutex mutex;
       
       SmartPtr<zmq::context_t> context;
       SmartPtr<zmq::socket_t> subscriber;
       SmartPtr<zmq::message_t> msg;
-      
-      virtual void run(){
-        subscriber->recv(msg.get());
-        mutex.lock();
-        receivedBuffer.resize(msg->size());
-        std::copy((icl8u*)msg->data(), ((icl8u*)msg->data())+msg->size(), receivedBuffer.begin());
-        mutex.unlock();
+      bool running;
+      std::string host;
+      int port;
+
+      Data(const std::string &host, int port):host(host),port(port){
+        context = new zmq::context_t(1);
+        subscriber = new zmq::socket_t(*context, ZMQ_SUB);
+        subscriber->connect(("tcp://"+host+":"+str(port)).c_str());
+        subscriber->setsockopt(ZMQ_SUBSCRIBE, 0,0); // subscribe to all messages (pass-all filter)
+        msg = new zmq::message_t;
       }
     };
     
     
     ZmqGrabber::ZmqGrabber(const std::string &host, int port) throw(utils::ICLException):m_data(0){
-      m_data = new Data;
-      m_data->context = new zmq::context_t(1);
-      m_data->subscriber = new zmq::socket_t(*m_data->context, ZMQ_SUB);
-      m_data->subscriber->connect(("tcp://"+host+":"+str(port)).c_str());
-      m_data->msg = new zmq::message_t;
+      m_data = new Data(host,port);
     }
     
     ZmqGrabber::~ZmqGrabber(){
       if(m_data) {
+        m_data->running = false;
         delete m_data;
       };
     }
@@ -83,17 +81,11 @@ namespace icl{
     }
     
     const core::ImgBase* ZmqGrabber::acquireImage(){
-      m_data->mutex.lock();
-      if(!m_data->receivedBuffer.size()){
-        m_data->mutex.unlock();
-        return 0;
-      }
-      const ImgBase *image = m_data->cmp.uncompress(m_data->receivedBuffer.data(), m_data->receivedBuffer.size());
-      m_data->mutex.unlock();
-      return image;
+      m_data->subscriber->recv(m_data->msg.get());
+      return m_data->cmp.uncompress((const icl8u*)m_data->msg->data(), m_data->msg->size());
     }
 
-    REGISTER_CONFIGURABLE(ZmqGrabber, return new ZmqGrabber("localhost",44444));
+    REGISTER_CONFIGURABLE(ZmqGrabber, return new ZmqGrabber("localhost",18243));
 
     Grabber* createZmqGrabber(const std::string &param){
       std::vector<std::string> ts = tok(param,":");
@@ -118,7 +110,7 @@ namespace icl{
 
 
     REGISTER_GRABBER(zmq,utils::function(createZmqGrabber), utils::function(getZmqDeviceList), 
-                     "zmq:host\\:port:Zmq-based network grabber")
+                     "zmq:host\\:port (host where data is published) :Zmq-based network grabber")
     
   } // namespace io
 }
