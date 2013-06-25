@@ -101,11 +101,23 @@ namespace icl{
       m_data = new Data;
       
       Scope rsbScope(scope);
-      ParticipantConfig rsbCfg;
+      ParticipantConfig rsbCfg = Factory::getInstance().getDefaultParticipantConfig();
+      typedef std::set<ParticipantConfig::Transport> TSet;
+      typedef std::vector<ParticipantConfig::Transport> TVec;
+      
+      TSet ts2 = rsbCfg.getTransports(true);
+      TVec ts(ts2.begin(),ts2.end());
       std::vector<std::string> transports = tok(transportList,",");
-      for(size_t i=0;i<transports.size();++i){
-        rsbCfg.addTransport(ParticipantConfig::Transport(transports[i]));
+
+      for(TVec::iterator it = ts.begin(); it != ts.end(); ++it){
+        ParticipantConfig::Transport &t = *it;
+        if( find(transports.begin(), transports.end(), it->getName()) == transports.end() ){
+          t.setEnabled(false);
+        }else{
+          it->setEnabled(true);
+        }
       }
+      rsbCfg.setTransports(TSet(ts.begin(),ts.end()));
       m_data->informer = Factory::getInstance().createInformer<RSBImage>(rsbScope,rsbCfg);
       m_data->out = Informer<RSBImage>::DataPtr(new RSBImage);
   
