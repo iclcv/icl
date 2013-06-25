@@ -143,11 +143,23 @@ namespace icl{
       m_data->hasNewImage = false;
       
       Scope rsbScope(scope);
-      ParticipantConfig rsbCfg;
+      ParticipantConfig rsbCfg = Factory::getInstance().getDefaultParticipantConfig();
+      typedef std::set<ParticipantConfig::Transport> TSet;
+      typedef std::vector<ParticipantConfig::Transport> TVec;
+      
+      TSet ts2 = rsbCfg.getTransports(true);
+      TVec ts(ts2.begin(),ts2.end());
       std::vector<std::string> transports = tok(transportList,",");
-      for(size_t i=0;i<transports.size();++i){
-        rsbCfg.addTransport(ParticipantConfig::Transport(transports[i]));
+
+      for(TVec::iterator it = ts.begin(); it != ts.end(); ++it){
+        ParticipantConfig::Transport &t = *it;
+        if( find(transports.begin(), transports.end(), it->getName()) == transports.end() ){
+          t.setEnabled(false);
+        }else{
+          it->setEnabled(true);
+        }
       }
+      rsbCfg.setTransports(TSet(ts.begin(),ts.end()));
       m_data->listener = Factory::getInstance().createListener(rsbScope,rsbCfg);
       m_data->handler = shared_ptr<Handler>(new Data::Handler(m_data,this));
       m_data->listener->addHandler(m_data->handler);
