@@ -56,6 +56,7 @@
 #include <ICLCore/CCFunctions.h>
 #include <ICLQt/GLContext.h>
 #include <ICLQt/Application.h>
+#include <ICLGeom/ShaderUtil.h>
 #endif
 
 #include <ICLQt/Quick.h>
@@ -272,6 +273,10 @@ namespace icl{
         }
       }
       
+      for(int i = 0; i < ShaderUtil::COUNT; i++) {
+        m_shaders[i] = 0;
+      }
+      
       addProperty("visualize cameras","flag","",false);
       addProperty("visualize world frame","flag","",false);
       addProperty("visualize object frames","flag","",false);
@@ -292,10 +297,9 @@ namespace icl{
   #ifdef HAVE_GLX
   #ifdef HAVE_QT
       freeAllPBuffers();
-      delete m_perPixelShader;
-      delete m_perPixelShaderTexture;
-      delete m_perPixelShaderNoShadow;
-      delete m_perPixelShaderTextureNoShadow;
+      for(unsigned int i = 0; i < ShaderUtil::COUNT; i++) {
+        delete m_shaders[i];
+      }
       freeShadowFBO();
   #endif
   #endif
@@ -450,10 +454,9 @@ namespace icl{
   #ifdef HAVE_QT
 
     void Scene::recompilePerPixelShader(int numShadowLights) const {
-      delete m_perPixelShader;
-      delete m_perPixelShaderTexture;
-      delete m_perPixelShaderNoShadow;
-      delete m_perPixelShaderTextureNoShadow;
+      for(unsigned int i = 0; i < ShaderUtil::COUNT; i++) {
+        delete m_shaders[i];
+      }
       std::stringstream fragmentBuffer;
       std::stringstream vertexBuffer;
       
@@ -610,13 +613,13 @@ namespace icl{
       <<"#endif\n"
       <<"}\n";
       
-      m_perPixelShader = new GLFragmentShader( vertexBuffer.str(), "#define RENDER_SHADOW\n" + fragmentBuffer.str());
-      m_perPixelShaderTexture = new GLFragmentShader( vertexBuffer.str(), "#define USE_TEXTURE;\n#define RENDER_SHADOW\n" + fragmentBuffer.str());
-      m_perPixelShaderNoShadow = new GLFragmentShader( vertexBuffer.str(), fragmentBuffer.str());
-      m_perPixelShaderTextureNoShadow = new GLFragmentShader( vertexBuffer.str(), "#define USE_TEXTURE;\n" + fragmentBuffer.str());
+      m_shaders[ShaderUtil::SHADOW] = new GLFragmentShader( vertexBuffer.str(), "#define RENDER_SHADOW\n" + fragmentBuffer.str());
+      m_shaders[ShaderUtil::SHADOW_TEXTURE] = new GLFragmentShader( vertexBuffer.str(), "#define USE_TEXTURE;\n#define RENDER_SHADOW\n" + fragmentBuffer.str());
+      m_shaders[ShaderUtil::NO_SHADOW] = new GLFragmentShader( vertexBuffer.str(), fragmentBuffer.str());
+      m_shaders[ShaderUtil::NO_SHADOW_TEXTURE] = new GLFragmentShader( vertexBuffer.str(), "#define USE_TEXTURE;\n" + fragmentBuffer.str());
     }
 
-    void Scene::renderSceneObjectRecursive(const vector<Mat> *project2shadow, SceneObject *o) const{
+    void Scene::renderSceneObjectRecursive(ShaderUtil* util, SceneObject *o) const{
       if(!creatingDisplayList){
         if(o->m_createDisplayListNextTime == 1){
           createDisplayList(o);
@@ -663,41 +666,10 @@ namespace icl{
       }
       
       
-      GLFragmentShader *activeShader = 0;
       //check if the custom shader has been set
       bool useCustomShader = o->getFragmentShader();
       //check if the matrices have been set(indicates if improved lighting is being used)
-      bool useImprovedShading = project2shadow;
-      
-      if(useImprovedShading) {
-         if(useCustomShader){
-            activeShader = o->getFragmentShader();
-            o->getFragmentShader()->activate();
-            o->getFragmentShader()->setUniform("bias", m_shadowBias);
-            o->getFragmentShader()->setUniform("shadowMat", *project2shadow);
-            o->getFragmentShader()->setUniform("shadow_map", 7);
-            o->getFragmentShader()->setUniform("image_map", 0);
-         }
-         else {
-            if(o->getReceiveShadowsEnabled()) {
-               activeShader = m_perPixelShader;
-               m_perPixelShader->activate();
-               m_perPixelShader->setUniform("bias", m_shadowBias);
-               m_perPixelShader->setUniform("shadowMat", *project2shadow);
-               m_perPixelShader->setUniform("shadow_map", 7);
-            } else {
-               activeShader = m_perPixelShaderNoShadow;
-               m_perPixelShaderNoShadow->activate();
-               m_perPixelShaderNoShadow->setUniform("shadowMat", *project2shadow);
-               m_perPixelShaderNoShadow->setUniform("shadow_map", 7);
-            }
-         }
-      }else {
-         if(useCustomShader){  
-            activeShader = o->getFragmentShader();
-            o->getFragmentShader()->activate();
-         } 
-      }
+      bool useImprovedShading = util;
 
       glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, o->m_specularReflectance.data());
 
@@ -721,7 +693,7 @@ namespace icl{
 
       if(o->isVisible()){
         
-        o->customRender();
+        o->complexCustomRender(util);
         if(o->m_primitives.size()){
           const Primitive::RenderContext ctx = { o->m_vertices, o->m_normals, o->m_vertexColors, 
                                                  o->m_sharedTextures,
@@ -732,30 +704,16 @@ namespace icl{
           
           for(unsigned int j=0;j<o->m_primitives.size();++j){
             Primitive *p = o->m_primitives[j];
-            if(o->isVisible(p->type)){
-              //use the texture shader if the primitive is a texture or text
-              if((p->type & (Primitive::text | Primitive::texture)) && useImprovedShading && !useCustomShader) {
-                if(o->getReceiveShadowsEnabled()) {
-                   m_perPixelShaderTexture->activate();
-                   m_perPixelShaderTexture->setUniform("bias", m_shadowBias);
-                   m_perPixelShaderTexture->setUniform("shadowMat", *project2shadow);
-                   m_perPixelShaderTexture->setUniform("shadow_map", 7);
-                   m_perPixelShaderTexture->setUniform("image_map", 0);
-                   p->render(ctx);
-                   m_perPixelShader->deactivate();
-                } else {
-                   m_perPixelShaderTextureNoShadow->activate();
-                   m_perPixelShaderTextureNoShadow->setUniform("shadowMat", *project2shadow);
-                   m_perPixelShaderTextureNoShadow->setUniform("shadow_map", 7);
-                   m_perPixelShaderTextureNoShadow->setUniform("image_map", 0);
-                   p->render(ctx);
-                   m_perPixelShaderTextureNoShadow->deactivate();
-                }
-                activeShader->activate();
-              } else {
-                p->render(ctx);
-              }
+            //use the texture shader if the primitive is a texture or text
+            if(useCustomShader) {
+              o->getFragmentShader()->activate();
+            } else if(useImprovedShading) {
+              util->activateShader(p->type,o->getReceiveShadowsEnabled());
+              p->render(ctx);
+            } else {
+              p->render(ctx);
             }
+            
           }
         }
   
@@ -764,8 +722,11 @@ namespace icl{
           GLboolean lightWasOn = true;
           glGetBooleanv(GL_LIGHTING,&lightWasOn);
           glDisable(GL_LIGHTING);
-          if(useImprovedShading) {
-            activeShader->deactivate();
+          
+          if(useCustomShader) {
+            o->getFragmentShader()->deactivate();
+          } else if(useImprovedShading) {
+            util->deactivateShaders();
           }
   
           if(creatingDisplayList){
@@ -806,25 +767,25 @@ namespace icl{
           }
           if(lightWasOn){
             glEnable(GL_LIGHTING);
-          }  
-          if(useImprovedShading) {
-            activeShader->activate();
-          } 
+          }
         }
-  
       } // is visible
       
       for(unsigned int i=0;i<o->m_children.size();++i){
-        renderSceneObjectRecursive(project2shadow, o->m_children[i].get());
+        renderSceneObjectRecursive(util, o->m_children[i].get());
       }
       glMatrixMode(GL_MODELVIEW);
       glPopMatrix();
-      if(activeShader) activeShader->deactivate();
+      if(useCustomShader) {
+        o->getFragmentShader()->activate();
+      } else if(useImprovedShading) {
+        util->deactivateShaders();
+      }
   
       o->unlock();
     }
     
-   void Scene::renderSceneObjectRecursiveShadow(SceneObject *o) const{
+   void Scene::renderSceneObjectRecursiveShadow(ShaderUtil* util, SceneObject *o) const{
       if(!creatingDisplayList){
         if(o->m_createDisplayListNextTime == 1){
           createDisplayList(o);
@@ -851,7 +812,7 @@ namespace icl{
          glMultMatrixf(T.transp().data());
          if(o->isVisible()){
            
-           o->customRender();
+           o->complexCustomRender(util);
            if(o->m_primitives.size()){
              const Primitive::RenderContext ctx = { o->m_vertices, o->m_normals, o->m_vertexColors, 
                                                     o->m_sharedTextures,
@@ -869,7 +830,7 @@ namespace icl{
            }
          }
          for(unsigned int i=0;i<o->m_children.size();++i){
-           renderSceneObjectRecursiveShadow(o->m_children[i].get());
+           renderSceneObjectRecursiveShadow(util, o->m_children[i].get());
          }
          glMatrixMode(GL_MODELVIEW);
          glPopMatrix();
@@ -934,8 +895,8 @@ namespace icl{
 
         if(lightSetupChanged) {
           recompilePerPixelShader(numShadowLights);
-          m_perPixelShader->activate();
-          m_perPixelShader->deactivate();
+          m_shaders[0]->activate();
+          m_shaders[0]->deactivate();
         }
 
         //recreate the shadowbuffer if the the lightsetup, or the resolution has changed
@@ -1023,8 +984,9 @@ namespace icl{
       glEnable(GL_DEPTH_TEST);
       
       if(lightingEnabled && useImprovedShading){
+        ShaderUtil util(m_shaders, &project2shadow, m_shadowBias);
         for(size_t i=0;i<m_objects.size();++i){
-          renderSceneObjectRecursive(&project2shadow, (SceneObject*)m_objects[i].get());
+          renderSceneObjectRecursive(&util, (SceneObject*)m_objects[i].get());
         }
       } else {
         for(size_t i=0;i<m_objects.size();++i){
@@ -1133,8 +1095,9 @@ namespace icl{
 	      glCullFace(GL_BACK);
       }
 	    
+	    ShaderUtil util;
       for(size_t i=0;i<m_objects.size();++i){
-        renderSceneObjectRecursiveShadow((SceneObject*)m_objects[i].get());
+        renderSceneObjectRecursiveShadow(&util, (SceneObject*)m_objects[i].get());
       }
 	    // enable the default framebuffer
 	    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);

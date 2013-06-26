@@ -45,6 +45,7 @@ namespace icl{
   
     /** \cond */
     class Scene;
+    struct ShaderUtil;
     /** \endcond */
    
     
@@ -432,6 +433,15 @@ namespace icl{
           already prepared correctly. Custom render is always called <b>before</b> 
           the SceneObject's primitives are rendered */
       virtual void customRender() {}
+      
+      struct ShaderUtil;
+      /// this function is called when an object is rendered
+      /** The function can be used to draw something in Object coordinates using
+          OpenGL commands directly. When complexCustomRender is called, the OpenGL matrices is 
+          already prepared correctly. Custom render is always called <b>before</b> 
+          the SceneObject's primitives are rendered. The complexCustomRender function is given
+          a ShaderUtil to enable rendering with the complex shaders from the Scene. */
+      virtual void complexCustomRender(icl::geom::ShaderUtil* util) {customRender();}
   
       /// sets how 2D-geom colors are set 
       void setColorsFromVertices(Primitive::Type t, bool on, bool recursive=true);

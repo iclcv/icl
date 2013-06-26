@@ -38,6 +38,7 @@
 #include <ICLGeom/SceneObject.h>
 #include <ICLGeom/Camera.h>
 #include <ICLGeom/SceneLight.h>
+#include <ICLGeom/Primitive.h>
 #include <ICLCore/Img.h>
 #include <ICLUtils/FPSEstimator.h>
 
@@ -51,6 +52,7 @@
 #include <ICLUtils/Configurable.h>
 #include <ICLUtils/SmartArray.h>
 #include <map>
+#include <ICLGeom/ShaderUtil.h>
 
 namespace icl{
     /** \cond */
@@ -126,6 +128,7 @@ namespace icl{
 
     
         */
+
     class Scene : public utils::Lockable, public utils::Configurable{
       public:
 
@@ -312,17 +315,8 @@ namespace icl{
       /// resolution at which the shadowmap is rendered (in this implementation shadowmaps are always square)
       mutable unsigned int shadowResolution;
       
-      /// the shader used for per pixel lighting and shadowmaps
-      mutable icl::qt::GLFragmentShader* m_perPixelShader;
-      
-      /// the shader used for per pixel lighting and shadowmaps with textures
-      mutable icl::qt::GLFragmentShader* m_perPixelShaderTexture;
-      
-      /// the shader used for per pixel lighting
-      mutable icl::qt::GLFragmentShader* m_perPixelShaderNoShadow;
-      
-      /// the shader used for per pixel lighting with textures
-      mutable icl::qt::GLFragmentShader* m_perPixelShaderTextureNoShadow;
+      ///Vector containing the shaders used in ImprovedShading
+      mutable icl::qt::GLFragmentShader* m_shaders[ShaderUtil::COUNT];
       
       /// defines the offset for the shadow
       mutable float m_shadowBias;
@@ -439,7 +433,7 @@ namespace icl{
       void recompilePerPixelShader(int numShadowLights) const;
       
       //// internally used rendering method for recursive rendering of the scene graph of shadowcasting objects
-      void renderSceneObjectRecursiveShadow(SceneObject *o) const;
+      void renderSceneObjectRecursiveShadow(ShaderUtil* util, SceneObject *o) const;
 #endif
 
       /// internally used rendering method for recursive rendering of the scene graph
@@ -448,7 +442,7 @@ namespace icl{
       };
       
       /// internally used rendering method for recursive rendering of the scene graph
-      void renderSceneObjectRecursive(const std::vector<geom::Mat> *project2shadow, SceneObject *o) const;
+      void renderSceneObjectRecursive(ShaderUtil* util, SceneObject *o) const;
 
       /// recursively renders object frames for all scene objects
       void renderObjectFramesRecursive(SceneObject *o, SceneObject *cs) const;
