@@ -213,6 +213,7 @@ namespace icl{
       int pointSmoothing;
       //0 = default, 1 = force off, 2 = force on
       int polygonSmoothing;
+      bool wireframe;
       float shadowBias;
     };
   
@@ -308,6 +309,7 @@ namespace icl{
       addProperty("line smoothing","menu","default,force off,force on","default");
       addProperty("point smoothing","menu","default,force off,force on","default");
       addProperty("polygon smoothing","menu","default,force off,force on","default");
+      addProperty("wireframe","flag","",false);
       addProperty("shadows.use improved shading","flag","",false);
       addProperty("shadows.cull object front for shadows","flag","",true);
       addProperty("shadows.resolution","menu","64,256,512,1024,2048",512);
@@ -917,6 +919,8 @@ namespace icl{
       else if(polygonSmoothing == "force on")m_renderSettings->polygonSmoothing=2;
       else m_renderSettings->polygonSmoothing=0;
       
+      m_renderSettings->wireframe = ((Configurable*)this)->getPropertyValue("wireframe");
+      
       vector<Mat> project2shadow;
       if(m_renderSettings->lightingEnabled && m_renderSettings->useImprovedShading) {
         
@@ -1003,6 +1007,9 @@ namespace icl{
       // specular lighting is still not working ..
       glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER,GL_TRUE);
       
+      if(m_renderSettings->wireframe)glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+      else glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+      
       if(m_renderSettings->lightingEnabled){
         float size = ((Configurable*)this)->getPropertyValue("light object size");
         glEnable(GL_LIGHTING);
@@ -1041,9 +1048,8 @@ namespace icl{
           renderSceneObjectRecursive(&util, (SceneObject*)m_objects[i].get());
         }
       } else {
-        ShaderUtil util;
         for(size_t i=0;i<m_objects.size();++i){
-          renderSceneObjectRecursive(&util,(SceneObject*)m_objects[i].get());
+          renderSceneObjectRecursive((SceneObject*)m_objects[i].get());
         }
       }
       

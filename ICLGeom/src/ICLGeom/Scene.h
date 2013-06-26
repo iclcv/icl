@@ -439,7 +439,8 @@ namespace icl{
 
       /// internally used rendering method for recursive rendering of the scene graph
       void renderSceneObjectRecursive(SceneObject *o) const{
-        renderSceneObjectRecursive(0, o);
+        ShaderUtil util;
+        renderSceneObjectRecursive(&util, o);
       };
       
       /// internally used rendering method for recursive rendering of the scene graph
