@@ -318,8 +318,9 @@ namespace icl{
       ///Vector containing the shaders used in ImprovedShading
       mutable icl::qt::GLFragmentShader* m_shaders[ShaderUtil::COUNT];
       
-      /// defines the offset for the shadow
-      mutable float m_shadowBias;
+      ///Internal struct containing the settings on how to render the scene
+      struct RenderSettings;
+      mutable RenderSettings *m_renderSettings;
       
       /// creates the FBO and Texture
       void createShadowFBO(unsigned int size = 512, unsigned int shadows = 1) const;

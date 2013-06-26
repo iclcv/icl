@@ -203,6 +203,18 @@ namespace icl{
       virtual void unlock(){ mutex.unlock(); }
   
     };  
+    
+    struct icl::geom::Scene::RenderSettings {
+      bool useImprovedShading;
+      bool lightingEnabled;
+      //0 = default, 1 = force off, 2 = force on
+      int lineSmoothing;
+      //0 = default, 1 = force off, 2 = force on
+      int pointSmoothing;
+      //0 = default, 1 = force off, 2 = force on
+      int polygonSmoothing;
+      float shadowBias;
+    };
   
   #ifdef HAVE_QT
     struct Scene::GLCallback : public ICLDrawWidget3D::GLCallback{
@@ -263,6 +275,13 @@ namespace icl{
   
    
     Scene::Scene():Lockable(true),m_fps(10){
+    
+      #ifdef HAVE_GLX
+      #ifdef HAVE_QT
+      m_renderSettings = new RenderSettings();
+      #endif
+      #endif
+      
       m_lights[0] = SmartPtr<SceneLight>(new SceneLight(this,0));
       m_shadowCameraObjects[0] = SmartPtr<SceneObject>(new CameraObject(this,0,1,true));
       m_globalAmbientLight = FixedColVector<int,4>(255,255,255,20);
@@ -286,10 +305,13 @@ namespace icl{
       addProperty("world frame size","float","[0,100000000]",100);
       addProperty("light object size","float","[0,100000000]",30);
       addProperty("background color","color","",Color(0,0,0));
+      addProperty("line smoothing","menu","default,force off,force on","default");
+      addProperty("point smoothing","menu","default,force off,force on","default");
+      addProperty("polygon smoothing","menu","default,force off,force on","default");
       addProperty("shadows.use improved shading","flag","",false);
       addProperty("shadows.cull object front for shadows","flag","",true);
-      addProperty("shadows.shadow resolution","menu","64,256,512,1024,2048",512);
-      addProperty("shadows.shadow bias","float","[-100,100]",1.0);
+      addProperty("shadows.resolution","menu","64,256,512,1024,2048",512);
+      addProperty("shadows.bias","float","[-100,100]",1.0);
       addProperty("info.FPS","info","",0);
       addProperty("info.Objects in the Scene","info","",0);
     }
@@ -301,6 +323,7 @@ namespace icl{
         delete m_shaders[i];
       }
       freeShadowFBO();
+      delete m_renderSettings;
   #endif
   #endif
     }
@@ -640,22 +663,40 @@ namespace icl{
         glShadeModel(GL_FLAT);
       }
       
-      if(o->m_lineSmoothingEnabled){
-        glEnable(GL_LINE_SMOOTH);
-      }else{
+      if(m_renderSettings->lineSmoothing == 1) {
         glDisable(GL_LINE_SMOOTH);
+      } else if(m_renderSettings->lineSmoothing == 2) {
+        glEnable(GL_LINE_SMOOTH);
+      }else {
+        if(o->m_lineSmoothingEnabled){
+          glEnable(GL_LINE_SMOOTH);
+        }else{
+          glDisable(GL_LINE_SMOOTH);
+        }
       }
       
-      if(o->m_pointSmoothingEnabled){
-        glEnable(GL_POINT_SMOOTH);
-      }else{
+      if(m_renderSettings->pointSmoothing == 1) {
         glDisable(GL_POINT_SMOOTH);
+      } else if(m_renderSettings->pointSmoothing == 2) {
+        glEnable(GL_POINT_SMOOTH);
+      }else {
+        if(o->m_pointSmoothingEnabled){
+          glEnable(GL_POINT_SMOOTH);
+        }else{
+          glDisable(GL_POINT_SMOOTH);
+        }
       }
       
-      if(o->m_polygonSmoothingEnabled){
-        glEnable(GL_POLYGON_SMOOTH);
-      }else{
+      if(m_renderSettings->polygonSmoothing == 1) {
         glDisable(GL_POLYGON_SMOOTH);
+      } else if(m_renderSettings->polygonSmoothing == 2) {
+        glEnable(GL_POLYGON_SMOOTH);
+      }else {
+        if(o->m_polygonSmoothingEnabled){
+          glEnable(GL_POLYGON_SMOOTH);
+        }else{
+          glDisable(GL_POLYGON_SMOOTH);
+        }
       }
       
       
@@ -668,8 +709,6 @@ namespace icl{
       
       //check if the custom shader has been set
       bool useCustomShader = o->getFragmentShader();
-      //check if the matrices have been set(indicates if improved lighting is being used)
-      bool useImprovedShading = util;
 
       glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, o->m_specularReflectance.data());
 
@@ -707,7 +746,7 @@ namespace icl{
             //use the texture shader if the primitive is a texture or text
             if(useCustomShader) {
               o->getFragmentShader()->activate();
-            } else if(useImprovedShading) {
+            } else if(m_renderSettings->useImprovedShading) {
               util->activateShader(p->type,o->getReceiveShadowsEnabled());
               p->render(ctx);
             } else {
@@ -725,7 +764,7 @@ namespace icl{
           
           if(useCustomShader) {
             o->getFragmentShader()->deactivate();
-          } else if(useImprovedShading) {
+          } else if(m_renderSettings->useImprovedShading) {
             util->deactivateShaders();
           }
   
@@ -778,7 +817,7 @@ namespace icl{
       glPopMatrix();
       if(useCustomShader) {
         o->getFragmentShader()->activate();
-      } else if(useImprovedShading) {
+      } else if(m_renderSettings->useImprovedShading) {
         util->deactivateShaders();
       }
   
@@ -859,14 +898,27 @@ namespace icl{
       if(widget){
         cam.getRenderParams().viewport = currentImageRect;
       }
+      m_renderSettings->lightingEnabled = ((Configurable*)this)->getPropertyValue("enable lighting");
+      m_renderSettings->useImprovedShading = ((Configurable*)this)->getPropertyValue("shadows.use improved shading");
+      m_renderSettings->shadowBias = ((Configurable*)this)->getPropertyValue("shadows.bias");
       
-      bool lightingEnabled = ((Configurable*)this)->getPropertyValue("enable lighting");
-      bool useImprovedShading = ((Configurable*)this)->getPropertyValue("shadows.use improved shading");
+      string lineSmoothing = ((Configurable*)this)->getPropertyValue("line smoothing");
+      if(lineSmoothing == "force off")m_renderSettings->lineSmoothing=1;
+      else if(lineSmoothing == "force on")m_renderSettings->lineSmoothing=2;
+      else m_renderSettings->lineSmoothing=0;
+      
+      string pointSmoothing = ((Configurable*)this)->getPropertyValue("point smoothing");
+      if(pointSmoothing == "force off")m_renderSettings->pointSmoothing=1;
+      else if(pointSmoothing == "force on")m_renderSettings->pointSmoothing=2;
+      else m_renderSettings->pointSmoothing=0;
+      
+      string polygonSmoothing = ((Configurable*)this)->getPropertyValue("polygon smoothing");
+      if(polygonSmoothing == "force off")m_renderSettings->polygonSmoothing=1;
+      else if(polygonSmoothing == "force on")m_renderSettings->polygonSmoothing=2;
+      else m_renderSettings->polygonSmoothing=0;
       
       vector<Mat> project2shadow;
-      if(lightingEnabled && useImprovedShading) {
-        //read the bias from the settings
-        m_shadowBias = ((Configurable*)this)->getPropertyValue("shadows.shadow bias");
+      if(m_renderSettings->lightingEnabled && m_renderSettings->useImprovedShading) {
         
         //update cameras and check if the lightsetup has changed
         bool lightSetupChanged = false;
@@ -900,7 +952,7 @@ namespace icl{
         }
 
         //recreate the shadowbuffer if the the lightsetup, or the resolution has changed
-        unsigned int resolution = ((Configurable*)this)->getPropertyValue("shadows.shadow resolution");
+        unsigned int resolution = ((Configurable*)this)->getPropertyValue("shadows.resolution");
         if(shadowResolution != resolution || lightSetupChanged || true) {
          freeShadowFBO();
          //don't create a shadowbuffer if there are no lights with shadows
@@ -930,7 +982,7 @@ namespace icl{
           
       }else {
         freeShadowFBO();
-        if(lightingEnabled) {
+        if(m_renderSettings->lightingEnabled) {
           for(int i=0;i<8;++i){
             if(m_lights[i]) {
               m_lights[i]->updatePositions(*this,getCamera(camIndex));
@@ -951,7 +1003,7 @@ namespace icl{
       // specular lighting is still not working ..
       glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER,GL_TRUE);
       
-      if(lightingEnabled){
+      if(m_renderSettings->lightingEnabled){
         float size = ((Configurable*)this)->getPropertyValue("light object size");
         glEnable(GL_LIGHTING);
         for(int i=0;i<8;++i){
@@ -983,14 +1035,15 @@ namespace icl{
       
       glEnable(GL_DEPTH_TEST);
       
-      if(lightingEnabled && useImprovedShading){
-        ShaderUtil util(m_shaders, &project2shadow, m_shadowBias);
+      if(m_renderSettings->lightingEnabled && m_renderSettings->useImprovedShading){
+        ShaderUtil util(m_shaders, &project2shadow, m_renderSettings->shadowBias);
         for(size_t i=0;i<m_objects.size();++i){
           renderSceneObjectRecursive(&util, (SceneObject*)m_objects[i].get());
         }
       } else {
+        ShaderUtil util;
         for(size_t i=0;i<m_objects.size();++i){
-          renderSceneObjectRecursive((SceneObject*)m_objects[i].get());
+          renderSceneObjectRecursive(&util,(SceneObject*)m_objects[i].get());
         }
       }
       
@@ -1003,7 +1056,7 @@ namespace icl{
 
       glPushAttrib(GL_ENABLE_BIT);
       
-      if(lightingEnabled && ((Configurable*)this)->getPropertyValue("visualize lights")){
+      if(m_renderSettings->lightingEnabled && ((Configurable*)this)->getPropertyValue("visualize lights")){
         for(int i=0;i<8;++i){
           if(m_lights[i] && m_lights[i]->on){
             if((m_lights[i]->anchor != SceneLight::CamAnchor) ||
