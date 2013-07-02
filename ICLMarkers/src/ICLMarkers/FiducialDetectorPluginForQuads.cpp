@@ -150,7 +150,10 @@ namespace icl{
       if(angle < 0) angle += 2*M_PI;
       return angle;
     }
-  
+
+    QuadDetector& FiducialDetectorPluginForQuads::getQuadDetector(){
+    	return data->quadd;
+    }
     void FiducialDetectorPluginForQuads::detect(std::vector<FiducialImpl*> &dst, const Img8u &image){
       for(unsigned int i=0;i<data->impls.size();++i){
         delete data->impls[i];

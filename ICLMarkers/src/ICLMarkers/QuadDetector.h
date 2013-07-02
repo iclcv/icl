@@ -33,6 +33,8 @@
 #include <ICLUtils/Configurable.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLCore/ImgBase.h>
+#include <ICLCV/RegionDetector.h>
+#include <vector>
 
 #include <ICLMarkers/TiltedQuad.h>
 
@@ -57,7 +59,7 @@ namespace icl{
         it's passed to the region detector internally
     */
     class QuadDetector : public utils::Configurable, public utils::Uncopyable{
-      
+
       /// Internal Data class
       class Data;
       
@@ -65,7 +67,16 @@ namespace icl{
       Data *data;
   
       public:
-      
+
+      std::vector< std::vector<icl::utils::Point32f> > allCorners;
+      std::vector< std::vector<icl::utils::Point32f> > getLongestCorners();
+      std::vector< std::vector<icl::utils::Point32f> > getSecLongestCorners();
+      std::vector<std::vector<icl::utils::Point32f> > getInterCorners();
+      std::vector<std::vector<icl::utils::Point32f> > getPerpCorners();
+      std::vector<std::vector<icl::utils::Point32f> > getMirrorCorners();
+
+
+//      std::vector< icl::utils::Point32f > getMirroredCorners();
       /// enum, that helps to specify what quads are searched in the threshold-result image
       enum QuadColor{
         BlackOnly,    //!< only quads that are black (default, value 0)
@@ -80,7 +91,8 @@ namespace icl{
                          value will remain fixed
   
           */
-      QuadDetector(QuadColor c = BlackOnly, bool dynamic=false);
+      QuadDetector(QuadColor c = BlackOnly, bool dynamic=false,
+    		  float minQRating = 0.4);
       
       /// Destructor
       ~QuadDetector();
@@ -93,6 +105,7 @@ namespace icl{
   
       /// returns the last binary image that was produced internally
       const core::Img8u &getLastBinaryImage() const;
+      icl::cv::RegionDetector* getRegionDetector();
     };
     
     
@@ -101,6 +114,8 @@ namespace icl{
   
     /// istream operator for QuadDetector::QuadColor instances
     std::istream &operator>>(std::istream &s, QuadDetector::QuadColor &c);
+
+
   
   } // namespace markers
 }

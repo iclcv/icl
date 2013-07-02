@@ -97,6 +97,10 @@ namespace icl{
       } iis;
     };
     
+    FiducialDetectorPlugin* FiducialDetector::getPlugin(){
+    	return data->plugin.get();
+    }
+
     FiducialDetector::FiducialDetector(const std::string &plugin,
                                        const Any &markersToLoad,
                                        const ParamList &params,

@@ -217,7 +217,7 @@ namespace icl{
       /** click always refers to the last detect call. If no region contains the given point (e.g. because
           it is outside the image rectangle), a null-region is returned. */
       const ImageRegion click(const utils::Point &pos);
-  
+      const std::vector<ImageRegion> & getLastDetectedRegions();
       private:
       
       /// Internally used utility function that extracts the input images ROI if necessary

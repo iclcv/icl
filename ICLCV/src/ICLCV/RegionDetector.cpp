@@ -318,6 +318,10 @@ namespace icl{
       }
     };
     
+    const std::vector<ImageRegion> & RegionDetector::getLastDetectedRegions(){
+    	return m_data->filteredRegions;
+    }
+
     void RegionDetector::filterRegions(){
       //BENCHMARK_THIS_FUNCTION;
       m_data->filteredRegions.clear();

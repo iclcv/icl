@@ -40,6 +40,7 @@
 #include <ICLMarkers/Fiducial.h>
 
 
+
 namespace icl{
   namespace markers{
     
@@ -198,6 +199,7 @@ namespace icl{
           * <b>amoeba</b> is not supported
       */
       core::Img8u createMarker(const utils::Any &whichOne,const utils::Size &size, const utils::ParamList &params);
+      FiducialDetectorPlugin* getPlugin();
     };
     
   } // namespace markers

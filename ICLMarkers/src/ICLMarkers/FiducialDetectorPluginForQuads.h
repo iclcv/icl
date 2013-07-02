@@ -32,6 +32,7 @@
 #pragma once
 
 #include <ICLMarkers/FiducialDetectorPlugin.h>
+#include <ICLMarkers/QuadDetector.h>
 
 namespace icl{
   namespace markers{
@@ -103,6 +104,7 @@ namespace icl{
       /** The method describes the parameters for the marker rectification */
       virtual void getQuadRectificationParameters(utils::Size &markerSizeWithBorder,
                                                   utils::Size &markerSizeWithoutBorder) = 0;
+      QuadDetector& getQuadDetector();
           
     };
   } // namespace markers
