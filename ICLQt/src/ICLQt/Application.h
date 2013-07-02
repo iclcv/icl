@@ -34,6 +34,7 @@
 #include <vector>
 #include <ICLUtils/Exception.h>
 #include <QtGui/QApplication>
+#include <ICLUtils/Function.h>
 
 namespace icl{
 
@@ -163,6 +164,38 @@ namespace icl{
           it is processed (please note, that the deletion will also take place
           within the GUI thread */
       void executeInGUIThread(AsynchronousEvent *event, bool blocking = false);
+      
+      /// utility class for executing functions with given arguments in the GUI thread
+      /** This function is a simple convenience wrapper for executeInGUIThread(AsynchronousEvent*,bool) */
+      template<class T>
+      void executeInGUIThread(utils::Function<void,T> f, T data, bool blocking = false){
+        struct TmpAsynchronousEvent : public AsynchronousEvent{
+          T data;
+          utils::Function<void,T> f;
+          TmpAsynchronousEvent(T data, utils::Function<void,T> f):data(data),f(f){}
+          void execute(){
+            f(data);
+          }
+        };
+        executeInGUIThread(new TmpAsynchronousEvent(data,f),blocking);
+      }
+      
+      /// utility class for executing functions with given arguments in the GUI thread
+      /** This function is a simple convenience wrapper for executeInGUIThread(AsynchronousEvent*,bool) */
+      template<class T,class U>
+      void executeInGUIThread(utils::Function<void,T,U> f, T t, U u, bool blocking = false){
+        struct TmpAsynchronousEvent : public AsynchronousEvent{
+          T t;
+          U u;
+          utils::Function<void,T,U> f;
+          TmpAsynchronousEvent(T t, U u, utils::Function<void,T,U> f):t(t),u(u),f(f){}
+          void execute(){
+            f(t,u);
+          }
+        };
+        executeInGUIThread(new TmpAsynchronousEvent(t,u,f),blocking);
+      }
+
 
       /// overloaded event function
       virtual bool event(QEvent *eIn);

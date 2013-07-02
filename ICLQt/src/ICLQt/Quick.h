@@ -65,17 +65,17 @@ namespace icl{
   
   #ifdef HAVE_QT
     /// uses Qt to spawn an open-file dialog with given filter
-    /** throws an exception if cancel was pressed */
+    /** throws an exception if cancel was pressed. The function thread-safe and can savely be called from a working thread */
     std::string openFileDialog(const std::string &filter="", 
                                const std::string &caption="open file",
-                               const std::string &initialDirectory="", 
+                               const std::string &initialDirectory="_____last", 
                                void *parentWidget=0) throw (utils::ICLException);
   
     /// uses Qt to spawn a save-file dialog with given filter
-    /** throws an exception if cancel was pressed */
+    /** throws an exception if cancel was pressed. The function thread-safe and can savely be called from a working thread */
     std::string saveFileDialog(const std::string &filter="", 
                                const std::string &caption="save file",
-                               const std::string &initialDirectory="", 
+                               const std::string &initialDirectory="_____last", 
                                void *parentWidget=0) throw (utils::ICLException);
   
     /// executes the given command as a child process and returns it output

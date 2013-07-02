@@ -55,6 +55,7 @@
 #include <QtGui/QFont>
 #include <QtGui/QApplication>
 #include <QtGui/QFileDialog>
+#include <ICLQt/Application.h>
 #endif
 
 #include <ICLCore/LineSampler.h>
@@ -90,20 +91,75 @@ namespace icl{
   
   
   #ifdef HAVE_QT
+    namespace{
+      struct IOContext{
+        const std::string &filter;
+        const std::string &caption;
+        const std::string &initialDirectory;
+        void *parentWidget;
+        std::string filename;
+        bool except;
+      };
+      void do_open(IOContext &c){
+        QString f = QFileDialog::getOpenFileName((QWidget*)c.parentWidget, c.caption.c_str(), c.initialDirectory.c_str(),
+                                                 c.filter.c_str() );
+        if(f.isNull() || !f.length()){
+          c.except = true;
+          //          throw ICLException("no file selected in openFileDialog or cancel was pressed. This exception must be caught explicitly!");        
+        }else{
+          c.filename = f.toLatin1().data();
+        }
+      }
+      void do_save(IOContext &c){
+        QString f = QFileDialog::getSaveFileName((QWidget*)c.parentWidget, c.caption.c_str(), c.initialDirectory.c_str(),
+                                                 c.filter.c_str() );
+        if(f.isNull() || !f.length()){
+          c.except = true;
+          //          throw ICLException("no file selected in openFileDialog or cancel was pressed. This exception must be caught explicitly!");        
+        }else{
+          c.filename = f.toLatin1().data();
+        }
+      }
+    }
+    
     std::string openFileDialog(const std::string &filter,const std::string &caption, 
                                const std::string &initialDirectory, void *parentWidget) throw (ICLException){
-      QString f = QFileDialog::getOpenFileName((QWidget*)parentWidget, caption.c_str(), initialDirectory.c_str(),
-                                  filter.c_str() );
-      if(f.isNull() || !f.length()) throw ICLException("no file selected in openFileDialog or cancel was pressed. This exception must be caught explicitly!");
-      return f.toLatin1().data();
+      static std::string lastDirectory = ".";
+      IOContext c = { filter, caption, (initialDirectory=="_____last"?lastDirectory:initialDirectory), parentWidget, std::string(), false };
+      ICLApp::instance()->executeInGUIThread<IOContext&>(do_open, c,true);
+      if(c.except){
+        throw ICLException("no file selected in openFileDialog or cancel was pressed. This exception must be caught explicitly!");
+      }
+      lastDirectory = File(c.filename).getDir();
+      return c.filename;
     }
+      /*
+          QString f = QFileDialog::getOpenFileName((QWidget*)parentWidget, caption.c_str(), initialDirectory.c_str(),
+          filter.c_str() );
+          if(f.isNull() || !f.length()){
+        throw ICLException("no file selected in openFileDialog or cancel was pressed. This exception must be caught explicitly!");
+          }
+          return f.toLatin1().data();
+          }
+          */
     std::string saveFileDialog(const std::string &filter,const std::string &caption, 
                                const std::string &initialDirectory,void *parentWidget) throw (ICLException){
+      static std::string lastDirectory = ".";
+      IOContext c = { filter, caption, (initialDirectory=="_____last"?lastDirectory:initialDirectory), parentWidget, std::string(), false };
+      ICLApp::instance()->executeInGUIThread<IOContext&>(do_save, c,true);
+      if(c.except){
+        throw ICLException("no file selected in openFileDialog or cancel was pressed. This exception must be caught explicitly!");
+      }
+      lastDirectory = File(c.filename).getDir();
+      return c.filename;
+      /*
       QString f = QFileDialog::getSaveFileName((QWidget*)parentWidget, caption.c_str(), initialDirectory.c_str(),
                                   filter.c_str() );
-      if(f.isNull() || !f.length()) throw ICLException("no file selected or saveFileDialog or cancel was pressed.This exception must be caught explicitly!");
+      if(f.isNull() || !f.length()){
+        throw ICLException("no file selected or saveFileDialog or cancel was pressed.This exception must be caught explicitly!");
+      }
       return f.toLatin1().data();
-      
+          */
     }
   #endif
   
