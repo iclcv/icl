@@ -297,7 +297,10 @@ public:
         float avgLen1 = (a.length() + c.length()) / 2.0;
         float avgLen2 = (b.length() + d.length()) / 2.0;
 
-        //this term punishes rectangles
+        //this term punishes rectangles, with different edge length as:
+        //       ___________
+        //      |           |
+        //       ___________
         float avgLenRating = min(avgLen1/avgLen2, avgLen2/avgLen1) * min(dp1/dp2, dp2/dp1);
         //the more perpendicular opposite edges are, the smaller is the length-quotient of the other 2 edges.
         float lenRating = min(dp1/lenQuot2, lenQuot2/dp1) * min(dp2/lenQuot1, lenQuot1/dp2);
