@@ -570,7 +570,7 @@ namespace icl{
         <<"  //get screen space coordinates\n"
         <<"  vec4 shadow_divided = shadow_coord[shadow] / shadow_coord[shadow].w;\n"
         <<"  //check if the coordinate is out of bounds\n"
-        <<"  if(shadow_divided.s < -1.0 || shadow_divided.s > 1.0) return ambient + diffuse + specular;\n"
+        <<"  if(shadow_divided.s < -1.0 || shadow_divided.s > 1.0) return ambient;\n" //return ambient + diffuse + specular;\n"
         <<"  //transform to texture space coordinates\n"
         <<"  shadow_divided = shadow_divided * 0.5 + 0.5;\n"
         <<"  shadow_divided.s = (float(shadow) + shadow_divided.s) / float(num_shadow_lights);\n"
@@ -745,16 +745,17 @@ namespace icl{
           
           for(unsigned int j=0;j<o->m_primitives.size();++j){
             Primitive *p = o->m_primitives[j];
-            //use the texture shader if the primitive is a texture or text
-            if(useCustomShader) {
-              o->getFragmentShader()->activate();
-            } else if(m_renderSettings->useImprovedShading) {
-              util->activateShader(p->type,o->getReceiveShadowsEnabled());
-              p->render(ctx);
-            } else {
-              p->render(ctx);
+            if(o->isVisible(p->type)){
+              //use the texture shader if the primitive is a texture or text
+              if(useCustomShader) {
+                o->getFragmentShader()->activate();
+              } else if(m_renderSettings->useImprovedShading) {
+                util->activateShader(p->type,o->getReceiveShadowsEnabled());
+                p->render(ctx);
+              } else {
+                p->render(ctx);
+              }
             }
-            
           }
         }
   
