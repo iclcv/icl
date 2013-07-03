@@ -306,27 +306,14 @@ namespace icl{
       /// frees the pbffer associated with given size (if there is one)
       void freePBuffer(const utils::Size &size);
       
-      /// GLuint pointing to the shadowmap texture
-      mutable GLuint shadowTexture;
-      
-      /// GLuint pointing to the shadowmap FBO
-      mutable GLuint shadowFBO;
-      
-      /// resolution at which the shadowmap is rendered (in this implementation shadowmaps are always square)
-      mutable unsigned int shadowResolution;
-      
       ///Vector containing the shaders used in ImprovedShading
       mutable icl::qt::GLFragmentShader* m_shaders[ShaderUtil::COUNT];
       
       ///Internal struct containing the settings on how to render the scene
       struct RenderSettings;
       mutable RenderSettings *m_renderSettings;
-      
-      /// creates the FBO and Texture
-      void createShadowFBO(unsigned int size = 512, unsigned int shadows = 1) const;
-      
-      /// frees all resources that are needed by the shadowmap
-      void freeShadowFBO() const;
+      struct FBOData;
+      mutable FBOData *m_fboData;
 #endif
 #endif
 

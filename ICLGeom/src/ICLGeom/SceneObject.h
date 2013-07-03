@@ -434,7 +434,6 @@ namespace icl{
           the SceneObject's primitives are rendered */
       virtual void customRender() {}
       
-      struct ShaderUtil;
       /// this function is called when an object is rendered
       /** The function can be used to draw something in Object coordinates using
           OpenGL commands directly. When complexCustomRender is called, the OpenGL matrices is 

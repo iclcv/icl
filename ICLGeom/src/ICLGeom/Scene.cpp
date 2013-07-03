@@ -68,6 +68,7 @@
 #include <ICLQt/Quick.h>
 
 #include <vector>
+#include <map>
 #include <sstream>
 
 
@@ -216,6 +217,89 @@ namespace icl{
       bool wireframe;
       float shadowBias;
     };
+    
+    struct icl::geom::Scene::FBOData {
+      struct Glints {
+        bool created;
+        /// GLuint pointing to the shadowmap texture
+        GLuint shadowTexture;
+        /// GLuint pointing to the shadowmap FBO
+        GLuint shadowFBO;
+        Glints():created(false) {
+        }
+      };
+      uint shadow_size;
+      uint num_shadows;
+      map<GLContext, Glints> infos;
+      FBOData():shadow_size(0),num_shadows(0),infos() {}
+      private:
+      void freeShadowFBO(Glints &g) {
+        if(g.created) {
+          glDeleteFramebuffersEXT(1, &g.shadowFBO);
+          glDeleteTextures(1, &g.shadowTexture);
+          g.created = false;
+        }
+      }
+      public:
+      void freeShadowFBO() {
+        if(shadow_size) {
+          GLContext current = GLContext::currentContext();
+          for(map<GLContext, Glints>::iterator it = infos.begin(); it != infos.end(); it++) {
+            if(!it->first) {
+              it->first.makeCurrent();
+              freeShadowFBO(it->second);
+            }
+          }
+	        shadow_size = 0;
+	        num_shadows = 0;
+	        if(!current)current.makeCurrent();
+	      }
+      }
+      
+      void createShadowFBO() {
+        Glints &glints = infos[GLContext::currentContext()];
+        
+        if(glints.created)freeShadowFBO(glints);
+        glints.created = true;
+	      GLenum FBOstatus;
+        
+        //create the shadow texture if simple filtering
+	      glGenTextures(1, &glints.shadowTexture);
+	      glBindTexture(GL_TEXTURE_2D, glints.shadowTexture);
+
+	      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	      glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
+	      glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
+
+	      glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadow_size * num_shadows, shadow_size, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
+	      glBindTexture(GL_TEXTURE_2D, 0);
+
+	      // create a framebuffer object
+	      glGenFramebuffers(1, &glints.shadowFBO);
+	      glBindFramebuffer(GL_FRAMEBUFFER_EXT, glints.shadowFBO);
+
+	      glDrawBuffer(GL_NONE);
+	      glReadBuffer(GL_NONE);
+     
+	      glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,GL_TEXTURE_2D, glints.shadowTexture, 0);
+
+	      // check FBO status
+	      FBOstatus = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+	      if(FBOstatus != GL_FRAMEBUFFER_COMPLETE_EXT)
+		      throw ICLException("GL_FRAMEBUFFER_COMPLETE_EXT failed, CANNOT use FBO");
+		      
+	      // switch back to previous framebuffer
+	      glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+      }
+      
+      void setShadowFBO(uint size = 512, uint shadows = 1) {
+        if(size != shadow_size || num_shadows != shadows) freeShadowFBO();
+        shadow_size = size;
+        num_shadows = shadows;
+      }
+    };
   
   #ifdef HAVE_QT
     struct Scene::GLCallback : public ICLDrawWidget3D::GLCallback{
@@ -280,6 +364,7 @@ namespace icl{
       #ifdef HAVE_GLX
       #ifdef HAVE_QT
       m_renderSettings = new RenderSettings();
+      m_fboData = new FBOData();
       #endif
       #endif
       
@@ -324,8 +409,9 @@ namespace icl{
       for(unsigned int i = 0; i < ShaderUtil::COUNT; i++) {
         delete m_shaders[i];
       }
-      freeShadowFBO();
+      m_fboData->freeShadowFBO();
       delete m_renderSettings;
+      delete m_fboData;
   #endif
   #endif
     }
@@ -571,6 +657,7 @@ namespace icl{
         <<"  vec4 shadow_divided = shadow_coord[shadow] / shadow_coord[shadow].w;\n"
         <<"  //check if the coordinate is out of bounds\n"
         <<"  if(shadow_divided.s < -1.0 || shadow_divided.s > 1.0) return ambient;\n" //return ambient + diffuse + specular;\n"
+        <<"  if(shadow_divided.t < -1.0 || shadow_divided.t > 1.0) return ambient;\n" //return ambient + diffuse + specular;\n"
         <<"  //transform to texture space coordinates\n"
         <<"  shadow_divided = shadow_divided * 0.5 + 0.5;\n"
         <<"  shadow_divided.s = (float(shadow) + shadow_divided.s) / float(num_shadow_lights);\n"
@@ -958,18 +1045,14 @@ namespace icl{
 
         //recreate the shadowbuffer if the the lightsetup, or the resolution has changed
         unsigned int resolution = ((Configurable*)this)->getPropertyValue("shadows.resolution");
-        if(shadowResolution != resolution || lightSetupChanged || true) {
-         freeShadowFBO();
-         //don't create a shadowbuffer if there are no lights with shadows
-         if(numShadowLights > 0) {
-           createShadowFBO(resolution,numShadowLights); 
-         }
+        if(m_fboData->shadow_size != resolution || lightSetupChanged) {
+          m_fboData->setShadowFBO(resolution,numShadowLights);
         }
 
         //bind texture if it has been created
-        if(shadowResolution>0) {
+        if(m_fboData->shadow_size>0) {
          glActiveTextureARB(GL_TEXTURE7);
-         glBindTexture(GL_TEXTURE_2D,shadowTexture);
+         glBindTexture(GL_TEXTURE_2D,m_fboData->infos[GLContext::currentContext()].shadowTexture);
         }
 
         //render the shadows and create the projection matrices for the vertex shader
@@ -977,7 +1060,7 @@ namespace icl{
         for(int i = 0; i < 8; i++) {
           if(m_lights[i]) {
             if(m_lights[i]->on && m_lights[i]->getShadowEnabled()) {
-              renderShadow(i, currentShadow++, shadowResolution);
+              renderShadow(i, currentShadow++, m_fboData->shadow_size);
               project2shadow.push_back(m_lights[i]->getShadowCam()->getProjectionMatrixGL() 
                              * m_lights[i]->getShadowCam()->getCSTransformationMatrixGL() 
                              * cam.getCSTransformationMatrixGL().inv());
@@ -986,7 +1069,7 @@ namespace icl{
         }
           
       }else {
-        freeShadowFBO();
+        m_fboData->freeShadowFBO();
         if(m_renderSettings->lightingEnabled) {
           for(int i=0;i<8;++i){
             if(m_lights[i]) {
@@ -1122,7 +1205,9 @@ namespace icl{
     }
     
    void Scene::renderShadow(const unsigned int light, const unsigned int shadow, unsigned int size) const{
-      glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, shadowFBO);
+      FBOData::Glints &glints = m_fboData->infos[GLContext::currentContext()];
+      if(!glints.created)m_fboData->createShadowFBO();
+      glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, glints.shadowFBO);
 
       //Using the fixed pipeline
       glUseProgram(0);
@@ -1250,49 +1335,6 @@ namespace icl{
       m_glCallbacks.push_back(new GLCallback(camIndex,this));
       return m_glCallbacks.back().get();
     }
-    
-    void Scene::createShadowFBO(unsigned int size, unsigned int shadows) const{
-	    GLenum FBOstatus;
-      
-      //create the shadow texture if simple filtering
-	    glGenTextures(1, &shadowTexture);
-	    glBindTexture(GL_TEXTURE_2D, shadowTexture);
-
-	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
-	    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
-
-	    glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, size * shadows, size, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
-	    glBindTexture(GL_TEXTURE_2D, 0);
-
-	    // create a framebuffer object
-	    glGenFramebuffers(1, &shadowFBO);
-	    glBindFramebuffer(GL_FRAMEBUFFER_EXT, shadowFBO);
-
-	    glDrawBuffer(GL_NONE);
-	    glReadBuffer(GL_NONE);
-   
-	    glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,GL_TEXTURE_2D, shadowTexture, 0);
-
-	    // check FBO status
-	    FBOstatus = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-	    if(FBOstatus != GL_FRAMEBUFFER_COMPLETE_EXT)
-		    throw ICLException("GL_FRAMEBUFFER_COMPLETE_EXT failed, CANNOT use FBO");
-		    
-	    // switch back to previous framebuffer
-	    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-	    shadowResolution = size;
-  }
-  
-  void Scene::freeShadowFBO() const{
-      if(shadowResolution) {
-	      glDeleteFramebuffersEXT(1, &shadowFBO);
-	      glDeleteTextures(1, &shadowTexture);
-	      shadowResolution = 0;
-	    }
-  }
   
   #endif // QT
   

@@ -80,8 +80,12 @@ namespace icl{
         GLContext ctx;
         DelEvent(const std::vector<GLuint> &del,const GLContext &ctx):del(del),ctx(ctx){}
         virtual void execute(){
-          ctx.makeCurrent();
-          glDeleteTextures(del.size(),del.data());
+          GLContext current = GLContext::currentContext();
+          if(!ctx) {
+            ctx.makeCurrent();
+            glDeleteTextures(del.size(),del.data());
+          }
+          if(!current)current.makeCurrent();
         }
       };
       ICLApplication *app = ICLApplication::instance();
