@@ -30,6 +30,7 @@
 
 #include <ICLQt/Common.h>
 #include <ICLMarkers/FiducialDetector.h>
+#include <ICLMarkers/MarkerCodeICL1.h>
 
 int main(int n, char **ppc){
   pa_explain
@@ -42,9 +43,26 @@ int main(int n, char **ppc){
   ("-s","output size of the marker image");
   
 
-  pa_init(n,ppc,"[m]-id|-i(type,int) -border-size|-b(int=2) "
+  pa_init(n,ppc,"-id|-i(type,int) -border-size|-b(int=2) "
           "-border-ration|-r(float=0.4) -output|-o(filename) "
-          "-size|-s(size=300x300)");
+          "-size|-s(size=300x300) "
+          "-show-valid-icl1-codes");
+
+  if(pa("-show-valid-icl1-codes")){
+    std::vector<MarkerCodeICL1> cs = MarkerCodeICL1::generate();
+    std::sort(cs.begin(),cs.end());
+    std::cout << "icl1 marker codes with minimal hamming distance > 1" << std::endl;
+    for(size_t i=0;i<cs.size();++i){
+      if(i<10) std::cout << " ";
+      std::cout << i << ": " << cs[i] << std::endl;
+    }
+    return 0;
+  }else{
+    if(!pa("-i")){
+      pa_show_usage("please define marker type and ID using '-i type id'");
+      return -1;
+    }
+  }
 
   
   FiducialDetector d(*pa("-i"));
@@ -65,16 +83,3 @@ int main(int n, char **ppc){
 }
 
 
-#if 0
-int main(int n, char **ppc){
-  painit(n,ppc,"-id|-i(int=0) -border|-b(int=2) -output|-o(filename) -show -size|-s(size=0x0)");
-  Img8u m = create_bch_marker_image(pa("-i"),pa("-b"),pa("-s"));
-  if(pa("-o")){
-    save(m,*pa("-o"));
-  }
-  if(pa("-show")){
-    m.scale(Size(500,500));
-    show(m);
-  }
-}
-#endif

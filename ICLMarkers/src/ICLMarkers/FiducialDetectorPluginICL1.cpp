@@ -71,6 +71,7 @@ namespace icl{
         //std::cout << existing[i].id << "  ";
       }
       //std::cout << "\n\n";
+      addProperty("max form factor","range","[2,20]",3.5);
     }
   
     FiducialDetectorPluginICL1::~FiducialDetectorPluginICL1(){
@@ -204,10 +205,11 @@ namespace icl{
         delete data->impls[i];
       }
       data->impls.clear();
-      
+      float maxFF = getPropertyValue("max form factor");
       for(unsigned int i=0;i<regions.size();++i){
         ImageRegion r = regions[i];
-        if(!Range32f(1.3,4.5).contains(r.getFormFactor())) continue;
+        
+        if(!Range32f(1.3,maxFF).contains(r.getFormFactor())) continue;
         
         const std::vector<ImageRegion> &srs = regions[i].getSubRegions();
         if(srs.size() != 4) continue;
