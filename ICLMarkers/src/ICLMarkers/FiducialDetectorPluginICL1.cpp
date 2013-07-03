@@ -169,16 +169,20 @@ namespace icl{
       impl.ensure2D()->infoRotation = normalize_angle(atan2(vy.y,vy.x));
       Point32f vx (-vy.y, vy.x);
       
+      const float cx = metrics.root.width/2;
+      const float cy = metrics.root.height/2;
+      
       // associate points
       for(int i=0;i<4;++i){
         const std::vector<ImageRegion> s=sorted[i].getSubRegions();
         int n = (int)s.size();
         std::vector<Point32f> cs(n);
-        std::transform(s.begin(),s.end(),cs.begin(), std::mem_fun_ref(&ImageRegion::getCOG));
-        std::sort(cs.begin(),cs.end(), sprod_to_cmp( vx )); // face == TPFrontFace ? x : Point32f(-x.x,-x.y)));
-  
         for(int j=0;j<n;++j){
-          dst.push_back(Fiducial::KeyPoint(s[j].getCOG(),metrics.crs[i].ccrs[j].center(),i+MarkerCodeICL1::P1*j));
+          cs[j] = s[j].getCOG();
+        }
+        std::sort(cs.begin(),cs.end(), sprod_to_cmp( vx )); // face == TPFrontFace ? x : Point32f(-x.x,-x.y)));
+        for(int j=0;j<n;++j){
+          dst.push_back(Fiducial::KeyPoint(cs[j],metrics.crs[i].ccrs[j].center()-Point32f(cx,cy),i+MarkerCodeICL1::P1*j));
         }
       }
       

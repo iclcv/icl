@@ -32,6 +32,18 @@
 #include <ICLCV/RunLengthEncoder.h>
 #include <ICLCV/RegionDetectorTools.h>
 
+
+
+//static char KernelText[] = "  __kernel void convolve(...)";
+//CLProgram program("gpu", KernelText);
+//program.listSelectedDevice();
+//CLBuffer inputBuffer = program.createBuffer("r",sizeof(sizeof(unsigned int)) * inputSignalHeight * inputSignalWidth,inputSignal);
+//CLBuffer outputSignalBuffer = program.createBuffer("w",sizeof(unsigned int) * outputSignalHeight * outputSignalWidth);
+//CLKernel kernel = program.createKernel("convolve");
+//kernel.setArgs(inputSignalBuffer, outputSignalBuffer, inputSignalWidth, maskWidth);                                                                                                                
+//kernel.apply(outputSignalWidth * outputSignalHeight, 0, 0);
+//outputSignalBuffer.read(outputSignal,outputSignalWidth * outputSignalHeight * sizeof(unsigned int));  
+
 using namespace icl::utils;
 using namespace icl::core;
 
