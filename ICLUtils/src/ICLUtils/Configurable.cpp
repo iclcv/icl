@@ -76,6 +76,7 @@ namespace icl{
         std::map<std::string,Property>::iterator it = m_properties.find(p.name);
         if(it != m_properties.end()) throw ICLException("Property " + str(p.name) + "cannot be added from child configurable due to name conflicts");
         m_properties[p.name] = p;
+        if(m_isOrdered) m_ordering[m_properties.size()] = p.name;
       }
       configurable -> m_elderConfigurable = this;
     }
@@ -86,9 +87,17 @@ namespace icl{
   
     std::vector<std::string> Configurable::getPropertyList() const{
       std::vector<std::string> v(m_properties.size());
-      int i=0;
-      for(PropertyMap::const_iterator it=m_properties.begin();it!=m_properties.end();++it){
-        v[i++] = it->second.name;
+      if(!m_isOrdered){
+        int i=0;
+        for(PropertyMap::const_iterator it=m_properties.begin();it!=m_properties.end();++it){
+          v[i++] = it->second.name;
+        }
+      } else {
+        std::map<int,std::string>::const_iterator it;
+        int i = 0;
+        for(it=m_ordering.begin();it!=m_ordering.end();++it){
+          v[i++] = it->second;
+        }
       }
       return v;
     }
@@ -102,6 +111,7 @@ namespace icl{
         throw ICLException("Unable to add property " + name + " because it is already used");
       }catch(ICLException &ex){
         m_properties[name]= Property(this,name,type,info,value,volatileness, tooltip);
+        if(m_isOrdered) m_ordering[m_properties.size()] = name;
       }
     }
     
@@ -118,7 +128,8 @@ namespace icl{
       }
     }
   
-    Configurable::Configurable(const std::string &ID) throw (ICLException) : m_elderConfigurable(NULL), m_ID(ID){
+    Configurable::Configurable(const std::string &ID, bool ordered) throw (ICLException)
+      : m_isOrdered(ordered), m_elderConfigurable(NULL), m_ID(ID){
       if(ID.length()){
         if(get(ID)) throw ICLException(str("Configurable(")+ID+"): given ID is already used");
       }
@@ -127,6 +138,8 @@ namespace icl{
     
     Configurable::Configurable(const Configurable &other){
       m_properties = other.m_properties;
+      m_isOrdered = other.m_isOrdered;
+      m_ordering = other.m_ordering;
       for(PropertyMap::iterator it=m_properties.begin();it!=m_properties.end();++it){
         if(it->second.configurable == &other){
           it->second.configurable = this;
@@ -140,6 +153,8 @@ namespace icl{
     Configurable &Configurable::operator=(const Configurable &other) {
       setConfigurableID("");
       m_properties = other.m_properties;
+      m_isOrdered = other.m_isOrdered;
+      m_ordering = other.m_ordering;
       for(PropertyMap::iterator it=m_properties.begin();it!=m_properties.end();++it){
         if(it->second.configurable == &other){
           it->second.configurable = this;

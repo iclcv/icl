@@ -218,7 +218,12 @@ namespace icl{
   
       /// list of all properties
       PropertyMap m_properties;
-      
+
+      /// whether to use property ordering
+      bool m_isOrdered;
+      /// ordering of the properties
+      std::map<int,std::string> m_ordering;
+
       /// internal list of child configurables
       std::vector<Configurable*> m_childConfigurables;
 
@@ -271,7 +276,7 @@ namespace icl{
           If given ID is "", then this configurable is not added to the static list.
           Configurables can later be put into the static list by using setConfigurableID
           **/
-      Configurable(const std::string &ID="") throw (ICLException);
+      Configurable(const std::string &ID="", bool ordered=true) throw (ICLException);
       
       public:
       
@@ -498,4 +503,5 @@ namespace icl{
     
   } // namespace utils
 }
+
 
