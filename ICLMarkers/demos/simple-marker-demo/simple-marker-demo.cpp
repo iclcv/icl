@@ -122,7 +122,7 @@ void run() {
   for (unsigned int i = 0; i < regions.size(); ++i) {
     const vector<Point> &boundary = regions[i].getBoundary();
     drawRegion(wRegions, boundary);
-    drawCorners(wHeurstics, quadd.allCorners[i], false);
+    drawCorners(wHeurstics, quadd.getAllCorners()[i], false);
   }
 
   wHeurstics->color(255, 0, 0);

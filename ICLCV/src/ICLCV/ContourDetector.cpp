@@ -42,14 +42,70 @@ using namespace icl::core;
 namespace icl{
   namespace cv{
 
-    ContourDetector::ContourDetector(const icl8u thresh, const bool hierarchy)
-      : id_count(0), threshold(thresh), hierarchy(hierarchy) {
+    struct ContourDetector::Data{
+      Img8u buffer;
+      int id_count;
+      icl8u threshold;
+      bool hierarchy;
+      std::vector<Contour> contours;
+
+      void findContoursWithoutHierarchy(core::Img<icl8u> &_img);
+
+      void findContoursWithHierarchy(core::Img<icl8u> &_img);
+
+      void createBinaryValues(core::Img<icl8u> &img);
+    };
+
+
+    void ContourDetector::setThreshold(const icl8u &threshold){
+      m_data->threshold = threshold;
+    }
+    
+    void ContourDetector::setCreateHierarchy(bool createHierarchy){
+      m_data->hierarchy = createHierarchy;
+    }
+    
+    template<class T> static void draw_contour(Img<T> &img, const icl64f &value, 
+                                               const std::vector<utils::Point> &contour){
+      T *d = img.getData(0);
+      int lineStep = img.getLineStep();
+      for (std::vector<utils::Point>::const_iterator it = contour.begin(); 
+           it != contour.end(); ++it) {
+        *(d + it->y * lineStep + it->x) = value;
+      }
+    }
+
+
+    ContourDetector::ContourDetector(const icl8u thresh, const bool hierarchy) : m_data(new Data){
+      m_data->id_count = 0;
+      m_data->threshold = thresh;
+      m_data->hierarchy = hierarchy;
     };
 
     ContourDetector::~ContourDetector() {
+      delete m_data;
     };
 
-    void ContourDetector::createBinaryValues(Img<icl8u> &img) {
+    void ContourDetector::drawAllContours(core::ImgBase *img, const icl64f &val) {
+      for (std::vector<Contour>::iterator it = m_data->contours.begin(); 
+           it != m_data->contours.end(); ++it) {
+        it->drawTo(img, val);
+      }
+    }
+
+    
+    void Contour::drawTo(ImgBase *img, const icl64f &value){
+      ICLASSERT_THROW(img,ICLException("Contour::draw: img was null"));
+      switch(img->getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: draw_contour(*img->as##D(),value,*this); break;
+        ICL_INSTANTIATE_ALL_DEPTHS;
+        default: ICL_INVALID_DEPTH;
+#undef ICL_INSTANTIATE_DEPTH
+      }
+    }
+
+
+    void ContourDetector::Data::createBinaryValues(Img<icl8u> &img) {
       icl8u *d = img.getData(0);
       icl8u *dstEnd = d + img.getDim();
 
@@ -74,13 +130,19 @@ namespace icl{
     #endif
     }
 
-    std::vector<Contour> &ContourDetector::findContours(core::Img<icl8u> &img) {
-      if (hierarchy) findContoursWithHierarchy(img);
-      else findContoursWithoutHierarchy(img);
-      return contours;
+    const std::vector<Contour> &ContourDetector::detect(core::Img<icl8u> &img) {
+      if (m_data->hierarchy) m_data->findContoursWithHierarchy(img);
+      else m_data->findContoursWithoutHierarchy(img);
+      return m_data->contours;
     }
 
-    void ContourDetector::findContoursWithoutHierarchy(core::Img<icl8u> &_img) {
+    const std::vector<Contour> &ContourDetector::detect(const core::ImgBase *image){
+      ICLASSERT_THROW(image,ICLException("ContourDetector::detect: image was null"));
+      image->convert(&m_data->buffer);
+      return detect(m_data->buffer);
+    }
+
+    void ContourDetector::Data::findContoursWithoutHierarchy(core::Img<icl8u> &_img) {
       if (_img.getFormat() != formatGray) {
         ERROR_LOG("the image format should be formatGray");
         return;
@@ -226,7 +288,7 @@ namespace icl{
       }
     }
 
-    void ContourDetector::findContoursWithHierarchy(Img<icl8u> &_img) {
+    void ContourDetector::Data::findContoursWithHierarchy(Img<icl8u> &_img) {
       if (_img.getFormat() != formatGray) {
         ERROR_LOG("the image format should be formatGray");
         return;

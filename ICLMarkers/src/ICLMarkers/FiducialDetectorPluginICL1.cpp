@@ -71,7 +71,7 @@ namespace icl{
         //std::cout << existing[i].id << "  ";
       }
       //std::cout << "\n\n";
-      addProperty("max form factor","range","[2,20]",3.5);
+      addProperty("max form factor","range","[2,20]",20);
     }
   
     FiducialDetectorPluginICL1::~FiducialDetectorPluginICL1(){
@@ -225,8 +225,10 @@ namespace icl{
           iclMin(MarkerCodeICL1::P,(int)srs[3].getSubRegions().size())
         };
         
+         
         std::sort(ns,ns+4);
         MarkerCodeICL1 code(ns);
+
         if(!Range32s(0,1296).contains(code.id) || !data->loaded[code.id]) continue;
   
         FiducialImpl *impl = new FiducialImplICL1(this,supported,computed,
@@ -254,7 +256,6 @@ namespace icl{
         data->loaded[x] = add;
         if(add) data->sizes[x] = s;
       }
-      
       data->loaded &= data->valid;
     }
   

@@ -87,6 +87,7 @@ namespace icl{
       static std::vector<MarkerCodeICL1> ps;
       if(ps.size()) return ps;
       
+      TODO_LOG("WARNING!! removed hammin check -> must be added as soon as possible");
       for(int i=1;i<=P;++i){
         for(int j=1;j<=P;++j){
           for(int k=1;k<=P;++k){

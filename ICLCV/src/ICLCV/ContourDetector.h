@@ -31,70 +31,70 @@
 #pragma once
 
 #include <ICLCore/Img.h>
+#include <ICLUtils/Uncopyable.h>
 
 #include <vector>
 
 namespace icl{
   namespace cv{
-
+    /// Utility class used by the ContourDetector
     struct Contour : std::vector<utils::Point> {
-      int id;
-      int is_hole;
-      int parent;
-      std::vector<int> children;
+      int id;             //!< contour ID
+      int is_hole;        //!< is it a hole
+      int parent;         //!< parent ID
+      std::vector<int> children; //!< child contours
 
       // draws the contour in the first channel of the given image
-      template<class T> void drawContour(core::Img<T> &img, icl64f value) {
-        T *d = img.getData(0);
-        int lineStep = img.getLineStep();
-        for (std::vector<utils::Point>::iterator it = begin(); it != end(); ++it) {
-          *(d + it->y * lineStep + it->x) = value;
-        }
-      }
-
+      void drawTo(core::ImgBase *img, const icl64f &value);
     };
 
-    // The ContourDetector extracts all contours of a given image.
-    // The image has to be gray with the type icl8u for the values.
-    class ContourDetector {
+    /// The ContourDetector extracts all contours of a given image.
+    /** Internally, the implementation works on binary images only,
+        but a compatiblity layer is provided that allows for working
+        on arbitraryly-typed images by internally converting the input
+        image before the compuation takes place. The algorithms alters
+        the values of the input image for performance reasons. If a
+        const image is passed to the ContourDetector::detect method,
+        the image is copied/converted before
 
+        \section HIER Contour Hierarchy
+        
+        The ContourDetector can be set up to also extract a countour
+        hierarchy.
+    **/
+    class ContourDetector : public utils::Uncopyable{
+      
+      /// internal data type
+      class Data;
+
+      /// internal data pointer
+      Data *m_data;
+      
       public:
 
       // contructor
       /** @param thesh threshold for creating the binary image
           @param hierarchy shows if the relationship of the contours should be calculated
       */
-      ContourDetector(const icl8u thresh, const bool hierarchy = true);
+      ContourDetector(const icl8u thresh=128, const bool createHierarchy=true);
   
       // destructor
       virtual ~ContourDetector();
 
       // draws all contours to the first channel of the given image with the given value
-      template<class T> void drawAllContours(core::Img<T> &img, const icl64f val) {
-        for (std::vector<Contour>::iterator it = contours.begin(); it != contours.end(); ++it) {
-          it->drawContour(img, val);
-        }
-      }
+      void drawAllContours(core::ImgBase *img, const icl64f &value);
 
-      // calculates all contours
-      std::vector<Contour> &findContours(core::Img<icl8u> &img);
+      // calculates all contours (creates a deep copy/conversion to Img8u of the input image)
+      const std::vector<Contour> &detect(const core::ImgBase *image);
 
-      private:
+      // calculates all controus (alters the values of the input image)
+      const std::vector<Contour> &detect(core::Img8u &image);
 
-      int id_count;
-      icl8u threshold;
-      bool hierarchy;
-      std::vector<Contour> contours;
-
-      // this function converts the image values to binary
-      void createBinaryValues(core::Img<icl8u> &img);
-
-      // calculation of contours without hierarchy information
-      void findContoursWithoutHierarchy(core::Img<icl8u> &_img);
-
-      // calculation of contours with hierarchy information
-      void findContoursWithHierarchy(core::Img<icl8u> &_img);
-
+      /// sets new binarization threshold
+      void setThreshold(const icl8u &threshold);
+      
+      /// sets whether a contour hierarchy is created
+      void setCreateHierarchy(bool createHierarchy);
     };
   
   } // namespace cv

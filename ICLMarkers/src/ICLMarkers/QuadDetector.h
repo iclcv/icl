@@ -68,15 +68,7 @@ namespace icl{
   
       public:
 
-      std::vector< std::vector<icl::utils::Point32f> > allCorners;
-      std::vector< std::vector<icl::utils::Point32f> > getLongestCorners();
-      std::vector< std::vector<icl::utils::Point32f> > getSecLongestCorners();
-      std::vector<std::vector<icl::utils::Point32f> > getInterCorners();
-      std::vector<std::vector<icl::utils::Point32f> > getPerpCorners();
-      std::vector<std::vector<icl::utils::Point32f> > getMirrorCorners();
 
-
-//      std::vector< icl::utils::Point32f > getMirroredCorners();
       /// enum, that helps to specify what quads are searched in the threshold-result image
       enum QuadColor{
         BlackOnly,    //!< only quads that are black (default, value 0)
@@ -105,7 +97,54 @@ namespace icl{
   
       /// returns the last binary image that was produced internally
       const core::Img8u &getLastBinaryImage() const;
+
+      
+      /// returns the internal region detector instance
       icl::cv::RegionDetector* getRegionDetector();
+
+
+      /// internal typedef for vector of points
+      typedef std::vector<utils::Point32f> PVec;
+
+      /// internal typedef for vector of vector of points
+      typedef std::vector<PVec> PVecVec;
+
+      /// returns all corners (const)
+      const PVecVec &getAllCorners() const;
+
+      /// returns all corners
+      PVecVec &getAllCorners();
+
+      /// returns longest corners (const)
+      const PVecVec &getLongestCorners() const;
+
+      /// returns longest corners
+      PVecVec &getLongestCorners();
+      
+      /// returns 2nd longest corners (const)
+      const PVecVec &getSecLongestCorners() const;
+
+      /// returns 2nd longest corners
+      PVecVec &getSecLongestCorners();
+
+      /// return inter? conrners (const)
+      const PVecVec &getInterCorners() const;
+
+      /// return inter? conrners
+      PVecVec &getInterCorners();
+
+      /// returns perpendicular corners (const)
+      const PVecVec &getPerpCorners() const;
+
+      /// returns perpendicular corners
+      PVecVec &getPerpCorners();
+      
+      /// returns mirror corners (const)
+      const PVecVec &getMirrorCorners() const;
+
+      /// returns mirror corners (const)
+      PVecVec &getMirrorCorners();
+
     };
     
     
