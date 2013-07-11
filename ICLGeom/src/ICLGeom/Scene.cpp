@@ -1010,6 +1010,7 @@ namespace icl{
       m_renderSettings->wireframe = ((Configurable*)this)->getPropertyValue("wireframe");
       
       vector<Mat> project2shadow;
+
       if(m_renderSettings->lightingEnabled && m_renderSettings->useImprovedShading) {
         
         //update cameras and check if the lightsetup has changed
@@ -1072,7 +1073,7 @@ namespace icl{
         m_fboData->freeShadowFBO();
         if(m_renderSettings->lightingEnabled) {
           for(int i=0;i<8;++i){
-            if(m_lights[i]) {
+            if(m_lights[i] && m_lights[i]->on) {
               m_lights[i]->updatePositions(*this,getCamera(camIndex));
             }
           }
@@ -1438,7 +1439,7 @@ namespace icl{
   
       
     void Scene::setLightingEnabled(bool flag){
-      setPropertyValue("visualize lights",flag);
+      setPropertyValue("enable lighting",flag);
     }
 
     void Scene::setDrawObjectFramesEnabled(bool enabled, float size){

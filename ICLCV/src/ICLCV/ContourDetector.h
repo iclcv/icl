@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLCV/src/ICLCV/ContourDetector.h                      **
 ** Module : ICLCV                                                  **
-** Authors: Sergius Gaulik                                         **
+** Authors: Sergius Gaulik, Christof Elbrechter                    **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -37,13 +37,50 @@
 
 namespace icl{
   namespace cv{
+    
+    struct ContourImpl{
+      virtual bool hasHierarchy() const = 0;
+      virtual int getID() const = 0;
+      virtual bool isHole() const = 0;
+      virtual const std::vector<int> &getChildren() const = 0;
+      virtual const utils::Point *begin() const = 0;
+      virtual const utils::Point *end() const = 0;
+    };
+    
     /// Utility class used by the ContourDetector
-    struct Contour : std::vector<utils::Point> {
-      int id;             //!< contour ID
-      int is_hole;        //!< is it a hole
-      int parent;         //!< parent ID
-      std::vector<int> children; //!< child contours
+    class Contour{ 
+      ContourImpl *impl;
 
+      public:
+      Contour(ContourImpl *impl = 0):impl(impl){}
+      
+      inline bool isNull() const { 
+        return !impl;
+      }
+      inline operator bool() const {
+        return !!impl;
+      }
+      inline bool hasHierarchy() const{
+        return impl->hasHierarchy();
+      }
+      inline int getID() const {
+        return impl->getID();
+      }
+      bool isHole() const{
+        return impl->isHole();
+      }
+      const std::vector<int> &getChildren() const{
+        return impl->getChildren();
+      }
+      const utils::Point *begin() const{
+        return impl->begin();
+      }
+      const utils::Point *end() const{
+        return impl->end();
+      }
+      const int getSize() const{
+        return (int)(end() - begin());
+      }
       // draws the contour in the first channel of the given image
       void drawTo(core::ImgBase *img, const icl64f &value);
     };
@@ -61,6 +98,15 @@ namespace icl{
         
         The ContourDetector can be set up to also extract a countour
         hierarchy.
+        
+        \section ALG Algorithms
+        
+        Internally 2 different contour tracing algorithms are implemented. While
+        the "Fast" method uses a 4-point neighbourhood, the Accurate method uses 
+        a 8-point neighborhood an can also optionally be used to obtain a region
+        hierarchy. The fast method uses its own memory allocator to improve runtime
+        performance.
+
     **/
     class ContourDetector : public utils::Uncopyable{
       
@@ -71,12 +117,19 @@ namespace icl{
       Data *m_data;
       
       public:
+      
+      /// contour tracing algorithm used
+      enum Algorithm{
+        Fast,                  //!< fast contour detection algorithm (using 4-point neighbourhood)
+        Accurate,              //!< accurate contour detection algorithm (using 8-point neighborhood)
+        AccurateWithHierarchy  //!< same as Accurate, but with Hierarchy estimation
+      };
 
       // contructor
       /** @param thesh threshold for creating the binary image
           @param hierarchy shows if the relationship of the contours should be calculated
       */
-      ContourDetector(const icl8u thresh=128, const bool createHierarchy=true);
+      ContourDetector(const icl8u thresh=128, Algorithm a = Fast);
   
       // destructor
       virtual ~ContourDetector();
@@ -94,7 +147,7 @@ namespace icl{
       void setThreshold(const icl8u &threshold);
       
       /// sets whether a contour hierarchy is created
-      void setCreateHierarchy(bool createHierarchy);
+      void setAlgorithm(Algorithm a);
     };
   
   } // namespace cv
