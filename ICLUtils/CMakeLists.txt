@@ -32,6 +32,7 @@ SET(SOURCES src/ICLUtils/ConfigFile.cpp
             src/ICLUtils/Configurable.cpp
 	    src/ICLUtils/ConsoleProgress.cpp
 	    src/ICLUtils/CLBuffer.cpp
+	    src/ICLUtils/CLImage2D.cpp	    
 	    src/ICLUtils/CLKernel.cpp
 	    src/ICLUtils/CLProgram.cpp
 	    src/ICLUtils/Exception.cpp
@@ -68,6 +69,7 @@ SET(HEADERS src/ICLUtils/Any.h
 	    src/ICLUtils/BasicTypes.h
 	    src/ICLUtils/ClippedCast.h
 	    src/ICLUtils/CLBuffer.h
+	    src/ICLUtils/CLImage2D.h	    
 	    src/ICLUtils/CLException.h
 	    src/ICLUtils/CLKernel.h
 	    src/ICLUtils/CLProgram.h 

@@ -34,6 +34,7 @@
 
 #include <string>
 #include <ICLUtils/CLBuffer.h>
+#include <ICLUtils/CLImage2D.h>
 #include <ICLUtils/CLException.h>
 #include <ICLUtils/FixedArray.h>
 
@@ -134,6 +135,9 @@ namespace icl {
       /// Overloaded Kernel argument setter for CLBuffer values (aka arrays/pointers)
       void setArg(const unsigned idx, const CLBuffer &value) throw (CLKernelException);
       
+      /// Overloaded Kernel argument setter for CLImage2D values (aka arrays/pointers)
+      void setArg(const unsigned idx, const CLImage2D &value) throw (CLKernelException);
+
       /// sets mutiple kernel arguments at once
       template<typename A>
       void setArgs(const A &value) throw (CLKernelException) {

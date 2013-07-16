@@ -169,6 +169,10 @@ namespace icl {
       impl->setArg(idx, value.getBuffer());
     }
 
+    void CLKernel::setArg(const unsigned idx, const CLImage2D &value) throw (CLKernelException){
+      impl->setArg(idx, value.getImage2D());
+    }
+
     void CLKernel::setArg(const unsigned idx, const FixedArray<float,4> &value) throw (CLKernelException){
       impl->setArg(idx, value);
     }

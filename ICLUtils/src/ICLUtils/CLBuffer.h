@@ -55,8 +55,11 @@ namespace icl {
       CLBuffer(cl::Context& context, cl::CommandQueue &cmdQueue, 
                const string &accessMode, size_t size, const void *src=NULL) throw (CLBufferException);
       
-      
-      public:
+      /// provides access to the underlying cl-buffer
+      cl::Buffer getBuffer();
+      const cl::Buffer getBuffer() const;
+
+    public:
       friend class CLProgram; //!< for tight integration with CLProgram instances
       friend class CLKernel;  //!< for tight integration with CLKernel instances
 
@@ -88,11 +91,6 @@ namespace icl {
       operator bool() const {
         return impl;
       }
-  
-      /// provides access to the underlying cl-buffer
-      cl::Buffer getBuffer();
-      
-      const cl::Buffer getBuffer() const;
       
     };
   }
