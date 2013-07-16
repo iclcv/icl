@@ -86,6 +86,7 @@ namespace icl{
       m_lineColorsFromVertices(false),
       m_triangleColorsFromVertices(false),
       m_quadColorsFromVertices(false),
+      m_polyColorsFromVertices(false),
       m_pointSize(1),
       m_lineWidth(1),
       m_useSmoothShading(true),
