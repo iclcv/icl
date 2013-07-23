@@ -197,8 +197,7 @@ namespace icl {
                                                       std::vector<Point32f> &allCorners) {
         std::vector<Point32f> qCorners;
         std::vector<Point32f> secLongest;
-        int postSrcVecEndIdx = (srcVecEndIdx + 1 + allCorners.size())
-        % allCorners.size();
+        int postSrcVecEndIdx = (srcVecEndIdx + 1 + allCorners.size()) % allCorners.size();
         int preSrcVecStartIdx = (srcVecStartIdx - 1
                                  + allCorners.size()) % allCorners.size();
         Point32f postSrcVecEnd = allCorners[postSrcVecEndIdx];
@@ -318,18 +317,19 @@ namespace icl {
           std::vector<Point32f> longest;
 
           int longestVecStartIdx = 0;
-          double maxLength = 0;
+          float maxLen = 0;
           for (unsigned i = 0; i < vecs.size(); i++) {
-            if (vecs[i].length() > maxLength) {
+            float l = sqr(vecs[i].x) + sqr(vecs[i].y);
+            if (l > maxLen) {
               longestVecStartIdx = i;
-              maxLength = vecs[i].length();
+              maxLen = l;
             }
           }
 
           Point32f longestVecStart = corners[longestVecStartIdx];
 
-          unsigned longestVecEndIdx = (longestVecStartIdx + 1 + corners.size())
-          % corners.size();
+          //unsigned longestVecEndIdx = (longestVecStartIdx + 1 + corners.size()) % corners.size();
+          unsigned longestVecEndIdx = longestVecStartIdx == corners.size()-1 ? 0 : longestVecStartIdx+1;
           Point32f longestVecEnd = corners[longestVecEndIdx];
 
           longest.push_back(longestVecStart);

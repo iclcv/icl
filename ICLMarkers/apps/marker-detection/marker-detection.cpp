@@ -79,6 +79,7 @@ void init(){
               << Label("no markers found yet").label("detected markers").handle("count")
               )
           << CheckBox("show IDs",true).out("showIDs")
+          << Label("-- ms").handle("ms").label("detection time")
           << (HBox() 
               << Button("running","pause").out("pause")
               << CamCfg("")
@@ -115,13 +116,19 @@ void init(){
 
 }
 
+inline float round2(float f){
+  return float((int)(f*100))*0.01;
+}
+
 // working loop
 void run(){
   static bool enable3D = pa("-3D").as<bool>() || pa("-c").as<bool>();
   while(gui["pause"]) Thread::msleep(100);
   const ImgBase *image = grabber.grab();
  
+  Time t = Time::now();
   const std::vector<Fiducial> &fids = fid->detect(image);
+  gui["ms"] = round2(t.age().toMilliSecondsDouble());
 
   DrawHandle3D draw = gui["draw"];
   draw = fid->getIntermediateImage(gui["vis"]);
