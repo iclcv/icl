@@ -281,7 +281,7 @@ IF(BUILD_WITH_PYLON)
 ENDIF()
 
 IF(BUILD_WITH_PCL)
-  FIND_PACKAGE(PCL 1.6 REQUIRED COMPONENTS kdtree common octree)
+  FIND_PACKAGE(PCL 1.6 REQUIRED COMPONENTS kdtree common octree search)
   # io requires openni aswell !!
   # FIND_PACKAGE(PCL REQUIRED) ?? 
   IF(PCL_FOUND)
