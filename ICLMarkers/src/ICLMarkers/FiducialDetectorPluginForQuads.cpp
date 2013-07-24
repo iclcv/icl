@@ -234,8 +234,5 @@ namespace icl{
       if(name != "binary") return FiducialDetectorPlugin::getIntermediateImage(name);
       return &data->quadd.getLastBinaryImage();
     }
-  
-  
-  
   } // namespace markers
 }

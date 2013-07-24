@@ -104,8 +104,10 @@ namespace icl{
       /** The method describes the parameters for the marker rectification */
       virtual void getQuadRectificationParameters(utils::Size &markerSizeWithBorder,
                                                   utils::Size &markerSizeWithoutBorder) = 0;
+      
+      /// returns the internal quad-detector
       QuadDetector& getQuadDetector();
-          
+
     };
   } // namespace markers
 }

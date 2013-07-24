@@ -329,7 +329,7 @@ namespace icl {
           Point32f longestVecStart = corners[longestVecStartIdx];
 
           //unsigned longestVecEndIdx = (longestVecStartIdx + 1 + corners.size()) % corners.size();
-          unsigned longestVecEndIdx = longestVecStartIdx == corners.size()-1 ? 0 : longestVecStartIdx+1;
+          unsigned longestVecEndIdx = longestVecStartIdx == ((int)corners.size())-1 ? 0 : longestVecStartIdx+1;
           Point32f longestVecEnd = corners[longestVecEndIdx];
 
           longest.push_back(longestVecStart);
@@ -461,10 +461,6 @@ namespace icl {
 
       data->css.deactivateProperty("debug-mode");
       addChildConfigurable(&data->css, "css");
-      addProperty("css.dynamic sigma", "flag", "", true, 0,
-                  "If set to true, the border-smoothing sigma is adapted\n"
-                  "relatively to the actual marker size (usually provides\n"
-                  "much better results)");
 
       data->css.setSigma(4.2);
       data->css.setCurvatureCutoff(66);
@@ -551,7 +547,6 @@ namespace icl {
 
       const std::vector<ImageRegion> &rs = data->rd->detect(data->lastBinImage);
 
-      const bool dynCSSSigma = getPropertyValue("css.dynamic sigma");
       const bool optEdges = getPropertyValue("optimize edges");
       const float minRating = getPropertyValue("min-rating");
       const bool useIntersectionHeuristic = getPropertyValue("intersection heuristic");
@@ -568,11 +563,11 @@ namespace icl {
 
       for (unsigned int i = 0; i < rs.size(); ++i) {
         const std::vector<Point> &boundary = rs[i].getBoundary();
-      
-        if(dynCSSSigma) {
-          data->css.setSigma(iclMin(7.,boundary.size() * (3.2/60) - 0.5));
-        }
-        PVec corners = data->css.detectCorners(boundary);
+        //if(dynCSSSigma) {
+        //  data->css.setSigma(iclMin(7.,boundary.size() * (3.2/60) - 0.5));
+        //}
+        //PVec corners = data->css.detectCorners(boundary);
+        PVec corners = computeCorners(rs[i]);
         
         data->allCorners.push_back(corners);
         if(useAnyHeuristic && (corners.size() > 4)){
@@ -605,6 +600,11 @@ namespace icl {
       return data->quads;
     }
 
+    std::vector<Point32f> QuadDetector::computeCorners(const ImageRegion &r) const{
+      const std::vector<Point> &boundary = r.getBoundary();
+      data->css.setSigma(iclMin(7.,boundary.size() * (3.2/60) - 0.5));
+      return data->css.detectCorners(boundary);
+    }
 
     const QuadDetector::PVecVec &QuadDetector::getAllCorners() const{
       return data->allCorners;
@@ -746,6 +746,8 @@ namespace icl {
     static float line_sprod(const StraightLine2D &a, const StraightLine2D &b) {
       return fabs(a.v[0] * b.v[0] + a.v[1] * b.v[1]);
     }
+
+
 
     void optimize_edges(std::vector<Point32f> &e4,
                         const std::vector<Point> &boundary) throw (int) {

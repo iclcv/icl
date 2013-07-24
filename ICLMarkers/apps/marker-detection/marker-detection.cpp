@@ -33,12 +33,14 @@
 #include <ICLGeom/ComplexCoordinateFrameSceneObject.h>
 
 #include <ICLMarkers/FiducialDetector.h>
+#include <ICLMarkers/FiducialDetectorPluginForQuads.h>
 
 HSplit gui;
 
 GenericGrabber grabber;
 FiducialDetector *fid = 0;
 Scene scene;
+bool canShowRegionCorners = false;
 
 struct Obj : public SceneObject{
   Obj(){
@@ -48,23 +50,14 @@ struct Obj : public SceneObject{
   }
 } *obj = 0;
 
-#if 0
-void bench();
-#endif
+
 void init(){
-
-#if 0
-  if(pa("-bench")){
-    bench();
-    ::exit(0);
-  }
-#endif
-
   fid = new FiducialDetector(pa("-m").as<std::string>(), 
                              pa("-m",1).as<std::string>(), 
                              ParamList("size",(*pa("-m",2)) ) );
   
   fid->setConfigurableID("fid");
+  canShowRegionCorners = (*pa("-m") == "bch" || *pa("-m") == "art");
 
   grabber.init(pa("-input"));
   if(pa("-size")) grabber.useDesired<Size>(pa("-size"));
@@ -78,7 +71,16 @@ void init(){
               << Fps().handle("fps")
               << Label("no markers found yet").label("detected markers").handle("count")
               )
-          << CheckBox("show IDs",true).out("showIDs")
+          << (HBox().label("show")
+              << ( VBox()
+                   << CheckBox("IDs",true).out("showIDs")
+                   << CheckBox("markers",true).out("showMarkerCorners")
+                   )
+              << (VBox()
+                  << CheckBox("regions",false).out("showRegionCorners").hideIf(!canShowRegionCorners)
+                  << CheckBox("angles",true).out("showAngles")
+                  )
+              )
           << Label("-- ms").handle("ms").label("detection time")
           << (HBox() 
               << Button("running","pause").out("pause")
@@ -138,7 +140,10 @@ void run(){
   gui["count"] = fids.size();
 
   const bool showIDs = gui["showIDs"];
-  
+  const bool showRegionCorners = canShowRegionCorners && gui["showRegionCorners"].as<bool>();
+  const bool showMarkerCorners = gui["showMarkerCorners"].as<bool>();
+  const bool showAngles = gui["showAngles"];
+
   for(unsigned int i=0;i<fids.size();++i){
     
     if(enable3D && fids[i].getID() == 0){
@@ -147,16 +152,29 @@ void run(){
       obj->setTransformation(fids[i].getPose3D());
     }
     
-    draw->color(255,0,0,255);
-    draw->linestrip(fids[i].getCorners2D());
+    if(showMarkerCorners){
+      draw->color(255,0,0,255);
+      draw->linestrip(fids[i].getCorners2D());
+    }
 
     if(showIDs){
     draw->color(0,100,255,255);
       draw->text(fids[i].getName(),fids[i].getCenter2D().x, fids[i].getCenter2D().y,9);
     }
-    draw->color(0,255,0,255);
-    float a = fids[i].getRotation2D();
-    draw->line(fids[i].getCenter2D(), fids[i].getCenter2D() + Point32f( cos(a), sin(a))*100 );
+    if(showRegionCorners){
+      static QuadDetector &qd = ((FiducialDetectorPluginForQuads*)fid->getPlugin())->getQuadDetector();
+      draw->color(0,100,255,255);
+      std::vector<Point32f> cs = qd.computeCorners(fids[i].getImageRegion());
+      draw->linestrip(cs);
+      for(size_t i=0;i<cs.size();++i){
+        draw->sym(cs[i],'x');
+      }
+    }
+    if(showAngles){
+      draw->color(0,255,0,255);
+      float a = fids[i].getRotation2D();
+      draw->line(fids[i].getCenter2D(), fids[i].getCenter2D() + Point32f( cos(a), sin(a))*100 );
+    }
   }
 
   draw.render();
@@ -170,53 +188,3 @@ int main(int n, char **ppc){
 }
 
 
-#if 0
-
-/// marker detection benchmark
-void bench(){
-  FiducialDetector d("art");
-  d.setPropertyValue("matching algorithm", "gray sqrdist");
-  
-  ImgQ rows;
-  int i=0;
-
-  int s = 2;
-  for(int y=0;y<20/s;++y){
-    ImgQ line;
-    for(int x=0;x<20/s;++x, ++i){
-      line = (line,ones(1,50*s,1)*255,cvt(d.createMarker("bch/bch"+str(i)+".png",Size(50*s,50*s),ParamList("size","50x50","border ratio",0.4))));
-      d.loadMarkers("bch/bch"+str(i)+".png",ParamList("size","50x50","border ratio",0.4));
-      std::cout << "marker " << i<< "loaded" << std::endl;
-    } 
-    rows = rows % ones(1000+20/s,1,1)*255 % line;
-  }
-  rows = (ones(2,rows.getHeight(),1)*255,rows,ones(2,rows.getHeight(),1)*255);
-  rows = (ones(rows.getWidth(),2,1)*255 % rows % ones(rows.getWidth(),2,1)*255);
-  
-  Img8u image = cvt8u(rows);
-
-  //image.setROI(Rect(200,200,620,620)); //144 / 36 markers
-
-  image.setROI(Rect(300,300,420,420)); // 64 /16 markers
-
-  image.setROI(Rect(400,400,220,220)); // 16 markers
-
-  image.fillBorder(255.0);
-  image.setFullROI();
-  show(image);
-  
-  Thread::sleep(4);
-
-  std::vector<int> found;
-  found.reserve(1000);
-  Time t = Time::now();
-  for(int i=0;i<100;++i){
-    const std::vector<Fiducial> &ms = d.detect(&image);
-    found.push_back(ms.size());
-  }
-  std::cout << "time for art:" << t.age().toSecondsDouble()*10 <<  "ms (" << found.back() << ")" << std::endl;
-   
-
-}
-
-#endif

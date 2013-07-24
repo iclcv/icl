@@ -43,7 +43,6 @@
 
 namespace icl{
   namespace markers{
-    
     /// Main Fiducial Detector class
     class FiducialDetector : public utils::Uncopyable, public utils::Configurable{
       
@@ -199,6 +198,8 @@ namespace icl{
           * <b>amoeba</b> is not supported
       */
       core::Img8u createMarker(const utils::Any &whichOne,const utils::Size &size, const utils::ParamList &params);
+
+      /// returns the internal plugin
       FiducialDetectorPlugin* getPlugin();
     };
     

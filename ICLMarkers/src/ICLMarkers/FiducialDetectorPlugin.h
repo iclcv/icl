@@ -163,7 +163,6 @@ namespace icl{
         throw utils::ICLException("FiducialDetectorPlugin::createMarker seems to be not implemented for this marker type");
         return core::Img8u();
       }
-  
     };
     
   } // namespace markers

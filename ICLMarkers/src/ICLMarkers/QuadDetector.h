@@ -144,7 +144,9 @@ namespace icl{
 
       /// returns mirror corners (const)
       PVecVec &getMirrorCorners();
-
+      
+      /// computes corners for the given image region
+      std::vector<utils::Point32f> computeCorners(const cv::ImageRegion &r) const;
     };
     
     
