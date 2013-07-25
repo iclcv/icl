@@ -31,6 +31,7 @@
 #pragma once
 
 #include <QtGui/QSlider>
+#include <QtCore/QThread>
 #include <QtGui/QApplication>
 #include <ICLQt/SliderUpdateEvent.h>
 #include <ICLUtils/Macros.h>
@@ -69,8 +70,14 @@ namespace icl{
       ThreadedUpdatableSlider(Qt::Orientation o, QWidget *parent = 0);
       
       /// call this function to update a widget's UI from an external thread
+      /** new, if this is called from the GUI thread, setValue is called directly
+          without using Qt's signal mechanism*/
       void setValueFromOtherThread(int value){
-        QApplication::postEvent(this,new SliderUpdateEvent(value),Qt::HighEventPriority);
+        if(QThread::currentThread() == QCoreApplication::instance()->thread()){
+          setValue(value);
+        }else{
+          QApplication::postEvent(this,new SliderUpdateEvent(value),Qt::HighEventPriority);
+        }
       }
       
       /// automatically called by Qt's event processing mechanism

@@ -195,13 +195,16 @@ namespace icl{
         };
         executeInGUIThread(new TmpAsynchronousEvent(t,u,f),blocking);
       }
-
+      
 
       /// overloaded event function
       virtual bool event(QEvent *eIn);
       
       /// returns the singelton ICLApplication instance (or NULL if there is none)
       static ICLApplication *instance();
+      
+      /// returns whether we are currently in the GUI thread
+      static bool isGUIThreadActive();
       
       private:
       /// singelton instance

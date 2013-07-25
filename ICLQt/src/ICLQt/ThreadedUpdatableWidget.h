@@ -33,6 +33,7 @@
 #include <QtGui/QWidget>
 #include <QtGui/QApplication>
 #include <QtCore/QEvent>
+#include <QtCore/QThread>
 #include <ICLUtils/Macros.h>
 
 namespace icl{
@@ -54,8 +55,15 @@ namespace icl{
       ThreadedUpdatableWidget(QWidget *parent = 0): QWidget(parent){}
       
       /// call this function to update a widget's UI from an external thread
+      /** new, if this is called from the GUI thread, setValue is called directly
+          without using Qt's signal mechanism*/
       void updateFromOtherThread(){
-        QApplication::postEvent(this,new QEvent(QEvent::User),Qt::HighEventPriority);
+        if(QThread::currentThread() == QCoreApplication::instance()->thread()){
+          update();
+        }else{
+          QApplication::postEvent(this,new QEvent(QEvent::User),Qt::HighEventPriority);
+        }
+        
       }
       
       /// automatically called by Qt's event processing mechanism

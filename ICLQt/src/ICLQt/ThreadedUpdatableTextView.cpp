@@ -31,14 +31,24 @@
 #include <ICLQt/ThreadedUpdatableTextView.h>
 #include <QtGui/QApplication>
 #include <ICLUtils/Macros.h>
+#include <ICLQt/Application.h>
+
 namespace icl{
   namespace qt{
     
     void ThreadedUpdatableTextView::appendTextFromOtherThread(const std::string &text){
-      QApplication::postEvent(this,new AddTextEvent(text),Qt::HighEventPriority);
+      if(ICLApp::isGUIThreadActive()){
+        append(text.c_str());
+      }else{
+        QApplication::postEvent(this,new AddTextEvent(text),Qt::HighEventPriority);
+      }
     }
     void ThreadedUpdatableTextView::clearTextFromOtherThread(){
-      QApplication::postEvent(this,new ClearTextEvent,Qt::HighEventPriority);
+      if(ICLApp::isGUIThreadActive()){
+        clear();
+      }else{
+        QApplication::postEvent(this,new ClearTextEvent,Qt::HighEventPriority);
+      }
     }
     
     bool ThreadedUpdatableTextView::event ( QEvent * event ){

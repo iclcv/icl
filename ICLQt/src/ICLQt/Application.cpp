@@ -30,6 +30,7 @@
 
 #include <ICLQt/Application.h>
 #include <QtCore/QLocale>
+#include <QtCore/QThread>
 #include <ICLUtils/ProgArg.h>
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/Mutex.h>
@@ -193,20 +194,26 @@ namespace icl{
     
     
     void ICLApplication::executeInGUIThread(ICLApplication::AsynchronousEvent *event, bool blocking){
-      if(blocking) {
-        Mutex mutex;
-        mutex.lock();
-        QApplication::postEvent(this,new AsynchronousEventWrapper(event, &mutex));
-        mutex.lock();
-        mutex.unlock();
-      } else {
-        QApplication::postEvent(this,new AsynchronousEventWrapper(event));
+      if(isGUIThreadActive() && blocking){
+        event->execute();
+      }else{
+        if(blocking) {
+          Mutex mutex;
+          mutex.lock();
+          QApplication::postEvent(this,new AsynchronousEventWrapper(event, &mutex));
+          mutex.lock();
+          mutex.unlock();
+        } else {
+          QApplication::postEvent(this,new AsynchronousEventWrapper(event));
+        }
       }
     }
   
     ICLApplication *ICLApplication::instance(){
       return s_app;
     }
-
+    bool ICLApplication::isGUIThreadActive(){
+      return QThread::currentThread() == QCoreApplication::instance()->thread();
+    }
   } // namespace qt
 }
