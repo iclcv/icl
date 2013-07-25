@@ -32,7 +32,7 @@
 
 #ifndef HAVE_OPENGL
 #warning "this header must not be included without HAVE_PCL defined"
-#else
+#endif
 
 #include <ICLGeom/PointCloudObjectBase.h>
 #include <ICLGeom/PCLIncludes.h>
@@ -172,5 +172,3 @@ namespace icl{
   
   } // namespace geom
 }
-
-#endif

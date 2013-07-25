@@ -160,7 +160,7 @@ namespace icl{
 
     const ImgBase *Grabber::grab(ImgBase **ppoDst){
       const ImgBase *acquired = acquireImage();
-      
+      if(!acquired) return acquired;
       // todo, on which image is the warping applied ?
       // on the aqcuired image or on the adapte image?
       // for now, we use the adapted which seem to make

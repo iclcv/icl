@@ -1838,6 +1838,7 @@ namespace icl{
       Img8u *out;
       ICLApplication *app = ICLApplication::instance();
       app->executeInGUIThread(new RenderEvent(this, camIndex, background, depthBuffer, mode, &out), true);
+      out -> setTime(icl::utils::Time::now());
 
       return *out;
     }

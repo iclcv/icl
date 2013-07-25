@@ -46,7 +46,10 @@ namespace icl{
       }
       virtual void run(){
         while(true){
-          cb();
+          if(!trylock()){
+            cb();
+            unlock();
+          }
           usleep(0);
         }
       }

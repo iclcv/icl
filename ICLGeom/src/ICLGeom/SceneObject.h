@@ -32,7 +32,7 @@
 
 #ifndef HAVE_OPENGL
 #warning "this header must not be included if HAVE_OPENGL is not defined"
-#else
+#endif
 
 #include <ICLUtils/Mutex.h>
 #include <ICLGeom/Primitive.h>
@@ -774,4 +774,3 @@ namespace icl{
   } // namespace geom
 }
 
-#endif
