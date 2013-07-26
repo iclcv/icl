@@ -225,7 +225,7 @@ namespace icl{
       std::map<int,std::string> m_ordering;
 
       /// internal list of child configurables
-      std::vector<Configurable*> m_childConfigurables;
+      std::map<const Configurable*, std::string> m_childConfigurables;
 
       /// internal pointer to elder configurable
       Configurable* m_elderConfigurable;
@@ -360,7 +360,11 @@ namespace icl{
       std::vector<Callback> callbacks;
   
       /// calls all registered callbacks
-      void call_callbacks(const std::string &propertyName) const;
+      /**
+      @param propertyName the name of the property to check
+      @param caller the instance calling the function
+      **/
+      void call_callbacks(const std::string &propertyName,const Configurable* caller) const;
   
       public:
   

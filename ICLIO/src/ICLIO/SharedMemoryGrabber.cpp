@@ -201,7 +201,9 @@ namespace icl{
 
       m_data->compressor.uncompress((const icl8u*)m_data->mem.constData(), m_data->mem.getSize(), &m_data->image);
       m_data->mem.unlock();
-      setPropertyValue("size", m_data->image->getSize());
+      if(Size(getPropertyValue("size")) != m_data->image->getSize()){
+        setPropertyValue("size", m_data->image->getSize());
+      }
 
       return (m_data->image->getDim()) ? m_data->image : NULL;
     }

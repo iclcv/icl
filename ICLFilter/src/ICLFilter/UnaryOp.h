@@ -101,7 +101,7 @@ namespace icl{
       void setClipToROI (bool bClipToROI) { 
         m_oROIHandler.setClipToROI(bClipToROI); 
         prop("UnaryOp.clip to ROI").value = bClipToROI ? "on" : "off";
-        call_callbacks("UnaryOp.clip to ROI");
+        call_callbacks("UnaryOp.clip to ROI",this);
       }
       
       /// sets if the destination image should be adapted to the source, or if it is only checked if it can be adapted.
@@ -111,7 +111,7 @@ namespace icl{
       void setCheckOnly (bool bCheckOnly) { 
         m_oROIHandler.setCheckOnly(bCheckOnly); 
         prop("UnaryOp.check only").value = bCheckOnly ? "on" : "off";
-        call_callbacks("UnaryOp.check only");
+        call_callbacks("UnaryOp.check only",this);
       }
       
       /// returns the ClipToROI status

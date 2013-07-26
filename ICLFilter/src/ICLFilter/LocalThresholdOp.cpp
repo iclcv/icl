@@ -93,7 +93,7 @@ namespace icl{
     void LocalThresholdOp::setMaskSize(unsigned int maskSize){
       // {{{ open
       prop("mask size").value = str(maskSize);
-      call_callbacks("mask size");
+      call_callbacks("mask size",this);
     }
   
     // }}}
@@ -101,7 +101,7 @@ namespace icl{
     void LocalThresholdOp::setGlobalThreshold(float globalThreshold){
       // {{{ open
       prop("global threshold").value = str(globalThreshold);
-      call_callbacks("global threshold");
+      call_callbacks("global threshold",this);
     }
   
     // }}}
@@ -109,7 +109,7 @@ namespace icl{
     void LocalThresholdOp::setGammaSlope(float gammaSlope){
       // {{{ open
       prop("gamma slope").value = str(gammaSlope);
-      call_callbacks("gamma slope");
+      call_callbacks("gamma slope",this);
     }
   
     // }}}
@@ -159,7 +159,7 @@ namespace icl{
     void LocalThresholdOp::setAlgorithm(algorithm a){
       // {{{ open
       prop("algorithm").value = (a==regionMean?"region mean":a==tiledNN?"tiledNN":"tiled linear");
-      call_callbacks("algorithm");
+      call_callbacks("algorithm",this);
     }
   
     // }}}

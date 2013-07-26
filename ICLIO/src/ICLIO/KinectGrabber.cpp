@@ -584,8 +584,8 @@ namespace icl{
       addProperty("size", "menu", "VGA {640x480}", "VGA {640x480}", 0, "");
       addProperty("LED", "menu", "off,green,red,yellow,blink yellow,blink green,blink red/yellow", m_impl->ledColor, 0, "");
       addProperty("Desired-Tilt-Angle", "range", "[-35,25]", m_impl->desiredTiltDegrees, 0, "");
-      addProperty("Current-Tilt-Angle", "info", "", angleval, 0, "");
-      addProperty("Accelerometers", "info", "", accelval, 0, "");
+      addProperty("Current-Tilt-Angle", "info", "", angleval, 100, "");
+      addProperty("Accelerometers", "info", "", accelval, 100, "");
       addProperty("shift-IR-image", "menu", "off,fast,accurate", values[(int)(m_impl->getDevice()->used->irShift)], 0, "");
       addProperty("depth-image-unit", "menu", "raw,mm", diunit, 0, "");
       addProperty("depth-image-post-processing", "menu", "off,median 3x3,median 5x5", ppvalue, 0, "");
@@ -608,8 +608,8 @@ namespace icl{
         double a[3]={0,0,0};
         m_impl->getDevice()->used->getState().getAccelerometers(a,a+1,a+2);
         std::string accelval = str(a[0]) + "-" + str(a[1]) + "-" + str(a[2]);
-        setPropertyValue("Current-Tilt-Angle", angleval);
-        setPropertyValue("Accelerometers", accelval);
+        prop("Current-Tilt-Angle").value = angleval;
+        prop("Accelerometers").value = accelval;
         m_impl -> lastupdate = Time::now();
       }
 

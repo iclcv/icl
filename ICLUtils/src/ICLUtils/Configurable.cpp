@@ -50,22 +50,19 @@ namespace icl{
     
      Configurable::Property &Configurable::prop(const std::string &propertyName) throw (ICLException){
       std::map<std::string,Property>::iterator it = m_properties.find(propertyName);
-      if(it == m_properties.end()) throw ICLException("Property " + str(propertyName) + " is not supported");
-      //TODO: this is a workaround because calling callbacks of elder configurables may break.
-      //static Property *p = new Property();
-      //if(it == m_properties.end()){
-      //  return *p;
-      //}
+      if(it == m_properties.end()){
+        throw ICLException("Property " + str(propertyName) + " is not supported");
+      }
       return it->second;
     }
   
     void Configurable::addChildConfigurable(Configurable *configurable, const std::string &childPrefix){
       ICLASSERT_RETURN(configurable);
-      m_childConfigurables.push_back(configurable);
       std::string pfx = childPrefix;
       if(pfx.length() && pfx[pfx.length()-1] != '.'){
         pfx += '.';
       }
+      m_childConfigurables[configurable] = pfx;
       const std::vector<std::string> ps = configurable->getPropertyListWithoutDeactivated();//getPropertyList();
       for(unsigned int i=0;i<ps.size();++i){
         Property p = Property(configurable, pfx+ps[i],configurable->getPropertyType(ps[i]),
@@ -180,29 +177,33 @@ namespace icl{
       }
     }
   
-    void Configurable::call_callbacks(const std::string &propertyName) const{
-      try{
-        if(callbacks.size()){
-          const Property &p = prop(propertyName);
-          int i = 0;
-          for(std::vector<Callback>::const_iterator it=callbacks.begin();it!=callbacks.end();++it,++i){
-            (*it)(p);
-          }
+    void Configurable::call_callbacks(
+        const std::string &propertyName, const Configurable* caller) const
+    {
+    std::string propname = propertyName;
+    if(m_childConfigurables.find(caller) != m_childConfigurables.end()){
+      propname = m_childConfigurables.find(caller)->second + propname;
+    }
+    try{
+      if(callbacks.size()){
+        const Property &p = prop(propname);
+        std::vector<Callback>::const_iterator it;
+        for(it=callbacks.begin();it!=callbacks.end();++it){
+          (*it)(p);
         }
-        if(m_elderConfigurable){
-          m_elderConfigurable -> call_callbacks(propertyName);
-        }
-      }catch (ICLException &e){
-        DEBUG_LOG("caught " << e.what());
-        return;
       }
+    }catch (ICLException &e){
+      DEBUG_LOG("caught " << e.what());
+      return;
+    }
+    if(m_elderConfigurable){
+      m_elderConfigurable -> call_callbacks(propname, this);
+    }
     }
   
     void Configurable::removedCallback(const Callback &cb){
       for(std::vector<Callback>::iterator it=callbacks.begin();it!=callbacks.end();++it){
         if( *it == cb ){
-          callbacks.erase(it);
-          break;
         }
       }
     }
@@ -229,7 +230,7 @@ namespace icl{
         Mutex::Locker lock(m_mutex);
         p.value = value;
       }
-      call_callbacks(propertyName);
+      call_callbacks(propertyName, this);
     }
     
     std::vector<std::string> remove_by_filter(const std::vector<std::string> &ps, 

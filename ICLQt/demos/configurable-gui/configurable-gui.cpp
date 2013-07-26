@@ -55,7 +55,18 @@ struct B : public Configurable, public Thread{
   virtual void run(){
     while(true){
       Thread::msleep(100);
-      setPropertyValue("time",Time::now().toString());
+      // this only sets the configurables property value without calling
+      // callbacks. The gui should update the value because of the propertys
+      // volatilenes-value. This only works with 'info' properties
+      prop("time").value = Time::now().toString();
+      int val =  getPropertyValue("general.x");
+      val = (val+1) % 100;
+      // this way not only the configurables property value is set but
+      // all registered callbacks are called too. this way the gui will
+      // get a qt-signal to process the new property value.
+      // this is slower than using volatileness and should not be done
+      // with a high frequency.
+      setPropertyValue("general.x", val);
     }
   }
 };

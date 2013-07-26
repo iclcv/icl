@@ -97,6 +97,7 @@
 #include <ICLQt/ColorHandle.h>
 #include <ICLQt/PlotHandle.h>
 #include <ICLQt/PlotWidget.h>
+#include <ICLQt/Quick.h>
 #include <QtGui/QCheckBox>
 #include <QtGui/QCleanlooksStyle>
 #include <QtCore/QTimer>
@@ -279,6 +280,7 @@ namespace icl{
       GUI sub_gui;
       bool deactivateExec;
       std::string processingProperty;
+      utils::Mutex execMutex;
   
       struct StSt{
         std::string full,half;
@@ -431,7 +433,12 @@ namespace icl{
         return StSt("error", "error");
       }
   
-      ConfigurableGUIWidget(const GUIDefinition &def):GUIWidget(def,1,1,GUIWidget::gridLayout, Size(8,12)),deactivateExec(false), processingProperty(""){
+      ConfigurableGUIWidget(const GUIDefinition &def)
+        : GUIWidget(def,1,1,GUIWidget::gridLayout, Size(8,12)),
+          deactivateExec(false), processingProperty(""),
+          execMutex(Mutex::mutexTypeRecursive)
+
+      {
         static const std::string pointer_prefix = "@pointer@:";
         if(def.param(0).length() > pointer_prefix.length() && 
            def.param(0).substr(0,pointer_prefix.length()) == pointer_prefix){
@@ -527,10 +534,9 @@ namespace icl{
 
       /// Called if a property is changed from somewhere else
       void propertyChanged(const Configurable::Property &p){
-        if(p.name == processingProperty || deactivateExec) return;
+        Mutex::Locker l(execMutex);
         const std::string &name = p.name;
         const std::string &type = p.type;
-        //const std::string &value = p.value;
         deactivateExec = true;
         processingProperty = p.name;
         if(type == "range" || type == "range:slider"){
@@ -544,7 +550,6 @@ namespace icl{
           gui.get<SpinnerHandle>("#R#"+name).setValue( parse<icl32s>(conf->getPropertyValue(name)) );
         }else if( type == "menu" || type == "value-list" || type == "valueList"){
           std::string handle = (type == "menu" ? "#m#" : "#v#")+name;
-          //     DEBUG_LOG("handle is " << handle << " value is " << conf->getPropertyValue(name));
           gui.get<ComboHandle>(handle).setSelectedItem(conf->getPropertyValue(name));
         }else if( type == "info"){
           gui["#i#"+name] = conf->getPropertyValue(name);
@@ -564,6 +569,7 @@ namespace icl{
       }
       
       void exec(const std::string &handle){
+        Mutex::Locker l(execMutex);
         if(handle.length()<3 || handle[0] != '#') throw ICLException("invalid callback (this should not happen)");
         std::string prop = handle.substr(3);
         if(deactivateExec || processingProperty == prop){
@@ -586,20 +592,28 @@ namespace icl{
           case 'C':
             conf->setPropertyValue(prop,gui[handle].as<Color>());
             break;
-          case 'c': 
+          case 'c':
             conf->setPropertyValue(prop,"");
             break;
           case 'X':
             if(prop == "load"){
-              QString filename = QFileDialog::getOpenFileName(this,"load property file","","XML-Files (*.xml)");
-              if(!filename.isNull() && filename != ""){
-                conf->loadProperties(filename.toLatin1().data());
+              try{
+                conf->loadProperties(
+                      openFileDialog("XML (*.xml);; All files (*)",
+                                     "load property file")
+                      );
                 //update_all_components();
+              } catch (utils::ICLException &e){
+                // cancel
               }
             }else if(prop == "save"){
-              QString filename = QFileDialog::getSaveFileName(this,"save properties to file","","XML-Files (*.xml)");
-              if(!filename.isNull() && filename != ""){
-                conf->saveProperties(filename.toLatin1().data());
+              try{
+                conf->saveProperties(
+                      saveFileDialog("XML (*.xml);; All files (*)",
+                                     "save properties to file"
+                                     ));
+              } catch (utils::ICLException &e){
+                // cancel
               }
             }
             break;
@@ -609,7 +623,7 @@ namespace icl{
         deactivateExec = false;
         processingProperty = "";
       }
-  
+
       static string getSyntax(){
         return string("prop(ConfigurableID)[general params]\n")+gen_params();
       }
