@@ -230,7 +230,7 @@ namespace icl{
         
         \code
         
-        painit(n,ppc,"-size|-s(Size=VGA) -index(int) -files(...)");
+        pa_init(n,ppc,"-size|-s(Size=VGA) -index(int) -files(...)");
         
         // extract the first sub-argument of argument 
         // '-index' and convert it into an int value
@@ -238,10 +238,9 @@ namespace icl{
   
         // extract the first sub-argument of argument '-size'
         // if '-s' is the shortcut for '-size'
-        Size s = pa("-s); 
+        Size s = pa("-s"); 
   
         // extract the 2nd sub-argument of argument '-input'
-        // if '-s' is the shortcut for '-size'
         int = pa("-input",1); 
         
         // check if argument -size was actually given
@@ -253,19 +252,25 @@ namespace icl{
         // map must always be searched
         int nFiles = pa("-files").n();
         for(int i=0;i<nFiles;++i){
-           std::cout << "file " << i << pa("-files",i) << std::endl;
+           std::cout << "file " << i << " " << pa("-files",i) << std::endl;
+        }
+
+        // alternatively, the "-files" prog-arg can be extracted
+        ProgArg f = pa("-files");
+        for(int i=0;i<f.n();++i){
+           std::cout << "file " << i << " " << f[i] << std::endl;
         }
   
         // list all given arguments and subarguments
         std::cout << "all arguments " << std::endl;
-        for(unsigned int i=0;i<pacount(false);++i){
+        for(unsigned int i=0;i<pa_get_count(false);++i){
           std::cout << pa(i,false) << std::endl;
         }
   
         // in case of having dangling arguments allowed in 
         // painit-call: list all dangling arguments
         std::cout << "all dangling arguments " << std::endl;
-        for(unsigned int i=0;i<pacount();++i){
+        for(unsigned int i=0;i<pa_get_count();++i){
           std::cout << pa(i) << std::endl;
         }
   

@@ -40,10 +40,14 @@
 #include <ICLIO/FileWriter.h>
 #include <float.h>
 #include <ICLUtils/StackTimer.h>
+#include <ICLGeom/Camera.h>
+#include <ICLGeom/CoplanarPointPoseEstimator.h>
+
 using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::core;
 using namespace icl::filter;
+using namespace icl::geom;
 using namespace icl::cv;
 using namespace std;
 typedef FixedColVector<float, 2> Vec2;
@@ -72,7 +76,8 @@ namespace icl {
       std::vector<std::vector<icl::utils::Point32f> > interCorners;
       std::vector<std::vector<icl::utils::Point32f> > mirrorCorners;
       std::vector<std::vector<icl::utils::Point32f> > allCorners;
-
+      Camera cameraForQuadRating;
+      Mat cameraForQuadRatingProjectionMatrix;
 
       Point32f center;
       inline std::vector<Vec2> getVecsToPoints(
@@ -283,6 +288,44 @@ namespace icl {
       }
 
       float getQuadRating(std::vector<Point32f> &corners) {
+        //#define USE_HOMOGRAPHY_BASED_ERROR
+#ifdef USE_HOMOGRAPHY_BASED_ERROR
+        CoplanarPointPoseEstimator pe(CoplanarPointPoseEstimator::cameraFrame, CoplanarPointPoseEstimator::HomographyBasedOnly);
+        static const Point32f obj[4] = {Point32f(-40,-40), Point32f(40,-40), Point32f(40,40), Point32f(-40,40) };
+        Mat T = pe.getPose(4,obj,corners.data(),cameraForQuadRating);
+        
+        FixedMatrix<float,1,3> r = extract_euler_angles(T);
+        FixedMatrix<float,1,3> t = T.part<3,0,1,3>();
+        Mat P = cameraForQuadRatingProjectionMatrix;
+        const Point32f *_M = obj, *_I = corners.data();
+
+        const float &A = P(0,0), &B = P(1,0), &C = P(2,0), &D = P(1,1), &E = P(2,1);
+        const float &rx = r[0], &ry = r[1], &rz = r[2], &tx = t[0], &ty=t[1], &tz = t[2];
+        const float cx = cos(rx), cy = cos(-ry), cz = cos(-rz), sx = sin(rx), sy = sin(-ry), sz = sin(-rz);
+        const float Rx0 = cy*cz-sx*sy*sz, Rx1 = cy*sz+cz*sx*sy, Rx2 = -sy*cx;
+        const float Ry0 = -sz*cx, Ry1 = cz*cx, Ry2 = sx;
+        const float F = Rx0*A + Rx1*B + Rx2*C;
+        const float G = Ry0*A + Ry1*B + Ry2*C;
+        
+        const float J = Rx1*D + Rx2*E;
+        const float K = Ry1*D + Ry2*E;
+        const float &N = Rx2;
+        const float &O = Ry2;
+        const float I = tx*A + ty*B + tz*C;
+        const float M = ty*D + tz*E;
+        const float &Q = tz;
+        
+        float error = 0;
+        for(int i=0;i<4;++i){
+          const float &Mix = _M[i].x, Miy = _M[i].y, Iix = _I[i].x, Iiy = _I[i].y;
+          const float R = F*Mix + G*Miy + I;
+          const float S = J*Mix + K*Miy + M;
+          const float T_inv = 1.0/(N*Mix + O*Miy + Q);
+          error += sqr(R*T_inv - Iix) + sqr(S*T_inv - Iiy);
+        }
+        return error;
+        
+#else
         std::vector<Vec2> vecs = getVecsToPoints(corners);
         Vec2 a = vecs[0];
         Vec2 b = vecs[1];
@@ -306,6 +349,7 @@ namespace icl {
         //the more perpendicular opposite edges are, the smaller is the length-quotient of the other 2 edges.
         float lenRating = min(dp1/lenQuot2, lenQuot2/dp1) * min(dp2/lenQuot1, lenQuot1/dp2);
         return (lenRating + avgLenRating) / 2.0;
+#endif
       }
 
       std::vector<Point32f> removeObstacleCorners(std::vector<Point32f> &corners, float minRating, bool useInterHeuristic, bool usePerpHeuristic, bool useMirrorHeuristic) {
@@ -339,9 +383,15 @@ namespace icl {
           std::vector<Point32f> cornersPerp;
           std::vector<Point32f> cornersInter;
           std::vector<Point32f> cornersMirror;
+#ifdef USE_HOMOGRAPHY_BASED_ERROR
+          float perpRating = 1.e37;
+          float interRating = 1.e37;
+          float mirrorRating = 1.e37;
+#else
           float perpRating = -1;
           float interRating = -1;
           float mirrorRating = -1;
+#endif
 
           if (useInterHeuristic) {
             cornersInter = getQCornersByIntersection(longestVecStart, longestVecEnd, longestVecStartIdx, longestVecEndIdx, corners);
@@ -375,26 +425,38 @@ namespace icl {
           }
 
           //                cout << "minRating " << minRating << "perpR " << perpRating << " interR " << interRating << " mirrR " << mirrorRating << endl;
-
-          if (perpRating > interRating)
-            {
-              if (perpRating > mirrorRating) {
-                if (perpRating > minRating) {
-                  quadCorners = cornersPerp;
-                }
-              } else if (mirrorRating > minRating) {
-                quadCorners = cornersMirror;
-              }
-            } else if (interRating > mirrorRating)
-            {
-              if (interRating > minRating) {
-                quadCorners = cornersInter;
-              }
-            } else if (mirrorRating > minRating) {
-            quadCorners = cornersMirror;
+          float rs[] = {perpRating, interRating, mirrorRating};
+          std::vector<Point32f> *cs[] = {&cornersPerp, &cornersInter, &cornersMirror};
+#ifdef USE_HOMOGRAPHY_BASED_ERROR
+          int idx = (int)(std::min_element(rs,rs+3)-rs);
+          quadCorners = *cs[idx];
+#else
+          int idx = (int)(std::max_element(rs,rs+3)-rs);
+          if(rs[idx] < minRating){
+            quadCorners = *cs[idx];
           }
-
+#endif
         }
+
+        //   if (perpRating > interRating)
+        //     {
+        //       if (perpRating > mirrorRating) {
+        //         if (perpRating > minRating) {
+        //           quadCorners = cornersPerp;
+        //         }
+        //       } else if (mirrorRating > minRating) {
+        //         quadCorners = cornersMirror;
+        //       }
+        //     } else if (interRating > mirrorRating)
+        //     {
+        //       if (interRating > minRating) {
+        //         quadCorners = cornersInter;
+        //       }
+        //     } else if (mirrorRating > minRating) {
+        //     quadCorners = cornersMirror;
+        //   }
+
+        // }
 
         return quadCorners;
       }
@@ -501,6 +563,9 @@ namespace icl {
         }
       }
 
+      data->cameraForQuadRating.setResolution(image->getSize());
+      data->cameraForQuadRatingProjectionMatrix = data->cameraForQuadRating.getProjectionMatrix();
+      
       std::string kernelType = getPropertyValue("pp.filter");
       Size kernelSize = getPropertyValue("pp.mask size");
 
