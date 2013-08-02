@@ -41,6 +41,8 @@ namespace icl {
     namespace utils {
 
         struct CLImage2D::Impl {
+            size_t width;
+            size_t height;
             cl::Image2D image2D;
             cl::CommandQueue cmdQueue;
 
@@ -61,39 +63,66 @@ namespace icl {
                 }
             }
 
-//      static ImageFormat getImageFormat(const icl::core::depth imgDepth, const icl::core::format imgFormat){
-//          return ImageFormat();
-//      }
-
             Impl() {}
             ~Impl() {
             }
 
             Impl(Impl& other):cmdQueue(other.cmdQueue) {
+                width = other.width;
+                height = other.height;
                 image2D = other.image2D;
             }
 
             Impl(cl::Context &context, cl::CommandQueue &cmdQueue,
                     const string &accessMode, const size_t width, const size_t height,
-//           const icl::core::depth imgDepth,
-//           const icl::core::format imgFormat,
-                    const void *src = 0)
-            throw (CLBufferException):cmdQueue(cmdQueue) {
+                    int depth, const void *src = 0) throw (CLBufferException):cmdQueue(cmdQueue) {
                 cl_mem_flags memFlags = stringToMemFlags(accessMode);
                 if (src) {
                     memFlags = memFlags | CL_MEM_COPY_HOST_PTR;
                 }
-
+                this->width = width;
+                this->height = height;
                 try {
-                    image2D = cl::Image2D(context, memFlags, cl::ImageFormat(CL_R, CL_UNSIGNED_INT32), width, height, 0, (void*) src);
+                    cl_channel_type channelType;
+                    switch(depth) {
+                        case 0:
+                        channelType = CL_UNSIGNED_INT8;
+                        break;
+                        case 1:
+                        channelType = CL_SIGNED_INT16;
+                        break;
+                        case 2:
+                        channelType = CL_SIGNED_INT32;
+                        break;
+                        case 3:
+                        channelType = CL_FLOAT;
+                        break;
+                        default:
+                        throw CLBufferException("unknown depth value");
+                    }
+                    image2D = cl::Image2D(context, memFlags, cl::ImageFormat(CL_R, channelType), width, height, 0, (void*) src);
                 } catch (cl::Error& error) {
                     throw CLBufferException(CLException::getMessage(error.err(), error.what()));
                 }
 
             }
 
-            void read(void *dst,unsigned regionWidth, unsigned regionHeight,
-                    unsigned originX, unsigned originY, bool block = true)
+            void regionToCLTypes(const utils::Rect &region, cl::size_t<3> &clOrigin,
+                    cl::size_t<3> &clRegion) {
+                clOrigin.push_back(region.x);
+                clOrigin.push_back(region.y);
+                clOrigin.push_back(0);
+                if (region == Rect::null) {
+                    clRegion.push_back(width);
+                    clRegion.push_back(height);
+                } else {
+                    clRegion.push_back(region.width);
+                    clRegion.push_back(region.height);
+                }
+                clRegion.push_back(1);
+            }
+
+            void read(void *dst, const utils::Rect &region=utils::Rect::null, bool block = true)
             throw (CLBufferException) {
                 cl_bool blocking;
                 if (block)
@@ -101,22 +130,17 @@ namespace icl {
                 else
                 blocking = CL_FALSE;
                 try {
-                    cl::size_t<3> origin;
-                    cl::size_t<3> region;
-                    origin.push_back(originX);
-                    origin.push_back(originY);
-                    origin.push_back(0);
-                    region.push_back(regionWidth);
-                    region.push_back(regionHeight);
-                    region.push_back(1);
-                    cmdQueue.enqueueReadImage(image2D, blocking, origin, region, 0, 0, dst);
+                    cl::size_t<3> clOrigin;
+                    cl::size_t<3> clRegion;
+                    regionToCLTypes(region, clOrigin, clRegion);
+                    cmdQueue.enqueueReadImage(image2D, blocking, clOrigin, clRegion, 0, 0, dst);
                 } catch (cl::Error& error) {
                     throw CLBufferException(CLException::getMessage(error.err(), error.what()));
                 }
             }
 
-            void write(void *src, unsigned regionWidth, unsigned regionHeight,
-                    unsigned originX, unsigned originY, bool block = true)
+            void write(void *src, const utils::Rect &region=utils::Rect::null,
+                    bool block = true)
             throw (CLBufferException) {
                 cl_bool blocking;
                 if (block)
@@ -124,15 +148,10 @@ namespace icl {
                 else
                 blocking = CL_FALSE;
                 try {
-                    cl::size_t<3> origin;
-                    cl::size_t<3> region;
-                    origin.push_back(originX);
-                    origin.push_back(originY);
-                    origin.push_back(0);
-                    region.push_back(regionWidth);
-                    region.push_back(regionHeight);
-                    region.push_back(1);
-                    cmdQueue.enqueueWriteImage(image2D, blocking, origin, region, 0, 0, src);
+                    cl::size_t<3> clOrigin;
+                    cl::size_t<3> clRegion;
+                    regionToCLTypes(region, clOrigin, clRegion);
+                    cmdQueue.enqueueWriteImage(image2D, blocking, clOrigin, clRegion, 0, 0, src);
                 } catch (cl::Error& error) {
                     throw CLBufferException(CLException::getMessage(error.err(), error.what()));
                 }
@@ -142,13 +161,11 @@ namespace icl {
 
         CLImage2D::CLImage2D(cl::Context &context, cl::CommandQueue &cmdQueue,
                 const string &accessMode, const size_t width, const size_t height,
-//                       const icl::core::depth imgDepth,
-//                       const icl::core::format imgFormat,
+                int depth,
                 const void *src)
         throw (CLBufferException) {
             impl = new Impl(context, cmdQueue, accessMode, width, height,
-//              imgDepth,
-//              imgFormat,
+                    depth,
                     src);
 
         }
@@ -163,6 +180,8 @@ namespace icl {
         CLImage2D& CLImage2D::operator=(CLImage2D const& other) {
             impl->cmdQueue = other.impl->cmdQueue;
             impl->image2D = other.impl->image2D;
+            impl->width = other.impl->width;
+            impl->height = other.impl->height;
             return *this;
         }
 
@@ -170,17 +189,16 @@ namespace icl {
             delete impl;
         }
 
-        void CLImage2D::read(void *dst, unsigned regionWidth, unsigned regionHeight,
-                unsigned originX, unsigned originY, bool block)
+        void CLImage2D::read(void *dst, const utils::Rect &region, bool block)
         throw (CLBufferException) {
-            impl->read(dst, regionWidth, regionHeight, originX, originY, block);
+            impl->read(dst, region, block);
 
         }
 
-        void CLImage2D::write(const void *src, unsigned regionWidth, unsigned regionHeight,
-                unsigned originX, unsigned originY, bool block)
+        void CLImage2D::write(const void *src, const utils::Rect &region,
+                bool block)
         throw (CLBufferException) {
-            impl->write((void *)src, regionWidth, regionHeight, originX, originY, block);
+            impl->write((void *)src, region, block);
         }
 
         cl::Image2D CLImage2D::getImage2D() {

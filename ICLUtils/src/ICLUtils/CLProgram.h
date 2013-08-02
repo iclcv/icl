@@ -195,7 +195,22 @@ namespace icl {
           in the graphics memory.*/
       CLBuffer createBuffer(const string &accessMode, size_t size,const void *src=0) throw(CLBufferException);
       
-      CLImage2D createImage2D(const string &accessMode,  const size_t width, const size_t height, const void *src=0) throw(CLBufferException);
+
+      /// creates a image2D object for memory exchange with graphics card memory
+      /** acessMode can either be "r", "w" or "rw", which refers to the readibility of the data
+          by the OpenCL source code (actually this seems to be not relevant since all images
+          can be read and written).\n
+          Optionally an initial source pointer can be passed that is then automatically uploaded to the image exisiting
+          in the graphics memory.
+
+          various image depths can be used \n
+            depth8u  = 0, < 8Bit unsigned integer values range {0,1,...255} \n
+            depth16s = 1, < 16Bit signed integer values \n
+            depth32s = 2, < 32Bit signed integer values \n
+            depth32f = 3, < 32Bit floating point values \n
+            depth64f = 4, < 64Bit floating point values \n
+          */
+      CLImage2D createImage2D(const string &accessMode, const size_t width, const size_t height, int depth, const void *src=0) throw(CLBufferException);
 
       /// extract a kernel from the program
       /** Kernels in the CLProgram's source code have to be qualified with the

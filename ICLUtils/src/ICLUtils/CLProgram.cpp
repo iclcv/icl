@@ -190,8 +190,8 @@ namespace icl {
         return CLBuffer(context, cmdQueue, accessMode, size, src);
       }
 
-      CLImage2D createImage2D(const string &accessMode,  const size_t width, const size_t height, const void *src=0) throw(CLBufferException){
-          return CLImage2D(context, cmdQueue, accessMode, width, height, src);
+      CLImage2D createImage2D(const string &accessMode,  const size_t width, const size_t height, int depth, const void *src=0) throw(CLBufferException){
+          return CLImage2D(context, cmdQueue, accessMode, width, height, depth, src);
       }
       CLKernel createKernel(const string &id) throw (CLKernelException) {
         return CLKernel(id, program, cmdQueue);
@@ -251,8 +251,8 @@ namespace icl {
       return impl->createBuffer(accessMode, size, src);
     }
 
-    CLImage2D CLProgram::createImage2D(const string &accessMode,  const size_t width, const size_t height, const void *src) throw(CLBufferException){
-        return impl->createImage2D(accessMode, width, height, src);
+    CLImage2D CLProgram::createImage2D(const string &accessMode,  const size_t width, const size_t height, int depth, const void *src) throw(CLBufferException){
+        return impl->createImage2D(accessMode, width, height, depth, src);
     }
 
 
