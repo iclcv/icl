@@ -70,6 +70,11 @@ namespace icl {
         TODO: what are the differences ? Why can i use "r" and "w" without
               producing error messages? (seems to be an OpenCL bug/feature)
         
+
+        A <b>CLImage2D</b> is similar to the CLBuffer but additionally offers
+        interpolation functionality which can be accessed in the kernel by using the
+        sampler_t type. Also a build-in 2D access to the image pixels is supported.
+
         A <b>CLKernel</b> is a callable OpenCL function. CLKernel instances
         are also created by a program (see \ref EX) and each kernel
         refers to a single function in the OpenCL source code that is 
@@ -79,11 +84,11 @@ namespace icl {
         
         \section EX Example (Image Convolution)
         
+
+        \code
         #include <ICLUtils/CLProgram.h>
         #include <ICLQt/Common.h>
         
-        
-        \code
         struct Conv{
           CLProgram program;          // main class
           CLBuffer input,output,mask; // buffers for image input/output and the 3x3-convolution mask
@@ -156,6 +161,95 @@ namespace icl {
           return ICLApp(n,args,"-input|-i(2)",init,run).exec();
         }
 
+        \endcode
+
+
+
+        The same example but this time CLImage2D is used for the memory access instead of CLBuffer.
+
+        \code
+        #include <ICLUtils/CLProgram.h>
+        #include <ICLQt/Common.h>
+
+        struct Conv{
+          CLProgram program;           // main class
+          CLImage2D input,output,mask; // images for input/output and the 3x3-convolution mask
+          CLKernel kernel;             // the OpenCL function
+          Size size;                   // ensure correct buffer sizes
+          Conv(const float m[9], const Size &s):size(s){
+            // source code
+            static const char *k = (
+                                    "__kernel void convolve(__read_only image2d_t m,                            \n"
+                                    "                        __read_only image2d_t  in,                         \n"
+                                    "                         __write_only image2d_t out){                      \n"
+                                    "    const int x = get_global_id(0);                                        \n"
+                                    "    const int y = get_global_id(1);                                        \n"
+                                    "    const int w = get_global_size(0);                                      \n"
+                                    "    const int h = get_global_size(1);                                      \n"
+                                    "    if(x && y && x<w-1 && y<h-1){                                          \n"
+                                    "      const sampler_t sampler= CLK_NORMALIZED_COORDS_FALSE |               \n"
+                                    "                               CLK_ADDRESS_CLAMP |                         \n"
+                                    "                               CLK_FILTER_NEAREST;                         \n"
+                                    "      uint4 outPixel = 0;                                                  \n"
+                                    "      for (int mx = 0; mx < 3; mx++) {                                     \n"
+                                    "        for (int my = 0; my < 3; my++) {                                   \n"
+                                    "          uint4 inPixel = read_imageui(in, sampler, (int2)(x-mx-1,y-my-1));\n"
+                                    "          float4 mValue = read_imagef(m, sampler, (int2)(mx,my));          \n"
+                                    "          outPixel.s0 += mValue.s0 * inPixel.s0;                           \n"
+                                    "        }                                                                  \n"
+                                    "      }                                                                    \n"
+                                    "      write_imageui(out, (int2)(x,y), outPixel);                           \n"
+                                    "  } \n"
+                                    "}                                                                        \n");
+
+            program = CLProgram("gpu",k);                              // create program running on CPU-device
+            program.listSelectedDevice();                              // show device seledted
+            input = program.createImage2D("r", s.width, s.height, 0);  // create input image
+            output = program.createImage2D("w", s.width, s.height, 0); // create output image
+            mask = program.createImage2D("r",3, 3, 3, m);              // create image for the 3x3 conv. mask
+            kernel = program.createKernel("convolve");                 // create the OpenCL kernel
+          }
+
+          void apply(const Img8u &src, Img8u &dst){
+            ICLASSERT_THROW(src.getSize() == size && dst.getSize() == size, ICLException("wrong size"));
+            input.write(src.begin(0));                                 // write input image to graphics memory
+            kernel.setArgs(mask, input, output);                       // set kernel arguments
+            kernel.apply(src.getWidth(), src.getHeight(), 0);          // apply the kernel (using WxH threads max.
+                                                                       // i.e. one per pixel)
+            output.read(dst.begin(0));                                 // read output image to destination image
+          }
+        } *conv = 0;
+
+
+        GUI gui;
+        GenericGrabber grabber;
+
+        void init(){
+          grabber.init(pa("-i"));
+
+          gui << Image().handle("image") << Show();
+          const ImgBase &image = *grabber.grab();
+          const float mask[]  = { 0.25, 0, -0.25,
+                                  0.5,  0, -0.5,
+                                  0.25, 0, -0.25};
+          grabber.useDesired(image.getSize());
+          grabber.useDesired(depth8u);
+          grabber.useDesired(formatGray);
+
+          conv = new Conv(mask,image.getSize());
+        }
+
+        void run(){
+          const Img8u &image = *grabber.grab()->as8u();
+          static Img8u res(image.getParams());
+
+          conv->apply(image,res);
+          gui["image"] = res;
+        }
+
+        int main(int n, char **args){
+          return ICLApp(n,args,"-input|-i(2)",init,run).exec();
+        }
         \endcode
         **/
     class CLProgram {
