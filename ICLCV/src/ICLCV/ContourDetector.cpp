@@ -51,13 +51,13 @@ namespace icl{
       virtual bool hasHierarchy() const { return false; }
       virtual int getID() const { return -1; }
       virtual bool isHole() const { return false; }
-      virtual const std::vector<int> &getChildren() const { 
+      virtual const std::vector<int> &getChildren() const {
         static std::vector<int> _null; return _null;
       }
-      virtual const Point *begin() const { 
+      virtual const Point *begin() const {
         return begin_point;
       }
-      virtual const Point *end() const { 
+      virtual const Point *end() const {
         return end_point;
       }
     };
@@ -75,7 +75,7 @@ namespace icl{
       std::vector<Point> mem;
       std::vector<Point*> cs;
       Point *next;
-      
+
       void addContour(){
         cs.push_back(next);
       }
@@ -112,7 +112,7 @@ namespace icl{
       int is_hole;        //!< is it a hole
       int parent;         //!< parent ID
       std::vector<int> children; //!< child contours
-      
+
       virtual bool hasHierarchy() const { return id != -1; }
       virtual int getID() const { return id; }
       virtual bool isHole() const { return is_hole; }
@@ -121,7 +121,7 @@ namespace icl{
       virtual const Point *begin() const { return &operator[](0); }
       virtual const Point *end() const { return begin() + size(); }
     };
-    
+
 
     struct ContourDetector::Data{
       Img8u buffer;
@@ -149,12 +149,12 @@ namespace icl{
     void ContourDetector::setThreshold(const icl8u &threshold){
       m_data->threshold = threshold;
     }
-    
+
     void ContourDetector::setAlgorithm(ContourDetector::Algorithm algo){
       m_data->algo = algo;
     }
-    
-    template<class T> static void draw_contour(Img<T> &img, const icl64f &value, 
+
+    template<class T> static void draw_contour(Img<T> &img, const icl64f &value,
                                                const Point *begin, const Point *end){
       T *d = img.getData(0);
       int lineStep = img.getLineStep();
@@ -175,13 +175,13 @@ namespace icl{
     };
 
     void ContourDetector::drawAllContours(core::ImgBase *img, const icl64f &val) {
-      for (std::vector<Contour>::iterator it = m_data->contoursRet.begin(); 
+      for (std::vector<Contour>::iterator it = m_data->contoursRet.begin();
            it != m_data->contoursRet.end(); ++it) {
         it->drawTo(img, val);
       }
     }
 
-    
+
     void Contour::drawTo(ImgBase *img, const icl64f &value){
       ICLASSERT_THROW(img,ICLException("Contour::draw: img was null"));
       switch(img->getDepth()){
@@ -192,7 +192,6 @@ namespace icl{
       }
     }
 
-
     void ContourDetector::Data::createBinaryValues(Img<icl8u> &img) {
       icl8u *d = img.getData(0);
       icl8u *dstEnd = d + img.getDim();
@@ -201,20 +200,19 @@ namespace icl{
       icl8u *dstSSEEnd = dstEnd - 15;
 
       for (; d < dstSSEEnd; d += 16) {
-        // convert 'rvalues' values at the same time
+        // convert 16 values at the same time
         icl128i v = icl128i(d);
         v.v0 = _mm_sub_epi8(v.v0, _mm_set1_epi8(128));
-        v.v0 = _mm_cmplt_epi8(v.v0, _mm_set1_epi8((char)threshold-128));
-        v.v0 = _mm_andnot_si128(v.v0, _mm_set1_epi32(0x01010101));
+        v.v0 = _mm_cmpgt_epi8(v.v0, _mm_set1_epi8((char)threshold-129));
         v.storeu(d);
       }
 
       for (; d < dstEnd; ++d) {
         // convert 1 value
-        *d = (*d < threshold) ? 0 : 1;
+        *d = (*d < threshold) ? 0 : 255;
       }
     #else
-      for (; d < dstEnd; ++d) *d = (*d < threshold) ? 0 : 1;
+      for (; d < dstEnd; ++d) *d = (*d < threshold) ? 0 : 255;
     #endif
     }
 
@@ -227,15 +225,15 @@ namespace icl{
         m_data->storage.reinit(img.getDim());
         m_data->findContoursFast(img);
         m_data->storage.copy(m_data->simples);
-          
+
       }
-     
+
       if(m_data->algo == Fast){
         const size_t n = m_data->simples.size();
         m_data->contoursRet.resize(n);
         for(size_t i=0;i<n;++i){
           m_data->contoursRet[i] = Contour(&m_data->simples[i]);
-        }     
+        }
       }else{
         const size_t n = m_data->contours.size();
         m_data->contoursRet.resize(n);
@@ -249,6 +247,7 @@ namespace icl{
     const std::vector<Contour> &ContourDetector::detect(const core::ImgBase *image){
       ICLASSERT_THROW(image,ICLException("ContourDetector::detect: image was null"));
       image->convert(&m_data->buffer);
+      m_data->createBinaryValues(m_data->buffer);
       return detect(m_data->buffer);
     }
 
@@ -273,10 +272,8 @@ namespace icl{
         *(img_d + size.width - 1) = 0;
       }
 
-      // convert gray values to binary values
-      createBinaryValues(img);
-
       contours.clear();
+      //storage.clear();
 
       int NBD = 1;
       const int w = size.width;
@@ -304,11 +301,14 @@ namespace icl{
             continue;
           }
 
-          if ((*pos0 != 1) || (prev_val)) {
+          if ((*pos0 != -1) || (prev_val)) {
             if (*pos0) {
               continue;
             }
-            if (prev_val < 1) {
+            if (prev_val == 0) {
+              continue;
+            }
+            if (prev_val < -1) {
               continue;
             }
             // an inner contour was found
@@ -317,12 +317,16 @@ namespace icl{
 
             c.clear();
             c.push_back(Point(x-1, y));
+            //storage.addContour();
+            //storage.addPoint(Point(x-1,y));
           } else {
             // an outer contour was found
             npos = 4;
 
             c.clear();
             c.push_back(Point(x, y));
+            //storage.addContour();
+            //storage.addPoint(Point(x,y));
           }
 
           // it is enough if the value of NBD is 2,
@@ -350,7 +354,7 @@ namespace icl{
             // follow contour
             while (true) {
               char tmp = *pos3;
-              if (tmp == 1) tmp = NBD;
+              if (tmp == -1) tmp = NBD;
 
               // find the next neighbour
               for (; ; ++npos) {
@@ -372,6 +376,7 @@ namespace icl{
               }
 
               c.push_back(utils::Point(c[it].x + int_to_inc[npos], c[it].y + int_to_inc[(npos+2)&7]));
+              //storage.addPoint(utils::Point((storage.next - 1)->x + int_to_inc[npos], (storage.next - 1)->y + int_to_inc[(npos+2)&7]));
               ++it;
               npos += 5;
 
@@ -419,9 +424,6 @@ namespace icl{
         *(img_d + size.width - 1) = 0;
       }
 
-      // convert gray values to binary values
-      createBinaryValues(img);
-
       contours.clear();
 
       int NBD = 1;
@@ -447,17 +449,21 @@ namespace icl{
           pos0 = img_d + x;
 
           if (prev_val && *pos0) {
-            if (*pos0 & -2) lnbdx = x;
+            if ((*pos0 + 1) & -2) lnbdx = x;
             continue;
           }
 
-          if ((*pos0 != 1) || (prev_val)) {
+          if ((*pos0 != -1) || (prev_val)) {
             if (*pos0) {
-              if (*pos0 & -2) lnbdx = x;
+              if ((*pos0 + 1) & -2) lnbdx = x;
               continue;
             }
-            if (prev_val < 1) {
-              if (*pos0 & -2) lnbdx = x;
+            if (prev_val == 0) {
+              if ((*pos0 + 1) & -2) lnbdx = x;
+              continue;
+            }
+            if (prev_val < -1) {
+              if ((*pos0 + 1) & -2) lnbdx = x;
               continue;
             }
             // an inner contour was found
@@ -529,7 +535,7 @@ namespace icl{
             // follow contour
             while (true) {
               char tmp = *pos3;
-              if (tmp == 1) tmp = NBD;
+              if (tmp == -1) tmp = NBD;
 
               // find the next neighbour
               for (; ; ++npos) {
@@ -582,8 +588,8 @@ namespace icl{
 
     void ContourDetector::Data::traceContour(Point pStart, Channel8u &c){
       Point p = pStart;
-      storage.addPoint(p);
-      int dir = 1; // from top 
+      storage.addPoint(Point(p.x-1, p.y));
+      int dir = 1; // from top
       /*  1
           0>  2
           3
@@ -592,7 +598,7 @@ namespace icl{
       //std::string names[] = {"left","top","right","bottom"};
       for(;;){
         //if(++step == 10) throw ICLException("step 100 reached at " + str(p));
-        c(p.x,p.y) = 128; 
+        c(p.x,p.y) = 128;
         //std::cout << " -- from " << names[dir] << " p is " << p <<  std::endl;
         switch(dir){
           case 0: // from left:
@@ -653,7 +659,7 @@ namespace icl{
             }else{
               storage.addPoint( (p = Point(p.x,p.y+1)) ); // bottom
               dir = 1;
-            } 
+            }
             break;
           default:
             break;
@@ -663,25 +669,25 @@ namespace icl{
         }
       }
     }
-    
+
     void ContourDetector::Data::findContoursFast(Img8u &img){
       icl8u *d = img.begin(0);
       const int W = img.getWidth(), H = img.getHeight(), W1=W-1, H1=H-1;
       const int DIM = W*H;
-      
+
       // the image border values have to be 0
       memset(d, 0, W);
       memset(d + DIM-W,0,W);
-      
+
       for(int y = 1; y<H;++y){
         d[y*W] = 0;
         d[y*W-1] = 0;
-      }  
-      
+      }
+
       Channel8u c = img[0];
-      
+
       storage.clear();
-      
+
       for(int y=1;y<H1;++y){
         for(int x=1;x<W1;++x){
           if( c(x-1,y)==255 && c(x,y) == 0){
