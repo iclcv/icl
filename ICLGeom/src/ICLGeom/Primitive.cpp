@@ -576,16 +576,16 @@ namespace icl{
         
         for(int x=1;x<w;++x){
           for(int y=1;y<h;++y){
-            const int is[4] = { getIdx(x,y), getIdx(x-1,y),  getIdx(x,y-1), getIdx(x-1,y-1) };
+            const int is[4] = { getIdx(x,y), getIdx(x-1,y),  getIdx(x-1,y-1),  getIdx(x,y-1) };
             if(!normals){
-              Vec n = compute_normal(vertices[is[0]], vertices[is[1]], vertices[is[2]], &ok);
+              Vec n = -compute_normal(vertices[is[0]], vertices[is[1]], vertices[is[2]], &ok);
               if(ok){
                 glNormal3fv(n.data());
               }
             }
             for(int i=0;i<4;++i){
               if(normals){
-                glNormal3fv(normals[is[i]].data());
+                glNormal3fv((-normals[is[i]]).data());
               }
               glVertex4fv(vertices[is[i]].data());
             }
@@ -601,16 +601,16 @@ namespace icl{
 
         for(int x=1;x<w;++x){
           for(int y=1;y<h;++y){
-            const int is[4] = { getIdx(x,y), getIdx(x-1,y),  getIdx(x,y-1), getIdx(x-1,y-1) };
+            const int is[4] = { getIdx(x,y), getIdx(x-1,y),  getIdx(x-1,y-1),  getIdx(x,y-1) };
             if(!normals){
-              Vec n = -compute_normal(vertices[is[0]], vertices[is[1]], vertices[is[2]], &ok);
+              Vec n = compute_normal(vertices[is[0]], vertices[is[1]], vertices[is[2]], &ok);
               if(ok){
                 glNormal3fv(n.data());
               }
             }
             for(int i=0;i<4;++i){
               if(normals){
-                Vec n = -normals[is[i]];
+                const Vec &n = normals[is[i]];
                 glNormal3fv(n.data());
               }
               glVertex4fv(vertices[is[i]].data());
