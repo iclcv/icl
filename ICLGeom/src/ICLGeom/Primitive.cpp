@@ -558,5 +558,103 @@ namespace icl{
       
     }
     
+    void TwoSidedGridPrimitive::render(const Primitive::RenderContext &ctx){
+      //int w,h;
+      //const Vec *vertices, *normals;
+      //GeomColor front,back,lines;
+      //bool drawLines,drawQuads;
+      bool ok = false;
+      
+      if(drawQuads){
+      
+        glEnable(GL_CULL_FACE);
+        glFrontFace(GL_FRONT);
+        glCullFace(GL_FRONT);
+
+        glBegin(GL_QUADS);
+        glColor4fv(front.data());
+        
+        for(int x=1;x<w;++x){
+          for(int y=1;y<h;++y){
+            const int is[4] = { getIdx(x,y), getIdx(x-1,y),  getIdx(x,y-1), getIdx(x-1,y-1) };
+            if(!normals){
+              Vec n = compute_normal(vertices[is[0]], vertices[is[1]], vertices[is[2]], &ok);
+              if(ok){
+                glNormal3fv(n.data());
+              }
+            }
+            for(int i=0;i<4;++i){
+              if(normals){
+                glNormal3fv(normals[is[i]].data());
+              }
+              glVertex4fv(vertices[is[i]].data());
+            }
+          }
+        }
+        glEnd();
+        
+
+        glFrontFace(GL_BACK);
+        glCullFace(GL_BACK);
+        glBegin(GL_QUADS);
+        glColor4fv(back.data());
+
+        for(int x=1;x<w;++x){
+          for(int y=1;y<h;++y){
+            const int is[4] = { getIdx(x,y), getIdx(x-1,y),  getIdx(x,y-1), getIdx(x-1,y-1) };
+            if(!normals){
+              Vec n = -compute_normal(vertices[is[0]], vertices[is[1]], vertices[is[2]], &ok);
+              if(ok){
+                glNormal3fv(n.data());
+              }
+            }
+            for(int i=0;i<4;++i){
+              if(normals){
+                Vec n = -normals[is[i]];
+                glNormal3fv(n.data());
+              }
+              glVertex4fv(vertices[is[i]].data());
+            }
+          }
+        }
+
+        glDisable(GL_CULL_FACE);
+        
+        glEnd();
+      }
+      
+      if(drawLines){
+        glColor4fv(lines.data());
+        glDisable(GL_LIGHTING);
+        glBegin(GL_LINES);
+        
+        for(int x=1;x<w;++x){
+          for(int y=1;y<h;++y){
+            const int is[3] = { getIdx(x,y), getIdx(x-1,y),  getIdx(x,y-1)};
+            glVertex4fv(vertices[is[0]].data());
+            glVertex4fv(vertices[is[1]].data());
+            glVertex4fv(vertices[is[0]].data());
+            glVertex4fv(vertices[is[2]].data());
+          }
+        }
+        glEnd();
+        
+        glBegin(GL_LINE_STRIP);
+        for(int x=0;x<w;++x){
+          glVertex4fv(vertices[x].data());
+        }
+        glEnd();
+
+        glBegin(GL_LINE_STRIP);
+        for(int y=0;y<h;++y){
+          glVertex4fv(vertices[y*w].data());
+        }
+        glEnd();
+        glEnable(GL_LIGHTING);
+      }
+      
+
+    }
+
   } // namespace geom
 }

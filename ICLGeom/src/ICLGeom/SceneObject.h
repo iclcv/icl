@@ -326,6 +326,14 @@ namespace icl{
                              int stride = 1,bool createFrontOnce=true,
                                   bool createBackOnce=true, core::scalemode sm=core::interpolateLIN);
   
+      
+      /// adds a two sided grid (sides may have different colors)
+      void addTwoSidedTGrid(int w, int h, const Vec *vertices, const Vec *normals=0, 
+                            const GeomColor &frontColor=GeomColor(0,100,255,255), 
+                            const GeomColor &backColor=GeomColor(255,0,100,255),
+                            const GeomColor &lineColor=GeomColor(0,255,100,255),
+                            bool drawLines=false, bool drawQuads=true);
+  
   
       /// adds text-texture quad -primitive to this object
       /** If the given normal indices (na,nb,nc and nd) are -1, auto-normal are computed using cross-product.

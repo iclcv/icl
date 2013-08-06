@@ -188,6 +188,15 @@ namespace icl{
       m_primitives.push_back(new TwoSidedTextureGridPrimitive(w,h,front,back,px,py,pz,pnx,pny,pnz,
                                                               stride,createFrontOnce, createBackOnce, sm));
     }
+
+    void SceneObject::addTwoSidedTGrid(int w, int h, const Vec *vertices, const Vec *normals, 
+                                       const GeomColor &frontColor,
+                                       const GeomColor &backColor,
+                                       const GeomColor &lineColor,
+                                       bool drawLines, bool drawQuads){
+      m_primitives.push_back(new TwoSidedGridPrimitive(w,h,vertices, normals, frontColor, backColor, 
+                                                       lineColor, drawLines, drawQuads));
+    }
   
     
   

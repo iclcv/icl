@@ -346,6 +346,33 @@ namespace icl{
       void setTextures(const core::ImgBase *front, const core::ImgBase *back);
     };
     
+
+    /// Grid primitive that renders a two-sided grid (sides have different colors)
+    class TwoSidedGridPrimitive: public Primitive{
+      int w,h;
+      const Vec *vertices, *normals;
+      GeomColor front,back,lines;
+      bool drawLines,drawQuads;
+      
+      inline int getIdx(int x, int y) const { return x+w*y; }
+      public:
+      TwoSidedGridPrimitive(int w, int h, const Vec *vertices, const Vec *normals=0, 
+                            const GeomColor &frontColor=GeomColor(0,100,255,255), 
+                            const GeomColor &backColor=GeomColor(255,0,100,255),
+                            const GeomColor &lineColor=GeomColor(0,255,100,255),
+                            bool drawLines=false, bool drawQuads=true):
+      Primitive(Primitive::quad), w(w), h(h), vertices(vertices), normals(normals),
+      front(frontColor*(1./255)),back(backColor*(1./255)),lines(lineColor*(1./255)),
+      drawLines(drawLines),drawQuads(drawQuads){}
+      
+      virtual void render(const Primitive::RenderContext &ctx);
+
+      virtual Primitive *copy() const{
+        return new TwoSidedGridPrimitive(w,h,vertices, normals, front*255, back*255, 
+                                         lines*255,drawLines,drawQuads);
+      }
+    };
+      
     /// The shared texture primitive references a texture from the parent SceneObject
     /** Therefore, shared textures can be reused in order to avoid that identical textures
         have to be hold several times in the graphics hardware memory */
