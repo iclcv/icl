@@ -484,7 +484,7 @@ namespace icl{
           addLine(0,i+1);
           if(i){
             addLine(i,i+1);
-            addTriangle(0,i+1,i);
+            addTriangle(i,i+1,0);
           }else{
             addLine(steps-1,1);
             addTriangle(0,steps,1);
@@ -492,7 +492,8 @@ namespace icl{
   
           bottom.push_back(i+1);
         }
-        addPolygon(steps,bottom.data());
+        addNormal(Vec(0,0,-1,1));
+        addPolygon(steps,bottom.data(),geom_blue(),std::vector<int>(steps,m_normals.size()-1).data());
       }else if(type == "cylinder"){
         // args: x,y,z, dx, dy, dz, steps
         float x = *params++;
@@ -521,15 +522,16 @@ namespace icl{
           }else{
             addLine(0, 2*(steps-1));
             addLine(1, 2*(steps-1)+1);
-            addQuad(0, 2*(steps-1), 2*(steps-1)+1, 1);
+            //            addQuad(0, 2*(steps-1), 2*(steps-1)+1, 1);
+            addQuad(1, 2*(steps-1)+1, 2*(steps-1), 0);
           }
           bottom.push_back(2*i);
           top.push_back(2*i+1);
         }
-        addNormal(Vec(0,0,1,1));
         addNormal(Vec(0,0,-1,1));
-        addPolygon(steps,top.data(),geom_blue(),std::vector<int>(top.size(),m_normals.size()-2).data());
-        addPolygon(steps,bottom.data(),geom_blue(),std::vector<int>(top.size(),m_normals.size()-1).data());
+        addNormal(Vec(0,0,1,1));
+        addPolygon(steps,top.data(),geom_blue(),std::vector<int>(top.size(),m_normals.size()-1).data());
+        addPolygon(steps,bottom.data(),geom_blue(),std::vector<int>(top.size(),m_normals.size()-2).data());
       }else{
         ERROR_LOG("unknown type:" << type);
       }
