@@ -995,6 +995,7 @@ namespace icl{
       glColor4f(1,1,1,1);
       
       TextureElement &t = *m_data->data(0,0);
+      glActiveTextureARB(GL_TEXTURE0);
       glBindTexture(GL_TEXTURE_2D, t.tex);
   
       const bool haveNormals = nxs && nys && nzs;
