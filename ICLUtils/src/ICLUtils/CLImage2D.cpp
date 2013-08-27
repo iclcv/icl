@@ -109,17 +109,18 @@ namespace icl {
 
             void regionToCLTypes(const utils::Rect &region, cl::size_t<3> &clOrigin,
                     cl::size_t<3> &clRegion) {
-                clOrigin.push_back(region.x);
-                clOrigin.push_back(region.y);
-                clOrigin.push_back(0);
+                clOrigin[0] = region.x;
+                clOrigin[1] = region.y;
+                clOrigin[2] = 0;
+
                 if (region == Rect::null) {
-                    clRegion.push_back(width);
-                    clRegion.push_back(height);
+                    clRegion[0] = width;
+                    clRegion[1] = height;
                 } else {
-                    clRegion.push_back(region.width);
-                    clRegion.push_back(region.height);
+                    clRegion[0] = region.width;
+                    clRegion[1] = region.height;
                 }
-                clRegion.push_back(1);
+                clRegion[2] = 1;
             }
 
             void read(void *dst, const utils::Rect &region=utils::Rect::null, bool block = true)
