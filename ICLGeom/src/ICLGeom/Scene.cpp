@@ -78,9 +78,9 @@ using namespace icl::core;
 
 namespace icl{
   namespace geom{
-  
+
     static bool creatingDisplayList = false;
-  
+
     struct CameraObject : public SceneObject{
       Scene *scene;
       int index;
@@ -98,7 +98,7 @@ namespace icl{
       isShadowCam(isShadowCam)
       {
         nameTexture = Img8u(Size(1,1),4);
-  
+
         addVertex(Vec(0,0,0,1),geom_white());
         addVertex(Vec(S,0,0,1),geom_red());
         addVertex(Vec(0,S,0,1),geom_green());
@@ -106,55 +106,55 @@ namespace icl{
           /// these depend on the camera's parameters
           addVertex(Vec(0,0,0,1),geom_blue());
         }
-        
+
         addLine(0,1,geom_red());
         addLine(0,2,geom_green());
-       
+
         for(int i=0;i<4;++i){
           addLine(0,i+3,geom_white());
         }
-        
+
         addLine(3,4,geom_white());
         addLine(3,5,geom_white());
         addLine(5,6,geom_white());
         addLine(4,6,geom_white());
-        
+
         addTriangle(0,3,4,geom_blue(100));
         addTriangle(0,4,6,geom_blue(100));
         addTriangle(0,6,5,geom_blue(100));
         addTriangle(0,5,3,geom_blue(100));
-  
-  
+
+
         for(int i=0;i<4;++i){ // 7,8,9,10
           addVertex(Vec(0,0,0,1),geom_invisible());
         }
-  
+
         addTexture(7,8,10,9,&nameTexture);
-  
+
         origVertices = m_vertices;
       }
-  
+
       virtual void prepareForRendering() {
         const Camera &cam = isShadowCam? *scene->getLight(index).getShadowCam() : scene->getCamera(index);
         int w = cam.getRenderParams().viewport.width;
         int h = cam.getRenderParams().viewport.height;
-  
+
         Mat T = cam.getCSTransformationMatrix().inv();
   #if 1
-  
+
         try{
           PlaneEquation p(T*Vec(0,0,S,1),T*Vec(0,0,1,1)-cam.getPosition());
           const Point32f ps[4] = { Point32f(w-1,0), Point32f(0,0), Point32f(w-1,h-1), Point32f(0,h-1) };
           std::vector<ViewRay> vs = cam.getViewRays(std::vector<Point32f>(ps,ps+4));
-  
+
           for(int i=0;i<4;++i){
             m_vertices[i+3] = vs[i].getIntersection(p);
           }
-  
+
         }catch(ICLException &e){
           WARNING_LOG("error visualizsing camera: " << e.what());
         }
-  
+
   #else
         // old version with same issue
         try{
@@ -164,7 +164,7 @@ namespace icl{
           SHOW(cam.getViewRay(Point32f(0,0)).direction.transp());
           SHOW(cam.getViewRay(Point32f(0,h-1)).direction.transp());
           SHOW(cam.getViewRay(Point32f(w-1,h-1)).direction.transp());
-  
+
           m_vertices[3] = cam.getViewRay(Point32f(w-1,0)).getIntersection(p);
           m_vertices[4] = cam.getViewRay(Point32f(0,0)).getIntersection(p);
           m_vertices[5] = cam.getViewRay(Point32f(w-1,h-1)).getIntersection(p);
@@ -174,7 +174,7 @@ namespace icl{
         }
   #endif
         std::string name = cam.getName();
-  
+
         if(name != lastName){
           lock();
           Img8u newTexture = TextPrimitive::create_texture(name.length() ? name : str("camera"),GeomColor(255,255,255,255),30);
@@ -182,7 +182,7 @@ namespace icl{
           unlock();
           lastName = name;
         }
-        
+
         if(lastName != ""){
           float h = S/5;
           float w = name.length()*h*0.6;
@@ -191,7 +191,7 @@ namespace icl{
           origVertices[9] = Vec(0,h,0,1);
           origVertices[10] = Vec(w,h,0,1);
         }
-        
+
         for(unsigned int i=0;i<3;++i){
           m_vertices[i] = T * origVertices[i];
         }
@@ -199,12 +199,12 @@ namespace icl{
           m_vertices[i] = T * origVertices[i];
         }
       }
-  
+
       virtual void lock(){ mutex.lock(); }
       virtual void unlock(){ mutex.unlock(); }
-  
-    };  
-    
+
+    };
+
     struct icl::geom::Scene::RenderSettings {
       bool useImprovedShading;
       bool lightingEnabled;
@@ -217,7 +217,7 @@ namespace icl{
       bool wireframe;
       float shadowBias;
     };
-    
+
     struct icl::geom::Scene::FBOData {
       struct Glints {
         bool created;
@@ -245,62 +245,62 @@ namespace icl{
         if(shadow_size) {
           GLContext current = GLContext::currentContext();
           for(map<GLContext, Glints>::iterator it = infos.begin(); it != infos.end(); it++) {
-            if(!it->first) {
+            if(it->first) {
               it->first.makeCurrent();
               freeShadowFBO(it->second);
             }
           }
-	        shadow_size = 0;
-	        num_shadows = 0;
-	        if(!current)current.makeCurrent();
-	      }
+            shadow_size = 0;
+            num_shadows = 0;
+            if(!current)current.makeCurrent();
+          }
       }
-      
+
       void createShadowFBO() {
         Glints &glints = infos[GLContext::currentContext()];
-        
+
         if(glints.created)freeShadowFBO(glints);
         glints.created = true;
-	      GLenum FBOstatus;
-        
+          GLenum FBOstatus;
+
         //create the shadow texture if simple filtering
-	      glGenTextures(1, &glints.shadowTexture);
-	      glBindTexture(GL_TEXTURE_2D, glints.shadowTexture);
+          glGenTextures(1, &glints.shadowTexture);
+          glBindTexture(GL_TEXTURE_2D, glints.shadowTexture);
 
-	      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-	      glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
-	      glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
+          glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
+          glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
 
-	      glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadow_size * num_shadows, shadow_size, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
-	      glBindTexture(GL_TEXTURE_2D, 0);
+          glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadow_size * num_shadows, shadow_size, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
+          glBindTexture(GL_TEXTURE_2D, 0);
 
-	      // create a framebuffer object
-	      glGenFramebuffers(1, &glints.shadowFBO);
-	      glBindFramebuffer(GL_FRAMEBUFFER_EXT, glints.shadowFBO);
+          // create a framebuffer object
+          glGenFramebuffers(1, &glints.shadowFBO);
+          glBindFramebuffer(GL_FRAMEBUFFER_EXT, glints.shadowFBO);
 
-	      glDrawBuffer(GL_NONE);
-	      glReadBuffer(GL_NONE);
-     
-	      glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,GL_TEXTURE_2D, glints.shadowTexture, 0);
+          glDrawBuffer(GL_NONE);
+          glReadBuffer(GL_NONE);
 
-	      // check FBO status
-	      FBOstatus = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-	      if(FBOstatus != GL_FRAMEBUFFER_COMPLETE_EXT)
-		      throw ICLException("GL_FRAMEBUFFER_COMPLETE_EXT failed, CANNOT use FBO");
-		      
-	      // switch back to previous framebuffer
-	      glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+          glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,GL_TEXTURE_2D, glints.shadowTexture, 0);
+
+          // check FBO status
+          FBOstatus = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+          if(FBOstatus != GL_FRAMEBUFFER_COMPLETE_EXT)
+              throw ICLException("GL_FRAMEBUFFER_COMPLETE_EXT failed, CANNOT use FBO");
+
+          // switch back to previous framebuffer
+          glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
       }
-      
+
       void setShadowFBO(uint size = 512, uint shadows = 1) {
         if(size != shadow_size || num_shadows != shadows) freeShadowFBO();
         shadow_size = size;
         num_shadows = shadows;
       }
     };
-  
+
   #ifdef HAVE_QT
     struct Scene::GLCallback : public ICLDrawWidget3D::GLCallback{
       int cameraIndex;
@@ -311,26 +311,26 @@ namespace icl{
       void performLink(ICLDrawWidget *widget){
         const std::string save = parent->getConfigurableID();
         const std::string id = "scene"+str(parent)+str(utils::Time::now().toMicroSeconds());
-        
+
         parent->setConfigurableID(id);
-        
+
         if(!gui){
           // create GUI
           gui = new VBox();
           *gui << Prop(id) << Create();
         }
-        
+
         static ImgQ icon = cvt(IconFactory::create_image("scene-props"));
-        
+
         widget->addSpecialButton("mousehandler"+str(this),&icon,
                                  function(gui,&GUI::switchVisibility),
                                  "3D scene properties  ");
         parent->setConfigurableID(save);
       }
-      
+
       GLCallback(int cameraIndex,Scene *parent):
         cameraIndex(cameraIndex),parent(parent),gui(0), needLink(false){}
-      
+
       virtual void draw(ICLDrawWidget3D *widget){
         if(needLink){
           performLink(widget);
@@ -348,26 +348,26 @@ namespace icl{
         needLink = true;
         widget->setBackgroundColorSource(function(this,&Scene::GLCallback::bgfunc));
       }
-      
+
       virtual void unlink(ICLDrawWidget3D *widget){
         TODO_LOG("implement unlink");
         widget->setBackgroundColorSource(ICLWidget::BGColorSource());
-        //widget->removeSpecialButton("mousehandler"+str(this));      
+        //widget->removeSpecialButton("mousehandler"+str(this));
       }
-      
+
     };
   #endif
-  
-   
+
+
     Scene::Scene():Lockable(true),m_fps(10){
-    
+
       #ifdef HAVE_GLX
       #ifdef HAVE_QT
       m_renderSettings = new RenderSettings();
       m_fboData = new FBOData();
       #endif
       #endif
-      
+
       m_lights[0] = SmartPtr<SceneLight>(new SceneLight(this,0));
       m_shadowCameraObjects[0] = SmartPtr<SceneObject>(new CameraObject(this,0,1,true));
       m_globalAmbientLight = FixedColVector<int,4>(255,255,255,20);
@@ -377,11 +377,11 @@ namespace icl{
           m_previousLightState[i][j] = false;
         }
       }
-      
+
       for(int i = 0; i < ShaderUtil::COUNT; i++) {
         m_shaders[i] = 0;
       }
-      
+
       addProperty("visualize cameras","flag","",false);
       addProperty("visualize world frame","flag","",false);
       addProperty("visualize object frames","flag","",false);
@@ -418,7 +418,7 @@ namespace icl{
     Scene::Scene(const Scene &scene){
       *this = scene;
     }
-    
+
     Scene &Scene::operator=(const Scene &scene){
       m_cameras = scene.m_cameras;
       m_objects.resize(scene.m_objects.size());
@@ -432,7 +432,7 @@ namespace icl{
         m_mouseHandlers[i] = SmartPtr<SceneMouseHandler>(new SceneMouseHandler( *(scene.m_mouseHandlers[i].get()) ));
         m_mouseHandlers[i]->setParentScene( this );
       }
-  
+
       m_glCallbacks.resize(scene.m_glCallbacks.size());
       for(unsigned int i=0;i<m_glCallbacks.size();++i){
         m_glCallbacks[i] = SmartPtr<GLCallback>(new GLCallback(scene.m_glCallbacks[i]->cameraIndex,this));
@@ -440,9 +440,9 @@ namespace icl{
   #ifdef HAVE_GLX
       freeAllPBuffers();
   #endif
-      
+
   #endif
-  
+
       for(unsigned int i=0;i<8;++i){
         if(scene.m_lights[i]){
           m_lights[i] = SmartPtr<SceneLight>(new SceneLight(*scene.m_lights[i]));
@@ -454,7 +454,7 @@ namespace icl{
         }
         m_shadowCameraObjects[i] = SmartPtr<SceneObject>(new CameraObject(this,i,1,true));
       }
-      
+
       if(scene.m_bounds){
         setBounds(scene.m_bounds[0].minVal,
                   scene.m_bounds[0].maxVal,
@@ -466,10 +466,10 @@ namespace icl{
         m_bounds = 0;
       }
       m_globalAmbientLight = scene.m_globalAmbientLight;
-      
+
       return *this;
     }
-  
+
     void Scene::addCamera(const Camera &cam, float visSize){
       m_cameras.push_back(cam);
       m_cameraObjects.push_back(new CameraObject(this,m_cameraObjects.size(), visSize));
@@ -488,7 +488,7 @@ namespace icl{
     const Camera &Scene::getCamera(int camIndex) const{
       return m_cameras[camIndex];
     }
-  
+
     std::vector<Camera*> Scene::getAllCameras(int firstIndex, int num){
       std::vector<Camera*> cams;
       for(int i=firstIndex,j=0; ( i<getCameraCount() ) && ( (num<0) || (j<num) ); ++i,++j){
@@ -496,16 +496,16 @@ namespace icl{
       }
       return cams;
     }
-  
+
     void Scene::addObject(SceneObject *object, bool passOwnerShip){
       m_objects.push_back(SmartPtr<SceneObject>(object,passOwnerShip));
     }
-  
+
     void Scene::removeObject(int idx){
       ICLASSERT_RETURN(idx >= 0 && idx < (int)m_objects.size());
       m_objects.erase(m_objects.begin()+idx);
     }
-    
+
     namespace{ struct is_obj{
       const SceneObject *o;
       is_obj(const SceneObject *o):o(o){}
@@ -513,7 +513,7 @@ namespace icl{
         return p.get() == o;
       }
     }; } // ending anonymos namespace
-  
+
     void Scene::removeObject(const SceneObject *obj){
       std::vector<SmartPtr<SceneObject> >::iterator it = std::find_if(m_objects.begin(),m_objects.end(),is_obj(obj));
       if(it == m_objects.end()){
@@ -524,23 +524,23 @@ namespace icl{
 
     void Scene::setGlobalAmbientLight(const GeomColor &color){
       std::copy(color.begin(),color.end(), m_globalAmbientLight.begin());
-    } 
-  
+    }
+
     void Scene::removeObjects(int startIndex, int endIndex){
       if(endIndex < 0) endIndex = m_objects.size();
       ICLASSERT_RETURN(startIndex >= 0 && startIndex < (int)m_objects.size());
       ICLASSERT_RETURN(endIndex >= 0 && endIndex <= (int)m_objects.size());
       ICLASSERT_RETURN(endIndex > startIndex);
-  
+
       int pos = startIndex;
       while(startIndex++ < endIndex){
         removeObject(pos);
       }
     }
-  
+
     void Scene::clear(bool camerasToo){
       m_objects.clear();
-  
+
       if(camerasToo){
         m_cameras.clear();
       }
@@ -548,18 +548,18 @@ namespace icl{
       m_mouseHandlers.clear();
       m_glCallbacks.clear();
   #endif
-  
+
     }
-  
+
     namespace {
       struct GLMatrix{
         FixedMatrix<float,4,4> mt;
         GLMatrix(const Mat &m):mt(m.transp()){}
-  
+
         operator const float*() const{
           return mt.data();
         }
-  
+
       };
     }
   #ifdef HAVE_QT
@@ -570,7 +570,7 @@ namespace icl{
       }
       std::stringstream fragmentBuffer;
       std::stringstream vertexBuffer;
-      
+
       //creating the vertex shader
       vertexBuffer
       <<"varying vec4 V;\n"
@@ -675,7 +675,7 @@ namespace icl{
 
       // celbrech: note, for shadow lights, one-sided lighting is used
       //           for other lights, GL_LIGHT_MODEL_TWO_SIDE is emulated
-      
+
       fragmentBuffer
       <<"vec3 computeLight(int light, bool isTwoSided){\n"
       <<"  vec3 ambient, diffuse, specular;\n"
@@ -689,7 +689,7 @@ namespace icl{
       <<"  N = normalize(vertex_normal);\n"
       <<"  texture_Color = texture2D(image_map, gl_TexCoord[0].st);\n"
       <<"  vec3 color = vec3(0,0,0);\n";
-      
+
       int currentShadow = 0;
       for(unsigned int i = 0; i < 8; i++) {
         if(m_lights[i] && m_lights[i]->on) {
@@ -700,7 +700,7 @@ namespace icl{
             twoSided = "false";
           }
           if(m_lights[i]->getShadowEnabled()) {
-            vertexBuffer 
+            vertexBuffer
             <<"  shadow_coord["<<currentShadow<<"] = shadowMat["<<currentShadow<<"] * V;\n";
             fragmentBuffer
             <<"#ifdef RENDER_SHADOW\n"
@@ -712,10 +712,10 @@ namespace icl{
           }else{
             fragmentBuffer << "  color += computeLight("<<i<<","<<twoSided<<");\n";
           }
-          
+
         }
       }
-      vertexBuffer 
+      vertexBuffer
       <<"}\n";
       fragmentBuffer
       <<"#ifdef USE_TEXTURE\n"
@@ -724,7 +724,7 @@ namespace icl{
       <<"  gl_FragColor =  vec4(color,gl_Color.a);\n"
       <<"#endif\n"
       <<"}\n";
-      
+
       m_shaders[ShaderUtil::SHADOW] = new GLFragmentShader( vertexBuffer.str(), "#define RENDER_SHADOW\n" + fragmentBuffer.str());
       m_shaders[ShaderUtil::SHADOW_TEXTURE] = new GLFragmentShader( vertexBuffer.str(), "#define USE_TEXTURE;\n#define RENDER_SHADOW\n" + fragmentBuffer.str());
       m_shaders[ShaderUtil::NO_SHADOW] = new GLFragmentShader( vertexBuffer.str(), fragmentBuffer.str());
@@ -745,13 +745,13 @@ namespace icl{
           return;
         }
       }
-  
+
       if(o->getSmoothShading()){
         glShadeModel(GL_SMOOTH);
       }else{
         glShadeModel(GL_FLAT);
       }
-      
+
       if(m_renderSettings->lineSmoothing == 1) {
         glDisable(GL_LINE_SMOOTH);
       } else if(m_renderSettings->lineSmoothing == 2) {
@@ -763,7 +763,7 @@ namespace icl{
           glDisable(GL_LINE_SMOOTH);
         }
       }
-      
+
       if(m_renderSettings->pointSmoothing == 1) {
         glDisable(GL_POINT_SMOOTH);
       } else if(m_renderSettings->pointSmoothing == 2) {
@@ -775,7 +775,7 @@ namespace icl{
           glDisable(GL_POINT_SMOOTH);
         }
       }
-      
+
       if(m_renderSettings->polygonSmoothing == 1) {
         glDisable(GL_POLYGON_SMOOTH);
       } else if(m_renderSettings->polygonSmoothing == 2) {
@@ -787,15 +787,15 @@ namespace icl{
           glDisable(GL_POLYGON_SMOOTH);
         }
       }
-      
-      
+
+
       if(o->m_depthTestEnabled){
         glEnable(GL_DEPTH_TEST);
       }else{
         glDisable(GL_DEPTH_TEST);
       }
-      
-      
+
+
       //check if the custom shader has been set
       bool useCustomShader = o->getFragmentShader();
 
@@ -803,14 +803,14 @@ namespace icl{
 
       float shininess[] = { (float)o->m_shininess };
       glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
-      
+
       glPointSize(o->m_pointSize);
       glLineWidth(o->m_lineWidth);
-      
+
       o->prepareForRendering();
-  
+
       o->lock();
-      
+
       const std::vector<Vec> &ps = o->m_vertices;
       glMatrixMode(GL_MODELVIEW);
       glPushMatrix();
@@ -820,16 +820,16 @@ namespace icl{
 
 
       if(o->isVisible()){
-        
+
         o->complexCustomRender(util);
         if(o->m_primitives.size()){
-          const Primitive::RenderContext ctx = { o->m_vertices, o->m_normals, o->m_vertexColors, 
+          const Primitive::RenderContext ctx = { o->m_vertices, o->m_normals, o->m_vertexColors,
                                                  o->m_sharedTextures,
                                                  o->m_lineColorsFromVertices,
-                                                 o->m_triangleColorsFromVertices, 
+                                                 o->m_triangleColorsFromVertices,
                                                  o->m_quadColorsFromVertices,
                                                  o->m_polyColorsFromVertices, o };
-          
+
           for(unsigned int j=0;j<o->m_primitives.size();++j){
             Primitive *p = o->m_primitives[j];
             if(o->isVisible(p->type)){
@@ -845,21 +845,21 @@ namespace icl{
             }
           }
         }
-  
-  
+
+
         if(o->isVisible(Primitive::vertex)){
           GLboolean lightWasOn = true;
           glGetBooleanv(GL_LIGHTING,&lightWasOn);
           glDisable(GL_LIGHTING);
-          
+
           if(useCustomShader) {
             o->getFragmentShader()->deactivate();
           } else if(m_renderSettings->useImprovedShading) {
             util->deactivateShaders();
           }
-  
+
           if(creatingDisplayList){
-            glBegin(GL_POINTS);        
+            glBegin(GL_POINTS);
             if(!o->m_vertexColors.size()){
               GeomColor c = o->getDefaultVertexColor();
               glColor4f(c[0]/255,c[1]/255,c[2]/255,c[3]/255);
@@ -877,12 +877,12 @@ namespace icl{
             if(o->m_vertexColors.size()){
               glEnableClientState(GL_VERTEX_ARRAY);
               glEnableClientState(GL_COLOR_ARRAY);
-              
+
               glVertexPointer(4,GL_FLOAT,0,o->m_vertices.data());
               glColorPointer(4,GL_FLOAT,0,o->m_vertexColors.data());
-              
+
               glDrawArrays(GL_POINTS, 0, o->m_vertices.size());
-              
+
               glDisableClientState(GL_VERTEX_ARRAY);
               glDisableClientState(GL_COLOR_ARRAY);
             }else{
@@ -899,7 +899,7 @@ namespace icl{
           }
         }
       } // is visible
-      
+
       for(unsigned int i=0;i<o->m_children.size();++i){
         renderSceneObjectRecursive(util, o->m_children[i].get());
       }
@@ -910,10 +910,10 @@ namespace icl{
       } else if(m_renderSettings->useImprovedShading) {
         util->deactivateShaders();
       }
-  
+
       o->unlock();
     }
-    
+
    void Scene::renderSceneObjectRecursiveShadow(ShaderUtil* util, SceneObject *o) const{
       if(!creatingDisplayList){
         if(o->m_createDisplayListNextTime == 1){
@@ -932,24 +932,24 @@ namespace icl{
 
       if(o->getCastShadowsEnabled()){
          o->prepareForRendering();
-     
+
          o->lock();
-         
+
          glMatrixMode(GL_MODELVIEW);
          glPushMatrix();
          const Mat &T = o->getTransformation(true);
          glMultMatrixf(T.transp().data());
          if(o->isVisible()){
-           
+
            o->complexCustomRender(util);
            if(o->m_primitives.size()){
-             const Primitive::RenderContext ctx = { o->m_vertices, o->m_normals, o->m_vertexColors, 
+             const Primitive::RenderContext ctx = { o->m_vertices, o->m_normals, o->m_vertexColors,
                                                     o->m_sharedTextures,
                                                     o->m_lineColorsFromVertices,
-                                                    o->m_triangleColorsFromVertices, 
+                                                    o->m_triangleColorsFromVertices,
                                                     o->m_quadColorsFromVertices,
                                                     o->m_polyColorsFromVertices, o };
-             
+
              for(unsigned int j=0;j<o->m_primitives.size();++j){
                Primitive *p = o->m_primitives[j];
                if(o->isVisible(p->type)){
@@ -963,27 +963,27 @@ namespace icl{
          }
          glMatrixMode(GL_MODELVIEW);
          glPopMatrix();
-     
+
          o->unlock();
       }
    }
-  
+
    void Scene::renderScene(int camIndex, ICLDrawWidget3D *widget) const{
-  
+
       Mutex::Locker l(this);
       //update Sceneinfo
       ((Configurable*)this)->setPropertyValue("info.FPS",m_fps.getFPSString());
-      
+
       stringstream s;
       s<<m_objects.size();
       ((Configurable*)this)->setPropertyValue("info.Objects in the Scene",s.str());
-      
+
       ICLASSERT_RETURN(camIndex >= 0 && camIndex < (int)m_cameras.size());
-  
+
       Rect currentImageRect = widget ? widget->getImageRect(true) : Rect::null;
       //    Size currentImageSize = widget ? widget->getImageSize(true) : Size::null;
       Size widgetSize = widget ? widget->getSize() : Size::null;
-  
+
       Camera cam = m_cameras[camIndex];
       if(widget){
         cam.getRenderParams().viewport = currentImageRect;
@@ -991,28 +991,28 @@ namespace icl{
       m_renderSettings->lightingEnabled = ((Configurable*)this)->getPropertyValue("enable lighting");
       m_renderSettings->useImprovedShading = ((Configurable*)this)->getPropertyValue("shadows.use improved shading");
       m_renderSettings->shadowBias = ((Configurable*)this)->getPropertyValue("shadows.bias");
-      
+
       string lineSmoothing = ((Configurable*)this)->getPropertyValue("line smoothing");
       if(lineSmoothing == "force off")m_renderSettings->lineSmoothing=1;
       else if(lineSmoothing == "force on")m_renderSettings->lineSmoothing=2;
       else m_renderSettings->lineSmoothing=0;
-      
+
       string pointSmoothing = ((Configurable*)this)->getPropertyValue("point smoothing");
       if(pointSmoothing == "force off")m_renderSettings->pointSmoothing=1;
       else if(pointSmoothing == "force on")m_renderSettings->pointSmoothing=2;
       else m_renderSettings->pointSmoothing=0;
-      
+
       string polygonSmoothing = ((Configurable*)this)->getPropertyValue("polygon smoothing");
       if(polygonSmoothing == "force off")m_renderSettings->polygonSmoothing=1;
       else if(polygonSmoothing == "force on")m_renderSettings->polygonSmoothing=2;
       else m_renderSettings->polygonSmoothing=0;
-      
+
       m_renderSettings->wireframe = ((Configurable*)this)->getPropertyValue("wireframe");
-      
+
       vector<Mat> project2shadow;
 
       if(m_renderSettings->lightingEnabled && m_renderSettings->useImprovedShading) {
-        
+
         //update cameras and check if the lightsetup has changed
         bool lightSetupChanged = false;
         int numShadowLights = 0;
@@ -1031,7 +1031,7 @@ namespace icl{
               lightSetupChanged = true;
             }
             m_previousLightState[i][2] = m_lights[i]->getTwoSidedEnabled();
-            
+
             if(m_lights[i]->getShadowEnabled()) {
               numShadowLights++;
             }
@@ -1062,13 +1062,13 @@ namespace icl{
           if(m_lights[i]) {
             if(m_lights[i]->on && m_lights[i]->getShadowEnabled()) {
               renderShadow(i, currentShadow++, m_fboData->shadow_size);
-              project2shadow.push_back(m_lights[i]->getShadowCam()->getProjectionMatrixGL() 
-                             * m_lights[i]->getShadowCam()->getCSTransformationMatrixGL() 
+              project2shadow.push_back(m_lights[i]->getShadowCam()->getProjectionMatrixGL()
+                             * m_lights[i]->getShadowCam()->getCSTransformationMatrixGL()
                              * cam.getCSTransformationMatrixGL().inv());
             }
           }
         }
-          
+
       }else {
         m_fboData->freeShadowFBO();
         if(m_renderSettings->lightingEnabled) {
@@ -1081,20 +1081,20 @@ namespace icl{
       }
 
       glEnable(GL_NORMALIZE);
-      
+
       glMatrixMode(GL_MODELVIEW);
       glLoadMatrixf(GLMatrix(cam.getCSTransformationMatrixGL()));
-  
+
       glMatrixMode(GL_PROJECTION);
       glLoadMatrixf(GLMatrix(cam.getProjectionMatrixGL()));
-  
+
       glLightModeli(GL_LIGHT_MODEL_TWO_SIDE,GL_TRUE);
       // specular lighting is still not working ..
       glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER,GL_TRUE);
-      
+
       if(m_renderSettings->wireframe)glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
       else glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-      
+
       if(m_renderSettings->lightingEnabled){
         float size = ((Configurable*)this)->getPropertyValue("light object size");
         glEnable(GL_LIGHTING);
@@ -1111,7 +1111,7 @@ namespace icl{
       }
 
       glLightModeliv(GL_LIGHT_MODEL_AMBIENT, m_globalAmbientLight.begin());
-      
+
       if(widget){
         if (widget->getFitMode() == ICLWidget::fmZoom) {
           // transforms y in case of having zoom activated
@@ -1124,9 +1124,9 @@ namespace icl{
         const Size &s = cam.getRenderParams().chipSize;
         glViewport(0,0,s.width,s.height);
       }
-      
+
       glEnable(GL_DEPTH_TEST);
-      
+
       if(m_renderSettings->lightingEnabled && m_renderSettings->useImprovedShading){
         ShaderUtil util(m_shaders, &project2shadow, m_renderSettings->shadowBias);
         for(size_t i=0;i<m_objects.size();++i){
@@ -1137,7 +1137,7 @@ namespace icl{
           renderSceneObjectRecursive((SceneObject*)m_objects[i].get());
         }
       }
-      
+
       if(((Configurable*)this)->getPropertyValue("visualize cameras")){
         for(unsigned int i=0;i<m_cameraObjects.size();++i){
           if((int)i == camIndex) continue;
@@ -1146,7 +1146,7 @@ namespace icl{
       }
 
       glPushAttrib(GL_ENABLE_BIT);
-      
+
       if(m_renderSettings->lightingEnabled && ((Configurable*)this)->getPropertyValue("visualize lights")){
         for(int i=0;i<8;++i){
           if(m_lights[i] && m_lights[i]->on){
@@ -1202,9 +1202,9 @@ namespace icl{
         glLightModeliv(GL_LIGHT_MODEL_AMBIENT, minumum_ambience);
         renderSceneObjectRecursive((SceneObject*)m_coordinateFrameObject.get());
       }
-  
+
     }
-    
+
    void Scene::renderShadow(const unsigned int light, const unsigned int shadow, unsigned int size) const{
       FBOData::Glints &glints = m_fboData->infos[GLContext::currentContext()];
       if(!glints.created)m_fboData->createShadowFBO();
@@ -1226,30 +1226,30 @@ namespace icl{
 
       glMatrixMode(GL_MODELVIEW);
       glLoadMatrixf(GLMatrix(m_lights[light]->getShadowCam()->getCSTransformationMatrixGL()));
-  
+
       glMatrixMode(GL_PROJECTION);
       glLoadMatrixf(GLMatrix(m_lights[light]->getShadowCam()->getProjectionMatrixGL()));
-      
+
       glEnable(GL_DEPTH_TEST);
-      
+
       glEnable(GL_CULL_FACE);
-	    
+
       bool cullFront = ((Configurable*)this)->getPropertyValue("shadows.cull object front for shadows");
-	    if(cullFront) {
-	      glCullFace(GL_FRONT);
+        if(cullFront) {
+          glCullFace(GL_FRONT);
       } else {
-	      glCullFace(GL_BACK);
+          glCullFace(GL_BACK);
       }
-	    
-	    ShaderUtil util;
+
+        ShaderUtil util;
       for(size_t i=0;i<m_objects.size();++i){
         renderSceneObjectRecursiveShadow(&util, (SceneObject*)m_objects[i].get());
       }
-	    // enable the default framebuffer
-	    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-	    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-	    glDisable(GL_CULL_FACE);
-	    glDisable(GL_SCISSOR_TEST);
+        // enable the default framebuffer
+        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        glDisable(GL_CULL_FACE);
+        glDisable(GL_SCISSOR_TEST);
     }
 
     void Scene::renderObjectFramesRecursive(SceneObject *o, SceneObject *cs) const{
@@ -1257,37 +1257,37 @@ namespace icl{
       glPushMatrix();
       const Mat &T = o->getTransformation(true);
       glMultMatrixf(T.transp().data());
-      
+
       renderSceneObjectRecursive(cs);
-      
+
       for(unsigned int i=0;i<o->m_children.size();++i){
         renderObjectFramesRecursive(o->m_children[i].get(),cs);
       }
 
       glPopMatrix();
-      
+
     }
 
     void Scene::setDrawLightsEnabled(bool enabled, float lightSize){
       setPropertyValue("visualize lights",enabled);
       setPropertyValue("light object size",lightSize);
     }
-    
+
     bool Scene::getDrawLightsEnabled() const {
       return ((Configurable*)this)->getPropertyValue("visualize lights");
     }
-  
+
     MouseHandler *Scene::getMouseHandler(int camIndex){
       // check input
       ICLASSERT_RETURN_VAL(camIndex >= 0 && camIndex < (int)m_cameras.size(),0);
-  
+
       // Search for already exsiting mouse handler for given camera.
       for(unsigned int i=0;i<m_mouseHandlers.size();++i){
         if(m_mouseHandlers[i]->getCameraIndex() == camIndex){
           return m_mouseHandlers[i].get();
         }
       }
-  
+
       // No mouse handler found for camera. Create a new one.
       SceneMouseHandler* newSceneMouseHandler = new SceneMouseHandler(camIndex,this);
       ICLASSERT(newSceneMouseHandler!=0);
@@ -1299,16 +1299,16 @@ namespace icl{
         newSceneMouseHandler->setSensitivities(getMaxSceneDim());
       }
       m_mouseHandlers.push_back(newSceneMouseHandler);
-  
+
       // return mouse handler
       return newSceneMouseHandler;
     }
-  
+
     void Scene::setMouseHandler(SceneMouseHandler* sceneMouseHandler, int camIndex){
       // check input
       ICLASSERT_RETURN(camIndex >= 0 && camIndex < (int)m_cameras.size());
       ICLASSERT_RETURN(sceneMouseHandler);
-  
+
       // Search for existing mouse handler and replace it.
       for(unsigned int i=0;i<m_mouseHandlers.size();++i){
         if(m_mouseHandlers[i]->getCameraIndex() == camIndex){
@@ -1318,15 +1318,15 @@ namespace icl{
           return;
         }
       }
-  
+
       // Camera did not have a mouse handler. Add new one.
       sceneMouseHandler->setParentScene(this);
       m_mouseHandlers.push_back(sceneMouseHandler);
     }
-  
+
     ICLDrawWidget3D::GLCallback *Scene::getGLCallback(int camIndex){
       ICLASSERT_RETURN_VAL(camIndex >= 0 && camIndex < (int)m_cameras.size(),0);
-  
+
       // search for already exsiting mouse handler for given camera
       for(unsigned int i=0;i<m_glCallbacks.size();++i){
         if(m_glCallbacks[i]->cameraIndex == camIndex){
@@ -1336,22 +1336,22 @@ namespace icl{
       m_glCallbacks.push_back(new GLCallback(camIndex,this));
       return m_glCallbacks.back().get();
     }
-  
+
   #endif // QT
-  
+
     void Scene::setDrawCamerasEnabled(bool enabled){
       setPropertyValue("visualize cameras",enabled);
     }
-  
+
     void Scene::setDrawCoordinateFrameEnabled(bool enabled, float size){
       setPropertyValue("visualize world frame",enabled);
       setPropertyValue("world frame size",size);
     }
-  
+
     bool Scene::getDrawCamerasEnabled() const{
       return ((Configurable*)this)->getPropertyValue("visualize cameras");
     }
-    
+
     bool Scene::getDrawCoordinateFrameEnabled() const{
       return ((Configurable*)this)->getPropertyValue("visualize world frame");
     }
@@ -1359,15 +1359,15 @@ namespace icl{
     void Scene::setBackgroundColor(const GeomColor &color){
       setPropertyValue("background color",Color(color[0],color[1],color[2]));
     }
-    
+
     GeomColor Scene::getBackgroundColor() const{
       Color c = ((Configurable*)this)->getPropertyValue("background color");
       return GeomColor(c[0],c[1],c[2],255);
     }
 
-  
-    void Scene::extendMaxSceneDimRecursive(float &minX, float &maxX, 
-                                           float &minY, float &maxY, 
+
+    void Scene::extendMaxSceneDimRecursive(float &minX, float &maxX,
+                                           float &minY, float &maxY,
                                            float &minZ, float &maxZ,
                                            SceneObject *o) const{
       std::vector<Vec> &ps = o->m_vertices;
@@ -1379,39 +1379,39 @@ namespace icl{
         if(ps[j][2] < minZ) minZ = ps[j][2];
         if(ps[j][2] > maxZ) maxZ = ps[j][2];
       }
-      
+
       for(unsigned int i=0;i<o->m_children.size();++i){
         extendMaxSceneDimRecursive(minX,maxX,minY,maxY,minZ,maxZ,o->m_children[i].get());
       }
-     
+
     }
-  
-  
-  
+
+
+
     float Scene::getMaxSceneDim() const{
       Range32f rangeXYZ[3]={Range32f::limits(),Range32f::limits(),Range32f::limits()};
       Range32f orig[3] = {rangeXYZ[0], rangeXYZ[1], rangeXYZ[2] };
-      
+
       for(int i=0;i<3;++i){
         std::swap(rangeXYZ[i].minVal,rangeXYZ[i].maxVal);
       }
       for(unsigned int i=0;i<m_objects.size();++i){
-        extendMaxSceneDimRecursive(rangeXYZ[0].minVal,rangeXYZ[0].maxVal, 
-                                   rangeXYZ[1].minVal,rangeXYZ[1].maxVal, 
+        extendMaxSceneDimRecursive(rangeXYZ[0].minVal,rangeXYZ[0].maxVal,
+                                   rangeXYZ[1].minVal,rangeXYZ[1].maxVal,
                                    rangeXYZ[2].minVal,rangeXYZ[2].maxVal,
                                    const_cast<SceneObject*>(m_objects[i].get()));
       }
       if(getDrawCamerasEnabled()){
         for(unsigned i=0;i<m_cameraObjects.size();++i){
-          extendMaxSceneDimRecursive(rangeXYZ[0].minVal,rangeXYZ[0].maxVal, 
-                                     rangeXYZ[1].minVal,rangeXYZ[1].maxVal, 
+          extendMaxSceneDimRecursive(rangeXYZ[0].minVal,rangeXYZ[0].maxVal,
+                                     rangeXYZ[1].minVal,rangeXYZ[1].maxVal,
                                      rangeXYZ[2].minVal,rangeXYZ[2].maxVal,
                                      const_cast<SceneObject*>(m_cameraObjects[i].get()));
         }
       }
       if(getDrawCoordinateFrameEnabled()){
-        extendMaxSceneDimRecursive(rangeXYZ[0].minVal,rangeXYZ[0].maxVal, 
-                                   rangeXYZ[1].minVal,rangeXYZ[1].maxVal, 
+        extendMaxSceneDimRecursive(rangeXYZ[0].minVal,rangeXYZ[0].maxVal,
+                                   rangeXYZ[1].minVal,rangeXYZ[1].maxVal,
                                    rangeXYZ[2].minVal,rangeXYZ[2].maxVal,
                                    const_cast<SceneObject*>(m_coordinateFrameObject.get()));
       }
@@ -1419,11 +1419,11 @@ namespace icl{
       if(rangeXYZ[0] == orig[0] && rangeXYZ[1] == orig[1] && rangeXYZ[2] == orig[2]){
         return 1000;
       }
-      
+
       float r = iclMax(iclMax(rangeXYZ[1].getLength(),rangeXYZ[2].getLength()),rangeXYZ[0].getLength());
       return r ? r : 1;
     }
-  
+
     SceneLight &Scene::getLight(int index) throw (ICLException){
       if(index < 0 || index > 7) throw ICLException("invalid light index");
       if(!m_lights[index]){
@@ -1432,12 +1432,12 @@ namespace icl{
       }
       return *m_lights[index];
     }
-  
+
     const SceneLight &Scene::getLight(int index) const throw (ICLException){
       return const_cast<Scene*>(this)->getLight(index);
     }
-  
-      
+
+
     void Scene::setLightingEnabled(bool flag){
       setPropertyValue("enable lighting",flag);
     }
@@ -1446,26 +1446,26 @@ namespace icl{
       setPropertyValue("visualize object frames",enabled);
       setPropertyValue("object frame size",size);
     }
-    
+
     bool Scene::getDrawObjectFramesEnabled() const{
       return ((Configurable*)this)->getPropertyValue("visualize object frames");
     }
 
-  
+
     SceneObject *Scene::getObject(int index) throw (ICLException){
       if(index < 0 || index >= (int)m_objects.size()) throw ICLException("Scene::getObject: invalid index");
       return m_objects[index].get();
     }
-  
+
     const SceneObject *Scene::getObject(int index) const throw (ICLException){
       return const_cast<Scene*>(this)->getObject(index);
     }
-    
+
     SceneObject *find_object_recursive(SceneObject *o, int idx, const std::vector<int> &indices){
       if(idx == (int)indices.size()-1) return o->getChild(indices[idx]);
       else return find_object_recursive(o->getChild(indices[idx]),idx+1,indices);
-    }  
-    
+    }
+
     SceneObject *Scene::getObject(const std::vector<int> recursiveIndices) throw (ICLException){
       if(!recursiveIndices.size()) throw ICLException("Scene::getObject: recursiveIndices's size was 0");
       if(recursiveIndices.size() == 1) return getObject(recursiveIndices.front());
@@ -1477,12 +1477,12 @@ namespace icl{
       }
       return found;
     }
-    
+
     SceneObject *Scene::getObject(const std::vector<int> recursiveIndices) const throw (ICLException){
       return const_cast<Scene*>(this)->getObject(recursiveIndices);
     }
-    
-  
+
+
     bool find_path_recursive(const SceneObject *o, std::vector<int> &path, const SceneObject *x){
       for(int i=0;i<o->getChildCount();++i){
         path.push_back(i);
@@ -1491,11 +1491,11 @@ namespace icl{
       }
       return false;
     }
-  
+
     std::vector<int> Scene::findPath(const SceneObject *o) const throw (ICLException){
       std::vector<int> path;
       for(unsigned int i=0;i<m_objects.size();++i){
-        path.push_back(i); 
+        path.push_back(i);
         if(m_objects[i].get() == o) {
           return path;
         }else{
@@ -1509,8 +1509,8 @@ namespace icl{
       throw ICLException("Scene::findPath: given object not found!");
       return path;
     }
-  
-    
+
+
     Hit Scene::findObject(const ViewRay &v){
       std::vector<Hit> hits;
       Hit h;
@@ -1521,7 +1521,7 @@ namespace icl{
       }
       return hits.size() ? *std::min_element(hits.begin(),hits.end()) : Hit();
     }
-  
+
     /// retunrs all objects intersected by the given viewray
     std::vector<Hit> Scene::findObjects(const ViewRay &v){
       std::vector<Hit> hits;
@@ -1532,13 +1532,13 @@ namespace icl{
       std::sort(hits.begin(),hits.end());
       return hits;
     }
-  
+
     void Scene::freeDisplayList(void *handle){
       glDeleteLists(*(GLuint*)handle,1);
       delete (GLuint*)handle;
     }
-  
-  
+
+
     void Scene::createDisplayList(SceneObject *o) const{
       if(!o->m_displayListHandle){
         o->m_displayListHandle = new GLuint(0);
@@ -1550,14 +1550,14 @@ namespace icl{
       glEndList();
       creatingDisplayList = false;
     }
-    
+
     void Scene::freeDisplayList(SceneObject *o) const{
       if(o->m_displayListHandle){
         freeDisplayList(o->m_displayListHandle);
         o->m_displayListHandle = 0;
       }
     }
-  
+
     void Scene::setBounds(float minX, float maxX, float minY, float maxY, float minZ, float maxZ){
       m_bounds = SmartArray<Range32f>(new Range32f[3]);
       if(minX == maxX){
@@ -1583,21 +1583,21 @@ namespace icl{
         m_bounds[2] = Range32f(minZ,maxZ);
       }
     }
-    
-  
-  
-  
+
+
+
+
   #ifdef HAVE_QT
   #ifdef HAVE_GLX
-  
+
     struct Scene::PBuffer{
-      
+
       static Mutex glxMutex; // glx context's are not thread-safe -> so offscreen rendering performed in an atomic code segment
-      
+
       static Display *getDisplay(){
         static Display *d = XOpenDisplay(getenv("DISPLAY"));
         // this leads to errors due to missing x-server connection
-        // obviously the connect is cut before the static context is free'd 
+        // obviously the connect is cut before the static context is free'd
         // static struct F{ ~F(){ XCloseDisplay(d); }} freeDisplay;
         return d;
       }
@@ -1614,15 +1614,15 @@ namespace icl{
           if(!configs){
             throw ICLException("Scene::render pbuffer based rendering is not supported on you machine");
           }
-        } 
+        }
         return *configs;
       }
-      
+
       PBuffer(){}
       PBuffer(const Size s):size(s){
         const int S[] = { GLX_PBUFFER_WIDTH,size.width, GLX_PBUFFER_HEIGHT, size.height, 0 };
         pbuffer = glXCreatePbuffer(getDisplay(), findGLXConfig(), S);
-  
+
         // note: setting this to false makes rendering 50% slower
         context = glXCreateNewContext(getDisplay(), findGLXConfig(), GLX_RGBA_TYPE, 0, true /* try direct rendering context first*/);
         if(!context){
@@ -1642,24 +1642,24 @@ namespace icl{
         glXMakeCurrent(getDisplay(),pbuffer,context);
         GLContext::set_current_glx_context(context,pbuffer,getDisplay());
       }
-      
+
       GLXContext context;    /* OpenGL context */
       GLXPbuffer pbuffer;    /* Pbuffer */
       SmartPtr<GLImg> background; // optionally used background image
       Size size;
       std::vector<icl8u> rgbbuf;
       Img8u buf;
-      
+
       struct DepthCorrection{
         std::vector<icl32f> factors;
         Size resolution;
         icl32f fX,fY,skew;
         Point32f ppOffs;
-  
+
         static inline float compute_depth_norm(const Vec &dir, const Vec &centerDir){
           return sprod3(dir,centerDir)/(norm3(dir)*norm3(centerDir));
         }
-        
+
         void update(const Camera &cam){
           const Camera::RenderParams &p = cam.getRenderParams();
           const float f = cam.getFocalLength();
@@ -1670,19 +1670,19 @@ namespace icl{
              fY != f*cam.getSamplingResolutionY() ||
              skew != cam.getSkew() ||
              ppOffs != cam.getPrincipalPointOffset()){
-            
+
             resolution = Size(w,h);
             fX = f*cam.getSamplingResolutionX();
             fY = f*cam.getSamplingResolutionY();
             skew = cam.getSkew();
             ppOffs = cam.getPrincipalPointOffset();
-            
+
             factors.resize(w*h);
-            
+
             Array2D<ViewRay> vs = cam.getAllViewRays();
-            
+
             const Vec c = vs(w/2-1,h/2-1).direction;
-  
+
             for(int idx=0;idx<w*h; ++idx){
               factors[idx] = 1.0/compute_depth_norm(vs[idx].direction,c);
             }
@@ -1690,42 +1690,42 @@ namespace icl{
         }
       } depthCorr;
     };
-  
+
     Scene::PBufferIndex::PBufferIndex(const Size &size):
       Size(size),threadID(pthread_self()){}
-  
+
     bool Scene::PBufferIndex::operator<(const Scene::PBufferIndex &other) const{
       if(other.threadID == threadID){
         if(other.width == width) return other.height < height;
         else return other.width < width;
       }else return other.threadID < threadID;
     }
-  
+
     Mutex Scene::PBuffer::glxMutex;
-    
+
     /** Benchmark results:
-        
+
         Hardware:     using dell xt2 laptop (intel integrated graphics adapter)
                       times in braces are taken from an Quad-Core Xeon Workstation with
-                      nvida quadro card 
+                      nvida quadro card
         ViewPortSize: VGA
         Scene:        ICL's scene graph demo (including the parrot background image)
-        
+
         context creation/
         buffer allocation   : 11ms (first time, then 0.06ms) (43ms, then 0.4ms)
-        
+
         rendering the scene : 85ms (5ms)
-        
+
         pbuffer read-out    : 31ms (3.2ms)
-        
+
         interlavedToPlanar  : 0.8ms (0.2ms)
-  
+
         flip vertically     : 0.6ms (0.13ms)
-  
+
         grabbing the depth buffer: ?? (4.29ms)
       -------------------------------------
         total               : 117ms (9ms) + time for depth buffer
-        
+
     */
     const Img8u &Scene::render(int camIndex, const ImgBase *background, Img32f *depthBuffer,
                                DepthBufferMode mode) const throw (ICLException){
@@ -1738,13 +1738,13 @@ namespace icl{
         DepthBufferMode &mode;
         Img8u **out;
         RenderEvent(const Scene *scene, int camIndex, const ImgBase *background, Img32f *depthBuffer, DepthBufferMode &mode, Img8u **out):
-          scene(scene), 
+          scene(scene),
           camIndex(camIndex),
           background(background),
           depthBuffer(depthBuffer),
           mode(mode),
           out(out){}
-          
+
         virtual void execute(){
           ICLASSERT_THROW(camIndex < (int)scene->m_cameras.size(),ICLException("Scene::render: invalid camera index"));
           const Camera &cam = scene->getCamera(camIndex);
@@ -1752,24 +1752,24 @@ namespace icl{
           int h = cam.getRenderParams().viewport.height;
           Size s(w,h);
           PBufferIndex idx(s);
-      
+
           Mutex::Locker lock(PBuffer::glxMutex);
           //    PBuffer::glxMutex.lock();
           std::map<PBufferIndex,PBuffer*>::iterator it = scene->m_pbuffers.find(idx);
           PBuffer &p = (it==scene->m_pbuffers.end())?(*(scene->m_pbuffers[idx] = new PBuffer(s))):(*it->second);
           // PBuffer::glxMutex.unlock();
-          
+
           scene->lock();
           p.makeCurrent();
-      
+
           GeomColor c = scene->getBackgroundColor();
           glClearColor(c[0]/255.,c[1]/255.,c[2]/255.,1);
-          glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );    
+          glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
           glEnable(GL_TEXTURE_2D);
           glEnable(GL_BLEND);
           glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
           glEnable(GL_COLOR_MATERIAL);
-      
+
           if(background){
             glOrtho(0, w, h, 0, -999999, 999999);
             glMatrixMode(GL_PROJECTION);
@@ -1782,35 +1782,35 @@ namespace icl{
             bg->update(background);
             bg->draw2D(Rect(0,0,w,h),s);
             glEnable(GL_LIGHTING);
-            glClear(GL_DEPTH_BUFFER_BIT );    
+            glClear(GL_DEPTH_BUFFER_BIT );
           }
-      
+
           scene->renderScene(camIndex);
           glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, p.rgbbuf.data());
           interleavedToPlanar(p.rgbbuf.data(),&p.buf);
           p.buf.mirror(axisHorz); // software mirroring takes only about 1ms (with ipp)
-          
+
           if(depthBuffer){
             depthBuffer->setSize(Size(w,h));
             depthBuffer->setChannels(1);
             glReadPixels(0,0,w,h, GL_DEPTH_COMPONENT, GL_FLOAT, depthBuffer->begin(0));
             depthBuffer->mirror(axisHorz);
-      
+
             if(mode != RawDepth01){
               const float zNear = cam.getRenderParams().clipZNear;
               const float zFar = cam.getRenderParams().clipZFar;
-              
+
               icl32f *db = depthBuffer->begin(0);
-      
+
               const int dim = w*h;
               const float Q = zFar / ( zFar - zNear );
               const float izFar = 1.0/zFar;
-              
+
               const float m = zFar-zNear;
               const float b = zNear;
-              
+
               const float A = izFar * m;
-      
+
               if(mode == DistToCamCenter){
                 p.depthCorr.update(cam);
                 const float *corr = p.depthCorr.factors.data();
@@ -1824,17 +1824,17 @@ namespace icl{
               }
             }
           }
-          
+
           GLContext::unset_current_glx_context();
           p.buf.setTime(icl::utils::Time::now());
           if(depthBuffer) depthBuffer->setTime(p.buf.getTime());
-          
+
           scene->unlock();
           *out = &p.buf;
         }
       };
       #endif
-      
+
       Img8u *out;
       ICLApplication *app = ICLApplication::instance();
       app->executeInGUIThread(new RenderEvent(this, camIndex, background, depthBuffer, mode, &out), true);
@@ -1842,7 +1842,7 @@ namespace icl{
 
       return *out;
     }
-  
+
     void Scene::freeAllPBuffers(){
       typedef std::map<PBufferIndex,PBuffer*>::iterator It;
       for(It it = m_pbuffers.begin();it != m_pbuffers.end();++it){
@@ -1850,7 +1850,7 @@ namespace icl{
       }
       m_pbuffers.clear();
     }
-  
+
     void Scene::freePBuffer(const Size &size){
       typedef std::map<PBufferIndex,PBuffer*>::iterator It;
       PBufferIndex idx(size);
@@ -1860,13 +1860,13 @@ namespace icl{
         m_pbuffers.erase(it);
       }
     }
-    
+
   #endif
   #endif
-  
+
     REGISTER_CONFIGURABLE(Scene, return new Scene);
 
-  
+
   } // namespace geom
 }
 
