@@ -225,7 +225,7 @@ presented in the paper *Direct Least Square Fitting of Ellipses* by
 
 .. _math.polyreg:
 
-Generig Polynomial Regression
+Generic Polynomial Regression
 """""""""""""""""""""""""""""
 
 The :icl:`PolynomialRegression` is a

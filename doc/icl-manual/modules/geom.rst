@@ -14,7 +14,7 @@ integrated and optimized for simplicity and usability. *Simplicity*
 means, that no 3rd party libraries except for OpenGL for the
 visualization are needed. The 3D vision framework's main class is
 :icl:`geom::Camera`, which represents a idealized pinhole camera
-defined by extrinsic and extrinsic parameters. The camera is not only
+defined by extrinsic and intrinsic parameters. The camera is not only
 used for 3D vision and camera calibration, but also for visualization
 tasks. For this, the ICLGeom package provides a lightweight scene
 graph implementation that basically consists of the :icl:`geom::Scene`
