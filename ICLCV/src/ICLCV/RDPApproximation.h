@@ -52,7 +52,11 @@ namespace icl{
 
         Parameters for the algorithm are:
       - <b>epsilon</b>
-        denotes the maximum perpendicular distance, that is used to filter points
+        denotes the maximum ratio between the perpendicular and the line distance,
+        that is used to filter points
+      - <b>max_corners</b>
+        denotes the maximum number of corners; if the number of corners is higher, the
+        algorithm return an empty list
       - <b>search_iters</b>
         denotes the number of steps to find the two farthest points of a polygon
     **/
@@ -65,8 +69,8 @@ namespace icl{
 
     public:
       /// default constructor with given arguments
-      RDPApproximation(float epsilon = 10.0f, int search_iters = 3) :
-        epsilon(epsilon), search_iters(search_iters) {};
+      RDPApproximation(float epsilon = 0.1f, int max_corners = 0, int search_iters = 3) :
+        epsilon(epsilon), max_corners(max_corners), search_iters(search_iters) {};
 
       /// approximates a polygon
       /**
@@ -85,20 +89,32 @@ namespace icl{
       }
 
       inline void setEpsilon(float value){ epsilon = value; }
+      inline void setMaxCorners(float value){ max_corners = value; }
       inline void setSearchIterations(float value){ search_iters = value; }
       inline float getEpsilon() const { return epsilon; }
+      inline float getMaxCorners() const { return max_corners; }
       inline float getSearchIterations() const { return search_iters; }
 
     private:
       /// parameters
       float epsilon;
+      int max_corners;
       int search_iters;
 
       /// approximates a curve
       void approximateCurve(const ChainPoint *first, const ChainPoint *last);
 
+      /// tries to approximates a curve with a maximum number of points
+      /**
+        * the param cap shows how much points can be in between of the first and the last point
+        */
+      int approximateCurveWithCap(const ChainPoint *first, const ChainPoint *last, int cap);
+
       /// approximates a polygon
       void approximatePolygon(const ChainPoint *cps, const int size, bool polygon);
+
+      /// approximates a rectangle if possible
+      void approximateWithCap(const ChainPoint *cps, const int size, bool polygon);
 
       /// result list
       std::vector<utils::Point32f> approximation;

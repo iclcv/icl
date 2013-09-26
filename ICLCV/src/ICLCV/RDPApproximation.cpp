@@ -47,7 +47,10 @@ namespace icl{
         current->y = it->y;
       }
 
-      approximatePolygon(cps, poly.size(), polygon);
+      if (max_corners >= 2)
+        approximateWithCap(cps, poly.size(), polygon);
+      else
+        approximatePolygon(cps, poly.size(), polygon);
 
       delete[] cps;
 
@@ -65,7 +68,10 @@ namespace icl{
         current->y = it->y;
       }
 
-      approximatePolygon(cps, poly.size(), polygon);
+      if (max_corners >= 2)
+        approximateWithCap(cps, poly.size(), polygon);
+      else
+        approximatePolygon(cps, poly.size(), polygon);
 
       delete[] cps;
 
@@ -83,7 +89,10 @@ namespace icl{
         current->y = it->y;
       }
 
-      approximatePolygon(cps, size, polygon);
+      if (max_corners >= 2)
+        approximateWithCap(cps, size, polygon);
+      else
+        approximatePolygon(cps, size, polygon);
 
       delete[] cps;
 
@@ -108,10 +117,38 @@ namespace icl{
         current = current->next;
       }
 
-      if (d_max > epsilon) {
+      if (d_max / (dx*dx+dy*dy) > epsilon) {
         approximateCurve(first, highest);
         approximateCurve(highest, last);
       } else approximation.push_back(Point32f(first->x, first->y));
+    }
+
+    int RDPApproximation::approximateCurveWithCap(const ChainPoint *first, const ChainPoint *last, int cap) {
+      const ChainPoint *current = first->next, *highest = 0;
+      float dx, dy, d_max = 0;
+
+      dx = first->x - last->x;
+      dy = first->y - last->y;
+
+      while (current != last) {
+        int d = abs((last->x - current->x) * dy - (last->y - current->y) * dx);
+
+        if (d > d_max) {
+          d_max = d;
+          highest = current;
+        }
+
+        current = current->next;
+      }
+
+      if (d_max / (dx*dx+dy*dy) > epsilon) {
+        --cap;
+        if (cap < 0) return cap;
+        if ((cap = approximateCurveWithCap(first, highest, cap)) < 0) return cap;
+        return approximateCurveWithCap(highest, last, cap);
+      } else approximation.push_back(Point32f(first->x, first->y));
+
+      return cap;
     }
 
     void RDPApproximation::approximatePolygon(const ChainPoint *cps, const int size, bool polygon) {
@@ -149,6 +186,82 @@ namespace icl{
       } else {
         approximateCurve(cps, cps->prev);
         approximation.push_back(Point32f(cps->prev->x, cps->prev->y));
+      }
+    }
+
+    void RDPApproximation::approximateWithCap(const ChainPoint *cps, const int size, bool polygon) {
+      const ChainPoint *current = cps, *first = cps, *last = cps->prev, *highest = cps;
+      float dx, dy;
+      int d_max = 0;
+
+      approximation.clear();
+
+      if (size < 4) {
+        return;
+      }
+
+
+      if (polygon) {
+        // find the point with the highest distance to the first point
+        do {
+          int d = pow(first->x - current->x, 2) + pow(first->y - current->y, 2);
+
+          if (d >= d_max) {
+            d_max = d;
+            last = current;
+          }
+
+          current = current->next;
+        } while (current != first);
+
+
+        // look for a better point, which should be a corner point
+        d_max = 0;
+        dx = first->x - last->x;
+        dy = first->y - last->y;
+        current = first->next;
+
+        while (current != last) {
+          int d = abs((last->x - current->x) * dy - (last->y - current->y) * dx);
+
+          if (d > d_max) {
+            d_max = d;
+            highest = current;
+          }
+
+          current = current->next;
+        }
+
+        if (d_max / (dx*dx+dy*dy) <= epsilon) current = highest;
+        else current = last;
+
+
+        // find a second corner point;
+        // just take the point with the highest distance to the previous point
+        d_max = 0;
+        first = last = current;
+
+        do {
+          int d = pow(first->x - current->x, 2) + pow(first->y - current->y, 2);
+
+          if (d >= d_max) {
+            d_max = d;
+            last = current;
+          }
+
+          current = current->next;
+        } while (current != first);
+
+
+        // rectangle points = cap + first point + last point
+        int cap = max_corners - 2;
+        cap = approximateCurveWithCap(first, last, cap);
+        if (cap >= 0) cap = approximateCurveWithCap(last, first, cap);
+
+        if (cap < 0) approximation.clear();
+      } else {
+        int cap = max_corners - 2;
+        approximateCurveWithCap(first, last, cap);
       }
     }
 
