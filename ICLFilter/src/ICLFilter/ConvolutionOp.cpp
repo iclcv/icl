@@ -154,23 +154,23 @@ namespace icl{
         ipp_call_filter_##KD(src,dst,kernel,c,op,IPPF);                                                                                   \
       }
   
-      // fixed sobel x filters
-      FIXED_SPEC(8u,8u,sobelX3x3,ippiFilterSobelHoriz_8u_C1R);
+      // fixed sobel y filters
+      FIXED_SPEC(8u,8u,sobelY3x3,ippiFilterSobelHoriz_8u_C1R);
           
   
-      FIXED_SPEC(16s,16s,sobelX3x3,ippiFilterSobelHoriz_16s_C1R);
-      FIXED_SPEC(32f,32f,sobelX3x3,ippiFilterSobelHoriz_32f_C1R);
-      FIXED_SPEC_M(8u,16s,sobelX3x3,ippiFilterSobelHoriz_8u16s_C1R,ippMskSize3x3);
-      FIXED_SPEC_M(8u,16s,sobelX5x5,ippiFilterSobelHoriz_8u16s_C1R,ippMskSize5x5);
-      FIXED_SPEC_M(32f,32f,sobelX5x5,ippiFilterSobelHorizMask_32f_C1R,ippMskSize5x5);
+      FIXED_SPEC(16s,16s,sobelY3x3,ippiFilterSobelHoriz_16s_C1R);
+      FIXED_SPEC(32f,32f,sobelY3x3,ippiFilterSobelHoriz_32f_C1R);
+      FIXED_SPEC_M(8u,16s,sobelY3x3,ippiFilterSobelHoriz_8u16s_C1R,ippMskSize3x3);
+      FIXED_SPEC_M(8u,16s,sobelY5x5,ippiFilterSobelHoriz_8u16s_C1R,ippMskSize5x5);
+      FIXED_SPEC_M(32f,32f,sobelY5x5,ippiFilterSobelHorizMask_32f_C1R,ippMskSize5x5);
   
-      // fixed sobel y filters
-      FIXED_SPEC(8u,8u,sobelY3x3,ippiFilterSobelVert_8u_C1R);
-      FIXED_SPEC(16s,16s,sobelY3x3,ippiFilterSobelVert_16s_C1R);
-      FIXED_SPEC(32f,32f,sobelY3x3,ippiFilterSobelVert_32f_C1R);
-      FIXED_SPEC_M(8u,16s,sobelY3x3,ippiFilterSobelVert_8u16s_C1R,ippMskSize3x3);
-      FIXED_SPEC_M(8u,16s,sobelY5x5,ippiFilterSobelVert_8u16s_C1R,ippMskSize5x5);
-      FIXED_SPEC_M(32f,32f,sobelY5x5,ippiFilterSobelVertMask_32f_C1R,ippMskSize5x5);
+      // fixed sobel x filters
+      FIXED_SPEC(8u,8u,sobelX3x3,ippiFilterSobelVert_8u_C1R);
+      FIXED_SPEC(16s,16s,sobelX3x3,ippiFilterSobelVert_16s_C1R);
+      FIXED_SPEC(32f,32f,sobelX3x3,ippiFilterSobelVert_32f_C1R);
+      FIXED_SPEC_M(8u,16s,sobelX3x3,ippiFilterSobelVert_8u16s_C1R,ippMskSize3x3);
+      FIXED_SPEC_M(8u,16s,sobelX5x5,ippiFilterSobelVert_8u16s_C1R,ippMskSize5x5);
+      FIXED_SPEC_M(32f,32f,sobelX5x5,ippiFilterSobelVertMask_32f_C1R,ippMskSize5x5);
   
   
       // fixed laplace filters

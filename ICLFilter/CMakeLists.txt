@@ -33,6 +33,7 @@ SET(SOURCES src/ICLFilter/AffineOp.cpp
 	    src/ICLFilter/BinaryCompareOp.cpp
 	    src/ICLFilter/BinaryLogicalOp.cpp
 	    src/ICLFilter/BinaryOp.cpp
+      src/ICLFilter/CannyOp.cpp
 	    src/ICLFilter/ChamferOp.cpp
 	    src/ICLFilter/ColorDistanceOp.cpp
 	    src/ICLFilter/ColorSegmentationOp.cpp
@@ -73,6 +74,7 @@ SET(HEADERS src/ICLFilter/AffineOp.h
 	    src/ICLFilter/BinaryCompareOp.h
 	    src/ICLFilter/BinaryLogicalOp.h
 	    src/ICLFilter/BinaryOp.h
+      src/ICLFilter/CannyOp.h
 	    src/ICLFilter/ChamferOp.h
 	    src/ICLFilter/ColorDistanceOp.h
 	    src/ICLFilter/ColorSegmentationOp.h
@@ -116,11 +118,9 @@ SET(HEADERS src/ICLFilter/AffineOp.h
 
 IF(IPP_FOUND)
   LIST(APPEND SOURCES src/ICLFilter/WienerOp.cpp
-                      src/ICLFilter/CannyOp.cpp
 		      src/ICLFilter/ProximityOp.cpp)
 
   LIST(APPEND HEADERS src/ICLFilter/WienerOp.h
-                      src/ICLFilter/CannyOp.h
 		      src/ICLFilter/ProximityOp.h)	    
 ENDIF()
 

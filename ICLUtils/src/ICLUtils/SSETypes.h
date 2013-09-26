@@ -329,6 +329,26 @@ namespace icl{
           return v0;
         }
 
+        inline icl128i& operator&=(const Icl128i &v) {
+          v0 = _mm_and_si128(v0, v.v0);
+          return *this;
+        }
+
+        inline icl128i& operator|=(const Icl128i &v) {
+          v0 = _mm_or_si128(v0, v.v0);
+          return *this;
+        }
+
+        inline icl128i& operator^=(const Icl128i &v) {
+          v0 = _mm_xor_si128(v0, v.v0);
+          return *this;
+        }
+
+        inline icl128i& andnot(const Icl128i &v) {
+          v0 = _mm_andnot_si128(v.v0, v0);
+          return *this;
+        }
+
         inline void add8(const Icl128i &v) {
           v0 = _mm_add_epi8(v0, v.v0);
         }
@@ -339,6 +359,18 @@ namespace icl{
 
         inline void add32(const Icl128i &v) {
           v0 = _mm_add_epi32(v0, v.v0);
+        }
+
+        inline void sub8(const Icl128i &v) {
+          v0 = _mm_sub_epi8(v0, v.v0);
+        }
+
+        inline void sub16(const Icl128i &v) {
+          v0 = _mm_sub_epi16(v0, v.v0);
+        }
+
+        inline void sub32(const Icl128i &v) {
+          v0 = _mm_sub_epi32(v0, v.v0);
         }
 
         inline void store(__m128i *v) const {
@@ -711,6 +743,30 @@ namespace icl{
           //v1 = _mm_cvtps_epi32(_mm_min_ps(_mm_max_ps(v.v1, vMin), vMax));
           v0 = _mm_cvtps_epi32(v.v0);
           v1 = _mm_cvtps_epi32(v.v1);
+          return *this;
+        }
+
+        inline icl256i& operator&=(const Icl256i &v) {
+          v0 = _mm_and_si128(v0, v.v0);
+          v1 = _mm_and_si128(v1, v.v1);
+          return *this;
+        }
+
+        inline icl256i& operator|=(const Icl256i &v) {
+          v0 = _mm_or_si128(v0, v.v0);
+          v1 = _mm_or_si128(v1, v.v1);
+          return *this;
+        }
+
+        inline icl256i& operator^=(const Icl256i &v) {
+          v0 = _mm_xor_si128(v0, v.v0);
+          v1 = _mm_xor_si128(v1, v.v1);
+          return *this;
+        }
+
+        inline icl256i& andnot(const Icl256i &v) {
+          v0 = _mm_andnot_si128(v.v0, v0);
+          v1 = _mm_andnot_si128(v.v1, v1);
           return *this;
         }
 
@@ -1152,6 +1208,38 @@ namespace icl{
           return *this;
         }
 
+        inline icl512i& operator&=(const Icl512i &v) {
+          v0 = _mm_and_si128(v0, v.v0);
+          v1 = _mm_and_si128(v1, v.v1);
+          v2 = _mm_and_si128(v2, v.v2);
+          v3 = _mm_and_si128(v3, v.v3);
+          return *this;
+        }
+
+        inline icl512i& operator|=(const Icl512i &v) {
+          v0 = _mm_or_si128(v0, v.v0);
+          v1 = _mm_or_si128(v1, v.v1);
+          v2 = _mm_or_si128(v2, v.v2);
+          v3 = _mm_or_si128(v3, v.v3);
+          return *this;
+        }
+
+        inline icl512i& operator^=(const Icl512i &v) {
+          v0 = _mm_xor_si128(v0, v.v0);
+          v1 = _mm_xor_si128(v1, v.v1);
+          v2 = _mm_xor_si128(v2, v.v2);
+          v3 = _mm_xor_si128(v3, v.v3);
+          return *this;
+        }
+
+        inline icl512i& andnot(const Icl512i &v) {
+          v0 = _mm_andnot_si128(v.v0, v0);
+          v1 = _mm_andnot_si128(v.v1, v1);
+          v2 = _mm_andnot_si128(v.v2, v2);
+          v3 = _mm_andnot_si128(v.v3, v3);
+          return *this;
+        }
+
         inline icl256i pack16s() {
           return icl256i(_mm_packs_epi32(v0, v1), _mm_packs_epi32(v2, v3));
         }
@@ -1422,6 +1510,26 @@ namespace icl{
         return lv;
       }
 
+      inline icl128i operator&(icl128i lv, const icl128i &rv) {
+        lv.v0 = _mm_and_si128(lv.v0, rv.v0);
+        return lv;
+      }
+
+      inline icl128i operator|(icl128i lv, const icl128i &rv) {
+        lv.v0 = _mm_or_si128(lv.v0, rv.v0);
+        return lv;
+      }
+
+      inline icl128i operator^(icl128i lv, const icl128i &rv) {
+        lv.v0 = _mm_xor_si128(lv.v0, rv.v0);
+        return lv;
+      }
+
+      inline icl128i andnot(icl128i lv, const icl128i &rv) {
+        lv.v0 = _mm_andnot_si128(rv.v0, lv.v0);
+        return lv;
+      }
+
       inline icl256 operator&(icl256 lv, const icl256 &rv) {
         lv.v0 = _mm_and_ps(lv.v0, rv.v0);
         lv.v1 = _mm_and_ps(lv.v1, rv.v1);
@@ -1443,6 +1551,30 @@ namespace icl{
       inline icl256 andnot(icl256 lv, const icl256 &rv) {
         lv.v0 = _mm_andnot_ps(rv.v0, lv.v0);
         lv.v1 = _mm_andnot_ps(rv.v1, lv.v1);
+        return lv;
+      }
+
+      inline icl256i operator&(icl256i lv, const icl256i &rv) {
+        lv.v0 = _mm_and_si128(lv.v0, rv.v0);
+        lv.v1 = _mm_and_si128(lv.v1, rv.v1);
+        return lv;
+      }
+
+      inline icl256i operator|(icl256i lv, const icl256i &rv) {
+        lv.v0 = _mm_or_si128(lv.v0, rv.v0);
+        lv.v1 = _mm_or_si128(lv.v1, rv.v1);
+        return lv;
+      }
+
+      inline icl256i operator^(icl256i lv, const icl256i &rv) {
+        lv.v0 = _mm_xor_si128(lv.v0, rv.v0);
+        lv.v1 = _mm_xor_si128(lv.v1, rv.v1);
+        return lv;
+      }
+
+      inline icl256i andnot(icl256i lv, const icl256i &rv) {
+        lv.v0 = _mm_andnot_si128(rv.v0, lv.v0);
+        lv.v1 = _mm_andnot_si128(rv.v1, lv.v1);
         return lv;
       }
 
@@ -1475,6 +1607,38 @@ namespace icl{
         lv.v1 = _mm_andnot_ps(rv.v1, lv.v1);
         lv.v2 = _mm_andnot_ps(rv.v2, lv.v2);
         lv.v3 = _mm_andnot_ps(rv.v3, lv.v3);
+        return lv;
+      }
+
+      inline icl512i operator&(icl512i lv, const icl512i &rv) {
+        lv.v0 = _mm_and_si128(lv.v0, rv.v0);
+        lv.v1 = _mm_and_si128(lv.v1, rv.v1);
+        lv.v2 = _mm_and_si128(lv.v2, rv.v2);
+        lv.v3 = _mm_and_si128(lv.v3, rv.v3);
+        return lv;
+      }
+
+      inline icl512i operator|(icl512i lv, const icl512i &rv) {
+        lv.v0 = _mm_or_si128(lv.v0, rv.v0);
+        lv.v1 = _mm_or_si128(lv.v1, rv.v1);
+        lv.v2 = _mm_or_si128(lv.v2, rv.v2);
+        lv.v3 = _mm_or_si128(lv.v3, rv.v3);
+        return lv;
+      }
+
+      inline icl512i operator^(icl512i lv, const icl512i &rv) {
+        lv.v0 = _mm_xor_si128(lv.v0, rv.v0);
+        lv.v1 = _mm_xor_si128(lv.v1, rv.v1);
+        lv.v2 = _mm_xor_si128(lv.v2, rv.v2);
+        lv.v3 = _mm_xor_si128(lv.v3, rv.v3);
+        return lv;
+      }
+
+      inline icl512i andnot(icl512i lv, const icl512i &rv) {
+        lv.v0 = _mm_andnot_si128(rv.v0, lv.v0);
+        lv.v1 = _mm_andnot_si128(rv.v1, lv.v1);
+        lv.v2 = _mm_andnot_si128(rv.v2, lv.v2);
+        lv.v3 = _mm_andnot_si128(rv.v3, lv.v3);
         return lv;
       }
 
@@ -1563,6 +1727,129 @@ namespace icl{
       }
 
       // -- min-max operations -- //
+
+
+      // ++ absosulte values ++ //
+
+    #ifdef HAVE_SSE3
+
+      inline icl128i abs8(icl128i v) {
+        v.v0 = _mm_abs_epi8(v.v0);
+        return v;
+      }
+
+      inline icl128i abs16(icl128i v) {
+        v.v0 = _mm_abs_epi16(v.v0);
+        return v;
+      }
+
+      inline icl128i abs32(icl128i v) {
+        v.v0 = _mm_abs_epi32(v.v0);
+        return v;
+      }
+
+      inline icl256i abs16(icl256i v) {
+        v.v0 = _mm_abs_epi16(v.v0);
+        v.v1 = _mm_abs_epi16(v.v1);
+        return v;
+      }
+
+      inline icl256i abs32(icl256i v) {
+        v.v0 = _mm_abs_epi32(v.v0);
+        v.v1 = _mm_abs_epi32(v.v1);
+        return v;
+      }
+
+      inline icl512i abs32(icl512i v) {
+        v.v0 = _mm_abs_epi32(v.v0);
+        v.v1 = _mm_abs_epi32(v.v1);
+        v.v2 = _mm_abs_epi32(v.v2);
+        v.v3 = _mm_abs_epi32(v.v3);
+        return v;
+      }
+
+    #else
+
+      // TODO: without SSE3
+
+    #endif
+
+      inline icl128 abs(icl128 v) {
+        return v.andnot(icl128(-0.0f));
+      }
+
+      inline icl256 abs(icl256 v) {
+        return v.andnot(icl256(-0.0f));
+      }
+
+      inline icl512 abs(icl512 v) {
+        return v.andnot(icl512(-0.0f));
+      }
+
+      // -- absosulte values -- //
+
+
+      // ++ squared root ++ //
+
+      inline icl128 sqrt(const icl128 &v) {
+        icl128 r;
+        r.v0 = _mm_sqrt_ps(v.v0);
+        return r;
+      }
+
+      inline icl256 sqrt(const icl256 &v) {
+        icl256 r;
+        r.v0 = _mm_sqrt_ps(v.v0);
+        r.v1 = _mm_sqrt_ps(v.v1);
+        return r;
+      }
+
+      inline icl512 sqrt(const icl512 &v) {
+        icl512 r;
+        r.v0 = _mm_sqrt_ps(v.v0);
+        r.v1 = _mm_sqrt_ps(v.v1);
+        r.v2 = _mm_sqrt_ps(v.v2);
+        r.v3 = _mm_sqrt_ps(v.v3);
+        return r;
+      }
+
+      inline icl128d sqrt(const icl128d &v) {
+        icl128d r;
+        r.v0 = _mm_sqrt_pd(v.v0);
+        return r;
+      }
+
+      inline icl256d sqrt(const icl256d &v) {
+        icl256d r;
+        r.v0 = _mm_sqrt_pd(v.v0);
+        r.v1 = _mm_sqrt_pd(v.v1);
+        return r;
+      }
+
+      inline icl512d sqrt(const icl512d &v) {
+        icl512d r;
+        r.v0 = _mm_sqrt_pd(v.v0);
+        r.v1 = _mm_sqrt_pd(v.v1);
+        r.v2 = _mm_sqrt_pd(v.v2);
+        r.v3 = _mm_sqrt_pd(v.v3);
+        return r;
+      }
+
+      inline icl1024d sqrt(const icl1024d &v) {
+        icl1024d r;
+        r.v0 = _mm_sqrt_pd(v.v0);
+        r.v1 = _mm_sqrt_pd(v.v1);
+        r.v2 = _mm_sqrt_pd(v.v2);
+        r.v3 = _mm_sqrt_pd(v.v3);
+        r.v4 = _mm_sqrt_pd(v.v4);
+        r.v5 = _mm_sqrt_pd(v.v5);
+        r.v6 = _mm_sqrt_pd(v.v6);
+        r.v7 = _mm_sqrt_pd(v.v7);
+        return r;
+      }
+
+      // -- squared root -- //
+
 
       // ++ cube root ++ //
 
