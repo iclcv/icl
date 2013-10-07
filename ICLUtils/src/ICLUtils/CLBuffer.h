@@ -56,8 +56,8 @@ namespace icl {
                const string &accessMode, size_t size, const void *src=NULL) throw (CLBufferException);
       
       /// provides access to the underlying cl-buffer
-      cl::Buffer getBuffer();
-      const cl::Buffer getBuffer() const;
+      cl::Buffer &getBuffer();
+      const cl::Buffer &getBuffer() const;
 
     public:
       friend class CLProgram; //!< for tight integration with CLProgram instances
@@ -75,6 +75,8 @@ namespace icl {
       /// destructor
       ~CLBuffer();
       
+      /// copies the content of this buffer into the given buffer      
+      void copy(CLBuffer &dst, int len, int src_offset = 0, int dst_offset = 0) throw (CLBufferException);
       
       /// reads buffer from graphics memory into given destination pointer
       void read(void *dst, int len, int offset = 0, bool block = true) throw (CLBufferException);

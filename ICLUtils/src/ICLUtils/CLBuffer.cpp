@@ -85,6 +85,15 @@ namespace icl {
 
       }
       
+      void copy(cl::Buffer &dst, int len, int src_offset = 0, int dst_offset = 0)
+        throw (CLBufferException) {
+        try {
+          cmdQueue.enqueueCopyBuffer(buffer, dst, src_offset, dst_offset, len);
+        } catch (cl::Error& error) {
+          throw CLBufferException(CLException::getMessage(error.err(), error.what()));
+        }
+      }
+      
       void read(void *dst, int len, int offset = 0, bool block = true)
         throw (CLBufferException) {
         cl_bool blocking;
@@ -139,6 +148,12 @@ namespace icl {
       delete impl;
     }
 
+    void CLBuffer::copy(CLBuffer &dst, int len, int src_offset, int dst_offset)
+      throw (CLBufferException) {
+      impl->copy(dst.getBuffer(), len, src_offset, dst_offset);
+
+    }
+
     void CLBuffer::read(void *dst, int len, int offset, bool block)
       throw (CLBufferException) {
       impl->read(dst, len, offset, block);
@@ -150,11 +165,11 @@ namespace icl {
       impl->write(src, len, offset, block);
     }
 
-    cl::Buffer CLBuffer::getBuffer() {
+    cl::Buffer &CLBuffer::getBuffer() {
       return impl->buffer;
     }
 
-    const cl::Buffer CLBuffer::getBuffer() const {
+    const cl::Buffer &CLBuffer::getBuffer() const {
       return impl->buffer;
     }
   }
