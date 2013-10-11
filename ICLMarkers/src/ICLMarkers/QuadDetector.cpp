@@ -35,6 +35,7 @@
 #include <ICLFilter/MorphologicalOp.h>
 #include <ICLFilter/MedianOp.h>
 #include <ICLCV/CornerDetectorCSS.h>
+#include <ICLCV/RDPApproximation.h>
 #include <ICLMath/StraightLine2D.h>
 
 #include <ICLIO/FileWriter.h>
@@ -69,6 +70,9 @@ namespace icl {
       } clockSort;
 
     public:
+
+      enum { APPROX_CSS, APPROX_RDP };
+
       //Debug information
       std::vector<std::vector<icl::utils::Point32f> > longestCorners;
       std::vector<std::vector<icl::utils::Point32f> > secLongestCorners;
@@ -465,6 +469,8 @@ namespace icl {
 
       SmartPtr<RegionDetector> rd;
       CornerDetectorCSS css;
+      RDPApproximation rdp;
+      int approxAlgorithm;
 
       SmartPtr<LocalThresholdOp> lt;
       SmartPtr<UnaryOp> pp;
@@ -494,6 +500,10 @@ namespace icl {
                     + str(BlackAndWhite), str(c), 0,
                     "Defines whether the marker borders are black, white or mixed");
       }
+      addProperty("contour approximation algorithm", "menu",
+                  "CSS,RDP", "CSS", 0,
+                  "Algorithm for approximating contours.");
+
       addProperty("optimize edges", "flag", "", "true", 0,
                   "Flag for optimized marker corner detection");
 
@@ -612,12 +622,16 @@ namespace icl {
 
       const std::vector<ImageRegion> &rs = data->rd->detect(data->lastBinImage);
 
+      std::string approxAlgorithm = getPropertyValue("contour approximation algorithm");
       const bool optEdges = getPropertyValue("optimize edges");
       const float minRating = getPropertyValue("min-rating");
       const bool useIntersectionHeuristic = getPropertyValue("intersection heuristic");
       const bool usePerpendicularHeuristic = getPropertyValue("perpendicular heuristic");
       const bool useMirrorHeuristic = getPropertyValue("mirror heuristic");
       const bool useAnyHeuristic = useIntersectionHeuristic || usePerpendicularHeuristic || useMirrorHeuristic;
+
+      data->approxAlgorithm = Data::APPROX_CSS;
+      if (approxAlgorithm == "RDP") data->approxAlgorithm = Data::APPROX_RDP;
 
       data->allCorners.clear();
       data->longestCorners.clear();
@@ -667,8 +681,15 @@ namespace icl {
 
     std::vector<Point32f> QuadDetector::computeCorners(const ImageRegion &r) const{
       const std::vector<Point> &boundary = r.getBoundary();
-      data->css.setSigma(iclMin(7.,boundary.size() * (3.2/60) - 0.5));
-      return data->css.detectCorners(boundary);
+
+      switch (data->approxAlgorithm) {
+        case Data::APPROX_RDP :
+          return data->rdp.approximate(boundary);
+        case Data::APPROX_CSS :
+        default :
+          data->css.setSigma(iclMin(7.,boundary.size() * (3.2/60) - 0.5));
+          return data->css.detectCorners(boundary);
+      }
     }
 
     const QuadDetector::PVecVec &QuadDetector::getAllCorners() const{
