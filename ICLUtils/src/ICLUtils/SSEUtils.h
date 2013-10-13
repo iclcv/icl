@@ -1742,6 +1742,49 @@ namespace icl{
         }
       }
 
+      template<class S, class D>
+      inline void sse_for(const S *src0, const S *src1, const S *src2, const S *src3, const S *src4,
+                          D *dst0, D *dstEnd,
+                          long srcWidth, long dstWidth, long lineWidth,
+                          void (*subMethod)(const S*, const S*, const S*, const S*, const S*, D*),
+                          void (*subSSEMethod)(const S*, const S*, const S*, const S*, const S*, D*),
+                          long step) {
+        D *dstLEnd   = dst0 + lineWidth;
+        D *dstSSEEnd = dstLEnd - (step - 1);
+        long srcOffset = srcWidth - lineWidth;
+        long dstOffset = dstWidth - lineWidth;
+
+        for (; dst0<dstEnd;) {
+          if (dst0<dstSSEEnd) {
+            // convert 'rvalues' values at the same time
+            (*subSSEMethod)(src0, src1, src2, src3, src4, dst0);
+
+            // increment pointers to the next values
+            src0 += step;
+            src1 += step;
+            src2 += step;
+            src3 += step;
+            src4 += step;
+            dst0 += step;
+          } else {
+            for (; dst0<dstLEnd; ++src0, ++src1, ++src2, ++src3, ++src4, ++dst0) {
+              // convert 1 value
+              (*subMethod)(src0, src1, src2, src3, src4, dst0);
+            }
+
+            // move all pointers to the next line
+            dstLEnd   += dstWidth;
+            dstSSEEnd += dstWidth;
+            src0 += srcOffset;
+            src1 += srcOffset;
+            src2 += srcOffset;
+            src3 += srcOffset;
+            src4 += srcOffset;
+            dst0 += dstOffset;
+          }
+        }
+      }
+
       // the sse_for functions can be implemented compact in only one function
       // using pointer-to-pointer, but it is slower than the current
       // implementation of many versions
@@ -2496,6 +2539,58 @@ namespace icl{
             dst1 += dstOffset;
             dst2 += dstOffset;
             dst3 += dstOffset;
+          }
+        }
+      }
+
+      template<class S, class D>
+      inline void sse_for(const S *src0, const S *src1, const S *src2, const S *src3, const S *src4,
+                          D *dst0, D *dstEnd,
+                          long srcWidth, long dstWidth, long lineWidth,
+                          void (*subMethod)(const S*, const S*, const S*, const S*, const S*, D*),
+                          void (*subSSEMethod)(const S*, const S*, const S*, const S*, const S*, D*),
+                          long srcStep, long dstStep) {
+        D *dstLEnd   = dst0 + lineWidth;
+        D *dstSSEEnd = dstLEnd - (dstStep - 1);
+        long srcOffset = srcWidth - lineWidth;
+        long dstOffset = dstWidth - lineWidth;
+        long sStep, dStep;
+
+        if (srcStep < dstStep) {
+          dStep = dstStep / srcStep;
+          sStep = 1;
+        } else {
+          sStep = srcStep / dstStep;
+          dStep = 1;
+        }
+
+        for (; dst0<dstEnd;) {
+          if (dst0<dstSSEEnd) {
+            // convert 'rvalues' values at the same time
+            (*subSSEMethod)(src0, src1, src2, src3, src4, dst0);
+
+            // increment pointers to the next values
+            src0 += srcStep;
+            src1 += srcStep;
+            src2 += srcStep;
+            src3 += srcStep;
+            src4 += srcStep;
+            dst0 += dstStep;
+          } else {
+            for (; dst0<dstLEnd; src0 += sStep, src1 += sStep, src2 += sStep, src3 += sStep, src4 += sStep, dst0 += dStep) {
+              // convert 1 value
+              (*subMethod)(src0, src1, src2, src3, src4, dst0);
+            }
+
+            // move all pointers to the next line
+            dstLEnd   += dstWidth;
+            dstSSEEnd += dstWidth;
+            src0 += srcOffset;
+            src1 += srcOffset;
+            src2 += srcOffset;
+            src3 += srcOffset;
+            src4 += srcOffset;
+            dst0 += dstOffset;
           }
         }
       }

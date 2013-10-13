@@ -8,7 +8,8 @@
 **                                                                 **
 ** File   : ICLFilter/src/ICLFilter/MedianOp.h                     **
 ** Module : ICLFilter                                              **
-** Authors: Christof Elbrechter, Robert Haschke, Andre Justus      **
+** Authors: Christof Elbrechter, Robert Haschke, Andre Justus,     **
+**          Sergius Gaulik                                         **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -41,7 +42,19 @@ namespace icl {
         implementation and the fallback C++-implementation is
         identical, the performances are of different orders of 
         magnitude.
-        The fallback implementation uses the naive algorithm
+        Fallback-functions for masks with dimensions 3x3 and 5x5
+        are optimizied with SSE-instructions, but the computation time
+        for images of types Img8u and Img16s is still greater than the one of
+        IPP-implementations. However SSE-implementations show a better
+        performance for the type icl32f.
+        Here the algorithm just takes the median using min and max
+        functions.
+        Images of the type Img8u and Img16s with other mask sizes
+        are processed by the algorithm, that was introduced by
+        Thomas S. Huang. With the help of a histogram the algorithm
+        runs in O(n).
+        For all other types a trivial implementation was designed to
+        calculate the median values. It uses the naive algorithm
         of sorting all N pixel values inside the median mask,
         and setting the destination pixel value to the mid-element
         of the sorted pixel list.
@@ -76,9 +89,10 @@ namespace icl {
         on a histogram. Look at the IPPI manual for more detail.
      
   
-        <h2>No IPP for floats</h2>
-        Currently the IPP supports no 2D-median filtering for
-        Ipp32f type, so the C++-fallback is used then.
+        <h2>IPP for floats</h2>
+        Currently the IPP implementation of 2D-median filtering for
+        Ipp32f type is slower than the C++-implementation,
+        so the C++-fallback is always used then.
   
   
         <h2>Mask-Sizes</h2>
@@ -100,49 +114,91 @@ namespace icl {
               <td><b>3x51</b></td> 
            </tr><tr>  
               <td><b>icl8u, ipp</b></td>    
-              <td>~5ms</td>
-              <td>~32ms</td>
-              <td>~434ms</td>
-              <td>~38ms</td>
-              <td>~430ms</td>
+              <td>~1.8ms</td>
+              <td>~2.6ms</td>
+              <td>~292ms</td>
+              <td>~32.4ms</td>
+              <td>~328ms</td>
            </tr><tr> 
               <td><b>icl8u, c++</b></td>  
-              <td>~146ms</td> 
-              <td>~334ms</td>
-              <td>~84000ms</td>
-              <td>~3400ms</td>
-              <td>~3500ms</td> 
+              <td>~2.6ms</td> 
+              <td>~11.7ms</td>
+              <td>~323ms</td>
+              <td>~350ms</td>
+              <td>~47ms</td> 
+           </tr><tr>  
+              <td><b>icl16s, ipp</b></td>    
+              <td>~2.7ms</td>
+              <td>~4ms</td>
+              <td>~21100ms</td>
+              <td>~338ms</td>
+              <td>~420ms</td>
+           </tr><tr> 
+              <td><b>icl16s, c++</b></td>  
+              <td>~4.2ms</td> 
+              <td>~16.2ms</td>
+              <td>~370ms</td>
+              <td>~384ms</td>
+              <td>~90ms</td> 
+           </tr><tr> 
+              <td><b>float, ipp</b></td>  
+              <td>~25ms</td> 
+              <td>~257ms</td>  
+              <td>~?ms</td>
+              <td>~52000ms</td>
+              <td>~49000ms</td> 
            </tr><tr> 
               <td><b>float, c++</b></td>  
-              <td>~181ms</td> 
-              <td>~464ms</td>  
-              <td>~115000ms</td>
-              <td>~4600ms</td>
-              <td>~4700ms</td> 
+              <td>~11.6ms</td> 
+              <td>~39ms</td>  
+              <td>~217000ms</td>
+              <td>~8700ms</td>
+              <td>~8700ms</td> 
            </tr>
         </table>
   
         <h3>Details</h3>
         <h3>Test A 1000x1000 icl8u-image with IPP</h3>
-        - mask size 3x3 <b>~5ms</b> (highly optimized)
-        - mask size 5x5 <b>~32ms</b>
-        - mask size 51x51 <b>~434ms</b> (still usable!)
-        - mask size 51x3 <b>~38ms</b>
-        - mask size 3x51 <b>~430ms</b> (mask height specifies time usage)
+        - mask size 3x3 <b>~1.8ms</b> (highly optimized)
+        - mask size 5x5 <b>~2.6ms</b>
+        - mask size 51x51 <b>~292ms</b> (still usable!)
+        - mask size 51x3 <b>~32.4ms</b>
+        - mask size 3x51 <b>~328ms</b> (mask height specifies time usage)
   
         <h3>Test B 1000x1000 icl8u-image no IPP</h3>
-        - mask size 3x3 <b>~146ms</b> (30 times slower)
-        - mask size 5x5 <b>~334ms</b>
-        - mask size 51x51 <b>~84000ms</b> (unusable!)
-        - mask size 51x3 <b>~3500ms</b>
-        - mask size 3x51 <b>~3500ms</b> 
+        - mask size 3x3 <b>~2.6ms</b> (less than 1.5 times slower)
+        - mask size 5x5 <b>~11.7ms</b> (about 4 times slower)
+        - mask size 51x51 <b>~323ms</b> (IPP is not much faster)
+        - mask size 51x3 <b>~350ms</b> (mask width specifies time usage)
+        - mask size 3x51 <b>~47ms</b> 
   
-        <h3>Test C 1000x1000 icl32f-image (no IPP for floats)</h3>
-        - mask size 3x3 <b>~181ms</b> (no special optimization)
-        - mask size 5x5 <b>~464ms</b> 
-        - mask size 51x51 <b>~115000ms</b> (unusable!)
-        - mask size 51x3 <b>~4600ms</b>
-        - mask size 3x51 <b>~4700ms</b> 
+        <h3>Test A 1000x1000 icl8u-image with IPP</h3>
+        - mask size 3x3 <b>~2.7ms</b> (highly optimized)
+        - mask size 5x5 <b>~4ms</b>
+        - mask size 51x51 <b>~21100ms</b> (unusable!)
+        - mask size 51x3 <b>~338ms</b>
+        - mask size 3x51 <b>~420ms</b>
+  
+        <h3>Test B 1000x1000 icl16s-image no IPP</h3>
+        - mask size 3x3 <b>~4.2ms</b> (1.5 times slower)
+        - mask size 5x5 <b>~16.2ms</b> ( 4 times slower)
+        - mask size 51x51 <b>~370ms</b> (IPP is not much faster)
+        - mask size 51x3 <b>~384ms</b> (mask width specifies time usage)
+        - mask size 3x51 <b>~90ms</b> 
+  
+        <h3>Test C 1000x1000 icl32f-image with IPP</h3>
+        - mask size 3x3 <b>~25ms</b> 
+        - mask size 5x5 <b>~257ms</b> 
+        - mask size 51x51 <b>~?ms</b> (calculation time is to great)
+        - mask size 51x3 <b>~52000ms</b> (unusable!)
+        - mask size 3x51 <b>~49000ms</b> (unusable!)
+
+        <h3>Test C 1000x1000 icl32f-image no IPP</h3>
+        - mask size 3x3 <b>~11.6ms</b> (sse optimization)
+        - mask size 5x5 <b>~39ms</b> (sse optimization)
+        - mask size 51x51 <b>~217000ms</b> (unusable!)
+        - mask size 51x3 <b>~8700ms</b>
+        - mask size 3x51 <b>~8700ms</b> 
   
       <h2>Example</h2>
       Here is an examle, how to use the Median object.
