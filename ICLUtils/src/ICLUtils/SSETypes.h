@@ -430,6 +430,135 @@ namespace icl{
         }
       };
 
+      // 16 icl8u values
+      struct icl128i8u : icl128i {
+        inline icl128i8u() {
+        }
+
+        inline icl128i8u(const __m128i &v) {
+          v0 = v;
+        }
+
+        inline icl128i8u(const __m128i *v) {
+          v0 = _mm_loadu_si128(v);
+        }
+
+        inline icl128i8u(const icl8u *v) {
+          v0 = _mm_loadu_si128((__m128i*)v);
+        }
+
+        inline icl128i8u(const Icl128i &v) {
+          v0 = v.v0;
+        }
+
+        inline icl128i8u(const Icl128 &v) {
+		      //__m128 vMin = _mm_set1_ps(-2147483520.f);
+	      	//__m128 vMax = _mm_set1_ps(2147483520.f);
+          //v0 = _mm_cvtps_epi32(_mm_min_ps(_mm_max_ps(v.v0, vMin), vMax));
+          v0 = _mm_cvtps_epi32(v.v0);
+        }
+
+        inline icl128i8u& operator+=(const icl128i8u &v) {
+          v0 = _mm_add_epi8(v0, v.v0);
+          return *this;
+        }
+
+        inline icl128i8u& operator-=(const icl128i8u &v) {
+          v0 = _mm_sub_epi8(v0, v.v0);
+          return *this;
+        }
+      };
+
+      // 8 icl16s values
+      struct icl128i16s : icl128i {
+        inline icl128i16s() {
+        }
+
+        inline icl128i16s(const __m128i &v) {
+          v0 = v;
+        }
+
+        inline icl128i16s(const __m128i *v) {
+          v0 = _mm_loadu_si128(v);
+        }
+
+        inline icl128i16s(const icl16s *v) {
+          v0 = _mm_loadu_si128((__m128i*)v);
+        }
+
+        inline icl128i16s(const icl16s v) {
+          v0 = _mm_set1_epi16(v);
+        }
+
+        inline icl128i16s(const Icl128i &v) {
+          v0 = v.v0;
+        }
+
+        inline icl128i16s(const Icl128 &v) {
+		      //__m128 vMin = _mm_set1_ps(-2147483520.f);
+	      	//__m128 vMax = _mm_set1_ps(2147483520.f);
+          //v0 = _mm_cvtps_epi32(_mm_min_ps(_mm_max_ps(v.v0, vMin), vMax));
+          v0 = _mm_cvtps_epi32(v.v0);
+        }
+
+        inline icl128i16s& operator+=(const icl128i16s &v) {
+          v0 = _mm_add_epi16(v0, v.v0);
+          return *this;
+        }
+
+        inline icl128i16s& operator-=(const icl128i16s &v) {
+          v0 = _mm_sub_epi16(v0, v.v0);
+          return *this;
+        }
+      };
+
+      // 4 icl32s values
+      struct icl128i32s : icl128i {
+        inline icl128i32s() {
+        }
+
+        inline icl128i32s(const __m128i &v) {
+          v0 = v;
+        }
+
+        inline icl128i32s(const __m128i *v) {
+          v0 = _mm_loadu_si128(v);
+        }
+
+        inline icl128i32s(const icl32s *v) {
+          v0 = _mm_loadu_si128((__m128i*)v);
+        }
+
+        inline icl128i32s(const icl32s i0, const icl32s i1, const icl32s i2, const icl32s i3) {
+          v0 = _mm_set_epi32(i3, i2, i1, i0);
+        }
+
+        inline icl128i32s(const icl32s v) {
+          v0 = _mm_set1_epi32(v);
+        }
+
+        inline icl128i32s(const Icl128i &v) {
+          v0 = v.v0;
+        }
+
+        inline icl128i32s(const Icl128 &v) {
+		      //__m128 vMin = _mm_set1_ps(-2147483520.f);
+	      	//__m128 vMax = _mm_set1_ps(2147483520.f);
+          //v0 = _mm_cvtps_epi32(_mm_min_ps(_mm_max_ps(v.v0, vMin), vMax));
+          v0 = _mm_cvtps_epi32(v.v0);
+        }
+
+        inline icl128i32s& operator+=(const icl128i32s &v) {
+          v0 = _mm_add_epi32(v0, v.v0);
+          return *this;
+        }
+
+        inline icl128i32s& operator-=(const icl128i32s &v) {
+          v0 = _mm_sub_epi32(v0, v.v0);
+          return *this;
+        }
+      };
+
       // 2 icl64f values
       struct icl128d : Icl128d {
         inline icl128d() {
@@ -840,6 +969,36 @@ namespace icl{
         inline void storeu(icl32u *v) const {
 		      _mm_storeu_si128((__m128i*)v,     v0);
 		      _mm_storeu_si128((__m128i*)(v+4), v1);
+        }
+      };
+
+      // 16 icl16s
+      struct icl256i16s : icl256i {
+        inline icl256i16s& operator+=(const icl256i16s &v) {
+          v0 = _mm_add_epi16(v0, v.v0);
+          v1 = _mm_add_epi16(v1, v.v1);
+          return *this;
+        }
+
+        inline icl256i16s& operator-=(const icl256i16s &v) {
+          v0 = _mm_sub_epi16(v0, v.v0);
+          v1 = _mm_sub_epi16(v1, v.v1);
+          return *this;
+        }
+      };
+
+      // 8 icl32
+      struct icl256i32s : icl256i {
+        inline icl256i32s& operator+=(const icl256i32s &v) {
+          v0 = _mm_add_epi16(v0, v.v0);
+          v1 = _mm_add_epi16(v1, v.v1);
+          return *this;
+        }
+
+        inline icl256i32s& operator-=(const icl256i32s &v) {
+          v0 = _mm_sub_epi16(v0, v.v0);
+          v1 = _mm_sub_epi16(v1, v.v1);
+          return *this;
         }
       };
 
@@ -1303,6 +1462,25 @@ namespace icl{
         }
       };
 
+      // 8 icl32
+      struct icl512i32s : icl512i {
+        inline icl512i32s& operator+=(const icl512i32s &v) {
+          v0 = _mm_add_epi16(v0, v.v0);
+          v1 = _mm_add_epi16(v1, v.v1);
+          v2 = _mm_add_epi16(v2, v.v2);
+          v3 = _mm_add_epi16(v3, v.v3);
+          return *this;
+        }
+
+        inline icl512i32s& operator-=(const icl512i32s &v) {
+          v0 = _mm_sub_epi16(v0, v.v0);
+          v1 = _mm_sub_epi16(v1, v.v1);
+          v2 = _mm_sub_epi16(v2, v.v2);
+          v3 = _mm_sub_epi16(v3, v.v3);
+          return *this;
+        }
+      };
+
       // 8 icl64f values
       struct icl512d : Icl512d {
         // TODO
@@ -1687,6 +1865,38 @@ namespace icl{
       // -- shift operations -- //
 
       // ++ min-max operations ++ //
+
+      inline icl128i8u min(icl128i8u lv, const icl128i8u &rv) {
+        lv.v0 = _mm_min_epu8(lv.v0, rv.v0);
+        return lv;
+      }
+
+      inline icl128i8u max(icl128i8u lv, const icl128i8u &rv) {
+        lv.v0 = _mm_max_epu8(lv.v0, rv.v0);
+        return lv;
+      }
+
+      inline icl128i16s min(icl128i16s lv, const icl128i16s &rv) {
+        lv.v0 = _mm_min_epi16(lv.v0, rv.v0);
+        return lv;
+      }
+
+      inline icl128i16s max(icl128i16s lv, const icl128i16s &rv) {
+        lv.v0 = _mm_max_epi16(lv.v0, rv.v0);
+        return lv;
+      }
+
+      inline icl256i16s min(icl256i16s lv, const icl256i16s &rv) {
+        lv.v0 = _mm_min_epi16(lv.v0, rv.v0);
+        lv.v1 = _mm_min_epi16(lv.v1, rv.v1);
+        return lv;
+      }
+
+      inline icl256i16s max(icl256i16s lv, const icl256i16s &rv) {
+        lv.v0 = _mm_max_epi16(lv.v0, rv.v0);
+        lv.v1 = _mm_max_epi16(lv.v1, rv.v1);
+        return lv;
+      }
 
       inline icl128 min(icl128 lv, const icl128 &rv) {
         lv.v0 = _mm_min_ps(lv.v0, rv.v0);
