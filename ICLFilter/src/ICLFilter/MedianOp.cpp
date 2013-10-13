@@ -67,141 +67,6 @@ namespace icl {
 
       // }}}
 
-  #ifdef HAVE_SSE2
-
-      // this one is only faster for images of the type Img8u
-      template<class T, class T1>
-      inline void sse_median3x3(const T *src0, T *dst0, T *dstEnd,
-                                long srcWidth, long dstWidth, long lineWidth,
-                                long step) {
-        T *dstLEnd   = dst0 + lineWidth;
-        T *dstSSEEnd = dstLEnd - (step - 1);
-
-        for (; dst0<dstLEnd;) {
-          if (dst0<dstSSEEnd) {
-            const T *srcIt = src0;
-            T *dstIt = dst0;
-
-            T1 a0 = srcIt;
-            T1 a1 = srcIt + 1;
-            T1 a2 = srcIt + 2;
-            srcIt += srcWidth;
-            T1 b0 = srcIt;
-            T1 b1 = srcIt + 1;
-            T1 b2 = srcIt + 2;
-            srcIt += srcWidth;
-
-            T1 A1 = min(a1, a2);
-            a2 = max(a1, a2);
-            a1 = max(a0, A1);
-            a0 = min(a0, A1);
-            A1 = min(a1, a2);
-            a2 = max(a1, a2);
-
-            T1 B1 = min(b1, b2);
-            b2 = max(b1, b2);
-            b1 = max(b0, B1);
-            b0 = min(b0, B1);
-            B1 = min(b1, b2);
-            b2 = max(b1, b2);
-
-            for (; dstIt<dstEnd; dstIt += dstWidth, srcIt += srcWidth) {
-              T1 c0 = a0;
-              T1 c1 = A1;
-              T1 c2 = a2;
-              a0 = b0;
-              A1 = B1;
-              a2 = b2;
-              b0 = srcIt;
-              B1 = srcIt + 1;
-              b2 = srcIt + 2;
-
-              T1 C1 = min(c1, c2);
-              c2 = max(c1, c2);
-              c1 = max(c0, C1);
-              c0 = min(c0, C1);
-              C1 = min(c1, c2);
-              c2 = max(c1, c2);
-
-              a0 = max(a0, max(b0, c0));
-              a2 = min(a2, max(b2, c2));
-              b1 = min(B1, C1);
-              b2 = max(B1, C1);
-              b1 = max(A1, b1);
-              a1 = min(b1, b2);
-
-              b1 = min(a1, a2);
-              b2 = max(a1, a2);
-              b1 = max(a0, b1);
-              min(b1, b2).storeu(dstIt);
-            }
-
-            // increment pointers to the next values
-            src0 += step;
-            dst0 += step;
-          } else {
-            for (; dst0<dstLEnd; ++dst0, ++src0) {
-              const T *srcIt = src0;
-              T *dstIt = dst0;
-
-              T a0 = *srcIt;
-              T a1 = srcIt[1];
-              T a2 = srcIt[2];
-              srcIt += srcWidth;
-              T b0 = *srcIt;
-              T b1 = srcIt[1];
-              T b2 = srcIt[2];
-              srcIt += srcWidth;
-
-              T A1 = std::min(a1, a2);
-              a2 = std::max(a1, a2);
-              a1 = std::max(a0, A1);
-              a0 = std::min(a0, A1);
-              A1 = std::min(a1, a2);
-              a2 = std::max(a1, a2);
-
-              T B1 = std::min(b1, b2);
-              b2 = std::max(b1, b2);
-              b1 = std::max(b0, B1);
-              b0 = std::min(b0, B1);
-              B1 = std::min(b1, b2);
-              b2 = std::max(b1, b2);
-
-              for (; dstIt<dstEnd; dstIt += dstWidth, srcIt += srcWidth) {
-                T c0 = a0;
-                T c1 = A1;
-                T c2 = a2;
-                a0 = b0;
-                A1 = B1;
-                a2 = b2;
-                b0 = *srcIt;
-                B1 = srcIt[1];
-                b2 = srcIt[2];
-
-                T C1 = std::min(c1, c2);
-                c2 = std::max(c1, c2);
-                c1 = std::max(c0, C1);
-                c0 = std::min(c0, C1);
-                C1 = std::min(c1, c2);
-                c2 = std::max(c1, c2);
-
-                a0 = std::max(a0, std::max(b0, c0));
-                a2 = std::min(a2, std::max(b2, c2));
-                b1 = std::min(B1, C1);
-                b2 = std::max(B1, C1);
-                b1 = std::max(A1, b1);
-                a1 = std::min(b1, b2);
-
-                b1 = std::min(a1, a2);
-                b2 = std::max(a1, a2);
-                b1 = std::max(a0, b1);
-                *dstIt = std::min(b1, b2);
-              } 
-            }
-          }
-        }
-      }
-
       template<class T>
       inline void subMedian3x3(const T *l0, const T *l1, const T *l2, T *med) {
         T a0 = *l0++;
@@ -246,52 +111,6 @@ namespace icl {
         b2 = std::max(a1, a2);
         b1 = std::max(a0, b1);
         *med = std::min(b1, b2);
-      }
-
-      template<class T0, class T1>
-      inline void subSSEMedian3x3(const T0 *l0, const T0 *l1, const T0 *l2, T0 *med) {
-        T1 a0 = l0++;
-        T1 a1 = l0++;
-        T1 a2 = l0;
-        T1 b0 = l1++;
-        T1 b1 = l1++;
-        T1 b2 = l1;
-        T1 c0 = l2++;
-        T1 c1 = l2++;
-        T1 c2 = l2;
-
-        T1 A1 = min(a1, a2);
-        a2 = max(a1, a2);
-        a1 = max(a0, A1);
-        a0 = min(a0, A1);
-        A1 = min(a1, a2);
-        a2 = max(a1, a2);
-
-        T1 B1 = min(b1, b2);
-        b2 = max(b1, b2);
-        b1 = max(b0, B1);
-        b0 = min(b0, B1);
-        B1 = min(b1, b2);
-        b2 = max(b1, b2);
-
-        T1 C1 = min(c1, c2);
-        c2 = max(c1, c2);
-        c1 = max(c0, C1);
-        c0 = min(c0, C1);
-        C1 = min(c1, c2);
-        c2 = max(c1, c2);
-
-        a0 = max(a0, max(b0, c0));
-        a2 = min(a2, max(b2, c2));
-        b1 = min(B1, C1);
-        b2 = max(B1, C1);
-        b1 = max(A1, b1);
-        a1 = min(b1, b2);
-
-        b1 = min(a1, a2);
-        b2 = max(a1, a2);
-        b1 = max(a0, b1);
-        min(b1, b2).storeu(med);
       }
 
     #define MINMAX(tmp, a, b) \
@@ -451,6 +270,187 @@ namespace icl {
       }
 
     #undef MINMAX
+
+  #ifdef HAVE_SSE2
+
+      // this one is only faster for images of the type Img8u
+      template<class T, class T1>
+      inline void sse_median3x3(const T *src0, T *dst0, T *dstEnd,
+                                long srcWidth, long dstWidth, long lineWidth,
+                                long step) {
+        T *dstLEnd   = dst0 + lineWidth;
+        T *dstSSEEnd = dstLEnd - (step - 1);
+
+        for (; dst0<dstLEnd;) {
+          if (dst0<dstSSEEnd) {
+            const T *srcIt = src0;
+            T *dstIt = dst0;
+
+            T1 a0 = srcIt;
+            T1 a1 = srcIt + 1;
+            T1 a2 = srcIt + 2;
+            srcIt += srcWidth;
+            T1 b0 = srcIt;
+            T1 b1 = srcIt + 1;
+            T1 b2 = srcIt + 2;
+            srcIt += srcWidth;
+
+            T1 A1 = min(a1, a2);
+            a2 = max(a1, a2);
+            a1 = max(a0, A1);
+            a0 = min(a0, A1);
+            A1 = min(a1, a2);
+            a2 = max(a1, a2);
+
+            T1 B1 = min(b1, b2);
+            b2 = max(b1, b2);
+            b1 = max(b0, B1);
+            b0 = min(b0, B1);
+            B1 = min(b1, b2);
+            b2 = max(b1, b2);
+
+            for (; dstIt<dstEnd; dstIt += dstWidth, srcIt += srcWidth) {
+              T1 c0 = a0;
+              T1 c1 = A1;
+              T1 c2 = a2;
+              a0 = b0;
+              A1 = B1;
+              a2 = b2;
+              b0 = srcIt;
+              B1 = srcIt + 1;
+              b2 = srcIt + 2;
+
+              T1 C1 = min(c1, c2);
+              c2 = max(c1, c2);
+              c1 = max(c0, C1);
+              c0 = min(c0, C1);
+              C1 = min(c1, c2);
+              c2 = max(c1, c2);
+
+              a0 = max(a0, max(b0, c0));
+              a2 = min(a2, max(b2, c2));
+              b1 = min(B1, C1);
+              b2 = max(B1, C1);
+              b1 = max(A1, b1);
+              a1 = min(b1, b2);
+
+              b1 = min(a1, a2);
+              b2 = max(a1, a2);
+              b1 = max(a0, b1);
+              min(b1, b2).storeu(dstIt);
+            }
+
+            // increment pointers to the next values
+            src0 += step;
+            dst0 += step;
+          } else {
+            for (; dst0<dstLEnd; ++dst0, ++src0) {
+              const T *srcIt = src0;
+              T *dstIt = dst0;
+
+              T a0 = *srcIt;
+              T a1 = srcIt[1];
+              T a2 = srcIt[2];
+              srcIt += srcWidth;
+              T b0 = *srcIt;
+              T b1 = srcIt[1];
+              T b2 = srcIt[2];
+              srcIt += srcWidth;
+
+              T A1 = std::min(a1, a2);
+              a2 = std::max(a1, a2);
+              a1 = std::max(a0, A1);
+              a0 = std::min(a0, A1);
+              A1 = std::min(a1, a2);
+              a2 = std::max(a1, a2);
+
+              T B1 = std::min(b1, b2);
+              b2 = std::max(b1, b2);
+              b1 = std::max(b0, B1);
+              b0 = std::min(b0, B1);
+              B1 = std::min(b1, b2);
+              b2 = std::max(b1, b2);
+
+              for (; dstIt<dstEnd; dstIt += dstWidth, srcIt += srcWidth) {
+                T c0 = a0;
+                T c1 = A1;
+                T c2 = a2;
+                a0 = b0;
+                A1 = B1;
+                a2 = b2;
+                b0 = *srcIt;
+                B1 = srcIt[1];
+                b2 = srcIt[2];
+
+                T C1 = std::min(c1, c2);
+                c2 = std::max(c1, c2);
+                c1 = std::max(c0, C1);
+                c0 = std::min(c0, C1);
+                C1 = std::min(c1, c2);
+                c2 = std::max(c1, c2);
+
+                a0 = std::max(a0, std::max(b0, c0));
+                a2 = std::min(a2, std::max(b2, c2));
+                b1 = std::min(B1, C1);
+                b2 = std::max(B1, C1);
+                b1 = std::max(A1, b1);
+                a1 = std::min(b1, b2);
+
+                b1 = std::min(a1, a2);
+                b2 = std::max(a1, a2);
+                b1 = std::max(a0, b1);
+                *dstIt = std::min(b1, b2);
+              } 
+            }
+          }
+        }
+      }
+
+      template<class T0, class T1>
+      inline void subSSEMedian3x3(const T0 *l0, const T0 *l1, const T0 *l2, T0 *med) {
+        T1 a0 = l0++;
+        T1 a1 = l0++;
+        T1 a2 = l0;
+        T1 b0 = l1++;
+        T1 b1 = l1++;
+        T1 b2 = l1;
+        T1 c0 = l2++;
+        T1 c1 = l2++;
+        T1 c2 = l2;
+
+        T1 A1 = min(a1, a2);
+        a2 = max(a1, a2);
+        a1 = max(a0, A1);
+        a0 = min(a0, A1);
+        A1 = min(a1, a2);
+        a2 = max(a1, a2);
+
+        T1 B1 = min(b1, b2);
+        b2 = max(b1, b2);
+        b1 = max(b0, B1);
+        b0 = min(b0, B1);
+        B1 = min(b1, b2);
+        b2 = max(b1, b2);
+
+        T1 C1 = min(c1, c2);
+        c2 = max(c1, c2);
+        c1 = max(c0, C1);
+        c0 = min(c0, C1);
+        C1 = min(c1, c2);
+        c2 = max(c1, c2);
+
+        a0 = max(a0, max(b0, c0));
+        a2 = min(a2, max(b2, c2));
+        b1 = min(B1, C1);
+        b2 = max(B1, C1);
+        b1 = max(A1, b1);
+        a1 = min(b1, b2);
+
+        b1 = min(a1, a2);
+        b2 = max(a1, a2);
+        b1 = max(a0, b1);
+        min(b1, b2).storeu(med);
+      }
 
     #define MINMAX(tmp, a, b) \
         tmp = a;              \
@@ -828,7 +828,7 @@ namespace icl {
 
   #else
 
-      #define APPLY_MEDIAN(T0, T1, STEP)                                                                                          \
+      #define APPLY_MEDIAN(T0, STEP)                                                                                          \
         template<>                                                                                                                \
         void apply_median(const Img<T0> *src, Img<T0> *dst, const Size &oMaskSize,const Point &roiOffset, const Point &oAnchor) { \
           if (oMaskSize == Size(3,3)) {                                                                                           \
@@ -861,12 +861,22 @@ namespace icl {
 
   #ifndef HAVE_IPP
 
+    #ifdef HAVE_SSE2
       APPLY_MEDIAN2(icl8u, icl128i8u, 16);
       APPLY_MEDIAN(icl16s, icl128i16s, 8);
+    #else
+      APPLY_MEDIAN(icl8u, 16);
+      APPLY_MEDIAN(icl16s, 8);
+    #endif
 
   #endif
 
+    #ifdef HAVE_SSE2
       APPLY_MEDIAN(icl32f, icl128, 4);
+      #undef APPLY_MEDIAN2
+    #else
+      APPLY_MEDIAN(icl32f, 4);
+    #endif
 
       #undef APPLY_MEDIAN
 
