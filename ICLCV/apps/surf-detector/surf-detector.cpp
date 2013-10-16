@@ -143,10 +143,11 @@ void init(){
            << CheckBox("show matches only",true).handle("vis matches")
            << CheckBox("visualize associations",true).handle("vis lines")
            << CheckBox("visualize extraction quad",true).handle("vis quad")
+           << CheckBox("visualize at all",true).handle("vis at all")
            << Slider(0,20,4).handle("octaves").label("octaves")
            << Slider(0,20,4).handle("intervals").label("intervals/octavelayer")
            << Slider(0,10,2).handle("step").label("sample step")
-           << FSlider(0,0.04,0.001).out("thresh").label("threshold")
+           << FSlider(0,0.04,0.005).out("thresh").label("threshold")
 
            << (HBox() 
                << Fps().handle("fps")
@@ -227,28 +228,32 @@ void run(){
   vis.setROI(Rect(tW,0,iW,iH));
   image.deepCopyROI(&vis);
   vis.setFullROI();
-  
-  if(gui["vis matches"]){
-    const std::vector<SurfMatch> &ms = surf->match(&image);
-    std::vector<SurfFeature> is(ms.size()), ts(ms.size());
-    for(size_t i=0;i<ms.size();++i){
-      ts[i] = ms[i].second;
-      is[i] = ms[i].first;
-    }
-    draw->draw(vis_surf(ts,0,(iH-tH)/2));
-    draw->draw(vis_surf(is,tW,0));
-    if(gui["vis lines"]){
-      draw->linewidth(3);
-      draw->color(0,100,255,100);
+
+  if(gui["vis at all"]){
+    if(gui["vis matches"]){
+      const std::vector<SurfMatch> &ms = surf->match(&image);
+      std::vector<SurfFeature> is(ms.size()), ts(ms.size());
       for(size_t i=0;i<ms.size();++i){
-        Point32f tm(ms[i].second.x,ms[i].second.y);
-        Point32f im(ms[i].first.x,ms[i].first.y);
-        draw->line(tm+Point32f(0,(iH-tH)/2), im+Point32f(tW,0));
+        ts[i] = ms[i].second;
+        is[i] = ms[i].first;
       }
+      draw->draw(vis_surf(ts,0,(iH-tH)/2));
+      draw->draw(vis_surf(is,tW,0));
+      if(gui["vis lines"]){
+        draw->linewidth(3);
+        draw->color(0,100,255,100);
+        for(size_t i=0;i<ms.size();++i){
+          Point32f tm(ms[i].second.x,ms[i].second.y);
+          Point32f im(ms[i].first.x,ms[i].first.y);
+          draw->line(tm+Point32f(0,(iH-tH)/2), im+Point32f(tW,0));
+        }
+      }
+    }else{
+      draw->draw(vis_surf(surf->detect(&image),tW,0));
+      draw->draw(vdtempl);
     }
   }else{
-    draw->draw(vis_surf(surf->detect(&image),tW,0));
-    draw->draw(vdtempl);
+    surf->match(&image);
   }
   //
   // 

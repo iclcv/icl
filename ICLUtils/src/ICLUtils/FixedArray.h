@@ -136,6 +136,12 @@ namespace icl{
           };
         };
       };
+
+      /// index access operator
+      T &operator[](unsigned int idx) { return m_data[idx]; }
+      
+      /// index access operator (const)
+      const T &operator[](unsigned int idx) const { return m_data[idx]; }
     };
         
   } // namespace utils

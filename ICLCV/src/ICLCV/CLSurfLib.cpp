@@ -1160,22 +1160,12 @@ void Surf::run(const icl::core::Img32f &image, bool upright) {
 const IpVec &Surf::detect(const ImgBase *image) {
 	ICLASSERT_THROW(image,
 			ICLException("CLSurfLib::Surf::detect: given image was null"));
-	// TODO This call takes about 4ms (is there any way to speed it up?)
-	//IplImage *img = getGray(source);
+
 	cc(image, &this->m_data->m_grayBuffer);
-
-	// set up variables for data access
-
-	//m_grayBuffer = m_grayBuffer/(1.0f/255.0f);
-
 	this->m_data->m_grayBuffer.forEach(scale_to_01);
-
 	run(m_data->m_grayBuffer, false);
-
 	const IpVec &ipts = retrieveDescriptors();
-
 	reset();
-
 	return ipts;
 }
 }

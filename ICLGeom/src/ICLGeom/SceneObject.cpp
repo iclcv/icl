@@ -1205,6 +1205,8 @@ namespace icl{
               case Primitive::texture:
               case Primitive::quad:{
                 const TextureGridPrimitive *t = dynamic_cast<const TextureGridPrimitive*>(p);
+                const TwoSidedGridPrimitive *tg = dynamic_cast<const TwoSidedGridPrimitive*>(p);
+
                 Hit h;
                 if(t){
                   for(int x=1;x<t->w;++x){
@@ -1213,6 +1215,25 @@ namespace icl{
                       Vec b = t->getPos(x,y-1);
                       Vec c = t->getPos(x,y);
                       Vec d = t->getPos(x-1,y);
+                      
+                      if(compute_intersection(v, Triangle(a,d,b), h.pos) == ViewRay::foundIntersection){
+                        h.obj = obj;
+                        h.dist = l3(v.offset,h.pos);
+                        hits.push_back(h);
+                      }else if(compute_intersection(v, Triangle(c,b,d), h.pos) == ViewRay::foundIntersection){
+                        h.obj = obj;
+                        h.dist = l3(v.offset,h.pos);
+                        hits.push_back(h);
+                      }
+                    }
+                  }
+                }else if(tg){
+                  for(int x=1;x<tg->w;++x){
+                    for(int y=1;y<tg->h;++y){
+                      Vec a = tg->getPos(x-1,y-1);
+                      Vec b = tg->getPos(x,y-1);
+                      Vec c = tg->getPos(x,y);
+                      Vec d = tg->getPos(x-1,y);
                       
                       if(compute_intersection(v, Triangle(a,d,b), h.pos) == ViewRay::foundIntersection){
                         h.obj = obj;

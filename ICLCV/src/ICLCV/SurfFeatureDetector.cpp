@@ -36,6 +36,7 @@
 
 #ifdef HAVE_OPENCL
 #include <ICLCV/CLSurfLib.h>
+#include <ICLUtils/CLProgram.h>
 #endif
 
 #ifdef HAVE_OPENCV
@@ -68,7 +69,22 @@ namespace icl{
       Size clsurf_curimage_size;
       Size clsurf_refimage_size;
       Img8u clsurf_refimage;
+
+      CLProgram matchProgram;
+      CLKernel distsKernel;
+      CLKernel matchKernel;
+
+      CLBuffer matchBufferRef;
+      CLBuffer matchBufferCur;
+      CLBuffer matchBufferDists;
+      CLBuffer matchBufferMatches;
       
+      int matchBufferRefSize; 
+      int matchBufferCurSize; 
+      int matchBufferDistsSize; 
+      int matchBufferMatchesSize; 
+      
+      bool refFeaturesDirty;
 #endif
       
       int octaves;
@@ -161,6 +177,7 @@ namespace icl{
       }
 #endif
 
+
 #ifdef HAVE_OPENCV
 
 #ifdef HAVE_OPENCL
@@ -172,6 +189,66 @@ namespace icl{
 #endif
 #endif
       
+
+#ifdef HAVE_OPENCL
+      if(m_data->clsurf_backend){
+        m_data->refFeaturesDirty = true;
+        static const char *match_program = (
+                                            "__kernel void dists(__global float4 *ref, int nRef,       \n"
+                                            "                    __global float4 *cur, int nCur,       \n"
+                                            "                    __global float *distances){           \n"
+                                            "    int iRefID = get_global_id(0);                        \n"
+                                            "    int iCurID = get_global_id(1);                        \n"
+                                            "    int iRef = get_global_id(0)*16;                       \n"
+                                            "    int iCur = get_global_id(1)*16;                       \n"
+                                            "    float result = 0;                                     \n"
+                                            "    for(int i=0;i<16;++i){                                \n"
+                                            "      float fd  = fast_distance(ref[iRef+i],cur[iCur+i]); \n"
+                                            "      result += fd*fd;                                    \n"
+                                            "    }                                                     \n"
+                                            "    distances[iRefID+nRef*iCurID] = result;               \n"
+                                            "    // suggestion: use 3rd global ID and atomic_ad to     \n"
+                                            "    // get rid of the for loop (use global_id(3) as       \n"
+                                            "    // \"outer\" loop to avoid blocks )                   \n"
+                                            "}                                                         \n"
+                                            "                                                          \n"
+                                            "__kernel void match(__global float *distances,            \n"
+                                            "                   int nRef, int nCur,                    \n"
+                                            "                   float significance,                    \n"
+                                            "                   __global int *matches){                \n"
+                                            "     int iCur = get_global_id(0);                         \n"
+                                            "     float d1 = MAXFLOAT;                                 \n"
+                                            "     float d2 = MAXFLOAT;                                 \n"
+                                            "     float iBest = -1;                                    \n"
+                                            "     for(int i=0;i<nRef;++i){                             \n"
+                                            "       float d = distances[i+nRef*iCur];                  \n"
+                                            "       if( d < d1 ){                                      \n"
+                                            "         d2 = d1;                                         \n"
+                                            "         d1 = d;                                          \n"
+                                            "         iBest = i;                                       \n"
+                                            "       }else if(d < d2){                                  \n"
+                                            "         d2 = d;                                          \n"
+                                            "       }                                                  \n"
+                                            "     }                                                    \n"
+                                            "     if( d1/d2 < significance) {                          \n"
+                                            "        matches[iCur] = iBest;                            \n"
+                                            "     }else{                                               \n"
+                                            "        matches[iCur] = -1;                               \n"
+                                            "     }                                                    \n"
+                                            "  }                                                       \n"
+                                            );  
+
+        m_data->matchProgram = CLProgram("gpu",match_program);
+
+        m_data->matchBufferRefSize = 0;
+        m_data->matchBufferCurSize = 0;
+        m_data->matchBufferDistsSize = 0;
+        m_data->matchBufferMatchesSize = 0;
+        
+        m_data->distsKernel = m_data->matchProgram.createKernel("dists");
+        m_data->matchKernel = m_data->matchProgram.createKernel("match");
+      }
+#endif
       
     }
     
@@ -259,6 +336,7 @@ namespace icl{
                                                              m_data->sampleStep, m_data->threshold);        
         }
         m_data->refFeatures = m_data->clsurf_refimage_backend->detect(&m_data->clsurf_refimage);
+        m_data->refFeaturesDirty = true;
       }
 #endif
     }
@@ -266,8 +344,20 @@ namespace icl{
     const std::vector<SurfFeature> &SurfFeatureDetector::getReferenceFeatures() const{
       return m_data->refFeatures;
     }
+
+    
+    static void adapt_cl_buffer_size(CLProgram &prog, CLBuffer &buffer, int &currentSize, int targetSize, 
+                                     const char *bufferType, const std::string &name){
+      if(currentSize < targetSize || currentSize > targetSize*10){
+        buffer = prog.createBuffer(bufferType,targetSize);
+        currentSize = targetSize;
+        std::cout << "clsurf::match: reallocating buffer '" << name << "' to size " << targetSize << std::endl;
+      }
+    }
+
         
     const std::vector<SurfMatch> &SurfFeatureDetector::match(const core::ImgBase *image, float significance){
+      
       ICLASSERT_THROW(image,ICLException("SurfFeatureDetector::match: given image was null"));
       const std::vector<SurfFeature> &ref = m_data->refFeatures;
       const std::vector<SurfFeature> &cur = detect(image);
@@ -275,28 +365,122 @@ namespace icl{
       matches.clear();
       
       if(!ref.size() || ! cur.size()) return matches;
-      
+
       matches.clear();
-      for(size_t j=0;j<cur.size();++j){
-        float ds[2] = { Range32f::limits().maxVal, Range32f::limits().maxVal };
-        const SurfFeature &c = cur[j];
-        const SurfFeature *match  = 0;
-        for(size_t i=0;i<ref.size();++i){
-          const SurfFeature &r = ref[i];
-          float d = r - c;
-          if(d < ds[0]){
-            ds[1] = ds[0];
-            ds[0] = d;
-            match = &r;
-          }else if(d < ds[1]){
-            ds[1] = d;
+      
+#ifdef HAVE_OPENCL
+      if(m_data->clsurf_backend){
+        if(m_data->refFeaturesDirty){
+          adapt_cl_buffer_size(m_data->matchProgram, m_data->matchBufferRef, m_data->matchBufferRefSize,
+                               64*sizeof(float)*ref.size(), "r", "reference features");
+#if 0
+          if(m_data->matchBufferRefSize < (int)ref.size() || m_data->matchBufferRefSize > 10*(int)ref.size()){
+            DEBUG_LOG("reallocating reference feature buffer to size " << ref.size());
+            m_data->matchBufferRef = m_data->matchProgram.createBuffer("r",64*sizeof(float)*ref.size());
+            m_data->matchBufferRefSize = (int)ref.size();
+          }
+#endif
+        }
+        
+        adapt_cl_buffer_size(m_data->matchProgram, m_data->matchBufferCur, m_data->matchBufferCurSize,
+                             64*sizeof(float)*cur.size(), "r", "current features");
+        adapt_cl_buffer_size(m_data->matchProgram, m_data->matchBufferDists, m_data->matchBufferDistsSize,
+                             cur.size()*ref.size()*sizeof(float),"rw","feature distance matrix");
+        adapt_cl_buffer_size(m_data->matchProgram, m_data->matchBufferMatches, m_data->matchBufferMatchesSize,
+                             cur.size()*sizeof(int),"w","feature matches");
+
+#if 0
+        if(m_data->matchBufferCurSize < (int)cur.size() || m_data->matchBufferCurSize > 10*(int)cur.size()){
+          DEBUG_LOG("reallocating current feature buffer to size " << cur.size());
+          m_data->matchBufferCur = m_data->matchProgram.createBuffer("r",64*sizeof(float)*cur.size());
+          m_data->matchBufferCurSize = (int)cur.size();
+        }
+
+        if(m_data->matchBufferDistsSize < (int)(cur.size() * ref.size()) || m_data->matchBufferDistsSize > 10*(int)(cur.size()*ref.size())){
+          DEBUG_LOG("reallocating distance matrix buffer to size " << cur.size() * ref.size());
+          m_data->matchBufferDists = m_data->matchProgram.createBuffer("rw",sizeof(float)*cur.size()*ref.size());
+          m_data->matchBufferDistsSize = (int)(cur.size() * ref.size());
+        }
+
+        if(m_data->matchBufferMatchesSize < (int)cur.size()){
+          m_data->matchBufferMatches = m_data->matchProgram.createBuffer("w",sizeof(int)*cur.size());
+          m_data->matchBufferMatchesSize = (int)(cur.size());
+        }
+#endif
+
+        if(m_data->refFeaturesDirty){
+          std::vector<icl8u> refVec(ref.size()*sizeof(float)*64);
+          // fill matchBufferRef:
+          for(size_t i=0;i<ref.size();++i){
+            //m_data->matchBufferRef.write(ref[i].descriptor,64*sizeof(float),i*64*sizeof(float));
+            memcpy(refVec.data()+i*64*sizeof(float),ref[i].descriptor, 64*sizeof(float));
+          }
+          m_data->matchBufferRef.write(refVec.data(),64*sizeof(float)*ref.size());
+        }
+          
+        std::vector<icl8u> curVec(cur.size()*sizeof(float)*64);
+        for(size_t i=0;i<cur.size();++i){
+          //m_data->matchBufferCur.write(cur[i].descriptor,64*sizeof(float),i*64*sizeof(float));
+          memcpy(curVec.data()+i*64*sizeof(float),cur[i].descriptor, 64*sizeof(float));
+        } 
+        // writing as one buffer is orders faster!
+        m_data->matchBufferCur.write(curVec.data(),64*sizeof(float)*cur.size());
+        
+
+        m_data->distsKernel.setArgs(m_data->matchBufferRef,
+                                    (int)ref.size(),
+                                    m_data->matchBufferCur,
+                                    (int)cur.size(),
+                                    m_data->matchBufferDists);
+        
+        m_data->distsKernel.apply(ref.size(),cur.size());
+
+        m_data->matchKernel.setArgs(m_data->matchBufferDists,
+                                    (int)ref.size(), (int)cur.size(),
+                                    significance,
+                                    m_data->matchBufferMatches);
+        m_data->matchKernel.apply(cur.size());
+
+        std::vector<int> matchTable(cur.size(),-1);
+        
+        m_data->matchBufferMatches.read(&matchTable[0],cur.size()*sizeof(int));
+
+        // matchTable contains for each curr feature the associated ref-index
+        for(size_t i=0;i<matchTable.size();++i){
+          int t = matchTable[i];
+          if(t >= 0){
+            matches.push_back(std::make_pair(cur[i],ref[t]));
+            matches.back().first.dx = ref[t].x - cur[i].x;
+            matches.back().first.dy = ref[t].y - cur[i].y;
           }
         }
-        if(ds[0]/ds[1] < significance){
-          matches.push_back(std::make_pair(c,*match));
-          matches.back().first.dx = match->x - c.x;
-          matches.back().first.dy = match->y - c.y;
+      }
+#endif
+
+      if(!m_data->clsurf_backend){
+        Time t = Time::now();
+        for(size_t j=0;j<cur.size();++j){
+          float ds[2] = { Range32f::limits().maxVal, Range32f::limits().maxVal };
+          const SurfFeature &c = cur[j];
+          const SurfFeature *match  = 0;
+          for(size_t i=0;i<ref.size();++i){
+            const SurfFeature &r = ref[i];
+            float d = r - c;
+            if(d < ds[0]){
+              ds[1] = ds[0];
+              ds[0] = d;
+              match = &r;
+            }else if(d < ds[1]){
+              ds[1] = d;
+            }
+          }
+          if(ds[0]/ds[1] < significance){
+            matches.push_back(std::make_pair(c,*match));
+            matches.back().first.dx = match->x - c.x;
+            matches.back().first.dy = match->y - c.y;
+          }
         }
+        t.showAge("time for feature matching");
       }
       return matches;
     }
