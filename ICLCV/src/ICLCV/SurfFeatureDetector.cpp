@@ -345,7 +345,8 @@ namespace icl{
       return m_data->refFeatures;
     }
 
-    
+
+#ifdef HAVE_OPENCL    
     static void adapt_cl_buffer_size(CLProgram &prog, CLBuffer &buffer, int &currentSize, int targetSize, 
                                      const char *bufferType, const std::string &name){
       if(currentSize < targetSize || currentSize > targetSize*10){
@@ -354,6 +355,7 @@ namespace icl{
         std::cout << "clsurf::match: reallocating buffer '" << name << "' to size " << targetSize << std::endl;
       }
     }
+#endif
 
         
     const std::vector<SurfMatch> &SurfFeatureDetector::match(const core::ImgBase *image, float significance){
@@ -373,13 +375,6 @@ namespace icl{
         if(m_data->refFeaturesDirty){
           adapt_cl_buffer_size(m_data->matchProgram, m_data->matchBufferRef, m_data->matchBufferRefSize,
                                64*sizeof(float)*ref.size(), "r", "reference features");
-#if 0
-          if(m_data->matchBufferRefSize < (int)ref.size() || m_data->matchBufferRefSize > 10*(int)ref.size()){
-            DEBUG_LOG("reallocating reference feature buffer to size " << ref.size());
-            m_data->matchBufferRef = m_data->matchProgram.createBuffer("r",64*sizeof(float)*ref.size());
-            m_data->matchBufferRefSize = (int)ref.size();
-          }
-#endif
         }
         
         adapt_cl_buffer_size(m_data->matchProgram, m_data->matchBufferCur, m_data->matchBufferCurSize,
@@ -389,30 +384,9 @@ namespace icl{
         adapt_cl_buffer_size(m_data->matchProgram, m_data->matchBufferMatches, m_data->matchBufferMatchesSize,
                              cur.size()*sizeof(int),"w","feature matches");
 
-#if 0
-        if(m_data->matchBufferCurSize < (int)cur.size() || m_data->matchBufferCurSize > 10*(int)cur.size()){
-          DEBUG_LOG("reallocating current feature buffer to size " << cur.size());
-          m_data->matchBufferCur = m_data->matchProgram.createBuffer("r",64*sizeof(float)*cur.size());
-          m_data->matchBufferCurSize = (int)cur.size();
-        }
-
-        if(m_data->matchBufferDistsSize < (int)(cur.size() * ref.size()) || m_data->matchBufferDistsSize > 10*(int)(cur.size()*ref.size())){
-          DEBUG_LOG("reallocating distance matrix buffer to size " << cur.size() * ref.size());
-          m_data->matchBufferDists = m_data->matchProgram.createBuffer("rw",sizeof(float)*cur.size()*ref.size());
-          m_data->matchBufferDistsSize = (int)(cur.size() * ref.size());
-        }
-
-        if(m_data->matchBufferMatchesSize < (int)cur.size()){
-          m_data->matchBufferMatches = m_data->matchProgram.createBuffer("w",sizeof(int)*cur.size());
-          m_data->matchBufferMatchesSize = (int)(cur.size());
-        }
-#endif
-
         if(m_data->refFeaturesDirty){
           std::vector<icl8u> refVec(ref.size()*sizeof(float)*64);
-          // fill matchBufferRef:
           for(size_t i=0;i<ref.size();++i){
-            //m_data->matchBufferRef.write(ref[i].descriptor,64*sizeof(float),i*64*sizeof(float));
             memcpy(refVec.data()+i*64*sizeof(float),ref[i].descriptor, 64*sizeof(float));
           }
           m_data->matchBufferRef.write(refVec.data(),64*sizeof(float)*ref.size());
@@ -420,13 +394,10 @@ namespace icl{
           
         std::vector<icl8u> curVec(cur.size()*sizeof(float)*64);
         for(size_t i=0;i<cur.size();++i){
-          //m_data->matchBufferCur.write(cur[i].descriptor,64*sizeof(float),i*64*sizeof(float));
           memcpy(curVec.data()+i*64*sizeof(float),cur[i].descriptor, 64*sizeof(float));
         } 
         // writing as one buffer is orders faster!
         m_data->matchBufferCur.write(curVec.data(),64*sizeof(float)*cur.size());
-        
-
         m_data->distsKernel.setArgs(m_data->matchBufferRef,
                                     (int)ref.size(),
                                     m_data->matchBufferCur,
