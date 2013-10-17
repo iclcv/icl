@@ -428,8 +428,8 @@ namespace icl{
       }
 #endif
 
-      if(!m_data->clsurf_backend){
-        Time t = Time::now();
+#ifdef HAVE_OPENCV
+      if(m_data->opensurf_backend){
         for(size_t j=0;j<cur.size();++j){
           float ds[2] = { Range32f::limits().maxVal, Range32f::limits().maxVal };
           const SurfFeature &c = cur[j];
@@ -451,8 +451,8 @@ namespace icl{
             matches.back().first.dy = match->y - c.y;
           }
         }
-        t.showAge("time for feature matching");
       }
+#endif
       return matches;
     }
   }
