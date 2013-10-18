@@ -963,7 +963,7 @@ namespace icl{
     template<class T, unsigned int M_ROWS_AND_COLS,unsigned int V_COLS>
     inline FixedMatrix<T,V_COLS,M_ROWS_AND_COLS> &operator*=(FixedMatrix<T,V_COLS,M_ROWS_AND_COLS> &v,
                                                              const FixedMatrix<T,M_ROWS_AND_COLS,M_ROWS_AND_COLS> &m){
-      return v = (m*v);
+      return v = (v*m);
     } 
   
     /// put the matrix into a std::ostream (human readable) 
