@@ -148,6 +148,29 @@ namespace icl{
           yuyv += 4;
         }
       }
+
+      // uses ipp if available and if buf is not null
+      void yuy2(const icl8u* yuy2, const Size &size, ImgBase **dst, std::vector<icl8u> *buf=0){
+        ensureCompatible(dst,depth8u,size,formatRGB);
+        Img8u &image = *(*dst)->as8u();
+        // interleaved order yuyv
+        icl8u *r = image.begin(0), *g = image.begin(1), *b=image.begin(2);
+        const int dim = image.getDim()/2;
+        for(int i=0;i<dim;++i){
+          int tr,tg,tb;
+          cc_util_yuv_to_rgb(yuy2[1], yuy2[0], yuy2[2],tr,tg,tb);
+          r[2*i] = tr;
+          g[2*i] = tg;
+          b[2*i] = tb;
+          
+          cc_util_yuv_to_rgb(yuy2[3], yuy2[0], yuy2[2],tr,tg,tb);
+          r[2*i+1] = tr;
+          g[2*i+1] = tg;
+          b[2*i+1] = tb;
+          
+          yuy2 += 4;
+        }
+      }
   
   #ifdef HAVE_LIBJPEG    
       void mjpg(const icl8u* data, const Size &size, ImgBase **dst, std::vector<icl8u> *buf = 0){
@@ -175,6 +198,7 @@ namespace icl{
       m_functions[FourCC("Y800").asInt()] = color_format_converter::gray;
       m_functions[FourCC("GREY").asInt()] = color_format_converter::gray;
       m_functions[FourCC("YUYV").asInt()] = color_format_converter::yuyv;
+      m_functions[FourCC("YUY2").asInt()] = color_format_converter::yuy2;
       m_functions[FourCC("Y444").asInt()] = color_format_converter::y444;
       m_functions[FourCC("YU12").asInt()] = color_format_converter::yu12;
       m_functions[FourCC("MYRM").asInt()] = color_format_converter::myrm;

@@ -179,7 +179,7 @@ void run(){
   /// try polynomial regression here!
   DynMatrix<float> X(fDataSamples.size(), 5);
   DynMatrix<float> Y(fDataSamples.size(), 1);
-  
+
   for(size_t i=0;i<fDataSamples.size();++i){
     const float x = fDataSamples[i].x, y = fDataSamples[i].y;
     X(i,0) = 1; 

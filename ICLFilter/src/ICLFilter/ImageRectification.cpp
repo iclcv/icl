@@ -363,8 +363,9 @@ namespace icl{
 
       return buffer;
     }
-  
+
   #ifdef HAVE_IPP
+
     
     template<class T, class IppFunc> 
     static const Img<T> &apply_image_rectificaion_ipp(bool validateAndSortPoints,const Rect *resultROI, bool advanedAlgorithm, 

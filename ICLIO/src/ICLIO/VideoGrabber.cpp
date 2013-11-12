@@ -43,6 +43,8 @@
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLUtils/Mutex.h>
 
+#include <ICLIO/ColorFormatDecoder.h>
+
 using namespace icl::utils;
 using namespace icl::core;
 
@@ -111,6 +113,8 @@ namespace icl{
         bool isSeekable;
 
         float ar;
+      
+        ColorFormatDecoder cfd;
 
         Data(const std::string &filename, VideoGrabber::XineHandle* xine)
           : mutex(Mutex::mutexTypeRecursive)
@@ -254,16 +258,18 @@ namespace icl{
       ICL_DELETE(m_params);
     }
     
-    static void convert_frame(icl8u *data, const Size &size,Img8u *image, const std::string &cc4){
-      // u and v channels are swapped -> bug in xine?
-      int dim4 = size.getDim()/4;
-      icl8u *u = data+dim4*4;
-      icl8u *v = u+dim4;
-      for(int i=0;i<dim4;++i){
+    /**
+        static void convert_frame(icl8u *data, const Size &size,Img8u *image, const std::string &cc4){
+        // u and v channels are swapped -> bug in xine?
+        int dim4 = size.getDim()/4;
+        icl8u *u = data+dim4*4;
+        icl8u *v = u+dim4;
+        for(int i=0;i<dim4;++i){
         std::swap(u[i],v[i]);
-      }
-      convertYUV420ToRGB8(data,size,image);
-    }
+        }
+        convertYUV420ToRGB8(data,size,image);
+        }
+    */
 
     void VideoGrabber::pause(){
       xine_set_param(m_xine->stream,XINE_PARAM_SPEED,XINE_SPEED_PAUSE);
@@ -294,17 +300,25 @@ namespace icl{
         throw ICLException("unable to read from stream [" +str(__FUNCTION__)+ "]");
       }
       
-      if(f.colorspace != XINE_IMGFMT_YV12){
-        throw ICLException("invalid xine colorspace (currently only XINE_IMGFMT_YV12 is allowed) ["+str(__FUNCTION__)+"]");
-      }
+
+      
+      //      if(f.colorspace != XINE_IMGFMT_YV12){
+      //  throw ICLException("invalid xine colorspace (currently only XINE_IMGFMT_YV12 is allowed) ["+str(__FUNCTION__)+"]");
+      //}
       
       m_params->streamOffs = f.pos_time;
       setPropertyValue("stream-pos-info", Any(f.pos_time));
       Size size(f.width,f.height);
       setPropertyValue("size", size);
 
-      ensureCompatible(&m_data->outputBuffer,depth8u,size,formatRGB);
-      convert_frame(f.data,size,m_data->outputBuffer->asImg<icl8u>(),m_xine->get_4cc());
+      
+      SHOW(FourCC(f.colorspace));
+
+      //ensureCompatible(&m_data->outputBuffer,depth8u,size,formatRGB);
+      m_data->cfd.decode(FourCC(f.colorspace), f.data, size, &m_data->outputBuffer);
+      //      convert_frame(f.data,size,m_data->outputBuffer->asImg<icl8u>(),m_xine->get_4cc());
+      
+
       xine_free_video_frame (m_xine->vo_port,&f);
       
       return m_data->outputBuffer;

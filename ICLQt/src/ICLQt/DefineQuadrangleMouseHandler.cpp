@@ -48,6 +48,7 @@ namespace icl{
       bool convexOnly;
       int xoffset;
       int yoffset;
+      float handleSize;
     };
 
     static bool is_convex(const std::vector<Point> &ps){
@@ -86,6 +87,8 @@ namespace icl{
 
       std::fill(m_data->handles,m_data->handles+4,0);
       m_data->dragged = -1;
+      
+      m_data->handleSize = 8;
     }
 
     void DefineQuadrangleMouseHandler::setQuadrangle(const utils::Point ps[4]) throw (ICLException){
@@ -146,7 +149,7 @@ namespace icl{
       }
       if(e.isPressEvent()){
         for(int i=0;i<4;++i){
-          if(m_data->ps[i].distanceTo(p) < 8){
+          if(m_data->ps[i].distanceTo(p) < m_data->handleSize){
             m_data->dragged = i;
             m_data->handles[i] = 2;
           }
@@ -162,13 +165,20 @@ namespace icl{
         }
       }else if(e.isMoveEvent()){
         for(int i=0;i<4;++i){
-          if(m_data->ps[i].distanceTo(p) < 8){
+          if(m_data->ps[i].distanceTo(p) < m_data->handleSize){
             m_data->handles[i] = 1;
           }else{
             m_data->handles[i] = 0;
           }
         }
       }
+    }
+    
+    void DefineQuadrangleMouseHandler::setHandleSize(float size){
+      if(!m_data) {
+        throw ICLException("DefineQuadrangleMouseHandler::setHandlesize() was called before it was initialized!");
+      }
+      m_data->handleSize = size;
     }
 
     VisualizationDescription DefineQuadrangleMouseHandler::vis() const{
@@ -177,6 +187,7 @@ namespace icl{
         throw ICLException("DefineQuadrangleMouseHandler::vis() was called before it was initialized!");
       }
       
+      const float r = m_data->handleSize;
       VisualizationDescription d;
       d.color(255,0,0,255);
       d.linewidth(2);
@@ -189,8 +200,8 @@ namespace icl{
       d.polygon(pso);
       d.linewidth(1);
       for(int i=0;i<4;++i){
-        d.fill(255,0,0,1+127*m_data->handles[i]);
-        d.rect(pso[i].x-5,pso[i].y-5,11,11);
+        d.fill(255,0,0,1+60*m_data->handles[i]);
+        d.rect(pso[i].x-r,pso[i].y-r,2*r+1,2*r+1);
       }
       return d;
     }

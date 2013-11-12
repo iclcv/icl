@@ -123,6 +123,13 @@ namespace icl{
       addProperty("minimum value","range:slider","[0,255]",str(minVal));
       addProperty("maximum value","range:slider","[0,255]",str(maxVal));
       addProperty("create region graph","menu","off,on",createRegionGraph ? "on" : "off");
+      addProperty("track times.on","flag","",false);
+      addProperty("track times.rle","info","","-");
+      addProperty("track times.analyse regions","info","","-");
+      addProperty("track times.join regions","info","","-");
+      addProperty("track times.create graph","info","","-");
+      addProperty("track times.filter regions","info","","-");
+      addProperty("track times.total","info","","-");
   
       addChildConfigurable(&m_data->css,"CSS");
     }
@@ -334,18 +341,52 @@ namespace icl{
                                  ));
     }
     
+    
+    inline std::string msec_string_and_reset(Time &t){
+      Time ct = Time::now();
+      Time dt = ct - t;
+      float msec = (float)dt.toMilliSecondsDouble();
+      t =  ct;
+      return str( 0.01*(int)(msec * 100) );
+    }
+    
     const std::vector<ImageRegion> &RegionDetector::detect(const ImgBase *image){
-      //BENCHMARK_THIS_FUNCTION;
+      bool trackTimes = getPropertyValue("track times.on");
+
+      Time t,tTotal;
+      
+      if(trackTimes){
+        tTotal = Time::now();
+      }
+       
       useImage(image);
   
+      if(trackTimes){
+        t = Time::now();
+        tTotal = t;
+      }
       // run length encoding
       m_data->rle.encode(image);
+
+      if(trackTimes){
+        setPropertyValue("track times.rle", msec_string_and_reset(t));
+      }
   
       // find all image region parts
       analyseRegions();
+
+      if(trackTimes){
+        setPropertyValue("track times.analyse regions", msec_string_and_reset(t));
+      }
+
   
       // join parts and create image regions
       joinRegions();
+
+      if(trackTimes){
+        setPropertyValue("track times.join regions", msec_string_and_reset(t));
+      }
+
   
       if(getPropertyValue("create region graph") == "on"){
         // create connectivity graph
@@ -353,10 +394,23 @@ namespace icl{
   
         // which region contains which other region
         setUpBorders();
+
+
+        if(trackTimes){
+          setPropertyValue("track times.create graph", msec_string_and_reset(t));
+        }
+
       }      
   
       // removed regions that do not match the given filter criteria
       filterRegions();
+
+
+      if(trackTimes){
+        setPropertyValue("track times.filter regions", msec_string_and_reset(t));
+        setPropertyValue("track times.total", msec_string_and_reset(tTotal));
+      }
+      
       
       return m_data->filteredRegions;
     }

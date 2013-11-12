@@ -61,7 +61,13 @@ namespace icl{
     void MyrmexDecoder::decode(const icl16s *data, const Size &size, ImgBase **dst){
   
       //TODO: viewpoint/speed/compression parameter
-      if(conversionTable.size()==0) init(data, size, VIEW_M, 6, 0);  //Init on first usage
+      try{
+        if(conversionTable.size()==0) init(data, size, VIEW_M, 6, 0);  //Init on first usage
+      }catch(ICLException &e){
+        // frame was erroneous -> drop it and return dummy 8x8 image
+        ensureCompatible(dst,depth16s, Size(8,8), formatGray);
+        return;
+      }
   
       Size outputImageSize = Size ( image_width,  image_height);
   
@@ -131,7 +137,7 @@ namespace icl{
     //sets speed/compression parameters, fill conversion tables, get real image dimensions
     void MyrmexDecoder::init(const icl16s *data, const Size &size,char viewpoint, unsigned char speed, unsigned char compression){
       //Speed and compression before first capture!
-  
+      
       setSpeed(speed);
       setCompression(compression);  
   
@@ -413,7 +419,7 @@ namespace icl{
     // bigtarget array is to reorderthe pixels inside a module to a new rotated position
     std::vector<char> MyrmexDecoder::makeConversiontable( int width, int height, std::vector<char> connections, char attached, char viewpoint ){
   	
-  
+
       //char actual[width][height];
   
       //conversion array
@@ -430,7 +436,6 @@ namespace icl{
   
   
       int index = 0;
-  
   
       //Create target depending on viewpoint
       //module targets for W
@@ -457,6 +462,7 @@ namespace icl{
   
   
       }
+
       //module targets for 3
       if (viewpoint == VIEW_3 ){
         for (int x=width-1;x>=0;x--){
@@ -481,6 +487,7 @@ namespace icl{
           }
         }
       }
+
       //module targets for M
       if (viewpoint == VIEW_M ){	  
         for (int y=height-1;y>=0;y--){
@@ -503,6 +510,7 @@ namespace icl{
           }
         }
       }
+
       //module targets for E
       if (viewpoint == VIEW_E ){
         for (int x=0;x<width;x++){
@@ -530,8 +538,8 @@ namespace icl{
             bigtarget[findex++] =  bigtargetB[x][y];
           }
         }
-      }
-  
+      }      
+
       //start point at attachment
       char startx;
       char starty;
@@ -552,6 +560,7 @@ namespace icl{
         startx = width-1;
         starty = height-1;
       }
+
       /*
           printf("Width / Height %d %d\n", width, height);
           printf("Start X/Y %d %d\n", startx, starty);
@@ -569,12 +578,17 @@ namespace icl{
         if (connections[i] == SOUTH ) y+=1;
         if (connections[i] == EAST ) x-=1;
         if (connections[i] == WEST ) x+=1;
+
+        if(ccounter >= (int)conversion.size()){
+          throw ICLException("error while creating myrmex decoder conversion table");
+        }
         conversion[ccounter++] = target[x][y];
+        
         //actual[x][y]=i;
   
       }
   
-  
+
       return conversion;
     }
   

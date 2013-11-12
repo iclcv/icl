@@ -69,6 +69,9 @@ namespace icl{
       
       /// sets an offset that shifts both in- and outputs
       void setOffset(const utils::Point &p);
+
+      /// sets the size of the handles
+      void setHandleSize(float size);
       
       /// returns the current quadrangle
       std::vector<utils::Point> getQuadrangle() const;
