@@ -105,6 +105,12 @@ IF(MESASR_FOUND)
   LIST(APPEND HEADERS src/ICLIO/SwissRangerGrabber.h)
 ENDIF()
 
+IF(LIBUSB_FOUND)
+  LIST(APPEND SOURCES src/ICLIO/PixelSenseGrabber.cpp)
+  LIST(APPEND HEADERS src/ICLIO/PixelSenseGrabber.h)
+ENDIF()
+
+
 IF(ImageMagick_FOUND)
   LIST(APPEND SOURCES src/ICLIO/FileWriterPluginImageMagick.cpp
     src/ICLIO/FileGrabberPluginImageMagick.cpp)
@@ -241,6 +247,7 @@ TARGET_LINK_LIBRARIES(ICLIO ICLFilter
 			    ${LIBDC_LIBRARIES}
 			    ${V4L_LIBRARIES}
 			    ${XINE_LIBRARIES}
+			    ${LIBUSB_LIBRARIES}
 			    ${OPENGL_LIBRARIES}
 			    ${LIBFREENECT_LIBRARIES}
 			    ${PYLON_LIBRARIES}

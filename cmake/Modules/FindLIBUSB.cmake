@@ -6,9 +6,9 @@
 #** Website: www.iclcv.org and                                      **
 #**          http://opensource.cit-ec.de/projects/icl               **
 #**                                                                 **
-#** File   : cmake/Modules/FindXine.cmake                           **
-#** Module : FindXine                                               **
-#** Authors: Michael Goetting                                       **
+#** File   : cmake/Modules/FindLIBUSB.cmake                         **
+#** Module : FindLIBUSB                                             **
+#** Authors: Christof Elbrechter                                    **
 #**                                                                 **
 #**                                                                 **
 #** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -34,52 +34,37 @@ INCLUDE(FindPackageHandleStandardArgs)
 # Start main part here
 # ---------------------------------------------------------------------
 
-# Search XINE_ROOT first if it is set.
-IF(XINE_ROOT)
-  SET(_XINE_SEARCH_ROOT PATHS ${XINE_ROOT} ${XINE_ROOT}/lib NO_DEFAULT_PATH)
-  LIST(APPEND _XINE_SEARCHES _XINE_SEARCH_ROOT)
+# Search LIBUSB_ROOT first if it is set.
+IF(LIBUSB_ROOT)
+  #SET(_LIBUSB_SEARCH_ROOT PATHS ${LIBUSB_ROOT} ${LIBUSB_ROOT}/lib NO_DEFAULT_PATH)
+  LIST(APPEND LIB_USB_SEARCH_PATH ${LIBUSB_ROOT})
+ELSE()
+  LIST(APPEND LIB_USB_SEARCH_PATH "/usr")
 ENDIF()
 
-# Normal search.
-SET(_XINE_SEARCH_NORMAL
-     PATHS "/usr"
-   )
-LIST(APPEND _XINE_SEARCHES _XINE_SEARCH_NORMAL)
-LIST(APPEND _XINE_LIBRARIES xine)
 
-# Try each search configuration
-FOREACH(_PATH ${_XINE_SEARCHES})
-  FIND_PATH(XINE_INCLUDE_DIR 
-            NAMES xine.h        
-	    PATHS ${${_PATH}}
-	    PATH_SUFFIXES "/include" 	  
-	    DOC "The path to XINE header files"
-	    NO_DEFAULT_PATH)
+FIND_PATH(LIBUSB_INCLUDE_DIR 
+  NAMES usb.h        
+  PATHS ${LIB_USB_SEARCH_PATH}
+  PATH_SUFFIXES "/include" 	  
+  DOC "The path to LIBUSB header files"
+  NO_DEFAULT_PATH)
   
-    FOREACH(_lib ${_XINE_LIBRARIES})
-      FIND_LIBRARY(${_lib}_LIBRARY  
-               NAMES ${_lib}
-	       PATHS ${${_PATH}}
-	       PATH_SUFFIXES "/lib"
-	       NO_DEFAULT_PATH)
-    ENDFOREACH()
-ENDFOREACH()
-	   
-# Handle the QUIETLY and REQUIRED arguments and set XINE_FOUND to TRUE if 
+FIND_LIBRARY(LIBUSB_LIBRARY  
+  NAMES usb
+  PATHS "${LIB_USB_SEARCH_PATH}"
+  PATH_SUFFIXES "/lib/" "lib/${ARCH_DEPENDENT_LIB_DIR}/" 
+  NO_DEFAULT_PATH)
+
+# Handle the QUIETLY and REQUIRED arguments and set LIBUSB_FOUND to TRUE if 
 # all listed variables are TRUE
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(XINE REQUIRED_VARS 
-				  xine_LIBRARY
-				  XINE_INCLUDE_DIR)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(LIBUSB REQUIRED_VARS 
+				  LIBUSB_LIBRARY
+				  LIBUSB_INCLUDE_DIR)
 
-IF(XINE_FOUND)
-  # HACK: Until FIND_LIBRARY could handle multiple libraries
-  FOREACH(_lib ${_XINE_LIBRARIES})
-    LIST(APPEND _XINE_LIBRARIES_LIST ${${_lib}_LIBRARY})
-  ENDFOREACH()
-
-  LIST(REMOVE_DUPLICATES _XINE_LIBRARIES_LIST)
-  SET(XINE_INCLUDE_DIRS ${XINE_INCLUDE_DIR})
-  SET(XINE_LIBRARIES ${_XINE_LIBRARIES_LIST})
+IF(LIBUSB_FOUND)
+  SET(LIBUSB_INCLUDE_DIRS ${LIBUSB_INCLUDE_DIR})
+  SET(LIBUSB_LIBRARIES ${LIBUSB_LIBRARY})
 ENDIF()
 
-MARK_AS_ADVANCED(XINE_INCLUDE_DIR)
+MARK_AS_ADVANCED(LIBUSB_INCLUDE_DIR)
