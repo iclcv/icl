@@ -1401,13 +1401,13 @@ namespace icl{
       (void)A; (void)U; (void)s; (void)V;
     }
 
-#define NEW_TEST
     template<>
     void svd_dyn(const DynMatrix<icl64f> &M, DynMatrix<icl64f> &U, DynMatrix<icl64f> &s, DynMatrix<icl64f> &Vt) throw (ICLException){
       U.setBounds(M.rows(), M.rows());
       Vt.setBounds(M.cols(), M.cols());
       s.setBounds(1,iclMin(M.rows(),M.cols()));
 
+/*
   #if defined HAVE_IPP_SVD
       int niter = M.rows();
       while (true) {
@@ -1423,6 +1423,8 @@ namespace icl{
         }
       }
   #elif defined HAVE_EIGEN3
+*/
+  #ifdef HAVE_EIGEN3
       svd_eigen(M,U,s,Vt);
   #else
       DynMatrix<icl64f> _U(iclMax(M.rows(),M.cols()), iclMax(M.rows(),M.cols()));

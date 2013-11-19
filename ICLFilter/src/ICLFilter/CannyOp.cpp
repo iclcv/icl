@@ -39,7 +39,6 @@ using namespace icl::core;
 namespace icl {
   namespace filter{
 
-    // without ipp non of the function is implemented
     CannyOp::CannyOp(icl32f lowThresh, icl32f highThresh,int preBlurRadius):
       // {{{ open
       m_lowT(lowThresh),m_highT(highThresh),m_ownOps(true),m_preBlurRadius(preBlurRadius){
@@ -154,7 +153,9 @@ namespace icl {
       icl32f high = m_highT;
       const icl32f *src0 = dx->asImg<icl32f>()->getData(c);
       const icl32f *src1 = dy->asImg<icl32f>()->getData(c);
-      icl8u *dst0 = dst->asImg<icl8u>()->getData(c);
+      Img8u *dst0 = dst->asImg<icl8u>();
+      ImgIterator<icl8u> dstIt    = dst0->beginROI(c);
+      ImgIterator<icl8u> dstItEnd = dst0->endROI(c);
 
       int w = dx->getWidth();
 
@@ -182,44 +183,44 @@ namespace icl {
       }
 
       // non-maximum-suppression with filtering of low magnitude values
-      for (int i = 0; i < dx->getDim(); ++i) {
+      for (int i = 0; i < dx->getDim(); ++i, ++dstIt) {
         if (mag[i] >= low) {
           float dir = src0[i] / src1[i];
 
           if (fabs(dir) >= 2.414213562373095f) {
             if (mag[i] <= mag[i-1] || mag[i] < mag[i+1]) {
-              dst0[i] = 0;
+              *dstIt = 0;
               continue;
             }
           } else if (dir > 0.4142135623730950f) {
             if (mag[i] <= mag[i-1-w] || mag[i] < mag[i+1+w]) {
-              dst0[i] = 0;
+              *dstIt = 0;
               continue;
             }
           } else if (dir < -0.4142135623730950f) {
             if (mag[i] <= mag[i-1+w] || mag[i] < mag[i+1-w]) {
-              dst0[i] = 0;
+              *dstIt = 0;
               continue;
             }
           } else {
             if (mag[i] <= mag[i-w] || mag[i] < mag[i+w]) {
-              dst0[i] = 0;
+              *dstIt = 0;
               continue;
             }
           }
 
-          if (mag[i] > high) dst0[i] = 2;
-          else dst0[i] = 1;
+          if (mag[i] > high) *dstIt = 2;
+          else *dstIt = 1;
         } else {
-          dst0[i] = 0;
+          *dstIt = 0;
         }
       }
 
       // hysteresis thresholding
-      icl8u *ittEnd = &dst0[dx->getDim()-1];
-      for (;dst0 != ittEnd; ++dst0) {
-        if (*dst0 == 2) {
-          followEdge(dst0, w);
+      dstIt = dst0->beginROI(c);
+      for (;dstIt != dstItEnd; ++dstIt) {
+        if (*dstIt == 2) {
+          followEdge(&(*dstIt), w);
         }
       }
 
@@ -229,9 +230,11 @@ namespace icl {
     void CannyOp::applyCanny16s(const ImgBase *dx, const ImgBase *dy, ImgBase *dst, int c) {
       icl16s low  = m_lowT;
       icl16s high = m_highT;
-      const icl16s *src0 = dx->asImg<icl16s>()->getData(c);
-      const icl16s *src1 = dy->asImg<icl16s>()->getData(c);
-      icl8u *dst0 = dst->asImg<icl8u>()->getData(c);
+      const icl16s *src0 = dx->asImg<icl16s>()->getROIData(c);
+      const icl16s *src1 = dy->asImg<icl16s>()->getROIData(c);
+      Img8u *dst0 = dst->asImg<icl8u>();
+      ImgIterator<icl8u> dstIt    = dst0->beginROI(c);
+      ImgIterator<icl8u> dstItEnd = dst0->endROI(c);
 
       int w = dx->getWidth();
 
@@ -259,51 +262,50 @@ namespace icl {
       }
 
       // non-maximum-suppression with filtering of low magnitude values
-      for (int i = 0; i < dx->getDim(); ++i) {
+      for (int i = 0; i < dx->getDim(); ++i, ++dstIt) {
         if (mag[i] >= low) {
           float dir = src0[i] / (float)(src1[i]);
 
           if (fabs(dir) >= 2.414213562373095f) {
-            if (mag[i] <= mag[i-1] || mag[i] < mag[i+1]) {
-              dst0[i] = 0;
+            if (mag[i] < mag[i-1] || mag[i] < mag[i+1]) {
+              *dstIt = 0;
               continue;
             }
           } else if (dir > 0.4142135623730950f) {
-            if (mag[i] <= mag[i-1-w] || mag[i] < mag[i+1+w]) {
-              dst0[i] = 0;
+            if (mag[i] < mag[i-1-w] || mag[i] < mag[i+1+w]) {
+              *dstIt = 0;
               continue;
             }
           } else if (dir < -0.4142135623730950f) {
-            if (mag[i] <= mag[i-1+w] || mag[i] < mag[i+1-w]) {
-              dst0[i] = 0;
+            if (mag[i] < mag[i-1+w] || mag[i] < mag[i+1-w]) {
+              *dstIt = 0;
               continue;
             }
           } else {
-            if (mag[i] <= mag[i-w] || mag[i] < mag[i+w]) {
-              dst0[i] = 0;
+            if (mag[i] < mag[i-w] || mag[i] < mag[i+w]) {
+              *dstIt = 0;
               continue;
             }
           }
 
-          if (mag[i] > high) dst0[i] = 2;
-          else dst0[i] = 1;
+          if (mag[i] > high) *dstIt = 2;
+          else *dstIt = 1;
         } else {
-          dst0[i] = 0;
+          *dstIt = 0;
         }
       }
 
       // hysteresis thresholding
-      icl8u *ittEnd = &dst0[dx->getDim()-1];
-      for (;dst0 != ittEnd; ++dst0) {
-        if (*dst0 == 2) {
-          followEdge(dst0, w);
+      dstIt = dst0->beginROI(c);
+      for (;dstIt != dstItEnd; ++dstIt) {
+        if (*dstIt == 2) {
+          followEdge(&(*dstIt), w);
         }
       }
 
       free(mag);
     }
 
-    /// no CannyOp::apply without ipp
 
     void CannyOp::apply (const ImgBase *poSrc, ImgBase **ppoDst){
         // {{{ open
@@ -321,7 +323,11 @@ namespace icl {
         m_ops[i]->apply(poSrc,&m_derivatives[i]);
       }
 
-      if (!prepare (ppoDst, m_derivatives[0], depth8u)) return;
+      if (getClipToROI()) {
+        if (!prepare (ppoDst, m_derivatives[0], depth8u)) return;
+      } else {
+        if (!prepare (ppoDst, depth8u, poSrc->getSize(), poSrc->getFormat(), poSrc->getChannels(), Rect(Point(1,1), m_derivatives[0]->getSize()))) return;
+      }
 
   #ifdef HAVE_IPP
       int minSize=0;
