@@ -269,19 +269,48 @@ namespace icl {
                 valueJ, valueK, valueL, valueM);
         setArg(13, valueN);
       }
-      
+
       /// sets mutiple kernel arguments at once
-      template<typename A, typename B, typename C, typename D, typename E, typename F, 
-               typename G, typename H, typename I, typename J, typename K, typename L, 
+      template<typename A, typename B, typename C, typename D, typename E, typename F,
+               typename G, typename H, typename I, typename J, typename K, typename L,
                typename M, typename N, typename O>
       void setArgs(const A &valueA, const B &valueB, const C &valueC, const D &valueD,
-                   const E &valueE, const F &valueF, const G &valueG, const H &valueH, 
-                   const I &valueI, const J &valueJ, const K &valueK, const L &valueL, 
-                   const M &valueM, const N &valueN, const O &valueO) 
+                   const E &valueE, const F &valueF, const G &valueG, const H &valueH,
+                   const I &valueI, const J &valueJ, const K &valueK, const L &valueL,
+                   const M &valueM, const N &valueN, const O &valueO)
                    throw (CLKernelException) {
-        setArgs(valueA, valueB, valueC, valueD, valueE, valueF, valueG, valueH, valueI, 
+        setArgs(valueA, valueB, valueC, valueD, valueE, valueF, valueG, valueH, valueI,
                 valueJ, valueK, valueL, valueM, valueN);
         setArg(14, valueO);
+      }
+
+      /// sets mutiple kernel arguments at once
+      template<typename A, typename B, typename C, typename D, typename E, typename F,
+               typename G, typename H, typename I, typename J, typename K, typename L,
+               typename M, typename N, typename O, typename P>
+      void setArgs(const A &valueA, const B &valueB, const C &valueC, const D &valueD,
+                   const E &valueE, const F &valueF, const G &valueG, const H &valueH,
+                   const I &valueI, const J &valueJ, const K &valueK, const L &valueL,
+                   const M &valueM, const N &valueN, const O &valueO, const P &valueP)
+                   throw (CLKernelException) {
+        setArgs(valueA, valueB, valueC, valueD, valueE, valueF, valueG, valueH, valueI,
+                valueJ, valueK, valueL, valueM, valueN, valueP);
+        setArg(15, valueP);
+      }
+
+      /// sets mutiple kernel arguments at once
+      template<typename A, typename B, typename C, typename D, typename E, typename F,
+               typename G, typename H, typename I, typename J, typename K, typename L,
+               typename M, typename N, typename O, typename P, typename Q>
+      void setArgs(const A &valueA, const B &valueB, const C &valueC, const D &valueD,
+                   const E &valueE, const F &valueF, const G &valueG, const H &valueH,
+                   const I &valueI, const J &valueJ, const K &valueK, const L &valueL,
+                   const M &valueM, const N &valueN, const O &valueO, const P &valueP,
+                   const Q &valueQ)
+                   throw (CLKernelException) {
+        setArgs(valueA, valueB, valueC, valueD, valueE, valueF, valueG, valueH, valueI,
+                valueJ, valueK, valueL, valueM, valueN, valueP, valueQ);
+        setArg(16, valueQ);
       }
       
       /// Utility structure for the CLKernel's index operator
