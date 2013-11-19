@@ -1,0 +1,94 @@
+%% beamer class to create slides
+\documentclass{beamer}
+\mode<presentation>
+
+%% german characters
+\usepackage[utf8]{inputenc}
+
+%% combine multiple rows
+\usepackage{multirow}
+
+%% for horizontal lines
+\usepackage{hhline}
+
+%% theme settings
+\usetheme{PaloAlto}
+\makeatletter
+  \setbeamertemplate{sidebar \beamer@sidebarside}
+  {
+    \beamer@tempdim=\beamer@sidebarwidth%
+    \advance\beamer@tempdim by -6pt%
+    \insertverticalnavigation{\beamer@sidebarwidth}%
+    \vfill
+    \ifx\beamer@sidebarside\beamer@lefttext%
+    \else%
+      \usebeamercolor{normal text}%
+      \llap{\usebeamertemplate***{navigation symbols}\hskip0.1cm}%
+      \vskip2pt%
+    \fi%
+  }%
+\makeatother
+\setbeamertemplate{navigation symbols}{\insertframenumber/\inserttotalframenumber}
+\definecolor{icl-blue}{RGB}{95,187,211}
+\definecolor{icl-blue2}{RGB}{239,239,239}
+\setbeamercolor*{palette primary}{use=structure,fg=white,bg=icl-blue}
+\setbeamercolor*{palette secondary}{use=structure,fg=white,bg=icl-blue!75!white}
+\setbeamercolor*{palette tertiary}{use=structure,fg=white,bg=structure.fg!50!black} \setbeamercolor*{palette quaternary}{fg=white,bg=black}
+\setbeamercolor*{sidebar}{use=structure,bg=icl-blue2}  
+\setbeamercolor*{palette sidebar primary}{use=structure,fg=black}
+\setbeamercolor*{palette sidebar secondary}{fg=black}
+\setbeamercolor*{palette sidebar tertiary}{use=structure,fg=black!50}
+\setbeamercolor*{palette sidebar quaternary}{fg=black}
+\setbeamercovered{transparent}
+
+%% more packages
+\usepackage{mathptmx}
+\usepackage[scaled=.90]{helvet}
+\usepackage{courier}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage[ngerman]{babel}
+\usepackage{multimedia} 
+\usepackage{todonotes}
+
+%% listings for code examples
+\usepackage{listings, color}
+\lstloadlanguages{Java}
+\lstset{
+  language=XML,
+  morekeywords={encoding,
+    xs:schema,xs:element,xs:complexType,xs:sequence,xs:attribute}
+}
+
+\usepackage{csquotes}
+\usepackage[backend=bibtex8,style=authortitle]{biblatex}
+\usepackage{filecontents}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                      here starts the document                        %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\title{ICL-Project talk}
+\date{\today}
+
+%% first slide
+\begin{frame}
+  \titlepage
+\end{frame}
+
+%% second slide
+\begin{frame}
+  \frametitle{Table of contents}
+  \tableofcontents[hideallsubsections] 
+\end{frame}
+
+
+\begin{frame}
+\begin{center}
+\LARGE
+  Thank you for your attention.
+\end{center}
+\end{frame}
+
+\end{document}

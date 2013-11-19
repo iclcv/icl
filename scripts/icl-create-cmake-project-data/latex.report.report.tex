@@ -1,0 +1,141 @@
+%% the document type and settins
+\documentclass[a4paper,fontsize=10pt,dvipsnames]{scrreprt}
+
+%% some packages for utf8 characters, german umlauts, nice typesetting
+\usepackage[utf8x]{inputenc}
+\usepackage[ngerman]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\usepackage{lmodern}
+
+%% packages for graphic visualization floats and subfloats
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{float}
+\usepackage{subfigure}
+\usepackage[labelfont={bf,sf,small}, font=small, format=plain]{caption}
+
+%% to create plots within latex document
+\usepackage{pgfplots}
+
+%% math packages
+\usepackage{mathtools}
+\usepackage{amsfonts}
+
+%% \nameref to make references to names of labels
+\usepackage{nameref}
+
+%% to change space between lines
+\usepackage{setspace}
+
+%% to show source code in document
+\usepackage{listings}
+
+%% acronym package for acronyms in text
+\usepackage[nolist,nohyperlinks]{acronym}
+
+%% a nice way to use todos in document
+\usepackage{todonotes}
+%\usepackage[disable]{todonotes}
+
+%% hyperref makes links in document, the hypersetup makes them invisible
+\usepackage{hyperref}
+\hypersetup{
+    unicode=false,          % non-Latin characters in Acrobat’s bookmarks
+    pdftoolbar=true,        % show Acrobat’s toolbar?
+    pdfmenubar=true,        % show Acrobat’s menu?
+    pdffitwindow=false,     % window fit to page when opened
+    pdfstartview={FitH},    % fits the width of the page to the window
+    pdftitle={My title},    % title
+    pdfauthor={Author},     % author
+    pdfsubject={Subject},   % subject of the document
+    pdfcreator={Creator},   % creator of the document
+    pdfproducer={Producer}, % producer of the document
+    pdfkeywords={keyword1} {key2} {key3}, % list of keywords
+    pdfnewwindow=true,      % links in new window
+    colorlinks=true,       % false: boxed links; true: colored links
+    linkcolor=black,          % color of internal links
+    citecolor=black,        % color of links to bibliography
+    filecolor=black,      % color of file links
+    urlcolor=black           % color of external links
+}
+
+\definecolor{lightgray}{cmyk}{0,0,0,0.08}
+\lstloadlanguages{XML}
+\lstset{
+    language=XML,                   % the language of the code
+    basicstyle=\footnotesize,       % the size of the fonts that are used for the code
+    numbers=left,                   % where to put the line-numbers
+    numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
+    stepnumber=2,                   % the step between two line-numbers. If it's 1, each line will be numbered
+    numbersep=5pt,                  % how far the line-numbers are from the code
+    backgroundcolor=\color{lightgray},  % choose the background color. You must add \usepackage{color}
+    showspaces=false,               % show spaces adding particular underscores
+    showstringspaces=false,         % underline spaces within strings
+    showtabs=false,                 % show tabs within strings adding particular underscores
+    frame=single,                   % adds a frame around the code
+    tabsize=2,                      % sets default tabsize to 2 spaces
+    captionpos=b,                   % sets the caption-position to bottom
+    breaklines=true,                % sets automatic line breaking
+    breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+    title=\lstname,                 % show the filename of files included with \lstinputlisting; also try caption instead of title
+    escapeinside={\%*}{*)},         % if you want to add a comment within your code
+    morekeywords={*,...}            % if you want to add more keywords to the set
+}
+
+\begin{acronym}
+    \acro{ICL}{\emph{Image Component Library}}
+\end{acronym}
+
+
+%% the bibiography style for \cite 
+%\bibliographystyle{plain}
+%\bibliographystyle{abbrv}
+%\bibliographystyle{alpha}
+\bibliographystyle{apalike}
+%\bibliographystyle{unsrt}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                      here starts the document                        %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+%% set document title and automatically create title page
+\title{Project report ICL-Project}
+\date{\today}
+\author{John Doe\\ Technische Fakult\"at, Universit\"at Bielefeld, 
+        \and Richard Row, \\ Technische Fakult\"at, Universit\"at Bielefeld}
+\maketitle
+
+%% add table of contents
+%\thispagestyle{empty}\ \clearpage
+\setcounter{page}{0}
+\pagenumbering{roman}
+\thispagestyle{empty}
+\tableofcontents
+\clearpage
+
+%% list of todos 
+\listoftodos
+\clearpage
+
+\setcounter{page}{0}
+\pagenumbering{arabic}
+
+% include subdocuments
+\include{sections/introduction}
+
+%% bibliography
+\newpage
+\phantomsection
+\addcontentsline{toc}{chapter}{Bibliograpie}
+\bibliography{../library}
+
+%% appendix
+\newpage
+\appendix
+%% include subdocuments for appendix
+\include{sections/appendix}
+
+\end{document}

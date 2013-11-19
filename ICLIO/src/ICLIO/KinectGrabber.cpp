@@ -597,27 +597,30 @@ namespace icl{
       ICL_DELETE(m_impl);
       FreenectContext::getFreenectContext().stop();
     }
-    
+
     const ImgBase* KinectGrabber::acquireImage(){
       Mutex::Locker lock(m_impl->mutex);
       // update current angle and accelometers every 200ms
       if(m_impl -> lastupdate.age() > 200000){
-        try{m_impl->getDevice()->used->updateState();}catch(...){DEBUG_LOG("could not update")}
-        double degs = m_impl->getDevice()->used->getState().getTiltDegs();
-        std::string angleval = (degs == -64) ? "moving" : str(degs);
-        double a[3]={0,0,0};
-        m_impl->getDevice()->used->getState().getAccelerometers(a,a+1,a+2);
-        std::string accelval = str(a[0]) + "-" + str(a[1]) + "-" + str(a[2]);
-        prop("Current-Tilt-Angle").value = angleval;
-        prop("Accelerometers").value = accelval;
-        m_impl -> lastupdate = Time::now();
+        updateState();
       }
-
       if(m_impl->getDevice()->mode != GRAB_DEPTH_IMAGE){
         return &m_impl->getLastColorImage();
       }else{
         return &m_impl->getLastDepthImage();
       }
+    }
+
+    void KinectGrabber::updateState(){
+      try{m_impl->getDevice()->used->updateState();}catch(...){DEBUG_LOG("could not update")}
+      double degs = m_impl->getDevice()->used->getState().getTiltDegs();
+      std::string angleval = (degs == -64) ? "moving" : str(degs);
+      double a[3]={0,0,0};
+      m_impl->getDevice()->used->getState().getAccelerometers(a,a+1,a+2);
+      std::string accelval = str(a[0]) + "-" + str(a[1]) + "-" + str(a[2]);
+      prop("Current-Tilt-Angle").value = angleval;
+      prop("Accelerometers").value = accelval;
+      m_impl -> lastupdate = Time::now();
     }
 
     /// callback for changed configurable properties

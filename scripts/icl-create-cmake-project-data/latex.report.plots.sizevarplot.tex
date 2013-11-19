@@ -1,0 +1,32 @@
+% Preamble: \pgfplotsset{width=7cm,compat=1.8}
+\begin{tikzpicture}
+\begin{axis}[
+height=0.4\textwidth,
+width=\textwidth,
+grid=major,
+ytick={460,470,...,530},
+ylabel=Umfang in $mm$,
+xlabel=Distanz in $mm$,
+ybar
+]
+\addplot coordinates {
+(640.681, 521.6085)
+(679.659, 515.43)
+(715.258, 510.216)
+(751.042, 507.717)
+(790.621, 507.0025)
+(838.618, 504.734)
+(883.46,  501.2905)
+(929.053, 494.8975)
+(970.589, 491.804)
+(1018.45, 484.987)
+(1059.78, 481.178)
+(1108.29, 476.936)
+(1154.5,  471.658)
+(1201.09, 466.438)
+(1241.32, 463.265)
+(1299.28, 460.36)
+};
+%\addlegendentry{Umfang}
+\end{axis}
+\end{tikzpicture}

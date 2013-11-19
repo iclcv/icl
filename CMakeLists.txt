@@ -403,7 +403,7 @@ ADD_SUBDIRECTORY(cmake)
 # ---- icl-make, icl-version and icl-install-project ----
 SET(PKG_CONFIG_FILE_NAME_NO_PC "ICL-${SO_VERSION}")
 
-FOREACH(FILE icl-make icl-create-project icl-version)
+FOREACH(FILE icl-make icl-create-project icl-create-cmake-project icl-version)
   SET(SRC scripts/${FILE}.in)
   SET(DST ${CMAKE_CURRENT_BINARY_DIR}/scripts/${FILE})
   CONFIGURE_FILE(${SRC} ${DST} @ONLY)
@@ -420,6 +420,18 @@ INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project-data/Makefi
 FOREACH(FILE Makefile doxyfile sample-test.cpp)
   SET(SRC scripts/icl-create-project-data/${FILE})
   SET(DST ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project-data)
+  FILE(COPY ${SRC} DESTINATION ${DST})
+  INSTALL(FILES ${DST}/${FILE} DESTINATION ${RESOURCE_DIR} RENAME ${FILE}.template)
+ENDFOREACH()
+
+FOREACH(FILE app.CMakeLists.txt CMakeLists.txt latex.clear.sh 
+              latex.report.plots.sizevarplot.tex latex.talk.talk.tex 
+              src.HelloWorld.cpp app.main.cpp Doxyfile.in latex.library.bib 
+              latex.report.report.tex LICENSE.LGPL  src.HelloWorld.h 
+              cmake.FindPkgConfig.cmake latex.build.sh latex.quick.sh 
+              latex.report.sections.introduction.tex src.CMakeLists.txt)
+  SET(SRC scripts/icl-create-cmake-project-data/${FILE})
+  SET(DST ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-cmake-project-data)
   FILE(COPY ${SRC} DESTINATION ${DST})
   INSTALL(FILES ${DST}/${FILE} DESTINATION ${RESOURCE_DIR} RENAME ${FILE}.template)
 ENDFOREACH()
