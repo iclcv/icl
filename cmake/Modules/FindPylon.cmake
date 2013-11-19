@@ -45,7 +45,16 @@ SET(_PYLON_SEARCH_NORMAL PATHS "/usr" "/opt")
 
 LIST(APPEND _PYLON_SEARCHES ${_PYLON_SEARCH_NORMAL})
 LIST(APPEND _PYLON_HEADERS PylonBase.h GenICamVersion.h)
-LIST(APPEND _PYLON_LIBRARIES pylonbase pylonutility pylongigesupp GenApi_gcc40_v2_1 GCBase_gcc40_v2_1)
+LIST(APPEND _PYLON_LIBRARIES 
+	pylonbase 
+	pylonutility 
+	pylongigesupp 
+	GenApi_gcc40_v2_1 
+	GCBase_gcc40_v2_1
+	xerces-c
+	MathParser_gcc40_v2_1
+	log4cpp_gcc40_v2_1
+	Log_gcc40_v2_1)
 
 # Set search path suffix
 LIST(APPEND _HEADER_SEARCH_PATH_SUFFIXES "/include/pylon" 
@@ -90,9 +99,12 @@ FIND_PACKAGE_HANDLE_STANDARD_ARGS(PYLON REQUIRED_VARS
 				  GenApi_gcc40_v2_1_LIBRARY
 				  GCBase_gcc40_v2_1_LIBRARY
 				  pylongigesupp_LIBRARY
+				  xerces-c_LIBRARY
+				  MathParser_gcc40_v2_1_LIBRARY
+				  log4cpp_gcc40_v2_1_LIBRARY
+				  Log_gcc40_v2_1_LIBRARY
 				  PylonBase.h_PYLON_INCLUDE_DIR
 				  GenICamVersion.h_PYLON_INCLUDE_DIR)
-
 
 IF(PYLON_FOUND)
   # HACK: Until FIND_LIBRARY could handle multiple libraries
