@@ -62,6 +62,10 @@ namespace icl{
       protected:
         struct Impl; //!< internal hidden implementation class
         Impl *m_impl;//!< hidden internal data
+
+      private:
+        void updateState();
+
     };
   } // namespace io
 }
