@@ -51,11 +51,12 @@ PKGCONFIG("ICL-${ICL_VERSION}" HAVE_ICL ICL_INCLUDE_DIRS ICL_DEFINES ICL_LINK_DI
 IF(HAVE_ICL)
   LIST(APPEND REQUIRED_LIBRARIES_LIST ICL_LIBS})
 ELSE()
-  message(STATUS "Could not find ICL-${ICL_VERSION}")
-  message(STATUS "Please ensure that ICL-${ICL_VERSION}.pc is in your PKG_CONFIG_PATH")
-  message(STATUS "You can specify the ICL-Version to use via cmake arguments.")
-  message(STATUS "\t the argument -DICL_VERSION=8.0 will change the version to 8.0")
-  message(FATAL_ERROR "\nThis project will not build without ICL")
+  message(FATAL_ERROR 
+    "\nCould not find ICL-${ICL_VERSION}\n"
+    "Please ensure that ICL-${ICL_VERSION}.pc is in your PKG_CONFIG_PATH\n"
+    "You can specify the ICL-Version to use via cmake arguments.\n"
+    "\t>> cmake .. -DICL_VERSION=8.0 will try to use  ICL-8.0\n"
+  )
 ENDIF()
 
 message(STATUS "Looking for doxygen")
