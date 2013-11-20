@@ -46,6 +46,7 @@ SET(SOURCES src/ICLCore/BayerConverter.cpp
 	    src/ICLCore/Line.cpp
 	    src/ICLCore/LineSampler.cpp
 	    src/ICLCore/ConvexHull.cpp
+	    src/ICLCore/AbstractCanvas.cpp            
 	    src/ICLCore/PseudoColorConverter.cpp)
           
 SET(HEADERS src/ICLCore/BayerConverter.h
@@ -73,6 +74,7 @@ SET(HEADERS src/ICLCore/BayerConverter.h
 	    src/ICLCore/Parable.h
 	    src/ICLCore/PixelRef.h
 	    src/ICLCore/ConvexHull.h
+	    src/ICLCore/AbstractCanvas.h
 	    src/ICLCore/PseudoColorConverter.h
 	    src/ICLCore/Types.h)
 
