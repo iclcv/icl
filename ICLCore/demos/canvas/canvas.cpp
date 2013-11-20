@@ -31,8 +31,58 @@
 #include <ICLQt/Common.h>
 #include <ICLCore/AbstractCanvas.h>
 
+struct Canvas : public AbstractCanvas{
+  union{
+    icl8u *c8u[4];
+    icl16s *c16s[4];
+    icl32s *c32s[4];
+    icl32f *c32f[4];
+    icl64f *c64f[4];
+    void *data[4];
+  };
+  Size size;
+  depth d;
+  
+  Canvas(ImgBase *image){
+    ICLASSERT_THROW(image,ICLException("Canvas::Canvas: image was null"));
+    std::fill(c8u,c8u+4,(icl8u*)0);
+    for(int i=0;i<image->getChannels() && i<=4;++i){
+      data[i] = image->getDataPtr(i);
+    }
+    this->size = image->getSize();
+    this->d = image->getDepth();
+  }
+  
+  virtual void draw_point_internal(const utils::Point32f &p){
+  
+  }
+  virtual void draw_line_internal(const utils::Point32f &a, 
+                                  const utils::Point32f &b){
+  }
+  virtual void fill_triangle_internal(const utils::Point32f &a, 
+                                      const utils::Point32f &b,
+                                      const utils::Point32f &c){
+  
+  }
+  virtual void draw_ellipse_internal(const utils::Point32f &c,
+                                     const utils::Point32f &axis1,
+                                     const utils::Point32f &axis2){
+  
+  }
+  virtual void draw_image_internal(const utils::Point32f &ul, 
+                                   const utils::Point32f &ur, 
+                                   const utils::Point32f &lr, 
+                                   const utils::Point32f &ll,
+                                   float alpha, scalemode sm){
+  
+  }
+  
+};
 
 int main(){
+  Img8u image = cvt8u(create("lena"));
+  Canvas c(&image);
+  
   ERROR_LOG("this application has not been implemented yet");
   return 0;
 }
