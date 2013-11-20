@@ -74,18 +74,18 @@ namespace icl{
     }
   
   #ifdef HAVE_QT  
-    void freeTextures(const std::vector<GLuint> &del, const GLContext &ctx){
+    void freeTextures(std::vector<GLuint> del, GLContext ctx){
       struct DelEvent : public ICLApplication::AsynchronousEvent{
         std::vector<GLuint> del;
         GLContext ctx;
         DelEvent(const std::vector<GLuint> &del,const GLContext &ctx):del(del),ctx(ctx){}
         virtual void execute(){
           GLContext current = GLContext::currentContext();
-          if(!ctx) {
+          if(ctx) {
             ctx.makeCurrent();
             glDeleteTextures(del.size(),del.data());
           }
-          if(!current)current.makeCurrent();
+          if(current)current.makeCurrent();
         }
       };
       ICLApplication *app = ICLApplication::instance();
@@ -99,10 +99,24 @@ namespace icl{
                       "working thread, which is very prone to seg-fault-like errors\n ");
           first = false;
         }
-        glDeleteTextures(del.size(),del.data());
+        GLContext current = GLContext::currentContext();
+        if(ctx) {
+          ctx.makeCurrent();
+          glDeleteTextures(del.size(),del.data());
+        }
+        if(current)current.makeCurrent();
       }else{
         app->executeInGUIThread(new DelEvent(del,ctx));
       }
+    }
+  #else
+    void freeTextures(std::vector<GLuint> del, GLContext ctx){
+      GLContext current = GLContext::currentContext();
+      if(ctx) {
+        ctx.makeCurrent();
+        glDeleteTextures(del.size(),del.data());
+      }
+      if(current)current.makeCurrent();
     }
   #endif
   
@@ -372,10 +386,10 @@ namespace icl{
       }
       
       void releaseTextures(){
-        // do we have to release the texture in all contexts?
-        std::vector<GLuint> &textures = infos[GLContext::currentContext()].textures;
-        if(textures.size()){
-          glDeleteTextures(textures.size(), textures.data());
+        for(map<GLContext,TextureInfo>::iterator it = infos.begin(); it != infos.end(); it++) {
+          std::vector<GLuint> &textures = it->second.textures;
+          const GLContext &ctx = it->first;
+          freeTextures(textures, ctx);
           textures.clear();
         }
       }
