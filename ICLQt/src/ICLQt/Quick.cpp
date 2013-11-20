@@ -1685,7 +1685,6 @@ namespace icl{
       if(FILL[3] != 0){
         float c[4],f[4];
         colorinfo(c,f);
-        DEBUG_LOG("using color:!" << f[0] << " " << f[1] << "... " << f[3] << " ");
         if(x1==x2 && y1 == y2){ line(image,x1,y1,x3,y3); return; }
         if(x1==x3 && y1 == y3){ line(image,x1,y1,x2,y2); return; }
         if(x2==x3 && y2 == y3){ line(image,x1,y1,x3,y3); return; }

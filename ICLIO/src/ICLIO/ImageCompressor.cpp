@@ -389,7 +389,7 @@ namespace icl{
         len = l * image->getChannels();
       }
   
-      return CompressedData(m_data->encoded_buffer.data(), (int)len, len/m_data->encoded_buffer.size());
+      return CompressedData(m_data->encoded_buffer.data(), (int)len+sizeof(Header::Params), len/m_data->encoded_buffer.size());
     }
   
     Time ImageCompressor::pickTimeStamp(const icl8u *data){

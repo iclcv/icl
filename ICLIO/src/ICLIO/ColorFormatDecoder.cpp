@@ -47,7 +47,7 @@ namespace icl{
       template<BayerConverter::bayerPattern P>
       void bayer(const icl8u *rawData,const Size &size, ImgBase **dst, std::vector<icl8u> *buffer=0){
         ensureCompatible(dst,depth8u, size, formatRGB);
-        BayerConverter bc(BayerConverter::bilinear, P);
+        BayerConverter bc(P,BayerConverter::bilinear);
         std::vector<icl8u*> cs(1,const_cast<icl8u*>(rawData));
         Img8u src(size,1,cs);
         bc.apply(&src, dst);

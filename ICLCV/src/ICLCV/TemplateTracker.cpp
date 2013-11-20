@@ -122,26 +122,28 @@ namespace icl{
     }
   
     void TemplateTracker::showRotationLUT() const{
-      throw ICLException("TemplateTracker::showRotationLUT is not yet implemented!");
-#if 0
+      // throw ICLException("TemplateTracker::showRotationLUT is not yet implemented!");
       ICLASSERT_RETURN(data->lut.size());
 
-      static const int MAX_W = 2000;
-      Img32f row;
-      Img32f all;
+      int n = data->lut.size();
+      int w = n, h = 1;
+      if(n > 10){
+        w = 10;
+        h = ceil(n/10.);
+      }
       
-      const int w = data->lut[0]->getWidth();
-      for(unsigned int i=0;i<data->lut.size();++i){
-        row = ( row , cvt(data->lut[i].get()) , zeros(1,1,1) );
-        if(row.getWidth()+w > MAX_W || i == data->lut.size() -1) {
-          all = (all % zeros(1,1,1) % row);
-          row = ImgQ();
+      Size s = data->lut[0]->getSize();
+      Img8u r(Size(s.width*w,s.height*h),1);
+      for(int y=0;y<h;++y){
+        for(int x=0;x<w;++x){
+          if(x+w*y < (int)data->lut.size()){
+            r.setROI(Point(x*s.width,y*s.height),s);
+            data->lut[x+w*y]->deepCopyROI(&r);
+          }
         }
       }
-      Img8u tmp = cvt8u(all);
-      TestImage::show(tmp);
-#endif
-
+      r.setFullROI();
+      io::TestImages::show(&r);
       
     }
   

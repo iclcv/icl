@@ -38,7 +38,8 @@
 
 #include <ICLFilter/MedianOp.h>
 #include <ICLFilter/ConvolutionOp.h>
-
+#include <ICLCore/BayerConverter.h>
+#include <ICLCore/CCFunctions.h>
 #include <pthread.h>
 
 #ifdef HAVE_QT
@@ -99,7 +100,26 @@ const ImgBase *grab_image(){
     }
     img = hack;
   }
-
+  if(pa("-decode-bayer")){
+    static std::string pattern = pa("-decode-bayer");
+    if(img->getDepth() != depth8u){
+      ERROR_LOG("unable to reinterpret input image as bayer-encoded image: depth must be 8u");
+    }else{
+      static std::string output = pa("-decode-bayer",1);
+      static std::string method = pa("-decode-bayer",2);
+      static BayerConverter b(pattern,method);
+      static ImgBase *tmp = 0;
+      b.apply(img->as8u(),&tmp);
+      img = tmp;
+      if(output == "gray"){
+        static ImgBase *gray = new Img8u(img->getSize(),formatGray);
+        core::cc(img,gray);
+        img = gray;
+      }else if(output != "rgb"){
+        ERROR_LOG("unable to reinterpret input image as bayer-encoded image: output format must be either rgb or gray");
+      }
+    }
+  }
   /* this does not work in the intended way because the images are converted to dst-format by the
      grabbers grab function using useDesired ...
   static bool reint = pa("-reinterpret-input-format");
@@ -308,6 +328,9 @@ int main(int n, char **ppc){
   ("-no-gui","dont display a GUI (sender app only this is default if Qt is not available)")
   ("-flip","define axis to flip (allowed sub arguments are"
    " x, y or both")
+  ("-decode-bayer","tells the decoder that input images are assued "
+   "to be in a one-channel bayer encoded grayscale format. Output format can either be gray or rgb. The "
+   "filterquality must be one of (nearestNeighbor,simple,bilinear,hqLinear,edgeSense,vng) ")
   ("-clip","define clip-rect ala ((x,y)WxH) or string interactive (which is not yet supported)")
   ("-pp","select preprocessing (one of \n"
    "\t- gauss 3x3 gaussian blur\n"
@@ -335,6 +358,7 @@ int main(int n, char **ppc){
           //"-reinterpret-input-format(fmt) "
 	 //-dist|-d(float,float,float,float) -reset|-r "
 	 "-dist|-d(fn) -reset|-r "
+          "-decode-bayer(bayer-pattern,outputformat,filterquality) "
          "-fps(float=15.0) -clip|-c(Rect) -camera-config(filename) -depth(depth) -format(format) -normalize|-n "
          "-perserve-preprocessing-roi|-ppp -progress "
          "-initially-disable-image-updates|-idu");

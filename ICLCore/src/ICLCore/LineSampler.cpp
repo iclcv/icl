@@ -40,7 +40,7 @@ namespace icl{
 
       template<bool useBounds>
       bool bounds_check(int x, int y,const int bounds[4]){
-        return x>=bounds[0] && y>=bounds[1] && x<=bounds[2] && y<=bounds[3];
+        return x>=bounds[0] && y>=bounds[1] && x<bounds[2] && y<bounds[3];
       }
       template<> bool bounds_check<false>(int,int,const int[4]) { return true; }
 
@@ -103,6 +103,13 @@ namespace icl{
       
       template<class UnaryPointFunc>
       inline void bresenham_internal_generic_level_0(int x0, int y0, int x1, int y1,const int br[4], UnaryPointFunc f){
+        // new optimization: if start and end point are IN the bounding rect,
+        // bounds dont need to be check for every point!
+        const int *useBR = br;
+        if(br && bounds_check<true>(x0, y0, br) && bounds_check<true>(x1, y1, br) ){
+          useBR =  0;
+        }
+        
         bool steep = std::abs(y1 - y0) > std::abs(x1 - x0);
         if(steep){
           std::swap(x0, y0);
@@ -114,13 +121,6 @@ namespace icl{
           std::swap(y0, y1);
         }
         
-        // new optimization: if start and end point are IN the bounding rect,
-        // bounds dont need to be check for every point!
-        const int *useBR = br;
-        if(br && bounds_check<true>(x0, y0, br) && bounds_check<true>(x1, y1, br) ){
-          useBR =  0;
-        }
-
         if(y0 < y1){
           bresenham_internal_generic_level_1<UnaryPointFunc,1>(x0,y0,x1,y1,useBR,steep,steep2,f);
         }else{

@@ -144,6 +144,8 @@ namespace icl{
       /** currently allowed:
           - "cube" params: [x,y,z,radius];
           - "cuboid" params: [x,y,z,dx,dy,dz]
+          - "cone" params: [x,y,z,dx,dy,dz,steps]
+          - "cylinder" params: [x,y,z,dx,dy,dz,steps]
           - "sphere" params: [x,y,z,radius,rzSteps,xySlices]
           - "spheroid" params: [x,y,z,rx,ry,rz,rzSteps,xySlices]
           - "superquadric" params: [x,y,z,rx,ry,rz,dx,dy,dz,e1,e2,rzSteps,xySlices] where \n

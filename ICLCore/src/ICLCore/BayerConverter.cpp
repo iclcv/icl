@@ -36,52 +36,70 @@ using namespace icl::utils;
 
 namespace icl {
   namespace core{
+
+    BayerConverter::BayerConverter(const std::string &pattern, const std::string &method){
+      m_eBayerPattern = translateBayerPattern(pattern);
+      m_eConvMethod = translateBayerConverterMethod(method);
+#ifdef HAVE_IPP
+      switch(m_eBayerPattern){
+        case BayerConverter::bayerPattern_BGGR:
+          m_IppBayerPattern = ippiBayerBGGR;
+          break;
+        case BayerConverter::bayerPattern_GBRG:
+          m_IppBayerPattern = ippiBayerGBRG;
+          break;
+        case BayerConverter::bayerPattern_GRBG:
+          m_IppBayerPattern = ippiBayerGRBG;
+          break;
+        case BayerConverter::bayerPattern_RGGB:
+          m_IppBayerPattern = ippiBayerRGGB;
+          break;
+        default:
+          ERROR_LOG("bayerPattern: " << m_eBayerPattern << " not defined.");
+          break;
+      }
+#endif
+    }
     
-    BayerConverter::BayerConverter(bayerConverterMethod eConvMethod, 
-                                   bayerPattern eBayerPattern,
-                                   Size s) {
-       // Initialize variables
-       m_eBayerPattern = eBayerPattern;
-       m_eConvMethod = eConvMethod;
-       m_buffer.resize(s.getDim()*3);
-       #ifdef HAVE_IPP
-         switch(eBayerPattern){
-           case BayerConverter::bayerPattern_BGGR:
-             m_IppBayerPattern = ippiBayerBGGR;
-             break;
-           case BayerConverter::bayerPattern_GBRG:
-             m_IppBayerPattern = ippiBayerGBRG;
-             break;
-           case BayerConverter::bayerPattern_GRBG:
-             m_IppBayerPattern = ippiBayerGRBG;
-             break;
-           case BayerConverter::bayerPattern_RGGB:
-             m_IppBayerPattern = ippiBayerRGGB;
-             break;
-           default:
-             DEBUG_LOG("bayerPattern: " << eBayerPattern << " not defined.")
-         }
-       #endif
+    BayerConverter::BayerConverter(bayerPattern eBayerPattern,
+                                   bayerConverterMethod eConvMethod, 
+                                   const Size &s) {
+      m_eBayerPattern = eBayerPattern;
+      m_eConvMethod = eConvMethod;
+      m_buffer.resize(s.getDim()*3);
+#ifdef HAVE_IPP
+      switch(eBayerPattern){
+        case BayerConverter::bayerPattern_BGGR:
+          m_IppBayerPattern = ippiBayerBGGR;
+          break;
+        case BayerConverter::bayerPattern_GBRG:
+          m_IppBayerPattern = ippiBayerGBRG;
+          break;
+        case BayerConverter::bayerPattern_GRBG:
+          m_IppBayerPattern = ippiBayerGRBG;
+          break;
+        case BayerConverter::bayerPattern_RGGB:
+          m_IppBayerPattern = ippiBayerRGGB;
+          break;
+        default:
+          ERROR_LOG("bayerPattern: " << eBayerPattern << " not defined.");
+          break;
+      }
+#endif
     }
     
     
     BayerConverter::~BayerConverter() { }
   
     void BayerConverter::apply(const Img8u *src, ImgBase **dst) {
-      // {{{ open
       ICLASSERT_THROW(src,ICLException("BayerConvert::apply: source image was NULL"));
-      // Check bayer and dst image compatibility
       ensureCompatible(dst, depth8u, src->getSize(), 3, formatRGB);
       m_buffer.resize(src->getDim()*3);
-      // Select interpolation method
+
       switch (m_eConvMethod) {
         case nearestNeighbor: 
           FUNCTION_LOG("Nearest Neighbor interpolation");
-          //#ifdef HAVE_IPP
-            //nnInterpolationIpp(src);
-          //#else
-            nnInterpolation(src);
-          //#endif
+          nnInterpolation(src);
           break;
           
         case bilinear:
@@ -105,23 +123,12 @@ namespace icl {
           break;
           
         default:
-          //#ifdef HAVE_IPP
-          //  nnInterpolationIpp(src);
-          //#else
-            nnInterpolation(src);
-          //#endif
+          nnInterpolation(src);
       }
-  
-      // convert data order from interleaved to planar
+      
       interleavedToPlanar(m_buffer.data(), (*dst)->asImg<icl8u>());
     }
-  
-  // }}}
-    
     void BayerConverter::nnInterpolation(const Img<icl8u> *poBayerImg) {
-      // {{{ open
-  
-      // Variable deklaration
       int iWidth = poBayerImg->getWidth();
       int iHeight = poBayerImg->getHeight();
       int i, imax, iinc;
@@ -199,12 +206,8 @@ namespace icl {
         start_with_green = !start_with_green;
       }
     }
-  
-  // }}}
     
     void BayerConverter::bilinearInterpolation(const Img<icl8u> *poBayerImg) {
-      // {{{ open
-  
       int iWidth = poBayerImg->getWidth();
       int iHeight = poBayerImg->getHeight();
       const int iBayerStep = iWidth;
@@ -297,12 +300,7 @@ namespace icl {
       }
     }
   
-  // }}}
-  
     void BayerConverter::hqLinearInterpolation(const Img<icl8u> *poBayerImg) {
-      // {{{ open
-  
-      // Variable initialization
       int iWidth = poBayerImg->getWidth();
       int iHeight = poBayerImg->getHeight();
       const int iBayerStep = iWidth;
@@ -493,13 +491,7 @@ namespace icl {
         start_with_green = !start_with_green;
       }
     }
-  
-  // }}}
-    
     void BayerConverter::edgeSenseInterpolation(const Img<icl8u> *poBayerImg) {
-      // {{{ open
-  
-      // Variable initialization
       icl8u *outR, *outG, *outB;
       int iWidth = poBayerImg->getWidth();
       int iHeight = poBayerImg->getHeight();
@@ -779,13 +771,8 @@ namespace icl {
       
       clearBorders(pucRGBInterImg, iWidth, iHeight, 3);
     }
-  
-  // }}}
     
     void BayerConverter::simpleInterpolation(const Img<icl8u> *poBayerImg) {
-      // {{{ open
-  
-      // Variable initialization
       int iWidth = poBayerImg->getWidth();
       int iHeight = poBayerImg->getHeight();
       int i, imax, iinc;
@@ -863,11 +850,8 @@ namespace icl {
         start_with_green = !start_with_green;
       }
     }
-  
-  // }}}
   #ifdef HAVE_IPP
     void BayerConverter::nnInterpolationIpp(const Img<icl8u> *poBayerImg) {
-      // {{{ open
       int n = 0;
       ippGetNumThreads(&n);
       ippSetNumThreads(1);
@@ -882,14 +866,9 @@ namespace icl {
       ippSetNumThreads(n);
     }
   
-  // }}}
   #endif
   
-    void BayerConverter::clearBorders(icl8u *rgb, int iWidth, 
-                                      int iHeight, int w) {
-      // {{{ open
-  
-      //Variable initialization
+    void BayerConverter::clearBorders(icl8u *rgb, int iWidth, int iHeight, int w) {
       int i, j;
       
       // black edges are added with a width w:
@@ -923,7 +902,7 @@ namespace icl {
     }
   
     BayerConverter::bayerConverterMethod BayerConverter::translateBayerConverterMethod(std::string sbcm) {
-  	if(sbcm.length()<=0){
+      if(sbcm.length()<=0){
         ICL_INVALID_FORMAT;
         return nearestNeighbor;
       }
@@ -969,6 +948,75 @@ namespace icl {
   	return bayerPattern_RGGB;
     }
   
-  // }}}
+    void BayerConverter::convert_bayer_to_gray(const Img8u &src, 
+                                               Img8u &dst, const 
+                                               std::string &pattern){
+      const Size &size = src.getSize();
+      const icl8u *s = src.begin(0);
+      dst.setSize(size);
+      dst.setFormat(formatGray);
+      icl8u *d = dst.begin(0);
+
+      const int w = size.width;
+      const int h = size.height;
+      
+      int blue = pattern == "BGGR" || pattern == "GBRG" ? -1 : 1;
+      int green = pattern  == "GBRG" || pattern == "GRBG";
+      
+      // set first line to 0
+      std::fill(d,d+w,icl8u(0));
+      // set last line to 0
+      std::fill(d+(h-1)*w,d+h*w,icl8u(0));
+      
+      d+=w+1; // 2nd pixel of 2nd row
+      const int w1 = w-1;
+      const int w2 = w*2;
+      int h1 = h-1;
+      
+      for (; h1; --h1, s+=w, d+=w){
+        int t0, t1;
+        const icl8u *e = s + w1;
+        
+        if (green) {
+          t0 = (s[1] + s[w*2+1] + 1) >> 1;
+          t1 = (s[w] + s[w+2]+ 1) >> 1;
+          *d++ = (t0 + s[w+1] + t1)/3;
+          ++s;
+        }
+        
+        if(blue > 0) {
+          for (; s <= e - 2; s += 2){
+            t0 = (s[0] + s[2] + s[w2] + s[w2+2]+2) >> 2;
+            t1 = (s[1] + s[w] + s[w+2] + s[w2+1]+2) >> 2;
+            *d++ = (t0 + t1 + s[w+1])/3;
+            
+            t0 = (s[2] + s[w2+2] + 1) >> 1;
+            t1 = (s[w+1] + s[w+3] + 1) >> 1;
+            *d++ = (t0 + t1 + s[w+2])/3;
+          }
+        }else{
+          for (; s <= e - 2; s += 2) {
+            t0 = (s[0] + s[2] + s[w2] + s[w2+2] + 2) >> 2;
+            t1 = (s[1] + s[w] + s[w+2] + s[w2+1] + 2) >> 2;
+            *d++ = (t0 + t1 + s[w+1])/3;
+            t0 = (s[2] + s[w2+2] + 1) >> 1;
+            t1 = (s[w + 1] + s[w+3] + 1) >> 1;
+            *d++ = (t0 + t1 + s[w+2])/3;
+          }
+        }  
+        if(s < e) {
+          t0 = (s[0] + s[2] + s[w2] + s[w2+2] + 2) >> 2;
+          t1 = (s[1] + s[w] + s[w+2] + s[w2+1] + 2) >> 2;
+          *d++ = (t0 + t1 + s[w+1])/3;
+          ++s;
+        }
+     
+        s -= w1;
+        d -= w1;
+        blue = -blue;
+        green = ! green;
+      }
+    }
+
   } // namespace core
 } // namespace
