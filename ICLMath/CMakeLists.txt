@@ -64,6 +64,7 @@ SET(HEADERS src/ICLMath/DynMatrix.h
 	    src/ICLMath/PCLKdtree.h
 	    src/ICLMath/PCLOctree.h
 	    src/ICLMath/PolynomialRegression.h
+	    src/ICLMath/PolynomialSolver.h
 	    src/ICLMath/QuadTree.h
 	    src/ICLMath/RansacFitter.h
 	    src/ICLMath/SimplexOptimizer.h

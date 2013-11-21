@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLGeom/src/ICLGeom/CoplanarPointPoseEstimator.h       **
 ** Module : ICLGeom                                                **
-** Authors: Christof Elbrechter                                    **
+** Authors: Christof Elbrechter, Sergius Gaulik                    **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -97,8 +97,11 @@ namespace icl{
       /// Internally used data pointer
       Data *data;
   
-      /// internally used to sync property settings with internal data
+      /// Internally used to sync property settings with internal data
       void propertyChangedCallback(const Property &p);
+
+      /// Internally used to correct the first transformation matrix using robust pose estimation algorithm
+      void robustPoseCorrection(int n, const utils::Point32f *modelPoints, std::vector<utils::Point32f> &ips);
       
       public:
   
