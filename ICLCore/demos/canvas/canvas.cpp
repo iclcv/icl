@@ -36,6 +36,10 @@ struct Canvas : public AbstractCanvas{
   typedef void (*point_func)(const Point32f&, void **, int, const AbstractCanvas::Color&);
   typedef void (*line_func)(LineSampler &ls, const Point32f&, const Point32f&, 
                             void **, int, const AbstractCanvas::Color&);
+  typedef void (*triangle_func)(const Point32f&, const Point32f &, 
+                                const Point32f&,void **, const int, 
+                                const AbstractCanvas::Color &,
+                                const AbstractCanvas::ClipRect&);
   LineSampler ls;
   void *data[4];
   Size size;
@@ -43,10 +47,11 @@ struct Canvas : public AbstractCanvas{
   int c;
   static const float ALPHA_SCALE = 0.00392156862745098039; // 1./255
   
-  point_func f_point_no_alpha;
-  point_func f_point_with_alpha;
-  line_func f_line_no_alpha;
-  line_func f_line_with_alpha;
+  struct Functions{
+    point_func f_point;
+    line_func f_line;
+    triangle_func f_triangle;
+  } funcs[2]; // 0=no alpha, 1 = with alpha
   
   template<class T>
   static inline void set_color_alpha(T &t, const float c, const float a){
@@ -104,12 +109,85 @@ struct Canvas : public AbstractCanvas{
     }
   }
 
+  static inline bool less_pt_y(const Point &a, const Point &b){
+    return a.y<b.y;
+  }
+
+  template<int CHAN, class T, bool WITH_ALPHA>
+  static inline void hlinef(void **data, float x1, float x2, float y, int w, 
+                            const AbstractCanvas::Color &cFill, float aScaled,
+                            const AbstractCanvas::ClipRect &clip){
+    if(y < clip.miny || y > clip.maxy || x2 < clip.minx || x1 > clip.maxx) return;
+    if(x1 < clip.minx) x1 = clip.minx;
+    if(x2 > clip.maxx) x2 = clip.maxx;
+
+    const int oL = (int)round(y)*w;
+    const int oS = round(x1) + oL;
+    const int oE = round(x2) + oL;
+    for(int o=oS;o<oE;++o){
+      set_color_gen<T,CHAN,WITH_ALPHA>(data,o,cFill,aScaled);
+    }
+  }
+
+
+  template<int CHAN, class T, bool WITH_ALPHA>
+  static void triangle_template(const Point32f &p1, const Point32f &p2, const Point32f &p3,
+                                void **data, const int w, const AbstractCanvas::Color &cFill,
+                                const AbstractCanvas::ClipRect &clip){
+    const float aScaled = cFill[3]*ALPHA_SCALE;      
+
+    Point ps[3] = { p1, p2, p3 };
+    std::sort((Point*)ps,(Point*)(ps+3),less_pt_y);
+    const Point &A=ps[0], &B=ps[1], &C=ps[2];
+    float dx1,dx2,dx3;
+    if (B.y-A.y > 0){
+      dx1=float(B.x-A.x)/(B.y-A.y);
+    }else{
+      dx1=B.x - A.x;
+    }
+    if (C.y-A.y > 0){
+      dx2=float(C.x-A.x)/(C.y-A.y);
+    }else{
+      dx2=0;
+    }
+    if (C.y-B.y > 0){
+      dx3=float(C.x-B.x)/(C.y-B.y);
+    }else{
+      dx3=0;
+    }
+    
+    Point32f S = Point32f(A.x,A.y);
+    Point32f E = Point32f(A.x,A.y);
+    if(dx1 > dx2) {
+      for(;S.y<=B.y;++S.y,++E.y,S.x+=dx2,E.x+=dx1){
+        hlinef<CHAN,T,WITH_ALPHA>(data,S.x,E.x,S.y,w,cFill,aScaled,clip);
+      }
+      E=Point32f(B.x+dx3,B.y+1);
+      for(;S.y<=C.y;S.y++,E.y++,S.x+=dx2,E.x+=dx3){
+        hlinef<CHAN,T,WITH_ALPHA>(data,S.x,E.x,S.y,w,cFill,aScaled,clip);
+        //            hlinef(image,S.x,E.x,S.y,true);
+      }
+    }else {
+      for(;S.y<=B.y;S.y++,E.y++,S.x+=dx1,E.x+=dx2){
+        hlinef<CHAN,T,WITH_ALPHA>(data,S.x,E.x,S.y,w,cFill,aScaled,clip);
+        //        hlinef(image,S.x,E.x,S.y,true);
+      }
+      S=Point32f(B.x+dx3,B.y+1);
+      for(;S.y<=C.y;S.y++,E.y++,S.x+=dx3,E.x+=dx2){
+        hlinef<CHAN,T,WITH_ALPHA>(data,S.x,E.x,S.y,w,cFill,aScaled,clip);
+        //hlinef(image,S.x,E.x,S.y,true);
+      }
+    }
+  }
+
   template<class T, int CHAN>
   void link_pointers(){
-    f_point_no_alpha = &point_template<CHAN,T,false>;                 
-    f_point_with_alpha = &point_template<CHAN,T,true>;       
-    f_line_no_alpha = &line_template<CHAN,T,false>;          
-    f_line_with_alpha = &line_template<CHAN,T,true>;         
+    funcs[0].f_point = &point_template<CHAN,T,false>;
+    funcs[1].f_point = &point_template<CHAN,T,true>;
+    funcs[0].f_line = &line_template<CHAN,T,false>;
+    funcs[1].f_line = &line_template<CHAN,T,true>;
+    funcs[0].f_triangle = &triangle_template<CHAN,T,false>;
+    funcs[1].f_triangle = &triangle_template<CHAN,T,true>;
   }
     
   Canvas(ImgBase *image){
@@ -124,8 +202,6 @@ struct Canvas : public AbstractCanvas{
     this->size = image->getSize();
     this->d = image->getDepth();
     this->c = image->getChannels();
-    this->f_point_no_alpha = 0;
-    this->f_point_with_alpha = 0;
 
     state.clip = AbstractCanvas::ClipRect(0,size.width-1,0,size.height-1);
 
@@ -146,30 +222,30 @@ struct Canvas : public AbstractCanvas{
      }                
   }
   
+  inline bool hasLineAlpha() const{
+    return state.linecolor[3] != 255;
+  }
+
+  inline bool hasFillAlpha() const{
+    return state.fillcolor[3] != 255;
+  }
+  
+  
   virtual void draw_point_internal(const utils::Point32f &p){
     if(clip(p)){
-      if(state.linecolor[3] == 255){
-        f_point_no_alpha(p,data,size.width,state.linecolor);
-      }else{
-        f_point_with_alpha(p,data,size.width,state.linecolor);
-      }
+      funcs[hasLineAlpha()].f_point(p,data,size.width,state.linecolor);
     }
   }
 
   virtual void draw_line_internal(const utils::Point32f &a, 
                                   const utils::Point32f &b){
     ls.setBoundingRect(getClipRect());
-    SHOW(getClipRect());
-    if(state.linecolor[3] == 255){
-      f_line_no_alpha(ls, a, b, data,size.width,state.linecolor);
-    }else{
-      f_line_with_alpha(ls, a, b, data,size.width,state.linecolor);
-    }
+    funcs[hasLineAlpha()].f_line(ls, a, b, data,size.width,state.linecolor);
   }
   virtual void fill_triangle_internal(const utils::Point32f &a, 
                                       const utils::Point32f &b,
                                       const utils::Point32f &c){
-  
+    funcs[hasFillAlpha()].f_triangle(a,b,c, data,size.width, state.fillcolor, state.clip);
   }
   virtual void draw_ellipse_internal(const utils::Point32f &c,
                                      const utils::Point32f &axis1,
@@ -191,7 +267,11 @@ int main(){
   ImgQ image(Size(1000,1000),3);
   Canvas c(&image);
 
+  c.fillcolor(0,100,255,100);
+  c.linecolor(255,0,0,100);
+  c.triangle(50,50, 100,100, 1000, 333);
 
+#if 0
   Time t = Time::now();
   for(int i=0;i<360;++i){
     c.push();
@@ -201,7 +281,7 @@ int main(){
     c.pop();
   }
   t.showAge("time for drawing 360 feathered lines (lines)");
-
+#endif
 
 #if 0
   Time t = Time::now();

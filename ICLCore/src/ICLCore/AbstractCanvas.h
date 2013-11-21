@@ -57,6 +57,13 @@ namespace icl{
         float maxx;
         float miny;
         float maxy;
+        bool in(float x, float y) const{
+          return ((x >= minx) && (x<= maxx) 
+                  && (y >= miny) && (y <= maxy));
+        }
+        bool in(const Point32f &p) const{
+          return in(p.x,p.y);
+        }
       };
       
       protected:
@@ -86,11 +93,10 @@ namespace icl{
                         state.T(0,1)*x + state.T(1,1)*y + state.T(2,1));
       }
       inline bool clip(float x, float y) const{
-        return ((x >= state.clip.minx) && (x<= state.clip.maxx) 
-                && (y >= state.clip.miny) && (y <= state.clip.maxy));
+        return state.clip.in(x,y);
       }
       inline bool clip(const Point32f &p) const{
-        return clip(p.x,p.y);
+        return state.clip.in(p);
       }
                         
       
