@@ -116,9 +116,16 @@ namespace icl{
       
       public:
 
+      virtual Rect32f getClipRect(){
+        return Rect32f(state.clip.minx, state.clip.miny,
+                       state.clip.maxx-state.clip.minx,
+                       state.clip.maxy-state.clip.miny);
+      }
+      
       virtual void push(){
         stack.push_back(state);
       }
+      
       virtual void pop() throw (utils::ICLException){
         ICLASSERT_THROW(stack.size(), utils::ICLException("AbstractCanvas::pop: stack is empty"));
         state = stack.back();

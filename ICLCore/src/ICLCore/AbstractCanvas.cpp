@@ -37,7 +37,15 @@ namespace icl{
     
     
     void AbstractCanvas::point(float x, float y){
-      draw_point_internal(transform(x,y));
+      if(state.pointsize == 1){
+        draw_point_internal(transform(x,y));
+      }else{
+        push();
+        state.fillcolor = state.linecolor;
+        state.linecolor = AbstractCanvas::Color(0,0,0,0);
+        circle(x,y,state.pointsize);
+        pop();
+      }
     }
 
     void AbstractCanvas::line(float x0, float y0, float x1, float y1){
