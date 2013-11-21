@@ -89,6 +89,9 @@ namespace icl{
         return ((x >= state.clip.minx) && (x<= state.clip.maxx) 
                 && (y >= state.clip.miny) && (y <= state.clip.maxy));
       }
+      inline bool clip(const Point32f &p) const{
+        return clip(p.x,p.y);
+      }
                         
       
       public:
@@ -137,11 +140,11 @@ namespace icl{
                          bool centered=false)  throw (utils::ICLException);
       virtual void text(const std::string &t, float x, float y, bool centered = false);
       
-      virtual void linecolor(float r, float g, float b, float a){
+      virtual void linecolor(float r, float g, float b, float a=255){
         state.linecolor = Color(r,g,b,a);
       }
 
-      virtual void fillcolor(float r, float g, float b, float a){
+      virtual void fillcolor(float r, float g, float b, float a=255){
         state.fillcolor = Color(r,g,b,a);
       }
       

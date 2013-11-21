@@ -39,6 +39,7 @@ namespace icl{
     void AbstractCanvas::point(float x, float y){
       draw_point_internal(transform(x,y));
     }
+
     void AbstractCanvas::line(float x0, float y0, float x1, float y1){
       draw_line_internal(transform(x0,y0),transform(x1,y1));
     }
