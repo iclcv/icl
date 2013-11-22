@@ -146,7 +146,7 @@ namespace icl{
       DesignMatrixGen m_gen;
       
       /// utility valiables
-      DynMatrix<T> m_D, m_S, m_Evecs, m_Evals;
+      DynMatrix<T> m_D, m_S, m_Evecs, m_Evals, m_svdU, m_svdS, m_svdVt;
       
       /// constraint matrix
       SmartPtr<DynMatrix<T> >m_C;
@@ -209,6 +209,19 @@ namespace icl{
           /// use eigen vector for the largest eigen value
           std::copy(m_Evecs.col_begin(0), m_Evecs.col_end(0), m_model.begin());
         }catch(ICLException &e){
+          //Si.svd(m_svdU, m_svdS, m_svdVt);
+          //SHOW(m_svdS);
+          //
+          //std::copy(m_svdU.col_begin(0), m_svdU.col_end(0), m_model.begin());
+          //
+          //for(int i=0;i<N;++i){
+          //  SHOW(getError(m_model,points[i]));
+          //}
+
+          // this can happen if there is no noise in the input values
+          // rather than solving Ax = lambda x, we have a 0 eigenvalue lambda
+          // therefore we have to solve Ax = 0 ??
+          DEBUG_LOG("LeastSquareModelFitting:fit: error in eigenvalue decomposition:\n" << e.what());
           std::fill(m_model.begin(),m_model.end(),Range<T>::limits().maxVal);
         }
         

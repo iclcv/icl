@@ -32,7 +32,7 @@
 #include <ICLCore/AbstractCanvas.h>
 #include <ICLCore/LineSampler.h>
 #include <ICLUtils/Random.h>
-#include <ICLMath/LeastSquareModelFitting.h>
+#include <ICLMath/LeastSquareModelFitting2D.h>
 
 struct Canvas : public AbstractCanvas{
   typedef void (*point_func)(const Point32f&, void **, int, const AbstractCanvas::Color&);
@@ -266,24 +266,56 @@ struct Canvas : public AbstractCanvas{
 
 
 struct Ellipse{
-  float A,B,C,r,x0,y0; // optimize these
-  Ellipse(float A, float B, float C, float r, float x0, float y0):
-    A(A),B(B),C(C),r(r),x0(x0),y0(y0){
+  float p[6];
+  Ellipse(const std::vector<double> &ps){
+    std::copy(ps.begin(),ps.end(),p);
+    SHOW(p[0]);
+    SHOW(p[1]);
+    SHOW(p[2]);
+    SHOW(p[3]);
+    SHOW(p[4]);
+    SHOW(p[5]);
   }
-  bool operator(float x, float y) const{
-    const float tx = x-x0;
-    const float ty = y-y0;
-    return A*sqr(tx) + 2*B*tx*ty + C*sqr(ty) < sqr(r);
+  inline float f(float x, float y) const{
+    return p[0] *sqr(x) + p[1]*x*y + p[2] * sqr(y) + p[3] * x + p[4] *y + p[5];
   }
-}
-void fill_ellipse_test_2(Channel32f C, AbstractCanvas::Transform Tglobal, Rect32f r){
+  
+  bool operator()(float x, float y) const{
+    return f(x,y) > 0;
+  }
+};
+
+void fill_ellipse_test_2(Channel32f C, AbstractCanvas::Transform T, Rect32f r){
   typedef FixedColVector<float,2> Vec2;
-  typedef LeastSquareModelFitting<float,Vec2> Fit;
+  typedef FixedColVector<float,3> Vec3;
+  typedef LeastSquareModelFitting2D Fit;
+  Fit fit(6,Fit::ellipse_gen);
+  const Point32f c = r.center();
+  const Vec3 ps[3] = { 
+    T * Vec3(r.right(), c.y, 1),
+    T * Vec3(r.left(), c.y, 1),
+    T * Vec3(c.x,r.top(), 1)
+    //T * Vec3(c.x,r.bottom(), 1)
+  };
+  std::vector<Point32f> psv(3);
+  for(int i=0;i<3;++i){
+    psv[i] = Point32f(ps[i].x,ps[i].y);
+    std::cout << "psv[" << i << "]: "<< psv[i] << std::endl;
+  }
+
+  std::vector<double> params = fit.fit(psv);
+  for(int i=0;i<(int)params.size();++i){
+    std::cout << "params[" << i << "]: "<< params[i] << std::endl;
+  }
+  Ellipse e(params);
   
-  
-  
-  
-  
+
+  for(float y=0;y<1000;++y){
+    for(float x=0;x<1000;++x){
+      C(x,y) = e.f(x,y);
+      if(e(x,y)) C(x,y) = 255;
+    }
+  }
 }
 
 void fill_ellipse_test(Channel32f C, AbstractCanvas::Transform Tglobal, Rect32f r){
@@ -349,7 +381,7 @@ int main(){
   c.rotate(M_PI/4);
   c.translate(500,500);
 
-  fill_ellipse_test(image[0],c.getTransform(), Rect(350,450,300,100) );
+  fill_ellipse_test_2(image[0],c.getTransform(), Rect(350,450,300,100) );
   c.linecolor(0,255,0,255);
   c.sym('+',500,500);
   c.sym('+',650,500);
