@@ -69,6 +69,11 @@ namespace icl{
 
       /// index access operator (const)
       const T &operator[](unsigned int idx) const { return m_data[idx]; }
+      
+      /// reinterprect FixedArray<T,1u> as a scalar
+      inline operator T() const{
+        return x;
+      }
     };
 
     /// Specialization for 2D-matrics providing direct access to values x, y

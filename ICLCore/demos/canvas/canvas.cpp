@@ -31,6 +31,8 @@
 #include <ICLQt/Common.h>
 #include <ICLCore/AbstractCanvas.h>
 #include <ICLCore/LineSampler.h>
+#include <ICLUtils/Random.h>
+#include <ICLMath/LeastSquareModelFitting.h>
 
 struct Canvas : public AbstractCanvas{
   typedef void (*point_func)(const Point32f&, void **, int, const AbstractCanvas::Color&);
@@ -263,14 +265,113 @@ struct Canvas : public AbstractCanvas{
 };
 
 
+struct Ellipse{
+  float A,B,C,r,x0,y0; // optimize these
+  Ellipse(float A, float B, float C, float r, float x0, float y0):
+    A(A),B(B),C(C),r(r),x0(x0),y0(y0){
+  }
+  bool operator(float x, float y) const{
+    const float tx = x-x0;
+    const float ty = y-y0;
+    return A*sqr(tx) + 2*B*tx*ty + C*sqr(ty) < sqr(r);
+  }
+}
+void fill_ellipse_test_2(Channel32f C, AbstractCanvas::Transform Tglobal, Rect32f r){
+  typedef FixedColVector<float,2> Vec2;
+  typedef LeastSquareModelFitting<float,Vec2> Fit;
+  
+  
+  
+  
+  
+}
+
+void fill_ellipse_test(Channel32f C, AbstractCanvas::Transform Tglobal, Rect32f r){
+  float cx = r.x + r.width/2;
+  float cy = r.y + r.height/2;
+  
+  typedef FixedColVector<float,2> Vec2;
+  typedef FixedMatrix<float,2,2> Mat2;
+
+  //  Tglobal = Tglobal.inv();
+  Mat2 R = Tglobal.part<0,0,2,2>();
+  Vec2 t = Tglobal.part<2,0,1,2>();
+
+  //  Mat2 T(r.width/2,0,
+  //       0,r.height/2);
+  //T = T*T;
+  //T = T.inv();
+
+  // opt ??
+  Mat2 T(1./sqr(r.width/2),0,
+         0, 1./sqr(r.height/2));
+
+  Vec2 c = Vec2(cx,cy) + t;
+
+  for(float y=0;y<1000;++y){
+    for(float x=0;x<1000;++x){
+      Vec2 v = R*Vec2(x,y)-c;
+      v = v + t;
+      float val = v.transp() * T * v;
+      if(val < 1) C(x,y) = 255;
+    }
+  }
+
+#if 0
+  
+  float a = T(0,0), b = T(1,0), tx=T(2,0);
+  float c = T(0,1), d = T(1,1), ty=T(2,1);
+  
+  
+  
+  for(int y=0;y<1000;++y){
+    float p = (y*(b+c)+tx)/a;
+    float q = (d*sqr(y)+y*ty+1)/a;
+    float pql = -p/2;
+    float pqr = sqr(p)/4 - q;
+    if(pqr < 0) continue;
+    SHOW(y);
+    pqr = ::sqrt( pqr );
+    float x1 = pql + pqr;
+    float x2 = pql - pqr;
+    if(x1 > x2) std::swap(x1,x2);
+    std::fill(&C(x1,y),&C(x2,y),255.0f);
+  }
+#endif
+}
+
 int main(){
+  URand rc(0,255);
+  URandI r(999);
   ImgQ image(Size(1000,1000),3);
   Canvas c(&image);
+  c.translate(-500,-500);
+  c.rotate(M_PI/4);
+  c.translate(500,500);
 
-  c.fillcolor(0,100,255,100);
-  c.linecolor(255,0,0,100);
-  c.triangle(50,50, 100,100, 1000, 333);
+  fill_ellipse_test(image[0],c.getTransform(), Rect(350,450,300,100) );
+  c.linecolor(0,255,0,255);
+  c.sym('+',500,500);
+  c.sym('+',650,500);
+  c.sym('+',500,550);
 
+#if 0  
+  c.fillcolor(255,0,0,255);
+  c.linecolor(0,255,0,100);
+  c.triangle(100,500,400,502,900,500);
+  c.triangle(500,100,502,400,500,900);
+#endif
+
+  
+#if 0
+  Time t = Time::now();
+  for(int i=0;i<100;++i){
+    c.fillcolor(rc,rc,rc,255);
+    c.linecolor(rc,rc,rc,255);
+    c.triangle(r,r,r,r,r,r);
+  }
+  t.showAge("time for rendering 100 random triangles");
+#endif
 #if 0
   Time t = Time::now();
   for(int i=0;i<360;++i){
@@ -309,7 +410,9 @@ int main(){
   }
   t.showAge("time for filling a " + str(image.getSize()) + " image");
 #endif
-  show(image);
+  
+  SHOW(image.getMinMax());
+  show(norm(image));
   
   return 0;
 }

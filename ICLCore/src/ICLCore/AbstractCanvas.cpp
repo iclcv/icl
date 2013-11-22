@@ -70,7 +70,7 @@ namespace icl{
           break;
         case '+':
           line(x,y-s,x,y+s);
-          line(x-s,y,y+s,y);
+          line(x-s,y,x+s,y);
           break;
         case '*':
           sym('x',x,y);

@@ -122,6 +122,16 @@ namespace icl{
       
       public:
 
+      virtual const Transform &getTransform() const{
+        return state.T;
+      }
+      virtual void getTransform(float &angle, float &tx, float &ty) const{
+        angle = acos(state.T(0,0));
+        tx = state.T(2,0);
+        ty = state.T(2,1);
+      }
+
+      
       virtual Rect32f getClipRect(){
         return Rect32f(state.clip.minx, state.clip.miny,
                        state.clip.maxx-state.clip.minx,
@@ -188,8 +198,8 @@ namespace icl{
       virtual void transform(float tx, float ty, float angle){
         if(angle){
           const float sa = sin(angle), ca = cos(angle);
-          state.T = Transform(sa,ca,tx,
-                              -ca,sa,ty,
+          state.T = Transform(ca,sa,tx,
+                              -sa,ca,ty,
                               0,0,1)*state.T;
         }else{
           state.T(2,0) += tx;
