@@ -438,7 +438,7 @@ void PylonColorToRgb::convert(const void *imgBuffer, ConvBuffers* b){
 BayerToRgb8Icl::BayerToRgb8Icl(BayerConverter::bayerConverterMethod method,
                                BayerConverter::bayerPattern pattern,
                                Size size)
-  : m_Conv(method, pattern, size), m_Channels(1), m_Size(size)
+  : m_Conv(pattern,method, size), m_Channels(1), m_Size(size)
 {
   // nothing to do.
 }
