@@ -454,8 +454,8 @@ namespace icl{
     int solve_poly(int degree, const double *in_real, const double *in_imag, double *out_real, double *out_imag)
     {
       int nroots;
-      xcomplex *poly  = new xcomplex[degree];
-      xcomplex *roots = new xcomplex[degree];
+      xcomplex *poly  = new xcomplex[degree+1];
+      xcomplex *roots = new xcomplex[degree+1];
 
       for (int i = 0; i <= degree; ++i) {
         __real__(poly)[i] = in_real[i];
