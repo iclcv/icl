@@ -1,5 +1,5 @@
 IF(QT4_FOUND)
-  ADD_SUBDIRECTORY(corner-detection-css)
+#  ADD_SUBDIRECTORY(corner-detection-css)
   ADD_SUBDIRECTORY(flood-filler)
   ADD_SUBDIRECTORY(mean-shift)
   ADD_SUBDIRECTORY(region-detection)
