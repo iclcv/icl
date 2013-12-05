@@ -309,6 +309,25 @@ namespace icl{
       bool needLink;
 
       void performLink(ICLDrawWidget *widget){
+        
+        typedef std::map<Scene*,std::vector<ICLDrawWidget*> > LinkMap;
+        static LinkMap current_links;
+        static Mutex mutex;
+        
+        Mutex::Locker lock(mutex);
+        LinkMap::iterator it = current_links.find(parent);
+        if(it != current_links.end()){
+          std::vector<ICLDrawWidget*> &ws = it->second;
+          if(std::find(ws.begin(),ws.end(), widget) != ws.end()){
+            // link between scene and widget is already established!
+            return;
+          }else{
+            ws.push_back(widget);
+          }
+        }else{
+          current_links[parent].push_back(widget);
+        }
+
         const std::string save = parent->getConfigurableID();
         const std::string id = "scene"+str(parent)+str(utils::Time::now().toMicroSeconds());
 

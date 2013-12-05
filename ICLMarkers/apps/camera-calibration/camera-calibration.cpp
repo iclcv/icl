@@ -177,9 +177,21 @@ static std::string get_save_filename(){
   return "";
 }
 
-static void save_cam(const Camera &cam, const std::string &filename){
+static void save_cam(Camera cam, const std::string &filename){
   if(filename.length()){
     std::ofstream s(filename.c_str());
+    if(pa("-os")){
+      Camera::RenderParams &r = cam.getRenderParams();
+      Size os = parse<Size>(*pa("-os"));
+      float fx = float(os.width) / float(r.chipSize.width);
+      float fy = float(os.height) / float(r.chipSize.height);
+      r.chipSize = os;
+      cam.setSamplingResolutionX(cam.getSamplingResolutionX()*fx);
+      cam.setSamplingResolutionY(cam.getSamplingResolutionY()*fy);
+      cam.setPrincipalPointOffset(cam.getPrincipalPointOffsetX()*fx,
+                                  cam.getPrincipalPointOffsetY()*fy);
+      r.viewport = Rect(Point::null,os);
+    }
     s << cam;
   }
 }
@@ -921,6 +933,7 @@ int main(int n, char **ppc){
                 "-initial-transform-id|-it(idx=0) "
                 "-create-empty-config-file|-cc "
                 "-force-size|-s|-size(WxH) "
+                "-convert-output-size|-os(WxH) "
                 "-output|-o(output-xml-file-name) "
                 ,init,run).exec();
 }

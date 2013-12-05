@@ -501,7 +501,7 @@ namespace icl {
                     "Defines whether the marker borders are black, white or mixed");
       }
       addProperty("contour approximation algorithm", "menu",
-                  "CSS,RDP", "CSS", 0,
+                  "CSS,RDP", "RDP", 0,
                   "Algorithm for approximating contours.");
 
       addProperty("optimize edges", "flag", "", "true", 0,
