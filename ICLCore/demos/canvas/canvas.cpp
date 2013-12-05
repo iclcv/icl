@@ -262,6 +262,9 @@ struct Canvas : public AbstractCanvas{
     void operator()(int x, int y) const{
       if(in(x,y)){
         set_color_gen<T,CHAN,WITH_ALPHA>(data,get_idx(x,y,w),cFill,aScaled);
+      }else{
+        static const AbstractCanvas::Color xxx(0,100,255,255);
+        set_color_gen<T,CHAN,WITH_ALPHA>(data,get_idx(x,y,w),xxx,aScaled);
       }
     }
   };
@@ -287,8 +290,8 @@ struct Canvas : public AbstractCanvas{
     
     const Vec2 t(c.x,c.y);
     
-    const Mat2 S(1./sqr(axis1.norm()/2),0,
-           0, 1./sqr(axis2.norm()/2));
+    const Mat2 S(1./sqr(axis1.norm()),0,
+           0, 1./sqr(axis2.norm()));
 
     InsideEllipse in = { R,S,t };
     SetEllipsePixels<CHAN,T,WITH_ALPHA> sep = { cFill, w, in, aScaled, data };
@@ -487,7 +490,7 @@ void run(){
   c.rotate(a);
   c.translate(x,y);
 
-  c.ellipse(x,y,w,h);
+  c.ellipse(x,y,w/2,h/2);
 
   c.linecolor(0,255,0,255);
   c.sym('+',x,y);
