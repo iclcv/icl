@@ -285,38 +285,6 @@ struct Ellipse{
   }
 };
 
-void fill_ellipse_test_2(Channel32f C, AbstractCanvas::Transform T, Rect32f r){
-  typedef FixedColVector<float,2> Vec2;
-  typedef FixedColVector<float,3> Vec3;
-  typedef LeastSquareModelFitting2D Fit;
-  Fit fit(6,Fit::ellipse_gen);
-  const Point32f c = r.center();
-  const Vec3 ps[3] = { 
-    T * Vec3(r.right(), c.y, 1),
-    T * Vec3(r.left(), c.y, 1),
-    T * Vec3(c.x,r.top(), 1)
-    //T * Vec3(c.x,r.bottom(), 1)
-  };
-  std::vector<Point32f> psv(3);
-  for(int i=0;i<3;++i){
-    psv[i] = Point32f(ps[i].x,ps[i].y);
-    std::cout << "psv[" << i << "]: "<< psv[i] << std::endl;
-  }
-
-  std::vector<double> params = fit.fit(psv);
-  for(int i=0;i<(int)params.size();++i){
-    std::cout << "params[" << i << "]: "<< params[i] << std::endl;
-  }
-  Ellipse e(params);
-  
-
-  for(float y=0;y<1000;++y){
-    for(float x=0;x<1000;++x){
-      C(x,y) = e.f(x,y);
-      if(e(x,y)) C(x,y) = 255;
-    }
-  }
-}
 
 void fill_ellipse_test(Channel32f C, AbstractCanvas::Transform Tglobal, Rect32f r){
   float cx = r.x + r.width/2;
@@ -338,19 +306,21 @@ void fill_ellipse_test(Channel32f C, AbstractCanvas::Transform Tglobal, Rect32f 
   Mat2 T(1./sqr(r.width/2),0,
          0, 1./sqr(r.height/2));
 
-  Vec2 c = Vec2(cx,cy) + t;
+  //  Vec2 c = Vec2(cx,cy) + t;
+  
+  R = R.transp();
 
   for(float y=0;y<1000;++y){
     for(float x=0;x<1000;++x){
-      Vec2 v = R*Vec2(x,y)-c;
-      v = v + t;
+      //Vec2 v = R*Vec2(x,y) - R*t - Vec2(cx,cy);
+      Vec2 v = R*(Vec2(x,y)-t) - Vec2(cx,cy);
       float val = v.transp() * T * v;
       if(val < 1) C(x,y) = 255;
     }
   }
 
+
 #if 0
-  
   float a = T(0,0), b = T(1,0), tx=T(2,0);
   float c = T(0,1), d = T(1,1), ty=T(2,1);
   
@@ -372,16 +342,51 @@ void fill_ellipse_test(Channel32f C, AbstractCanvas::Transform Tglobal, Rect32f 
 #endif
 }
 
-int main(){
+HBox gui;
+void init(){
+  gui << Image().handle("image").minSize(32,24) 
+      << ( VBox().minSize(16,0).maxSize(16,99)
+           << FSlider(0,1000,500).handle("x").label("x")
+           << FSlider(0,1000,500).handle("y").label("y")
+           << FSlider(0,2*M_PI,0).handle("a").label("angle")
+           << FSlider(0,1000,200).handle("w").label("width")
+           << FSlider(0,1000,100).handle("h").label("height")
+          )
+      << Show();
+}
+
+void run(){
+  ImgQ image(Size(1000,1000),formatRGB);
+  Canvas c(&image);
+  
+  float x = gui["x"], y=gui["y"], a=gui["a"], w=gui["w"], h=gui["h"];
+  
+  c.translate(-x,-y);
+  c.rotate(a);
+  c.translate(x,y);
+
+  fill_ellipse_test(image[0],c.getTransform(), Rect(x-w/2,y-h/2,w,h));
+
+  c.linecolor(0,255,0,255);
+  c.sym('+',x,y);
+  c.sym('+',x+w/2,y);
+  c.sym('+',x,y+h/2);
+  
+  
+  gui["image"] = image;
+}
+
+int main(int n, char **ppc){
+  return ICLApp(n,ppc,"",init,run).exec();
   URand rc(0,255);
   URandI r(999);
   ImgQ image(Size(1000,1000),3);
   Canvas c(&image);
   c.translate(-500,-500);
-  c.rotate(M_PI/4);
+  c.rotate(M_PI/10);
   c.translate(500,500);
 
-  fill_ellipse_test_2(image[0],c.getTransform(), Rect(350,450,300,100) );
+  fill_ellipse_test(image[0],c.getTransform(), Rect(350,450,300,100) );
   c.linecolor(0,255,0,255);
   c.sym('+',500,500);
   c.sym('+',650,500);
