@@ -262,10 +262,11 @@ struct Canvas : public AbstractCanvas{
     void operator()(int x, int y) const{
       if(in(x,y)){
         set_color_gen<T,CHAN,WITH_ALPHA>(data,get_idx(x,y,w),cFill,aScaled);
-      }else{
-        static const AbstractCanvas::Color xxx(0,100,255,255);
-        set_color_gen<T,CHAN,WITH_ALPHA>(data,get_idx(x,y,w),xxx,aScaled);
       }
+      //else{
+      //  static const AbstractCanvas::Color xxx(0,100,255,255);
+      //  set_color_gen<T,CHAN,WITH_ALPHA>(data,get_idx(x,y,w),xxx,aScaled);
+      //}
     }
   };
     
@@ -303,6 +304,58 @@ struct Canvas : public AbstractCanvas{
     
     for_each_in_triangle(pa,pb,pc,clip,sep);
     for_each_in_triangle(pa,pc,pd,clip,sep);
+
+    // almost correct, but translation (c) is not used correctly
+    // Base idea: v := R(x-c)
+    // Ellipse: v^t S v = 1
+    /** since S = diag(Sx,Sy)
+        => Sx Vx^2 + Sy Vy^2 = 1
+        where R = [A0, A1,  = [ -A-
+                   B0, B1 ]     -B- ]
+        Vx = A0x + A1y - Ac  
+        Vy = B0x + B1y - Bc
+        
+        Vx^2 := ...
+        Vy^2 :=
+
+        now, x is extracted leading to a squared formular x^2 + bx +c = 0,
+        which is solved using qp-formular
+
+    */
+
+    const float A0 = R(0,0), A1 = R(1,0), B0=R(0,1), B1=R(1,1);
+    const float Sx = S(0,0), Sy = S(1,1);
+    const float Ac = A0 *c.x + A1 * c.y;
+    const float Bc = B0 *c.x + B1 * c.y;
+    const float K = Sx * sqr(A0) + Sy * sqr(B0);
+    const float p1 = (2*(A0*Sx*A1 + B0*Sy*B1))/K;
+    const float p2 = (2*(A0*Sx*Ac + B0*Sy*Bc))/K;
+    const float q1 = (Sx*sqr(A1) + Sy*sqr(B1))/K;
+    const float q2 = 2*(Sx*A1*Ac + Sy*B1*Bc)/K;
+    const float q3 = (Sx*sqr(Ac) + Sy*sqr(Bc) -1)/K;
+
+    static const AbstractCanvas::Color cBorder(0,100,255,255);
+
+    for(int y=0;y<1000;++y){
+      const float p = p1*y - p2;
+      const float q = q1*sqr(y) + q2*y + q3;
+      // pq: x1/2 = -(p/2) +- sqrt(p*p/4 -q)
+      const float mp2 = -p/2;
+      const float pp4q = p*p/4-q;
+
+      if(pp4q >= 0){
+        const float sqrtpp4q = sqrt(pp4q);
+        const int x1 = mp2 + sqrtpp4q;
+        const int x2 = mp2 - sqrtpp4q;
+        if(clip.in(x1,y)){
+          set_color_gen<T,CHAN,WITH_ALPHA>(data,get_idx(x1,y,w),cBorder,aScaled);
+        }
+        if(clip.in(x2,y)){
+          set_color_gen<T,CHAN,WITH_ALPHA>(data,get_idx(x2,y,w),cBorder,aScaled);
+        }
+      }
+      
+    }
   }
 
   template<class T, int CHAN>
