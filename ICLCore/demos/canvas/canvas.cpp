@@ -188,6 +188,57 @@ struct Canvas : public AbstractCanvas{
     }
   }
   
+  template<class Func>
+  static void for_each_in_triangle(const Point32f &p1, const Point32f &p2, const Point32f &p3,
+                                   const AbstractCanvas::ClipRect &clip, Func f){
+    Point ps[3] = { p1, p2, p3 };
+    std::sort((Point*)ps,(Point*)(ps+3),less_pt_y);
+    const Point &A=ps[0], &B=ps[1], &C=ps[2];
+    float dx1,dx2,dx3;
+    if (B.y-A.y > 0){
+      dx1=float(B.x-A.x)/(B.y-A.y);
+    }else{
+      dx1=B.x - A.x;
+    }
+    if (C.y-A.y > 0){
+      dx2=float(C.x-A.x)/(C.y-A.y);
+    }else{
+      dx2=0;
+    }
+    if (C.y-B.y > 0){
+      dx3=float(C.x-B.x)/(C.y-B.y);
+    }else{
+      dx3=0;
+    }
+    
+    Point32f S = Point32f(A.x,A.y);
+    Point32f E = Point32f(A.x,A.y);
+    if(dx1 > dx2) {
+      for(;S.y<=B.y;++S.y,++E.y,S.x+=dx2,E.x+=dx1){
+        for(int x=S.x;x<E.x;++x){
+          if(clip.in(x,S.y)) f(x,S.y);
+        }
+      }
+      E=Point32f(B.x+dx3,B.y+1);
+      for(;S.y<=C.y;S.y++,E.y++,S.x+=dx2,E.x+=dx3){
+        for(int x=S.x;x<E.x;++x){
+          if(clip.in(x,S.y)) f(x,S.y);
+        }
+      }
+    }else {
+      for(;S.y<=B.y;S.y++,E.y++,S.x+=dx1,E.x+=dx2){
+        for(int x=S.x;x<E.x;++x){
+          if(clip.in(x,S.y)) f(x,S.y);
+        }
+      }
+      S=Point32f(B.x+dx3,B.y+1);
+      for(;S.y<=C.y;S.y++,E.y++,S.x+=dx3,E.x+=dx2){
+        for(int x=S.x;x<E.x;++x){
+          if(clip.in(x,S.y)) f(x,S.y);
+        }
+      }
+    }
+  }
   
   struct InsideEllipse{
     typedef FixedColVector<float,2> Vec2;
@@ -199,6 +250,22 @@ struct Canvas : public AbstractCanvas{
         return (v.transp()*S*v) < 1;
     }
   };
+
+  template<int CHAN, class T, bool WITH_ALPHA>
+  struct SetEllipsePixels{
+    const AbstractCanvas::Color cFill;
+    const int w;
+    const InsideEllipse in;
+    const float aScaled;
+    void **data;
+    
+    void operator()(int x, int y) const{
+      if(in(x,y)){
+        set_color_gen<T,CHAN,WITH_ALPHA>(data,get_idx(x,y,w),cFill,aScaled);
+      }
+    }
+  };
+    
   
   
   template<int CHAN, class T, bool WITH_ALPHA>
@@ -215,16 +282,26 @@ struct Canvas : public AbstractCanvas{
     const Point32f ax = axis1.normalized();
     const Point32f ay = axis2.normalized();
     
-    Mat2 R(ax.x, ax.y,
+    const Mat2 R(ax.x, ax.y,
            ay.x, ay.y);
     
-    Vec2 t(c.x,c.y);
+    const Vec2 t(c.x,c.y);
     
-    Mat2 S(1./sqr(axis1.norm()/2),0,
+    const Mat2 S(1./sqr(axis1.norm()/2),0,
            0, 1./sqr(axis2.norm()/2));
 
     InsideEllipse in = { R,S,t };
-
+    SetEllipsePixels<CHAN,T,WITH_ALPHA> sep = { cFill, w, in, aScaled, data };
+    
+    Point32f pa = c + axis1 + axis2;
+    Point32f pb = c + axis1 - axis2;
+    Point32f pc = c - axis1 - axis2;
+    Point32f pd = c - axis1 + axis2;
+    
+    for_each_in_triangle(pa,pb,pc,clip,sep);
+    for_each_in_triangle(pa,pc,pd,clip,sep);
+    
+#if 0
     for(float y=clip.miny;y<clip.maxy;++y){
       for(float x=clip.minx;x<clip.maxx;++x){
         if(in(x,y)) {
@@ -236,6 +313,7 @@ struct Canvas : public AbstractCanvas{
         //}
       }
     }
+#endif
   }
 
   template<class T, int CHAN>
