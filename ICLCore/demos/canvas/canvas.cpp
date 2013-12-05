@@ -42,6 +42,11 @@ struct Canvas : public AbstractCanvas{
                                 const Point32f&,void **, const int, 
                                 const AbstractCanvas::Color &,
                                 const AbstractCanvas::ClipRect&);
+  typedef void (*ellipse_func)(const Point32f&, const Point32f &, 
+                               const Point32f&, void **, const int, 
+                               const AbstractCanvas::Color &,
+                               const AbstractCanvas::ClipRect&);
+
   LineSampler ls;
   void *data[4];
   Size size;
@@ -53,6 +58,7 @@ struct Canvas : public AbstractCanvas{
     point_func f_point;
     line_func f_line;
     triangle_func f_triangle;
+    ellipse_func f_ellipse;
   } funcs[2]; // 0=no alpha, 1 = with alpha
   
   template<class T>
@@ -181,6 +187,56 @@ struct Canvas : public AbstractCanvas{
       }
     }
   }
+  
+  
+  struct InsideEllipse{
+    typedef FixedColVector<float,2> Vec2;
+    typedef FixedMatrix<float,2,2> Mat2;
+    Mat2 R,S;
+    Vec2 t;
+    bool operator()(float x, float y) const{
+      Vec2 v = R*(Vec2(x,y)-t);
+        return (v.transp()*S*v) < 1;
+    }
+  };
+  
+  
+  template<int CHAN, class T, bool WITH_ALPHA>
+  static void ellipse_template(const Point32f&c, const Point32f &axis1, 
+                               const Point32f&axis2, void **data, const int w, 
+                               const AbstractCanvas::Color &cFill,
+                               const AbstractCanvas::ClipRect &clip){
+    // axis are relative to (0,0)
+    const float aScaled = cFill[3]*ALPHA_SCALE;  
+    
+    typedef FixedColVector<float,2> Vec2;
+    typedef FixedMatrix<float,2,2> Mat2;
+    
+    const Point32f ax = axis1.normalized();
+    const Point32f ay = axis2.normalized();
+    
+    Mat2 R(ax.x, ax.y,
+           ay.x, ay.y);
+    
+    Vec2 t(c.x,c.y);
+    
+    Mat2 S(1./sqr(axis1.norm()/2),0,
+           0, 1./sqr(axis2.norm()/2));
+
+    InsideEllipse in = { R,S,t };
+
+    for(float y=clip.miny;y<clip.maxy;++y){
+      for(float x=clip.minx;x<clip.maxx;++x){
+        if(in(x,y)) {
+          set_color_gen<T,CHAN,WITH_ALPHA>(data,get_idx(x,y,w),cFill,aScaled);
+        }
+        //const Vec2 v = R*(Vec2(x,y)-t);
+        //if(v.transp() * S * v < 1){
+        //  set_color_gen<T,CHAN,WITH_ALPHA>(data,get_idx(x,y,w),cFill,aScaled);
+        //}
+      }
+    }
+  }
 
   template<class T, int CHAN>
   void link_pointers(){
@@ -190,6 +246,9 @@ struct Canvas : public AbstractCanvas{
     funcs[1].f_line = &line_template<CHAN,T,true>;
     funcs[0].f_triangle = &triangle_template<CHAN,T,false>;
     funcs[1].f_triangle = &triangle_template<CHAN,T,true>;
+    funcs[0].f_ellipse = &ellipse_template<CHAN,T,false>;
+    funcs[1].f_ellipse = &ellipse_template<CHAN,T,true>;
+
   }
     
   Canvas(ImgBase *image){
@@ -249,9 +308,11 @@ struct Canvas : public AbstractCanvas{
                                       const utils::Point32f &c){
     funcs[hasFillAlpha()].f_triangle(a,b,c, data,size.width, state.fillcolor, state.clip);
   }
+
   virtual void draw_ellipse_internal(const utils::Point32f &c,
                                      const utils::Point32f &axis1,
                                      const utils::Point32f &axis2){
+    funcs[hasFillAlpha()].f_ellipse(c,axis1,axis2, data, size.width, state.fillcolor, state.clip);
   
   }
   virtual void draw_image_internal(const utils::Point32f &ul, 
@@ -265,25 +326,7 @@ struct Canvas : public AbstractCanvas{
 };
 
 
-struct Ellipse{
-  float p[6];
-  Ellipse(const std::vector<double> &ps){
-    std::copy(ps.begin(),ps.end(),p);
-    SHOW(p[0]);
-    SHOW(p[1]);
-    SHOW(p[2]);
-    SHOW(p[3]);
-    SHOW(p[4]);
-    SHOW(p[5]);
-  }
-  inline float f(float x, float y) const{
-    return p[0] *sqr(x) + p[1]*x*y + p[2] * sqr(y) + p[3] * x + p[4] *y + p[5];
-  }
-  
-  bool operator()(float x, float y) const{
-    return f(x,y) > 0;
-  }
-};
+
 
 
 void fill_ellipse_test(Channel32f C, AbstractCanvas::Transform Tglobal, Rect32f r){
@@ -361,11 +404,12 @@ void run(){
   
   float x = gui["x"], y=gui["y"], a=gui["a"], w=gui["w"], h=gui["h"];
   
+  c.fillcolor(255,0,0,255);
   c.translate(-x,-y);
   c.rotate(a);
   c.translate(x,y);
 
-  fill_ellipse_test(image[0],c.getTransform(), Rect(x-w/2,y-h/2,w,h));
+  c.ellipse(x,y,w,h);
 
   c.linecolor(0,255,0,255);
   c.sym('+',x,y);
