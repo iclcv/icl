@@ -1,0 +1,17 @@
+IF(QT4_FOUND)
+  ADD_SUBDIRECTORY(create)
+  ADD_SUBDIRECTORY(reset-sm-bus)
+  ADD_SUBDIRECTORY(video-player)
+  ADD_SUBDIRECTORY(multi-viewer)
+ENDIF()
+
+IF(QT4_FOUND AND LIBDC_FOUND)
+  ADD_SUBDIRECTORY(dcdeviceinfo)
+  ADD_SUBDIRECTORY(dcclearisochannels)
+  ADD_SUBDIRECTORY(reset-dc-bus)
+ENDIF()
+
+ADD_SUBDIRECTORY(camera-param-io)
+ADD_SUBDIRECTORY(convert)
+ADD_SUBDIRECTORY(jpg2cpp)
+ADD_SUBDIRECTORY(pipe)

@@ -1,0 +1,7 @@
+ADD_SUBDIRECTORY(camera-config)
+ADD_SUBDIRECTORY(color-picker)
+ADD_SUBDIRECTORY(create-button-icon)
+ADD_SUBDIRECTORY(gui-assignment-info)
+ADD_SUBDIRECTORY(image-compare)
+ADD_SUBDIRECTORY(viewer)
+ADD_SUBDIRECTORY(xv)

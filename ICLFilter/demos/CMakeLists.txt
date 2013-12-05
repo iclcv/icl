@@ -1,0 +1,12 @@
+IF(QT4_FOUND)
+  ADD_SUBDIRECTORY(affine-op)
+  ADD_SUBDIRECTORY(convolution-op)
+  ADD_SUBDIRECTORY(fft)
+  ADD_SUBDIRECTORY(gabor-op)
+  ADD_SUBDIRECTORY(temporal-smoothing)
+  ADD_SUBDIRECTORY(warp-op)
+ENDIF()
+
+IF(QT4_FOUND AND IPP_FOUND)
+  ADD_SUBDIRECTORY(canny-op)
+ENDIF()

@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="744.09448819"
+   height="1052.3622047"
+   id="svg2"
+   sodipodi:version="0.32"
+   inkscape:version="0.46"
+   sodipodi:docname="drawing-layers.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   inkscape:export-filename="/home/celbrech/projects/ICL/ICLQt/doc/drawing-layers.png"
+   inkscape:export-xdpi="51.619999"
+   inkscape:export-ydpi="51.619999">
+  <defs
+     id="defs4">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       id="perspective10" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     gridtolerance="10000"
+     guidetolerance="10"
+     objecttolerance="10"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.98994949"
+     inkscape:cx="267.11909"
+     inkscape:cy="536.2739"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     showguides="true"
+     inkscape:snap-global="true"
+     inkscape:window-width="1680"
+     inkscape:window-height="973"
+     inkscape:window-x="0"
+     inkscape:window-y="25">
+    <inkscape:grid
+       type="xygrid"
+       id="grid2529" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g2519"
+       transform="matrix(0.9904429,0,0,0.9712744,2.063587,-3.6663194)">
+      <rect
+         ry="11.480608"
+         rx="11.258417"
+         y="505.53412"
+         x="98.876007"
+         height="66.922386"
+         width="388.715"
+         id="rect2383"
+         style="opacity:1;fill:#006680;stroke:#000000;stroke-width:1.14700902;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      <text
+         id="text2385"
+         y="544.87128"
+         x="155.27159"
+         style="font-size:20px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           style="font-size:22px;fill:#ffffff"
+           y="544.87128"
+           x="155.27159"
+           id="tspan2387"
+           sodipodi:role="line">GLTextureMapBaseImage</tspan></text>
+    </g>
+    <g
+       id="g2524"
+       transform="matrix(0.9904429,0,0,0.9712744,3.0694614,-1.6778046)">
+      <rect
+         style="opacity:1;fill:#a02c2c;stroke:#000000;stroke-width:1.14700902;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         id="rect2389"
+         width="388.715"
+         height="66.922386"
+         x="97.865852"
+         y="431.45627"
+         rx="11.258417"
+         ry="11.480608" />
+      <text
+         xml:space="preserve"
+         style="font-size:20px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="236.62717"
+         y="470.98679"
+         id="text2391"><tspan
+           sodipodi:role="line"
+           id="tspan2393"
+           x="236.62717"
+           y="470.98679"
+           style="font-size:22px;fill:#ffffff">ICLWidget</tspan></text>
+    </g>
+    <g
+       id="g2494"
+       transform="matrix(0.9878843,0,0,0.9642591,3.319861,3.2263005)">
+      <rect
+         ry="11.564134"
+         rx="11.287576"
+         y="357.37839"
+         x="97.865852"
+         height="66.922386"
+         width="388.715"
+         id="rect2395"
+         style="opacity:1;fill:#c83737;stroke:#000000;stroke-width:1.15266371;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      <text
+         id="text2397"
+         y="396.90891"
+         x="206.87131"
+         style="font-size:20px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           style="font-size:22px;fill:#ffffff"
+           y="396.90891"
+           x="206.87131"
+           id="tspan2399"
+           sodipodi:role="line">ICLDrawWidget</tspan></text>
+    </g>
+    <g
+       id="g2484"
+       transform="matrix(0.9871371,0,0,0.9712744,3.6735929,2.1834968)">
+      <rect
+         style="opacity:1;fill:#d35f5f;stroke:#000000;stroke-width:1.14892793;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         id="rect2401"
+         width="388.715"
+         height="66.922386"
+         x="98.876007"
+         y="283.30051"
+         rx="11.29612"
+         ry="11.480608" />
+      <text
+         xml:space="preserve"
+         style="font-size:20px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="192.78868"
+         y="322.83102"
+         id="text2403"><tspan
+           sodipodi:role="line"
+           id="tspan2405"
+           x="192.78868"
+           y="322.83102"
+           style="font-size:22px;fill:#ffffff">ICLDrawWidget3D</tspan></text>
+    </g>
+    <g
+       id="g2513"
+       transform="matrix(0.9958839,0,0,0.9712744,-1.8152592,-2.6852028)">
+      <rect
+         style="opacity:1;fill:#447821;stroke:#000000;stroke-width:1.14387131;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         id="rect2407"
+         width="200.82661"
+         height="66.922386"
+         x="493.84564"
+         y="504.52399"
+         rx="11.196905"
+         ry="11.480608" />
+      <text
+         id="text2409"
+         y="531.69781"
+         x="592.9762"
+         style="font-size:25.69172478px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           style="font-size:15.41503525px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
+           y="531.69781"
+           x="592.9762"
+           id="tspan2411"
+           sodipodi:role="line">OpenGL-based</tspan><tspan
+           style="font-size:15.41503525px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
+           id="tspan2413"
+           y="550.96661"
+           x="592.9762"
+           sodipodi:role="line">3D image visualisation</tspan></text>
+    </g>
+    <g
+       id="g2506"
+       transform="matrix(0.9958839,0,0,0.9715299,-2.806723,-2.1545726)">
+      <rect
+         ry="11.47759"
+         rx="11.196905"
+         y="431.793"
+         x="494.8558"
+         height="66.922386"
+         width="200.82661"
+         id="rect2415"
+         style="opacity:1;fill:#5aa02c;stroke:#000000;stroke-width:1.14372087;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      <text
+         xml:space="preserve"
+         style="font-size:25.69172478px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="593.98633"
+         y="449.87546"
+         id="text2417"><tspan
+           id="tspan2431"
+           sodipodi:role="line"
+           x="593.98633"
+           y="449.87546"
+           style="font-size:15.41503525px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans">Synchronized image</tspan><tspan
+           id="tspan2448"
+           sodipodi:role="line"
+           x="593.98633"
+           y="469.14426"
+           style="font-size:15.41503525px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans">visualization and</tspan><tspan
+           id="tspan2444"
+           sodipodi:role="line"
+           x="593.98633"
+           y="488.41306"
+           style="font-size:15.41503525px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans">on-screen menu</tspan></text>
+    </g>
+    <g
+       id="g2499"
+       transform="matrix(0.9958839,0,0,0.9712744,-1.8152592,1.5416916)">
+      <rect
+         style="opacity:1;fill:#71c837;stroke:#000000;stroke-width:1.14387131;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         id="rect2450"
+         width="200.82661"
+         height="66.922386"
+         x="493.84564"
+         y="356.03156"
+         rx="11.196905"
+         ry="11.480608" />
+      <text
+         id="text2452"
+         y="374.11401"
+         x="592.9762"
+         style="font-size:25.69172478px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           style="font-size:15.41503525px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
+           y="374.11401"
+           x="592.9762"
+           sodipodi:role="line"
+           id="tspan2458">Image annotation</tspan><tspan
+           id="tspan2465"
+           style="font-size:15.41503525px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
+           y="393.38281"
+           x="595.42993"
+           sodipodi:role="line">(independent from </tspan><tspan
+           id="tspan2467"
+           style="font-size:15.41503525px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
+           y="412.65161"
+           x="592.9762"
+           sodipodi:role="line">vis. parameters)</tspan></text>
+    </g>
+    <g
+       id="g2489"
+       transform="matrix(1.0026258,0,0,0.9712744,-5.1409143,2.1834377)">
+      <rect
+         ry="11.480608"
+         rx="11.121614"
+         y="283.30057"
+         x="493.84564"
+         height="66.922386"
+         width="200.82661"
+         id="rect2469"
+         style="opacity:1;fill:#71c837;stroke:#000000;stroke-width:1.14001906;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      <text
+         xml:space="preserve"
+         style="font-size:25.69172478px;font-style:normal;font-weight:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         x="591.96606"
+         y="319.56577"
+         id="text2471"><tspan
+           sodipodi:role="line"
+           x="591.96606"
+           y="319.56577"
+           style="font-size:15.41503525px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
+           id="tspan2477">3D Overlay</tspan></text>
+    </g>
+  </g>
+</svg>

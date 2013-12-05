@@ -1,0 +1,147 @@
+#!/bin/bash
+
+RESOURCE_DIR=@CMAKE_INSTALL_PREFIX@/@RESOURCE_DIR@
+ICL_VERSION=@SO_VERSION@
+
+function infotext(){
+echo "Project structure:"
+echo -e "\t$1"
+echo -e "\t ├── app"
+echo -e "\t ├── build"
+echo -e "\t ├── cmake"
+echo -e "\t ├── doc"
+echo -e "\t ├── latex"
+echo -e "\t │   ├── report"
+echo -e "\t │   └── talk"
+echo -e "\t └── src"
+echo ""
+echo "You can:"
+echo -e "\t- Change the build configuration by editing CMakeLists.txt."
+echo -e "\t- Add source files to the library by editing src/CMakeLists.txt."
+echo -e "\t- Add applications by editing app/CMakeLists.txt."
+echo ""
+echo "To build this project call:"
+echo -e "\t >> cd build"
+echo -e "\t >> cmake .."
+echo -e "\t >> make "
+echo ""
+echo "This will create a lib${1}.so from sources in src and link it against "
+echo "applications from app."
+echo ""
+echo "Create a doxygen documentation with:"
+echo -e "\t >> make doc"
+echo ""
+echo "Install the build project with:"
+echo -e "\t >> make install"
+echo ""
+echo "There are latex templates for a report and a talk in latex"
+echo "They can be build with the enclosed build scripts"
+}
+
+function help(){
+  echo ""
+  echo "This can be used to create a CMAKE project that already links against the ICL."
+  echo "It will look the following way:"
+  infotext "projectname"
+  echo ""
+  echo -e "usage:\n\ticl-create-cmake-project PROJECT_FOLDER_NAME"
+  echo -e "\t(e.g.) ./icl-create-cmake-project MyICLCMAKEProject"
+}
+
+if [ $# -ne 1 ] ; then
+  help
+  exit 1
+fi
+
+if [ "$1" == "-h" ] ; then
+  help
+  exit 1
+fi
+
+if [ "$1" == "--help" ] ; then
+  help
+  exit 1
+fi
+
+if [ -d $1 ] ; then
+    echo "error: foldername $1 already exists"
+    exit 1
+fi
+
+if [ -e $1 ] ; then
+    echo "error: file with name $1 already exists"
+    exit 1
+fi
+
+PROJECT=$1
+
+echo "########################################################"
+echo "# Creating project ${PROJECT}"
+echo "########################################################"
+
+# Create folder root dir
+echo -n "Creating folder ${PROJECT} ... "
+mkdir -p ./${PROJECT}
+echo "done"
+
+# Create folder lib dir
+echo -n "Creating sub folders ..."
+for T in src app doc build cmake latex/report/images latex/report/plots latex/report/sections latex/talk/images; do
+    mkdir -p ./${PROJECT}/$T ;
+done
+echo "done"
+
+echo -n "Copying cmake files ... "
+cp ${RESOURCE_DIR}/CMakeLists.txt.template ./${PROJECT}/CMakeLists.txt
+sed -i -e "s|\\@projectname|$PROJECT|" ./${PROJECT}/CMakeLists.txt
+sed -i -e "s|\\@current_icl_version|\"${ICL_VERSION}\"|" ./${PROJECT}/CMakeLists.txt
+cp ${RESOURCE_DIR}/app.CMakeLists.txt.template ./${PROJECT}/app/CMakeLists.txt
+cp ${RESOURCE_DIR}/src.CMakeLists.txt.template ./${PROJECT}/src/CMakeLists.txt
+cp ${RESOURCE_DIR}/cmake.FindPkgConfig.cmake.template ./${PROJECT}/cmake/FindPkgConfig.cmake
+echo "done"
+
+echo -n "Copying license ... "
+cp ${RESOURCE_DIR}/LICENSE.LGPL.template ./${PROJECT}/LICENSE.LGPL
+echo "done"
+
+echo -n "Copying doxygen ... "
+cp ${RESOURCE_DIR}/Doxyfile.in.template ./${PROJECT}/Doxyfile.in
+echo "done"
+
+echo -n "Copying sample source ...     "
+cp ${RESOURCE_DIR}/src.HelloWorld.cpp.template ./${PROJECT}/src/HelloWorld.cpp
+cp ${RESOURCE_DIR}/src.HelloWorld.h.template ./${PROJECT}/src/HelloWorld.h
+echo "done"
+
+echo -n "Copying sample application ...     "
+cp ${RESOURCE_DIR}/app.main.cpp.template ./${PROJECT}/app/main.cpp
+echo "done"
+
+echo -n "Copying latex files ...     "
+cp ${RESOURCE_DIR}/latex.library.bib.template ./${PROJECT}/latex/library.bib
+cp ${RESOURCE_DIR}/latex.build.sh.template ./${PROJECT}/latex/report/build.sh
+cp ${RESOURCE_DIR}/latex.clear.sh.template ./${PROJECT}/latex/report/clear.sh
+cp ${RESOURCE_DIR}/latex.quick.sh.template ./${PROJECT}/latex/report/quick.sh
+cp ${RESOURCE_DIR}/latex.report.report.tex.template ./${PROJECT}/latex/report/report.tex
+cp ${RESOURCE_DIR}/latex.report.plots.sizevarplot.tex.template ./${PROJECT}/latex/report/plots/sizevarplot.tex
+cp ${RESOURCE_DIR}/latex.report.sections.introduction.tex.template ./${PROJECT}/latex/report/sections/introduction.tex
+cp ${RESOURCE_DIR}/latex.build.sh.template ./${PROJECT}/latex/talk/build.sh
+cp ${RESOURCE_DIR}/latex.clear.sh.template ./${PROJECT}/latex/talk/clear.sh
+cp ${RESOURCE_DIR}/latex.quick.sh.template ./${PROJECT}/latex/talk/quick.sh
+cp ${RESOURCE_DIR}/latex.talk.talk.tex.template ./${PROJECT}/latex/talk/talk.tex
+sed -i -e "s|icl-project|report|" ./${PROJECT}/latex/report/build.sh
+sed -i -e "s|icl-project|report|" ./${PROJECT}/latex/report/quick.sh
+sed -i -e "s|icl-project|report|" ./${PROJECT}/latex/report/clear.sh
+sed -i -e "s|icl-project|talk|" ./${PROJECT}/latex/talk/build.sh
+sed -i -e "s|icl-project|talk|" ./${PROJECT}/latex/talk/quick.sh
+sed -i -e "s|icl-project|talk|" ./${PROJECT}/latex/talk/clear.sh
+chmod u+x ./${PROJECT}/latex/report/build.sh
+chmod u+x ./${PROJECT}/latex/report/quick.sh
+chmod u+x ./${PROJECT}/latex/report/clear.sh
+chmod u+x ./${PROJECT}/latex/talk/build.sh
+chmod u+x ./${PROJECT}/latex/talk/quick.sh
+chmod u+x ./${PROJECT}/latex/talk/clear.sh
+echo "done"
+echo "Project created. "
+echo ""
+infotext $PROJECT

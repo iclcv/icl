@@ -1,0 +1,2 @@
+ADD_SUBDIRECTORY(model-fitting)
+ADD_SUBDIRECTORY(quick)
