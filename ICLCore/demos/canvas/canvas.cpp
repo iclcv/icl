@@ -303,20 +303,6 @@ struct Canvas : public AbstractCanvas{
     
     for_each_in_triangle(pa,pb,pc,clip,sep);
     for_each_in_triangle(pa,pc,pd,clip,sep);
-    
-#if 0
-    for(float y=clip.miny;y<clip.maxy;++y){
-      for(float x=clip.minx;x<clip.maxx;++x){
-        if(in(x,y)) {
-          set_color_gen<T,CHAN,WITH_ALPHA>(data,get_idx(x,y,w),cFill,aScaled);
-        }
-        //const Vec2 v = R*(Vec2(x,y)-t);
-        //if(v.transp() * S * v < 1){
-        //  set_color_gen<T,CHAN,WITH_ALPHA>(data,get_idx(x,y,w),cFill,aScaled);
-        //}
-      }
-    }
-#endif
   }
 
   template<class T, int CHAN>
