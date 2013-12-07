@@ -38,7 +38,7 @@
 
 namespace icl{
   namespace qt{
-    struct ImageStatistics{
+    struct ICL_QT_API ImageStatistics{
       core::ImgParams params;
       core::depth d;
       std::vector<utils::Range64f> ranges;

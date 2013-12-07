@@ -235,7 +235,7 @@ namespace icl{
                to matchTemplate
 	@param useCrossCorrCoeffInsteadOfSqrDistance
     **/
-    std::vector<utils::Rect> matchTemplate(const core::Img8u &src, 
+    std::vector<utils::Rect> ICL_CV_API matchTemplate(const core::Img8u &src,
                                            const core::Img8u &templ, 
                                            float significance,
                                            core::Img8u *buffer=0,
@@ -245,7 +245,7 @@ namespace icl{
   
     
     /// more general matchTemplate implementation
-    std::vector<utils::Rect> matchTemplate(const core::Img8u &src, 
+    std::vector<utils::Rect> ICL_CV_API matchTemplate(const core::Img8u &src,
                                            const core::Img8u *srcMask,
                                            const core::Img8u &templ, 
                                            const core::Img8u *templMask,

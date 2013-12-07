@@ -521,9 +521,9 @@ namespace icl{
             const DataSegment<icl8u,4> a = selectBGRA();
             const DataSegment<icl8u,3> b = dst.selectBGR();
             for(int i=0;i<a.getDim();++i){
-              if(fabs(a[i][0]-b[i][0]) > tollerance) return false;
-              if(fabs(a[i][1]-b[i][1]) > tollerance) return false;
-              if(fabs(a[i][2]-b[i][2]) > tollerance) return false;
+              if(fabs((float)(a[i][0]-b[i][0])) > tollerance) return false;
+              if(fabs((float)(a[i][1]-b[i][1])) > tollerance) return false;
+              if(fabs((float)(a[i][2]-b[i][2])) > tollerance) return false;
             }
           }else if(dst.supports(RGBA32f)){
             const DataSegment<icl8u,4> a = selectBGRA();
@@ -540,9 +540,9 @@ namespace icl{
             const DataSegment<icl8u,4> a = dst.selectBGRA();
             const DataSegment<icl8u,3> b = selectBGR();
             for(int i=0;i<a.getDim();++i){
-              if(fabs(a[i][0]-b[i][0]) > tollerance) return false;
-              if(fabs(a[i][1]-b[i][1]) > tollerance) return false;
-              if(fabs(a[i][2]-b[i][2]) > tollerance) return false;
+              if(fabs((float)(a[i][0]-b[i][0])) > tollerance) return false;
+              if(fabs((float)(a[i][1]-b[i][1])) > tollerance) return false;
+              if(fabs((float)(a[i][2]-b[i][2])) > tollerance) return false;
             }
           }else if(dst.supports(BGR)){
             if(!selectBGR().equals(dst.selectBGR(),tollerance)) return false;

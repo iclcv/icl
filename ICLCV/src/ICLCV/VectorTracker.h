@@ -31,6 +31,7 @@
 #pragma once
 
 #include <vector>
+#include <ICLUtils/CompatMacros.h>
 
 namespace icl{
   namespace cv{
@@ -39,7 +40,7 @@ namespace icl{
     /** Here's a copy of the PositionTracker documentation, which assumes 2D-input data:
         \copydoc icl::cv::PositionTracker
     */
-    class VectorTracker{
+    class ICL_CV_API VectorTracker{
       public:
       /// Determines how ids are allocated internally
       enum IDmode{

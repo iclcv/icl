@@ -43,7 +43,7 @@ namespace icl{
     /// The working line segment class extends the LineSegment class by some working parameters
     /** These extra parameters are not used in the ImageRegion class. Here, we can use C++'s 
         slicing assignment to cut the extra information using std::copy */
-    struct WorkingLineSegment : public LineSegment{
+    struct ICL_CV_API WorkingLineSegment : public LineSegment{
       /// image value
       int val; 
      

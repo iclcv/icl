@@ -44,7 +44,7 @@ namespace icl{
     typedef std::vector<QRadioButton*> RadioButtonVec;
   
     /// Class for handling button goups \ingroup HANDLE
-    class ButtonGroupHandle : public GUIHandle<RadioButtonVec> {
+    class ICL_QT_API ButtonGroupHandle : public GUIHandle<RadioButtonVec> {
       public:
       /// Create an empty handle
       ButtonGroupHandle(){}

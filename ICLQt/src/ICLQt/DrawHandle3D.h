@@ -44,7 +44,7 @@ namespace icl{
     /** \endcond */
   
     /// Handle class for image components \ingroup HANDLES
-    class DrawHandle3D : public GUIHandle<ICLDrawWidget3D>{
+    class ICL_QT_API DrawHandle3D : public GUIHandle<ICLDrawWidget3D>{
       public:
       
       /// Create an empty handle

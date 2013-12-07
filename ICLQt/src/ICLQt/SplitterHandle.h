@@ -38,7 +38,7 @@ namespace icl{
   namespace qt{
     
     /// A Handle for SplitterWidget container GUI components  \ingroup HANDLES
-    class SplitterHandle : public GUIHandle<QSplitter>, public ContainerHandle{
+    class ICL_QT_API SplitterHandle : public GUIHandle<QSplitter>, public ContainerHandle{
       public:
       /// create an empty handle
       SplitterHandle(): GUIHandle<QSplitter>(){}

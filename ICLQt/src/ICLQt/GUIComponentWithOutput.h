@@ -35,7 +35,7 @@
 namespace icl{
   namespace qt{
   
-    struct GUIComponentWithOutput : public GUIComponent{
+    struct ICL_QT_API GUIComponentWithOutput : public GUIComponent{
       GUIComponentWithOutput(const std::string &type, const std::string &params):
       GUIComponent(type,params){}
   

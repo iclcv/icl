@@ -35,7 +35,7 @@
 namespace icl{
   namespace core{
     /// Combination classifier using RG-chroma. as well as RGB-thresholded reference color classifiation \ingroup COMMON
-    struct ICL_CORE_API ChromaAndRGBClassifier{
+    struct ICL_CORE_API_T ChromaAndRGBClassifier{
       /// classifies a given r-g-b-Pixel
       /**The function is:
           \code

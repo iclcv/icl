@@ -31,6 +31,7 @@
 #pragma once
 
 #include <cmath>
+#include <ICLUtils/CompatMacros.h>
 
 #ifdef ICL_SYSTEM_WINDOWS
 #define M_PI 3.14159265358979323846
@@ -39,7 +40,7 @@
 namespace icl{
   namespace cv{
     /// data-struct to represent local PCA information \ingroup G_RD
-    class RegionPCAInfo{
+    class ICL_CV_API RegionPCAInfo{
       public:
       
       /// Default Constructor

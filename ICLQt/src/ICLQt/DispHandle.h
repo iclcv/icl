@@ -43,7 +43,7 @@ namespace icl{
     typedef utils::Array2D<LabelHandle>  LabelMatrix;
   
     /// Handle class for disp components \ingroup HANDLE
-    class DispHandle : public GUIHandle<LabelMatrix>{
+    class ICL_QT_API DispHandle : public GUIHandle<LabelMatrix>{
       public:
       /// create an empty handle
       DispHandle(){}

@@ -32,6 +32,7 @@
 
 #include <ICLQt/GUIHandle.h>
 #include <string>
+#include <ICLUtils/CompatMacros.h>
 //#include <QtGui/QGroupBox>
 /** \cond */
 class QGroupBox;
@@ -41,7 +42,7 @@ class QGroupBox;
 namespace icl{
   namespace qt{
     /// Handle class for "border" gui components (only for explicit "border" components) \ingroup HANDLES
-    class BorderHandle : public GUIHandle<QGroupBox>{
+    class ICL_QT_API BorderHandle : public GUIHandle<QGroupBox>{
       public:
       /// Creates an empty border handle
       BorderHandle(){}

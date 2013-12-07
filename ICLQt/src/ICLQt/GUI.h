@@ -55,7 +55,7 @@ namespace icl{
   
     /// Main Class of ICL's GUI creation framework
     /** Please refer to the ICL manual for details */
-    class GUI{
+    class ICL_QT_API GUI{
       private:
       /// stream operator to add new widgets
       /** if the given definition is "" or "dummy", this operator does nothing */

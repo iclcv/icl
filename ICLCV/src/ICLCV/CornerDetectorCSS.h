@@ -88,7 +88,7 @@ namespace icl{
         const std::vector<Point32f> &corners = css.detectCorners(boundary);
         \endcode
     **/
-    class CornerDetectorCSS : public utils::Configurable{
+    class ICL_CV_API CornerDetectorCSS : public utils::Configurable{
       public:
       /// 1 dim gaussian kernel
       struct GaussianKernel {

@@ -97,10 +97,10 @@ namespace icl{
         All methods of this class are implemented in a thread-saft manner. Therefore
         no additional locking is neccessary (and Lockable is inherited protectedly)
     */
-    class DefineRectanglesMouseHandler :  public MouseHandler, protected utils::Lockable{
+    class ICL_QT_API DefineRectanglesMouseHandler : public MouseHandler, protected utils::Lockable{
       public:
       /// Cummulative Options structure
-      class Options{
+        class ICL_QT_API Options{
         friend class DefineRectanglesMouseHandler;
         /// Constructor showing default options
         Options(const core::Color4D &edgeColor=core::Color4D(0,255,0,255), 

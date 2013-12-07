@@ -45,7 +45,7 @@ namespace icl{
         original QLabel but this thread-save reimplementation called
         CompabilityLabel.
     */
-    class ColorLabel : public ThreadedUpdatableWidget{
+    class ICL_QT_API ColorLabel : public ThreadedUpdatableWidget{
       public:
       /// Create a new label with given text and given parent widget
       ColorLabel(core::Color4D &color, bool useAlpha, QWidget *parent=0);

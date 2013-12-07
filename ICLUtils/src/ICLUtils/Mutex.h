@@ -38,7 +38,7 @@ namespace icl{
   namespace utils{
   
     /** \cond */
-    class ICL_UTILS_EXP Lockable;
+    class Lockable;
     /** \endcond */  
   
     /// Mutex class of the ICL \ingroup THREAD
@@ -117,7 +117,7 @@ namespace icl{
       }
       
       /// Locks a mutex on the stack (mutex is unlocked when the stack's section is released
-      class Locker : public Uncopyable{
+      class ICL_UTILS_EXP Locker : public Uncopyable{
         public:
         /// Locks the given mutex until the section is leaved
         Locker(Mutex *m);

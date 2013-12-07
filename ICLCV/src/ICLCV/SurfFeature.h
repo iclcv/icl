@@ -38,7 +38,7 @@ namespace icl{
   namespace cv{
     
     /// Generic SURF Feature type
-    struct SurfFeature{
+    struct ICL_CV_API SurfFeature{
       float x;               //!< feature x-position
       float y;               //!< feature y-position
       float scale;           //!< feature size (scale factor)

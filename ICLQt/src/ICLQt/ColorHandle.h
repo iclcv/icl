@@ -37,7 +37,7 @@ namespace icl{
   namespace qt{
   
     /// Class wrapping ColorLabel GUI compoenent handling \ingroup HANDLES
-    class ColorHandle : public GUIHandle<ColorLabel>{
+    class ICL_QT_API ColorHandle : public GUIHandle<ColorLabel>{
       public:
       
       /// Create an empty handle

@@ -38,7 +38,7 @@ namespace icl{
   namespace qt{
     
     /// A Handle for TabWidget container GUI components  \ingroup HANDLES
-    class TabHandle : public GUIHandle<QTabWidget>, public ContainerHandle{
+    class ICL_QT_API TabHandle : public GUIHandle<QTabWidget>, public ContainerHandle{
       public:
       /// create an empty handle
       TabHandle(): GUIHandle<QTabWidget>(){}

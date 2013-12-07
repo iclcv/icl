@@ -82,7 +82,7 @@ namespace icl{
         The annotaiton iterface is hold very low-level. Perhaps extending classes
         provide simpler interfaces.
     */
-    class AbstractPlotWidget : public ThreadedUpdatableWidget, public utils::Configurable{
+    class ICL_QT_API AbstractPlotWidget : public ThreadedUpdatableWidget, public utils::Configurable{
       struct Data; //!< pimpl
       Data *data;  //!< pimpl pointer
   

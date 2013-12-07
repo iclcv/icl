@@ -77,7 +77,7 @@ namespace icl{
         the buffered data is automatically uploaded to the graphics hardware <b> if this is
         necessary</b>.
     */
-    class GLImg : public utils::Uncopyable{
+    class ICL_QT_API GLImg : public utils::Uncopyable{
       struct Data;  //!< internal data structure
       Data *m_data; //!< internal data pointer
       

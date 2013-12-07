@@ -41,7 +41,7 @@ namespace icl{
   namespace qt{
     
     /// Handle class for spinner components \ingroup HANDLES
-    class SpinnerHandle : public GUIHandle<QSpinBox>{
+    class ICL_QT_API SpinnerHandle : public GUIHandle<QSpinBox>{
   
       public:
       

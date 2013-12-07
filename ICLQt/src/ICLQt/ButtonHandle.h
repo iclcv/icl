@@ -44,7 +44,7 @@ namespace icl{
   namespace qt{
     
     /// Special Utiltiy class for handling Button clicks in the ICL GUI API \ingroup HANDLES
-    class ButtonHandle : public GUIHandle<QPushButton>{
+    class ICL_QT_API ButtonHandle : public GUIHandle<QPushButton>{
       public:
       
       friend class ButtonGUIWidget;

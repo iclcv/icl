@@ -40,7 +40,7 @@ namespace icl{
     /// The GUIComponent class servers as a generic interface for GUI definitions
     /** <b>Please refer to the ICL-manual for an introduction to the GUI toolkit</b>\n
      */
-    class GUIComponent{
+    class ICL_QT_API GUIComponent{
     
       /// friend container class
       friend class ContainerGUIComponent;
@@ -50,7 +50,7 @@ namespace icl{
   
       public:
       /// Actual options (set using the .xxx methods)
-      struct Options {
+      struct ICL_QT_API Options {
       Options():margin(-1),spacing(-1), hide(false){}
         std::string handle;  //!< the component handle
         std::string out;     //!< the component output (only GUIComponentWithOutput subclasses)

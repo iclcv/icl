@@ -36,7 +36,7 @@ namespace icl{
   namespace qt{
     /// Abstract base class for Handle classes \ingroup HANDLES
     template <class T>
-    class GUIHandle : public GUIHandleBase{
+    class ICL_QT_API GUIHandle : public GUIHandleBase{
   
       protected:
       /// as GUIHandle is just an interface, its base constructor is protected

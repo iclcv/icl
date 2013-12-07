@@ -39,7 +39,7 @@ namespace icl{
   namespace qt{
     
     /// Class for handling "float" textfield components \ingroup HANDLES
-    class FloatHandle : public GUIHandle<QLineEdit> {
+    class ICL_QT_API FloatHandle : public GUIHandle<QLineEdit> {
       public:
       
       /// Create an empty handle

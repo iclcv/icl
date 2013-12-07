@@ -36,6 +36,10 @@ using namespace icl::core;
 using namespace icl::math;
 using namespace icl::qt;
 
+#ifdef ICL_SYSTEM_WINDOWS
+#define M_PI_2 2*3.14159265358979323846
+#endif
+
 namespace icl{
   namespace geom{
     ComplexCoordinateFrameSceneObject::ComplexCoordinateFrameSceneObject(float axisLength,float axisThickness, bool withLabels){

@@ -68,7 +68,7 @@ namespace icl{
           - for all \f$r_j \in \mbox{Regions}_i\f$
             - OUTPUT_DATA.add(SimpleBlobSearcher::Blob(\f$r_j\f$, \f$RC_i\f$, i)
     */
-    class SimpleBlobSearcher : public utils::Uncopyable{
+    class ICL_CV_API SimpleBlobSearcher : public utils::Uncopyable{
       public:
       
       /// Internal blob-result type

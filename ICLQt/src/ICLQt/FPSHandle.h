@@ -45,7 +45,7 @@ namespace icl{
     /** FPSHandles are created by the GUI class. FPSHandles must be notified
         each step using its
         @see GUI */
-    class FPSHandle : public GUIHandle<CompabilityLabel>{
+    class ICL_QT_API FPSHandle : public GUIHandle<CompabilityLabel>{
       public:
   
       // create an empty handle

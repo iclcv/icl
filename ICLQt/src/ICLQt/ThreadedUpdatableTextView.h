@@ -33,11 +33,12 @@
 #include <QtGui/QTextEdit>
 #include <QtCore/QEvent>
 #include <string>
+#include <ICLUtils/CompatMacros.h>
 
 namespace icl{
   namespace qt{
   
-    class ThreadedUpdatableTextView : public QTextEdit{
+    class ICL_QT_API ThreadedUpdatableTextView : public QTextEdit{
       static const QEvent::Type ADD_TEXT=(QEvent::Type)(QEvent::User+1);
       static const QEvent::Type CLEAR_TEXT=(QEvent::Type)(QEvent::User+2);
   

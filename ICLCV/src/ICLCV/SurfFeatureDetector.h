@@ -45,7 +45,7 @@ namespace icl{
           The OpenSurf backend needs OpenCV, while the clsurf-backend
           builds on mandatory OpenCL support.
       */
-      class SurfFeatureDetector {
+      class ICL_CV_API SurfFeatureDetector {
         struct Data;  //!< hidden implementation
         Data *m_data; //!< hidden data pointer
 

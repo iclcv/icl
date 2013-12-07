@@ -46,7 +46,7 @@ namespace icl{
     /** \endcond */
    
     /// Handle class for slider componets \ingroup HANDLES
-    class SliderHandle : public GUIHandle<ThreadedUpdatableSlider>{
+    class ICL_QT_API SliderHandle : public GUIHandle<ThreadedUpdatableSlider>{
   
       /// associated display
       QLCDNumber *lcd;

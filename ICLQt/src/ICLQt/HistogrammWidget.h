@@ -38,7 +38,7 @@ namespace icl{
     
     /// Utility class used within the ICLWidget class
     /** The HistogrammWidget is used in the 'info' tab of the ICLWidget's on screen display */
-    struct HistogrammWidget : public PlotWidget{
+    struct ICL_QT_API HistogrammWidget : public PlotWidget{
       /// logarithmic mode
       bool logOn;
       

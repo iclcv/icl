@@ -95,7 +95,7 @@ namespace icl{
         debugging.
     **/
   
-    struct ImageRegion {
+    struct ICL_CV_API ImageRegion {
   
       /// Internally handled data (not shallow copied, but simply linked to the real data that is managed by the RegionDetector
       ImageRegionData *m_data;

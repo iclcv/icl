@@ -82,7 +82,7 @@ namespace icl{
         If mouse interaction shall be visualized, this coordinates can directly be passed
         to the drawing functions of ICLDrawWidget's.
     */
-    class MouseEvent{
+    class ICL_QT_API MouseEvent{
       /// event location in widget coordinates
       utils::Point m_widgetPos;
       

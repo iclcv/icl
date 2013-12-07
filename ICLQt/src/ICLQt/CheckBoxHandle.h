@@ -43,7 +43,7 @@ namespace icl{
   namespace qt{
     
     /// Special Utiltiy class for handling Button clicks in the ICL GUI API \ingroup HANDLES
-    class CheckBoxHandle : public GUIHandle<QCheckBox>{
+    class ICL_QT_API CheckBoxHandle : public GUIHandle<QCheckBox>{
       public:
       
       /// creates a n empty button handle

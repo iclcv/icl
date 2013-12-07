@@ -536,10 +536,9 @@ namespace icl{
   // }}}
      
   
-    template class 
-HungarianAlgorithm<icl32s>;
-    template class HungarianAlgorithm<icl32f>;
-    template class HungarianAlgorithm<icl64f>;
+    template class ICL_CV_API HungarianAlgorithm<icl32s>;
+    template class ICL_CV_API HungarianAlgorithm<icl32f>;
+    template class ICL_CV_API HungarianAlgorithm<icl64f>;
   
   } // namespace cv
 }

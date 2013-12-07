@@ -153,7 +153,7 @@ namespace icl{
         *Soon!*
         
     */
-    class PlotWidget : public LowLevelPlotWidget{
+    class ICL_QT_API PlotWidget : public LowLevelPlotWidget{
       struct Data;  //!< internal data structure
       Data *m_data; //!< internal data (pimpl)
       

@@ -541,15 +541,15 @@ void Segmentation3D::calculatePointAssignmentAndAdjacency() {
 		int numFaces = cluster.size();
 		DynMatrix<bool> newMatrix(numFaces, numFaces, false);
 		neighbours = newMatrix;
-		int assignmentOut[w * h];for
-(		int x=0; x<w; x++) {
+		int *assignmentOut = new int[w * h];
+    for (int x=0; x<w; x++) {
 			for(int y=0; y<h; y++) {
 				int i=x+w*y;
 				float dist=100000;
 				int ass=0;
 				bool assigned=false;
 				if(elements[i]==true && assignment[i]==0) {
-					bool adj[numFaces];
+					bool *adj = new bool[numFaces];
 					for(int a=0; a<numFaces; a++) {
 						adj[a]=false;
 					}
@@ -569,6 +569,7 @@ void Segmentation3D::calculatePointAssignmentAndAdjacency() {
 								}
 							}
 						}
+            delete adj;
 					}
 					for(int a=0; a<numFaces-1; a++) {
 						for (int b=a+1; b<numFaces; b++) {
@@ -596,6 +597,7 @@ void Segmentation3D::calculatePointAssignmentAndAdjacency() {
 			neighbours(i, i) = true;
 		}
 		memcpy(assignment, assignmentOut, sizeof(assignmentOut));
+    delete assignmentOut;
 	}
 }
 
@@ -880,8 +882,8 @@ void Segmentation3D::greedyComposition() {
 		}
 	}
 
-	bool alrSet[W.cols()];for
-(	unsigned int i=0; i<W.cols(); i++) {
+	bool *alrSet = new bool[W.cols()];
+  for(unsigned int i=0; i<W.cols(); i++) {
 		alrSet[i]=false;
 	}
 	for (unsigned int i = 0; i < blobs.size(); i++) {
@@ -897,7 +899,7 @@ void Segmentation3D::greedyComposition() {
 		}
 	}
 
-	int comp[cluster.size()];
+	int *comp = new int[cluster.size()];
 
 for(	unsigned int x=0; x<blobs.size(); x++) {
 		for(unsigned int y=0; y<blobs.at(x).size(); y++) {
@@ -909,6 +911,9 @@ for(	unsigned int x=0; x<blobs.size(); x++) {
 			assignment[i] = comp[assignment[i] - 1];
 		}
 	}
+
+  delete alrSet;
+  delete comp;
 }
 
 void Segmentation3D::calculateRemainingPoints() {
@@ -1130,7 +1135,8 @@ void Segmentation3D::calculateRemainingPoints() {
 		}
 
 		else if (nb.size() > 1) {
-			int zuws[nb.size()];for(unsigned int a=0; a<blobs.size(); a++) {
+			int *zuws = new int[nb.size()];
+      for(unsigned int a=0; a<blobs.size(); a++) {
 				for(unsigned int b=0; b<blobs.at(a).size(); b++) {
 					for(unsigned int c=0; c<nb.size(); c++) {
 						if(blobs.at(a).at(b)==nb.at(c)-1) {
@@ -1200,6 +1206,7 @@ void Segmentation3D::calculateRemainingPoints() {
 				 }
 				 */
 			}
+      delete zuws;
 		}
 	}
 }
@@ -1222,9 +1229,9 @@ void Segmentation3D::blobSegmentation() {
 	int cAboveRead[RANSACpasses];
 	int cBelowRead[RANSACpasses];
 #endif
-	Vec n0[RANSACpasses];
-	float dist[RANSACpasses];
-	int cOnRead[RANSACpasses];
+	Vec *n0 = new Vec[RANSACpasses];
+	float *dist = new float[RANSACpasses];
+	int *cOnRead = new int[RANSACpasses];
 
 	for (int i = 0; i < RANSACpasses; i++) {
 #ifdef HAVE_OPENCL
@@ -1359,6 +1366,8 @@ void Segmentation3D::blobSegmentation() {
 
 	regionGrowBlobs();
   assignment = assignmentBlobs;
+
+  delete n0, dist, cOnRead;
 }
 
 void Segmentation3D::colorPointcloud() {

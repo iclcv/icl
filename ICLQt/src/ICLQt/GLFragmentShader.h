@@ -41,7 +41,7 @@ namespace icl{
     /** The GLFragmentShader class can be used to create simple fragment shader programs.
         
     */
-    class GLFragmentShader : public utils::Uncopyable{
+    class ICL_QT_API GLFragmentShader : public utils::Uncopyable{
       struct Data;
       Data *m_data;
       

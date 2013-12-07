@@ -39,7 +39,7 @@
 namespace icl{
   namespace qt{
     
-    class ChromaClassifierIO{
+    class ICL_QT_API ChromaClassifierIO{
       public:
       static void save(const core::ChromaClassifier &cc, 
                        const std::string &filename, 

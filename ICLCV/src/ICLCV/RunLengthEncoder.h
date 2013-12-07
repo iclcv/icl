@@ -96,7 +96,7 @@ namespace icl {
   
         xstart, xend and y
     */
-    class RunLengthEncoder{
+    class ICL_CV_API RunLengthEncoder{
       /// internal typedef
       typedef WorkingLineSegment WLS;
       

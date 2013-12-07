@@ -36,7 +36,7 @@
 namespace icl{
   namespace core{
     /// Classifier interface using RG-chromaticity space and two parables \ingroup COMMON
-    struct ICL_CORE_API ChromaClassifier{
+    struct ICL_CORE_API_T ChromaClassifier{
     public:
       /// classifies a given R-G-Pixel
       inline bool operator()(icl8u chromaR, icl8u chromaG) const{

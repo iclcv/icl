@@ -31,6 +31,7 @@
 #pragma once
 
 #include <ICLCore/Types.h>
+#include <ICLUtils/CompatMacros.h>
 
 namespace icl{
   namespace cv{

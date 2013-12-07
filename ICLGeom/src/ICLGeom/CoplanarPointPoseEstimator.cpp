@@ -462,7 +462,7 @@ namespace icl{
 
         FixedMatrix<icl32f, 3, 3> I =  FixedMatrix<icl32f, 3, 3>::id();
 
-        FixedMatrix<icl32f, 3, 3> VV[n];
+        FixedMatrix<icl32f, 3, 3> *VV = new FixedMatrix<icl32f, 3, 3>[n];
         for (int i = 0; i < n; ++i) {
           VV[i] = (V[i] * V[i].transp()) / (V[i].transp() * V[i])(0,0);
         }
@@ -472,6 +472,8 @@ namespace icl{
             FixedMatrix<icl32f, 1, 3> tmp = (I - VV[i])*(R*P[i] + t);
             error += pow(tmp(0, 0), 2) + pow(tmp(0, 1), 2) + pow(tmp(0, 2), 2);
         }
+
+        delete VV;
       }
 
       struct MinSol {
@@ -485,7 +487,8 @@ namespace icl{
                            std::vector< FixedMatrix<icl32f, 1, 3> > &V,
                            FixedMatrix<icl32f, 3, 3> &Rz, FixedMatrix<icl32f, 1, 3> &t,
                            MinSol &sol) {
-        FixedMatrix<icl32f, 3, 3> VV[n], G, Rp;
+        FixedMatrix<icl32f, 3, 3> *VV = new FixedMatrix<icl32f, 3, 3>[n];
+        FixedMatrix<icl32f, 3, 3> G, Rp;
         FixedMatrix<icl32f, 3, 3> Vsum(0.0f), E(0.0f);
         FixedMatrix<icl32f, 3, 3> I = FixedMatrix<icl32f, 3, 3>::id();
         FixedMatrix<icl32f, 3, 3> t_opt(0.0f);
@@ -578,6 +581,8 @@ namespace icl{
           t_new = G * t_new;
           sol.ts.push_back(t_new);
         }
+
+        delete VV;
       }
 
     void CoplanarPointPoseEstimator::robustPoseCorrection(int n, const Point32f *modelPoints, std::vector<Point32f> &ips) {

@@ -43,7 +43,7 @@ namespace icl{
     /** \endcond */
     
     /// Utility class that implements draggable rects on the ChromaWidget surface \ingroup UNCOMMON
-    struct Dragger{
+    struct ICL_QT_API Dragger{
       
       /// Utility class which helps to convert rgb to RG-Chroma and back
       struct Color{

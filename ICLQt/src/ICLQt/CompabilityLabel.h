@@ -45,7 +45,7 @@ namespace icl{
         original QLabel but this thread-save reimplementation called
         CompabilityLabel.
     */
-    class CompabilityLabel : public ThreadedUpdatableWidget{
+    class ICL_QT_API CompabilityLabel : public ThreadedUpdatableWidget{
       public:
       /// Create a new label with given text and given parent widget
       CompabilityLabel(const QString &text, QWidget *parent=0);

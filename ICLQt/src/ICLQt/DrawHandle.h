@@ -44,7 +44,7 @@ namespace icl{
     /** \endcond */
   
     /// Handle class for image components \ingroup HANDLES
-    class DrawHandle : public GUIHandle<ICLDrawWidget>{
+    class ICL_QT_API DrawHandle : public GUIHandle<ICLDrawWidget>{
       public:
       /// create an empty handle
       DrawHandle(){}

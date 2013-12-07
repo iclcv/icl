@@ -60,7 +60,7 @@ namespace icl{
       - <b>search_iters</b>
         denotes the number of steps to find the two farthest points of a polygon
     **/
-    class RDPApproximation {
+    class ICL_CV_API RDPApproximation {
 
       struct ChainPoint : utils::Point32f {
         ChainPoint *prev;

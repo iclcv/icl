@@ -31,6 +31,7 @@
 #pragma once
 
 #include <ICLCore/Types.h>
+#include <ICLUtils/CompatMacros.h>
 
 // forward declared QImage class
 class QImage;
@@ -80,7 +81,7 @@ namespace icl{
         is essentially, as you will not have a 2nd instance of the image.
     */
     
-    class QImageConverter{
+    class ICL_QT_API QImageConverter{
       public:
       /// creates an empty QImageConverter object
       QImageConverter();

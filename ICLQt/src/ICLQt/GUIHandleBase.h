@@ -36,7 +36,7 @@ namespace icl{
   namespace qt{
     
     /// Base class for GUIHandles providing functions to register callbacks \ingroup UNCOMMON
-    class GUIHandleBase{
+    class ICL_QT_API GUIHandleBase{
   
       protected:
       /// create a new GUIHandleBase

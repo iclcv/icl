@@ -38,7 +38,7 @@ namespace icl{
   namespace qt{
   
     /// Simple utility class providing static functions to create some icons
-    class IconFactory{
+    class ICL_QT_API IconFactory{
       public:
       static const QPixmap &create_icl_window_icon_as_qpixmap();
       static const QIcon &create_icl_window_icon_as_qicon();

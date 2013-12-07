@@ -66,7 +66,7 @@ namespace icl{
         and put into the queue.
         
     */
-    class FloodFiller{
+    class ICL_CV_API FloodFiller{
       /// internal list of to-be-processed points
       std::vector<utils::Point> futurePoints;
       

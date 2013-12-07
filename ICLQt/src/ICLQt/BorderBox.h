@@ -32,11 +32,12 @@
 
 #include <QtGui/QGroupBox>
 #include <QtGui/QVBoxLayout>
+#include <ICLUtils/CompatMacros.h>
 /// The icl namespace
 namespace icl{
   namespace qt{
     /// A simple utility class (QWidget with titled border) \ingroup UNCOMMON
-    struct BorderBox : public QGroupBox{
+    struct ICL_QT_API BorderBox : public QGroupBox{
   
       /// Create a new BorderBox Object
       /** @param label title of the border

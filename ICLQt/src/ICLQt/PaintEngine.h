@@ -45,7 +45,7 @@ namespace icl{
 
   namespace qt{
     /// pure virtual Paint engine interface \ingroup UNCOMMON
-    class PaintEngine{
+    class ICL_QT_API PaintEngine{
       public:
       virtual ~PaintEngine(){}
       enum AlignMode {NoAlign, Centered, Justify};

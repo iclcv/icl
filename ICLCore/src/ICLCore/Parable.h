@@ -44,7 +44,7 @@ namespace icl{
         Parables can be created by given parameters a,b and c
         or by 3 given points.
     */
-    struct ICL_CORE_API Parable{
+    struct ICL_CORE_API_T Parable{
       
       /// create an empty parable (a=b=c=0)
       Parable():a(0),b(0),c(0){}

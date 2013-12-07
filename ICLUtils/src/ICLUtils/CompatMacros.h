@@ -102,7 +102,7 @@
 #define ICL_CV_API_T
 #endif
 
-#ifdef ICLQT_EXPORTS
+#ifdef ICLQt_EXPORTS
 #define ICL_QT_API   __declspec(dllexport)
 #define ICL_QT_API_T __declspec(dllexport)
 #else

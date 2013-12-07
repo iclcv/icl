@@ -191,7 +191,7 @@ int main(){
         const int dim = getDim();
         for(int i=0;i<dim;++i){
           for(int j=0;j<N;++j){
-            if(fabs(operator[](i)[j] - dst[i][j]) > tollerance) return false;
+            if(fabs((float)(operator[](i)[j] - dst[i][j])) > tollerance) return false;
           }
         }
         return true;
@@ -344,7 +344,7 @@ int main(){
         if(isOrganized() && getSize() != dst.getSize()) return false;
         const int dim = getDim();
         for(int i=0;i<dim;++i){
-          if(fabs(operator[](i) - dst[i]) > tollerance) return false;
+          if(fabs((float)(operator[](i) - dst[i])) > tollerance) return false;
         }
         return true;
       }

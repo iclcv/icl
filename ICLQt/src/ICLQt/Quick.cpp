@@ -809,20 +809,20 @@ namespace icl{
     // }}}
   
   #define ICL_INSTANTIATE_DEPTH(D)                                   \
-    template Img<icl##D> zeros(int,int,int);                         \
-    template Img<icl##D> ones(int,int,int);                          \
-    template Img<icl##D> load(const std::string&);                   \
-    template Img<icl##D> load(const std::string&,format);            \
-    template Img<icl##D> create(const std::string&,format);          \
-    template Img<icl##D> grab(const std::string&,const std::string&, \
+    template ICL_QT_API Img<icl##D> zeros(int,int,int);                         \
+    template ICL_QT_API Img<icl##D> ones(int, int, int);                          \
+    template ICL_QT_API Img<icl##D> load(const std::string&);                   \
+    template ICL_QT_API Img<icl##D> load(const std::string&, format);            \
+    template ICL_QT_API Img<icl##D> create(const std::string&, format);          \
+    template ICL_QT_API Img<icl##D> grab(const std::string&, const std::string&, \
                               const Size&,format,bool);              \
-    template Img<icl##D> filter(const Img<icl##D>&,                  \
+    template ICL_QT_API Img<icl##D> filter(const Img<icl##D>&,                  \
                                 const std::string&);                 \
-    template Img<icl##D> blur(const Img<icl##D>&,int);               \
-    template Img<icl##D> copy(const Img<icl##D>&);                   \
-    template Img<icl##D> copyroi(const Img<icl##D>&);                \
-    template void print(const Img<icl##D>&);                         \
-    template Img<icl##D> norm(const Img<icl##D>&);
+    template ICL_QT_API Img<icl##D> blur(const Img<icl##D>&,int);               \
+    template ICL_QT_API Img<icl##D> copy(const Img<icl##D>&);                   \
+    template ICL_QT_API Img<icl##D> copyroi(const Img<icl##D>&);                \
+    template ICL_QT_API void print(const Img<icl##D>&);                         \
+    template ICL_QT_API Img<icl##D> norm(const Img<icl##D>&);
     ICL_INSTANTIATE_ALL_DEPTHS
   #undef ICL_INSTANTIATE_DEPTH
   
@@ -1213,17 +1213,17 @@ namespace icl{
   
     // }}}
   
-    template ImgQ binOR<icl8u>(const ImgQ&, const ImgQ&);
-    template ImgQ binOR<icl16s>(const ImgQ&, const ImgQ&);
-    template ImgQ binOR<icl32s>(const ImgQ&, const ImgQ&);
+    template ICL_QT_API ImgQ binOR<icl8u>(const ImgQ&, const ImgQ&);
+    template ICL_QT_API ImgQ binOR<icl16s>(const ImgQ&, const ImgQ&);
+    template ICL_QT_API ImgQ binOR<icl32s>(const ImgQ&, const ImgQ&);
   
-    template ImgQ binAND<icl8u>(const ImgQ&, const ImgQ&);
-    template ImgQ binAND<icl16s>(const ImgQ&, const ImgQ&);
-    template ImgQ binAND<icl32s>(const ImgQ&, const ImgQ&);
+    template ICL_QT_API ImgQ binAND<icl8u>(const ImgQ&, const ImgQ&);
+    template ICL_QT_API ImgQ binAND<icl16s>(const ImgQ&, const ImgQ&);
+    template ICL_QT_API ImgQ binAND<icl32s>(const ImgQ&, const ImgQ&);
   
-    template ImgQ binXOR<icl8u>(const ImgQ&, const ImgQ&);
-    template ImgQ binXOR<icl16s>(const ImgQ&, const ImgQ&);
-    template ImgQ binXOR<icl32s>(const ImgQ&, const ImgQ&);
+    template ICL_QT_API ImgQ binXOR<icl8u>(const ImgQ&, const ImgQ&);
+    template ICL_QT_API ImgQ binXOR<icl16s>(const ImgQ&, const ImgQ&);
+    template ICL_QT_API ImgQ binXOR<icl32s>(const ImgQ&, const ImgQ&);
   
   
     ImgQ operator,(const ImgQ &a, const ImgQ &b){

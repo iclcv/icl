@@ -48,7 +48,7 @@ namespace icl{
         updateFromOtherThread used QApplication::postEvent, to post a UserType
         QEvent to this object, which is caught in the overloaded event() function
     */
-    class ThreadedUpdatableWidget : public QWidget{
+    class ICL_QT_API ThreadedUpdatableWidget : public QWidget{
       public:
       
       /// Base constructor
