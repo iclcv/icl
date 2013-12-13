@@ -273,7 +273,7 @@ struct Canvas : public AbstractCanvas{
   
   
   template<int CHAN, class T, bool WITH_ALPHA>
-  static void ellipse_template(const Point32f&c, const Point32f &axis1, 
+  static void ellipse_template(const Point32f&cc, const Point32f &axis1, 
                                const Point32f&axis2, void **data, const int w, 
                                const AbstractCanvas::Color &cFill,
                                const AbstractCanvas::ClipRect &clip){
@@ -289,7 +289,7 @@ struct Canvas : public AbstractCanvas{
     const Mat2 R(ax.x, ax.y,
            ay.x, ay.y);
     
-    const Vec2 t(c.x,c.y);
+    const Vec2 t(cc.x,cc.y);
     
     const Mat2 S(1./sqr(axis1.norm()),0,
            0, 1./sqr(axis2.norm()));
@@ -297,10 +297,10 @@ struct Canvas : public AbstractCanvas{
     InsideEllipse in = { R,S,t };
     SetEllipsePixels<CHAN,T,WITH_ALPHA> sep = { cFill, w, in, aScaled, data };
     
-    Point32f pa = c + axis1 + axis2;
-    Point32f pb = c + axis1 - axis2;
-    Point32f pc = c - axis1 - axis2;
-    Point32f pd = c - axis1 + axis2;
+    Point32f pa = cc + axis1 + axis2;
+    Point32f pb = cc + axis1 - axis2;
+    Point32f pc = cc - axis1 - axis2;
+    Point32f pd = cc - axis1 + axis2;
     
     for_each_in_triangle(pa,pb,pc,clip,sep);
     for_each_in_triangle(pa,pc,pd,clip,sep);
@@ -323,6 +323,51 @@ struct Canvas : public AbstractCanvas{
 
     */
 
+#if 1
+    { // a scope 1
+      const float a = R(0,0), b=R(1,0), c=R(0,1), d=R(1,1);
+      const float Sx = S(0,0), Sy=S(1,1);
+      const float A = Sx, D = Sy;
+      const float S = a*cc.x + b*cc.y;
+      const float Q = c*cc.x + d*cc.y;
+      
+      const float a0 = 2*(A*sqr(b)+D*sqr(d));
+      const float a1 = 2*(a*A*b + c*d*D);
+      const float a2 = 2*(A*b*S + d*D*Q);
+      const float a3 = 2*a0;
+      const float a4 = sqr(a)*A + sqr(c)*D;
+      const float a5 = 2*(a*A*S+c*D*Q);
+      const float a6 = A*sqr(S) + D*sqr(Q) - 1;
+
+      const float b1 = sqr(a1) - a3*a4;
+      const float b2 = 2*a1*a2+a5;
+      const float b3 = sqr(a2)+a6;
+      
+      static const AbstractCanvas::Color cBorder(0,100,255,255);
+    
+      for(int x=0;x<1000;++x){
+        const float root = b1*sqr(x) + b2*x * b3;
+        if(root >= 0){
+          const float c1 = 1./a0;
+          const float c2 = sqrt(root);
+          const float c3 = a1*x+a2;
+          
+          const int y1 = round(c1*(c2 - c3));
+          const int y2 = round(c1*(-c2 -c3));
+          
+          if(clip.in(x,y1)){
+            set_color_gen<T,CHAN,WITH_ALPHA>(data,get_idx(x,y1,w),cBorder,aScaled);
+          }
+          if(clip.in(x,y2)){
+            set_color_gen<T,CHAN,WITH_ALPHA>(data,get_idx(x,y2,w),cBorder,aScaled);
+          }
+          
+        }
+      }
+    } // end of scope    
+    
+
+#else
     const float A0 = R(0,0), A1 = R(1,0), B0=R(0,1), B1=R(1,1);
     const float Sx = S(0,0), Sy = S(1,1);
     const float Ac = A0 *c.x + A1 * c.y;
@@ -356,6 +401,7 @@ struct Canvas : public AbstractCanvas{
       }
       
     }
+#endif
   }
 
   template<class T, int CHAN>

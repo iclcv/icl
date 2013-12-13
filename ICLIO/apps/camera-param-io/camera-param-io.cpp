@@ -43,33 +43,40 @@ int main(int n, char **ppc){
      ("-s","set feature to value (e.g. -s gain 100). Incompatible to all others except -d.")
      ("-g","get a value. Incompatible to all others except -d.")
      ("-l","list features of device. Incompatible to all others except -d.")
-     ("-d","grabber type (-d dc 0, unicap 0, pwc)")
-     ("-i","use input xml-file to setup a list of parameters together. "
+     ("-p","grabber type (-d dc 0, unicap 0, pwc)")
+     ("-p","use input xml-file to setup a list of parameters together. "
       "Incompatible to all others except -d.")
-     ("-o","writes all parameters to given output xml file. Incompatible to all others except -d.");
+     ("-o","writes all parameters to given output xml file. Incompatible to all others except -d.")
+     ("-g","makes the grabber to grab an image before and after loading all properties\n"
+      "for some devices (in particular some dc cameras), this is necessary to actually\n"
+      "store the new parameters on the device");
   
-  pa_init(n,ppc,"-set|-s(param,value) -get|-g(param) -device|-d(device-type=dc,device-params=0) "
-         "-list|-l -input|-i(input-xml-file) -output|-o(output-xml-file)");
+  pa_init(n,ppc,"-set|-s(param,value) -get|-g(param) [m]-input|-i(devicetype,devicespec) "
+         "-list|-l -parameter-file|-p(input-xml-file) -output|-o(output-xml-file) -grab-once|-go");
 
-  bool s = pa("-s"), g=pa("-g"), l=pa("-l"), i=pa("-i"), o=pa("-o");
-  if(!(s||g||l||i||o)){
-    pa_show_usage("one arg of -s, -g, -l, -i or -o must be given");
+  bool s = pa("-s"), g=pa("-g"), l=pa("-l"), p=pa("-p"), o=pa("-o");
+  if(!(s||g||l||p||o)){
+    pa_show_usage("one arg of -s, -g, -l, -p or -o must be given");
     exit(-1);
-  }else if(s+g+l+i+o > 1){
+  }else if(s+g+l+p+o > 1){
     pa_show_usage("invalid argument combination");
     exit(-1);
   }
   
   GenericGrabber grabber;
-  grabber.init(pa("-d"));
+  grabber.init(pa("-i"));
 
   if(s){
     std::string val = pa("-s",1);
+    if(pa("-go")) grabber.grab();
     grabber.setPropertyValue(pa("-s",0),val);
+    if(pa("-go")) grabber.grab();
   }else if(g){
     std::cout << grabber.getPropertyValue(pa("-g")) << std::endl;
-  }else if(i){
-    grabber.loadProperties(pa("-i"));
+  }else if(p){
+    if(pa("-go")) grabber.grab();
+    grabber.loadProperties(pa("-p"));
+    if(pa("-go")) grabber.grab();
   }else if(o){
     grabber.saveProperties(pa("-o"));
   }else{

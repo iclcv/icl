@@ -97,7 +97,7 @@ namespace icl{
       static Mat map(const std::vector<Vec> &Xs, const std::vector<Vec> &Ys, MapMode mode=RigidBody) 
       throw (utils::ICLException,math::SingularMatrixException,math::IncompatibleMatrixDimensionException){
         ICLASSERT_THROW(Xs.size() == Ys.size(), utils::ICLException("PoseEstimator::map: need same number of input- and output-points"));
-        math::DynMatrix<float> XsD(Xs.size(),3),YsD(Ys.size(),3);
+        math::DynMatrix<double> XsD(Xs.size(),3),YsD(Ys.size(),3);
         for(unsigned int i=0;i<Xs.size();++i){
           std::copy(Xs[i].begin(),Xs[i].begin()+3, XsD.col_begin(i));
           std::copy(Ys[i].begin(),Ys[i].begin()+3, YsD.col_begin(i));

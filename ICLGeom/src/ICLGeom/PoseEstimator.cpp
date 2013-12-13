@@ -37,6 +37,11 @@
 #include <ICLGeom/PoseEstimator.h>
 #include <ICLCore/CoreFunctions.h>
 
+#ifdef HAVE_EIGEN3
+// for umeyama-based pose estimation
+#include <Eigen/Geometry>
+#endif
+
 using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::core;
@@ -143,6 +148,25 @@ namespace icl{
       ICLASSERT_THROW(Xs.cols() > 0, IncompatibleMatrixDimensionException("PoseEstimator::map: At least 1 point is needed for relative pose estimation"));
       ICLASSERT_THROW(Xs.cols() > 3 || mode !=Affine, IncompatibleMatrixDimensionException("PoseEstimator::map: for affine mapping, at least 4 points are needed!"));
     
+#ifdef HAVE_EIGEN3
+      if(mode == RigidBody && Xs.rows() == 3){
+        typedef Eigen::Map<const Eigen::Matrix<T,3, Eigen::Dynamic,  Eigen::RowMajor> > EigenMapType;
+
+        const EigenMapType XsEigen(Xs.begin(), Xs.rows(), Xs.cols());
+        const EigenMapType YsEigen(Ys.begin(), Ys.rows(), Ys.cols());
+
+        Eigen::Matrix<T,4,4> TM = Eigen::umeyama(XsEigen,YsEigen,false).matrix();
+
+        FixedMatrix<T,4,4> TT;
+        for(int x=0;x<4;++x){
+          for(int y=0;y<4;++y){
+            TT(x,y) = TM(y,x);
+          }
+        }
+        return TT;
+      }
+#endif
+
       static const T eps = getDepth<T>() == getDepth<float>() ? -23 : -52; 
     
       typedef FixedMatrix<T,4,4> M4;

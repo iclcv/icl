@@ -140,7 +140,7 @@ namespace icl{
         m_data->impls.resize(m_data->numImplsUsed);
       }
   
-      for(int i=0;i<=maxID;++i){
+      for(int i=0;i<m_data->numImplsUsed;++i){
         m_data->impls[i].numFound = 0;
       }
       
@@ -159,7 +159,7 @@ namespace icl{
       }
   
       m_data->output.clear();
-      for(unsigned int i=0;i<m_data->impls.size();++i){
+      for(unsigned int i=0;i<m_data->numImplsUsed;++i){
         if(m_data->impls[i].numFound >= minCamsFound){
           m_data->output.push_back(MultiCamFiducial(&m_data->impls[i]));
         }

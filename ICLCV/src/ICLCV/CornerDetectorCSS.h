@@ -34,6 +34,7 @@
 #include <ICLCore/Types.h>
 #include <vector>
 #include <ICLUtils/Configurable.h>
+#include <ICLUtils/Uncopyable.h>
 
 namespace icl{
   namespace cv{
@@ -84,7 +85,7 @@ namespace icl{
         const std::vector<Point32f> &corners = css.detectCorners(boundary);
         \endcode
     **/
-    class CornerDetectorCSS : public utils::Configurable{
+    class CornerDetectorCSS : public utils::Configurable, public utils::Uncopyable{
       public:
       /// 1 dim gaussian kernel
       struct GaussianKernel {
@@ -101,10 +102,11 @@ namespace icl{
                         float sigma=3.,
                         float curvature_cutoff=100.,
                         float straight_line_thresh=0.1,
-                        bool accurate = false):
-      angle_thresh(angle_thresh), rc_coeff(rc_coeff), sigma(sigma),
-        curvature_cutoff(curvature_cutoff), straight_line_thresh(straight_line_thresh), accurate(accurate){}
+                        bool accurate = false);
 
+      /// Destructor
+      ~CornerDetectorCSS();
+      
       /// sets value of a property (always call call_callbacks(propertyName) or Configurable::setPropertyValue)
       virtual void setPropertyValue(const std::string &propertyName,
                                     const utils::Any &value) throw (utils::ICLException);
@@ -202,7 +204,8 @@ namespace icl{
       void fill_gauss(float *mask, float sigma, int width);
       void convolute(const float *data, int data_length, const float *mask , int mask_length, float *convoluted);
       void calculate_curvatures(const float *smoothed_x, const float *smoothed_y, int length, float curvature_cutoff, float *curvatures);
-      void calculate_curvatures_bulk(int array_length, int num_boundaries, const int *lengths, const int *indices, const int *indices_padded, const float *smoothed_x, const float *smoothed_y, float curvature_cutoff, float *curvature);
+      void calculate_curvatures_bulk(int array_length, int num_boundaries, const int *lengths, 
+                                     const int *indices, const int *indices_padded, const float *smoothed_x, const float *smoothed_y, float curvature_cutoff, float *curvature);
       int findExtrema(int *extrema, int *num_extrema_out, float* k, int length);
       void removeRoundCorners(float rc_coeff, int maxima_offset, float* k, int length, int *extrema, int num_extrema, int *new_extrema, int *num_new_extrema_out);
       void removeRoundCornersAccurate(float rc_coeff, int maxima_offset, float* k, int length, int *extrema, int num_extrema, int *extrema_out, int *num_extrema_out);
@@ -210,57 +213,13 @@ namespace icl{
       float cornerAngleAccurate(float *x, float *y, int prev, int current, int next, int array_length, float straight_line_thresh);
       void removeFalseCorners(float angle_thresh, float* x, float* y, float* k, int length, int *maxima, int num_maxima, int *maxima_out, int *num_maxima_out);
 
-//      /// gausian kernel
-//      GaussianKernel m_gauss;
-
-//      /// finds the indicies of extrema
-//      /**
-//          * @param extrema reference to a std::vector in which the extrema are stored
-//          * @param x function values
-//          * @param length number of points in array x
-//          */
-//      static void findExtrema(std::vector<int> &extrema, icl32f* x, int length);
-
-//      /// removes round corners by comparing all corner candidates with adaptive local threshold
-//      /**
-//          * The round corner coefficient denotes the minimum ratio of major axis to minor
-//          * axis of an ellipse, whose vertex could be detected as a corner by proposed detector.
-//          * @param rc_coeff round corner coefficient
-//    * @param k curvature function
-//          * @param extrema indicies of extrem points in curvature function k
-//          */
-//      static void removeRoundCorners( float rc_coeff, icl32f* k, std::vector<int> &extrema);
-
-//      /// remove false corners by checking the corner angle
-//      /**
-//          * The angle threshold denotes the maximum obtuse angle that a corner can have when
-//          * it is detected as a true corner.
-//          * @param angle_thresh angle threshold
-//          * @param xx,yy x,y dimension of smoothed contour
-//          * @param k curvature function
-//          * @param length number of points in smoothed contour (and curvature function)
-//          * @param maxima indicies of maximum points in curvature function k
-//          * @param corner_angles
-//    * @param straight_line_thresh
-//          */
-//      static void removeFalseCorners(float angle_thresh, icl32f* xx, icl32f* yy, icl32f* k,
-//                                     int length, std::vector<int> &maxima, std::vector<float> &corner_angles,
-//                                     float straight_line_thresh);
-
-//      /// estimates the angle of a corner
-//      /**
-//          * Eestimates the angle of a corner in a part of the curve by fitting a circle
-//          * on each side of the corner and calculating the angle between the two tangents.
-//          * @param x,y x,y dimension of the contour segment around the corner
-//          * @param length number of points in contour segment
-//          * @param center position of corner in contour segment
-//          * @param straight_line_thresh
-//          */
-//      static float tangentAngle(icl32f* x, icl32f* y, int length, int center, float straight_line_thresh);
-
       // result lists
       std::vector<utils::Point32f> corners;
       std::vector<std::vector<utils::Point32f> > corners_list;
+
+      struct CLCurvature;
+      CLCurvature *clcurvature;
+      bool useOpenCL; // in case of no support, this is always false
     };
   } // namespace core
 }

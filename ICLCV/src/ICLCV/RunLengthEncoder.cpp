@@ -85,12 +85,13 @@ namespace icl{
           curr = *p++;  
           sls = sldata+y*W;
           pLast = p-1;
-          while(p<pEnd){
+          while(true){//p<pEnd){
             p = find_first_not(p,pEnd,curr);
             sls->init((int)(pLast-pBegin), y,(int)(p-pBegin),curr); 
             ++sls;
-            curr = *p; 
+            if(p == pEnd) break;
             pLast = p;
+            curr = *p; 
           }
           m_ends[y] = sls;
         }

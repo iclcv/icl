@@ -203,6 +203,7 @@ namespace icl{
           ERROR_LOG(" FiducialDetectorPluginForQuads:: current plugin settings for the marker's"
                     " inner and outer sizes do not allow to create an appropriate image ROI for"
                     " rectification");
+
           return;
         }
   

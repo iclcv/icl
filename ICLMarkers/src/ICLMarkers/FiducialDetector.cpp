@@ -176,6 +176,7 @@ namespace icl{
       const Img8u &ppImage = data->pp->pp(image);
       data->iis.pp = (ImgBase*)(&ppImage);
       data->fidImpls.clear();
+      
       data->plugin->detect(data->fidImpls,ppImage);
       
       data->fids.resize(data->fidImpls.size());

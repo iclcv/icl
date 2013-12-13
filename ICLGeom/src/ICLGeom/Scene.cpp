@@ -177,8 +177,14 @@ namespace icl{
 
         if(name != lastName){
           lock();
-          Img8u newTexture = TextPrimitive::create_texture(name.length() ? name : str("camera"),GeomColor(255,255,255,255),30);
-          dynamic_cast<TexturePrimitive*>(m_primitives.back())->texture.update(&newTexture);
+          delete m_primitives.back();
+          m_primitives.pop_back();
+          addTextTexture(7,8,10,9,name.length() ? name : str("camera"));
+          // why does update not work? does it need a permanently valid texture?
+          //          addTexture(7,8,10,9,&nameTexture);
+          // Img8u newTexture = TextPrimitive::create_texture(name.length() ? name : str("camera"),GeomColor(255,255,255,255),30);
+          //SHOW(newTexture);
+          //dynamic_cast<TexturePrimitive*>(m_primitives.back())->texture.update(&newTexture);
           unlock();
           lastName = name;
         }

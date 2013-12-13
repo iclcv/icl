@@ -51,6 +51,9 @@ void init(){
     std::string c = *pa("-c",i);
     Camera cam (c);
     std::string n = cam.getName();
+    if(n == ""){
+      cam.setName(c);
+    }
     comboList << (i?",":"") << ( (n == "no title defined" || n == "") ? c : cam.getName()) ; 
     scene.addCamera(cam);
   }

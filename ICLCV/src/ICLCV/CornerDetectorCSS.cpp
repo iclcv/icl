@@ -45,23 +45,23 @@ using namespace icl::core;
 namespace icl{
   namespace cv{
 #ifdef HAVE_OPENCL
-    struct CLCurvature{
-      CLProgram DeriveProgram;
-      CLKernel DeriveAllAndCurvatureKernel;
+    struct CornerDetectorCSS::CLCurvature{
+      CLProgram deriveProgram;
+      CLKernel deriveAllAndCurvatureKernel;
       CLCurvature(){
         // source code
         static const char *code = (
-                                    "__kernel void deriveAllAndCurvature(float curvature_cutoff,                	\n"
+                                    "__kernel void deriveAllAndCurvature(float curvature_cutoff,       	\n"
                                     "                        const __global float *x,                	\n"
                                     "                        const __global float *y,                	\n"
-                                    "                        __global float *curvature){                   \n"
-                                    "    	unsigned int i = get_global_id(0);					\n"
+                                    "                        __global float *curvature){                \n"
+                                    "    	unsigned int i = get_global_id(0);		        \n"
                                     "    float x_1 = (x[i+2]-x[i])/2.f;					\n"
                                     "    float x_0 = (x[i]-x[i-2])/2.f;					\n"
-                                    "    float xu = (x[i+1]-x[i-1])/2.f;					\n"
+                                    "    float xu = (x[i+1]-x[i-1])/2.f;				\n"
                                     "    float y_1 = (y[i+2]-y[i])/2.f;					\n"
                                     "    float y_0 = (y[i]-y[i-2])/2.f;					\n"
-                                    "    float yu = (y[i+1]-y[i-1])/2.f;					\n"
+                                    "    float yu = (y[i+1]-y[i-1])/2.f;				\n"
                                     "    float xuu = (x_1-x_0)/2.f;					\n"
                                     "    float yuu = (y_1-y_0)/2.f;					\n"
                                     "    float k = fabs((xu*yuu - xuu*yu) / pow((xu*xu + yu*yu),1.5f)); \n"
@@ -69,33 +69,53 @@ namespace icl{
                                     "}\n"
                                    );
 
-        DeriveProgram = CLProgram("gpu",code);
-        DeriveAllAndCurvatureKernel = DeriveProgram.createKernel("deriveAllAndCurvature");
+        deriveProgram = CLProgram("gpu",code);
+        deriveAllAndCurvatureKernel = deriveProgram.createKernel("deriveAllAndCurvature");
       }
 
-      void calculateCurvature(const icl32f *in_x, const icl32f *in_y, float curvature_cutoff, uint length, icl32f *curvature_out){
-        //make sure length is dividable by 2 to avoid prime numbers which can cause weird issues witht the workgroup size and slow down the kernel
+      void operator()(const icl32f *in_x, const icl32f *in_y, 
+                      float curvature_cutoff, uint length, icl32f *curvature_out){
+        // make sure length is dividable by 2 to avoid prime numbers which can cause 
+        // weird issues witht the workgroup size and slow down the kernel
         uint save_length = length + length%2;
         uint dim = length * sizeof(icl32f);
         uint save_dim = save_length * sizeof(icl32f);
 
-        CLBuffer x = DeriveProgram.createBuffer("r",save_dim);
-        CLBuffer y = DeriveProgram.createBuffer("r",save_dim);
-        CLBuffer curvature = DeriveProgram.createBuffer("w",save_dim);
+        CLBuffer x = deriveProgram.createBuffer("r",save_dim);
+        CLBuffer y = deriveProgram.createBuffer("r",save_dim);
+        CLBuffer curvature = deriveProgram.createBuffer("w",save_dim);
         x.write(in_x,dim);
         y.write(in_y,dim);
-        DeriveAllAndCurvatureKernel.setArgs(curvature_cutoff, x, y, curvature);
-        DeriveAllAndCurvatureKernel.apply(save_length,0,0);
+        deriveAllAndCurvatureKernel.setArgs(curvature_cutoff, x, y, curvature);
+        deriveAllAndCurvatureKernel.apply(save_length,0,0);
         curvature.read(curvature_out,dim);
       }
-    }clCurvature;
+    };
+#else
+    struct CornerDetectorCSS::CLCurvature{
+      // dummy
+    };
 #endif
+
+
 
     inline int wrap(int index, int length) {
       index = index%length;
       return index<0 ? index+length : index;
     }
 
+    CornerDetectorCSS::CornerDetectorCSS(float angle_thresh,
+                                         float rc_coeff,
+                                         float sigma,
+                                         float curvature_cutoff,
+                                         float straight_line_thresh,
+                                         bool accurate):
+      angle_thresh(angle_thresh), rc_coeff(rc_coeff), sigma(sigma),
+      curvature_cutoff(curvature_cutoff), 
+      straight_line_thresh(straight_line_thresh), 
+      accurate(accurate), clcurvature(0), useOpenCL(false){
+    }
+    
     int CornerDetectorCSS::gauss_radius(float sigma, float cutoff) {
       float ssq2 = sigma*sigma*2.f;
       float norm_inv = sqrt(float(M_PI)*ssq2);
@@ -114,6 +134,10 @@ namespace icl{
       for (int i=0; i<width*2+1; i++) {
         mask[i] /= sum;
       }
+    }
+    
+    CornerDetectorCSS::~CornerDetectorCSS(){
+      ICL_DELETE(clcurvature);
     }
 
     void CornerDetectorCSS::convolute(const float *data, int data_length, const float *mask , int mask_length, float *convoluted) {
@@ -140,7 +164,8 @@ namespace icl{
     }
 
     //this functions expects a minimum length of 3
-    void CornerDetectorCSS::calculate_curvatures(const float *smoothed_x, const float *smoothed_y, int length, float curvature_cutoff, float *curvatures) {
+    void CornerDetectorCSS::calculate_curvatures(const float *smoothed_x, const float *smoothed_y, 
+                                                 int length, float curvature_cutoff, float *curvatures) {
       //calculate special cases
       //i = 0
       float xu_0 = (smoothed_x[0] - smoothed_x[length-2]) * 0.5f;
@@ -201,7 +226,11 @@ namespace icl{
       curvatures[length-1] = round(k*curvature_cutoff)/curvature_cutoff;
     }
 
-    void CornerDetectorCSS::calculate_curvatures_bulk(int array_length, int num_boundaries, const int *lengths, const int *indices, const int *indices_padded, const float *smoothed_x, const float *smoothed_y, float curvature_cutoff, float *curvature) {
+    void CornerDetectorCSS::calculate_curvatures_bulk(int array_length, int num_boundaries, 
+                                                      const int *lengths, const int *indices,
+                                                      const int *indices_padded, const float *smoothed_x, 
+                                                      const float *smoothed_y, float curvature_cutoff, 
+                                                      float *curvature) {
       float padded_x[array_length + num_boundaries * 4], padded_y[array_length + num_boundaries * 4];
       for(int i = 0; i < num_boundaries; i++) {
         memcpy(&padded_x[indices_padded[i]],&smoothed_x[indices[i]+lengths[i]-2],2 * sizeof(float));
@@ -215,11 +244,20 @@ namespace icl{
         memcpy(&padded_y[indices_padded[i] + 2], &smoothed_y[indices[i]],sizeof(float) * lengths[i]);
       }
       //calculate curvatures
+      bool done = false;
 #ifdef HAVE_OPENCL
-      clCurvature.calculateCurvature(padded_x,padded_y,curvature_cutoff,array_length + num_boundaries * 4, curvature);
-#else
-      calculate_curvatures(padded_x, padded_y, array_length + num_boundaries * 4, curvature_cutoff, curvature);
+      if(useOpenCL){
+        if(!clcurvature) clcurvature = new CLCurvature;
+        (*clcurvature)(padded_x,padded_y,curvature_cutoff,
+                       array_length + num_boundaries * 4, curvature);
+        done = true;
+      }
 #endif
+      if(!done){
+        calculate_curvatures(padded_x, padded_y, 
+                             array_length + num_boundaries * 4, 
+                             curvature_cutoff, curvature);
+      }
     }
 
     //returns the offset of the first maxima
@@ -253,7 +291,9 @@ namespace icl{
       return maxima_offset;
     }
 
-    void CornerDetectorCSS::removeRoundCorners(float rc_coeff, int maxima_offset, float* k, int length, int *extrema, int num_extrema, int *new_extrema, int *num_new_extrema_out) {
+    void CornerDetectorCSS::removeRoundCorners(float rc_coeff, int maxima_offset, float* k, 
+                                               int length, int *extrema, int num_extrema, 
+                                               int *new_extrema, int *num_new_extrema_out) {
       int num_new_extrema = 0;
       for (int i=maxima_offset; i<num_extrema; i+=2) {
         float kl = k[extrema[wrap(i-1,num_extrema)]];
@@ -266,7 +306,10 @@ namespace icl{
       *num_new_extrema_out = num_new_extrema;
     }
 
-    void CornerDetectorCSS::removeRoundCornersAccurate(float rc_coeff, int maxima_offset, float* k, int length, int *extrema, int num_extrema, int *extrema_out, int *num_extrema_out) {
+    void CornerDetectorCSS::removeRoundCornersAccurate(float rc_coeff, int maxima_offset, 
+                                                       float* k, int length, int *extrema, 
+                                                       int num_extrema, int *extrema_out, 
+                                                       int *num_extrema_out) {
       int num_new_extrema = 0;
       float mean;
       int n;
@@ -286,7 +329,8 @@ namespace icl{
       *num_extrema_out = num_new_extrema;
     }
 
-    float CornerDetectorCSS::cornerAngle(float *x, float *y, int prev, int current, int next, int length, float straight_line_thresh) {
+    float CornerDetectorCSS::cornerAngle(float *x, float *y, int prev, int current, 
+                                         int next, int length, float straight_line_thresh) {
       float xr = x[next] - x[current];
       float yr = y[next] - y[current];
       float xl = x[prev] - x[current];
@@ -304,7 +348,9 @@ namespace icl{
         return (T(0) < val) - (val < T(0));
     }
 
-    float CornerDetectorCSS::cornerAngleAccurate(float *x, float *y, int prev, int current, int next, int array_length, float straight_line_thresh) {
+    float CornerDetectorCSS::cornerAngleAccurate(float *x, float *y, int prev, int current, 
+                                                 int next, int array_length, 
+                                                 float straight_line_thresh) {
       int last, first, middle;
       float x0,y0,x1,y1,x2,y2,x3,y3;
       float tangent_direction;
@@ -347,9 +393,10 @@ namespace icl{
       return (angle < 0) ? angle+360 : (angle > 360) ? angle-360 : angle;
     }
 
-    void CornerDetectorCSS::removeFalseCorners(float angle_thresh, float* x, float* y, float* k, int length,
-                            int *maxima, int num_maxima,
-                            int *maxima_out, int *num_maxima_out) {
+    void CornerDetectorCSS::removeFalseCorners(float angle_thresh, float* x, 
+                                               float* y, float* k, int length,
+                                               int *maxima, int num_maxima,
+                                               int *maxima_out, int *num_maxima_out) {
 
       int *new_maxima = maxima_out;
       int num_new_maxima;
@@ -547,6 +594,7 @@ namespace icl{
       else if(propertyName == "curvature-cutoff") curvature_cutoff = parse<float>(value);
       else if(propertyName == "straight-line-threshold") straight_line_thresh = parse<float>(value);
       else if(propertyName == "accurate") accurate = value == "on";
+      else if(propertyName == "use opencl") useOpenCL = value == "on";
       else {
         ERROR_LOG("invalid property name " << propertyName);
       }
@@ -555,12 +603,12 @@ namespace icl{
     std::vector<std::string> CornerDetectorCSS::getPropertyList() const{
       static const std::vector<std::string> l = tok("angle-threshold,rc-coefficient,sigma,"
                                                     "curvature-cutoff,straight-line-threshold,"
-                                                    "accurate,",",");
+                                                    "accurate,use opencl",",");
       return l;
     }
 
     std::string CornerDetectorCSS::getPropertyType(const std::string &propertyName) const{
-      if(propertyName == "accurate") return "flag";
+      if(propertyName == "accurate" || propertyName == "use opencl") return "flag";
       return "range";
     }
 
@@ -570,7 +618,7 @@ namespace icl{
       else if(propertyName == "sigma") return "[1,20]";
       else if(propertyName == "curvature-cutoff") return "[0,1000]";
       else if(propertyName == "straight-line-threshold") return "[0,180]";
-      else if(propertyName == "accurate") return "off,on";
+      else if(propertyName == "accurate" || propertyName == "use opencl") return "off,on";
       else return "undefined";
     }
 
@@ -581,6 +629,7 @@ namespace icl{
       else if(propertyName == "curvature-cutoff") return str(curvature_cutoff);
       else if(propertyName == "straight-line-threshold") return str(straight_line_thresh);
       else if(propertyName == "accurate") return accurate ? "on" : "off";
+      else if(propertyName == "use opencl") return useOpenCL ? "on" : "off";
       else return "undefined";
     }
 
@@ -612,7 +661,11 @@ namespace icl{
       }else if(propertyName == "accurate"){
         return str("Choose between using more complex sampling of the \n"
                    "boundary or using fast approximations.");
+      }else if(propertyName == "use opencl"){
+        return str("Choose whether to use opencl to compute curvature \n"
+                   "(if opencl is not supported, this has no effect");
       }
+
       return "";
     }
 
