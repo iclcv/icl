@@ -30,19 +30,19 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+#include <string>
+#include <iostream>
+
 #ifdef HAVE_IPP
 #include <ipp.h>
 #endif
-
-#include <string>
-#include <iostream>
-#include <ICLUtils/CompatMacros.h>
 
 namespace icl {
   namespace utils{
   #ifndef HAVE_IPP
     /// fallback implementation for the IppiSize struct, defined in the ippi lib
-    struct ICL_UTILS_EXP IppiSize {
+    struct ICLUtils_API IppiSize {
       // width
       int width;
       
@@ -54,11 +54,11 @@ namespace icl {
   #endif
     
     /** \cond */
-    class ICL_UTILS_EXP Size32f;
+    class Size32f;
     /** \endcond */
     
     /// Size class of the ICL
-    class ICL_UTILS_EXP Size : public IppiSize{
+    class ICLUtils_API Size : public IppiSize{
       public:
       /// null is w=0, h=0
       static const Size null;
@@ -212,11 +212,11 @@ namespace icl {
     };
   
     /// ostream operator WIDTHxHEIGHT
-    ICL_UTILS_EXP std::ostream &operator<<(std::ostream &os, const Size &s);
+    ICLUtils_API std::ostream &operator<<(std::ostream &os, const Size &s);
     
     /// istream operator parses a size from a string
     /** also called in Size::Size(const std::string&)**/
-    ICL_UTILS_EXP std::istream &operator>>(std::istream &is, Size &s);
+    ICLUtils_API std::istream &operator>>(std::istream &is, Size &s);
     
   } // namespace utils
 }// namespace icl

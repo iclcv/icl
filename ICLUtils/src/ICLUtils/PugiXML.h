@@ -47,11 +47,11 @@
 #pragma once
 
 #ifdef ICL_SYSTEM_WINDOWS
-#ifdef ICLUtils_EXPORTS
-#define PUGIXML_API __declspec(dllexport)
-#else
-#define PUGIXML_CLASS __declspec(dllimport)
-#endif
+  #ifdef ICLUtils_EXPORTS
+    #define PUGIXML_API __declspec(dllexport)
+  #else
+    #define PUGIXML_CLASS __declspec(dllimport)
+  #endif
 #endif
 
 /** \cond */

@@ -30,9 +30,9 @@
 
 #pragma once
 
+#include <ICLUtils/Macros.h>
 #include <ICLUtils/Any.h>
 #include <map>
-#include <ICLUtils/CompatMacros.h>
 
 namespace icl{
   namespace utils{
@@ -41,7 +41,7 @@ namespace icl{
     /** The ParamList is supposed to be used in function interfaces
         for passing several parameters as one argument. Usually this
         should only be used where efficiency is not compulsory */
-    struct ICL_UTILS_EXP ParamList : public std::map<std::string, Any>{
+    struct ICLUtils_API ParamList : public std::map<std::string, Any>{
   
       /// The Key type (std::string)
       typedef std::string Key;

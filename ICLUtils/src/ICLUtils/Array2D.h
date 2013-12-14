@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/SmartArray.h>
 #include <ICLUtils/Size.h>
 #include <ICLUtils/Point.h>
@@ -57,7 +58,7 @@ namespace icl{
         a very small and constant overhead
     */
     template<class T>
-    class ICL_UTILS_EXP_T Array2D{
+    class Array2D{
       
       /// current dimension
       Size m_size;
@@ -234,4 +235,3 @@ namespace icl{
   
   } // namespace utils
 }
-

@@ -30,11 +30,11 @@
 
 #pragma once
 
-#include <string>
-#include <vector>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Mutex.h>
 #include <ICLUtils/Macros.h>
-#include <ICLUtils/CompatMacros.h>
+#include <string>
+#include <vector>
 
 namespace icl{
   namespace utils{
@@ -58,7 +58,7 @@ namespace icl{
         The handleSignal() function must not exit the program. This will be
         done auomatically.
     */
-    class ICL_UTILS_EXP_T SignalHandler{
+    class ICLUtils_API SignalHandler{
       public:
       /// Create a new Signal handler with a list of signals
       /** The default parameters can be used to catch some common signals

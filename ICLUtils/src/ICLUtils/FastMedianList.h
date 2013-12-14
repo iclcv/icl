@@ -30,9 +30,9 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <string.h>
 #include <cmath>
-#include <ICLUtils/CompatMacros.h>
 
 namespace icl{
   namespace utils{
@@ -82,7 +82,7 @@ namespace icl{
         about 120.
         
     */
-    class ICL_UTILS_EXP FastMedianList{
+    class ICLUtils_API FastMedianList{
       public:
       /// Create a new fast median list with given max size
       /** t2,t3 and t4 are deprecated! */

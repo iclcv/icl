@@ -30,10 +30,10 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/BasicTypes.h>
 #include <ICLUtils/ClippedCast.h>
 #include <ICLUtils/Macros.h>
-#include <ICLUtils/CompatMacros.h>
 
 #include <algorithm>
 #include <limits>
@@ -46,7 +46,7 @@ namespace icl{
    
     /// class representing a range defined by min and max value \ingroup TYPES
     template<class Type> 
-    struct ICL_UTILS_EXP_T Range{
+    struct Range{
   
       /** \cond */
   
@@ -134,11 +134,11 @@ namespace icl{
     /** Available for all icl-Types (icl8u,icl16s, icl32s, icl32f and icl64f and
         for unsigned int */
     template<class T> 
-    ICL_UTILS_EXP std::ostream &operator<<(std::ostream &s, const Range <T> &range);
+    std::ostream &operator<<(std::ostream &s, const Range <T> &range);
   
     /// parses a range argument into a std::string
     template<class T> 
-    ICL_UTILS_EXP std::istream &operator>>(std::istream &s, Range <T> &range);
+    std::istream &operator>>(std::istream &s, Range <T> &range);
 
   
   } // namespace utils

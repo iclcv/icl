@@ -29,17 +29,18 @@
 ********************************************************************/
 #ifdef HAVE_OPENCL
 #pragma once
+
+#include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/Exception.h>
 #include <string>
 #include <sstream>
 #include <iostream>
-#include <ICLUtils/Exception.h>
-#include <ICLUtils/CompatMacros.h>
 
 using namespace std;
 namespace icl {
 	namespace utils {
 	    /// Base class for an OpenCL Exception
-    class ICL_UTILS_EXP CLException: public ICLException {
+    class ICLUtils_API CLException: public ICLException {
 		public:
 			static string getMessage(const int errorCode, const string message){
 				std::stringstream sstr;
@@ -49,23 +50,23 @@ namespace icl {
 			CLException(const std::string &msg) throw() : ICLException(msg) {}
 		};
 		/// Class for an OpenCL Exception during initialization
-    class ICL_UTILS_EXP CLInitException: public CLException {
+    class ICLUtils_API CLInitException: public CLException {
 		public:
 			CLInitException(const std::string &msg) throw() : CLException(msg) {}
 		};
 		/// Class for an OpenCL Exception during kernel compiling
-    class ICL_UTILS_EXP CLBuildException: public CLException {
+    class ICLUtils_API CLBuildException: public CLException {
 		public:
 			CLBuildException(const std::string &msg) throw() : CLException(msg) {}
 		};
 		/// Class for an OpenCL Exception associated with buffers
-    class ICL_UTILS_EXP CLBufferException: public CLException {
+    class ICLUtils_API CLBufferException: public CLException {
 		public:
 			CLBufferException(const std::string &msg) throw() : CLException(msg) {}
 		};
 
 		/// Class for an OpenCL Exception associated with kernels
-    class ICL_UTILS_EXP CLKernelException: public CLException {
+    class ICLUtils_API CLKernelException: public CLException {
 		public:
 			CLKernelException(const std::string &msg) throw() : CLException(msg) {}
 		};

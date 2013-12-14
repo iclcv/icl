@@ -30,16 +30,16 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Any.h>
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Macros.h>
-#include <ICLUtils/CompatMacros.h>
 
 namespace icl{
   namespace utils{
   
     /// Programm argument environment exception type \ingroup PA \ingroup EXCEPT
-    struct ICL_UTILS_EXP ProgArgException : public ICLException{
+    struct ICLUtils_API ProgArgException : public ICLException{
       ProgArgException(const std::string &func, const std::string &what):
       ICLException(func+":"+what){}
     };
@@ -47,10 +47,10 @@ namespace icl{
     
     /** \cond */
     // internally used programm argument data type
-    class ICL_UTILS_EXP ProgArgData{
+    class ICLUtils_API ProgArgData{
       protected:
-        friend ICL_UTILS_EXP const std::string &pa_subarg_internal(const ProgArgData &pa) throw (ProgArgException);
-        friend ICL_UTILS_EXP bool pa_defined_internal(const ProgArgData &pa) throw (ProgArgException);
+        friend ICLUtils_API const std::string &pa_subarg_internal(const ProgArgData &pa) throw (ProgArgException);
+        friend ICLUtils_API bool pa_defined_internal(const ProgArgData &pa) throw (ProgArgException);
       std::string id;
       int subargidx;
       bool danglingOnly;
@@ -66,18 +66,18 @@ namespace icl{
     
     /** \cond */
     // internal function for program argument explanation
-    ICL_UTILS_EXP void pa_explain_internal(const std::string &pa, const std::string &ex);
+    void ICLUtils_API pa_explain_internal(const std::string &pa, const std::string &ex);
     
     // internal sub-argument access function
-    ICL_UTILS_EXP const std::string &pa_subarg_internal(const ProgArgData &pa) throw (ProgArgException);
+    const ICLUtils_API std::string &pa_subarg_internal(const ProgArgData &pa) throw (ProgArgException);
   
     // another internal helper function
-    ICL_UTILS_EXP bool pa_defined_internal(const ProgArgData &pa) throw (ProgArgException);
+    bool ICLUtils_API pa_defined_internal(const ProgArgData &pa) throw (ProgArgException);
     /** \endcond */
     
     /// Programm argument utility class \ingroup PA
     /** @see icl::pa(const std::string&,unsigned int) */
-    class ICL_UTILS_EXP ProgArg : public ProgArgData{
+    class ICLUtils_API ProgArg : public ProgArgData{
       /// private constructor
       /** Use the functions icl::utils::pa(const std::string&,unsigned int) and
           icl::utils::pa(unsigned int,bool) to create an instance of this 
@@ -93,11 +93,11 @@ namespace icl{
       public:
       /** \cond */
       // undocumented friend
-      friend const ProgArg pa(const std::string &,unsigned int) throw (ProgArgException);
+      friend ICLUtils_API const ProgArg pa(const std::string &,unsigned int) throw (ProgArgException);
       // undocumented friend
-      friend const ProgArg pa(unsigned int,bool);
+      friend ICLUtils_API const ProgArg pa(unsigned int, bool);
       // yet another one
-      friend bool pa_defined_internal(const ProgArgData &pa) throw (ProgArgException);
+      friend ICLUtils_API bool pa_defined_internal(const ProgArgData &pa) throw (ProgArgException);
       /** \endcond */
       
       /// returns the count of actually given sub arguments
@@ -325,7 +325,7 @@ namespace icl{
     
     /// returns number of actually given args given \ingroup PA
     /** @see icl::utils::pa(const std::string&,unsigned int) */
-    ICL_UTILS_EXP unsigned int pa_get_count(bool danglingOnly = true);
+    ICLUtils_API unsigned int pa_get_count(bool danglingOnly = true);
   
     /// returns application name (full command line)
     /** @param fullpath if this is set to true, the complete
@@ -335,14 +335,14 @@ namespace icl{
                just the program name is returned.
       
         @see icl::utils::pa(const std::string&,unsigned int) */
-    ICL_UTILS_EXP const std::string &pa_get_progname(bool fullpath = false);
+    ICLUtils_API const std::string &pa_get_progname(bool fullpath = false);
   
     /// shows current available programm arguments \ingroup PA
-    ICL_UTILS_EXP void pa_show_usage(const std::string &msg = "");
+    ICLUtils_API void pa_show_usage(const std::string &msg = "");
     
     /** \cond */
     // utility class which allows the user to call the paex-function in a 'stacked' manner
-    struct ICL_UTILS_EXP PAEX{
+    struct ICLUtils_API PAEX{
       PAEX operator()(const std::string &pa, const std::string &ex);
     };
     /** \endcond */
@@ -458,25 +458,25 @@ namespace icl{
         mandatory arguments must have sub-arguments (which is also
         sensible if you think about it). 
     */
-    ICL_UTILS_EXP void pa_init(int n, char **ppc, const std::string &init, bool allowDanglingArgs = false);
+    ICLUtils_API void pa_init(int n, char **ppc, const std::string &init, bool allowDanglingArgs = false);
   
   
     /// shows all given program arguments \ingroup PA
-    ICL_UTILS_EXP void pa_show();
+    ICLUtils_API void pa_show();
   
     /// Sets a license text, that is used when applications are run with --version or -v \ingroup PA
     /** pasetlic has to be called before painit is called. Otherwise, only the default licese text is shown. */
-    ICL_UTILS_EXP void pa_set_license(const std::string &newLicenseText);
+    ICLUtils_API void pa_set_license(const std::string &newLicenseText);
     
     /// Sets a applications help text that is used when applications are run with --help or with unknown arguments \ingroup PA
     /** pasethelp has to be called before painit is called. */
-    ICL_UTILS_EXP void pa_set_help_text(const std::string &newHelpText);
+    ICLUtils_API void pa_set_help_text(const std::string &newHelpText);
     
     /// returns the current license text \ingroup PA
-    ICL_UTILS_EXP std::string pa_get_license();
+    ICLUtils_API std::string pa_get_license();
     
     /// returns the current help text (which is empty, if it was not set) \ingroup PA
-    ICL_UTILS_EXP std::string pa_get_help_text();
+    ICLUtils_API std::string pa_get_help_text();
   } // namespace utils
 }
 

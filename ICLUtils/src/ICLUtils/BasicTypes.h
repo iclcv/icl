@@ -30,6 +30,10 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+#include <stdint.h>
+#include <complex>
+
 #ifdef HAVE_IPP
 #include <ipp.h>
 
@@ -38,9 +42,6 @@
 #endif
 
 #endif
-
-#include <stdint.h>
-#include <complex>
 
 namespace icl {
   

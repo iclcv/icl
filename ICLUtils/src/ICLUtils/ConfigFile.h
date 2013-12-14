@@ -30,13 +30,13 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/StringUtils.h> 
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Lockable.h>
 #include <ICLUtils/SmartPtr.h>
 #include <map>
 #include <typeinfo>
-#include <ICLUtils/CompatMacros.h>
 
 /** \cond */
 namespace pugi{
@@ -48,7 +48,7 @@ namespace pugi{
 namespace icl{
   namespace utils{
     /** \cond */
-    struct ICL_UTILS_EXP XMLDocumentDelOp{ static void delete_func(pugi::xml_document *h); };
+    struct ICLUtils_API XMLDocumentDelOp{ static void delete_func(pugi::xml_document *h); };
     /** \endcond */
   
     /// Utility class for creating and reading XML-based hierarchical configuration files 
@@ -168,27 +168,27 @@ namespace icl{
         Internally data is stored in the parent classes (DataStore) hash maps to optimize
         data access. ConfigFile data key is the the '.'-concatenated identifier.
     */
-    class ICL_UTILS_EXP_T ConfigFile : public Lockable{
+    class ICLUtils_API ConfigFile : public Lockable{
   
       public:
-      friend class ConfigFileGUI;
+      friend class ICLUtils_API ConfigFileGUI;
       
       /// Internal exception type, thrown if an entry was not found
-      struct EntryNotFoundException : public ICLException{
+      struct ICLUtils_API EntryNotFoundException : public ICLException{
         EntryNotFoundException(const std::string &entryName):
         ICLException("Entry " + entryName+" could not be found!"){}
         virtual ~EntryNotFoundException() throw(){}
       };
       
       /// Internal exception type, thrown if an entry type missmatch occurs
-      struct InvalidTypeException : public ICLException{
+      struct ICLUtils_API InvalidTypeException : public ICLException{
         InvalidTypeException(const std::string &entryName, const std::string &typeName):
         ICLException("Invalid type " + typeName + " (entry " + entryName + ")"){};
         virtual ~InvalidTypeException() throw() {}
       };
   
       /// thrown if unregistered types are used
-      struct UnregisteredTypeException : public ICLException{
+      struct ICLUtils_API UnregisteredTypeException : public ICLException{
         UnregisteredTypeException(const std::string &rttiID):
         ICLException("type with RTTI ID " + rttiID + " is not registered"){}
         ~UnregisteredTypeException() throw(){}
@@ -334,7 +334,7 @@ namespace icl{
   
       /// Data- type used for the []-operator of ConfigFile instances
       /** @see Data ConfigFile::operator[](const std::string &id) */
-      class Data{
+      class ICLUtils_API Data{
         std::string id; //!< internal id (config.foo.bar)
         ConfigFile *cf; //!< parent config file
         
@@ -343,7 +343,7 @@ namespace icl{
         public:
         
         /// for tight integration with parent ConfigFile class
-        friend class ConfigFile;
+        friend class ICLUtils_API ConfigFile;
         
         /// automatic cast operator (lvalue type determines T)
         /** This automatic cast automatically detects the destination (lvalue) type an calls the
@@ -493,7 +493,7 @@ namespace icl{
   
       /// Utility Type for restriction of type values
       /** Currently key restrictions cannot be propergated to the XML structure when set*/
-      struct KeyRestriction{
+      struct ICLUtils_API KeyRestriction{
         inline KeyRestriction():
           hasRange(false),hasValues(false){}
         inline KeyRestriction(double min, double max):
@@ -522,7 +522,7 @@ namespace icl{
       const KeyRestriction *getRestriction(const std::string &id) const throw (EntryNotFoundException);
   
       /// internal utility structure for contained data
-      struct Entry{
+      struct ICLUtils_API Entry{
         std::string id;           //!< entries key (config.foo.bar....)
         std::string value;        //!< entries value as string
         std::string rttiType;     //!< entries rtti type ID
@@ -600,19 +600,19 @@ namespace icl{
       std::map<std::string,Entry> m_entries;
   
       /// ostream operator is allowed to access privat members
-      friend ICL_UTILS_EXP std::ostream &operator<<(std::ostream&, const ConfigFile&);
+      friend ICLUtils_API std::ostream &operator<<(std::ostream&, const ConfigFile&);
     };
     
     
     /// Default ostream operator to put a ConfigFile into a stream
-    ICL_UTILS_EXP std::ostream &operator<<(std::ostream &s, const ConfigFile &cf);
+    ICLUtils_API std::ostream &operator<<(std::ostream &s, const ConfigFile &cf);
   
     /** \cond */
-    template<> ICL_UTILS_EXP_T inline ConfigFile::Data &ConfigFile::Data::operator=(char * const &t)
+    template<> inline ConfigFile::Data &ConfigFile::Data::operator=(char * const &t)
     throw (UnregisteredTypeException,InvalidTypeException,EntryNotFoundException){
       return ConfigFile::Data::operator=(std::string(t));
     }
-    template<> ICL_UTILS_EXP_T inline ConfigFile::Data &ConfigFile::Data::operator=(const char * const &t)
+    template<> inline ConfigFile::Data &ConfigFile::Data::operator=(const char * const &t)
     throw (UnregisteredTypeException,InvalidTypeException,EntryNotFoundException){
       return ConfigFile::Data::operator=(std::string(t));
     }

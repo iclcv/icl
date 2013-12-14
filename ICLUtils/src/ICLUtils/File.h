@@ -30,19 +30,19 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/ShallowCopyable.h>
 #include <ICLUtils/BasicTypes.h>
 #include <string>
 #include <vector>
-#include <ICLUtils/CompatMacros.h>
 
 
 namespace icl{
   namespace utils{
     
     /** \cond */
-    class ICL_UTILS_EXP FileImpl;
-    struct ICL_UTILS_EXP FileImplDelOp { static void delete_func(FileImpl *i); };
+    class FileImpl;
+    struct ICLUtils_API FileImplDelOp { static void delete_func(FileImpl *i); };
     /** \endcond */
     
     /// Utility class for file handling (reading files is buffered) \ingroup UTILS_G
@@ -58,7 +58,7 @@ namespace icl{
         by shallow copied instances using the ICL SmartPtr class. This mechanism
         provides save shallow copies using reference counting.
     **/
-    class ICL_UTILS_EXP File : public utils::ShallowCopyable<FileImpl, FileImplDelOp>{
+    class ICLUtils_API File : public utils::ShallowCopyable<FileImpl, FileImplDelOp>{
       public:
       
       /// mode to open files

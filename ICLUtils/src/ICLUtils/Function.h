@@ -30,9 +30,9 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/SmartPtr.h>
 #include <functional>
-#include <ICLUtils/CompatMacros.h>
 
 namespace icl{
   namespace utils{
@@ -43,7 +43,7 @@ namespace icl{
     /// General Implementation for binary functions \ingroup FUNCTION
     /** @see \ref FUNCTION_SECTION */
     template<class R=void*, class A=void*, class B=void*, class C=void*>
-    struct ICL_UTILS_EXP_T FunctionImpl{
+    struct ICLUtils_API_T FunctionImpl{
       /// function interface
       virtual R operator()(A a, B b, C c) const = 0;
       virtual ~FunctionImpl(){}
@@ -52,7 +52,7 @@ namespace icl{
     /// Special Implementation for unary functions \ingroup FUNCTION
     /** @see \ref FUNCTION_SECTION */
     template<class R, class A, class B>
-    struct ICL_UTILS_EXP_T FunctionImpl<R, A, B, void*>{
+    struct ICLUtils_API_T FunctionImpl<R, A, B, void*>{
       /// function interface
       virtual R operator()(A a, B b) const = 0;
       virtual ~FunctionImpl(){}
@@ -61,16 +61,16 @@ namespace icl{
     /// Special Implementation for unary functions \ingroup FUNCTION
     /** @see \ref FUNCTION_SECTION */
     template<class R, class A>
-    struct ICL_UTILS_EXP_T FunctionImpl<R, A, void*>{
+    struct ICLUtils_API_T FunctionImpl<R, A, void*>{
       /// function interface
       virtual R operator()(A a) const = 0;
       virtual ~FunctionImpl(){}
     };
   
-    /// Special Implementation for void functions \ingroup FUNCTION
+    /// Special Implementation for void* functions \ingroup FUNCTION
     /** @see \ref FUNCTION_SECTION */
     template<class R>
-    struct ICL_UTILS_EXP_T FunctionImpl<R, void*, void*>{
+    struct ICLUtils_API_T FunctionImpl<R, void*, void*>{
       /// function interface
       virtual R operator()() const= 0;
       virtual ~FunctionImpl(){}
@@ -86,7 +86,7 @@ namespace icl{
         specialized for member functions with less parameters.
         @see \ref FUNCTION_SECTION */
     template <class Object, class R=void*, class A=void*, class B=void*, class C=void*>
-    struct ICL_UTILS_EXP_T MemberFunctionImpl : public FunctionImpl<R, A, B, C>{
+    struct ICLUtils_API_T MemberFunctionImpl : public FunctionImpl<R, A, B, C>{
       Object *obj;
       R (Object::*method)(A, B, C);
       virtual R operator()(A a,B b,C c) const { return (obj->*method)(a, b, c); }
@@ -94,21 +94,21 @@ namespace icl{
     
     /** \cond **/
     template <class Object, class R, class A, class B>
-    struct ICL_UTILS_EXP_T MemberFunctionImpl<Object, R, A, B, void*> : public FunctionImpl<R, A, B>{
+    struct ICLUtils_API_T MemberFunctionImpl<Object, R, A, B, void*> : public FunctionImpl<R, A, B>{
       Object *obj;
       R (Object::*method)(A, B);
       virtual R operator()(A a,B b) const { return (obj->*method)(a, b); }
     };
   
     template <class Object, class R, class A>
-    struct ICL_UTILS_EXP_T MemberFunctionImpl<Object, R, A, void*, void*> : public FunctionImpl<R, A>{
+    struct ICLUtils_API_T MemberFunctionImpl<Object, R, A, void*, void*> : public FunctionImpl<R, A>{
       Object *obj;
       R (Object::*method)(A);
       virtual R operator()(A a) const { return (obj->*method)(a); }
     };
     
     template <class Object, class R>
-    struct ICL_UTILS_EXP_T MemberFunctionImpl<Object, R, void*, void*, void*> : public FunctionImpl<R>{
+    struct ICLUtils_API_T MemberFunctionImpl<Object, R, void*, void*, void*> : public FunctionImpl<R>{
       Object *obj;
       R (Object::*method)();
       virtual R operator()() const { return (obj->*method)(); }
@@ -125,7 +125,7 @@ namespace icl{
         specialized for member functions with less parameters.
         @see \ref FUNCTION_SECTION */
     template <class Object, class R=void*, class A=void*, class B=void*, class C=void*>
-    struct ICL_UTILS_EXP_T ConstMemberFunctionImpl : public FunctionImpl<R, A, B, C>{
+    struct ICLUtils_API_T ConstMemberFunctionImpl : public FunctionImpl<R, A, B, C>{
       const Object *obj;
       R (Object::*method)(A, B, C) const;
       virtual R operator()(A a,B b,C c) const { return (obj->*method)(a, b, c); }
@@ -133,21 +133,21 @@ namespace icl{
     /** \cond **/
   
     template <class Object, class R, class A, class B>
-    struct ICL_UTILS_EXP_T ConstMemberFunctionImpl<Object, R, A, B, void*> : public FunctionImpl<R, A, B>{
+    struct ICLUtils_API_T ConstMemberFunctionImpl<Object, R, A, B, void*> : public FunctionImpl<R, A, B>{
       const Object *obj;
       R (Object::*method)(A, B) const;
       virtual R operator()(A a,B b) const { return (obj->*method)(a, b); }
     };
   
     template <class Object, class R, class A>
-    struct ICL_UTILS_EXP_T ConstMemberFunctionImpl<Object, R, A, void*, void*> : public FunctionImpl<R, A>{
+    struct ICLUtils_API_T ConstMemberFunctionImpl<Object, R, A, void*, void*> : public FunctionImpl<R, A>{
       const Object *obj;
       R (Object::*method)(A) const;
       virtual R operator()(A a) const { return (obj->*method)(a); }
     };
     
     template <class Object, class R>
-    struct ICL_UTILS_EXP_T ConstMemberFunctionImpl<Object, R, void*, void*, void*> : public FunctionImpl<R>{
+    struct ICLUtils_API_T ConstMemberFunctionImpl<Object, R, void*, void*, void*> : public FunctionImpl<R>{
       const Object *obj;
       R (Object::*method)() const;
       virtual R operator()() const { return (obj->*method)(); }
@@ -164,25 +164,25 @@ namespace icl{
         specialized for member functions with less parameters.
         @see \ref FUNCTION_SECTION */
     template <class Object, class R=void*, class A=void*, class B=void*, class C=void*>
-    struct ICL_UTILS_EXP_T FunctorFunctionImpl : public FunctionImpl<R, A, B, C>{
+    struct ICLUtils_API_T FunctorFunctionImpl : public FunctionImpl<R, A, B, C>{
       Object *obj;
       virtual R operator()(A a,B b, C c) const { return (*obj)(a,b,c); }
     };
     
     /** \cond **/
     template <class Object, class R, class A, class B>
-    struct ICL_UTILS_EXP_T FunctorFunctionImpl<Object, R, A, B, void*> : public FunctionImpl<R, A, B>{
+    struct ICLUtils_API_T FunctorFunctionImpl<Object, R, A, B, void*> : public FunctionImpl<R, A, B>{
       Object *obj;
       virtual R operator()(A a,B b) const { return (*obj)(a,b); }
     };
   
     template <class Object, class R, class A>
-    struct ICL_UTILS_EXP_T FunctorFunctionImpl<Object, R, A, void*, void*> : public FunctionImpl<R, A>{
+    struct ICLUtils_API_T FunctorFunctionImpl<Object, R, A, void*, void*> : public FunctionImpl<R, A>{
       Object *obj;
       virtual R operator()(A a) const { return (*obj)(a); }
     };
     template <class Object, class R>
-    struct ICL_UTILS_EXP_T FunctorFunctionImpl<Object, R, void*, void*, void*> : public FunctionImpl<R>{
+    struct ICLUtils_API_T FunctorFunctionImpl<Object, R, void*, void*, void*> : public FunctionImpl<R>{
       Object *obj;
       virtual R operator()() const { return (*obj)(); }
     };
@@ -198,25 +198,25 @@ namespace icl{
         specialized for member functions with less parameters.
         @see \ref FUNCTION_SECTION */
     template <class Object, class R=void*, class A=void*, class B=void*, class C=void*>
-    struct ICL_UTILS_EXP_T ConstFunctorFunctionImpl : public FunctionImpl<R, A, B, C>{
+    struct ICLUtils_API_T ConstFunctorFunctionImpl : public FunctionImpl<R, A, B, C>{
       const Object *obj;
       virtual R operator()(A a,B b, C c) const { return (*obj)(a,b,c); }
     };
     
     /** \cond **/
     template <class Object, class R, class A, class B>
-    struct ICL_UTILS_EXP_T ConstFunctorFunctionImpl<Object, R, A, B, void*> : public FunctionImpl<R, A, B>{
+    struct ICLUtils_API_T ConstFunctorFunctionImpl<Object, R, A, B, void*> : public FunctionImpl<R, A, B>{
       const Object *obj;
       virtual R operator()(A a,B b) const { return (*obj)(a,b); }
     };
   
     template <class Object, class R, class A>
-    struct ICL_UTILS_EXP_T ConstFunctorFunctionImpl<Object, R, A, void*, void*> : public FunctionImpl<R, A>{
+    struct ICLUtils_API_T ConstFunctorFunctionImpl<Object, R, A, void*, void*> : public FunctionImpl<R, A>{
       const Object *obj;
       virtual R operator()(A a) const { return (*obj)(a); }
     };
     template <class Object, class R>
-    struct ICL_UTILS_EXP_T ConstFunctorFunctionImpl<Object, R, void*, void*, void*> : public FunctionImpl<R>{
+    struct ICLUtils_API_T ConstFunctorFunctionImpl<Object, R, void*, void*, void*> : public FunctionImpl<R>{
       const Object *obj;
       virtual R operator()() const { return (*obj)(); }
     };
@@ -233,24 +233,24 @@ namespace icl{
         specialized for member functions with less parameters.
         @see \ref FUNCTION_SECTION */
     template <class R=void*, class A=void*, class B=void*, class C=void*>
-    struct ICL_UTILS_EXP_T GlobalFunctionImpl : public FunctionImpl<R, A, B, C>{
+    struct ICLUtils_API_T GlobalFunctionImpl : public FunctionImpl<R, A, B, C>{
       R (*global_function)(A, B, C);
       virtual R operator()(A a,B b,C c) const { return global_function(a, b,c); }
     };
     /** \cond **/
     template <class R, class A, class B>
-    struct ICL_UTILS_EXP_T GlobalFunctionImpl<R, A, B, void*> : public FunctionImpl<R, A, B>{
+    struct ICLUtils_API_T GlobalFunctionImpl<R, A, B, void*> : public FunctionImpl<R, A, B>{
       R (*global_function)(A, B);
       virtual R operator()(A a,B b) const { return global_function(a, b); }
     };
   
     template <class R, class A>
-    struct ICL_UTILS_EXP_T GlobalFunctionImpl<R, A, void*, void*> : public FunctionImpl<R, A>{
+    struct ICLUtils_API_T GlobalFunctionImpl<R, A, void*, void*> : public FunctionImpl<R, A>{
       R (*global_function)(A);
       virtual R operator()(A a) const { return global_function(a); }
     };
     template <class R>
-    struct ICL_UTILS_EXP_T GlobalFunctionImpl<R, void*, void*, void*> : public FunctionImpl<R>{
+    struct ICLUtils_API_T GlobalFunctionImpl<R, void*, void*, void*> : public FunctionImpl<R>{
       R (*global_function)();
       virtual R operator()() const { return global_function(); }
     };
@@ -280,7 +280,7 @@ namespace icl{
         
         @see \ref FUNCTION_SECTION */
     template<class R=void*, class A=void*, class B=void*, class C=void*> 
-    struct ICL_UTILS_EXP_T Function {
+    struct ICLUtils_API_T Function {
       /// Empty constructor (implementation will become null)
       Function(){}
       
@@ -313,7 +313,7 @@ namespace icl{
     };
     
     /** \cond */
-    template<class R, class A, class B> struct ICL_UTILS_EXP_T Function<R, A, B, void*> : public std::binary_function<A, B, R>{
+    template<class R, class A, class B> struct ICLUtils_API_T Function<R, A, B, void*> : public std::binary_function<A, B, R>{
       Function(){}
       Function(FunctionImpl<R,A,B> *impl):impl(impl){}
       Function(icl::utils::SmartPtr<FunctionImpl<R,A,B> >impl):impl(impl){}
@@ -324,10 +324,10 @@ namespace icl{
       R operator()(A a, B b) const { return (*impl)(a,b); }
       operator bool() const { return impl; }
       
-      operator Function<void*,A,B> () const { return (*(const Function<void*,A,B>*)(this)); }
+      operator Function<void,A,B> () const { return (*(const Function<void,A,B>*)(this)); }
     };
   
-    template<class R, class A> struct ICL_UTILS_EXP_T Function<R, A, void*> : public std::unary_function<A, R>{
+    template<class R, class A> struct ICLUtils_API_T Function<R, A, void*> : public std::unary_function<A, R>{
       Function(){}
       Function(FunctionImpl<R,A> *impl):impl(impl){}
       Function(icl::utils::SmartPtr<FunctionImpl<R,A> >impl):impl(impl){}
@@ -338,9 +338,9 @@ namespace icl{
       R operator()(A a) const { return (*impl)(a); }
       operator bool() const { return impl; }
       
-      operator Function<void*,A> () const { return (*(const Function<void*,A>*)(this)); }
+      operator Function<void,A> () const { return (*(const Function<void,A>*)(this)); }
     };
-    template<class R> struct ICL_UTILS_EXP_T Function<R, void*, void*>{
+    template<class R> struct ICLUtils_API_T Function<R, void*, void*>{
       typedef R result_type;
       Function(){}
       Function(FunctionImpl<R> *impl):impl(impl){}
@@ -353,7 +353,7 @@ namespace icl{
   
       operator bool() const { return impl; }
   
-      operator Function<void> () const { return (*(const Function<void>*)(this)); }
+      operator Function<void*> () const { return (*(const Function<void*>*)(this)); }
     };
     /** \endcond */
         
@@ -369,7 +369,7 @@ namespace icl{
         a given object instance (passed by reference) and a given binary member function
         @see \ref FUNCTION_SECTION */
     template<class Object,class R, class A, class B, class C>
-    ICL_UTILS_EXP_T Function<R, A, B, C> function(Object &obj, R(Object::*method)(A, B, C)){
+    ICLUtils_API_T Function<R, A, B, C> function(Object &obj, R(Object::*method)(A, B, C)){
       MemberFunctionImpl<Object,R,A,B,C> *impl = new MemberFunctionImpl<Object,R,A,B,C>;
       impl->obj = &obj;
       impl->method = method;
@@ -381,7 +381,7 @@ namespace icl{
         a given object instance (passed by reference) and a given binary member function
         @see \ref FUNCTION_SECTION */
     template<class Object,class R, class A, class B>
-    ICL_UTILS_EXP_T Function<R, A, B> function(Object &obj, R(Object::*method)(A, B)){
+    ICLUtils_API_T Function<R, A, B> function(Object &obj, R(Object::*method)(A, B)){
       MemberFunctionImpl<Object,R,A,B> *impl = new MemberFunctionImpl<Object,R,A,B>;
       impl->obj = &obj;
       impl->method = method;
@@ -393,7 +393,7 @@ namespace icl{
         a given object instance (passed by reference) and a given unary member function
         @see \ref FUNCTION_SECTION */
     template<class Object,class R, class A>
-    ICL_UTILS_EXP_T Function<R, A> function(Object &obj, R(Object::*method)(A)){
+    ICLUtils_API_T Function<R, A> function(Object &obj, R(Object::*method)(A)){
       MemberFunctionImpl<Object,R,A> *impl = new MemberFunctionImpl<Object,R,A>;
       impl->obj = &obj;
       impl->method = method;
@@ -406,7 +406,7 @@ namespace icl{
         member function
         @see \ref FUNCTION_SECTION */
     template<class Object,class R>
-    ICL_UTILS_EXP_T Function<R> function(Object &obj, R(Object::*method)()){
+    ICLUtils_API_T Function<R> function(Object &obj, R(Object::*method)()){
       MemberFunctionImpl<Object,R> *impl = new MemberFunctionImpl<Object,R>;
       impl->obj = &obj;
       impl->method = method;
@@ -418,7 +418,7 @@ namespace icl{
         a given object instance (passed by reference) and a given unary member function
         @see \ref FUNCTION_SECTION */
     template<class Object,class R,class A,class B,class C>
-    ICL_UTILS_EXP_T Function<R, A, B, C> function(const Object &obj, R(Object::*method)(A a, B b, C c) const){
+    ICLUtils_API_T Function<R, A, B, C> function(const Object &obj, R(Object::*method)(A a, B b, C c) const){
       ConstMemberFunctionImpl<Object,R,A,B,C> *impl = new ConstMemberFunctionImpl<Object,R,A,B,C>;
       impl->obj = &obj;
       impl->method = method;
@@ -430,7 +430,7 @@ namespace icl{
         a given object instance (passed by reference) and a given unary member function
         @see \ref FUNCTION_SECTION */
     template<class Object,class R,class A,class B>
-    ICL_UTILS_EXP_T Function<R, A, B> function(const Object &obj, R(Object::*method)(A a, B b) const){
+    ICLUtils_API_T Function<R, A, B> function(const Object &obj, R(Object::*method)(A a, B b) const){
       ConstMemberFunctionImpl<Object,R,A,B> *impl = new ConstMemberFunctionImpl<Object,R,A,B>;
       impl->obj = &obj;
       impl->method = method;
@@ -441,7 +441,7 @@ namespace icl{
         a given object instance (passed by reference) and a given unary member function
         @see \ref FUNCTION_SECTION */
     template<class Object,class R,class A>
-    ICL_UTILS_EXP_T Function<R, A> function(const Object &obj, R(Object::*method)(A a) const){
+    ICLUtils_API_T Function<R, A> function(const Object &obj, R(Object::*method)(A a) const){
       ConstMemberFunctionImpl<Object,R,A> *impl = new ConstMemberFunctionImpl<Object,R,A>;
       impl->obj = &obj;
       impl->method = method;
@@ -453,7 +453,7 @@ namespace icl{
         member function
         @see \ref FUNCTION_SECTION */
     template<class Object,class R>
-    ICL_UTILS_EXP_T Function<R> function(const Object &obj, R(Object::*method)() const){
+    ICLUtils_API_T Function<R> function(const Object &obj, R(Object::*method)() const){
       ConstMemberFunctionImpl<Object,R> *impl = new ConstMemberFunctionImpl<Object,R>;
       impl->obj = &obj;
       impl->method = method;
@@ -465,21 +465,21 @@ namespace icl{
         a given object instance (passed by reference) and a given binary member function
         @see \ref FUNCTION_SECTION */
     template<class Object,class R, class A, class B, class C>
-    ICL_UTILS_EXP_T Function<R, A, B, C> function(Object *obj, R(Object::*method)(A, B, C)){ return function<Object, R, A, B, C>(*obj, method); }
+    ICLUtils_API_T Function<R, A, B, C> function(Object *obj, R(Object::*method)(A, B, C)){ return function<Object, R, A, B, C>(*obj, method); }
   
     /// Create Function instances from member functions \ingroup FUNCTION
     /** This version of function allows to create a Function instance from 
         a given object instance (passed by reference) and a given binary member function
         @see \ref FUNCTION_SECTION */
     template<class Object,class R, class A, class B>
-    ICL_UTILS_EXP_T Function<R, A, B> function(Object *obj, R(Object::*method)(A, B)){ return function<Object, R, A, B>(*obj, method); }
+    ICLUtils_API_T Function<R, A, B> function(Object *obj, R(Object::*method)(A, B)){ return function<Object, R, A, B>(*obj, method); }
     
     /// create Function instances from member function \ingroup FUNCTION
     /** This version of function allows to create a Function instance from 
         a given object instance (passed by reference) and a given unary member function
         @see \ref FUNCTION_SECTION */
     template<class Object,class R, class A>
-    ICL_UTILS_EXP_T Function<R, A> function(Object *obj, R(Object::*method)(A)){ return function<Object, R, A>(*obj, method); }
+    ICLUtils_API_T Function<R, A> function(Object *obj, R(Object::*method)(A)){ return function<Object, R, A>(*obj, method); }
     
     /// create Function instances from member function \ingroup FUNCTION
     /** This version of function allows to create a Function instance from 
@@ -487,28 +487,28 @@ namespace icl{
         member function
         @see \ref FUNCTION_SECTION */
     template<class Object,class R>
-    ICL_UTILS_EXP_T Function<R> function(Object *obj, R(Object::*method)()){ return function<Object, R>(*obj, method); }
+    ICLUtils_API_T Function<R> function(Object *obj, R(Object::*method)()){ return function<Object, R>(*obj, method); }
   
     /// Create Function instances from const member functions \ingroup FUNCTION
     /** This version of function allows to create a Function instance from 
         a given object instance (passed by reference) and a given binary member function
         @see \ref FUNCTION_SECTION */ 
     template<class Object,class R, class A, class B, class C>
-    ICL_UTILS_EXP_T Function<R, A, B, C> function(const Object *obj, R(Object::*method)(A, B, C) const){ return function<Object, R, A, B, C>(*obj, method); }
+    ICLUtils_API_T Function<R, A, B, C> function(const Object *obj, R(Object::*method)(A, B, C) const){ return function<Object, R, A, B, C>(*obj, method); }
    
     /// Create Function instances from const member functions \ingroup FUNCTION
     /** This version of function allows to create a Function instance from 
         a given object instance (passed by reference) and a given binary member function
         @see \ref FUNCTION_SECTION */ 
     template<class Object,class R, class A, class B>
-    ICL_UTILS_EXP_T Function<R, A, B> function(const Object *obj, R(Object::*method)(A, B) const){ return function<Object, R, A, B>(*obj, method); }
+    ICLUtils_API_T Function<R, A, B> function(const Object *obj, R(Object::*method)(A, B) const){ return function<Object, R, A, B>(*obj, method); }
   
     /// create Function instances from const member function \ingroup FUNCTION
     /** This version of function allows to create a Function instance from 
         a given object instance (passed by reference) and a given unary member function
         @see \ref FUNCTION_SECTION */
     template<class Object,class R, class A>
-    ICL_UTILS_EXP_T Function<R, A> function(const Object *obj, R(Object::*method)(A) const){ return function<Object, R, A>(*obj, method); }
+    ICLUtils_API_T Function<R, A> function(const Object *obj, R(Object::*method)(A) const){ return function<Object, R, A>(*obj, method); }
     
     /// create Function instances from const member function \ingroup FUNCTION
     /** This version of function allows to create a Function instance from 
@@ -516,7 +516,7 @@ namespace icl{
         member function
         @see \ref FUNCTION_SECTION */
     template<class Object,class R>
-    ICL_UTILS_EXP_T Function<R> function(const Object *obj, R(Object::*method)() const){ return function<Object, R>(*obj, method); }
+    ICLUtils_API_T Function<R> function(const Object *obj, R(Object::*method)() const){ return function<Object, R>(*obj, method); }
   
     
     //////////////////////////////////////////////////////////
@@ -525,7 +525,7 @@ namespace icl{
     
     /// Empty utility template that can be used to select a special functor \ingroup FUNCTION
     /** @see \ref FUNCTION_SECTION */
-    template <class R = void*, class A = void*, class B = void*, class C = void*> struct ICL_UTILS_EXP_T SelectFunctor{};
+    template <class R = void*, class A = void*, class B = void*, class C = void*> struct ICLUtils_API_T SelectFunctor{};
     
     /// create Function instances from given object-functor \ingroup FUNCTION
     /** In constrast to functions, a pointer to an objects overloaded functor can only
@@ -533,7 +533,7 @@ namespace icl{
         to pick a functor from a given object 
         @see \ref FUNCTION_SECTION */
     template<class Object,class R, class A, class B, class C>
-    ICL_UTILS_EXP_T Function<R, A, B, C> function(Object &obj, SelectFunctor<R, A, B, C>){
+    ICLUtils_API_T Function<R, A, B, C> function(Object &obj, SelectFunctor<R, A, B, C>){
       FunctorFunctionImpl<Object,R,A,B,C>  *impl = new FunctorFunctionImpl<Object,R,A,B,C>;
       impl->obj = &obj;
       return Function<R,A,B,C>(impl);
@@ -545,7 +545,7 @@ namespace icl{
         to pick a functor from a given object 
         @see \ref FUNCTION_SECTION */
     template<class Object,class R, class A, class B, class C>
-    ICL_UTILS_EXP_T Function<R, A, B> function(const Object &obj, SelectFunctor<R, A, B, C>){
+    ICLUtils_API_T Function<R, A, B> function(const Object &obj, SelectFunctor<R, A, B, C>){
       ConstFunctorFunctionImpl<Object,R,A,B,C>  *impl = new ConstFunctorFunctionImpl<Object,R,A,B,C>;
       impl->obj = &obj;
       return Function<R,A,B,C>(impl);
@@ -554,14 +554,14 @@ namespace icl{
     /// shortcut create Function to wrap an objects parameter-less function operator \ingroup FUNCTION
     /** @see \ref FUNCTION_SECTION */
     template<class Object>
-    ICL_UTILS_EXP_T Function<> function(Object &obj){
+    ICLUtils_API_T Function<> function(Object &obj){
       return function(obj,SelectFunctor<void*,void*,void*,void*>());
     } 
   
     /// shortcut create Function to wrap a const objects parameter-less function operator \ingroup FUNCTION
     /** @see \ref FUNCTION_SECTION */
     template<class Object>
-    ICL_UTILS_EXP_T Function<> function(const Object &obj){
+    ICLUtils_API_T Function<> function(const Object &obj){
       return function(obj,SelectFunctor<void*,void*,void*,void*>());
     } 
   
@@ -571,7 +571,7 @@ namespace icl{
         to pick a functor from a given object 
         @see \ref FUNCTION_SECTION */
     template<class Object,class R, class A, class B, class C>
-    ICL_UTILS_EXP_T Function<R, A, B, C> function(Object *obj, SelectFunctor<R, A, B, C> selector){ return function<Object, R, A, B, C>(*obj, selector); }
+    ICLUtils_API_T Function<R, A, B, C> function(Object *obj, SelectFunctor<R, A, B, C> selector){ return function<Object, R, A, B, C>(*obj, selector); }
     
    /// create Function instances from given object-functor (const version) \ingroup FUNCTION
     /** In constrast to functions, a pointer to an objects overloaded functor can only
@@ -579,7 +579,7 @@ namespace icl{
         to pick a functor from a given object 
         @see \ref FUNCTION_SECTION */
     template<class Object,class R, class A, class B, class C>
-    ICL_UTILS_EXP_T Function<R, A, B, C> function(const Object *obj, SelectFunctor<R, A, B, C> selector){ return function<Object, R, A, B, C>(*obj, selector); }
+    ICLUtils_API_T Function<R, A, B, C> function(const Object *obj, SelectFunctor<R, A, B, C> selector){ return function<Object, R, A, B, C>(*obj, selector); }
     
     
     //////////////////////////////////////////////////////////
@@ -591,7 +591,7 @@ namespace icl{
         detect the parameter types (like std::make_pair)
         @see \ref FUNCTION_SECTION */
     template<class R, class A, class B, class C>
-    ICL_UTILS_EXP_T Function<R, A, B, C> function(R(*global_function)(A a, B b, C c)){
+    ICLUtils_API_T Function<R, A, B, C> function(R(*global_function)(A a, B b, C c)){
       return Function<R,A,B,C>(global_function);
     } 
     
@@ -600,7 +600,7 @@ namespace icl{
         detect the parameter types (like std::make_pair)
         @see \ref FUNCTION_SECTION */
     template<class R, class A, class B>
-    ICL_UTILS_EXP_T Function<R, A, B> function(R(*global_function)(A a, B b)){
+    ICLUtils_API_T Function<R, A, B> function(R(*global_function)(A a, B b)){
       return Function<R,A,B>(global_function);
     } 
   
@@ -610,7 +610,7 @@ namespace icl{
         detect the parameter types (like std::make_pair)
         @see \ref FUNCTION_SECTION */
     template<class R, class A>
-    ICL_UTILS_EXP_T Function<R, A> function(R(*global_function)(A a)){
+    ICLUtils_API_T Function<R, A> function(R(*global_function)(A a)){
       return Function<R,A>(global_function);
     } 
   
@@ -619,7 +619,7 @@ namespace icl{
         detect the parameter types (like std::make_pair)
         @see \ref FUNCTION_SECTION */
     template<class R>
-    ICL_UTILS_EXP_T Function<R> function(R(*global_function)()){
+    ICLUtils_API_T Function<R> function(R(*global_function)()){
       return Function<R>(global_function);
     } 
   
@@ -627,7 +627,7 @@ namespace icl{
     /// Function creator function from given FunctionImpl instance \ingroup FUNCTION
     /** @see \ref FUNCTION_SECTION */
     template<class R, class A, class B, class C>
-    ICL_UTILS_EXP_T Function<R, A, B, C> function(FunctionImpl<R, A, B, C> *impl){
+    ICLUtils_API_T Function<R, A, B, C> function(FunctionImpl<R, A, B, C> *impl){
       return Function<R,A,B,C>(impl);
     }
   } // namespace utils

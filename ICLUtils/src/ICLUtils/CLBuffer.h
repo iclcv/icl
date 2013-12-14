@@ -30,9 +30,9 @@
 #ifdef HAVE_OPENCL
 #pragma once
 
-#include <string>
-#include <ICLUtils/CLException.h>
 #include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/CLException.h>
+#include <string>
 
 /** \cond */
 namespace cl{
@@ -48,7 +48,7 @@ namespace icl {
     /// Wrapper for an OpenCL Buffer
     /** Valid CLBuffer instances can only be created by a CLProgram instance.
         @see CLProgram for more details */
-    class ICL_UTILS_EXP CLBuffer{
+    class ICLUtils_API CLBuffer{
       struct Impl; //!< internal hidden implementation type
       Impl *impl;  //!< internal implemetation
       
@@ -61,8 +61,8 @@ namespace icl {
       const cl::Buffer &getBuffer() const;
 
     public:
-      friend class CLProgram; //!< for tight integration with CLProgram instances
-      friend class CLKernel;  //!< for tight integration with CLKernel instances
+      friend class ICLUtils_API CLProgram; //!< for tight integration with CLProgram instances
+      friend class ICLUtils_API CLKernel;  //!< for tight integration with CLKernel instances
 
       /// default constructor (creates null instance)
       CLBuffer();

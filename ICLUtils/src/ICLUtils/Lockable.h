@@ -30,15 +30,15 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Mutex.h>
 #include <ICLUtils/UncopiedInstance.h>
-#include <ICLUtils/CompatMacros.h>
 
 namespace icl{
   namespace utils{
   
     /// Interface for objects, that can be locked using an internal mutex
-    class ICL_UTILS_EXP Lockable{
+    class ICLUtils_API Lockable{
       
       /// wrapped mutex variable
       Mutex *m_mutex;

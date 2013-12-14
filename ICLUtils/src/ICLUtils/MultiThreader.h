@@ -30,18 +30,18 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Semaphore.h>
 #include <ICLUtils/Mutex.h>
 #include <ICLUtils/ShallowCopyable.h>
 #include <vector>
-#include <ICLUtils/CompatMacros.h>
 
 namespace icl{
   namespace utils{
   
     /** \cond */
-    class ICL_UTILS_EXP MultiThreaderImpl;
-    class ICL_UTILS_EXP MultiThreaderImplDelOp{
+    class ICLUtils_API MultiThreaderImpl;
+    class ICLUtils_API MultiThreaderImplDelOp{
       public: static void delete_func(MultiThreaderImpl *impl);
     };
     /** \endcond */
@@ -158,11 +158,11 @@ namespace icl{
         ICLFilter package, which provides a top level interface for parallelizing
         unary operators (class interface UnaryOp)
     */
-    class ICL_UTILS_EXP MultiThreader : public ShallowCopyable<MultiThreaderImpl,MultiThreaderImplDelOp>{
+    class ICLUtils_API MultiThreader : public ShallowCopyable<MultiThreaderImpl,MultiThreaderImplDelOp>{
       public:
       
       /// plugin class for work packages performed parallel
-      class Work{
+        class ICLUtils_API Work{
         public:
         /// virtual destructor doing nothing
         virtual ~Work(){}

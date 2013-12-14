@@ -30,17 +30,17 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/BasicTypes.h>
+#include <ICLUtils/Exception.h>
+#include <ICLUtils/Time.h>
+
 #include <string>
 #include <vector>
 #include <algorithm>
 #include <iterator>
 #include <sstream>
 #include <iostream>
-
-#include <ICLUtils/BasicTypes.h>
-#include <ICLUtils/Exception.h>
-#include <ICLUtils/Time.h>
-#include <ICLUtils/CompatMacros.h>
 
 namespace icl{
   namespace utils{
@@ -86,49 +86,49 @@ namespace icl{
   
     
     /// inplace lower case conversion \ingroup STRUTILS
-    ICL_UTILS_EXP std::string &toLowerI(std::string &s);
+    ICLUtils_API std::string &toLowerI(std::string &s);
     
     /// inplace upper case conversion \ingroup STRUTILS
-    ICL_UTILS_EXP std::string &toUpperI(std::string &s);
+    ICLUtils_API std::string &toUpperI(std::string &s);
   
     /// lower case conversion \ingroup STRUTILS
-    ICL_UTILS_EXP std::string toLower(const std::string &s);
+    ICLUtils_API std::string toLower(const std::string &s);
     
     /// upper case conversion \ingroup STRUTILS
-    ICL_UTILS_EXP std::string toUpper(const std::string &s);
+    ICLUtils_API std::string toUpper(const std::string &s);
   
     /// tokenizes a string with given delimiters (internally using a temporary StrTok instance) \ingroup STRUTILS
-    ICL_UTILS_EXP std::vector<std::string> tok(const std::string &s, const std::string &delims = " ",
+    ICLUtils_API std::vector<std::string> tok(const std::string &s, const std::string &delims = " ",
                                  bool singleCharDelims=true, char escapeChar='\0');
     
     /// tokenize a string with given delimiters into a result vector (optimized) \ingroup STRUTILS
-    ICL_UTILS_EXP std::vector<std::string> &tok(const std::string &s, const std::string &delim, std::vector<std::string> &dst,
+    ICLUtils_API std::vector<std::string> &tok(const std::string &s, const std::string &delim, std::vector<std::string> &dst,
                                   bool singleCharDelims=true, char escapeChar='\0');
   
     /// concatinates at string-vector to a single string \ingroup STRUTILS
-    ICL_UTILS_EXP std::string cat(const std::vector<std::string> &v);
+    ICLUtils_API std::string cat(const std::vector<std::string> &v);
     
     /// creates a string from a given integer \ingroup STRUTILS
     /** @param i to be converted integer value
         @param format format string as %d or %8d 
         @param buf optinal dest buffer (used if not NULL)
     */
-    ICL_UTILS_EXP std::string toStr(int i, const char* format, char *buf = 0);
+    ICLUtils_API std::string toStr(int i, const char* format, char *buf = 0);
     
     /// creates a string from a given double/float \ingroup STRUTILS
     /** @param d to be converted double/float value
         @param format format string as %ff or %3.5f 
         @param buf optinal dest buffer (used if not NULL)
     */
-    ICL_UTILS_EXP std::string toStr(double d, const char* format, char *buf = 0);
+    ICLUtils_API std::string toStr(double d, const char* format, char *buf = 0);
     
     /// create a string from given integer using format string "%d" \ingroup STRUTILS
     /** @see toStr(int,const char*,char*)*/
-    ICL_UTILS_EXP std::string toStr(int i, char *buf = 0);
+    ICLUtils_API std::string toStr(int i, char *buf = 0);
     
     /// create a string from given float using format string "%f" \ingroup STRUTILS
     /** @see toStr(double,const char*,char*)*/
-    ICL_UTILS_EXP std::string toStr(double d, char *buf = 0);
+    ICLUtils_API std::string toStr(double d, char *buf = 0);
   
     
     /// convert a data type into a string using an std::ostringstream instance \ingroup STRUTILS
@@ -197,10 +197,10 @@ namespace icl{
 
     /** \cond */
     // we use this support functions here to avoid massive header code blow!
-    ICL_UTILS_EXP icl8u parse_icl8u(const std::string &s);
-    ICL_UTILS_EXP icl32f parse_icl32f(const std::string &s);
-    ICL_UTILS_EXP icl64f parse_icl64f(const std::string &s);
-    ICL_UTILS_EXP bool parse_bool(const std::string &s);
+    ICLUtils_API icl8u parse_icl8u(const std::string &s);
+    ICLUtils_API icl32f parse_icl32f(const std::string &s);
+    ICLUtils_API icl64f parse_icl64f(const std::string &s);
+    ICLUtils_API bool parse_bool(const std::string &s);
   
     template<>
     inline icl8u parse<icl8u>(const std::string &s){
@@ -227,19 +227,19 @@ namespace icl{
   
     
     /// cast a string to an icl8u (parse) \ingroup STRUTILS
-    ICL_UTILS_EXP icl8u to8u(const std::string &s);
+    ICLUtils_API icl8u to8u(const std::string &s);
   
     /// cast a string to an icl16s (parse) \ingroup STRUTILS
-    ICL_UTILS_EXP icl16s to16s(const std::string &s);
+    ICLUtils_API icl16s to16s(const std::string &s);
   
     /// cast a string to an icl32ss (parse) \ingroup STRUTILS
-    ICL_UTILS_EXP icl32s to32s(const std::string &s);
+    ICLUtils_API icl32s to32s(const std::string &s);
   
     /// cast a string to an icl32f (parse) \ingroup STRUTILS
-    ICL_UTILS_EXP icl32f to32f(const std::string &s);
+    ICLUtils_API icl32f to32f(const std::string &s);
   
     /// cast a string to an icl64f (parse) \ingroup STRUTILS
-    ICL_UTILS_EXP icl64f to64f(const std::string &s);
+    ICLUtils_API icl64f to64f(const std::string &s);
     
     /// parse a vector of strings into a vector of T's \ingroup STRUTILS
     template<class T>
@@ -266,10 +266,10 @@ namespace icl{
     
     /// Utility structure for matching results \ingroup STRUTILS
     /** @see icl::match for more details */
-    struct ICL_UTILS_EXP MatchResult{
+    struct ICLUtils_API MatchResult{
       bool matched; //!< was the match successful 
       
-      struct Match{ 
+      struct ICLUtils_API Match{
         int begin;
         int end; 
       };
@@ -289,22 +289,22 @@ namespace icl{
                                 the whole pattern match is submatches[0] in the resulting MatchResult
                                 if numSubMatches is at least 1 
         */
-    ICL_UTILS_EXP MatchResult match(const std::string &text, const std::string &regex, int numSubMatches = 0)
+    ICLUtils_API MatchResult match(const std::string &text, const std::string &regex, int numSubMatches = 0)
       throw (InvalidRegularExpressionException);
     
     
     /// converts a Time::value_type (long int) into a string
-    ICL_UTILS_EXP std::string time2str(Time::value_type x);
+    ICLUtils_API std::string time2str(Time::value_type x);
     
     /// crops trailing whitespaces of a string
-    ICL_UTILS_EXP std::string skipWhitespaces(const std::string &s);
+    ICLUtils_API std::string skipWhitespaces(const std::string &s);
       
     
     /// returns whether a given string ends with a given suffix
-    ICL_UTILS_EXP bool endsWith(const std::string &s, const std::string &suffix);
+    ICLUtils_API bool endsWith(const std::string &s, const std::string &suffix);
     
     /// returns whether a given string begins with a given prefix
-    ICL_UTILS_EXP bool startsWith(const std::string &s, const std::string &prefix);
+    ICLUtils_API bool startsWith(const std::string &s, const std::string &prefix);
     
     /// analyses a file pattern with hash-characters
     /** This function is e.g. used by the FilennameGenerator to extract a patterns hash count
@@ -313,7 +313,7 @@ namespace icl{
         hashes and the position in the string where the suffix begins. E.g. if the pattern is
         "image_##.ppm.gz", the hash-count is 2 and the suffix-pos becomes 8.
         **/
-    ICL_UTILS_EXP void analyseHashes(const std::string &sFileName, unsigned int& nHashes, std::string::size_type& iPostfixPos);
+    ICLUtils_API void analyseHashes(const std::string &sFileName, unsigned int& nHashes, std::string::size_type& iPostfixPos);
     
   } // namespace utils
 }

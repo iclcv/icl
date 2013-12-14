@@ -30,15 +30,15 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Time.h>
 #include <deque>
 #include <string>
-#include <ICLUtils/CompatMacros.h>
 
 namespace icl{
   namespace utils{
     ///Utility clas for online FPS estimation \ingroup TIME
-    class ICL_UTILS_EXP FPSEstimator{
+    class ICLUtils_API FPSEstimator{
       public:
   
       ///Constructor

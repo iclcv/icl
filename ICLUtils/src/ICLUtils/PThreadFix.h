@@ -33,13 +33,13 @@
 
 #if 0
 #if   defined(HAVE_IPP) || defined(HAVE_MKL)
-#include <ICLUtils/Timer.h>
 #include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/Timer.h>
 
 namespace icl{
   namespace utils{
     static icl::Timer ICL_STATIC_FIX_TO_AVOID_UNDEFINED_REFERENCE_TO_PTHREAD_ATFORK;
-    struct ICL_UTILS_EXP ICL_PThreadAtForkFix{
+    struct ICLUtils_API ICL_PThreadAtForkFix{
       ICL_PThreadAtForkFix();
       static ICL_PThreadAtForkFix fix;
     };

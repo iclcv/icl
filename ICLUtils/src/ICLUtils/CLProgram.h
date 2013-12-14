@@ -32,13 +32,13 @@
 
 #ifdef HAVE_OPENCL
 
-#include <string.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/CLBuffer.h>
 #include <ICLUtils/CLKernel.h>
 #include <ICLUtils/CLImage2D.h>
-#include <fstream>
 #include <ICLUtils/CLException.h>
-#include <ICLUtils/CompatMacros.h>
+#include <string.h>
+#include <fstream>
 
 namespace icl {
   namespace utils {
@@ -253,7 +253,7 @@ namespace icl {
         }
         \endcode
         **/
-    class ICL_UTILS_EXp CLProgram {
+    class ICLUtils_API CLProgram {
       struct Impl;
       Impl *impl;
       

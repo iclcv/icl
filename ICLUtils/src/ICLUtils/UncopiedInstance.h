@@ -69,7 +69,7 @@ namespace icl{
         \endcode
     */
     template<class T>
-    class ICL_UTILS_EXP_T UncopiedInstance : public T{
+    class UncopiedInstance : public T{
       public:
       
       /// copy from parent constructor

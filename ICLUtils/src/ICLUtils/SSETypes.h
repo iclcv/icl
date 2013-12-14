@@ -30,8 +30,27 @@
 
 #pragma once
 
-#include <ICLUtils/BasicTypes.h>
+#ifdef USE_SSE
+  #ifdef __SSE2__
+    #include "emmintrin.h"
+    #define __ICL_SSE2__
+    #define ICL_SSE2
+    #define HAVE_SSE2
+    #ifdef __SSE3__
+      #include "pmmintrin.h"
+      #define __ICL_SSE3__
+      #define ICL_SSE3
+      #define HAVE_SSE3
+      #if defined __SSSE3__
+        #include "tmmintrin.h"
+        #define HAVE_SSSE3
+      #endif
+    #endif
+  #endif
+#endif
+
 #include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/BasicTypes.h>
 
 namespace icl{
   namespace utils{

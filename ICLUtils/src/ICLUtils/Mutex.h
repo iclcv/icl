@@ -30,9 +30,9 @@
 
 #pragma once
 
-#include <pthread.h>
-#include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/Uncopyable.h>
+#include <pthread.h>
 
 namespace icl{
   namespace utils{
@@ -51,7 +51,7 @@ namespace icl{
         - unlocked (pthread_mutex_unlock)
         - and destroyed (Destructor)-> (pthread_mutex_destroy)
     **/
-    class ICL_UTILS_EXP Mutex : public Uncopyable{
+    class ICLUtils_API Mutex : public Uncopyable{
       public:
   
       /// This enum holds available mutex types.
@@ -117,7 +117,7 @@ namespace icl{
       }
       
       /// Locks a mutex on the stack (mutex is unlocked when the stack's section is released
-      class ICL_UTILS_EXP Locker : public Uncopyable{
+      class ICLUtils_API Locker : public Uncopyable{
         public:
         /// Locks the given mutex until the section is leaved
         Locker(Mutex *m);

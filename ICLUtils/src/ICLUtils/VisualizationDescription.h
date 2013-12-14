@@ -30,10 +30,10 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Any.h>
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/Rect32f.h>
-#include <ICLUtils/CompatMacros.h>
 
 namespace icl{
   namespace utils{
@@ -68,7 +68,7 @@ namespace icl{
           - o: little circles
           - .: point
     */
-    class ICL_UTILS_EXP_T VisualizationDescription{
+    class VisualizationDescription{
       public:
       
       /// Single part of the the visualization pipeline

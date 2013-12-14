@@ -42,7 +42,7 @@ namespace icl{
         (w can also be called h)
     */
     template<class T,unsigned int DIM>
-    struct ICL_UTILS_EXP_T FixedArray{
+    struct FixedArray{
       T m_data[DIM];
       
       /// index access operator
@@ -54,7 +54,7 @@ namespace icl{
     
     /// Specialization for 1D-vectors providing a value x
     template<class T>
-    struct ICL_UTILS_EXP_T FixedArray<T, 1u>{
+    struct FixedArray<T, 1u>{
       union{
         T m_data[1];
         T x;
@@ -80,7 +80,7 @@ namespace icl{
 
     /// Specialization for 2D-matrics providing direct access to values x, y
     template<class T>
-    struct ICL_UTILS_EXP_T FixedArray<T, 2u>{
+    struct FixedArray<T, 2u>{
       union{
         T m_data[2];
         struct { T x; T y; };
@@ -102,7 +102,7 @@ namespace icl{
 
     /// Specialization for 3D-matrics providing direct access to values x, y, z
     template<class T>
-    struct ICL_UTILS_EXP_T FixedArray<T, 3u>{
+    struct FixedArray<T, 3u>{
 
       /// empty constructor (leaving data uninitialized)
       FixedArray(){}
@@ -123,7 +123,7 @@ namespace icl{
 
     /// Specialization for 4D-matrics providing direct access to values x, y, z and h
     template<class T>
-    struct ICL_UTILS_EXP_T FixedArray<T, 4u>{
+    struct FixedArray<T, 4u>{
 
       /// empty constructor (leaving data uninitialized)
       FixedArray(){}

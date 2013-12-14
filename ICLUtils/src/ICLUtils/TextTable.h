@@ -30,9 +30,9 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Size.h>
-#include <ICLUtils/CompatMacros.h>
 
 namespace icl{
   namespace utils{
@@ -82,7 +82,7 @@ namespace icl{
 
       \endcode
     */
-    class ICL_UTILS_EXP TextTable{
+    class ICLUtils_API TextTable{
       std::vector<std::string> m_texts; //!< internal text data
       Size m_size;  //!< current size
       int m_maxCellWidth; //!< current maximum cell width for serialization
@@ -126,13 +126,13 @@ namespace icl{
       inline const std::vector<std::string> &getData() const { return m_texts; }
 
       /// Utility class that is used, to assign a table row at once
-      class RowAssigner{
+      class ICLUtils_API RowAssigner{
         TextTable &t; //!< parent TextTable 
         int row;      //!< parent
         inline RowAssigner(TextTable &t, int row):t(t),row(row){}
 
         /// grant instantiation access to the parent TextTable class
-        friend class TextTable;
+        friend class ICLUtils_API TextTable;
 
         public:
         /// assigns a standard vector of strings (each element is put into a single column)

@@ -30,12 +30,12 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/Mutex.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/Function.h>
 #include <iostream>
-#include <ICLUtils/CompatMacros.h>
 
 namespace icl{
   namespace utils{
@@ -61,7 +61,7 @@ namespace icl{
         an icl::Function instance that is then called whenever a new set of 
         data is available.
     */
-    class ICL_UTILS_EXP ProcessMonitor : protected Thread, public Uncopyable{
+    class ICLUtils_API ProcessMonitor : protected Thread, public Uncopyable{
       /// internal data structure (pimpl)
       struct Data;
       
@@ -71,7 +71,7 @@ namespace icl{
       public:
       
       /// Utility struct, that is used to pass available information at once
-      struct Info{
+      struct ICLUtils_API Info{
         int pid;            // current process ID
         int numThreads;     // number of threads of the current process
         float cpuUsage;     // percent 0-numCPUs*100
@@ -113,7 +113,7 @@ namespace icl{
     };
   
     /// overloaded ostream operator for the ProcessMonitor's Info data type
-    ICL_UTILS_EXP std::ostream &operator<<(std::ostream &s, const ProcessMonitor::Info &info);
+    ICLUtils_API std::ostream &operator<<(std::ostream &s, const ProcessMonitor::Info &info);
   } // namespace utils
 }
 

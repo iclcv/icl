@@ -30,8 +30,8 @@
 
 #pragma once
 
-#include <ICLUtils/SmartPtrBase.h>
 #include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/SmartPtrBase.h>
 
 namespace icl{
   namespace utils{
@@ -40,7 +40,7 @@ namespace icl{
     /** If the internal reference counter becomes 0, the contained
         data pointer is release using <tt>delete []</tt>*/
     template<class T>
-    struct ICL_UTILS_EXP_T SmartArray : public SmartPtrBase<T, ArrayDelOp>{
+    struct SmartArray : public SmartPtrBase<T, ArrayDelOp>{
       // type definition for the parent class
       typedef SmartPtrBase<T,ArrayDelOp> super;
       /// creates a null pointer

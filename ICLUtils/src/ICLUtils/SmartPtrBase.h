@@ -30,23 +30,23 @@
 
 #pragma once
 
-#include <cstdlib>
 #include <ICLUtils/Macros.h>
+#include <cstdlib>
 
 namespace icl{
   namespace utils{
     
     /// Pure Interface class for DelOps \ingroup UTILS
-    class ICL_UTILS_EXP DelOpBase { };
+    class DelOpBase { };
     
     /// Pointer delete operation class for the SmartPtr class \ingroup UTILS
-    struct ICL_UTILS_EXP_T PointerDelOp : public DelOpBase{ template<class T> static void delete_func(T *t){ delete t; } };
+    struct PointerDelOp : public DelOpBase{ template<class T> static void delete_func(T *t){ delete t; } };
   
     /// Array delete operation class for the SmartPtr class \ingroup UTILS
-    struct ICL_UTILS_EXP_T ArrayDelOp : public DelOpBase{ template<class T>  static void delete_func(T *t){ delete[] t; } };
+    struct ArrayDelOp : public DelOpBase{ template<class T>  static void delete_func(T *t){ delete[] t; } };
   
     /// C-Style delete operation class for the SmartPtr class \ingroup UTILS
-    struct ICL_UTILS_EXP FreeDelOp : public DelOpBase{ static void delete_func(void *v){ free(v); } };
+    struct ICLUtils_API FreeDelOp : public DelOpBase{ static void delete_func(void *v){ free(v); } };
     
     /// Base class for reference counting smart-pointers  \ingroup UTILS
     /** \section Gen General Information
@@ -73,7 +73,7 @@ namespace icl{
         used to care about the deletion of the managed data segment.
     */
     template<class T, class delOp = ArrayDelOp > 
-    class ICL_UTILS_EXP_T SmartPtrBase{
+    class SmartPtrBase{
       protected:
       T   *e; /**< corresponding data element */
       int *c; /**< reference counters */

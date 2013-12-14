@@ -30,11 +30,11 @@
 
 #pragma once
 
+#include <ICLUtils/Macros.h>
 #include <ICLUtils/Point.h>
 #include <ICLUtils/Size.h>
 #include <stdio.h>
 #include <algorithm>
-#include <ICLUtils/CompatMacros.h>
 #ifdef HAVE_IPP
 #include <ipp.h>
 #endif
@@ -45,7 +45,7 @@ namespace icl {
     
   #ifndef HAVE_IPP
     /// fallback implementation for the IppiRect struct, defined in the ippi lib \ingroup TYPES
-    struct ICL_UTILS_EXP IppiRect {
+    struct ICLUtils_API IppiRect {
   
       /// xpos of upper left corner
       int x;
@@ -89,10 +89,10 @@ namespace icl {
     */
   
     /** \cond */
-    class ICL_UTILS_EXP Rect32f;
+    class Rect32f;
     /** \endcond*/
     
-    class ICL_UTILS_EXP Rect : public IppiRect{
+    class ICLUtils_API Rect : public IppiRect{
       public:
       
       /// null Rect is w=0, h=0, x=0, y=0
@@ -215,30 +215,15 @@ namespace icl {
       }
       /// returns width*height
       int getDim() const {return width*height;}
-  
-#ifdef ICL_SYSTEM_WINDOWS
+
       /// intersection of two Rects
       Rect operator&(const Rect &r) const {
-        int tx = (x > r.x) ? x : r.x;
-        int ty = (y > r.y) ? y : r.y;
-        Point ul(tx, ty);
-        tx = (right() < r.right()) ? right() : r.right();
-        ty = (bottom() < r.bottom()) ? bottom() : r.bottom();
-        Point lr(tx, ty);
-        Rect result(ul.x, ul.y, lr.x - ul.x, lr.y - ul.y);
-        if (result.width > 0 && result.height > 0) return result;
-        else return null;
-      }
-#else
-      /// intersection of two Rects
-      Rect operator&(const Rect &r) const {
-         Point ul (std::max (x, r.x), std::max (y, r.y));
-         Point lr (std::min (right(), r.right()), std::min (bottom(), r.bottom()));
+         Point ul (iclMax(x, r.x), iclMax(y, r.y));
+         Point lr (iclMin(right(), r.right()), iclMin(bottom(), r.bottom()));
          Rect result (ul.x, ul.y, lr.x-ul.x, lr.y-ul.y);
          if (result.width > 0 && result.height > 0) return result;
          else return null;
       }
-#endif
 
       /// inplace intersection of two rects
       Rect &operator&=(const Rect &r){
@@ -246,25 +231,12 @@ namespace icl {
         return *this;
       }
 
-#ifdef ICL_SYSTEM_WINDOWS
       /// union of two Rects
       Rect operator|(const Rect &r) const {
-        int tx = (x < r.x) ? x : r.x;
-        int ty = (y < r.y) ? y : r.y;
-        Point ul(tx, ty);
-        tx = (right() > r.right()) ? right() : r.right();
-        ty = (bottom() > r.bottom()) ? bottom() : r.bottom();
-        Point lr(tx, ty);
-        return Rect(ul.x, ul.y, lr.x - ul.x, lr.y - ul.y);
-      }
-#else
-      /// union of two Rects
-      Rect operator|(const Rect &r) const {
-         Point ul (std::min (x, r.x), std::min (y, r.y));
-         Point lr (std::max (right(), r.right()), std::max (bottom(), r.bottom()));
+         Point ul (iclMin(x, r.x), iclMin(y, r.y));
+         Point lr (iclMax(right(), r.right()), iclMax(bottom(), r.bottom()));
          return Rect (ul.x, ul.y, lr.x-ul.x, lr.y-ul.y);
       }
-#endif
 
       /// inplace union of two rects
       Rect &operator|=(const Rect &r){
@@ -357,10 +329,10 @@ namespace icl {
     };
   
     /// ostream operator (x,y)wxy
-    ICL_UTILS_EXP std::ostream &operator<<(std::ostream &s, const Rect &r);
+    ICLUtils_API std::ostream &operator<<(std::ostream &s, const Rect &r);
     
     /// istream operator
-    ICL_UTILS_EXP std::istream &operator>>(std::istream &s, Rect &r);
+    ICLUtils_API std::istream &operator>>(std::istream &s, Rect &r);
   
   
   } // namespace utils

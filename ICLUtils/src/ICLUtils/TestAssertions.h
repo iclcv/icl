@@ -35,11 +35,11 @@
 
 #ifdef HAVE_GTEST
 
-#include <gtest/gtest.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Point32f.h>
 #include <ICLMath/FixedVector.h>
 #include <ICLMath/DynMatrixUtils.h>
-#include <ICLUtils/CompatMacros.h>
+#include <gtest/gtest.h>
 
 namespace icl {
   namespace utils{
@@ -51,7 +51,7 @@ namespace icl {
   *            delta is a float, e.g., isNear(A, B, 1e-6f).
   */
   template<class T, unsigned int WIDTH, unsigned int HEIGHT>
-  ICL_UTILS_EXP_T testing::AssertionResult isNear(const FixedMatrix<T,WIDTH,HEIGHT> &matrix_a,
+  testing::AssertionResult isNear(const FixedMatrix<T,WIDTH,HEIGHT> &matrix_a,
                                   const FixedMatrix<T,WIDTH,HEIGHT> &matrix_b,
                                   T delta) {
     for (unsigned int x=0; x<WIDTH; x++) for (unsigned int y=0; y<HEIGHT; y++) {
@@ -75,7 +75,7 @@ namespace icl {
 *            delta is a float, e.g., isNear(A, B, 1e-6f).
 */
 template<class T, unsigned int DIM>
-ICL_UTILS_EXP_T testing::AssertionResult isNear(const FixedColVector<T,DIM> &vector_a,
+testing::AssertionResult isNear(const FixedColVector<T,DIM> &vector_a,
                                 const FixedColVector<T,DIM> &vector_b,
                                 T delta) {
   for (unsigned int i=0; i<DIM; i++) {
@@ -98,7 +98,7 @@ ICL_UTILS_EXP_T testing::AssertionResult isNear(const FixedColVector<T,DIM> &vec
 *            delta is a float, e.g., isNear(A, B, 1e-6f).
 */
 template<class T, unsigned int DIM>
-ICL_UTILS_EXP_T testing::AssertionResult isNear(const FixedRowVector<T,DIM> &vector_a,
+testing::AssertionResult isNear(const FixedRowVector<T,DIM> &vector_a,
                                 const FixedRowVector<T,DIM> &vector_b,
                                 T delta) {
   for (unsigned int i=0; i<DIM; i++) {
@@ -118,7 +118,7 @@ ICL_UTILS_EXP_T testing::AssertionResult isNear(const FixedRowVector<T,DIM> &vec
 * error bound delta. Use this function in your test by calling, e.g.,
 * EXPECT_TRUE(isNear(p, q, error_bound));
 */
-ICL_UTILS_EXP testing::AssertionResult isNear(const Point32f &p,
+testing::AssertionResult isNear(const Point32f &p,
                                 const Point32f &q,
                                 float delta) {
   float dist = sqrt((p.x-q.x)*(p.x-q.x) + (p.y-q.y)*(p.y-q.y));

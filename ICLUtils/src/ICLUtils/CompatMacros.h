@@ -30,6 +30,13 @@
 
 #pragma once
 
+#ifdef ICL_SYSTEM_WINDOWS
+  #define NOMINMAX
+  //#define __msxml_h__ // icl has its own xml classes
+  //#include <Windows.h>
+#endif
+
+
 #ifdef SYSTEM_WINDOWS
 #	define IPP_DECL __stdcall
 #	ifndef _USE_MATH_DEFINES
@@ -47,11 +54,13 @@
 #ifdef ICL_SYSTEM_WINDOWS
 
 #ifdef ICLUtils_EXPORTS
-#define ICL_UTILS_EXP   __declspec(dllexport)
-#define ICL_UTILS_EXP_T __declspec(dllexport)
+#define ICLUtils_API   __declspec(dllexport)
+#define ICLUtils_API_T __declspec(dllexport)
+#define ICLUtils_API_I __declspec(dllexport)
 #else
-#define ICL_UTILS_EXP   __declspec(dllimport)
-#define ICL_UTILS_EXP_T
+#define ICLUtils_API   __declspec(dllimport)
+#define ICLUtils_API_T
+#define ICLUtils_API_I __declspec(dllimport)
 #endif
 
 #ifdef ICLMath_EXPORTS
@@ -119,8 +128,8 @@
 #endif
 
 #else
-#define ICL_UTILS_EXP
-#define ICL_UTILS_EXP_T
+#define ICLUtils_API
+#define ICLUtils_API_T
 #define ICL_MATH_API
 #define ICL_MATH_API_T
 #define ICL_CORE_API

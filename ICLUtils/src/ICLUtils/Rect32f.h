@@ -30,19 +30,19 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/Size32f.h>
 #include <ICLUtils/Rect.h>
 #include <stdio.h>
 #include <algorithm>
-#include <ICLUtils/CompatMacros.h>
 
 namespace icl {
   namespace utils{
     
     
     /// Floating point precision implementation of the Rect class \ingroup TYPES
-    class ICL_UTILS_EXP Rect32f{
+    class ICLUtils_API Rect32f{
       public:
      
       float x;      ///!< x pos (upper left)
@@ -265,10 +265,10 @@ namespace icl {
     };
   
     /// ostream operator (x,y)wxy
-    ICL_UTILS_EXP std::ostream &operator<<(std::ostream &s, const Rect32f &r);
+    ICLUtils_API std::ostream &operator<<(std::ostream &s, const Rect32f &r);
     
     /// istream operator
-    ICL_UTILS_EXP std::istream &operator>>(std::istream &s, Rect32f &r);
+    ICLUtils_API std::istream &operator>>(std::istream &s, Rect32f &r);
   
   
   } // namespace utils

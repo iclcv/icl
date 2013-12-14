@@ -30,8 +30,8 @@
 
 #pragma once
 
-#include <ICLUtils/SmartPtr.h>
 #include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/SmartPtr.h>
 
 namespace icl{
   namespace utils{
@@ -128,7 +128,7 @@ namespace icl{
         \endcode
     **/
     template<class Impl,class DelOp=PointerDelOp>
-    class ICL_UTILS_EXP_T ShallowCopyable{
+    class ShallowCopyable{
       public:
       typedef ShallowCopyable<Impl,DelOp> ParentSC;
 

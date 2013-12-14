@@ -30,15 +30,15 @@
 
 #pragma once
 
+#include <ICLUtils/Macros.h>
 #include <ICLUtils/Time.h>
 #include <vector>
 #include <string>
-#include <ICLUtils/Macros.h>
-#include <ICLUtils/CompatMacros.h>
 
 namespace icl {
   namespace utils{
-    class ICL_UTILS_EXP Timer{
+
+    class ICLUtils_API Timer{
       private:
       int m_iTimerMode;
       std::vector<Time::value_type> m_vecTime;

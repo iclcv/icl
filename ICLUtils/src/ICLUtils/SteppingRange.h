@@ -30,8 +30,8 @@
 
 #pragma once
 
-#include <ICLUtils/Range.h>
 #include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/Range.h>
 
 namespace icl{
   namespace utils{
@@ -43,7 +43,7 @@ namespace icl{
         are less then or equal to the maxVal 
     **/
     template<class Type> 
-    struct ICL_UTILS_EXP_T SteppingRange : public Range<Type>{
+    struct SteppingRange : public Range<Type>{
       /// create an empty range (min = max = 0)
       SteppingRange():Range<Type>(),stepping(0){}
       
@@ -95,11 +95,11 @@ namespace icl{
     /** Available for all icl-Types (icl8u,icl16s, icl32s, icl32f and icl64f and
         for unsigned int */
     template<class T> 
-    ICL_UTILS_EXP_T std::ostream &operator<<(std::ostream &s, const SteppingRange <T> &range);
+    std::ostream &operator<<(std::ostream &s, const SteppingRange <T> &range);
   
     /// parses a range argument into a std::string
     template<class T> 
-    ICL_UTILS_EXP_T std::istream &operator>>(std::istream &s, SteppingRange <T> &range);
+    std::istream &operator>>(std::istream &s, SteppingRange <T> &range);
   
   
   #define ICL_INSTANTIATE_DEPTH(D) typedef SteppingRange<icl##D> SteppingRange##D;

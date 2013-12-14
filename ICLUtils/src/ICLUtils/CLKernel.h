@@ -32,12 +32,12 @@
 
 #ifdef HAVE_OPENCL
 
-#include <string>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/CLBuffer.h>
 #include <ICLUtils/CLImage2D.h>
 #include <ICLUtils/CLException.h>
 #include <ICLUtils/FixedArray.h>
-#include <ICLUtils/CompatMacros.h>
+#include <string>
 
 /** \cond */
 namespace cl{
@@ -69,7 +69,7 @@ namespace icl {
         kernel[2] = inSize;
         kernel[3] = outSize;
         **/
-    class ICL_UTILS_EXP CLKernel {
+    class ICLUtils_API CLKernel {
       struct Impl; //!< internal implementation
       Impl *impl;  //!< internally used data 
       

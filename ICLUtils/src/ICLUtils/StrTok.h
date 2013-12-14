@@ -30,15 +30,15 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <vector>
 #include <string>
-#include <ICLUtils/CompatMacros.h>
 
 namespace icl{
   namespace utils{
     
     /// String Tokenizer Utility class  \ingroup UTILS
-    class ICL_UTILS_EXP StrTok{
+    class ICLUtils_API StrTok{
       public:
       
       /// Constructor

@@ -53,8 +53,8 @@ namespace icl{
     }
 
   #define ICL_INSTANTIATE_DEPTH(D)                                        \
-    template ICL_UTILS_EXP std::ostream &operator<<(std::ostream&, const Range<icl##D>&); \
-    template ICL_UTILS_EXP std::istream &operator>>(std::istream&, Range<icl##D>&);
+    template ICLUtils_API std::ostream &operator<<(std::ostream&, const Range<icl##D>&); \
+    template ICLUtils_API std::istream &operator>>(std::istream&, Range<icl##D>&);
       ICL_INSTANTIATE_ALL_DEPTHS
   #undef ICL_INSTANTIATE_DEPTH
 

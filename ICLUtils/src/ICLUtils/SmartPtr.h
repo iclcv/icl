@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/SmartPtrBase.h>
 
 namespace icl{
@@ -68,7 +69,7 @@ namespace icl{
         </pre>
     */
     template<class T>
-    struct ICL_UTILS_EXP_T SmartPtr : public SmartPtrBase<T, PointerDelOp>{
+    struct SmartPtr : public SmartPtrBase<T, PointerDelOp>{
       // type definition for the parent class
       typedef SmartPtrBase<T,PointerDelOp> super;
       /// creates a null pointer
@@ -90,4 +91,3 @@ namespace icl{
   
   } // namespace utils
 }
-

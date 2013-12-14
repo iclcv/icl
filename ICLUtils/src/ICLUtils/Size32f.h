@@ -30,14 +30,14 @@
 
 #pragma once
 
-#include <iostream>
-#include <ICLUtils/Size.h>
 #include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/Size.h>
+#include <iostream>
 
 namespace icl{
   namespace utils{
     /// Size32f class of the ICL (float valued)
-    class ICL_UTILS_EXP Size32f{
+    class ICLUtils_API Size32f{
       
       public:
       // width variable
@@ -99,10 +99,10 @@ namespace icl{
     };
   
     /// ostream operator WIDTHxHEIGHT
-    ICL_UTILS_EXP std::ostream &operator<<(std::ostream &os, const Size32f &s);
+    ICLUtils_API std::ostream &operator<<(std::ostream &os, const Size32f &s);
     
     /// istream operator
-    ICL_UTILS_EXP std::istream &operator>>(std::istream &is, Size32f &s);
+    ICLUtils_API std::istream &operator>>(std::istream &is, Size32f &s);
   
   } // namespace utils
 }// namespace icl

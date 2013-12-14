@@ -30,25 +30,18 @@
 
 #pragma once
 
-#ifdef HAVE_IPP
-#include <ipp.h>
-#endif
-
 #include <ICLUtils/Macros.h>
 #include <ostream>
-#include <ICLUtils/CompatMacros.h>
 
-#ifdef ICLUtils_EXPORTS
-#define ICL_UTILS_API __declspec(dllexport)
-#else
-#define ICL_UTILS_API __declspec(dllimport)
+#ifdef HAVE_IPP
+#include <ipp.h>
 #endif
 
 namespace icl{
   namespace utils{
   #ifndef HAVE_IPP
     /// fallback implementation for the IppiPoint struct, defined in the ippi libb \ingroup TYPES
-    struct ICL_UTILS_API IppiPoint {
+    struct ICLUtils_API IppiPoint {
       /// xpos
       int x;
       /// ypos
@@ -58,17 +51,17 @@ namespace icl{
   #endif
   
     /** \cond */
-    class ICL_UTILS_API Point32f;
+    class Point32f;
     /** \endcond */
     
     /// Point class of the ICL used e.g. for the Images ROI offset \ingroup TYPES
-    class ICL_UTILS_API Point : public IppiPoint{
+    class ICLUtils_API Point : public IppiPoint{
       public:
       /// null Point is x=0, y=0
       static const Point null;
 
-	  /// default constructor
-	  Point(){ this->x = 0; this->y = 0; }
+	    /// default constructor
+	    Point(){ this->x = 0; this->y = 0; }
 
       /// deep copy of a Point
       Point(const Point& p){ this->x = p.x; this->y = p.y; }
@@ -122,10 +115,10 @@ namespace icl{
     };
     
     /// ostream operator (x,y)
-    ICL_UTILS_API std::ostream &operator<<(std::ostream &s, const Point &p);
+    ICLUtils_API std::ostream &operator<<(std::ostream &s, const Point &p);
     
     /// istream operator
-    ICL_UTILS_API std::istream &operator>>(std::istream &s, Point &p);
+    ICLUtils_API std::istream &operator>>(std::istream &s, Point &p);
   
     
   } // namespace utils

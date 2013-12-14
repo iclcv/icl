@@ -30,19 +30,15 @@
 
 #pragma once
 
-#include <ICLUtils/Point.h>
-#include <ICLUtils/ClippedCast.h>
 #include <ICLUtils/CompatMacros.h>
-#ifdef ICLUtils_EXPORTS
-#define ICL_UTILS_API __declspec(dllexport)
-#else
-#define ICL_UTILS_API __declspec(dllimport)
-#endif
+#include <ICLUtils/ClippedCast.h>
+#include <ICLUtils/Point.h>
+
 namespace icl{
   namespace utils{
     
     /// Single precission 3D Vectors Point class of the ICL \ingroup TYPES
-    class ICL_UTILS_API Point32f{
+    class ICLUtils_API Point32f{
       public:
       
       /// x position of this point
@@ -54,8 +50,8 @@ namespace icl{
       /// null Point is x=0, y=0
       static const Point32f null;
 
-	  /// default constructor
-	  Point32f() :x(0.0f), y(0.0f){}
+	    /// default constructor
+	    Point32f() :x(0.0f), y(0.0f){}
 
       /// deep copy of a Point
       Point32f(const Point32f& p):x(p.x),y(p.y){}
@@ -138,10 +134,10 @@ namespace icl{
     };
   
     /// ostream operator (x,y)
-    ICL_UTILS_API std::ostream &operator<<(std::ostream &s, const Point32f &p);
+    ICLUtils_API std::ostream &operator<<(std::ostream &s, const Point32f &p);
     
     /// istream operator
-    ICL_UTILS_API std::istream &operator>>(std::istream &s, Point32f &p);
+    ICLUtils_API std::istream &operator>>(std::istream &s, Point32f &p);
   
     
   } // namespace utils

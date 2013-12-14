@@ -30,21 +30,21 @@
 
 #pragma once
 
-#include <string>
 #include <ICLUtils/CompatMacros.h>
+#include <string>
 
 namespace icl{
   namespace utils{
     
     /// static utility function for displaying some progress information in console
-    void ICL_UTILS_EXP progress_init(const std::string &text = "Creating LUT");
+    void ICLUtils_API progress_init(const std::string &text = "Creating LUT");
     
     /// static utility function for displaying some progress information in console
-    void ICL_UTILS_EXP progress_finish();
+    void ICLUtils_API progress_finish();
   
     /// static utility function for displaying some progress information in console
     /** Extra text is show behind the progress bar */
-    void ICL_UTILS_EXP progress(int curr, int max, const std::string &extraText = "");
+    void ICLUtils_API progress(int curr, int max, const std::string &extraText = "");
   
   } // namespace utils
 }

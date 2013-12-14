@@ -61,7 +61,7 @@ namespace icl{
         }
         \endcode
     **/
-    class ICL_UTILS_EXP Uncopyable{
+    class ICLUtils_API Uncopyable{
       protected:
       /// Empty base constructor
       Uncopyable(){}

@@ -30,12 +30,10 @@
 
 #pragma once
 
-
+#include <ICLUtils/Macros.h>
 #include <ICLUtils/Timer.h>
 #include <string>
-#include <ICLUtils/Macros.h>
 #include <cstdio>
-#include <ICLUtils/CompatMacros.h>
 
 namespace icl{
   namespace utils{
@@ -99,10 +97,10 @@ namespace icl{
         \endcode
     }
     */
-    class ICL_UTILS_EXP StackTimer{
+    class ICLUtils_API StackTimer{
     public:
       /// StackTimerNotifier constructor, USE BENCHMARK_THIS_FUNCTION-MACRO instead
-      class StackTimerNotifier{
+      class ICLUtils_API StackTimerNotifier{
         public:
         StackTimerNotifier(const char* functionname, 
                            bool writeCounts=true, 
