@@ -365,9 +365,9 @@ struct PointCloudNormalEstimator::Data {
 
 #ifdef HAVE_OPENCL
 		//create openCL context
-		rawImageArray = new float[w*h];
-		filteredImageArray = new float[w*h];
-		angleImageArray = new float[w*h];
+                //	rawImageArray = new float[w*h];
+                //	filteredImageArray = new float[w*h];
+                //		angleImageArray = new float[w*h];
 		binarizedImageArray = new unsigned char[w*h];
 		normalImageRArray = new unsigned char[w*h];
 		normalImageGArray = new unsigned char[w*h];
@@ -391,11 +391,11 @@ struct PointCloudNormalEstimator::Data {
 		if(clReady==true) { //only if CL context is available
 			try {
 				//create buffer for memory access and allocation
-				rawImageBuffer = program.createBuffer("rw", w*h * sizeof(float), rawImageArray);
-				filteredImageBuffer = program.createBuffer("rw", w*h * sizeof(float), filteredImageArray);
+                          rawImageBuffer = program.createBuffer("rw", w*h * sizeof(float));//, rawImageArray);
+                          filteredImageBuffer = program.createBuffer("rw", w*h * sizeof(float));//, filteredImageArray);
 				normalsBuffer = program.createBuffer("rw", w*h * sizeof(FixedColVector<float, 4>), normals);
 				avgNormalsBuffer = program.createBuffer("rw", w*h * sizeof(FixedColVector<float, 4>), avgNormals);
-				angleImageBuffer = program.createBuffer("rw", w*h * sizeof(float), angleImageArray);
+				angleImageBuffer = program.createBuffer("rw", w*h * sizeof(float));//, angleImageArray);
 				binarizedImageBuffer = program.createBuffer("rw", w*h * sizeof(unsigned char), binarizedImageArray);
 				normalImageRBuffer = program.createBuffer("rw", w*h * sizeof(unsigned char), normalImageRArray);
 				normalImageGBuffer = program.createBuffer("rw", w*h * sizeof(unsigned char), normalImageGArray);
@@ -426,9 +426,9 @@ struct PointCloudNormalEstimator::Data {
 		delete[] avgNormals;
 		delete[] worldNormals;
 #ifdef HAVE_OPENCL
-		delete[] rawImageArray;
-		delete[] filteredImageArray;
-		delete[] angleImageArray;
+                //	delete[] rawImageArray;
+                //		delete[] filteredImageArray;
+                //		delete[] angleImageArray;
 		delete[] binarizedImageArray;
 		delete[] normalImageRArray;
 		delete[] normalImageGArray;
@@ -467,9 +467,9 @@ struct PointCloudNormalEstimator::Data {
 	float* outputFilteredImage;//output of kernel for image
 	float* outputAngleImage;
 	unsigned char* outputBinarizedImage;
-	float* rawImageArray;//input for image to kernel
-	float* filteredImageArray;
-	float* angleImageArray;
+  //	float* rawImageArray;//input for image to kernel
+  //	float* filteredImageArray;
+  //	float* angleImageArray;
 	unsigned char* binarizedImageArray;
 	unsigned char* normalImageRArray;
 	unsigned char* normalImageGArray;
@@ -514,9 +514,11 @@ void PointCloudNormalEstimator::setDepthImage(const Img32f &depthImg) {
 	m_data->rawImage = depthImg;
 #ifdef HAVE_OPENCL
 	if(m_data->useCL==true && m_data->clReady==true) {
-		m_data->rawImageArray=m_data->rawImage.begin(0); //image to float array
+          //	m_data->rawImageArray=m_data->rawImage.begin(0); //image to float array
 		try {
-			m_data->rawImageBuffer = m_data->program.createBuffer("r", m_data->w*m_data->h * sizeof(float), m_data->rawImageArray);
+                  //	m_data->rawImageBuffer = m_data->program.createBuffer("r", m_data->w*m_data->h * sizeof(float), 
+                  // depthImg.begin(0));
+                  m_data->rawImageBuffer.write(depthImg.begin(0),m_data->w*m_data->h*sizeof(float));
 		} catch (CLException &err) { //catch openCL errors
 			std::cout<< "ERROR: "<< err.what()<< std::endl;
 		}
@@ -586,18 +588,18 @@ const Img32f &PointCloudNormalEstimator::getFilteredDepthImage() {
 	return m_data->filteredImage;
 }
 
-void PointCloudNormalEstimator::setFilteredDepthImage(
-		const Img32f &filteredImg) {
-	m_data->filteredImage = filteredImg;
+void PointCloudNormalEstimator::setFilteredDepthImage(const Img32f &filteredImg) {
+  m_data->filteredImage = filteredImg;
 #ifdef HAVE_OPENCL
-	if(m_data->useCL==true && m_data->clReady==true) {
-		m_data->filteredImageArray=m_data->filteredImage.begin(0); //image to float array
-		try {
-			m_data->filteredImageBuffer = m_data->program.createBuffer("r", m_data->w*m_data->h * sizeof(float), m_data->filteredImageArray);
+  if(m_data->useCL==true && m_data->clReady==true) {
+    //m_data->filteredImageArray=m_data->filteredImage.begin(0); //image to float array
+    try {
+      m_data->filteredImageBuffer = m_data->program.createBuffer("r", m_data->w*m_data->h * sizeof(float), 
+                                                                 filteredImg.begin(0));
 		} catch (CLException &err) { //catch openCL errors
-			std::cout<< "ERROR: "<< err.what()<< std::endl;
-		}
-	}
+      std::cout<< "ERROR: "<< err.what()<< std::endl;
+    }
+  }
 #endif
 }
 
@@ -1116,16 +1118,17 @@ const Img32f &PointCloudNormalEstimator::getAngleImage() {
 }
 
 void PointCloudNormalEstimator::setAngleImage(const Img32f &angleImg) {
-	m_data->angleImage = angleImg;
+  m_data->angleImage = angleImg;
 #ifdef HAVE_OPENCL
-	if(m_data->useCL==true && m_data->clReady==true) {
-		m_data->angleImageArray=m_data->angleImage.begin(0); //image to float array
-		try {
-			m_data->angleImageBuffer = m_data->program.createBuffer("r", m_data->w*m_data->h * sizeof(float), m_data->angleImageArray);
-		} catch (CLException &err) { //catch openCL errors
-			std::cout<< "ERROR: "<< err.what()<< std::endl;
-		}
-	}
+  if(m_data->useCL==true && m_data->clReady==true) {
+    //m_data->angleImageArray=m_data->angleImage.begin(0); //image to float array
+    try {
+      m_data->angleImageBuffer = m_data->program.createBuffer("r", m_data->w*m_data->h * sizeof(float), 
+                                                              angleImg.begin(0));
+    } catch (CLException &err) { //catch openCL errors
+      std::cout<< "ERROR: "<< err.what()<< std::endl;
+    }
+  }
 #endif
 }
 

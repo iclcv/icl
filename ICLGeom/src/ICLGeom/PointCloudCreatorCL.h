@@ -56,10 +56,14 @@ namespace icl{
       ///Destructor
       ~PointCloudCreatorCL();
   	  	
-  	  ///Creates a uncolored pointcloud (called from PointCloudCreator)
-  	  void create(bool NEEDS_RAW_TO_MM_MAPPING,const core::Img32f *depthValues, 
-                           const Vec O, const int DEPTH_DIM, 
-                           DataSegment<float,3> xyz, const utils::Array2D<Vec> &dirs, float depthScaling);
+      /// updates the internally used direction vectors
+      /** the underlying chip size must not change, otherwise, and exception is thrown */
+      void setDirectionVectors(const utils::Array2D<Vec> &dirs) throw (utils::ICLException);
+      
+      ///Creates a uncolored pointcloud (called from PointCloudCreator)
+      void create(bool NEEDS_RAW_TO_MM_MAPPING,const core::Img32f *depthValues, 
+                  const Vec O, const int DEPTH_DIM, 
+                  DataSegment<float,3> xyz, const utils::Array2D<Vec> &dirs, float depthScaling);
       
       ///Creates a RGBD-mapped pointcloud (called from PointCloudCreator)
       void createRGB(bool NEEDS_RAW_TO_MM_MAPPING,const core::Img32f *depthValues, const Mat M, 
@@ -73,14 +77,14 @@ namespace icl{
   	  	
      private:
       bool clReady;
-
+      utils::Size size;
     #ifdef HAVE_OPENCL
       //OpenCL data
-  	  float* depthValuesArray;
-  	  unsigned char* rInArray;
-      unsigned char* gInArray;
-      unsigned char* bInArray;
-  	  float* dirsArray;
+
+      //float* depthValuesArray;
+      //	  unsigned char* rInArray;
+      //unsigned char* gInArray;
+      //unsigned char* bInArray;
   	  float* xyzData;
   	  math::FixedColVector<float, 4>* rgbaData;
   	

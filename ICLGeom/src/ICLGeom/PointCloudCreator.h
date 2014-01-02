@@ -100,6 +100,17 @@ namespace icl{
       
       /// returns the current camera camera (if this was not given, an exception is thrown)
       const Camera &getColorCamera() const throw (utils::ICLException);
+
+      /// sets new cameras (reinitializes data structures internally)
+      /** This functions is relatively complex, so it should be performed only
+          when it is needed */
+      void setCameras(const Camera &depthCam, const Camera &colorCam);
+
+      /// sets the internally used depthCamera
+      /** This functions is relatively complex, so it should be performed only
+          when it is needed.
+          After using this function, the creator will have no color camera any more*/
+      void setDepthCamera(const Camera &depthCam);
       
       /// returns whether a color camera was given (and therefore whether RGBD-mapping is supported)
       bool hasColorCamera() const;

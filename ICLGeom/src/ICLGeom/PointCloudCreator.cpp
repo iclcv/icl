@@ -60,11 +60,7 @@ namespace icl{
 #ifdef HAVE_OPENCL
       bool clReady;
       bool clUse;
-      PointCloudCreatorCL* creatorCL;
-      
-      ~Data(){
-        ICL_DELETE(creatorCL);
-      }
+      SmartPtr<PointCloudCreatorCL> creatorCL;
 #endif
       
 
@@ -74,6 +70,10 @@ namespace icl{
       }
   
       void init(Camera *depthCam, Camera *colorCam, PointCloudCreator::DepthImageMode mode){
+        
+        if(depthCamera && (depthCamera->getRenderParams().chipSize != depthCam->getRenderParams().chipSize)){
+          throw ICLException("PointCloudCreator::setCameras(d,c): this call cannot be used to adapt the camera chip size");
+        }
         this->lastDepthImageMM = 0;
         this->mode = mode;
         depthCamera = depthCam;
@@ -105,10 +105,9 @@ namespace icl{
         }
 
 #ifdef HAVE_OPENCL
-        clUse=true;  
+        clUse=true;
         creatorCL = new PointCloudCreatorCL(depthImageSize, viewRayDirections);
         clReady = creatorCL->isCLReady();
-
 #endif
       }
       
@@ -392,6 +391,16 @@ namespace icl{
       if(!hasColorCamera()) throw ICLException("PointCloudCreator::getColorCamera(): no color camera available");
       return *m_data->colorCamera;
     }
+
+
+    void PointCloudCreator::setCameras(const Camera &depthCam, const Camera &colorCam){
+      m_data->init(new Camera(depthCam),new Camera(colorCam), m_data->mode);
+    }
+    
+    void PointCloudCreator::setDepthCamera(const Camera &depthCam){
+      m_data->init(new Camera(depthCam),0, m_data->mode);
+    }
+
       
     bool PointCloudCreator::hasColorCamera() const{
       return m_data->colorCamera;
