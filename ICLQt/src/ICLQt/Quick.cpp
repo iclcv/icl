@@ -55,6 +55,7 @@
 #include <QtGui/QFont>
 #include <QtGui/QApplication>
 #include <QtGui/QFileDialog>
+#include <QtGui/QInputDialog>
 #include <ICLQt/Application.h>
 #endif
 
@@ -100,6 +101,16 @@ namespace icl{
         std::string filename;
         bool except;
       };
+      struct TextIOContext{
+        const std::string &caption;
+        const std::string &message;
+        const std::string &initialText;
+        void *parentWidget;
+        std::string text;
+        bool except;
+      };
+
+      
       void do_open(IOContext &c){
         QString f = QFileDialog::getOpenFileName((QWidget*)c.parentWidget, c.caption.c_str(), c.initialDirectory.c_str(),
                                                  c.filter.c_str() );
@@ -118,6 +129,18 @@ namespace icl{
           //          throw ICLException("no file selected in openFileDialog or cancel was pressed. This exception must be caught explicitly!");        
         }else{
           c.filename = f.toLatin1().data();
+        }
+      }
+      void do_gettext(TextIOContext &c){
+        bool ok = false;
+        QString t = QInputDialog::getText((QWidget*)c.parentWidget, c.caption.c_str(), 
+                                          c.message.c_str(), QLineEdit::Normal, 
+                                          c.initialText.c_str(), &ok);
+        if(!ok){
+          c.except = true;
+          c.text = "";
+        }else{
+          c.text = t.toLatin1().data();
         }
       }
     }
@@ -161,6 +184,18 @@ namespace icl{
       return f.toLatin1().data();
           */
     }
+
+    std::string textInputDialog(const std::string &caption, const std::string &message,
+                                const std::string &initialText, void *parentWidget) throw (utils::ICLException){
+      TextIOContext c = { caption, message, initialText, parentWidget, std::string(), false };  
+      ICLApp::instance()->executeInGUIThread<TextIOContext&>(do_gettext, c, true);
+      if(c.except){
+        throw ICLException("text input via 'textInputDialog' was aborted");
+      }
+      return c.text;
+    }
+
+
   #endif
   
   
