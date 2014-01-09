@@ -129,7 +129,7 @@ namespace icl{
     
         */
 
-    class Scene : public utils::Lockable, public utils::Configurable{
+    class ICL_Geom_API Scene : public utils::Lockable, public utils::Configurable{
       public:
 
       /// make SceneObject friend of Scene

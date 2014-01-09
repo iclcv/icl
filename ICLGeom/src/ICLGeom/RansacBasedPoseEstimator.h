@@ -38,13 +38,13 @@ namespace icl{
   namespace geom{
     
     /// RANSAC-based pose estimation
-    class RansacBasedPoseEstimator : public utils::Uncopyable{
+    class ICL_Geom_API RansacBasedPoseEstimator : public utils::Uncopyable{
       struct Data;  //!< internal data handling
       Data *m_data; //!< internal data pointer
       
       public:
       
-      struct Result{
+      struct ICL_Geom_API Result{
         Mat T;
         bool found;
         float error;

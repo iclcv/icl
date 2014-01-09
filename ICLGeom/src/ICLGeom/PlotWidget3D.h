@@ -38,7 +38,7 @@
 namespace icl{
   namespace geom{
 
-    class PlotWidget3D : public qt::ICLDrawWidget3D{
+    class ICL_Geom_API PlotWidget3D : public qt::ICLDrawWidget3D{
       struct Data;
       Data *m_data;
 

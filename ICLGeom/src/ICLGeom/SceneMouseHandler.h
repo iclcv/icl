@@ -65,7 +65,7 @@ namespace icl{
     
     
     /// mouse mapping table entry
-    struct MouseMappingTableEntry{
+    struct ICL_Geom_API MouseMappingTableEntry{
       /// pointer to mouse action function
       MouseActionCallback mMouseAction;
       
@@ -75,7 +75,7 @@ namespace icl{
     
     
     /// mouse sensitivities
-    struct MouseSensitivities{
+    struct ICL_Geom_API MouseSensitivities{
       /// sensitivity factor for translation (e.g. mParentScene->getMaxSceneDim())
       float mTranslation;
       
@@ -127,7 +127,7 @@ namespace icl{
         - mouse action functions will be called with an additional data pointer (void*)
         to grant access to all kind of desired data.
         */
-    class SceneMouseHandler : public qt::MouseHandler{
+    class ICL_Geom_API SceneMouseHandler : public qt::MouseHandler{
       protected:
       
       ///  Mouse mapping table:
