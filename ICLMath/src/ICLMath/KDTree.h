@@ -29,12 +29,12 @@
 ********************************************************************/
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLMath/DynMatrix.h>
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/BasicTypes.h>
 #include <ICLUtils/Uncopyable.h>
 #include <vector>
-#include <ICLUtils/CompatMacros.h>
 
 namespace icl{
   namespace math{
@@ -48,7 +48,7 @@ namespace icl{
         by the KD-Tree instance. Therefore, that tree instance will only stay valid as long as
         the referenced data does
     */
-    class ICL_MATH_API KDTree : public utils::Uncopyable{
+    class ICLMath_API KDTree : public utils::Uncopyable{
       private:
       ///Keeps data of node
       struct Node{

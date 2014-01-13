@@ -30,13 +30,14 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/AffineOp.h>
 
 namespace icl{
   namespace filter{
     
    /// Class to rotate images \ingroup UNARY \ingroup AFFINE
-    class ICL_FILTER_API RotateOp : public AffineOp {
+    class ICLFilter_API RotateOp : public AffineOp {
       public:
       /// Constructor
       RotateOp (double dAngle=0.0, core::scalemode eInterpolate=core::interpolateLIN) :

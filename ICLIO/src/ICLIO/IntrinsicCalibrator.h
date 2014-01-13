@@ -30,15 +30,15 @@
 
 #pragma once
 
-#include <ICLCore/Img.h>
 #include <ICLUtils/BasicTypes.h>
-#include <ICLMath/DynMatrix.h>
-#include <ICLMath/DynMatrixUtils.h>
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/ConfigFile.h>
 #include <ICLUtils/StackTimer.h>
 #include <ICLUtils/Array2D.h>
+#include <ICLMath/DynMatrix.h>
+#include <ICLMath/DynMatrixUtils.h>
+#include <ICLCore/Img.h>
 #include <ICLIO/ImageUndistortion.h>
 
 namespace icl{
@@ -55,7 +55,7 @@ namespace icl{
       
       public:
       ///Simple struct for handle result of computation of intrinsics
-      struct Result : public ImageUndistortion{
+      struct ICL_IO_API Result : public ImageUndistortion{
         
         /// create a null result
         Result(){}

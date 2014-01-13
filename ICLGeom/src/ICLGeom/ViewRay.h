@@ -45,7 +45,7 @@ namespace icl{
     /** A view-ray is described by the equation
         \f[ V: \mbox{offset} + \lambda \cdot \mbox{direction} \f]
     */
-    struct ViewRay{
+    struct ICL_Geom_API ViewRay{
       /// Constructor with given offset and direction vector
       explicit ViewRay(const Vec &offset=Vec(), const Vec &direction=Vec(), bool autoNormalizeDirection=false);
       
@@ -113,7 +113,7 @@ namespace icl{
     };
   
     /// ostream operator
-    std::ostream &operator<<(std::ostream &s, const ViewRay &vr);
+    ICL_Geom_API std::ostream &operator<<(std::ostream &s, const ViewRay &vr);
   } // namespace geom
 }
 

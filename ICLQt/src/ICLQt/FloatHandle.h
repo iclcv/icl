@@ -30,7 +30,9 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLQt/GUIHandle.h>
+
 /** \cond */
 class QLineEdit;
 /** \endcond */

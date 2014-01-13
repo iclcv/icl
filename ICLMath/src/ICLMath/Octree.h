@@ -31,15 +31,15 @@
 #pragma once
 
 
-#include <algorithm>
-#include <set>
-
-#include <ICLMath/FixedVector.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/VisualizationDescription.h>
 #include <ICLUtils/Rect32f.h>
 #include <ICLUtils/Range.h>
 #include <ICLUtils/StringUtils.h>
-#include <ICLUtils/CompatMacros.h>
+#include <ICLMath/FixedVector.h>
+
+#include <algorithm>
+#include <set>
 
 namespace icl{
 
@@ -57,13 +57,13 @@ namespace icl{
         
     **/
     template<class Scalar, int CAPACITY=16, int SF=1, class Pt=FixedColVector<Scalar,4>, int ALLOC_CHUNK_SIZE=1024>
-    class ICL_MATH_API_T Octree{
+    class Octree{
       public:
 
       /// internally used axis-aligned bounding box
       /** An AABB is defined by its center point and it half bounds
           into x- and y-direction */
-      struct AABB{
+      struct ICLMath_API AABB{
         Pt center;   //!< center point
         Pt halfSize; //!< half dimension  
         
@@ -96,7 +96,7 @@ namespace icl{
       /// Internally used node structure
       /** Each node can contain up to CAPACITY elements. Further nodes
           are distributed to one of the four children */
-      struct Node{
+      struct ICLMath_API Node{
         AABB boundary;         //!< node boundary
         Pt points[CAPACITY];   //!< contained nodes
         Pt *next;              //!< next node to fill 
@@ -172,7 +172,7 @@ namespace icl{
       /// Inernally used block allocator
       /** The allocator allocates ALLOC_CHUNK_SIZE*4 Node instances
           at once and automatically frees all data at destruction time */
-      struct Allocator{
+      struct ICLMath_API Allocator{
         
         /// allocated data
         std::vector<Node*> allocated;

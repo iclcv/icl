@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Point.h>
 #include <ICLUtils/Rect.h>
 #include <ICLUtils/Exception.h>
@@ -63,7 +64,7 @@ namespace icl{
         (640x480 lines), takes about 650 ms. This leads to an approximate time of 0.002ms per line
         or in other words, 500 lines per millisecond;
     */
-    class ICL_CORE_API LineSampler{
+    class ICLCore_API LineSampler{
       protected:
       std::vector<utils::Point> m_buf; //!< internal buffer
       std::vector<int> m_br;           //!< optionally given bounding rect

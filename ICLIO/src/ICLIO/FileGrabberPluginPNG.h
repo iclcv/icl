@@ -30,9 +30,10 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/Mutex.h>
 #include <ICLIO/FileGrabberPlugin.h>
 #include <vector>
-#include <ICLUtils/Mutex.h>
 
 namespace icl{
   namespace io{

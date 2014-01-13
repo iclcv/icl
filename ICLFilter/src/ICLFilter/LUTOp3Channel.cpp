@@ -152,7 +152,7 @@ namespace icl{
       }
     }
   
-  #define ICL_INSTANTIATE_DEPTH(D) template class ICL_FILTER_API LUTOp3Channel<icl##D>;
+  #define ICL_INSTANTIATE_DEPTH(D) template class ICLFilter_API LUTOp3Channel<icl##D>;
     ICL_INSTANTIATE_ALL_DEPTHS
   #undef ICL_INSTANTIATE_DEPTH
     

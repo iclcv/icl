@@ -30,10 +30,11 @@
 
 #pragma once
 
-#include <ICLMath/DynMatrix.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Range.h>
 #include <ICLUtils/Rect32f.h>
 #include <ICLUtils/Configurable.h>
+#include <ICLMath/DynMatrix.h>
 #include <ICLQt/MouseEvent.h>
 #include <ICLQt/MouseHandler.h>
 

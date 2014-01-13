@@ -182,7 +182,7 @@ namespace icl{
     };
     
     /** \cond **/
-    template<> ICLUtils_API_I
+    template<>
     inline std::vector<float> Any::as<std::vector<float> >() const{
       const size_t l = std::string::length();
       if(l < sizeof(int)) throw ICLException("cannot convert Any to std::vector<float> size must be at least sizeof(int)");
@@ -195,7 +195,7 @@ namespace icl{
       return std::vector<float>((const float*)p, ((const float*)p) + size);
     }
 
-    template<> ICLUtils_API_I
+    template<>
     inline Any::Any(const std::vector<float> &v){
       std::string::resize(sizeof(int) + v.size() * sizeof(float));
       icl8u *p = (icl8u*)&std::string::operator[](0);
@@ -203,7 +203,7 @@ namespace icl{
       memcpy(p+sizeof(int),v.data(), v.size()*sizeof(float));
     }
 
-    template<> ICLUtils_API_I
+    template<>
     inline std::vector<int> Any::as<std::vector<int> >() const{
       const size_t l = std::string::length();
       if(l < sizeof(int)) throw ICLException("cannot convert Any to std::vector<int> size must be at least sizeof(int)");
@@ -216,7 +216,7 @@ namespace icl{
       return std::vector<int>((const int*)p, ((const int*)p) + size);
     }
 
-    template<> ICLUtils_API_I
+    template<>
     inline Any::Any(const std::vector<int> &v){
       std::string::resize(sizeof(int) + v.size() * sizeof(int));
       icl8u *p = (icl8u*)&std::string::operator[](0);

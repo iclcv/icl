@@ -30,8 +30,8 @@
 
 #pragma once
 
-#include <ICLCore/Types.h>
 #include <ICLUtils/CompatMacros.h>
+#include <ICLCore/Types.h>
 
 // forward declared QImage class
 class QImage;

@@ -29,6 +29,7 @@
 ********************************************************************/
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCV/WorkingLineSegment.h>
 
 #include <vector>

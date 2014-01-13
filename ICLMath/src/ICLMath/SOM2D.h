@@ -30,8 +30,8 @@
 
 #pragma once
 
-#include <ICLMath/SOM.h>
 #include <ICLUtils/CompatMacros.h>
+#include <ICLMath/SOM.h>
 
 namespace icl{
   namespace math{
@@ -44,7 +44,7 @@ namespace icl{
         of x-Cells and y-Cells directly as well as a specialized getNeuron()-
         function.
     */
-    class ICL_MATH_API_T SOM2D : public SOM{
+    class ICLMath_API SOM2D : public SOM{
   
       /** \cond this function is just used here for an inline vector creation*/
       template<class T>

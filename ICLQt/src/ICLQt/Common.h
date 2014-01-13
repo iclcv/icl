@@ -35,13 +35,14 @@
 #include <ICLQt/Application.h>
 #endif
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/StringUtils.h>
-#include <ICLQt/Quick.h>
-#include <ICLIO/GenericGrabber.h>
 #include <ICLUtils/ProgArg.h>
 #include <ICLUtils/Mutex.h>
-#include <ICLIO/FileWriter.h>
 #include <ICLCore/Color.h>
+#include <ICLIO/FileWriter.h>
+#include <ICLIO/GenericGrabber.h>
+#include <ICLQt/Quick.h>
 
 

@@ -30,12 +30,13 @@
 
 #pragma once
 
-#include <ICLQt/Widget.h>
-#include <QtCore/QMutex>
+#include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/VisualizationDescription.h>
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/Rect32f.h>
 #include <ICLMath/FixedMatrix.h>
-#include <ICLUtils/VisualizationDescription.h>
+#include <ICLQt/Widget.h>
+#include <QtCore/QMutex>
 
 namespace icl{
   /** \cond */

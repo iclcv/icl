@@ -31,6 +31,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/VisualizationDescription.h>
 #include <utility>
 

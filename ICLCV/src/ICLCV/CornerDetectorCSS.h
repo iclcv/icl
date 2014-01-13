@@ -30,10 +30,11 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Point32f.h>
+#include <ICLUtils/Configurable.h>
 #include <ICLCore/Types.h>
 #include <vector>
-#include <ICLUtils/Configurable.h>
 
 #ifdef ICL_SYSTEM_WINDOWS
 #define M_PI 3.14159265358979323846
@@ -91,7 +92,7 @@ namespace icl{
     class ICL_CV_API CornerDetectorCSS : public utils::Configurable{
       public:
       /// 1 dim gaussian kernel
-      struct GaussianKernel {
+      struct ICL_CV_API GaussianKernel {
         std::vector<icl32f> gau;
         float sigma;
         float cutoff;
@@ -152,9 +153,9 @@ namespace icl{
           xooo                xooo
           </pre>
           */
-      template<class T>
+      template<class T> ICL_CV_API
       const std::vector<std::vector<utils::Point32f> > &detectCorners(const std::vector<std::vector<T> > &boundaries, const std::vector<icl32f> &sigmas);
-      template<class T>
+      template<class T> ICL_CV_API
       const std::vector<utils::Point32f> &detectCorners(const std::vector<T> &boundary);
 
       /// returns the result of last detectCorners call

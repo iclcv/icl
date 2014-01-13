@@ -28,8 +28,8 @@
 **                                                                 **
 ********************************************************************/
 
-#include <ICLFilter/BinaryArithmeticalOp.h>
 #include <ICLCore/Img.h>
+#include <ICLFilter/BinaryArithmeticalOp.h>
 #include <math.h>
 
 using namespace icl::utils;

@@ -30,9 +30,10 @@
 
 #pragma once
 
-#include <ICLCore/Color.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Time.h>
 #include <ICLUtils/Size32f.h>
+#include <ICLCore/Color.h>
 
 #include <ICLIO/Grabber.h>
 

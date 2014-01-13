@@ -30,8 +30,9 @@
 
 #pragma once
 
-#include <string>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLQt/GUIHandle.h>
+#include <string>
 
 /** \cond */
 class QComboBox;

@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Converter.h>
 #include <ICLUtils/Uncopyable.h>
 
@@ -43,7 +44,7 @@ namespace icl{
         the FixedConverter.
         @see icl::Converter
     **/
-    class ICL_CORE_API FixedConverter : public utils::Uncopyable{
+    class ICLCore_API FixedConverter : public utils::Uncopyable{
       public:
       /// Create a new FixedConverter Object with given destination params and depth
       /** @param p output image parameters

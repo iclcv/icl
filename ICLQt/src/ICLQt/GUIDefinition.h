@@ -30,9 +30,10 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/Size.h>
 #include <string>
 #include <vector>
-#include <ICLUtils/Size.h>
 
 /** \cond */
 class QLayout;

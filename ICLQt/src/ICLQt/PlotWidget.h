@@ -30,10 +30,11 @@
 
 #pragma once
 
-#include <ICLQt/LowLevelPlotWidget.h>
-#include <ICLMath/FixedVector.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Array2D.h>
 #include <ICLUtils/VisualizationDescription.h>
+#include <ICLMath/FixedVector.h>
+#include <ICLQt/LowLevelPlotWidget.h>
 
 namespace icl{
   namespace qt{

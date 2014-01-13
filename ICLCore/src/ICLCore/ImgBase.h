@@ -31,13 +31,14 @@
 
 #pragma once
 
-#include <vector>
-#include <string>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/CoreFunctions.h>
 #include <ICLCore/ImgParams.h>
 #include <ICLUtils/Time.h>
 #include <ICLUtils/Range.h>
 #include <ICLUtils/SmartPtr.h>
+#include <vector>
+#include <string>
 
 namespace icl {
   namespace core{
@@ -127,7 +128,7 @@ namespace icl {
         }
         \endcode
     **/ 
-    class ICL_CORE_API ImgBase{
+    class ICLCore_API ImgBase{
       public:
       
       /// Destructor
@@ -315,7 +316,7 @@ namespace icl {
           @return converted image
           @see deepCopy
           */      
-      template<class T>
+      template<class T> ICLCore_API
       Img<T> *convert(Img<T> *poDst=NULL) const;
   
       /// returns a converted (or deep copied) instance of this image
@@ -339,7 +340,7 @@ namespace icl {
           @param poDst optionally given destination image pointer.
           @return converted image, containing the source images ROI
           */
-      template<class T>
+      template<class T> ICLCore_API
       Img<T> *convertROI(Img<T> *poDst=NULL) const;
   
       /// returns a converted (or deep copied) instance of this images ROI
@@ -901,7 +902,7 @@ namespace icl {
     };
   
     /// puts a string representation of the image into given steam
-    ICL_CORE_API std::ostream &operator<<(std::ostream &s, const ImgBase &image);
+    ICLCore_API std::ostream &operator<<(std::ostream &s, const ImgBase &image);
   } // namespace core
 }
 

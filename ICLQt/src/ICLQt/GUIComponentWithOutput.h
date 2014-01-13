@@ -30,12 +30,13 @@
 
 #pragma once 
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLQt/GUIComponent.h>
 
 namespace icl{
   namespace qt{
   
-    struct ICL_QT_API GUIComponentWithOutput : public GUIComponent{
+    struct GUIComponentWithOutput : public GUIComponent{
       GUIComponentWithOutput(const std::string &type, const std::string &params):
       GUIComponent(type,params){}
   

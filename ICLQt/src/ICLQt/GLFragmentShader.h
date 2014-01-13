@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/Exception.h>
 #include <ICLMath/FixedVector.h>

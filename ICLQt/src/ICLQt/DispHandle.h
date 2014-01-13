@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Array2D.h>
 #include <ICLQt/LabelHandle.h>
 #include <ICLQt/GUIHandle.h>
@@ -43,7 +44,7 @@ namespace icl{
     typedef utils::Array2D<LabelHandle>  LabelMatrix;
   
     /// Handle class for disp components \ingroup HANDLE
-    class ICL_QT_API DispHandle : public GUIHandle<LabelMatrix>{
+    class DispHandle : public GUIHandle<LabelMatrix>{
       public:
       /// create an empty handle
       DispHandle(){}

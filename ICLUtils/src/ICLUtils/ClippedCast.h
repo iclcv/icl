@@ -68,7 +68,7 @@ namespace icl{
     
     /** \cond */
     /// specializations for all buildin data types
-#define SPECIALISE_CLIPPED_CAST(T) template<> ICLUtils_API_I inline T clipped_cast<T,T>(T t) { return t; }
+#define SPECIALISE_CLIPPED_CAST(T) template<> inline T clipped_cast<T,T>(T t) { return t; }
     SPECIALISE_CLIPPED_CAST(int)
     SPECIALISE_CLIPPED_CAST(unsigned int)
     SPECIALISE_CLIPPED_CAST(char)

@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLMath/LeastSquareModelFitting.h>
 #include <ICLUtils/Point32f.h>
 
@@ -39,7 +40,7 @@ namespace icl{
     /// Direct Least Square Fitting specialization for 2D input data
     /** Specialized least square model fitting for 2D data. Also
         some special desing matrix creation methods are provided */
-    class ICL_MATH_API LeastSquareModelFitting2D : public LeastSquareModelFitting<double,utils::Point32f>{
+    class ICLMath_API LeastSquareModelFitting2D : public LeastSquareModelFitting<double,utils::Point32f>{
       /// super type
       typedef LeastSquareModelFitting<double, utils::Point32f> Super;
       public:

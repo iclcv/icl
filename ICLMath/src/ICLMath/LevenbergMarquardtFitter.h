@@ -30,9 +30,9 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLMath/DynVector.h>            
 #include <ICLUtils/Function.h>
-#include <ICLUtils/CompatMacros.h>
 
 namespace icl{
   namespace math{
@@ -249,7 +249,7 @@ namespace icl{
         \endcode
     */
     template<class Scalar>
-    class ICL_MATH_API_T LevenbergMarquardtFitter{
+    class ICLMath_IMP LevenbergMarquardtFitter{
       public:
       
       typedef DynColVector<Scalar> Vector; //!< vector type
@@ -257,21 +257,21 @@ namespace icl{
       typedef DynMatrix<Scalar> Matrix;    //!< matrix type (used for input data)
     
       /// Utility structure, that represents a fitting result
-      struct Result{ 
+      struct ICLMath_API Result{ 
         int iteration;                //!< number of iterations needed
         Scalar error;                 //!< reached error
         std::vector<Scalar> lambdas;  //!< last lambdas (one per output)
         Params params;                //!< final parameters
       
         /// overloaded ostream-operator
-        friend inline std::ostream &operator<<(std::ostream &str, const Result &d){
+        friend ICLMath_API inline std::ostream &operator<<(std::ostream &str, const Result &d){
           return str << "iteration: " << d.iteration << "  error:" << d.error 
                      << "  lambda[0]:" << d.lambdas[0] << "  params:" << d.params.transp();
         }
       };
 
       /// utility structure that is used in the static create_data utlity method
-      struct Data{
+      struct ICLMath_API Data{
         Matrix x;  //!< input (each row is a data sample)
         Matrix y;  //!< outputs
       };

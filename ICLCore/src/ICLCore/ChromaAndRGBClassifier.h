@@ -30,12 +30,13 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/ChromaClassifier.h>
 
 namespace icl{
   namespace core{
     /// Combination classifier using RG-chroma. as well as RGB-thresholded reference color classifiation \ingroup COMMON
-    struct ICL_CORE_API_T ChromaAndRGBClassifier{
+    struct ChromaAndRGBClassifier{
       /// classifies a given r-g-b-Pixel
       /**The function is:
           \code

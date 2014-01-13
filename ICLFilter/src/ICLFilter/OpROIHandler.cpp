@@ -28,8 +28,8 @@
 **                                                                 **
 ********************************************************************/
 
-#include <ICLFilter/OpROIHandler.h>
 #include <ICLUtils/Macros.h>
+#include <ICLFilter/OpROIHandler.h>
 
 using namespace icl::utils;
 using namespace icl::core;

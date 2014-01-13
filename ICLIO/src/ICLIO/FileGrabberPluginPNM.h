@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLIO/FileGrabberPlugin.h>
 
 namespace icl{

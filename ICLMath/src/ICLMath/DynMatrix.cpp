@@ -29,7 +29,6 @@
 ********************************************************************/
 
 #include <ICLMath/DynMatrix.h>
-#include <ICLUtils/Macros.h>
 #include <stdint.h>
 #include <complex>
 #include <algorithm>
@@ -464,12 +463,12 @@ namespace icl{
     }
   
     template<>
-    ICL_MATH_API DynMatrix<float> DynMatrix<float>::big_matrix_pinv(float zeroThreshold) const
+    ICLMath_API DynMatrix<float> DynMatrix<float>::big_matrix_pinv(float zeroThreshold) const
       throw (InvalidMatrixDimensionException,SingularMatrixException,ICLException){
       return big_matrix_pinv(zeroThreshold,sgesdd,cblas_sgemm);
     }
     template<>
-    ICL_MATH_API DynMatrix<double> DynMatrix<double>::big_matrix_pinv(double zeroThreshold) const
+    ICLMath_API DynMatrix<double> DynMatrix<double>::big_matrix_pinv(double zeroThreshold) const
       throw (InvalidMatrixDimensionException,SingularMatrixException,ICLException){
       return big_matrix_pinv(zeroThreshold,dgesdd,cblas_dgemm);
     }
@@ -658,7 +657,7 @@ namespace icl{
     }
   
   #ifdef HAVE_IPP
-    template<>
+    template<> ICLMath_API
     void find_eigenvectors(const DynMatrix<icl32f> &a, DynMatrix<icl32f> &eigenvectors, DynMatrix<icl32f> &eigenvalues, icl32f* buffer){
       const int n = a.cols();
   
@@ -672,7 +671,7 @@ namespace icl{
         throw ICLException(std::string("IPP-Error in ") + __FUNCTION__ + "\"" +ippGetStatusString(sts) +"\"");
       }
     }
-    template<>
+    template<> ICLMath_API
     void find_eigenvectors(const DynMatrix<icl64f> &a, DynMatrix<icl64f> &eigenvectors, DynMatrix<icl64f> &eigenvalues, icl64f* buffer){
       const int n = a.cols();
       icl64f * useBuffer = buffer ? buffer : new icl64f[n*n];
@@ -704,65 +703,65 @@ namespace icl{
   
   
   #ifdef HAVE_IPP
-    template<> ICL_MATH_API DynMatrix<float> DynMatrix<float>::inv() const throw (InvalidMatrixDimensionException,SingularMatrixException){
+    template<> ICLMath_API DynMatrix<float> DynMatrix<float>::inv() const throw (InvalidMatrixDimensionException,SingularMatrixException){
       return apply_dyn_matrix_inv<float,ippmInvert_m_32f>(*this);
     }
-    template<> ICL_MATH_API DynMatrix<double> DynMatrix<double>::inv() const throw (InvalidMatrixDimensionException,SingularMatrixException){
+    template<> ICLMath_API DynMatrix<double> DynMatrix<double>::inv() const throw (InvalidMatrixDimensionException,SingularMatrixException){
       return apply_dyn_matrix_inv<double,ippmInvert_m_64f>(*this);
     }
-    template<> ICL_MATH_API float DynMatrix<float>::det() const throw (InvalidMatrixDimensionException){
+    template<> ICLMath_API float DynMatrix<float>::det() const throw (InvalidMatrixDimensionException){
       return apply_dyn_matrix_det<float,ippmDet_m_32f>(*this);
     }
-    template<> ICL_MATH_API double DynMatrix<double>::det() const throw (InvalidMatrixDimensionException){
+    template<> ICLMath_API double DynMatrix<double>::det() const throw (InvalidMatrixDimensionException){
       return apply_dyn_matrix_det<double,ippmDet_m_64f>(*this);
     }
   #endif
   
   
-    template ICL_MATH_API void DynMatrix<float>::svd(DynMatrix<float>&, DynMatrix<float>&, DynMatrix<float>&) const throw (ICLException);
-    template ICL_MATH_API void DynMatrix<double>::svd(DynMatrix<double>&, DynMatrix<double>&, DynMatrix<double>&) const throw (ICLException);
+    template ICLMath_API void DynMatrix<float>::svd(DynMatrix<float>&, DynMatrix<float>&, DynMatrix<float>&) const throw (ICLException);
+    template ICLMath_API void DynMatrix<double>::svd(DynMatrix<double>&, DynMatrix<double>&, DynMatrix<double>&) const throw (ICLException);
   
-    template ICL_MATH_API void DynMatrix<float>::eigen(DynMatrix<float>&, DynMatrix<float>&) const throw(InvalidMatrixDimensionException, ICLException);
-    template ICL_MATH_API void DynMatrix<double>::eigen(DynMatrix<double>&, DynMatrix<double>&) const throw(InvalidMatrixDimensionException, ICLException);
+    template ICLMath_API void DynMatrix<float>::eigen(DynMatrix<float>&, DynMatrix<float>&) const throw(InvalidMatrixDimensionException, ICLException);
+    template ICLMath_API void DynMatrix<double>::eigen(DynMatrix<double>&, DynMatrix<double>&) const throw(InvalidMatrixDimensionException, ICLException);
   
-    template ICL_MATH_API DynMatrix<float> DynMatrix<float>::inv()const throw (InvalidMatrixDimensionException, SingularMatrixException);
-    template ICL_MATH_API DynMatrix<double> DynMatrix<double>::inv()const throw (InvalidMatrixDimensionException, SingularMatrixException);
+    template ICLMath_API DynMatrix<float> DynMatrix<float>::inv()const throw (InvalidMatrixDimensionException, SingularMatrixException);
+    template ICLMath_API DynMatrix<double> DynMatrix<double>::inv()const throw (InvalidMatrixDimensionException, SingularMatrixException);
   
-    template ICL_MATH_API float DynMatrix<float>::det()const throw (InvalidMatrixDimensionException);
-    template ICL_MATH_API double DynMatrix<double>::det()const throw (InvalidMatrixDimensionException);
+    template ICLMath_API float DynMatrix<float>::det()const throw (InvalidMatrixDimensionException);
+    template ICLMath_API double DynMatrix<double>::det()const throw (InvalidMatrixDimensionException);
   
-    template ICL_MATH_API void DynMatrix<float>::decompose_QR(DynMatrix<float> &Q, DynMatrix<float> &R) const
+    template ICLMath_API void DynMatrix<float>::decompose_QR(DynMatrix<float> &Q, DynMatrix<float> &R) const
       throw (InvalidMatrixDimensionException,SingularMatrixException);
-    template ICL_MATH_API void DynMatrix<double>::decompose_QR(DynMatrix<double> &Q, DynMatrix<double> &R) const
-      throw (InvalidMatrixDimensionException,SingularMatrixException);
-  
-    template ICL_MATH_API void DynMatrix<float>::decompose_RQ(DynMatrix<float> &R, DynMatrix<float> &Q) const
-      throw (InvalidMatrixDimensionException,SingularMatrixException);
-    template ICL_MATH_API void DynMatrix<double>::decompose_RQ(DynMatrix<double> &R, DynMatrix<double> &Q) const
+    template ICLMath_API void DynMatrix<double>::decompose_QR(DynMatrix<double> &Q, DynMatrix<double> &R) const
       throw (InvalidMatrixDimensionException,SingularMatrixException);
   
-    template ICL_MATH_API void DynMatrix<float>::decompose_LU(DynMatrix<float> &L, DynMatrix<float> &U, float zeroThreshold) const;
-    template ICL_MATH_API void DynMatrix<double>::decompose_LU(DynMatrix<double> &L, DynMatrix<double> &U, double zeroThreshold) const;
+    template ICLMath_API void DynMatrix<float>::decompose_RQ(DynMatrix<float> &R, DynMatrix<float> &Q) const
+      throw (InvalidMatrixDimensionException,SingularMatrixException);
+    template ICLMath_API void DynMatrix<double>::decompose_RQ(DynMatrix<double> &R, DynMatrix<double> &Q) const
+      throw (InvalidMatrixDimensionException,SingularMatrixException);
   
-    template ICL_MATH_API DynMatrix<float> DynMatrix<float>::solve_upper_triangular(const DynMatrix<float> &b)
+    template ICLMath_API void DynMatrix<float>::decompose_LU(DynMatrix<float> &L, DynMatrix<float> &U, float zeroThreshold) const;
+    template ICLMath_API void DynMatrix<double>::decompose_LU(DynMatrix<double> &L, DynMatrix<double> &U, double zeroThreshold) const;
+  
+    template ICLMath_API DynMatrix<float> DynMatrix<float>::solve_upper_triangular(const DynMatrix<float> &b)
       const throw(InvalidMatrixDimensionException);
-    template ICL_MATH_API DynMatrix<double> DynMatrix<double>::solve_upper_triangular(const DynMatrix<double> &b)
+    template ICLMath_API DynMatrix<double> DynMatrix<double>::solve_upper_triangular(const DynMatrix<double> &b)
       const throw(InvalidMatrixDimensionException);
   
-    template ICL_MATH_API DynMatrix<float> DynMatrix<float>::solve_lower_triangular(const DynMatrix<float> &b)
+    template ICLMath_API DynMatrix<float> DynMatrix<float>::solve_lower_triangular(const DynMatrix<float> &b)
       const throw(InvalidMatrixDimensionException);
-    template ICL_MATH_API DynMatrix<double> DynMatrix<double>::solve_lower_triangular(const DynMatrix<double> &b)
+    template ICLMath_API DynMatrix<double> DynMatrix<double>::solve_lower_triangular(const DynMatrix<double> &b)
       const throw(InvalidMatrixDimensionException);
   
-    template ICL_MATH_API DynMatrix<float> DynMatrix<float>::solve(const DynMatrix<float> &b, const std::string &method, float zeroThreshold)
+    template ICLMath_API DynMatrix<float> DynMatrix<float>::solve(const DynMatrix<float> &b, const std::string &method, float zeroThreshold)
       throw(InvalidMatrixDimensionException,  ICLException, SingularMatrixException);
-    template ICL_MATH_API DynMatrix<double> DynMatrix<double>::solve(const DynMatrix<double> &b, const std::string &method, double zeroThreshold)
+    template ICLMath_API DynMatrix<double> DynMatrix<double>::solve(const DynMatrix<double> &b, const std::string &method, double zeroThreshold)
       throw(InvalidMatrixDimensionException,  ICLException, SingularMatrixException);
   
   
-    template ICL_MATH_API DynMatrix<float> DynMatrix<float>::pinv(bool, float) const
+    template ICLMath_API DynMatrix<float> DynMatrix<float>::pinv(bool, float) const
       throw (InvalidMatrixDimensionException,SingularMatrixException,ICLException);
-    template ICL_MATH_API DynMatrix<double> DynMatrix<double>::pinv(bool, double) const
+    template ICLMath_API DynMatrix<double> DynMatrix<double>::pinv(bool, double) const
       throw (InvalidMatrixDimensionException,SingularMatrixException,ICLException);
   
     template<class T>
@@ -802,8 +801,8 @@ namespace icl{
     }
   
   #define X(T)                                                            \
-    template ICL_MATH_API std::ostream &operator<<(std::ostream&,const DynMatrix<T >&); \
-    template ICL_MATH_API std::istream &operator>>(std::istream&,DynMatrix<T >&)
+    template ICLMath_API std::ostream &operator<<(std::ostream&,const DynMatrix<T >&); \
+    template ICLMath_API std::istream &operator>>(std::istream&,DynMatrix<T >&)
   
     X(uint8_t);
     X(int16_t);
@@ -859,8 +858,8 @@ namespace icl{
   
     
   #define ICL_INSTANTIATE_DEPTH(D)                                        \
-    template DynMatrix<icl##D> DynMatrix<icl##D>::loadCSV(const std::string &filename) throw (ICLException); \
-    template void DynMatrix<icl##D>::saveCSV(const std::string&) throw (ICLException);
+    template ICLMath_API DynMatrix<icl##D> DynMatrix<icl##D>::loadCSV(const std::string &filename) throw (ICLException); \
+    template ICLMath_API void DynMatrix<icl##D>::saveCSV(const std::string&) throw (ICLException);
     ICL_INSTANTIATE_ALL_DEPTHS;
   #undef ICL_INSTANTIATE_DEPTH
   } // namespace math

@@ -60,7 +60,7 @@ namespace icl{
         and sub-region counts (0,0,0,2)\n
         The corresponding code is "b0122111"
     */
-    struct TwoLevelRegionStructure : public RegionStructure{
+    struct ICLMarkers_API TwoLevelRegionStructure : public RegionStructure{
       /// root region color
       icl8u color;
       

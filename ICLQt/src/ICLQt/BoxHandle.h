@@ -30,10 +30,11 @@
 
 #pragma once
 
-#include <QtGui/QWidget>
-#include <QtGui/QLayout>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLQt/GUIHandle.h>
 #include <ICLQt/ContainerHandle.h>
+#include <QtGui/QWidget>
+#include <QtGui/QLayout>
 
 /** \cond */
 class QScrollArea;
@@ -43,7 +44,7 @@ namespace icl{
   namespace qt{
     
     /// A Handle for container GUI components (hbox, vbox, hscroll and vscroll) \ingroup HANDLES
-    class ICL_QT_API BoxHandle : public GUIHandle<QWidget>, public ContainerHandle{
+    class BoxHandle : public GUIHandle<QWidget>, public ContainerHandle{
       bool horizontal;    //!< internal property that indicate the underlying layout orientation
       QScrollArea * scroll; //!< optional parent QScrollArea
       

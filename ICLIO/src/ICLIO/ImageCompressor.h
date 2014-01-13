@@ -30,8 +30,9 @@
 
 #pragma once
 
-#include <ICLCore/Img.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
+#include <ICLCore/Img.h>
 
 namespace icl{
   namespace io{
@@ -134,7 +135,7 @@ namespace icl{
       
       public:
       /// compression specification
-      struct CompressionSpec{
+      struct ICL_IO_API CompressionSpec{
         explicit CompressionSpec(const std::string &mode=std::string(),
                         const std::string &quality=std::string()):mode(mode),quality(quality){}
         std::string mode;    //!< mode
@@ -186,7 +187,7 @@ namespace icl{
       
       /// most simple dyn-size array with given data and length
       /** This class does no memory management at all */
-      struct CompressedData{
+      struct ICL_IO_API CompressedData{
         /// Constructor
         CompressedData(icl8u *bytes=0,int len=0, float compressionRatio=0, 
                        const CompressionSpec &compression=CompressionSpec()):

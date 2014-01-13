@@ -97,10 +97,10 @@ namespace icl{
         \endcode
     }
     */
-    class ICLUtils_API StackTimer{
+    class StackTimer{
     public:
       /// StackTimerNotifier constructor, USE BENCHMARK_THIS_FUNCTION-MACRO instead
-      class ICLUtils_API StackTimerNotifier{
+      class StackTimerNotifier{
         public:
         StackTimerNotifier(const char* functionname, 
                            bool writeCounts=true, 

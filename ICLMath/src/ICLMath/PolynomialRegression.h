@@ -30,10 +30,10 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLMath/DynMatrix.h>
 #include <vector>
 #include <string>
-#include <ICLUtils/CompatMacros.h>
 
 namespace icl{
   
@@ -43,7 +43,7 @@ namespace icl{
     
     /// utility class
     template<class T>
-    struct ICL_MATH_API_T PolynomialRegressionAttrib{
+    struct PolynomialRegressionAttrib{
       virtual T compute(const T *row) const = 0; 
       virtual std::string toString() const = 0;
     };
@@ -80,7 +80,7 @@ namespace icl{
         
     */
     template<class T>
-    class ICL_MATH_API_T PolynomialRegression{
+    class ICLMath_IMP PolynomialRegression{
       
       /// internally used matrxi type
       typedef DynMatrix<T> Matrix;
@@ -91,7 +91,7 @@ namespace icl{
       public:
       
       /// result type
-      class Result{
+      class ICLMath_API Result{
         /// parent class
         friend class PolynomialRegression;
 

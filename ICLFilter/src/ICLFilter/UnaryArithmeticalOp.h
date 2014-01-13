@@ -30,8 +30,9 @@
 
 #pragma once
 
-#include <ICLFilter/UnaryOp.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
+#include <ICLFilter/UnaryOp.h>
 
 namespace icl {
   namespace filter{
@@ -46,7 +47,7 @@ namespace icl {
         Img64f Fallback only
         The user have to take care about overflows. For example 255+1=0 on icl8u
      */
-    class ICL_FILTER_API UnaryArithmeticalOp : public UnaryOp {
+    class ICLFilter_API UnaryArithmeticalOp : public UnaryOp {
       public:
       /// this enum specifiy all possible binary arithmetical operations
       enum optype{

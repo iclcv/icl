@@ -30,14 +30,15 @@
 
 #pragma once
 
-#include <ICLFilter/BaseAffineOp.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
+#include <ICLFilter/BaseAffineOp.h>
 
 namespace icl{
   namespace filter{
     
     /// Class to mirror images vertically or horizontally \ingroup UNARY \ingroup AFFINE
-    class ICL_FILTER_API MirrorOp : public BaseAffineOp, public utils::Uncopyable {
+    class ICLFilter_API MirrorOp : public BaseAffineOp, public utils::Uncopyable {
       public:
       /// Constructor
       /**

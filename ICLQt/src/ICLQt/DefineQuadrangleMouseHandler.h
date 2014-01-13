@@ -30,10 +30,11 @@
 
 #pragma once
 
-#include <ICLQt/MouseHandler.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Lockable.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/VisualizationDescription.h>
+#include <ICLQt/MouseHandler.h>
 
 namespace icl{
   namespace qt{

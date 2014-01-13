@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Color.h>
 #include <ICLCore/Img.h>
 
@@ -40,7 +41,7 @@ namespace icl{
     /** The PseudoColorConverter converts a given 1-channel image into an RGB pseudocolor image.
         It can be set up to use a default color-table or it can be set up using a Stop-based
         piecewise linear color table as internal convert lookup table */
-    struct ICL_CORE_API PseudoColorConverter{
+    struct ICLCore_API PseudoColorConverter{
       /// mode internally used
       enum ColorTable{
         Default,         //!< default mode using default gradient
@@ -48,7 +49,7 @@ namespace icl{
       };
       
       /// This is for creation of color gradients
-      struct Stop{
+      struct ICLCore_API Stop{
         Stop(float relPos=0, const Color &color=Color(0,0,0)):
         relPos(relPos),color(color){}
         float relPos; //!< relative pos [0,1]

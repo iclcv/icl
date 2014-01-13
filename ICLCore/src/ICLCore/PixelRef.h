@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Types.h>
 #include <ICLUtils/SmartArray.h>
 #include <ICLUtils/Exception.h>
@@ -56,7 +57,7 @@ namespace icl{
         if source channel count is not compatible.
     */
     template<class T>
-    class ICL_CORE_API_T PixelRef{
+    class PixelRef{
       
       /// Internal data
       std::vector<T*> m_data;

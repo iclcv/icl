@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLCore/Img.h>
 
@@ -73,7 +74,7 @@ namespace icl{
         Otherwise, a new image with the desired parameters is created, stored
         and returned.
     */
-    class ICL_CORE_API ImgBuffer : public utils::Uncopyable{
+    class ICLCore_API ImgBuffer : public utils::Uncopyable{
       struct Data; //!< internal data storage class
       Data *data;  //!< internal data storage pointer
       ImgBuffer(); //!< private contructor -> use static function instance to get the singelton instance
@@ -86,15 +87,15 @@ namespace icl{
       static ImgBuffer *instance();
       
       /// returns an independent image if available, otherwise, a new one is added
-      template<class T>
+      template<class T> ICLCore_API
       Img<T> *get();
       
       /// returns an independent image with preferably correct parameters or a new one
-      template<class T>
+      template<class T> ICLCore_API
       Img<T> *get(const utils::Size &size, int channels);
   
       /// returns an independent image with preferably correct parameters or a new one
-      template<class T>
+      template<class T> ICLCore_API
       Img<T> *get(const ImgParams &params);
 
       /// non template version for get(void)

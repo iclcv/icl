@@ -32,11 +32,11 @@
 
 #ifdef HAVE_LIBJPEG
 
+#include <ICLUtils/CompatMacros.h>
 #include <stdio.h>
 #include <jerror.h>
 #include <jpeglib.h>
 #include <setjmp.h>
-#include <ICLUtils/CompatMacros.h>
 
 
 /** \cond  this is not commented, because this are only support structs and functions */ 

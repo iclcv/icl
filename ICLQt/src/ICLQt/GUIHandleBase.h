@@ -30,13 +30,14 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLQt/GUIWidget.h>
 
 namespace icl{
   namespace qt{
     
     /// Base class for GUIHandles providing functions to register callbacks \ingroup UNCOMMON
-    class ICL_QT_API GUIHandleBase{
+    class GUIHandleBase{
   
       protected:
       /// create a new GUIHandleBase

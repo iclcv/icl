@@ -38,28 +38,11 @@ namespace icl{
 
   #ifdef ICL_SYSTEM_WINDOWS
     typedef std::complex<double> xcomplex;
-
-    //inline double __real__(xcomplex c) { return c.; }
-    //inline double __imag__(xcomplex c) { return c._Val[1]; }
-#define __real__(C) (C)._Val[0]
-#define __imag__(C) (C)._Val[1]
+    #define __real__(C) (C)._Val[0]
+    #define __imag__(C) (C)._Val[1]
   #else
     typedef _Complex double xcomplex;
   #endif
-
-    typedef double xreal;
-    static const struct { double ZERO, INFIN; int MIN_EXP, MAX_EXP; }
-      xdata = { 0.0, DBL_MAX, DBL_MIN_EXP, DBL_MAX_EXP };
-    static xreal xnorm(xcomplex z) { return __real__(z)*__real__(z)+__imag__(z)*__imag__(z);}
-    static xreal xabs(xcomplex z) { return sqrt(xnorm(z)); }
-    static xreal xroot(xreal x, int n) { return pow(x,1.0/n); }
-    static int xlogb(xcomplex z) { return ilogb(xnorm(z)) / 2; }
-    #define xbits(z) DBL_MANT_DIG
-    #define xeta(z) DBL_EPSILON
-    static void xscalbln (xcomplex *z, int e) {
-      __real__(*z) = scalbln(__real__(*z), e);
-      __imag__(*z) = scalbln(__imag__(*z), e);
-    }
 
     /****************************************************************************
      *
@@ -76,6 +59,20 @@ namespace icl{
      *
      * The ICL developers applied only minor changes to this file
      ****************************************************************************/
+
+    typedef double xreal;
+    static const struct { double ZERO, INFIN; int MIN_EXP, MAX_EXP; }
+    xdata = { 0.0, DBL_MAX, DBL_MIN_EXP, DBL_MAX_EXP };
+    static xreal xnorm(xcomplex z) { return __real__(z)*__real__(z) + __imag__(z)*__imag__(z); }
+    static xreal xabs(xcomplex z) { return sqrt(xnorm(z)); }
+    static xreal xroot(xreal x, int n) { return pow(x, 1.0 / n); }
+    static int xlogb(xcomplex z) { return ilogb(xnorm(z)) / 2; }
+    #define xbits(z) DBL_MANT_DIG
+    #define xeta(z) DBL_EPSILON
+    static void xscalbln(xcomplex *z, int e) {
+      __real__(*z) = scalbln(__real__(*z), e);
+      __imag__(*z) = scalbln(__imag__(*z), e);
+    }
 
     // CAUCHY COMPUTES A LOWER BOUND ON THE MODULI OF THE ZEROS OF A
     // POLYNOMIAL - PT IS THE MODULUS OF THE COEFFICIENTS.
@@ -481,8 +478,8 @@ namespace icl{
       return degree - deg;
     }
 
-    // Wrapper function
-    //
+    // Wrapper function:
+    // This function calls the one made by Laurent Bartholdi
     int solve_poly(int degree, const double *in_real, const double *in_imag, double *out_real, double *out_imag)
     {
       int nroots;

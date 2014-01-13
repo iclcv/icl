@@ -30,9 +30,10 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+#include <ICLCore/Img.h>
 #include <QtGui/QPixmap>
 #include <QtGui/QIcon>
-#include <ICLCore/Img.h>
 
 namespace icl{
   namespace qt{

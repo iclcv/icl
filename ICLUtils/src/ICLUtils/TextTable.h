@@ -132,7 +132,7 @@ namespace icl{
         inline RowAssigner(TextTable &t, int row):t(t),row(row){}
 
         /// grant instantiation access to the parent TextTable class
-        friend class ICLUtils_API TextTable;
+        friend class TextTable;
 
         public:
         /// assigns a standard vector of strings (each element is put into a single column)

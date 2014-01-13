@@ -30,10 +30,12 @@
 
 #pragma once
 
-#include <ICLCV/ImageRegion.h>
-#include <ICLCore/Color.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Range.h>
 #include <ICLUtils/Uncopyable.h>
+#include <ICLCore/Color.h>
+#include <ICLCV/ImageRegion.h>
+
 namespace icl{
   namespace cv{
   
@@ -72,7 +74,7 @@ namespace icl{
       public:
       
       /// Internal blob-result type
-      struct Blob{
+        struct ICL_CV_API Blob{
         Blob():region(0),refColorIndex(-1){}
         Blob(const ImageRegion *region, const core::Color &refColor, int refColorIndex);
         

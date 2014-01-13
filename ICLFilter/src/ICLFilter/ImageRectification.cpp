@@ -409,7 +409,7 @@ namespace icl{
   #endif
   
     
-  #define ICL_INSTANTIATE_DEPTH(D) template class ICL_FILTER_API ImageRectification<icl##D>;
+  #define ICL_INSTANTIATE_DEPTH(D) template class ICLFilter_API ImageRectification<icl##D>;
     ICL_INSTANTIATE_ALL_DEPTHS;
   #undef ICL_INSTANTIATE_DEPTH
   } // namespace markers

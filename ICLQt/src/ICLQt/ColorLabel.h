@@ -30,9 +30,10 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+#include <ICLCore/Color.h>
 #include <ICLQt/ThreadedUpdatableWidget.h>
 #include <QtCore/QMutex>
-#include <ICLCore/Color.h>
 
 namespace icl{
   namespace qt{

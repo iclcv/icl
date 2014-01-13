@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/ImgBase.h>
 #include <ICLCore/Types.h>
 #include <ICLUtils/Exception.h>
@@ -61,7 +62,7 @@ namespace icl{
         <-4 -><- size  ->
         </pre>
     */
-    struct ICL_CORE_API ImageSerializer{
+    struct ICLCore_API ImageSerializer{
       
       /// Internally used type for image headers
       typedef std::vector<icl8u> ImageHeader;

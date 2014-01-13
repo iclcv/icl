@@ -30,9 +30,9 @@
 
 #pragma once
 
-#include <string>
-#include <ICLCore/Types.h>
 #include <ICLUtils/CompatMacros.h>
+#include <ICLCore/Types.h>
+#include <string>
 
 /// icl namespace
 namespace icl {

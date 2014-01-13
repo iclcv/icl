@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
 #include <ICLFilter/UnaryOp.h>
 
@@ -56,7 +57,7 @@ namespace icl {
         - icl32f: 10.9ms
         - icl64f: 21ms
         **/
-    class ICL_FILTER_API WeightChannelsOp : public UnaryOp {
+    class ICLFilter_API WeightChannelsOp : public UnaryOp {
       public:
       /// creates a new WeightChannelsOp object
       WeightChannelsOp(){}

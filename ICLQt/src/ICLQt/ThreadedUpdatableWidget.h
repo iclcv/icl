@@ -30,11 +30,11 @@
 
 #pragma once
 
+#include <ICLUtils/Macros.h>
 #include <QtGui/QWidget>
 #include <QtGui/QApplication>
 #include <QtCore/QEvent>
 #include <QtCore/QThread>
-#include <ICLUtils/Macros.h>
 
 namespace icl{
   namespace qt{
@@ -48,7 +48,7 @@ namespace icl{
         updateFromOtherThread used QApplication::postEvent, to post a UserType
         QEvent to this object, which is caught in the overloaded event() function
     */
-    class ICL_QT_API ThreadedUpdatableWidget : public QWidget{
+    class ThreadedUpdatableWidget : public QWidget{
       public:
       
       /// Base constructor

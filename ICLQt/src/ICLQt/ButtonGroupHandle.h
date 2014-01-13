@@ -30,9 +30,11 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+#include <ICLQt/GUIHandle.h>
 #include <vector>
 #include <string>
-#include <ICLQt/GUIHandle.h>
+
 /** \cond */
 class QRadioButton;
 /** \endcond */
@@ -44,40 +46,40 @@ namespace icl{
     typedef std::vector<QRadioButton*> RadioButtonVec;
   
     /// Class for handling button goups \ingroup HANDLE
-    class ICL_QT_API ButtonGroupHandle : public GUIHandle<RadioButtonVec> {
+    class ButtonGroupHandle : public GUIHandle<RadioButtonVec> {
       public:
       /// Create an empty handle
-      ButtonGroupHandle(){}
+      ICL_QT_API ButtonGroupHandle(){}
   
       /// Craete a valid handle
-      ButtonGroupHandle(RadioButtonVec *buttons, GUIWidget *w): GUIHandle<RadioButtonVec>(buttons,w){ }
+      ICL_QT_API ButtonGroupHandle(RadioButtonVec *buttons, GUIWidget *w) : GUIHandle<RadioButtonVec>(buttons, w){ }
       
       /// select a button with given index
-      void select(int id);
+      ICL_QT_API void select(int id);
       
       /// get the selected index
-      int getSelected() const;
+      ICL_QT_API int getSelected() const;
   
       /// get the text of the currently selected button
-      std::string getSelectedText() const;
+      ICL_QT_API std::string getSelectedText() const;
       
       /// returns the text of a button with given index
-      std::string getText(int id) const;
+      ICL_QT_API std::string getText(int id) const;
       
       /// sets the text of a button with index ot a given text
-      void setText(int id, const std::string &text);
+      ICL_QT_API void setText(int id, const std::string &text);
       
       /// disables all radio buttons
-      void disable();
+      ICL_QT_API void disable();
       
       /// enables all radio buttons
-      void enable();
+      ICL_QT_API void enable();
       
       /// disables button at index
-      void disable(int index);
+      ICL_QT_API void disable(int index);
       
       /// enables button at index
-      void enable(int index);
+      ICL_QT_API void enable(int index);
       
       private:
       /// utility function (number of elements)

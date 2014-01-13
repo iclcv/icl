@@ -30,9 +30,10 @@
 
 #pragma once
 
-#include <string>
-#include <ICLQt/GUIHandle.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/StringUtils.h>
+#include <ICLQt/GUIHandle.h>
+#include <string>
 
 namespace icl{
   namespace qt{

@@ -30,10 +30,11 @@
 
 #pragma once
 
-#include <ICLCore/ImgBase.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/ProgArg.h>
-#include <ICLIO/ImageOutput.h>
 #include <ICLUtils/SmartPtr.h>
+#include <ICLCore/ImgBase.h>
+#include <ICLIO/ImageOutput.h>
 
 namespace icl{
   namespace io{

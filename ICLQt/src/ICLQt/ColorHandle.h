@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLQt/GUIHandle.h>
 #include <ICLQt/ColorLabel.h>
 
@@ -37,7 +38,7 @@ namespace icl{
   namespace qt{
   
     /// Class wrapping ColorLabel GUI compoenent handling \ingroup HANDLES
-    class ICL_QT_API ColorHandle : public GUIHandle<ColorLabel>{
+    class ColorHandle : public GUIHandle<ColorLabel>{
       public:
       
       /// Create an empty handle

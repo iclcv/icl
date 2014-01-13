@@ -60,7 +60,7 @@ namespace icl{
         
         */
     template<class RESULT_T=float,class IDX_T=int>
-    class ICL_FILTER_API LUT2D{
+    class LUT2D{
       //    RESULT_T *lutOrig;
       RESULT_T *lut;
       int minVal;

@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
 #include <ICLUtils/Uncopyable.h>
 
@@ -39,7 +40,7 @@ namespace icl {
     /// Utiltity class for bayer pattern conversion
     /** The internal implementation was basically taken from
         the libdc files */
-    class ICL_CORE_API BayerConverter : public utils::Uncopyable{
+    class ICLCore_API BayerConverter : public utils::Uncopyable{
       public:
       
       enum bayerConverterMethod {

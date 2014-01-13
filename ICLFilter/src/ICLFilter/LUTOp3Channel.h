@@ -30,10 +30,11 @@
 
 #pragma once
 
-#include <ICLFilter/UnaryOp.h>
-#include <ICLCore/Img.h>
-#include <vector>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
+#include <ICLCore/Img.h>
+#include <ICLFilter/UnaryOp.h>
+#include <vector>
 
 namespace icl {
   namespace filter{
@@ -150,7 +151,7 @@ namespace icl {
         
     **/
     template<class T>
-    class ICL_FILTER_API LUTOp3Channel : public UnaryOp, public utils::Uncopyable {
+    class ICLFilter_API LUTOp3Channel : public UnaryOp, public utils::Uncopyable {
       public:
       
       /// Internal plugin class for the LUTOp3Channel 
@@ -158,7 +159,7 @@ namespace icl {
           functions. The basic implementation realized a default color distance 
           map on source images.
       */
-      class Plugin{
+      class ICLFilter_API Plugin{
         public:
         /// Empty constructor
         Plugin(){}
@@ -251,6 +252,7 @@ namespace icl {
       /// channel range increment (...)
       icl8u m_ucShift;
     };
+
   } // namespace filter
 } // namespace icl
 

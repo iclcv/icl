@@ -44,7 +44,7 @@
 namespace icl{
   namespace markers{
     /// Main Fiducial Detector class
-    class FiducialDetector : public utils::Uncopyable, public utils::Configurable{
+    class ICLMarkers_API FiducialDetector : public utils::Uncopyable, public utils::Configurable{
       
       /// hidden data class
       struct Data;

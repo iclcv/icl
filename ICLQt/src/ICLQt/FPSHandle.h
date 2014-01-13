@@ -30,12 +30,13 @@
 
 #pragma once
 
-#include <string>
-#include <QtCore/QString>
-#include <QtGui/QWidget>
+#include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/FPSEstimator.h>
 #include <ICLQt/GUIHandle.h>
 #include <ICLQt/CompabilityLabel.h>
-#include <ICLUtils/FPSEstimator.h>
+#include <QtCore/QString>
+#include <QtGui/QWidget>
+#include <string>
 
 namespace icl{
   namespace qt{
@@ -45,7 +46,7 @@ namespace icl{
     /** FPSHandles are created by the GUI class. FPSHandles must be notified
         each step using its
         @see GUI */
-    class ICL_QT_API FPSHandle : public GUIHandle<CompabilityLabel>{
+    class FPSHandle : public GUIHandle<CompabilityLabel>{
       public:
   
       // create an empty handle

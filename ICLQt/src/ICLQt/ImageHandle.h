@@ -30,9 +30,9 @@
 
 #pragma once
 
-
-#include <ICLQt/GUIHandle.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Exception.h>
+#include <ICLQt/GUIHandle.h>
 
 namespace icl{
   /** \cond */

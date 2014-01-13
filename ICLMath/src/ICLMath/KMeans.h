@@ -30,10 +30,10 @@
 
 #pragma once
 
-#include <ICLUtils/Random.h>
-#include <algorithm>
-#include <ICLUtils/Point32f.h>
 #include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/Random.h>
+#include <ICLUtils/Point32f.h>
+#include <algorithm>
 
 namespace icl{
   namespace math{
@@ -55,7 +55,7 @@ namespace icl{
         DynColVector, DynRowVector and Point32f
     */
     template<class Vector, class Scalar>
-    class ICL_MATH_API_T KMeans{
+    class KMeans{
       
       /// internal list of centroids
       std::vector<Vector> m_centers;
@@ -88,7 +88,7 @@ namespace icl{
       public:
 
       /// restult type
-      struct Result{
+      struct ICLMath_API Result{
         const std::vector<Vector> &centers; //!< final list of centroids
         const std::vector<int> &nums;       //!< final number of points for each centroid
         const std::vector<Scalar> &errors;  //!< average quantisation errors
@@ -167,12 +167,12 @@ namespace icl{
 
     /** \cond */
     template<>
-    ICL_MATH_API float KMeans<utils::Point32f, float>::dist(const utils::Point32f &a, const utils::Point32f &b){
+    float KMeans<utils::Point32f, float>::dist(const utils::Point32f &a, const utils::Point32f &b){
       return a.distanceTo(b);
     }
       
     template<>
-    ICL_MATH_API void KMeans<utils::Point32f, float>::setVectorNull(utils::Point32f &p){
+    void KMeans<utils::Point32f, float>::setVectorNull(utils::Point32f &p){
       p = utils::Point32f::null;
     }
     /** \endcond */

@@ -63,8 +63,8 @@ namespace icl {
             const cl::Image2D getImage2D() const;
 
         public:
-            friend class ICLUtils_API CLProgram;//!< for tight integration with CLProgram instances
-            friend class ICLUtils_API CLKernel;//!< for tight integration with CLKernel instances
+            friend class CLProgram;//!< for tight integration with CLProgram instances
+            friend class CLKernel;//!< for tight integration with CLKernel instances
 
             /// default constructor (creates null instance)
             CLImage2D();

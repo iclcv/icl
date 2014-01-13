@@ -30,8 +30,7 @@
 
 #pragma once
 
-#include <string>
-#include <vector>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/SmartPtr.h>
 #include <ICLUtils/Function.h>
 #include <ICLQt/DataStore.h>
@@ -39,6 +38,8 @@
 #include <QtGui/QLayout>
 #include <QtGui/QWidget>
 #include <QtGui/QApplication>
+#include <string>
+#include <vector>
 
 /** \cond */
 class QLayout;
@@ -166,21 +167,13 @@ namespace icl{
       
       /// simple callback, that can be registered at GUI components
       /** Simple callback methods don't get any information about the source */
-#ifdef ICL_SYSTEM_WINDOWS
-      typedef utils::Function<void*> Callback;
-#else
       typedef utils::Function<void> Callback;
-#endif
       
       /// complex callback type that can be registered at GUI components
       /** Complex callback methods get the GUI components handle name as
           parameters. By these means, single callbacks can be registered
           to several components and still be able to handle events differently */
-#ifdef ICL_SYSTEM_WINDOWS
-      typedef utils::Function<void*,const std::string&> ComplexCallback;
-#else
       typedef utils::Function<void, const std::string&> ComplexCallback;
-#endif
       
       
       /// registers a callback function on each component 

@@ -30,9 +30,10 @@
 
 #pragma once
 
-#include <string>
-#include <QtCore/QString>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLQt/GUIHandle.h>
+#include <QtCore/QString>
+#include <string>
 
 /** \cond */
 class QLineEdit;

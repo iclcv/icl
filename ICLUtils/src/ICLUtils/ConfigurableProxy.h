@@ -37,7 +37,7 @@ namespace icl{
   namespace utils{
 
     /// This class provides the getter and setter methods of an internally set Configurable.
-    class ICLUtils_API_T ConfigurableProxy{
+    class ConfigurableProxy{
       private:
         mutable Mutex m_configurableLock;
         Configurable* m_intConfigurable;

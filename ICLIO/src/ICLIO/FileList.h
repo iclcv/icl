@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/ShallowCopyable.h>
 #include <string>
 #include <vector>
@@ -38,8 +39,8 @@ namespace icl{
   namespace io{
     
     /** \cond */
-    class ICL_IO_API FileListImpl;
-    struct ICL_IO_API FileListImplDelOp { static void delete_func(FileListImpl *i); };
+    class FileListImpl;
+    struct FileListImplDelOp { static void delete_func(FileListImpl *i); };
     /** \endcond */
   
     /// Utility class implementing a list of files \ingroup UTILS_G

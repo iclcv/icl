@@ -30,14 +30,15 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/Random.h>
+
 #include <vector>
 #include <algorithm>
 #include <cmath>
 #ifdef HAVE_IPP
 #include <ipps.h>
 #endif
-
-#include <ICLUtils/Random.h>
 
 namespace icl {
   namespace math{
@@ -48,7 +49,7 @@ namespace icl {
         @return The euclidian distance |v1-v2|
     */
     template <class ForwardIterator> 
-    inline ICL_MATH_API_T float euclidian(ForwardIterator v1Begin, ForwardIterator v1End,
+    inline float euclidian(ForwardIterator v1Begin, ForwardIterator v1End,
                            ForwardIterator v2Begin) {
       float fSum = 0.0, fDiff;
       for (; v1Begin != v1End; ++v1Begin, ++v2Begin) {
@@ -74,7 +75,7 @@ namespace icl {
         @param end end iterator 
         IPP-optimized for float and double */
     template <class ForwardIterator>
-    inline ICL_MATH_API_T double mean(ForwardIterator begin, ForwardIterator end){
+    inline double mean(ForwardIterator begin, ForwardIterator end){
       if(begin == end) return 0;
       double sum = 0;
       int num = 0;
@@ -109,7 +110,7 @@ namespace icl {
         @param empiricMean if true, sum of square distances is devidec by n-1 else by n
         */
     template <class ForwardIterator>
-    inline ICL_MATH_API_T double variance(ForwardIterator begin, ForwardIterator end, double mean, bool empiricMean = true){
+    inline double variance(ForwardIterator begin, ForwardIterator end, double mean, bool empiricMean = true){
       if(begin == end) return 0;
       register double sum = 0;
       register double d = 0;

@@ -30,11 +30,12 @@
 
 #pragma once
 
-#include <vector>
-#include <QtCore/Qt>
-#include <ICLCore/Img.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Point.h>
 #include <ICLUtils/Point32f.h>
+#include <ICLCore/Img.h>
+#include <QtCore/Qt>
+#include <vector>
 
 namespace icl{
   namespace qt{

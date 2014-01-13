@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/BinaryOp.h>
 
 namespace icl {
@@ -41,7 +42,7 @@ namespace icl {
         If the result of the comparison is true, the corresponding output 
         pixel is set to 255; otherwise, it is set to 0.
         */
-    class ICL_FILTER_API BinaryCompareOp : public BinaryOp {
+    class ICLFilter_API BinaryCompareOp : public BinaryOp {
       public:
   #ifdef HAVE_IPP
       /// this enum specifiy all possible compare operations

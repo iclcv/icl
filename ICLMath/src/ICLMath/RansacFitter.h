@@ -30,12 +30,12 @@
 
 #pragma once
 
-#include <ICLMath/DynVector.h>
-#include <ICLMath/FixedVector.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Function.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/Random.h>
-#include <ICLUtils/CompatMacros.h>
+#include <ICLMath/DynVector.h>
+#include <ICLMath/FixedVector.h>
 
 namespace icl{
   namespace math{
@@ -60,7 +60,7 @@ namespace icl{
     */
     template<class DataPoint=std::vector<float>,
              class Model=std::vector<float> >
-    class ICL_MATH_API RansacFitter{
+    class RansacFitter{
       public:
       /// DataSet type (just a set of DataPoint instances)
       typedef std::vector<DataPoint> DataSet;

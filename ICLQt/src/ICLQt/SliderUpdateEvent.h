@@ -30,14 +30,14 @@
 
 #pragma once
 
-#include <QtCore/QEvent>
 #include <ICLUtils/CompatMacros.h>
+#include <QtCore/QEvent>
 
 namespace icl{ 
   namespace qt{
     
     /// Utility class for threaded updatable sliders 
-    struct ICL_QT_API SliderUpdateEvent : public QEvent{
+    struct SliderUpdateEvent : public QEvent{
       int value;
       static const QEvent::Type EVENT_ID=(QEvent::Type)(QEvent::User+1);
       SliderUpdateEvent(int value):

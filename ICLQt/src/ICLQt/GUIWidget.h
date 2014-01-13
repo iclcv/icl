@@ -30,10 +30,10 @@
 
 #pragma once
 
-#include <QtGui/QWidget>
 #include <ICLUtils/Size.h>
-#include <ICLQt/GUI.h>
 #include <ICLUtils/Uncopyable.h>
+#include <ICLQt/GUI.h>
+#include <QtGui/QWidget>
 
 /** \cond */
 class QGridLayout;
@@ -49,7 +49,7 @@ namespace icl{
     /** \endcond */
   
     /// Abstract class for GUI components \ingroup UNCOMMON
-    class GUIWidget : public QWidget, public utils::Uncopyable{
+    class ICL_QT_API GUIWidget : public QWidget, public utils::Uncopyable{
       Q_OBJECT;
       public:
       enum layoutType{

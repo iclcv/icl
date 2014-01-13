@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/UnaryOp.h>
 
 namespace icl {
@@ -55,7 +56,7 @@ namespace icl {
         
          <h2>Benchmarks</h2>
      */
-    class ICL_FILTER_API ThresholdOp : public UnaryOp {
+    class ICLFilter_API ThresholdOp : public UnaryOp {
   
      public:
         /// this enum specifiy all possible thresholding operations

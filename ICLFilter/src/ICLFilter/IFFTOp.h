@@ -29,13 +29,16 @@
 ********************************************************************/
 
 #pragma once
-#include <ICLCore/Img.h>
-#include <ICLFilter/UnaryOp.h>
-#include <ICLMath/FFTUtils.h>
-#include <cmath>
-#include <complex>
+
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/BasicTypes.h>
 #include <ICLMath/DynMatrix.h>
+#include <ICLMath/FFTUtils.h>
+#include <ICLCore/Img.h>
+#include <ICLFilter/UnaryOp.h>
+#include <cmath>
+#include <complex>
+
 namespace icl{
   namespace filter{
     /// This class implements the unary operator for the inverse fast and discrete 2D fourier transformation.
@@ -43,7 +46,7 @@ namespace icl{
         This implementation uses the ifft as far as it can be applied and switches to the idft,
         so you can use it if datasize is not a power of 2 too. If MKL or IPP is available, IFFTOp tries
         to use it if possible.*/
-    class ICL_FILTER_API IFFTOp : public UnaryOp{
+    class ICLFilter_API IFFTOp : public UnaryOp{
       
       private:
       ///Forwarddeklaration.

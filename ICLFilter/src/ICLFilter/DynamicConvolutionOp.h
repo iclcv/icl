@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/ConvolutionOp.h>
 
 namespace icl{
@@ -42,7 +43,7 @@ namespace icl{
         directly set as the (unbuffered) kernel data of the underlying Convolution
         class.
     */
-    class ICL_FILTER_API DynamicConvolutionOp : public ConvolutionOp {
+    class ICLFilter_API DynamicConvolutionOp : public ConvolutionOp {
       public:
       /// Constructor
       /**

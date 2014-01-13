@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLIO/FileWriterPlugin.h>
 
 namespace icl{

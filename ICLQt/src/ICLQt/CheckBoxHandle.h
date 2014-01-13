@@ -30,9 +30,10 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+#include <ICLQt/GUIHandle.h>
 #include <string>
 #include <vector>
-#include <ICLQt/GUIHandle.h>
 
 /**\cond */
 class QCheckBox;

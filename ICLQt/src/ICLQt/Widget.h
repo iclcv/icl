@@ -62,7 +62,7 @@ namespace icl{
         
         
     */
-    class ICLWidget : public QGLWidget{
+    class ICL_QT_API ICLWidget : public QGLWidget{
       Q_OBJECT
       public:
       /// just used internally 

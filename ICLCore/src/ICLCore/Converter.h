@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
 #include <ICLUtils/Uncopyable.h>
 
@@ -45,7 +46,7 @@ namespace icl{
         If demanded, the converter provides an interface to specify the order
         of the different operations.
     **/
-    class ICL_CORE_API Converter : public utils::Uncopyable{
+    class ICLCore_API Converter : public utils::Uncopyable{
       public:
       /// enum to define internal used operation order
       enum oporder{

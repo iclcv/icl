@@ -72,7 +72,7 @@ namespace icl{
         The whole marker structure becomes 13 x 17 units. These are 
         mapped linearily to the actual marker size in mm;
     */
-    struct MarkerMetricsICL1 : public MarkerCodeICL1 {
+    struct ICLMarkers_API MarkerMetricsICL1 : public MarkerCodeICL1 {
   
       /// real dimension of the root region
       utils::Size32f root;

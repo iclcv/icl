@@ -37,7 +37,7 @@
 namespace icl{
   namespace qt{
     /// Base class for Container like GUI handles as Box- or Tab widgets
-    class ICL_QT_API ContainerHandle{
+    class ContainerHandle{
       protected:
       /// must be subclassed
       ContainerHandle(){}

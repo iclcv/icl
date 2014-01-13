@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/MultiTypeMap.h>
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Function.h>

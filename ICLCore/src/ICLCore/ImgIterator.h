@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/CoreFunctions.h>
 #include <ICLMath/MatrixSubRectIterator.h>
 
@@ -238,7 +239,7 @@ namespace icl{
         only const ImgIterators which do not allow to change the image data.
         */
     template <typename Type>
-    class ICL_CORE_API_T ImgIterator : public math::MatrixSubRectIterator<Type>{
+    class ImgIterator : public math::MatrixSubRectIterator<Type>{
       public:
       
       static inline const ImgIterator<Type> create_end_roi_iterator(const Type *data,

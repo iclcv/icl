@@ -30,11 +30,12 @@
 
 #pragma once
 
-#include <ICLFilter/UnaryOp.h>
-#include <ICLCore/Img.h>
-#include <ICLUtils/Point.h>
-#include <vector>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
+#include <ICLUtils/Point.h>
+#include <ICLCore/Img.h>
+#include <ICLFilter/UnaryOp.h>
+#include <vector>
 
 namespace icl{
   namespace filter{
@@ -114,7 +115,7 @@ namespace icl{
         - \f$\gamma\f$ aspect-ratio of the Gaussian
         
     **/
-    class ICL_FILTER_API GaborOp : public UnaryOp, public utils::Uncopyable{
+    class ICLFilter_API GaborOp : public UnaryOp, public utils::Uncopyable{
       public:
       /// creates an empty GaborOp
       GaborOp();

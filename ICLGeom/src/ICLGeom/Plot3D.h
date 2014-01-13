@@ -47,7 +47,7 @@ namespace icl{
         Please note, that including this class will automaticall also include the
         dependent classes PlotWidget3D and PlotHandle3D for convenience reasons
         */
-    struct Plot3D : public qt::GUIComponent{
+    struct ICL_Geom_API Plot3D : public qt::GUIComponent{
       private:
       /// internally used utility method
       static std::string form_args(const utils::Range32f &xrange,

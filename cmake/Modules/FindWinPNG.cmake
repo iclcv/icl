@@ -34,8 +34,7 @@ INCLUDE(FindPackageHandleStandardArgs)
 # Start main part here
 # ---------------------------------------------------------------------
 
-# Ask the root directory of png.
-# http://gnuwin32.sourceforge.net/packages/jpeg.htm
+# Ask for the root directory of png.
 SET(PNG_ROOT PNG_ROOT CACHE PATH "Root directory of png")
 
 # Search PNG_ROOT first.

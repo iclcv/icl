@@ -30,8 +30,9 @@
 
 #pragma once
 
-#include <ICLCore/ImgBase.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
+#include <ICLCore/ImgBase.h>
 
 #ifndef HAVE_LIBJPEG
 #warning "libjpeg is not available, therefore, this header should not be included"

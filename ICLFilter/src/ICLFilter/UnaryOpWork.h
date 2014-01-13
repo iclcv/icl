@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/MultiThreader.h>
 #include <ICLFilter/UnaryOp.h>
 
@@ -37,7 +38,7 @@ namespace icl{
   namespace filter{
   
     /// Internally used Plugin class for multithreaded unary operations
-    struct ICL_FILTER_API UnaryOpWork : public utils::MultiThreader::Work{
+    struct ICLFilter_API UnaryOpWork : public utils::MultiThreader::Work{
       /// Construktor
       UnaryOpWork(UnaryOp *op, const core::ImgBase *src, core::ImgBase *dst):
         op(op),src(src),dst(dst){}

@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Time.h>
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/Exception.h>

@@ -88,8 +88,8 @@ namespace icl{
       }
     }
     
-    template struct ICL_MATH_API GenericHomography2D<float>;
-    template struct ICL_MATH_API GenericHomography2D<double>;
+    template struct ICLMath_API GenericHomography2D<float>;
+    template struct ICLMath_API GenericHomography2D<double>;
   
   } // namespace math
 }

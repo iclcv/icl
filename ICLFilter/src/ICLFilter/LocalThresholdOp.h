@@ -30,10 +30,11 @@
 
 #pragma once
 
-#include <ICLFilter/UnaryOp.h>
-#include <ICLUtils/Size.h>
-#include <vector>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
+#include <ICLUtils/Size.h>
+#include <ICLFilter/UnaryOp.h>
+#include <vector>
 
 namespace icl{
   namespace filter{
@@ -161,7 +162,7 @@ namespace icl{
         The experimental gamma-slope-computation is much more expensive: Here, the RegionMean algorithms
         needs about 25ms.
     */
-    class ICL_FILTER_API LocalThresholdOp : public UnaryOp, public utils::Uncopyable{
+    class ICLFilter_API LocalThresholdOp : public UnaryOp, public utils::Uncopyable{
       public:
       
       /// Internally used algorithm 

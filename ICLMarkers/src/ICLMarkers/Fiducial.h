@@ -52,7 +52,7 @@ namespace icl{
         Therefore, Fiducial instances can simply be copied
         as fast as a pointer-copy.
     */
-    class Fiducial{
+    class ICLMarkers_API Fiducial{
       /// hidden implementation (always managed by the parent MarkerDetector)
       FiducialImpl *impl;
       

@@ -30,10 +30,11 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/ImgBase.h>
+#include <ICLIO/GenericGrabber.h>
 #include <ICLQt/ContainerGUIComponents.h>
 #include <QtGui/QSplitter>
-#include <ICLIO/GenericGrabber.h>
 
 namespace icl{
   namespace qt{

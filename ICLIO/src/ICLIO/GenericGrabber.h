@@ -30,13 +30,13 @@
 
 #pragma once
 
-#include <ICLIO/Grabber.h>
-#include <string>
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Lockable.h>
 #include <ICLUtils/ProgArg.h>
 #include <ICLUtils/ConfigurableProxy.h>
+#include <ICLIO/Grabber.h>
+#include <string>
 
 namespace icl {
   namespace io{

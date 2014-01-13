@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Point.h>
 #include <ICLUtils/Rect.h>
 #include <vector>
@@ -44,7 +45,7 @@ namespace icl{
         sampling procedure is highly optimized by an implementation of Bresenhams line-
         algorithm, which draws lines without any floating point operation at all.
     */
-    class ICL_CORE_API Line{
+    class ICLCore_API Line{
       public:
       /// Null line of length 0 with and and end point 0
       static const Line null;
@@ -122,10 +123,10 @@ namespace icl{
     };
   
     /// ostream operator (start-x,start-y)(end-x,end-y)
-    ICL_CORE_API std::ostream &operator<<(std::ostream &s, const Line &l);
+    ICLCore_API std::ostream &operator<<(std::ostream &s, const Line &l);
     
     /// istream operator
-    ICL_CORE_API std::istream &operator>>(std::istream &s, Line &l);
+    ICLCore_API std::istream &operator>>(std::istream &s, Line &l);
   
   } // namespace core
 }

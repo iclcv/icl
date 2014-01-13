@@ -37,7 +37,7 @@ namespace icl{
   namespace markers{
     
     /// FiducialDetectorPlugin for reacTIVision's 'amoeba' markers\ingroup PLUGINS
-    class FiducialDetectorPluginAmoeba : public FiducialDetectorPluginHierarchical{
+    class ICLMarkers_API FiducialDetectorPluginAmoeba : public FiducialDetectorPluginHierarchical{
       /// internal data class
       class Data;
       

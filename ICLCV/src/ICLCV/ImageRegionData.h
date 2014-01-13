@@ -30,11 +30,12 @@
 
 #pragma once
 
-#include <ICLCore/Img.h>
+#include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/StackTimer.h>
 #include <ICLUtils/Any.h>
+#include <ICLCore/Img.h>
 #include <ICLCV/ImageRegionPart.h>
 #include <ICLCV/ImageRegion.h>
-#include <ICLUtils/StackTimer.h>
 #include <ICLCV/RegionPCAInfo.h>
 #include <ICLCV/CornerDetectorCSS.h>
 

@@ -30,10 +30,10 @@
 
 #pragma once
 
-#include <ICLMath/FixedVector.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/Exception.h>
-#include <ICLUtils/CompatMacros.h>
+#include <ICLMath/FixedVector.h>
 
 namespace icl{
   namespace math{
@@ -45,7 +45,7 @@ namespace icl{
         The template is instantiated for template parameter Pos type
         Point32f and FixedColVector<float,2>
     */
-    struct ICL_MATH_API StraightLine2D{
+    struct ICLMath_API StraightLine2D{
       /// internal typedef 
       typedef FixedColVector<float,2> PointPolar;
   

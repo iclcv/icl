@@ -36,8 +36,11 @@
 namespace icl{
   namespace markers{
     
+// compiler bug?: http://bytes.com/topic/c/answers/710704-const-static-initialization-visual-studio
+#ifndef ICL_SYSTEM_WINDOWS
     const int MarkerCodeICL1::P;
     const int MarkerCodeICL1::P1;
+#endif
   
     MarkerCodeICL1::MarkerCodeICL1():id(99999999){
       n[0] = n[1] = n[2] = n[3] = 0;

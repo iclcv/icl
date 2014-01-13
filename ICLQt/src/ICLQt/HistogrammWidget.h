@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLQt/PlotWidget.h>
 #include <ICLQt/ImageStatistics.h>
 

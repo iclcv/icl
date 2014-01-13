@@ -31,19 +31,20 @@
 
 #pragma once
 
-#include <string>
-#include <vector>
-#include <set>
-
-#include <ICLCore/ImgBase.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/SteppingRange.h>
 #include <ICLUtils/Function.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/Configurable.h>
 #include <ICLUtils/ProgArg.h>
+#include <ICLUtils/Uncopyable.h>
+#include <ICLCore/ImgBase.h>
 #include <ICLIO/GrabberDeviceDescription.h>
 #include <ICLIO/ImageUndistortion.h>
-#include <ICLUtils/Uncopyable.h>
+
+#include <string>
+#include <vector>
+#include <set>
 
 namespace icl {
   namespace io{

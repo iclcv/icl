@@ -5125,8 +5125,8 @@ namespace icl{
     // {{{ explicit template instatiations for interleavedToPlanar and planarToInterleaved
   
   #define EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(TYPEA,TYPEB)                            \
-    template ICL_CORE_API void planarToInterleaved<TYPEB, TYPEA>(const Img<TYPEB>*, TYPEA*, int);             \
-    template ICL_CORE_API void interleavedToPlanar<TYPEA, TYPEB>(const TYPEA*, Img<TYPEB>*, int)
+    template ICLCore_API void planarToInterleaved<TYPEB, TYPEA>(const Img<TYPEB>*, TYPEA*, int);             \
+    template ICLCore_API void interleavedToPlanar<TYPEA, TYPEB>(const TYPEA*, Img<TYPEB>*, int)
   
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(signed char,icl8u);
     

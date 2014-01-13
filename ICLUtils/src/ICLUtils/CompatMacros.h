@@ -32,6 +32,7 @@
 
 #ifdef ICL_SYSTEM_WINDOWS
   #define NOMINMAX
+  #define _USE_MATH_DEFINES
   //#define __msxml_h__ // icl has its own xml classes
   //#include <Windows.h>
 #endif
@@ -55,96 +56,76 @@
 
 #ifdef ICLUtils_EXPORTS
 #define ICLUtils_API   __declspec(dllexport)
-#define ICLUtils_API_T __declspec(dllexport)
-#define ICLUtils_API_I __declspec(dllexport)
 #else
 #define ICLUtils_API   __declspec(dllimport)
-#define ICLUtils_API_T
-#define ICLUtils_API_I __declspec(dllimport)
 #endif
 
 #ifdef ICLMath_EXPORTS
-#define ICL_MATH_API   __declspec(dllexport)
-#define ICL_MATH_API_T __declspec(dllexport)
+#define ICLMath_IMP
+#define ICLMath_API   __declspec(dllexport)
 #else
-#define ICL_MATH_API   __declspec(dllimport)
-#define ICL_MATH_API_T
+#define ICLMath_IMP   __declspec(dllimport)
+#define ICLMath_API   __declspec(dllimport)
 #endif
 
 #ifdef ICLCore_EXPORTS
-#define ICL_CORE_API   __declspec(dllexport)
-#define ICL_CORE_API_T __declspec(dllexport)
+#define ICLCore_API   __declspec(dllexport)
 #else
-#define ICL_CORE_API   __declspec(dllimport)
-#define ICL_CORE_API_T
+#define ICLCore_API   __declspec(dllimport)
 #endif
 
 #ifdef ICLFilter_EXPORTS
-#define ICL_FILTER_API   __declspec(dllexport)
-#define ICL_FILTER_API_T __declspec(dllexport)
+#define ICLFilter_API   __declspec(dllexport)
 #else
-#define ICL_FILTER_API   __declspec(dllimport)
-#define ICL_FILTER_API_T
+#define ICLFilter_API   __declspec(dllimport)
 #endif
 
 #ifdef ICLIO_EXPORTS
 #define ICL_IO_API   __declspec(dllexport)
-#define ICL_IO_API_T __declspec(dllexport)
 #else
 #define ICL_IO_API   __declspec(dllimport)
-#define ICL_IO_API_T
 #endif
 
 #ifdef ICLIO_EXPORTS
 #define ICL_IO_API   __declspec(dllexport)
-#define ICL_IO_API_T __declspec(dllexport)
 #else
 #define ICL_IO_API   __declspec(dllimport)
-#define ICL_IO_API_T
 #endif
 
 #ifdef ICLCV_EXPORTS
 #define ICL_CV_API   __declspec(dllexport)
-#define ICL_CV_API_T __declspec(dllexport)
 #else
 #define ICL_CV_API   __declspec(dllimport)
-#define ICL_CV_API_T
 #endif
 
 #ifdef ICLQt_EXPORTS
 #define ICL_QT_API   __declspec(dllexport)
-#define ICL_QT_API_T __declspec(dllexport)
 #else
 #define ICL_QT_API   __declspec(dllimport)
-#define ICL_QT_API_T
 #endif
 
 #ifdef ICLGeom_EXPORTS
 #define ICL_Geom_API   __declspec(dllexport)
-#define ICL_Geom_API_T __declspec(dllexport)
 #else
 #define ICL_Geom_API   __declspec(dllimport)
-#define ICL_Geom_API_T
+#endif
+
+#ifdef ICLMarkers_EXPORTS
+#define ICLMarkers_API   __declspec(dllexport)
+#else
+#define ICLMarkers_API   __declspec(dllimport)
 #endif
 
 #else
 #define ICLUtils_API
-#define ICLUtils_API_T
-#define ICL_MATH_API
-#define ICL_MATH_API_T
-#define ICL_CORE_API
-#define ICL_CORE_API_T
-#define ICL_FILTER_API
-#define ICL_FILTER_API_T
+#define ICLMath_IMP
+#define ICLMath_IMP
+#define ICLCore_API
+#define ICLFilter_API
 #define ICL_IO_API
-#define ICL_IO_API_T
 #define ICL_CV_API
-#define ICL_CV_API_T
 #define ICL_QT_API
-#define ICL_QT_API_T
 #define ICL_Geom_API
-#define ICL_Geom_API_T
-#define ICL_Markers_API
-#define ICL_Markers_API_T
+#define ICLMarkers_API
 #endif
 

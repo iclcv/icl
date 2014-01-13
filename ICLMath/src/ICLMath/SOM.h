@@ -30,10 +30,10 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Range.h>
 #include <ICLUtils/SmartPtr.h>
 #include <vector>
-#include <ICLUtils/CompatMacros.h>
 
 namespace icl{
   namespace math{
@@ -67,13 +67,13 @@ namespace icl{
         \f]
         
     **/
-    class ICL_MATH_API SOM{
+    class ICLMath_API SOM{
       public:
       /// SOM internal Neuron struct
       /** The SOM Neuron struct is defined by grid-location vector and prototype vector. In 
           addition, each neuron has a void* meta, that can be used to associate some 
           meta-data with a certain neuron (Note,the pointer meta is not released automatically).*/
-      struct Neuron{
+      struct ICLMath_API Neuron{
         typedef utils::SmartPtr<float> vector_type;
         
         /// create a null neuron

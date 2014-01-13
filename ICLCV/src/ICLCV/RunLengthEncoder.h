@@ -31,10 +31,11 @@
 
 #pragma once
 
-#include <ICLCV/WorkingLineSegment.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Size.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLCore/Img.h>
+#include <ICLCV/WorkingLineSegment.h>
 #include <vector>
 
 namespace icl { 

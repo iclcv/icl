@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Point.h>
 #include <ICLUtils/Size.h>
 #include <ICLUtils/Rect.h>
@@ -54,7 +55,7 @@ namespace icl{
         depth of the underlying Img object) Images can be made
         compatible by calling imageA.setParams(imageB.getParams())
     */
-    class ICL_CORE_API ImgParams{
+    class ICLCore_API ImgParams{
       public:
       /// as default size=(0,0), channels=0, format=matrix, roi=(0,0,0,0)
       static const ImgParams null;
@@ -287,10 +288,10 @@ namespace icl{
     };
   
     /// ostream operator SIZExCHANNELS@FORMAT.ROI
-    ICL_CORE_API std::ostream &operator<<(std::ostream &os, const ImgParams &p);
+    ICLCore_API std::ostream &operator<<(std::ostream &os, const ImgParams &p);
     
     /// istream operator
-    ICL_CORE_API std::istream &operator>>(std::istream &is, ImgParams &p);
+    ICLCore_API std::istream &operator>>(std::istream &is, ImgParams &p);
   
   } // namespace core
 }

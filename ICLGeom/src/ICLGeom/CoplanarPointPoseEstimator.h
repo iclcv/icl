@@ -89,7 +89,7 @@ namespace icl{
         Simple Pose estimation with 4 points needs about 80 ns on an Intel(R) Xeon(R) E5530
         (2.40GHz). If 9 points are used, it needs about 110 ns.
     */
-    class CoplanarPointPoseEstimator : public utils::Configurable{
+    class ICL_Geom_API CoplanarPointPoseEstimator : public utils::Configurable{
   
       /// Internal data structure
       struct Data;

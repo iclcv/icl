@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLQt/GUI.h>
 
 namespace icl{
@@ -40,7 +41,7 @@ namespace icl{
         GUI definition section. Internally a mutable GUIComponent is used
         for parameter accumulation
     */
-    struct ICL_QT_API ContainerGUIComponent : public GUI{
+    struct ContainerGUIComponent : public GUI{
       protected:
       /// we use these options to create the 
       /** Please note that inheritance is not possible because it leads to

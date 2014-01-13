@@ -43,7 +43,7 @@ namespace icl{
     /// FiducialDetectorPlugin for ARToolkit+ like markers using BCH coded IDs \ingroup PLUGINS
     /** This is just a plugin class that is used by the FiducialDetector. Please
         refer the icl::markers::FiducialDetector class documentation for more details. */
-    class FiducialDetectorPluginICL1 : public FiducialDetectorPluginHierarchical{
+    class ICLMarkers_API FiducialDetectorPluginICL1 : public FiducialDetectorPluginHierarchical{
       struct Data;
       Data *data;
   

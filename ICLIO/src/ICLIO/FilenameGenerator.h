@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/ShallowCopyable.h>
 #include <string>
 #include <vector>
@@ -37,8 +38,8 @@
 namespace icl{
   namespace io{
     /** \cond */
-    class ICL_IO_API FilenameGeneratorImpl;
-    struct ICL_IO_API FilenameGeneratorImplDelOp { static void delete_func(FilenameGeneratorImpl *i); };
+    class FilenameGeneratorImpl;
+    struct FilenameGeneratorImplDelOp { static void delete_func(FilenameGeneratorImpl *i); };
     /** \endcond */
   
     /// Utility class for generating a stream of filenames \ingroup UTILS_G

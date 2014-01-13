@@ -1615,13 +1615,13 @@ namespace icl {
   
     // }}}
   
-  #define ICL_INSTANTIATE_DEPTH(D)  template ICL_CORE_API void scaledCopyChannelROI<icl##D> \
+  #define ICL_INSTANTIATE_DEPTH(D)  template ICLCore_API void scaledCopyChannelROI<icl##D> \
     (const Img<icl##D>*,int,const Point&,const Size&,                     \
      Img<icl##D>*,int,const Point&,const Size&,scalemode); 
   
     /// IPP-OPTIMIZED specialization for icl8u to icl8u ROI sclaing (using ippiResize)
   #ifdef HAVE_IPP
-    template<> inline ICL_CORE_API void 
+    template<> inline void 
     scaledCopyChannelROI<icl8u>(const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
                                 Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
                                 scalemode eScaleMode)
@@ -1665,7 +1665,7 @@ namespace icl {
     // }}}
   
     /// IPP-OPTIMIZED specialization for icl32f to icl32f ROI sclaing (using ippiResize)
-    template<> inline ICL_CORE_API void 
+    template<> inline void 
     scaledCopyChannelROI<icl32f>(const Img<icl32f> *src, int srcC, const Point &srcOffs, const Size &srcSize,
                                  Img<icl32f> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
                                  scalemode eScaleMode)
@@ -1769,14 +1769,14 @@ namespace icl {
     // }}}
   
   
-  #define ICL_INSTANTIATE_DEPTH(D) template ICL_CORE_API void flippedCopyChannelROI<icl##D>(axis eAxis, \
-                                                                               const Img<icl##D> *src, int srcC, const Point &srcOffs, const Size &srcSize, \
-                                                                               Img<icl##D> *dst, int dstC, const Point &dstOffs, const Size &dstSize);
+  #define ICL_INSTANTIATE_DEPTH(D) template ICLCore_API void flippedCopyChannelROI<icl##D>(axis eAxis, \
+                          const Img<icl##D> *src, int srcC, const Point &srcOffs, const Size &srcSize, \
+                          Img<icl##D> *dst, int dstC, const Point &dstOffs, const Size &dstSize);
   
   #ifdef HAVE_IPP
     /// IPP-OPTIMIZED specialization for icl8u image flipping
     template <>
-    ICL_CORE_API void flippedCopyChannelROI<icl8u>(axis eAxis, 
+    ICLCore_API void flippedCopyChannelROI<icl8u>(axis eAxis, 
                                       const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
                                       Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize) {
       // {{{ open
@@ -1791,7 +1791,7 @@ namespace icl {
   
     /// IPP-OPTIMIZED specialization for icl8u image flipping
     template <>
-    ICL_CORE_API void flippedCopyChannelROI<icl32f>(axis eAxis, 
+    ICLCore_API void flippedCopyChannelROI<icl32f>(axis eAxis, 
                                        const Img<icl32f> *src, int srcC, const Point &srcOffs, const Size &srcSize,
                                        Img<icl32f> *dst, int dstC, const Point &dstOffs, const Size &dstSize) {
       // {{{ open
@@ -2127,8 +2127,8 @@ namespace icl {
     // {{{  explicit instantiation of the Img<T> classes 
 
 #define ICL_INSTANTIATE_DEPTH(D)           \
-  template class ICL_CORE_API Img<icl##D>; \
-  template struct ICL_CORE_API ImgBasePtrPtr<icl##D>;
+  template class ICLCore_API Img<icl##D>; \
+  template struct ICLCore_API ImgBasePtrPtr<icl##D>;
     ICL_INSTANTIATE_ALL_DEPTHS
 #undef ICL_INSTANTIATE_DEPTH
 

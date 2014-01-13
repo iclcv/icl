@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/OpROIHandler.h>
 
 namespace icl{
@@ -38,7 +39,7 @@ namespace icl{
     /** A list of all binary operators can be found here: \n
         \ref BINARY
     **/
-    class ICL_FILTER_API BinaryOp{
+    class ICLFilter_API BinaryOp{
       public:
       
       /// default constructor

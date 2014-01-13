@@ -30,10 +30,10 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <QtGui/QTextEdit>
 #include <QtCore/QEvent>
 #include <string>
-#include <ICLUtils/CompatMacros.h>
 
 namespace icl{
   namespace qt{

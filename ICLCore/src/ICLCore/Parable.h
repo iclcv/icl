@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Point32f.h>
 #include <stdio.h>
 
@@ -44,7 +45,7 @@ namespace icl{
         Parables can be created by given parameters a,b and c
         or by 3 given points.
     */
-    struct ICL_CORE_API_T Parable{
+    struct Parable{
       
       /// create an empty parable (a=b=c=0)
       Parable():a(0),b(0),c(0){}

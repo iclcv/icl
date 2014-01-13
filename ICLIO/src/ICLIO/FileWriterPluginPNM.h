@@ -30,10 +30,11 @@
 
 #pragma once
 
-#include <ICLIO/FileWriterPlugin.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Mutex.h>
-#include <vector>
 #include <ICLCore/Types.h>
+#include <ICLIO/FileWriterPlugin.h>
+#include <vector>
 
 namespace icl{
   namespace io{

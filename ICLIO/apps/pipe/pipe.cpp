@@ -84,7 +84,7 @@ void init_grabber(){
 const ImgBase *grab_image(){
   const ImgBase *img = 0;
   //  const ImgBase *image = grabber.grab();
-  if(!pa("-flip")){
+  if(!(bool)pa("-flip")){
     img = grabber.grab();
   }else{
     ImgBase *hack = const_cast<ImgBase*>(grabber.grab());
@@ -137,7 +137,7 @@ const ImgBase *grab_image(){
   }
    */
   
-  if(!pa("-clip")){
+  if(!(bool)pa("-clip")){
     return img;
     
   }else{
@@ -178,7 +178,7 @@ void send_app(){
   }
 #endif
  
-  while(first || !pa("-single-shot")){
+  while(first || !(bool)pa("-single-shot")){
     const ImgBase *grabbedImage = grab_image();
 
     const ImgBase *ppImage = 0;

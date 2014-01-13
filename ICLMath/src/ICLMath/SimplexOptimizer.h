@@ -30,18 +30,18 @@
 
 #pragma once
 
-#include <ICLMath/DynVector.h>
-#include <ICLMath/FixedVector.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Function.h>
 #include <ICLUtils/Uncopyable.h>
-#include <ICLUtils/CompatMacros.h>
+#include <ICLMath/DynVector.h>
+#include <ICLMath/FixedVector.h>
 
 namespace icl{
   namespace math{
     
     /// Utility structure, that is used as accumulator for results of the SimplexOptimizer class
     template<class T, class Vector=DynColVector<T> >
-    struct ICL_MATH_API_T SimplexOptimizationResult{
+    struct SimplexOptimizationResult{
       const Vector &x;                      //!< result vector
       const T fx;                           //!< error function value at result vector position
       const int iterations;                 //!< actual count of iterations that were used for optimization
@@ -142,7 +142,7 @@ namespace icl{
         to 2D/3D rendering
     */
     template<class T, class Vector=DynColVector<T> >
-    class ICL_MATH_API_T SimplexOptimizer : public utils::Uncopyable{
+    class ICLMath_IMP SimplexOptimizer : public utils::Uncopyable{
       struct Data; //!< internal data structure
       Data *m_data;  //!< internal data pointer
   

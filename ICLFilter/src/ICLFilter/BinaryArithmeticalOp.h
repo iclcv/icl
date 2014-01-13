@@ -30,8 +30,9 @@
 
 #pragma once
 
-#include <ICLFilter/BinaryOp.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
+#include <ICLFilter/BinaryOp.h>
 
 namespace icl {
   namespace filter{
@@ -40,7 +41,7 @@ namespace icl {
       Performance notes: The functions are implemented for all 5 ICL datatypes, but only
       Img8u, Img16s and Img32f are IPP-accelerated!      
     */
-    class ICL_FILTER_API BinaryArithmeticalOp : public BinaryOp{
+    class ICLFilter_API BinaryArithmeticalOp : public BinaryOp{
       public:
       /// this enum specifiy all possible binary arithmetical operations
       enum optype{

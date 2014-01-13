@@ -28,12 +28,12 @@
 **                                                                 **
 ********************************************************************/
 
+#include <ICLUtils/Macros.h>
 #include <ICLMath/StochasticOptimizer.h>
 #include <algorithm>
 #include <numeric>
 #include <vector>
 #include <functional>
-#include <ICLUtils/Macros.h>
 
 namespace icl{
   namespace math{
@@ -78,8 +78,8 @@ namespace icl{
       return Result(data,error,startError,maxSteps);
     }
   
-    template class ICL_MATH_API StochasticOptimizer<float>;
-    template class ICL_MATH_API StochasticOptimizer<double>;
+    template class ICLMath_API StochasticOptimizer<float>;
+    template class ICLMath_API StochasticOptimizer<double>;
     
   } // namespace math
 }

@@ -30,13 +30,14 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/UnaryOp.h>
 
 namespace icl {
   namespace filter{
     
     /// Class for creating a color distance map
-    class ICL_FILTER_API ColorDistanceOp : public UnaryOp{
+    class ICLFilter_API ColorDistanceOp : public UnaryOp{
       public:
       
       /// Dummy constructor (creates an uninitialized instance)

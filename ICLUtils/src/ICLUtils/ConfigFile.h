@@ -171,7 +171,7 @@ namespace icl{
     class ICLUtils_API ConfigFile : public Lockable{
   
       public:
-      friend class ICLUtils_API ConfigFileGUI;
+      friend class ConfigFileGUI;
       
       /// Internal exception type, thrown if an entry was not found
       struct ICLUtils_API EntryNotFoundException : public ICLException{
@@ -343,7 +343,7 @@ namespace icl{
         public:
         
         /// for tight integration with parent ConfigFile class
-        friend class ICLUtils_API ConfigFile;
+        friend class ConfigFile;
         
         /// automatic cast operator (lvalue type determines T)
         /** This automatic cast automatically detects the destination (lvalue) type an calls the

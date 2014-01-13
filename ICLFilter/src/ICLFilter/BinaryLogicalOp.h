@@ -30,8 +30,9 @@
 
 #pragma once
 
-#include <ICLFilter/BinaryOp.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
+#include <ICLFilter/BinaryOp.h>
 
 namespace icl {
   namespace filter{
@@ -40,7 +41,7 @@ namespace icl {
       Logical operations are only possible on integer types like Img8u, Img16s and Img32s
     */
   
-    class ICL_FILTER_API BinaryLogicalOp : public BinaryOp{
+    class ICLFilter_API BinaryLogicalOp : public BinaryOp{
       public:
       /// this enum specifiy all possible binary logical operations
       enum optype{

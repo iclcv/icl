@@ -91,24 +91,24 @@ namespace icl{
 	}
 	return dst;
       }
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl8u>&  fftshift(DynMatrix<icl8u> &src,DynMatrix<icl8u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl16u>&  fftshift(DynMatrix<icl16u> &src,DynMatrix<icl16u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl16s>&  fftshift(DynMatrix<icl16s> &src,DynMatrix<icl16s> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32u>&  fftshift(DynMatrix<icl32u> &src,DynMatrix<icl32u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32s>&  fftshift(DynMatrix<icl32s> &src,DynMatrix<icl32s> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32f>&  fftshift(DynMatrix<icl32f> &src,DynMatrix<icl32f> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  fftshift(DynMatrix<icl32c > &src,
                                                        DynMatrix<icl32c > &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl64f>&  fftshift(DynMatrix<icl64f> &src,DynMatrix<icl64f> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  fftshift(DynMatrix<std::complex<icl64f> > &src,
                                                        DynMatrix<std::complex<icl64f> > &dst);
       
@@ -164,24 +164,24 @@ namespace icl{
 	}
 	return dst;
       }
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl8u>&  ifftshift(DynMatrix<icl8u> &src,DynMatrix<icl8u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl16u>&  ifftshift(DynMatrix<icl16u> &src,DynMatrix<icl16u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl16s>&  ifftshift(DynMatrix<icl16s> &src,DynMatrix<icl16s> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32u>&  ifftshift(DynMatrix<icl32u> &src,DynMatrix<icl32u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32s>&  ifftshift(DynMatrix<icl32s> &src,DynMatrix<icl32s> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32f>&  ifftshift(DynMatrix<icl32f> &src,DynMatrix<icl32f> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  ifftshift(DynMatrix<icl32c > &src,
                                      DynMatrix<icl32c > &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl64f>&  ifftshift(DynMatrix<icl64f> &src,DynMatrix<icl64f> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  ifftshift(DynMatrix<std::complex<icl64f> > &src,
                                                    DynMatrix<std::complex<icl64f> > &dst);
       
@@ -230,10 +230,10 @@ namespace icl{
 	}
 	return dst;
       }
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32f>&  logpowerspectrum(const DynMatrix<icl32c > &src,
                                            DynMatrix<icl32f> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl64f>&  logpowerspectrum(const DynMatrix<std::complex<icl64f> > &src,
                                            DynMatrix<icl64f> &dst);
       
@@ -252,10 +252,10 @@ namespace icl{
 	}
 	return dst;
       }
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32f>&  powerspectrum(const DynMatrix<icl32c > &src,
                                         DynMatrix<icl32f> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl64f>&  powerspectrum(const DynMatrix<std::complex<icl64f> > &src,
                                         DynMatrix<icl64f> &dst);
 
@@ -277,32 +277,32 @@ namespace icl{
 	return dst;
       }
 
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl8u>&  continueMatrixToPowerOf2(const DynMatrix<icl8u> &src,
                                                   DynMatrix<icl8u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl16u>&  continueMatrixToPowerOf2(const DynMatrix<icl16u> &src,
                                                    DynMatrix<icl16u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32u>&  continueMatrixToPowerOf2(const DynMatrix<icl32u> &src,
                                                    DynMatrix<icl32u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl16s>&  continueMatrixToPowerOf2(const DynMatrix<icl16s> &src,
                                                    DynMatrix<icl16s> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32s>&  continueMatrixToPowerOf2(const DynMatrix<icl32s> &src,
                                                    DynMatrix<icl32s> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32f>&  continueMatrixToPowerOf2(const DynMatrix<icl32f> &src,
                                                    DynMatrix<icl32f> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  continueMatrixToPowerOf2(
                                                     const DynMatrix<icl32c > &src,
                                                     DynMatrix<icl32c > &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl64f>&  continueMatrixToPowerOf2(const DynMatrix<icl64f> &,
                                                    DynMatrix<icl64f> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  
       continueMatrixToPowerOf2(const DynMatrix<std::complex<icl64f> > &src,
                                DynMatrix<std::complex<icl64f> > &dst);
@@ -335,32 +335,32 @@ namespace icl{
 	}
 	return dst;
       }
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl8u>  &mirrorOnCenter(const DynMatrix<icl8u> &src,
                                         DynMatrix<icl8u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl16u> &mirrorOnCenter(const DynMatrix<icl16u> &src,
                                         DynMatrix<icl16u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32u> &mirrorOnCenter(const DynMatrix<icl32u> &src,
                                         DynMatrix<icl32u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl16s> &mirrorOnCenter(const DynMatrix<icl16s> &src,
                                         DynMatrix<icl16s> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32s> &mirrorOnCenter(const DynMatrix<icl32s> &src,
                                         DynMatrix<icl32s> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32f> &mirrorOnCenter(const DynMatrix<icl32f> &src,
                                         DynMatrix<icl32f> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c > &mirrorOnCenter(
                                          const DynMatrix<icl32c > &src,
                                          DynMatrix<icl32c > &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl64f> &mirrorOnCenter(const DynMatrix<icl64f> &src,
                                         DynMatrix<icl64f> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> > &mirrorOnCenter(
                                                        const DynMatrix<std::complex<icl64f> > &src,
                                                        DynMatrix<std::complex<icl64f> > &dst);
@@ -385,32 +385,32 @@ namespace icl{
 	}
 	return dst;
       }
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl8u>&  makeborder(const DynMatrix<icl8u> &src,
                                     DynMatrix<icl8u> &dst, icl8u borderFill);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl16u>&  makeborder(const DynMatrix<icl16u> &src,
                                      DynMatrix<icl16u> &dst, icl16u borderFill);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32u>&  makeborder(const DynMatrix<icl32u> &src,
                                      DynMatrix<icl32u> &dst, icl32u borderFill);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl16s>&  makeborder(const DynMatrix<icl16s> &src,
                                      DynMatrix<icl16s> &dst, icl16s borderFill);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32s>&  makeborder(const DynMatrix<icl32s> &src,
                                      DynMatrix<icl32s> &dst, icl32s borderFill);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32f>&  makeborder(const DynMatrix<icl32f> &src,
                                      DynMatrix<icl32f> &dst,icl32f borderFill);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  makeborder(
                                       const DynMatrix<icl32c > &src,
                                       DynMatrix<icl32c > &dst,icl32c borderFill);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl64f>&  makeborder(const DynMatrix<icl64f> &src,
                                      DynMatrix<icl64f> &dst,icl64f borderFill);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  makeborder(
                                                     const DynMatrix<std::complex<icl64f> > &src,
                                                     DynMatrix<std::complex<icl64f> > &dst,std::complex<icl64f> borderFill);
@@ -428,34 +428,34 @@ namespace icl{
 	}
 	return dst;
       }
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl8u> &imagpart(const DynMatrix<icl32c > &src,
                                  DynMatrix<icl8u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl16u> &imagpart(const DynMatrix<icl32c > &src,
                                   DynMatrix<icl16u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32u> &imagpart(const DynMatrix<icl32c > &src,
                                   DynMatrix<icl32u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32f> &imagpart(const DynMatrix<icl32c > &src,
                                   DynMatrix<icl32f> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl64f> &imagpart(const DynMatrix<icl32c > &src,
                                   DynMatrix<icl64f> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl8u> &imagpart(const DynMatrix<std::complex<icl64f> > &src,
                                  DynMatrix<icl8u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl16u> &imagpart(const DynMatrix<std::complex<icl64f> > &src,
                                   DynMatrix<icl16u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32u> &imagpart(const DynMatrix<std::complex<icl64f> > &src,
                                   DynMatrix<icl32u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32f> &imagpart(const DynMatrix<std::complex<icl64f> > &src,
                                   DynMatrix<icl32f> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl64f> &imagpart(const DynMatrix<std::complex<icl64f> > &src,
                                   DynMatrix<icl64f> &dst);
 
@@ -472,46 +472,46 @@ namespace icl{
 	}
 	return dst;
       }
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl8u>&  realpart(const DynMatrix<icl32c > &src,
                                   DynMatrix<icl8u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl16u>&  realpart(const DynMatrix<icl32c > &src,
                                    DynMatrix<icl16u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32u>&  realpart(const DynMatrix<icl32c > &src,
                                    DynMatrix<icl32u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl16s>&  realpart(const DynMatrix<icl32c > &src,
                                    DynMatrix<icl16s> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32s>&  realpart(const DynMatrix<icl32c > &src,
                                    DynMatrix<icl32s> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32f>&  realpart(const DynMatrix<icl32c > &src,
                                    DynMatrix<icl32f> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl64f>&  realpart(const DynMatrix<icl32c > &src,
                                    DynMatrix<icl64f> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl8u>&  realpart(const DynMatrix<std::complex<icl64f> > &src,
                                   DynMatrix<icl8u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl16u>&  realpart(const DynMatrix<std::complex<icl64f> > &src,
                                    DynMatrix<icl16u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32u>&  realpart(const DynMatrix<std::complex<icl64f> > &src,
                                    DynMatrix<icl32u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl16s>&  realpart(const DynMatrix<std::complex<icl64f> > &src,
                                    DynMatrix<icl16s> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32s>&  realpart(const DynMatrix<std::complex<icl64f> > &src,
                                    DynMatrix<icl32s> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32f>&  realpart(const DynMatrix<std::complex<icl64f> > &src,
                                    DynMatrix<icl32f> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl64f>&  realpart(const DynMatrix<std::complex<icl64f> > &src,
                                    DynMatrix<icl64f> &dst);
 
@@ -532,10 +532,10 @@ namespace icl{
           imagdata[i] = (T)srcdata[i].imag();
 	}
       }
-      template ICL_MATH_API void
+      template ICLMath_API void
       split_complex(const DynMatrix<icl32c > &src,DynMatrix<icl32f> &real,
                     DynMatrix<icl32f> &img);
-      template ICL_MATH_API void
+      template ICLMath_API void
       split_complex(const DynMatrix<std::complex<icl64f> > &src,DynMatrix<icl64f> &real,
                     DynMatrix<icl64f> &img);
 
@@ -553,46 +553,46 @@ namespace icl{
 	}
 	return dst;
       }
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl8u>&  magnitude(const DynMatrix<icl32c > &src,
                                    DynMatrix<icl8u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl16u>&  magnitude(const DynMatrix<icl32c > &src,
                                     DynMatrix<icl16u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32u>&  magnitude(const DynMatrix<icl32c > &src,
                                     DynMatrix<icl32u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl16s>&  magnitude(const DynMatrix<icl32c > &src,
                                     DynMatrix<icl16s> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32s>&  magnitude(const DynMatrix<icl32c > &src,
                                     DynMatrix<icl32s> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32f>&  magnitude(const DynMatrix<icl32c > &src,
                                          DynMatrix<icl32f> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl64f>&  magnitude(const DynMatrix<icl32c > &src,
                                          DynMatrix<icl64f> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl8u>&  magnitude(const DynMatrix<std::complex<icl64f> > &src,
                                         DynMatrix<icl8u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl16u>&  magnitude(const DynMatrix<std::complex<icl64f> > &src,
                                          DynMatrix<icl16u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32u>&  magnitude(const DynMatrix<std::complex<icl64f> > &src,
                                          DynMatrix<icl32u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl16s>&  magnitude(const DynMatrix<std::complex<icl64f> > &src,
                                          DynMatrix<icl16s> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32s>&  magnitude(const DynMatrix<std::complex<icl64f> > &src,
                                          DynMatrix<icl32s> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32f>&  magnitude(const DynMatrix<std::complex<icl64f> > &src,
                                          DynMatrix<icl32f> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl64f>&  magnitude(const DynMatrix<std::complex<icl64f> > &src,
                                          DynMatrix<icl64f> &dst);
 
@@ -628,46 +628,46 @@ namespace icl{
 	}
 	return dst;
       }
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl8u>&  phase(const DynMatrix<icl32c > &src,
                                     DynMatrix<icl8u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl16u>&  phase(const DynMatrix<icl32c > &src,
                                      DynMatrix<icl16u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32u>&  phase(const DynMatrix<icl32c > &src,
                                      DynMatrix<icl32u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl16s>&  phase(const DynMatrix<icl32c > &src,
                                      DynMatrix<icl16s> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32s>&  phase(const DynMatrix<icl32c > &src,
                                      DynMatrix<icl32s> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32f>&  phase(const DynMatrix<icl32c > &src,
                                      DynMatrix<icl32f> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl64f>&  phase(const DynMatrix<icl32c > &src,
                                      DynMatrix<icl64f> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl8u>&  phase(const DynMatrix<std::complex<icl64f> > &src,
                                     DynMatrix<icl8u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl16u>&  phase(const DynMatrix<std::complex<icl64f> > &src,
                                      DynMatrix<icl16u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32u>&  phase(const DynMatrix<std::complex<icl64f> > &src,
                                      DynMatrix<icl32u> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl16s>&  phase(const DynMatrix<std::complex<icl64f> > &src,
                                      DynMatrix<icl16s> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32s>&  phase(const DynMatrix<std::complex<icl64f> > &src,
                                      DynMatrix<icl32s> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32f>&  phase(const DynMatrix<std::complex<icl64f> > &src,
                                      DynMatrix<icl32f> &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl64f>&  phase(const DynMatrix<std::complex<icl64f> > &src,
                                      DynMatrix<icl64f> &dst);
 
@@ -707,10 +707,10 @@ namespace icl{
           }
 	}
       }
-      template ICL_MATH_API
+      template ICLMath_API
       void  split_magnitude_phase(const DynMatrix<icl32c > &src,
                                   DynMatrix<icl32f> &magnitude, DynMatrix<icl32f> &phase);
-      template ICL_MATH_API
+      template ICLMath_API
       void  split_magnitude_phase(const DynMatrix<std::complex<icl64f> > &src,
                                   DynMatrix<icl64f> &magnitude, DynMatrix<icl64f> &phase);
 
@@ -731,46 +731,46 @@ namespace icl{
 	}
 	return dst;
       }
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c > &joinComplex(const DynMatrix<icl8u> &real,
                                                          const DynMatrix<icl8u> &im,DynMatrix<icl32c > &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c > &joinComplex(const DynMatrix<icl16u> &real,
                                                          const DynMatrix<icl16u> &im,DynMatrix<icl32c > &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c > &joinComplex(const DynMatrix<icl32u> &real,
                                                          const DynMatrix<icl32u> &im,DynMatrix<icl32c > &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c > &joinComplex(const DynMatrix<icl16s> &real,
                                                          const DynMatrix<icl16s> &im,DynMatrix<icl32c > &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c > &joinComplex(const DynMatrix<icl32s> &real,
                                                          const DynMatrix<icl32s> &im,DynMatrix<icl32c > &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c > &joinComplex(const DynMatrix<icl32f> &real,
                                                          const DynMatrix<icl32f> &im,DynMatrix<icl32c > &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c > &joinComplex(const DynMatrix<icl64f> &real,
                                                          const DynMatrix<icl64f> &im,DynMatrix<icl32c > &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> > &joinComplex(const DynMatrix<icl8u> &real,
                                                          const DynMatrix<icl8u> &im,DynMatrix<std::complex<icl64f> > &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> > &joinComplex(const DynMatrix<icl16u> &real,
                                                          const DynMatrix<icl16u> &im,DynMatrix<std::complex<icl64f> > &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> > &joinComplex(const DynMatrix<icl32u> &real,
                                                          const DynMatrix<icl32u> &im,DynMatrix<std::complex<icl64f> > &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> > &joinComplex(const DynMatrix<icl16s> &real,
                                                          const DynMatrix<icl16s> &im,DynMatrix<std::complex<icl64f> > &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> > &joinComplex(const DynMatrix<icl32s> &real,
                                                          const DynMatrix<icl32s> &im,DynMatrix<std::complex<icl64f> > &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> > &joinComplex(const DynMatrix<icl32f> &real,
                                                          const DynMatrix<icl32f> &im,DynMatrix<std::complex<icl64f> > &dst);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> > &joinComplex(const DynMatrix<icl64f> &real,
                                                          const DynMatrix<icl64f> &im,DynMatrix<std::complex<icl64f> > &dst);
 
@@ -825,26 +825,26 @@ namespace icl{
           return m3;
 	}
       }
-      template ICL_MATH_API icl32c*  fft(unsigned int n, const icl8u* a);
-      template ICL_MATH_API icl32c*  fft(unsigned int n, const icl16u* a);
-      template ICL_MATH_API icl32c*  fft(unsigned int n, const icl32u* a);
-      template ICL_MATH_API icl32c*  fft(unsigned int n, const icl16s* a);
-      template ICL_MATH_API icl32c*  fft(unsigned int n, const icl32s* a);
+      template ICLMath_API icl32c*  fft(unsigned int n, const icl8u* a);
+      template ICLMath_API icl32c*  fft(unsigned int n, const icl16u* a);
+      template ICLMath_API icl32c*  fft(unsigned int n, const icl32u* a);
+      template ICLMath_API icl32c*  fft(unsigned int n, const icl16s* a);
+      template ICLMath_API icl32c*  fft(unsigned int n, const icl32s* a);
 
-      template ICL_MATH_API std::complex<icl64f>*  fft(unsigned int n, const icl8u* a);
-      template ICL_MATH_API std::complex<icl64f>*  fft(unsigned int n, const icl16u* a);
-      template ICL_MATH_API std::complex<icl64f>*  fft(unsigned int n, const icl32u* a);
-      template ICL_MATH_API std::complex<icl64f>*  fft(unsigned int n, const icl16s* a);
-      template ICL_MATH_API std::complex<icl64f>*  fft(unsigned int n, const icl32s* a);
+      template ICLMath_API std::complex<icl64f>*  fft(unsigned int n, const icl8u* a);
+      template ICLMath_API std::complex<icl64f>*  fft(unsigned int n, const icl16u* a);
+      template ICLMath_API std::complex<icl64f>*  fft(unsigned int n, const icl32u* a);
+      template ICLMath_API std::complex<icl64f>*  fft(unsigned int n, const icl16s* a);
+      template ICLMath_API std::complex<icl64f>*  fft(unsigned int n, const icl32s* a);
       
-      template ICL_MATH_API icl32c*  fft(unsigned int n, const icl32f* a);
-      template ICL_MATH_API std::complex<icl64f>*  fft(unsigned int n, const icl32f* a);
-      template ICL_MATH_API std::complex<icl64f>*  fft(unsigned int n, const icl64f* a);
-      template ICL_MATH_API icl32c*  fft(unsigned int n, const icl64f* a);
-      template ICL_MATH_API icl32c*  fft(unsigned int n, const icl32c* a);
-      template ICL_MATH_API std::complex<icl64f>*  fft(unsigned int n, const icl32c* a);
-      template ICL_MATH_API std::complex<icl64f>*  fft(unsigned int n, const std::complex<icl64f>* a);
-      template ICL_MATH_API icl32c*  fft(unsigned int n, const std::complex<icl64f>* a);
+      template ICLMath_API icl32c*  fft(unsigned int n, const icl32f* a);
+      template ICLMath_API std::complex<icl64f>*  fft(unsigned int n, const icl32f* a);
+      template ICLMath_API std::complex<icl64f>*  fft(unsigned int n, const icl64f* a);
+      template ICLMath_API icl32c*  fft(unsigned int n, const icl64f* a);
+      template ICLMath_API icl32c*  fft(unsigned int n, const icl32c* a);
+      template ICLMath_API std::complex<icl64f>*  fft(unsigned int n, const icl32c* a);
+      template ICLMath_API std::complex<icl64f>*  fft(unsigned int n, const std::complex<icl64f>* a);
+      template ICLMath_API icl32c*  fft(unsigned int n, const std::complex<icl64f>* a);
       
 #ifdef HAVE_IPP
       template<typename T>
@@ -907,22 +907,22 @@ namespace icl{
 	delete[] dstbuf;
 	return dst;
       }
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_fft(const DynMatrix<icl8u> &src,
                                                            DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) throw (FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_fft(const DynMatrix<icl16u> &src,
                                                            DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) throw (FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_fft(const DynMatrix<icl32u> &src,
                                                            DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) throw (FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_fft(const DynMatrix<icl16s> &src,
                                                            DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) throw (FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_fft(const DynMatrix<icl32s> &src,
                                                            DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) throw (FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_fft(const DynMatrix<icl32f> &src,
                                                            DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) throw (FFTException);
       
@@ -1031,15 +1031,15 @@ namespace icl{
 	}
       }
 
-      template ICL_MATH_API
+      template
       void  unpack_mkl_fft(float *src, std::complex<float> *dst, unsigned int cols,
                            unsigned int rows);
-      template ICL_MATH_API
+      template
       void  unpack_mkl_fft(double *src, std::complex<double> *dst, unsigned int cols,
                            unsigned int rows);
 
       template<class T2> DFTI_CONFIG_VALUE getMKLDftiType(){ return DFTI_DOUBLE; }
-      template<> ICL_MATH_API DFTI_CONFIG_VALUE getMKLDftiType<float>() { return DFTI_SINGLE; }
+      template<> DFTI_CONFIG_VALUE getMKLDftiType<float>() { return DFTI_SINGLE; }
 
       template<typename T1,typename T2>
       DynMatrix<std::complex<T2> >&  mkl_wrapper_function_result_fft(
@@ -1090,47 +1090,47 @@ namespace icl{
 	delete[] srcbuf;
 	return dst;
       }
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_fft(const DynMatrix<icl8u> &src,
                                                                               DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) throw (FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_fft(const DynMatrix<icl16u> &src,
                                                                               DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) throw (FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_fft(const DynMatrix<icl32u> &src,
                                                                               DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) throw (FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_fft(const DynMatrix<icl16s> &src,
                                                                               DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) throw (FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_fft(const DynMatrix<icl32s> &src,
                                                                               DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) throw (FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_fft(const DynMatrix<icl32f> &src,
                                                                               DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) throw (FFTException);
 
-      template ICL_MATH_API
+      template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_fft(const DynMatrix<icl8u> &src,
                                                                               DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf)throw (FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_fft(const DynMatrix<icl16u> &src,
                                                                               DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf) throw (FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_fft(const DynMatrix<icl32u> &src,
                                                                               DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf) throw (FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_fft(const DynMatrix<icl16s> &src,
                                                                               DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf) throw (FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_fft(const DynMatrix<icl32s> &src,
                                                                               DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf) throw (FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_fft(const DynMatrix<icl32f> &src,
                                                                               DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf) throw (FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_fft(const DynMatrix<icl64f> &src,
                                                                               DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf) throw (FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_fft(const DynMatrix<icl64f> &src,
                                                                               DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) throw (FFTException);
 
@@ -1167,10 +1167,10 @@ namespace icl{
           throw FFTException("FFTException DftiFreeDescriptorError");
 	}
       }
-      template ICL_MATH_API
+      template
       void mkl_wrapper_function_result_fft_complex(DFTI_DESCRIPTOR_HANDLE &my_desc1_handle,_MKL_Complex8 *src,
                                                    icl32c *dst, icl32c *buffer,unsigned int dimx, unsigned int dimy) throw (FFTException);
-      template ICL_MATH_API
+      template
       void mkl_wrapper_function_result_fft_complex(DFTI_DESCRIPTOR_HANDLE &my_desc1_handle,_MKL_Complex16 *src,
                                                    std::complex<icl64f> *dst, std::complex<icl64f> *buffer,unsigned int dimx, unsigned int dimy) throw (FFTException);
 
@@ -1244,58 +1244,58 @@ namespace icl{
 	}
 	return dst;
       }
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  fft2D_cpp(const DynMatrix<icl8u> &src,
                                                         DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  fft2D_cpp(const DynMatrix<icl16u> &src,
                                                         DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  fft2D_cpp(const DynMatrix<icl16s> &src,
                                                         DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  fft2D_cpp(const DynMatrix<icl32u> &src,
                                                         DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  fft2D_cpp(const DynMatrix<icl32s> &src,
                                                         DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  fft2D_cpp(const DynMatrix<icl8u> &src,
                                                         DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  fft2D_cpp(const DynMatrix<icl16u> &src,
                                                         DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  fft2D_cpp(const DynMatrix<icl16s> &src,
                                                         DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  fft2D_cpp(const DynMatrix<icl32u> &src,
                                                         DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  fft2D_cpp(const DynMatrix<icl32s> &src,
                                                         DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  fft2D_cpp(const DynMatrix<icl32f> &src,
                                                         DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >& fft2D_cpp(const DynMatrix<icl32f> &src,
                                                        DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >& fft2D_cpp(const DynMatrix<icl64f> &src,
                                                        DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >& fft2D_cpp(const DynMatrix<icl64f> &src,
                                                        DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >& fft2D_cpp(const DynMatrix<icl32c > &src,
                                                        DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >& fft2D_cpp(const DynMatrix<icl32c > &src,
                                                        DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >& fft2D_cpp(const DynMatrix<std::complex<icl64f> > &src,
                                                        DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >& fft2D_cpp(const DynMatrix<std::complex<icl64f> > &src,
                                                        DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
 
@@ -1313,27 +1313,27 @@ namespace icl{
 #endif
 	return fft2D_cpp(src,dst,buf);
       }
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >& fft2D(const DynMatrix<icl8u> &src,
                                                    DynMatrix<icl32c > &dst,	DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >& fft2D(const DynMatrix<icl16u> &src,
                                                    DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >& fft2D(const DynMatrix<icl32u> &src,
                                                    DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >& fft2D(const DynMatrix<icl16s> &src,
                                                    DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >& fft2D(const DynMatrix<icl32s> &src,
                                                    DynMatrix<icl32c > &dst,	DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >& fft2D(const DynMatrix<icl32f> &src,
                                                    DynMatrix<icl32c > &dst,	DynMatrix<icl32c > &buf);
 
       //double
-      template<> ICL_MATH_API
+      template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  fft2D(const DynMatrix<icl8u> &src,
                                                     DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
 #ifdef HAVE_MKL
@@ -1341,7 +1341,7 @@ namespace icl{
 #endif
 	return fft2D_cpp(src,dst,buf);
       }
-      template<> ICL_MATH_API
+      template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  fft2D(const DynMatrix<icl16u> &src,
                                                     DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
 #ifdef HAVE_MKL
@@ -1349,7 +1349,7 @@ namespace icl{
 #endif
 	return fft2D_cpp(src,dst,buf);
       }
-      template<> ICL_MATH_API
+      template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  fft2D(const DynMatrix<icl32u> &src,
                                                     DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
 #ifdef HAVE_MKL
@@ -1357,7 +1357,7 @@ namespace icl{
 #endif
 	return fft2D_cpp(src,dst,buf);
       }
-      template<> ICL_MATH_API
+      template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  fft2D(const DynMatrix<icl16s> &src,
                                                     DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
 #ifdef HAVE_MKL
@@ -1365,7 +1365,7 @@ namespace icl{
 #endif
 	return fft2D_cpp(src,dst,buf);
       }
-      template<> ICL_MATH_API
+      template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  fft2D(const DynMatrix<icl32s> &src,
                                                     DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
 #ifdef HAVE_MKL
@@ -1373,7 +1373,7 @@ namespace icl{
 #endif
 	return fft2D_cpp(src,dst,buf);
       }
-      template<> ICL_MATH_API
+      template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  fft2D(const DynMatrix<icl32f> &src,
                                                     DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
 #ifdef HAVE_MKL
@@ -1381,7 +1381,7 @@ namespace icl{
 #endif
 	return fft2D_cpp(src,dst,buf);
       }
-      template<> ICL_MATH_API
+      template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  fft2D(const DynMatrix<icl64f> &src,
                                                     DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
 #ifdef HAVE_MKL
@@ -1389,7 +1389,7 @@ namespace icl{
 #endif
 	return fft2D_cpp(src,dst,buf);
       }
-      template<> ICL_MATH_API
+      template<> ICLMath_API
       DynMatrix<icl32c >&  fft2D(const DynMatrix<icl64f> &src,
                                                     DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf){
 #ifdef HAVE_MKL
@@ -1398,7 +1398,7 @@ namespace icl{
 	return fft2D_cpp(src,dst,buf);
       }
       //complex
-      template<> ICL_MATH_API
+      template<> ICLMath_API
       DynMatrix<icl32c >& fft2D(const DynMatrix<icl32c > &src,
                                                    DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf){
 	if(isPowerOfTwo(src.cols()) && isPowerOfTwo(src.rows())){
@@ -1412,7 +1412,7 @@ namespace icl{
 #endif
 	return fft2D_cpp(src,dst,buf);
       }
-      template<> ICL_MATH_API
+      template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >& fft2D(const DynMatrix<std::complex<icl64f> > &src,
                                                    DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
 #ifdef HAVE_MKL
@@ -1420,12 +1420,12 @@ namespace icl{
 #endif
 	return fft2D_cpp(src,dst,buf);
       }
-      template<> ICL_MATH_API
+      template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >& fft2D(const DynMatrix<icl32c > &src,DynMatrix<std::complex<icl64f> > &dst,
                                                    DynMatrix<std::complex<icl64f> > &buf){
 	return fft2D_cpp(src,dst,buf);
       }
-      template<> ICL_MATH_API
+      template<> ICLMath_API
       DynMatrix<icl32c >& fft2D(const DynMatrix<std::complex<icl64f> > &src,DynMatrix<icl32c > &dst,
                                                    DynMatrix<icl32c > &buf){
 	return fft2D_cpp(src,dst,buf);
@@ -1451,25 +1451,25 @@ namespace icl{
 	return d;
       }
 
-      template ICL_MATH_API icl32c*  dft(unsigned int n, icl8u* src);
-      template ICL_MATH_API std::complex<icl64f>*  dft(unsigned int n, icl8u* src);
-      template ICL_MATH_API icl32c*  dft(unsigned int n, icl16u* src);
-      template ICL_MATH_API std::complex<icl64f>*  dft(unsigned int n, icl16u* src);
-      template ICL_MATH_API icl32c*  dft(unsigned int n, icl32u* src);
-      template ICL_MATH_API std::complex<icl64f>*  dft(unsigned int n, icl32u* src);
-      template ICL_MATH_API icl32c*  dft(unsigned int n, icl16s* src);
-      template ICL_MATH_API std::complex<icl64f>*  dft(unsigned int n, icl16s* src);
-      template ICL_MATH_API icl32c*  dft(unsigned int n, icl32s* src);
-      template ICL_MATH_API std::complex<icl64f>*  dft(unsigned int n, icl32s* src);
+      template ICLMath_API icl32c*  dft(unsigned int n, icl8u* src);
+      template ICLMath_API std::complex<icl64f>*  dft(unsigned int n, icl8u* src);
+      template ICLMath_API icl32c*  dft(unsigned int n, icl16u* src);
+      template ICLMath_API std::complex<icl64f>*  dft(unsigned int n, icl16u* src);
+      template ICLMath_API icl32c*  dft(unsigned int n, icl32u* src);
+      template ICLMath_API std::complex<icl64f>*  dft(unsigned int n, icl32u* src);
+      template ICLMath_API icl32c*  dft(unsigned int n, icl16s* src);
+      template ICLMath_API std::complex<icl64f>*  dft(unsigned int n, icl16s* src);
+      template ICLMath_API icl32c*  dft(unsigned int n, icl32s* src);
+      template ICLMath_API std::complex<icl64f>*  dft(unsigned int n, icl32s* src);
 
-      template ICL_MATH_API icl32c*  dft(unsigned int n, icl32f* src);
-      template ICL_MATH_API std::complex<icl64f>*  dft(unsigned int n, icl32f* src);
-      template ICL_MATH_API std::complex<icl64f>*  dft(unsigned int n, icl64f* src);
-      template ICL_MATH_API icl32c*  dft(unsigned int n, icl64f* src);
-      template ICL_MATH_API icl32c*  dft(unsigned int n, icl32c* src);
-      template ICL_MATH_API std::complex<icl64f>*  dft(unsigned int n, icl32c* src);
-      template ICL_MATH_API std::complex<icl64f>*  dft(unsigned int n, std::complex<icl64f>* src);
-      template ICL_MATH_API icl32c*  dft(unsigned int n, std::complex<icl64f>* src);
+      template ICLMath_API icl32c*  dft(unsigned int n, icl32f* src);
+      template ICLMath_API std::complex<icl64f>*  dft(unsigned int n, icl32f* src);
+      template ICLMath_API std::complex<icl64f>*  dft(unsigned int n, icl64f* src);
+      template ICLMath_API icl32c*  dft(unsigned int n, icl64f* src);
+      template ICLMath_API icl32c*  dft(unsigned int n, icl32c* src);
+      template ICLMath_API std::complex<icl64f>*  dft(unsigned int n, icl32c* src);
+      template ICLMath_API std::complex<icl64f>*  dft(unsigned int n, std::complex<icl64f>* src);
+      template ICLMath_API icl32c*  dft(unsigned int n, std::complex<icl64f>* src);
 
       template<typename T1,typename T2>
       DynMatrix<std::complex<T2> >&  dft2D(DynMatrix<T1> &src,
@@ -1492,58 +1492,58 @@ namespace icl{
 	}
 	return dst;
       }
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  dft2D(DynMatrix<icl8u>& src,
                                                     DynMatrix<icl32c >& dst, DynMatrix<icl32c >& buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  dft2D(DynMatrix<icl8u>& src,
                                                     DynMatrix<std::complex<icl64f> >& dst, DynMatrix<std::complex<icl64f> >& buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  dft2D(DynMatrix<icl16u>& src,
                                                     DynMatrix<icl32c >& dst, DynMatrix<icl32c >& buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  dft2D(DynMatrix<icl16u>& src,
                                                     DynMatrix<std::complex<icl64f> >& dst, DynMatrix<std::complex<icl64f> >& buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  dft2D(DynMatrix<icl16s>& src,
                                                     DynMatrix<icl32c >& dst, DynMatrix<icl32c >& buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  dft2D(DynMatrix<icl16s>& src,
                                                     DynMatrix<std::complex<icl64f> >& dst, DynMatrix<std::complex<icl64f> >& buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  dft2D(DynMatrix<icl32u>& src,
                                                     DynMatrix<icl32c >& dst, DynMatrix<icl32c >& buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  dft2D(DynMatrix<icl32u>& src,
                                                     DynMatrix<std::complex<icl64f> >& dst, DynMatrix<std::complex<icl64f> >& buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  dft2D(DynMatrix<icl32s>& src,
                                                     DynMatrix<icl32c >& dst, DynMatrix<icl32c >& buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  dft2D(DynMatrix<icl32s>& src,
                                                     DynMatrix<std::complex<icl64f> >& dst, DynMatrix<std::complex<icl64f> >& buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  dft2D(DynMatrix<icl32f>& src,
                                                     DynMatrix<icl32c >& dst, DynMatrix<icl32c >& buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  dft2D(DynMatrix<icl32f>& src,
                                                     DynMatrix<std::complex<icl64f> >& dst, DynMatrix<std::complex<icl64f> >& buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  dft2D(DynMatrix<icl64f>& src,
                                                     DynMatrix<std::complex<icl64f> >& dst, DynMatrix<std::complex<icl64f> >& buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  dft2D(DynMatrix<icl64f>& src,
                                                     DynMatrix<icl32c >& dst, DynMatrix<icl32c >& buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  dft2D(DynMatrix<icl32c >& src,
                                                     DynMatrix<icl32c >& dst, DynMatrix<icl32c >& buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  dft2D(DynMatrix<std::complex<icl64f> >& src,
                                                     DynMatrix<std::complex<icl64f> >& dst, DynMatrix<std::complex<icl64f> >& buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  dft2D(DynMatrix<icl32c >& src,
                                                     DynMatrix<std::complex<icl64f> >& dst, DynMatrix<std::complex<icl64f> >& buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  dft2D(DynMatrix<std::complex<icl64f> >& src,
                                                     DynMatrix<icl32c >& dst, DynMatrix<icl32c >& buf);
 
@@ -1628,25 +1628,25 @@ namespace icl{
 	return tempMat;
       }
 
-      template ICL_MATH_API icl32c*  ifft_cpp(unsigned int n, const icl8u* a);
-      template ICL_MATH_API icl32c*  ifft_cpp(unsigned int n, const icl16u* a);
-      template ICL_MATH_API icl32c*  ifft_cpp(unsigned int n, const icl32u* a);
-      template ICL_MATH_API icl32c*  ifft_cpp(unsigned int n, const icl16s* a);
-      template ICL_MATH_API icl32c*  ifft_cpp(unsigned int n, const icl32s* a);
-      template ICL_MATH_API icl32c*  ifft_cpp(unsigned int n, const icl32f* a);
+      template ICLMath_API icl32c*  ifft_cpp(unsigned int n, const icl8u* a);
+      template ICLMath_API icl32c*  ifft_cpp(unsigned int n, const icl16u* a);
+      template ICLMath_API icl32c*  ifft_cpp(unsigned int n, const icl32u* a);
+      template ICLMath_API icl32c*  ifft_cpp(unsigned int n, const icl16s* a);
+      template ICLMath_API icl32c*  ifft_cpp(unsigned int n, const icl32s* a);
+      template ICLMath_API icl32c*  ifft_cpp(unsigned int n, const icl32f* a);
 
-      template ICL_MATH_API std::complex<icl64f>*  ifft_cpp(unsigned int n, const icl8u* a);
-      template ICL_MATH_API std::complex<icl64f>*  ifft_cpp(unsigned int n, const icl16u* a);
-      template ICL_MATH_API std::complex<icl64f>*  ifft_cpp(unsigned int n, const icl32u* a);
-      template ICL_MATH_API std::complex<icl64f>*  ifft_cpp(unsigned int n, const icl16s* a);
-      template ICL_MATH_API std::complex<icl64f>*  ifft_cpp(unsigned int n, const icl32s* a);
-      template ICL_MATH_API std::complex<icl64f>*  ifft_cpp(unsigned int n, const icl32f* a);
-      template ICL_MATH_API std::complex<icl64f>*  ifft_cpp(unsigned int n, const icl64f* a);
+      template ICLMath_API std::complex<icl64f>*  ifft_cpp(unsigned int n, const icl8u* a);
+      template ICLMath_API std::complex<icl64f>*  ifft_cpp(unsigned int n, const icl16u* a);
+      template ICLMath_API std::complex<icl64f>*  ifft_cpp(unsigned int n, const icl32u* a);
+      template ICLMath_API std::complex<icl64f>*  ifft_cpp(unsigned int n, const icl16s* a);
+      template ICLMath_API std::complex<icl64f>*  ifft_cpp(unsigned int n, const icl32s* a);
+      template ICLMath_API std::complex<icl64f>*  ifft_cpp(unsigned int n, const icl32f* a);
+      template ICLMath_API std::complex<icl64f>*  ifft_cpp(unsigned int n, const icl64f* a);
 
-      template ICL_MATH_API icl32c*  ifft_cpp(unsigned int n, const icl32c* a);
-      template ICL_MATH_API std::complex<icl64f>*  ifft_cpp(unsigned int n, const icl32c* a);
-      template ICL_MATH_API std::complex<icl64f>*  ifft_cpp(unsigned int n, const std::complex<icl64f>* a);
-      template ICL_MATH_API icl32c*  ifft_cpp(unsigned int n, const std::complex<icl64f>* a);
+      template ICLMath_API icl32c*  ifft_cpp(unsigned int n, const icl32c* a);
+      template ICLMath_API std::complex<icl64f>*  ifft_cpp(unsigned int n, const icl32c* a);
+      template ICLMath_API std::complex<icl64f>*  ifft_cpp(unsigned int n, const std::complex<icl64f>* a);
+      template ICLMath_API icl32c*  ifft_cpp(unsigned int n, const std::complex<icl64f>* a);
 
 #ifdef HAVE_IPP
       template<typename T>
@@ -1697,31 +1697,31 @@ namespace icl{
 	return dst;
       }
 
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl8u> &src,
                                                                                        DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) throw(FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl16u> &src,
                                                                                        DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) throw(FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl32u> &src,
                                                                                        DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) throw(FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl16s> &src,
                                                                                        DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) throw(FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl32s> &src,
                                                                                        DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) throw(FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl32f> &src,
                                                                                        DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) throw(FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl64f> &src,
                                                                                        DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) throw(FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl32c > &src,
                                                                                        DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) throw(FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<std::complex<icl64f> > &src,
                                                                                        DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) throw(FFTException);
 #endif
@@ -1785,31 +1785,31 @@ namespace icl{
 	delete[] srcbuf;
 	return dst;
       }
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl8u> &src,
                                                                                        DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer) throw(FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl16u> &src,
                                                                                        DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer) throw(FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl32u> &src,
                                                                                        DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer) throw(FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl16s> &src,
                                                                                        DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer) throw(FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl32s> &src,
                                                                                        DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer) throw(FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl32f> &src,
                                                                                        DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer) throw(FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl64f> &src,
                                                                                        DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer) throw(FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl32c > &src,
                                                                                        DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer) throw(FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_ifft_icl32fc(const DynMatrix<std::complex<icl64f> > &src,
                                                                                        DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer) throw(FFTException);
 
@@ -1871,31 +1871,31 @@ namespace icl{
 	delete[] srcbuf;
 	return dst;
       }
-      template ICL_MATH_API
+      template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_ifft_icl64fc(const DynMatrix<icl8u> &src,
                                                                                        DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer) throw(FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_ifft_icl64fc(const DynMatrix<icl16u> &src,
                                                                                        DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer) throw(FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_ifft_icl64fc(const DynMatrix<icl32u> &src,
                                                                                        DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer) throw(FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_ifft_icl64fc(const DynMatrix<icl16s> &src,
                                                                                        DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer) throw(FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_ifft_icl64fc(const DynMatrix<icl32s> &src,
                                                                                        DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer) throw(FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_ifft_icl64fc(const DynMatrix<icl32f> &src,
                                                                                        DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer) throw(FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_ifft_icl64fc(const DynMatrix<icl64f> &src,
                                                                                        DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer) throw(FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_ifft_icl64fc(const DynMatrix<icl32c > &src,
                                                                                        DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer) throw(FFTException);
-      template ICL_MATH_API
+      template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_ifft_icl64fc(const DynMatrix<std::complex<icl64f> > &src,
                                                                                        DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer) throw(FFTException);
 #endif
@@ -1925,58 +1925,58 @@ namespace icl{
 	}
 	return dst;
       }
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  ifft2D_cpp(const DynMatrix<icl8u> &src,
                                                          DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  ifft2D_cpp(const DynMatrix<icl16u> &src,
                                                          DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  ifft2D_cpp(const DynMatrix<icl32u> &src,
                                                          DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  ifft2D_cpp(const DynMatrix<icl16s> &src,
                                                          DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  ifft2D_cpp(const DynMatrix<icl32s> &src,
                                                          DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  ifft2D_cpp(const DynMatrix<icl8u> &src,
                                                          DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  ifft2D_cpp(const DynMatrix<icl16u> &src,
                                                          DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  ifft2D_cpp(const DynMatrix<icl32u> &src,
                                                          DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  ifft2D_cpp(const DynMatrix<icl16s> &src,
                                                          DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  ifft2D_cpp(const DynMatrix<icl32s> &src,
                                                          DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  ifft2D_cpp(const DynMatrix<icl32f> &src,
                                                          DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  ifft2D_cpp(const DynMatrix<icl64f> &src,
                                                          DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  ifft2D_cpp(const DynMatrix<icl32f> &src,
                                                          DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  ifft2D_cpp(const DynMatrix<icl64f> &src,
                                                          DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  ifft2D_cpp(const DynMatrix<icl32c > &src,
                                                          DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  ifft2D_cpp(const DynMatrix<icl32c > &src,
                                                          DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  ifft2D_cpp(const DynMatrix<std::complex<icl64f> > &src,
                                                          DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  ifft2D_cpp(const DynMatrix<std::complex<icl64f> > &src,
                                                          DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
 
@@ -1995,35 +1995,35 @@ namespace icl{
 #endif
 	return ifft2D_cpp(src,dst,buf);
       }
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >& ifft2D(const DynMatrix<icl8u> &src,
                                                     DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >& ifft2D(const DynMatrix<icl16u> &src,
                                                     DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >& ifft2D(const DynMatrix<icl32u> &src,
                                                     DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >& ifft2D(const DynMatrix<icl16s> &src,
                                                     DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >& ifft2D(const DynMatrix<icl32s> &src,
                                                     DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >& ifft2D(const DynMatrix<icl32f> &src,
                                                     DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >& ifft2D(const DynMatrix<icl64f> &src,
                                                     DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >& ifft2D(const DynMatrix<icl32c > &src,
                                                     DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >& ifft2D(const DynMatrix<std::complex<icl64f> > &src,
                                                     DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
       //double
-      template<> ICL_MATH_API
+      template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  ifft2D(const DynMatrix<icl8u> &src,
                                                      DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
 #ifdef HAVE_MKL
@@ -2031,7 +2031,7 @@ namespace icl{
 #endif
 	return ifft2D_cpp(src,dst,buf);
       }
-      template<> ICL_MATH_API
+      template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  ifft2D(const DynMatrix<icl16u> &src,
                                                      DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
 #ifdef HAVE_MKL
@@ -2039,7 +2039,7 @@ namespace icl{
 #endif
 	return ifft2D(src,dst,buf);
       }
-      template<> ICL_MATH_API
+      template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  ifft2D(const DynMatrix<icl32u> &src,
                                                      DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
 #ifdef HAVE_MKL
@@ -2047,7 +2047,7 @@ namespace icl{
 #endif
 	return ifft2D_cpp(src,dst,buf);
       }
-      template<> ICL_MATH_API
+      template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  ifft2D(const DynMatrix<icl16s> &src,
                                                      DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
 #ifdef HAVE_MKL
@@ -2055,7 +2055,7 @@ namespace icl{
 #endif
 	return ifft2D_cpp(src,dst,buf);
       }
-      template<> ICL_MATH_API
+      template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  ifft2D(const DynMatrix<icl32s> &src,
                                                      DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
 #ifdef HAVE_MKL
@@ -2063,7 +2063,7 @@ namespace icl{
 #endif
 	return ifft2D_cpp(src,dst,buf);
       }
-      template<> ICL_MATH_API
+      template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  ifft2D(const DynMatrix<icl32f> &src,
                                                      DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
 #ifdef HAVE_MKL
@@ -2071,7 +2071,7 @@ namespace icl{
 #endif
 	return ifft2D_cpp(src,dst,buf);
       }
-      template<> ICL_MATH_API
+      template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  ifft2D(const DynMatrix<icl64f> &src,
                                                      DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
 #ifdef HAVE_MKL
@@ -2081,7 +2081,7 @@ namespace icl{
       }
 
       //complex
-      template<> ICL_MATH_API
+      template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  ifft2D(const DynMatrix<icl32c > &src,
                                                      DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
 #ifdef HAVE_MKL
@@ -2089,7 +2089,7 @@ namespace icl{
 #endif
 	return ifft2D_cpp(src,dst,buf);
       }
-      template<> ICL_MATH_API
+      template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  ifft2D(const DynMatrix<std::complex<icl64f> > &src,
                                                      DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
 #ifdef HAVE_MKL
@@ -2119,24 +2119,24 @@ namespace icl{
 	return d;
       }
 
-      template ICL_MATH_API icl32c*  idft(unsigned int n, icl8u* src);
-      template ICL_MATH_API std::complex<icl64f>*  idft(unsigned int n, icl8u* src);
-      template ICL_MATH_API icl32c*  idft(unsigned int n, icl16u* src);
-      template ICL_MATH_API std::complex<icl64f>*  idft(unsigned int n, icl16u* src);
-      template ICL_MATH_API icl32c*  idft(unsigned int n, icl16s* src);
-      template ICL_MATH_API std::complex<icl64f>*  idft(unsigned int n, icl16s* src);
-      template ICL_MATH_API icl32c*  idft(unsigned int n, icl32u* src);
-      template ICL_MATH_API std::complex<icl64f>*  idft(unsigned int n, icl32u* src);
-      template ICL_MATH_API icl32c*  idft(unsigned int n, icl32s* src);
-      template ICL_MATH_API std::complex<icl64f>*  idft(unsigned int n, icl32s* src);
-      template ICL_MATH_API icl32c*  idft(unsigned int n, icl32f* src);
-      template ICL_MATH_API std::complex<icl64f>*  idft(unsigned int n, icl32f* src);
-      template ICL_MATH_API std::complex<icl64f>*  idft(unsigned int n, icl64f* src);
-      template ICL_MATH_API icl32c*  idft(unsigned int n, icl64f* src);
-      template ICL_MATH_API icl32c*  idft(unsigned int n, icl32c* src);
-      template ICL_MATH_API std::complex<icl64f>*  idft(unsigned int n, icl32c* src);
-      template ICL_MATH_API std::complex<icl64f>*  idft(unsigned int n, std::complex<icl64f>* src);
-      template ICL_MATH_API icl32c*  idft(unsigned int n, std::complex<icl64f>* src);
+      template ICLMath_API icl32c*  idft(unsigned int n, icl8u* src);
+      template ICLMath_API std::complex<icl64f>*  idft(unsigned int n, icl8u* src);
+      template ICLMath_API icl32c*  idft(unsigned int n, icl16u* src);
+      template ICLMath_API std::complex<icl64f>*  idft(unsigned int n, icl16u* src);
+      template ICLMath_API icl32c*  idft(unsigned int n, icl16s* src);
+      template ICLMath_API std::complex<icl64f>*  idft(unsigned int n, icl16s* src);
+      template ICLMath_API icl32c*  idft(unsigned int n, icl32u* src);
+      template ICLMath_API std::complex<icl64f>*  idft(unsigned int n, icl32u* src);
+      template ICLMath_API icl32c*  idft(unsigned int n, icl32s* src);
+      template ICLMath_API std::complex<icl64f>*  idft(unsigned int n, icl32s* src);
+      template ICLMath_API icl32c*  idft(unsigned int n, icl32f* src);
+      template ICLMath_API std::complex<icl64f>*  idft(unsigned int n, icl32f* src);
+      template ICLMath_API std::complex<icl64f>*  idft(unsigned int n, icl64f* src);
+      template ICLMath_API icl32c*  idft(unsigned int n, icl64f* src);
+      template ICLMath_API icl32c*  idft(unsigned int n, icl32c* src);
+      template ICLMath_API std::complex<icl64f>*  idft(unsigned int n, icl32c* src);
+      template ICLMath_API std::complex<icl64f>*  idft(unsigned int n, std::complex<icl64f>* src);
+      template ICLMath_API icl32c*  idft(unsigned int n, std::complex<icl64f>* src);
 
       template<typename T1, typename T2>
       DynMatrix<std::complex<T2> >&   idft2D(DynMatrix<T1>& src,DynMatrix<std::complex<T2> > &dst,DynMatrix<std::complex<T2> > &buf){
@@ -2158,58 +2158,58 @@ namespace icl{
 	}
 	return dst;
       }
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  idft2D(DynMatrix<icl8u>& src,
                                                      DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  idft2D(DynMatrix<icl8u>& src,
                                                      DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  idft2D(DynMatrix<icl16u>& src,
                                                      DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  idft2D(DynMatrix<icl16u>& src,
                                                      DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  idft2D(DynMatrix<icl32u>& src,
                                                      DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  idft2D(DynMatrix<icl32u>& src,
                                                      DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  idft2D(DynMatrix<icl16s>& src,
                                                      DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  idft2D(DynMatrix<icl16s>& src,
                                                      DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  idft2D(DynMatrix<icl32s>& src,
                                                      DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  idft2D(DynMatrix<icl32s>& src,
                                                      DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  idft2D(DynMatrix<icl32f>& src,
                                                      DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  idft2D(DynMatrix<icl32f>& src,
                                                      DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  idft2D(DynMatrix<icl64f>& src,
                                                      DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  idft2D(DynMatrix<icl64f>& src,
                                                      DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  idft2D(DynMatrix<icl32c >& src,
                                                      DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  idft2D(DynMatrix<icl32c >& src,
                                                      DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  idft2D(DynMatrix<std::complex<icl64f> >& src,
                                                      DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template ICL_MATH_API
+      template ICLMath_API
       DynMatrix<icl32c >&  idft2D(DynMatrix<std::complex<icl64f> >& src,
                                                      DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
     } // namespace fft

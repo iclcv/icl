@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/Configurable.h>
 #include <ICLCore/ImgBase.h>

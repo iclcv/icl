@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/AffineOp.h>
 
 namespace icl{
@@ -38,7 +39,7 @@ namespace icl{
     /// Class to translate images \ingroup UNARY \ingroup AFFINE
     /** TODO: currently the translation effect is compensated by the AffineOp's 
         re-centering mechanism*/
-    class ICL_FILTER_API TranslateOp : public AffineOp {
+    class ICLFilter_API TranslateOp : public AffineOp {
       public:
       /// Constructor
       TranslateOp (double dX=0.0, double dY=0.0, core::scalemode eInterpolate=core::interpolateLIN) :

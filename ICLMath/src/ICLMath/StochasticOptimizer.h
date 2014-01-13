@@ -37,7 +37,7 @@ namespace icl{
   
     /// Utility structure for the stochastic optimizer class
     template<class T>
-    struct ICL_MATH_API_T StochasticOptimizerResult{
+    struct StochasticOptimizerResult{
         /// creates a new result structure (internally used only)
       StochasticOptimizerResult(const T *data=0,T error=0, T startError=0, int steps=0);
       const T *data; //!< resulting optimized data vector
@@ -60,7 +60,7 @@ namespace icl{
         **NEW** now this class is a template (defined for float and double)
     */
     template<class T=float>
-    class ICL_MATH_API StochasticOptimizer {
+    class ICLMath_IMP StochasticOptimizer {
       public:
       /// Result structure
       typedef StochasticOptimizerResult<T> Result;
@@ -104,6 +104,7 @@ namespace icl{
       /// internal data-dimension variable
       int m_dataDim;
     };
+
   } // namespace math
 }
 

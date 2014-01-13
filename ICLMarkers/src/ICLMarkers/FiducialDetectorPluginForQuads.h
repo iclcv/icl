@@ -43,7 +43,7 @@ namespace icl{
     
     
     /// FiducialDetectorPlugin for quad-markers like ARToolkit and BCH-Code markers \ingroup PLUGINS
-    class FiducialDetectorPluginForQuads : public FiducialDetectorPlugin{
+    class ICLMarkers_API FiducialDetectorPluginForQuads : public FiducialDetectorPlugin{
       /// Internal Data
       struct Data;
       

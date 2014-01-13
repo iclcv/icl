@@ -30,8 +30,9 @@
 
 #pragma once
 
-#include <ICLCore/Img.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
+#include <ICLCore/Img.h>
 
 #include <vector>
 

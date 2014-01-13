@@ -56,11 +56,7 @@ namespace icl{
       struct CB{
         /// associated event 
         enum Event{ press,release,move,value,all } event;
-#ifdef ICL_SYSTEM_WINDOWS
-        utils::Function<void*> f; //!< associated 'void f()' -function
-#else
         utils::Function<void> f; //!< associated 'void f()' -function
-#endif
       };
       
       /// internal list of callbacks

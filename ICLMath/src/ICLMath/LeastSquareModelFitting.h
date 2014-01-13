@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLMath/DynMatrix.h>
 
 namespace icl{
@@ -129,7 +130,7 @@ namespace icl{
     */
   
     template<class T, class DataPoint>
-    class ICL_MATH_API LeastSquareModelFitting{
+    class ICLMath_IMP LeastSquareModelFitting{
       public:
       /// fills the give float* with data from the given data point
       /** creates the rows of the design matrix */

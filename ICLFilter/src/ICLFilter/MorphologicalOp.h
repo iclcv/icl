@@ -30,9 +30,10 @@
 
 #pragma once
 
-#include <ICLFilter/NeighborhoodOp.h>
-#include <ICLCore/Img.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
+#include <ICLCore/Img.h>
+#include <ICLFilter/NeighborhoodOp.h>
 
 
 namespace icl {
@@ -83,7 +84,7 @@ namespace icl {
         <b>left: binary image results, right: gray image results</b>
         \image html  morphologic_operator_results.png
     */
-    class ICL_FILTER_API MorphologicalOp : public NeighborhoodOp, public utils::Uncopyable {
+    class ICLFilter_API MorphologicalOp : public NeighborhoodOp, public utils::Uncopyable {
     public:
   
     /// this enum specifiy all possible morphological operations
@@ -171,6 +172,7 @@ namespace icl {
       core::ImgBase *m_gradientBorderBuffer_1;
       core::ImgBase *m_gradientBorderBuffer_2;
   
+    private:
       template<class T>
       void apply_t(const core::ImgBase *src, core::ImgBase **dst);
   #endif

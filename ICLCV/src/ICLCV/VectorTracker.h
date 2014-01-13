@@ -30,8 +30,8 @@
 
 #pragma once
 
-#include <vector>
 #include <ICLUtils/CompatMacros.h>
+#include <vector>
 
 namespace icl{
   namespace cv{

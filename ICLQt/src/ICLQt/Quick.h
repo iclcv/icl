@@ -30,9 +30,10 @@
 
 #pragma once
 
-#include <ICLCore/Img.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Exception.h>
+#include <ICLCore/Img.h>
 
 namespace icl{
   namespace utils{}
@@ -97,7 +98,7 @@ namespace icl{
         @param height image height
         @param channels image channel count
     **/
-    template<class T>
+    template<class T> ICL_QT_API
     core::Img<T> zeros(int width, int height, int channels=1);
     
     /***/
@@ -111,7 +112,7 @@ namespace icl{
         @param height image height
         @param channels image channel count      
     **/
-    template<class T>
+    template<class T> ICL_QT_API
     core::Img<T> ones(int width, int height, int channels=1);
   
     /** \cond affinity version */
@@ -121,7 +122,7 @@ namespace icl{
     /// load an image file read file (affinity for floats) 
     /** @param filename filename/pattern to read 
     **/
-    template<class T>
+    template<class T> ICL_QT_API
     core::Img<T> load(const std::string &filename);
   
      /** \cond affinity version */
@@ -132,7 +133,7 @@ namespace icl{
     /** @param filename filename to read (*.jpg, *.ppm, *.pgm)
         @param fmt image core::format to convert the result to
     **/
-    template<class T>
+    template<class T> ICL_QT_API
     core::Img<T> load(const std::string &filename, core::format fmt);
   
     /** \cond affinity version */
@@ -145,7 +146,7 @@ namespace icl{
                     windows, flowers, women, house and tree 
         @param fmt image core::format to convert the result to
     **/
-    template<class T>
+    template<class T> ICL_QT_API
     core::Img<T> create(const std::string &name, core::format fmt=formatRGB);
   
     /** \cond affinity version */
@@ -160,7 +161,7 @@ namespace icl{
         @param releaseGrabber if set to true, the 
                correspondig grabbers are deleted 
                immediately */
-    template<class T>
+    template<class T> ICL_QT_API
     core::Img<T> grab(const std::string &dev, const std::string &devSpec, 
                 const utils::Size &size=utils::Size::null, core::format fmt=formatRGB,
                 bool releaseGrabber=false);
@@ -266,7 +267,7 @@ namespace icl{
                       laplacs, median, dilation,erosion, opening and
                       closing 
     **/
-    template<class T>
+    template<class T> ICL_QT_API
     core::Img<T> filter(const core::Img<T> &image, const std::string &filter);
     
     /** \cond affinity version */
@@ -277,7 +278,7 @@ namespace icl{
   
     /// applies gaussian blur to a given image (using a maskRadius*2+1-sized gaussian filter)
     /** affinity for floats */
-    template<class T>
+    template<class T> ICL_QT_API
     core::Img<T> blur(const core::Img<T> &image, int maskRadius=1);
     
     /** \cond */
@@ -344,17 +345,17 @@ namespace icl{
    
     /// deep copy for an image
     /** @param image source image **/
-    template<class T>
+    template<class T> ICL_QT_API
     core::Img<T> copy(const core::Img<T> &image);
     
     /// deep copy of an images roi
     /** @param image source image **/
-    template <class T>
+    template <class T> ICL_QT_API
     core::Img<T> copyroi(const core::Img<T> &image);
     
     /// normalize an images range to [0,255]
     /** @param image source image **/
-    template<class T>
+    template<class T> ICL_QT_API
     core::Img<T> norm(const core::Img<T> &image);
     
     /// horizontal flip of an image
@@ -534,15 +535,15 @@ namespace icl{
     ICL_QT_API ImgQ operator&&(const ImgQ &a, const ImgQ &b);
   
     /// pixels-wise binary or (each value is converted to T brefore binary or)
-    template<class T>
+    template<class T> ICL_QT_API
     ImgQ binOR(const ImgQ &a, const ImgQ &b);
     
     /// pixels-wise binary or (each value is converted to T brefore binary or)
-    template<class T>
+    template<class T> ICL_QT_API
     ImgQ binXOR(const ImgQ &a, const ImgQ &b);
   
     /// pixels-wise binary or (each value is converted to T brefore binary or)
-    template<class T>
+    template<class T> ICL_QT_API
     ImgQ binAND(const ImgQ &a, const ImgQ &b);
     
     /** @} **/

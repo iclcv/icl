@@ -105,10 +105,10 @@ namespace icl{
     
     
   #define INSTANTIATE(T)                                          \
-    template ICL_MATH_API FixedMatrix<T,2,2> create_rot_2D(T);                 \
-    template ICL_MATH_API FixedMatrix<T, 3, 3> create_hom_3x3(T, T, T, T, T);        \
-    template ICL_MATH_API FixedMatrix<T, 3, 3> create_rot_3D(T, T, T);             \
-    template ICL_MATH_API FixedMatrix<T, 4, 4> create_hom_4x4(T, T, T, T, T, T, T, T, T);
+    template ICLMath_API FixedMatrix<T,2,2> create_rot_2D(T);                 \
+    template ICLMath_API FixedMatrix<T, 3, 3> create_hom_3x3(T, T, T, T, T);        \
+    template ICLMath_API FixedMatrix<T, 3, 3> create_rot_3D(T, T, T);             \
+    template ICLMath_API FixedMatrix<T, 4, 4> create_hom_4x4(T, T, T, T, T, T, T, T, T);
   
     INSTANTIATE(float);
     INSTANTIATE(double);
@@ -203,8 +203,8 @@ namespace icl{
     }
   
   #define INSTANTIATE_INV_AND_DET_OPT_FUNCS(T,D)                             \
-    template ICL_MATH_API void icl_util_get_fixed_##D##x##D##_matrix_inv<T>(const T*,T*); \
-    template ICL_MATH_API T icl_util_get_fixed_##D##x##D##_matrix_det<T>(const T*);
+    template ICLMath_API void icl_util_get_fixed_##D##x##D##_matrix_inv<T>(const T*,T*); \
+    template ICLMath_API T icl_util_get_fixed_##D##x##D##_matrix_det<T>(const T*);
   
   INSTANTIATE_INV_AND_DET_OPT_FUNCS(float,2);
   INSTANTIATE_INV_AND_DET_OPT_FUNCS(float,3);
@@ -257,11 +257,11 @@ namespace icl{
     }
     
     
-    template ICL_MATH_API FixedMatrix<float, 4, 4> create_rot_4x4(float, float, float, float);
-    template ICL_MATH_API FixedMatrix<double, 4, 4> create_rot_4x4(double, double, double, double);
+    template ICLMath_API FixedMatrix<float, 4, 4> create_rot_4x4(float, float, float, float);
+    template ICLMath_API FixedMatrix<double, 4, 4> create_rot_4x4(double, double, double, double);
   
-    template ICL_MATH_API FixedMatrix<float, 3, 3> create_rot_3D(float, float, float, float);
-    template ICL_MATH_API FixedMatrix<double, 3, 3> create_rot_3D(double, double, double, double);
+    template ICLMath_API FixedMatrix<float, 3, 3> create_rot_3D(float, float, float, float);
+    template ICLMath_API FixedMatrix<double, 3, 3> create_rot_3D(double, double, double, double);
   
 
 

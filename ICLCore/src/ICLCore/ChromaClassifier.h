@@ -30,13 +30,14 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Types.h>
 #include <ICLCore/Parable.h>
 
 namespace icl{
   namespace core{
     /// Classifier interface using RG-chromaticity space and two parables \ingroup COMMON
-    struct ICL_CORE_API_T ChromaClassifier{
+    struct ChromaClassifier{
     public:
       /// classifies a given R-G-Pixel
       inline bool operator()(icl8u chromaR, icl8u chromaG) const{

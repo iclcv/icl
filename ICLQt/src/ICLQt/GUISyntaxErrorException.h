@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Exception.h>
 
 #include <string>
@@ -37,7 +38,7 @@
 namespace icl{ 
   namespace qt{
     /// Internally used and caught exception class for the GUI API \ingroup UNCOMMON
-    class ICL_QT_API GUISyntaxErrorException : public utils::ICLException {
+    class GUISyntaxErrorException : public utils::ICLException {
       public:
       GUISyntaxErrorException(const std::string &guidef, const std::string &problem) throw():
       utils::ICLException(std::string("Syntax Error while parsing:\n\"")+guidef+"\"\n("+problem+")\n") {}

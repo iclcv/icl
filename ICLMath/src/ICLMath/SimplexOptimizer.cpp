@@ -28,13 +28,13 @@
 **                                                                 **
 ********************************************************************/
 
+#include <ICLUtils/StringUtils.h>
 #include <ICLMath/SimplexOptimizer.h>
 #include <vector>
 #include <limits>
 #include <algorithm>
 #include <functional>
 #include <iostream>
-#include <ICLUtils/StringUtils.h>
 
 using namespace icl::utils;
 
@@ -336,28 +336,28 @@ namespace icl{
     }
   
     
-    template class ICL_MATH_API SimplexOptimizer<float, DynColVector<float> >;
-    template class ICL_MATH_API SimplexOptimizer<double, DynColVector<double> >;
+    template class ICLMath_API SimplexOptimizer<float, DynColVector<float> >;
+    template class ICLMath_API SimplexOptimizer<double, DynColVector<double> >;
   
-    template class ICL_MATH_API SimplexOptimizer<float, DynRowVector<float> >;
-    template class ICL_MATH_API SimplexOptimizer<double, DynRowVector<double> >;
+    template class ICLMath_API SimplexOptimizer<float, DynRowVector<float> >;
+    template class ICLMath_API SimplexOptimizer<double, DynRowVector<double> >;
   
-    template class ICL_MATH_API SimplexOptimizer<float, DynMatrix<float> >;
-    template class ICL_MATH_API SimplexOptimizer<double, DynMatrix<double> >;
+    template class ICLMath_API SimplexOptimizer<float, DynMatrix<float> >;
+    template class ICLMath_API SimplexOptimizer<double, DynMatrix<double> >;
   
-    template class ICL_MATH_API SimplexOptimizer<float, std::vector<float> >;
-    template class ICL_MATH_API SimplexOptimizer<double, std::vector<double> >;
+    template class ICLMath_API SimplexOptimizer<float, std::vector<float> >;
+    template class ICLMath_API SimplexOptimizer<double, std::vector<double> >;
   
   
   #define INST(D)                                                       \
-    template class ICL_MATH_API SimplexOptimizer<float,FixedColVector<float,D> >;    \
-    template class ICL_MATH_API SimplexOptimizer<float, FixedRowVector<float, D> >;    \
-    template class ICL_MATH_API SimplexOptimizer<float, FixedMatrix<float, 1, D> >;     \
-    template class ICL_MATH_API SimplexOptimizer<float, FixedMatrix<float, D, 1> >;     \
-    template class ICL_MATH_API SimplexOptimizer<double, FixedColVector<double, D> >;  \
-    template class ICL_MATH_API SimplexOptimizer<double, FixedRowVector<double, D> >;  \
-    template class ICL_MATH_API SimplexOptimizer<double, FixedMatrix<double, 1, D> >;   \
-    template class ICL_MATH_API SimplexOptimizer<double, FixedMatrix<double, D, 1> >
+    template class ICLMath_API SimplexOptimizer<float,FixedColVector<float,D> >;    \
+    template class ICLMath_API SimplexOptimizer<float, FixedRowVector<float, D> >;    \
+    template class ICLMath_API SimplexOptimizer<float, FixedMatrix<float, 1, D> >;     \
+    template class ICLMath_API SimplexOptimizer<float, FixedMatrix<float, D, 1> >;     \
+    template class ICLMath_API SimplexOptimizer<double, FixedColVector<double, D> >;  \
+    template class ICLMath_API SimplexOptimizer<double, FixedRowVector<double, D> >;  \
+    template class ICLMath_API SimplexOptimizer<double, FixedMatrix<double, 1, D> >;   \
+    template class ICLMath_API SimplexOptimizer<double, FixedMatrix<double, D, 1> >
   
     INST(2);
     INST(3); 

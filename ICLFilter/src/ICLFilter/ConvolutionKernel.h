@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Size.h>
 #include <ICLUtils/Exception.h>
 
@@ -43,7 +44,7 @@ namespace icl{
   
   
   copies of shallow copied instances are shallow! */
-    struct ICL_FILTER_API ConvolutionKernel{
+    struct ICLFilter_API ConvolutionKernel{
   
       /// this enum contains several predefined convolution kernel types
       /** <h3>kernelSobleX</h3>

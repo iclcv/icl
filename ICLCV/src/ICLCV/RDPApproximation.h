@@ -30,9 +30,10 @@
 
 #pragma once
 
-#include <ICLCore/Img.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Point.h>
 #include <ICLUtils/Point32f.h>
+#include <ICLCore/Img.h>
 #include <ICLCore/Types.h>
 #include <vector>
 

@@ -30,8 +30,9 @@
 
 #pragma once
 
-#include <ICLIO/FileWriterPlugin.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Mutex.h>
+#include <ICLIO/FileWriterPlugin.h>
 #include <ICLIO/ImageCompressor.h>
 
 namespace icl{

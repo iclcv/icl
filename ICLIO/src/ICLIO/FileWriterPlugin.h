@@ -30,8 +30,9 @@
 
 #pragma once
 
-#include <ICLCore/Img.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/File.h>
+#include <ICLCore/Img.h>
 
 
 namespace icl{

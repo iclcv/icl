@@ -31,15 +31,15 @@
 #pragma once
 
 
-#include <algorithm>
-#include <set>
-
+#include <ICLUtils/CompatMacros.h>
 #include <ICLMath/FixedVector.h>
 #include <ICLUtils/VisualizationDescription.h>
 #include <ICLUtils/Rect32f.h>
 #include <ICLUtils/Range.h>
 #include <ICLUtils/StringUtils.h>
-#include <ICLUtils/CompatMacros.h>
+
+#include <algorithm>
+#include <set>
 
 namespace icl{
 
@@ -172,7 +172,7 @@ namespace icl{
         * query: 22.8ms (22.8ms)
     */
     template<class Scalar, int CAPACITY=4, int SF=1, int ALLOC_CHUNK_SIZE=1024>
-    class ICL_MATH_API_T QuadTree{
+    class QuadTree{
       public:
       
       // 2D-point type, internally used

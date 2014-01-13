@@ -31,9 +31,10 @@
 
 #pragma once
 
-#include <ICLFilter/UnaryOp.h>
-#include <ICLCore/Img.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
+#include <ICLCore/Img.h>
+#include <ICLFilter/UnaryOp.h>
 
 #ifdef HAVE_OPENCL    
 #include <ICLUtils/CLProgram.h>
@@ -44,7 +45,7 @@
 namespace icl{
   namespace filter{
   
-    class ICL_FILTER_API TemporalSmoothingCL{
+    class ICLFilter_API TemporalSmoothingCL{
       public:
       
       /// creates a new TemporalSmoothingCL with given parameters (implementation of the MotionSensitiveTemporalSmoothing Filter)
@@ -142,7 +143,7 @@ namespace icl{
   
     };
   
-    class ICL_FILTER_API MotionSensitiveTemporalSmoothing : public UnaryOp, public utils::Uncopyable{
+    class ICLFilter_API MotionSensitiveTemporalSmoothing : public UnaryOp, public utils::Uncopyable{
       public:
       
       /// creates a new MotionSensitiveTemporalSmoothing filter with given parameters

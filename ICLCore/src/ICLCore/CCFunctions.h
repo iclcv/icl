@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Types.h>
 #include <ICLUtils/Size.h>
 #include <string>
@@ -445,29 +446,29 @@ namespace icl{
         additional optimizations that causes, that the U- and V- channel range are not full 8bit range [0-255].
         We aim to fix that in future    
     */
-    ICL_CORE_API void cc(const ImgBase *src, ImgBase *dst, bool roiOnly=false);
+    ICLCore_API void cc(const ImgBase *src, ImgBase *dst, bool roiOnly=false);
     
     /// returns whether a lookup table was already created for src and dst format
     /** @param srcFmt source format
         @param dstFmt destination format
     **/
-    ICL_CORE_API bool lut_available(format srcFmt, format dstFmt);
+    ICLCore_API bool lut_available(format srcFmt, format dstFmt);
   
     /// Internally creates a lookup table to accelerate conversion between given formats
     /** Take care: <b>Each LUT uses up to 48MB of system memory</b> 
         @param srcFmt source format
         @param dstFmt destination format
     **/
-    ICL_CORE_API void createLUT(format srcFmt, format dstFmt);
+    ICLCore_API void createLUT(format srcFmt, format dstFmt);
     
     /// releases the internal lookup table created with createLUT
     /**  @param srcFmt source format
          @param dstFmt destination format
     **/
-    ICL_CORE_API void releaseLUT(format srcFmt, format dstFmt);
+    ICLCore_API void releaseLUT(format srcFmt, format dstFmt);
   
     /// releases all lookup tables that were created with createLUT
-    ICL_CORE_API void releaseAllLUTs();
+    ICLCore_API void releaseAllLUTs();
     
     /// Internal used type, that describes an implementation type of a specific color conversion function
     enum ccimpl{
@@ -480,13 +481,13 @@ namespace icl{
     
     /// translates a ccimpl enum into a string representation
     /** The returned string for ccAvailable is "available" (...) */
-    ICL_CORE_API std::string translateCCImpl(ccimpl i);
+    ICLCore_API std::string translateCCImpl(ccimpl i);
   
     /// translates the string represenation of a
-    ICL_CORE_API ccimpl translateCCImlp(const std::string &s);
+    ICLCore_API ccimpl translateCCImlp(const std::string &s);
   
     /// returns the ccimpl state to a conversion from srcFmt to dstFmt
-    ICL_CORE_API ccimpl cc_available(format srcFmt, format dstFmt);
+    ICLCore_API ccimpl cc_available(format srcFmt, format dstFmt);
   
   
     /// Convert an image in YUV420-format to RGB8 format (ippi accelerated)
@@ -496,7 +497,7 @@ namespace icl{
     has half X- and half Y-resolution. The data pointer has iW*iH*1.5 elements)
     @param s image size 
     */
-    ICL_CORE_API void convertYUV420ToRGB8(const unsigned char *pucSrc, const utils::Size &s, Img8u* poDst);
+    ICLCore_API void convertYUV420ToRGB8(const unsigned char *pucSrc, const utils::Size &s, Img8u* poDst);
   
     /// Convert an 4 channel Img8u into Qts ARGB32 interleaved format 
     /** \@param pucDst destination data pointer of size
@@ -525,8 +526,8 @@ namespace icl{
         @param dstLineStep optinal linestep of the destination image. This must be given, if it differs from
                            the source images lineStep multiplied by the source images channel count
     */
-    template<class S, class D>
-    ICL_CORE_API void planarToInterleaved(const Img<S> *src, D* dst, int dstLineStep = -1);
+    template<class S, class D> ICLCore_API
+    void planarToInterleaved(const Img<S> *src, D* dst, int dstLineStep = -1);
     
     /// Converts interleaved image data into planar representation 
     /** The source data is transformed into the destination images ROI 
@@ -534,23 +535,23 @@ namespace icl{
         @param dst image pointer
         @param srcLineStep optionally given src linestep size
     */
-    template<class S, class D>
-    ICL_CORE_API void interleavedToPlanar(const S *src, Img<D> *dst, int srcLineStep = -1);
+    template<class S, class D> ICLCore_API
+    void interleavedToPlanar(const S *src, Img<D> *dst, int srcLineStep = -1);
 
 
     /// converts given (r,g,b) pixel into the yuv format
-    ICL_CORE_API void cc_util_rgb_to_yuv(const icl32s r, const icl32s g, const icl32s b, icl32s &y, icl32s &u, icl32s &v);
+    ICLCore_API void cc_util_rgb_to_yuv(const icl32s r, const icl32s g, const icl32s b, icl32s &y, icl32s &u, icl32s &v);
     
     /// converts given (y,u,v) pixel into the rgb format
-    ICL_CORE_API void cc_util_yuv_to_rgb(const icl32s y, const icl32s u, const icl32s v, icl32s &r, icl32s &g, icl32s &b);
+    ICLCore_API void cc_util_yuv_to_rgb(const icl32s y, const icl32s u, const icl32s v, icl32s &r, icl32s &g, icl32s &b);
     
     /// converts given (r,g,b) pixel into the hls format
-    ICL_CORE_API void cc_util_rgb_to_hls(const icl32f r255, const icl32f g255, const icl32f b255, icl32f &h, icl32f &l, icl32f &s);
+    ICLCore_API void cc_util_rgb_to_hls(const icl32f r255, const icl32f g255, const icl32f b255, icl32f &h, icl32f &l, icl32f &s);
   
     /// converts given (h,l,s) pixel into the rgb format
-    ICL_CORE_API void cc_util_hls_to_rgb(const icl32f h255, const icl32f l255, const icl32f sl255, icl32f &r, icl32f &g, icl32f &b);
+    ICLCore_API void cc_util_hls_to_rgb(const icl32f h255, const icl32f l255, const icl32f sl255, icl32f &r, icl32f &g, icl32f &b);
   
     /// converts given (r,g,b) pixel into the RG-chroma format
-    ICL_CORE_API void cc_util_rgb_to_chroma(const icl32f r, const icl32f g, const icl32f b, icl32f &chromaR, icl32f &chromaG);
+    ICLCore_API void cc_util_rgb_to_chroma(const icl32f r, const icl32f g, const icl32f b, icl32f &chromaR, icl32f &chromaG);
   } // namespace core
 }

@@ -30,8 +30,9 @@
 
 #pragma once
 
-#include <ICLFilter/NeighborhoodOp.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
+#include <ICLFilter/NeighborhoodOp.h>
 #include <ICLFilter/ConvolutionKernel.h>
 
 namespace icl {
@@ -92,7 +93,7 @@ namespace icl {
     in two Constructors.
     */
   
-    class ICL_FILTER_API ConvolutionOp : public NeighborhoodOp, public utils::Uncopyable{
+    class ICLFilter_API ConvolutionOp : public NeighborhoodOp, public utils::Uncopyable{
       public:
   
       /// Default constructor (force unsigned is set to false)

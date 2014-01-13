@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Types.h>
 #include <ICLUtils/Size.h>
 #include <ICLUtils/Point.h>
@@ -140,7 +141,7 @@ namespace icl{
         
     */
     template<class T>
-    class ICL_CORE_API_T Channel{
+    class Channel{
       mutable T *m_data;   
       mutable utils::Size m_size;
       mutable utils::Rect m_roi;

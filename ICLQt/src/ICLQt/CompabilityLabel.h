@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLQt/ThreadedUpdatableWidget.h>
 #include <QtCore/QString>
 #include <QtCore/QMutex>

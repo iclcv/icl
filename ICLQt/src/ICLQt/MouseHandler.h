@@ -89,7 +89,7 @@ namespace icl{
         }
         \endcode
         */
-    class MouseHandler : public QObject{
+    class ICL_QT_API MouseHandler : public QObject{
       Q_OBJECT
       public:
 

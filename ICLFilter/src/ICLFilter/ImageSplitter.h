@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/ImgBase.h>
 #include <vector>
 
@@ -56,7 +57,7 @@ namespace icl{
         thread.
         
     */
-    class ICL_FILTER_API ImageSplitter{
+    class ICLFilter_API ImageSplitter{
       public:
       /// splits a source image into given number of parts
       static std::vector<core::ImgBase*> split(core::ImgBase *src, int nParts);

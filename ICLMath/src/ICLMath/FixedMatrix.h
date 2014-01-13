@@ -30,6 +30,13 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/Exception.h>
+#include <ICLUtils/ClippedCast.h>
+#include <ICLUtils/FixedArray.h>
+#include <ICLMath/DynMatrix.h>
+#include <ICLMath/MatrixSubRectIterator.h>
+
 #include <iterator>
 #include <algorithm>
 #include <numeric>
@@ -38,26 +45,15 @@
 #include <vector>
 #include <cmath>
 
-#include <ICLUtils/Exception.h>
-#include <ICLMath/DynMatrix.h>
-#include <ICLUtils/ClippedCast.h>
-#include <ICLMath/MatrixSubRectIterator.h>
-#include <ICLUtils/FixedArray.h>
-#include <ICLUtils/CompatMacros.h>
-
 #ifdef HAVE_IPP
 #include <ippm.h>
-#endif
-
-#ifdef ICL_SYSTEM_WINDOWS
-  #define M_PI 3.14159265358979323846
 #endif
 
 namespace icl{
   namespace math{
   
     /// FixedMatrix base struct defining datamode enum \ingroup LINALG
-    struct ICL_MATH_API_T FixedMatrixBase{
+    struct FixedMatrixBase{
       /// Optimized copy function template (for N>30 using std::copy, otherwise a simple loop is used)
       template<class SrcIterator, class DstIterator, unsigned int N>
       static void optimized_copy(SrcIterator srcBegin, SrcIterator srcEnd, DstIterator dstBegin){
@@ -78,7 +74,7 @@ namespace icl{
       
     /** \cond */
     /// Forward Declaration fo FixedMatrixPart struct
-    template<class T, unsigned int COLS, unsigned int ROWS> class ICL_MATH_API_T FixedMatrix;
+    template<class T, unsigned int COLS, unsigned int ROWS> class FixedMatrix;
     /** \endcond */
     
   
@@ -93,7 +89,7 @@ namespace icl{
         are 'templated' to the range size (template parameter N)
     **/
     template<class T,unsigned int N, class Iterator>
-    class ICL_MATH_API_T FixedMatrixPart : public FixedMatrixBase{
+    class FixedMatrixPart : public FixedMatrixBase{
   
       public:
       /// Start iterator 
@@ -173,7 +169,7 @@ namespace icl{
           - 1000 x multiply 5x5 matrices 238 ns [generic C++ implementation for A*B]
     */
     template<class T,unsigned int COLS,unsigned int ROWS>
-    class ICL_MATH_API_T FixedMatrix : public utils::FixedArray<T, COLS*ROWS>, public FixedMatrixBase{
+    class FixedMatrix : public utils::FixedArray<T, COLS*ROWS>, public FixedMatrixBase{
       public:
       
       /// creates a shallow copied DynMatrix instance wrapping this' data
@@ -311,11 +307,11 @@ namespace icl{
       }
   
       /// Matrix devision (inplace)
-      FixedMatrix &operator/=(const FixedMatrix &m) const 
+      FixedMatrix &operator/=(const FixedMatrix &m) 
         throw (IncompatibleMatrixDimensionException,
                InvalidMatrixDimensionException,
                SingularMatrixException){
-        return *this = this->operator*(m.inv());
+                 return *this = this->operator*(m.inv());
       }
   
       /// Multiply all elements by a scalar
@@ -940,7 +936,7 @@ namespace icl{
     /// Vertical Matrix concatenation  \ingroup LINALG
     /** like ICLQuick image concatenation, dont forget the brackets sometimes */
     template<class T,unsigned  int WIDTH,unsigned  int HEIGHT, unsigned int HEIGHT2>
-    inline ICL_MATH_API_T FixedMatrix<T, WIDTH, HEIGHT + HEIGHT2> operator%(const FixedMatrix<T, WIDTH, HEIGHT> &a,
+    inline FixedMatrix<T, WIDTH, HEIGHT + HEIGHT2> operator%(const FixedMatrix<T, WIDTH, HEIGHT> &a,
                                                          const FixedMatrix<T,WIDTH,HEIGHT2> &b){
       FixedMatrix<T,WIDTH,HEIGHT+HEIGHT2> M;
       for(unsigned int i=0;i<HEIGHT;++i) M.row(i) = a.row(i);
@@ -951,7 +947,7 @@ namespace icl{
     /// Horizontal Matrix concatenation  \ingroup LINALG
     /** like ICLQuick image concatenation, dont forget the brackets sometimes */
     template<class T,unsigned  int WIDTH,unsigned  int HEIGHT, unsigned int WIDTH2>
-    inline ICL_MATH_API_T FixedMatrix<T, WIDTH + WIDTH2, HEIGHT> operator,(const FixedMatrix<T, WIDTH, HEIGHT> &a,
+    inline FixedMatrix<T, WIDTH + WIDTH2, HEIGHT> operator,(const FixedMatrix<T, WIDTH, HEIGHT> &a,
                                                          const FixedMatrix<T,WIDTH2,HEIGHT> &b){
       FixedMatrix<T,WIDTH+WIDTH2,HEIGHT> M;
       for(unsigned int i=0;i<WIDTH;++i) M.col(i) = a.col(i);
@@ -988,16 +984,16 @@ namespace icl{
   
   
     /// creates a 2D rotation matrix (defined for float and double)
-    template<class T>
-    ICL_MATH_API_T FixedMatrix<T, 2, 2> create_rot_2D(T angle);
+    template<class T> ICLMath_IMP
+    FixedMatrix<T, 2, 2> create_rot_2D(T angle);
   
     /// creates a 2D homogen matrix (defined for float and double)
-    template<class T>
-    ICL_MATH_API_T FixedMatrix<T, 3, 3> create_hom_3x3(T angle, T dx = 0, T dy = 0, T v0 = 0, T v1 = 0);
+    template<class T> ICLMath_IMP
+    FixedMatrix<T, 3, 3> create_hom_3x3(T angle, T dx = 0, T dy = 0, T v0 = 0, T v1 = 0);
   
     /// creates a 2D homogen matrix with translation part only (defined for float and double)
     template<class T>
-    inline ICL_MATH_API_T FixedMatrix<T, 3, 3> create_hom_3x3_trans(T dx, T dy){
+    inline FixedMatrix<T, 3, 3> create_hom_3x3_trans(T dx, T dy){
       FixedMatrix<T,3,3> m = FixedMatrix<T,3,3>::id();
       m(2,0)=dx;
       m(2,1)=dy;
@@ -1006,25 +1002,25 @@ namespace icl{
     
   
     /// create 3D rotation matrix that rotates about given axis by given angle (float and double only)
-    template<class T>
-    ICL_MATH_API_T FixedMatrix<T, 3, 3> create_rot_3D(T axisX, T axisY, T axisZ, T angle);
+    template<class T> ICLMath_IMP
+    FixedMatrix<T, 3, 3> create_rot_3D(T axisX, T axisY, T axisZ, T angle);
     
     /// creates a 3D rotation matrix (defined for float and double)
-    template<class T>
-    ICL_MATH_API_T FixedMatrix<T, 3, 3> create_rot_3D(T rx, T ry, T rz);
+    template<class T> ICLMath_IMP
+    FixedMatrix<T, 3, 3> create_rot_3D(T rx, T ry, T rz);
   
     /// creates a 3D homogeneous matrix (defined for float and double)
-    template<class T>
-    ICL_MATH_API_T FixedMatrix<T, 4, 4> create_hom_4x4(T rx, T ry, T rz, T dx = 0, T dy = 0, T dz = 0, T v0 = 0, T v1 = 0, T v2 = 0);
+    template<class T> ICLMath_IMP
+    FixedMatrix<T, 4, 4> create_hom_4x4(T rx, T ry, T rz, T dx = 0, T dy = 0, T dz = 0, T v0 = 0, T v1 = 0, T v2 = 0);
   
     /// create 4D homogeneous matrix that rotates about given axis by given angle float and double only)
-    template<class T>
-    ICL_MATH_API_T FixedMatrix<T, 4, 4> create_rot_4x4(T axisX, T axisY, T axisZ, T angle);
+    template<class T> ICLMath_IMP
+    FixedMatrix<T, 4, 4> create_rot_4x4(T axisX, T axisY, T axisZ, T angle);
   
   
     /// creates a 3D homogen matrix with translation part only (defined for float and double)
     template<class T>
-    inline ICL_MATH_API_T FixedMatrix<T, 4, 4> create_hom_4x4_trans(T dx, T dy, T dz){
+    inline FixedMatrix<T, 4, 4> create_hom_4x4_trans(T dx, T dy, T dz){
       FixedMatrix<T,4,4> m = FixedMatrix<T,4,4>::id();
       m(3,0)=dx;
       m(3,1)=dy;
@@ -1038,7 +1034,7 @@ namespace icl{
         in order to avoid having several functions for 3x3, 4x4, ... matrices. To avoid
         seg-faults, an exception is thrown in case of too small matrices m. */
     template<class T,unsigned int COLS, unsigned int ROWS>
-    ICL_MATH_API_T FixedMatrix<T, 1, 3> extract_euler_angles(const FixedMatrix<T, COLS, ROWS> &m) throw (InvalidMatrixDimensionException){
+    FixedMatrix<T, 1, 3> extract_euler_angles(const FixedMatrix<T, COLS, ROWS> &m) throw (InvalidMatrixDimensionException){
       ICLASSERT_THROW(COLS>2 && ROWS>2,InvalidMatrixDimensionException("extract_euler_angles needs a matrix that has at least 3 rows and columns"));
       if( m(1,2) > -0.999999 && m(1,2) < 0.999999){ //avoid Gimbal lock
         return FixedMatrix<T,1,3>(asin(m(1,2)),atan2(m(0,2),m(2,2)),atan2(m(1,0),m(1,1)));
@@ -1097,19 +1093,19 @@ namespace icl{
     // this functions are implemented in iclFixedMatrix.cpp. All templates are
     // instantiated for float and double
   
-    template<class T> 
-    ICL_MATH_API_T void icl_util_get_fixed_4x4_matrix_inv(const T *src, T*dst);
-    template<class T> 
-    ICL_MATH_API_T void icl_util_get_fixed_3x3_matrix_inv(const T *src, T*dst);
-    template<class T> 
-    ICL_MATH_API_T void icl_util_get_fixed_2x2_matrix_inv(const T *src, T*dst);
+    template<class T> ICLMath_IMP
+    void icl_util_get_fixed_4x4_matrix_inv(const T *src, T*dst);
+    template<class T> ICLMath_IMP
+    void icl_util_get_fixed_3x3_matrix_inv(const T *src, T*dst);
+    template<class T> ICLMath_IMP
+    void icl_util_get_fixed_2x2_matrix_inv(const T *src, T*dst);
   
-    template<class T> 
-    ICL_MATH_API_T T icl_util_get_fixed_4x4_matrix_det(const T *src);
-    template<class T> 
-    ICL_MATH_API_T T icl_util_get_fixed_3x3_matrix_det(const T *src);
-    template<class T> 
-    ICL_MATH_API_T T icl_util_get_fixed_2x2_matrix_det(const T *src);
+    template<class T> ICLMath_IMP
+    T icl_util_get_fixed_4x4_matrix_det(const T *src);
+    template<class T> ICLMath_IMP
+    T icl_util_get_fixed_3x3_matrix_det(const T *src);
+    template<class T> ICLMath_IMP
+    T icl_util_get_fixed_2x2_matrix_det(const T *src);
   
   #define SPECIALISED_MATRIX_INV_AND_DET(D,T) \
     template<>                                                            \
@@ -1139,7 +1135,15 @@ namespace icl{
   /** \endcond */
   #endif
   
-  
+
+#ifdef WIN32
+    // this is temporary fix!
+    // because Homography2D is exported and therefore the base class is exported too
+    // we need to import this in executables/libraries
+    template class ICLMath_API FixedMatrix<float, 3, 3>;
+    template class ICLMath_API FixedMatrix<double, 3, 3>;
+#endif
+
   } // namespace math
 }
 

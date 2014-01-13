@@ -72,7 +72,7 @@ namespace icl{
         to speed up the detection step itself since usually most complex features
         dont have to be computed for each detected Fiducial.
     */
-    struct FiducialImpl{
+    struct ICLMarkers_API FiducialImpl{
       /// parent Fiducial Detector instance
       FiducialDetectorPlugin *parent;
       

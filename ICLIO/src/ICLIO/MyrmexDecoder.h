@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
 
 #define ERROR_MARK  0xA000 //Top 4 Bits code on last pixel of last frame to mark that an error occurred during readout

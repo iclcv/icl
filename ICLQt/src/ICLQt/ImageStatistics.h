@@ -30,15 +30,16 @@
 
 #pragma once
 
-#include <vector>
-#include <ICLCore/Types.h>
-#include <ICLCore/ImgParams.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Range.h>
 #include <ICLUtils/Time.h>
+#include <ICLCore/Types.h>
+#include <ICLCore/ImgParams.h>
+#include <vector>
 
 namespace icl{
   namespace qt{
-    struct ICL_QT_API ImageStatistics{
+    struct ImageStatistics{
       core::ImgParams params;
       core::depth d;
       std::vector<utils::Range64f> ranges;

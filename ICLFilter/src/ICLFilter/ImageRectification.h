@@ -30,9 +30,10 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/SSEUtils.h>
 #include <ICLCore/Img.h>
 #include <ICLMath/FixedMatrix.h>
-#include <ICLUtils/SSEUtils.h>
 
 namespace icl{
   namespace filter{
@@ -47,7 +48,7 @@ namespace icl{
         TODO  this could still be implemented as a UnaryOp instance
         */
     template<class T>
-    class ICL_FILTER_API ImageRectification{
+    class ICLFilter_API ImageRectification{
       core::Img<T> buffer; //!< internal image buffer
       bool validateAndSortPoints; //!< internal flag
       
@@ -88,7 +89,7 @@ namespace icl{
   
       //    TODO: use result roi in order to speed up
     };
-  
+
   } // namespace markers
 }
 

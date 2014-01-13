@@ -128,13 +128,8 @@ namespace icl{
   
       GLImg tmImage;
   
-#ifdef ICL_SYSTEM_WINDOWS
-      Function<void*> vcb;
-      Function<void*,bool> bcb;
-#else
       Function<void> vcb;
       Function<void, bool> bcb;
-#endif
   
       std::string toolTipText;
   

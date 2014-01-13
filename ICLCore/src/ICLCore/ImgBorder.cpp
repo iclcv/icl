@@ -73,7 +73,7 @@ namespace icl{
     // }}}
     
     // export these functions
-  #define ICL_INSTANTIATE_DEPTH(D) template ICL_CORE_API void ImgBorder::fixed<icl##D>(Img<icl##D> *im,icl##D *val);
+  #define ICL_INSTANTIATE_DEPTH(D) template ICLCore_API void ImgBorder::fixed<icl##D>(Img<icl##D> *im,icl##D *val);
     ICL_INSTANTIATE_ALL_DEPTHS
   #undef ICL_INSTANTIATE_DEPTH
   

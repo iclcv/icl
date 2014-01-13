@@ -30,9 +30,10 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/SmartPtr.h>
 #include <ICLQt/DrawWidget.h>
 #include <vector>
-#include <ICLUtils/SmartPtr.h>
 
 namespace icl{
   namespace qt{
@@ -51,7 +52,7 @@ namespace icl{
       public:
       
       /// internally used callback class type
-        class ICL_QT_API GLCallback{
+      class GLCallback{
         public:
         /// empty destructor (doing nothing)
         virtual ~GLCallback(){}

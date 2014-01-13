@@ -30,15 +30,16 @@
 
 #pragma once
 
-#include <QtGui/QSplitter>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLQt/GUIHandle.h>
 #include <ICLQt/ContainerHandle.h>
+#include <QtGui/QSplitter>
 
 namespace icl{
   namespace qt{
     
     /// A Handle for SplitterWidget container GUI components  \ingroup HANDLES
-    class ICL_QT_API SplitterHandle : public GUIHandle<QSplitter>, public ContainerHandle{
+    class SplitterHandle : public GUIHandle<QSplitter>, public ContainerHandle{
       public:
       /// create an empty handle
       SplitterHandle(): GUIHandle<QSplitter>(){}

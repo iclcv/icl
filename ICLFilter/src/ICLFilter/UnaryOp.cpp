@@ -28,18 +28,17 @@
 **                                                                 **
 ********************************************************************/
 
+#include <ICLUtils/Macros.h>
+#include <ICLUtils/StringUtils.h>
 #include <ICLFilter/UnaryOp.h>
 #include <ICLFilter/UnaryOpWork.h>
-#include <ICLUtils/Macros.h>
 #include <ICLFilter/ImageSplitter.h>
-
-#include <map>
-#include <ICLUtils/StringUtils.h>
 #include <ICLFilter/ConvolutionOp.h>
 #include <ICLFilter/MorphologicalOp.h>
 #include <ICLFilter/MedianOp.h>
 #include <ICLFilter/RotateOp.h>
 #include <ICLFilter/ScaleOp.h>
+#include <map>
 
 #ifdef HAVE_IPP
 #include <ICLFilter/CannyOp.h>

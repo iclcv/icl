@@ -30,8 +30,8 @@
 
 #pragma once
 
-#include <iostream>
 #include <ICLUtils/CompatMacros.h>
+#include <iostream>
 
 namespace icl{
   namespace cv{

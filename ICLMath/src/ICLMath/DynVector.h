@@ -30,15 +30,15 @@
 
 #pragma once
 
-#include <ICLMath/DynMatrix.h>
 #include <ICLUtils/CompatMacros.h>
+#include <ICLMath/DynMatrix.h>
 
 namespace icl{
   namespace math{
     
     /// Extension class for the DynMatrix<T> template, that restricts the the matrix column count to 'one'
     template<class T>
-    struct ICL_MATH_API_T DynColVector : public DynMatrix<T>{
+    struct DynColVector : public DynMatrix<T>{
       /// creates a column vector from given matrix column
       DynColVector(const typename DynMatrix<T>::DynMatrixColumn &column):
         DynMatrix<T>(column){}
@@ -88,7 +88,7 @@ namespace icl{
     };
   
     template<class T>
-    struct ICL_MATH_API_T DynRowVector : public DynMatrix<T>{
+    struct DynRowVector : public DynMatrix<T>{
       /// Default empty constructor creates a null-vector
       inline DynRowVector():DynMatrix<T>(){}
   

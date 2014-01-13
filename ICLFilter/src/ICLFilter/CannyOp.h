@@ -30,9 +30,10 @@
 
 #pragma once
 
-#include <ICLFilter/UnaryOp.h>
-#include <ICLCore/Img.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
+#include <ICLCore/Img.h>
+#include <ICLFilter/UnaryOp.h>
 
 namespace icl {
   namespace filter{
@@ -70,7 +71,7 @@ namespace icl {
 
 
     */
-    class ICL_FILTER_API CannyOp : public UnaryOp, public utils::Uncopyable{
+    class ICLFilter_API CannyOp : public UnaryOp, public utils::Uncopyable{
       public:
         /// Constructor
         /**

@@ -30,16 +30,15 @@
 
 #pragma once
 
+#include <ICLUtils/Macros.h>
+#include <ICLUtils/Exception.h>
+
 #include <iterator>
 #include <algorithm>
 #include <numeric>
 #include <functional>
 #include <vector>
 #include <cmath>
-
-#include <ICLUtils/Exception.h>
-#include <ICLUtils/Macros.h>
-#include <ICLUtils/CompatMacros.h>
 
 #ifdef HAVE_IPP
 #include <ipp.h>
@@ -54,22 +53,22 @@ namespace icl{
   namespace math{
   
     /// Special linear algebra exception type  \ingroup LINALG \ingroup EXCEPT
-    struct ICL_MATH_API InvalidMatrixDimensionException :public utils::ICLException{
+    struct ICLMath_API InvalidMatrixDimensionException :public utils::ICLException{
       InvalidMatrixDimensionException(const std::string &msg):utils::ICLException(msg){}
     };
   
     /// Special linear algebra exception type  \ingroup LINALG \ingroup EXCEPT
-    struct ICL_MATH_API IncompatibleMatrixDimensionException :public utils::ICLException{
+    struct ICLMath_API IncompatibleMatrixDimensionException :public utils::ICLException{
       IncompatibleMatrixDimensionException(const std::string &msg):utils::ICLException(msg){}
     };
   
     /// Special linear algebra exception type  \ingroup LINALG \ingroup EXCEPT
-    struct ICL_MATH_API InvalidIndexException : public utils::ICLException{
+    struct ICLMath_API InvalidIndexException : public utils::ICLException{
       InvalidIndexException(const std::string &msg):utils::ICLException(msg){}
     };
   
     /// Special linear algebra exception type  \ingroup LINALG \ingroup EXCEPT
-    struct ICL_MATH_API SingularMatrixException : public utils::ICLException{
+    struct ICLMath_API SingularMatrixException : public utils::ICLException{
       SingularMatrixException(const std::string &msg):utils::ICLException(msg){}
     };
   
@@ -79,7 +78,7 @@ namespace icl{
         uint8_t, int16_t, int32_t, float and double
     */
     template<class T>
-    struct ICL_MATH_API_T DynMatrix{
+    struct DynMatrix{
   
       /** \cond */
       class DynMatrixColumn;
@@ -647,7 +646,7 @@ namespace icl{
       typedef const col_iterator const_col_iterator;
   
       /// Internally used Utility structure referencing a matrix column shallowly
-      class DynMatrixColumn{
+      class ICLMath_API DynMatrixColumn{
         public:
   #ifdef DYN_MATRIX_INDEX_CHECK
   #define DYN_MATRIX_COLUMN_CHECK(C,E) if(C) ERROR_LOG(E)
@@ -844,7 +843,7 @@ namespace icl{
       /// applies LU-decomposition (without using partial pivoting) (only for icl32f and icl64f)
       /** Even though, implementation also works for non-sqared matrices, it's not recommended to
           apply this function on non-sqared matrices */
-      void decompose_LU(DynMatrix &L, DynMatrix &U, T zeroThreshold=1E-16) const;
+      void decompose_LU(DynMatrix &L, DynMatrix &U, T zeroThreshold = 1E-16) const;
   
       /// solves Mx=b for M=*this (only if M is a squared upper triangular matrix) (only for icl32f and icl64f)
       DynMatrix solve_upper_triangular(const DynMatrix &b) const throw(InvalidMatrixDimensionException);
@@ -900,12 +899,12 @@ namespace icl{
             * svd 23.4 ms
           @param zeroThreshold 
       */
-      DynMatrix solve(const DynMatrix &b, const std::string &method="lu",T zeroThreshold=1E-16)
+      DynMatrix solve(const DynMatrix &b, const std::string &method = "lu", T zeroThreshold = 1E-16)
         throw(InvalidMatrixDimensionException,  utils::ICLException, SingularMatrixException);
   
   
       /// invert the matrix (only for icl32f and icl64f)
-      DynMatrix inv() const throw (InvalidMatrixDimensionException,SingularMatrixException);
+      DynMatrix inv() const throw (InvalidMatrixDimensionException, SingularMatrixException);
   
       /// Extracts the matrix's eigenvalues and eigenvectors
       /** This function only works on squared symmetric matrices.
@@ -931,7 +930,7 @@ namespace icl{
           @param V is filled column-wise with the eigenvectors of A'A (in V, V is stored not V')
           @see icl::svd_dyn
       */
-      void svd(DynMatrix &U, DynMatrix &S,  DynMatrix &V) const throw (utils::ICLException);
+      void svd(DynMatrix &U, DynMatrix &S, DynMatrix &V) const throw (utils::ICLException);
   
       /// calculates the Moore-Penrose pseudo-inverse (only implemented for icl32f and icl64f)
       /** Internally, this functions can use either a QR-decomposition based approach, or it can use
@@ -958,7 +957,7 @@ namespace icl{
           return V * S * U.transp();
           </code>
       */
-      DynMatrix pinv(bool useSVD=false, T zeroThreshold=1E-16) const
+      DynMatrix pinv(bool useSVD = false, T zeroThreshold = 1E-16) const
         throw (InvalidMatrixDimensionException,SingularMatrixException,utils::ICLException);
   
       /// calculates the Moore-Penrose pseudo-inverse (specialized for big matrices)
@@ -968,7 +967,7 @@ namespace icl{
       * @param zeroThreshold singular values below threshold are set to zero
       * @return pseudo inverse
       */
-      DynMatrix big_matrix_pinv(T zeroThreshold=1E-16) const
+      DynMatrix big_matrix_pinv(T zeroThreshold = 1E-16) const
         throw (InvalidMatrixDimensionException,SingularMatrixException,utils::ICLException);
   
   #ifdef HAVE_MKL
@@ -1138,19 +1137,19 @@ namespace icl{
     /** \cond */
     /// creates a dyn-matrix from given matrix column
     template<class T>
-    ICL_MATH_API_T DynMatrix<T>::DynMatrix(const typename DynMatrix<T>::DynMatrixColumn &column) :
+    DynMatrix<T>::DynMatrix(const typename DynMatrix<T>::DynMatrixColumn &column) :
     m_rows(column.dim()),m_cols(1),m_data(new T[column.dim()]),m_ownData(true){
       std::copy(column.begin(),column.end(),begin());
     }
     /** \endcond */
 
     /// ostream operator implemented for uchar, short, int, float and double matrices  \ingroup LINALG
-    template<class T>
-    ICL_MATH_API std::ostream &operator<<(std::ostream &s, const DynMatrix<T> &m);
+    template<class T> ICLMath_IMP
+    std::ostream &operator<<(std::ostream &s, const DynMatrix<T> &m);
   
     /// istream operator implemented for uchar, short, int, float and double matrices  \ingroup LINALG
-    template<class T>
-    ICL_MATH_API std::istream &operator>>(std::istream &s, DynMatrix<T> &m);
+    template<class T> ICLMath_IMP
+    std::istream &operator>>(std::istream &s, DynMatrix<T> &m);
 
   
 #ifdef HAVE_IPP
@@ -1164,7 +1163,7 @@ namespace icl{
     }
 
     template<>
-    inline ICL_MATH_API double DynMatrix<double>::sqrDistanceTo(const DynMatrix<double> &other) const throw (InvalidMatrixDimensionException){
+    inline double DynMatrix<double>::sqrDistanceTo(const DynMatrix<double> &other) const throw (InvalidMatrixDimensionException){
       ICLASSERT_THROW(dim() == other.dim(), InvalidMatrixDimensionException("DynMatrix::sqrDistanceTo: dimension missmatch"));
       double norm = 0 ;
       ippsNormDiff_L2_64f(begin(), other.begin(), dim(), &norm);
@@ -1172,7 +1171,7 @@ namespace icl{
     }
 
     template<>
-    inline ICL_MATH_API float DynMatrix<float>::distanceTo(const DynMatrix<float> &other) const throw (InvalidMatrixDimensionException){
+    inline float DynMatrix<float>::distanceTo(const DynMatrix<float> &other) const throw (InvalidMatrixDimensionException){
       ICLASSERT_THROW(dim() == other.dim(), InvalidMatrixDimensionException("DynMatrix::distanceTo: dimension missmatch"));
       float norm = 0 ;
       ippsNormDiff_L2_32f(begin(), other.begin(), dim(), &norm);
@@ -1180,7 +1179,7 @@ namespace icl{
     }
 
     template<>
-    inline ICL_MATH_API double DynMatrix<double>::distanceTo(const DynMatrix<double> &other) const throw (InvalidMatrixDimensionException){
+    inline double DynMatrix<double>::distanceTo(const DynMatrix<double> &other) const throw (InvalidMatrixDimensionException){
       ICLASSERT_THROW(dim() == other.dim(), InvalidMatrixDimensionException("DynMatrix::distanceTo: dimension missmatch"));
       double norm = 0 ;
       ippsNormDiff_L2_64f(begin(), other.begin(), dim(), &norm);
@@ -1189,7 +1188,7 @@ namespace icl{
   
 #define DYN_MATRIX_MULT_SPECIALIZE(IPPT)                                \
     template<>                                                          \
-    inline ICL_MATH_API DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::mult(            \
+    inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::mult(            \
                                                             const DynMatrix<Ipp##IPPT> &m, DynMatrix<Ipp##IPPT> &dst) const \
     throw (IncompatibleMatrixDimensionException){                       \
       if(cols() != m.rows() ) throw IncompatibleMatrixDimensionException("A*B : cols(A) must be row(B)"); \
@@ -1207,7 +1206,7 @@ namespace icl{
   
 #define DYN_MATRIX_ELEMENT_WISE_DIV_SPECIALIZE(IPPT)                    \
     template<>                                                          \
-    inline ICL_MATH_API DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::elementwise_div( \
+    inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::elementwise_div( \
                                                                        const DynMatrix<Ipp##IPPT> &m, DynMatrix<Ipp##IPPT> &dst) const \
     throw (IncompatibleMatrixDimensionException){                       \
       if((m.cols() != cols()) || (m.rows() != rows())){                 \
@@ -1230,7 +1229,7 @@ namespace icl{
   
 #define DYN_MATRIX_MULT_BY_CONSTANT(IPPT)                               \
     template<>                                                          \
-    inline ICL_MATH_API DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::mult(            \
+    inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::mult(            \
                                                             Ipp##IPPT f, DynMatrix<Ipp##IPPT> &dst) const{ \
       dst.setBounds(cols(),rows());                                     \
       ippsMulC_##IPPT(data(),f, dst.data(),dim());                      \
@@ -1244,7 +1243,7 @@ namespace icl{
   
 #define DYN_MATRIX_NORM_SPECIALZE(T,IPPT)               \
     template<>                                          \
-    inline ICL_MATH_API_T T DynMatrix<T> ::norm(double l) const{       \
+    inline T DynMatrix<T> ::norm(double l) const{       \
       if(l==1){                                         \
         T val;                                          \
         ippsNorm_L1_##IPPT(m_data,dim(),&val);          \
@@ -1273,7 +1272,7 @@ namespace icl{
     /// vertical concatenation of matrices
     /** missing elementes are padded with 0 */
     template<class T>
-    inline ICL_MATH_API_T DynMatrix<T> operator,(const DynMatrix<T> &left, const DynMatrix<T> &right){
+    inline DynMatrix<T> operator,(const DynMatrix<T> &left, const DynMatrix<T> &right){
       int w = left.cols() + right.cols();
       int h = iclMax(left.rows(),right.rows());
       DynMatrix<T> result(w,h,float(0));
@@ -1289,7 +1288,7 @@ namespace icl{
     /// horizontal concatenation of matrices
     /** missing elementes are padded with 0 */
     template<class T>
-    inline ICL_MATH_API_T DynMatrix<T> operator%(const DynMatrix<T> &top, const DynMatrix<T> &bottom){
+    inline DynMatrix<T> operator%(const DynMatrix<T> &top, const DynMatrix<T> &bottom){
       int w = iclMax(top.cols(),bottom.cols());
       int h = top.rows() + bottom.rows();
       DynMatrix<T> result(w,h,float(0));

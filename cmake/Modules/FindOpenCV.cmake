@@ -33,11 +33,15 @@ INCLUDE(FindPackageHandleStandardArgs)
 # ---------------------------------------------------------------------
 # Start main part here
 # ---------------------------------------------------------------------
+
+# Ask for the root directory of OpenCV.
+SET(OPENCV_ROOT OPENCV_ROOT CACHE PATH "Root directory of OpenCV")
+
 IF(EXISTS "${OPENCV_ROOT}")
   SET(OpenCV_DIR ${OPENCV_ROOT})
 ENDIF()
 
-if(EXISTS "${OpenCV_DIR}/OpenCVConfig.cmake")  
+if(EXISTS "${OpenCV_DIR}/OpenCVConfig.cmakeTODO")  
   # Include the standard CMake script
   INCLUDE("${OpenCV_DIR}/OpenCVConfig.cmake")
   
@@ -45,9 +49,16 @@ if(EXISTS "${OpenCV_DIR}/OpenCVConfig.cmake")
   SET(CVLIB_SUFFIX "${OpenCV_VERSION_MAJOR}${OpenCV_VERSION_MINOR}${OpenCV_VERSION_PATCH}")
   
   SET(OpenCV_LIBRARIES "")
-  FOREACH(L ${OpenCV_LIBS})
-    LIST(APPEND OpenCV_LIBRARIES "${OpenCV_LIB_DIR}/lib${L}.so")
-  ENDFOREACH()
+  IF(WIN32)
+    FOREACH(L ${OpenCV_LIBS})
+    MESSAGE(STATUS "${OpenCV_LIB_DIR}/${L}.dll")
+      LIST(APPEND OpenCV_LIBRARIES "${OpenCV_LIB_DIR}/${L}.dll")
+    ENDFOREACH()
+  ELSE()
+    FOREACH(L ${OpenCV_LIBS})
+      LIST(APPEND OpenCV_LIBRARIES "${OpenCV_LIB_DIR}/lib${L}.so")
+    ENDFOREACH()
+  ENDIF()
 ELSE()
   # find headers
   FIND_PATH(OpenCV_INCLUDE_DIRS "cv.h" "cxcore.h" "highgui.h"
@@ -57,10 +68,16 @@ ELSE()
   # Initiate the variable before the loop
   SET(GLOBAL OpenCV_LIBRARIES "")
 
-  IF(EXISTS ${OpenCV_DIR})
-    SET(OpenCV_LIB_DIR "${OpenCV_DIR}/lib")
+  IF(WIN32)
+    IF(EXISTS ${OpenCV_DIR})
+      SET(OpenCV_LIB_DIR "${OpenCV_DIR}/x86/vc11/lib")
+    ENDIF()
   ELSE()
-    SET(OpenCV_LIB_DIR "/usr/lib")
+    IF(EXISTS ${OpenCV_DIR})
+      SET(OpenCV_LIB_DIR "${OpenCV_DIR}/lib")
+    ELSE()
+      SET(OpenCV_LIB_DIR "/usr/lib")
+    ENDIF()
   ENDIF()
 
   # strategy: search for old style libraries first
@@ -92,16 +109,18 @@ ELSE()
     SET(OpenCV_LIBRARIES "")
 
     FOREACH(L core highgui imgproc video ml calib3d)
+      MESSAGE(STATUS "checking for opencv_${L}247.lib in ${OpenCV_LIB_DIR}")
       FIND_LIBRARY(OpenCV_${L}_LIBRARY
-        NAMES "libopencv_${L}" "opencv_${L}"
+        NAMES "libopencv_${L}" "opencv_${L}247.lib"
         PATHS "${OpenCV_LIB_DIR}"
         NO_DEFAULT_PATH)
       
-      IF(NOT ${OpenCV_${L}_LIBRARY} STREQUAL "OpenCV_${L}_LIBRARY-NOTFOUND")
+      #IF(NOT ${OpenCV_${L}_LIBRARY} STREQUAL "OpenCV_${L}_LIBRARY-NOTFOUND")
+        MESSAGE(STATUS "found")
         LIST(APPEND OpenCV_LIBRARIES ${OpenCV_${L}_LIBRARY})
-      ELSE()
-        SET(OpenCV_NEW_LIBS_NOT_FOUND "TRUE")
-      ENDIF()
+      #ELSE()
+        #SET(OpenCV_NEW_LIBS_NOT_FOUND "TRUE")
+      #ENDIF()
     ENDFOREACH()  
     
     IF(${OpenCV_NEW_LIBS_NOT_FOUND} STREQUAL "FALSE")

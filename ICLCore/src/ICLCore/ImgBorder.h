@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
 
 
@@ -76,14 +77,14 @@ namespace icl{
         Img. 
     
     */
-    class ICL_CORE_API ImgBorder{
+    class ICLCore_API ImgBorder{
       public:
   
       /// sets up an images border with a fixed value
       /** @param poImage destination image (with channel count C)
           @param ptVal destination value (for each of the C channels)
       */
-      template<class T> 
+      template<class T> ICLCore_API
       static void fixed(Img<T> *poImage, T* ptVal);
       
       /// sets up an images border by extruding the images ROI pixels towards the image border

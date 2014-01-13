@@ -30,11 +30,12 @@
 
 #pragma once
 
-#include <ICLCore/ImgBase.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
-#include <ICLMath/FixedVector.h>
 #include <ICLUtils/Function.h>
 #include <ICLUtils/Range.h>
+#include <ICLMath/FixedVector.h>
+#include <ICLCore/ImgBase.h>
 #include <ICLQt/ImageStatistics.h>
 
 namespace icl{

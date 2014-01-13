@@ -30,12 +30,13 @@
 
 #pragma once
 
-#include <stdio.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/Size32f.h>
 #include <ICLUtils/Rect32f.h>
 #include <ICLCore/Types.h>
 #include <string>
+#include <stdio.h>
 #include <QtGui/QImage>
 
 namespace icl{
@@ -45,7 +46,7 @@ namespace icl{
 
   namespace qt{
     /// pure virtual Paint engine interface \ingroup UNCOMMON
-    class ICL_QT_API PaintEngine{
+    class PaintEngine{
       public:
       virtual ~PaintEngine(){}
       enum AlignMode {NoAlign, Centered, Justify};

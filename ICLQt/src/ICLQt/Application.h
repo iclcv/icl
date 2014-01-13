@@ -30,15 +30,18 @@
 
 #pragma once
 
-#ifdef ICL_SYSTEM_WINDOWS
-  #include "windows.h"
-  #include <GL/glew.h>
-#endif
+#include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/Exception.h>
+#include <ICLUtils/Function.h>
 #include <string>
 #include <vector>
-#include <ICLUtils/Exception.h>
+
+#ifdef ICL_SYSTEM_WINDOWS
+#include "windows.h"
+#include <GL/glew.h>
+#endif
+
 #include <QtGui/QApplication>
-#include <ICLUtils/Function.h>
 
 namespace icl{
 

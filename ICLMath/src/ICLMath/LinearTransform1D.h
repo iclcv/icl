@@ -30,14 +30,14 @@
 
 #pragma once
 
-#include <ICLUtils/Range.h>
 #include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/Range.h>
 
 namespace icl{
   namespace math{
   
     /// A standard linear mapping class for the 1D case f(x) = m * x + b
-    struct ICL_MATH_API_T LinearTransform1D{
+    struct LinearTransform1D{
       /// slope
       float m;
       
