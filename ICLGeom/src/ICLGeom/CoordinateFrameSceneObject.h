@@ -77,8 +77,12 @@ namespace icl{
         
         for(int i=0;i<3;++i){
           axis[i]->removeTransformation();
-          axis[i]->scale((i==0)*l+(i!=0)*t,(i==1)*l+(i!=1)*t,(i==2)*l+(i!=2)*t);
-          axis[i]->translate((i==0)*l/2,(i==1)*l/2,(i==2)*l/2);
+          axis[i]->scale((i==0)*l+(i!=0)*t,
+                         (i==1)*l+(i!=1)*t,
+                         (i==2)*l+(i!=2)*t);
+          axis[i]->translate((i==0)*l/2,
+                             (i==1)*l/2,
+                             (i==2)*l/2);
         }
       }
       

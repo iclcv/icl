@@ -247,22 +247,6 @@ namespace icl{
     }
   
   
-    Mat create_hom_4x4_superquadric(float rx, float ry, float rz, 
-  				  float x, float y, float z){
-      float a  = cos(rx);
-      float b  = sin(rx);
-      float c  = cos(ry);
-      float d  = sin(ry);
-      float e  = cos(rz);
-      float f  = sin(rz);
-      float ad = a*d;
-      float bd = b*d;
-      return Mat(c*e, -c*f, -d, x,
-  	       -bd*e+a*f, bd*f+a*e, -b*c,y,
-  	       ad*e+b*f,-ad*f+b*e,a*c,z,
-  	       0,0,0,1);
-    }
-    
     SceneObject::SceneObject(const std::string &type,const float *params):
       m_lineColorsFromVertices(false),
       m_triangleColorsFromVertices(false),
@@ -427,7 +411,7 @@ namespace icl{
   
         const float dAlpha = M_PI/(na-1);
         const float dBeta = 2*M_PI/nb;
-        Mat T = create_hom_4x4_superquadric(rotx,roty,rotz,x,y,z);
+        Mat T = create_hom_4x4<float>(rotx,roty,rotz,x,y,z);
         Mat R = create_hom_4x4<float>(rotx,roty,rotz);
   
         for(int i=0;i<na;++i){      
@@ -439,7 +423,7 @@ namespace icl{
             float Y = cos_sq(eta,e1)*sin_sq(omega,e2);
             float Z = sin_sq(eta,e1);
             addVertex(T * Vec(dx*X,dy*Y,dz*Z,1), geom_blue(200));
-            addNormal(R *normalize3(-Vec(X,Y,Z)));
+            addNormal(R * normalize3(-Vec(X,Y,Z)));
   
             if(i){
               if( i != (na-1)){
@@ -810,8 +794,8 @@ namespace icl{
       m_hasTransformation = true;
     }
     
-    void SceneObject::rotate(float rx, float ry, float rz){
-      transform(create_hom_4x4<float>(rx,ry,rz));
+    void SceneObject::rotate(float rx, float ry, float rz,  AXES axes){
+      transform(create_hom_4x4<float>(rx,ry,rz, 0,0,0, 0,0,0, axes));
     }
     
     void SceneObject::translate(float dx, float dy, float dz){

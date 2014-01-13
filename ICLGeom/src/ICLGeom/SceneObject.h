@@ -486,11 +486,13 @@ namespace icl{
       } 
       
       /// rotates the scene object (this affects it's transformation matrix)
-      virtual void rotate(float rx, float ry, float rz);
+      virtual void rotate(float rx, float ry, float rz, 
+                          icl::math::AXES axes=icl::math::AXES_DEFAULT);
   
       /// utility wrapper for vector based rotation 
       template<class T>
-      inline void rotate(const T &t) { rotate((float)t[0],(float)t[1],(float)t[2]); }
+      inline void rotate(const T &t, icl::math::AXES axes=icl::math::AXES_DEFAULT) 
+        { rotate((float)t[0],(float)t[1],(float)t[2]); }
       
       /// translates the scene object (this affects it's translates matrix)
       virtual void translate(float dx, float dy, float dz);
