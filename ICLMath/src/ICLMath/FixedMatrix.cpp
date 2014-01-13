@@ -33,15 +33,16 @@
 #include <ICLUtils/ConfigFile.h>
 #include <cmath>
 #include <string>
+#include <boost/math/tools/precision.hpp>
 
 namespace icl{
   namespace math{
-  
+    const AXES AXES_DEFAULT = rxyz;
+
     template<class T, bool skip3rd> 
     inline void get_2x2_rot_data(T r ,T *p){
       *p++=cos(r); *p++=-sin(r); if(skip3rd) p++;
       *p++=sin(r); *p++=cos(r);
-
     }
   
     
@@ -65,9 +66,121 @@ namespace icl{
       m(1,2) = v1;
       return m;
     }
-    
+
+    static const unsigned int AXES2TUPLE[][4] = 
+    {/*sxyz*/ {0, 0, 0, 0}, /*sxyx*/ {0, 0, 1, 0}, /*sxzy*/ {0, 1, 0, 0},
+     /*sxzx*/ {0, 1, 1, 0}, /*syzx*/ {1, 0, 0, 0}, /*syzy*/ {1, 0, 1, 0},
+     /*syxz*/ {1, 1, 0, 0}, /*syxy*/ {1, 1, 1, 0}, /*szxy*/ {2, 0, 0, 0},
+     /*szxz*/ {2, 0, 1, 0}, /*szyx*/ {2, 1, 0, 0}, /*szyz*/ {2, 1, 1, 0},
+     /*rzyx*/ {0, 0, 0, 1}, /*rxyx*/ {0, 0, 1, 1}, /*ryzx*/ {0, 1, 0, 1},
+     /*rxzx*/ {0, 1, 1, 1}, /*rxzy*/ {1, 0, 0, 1}, /*ryzy*/ {1, 0, 1, 1},
+     /*rzxy*/ {1, 1, 0, 1}, /*ryxy*/ {1, 1, 1, 1}, /*ryxz*/ {2, 0, 0, 1},
+     /*rzxz*/ {2, 0, 1, 1}, /*rxyz*/ {2, 1, 0, 1}, /*rzyz*/ {2, 1, 1, 1}};
+    static const unsigned int NEXT_AXIS[4] = {1, 2, 0, 1};
+
+    template<class T>
+    FixedMatrix<T,3,3> create_rot_3D (T ai, T aj, T ak, AXES axes) {
+      const unsigned int* const tuple = AXES2TUPLE[axes];
+      const unsigned int 
+        firstaxis  = tuple[0],
+        parity     = tuple[1],
+        repetition = tuple[2],
+        frame      = tuple[3]; // static=0 or rotated=1
+      unsigned int 
+        i = firstaxis,
+        j = NEXT_AXIS[i+parity],
+        k = NEXT_AXIS[i-parity+1];
+      if (frame)  std::swap (ai, ak);
+      if (parity) {ai*=-1; aj*=-1, ak*=-1;}
+
+      T si = sin(ai), sj = sin(aj), sk = sin(ak);
+      T ci = cos(ai), cj = cos(aj), ck = cos(ak);
+      T cc = ci*ck, cs = ci*sk;
+      T sc = si*ck, ss = si*sk;
+
+      FixedMatrix<T,3,3> m;
+      if (repetition) {
+        m(i,i) = cj;
+        m(j,i) = sj*si;
+        m(k,i) = sj*ci;
+        m(i,j) = sj*sk;
+        m(j,j) = -cj*ss+cc;
+        m(k,j) = -cj*cs-sc;
+        m(i,k) = -sj*ck;
+        m(j,k) = cj*sc+cs;
+        m(k,k) = cj*cc-ss;
+      }else{
+        m(i,i) = cj*ck;
+        m(j,i) = sj*sc-cs;
+        m(k,i) = sj*cc+ss;
+        m(i,j) = cj*sk;
+        m(j,j) = sj*ss+cc;
+        m(k,j) = sj*cs-sc;
+        m(i,k) = -sj;
+        m(j,k) = cj*si;
+        m(k,k) = cj*ci;
+      }
+      return m;
+    }
+
+    template<class T,unsigned int COLS, unsigned int ROWS>
+    FixedMatrix<T,1,3> 
+    extract_euler_angles (const FixedMatrix<T,COLS,ROWS> &m,
+                          AXES axes) {
+      static const T EPS = 4.0 * boost::math::tools::epsilon<T>();
+      T ai, aj, ak;
+      
+      const unsigned int* const tuple = AXES2TUPLE[axes];
+      const unsigned int 
+        firstaxis  = tuple[0],
+        parity     = tuple[1],
+        repetition = tuple[2],
+        frame      = tuple[3]; // static=0 or rotated=1
+      unsigned int 
+        i = firstaxis,
+        j = NEXT_AXIS[i+parity],
+        k = NEXT_AXIS[i-parity+1];
+
+      if (repetition) {
+        T sy = sqrt(m(j,i)*m(j,i) + m(k,i)*m(k,i));
+        if (sy > EPS) {
+            ai = atan2( m(j,i),  m(k,i));
+            aj = atan2( sy,      m(i,i));
+            ak = atan2( m(i,j), -m(i,k));
+        }else{
+            ai = atan2(-m(k,j),  m(j,j));
+            aj = atan2( sy,      m(i,i));
+            ak = 0.0;
+        }
+      }else{
+        T cy = sqrt(m(i,i)*m(i,i) + m(i,j)*m(i,j));
+        if (cy > EPS) {
+            ai = atan2( m(j,k),  m(k,k));
+            aj = atan2(-m(i,k),  cy);
+            ak = atan2( m(i,j),  m(i,i));
+        }else{
+            ai = atan2(-m(k,j),  m(j,j));
+            aj = atan2(-m(i,k),  cy);
+            ak = 0.0;
+        }
+      }
+
+      if (parity) {ai*=-1; aj*=-1, ak*=-1;}
+      if (frame)  std::swap (ai, ak);
+
+      return FixedMatrix<T,1,3>(ai, aj, ak);
+    }
+    template<class T>
+    FixedMatrix<T,1,3> extract_euler_angles (const FixedMatrix<T,3,3> &m, AXES axes) {
+      return extract_euler_angles<T,3,3>(m, axes);
+    }
+    template<class T>
+    FixedMatrix<T,1,3> extract_euler_angles (const FixedMatrix<T,4,4> &m, AXES axes) {
+      return extract_euler_angles<T,4,4>(m, axes);
+    }
+
     template<class T, bool skip4th> 
-    inline void get_3x3_rot_data(T rx, T ry, T rz,T *p){
+    inline void get_3x3_rot_data(T rx, T ry, T rz,  T *p){
       T cx = cos(rx);
       T cy = cos(-ry);
       T cz = cos(-rz);
@@ -79,17 +192,24 @@ namespace icl{
       *p++=-sy*cx;         *p++=sx;     *p++=cx*cy;       
     }
   
-    template<class T>
-    FixedMatrix<T,3,3> create_rot_3D(T rx,T ry,T rz){
-      FixedMatrix<T,3,3> m;
-      get_3x3_rot_data<T,false>(rx,ry,rz,m.data());
-      return m;
-    }
-  
     /// defined for float and double
     template<class T>
-    FixedMatrix<T,4,4> create_hom_4x4(T rx, T ry, T rz, T dx, T dy, T dz, T v0, T v1, T v2){
+    FixedMatrix<T,4,4> create_hom_4x4(T rx, T ry, T rz, 
+                                      T dx, T dy, T dz, 
+                                      T v0, T v1, T v2,
+                                      AXES axes){
       FixedMatrix<T,4,4> m;
+#if 1
+      FixedMatrix<T,3,3> r = create_rot_3D (rx, ry, rz, axes);
+//      FixedMatrix<T,3,3> r = create_rot_3D (-rz,rx,-ry, rzxy);
+
+      // The layout in memory is transposed! This is correct:
+      T *M = m.data(), *R = r.data();
+      *M++ = *R++;  *M++ = *R++;  *M++ = *R++;  *M++ = dx;
+      *M++ = *R++;  *M++ = *R++;  *M++ = *R++;  *M++ = dy;
+      *M++ = *R++;  *M++ = *R++;  *M++ = *R++;  *M++ = dz;
+      *M++ = v0;    *M++ = v1;    *M++ = v2;    *M++ = 1;
+#else
       get_3x3_rot_data<T,true>(rx,ry,rz,m.data());
       m(3,0) = dx;
       m(3,1) = dy;
@@ -98,7 +218,8 @@ namespace icl{
       
       m(0,3) = v0;
       m(1,3) = v1;
-      m(2,3) = v2;
+      m(2,3) = v2;      
+#endif
       return m;
     }
   
@@ -107,9 +228,11 @@ namespace icl{
   #define INSTANTIATE(T)                                          \
     template FixedMatrix<T,2,2> create_rot_2D(T);                 \
     template FixedMatrix<T,3,3> create_hom_3x3(T,T,T,T,T);        \
-    template FixedMatrix<T,3,3> create_rot_3D(T,T,T);             \
-    template FixedMatrix<T,4,4> create_hom_4x4(T,T,T,T,T,T,T,T,T);
-  
+    template FixedMatrix<T,3,3> create_rot_3D(T,T,T,AXES);        \
+    template FixedMatrix<T,4,4> create_hom_4x4(T,T,T,T,T,T,T,T,T,AXES); \
+    template FixedMatrix<T,1,3> extract_euler_angles(const FixedMatrix<T,3,3>&, AXES);\
+    template FixedMatrix<T,1,3> extract_euler_angles(const FixedMatrix<T,4,4>&, AXES);\
+
     INSTANTIATE(float);
     INSTANTIATE(double);
   #undef INSTANTIATE

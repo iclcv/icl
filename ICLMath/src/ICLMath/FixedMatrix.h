@@ -1000,24 +1000,34 @@ namespace icl{
     }
     
   
-    /// create 3D rotation matrix that rotates about given axis by given angle (float and double only)
+    /// axes order specifications for euler angles
+    enum AXES { sxyz, sxyx, sxzy,  sxzx, syzx, syzy, 
+                syxz, syxy, szxy,  szxz, szyx, szyz,
+                rzyx, rxyx, ryzx,  rxzx, rxzy, ryzy,
+                rzxy, ryxy, ryxz,  rzxz, rxyz, rzyz };
+    extern const AXES AXES_DEFAULT; // rxyz
+
+    /// create 3D rotation matrix from rotation axis and angle (defined for float and double only)
     template<class T>
     FixedMatrix<T,3,3> create_rot_3D(T axisX, T axisY, T axisZ, T angle);
     
-    /// creates a 3D rotation matrix (defined for float and double)
+    /// create 3D rotation matrix from euler angles in specified axes order (defined for float and double only)
     template<class T>
-    FixedMatrix<T,3,3> create_rot_3D(T rx,T ry,T rz);
-  
+    FixedMatrix<T,3,3> create_rot_3D (T ai, T aj, T ak, AXES axes=AXES_DEFAULT);    
+
     /// creates a 3D homogeneous matrix (defined for float and double)
     template<class T>
-    FixedMatrix<T,4,4> create_hom_4x4(T rx, T ry, T rz, T dx=0, T dy=0, T dz=0, T v0=0, T v1=0, T v2=0);
+    FixedMatrix<T,4,4> create_hom_4x4(T rx, T ry, T rz, 
+                                      T dx=0, T dy=0, T dz=0, 
+                                      T v0=0, T v1=0, T v2=0,
+                                      AXES axes=AXES_DEFAULT);
   
-    /// create 4D homogeneous matrix that rotates about given axis by given angle float and double only)
+    /// create 4D homogeneous matrix that rotates about given axis by given angle (defined for float and double only)
     template<class T>
     FixedMatrix<T,4,4> create_rot_4x4(T axisX, T axisY, T axisZ, T angle);
   
   
-    /// creates a 3D homogen matrix with translation part only (defined for float and double)
+    /// creates 4D homogeneous matrix with translation part only (defined for float and double)
     template<class T>
     inline FixedMatrix<T,4,4> create_hom_4x4_trans(T dx, T dy, T dz){
       FixedMatrix<T,4,4> m = FixedMatrix<T,4,4>::id();
@@ -1027,20 +1037,13 @@ namespace icl{
       return m;
     }
   
-    /// extracts the euler angles from the given rotation matrix
-    /** Even though the function interface suggests, that m can have arbitrary dimensions, 
-        it must hae at least 3 rows and 3 colums. We chose this very generic interface
-        in order to avoid having several functions for 3x3, 4x4, ... matrices. To avoid
-        seg-faults, an exception is thrown in case of too small matrices m. */
-    template<class T,unsigned int COLS, unsigned int ROWS>
-    FixedMatrix<T,1,3> extract_euler_angles(const FixedMatrix<T,COLS,ROWS> &m) throw (InvalidMatrixDimensionException){
-      ICLASSERT_THROW(COLS>2 && ROWS>2,InvalidMatrixDimensionException("extract_euler_angles needs a matrix that has at least 3 rows and columns"));
-      if( m(1,2) > -0.999999 && m(1,2) < 0.999999){ //avoid Gimbal lock
-        return FixedMatrix<T,1,3>(asin(m(1,2)),atan2(m(0,2),m(2,2)),atan2(m(1,0),m(1,1)));
-      }else{
-        return FixedMatrix<T,1,3>(-M_PI/2,0,-atan2(m(0,1),m(0,0)));
-      }
-    }
+    /// compute euler angles for rotation matrix assuming specified axes order
+    template<class T>
+    FixedMatrix<T,1,3> extract_euler_angles(const FixedMatrix<T,3,3> &m,
+                                            AXES axes=AXES_DEFAULT); 
+    template<class T>
+    FixedMatrix<T,1,3> extract_euler_angles(const FixedMatrix<T,4,4> &m,
+                                            AXES axes=AXES_DEFAULT); 
   
     
     /** \cond  declared and documented above */
