@@ -94,7 +94,7 @@ namespace icl{
       public:
 
       /// ICLWidget is allowed to connect to the private slot handleEvent
-      friend class ICLWidget;
+      friend class ICL_QT_API ICLWidget;
 
       /// mouse_handler function type
       typedef void (*mouse_handler)(const MouseEvent &event);

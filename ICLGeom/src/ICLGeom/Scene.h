@@ -297,6 +297,7 @@ namespace icl{
           about a second in the first call. In later calls, the values are just re-used. 
         
           */
+#if 0
       const core::Img8u &render(int camIndx, const core::ImgBase *background=0, core::Img32f *depthBuffer=0, 
                                 DepthBufferMode mode=DistToCamCenter) const throw (utils::ICLException);
     
@@ -305,6 +306,7 @@ namespace icl{
     
       /// frees the pbffer associated with given size (if there is one)
       void freePBuffer(const utils::Size &size);
+#endif
       
       ///Vector containing the shaders used in ImprovedShading
       mutable icl::qt::GLFragmentShader* m_shaders[ShaderUtil::COUNT];
@@ -464,7 +466,7 @@ namespace icl{
       std::vector<utils::SmartPtr<GLCallback> > m_glCallbacks;
 #endif
 
-
+#if 0
       /// internal class for offscreen rendering
       struct PBuffer;
     
@@ -476,6 +478,7 @@ namespace icl{
     
       /// intenal list of of offscreen rendering buffers
       mutable std::map<PBufferIndex,PBuffer*> m_pbuffers;
+#endif
 
       /// internally used scene object
       mutable utils::SmartPtr<SceneObject> m_coordinateFrameObject;

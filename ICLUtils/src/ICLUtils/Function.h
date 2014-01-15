@@ -622,14 +622,6 @@ namespace icl{
     template<class R>
     Function<R> function(R(*global_function)()){
       return Function<R>(global_function);
-    } 
-  
-  
-    /// Function creator function from given FunctionImpl instance \ingroup FUNCTION
-    /** @see \ref FUNCTION_SECTION */
-    template<class R, class A, class B, class C>
-    Function<R, A, B, C> function(FunctionImpl<R, A, B, C> *impl){
-      return Function<R,A,B,C>(impl);
     }
   } // namespace utils
 }

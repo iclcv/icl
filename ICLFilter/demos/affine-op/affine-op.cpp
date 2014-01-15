@@ -27,9 +27,8 @@
 ** Excellence Initiative.                                          **
 **                                                                 **
 ********************************************************************/
-
-#include <ICLQt/Common.h>
 #include <ICLFilter/AffineOp.h>
+#include <ICLQt/Common.h>
 #include <ICLUtils/StackTimer.h>
 
 GUI gui = HSplit().minSize(32,24);
@@ -83,8 +82,8 @@ void init(){
   
   image = cvt8u(scale(create("parrot"),0.4));
 
-  gui.registerCallback(function(step),"a,b,c,d");
-  gui.registerCallback(function(bench),"bench");
+  gui.registerCallback(step,"a,b,c,d");
+  gui.registerCallback(bench,"bench");
   gui["draw"] = image;
 }
 

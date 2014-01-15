@@ -432,7 +432,9 @@ namespace icl{
     Scene::~Scene(){
   #ifdef HAVE_GLX
   #ifdef HAVE_QT
+#if 0
       freeAllPBuffers();
+#endif
       for(unsigned int i = 0; i < ShaderUtil::COUNT; i++) {
         delete m_shaders[i];
       }
@@ -465,7 +467,9 @@ namespace icl{
         m_glCallbacks[i] = SmartPtr<GLCallback>(new GLCallback(scene.m_glCallbacks[i]->cameraIndex,this));
       }
   #ifdef HAVE_GLX
+#if 0
       freeAllPBuffers();
+#endif
   #endif
 
   #endif

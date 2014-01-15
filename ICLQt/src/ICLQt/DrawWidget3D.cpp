@@ -34,6 +34,11 @@
 #ifdef ICL_SYSTEM_APPLE
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
+#elif ICL_SYSTEM_WINDOWS
+#define NOMINMAX
+#include <Windows.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 #else
 #include <GL/gl.h>
 #include <GL/glu.h>

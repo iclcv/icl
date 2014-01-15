@@ -29,7 +29,9 @@
 ********************************************************************/
 
 #pragma once
-
+#ifdef HAVE_OPENGL
+#include <GL/glew.h>
+#endif
 #include <ICLGeom/GeomDefs.h>
 #include <ICLGeom/Scene.h>
 #include <ICLGeom/SceneObject.h>
