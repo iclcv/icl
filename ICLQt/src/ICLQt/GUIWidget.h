@@ -30,10 +30,10 @@
 
 #pragma once
 
-#include <ICLUtils/Size.h>
-#include <ICLUtils/Uncopyable.h>
-#include <ICLQt/GUI.h>
 #include <QtGui/QWidget>
+#include <ICLUtils/Size.h>
+#include <ICLQt/GUI.h>
+#include <ICLUtils/Uncopyable.h>
 
 /** \cond */
 class QGridLayout;
@@ -66,7 +66,7 @@ namespace icl{
           @param lt layout-type to use
           @param defMinSize default minimum size constraint for the widget
       */
-      GUIWidget(const GUIDefinition &def, 
+      GUIWidget(const GUIDefinition &def,
                 int minParamCount, 
                 int maxParamCount=-1,
                 layoutType lt=gridLayout, 
@@ -85,7 +85,7 @@ namespace icl{
   
       /// help function to add new sub components
       /** This function does only work as long the underlying layout manamer is a QGridLayout */
-      void addToGrid(QWidget *c, int x=0, int y=0, int width=1,int height=1); 
+      void addToGrid(QWidget *c, int x = 0, int y = 0, int width = 1, int height = 1);
       
       /// virtual function which must be implemented for a components custom "new-data"-event
       virtual void processIO(){}
@@ -120,7 +120,7 @@ namespace icl{
       void cb();
   
       /// returns the widgets preferres size 
-      virtual QSize sizeHint () const;
+      virtual QSize sizeHint() const;
       
       private:
       /// initial layout managers

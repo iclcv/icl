@@ -49,7 +49,7 @@ namespace icl{
         updateFromOtherThread used QApplication::postEvent, to post a UserType
         QEvent to this object, which is caught in the overloaded event() function
     */
-    class ThreadedUpdatableSlider : public QSlider{
+    class ICL_QT_API ThreadedUpdatableSlider : public QSlider{
       Q_OBJECT;
       
       /// internally callback type
@@ -99,7 +99,7 @@ namespace icl{
           - value (when the value is changed)
           - all (for all events)
       */
-      void registerCallback(const utils::Function<void> &cb, const std::string &events="value");
+      void registerCallback(const utils::Function<void> &cb, const std::string &events = "value");
   
       /// removes all callbacks associated to this slider component
       void removeCallbacks();

@@ -87,7 +87,7 @@ namespace icl{
       };   
     
       /// creates a new ICLWidget within the parent widget
-      ICLWidget(QWidget *parent=0);
+      ICLWidget(QWidget *parent = 0);
     
       /// destructor
       virtual ~ICLWidget();
@@ -123,10 +123,10 @@ namespace icl{
       utils::Size getSize() { return utils::Size(width(),height()); }
     
       /// returns the current images size
-      utils::Size getImageSize(bool fromGUIThread=false);
+      utils::Size getImageSize(bool fromGUIThread = false);
 
       /// returns the rect, that is currently used to draw the image into
-      utils::Rect getImageRect(bool fromGUIThread=false);
+      utils::Rect getImageRect(bool fromGUIThread = false);
 
       /// returns current fit-mode
       fitmode getFitMode();
@@ -157,7 +157,7 @@ namespace icl{
           - enter  (mouse cursor enters the widget)
           - leave  (mouse cursor leaved the widget)
           */
-      void registerCallback(const GUI::Callback &cb, const std::string &eventList="drag,press");
+      void registerCallback(const GUI::Callback &cb, const std::string &eventList = "drag,press");
 
       /// removes all callbacks registered using registerCallback
       void removeCallbacks();
@@ -203,7 +203,7 @@ namespace icl{
 	  @param cb
 	  @param toolTipText
           */
-      void addSpecialToggleButton(const std::string &id, 
+      void addSpecialToggleButton(const std::string &id,
                                   const core::ImgBase* untoggledIcon = 0, 
                                   const core::ImgBase *toggledIcon = 0, 
                                   bool initiallyToggled = 0, 
@@ -212,7 +212,7 @@ namespace icl{
 
       /// Adds a new toggle-button to the OSD-button bar on the upper widget edge
       /** @see addSpecialToggleButton */
-      void addSpecialButton(const std::string &id, 
+      void addSpecialButton(const std::string &id,
                             const core::ImgBase* icon = 0, 
                             const utils::Function<void> &cb=(utils::FunctionImpl<void>*)0,//Function<void>(), fix for clang
                             const std::string &toolTipText="");
@@ -258,7 +258,7 @@ namespace icl{
       protected:
       
       /// shows a help dialog 
-      void showInfoDialog();
+        void showInfoDialog();
 
       /// this is reimplemented by the DrawWidget and by the DrawWidget3D for internal buffers swapping
       /** swapQueues is automatically called by render */

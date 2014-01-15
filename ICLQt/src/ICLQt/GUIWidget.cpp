@@ -147,8 +147,7 @@ namespace icl{
   
     void GUIWidget::cb(){
       for(unsigned int i=0;i<m_vecCallbacks.size();++i){
-		  void* herp;
-		m_vecCallbacks[i]();
+        m_vecCallbacks[i]();
       }
       if(m_handle){
         for(unsigned int i=0;i<m_vecComplexCallbacks.size();++i){

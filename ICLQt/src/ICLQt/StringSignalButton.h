@@ -30,12 +30,13 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <QtGui/QPushButton>
 
 namespace icl{
   namespace qt{
     /// internally used button that emits a signal with its text \ingroup UNCOMMON
-    class StringSignalButton : public QPushButton{
+    class ICL_QT_API StringSignalButton : public QPushButton{
       Q_OBJECT
       public:
       /// Create a new StringSignalButton with given text and parent widget
