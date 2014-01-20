@@ -203,21 +203,30 @@ namespace icl {
       throw (CLInitException, CLBuildException) {
       impl = new Impl();
       cl_device_type devType = Impl::stringToDeviceType(deviceType);
-      impl->initDevice(devType);
-      impl->initProgram(sourceCode);
+      try {
+        impl->initDevice(devType);
+        impl->initProgram(sourceCode);
+      } catch (const CLException &e) {
+        delete impl; // ensure impl is released
+        throw;
+      }
     }
 
     CLProgram::CLProgram(const string deviceType, ifstream &fileStream)
       throw (CLInitException, CLBuildException) {
       impl = new Impl();
       cl_device_type devType = Impl::stringToDeviceType(deviceType);
-      impl->initDevice(devType);
-      std::string contents;
-
-      std::string srcProg(std::istreambuf_iterator<char>(fileStream),
+      try {
+        impl->initDevice(devType);
+        std::string contents;
+        std::string srcProg(std::istreambuf_iterator<char>(fileStream),
                           (std::istreambuf_iterator<char>()));
 
-      impl->initProgram(srcProg);
+        impl->initProgram(srcProg);
+      } catch (const CLException &e) {
+        delete impl; // ensure impl is released
+        throw;
+      }
     }
 
     CLProgram::CLProgram(const CLProgram& other){
