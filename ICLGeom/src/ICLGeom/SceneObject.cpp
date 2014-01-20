@@ -834,6 +834,11 @@ namespace icl{
       m_children.push_back(SmartPtr<SceneObject>(child,passOwnerShip));
       child->m_parent = this;
     }
+    void SceneObject::addChild(SmartPtr<SceneObject> child){
+      m_children.push_back(child);
+      child->m_parent = this;
+    }
+
     bool SceneObject::hasChild(const SceneObject *o) const{
       for(size_t i=0;i<m_children.size();++i){
         if(m_children[i].get() == o) return true;
@@ -872,6 +877,13 @@ namespace icl{
     const SceneObject *SceneObject::getChild(int index) const{
       return const_cast<SceneObject*>(this)->getChild(index);
     }
+
+    /// returns a shared pointer to the child at given index
+    SmartPtr<SceneObject> SceneObject::getChildPtr(int index){
+      if(index < 0 || index >= (int)m_children.size()) return SmartPtr<SceneObject>();
+      return m_children[index];
+    }
+
   
   
     void SceneObject::setPointSize(float pointSize, bool recursive){

@@ -533,6 +533,13 @@ namespace icl{
       */
       void addChild(SceneObject *child, bool passOwnerShip=true);
       
+      /// directly passes a smart pointer as a child
+      /** By passing a smart pointer to an object, pointer-sharing can
+          also be extended to the caller scope.
+          Please note, that adding a child to an object o, will always set
+          the child's parent to o */
+      void addChild(utils::SmartPtr<SceneObject> child);
+      
       /// removes given child
       /** no errors if the child was not found */
       void removeChild(SceneObject *child);
@@ -548,9 +555,12 @@ namespace icl{
       
       /// returns child at given index
       SceneObject *getChild(int index);
-      
+
       /// returns child at given index (const)
       const SceneObject *getChild(int index) const;
+
+      /// returns a shared pointer to the child at given index
+      utils::SmartPtr<SceneObject> getChildPtr(int index);
       
       /// returns whether the given object is a child of this one
       bool hasChild(const SceneObject *o) const;

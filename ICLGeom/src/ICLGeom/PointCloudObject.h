@@ -58,7 +58,7 @@ namespace icl{
       public:
       
       /// create an un-organizied point cloud with N points
-      PointCloudObject(int numPoints, bool withNormals=false, bool withColors=true);
+      PointCloudObject(int numPoints=0, bool withNormals=false, bool withColors=true);
       
       /// creates a new organized or un-organized SimplePointCloudObject instance
       /** @param width number of points per line (if unordered, number of points)
