@@ -71,7 +71,7 @@ namespace icl{
         minimum rectangle dimension is only used for the 'real' 
         rectangle, not for the dragged one.
     */
-    class ICL_QT_API DragRectangleMouseHandler : public MouseHandler, public utils::Lockable{
+    class ICLQt_API DragRectangleMouseHandler : public MouseHandler, public utils::Lockable{
       protected:
       utils::Point m_origin; //!< point where the drag gesture started
       utils::Point m_curr;   //!< current mouse-position while dragging

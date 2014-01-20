@@ -51,7 +51,7 @@ namespace icl{
         video image output of course use the used video/file formats compression
         mechanism.
     */
-    struct ICL_IO_API ImageOutput : protected ImageCompressor{
+    struct ICLIO_API ImageOutput : protected ImageCompressor{
       /// virtual destructor
       virtual ~ImageOutput() {}
   

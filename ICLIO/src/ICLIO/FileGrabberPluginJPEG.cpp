@@ -42,6 +42,8 @@ namespace icl{
   #ifdef HAVE_LIBJPEG
     void FileGrabberPluginJPEG::grab(File &file, ImgBase **dest){
       // {{{ open 
+      // TODO: delete
+      printf("jpeg\n");
       JPEGDecoder::decode(file,dest);
     }
     // }}}

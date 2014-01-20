@@ -126,7 +126,7 @@ namespace icl{
       inline const std::vector<std::string> &getData() const { return m_texts; }
 
       /// Utility class that is used, to assign a table row at once
-      class ICLUtils_API RowAssigner{
+      class RowAssigner{
         TextTable &t; //!< parent TextTable 
         int row;      //!< parent
         inline RowAssigner(TextTable &t, int row):t(t),row(row){}

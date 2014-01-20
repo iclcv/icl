@@ -38,7 +38,7 @@ namespace icl{
   namespace io{
     
     /// A Writer Plugin for writing ".jpeg" and ".jpg" images \ingroup FILEIO_G
-    class ICL_IO_API FileWriterPluginJPEG : public FileWriterPlugin{
+    class ICLIO_API FileWriterPluginJPEG : public FileWriterPlugin{
       public:
       /// write implementation
       virtual void write(utils::File &file, const core::ImgBase *image);

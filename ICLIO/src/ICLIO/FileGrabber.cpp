@@ -190,6 +190,8 @@ namespace icl{
       : m_data(new Data), m_propertyMutex(utils::Mutex::mutexTypeRecursive), m_updatingProperties(false)
     {
       // {{{ open
+      // TODO: delete
+      printf("FileGrabber: %s, %d, %d\n", pattern.c_str(), (int)buffer, (int)ignoreDesired);
 
       if(File(pattern).isDirectory()){
         m_data->oFileList = pattern+"/*";
@@ -214,6 +216,8 @@ namespace icl{
           throw FileNotFoundException(pattern);
         }
       }
+      // TODO: delete
+      printf("FileGrabber: mid\n");
       m_data->iCurrIdx  = 0;
       m_data->bBufferImages = false;
       m_data->bAutoNext = true;
@@ -226,6 +230,8 @@ namespace icl{
         bufferImages(false);
       }
       addProperties();
+      // TODO: delete
+      printf("FileGrabber: end\n");
     }
 
     // }}}
@@ -315,7 +321,11 @@ namespace icl{
     // }}}
     
     const ImgBase *FileGrabber::acquireImage(){
+      // TODO: delete
+      printf("FileGrabber::aquireImage().try");
       try{
+        // TODO: delete
+        printf("FileGrabber::aquireImage()");
         const ImgBase* img = grabImage();
         updateProperties(img);
         return img;
@@ -329,7 +339,8 @@ namespace icl{
 
     const core::ImgBase *FileGrabber::grabImage(){
       // {{{ open
-
+      // TODO: delete
+      printf("FileGrabber::grabImage()\n");
       if(m_data->bBufferImages){
         if(m_data->useTimeStamps) {
           ERROR_LOG("buffering images and using timestamps cannot be used in parallel! (deactivating use of timestamps)");
@@ -342,6 +353,8 @@ namespace icl{
         return p;
       }
 
+      // TODO: delete
+      printf("FileGrabber::grabImage().next: %s\n", m_data->oFileList[m_data->iCurrIdx].c_str());
       ICLASSERT_RETURN_VAL(!m_data->oFileList.isNull(),NULL);
       File f(m_data->oFileList[m_data->iCurrIdx]);
       if(m_data->bAutoNext) ++m_data->iCurrIdx;
@@ -354,18 +367,24 @@ namespace icl{
         }
       }
 
+      // TODO: delete
+      printf("FileGrabber::grabImage().filegrabberplugin\n");
       FileGrabberPlugin *p = find_plugin(m_data->forcedPluginType == "" ? f.getSuffix() : m_data->forcedPluginType);
       if(!p){
         throw InvalidFileException(str("file type (filename was \"")+f.getName()+"\")");
         return 0;
       }
 
+      // TODO: delete
+      printf("FileGrabber::grabImage().try\n");
       try{
         p->grab(f,&m_data->poBufferImage);
       }catch(ICLException&){
         if(f.isOpen()) f.close();
         throw;
       }
+      // TODO: delete
+      printf("FileGrabber::grabImage().if\n");
       if(m_data->useTimeStamps){
         Time now = Time::now();
         Time &ref = m_data->referenceTime;
@@ -395,6 +414,8 @@ namespace icl{
           }
         }
       }
+      // TODO: delete
+      printf("FileGrabber::grabImage().return\n");
       return m_data->poBufferImage;
     }
 

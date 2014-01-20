@@ -67,7 +67,7 @@ namespace icl{
         and put into the queue.
         
     */
-    class ICL_CV_API FloodFiller{
+    class ICLCV_API FloodFiller{
       /// internal list of to-be-processed points
       std::vector<utils::Point> futurePoints;
       
@@ -77,7 +77,7 @@ namespace icl{
       public:
   
       /// result structure, returned by the 'apply' methods
-      struct ICL_CV_API Result{
+      struct ICLCV_API Result{
         std::vector<utils::Point> pixels; /// list of filled pixels
         core::Img8u ffLUT;               /// binary mask with filled pixels
       } result;

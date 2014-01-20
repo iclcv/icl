@@ -45,7 +45,7 @@ namespace icl{
     /** This Grabber implementation can be used for all point-cloud sources,
         where the point cloud must still be created from a given core::depth images.
         Internally an instance of PointCloudCreator is used. */
-    class DepthCameraPointCloudGrabber : public PointCloudGrabber{
+    class ICLGeom_API DepthCameraPointCloudGrabber : public PointCloudGrabber{
       struct Data;  //!< pimpl type
       Data *m_data; //!< pimpl pointer
         

@@ -55,7 +55,7 @@ namespace icl{
     
         @see ICL/trunk/ICLQt/test/ICLDrawDemo for more details
     */
-    class ICL_QT_API GLPaintEngine : public PaintEngine{
+    class ICLQt_API GLPaintEngine : public PaintEngine{
       public:
       
       GLPaintEngine(QGLWidget *widget);

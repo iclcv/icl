@@ -37,7 +37,7 @@ namespace icl{
   namespace io{
     
     /// Plugin to grab ".ppm", ".pgm", ".pgm" and ".icl" images \ingroup FILEIO_G
-    class ICL_IO_API FileGrabberPluginPNM : public FileGrabberPlugin{
+    class ICLIO_API FileGrabberPluginPNM : public FileGrabberPlugin{
       public:
       /// grab implementation
       virtual void grab(utils::File &file, core::ImgBase **dest);

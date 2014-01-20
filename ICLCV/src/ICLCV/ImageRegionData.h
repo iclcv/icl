@@ -47,7 +47,7 @@ namespace icl{
     /// Utility class for shallow copied data of image region class  \ingroup G_RD
     /** Note: a nested class of ImageRegion is not possible as we need forward 
         declarations of this class. Nested classes cannot be 'forward-declared' */
-    struct ICL_CV_API ImageRegionData{
+    struct ICLCV_API ImageRegionData{
     private:
       typedef ImageRegionData IRD;
     public:

@@ -42,10 +42,10 @@ namespace icl{
     /** TODO: Add Documentation 
         What about a fixed 3D-Version that uses 3D-Fixed Matrix data?
     */
-    class ICL_Geom_API ICP : public utils::Uncopyable{
+    class ICLGeom_API ICP : public utils::Uncopyable{
       public:
       /// Simple result structure
-      struct ICL_Geom_API Result{
+      struct ICLGeom_API Result{
         Result();
         math::DynMatrix<icl64f> rotation;    //!< Model rotation matrix
         math::DynMatrix<icl64f> translation; //!< Model translation matrix

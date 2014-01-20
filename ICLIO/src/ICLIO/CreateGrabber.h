@@ -45,7 +45,7 @@ namespace icl{
     /** This grabber can be used as placeholder whenever no senseful Grabber
         is available. It provides an instance of an image that is created with
         the icl::io::TestImages::create function */
-    class ICL_IO_API CreateGrabber : public Grabber{
+    class ICLIO_API CreateGrabber : public Grabber{
       public:
 
         /// default grab function

@@ -60,7 +60,7 @@ namespace icl{
         The algorithm is well described in the paper
         "Model-based object pose in 25 lines of code" written by Dementhon and Davis in 1995
     */
-    class ICL_Geom_API Posit{
+    class ICLGeom_API Posit{
       struct Data; //!< internal data storage class
       Data *data;  //!< internal data storage
       
@@ -99,7 +99,7 @@ namespace icl{
       const std::vector<Vec> &getModel() const;
       
       /// result type (basically a 4x4 homogeneous transformation matrix)
-      struct ICL_Geom_API Result : public Mat{
+      struct ICLGeom_API Result : public Mat{
         friend struct Posit::Data;
         private:
         /// private Konstructor

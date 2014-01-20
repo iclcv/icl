@@ -68,7 +68,7 @@ namespace icl{
         -# ... ???
 
      */
-    class ICL_Geom_API PointCloudNormalEstimator : public utils::Uncopyable{
+    class ICLGeom_API PointCloudNormalEstimator : public utils::Uncopyable{
       struct Data;  //!< internal data type
       Data *m_data; //!< internal data pointer
 

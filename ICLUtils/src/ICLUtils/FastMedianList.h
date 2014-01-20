@@ -82,7 +82,7 @@ namespace icl{
         about 120.
         
     */
-    class ICLUtils_API FastMedianList{
+    class FastMedianList{
       public:
       /// Create a new fast median list with given max size
       /** t2,t3 and t4 are deprecated! */

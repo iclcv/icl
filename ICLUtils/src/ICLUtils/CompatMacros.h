@@ -81,33 +81,33 @@
 #endif
 
 #ifdef ICLIO_EXPORTS
-#define ICL_IO_API   __declspec(dllexport)
+#define ICLIO_API   __declspec(dllexport)
 #else
-#define ICL_IO_API   __declspec(dllimport)
+#define ICLIO_API   __declspec(dllimport)
 #endif
 
 #ifdef ICLIO_EXPORTS
-#define ICL_IO_API   __declspec(dllexport)
+#define ICLIO_API   __declspec(dllexport)
 #else
-#define ICL_IO_API   __declspec(dllimport)
+#define ICLIO_API   __declspec(dllimport)
 #endif
 
 #ifdef ICLCV_EXPORTS
-#define ICL_CV_API   __declspec(dllexport)
+#define ICLCV_API   __declspec(dllexport)
 #else
-#define ICL_CV_API   __declspec(dllimport)
+#define ICLCV_API   __declspec(dllimport)
 #endif
 
 #ifdef ICLQt_EXPORTS
-#define ICL_QT_API   __declspec(dllexport)
+#define ICLQt_API   __declspec(dllexport)
 #else
-#define ICL_QT_API   __declspec(dllimport)
+#define ICLQt_API   __declspec(dllimport)
 #endif
 
 #ifdef ICLGeom_EXPORTS
-#define ICL_Geom_API   __declspec(dllexport)
+#define ICLGeom_API   __declspec(dllexport)
 #else
-#define ICL_Geom_API   __declspec(dllimport)
+#define ICLGeom_API   __declspec(dllimport)
 #endif
 
 #ifdef ICLMarkers_EXPORTS
@@ -122,10 +122,10 @@
 #define ICLMath_IMP
 #define ICLCore_API
 #define ICLFilter_API
-#define ICL_IO_API
-#define ICL_CV_API
-#define ICL_QT_API
-#define ICL_Geom_API
+#define ICLIO_API
+#define ICLCV_API
+#define ICLQt_API
+#define ICLGeom_API
 #define ICLMarkers_API
 #endif
 

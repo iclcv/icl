@@ -140,15 +140,5 @@ namespace icl{
     template<class T> ICLUtils_API
     std::istream &operator>>(std::istream &s, Range <T> &range);
 
-//#ifdef WIN32
-//  #ifndef ICLUtils_EXPORTS
-//    #define ICL_INSTANTIATE_DEPTH(D)                                        \
-//      template ICLUtils_API std::ostream &operator<<(std::ostream&, const Range<icl##D>&); \
-//      template ICLUtils_API std::istream &operator>>(std::istream&, Range<icl##D>&);
-//        ICL_INSTANTIATE_ALL_DEPTHS
-//    #undef ICL_INSTANTIATE_DEPTH
-//  #endif
-//#endif
-  
   } // namespace utils
 }

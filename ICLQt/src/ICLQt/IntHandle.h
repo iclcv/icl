@@ -41,7 +41,7 @@ namespace icl{
   namespace qt{
     
     /// Class for handling "int" textfield components \ingroup HANDLES
-    class ICL_QT_API IntHandle : public GUIHandle<QLineEdit>{
+    class ICLQt_API IntHandle : public GUIHandle<QLineEdit>{
       public:
       
       /// Create an empty handle

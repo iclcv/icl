@@ -101,18 +101,25 @@ namespace icl{
       return;
     }
   
-    void JPEGDecoder::decode_internal(File *file,const unsigned char *data,unsigned int maxDataLen, ImgBase **dest) throw (InvalidFileFormatException){
+    void JPEGDecoder::decode_internal(File *file, const unsigned char *data, unsigned int maxDataLen, ImgBase **dest) throw (InvalidFileFormatException){
+      // TODO: delete
+      printf("decode_internal\n");
       ICLASSERT_RETURN(!(file&&data));
       ICLASSERT_RETURN(!(!file&&!data));
       ICLASSERT_RETURN(dest);
       
-      if(file && !file->isOpen()){
+      if (file && !file->isOpen()){
+        // TODO: delete
+        printf("jpegOpenFile\n");
         file->open(File::readBinary);
         ICLASSERT_RETURN(file->isOpen());    
       }
-      
+      // TODO: delete
+      printf("jpegHandle\n");
       JPEGDataHandle jpegHandle;
-      
+
+      // TODO: delete
+      printf("jpegSetup\n");
       // setup the jpeg error routine once
       if (setjmp(jpegHandle.em.setjmp_buffer)) {
         /* If we get here, the JPEG code has signaled an error.
@@ -120,10 +127,14 @@ namespace icl{
         jpeg_destroy_decompress(&jpegHandle.info);
         throw InvalidFileFormatException();
       }
-      
+
+      // TODO: delete
+      printf("jpegInit\n");
       /* Step 1: Initialize the JPEG decompression object. */
       jpeg_create_decompress(&jpegHandle.info);
-      
+
+      // TODO: delete
+      printf("jpegSpecify\n");
       /* Step 2: specify data source (eg, a file) */
       if(file){
         jpeg_stdio_src(&jpegHandle.info, (FILE*)file->getHandle());
@@ -131,15 +142,23 @@ namespace icl{
         DataSourceManager dsm(&jpegHandle.info,const_cast<JOCTET*>(data),maxDataLen);
         jpegHandle.info.src = &dsm;  
       }
-      
+
+      // TODO: delete
+      printf("jpegSaveMarkers\n");
       /* request to save comments */
       jpeg_save_markers (&jpegHandle.info, JPEG_COM, 1024);
-  
+
+      // TODO: delete
+      printf("jpegReadHeader\n");
       /* Step 3: read file parameters with jpeg_read_header() */
       jpeg_read_header(&jpegHandle.info, TRUE);
-      
+
+      // TODO: delete
+      printf("jpegInfo\n");
       FileGrabberPlugin::HeaderInfo oInfo;
-  
+
+      // TODO: delete
+      printf("jpegFor\n");
       /* evaluate markers, i.e. comments */
       for (jpeg_saved_marker_ptr m = jpegHandle.info.marker_list; m; m = m->next){
         if (m->marker != JPEG_COM) continue;
@@ -161,7 +180,9 @@ namespace icl{
       }
   
       /* Step 4: set parameters for decompression */
-      
+
+      // TODO: delete
+      printf("jpegDecompress\n");
       /* Step 5: Start decompressor */
       jpeg_start_decompress(&jpegHandle.info);
       
@@ -237,17 +258,24 @@ namespace icl{
           }
         }
       }
-      
+
+      // TODO: delete
+      printf("jpegFinish\n");
       /* Step 7: Finish decompression */
       (void) jpeg_finish_decompress(&jpegHandle.info);
       
       /* At this point you may want to check to see whether any corrupt-data
        * warnings occurred (test whether jpgErr.pub.num_warnings is nonzero).
        */
-      
+
+      // TODO: delete
+      printf("jpegRelease\n");
       /* Step 8: Release JPEG decompression object */
       jpeg_destroy_decompress(&jpegHandle.info);
       if (oInfo.channelCount == 3) ICL_DELETE_ARRAY( pcBuf );    
+
+      // TODO: delete
+      printf("jpegEnd\n");
     }
   } // namespace io
 }

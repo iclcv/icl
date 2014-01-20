@@ -49,7 +49,7 @@ namespace icl{
     };
     
     /// Utility class used by the ContourDetector
-    class ICL_CV_API Contour{ 
+    class ICLCV_API Contour{ 
       ContourImpl *impl;
 
       public:
@@ -109,7 +109,7 @@ namespace icl{
         performance.
 
     **/
-    class ICL_CV_API ContourDetector : public utils::Uncopyable{
+    class ICLCV_API ContourDetector : public utils::Uncopyable{
       
       /// internal data type
       class Data;

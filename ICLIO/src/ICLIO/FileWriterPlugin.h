@@ -38,7 +38,7 @@
 namespace icl{
   namespace io{
     /// Interface class for writer plugins writing images in different file formats \ingroup FILEIO_G
-    class ICL_IO_API FileWriterPlugin{
+    class ICLIO_API FileWriterPlugin{
       public:
       virtual ~FileWriterPlugin() {}
       /// pure virtual writing function

@@ -662,8 +662,8 @@ namespace icl{
   
     // }}}
     
-    template ICL_CV_API class PositionTracker<icl32s>;
-    template ICL_CV_API class PositionTracker<icl32f>;
+    template ICLCV_API class PositionTracker<icl32s>;
+    template ICLCV_API class PositionTracker<icl32f>;
     //template class  PositionTracker<icl64f>;
   
   } // namespace cv

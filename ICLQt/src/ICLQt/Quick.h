@@ -67,21 +67,21 @@ namespace icl{
   #ifdef HAVE_QT
     /// uses Qt to spawn an open-file dialog with given filter
     /** throws an exception if cancel was pressed. The function thread-safe and can savely be called from a working thread */
-    ICL_QT_API std::string openFileDialog(const std::string &filter = "",
+    ICLQt_API std::string openFileDialog(const std::string &filter = "",
                                const std::string &caption="open file",
                                const std::string &initialDirectory="_____last", 
                                void *parentWidget=0) throw (utils::ICLException);
   
     /// uses Qt to spawn a save-file dialog with given filter
     /** throws an exception if cancel was pressed. The function thread-safe and can savely be called from a working thread */
-    ICL_QT_API std::string saveFileDialog(const std::string &filter = "",
+    ICLQt_API std::string saveFileDialog(const std::string &filter = "",
                                const std::string &caption="save file",
                                const std::string &initialDirectory="_____last", 
                                void *parentWidget=0) throw (utils::ICLException);
   
     /// executes the given command as a child process and returns it output
     /** Internally, popen is used */
-    ICL_QT_API std::string execute_process(const std::string &command);
+    ICLQt_API std::string execute_process(const std::string &command);
   #endif
   
   #define ICL_QUICK_DEPTH depth32f
@@ -98,7 +98,7 @@ namespace icl{
         @param height image height
         @param channels image channel count
     **/
-    template<class T> ICL_QT_API
+    template<class T> ICLQt_API
     core::Img<T> zeros(int width, int height, int channels=1);
     
     /***/
@@ -112,7 +112,7 @@ namespace icl{
         @param height image height
         @param channels image channel count      
     **/
-    template<class T> ICL_QT_API
+    template<class T> ICLQt_API
     core::Img<T> ones(int width, int height, int channels=1);
   
     /** \cond affinity version */
@@ -122,7 +122,7 @@ namespace icl{
     /// load an image file read file (affinity for floats) 
     /** @param filename filename/pattern to read 
     **/
-    template<class T> ICL_QT_API
+    template<class T> ICLQt_API
     core::Img<T> load(const std::string &filename);
   
      /** \cond affinity version */
@@ -133,7 +133,7 @@ namespace icl{
     /** @param filename filename to read (*.jpg, *.ppm, *.pgm)
         @param fmt image core::format to convert the result to
     **/
-    template<class T> ICL_QT_API
+    template<class T> ICLQt_API
     core::Img<T> load(const std::string &filename, core::format fmt);
   
     /** \cond affinity version */
@@ -146,7 +146,7 @@ namespace icl{
                     windows, flowers, women, house and tree 
         @param fmt image core::format to convert the result to
     **/
-    template<class T> ICL_QT_API
+    template<class T> ICLQt_API
     core::Img<T> create(const std::string &name, core::format fmt=formatRGB);
   
     /** \cond affinity version */
@@ -161,7 +161,7 @@ namespace icl{
         @param releaseGrabber if set to true, the 
                correspondig grabbers are deleted 
                immediately */
-    template<class T> ICL_QT_API
+    template<class T> ICLQt_API
     core::Img<T> grab(const std::string &dev, const std::string &devSpec, 
                 const utils::Size &size=utils::Size::null, core::format fmt=formatRGB,
                 bool releaseGrabber=false);
@@ -184,77 +184,77 @@ namespace icl{
     /** @param image source image 
         @return converted image 
     **/
-    ICL_QT_API core::Img8u cvt8u(const ImgQ &image);
+    ICLQt_API core::Img8u cvt8u(const ImgQ &image);
   
     /// Converts the image into depth16
     /** @param image source image 
         @return converted image 
     **/
-    ICL_QT_API core::Img16s cvt16s(const ImgQ &image);
+    ICLQt_API core::Img16s cvt16s(const ImgQ &image);
   
     /// Converts the image into depth32s
     /** @param image source image 
         @return converted image 
     **/
-    ICL_QT_API core::Img32s cvt32s(const ImgQ &image);
+    ICLQt_API core::Img32s cvt32s(const ImgQ &image);
   
     /// Converts the image into depth32f
     /** @param image source image 
         @return converted image 
     **/
-    ICL_QT_API core::Img32f cvt32f(const ImgQ &image);
+    ICLQt_API core::Img32f cvt32f(const ImgQ &image);
   
     /// Converts the image into depth64f
     /** @param image source image 
         @return converted image 
     **/
-    ICL_QT_API core::Img64f cvt64f(const ImgQ &image);
+    ICLQt_API core::Img64f cvt64f(const ImgQ &image);
   
     /// Converts a given core::Img8u into an ImgQ
     /** @param image source image 
         @return converted image 
     **/
-    ICL_QT_API ImgQ cvt(const core::Img8u &image);
+    ICLQt_API ImgQ cvt(const core::Img8u &image);
   
     /** \cond */
     /// Converts a given core::Img16s into an ImgQ
     /** @param image source image 
         @return converted image 
     **/
-    ICL_QT_API ImgQ cvt(const core::Img16s &image);
+    ICLQt_API ImgQ cvt(const core::Img16s &image);
   
     /// Converts a given core::Img32s into an ImgQ
     /** @param image source image 
         @return converted image 
     **/
-    ICL_QT_API ImgQ cvt(const core::Img32s &image);
+    ICLQt_API ImgQ cvt(const core::Img32s &image);
   
     /// Converts a given core::Img32f into an ImgQ
     /** @param image source image 
         @return converted image 
     **/
 
-    ICL_QT_API ImgQ cvt(const core::Img32f &image);
+    ICLQt_API ImgQ cvt(const core::Img32f &image);
 
     /// Converts a given core::Img64f into an ImgQ
     /** @param image source image 
         @return converted image 
     **/
-    ICL_QT_API ImgQ cvt(const core::Img64f &image);
+    ICLQt_API ImgQ cvt(const core::Img64f &image);
     /** \endcond */
 
     /// Converts a given core::ImgBase into an ImgQ
     /** @param image source image 
         @return conveted image 
     **/
-    ICL_QT_API ImgQ cvt(const core::ImgBase *image);
+    ICLQt_API ImgQ cvt(const core::ImgBase *image);
   
   
     /// Converts a given core::ImgBase into an ImgQ
     /** @param image source image 
         @return conveted image 
     **/
-    ICL_QT_API ImgQ cvt(const core::ImgBase &image);
+    ICLQt_API ImgQ cvt(const core::ImgBase &image);
     /** @} **/
     /* }}} */
   
@@ -267,7 +267,7 @@ namespace icl{
                       laplacs, median, dilation,erosion, opening and
                       closing 
     **/
-    template<class T> ICL_QT_API
+    template<class T> ICLQt_API
     core::Img<T> filter(const core::Img<T> &image, const std::string &filter);
     
     /** \cond affinity version */
@@ -278,7 +278,7 @@ namespace icl{
   
     /// applies gaussian blur to a given image (using a maskRadius*2+1-sized gaussian filter)
     /** affinity for floats */
-    template<class T> ICL_QT_API
+    template<class T> ICLQt_API
     core::Img<T> blur(const core::Img<T> &image, int maskRadius=1);
     
     /** \cond */
@@ -291,42 +291,42 @@ namespace icl{
     /** @param image source image*
         @param fmt destination image format
     **/
-    ICL_QT_API ImgQ cc(const ImgQ& image, core::format fmt);
+    ICLQt_API ImgQ cc(const ImgQ& image, core::format fmt);
     
     /// converts a given image to formatRGB
     /** @param image source image **/
-    ICL_QT_API ImgQ rgb(const ImgQ &image);
+    ICLQt_API ImgQ rgb(const ImgQ &image);
     
     /// converts a given image to formatHLS
     /** @param image source image **/
-    ICL_QT_API ImgQ hls(const ImgQ &image);
+    ICLQt_API ImgQ hls(const ImgQ &image);
   
     /// converts a given image to formatLAB
     /** @param image source image **/
-    ICL_QT_API ImgQ lab(const ImgQ &image);
+    ICLQt_API ImgQ lab(const ImgQ &image);
   
     /// converts a given image to formatGray
     /** @param image source image **/
-    ICL_QT_API ImgQ gray(const ImgQ &image);
+    ICLQt_API ImgQ gray(const ImgQ &image);
     
     /// scales an image by a given factor
     /** @param image source image
         @param factor scale factor 
     **/
-    ICL_QT_API ImgQ scale(const ImgQ& image, float factor);
+    ICLQt_API ImgQ scale(const ImgQ& image, float factor);
   
     /// scales an image to the given size
     /** @param image source image
         @param width destination image width
         @param height destination image height
     **/
-    ICL_QT_API ImgQ scale(const ImgQ& image, int width, int height);
+    ICLQt_API ImgQ scale(const ImgQ& image, int width, int height);
     
     /// picks a specific image channel
     /** @param image source image
         @param channel channel index to pick
     **/
-    ICL_QT_API ImgQ channel(const ImgQ &image, int channel);
+    ICLQt_API ImgQ channel(const ImgQ &image, int channel);
   
     /// reduces an images quantisation levels
     /** Internally the image is coverted to core::Img8u and back to
@@ -335,36 +335,36 @@ namespace icl{
         @param levels gray level count for each channel of the 
                       destination image
     **/
-    ICL_QT_API ImgQ levels(const ImgQ &image, icl8u levels);
+    ICLQt_API ImgQ levels(const ImgQ &image, icl8u levels);
     
     /// performs an image binarisation for each channel with given threshold
     /** @param image source image
         @param threshold threshold to compare each pixel with
     **/
-    ICL_QT_API ImgQ thresh(const ImgQ &image, float threshold);
+    ICLQt_API ImgQ thresh(const ImgQ &image, float threshold);
    
     /// deep copy for an image
     /** @param image source image **/
-    template<class T> ICL_QT_API
+    template<class T> ICLQt_API
     core::Img<T> copy(const core::Img<T> &image);
     
     /// deep copy of an images roi
     /** @param image source image **/
-    template <class T> ICL_QT_API
+    template <class T> ICLQt_API
     core::Img<T> copyroi(const core::Img<T> &image);
     
     /// normalize an images range to [0,255]
     /** @param image source image **/
-    template<class T> ICL_QT_API
+    template<class T> ICLQt_API
     core::Img<T> norm(const core::Img<T> &image);
     
     /// horizontal flip of an image
     /** @param image source image **/
-    ICL_QT_API ImgQ flipx(const ImgQ& image);
+    ICLQt_API ImgQ flipx(const ImgQ& image);
   
     /// vertical flip of an image
     /** @param image source image **/
-    ICL_QT_API ImgQ flipy(const ImgQ& image);
+    ICLQt_API ImgQ flipy(const ImgQ& image);
   
     /** @} **/
     /* }}} */
@@ -376,7 +376,7 @@ namespace icl{
     /** @param image source image
         @param filename filename to write the image to.
     **/
-    ICL_QT_API void save(const core::ImgBase &image, const std::string &filename);
+    ICLQt_API void save(const core::ImgBase &image, const std::string &filename);
     
     /// shows an image using TestImages::show
     /** The image is wrote to disk into a temporary file. Then it
@@ -386,7 +386,7 @@ namespace icl{
         @param image image to show
         @see showSetput(const string&, const stirng&, int)
     **/
-    ICL_QT_API void show(const ImgBase &image);
+    ICLQt_API void show(const ImgBase &image);
     
     /// setup image visualisation programm
     /** when images are shown using an extrenal viewer like gnu's xv, the image is temporarily 
@@ -400,7 +400,7 @@ namespace icl{
         @see show
         @see ICLIO/TestImages 
     **/
-    ICL_QT_API void showSetup(const string &showCommand = "xv %s", const string &rmCommand = "rm -rf %s", int msecBeforeDelete = 500);
+    ICLQt_API void showSetup(const string &showCommand = "xv %s", const string &rmCommand = "rm -rf %s", int msecBeforeDelete = 500);
     
     /// print the images parameters to std::out
     /** @param image image to print to std::out **/
@@ -417,77 +417,77 @@ namespace icl{
     /** @param a first source image 
         @param b second source image 
     **/
-    ICL_QT_API ImgQ operator+(const ImgQ &a, const ImgQ &b);
+    ICLQt_API ImgQ operator+(const ImgQ &a, const ImgQ &b);
     
     /// subtracts two images pixel-wise
     /** @param a first source image 
         @param b second source image 
     **/
-    ICL_QT_API ImgQ operator-(const ImgQ &a, const ImgQ &b);
+    ICLQt_API ImgQ operator-(const ImgQ &a, const ImgQ &b);
     
     /// multiplies two images pixel-wise
     /** @param a first source image 
         @param b second source image 
     **/
-    ICL_QT_API ImgQ operator*(const ImgQ &a, const ImgQ &b);
+    ICLQt_API ImgQ operator*(const ImgQ &a, const ImgQ &b);
   
     /// divides two images pixel-wise
     /** @param a first source image 
         @param b second source image 
     **/
-    ICL_QT_API ImgQ operator/(const ImgQ &a, const ImgQ &b);
+    ICLQt_API ImgQ operator/(const ImgQ &a, const ImgQ &b);
   
     /// adds a constant to each pixel value
     /** @param image source image 
         @param val const addition value
     **/
-    ICL_QT_API ImgQ operator+(const ImgQ &image, float val);
+    ICLQt_API ImgQ operator+(const ImgQ &image, float val);
   
     /// subtracts a constant to each pixel value
     /** @param image source image 
         @param val const subtraction value
     **/
-    ICL_QT_API ImgQ operator-(const ImgQ &image, float val);
+    ICLQt_API ImgQ operator-(const ImgQ &image, float val);
   
     /// multiplies each pixel value with a constant
     /** @param image source image 
         @param val const multiplication value
     **/
-    ICL_QT_API ImgQ operator*(const ImgQ &image, float val);
+    ICLQt_API ImgQ operator*(const ImgQ &image, float val);
   
     /// divides each pixel value by a constant
       /** @param image source image 
         @param val const division value
     **/
-    ICL_QT_API ImgQ operator/(const ImgQ &image, float val);
+    ICLQt_API ImgQ operator/(const ImgQ &image, float val);
   
     /// adds a constant to each pixel value
     /** @param image source image 
         @param val const addition value
     **/
-    ICL_QT_API ImgQ operator+(float val, const ImgQ &image);
+    ICLQt_API ImgQ operator+(float val, const ImgQ &image);
   
     /// subtracts each pixel value from a constant
     /** @param image source image 
         @param val const left value for subtraction
     **/
-    ICL_QT_API ImgQ operator-(float val, const ImgQ &image);
+    ICLQt_API ImgQ operator-(float val, const ImgQ &image);
     
     /// multiplies each pixel value with a constant
       /** @param image source image 
         @param val const multiplication value
     **/
-    ICL_QT_API ImgQ operator*(float val, const ImgQ &image);
+    ICLQt_API ImgQ operator*(float val, const ImgQ &image);
     
     /// divides a constant by each pixel value
     /** @param image source image 
         @param val nominator for the division operation
     **/
-    ICL_QT_API ImgQ operator/(float val, const ImgQ &image);
+    ICLQt_API ImgQ operator/(float val, const ImgQ &image);
   
     /// returns image*(-1)
     /** @param image source image **/
-    ICL_QT_API ImgQ operator-(const ImgQ &image);
+    ICLQt_API ImgQ operator-(const ImgQ &image);
   
     /** @} **/
     /* }}} */
@@ -497,23 +497,23 @@ namespace icl{
   
     /// calls exp( each pixel )
     /** @param image source image **/
-    ICL_QT_API ImgQ exp(const ImgQ &image);
+    ICLQt_API ImgQ exp(const ImgQ &image);
   
     /// calls ln( each pixel )  
     /** @param image source image **/
-    ICL_QT_API ImgQ ln(const ImgQ &image);
+    ICLQt_API ImgQ ln(const ImgQ &image);
   
     /// calls ( each pixel )²
     /** @param image source image **/
-    ICL_QT_API ImgQ sqr(const ImgQ &image);
+    ICLQt_API ImgQ sqr(const ImgQ &image);
     
     /// calls sqrt( each pixel)
     /** @param image source image **/
-    ICL_QT_API ImgQ sqrt(const ImgQ &image);
+    ICLQt_API ImgQ sqrt(const ImgQ &image);
     
     /// calls abs ( each pixel)
     /** @param image source image **/
-    ICL_QT_API ImgQ abs(const ImgQ &image);
+    ICLQt_API ImgQ abs(const ImgQ &image);
     
     /** @} **/
     /* }}} */
@@ -526,24 +526,24 @@ namespace icl{
     /** @param a first source image 
         @param b second source image
     **/
-    ICL_QT_API ImgQ operator||(const ImgQ &a, const ImgQ &b);
+    ICLQt_API ImgQ operator||(const ImgQ &a, const ImgQ &b);
   
     /// pixel-wise logical and
     /** @param a first source image 
         @param b second source image
     **/
-    ICL_QT_API ImgQ operator&&(const ImgQ &a, const ImgQ &b);
+    ICLQt_API ImgQ operator&&(const ImgQ &a, const ImgQ &b);
   
     /// pixels-wise binary or (each value is converted to T brefore binary or)
-    template<class T> ICL_QT_API
+    template<class T> ICLQt_API
     ImgQ binOR(const ImgQ &a, const ImgQ &b);
     
     /// pixels-wise binary or (each value is converted to T brefore binary or)
-    template<class T> ICL_QT_API
+    template<class T> ICLQt_API
     ImgQ binXOR(const ImgQ &a, const ImgQ &b);
   
     /// pixels-wise binary or (each value is converted to T brefore binary or)
-    template<class T> ICL_QT_API
+    template<class T> ICLQt_API
     ImgQ binAND(const ImgQ &a, const ImgQ &b);
     
     /** @} **/
@@ -570,20 +570,20 @@ namespace icl{
         @param a left image
         @param b right image
     **/
-    ICL_QT_API ImgQ operator,(const ImgQ &a, const ImgQ &b);
+    ICLQt_API ImgQ operator,(const ImgQ &a, const ImgQ &b);
     
     /// vertical image combination (as ,-operator)
     /** @param a upper image
         @param b lower image
     **/
-    ICL_QT_API ImgQ operator%(const ImgQ &a, const ImgQ &b);
+    ICLQt_API ImgQ operator%(const ImgQ &a, const ImgQ &b);
   
     /// channel concatenation of images
     /** @param a first image (channels f1,f2,f3,...)
         @param b second image (channels s2, s2,s3,...)
         @return image with channels (f1,f2,... s1, s2, ...)
     **/
-    ICL_QT_API ImgQ operator|(const ImgQ &a, const ImgQ &b);
+    ICLQt_API ImgQ operator|(const ImgQ &a, const ImgQ &b);
   
     /** @} **/
     /* }}} */
@@ -594,7 +594,7 @@ namespace icl{
   
     /// internal stuct, used for deep image copies
     /** @see icl::roi(core::Img<icl32f> &)*/
-    struct ICL_QT_API ImgROI{
+    struct ICLQt_API ImgROI{
       /// image data
       ImgQ image;
       
@@ -636,7 +636,7 @@ namespace icl{
         </pre>
         @param r image to wrap
     **/
-    ICL_QT_API ImgROI roi(ImgQ &r);
+    ICLQt_API ImgROI roi(ImgQ &r);
     
     /// creates full ROI ROI-struct
     /** this can also be used for deep copies
@@ -659,7 +659,7 @@ namespace icl{
         </pre>
         @param r image to wrap
     **/
-    ICL_QT_API ImgROI data(ImgQ &r);
+    ICLQt_API ImgROI data(ImgQ &r);
   
     /** @} **/
     /* }}} */
@@ -673,7 +673,7 @@ namespace icl{
         @param b blue value (if < 0, b is set to r) 
         @param alpha alpha value 255 = no transparency, 0 = full transparency
     **/
-    ICL_QT_API void color(float r, float g = -1, float b = -1, float alpha = 255);
+    ICLQt_API void color(float r, float g = -1, float b = -1, float alpha = 255);
   
     /// sets the current fill color to given r,g,b,alpha value
     /** @param r red value 
@@ -681,20 +681,20 @@ namespace icl{
         @param b blue value (if < 0, b is set to r) 
         @param alpha alpha value 255 = no transparency, 0 = full transparency
     **/
-    ICL_QT_API void fill(float r, float g = -1, float b = -1, float alpha = 255);
+    ICLQt_API void fill(float r, float g = -1, float b = -1, float alpha = 255);
   
     /// returns the current color state
     /** @param color destintaion array for the current draw color 
         @param fill destinaion array for the current fill color 
     **/
-    ICL_QT_API void colorinfo(float color[4], float fill[4]);
+    ICLQt_API void colorinfo(float color[4], float fill[4]);
     
     /// draws a 6x6-cross into an image
     /** @param image destination image 
         @param x x-pos of the cross
         @param y y-pos of the cross
     **/
-    ICL_QT_API void cross(ImgQ &image, int x, int y);
+    ICLQt_API void cross(ImgQ &image, int x, int y);
   
     /// draws a 6x6-cross into an image
     /** @param image destination image 
@@ -710,7 +710,7 @@ namespace icl{
         @param h height of the rect
         @param rounding rounded corners (in pixels)
     **/
-    ICL_QT_API void rect(ImgQ &image, int x, int y, int w, int h, int rounding = 0);
+    ICLQt_API void rect(ImgQ &image, int x, int y, int w, int h, int rounding = 0);
   
     /// draws a rect into an image
     /** @param image destination image
@@ -721,7 +721,7 @@ namespace icl{
     
     /// draws a triangle into an image
     /** given 3 points (x1,y1),(x2,y2),(x3,y3) */
-    ICL_QT_API void triangle(ImgQ &image, int x1, int y1, int x2, int y2, int x3, int y3);
+    ICLQt_API void triangle(ImgQ &image, int x1, int y1, int x2, int y2, int x3, int y3);
   
     /// draws a triangle into an image
     inline void triangle(ImgQ &image, const utils::Point &a, const utils::Point &b, const utils::Point &c){
@@ -735,7 +735,7 @@ namespace icl{
         @param x2 second point x coord 
         @param y2 second point y coord      
     **/
-    ICL_QT_API void line(ImgQ &image, int x1, int y1, int x2, int y2);
+    ICLQt_API void line(ImgQ &image, int x1, int y1, int x2, int y2);
   
     /// draws a line into an image
     /** @param image destination image 
@@ -748,17 +748,17 @@ namespace icl{
     /** @param image destination image
         @param pts list of points
         @param closeLoop if true, then also the first and the last point is connected */
-    ICL_QT_API void linestrip(ImgQ &image, const std::vector<utils::Point> &pts, bool closeLoop = true);
+    ICLQt_API void linestrip(ImgQ &image, const std::vector<utils::Point> &pts, bool closeLoop = true);
     
     /// draws a polygon (constructed out of linestrips
-    ICL_QT_API void polygon(ImgQ &image, const std::vector<utils::Point> &corners);
+    ICLQt_API void polygon(ImgQ &image, const std::vector<utils::Point> &corners);
     
     /// draw a single pixel into an image
     /** @param image destination image 
         @param x xpos of the pixel 
         @param y ypos of the pixel 
     **/
-    ICL_QT_API void pix(ImgQ &image, int x, int y);
+    ICLQt_API void pix(ImgQ &image, int x, int y);
   
     /// draw a single pixel into an image
     /** @param image destination image 
@@ -770,13 +770,13 @@ namespace icl{
     /** @param image destination image
         @param pts vector of points
     **/
-    ICL_QT_API void pix(ImgQ &image, const vector<utils::Point> &pts);
+    ICLQt_API void pix(ImgQ &image, const vector<utils::Point> &pts);
   
     /// draws a set of point sets into an image
     /** @param image destination image
         @param pts vector of vector of points to draw
     **/
-    ICL_QT_API void pix(ImgQ &image, const vector<vector<utils::Point> > &pts);
+    ICLQt_API void pix(ImgQ &image, const vector<vector<utils::Point> > &pts);
     
     /// renders a filled circle into an image
     /** This function renders a filled circle into a 3 or 1 channel image (only with fill color!)
@@ -786,7 +786,7 @@ namespace icl{
         @param y x-pos of the circle center
         @param r radius of the circle
     **/
-    ICL_QT_API void circle(ImgQ &image, int x, int y, int r);
+    ICLQt_API void circle(ImgQ &image, int x, int y, int r);
     
     /// renders a text into an image (only available with Qt-Support)
     /** This functin renders a text into a 3 or 1 channel image
@@ -796,7 +796,7 @@ namespace icl{
         @param y ypos of the lower left corner of the text
         @param text text to render
     **/
-    ICL_QT_API void text(ImgQ &image, int x, int y, const string &text);
+    ICLQt_API void text(ImgQ &image, int x, int y, const string &text);
   
      /// renders a text into an image (only available with Qt-Support)
     /** This functin renders a text into an 3 or 1 channel image
@@ -812,17 +812,17 @@ namespace icl{
         @param text text label
         @return labeled source image (= given image)
      **/
-    ICL_QT_API ImgQ label(const ImgQ &image, const string &text);
+    ICLQt_API ImgQ label(const ImgQ &image, const string &text);
   
     /// sets up the current font  (only available with Qt-Support)
     /** @param size new font size 12 by default 
         @param family font family string "Arial" by default
     **/
-    ICL_QT_API void font(int size, const string &family = "Arial");
+    ICLQt_API void font(int size, const string &family = "Arial");
     
     /// sets up current fontsize (only available with Qt-Support)
     /** @param size new font size (default is 12) **/
-    ICL_QT_API void fontsize(int size);
+    ICLQt_API void fontsize(int size);
     /** @} **/
     /* }}} */
   
@@ -830,10 +830,10 @@ namespace icl{
     /* {{{ open */
   
     /// starts a timer
-    ICL_QT_API void tic(const std::string &label = "");
+    ICLQt_API void tic(const std::string &label = "");
     
     /// stops a timer started with tic()
-    ICL_QT_API void toc();
+    ICLQt_API void toc();
     /** @} **/
     /* }}} */
                   

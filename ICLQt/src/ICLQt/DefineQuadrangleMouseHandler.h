@@ -43,7 +43,7 @@ namespace icl{
         restricted to be always convex. The quadrangle is initialized as a rectangle
         that is 20 px smaller than the given max-size rectangle.
         */
-    class ICL_QT_API DefineQuadrangleMouseHandler : public qt::MouseHandler,
+    class ICLQt_API DefineQuadrangleMouseHandler : public qt::MouseHandler,
           public utils::Uncopyable, public utils::Lockable{
       struct Data;  //!< pimpl type
       Data *m_data; //!< pimpl pointer

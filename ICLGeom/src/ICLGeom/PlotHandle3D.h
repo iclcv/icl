@@ -38,7 +38,7 @@ namespace icl{
   namespace geom{
     
     /// Handle class for image components \ingroup HANDLES
-    class ICL_Geom_API PlotHandle3D : public qt::GUIHandle<PlotWidget3D>{
+    class ICLGeom_API PlotHandle3D : public qt::GUIHandle<PlotWidget3D>{
       public:
       /// Create an empty handle
       PlotHandle3D(){}

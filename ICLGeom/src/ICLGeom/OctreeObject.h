@@ -51,8 +51,8 @@ namespace icl{
   namespace geom{
     
     /** \cond */
-    void octree_object_render_box(float x0, float y0, float z0, 
-                                  float x1, float y1, float z1);
+    ICLGeom_API void octree_object_render_box(float x0, float y0, float z0,
+                                              float x1, float y1, float z1);
     
     template<class Scalar, int CAPACITY, int SF, class Pt, int ALLOC_CHUNK_SIZE>
     struct OctreePointRenderer{

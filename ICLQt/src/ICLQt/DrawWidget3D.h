@@ -48,7 +48,7 @@ namespace icl{
         Most older methods got the deprecated status. They will be removed soon, since
         it turned out, that using ICLGeom's Scene class is much easier and less error-prone.
     */
-    class ICL_QT_API ICLDrawWidget3D : public ICLDrawWidget {
+    class ICLQt_API ICLDrawWidget3D : public ICLDrawWidget {
       public:
       
       /// internally used callback class type

@@ -159,6 +159,8 @@ namespace icl{
     }
 
     const ImgBase *Grabber::grab(ImgBase **ppoDst){
+      // TODO: delete
+      printf("grabber.grab().begin:\n");
       const ImgBase *acquired = acquireImage();
       if(!acquired) return acquired;
       // todo, on which image is the warping applied ?
@@ -177,6 +179,8 @@ namespace icl{
       }else{
         return adapted;
       }
+      // TODO: delete
+      printf("grabber.grab().end:\n");
     }
 
     void Grabber::enableUndistortion(const ImageUndistortion &udist){

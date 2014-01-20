@@ -78,8 +78,9 @@ namespace icl {
     template<class Type>
     Img<Type>::Img(const Size& s, format eFormat):
       // {{{ open
-      ImgBase(icl::core::getDepth<Type>(),ImgParams(s,eFormat)){
-      FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," << translateFormat(eFormat) << ")  this:" << this );
+      ImgBase(icl::core::getDepth<Type>(), ImgParams(s, eFormat)){
+      // TODO: no translateFormat and translateDepth
+      //FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," << translateFormat(eFormat) << ")  this:" << this );
     
       for(int i=0;i<getChannels();i++) {
         m_vecChannels.push_back(createChannel());
@@ -93,9 +94,10 @@ namespace icl {
     Img<Type>::Img(const Size &s,int iChannels, format fmt):
       // {{{ open
   
-      ImgBase(icl::core::getDepth<Type>(),ImgParams(s,iChannels,fmt)){
-      FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," << 
-                   iChannels << "," << translateFormat(fmt) << ")  this:" << this );
+      ImgBase(icl::core::getDepth<Type>(), ImgParams(s, iChannels, fmt)){
+      // TODO: no translateFormat and translateDepth
+      //FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," << 
+      //             iChannels << "," << translateFormat(fmt) << ")  this:" << this );
     
       for(int i=0;i<getChannels();i++) {
         m_vecChannels.push_back(createChannel());
@@ -127,8 +129,9 @@ namespace icl {
       // {{{ open
       ImgBase(icl::core::getDepth<Type>(),ImgParams(s,channels,fmt)){
       ICLASSERT_THROW (getChannels () <= (int) vptData.size(), InvalidImgParamException("channels"));
-      FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," <<  channels << 
-                   "," << translateFormat(fmt) << ",Type**)  this:" << this);
+      // TODO: no translateFormat
+      //FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," <<  channels << 
+      //             "," << translateFormat(fmt) << ",Type**)  this:" << this);
     
       typename std::vector<Type*>::const_iterator it = vptData.begin();
       for(int i=0; i<getChannels(); ++i, ++it) {
@@ -143,8 +146,9 @@ namespace icl {
     Img<Type>::Img(const Size &s, format eFormat, const std::vector<Type*>& vptData, bool passOwnerShip) :
       // {{{ open
       ImgBase(icl::core::getDepth<Type>(),ImgParams(s,eFormat)){
-      ICLASSERT_THROW (getChannels () <= (int) vptData.size(), InvalidImgParamException("channels"));
-      FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," << translateFormat(eFormat) << ",Type**)  this:" << this);
+      ICLASSERT_THROW(getChannels() <= (int)vptData.size(), InvalidImgParamException("channels"));
+      // TODO: no translateFormat and translateDepth
+      //FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," << translateFormat(eFormat) << ",Type**)  this:" << this);
      
       typename std::vector<Type*>::const_iterator it = vptData.begin();
       for(int i=0; i<getChannels(); ++i, ++it) {

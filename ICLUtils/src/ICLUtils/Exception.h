@@ -39,7 +39,7 @@
 namespace icl {
   namespace utils{
     /// Base class for Exception handling in the ICL \ingroup EXCEPT
-    class ICLUtils_API ICLException : public std::runtime_error
+    class ICLException : public std::runtime_error
     {
     public:
       ICLException (const std::string &msg) throw() : runtime_error(msg){}
@@ -47,7 +47,7 @@ namespace icl {
     };
   
     /// Exception for invalid file formats \ingroup EXCEPT
-    class ICLUtils_API InvalidFileFormatException : public ICLException {
+    class InvalidFileFormatException : public ICLException {
     public:
       InvalidFileFormatException () throw() : 
          ICLException ("invalid file format") {}
@@ -57,7 +57,7 @@ namespace icl {
     };
   
     /// Exception thrown if a file could not be opend \ingroup EXCEPT
-    class ICLUtils_API FileOpenException : public ICLException {
+    class FileOpenException : public ICLException {
     public:
       FileOpenException (const std::string& sFileName) throw() : 
          ICLException (std::string("Can't open file: ") + sFileName) {}
@@ -65,7 +65,7 @@ namespace icl {
     };
     
     /// Exception thrown if a file could not be found \ingroup EXCEPT
-    class ICLUtils_API FileNotFoundException : public ICLException {
+    class FileNotFoundException : public ICLException {
       public:
       FileNotFoundException (const std::string& sFileName) throw() : 
       ICLException (std::string("File not found: ") + sFileName) {}
@@ -73,7 +73,7 @@ namespace icl {
     };
      
     /// Exception thrown if a file could not be read properly \ingroup EXCEPT
-    class ICLUtils_API InvalidFileException : public ICLException {
+    class InvalidFileException : public ICLException {
       public:
       InvalidFileException (const std::string& sFileName) throw() : 
       ICLException (std::string("Invalied file: ") + sFileName) {}
@@ -81,7 +81,7 @@ namespace icl {
     };
     
     /// Exception called if an image gets invalid params \ingroup EXCEPT
-    class ICLUtils_API InvalidImgParamException : public ICLException {
+    class InvalidImgParamException : public ICLException {
       public:
       InvalidImgParamException(const std::string &param) throw():
         ICLException(std::string("Invalid Img-Parameter: ")+param) {}
@@ -89,7 +89,7 @@ namespace icl {
     };
   
     /// Exception thrown if a function should process an unsupported image format \ingroup EXCEPT
-    class ICLUtils_API InvalidFormatException : public ICLException {
+    class InvalidFormatException : public ICLException {
       public:
       InvalidFormatException(const std::string &functionName) throw():
         ICLException(std::string("Invalid Format in: ")+functionName) {}
@@ -97,7 +97,7 @@ namespace icl {
     };
   
     /// Exception thrown if a function should process an unsupported image depth \ingroup EXCEPT
-    class ICLUtils_API InvalidDepthException : public ICLException {
+    class InvalidDepthException : public ICLException {
       public:
       InvalidDepthException(const std::string &functionName) throw():
         ICLException(std::string("Invalid Depth in: ")+functionName) {}
@@ -105,7 +105,7 @@ namespace icl {
     };
    
     /// Exception thrown if a function should process an unsupported sizes (e.g. with negative dim..) \ingroup EXCEPT
-    class ICLUtils_API InvalidSizeException : public ICLException {
+    class InvalidSizeException : public ICLException {
       public:
       InvalidSizeException(const std::string &functionName) throw():
         ICLException(std::string("Invalid Size in: ")+functionName) {}
@@ -113,7 +113,7 @@ namespace icl {
     };
   
     /// Exception thrown if a string is parsed into a specific type (or something) \ingroup EXCEPT
-    class ICLUtils_API ParseException : public ICLException {
+    class ParseException : public ICLException {
       public:
       ParseException(const std::string &whatToParse) throw():
         ICLException(std::string("unable to parse: ")+whatToParse) {}
@@ -123,7 +123,7 @@ namespace icl {
     };
     
     /// Thrown by iclStringUtils::match if regular Expression is not valid \ingroup EXCEPT
-    class ICLUtils_API InvalidRegularExpressionException : public ICLException{
+    class InvalidRegularExpressionException : public ICLException{
       public:
       InvalidRegularExpressionException(const std::string &regex) throw():
       ICLException("invalid regular expression: '"+regex+"'"){

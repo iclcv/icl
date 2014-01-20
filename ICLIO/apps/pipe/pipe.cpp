@@ -84,7 +84,10 @@ void init_grabber(){
 const ImgBase *grab_image(){
   const ImgBase *img = 0;
   //  const ImgBase *image = grabber.grab();
-  if(!(bool)pa("-flip")){
+    // TODO: delete
+  printf("send_app(): if1:\n");
+  if (!(bool)pa("-flip")){
+    printf("grab:\n");
     img = grabber.grab();
   }else{
     ImgBase *hack = const_cast<ImgBase*>(grabber.grab());
@@ -100,6 +103,8 @@ const ImgBase *grab_image(){
     }
     img = hack;
   }
+  // TODO: delete
+  printf("send_app(): if2:\n");
   if(pa("-decode-bayer")){
     static std::string pattern = pa("-decode-bayer");
     if(img->getDepth() != depth8u){
@@ -172,16 +177,21 @@ void send_app(){
 #ifdef HAVE_QT
   ImageHandle IH;
   FPSHandle FPS;
-  if(!pa("-no-gui")){
+  if(!(bool)pa("-no-gui")){
     IH = gui.get<ImageHandle>("image");
     FPS= gui.get<FPSHandle>("fps");
   }
 #endif
  
   while(first || !(bool)pa("-single-shot")){
+    // TODO: delete
+    printf("grab_image:\n");
     const ImgBase *grabbedImage = grab_image();
+    printf("pointer: %p\n", grabbedImage);
 
     const ImgBase *ppImage = 0;
+    // TODO: delete
+    printf("send_app(): if:\n");
     if(pa("-pp") && *ppEnabled){
       static UnaryOp *pp = 0;
       if(!pp){
@@ -208,6 +218,8 @@ void send_app(){
     }else{
       ppImage = grabbedImage;
     }
+    // TODO: delete
+    printf("send_app(): ifelse-end:\n");
     const ImgBase *normImage = 0;
     if(pa("-normalize")){
       static ImgBase *buf = 0;
@@ -219,7 +231,7 @@ void send_app(){
     }
     output.send(normImage);
 #ifdef HAVE_QT
-    if(!pa("-no-gui")){
+    if(!(bool)pa("-no-gui")){
       bool &updateImages = gui.get<bool>("updateImages");
       if(updateImages){
         IH = normImage;
@@ -232,7 +244,7 @@ void send_app(){
     bool useGUI = false;
 #ifdef HAVE_QT
     int fpsLimit = 0;
-    if(!pa("-no-gui")){
+    if(!(bool)pa("-no-gui")){
       fpsLimit = gui.get<int>("fpsLimit");
       useGUI = true;
     }else{
@@ -241,7 +253,9 @@ void send_app(){
 #else
     int fpsLimit = pa("-fps");
 #endif
-    
+
+    // TODO: delete
+    printf("send_app(): noGui\n");
     if(!useGUI){
       if(pa("-progress")){
           static int curr = 0;
@@ -258,11 +272,19 @@ void send_app(){
         }
     }
 
+    // TODO: delete
+    printf("send_app(): limiter:\n");
     static FPSLimiter limiter(15,10);
     if(limiter.getMaxFPS() != fpsLimit) limiter.setMaxFPS(fpsLimit);
-    
+
+    // TODO: delete
+    printf("send_app(): wait:\n");
     limiter.wait();
 
+    // TODO: delete
+    printf("send_app(): end:\n");
+    char var;
+    std::cin >> var;
   }
 }
 
@@ -309,6 +331,7 @@ void init_gui(){
 
 
 int main(int n, char **ppc){
+  printf("pa_explain:\n");
   pa_explain
   ("-input","for sender application only allowed ICL default\n"
    " input specification e.g. -input pwc 0 or -input file bla/*.ppm")
@@ -352,6 +375,7 @@ int main(int n, char **ppc){
    "the icl-camcfg tool. Please note: some grabber parameters might cause an internal grabber crash, "
    "so e.g. trigger setup parameters or the isospeed parameters must be removed from this file");
 
+  printf("pa_init:\n");
   pa_init(n,ppc,"[m]-output|-o(output-type-string,output-parameters) "
          "-flip|-f(string) -single-shot [m]-input|-i(device,device-params) "
          "-size|(Size) -no-gui -pp(1) "
@@ -363,10 +387,13 @@ int main(int n, char **ppc){
          "-perserve-preprocessing-roi|-ppp -progress "
          "-initially-disable-image-updates|-idu");
 
-  if(pa("-reset")){
+  printf("pa:\n");
+  if (pa("-reset")){
+    printf("resetBus:\n");
     GenericGrabber::resetBus();
   }
-  
+
+  printf("init_grabber:\n");
   init_grabber();  
 
 #ifdef HAVE_QT
@@ -380,6 +407,7 @@ int main(int n, char **ppc){
 #else
   static bool alwaysTrue = 1;
   ppEnabled = &alwaysTrue;
+  printf("send_app:\n");
   send_app();
 #endif
 }

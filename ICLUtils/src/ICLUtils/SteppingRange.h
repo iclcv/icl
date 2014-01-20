@@ -106,15 +106,5 @@ namespace icl{
     ICL_INSTANTIATE_ALL_DEPTHS
   #undef ICL_INSTANTIATE_DEPTH
 
-//#ifdef WIN32
-//  #ifndef ICLUtils_EXPORTS
-//    #define ICL_INSTANTIATE_DEPTH(D)                                        \
-//      template ICLUtils_API std::ostream &operator<<(std::ostream&, const SteppingRange<icl##D>&); \
-//      template ICLUtils_API std::istream &operator>>(std::istream&, SteppingRange<icl##D>&);
-//          ICL_INSTANTIATE_ALL_DEPTHS
-//    #undef ICL_INSTANTIATE_DEPTH
-//  #endif
-//#endif
-    
   } // namespace utils
 }

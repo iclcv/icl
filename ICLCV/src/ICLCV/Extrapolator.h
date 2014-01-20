@@ -45,7 +45,7 @@ namespace icl{
         and the time types long int, int and icl32f
     */
     template<class valueType, class timeType>
-    class ICL_CV_API Extrapolator{
+    class ICLCV_API Extrapolator{
         public:
       /// extrapolates the next value (time t) using linear interpolation
       /** The time series is x_2(t-2),x_1(t-1),result(t) \; with \; dt=1

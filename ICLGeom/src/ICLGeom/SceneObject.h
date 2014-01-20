@@ -138,7 +138,7 @@ namespace icl{
       friend class Scene;
       
       /// create an object
-      ICL_Geom_API SceneObject();
+      ICLGeom_API SceneObject();
       
       /// create by string:
       /** currently allowed:
@@ -155,7 +155,7 @@ namespace icl{
              - (e1,and e2) are the roundness parameters
              - (rzSlices,rxSlices) is used for the number of steps the create nodes
       */
-      ICL_Geom_API SceneObject(const std::string &type,const float *params);
+      ICLGeom_API SceneObject(const std::string &type,const float *params);
       
       /// create a cube scene object
       static inline SceneObject *cube(float x, float y, float z, float r){
@@ -190,7 +190,7 @@ namespace icl{
   
       
       /// creates a scene object from given .obj file
-      ICL_Geom_API SceneObject(const std::string &objFileName) throw (utils::ICLException);
+      ICLGeom_API SceneObject(const std::string &objFileName) throw (utils::ICLException);
   
       /// deep copy of SceneObject instance
       /** The new instance's parent is set to null, i.e. it must
@@ -205,63 +205,63 @@ namespace icl{
       /// assignment operator for deep copy
       /** This instances parent is not changed. I.e. it must
           be added to other's parent explicitly if this is necessary. */
-      ICL_Geom_API SceneObject &operator=(const SceneObject &other);
+      ICLGeom_API SceneObject &operator=(const SceneObject &other);
       
       /// Empty destructor (but virtual)
-      ICL_Geom_API virtual ~SceneObject();
+      ICLGeom_API virtual ~SceneObject();
       
       /// returns object vertices
       /** If the vertex count is changed, the object needs to be
           locked */
-      ICL_Geom_API std::vector<Vec> &getVertices();
+      ICLGeom_API std::vector<Vec> &getVertices();
   
       /// returns object vertices (const)
-      ICL_Geom_API const std::vector<Vec> &getVertices() const;
+      ICLGeom_API const std::vector<Vec> &getVertices() const;
   
       /// returns object vertex colors
       /** If the number of vertex colors is changed, the object needs to be
           locked */
-      ICL_Geom_API std::vector<GeomColor> &getVertexColors();
+      ICLGeom_API std::vector<GeomColor> &getVertexColors();
   
       /// returns object vertex colors (const)
-      ICL_Geom_API const std::vector<GeomColor> &getVertexColors() const;
+      ICLGeom_API const std::vector<GeomColor> &getVertexColors() const;
   
   
       /// returns object's primitives (lines, quads, etc...)
-      ICL_Geom_API std::vector<Primitive*> &getPrimitives();
+      ICLGeom_API std::vector<Primitive*> &getPrimitives();
   
       /// returns object's primitives (lines, quads, etc...) (const)
-      ICL_Geom_API const std::vector<Primitive*> &getPrimitives() const;
+      ICLGeom_API const std::vector<Primitive*> &getPrimitives() const;
   
       /// changes visibility of given primitive type
-      ICL_Geom_API void setVisible(int oredTypes, bool visible, bool recursive = true);
+      ICLGeom_API void setVisible(int oredTypes, bool visible, bool recursive = true);
       
       /// returns visibility of given primitive type
-      ICL_Geom_API bool isVisible(Primitive::Type t) const;
+      ICLGeom_API bool isVisible(Primitive::Type t) const;
       
       /// adds a new vertex to this object
       /** Please note, that colors are defined in ICL's commong [0,255] range,
           but they are stored internally in [0,1] range, since this is how
           OpenGL expects colors */
-      ICL_Geom_API void addVertex(const Vec &p, const GeomColor &color = GeomColor(255, 0, 0, 255));
+      ICLGeom_API void addVertex(const Vec &p, const GeomColor &color = GeomColor(255, 0, 0, 255));
   
       /// adds a GLImg as shared texture
-      ICL_Geom_API void addSharedTexture(utils::SmartPtr<qt::GLImg> gli);
+      ICLGeom_API void addSharedTexture(utils::SmartPtr<qt::GLImg> gli);
       
       /// adds an core::ImgBase * as shared texutre
-      ICL_Geom_API void addSharedTexture(const core::ImgBase *image, core::scalemode sm = core::interpolateLIN);
+      ICLGeom_API void addSharedTexture(const core::ImgBase *image, core::scalemode sm = core::interpolateLIN);
   
   
       /// adds a new normal to this object
-      ICL_Geom_API void addNormal(const Vec &n);
+      ICLGeom_API void addNormal(const Vec &n);
       
       /// adds a new line to this object
       /** If the given normal indices (na and nb) are -1, no normals are used for this primitives */
-      ICL_Geom_API void addLine(int x, int y, const GeomColor &color = GeomColor(100, 100, 100, 255));
+      ICLGeom_API void addLine(int x, int y, const GeomColor &color = GeomColor(100, 100, 100, 255));
   
       /// adds a new triangle to this onject
       /** If the given normal indices (na,nb and nc) are -1, auto-normal are computed using cross-product */
-      ICL_Geom_API void addTriangle(int a, int b, int c, int na, int nb, int nc,
+      ICLGeom_API void addTriangle(int a, int b, int c, int na, int nb, int nc,
                        const GeomColor &color=GeomColor(0,100,250,255));
       
       /// convenience method for creation of a triangle with auto-normals
@@ -272,7 +272,7 @@ namespace icl{
   
       /// adds a new triangle to this onject
       /** If the given normal indices (na,nb,nc and nd) are -1, auto-normal are computed using cross-product */
-      ICL_Geom_API void addQuad(int a, int b, int c, int d, int na, int nb, int nc, int nd,
+      ICLGeom_API void addQuad(int a, int b, int c, int d, int na, int nb, int nc, int nd,
                    const GeomColor &color=GeomColor(0,100,250,255)); 
   
       /// convenience method for creation of a quad with auto-normals
@@ -282,12 +282,12 @@ namespace icl{
   
       /// add a polygon to this object (note triangles and quads are slower here)
       /** If the given normal indices's size is 0, auto-normal are computed using cross-product */
-      ICL_Geom_API void addPolygon(int nPoints, const int *vertexIndices, const GeomColor &color = GeomColor(0, 100, 250, 255),
+      ICLGeom_API void addPolygon(int nPoints, const int *vertexIndices, const GeomColor &color = GeomColor(0, 100, 250, 255),
                       const int *normalIndices=0);
   
       
       /** If the given normal indices (na,nb,nc and nd) are -1, auto-normal are computed using cross-product */
-      ICL_Geom_API void addTexture(int a, int b, int c, int d,
+      ICLGeom_API void addTexture(int a, int b, int c, int d,
                       const core::ImgBase *texture, 
                       int na, int nb, int nc, int nd,
                       bool createTextureOnce=true,
@@ -304,25 +304,25 @@ namespace icl{
       /// adds are shared texture primitive
       /** The sharedTextureIndex references a shared texture that has been added
           by using SceneObject::addSharedTexture */
-      ICL_Geom_API void addTexture(int a, int b, int c, int d,
+      ICLGeom_API void addTexture(int a, int b, int c, int d,
                       int sharedTextureIndex,
                       int na=-1, int nb=-1, int nc=-1, int nd=-1);
   
       /// adds a GenericTexturePrimitive for custom texCoords
-      ICL_Geom_API void addTexture(const core::ImgBase *image, int numPoints, const int *vertexIndices,
+      ICLGeom_API void addTexture(const core::ImgBase *image, int numPoints, const int *vertexIndices,
                       const utils::Point32f *texCoords, const int *normalIndices = 0,
                       bool createTextureOnce=true);
                  
   
       /// adds a texture that is drawn on a 2D grid of vertices in 3D space
-      ICL_Geom_API void addTextureGrid(int w, int h, const core::ImgBase *image,
+      ICLGeom_API void addTextureGrid(int w, int h, const core::ImgBase *image,
                           const icl32f *px, const icl32f *py, const icl32f *pz,
                           const icl32f *pnx=0, const icl32f *pny=0, const icl32f *pnz=0,
                           int stride = 1,bool createTextureOnce=true,core::scalemode sm=core::interpolateLIN);
   
       /// adds a texture grid that has two different texture for the two faces
       /** Internally, the TwoSidedTextureGridPrimitive is used */
-      ICL_Geom_API void addTwoSidedTextureGrid(int w, int h, const core::ImgBase *front, const core::ImgBase *back,
+      ICLGeom_API void addTwoSidedTextureGrid(int w, int h, const core::ImgBase *front, const core::ImgBase *back,
                              const icl32f *px, const icl32f *py, const icl32f *pz,
                              const icl32f *pnx=0, const icl32f *pny=0, const icl32f *pnz=0,
                              int stride = 1,bool createFrontOnce=true,
@@ -330,7 +330,7 @@ namespace icl{
   
       
       /// adds a two sided grid (sides may have different colors)
-      ICL_Geom_API void addTwoSidedTGrid(int w, int h, const Vec *vertices, const Vec *normals = 0,
+      ICLGeom_API void addTwoSidedTGrid(int w, int h, const Vec *vertices, const Vec *normals = 0,
                             const GeomColor &frontColor=GeomColor(0,100,255,255), 
                             const GeomColor &backColor=GeomColor(255,0,100,255),
                             const GeomColor &lineColor=GeomColor(0,255,100,255),
@@ -353,7 +353,7 @@ namespace icl{
 	  @param textSize the text size
 	  @param sm the scale mode
 */
-      ICL_Geom_API void addTextTexture(int a, int b, int c, int d, const std::string &text,
+      ICLGeom_API void addTextTexture(int a, int b, int c, int d, const std::string &text,
                           const GeomColor &color, 
                           int na, int nb, int nc, int nd,
                           int textSize,core::scalemode sm = core::interpolateLIN);
@@ -372,7 +372,7 @@ namespace icl{
           always be oriented towards the camera. The textRenderSize parameter
           defines the pixel resolution of the text
       */
-      ICL_Geom_API void addText(int a, const std::string &text, float billboardHeight = 10,
+      ICLGeom_API void addText(int a, const std::string &text, float billboardHeight = 10,
                    const GeomColor &color=GeomColor(255,255,255,255),
                    int textRenderSize=30, core::scalemode sm=core::interpolateLIN);
   
@@ -394,7 +394,7 @@ namespace icl{
       /// adds a cuboid child-object with given parameters
       /** returns a pointer to the cube added. This can be used to adapt
           further properties of that object */
-      ICL_Geom_API SceneObject *addCuboid(float x, float y, float z, float dx, float dy, float dz);
+      ICLGeom_API SceneObject *addCuboid(float x, float y, float z, float dx, float dy, float dz);
   
       /// adds a cuboid child-object with given parameters
       /** returns a pointer to the cube added. This can be used to adapt
@@ -406,32 +406,32 @@ namespace icl{
       /// adds a cuboid child-object with given parameters
       /** returns a pointer to the cube added. This can be used to adapt
           further properties of that object */
-      ICL_Geom_API SceneObject *addSpheroid(float x, float y, float z, float rx, float ry, float rz, int rzSteps, int xySlices);
+      ICLGeom_API SceneObject *addSpheroid(float x, float y, float z, float rx, float ry, float rz, int rzSteps, int xySlices);
       
       /// adds a cylindical child object with given parameters
       /** returns a pointer to the cylinder added. This can be used to adapt
           further properties of that object */
-      ICL_Geom_API SceneObject *addCylinder(float x, float y, float z, float rx, float ry, float h, int steps);
+      ICLGeom_API SceneObject *addCylinder(float x, float y, float z, float rx, float ry, float h, int steps);
   
       /// adds a conical child object with given parameters
       /** returns a pointer to the cone added. This can be used to adapt
           further properties of that object */
-      ICL_Geom_API SceneObject *addCone(float x, float y, float z, float rx, float ry, float h, int steps);
+      ICLGeom_API SceneObject *addCone(float x, float y, float z, float rx, float ry, float h, int steps);
   
       
       /// tints all Primitives with given type in given color
-      ICL_Geom_API void setColor(Primitive::Type t, const GeomColor &color, bool recursive = true);
+      ICLGeom_API void setColor(Primitive::Type t, const GeomColor &color, bool recursive = true);
       
       /// sets point size
-      ICL_Geom_API void setPointSize(float pointSize, bool recursive = true);
+      ICLGeom_API void setPointSize(float pointSize, bool recursive = true);
   
       /// sets point size
-      ICL_Geom_API void setLineWidth(float lineWidth, bool recursive = true);
+      ICLGeom_API void setLineWidth(float lineWidth, bool recursive = true);
   
      
       
       /// performs a deep copy of this object
-      ICL_Geom_API virtual SceneObject *copy() const;
+      ICLGeom_API virtual SceneObject *copy() const;
   
       /// called by the renderer before the object is rendered
       /** here, dynamic object types can adapt e.g. their vertices or colors*/
@@ -453,13 +453,13 @@ namespace icl{
       virtual void complexCustomRender(icl::geom::ShaderUtil* util) {customRender();}
   
       /// sets how 2D-geom colors are set 
-      ICL_Geom_API void setColorsFromVertices(Primitive::Type t, bool on, bool recursive = true);
+      ICLGeom_API void setColorsFromVertices(Primitive::Type t, bool on, bool recursive = true);
       
       /// returns wheather smooth shading is activated
-      ICL_Geom_API bool getSmoothShading() const;
+      ICLGeom_API bool getSmoothShading() const;
       
       /// sets whether to use smoothshading (default is false)
-      ICL_Geom_API void setSmoothShading(bool on, bool recursive = true);
+      ICLGeom_API void setSmoothShading(bool on, bool recursive = true);
   
   
       /** @{ @name methods for creation of a scene graph **/
@@ -467,13 +467,13 @@ namespace icl{
       /** All vertices are transformed with this matrix before rendering. If the
           SceneObject instance has a parent-Scene object, then the parent's
           SceneObject's transformation pre-multiplied */
-      ICL_Geom_API virtual void setTransformation(const Mat &m);
+      ICLGeom_API virtual void setTransformation(const Mat &m);
       
       /// sets the internal transformation to the identity matrix
-      ICL_Geom_API void removeTransformation();
+      ICLGeom_API void removeTransformation();
   
       /// multiplies the current transformation matrix by given matrix 
-      ICL_Geom_API virtual void transform(const Mat &m);
+      ICLGeom_API virtual void transform(const Mat &m);
   
       /// utility method for passing arbitrary matrix classes 
       /** Note: the given T instance m, needs to have a function-operator(x,y)*/
@@ -486,21 +486,21 @@ namespace icl{
       } 
       
       /// rotates the scene object (this affects it's transformation matrix)
-      ICL_Geom_API virtual void rotate(float rx, float ry, float rz);
+      ICLGeom_API virtual void rotate(float rx, float ry, float rz);
   
       /// utility wrapper for vector based rotation 
       template<class T>
       inline void rotate(const T &t) { rotate((float)t[0],(float)t[1],(float)t[2]); }
       
       /// translates the scene object (this affects it's translates matrix)
-      ICL_Geom_API virtual void translate(float dx, float dy, float dz);
+      ICLGeom_API virtual void translate(float dx, float dy, float dz);
   
       /// utility wrapper for vector based translation
       template<class T>
       inline void translate(const T &t) { translate((float)t[0],(float)t[1],(float)t[2]); }
   
       /// transformes the current transformation matrix by a scale matrix
-      ICL_Geom_API virtual void scale(float sx, float sy, float sz);
+      ICLGeom_API virtual void scale(float sx, float sy, float sz);
       
       /// utility wrapper for vector based scaling
       template<class T>
@@ -510,17 +510,17 @@ namespace icl{
       /** If the relative flag is true, only this objects transformation matrix is returned.
           If it is set to false (which is default), also the parent SceneObjects absolute
           transformation matrix is queried and premultiplied */
-      ICL_Geom_API Mat getTransformation(bool relative = false) const;
+      ICLGeom_API Mat getTransformation(bool relative = false) const;
       
       /// returns whether the SceneObject has currently a non-ID-transformation
       /** Here also the parent transformation is regarded if relative is false */
-      ICL_Geom_API bool hasTransformation(bool relative = false) const;
+      ICLGeom_API bool hasTransformation(bool relative = false) const;
       
       /// returns the parent scene object
-      ICL_Geom_API SceneObject *getParent();
+      ICLGeom_API SceneObject *getParent();
       
       /// returns the parent scene object (const version)
-      ICL_Geom_API const SceneObject *getParent() const;
+      ICLGeom_API const SceneObject *getParent() const;
   
       /// adds a new child to this scene object
       /** If the child's owner ship is passed, it is deleted automatically when it is removed or
@@ -529,29 +529,29 @@ namespace icl{
           <b>Note:</b> there is no cycle detection in the SceneObject class. Adding A to B and
           B to A leads to unknown results and most likely to programm errors.
       */
-      ICL_Geom_API void addChild(SceneObject *child, bool passOwnerShip = true);
+      ICLGeom_API void addChild(SceneObject *child, bool passOwnerShip = true);
       
       /// removes given child
       /** no errors if the child was not found */
-      ICL_Geom_API void removeChild(SceneObject *child);
+      ICLGeom_API void removeChild(SceneObject *child);
   
       /// removes all children
-      ICL_Geom_API void removeAllChildren();
+      ICLGeom_API void removeAllChildren();
       
       /// returns whether the SceneObject has children at all
-      ICL_Geom_API bool hasChildren() const;
+      ICLGeom_API bool hasChildren() const;
       
       /// returns the number of children
-      ICL_Geom_API int getChildCount() const;
+      ICLGeom_API int getChildCount() const;
       
       /// returns child at given index
-      ICL_Geom_API SceneObject *getChild(int index);
+      ICLGeom_API SceneObject *getChild(int index);
       
       /// returns child at given index (const)
-      ICL_Geom_API const SceneObject *getChild(int index) const;
+      ICLGeom_API const SceneObject *getChild(int index) const;
       
       /// returns whether the given object is a child of this one
-      ICL_Geom_API bool hasChild(const SceneObject *o) const;
+      ICLGeom_API bool hasChild(const SceneObject *o) const;
       /** @} **/
 
       /// automatically creates precomputed normals
@@ -567,7 +567,7 @@ namespace icl{
           looks identical to the Primitives automatically created
           online normals, but reduces processor load.
       */
-      ICL_Geom_API void createAutoNormals(bool smooth = true);
+      ICLGeom_API void createAutoNormals(bool smooth = true);
       
       /// can be reimplemented by subclass to provide and interface for setting default vertex color
       /** The default vertex color is used if no color information is available (m_vertexColors.size()
@@ -583,7 +583,7 @@ namespace icl{
           object on and the actually hit child (or child of child etc.) 
           might also be returned.
       */
-      ICL_Geom_API Hit hit(const ViewRay &v, bool recursive = true);
+      ICLGeom_API Hit hit(const ViewRay &v, bool recursive = true);
       
       /// returns whether this object is hit by the given viewray (const)
       const Hit hit(const ViewRay &v, bool recursive=true) const{
@@ -591,18 +591,18 @@ namespace icl{
       }
       
       /// returns all hits with SceneObjects form the given viewray
-      ICL_Geom_API std::vector<Hit> hits(const ViewRay &v, bool recursive = true);
+      ICLGeom_API std::vector<Hit> hits(const ViewRay &v, bool recursive = true);
   
       /// returns all vertices in their final world coordinates
-      ICL_Geom_API std::vector<Vec> getTransformedVertices() const;
+      ICLGeom_API std::vector<Vec> getTransformedVertices() const;
       
       /// returns the vertex, that is closest to the given point in wold coordinates
       /** If relative is true, the vertex is returned in object-coordinates, otherwise
           it is returned in world coordinates */
-      ICL_Geom_API Vec getClosestVertex(const Vec &pWorld, bool relative = false) throw (utils::ICLException);
+      ICLGeom_API Vec getClosestVertex(const Vec &pWorld, bool relative = false) throw (utils::ICLException);
       
       /// sets the visibility of this object
-      ICL_Geom_API void setVisible(bool visible, bool recursive = true);
+      ICLGeom_API void setVisible(bool visible, bool recursive = true);
       
       /// returns whether this object is currently visible
       bool isVisible() const { return m_isVisible; }
@@ -674,18 +674,18 @@ namespace icl{
       }
   
       /// deletes and removes all primitives
-      ICL_Geom_API void clearAllPrimitives();
+      ICLGeom_API void clearAllPrimitives();
       
       /// creates a displaylist in the next render cycle
       /** if the displaylist was already created, it is updated */
-      ICL_Geom_API void createDisplayList();
+      ICLGeom_API void createDisplayList();
       
       /// frees the displaylist in the next render cycle
-      ICL_Geom_API void freeDisplayList();
+      ICLGeom_API void freeDisplayList();
       
       /// sets a fragment shader to use for this object
       /** use set fragment shader (0) in order to delete the fragment shader */
-      ICL_Geom_API void setFragmentShader(qt::GLFragmentShader *shader);
+      ICLGeom_API void setFragmentShader(qt::GLFragmentShader *shader);
       
       /// returns the current fragment shader (or NULL if non was given)
       inline qt::GLFragmentShader *getFragmentShader() { return m_fragmentShader; }

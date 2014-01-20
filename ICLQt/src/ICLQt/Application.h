@@ -101,7 +101,7 @@ namespace icl{
         \endcode
         I guess there's nothing more to explain, isn't it?
     */
-    class ICL_QT_API ICLApplication : public QObject{
+    class ICLQt_API ICLApplication : public QObject{
       
       public:
       QApplication *app;

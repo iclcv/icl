@@ -41,7 +41,7 @@ namespace icl{
     /** \endcond */
     
     /// utility structure that defines a hit between a ViewRay and SceneObjects
-    struct ICL_Geom_API Hit{
+    struct ICLGeom_API Hit{
       /// constructor (initializes obj with 0 and dist with -1)
       Hit():obj(0),dist(-1){}
       

@@ -56,7 +56,7 @@ namespace icl {
       template <> inline core::depth grabber_get_null<core::depth>(){ return (core::depth)-1; }
       template <> inline icl::utils::Size grabber_get_null<icl::utils::Size>(){ return icl::utils::Size::null; }
 
-      struct ICL_IO_API grabber_get_xxx_dummy{
+      struct ICLIO_API grabber_get_xxx_dummy{
           grabber_get_xxx_dummy(){
             grabber_get_null<core::format>();
             grabber_get_null<core::depth>();
@@ -150,7 +150,7 @@ namespace icl {
         So far only a few grabbers provide this feature at all. If it
         is not provided, the registered callbacks will never be called.
     */
-    class ICL_IO_API Grabber : public utils::Uncopyable, public utils::Configurable{
+    class ICLIO_API Grabber : public utils::Uncopyable, public utils::Configurable{
         /// internal data class
         struct Data;
 
@@ -324,7 +324,7 @@ namespace icl {
     template<> inline bool Grabber::desiredUsed<core::depth>() const{ return (int)getDesired<core::depth>() != -1; }
     template<> inline bool Grabber::desiredUsed<utils::Size>() const{ return getDesired<utils::Size>() != utils::Size::null; }
 
-    class ICL_IO_API GrabberRegister : utils::Uncopyable {
+    class ICLIO_API GrabberRegister : utils::Uncopyable {
       private:
         utils::Mutex mutex;
 

@@ -43,7 +43,7 @@ namespace icl{
   namespace qt{
     
     /// Internally used widget to define image params \ingroup UNCOMMON
-    class ICL_QT_API ImgParamWidget : public QWidget{
+    class ICLQt_API ImgParamWidget : public QWidget{
       Q_OBJECT
       public:
       ImgParamWidget(QWidget *parent);

@@ -44,18 +44,18 @@ namespace icl{
   namespace io{
   
     // returns controll to the caller
-    struct ICL_IO_API icl_jpeg_error_mgr : jpeg_error_mgr {
+    struct ICLIO_API icl_jpeg_error_mgr : jpeg_error_mgr {
       jmp_buf setjmp_buffer; 
     };
     
     // passes controll back to the caller
-    ICL_IO_API void icl_jpeg_error_exit(j_common_ptr cinfo);
+    ICLIO_API void icl_jpeg_error_exit(j_common_ptr cinfo);
     
     // }}}
   
     
     /// Handles JPEG info and error manager
-    struct ICL_IO_API JPEGDataHandle{
+    struct ICLIO_API JPEGDataHandle{
       inline JPEGDataHandle(){
         info.err = jpeg_std_error(&em);
         em.error_exit = icl_jpeg_error_exit;

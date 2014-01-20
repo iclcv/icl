@@ -42,7 +42,7 @@ namespace icl{
   namespace qt{
     
     /// Handle class for combo components \ingroup HANDLES
-    class ICL_QT_API ComboHandle : public GUIHandle<QComboBox>{
+    class ICLQt_API ComboHandle : public GUIHandle<QComboBox>{
       public:
       /// create an empty handle
       ComboHandle(){}

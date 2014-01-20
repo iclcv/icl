@@ -37,7 +37,7 @@ namespace icl{
   namespace io{
     
     /// Plugin to grab binary icl image (.bicl or .bicl.gz) \ingroup GRABBER_G
-    class ICL_IO_API FileGrabberPluginBICL : public FileGrabberPlugin{
+    class ICLIO_API FileGrabberPluginBICL : public FileGrabberPlugin{
       public:
       /// grab implementation
       virtual void grab(utils::File &file, core::ImgBase **dest);

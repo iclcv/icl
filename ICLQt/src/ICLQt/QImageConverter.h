@@ -81,7 +81,7 @@ namespace icl{
         is essentially, as you will not have a 2nd instance of the image.
     */
     
-    class ICL_QT_API QImageConverter{
+    class ICLQt_API QImageConverter{
       public:
       /// creates an empty QImageConverter object
       QImageConverter();

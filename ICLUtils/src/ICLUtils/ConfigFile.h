@@ -174,21 +174,21 @@ namespace icl{
       friend class ConfigFileGUI;
       
       /// Internal exception type, thrown if an entry was not found
-      struct ICLUtils_API EntryNotFoundException : public ICLException{
+      struct EntryNotFoundException : public ICLException{
         EntryNotFoundException(const std::string &entryName):
         ICLException("Entry " + entryName+" could not be found!"){}
         virtual ~EntryNotFoundException() throw(){}
       };
       
       /// Internal exception type, thrown if an entry type missmatch occurs
-      struct ICLUtils_API InvalidTypeException : public ICLException{
+      struct InvalidTypeException : public ICLException{
         InvalidTypeException(const std::string &entryName, const std::string &typeName):
         ICLException("Invalid type " + typeName + " (entry " + entryName + ")"){};
         virtual ~InvalidTypeException() throw() {}
       };
   
       /// thrown if unregistered types are used
-      struct ICLUtils_API UnregisteredTypeException : public ICLException{
+      struct UnregisteredTypeException : public ICLException{
         UnregisteredTypeException(const std::string &rttiID):
         ICLException("type with RTTI ID " + rttiID + " is not registered"){}
         ~UnregisteredTypeException() throw(){}
@@ -334,7 +334,7 @@ namespace icl{
   
       /// Data- type used for the []-operator of ConfigFile instances
       /** @see Data ConfigFile::operator[](const std::string &id) */
-      class ICLUtils_API Data{
+      class Data{
         std::string id; //!< internal id (config.foo.bar)
         ConfigFile *cf; //!< parent config file
         
@@ -493,7 +493,7 @@ namespace icl{
   
       /// Utility Type for restriction of type values
       /** Currently key restrictions cannot be propergated to the XML structure when set*/
-      struct ICLUtils_API KeyRestriction{
+      struct KeyRestriction{
         inline KeyRestriction():
           hasRange(false),hasValues(false){}
         inline KeyRestriction(double min, double max):
@@ -503,7 +503,7 @@ namespace icl{
         }
         inline KeyRestriction(const std::string &values):
           values(values),hasRange(false),hasValues(true){}
-        std::string toString() const;
+        ICLUtils_API std::string toString() const;
   
         double min,max;
         std::string values;
@@ -522,7 +522,7 @@ namespace icl{
       const KeyRestriction *getRestriction(const std::string &id) const throw (EntryNotFoundException);
   
       /// internal utility structure for contained data
-      struct ICLUtils_API Entry{
+      struct Entry{
         std::string id;           //!< entries key (config.foo.bar....)
         std::string value;        //!< entries value as string
         std::string rttiType;     //!< entries rtti type ID

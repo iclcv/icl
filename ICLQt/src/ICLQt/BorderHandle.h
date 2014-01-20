@@ -43,7 +43,7 @@ class QGroupBox;
 namespace icl{
   namespace qt{
     /// Handle class for "border" gui components (only for explicit "border" components) \ingroup HANDLES
-    class ICL_QT_API BorderHandle : public GUIHandle<QGroupBox>{
+    class ICLQt_API BorderHandle : public GUIHandle<QGroupBox>{
       public:
       /// Creates an empty border handle
       BorderHandle(){}

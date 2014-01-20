@@ -204,8 +204,13 @@ namespace icl{
         
         /// returns whether the AABB intersects with another AABB
         bool intersects(const AABB &o) const{
+#ifdef WIN32
+          return  (fabs((float)center[0] - o.center[0]) < (halfSize[0] + o.halfSize[0])
+                   && fabs((float)center[1] - o.center[1]) < (halfSize[1] + o.halfSize[1]));
+#else
           return  (fabs(center[0] - o.center[0]) < (halfSize[0] + o.halfSize[0])
-                   && fabs(center[1] - o.center[1]) < (halfSize[1] + o.halfSize[1]));
+            && fabs(center[1] - o.center[1]) < (halfSize[1] + o.halfSize[1]));
+#endif
         }
 
         

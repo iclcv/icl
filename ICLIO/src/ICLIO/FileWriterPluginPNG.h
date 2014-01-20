@@ -38,7 +38,7 @@ namespace icl{
   namespace io{
     
     /// A Writer Plugin for writing ".png" images \ingroup FILEIO_G
-    class ICL_IO_API FileWriterPluginPNG : public FileWriterPlugin{
+    class ICLIO_API FileWriterPluginPNG : public FileWriterPlugin{
       utils::Mutex mutex;
       std::vector<unsigned char> data;
       std::vector<unsigned char*> rows;

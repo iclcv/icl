@@ -63,7 +63,7 @@ namespace icl{
       /// internally used axis-aligned bounding box
       /** An AABB is defined by its center point and it half bounds
           into x- and y-direction */
-      struct ICLMath_API AABB{
+      struct AABB{
         Pt center;   //!< center point
         Pt halfSize; //!< half dimension  
         
@@ -96,7 +96,7 @@ namespace icl{
       /// Internally used node structure
       /** Each node can contain up to CAPACITY elements. Further nodes
           are distributed to one of the four children */
-      struct ICLMath_API Node{
+      struct Node{
         AABB boundary;         //!< node boundary
         Pt points[CAPACITY];   //!< contained nodes
         Pt *next;              //!< next node to fill 
@@ -172,7 +172,7 @@ namespace icl{
       /// Inernally used block allocator
       /** The allocator allocates ALLOC_CHUNK_SIZE*4 Node instances
           at once and automatically frees all data at destruction time */
-      struct ICLMath_API Allocator{
+      struct Allocator{
         
         /// allocated data
         std::vector<Node*> allocated;

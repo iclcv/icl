@@ -40,7 +40,7 @@ namespace icl{
   namespace io{
   
     /// Publisher, that can be used to publish images via SharedMemorySegment
-    class ICL_IO_API SharedMemoryPublisher : public ImageOutput{
+    class ICLIO_API SharedMemoryPublisher : public ImageOutput{
       struct Data;  //!< intenal data
       Data *m_data; //!< intenal data
       

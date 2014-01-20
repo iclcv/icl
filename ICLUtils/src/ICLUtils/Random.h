@@ -37,6 +37,10 @@
 #include <cmath>
 #include <cstdlib>
 
+#ifdef ICL_SYSTEM_WINDOWS
+  #undef max
+#endif
+
 namespace icl{
   namespace utils{
     /// Initilaize the random number generator. \ingroup RANDOM
@@ -145,7 +149,7 @@ namespace icl{
         Here: URand is only evaluatet at the function interface, so the 
         image is filled with a single random value;
      */
-    class ICLUtils_API URand{
+    class URand{
       Range64f range;
       public:
       /// Range [0,1]
@@ -163,7 +167,7 @@ namespace icl{
   
     /// lightweight Random generator class for uniform random distributions in positive integer domain
     /** @see URand*/
-    class ICLUtils_API URandI{
+    class URandI{
       unsigned int max;
       public:
       /// Create with given max value
@@ -175,7 +179,7 @@ namespace icl{
   
     /// lightweight Random generator class for gaussian distributed numbers
     /** @see URand*/
-    class ICLUtils_API GRand{
+    class GRand{
       icl64f mean,var;
       public:
       /// Create with optionally given mean and variance
@@ -187,7 +191,7 @@ namespace icl{
   
     /// lightweight Random generator class for gaussian distributed numbers clipped to a given range
     /** @see URand*/
-    class ICLUtils_API GRandClip{
+    class GRandClip{
       icl64f mean,var;
       Range64f range;
       public:

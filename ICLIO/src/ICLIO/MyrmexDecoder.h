@@ -52,7 +52,7 @@
 namespace icl{
   namespace io{
   
-    class ICL_IO_API MyrmexDecoder {
+    class ICLIO_API MyrmexDecoder {
    
     public:
       MyrmexDecoder();

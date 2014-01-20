@@ -38,7 +38,7 @@ namespace icl{
   namespace io{
     
     /// defines and explains an available grabber device
-    struct ICL_IO_API GrabberDeviceDescription{
+    struct ICLIO_API GrabberDeviceDescription{
       /// Constructor
       GrabberDeviceDescription(const std::string &deviceType, const std::string &deviceID, const std::string &description):
         type(deviceType),id(deviceID),description(description){}

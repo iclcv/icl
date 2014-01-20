@@ -108,12 +108,12 @@ namespace icl{
   
     // }}}
   
-    template ICL_CV_API class Extrapolator<icl32s, int>;
-    template ICL_CV_API class Extrapolator<icl32f, long int>;
-    template ICL_CV_API class Extrapolator<icl32f, int>;
-    template ICL_CV_API class Extrapolator<icl32f, icl32f>;
-    template ICL_CV_API class Extrapolator<icl64f, long int>;
-    template ICL_CV_API class Extrapolator<icl64f, int>;
-    template ICL_CV_API class Extrapolator<icl64f, icl32f>;
+    template ICLCV_API class Extrapolator<icl32s, int>;
+    template ICLCV_API class Extrapolator<icl32f, long int>;
+    template ICLCV_API class Extrapolator<icl32f, int>;
+    template ICLCV_API class Extrapolator<icl32f, icl32f>;
+    template ICLCV_API class Extrapolator<icl64f, long int>;
+    template ICLCV_API class Extrapolator<icl64f, int>;
+    template ICLCV_API class Extrapolator<icl64f, icl32f>;
   } // namespace cv
 }

@@ -41,7 +41,7 @@ namespace icl{
     
     /// Wrapper class for fourcc color codes
     /** @see ColorFormatDecoder */
-    class ICL_IO_API FourCC{
+    class ICLIO_API FourCC{
       icl32s key; //!< internally a fourcc is represented by an u-int value
         
       public:

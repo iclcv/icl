@@ -85,7 +85,7 @@ namespace icl{
             even sometimes mess up already existent devices.
         \image html camcfg.png "The CamCfgWiget used for the icl-camcfg application"
     */
-    class ICL_QT_API CamCfgWidget : public QWidget{
+    class ICLQt_API CamCfgWidget : public QWidget{
       class Data;  //!< internal data class
       Data* data; //!< internal data storage
   

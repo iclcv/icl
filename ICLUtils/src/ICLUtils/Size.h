@@ -42,7 +42,7 @@ namespace icl {
   namespace utils{
   #ifndef HAVE_IPP
     /// fallback implementation for the IppiSize struct, defined in the ippi lib
-    struct ICLUtils_API IppiSize {
+    struct IppiSize {
       // width
       int width;
       

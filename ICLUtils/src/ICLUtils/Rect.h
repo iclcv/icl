@@ -45,7 +45,7 @@ namespace icl {
     
   #ifndef HAVE_IPP
     /// fallback implementation for the IppiRect struct, defined in the ippi lib \ingroup TYPES
-    struct ICLUtils_API IppiRect {
+    struct IppiRect {
   
       /// xpos of upper left corner
       int x;

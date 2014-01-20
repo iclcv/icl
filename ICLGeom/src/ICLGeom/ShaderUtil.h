@@ -10,7 +10,7 @@ namespace icl{
     
     /** The ShaderUtil is an easy to use wrapper for activating the 
         correct shader for the primitive that is to be rendered.*/
-    class ShaderUtil {
+    class ICLGeom_API ShaderUtil {
       icl::qt::GLFragmentShader** m_shaders;
       icl::qt::GLFragmentShader* activeShader;
       const std::vector<Mat> *project2shadow;

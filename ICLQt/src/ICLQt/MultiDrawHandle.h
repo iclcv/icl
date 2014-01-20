@@ -55,38 +55,38 @@ namespace icl{
       public:
       
       /// Create an empty draw handle
-      ICL_QT_API MultiDrawHandle();
+      ICLQt_API MultiDrawHandle();
   
       /// create a new ImageHandel
-      ICL_QT_API MultiDrawHandle(ICLDrawWidget *w, QTabBar *t, std::vector<core::ImgBase*> *imageBuffer, bool bufferAll, bool bufferDeeply, GUIWidget *guiw);
+      ICLQt_API MultiDrawHandle(ICLDrawWidget *w, QTabBar *t, std::vector<core::ImgBase*> *imageBuffer, bool bufferAll, bool bufferDeeply, GUIWidget *guiw);
   
       /// explicit copy constructor
-      ICL_QT_API MultiDrawHandle(const MultiDrawHandle &other);
+      ICLQt_API MultiDrawHandle(const MultiDrawHandle &other);
   
-      ICL_QT_API ~MultiDrawHandle();
+      ICLQt_API ~MultiDrawHandle();
   
       class Assigner{
         public:
         MultiDrawHandle *d;
         int idx;
   
-        ICL_QT_API void setImage(const core::ImgBase *image);
+        ICLQt_API void setImage(const core::ImgBase *image);
         void operator=(const core::ImgBase *image){ setImage(image); }
         void operator=(const core::ImgBase &image){ setImage(&image); }
       };
       
-      ICL_QT_API Assigner operator[](int idx);
-      ICL_QT_API Assigner operator[](const std::string &name);
+      ICLQt_API Assigner operator[](int idx);
+      ICLQt_API Assigner operator[](const std::string &name);
       
       /// calles updated internally
-      ICL_QT_API void render();
-      ICL_QT_API int getSelectedIndex();
-      ICL_QT_API int getNumTabs();
-      ICL_QT_API std::string getSelected();
-      ICL_QT_API bool isSelected(const std::string &text);
+      ICLQt_API void render();
+      ICLQt_API int getSelectedIndex();
+      ICLQt_API int getNumTabs();
+      ICLQt_API std::string getSelected();
+      ICLQt_API bool isSelected(const std::string &text);
   
       public slots:
-      ICL_QT_API void tabChanged(int idx);
+      ICLQt_API void tabChanged(int idx);
       
   
       private:

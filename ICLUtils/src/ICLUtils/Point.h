@@ -41,7 +41,7 @@ namespace icl{
   namespace utils{
   #ifndef HAVE_IPP
     /// fallback implementation for the IppiPoint struct, defined in the ippi libb \ingroup TYPES
-    struct ICLUtils_API IppiPoint {
+    struct IppiPoint {
       /// xpos
       int x;
       /// ypos

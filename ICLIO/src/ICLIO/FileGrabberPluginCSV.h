@@ -57,7 +57,7 @@ namespace icl{
            the image height; its horizontal comma-separated token count defines its
            width.
         */
-    class ICL_IO_API FileGrabberPluginCSV : public FileGrabberPlugin{
+    class ICLIO_API FileGrabberPluginCSV : public FileGrabberPlugin{
       public:
       /// Create a new Plugin
       FileGrabberPluginCSV();

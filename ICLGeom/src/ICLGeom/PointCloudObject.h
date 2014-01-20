@@ -48,7 +48,7 @@ namespace icl{
         - add optional color (perhaps not possible)
         
      */
-    class PointCloudObject : public PointCloudObjectBase{
+    class ICLGeom_API PointCloudObject : public PointCloudObjectBase{
       protected:
       bool m_organized;       //!< internal 2D organized flag
       utils::Size m_dim2D;    //!< 2D dimension

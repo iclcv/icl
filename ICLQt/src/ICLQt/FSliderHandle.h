@@ -43,7 +43,7 @@ namespace icl{
   namespace qt{
     
     /// Handle class for slider componets \ingroup HANDLES
-    class ICL_QT_API FSliderHandle : public GUIHandle<ThreadedUpdatableSlider>{
+    class ICLQt_API FSliderHandle : public GUIHandle<ThreadedUpdatableSlider>{
       /// associated display
       QLCDNumber *lcd;
       public:

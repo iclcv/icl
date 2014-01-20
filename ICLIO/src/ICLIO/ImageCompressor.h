@@ -123,7 +123,7 @@ namespace icl{
         + header size of 37 + N bytes (N is meta data size)\n
         for JPEG data, 2x the raw image data is allocated
     */
-    class ICL_IO_API ImageCompressor : public utils::Uncopyable{
+    class ICLIO_API ImageCompressor : public utils::Uncopyable{
       struct Data;  //!< pimpl type
       Data *m_data; //!< pimpl pointer
   
@@ -135,7 +135,7 @@ namespace icl{
       
       public:
       /// compression specification
-      struct ICL_IO_API CompressionSpec{
+      struct ICLIO_API CompressionSpec{
         explicit CompressionSpec(const std::string &mode=std::string(),
                         const std::string &quality=std::string()):mode(mode),quality(quality){}
         std::string mode;    //!< mode
@@ -187,7 +187,7 @@ namespace icl{
       
       /// most simple dyn-size array with given data and length
       /** This class does no memory management at all */
-      struct ICL_IO_API CompressedData{
+      struct ICLIO_API CompressedData{
         /// Constructor
         CompressedData(icl8u *bytes=0,int len=0, float compressionRatio=0, 
                        const CompressionSpec &compression=CompressionSpec()):

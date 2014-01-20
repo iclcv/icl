@@ -162,7 +162,7 @@ namespace icl{
       public:
       
       /// plugin class for work packages performed parallel
-        class ICLUtils_API Work{
+      class Work{
         public:
         /// virtual destructor doing nothing
         virtual ~Work(){}

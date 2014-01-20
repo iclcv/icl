@@ -184,6 +184,8 @@ namespace icl{
                               const std::string &params,
                               bool notifyErrors) throw(ICLException)
     {
+      // TODO: delete
+      printf("genericGrabber::init(3):\n");
       // get lock and grabber information
       Mutex::Locker __lock(m_mutex);
       GrabberRegister *grabberReg = GrabberRegister::getInstance();
@@ -216,6 +218,8 @@ namespace icl{
         std::cout << t << std::endl;
         std::terminate();
       }
+      // TODO: delete
+      printf("genericGrabber::init(3).createGrabber:\n");
 
       // create grabber
       unsigned int i;
@@ -238,13 +242,18 @@ namespace icl{
           m_poGrabber = GrabberInstanceTable::get()->createGrabber(grabbers.at(0));
           m_poDesc = grabbers.at(0);
           break;
-        } catch(ICLException &e){
+        }
+        catch (ICLException &e){
+          // TODO: delete
+          printf("genericGrabber::init(3).initCreateGrabber:\n");
           addError(errStr, id, param, str(e.what()));
         } catch(...){
           addError(errStr, id, param, "unknown exception catched");
         }
       }
 
+      // TODO: delete
+      printf("genericGrabber::init(3).suitableDevice:\n");
       if(!m_poGrabber && notifyErrors){
         std::string errMsg("generic grabber was not able to find any suitable device\ntried:");
         ERROR_LOG("unable to instantiate grabber " << errMsg+errStr);
@@ -293,6 +302,9 @@ namespace icl{
           }
         }
       }
+
+      // TODO: delete
+      printf("genericGrabber::init(3).end:\n");
     }
 
     void GenericGrabber::resetBus(const std::string &deviceList, bool verbose){

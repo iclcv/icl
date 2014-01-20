@@ -91,7 +91,7 @@ namespace icl{
         assignment) and the DataSegmentBase::Bytes class does also provide
         iterator based access to every byte element
     */
-    struct ICL_Geom_API DataSegmentBase{
+    struct ICLGeom_API DataSegmentBase{
       /// for easier integration with the pointcloud object base class
       friend class PointCloudObjectBase;
       
@@ -186,7 +186,7 @@ namespace icl{
       const DataSegment<T,N> &as() const;
       
       /// Very simple Byte Vector class to provide binary access to DataSegmentBase data
-      class ICL_Geom_API Bytes{
+      class ICLGeom_API Bytes{
         icl8u *data; //!< data pointer (shallowly wrapped)
         int len;     //!< number of byte elements
         /// constructor (private)

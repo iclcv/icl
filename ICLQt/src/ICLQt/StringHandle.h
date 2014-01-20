@@ -43,7 +43,7 @@ namespace icl{
   namespace qt{
     
     /// Class for handling "string" textfield components \ingroup HANDLES
-    class ICL_QT_API StringHandle : public GUIHandle<QLineEdit>{
+    class ICLQt_API StringHandle : public GUIHandle<QLineEdit>{
       public:
       /// Creates an empty string handle
       StringHandle(){}

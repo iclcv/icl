@@ -41,7 +41,7 @@
 namespace icl{
   namespace io{
     /// encoding class for data-to-data jpeg compression
-    class ICL_IO_API JPEGEncoder : public utils::Uncopyable{
+    class ICLIO_API JPEGEncoder : public utils::Uncopyable{
       struct Data;  //!< pimpl type
       Data *m_data; //!< pimpl pointer
   

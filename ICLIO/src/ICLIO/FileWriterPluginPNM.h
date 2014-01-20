@@ -40,7 +40,7 @@ namespace icl{
   namespace io{
     
     /// Writer plugin to write images as ".ppm", ".pgm", ".pnm" and ".icl" \ingroup FILEIO_G
-    class ICL_IO_API FileWriterPluginPNM : public FileWriterPlugin{
+    class ICLIO_API FileWriterPluginPNM : public FileWriterPlugin{
       public:
       /// write implementation
       virtual void write(utils::File &file, const core::ImgBase *image);

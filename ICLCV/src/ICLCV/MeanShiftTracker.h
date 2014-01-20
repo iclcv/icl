@@ -89,7 +89,7 @@ namespace icl {
         Add functionality to open any image as kernel image.
         Performance tweaking.
         **/
-    class ICL_CV_API MeanShiftTracker {
+    class ICLCV_API MeanShiftTracker {
       
       public:
       

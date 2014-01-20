@@ -38,7 +38,7 @@ namespace icl{
   namespace utils{
   
     /// Interface for objects, that can be locked using an internal mutex
-    class ICLUtils_API Lockable{
+    class Lockable{
       
       /// wrapped mutex variable
       Mutex *m_mutex;

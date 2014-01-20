@@ -49,7 +49,7 @@ namespace icl{
         The FilenameGenerator class extends the ShallowCopyable class interface to provide
         cheap-copies using reference counting.
     **/
-    class ICL_IO_API FilenameGenerator : public utils::ShallowCopyable<FilenameGeneratorImpl, FilenameGeneratorImplDelOp>{
+    class ICLIO_API FilenameGenerator : public utils::ShallowCopyable<FilenameGeneratorImpl, FilenameGeneratorImplDelOp>{
       public:
       static const int INFINITE_FILE_COUNT;
       /// Null constructor

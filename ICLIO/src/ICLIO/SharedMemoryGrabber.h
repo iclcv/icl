@@ -42,7 +42,7 @@ namespace icl{
         Grabber class directly, but instantiate GenericGrabber with
         Devide type 'sm'.
     */
-    class ICL_IO_API SharedMemoryGrabber : public Grabber {
+    class ICLIO_API SharedMemoryGrabber : public Grabber {
         /// Internal Data storage class
         struct Data;
 

@@ -246,7 +246,7 @@ namespace icl {
 
 #define ICL_DELETE_ARRAY(X) if((X)){ delete [] (X); (X)=0; }
 
-#ifdef ICL_SYSTEM_WINDOWS
+#ifdef WIN32
   #define ICL_DEPRECATED __declspec(deprecated)
 #else
   #define ICL_DEPRECATED __attribute__((deprecated))

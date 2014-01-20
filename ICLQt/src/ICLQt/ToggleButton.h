@@ -36,7 +36,7 @@
 namespace icl{
   namespace qt{
   
-    class ICL_QT_API ToggleButton : public QPushButton{
+    class ICLQt_API ToggleButton : public QPushButton{
       Q_OBJECT;
       public:
       ToggleButton(const std::string &untoggledText, 

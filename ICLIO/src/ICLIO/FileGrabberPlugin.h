@@ -37,7 +37,7 @@
 namespace icl{
   namespace io{
     /// interface for ImageGrabber Plugins for reading different file types \ingroup FILEIO_G
-    class ICL_IO_API FileGrabberPlugin{
+    class ICLIO_API FileGrabberPlugin{
       public:
   #ifdef HAVE_LIBJPEG
       friend class JPEGDecoder;

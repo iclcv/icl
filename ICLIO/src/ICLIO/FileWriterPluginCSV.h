@@ -37,7 +37,7 @@ namespace icl{
   namespace io{
   
     /// Writer plugins for ".csv"-files (<b>Comma</b>-<b>Separated</b> <b>Values</b>) \ingroup FILEIO_G
-    class ICL_IO_API FileWriterPluginCSV : public FileWriterPlugin{
+    class ICLIO_API FileWriterPluginCSV : public FileWriterPlugin{
       public:
       
       /// write implementation

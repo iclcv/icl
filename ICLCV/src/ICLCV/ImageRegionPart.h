@@ -39,7 +39,7 @@ namespace icl{
   namespace cv{
     
     /// The ImageRegionPart represents a intermediate region part for the connected component analysis
-    struct ICL_CV_API ImageRegionPart{
+    struct ICLCV_API ImageRegionPart{
       
       /// internally used type for buffering children
       typedef std::vector<ImageRegionPart*> children_container;

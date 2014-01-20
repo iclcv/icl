@@ -449,8 +449,8 @@ namespace icl{
       }
       return corners;
     }
-    template ICL_CV_API const vector<Point32f> &CornerDetectorCSS::detectCorners(const vector<Point32f> &boundary);
-    template ICL_CV_API const vector<Point32f> &CornerDetectorCSS::detectCorners(const vector<Point> &boundary);
+    template ICLCV_API const vector<Point32f> &CornerDetectorCSS::detectCorners(const vector<Point32f> &boundary);
+    template ICLCV_API const vector<Point32f> &CornerDetectorCSS::detectCorners(const vector<Point> &boundary);
 
     template<class T>
     const vector<vector<utils::Point32f> > &CornerDetectorCSS::detectCorners(const vector<vector<T> > &boundaries, const vector<icl32f> &sigmas) {
@@ -560,8 +560,8 @@ namespace icl{
       return corners_list;
     }
 
-    template ICL_CV_API const vector<vector<utils::Point32f> > &CornerDetectorCSS::detectCorners(const vector<vector<Point32f> > &boundaries, const vector<icl32f> &sigmas);
-    template ICL_CV_API const vector<vector<utils::Point32f> > &CornerDetectorCSS::detectCorners(const vector<vector<Point> > &boundaries, const vector<icl32f> &sigmas);
+    template ICLCV_API const vector<vector<utils::Point32f> > &CornerDetectorCSS::detectCorners(const vector<vector<Point32f> > &boundaries, const vector<icl32f> &sigmas);
+    template ICLCV_API const vector<vector<utils::Point32f> > &CornerDetectorCSS::detectCorners(const vector<vector<Point> > &boundaries, const vector<icl32f> &sigmas);
 
 
     void CornerDetectorCSS::setPropertyValue(const std::string &propertyName, const Any &value) throw (ICLException){

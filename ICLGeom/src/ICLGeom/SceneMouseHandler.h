@@ -166,7 +166,7 @@ namespace icl{
       /** @param pCameraIndex index of camera in scene
           @param pParentScene pointer to parent scene
           */
-      ICL_Geom_API SceneMouseHandler(const int pCameraIndex, Scene* pParentScene );
+      ICLGeom_API SceneMouseHandler(const int pCameraIndex, Scene* pParentScene );
       
       /// Copy constructor.
       /** @param pSceneMouseHandler source */
@@ -175,10 +175,10 @@ namespace icl{
       }
 
       /// Destructor
-      ICL_Geom_API ~SceneMouseHandler();
+      ICLGeom_API ~SceneMouseHandler();
       
       /// Assignment operator.
-      ICL_Geom_API SceneMouseHandler& operator=(const SceneMouseHandler& pSceneMouseHandler);
+      ICLGeom_API SceneMouseHandler& operator=(const SceneMouseHandler& pSceneMouseHandler);
       
       /// Set parent scene.
       void setParentScene(Scene* pParentScene){
@@ -197,7 +197,7 @@ namespace icl{
           @param pWheel sensitivity of mouse wheel (e.g. 0.001)
           @param pModifier factor to modify sensitivity (e.g. 10.0)
           */
-      ICL_Geom_API void setSensitivities(const float pTranslation, const float pRotation = 1.0,
+      ICLGeom_API void setSensitivities(const float pTranslation, const float pRotation = 1.0,
                             const float pMouse = 1.0, const float pWheel = 0.001,
                             const float pModifier = 10.0 );
       
@@ -226,7 +226,7 @@ namespace icl{
 
       /// Set mouse mappings.
       /** Inherit from this class and overload this function to define new mouse mappings. */
-      ICL_Geom_API virtual void setMouseMappings();
+      ICLGeom_API virtual void setMouseMappings();
       
       
       /// Set one mouse mapping.
@@ -239,7 +239,7 @@ namespace icl{
           @param pAlt alt
           @param pMouseActionCallback function pointer that should be called
           @param pData pointer to additional data */
-      ICL_Geom_API void setMouseMapping(const qt::MouseEventType pMouseEventType,
+      ICLGeom_API void setMouseMapping(const qt::MouseEventType pMouseEventType,
                            const bool pLeftMouseButton,
                            const bool pMiddleMouseButton,
                            const bool pRightMouseButton,
@@ -261,7 +261,7 @@ namespace icl{
           @param pInverseX inverse x-axis
           @param pInverseY inverse y-axis */
       
-      ICL_Geom_API static void freeView(const qt::MouseEvent &pMouseEvent,
+      ICLGeom_API static void freeView(const qt::MouseEvent &pMouseEvent,
                            const utils::Point32f &pCurrentMousePosition,
                            const utils::Point32f &pDeltaMousePosition,
                            Camera &pCamera, void *pData,
@@ -341,7 +341,7 @@ namespace icl{
           @param pDeltaMousePosition delta compared to last mouse position
           @param pCamera camera
           @param pData pointer for additional data used to set sensitivity */
-      ICL_Geom_API static void rotateAroundOrigin(const qt::MouseEvent &pMouseEvent,
+      ICLGeom_API static void rotateAroundOrigin(const qt::MouseEvent &pMouseEvent,
                                      const utils::Point32f &pCurrentMousePosition,
                                      const utils::Point32f &pDeltaMousePosition,
                                      Camera &pCamera, void *pData);
@@ -354,7 +354,7 @@ namespace icl{
           @param pDeltaMousePosition delta compared to last mouse position
           @param pCamera camera
           @param pData pointer for additional data used to set sensitivity */
-      ICL_Geom_API static void strafe(const qt::MouseEvent &pMouseEvent,
+      ICLGeom_API static void strafe(const qt::MouseEvent &pMouseEvent,
                          const utils::Point32f &pCurrentMousePosition,
                          const utils::Point32f &pDeltaMousePosition,
                          Camera &pCamera, void *pData);
@@ -367,7 +367,7 @@ namespace icl{
           @param pDeltaMousePosition delta compared to last mouse position
           @param pCamera camera
           @param pData pointer for additional data used to set sensitivity */
-      ICL_Geom_API static void rollAndDistance(const qt::MouseEvent &pMouseEvent,
+      ICLGeom_API static void rollAndDistance(const qt::MouseEvent &pMouseEvent,
                                   const utils::Point32f &pCurrentMousePosition,
                                   const utils::Point32f &pDeltaMousePosition,
                                   Camera &pCamera, void *pData);
@@ -375,7 +375,7 @@ namespace icl{
       
       /// Process mouse event using mouse mapping table.
       /** @param pMouseEvent mouse event */
-      ICL_Geom_API virtual void process(const qt::MouseEvent &pMouseEvent);
+      ICLGeom_API virtual void process(const qt::MouseEvent &pMouseEvent);
     };
     
   } // namespace geom

@@ -89,10 +89,10 @@ namespace icl{
         const std::vector<Point32f> &corners = css.detectCorners(boundary);
         \endcode
     **/
-    class ICL_CV_API CornerDetectorCSS : public utils::Configurable{
+    class ICLCV_API CornerDetectorCSS : public utils::Configurable{
       public:
       /// 1 dim gaussian kernel
-      struct ICL_CV_API GaussianKernel {
+      struct ICLCV_API GaussianKernel {
         std::vector<icl32f> gau;
         float sigma;
         float cutoff;
@@ -153,9 +153,9 @@ namespace icl{
           xooo                xooo
           </pre>
           */
-      template<class T> ICL_CV_API
+      template<class T> ICLCV_API
       const std::vector<std::vector<utils::Point32f> > &detectCorners(const std::vector<std::vector<T> > &boundaries, const std::vector<icl32f> &sigmas);
-      template<class T> ICL_CV_API
+      template<class T> ICLCV_API
       const std::vector<utils::Point32f> &detectCorners(const std::vector<T> &boundary);
 
       /// returns the result of last detectCorners call

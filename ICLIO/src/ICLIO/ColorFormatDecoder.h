@@ -70,7 +70,7 @@ namespace icl{
   
         @see FourCC
     */
-    class ICL_IO_API ColorFormatDecoder{
+    class ICLIO_API ColorFormatDecoder{
       public:
       // conversion function type
       typedef void (*decoder_func)(const icl8u*,const utils::Size&,core::ImgBase**,std::vector<icl8u>*);

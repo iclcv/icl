@@ -49,7 +49,7 @@ namespace icl{
         a given shader has already been compiled and set up for the current
         active GLContext.
      */
-    class ICL_QT_API GLContext{
+    class ICLQt_API GLContext{
       public:
       /// internal handle type
       typedef void* Handle;

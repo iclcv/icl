@@ -45,7 +45,7 @@ namespace icl{
   namespace io{
 
     /// opencv base grabber implementation for movie files \ingroup MOVIE_FILE_G
-    class ICL_IO_API OpenCVVideoGrabber : public Grabber{
+    class ICLIO_API OpenCVVideoGrabber : public Grabber{
         struct Data; //!< pimpl type
         Data *data; //!< pimpl pointer
         utils::Mutex mutex; //! locking

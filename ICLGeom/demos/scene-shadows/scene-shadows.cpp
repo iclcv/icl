@@ -53,7 +53,7 @@ void init(){
       << ( HBox().maxSize(99,3)
            << FSlider(0.5,20,3).out("f").handle("focal").label("focal length").maxSize(100,3)
            << FSlider(1,100,15).out("r").label("light radius").maxSize(100,3)
-           << Button("reload").handle("reload").hideIf(!pa("-o"))
+           << Button("reload").handle("reload").hideIf(!(bool)pa("-o"))
          )
       << Show();
   
@@ -101,8 +101,8 @@ void init(){
     o->setColor(Primitive::line,GeomColor(255,0,0,255));
     o->setPolygonSmoothingEnabled(false);
 
-    if(!pa("-render-lines"))o->setVisible(Primitive::line,false);
-    if(!pa("-render-points"))o->setVisible(Primitive::vertex,false);
+    if(!(bool)pa("-render-lines"))o->setVisible(Primitive::line,false);
+    if(!(bool)pa("-render-points"))o->setVisible(Primitive::vertex,false);
 
     scene.addObject(o);
   }else{ // or create a simple cube
@@ -114,8 +114,8 @@ void init(){
       if(pa("-n")){
         o->createAutoNormals();
       }
-      if(!pa("-render-lines"))o->setVisible(Primitive::line,false);
-      if(!pa("-render-points"))o->setVisible(Primitive::vertex,false);
+      if(!(bool)pa("-render-lines"))o->setVisible(Primitive::line,false);
+      if(!(bool)pa("-render-points"))o->setVisible(Primitive::vertex,false);
       scene.addObject(o);
     }else{
       pa_show_usage("invalid shape arg for -s");

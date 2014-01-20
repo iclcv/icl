@@ -44,7 +44,7 @@ namespace icl{
         class. Simply set scene.setDrawCoordinateFrameEnabled(true,l,t) to
         visualize a Scene's coordintate frame. If you need a coordinate frame
         that is not alligned with the scene's origin, you can use this class. */
-    class ICL_Geom_API CoordinateFrameSceneObject : public SceneObject{
+    class ICLGeom_API CoordinateFrameSceneObject : public SceneObject{
       
       /// length for x-, y- and z-axis
       float axisLength;

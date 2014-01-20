@@ -154,7 +154,7 @@ namespace icl{
         *Soon!*
         
     */
-    class ICL_QT_API PlotWidget : public LowLevelPlotWidget{
+    class ICLQt_API PlotWidget : public LowLevelPlotWidget{
       struct Data;  //!< internal data structure
       Data *m_data; //!< internal data (pimpl)
       
@@ -256,7 +256,7 @@ namespace icl{
           @param connect if set to true, successive points are connected
                  using a line
       */
-      template<class T>
+      template<class T> ICLQt_API
       void scatter(const T *xs, const T *ys, int num, int xStride = 1, int yStride=1, bool connect=false);
   
       /// adds a scatter plot from given vector of points
@@ -290,7 +290,7 @@ namespace icl{
           @param num number of elements
           @param stride data increment to iterate through the data elements
                  stride is given in sizeof(float) units */
-      template<class T>
+      template<class T> ICLQt_API
       void series(const T *data, int num, int stride=1);
       
       /// adds series data from given std::vector
@@ -322,7 +322,7 @@ namespace icl{
           @param num number of elements
           @param stride data increment to iterate through the data elements
                  stride is given in sizeof(float) units */
-      template<class T>
+      template<class T> ICLQt_API
       void bars(const T *data, int num, int stride=1);
       
       /// adds bar plot data from given std::vector

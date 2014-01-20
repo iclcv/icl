@@ -59,9 +59,12 @@ namespace icl{
       
       void break_apart(std::string s, std::string &dir, std::string &basename, std::string &suffix, std::string &filename){
         // {{{ open
-  
+  // TODO: delete
+        printf("break_apart(s=%s, dir=%s, basename=%s, suffix=%s, filename=%s)\n", s.c_str(), dir.c_str(), basename.c_str(), suffix.c_str(), filename.c_str());
         size_t p = s.rfind(DIR_SEPERATOR);
-        
+
+        // TODO: delete
+        printf("dic break_apart\n");
         /// split directory xxx/filename.suffix
         if(p==std::string::npos){
           dir = "";
@@ -70,7 +73,9 @@ namespace icl{
           dir = s.substr(0,p);
           filename = s.substr(p+1);
         }
-        
+
+        // TODO: delete
+        printf("suffix break_apart\n");
         // split suffix
         p = filename.rfind('.');
         if(p == std::string::npos){
@@ -87,6 +92,8 @@ namespace icl{
             }
           }
         }
+        // TODO: delete
+        printf("end break_apart\n");
       }
   
       // }}}
@@ -141,8 +148,15 @@ namespace icl{
       static const char *s_apcOpenModes[4] = { "rb","r","wb","w" };
   
       bool file_exists(const std::string &filename){
+        // TODO: delete
+        printf("file_exists: filename=%s\n", filename.c_str());
+#ifdef ICL_SYSTEM_WINDOWS
+        struct _stat stFileInfo;
+        return _stat(filename.c_str(),&stFileInfo)==0;
+#else
         struct stat stFileInfo;
         return stat(filename.c_str(),&stFileInfo)==0;
+#endif
       }
       
       bool file_is_dir(const std::string &filename){

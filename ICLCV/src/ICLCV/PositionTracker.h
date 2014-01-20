@@ -240,7 +240,7 @@ namespace icl{
     */
   
     template<class valueType>
-    class ICL_CV_API PositionTracker{
+    class ICLCV_API PositionTracker{
       public:
       
      

@@ -47,7 +47,7 @@
 
 namespace icl{
   namespace geom{
-    class ICL_Geom_API SoftPosit{
+    class ICLGeom_API SoftPosit{
       private:
       //M
       unsigned int nbWorldPts;

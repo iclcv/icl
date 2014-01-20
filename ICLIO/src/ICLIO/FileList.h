@@ -44,7 +44,7 @@ namespace icl{
     /** \endcond */
   
     /// Utility class implementing a list of files \ingroup UTILS_G
-    class ICL_IO_API FileList : public utils::ShallowCopyable<FileListImpl, FileListImplDelOp>{
+    class ICLIO_API FileList : public utils::ShallowCopyable<FileListImpl, FileListImplDelOp>{
       public:
   
       /// Create a null file-list

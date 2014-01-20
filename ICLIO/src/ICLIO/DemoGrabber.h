@@ -45,7 +45,7 @@ namespace icl{
     /** This grabber can be used as placeholder whenever no senseful Grabber
         is available. It can be set up to work at a certain fps to avoid
         some real unexpected behaviour */
-    class ICL_IO_API DemoGrabber : public Grabber{
+    class ICLIO_API DemoGrabber : public Grabber{
       public:
         /// default grab function
         virtual const core::ImgBase* acquireImage();

@@ -55,7 +55,7 @@ namespace icl {
       A signal handler is installed to ensure that all SharedMemorySegments
       are released.
     **/
-    class ICL_IO_API SharedMemorySegment{
+    class ICLIO_API SharedMemorySegment{
       public:
 
         /// Creates a SharedMemorySegment instance.
@@ -178,7 +178,7 @@ namespace icl {
     };
 
     /// an easy way to lock a SharedMemorySegment, unlocking at destruction.
-    struct ICL_IO_API SharedMemorySegmentLocker{
+    struct ICLIO_API SharedMemorySegmentLocker{
         /// local reference to SharedMemorySegment
         SharedMemorySegment &segment;
 
@@ -197,7 +197,7 @@ namespace icl {
       Each SharedMemorySegment::Impl instance adds its segment name to the
       register on creation and removes it on destruction.
     **/
-    class ICL_IO_API SharedMemorySegmentRegister
+    class ICLIO_API SharedMemorySegmentRegister
     {
       public:
         friend struct SharedMemorySegment::Impl;

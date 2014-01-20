@@ -36,7 +36,7 @@
 namespace icl{
   namespace io{
   
-    class ICL_IO_API ImageUndistortion{
+    class ICLIO_API ImageUndistortion{
       public:
       struct Impl; //!< internal impl
       
@@ -76,10 +76,10 @@ namespace icl{
     };
     
     /// overloaded ostream operator for ImageUndistortion instances 
-    ICL_IO_API std::istream &operator>>(std::istream &is, ImageUndistortion &udist);
+    ICLIO_API std::istream &operator>>(std::istream &is, ImageUndistortion &udist);
     
     /// overloaded istream operator for ImageUndistortion instances 
-    ICL_IO_API std::ostream &operator<<(std::ostream &s, const ImageUndistortion &udist);
+    ICLIO_API std::ostream &operator<<(std::ostream &s, const ImageUndistortion &udist);
   } // namespace io
 }
 

@@ -52,16 +52,16 @@ namespace icl{
       friend class ToggleButtonGUIWidget;
       
       /// creates a n empty button handle
-      ICL_QT_API ButtonHandle();
+      ICLQt_API ButtonHandle();
   
       /// create a new event with a given button id
-      ICL_QT_API ButtonHandle(QPushButton *b, GUIWidget *w);
+      ICLQt_API ButtonHandle(QPushButton *b, GUIWidget *w);
   
       /// check if this event/button was triggered
       /** @param reset if set to true the internal boolen variable
                        is set to false, so wasTriggered returns true
                        only if the button was triggered again */
-      ICL_QT_API bool wasTriggered(bool reset = true);
+      ICLQt_API bool wasTriggered(bool reset = true);
       
       /// trigger this event (sets the internal boolean variable to true)
       void trigger(bool execCallbacks = true){
@@ -72,10 +72,10 @@ namespace icl{
       }
       
       /// sets the internal boolean variable to false
-      ICL_QT_API void reset();
+      ICLQt_API void reset();
       
       /// returns this buttons id (uncommon)
-      ICL_QT_API const std::string &getID() const;
+      ICLQt_API const std::string &getID() const;
       
       private:
       

@@ -124,7 +124,7 @@ namespace icl{
         }
         \endcode
     **/
-    class ICL_IO_API FileWriter : public ImageOutput{
+    class ICLIO_API FileWriter : public ImageOutput{
       public:
       /// initializer class
       friend class FileWriterPluginMapInitializer;

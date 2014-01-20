@@ -62,11 +62,11 @@ namespace icl{
       public:
       
       /// Default constructor with useful default size
-      ComplexCoordinateFrameSceneObject(float axisLength=100,float axisThickness=5, 
+      ICLGeom_API ComplexCoordinateFrameSceneObject(float axisLength=100,float axisThickness=5, 
                                         bool withXYZLabels=true);
   
       /// Dynamic adaption
-      void setParams(float axisLength, float axisThickness, bool withXYZLabels=true);
+      ICLGeom_API void setParams(float axisLength, float axisThickness, bool withXYZLabels = true);
       
       /// returns current length of the axis'
       inline float getAxisLength() const { return axisLength; }

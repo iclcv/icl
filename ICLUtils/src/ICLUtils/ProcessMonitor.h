@@ -71,7 +71,7 @@ namespace icl{
       public:
       
       /// Utility struct, that is used to pass available information at once
-      struct ICLUtils_API Info{
+      struct Info{
         int pid;            // current process ID
         int numThreads;     // number of threads of the current process
         float cpuUsage;     // percent 0-numCPUs*100

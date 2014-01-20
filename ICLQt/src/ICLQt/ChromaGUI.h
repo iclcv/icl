@@ -61,7 +61,7 @@ namespace icl{
         segmenter, which can be combined with the chromaticity-space segmenter, and which 
         can also be adjusted using GUI components.
     **/
-    class ICL_QT_API ChromaGUI : public QObject, public GUI{
+    class ICLQt_API ChromaGUI : public QObject, public GUI{
       Q_OBJECT
       public:
       

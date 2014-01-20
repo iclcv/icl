@@ -42,7 +42,7 @@ namespace icl{
     /** For the mapping, two Camera instances are needed. The mapping computes
         the source color image positions for a given depth (x,y,d)-depth image pixel
     */
-    class ICL_Geom_API RGBDMapping{
+    class ICLGeom_API RGBDMapping{
       protected:
       Mat colorCamMatrix;        //!< color camera matrix
       utils::Array2D<Vec> depthCamRays; //!< depth camera view rays

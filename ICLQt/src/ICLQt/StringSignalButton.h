@@ -36,7 +36,7 @@
 namespace icl{
   namespace qt{
     /// internally used button that emits a signal with its text \ingroup UNCOMMON
-    class ICL_QT_API StringSignalButton : public QPushButton{
+    class ICLQt_API StringSignalButton : public QPushButton{
       Q_OBJECT
       public:
       /// Create a new StringSignalButton with given text and parent widget

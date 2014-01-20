@@ -51,11 +51,11 @@ namespace icl{
         or use the optimze call where world points are generated automatically and
         layout of image points must be rowwise.
         */
-    class ICL_IO_API IntrinsicCalibrator : public utils::Uncopyable{
+    class ICLIO_API IntrinsicCalibrator : public utils::Uncopyable{
       
       public:
       ///Simple struct for handle result of computation of intrinsics
-      struct ICL_IO_API Result : public ImageUndistortion{
+      struct ICLIO_API Result : public ImageUndistortion{
         
         /// create a null result
         Result(){}

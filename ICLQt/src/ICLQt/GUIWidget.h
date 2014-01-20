@@ -49,7 +49,7 @@ namespace icl{
     /** \endcond */
   
     /// Abstract class for GUI components \ingroup UNCOMMON
-    class ICL_QT_API GUIWidget : public QWidget, public utils::Uncopyable{
+    class ICLQt_API GUIWidget : public QWidget, public utils::Uncopyable{
       Q_OBJECT;
       public:
       enum layoutType{

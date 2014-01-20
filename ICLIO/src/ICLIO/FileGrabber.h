@@ -50,7 +50,7 @@ namespace icl{
         }
         \endcode
     **/
-    class ICL_IO_API FileGrabber : public Grabber {
+    class ICLIO_API FileGrabber : public Grabber {
       public:
 
         /// for the internal plugin concept

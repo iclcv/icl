@@ -40,7 +40,7 @@ namespace icl{
     
   
     /// Plugin class to read "png" images \ingroup FILEIO_G
-    class ICL_IO_API FileGrabberPluginPNG : public FileGrabberPlugin {
+    class ICLIO_API FileGrabberPluginPNG : public FileGrabberPlugin {
       std::vector<unsigned char> data;
       std::vector<unsigned char*> rows;
   

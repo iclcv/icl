@@ -243,7 +243,7 @@ namespace icl{
         \endcode
         \image html plot_widget_g.png
     */
-    class ICL_QT_API LowLevelPlotWidget : public virtual AbstractPlotWidget{
+    class ICLQt_API LowLevelPlotWidget : public virtual AbstractPlotWidget{
       class Data; //!< pimpl
       Data *data; //!< pimpl pointer
       

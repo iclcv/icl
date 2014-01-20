@@ -71,7 +71,7 @@ namespace icl{
           - same row-count
           - row-cout 3 or 4 (if it is 4, the last row is not used at all)
           - at least one column (however you'll need 3 columns for 6D mapping */
-      template<class T> ICL_Geom_API
+      template<class T> ICLGeom_API
       static math::FixedMatrix<T,4,4> map(const math::DynMatrix<T> &Xs, const math::DynMatrix<T> &Ys, MapMode mode=RigidBody) 
       throw (math::IncompatibleMatrixDimensionException,math::SingularMatrixException);
   
@@ -106,7 +106,7 @@ namespace icl{
       }
   
       /// utility function (instantiated for depth32f and depth64f)
-      template<class T> ICL_Geom_API
+      template<class T> ICLGeom_API
       static math::FixedMatrix<T,3,3> quaternion_to_rotation_matrix(T w, T x, T y, T z);
     };
   

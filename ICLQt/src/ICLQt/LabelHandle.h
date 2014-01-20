@@ -45,7 +45,7 @@ namespace icl{
     /** The gui label is created inside the GUI class, it can be used
         to make GUI-"label" components show anther text 
         @see GUI */
-    class ICL_QT_API LabelHandle : public GUIHandle<CompabilityLabel>{
+    class ICLQt_API LabelHandle : public GUIHandle<CompabilityLabel>{
       public:
       
       /// Create an empty handle

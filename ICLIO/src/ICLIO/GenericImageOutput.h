@@ -61,7 +61,7 @@ namespace icl{
         GenericGrabber backends for these types are also able to deserialize the images meta data
     */
     
-    class ICL_IO_API GenericImageOutput : public ImageOutput{
+    class ICLIO_API GenericImageOutput : public ImageOutput{
       std::string type;
       std::string description;
       utils::SmartPtr<ImageOutput> impl;

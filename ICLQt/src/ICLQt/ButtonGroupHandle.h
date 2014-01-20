@@ -49,37 +49,37 @@ namespace icl{
     class ButtonGroupHandle : public GUIHandle<RadioButtonVec> {
       public:
       /// Create an empty handle
-      ICL_QT_API ButtonGroupHandle(){}
+      ICLQt_API ButtonGroupHandle(){}
   
       /// Craete a valid handle
-      ICL_QT_API ButtonGroupHandle(RadioButtonVec *buttons, GUIWidget *w) : GUIHandle<RadioButtonVec>(buttons, w){ }
+      ICLQt_API ButtonGroupHandle(RadioButtonVec *buttons, GUIWidget *w) : GUIHandle<RadioButtonVec>(buttons, w){ }
       
       /// select a button with given index
-      ICL_QT_API void select(int id);
+      ICLQt_API void select(int id);
       
       /// get the selected index
-      ICL_QT_API int getSelected() const;
+      ICLQt_API int getSelected() const;
   
       /// get the text of the currently selected button
-      ICL_QT_API std::string getSelectedText() const;
+      ICLQt_API std::string getSelectedText() const;
       
       /// returns the text of a button with given index
-      ICL_QT_API std::string getText(int id) const;
+      ICLQt_API std::string getText(int id) const;
       
       /// sets the text of a button with index ot a given text
-      ICL_QT_API void setText(int id, const std::string &text);
+      ICLQt_API void setText(int id, const std::string &text);
       
       /// disables all radio buttons
-      ICL_QT_API void disable();
+      ICLQt_API void disable();
       
       /// enables all radio buttons
-      ICL_QT_API void enable();
+      ICLQt_API void enable();
       
       /// disables button at index
-      ICL_QT_API void disable(int index);
+      ICLQt_API void disable(int index);
       
       /// enables button at index
-      ICL_QT_API void enable(int index);
+      ICLQt_API void enable(int index);
       
       private:
       /// utility function (number of elements)

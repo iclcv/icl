@@ -139,7 +139,7 @@ int main(int n, char **ppc){
     \image html drawing-example.png "Screenshot of sample application"
 </TD></TR></TABLE>
 */
-    class ICL_QT_API ICLDrawWidget : public ICLWidget {
+    class ICLQt_API ICLDrawWidget : public ICLWidget {
       template<class T> 
       static inline void icl_given_type_has_no_int_index_operator(const T &t){
         t[0];

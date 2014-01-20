@@ -44,7 +44,7 @@ namespace icl{
     /// Extension of the associative container MultiTypeMap \ingroup UNCOMMON
     /** Adds an index operator[string] for direct access to contained values
      */
-    class ICL_QT_API DataStore : public utils::MultiTypeMap{
+    class ICLQt_API DataStore : public utils::MultiTypeMap{
       public:
   
       /// Internal Exception type thrown if operator[] is given an unknown index string
@@ -60,7 +60,7 @@ namespace icl{
       
       
       /// Arbitrary Data encapsulation type
-      class ICL_QT_API Data{
+      class ICLQt_API Data{
         
         /// internally reference DataStore entry
         DataArray *data;

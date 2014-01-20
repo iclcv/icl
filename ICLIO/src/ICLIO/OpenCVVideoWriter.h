@@ -44,7 +44,7 @@
 namespace icl{
   namespace io{
   
-    class ICL_IO_API OpenCVVideoWriter :public ImageOutput{
+    class ICLIO_API OpenCVVideoWriter :public ImageOutput{
       private:
       ///OpenCV VideoWriter struct
   	CvVideoWriter *writer;

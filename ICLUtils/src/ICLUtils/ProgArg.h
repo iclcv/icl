@@ -39,7 +39,7 @@ namespace icl{
   namespace utils{
   
     /// Programm argument environment exception type \ingroup PA \ingroup EXCEPT
-    struct ICLUtils_API ProgArgException : public ICLException{
+    struct ProgArgException : public ICLException{
       ProgArgException(const std::string &func, const std::string &what):
       ICLException(func+":"+what){}
     };
@@ -47,10 +47,10 @@ namespace icl{
     
     /** \cond */
     // internally used programm argument data type
-    class ICLUtils_API ProgArgData{
-      protected:
-        friend ICLUtils_API const std::string &pa_subarg_internal(const ProgArgData &pa) throw (ProgArgException);
-        friend ICLUtils_API bool pa_defined_internal(const ProgArgData &pa) throw (ProgArgException);
+    class ProgArgData{
+    protected:
+      friend ICLUtils_API const std::string &pa_subarg_internal(const ProgArgData &pa) throw (ProgArgException);
+      friend ICLUtils_API bool pa_defined_internal(const ProgArgData &pa) throw (ProgArgException);
       std::string id;
       int subargidx;
       bool danglingOnly;
@@ -77,7 +77,7 @@ namespace icl{
     
     /// Programm argument utility class \ingroup PA
     /** @see icl::pa(const std::string&,unsigned int) */
-    class ICLUtils_API ProgArg : public ProgArgData{
+    class ProgArg : public ProgArgData{
       /// private constructor
       /** Use the functions icl::utils::pa(const std::string&,unsigned int) and
           icl::utils::pa(unsigned int,bool) to create an instance of this 
@@ -102,10 +102,10 @@ namespace icl{
       
       /// returns the count of actually given sub arguments
       /** If this argument was not given, this function returns 0.*/
-      int n() const throw (ProgArgException);
+      ICLUtils_API int n() const throw (ProgArgException);
 
       /// returns the given sub-argument in shape of an utils::Any
-      Any operator[](int subArgIdx) const throw (ProgArgException);
+      ICLUtils_API Any operator[](int subArgIdx) const throw (ProgArgException);
   
       /// this is the main conversion function. It returns the associated sub argument as given T
       /** If T is bool, this operator returns whether the arg was given rather than
@@ -114,7 +114,12 @@ namespace icl{
       inline operator T() const throw (ProgArgException){
         return parse<T>(pa_subarg_internal(*this));
       }
-  
+
+      /// negation operator
+      inline bool operator!() const throw (ProgArgException){
+        return !pa_defined_internal(*this);
+      }
+
       /// this template function can be used to explicitly cast a program argument into a given type
       template<class T>
       inline T as() const throw (ProgArgException){

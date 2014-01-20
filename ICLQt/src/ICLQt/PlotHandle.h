@@ -38,7 +38,7 @@ namespace icl{
   namespace qt{
     
     /// Handle class for image components \ingroup HANDLES
-    class ICL_QT_API PlotHandle : public GUIHandle<PlotWidget>{
+    class ICLQt_API PlotHandle : public GUIHandle<PlotWidget>{
       public:
       /// Create an empty handle
       PlotHandle(){}

@@ -43,7 +43,7 @@ namespace icl{
   namespace io{
 
     /// Grabber class that uses OpenCV's grabbing function to grab camera images
-    class ICL_IO_API OpenCVCamGrabber : public Grabber{
+    class ICLIO_API OpenCVCamGrabber : public Grabber{
       private:
         /// Wrapped Device struct
         CvCapture *cvc;

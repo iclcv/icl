@@ -37,7 +37,7 @@ namespace icl{
   namespace geom{
     
     /// Utility structure for calculation of view-ray / plane intersections
-    struct ICL_Geom_API PlaneEquation{
+    struct ICLGeom_API PlaneEquation{
   
       /// Constructor with given offset and direction vector
       explicit PlaneEquation(const Vec &offset=Vec(), const Vec &normal=Vec());
@@ -50,7 +50,7 @@ namespace icl{
     };
   
     /// ostream operator
-    ICL_Geom_API std::ostream &operator<<(std::ostream &s, const PlaneEquation &p);
+    ICLGeom_API std::ostream &operator<<(std::ostream &s, const PlaneEquation &p);
   } // namespace geom
 }
 
