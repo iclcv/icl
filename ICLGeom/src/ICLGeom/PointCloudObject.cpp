@@ -124,13 +124,14 @@ namespace icl{
       //      SHOW(size);
       m_organized = (size.height > 0);
       m_dim2D = size;
-      m_vertices.resize(m_organized ? size.getDim() : size.width,Vec(0,0,0,1));
+      const size_t len = m_organized ? size.getDim() : size.width;
+      m_vertices.resize(len,Vec(0,0,0,1));
       
       if(m_hasColors){
-        m_vertexColors.resize(size.getDim(),Vec(0,0,0,1));
+        m_vertexColors.resize(len,Vec(0,0,0,1));
       }
       if(m_hasNormals){
-        m_normals.resize(size.getDim(),Vec(0,0,0,1));
+        m_normals.resize(len,Vec(0,0,0,1));
       }
     }
   
