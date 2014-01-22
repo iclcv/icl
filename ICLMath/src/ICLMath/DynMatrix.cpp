@@ -369,7 +369,7 @@ namespace icl{
         }catch(const ICLException &ex){
           return pinv(false,zeroThreshold);
         }
-        DynMatrix S(s.rows(),s.rows(),0.0f);
+        DynMatrix S(U.cols(), V.rows(),0.0f);
         for(unsigned int i=0;i<s.rows();++i){
           S(i,i) = (fabs(s[i]) > zeroThreshold) ? 1.0/s[i] : 0;
         }
