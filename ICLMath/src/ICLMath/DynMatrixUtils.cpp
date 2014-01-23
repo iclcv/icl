@@ -1458,9 +1458,9 @@ namespace icl{
 
     template<>
     ICLMath_API void svd_dyn(const DynMatrix<icl32f> &A, DynMatrix<icl32f> &U, DynMatrix<icl32f> &s, DynMatrix<icl32f> &V) throw (ICLException){
-      U.setBounds(A.cols(), A.rows());
+      U.setBounds(A.rows(), A.rows());
       V.setBounds(A.cols(), A.cols());
-      s.setBounds(1,A.cols());
+      s.setBounds(1, iclMin(A.rows(), A.cols()));
 
   #if defined HAVE_EIGEN3 && !defined HAVE_IPP
       svd_eigen(A,U,s,V);

@@ -34,7 +34,9 @@
 //#include <sched.h>
 #include <pthread.h>
 #ifndef ICL_SYSTEM_APPLE
-#ifndef ICL_SYSTEM_WINDOWS
+#ifdef ICL_SYSTEM_WINDOWS
+  #include <Windows.h>
+#else
   #include <unistd.h>
 #endif
 #endif
@@ -106,8 +108,7 @@ namespace icl{
   	#ifndef ICL_SYSTEM_WINDOWS
       ::usleep(usec);
   	#else
-  	//TODO is this really ok?
-  	sleep(usec);
+  	  Sleep(usec/1000);
   	#endif
     }
   
@@ -115,16 +116,14 @@ namespace icl{
   #ifndef ICL_SYSTEM_WINDOWS
       usleep(msecs*1000);
   #else
-  	  //System::Threading::Thread::Sleep(msecs);
-      sleep(msecs);
+      Sleep(msecs);
   #endif
     }
     void Thread::sleep(float secs){
   #ifndef ICL_SYSTEM_WINDOWS
       ::usleep((long)secs*1000000);
   #else
-      sleep(secs*1000);
-  //	  System::Threading::Thread::Sleep(secs*1000);
+      Sleep(secs*1000);
   #endif
     }
   
