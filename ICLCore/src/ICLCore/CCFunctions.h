@@ -550,5 +550,8 @@ namespace icl{
   
     /// converts given (r,g,b) pixel into the RG-chroma format
     void cc_util_rgb_to_chroma(const icl32f r, const icl32f g, const icl32f b, icl32f &chromaR, icl32f &chromaG);
+
+    /// converts given (r,g,b) pixel into the Lab format
+    void cc_util_rgb_to_lab(const icl32f &r, const icl32f &g, const icl32f &b, icl32f &L, icl32f &A, icl32f &B);
   } // namespace core
 }
