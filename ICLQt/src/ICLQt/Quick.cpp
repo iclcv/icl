@@ -57,6 +57,14 @@
 #include <QtGui/QFileDialog>
 #include <QtGui/QInputDialog>
 #include <ICLQt/Application.h>
+
+#include <ICLQt/GUI.h>
+#include <ICLQt/GUIComponents.h>
+#include <ICLQt/GUIWidget.h>
+
+#include <QtGui/QInputDialog>
+#include <QtGui/QVBoxLayout>
+#include <QtGui/QPushButton>
 #endif
 
 #include <ICLCore/LineSampler.h>
@@ -65,6 +73,8 @@
 
 #include <fstream>
 #include <cstdio>
+
+
 
 using namespace icl::utils;
 using namespace icl::math;
@@ -93,6 +103,53 @@ namespace icl{
   
   #ifdef HAVE_QT
     namespace{
+      
+      struct CustomGetTextDialog : public QDialog{
+        static GUI gui;
+
+        std::string &dst;
+        CustomGetTextDialog(QWidget *parent, const std::string &text, const std::string &title, 
+                            const std::string &initialText, const ImgBase *image, std::string &dst):
+          QDialog(parent, Qt::Dialog),dst(dst){
+          setWindowTitle(title.c_str());
+          setModal(false);//true);
+
+          
+          if(!gui.getRootWidget()){
+            gui << Image().handle("image").size(16,12);
+            std::vector<std::string> lines = tok(text,"\n");
+            for(size_t i=0;i<lines.size();++i){
+              gui << Label(lines[i]);
+            }
+            gui << String(initialText,1000).handle("text")
+                 << Button("done").handle("done")
+                 << Button("cancel").handle("cancel")
+                 << Create();
+          
+            gui["image"] = image;
+
+            GUI::ComplexCallback cbf = function(this,&CustomGetTextDialog::cb);
+            gui.registerCallback(cbf,"text,done,cancel");
+
+            setLayout(new QVBoxLayout);
+          }
+          layout()->addWidget(gui.getRootWidget());
+        }            
+        void cb(const std::string &src){
+          layout()->removeWidget(gui.getRootWidget());
+          gui.removeCallbacks("text,done,cancel");
+          gui.hide();
+          int ret = 0;
+          if(src == "done" || src == "text"){
+            dst = gui["text"].as<std::string>();                
+            ret = 1;
+          }
+          done(ret);
+        }
+      };
+      
+      GUI CustomGetTextDialog::gui;
+      
       struct IOContext{
         const std::string &filter;
         const std::string &caption;
@@ -108,6 +165,7 @@ namespace icl{
         void *parentWidget;
         std::string text;
         bool except;
+        const ImgBase *visImage;
       };
 
       
@@ -133,9 +191,18 @@ namespace icl{
       }
       void do_gettext(TextIOContext &c){
         bool ok = false;
-        QString t = QInputDialog::getText((QWidget*)c.parentWidget, c.caption.c_str(), 
-                                          c.message.c_str(), QLineEdit::Normal, 
-                                          c.initialText.c_str(), &ok);
+        QString t;
+        if(c.visImage){
+          throw ICLException("Sorry displaying images in a dialog does not work yet (TODO: implement this using a qimage view)");
+          std::string dst;
+          CustomGetTextDialog dialog((QWidget*)c.parentWidget, c.message, c.caption, c.initialText, c.visImage, dst);
+          int e = dialog.exec();
+          if(e) t = dst.c_str();
+          SHOW(e);
+        }else
+          t = QInputDialog::getText((QWidget*)c.parentWidget, c.caption.c_str(), 
+                                    c.message.c_str(), QLineEdit::Normal, 
+                                    c.initialText.c_str(), &ok);
         if(!ok){
           c.except = true;
           c.text = "";
@@ -186,9 +253,12 @@ namespace icl{
     }
 
     std::string textInputDialog(const std::string &caption, const std::string &message,
-                                const std::string &initialText, void *parentWidget) throw (utils::ICLException){
-      TextIOContext c = { caption, message, initialText, parentWidget, std::string(), false };  
+                                const std::string &initialText, void *parentWidget,
+                                core::ImgBase *visImage) throw (utils::ICLException){
+      TextIOContext c = { caption, message, initialText, parentWidget, std::string(), false, visImage };  
+
       ICLApp::instance()->executeInGUIThread<TextIOContext&>(do_gettext, c, true);
+
       if(c.except){
         throw ICLException("text input via 'textInputDialog' was aborted");
       }

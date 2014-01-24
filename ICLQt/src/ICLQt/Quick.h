@@ -79,11 +79,15 @@ namespace icl{
                                void *parentWidget=0) throw (utils::ICLException);
 
     /// uses Qt to spawn a text input dialog
-    /** throws an exception if cancel was pressed. The function is thread-safe and can savely be called from a working thread */
+    /** throws an exception if cancel was pressed. The function is thread-safe and can savely be 
+        called from a working thread. If the visImage pointer is not null, it will be visualized 
+        in the dialog */
     std::string textInputDialog(const std::string &caption="text ...",
                                 const std::string &message="please write your text here",
                                 const std::string &initialText="",
-                                void *parentWidget=0) throw (utils::ICLException);
+                                void *parentWidget=0,
+                                core::ImgBase *visImage=0) throw (utils::ICLException);
+
    
     /// executes the given command as a child process and returns it output
     /** Internally, popen is used */
