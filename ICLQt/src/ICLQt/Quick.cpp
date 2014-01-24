@@ -56,10 +56,16 @@
 #include <QtGui/QApplication>
 #include <QtGui/QFileDialog>
 #include <QtGui/QInputDialog>
+#include <QtGui/QGraphicsView>
+#include <QtGui/QGraphicsScene>
+#include <QtGui/QGraphicsPixmapItem>
+#include <QtGui/QWheelEvent>
 #include <ICLQt/Application.h>
 
 #include <ICLQt/GUI.h>
 #include <ICLQt/GUIComponents.h>
+#include <ICLQt/BoxHandle.h>
+#include <ICLQt/ContainerGUIComponents.h>
 #include <ICLQt/GUIWidget.h>
 
 #include <QtGui/QInputDialog>
@@ -103,52 +109,87 @@ namespace icl{
   
   #ifdef HAVE_QT
     namespace{
+
+      struct SimpleQImageWidget : public QGraphicsView{
+        SimpleQImageWidget(const ImgBase *image, QWidget *parent):QGraphicsView(parent){
+          setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+          QGraphicsScene* scene = new QGraphicsScene(this);
+          setScene(scene);
+          QImageConverter cvt(image);
+          QGraphicsPixmapItem *item = new QGraphicsPixmapItem(QPixmap::fromImage(*cvt.getQImage()));
+          scene->addItem(item);
+          setSceneRect(0,0,image->getWidth(), image->getHeight());
+          setDragMode(ScrollHandDrag);
+          scale(0.5,0.5);
+          setBackgroundBrush(QColor(0,0,0));
+        }
+        void wheelEvent(QWheelEvent* event) {
+          setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+          double scaleFactor = 1.15;
+          if(event->delta() > 0) {
+            // Zoom in
+            scale(scaleFactor, scaleFactor);
+          } else {
+            // Zooming out
+            scale(1.0 / scaleFactor, 1.0 / scaleFactor);
+          }
+        }
+      };
       
       struct CustomGetTextDialog : public QDialog{
-        static GUI gui;
+        GUI gui;
 
         std::string &dst;
         CustomGetTextDialog(QWidget *parent, const std::string &text, const std::string &title, 
                             const std::string &initialText, const ImgBase *image, std::string &dst):
           QDialog(parent, Qt::Dialog),dst(dst){
+          setContentsMargins(1,1,1,1);
+          gui = HBox();
+        
+
           setWindowTitle(title.c_str());
           setModal(false);//true);
 
-          
-          if(!gui.getRootWidget()){
-            gui << Image().handle("image").size(16,12);
-            std::vector<std::string> lines = tok(text,"\n");
-            for(size_t i=0;i<lines.size();++i){
-              gui << Label(lines[i]);
-            }
-            gui << String(initialText,1000).handle("text")
-                 << Button("done").handle("done")
-                 << Button("cancel").handle("cancel")
-                 << Create();
-          
-            gui["image"] = image;
-
-            GUI::ComplexCallback cbf = function(this,&CustomGetTextDialog::cb);
-            gui.registerCallback(cbf,"text,done,cancel");
-
-            setLayout(new QVBoxLayout);
+          gui << VBox().handle("box").size(16,12);
+          VBox rest;
+          std::vector<std::string> lines = tok(text,"\n");
+          for(size_t i=0;i<lines.size();++i){
+            rest << Label(lines[i]);
           }
+          for(size_t i = lines.size();i < 6;++i){
+            rest << Label("");
+          }
+          rest <<VBox().handle("stretch");
+          rest << String(initialText,1000).handle("text")
+              << ( HBox() 
+                   << Button("done").handle("done")
+                   << Button("cancel").handle("cancel")
+                 );
+          gui << rest  << Create();
+          
+          GUI::ComplexCallback cbf = function(this,&CustomGetTextDialog::cb);
+          gui.registerCallback(cbf,"text,done,cancel");
+          
+          BoxHandle box = gui.get<BoxHandle>("box");
+          gui.get<BoxHandle>("stretch")->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+          box.add(new SimpleQImageWidget(image,*box));
+          
+          setLayout(new QVBoxLayout);
+          layout()->setContentsMargins(1,1,1,1);
           layout()->addWidget(gui.getRootWidget());
-        }            
+        }
+
         void cb(const std::string &src){
-          layout()->removeWidget(gui.getRootWidget());
           gui.removeCallbacks("text,done,cancel");
           gui.hide();
           int ret = 0;
           if(src == "done" || src == "text"){
-            dst = gui["text"].as<std::string>();                
+            dst = gui["text"].as<std::string>();   
             ret = 1;
           }
           done(ret);
         }
       };
-      
-      GUI CustomGetTextDialog::gui;
       
       struct IOContext{
         const std::string &filter;
@@ -190,24 +231,31 @@ namespace icl{
         }
       }
       void do_gettext(TextIOContext &c){
-        bool ok = false;
-        QString t;
+
+
         if(c.visImage){
-          throw ICLException("Sorry displaying images in a dialog does not work yet (TODO: implement this using a qimage view)");
+          //          throw ICLException("Sorry displaying images in a dialog does not work yet (TODO: implement this using a qimage view)");
           std::string dst;
           CustomGetTextDialog dialog((QWidget*)c.parentWidget, c.message, c.caption, c.initialText, c.visImage, dst);
           int e = dialog.exec();
-          if(e) t = dst.c_str();
-          SHOW(e);
-        }else
-          t = QInputDialog::getText((QWidget*)c.parentWidget, c.caption.c_str(), 
-                                    c.message.c_str(), QLineEdit::Normal, 
-                                    c.initialText.c_str(), &ok);
-        if(!ok){
-          c.except = true;
-          c.text = "";
+          if(e){
+            c.text = dst.c_str();
+            c.except = false;
+          }else{
+            c.except = true;
+            c.text = "";
+          }
         }else{
-          c.text = t.toLatin1().data();
+          bool ok = false;
+          QString t = QInputDialog::getText((QWidget*)c.parentWidget, c.caption.c_str(), 
+                                            c.message.c_str(), QLineEdit::Normal, 
+                                            c.initialText.c_str(), &ok);
+          if(!ok){
+            c.except = true;
+            c.text = "";
+          }else{
+            c.text = t.toLatin1().data();
+          }
         }
       }
     }
