@@ -220,7 +220,7 @@ namespace icl {
 
 
     MorphologicalOp::~MorphologicalOp(){
-      ICL_DELETE(m_pcMask);
+      ICL_DELETE_ARRAY(m_pcMask);
       ICL_DELETE(m_openingAndClosingBuffer);
       ICL_DELETE(m_gradientBorderBuffer_1);
       ICL_DELETE(m_gradientBorderBuffer_2);
@@ -533,7 +533,7 @@ namespace icl {
         NeighborhoodOp::setMask (maskSize);
       }
   
-      ICL_DELETE(m_pcMask);
+      ICL_DELETE_ARRAY(m_pcMask);
       m_pcMask = new icl8u[maskSize.getDim()];
       if(pcMask){
         std::copy(pcMask,pcMask+maskSize.getDim(),m_pcMask);
