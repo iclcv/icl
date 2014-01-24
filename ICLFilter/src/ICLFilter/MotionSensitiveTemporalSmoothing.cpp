@@ -175,19 +175,19 @@ void MotionSensitiveTemporalSmoothing::apply(const ImgBase *poSrc,
 	}
 
 	if (poSrc->getDepth() == depth8u) {
-		Img8u src = *poSrc->as8u();
+		Img8u &src = *poSrc->as8u();
 		Img8u &dst = *(*ppoDst)->as8u();
 		for (int i = 0; i < numChannels; i++) {
-			Img8u in = (*src.selectChannel(i));
-			Img8u out = clPointer.at(i)->temporalSmoothingC(in);
+			SmartPtr<Img8u> in = src.selectChannel(i);
+			Img8u out = clPointer.at(i)->temporalSmoothingC(*in);
 			dst.replaceChannel(i, &out, 0);
 		}
 	} else {
-		Img32f src = *poSrc->as32f();
+		Img32f &src = *poSrc->as32f();
 		Img32f &dst = *(*ppoDst)->as32f();
 		for (int i = 0; i < numChannels; i++) {
-			Img32f in = (*src.selectChannel(i));
-			Img32f out = clPointer.at(i)->temporalSmoothingF(in);
+			SmartPtr<Img32f> in = src.selectChannel(i);
+			Img32f out = clPointer.at(i)->temporalSmoothingF(*in);
 			dst.replaceChannel(i, &out, 0);
 		}
 	}
