@@ -63,7 +63,6 @@ SET(SOURCES src/ICLUtils/ConfigFile.cpp
 	    src/ICLUtils/Thread.cpp
 	    src/ICLUtils/Time.cpp
 	    src/ICLUtils/Timer.cpp)
-            #src/ICLUtils/IppInterface.cpp)
 
 SET(HEADERS src/ICLUtils/Any.h
             src/ICLUtils/Array2D.h
@@ -125,8 +124,12 @@ SET(HEADERS src/ICLUtils/Any.h
 	    src/ICLUtils/VisualizationDescription.h
 	    src/ICLUtils/XML.h
             src/ICLUtils/SSEUtils.h
-            src/ICLUtils/SSETypes.h
-            src/ICLUtils/IppInterface.h)
+            src/ICLUtils/SSETypes.h)
+
+IF(DL_FOUND)
+  LIST(APPEND SOURCES src/ICLUtils/IppInterface.cpp)
+  LIST(APPEND HEADERS src/ICLUtils/IppInterface.h)
+ENDIF()
 
 INCLUDE_DIRECTORIES(BEFORE src 
                            "${CMAKE_BINARY_DIR}/src")
@@ -137,7 +140,8 @@ ADD_LIBRARY(ICLUtils SHARED ${SOURCES} ${HEADERS})
 LIST(REMOVE_DUPLICATES REQUIRED_LIBRARIES_LIST)
 TARGET_LINK_LIBRARIES(ICLUtils ${REQUIRED_LIBRARIES_LIST}
                                ${IPP_LIBRARIES}
-			       ${OPENCL_LIBRARIES})
+			       ${OPENCL_LIBRARIES}
+             ${DL_LIBRARIES})
 
 SET_TARGET_PROPERTIES(ICLUtils
                       PROPERTIES 

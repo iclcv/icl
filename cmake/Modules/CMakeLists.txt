@@ -2,6 +2,7 @@ SET(CMAKE_MODULE_PATH "${ICL_CMAKE_MODULE_PATH}")
 MESSAGE(STATUS "CMake modules will be installed to: ${CMAKE_MODULE_PATH}")
 
 INSTALL(FILES FindEigen3.cmake
+              FindDL.cmake
               FindGLEW.cmake
 	      FindIPP.cmake
 	      FindLibDC.cmake
