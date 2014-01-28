@@ -62,7 +62,8 @@ SET(SOURCES src/ICLUtils/ConfigFile.cpp
 	    src/ICLUtils/TextTable.cpp
 	    src/ICLUtils/Thread.cpp
 	    src/ICLUtils/Time.cpp
-	    src/ICLUtils/Timer.cpp)
+	    src/ICLUtils/Timer.cpp
+            src/ICLUtils/IppInterface.cpp)
 
 SET(HEADERS src/ICLUtils/Any.h
             src/ICLUtils/Array2D.h
@@ -124,7 +125,8 @@ SET(HEADERS src/ICLUtils/Any.h
 	    src/ICLUtils/VisualizationDescription.h
 	    src/ICLUtils/XML.h
             src/ICLUtils/SSEUtils.h
-            src/ICLUtils/SSETypes.h)
+            src/ICLUtils/SSETypes.h
+            src/ICLUtils/IppInterface.h)
 
 INCLUDE_DIRECTORIES(BEFORE src 
                            "${CMAKE_BINARY_DIR}/src")
