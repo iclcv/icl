@@ -62,8 +62,8 @@ SET(SOURCES src/ICLUtils/ConfigFile.cpp
 	    src/ICLUtils/TextTable.cpp
 	    src/ICLUtils/Thread.cpp
 	    src/ICLUtils/Time.cpp
-	    src/ICLUtils/Timer.cpp
-            src/ICLUtils/IppInterface.cpp)
+	    src/ICLUtils/Timer.cpp)
+            #src/ICLUtils/IppInterface.cpp)
 
 SET(HEADERS src/ICLUtils/Any.h
             src/ICLUtils/Array2D.h
