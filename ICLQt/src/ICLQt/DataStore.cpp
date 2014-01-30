@@ -447,8 +447,8 @@ INST_OTHER_TYPES
     TO_NUM(ButtonHandle,dst=(*src)->isChecked());
 
     // CheckBoxHandle
-    FROM_TO_NUM(CheckBoxHandle,dst->setChecked(src),dst=(*src)->isChecked());
-    FROM_TO_STR(CheckBoxHandle,dst=str((*src)->isChecked()),dst->setChecked(parse<bool>(src)));
+    FROM_TO_NUM(CheckBoxHandle,dst->setChecked(src),dst=src.isChecked());
+    FROM_TO_STR(CheckBoxHandle,dst=str(src.isChecked()),dst.doCheck(parse<bool>(src)));
 
     
     // StringHandle
