@@ -1033,7 +1033,7 @@ namespace icl{
       FixedMatrix<T,4,4> m = FixedMatrix<T,4,4>::id();
       m(3,0)=dx;
       m(3,1)=dy;
-      m(3,2)=dy;
+      m(3,2)=dz;
       return m;
     }
   

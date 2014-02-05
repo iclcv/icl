@@ -33,6 +33,7 @@
 #include <ICLGeom/Scene.h>
 #include <ICLMarkers/FiducialDetector.h>
 #include <ICLGeom/GridSceneObject.h>
+#include <ICLMarkers/FiducialDetectorPlugin.h>
 
 #include <QtGui/QMessageBox>
 #include <fstream>
@@ -479,7 +480,7 @@ void init(){
       Vec3 o,dx,dy,dx1,dy1;
       Size s(1,1);
       Size32f ms;
-      Range32s r;
+      std::vector<int> markerIDs;
       MarkerType t;
       bool haveCorners;
       try{
@@ -491,52 +492,60 @@ void init(){
           dy = parse<Vec3>(cfg["y-direction"]);
           dx1 = dx.normalized();
           dy1 = dy.normalized();
-          r = parse<Range32s>(cfg["marker-ids"]);
-          ICLASSERT_THROW(r.getLength()+1 == s.getDim(), ICLException("error loading configuration file at given grid " + str(i)
-                                                                      + ": given size " +str(s) + " is not compatible to "
-                                                                      + "given marker ID range " +str(r) ));
-        }else{
-          r.minVal = r.maxVal = cfg["marker-id"].as<int>();
-        }
 
+          markerIDs = FiducialDetectorPlugin::parse_list_str(cfg["marker-ids"].as<std::string>());
+
+          ICLASSERT_THROW((int)markerIDs.size() == s.getDim(), 
+                          ICLException("error loading configuration file at given grid " + str(i)
+                                       + ": given size " +str(s) + " is not compatible to "
+                                       + "given marker ID range "  + 
+                                       cfg["marker-ids"].as<std::string>()));
+        }else{
+          markerIDs.push_back(cfg["marker-id"].as<int>());
+        }
+        
         if(!fds[t]) fds[t] = create_new_fd(t,configurables,iin);
         try{ 
           ms = parse<Size32f>(cfg["marker-size"]); 
         } catch(...){}
 
-        fds[t]->loadMarkers(r,t==AMOEBA ? ParamList() : ParamList("size",ms));
+        fds[t]->loadMarkers(cfg["marker-ids"].as<std::string>(),t==AMOEBA ? ParamList() : ParamList("size",ms));
 
         if(mode == ExtractGrids){
-          std::cout << "** registering grid with " << (t?"amoeba":"bch") << " marker range " << r << std::endl; 
+          std::cout << "** registering grid with " << (t?"amoeba":"bch") << " marker ids: {" 
+                    << markerIDs.front() << ", ..., " << markerIDs.back() << "}"  << std::endl; 
         }else{
-          std::cout << "** registering single " << (t?"amoeba":"bch") << " marker with id " << r.minVal << std::endl; 
+          std::cout << "** registering single " << (t?"amoeba":"bch") << " marker with id " << markerIDs[0] << std::endl; 
         }
+
         
-        int id = r.minVal;
+        int idIdx = 0;
         std::vector<PossibleMarker> &lut = possible[t];
         //  std::vector<Vec> vertices;
         
         haveCorners = (mode==ExtractGrids) && (ms != Size32f::null) && (t==BCH);
 
         for(int y=0;y<s.height;++y){
-          for(int x=0;x<s.width;++x){
+          for(int x=0;x<s.width;++x, ++idIdx){
+            int id = markerIDs[idIdx];
+            if(id == -1) continue;
             Vec3 v = o+dx*x +dy*y;
             if(lut[id].loaded) throw ICLException("error loading configuration file at given grid " + str(i)
-                                                 +" : the marker ID " + str(id) + " was already used before");
+                                                  +" : the marker ID " + str(id) + " was already used before");
             if(haveCorners){
               Vec3 ul = v + dx1*(ms.width/2) - dy1*(ms.height/2);
               Vec3 ur = v + dx1*(ms.width/2) + dy1*(ms.height/2);
               Vec3 ll = v - dx1*(ms.width/2) + dy1*(ms.height/2);
               Vec3 lr = v - dx1*(ms.width/2) - dy1*(ms.height/2);
               
-              lut[id++] = PossibleMarker(c,
-                                         v.resize<1,4>(1),
-                                         ul.resize<1,4>(1),
-                                         ur.resize<1,4>(1),
-                                         ll.resize<1,4>(1),
-                                         lr.resize<1,4>(1));
+              lut[id] = PossibleMarker(c,
+                                       v.resize<1,4>(1),
+                                       ul.resize<1,4>(1),
+                                       ur.resize<1,4>(1),
+                                       ll.resize<1,4>(1),
+                                       lr.resize<1,4>(1));
             }else{
-              lut[id++] = PossibleMarker(c,Vec(v[0],v[1],v[2],1));
+              lut[id] = PossibleMarker(c,Vec(v[0],v[1],v[2],1));
             }
             //            vertices.push_back(cf.transforms[0].transform*Vec(v[0],v[1],v[2],1));
           }
