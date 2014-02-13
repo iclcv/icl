@@ -651,7 +651,7 @@ namespace icl{
         setup_pixel_transfer(s,s,s,s,b,b,b,b);
         
       }
-  
+
       void uploadTextureData(){
         ICLASSERT_THROW(data.getDim(),ICLException("unable to draw GLImg: no texture data available"));
         if(!isDirty()) return;

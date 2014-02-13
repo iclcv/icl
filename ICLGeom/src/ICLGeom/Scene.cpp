@@ -55,6 +55,7 @@
 #include <ICLQt/GUI.h>
 #include <ICLQt/ContainerGUIComponents.h>
 #include <ICLQt/IconFactory.h>
+#include <QGLPixelBuffer.h>
 #endif
 
 #ifdef HAVE_GLX
@@ -68,6 +69,7 @@
 #endif
 
 #include <ICLQt/Quick.h>
+#include <ICLQt/QImageConverter.h>
 #include <ICLGeom/GeomDefs.h>
 #include <ICLUtils/StringUtils.h>
 
@@ -430,18 +432,14 @@ namespace icl{
       addProperty("info.Objects in the Scene","info","",0);
     }
     Scene::~Scene(){
-  #ifdef HAVE_GLX
   #ifdef HAVE_QT
-#if 0
-      freeAllPBuffers();
-#endif
       for(unsigned int i = 0; i < ShaderUtil::COUNT; i++) {
         delete m_shaders[i];
       }
       m_fboData->freeShadowFBO();
+      freeAllPBuffers();
       delete m_renderSettings;
       delete m_fboData;
-  #endif
   #endif
     }
     Scene::Scene(const Scene &scene){
@@ -466,11 +464,7 @@ namespace icl{
       for(unsigned int i=0;i<m_glCallbacks.size();++i){
         m_glCallbacks[i] = SmartPtr<GLCallback>(new GLCallback(scene.m_glCallbacks[i]->cameraIndex,this));
       }
-  #ifdef HAVE_GLX
-#if 0
       freeAllPBuffers();
-#endif
-  #endif
 
   #endif
 
@@ -1000,7 +994,7 @@ namespace icl{
    }
 
    void Scene::renderScene(int camIndex, ICLDrawWidget3D *widget) const{
-
+      glewInit();
       Mutex::Locker l(this);
       //update Sceneinfo
       ((Configurable*)this)->setPropertyValue("info.FPS",m_fps.getFPSString());
@@ -1615,94 +1609,44 @@ namespace icl{
       }
     }
 
-
-
-#if 0
-  #ifdef HAVE_QT
-  #ifdef HAVE_GLX
-
     struct Scene::PBuffer{
-
-      static Mutex glxMutex; // glx context's are not thread-safe -> so offscreen rendering performed in an atomic code segment
-
-      static Display *getDisplay(){
-        static Display *d = XOpenDisplay(getenv("DISPLAY"));
-        // this leads to errors due to missing x-server connection
-        // obviously the connect is cut before the static context is free'd
-        // static struct F{ ~F(){ XCloseDisplay(d); }} freeDisplay;
-        return d;
-      }
-      static GLXFBConfig &findGLXConfig() throw (ICLException){
-        static int n = 0;
-        static const int att[] = {GLX_RED_SIZE,8,GLX_GREEN_SIZE,8,GLX_BLUE_SIZE,8,GLX_DEPTH_SIZE,24,
-                                  GLX_DRAWABLE_TYPE, GLX_PBUFFER_BIT, 0};
-        static GLXFBConfig *configs = glXChooseFBConfig(getDisplay(), DefaultScreen(getDisplay()),att,&n);
-        if(!configs){
-          // We choose a less restrictive configuration
-          static const int att2[] = {GLX_RED_SIZE,4,GLX_GREEN_SIZE,4,GLX_BLUE_SIZE,4,GLX_DEPTH_SIZE,16,
-                                    GLX_DRAWABLE_TYPE, GLX_PBUFFER_BIT, 0};
-          configs = glXChooseFBConfig(getDisplay(), DefaultScreen(getDisplay()),att2,&n);
-          if(!configs){
-            throw ICLException("Scene::render pbuffer based rendering is not supported on you machine");
-          }
-        }
-        return *configs;
+      QGLPixelBuffer m_buffer;
+      QImageConverter conv;
+      SmartPtr<GLImg> background;
+      PBuffer(Size s):m_buffer(QSize(s.width,s.height)){}
+      void update(const Camera &cam) {
+        depthCorr.update(cam);
       }
 
-      PBuffer(){}
-      PBuffer(const Size s):size(s){
-        const int S[] = { GLX_PBUFFER_WIDTH,size.width, GLX_PBUFFER_HEIGHT, size.height, 0 };
-        pbuffer = glXCreatePbuffer(getDisplay(), findGLXConfig(), S);
-
-        // note: setting this to false makes rendering 50% slower
-        context = glXCreateNewContext(getDisplay(), findGLXConfig(), GLX_RGBA_TYPE, 0, true /* try direct rendering context first*/);
-        if(!context){
-          context = glXCreateNewContext(getDisplay(), findGLXConfig(), GLX_RGBA_TYPE, 0, false);
-          if(!context){
-            throw ICLException("glXCreateNewContext failed: unable to create pbuffer rendering context");
-          }
-        }
-        buf = Img8u(s,formatRGB);
-        rgbbuf.resize(size.width*size.height*3);
-      }
-      ~PBuffer(){
-        glXDestroyContext(getDisplay(), context);
-        glXDestroyPbuffer(getDisplay(), pbuffer);
-      }
-      void makeCurrent(){
-        glXMakeCurrent(getDisplay(),pbuffer,context);
-        GLContext::set_current_glx_context(context,pbuffer,getDisplay());
+      const Img8u &getImage() {
+        QImage img = m_buffer.toImage();
+        conv.setQImage(&img);
+        return *conv.getImgBase()->as8u();
       }
 
-      GLXContext context;    /* OpenGL context */
-      GLXPbuffer pbuffer;    /* Pbuffer */
-      SmartPtr<GLImg> background; // optionally used background image
-      Size size;
-      std::vector<icl8u> rgbbuf;
-      Img8u buf;
 
       struct DepthCorrection{
         std::vector<icl32f> factors;
         Size resolution;
-        icl32f fX,fY,skew;
+        icl32f fX, fY, skew;
         Point32f ppOffs;
 
         static inline float compute_depth_norm(const Vec &dir, const Vec &centerDir){
-          return sprod3(dir,centerDir)/(norm3(dir)*norm3(centerDir));
+          return sprod3(dir, centerDir) / (norm3(dir)*norm3(centerDir));
         }
 
         void update(const Camera &cam){
           const Camera::RenderParams &p = cam.getRenderParams();
           const float f = cam.getFocalLength();
           const int w = p.viewport.width, h = p.viewport.height;
-          if(!factors.size() ||
-             resolution != Size(w,h) ||
-             fX != f*cam.getSamplingResolutionX() ||
-             fY != f*cam.getSamplingResolutionY() ||
-             skew != cam.getSkew() ||
-             ppOffs != cam.getPrincipalPointOffset()){
+          if (!factors.size() ||
+            resolution != Size(w, h) ||
+            fX != f*cam.getSamplingResolutionX() ||
+            fY != f*cam.getSamplingResolutionY() ||
+            skew != cam.getSkew() ||
+            ppOffs != cam.getPrincipalPointOffset()){
 
-            resolution = Size(w,h);
+            resolution = Size(w, h);
             fX = f*cam.getSamplingResolutionX();
             fY = f*cam.getSamplingResolutionY();
             skew = cam.getSkew();
@@ -1712,64 +1656,66 @@ namespace icl{
 
             Array2D<ViewRay> vs = cam.getAllViewRays();
 
-            const Vec c = vs(w/2-1,h/2-1).direction;
+            const Vec c = vs(w / 2 - 1, h / 2 - 1).direction;
 
-            for(int idx=0;idx<w*h; ++idx){
-              factors[idx] = 1.0/compute_depth_norm(vs[idx].direction,c);
+            for (int idx = 0; idx<w*h; ++idx){
+              factors[idx] = 1.0 / compute_depth_norm(vs[idx].direction, c);
             }
           }
         }
-      } depthCorr;
+      }depthCorr;
+
     };
 
-    Scene::PBufferIndex::PBufferIndex(const Size &size):
-      Size(size),threadID(pthread_self()){}
+    Scene::PBufferIndex::PBufferIndex(const Size &size) :
+      Size(size), threadID(pthread_self()){}
 
     bool Scene::PBufferIndex::operator<(const Scene::PBufferIndex &other) const{
-      if(other.threadID == threadID){
-        if(other.width == width) return other.height < height;
+      if (other.threadID.p == threadID.p){
+        if (other.width == width) return other.height < height;
         else return other.width < width;
-      }else return other.threadID < threadID;
+      }
+      else return other.threadID.p < threadID.p;
     }
 
-    Mutex Scene::PBuffer::glxMutex;
+    void Scene::freeAllPBuffers(){
+      typedef std::map<PBufferIndex, PBuffer*>::iterator It;
+      for (It it = m_pbuffers.begin(); it != m_pbuffers.end(); ++it){
+        delete it->second;
+      }
+      m_pbuffers.clear();
+    }
 
-    /** Benchmark results:
+    void Scene::freePBuffer(const Size &size){
+      typedef std::map<PBufferIndex, PBuffer*>::iterator It;
+      PBufferIndex idx(size);
+      It it = m_pbuffers.find(idx);
+      if (it != m_pbuffers.end()){
+        delete it->second;
+        m_pbuffers.erase(it);
+      }
+    }
 
-        Hardware:     using dell xt2 laptop (intel integrated graphics adapter)
-                      times in braces are taken from an Quad-Core Xeon Workstation with
-                      nvida quadro card
-        ViewPortSize: VGA
-        Scene:        ICL's scene graph demo (including the parrot background image)
-
-        context creation/
-        buffer allocation   : 11ms (first time, then 0.06ms) (43ms, then 0.4ms)
-
-        rendering the scene : 85ms (5ms)
-
-        pbuffer read-out    : 31ms (3.2ms)
-
-        interlavedToPlanar  : 0.8ms (0.2ms)
-
-        flip vertically     : 0.6ms (0.13ms)
-
-        grabbing the depth buffer: ?? (4.29ms)
-      -------------------------------------
-        total               : 117ms (9ms) + time for depth buffer
-
-    */
     const Img8u &Scene::render(int camIndex, const ImgBase *background, Img32f *depthBuffer,
-                               DepthBufferMode mode) const throw (ICLException){
-      #ifdef HAVE_QT
-        struct RenderEvent : public ICLApplication::AsynchronousEvent{
+      DepthBufferMode mode) {
+      const Camera &cam = this->getCamera(camIndex);
+      int w = cam.getRenderParams().viewport.width;
+      int h = cam.getRenderParams().viewport.height;
+      Size s(w, h);
+      PBufferIndex idx(s);
+      std::map<PBufferIndex, PBuffer*>::iterator it = this->m_pbuffers.find(idx);
+      PBuffer &pbuffer = (it == this->m_pbuffers.end()) ? (*(this->m_pbuffers[idx] = new PBuffer(s))) : (*it->second);
+      struct RenderEvent : public ICLApplication::AsynchronousEvent{
         const Scene *scene;
+        PBuffer *pbuffer;
         int camIndex;
         const ImgBase *background;
         Img32f *depthBuffer;
-        DepthBufferMode &mode;
-        Img8u **out;
-        RenderEvent(const Scene *scene, int camIndex, const ImgBase *background, Img32f *depthBuffer, DepthBufferMode &mode, Img8u **out):
+        DepthBufferMode mode;
+        Img8u const** out;
+        RenderEvent(const Scene *scene, PBuffer *pbuffer, int camIndex, const ImgBase *background, Img32f *depthBuffer, DepthBufferMode mode, Img8u const** out) :
           scene(scene),
+          pbuffer(pbuffer),
           camIndex(camIndex),
           background(background),
           depthBuffer(depthBuffer),
@@ -1777,124 +1723,85 @@ namespace icl{
           out(out){}
 
         virtual void execute(){
-          ICLASSERT_THROW(camIndex < (int)scene->m_cameras.size(),ICLException("Scene::render: invalid camera index"));
-          const Camera &cam = scene->getCamera(camIndex);
-          int w = cam.getRenderParams().viewport.width;
-          int h = cam.getRenderParams().viewport.height;
-          Size s(w,h);
-          PBufferIndex idx(s);
-
-          Mutex::Locker lock(PBuffer::glxMutex);
-          //    PBuffer::glxMutex.lock();
-          std::map<PBufferIndex,PBuffer*>::iterator it = scene->m_pbuffers.find(idx);
-          PBuffer &p = (it==scene->m_pbuffers.end())?(*(scene->m_pbuffers[idx] = new PBuffer(s))):(*it->second);
-          // PBuffer::glxMutex.unlock();
-
           scene->lock();
-          p.makeCurrent();
-
+          const Camera &cam = scene->getCamera(camIndex);
+          int w = cam.getResolution().width;
+          int h = cam.getResolution().height;
+          Size s(w, h);
+          pbuffer->update(cam);
+          pbuffer->m_buffer.makeCurrent();
           GeomColor c = scene->getBackgroundColor();
-          glClearColor(c[0]/255.,c[1]/255.,c[2]/255.,1);
-          glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+          glClearColor(c[0] / 255., c[1] / 255., c[2] / 255., 1);
+          glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
           glEnable(GL_TEXTURE_2D);
           glEnable(GL_BLEND);
           glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
           glEnable(GL_COLOR_MATERIAL);
 
-          if(background){
+          if (background){
             glOrtho(0, w, h, 0, -999999, 999999);
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
             glDisable(GL_LIGHTING);
-            SmartPtr<GLImg> &bg = p.background;
-            if(!bg) bg = SmartPtr<GLImg>(new GLImg);
+            SmartPtr<GLImg> &bg = pbuffer->background;
+            if (!bg) bg = SmartPtr<GLImg>(new GLImg);
             bg->update(background);
-            bg->draw2D(Rect(0,0,w,h),s);
+            bg->draw2D(Rect(0, 0, w, h), s);
             glEnable(GL_LIGHTING);
-            glClear(GL_DEPTH_BUFFER_BIT );
+            glClear(GL_DEPTH_BUFFER_BIT);
           }
 
           scene->renderScene(camIndex);
-          glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, p.rgbbuf.data());
-          interleavedToPlanar(p.rgbbuf.data(),&p.buf);
-          p.buf.mirror(axisHorz); // software mirroring takes only about 1ms (with ipp)
-
-          if(depthBuffer){
-            depthBuffer->setSize(Size(w,h));
+          *out = &pbuffer->getImage();
+          if (depthBuffer){
+            depthBuffer->setSize(Size(w, h));
             depthBuffer->setChannels(1);
-            glReadPixels(0,0,w,h, GL_DEPTH_COMPONENT, GL_FLOAT, depthBuffer->begin(0));
+            glReadPixels(0, 0, w, h, GL_DEPTH_COMPONENT, GL_FLOAT, depthBuffer->begin(0));
             depthBuffer->mirror(axisHorz);
 
-            if(mode != RawDepth01){
+            if (mode != RawDepth01){
               const float zNear = cam.getRenderParams().clipZNear;
               const float zFar = cam.getRenderParams().clipZFar;
 
               icl32f *db = depthBuffer->begin(0);
 
               const int dim = w*h;
-              const float Q = zFar / ( zFar - zNear );
-              const float izFar = 1.0/zFar;
+              const float Q = zFar / (zFar - zNear);
+              const float izFar = 1.0 / zFar;
 
-              const float m = zFar-zNear;
+              const float m = zFar - zNear;
               const float b = zNear;
 
               const float A = izFar * m;
 
-              if(mode == DistToCamCenter){
-                p.depthCorr.update(cam);
-                const float *corr = p.depthCorr.factors.data();
-                for(int i=0;i<dim;++i){
-                  db[i] = corr[i] * (A / (Q-db[i]) + b) - 1;
+              if (mode == DistToCamCenter){
+                pbuffer->depthCorr.update(cam);
+                const float *corr = pbuffer->depthCorr.factors.data();
+                for (int i = 0; i < dim; ++i){
+                  db[i] = corr[i] * (A / (Q - db[i]) + b) - 1;
                 }
-              }else{
-                for(int i=0;i<dim;++i){
-                  db[i] = (A / (Q-db[i]) + b) - 1;
+              }
+              else{
+                for (int i = 0; i < dim; ++i){
+                  db[i] = (A / (Q - db[i]) + b) - 1;
                 }
               }
             }
           }
-
-          GLContext::unset_current_glx_context();
-          p.buf.setTime(icl::utils::Time::now());
-          if(depthBuffer) depthBuffer->setTime(p.buf.getTime());
-
+          pbuffer->m_buffer.doneCurrent();
           scene->unlock();
-          *out = &p.buf;
         }
       };
-      #endif
-
-      Img8u *out;
+      Img8u const* img;
       ICLApplication *app = ICLApplication::instance();
-      app->executeInGUIThread(new RenderEvent(this, camIndex, background, depthBuffer, mode, &out), true);
-      out -> setTime(icl::utils::Time::now());
-
-      return *out;
+      //app->executeInGUIThread(new RenderEvent(this, &pbuffer, camIndex, background, depthBuffer, mode, &img), true);
+      RenderEvent event(this, &pbuffer, camIndex, background, depthBuffer, mode, &img);
+      event.execute();
+      return *img;
     }
 
-    void Scene::freeAllPBuffers(){
-      typedef std::map<PBufferIndex,PBuffer*>::iterator It;
-      for(It it = m_pbuffers.begin();it != m_pbuffers.end();++it){
-        delete it->second;
-      }
-      m_pbuffers.clear();
-    }
-
-    void Scene::freePBuffer(const Size &size){
-      typedef std::map<PBufferIndex,PBuffer*>::iterator It;
-      PBufferIndex idx(size);
-      It it = m_pbuffers.find(idx);
-      if(it != m_pbuffers.end()){
-        delete it->second;
-        m_pbuffers.erase(it);
-      }
-    }
-
-  #endif
-  #endif
-#endif
 
     REGISTER_CONFIGURABLE(Scene, return new Scene);
 

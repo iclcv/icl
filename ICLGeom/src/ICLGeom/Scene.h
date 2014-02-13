@@ -262,6 +262,9 @@ namespace icl{
         DistToCamPlane,  //!< core::depth buffer values define distance to the camera's z=0 plane
         DistToCamCenter  //!< core::depth buffer values define distanct to the camera center
       };
+      struct PBuffer;
+      const core::Img8u &render(int camIndx, const core::ImgBase *background = 0, core::Img32f *depthBuffer = 0,
+        DepthBufferMode mode = DistToCamCenter);
     
       /// renders the current scene using an instance of glx pbuffer
       /** This method is currently only supported on linux systems, since
@@ -297,17 +300,6 @@ namespace icl{
           about a second in the first call. In later calls, the values are just re-used. 
         
           */
-#if 0
-      const core::Img8u &render(int camIndx, const core::ImgBase *background=0, core::Img32f *depthBuffer=0, 
-                                DepthBufferMode mode=DistToCamCenter) const throw (utils::ICLException);
-    
-      /// frees all pbuffers allocated before
-      void freeAllPBuffers();
-    
-      /// frees the pbffer associated with given size (if there is one)
-      void freePBuffer(const utils::Size &size);
-#endif
-      
       ///Vector containing the shaders used in ImprovedShading
       mutable icl::qt::GLFragmentShader* m_shaders[ShaderUtil::COUNT];
       
@@ -464,20 +456,21 @@ namespace icl{
 
       /// internally used list of callbacks
       std::vector<utils::SmartPtr<GLCallback> > m_glCallbacks;
-#endif
 
-#if 0
-      /// internal class for offscreen rendering
       struct PBuffer;
-    
+
+      /// frees all pbuffers allocated before
+      void freeAllPBuffers();
+
+      /// frees the pbffer associated with given size (if there is one)
+      void freePBuffer(const utils::Size &size);
+
       struct PBufferIndex : public utils::Size{
-        unsigned int threadID;
+        pthread_t threadID;
         PBufferIndex(const utils::Size &size);
         bool operator<(const PBufferIndex &other) const;
       };
-    
-      /// intenal list of of offscreen rendering buffers
-      mutable std::map<PBufferIndex,PBuffer*> m_pbuffers;
+      mutable std::map<PBufferIndex, PBuffer*> m_pbuffers;
 #endif
 
       /// internally used scene object
