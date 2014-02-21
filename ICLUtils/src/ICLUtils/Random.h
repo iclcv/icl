@@ -37,7 +37,7 @@
 #include <cmath>
 #include <cstdlib>
 
-#ifdef ICL_SYSTEM_WINDOWS
+#ifdef WIN32
   #undef max
 #endif
 
@@ -47,7 +47,7 @@ namespace icl{
     /** @param seedval The seed value (e.g. time(0) ...)
     */
     inline void randomSeed(long int seedval) {
-  #ifdef ICL_SYSTEM_WINDOWS
+  #ifdef WIN32
       srand(seedval);
   #else
       srand48(seedval);
@@ -65,7 +65,7 @@ namespace icl{
   
     /// Generates random numbers in range [0,1]  \ingroup RANDOM
     inline double random(double max = 1) {
-  #ifdef ICL_SYSTEM_WINDOWS
+  #ifdef WIN32
       // this generates quite poor random numbers, because RAND_MAX = 32767
       return max*(static_cast<double>(rand()) / (1.0 + static_cast<double>(RAND_MAX)));
   #else

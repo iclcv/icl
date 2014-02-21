@@ -59,14 +59,16 @@ IF(WIN32)
   FIND_PATH(GLEW_INCLUDE_DIR
     NAMES GL/glew.h
     PATHS ${${_GLEW_SEARCHES}}
-    PATH_SUFFIXES "include" 	  
+    PATH_SUFFIXES "include"	  
     DOC "The path to GLEW header files"
     NO_DEFAULT_PATH)
 
   FIND_LIBRARY(GLEW_LIBRARIES  
-    NAMES glew32.lib glew32s.lib
+    NAMES glew32.lib
     PATHS  ${${_GLEW_SEARCHES}}
-    PATH_SUFFIXES "/lib" "/lib/Release/Win32" "/lib/Release/x64"
+    PATH_SUFFIXES "lib" "lib/${ARCH_DEPENDENT_LIB_DIR}"
+                  "lib/Release/${ARCH_DEPENDENT_LIB_DIR}"
+                  "lib/Release/Win32"
     NO_DEFAULT_PATH)
 ELSE()
   # Try each search configuration
@@ -85,7 +87,5 @@ ELSE()
 ENDIF()
 
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(GLEW REQUIRED_VARS 
-				  GLEW_LIBRARIES
-				  GLEW_INCLUDE_DIR)
-
-MARK_AS_ADVANCED(GLEW_INCLUDE_DIR)
+                                  GLEW_LIBRARIES
+                                  GLEW_INCLUDE_DIR)

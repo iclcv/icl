@@ -30,7 +30,7 @@
 
 #include <ICLFilter/UnaryArithmeticalOp.h>
 #include <ICLCore/Img.h>
-#include <math.h>
+#include <cmath>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -114,7 +114,7 @@ namespace icl {
       // }}}
   
       
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
       /*** IPP function specializations for "no val":
           sqrOp=10,
           sqrtOp=11,

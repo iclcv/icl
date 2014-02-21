@@ -29,7 +29,7 @@
 ********************************************************************/
 
 #pragma once
-#ifdef HAVE_OPENGL
+#ifdef ICL_HAVE_OPENGL
 #include <GL/glew.h>
 #endif
 #include <ICLGeom/GeomDefs.h>
@@ -41,7 +41,7 @@
 #include <ICLGeom/PointCloudObject.h>
 #include <ICLGeom/DepthCameraPointCloudGrabber.h>
 #include <ICLGeom/ComplexCoordinateFrameSceneObject.h>
-#ifdef HAVE_PCL
+#ifdef ICL_HAVE_PCL
 #include <ICLGeom/PCLPointCloudObject.h>
 #endif
 

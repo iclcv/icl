@@ -34,7 +34,7 @@
 #include <ICLUtils/BasicTypes.h>
 #include <iostream>
 #include <stdlib.h>
-#include <math.h>
+#include <cmath>
 
 namespace icl {
   namespace utils{
@@ -195,12 +195,9 @@ namespace icl {
     /** Utility macros and defines */
     
     // ?? why not as macro? -> no type problems
-#ifdef ICL_SYSTEM_LINUX
+#ifdef UNIX
 #define iclMin(A,B) std::min(A,B)
 #define iclMax(A,B) std::max(A,B)
-#else
-#define iclMin(A,B) ((A)<(B)?(A):(B))
-#define iclMax(A,B) ((A)>(B)?(A):(B))
 #endif
     
 #ifndef iclMin
@@ -224,7 +221,7 @@ namespace icl {
         case 4: return sqr(sqr(x));
         case 5: return sqr(sqr(x))*x;
         default:
-          return ::pow(x,N);
+          return ::pow(x,(int)N);
       }
     }
   } // namespace utils

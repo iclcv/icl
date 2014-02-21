@@ -29,7 +29,7 @@
  ********************************************************************/
 
 #define __CL_ENABLE_EXCEPTIONS //enables openCL error catching
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 #include <CL/cl.hpp>
 #endif
 
@@ -41,7 +41,7 @@
 namespace icl {
 namespace geom {
 
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 //OpenCL kernel code
 static char segmentationKernel[] =
 "  #pragma OPENCL EXTENSION cl_khr_global_int32_base_atomics : enable                                                           \n"
@@ -225,7 +225,7 @@ normalEdgeImage	.setSize(Size(w, h));
 
 	region = new RegionDetector(25, 4000000, 254, 255, false);
 
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 	try
 	{
 		program = CLProgram("gpu", segmentationKernel);
@@ -260,7 +260,7 @@ Segmentation3D::~Segmentation3D() {
 	delete[] assignmentRemaining;
 	delete[] elementsBlobs;
 	delete[] assignmentBlobs;
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 	delete[] segmentColorImageRArray;
 	delete[] segmentColorImageGArray;
 	delete[] segmentColorImageBArray;
@@ -492,7 +492,7 @@ void Segmentation3D::regionGrow() {
 
 void Segmentation3D::calculatePointAssignmentAndAdjacency() {
 	if (useCL == true && clReady == true) {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 		try {
 			int numFaces=cluster.size();
 			DynMatrix<bool> newMatrix(numFaces,numFaces,false);
@@ -606,7 +606,7 @@ void Segmentation3D::calculateCutfreeMatrix() {
 	cutfree = newMatrix;
 
 	for (unsigned int a = 0; a < neighbours.rows(); a++) {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
       int numPoints=cluster.at(a).size();
       CLBuffer RANSACpointsBuffer;
       if (useCL == true && clReady == true)
@@ -623,7 +623,7 @@ void Segmentation3D::calculateCutfreeMatrix() {
 				int countNAcc = 0;
 
 				if (useCL == true && clReady == true) {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 
 					Vec n0[RANSACpasses];
 					float dist[RANSACpasses];
@@ -1221,7 +1221,7 @@ void Segmentation3D::blobSegmentation() {
 		}
 	}
 
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 	int numPoints=cluster.at(maxID).size();
 	int cAbove[RANSACpasses];
 	int cBelow[RANSACpasses];
@@ -1234,7 +1234,7 @@ void Segmentation3D::blobSegmentation() {
 	int *cOnRead = new int[RANSACpasses];
 
 	for (int i = 0; i < RANSACpasses; i++) {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 		cAbove[i]=0;
 		cBelow[i]=0;
 		cOn[i]=0;
@@ -1267,7 +1267,7 @@ void Segmentation3D::blobSegmentation() {
 	}
 
 	if (useCL == true && clReady == true) {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 		try {
 			CLBuffer RANSACpointsBuffer = program.createBuffer("r", numPoints * sizeof(int), &cluster.at(maxID)[0]);
 			xyzBuffer = program.createBuffer("r", w*h * sizeof(FixedColVector<float, 4>), &xyzData[0]);
@@ -1325,7 +1325,7 @@ void Segmentation3D::blobSegmentation() {
 	}
 
 	if (useCL == true && clReady == true) {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 		try {
 			elementsBlobsBuffer = program.createBuffer("rw", w*h * sizeof(bool), elementsBlobs);
 			assignmentBlobsBuffer = program.createBuffer("r", w*h * sizeof(int), assignmentBlobs);
@@ -1372,7 +1372,7 @@ void Segmentation3D::blobSegmentation() {
 
 void Segmentation3D::colorPointcloud() {
 	if (useCL == true && clReady == true) {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 		try {
 			assignmentBuffer = program.createBuffer("r", w*h * sizeof(int), assignment);
 			kernelSegmentColoring.setArgs(assignmentBuffer,

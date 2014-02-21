@@ -31,7 +31,7 @@
 #include <ICLCV/PositionTracker.h>
 #include <ICLCV/Extrapolator.h>
 #include <ICLCV/HungarianAlgorithm.h>
-#include <math.h>
+#include <cmath>
 #include <set>
 #include <limits>
 #include <cstdio>

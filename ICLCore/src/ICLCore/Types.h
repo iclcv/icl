@@ -79,7 +79,7 @@ namespace icl {
     };
     
   
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
     /// for scaling of Img images theses functions are provided \ingroup TYPES
     enum scalemode{
       interpolateNN=IPPI_INTER_NN,      /**< nearest neighbor interpolation */
@@ -97,7 +97,7 @@ namespace icl {
   
     /// for flipping of images \ingroup TYPES
     enum axis{
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
       axisHorz=ippAxsHorizontal, /**> horizontal image axis */
       axisVert=ippAxsVertical,   /**> vertical image axis */
       axisBoth=ippAxsBoth        /**> flip both axis */

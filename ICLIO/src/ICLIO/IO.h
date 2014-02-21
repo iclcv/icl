@@ -30,7 +30,7 @@
 
 #pragma once
 
-#ifdef HAVE_LIBDC
+#ifdef ICL_HAVE_LIBDC
 #include <ICLIO/DCGrabber.h>
 #endif
 
@@ -43,7 +43,7 @@
 #include <ICLIO/GenericGrabber.h>
 #include <ICLIO/IOFunctions.h>
 
-#ifdef HAVE_VIDEODEV
+#ifdef ICL_HAVE_VIDEODEV
 #include </PWCGrabber.h>
 #endif
 
@@ -54,7 +54,7 @@
 #include <ICLIO/TestImages.h>
 
 
-#ifdef HAVE_XINE
+#ifdef ICL_HAVE_XINE
 #include <ICLIO/VideoGrabber.h>
 #endif 
 

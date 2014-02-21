@@ -32,11 +32,11 @@
 #include <ICLQt/GLFragmentShader.h>
 #include <ICLUtils/StringUtils.h>
 
-#ifdef ICL_SYSTEM_APPLE
+#ifdef APPLE
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
 #include <OpenGL/glew.h>
-#elif ICL_SYSTEM_WINDOWS
+#elif WIN32
 #define NOMINMAX
 #include <Windows.h>
 #include <GL/glew.h>

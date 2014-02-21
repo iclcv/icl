@@ -8,7 +8,7 @@
 #**                                                                 **
 #** File   : cmake/Modules/FindRSB.cmake                            **
 #** Module : FindRSB                                                **
-#** Authors: Christof Elbrechter                                    **
+#** Authors: Christof Elbrechter, Sergius Gaulik                    **
 #**                                                                 **
 #**                                                                 **
 #** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -30,23 +30,33 @@
 
 INCLUDE(FindPackageHandleStandardArgs)
 
+# Ask the root directory of rsb.
+SET(RSB_ROOT RSB_ROOT CACHE PATH "Root directory of rsb")
+
+# Ask the root directory of rsc.
+SET(RSC_ROOT RSC_ROOT CACHE PATH "Root directory of rsc")
+
 IF(NOT RSB_ROOT)
   IF(RSB_DIR)
     SET(RSB_ROOT ${RSB_DIR})
   ELSE()
-    SET(RSB_ROOT /usr)
+    IF(NOT WIN32)
+      SET(RSB_ROOT /usr)
+    ENDIF(NOT WIN32)
   ENDIF()
 ENDIF()
 
 FIND_PATH(RSB_INCLUDE_DIR 
   NAMES rsb/Factory.h rsb/Handler.h rsb/converter/Repository.h rsb/converter/ProtocolBufferConvert.h
-  PATHS ${RSB_ROOT}/include ${RSB_ROOT}/include/rsb ${RSB_ROOT}/include/rsb0.9 
+  PATHS ${RSB_ROOT}/include ${RSB_ROOT}/include/rsb ${RSB_ROOT}/include/rsb0.9 ${RSB_ROOT}/include/rsb0.10 ${RSB_ROOT}/include/rsb0.11
   DOC "The path to RSB header files"
   NO_DEFAULT_PATH)
 
 FIND_PATH(RSC_INCLUDE_DIR 
   NAMES rsc/logging/Logger.h
-  PATHS ${RSB_ROOT}/include ${RSB_ROOT}/include/rsc ${RSB_ROOT}/include/rsc0.9
+  PATHS ${RSC_ROOT}/include ${RSC_ROOT}/include/rsc ${RSC_ROOT}/include/rsc0.9
+        ${RSC_ROOT}/include/rsc0.10 ${RSC_ROOT}/include/rsc0.11
+        ${RSB_ROOT}/include ${RSB_ROOT}/include/rsc
   DOC "The path to RSC header files"
   NO_DEFAULT_PATH)
 
@@ -58,37 +68,43 @@ IF(RSC_INCLUDE_DIR)
   MESSAGE(STATUS "Found RSC include dir: ${RSC_INCLUDE_DIR}")
 ENDIF()
 
+# old library layout
 FIND_LIBRARY(RSB_LIBRARY  
   NAMES rsbcore
   PATHS ${RSB_ROOT}
   PATH_SUFFIXES lib
   NO_DEFAULT_PATH)
 
-IF(NOT RSB_LIBRARY)
-  MESSAGE(STATUS "### here searching in ${RSB_ROOT}")
-  # new library layout, we need to link against libspread as well
-  FIND_LIBRARY(RSB_LIBRARY  
+get_filename_component(FILE_NAME ${RSB_LIBRARY} NAME_WE)
+IF(FILE_NAME STREQUAL librsbcore OR FILE_NAME STREQUAL rsbcore)
+  MESSAGE(STATUS "resulting rsb-lib(old library layout): ${RSB_LIBRARY}")
+ELSE()
+  FIND_LIBRARY(RSB_LIBRARY
     NAMES rsb
     PATHS ${RSB_ROOT}
     PATH_SUFFIXES lib
     NO_DEFAULT_PATH)
   MESSAGE(STATUS "resulting rsb-lib: ${RSB_LIBRARY}")
-  IF(RSB_LIBRARY)
-    FIND_LIBRARY(SPREAD_LIBRARY  
-      NAMES spread
-      PATHS ${RSB_ROOT} /usr
-      PATH_SUFFIXES lib
-      NO_DEFAULT_PATH)
-    IF(NOT SPREAD_LIBRARY)
+
+  # new library layout, we need to link against libspread as well
+  FIND_LIBRARY(SPREAD_LIBRARY  
+    NAMES libspread
+    PATHS ${RSB_ROOT}/../spread /usr
+    PATH_SUFFIXES lib bin
+    NO_DEFAULT_PATH)
+  MESSAGE(STATUS "resulting spread: ${SPREAD_LIBRARY}")
+  IF(RSB_LIBRARY AND NOT SPREAD_LIBRARY)
+    IF(WIN32)
+      MESSAGE(FATAL_ERROR "Not Found: libspread.lib in ${RSB_ROOT}/../spread/lib and ${RSB_ROOT}/../spread/bin (the new rsb-library layout that uses rsb.lib needs explicit linkage against libspread.lib)")
+    ELSE(WIN32)
       MESSAGE(FATAL_ERROR "Not Found: libspread.so in ${RSB_ROOT}/lib and /usr/lib (the new rsb-library layout that uses librsb.so needs explicit linkage against libspread.so)")
-    ENDIF()
-    MESSAGE(STATUS "resulting spread: ${SPREAD_LIBRARY}")
+    ENDIF(WIN32)
   ENDIF()
 ENDIF()
 
 FIND_LIBRARY(RSC_LIBRARY  
-  NAMES rsc rsc0.9
-  PATHS ${RSB_ROOT}
+  NAMES rsc rsc0.9 rsc0.10 rsc0.11
+  PATHS ${RSC_ROOT} ${RSB_ROOT}
   PATH_SUFFIXES lib
   NO_DEFAULT_PATH)
 MESSAGE(STATUS "resulting rsc-lib: ${RSC_LIBRARY}")
@@ -99,12 +115,12 @@ ENDIF()
 
 # define mandatory arguments
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(RSB REQUIRED_VARS 
-				  RSB_LIBRARIES
-				  RSB_INCLUDE_DIR
+                                  RSB_LIBRARIES
+                                  RSB_INCLUDE_DIR
                                   RSC_INCLUDE_DIR)
 IF(RSB_FOUND)
   INCLUDE_DIRECTORIES(${RSB_INCLUDE_DIR} ${RSC_INCLUDE_DIR})
 ENDIF()
 
-MARK_AS_ADVANCED(RSB_INCLUDE_DIR)
-MARK_AS_ADVANCED(RSC_INCLUDE_DIR)
+#MARK_AS_ADVANCED(RSB_INCLUDE_DIR)
+#MARK_AS_ADVANCED(RSC_INCLUDE_DIR)

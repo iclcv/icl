@@ -217,7 +217,7 @@ namespace icl{
     MatchResult match(const std::string &text, const std::string &regexIn, int num)
       throw (InvalidRegularExpressionException){
       string regexSave = regexIn;
-  #ifndef ICL_SYSTEM_WINDOWS
+  #ifndef ICL_SYSTEM_WINDOWS // TODOW
       char *regex = const_cast<char*>(regexSave.c_str());
       regex_t    re;
       
@@ -252,7 +252,7 @@ namespace icl{
     }
 
 
-#ifndef ICL_SYSTEM_WINDOWS
+#ifndef ICL_SYSTEM_WINDOWS // TODOW
     string toLower(string s){
       // {{{ open
       for(unsigned int i=0;i<s.length();i++){

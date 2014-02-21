@@ -1127,7 +1127,7 @@ namespace icl{
 
 //  the IPP conversion functions are replaced by a SSE implementation
 /*
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
     template<class IppFunc>
     static void convert_color_with_ipp(const Img8u *src, Img8u *dst, bool roiOnly, IppFunc ipp_func){
       if(roiOnly){
@@ -5050,7 +5050,7 @@ namespace icl{
       interleavedToPlanar_Generic(src,dst, srcLineStep);
     }
     
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
   
    // {{{ PLANAR_2_INTERLEAVED_IPP
   
@@ -5267,7 +5267,7 @@ namespace icl{
     }
 // IPP conversion is replaced by a SSE implementation
 /*
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
       const icl8u *apucSrc[] = {pucSrc,pucSrc+s.getDim(), pucSrc+s.getDim()+s.getDim()/4};
       icl8u *apucDst[] = {poDst->getData(0),poDst->getData(1),poDst->getData(2)};
       ippiYUV420ToRGB_8u_P3(apucSrc,apucDst,s); 

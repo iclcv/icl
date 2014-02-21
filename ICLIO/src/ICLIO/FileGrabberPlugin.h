@@ -39,7 +39,7 @@ namespace icl{
     /// interface for ImageGrabber Plugins for reading different file types \ingroup FILEIO_G
     class ICLIO_API FileGrabberPlugin{
       public:
-  #ifdef HAVE_LIBJPEG
+  #ifdef ICL_HAVE_LIBJPEG
       friend class JPEGDecoder;
   #endif
   

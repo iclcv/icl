@@ -33,13 +33,13 @@
 #include <ICLUtils/Macros.h>
 #include <ostream>
 
-#ifdef HAVE_IPP
+#ifdef ICL_HAVE_IPP
 #include <ipp.h>
 #endif
 
 namespace icl{
   namespace utils{
-  #ifndef HAVE_IPP
+  #ifndef ICL_HAVE_IPP
     /// fallback implementation for the IppiPoint struct, defined in the ippi libb \ingroup TYPES
     struct IppiPoint {
       /// xpos

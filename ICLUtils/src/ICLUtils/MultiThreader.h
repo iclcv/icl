@@ -62,7 +62,7 @@ namespace icl{
         The following example explains how to parallelize a simple function-call
         \code
         #include <ICLQt/Quick.h>
-        #include <math.h>
+        #include <cmath>
         #include <ICLUtils/MultiThreader.h>
         
         // a simple function calculating the l2 norm on a data array

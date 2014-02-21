@@ -60,7 +60,7 @@ namespace icl{
       if(fourcc.length() == 4){
         FOURCC = ICL_FOURCCC(fourcc[0],fourcc[1],fourcc[2],fourcc[3]);
       }
-  
+
       writer = cvCreateVideoWriter(filename.c_str(), FOURCC, fps,
                                    cvSize(frame_size.width,frame_size.height)
                                    , frame_color);

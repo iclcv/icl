@@ -183,12 +183,12 @@ namespace icl{
   
   #define CHECK_THROW(KEY)                                                \
       if(!f.contains("" #KEY)){                                           \
-        throw ICLException("unsable to parse xml-file to "                \
+        throw ICLException("unable to parse xml-file to "                \
                            "ImageUndistortion: entry " #KEY               \
                            " is missing!");                               \
       }
       CHECK_THROW(model);
-      std::string model = f["model"];
+      std::string model = f["model"].as<std::string>();
       
       if(model == "MatlabModel5Params"){
   #define LFS(KEY)                                                        \

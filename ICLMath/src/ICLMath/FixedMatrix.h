@@ -45,7 +45,7 @@
 #include <vector>
 #include <cmath>
 
-#ifdef HAVE_IPP
+#ifdef ICL_HAVE_IPP
 #include <ippm.h>
 #endif
 
@@ -841,7 +841,7 @@ namespace icl{
       inline double length(T norm=2) const{ 
         double sumSquares = 0;
         for(unsigned int i=0;i<DIM;++i){
-          sumSquares += ::pow((*this)[i],(double)norm);
+          sumSquares += ::pow((double)(*this)[i],(double)norm);
         }
         return ::pow( sumSquares, 1.0/norm);
       }
@@ -1058,7 +1058,7 @@ namespace icl{
     }
     /** \endcond */
   
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
   #define OPTIMIZED_MATRIX_MULTIPLICATION(LEFT_COLS,LEFT_ROWS,RIGHT_COLS,TYPE,IPPSUFFIX) \
     template<> template<>                                                                \
     inline void                                                                          \

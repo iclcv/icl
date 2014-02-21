@@ -159,8 +159,10 @@ namespace icl{
                   "Defines the ratio between angle and position values");
       addProperty("time monitoring","flag","",data->timeMonitoring,0,
                   "If set to true, benchmarking is enabled");
+#if !(defined _MSC_VER && _MSC_VER < 1800)
       addProperty("pose correction","flag","",data->poseCorrection,0,
                   "If set to true, the pose is corrected using robust pose estimation algorithm");
+#endif
 
 
       registerCallback(function(this,&CoplanarPointPoseEstimator::propertyChangedCallback));
@@ -341,7 +343,8 @@ namespace icl{
       return create_hom_4x4<float>(rBest[0],rBest[1],rBest[2],tBest[0],tBest[1],tBest[2]);
     }
 
-
+    
+#if !(defined _MSC_VER && _MSC_VER < 1800)
       FixedMatrix<icl32f, 3, 3> getRzyx(icl32f a, icl32f b, icl32f c) {
         FixedMatrix<icl32f, 3, 3> R;
 
@@ -673,7 +676,7 @@ namespace icl{
         data->T = fuseMat(sol.Rs[ind], sol.ts[ind]);
       }
     }
-
+#endif
 
     //  void simplex_iteration_callback(const SimplexOptimizer<float,Pose6D>::Result &r){
     //    if(r.iterations == 1 || !(r.iterations%100)){
@@ -763,8 +766,10 @@ namespace icl{
 
 #endif
 
-
+      
+#if !(defined _MSC_VER && _MSC_VER < 1800)
       if (data->poseCorrection) robustPoseCorrection(n, modelPoints, ips);
+#endif
 
 
       if(data->algorithm != HomographyBasedOnly){

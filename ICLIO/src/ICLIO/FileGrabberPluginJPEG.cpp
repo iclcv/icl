@@ -39,11 +39,9 @@ using namespace icl::core;
 
 namespace icl{
   namespace io{
-  #ifdef HAVE_LIBJPEG
+  #ifdef ICL_HAVE_LIBJPEG
     void FileGrabberPluginJPEG::grab(File &file, ImgBase **dest){
       // {{{ open 
-      // TODO: delete
-      printf("jpeg\n");
       JPEGDecoder::decode(file,dest);
     }
     // }}}
@@ -51,7 +49,7 @@ namespace icl{
     void FileGrabberPluginJPEG::grab(File &file, ImgBase **dest){
       ERROR_LOG("JPEG support currently not available! \n" << 
                 "To enabled JPEG support: you have to compile the ICLIO package\n" <<
-                "with -DHAVE_LIBJPEG compiler flag AND with a valid\n" << 
+                "with -DICL_HAVE_LIBJPEG compiler flag AND with a valid\n" << 
                 "LIBJPEG_ROOT set.");    
       ERROR_LOG("Destination image is set to NULL, which may cause further errors!");
       (void) file;

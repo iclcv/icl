@@ -46,7 +46,7 @@
 
 #pragma once
 
-#ifdef ICL_SYSTEM_WINDOWS
+#ifdef WIN32
   #ifdef ICLUtils_EXPORTS
     #define PUGIXML_API __declspec(dllexport)
   #else

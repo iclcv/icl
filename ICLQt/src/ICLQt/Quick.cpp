@@ -48,7 +48,7 @@
 #include <ICLFilter/LUTOp.h>
 #include <ICLUtils/Timer.h>
 
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
 #include <ICLQt/QImageConverter.h>
 #include <QtGui/QPainter>
 #include <QtGui/QImage>
@@ -94,7 +94,7 @@ namespace icl{
     }
   
   
-  #ifdef HAVE_QT
+  #ifdef ICL_HAVE_QT
     namespace{
       struct IOContext{
         const std::string &filter;
@@ -1761,7 +1761,7 @@ namespace icl{
     void text(ImgQ &image, int xoffs, int yoffs, const string &text){
       // {{{ open
       // first rendering the text 
-  #ifdef HAVE_QT
+  #ifdef ICL_HAVE_QT
       int n = 0;
       char ** ppc = 0;
       if(!qApp){

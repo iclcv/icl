@@ -76,7 +76,7 @@ namespace icl {
       Img32f k(Size(2*bandwidth+1,2*bandwidth+1),1);
       for (int i = -bandwidth; i < bandwidth; i++) {
         for (int j = -bandwidth; j < bandwidth; j++) {
-          float value = ::sqrt ((i*i)+(j*j))/bandwidth;
+          float value = ::sqrt ((float)(i*i)+(j*j))/bandwidth;
           k(i+bandwidth,j+bandwidth, 0) = ( value > 1 ? 0 : (1.0-value*value) );
         }
       }

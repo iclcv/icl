@@ -35,7 +35,7 @@
 #include <ICLGeom/PointCloudObjectBase.h>
 #include <ICLCV/RegionDetector.h>
 
-#ifdef HAVE_OPENCL    
+#ifdef ICL_HAVE_OPENCL    
 #include <ICLUtils/CLProgram.h>
 #include <ICLUtils/CLBuffer.h>
 #include <ICLUtils/CLKernel.h>
@@ -242,7 +242,7 @@ namespace icl{
       
       float dist3(const Vec &a, const Vec &b);
       
-    #ifdef HAVE_OPENCL
+    #ifdef ICL_HAVE_OPENCL
       //OpenCL data
       unsigned char* segmentColorImageRArray;
       unsigned char* segmentColorImageGArray;

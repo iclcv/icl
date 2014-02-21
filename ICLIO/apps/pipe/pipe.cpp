@@ -42,7 +42,7 @@
 #include <ICLCore/CCFunctions.h>
 #include <pthread.h>
 
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
 VBox gui;
 #endif
 
@@ -84,10 +84,8 @@ void init_grabber(){
 const ImgBase *grab_image(){
   const ImgBase *img = 0;
   //  const ImgBase *image = grabber.grab();
-    // TODO: delete
-  printf("send_app(): if1:\n");
+
   if (!(bool)pa("-flip")){
-    printf("grab:\n");
     img = grabber.grab();
   }else{
     ImgBase *hack = const_cast<ImgBase*>(grabber.grab());
@@ -103,8 +101,7 @@ const ImgBase *grab_image(){
     }
     img = hack;
   }
-  // TODO: delete
-  printf("send_app(): if2:\n");
+
   if(pa("-decode-bayer")){
     static std::string pattern = pa("-decode-bayer");
     if(img->getDepth() != depth8u){
@@ -174,7 +171,7 @@ const ImgBase *grab_image(){
 GenericImageOutput output;
 
 void send_app(){
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
   ImageHandle IH;
   FPSHandle FPS;
   if(!(bool)pa("-no-gui")){
@@ -184,19 +181,14 @@ void send_app(){
 #endif
  
   while(first || !(bool)pa("-single-shot")){
-    // TODO: delete
-    printf("grab_image:\n");
     const ImgBase *grabbedImage = grab_image();
-    printf("pointer: %p\n", grabbedImage);
-
     const ImgBase *ppImage = 0;
-    // TODO: delete
-    printf("send_app(): if:\n");
+
     if(pa("-pp") && *ppEnabled){
       static UnaryOp *pp = 0;
       if(!pp){
         static std::string pps = pa("-pp");
-        if(pps == "gauss"){
+        if (pps == "gauss"){
           pp = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::gauss3x3));
         }else if(pps == "gauss5") {
           pp = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::gauss5x5));
@@ -218,8 +210,7 @@ void send_app(){
     }else{
       ppImage = grabbedImage;
     }
-    // TODO: delete
-    printf("send_app(): ifelse-end:\n");
+
     const ImgBase *normImage = 0;
     if(pa("-normalize")){
       static ImgBase *buf = 0;
@@ -230,7 +221,7 @@ void send_app(){
       normImage = ppImage;
     }
     output.send(normImage);
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
     if(!(bool)pa("-no-gui")){
       bool &updateImages = gui.get<bool>("updateImages");
       if(updateImages){
@@ -242,7 +233,7 @@ void send_app(){
     first = false;
     
     bool useGUI = false;
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
     int fpsLimit = 0;
     if(!(bool)pa("-no-gui")){
       fpsLimit = gui.get<int>("fpsLimit");
@@ -254,8 +245,6 @@ void send_app(){
     int fpsLimit = pa("-fps");
 #endif
 
-    // TODO: delete
-    printf("send_app(): noGui\n");
     if(!useGUI){
       if(pa("-progress")){
           static int curr = 0;
@@ -272,23 +261,13 @@ void send_app(){
         }
     }
 
-    // TODO: delete
-    printf("send_app(): limiter:\n");
     static FPSLimiter limiter(15,10);
     if(limiter.getMaxFPS() != fpsLimit) limiter.setMaxFPS(fpsLimit);
-
-    // TODO: delete
-    printf("send_app(): wait:\n");
     limiter.wait();
-
-    // TODO: delete
-    printf("send_app(): end:\n");
-    char var;
-    std::cin >> var;
   }
 }
 
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
 void init_gui(){
   output.init(pa("-o"));
 
@@ -331,7 +310,6 @@ void init_gui(){
 
 
 int main(int n, char **ppc){
-  printf("pa_explain:\n");
   pa_explain
   ("-input","for sender application only allowed ICL default\n"
    " input specification e.g. -input pwc 0 or -input file bla/*.ppm")
@@ -375,7 +353,6 @@ int main(int n, char **ppc){
    "the icl-camcfg tool. Please note: some grabber parameters might cause an internal grabber crash, "
    "so e.g. trigger setup parameters or the isospeed parameters must be removed from this file");
 
-  printf("pa_init:\n");
   pa_init(n,ppc,"[m]-output|-o(output-type-string,output-parameters) "
          "-flip|-f(string) -single-shot [m]-input|-i(device,device-params) "
          "-size|(Size) -no-gui -pp(1) "
@@ -387,27 +364,25 @@ int main(int n, char **ppc){
          "-perserve-preprocessing-roi|-ppp -progress "
          "-initially-disable-image-updates|-idu");
 
-  printf("pa:\n");
   if (pa("-reset")){
-    printf("resetBus:\n");
     GenericGrabber::resetBus();
   }
 
-  printf("init_grabber:\n");
   init_grabber();  
 
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
   if(!pa("-no-gui")){
     return ICLApp(n,ppc,"",init_gui,send_app).exec();
   }else{
     static bool alwaysTrue = 1;
     ppEnabled = &alwaysTrue;
+    output.init(pa("-o"));
     send_app();
   }
 #else
   static bool alwaysTrue = 1;
   ppEnabled = &alwaysTrue;
-  printf("send_app:\n");
+  output.init(pa("-o"));
   send_app();
 #endif
 }

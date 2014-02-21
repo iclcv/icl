@@ -374,7 +374,7 @@ namespace icl {
                                  float focalLength)
       throw (NotEnoughDataPointsException,SingularMatrixException) {
   
-  #ifndef HAVE_MKL
+  #ifndef ICL_HAVE_MKL
   	return calibrate_pinv(Xws,xis,focalLength);
   #else
       // TODO: normalize points

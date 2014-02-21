@@ -35,7 +35,7 @@
 #include <cstring>
 #include <stdio.h>
 
-#ifdef HAVE_LIBZ
+#ifdef ICL_HAVE_LIBZ
 #include <zlib.h>
 #endif
 
@@ -59,12 +59,8 @@ namespace icl{
       
       void break_apart(std::string s, std::string &dir, std::string &basename, std::string &suffix, std::string &filename){
         // {{{ open
-  // TODO: delete
-        printf("break_apart(s=%s, dir=%s, basename=%s, suffix=%s, filename=%s)\n", s.c_str(), dir.c_str(), basename.c_str(), suffix.c_str(), filename.c_str());
         size_t p = s.rfind(DIR_SEPERATOR);
 
-        // TODO: delete
-        printf("dic break_apart\n");
         /// split directory xxx/filename.suffix
         if(p==std::string::npos){
           dir = "";
@@ -74,8 +70,6 @@ namespace icl{
           filename = s.substr(p+1);
         }
 
-        // TODO: delete
-        printf("suffix break_apart\n");
         // split suffix
         p = filename.rfind('.');
         if(p == std::string::npos){
@@ -92,8 +86,6 @@ namespace icl{
             }
           }
         }
-        // TODO: delete
-        printf("end break_apart\n");
       }
   
       // }}}
@@ -120,7 +112,7 @@ namespace icl{
   
       // }}}
   
-  #ifdef HAVE_LIBZ
+  #ifdef ICL_HAVE_LIBZ
       void buffer_file_gz(gzFile fp, std::vector<unsigned char> &data){
         // {{{ open
   
@@ -148,15 +140,8 @@ namespace icl{
       static const char *s_apcOpenModes[4] = { "rb","r","wb","w" };
   
       bool file_exists(const std::string &filename){
-        // TODO: delete
-        printf("file_exists: filename=%s\n", filename.c_str());
-#ifdef ICL_SYSTEM_WINDOWS
-        struct _stat stFileInfo;
-        return _stat(filename.c_str(),&stFileInfo)==0;
-#else
         struct stat stFileInfo;
         return stat(filename.c_str(),&stFileInfo)==0;
-#endif
       }
       
       bool file_is_dir(const std::string &filename){
@@ -172,7 +157,7 @@ namespace icl{
         // {{{ open
   
         name(name),handle(0),
-  #ifdef HAVE_LIBZ
+  #ifdef ICL_HAVE_LIBZ
         gzipped(endsWith(name,".gz")),
   #endif
         bufferoffset(0),
@@ -188,7 +173,7 @@ namespace icl{
   
         ICLASSERT_RETURN(!handle);
         const char *pcOpenMode = s_apcOpenModes[openmode];
-  #ifdef HAVE_LIBZ
+  #ifdef ICL_HAVE_LIBZ
         if(gzipped){
           handle = gzopen(name.c_str(),pcOpenMode);
         }else{
@@ -214,7 +199,7 @@ namespace icl{
   
         const char *pcOpenMode = s_apcOpenModes[openmode];
         
-  #ifdef HAVE_LIBZ
+  #ifdef ICL_HAVE_LIBZ
         if(gzipped){
           gzclose((gzFile)handle);
           handle = gzopen(name.c_str(),pcOpenMode);
@@ -235,7 +220,7 @@ namespace icl{
         // {{{ open
   
         ICLASSERT_RETURN(handle);
-  #ifdef HAVE_LIBZ
+  #ifdef ICL_HAVE_LIBZ
         if(gzipped){
           gzclose((gzFile)handle);
         }else{
@@ -253,7 +238,7 @@ namespace icl{
   
         ICLASSERT_RETURN(handle);
         if(buffer.size()) return;
-  #ifdef HAVE_LIBZ
+  #ifdef ICL_HAVE_LIBZ
         if(gzipped){
           buffer_file_gz((gzFile)handle,buffer);
         }else{
@@ -274,7 +259,7 @@ namespace icl{
       std::string filename;
   
       void *handle;
-  #ifdef HAVE_LIBZ
+  #ifdef ICL_HAVE_LIBZ
       bool gzipped;
   #endif
       std::vector<icl8u> buffer;
@@ -396,7 +381,7 @@ namespace icl{
   
       int bytesWritten = 0;
         
-  #ifdef HAVE_LIBZ
+  #ifdef ICL_HAVE_LIBZ
       if(impl->gzipped){
         while(bytesWritten < len){
           bytesWritten += gzwrite((gzFile)(impl->handle),data,len); 

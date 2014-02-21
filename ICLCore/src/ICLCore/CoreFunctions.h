@@ -219,7 +219,7 @@ namespace icl {
     } 
   
   
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
     /** \cond */ 
     template <>
     inline void copy<icl8u>(const icl8u *poSrcStart, const icl8u *poSrcEnd, icl8u *poDst){
@@ -253,7 +253,7 @@ namespace icl {
       std::transform(poSrcStart,poSrcEnd,poDst,utils::clipped_cast<srcT,dstT>);
     }
     
-  #ifdef HAVE_IPP 
+  #ifdef ICL_HAVE_IPP 
     /** \cond */ 
     /// from icl8u functions
     template<> inline void convert<icl8u,icl32f>(const icl8u *poSrcStart,const icl8u *poSrcEnd, icl32f *poDst){

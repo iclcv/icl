@@ -40,12 +40,12 @@
 #include <vector>
 #include <cmath>
 
-#ifdef HAVE_IPP
+#ifdef ICL_HAVE_IPP
 #include <ipp.h>
 #endif
 
 // Intel Math Kernel Library
-#ifdef HAVE_MKL
+#ifdef ICL_HAVE_MKL
 #include "mkl_cblas.h"
 #endif
 
@@ -970,7 +970,7 @@ namespace icl{
       DynMatrix big_matrix_pinv(T zeroThreshold = 1E-16) const
         throw (InvalidMatrixDimensionException,SingularMatrixException,utils::ICLException);
   
-  #ifdef HAVE_MKL
+  #ifdef ICL_HAVE_MKL
       typedef void(*GESDD)(const char*, const int*, const int*, T*, const int*, T*, T*, const int*, T*, const int*, T*, const int*, int*, int*);
       typedef void(*CBLAS_GEMM)(CBLAS_ORDER,CBLAS_TRANSPOSE,CBLAS_TRANSPOSE,int,int,int,T,const T*,int,const T*,int,T,T*,int);
       DynMatrix big_matrix_pinv(T zeroThreshold, GESDD gesdd, CBLAS_GEMM cblas_gemm) const
@@ -1152,7 +1152,7 @@ namespace icl{
     std::istream &operator>>(std::istream &s, DynMatrix<T> &m);
 
   
-#ifdef HAVE_IPP
+#ifdef ICL_HAVE_IPP
     /** \cond */
     template<>
     inline float DynMatrix<float>::sqrDistanceTo(const DynMatrix<float> &other) const throw (InvalidMatrixDimensionException){
@@ -1267,7 +1267,7 @@ namespace icl{
   
     /** \endcond */
   
-#endif // HAVE_IPP
+#endif // ICL_HAVE_IPP
    
     /// vertical concatenation of matrices
     /** missing elementes are padded with 0 */

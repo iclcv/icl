@@ -36,7 +36,7 @@
 #include <ICLCore/Img.h>
 #include <ICLFilter/UnaryOp.h>
 
-#ifdef HAVE_OPENCL    
+#ifdef ICL_HAVE_OPENCL    
 #include <ICLUtils/CLProgram.h>
 #include <ICLUtils/CLKernel.h>
 #include <ICLUtils/CLBuffer.h>
@@ -113,7 +113,7 @@ namespace icl{
       core::Img8u outputImageC; 
       core::Img32f motionImage;     
      	
-    #ifdef HAVE_OPENCL
+    #ifdef ICL_HAVE_OPENCL
       //OpenCL    
       float* inputImage1ArrayF;
       float* inputImagesArrayF;

@@ -34,13 +34,13 @@
 #include <string>
 #include <iostream>
 
-#ifdef HAVE_IPP
+#ifdef ICL_HAVE_IPP
 #include <ipp.h>
 #endif
 
 namespace icl {
   namespace utils{
-  #ifndef HAVE_IPP
+  #ifndef ICL_HAVE_IPP
     /// fallback implementation for the IppiSize struct, defined in the ippi lib
     struct IppiSize {
       // width

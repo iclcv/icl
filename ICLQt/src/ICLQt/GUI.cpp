@@ -110,7 +110,7 @@
 
 #include <ICLQt/Widget.h>
 #include <ICLQt/DrawWidget.h>
-#ifdef HAVE_OPENGL
+#ifdef ICL_HAVE_OPENGL
 #include <ICLQt/DrawWidget3D.h>
 #endif
 #include <ICLQt/ThreadedUpdatableSlider.h>
@@ -1849,7 +1849,7 @@ namespace icl{
   
     // }}}
   
-  #ifdef HAVE_OPENGL
+  #ifdef ICL_HAVE_OPENGL
     struct DrawGUIWidget3D : public GUIWidget{
       // {{{ open
       DrawGUIWidget3D(const GUIDefinition &def):GUIWidget(def,0,1,GUIWidget::gridLayout,Size(16,12)){
@@ -2061,7 +2061,7 @@ namespace icl{
         GUI::register_widget_type("image",create_widget_template<ImageGUIWidget>);
         GUI::register_widget_type("state",create_widget_template<StateGUIWidget>);
         GUI::register_widget_type("draw",create_widget_template<DrawGUIWidget>);
-  #ifdef HAVE_OPENGL
+  #ifdef ICL_HAVE_OPENGL
         GUI::register_widget_type("draw3D",create_widget_template<DrawGUIWidget3D>);
   #endif
         GUI::register_widget_type("combo",create_widget_template<ComboGUIWidget>);

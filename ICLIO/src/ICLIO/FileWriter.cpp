@@ -35,14 +35,14 @@
 #include <ICLIO/FileWriterPluginPNM.h> 
 #include <ICLIO/FileWriterPluginCSV.h> 
 #include <ICLIO/FileWriterPluginBICL.h> 
-#ifdef HAVE_LIBJPEG
+#ifdef ICL_HAVE_LIBJPEG
 #include <ICLIO/FileWriterPluginJPEG.h> 
 #endif
-#ifdef HAVE_IMAGEMAGICK
+#ifdef ICL_HAVE_IMAGEMAGICK
 #include <ICLIO/FileWriterPluginImageMagick.h>
 #endif
 
-#ifdef HAVE_LIBPNG
+#ifdef ICL_HAVE_LIBPNG
 #include <ICLIO/FileWriterPluginPNG.h>
 #endif
 
@@ -73,16 +73,16 @@ namespace icl{
   
         
   
-  #ifdef HAVE_LIBJPEG
+  #ifdef ICL_HAVE_LIBJPEG
         FileWriter::s_mapPlugins[".jpeg"] = new FileWriterPluginJPEG;
         FileWriter::s_mapPlugins[".jpg"] = new FileWriterPluginJPEG;
         FileWriter::s_mapPlugins[".jicl"] = new FileWriterPluginBICL("jpeg","85");
-  #elif HAVE_IMAGEMAGICK
+  #elif ICL_HAVE_IMAGEMAGICK
         FileWriter::s_mapPlugins[".jpeg"] = new FileWriterPluginImageMagick;
         FileWriter::s_mapPlugins[".jpg"] = new FileWriterPluginImageMagick;
   #endif
   
-  #ifdef HAVE_LIBZ
+  #ifdef ICL_HAVE_LIBZ
         FileWriter::s_mapPlugins[".ppm.gz"] = new FileWriterPluginPNM;
         FileWriter::s_mapPlugins[".pgm.gz"] = new FileWriterPluginPNM;
         FileWriter::s_mapPlugins[".pnm.gz"] = new FileWriterPluginPNM;
@@ -96,14 +96,14 @@ namespace icl{
   
   #endif
   
-  #ifdef HAVE_LIBPNG
+  #ifdef ICL_HAVE_LIBPNG
         FileWriter::s_mapPlugins[".png"] = new FileWriterPluginPNG;
   #endif
         
-  #ifdef HAVE_IMAGEMAGICK
+  #ifdef ICL_HAVE_IMAGEMAGICK
         
         static const char *imageMagickFormats[] = {
-  #ifndef HAVE_LIBPNG
+  #ifndef ICL_HAVE_LIBPNG
           "png",
   #endif
           "gif","pdf","ps","avs","bmp","cgm","cin","cur","cut","dcx",

@@ -38,7 +38,7 @@ using namespace icl::core;
 namespace icl{
   namespace filter{
     namespace{
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
       template<class SrcType, class DstType, typename ippfunc>
       inline void ipp_call_fixed(const Img<SrcType> &src, Img<DstType> &dst, int channel, ippfunc func, ConvolutionOp &op){
         func(src.getROIData(channel,op.getROIOffset()),src.getLineStep(),dst.getROIData(channel),dst.getLineStep(),dst.getROISize());
@@ -126,7 +126,7 @@ namespace icl{
       
   
   
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
       /// define specializations of convolute-template
   
       // note: each specialization is doubled because the kernel-type template parameters is handled in the IPP
@@ -206,7 +206,7 @@ namespace icl{
   #undef FIXED_SPEC_M
   #undef CONV_SPEC
   
-  #endif //HAVE_IPP
+  #endif //ICL_HAVE_IPP
   
   
       template<class KernelType, class SrcType, class DstType, ConvolutionKernel::fixedType t>

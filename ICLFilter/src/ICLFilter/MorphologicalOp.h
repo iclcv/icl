@@ -149,7 +149,7 @@ namespace icl {
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
       
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
     private:
   
       template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, const Ipp8u*, IppiSize, IppiPoint)>

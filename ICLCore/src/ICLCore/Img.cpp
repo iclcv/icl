@@ -643,7 +643,7 @@ namespace icl {
       return dst;
     }
   
-  #ifdef HAVE_IPP  
+  #ifdef ICL_HAVE_IPP  
     template<>
     Img<icl8u> *Img<icl8u>::lut(const icl8u *lut, Img<icl8u> *dst, int bits) const{
       if(!dst){
@@ -835,7 +835,7 @@ namespace icl {
     }
   
   
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
     template <>
     void Img<icl8u>::mirror(axis eAxis, int iChannel, const Point &oOffset, const Size &oSize) {
       ippiMirror_8u_C1IR(getROIData(iChannel,oOffset),getLineStep(), oSize, (IppiAxis) eAxis);
@@ -939,7 +939,7 @@ namespace icl {
         return *it;
       }
     }
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
   #define ICL_INSTANTIATE_DEPTH(T)                                        \
     template<> icl ## T                                                   \
     Img<icl ## T>::getMax(int iChannel,Point *coords) const {             \
@@ -990,7 +990,7 @@ namespace icl {
         return *it;
       }
     }
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
   #define ICL_INSTANTIATE_DEPTH(T)                                        \
     template<> icl##T                                                     \
     Img<icl ## T>::getMin(int iChannel, Point *coords) const {            \
@@ -1068,7 +1068,7 @@ namespace icl {
   
     }
   
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
   
   #define ICL_INSTANTIATE_DEPTH(T)                                        \
     template<> const Range<icl##T>                                        \
@@ -1291,7 +1291,7 @@ namespace icl {
       }
     }
   
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
     template <> void 
     Img<icl32f>::normalize(int iChannel, const Range<icl32f> &srcRange, const Range<icl32f> &dstRange){
       FUNCTION_LOG("");
@@ -1624,7 +1624,7 @@ namespace icl {
      Img<icl##D>*,int,const Point&,const Size&,scalemode); 
   
     /// IPP-OPTIMIZED specialization for icl8u to icl8u ROI sclaing (using ippiResize)
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
     template<> inline void 
     scaledCopyChannelROI<icl8u>(const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
                                 Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
@@ -1635,7 +1635,11 @@ namespace icl {
       CHECK_VALUES_NO_SIZE(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
   
   #if IPP_USE_DEPRICATED_RESIZE
-  #warning "we are aware of the fact that ippiResize is deprecated, however the replacement seems to be buggy in case of LIN interpolation"
+    #if WIN32
+      #pragma WARNING("we are aware of the fact that ippiResize is deprecated, however the replacement seems to be buggy in case of LIN interpolation")
+    #else
+      #warning "we are aware of the fact that ippiResize is deprecated, however the replacement seems to be buggy in case of LIN interpolation"
+    #endif
       //NOTE: this function has become deprecated
       // attention: for source image IPP wants indeed the *image* origin
       ippiResize_8u_C1R(src->getData(srcC),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
@@ -1680,7 +1684,11 @@ namespace icl {
       CHECK_VALUES_NO_SIZE(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
       
   #if IPP_USE_DEPRICATED_RESIZE
-  #warning "we are aware of the fact that ippiResize is deprecated, however the replacement seems to be buggy in case of LIN interpolation"
+    #if WIN32
+      #pragma WARNING("we are aware of the fact that ippiResize is deprecated, however the replacement seems to be buggy in case of LIN interpolation")
+    #else
+      #warning "we are aware of the fact that ippiResize is deprecated, however the replacement seems to be buggy in case of LIN interpolation"
+    #endif
       //NOTE: this function has become deprecated
       // attention: for source image IPP wants indeed the *image* origin
       ippiResize_32f_C1R(src->getData(srcC),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
@@ -1777,7 +1785,7 @@ namespace icl {
                           const Img<icl##D> *src, int srcC, const Point &srcOffs, const Size &srcSize, \
                           Img<icl##D> *dst, int dstC, const Point &dstOffs, const Size &dstSize);
   
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
     /// IPP-OPTIMIZED specialization for icl8u image flipping
     template <>
     ICLCore_API void flippedCopyChannelROI<icl8u>(axis eAxis, 

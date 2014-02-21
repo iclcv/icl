@@ -30,7 +30,7 @@
 
 #include <ICLIO/ImageCompressor.h>
 #include <stdint.h>
-#ifdef HAVE_LIBJPEG
+#ifdef ICL_HAVE_LIBJPEG
 #include <ICLIO/JPEGEncoder.h>
 #include <ICLIO/JPEGDecoder.h>
 #endif
@@ -49,7 +49,7 @@ namespace icl{
       ImgBase *decoded_buffer;
       ImageCompressor::CompressionSpec compression;
       
-  #ifdef HAVE_LIBJPEG
+  #ifdef ICL_HAVE_LIBJPEG
       SmartPtr<JPEGEncoder> jpegEncoder;
   #endif
   
@@ -328,7 +328,7 @@ namespace icl{
       Header header = createHeader(image,skipMetaData);
       
       if(m_data->compression.mode == "jpeg"){
-  #ifdef HAVE_LIBJPEG
+  #ifdef ICL_HAVE_LIBJPEG
   
         if(!m_data->jpegEncoder) m_data->jpegEncoder = new JPEGEncoder;
         m_data->jpegEncoder->setQuality(parse<int>(m_data->compression.quality));
@@ -419,7 +419,7 @@ namespace icl{
       ImgBase *&useDst = dst ? *dst : m_data->decoded_buffer;
   
       if(header.getCompressionMode() == "jpeg"){
-  #ifdef HAVE_LIBJPEG
+  #ifdef ICL_HAVE_LIBJPEG
         JPEGDecoder::decode(header.imageBegin(), header.imageLen(), &useDst);
         useDst->getMetaData().assign(header.metaBegin(), header.metaBegin()+header.params.metaLen);
   #else

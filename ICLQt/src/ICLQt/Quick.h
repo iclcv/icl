@@ -64,7 +64,7 @@ using namespace std;
 namespace icl{
   namespace qt{
   
-  #ifdef HAVE_QT
+  #ifdef ICL_HAVE_QT
     /// uses Qt to spawn an open-file dialog with given filter
     /** throws an exception if cancel was pressed. The function thread-safe and can savely be called from a working thread */
     ICLQt_API std::string openFileDialog(const std::string &filter = "",

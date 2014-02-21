@@ -30,7 +30,7 @@
 
 #include <ICLFilter/LUTOp3Channel.h>
 #include <ICLUtils/Exception.h>
-#include <math.h>
+#include <cmath>
 
 using namespace icl::utils;
 using namespace icl::core;

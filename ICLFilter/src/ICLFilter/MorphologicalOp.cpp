@@ -40,7 +40,7 @@ using namespace icl::core;
 
 namespace icl {
   namespace filter{
-  #ifndef HAVE_IPP
+  #ifndef ICL_HAVE_IPP
     template<class T, typename cmp_func>
     void morph_cpp(const Img<T> &src, Img<T> &dst, MorphologicalOp &op,
                    T init, cmp_func cmp, const icl8u *mask){
@@ -228,7 +228,7 @@ namespace icl {
   
   
   
-  #else //  HAVE_IPP is defined !
+  #else //  ICL_HAVE_IPP is defined !
     MorphologicalOp::MorphologicalOp (optype eOptype, const Size &maskSize,const icl8u *pcMask){
       ICLASSERT_RETURN(maskSize.getDim());
       

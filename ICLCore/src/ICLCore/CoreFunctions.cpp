@@ -297,7 +297,7 @@ namespace icl{
 
   
 
-  #ifdef HAVE_IPP 
+  #ifdef ICL_HAVE_IPP 
   #elif defined HAVE_SSE2
     // --- from icl8u to icl32f ---
     template<> void convert<icl8u,icl32f>(const icl8u *poSrcStart,const icl8u *poSrcEnd, icl32f *poDst) {
@@ -762,7 +762,7 @@ namespace icl{
           return math::mean(image.begin(channel),image.end(channel));
         }
       }
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
       template<> double channel_mean<icl8u>(const Img8u &image, int channel, bool roiOnly){
         icl64f m=0;
         ippiMean_8u_C1R(roiOnly ? image.getROIData(channel) : image.getData(channel),image.getLineStep(),
@@ -948,7 +948,7 @@ namespace icl{
         }
       }    
   
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
       
   #define COMPUTE_DEFAULT_HISTO_256_TEMPLATE(D)                                                                                \
       template<> void compute_default_histo_256<icl##D>(const Img##D &image, int c, std::vector<int> &h, bool roiOnly){             \

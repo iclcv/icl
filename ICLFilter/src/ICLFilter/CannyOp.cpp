@@ -329,7 +329,7 @@ namespace icl {
         if (!prepare (ppoDst, depth8u, poSrc->getSize(), poSrc->getFormat(), poSrc->getChannels(), Rect(Point(1,1), m_derivatives[0]->getSize()))) return;
       }
 
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
       int minSize=0;
       ippiCannyGetSize(m_derivatives[0]->getSize(), &minSize);
       m_cannyBuf.resize(minSize);

@@ -35,7 +35,7 @@
 #include <fstream>
 
 // Intel Math Kernel Library
-#ifdef HAVE_MKL
+#ifdef ICL_HAVE_MKL
 #include "mkl_types.h"
 #include "mkl_lapack.h"
 #endif
@@ -48,7 +48,7 @@ using namespace icl::utils;
 namespace icl{
   namespace math{
   
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
    template<class T, IppStatus (*ippFunc)(const T*,int,int,T*,T*,int,int,int)>
    static DynMatrix<T> apply_dyn_matrix_inv(const DynMatrix<T> &s){
       if(s.cols() != s.rows()){
@@ -177,7 +177,7 @@ namespace icl{
           DynMatrix<T> D(order-1,order-1);
           for(unsigned int i=0;i<order;++i){
             get_minor_matrix(*this,i,0,D);
-            det += ::pow(-1.0,i) * (*this)(i,0) * D.det();
+            det += ::pow(-1.0,(int)i) * (*this)(i,0) * D.det();
           }
           return det;
         }
@@ -393,7 +393,7 @@ namespace icl{
       return pinv( true, zeroThreshold );
     }
   
-  #ifdef HAVE_MKL
+  #ifdef ICL_HAVE_MKL
     template<class T>
       DynMatrix<T> DynMatrix<T>::big_matrix_pinv(T zeroThreshold, GESDD gesdd, CBLAS_GEMM cblas_gemm) const
       throw (InvalidMatrixDimensionException,SingularMatrixException, ICLException){
@@ -656,7 +656,7 @@ namespace icl{
       delete [] pvalues;
     }
   
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
     template<> ICLMath_API
     void find_eigenvectors(const DynMatrix<icl32f> &a, DynMatrix<icl32f> &eigenvectors, DynMatrix<icl32f> &eigenvalues, icl32f* buffer){
       const int n = a.cols();
@@ -702,7 +702,7 @@ namespace icl{
     }
   
   
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
     template<> ICLMath_API DynMatrix<float> DynMatrix<float>::inv() const throw (InvalidMatrixDimensionException,SingularMatrixException){
       return apply_dyn_matrix_inv<float,ippmInvert_m_32f>(*this);
     }

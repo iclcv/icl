@@ -846,7 +846,7 @@ namespace icl{
       template ICLMath_API std::complex<icl64f>*  fft(unsigned int n, const std::complex<icl64f>* a);
       template ICLMath_API icl32c*  fft(unsigned int n, const std::complex<icl64f>* a);
       
-#ifdef HAVE_IPP
+#ifdef ICL_HAVE_IPP
       template<typename T>
       DynMatrix<icl32c >&  ipp_wrapper_function_result_fft(const DynMatrix<T> &src,
                                                            DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) throw (FFTException){
@@ -968,7 +968,7 @@ namespace icl{
       }
 #endif
 
-#ifdef HAVE_MKL
+#ifdef ICL_HAVE_MKL
 #include <mkl_dfti.h>
       template<typename T>
       void unpack_mkl_fft(T *src,std::complex<T> *dst, unsigned int cols, unsigned int rows){
@@ -1303,12 +1303,12 @@ namespace icl{
       DynMatrix<std::complex<T2> >& fft2D(const DynMatrix<T1> &src,
                                                DynMatrix<std::complex<T2> > &dst, DynMatrix<std::complex<T2> > &buf){
 	if(isPowerOfTwo(src.cols()) && isPowerOfTwo(src.rows())){
-#ifdef HAVE_IPP
+#ifdef ICL_HAVE_IPP
           buf.setBounds(src.cols(),src.rows());
           return ipp_wrapper_function_result_fft(src,dst,buf);
 #endif
 	}
-#ifdef HAVE_MKL
+#ifdef ICL_HAVE_MKL
 	return mkl_wrapper_function_result_fft(src,dst,buf);
 #endif
 	return fft2D_cpp(src,dst,buf);
@@ -1336,7 +1336,7 @@ namespace icl{
       template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  fft2D(const DynMatrix<icl8u> &src,
                                                     DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef HAVE_MKL
+#ifdef ICL_HAVE_MKL
 	return mkl_wrapper_function_result_fft(src,dst,buf);
 #endif
 	return fft2D_cpp(src,dst,buf);
@@ -1344,7 +1344,7 @@ namespace icl{
       template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  fft2D(const DynMatrix<icl16u> &src,
                                                     DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef HAVE_MKL
+#ifdef ICL_HAVE_MKL
 	return mkl_wrapper_function_result_fft(src,dst,buf);
 #endif
 	return fft2D_cpp(src,dst,buf);
@@ -1352,7 +1352,7 @@ namespace icl{
       template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  fft2D(const DynMatrix<icl32u> &src,
                                                     DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef HAVE_MKL
+#ifdef ICL_HAVE_MKL
 	return mkl_wrapper_function_result_fft(src,dst,buf);
 #endif
 	return fft2D_cpp(src,dst,buf);
@@ -1360,7 +1360,7 @@ namespace icl{
       template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  fft2D(const DynMatrix<icl16s> &src,
                                                     DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef HAVE_MKL
+#ifdef ICL_HAVE_MKL
 	return mkl_wrapper_function_result_fft(src,dst,buf);
 #endif
 	return fft2D_cpp(src,dst,buf);
@@ -1368,7 +1368,7 @@ namespace icl{
       template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  fft2D(const DynMatrix<icl32s> &src,
                                                     DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef HAVE_MKL
+#ifdef ICL_HAVE_MKL
 	return mkl_wrapper_function_result_fft(src,dst,buf);
 #endif
 	return fft2D_cpp(src,dst,buf);
@@ -1376,7 +1376,7 @@ namespace icl{
       template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  fft2D(const DynMatrix<icl32f> &src,
                                                     DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef HAVE_MKL
+#ifdef ICL_HAVE_MKL
 	return mkl_wrapper_function_result_fft(src,dst,buf);
 #endif
 	return fft2D_cpp(src,dst,buf);
@@ -1384,7 +1384,7 @@ namespace icl{
       template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  fft2D(const DynMatrix<icl64f> &src,
                                                     DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef HAVE_MKL
+#ifdef ICL_HAVE_MKL
 	return mkl_wrapper_function_result_fft(src,dst,buf);
 #endif
 	return fft2D_cpp(src,dst,buf);
@@ -1392,7 +1392,7 @@ namespace icl{
       template<> ICLMath_API
       DynMatrix<icl32c >&  fft2D(const DynMatrix<icl64f> &src,
                                                     DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf){
-#ifdef HAVE_MKL
+#ifdef ICL_HAVE_MKL
 	return mkl_wrapper_function_result_fft(src,dst,buf);
 #endif
 	return fft2D_cpp(src,dst,buf);
@@ -1402,12 +1402,12 @@ namespace icl{
       DynMatrix<icl32c >& fft2D(const DynMatrix<icl32c > &src,
                                                    DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf){
 	if(isPowerOfTwo(src.cols()) && isPowerOfTwo(src.rows())){
-#ifdef HAVE_IPP
+#ifdef ICL_HAVE_IPP
           buf.setBounds(src.cols(),src.rows());
           return ipp_wrapper_function_result_fft_icl32fc(src,dst,buf);
 #endif
 	}
-#ifdef HAVE_MKL
+#ifdef ICL_HAVE_MKL
 	return mkl_wrapper_function_result_fft_icl32fc(src,dst,buf);
 #endif
 	return fft2D_cpp(src,dst,buf);
@@ -1415,7 +1415,7 @@ namespace icl{
       template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >& fft2D(const DynMatrix<std::complex<icl64f> > &src,
                                                    DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef HAVE_MKL
+#ifdef ICL_HAVE_MKL
 	return mkl_wrapper_function_result_fft_icl64fc(src,dst,buf);
 #endif
 	return fft2D_cpp(src,dst,buf);
@@ -1648,7 +1648,7 @@ namespace icl{
       template ICLMath_API std::complex<icl64f>*  ifft_cpp(unsigned int n, const std::complex<icl64f>* a);
       template ICLMath_API icl32c*  ifft_cpp(unsigned int n, const std::complex<icl64f>* a);
 
-#ifdef HAVE_IPP
+#ifdef ICL_HAVE_IPP
       template<typename T>
       DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<T> &src,
                                                                                        DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) throw(FFTException){
@@ -1726,7 +1726,7 @@ namespace icl{
                                                                                        DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) throw(FFTException);
 #endif
 
-#ifdef HAVE_MKL
+#ifdef ICL_HAVE_MKL
       template<typename T1,typename T2>
       DynMatrix<std::complex<T2> >&  mkl_wrapper_function_result_ifft_icl32fc(const DynMatrix<T1> &src,
                                                                                    DynMatrix<std::complex<T2> > &dst,DynMatrix<std::complex<T2> > &buffer) throw(FFTException){
@@ -1984,13 +1984,13 @@ namespace icl{
       DynMatrix<std::complex<T2> >& ifft2D(const DynMatrix<T1> &src,
                                                 DynMatrix<std::complex<T2> > &dst,	DynMatrix<std::complex<T2> > &buf){
 	if(isPowerOfTwo(src.cols()) && isPowerOfTwo(src.rows())){
-#ifdef HAVE_IPP
+#ifdef ICL_HAVE_IPP
           buf.setBounds(src.cols(),src.rows());
           return ipp_wrapper_function_result_ifft_icl32fc(src,dst,buf);
 
 #endif
 	}
-#ifdef HAVE_MKL
+#ifdef ICL_HAVE_MKL
 	return mkl_wrapper_function_result_ifft_icl32fc(src,dst,buf);
 #endif
 	return ifft2D_cpp(src,dst,buf);
@@ -2026,7 +2026,7 @@ namespace icl{
       template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  ifft2D(const DynMatrix<icl8u> &src,
                                                      DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef HAVE_MKL
+#ifdef ICL_HAVE_MKL
 	return mkl_wrapper_function_result_ifft_icl64fc(src,dst,buf);
 #endif
 	return ifft2D_cpp(src,dst,buf);
@@ -2034,7 +2034,7 @@ namespace icl{
       template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  ifft2D(const DynMatrix<icl16u> &src,
                                                      DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef HAVE_MKL
+#ifdef ICL_HAVE_MKL
 	return mkl_wrapper_function_result_ifft_icl64fc(src,dst,buf);
 #endif
 	return ifft2D(src,dst,buf);
@@ -2042,7 +2042,7 @@ namespace icl{
       template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  ifft2D(const DynMatrix<icl32u> &src,
                                                      DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef HAVE_MKL
+#ifdef ICL_HAVE_MKL
 	return mkl_wrapper_function_result_ifft_icl64fc(src,dst,buf);
 #endif
 	return ifft2D_cpp(src,dst,buf);
@@ -2050,7 +2050,7 @@ namespace icl{
       template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  ifft2D(const DynMatrix<icl16s> &src,
                                                      DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef HAVE_MKL
+#ifdef ICL_HAVE_MKL
 	return mkl_wrapper_function_result_ifft_icl64fc(src,dst,buf);
 #endif
 	return ifft2D_cpp(src,dst,buf);
@@ -2058,7 +2058,7 @@ namespace icl{
       template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  ifft2D(const DynMatrix<icl32s> &src,
                                                      DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef HAVE_MKL
+#ifdef ICL_HAVE_MKL
 	return mkl_wrapper_function_result_ifft_icl64fc(src,dst,buf);
 #endif
 	return ifft2D_cpp(src,dst,buf);
@@ -2066,7 +2066,7 @@ namespace icl{
       template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  ifft2D(const DynMatrix<icl32f> &src,
                                                      DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef HAVE_MKL
+#ifdef ICL_HAVE_MKL
 	return mkl_wrapper_function_result_ifft_icl64fc(src,dst,buf);
 #endif
 	return ifft2D_cpp(src,dst,buf);
@@ -2074,7 +2074,7 @@ namespace icl{
       template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  ifft2D(const DynMatrix<icl64f> &src,
                                                      DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef HAVE_MKL
+#ifdef ICL_HAVE_MKL
 	return mkl_wrapper_function_result_ifft_icl64fc(src,dst,buf);
 #endif
 	return ifft2D_cpp(src,dst,buf);
@@ -2084,7 +2084,7 @@ namespace icl{
       template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  ifft2D(const DynMatrix<icl32c > &src,
                                                      DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef HAVE_MKL
+#ifdef ICL_HAVE_MKL
 	return mkl_wrapper_function_result_ifft_icl64fc(src,dst,buf);
 #endif
 	return ifft2D_cpp(src,dst,buf);
@@ -2092,7 +2092,7 @@ namespace icl{
       template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  ifft2D(const DynMatrix<std::complex<icl64f> > &src,
                                                      DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef HAVE_MKL
+#ifdef ICL_HAVE_MKL
 	return mkl_wrapper_function_result_ifft_icl64fc(src,dst,buf);
 #endif
 	return ifft2D_cpp(src,dst,buf);

@@ -27,7 +27,7 @@
 ** Excellence Initiative.                                          **
 **                                                                 **
 ********************************************************************/
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 #include <ICLUtils/CLKernel.h>
 #include <iostream>
 #include <sstream>

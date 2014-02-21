@@ -364,7 +364,7 @@ namespace icl{
       return buffer;
     }
 
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
 
     
     template<class T, class IppFunc> 

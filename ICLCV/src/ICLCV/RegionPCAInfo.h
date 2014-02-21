@@ -33,10 +33,6 @@
 #include <ICLUtils/CompatMacros.h>
 #include <cmath>
 
-#ifdef ICL_SYSTEM_WINDOWS
-#define M_PI 3.14159265358979323846
-#endif
-
 namespace icl{
   namespace cv{
     /// data-struct to represent local PCA information \ingroup G_RD

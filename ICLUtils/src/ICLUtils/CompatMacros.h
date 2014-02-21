@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLUtils/src/ICLUtils/CompatMacros.h                   **
 ** Module : ICLUtils                                               **
-** Authors: Christof Elbrechter                                    **
+** Authors: Christof Elbrechter, Sergius Gaulik                    **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -30,14 +30,48 @@
 
 #pragma once
 
-#ifdef ICL_SYSTEM_WINDOWS
+#include <ICLUtils/ICLConfig.h>
+
+#ifdef WIN32
   #define NOMINMAX
   #define _USE_MATH_DEFINES
+  #define M_PI 3.14159265358979323846
   //#define __msxml_h__ // icl has its own xml classes
   //#include <Windows.h>
+  // TODOWW: test with _MSC_VER == 1700
+  #if (defined _MSC_VER && _MSC_VER <= 1600)
+    #include <cmath>
+    inline double round(double a)
+    {
+      return floor(a + 0.5f);
+    }
+    inline double log2(double a)  
+    {
+      return log(a) / 0.69314718055994530943;  
+    }
+    inline float pow(int a, int b)  
+    {
+      return pow((float)a, b);  
+    }
+    inline int rint(double a)  
+    {
+      // this is not really what it should do
+      return (int)round(a);  
+    }
+    inline float log(int a)  
+    {
+      return log((float)a);  
+    }
+    inline float exp(int a)  
+    {
+      return exp((float)a);  
+    }
+  #endif
+  // in windows use this instead of #warning
+  #define WARNING(msg) message(__FILE__ "(" STRINGIZE(__LINE__) ") : warning: " #msg)
 #endif
 
-
+// TODO: whats this?
 #ifdef SYSTEM_WINDOWS
 #	define IPP_DECL __stdcall
 #	ifndef _USE_MATH_DEFINES
@@ -52,7 +86,7 @@
 
 /// this macros are important for creating dll's
 
-#ifdef ICL_SYSTEM_WINDOWS
+#ifdef WIN32
 
 #ifdef ICLUtils_EXPORTS
 #define ICLUtils_API   __declspec(dllexport)

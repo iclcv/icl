@@ -33,7 +33,7 @@
 #include <ICLUtils/Point32f.h>
 #include <cstring>
 
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 #include <ICLUtils/CLProgram.h>
 #include <CL/cl.hpp>
 #endif
@@ -44,7 +44,7 @@ using namespace icl::core;
 
 namespace icl{
   namespace cv{
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
     struct CLCurvature{
       CLProgram DeriveProgram;
       CLKernel DeriveAllAndCurvatureKernel;
@@ -117,7 +117,7 @@ namespace icl{
     }
 
     void CornerDetectorCSS::convolute(const float *data, int data_length, const float *mask , int mask_length, float *convoluted) {
-#ifdef HAVE_IPP
+#ifdef ICL_HAVE_IPP
       int radius = mask_length / 2;
       float val[data_length + 2 * radius];
       memcpy(val, data + data_length - radius, sizeof(float) * radius);
@@ -216,7 +216,7 @@ namespace icl{
         memcpy(&padded_y[indices_padded[i] + 2], &smoothed_y[indices[i]],sizeof(float) * lengths[i]);
       }
       //calculate curvatures
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
       clCurvature.calculateCurvature(padded_x,padded_y,curvature_cutoff,array_length + num_boundaries * 4, curvature);
 #else
       calculate_curvatures(padded_x, padded_y, array_length + num_boundaries * 4, curvature_cutoff, curvature);

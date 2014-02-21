@@ -32,7 +32,7 @@
 #pragma once
 
 #if 0
-#if   defined(HAVE_IPP) || defined(HAVE_MKL)
+#if   defined(ICL_HAVE_IPP) || defined(ICL_HAVE_MKL)
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Timer.h>
 

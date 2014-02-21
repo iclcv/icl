@@ -35,7 +35,6 @@ INCLUDE(FindPackageHandleStandardArgs)
 # ---------------------------------------------------------------------
 
 # Ask the root directory of jpeg.
-# http://gnuwin32.sourceforge.net/packages/jpeg.htm
 SET(JPEG_ROOT JPEG_ROOT CACHE PATH "Root directory of jpeg")
 
 # Search JPEG_ROOT first.
@@ -44,22 +43,29 @@ IF(JPEG_ROOT)
   LIST(APPEND _JPEG_SEARCHES _JPEG_SEARCH_ROOT)
 ENDIF()
 
-# Try each search configuration
-FIND_PATH(JPEG_INCLUDE_DIR 
-  NAMES jpeglib.h
-  PATHS ${${_JPEG_SEARCHES}}
-  PATH_SUFFIXES "include" 	  
-  DOC "The path to JPEG header files"
-  NO_DEFAULT_PATH)
+# Normal search.
+SET(_JPEG_SEARCH_NORMAL
+     PATHS "${CMAKE_INSTALL_PREFIX}/../GnuWin32"
+   )
 
-FIND_LIBRARY(JPEG_LIBRARIES  
-  NAMES jpeg.lib
-  PATHS  ${${_JPEG_SEARCHES}}
-  PATH_SUFFIXES "/lib"
-  NO_DEFAULT_PATH)
+LIST(APPEND _JPEG_SEARCHES _JPEG_SEARCH_NORMAL)
+
+# Try each search configuration
+FOREACH(_PATH ${_JPEG_SEARCHES})
+  FIND_PATH(JPEG_INCLUDE_DIR 
+    NAMES jpeglib.h
+    PATHS ${${_PATH}}
+    PATH_SUFFIXES "include" 	  
+    DOC "The path to JPEG header files"
+    NO_DEFAULT_PATH)
+
+  FIND_LIBRARY(JPEG_LIBRARIES
+    NAMES jpeg.lib
+    PATHS ${${_PATH}}
+    PATH_SUFFIXES "lib"
+    NO_DEFAULT_PATH)
+ENDFOREACH()
 
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(JPEG REQUIRED_VARS 
 				  JPEG_LIBRARIES
 				  JPEG_INCLUDE_DIR)
-
-MARK_AS_ADVANCED(JPEG_INCLUDE_DIR)

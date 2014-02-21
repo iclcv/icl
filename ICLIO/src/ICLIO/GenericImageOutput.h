@@ -87,7 +87,9 @@ namespace icl{
       
       /// sends a new image
       virtual void send(const core::ImgBase *image){
-        if(impl) impl->send(image);
+        if (impl) {
+          impl->send(image);
+        }
         else{
           ERROR_LOG("unable to send image with a NULL output");
         }

@@ -49,7 +49,7 @@
 #include <ICLGeom/Scene.h>
 #include <ICLGeom/CoordinateFrameSceneObject.h>
 #include <ICLGeom/ComplexCoordinateFrameSceneObject.h>
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
 #include <ICLQt/DrawWidget.h>
 #include <ICLQt/GLImg.h>
 #include <ICLQt/GUI.h>
@@ -58,7 +58,7 @@
 #include <QGLPixelBuffer.h>
 #endif
 
-#ifdef HAVE_GLX
+#ifdef ICL_HAVE_GLX
 #ifndef ICL_SYSTEM_WINDOWS
 #include <GL/glx.h>
 #endif
@@ -311,7 +311,7 @@ namespace icl{
       }
     };
 
-  #ifdef HAVE_QT
+  #ifdef ICL_HAVE_QT
     struct Scene::GLCallback : public ICLDrawWidget3D::GLCallback{
       int cameraIndex;
       Scene *parent;
@@ -390,8 +390,8 @@ namespace icl{
 
     Scene::Scene():Lockable(true),m_fps(10){
 
-      #ifdef HAVE_GLX
-      #ifdef HAVE_QT
+      #ifdef ICL_HAVE_GLX
+      #ifdef ICL_HAVE_QT
       m_renderSettings = new RenderSettings();
       m_fboData = new FBOData();
       #endif
@@ -432,7 +432,7 @@ namespace icl{
       addProperty("info.Objects in the Scene","info","",0);
     }
     Scene::~Scene(){
-  #ifdef HAVE_QT
+  #ifdef ICL_HAVE_QT
       for(unsigned int i = 0; i < ShaderUtil::COUNT; i++) {
         delete m_shaders[i];
       }
@@ -453,7 +453,7 @@ namespace icl{
       for(unsigned int i=0;i<m_objects.size();++i){
         m_objects[i] = scene.m_objects[i]->copy();
       }
-  #ifdef HAVE_QT
+  #ifdef ICL_HAVE_QT
       m_mouseHandlers.resize(scene.m_mouseHandlers.size());
       for(unsigned int i=0;i<m_mouseHandlers.size();++i){
         m_mouseHandlers[i] = SmartPtr<SceneMouseHandler>(new SceneMouseHandler( *(scene.m_mouseHandlers[i].get()) ));
@@ -569,7 +569,7 @@ namespace icl{
       if(camerasToo){
         m_cameras.clear();
       }
-  #ifdef HAVE_QT
+  #ifdef ICL_HAVE_QT
       m_mouseHandlers.clear();
       m_glCallbacks.clear();
   #endif
@@ -587,7 +587,7 @@ namespace icl{
 
       };
     }
-  #ifdef HAVE_QT
+  #ifdef ICL_HAVE_QT
 
     void Scene::recompilePerPixelShader(int numShadowLights) const {
       for(unsigned int i = 0; i < ShaderUtil::COUNT; i++) {

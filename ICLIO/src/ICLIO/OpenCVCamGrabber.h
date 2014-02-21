@@ -35,7 +35,7 @@
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Mutex.h>
 
-#ifdef HAVE_OPENCV
+#ifdef ICL_HAVE_OPENCV
 #include <opencv/highgui.h>
 #include <opencv/cxcore.h>
 #endif

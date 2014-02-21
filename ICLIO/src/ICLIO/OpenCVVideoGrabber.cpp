@@ -60,14 +60,16 @@ namespace icl{
     const ImgBase *OpenCVVideoGrabber::acquireImage(){
       utils::Mutex::Locker l(mutex);
       ICLASSERT_RETURN_VAL( !(data->cvc==0), 0);
-      core::ipl_to_img(cvQueryFrame(data->cvc),&data->m_buffer);
-      if(data->use_video_fps){
+      core::ipl_to_img(cvQueryFrame(data->cvc), &data->m_buffer);
+
+      if (data->use_video_fps){
         data->fpslimiter->wait();
       }
+
       updating = true;
       setPropertyValue("pos_msec_current", cvGetCaptureProperty(data->cvc,CV_CAP_PROP_POS_MSEC));
       setPropertyValue("pos_frames_current", cvGetCaptureProperty(data->cvc,CV_CAP_PROP_POS_FRAMES));
-      setPropertyValue("pos_avi_ratio", cvGetCaptureProperty(data->cvc,CV_CAP_PROP_POS_AVI_RATIO));
+      setPropertyValue("pos_avi_ratio", cvGetCaptureProperty(data->cvc, CV_CAP_PROP_POS_AVI_RATIO));
       updating = false;
       return data->m_buffer;
     }
@@ -82,20 +84,12 @@ namespace icl{
         throw FileNotFoundException(fileName);
       }
 
-      // TODO: delete
-      printf("cvCaptureFromFile: %s\n", fileName.c_str());
       data->cvc = cvCaptureFromFile(fileName.c_str());
       int fps = cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FPS);
       data->fpslimiter = new FPSLimiter(fps);
-      // TODO: delete
-      printf("cvCaptureFromFile.fps: %d %p\n", fps, data->cvc);
-      // TODO: delete
-      printf("cvCaptureFromFile.frames: %f\n", cvGetCaptureProperty(data->cvc, CV_CAP_PROP_FRAME_COUNT));
 
       data->size.width = cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FRAME_WIDTH);
       data->size.height = cvGetCaptureProperty(data->cvc, CV_CAP_PROP_FRAME_HEIGHT);
-      // TODO: delete
-      printf("cvCaptureFromFile.size: %d %d\n", data->size.width, data->size.height);
 
       // Configurable
       addProperty("pos_msec_current", "info", "", cvGetCaptureProperty(data->cvc,CV_CAP_PROP_POS_MSEC), 0, "");

@@ -40,7 +40,7 @@
 #include <ICLFilter/ScaleOp.h>
 #include <map>
 
-#ifdef HAVE_IPP
+#ifdef ICL_HAVE_IPP
 #include <ICLFilter/CannyOp.h>
 #endif
 
@@ -229,7 +229,7 @@ namespace icl{
         return new ScaleOp(fx,fy,sm);
       }
       
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
        UnaryOp *create_canny(const paramlist &params){
          ICLASSERT_THROW(params.size() == 2 ||params.size() == 3,ICLException(str(__FUNCTION__)+": params list size must be 2 or 3 here"));
          float low = parse<float>(params[0]);
@@ -353,7 +353,7 @@ namespace icl{
   
         CREATORS["scale"] = Creator(create_scale,"scale","fx (<5),fy (<5)=fx,interplation=NN (one of RA,LIN or NN)");
   
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
         CREATORS["canny"] = Creator(create_canny,"canny","lowThresh,highThresh,preblur=false (true or false)");
   #endif
   

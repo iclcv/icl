@@ -40,7 +40,7 @@ namespace icl {
     BayerConverter::BayerConverter(const std::string &pattern, const std::string &method){
       m_eBayerPattern = translateBayerPattern(pattern);
       m_eConvMethod = translateBayerConverterMethod(method);
-#ifdef HAVE_IPP
+#ifdef ICL_HAVE_IPP
       switch(m_eBayerPattern){
         case BayerConverter::bayerPattern_BGGR:
           m_IppBayerPattern = ippiBayerBGGR;
@@ -67,7 +67,7 @@ namespace icl {
       m_eBayerPattern = eBayerPattern;
       m_eConvMethod = eConvMethod;
       m_buffer.resize(s.getDim()*3);
-#ifdef HAVE_IPP
+#ifdef ICL_HAVE_IPP
       switch(eBayerPattern){
         case BayerConverter::bayerPattern_BGGR:
           m_IppBayerPattern = ippiBayerBGGR;
@@ -850,7 +850,7 @@ namespace icl {
         start_with_green = !start_with_green;
       }
     }
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
     void BayerConverter::nnInterpolationIpp(const Img<icl8u> *poBayerImg) {
       int n = 0;
       ippGetNumThreads(&n);

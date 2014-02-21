@@ -29,10 +29,10 @@
 ********************************************************************/
 
 #pragma once
-#ifdef HAVE_OPENGL
+#ifdef ICL_HAVE_OPENGL
 #include <GL\glew.h>
 #endif
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
 #include <ICLQt/Qt.h>
 #include <ICLQt/Application.h>
 #endif

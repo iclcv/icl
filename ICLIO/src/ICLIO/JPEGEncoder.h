@@ -34,8 +34,12 @@
 #include <ICLUtils/Uncopyable.h>
 #include <ICLCore/ImgBase.h>
 
-#ifndef HAVE_LIBJPEG
-#warning "libjpeg is not available, therefore, this header should not be included"
+#ifndef ICL_HAVE_LIBJPEG
+  #if WIN32
+    #pragma WARNING("libjpeg is not available, therefore, this header should not be included")
+  #else
+    #warning "libjpeg is not available, therefore, this header should not be included"
+  #endif
 #endif
 
 namespace icl{

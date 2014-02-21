@@ -36,7 +36,7 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
-#ifdef HAVE_IPP
+#ifdef ICL_HAVE_IPP
 #include <ipps.h>
 #endif
 
@@ -87,7 +87,7 @@ namespace icl {
     }
 
     /** \cond */
-#ifdef HAVE_IPP
+#ifdef ICL_HAVE_IPP
     template<> inline double mean<const icl32f*>(const icl32f *begin,const icl32f *end){
       icl32f m = 0;
       ippsMean_32f(begin,end-begin,&m,ippAlgHintAccurate);

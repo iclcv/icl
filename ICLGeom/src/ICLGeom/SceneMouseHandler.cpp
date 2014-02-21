@@ -42,7 +42,7 @@ using namespace icl::qt;
 namespace icl{
   namespace geom{
   
-  #ifdef HAVE_QT
+  #ifdef ICL_HAVE_QT
   
     SceneMouseHandler::~SceneMouseHandler(){
       ICL_DELETE(mGUI);

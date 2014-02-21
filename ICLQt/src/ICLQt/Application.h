@@ -36,7 +36,7 @@
 #include <string>
 #include <vector>
 
-#ifdef ICL_SYSTEM_WINDOWS
+#ifdef WIN32
 #include "windows.h"
 #include <GL/glew.h>
 #endif

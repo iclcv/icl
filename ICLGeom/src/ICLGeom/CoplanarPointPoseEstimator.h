@@ -99,9 +99,11 @@ namespace icl{
   
       /// Internally used to sync property settings with internal data
       void propertyChangedCallback(const Property &p);
-
+      
+#if !(defined _MSC_VER && _MSC_VER < 1800)
       /// Internally used to correct the first transformation matrix using robust pose estimation algorithm
       void robustPoseCorrection(int n, const utils::Point32f *modelPoints, std::vector<utils::Point32f> &ips);
+#endif
       
       public:
   

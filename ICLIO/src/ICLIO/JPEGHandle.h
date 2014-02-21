@@ -30,7 +30,7 @@
 
 #pragma once
 
-#ifdef HAVE_LIBJPEG
+#ifdef ICL_HAVE_LIBJPEG
 
 #include <ICLUtils/CompatMacros.h>
 #include <stdio.h>
@@ -44,7 +44,7 @@ namespace icl{
   namespace io{
   
     // returns controll to the caller
-    struct ICLIO_API icl_jpeg_error_mgr : jpeg_error_mgr {
+    struct icl_jpeg_error_mgr : jpeg_error_mgr {
       jmp_buf setjmp_buffer; 
     };
     
@@ -69,7 +69,7 @@ namespace icl{
 
 /** \endcond */
 
-#else // not HAVE_LIBJPEG
+#else // not ICL_HAVE_LIBJPEG
 namespace icl{
   namespace io{
     /** \cond */
@@ -77,4 +77,4 @@ namespace icl{
     /** \endcond */
   } // namespace io
 }
-#endif // not HAVE_LIBJPEG
+#endif // not ICL_HAVE_LIBJPEG

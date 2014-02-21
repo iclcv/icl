@@ -27,7 +27,7 @@
 ** Excellence Initiative.                                          **
 **                                                                 **
 ********************************************************************/
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>

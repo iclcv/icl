@@ -30,13 +30,17 @@
 
 #pragma once
 
-#include <float.h>
 #include <ICLUtils/BasicTypes.h>
+#include <float.h>
+
+#if (defined _MSC_VER && _MSC_VER < 1800)
+#pragma WARNING("This compiler does not support the functions ilogb and scalbln.")
+#else
 
 namespace icl{
   namespace math{
 
-  #ifdef ICL_SYSTEM_WINDOWS
+  #ifdef WIN32
     typedef std::complex<double> xcomplex;
     #define __real__(C) (C)._Val[0]
     #define __imag__(C) (C)._Val[1]
@@ -292,7 +296,7 @@ namespace icl{
       b = true;
       if(relstp < xeta(P[0])) tp = xeta(P[0]);
 
-  #ifdef ICL_SYSTEM_WINDOWS
+  #ifdef WIN32
       *s *= 1.0 + xcomplex(1.0, 1.0)*sqrt(tp);
   #else
       *s *= 1.0 + (1.0 + 1.0i)*sqrt(tp);
@@ -398,7 +402,7 @@ namespace icl{
     //
     int cpoly(int degree, const xcomplex poly[], xcomplex Roots[])
     {
-  #ifdef ICL_SYSTEM_WINDOWS
+  #ifdef WIN32
       xcomplex PhiDiff = xcomplex(-0.069756473, 0.99756405);
       xcomplex PhiRand = xcomplex(1.0, -1.0) /sqrt(2.0);
   #else
@@ -505,3 +509,5 @@ namespace icl{
     }
   }
 }
+
+#endif

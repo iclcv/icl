@@ -126,7 +126,7 @@ namespace icl{
     }
     // }}} 
   
-  #ifdef HAVE_IPP_DEACTIVATED_BECAUSE_IT_IS_MUCH_SLOWER
+  #ifdef ICL_HAVE_IPP_DEACTIVATED_BECAUSE_IT_IS_MUCH_SLOWER
   
     template<class S, class D, class B, class IPP_FUNC>
     void create_integral_image_ipp(const Img<S> &src, Img<D> &dst, ImgBase **buf,  IPP_FUNC ippfunc){

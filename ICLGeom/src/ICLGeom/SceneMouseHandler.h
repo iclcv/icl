@@ -30,8 +30,8 @@
 
 #pragma once
 
-#if !defined(HAVE_OPENGL) || !defined(HAVE_QT)
-#warning "this header must not be included if HAVE_OPENGL or HAVE_QT is not defined"
+#if !defined(ICL_HAVE_OPENGL) || !defined(ICL_HAVE_QT)
+#warning "this header must not be included if ICL_HAVE_OPENGL or ICL_HAVE_QT is not defined"
 #else
 
 

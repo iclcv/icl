@@ -31,8 +31,12 @@
 
 #pragma once
 
-#ifndef HAVE_OPENGL
-#warning "this header must not be included if HAVE_OPENGL is not defined"
+#ifndef ICL_HAVE_OPENGL
+  #ifdef WIN32
+    #pragma WARNING("this header must not be included if HAVE_OPENGL is not defined")
+  #else
+    #warning "this header must not be included if HAVE_OPENGL is not defined"
+  #endif
 #else
 
 #include <ICLGeom/SceneObject.h>
@@ -42,7 +46,7 @@
 #include <ICLCore/Img.h>
 #include <ICLUtils/FPSEstimator.h>
 
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
 #include <ICLQt/MouseHandler.h>
 #include <ICLQt/DrawWidget3D.h>
 #include <ICLGeom/SceneMouseHandler.h>
@@ -245,7 +249,7 @@ namespace icl{
       /** If camerasToo is set to true, also all cameras are removed */
       void clear(bool camerasToo=false);
 
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
       /// returns a mouse handler that adapts the scene's camera using mouse-interaction
       qt::MouseHandler *getMouseHandler(int camIndex=0);
     
@@ -256,7 +260,7 @@ namespace icl{
       /** please see ICLQt::ICLDrawWidget3D::callback */
       qt::ICLDrawWidget3D::GLCallback *getGLCallback(int camIndex);
     
-#ifdef HAVE_GLX
+#ifdef ICL_HAVE_GLX
       enum DepthBufferMode{
         RawDepth01,      //!< raw core::depth buffer in range [0,1]
         DistToCamPlane,  //!< core::depth buffer values define distance to the camera's z=0 plane
@@ -404,7 +408,7 @@ namespace icl{
       /// frees the display list, that is associated with an object
       void freeDisplayList(SceneObject *o) const;
 
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
       /// internally used rendering method
       void renderScene(int camIndex, qt::ICLDrawWidget3D *widget=0) const;
       
@@ -450,7 +454,7 @@ namespace icl{
       /// internal list of top-level camera objects used for camera visualization
       std::vector<utils::SmartPtr<SceneObject> > m_cameraObjects;
 
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
       /// internally used list of mouse handlers
       std::vector<utils::SmartPtr<SceneMouseHandler> > m_mouseHandlers;
 

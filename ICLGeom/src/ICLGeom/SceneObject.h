@@ -30,8 +30,8 @@
 
 #pragma once
 
-#ifndef HAVE_OPENGL
-#warning "this header must not be included if HAVE_OPENGL is not defined"
+#ifndef ICL_HAVE_OPENGL
+#warning "this header must not be included if ICL_HAVE_OPENGL is not defined"
 #endif
 
 #include <ICLUtils/Mutex.h>

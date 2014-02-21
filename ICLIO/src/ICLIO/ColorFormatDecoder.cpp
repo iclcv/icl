@@ -90,7 +90,7 @@ namespace icl{
         ensureCompatible(dst,depth8u,size,formatRGB);
         Img8u &image = *(*dst)->as8u();
   
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
         if(buffer){
           buffer->resize(size.getDim()*3);
           ippiYUVToRGB_8u_C3R(rawData,3*size.width,buffer->data(),3*size.width,size);
@@ -120,7 +120,7 @@ namespace icl{
         ensureCompatible(dst,depth8u,size,formatRGB);
         Img8u &image = *(*dst)->as8u();
         /*
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
         if(buf){
           // 3Times faster on -O4
           buf->resize(size.getDim()*3);
@@ -172,7 +172,7 @@ namespace icl{
         }
       }
   
-  #ifdef HAVE_LIBJPEG    
+  #ifdef ICL_HAVE_LIBJPEG    
       void mjpg(const icl8u* data, const Size &size, ImgBase **dst, std::vector<icl8u> *buf = 0){
         try{
           // naive check for a correct jpeg file:
@@ -208,7 +208,7 @@ namespace icl{
       m_functions[FourCC("GRBG").asInt()] = color_format_converter::bayer<BayerConverter::bayerPattern_GRBG>;
       m_functions[FourCC("BGGR").asInt()] = color_format_converter::bayer<BayerConverter::bayerPattern_BGGR>;
   
-  #ifdef HAVE_LIBJPEG
+  #ifdef ICL_HAVE_LIBJPEG
       m_functions[FourCC("MJPG").asInt()] = color_format_converter::mjpg;
   #endif
   

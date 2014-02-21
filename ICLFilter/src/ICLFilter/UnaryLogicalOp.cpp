@@ -30,7 +30,7 @@
 
 #include <ICLFilter/UnaryLogicalOp.h>
 #include <ICLCore/Img.h>
-#include <math.h>
+#include <cmath>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -82,7 +82,7 @@ namespace icl {
         }
       };
       
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
       // IPP function specializations for "no val":
       template <typename T, IppStatus (IPP_DECL *func) (const T*, int, T*, int, IppiSize)>
       inline void ipp_call_no_val(const Img<T> *src, Img<T> *dst){

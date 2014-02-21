@@ -33,7 +33,7 @@
 #include <cmath>
 #include <algorithm>
 
-#ifdef ICL_SYSTEM_WINDOWS
+#ifdef WIN32
   #include <functional>
 #endif
 

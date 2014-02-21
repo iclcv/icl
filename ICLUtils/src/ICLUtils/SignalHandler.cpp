@@ -52,7 +52,7 @@ namespace icl{
     namespace {
       static Mutex SignalHandlerMutex(Mutex::mutexTypeRecursive);
       
-#ifdef ICL_SYSTEM_WINDOWS
+#ifdef ICL_SYSTEM_WINDOWS // TODOW
       struct sigaction {
         //int          sa_flags;
         //sigset_t     sa_mask;
@@ -270,22 +270,3 @@ namespace icl{
   } // namespace utils
   
 }
-
-//#include <ICLUtils/SignalHandler.h>
-//namespace icl{
-//  namespace utils{
-//
-//    SignalHandler::SignalHandler(const std::string &signalsList){};
-//
-//    SignalHandler::~SignalHandler(){};
-//
-//    void SignalHandler::handleSignals(const std::string &signalAsString) {};
-//
-//    void SignalHandler::removeHandle(std::string signalName){};
-//
-//    void SignalHandler::removeAllHandles(){};
-//
-//    void SignalHandler::oldAction(const std::string &signal){};
-//
-//  } // namespace utils
-//} // namespace icl

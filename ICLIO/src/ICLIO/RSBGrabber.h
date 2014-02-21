@@ -34,7 +34,11 @@
 #include <ICLIO/Grabber.h>
 
 #if !defined(HAVE_RSB) || !defined(HAVE_PROTOBUF)
-#warning "This header should only be included if HAVE_RSB and HAVE_PROTOBUF are defined and available in ICL"
+  #if WIN32
+    #pragma WARNING("This header should only be included if HAVE_RSB and HAVE_PROTOBUF are defined and available in ICL")
+  #else
+    #warning "This header should only be included if HAVE_RSB and HAVE_PROTOBUF are defined and available in ICL"
+  #endif
 #endif
 
 namespace icl{
@@ -48,32 +52,32 @@ namespace icl{
       public:
 
         /// empty constructor (creates a null instance)
-        RSBGrabber();
+        ICLIO_API RSBGrabber();
 
         /// Destructor
-        ~RSBGrabber();
+        ICLIO_API ~RSBGrabber();
 
         /// main constructor with given scope and comma separated transportList
         /** supported transports are socket, spread and inprocess. Please note, that
           the spread-transport requires spread running. */
-        RSBGrabber(const std::string &scope, const std::string &transportList="spread");
+        ICLIO_API RSBGrabber(const std::string &scope, const std::string &transportList="spread");
 
         /// deferred intialization with given scope and comma separated transportList
         /** supported transports are socket, spread and inprocess. Please note, that
           the spread-transport requires spread running. */
-        void init(const std::string &scope, const std::string &transportList="spread");
+        ICLIO_API void init(const std::string &scope, const std::string &transportList = "spread");
 
         /// grabber-interface
-        virtual const core::ImgBase *acquireImage();
+        ICLIO_API virtual const core::ImgBase *acquireImage();
 
         /// returns whether this grabber has not jet been initialized
         inline bool isNull() const { return !m_data; }
 
         /// returns a list of all available rsb streams
-        static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
+        ICLIO_API static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
 
         /// callback for changed configurable properties
-        void processPropertyChange(const utils::Configurable::Property &prop);
+        ICLIO_API void processPropertyChange(const utils::Configurable::Property &prop);
 
     };
 

@@ -227,11 +227,24 @@ IF(RSB_FOUND)
 ENDIF()
 
 # ---- Library build instructions ----
+IF(WIN32)
 INCLUDE_DIRECTORIES(BEFORE src
+                           ${ICL_SOURCE_DIR}/3rdparty/zlib
+                           ${ICL_SOURCE_DIR}/3rdparty/libpng
+                           ${ICL_SOURCE_DIR}/3rdparty/libjpeg
+                           ${CMAKE_BINARY_DIR}/src
                            ${ICL_SOURCE_DIR}/ICLUtils/src
                            ${ICL_SOURCE_DIR}/ICLMath/src
                            ${ICL_SOURCE_DIR}/ICLCore/src
                            ${ICL_SOURCE_DIR}/ICLFilter/src)
+ELSE()
+INCLUDE_DIRECTORIES(BEFORE src
+                           ${CMAKE_BINARY_DIR}/src
+                           ${ICL_SOURCE_DIR}/ICLUtils/src
+                           ${ICL_SOURCE_DIR}/ICLMath/src
+                           ${ICL_SOURCE_DIR}/ICLCore/src
+                           ${ICL_SOURCE_DIR}/ICLFilter/src)
+ENDIF()
 
 IF(QT_FOUND)
   ADD_LIBRARY(ICLIO SHARED ${SOURCES} ${HEADERS})

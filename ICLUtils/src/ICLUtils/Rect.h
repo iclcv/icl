@@ -35,7 +35,7 @@
 #include <ICLUtils/Size.h>
 #include <stdio.h>
 #include <algorithm>
-#ifdef HAVE_IPP
+#ifdef ICL_HAVE_IPP
 #include <ipp.h>
 #endif
 
@@ -43,7 +43,7 @@
 namespace icl {
   namespace utils{
     
-  #ifndef HAVE_IPP
+  #ifndef ICL_HAVE_IPP
     /// fallback implementation for the IppiRect struct, defined in the ippi lib \ingroup TYPES
     struct IppiRect {
   

@@ -34,7 +34,7 @@
 #include <ICLIO/Grabber.h>
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLUtils/Exception.h>
-#ifdef HAVE_OPENCV
+#ifdef ICL_HAVE_OPENCV
 #include <opencv/highgui.h>
 #endif
 

@@ -33,7 +33,7 @@
 #include <ICLUtils/Point.h>
 
 #include <limits>
-#include <math.h>
+#include <cmath>
 #include <vector>
 
 using namespace icl::utils;

@@ -44,7 +44,7 @@ namespace icl {
         */
     class ICLFilter_API BinaryCompareOp : public BinaryOp {
       public:
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
       /// this enum specifiy all possible compare operations
       enum optype{
         lt   = ippCmpLess,      /**< "<"- relation */

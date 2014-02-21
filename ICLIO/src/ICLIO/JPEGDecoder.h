@@ -37,7 +37,7 @@
 
 namespace icl{
   namespace io{
-    /// Utility class for decoding JPEG-Data streams (with HAVE_LIBJPEG only)
+    /// Utility class for decoding JPEG-Data streams (with ICL_HAVE_LIBJPEG only)
     class ICLIO_API JPEGDecoder{
       public:
       /// Decode JPEG-File (E.g. used for FileGrabberPluginJPEG)

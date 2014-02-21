@@ -30,7 +30,7 @@
 
 #include <ICLCore/Line.h>
 #include <ICLCore/LineSampler.h>
-#include <math.h>
+#include <cmath>
 #include <algorithm>
 #include <ICLUtils/Point32f.h>
 

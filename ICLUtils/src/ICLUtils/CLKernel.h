@@ -30,7 +30,7 @@
 
 #pragma once
 
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/CLBuffer.h>

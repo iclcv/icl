@@ -29,7 +29,7 @@
  ********************************************************************/
 
 #define __CL_ENABLE_EXCEPTIONS //enables openCL error catching
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 #include <ICLUtils/CLKernel.h>
 #include <ICLUtils/CLBuffer.h>
 #include <ICLUtils/CLProgram.h>
@@ -291,7 +291,7 @@ static char normalEstimationKernel[] =
 				"  	 }                                                                                                                      \n"
 				"}                                                                                                                          \n";
 
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 typedef FixedColVector<float, 4> Vec4;
 #else
 struct Vec4 {
@@ -363,7 +363,7 @@ struct PointCloudNormalEstimator::Data {
 		normalImage.setSize(Size(w, h));
 		normalImage.setChannels(3);
 
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 		//create openCL context
 		rawImageArray = new float[w*h];
 		filteredImageArray = new float[w*h];
@@ -425,7 +425,7 @@ struct PointCloudNormalEstimator::Data {
 		delete[] normals;
 		delete[] avgNormals;
 		delete[] worldNormals;
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 		delete[] rawImageArray;
 		delete[] filteredImageArray;
 		delete[] angleImageArray;
@@ -460,7 +460,7 @@ struct PointCloudNormalEstimator::Data {
 	core::Img8u binarizedImage;
 	core::Img8u normalImage;
 
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 	//OpenCL data
 	Vec4 * outputNormals;
 	Vec4 * outputWorldNormals;
@@ -512,7 +512,7 @@ PointCloudNormalEstimator::~PointCloudNormalEstimator() {
 
 void PointCloudNormalEstimator::setDepthImage(const Img32f &depthImg) {
 	m_data->rawImage = depthImg;
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 	if(m_data->useCL==true && m_data->clReady==true) {
 		m_data->rawImageArray=m_data->rawImage.begin(0); //image to float array
 		try {
@@ -526,7 +526,7 @@ void PointCloudNormalEstimator::setDepthImage(const Img32f &depthImg) {
 
 void PointCloudNormalEstimator::applyMedianFilter() {
 	if (m_data->useCL == true && m_data->clReady == true) {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 		try {
 			m_data->kernelMedianFilter.setArgs(m_data->rawImageBuffer,
 					m_data->filteredImageBuffer,
@@ -569,7 +569,7 @@ void PointCloudNormalEstimator::applyMedianFilter() {
 }
 
 const Img32f &PointCloudNormalEstimator::getFilteredDepthImage() {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 	if(m_data->useCL==true && m_data->clReady==true) {
 		try {
 			m_data->filteredImageBuffer.read( //read output from kernel
@@ -589,7 +589,7 @@ const Img32f &PointCloudNormalEstimator::getFilteredDepthImage() {
 void PointCloudNormalEstimator::setFilteredDepthImage(
 		const Img32f &filteredImg) {
 	m_data->filteredImage = filteredImg;
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 	if(m_data->useCL==true && m_data->clReady==true) {
 		m_data->filteredImageArray=m_data->filteredImage.begin(0); //image to float array
 		try {
@@ -603,7 +603,7 @@ void PointCloudNormalEstimator::setFilteredDepthImage(
 
 void PointCloudNormalEstimator::applyNormalCalculation() {
 	if (m_data->useCL == true && m_data->clReady == true) {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 		try {
 			m_data->kernelNormalCalculation.setArgs(m_data->filteredImageBuffer,
 					m_data->normalsBuffer,
@@ -662,7 +662,7 @@ void PointCloudNormalEstimator::applyNormalCalculation() {
 
 void PointCloudNormalEstimator::applyTemporalNormalAveraging() {
 	if (m_data->useCL == true && m_data->clReady == true) {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 		try {
 			m_data->kernelNormalAveraging.setArgs(m_data->normalsBuffer,
 					m_data->avgNormalsBuffer,
@@ -752,7 +752,7 @@ void PointCloudNormalEstimator::applyGaussianNormalSmoothing() {
 		kernel = k1 * k1.transp();
 	}
 	if (m_data->useCL == true && m_data->clReady == true) {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 		try {
 
 			m_data->gaussKernelBuffer = m_data->program.createBuffer("rw", kSize * sizeof(float), (void *) &kernel[0]);
@@ -807,7 +807,7 @@ void PointCloudNormalEstimator::applyGaussianNormalSmoothing() {
 
 const Vec *PointCloudNormalEstimator::getNormals() {
 	if (m_data->useCL == true && m_data->clReady == true) {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 		try {
 			if(m_data->useNormalAveraging==true) {
 				m_data->avgNormalsBuffer.read(m_data->outputNormals, m_data->w*m_data->h * sizeof(FixedColVector<float, 4>));
@@ -840,7 +840,7 @@ void PointCloudNormalEstimator::applyWorldNormalCalculation(const Camera &cam) {
 	Mat T2 = R.transp().resize<4, 4>(0);
 	T2(3, 3) = 1;
 	if (m_data->useCL == true && m_data->clReady == true) {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 		try {
 			m_data->camBuffer = m_data->program.createBuffer("rw", 16 * sizeof(float), (void *) &T2[0]);
 
@@ -892,7 +892,7 @@ void PointCloudNormalEstimator::applyWorldNormalCalculation(const Camera &cam) {
 
 const Vec* PointCloudNormalEstimator::getWorldNormals() {
 	if (m_data->useCL == true && m_data->clReady == true) {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 		try {
 			m_data->worldNormalsBuffer.read(m_data->outputWorldNormals,
 					m_data->w*m_data->h * sizeof(FixedColVector<float, 4>));
@@ -910,7 +910,7 @@ const Vec* PointCloudNormalEstimator::getWorldNormals() {
 
 const core::Img8u &PointCloudNormalEstimator::getRGBNormalImage() {
 	if (m_data->useCL == true && m_data->clReady == true) {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 		try {
 			m_data->normalImageRBuffer.read(m_data->normalImageRArray,
 					m_data->w*m_data->h * sizeof(unsigned char));
@@ -944,7 +944,7 @@ void PointCloudNormalEstimator::setNormals(Vec* pNormals) {
 	} else {
 		m_data->normals = (Vec4*) pNormals;
 	}
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 	if(m_data->useCL==true && m_data->clReady==true) {
 		try {
 			if(m_data->useNormalAveraging==true) {
@@ -961,7 +961,7 @@ void PointCloudNormalEstimator::setNormals(Vec* pNormals) {
 
 void PointCloudNormalEstimator::applyAngleImageCalculation() {
 	if (m_data->useCL == true && m_data->clReady == true) {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 		try {
 			if(m_data->useNormalAveraging==true) {
 				m_data->kernelAngleImageCalculation[0] = m_data->avgNormalsBuffer;
@@ -1102,7 +1102,7 @@ void PointCloudNormalEstimator::applyAngleImageCalculation() {
 }
 
 const Img32f &PointCloudNormalEstimator::getAngleImage() {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 	if(m_data->useCL==true && m_data->clReady==true) {
 		try {
 			m_data->angleImageBuffer.read(m_data->outputAngleImage, m_data->w*m_data->h * sizeof(float));
@@ -1117,7 +1117,7 @@ const Img32f &PointCloudNormalEstimator::getAngleImage() {
 
 void PointCloudNormalEstimator::setAngleImage(const Img32f &angleImg) {
 	m_data->angleImage = angleImg;
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 	if(m_data->useCL==true && m_data->clReady==true) {
 		m_data->angleImageArray=m_data->angleImage.begin(0); //image to float array
 		try {
@@ -1131,7 +1131,7 @@ void PointCloudNormalEstimator::setAngleImage(const Img32f &angleImg) {
 
 void PointCloudNormalEstimator::applyImageBinarization() {
 	if (m_data->useCL == true && m_data->clReady == true) {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 		try {
 			m_data->kernelImageBinarization.setArgs(m_data->angleImageBuffer,
 					m_data->binarizedImageBuffer,
@@ -1159,7 +1159,7 @@ void PointCloudNormalEstimator::applyImageBinarization() {
 }
 
 const Img8u &PointCloudNormalEstimator::getBinarizedAngleImage() {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 	if(m_data->useCL==true && m_data->clReady==true) {
 		try {
 			m_data->binarizedImageBuffer.read(m_data->outputBinarizedImage, m_data->w*m_data->h * sizeof(unsigned char));

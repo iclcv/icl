@@ -56,7 +56,7 @@ namespace icl {
       template <> inline core::depth grabber_get_null<core::depth>(){ return (core::depth)-1; }
       template <> inline icl::utils::Size grabber_get_null<icl::utils::Size>(){ return icl::utils::Size::null; }
 
-      struct ICLIO_API grabber_get_xxx_dummy{
+      struct grabber_get_xxx_dummy{
           grabber_get_xxx_dummy(){
             grabber_get_null<core::format>();
             grabber_get_null<core::depth>();

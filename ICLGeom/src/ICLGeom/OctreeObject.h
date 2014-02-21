@@ -34,10 +34,10 @@
 #include <ICLGeom/SceneObject.h>
 
 
-#ifdef ICL_SYSTEM_APPLE
+#ifdef APPLE
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
-#elif ICL_SYSTEM_WINDOWS
+#elif WIN32
 #define NOMINMAX
 #include <Windows.h>
 #include <GL/gl.h>

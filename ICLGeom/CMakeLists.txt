@@ -122,7 +122,12 @@ ENDIF()
 
 
 # ---- Library build instructions ----
+IF(WIN32)
 INCLUDE_DIRECTORIES(BEFORE src
+                           ${ICL_SOURCE_DIR}/3rdparty/zlib
+                           ${ICL_SOURCE_DIR}/3rdparty/libpng
+                           ${ICL_SOURCE_DIR}/3rdparty/libjpeg
+                           ${CMAKE_BINARY_DIR}/src
                            ${ICL_SOURCE_DIR}/ICLUtils/src
                            ${ICL_SOURCE_DIR}/ICLMath/src
                            ${ICL_SOURCE_DIR}/ICLCore/src
@@ -130,6 +135,17 @@ INCLUDE_DIRECTORIES(BEFORE src
                            ${ICL_SOURCE_DIR}/ICLIO/src
                            ${ICL_SOURCE_DIR}/ICLQt/src
                            ${ICL_SOURCE_DIR}/ICLCV/src)
+ELSE()
+INCLUDE_DIRECTORIES(BEFORE src
+                           ${CMAKE_BINARY_DIR}/src
+                           ${ICL_SOURCE_DIR}/ICLUtils/src
+                           ${ICL_SOURCE_DIR}/ICLMath/src
+                           ${ICL_SOURCE_DIR}/ICLCore/src
+                           ${ICL_SOURCE_DIR}/ICLFilter/src
+                           ${ICL_SOURCE_DIR}/ICLIO/src
+                           ${ICL_SOURCE_DIR}/ICLQt/src
+                           ${ICL_SOURCE_DIR}/ICLCV/src)
+ENDIF()
 
 ADD_LIBRARY(ICLGeom SHARED ${SOURCES} ${HEADERS})
 
