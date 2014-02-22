@@ -30,7 +30,7 @@
 
 #include <ICLIO/FileWriterPluginImageMagick.h>
 
-#ifdef HAVE_IMAGEMAGICK
+#ifdef ICL_HAVE_IMAGEMAGICK
 #define OMP_NUM_THREADS 1
 #ifndef ICL_SYSTEM_LINUX
 #include <Magick++.h>
@@ -55,7 +55,7 @@ using namespace icl::core;
 namespace icl{
   namespace io{
     
-  #ifdef HAVE_IMAGEMAGICK
+  #ifdef ICL_HAVE_IMAGEMAGICK
   
     
   
@@ -78,7 +78,7 @@ namespace icl{
       ICL_DELETE(m_data);
     }
     
-  #ifdef HAVE_IMAGEMAGICK
+  #ifdef ICL_HAVE_IMAGEMAGICK
     Magick::StorageType get_magick_storage_type(depth d){
       switch(d){
         case depth8u: return Magick::CharPixel;

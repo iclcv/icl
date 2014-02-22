@@ -53,22 +53,22 @@ namespace icl{
   namespace math{
   
     /// Special linear algebra exception type  \ingroup LINALG \ingroup EXCEPT
-    struct ICLMath_API InvalidMatrixDimensionException :public utils::ICLException{
+    struct InvalidMatrixDimensionException :public utils::ICLException{
       InvalidMatrixDimensionException(const std::string &msg):utils::ICLException(msg){}
     };
   
     /// Special linear algebra exception type  \ingroup LINALG \ingroup EXCEPT
-    struct ICLMath_API IncompatibleMatrixDimensionException :public utils::ICLException{
+    struct IncompatibleMatrixDimensionException :public utils::ICLException{
       IncompatibleMatrixDimensionException(const std::string &msg):utils::ICLException(msg){}
     };
   
     /// Special linear algebra exception type  \ingroup LINALG \ingroup EXCEPT
-    struct ICLMath_API InvalidIndexException : public utils::ICLException{
+    struct InvalidIndexException : public utils::ICLException{
       InvalidIndexException(const std::string &msg):utils::ICLException(msg){}
     };
   
     /// Special linear algebra exception type  \ingroup LINALG \ingroup EXCEPT
-    struct ICLMath_API SingularMatrixException : public utils::ICLException{
+    struct SingularMatrixException : public utils::ICLException{
       SingularMatrixException(const std::string &msg):utils::ICLException(msg){}
     };
   

@@ -62,13 +62,13 @@ namespace icl{
     class FileWriterPluginImageMagick : public FileWriterPlugin{
       public:
       /// creates a plugin
-      FileWriterPluginImageMagick();
+      ICLIO_API FileWriterPluginImageMagick();
       
       /// Destructor
-      virtual ~FileWriterPluginImageMagick();
+      ICLIO_API virtual ~FileWriterPluginImageMagick();
       
       /// pure virtual writing function
-      virtual void write(utils::File &file, const core::ImgBase *image);
+      ICLIO_API virtual void write(utils::File &file, const core::ImgBase *image);
   
       /// InternalData storage class
       class InternalData;
@@ -80,7 +80,7 @@ namespace icl{
     
     /** \cond */
     // this is called automatically
-    void icl_initialize_image_magick_context();
+    ICLIO_API void icl_initialize_image_magick_context();
     /** \endcond */
   
   } // namespace io

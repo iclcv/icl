@@ -32,6 +32,7 @@
 
 #include <ICLIO/PylonIncludes.h>
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLIO/Grabber.h>
 #include <ICLIO/PylonUtils.h>
 #include <ICLIO/PylonCameraOptions.h>
@@ -91,21 +92,21 @@ namespace icl {
           * @param dev The PylonDevice that should be used for image acquisition.
           * @param args The arguments provided to this grabber.
           */
-          PylonGrabber(const Pylon::CDeviceInfo &dev, const std::string args);
+          ICLIO_API PylonGrabber(const Pylon::CDeviceInfo &dev, const std::string args);
 
           /// Destructor
-          ~PylonGrabber();
+          ICLIO_API ~PylonGrabber();
 
           /// grab function grabs an image (destination image is adapted on demand)
           /** @copydoc icl::io::Grabber::grab(core::ImgBase**) **/
-          virtual const core::ImgBase* acquireImage();
+          ICLIO_API virtual const core::ImgBase* acquireImage();
 
           /// Uses args to choose a pylon device
           /**
           * @param args The arguments provided to this grabber.
           * @throw ICLException when no suitable device exists.
           */
-          static Pylon::CDeviceInfo getDeviceFromArgs(std::string args) throw(utils::ICLException);
+          ICLIO_API static Pylon::CDeviceInfo getDeviceFromArgs(std::string args) throw(utils::ICLException);
 
         private:
           /// A mutex lock to synchronize buffer and color converter access.

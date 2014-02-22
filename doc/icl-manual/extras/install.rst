@@ -67,7 +67,7 @@ In Windows you only need to get libpthread. All other
 mandatory libraries are provided by the ICL.
 libpthread can be downloaded on the following website::
 
-  https://www.sourceware.org/pthreads-win32/
+* https://www.sourceware.org/pthreads-win32/
 
 
 .. _install.dependencies.optional:
@@ -579,7 +579,12 @@ here share our experiences with you.
 Installing and Using Basler Pylon Drivers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Download binary packages e.g.
+If you are using Windows for the installation you only need to install
+the Pylon SDK, which is found on the following website:
+
+* http://www.baslerweb.com/Downloads-Software-43868.html
+
+In Linux download binary packages e.g.
 
 * 32bit: http://www.baslerweb.com/7/0/9/9/pylon-2.3.3-1337-32.tar.gz
 * 64bit: http://www.baslerweb.com/7/0/9/9/pylon-2.3.3-1337-64.tar.gz

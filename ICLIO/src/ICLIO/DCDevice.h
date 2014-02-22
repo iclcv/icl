@@ -46,7 +46,7 @@ namespace icl{
     /** \endcond */
     
     /// Device struct, used by the DCGrabber class to identify devices \ingroup DC_G
-    class DCDevice{
+    class ICLIO_API DCDevice{
       public:
   
       /// returns a type ID specifier (vendor+" -- "+model)
@@ -72,7 +72,7 @@ namespace icl{
       static void dc1394_reset_bus(bool verbose=false);
       
       /// Internally used Mode struct (combination of videomode and framerate)
-      struct Mode{
+      struct ICLIO_API Mode{
         /// creates a new Mode with given videomode and framerate
         Mode(dc1394video_mode_t vm, dc1394framerate_t fr):
           videomode(vm),framerate(fr){}

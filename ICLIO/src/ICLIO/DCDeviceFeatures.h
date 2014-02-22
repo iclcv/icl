@@ -42,12 +42,12 @@ namespace icl{
     class DCDeviceFeaturesImpl : public utils::Configurable {
     public:
 
-      DCDeviceFeaturesImpl(const DCDevice &dev);
+      ICLIO_API DCDeviceFeaturesImpl(const DCDevice &dev);
       virtual ~DCDeviceFeaturesImpl(){}
 
-      void show();
+      ICLIO_API void show();
       /// callback function for property changes.
-      void processPropertyChange(const utils::Configurable::Property &p);
+      ICLIO_API void processPropertyChange(const utils::Configurable::Property &p);
 
     private:
       dc1394feature_info_t *getInfoPtr(const std::string &name) const;
@@ -59,7 +59,7 @@ namespace icl{
     };
 
     struct DCDeviceFeaturesImplDelOp{
-      static void delete_func(DCDeviceFeaturesImpl *impl);
+      ICLIO_API static void delete_func(DCDeviceFeaturesImpl *impl);
     };
     /** endcond */
   
@@ -94,10 +94,10 @@ namespace icl{
     class DCDeviceFeatures : public utils::ShallowCopyable<DCDeviceFeaturesImpl,DCDeviceFeaturesImplDelOp>, public utils::Configurable {
       public:
       /// Base constructor create a null Object
-      DCDeviceFeatures();
+      ICLIO_API DCDeviceFeatures();
   
       /// Default constructor with given DCDevice struct
-      DCDeviceFeatures(const DCDevice &dev);
+      ICLIO_API DCDeviceFeatures(const DCDevice &dev);
       
     };
   } // namespace io

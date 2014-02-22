@@ -266,10 +266,10 @@ namespace icl{
     
     /// Utility structure for matching results \ingroup STRUTILS
     /** @see icl::match for more details */
-    struct ICLUtils_API MatchResult{
+    struct MatchResult{
       bool matched; //!< was the match successful 
       
-      struct ICLUtils_API Match{
+      struct Match{
         int begin;
         int end; 
       };

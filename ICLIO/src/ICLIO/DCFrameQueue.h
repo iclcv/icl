@@ -55,10 +55,10 @@ namespace icl{
       class DCFrameQueue{
         public:
         /// Creates a new DCFrameQueue objects with given camera, DMABuffer size and count of queued buffers
-        DCFrameQueue(dc1394camera_t* c, DCDeviceOptions *options,int nDMABuffers=5, int nQueuedBuffers=1);
+        ICLIO_API DCFrameQueue(dc1394camera_t* c, DCDeviceOptions *options,int nDMABuffers=5, int nQueuedBuffers=1);
   
         /// releases the internal camera using icl::dc::release_dc_cam()
-        ~DCFrameQueue();
+        ICLIO_API ~DCFrameQueue();
         
         /// performs a new step
         /** - enqueue the oldest frame front() in the DMA-queue
@@ -66,7 +66,7 @@ namespace icl{
             - dequeue a frame F ( this is the newest one now)
             - push F into the internal frame
         */
-        void step();
+        ICLIO_API void step();
   
         /// returns the oldest frame in the queue
         /** new frames are pushed from the back. 
@@ -90,17 +90,17 @@ namespace icl{
         
         /// pushes a new frame to the back of the internal queue (auto lock()/unlock())
         /** The function internally locks the queue */
-        void push(dc1394video_frame_t *f);
+        ICLIO_API void push(dc1394video_frame_t *f);
         
         /// pops the oldest frame from the front of the internal queue (auto lock()/unlock())
         /** The function internally locks the queue */
-        dc1394video_frame_t *pop();
+        ICLIO_API dc1394video_frame_t *pop();
         
         /// shows some debugging information for the wrapped camera
-        void showDetails() const;
+        ICLIO_API void showDetails() const;
   
         /// calls dc1394_reset_bus  (not save!)
-        void resetBus();
+        ICLIO_API void resetBus();
         
         private:
         /// wrapped queue structure

@@ -157,7 +157,7 @@ namespace icl {
       throw OBJ;                      \
     }
   
-  #if __GNUC__ >= 3
+  #if (defined __GNUC__ && __GNUC__ >= 3)
   #define ICL_UNLIKELY(expr) __builtin_expect(expr, 0)
   #else
   #define ICL_UNLIKELY(expr) expr

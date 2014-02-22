@@ -32,6 +32,7 @@
 
 #include <ICLIO/PylonIncludes.h>
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/ImgBase.h>
 #include <ICLCore/Img.h>
 #include <ICLUtils/Mutex.h>
@@ -54,7 +55,7 @@ namespace icl {
       };
   
       /// This is the color-conversion-class for Pylon images \ingroup GIGE_G
-      class PylonColorConverter {
+      class ICLIO_API PylonColorConverter {
         public:
         /// Constructor
         PylonColorConverter();
@@ -112,7 +113,7 @@ namespace icl {
       };
   
       /// This ColorConverter is used for pylon-mono16s to icl-mono16s conversion.
-      class Mono16sToMono16s : public ColorConverter{
+      class ICLIO_API Mono16sToMono16s : public ColorConverter{
         public:
           /// Constructor initializes conversion
           Mono16sToMono16s(int width, int height);
@@ -126,7 +127,7 @@ namespace icl {
       };
   
       /// This ColorConverter is used for other pylon-mono to icl-mono8u conversion.
-      class MonoToMono8u : public ColorConverter{
+      class ICLIO_API MonoToMono8u : public ColorConverter{
         public:
           /// Constructor initializes conversion
           MonoToMono8u(int width, int height, Pylon::PixelType pixel_type,
@@ -153,7 +154,7 @@ namespace icl {
   
       /// This ColorConverter is used for pylon-rgb to icl-rgb conversion.
       /** This color type is only used by pylon camera-emulation **/
-      class Rgb8uToRgb8u : public ColorConverter{
+      class ICLIO_API Rgb8uToRgb8u : public ColorConverter{
         public:
           /// Constructor initializes conversion
           Rgb8uToRgb8u(int width, int height);
@@ -167,7 +168,7 @@ namespace icl {
       };
   
       /// This ColorConverter is used for pylon-bayer/yuv to icl-rgb conversion.
-      class PylonColorToRgb : public ColorConverter{
+      class ICLIO_API PylonColorToRgb : public ColorConverter{
         public:
           /// Constructor initializes conversion
           PylonColorToRgb(int width, int height, Pylon::PixelType pixel_type,
@@ -193,7 +194,7 @@ namespace icl {
       };
   
       /// This ColorConverter uses the icl Bayer to Rgb conversion.
-      class BayerToRgb8Icl : public ColorConverter{
+      class ICLIO_API BayerToRgb8Icl : public ColorConverter{
         public:
           /// Constructor initializes conversion
         BayerToRgb8Icl(core::BayerConverter::bayerConverterMethod method,
@@ -213,7 +214,7 @@ namespace icl {
   
   #ifdef HAVE_IPP
       /// This ColorConverter uses the icl Yuv422 to Rgb conversion.
-      class Yuv422ToRgb8Icl : public ColorConverter{
+      class ICLIO_API Yuv422ToRgb8Icl : public ColorConverter{
         public:
           /// Constructor initializes conversion
           Yuv422ToRgb8Icl(int width, int height);
@@ -229,7 +230,7 @@ namespace icl {
       };
   
       /// This ColorConverter uses the icl Yuv422YUYV to Rgb conversion.
-      class Yuv422YUYVToRgb8Icl : public ColorConverter{
+      class ICLIO_API Yuv422YUYVToRgb8Icl : public ColorConverter{
         public:
           /// Constructor initializes conversion
           Yuv422YUYVToRgb8Icl(int width, int height);

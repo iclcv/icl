@@ -101,17 +101,17 @@ namespace icl{
                           be set by the property iso-speed)
 
           */
-        DCGrabber(const DCDevice &dev=DCDevice::null, int isoMBits=0);
+        ICLIO_API DCGrabber(const DCDevice &dev=DCDevice::null, int isoMBits=0);
 
         /// Destructor
-        ~DCGrabber();
+        ICLIO_API ~DCGrabber();
         
         /// grab function grabs an image (destination image is adapted on demand)
         /** @copydoc icl::io::Grabber::grab(core::ImgBase**) **/
-        virtual const core::ImgBase *acquireImage();
+        ICLIO_API virtual const core::ImgBase *acquireImage();
 
         /// Returns a list of all connected DCDevices
-        static std::vector<DCDevice> getDCDeviceList(bool resetBusFirst=false);
+        ICLIO_API static std::vector<DCDevice> getDCDeviceList(bool resetBusFirst=false);
 
         /// calls dc1394_reset_bus functions (see DCDevice)
         static void dc1394_reset_bus(bool verbose=false){
@@ -119,7 +119,7 @@ namespace icl{
         }
 
         /// filters out the size property, as it is set by the core::format property
-        virtual std::vector<std::string> get_io_property_list();
+        ICLIO_API virtual std::vector<std::string> get_io_property_list();
 
       private:
         /// internally used function to restart the DCGrabberThread

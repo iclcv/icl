@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLIO/PylonIncludes.h>
 #include <ICLUtils/Mutex.h>
 #include <ICLUtils/Exception.h>
@@ -107,11 +108,11 @@ namespace icl {
       class ConvBuffers {
         public:
           /// Constructor sets all pointers to NULL
-          ConvBuffers();
+          ICLIO_API ConvBuffers();
           /// calls free
-          ~ConvBuffers();
+          ICLIO_API ~ConvBuffers();
           /// deletes Objects pointed at, when pointer != NULL
-          void free();
+          ICLIO_API void free();
           /// To this ImageBase the converted image is written.
           icl::core::ImgBase* m_Image;
           /// Buffer für color conversion
@@ -136,26 +137,26 @@ namespace icl {
       class ConcGrabberBuffer {
         public:
           /// Constructor creates and initializes resources.
-          ConcGrabberBuffer();
+          ICLIO_API ConcGrabberBuffer();
           /// Destructor frees allocated memory.
-          ~ConcGrabberBuffer();
+          ICLIO_API ~ConcGrabberBuffer();
   
           /// returns a pointer to the most recent actualized ConvBuffers.
           /**
               ConvBuffers will then be marked and not overwritten till the
               next call to getNextImage()
           **/
-          ConvBuffers* getNextReadBuffer();
+          ICLIO_API ConvBuffers* getNextReadBuffer();
           /// returns a pointer to the next write ConvBuffers.
           /**
               sets the returned ConvBuffers as current writeable and marks
               the old writeable as new.
           **/
-          ConvBuffers* getNextWriteBuffer();
+          ICLIO_API ConvBuffers* getNextWriteBuffer();
           /// mark ConvBuffers to be reset on next write-access.
-          void setReset();
+          ICLIO_API void setReset();
           /// tells whether a new ConvBuffers is available
-          bool newAvailable();
+          ICLIO_API bool newAvailable();
   
         private:
           /// current objects which alternately are read and written.
@@ -182,15 +183,15 @@ namespace icl {
       struct PylonAutoEnv{
         public:
           /// Initializes Pylon environment if not already done.
-          PylonAutoEnv();
+          ICLIO_API PylonAutoEnv();
           /// Terminates Pylon environment when (calls to term) == (calls to init).
-          ~PylonAutoEnv();
+          ICLIO_API ~PylonAutoEnv();
           /// Initializes the Pylon environment.
           /** @return whether Pylon::PylonInitialize() actually was called. */
-          static bool initPylonEnv();
+          ICLIO_API static bool initPylonEnv();
           /// terminates the Pylon environment.
           /** @return whether Pylon::PylontTerminate() actually was called. */
-          static bool termPylonEnv();
+          ICLIO_API static bool termPylonEnv();
       };
   
       /// Utility Structure \ingroup GIGE_G
@@ -229,9 +230,9 @@ namespace icl {
           * @param mock Whether to mock the stopping. This can be used to
           *        create 'shallow' AcquisitionInterruptors on conditions.
           */
-          AcquisitionInterruptor(Interruptable* i, bool mock=false);
+          ICLIO_API AcquisitionInterruptor(Interruptable* i, bool mock = false);
           /// Starts acquisition if stopped before.
-          ~AcquisitionInterruptor();
+          ICLIO_API ~AcquisitionInterruptor();
       };
   
       /// Utility Structure \ingroup GIGE_G
@@ -251,20 +252,20 @@ namespace icl {
         * @param mock Whether to mock the stopping. This can be used to
         *        create 'shallow' GrabbingInterruptors on conditions.
         */
-        GrabbingInterruptor(Interruptable* i, bool mock=false);
+        ICLIO_API GrabbingInterruptor(Interruptable* i, bool mock = false);
         /// Destructor calls grabbingStart().
-        ~GrabbingInterruptor();
+        ICLIO_API ~GrabbingInterruptor();
       };
   
       /// Prints help-information to std::cout
-      void printHelp();
+      ICLIO_API void printHelp();
       /// Uses args to find demanded device
-      Pylon::CDeviceInfo getDeviceFromArgs(std::string args) throw(utils::ICLException);
+      ICLIO_API Pylon::CDeviceInfo getDeviceFromArgs(std::string args) throw(utils::ICLException);
       /// Uses args to find out which BufferChannel to use.
-      int channelFromArgs(std::string args);
+      ICLIO_API int channelFromArgs(std::string args);
       /// Returns a list of available Pylon devices.
       /** @param filter if provided will be used to filter available devices */
-      Pylon::DeviceInfoList_t
+      ICLIO_API Pylon::DeviceInfoList_t
       getPylonDeviceList(Pylon::DeviceInfoList_t* filter=NULL);
   
     } //namespace pylon
