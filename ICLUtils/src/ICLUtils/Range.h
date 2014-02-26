@@ -69,7 +69,7 @@ namespace icl{
   
       /// returns type range (using std::numeric_limits<Type>)
       static inline Range<Type> limits(){
-        return Range<Type>(std::numeric_limits<Type>::min(),std::numeric_limits<Type>::max());
+        return Range<Type>((std::numeric_limits<Type>::min)(),(std::numeric_limits<Type>::max)());
       }
 
       /// returns inverted limits range [numeric-limits.max,numeric-limits.min]
