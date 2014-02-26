@@ -38,6 +38,7 @@
   #endif
 #else
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Mutex.h>
 #include <ICLQt/GLFragmentShader.h>
 

@@ -35,7 +35,7 @@
 
 #include <ICLUtils/ConfigFile.h>
 
-using namespace icl;
+//using namespace icl;
 
 HSplit gui;
 SmartPtr<GenericGrabber> cg;

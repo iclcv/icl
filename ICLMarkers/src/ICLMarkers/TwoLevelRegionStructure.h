@@ -30,13 +30,14 @@
 
 #pragma once
 
-#include <vector>
-#include <string>
-
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/BasicTypes.h>
 #include <ICLUtils/Exception.h>
 
 #include <ICLMarkers/RegionStructure.h>
+
+#include <vector>
+#include <string>
 
 namespace icl{
   namespace markers{

@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/SceneObject.h>
 #include <ICLGeom/DataSegment.h>
 #include <ICLCore/ImgBase.h>

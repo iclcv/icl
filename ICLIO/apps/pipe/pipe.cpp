@@ -89,7 +89,7 @@ const ImgBase *grab_image(){
     img = grabber.grab();
   }else{
     ImgBase *hack = const_cast<ImgBase*>(grabber.grab());
-    std::string axis = pa("-flip");
+    std::string axis = pa("-flip").as<std::string>();
     if(axis  ==   "x"){
       hack->mirror(axisVert);
     }else if(axis  ==  "y"){
@@ -103,12 +103,12 @@ const ImgBase *grab_image(){
   }
 
   if(pa("-decode-bayer")){
-    static std::string pattern = pa("-decode-bayer");
+    static std::string pattern = pa("-decode-bayer").as<std::string>();
     if(img->getDepth() != depth8u){
       ERROR_LOG("unable to reinterpret input image as bayer-encoded image: depth must be 8u");
     }else{
-      static std::string output = pa("-decode-bayer",1);
-      static std::string method = pa("-decode-bayer",2);
+      static std::string output = pa("-decode-bayer", 1).as<std::string>();
+      static std::string method = pa("-decode-bayer", 2).as<std::string>();
       static BayerConverter b(pattern,method);
       static ImgBase *tmp = 0;
       b.apply(img->as8u(),&tmp);
@@ -187,7 +187,7 @@ void send_app(){
     if(pa("-pp") && *ppEnabled){
       static UnaryOp *pp = 0;
       if(!pp){
-        static std::string pps = pa("-pp");
+        static std::string pps = pa("-pp").as<std::string>();
         if (pps == "gauss"){
           pp = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::gauss3x3));
         }else if(pps == "gauss5") {

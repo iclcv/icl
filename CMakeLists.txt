@@ -50,8 +50,14 @@ ENDIF(WIN32)
 
 # ---- build type (debug/release) and opptions
 IF(WIN32)
+  IF(MSVC)
+    SET(ICL_MSC_VER ${MSVC_VERSION})
+  ENDIF(MSVC)
+ENDIF(WIN32)
+
+IF(MSVC)
   set(CMAKE_CONFIGURATION_TYPES Debug Release CACHE TYPE INTERNAL FORCE)
-ENDIF()
+ENDIF(MSVC)
 
 IF(NOT WIN32)
   OPTION(ENABLE_NATIVE_BUILD_OPTION "Decide whether to use -march=native optimization flag" OFF)

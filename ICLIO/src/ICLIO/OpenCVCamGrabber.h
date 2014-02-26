@@ -30,6 +30,7 @@
 ********************************************************************/
 
 #pragma once
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/OpenCV.h>
 #include <ICLIO/Grabber.h>
 #include <ICLUtils/Exception.h>

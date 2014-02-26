@@ -39,6 +39,7 @@
   #endif
 #else
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/SceneObject.h>
 #include <ICLGeom/Camera.h>
 #include <ICLGeom/SceneLight.h>

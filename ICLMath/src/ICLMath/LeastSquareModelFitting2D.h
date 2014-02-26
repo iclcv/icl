@@ -40,7 +40,7 @@ namespace icl{
     /// Direct Least Square Fitting specialization for 2D input data
     /** Specialized least square model fitting for 2D data. Also
         some special desing matrix creation methods are provided */
-    class ICLMath_API LeastSquareModelFitting2D : public LeastSquareModelFitting<double,utils::Point32f>{
+    class LeastSquareModelFitting2D : public LeastSquareModelFitting<double,utils::Point32f>{
       /// super type
       typedef LeastSquareModelFitting<double, utils::Point32f> Super;
       public:

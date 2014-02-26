@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLMarkers/MultiCamFiducial.h>
 #include <ICLUtils/Configurable.h>
 

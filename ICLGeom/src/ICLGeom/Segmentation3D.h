@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/GeomDefs.h>
 #include <ICLCore/Img.h>
 #include <ICLGeom/PointCloudObjectBase.h>

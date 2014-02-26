@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLMath/Octree.h>
 #include <ICLGeom/SceneObject.h>
 

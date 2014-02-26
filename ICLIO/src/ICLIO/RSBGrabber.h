@@ -31,6 +31,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLIO/Grabber.h>
 
 #if !defined(HAVE_RSB) || !defined(HAVE_PROTOBUF)

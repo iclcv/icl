@@ -30,11 +30,7 @@
 
 #define __CL_ENABLE_EXCEPTIONS //enables openCL error catching
 #ifdef ICL_HAVE_OPENCL
-#ifdef WIN32
-#include <CL/cl.h>
-#else
 #include <CL/cl.hpp>
-#endif
 #endif
 
 #include <ICLGeom/Segmentation3D.h>
@@ -629,15 +625,15 @@ void Segmentation3D::calculateCutfreeMatrix() {
 				if (useCL == true && clReady == true) {
 #ifdef ICL_HAVE_OPENCL
 
-					Vec n0[RANSACpasses];
-					float dist[RANSACpasses];
-					int cAbove[RANSACpasses];
-					int cBelow[RANSACpasses];
-					int cOn[RANSACpasses];
+					Vec *n0 = new Vec[RANSACpasses];
+					float *dist = new float[RANSACpasses];
+					int *cAbove = new int[RANSACpasses];
+					int *cBelow = new int[RANSACpasses];
+					int *cOn = new int[RANSACpasses];
 
-					int cAboveRead[RANSACpasses];
-					int cBelowRead[RANSACpasses];
-					int cOnRead[RANSACpasses];
+					int *cAboveRead = new int[RANSACpasses];
+					int *cBelowRead = new int[RANSACpasses];
+					int *cOnRead = new int[RANSACpasses];
 
 					for(int i=0; i<RANSACpasses; i++) {
 						cAbove[i]=0;
@@ -710,6 +706,8 @@ void Segmentation3D::calculateCutfreeMatrix() {
 					} else {
 						cutfree(a,b)=false;
 					}
+
+          delete n0, dist, cAbove, cBelow, cOn, cAboveRead, cBelowRead, cOnRead;
 #endif
 				} else {
 					for (int p = 0; p < RANSACpasses; p++) {
@@ -1227,11 +1225,11 @@ void Segmentation3D::blobSegmentation() {
 
 #ifdef ICL_HAVE_OPENCL
 	int numPoints=cluster.at(maxID).size();
-	int cAbove[RANSACpasses];
-	int cBelow[RANSACpasses];
-	int cOn[RANSACpasses];
-	int cAboveRead[RANSACpasses];
-	int cBelowRead[RANSACpasses];
+	int *cAbove = new int[RANSACpasses];
+	int *cBelow = new int[RANSACpasses];
+  int *cOn = new int[RANSACpasses];
+  int *cAboveRead = new int[RANSACpasses];
+  int *cBelowRead = new int[RANSACpasses];
 #endif
 	Vec *n0 = new Vec[RANSACpasses];
 	float *dist = new float[RANSACpasses];
@@ -1372,6 +1370,7 @@ void Segmentation3D::blobSegmentation() {
   assignment = assignmentBlobs;
 
   delete n0, dist, cOnRead;
+  delete cAbove, cBelow, cOn, cAboveRead, cBelowRead;
 }
 
 void Segmentation3D::colorPointcloud() {

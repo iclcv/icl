@@ -31,6 +31,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLMarkers/FiducialDetectorPluginHierarchical.h>
 
 namespace icl{

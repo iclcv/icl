@@ -140,7 +140,7 @@ void save_as(){
 
 void overwrite(){
   Mutex::Locker lock(currMutex);
-  std::string filename = pa("-i",1);
+  std::string filename = pa("-i", 1).as<std::string>();
   save(curr,filename);
 }
 

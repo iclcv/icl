@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLMath/DynMatrix.h>
 #include <ICLMath/FixedVector.h>
 #include <ICLUtils/Macros.h>

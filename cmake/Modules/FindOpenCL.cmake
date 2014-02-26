@@ -51,13 +51,13 @@ IF(WIN32)
             NO_DEFAULT_PATH)
 
   IF(ICL_64BIT)
-    FIND_LIBRARY(OPENCL_LIBRARY  
+    FIND_LIBRARY(OPENCL_LIBRARIES  
                  NAMES OpenCL
                  PATHS ${OPENCL_ROOT}
                  PATH_SUFFIXES "/lib" "/lib/x64"
                  NO_DEFAULT_PATH)
   ELSE()
-    FIND_LIBRARY(OPENCL_LIBRARY  
+    FIND_LIBRARY(OPENCL_LIBRARIES  
                  NAMES OpenCL
                  PATHS ${OPENCL_ROOT}
                  PATH_SUFFIXES "/lib" "/lib/Win32"
@@ -88,7 +88,7 @@ ELSE(WIN32)
         DOC "The path to OPENCL header files"
         NO_DEFAULT_PATH)
     
-    FIND_LIBRARY(OPENCL_LIBRARY  
+    FIND_LIBRARY(OPENCL_LIBRARIES  
                  NAMES OpenCL
                  PATHS ${${_PATH}}
                  PATH_SUFFIXES ${_LIB_SEARCH_PATH_SUFFIXES}
@@ -99,7 +99,7 @@ ENDIF(WIN32)
 # Handle the QUIETLY and REQUIRED arguments and set OPENCL_FOUND to TRUE if 
 # all listed variables are TRUE
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(OPENCL REQUIRED_VARS 
-                                  OPENCL_LIBRARY
+                                  OPENCL_LIBRARIES
                                   OPENCL_INCLUDE_DIR)
 
 IF(OPENCL_FOUND)
@@ -125,17 +125,6 @@ IF(OPENCL_FOUND)
     ADD_DEFINITIONS( -DCL_USE_DEPRECATED_OPENCL_1_1_APIS)
   ENDIF()
 
-  
-  IF(NOT WIN32)
-    # HACK: Until FIND_LIBRARY could handle multiple libraries
-    FOREACH(_lib ${_OPENCL_LIBRARIES})
-      LIST(APPEND _OPENCL_LIBRARIES_LIST ${${_lib}_LIBRARY})
-    ENDFOREACH()
-
-    LIST(REMOVE_DUPLICATES _OPENCL_LIBRARIES_LIST)
-    SET(OPENCL_LIBRARIES ${_OPENCL_LIBRARIES_LIST})
-  ENDIF(NOT WIN32)
-  
   SET(OPENCL_INCLUDE_DIRS ${OPENCL_INCLUDE_DIR})
 ENDIF()
 

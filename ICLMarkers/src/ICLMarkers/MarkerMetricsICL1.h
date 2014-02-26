@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLMarkers/MarkerCodeICL1.h>
 #include <ICLUtils/Rect32f.h>
 #include <ICLUtils/Point32f.h>

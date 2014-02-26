@@ -159,7 +159,7 @@ namespace icl{
                   "Defines the ratio between angle and position values");
       addProperty("time monitoring","flag","",data->timeMonitoring,0,
                   "If set to true, benchmarking is enabled");
-#if !(defined _MSC_VER && _MSC_VER < 1800)
+#if !(defined ICL_MSC_VER && ICL_MSC_VER < 1800)
       addProperty("pose correction","flag","",data->poseCorrection,0,
                   "If set to true, the pose is corrected using robust pose estimation algorithm");
 #endif
@@ -344,7 +344,7 @@ namespace icl{
     }
 
     
-#if !(defined _MSC_VER && _MSC_VER < 1800)
+#if !(defined ICL_MSC_VER && ICL_MSC_VER < 1800)
       FixedMatrix<icl32f, 3, 3> getRzyx(icl32f a, icl32f b, icl32f c) {
         FixedMatrix<icl32f, 3, 3> R;
 
@@ -767,7 +767,7 @@ namespace icl{
 #endif
 
       
-#if !(defined _MSC_VER && _MSC_VER < 1800)
+#if !(defined ICL_MSC_VER && ICL_MSC_VER < 1800)
       if (data->poseCorrection) robustPoseCorrection(n, modelPoints, ips);
 #endif
 

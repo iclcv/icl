@@ -31,6 +31,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLMarkers/FiducialDetectorPlugin.h>
 #include <ICLMarkers/QuadDetector.h>
 

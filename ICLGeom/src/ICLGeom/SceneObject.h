@@ -38,6 +38,7 @@
 #endif
 #endif
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Mutex.h>
 #include <ICLGeom/Primitive.h>
 #include <ICLGeom/ViewRay.h>

@@ -82,7 +82,7 @@ void init(){
       << Show();
       
   if(pa("-cam")){
-    string camname = pa("-cam");
+    string camname = pa("-cam").as<std::string>();
     cam=Camera(camname);
     cam.setName("Depth Camera");
   }

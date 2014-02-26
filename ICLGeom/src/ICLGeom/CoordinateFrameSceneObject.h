@@ -38,6 +38,7 @@
   #endif
 #else
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/SceneObject.h>
 
 namespace icl{

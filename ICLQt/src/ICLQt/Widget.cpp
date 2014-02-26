@@ -524,7 +524,7 @@ namespace icl{
       }
   
       void autoCapDeviceChanged(){
-        std::string newDevice = menu["auto-cap-device"];
+        std::string newDevice = menu["auto-cap-device"].as<std::string>();
         if(newDevice == "video") menu["auto-cap-filepattern"] = str("video.avi,MP42,VGA,25");
         else if(newDevice == "xcfp") menu["auto-cap-filepattern"] = str("publisher-name");
         else if(newDevice == "xcfs") menu["auto-cap-filepattern"] = str("stream-name");

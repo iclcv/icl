@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/OctreeObject.h>
 #include <ICLGeom/ViewRay.h>
 #include <vector>

@@ -30,11 +30,12 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/PointCloudObjectBase.h>
 #include <ICLCore/Img.h>
 #include <ICLMath/FixedVector.h>
 
-#ifdef HAVE_OPENCL    
+#ifdef ICL_HAVE_OPENCL    
 #include <ICLUtils/CLProgram.h>
 #include <ICLUtils/CLKernel.h>
 #include <ICLUtils/CLBuffer.h>
@@ -51,30 +52,30 @@ namespace icl{
       /** Constructs an object of this class.
           @param size size of the input core::depth image and output pointcloud
           @param dirs view ray directions calculated in PointCloudCreator*/
-      PointCloudCreatorCL(utils::Size size, const utils::Array2D<Vec> &dirs); 
+      ICLGeom_API PointCloudCreatorCL(utils::Size size, const utils::Array2D<Vec> &dirs); 
   	
       ///Destructor
-      ~PointCloudCreatorCL();
+      ICLGeom_API ~PointCloudCreatorCL();
   	  	
   	  ///Creates a uncolored pointcloud (called from PointCloudCreator)
-  	  void create(bool NEEDS_RAW_TO_MM_MAPPING,const core::Img32f *depthValues, 
+      ICLGeom_API void create(bool NEEDS_RAW_TO_MM_MAPPING, const core::Img32f *depthValues,
                            const Vec O, const int DEPTH_DIM, 
                            DataSegment<float,3> xyz, const utils::Array2D<Vec> &dirs, float depthScaling);
       
       ///Creates a RGBD-mapped pointcloud (called from PointCloudCreator)
-      void createRGB(bool NEEDS_RAW_TO_MM_MAPPING,const core::Img32f *depthValues, const Mat M, 
+      ICLGeom_API void createRGB(bool NEEDS_RAW_TO_MM_MAPPING, const core::Img32f *depthValues, const Mat M,
                            const Vec O, const unsigned int COLOR_W, const unsigned int COLOR_H, const int DEPTH_DIM, 
                            DataSegment<float,3> xyz, DataSegment<float,4> rgba,
                            const core::Img8u *rgbIn,const utils::Array2D<Vec> &dirs, float depthScaling);
   	
       /// Returns the openCL status (true=openCL context ready, false=no openCL context available)
       /**        @return openCL context ready/unavailable */
-      bool isCLReady();
+      ICLGeom_API bool isCLReady();
   	  	
      private:
       bool clReady;
 
-    #ifdef HAVE_OPENCL
+    #ifdef ICL_HAVE_OPENCL
       //OpenCL data
   	  float* depthValuesArray;
   	  unsigned char* rInArray;

@@ -60,7 +60,7 @@ namespace icl{
       
       
       /// Arbitrary Data encapsulation type
-      class ICLQt_API Data{
+      class Data{
         
         /// internally reference DataStore entry
         DataArray *data;
@@ -69,7 +69,7 @@ namespace icl{
         inline Data(DataArray *data):data(data){}
         
         /// This is the mighty and magic conversion function 
-        static void assign(void *src, const std::string &srcType, void *dst, 
+        ICLQt_API static void assign(void *src, const std::string &srcType, void *dst, 
                            const std::string &dstType) throw (UnassignableTypesException); 
   
         public:
@@ -77,8 +77,8 @@ namespace icl{
         /// Internally used Data- Structure
         struct Event{
           Event(const std::string &msg="", void *data=0):message(msg),data(data){}
-        Event(const std::string &msg, const utils::Function<void> &cb): message(msg),data(0),cb(cb){}
-        Event(const std::string &msg, const utils::Function<void,const std::string&> &cb2): message(msg),data(0),cb2(cb2){}
+          Event(const std::string &msg, const utils::Function<void> &cb): message(msg),data(0),cb(cb){}
+          Event(const std::string &msg, const utils::Function<void,const std::string&> &cb2): message(msg),data(0),cb2(cb2){}
           std::string message;
           void *data;
           utils::Function<void> cb;
@@ -131,7 +131,7 @@ namespace icl{
         }
         
         /// installs a function directly
-        void install(utils::Function<void,const MouseEvent &> f);
+        ICLQt_API void install(utils::Function<void, const MouseEvent &> f);
   
         // installs a global function (should be implicit)
         //void install(void (*f)(const MouseEvent &)){

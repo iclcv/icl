@@ -60,7 +60,7 @@ namespace icl{
     }
     
   
-  #if (defined _MSC_VER && _MSC_VER <= 1600)
+  #if (defined ICL_MSC_VER && ICL_MSC_VER < 1800)
     template<class T>
     static inline void apply_warp_2(const Channel32f warpMap[2],
                                     const Channel<T> &src,

@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLMarkers/FiducialDetector.h>
 #include <ICLGeom/GeomDefs.h>
 

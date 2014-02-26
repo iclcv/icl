@@ -57,13 +57,13 @@ int main(int n, char **ppc){
   }
   
   if(pa("-o")){
-    std::string name = pa("-o",0);
-    std::string filename = pa("-o",1);
+    std::string name = pa("-o",0).as<std::string>();
+    std::string filename = pa("-o",1).as<std::string>();
     Configurable::create_configurable(name)->saveProperties(name);
   }
   
   if(pa("-i")){
-    std::string name = pa("-i");
+    std::string name = pa("-i").as<std::string>();
     Configurable *p = Configurable::create_configurable(name);
     
     std::cout << "--- Properties for Configurable " << name << " ---" << std::endl;

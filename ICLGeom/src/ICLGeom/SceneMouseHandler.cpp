@@ -140,11 +140,11 @@ namespace icl{
 
       // left mouse button: free view
       setMouseMapping(MouseDragEvent, true, false, false, false, false, false, 
-                      &freeView, &mMouseSensitivities[NormalMouseSensitivity] );
+                      &SceneMouseHandler::freeView, &mMouseSensitivities[NormalMouseSensitivity] );
       setMouseMapping(MouseDragEvent, true, false, false, true,  false, false,
-                      &freeView, &mMouseSensitivities[LowMouseSensitivity] );
+                      &SceneMouseHandler::freeView, &mMouseSensitivities[LowMouseSensitivity] );
       setMouseMapping(MouseDragEvent, true, false, false, false, true,  false,
-                      &freeView, &mMouseSensitivities[HighMouseSensitivity] );
+                      &SceneMouseHandler::freeView, &mMouseSensitivities[HighMouseSensitivity] );
 
       // middle mouse button: strafe
       setMouseMapping(MouseDragEvent, false, true, false, false, false, false, &strafe, 

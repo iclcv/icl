@@ -31,6 +31,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/Camera.h>
 #include <ICLUtils/Array2D.h>
 

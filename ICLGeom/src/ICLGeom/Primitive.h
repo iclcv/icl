@@ -38,6 +38,7 @@
 #endif
 #else
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/GeomDefs.h>
 #include <ICLCore/Img.h>
 #include <ICLMath/FixedVector.h>

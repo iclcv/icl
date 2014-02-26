@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLMath/FixedMatrix.h>
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/Configurable.h>
@@ -100,7 +101,7 @@ namespace icl{
       /// Internally used to sync property settings with internal data
       void propertyChangedCallback(const Property &p);
       
-#if !(defined _MSC_VER && _MSC_VER < 1800)
+#if !(defined ICL_MSC_VER && ICL_MSC_VER < 1800)
       /// Internally used to correct the first transformation matrix using robust pose estimation algorithm
       void robustPoseCorrection(int n, const utils::Point32f *modelPoints, std::vector<utils::Point32f> &ips);
 #endif

@@ -31,6 +31,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCV/ImageRegion.h>
 
 #include <ICLMarkers/FiducialDetectorPlugin.h>

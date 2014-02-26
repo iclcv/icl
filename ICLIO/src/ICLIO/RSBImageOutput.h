@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLIO/GenericImageOutput.h>
 
 #if !defined(HAVE_RSB) || !defined(HAVE_PROTOBUF)

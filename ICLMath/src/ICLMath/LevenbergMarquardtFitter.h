@@ -257,7 +257,7 @@ namespace icl{
       typedef DynMatrix<Scalar> Matrix;    //!< matrix type (used for input data)
     
       /// Utility structure, that represents a fitting result
-      struct ICLMath_API Result{ 
+      struct Result{ 
         int iteration;                //!< number of iterations needed
         Scalar error;                 //!< reached error
         std::vector<Scalar> lambdas;  //!< last lambdas (one per output)
@@ -271,7 +271,7 @@ namespace icl{
       };
 
       /// utility structure that is used in the static create_data utlity method
-      struct ICLMath_API Data{
+      struct Data{
         Matrix x;  //!< input (each row is a data sample)
         Matrix y;  //!< outputs
       };

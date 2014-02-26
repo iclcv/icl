@@ -30,9 +30,10 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/BasicTypes.h>
 #include <vector>
 #include <iostream>
-#include <ICLUtils/BasicTypes.h>
 
 namespace icl{
   namespace markers{

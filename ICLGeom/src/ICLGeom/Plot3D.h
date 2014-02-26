@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLQt/GUIComponent.h>
 #include <ICLUtils/Range.h>
 #include <ICLGeom/PlotWidget3D.h>

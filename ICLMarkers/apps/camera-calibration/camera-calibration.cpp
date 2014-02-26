@@ -324,7 +324,7 @@ void change_plane(const std::string &handle){
     ICL_DELETE(planeObj);
   }
   
-  const std::string t = planeOptionGUI["planeDim"];
+  const std::string t = planeOptionGUI["planeDim"].as<std::string>();
   const float offset = planeOptionGUI["planeOffset"];
   const float radius = parse<float>(planeOptionGUI["planeRadius"]);
   const float ticDist = planeOptionGUI["planeTicDist"];
@@ -409,7 +409,7 @@ void init(){
     std::ostringstream transformNameList;    
     for(int t=0;true;++t){
       try{
-        const std::string name = cfg["config.world-transform-"+str(t)+".name"];
+        const std::string name = cfg["config.world-transform-" + str(t) + ".name"].as<std::string>();
         transformNameList << (t?",":"") << name;
         const Mat transform = parse<Mat>(cfg["config.world-transform-"+str(t)+".transform"]);
         cf.transforms.push_back(NamedTransform(name,transform));
@@ -435,7 +435,7 @@ void init(){
     try{
       std::string s;
       try{
-        const std::string s2 = cfg["config.obj-file"];
+        const std::string s2 = cfg["config.obj-file"].as<std::string>();
         s = s2;
       }catch(...){
         throw 1;
@@ -892,7 +892,7 @@ void run(){
   if(havePlane){
     draw->linewidth(1);
     const Point32f p = currentMousePos;
-    const std::string t = planeOptionGUI["planeDim"];
+    const std::string t = planeOptionGUI["planeDim"].as<std::string>();
     const float o = planeOptionGUI["planeOffset"];
     const float x=t=="x",y=t=="y",z=t=="z";
     PlaneEquation pe(Vec(o*x,o*y,o*z,1),Vec(x,y,z,1));

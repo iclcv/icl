@@ -130,7 +130,7 @@ namespace icl{
     */
   
     template<class T, class DataPoint>
-    class ICLMath_IMP LeastSquareModelFitting{
+    class LeastSquareModelFitting{
       public:
       /// fills the give float* with data from the given data point
       /** creates the rows of the design matrix */

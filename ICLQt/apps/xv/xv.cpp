@@ -65,7 +65,7 @@ int main (int n, char **ppc){
 
   const ImgBase *image = 0;
   if(pa("-input")){
-    string imageName = pa("-input");
+    std::string imageName = pa("-input").as<std::string>();
 
     try{
       static FileGrabber w(imageName);
@@ -105,7 +105,7 @@ int main (int n, char **ppc){
     
     Size maxSize;
     for(unsigned int i=0;i<pa_get_count();++i){
-      std::string s = pa(i);
+      std::string s = pa(i).as<std::string>();
       try{
         FileGrabber grabber(s,false,true);
         const ImgBase *image = grabber.grab();

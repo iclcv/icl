@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLMath/FixedVector.h>
 #include <ICLCore/CoreFunctions.h>
 #include <ICLGeom/DataSegmentBase.h>

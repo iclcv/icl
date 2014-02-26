@@ -35,10 +35,10 @@
   #if defined __SSE2__ || defined _M_X64  || (defined _M_IX86_FP && _M_IX86_FP >= 2)
     #include "emmintrin.h"
     #define HAVE_SSE2
-    #if defined __SSE3__ || (defined _MSC_VER && _MSC_VER >= 1500)
+    #if defined __SSE3__ || (defined ICL_MSC_VER && ICL_MSC_VER >= 1500)
       #include "pmmintrin.h"
       #define HAVE_SSE3
-      #if defined __SSSE3__ || (defined _MSC_VER && _MSC_VER >= 1500)
+      #if defined __SSSE3__ || (defined ICL_MSC_VER && ICL_MSC_VER >= 1500)
         #include "tmmintrin.h"
         #define HAVE_SSSE3
       #endif

@@ -164,8 +164,8 @@ ENDFUNCTION()
 # ---- Add definitions ----
 #*********************************************************************
 MACRO(ADD_ICL_DEFINITIONS)
-  string(REPLACE "-D" "" ST "${ARGV}")
-  SET(${ST} 1) # this is needed for ICLConfig.h
+  string(REPLACE "-D" "" _ST "${ARGV}")
+  SET(${_ST} 1) # this is needed for ICLConfig.h
 
   ADD_DEFINITIONS(${ARGV})
   LIST(APPEND ICL_DEFINITIONS ${ARGV})

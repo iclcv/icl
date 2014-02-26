@@ -46,7 +46,7 @@ Reg *reg = 0;
 
 ImgQ approx(const ImgQ &image){
   static std::string lastF;
-  std::string currF = gui["f"];
+  std::string currF = gui["f"].as<std::string>();
   if(!reg) reg = new Reg(currF);
   gui["fused"] = reg->getFunctionString();
   gui["status"] = str("ok");

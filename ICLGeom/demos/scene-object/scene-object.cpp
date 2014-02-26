@@ -91,7 +91,7 @@ void init(){
     o->setVisible(Primitive::line,true);
     scene.addObject(o);
   }else{ // or create a simple cube
-    std::string shape=pa("-s");
+    std::string shape = pa("-s").as<std::string>();
     const float data[] = {0,0,0,7,3,2, 30, 30};
     if(shape == "cylinder" || shape == "cone" || shape == "spheroid" || shape == "cuboid"){
       SceneObject *o = new SceneObject(shape,data);

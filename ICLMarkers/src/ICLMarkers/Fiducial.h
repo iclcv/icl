@@ -30,11 +30,12 @@
 
 #pragma once
 
-#include <bitset>
-
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Point32f.h>
 #include <ICLGeom/GeomDefs.h>
 #include <ICLCV/ImageRegion.h>
+
+#include <bitset>
 
 namespace icl{
   namespace markers{

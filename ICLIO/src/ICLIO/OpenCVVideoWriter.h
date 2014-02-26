@@ -30,14 +30,15 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+#include <ICLIO/ImageOutput.h>
+#include <ICLUtils/Uncopyable.h>
+
 #include <string>
 
 #ifdef ICL_HAVE_OPENCV
 #include <opencv/highgui.h>
 #endif
-
-#include <ICLIO/ImageOutput.h>
-#include <ICLUtils/Uncopyable.h>
 
 
 

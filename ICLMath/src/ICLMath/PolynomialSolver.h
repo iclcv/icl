@@ -33,7 +33,7 @@
 #include <ICLUtils/BasicTypes.h>
 #include <float.h>
 
-#if (defined _MSC_VER && _MSC_VER < 1800)
+#if (defined ICL_MSC_VER && ICL_MSC_VER < 1800)
 #pragma WARNING("This compiler does not support the functions ilogb and scalbln.")
 #else
 

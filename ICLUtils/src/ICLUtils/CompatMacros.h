@@ -39,7 +39,7 @@
   //#define __msxml_h__ // icl has its own xml classes
   //#include <Windows.h>
   // TODOWW: test with _MSC_VER == 1700
-  #if (defined _MSC_VER && _MSC_VER <= 1600)
+  #if (defined ICL_MSC_VER && ICL_MSC_VER < 1800)
     #include <cmath>
     inline double round(double a)
     {
@@ -53,6 +53,10 @@
     {
       return pow((float)a, b);  
     }
+    inline double pow(float a, double b)
+    {
+      return pow((double)a, b);
+    }
     inline int rint(double a)  
     {
       // this is not really what it should do
@@ -65,6 +69,10 @@
     inline float exp(int a)  
     {
       return exp((float)a);  
+    }
+    inline float sqrt(int a)
+    {
+      return sqrt((float)a);
     }
   #endif
   // in windows use this instead of #warning

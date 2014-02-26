@@ -30,10 +30,11 @@
 
 #pragma once
 
-#include <bitset>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/BasicTypes.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLCore/Img.h>
+#include <bitset>
 
 namespace icl{
   namespace markers{

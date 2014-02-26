@@ -37,6 +37,8 @@
 #cmakedefine ICL_32BIT @ICL_32BIT@
 #cmakedefine ICL_64BIT @ICL_64BIT@
 
+#cmakedefine ICL_MSC_VER @ICL_MSC_VER@
+
 #cmakedefine ICL_SYSTEM_UNIX @ICL_SYSTEM_UNIX@
 #cmakedefine ICL_SYSTEM_WINDOWS @ICL_SYSTEM_WINDOWS@
 #cmakedefine ICL_SYSTEM_APPLE @ICL_SYSTEM_APPLE@

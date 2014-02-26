@@ -259,7 +259,7 @@ INST_OTHER_TYPES
            return apply(*reinterpret_cast<S*>(src),*reinterpret_cast<D*>(dst));  \
         }                                                                        \
       };                                                                         \
-      template struct AssignSpecial<S,D>;
+      //template struct AssignSpecial<S,D>; // TODO: maybe we need this one in Unix
 
     // ComboHandle
     FROM_TO_NUM(ComboHandle,dst.setSelectedIndex((int)src),dst=src.getSelectedIndex());
