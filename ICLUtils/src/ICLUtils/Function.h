@@ -372,7 +372,7 @@ namespace icl{
     /** This version of function allows to create a Function instance from 
         a given object instance (passed by reference) and a given binary member function
         @see \ref FUNCTION_SECTION */
-    template<class Object, class R = void, class A = NO_ARG, class B = NO_ARG, class C = NO_ARG>
+    template<class Object, class R, class A, class B, class C>
     Function<R, A, B, C> function(Object &obj, R(Object::*method)(A, B, C)){
       MemberFunctionImpl<Object,R,A,B,C> *impl = new MemberFunctionImpl<Object,R,A,B,C>;
       impl->obj = &obj;
