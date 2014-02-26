@@ -34,6 +34,9 @@ INCLUDE(FindPackageHandleStandardArgs)
 # Start main part here
 # ---------------------------------------------------------------------
 
+# Ask the root directory of LIBUSB.
+SET(LIBUSB_ROOT LIBUSB_ROOT CACHE PATH "Root directory of LIBUSB")
+
 # Search LIBUSB_ROOT first if it is set.
 IF(LIBUSB_ROOT)
   #SET(_LIBUSB_SEARCH_ROOT PATHS ${LIBUSB_ROOT} ${LIBUSB_ROOT}/lib NO_DEFAULT_PATH)
@@ -44,27 +47,35 @@ ENDIF()
 
 
 FIND_PATH(LIBUSB_INCLUDE_DIR 
-  NAMES usb.h        
+  NAMES usb.h lusb0_usb.h
   PATHS ${LIB_USB_SEARCH_PATH}
-  PATH_SUFFIXES "/include" 	  
+  PATH_SUFFIXES "/include"
   DOC "The path to LIBUSB header files"
   NO_DEFAULT_PATH)
   
+IF(WIN32)
+  IF(ICL_64BIT)
+    SET(LIBUSB_ARCH "msvc_x64")
+  ELSE()
+    SET(LIBUSB_ARCH "msvc")
+  ENDIF()
+ENDIF(WIN32)
+
 FIND_LIBRARY(LIBUSB_LIBRARY  
-  NAMES usb
+  NAMES usb libusb
   PATHS "${LIB_USB_SEARCH_PATH}"
-  PATH_SUFFIXES "/lib/" "lib/${ARCH_DEPENDENT_LIB_DIR}/" 
+  PATH_SUFFIXES "/lib" "lib/${ARCH_DEPENDENT_LIB_DIR}" "lib/${LIBUSB_ARCH}" 
   NO_DEFAULT_PATH)
 
 # Handle the QUIETLY and REQUIRED arguments and set LIBUSB_FOUND to TRUE if 
 # all listed variables are TRUE
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(LIBUSB REQUIRED_VARS 
-				  LIBUSB_LIBRARY
-				  LIBUSB_INCLUDE_DIR)
+                                  LIBUSB_LIBRARY
+                                  LIBUSB_INCLUDE_DIR)
 
 IF(LIBUSB_FOUND)
   SET(LIBUSB_INCLUDE_DIRS ${LIBUSB_INCLUDE_DIR})
   SET(LIBUSB_LIBRARIES ${LIBUSB_LIBRARY})
 ENDIF()
 
-MARK_AS_ADVANCED(LIBUSB_INCLUDE_DIR)
+#MARK_AS_ADVANCED(LIBUSB_INCLUDE_DIR)

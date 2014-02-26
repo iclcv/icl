@@ -36,7 +36,11 @@ INCLUDE(FindPackageHandleStandardArgs)
 
 IF(WIN32)
   # Ask the root directory of OpenCL.
-  SET(OPENCL_ROOT OPENCL_ROOT CACHE PATH "Root directory of OpenCL")
+  IF(NOT OPENCL_ROOT)
+    SET(OPENCL_ROOT $ENV{CUDA_PATH} CACHE PATH "Root directory of OpenCL")
+  ELSE()
+    SET(OPENCL_ROOT OPENCL_ROOT CACHE PATH "Root directory of OpenCL")
+  ENDIF()
 
   # Look for the header files
   FIND_PATH(OPENCL_INCLUDE_DIR 
@@ -45,9 +49,20 @@ IF(WIN32)
             PATH_SUFFIXES "include"
             DOC "The path to OPENCL header files"
             NO_DEFAULT_PATH)
-          
-  FIND_PACKAGE_HANDLE_STANDARD_ARGS(OPENCL REQUIRED_VARS
-                                    OPENCL_INCLUDE_DIR)
+
+  IF(ICL_64BIT)
+    FIND_LIBRARY(OPENCL_LIBRARY  
+                 NAMES OpenCL
+                 PATHS ${OPENCL_ROOT}
+                 PATH_SUFFIXES "/lib" "/lib/x64"
+                 NO_DEFAULT_PATH)
+  ELSE()
+    FIND_LIBRARY(OPENCL_LIBRARY  
+                 NAMES OpenCL
+                 PATHS ${OPENCL_ROOT}
+                 PATH_SUFFIXES "/lib" "/lib/Win32"
+                 NO_DEFAULT_PATH)
+  ENDIF()
 ELSE(WIN32)
   # Search OPENCL_ROOT first if it is set.
   IF(OPENCL_ROOT)
@@ -60,7 +75,6 @@ ELSE(WIN32)
        PATHS "/usr"
      )
   LIST(APPEND _OPENCL_SEARCHES _OPENCL_SEARCH_NORMAL)
-  LIST(APPEND _OPENCL_LIBRARIES OpenCL)
 
   # Set search path suffix
   SET (_LIB_SEARCH_PATH_SUFFIXES "/lib")
@@ -74,21 +88,19 @@ ELSE(WIN32)
         DOC "The path to OPENCL header files"
         NO_DEFAULT_PATH)
     
-      FOREACH(_lib ${_OPENCL_LIBRARIES})
-        FIND_LIBRARY(${_lib}_LIBRARY  
-                 NAMES ${_lib}
-           PATHS ${${_PATH}}
-           PATH_SUFFIXES ${_LIB_SEARCH_PATH_SUFFIXES}
-           NO_DEFAULT_PATH)
-      ENDFOREACH()
+    FIND_LIBRARY(OPENCL_LIBRARY  
+                 NAMES OpenCL
+                 PATHS ${${_PATH}}
+                 PATH_SUFFIXES ${_LIB_SEARCH_PATH_SUFFIXES}
+                 NO_DEFAULT_PATH)
   ENDFOREACH()
-       
-  # Handle the QUIETLY and REQUIRED arguments and set OPENCL_FOUND to TRUE if 
-  # all listed variables are TRUE
-  FIND_PACKAGE_HANDLE_STANDARD_ARGS(OPENCL REQUIRED_VARS 
-            OpenCL_LIBRARY
-            OPENCL_INCLUDE_DIR)
 ENDIF(WIN32)
+       
+# Handle the QUIETLY and REQUIRED arguments and set OPENCL_FOUND to TRUE if 
+# all listed variables are TRUE
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(OPENCL REQUIRED_VARS 
+                                  OPENCL_LIBRARY
+                                  OPENCL_INCLUDE_DIR)
 
 IF(OPENCL_FOUND)
   IF(WIN32)
@@ -121,9 +133,10 @@ IF(OPENCL_FOUND)
     ENDFOREACH()
 
     LIST(REMOVE_DUPLICATES _OPENCL_LIBRARIES_LIST)
-    SET(OPENCL_INCLUDE_DIRS ${OPENCL_INCLUDE_DIR})
     SET(OPENCL_LIBRARIES ${_OPENCL_LIBRARIES_LIST})
   ENDIF(NOT WIN32)
+  
+  SET(OPENCL_INCLUDE_DIRS ${OPENCL_INCLUDE_DIR})
 ENDIF()
 
 #MARK_AS_ADVANCED(OPENCL_INCLUDE_DIR)

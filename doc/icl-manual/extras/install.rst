@@ -23,6 +23,7 @@ Table of Contents
 * :ref:`install.dependencies`
 
   * :ref:`install.dependencies.mandatory`
+  * :ref:`install.dependencies.doc`
   * :ref:`install.dependencies.optional`
 
 * :ref:`install.source`
@@ -68,6 +69,41 @@ mandatory libraries are provided by the ICL.
 libpthread can be downloaded on the following website::
 
 * https://www.sourceware.org/pthreads-win32/
+
+
+.. _install.dependencies.doc:
+
+Dependencies for the Documentation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In order to create the documentation of ICL and this manual you need to install
+some tools:
+
+* **Python 2.7.x**
+* **pyparsing**
+* **Sphinx**
+* **Doxygen**
+
+You can get Python on the following website:
+
+* http://python.org/download/
+
+After installing Python it is recommended to add the Python and
+Python/Scripts directory to the environment variable **PATH**.
+For an easy installation of **pyparsing** and **Sphinx** download setuptools here:
+
+https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py
+
+Using the command prompt browse to the directory with the previously downloaded file
+and run the following commands to install **setuptools**, **pyparsing** and **Sphinx**::
+
+python ez_setup.py
+easy_install pyparsing
+easy_install sphinx
+
+Now you only need **Doxygen** which can be found here:
+
+http://www.stack.nl/~dimitri/doxygen/download.html
 
 
 .. _install.dependencies.optional:

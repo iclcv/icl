@@ -32,6 +32,9 @@
 #include <ICLIO/PixelSenseGrabber.h>
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/StringUtils.h>
+#ifdef WIN32
+  #include <lusb0_usb.h> // TODO: why is this one not included in Unix?
+#endif
 
 using namespace icl::utils;
 using namespace icl::core;

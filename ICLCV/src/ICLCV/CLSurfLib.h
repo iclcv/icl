@@ -85,7 +85,7 @@
 #include <ICLCore/Img.h>
 #include <ICLCV/SurfFeature.h>
 #include <vector>
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 #include <ICLUtils/CLProgram.h>
 #include <ICLUtils/CLKernel.h>
 #include <ICLUtils/CLBuffer.h>
@@ -116,13 +116,13 @@ namespace icl{
         public:
     
         /// initializer (OpenCL initialization is performed internally)
-        Surf(int initialPoints, int i_height, int i_width,  int octaves, 
+        ICLCV_API Surf(int initialPoints, int i_height, int i_width,  int octaves, 
              int intervals, int sample_step, float threshold); 
 
-        ~Surf();
+        ICLCV_API ~Surf();
     
         /// our own ICL-based detection method
-        const IpVec &detect(const core::ImgBase *image);
+        ICLCV_API const IpVec &detect(const core::ImgBase *image);
         
         private:
 

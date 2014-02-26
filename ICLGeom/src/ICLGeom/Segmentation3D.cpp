@@ -30,7 +30,11 @@
 
 #define __CL_ENABLE_EXCEPTIONS //enables openCL error catching
 #ifdef ICL_HAVE_OPENCL
+#ifdef WIN32
+#include <CL/cl.h>
+#else
 #include <CL/cl.hpp>
+#endif
 #endif
 
 #include <ICLGeom/Segmentation3D.h>

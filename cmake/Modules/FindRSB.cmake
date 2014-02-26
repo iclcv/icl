@@ -86,20 +86,49 @@ ELSE()
     NO_DEFAULT_PATH)
   MESSAGE(STATUS "resulting rsb-lib: ${RSB_LIBRARY}")
 
-  # new library layout, we need to link against libspread as well
-  FIND_LIBRARY(SPREAD_LIBRARY  
-    NAMES libspread
-    PATHS ${RSB_ROOT}/../spread /usr
-    PATH_SUFFIXES lib bin
-    NO_DEFAULT_PATH)
-  MESSAGE(STATUS "resulting spread: ${SPREAD_LIBRARY}")
-  IF(RSB_LIBRARY AND NOT SPREAD_LIBRARY)
+  IF(RSB_LIBRARY)
+    # new library layout, we need to link against libspread as well
+    FIND_LIBRARY(SPREAD_LIBRARY  
+      NAMES libspread
+      PATHS ${RSB_ROOT}/../spread /usr
+      PATH_SUFFIXES lib bin
+      NO_DEFAULT_PATH)
+    MESSAGE(STATUS "resulting spread: ${SPREAD_LIBRARY}")
+    IF(RSB_LIBRARY AND NOT SPREAD_LIBRARY)
+      IF(WIN32)
+        MESSAGE(FATAL_ERROR "Not Found: libspread.lib in ${RSB_ROOT}/../spread/lib and ${RSB_ROOT}/../spread/bin (the new rsb-library layout that uses rsb.lib needs explicit linkage against libspread.lib)")
+      ELSE(WIN32)
+        MESSAGE(FATAL_ERROR "Not Found: libspread.so in ${RSB_ROOT}/lib and /usr/lib (the new rsb-library layout that uses librsb.so needs explicit linkage against libspread.so)")
+      ENDIF(WIN32)
+    ENDIF()
+    
     IF(WIN32)
-      MESSAGE(FATAL_ERROR "Not Found: libspread.lib in ${RSB_ROOT}/../spread/lib and ${RSB_ROOT}/../spread/bin (the new rsb-library layout that uses rsb.lib needs explicit linkage against libspread.lib)")
-    ELSE(WIN32)
-      MESSAGE(FATAL_ERROR "Not Found: libspread.so in ${RSB_ROOT}/lib and /usr/lib (the new rsb-library layout that uses librsb.so needs explicit linkage against libspread.so)")
+      # Windows needs some boost include files and libraries
+      FIND_PATH(BOOST_INCLUDE_DIR 
+        NAMES boost/shared_ptr.hpp
+        PATHS ${RSB_ROOT}/../boost/include/boost-1_54 /usr
+        DOC "The path to boost header files"
+        NO_DEFAULT_PATH)
+
+      IF(BOOST_INCLUDE_DIR)
+        MESSAGE(STATUS "Found boost include dir: ${BOOST_INCLUDE_DIR}")
+      ENDIF()
+      
+      FOREACH(L filesystem regex chrono date_time system thread)
+        FIND_LIBRARY(BOOST_${L}_LIBRARY
+          NAMES "libboost_${L}-vc100-mt-gd-1_54" "libboost_${L}-vc110-mt-gd-1_54"
+          PATHS ${RSB_ROOT}/../boost /usr
+          PATH_SUFFIXES lib
+          NO_DEFAULT_PATH)
+        
+        IF(NOT ${BOOST_${L}_LIBRARY} STREQUAL "BOOST_${L}_LIBRARY-NOTFOUND")
+          LIST(APPEND BOOST_LIBRARIES ${BOOST_${L}_LIBRARY})
+        ELSE()
+          MESSAGE(STATUS "Not Found: libboost_${L}-vc100-mt-gd-1_54.lib in ${RSB_ROOT}/../boost/lib")
+        ENDIF()
+      ENDFOREACH()
     ENDIF(WIN32)
-  ENDIF()
+  ENDIF(RSB_LIBRARY)
 ENDIF()
 
 FIND_LIBRARY(RSC_LIBRARY  
@@ -114,12 +143,22 @@ IF(RSB_LIBRARY AND RSC_LIBRARY)
 ENDIF()
 
 # define mandatory arguments
+IF(WIN32)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(RSB REQUIRED_VARS 
                                   RSB_LIBRARIES
+                                  BOOST_LIBRARIES
                                   RSB_INCLUDE_DIR
-                                  RSC_INCLUDE_DIR)
+                                  RSC_INCLUDE_DIR
+                                  BOOST_INCLUDE_DIR)
+ELSE(WIN32)
+  FIND_PACKAGE_HANDLE_STANDARD_ARGS(RSB REQUIRED_VARS 
+                                    RSB_LIBRARIES
+                                    RSB_INCLUDE_DIR
+                                    RSC_INCLUDE_DIR)
+ENDIF(WIN32)
+
 IF(RSB_FOUND)
-  INCLUDE_DIRECTORIES(${RSB_INCLUDE_DIR} ${RSC_INCLUDE_DIR})
+  INCLUDE_DIRECTORIES(${RSB_INCLUDE_DIR} ${RSC_INCLUDE_DIR} ${BOOST_INCLUDE_DIR})
 ENDIF()
 
 #MARK_AS_ADVANCED(RSB_INCLUDE_DIR)

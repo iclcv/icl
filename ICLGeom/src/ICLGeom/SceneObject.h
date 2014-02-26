@@ -31,7 +31,11 @@
 #pragma once
 
 #ifndef ICL_HAVE_OPENGL
+#if WIN32
+#pragma WARNING("this header must not be included if ICL_HAVE_OPENGL is not defined")
+#else
 #warning "this header must not be included if ICL_HAVE_OPENGL is not defined"
+#endif
 #endif
 
 #include <ICLUtils/Mutex.h>

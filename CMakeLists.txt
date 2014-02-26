@@ -53,10 +53,12 @@ IF(WIN32)
   set(CMAKE_CONFIGURATION_TYPES Debug Release CACHE TYPE INTERNAL FORCE)
 ENDIF()
 
-OPTION(ENABLE_NATIVE_BUILD_OPTION "Decide whether to use -march=native optimization flag" OFF)
-OPTION(ENABLE_SSEFPMATH_BUILD_OPTION "Decide whether to use -mfpmath=sse optimization flag" OFF)
+IF(NOT WIN32)
+  OPTION(ENABLE_NATIVE_BUILD_OPTION "Decide whether to use -march=native optimization flag" OFF)
+  OPTION(ENABLE_SSEFPMATH_BUILD_OPTION "Decide whether to use -mfpmath=sse optimization flag" OFF)
+  OPTION(ENABLE_FASTMATH_BUILD_OPTION "Decide whether to use -ffast-math optimization flag" OFF)
+ENDIF()
 OPTION(ENABLE_OPENMP_BUILD_OPTION "Decide whether to use -fopenmp optimization flag" OFF)
-OPTION(ENABLE_FASTMATH_BUILD_OPTION "Decide whether to use -ffast-math optimization flag" OFF)
 
 if(CMAKE_CXX_COMPILER MATCHES ".*clang\\+\\+$") # little ugly here
   set(ICL_DEACTIVATED_WARNING -Wno-internal-linkage-in-inline 
@@ -185,19 +187,18 @@ OPTION(BUILD_APPS "Decide if applications shall be build or not" OFF)
 
 # ---- Dependency handling ----
 IF(WIN32)
-	FIND_PACKAGE(WinPthreads REQUIRED)
-	IF(PTHREADS_FOUND)
-	  LIST(APPEND REQUIRED_LIBRARIES_LIST ${PTHREADS_LIBRARIES})
-	ENDIF()
+    FIND_PACKAGE(WinPthreads REQUIRED)
+    IF(PTHREADS_FOUND)
+      LIST(APPEND REQUIRED_LIBRARIES_LIST ${PTHREADS_LIBRARIES})
+    ENDIF()
 ELSE()
-	FIND_PACKAGE(Threads REQUIRED)
-	IF(Threads_FOUND)
-	  LIST(APPEND REQUIRED_LIBRARIES_LIST ${CMAKE_THREAD_LIBS_INIT})
-	ENDIF()
+    FIND_PACKAGE(Threads REQUIRED)
+    IF(Threads_FOUND)
+      LIST(APPEND REQUIRED_LIBRARIES_LIST ${CMAKE_THREAD_LIBS_INIT})
+    ENDIF()
 ENDIF()
 
 IF(WIN32)
-  #FIND_PACKAGE(WINZLIB REQUIRED)
   LIST(APPEND REQUIRED_LIBRARIES_LIST zlib)
   ADD_ICL_DEFINITIONS(-DICL_HAVE_LIBZ)
 ELSE()
@@ -209,7 +210,6 @@ IF(ZLIB_FOUND)
 ENDIF()
 
 IF(WIN32)
-  #FIND_PACKAGE(WINJPEG REQUIRED)
   LIST(APPEND REQUIRED_LIBRARIES_LIST libjpeg)
   ADD_ICL_DEFINITIONS(-DICL_HAVE_LIBJPEG)
 ELSE()
@@ -221,7 +221,6 @@ IF(JPEG_FOUND)
 ENDIF()
 
 IF(WIN32)
-  #FIND_PACKAGE(WINPNG REQUIRED)
   LIST(APPEND REQUIRED_LIBRARIES_LIST libpng)
   ADD_ICL_DEFINITIONS(-DICL_HAVE_LIBPNG)
 ELSE()
@@ -395,6 +394,9 @@ IF(BUILD_WITH_RSB)
     ADD_ICL_DEFINITIONS(-DICL_HAVE_PROTOBUF)
     LIST(APPEND RSB_RSC_AND_PROTOBUF_LIBRARIES_PC ${RSB_LIBRARIES})
     LIST(APPEND RSB_RSC_AND_PROTOBUF_LIBRARIES_PC ${PROTOBUF_LIBRARIES})
+    IF(WIN32)
+      LIST(APPEND RSB_RSC_AND_PROTOBUF_LIBRARIES_PC ${BOOST_LIBRARIES})
+    ENDIF(WIN32)
     LIST(REMOVE_DUPLICATES RSB_RSC_AND_PROTOBUF_LIBRARIES_PC)
     LIST(REMOVE_ITEM RSB_RSC_AND_PROTOBUF_LIBRARIES_PC debug)
     LIST(REMOVE_ITEM RSB_RSC_AND_PROTOBUF_LIBRARIES_PC optimized)
@@ -414,35 +416,38 @@ IF(WIN32)
 INCLUDE_DIRECTORIES(BEFORE SYSTEM ${ZLIB_INCLUDE_DIRS}
                                   ${JPEG_INCLUDE_DIR}
                                   ${PTHREADS_INCLUDE_DIR}
-				  ${PNG_INCLUDE_DIRS}
+                                  ${PNG_INCLUDE_DIRS}
                                   ${ImageMagick_INCLUDE_DIRS})
 ELSE()
 INCLUDE_DIRECTORIES(BEFORE SYSTEM ${ZLIB_INCLUDE_DIRS}
                                   ${JPEG_INCLUDE_DIR}
-				  ${PNG_INCLUDE_DIRS}
+                                  ${PNG_INCLUDE_DIRS}
                                   ${ImageMagick_INCLUDE_DIRS})
 ENDIF()
 
 # ---- 3rd party include directories ----
 INCLUDE_DIRECTORIES(${IPP_INCLUDE_DIRS}
                     ${MKL_INCLUDE_DIRS}
-		    ${OPENCL_INCLUDE_DIRS}
-		    ${EIGEN3_INCLUDE_DIRS}
-		    ${OpenCV_INCLUDE_DIRS}
-		    ${MESASR_INCLUDE_DIRS}
-		    ${LIBDC_INCLUDE_DIRS}
-		    ${V4L_INCLUDE_DIRS}
-		    ${XINE_INCLUDE_DIRS}
-		    ${OPENGL_INCLUDE_DIR}
-		    ${GLEW_INCLUDE_DIR}
-		    ${LIBFREENECT_INCLUDE_DIRS}
-		    ${PYLON_INCLUDE_DIRS}
-		    ${PCL_INCLUDE_DIRS}
-		    ${OPENNI_INCLUDE_DIRS}
-		    ${RSB_INCLUDE_DIRS}
-		    ${ZMQ_INCLUDE_DIRS}
-		    ${PROTOBUF_INCLUDE_DIRS}
-		    )
+                    ${OPENCL_INCLUDE_DIRS}
+                    ${EIGEN3_INCLUDE_DIRS}
+                    ${OpenCV_INCLUDE_DIRS}
+                    ${MESASR_INCLUDE_DIRS}
+                    ${LIBDC_INCLUDE_DIRS}
+                    ${V4L_INCLUDE_DIRS}
+                    ${XINE_INCLUDE_DIRS}
+                    ${OPENGL_INCLUDE_DIR}
+                    ${GLEW_INCLUDE_DIR}
+                    ${LIBFREENECT_INCLUDE_DIRS}
+                    ${PYLON_INCLUDE_DIRS}
+                    ${PCL_INCLUDE_DIRS}
+                    ${OPENNI_INCLUDE_DIRS}
+                    ${RSB_INCLUDE_DIRS}
+                    ${RSC_INCLUDE_DIRS}
+                    ${BOOST_INCLUDE_DIR}
+                    ${PROTOBUF_INCLUDE_DIRS}
+                    ${ZMQ_INCLUDE_DIRS}
+                    ${LIBUSB_INCLUDE_DIRS}
+                    )
 
 #---- Add src sub directories ----
 IF(WIN32)

@@ -73,11 +73,11 @@ namespace icl{
         DeriveAllAndCurvatureKernel = DeriveProgram.createKernel("deriveAllAndCurvature");
       }
 
-      void calculateCurvature(const icl32f *in_x, const icl32f *in_y, float curvature_cutoff, uint length, icl32f *curvature_out){
+      void calculateCurvature(const icl32f *in_x, const icl32f *in_y, float curvature_cutoff, unsigned int length, icl32f *curvature_out){
         //make sure length is dividable by 2 to avoid prime numbers which can cause weird issues witht the workgroup size and slow down the kernel
-        uint save_length = length + length%2;
-        uint dim = length * sizeof(icl32f);
-        uint save_dim = save_length * sizeof(icl32f);
+        unsigned int save_length = length + length % 2;
+        unsigned int dim = length * sizeof(icl32f);
+        unsigned int save_dim = save_length * sizeof(icl32f);
 
         CLBuffer x = DeriveProgram.createBuffer("r",save_dim);
         CLBuffer y = DeriveProgram.createBuffer("r",save_dim);

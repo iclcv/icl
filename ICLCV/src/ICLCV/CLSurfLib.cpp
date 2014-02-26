@@ -86,8 +86,12 @@
 
 #include <CL/cl.h>
 #include "cstdio"
+#ifdef WIN32
+#include <Windows.h>
+#else
 #include <unistd.h>
 #include <sys/time.h>
+#endif
 #include <sstream>
 
 #define DESC_SIZE 64
