@@ -47,7 +47,7 @@ struct Canvas : public AbstractCanvas{
   Size size;
   depth d;
   int c;
-  static const float ALPHA_SCALE = 0.00392156862745098039; // 1./255
+  static const float ALPHA_SCALE;
   
   struct Functions{
     point_func f_point;
@@ -264,26 +264,29 @@ struct Canvas : public AbstractCanvas{
   
 };
 
+const float Canvas::ALPHA_SCALE = 0.00392156862745098039; // 1./255
 
-struct Ellipse{
-  float p[6];
-  Ellipse(const std::vector<double> &ps){
-    std::copy(ps.begin(),ps.end(),p);
-    SHOW(p[0]);
-    SHOW(p[1]);
-    SHOW(p[2]);
-    SHOW(p[3]);
-    SHOW(p[4]);
-    SHOW(p[5]);
-  }
-  inline float f(float x, float y) const{
-    return p[0] *sqr(x) + p[1]*x*y + p[2] * sqr(y) + p[3] * x + p[4] *y + p[5];
-  }
-  
-  bool operator()(float x, float y) const{
-    return f(x,y) > 0;
-  }
-};
+namespace ICL {
+  struct Ellipse{
+    float p[6];
+    Ellipse(const std::vector<double> &ps){
+      std::copy(ps.begin(), ps.end(), p);
+      SHOW(p[0]);
+      SHOW(p[1]);
+      SHOW(p[2]);
+      SHOW(p[3]);
+      SHOW(p[4]);
+      SHOW(p[5]);
+    }
+    inline float f(float x, float y) const{
+      return p[0] * sqr(x) + p[1] * x*y + p[2] * sqr(y) + p[3] * x + p[4] * y + p[5];
+    }
+
+    bool operator()(float x, float y) const{
+      return f(x, y) > 0;
+    }
+  };
+}
 
 void fill_ellipse_test_2(Channel32f C, AbstractCanvas::Transform T, Rect32f r){
   typedef FixedColVector<float,2> Vec2;
@@ -307,7 +310,7 @@ void fill_ellipse_test_2(Channel32f C, AbstractCanvas::Transform T, Rect32f r){
   for(int i=0;i<(int)params.size();++i){
     std::cout << "params[" << i << "]: "<< params[i] << std::endl;
   }
-  Ellipse e(params);
+  ICL::Ellipse e(params);
   
 
   for(float y=0;y<1000;++y){
