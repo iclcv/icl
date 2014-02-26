@@ -314,7 +314,8 @@ namespace icl{
     };
     
     /** \cond */
-    template<class R, class A, class B> struct Function<R, A, B, NO_ARG> : public std::binary_function<A, B, R>{
+    template<class R, class A, class B> 
+    struct Function<R, A, B, NO_ARG> : public std::binary_function<A, B, R>{
       Function(){}
       Function(FunctionImpl<R,A,B> *impl):impl(impl){}
       Function(icl::utils::SmartPtr<FunctionImpl<R,A,B> >impl):impl(impl){}
@@ -328,7 +329,8 @@ namespace icl{
       operator Function<R,A,B> () const { return (*(const Function<R,A,B>*)(this)); }
     };
   
-    template<class R, class A> struct Function<R, A, NO_ARG> : public std::unary_function<A, R>{
+    template<class R, class A> 
+    struct Function<R, A, NO_ARG> : public std::unary_function<A, R>{
       Function(){}
       Function(FunctionImpl<R,A> *impl):impl(impl){}
       Function(icl::utils::SmartPtr<FunctionImpl<R,A> >impl):impl(impl){}
@@ -341,7 +343,8 @@ namespace icl{
       
       operator Function<R,A> () const { return (*(const Function<R,A>*)(this)); }
     };
-    template<class R> struct Function<R, NO_ARG>{
+    template<class R> 
+    struct Function<R, NO_ARG>{
       typedef R result_type;
       Function(){}
       Function(FunctionImpl<R> *impl):impl(impl){}
@@ -369,7 +372,7 @@ namespace icl{
     /** This version of function allows to create a Function instance from 
         a given object instance (passed by reference) and a given binary member function
         @see \ref FUNCTION_SECTION */
-    template<class Object,class R, class A, class B, class C>
+    template<class Object, class R = void, class A = NO_ARG, class B = NO_ARG, class C = NO_ARG>
     Function<R, A, B, C> function(Object &obj, R(Object::*method)(A, B, C)){
       MemberFunctionImpl<Object,R,A,B,C> *impl = new MemberFunctionImpl<Object,R,A,B,C>;
       impl->obj = &obj;

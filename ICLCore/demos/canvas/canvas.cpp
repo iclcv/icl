@@ -266,7 +266,7 @@ struct Canvas : public AbstractCanvas{
 
 const float Canvas::ALPHA_SCALE = 0.00392156862745098039; // 1./255
 
-namespace ICL {
+namespace icl {
   struct Ellipse{
     float p[6];
     Ellipse(const std::vector<double> &ps){
@@ -310,7 +310,7 @@ void fill_ellipse_test_2(Channel32f C, AbstractCanvas::Transform T, Rect32f r){
   for(int i=0;i<(int)params.size();++i){
     std::cout << "params[" << i << "]: "<< params[i] << std::endl;
   }
-  ICL::Ellipse e(params);
+  icl::Ellipse e(params);
   
 
   for(float y=0;y<1000;++y){

@@ -642,17 +642,17 @@ void init(){
 
   
   markerDetectionOptionGUI.create();
-  gui["show-marker-detection-options"].registerCallback(function(&markerDetectionOptionGUI,&GUI::switchVisibility));
-  gui["show-plane-options"].registerCallback(function(&planeOptionGUI,&GUI::switchVisibility));
+  gui["show-marker-detection-options"].registerCallback(utils::function(&markerDetectionOptionGUI,&GUI::switchVisibility));
+  gui["show-plane-options"].registerCallback(utils::function(&planeOptionGUI, &GUI::switchVisibility));
            
 
-  gui["save"].registerCallback(function(bestOfNSaver,&BestOfNSaver::init));
-  gui["save_stop"].registerCallback(function(bestOfNSaver,&BestOfNSaver::stop));
+  gui["save"].registerCallback(utils::function(bestOfNSaver, &BestOfNSaver::init));
+  gui["save_stop"].registerCallback(utils::function(bestOfNSaver, &BestOfNSaver::stop));
 
   scene.addCamera(Camera());
   scene.getCamera(0).setResolution(grabber.grab()->getSize());
   
-  gui["showRelTransGUI"].registerCallback(function(&relTransGUI,&GUI::switchVisibility));
+  gui["showRelTransGUI"].registerCallback(utils::function(&relTransGUI, &GUI::switchVisibility));
   
   planeOptionGUI["planeOffset"].disable();
   planeOptionGUI["planeRadius"].disable();

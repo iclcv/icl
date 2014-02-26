@@ -199,7 +199,7 @@ void init(){
   //<< Button("show transformation matrix").handle("showRelTrans") 
       << Create();
 
-  gui["rel"].registerCallback(function(rel,&GUI::switchVisibility)); 
+  gui["rel"].registerCallback(utils::function(rel,&GUI::switchVisibility)); 
   
   grabber.init(pa("-i"));
   
