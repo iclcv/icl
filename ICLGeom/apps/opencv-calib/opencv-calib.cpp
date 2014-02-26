@@ -53,8 +53,8 @@ int minSuccesses = 0;
 int framewidth=0;
 int frameheight=0;
 
-DynMatrix<icl64f> *intr;
-DynMatrix<icl64f> *dist;
+DynMatrix<icl::icl64f> *intr;
+DynMatrix<icl::icl64f> *dist;
 
 void save_params(){
   try{

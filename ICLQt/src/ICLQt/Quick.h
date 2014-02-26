@@ -46,7 +46,7 @@ namespace icl{
   namespace cv{}
   namespace markers{}
 }
-using namespace icl;
+
 using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::core;
