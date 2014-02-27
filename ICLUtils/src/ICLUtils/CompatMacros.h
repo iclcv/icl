@@ -79,14 +79,9 @@
   #define WARNING(msg) message(__FILE__ "(" STRINGIZE(__LINE__) ") : warning: " #msg)
 #endif
 
-// TODO: whats this?
-#ifdef SYSTEM_WINDOWS
+
+#ifdef ICL_SYSTEM_WINDOWS
 #	define IPP_DECL __stdcall
-#	ifndef _USE_MATH_DEFINES
-#	define _USE_MATH_DEFINES
-#	endif
-#	define rint  ::System::Math::Round
-#	define round ::System::Math::Round
 #else
 #	define IPP_DECL
 #endif
@@ -161,7 +156,7 @@
 #else
 #define ICLUtils_API
 #define ICLMath_IMP
-#define ICLMath_IMP
+#define ICLMath_API
 #define ICLCore_API
 #define ICLFilter_API
 #define ICLIO_API

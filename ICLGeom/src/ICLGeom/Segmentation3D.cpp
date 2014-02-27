@@ -1370,7 +1370,9 @@ void Segmentation3D::blobSegmentation() {
   assignment = assignmentBlobs;
 
   delete n0, dist, cOnRead;
+#ifdef ICL_HAVE_OPENCL
   delete cAbove, cBelow, cOn, cAboveRead, cBelowRead;
+#endif
 }
 
 void Segmentation3D::colorPointcloud() {

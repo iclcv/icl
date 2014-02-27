@@ -132,7 +132,7 @@ IF(WIN32)
   FIND_PACKAGE_HANDLE_STANDARD_ARGS(PYLON REQUIRED_VARS 
                                     PylonBase${PYLON_SUFFIX}_LIBRARY
                                     PylonUtility${PYLON_SUFFIX}_LIBRARY
-                                    PylonGigE${PYLON_SUFFIX}_LIBRARY
+                                    PylonGigE${PYLON_SUFFIX}_TL_LIBRARY
                                     PylonBootstrapper_LIBRARY
                                     GenApi${PYLON_SUFFIX}_${GENICAM_VER}_LIBRARY
                                     GCBase${PYLON_SUFFIX}_${GENICAM_VER}_LIBRARY

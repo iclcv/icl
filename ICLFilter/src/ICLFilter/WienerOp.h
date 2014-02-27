@@ -65,7 +65,7 @@ namespace icl {
       /** @param poSrc Source image
           @param ppoDst Destination image
       **/
-      void apply (const core::ImgBase *poSrc, core::ImgBase **ppoDst);
+      ICLFilter_API void apply (const core::ImgBase *poSrc, core::ImgBase **ppoDst);
   
       /// Import unaryOps apply function without destination image
       using NeighborhoodOp::apply;

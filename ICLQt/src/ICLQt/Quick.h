@@ -46,6 +46,8 @@ namespace icl{
   namespace cv{}
   namespace markers{}
 }
+
+#ifndef ICL_NO_USING_NAMESPACES
 using namespace icl;
 using namespace icl::utils;
 using namespace icl::math;
@@ -56,6 +58,7 @@ using namespace icl::qt;
 using namespace icl::geom;
 using namespace icl::cv;
 using namespace icl::markers;
+#endif
 
 /// just used by default
 using namespace std;
@@ -147,10 +150,10 @@ namespace icl{
         @param fmt image core::format to convert the result to
     **/
     template<class T> ICLQt_API
-    core::Img<T> create(const std::string &name, core::format fmt=formatRGB);
+    core::Img<T> create(const std::string &name, core::format fmt=icl::core::formatRGB);
   
     /** \cond affinity version */
-    inline ImgQ create(const std::string &name, core::format fmt=formatRGB) { return create<ICL_QUICK_TYPE>(name,fmt); }
+    inline ImgQ create(const std::string &name, core::format fmt=icl::core::formatRGB) { return create<ICL_QUICK_TYPE>(name,fmt); }
     /** \endcond */
     
     /// grabs a new image from given device (affinity for floats) 
@@ -168,7 +171,7 @@ namespace icl{
   
     /** \cond affinity version */
     inline ImgQ grab(const std::string &dev, const std::string &devSpec, 
-                     const utils::Size &size=utils::Size::null, core::format fmt=formatRGB,
+                     const utils::Size &size=utils::Size::null, core::format fmt=icl::core::formatRGB,
                      bool releaseGrabber=false){
       return grab<ICL_QUICK_TYPE>(dev,devSpec,size,fmt,releaseGrabber);
     }
@@ -386,7 +389,7 @@ namespace icl{
         @param image image to show
         @see showSetput(const string&, const stirng&, int)
     **/
-    ICLQt_API void show(const ImgBase &image);
+    ICLQt_API void show(const icl::core::ImgBase &image);
     
     /// setup image visualisation programm
     /** when images are shown using an extrenal viewer like gnu's xv, the image is temporarily 

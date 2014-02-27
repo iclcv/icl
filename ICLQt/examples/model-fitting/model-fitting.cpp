@@ -85,7 +85,7 @@ void compute(){
   PlotHandle plot = gui["plot"];
   plot->lock();
   plot->clear();
-  std::string what = gui["what"];
+  std::string what = gui["what"].as<std::string>();
   if(what == "line"){
     plot->setDataViewPort(Range32f(-1.1,1.1), Range32f(-60,20));
     plot->setPropertyValue("tics.x-distance",0.25);
@@ -173,7 +173,7 @@ void init(){
 }
 
 void run(){
-  while(!gui["run"]){
+  while(!(bool)gui["run"]){
     Thread::msleep(10);
   }
   compute();
