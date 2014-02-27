@@ -102,8 +102,8 @@ void compute(){
     LeastSquareModelFitting2D ls(3,LeastSquareModelFitting2D::line_gen); 
 
     if(gui["ransac"]){
-      RANSAC::ModelFitting fit = function(ls,&LS::fit);
-      RANSAC::PointError err = function(ls,&LS::getError);
+      RANSAC::ModelFitting fit = utils::function(ls,&LS::fit);
+      RANSAC::PointError err = utils::function(ls,&LS::getError);
       RANSAC fitLine(5,100,fit,err,0.2,30);
       RANSAC::Result r = fitLine.fit(ptsOrig);
       const Point32f mps[2] = { get_line_point(r.model,-1), get_line_point(r.model,1) };
@@ -126,8 +126,8 @@ void compute(){
     
     std::vector<double> model;
     if(gui["ransac"]){
-      RANSAC::ModelFitting fit = function(ls,&LS::fit);
-      RANSAC::PointError err = function(ls,&LS::getError);
+      RANSAC::ModelFitting fit = utils::function(ls,&LS::fit);
+      RANSAC::PointError err = utils::function(ls,&LS::getError);
       RANSAC fitCircle(5,100,fit,err,0.005,40);
       RANSAC::Result result = fitCircle.fit(ptsOrig);
       model = result.model;
