@@ -42,7 +42,7 @@ namespace icl {
     class ICLException : public std::runtime_error
     {
     public:
-      ICLException(const std::string &msg) throw() : runtime_error(msg){ std::cout << msg << std::endl; }
+      ICLException(const std::string &msg) throw() : runtime_error(msg){}
       void report();
     };
   
