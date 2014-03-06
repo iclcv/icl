@@ -33,7 +33,7 @@
 #include <ICLUtils/BasicTypes.h>
 #include <float.h>
 
-#if (defined ICL_MSC_VER && ICL_MSC_VER < 1800)
+#if (defined _MSC_VER && _MSC_VER < 1800)
 #pragma WARNING("This compiler does not support the functions ilogb and scalbln.")
 #else
 
@@ -475,7 +475,10 @@ namespace icl{
         // if 9 shifts fail, the outer loop is repeated with another sequence of shifts
       }
 
-      delete P, H, h, p;
+      delete P;
+      delete H;
+      delete h;
+      delete p;
 
       // The zerofinder has failed on two major passes
       // return empty handed with the number of roots found (less than the original degree)

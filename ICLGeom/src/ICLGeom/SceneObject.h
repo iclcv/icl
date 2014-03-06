@@ -50,7 +50,7 @@ namespace icl{
   
     /** \cond */
     class Scene;
-    struct ShaderUtil;
+    class ShaderUtil;
     /** \endcond */
    
     

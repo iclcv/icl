@@ -440,7 +440,8 @@ namespace icl{
           corners.push_back(Point32f(x[maximum], y[maximum]));
         }
 
-        delete x, y;
+        delete x;
+        delete y;
         delete smoothed_x, smoothed_y;
         delete curvature;
         delete gauss;
@@ -544,8 +545,10 @@ namespace icl{
         }
       }
 
-      delete x, y;
-      delete smoothed_x, smoothed_y;
+      delete x;
+      delete y;
+      delete smoothed_x;
+      delete smoothed_y;
       delete curvature;
       delete gauss;
       delete extrema0;
@@ -553,7 +556,8 @@ namespace icl{
       delete extrema1;
       delete extrema1_sizes;
 
-      delete lengths, indices;
+      delete lengths;
+      delete indices;
       delete indices_padded;
       delete gauss_indices;
 

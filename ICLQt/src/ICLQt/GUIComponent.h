@@ -44,7 +44,7 @@ namespace icl{
     class GUIComponent{
     
       /// friend container class
-      friend class ContainerGUIComponent;
+      friend struct ContainerGUIComponent;
       
       /// friend GUI class
       friend class GUI;

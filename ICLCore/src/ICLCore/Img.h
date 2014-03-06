@@ -1934,14 +1934,7 @@ namespace icl {
     ICLCore_API void flippedCopyROI(axis eAxis, const ImgBase *poSrc, ImgBase **ppoDst = 0);
     /* }}} */
   
-    /* }}} */ 
-//#ifndef ICLCore_EXPORTS
-//#define ICL_INSTANTIATE_DEPTH(D)           \
-//  template class ICLCore_API Img<icl##D>; \
-//  template struct ICLCore_API ImgBasePtrPtr<icl##D>;
-//    ICL_INSTANTIATE_ALL_DEPTHS
-//#undef ICL_INSTANTIATE_DEPTH
-//#endif
+    /* }}} */
   } // namespace core
 } //namespace icl
 

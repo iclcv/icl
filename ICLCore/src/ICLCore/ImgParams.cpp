@@ -77,10 +77,6 @@ namespace icl{
     
     void ImgParams::setup(const Size &size, format fmt, int channels,const Rect &roi){
       // {{{ open
-
-      // TODO: no translateFormat and translateDepth
-      //FUNCTION_LOG("setup(width="<<size.width<<",height="<<size.height<<",format="<<translateFormat(fmt)<<
-      //             ",channels="<<channels<<",ROI=("<<roi.x<<","<<roi.y<<","<<roi.width<<","<<roi.height<<"))");
   
       ICLASSERT_THROW(fmt == formatMatrix || channels == getChannelsOfFormat(fmt),
                       InvalidImgParamException("incompatible format (" + str(fmt) + ") and channel count (" + str(channels) + ")"));

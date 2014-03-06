@@ -707,7 +707,14 @@ void Segmentation3D::calculateCutfreeMatrix() {
 						cutfree(a,b)=false;
 					}
 
-          delete n0, dist, cAbove, cBelow, cOn, cAboveRead, cBelowRead, cOnRead;
+          delete n0;
+          delete dist;
+          delete cAbove;
+          delete cBelow;
+          delete cOn;
+          delete cAboveRead;
+          delete cBelowRead;
+          delete cOnRead;
 #endif
 				} else {
 					for (int p = 0; p < RANSACpasses; p++) {

@@ -52,11 +52,11 @@
 namespace icl{
   namespace io{
   
-    class ICLIO_API MyrmexDecoder {
+    class MyrmexDecoder {
    
     public:
-      MyrmexDecoder();
-      void decode(const icl16s *data, const utils::Size &size, core::ImgBase **dst);
+      ICLIO_API MyrmexDecoder();
+      ICLIO_API void decode(const icl16s *data, const utils::Size &size, core::ImgBase **dst);
   
     private:
       char attachedPosition; //store position of central unit

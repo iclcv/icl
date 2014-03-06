@@ -38,23 +38,13 @@ using namespace icl::math;
 namespace icl {
   namespace core{
     
-    ImgBase::ImgBase(depth d, const ImgParams &params):m_oParams(params),m_eDepth(d) {
-      // TODO: no translateFormat and translateDepth
-      //FUNCTION_LOG("ImgBase(" << getWidth()
-      //             << "," << getHeight()
-      //             << "," << translateFormat(getFormat()) 
-      //             << ", "<< translateDepth(getDepth()) 
-      //             << "," << getChannels() << ")  this:" << this); 
-    }
+    ImgBase::ImgBase(depth d, const ImgParams &params):m_oParams(params),m_eDepth(d) { }
     
     ImgBase::~ImgBase(){
       FUNCTION_LOG("");
     }
   
     void ImgBase::print(const std::string title) const{
-      // TODO: no sTitle
-      //FUNCTION_LOG(sTitle);
-      
       std::cout << " -----------------------------------------" << std::endl
                 << "| image     : " << title  << std::endl
                 << "| timestamp : " << getTime() << std::endl

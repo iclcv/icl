@@ -31,7 +31,8 @@
 #pragma once
 
 #include <ICLUtils/ICLConfig.h>
-
+#undef _MSC_VER
+#define _MSC_VER 1600
 #ifdef WIN32
   #define NOMINMAX
   #define _USE_MATH_DEFINES
@@ -39,7 +40,7 @@
   //#define __msxml_h__ // icl has its own xml classes
   //#include <Windows.h>
   // TODOWW: test with _MSC_VER == 1700
-  #if (defined ICL_MSC_VER && ICL_MSC_VER < 1800)
+  #if (defined _MSC_VER && _MSC_VER < 1800)
     #include <cmath>
     inline double round(double a)
     {
@@ -76,7 +77,7 @@
     }
   #endif
   // in windows use this instead of #warning
-  #define WARNING(msg) message(__FILE__ "(" STRINGIZE(__LINE__) ") : warning: " #msg)
+  #define WARNING(msg) message(__FILE__ "(" STRINGSIZE(__LINE__) ") : warning: " #msg)
 #endif
 
 
