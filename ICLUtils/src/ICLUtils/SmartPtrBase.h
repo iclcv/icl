@@ -130,7 +130,8 @@ namespace icl{
       /// Create a copy of given smart pointer with more general type
       /** This does of course only work, if DeriveT is T or if it extends T */
       template<class DerivedT>
-      SmartPtrBase(const SmartPtrBase<DerivedT,delOp> &r): e(r.e), c(r.c), d(r.d){ 
+      SmartPtrBase(const SmartPtrBase<DerivedT,delOp> &r): e(&dynamic_cast<T&>(*r.e)), c(r.c), d(r.d){ 
+        //      SmartPtrBase(const SmartPtrBase<DerivedT,delOp> &r): e(r.e), c(r.c), d(r.d){ 
         inc(); 
       }
   

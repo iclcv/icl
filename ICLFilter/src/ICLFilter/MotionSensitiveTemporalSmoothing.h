@@ -59,12 +59,12 @@ namespace icl{
       /// Execution of the temporal smoothing for float images
       /** @param inputImage the next input image for the smoothing sequence
           @return the smoothed image */ 
-      core::Img32f temporalSmoothingF(core::Img32f &inputImage);
+      core::Img32f temporalSmoothingF(const core::Img32f &inputImage);
       
       /// Execution of the temporal smoothing for uchar images
       /** @param inputImage the next input image for the smoothing sequence
           @return the smoothed image */
-      core::Img8u temporalSmoothingC(core::Img8u &inputImage);
+      core::Img8u temporalSmoothingC(const core::Img8u &inputImage);
       
       /// Sets openCL enabled/disabled. Enabling has no effect if no openCL context is available. (default true=enabled)
       /**        @param use enable/disable openCL */

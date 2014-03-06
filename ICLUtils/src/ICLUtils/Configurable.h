@@ -281,7 +281,7 @@ namespace icl{
       public:
       
       /// virtual destructor 
-      ~Configurable(){}
+      virtual ~Configurable(){}
   
       /// Copy constructor
       /** the configurable ID is not copied. Use setConfigurableID afterwards */

@@ -395,7 +395,11 @@ namespace icl{
   
 
     void PointCloudObjectBase::deepCopy(PointCloudObjectBase &dst) const{
-      dst.setSize(getSize());
+      if(isOrganized()){
+        dst.setSize(getSize());
+      }else{
+        dst.setDim(getDim());
+      }
       const int dim = getDim();
 
       bool intensity = supports(Intensity) && dst.supports(Intensity);

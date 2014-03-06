@@ -370,7 +370,7 @@ namespace icl{
         rm(rmOff),bciUpdateAuto(0),channelUpdateAuto(0),
         mouseX(-1),mouseY(-1),selChannel(-1),showNoImageWarnings(true),
         outputCap(0),menuOn(true),menuMutex(QMutex::Recursive),menuptr(0),zoomAdjuster(0),
-        qic(0),menuEnabled(true),infoTab(0),
+        qic(0),menuEnabled(true),infoTab(0),histoWidget(0),
         imageInfoIndicatorEnabled(true),infoTabVisible(false),
         selectedTabIndex(0),embeddedZoomMode(false),
         embeddedZoomModeJustEnabled(false),embeddedZoomRect(0),

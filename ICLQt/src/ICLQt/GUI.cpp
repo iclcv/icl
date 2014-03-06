@@ -1199,6 +1199,7 @@ namespace icl{
       }
       virtual void processIO(){
         *m_stateRef = m_poCheckBox->checkState() == Qt::Checked;
+        DEBUG_LOG("check-box-process-IO::: " << *m_stateRef);
       }
     private:
       bool *m_stateRef;

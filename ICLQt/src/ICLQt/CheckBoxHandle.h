@@ -57,6 +57,12 @@ namespace icl{
   
       // unchecks this checkbox
       void uncheck(bool execCallbacks=true);
+
+      /// defines the check-state
+      inline void doCheck(bool on, bool execCallbacks=true){
+        if(on) check(execCallbacks);
+        else uncheck(execCallbacks);
+      }
   
       // returns whether this the checkbox is currently checked
       bool isChecked() const;

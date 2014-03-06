@@ -426,6 +426,8 @@ namespace icl{
       addProperty("shadows.bias","float","[-100,100]",1.0);
       addProperty("info.FPS","info","",0);
       addProperty("info.Objects in the Scene","info","",0);
+      addProperty("info.Primitives in the Scene","info","",0);
+      addProperty("info.Vertices in the Scene","info","",0);
     }
     Scene::~Scene(){
   #ifdef HAVE_GLX
@@ -992,6 +994,15 @@ namespace icl{
          o->unlock();
       }
    }
+    
+    static void count_objs_recursive(const SceneObject *o, int &n, int &np, int &nv){
+     ++n;
+     np += o->getPrimitives().size();
+     nv += o->getVertices().size();
+     for(int i=0;i<o->getChildCount();++i){
+       count_objs_recursive(o->getChild(i),n,np,nv);
+     }
+   }
 
    void Scene::renderScene(int camIndex, ICLDrawWidget3D *widget) const{
 
@@ -999,9 +1010,14 @@ namespace icl{
       //update Sceneinfo
       ((Configurable*)this)->setPropertyValue("info.FPS",m_fps.getFPSString());
 
-      stringstream s;
-      s<<m_objects.size();
-      ((Configurable*)this)->setPropertyValue("info.Objects in the Scene",s.str());
+      int nObjs = 0, nPrim = 0, nVert = 0;
+      for(size_t i=0;i<m_objects.size();++i){
+        count_objs_recursive(m_objects[i].get(),nObjs,nPrim,nVert);
+      }
+
+      ((Configurable*)this)->setPropertyValue("info.Objects in the Scene",nObjs);
+      ((Configurable*)this)->setPropertyValue("info.Primitives in the Scene",nPrim);
+      ((Configurable*)this)->setPropertyValue("info.Vertices in the Scene",nVert);
 
       ICLASSERT_RETURN(camIndex >= 0 && camIndex < (int)m_cameras.size());
 

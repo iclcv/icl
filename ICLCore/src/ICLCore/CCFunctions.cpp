@@ -386,7 +386,7 @@ namespace icl{
     }
     // }}}
 
-    inline void cc_util_rgb_to_xyz(const icl32f r, const icl32f g, const icl32f b, icl32f &X, icl32f &Y, icl32f &Z){
+    inline void cc_util_rgb_to_xyz_inline(const icl32f r, const icl32f g, const icl32f b, icl32f &X, icl32f &Y, icl32f &Z){
       // {{{ open
       /*
       icl32f fR = r / 255.0f;
@@ -432,7 +432,7 @@ namespace icl{
         return cbrt_halley(cbrt_kahan(x), x);
       }
 
-    inline void cc_util_xyz_to_lab(const icl32f X, const icl32f Y, const icl32f Z, icl32f &L, icl32f &a, icl32f &b){
+    inline void cc_util_xyz_to_lab_inline(const icl32f X, const icl32f Y, const icl32f Z, icl32f &L, icl32f &a, icl32f &b){
       // {{{ open
       static const icl32f wX = 1/0.950455f;
       static const icl32f wY = 1/1.000;
@@ -451,6 +451,12 @@ namespace icl{
       b = 200.0f * (fY - fZ) + 128;
     }
     // }}}
+
+    void cc_util_rgb_to_lab(const icl32f &r, const icl32f &g, const icl32f &b, icl32f &L, icl32f &A, icl32f &B){
+      icl32f x(0),y(0),z(0);
+      cc_util_rgb_to_xyz_inline(r,g,b,x,y,z);
+      cc_util_xyz_to_lab_inline(x,y,z,L,A,B);
+    }
 
     void cc_util_hls_to_rgb(const icl32f h255, const icl32f l255, const icl32f sl255, icl32f &r, icl32f &g, icl32f &b){
       // {{{ open
@@ -754,11 +760,11 @@ namespace icl{
           const ImgIterator<S> itEnd = src->endROI(0);
 
           for(;itR!= itEnd;++itR,++itG,++itB,++itL,++ita,++itb){
-            cc_util_rgb_to_xyz(clipped_cast<S,icl32f>(*itR),
+            cc_util_rgb_to_xyz_inline(clipped_cast<S,icl32f>(*itR),
                                clipped_cast<S,icl32f>(*itG),
                                clipped_cast<S,icl32f>(*itB),
                                reg_X,reg_Y,reg_Z);
-            cc_util_xyz_to_lab(reg_X,reg_Y,reg_Z,reg_L,reg_a,reg_b);
+            cc_util_xyz_to_lab_inline(reg_X,reg_Y,reg_Z,reg_L,reg_a,reg_b);
             *itL = clipped_cast<icl32f,D>(reg_L);
             *ita = clipped_cast<icl32f,D>(reg_a);
             *itb = clipped_cast<icl32f,D>(reg_b);
@@ -768,11 +774,11 @@ namespace icl{
           GET_3_CHANNEL_POINTERS_NODIM(D,dst,LL,aa,bb);
 
           for(int i=0;i<dim;++i){ 
-            cc_util_rgb_to_xyz(clipped_cast<S,icl32f>(r[i]),
+            cc_util_rgb_to_xyz_inline(clipped_cast<S,icl32f>(r[i]),
                                clipped_cast<S,icl32f>(g[i]),
                                clipped_cast<S,icl32f>(b[i]),
                                reg_X,reg_Y,reg_Z);
-            cc_util_xyz_to_lab(reg_X,reg_Y,reg_Z,reg_L,reg_a,reg_b);
+            cc_util_xyz_to_lab_inline(reg_X,reg_Y,reg_Z,reg_L,reg_a,reg_b);
             LL[i] = clipped_cast<icl32f,D>(reg_L);
             aa[i] = clipped_cast<icl32f,D>(reg_a);
             bb[i] = clipped_cast<icl32f,D>(reg_b);
@@ -1951,11 +1957,11 @@ namespace icl{
     template<class S, class D>
     inline void subRGBtoLab(const S *r, const S *g, const S *b, D *L, D *A, D *B) {
       register icl32f reg_X,reg_Y,reg_Z,reg_L, reg_a, reg_b;
-      cc_util_rgb_to_xyz(clipped_cast<S,icl32f>(*r),
+      cc_util_rgb_to_xyz_inline(clipped_cast<S,icl32f>(*r),
                          clipped_cast<S,icl32f>(*g),
                          clipped_cast<S,icl32f>(*b),
                          reg_X,reg_Y,reg_Z);
-      cc_util_xyz_to_lab(reg_X,reg_Y,reg_Z,reg_L,reg_a,reg_b);
+      cc_util_xyz_to_lab_inline(reg_X,reg_Y,reg_Z,reg_L,reg_a,reg_b);
       *L = clipped_cast<icl32f,D>(reg_L);
       *A = clipped_cast<icl32f,D>(reg_a);
       *B = clipped_cast<icl32f,D>(reg_b);
@@ -1964,11 +1970,11 @@ namespace icl{
     template<class S>
     inline void subRGBtoLab(const S *r, const S *g, const S *b, icl8u *L, icl8u *A, icl8u *B) {
       register icl32f reg_X,reg_Y,reg_Z,reg_L, reg_a, reg_b;
-      cc_util_rgb_to_xyz(clipped_cast<S,icl32f>(*r),
+      cc_util_rgb_to_xyz_inline(clipped_cast<S,icl32f>(*r),
                          clipped_cast<S,icl32f>(*g),
                          clipped_cast<S,icl32f>(*b),
                          reg_X,reg_Y,reg_Z);
-      cc_util_xyz_to_lab(reg_X,reg_Y,reg_Z,reg_L,reg_a,reg_b);
+      cc_util_xyz_to_lab_inline(reg_X,reg_Y,reg_Z,reg_L,reg_a,reg_b);
       *L = clipped_cast<icl32f,icl8u>(reg_L);
       *A = clipped_cast<icl32f,icl8u>(reg_a);
       *B = clipped_cast<icl32f,icl8u>(reg_b);
@@ -2592,9 +2598,9 @@ namespace icl{
                                 clipped_cast<S,icl32f>(*l),
                                 clipped_cast<S,icl32f>(*s),
                                 reg_r,reg_g,reg_b);
-      cc_util_rgb_to_xyz(reg_r, reg_g, reg_b,
+      cc_util_rgb_to_xyz_inline(reg_r, reg_g, reg_b,
                          reg_X, reg_Y, reg_Z);
-      cc_util_xyz_to_lab(reg_X,reg_Y,reg_Z,reg_r,reg_g,reg_b);
+      cc_util_xyz_to_lab_inline(reg_X,reg_Y,reg_Z,reg_r,reg_g,reg_b);
       *L = clipped_cast<icl32f,D>(reg_r);
       *a = clipped_cast<icl32f,D>(reg_g);
       *b = clipped_cast<icl32f,D>(reg_b);
@@ -2607,9 +2613,9 @@ namespace icl{
                                 clipped_cast<S,icl32f>(*l),
                                 clipped_cast<S,icl32f>(*s),
                                 reg_r,reg_g,reg_b);
-      cc_util_rgb_to_xyz(reg_r, reg_g, reg_b,
+      cc_util_rgb_to_xyz_inline(reg_r, reg_g, reg_b,
                          reg_X, reg_Y, reg_Z);
-      cc_util_xyz_to_lab(reg_X,reg_Y,reg_Z,reg_r,reg_g,reg_b);
+      cc_util_xyz_to_lab_inline(reg_X,reg_Y,reg_Z,reg_r,reg_g,reg_b);
       *L = clipped_cast<icl32f,icl8u>(reg_r + 0.5f);
       *a = clipped_cast<icl32f,icl8u>(reg_g + 0.5f);
       *b = clipped_cast<icl32f,icl8u>(reg_b + 0.5f);
@@ -3125,9 +3131,9 @@ namespace icl{
                          clipped_cast<S,icl32f>(*u),
                          clipped_cast<S,icl32f>(*v),
                          reg_r, reg_g, reg_b);
-      cc_util_rgb_to_xyz(reg_r, reg_g, reg_b,
+      cc_util_rgb_to_xyz_inline(reg_r, reg_g, reg_b,
                          reg_X, reg_Y, reg_Z);
-      cc_util_xyz_to_lab(reg_X,reg_Y,reg_Z,reg_r,reg_g,reg_b);
+      cc_util_xyz_to_lab_inline(reg_X,reg_Y,reg_Z,reg_r,reg_g,reg_b);
       *l = clipped_cast<icl32f,D>(reg_r);
       *a = clipped_cast<icl32f,D>(reg_g);
       *b = clipped_cast<icl32f,D>(reg_b);
@@ -3140,9 +3146,9 @@ namespace icl{
                          clipped_cast<S,icl32f>(*u),
                          clipped_cast<S,icl32f>(*v),
                          reg_r, reg_g, reg_b);
-      cc_util_rgb_to_xyz(reg_r, reg_g, reg_b,
+      cc_util_rgb_to_xyz_inline(reg_r, reg_g, reg_b,
                          reg_X, reg_Y, reg_Z);
-      cc_util_xyz_to_lab(reg_X,reg_Y,reg_Z,reg_r,reg_g,reg_b);
+      cc_util_xyz_to_lab_inline(reg_X,reg_Y,reg_Z,reg_r,reg_g,reg_b);
       *l = clipped_cast<icl32f,icl8u>(reg_r + 0.5f);
       *a = clipped_cast<icl32f,icl8u>(reg_g + 0.5f);
       *b = clipped_cast<icl32f,icl8u>(reg_b + 0.5f);

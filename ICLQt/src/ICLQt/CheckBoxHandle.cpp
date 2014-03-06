@@ -44,11 +44,13 @@ namespace icl{
     
     
     void CheckBoxHandle::check(bool execCallbacks){
+      *m_stateRef = true;
       (***this).setCheckState(Qt::Checked);
       if(execCallbacks) cb();
     }
     
     void CheckBoxHandle::uncheck(bool execCallbacks){
+      *m_stateRef = false;
       (***this).setCheckState(Qt::Unchecked);
       if(execCallbacks) cb();
     }

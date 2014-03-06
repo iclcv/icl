@@ -109,8 +109,14 @@ namespace icl{
       string optParamList;
       split_string(def,m_sType,paramList,optParamList);
       
+     
+      
       if(paramList.length()){
         m_vecParams = StrTok(paramList,",",true,'\\').allTokens();
+      }
+
+      if(m_sType == "string" && paramList.length() && paramList[0] == ','){
+        m_vecParams.insert(m_vecParams.begin(), "");
       }
       
       if(optParamList.length()){

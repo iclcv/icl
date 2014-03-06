@@ -53,30 +53,17 @@ namespace icl{
       
       const float l=axisLength, d=axisThickness;
       const float p = M_PI_2;
-      const float rxs[3]={0,p,0},rys[3]={p,0,0},rzs[3]={0,0,0};
+      const float rxs[3]={0,-p,0},rys[3]={p,0,0},rzs[3]={0,0,0};
       const GeomColor cs[]={geom_red(),geom_green(),geom_blue() };
       for(int i=0;i<3;++i){
-        SceneObject *o = addCylinder(0,0,i==2 ? l/2 : -l/2,d,d,l,20);
+        SceneObject *o = addCylinder(0,0,l/2, d,d,l, 20);
         o->rotate(rxs[i],rys[i],rzs[i]);
         o->setVisible(Primitive::line,false);
         o->setVisible(Primitive::vertex,false);
         o->setColor(Primitive::quad,cs[i]);
         o->setColor(Primitive::polygon,cs[i]);
-        switch(i){
-          case 0:
-            o = addCone(0,0,l,2*d,2*d,3*d,20);
-            o->rotate(M_PI,0,0);
-            break;
-          case 1:
-            o = addCone(0,0,l,2*d,2*d,3*d,20);
-            o->rotate(M_PI,0,0);
-            break;
-          case 2:
-            o = addCone(0,0,l,2*d,2*d,3*d,20);
-            o->rotate(0,0,0);
-            break;
-        }
-        
+
+        o = addCone(0,0,l, 2*d,2*d,3*d, 20);
         o->rotate(rxs[i],rys[i],rzs[i]);
         o->setVisible(Primitive::line,false);
         o->setVisible(Primitive::vertex,false);

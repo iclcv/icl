@@ -42,6 +42,8 @@
 #include <GL/glx.h>
 #endif
 
+#include <ICLUtils/Macros.h>
+
 namespace icl{
   namespace qt{
     

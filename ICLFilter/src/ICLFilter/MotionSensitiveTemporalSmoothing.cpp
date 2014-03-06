@@ -175,19 +175,19 @@ void MotionSensitiveTemporalSmoothing::apply(const ImgBase *poSrc,
 	}
 
 	if (poSrc->getDepth() == depth8u) {
-		Img8u src = *poSrc->as8u();
+		const Img8u &src = *poSrc->as8u();
 		Img8u &dst = *(*ppoDst)->as8u();
 		for (int i = 0; i < numChannels; i++) {
-			Img8u in = (*src.selectChannel(i));
-			Img8u out = clPointer.at(i)->temporalSmoothingC(in);
+			SmartPtr<const Img8u> in = src.selectChannel(i);
+			Img8u out = clPointer.at(i)->temporalSmoothingC(*in);
 			dst.replaceChannel(i, &out, 0);
 		}
 	} else {
-		Img32f src = *poSrc->as32f();
+		const Img32f &src = *poSrc->as32f();
 		Img32f &dst = *(*ppoDst)->as32f();
 		for (int i = 0; i < numChannels; i++) {
-			Img32f in = (*src.selectChannel(i));
-			Img32f out = clPointer.at(i)->temporalSmoothingF(in);
+			SmartPtr<const Img32f> in = src.selectChannel(i);
+			Img32f out = clPointer.at(i)->temporalSmoothingF(*in);
 			dst.replaceChannel(i, &out, 0);
 		}
 	}
@@ -347,7 +347,7 @@ TemporalSmoothingCL::~TemporalSmoothingCL() {
 #endif
 }
 
-Img32f TemporalSmoothingCL::temporalSmoothingF(Img32f &inputImage) {
+Img32f TemporalSmoothingCL::temporalSmoothingF(const Img32f &inputImage) {
 	if (filterSize > maxFilterSize) {
 		filterSize = maxFilterSize;
 		std::cout << "set filter size to maximum (" << maxFilterSize << ")"
@@ -421,7 +421,7 @@ Img32f TemporalSmoothingCL::temporalSmoothingF(Img32f &inputImage) {
 	return outputImageF;
 }
 
-Img8u TemporalSmoothingCL::temporalSmoothingC(Img8u &inputImage) {
+Img8u TemporalSmoothingCL::temporalSmoothingC(const Img8u &inputImage) {
 	if (filterSize > maxFilterSize) {
 		filterSize = maxFilterSize;
 		std::cout << "set filter size to maximum (" << maxFilterSize << ")"

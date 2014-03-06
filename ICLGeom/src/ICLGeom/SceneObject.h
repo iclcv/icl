@@ -486,11 +486,13 @@ namespace icl{
       } 
       
       /// rotates the scene object (this affects it's transformation matrix)
-      virtual void rotate(float rx, float ry, float rz);
+      virtual void rotate(float rx, float ry, float rz, 
+                          icl::math::AXES axes=icl::math::AXES_DEFAULT);
   
       /// utility wrapper for vector based rotation 
       template<class T>
-      inline void rotate(const T &t) { rotate((float)t[0],(float)t[1],(float)t[2]); }
+      inline void rotate(const T &t, icl::math::AXES axes=icl::math::AXES_DEFAULT) 
+        { rotate((float)t[0],(float)t[1],(float)t[2]); }
       
       /// translates the scene object (this affects it's translates matrix)
       virtual void translate(float dx, float dy, float dz);
@@ -531,6 +533,13 @@ namespace icl{
       */
       void addChild(SceneObject *child, bool passOwnerShip=true);
       
+      /// directly passes a smart pointer as a child
+      /** By passing a smart pointer to an object, pointer-sharing can
+          also be extended to the caller scope.
+          Please note, that adding a child to an object o, will always set
+          the child's parent to o */
+      void addChild(utils::SmartPtr<SceneObject> child);
+      
       /// removes given child
       /** no errors if the child was not found */
       void removeChild(SceneObject *child);
@@ -546,9 +555,12 @@ namespace icl{
       
       /// returns child at given index
       SceneObject *getChild(int index);
-      
+
       /// returns child at given index (const)
       const SceneObject *getChild(int index) const;
+
+      /// returns a shared pointer to the child at given index
+      utils::SmartPtr<SceneObject> getChildPtr(int index);
       
       /// returns whether the given object is a child of this one
       bool hasChild(const SceneObject *o) const;
