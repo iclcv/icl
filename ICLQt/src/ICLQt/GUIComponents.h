@@ -30,8 +30,9 @@
 
 #pragma once
 
-#include <ICLQt/GUIComponentWithOutput.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Any.h>
+#include <ICLQt/GUIComponentWithOutput.h>
 
 namespace icl{  
   /** \cond */

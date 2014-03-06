@@ -51,28 +51,28 @@ namespace icl{
          @param bufferDepth
          @param pickChannel
       */
-        SwissRangerGrabber(int serialNumber=0,
+        ICLIO_API SwissRangerGrabber(int serialNumber=0,
                                core::depth bufferDepth=core::depth32f,
                                int pickChannel=-1)
         throw (utils::ICLException);
 
         /// Destructor
-        ~SwissRangerGrabber();
+        ICLIO_API ~SwissRangerGrabber();
 
         /// returns a list of all found devices
-        static const std::vector<GrabberDeviceDescription> &getDeviceList(std::string hint, bool rescan);
+        ICLIO_API static const std::vector<GrabberDeviceDescription> &getDeviceList(std::string hint, bool rescan);
 
         /// grab an undistorted image
-        const core::ImgBase *acquireImage();
+        ICLIO_API const core::ImgBase *acquireImage();
         
         /// Internally used utility function, that might be interesting elsewhere
-        static float getMaxRangeMM(const std::string &modulationFreq) throw (utils::ICLException);
+        ICLIO_API static float getMaxRangeMM(const std::string &modulationFreq) throw (utils::ICLException);
 
         /// adds properties to Configurable
-        void addProperties();
+        ICLIO_API void addProperties();
 
         /// callback for changed configurable properties
-        void processPropertyChange(const utils::Configurable::Property &prop);
+        ICLIO_API void processPropertyChange(const utils::Configurable::Property &prop);
 
       private:
         /// utility function

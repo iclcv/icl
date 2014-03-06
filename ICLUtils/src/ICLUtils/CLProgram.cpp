@@ -27,7 +27,7 @@
 ** Excellence Initiative.                                          **
 **                                                                 **
 ********************************************************************/
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 #include <ICLUtils/CLProgram.h>
 #include <ICLUtils/StringUtils.h>
 #define __CL_ENABLE_EXCEPTIONS //enables openCL error catching

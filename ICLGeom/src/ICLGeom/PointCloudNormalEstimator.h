@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/GeomDefs.h>
 #include <ICLCore/Img.h>
 #include <ICLGeom/Camera.h>
@@ -68,7 +69,7 @@ namespace icl{
         -# ... ???
 
      */
-    class PointCloudNormalEstimator : public utils::Uncopyable{
+    class ICLGeom_API PointCloudNormalEstimator : public utils::Uncopyable{
       struct Data;  //!< internal data type
       Data *m_data; //!< internal data pointer
 

@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLIO/Grabber.h>
 
 namespace icl{
@@ -41,7 +42,7 @@ namespace icl{
         Grabber class directly, but instantiate GenericGrabber with
         Devide type 'sm'.
     */
-    class SharedMemoryGrabber : public Grabber {
+    class ICLIO_API SharedMemoryGrabber : public Grabber {
         /// Internal Data storage class
         struct Data;
 

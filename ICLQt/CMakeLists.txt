@@ -171,12 +171,26 @@ SET(ICL_MOC_HEADERS src/ICLQt/Widget.h
 	            src/ICLQt/ToggleButton.h)
 
 # ---- Library build instructions ----
+IF(WIN32)
 INCLUDE_DIRECTORIES(BEFORE src
+                           ${ICL_SOURCE_DIR}/3rdparty/zlib
+                           ${ICL_SOURCE_DIR}/3rdparty/libpng
+                           ${ICL_SOURCE_DIR}/3rdparty/libjpeg
+                           ${CMAKE_BINARY_DIR}/src
                            ${ICL_SOURCE_DIR}/ICLUtils/src
                            ${ICL_SOURCE_DIR}/ICLMath/src
                            ${ICL_SOURCE_DIR}/ICLCore/src
                            ${ICL_SOURCE_DIR}/ICLFilter/src
                            ${ICL_SOURCE_DIR}/ICLIO/src)
+ELSE()
+INCLUDE_DIRECTORIES(BEFORE src
+                           ${CMAKE_BINARY_DIR}/src
+                           ${ICL_SOURCE_DIR}/ICLUtils/src
+                           ${ICL_SOURCE_DIR}/ICLMath/src
+                           ${ICL_SOURCE_DIR}/ICLCore/src
+                           ${ICL_SOURCE_DIR}/ICLFilter/src
+                           ${ICL_SOURCE_DIR}/ICLIO/src)
+ ENDIF()
 
 QT4_WRAP_CPP(MOC_FILES ${ICL_MOC_HEADERS})
 

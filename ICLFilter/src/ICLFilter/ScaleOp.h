@@ -30,13 +30,14 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/AffineOp.h>
 
 namespace icl{
   namespace filter{
     
     /// Class to scale images \ingroup UNARY \ingroup AFFINE
-    class ScaleOp : public AffineOp{
+    class ICLFilter_API ScaleOp : public AffineOp{
       public:
       /// Constructor
       ScaleOp (double factorX=0.0, double factorY=0.0, 

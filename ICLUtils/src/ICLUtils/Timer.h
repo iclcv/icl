@@ -28,15 +28,17 @@
 **                                                                 **
 ********************************************************************/
 
+#pragma once
+
+#include <ICLUtils/Macros.h>
 #include <ICLUtils/Time.h>
 #include <vector>
 #include <string>
-#include <ICLUtils/Macros.h>
-#pragma once
 
 namespace icl {
   namespace utils{
-    class Timer{
+
+    class ICLUtils_API Timer{
       private:
       int m_iTimerMode;
       std::vector<Time::value_type> m_vecTime;

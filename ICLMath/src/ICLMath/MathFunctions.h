@@ -30,14 +30,15 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/Random.h>
+
 #include <vector>
 #include <algorithm>
 #include <cmath>
-#ifdef HAVE_IPP
+#ifdef ICL_HAVE_IPP
 #include <ipps.h>
 #endif
-
-#include <ICLUtils/Random.h>
 
 namespace icl {
   namespace math{
@@ -86,7 +87,7 @@ namespace icl {
     }
 
     /** \cond */
-#ifdef HAVE_IPP
+#ifdef ICL_HAVE_IPP
     template<> inline double mean<const icl32f*>(const icl32f *begin,const icl32f *end){
       icl32f m = 0;
       ippsMean_32f(begin,end-begin,&m,ippAlgHintAccurate);
@@ -109,7 +110,7 @@ namespace icl {
         @param empiricMean if true, sum of square distances is devidec by n-1 else by n
         */
     template <class ForwardIterator>
-    inline double variance(ForwardIterator begin, ForwardIterator end, double mean, bool empiricMean=true){
+    inline double variance(ForwardIterator begin, ForwardIterator end, double mean, bool empiricMean = true){
       if(begin == end) return 0;
       register double sum = 0;
       register double d = 0;

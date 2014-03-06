@@ -30,10 +30,11 @@
 
 #pragma once
 
-#include <bitset>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Size32f.h>
 #include <ICLMarkers/Fiducial.h>
 
+#include <bitset>
 
 namespace icl{
   namespace markers{
@@ -72,7 +73,7 @@ namespace icl{
         to speed up the detection step itself since usually most complex features
         dont have to be computed for each detected Fiducial.
     */
-    struct FiducialImpl{
+    struct ICLMarkers_API FiducialImpl{
       /// parent Fiducial Detector instance
       FiducialDetectorPlugin *parent;
       

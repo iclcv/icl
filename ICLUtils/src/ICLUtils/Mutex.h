@@ -30,8 +30,9 @@
 
 #pragma once
 
-#include <pthread.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
+#include <pthread.h>
 
 namespace icl{
   namespace utils{
@@ -50,19 +51,19 @@ namespace icl{
         - unlocked (pthread_mutex_unlock)
         - and destroyed (Destructor)-> (pthread_mutex_destroy)
     **/
-    class Mutex : public Uncopyable{ 
+    class Mutex : public Uncopyable{
       public:
   
       /// This enum holds available mutex types.
       enum MutexType {
-      #ifndef ICL_SYSTEM_WINDOWS
+      //#ifndef ICL_SYSTEM_WINDOWS
         /// normal mutex can not be locked by owner before unlocking
         mutexTypeNormal = PTHREAD_MUTEX_NORMAL,
         /// recursive mutex can be locked repeatedly by owner-thread. needs equal unlocks.
         mutexTypeRecursive = PTHREAD_MUTEX_RECURSIVE
-      #else
+      //#else
   
-      #endif
+      //#endif
       } type;
   
       /// Create a mutex
@@ -70,49 +71,49 @@ namespace icl{
            @param type The default MutexType is MutexType::mutexTypeNormal
       **/
       Mutex(MutexType type = mutexTypeNormal):type(type){
-  	  #ifndef ICL_SYSTEM_WINDOWS
+  	  //#ifndef ICL_SYSTEM_WINDOWS
         pthread_mutexattr_init(&a);
         pthread_mutexattr_settype(&a, type);
         pthread_mutex_init(&m,&a);
-  	  #else
+  	  //#else
   	  
-  	  #endif
+  	  //#endif
       }
       /// Destroys the mutex
       ~Mutex(){
-  	  #ifndef ICL_SYSTEM_WINDOWS
+  	  //#ifndef ICL_SYSTEM_WINDOWS
           pthread_mutex_destroy(&m);
-  	  #else
+  	  //#else
   	  
-  	  #endif
+  	  //#endif
       }
       /// locks the mutex
       void lock(){
-  	  #ifndef ICL_SYSTEM_WINDOWS
+  	  //#ifndef ICL_SYSTEM_WINDOWS
         pthread_mutex_lock(&m);
-  	  #else
+  	  //#else
   	  
-  	  #endif
+  	  //#endif
       }
       /// locks the mutex without blocking. returns immediately.
       /**
           @return zero if lock is acquired. otherwise an error-number
       **/
       int trylock(){
-        #ifndef ICL_SYSTEM_WINDOWS
+        //#ifndef ICL_SYSTEM_WINDOWS
         return pthread_mutex_trylock(&m);
-        #else
+        //#else
   
-        #endif
+        //#endif
       }
   
       /// unlocks the mutex
       void unlock(){
-  	  #ifndef ICL_SYSTEM_WINDOWS
+  	  //#ifndef ICL_SYSTEM_WINDOWS
         pthread_mutex_unlock(&m);
-  	  #else
+  	  //#else
   	  
-  	  #endif
+  	  //#endif
       }
       
       /// Locks a mutex on the stack (mutex is unlocked when the stack's section is released
@@ -125,10 +126,10 @@ namespace icl{
         Locker(Mutex &m);
   
         /// Locks given lockable until destruction
-        Locker(const Lockable *l);
+        ICLUtils_API Locker(const Lockable *l);
   
         /// Locks given lockable until destruction
-        Locker(const Lockable &l);
+        ICLUtils_API Locker(const Lockable &l);
   
         /// unlocks the given mutex (automatically called for objects on the stack)
         ~Locker();

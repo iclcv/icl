@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/Exception.h>
 #include <ICLMath/FixedVector.h>
@@ -41,7 +42,7 @@ namespace icl{
     /** The GLFragmentShader class can be used to create simple fragment shader programs.
         
     */
-    class GLFragmentShader : public utils::Uncopyable{
+    class ICLQt_API GLFragmentShader : public utils::Uncopyable{
       struct Data;
       Data *m_data;
       

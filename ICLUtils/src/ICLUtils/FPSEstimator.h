@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Time.h>
 #include <deque>
 #include <string>
@@ -37,7 +38,7 @@
 namespace icl{
   namespace utils{
     ///Utility clas for online FPS estimation \ingroup TIME
-    class FPSEstimator{
+    class ICLUtils_API FPSEstimator{
       public:
   
       ///Constructor

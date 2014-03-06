@@ -30,10 +30,11 @@
 
 #pragma once
 
-#include <ICLCore/ImgBase.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/ProgArg.h>
-#include <ICLIO/ImageOutput.h>
 #include <ICLUtils/SmartPtr.h>
+#include <ICLCore/ImgBase.h>
+#include <ICLIO/ImageOutput.h>
 
 namespace icl{
   namespace io{
@@ -60,7 +61,7 @@ namespace icl{
         GenericGrabber backends for these types are also able to deserialize the images meta data
     */
     
-    class GenericImageOutput : public ImageOutput{
+    class ICLIO_API GenericImageOutput : public ImageOutput{
       std::string type;
       std::string description;
       utils::SmartPtr<ImageOutput> impl;
@@ -86,7 +87,9 @@ namespace icl{
       
       /// sends a new image
       virtual void send(const core::ImgBase *image){
-        if(impl) impl->send(image);
+        if (impl) {
+          impl->send(image);
+        }
         else{
           ERROR_LOG("unable to send image with a NULL output");
         }

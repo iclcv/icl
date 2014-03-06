@@ -30,9 +30,10 @@
 
 #pragma once
 
-#include <vector>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Range.h>
 #include <ICLUtils/Configurable.h>
+#include <vector>
 
 namespace icl{
   namespace math{
@@ -103,11 +104,10 @@ namespace icl{
         - provide an interface for Batch based VQ using (EM-Algorithm or something like that)
         - \f[ f_X(x_1, \dots, x_N) = \frac {1} {(2\pi)^{N/2}|\Sigma|^{1/2}} \exp \left( -\frac{1}{2} ( x - \mu)^\top \Sigma^{-1} (x - \mu) \right) \f]
     **/
-    class LLM : public utils::Configurable{
-      public:
+    class ICLMath_API LLM : public utils::Configurable{
       public:
       /// Internally used Kernel structure
-      struct Kernel{
+      struct ICLMath_API Kernel{
         /// Empty base constructor
         Kernel();
         /// Default constructur with given input an output dimension

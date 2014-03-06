@@ -67,7 +67,7 @@ int main(int n, char **ppc){
   grabber.init(pa("-i"));
 
   if(s){
-    std::string val = pa("-s",1);
+    std::string val = pa("-s", 1).as<std::string>();
     if(pa("-go")) grabber.grab();
     grabber.setPropertyValue(pa("-s",0),val);
     if(pa("-go")) grabber.grab();

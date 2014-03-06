@@ -29,8 +29,11 @@
 ********************************************************************/
 
 #pragma once
-#include <vector>
+
+#include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/UnaryOp.h>
+#include <vector>
+
 namespace icl{
   /** \cond */
   namespace core{  class ImgBase; }
@@ -87,7 +90,7 @@ namespace icl{
         }
         \endcode
     **/
-    class UnaryOpPipe : public UnaryOp{
+    class ICLFilter_API UnaryOpPipe : public UnaryOp{
       public:
       /// create an empty pipe
       UnaryOpPipe();

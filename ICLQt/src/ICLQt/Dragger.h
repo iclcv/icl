@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/Rect32f.h>
 #include <ICLCore/Types.h>
@@ -43,7 +44,7 @@ namespace icl{
     /** \endcond */
     
     /// Utility class that implements draggable rects on the ChromaWidget surface \ingroup UNCOMMON
-    struct Dragger{
+    struct ICLQt_API Dragger{
       
       /// Utility class which helps to convert rgb to RG-Chroma and back
       struct Color{

@@ -30,10 +30,12 @@
 
 #pragma once
 
-#include <ICLCV/ImageRegion.h>
-#include <ICLCore/Color.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Range.h>
 #include <ICLUtils/Uncopyable.h>
+#include <ICLCore/Color.h>
+#include <ICLCV/ImageRegion.h>
+
 namespace icl{
   namespace cv{
   
@@ -68,11 +70,11 @@ namespace icl{
           - for all \f$r_j \in \mbox{Regions}_i\f$
             - OUTPUT_DATA.add(SimpleBlobSearcher::Blob(\f$r_j\f$, \f$RC_i\f$, i)
     */
-    class SimpleBlobSearcher : public utils::Uncopyable{
+    class ICLCV_API SimpleBlobSearcher : public utils::Uncopyable{
       public:
       
       /// Internal blob-result type
-      struct Blob{
+        struct ICLCV_API Blob{
         Blob():region(0),refColorIndex(-1){}
         Blob(const ImageRegion *region, const core::Color &refColor, int refColorIndex);
         

@@ -332,7 +332,7 @@ namespace icl{
     void RegionDetector::filterRegions(){
       //BENCHMARK_THIS_FUNCTION;
       m_data->filteredRegions.clear();
-      copy_if(m_data->regions.begin(),m_data->regions.end(),
+      region_detector_tools::copy_if(m_data->regions.begin(), m_data->regions.end(),
               std::back_inserter(m_data->filteredRegions),
               SimpleRegionFilter(parse<int>(getPropertyValue("minimum value")),
                                  parse<int>(getPropertyValue("maximum value")),

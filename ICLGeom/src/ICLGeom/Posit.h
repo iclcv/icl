@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/GeomDefs.h>
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Point32f.h>
@@ -60,7 +61,7 @@ namespace icl{
         The algorithm is well described in the paper
         "Model-based object pose in 25 lines of code" written by Dementhon and Davis in 1995
     */
-    class Posit{
+    class ICLGeom_API Posit{
       struct Data; //!< internal data storage class
       Data *data;  //!< internal data storage
       
@@ -99,7 +100,7 @@ namespace icl{
       const std::vector<Vec> &getModel() const;
       
       /// result type (basically a 4x4 homogeneous transformation matrix)
-      struct Result : public Mat{
+      struct ICLGeom_API Result : public Mat{
         friend struct Posit::Data;
         private:
         /// private Konstructor

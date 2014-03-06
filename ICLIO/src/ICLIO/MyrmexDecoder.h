@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
 
 #define ERROR_MARK  0xA000 //Top 4 Bits code on last pixel of last frame to mark that an error occurred during readout
@@ -54,8 +55,8 @@ namespace icl{
     class MyrmexDecoder {
    
     public:
-      MyrmexDecoder();
-      void decode(const icl16s *data, const utils::Size &size, core::ImgBase **dst);
+      ICLIO_API MyrmexDecoder();
+      ICLIO_API void decode(const icl16s *data, const utils::Size &size, core::ImgBase **dst);
   
     private:
       char attachedPosition; //store position of central unit

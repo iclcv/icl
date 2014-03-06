@@ -30,12 +30,13 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <cmath>
 
 namespace icl{
   namespace cv{
     /// data-struct to represent local PCA information \ingroup G_RD
-    class RegionPCAInfo{
+    class ICLCV_API RegionPCAInfo{
       public:
       
       /// Default Constructor

@@ -30,13 +30,14 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLIO/FileGrabberPlugin.h>
 
 namespace icl{
   namespace io{
     
     /// Plugin to grab binary icl image (.bicl or .bicl.gz) \ingroup GRABBER_G
-    class FileGrabberPluginBICL : public FileGrabberPlugin{
+    class ICLIO_API FileGrabberPluginBICL : public FileGrabberPlugin{
       public:
       /// grab implementation
       virtual void grab(utils::File &file, core::ImgBase **dest);

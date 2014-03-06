@@ -30,10 +30,15 @@
 
 #pragma once
 
-#ifndef HAVE_OPENGL
-#warning "this header must not be included if HAVE_OPENGL is not defined"
+#ifndef ICL_HAVE_OPENGL
+#if WIN32
+#pragma WARNING("this header must not be included if ICL_HAVE_OPENGL is not defined")
+#else
+#warning "this header must not be included if ICL_HAVE_OPENGL is not defined"
+#endif
 #else
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/GeomDefs.h>
 #include <ICLCore/Img.h>
 #include <ICLMath/FixedVector.h>
@@ -120,7 +125,7 @@ namespace icl{
       math::FixedColVector<int,2>(a,b),Primitive(Primitive::line,color){}
         
       /// render
-      virtual void render(const Primitive::RenderContext &ctx);
+      ICLGeom_API virtual void render(const Primitive::RenderContext &ctx);
   
       /// direct access to the i-th vertex/normal index
       inline int i(int idx) const { return super::operator[](idx); }
@@ -139,7 +144,7 @@ namespace icl{
       super(a,b,c,na,nb,nc),Primitive(Primitive::triangle,color){}
       
       /// render method
-      virtual void render(const Primitive::RenderContext &ctx);
+      ICLGeom_API virtual void render(const Primitive::RenderContext &ctx);
       
       /// direct access to the i-th vertex/normal index
       inline int i(int idx) const { return super::operator[](idx); }
@@ -149,7 +154,7 @@ namespace icl{
 
       /// computes the normal for this triangle
       /** Given the parent SceneObject's vertex vector*/
-      Vec computeNormal(const std::vector<Vec> &vertices) const;
+      ICLGeom_API Vec computeNormal(const std::vector<Vec> &vertices) const;
 
     };
   
@@ -173,7 +178,7 @@ namespace icl{
       tesselationResolution(tesselationResolution){}
       
       /// render method
-      virtual void render(const Primitive::RenderContext &ctx);
+      ICLGeom_API virtual void render(const Primitive::RenderContext &ctx);
   
       /// direct access to the i-th vertex/normal index
       inline int i(int idx) const { return super::operator[](idx); }
@@ -183,7 +188,7 @@ namespace icl{
       
       /// computes the normal for this quad
       /** Given the parent SceneObject's vertex vector*/
-      Vec computeNormal(const std::vector<Vec> &vertices) const;
+      ICLGeom_API Vec computeNormal(const std::vector<Vec> &vertices) const;
     };
   
     /// polygon primitive
@@ -205,7 +210,7 @@ namespace icl{
       }
       
       /// render method
-      virtual void render(const Primitive::RenderContext &ctx);
+      ICLGeom_API virtual void render(const Primitive::RenderContext &ctx);
       
       /// deep copy method
       virtual Primitive *copy() const { 
@@ -231,7 +236,7 @@ namespace icl{
     /// extra base class for primitives, that use a special alpha function (in particular textures)
     struct AlphaFuncProperty{
       /// base constructor setting up to GL_GREATER 0.1
-      AlphaFuncProperty();
+      ICLGeom_API AlphaFuncProperty();
       AlphaFuncProperty(int alphaFunc, float alphaValue):alphaFunc(alphaFunc),alphaValue(alphaValue){}
     
       int alphaFunc;         //!<< used for glAlphaFunc call glAlphaFunc((GLenum)alphaFunc,alphaValue)
@@ -243,7 +248,7 @@ namespace icl{
         alphaValue = value;
       }
       
-      void restoreAlphaDefaults();
+      ICLGeom_API void restoreAlphaDefaults();
     };
   
     
@@ -280,7 +285,7 @@ namespace icl{
       }
   
       /// render method
-      virtual void render(const Primitive::RenderContext &ctx);
+      ICLGeom_API virtual void render(const Primitive::RenderContext &ctx);
   
       /// deep copy
       virtual Primitive *copy() const { 
@@ -313,14 +318,14 @@ namespace icl{
       Primitive(Primitive::texture),w(w),h(h),texture(image,sm),px(px),py(py),pz(pz),
       pnx(pnx),pny(pny),pnz(pnz),stride(stride),image(createTextureOnce ? 0 : image){}
   
-      virtual void render(const Primitive::RenderContext &ctx);
+      ICLGeom_API virtual void render(const Primitive::RenderContext &ctx);
       
       virtual Primitive *copy() const { 
         return new TextureGridPrimitive(w,h,image ? image : texture.extractImage(),
                                         px,py,pz,pnx,pny,pnz,stride,!image,
                                         texture.getScaleMode()); 
       }
-      void getAABB(utils::Range32f aabb[3]);
+      ICLGeom_API void getAABB(utils::Range32f aabb[3]);
       
       inline Vec getPos(int x, int y) const {
         const int idx = stride*(x + w*y);
@@ -340,10 +345,10 @@ namespace icl{
       TextureGridPrimitive(w,h,front,px,py,pz,pnx,pny,pnz,stride,createFrontOnce,sm),back(back,sm),
       iback(createBackOnce ? 0 : back){}
       
-      virtual void render(const Primitive::RenderContext &ctx);
+      ICLGeom_API virtual void render(const Primitive::RenderContext &ctx);
       
       /// sets new textures
-      void setTextures(const core::ImgBase *front, const core::ImgBase *back);
+      ICLGeom_API void setTextures(const core::ImgBase *front, const core::ImgBase *back);
     };
     
 
@@ -365,7 +370,7 @@ namespace icl{
       front(frontColor*(1./255)),back(backColor*(1./255)),lines(lineColor*(1./255)),
       drawLines(drawLines),drawQuads(drawQuads){}
       
-      virtual void render(const Primitive::RenderContext &ctx);
+      ICLGeom_API virtual void render(const Primitive::RenderContext &ctx);
 
       virtual Primitive *copy() const{
         return new TwoSidedGridPrimitive(w,h,vertices, normals, front*255, back*255, 
@@ -391,7 +396,7 @@ namespace icl{
       }
   
       /// render method
-      virtual void render(const Primitive::RenderContext &ctx);
+      ICLGeom_API virtual void render(const Primitive::RenderContext &ctx);
   
       /// deep copy
       virtual Primitive *copy() const { 
@@ -413,18 +418,18 @@ namespace icl{
       std::vector<int> normalIndices;
   
       /// Generic version, where the given values are copied deeply into the internal buffers for rendering
-      GenericTexturePrimitive(const core::ImgBase *image, int numPoints,
+      ICLGeom_API GenericTexturePrimitive(const core::ImgBase *image, int numPoints,
                               const float *xs, const float *ys, const float *zs, int xyzStride,
                               const utils::Point32f *texCoords, const float *nxs=0, const float *nys=0,
                               const float *nzs=0, int nxyzStride=1, bool createTextureOnce=true);
       
       /// less generic Constructor, that uses index-pointers for referencing vertices and normals of the parent SceneObject
-      GenericTexturePrimitive(const core::ImgBase *image, int numPoints, const int *vertexIndices,
+      ICLGeom_API GenericTexturePrimitive(const core::ImgBase *image, int numPoints, const int *vertexIndices,
                               const utils::Point32f *texCoords, const int *normalIndices = 0,
                               bool createTextureOnce=true);
       
       //// custom render implementation
-      virtual void render(const Primitive::RenderContext &ctx);    
+      ICLGeom_API virtual void render(const Primitive::RenderContext &ctx);    
   
       /// deep copy method
       virtual Primitive *copy() const {
@@ -444,7 +449,7 @@ namespace icl{
       GeomColor textColor;
       
       /// utility method to creat a text texture
-      static core::Img8u create_texture(const std::string &text, const GeomColor &color, int textSize);
+      ICLGeom_API static core::Img8u create_texture(const std::string &text, const GeomColor &color, int textSize);
       
       /// used for billboard text
       /** if the value is > 0, the text-texture will always be oriented towards the camera.
@@ -452,17 +457,17 @@ namespace icl{
       float billboardHeight; 
       
       /// constructor
-      TextPrimitive(int a, int b, int c, int d, 
+      ICLGeom_API TextPrimitive(int a, int b, int c, int d, 
                     const std::string &text,
                     int textSize=20,
                     const GeomColor &textColor=GeomColor(255,255,255,255),
                     int na=-1, int nb=-1, int nc=-1, int nd=-1,
                     float billboardHeight=0,
                     core::scalemode sm=core::interpolateLIN);
-      ~TextPrimitive();
+      ICLGeom_API ~TextPrimitive();
   
       /// render method
-      virtual void render(const Primitive::RenderContext &ctx);
+      ICLGeom_API virtual void render(const Primitive::RenderContext &ctx);
   
       /// deep copy method
       virtual Primitive *copy() const {

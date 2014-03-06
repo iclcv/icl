@@ -131,8 +131,16 @@ IF(DL_FOUND)
   LIST(APPEND HEADERS src/ICLUtils/IppInterface.h)
 ENDIF()
 
+IF(WIN32)
+INCLUDE_DIRECTORIES(BEFORE src
+                           "${ICL_SOURCE_DIR}/3rdparty/zlib"
+                           "${ICL_SOURCE_DIR}/3rdparty/libpng"
+                           "${ICL_SOURCE_DIR}/3rdparty/libjpeg"
+                           "${CMAKE_BINARY_DIR}/src")
+ELSE()
 INCLUDE_DIRECTORIES(BEFORE src 
                            "${CMAKE_BINARY_DIR}/src")
+ENDIF()
 
 ADD_LIBRARY(ICLUtils SHARED ${SOURCES} ${HEADERS})
 

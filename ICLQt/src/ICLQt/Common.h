@@ -29,15 +29,17 @@
 ********************************************************************/
 
 #pragma once
-
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_OPENGL
+#include <GL/glew.h>
+#endif
+#ifdef ICL_HAVE_QT
 #include <ICLQt/Qt.h>
 #include <ICLQt/Application.h>
+#include <ICLQt/Quick.h>
 #endif
 
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/StringUtils.h>
-#include <ICLQt/Quick.h>
 #include <ICLIO/GenericGrabber.h>
 #include <ICLUtils/ProgArg.h>
 #include <ICLUtils/Mutex.h>

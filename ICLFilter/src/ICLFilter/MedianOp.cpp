@@ -859,7 +859,7 @@ namespace icl {
 
   #endif
 
-  #ifndef HAVE_IPP
+  #ifndef ICL_HAVE_IPP
 
     #ifdef HAVE_SSE2
       APPLY_MEDIAN2(icl8u, icl128i8u, 16);
@@ -880,7 +880,7 @@ namespace icl {
 
       #undef APPLY_MEDIAN
 
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
 
       template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, IppiSize, IppiPoint)>
       void ippMedian(const Img<T>* src, Img<T> *dst, const Size& maskSize,const Point &roiOffset, const Point &oAnchor) {

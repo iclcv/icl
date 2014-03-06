@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLIO/FileGrabberPlugin.h>
 
 namespace icl{
@@ -56,7 +57,7 @@ namespace icl{
            the image height; its horizontal comma-separated token count defines its
            width.
         */
-    class FileGrabberPluginCSV : public FileGrabberPlugin{
+    class ICLIO_API FileGrabberPluginCSV : public FileGrabberPlugin{
       public:
       /// Create a new Plugin
       FileGrabberPluginCSV();

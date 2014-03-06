@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLMath/DynVector.h>            
 #include <ICLUtils/Function.h>
 
@@ -248,7 +249,7 @@ namespace icl{
         \endcode
     */
     template<class Scalar>
-    class LevenbergMarquardtFitter{
+    class ICLMath_IMP LevenbergMarquardtFitter{
       public:
       
       typedef DynColVector<Scalar> Vector; //!< vector type
@@ -263,7 +264,7 @@ namespace icl{
         Params params;                //!< final parameters
       
         /// overloaded ostream-operator
-        friend inline std::ostream &operator<<(std::ostream &str, const Result &d){
+        friend ICLMath_API inline std::ostream &operator<<(std::ostream &str, const Result &d){
           return str << "iteration: " << d.iteration << "  error:" << d.error 
                      << "  lambda[0]:" << d.lambdas[0] << "  params:" << d.params.transp();
         }

@@ -61,7 +61,7 @@ namespace icl{
         segmenter, which can be combined with the chromaticity-space segmenter, and which 
         can also be adjusted using GUI components.
     **/
-    class ChromaGUI : public QObject, public GUI{
+    class ICLQt_API ChromaGUI : public QObject, public GUI{
       Q_OBJECT
       public:
       
@@ -79,10 +79,10 @@ namespace icl{
       void blueSliderChanged(int val);
       
       /// used for the save-button
-      void save(const std::string &filename="");
+      void save(const std::string &filename = "");
       
       /// used for the load-button
-      void load(const std::string &filename="");
+      void load(const std::string &filename = "");
       
       private:
       /// Wrapped ChromaWidget (an internal class)

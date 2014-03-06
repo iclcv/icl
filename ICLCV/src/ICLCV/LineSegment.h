@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <iostream>
 
 namespace icl{
@@ -41,7 +42,7 @@ namespace icl{
         Note: the LineSegment's xend location is the first pixel
               after the LineSegment, that does not have the same value
     */
-    struct LineSegment{
+    struct ICLCV_API LineSegment{
       int x;    //!<first pixel of this line segment
       int y;    //!<y position in the image of this line segment
       int xend; //!<first pixel AFTER this line segment

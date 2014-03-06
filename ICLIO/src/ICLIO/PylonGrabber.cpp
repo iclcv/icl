@@ -75,7 +75,7 @@ PylonGrabber::PylonGrabber(
 }
 
 PylonGrabber::~PylonGrabber(){
-  FUNCTION_LOG();
+  FUNCTION_LOG("");
   // Stop acquisition
   acquisitionStop();
   // deregister buffers
@@ -92,7 +92,7 @@ PylonGrabber::~PylonGrabber(){
 
 
 void PylonGrabber::grabbingStart(){
-  FUNCTION_LOG();
+  FUNCTION_LOG("");
   // Get the image buffer size
   const size_t imageSize = m_CameraOptions -> getNeededBufferSize();
   DEBUG_LOG2("Buffer size: " << imageSize);
@@ -135,7 +135,7 @@ void PylonGrabber::grabbingStart(){
 }
 
 void PylonGrabber::grabbingStop(){
-  FUNCTION_LOG();
+  FUNCTION_LOG("");
   m_Grabber -> CancelGrab();
   Pylon::GrabResult result;
   while (m_Grabber -> GetWaitObject().Wait(0)) {
@@ -155,14 +155,14 @@ void PylonGrabber::grabbingStop(){
 }
 
 void PylonGrabber::acquisitionStart(){
-  FUNCTION_LOG();
+  FUNCTION_LOG("");
   m_CameraOptions -> acquisitionStart();
   m_GrabberThread -> start();
   m_ImgMutex.unlock();
 }
 
 void PylonGrabber::acquisitionStop(){
-  FUNCTION_LOG();
+  FUNCTION_LOG("");
   m_ImgMutex.lock();
   m_GrabberThread -> stop();
   m_CameraOptions -> acquisitionStop();

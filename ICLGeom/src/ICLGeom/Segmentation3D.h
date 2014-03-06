@@ -30,12 +30,13 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/GeomDefs.h>
 #include <ICLCore/Img.h>
 #include <ICLGeom/PointCloudObjectBase.h>
 #include <ICLCV/RegionDetector.h>
 
-#ifdef HAVE_OPENCL    
+#ifdef ICL_HAVE_OPENCL    
 #include <ICLUtils/CLProgram.h>
 #include <ICLUtils/CLBuffer.h>
 #include <ICLUtils/CLKernel.h>
@@ -45,7 +46,7 @@ namespace icl{
   namespace geom{
     /**
        This class includes segmentation algorithms for depth images. It uses OpenCL for hardware parallelization if a compatible GPU is found. The input is a depth image, a binarized edge image from the PointNormalEstimation class and the xyz DataSegment from the PointCloudObject class. The output is a color image (e.g. as input for setColorsFromImage() method of the PointCloudObject class).*/
-    class Segmentation3D{
+    class ICLGeom_API Segmentation3D{
   	
      public:
       /// Constructor
@@ -242,7 +243,7 @@ namespace icl{
       
       float dist3(const Vec &a, const Vec &b);
       
-    #ifdef HAVE_OPENCL
+    #ifdef ICL_HAVE_OPENCL
       //OpenCL data
       unsigned char* segmentColorImageRArray;
       unsigned char* segmentColorImageGArray;

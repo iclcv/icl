@@ -325,7 +325,7 @@ void change_plane(const std::string &handle){
     ICL_DELETE(planeObj);
   }
   
-  const std::string t = planeOptionGUI["planeDim"];
+  const std::string t = planeOptionGUI["planeDim"].as<std::string>();
   const float offset = planeOptionGUI["planeOffset"];
   const float radius = parse<float>(planeOptionGUI["planeRadius"]);
   const float ticDist = planeOptionGUI["planeTicDist"];
@@ -410,7 +410,7 @@ void init(){
     std::ostringstream transformNameList;    
     for(int t=0;true;++t){
       try{
-        const std::string name = cfg["config.world-transform-"+str(t)+".name"];
+        const std::string name = cfg["config.world-transform-" + str(t) + ".name"].as<std::string>();
         transformNameList << (t?",":"") << name;
         const Mat transform = parse<Mat>(cfg["config.world-transform-"+str(t)+".transform"]);
         cf.transforms.push_back(NamedTransform(name,transform));
@@ -436,7 +436,7 @@ void init(){
     try{
       std::string s;
       try{
-        const std::string s2 = cfg["config.obj-file"];
+        const std::string s2 = cfg["config.obj-file"].as<std::string>();
         s = s2;
       }catch(...){
         throw 1;
@@ -651,17 +651,17 @@ void init(){
 
   
   markerDetectionOptionGUI.create();
-  gui["show-marker-detection-options"].registerCallback(function(&markerDetectionOptionGUI,&GUI::switchVisibility));
-  gui["show-plane-options"].registerCallback(function(&planeOptionGUI,&GUI::switchVisibility));
+  gui["show-marker-detection-options"].registerCallback(utils::function(&markerDetectionOptionGUI,&GUI::switchVisibility));
+  gui["show-plane-options"].registerCallback(utils::function(&planeOptionGUI, &GUI::switchVisibility));
            
 
-  gui["save"].registerCallback(function(bestOfNSaver,&BestOfNSaver::init));
-  gui["save_stop"].registerCallback(function(bestOfNSaver,&BestOfNSaver::stop));
+  gui["save"].registerCallback(utils::function(bestOfNSaver, &BestOfNSaver::init));
+  gui["save_stop"].registerCallback(utils::function(bestOfNSaver, &BestOfNSaver::stop));
 
   scene.addCamera(Camera());
   scene.getCamera(0).setResolution(grabber.grab()->getSize());
   
-  gui["showRelTransGUI"].registerCallback(function(&relTransGUI,&GUI::switchVisibility));
+  gui["showRelTransGUI"].registerCallback(utils::function(&relTransGUI, &GUI::switchVisibility));
   
   planeOptionGUI["planeOffset"].disable();
   planeOptionGUI["planeRadius"].disable();
@@ -901,7 +901,7 @@ void run(){
   if(havePlane){
     draw->linewidth(1);
     const Point32f p = currentMousePos;
-    const std::string t = planeOptionGUI["planeDim"];
+    const std::string t = planeOptionGUI["planeDim"].as<std::string>();
     const float o = planeOptionGUI["planeOffset"];
     const float x=t=="x",y=t=="y",z=t=="z";
     PlaneEquation pe(Vec(o*x,o*y,o*z,1),Vec(x,y,z,1));

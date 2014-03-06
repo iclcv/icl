@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <iterator>
 
 namespace icl{
@@ -66,7 +67,7 @@ namespace icl{
   
     */
     template <typename Type>
-    class MatrixSubRectIterator : public std::iterator<std::forward_iterator_tag,Type>{
+    class MatrixSubRectIterator : public std::iterator<std::forward_iterator_tag, Type>{
       protected:
       inline void init () {
          m_lineStep = m_matrixWidth - m_subRectWidth + 1;

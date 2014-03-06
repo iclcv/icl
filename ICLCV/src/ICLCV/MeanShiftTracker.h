@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
 
 namespace icl {
@@ -88,7 +89,7 @@ namespace icl {
         Add functionality to open any image as kernel image.
         Performance tweaking.
         **/
-    class MeanShiftTracker {
+    class ICLCV_API MeanShiftTracker {
       
       public:
       

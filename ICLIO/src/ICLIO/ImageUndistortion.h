@@ -30,12 +30,13 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
 
 namespace icl{
   namespace io{
   
-    class ImageUndistortion{
+    class ICLIO_API ImageUndistortion{
       public:
       struct Impl; //!< internal impl
       
@@ -75,10 +76,10 @@ namespace icl{
     };
     
     /// overloaded ostream operator for ImageUndistortion instances 
-    std::istream &operator>>(std::istream &is, ImageUndistortion &udist);
+    ICLIO_API std::istream &operator>>(std::istream &is, ImageUndistortion &udist);
     
     /// overloaded istream operator for ImageUndistortion instances 
-    std::ostream &operator<<(std::ostream &s, const ImageUndistortion &udist);
+    ICLIO_API std::ostream &operator<<(std::ostream &s, const ImageUndistortion &udist);
   } // namespace io
 }
 

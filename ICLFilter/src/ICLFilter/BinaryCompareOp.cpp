@@ -115,7 +115,7 @@ namespace icl {
     // }}}
      
   
-  #ifdef HAVE_IPP 
+  #ifdef ICL_HAVE_IPP 
     template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*,int,const T*,int, icl8u*,int,IppiSize,IppCmpOp)>
     inline void ippCall(const Img<T> *src1,const Img<T>*src2, Img8u *dst, BinaryCompareOp::optype cmpOp){
       // {{{ open

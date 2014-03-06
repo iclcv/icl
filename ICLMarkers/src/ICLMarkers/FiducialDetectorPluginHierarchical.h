@@ -31,6 +31,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCV/ImageRegion.h>
 
 #include <ICLMarkers/FiducialDetectorPlugin.h>
@@ -41,7 +42,7 @@ namespace icl{
     
   
     /// Extra abstraction layer that defines a basic skeleton for the detection of hierarchical fiducials \ingroup PLUGINS
-    class FiducialDetectorPluginHierarchical : public FiducialDetectorPlugin{
+    class ICLMarkers_API FiducialDetectorPluginHierarchical : public FiducialDetectorPlugin{
       /// internal data class
       struct Data;
       

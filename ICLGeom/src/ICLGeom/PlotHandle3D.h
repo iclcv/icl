@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLQt/GUIHandle.h>
 #include <ICLQt/GUIWidget.h>
 #include <ICLGeom/PlotWidget3D.h>
@@ -38,7 +39,7 @@ namespace icl{
   namespace geom{
     
     /// Handle class for image components \ingroup HANDLES
-    class PlotHandle3D : public qt::GUIHandle<PlotWidget3D>{
+    class ICLGeom_API PlotHandle3D : public qt::GUIHandle<PlotWidget3D>{
       public:
       /// Create an empty handle
       PlotHandle3D(){}

@@ -30,11 +30,12 @@
 
 #pragma once
 
-#include <string>
+#include <ICLUtils/CompatMacros.h>
 #include <QtCore/QString>
-#include <QtGui/QWidget>
 #include <ICLQt/GUIHandle.h>
 #include <ICLQt/CompabilityLabel.h>
+#include <QtGui/QWidget>
+#include <string>
 
 
 namespace icl{
@@ -44,7 +45,7 @@ namespace icl{
     /** The gui label is created inside the GUI class, it can be used
         to make GUI-"label" components show anther text 
         @see GUI */
-    class LabelHandle : public GUIHandle<CompabilityLabel>{
+    class ICLQt_API LabelHandle : public GUIHandle<CompabilityLabel>{
       public:
       
       /// Create an empty handle

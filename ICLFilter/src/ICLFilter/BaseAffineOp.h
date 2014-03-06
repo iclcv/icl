@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/UnaryOp.h>
 
 namespace icl{
@@ -44,7 +45,7 @@ namespace icl{
         - Mirror
         - Scale  
     */
-    class BaseAffineOp : public UnaryOp{
+    class ICLFilter_API BaseAffineOp : public UnaryOp{
       public:
       /// Destructor
       virtual ~BaseAffineOp(){}

@@ -337,7 +337,7 @@ namespace icl{
         if (smart_dir==0){//upper left, so we dont get a 'maze'
   
   
-  	if ((connections[i] == NORTH) or (connections[i] == SOUTH)){
+  	if ((connections[i] == NORTH) || (connections[i] == SOUTH)){
             if (dir == TOP){ //direction in which we are moving
               top_counter++;
   
@@ -351,7 +351,7 @@ namespace icl{
             //printf("TOP\n");
   	}
   
-  	if ((connections[i] == EAST) or (connections[i] == WEST)){
+  	if ((connections[i] == EAST) || (connections[i] == WEST)){
             if (dir == SIDE){
               side_counter++;
   
@@ -367,7 +367,7 @@ namespace icl{
   
   
         } else { //we get a 'maze' type discovery which gives max width/height from longest walks
-  	if ((connections[i] == NORTH) or (connections[i] == SOUTH)){
+  	if ((connections[i] == NORTH) || (connections[i] == SOUTH)){
             if (dir == TOP){ //direction in which we are moving
               top_counter++;
   
@@ -381,7 +381,7 @@ namespace icl{
             //printf("TOP\n");
   	}
   
-  	if ((connections[i] == EAST) or (connections[i] == WEST)){
+  	if ((connections[i] == EAST) || (connections[i] == WEST)){
             if (dir == SIDE){
               side_counter++;
   
@@ -431,7 +431,8 @@ namespace icl{
   	}*/
   
       //target array
-      char target[width][height];
+      char **target = new char*[width];
+      for (int i = 0; i < width; ++i) target[i] = new char[height];
       int bigtargetB[16][16];
   
   
@@ -587,7 +588,9 @@ namespace icl{
         //actual[x][y]=i;
   
       }
-  
+
+      for (int i = 0; i < width; ++i) delete[] target[i];
+      delete[] target;
 
       return conversion;
     }

@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <vector>
 #include <string>
 
@@ -37,7 +38,7 @@ namespace icl{
   namespace utils{
     
     /// String Tokenizer Utility class  \ingroup UTILS
-    class StrTok{
+    class ICLUtils_API StrTok{
       public:
       
       /// Constructor

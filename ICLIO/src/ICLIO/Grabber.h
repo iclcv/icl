@@ -31,19 +31,20 @@
 
 #pragma once
 
-#include <string>
-#include <vector>
-#include <set>
-
-#include <ICLCore/ImgBase.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/SteppingRange.h>
 #include <ICLUtils/Function.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/Configurable.h>
 #include <ICLUtils/ProgArg.h>
+#include <ICLUtils/Uncopyable.h>
+#include <ICLCore/ImgBase.h>
 #include <ICLIO/GrabberDeviceDescription.h>
 #include <ICLIO/ImageUndistortion.h>
-#include <ICLUtils/Uncopyable.h>
+
+#include <string>
+#include <vector>
+#include <set>
 
 namespace icl {
   namespace io{
@@ -149,7 +150,7 @@ namespace icl {
         So far only a few grabbers provide this feature at all. If it
         is not provided, the registered callbacks will never be called.
     */
-    class Grabber : public utils::Uncopyable, public utils::Configurable{
+    class ICLIO_API Grabber : public utils::Uncopyable, public utils::Configurable{
         /// internal data class
         struct Data;
 
@@ -323,7 +324,7 @@ namespace icl {
     template<> inline bool Grabber::desiredUsed<core::depth>() const{ return (int)getDesired<core::depth>() != -1; }
     template<> inline bool Grabber::desiredUsed<utils::Size>() const{ return getDesired<utils::Size>() != utils::Size::null; }
 
-    class GrabberRegister : utils::Uncopyable {
+    class ICLIO_API GrabberRegister : utils::Uncopyable {
       private:
         utils::Mutex mutex;
 

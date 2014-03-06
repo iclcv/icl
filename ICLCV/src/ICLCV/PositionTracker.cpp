@@ -31,7 +31,7 @@
 #include <ICLCV/PositionTracker.h>
 #include <ICLCV/Extrapolator.h>
 #include <ICLCV/HungarianAlgorithm.h>
-#include <math.h>
+#include <cmath>
 #include <set>
 #include <limits>
 #include <cstdio>
@@ -662,8 +662,8 @@ namespace icl{
   
     // }}}
     
-    template class  PositionTracker<icl32s>;
-    template class  PositionTracker<icl32f>;
+    template ICLCV_API class PositionTracker<icl32s>;
+    template ICLCV_API class PositionTracker<icl32f>;
     //template class  PositionTracker<icl64f>;
   
   } // namespace cv

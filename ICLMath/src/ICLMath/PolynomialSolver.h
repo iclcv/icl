@@ -30,26 +30,23 @@
 
 #pragma once
 
-#include <float.h>
 #include <ICLUtils/BasicTypes.h>
+#include <float.h>
+
+#if (defined _MSC_VER && _MSC_VER < 1800)
+#pragma WARNING("This compiler does not support the functions ilogb and scalbln.")
+#else
 
 namespace icl{
   namespace math{
 
-    typedef double xreal;
+  #ifdef WIN32
+    typedef std::complex<double> xcomplex;
+    #define __real__(C) (C)._Val[0]
+    #define __imag__(C) (C)._Val[1]
+  #else
     typedef _Complex double xcomplex;
-    static const struct { double ZERO, INFIN; int MIN_EXP, MAX_EXP; }
-      xdata = { 0.0, DBL_MAX, DBL_MIN_EXP, DBL_MAX_EXP };
-    static xreal xnorm(xcomplex z) { return __real__(z)*__real(z)+__imag__(z)*__imag__(z);}
-    static xreal xabs(xcomplex z) { return sqrt(xnorm(z)); }
-    static xreal xroot(xreal x, int n) { return pow(x,1.0/n); }
-    static int xlogb(xcomplex z) { return ilogb(xnorm(z)) / 2; }
-    #define xbits(z) DBL_MANT_DIG
-    #define xeta(z) DBL_EPSILON
-    static void xscalbln (xcomplex *z, int e) {
-      __real__(*z) = scalbln(__real__(*z), e);
-      __imag__(*z) = scalbln(__imag__(*z), e);
-    }
+  #endif
 
     /****************************************************************************
      *
@@ -67,12 +64,27 @@ namespace icl{
      * The ICL developers applied only minor changes to this file
      ****************************************************************************/
 
+    typedef double xreal;
+    static const struct { double ZERO, INFIN; int MIN_EXP, MAX_EXP; }
+    xdata = { 0.0, DBL_MAX, DBL_MIN_EXP, DBL_MAX_EXP };
+    static xreal xnorm(xcomplex z) { return __real__(z)*__real__(z) + __imag__(z)*__imag__(z); }
+    static xreal xabs(xcomplex z) { return sqrt(xnorm(z)); }
+    static xreal xroot(xreal x, int n) { return pow(x, 1.0 / n); }
+    static int xlogb(xcomplex z) { return ilogb(xnorm(z)) / 2; }
+    #define xbits(z) DBL_MANT_DIG
+    #define xeta(z) DBL_EPSILON
+    static void xscalbln(xcomplex *z, int e) {
+      __real__(*z) = scalbln(__real__(*z), e);
+      __imag__(*z) = scalbln(__imag__(*z), e);
+    }
+
     // CAUCHY COMPUTES A LOWER BOUND ON THE MODULI OF THE ZEROS OF A
     // POLYNOMIAL - PT IS THE MODULUS OF THE COEFFICIENTS.
     //
     static xcomplex cauchy(const int deg, xcomplex *P)
     {
-      xreal x, xm, f, dx, df, tmp[deg+1];
+      xreal x, xm, f, dx, df;
+      xreal *tmp = new xreal[deg + 1];
 
       for(int i = 0; i<=deg; i++){ tmp[i] = xabs(P[i]); };
 
@@ -111,6 +123,8 @@ namespace icl{
         dx = f / df;
         x -= dx;				// Newton step
       }
+
+      delete tmp;
 
       return (xcomplex)(x);
     }
@@ -161,11 +175,14 @@ namespace icl{
     static void noshft(const int l1, int deg, xcomplex *P, xcomplex *H)
     {
       int i, j, jj;
-      xcomplex t;
+      xcomplex t, tmp;
 
       // compute the first H-polynomial as the (normed) derivative of P
-      for(i = 0; i < deg; i++)
-        H[i] = (P[i] * (deg-i)) / deg;
+      for (i = 0; i < deg; i++) {
+        tmp *= (deg - i);
+        tmp /= deg;
+        H[i] = tmp;
+      }
 
       for(jj = 1; jj <= l1; jj++) {
         if(xnorm(H[deg - 1]) > xeta(P[deg-1])*xeta(P[deg-1])* 10*10 * xnorm(P[deg - 1])) {
@@ -279,7 +296,11 @@ namespace icl{
       b = true;
       if(relstp < xeta(P[0])) tp = xeta(P[0]);
 
-      *s *= 1.0 + (1.0+1.0i)*sqrt(tp);
+  #ifdef WIN32
+      *s *= 1.0 + xcomplex(1.0, 1.0)*sqrt(tp);
+  #else
+      *s *= 1.0 + (1.0 + 1.0i)*sqrt(tp);
+  #endif
 
       Ps = polyev(deg, *s, P, p);
       for(j = 1; j <= 5; j++){
@@ -320,7 +341,7 @@ namespace icl{
        bool bol, conv;	 	       // boolean for convergence of stage 2
        bool test, pasd;
        xcomplex old_T, old_S, Ps, t;
-       xcomplex Tmp[deg+1];
+       xcomplex *Tmp = new xcomplex[deg+1];
 
        Ps = polyev(deg, *s, P, p);
        test = true;
@@ -371,6 +392,9 @@ namespace icl{
 
        // Attempt an iteration with final H polynomial from second stage
        conv = vrshft(10, deg, P, p, H, h, zero, s);
+
+       delete Tmp;
+
        return conv;
     }
 
@@ -378,9 +402,16 @@ namespace icl{
     //
     int cpoly(int degree, const xcomplex poly[], xcomplex Roots[])
     {
+  #ifdef WIN32
+      xcomplex PhiDiff = xcomplex(-0.069756473, 0.99756405);
+      xcomplex PhiRand = xcomplex(1.0, -1.0) /sqrt(2.0);
+  #else
       xcomplex PhiDiff = -0.069756473 + 0.99756405i;
-      xcomplex PhiRand = (1.0-1.0i) /sqrt(2.0);
-      xcomplex P[degree+1], H[degree+1], h[degree+1], p[degree+1], zero, s, bnd;
+      xcomplex PhiRand = (1.0 - 1.0i) / sqrt(2.0);
+  #endif
+      xcomplex *P = new xcomplex[degree + 1], *H = new xcomplex[degree + 1];
+      xcomplex *h = new xcomplex[degree + 1], *p = new xcomplex[degree + 1];
+      xcomplex zero, s, bnd;
       unsigned int conv = 0;
 
       while(poly[0] == xdata.ZERO) {
@@ -444,13 +475,18 @@ namespace icl{
         // if 9 shifts fail, the outer loop is repeated with another sequence of shifts
       }
 
+      delete P;
+      delete H;
+      delete h;
+      delete p;
+
       // The zerofinder has failed on two major passes
       // return empty handed with the number of roots found (less than the original degree)
       return degree - deg;
     }
 
-    // Wrapper function
-    //
+    // Wrapper function:
+    // This function calls the one made by Laurent Bartholdi
     int solve_poly(int degree, const double *in_real, const double *in_imag, double *out_real, double *out_imag)
     {
       int nroots;
@@ -458,15 +494,15 @@ namespace icl{
       xcomplex *roots = new xcomplex[degree+1];
 
       for (int i = 0; i <= degree; ++i) {
-        __real__(poly)[i] = in_real[i];
-        __imag__(poly)[i] = in_imag[i];
+        __real__(poly[i]) = in_real[i];
+        __imag__(poly[i]) = in_imag[i];
       }
 
       nroots = cpoly(degree, poly, roots);
 
       for (int i = 0; i < nroots; ++i) {
-        out_real[i] = __real__(roots)[i];
-        out_imag[i] = __imag__(roots)[i];
+        out_real[i] = __real__(roots[i]);
+        out_imag[i] = __imag__(roots[i]);
       }
 
       delete[] poly;
@@ -476,3 +512,5 @@ namespace icl{
     }
   }
 }
+
+#endif

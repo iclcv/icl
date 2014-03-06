@@ -30,16 +30,17 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/ConfigFile.h>
+#include <ICLUtils/StringUtils.h>
 #include <ICLCore/Parable.h>
 #include <ICLCore/ChromaClassifier.h>
 #include <ICLCore/ChromaAndRGBClassifier.h>
-#include <ICLUtils/ConfigFile.h>
-#include <ICLUtils/StringUtils.h>
 
 namespace icl{
   namespace qt{
     
-    class ChromaClassifierIO{
+    class ICLQt_API ChromaClassifierIO{
       public:
       static void save(const core::ChromaClassifier &cc, 
                        const std::string &filename, 

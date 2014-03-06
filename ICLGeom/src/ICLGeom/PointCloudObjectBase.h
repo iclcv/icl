@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/SceneObject.h>
 #include <ICLGeom/DataSegment.h>
 #include <ICLCore/ImgBase.h>
@@ -93,7 +94,7 @@ namespace icl{
         provides binary access to it's referenced data and run-time
         information about it's actual type and feature dimension.
     */
-    class PointCloudObjectBase : public SceneObject{
+    class ICLGeom_API PointCloudObjectBase : public SceneObject{
       protected:
       
       /// default color used to render points that have no color information
@@ -318,7 +319,7 @@ namespace icl{
     };
   
     /// overloaded ostream operator for PointCloudObjectBase::FeatureType
-    std::ostream &operator<<(std::ostream &s, const PointCloudObjectBase::FeatureType t);
+    ICLGeom_API std::ostream &operator<<(std::ostream &s, const PointCloudObjectBase::FeatureType t);
   } // namespace geom
 }
 

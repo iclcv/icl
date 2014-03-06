@@ -103,7 +103,7 @@ namespace icl{
     
     // }}}
     
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
     template<>
     void AffineOp::affine<icl8u> (const ImgBase *poSrc, ImgBase *poDst) {
       // {{{ open

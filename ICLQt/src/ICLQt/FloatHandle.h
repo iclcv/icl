@@ -30,7 +30,9 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLQt/GUIHandle.h>
+
 /** \cond */
 class QLineEdit;
 /** \endcond */
@@ -39,7 +41,7 @@ namespace icl{
   namespace qt{
     
     /// Class for handling "float" textfield components \ingroup HANDLES
-    class FloatHandle : public GUIHandle<QLineEdit> {
+    class ICLQt_API FloatHandle : public GUIHandle<QLineEdit> {
       public:
       
       /// Create an empty handle

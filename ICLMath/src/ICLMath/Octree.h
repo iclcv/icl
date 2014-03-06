@@ -31,14 +31,15 @@
 #pragma once
 
 
-#include <algorithm>
-#include <set>
-
-#include <ICLMath/FixedVector.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/VisualizationDescription.h>
 #include <ICLUtils/Rect32f.h>
 #include <ICLUtils/Range.h>
 #include <ICLUtils/StringUtils.h>
+#include <ICLMath/FixedVector.h>
+
+#include <algorithm>
+#include <set>
 
 namespace icl{
 

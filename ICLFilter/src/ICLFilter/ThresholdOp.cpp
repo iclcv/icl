@@ -142,7 +142,7 @@ namespace icl {
   
   
      
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
      // {{{ ippi-function call templates
   
      template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, T)>
@@ -257,7 +257,7 @@ namespace icl {
   #define ICL_INSTANTIATE_DEPTH(T) \
     void ThresholdOp::tlt(const Img ## T *src, Img ## T *dst, icl ## T t){\
       ThresholdOp::tltVal(src, dst, t, t);}
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
     ICL_INSTANTIATE_ALL_FB_DEPTHS
   #else
     ICL_INSTANTIATE_ALL_DEPTHS
@@ -267,7 +267,7 @@ namespace icl {
   #define ICL_INSTANTIATE_DEPTH(T) \
     void ThresholdOp::tgt(const Img ## T *src, Img ## T *dst, icl ## T t){\
       ThresholdOp::tgtVal(src, dst, t, t);}
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
     ICL_INSTANTIATE_ALL_FB_DEPTHS
   #else
     ICL_INSTANTIATE_ALL_DEPTHS
@@ -277,7 +277,7 @@ namespace icl {
   #define ICL_INSTANTIATE_DEPTH(T) \
     void ThresholdOp::tltgt(const Img ## T *src, Img ## T *dst, icl ## T tMin, icl ## T tMax){\
       ThresholdOp::tltgtVal(src, dst, tMin,tMin, tMax,tMax);}
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
     ICL_INSTANTIATE_ALL_FB_DEPTHS
   #else
     ICL_INSTANTIATE_ALL_DEPTHS
@@ -291,7 +291,7 @@ namespace icl {
   #define ICL_INSTANTIATE_DEPTH(T) \
     void ThresholdOp::tltVal(const Img ##T *src, Img ## T *dst, icl ## T t, icl ## T val){\
       fallbackThreshold (src, dst, ThreshOpLTVal<icl ## T>(t,val));}
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
     ICL_INSTANTIATE_ALL_FB_DEPTHS
   #else
     ICL_INSTANTIATE_ALL_DEPTHS
@@ -301,7 +301,7 @@ namespace icl {
   #define ICL_INSTANTIATE_DEPTH(T) \
     void ThresholdOp::tgtVal(const Img ##T *src, Img ## T *dst, icl ## T t, icl ## T val){\
       fallbackThreshold (src, dst, ThreshOpGTVal<icl ## T>(t,val));}
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
     ICL_INSTANTIATE_ALL_FB_DEPTHS
   #else
     ICL_INSTANTIATE_ALL_DEPTHS
@@ -311,7 +311,7 @@ namespace icl {
   #define ICL_INSTANTIATE_DEPTH(T) \
     void ThresholdOp::tltgtVal(const Img ## T *src, Img ## T *dst, icl ## T tMin, icl ## T minVal, icl ##T tMax, icl ## T maxVal){\
         fallbackThreshold (src, dst, ThreshOpLTGTVal<icl ## T>(tMin,minVal,tMax,maxVal));}
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
     ICL_INSTANTIATE_ALL_FB_DEPTHS
   #else
     ICL_INSTANTIATE_ALL_DEPTHS

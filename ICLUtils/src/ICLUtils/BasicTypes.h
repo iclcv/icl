@@ -30,24 +30,24 @@
 
 #pragma once
 
-#ifdef HAVE_IPP
-#include <ipp.h>
-
-#if IPP_VERSION_MAJOR == 6
-#define HAVE_IPP_6X
-#endif
-
-#endif
-
+#include <ICLUtils/CompatMacros.h>
 #include <stdint.h>
 #include <complex>
 
+#ifdef ICL_HAVE_IPP
+#include <ipp.h>
+
+#if IPP_VERSION_MAJOR == 6
+#define ICL_HAVE_IPP_6X
+#endif
+
+#endif
 
 namespace icl {
   
   // here, we do not use an extra utils namespace
   
-#ifdef HAVE_IPP
+#ifdef ICL_HAVE_IPP
   /// 64Bit floating point type for the ICL \ingroup BASIC_TYPES
   typedef Ipp64f icl64f;
   

@@ -30,12 +30,13 @@
 
 #pragma once
 
-#include <string>
-#include <QtCore/QString>
-#include <QtGui/QWidget>
+#include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/FPSEstimator.h>
 #include <ICLQt/GUIHandle.h>
 #include <ICLQt/CompabilityLabel.h>
-#include <ICLUtils/FPSEstimator.h>
+#include <QtCore/QString>
+#include <QtGui/QWidget>
+#include <string>
 
 namespace icl{
   namespace qt{

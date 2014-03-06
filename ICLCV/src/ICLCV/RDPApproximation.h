@@ -30,9 +30,10 @@
 
 #pragma once
 
-#include <ICLCore/Img.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Point.h>
 #include <ICLUtils/Point32f.h>
+#include <ICLCore/Img.h>
 #include <ICLCore/Types.h>
 #include <vector>
 
@@ -60,7 +61,7 @@ namespace icl{
       - <b>search_iters</b>
         denotes the number of steps to find the two farthest points of a polygon
     **/
-    class RDPApproximation {
+    class ICLCV_API RDPApproximation {
 
       struct ChainPoint : utils::Point32f {
         ChainPoint *prev;

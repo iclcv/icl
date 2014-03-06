@@ -30,7 +30,9 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Random.h>
+#include <ICLUtils/Point32f.h>
 #include <algorithm>
 
 namespace icl{
@@ -86,7 +88,7 @@ namespace icl{
       public:
 
       /// restult type
-      struct Result{
+      struct ICLMath_API Result{
         const std::vector<Vector> &centers; //!< final list of centroids
         const std::vector<int> &nums;       //!< final number of points for each centroid
         const std::vector<Scalar> &errors;  //!< average quantisation errors
@@ -165,13 +167,13 @@ namespace icl{
 
     /** \cond */
     template<>
-    float KMeans<Point32f,float>::dist(const Point32f &a, const Point32f &b){
+    float KMeans<utils::Point32f, float>::dist(const utils::Point32f &a, const utils::Point32f &b){
       return a.distanceTo(b);
     }
       
     template<>
-    void KMeans<Point32f,float>::setVectorNull(Point32f &p){
-      p = Point32f::null;
+    void KMeans<utils::Point32f, float>::setVectorNull(utils::Point32f &p){
+      p = utils::Point32f::null;
     }
     /** \endcond */
 

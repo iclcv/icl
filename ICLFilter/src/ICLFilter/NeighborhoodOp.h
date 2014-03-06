@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/UnaryOp.h>
 
 namespace icl {
@@ -55,7 +56,7 @@ namespace icl {
         simultaneous operations running on the source image within different
         threads do not interfere.
     */
-    class NeighborhoodOp : public UnaryOp {
+    class ICLFilter_API NeighborhoodOp : public UnaryOp {
       public:
       
       ///Destructor

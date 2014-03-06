@@ -30,10 +30,11 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/ImgBase.h>
+#include <ICLIO/GenericGrabber.h>
 #include <ICLQt/ContainerGUIComponents.h>
 #include <QtGui/QSplitter>
-#include <ICLIO/GenericGrabber.h>
 
 namespace icl{
   namespace qt{
@@ -84,7 +85,7 @@ namespace icl{
             even sometimes mess up already existent devices.
         \image html camcfg.png "The CamCfgWiget used for the icl-camcfg application"
     */
-    class CamCfgWidget : public QWidget{
+    class ICLQt_API CamCfgWidget : public QWidget{
       class Data;  //!< internal data class
       Data* data; //!< internal data storage
   
@@ -92,8 +93,9 @@ namespace icl{
       /// Creates a full Configuration Widget with device and preview widget
       CamCfgWidget(const std::string &deviceFilter="",QWidget *parent=0);
       
+      // TODO: where is the definition for this?
       /// Creates a Configuration Widget for a single device
-      CamCfgWidget(const std::string &devType="", const std::string &devID="", QWidget *parent=0); 
+      //CamCfgWidget(const std::string &devType="", const std::string &devID="", QWidget *parent=0); 
       
       /// Destructor
       ~CamCfgWidget();

@@ -48,7 +48,7 @@
 #include <ICLFilter/LUTOp.h>
 #include <ICLUtils/Timer.h>
 
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
 #include <ICLQt/QImageConverter.h>
 #include <QtGui/QPainter>
 #include <QtGui/QImage>
@@ -94,7 +94,11 @@ namespace icl{
   
     std::string execute_process(const std::string &command){
       char buf[128];
-      FILE *f = popen(command.c_str(),"r");
+#ifdef ICL_SYSTEM_WINDOWS
+      FILE *f = _popen(command.c_str(),"r");
+#else
+      FILE *f = popen(command.c_str(), "r");
+#endif
       std::ostringstream out;
       while( !feof(f) ){
         memset(buf,0,128);
@@ -107,7 +111,7 @@ namespace icl{
     }
   
   
-  #ifdef HAVE_QT
+  #ifdef ICL_HAVE_QT
     namespace{
 
       struct SimpleQImageWidget : public QGraphicsView{
@@ -921,7 +925,11 @@ namespace icl{
         saveColorAndFill();
         color(255,0,0);
         fill(0,0,0,0);
+#ifdef ICL_SYSTEM_WINDOWS
+  #pragma NOTE("unable to visualize ROI in show!")
+#else
   #warning "unable to visualize ROI in show!"
+#endif
         //      rect(Ti,Ti.getROI());
         restoreColorAndFill();
         Ti.setFullROI();
@@ -954,20 +962,20 @@ namespace icl{
     // }}}
   
   #define ICL_INSTANTIATE_DEPTH(D)                                   \
-    template Img<icl##D> zeros(int,int,int);                         \
-    template Img<icl##D> ones(int,int,int);                          \
-    template Img<icl##D> load(const std::string&);                   \
-    template Img<icl##D> load(const std::string&,format);            \
-    template Img<icl##D> create(const std::string&,format);          \
-    template Img<icl##D> grab(const std::string&,const std::string&, \
+    template ICLQt_API Img<icl##D> zeros(int,int,int);                         \
+    template ICLQt_API Img<icl##D> ones(int, int, int);                          \
+    template ICLQt_API Img<icl##D> load(const std::string&);                   \
+    template ICLQt_API Img<icl##D> load(const std::string&, format);            \
+    template ICLQt_API Img<icl##D> create(const std::string&, format);          \
+    template ICLQt_API Img<icl##D> grab(const std::string&, const std::string&, \
                               const Size&,format,bool);              \
-    template Img<icl##D> filter(const Img<icl##D>&,                  \
+    template ICLQt_API Img<icl##D> filter(const Img<icl##D>&,                  \
                                 const std::string&);                 \
-    template Img<icl##D> blur(const Img<icl##D>&,int);               \
-    template Img<icl##D> copy(const Img<icl##D>&);                   \
-    template Img<icl##D> copyroi(const Img<icl##D>&);                \
-    template void print(const Img<icl##D>&);                         \
-    template Img<icl##D> norm(const Img<icl##D>&);
+    template ICLQt_API Img<icl##D> blur(const Img<icl##D>&,int);               \
+    template ICLQt_API Img<icl##D> copy(const Img<icl##D>&);                   \
+    template ICLQt_API Img<icl##D> copyroi(const Img<icl##D>&);                \
+    template ICLQt_API void print(const Img<icl##D>&);                         \
+    template ICLQt_API Img<icl##D> norm(const Img<icl##D>&);
     ICL_INSTANTIATE_ALL_DEPTHS
   #undef ICL_INSTANTIATE_DEPTH
   
@@ -1358,17 +1366,17 @@ namespace icl{
   
     // }}}
   
-    template ImgQ binOR<icl8u>(const ImgQ&, const ImgQ&);
-    template ImgQ binOR<icl16s>(const ImgQ&, const ImgQ&);
-    template ImgQ binOR<icl32s>(const ImgQ&, const ImgQ&);
+    template ICLQt_API ImgQ binOR<icl8u>(const ImgQ&, const ImgQ&);
+    template ICLQt_API ImgQ binOR<icl16s>(const ImgQ&, const ImgQ&);
+    template ICLQt_API ImgQ binOR<icl32s>(const ImgQ&, const ImgQ&);
   
-    template ImgQ binAND<icl8u>(const ImgQ&, const ImgQ&);
-    template ImgQ binAND<icl16s>(const ImgQ&, const ImgQ&);
-    template ImgQ binAND<icl32s>(const ImgQ&, const ImgQ&);
+    template ICLQt_API ImgQ binAND<icl8u>(const ImgQ&, const ImgQ&);
+    template ICLQt_API ImgQ binAND<icl16s>(const ImgQ&, const ImgQ&);
+    template ICLQt_API ImgQ binAND<icl32s>(const ImgQ&, const ImgQ&);
   
-    template ImgQ binXOR<icl8u>(const ImgQ&, const ImgQ&);
-    template ImgQ binXOR<icl16s>(const ImgQ&, const ImgQ&);
-    template ImgQ binXOR<icl32s>(const ImgQ&, const ImgQ&);
+    template ICLQt_API ImgQ binXOR<icl8u>(const ImgQ&, const ImgQ&);
+    template ICLQt_API ImgQ binXOR<icl16s>(const ImgQ&, const ImgQ&);
+    template ICLQt_API ImgQ binXOR<icl32s>(const ImgQ&, const ImgQ&);
   
   
     ImgQ operator,(const ImgQ &a, const ImgQ &b){
@@ -1801,7 +1809,11 @@ namespace icl{
     /// draws a polygon (constructed out of linestrips
     void polygon(ImgQ &image, const std::vector<Point> &corners){
       ICLASSERT_THROW(corners.size() >= 3, ICLException("qt::polygon needs at least 3 points"));
-#warning "qt::polygon is still buggy"
+#ifdef ICL_SYSTEM_WINDOWS
+  #pragma NOTE("qt::polygon is still buggy")
+#else
+  #warning "qt::polygon is still buggy"
+#endif
       float c[4],f[4];
       colorinfo(c,f);
       if(!f[3]) {
@@ -1902,7 +1914,7 @@ namespace icl{
     void text(ImgQ &image, int xoffs, int yoffs, const string &text){
       // {{{ open
       // first rendering the text 
-  #ifdef HAVE_QT
+  #ifdef ICL_HAVE_QT
       int n = 0;
       char ** ppc = 0;
       if(!qApp){

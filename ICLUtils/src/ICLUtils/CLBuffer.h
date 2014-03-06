@@ -27,11 +27,12 @@
 ** Excellence Initiative.                                          **
 **                                                                 **
 ********************************************************************/
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 #pragma once
 
-#include <string>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/CLException.h>
+#include <string>
 
 /** \cond */
 namespace cl{
@@ -47,7 +48,7 @@ namespace icl {
     /// Wrapper for an OpenCL Buffer
     /** Valid CLBuffer instances can only be created by a CLProgram instance.
         @see CLProgram for more details */
-    class CLBuffer{
+    class ICLUtils_API CLBuffer{
       struct Impl; //!< internal hidden implementation type
       Impl *impl;  //!< internal implemetation
       

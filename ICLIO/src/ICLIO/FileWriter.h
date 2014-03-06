@@ -30,11 +30,12 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
+#include <ICLCore/Types.h>
 #include <ICLIO/ImageOutput.h>
 #include <ICLIO/FilenameGenerator.h>
 #include <ICLIO/FileWriterPlugin.h>
-#include <ICLCore/Types.h>
 #include <string>
 #include <map>
 
@@ -123,7 +124,7 @@ namespace icl{
         }
         \endcode
     **/
-    class FileWriter : public ImageOutput{
+    class ICLIO_API FileWriter : public ImageOutput{
       public:
       /// initializer class
       friend class FileWriterPluginMapInitializer;

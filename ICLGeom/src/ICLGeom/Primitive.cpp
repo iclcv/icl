@@ -28,7 +28,7 @@
 **                                                                 **
 ********************************************************************/
 
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
 #include <QtGui/QFontMetrics>
 #include <QtCore/QRectF>
 #include <QtGui/QImage>
@@ -37,9 +37,14 @@
 #include <ICLCore/CCFunctions.h>
 #endif
 
-#ifdef ICL_SYSTEM_APPLE
+#ifdef APPLE
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
+#elif WIN32
+#define NOMINMAX
+#include <Windows.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 #else
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -65,7 +70,7 @@ namespace icl{
     }
   
     Img8u TextPrimitive::create_texture(const std::string &text,const GeomColor &color, int textSize){
-  #ifdef HAVE_QT
+  #ifdef ICL_HAVE_QT
       int r = color[0];
       int g = color[1];
       int b = color[2];

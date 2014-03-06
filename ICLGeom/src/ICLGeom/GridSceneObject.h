@@ -30,10 +30,15 @@
 
 #pragma once
 
-#ifndef HAVE_OPENGL
-#warning "this header must not be included if HAVE_OPENGL is not defined"
+#ifndef ICL_HAVE_OPENGL
+#if WIN32
+#pragma WARNING("this header must not be included if ICL_HAVE_OPENGL is not defined")
+#else
+#warning "this header must not be included if ICL_HAVE_OPENGL is not defined"
+#endif
 #else
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/SceneObject.h>
 
 
@@ -44,7 +49,7 @@ namespace icl{
     /** The GridSceneObject implements a 2D grid in 3D space. The grid consits of
         2D array of normal vectors. All attributes remain default SceneObject attributs.
         The grid cells are created as quads. */
-    class GridSceneObject : public SceneObject{
+    class ICLGeom_API GridSceneObject : public SceneObject{
       int nXCells; //!< grid width
       int nYCells; //!< grid height
       

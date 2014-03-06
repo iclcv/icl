@@ -77,7 +77,7 @@ void writeLine(vector<unsigned char>::iterator &it, int len, bool isLastRow){
 int main(int n, char **ppc){
   
   
-  if(n!=2) return usage();
+  if(n!=3) return usage();
     
   FILE *f = fopen(ppc[1],"rb");
   if(!f) return fileNotFound(ppc[1]);

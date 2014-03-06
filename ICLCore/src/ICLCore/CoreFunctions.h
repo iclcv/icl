@@ -31,11 +31,6 @@
 
 #pragma once
 
-#include <string>
-#include <cstring>
-#include <iostream>
-#include <vector>
-
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/ClippedCast.h>
@@ -44,6 +39,11 @@
 
 #include <ICLCore/Types.h>
 #include <ICLCore/ImgParams.h>
+
+#include <string>
+#include <cstring>
+#include <iostream>
+#include <vector>
 
 /// The ICL-namespace
 /** This namespace is dedicated for ICLCore- and all additional Computer-Vision
@@ -95,7 +95,7 @@ namespace icl {
       @return the new ImgBase* with underlying Img<Type>, where
               Type is depending on the first parameter eDepth
     **/
-    ImgBase *imgNew(depth d=depth8u, const ImgParams &params = ImgParams::null);
+    ICLCore_API ImgBase *imgNew(depth d = depth8u, const ImgParams &params = ImgParams::null);
     
     /// creates a new Img (see the above function for more details) \ingroup IMAGE
     inline ImgBase *imgNew(depth d, const utils::Size& size, format fmt, 
@@ -134,10 +134,10 @@ namespace icl {
         @param eDepth destination depth of the image
         @return the new image (this can be used e.g. if ppoImage is NULL)
     **/
-    ImgBase *ensureDepth(ImgBase **ppoImage, depth eDepth);
+    ICLCore_API ImgBase *ensureDepth(ImgBase **ppoImage, depth eDepth);
   
     /// ensures that an image has given depth and parameters \ingroup IMAGE
-    ImgBase *ensureCompatible(ImgBase **dst, depth d,const ImgParams &params);
+    ICLCore_API ImgBase *ensureCompatible(ImgBase **dst, depth d, const ImgParams &params);
   
     /// ensures that an image has given depth, size, number of channels and ROI \ingroup IMAGE
     /** If the given pointer to the destination image is 0, a new image with appropriate
@@ -163,7 +163,7 @@ namespace icl {
     /** The given format must be compatible to the given channel count.
         <b>If not:</b> The format is set to "formatMatrix" and an exception is thrown.
     */
-    ImgBase *ensureCompatible(ImgBase **dst, depth d, const utils::Size &size, int channels, format fmt, const utils::Rect &roi=utils::Rect::null);
+    ICLCore_API ImgBase *ensureCompatible(ImgBase **dst, depth d, const utils::Size &size, int channels, format fmt, const utils::Rect &roi = utils::Rect::null);
     
     /// ensures that the destination image gets same depth, size, channel count, depth, format and ROI as source image \ingroup IMAGE
     /** If the given pointer to the destination image is 0, a new image is created as a deep copy of poSrc.
@@ -176,29 +176,29 @@ namespace icl {
         @param src  source image. All params of this image are extracted to define
                       the destination parameters for *ppoDst.  
     **/
-    ImgBase *ensureCompatible(ImgBase **dst, const ImgBase *src);
+    ICLCore_API ImgBase *ensureCompatible(ImgBase **dst, const ImgBase *src);
   
     /// determines the count of channels, for each color format \ingroup GENERAL
     /** @param fmt source format which channel count should be returned
         @return channel count of format eFormat
     **/
-    int getChannelsOfFormat(format fmt);
+    ICLCore_API int getChannelsOfFormat(format fmt);
   
     /// getDepth<T> returns to depth enum associated to type T \ingroup GENERAL
     template<class T> inline depth getDepth();
   
   
     /// puts a string representation of format into the given stream
-    std::ostream &operator<<(std::ostream &s,const format &f);
+    ICLCore_API std::ostream &operator<<(std::ostream &s, const format &f);
     
     /// puts a string representation of depth into the given stream
-    std::ostream &operator<<(std::ostream &s,const depth &d);
+    ICLCore_API std::ostream &operator<<(std::ostream &s, const depth &d);
   
     /// puts a string representation of format into the given stream
-    std::istream &operator>>(std::istream &s, format &f);
+    ICLCore_API std::istream &operator>>(std::istream &s, format &f);
     
     /// puts a string representation of depth into the given stream
-    std::istream &operator>>(std::istream &s, depth &d);
+    ICLCore_API std::istream &operator>>(std::istream &s, depth &d);
   
     
     /** \cond */ 
@@ -209,7 +209,7 @@ namespace icl {
     /** \endcond  */
    
     /// return sizeof value for the given depth type \ingroup GENERAL
-    unsigned int getSizeOf(depth eDepth);
+    ICLCore_API unsigned int getSizeOf(depth eDepth);
   
     /// moves data from source to destination array (no casting possible) \ingroup GENERAL
     template <class T>
@@ -219,7 +219,7 @@ namespace icl {
     } 
   
   
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
     /** \cond */ 
     template <>
     inline void copy<icl8u>(const icl8u *poSrcStart, const icl8u *poSrcEnd, icl8u *poDst){
@@ -253,7 +253,7 @@ namespace icl {
       std::transform(poSrcStart,poSrcEnd,poDst,utils::clipped_cast<srcT,dstT>);
     }
     
-  #ifdef HAVE_IPP 
+  #ifdef ICL_HAVE_IPP 
     /** \cond */ 
     /// from icl8u functions
     template<> inline void convert<icl8u,icl32f>(const icl8u *poSrcStart,const icl8u *poSrcEnd, icl32f *poDst){
@@ -303,31 +303,31 @@ namespace icl {
       ippsConvert_64f32s_Sfs(poSrcStart,poDst,(poSrcEnd-poSrcStart),ippRndNear,0);
     }
     /** \endcond */
-  #elif defined __ICL_SSE2__
+  #elif defined HAVE_SSE2
     /** \cond */
 
     /// from icl8u functions
-    template<> void convert<icl8u,icl32f>(const icl8u *poSrcStart,const icl8u *poSrcEnd, icl32f *poDst);
+    template<> ICLCore_API void convert<icl8u,icl32f>(const icl8u *poSrcStart,const icl8u *poSrcEnd, icl32f *poDst);
 
     /// from icl16s functions
-    template<> void convert<icl16s,icl32s>(const icl16s *poSrcStart,const icl16s *poSrcEnd, icl32s *poDst);
-    template<> void convert<icl16s,icl32f>(const icl16s *poSrcStart,const icl16s *poSrcEnd, icl32f *poDst);
-    template<> void convert<icl16s,icl64f>(const icl16s *poSrcStart,const icl16s *poSrcEnd, icl64f *poDst);
+    template<> ICLCore_API void convert<icl16s,icl32s>(const icl16s *poSrcStart,const icl16s *poSrcEnd, icl32s *poDst);
+    template<> ICLCore_API void convert<icl16s,icl32f>(const icl16s *poSrcStart,const icl16s *poSrcEnd, icl32f *poDst);
+    template<> ICLCore_API void convert<icl16s,icl64f>(const icl16s *poSrcStart,const icl16s *poSrcEnd, icl64f *poDst);
     
     // from icl32s functions
-    template<> void convert<icl32s,icl16s>(const icl32s *poSrcStart,const icl32s *poSrcEnd, icl16s *poDst);
-    template<> void convert<icl32s,icl32f>(const icl32s *poSrcStart,const icl32s *poSrcEnd, icl32f *poDst);
-    template<> void convert<icl32s,icl64f>(const icl32s *poSrcStart,const icl32s *poSrcEnd, icl64f *poDst);
+    template<> ICLCore_API void convert<icl32s,icl16s>(const icl32s *poSrcStart,const icl32s *poSrcEnd, icl16s *poDst);
+    template<> ICLCore_API void convert<icl32s,icl32f>(const icl32s *poSrcStart,const icl32s *poSrcEnd, icl32f *poDst);
+    template<> ICLCore_API void convert<icl32s,icl64f>(const icl32s *poSrcStart,const icl32s *poSrcEnd, icl64f *poDst);
   
     // from icl32f functions
-    template <> void convert<icl32f,icl8u>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl8u *poDst);
-    template <> void convert<icl32f,icl16s>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl16s *poDst);
-    template <> void convert<icl32f,icl32s>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl32s *poDst);
-    template <> void convert<icl32f,icl64f>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl64f *poDst);
+    template <> ICLCore_API void convert<icl32f,icl8u>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl8u *poDst);
+    template <> ICLCore_API void convert<icl32f,icl16s>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl16s *poDst);
+    template <> ICLCore_API void convert<icl32f,icl32s>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl32s *poDst);
+    template <> ICLCore_API void convert<icl32f,icl64f>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl64f *poDst);
   
     // from icl64f functions 
-    template<> void convert<icl64f,icl32f>(const icl64f *poSrcStart,const icl64f *poSrcEnd, icl32f *poDst);
-    template <> void convert<icl64f,icl32s>(const icl64f *poSrcStart,const icl64f *poSrcEnd, icl32s *poDst);
+    template<> ICLCore_API void convert<icl64f,icl32f>(const icl64f *poSrcStart,const icl64f *poSrcEnd, icl32f *poDst);
+    template <> ICLCore_API void convert<icl64f,icl32s>(const icl64f *poSrcStart,const icl64f *poSrcEnd, icl32s *poDst);
 
     /** \endcond */
   #endif 
@@ -341,7 +341,7 @@ namespace icl {
         @param maxVal return value for the maximum
     **/
     template<class T>
-    inline void getMinAndMax(T a, T b, T c, T &minVal, T &maxVal){
+    ICLCore_API inline void getMinAndMax(T a, T b, T c, T &minVal, T &maxVal){
       if(a<b) {
         minVal=a;
         maxVal=b;
@@ -366,7 +366,7 @@ namespace icl {
 	@param roiOnly
         @return mean value of image or image channel (optionally: roi)
     */
-    std::vector<double> mean(const ImgBase *poImg, int iChannel=-1, bool roiOnly=false);
+    ICLCore_API std::vector<double> mean(const ImgBase *poImg, int iChannel = -1, bool roiOnly = false);
 
     /// Compute the variance value of an image a with given mean \ingroup MATH
     /** @param poImg input imge
@@ -376,7 +376,7 @@ namespace icl {
 	@param roiOnly
         @return The variance value form the vector
     */
-    std::vector<double> variance(const ImgBase *poImg, const std::vector<double> &mean, bool empiricMean=true,  int iChannel=-1, bool roiOnly=false);
+    ICLCore_API std::vector<double> variance(const ImgBase *poImg, const std::vector<double> &mean, bool empiricMean = true, int iChannel = -1, bool roiOnly = false);
     
     /// Compute the variance value of an image a \ingroup MATH
     /** @param poImg input imge
@@ -384,14 +384,14 @@ namespace icl {
 	@param roiOnly 
         @return The variance value form the vector
         */
-    std::vector<double> variance(const ImgBase *poImg, int iChannel=-1, bool roiOnly=false); 
+    ICLCore_API std::vector<double> variance(const ImgBase *poImg, int iChannel = -1, bool roiOnly = false);
 
     /// Compute the std::deviation of an image
     /** @param poImage input image
         @param iChannel channel index (all channels if -1)
         @param roiOnly
         */
-    std::vector<double> stdDeviation(const ImgBase *poImage, int iChannel=-1, bool roiOnly = false);
+    ICLCore_API std::vector<double> stdDeviation(const ImgBase *poImage, int iChannel = -1, bool roiOnly = false);
     
     /// Compute the std::deviation of an image with given channel means
     /** @param poImage input image
@@ -400,7 +400,7 @@ namespace icl {
         @param iChannel channel index (all channels if -1)
 	@param roiOnly
     */
-    std::vector<double> stdDeviation(const ImgBase *poImage, const std::vector<double> mean, bool empiricMean=true, int iChannel=-1, bool roiOnly = false);
+    ICLCore_API std::vector<double> stdDeviation(const ImgBase *poImage, const std::vector<double> mean, bool empiricMean = true, int iChannel = -1, bool roiOnly = false);
   
     /// Calculates mean and standard deviation of given image simultanously
     /** @param image input image
@@ -408,14 +408,14 @@ namespace icl {
 	@param roiOnly
         @return vector v of pairs p with p.first = mean and p.second = stdDev v[i] containing i-th channel's results
     */
-    std::vector< std::pair<double,double> > meanAndStdDev(const ImgBase *image, int iChannel=-1, bool roiOnly = false);
+    ICLCore_API std::vector< std::pair<double, double> > meanAndStdDev(const ImgBase *image, int iChannel = -1, bool roiOnly = false);
     
     
     /// computes the color histogramm of given image channel                               
-    std::vector<int> channelHisto(const ImgBase *image,int channel, int levels=256, bool roiOnly=false);
+    ICLCore_API std::vector<int> channelHisto(const ImgBase *image, int channel, int levels = 256, bool roiOnly = false);
     
     /// computes the color histogramm of given image
-    std::vector<std::vector<int> > hist(const ImgBase *image, int levels=256, bool roiOnly=false);
+    ICLCore_API std::vector<std::vector<int> > hist(const ImgBase *image, int levels = 256, bool roiOnly = false);
   
   } // namespace core
 } // namespace icl

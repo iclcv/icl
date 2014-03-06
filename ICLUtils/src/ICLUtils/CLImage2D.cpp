@@ -27,7 +27,7 @@
  ** Excellence Initiative.                                          **
  **                                                                 **
  ********************************************************************/
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 
 #define __CL_ENABLE_EXCEPTIONS
 #include <CL/cl.hpp>

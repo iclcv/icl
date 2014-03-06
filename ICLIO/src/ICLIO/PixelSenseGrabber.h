@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLIO/Grabber.h>
 
 namespace icl{
@@ -72,25 +73,25 @@ namespace icl{
       };
       
       /// default grab function
-      virtual const core::ImgBase* acquireImage();
+      ICLIO_API virtual const core::ImgBase* acquireImage();
       
       /// Create a PixelSenseGrabber with given max. fps count
-      PixelSenseGrabber(float maxFPS=30);
+      ICLIO_API PixelSenseGrabber(float maxFPS = 30);
       
       /// destructor
-      ~PixelSenseGrabber();
+      ICLIO_API ~PixelSenseGrabber();
 
       /// this utility method can be used to extract the meta-data of a grabbed image
-      static std::vector<Blob> extractBlobMetaData(const core::ImgBase *image);
+      ICLIO_API static std::vector<Blob> extractBlobMetaData(const core::ImgBase *image);
     };
 
     /// overloaded ostream operator for the PixelSenseGrabber::Blob type
     /** concatenates relevant information using a comma delimiter */
-    std::ostream &operator<<(std::ostream &str, const PixelSenseGrabber::Blob &b);
+    ICLIO_API std::ostream &operator<<(std::ostream &str, const PixelSenseGrabber::Blob &b);
     
     /// overloaded istream operator for the PixelSenseGrabber::Blob type
     /** relevant information is assumed to be comma delimited */
-    std::istream &operator>>(std::istream &str, PixelSenseGrabber::Blob &b);
+    ICLIO_API std::istream &operator>>(std::istream &str, PixelSenseGrabber::Blob &b);
       
   } // namespace io
 }

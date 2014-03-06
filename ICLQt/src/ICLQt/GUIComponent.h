@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Range.h>
 #include <ICLUtils/Size.h>
@@ -43,7 +44,7 @@ namespace icl{
     class GUIComponent{
     
       /// friend container class
-      friend class ContainerGUIComponent;
+      friend struct ContainerGUIComponent;
       
       /// friend GUI class
       friend class GUI;

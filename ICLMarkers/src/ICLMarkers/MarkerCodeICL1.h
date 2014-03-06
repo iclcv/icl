@@ -30,9 +30,10 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/BasicTypes.h>
 #include <vector>
 #include <iostream>
-#include <ICLUtils/BasicTypes.h>
 
 namespace icl{
   namespace markers{
@@ -74,7 +75,7 @@ namespace icl{
         \f[ n_1 = id; \f]
         
     */
-    struct MarkerCodeICL1{
+    struct ICLMarkers_API MarkerCodeICL1{
       /// maximum amount of child-child-regions
       static const int P = 5;
       /// related to maximum child-child-region count base for ID computation
@@ -121,7 +122,7 @@ namespace icl{
     };
     
     /// ostream operator for MarkerCodeICL1
-    std::ostream &operator<<(std::ostream &str, const MarkerCodeICL1 &c);
+    ICLMarkers_API std::ostream &operator<<(std::ostream &str, const MarkerCodeICL1 &c);
   
   
   } // namespace markers

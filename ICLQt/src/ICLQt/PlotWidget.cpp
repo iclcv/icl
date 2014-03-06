@@ -171,9 +171,9 @@ namespace icl{
   
     
   #define ICL_INSTANTIATE_DEPTH(D)                                        \
-    template void PlotWidget::bars<icl##D>(const icl##D*,int,int);        \
-    template void PlotWidget::series<icl##D>(const icl##D*,int,int);      \
-    template void PlotWidget::scatter<icl##D>(const icl##D*, const icl##D*, int,int,int,bool);
+    template ICLQt_API void PlotWidget::bars<icl##D>(const icl##D*,int,int);        \
+    template ICLQt_API void PlotWidget::series<icl##D>(const icl##D*, int, int);      \
+    template ICLQt_API void PlotWidget::scatter<icl##D>(const icl##D*, const icl##D*, int, int, int, bool);
     
     ICL_INSTANTIATE_ALL_DEPTHS;
   #undef ICL_INSTANTIATE_DEPTH

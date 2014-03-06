@@ -107,7 +107,7 @@ namespace icl{
     }
   
     void LUTOp::reduceBits(const Img8u *src, Img8u *dst, icl8u n){
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
       ICLASSERT_RETURN( src && dst );
       ICLASSERT_RETURN( src->getROISize() == dst->getROISize() );
       ICLASSERT_RETURN( src->getChannels() == dst->getChannels() );

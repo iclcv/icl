@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLIO/FileGrabberPlugin.h>
 
 namespace icl{
@@ -37,7 +38,7 @@ namespace icl{
     
   
     /// Plugin class to read "jpeg" and "jpg" images \ingroup FILEIO_G
-    class FileGrabberPluginJPEG : public FileGrabberPlugin {
+    class ICLIO_API FileGrabberPluginJPEG : public FileGrabberPlugin {
       public:
       /// grab implementation
       virtual void grab(utils::File &file, core::ImgBase **dest); 

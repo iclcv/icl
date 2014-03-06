@@ -30,6 +30,13 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/Exception.h>
+#include <ICLUtils/ClippedCast.h>
+#include <ICLUtils/FixedArray.h>
+#include <ICLMath/DynMatrix.h>
+#include <ICLMath/MatrixSubRectIterator.h>
+
 #include <iterator>
 #include <algorithm>
 #include <numeric>
@@ -38,13 +45,7 @@
 #include <vector>
 #include <cmath>
 
-#include <ICLUtils/Exception.h>
-#include <ICLMath/DynMatrix.h>
-#include <ICLUtils/ClippedCast.h>
-#include <ICLMath/MatrixSubRectIterator.h>
-#include <ICLUtils/FixedArray.h>
-
-#ifdef HAVE_IPP
+#ifdef ICL_HAVE_IPP
 #include <ippm.h>
 #endif
 
@@ -73,7 +74,7 @@ namespace icl{
       
     /** \cond */
     /// Forward Declaration fo FixedMatrixPart struct
-    template<class T,unsigned int COLS,unsigned int ROWS> class FixedMatrix;
+    template<class T, unsigned int COLS, unsigned int ROWS> class FixedMatrix;
     /** \endcond */
     
   
@@ -168,7 +169,7 @@ namespace icl{
           - 1000 x multiply 5x5 matrices 238 ns [generic C++ implementation for A*B]
     */
     template<class T,unsigned int COLS,unsigned int ROWS>
-    class FixedMatrix : public utils::FixedArray<T,COLS*ROWS>, public FixedMatrixBase{
+    class FixedMatrix : public utils::FixedArray<T, COLS*ROWS>, public FixedMatrixBase{
       public:
       
       /// creates a shallow copied DynMatrix instance wrapping this' data
@@ -306,11 +307,11 @@ namespace icl{
       }
   
       /// Matrix devision (inplace)
-      FixedMatrix &operator/=(const FixedMatrix &m) const 
+      FixedMatrix &operator/=(const FixedMatrix &m) 
         throw (IncompatibleMatrixDimensionException,
                InvalidMatrixDimensionException,
                SingularMatrixException){
-        return *this = this->operator*(m.inv());
+                 return *this = this->operator*(m.inv());
       }
   
       /// Multiply all elements by a scalar
@@ -840,7 +841,7 @@ namespace icl{
       inline double length(T norm=2) const{ 
         double sumSquares = 0;
         for(unsigned int i=0;i<DIM;++i){
-          sumSquares += ::pow((*this)[i],(double)norm);
+          sumSquares += ::pow((double)(*this)[i],(double)norm);
         }
         return ::pow( sumSquares, 1.0/norm);
       }
@@ -935,7 +936,7 @@ namespace icl{
     /// Vertical Matrix concatenation  \ingroup LINALG
     /** like ICLQuick image concatenation, dont forget the brackets sometimes */
     template<class T,unsigned  int WIDTH,unsigned  int HEIGHT, unsigned int HEIGHT2>
-    inline FixedMatrix<T,WIDTH,HEIGHT+HEIGHT2> operator%(const FixedMatrix<T,WIDTH,HEIGHT> &a,
+    inline FixedMatrix<T, WIDTH, HEIGHT + HEIGHT2> operator%(const FixedMatrix<T, WIDTH, HEIGHT> &a,
                                                          const FixedMatrix<T,WIDTH,HEIGHT2> &b){
       FixedMatrix<T,WIDTH,HEIGHT+HEIGHT2> M;
       for(unsigned int i=0;i<HEIGHT;++i) M.row(i) = a.row(i);
@@ -946,7 +947,7 @@ namespace icl{
     /// Horizontal Matrix concatenation  \ingroup LINALG
     /** like ICLQuick image concatenation, dont forget the brackets sometimes */
     template<class T,unsigned  int WIDTH,unsigned  int HEIGHT, unsigned int WIDTH2>
-    inline FixedMatrix<T,WIDTH+WIDTH2,HEIGHT> operator,(const FixedMatrix<T,WIDTH,HEIGHT> &a,
+    inline FixedMatrix<T, WIDTH + WIDTH2, HEIGHT> operator,(const FixedMatrix<T, WIDTH, HEIGHT> &a,
                                                          const FixedMatrix<T,WIDTH2,HEIGHT> &b){
       FixedMatrix<T,WIDTH+WIDTH2,HEIGHT> M;
       for(unsigned int i=0;i<WIDTH;++i) M.col(i) = a.col(i);
@@ -983,16 +984,16 @@ namespace icl{
   
   
     /// creates a 2D rotation matrix (defined for float and double)
-    template<class T>
-    FixedMatrix<T,2,2> create_rot_2D(T angle);
+    template<class T> ICLMath_IMP
+    FixedMatrix<T, 2, 2> create_rot_2D(T angle);
   
     /// creates a 2D homogen matrix (defined for float and double)
-    template<class T>
-    FixedMatrix<T,3,3> create_hom_3x3(T angle, T dx=0, T dy=0, T v0=0, T v1=0);
+    template<class T> ICLMath_IMP
+    FixedMatrix<T, 3, 3> create_hom_3x3(T angle, T dx = 0, T dy = 0, T v0 = 0, T v1 = 0);
   
     /// creates a 2D homogen matrix with translation part only (defined for float and double)
     template<class T>
-    inline FixedMatrix<T,3,3> create_hom_3x3_trans(T dx, T dy){
+    inline FixedMatrix<T, 3, 3> create_hom_3x3_trans(T dx, T dy){
       FixedMatrix<T,3,3> m = FixedMatrix<T,3,3>::id();
       m(2,0)=dx;
       m(2,1)=dy;
@@ -1008,28 +1009,27 @@ namespace icl{
     extern const AXES AXES_DEFAULT; // rxyz
 
     /// create 3D rotation matrix from rotation axis and angle (defined for float and double only)
-    template<class T>
-    FixedMatrix<T,3,3> create_rot_3D(T axisX, T axisY, T axisZ, T angle);
+    template<class T> ICLMath_IMP
+    FixedMatrix<T, 3, 3> create_rot_3D(T axisX, T axisY, T axisZ, T angle);
     
     /// create 3D rotation matrix from euler angles in specified axes order (defined for float and double only)
-    template<class T>
+    template<class T> ICLMath_IMP
     FixedMatrix<T,3,3> create_rot_3D (T ai, T aj, T ak, AXES axes=AXES_DEFAULT);    
-
     /// creates a 3D homogeneous matrix (defined for float and double)
-    template<class T>
+    template<class T> ICLMath_IMP
     FixedMatrix<T,4,4> create_hom_4x4(T rx, T ry, T rz, 
                                       T dx=0, T dy=0, T dz=0, 
                                       T v0=0, T v1=0, T v2=0,
                                       AXES axes=AXES_DEFAULT);
   
     /// create 4D homogeneous matrix that rotates about given axis by given angle (defined for float and double only)
-    template<class T>
-    FixedMatrix<T,4,4> create_rot_4x4(T axisX, T axisY, T axisZ, T angle);
+    template<class T> ICLMath_IMP
+    FixedMatrix<T, 4, 4> create_rot_4x4(T axisX, T axisY, T axisZ, T angle);
   
   
     /// creates 4D homogeneous matrix with translation part only (defined for float and double)
     template<class T>
-    inline FixedMatrix<T,4,4> create_hom_4x4_trans(T dx, T dy, T dz){
+    inline FixedMatrix<T, 4, 4> create_hom_4x4_trans(T dx, T dy, T dz){
       FixedMatrix<T,4,4> m = FixedMatrix<T,4,4>::id();
       m(3,0)=dx;
       m(3,1)=dy;
@@ -1038,12 +1038,12 @@ namespace icl{
     }
   
     /// compute euler angles for rotation matrix assuming specified axes order
-    template<class T>
+    template<class T> ICLMath_IMP
     FixedMatrix<T,1,3> extract_euler_angles(const FixedMatrix<T,3,3> &m,
                                             AXES axes=AXES_DEFAULT); 
-    template<class T>
+    template<class T> ICLMath_IMP
     FixedMatrix<T,1,3> extract_euler_angles(const FixedMatrix<T,4,4> &m,
-                                            AXES axes=AXES_DEFAULT); 
+                                            AXES axes=AXES_DEFAULT);
   
     
     /** \cond  declared and documented above */
@@ -1060,7 +1060,7 @@ namespace icl{
     }
     /** \endcond */
   
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
   #define OPTIMIZED_MATRIX_MULTIPLICATION(LEFT_COLS,LEFT_ROWS,RIGHT_COLS,TYPE,IPPSUFFIX) \
     template<> template<>                                                                \
     inline void                                                                          \
@@ -1095,18 +1095,18 @@ namespace icl{
     // this functions are implemented in iclFixedMatrix.cpp. All templates are
     // instantiated for float and double
   
-    template<class T> 
+    template<class T> ICLMath_IMP
     void icl_util_get_fixed_4x4_matrix_inv(const T *src, T*dst);
-    template<class T> 
+    template<class T> ICLMath_IMP
     void icl_util_get_fixed_3x3_matrix_inv(const T *src, T*dst);
-    template<class T> 
+    template<class T> ICLMath_IMP
     void icl_util_get_fixed_2x2_matrix_inv(const T *src, T*dst);
   
-    template<class T> 
+    template<class T> ICLMath_IMP
     T icl_util_get_fixed_4x4_matrix_det(const T *src);
-    template<class T> 
+    template<class T> ICLMath_IMP
     T icl_util_get_fixed_3x3_matrix_det(const T *src);
-    template<class T> 
+    template<class T> ICLMath_IMP
     T icl_util_get_fixed_2x2_matrix_det(const T *src);
   
   #define SPECIALISED_MATRIX_INV_AND_DET(D,T) \
@@ -1137,7 +1137,15 @@ namespace icl{
   /** \endcond */
   #endif
   
-  
+
+#ifdef WIN32
+    // this is temporary fix!
+    // because Homography2D is exported and therefore the base class is exported too
+    // we need to import this in executables/libraries
+    template class ICLMath_API FixedMatrix<float, 3, 3>;
+    template class ICLMath_API FixedMatrix<double, 3, 3>;
+#endif
+
   } // namespace math
 }
 

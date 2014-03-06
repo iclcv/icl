@@ -31,7 +31,7 @@
 
 #include <ICLQt/Common.h>
 #include <ICLGeom/PointCloudNormalEstimator.h>
-#include <sys/time.h>
+#include <ICLUtils/Time.h>
 
 HSplit gui;
 GenericGrabber grabDepth, grabColor;
@@ -82,7 +82,7 @@ void init(){
       << Show();
       
   if(pa("-cam")){
-    string camname = pa("-cam");
+    string camname = pa("-cam").as<std::string>();
     cam=Camera(camname);
     cam.setName("Depth Camera");
   }
@@ -116,8 +116,8 @@ void run(){
   float threshold = gui["threshold"];
   int avgrange = gui["avgrange"];
 	
-  timeval start, end;
-  gettimeofday(&start, 0);
+  Time start, end;
+  start = Time::now();
 
   usedFilterHandle = gui.get<ButtonGroupHandle>("usedFilter");
   if(usedFilterHandle.getSelected()==1){ //median 3x3
@@ -177,15 +177,14 @@ void run(){
     normalEstimator->applyWorldNormalCalculation(cam);
     normalImage=normalEstimator->getRGBNormalImage();
   }
-    
-  gettimeofday(&end, 0);
+  end = Time::now();
   if(normalEstimator->isCLReady()==true && normalEstimator->isCLActive()==true){
     std::cout<<"Size: "<<size<<" ,Open CL, Runtime: ";
   }
   else{ 
     std::cout<<"Size: "<<size<<" ,CPU, Runtime: ";
   }
-  std::cout <<((end.tv_usec-start.tv_usec)+((end.tv_sec-start.tv_sec)*1000000))/1000 <<" ms" << endl;
+  std::cout <<(end-start).toMicroSeconds() <<" ms" << endl;
 
   gui["depth"] = depthImage;
   gui["color"] = colorImage;

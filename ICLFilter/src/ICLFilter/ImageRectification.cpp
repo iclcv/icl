@@ -148,7 +148,7 @@ namespace icl{
       const int W=resultSize.width,H=resultSize.height;
       int x;
 
-#ifdef __ICL_SSE2__
+#ifdef HAVE_SSE2
       // convert the values of the homography matrix in sse-types
       const __m128 hom00 = _mm_set1_ps(hom(0,0));
       const __m128 hom01 = _mm_set1_ps(hom(0,1));
@@ -174,7 +174,7 @@ namespace icl{
           const int xstart = resultROI->x, xend = resultROI->right(), 
                     ystart = resultROI->y, yend = resultROI->bottom();
           for(int y=ystart;y<yend;++y){
-#ifdef __ICL_SSE2__
+#ifdef HAVE_SSE2
             const __m128 ra = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom10), hom20);
             const __m128 rb = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom11), hom21);
             const __m128 rz = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom12), hom22);
@@ -206,7 +206,7 @@ namespace icl{
           }
         }else{
           for(int y=0;y<H;++y){
-#ifdef __ICL_SSE2__
+#ifdef HAVE_SSE2
             const __m128 ra = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom10), hom20);
             const __m128 rb = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom11), hom21);
             const __m128 rz = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom12), hom22);
@@ -250,7 +250,7 @@ namespace icl{
       const int W=resultSize.width,H=resultSize.height;
       int x;
 
-#ifdef __ICL_SSE2__
+#ifdef HAVE_SSE2
       // convert the values of the homography matrix in sse-types
       const __m128 hom00 = _mm_set1_ps(hom(0,0));
       const __m128 hom01 = _mm_set1_ps(hom(0,1));
@@ -276,7 +276,7 @@ namespace icl{
           const int xstart = resultROI->x, xend = resultROI->right(), 
                     ystart = resultROI->y, yend = resultROI->bottom();
           for(int y=ystart;y<yend;++y){
-#ifdef __ICL_SSE2__
+#ifdef HAVE_SSE2
             const __m128 ra = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom10), hom20);
             const __m128 rb = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom11), hom21);
             const __m128 rz = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom12), hom22);
@@ -306,7 +306,7 @@ namespace icl{
           }
         }else{
           for(int y=0;y<H;++y){
-#ifdef __ICL_SSE2__
+#ifdef HAVE_SSE2
             const __m128 ra = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom10), hom20);
             const __m128 rb = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom11), hom21);
             const __m128 rz = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(y), hom12), hom22);
@@ -364,7 +364,7 @@ namespace icl{
       return buffer;
     }
 
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
 
     
     template<class T, class IppFunc> 
@@ -409,7 +409,7 @@ namespace icl{
   #endif
   
     
-  #define ICL_INSTANTIATE_DEPTH(D) template class ImageRectification<icl##D>;
+  #define ICL_INSTANTIATE_DEPTH(D) template class ICLFilter_API ImageRectification<icl##D>;
     ICL_INSTANTIATE_ALL_DEPTHS;
   #undef ICL_INSTANTIATE_DEPTH
   } // namespace markers

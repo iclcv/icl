@@ -30,12 +30,13 @@
 ********************************************************************/
 
 #pragma once
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/OpenCV.h>
 #include <ICLIO/Grabber.h>
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Mutex.h>
 
-#ifdef HAVE_OPENCV
+#ifdef ICL_HAVE_OPENCV
 #include <opencv/highgui.h>
 #include <opencv/cxcore.h>
 #endif
@@ -43,7 +44,7 @@ namespace icl{
   namespace io{
 
     /// Grabber class that uses OpenCV's grabbing function to grab camera images
-    class OpenCVCamGrabber : public Grabber{
+    class ICLIO_API OpenCVCamGrabber : public Grabber{
       private:
         /// Wrapped Device struct
         CvCapture *cvc;

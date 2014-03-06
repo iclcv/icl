@@ -32,7 +32,7 @@
 #include <ICLFilter/ProximityOp.h>
 #include <ICLCV/CV.h>
 #include <ICLFilter/BinaryLogicalOp.h>
-#ifdef HAVE_IPP
+#ifdef ICL_HAVE_IPP
 #include <ippi.h>
 #endif 
 #include <ICLCore/Img.h>
@@ -123,7 +123,7 @@ namespace icl{
         useBuffer->setROI(Rect(bufOffs,bufSize));
       }
       for(int i=0;i<src.getChannels();i++){
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
         if(useCrossCorrCoeffInsteadOfSqrDistance){
           ippiCrossCorrValid_Norm_8u_C1RSfs(src.getROIData(i),src.getLineStep(),
                                             src.getROISize(), templ.getROIData(i),

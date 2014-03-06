@@ -30,16 +30,17 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/Mutex.h>
 #include <ICLIO/FileGrabberPlugin.h>
 #include <vector>
-#include <ICLUtils/Mutex.h>
 
 namespace icl{
   namespace io{
     
   
     /// Plugin class to read "png" images \ingroup FILEIO_G
-    class FileGrabberPluginPNG : public FileGrabberPlugin {
+    class ICLIO_API FileGrabberPluginPNG : public FileGrabberPlugin {
       std::vector<unsigned char> data;
       std::vector<unsigned char*> rows;
   

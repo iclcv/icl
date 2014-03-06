@@ -60,14 +60,16 @@ namespace icl{
     const ImgBase *OpenCVVideoGrabber::acquireImage(){
       utils::Mutex::Locker l(mutex);
       ICLASSERT_RETURN_VAL( !(data->cvc==0), 0);
-      core::ipl_to_img(cvQueryFrame(data->cvc),&data->m_buffer);
-      if(data->use_video_fps){
+      core::ipl_to_img(cvQueryFrame(data->cvc), &data->m_buffer);
+
+      if (data->use_video_fps){
         data->fpslimiter->wait();
       }
+
       updating = true;
       setPropertyValue("pos_msec_current", cvGetCaptureProperty(data->cvc,CV_CAP_PROP_POS_MSEC));
       setPropertyValue("pos_frames_current", cvGetCaptureProperty(data->cvc,CV_CAP_PROP_POS_FRAMES));
-      setPropertyValue("pos_avi_ratio", cvGetCaptureProperty(data->cvc,CV_CAP_PROP_POS_AVI_RATIO));
+      setPropertyValue("pos_avi_ratio", cvGetCaptureProperty(data->cvc, CV_CAP_PROP_POS_AVI_RATIO));
       updating = false;
       return data->m_buffer;
     }
@@ -87,7 +89,7 @@ namespace icl{
       data->fpslimiter = new FPSLimiter(fps);
 
       data->size.width = cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FRAME_WIDTH);
-      data->size.height = cvGetCaptureProperty(data->cvc,CV_CAP_PROP_FRAME_HEIGHT);
+      data->size.height = cvGetCaptureProperty(data->cvc, CV_CAP_PROP_FRAME_HEIGHT);
 
       // Configurable
       addProperty("pos_msec_current", "info", "", cvGetCaptureProperty(data->cvc,CV_CAP_PROP_POS_MSEC), 0, "");

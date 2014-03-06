@@ -30,11 +30,12 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/OpenCV.h>
 #include <ICLIO/Grabber.h>
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLUtils/Exception.h>
-#ifdef HAVE_OPENCV
+#ifdef ICL_HAVE_OPENCV
 #include <opencv/highgui.h>
 #endif
 
@@ -45,7 +46,7 @@ namespace icl{
   namespace io{
 
     /// opencv base grabber implementation for movie files \ingroup MOVIE_FILE_G
-    class OpenCVVideoGrabber : public Grabber{
+    class ICLIO_API OpenCVVideoGrabber : public Grabber{
         struct Data; //!< pimpl type
         Data *data; //!< pimpl pointer
         utils::Mutex mutex; //! locking

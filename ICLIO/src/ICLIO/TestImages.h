@@ -30,13 +30,14 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
 #include <string>
 
 namespace icl{
   namespace io{
     /// Utility class for creating test images \ingroup UTILS_G
-    class TestImages{
+    class ICLIO_API TestImages{
       public:
       /// creates a new testimage instance
       /** possible values for name are
@@ -106,27 +107,27 @@ namespace icl{
     
     /// shortcurt function to create the "macaw"-image
     /** @return new image (ownership is passed to the caller!) */
-    core::ImgBase *createImage_macaw();
+    ICLIO_API core::ImgBase *createImage_macaw();
   
     /// shortcurt function to create the "windows"-image
     /** @return new image (ownership is passed to the caller!) */
-    core::ImgBase *createImage_windows();
+    ICLIO_API core::ImgBase *createImage_windows();
     
     /// shortcurt function to create the "flowers"-image
     /** @return new image (ownership is passed to the caller!) */
-    core::ImgBase *createImage_flowers();
+    ICLIO_API core::ImgBase *createImage_flowers();
   
     /// shortcurt function to create the famous "lena"-image
     /** @return new image (ownership is passed to the caller!) */
-    core::ImgBase *createImage_lena();
+    ICLIO_API core::ImgBase *createImage_lena();
   
     /// shortcurt function to create the famous "cameraman"-image
     /** @return new image (ownership is passed to the caller!) */
-    core::ImgBase *createImage_cameraman();
+    ICLIO_API core::ImgBase *createImage_cameraman();
   
     /// shortcurt function to create the "mandril"-image
     /** @return new image (ownership is passed to the caller!) */
-    core::ImgBase *createImage_mandril();
+    ICLIO_API core::ImgBase *createImage_mandril();
   
   
   

@@ -30,11 +30,11 @@
 
 #pragma once
 
+#include <ICLUtils/Macros.h>
 #include <QtGui/QWidget>
 #include <QtGui/QApplication>
 #include <QtCore/QEvent>
 #include <QtCore/QThread>
-#include <ICLUtils/Macros.h>
 
 namespace icl{
   namespace qt{

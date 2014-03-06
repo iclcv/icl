@@ -30,8 +30,8 @@
 
 #pragma once
 
-#include <cstdlib>
 #include <ICLUtils/Macros.h>
+#include <cstdlib>
 
 namespace icl{
   namespace utils{
@@ -43,7 +43,7 @@ namespace icl{
     struct PointerDelOp : public DelOpBase{ template<class T> static void delete_func(T *t){ delete t; } };
   
     /// Array delete operation class for the SmartPtr class \ingroup UTILS
-    struct ArrayDelOp : public DelOpBase{ template<class T>  static void delete_func(T *t){ delete [] t; } };
+    struct ArrayDelOp : public DelOpBase{ template<class T>  static void delete_func(T *t){ delete[] t; } };
   
     /// C-Style delete operation class for the SmartPtr class \ingroup UTILS
     struct FreeDelOp : public DelOpBase{ static void delete_func(void *v){ free(v); } };

@@ -111,9 +111,10 @@ void run(){
     backFaceGrabber.grab()->convert(&backImage);
   }
   gui["draw"].render();
-  
+#if 0
   gui["offscreen0"] = scene.render(0);
   gui["offscreen1"] = scene.render(1);
+#endif
 }
 
 void init(){

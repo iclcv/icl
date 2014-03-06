@@ -30,9 +30,10 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+#include <ICLQt/GUIHandle.h>
 #include <string>
 #include <vector>
-#include <ICLQt/GUIHandle.h>
 
 /**\cond */
 class QCheckBox;
@@ -43,7 +44,7 @@ namespace icl{
   namespace qt{
     
     /// Special Utiltiy class for handling Button clicks in the ICL GUI API \ingroup HANDLES
-    class CheckBoxHandle : public GUIHandle<QCheckBox>{
+    class ICLQt_API CheckBoxHandle : public GUIHandle<QCheckBox>{
       public:
       
       /// creates a n empty button handle

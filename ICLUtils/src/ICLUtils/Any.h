@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/StringUtils.h>
 #include <cstring>
 
@@ -181,7 +182,7 @@ namespace icl{
     };
     
     /** \cond **/
-    template<> 
+    template<>
     inline std::vector<float> Any::as<std::vector<float> >() const{
       const size_t l = std::string::length();
       if(l < sizeof(int)) throw ICLException("cannot convert Any to std::vector<float> size must be at least sizeof(int)");
@@ -202,7 +203,7 @@ namespace icl{
       memcpy(p+sizeof(int),v.data(), v.size()*sizeof(float));
     }
 
-    template<> 
+    template<>
     inline std::vector<int> Any::as<std::vector<int> >() const{
       const size_t l = std::string::length();
       if(l < sizeof(int)) throw ICLException("cannot convert Any to std::vector<int> size must be at least sizeof(int)");

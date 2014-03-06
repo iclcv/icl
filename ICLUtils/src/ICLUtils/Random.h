@@ -30,11 +30,16 @@
 
 #pragma once
 
-#include <cmath>
-#include <cstdlib>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Time.h>
 #include <ICLUtils/Range.h>
 #include <ICLUtils/ClippedCast.h>
+#include <cmath>
+#include <cstdlib>
+
+#ifdef WIN32
+  #undef max
+#endif
 
 namespace icl{
   namespace utils{
@@ -42,7 +47,7 @@ namespace icl{
     /** @param seedval The seed value (e.g. time(0) ...)
     */
     inline void randomSeed(long int seedval) {
-  #ifdef ICL_SYSTEM_WINDOWS
+  #ifdef WIN32
       srand(seedval);
   #else
       srand48(seedval);
@@ -50,7 +55,7 @@ namespace icl{
     }
   
     /// Initilaize the random number generator (with Time::now().toMicroSeconds()).\ingroup RANDOM 
-    inline void randomSeed() {randomSeed(Time::now().toMicroSeconds());}
+    inline void randomSeed() { randomSeed(Time::now().toMicroSeconds()); }
   
     /// Object based random seed caller \ingroup RANDOM
     /** Calls randomSeed() at construction time */
@@ -59,7 +64,7 @@ namespace icl{
     };
   
     /// Generates random numbers in range [0,1]  \ingroup RANDOM
-    inline double random(double max=1) {
+    inline double random(double max = 1) {
   #ifdef WIN32
       // this generates quite poor random numbers, because RAND_MAX = 32767
       return max*(static_cast<double>(rand()) / (1.0 + static_cast<double>(RAND_MAX)));
@@ -98,7 +103,7 @@ namespace icl{
         @param range for the random value 
         @param roiOnly decides whether to apply the operation on the whole image or on its ROI only 
     **/
-    void random(ImgBase *poImage, const Range<double> &range=Range<double>(0,255), bool roiOnly=true);
+    ICLUtils_API void random(ImgBase *poImage, const Range<double> &range=Range<double>(0,255), bool roiOnly=true);
   
     /// fill an image with gauss-distributed random values with given mean, variance and min/max value \ingroup RANDOM
     /** @param poImage image to fill with random values (NULL is not allowed) 
@@ -107,7 +112,7 @@ namespace icl{
         @param minAndMax clipping range for all variables
         @param roiOnly decides whether to apply the operation on the whole image or on its ROI only 
     **/
-    void gaussRandom(ImgBase *poImage, double mean, double var, const Range<double> &minAndMax, bool roiOnly=true);
+    ICLUtils_API void gaussRandom(ImgBase *poImage, double mean, double var, const Range<double> &minAndMax, bool roiOnly=true);
   #endif
     /// Generate a gaussian random number with given mean and variance \ingroup RANDOM
     /** @param mean mode of the gaussian
@@ -115,7 +120,7 @@ namespace icl{
         @return gaussian distributed variable
         @sa double(double,double,const Range<double>&), 
     **/
-    double gaussRandom(double mean, double var);
+    ICLUtils_API double gaussRandom(double mean, double var);
   
     /// Generate a gaussian random number with given mean and variance and clips the result to a range \ingroup RANDOM
     /** @param mean mode of the gaussian

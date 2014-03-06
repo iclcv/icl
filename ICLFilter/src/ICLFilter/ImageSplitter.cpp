@@ -29,7 +29,7 @@
 ********************************************************************/
 
 #include <ICLFilter/ImageSplitter.h>
-#include <math.h>
+#include <cmath>
 
 using namespace icl::utils;
 using namespace icl::core;

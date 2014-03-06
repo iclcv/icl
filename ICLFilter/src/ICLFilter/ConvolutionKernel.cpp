@@ -33,6 +33,10 @@
 #include <cmath>
 #include <algorithm>
 
+#ifdef WIN32
+  #include <functional>
+#endif
+
 using namespace icl::utils;
 
 namespace icl{

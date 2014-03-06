@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Time.h>
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/Exception.h>
@@ -54,7 +55,7 @@ namespace icl {
       A signal handler is installed to ensure that all SharedMemorySegments
       are released.
     **/
-    class SharedMemorySegment{
+    class ICLIO_API SharedMemorySegment{
       public:
 
         /// Creates a SharedMemorySegment instance.
@@ -177,7 +178,7 @@ namespace icl {
     };
 
     /// an easy way to lock a SharedMemorySegment, unlocking at destruction.
-    struct SharedMemorySegmentLocker{
+    struct ICLIO_API SharedMemorySegmentLocker{
         /// local reference to SharedMemorySegment
         SharedMemorySegment &segment;
 
@@ -196,7 +197,7 @@ namespace icl {
       Each SharedMemorySegment::Impl instance adds its segment name to the
       register on creation and removes it on destruction.
     **/
-    class SharedMemorySegmentRegister
+    class ICLIO_API SharedMemorySegmentRegister
     {
       public:
         friend struct SharedMemorySegment::Impl;

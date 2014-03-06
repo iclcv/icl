@@ -30,10 +30,15 @@
 
 #pragma once
 
-#ifndef HAVE_OPENGL
-#warning "this header must not be included if HAVE_OPENGL is not defined"
+#ifndef ICL_HAVE_OPENGL
+  #ifdef WIN32
+    #pragma WARNING("this header must not be included if HAVE_OPENGL is not defined")
+  #else
+    #warning "this header must not be included if HAVE_OPENGL is not defined"
+  #endif
 #else
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/GeomDefs.h>
 #include <ICLUtils/Uncopyable.h>
 
@@ -59,7 +64,7 @@ namespace icl{
         change the position of the camera since it will be back
         changed to the lights position every frame.
         */
-    class SceneLight : public utils::Uncopyable{
+    class ICLGeom_API SceneLight : public utils::Uncopyable{
       /// called by the scene 
       /** This method is called by the scene and sets up the
           light in OpenGL by using the instances parameters */

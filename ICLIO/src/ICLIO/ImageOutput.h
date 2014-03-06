@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/ImgBase.h>
 #include <ICLIO/ImageCompressor.h>
 
@@ -50,7 +51,7 @@ namespace icl{
         video image output of course use the used video/file formats compression
         mechanism.
     */
-    struct ImageOutput : protected ImageCompressor{
+    struct ICLIO_API ImageOutput : protected ImageCompressor{
       /// virtual destructor
       virtual ~ImageOutput() {}
   

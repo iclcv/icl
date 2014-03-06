@@ -30,16 +30,17 @@
 
 #pragma once
 
-#include <ICLIO/FileWriterPlugin.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Mutex.h>
-#include <vector>
 #include <ICLCore/Types.h>
+#include <ICLIO/FileWriterPlugin.h>
+#include <vector>
 
 namespace icl{
   namespace io{
     
     /// Writer plugin to write images as ".ppm", ".pgm", ".pnm" and ".icl" \ingroup FILEIO_G
-    class FileWriterPluginPNM : public FileWriterPlugin{
+    class ICLIO_API FileWriterPluginPNM : public FileWriterPlugin{
       public:
       /// write implementation
       virtual void write(utils::File &file, const core::ImgBase *image);

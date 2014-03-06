@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/Size32f.h>
 #include <ICLUtils/Rect.h>
@@ -41,7 +42,7 @@ namespace icl {
     
     
     /// Floating point precision implementation of the Rect class \ingroup TYPES
-    class Rect32f{
+    class ICLUtils_API Rect32f{
       public:
      
       float x;      ///!< x pos (upper left)
@@ -51,7 +52,15 @@ namespace icl {
   
       /// static null instance (0,0,0,0)
       static const Rect32f null;
-      
+
+	    /// default constructor
+	    Rect32f(){
+		    this->x = 0.0f;
+		    this->y = 0.0f;
+		    this->width = 0.0f;
+		    this->height = 0.0f;
+	    }
+
       /// creates a defined Rect32f
       Rect32f(float x, float y, float width, float height):
       x(x),y(y),width(width),height(height){
@@ -70,7 +79,7 @@ namespace icl {
       } 
       
       /// create a deep copy of a rect
-      Rect32f(const Rect32f &r=null){
+      Rect32f(const Rect32f &r){
         this->x = r.x;
         this->y = r.y;
         this->width = r.width;
@@ -256,10 +265,10 @@ namespace icl {
     };
   
     /// ostream operator (x,y)wxy
-    std::ostream &operator<<(std::ostream &s, const Rect32f &r);
+    ICLUtils_API std::ostream &operator<<(std::ostream &s, const Rect32f &r);
     
     /// istream operator
-    std::istream &operator>>(std::istream &s, Rect32f &r);
+    ICLUtils_API std::istream &operator>>(std::istream &s, Rect32f &r);
   
   
   } // namespace utils

@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLMath/FixedMatrix.h>
@@ -46,11 +47,11 @@ namespace icl{
     
 
     
-    class AbstractCanvas : public utils::Uncopyable{
+    class ICLCore_API AbstractCanvas : public utils::Uncopyable{
       public:
       typedef math::FixedMatrix<float,3,3> Transform;
       typedef core::Color4D32f Color;
-      struct ClipRect{
+      struct ICLCore_API ClipRect{
         ClipRect(float minx=0, float maxx=0, float miny=0, float maxy=0): 
           minx(minx),maxx(maxx),miny(miny),maxy(maxy){}
         float minx;

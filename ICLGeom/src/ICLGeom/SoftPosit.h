@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLMath/DynMatrix.h>
 #include <ICLMath/FixedVector.h>
 #include <ICLUtils/Macros.h>
@@ -37,13 +38,17 @@
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/BasicTypes.h>
 
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
 #include<ICLQt/DrawWidget.h>
+#endif
+
+#ifdef WIN32
+  #undef max
 #endif
 
 namespace icl{
   namespace geom{
-    class SoftPosit{
+    class ICLGeom_API SoftPosit{
       private:
       //M
       unsigned int nbWorldPts;
@@ -63,7 +68,7 @@ namespace icl{
       static const double betaUpdate;// not allowed in clang = 1.05;
   
       static const double betaZero;;// not allowed in clang = 0.0004;
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
       qt::ICLDrawWidget *dw;
 #endif
       math::DynMatrix<icl64f> iAdj;
@@ -164,7 +169,7 @@ namespace icl{
   
       void softPosit(math::DynMatrix<icl64f> imagePts, math::DynMatrix<icl64f> worldPts, double beta0, int noiseStd,	math::DynMatrix<icl64f> initRot,
                      math::DynMatrix<icl64f> initTrans, double focalLength, math::DynMatrix<icl64f> center = math::DynMatrix<icl64f>(2,0), bool draw = true);
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
       void softPosit(math::DynMatrix<icl64f> imagePts, math::DynMatrix<icl64f> imageAdj, math::DynMatrix<icl64f> worldPts,
                      math::DynMatrix<icl64f> worldAdj, double beta0, int noiseStd,	math::DynMatrix<icl64f> initRot,
                      math::DynMatrix<icl64f> initTrans, double focalLength, qt::ICLDrawWidget &w,
@@ -173,7 +178,7 @@ namespace icl{
       void softPosit(std::vector<utils::Point32f> imagePts, std::vector<math::FixedColVector<double,3> > worldPts,
                      double beta0, int noiseStd,	math::DynMatrix<icl64f> initRot, math::DynMatrix<icl64f> initTrans,
                      double focalLength, math::DynMatrix<icl64f> center = math::DynMatrix<icl64f>(2,0));
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
       void softPosit(std::vector<utils::Point32f> imagePts, math::DynMatrix<icl64f> imageAdj, std::vector<math::FixedColVector<double,3> > worldPts,
                      math::DynMatrix<icl64f> worldAdj, double beta0, int noiseStd,	math::DynMatrix<icl64f> initRot,
                      math::DynMatrix<icl64f> initTrans, double focalLength, qt::ICLDrawWidget &w,
@@ -195,7 +200,7 @@ namespace icl{
         return isNull;
       }
   
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
       void visualize(const math::DynMatrix<icl64f> & imagePts, const math::DynMatrix<icl64f> &projWorldPts, unsigned int delay=200);
   
       void visualize(qt::ICLDrawWidget &w,const math::DynMatrix<icl64f> & imagePts, const math::DynMatrix<icl64f> &imageAdj,

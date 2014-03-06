@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Configurable.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLCore/ImgBase.h>
@@ -58,7 +59,7 @@ namespace icl{
         for the post-processing the local-threshold result image before
         it's passed to the region detector internally
     */
-    class QuadDetector : public utils::Configurable, public utils::Uncopyable{
+    class ICLMarkers_API QuadDetector : public utils::Configurable, public utils::Uncopyable{
 
       /// Internal Data class
       class Data;
@@ -151,10 +152,10 @@ namespace icl{
     
     
     /// ostream operator for QuadDetector::QuadColor instances
-    std::ostream &operator<<(std::ostream &s, const QuadDetector::QuadColor &c);
+    ICLMarkers_API std::ostream &operator<<(std::ostream &s, const QuadDetector::QuadColor &c);
   
     /// istream operator for QuadDetector::QuadColor instances
-    std::istream &operator>>(std::istream &s, QuadDetector::QuadColor &c);
+    ICLMarkers_API std::istream &operator>>(std::istream &s, QuadDetector::QuadColor &c);
 
 
   

@@ -29,9 +29,10 @@
 ********************************************************************/
 #pragma once
 
-#include <ICLFilter/UnaryOp.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
 #include <ICLCore/Color.h>
+#include <ICLFilter/UnaryOp.h>
 
 namespace icl{
   namespace filter{
@@ -108,7 +109,7 @@ namespace icl{
         \section BENCH Benchmark Results
   
     */
-    class ColorSegmentationOp : public UnaryOp{
+    class ICLFilter_API ColorSegmentationOp : public UnaryOp{
       public:
       /// Internally used class
       class LUT3D; 

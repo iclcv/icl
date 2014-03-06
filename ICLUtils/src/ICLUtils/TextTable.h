@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Size.h>
 
@@ -81,7 +82,7 @@ namespace icl{
 
       \endcode
     */
-    class TextTable{
+    class ICLUtils_API TextTable{
       std::vector<std::string> m_texts; //!< internal text data
       Size m_size;  //!< current size
       int m_maxCellWidth; //!< current maximum cell width for serialization

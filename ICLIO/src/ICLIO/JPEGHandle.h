@@ -30,8 +30,9 @@
 
 #pragma once
 
-#ifdef HAVE_LIBJPEG
+#ifdef ICL_HAVE_LIBJPEG
 
+#include <ICLUtils/CompatMacros.h>
 #include <stdio.h>
 #include <jerror.h>
 #include <jpeglib.h>
@@ -48,13 +49,13 @@ namespace icl{
     };
     
     // passes controll back to the caller
-    void icl_jpeg_error_exit (j_common_ptr cinfo);
+    ICLIO_API void icl_jpeg_error_exit(j_common_ptr cinfo);
     
     // }}}
   
     
     /// Handles JPEG info and error manager
-    struct JPEGDataHandle{
+    struct ICLIO_API JPEGDataHandle{
       inline JPEGDataHandle(){
         info.err = jpeg_std_error(&em);
         em.error_exit = icl_jpeg_error_exit;
@@ -68,7 +69,7 @@ namespace icl{
 
 /** \endcond */
 
-#else // not HAVE_LIBJPEG
+#else // not ICL_HAVE_LIBJPEG
 namespace icl{
   namespace io{
     /** \cond */
@@ -76,4 +77,4 @@ namespace icl{
     /** \endcond */
   } // namespace io
 }
-#endif // not HAVE_LIBJPEG
+#endif // not ICL_HAVE_LIBJPEG

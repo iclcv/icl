@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+
 namespace icl{
   namespace utils{
     /// Class interface for un-copyable classes.

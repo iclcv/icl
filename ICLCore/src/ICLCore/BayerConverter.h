@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
 #include <ICLUtils/Uncopyable.h>
 
@@ -39,7 +40,7 @@ namespace icl {
     /// Utiltity class for bayer pattern conversion
     /** The internal implementation was basically taken from
         the libdc files */
-    class BayerConverter : public utils::Uncopyable{
+    class ICLCore_API BayerConverter : public utils::Uncopyable{
       public:
       
       enum bayerConverterMethod {
@@ -115,7 +116,7 @@ namespace icl {
   
       bayerConverterMethod m_eConvMethod;
       bayerPattern m_eBayerPattern;
-      #ifdef HAVE_IPP
+      #ifdef ICL_HAVE_IPP
         IppiBayerGrid m_IppBayerPattern;
       #endif
       
@@ -125,7 +126,7 @@ namespace icl {
       void hqLinearInterpolation(const Img8u *poBayerImg);
       void edgeSenseInterpolation(const Img8u *poBayerImg);
       void simpleInterpolation(const Img8u *poBayerImg);
-      #ifdef HAVE_IPP
+      #ifdef ICL_HAVE_IPP
         void nnInterpolationIpp(const Img8u *poBayerImg);
       #endif
       

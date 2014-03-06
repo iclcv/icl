@@ -134,7 +134,7 @@ namespace icl {
       /** @param ot optype for the ProximityOp 
           @param am apply mode for the ProximityOp (default = "valid")
       **/
-      ProximityOp(optype ot, applymode am=valid);
+      ICLFilter_API ProximityOp(optype ot, applymode am=valid);
   
       /// Destructor
       virtual ~ProximityOp(){
@@ -150,26 +150,26 @@ namespace icl {
           @param poSrc2 template 
           @param ppoDst destination image (apated automatically)        
       **/
-      virtual void apply(const core::ImgBase *poSrc1, const core::ImgBase *poSrc2, core::ImgBase **ppoDst);
+      ICLFilter_API virtual void apply(const core::ImgBase *poSrc1, const core::ImgBase *poSrc2, core::ImgBase **ppoDst);
   
       /// import apply symbol from parent class
       using BinaryOp::apply;
   
       /// sets the current optype
       /** @param ot new optype **/
-      void setOpType(optype ot);
+      ICLFilter_API void setOpType(optype ot);
       
       /// sets the current applymode
       /** @param am new applymode value **/
-      void setApplyMode(applymode am);
+      ICLFilter_API void setApplyMode(applymode am);
       
       /// returns the current optype
       /** @return current optype **/
-      optype getOpType() const;
+      ICLFilter_API optype getOpType() const;
   
       /// returns the current applymode
       /** @return current applymode **/
-      applymode getApplyMode() const;
+      ICLFilter_API applymode getApplyMode() const;
   
       private:
       

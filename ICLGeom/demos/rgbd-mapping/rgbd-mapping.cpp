@@ -31,9 +31,9 @@
 #include <ICLQt/Common.h>
 #include <ICLGeom/Geom.h>
 
-#undef HAVE_PCL
+#undef ICL_HAVE_PCL
 
-#ifdef HAVE_PCL
+#ifdef ICL_HAVE_PCL
 #include <ICLGeom/PCLPointCloudObject.h>
 #else
 #include <ICLGeom/PointCloudObject.h>

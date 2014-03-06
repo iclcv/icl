@@ -30,12 +30,13 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include<ICLUtils/Exception.h>
 
 namespace icl{
   namespace math{
     /// Special exception implementation for the FFT package
-    class FFTException : public utils::ICLException{
+    class ICLMath_API FFTException : public utils::ICLException{
       public:
       FFTException(const std::string &msg):utils::ICLException(msg){}
     }; 

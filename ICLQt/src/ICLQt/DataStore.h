@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/MultiTypeMap.h>
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Function.h>
@@ -43,7 +44,7 @@ namespace icl{
     /// Extension of the associative container MultiTypeMap \ingroup UNCOMMON
     /** Adds an index operator[string] for direct access to contained values
      */
-    class DataStore : public utils::MultiTypeMap{
+    class ICLQt_API DataStore : public utils::MultiTypeMap{
       public:
   
       /// Internal Exception type thrown if operator[] is given an unknown index string
@@ -68,7 +69,7 @@ namespace icl{
         inline Data(DataArray *data):data(data){}
         
         /// This is the mighty and magic conversion function 
-        static void assign(void *src, const std::string &srcType, void *dst, 
+        ICLQt_API static void assign(void *src, const std::string &srcType, void *dst, 
                            const std::string &dstType) throw (UnassignableTypesException); 
   
         public:
@@ -76,8 +77,8 @@ namespace icl{
         /// Internally used Data- Structure
         struct Event{
           Event(const std::string &msg="", void *data=0):message(msg),data(data){}
-        Event(const std::string &msg, const utils::Function<void> &cb): message(msg),data(0),cb(cb){}
-        Event(const std::string &msg, const utils::Function<void,const std::string&> &cb2): message(msg),data(0),cb2(cb2){}
+          Event(const std::string &msg, const utils::Function<void> &cb): message(msg),data(0),cb(cb){}
+          Event(const std::string &msg, const utils::Function<void,const std::string&> &cb2): message(msg),data(0),cb2(cb2){}
           std::string message;
           void *data;
           utils::Function<void> cb;
@@ -130,7 +131,7 @@ namespace icl{
         }
         
         /// installs a function directly
-        void install(utils::Function<void,const MouseEvent &> f);
+        ICLQt_API void install(utils::Function<void, const MouseEvent &> f);
   
         // installs a global function (should be implicit)
         //void install(void (*f)(const MouseEvent &)){

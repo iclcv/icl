@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Array2D.h>
 #include <ICLQt/LabelHandle.h>
 #include <ICLQt/GUIHandle.h>

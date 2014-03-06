@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/StringUtils.h> 
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Lockable.h>
@@ -47,7 +48,7 @@ namespace pugi{
 namespace icl{
   namespace utils{
     /** \cond */
-    struct XMLDocumentDelOp{ static void delete_func(pugi::xml_document *h); };
+    struct ICLUtils_API XMLDocumentDelOp{ static void delete_func(pugi::xml_document *h); };
     /** \endcond */
   
     /// Utility class for creating and reading XML-based hierarchical configuration files 
@@ -167,7 +168,7 @@ namespace icl{
         Internally data is stored in the parent classes (DataStore) hash maps to optimize
         data access. ConfigFile data key is the the '.'-concatenated identifier.
     */
-    class ConfigFile : public Lockable{
+    class ICLUtils_API ConfigFile : public Lockable{
   
       public:
       friend class ConfigFileGUI;
@@ -496,10 +497,13 @@ namespace icl{
         inline KeyRestriction():
           hasRange(false),hasValues(false){}
         inline KeyRestriction(double min, double max):
-          min(min),max(max),hasRange(true),hasValues(false){}
+          hasRange(true),hasValues(false){
+            this->min = min;
+            this->max = max;
+        }
         inline KeyRestriction(const std::string &values):
           values(values),hasRange(false),hasValues(true){}
-        std::string toString() const;
+        ICLUtils_API std::string toString() const;
   
         double min,max;
         std::string values;
@@ -596,19 +600,19 @@ namespace icl{
       std::map<std::string,Entry> m_entries;
   
       /// ostream operator is allowed to access privat members
-      friend std::ostream &operator<<(std::ostream&,const ConfigFile&);
+      friend ICLUtils_API std::ostream &operator<<(std::ostream&, const ConfigFile&);
     };
     
     
     /// Default ostream operator to put a ConfigFile into a stream
-    std::ostream &operator<<(std::ostream &s, const ConfigFile &cf);
+    ICLUtils_API std::ostream &operator<<(std::ostream &s, const ConfigFile &cf);
   
     /** \cond */
-    template<> inline ConfigFile::Data &ConfigFile::Data::operator=(char * const &t) 
+    template<> inline ConfigFile::Data &ConfigFile::Data::operator=(char * const &t)
     throw (UnregisteredTypeException,InvalidTypeException,EntryNotFoundException){
       return ConfigFile::Data::operator=(std::string(t));
     }
-    template<> inline ConfigFile::Data &ConfigFile::Data::operator=(const char * const &t) 
+    template<> inline ConfigFile::Data &ConfigFile::Data::operator=(const char * const &t)
     throw (UnregisteredTypeException,InvalidTypeException,EntryNotFoundException){
       return ConfigFile::Data::operator=(std::string(t));
     }

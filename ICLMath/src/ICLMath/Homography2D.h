@@ -30,12 +30,13 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLMath/FixedMatrix.h>
 #include <ICLUtils/Point32f.h>
 
 namespace icl{
   namespace math{
-    
+
     /// Utility structure that represents a 2D homography (implemented for float and double)
     /** Basically, a 2D homography implements a transformation between 2 paralellograms 
         Given a set of at least 4 points in parallellogram A and the same number of 
@@ -152,7 +153,7 @@ namespace icl{
         an SVD (@see ICLMath/DynMatrix::solve) based solver (the much faster lu-decomposition based solver does not provide useful results)
     */
     template<class T>
-    struct GenericHomography2D : public FixedMatrix<T,3,3>{
+    struct ICLMath_IMP GenericHomography2D : public FixedMatrix<T, 3, 3>{
       /// super class typedef for shorter super-class references
       typedef FixedMatrix<T,3,3> Super;
       
@@ -194,7 +195,7 @@ namespace icl{
       }
     };
     
-    /// default homography 2D type definition (usually fload depth is enough)
+    /// default homography 2D type definition (usually float depth is enough)
     typedef GenericHomography2D<float> Homography2D;
     
   

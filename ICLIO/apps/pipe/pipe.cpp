@@ -42,7 +42,7 @@
 #include <ICLCore/CCFunctions.h>
 #include <pthread.h>
 
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
 VBox gui;
 #endif
 
@@ -84,11 +84,12 @@ void init_grabber(){
 const ImgBase *grab_image(){
   const ImgBase *img = 0;
   //  const ImgBase *image = grabber.grab();
-  if(!pa("-flip")){
+
+  if (!(bool)pa("-flip")){
     img = grabber.grab();
   }else{
     ImgBase *hack = const_cast<ImgBase*>(grabber.grab());
-    std::string axis = pa("-flip");
+    std::string axis = pa("-flip").as<std::string>();
     if(axis  ==   "x"){
       hack->mirror(axisVert);
     }else if(axis  ==  "y"){
@@ -100,13 +101,14 @@ const ImgBase *grab_image(){
     }
     img = hack;
   }
+
   if(pa("-decode-bayer")){
-    static std::string pattern = pa("-decode-bayer");
+    static std::string pattern = pa("-decode-bayer").as<std::string>();
     if(img->getDepth() != depth8u){
       ERROR_LOG("unable to reinterpret input image as bayer-encoded image: depth must be 8u");
     }else{
-      static std::string output = pa("-decode-bayer",1);
-      static std::string method = pa("-decode-bayer",2);
+      static std::string output = pa("-decode-bayer", 1).as<std::string>();
+      static std::string method = pa("-decode-bayer", 2).as<std::string>();
       static BayerConverter b(pattern,method);
       static ImgBase *tmp = 0;
       b.apply(img->as8u(),&tmp);
@@ -137,7 +139,7 @@ const ImgBase *grab_image(){
   }
    */
   
-  if(!pa("-clip")){
+  if(!(bool)pa("-clip")){
     return img;
     
   }else{
@@ -169,24 +171,24 @@ const ImgBase *grab_image(){
 GenericImageOutput output;
 
 void send_app(){
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
   ImageHandle IH;
   FPSHandle FPS;
-  if(!pa("-no-gui")){
+  if(!(bool)pa("-no-gui")){
     IH = gui.get<ImageHandle>("image");
     FPS= gui.get<FPSHandle>("fps");
   }
 #endif
  
-  while(first || !pa("-single-shot")){
+  while(first || !(bool)pa("-single-shot")){
     const ImgBase *grabbedImage = grab_image();
-
     const ImgBase *ppImage = 0;
+
     if(pa("-pp") && *ppEnabled){
       static UnaryOp *pp = 0;
       if(!pp){
-        static std::string pps = pa("-pp");
-        if(pps == "gauss"){
+        static std::string pps = pa("-pp").as<std::string>();
+        if (pps == "gauss"){
           pp = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::gauss3x3));
         }else if(pps == "gauss5") {
           pp = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::gauss5x5));
@@ -208,6 +210,7 @@ void send_app(){
     }else{
       ppImage = grabbedImage;
     }
+
     const ImgBase *normImage = 0;
     if(pa("-normalize")){
       static ImgBase *buf = 0;
@@ -218,8 +221,8 @@ void send_app(){
       normImage = ppImage;
     }
     output.send(normImage);
-#ifdef HAVE_QT
-    if(!pa("-no-gui")){
+#ifdef ICL_HAVE_QT
+    if(!(bool)pa("-no-gui")){
       bool &updateImages = gui.get<bool>("updateImages");
       if(updateImages){
         IH = normImage;
@@ -230,9 +233,9 @@ void send_app(){
     first = false;
     
     bool useGUI = false;
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
     int fpsLimit = 0;
-    if(!pa("-no-gui")){
+    if(!(bool)pa("-no-gui")){
       fpsLimit = gui.get<int>("fpsLimit");
       useGUI = true;
     }else{
@@ -241,7 +244,7 @@ void send_app(){
 #else
     int fpsLimit = pa("-fps");
 #endif
-    
+
     if(!useGUI){
       if(pa("-progress")){
           static int curr = 0;
@@ -260,13 +263,11 @@ void send_app(){
 
     static FPSLimiter limiter(15,10);
     if(limiter.getMaxFPS() != fpsLimit) limiter.setMaxFPS(fpsLimit);
-    
     limiter.wait();
-
   }
 }
 
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
 void init_gui(){
   output.init(pa("-o"));
 
@@ -363,23 +364,25 @@ int main(int n, char **ppc){
          "-perserve-preprocessing-roi|-ppp -progress "
          "-initially-disable-image-updates|-idu");
 
-  if(pa("-reset")){
+  if (pa("-reset")){
     GenericGrabber::resetBus();
   }
-  
+
   init_grabber();  
 
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
   if(!pa("-no-gui")){
     return ICLApp(n,ppc,"",init_gui,send_app).exec();
   }else{
     static bool alwaysTrue = 1;
     ppEnabled = &alwaysTrue;
+    output.init(pa("-o"));
     send_app();
   }
 #else
   static bool alwaysTrue = 1;
   ppEnabled = &alwaysTrue;
+  output.init(pa("-o"));
   send_app();
 #endif
 }

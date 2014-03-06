@@ -38,7 +38,7 @@ namespace icl {
   namespace filter{
   
     
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
     
     namespace{
       template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, IppiSize, IppiPoint, float[], icl8u*)>

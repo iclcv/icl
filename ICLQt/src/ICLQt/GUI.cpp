@@ -110,7 +110,7 @@
 
 #include <ICLQt/Widget.h>
 #include <ICLQt/DrawWidget.h>
-#ifdef HAVE_OPENGL
+#ifdef ICL_HAVE_OPENGL
 #include <ICLQt/DrawWidget3D.h>
 #endif
 #include <ICLQt/ThreadedUpdatableSlider.h>
@@ -123,7 +123,9 @@
 #include <map>
 #include <set>
 
-#include <unistd.h>
+#ifndef ICL_SYSTEM_WINDOWS
+  #include <unistd.h>
+#endif
 
 using namespace std;
 using namespace icl::utils;
@@ -523,13 +525,13 @@ namespace icl{
         
         std::string cblist = ostr.str();
         if(cblist.size() > 1){
-          gui.registerCallback(function(this,&icl::qt::ConfigurableGUIWidget::exec),cblist.substr(1),'\1');
+          gui.registerCallback(utils::function(this,&icl::qt::ConfigurableGUIWidget::exec),cblist.substr(1),'\1');
         }
         for(unsigned int i=0;i<timers.size();++i){
           timers[i]->start();
         }
         
-        conf->registerCallback(function(this,&icl::qt::ConfigurableGUIWidget::propertyChanged));
+        conf->registerCallback(utils::function(this,&icl::qt::ConfigurableGUIWidget::propertyChanged));
       }
 
       /// Called if a property is changed from somewhere else
@@ -1848,7 +1850,7 @@ namespace icl{
   
     // }}}
   
-  #ifdef HAVE_OPENGL
+  #ifdef ICL_HAVE_OPENGL
     struct DrawGUIWidget3D : public GUIWidget{
       // {{{ open
       DrawGUIWidget3D(const GUIDefinition &def):GUIWidget(def,0,1,GUIWidget::gridLayout,Size(16,12)){
@@ -2060,7 +2062,7 @@ namespace icl{
         GUI::register_widget_type("image",create_widget_template<ImageGUIWidget>);
         GUI::register_widget_type("state",create_widget_template<StateGUIWidget>);
         GUI::register_widget_type("draw",create_widget_template<DrawGUIWidget>);
-  #ifdef HAVE_OPENGL
+  #ifdef ICL_HAVE_OPENGL
         GUI::register_widget_type("draw3D",create_widget_template<DrawGUIWidget3D>);
   #endif
         GUI::register_widget_type("combo",create_widget_template<ComboGUIWidget>);

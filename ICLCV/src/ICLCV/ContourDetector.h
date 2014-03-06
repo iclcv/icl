@@ -30,8 +30,9 @@
 
 #pragma once
 
-#include <ICLCore/Img.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
+#include <ICLCore/Img.h>
 
 #include <vector>
 
@@ -48,7 +49,7 @@ namespace icl{
     };
     
     /// Utility class used by the ContourDetector
-    class Contour{ 
+    class ICLCV_API Contour{ 
       ContourImpl *impl;
 
       public:
@@ -108,7 +109,7 @@ namespace icl{
         performance.
 
     **/
-    class ContourDetector : public utils::Uncopyable{
+    class ICLCV_API ContourDetector : public utils::Uncopyable{
       
       /// internal data type
       class Data;

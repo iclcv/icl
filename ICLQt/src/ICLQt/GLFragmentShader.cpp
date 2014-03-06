@@ -65,6 +65,12 @@ namespace icl{
         return "";
       }
     }
+
+    static bool shader_compiled(GLuint obj){
+      GLint compiled = 0;
+      glGetShaderiv(obj, GL_COMPILE_STATUS, &compiled);
+      return compiled;
+    }
     
     static std::string program_info(GLuint obj){
       int infologLength = 0;
@@ -120,9 +126,9 @@ namespace icl{
         int lenF = m_data->fragmentProgramString.size();
         glShaderSource(d.fragmentShader,1,&pF,&lenF);
         glCompileShader(d.fragmentShader);
-        
-        std::string info = shader_info(d.fragmentShader);
-        if(info.length()){
+
+        if(!shader_compiled(d.fragmentShader)){
+          std::string info = shader_info(d.fragmentShader);
           throw ICLException("unable to compile fragment shader:[ \n" + info + "\n]");
         }
       }
@@ -133,9 +139,9 @@ namespace icl{
         int lenV = m_data->vertexProgramString.size();
         glShaderSource(d.vertexShader,1,&pV,&lenV);
         glCompileShader(d.vertexShader);
-        
-        std::string info = shader_info(d.vertexShader);
-        if(info.length()){
+
+        if (!shader_compiled(d.vertexShader)){
+          std::string info = shader_info(d.vertexShader);
           throw ICLException("unable to compile vertex shader:[ \n" + info + "\n]");
         }
       }
@@ -242,12 +248,13 @@ namespace icl{
         GLint loc = glGetUniformLocation(it->second.program, var.c_str());
         if (loc != -1)
         {
-          float matData[16 * val.size()];
+          float *matData = new float[16 * val.size()];
           for(unsigned int i = 0; i < val.size(); i++) {
             memcpy((matData + 16 * i), val[i].data(), 16 * sizeof(float));
           }
           glUniformMatrix4fv(loc, val.size(), true, matData);
-          
+         
+          delete[] matData;
         } else {
 //          throw ICLException("Tried to set a non-existent uniform.");
         }

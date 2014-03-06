@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <iostream>
 #include <exception>
 #include <string>
@@ -41,7 +42,7 @@ namespace icl {
     class ICLException : public std::runtime_error
     {
     public:
-      ICLException (const std::string &msg) throw() : runtime_error(msg){}
+      ICLException(const std::string &msg) throw() : runtime_error(msg){}
       void report();
     };
   

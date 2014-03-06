@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLIO/Grabber.h>
 #include <ICLIO/FileGrabberPlugin.h>
 
@@ -49,7 +50,7 @@ namespace icl{
         }
         \endcode
     **/
-    class FileGrabber : public Grabber {
+    class ICLIO_API FileGrabber : public Grabber {
       public:
 
         /// for the internal plugin concept

@@ -38,7 +38,7 @@ using namespace icl::utils;
 namespace icl{
   namespace math{
     template<class T>
-    GenericHomography2D<T>::GenericHomography2D(const Point32f *x, const Point32f *y, int n,GenericHomography2D<T>::Algorithm alg){
+    GenericHomography2D<T>::GenericHomography2D(const Point32f *x, const Point32f *y, int n,typename GenericHomography2D<T>::Algorithm alg){
       if(alg == Simple){
         DynMatrix<T> X(n,3),Y(n,3);
         for(int i=0;i<n;++i){
@@ -88,8 +88,8 @@ namespace icl{
       }
     }
     
-    template struct GenericHomography2D<float>;
-    template struct GenericHomography2D<double>;
+    template struct ICLMath_API GenericHomography2D<float>;
+    template struct ICLMath_API GenericHomography2D<double>;
   
   } // namespace math
 }

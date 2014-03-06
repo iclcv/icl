@@ -49,17 +49,17 @@ namespace icl{
       /// Create UdpImageOutput with given targetPC and port
       /** Of targetPC is "", a null output is created, that must be initialized
           with init before send can be called */
-      ZmqImageOutput(int port=44444);
+      ICLIO_API ZmqImageOutput(int port=44444);
 
       /// Destructor
-      ~ZmqImageOutput();
+      ICLIO_API ~ZmqImageOutput();
 
       
       /// deferred initialization 
-      void init(int port=44444);
+      ICLIO_API void init(int port=44444);
       
       /// sender method
-      virtual void send(const core::ImgBase *image);
+      ICLIO_API virtual void send(const core::ImgBase *image);
       
       /// returns whether this is a null instance
       inline bool isNull() const { return !m_data; }

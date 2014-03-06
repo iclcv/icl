@@ -32,6 +32,7 @@
 
 #define NOMINMAX // needed for Win32 in order to not define min, max as macros
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLQt/PaintEngine.h>
 #include <QtGui/QFont>
 
@@ -54,7 +55,7 @@ namespace icl{
     
         @see ICL/trunk/ICLQt/test/ICLDrawDemo for more details
     */
-    class GLPaintEngine : public PaintEngine{
+    class ICLQt_API GLPaintEngine : public PaintEngine{
       public:
       
       GLPaintEngine(QGLWidget *widget);

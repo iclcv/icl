@@ -31,11 +31,12 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/ShallowCopyable.h>
+#include <ICLUtils/Any.h>
 #include <ICLCore/Img.h>
 #include <ICLCV/RegionPCAInfo.h>
 #include <ICLCV/LineSegment.h>
-#include <ICLUtils/Any.h>
 
 namespace icl{
   namespace cv{
@@ -95,7 +96,7 @@ namespace icl{
         debugging.
     **/
   
-    struct ImageRegion {
+    struct ICLCV_API ImageRegion {
   
       /// Internally handled data (not shallow copied, but simply linked to the real data that is managed by the RegionDetector
       ImageRegionData *m_data;

@@ -28,10 +28,10 @@
 **                                                                 **
 ********************************************************************/
 
-#include <ICLIO/DemoGrabber.h>
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Random.h>
+#include <ICLIO/DemoGrabber.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -71,11 +71,11 @@ namespace icl{
 
       // Configurable
       std::string blobvalue;
-      if(fabs(m_size.width-0.05 < 1E-5)){
+      if(fabs(m_size.width-0.05) < 1E-5){
         blobvalue = "5% of image size";
-      } else if (fabs(m_size.width-0.10 < 1E-5)){
+      } else if (fabs(m_size.width-0.10) < 1E-5){
         blobvalue = "10% of image size";
-      } else if (fabs(m_size.width-0.20 < 1E-5)){
+      } else if (fabs(m_size.width-0.20) < 1E-5){
         blobvalue = "20% of image size";
       }
       std::string sizevalue;

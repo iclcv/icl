@@ -29,8 +29,9 @@
 ********************************************************************/
 
 #pragma once
+
+#include <ICLUtils/CompatMacros.h>
 #include <ICLMath/FFTUtils.h>
-#include <ICLCore/ImgBase.h>
 #include <ICLCore/Img.h>
 #include <ICLFilter/UnaryOp.h>
 #include <cmath>
@@ -113,7 +114,7 @@ namespace icl{
   	<TR><TD>FB</TD><TD> 214 </TD><TD> 440 </TD><TD> 896 </TD><TD> 5509 </TD><TD> 1395 </TD><TD> 11064 </TD><TD> 438 </TD><TD> 1915 </TD></TR>
   	</TABLE>
     */
-  class FFTOp : public UnaryOp{
+  class ICLFilter_API FFTOp : public UnaryOp{
   
   private:
   	///Forwarddeklaration.

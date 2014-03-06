@@ -73,8 +73,18 @@ SET(HEADERS src/ICLMath/DynMatrix.h
 	    src/ICLMath/StochasticOptimizer.h
 	    src/ICLMath/StraightLine2D.h)
 
+IF(WIN32)
 INCLUDE_DIRECTORIES(BEFORE src
+                           ${ICL_SOURCE_DIR}/3rdparty/zlib
+                           ${ICL_SOURCE_DIR}/3rdparty/libpng
+                           ${ICL_SOURCE_DIR}/3rdparty/libjpeg
+                           ${CMAKE_BINARY_DIR}/src
                            ${ICL_SOURCE_DIR}/ICLUtils/src)
+ELSE()
+INCLUDE_DIRECTORIES(BEFORE src
+                           ${CMAKE_BINARY_DIR}/src
+                           ${ICL_SOURCE_DIR}/ICLUtils/src)
+ENDIF()
 
 ADD_LIBRARY(ICLMath SHARED ${SOURCES} ${HEADERS})
 

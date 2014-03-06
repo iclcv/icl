@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include <ICLCore/ImgBase.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
 
 namespace icl{
@@ -55,7 +55,7 @@ namespace icl{
         and gradient angle depends on the given calculation mode
         flag.      
     */
-    class GradientImage{
+    class ICLFilter_API GradientImage{
       public:
       
       /// flags to indicate which gradient information should be calculated

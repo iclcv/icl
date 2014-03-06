@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLQt/AbstractPlotWidget.h>
 
 namespace icl{
@@ -242,7 +243,7 @@ namespace icl{
         \endcode
         \image html plot_widget_g.png
     */
-    class LowLevelPlotWidget : public virtual AbstractPlotWidget{
+    class ICLQt_API LowLevelPlotWidget : public virtual AbstractPlotWidget{
       class Data; //!< pimpl
       Data *data; //!< pimpl pointer
       

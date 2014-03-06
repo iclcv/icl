@@ -30,9 +30,10 @@
 
 #pragma once
 
-#include <string>
-#include <QtCore/QString>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLQt/GUIHandle.h>
+#include <QtCore/QString>
+#include <string>
 
 /** \cond */
 class QLineEdit;
@@ -42,7 +43,7 @@ namespace icl{
   namespace qt{
     
     /// Class for handling "string" textfield components \ingroup HANDLES
-    class StringHandle : public GUIHandle<QLineEdit>{
+    class ICLQt_API StringHandle : public GUIHandle<QLineEdit>{
       public:
       /// Creates an empty string handle
       StringHandle(){}

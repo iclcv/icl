@@ -30,12 +30,13 @@
 
 #pragma once
 
-#include <ICLQt/Widget.h>
-#include <QtCore/QMutex>
+#include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/VisualizationDescription.h>
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/Rect32f.h>
 #include <ICLMath/FixedMatrix.h>
-#include <ICLUtils/VisualizationDescription.h>
+#include <ICLQt/Widget.h>
+#include <QtCore/QMutex>
 
 namespace icl{
   /** \cond */
@@ -138,7 +139,7 @@ int main(int n, char **ppc){
     \image html drawing-example.png "Screenshot of sample application"
 </TD></TR></TABLE>
 */
-    class ICLDrawWidget : public ICLWidget {
+    class ICLQt_API ICLDrawWidget : public ICLWidget {
       template<class T> 
       static inline void icl_given_type_has_no_int_index_operator(const T &t){
         t[0];

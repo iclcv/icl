@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLQt/GUIHandle.h>
 
 namespace icl{
@@ -44,7 +45,7 @@ namespace icl{
     /** \endcond */
   
     /// Handle class for image components \ingroup HANDLES
-    class DrawHandle3D : public GUIHandle<ICLDrawWidget3D>{
+    class ICLQt_API DrawHandle3D : public GUIHandle<ICLDrawWidget3D>{
       public:
       
       /// Create an empty handle

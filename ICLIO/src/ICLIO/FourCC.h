@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/BasicTypes.h>
 #include <ICLUtils/Exception.h>
 #include <string>
@@ -40,7 +41,7 @@ namespace icl{
     
     /// Wrapper class for fourcc color codes
     /** @see ColorFormatDecoder */
-    class FourCC{
+    class ICLIO_API FourCC{
       icl32s key; //!< internally a fourcc is represented by an u-int value
         
       public:

@@ -30,12 +30,13 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <QtGui/QPushButton>
 
 namespace icl{
   namespace qt{
   
-    class ToggleButton : public QPushButton{
+    class ICLQt_API ToggleButton : public QPushButton{
       Q_OBJECT;
       public:
       ToggleButton(const std::string &untoggledText, 

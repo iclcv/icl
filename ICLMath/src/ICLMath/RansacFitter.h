@@ -30,11 +30,12 @@
 
 #pragma once
 
-#include <ICLMath/DynVector.h>
-#include <ICLMath/FixedVector.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Function.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/Random.h>
+#include <ICLMath/DynVector.h>
+#include <ICLMath/FixedVector.h>
 
 namespace icl{
   namespace math{

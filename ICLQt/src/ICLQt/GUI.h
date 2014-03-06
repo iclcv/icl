@@ -30,8 +30,7 @@
 
 #pragma once
 
-#include <string>
-#include <vector>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/SmartPtr.h>
 #include <ICLUtils/Function.h>
 #include <ICLQt/DataStore.h>
@@ -39,6 +38,8 @@
 #include <QtGui/QLayout>
 #include <QtGui/QWidget>
 #include <QtGui/QApplication>
+#include <string>
+#include <vector>
 
 /** \cond */
 class QLayout;
@@ -55,7 +56,7 @@ namespace icl{
   
     /// Main Class of ICL's GUI creation framework
     /** Please refer to the ICL manual for details */
-    class GUI{
+    class ICLQt_API GUI{
       private:
       /// stream operator to add new widgets
       /** if the given definition is "" or "dummy", this operator does nothing */
@@ -172,7 +173,7 @@ namespace icl{
       /** Complex callback methods get the GUI components handle name as
           parameters. By these means, single callbacks can be registered
           to several components and still be able to handle events differently */
-      typedef utils::Function<void,const std::string&> ComplexCallback;
+      typedef utils::Function<void, const std::string&> ComplexCallback;
       
       
       /// registers a callback function on each component 

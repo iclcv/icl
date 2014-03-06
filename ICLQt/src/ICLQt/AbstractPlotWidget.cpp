@@ -303,7 +303,11 @@ namespace icl{
       }
       else if(p.name == "fullscreen"){
         if(isFullScreen()){
+#ifdef ICL_SYSTEM_WINDOWS
+          setWindowState((Qt::WindowState)((icl32s)windowState() & !(icl32s)Qt::WindowFullScreen));
+#else
           setWindowState(windowState() & !Qt::WindowFullScreen);
+#endif
           setParent(data->parentBeforeFullScreen);
           if(data->parentBeforeFullScreen && data->parentBeforeFullScreen->layout()){
             data->parentBeforeFullScreen->layout()->addWidget(this);
@@ -713,8 +717,8 @@ namespace icl{
         p.drawLine(q - QPoint(0,9), q - QPoint(-9,9));
   
         
-        if(fabs(data->mousePressStart.x() - q2.x()) > 100
-           || fabs(data->mousePressStart.y() - q2.y()) > 10){
+        if(abs(data->mousePressStart.x() - q2.x()) > 100
+           || abs(data->mousePressStart.y() - q2.y()) > 10){
   
           Point32f pd2 = winToDraw(Point(q2.x(), q2.y()));
           QString t = QString("(%1,%2)").arg(pd2.x).arg(pd2.y);

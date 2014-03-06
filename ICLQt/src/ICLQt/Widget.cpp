@@ -129,7 +129,7 @@ namespace icl{
       GLImg tmImage;
   
       Function<void> vcb;
-      Function<void,bool> bcb;
+      Function<void, bool> bcb;
   
       std::string toolTipText;
   
@@ -503,7 +503,11 @@ namespace icl{
       }
       void leaveFullScreen(){
         if(parent->isFullScreen()){
+#ifdef ICL_SYSTEM_WINDOWS
+          parent->setWindowState((Qt::WindowState)((icl32s)parent->windowState() & !(icl32s)Qt::WindowFullScreen));
+#else
           parent->setWindowState(parent->windowState() & !Qt::WindowFullScreen);
+#endif
           parent->setParent(parentBeforeFullScreen);
           if(parentBeforeFullScreen && parentBeforeFullScreen->layout()){
             parentBeforeFullScreen->layout()->addWidget(parent);
@@ -520,7 +524,7 @@ namespace icl{
       }
   
       void autoCapDeviceChanged(){
-        std::string newDevice = menu["auto-cap-device"];
+        std::string newDevice = menu["auto-cap-device"].as<std::string>();
         if(newDevice == "video") menu["auto-cap-filepattern"] = str("video.avi,MP42,VGA,25");
         else if(newDevice == "xcfp") menu["auto-cap-filepattern"] = str("publisher-name");
         else if(newDevice == "xcfs") menu["auto-cap-filepattern"] = str("stream-name");
@@ -1143,7 +1147,7 @@ namespace icl{
       
       data->menu.create();
       
-      data->menu["auto-cap-device"].registerCallback(function(data,&ICLWidget::Data::autoCapDeviceChanged));
+      data->menu["auto-cap-device"].registerCallback(utils::function(data,&ICLWidget::Data::autoCapDeviceChanged));
   
   
       (*data->menu.get<ComboHandle>("auto-cap-mode"))->setToolTip("== Choose What to Capture =="
@@ -1280,14 +1284,14 @@ namespace icl{
         BoxHandle &h = data->menu.get<BoxHandle>("lic");
         QTextEdit *lic = new QTextEdit(*h);
         lic->setReadOnly(true);
-        lic->setWordWrapMode(QTextOption::QTextOption::NoWrap);
+        lic->setWordWrapMode(QTextOption::NoWrap);
         lic->setText(pa_get_license().c_str());
         h.add(lic,"License Information");
       }{
         BoxHandle &h = data->menu.get<BoxHandle>("help");
         QTextEdit *help = new QTextEdit(*h);
         help->setReadOnly(true);
-        help->setWordWrapMode(QTextOption::QTextOption::NoWrap);
+        help->setWordWrapMode(QTextOption::NoWrap);
         std::string text = pa_get_help_text();
         help->setText(text.length() ? text.c_str() : 
                      "no help information available\n"
@@ -2501,7 +2505,7 @@ namespace icl{
     void ICLWidget::setInfoText(const std::string &infoText){
       if(!m_data->infoText.size()){
         static Img8u infoIcon = IconFactory::create_image("info");
-        addSpecialButton("info",&infoIcon,function(this,&ICLWidget::showInfoDialog),"shows extra information");
+        addSpecialButton("info",&infoIcon,utils::function(this,&ICLWidget::showInfoDialog),"shows extra information");
       }
       m_data->infoText = infoText;
     }

@@ -56,7 +56,7 @@
 #include <ICLQt/LabelHandle.h>
 #include <ICLQt/ButtonHandle.h>
 #include <ICLQt/DrawHandle.h>
-#ifdef HAVE_OPENGL
+#ifdef ICL_HAVE_OPENGL
 #include <ICLQt/DrawHandle3D.h>
 #endif
 #include <ICLQt/StringHandle.h>
@@ -74,7 +74,7 @@
 #include <QtGui/QPushButton>
 #include <ICLQt/Widget.h>
 #include <ICLQt/DrawWidget.h>
-#ifdef HAVE_OPENGL
+#ifdef ICL_HAVE_OPENGL
 #include <ICLQt/DrawWidget3D.h>
 #endif
 #include <ICLUtils/StringUtils.h>
@@ -259,7 +259,7 @@ INST_OTHER_TYPES
            return apply(*reinterpret_cast<S*>(src),*reinterpret_cast<D*>(dst));  \
         }                                                                        \
       };                                                                         \
-      template struct AssignSpecial<S,D>;
+      //template struct AssignSpecial<S,D>; // TODO: maybe we need this one in Unix
 
     // ComboHandle
     FROM_TO_NUM(ComboHandle,dst.setSelectedIndex((int)src),dst=src.getSelectedIndex());
@@ -384,7 +384,7 @@ INST_OTHER_TYPES
     FROM_TO(DrawHandle,ICLWidget*,dst = *src);
 
     //FROM_TO(DataStore::Data::Event,DrawHandle,if(src.message=="update")dst.update());
-#ifdef HAVE_OPENGL
+#ifdef ICL_HAVE_OPENGL
     // DrawHandle3D
     FROM_IMG(DrawHandle3D,(*dst)->setImage(&src));
     FROM_IMG_PTR(DrawHandle3D,dst=src);
@@ -624,7 +624,7 @@ namespace icl{
       ADD(DrawHandle,ICLWidget*);
   
   
-  #ifdef HAVE_OPENGL
+  #ifdef ICL_HAVE_OPENGL
       // DrawHandle3D
       FROM_IMG_ADD(DrawHandle3D);
       FROM_IMG_PTR_ADD(DrawHandle3D);

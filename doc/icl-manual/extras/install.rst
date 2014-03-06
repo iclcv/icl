@@ -23,9 +23,11 @@ Table of Contents
 * :ref:`install.dependencies`
 
   * :ref:`install.dependencies.mandatory`
+  * :ref:`install.dependencies.doc`
   * :ref:`install.dependencies.optional`
 
 * :ref:`install.source`
+* :ref:`install.winsource`
 * :ref:`install.binary`
 * :ref:`install.special`
 
@@ -61,6 +63,47 @@ packages can be installed via::
   sudo apt-get install libjpeg-dev libpng-dev libz-dev 
 
 The libpthread-dev library comes with the C/C++ compiler
+
+In Windows you only need to get libpthread. All other
+mandatory libraries are provided by the ICL.
+libpthread can be downloaded on the following website::
+
+* https://www.sourceware.org/pthreads-win32/
+
+
+.. _install.dependencies.doc:
+
+Dependencies for the Documentation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In order to create the documentation of ICL and this manual you need to install
+some tools:
+
+* **Python 2.7.x**
+* **pyparsing**
+* **Sphinx**
+* **Doxygen**
+
+You can get Python on the following website:
+
+* http://python.org/download/
+
+After installing Python it is recommended to add the Python and
+Python/Scripts directory to the environment variable **PATH**.
+For an easy installation of **pyparsing** and **Sphinx** download setuptools here:
+
+https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py
+
+Using the command prompt browse to the directory with the previously downloaded file
+and run the following commands to install **setuptools**, **pyparsing** and **Sphinx**::
+
+python ez_setup.py
+easy_install pyparsing
+easy_install sphinx
+
+Now you only need **Doxygen** which can be found here:
+
+http://www.stack.nl/~dimitri/doxygen/download.html
 
 
 .. _install.dependencies.optional:
@@ -377,11 +420,10 @@ exchange image data between different processes and PCs.
 * **Ubuntu packages:**  no in standard, but on the same server as
   the ICL debian packages sources soon
 
-   
 .. _install.source:
 
-Installaion from Source
-"""""""""""""""""""""""
+Installation from Source
+""""""""""""""""""""""""
 
 ICL uses CMake as build system. After checking out the sources, 
 it is recommended to used an extra build folder in order keep the
@@ -476,10 +518,84 @@ and defines some variables can be found
       -DENABLE_FASTMATH_BUILD_OPTION=ON \
       ..
 
+   
+.. _install.winsource:
 
+Installation from Source in Windows
+""""""""""""""""""""""""""""""""""
+
+Before you can install the ICL you need to get some tools:
+
+* **Subversion:** http://subversion.apache.org/packages.html
+* **Visual Studio:** http://www.visualstudio.com/downloads/download-visual-studio-vs
+* **CMake:** http://www.cmake.org/cmake/resources/software.html
+
+Then you can open your command window and check out the source files::
+
+   svn co https://opensource.cit-ec.de/svn/icl/trunk ICL
+
+In CMake you have to choose the directory with the source code and
+where to build the binaries first. By clicking on the Configure button
+you have to specify the generator. In our case it is Visual Studio.
+In addition you have the choice between a 32 bit and 64 bit compiler.
+By confirming the selection you get a list with the configuration options
+for the project.
+Every time you change one
+of the options you have to update the settings by clicking on the
+Configure button again. In case of an error CMake will show it
+in its output window. A red message means that the progression cannot
+go further. Some errors are not critical and these do not stop
+the progression, but some features of the ICL could be limited.
+
+.. image:: /extras/images/notfound.png
+
+Now you have to configure at least the path to the pthreads folder, if it
+is not detected automatically. This can be done by choosing the root directory
+with the library and the include files by setting the variable **PTHREADS_ROOT**.
+Another way is to select the pthread library **PTHREADS_LIBRARIES** and the
+include directory **PTHREADS_INCLUDE_DIR** directly.
+
+.. image:: /extras/images/pthreads_dir.png
+
+Every other option in the
+list is optional. By adding more libraries you have to do the same like with pthreads
+after updating the configuration.
+At the end all project files will be created by using the Generate button.
+
+In the build folder you will find the file **ICL.sln** you can use to open
+the project with Visual Studio. In the IDE you should select the configuration
+type first. You have the choice between **Debug** and **Release** binaries.
+
+.. image:: /extras/images/release.png
+
+In order to build the binaries you have to build the project **ALL_BUILD**.
+If you want to create the documentation and the manual you have to build the projects
+**doc** and **manual** explicitly.
+
+You can use the project **INSTALL** to copy all generated files, which are needed for
+your own projects, into the installation directory. This folder is selected
+during the CMake configuration.
+
+At this point it is recommended to add an enviroment variable and add the
+directory with the created Dynamic-link Libraries (DLL's) to your system path.
+For easy access add the enviroment variable
+**ICL_DIR** with directory where have installed the ICL. This can be done with the
+following line in the command prompt::
+
+   setx -m ICL_DIR INSTALL_DIR
+
+Here **INSTALL_DIR** is the path to the folder containing the installed files.
+
+Applications which are using the ICL need an access to the ICL libraries. The nasty
+way is to put the DLL's and the application executable in the same folder.
+By adding the directory of the DLL's to the system variable **PATH** you will
+avoid the previous mentioned way. This variable defines directories where
+an application can search for missing libraries.
+
+.. TODO:: link how to build project with icl
 
 .. _install.binary:
-
+   
 Installaion using Binary Packages
 """""""""""""""""""""""""""""""""
 
@@ -499,7 +615,12 @@ here share our experiences with you.
 Installing and Using Basler Pylon Drivers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Download binary packages e.g.
+If you are using Windows for the installation you only need to install
+the Pylon SDK, which is found on the following website:
+
+* http://www.baslerweb.com/Downloads-Software-43868.html
+
+In Linux download binary packages e.g.
 
 * 32bit: http://www.baslerweb.com/7/0/9/9/pylon-2.3.3-1337-32.tar.gz
 * 64bit: http://www.baslerweb.com/7/0/9/9/pylon-2.3.3-1337-64.tar.gz

@@ -30,8 +30,10 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <string.h>
 #include <cmath>
+
 namespace icl{
   namespace utils{
     /// Utility class for fast calculation of a median (calculating a median in O(N))

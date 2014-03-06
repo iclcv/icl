@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLMath/SOM.h>
 
 namespace icl{
@@ -43,7 +44,7 @@ namespace icl{
         of x-Cells and y-Cells directly as well as a specialized getNeuron()-
         function.
     */
-    class SOM2D : public SOM{
+    class ICLMath_API SOM2D : public SOM{
   
       /** \cond this function is just used here for an inline vector creation*/
       template<class T>
@@ -67,7 +68,7 @@ namespace icl{
       SOM2D(unsigned int dataDim, 
             unsigned int nXCells, 
             unsigned int nYCells, 
-            const std::vector<Range<float> >& prototypeBounds, 
+            const std::vector<utils::Range<float> >& prototypeBounds, 
             float epsilon=0.1, 
             float sigma=1):SOM(dataDim,vec2(nXCells,nYCells),prototypeBounds,epsilon,sigma){}
   

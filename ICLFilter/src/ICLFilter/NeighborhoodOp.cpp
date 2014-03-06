@@ -63,7 +63,7 @@ namespace icl {
       oROIsize = newROI.getSize();
   
   
-  #ifdef HAVE_IPP // workaround for IPP bug (anchor not correctly handled)
+  #ifdef ICL_HAVE_IPP // workaround for IPP bug (anchor not correctly handled)
       if (m_oMaskSize.width % 2 == 0) oROIsize.width--;
       if (m_oMaskSize.height % 2 == 0) oROIsize.height--;
   #endif
@@ -81,13 +81,13 @@ namespace icl {
           if (oROIoffset.y < m_oAnchor.y) oROIoffset.y = m_oAnchor.y;
           if (oROIsize.width > (a=oSize.width - (oROIoffset.x + m_oMaskSize.width - m_oAnchor.x - 1))) {
           oROIsize.width = a;
-          #ifdef HAVE_IPP // workaround for IPP bug (anchor not correctly handled)
+          #ifdef ICL_HAVE_IPP // workaround for IPP bug (anchor not correctly handled)
           if (m_oMaskSize.width % 2 == 0) oROIsize.width--;
           #endif
           }
           if (oROIsize.height > (a=oSize.height - (oROIoffset.y + m_oMaskSize.height - m_oAnchor.y - 1))) {
           oROIsize.height = a;
-          #ifdef HAVE_IPP // workaround for IPP bug (anchor not correctly handled)
+          #ifdef ICL_HAVE_IPP // workaround for IPP bug (anchor not correctly handled)
           if (m_oMaskSize.height % 2 == 0) oROIsize.height--;
           #endif
           }

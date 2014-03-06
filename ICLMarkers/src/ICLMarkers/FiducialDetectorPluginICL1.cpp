@@ -262,7 +262,7 @@ namespace icl{
   
     /// marker is 13x17 cells
     Img8u FiducialDetectorPluginICL1::createMarker(const Any &whichOne,const Size &size, const ParamList &params){
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
       Size size2 = size * 2; // simulate anti-aliasing by rendering the marker in double size before downscaling
       int which = whichOne;
       const int white = which > 0 ? 255 :  0;

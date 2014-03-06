@@ -64,7 +64,7 @@ namespace icl{
       // define specializations for all optypes
       SPECIALIZE(and,(t&&val)*TRUE_VAL);
       SPECIALIZE(or,(t||val)*TRUE_VAL);
-      SPECIALIZE(xor,(!!val xor !!t)*TRUE_VAL); // using !! to convert v into boolean
+      SPECIALIZE(xor,(!!val ^ !!t)*TRUE_VAL); // using !! to convert v into boolean
       SPECIALIZE(not,(!t)*TRUE_VAL);
       SPECIALIZE(binAnd,t&val);
       SPECIALIZE(binOr,t|val);

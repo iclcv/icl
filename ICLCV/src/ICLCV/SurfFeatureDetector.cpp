@@ -34,12 +34,12 @@
 #include <ICLCore/CCFunctions.h>
 #include <ICLUtils/Range.h>
 
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 #include <ICLCV/CLSurfLib.h>
 #include <ICLUtils/CLProgram.h>
 #endif
 
-#ifdef HAVE_OPENCV
+#ifdef ICL_HAVE_OPENCV
 #include <ICLCV/OpenSurfLib.h>
 #include <ICLCore/OpenCV.h>
 
@@ -56,13 +56,13 @@ namespace icl{
       std::vector<SurfFeature> currFeatures;
       std::vector<SurfMatch> currMatches;
       
-#ifdef HAVE_OPENCV
+#ifdef ICL_HAVE_OPENCV
       bool opensurf_backend;
       IplImage *opensurf_refimage;
       IplImage *opensurf_imagebuffer;
 #endif
       
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
       bool clsurf_backend;
       clsurf::Surf *clsurf_curimage_backend;
       clsurf::Surf *clsurf_refimage_backend;
@@ -93,14 +93,14 @@ namespace icl{
       float threshold;
       
       Data(){
-#ifdef HAVE_OPENCV
+#ifdef ICL_HAVE_OPENCV
         opensurf_refimage = 0;
         opensurf_imagebuffer = 0;
         opensurf_backend = false;
         
 #endif
 
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
         clsurf_backend = false;
         clsurf_curimage_backend = 0;
         clsurf_refimage_backend = 0;
@@ -109,14 +109,14 @@ namespace icl{
       }
       
       ~Data(){
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
         ICL_DELETE(clsurf_refimage_backend);
         ICL_DELETE(clsurf_curimage_backend);
 #endif
       }
       
       void updateReferenceFeatures(){
-#ifdef HAVE_OPENCV
+#ifdef ICL_HAVE_OPENCV
         if(opensurf_backend && opensurf_refimage){
           refFeatures.clear();
           static const bool upright = false;
@@ -125,7 +125,7 @@ namespace icl{
         }
 #endif
         
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
         if(clsurf_backend){
           ICL_DELETE(clsurf_refimage_backend);          
           ICL_DELETE(clsurf_curimage_backend);          
@@ -145,7 +145,7 @@ namespace icl{
 
     SurfFeatureDetector::SurfFeatureDetector(int octaves, int intervals, int sampleStep, 
                                              float threshold, const std::string &plugin){
-#if not defined(HAVE_OPENCV) && not defined(HAVE_OPENCL)
+#if not defined(ICL_HAVE_OPENCV) && not defined(ICL_HAVE_OPENCL)
       throw ICLException("Unable to create SurfFeatureDetector: no backend available");
 #endif
       
@@ -153,13 +153,13 @@ namespace icl{
         throw ICLException("Unable to create SurfFeatureDetector: invalid plugin name (allowed is clsurf, opensurf and best)");
       }
       
-#ifndef HAVE_OPENCV
+#ifndef ICL_HAVE_OPENCV
       if(plugin == "opensurf"){
         throw ICLException("Unable to create SurfFeatureDetector with opensurf-backend (OpenCV dependency is missing)");
       }
 #endif
 
-#ifndef HAVE_OPENCL
+#ifndef ICL_HAVE_OPENCL
       if(plugin == "clsurf"){
         throw ICLException("Unable to create SurfFeatureDetector with clsurf-backend (OpenCL dependency is missing)");
       }
@@ -171,16 +171,16 @@ namespace icl{
       m_data->sampleStep = sampleStep;
       m_data->threshold = threshold;
 
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
       if(plugin == "clsurf" || plugin == "best"){
         m_data->clsurf_backend = true;
       }
 #endif
 
 
-#ifdef HAVE_OPENCV
+#ifdef ICL_HAVE_OPENCV
 
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
       if(!m_data->clsurf_backend){
         m_data->opensurf_backend = true;
       }
@@ -190,7 +190,7 @@ namespace icl{
 #endif
       
 
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
       if(m_data->clsurf_backend){
         m_data->refFeaturesDirty = true;
         static const char *match_program = (
@@ -284,7 +284,7 @@ namespace icl{
     
     const std::vector<SurfFeature> &SurfFeatureDetector::detect(const core::ImgBase *image){
       ICLASSERT_THROW(image,ICLException("SurfFeatureDetector::detect: given image was null"));
-#ifdef HAVE_OPENCV
+#ifdef ICL_HAVE_OPENCV
       if(m_data->opensurf_backend){
         core::img_to_ipl(image,&m_data->opensurf_imagebuffer);
         m_data->currFeatures.clear();
@@ -297,7 +297,7 @@ namespace icl{
       }
 #endif
 
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
       if(m_data->clsurf_backend){
         if(!m_data->clsurf_curimage_backend ||
            m_data->clsurf_curimage_size != image->getSize()){
@@ -316,14 +316,14 @@ namespace icl{
 
     void SurfFeatureDetector::setReferenceImage(const core::ImgBase *image){
       ICLASSERT_THROW(image,ICLException("SurfFeatureDetector::setReferenceImage: given image was null"));
-#ifdef HAVE_OPENCV
+#ifdef ICL_HAVE_OPENCV
       if(m_data->opensurf_backend){
         core::img_to_ipl(image,&m_data->opensurf_refimage);
         m_data->updateReferenceFeatures();
       }
 #endif
 
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
       if(m_data->clsurf_backend){
         cc(image, &m_data->clsurf_refimage);
 
@@ -346,7 +346,7 @@ namespace icl{
     }
 
 
-#ifdef HAVE_OPENCL    
+#ifdef ICL_HAVE_OPENCL    
     static void adapt_cl_buffer_size(CLProgram &prog, CLBuffer &buffer, int &currentSize, int targetSize, 
                                      const char *bufferType, const std::string &name){
       if(currentSize < targetSize || currentSize > targetSize*10){
@@ -370,7 +370,7 @@ namespace icl{
 
       matches.clear();
       
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
       if(m_data->clsurf_backend){
         if(m_data->refFeaturesDirty){
           adapt_cl_buffer_size(m_data->matchProgram, m_data->matchBufferRef, m_data->matchBufferRefSize,
@@ -428,7 +428,7 @@ namespace icl{
       }
 #endif
 
-#ifdef HAVE_OPENCV
+#ifdef ICL_HAVE_OPENCV
       if(m_data->opensurf_backend){
         for(size_t j=0;j<cur.size();++j){
           float ds[2] = { Range32f::limits().maxVal, Range32f::limits().maxVal };

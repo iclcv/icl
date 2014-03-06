@@ -73,7 +73,7 @@ namespace icl{
     // }}}
     
     // export these functions
-  #define ICL_INSTANTIATE_DEPTH(D) template void ImgBorder::fixed<icl##D>(Img<icl##D> *im,icl##D *val);
+  #define ICL_INSTANTIATE_DEPTH(D) template ICLCore_API void ImgBorder::fixed<icl##D>(Img<icl##D> *im,icl##D *val);
     ICL_INSTANTIATE_ALL_DEPTHS
   #undef ICL_INSTANTIATE_DEPTH
   
@@ -173,7 +173,7 @@ namespace icl{
       
       switch (poImage->getDepth()){
         case depth8u:
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
           for(int c=0;c<poImage->getChannels();c++){
             ippiCopyReplicateBorder_8u_C1IR(poImage->asImg<icl8u>()->getROIData(c),poImage->getLineStep(),
                                           poImage->getROISize(),poImage->getSize(), 
@@ -184,7 +184,7 @@ namespace icl{
   #endif
           break;
         case depth32f:
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
           for(int c=0;c<poImage->getChannels();c++){ /// icl32f-case using Ipp32s method
             ippiCopyReplicateBorder_32f_C1IR(poImage->asImg<icl32f>()->getROIData(c),poImage->getLineStep(),
                                            poImage->getROISize(),poImage->getSize(), 

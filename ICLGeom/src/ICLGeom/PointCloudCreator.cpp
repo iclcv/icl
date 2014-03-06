@@ -31,7 +31,7 @@
 #include <ICLGeom/PointCloudCreator.h>
 #include <ICLCore/Img.h>
 
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 #include <ICLGeom/PointCloudCreatorCL.h>
 #endif
 
@@ -57,7 +57,7 @@ namespace icl{
       PointCloudCreator::DepthImageMode mode;    // memorized for easy copying
       const Img32f *lastDepthImageMM;
  
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
       bool clReady;
       bool clUse;
       SmartPtr<PointCloudCreatorCL> creatorCL;
@@ -104,7 +104,7 @@ namespace icl{
           }
         }
 
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
         clUse=true;
         creatorCL = new PointCloudCreatorCL(depthImageSize, viewRayDirections);
         clReady = creatorCL->isCLReady();
@@ -120,7 +120,7 @@ namespace icl{
     
     
     PointCloudCreator::PointCloudCreator():m_data(new Data){
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
       m_data->clUse=true;  
       m_data->creatorCL = 0;
       m_data->clReady = false;
@@ -285,7 +285,7 @@ namespace icl{
       const int H = m_data->colorImageSize.height;
       const int DIM = m_data->depthImageSize.getDim();
       
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
       bool canUseOpenCL = m_data->clReady && m_data->clUse;
       if(rgbImage) canUseOpenCL &= (depthImageMM.getSize() == rgbImage->getSize());
 #endif
@@ -299,7 +299,7 @@ namespace icl{
       
       if(m_data->mode == KinectRAW11Bit){
         if(destination.supports(PointCloudObjectBase::RGBA32f)){
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
           if(canUseOpenCL){
             if(X){ 
               DataSegment<float,4> rgba = destination.selectRGBA32f();
@@ -327,7 +327,7 @@ namespace icl{
         }else{
           // point cloud supports no color information: deactivate mapping
           static DataSegment<float,4> dummy;
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
           if(canUseOpenCL){
             m_data->creatorCL->create(true,&depthImageMM, O, DIM, xyz, dirs, depthScaling);
           }else{
@@ -340,7 +340,7 @@ namespace icl{
         }
       }else{
         if(destination.supports(PointCloudObjectBase::RGBA32f)){
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
           if(canUseOpenCL){
             if(X){ 
               DataSegment<float,4> rgba = destination.selectRGBA32f();
@@ -368,7 +368,7 @@ namespace icl{
         }else{
           // point cloud supports no color information: deactivate mapping
           static DataSegment<float,4> dummy;
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
           if(canUseOpenCL){
             m_data->creatorCL->create(false,&depthImageMM, O, DIM, xyz, dirs, depthScaling);
           }else{
@@ -497,7 +497,7 @@ namespace icl{
     }
     
     void PointCloudCreator::setUseCL(bool use){
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
       m_data->clUse=use;
 #else
       (void)use;

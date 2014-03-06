@@ -30,10 +30,15 @@
 
 #pragma once
 
-#ifndef HAVE_OPENGL
-#warning "this header must not be included if HAVE_OPENGL is not defined"
+#ifndef ICL_HAVE_OPENGL
+  #if WIN32
+    #pragma WARNING("this header must not be included if ICL_HAVE_OPENGL is not defined")
+  #else
+    #warning "this header must not be included if ICL_HAVE_OPENGL is not defined"
+  #endif
 #else
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/SceneObject.h>
 
 namespace icl{
@@ -44,7 +49,7 @@ namespace icl{
         class. Simply set scene.setDrawCoordinateFrameEnabled(true,l,t) to
         visualize a Scene's coordintate frame. If you need a coordinate frame
         that is not alligned with the scene's origin, you can use this class. */
-    class CoordinateFrameSceneObject : public SceneObject{
+    class ICLGeom_API CoordinateFrameSceneObject : public SceneObject{
       
       /// length for x-, y- and z-axis
       float axisLength;

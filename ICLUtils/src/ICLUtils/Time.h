@@ -28,10 +28,11 @@
 **                                                                 **
 ********************************************************************/
 
+#include <ICLUtils/CompatMacros.h>
 #include <string>
 #include <iostream>
-
 #include <stdint.h>
+
 // **********************************************************************
 //
 // Copyright (c) 2003-2005 ZeroC, Inc. All rights reserved.
@@ -48,7 +49,7 @@ namespace icl{
   namespace utils{
   
     /// ICL Time class (taken from the Ice lib) \ingroup TIME
-    class Time {
+    class ICLUtils_API Time {
       public:
   
       /// internal data type (64Bit integer)
@@ -277,9 +278,9 @@ namespace icl{
               return t;
            }
   
-        friend std::ostream& operator<<(std::ostream&, const Time&);
+        friend ICLUtils_API std::ostream& operator<<(std::ostream&, const Time&);
   
-        friend std::istream& operator>>(std::istream&, Time&);
+        friend ICLUtils_API std::istream& operator>>(std::istream&, Time&);
   
      private:
   
@@ -287,10 +288,10 @@ namespace icl{
      };
   
      /// writes Time instances value type into the stream
-     std::ostream& operator<<(std::ostream&, const Time&);
+     ICLUtils_API std::ostream& operator<<(std::ostream&, const Time&);
   
      /// reads Time instances value type from the stream
-     std::istream& operator>>(std::istream&, Time&);
+     ICLUtils_API std::istream& operator>>(std::istream&, Time&);
   
   } // namespace utils
 } // End namespace icl

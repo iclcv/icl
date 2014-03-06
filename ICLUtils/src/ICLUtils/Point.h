@@ -30,16 +30,16 @@
 
 #pragma once
 
-#ifdef HAVE_IPP
-#include <ipp.h>
-#endif
-
 #include <ICLUtils/Macros.h>
 #include <ostream>
 
+#ifdef ICL_HAVE_IPP
+#include <ipp.h>
+#endif
+
 namespace icl{
   namespace utils{
-  #ifndef HAVE_IPP
+  #ifndef ICL_HAVE_IPP
     /// fallback implementation for the IppiPoint struct, defined in the ippi libb \ingroup TYPES
     struct IppiPoint {
       /// xpos
@@ -55,13 +55,16 @@ namespace icl{
     /** \endcond */
     
     /// Point class of the ICL used e.g. for the Images ROI offset \ingroup TYPES
-    class Point : public IppiPoint{
+    class ICLUtils_API Point : public IppiPoint{
       public:
       /// null Point is x=0, y=0
       static const Point null;
-  
+
+	    /// default constructor
+	    Point(){ this->x = 0; this->y = 0; }
+
       /// deep copy of a Point
-      Point(const Point& p=null){ this->x = p.x; this->y = p.y; }
+      Point(const Point& p){ this->x = p.x; this->y = p.y; }
   
       /// Create a point from given float point (values are rounded)
       Point(const Point32f &p);
@@ -112,10 +115,10 @@ namespace icl{
     };
     
     /// ostream operator (x,y)
-    std::ostream &operator<<(std::ostream &s, const Point &p);
+    ICLUtils_API std::ostream &operator<<(std::ostream &s, const Point &p);
     
     /// istream operator
-    std::istream &operator>>(std::istream &s, Point &p);
+    ICLUtils_API std::istream &operator>>(std::istream &s, Point &p);
   
     
   } // namespace utils

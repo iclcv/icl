@@ -32,19 +32,19 @@
 
 #include <ICLIO/ImageOutput.h>
 
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
 #include <ICLIO/SharedMemoryPublisher.h>
 #endif
 
-#ifdef HAVE_ZMQ
+#ifdef ICL_HAVE_ZMQ
 #include <ICLIO/ZmqImageOutput.h>
 #endif
 
-#ifdef HAVE_OPENCV
+#ifdef ICL_HAVE_OPENCV
 #include <ICLIO/OpenCVVideoWriter.h>
 #endif
 
-#if defined(HAVE_RSB) && defined(HAVE_PROTOBUF)
+#if defined(ICL_HAVE_RSB) && defined(ICL_HAVE_PROTOBUF)
 #include <ICLIO/RSBImageOutput.h>
 #endif
 
@@ -91,7 +91,7 @@ namespace icl{
       }
       std::vector<std::string> plugins;
       
-  #ifdef HAVE_OPENCV
+  #ifdef ICL_HAVE_OPENCV
       plugins.push_back("video~Video File~OpenCV based video file writer");
       if(type == "video"){
         try{
@@ -100,7 +100,7 @@ namespace icl{
           std::string fourcc = t.size() > 1 ? t[1] : str("DIV3");
           Size size = t.size() > 2 ? parse<Size>(t[2]) : Size::VGA;
           double fps = t.size() > 3 ? parse<double>(t[3]) : 24;
-          o = new OpenCVVideoWriter(t[0],fourcc,fps,size);
+          o = new OpenCVVideoWriter(t[0], fourcc, fps, size);
         }catch(const std::exception &e){
           ERROR_LOG("Unable to create OpenCVVideoWriter with this parameters: " << d << "(error: " << e.what() << ")");
         }
@@ -108,7 +108,7 @@ namespace icl{
       }
   #endif
 
-  #ifdef HAVE_ZMQ
+  #ifdef ICL_HAVE_ZMQ
       plugins.push_back("zmq~port~ZMQ-based network transfer");
       if(type == "zmq"){
         o = new ZmqImageOutput(parse<int>(d));
@@ -116,7 +116,7 @@ namespace icl{
 
   #endif
   
-  #ifdef HAVE_QT
+  #ifdef ICL_HAVE_QT
       plugins.push_back("sm~Shared Memory Segment ID~Qt based shared memory writer");
 
       if(type == "sm"){
@@ -124,7 +124,7 @@ namespace icl{
       }
   #endif
       
-  #if defined(HAVE_RSB) && defined(HAVE_PROTOBUF)
+  #if defined(ICL_HAVE_RSB) && defined(ICL_HAVE_PROTOBUF)
       plugins.push_back("rsb~[transport:]/scope~Network output stream");
       if(type == "rsb"){
         try{
@@ -172,7 +172,8 @@ namespace icl{
       
       if(!o){
         ERROR_LOG("unable to instantiate GenericImageOutput with type \"" << type << "\" and params \"" << d << "\"");
-      }else{
+      }
+      else{
         impl = SmartPtr<ImageOutput>(o);
       }
     }

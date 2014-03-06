@@ -30,14 +30,15 @@
 
 #pragma once
 
-#include <ICLCore/Img.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/File.h>
+#include <ICLCore/Img.h>
 
 
 namespace icl{
   namespace io{
     /// Interface class for writer plugins writing images in different file formats \ingroup FILEIO_G
-    class FileWriterPlugin{
+    class ICLIO_API FileWriterPlugin{
       public:
       virtual ~FileWriterPlugin() {}
       /// pure virtual writing function

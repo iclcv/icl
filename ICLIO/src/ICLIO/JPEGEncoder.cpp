@@ -75,7 +75,11 @@ namespace icl{
         md->buffer = buffer;
         md->outsize = outsize;
         md->mgr.init_destination = init_destination;
+#ifdef ICL_SYSTEM_WINDOWS
+        md->mgr.empty_output_buffer = (boolean(__cdecl *)(j_compress_ptr))empty_output_buffer;
+#else
         md->mgr.empty_output_buffer = empty_output_buffer;
+#endif
         md->mgr.term_destination = term_destination;
       }
     }

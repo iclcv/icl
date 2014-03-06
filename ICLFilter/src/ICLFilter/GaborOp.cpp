@@ -30,7 +30,7 @@
 
 #include <ICLFilter/GaborOp.h>
 #include <ICLFilter/ConvolutionOp.h>
-#include <math.h>
+#include <cmath>
 
 using namespace icl::utils;
 using namespace icl::core;

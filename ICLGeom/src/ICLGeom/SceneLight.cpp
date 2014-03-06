@@ -32,11 +32,16 @@
 #include <ICLGeom/SceneLightObject.h>
 #include <ICLGeom/Scene.h>
 
-#ifdef HAVE_OPENGL
+#ifdef ICL_HAVE_OPENGL
 
 #ifdef ICL_SYSTEM_APPLE
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
+#elif ICL_SYSTEM_WINDOWS
+#define NOMINMAX
+#include <Windows.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 #else
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -83,7 +88,7 @@ namespace icl{
 
     /// Cam is the Camera that is acutally used for rendering ...
     void SceneLight::setupGL(const Scene &scene, const Camera &cam) const{
-  #ifdef HAVE_OPENGL
+  #ifdef ICL_HAVE_OPENGL
       GLenum l = GL_LIGHT0 + index;
       if(!on){
         glDisable(l);

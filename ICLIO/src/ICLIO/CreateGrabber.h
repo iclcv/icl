@@ -30,9 +30,10 @@
 
 #pragma once
 
-#include <ICLCore/Color.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Time.h>
 #include <ICLUtils/Size32f.h>
+#include <ICLCore/Color.h>
 
 #include <ICLIO/Grabber.h>
 
@@ -44,7 +45,7 @@ namespace icl{
     /** This grabber can be used as placeholder whenever no senseful Grabber
         is available. It provides an instance of an image that is created with
         the icl::io::TestImages::create function */
-    class CreateGrabber : public Grabber{
+    class ICLIO_API CreateGrabber : public Grabber{
       public:
 
         /// default grab function

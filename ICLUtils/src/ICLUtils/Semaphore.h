@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/ShallowCopyable.h>
 
 
@@ -37,15 +38,15 @@ namespace icl{
   namespace utils{
     
     /** \cond */
-    class SemaphoreImpl;
-    class SemaphoreImplDelOp{
+    class ICLUtils_API SemaphoreImpl;
+    class ICLUtils_API SemaphoreImplDelOp{
       public: static void delete_func(SemaphoreImpl *impl);
     };
     /** \endcond */
     
     
     /// Simple Semaphore implementation wrapping the standard linux "sem_t"-struct \ingroup THREAD
-    class Semaphore : public ShallowCopyable<SemaphoreImpl,SemaphoreImplDelOp>{
+    class ICLUtils_API Semaphore : public ShallowCopyable<SemaphoreImpl, SemaphoreImplDelOp>{
       public:
       /// create a semaphore initialized with n resources
       Semaphore(int n=1);

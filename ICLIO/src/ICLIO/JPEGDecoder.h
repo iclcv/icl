@@ -30,14 +30,15 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/File.h>
-#include <ICLCore/Types.h>
 #include <ICLUtils/Exception.h>
+#include <ICLCore/Types.h>
 
 namespace icl{
   namespace io{
-    /// Utility class for decoding JPEG-Data streams (with HAVE_LIBJPEG only)
-    class JPEGDecoder{
+    /// Utility class for decoding JPEG-Data streams (with ICL_HAVE_LIBJPEG only)
+    class ICLIO_API JPEGDecoder{
       public:
       /// Decode JPEG-File (E.g. used for FileGrabberPluginJPEG)
       /** @param file must be opened in mode readBinary or not opend 

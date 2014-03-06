@@ -185,7 +185,7 @@ namespace icl{
         }
         data->settingUpDevice = false;
       }else if(source == "hz"){
-        std::string v = data->gui["hz"];
+        std::string v = data->gui["hz"].as<std::string>();
         if(v.length() < 5) {
           ERROR_LOG("invalid FPS-value [this should not happen]");
         }else{

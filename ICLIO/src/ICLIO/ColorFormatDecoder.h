@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
 #include <ICLIO/FourCC.h>
 
@@ -69,7 +70,7 @@ namespace icl{
   
         @see FourCC
     */
-    class ColorFormatDecoder{
+    class ICLIO_API ColorFormatDecoder{
       public:
       // conversion function type
       typedef void (*decoder_func)(const icl8u*,const utils::Size&,core::ImgBase**,std::vector<icl8u>*);

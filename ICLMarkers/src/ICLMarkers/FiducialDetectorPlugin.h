@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Any.h>
 #include <ICLUtils/Configurable.h>
 #include <ICLUtils/ParamList.h>
@@ -45,7 +46,7 @@ namespace icl{
   namespace markers{
     
     /// Generic Interface class for FiducialDetector plugins \ingroup PLUGINS
-    struct FiducialDetectorPlugin : public utils::Configurable{
+    struct ICLMarkers_API FiducialDetectorPlugin : public utils::Configurable{
       /// Camera structure for 3D feature estimation
       /** The actual camera instance is managed by the parent
           FiducialDetector instance */

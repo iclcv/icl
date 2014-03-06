@@ -31,9 +31,10 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/BasicTypes.h>
 #include <iostream>
 #include <stdlib.h>
-#include <math.h>
+#include <cmath>
 
 namespace icl {
   namespace utils{
@@ -156,7 +157,7 @@ namespace icl {
       throw OBJ;                      \
     }
   
-  #if __GNUC__ >= 3
+  #if (defined __GNUC__ && __GNUC__ >= 3)
   #define ICL_UNLIKELY(expr) __builtin_expect(expr, 0)
   #else
   #define ICL_UNLIKELY(expr) expr
@@ -174,17 +175,29 @@ namespace icl {
   #define ICL_INSTANTIATE_ALL_DEPTHS \
     ICL_INSTANTIATE_ALL_INT_DEPTHS \
     ICL_INSTANTIATE_ALL_FLOAT_DEPTHS
-  
+
+
+  #define ICL_INSTANTIATE_ALL_SECOND_DEPTHS(D) \
+    ICL_INSTANTIATE_DEPTH(D, 8u)  \
+    ICL_INSTANTIATE_DEPTH(D, 16s) \
+    ICL_INSTANTIATE_DEPTH(D, 32s) \
+    ICL_INSTANTIATE_DEPTH(D, 32f) \
+    ICL_INSTANTIATE_DEPTH(D, 64f)
+
+  #define ICL_INSTANTIATE_ALL_DEPTHS_2 \
+    ICL_INSTANTIATE_ALL_SECOND_DEPTHS(8u) \
+    ICL_INSTANTIATE_ALL_SECOND_DEPTHS(16s) \
+    ICL_INSTANTIATE_ALL_SECOND_DEPTHS(32s) \
+    ICL_INSTANTIATE_ALL_SECOND_DEPTHS(32f) \
+    ICL_INSTANTIATE_ALL_SECOND_DEPTHS(64f)
+
 
     /** Utility macros and defines */
     
     // ?? why not as macro? -> no type problems
-#ifdef ICL_SYSTEM_LINUX
+#ifdef UNIX
 #define iclMin(A,B) std::min(A,B)
 #define iclMax(A,B) std::max(A,B)
-#else
-#define iclMin(A,B) ((A)<(B)?(A):(B))
-#define iclMax(A,B) ((A)>(B)?(A):(B))
 #endif
     
 #ifndef iclMin
@@ -208,7 +221,7 @@ namespace icl {
         case 4: return sqr(sqr(x));
         case 5: return sqr(sqr(x))*x;
         default:
-          return ::pow(x,N);
+          return ::pow(x,(int)N);
       }
     }
   } // namespace utils
@@ -230,4 +243,8 @@ namespace icl {
 
 #define ICL_DELETE_ARRAY(X) if((X)){ delete [] (X); (X)=0; }
 
-#define ICL_DEPRECATED __attribute__((deprecated))
+#ifdef WIN32
+  #define ICL_DEPRECATED __declspec(deprecated)
+#else
+  #define ICL_DEPRECATED __attribute__((deprecated))
+#endif

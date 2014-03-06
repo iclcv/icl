@@ -30,11 +30,12 @@
 
 #pragma once
 
-#include <vector>
-#include <QtCore/Qt>
-#include <ICLCore/Img.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Point.h>
 #include <ICLUtils/Point32f.h>
+#include <ICLCore/Img.h>
+#include <QtCore/Qt>
+#include <vector>
 
 namespace icl{
   namespace qt{
@@ -82,7 +83,7 @@ namespace icl{
         If mouse interaction shall be visualized, this coordinates can directly be passed
         to the drawing functions of ICLDrawWidget's.
     */
-    class MouseEvent{
+    class ICLQt_API MouseEvent{
       /// event location in widget coordinates
       utils::Point m_widgetPos;
       

@@ -36,6 +36,9 @@
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
 #include <OpenGL/glx.h>
+#elif ICL_SYSTEM_WINDOWS
+#include <GL/gl.h>
+#include <GL/glu.h>
 #else
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -65,8 +68,7 @@ namespace icl{
     
     void GLContext::makeCurrent() const{
       if(isNull()) return;
-      if(isGLX) glXMakeCurrent((Display*)display,(GLXPbuffer)pbuffer, (GLXContext) handle);
-      else ((QGLContext*)handle)->makeCurrent();
+      ((QGLContext*)handle)->makeCurrent();
     }
   
     

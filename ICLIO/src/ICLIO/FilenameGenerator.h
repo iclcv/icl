@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/ShallowCopyable.h>
 #include <string>
 #include <vector>
@@ -48,7 +49,7 @@ namespace icl{
         The FilenameGenerator class extends the ShallowCopyable class interface to provide
         cheap-copies using reference counting.
     **/
-    class FilenameGenerator : public utils::ShallowCopyable<FilenameGeneratorImpl,FilenameGeneratorImplDelOp>{
+    class ICLIO_API FilenameGenerator : public utils::ShallowCopyable<FilenameGeneratorImpl, FilenameGeneratorImplDelOp>{
       public:
       static const int INFINITE_FILE_COUNT;
       /// Null constructor

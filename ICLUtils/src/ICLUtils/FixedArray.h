@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+
 namespace icl{
   namespace utils{
     /// Fixed C++-array wrapper class for data handling
@@ -52,7 +54,7 @@ namespace icl{
     
     /// Specialization for 1D-vectors providing a value x
     template<class T>
-    struct FixedArray<T,1u>{
+    struct FixedArray<T, 1u>{
       union{
         T m_data[1];
         T x;
@@ -78,7 +80,7 @@ namespace icl{
 
     /// Specialization for 2D-matrics providing direct access to values x, y
     template<class T>
-    struct FixedArray<T,2u>{
+    struct FixedArray<T, 2u>{
       union{
         T m_data[2];
         struct { T x; T y; };
@@ -100,7 +102,7 @@ namespace icl{
 
     /// Specialization for 3D-matrics providing direct access to values x, y, z
     template<class T>
-    struct FixedArray<T,3u>{
+    struct FixedArray<T, 3u>{
 
       /// empty constructor (leaving data uninitialized)
       FixedArray(){}
@@ -121,7 +123,7 @@ namespace icl{
 
     /// Specialization for 4D-matrics providing direct access to values x, y, z and h
     template<class T>
-    struct FixedArray<T,4u>{
+    struct FixedArray<T, 4u>{
 
       /// empty constructor (leaving data uninitialized)
       FixedArray(){}

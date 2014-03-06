@@ -34,35 +34,58 @@ INCLUDE(FindPackageHandleStandardArgs)
 # Start main part here
 # ---------------------------------------------------------------------
 
+IF(WIN32)
+  # Ask the root directory of glew
+  SET(GLEW_ROOT GLEW_ROOT CACHE PATH "Root directory of glew")
+ENDIF()
+
 # Search GLEW_ROOT first if it is set.
 IF(GLEW_ROOT)
-  SET(_GLEW_SEARCH_ROOT PATHS ${GLEW_ROOT} ${GLEW_ROOT}/lib NO_DEFAULT_PATH)
+  SET(_GLEW_SEARCH_ROOT PATHS ${GLEW_ROOT} NO_DEFAULT_PATH)
   LIST(APPEND _GLEW_SEARCHES _GLEW_SEARCH_ROOT)
 ENDIF()
 
-# Normal search.
-SET(_GLEW_SEARCH_NORMAL
-     PATHS "/usr"
-   )
+IF(UNIX)
+  # Normal search.
+  SET(_GLEW_SEARCH_NORMAL
+       PATHS "/usr"
+     )
+     
+  LIST(APPEND _GLEW_SEARCHES _GLEW_SEARCH_NORMAL)
+ENDIF()
 
-LIST(APPEND _GLEW_SEARCHES _GLEW_SEARCH_NORMAL)
+IF(WIN32)
+  # Try each search configuration
+  FIND_PATH(GLEW_INCLUDE_DIR
+    NAMES GL/glew.h
+    PATHS ${${_GLEW_SEARCHES}}
+    PATH_SUFFIXES "include"	  
+    DOC "The path to GLEW header files"
+    NO_DEFAULT_PATH)
 
-# Try each search configuration
-FIND_PATH(GLEW_INCLUDE_DIRS 
-  NAMES glew.h
-  PATHS ${${_GLEW_SEARCHES}}
-  PATH_SUFFIXES "include/GL" 	  
-  DOC "The path to GLEW header files"
-  NO_DEFAULT_PATH)
+  FIND_LIBRARY(GLEW_LIBRARIES  
+    NAMES glew32.lib
+    PATHS  ${${_GLEW_SEARCHES}}
+    PATH_SUFFIXES "lib" "lib/${ARCH_DEPENDENT_LIB_DIR}"
+                  "lib/Release/${ARCH_DEPENDENT_LIB_DIR}"
+                  "lib/Release/Win32"
+    NO_DEFAULT_PATH)
+ELSE()
+  # Try each search configuration
+  FIND_PATH(GLEW_INCLUDE_DIR
+    NAMES glew.h
+    PATHS ${${_GLEW_SEARCHES}}
+    PATH_SUFFIXES "include/GL" 	  
+    DOC "The path to GLEW header files"
+    NO_DEFAULT_PATH)
 
-FIND_LIBRARY(GLEW_LIBRARIES  
-  NAMES GLEW
-  PATHS  ${${_GLEW_SEARCHES}}
-  PATH_SUFFIXES "/lib" "/lib/i386-linux-gnu" "/lib/x86_64-linux-gnu"
-  NO_DEFAULT_PATH)
+  FIND_LIBRARY(GLEW_LIBRARIES  
+    NAMES GLEW
+    PATHS  ${${_GLEW_SEARCHES}}
+    PATH_SUFFIXES "/lib" "/lib/i386-linux-gnu" "/lib/x86_64-linux-gnu"
+    NO_DEFAULT_PATH)
+ENDIF()
 
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(GLEW REQUIRED_VARS 
-				  GLEW_LIBRARIES
-				  GLEW_INCLUDE_DIRS)
-
-MARK_AS_ADVANCED(GLEW_INCLUDE_DIRS)
+                                  GLEW_LIBRARIES
+                                  GLEW_INCLUDE_DIR)

@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Thread.h>
 #include <ICLIO/PylonUtils.h>
 #include <ICLIO/PylonColorConverter.h>
@@ -50,22 +51,22 @@ namespace icl {
           * @param converter 
           * @param options 
           */
-          PylonGrabberThread(Pylon::IStreamGrabber* grabber,
+          ICLIO_API PylonGrabberThread(Pylon::IStreamGrabber* grabber,
                                   PylonColorConverter* converter,
                                   PylonCameraOptions* options);
           /// Destructor frees all allocated memory
-          ~PylonGrabberThread();
+          ICLIO_API ~PylonGrabberThread();
           /// acquires images and writes them into an internal queue
-          void run();
+          ICLIO_API void run();
           /// reinitializes buffer
-          void resetBuffer();
+          ICLIO_API void resetBuffer();
           /// getter for the most current image
           /**
           * @return a pointer to an internally used TsBuffer the buffer
           *         can safely be used until the next call to
           *         getCurrentImage() or resetBuffer().
           */
-          core::ImgBase* getCurrentImage();
+          ICLIO_API core::ImgBase* getCurrentImage();
         private:
           /// A pointer to the image-providing StreamGrabber.
           Pylon::IStreamGrabber* m_Grabber;

@@ -30,13 +30,14 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLMath/FixedMatrix.h>
 
 namespace icl{
   namespace math{
     
     template<class T, int DIM>
-    struct FixedColVector : public FixedMatrix<T,1,DIM>{
+    struct FixedColVector : public FixedMatrix<T, 1, DIM>{
       typedef FixedMatrix<T,1,DIM> super;
       FixedColVector(){}
       FixedColVector(const T &init):super(init){}
@@ -57,7 +58,7 @@ namespace icl{
   
     
     template<class T, int DIM>
-    struct FixedRowVector : public FixedMatrix<T,DIM,1>{
+    struct FixedRowVector : public FixedMatrix<T, DIM, 1>{
       typedef FixedMatrix<T,DIM,1> super;
       FixedRowVector(){}
       FixedRowVector(const T &init):super(init){}

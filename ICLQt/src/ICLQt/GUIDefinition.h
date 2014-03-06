@@ -30,9 +30,10 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/Size.h>
 #include <string>
 #include <vector>
-#include <ICLUtils/Size.h>
 
 /** \cond */
 class QLayout;
@@ -48,7 +49,7 @@ namespace icl{
     /** \endcond */
   
     /// Utilty class to simplify creation of GUI components \ingroup UNCOMMON
-    class GUIDefinition{
+    class ICLQt_API GUIDefinition{
       public:
       /// create a new GUI Definition
       GUIDefinition(const std::string &def, GUI *gui, 

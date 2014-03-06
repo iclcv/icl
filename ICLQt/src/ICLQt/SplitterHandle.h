@@ -30,9 +30,10 @@
 
 #pragma once
 
-#include <QtGui/QSplitter>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLQt/GUIHandle.h>
 #include <ICLQt/ContainerHandle.h>
+#include <QtGui/QSplitter>
 
 namespace icl{
   namespace qt{

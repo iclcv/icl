@@ -60,7 +60,11 @@ namespace icl{
         return buf;
       }else{
         char buf2[64];
-        snprintf(buf2,64,format,d);
+#ifdef ICL_SYSTEM_WINDOWS
+        _snprintf(buf2,64,format,d);
+#else
+        snprintf(buf2, 64, format, d);
+#endif
         return buf2;
       }
     }
@@ -132,7 +136,11 @@ namespace icl{
         return buf;
       }else{
         char buf2[64];
-        snprintf(buf2,64,format,d);
+#ifdef ICL_SYSTEM_WINDOWS
+        _snprintf(buf2,64,format,d);
+#else
+        snprintf(buf2, 64, format, d);
+#endif
         return buf2;
       }
     }
@@ -183,7 +191,7 @@ namespace icl{
     }
   
     bool parse_bool(const std::string &s){
-      std::string s2=toLower(s);
+      std::string s2 = toLower(s);
       if(s == "true" || s == "yes" || s == "on" || s == "1") return true;
       if(s == "false" || s == "no" || s == "off" || s == "0") return false;
       return (bool)parse_icl8u(s);
@@ -209,7 +217,7 @@ namespace icl{
     MatchResult match(const std::string &text, const std::string &regexIn, int num)
       throw (InvalidRegularExpressionException){
       string regexSave = regexIn;
-  #ifndef ICL_SYSTEM_WINDOWS
+  #ifndef ICL_SYSTEM_WINDOWS // TODOW
       char *regex = const_cast<char*>(regexSave.c_str());
       regex_t    re;
       
@@ -243,7 +251,8 @@ namespace icl{
       return mr;
     }
 
-      
+
+#ifndef ICL_SYSTEM_WINDOWS // TODOW
     string toLower(string s){
       // {{{ open
       for(unsigned int i=0;i<s.length();i++){
@@ -251,6 +260,7 @@ namespace icl{
       }
       return s;
     };
+#endif
     
     string time2str(Time::value_type x){
       char acBuf[30];

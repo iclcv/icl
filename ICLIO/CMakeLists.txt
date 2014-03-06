@@ -30,75 +30,75 @@
 
 SET(SOURCES src/ICLIO/DemoImageFlowers.cpp
             src/ICLIO/DemoImageMacaw.cpp
-	    src/ICLIO/DemoImageWindows.cpp
-	    src/ICLIO/DemoImageLena.cpp
-	    src/ICLIO/DemoImageCameraMan.cpp
-	    src/ICLIO/DemoImageMandril.cpp
-	    src/ICLIO/FileGrabber.cpp
-	    src/ICLIO/CreateGrabber.cpp
-	    src/ICLIO/FileGrabberPluginCSV.cpp
-	    src/ICLIO/FileGrabberPluginBICL.cpp
-	    src/ICLIO/FileGrabberPluginPNM.cpp
-	    src/ICLIO/FileList.cpp
-	    src/ICLIO/FilenameGenerator.cpp
-	    src/ICLIO/FileWriter.cpp
-	    src/ICLIO/FileWriterPluginCSV.cpp
-	    src/ICLIO/FileWriterPluginPNM.cpp
-	    src/ICLIO/FileWriterPluginBICL.cpp
-	    src/ICLIO/GenericGrabber.cpp
-	    src/ICLIO/Grabber.cpp
-	    src/ICLIO/ImageUndistortion.cpp
-	    src/ICLIO/IOFunctions.cpp
-	    src/ICLIO/TestImages.cpp
-	    src/ICLIO/DemoGrabber.cpp
-	    src/ICLIO/GenericImageOutput.cpp
-	    src/ICLIO/IntrinsicCalibrator.cpp
-	    src/ICLIO/ColorFormatDecoder.cpp
-	    src/ICLIO/ImageCompressor.cpp
-	    src/ICLIO/MyrmexDecoder.cpp
-	    src/ICLIO/JPEGHandle.cpp
-	    src/ICLIO/FileGrabberPluginJPEG.cpp
-	    src/ICLIO/FileWriterPluginJPEG.cpp
-	    src/ICLIO/JPEGDecoder.cpp
-	    src/ICLIO/JPEGEncoder.cpp
-	    src/ICLIO/FileGrabberPluginPNG.cpp
-	    src/ICLIO/FileWriterPluginPNG.cpp)
+            src/ICLIO/DemoImageWindows.cpp
+            src/ICLIO/DemoImageLena.cpp
+            src/ICLIO/DemoImageCameraMan.cpp
+            src/ICLIO/DemoImageMandril.cpp
+            src/ICLIO/FileGrabber.cpp
+            src/ICLIO/CreateGrabber.cpp
+            src/ICLIO/FileGrabberPluginCSV.cpp
+            src/ICLIO/FileGrabberPluginBICL.cpp
+            src/ICLIO/FileGrabberPluginPNM.cpp
+            src/ICLIO/FileList.cpp
+            src/ICLIO/FilenameGenerator.cpp
+            src/ICLIO/FileWriter.cpp
+            src/ICLIO/FileWriterPluginCSV.cpp
+            src/ICLIO/FileWriterPluginPNM.cpp
+            src/ICLIO/FileWriterPluginBICL.cpp
+            src/ICLIO/GenericGrabber.cpp
+            src/ICLIO/Grabber.cpp
+            src/ICLIO/ImageUndistortion.cpp
+            src/ICLIO/IOFunctions.cpp
+            src/ICLIO/TestImages.cpp
+            src/ICLIO/DemoGrabber.cpp
+            src/ICLIO/GenericImageOutput.cpp
+            src/ICLIO/IntrinsicCalibrator.cpp
+            src/ICLIO/ColorFormatDecoder.cpp
+            src/ICLIO/ImageCompressor.cpp
+            src/ICLIO/MyrmexDecoder.cpp
+            src/ICLIO/JPEGHandle.cpp
+            src/ICLIO/FileGrabberPluginJPEG.cpp
+            src/ICLIO/FileWriterPluginJPEG.cpp
+            src/ICLIO/JPEGDecoder.cpp
+            src/ICLIO/JPEGEncoder.cpp
+            src/ICLIO/FileGrabberPluginPNG.cpp
+            src/ICLIO/FileWriterPluginPNG.cpp)
 
 SET(HEADERS src/ICLIO/FileGrabber.h
-	    src/ICLIO/CreateGrabber.h
-	    src/ICLIO/FileGrabberPlugin.h
-	    src/ICLIO/FileGrabberPluginCSV.h
-	    src/ICLIO/FileGrabberPluginBICL.h
-	    src/ICLIO/FileGrabberPluginPNM.h
-	    src/ICLIO/FileList.h
-	    src/ICLIO/FilenameGenerator.h
-	    src/ICLIO/FileWriter.h
-	    src/ICLIO/FileWriterPlugin.h
-	    src/ICLIO/FileWriterPluginCSV.h
-	    src/ICLIO/FileWriterPluginPNM.h
-	    src/ICLIO/FileWriterPluginBICL.h
-	    src/ICLIO/GenericGrabber.h
-	    src/ICLIO/Grabber.h
-	    src/ICLIO/GrabberDeviceDescription.h
-	    src/ICLIO/ImageOutput.h
-	    src/ICLIO/ImageUndistortion.h
-	    src/ICLIO/IO.h
-	    src/ICLIO/IOFunctions.h
-	    src/ICLIO/TestImages.h
-	    src/ICLIO/DemoGrabber.h
-	    src/ICLIO/GenericImageOutput.h
-	    src/ICLIO/IntrinsicCalibrator.h
-	    src/ICLIO/ColorFormatDecoder.h
-	    src/ICLIO/ImageCompressor.h
-	    src/ICLIO/MyrmexDecoder.h
-	    src/ICLIO/JPEGHandle.h
-	    src/ICLIO/FileGrabberPluginJPEG.h
-	    src/ICLIO/FileWriterPluginJPEG.h
-	    src/ICLIO/JPEGDecoder.h
-	    src/ICLIO/JPEGEncoder.h
-	    src/ICLIO/FourCC.h
-	    src/ICLIO/FileGrabberPluginPNG.h
-	    src/ICLIO/FileWriterPluginPNG.h)
+            src/ICLIO/CreateGrabber.h
+            src/ICLIO/FileGrabberPlugin.h
+            src/ICLIO/FileGrabberPluginCSV.h
+            src/ICLIO/FileGrabberPluginBICL.h
+            src/ICLIO/FileGrabberPluginPNM.h
+            src/ICLIO/FileList.h
+            src/ICLIO/FilenameGenerator.h
+            src/ICLIO/FileWriter.h
+            src/ICLIO/FileWriterPlugin.h
+            src/ICLIO/FileWriterPluginCSV.h
+            src/ICLIO/FileWriterPluginPNM.h
+            src/ICLIO/FileWriterPluginBICL.h
+            src/ICLIO/GenericGrabber.h
+            src/ICLIO/Grabber.h
+            src/ICLIO/GrabberDeviceDescription.h
+            src/ICLIO/ImageOutput.h
+            src/ICLIO/ImageUndistortion.h
+            src/ICLIO/IO.h
+            src/ICLIO/IOFunctions.h
+            src/ICLIO/TestImages.h
+            src/ICLIO/DemoGrabber.h
+            src/ICLIO/GenericImageOutput.h
+            src/ICLIO/IntrinsicCalibrator.h
+            src/ICLIO/ColorFormatDecoder.h
+            src/ICLIO/ImageCompressor.h
+            src/ICLIO/MyrmexDecoder.h
+            src/ICLIO/JPEGHandle.h
+            src/ICLIO/FileGrabberPluginJPEG.h
+            src/ICLIO/FileWriterPluginJPEG.h
+            src/ICLIO/JPEGDecoder.h
+            src/ICLIO/JPEGEncoder.h
+            src/ICLIO/FourCC.h
+            src/ICLIO/FileGrabberPluginPNG.h
+            src/ICLIO/FileWriterPluginPNG.h)
 
 IF(MESASR_FOUND)
   LIST(APPEND SOURCES src/ICLIO/SwissRangerGrabber.cpp)
@@ -143,10 +143,10 @@ ENDIF()
 IF(OpenCV_FOUND)
   LIST(APPEND SOURCES src/ICLIO/OpenCVCamGrabber.cpp
                       src/ICLIO/OpenCVVideoWriter.cpp
-		      src/ICLIO/OpenCVVideoGrabber.cpp)
+                      src/ICLIO/OpenCVVideoGrabber.cpp)
   LIST(APPEND HEADERS src/ICLIO/OpenCVCamGrabber.h
                       src/ICLIO/OpenCVVideoWriter.h
-		      src/ICLIO/OpenCVVideoGrabber.h)
+                      src/ICLIO/OpenCVVideoGrabber.h)
 ENDIF()
  
 IF(QT4_FOUND)
@@ -179,25 +179,25 @@ ENDIF()
 IF(PYLON_FOUND)
   LIST(APPEND SOURCES src/ICLIO/PylonGrabber.cpp
                       src/ICLIO/PylonGrabberThread.cpp
-		      src/ICLIO/PylonCameraOptions.cpp
-		      src/ICLIO/PylonColorConverter.cpp
-		      src/ICLIO/PylonUtils.cpp)
+                      src/ICLIO/PylonCameraOptions.cpp
+                      src/ICLIO/PylonColorConverter.cpp
+                      src/ICLIO/PylonUtils.cpp)
 
   LIST(APPEND HEADERS src/ICLIO/PylonGrabber.h
                       src/ICLIO/PylonGrabberThread.h
-		      src/ICLIO/PylonCameraOptions.h
-		      src/ICLIO/PylonColorConverter.h
-		      src/ICLIO/PylonUtils.h
-		      src/ICLIO/PylonIncludes.h)
+                      src/ICLIO/PylonCameraOptions.h
+                      src/ICLIO/PylonColorConverter.h
+                      src/ICLIO/PylonUtils.h
+                      src/ICLIO/PylonIncludes.h)
 ENDIF()
 
 IF(OPENNI_FOUND)
   LIST(APPEND SOURCES src/ICLIO/OpenNIGrabber.cpp
                       src/ICLIO/OpenNIUtils.cpp)
-		      
+
   LIST(APPEND HEADERS src/ICLIO/OpenNIGrabber.h
                       src/ICLIO/OpenNIIncludes.h
-		      src/ICLIO/OpenNIUtils.h)
+                      src/ICLIO/OpenNIUtils.h)
 
 ENDIF()
 
@@ -219,51 +219,61 @@ IF(RSB_FOUND)
 
   LIST(APPEND SOURCES src/ICLIO/RSBGrabber.cpp
                       src/ICLIO/RSBImageOutput.cpp
-		      ${PROTO_SRCS})
+                      ${PROTO_SRCS})
 
   LIST(APPEND HEADERS src/ICLIO/RSBGrabber.h
                       src/ICLIO/RSBImageOutput.h
-		      ${PROTO_HDRS})
+                      ${PROTO_HDRS})
 ENDIF()
 
 # ---- Library build instructions ----
+IF(WIN32)
 INCLUDE_DIRECTORIES(BEFORE src
+                           ${ICL_SOURCE_DIR}/3rdparty/zlib
+                           ${ICL_SOURCE_DIR}/3rdparty/libpng
+                           ${ICL_SOURCE_DIR}/3rdparty/libjpeg
+                           ${CMAKE_BINARY_DIR}/src
                            ${ICL_SOURCE_DIR}/ICLUtils/src
                            ${ICL_SOURCE_DIR}/ICLMath/src
                            ${ICL_SOURCE_DIR}/ICLCore/src
                            ${ICL_SOURCE_DIR}/ICLFilter/src)
-
-IF(QT_FOUND)
-  ADD_LIBRARY(ICLIO SHARED ${SOURCES} ${HEADERS})
 ELSE()
-  ADD_LIBRARY(ICLIO SHARED ${SOURCES} ${HEADERS})
+INCLUDE_DIRECTORIES(BEFORE src
+                           ${CMAKE_BINARY_DIR}/src
+                           ${ICL_SOURCE_DIR}/ICLUtils/src
+                           ${ICL_SOURCE_DIR}/ICLMath/src
+                           ${ICL_SOURCE_DIR}/ICLCore/src
+                           ${ICL_SOURCE_DIR}/ICLFilter/src)
 ENDIF()
+
+ADD_LIBRARY(ICLIO SHARED ${SOURCES} ${HEADERS})
 
 
 # ---- 3rd party library handling ----
 TARGET_LINK_LIBRARIES(ICLIO ICLFilter
                             ${MESASR_LIBRARIES}
-			    ${ImageMagick_LIBRARIES}
-			    ${LIBDC_LIBRARIES}
-			    ${V4L_LIBRARIES}
-			    ${XINE_LIBRARIES}
-			    ${LIBUSB_LIBRARIES}
-			    ${OPENGL_LIBRARIES}
-			    ${LIBFREENECT_LIBRARIES}
-			    ${PYLON_LIBRARIES}
-			    ${OPENNI_LIBRARIES}
-			    ${QT_LIBRARIES}
-			    ${RSB_LIBRARIES}
-			    ${ZMQ_LIBRARIES}
-			    ${PROTOBUF_LIBRARIES}
-			    ${OpenCV_LIBS})
+                            ${ImageMagick_LIBRARIES}
+                            ${LIBDC_LIBRARIES}
+                            ${V4L_LIBRARIES}
+                            ${XINE_LIBRARIES}
+                            ${LIBUSB_LIBRARIES}
+                            ${OPENGL_LIBRARIES}
+                            ${LIBFREENECT_LIBRARIES}
+                            ${PYLON_LIBRARIES}
+                            ${OPENNI_LIBRARIES}
+                            ${QT_LIBRARIES}
+                            ${RSB_LIBRARIES}
+                            ${BOOST_LIBRARIES}
+                            ${PROTOBUF_LIBRARIES}
+                            ${ZMQ_LIBRARIES}
+                            ${OpenCV_LIBS})
 
 # Wo sind die hier :-? (UNICAP XCF QT GENICAM OPENNI RSB PROTOBUF)
 
 
 SET_TARGET_PROPERTIES(ICLIO
                       PROPERTIES 
-		      VERSION ${SO_VERSION})
+                      VERSION ${SO_VERSION})
 
 # ---- Build examples/ demos/ apps ----
 IF(BUILD_DEMOS)
@@ -284,15 +294,15 @@ INSTALL_FILES_RECURSIVE("include/${INSTALL_PATH_PREFIX}" HEADERS)
 # ---- PKG-config ----
 CREATE_PKGCONFIG(NAME ICLIO
                  LIBRARY_DEPS ${MESASR_LIBRARIES}
-			      ${ImageMagick_LIBRARIES}
-			      ${LIBDC_LIBRARIES}
-			      ${V4L_LIBRARIES}
-			      ${XINE_LIBRARIES}
-			      ${OPENGL_LIBRARIES}
-			      ${LIBFREENECT_LIBRARIES}
-			      ${PYLON_LIBRARIES}
-			      ${OPENNI_LIBRARIES}
-			      ${QT_LIBRARIES}
-			      ${ZMQ_LIBRARIES}
-			      ${RSB_RSC_AND_PROTOBUF_LIBRARIES_PC}
+                              ${ImageMagick_LIBRARIES}
+                              ${LIBDC_LIBRARIES}
+                              ${V4L_LIBRARIES}
+                              ${XINE_LIBRARIES}
+                              ${OPENGL_LIBRARIES}
+                              ${LIBFREENECT_LIBRARIES}
+                              ${PYLON_LIBRARIES}
+                              ${OPENNI_LIBRARIES}
+                              ${QT_LIBRARIES}
+                              ${ZMQ_LIBRARIES}
+                              ${RSB_RSC_AND_PROTOBUF_LIBRARIES_PC}
                  PKGCONFIG_DEPS ICLFilter-${SO_VERSION})

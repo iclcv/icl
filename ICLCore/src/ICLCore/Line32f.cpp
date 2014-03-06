@@ -30,7 +30,7 @@
 
 #include <ICLCore/Line32f.h>
 #include <ICLCore/Line.h>
-#include <math.h>
+#include <cmath>
 #include <algorithm>
 
 using namespace icl::utils;

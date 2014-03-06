@@ -109,7 +109,7 @@ int main(int n, char **ppc){
   scalemode sm = interpolateLIN;
   
   if(pa("-scalemode")){
-    std::string sm = pa("-scalemode");
+    std::string sm = pa("-scalemode").as<std::string>();
     if(sm == "NN"){
       sm = interpolateNN;
     }else if(sm == "LIN"){
@@ -127,7 +127,7 @@ int main(int n, char **ppc){
   conv.apply(image,&dst);
   
   if(pa("-flip")){
-    std::string axis = pa("-flip");
+    std::string axis = pa("-flip").as<std::string>();
     core::axis a = axisHorz;
     if(axis == "horz"){}
     else if(axis == "vert") a = axisVert;

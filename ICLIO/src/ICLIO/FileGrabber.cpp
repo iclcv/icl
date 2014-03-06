@@ -43,15 +43,15 @@
 #include <ICLIO/FileGrabberPluginBICL.h>
 #include <ICLIO/FileGrabberPluginCSV.h>
 
-#ifdef HAVE_LIBJPEG
+#ifdef ICL_HAVE_LIBJPEG
 #include <ICLIO/FileGrabberPluginJPEG.h>
 #endif
 
-#ifdef HAVE_LIBPNG
+#ifdef ICL_HAVE_LIBPNG
 #include <ICLIO/FileGrabberPluginPNG.h>
 #endif
 
-#ifdef HAVE_IMAGEMAGICK
+#ifdef ICL_HAVE_IMAGEMAGICK
 #include <ICLIO/FileGrabberPluginImageMagick.h>
 #endif
 
@@ -115,16 +115,16 @@ namespace icl{
         plugins[".rle6"] = new FileGrabberPluginBICL;
         plugins[".rle8"] = new FileGrabberPluginBICL;
 
-#ifdef HAVE_LIBJPEG
+#ifdef ICL_HAVE_LIBJPEG
         plugins[".jpg"] = new FileGrabberPluginJPEG;
         plugins[".jpeg"] = new FileGrabberPluginJPEG;
         plugins[".jicl"] = new FileGrabberPluginBICL;
-#elif HAVE_IMAGEMAGICK
+#elif ICL_HAVE_IMAGEMAGICK
         plugins[".jpg"] = new FileGrabberPluginImageMagick;
         plugins[".jpeg"] = new FileGrabberPluginImageMagick;
 #endif
 
-#ifdef HAVE_LIBZ
+#ifdef ICL_HAVE_LIBZ
         plugins[".ppm.gz"] = new FileGrabberPluginPNM;
         plugins[".pgm.gz"] = new FileGrabberPluginPNM;
         plugins[".pnm.gz"] = new FileGrabberPluginPNM;
@@ -137,13 +137,13 @@ namespace icl{
         plugins[".rle8.gz"] = new FileGrabberPluginBICL;
 #endif
 
-#ifdef HAVE_LIBPNG
+#ifdef ICL_HAVE_LIBPNG
         plugins[".png"] = new FileGrabberPluginPNG;
 #endif
 
-#ifdef HAVE_IMAGEMAGICK
+#ifdef ICL_HAVE_IMAGEMAGICK
         const char *imageMagickFormats[] = {
-  #ifndef HAVE_LIBPNG
+  #ifndef ICL_HAVE_LIBPNG
           "png",
   #endif
           "gif","pdf","ps","avs","bmp","cgm","cin","cur","cut","dcx",
@@ -214,6 +214,7 @@ namespace icl{
           throw FileNotFoundException(pattern);
         }
       }
+
       m_data->iCurrIdx  = 0;
       m_data->bBufferImages = false;
       m_data->bAutoNext = true;
@@ -329,7 +330,6 @@ namespace icl{
 
     const core::ImgBase *FileGrabber::grabImage(){
       // {{{ open
-
       if(m_data->bBufferImages){
         if(m_data->useTimeStamps) {
           ERROR_LOG("buffering images and using timestamps cannot be used in parallel! (deactivating use of timestamps)");
@@ -366,6 +366,7 @@ namespace icl{
         if(f.isOpen()) f.close();
         throw;
       }
+
       if(m_data->useTimeStamps){
         Time now = Time::now();
         Time &ref = m_data->referenceTime;
@@ -395,6 +396,7 @@ namespace icl{
           }
         }
       }
+
       return m_data->poBufferImage;
     }
 

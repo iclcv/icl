@@ -29,8 +29,8 @@
 ********************************************************************/
 
 #include <ICLUtils/Point.h>
-#include <math.h>
 #include <ICLUtils/Point32f.h>
+#include <cmath>
 
 namespace icl{
   namespace utils{

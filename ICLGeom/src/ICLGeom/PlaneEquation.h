@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/GeomDefs.h>
 #include <iostream>
 
@@ -37,7 +38,7 @@ namespace icl{
   namespace geom{
     
     /// Utility structure for calculation of view-ray / plane intersections
-    struct PlaneEquation{
+    struct ICLGeom_API PlaneEquation{
   
       /// Constructor with given offset and direction vector
       explicit PlaneEquation(const Vec &offset=Vec(), const Vec &normal=Vec());
@@ -50,7 +51,7 @@ namespace icl{
     };
   
     /// ostream operator
-    std::ostream &operator<<(std::ostream &s, const PlaneEquation &p);
+    ICLGeom_API std::ostream &operator<<(std::ostream &s, const PlaneEquation &p);
   } // namespace geom
 }
 

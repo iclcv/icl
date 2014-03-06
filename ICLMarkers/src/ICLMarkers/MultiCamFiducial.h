@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLMarkers/FiducialDetector.h>
 #include <ICLGeom/GeomDefs.h>
 
@@ -61,7 +62,7 @@ namespace icl{
         than one view is available, multicamera geometry is used to
         provide a much moch accurate estimation of the marker pose.
     */
-    class MultiCamFiducial{
+    class ICLMarkers_API MultiCamFiducial{
       MultiCamFiducialImpl *impl; //!< internal implementation
       
         public:

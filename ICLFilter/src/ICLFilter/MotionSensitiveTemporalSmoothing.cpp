@@ -39,7 +39,7 @@ using namespace icl::core;
 namespace icl {
 namespace filter {
 
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 static char timeSmoothingKernel[] =
 "__kernel void                                                                                                                  \n"
 "temporalSmoothingFloat(__global float const * inputImages, __global float * outputImage, int const filterSize, int const imgCount, int const w, int const h, int const difference, int const nullvalue, __global float * motionImage)                                                                                              \n"
@@ -240,7 +240,7 @@ TemporalSmoothingCL::TemporalSmoothingCL(utils::Size size, core::depth depth,
 	imgCount = 0;
 	useCL = true;
 
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 	//create openCL context
 	motionImage.setSize(Size(w,h));
 	motionImage.setChannels(1);
@@ -333,7 +333,7 @@ TemporalSmoothingCL::TemporalSmoothingCL(utils::Size size, core::depth depth,
 }
 
 TemporalSmoothingCL::~TemporalSmoothingCL() {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 	if(d==depth32f) {
 		delete[] inputImage1ArrayF;
 		delete[] inputImagesArrayF;
@@ -365,7 +365,7 @@ Img32f TemporalSmoothingCL::temporalSmoothingF(const Img32f &inputImage) {
 	imgCount++;
 
 	if (useCL == true && clReady == true) {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 		try {
 			inputImage1ArrayF=inputImagesF.at(imgCount-1).begin(0);
 			inputImageBufferF.write(inputImage1ArrayF, w*h * sizeof(float), (imgCount-1)*w*h* sizeof(float));
@@ -439,7 +439,7 @@ Img8u TemporalSmoothingCL::temporalSmoothingC(const Img8u &inputImage) {
 	imgCount++;
 
 	if (useCL == true && clReady == true) {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 		try {
 			inputImage1ArrayC=inputImagesC.at(imgCount-1).begin(0);
 
@@ -512,7 +512,7 @@ void TemporalSmoothingCL::setDifference(int iDifference) {
 
 Img32f TemporalSmoothingCL::getMotionImage() {
 	if (useCL == true && clReady == true) {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 		motionImageBuffer.read(motionImageArray, w*h * sizeof(float));
 		motionImage = Img32f(Size(w,h),1,std::vector<float*>(1,motionImageArray),false);
 #endif

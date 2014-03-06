@@ -32,8 +32,7 @@
 #include <ICLQt/Common.h>
 #include <ICLFilter/MotionSensitiveTemporalSmoothing.h>
 #include <ICLFilter/ConvolutionOp.h>
-
-#include <sys/time.h>
+#include <ICLUtils/Time.h>
 
 VSplit gui;
 
@@ -81,14 +80,14 @@ void update(){
   smoothing->setFilterSize(filterSize);
   smoothing->setDifference(difference);
   
-  timeval startT, endT;
-  gettimeofday(&startT, 0);
-  smoothing->apply(src,&dst);
-  gettimeofday(&endT, 0);
+  Time startT, endT;
+  startT = Time::now();
+  smoothing->apply(src, &dst);
+  endT = Time::now();
   if(smoothing->isCLActive()){
-    std::cout <<"OpenCL :"<<((endT.tv_usec-startT.tv_usec)+((endT.tv_sec-startT.tv_sec)*1000000))/1000 <<" ms" << endl;
+    std::cout <<"OpenCL :"<< (endT-startT).toMilliSeconds() <<" ms" << endl;
   }else{     
-    std::cout <<"CPU :"<<((endT.tv_usec-startT.tv_usec)+((endT.tv_sec-startT.tv_sec)*1000000))/1000 <<" ms" << endl;
+    std::cout << "CPU :" << (endT - startT).toMilliSeconds() << " ms" << endl;
   }
   imageOut = dst;
   image = src;

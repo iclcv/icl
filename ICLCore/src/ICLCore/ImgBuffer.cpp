@@ -122,12 +122,12 @@ namespace icl{
       buf.push_back(new Img<T>);
       return buf.back()->asImg<T>();
     }
-    
-  #define ICL_INSTANTIATE_DEPTH(D)                  \
-    template Img<icl##D> *ImgBuffer::get<icl##D>(); \
-    template Img<icl##D> *ImgBuffer::get<icl##D>(const ImgParams&); \
-    template Img<icl##D> *ImgBuffer::get<icl##D>(const Size&,int);
-  ICL_INSTANTIATE_ALL_DEPTHS
-  #undef ICL_INSTANTIATE_DEPTH
+
+#define ICL_INSTANTIATE_DEPTH(D)                  \
+  template ICLCore_API Img<icl##D> *ImgBuffer::get<icl##D>(); \
+  template ICLCore_API Img<icl##D> *ImgBuffer::get<icl##D>(const ImgParams&); \
+  template ICLCore_API Img<icl##D> *ImgBuffer::get<icl##D>(const Size&, int);
+    ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
   } // namespace core
 }

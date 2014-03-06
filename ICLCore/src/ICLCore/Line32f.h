@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/Rect.h>
 #include <vector>
@@ -44,7 +45,7 @@ namespace icl{
     /// The ICLs abstract line class describing a line from Point "start" to Point "end" \ingroup TYPES
     /** @see icl::Line
     */
-    class Line32f{
+    class ICLCore_API Line32f{
       public:
       /// Null line of length 0 with and and end point 0
       static const Line32f null;
@@ -128,10 +129,10 @@ namespace icl{
     };
   
     /// ostream operator (start-x,start-y)(end-x,end-y)
-    std::ostream &operator<<(std::ostream &s, const Line32f &l);
+    ICLCore_API std::ostream &operator<<(std::ostream &s, const Line32f &l);
     
     /// istream operator
-    std::istream &operator>>(std::istream &s, Line32f &l);
+    ICLCore_API std::istream &operator>>(std::istream &s, Line32f &l);
   
   } // namespace core
 }

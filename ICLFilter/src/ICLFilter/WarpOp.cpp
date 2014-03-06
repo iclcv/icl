@@ -60,11 +60,11 @@ namespace icl{
     }
     
   
-    template<class T, T (*interpolator)(float x, float y, const Channel<T> &src)>
+    template<class T>
     static inline void apply_warp_2(const Channel32f warpMap[2],
                                     const Channel<T> &src,
                                     Channel<T> &dst,
-                                    const Size &size){
+                                    const Size &size, T (*interpolator)(float x, float y, const Channel<T> &src)){
   
       for(int x=0;x<size.width;++x){
         for(int y=0;y<size.height;++y){
@@ -73,8 +73,7 @@ namespace icl{
         }
       }
     }
-                                  
-  
+
     template<class T>
     static void apply_warp(const Channel32f warpMap[2], 
                            const Img<T>&src, 
@@ -84,17 +83,17 @@ namespace icl{
         const Channel<T> s = src[c];
         Channel<T> d = dst[c];
         if(mode == interpolateNN){
-          apply_warp_2<T,interpolate_pixel_nn<T> >(warpMap,s,d,s.getSize());
+          apply_warp_2<T>(warpMap,s,d,s.getSize(),interpolate_pixel_nn<T>);
         }else if(mode == interpolateLIN){
-          apply_warp_2<T,interpolate_pixel_lin<T> >(warpMap,s,d,s.getSize());
+          apply_warp_2<T>(warpMap,s,d,s.getSize(),interpolate_pixel_lin<T>);
         }else{
           ERROR_LOG("region average interpolation mode does not work here!");
           return;
         }
       }
-    }
+    }          
   
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
     template<>  
     void apply_warp<icl8u>(const Channel32f warpMap[2], 
                                   const Img<icl8u> &src, 

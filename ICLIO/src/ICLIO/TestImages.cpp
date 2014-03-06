@@ -40,12 +40,9 @@
 #include <ICLUtils/Time.h>
 #include <ICLUtils/Thread.h>
 
-//#ifdef WIN32
-//#ifdef ICL_SYSTEM_WINDOWS
-//#include </Win32.h>
-//#else
-#include <unistd.h>
-//#endif
+#ifndef ICL_SYSTEM_WINDOWS
+  #include <unistd.h>
+#endif
 
 using std::vector;
 using std::string;

@@ -31,6 +31,8 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+
 namespace icl{
   namespace qt{
     
@@ -47,7 +49,7 @@ namespace icl{
         a given shader has already been compiled and set up for the current
         active GLContext.
      */
-    class GLContext{
+    class ICLQt_API GLContext{
       public:
       /// internal handle type
       typedef void* Handle;

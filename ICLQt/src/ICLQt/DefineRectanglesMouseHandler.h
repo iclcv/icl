@@ -30,10 +30,11 @@
 
 #pragma once
 
-#include <ICLQt/MouseHandler.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Lockable.h>
-#include <ICLCore/Color.h>
 #include <ICLUtils/Any.h>
+#include <ICLCore/Color.h>
+#include <ICLQt/MouseHandler.h>
 
 namespace icl{
   namespace qt{
@@ -97,10 +98,10 @@ namespace icl{
         All methods of this class are implemented in a thread-saft manner. Therefore
         no additional locking is neccessary (and Lockable is inherited protectedly)
     */
-    class DefineRectanglesMouseHandler :  public MouseHandler, protected utils::Lockable{
+    class ICLQt_API DefineRectanglesMouseHandler : public MouseHandler, protected utils::Lockable{
       public:
       /// Cummulative Options structure
-      class Options{
+        class ICLQt_API Options{
         friend class DefineRectanglesMouseHandler;
         /// Constructor showing default options
         Options(const core::Color4D &edgeColor=core::Color4D(0,255,0,255), 

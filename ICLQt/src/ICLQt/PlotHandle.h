@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLQt/GUIHandle.h>
 #include <ICLQt/PlotWidget.h>
 
@@ -37,7 +38,7 @@ namespace icl{
   namespace qt{
     
     /// Handle class for image components \ingroup HANDLES
-    class PlotHandle : public GUIHandle<PlotWidget>{
+    class ICLQt_API PlotHandle : public GUIHandle<PlotWidget>{
       public:
       /// Create an empty handle
       PlotHandle(){}

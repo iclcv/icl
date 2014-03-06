@@ -36,7 +36,9 @@
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/Mutex.h>
 #include <sys/types.h>
-#include <unistd.h>
+#ifndef ICL_SYSTEM_WINDOWS
+  #include <unistd.h>
+#endif
 #include <cstdio>
 
 #ifdef ICL_SYSTEM_APPLE
@@ -50,14 +52,36 @@ namespace icl{
     namespace {
       static Mutex SignalHandlerMutex(Mutex::mutexTypeRecursive);
       
-#ifdef ICL_SYSTEM_WINDOWS
+#ifdef ICL_SYSTEM_WINDOWS // TODOW
       struct sigaction {
-        int          sa_flags;
-        sigset_t     sa_mask;
-        __p_sig_fn_t sa_handler;   /* see mingw/include/signal.h about the type */
+        //int          sa_flags;
+        //sigset_t     sa_mask;
+        //__p_sig_fn_t sa_handler;   /* see mingw/include/signal.h about the type */
+        int sa_flags;
+        int sa_mask;
+        void (*sa_handler)(int);
       };
 #define sigemptyset(pset)    (*(pset) = 0)
-      int sigaction(int signum, const struct sigaction *act, struct sigaction *oact);
+      int sigaction(int signum, const struct sigaction *act, struct sigaction *oact) {
+        /*void(*handler)(int);
+
+        if (act && oact) {
+          handler = signal(signum, act->sa_handler);
+          if (handler == SIG_ERR) return -1;
+          oact->sa_handler = handler;
+        } if (act && (oact == NULL)) {
+          handler = signal(signum, act->sa_handler);
+          if (handler == SIG_ERR) return -1;
+        }
+        else if ((act == NULL) && oact) {
+          if ((handler = signal(signum, SIG_IGN)) == SIG_ERR) return -1;
+          oact->sa_handler = handler;
+          handler = signal(signum, oact->sa_handler);
+          if (handler == SIG_ERR) return -1;
+        }
+        */
+        return 0;
+      }
       int kill(pid_t pid, int signal);
 #endif
       
@@ -126,7 +150,7 @@ namespace icl{
       void signal_handler_function(int signal){
         Mutex::Locker l(SignalHandlerMutex);
         while(SHM.count(signal)){
-        shMap::iterator it = SHM.find(signal);
+          shMap::iterator it = SHM.find(signal);
           SignalHandler *sh = (*it).second;
           sh->handleSignals(SSM.getString(signal));
           sh->removeAllHandles();
@@ -158,19 +182,10 @@ namespace icl{
           new_action.sa_handler = signal_handler_function;
           sigemptyset (&new_action.sa_mask);
           new_action.sa_flags = 0;
-#ifndef ICL_SYSTEM_WINDOWS
           sigaction (signal, NULL, old_action);
-#else
 
-#endif
           if (old_action->sa_handler != SIG_IGN){
-
-
-#ifndef ICL_SYSTEM_WINDOWS
             sigaction (signal, &new_action, NULL);
-#else
-
-#endif
             SHM.insert(pair<int,SignalHandler*>(signal,this));
             SAM[signal]=old_action;
             m_vecAssocitatedSignals.push_back(signal);
@@ -210,11 +225,7 @@ namespace icl{
           if(handlerCount == 1){
             DEBUG_LOG2("deleting system signal handler " << signal);
             struct sigaction *old_action = SAM[signal];
-#ifndef ICL_SYSTEM_WINDOWS
             sigaction (signal, old_action, NULL);
-#else
-
-#endif
             delete old_action;
             SAM.erase(SAM.find(signal));
           }
@@ -257,5 +268,5 @@ namespace icl{
 #endif
     }*/
   } // namespace utils
-
+  
 }

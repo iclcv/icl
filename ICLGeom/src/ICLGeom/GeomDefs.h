@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Types.h>
 #include <ICLMath/FixedMatrix.h>
 #include <ICLMath/FixedVector.h>
@@ -102,7 +103,7 @@ namespace icl{
     /** The implementation is based on the code of http://www.geometrictools.com which is
         povided under the terms of the "Boost Software License 1.0" 
         (http://www.boost.org/LICENSE_1_0.txt) */
-    float dist_point_linesegment(const Vec &p,
+    ICLGeom_API float dist_point_linesegment(const Vec &p,
                                  const Vec &lineStart,
                                  const Vec &lineEnd,
                                  Vec *nearestPoint=0);
@@ -112,7 +113,7 @@ namespace icl{
     /** The implementation is based on the code of http://www.geometrictools.com which is
         povided under the terms of the "Boost Software License 1.0" 
         (http://www.boost.org/LICENSE_1_0.txt) */
-    float dist_point_triangle(const Vec &p,
+    ICLGeom_API float dist_point_triangle(const Vec &p,
                               const Vec &a,
                               const Vec &b,
                               const Vec &c,

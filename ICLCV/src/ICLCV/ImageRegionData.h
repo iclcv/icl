@@ -30,11 +30,12 @@
 
 #pragma once
 
-#include <ICLCore/Img.h>
+#include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/StackTimer.h>
 #include <ICLUtils/Any.h>
+#include <ICLCore/Img.h>
 #include <ICLCV/ImageRegionPart.h>
 #include <ICLCV/ImageRegion.h>
-#include <ICLUtils/StackTimer.h>
 #include <ICLCV/RegionPCAInfo.h>
 #include <ICLCV/CornerDetectorCSS.h>
 
@@ -46,7 +47,7 @@ namespace icl{
     /// Utility class for shallow copied data of image region class  \ingroup G_RD
     /** Note: a nested class of ImageRegion is not possible as we need forward 
         declarations of this class. Nested classes cannot be 'forward-declared' */
-    struct ImageRegionData{
+    struct ICLCV_API ImageRegionData{
     private:
       typedef ImageRegionData IRD;
     public:

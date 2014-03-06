@@ -30,8 +30,9 @@
 
 #pragma once
 
-#include <ICLIO/FileWriterPlugin.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Mutex.h>
+#include <ICLIO/FileWriterPlugin.h>
 
 namespace icl{
   namespace io{
@@ -44,7 +45,7 @@ namespace icl{
       
       public:
       /// write implementation
-      virtual void write(utils::File &file, const core::ImgBase *image);
+      ICLIO_API virtual void write(utils::File &file, const core::ImgBase *image);
     };
   } // namespace io
 }

@@ -30,7 +30,7 @@
 
 #include <ICLFilter/BinaryLogicalOp.h>
 #include <ICLCore/Img.h>
-#include <math.h>
+#include <cmath>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -69,7 +69,7 @@ namespace icl {
       // }}}
     
      
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
       template <typename T, IppStatus (IPP_DECL *func) (const T*, int,const T*, int, T*, int, IppiSize)>
       inline void ipp_call(const Img<T> *src1,const Img<T> *src2, Img<T> *dst){
         // {{{ open

@@ -27,12 +27,13 @@
  ** Excellence Initiative.                                          **
  **                                                                 **
  ********************************************************************/
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 #pragma once
 
-#include <string>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/CLException.h>
 #include <ICLUtils/Rect.h>
+#include <string>
 
 /** \cond */
 namespace cl {
@@ -48,7 +49,7 @@ namespace icl {
         /// Wrapper for an OpenCL Image2D
         /** Valid CLImage2D instances can only be created by a CLProgram instance.
          @see CLProgram for more details */
-        class CLImage2D {
+      class ICLUtils_API CLImage2D {
             struct Impl; //!< internal hidden implementation type
             Impl *impl;//!< internal implemetation
 

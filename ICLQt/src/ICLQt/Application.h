@@ -30,11 +30,18 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/Exception.h>
+#include <ICLUtils/Function.h>
 #include <string>
 #include <vector>
-#include <ICLUtils/Exception.h>
+
+#ifdef WIN32
+#include "windows.h"
+#include <GL/glew.h>
+#endif
+
 #include <QtGui/QApplication>
-#include <ICLUtils/Function.h>
 
 namespace icl{
 
@@ -94,7 +101,7 @@ namespace icl{
         \endcode
         I guess there's nothing more to explain, isn't it?
     */
-    class ICLApplication : public QObject{
+    class ICLQt_API ICLApplication : public QObject{
       
       public:
       QApplication *app;

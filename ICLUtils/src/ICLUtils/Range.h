@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/BasicTypes.h>
 #include <ICLUtils/ClippedCast.h>
 #include <ICLUtils/Macros.h>
@@ -68,12 +69,12 @@ namespace icl{
   
       /// returns type range (using std::numeric_limits<Type>)
       static inline Range<Type> limits(){
-        return Range<Type>(std::numeric_limits<Type>::min(),std::numeric_limits<Type>::max());
+        return Range<Type>((std::numeric_limits<Type>::min)(),(std::numeric_limits<Type>::max)());
       }
 
       /// returns inverted limits range [numeric-limits.max,numeric-limits.min]
-      static inline Range<Type> inv_limits(){
-        return Range<Type>(std::numeric_limits<Type>::max(),std::numeric_limits<Type>::min());
+	  static inline Range<Type> inv_limits(){
+        return Range<Type>((std::numeric_limits<Type>::max)(),(std::numeric_limits<Type>::min)());
       }
       
       /// estimate range of given iterator range (using std::for_each)
@@ -132,13 +133,12 @@ namespace icl{
     /// puts a string representation [min,max] of given range into the given stream
     /** Available for all icl-Types (icl8u,icl16s, icl32s, icl32f and icl64f and
         for unsigned int */
-    template<class T> 
+    template<class T> ICLUtils_API 
     std::ostream &operator<<(std::ostream &s, const Range <T> &range);
   
     /// parses a range argument into a std::string
-    template<class T> 
+    template<class T> ICLUtils_API
     std::istream &operator>>(std::istream &s, Range <T> &range);
-  
-  
+
   } // namespace utils
 }

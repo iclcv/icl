@@ -30,8 +30,9 @@
 
 #pragma once
 
-#include <ICLFilter/UnaryOp.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
+#include <ICLFilter/UnaryOp.h>
 
 namespace icl {
   namespace filter{
@@ -42,7 +43,7 @@ namespace icl {
          are only supported on integer typed images, i.e. icl8u.
      */
   
-    class UnaryLogicalOp : public UnaryOp {
+    class ICLFilter_API UnaryLogicalOp : public UnaryOp {
       public:
       /// this enum specifiy all possible unary logical operations
       enum optype{

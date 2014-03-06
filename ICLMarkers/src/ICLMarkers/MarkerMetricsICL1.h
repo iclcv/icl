@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLMarkers/MarkerCodeICL1.h>
 #include <ICLUtils/Rect32f.h>
 #include <ICLUtils/Point32f.h>
@@ -72,7 +73,7 @@ namespace icl{
         The whole marker structure becomes 13 x 17 units. These are 
         mapped linearily to the actual marker size in mm;
     */
-    struct MarkerMetricsICL1 : public MarkerCodeICL1 {
+    struct ICLMarkers_API MarkerMetricsICL1 : public MarkerCodeICL1 {
   
       /// real dimension of the root region
       utils::Size32f root;

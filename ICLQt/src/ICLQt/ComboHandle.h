@@ -30,8 +30,9 @@
 
 #pragma once
 
-#include <string>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLQt/GUIHandle.h>
+#include <string>
 
 /** \cond */
 class QComboBox;
@@ -50,37 +51,37 @@ namespace icl{
       ComboHandle(QComboBox *cb, GUIWidget *w):GUIHandle<QComboBox>(cb,w){}
       
       /// add an item
-      void add(const std::string &item);
+      ICLQt_API void add(const std::string &item);
   
       /// remove an item
-      void remove(const std::string &item);
+      ICLQt_API void remove(const std::string &item);
       
       /// remove item at given index
-      void remove(int idx);
+      ICLQt_API void remove(int idx);
       
       /// void remove all items
-      void clear();
+      ICLQt_API void clear();
       
       /// returns the item at given index
-      std::string getItem(int idx) const;
+      ICLQt_API std::string getItem(int idx) const;
   
       /// returns the index of a given item
-      int getIndex(const std::string &item) const;
+      ICLQt_API int getIndex(const std::string &item) const;
       
       /// returns the currently selected index
-      int getSelectedIndex() const;
+      ICLQt_API int getSelectedIndex() const;
       
       /// returns the currently selected item
-      std::string getSelectedItem() const;
+      ICLQt_API std::string getSelectedItem() const;
       
       /// returns the count of elements
-      int getItemCount() const;
+      ICLQt_API int getItemCount() const;
       
       /// sets the current index
-      void setSelectedIndex(int idx);
+      ICLQt_API void setSelectedIndex(int idx);
       
       /// sets the current item
-      void setSelectedItem(const std::string &item);
+      ICLQt_API void setSelectedItem(const std::string &item);
   
       /// convenience operator wrapping getSelectedIndex
       inline operator int() const { return getSelectedIndex(); }

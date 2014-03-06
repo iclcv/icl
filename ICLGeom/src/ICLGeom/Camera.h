@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Size.h>
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/Rect.h>
@@ -128,10 +129,10 @@ namespace icl {
         ICL's <a href="www.iclcv.org">website</a>.
     */
   
-    class Camera {
+    class ICLGeom_API Camera {
       public:
   
-      struct RenderParams {
+      struct ICLGeom_API RenderParams {
         utils::Size chipSize;    //!< chip size in [pixels] for transformation to chip coordinates
         float clipZNear;  //!< position of the near clipping plane in [mm]
         float clipZFar;   //!< position of the far clipping plane in [mm]
@@ -484,10 +485,10 @@ namespace icl {
     };
   
     /// ostream operator (writes camera in XML core::format)
-    std::ostream &operator<<(std::ostream &os, const Camera &cam);
+    ICLGeom_API std::ostream &operator<<(std::ostream &os, const Camera &cam);
   
     /// istream operator parses a camera from an XML-string
-    std::istream &operator>>(std::istream &is, Camera &cam) throw (utils::ParseException);
+    ICLGeom_API std::istream &operator>>(std::istream &is, Camera &cam) throw (utils::ParseException);
   
   } // namespace geom
 } // namespace icl

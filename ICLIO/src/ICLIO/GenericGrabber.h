@@ -30,13 +30,13 @@
 
 #pragma once
 
-#include <ICLIO/Grabber.h>
-#include <string>
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Lockable.h>
 #include <ICLUtils/ProgArg.h>
 #include <ICLUtils/ConfigurableProxy.h>
+#include <ICLIO/Grabber.h>
+#include <string>
 
 namespace icl {
   namespace io{
@@ -48,7 +48,7 @@ namespace icl {
         class. The GenericGrabber also provides camera
         configuration via ConfigurableProxy interface.
     */
-    class GenericGrabber: public utils::Uncopyable, public utils::ConfigurableProxy{
+    class ICLIO_API GenericGrabber : public utils::Uncopyable, public utils::ConfigurableProxy{
 
         Grabber *m_poGrabber; //!< internally wrapped grabber instance
 
@@ -186,9 +186,10 @@ namespace icl {
 
         /// grab function calls the Grabber-specific acquireImage-method and applies distortion if necessary
         /** If dst is not NULL, it is exploited and filled with image data **/
-        const core::ImgBase *grab(core::ImgBase **dst=0){
+        const core::ImgBase *grab(core::ImgBase **dst = 0){
           utils::Mutex::Locker __lock(m_mutex);
-          ICLASSERT_RETURN_VAL(!isNull(),0);
+          ICLASSERT_RETURN_VAL(!isNull(), 0);
+
           return m_poGrabber->grab(dst);
         }
 

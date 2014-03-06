@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/UnaryOp.h>
 
 namespace icl {
@@ -41,10 +42,10 @@ namespace icl {
          binarized image of type Img8u. If the result of the comparison is true,
          the corresponding output pixel is set to 255; otherwise, it is set to 0.
      */
-    class UnaryCompareOp : public UnaryOp {
+    class ICLFilter_API UnaryCompareOp : public UnaryOp {
       public:
    
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
       /// this enum specifiy all possible compare operations
       enum optype{
         lt   = ippCmpLess,      /**< "<"- relation */

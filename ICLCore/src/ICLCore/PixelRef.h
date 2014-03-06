@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Types.h>
 #include <ICLUtils/SmartArray.h>
 #include <ICLUtils/Exception.h>

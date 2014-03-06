@@ -99,6 +99,7 @@ ENDFUNCTION()
 # ---- Create pkg-config ----
 #*********************************************************************
 FUNCTION(CREATE_PKGCONFIG)
+#IF(NOT WIN32)
   SET(oneValueArgs NAME)
   SET(multiValueArgs PKGCONFIG_DEPS LIBRARY_DEPS RPATH_DEPS)
   CMAKE_PARSE_ARGUMENTS(CONFIG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -156,12 +157,16 @@ FUNCTION(CREATE_PKGCONFIG)
   INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/icl.pc
           DESTINATION lib/pkgconfig
           RENAME      "${PKG_NAME}-${SO_VERSION}.pc")
+#ENDIF()
 ENDFUNCTION()
 
 #*********************************************************************
 # ---- Add definitions ----
 #*********************************************************************
 MACRO(ADD_ICL_DEFINITIONS)
+  string(REPLACE "-D" "" _ST "${ARGV}")
+  SET(${_ST} 1) # this is needed for ICLConfig.h
+
   ADD_DEFINITIONS(${ARGV})
   LIST(APPEND ICL_DEFINITIONS ${ARGV})
 ENDMACRO()

@@ -38,7 +38,7 @@ using namespace icl::core;
 namespace icl {
   namespace utils{
 
-#ifdef HAVE_IPP
+#ifdef ICL_HAVE_IPP
     
     template<> inline std::string str(const filter::ProximityOp::optype &t){
       return (t == filter::ProximityOp::sqrDistance ? "sqrDistance" :

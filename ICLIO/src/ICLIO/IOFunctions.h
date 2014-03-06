@@ -30,8 +30,9 @@
 
 #pragma once
 
-#include <string>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Types.h>
+#include <string>
 
 /// icl namespace
 namespace icl {
@@ -47,7 +48,7 @@ namespace icl {
         is restricted to a single line, which is cropped, if the label would
         overlap with the right or bottom  image border.
     */ 
-    void labelImage(core::ImgBase *image,const std::string &label);
+    ICLIO_API void labelImage(core::ImgBase *image, const std::string &label);
   
   } // namespace io
 } //namespace icl

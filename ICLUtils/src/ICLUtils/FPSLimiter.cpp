@@ -61,8 +61,7 @@ namespace icl{
       if(m_waitOff) return 0;
       float desiredInterval = (1000000.0/m_maxFPS);
       Time now = Time::now();
-      float interval =  now.toMicroSecondsDouble() - m_lastTime.toMicroSecondsDouble();
-  
+      float interval = now.toMicroSecondsDouble() - m_lastTime.toMicroSecondsDouble();
       float timeToWait = desiredInterval - interval;
       if(timeToWait > 0){
         Thread::usleep((unsigned int)timeToWait);

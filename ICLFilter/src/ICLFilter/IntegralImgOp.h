@@ -30,9 +30,10 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
-#include <vector>
 #include <ICLFilter/UnaryOp.h>
+#include <vector>
 
 namespace icl{
   namespace filter{
@@ -94,7 +95,7 @@ namespace icl{
         - Intel IPP 1.8ms (but different integral image, and not supported)
   
     */
-    class IntegralImgOp : public UnaryOp{
+    class ICLFilter_API IntegralImgOp : public UnaryOp{
       public:
   
       /// Constructor

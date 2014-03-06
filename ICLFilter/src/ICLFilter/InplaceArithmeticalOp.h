@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/InplaceOp.h>
 
 namespace icl{
@@ -39,7 +40,7 @@ namespace icl{
         "ln", "exp" and "abs".\n
         Currently no IPP-Optimization is available      
     */
-    class InplaceArithmeticalOp : public InplaceOp{
+    class ICLFilter_API InplaceArithmeticalOp : public InplaceOp{
       public:
   
       /// Optypes specify the certain operation

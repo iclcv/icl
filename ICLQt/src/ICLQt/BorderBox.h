@@ -30,8 +30,10 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <QtGui/QGroupBox>
 #include <QtGui/QVBoxLayout>
+
 /// The icl namespace
 namespace icl{
   namespace qt{

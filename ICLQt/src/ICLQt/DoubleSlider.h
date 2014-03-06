@@ -44,7 +44,7 @@ namespace icl{
   namespace qt{
     
     /// A utiltiy class which implements a labeld, double valued QSlider \ingroup UNCOMMON
-    class DoubleSlider : public QWidget{
+    class ICLQt_API DoubleSlider : public QWidget{
       Q_OBJECT
       public:
       /// Create a new QSlider object

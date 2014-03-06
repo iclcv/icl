@@ -46,18 +46,18 @@ namespace icl{
         };
 
         /// returns a list of attached kinect devices
-        static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
+        ICLIO_API static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
 
-        KinectGrabber(Mode mode = GRAB_DEPTH_IMAGE, int deviceID=0, const utils::Size &size=utils::Size::VGA) throw (utils::ICLException);
+        ICLIO_API KinectGrabber(Mode mode = GRAB_DEPTH_IMAGE, int deviceID=0, const utils::Size &size=utils::Size::VGA) throw (utils::ICLException);
 
         /// Destructor
-        ~KinectGrabber();
+        ICLIO_API ~KinectGrabber();
 
         /// grabs a new image
-        virtual const core::ImgBase* acquireImage();
+        ICLIO_API virtual const core::ImgBase* acquireImage();
 
         /// callback for changed configurable properties
-        void processPropertyChange(const utils::Configurable::Property &prop);
+        ICLIO_API void processPropertyChange(const utils::Configurable::Property &prop);
 
       protected:
         struct Impl; //!< internal hidden implementation class

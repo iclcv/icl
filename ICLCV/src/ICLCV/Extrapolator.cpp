@@ -30,6 +30,7 @@
 
 #include <ICLCV/Extrapolator.h>
 #include <stdio.h>
+
 namespace icl{
   namespace cv{
   
@@ -107,12 +108,12 @@ namespace icl{
   
     // }}}
   
-    template class Extrapolator<icl32s,int>;
-    template class Extrapolator<icl32f,long int>;
-    template class Extrapolator<icl32f,int>;
-    template class Extrapolator<icl32f,icl32f>;
-    template class Extrapolator<icl64f,long int>;
-    template class Extrapolator<icl64f,int>;
-    template class Extrapolator<icl64f,icl32f>;
+    template ICLCV_API class Extrapolator<icl32s, int>;
+    template ICLCV_API class Extrapolator<icl32f, long int>;
+    template ICLCV_API class Extrapolator<icl32f, int>;
+    template ICLCV_API class Extrapolator<icl32f, icl32f>;
+    template ICLCV_API class Extrapolator<icl64f, long int>;
+    template ICLCV_API class Extrapolator<icl64f, int>;
+    template ICLCV_API class Extrapolator<icl64f, icl32f>;
   } // namespace cv
 }

@@ -30,17 +30,18 @@
 
 #pragma once
 
-#include <vector>
-#include <string>
-#include <algorithm>
-#include <map>
-
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/SmartPtr.h>
 #include <ICLUtils/Any.h>
 #include <ICLUtils/Function.h>
 #include <ICLUtils/UncopiedInstance.h>
 #include <ICLUtils/Mutex.h>
+
+#include <vector>
+#include <string>
+#include <algorithm>
+#include <map>
 
 namespace icl{
   namespace utils{
@@ -190,7 +191,7 @@ namespace icl{
         obtain a list of all Configurable implementations and their
         supported properties.
     */
-    class Configurable{
+    class ICLUtils_API Configurable{
       public:
       /// Represents a single property
       struct Property{
@@ -490,7 +491,7 @@ namespace icl{
     /// registration macro for configurables
     /** @see \ref REG */
   #define REGISTER_CONFIGURABLE(NAME,CREATE)                              \
-    struct StaticConfigurableRegistrationFor_##NAME{                      \
+    struct StaticConfigurableRegistrationFor_##NAME{ \
       typedef StaticConfigurableRegistrationFor_##NAME This;              \
       static Configurable *create(){                                      \
         CREATE;                                                           \

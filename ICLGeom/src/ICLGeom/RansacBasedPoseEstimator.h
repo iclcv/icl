@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLGeom/GeomDefs.h>
 #include <ICLGeom/Camera.h>
@@ -38,13 +39,13 @@ namespace icl{
   namespace geom{
     
     /// RANSAC-based pose estimation
-    class RansacBasedPoseEstimator : public utils::Uncopyable{
+    class ICLGeom_API RansacBasedPoseEstimator : public utils::Uncopyable{
       struct Data;  //!< internal data handling
       Data *m_data; //!< internal data pointer
       
       public:
       
-      struct Result{
+      struct ICLGeom_API Result{
         Mat T;
         bool found;
         float error;

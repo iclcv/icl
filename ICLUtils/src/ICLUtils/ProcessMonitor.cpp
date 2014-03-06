@@ -37,7 +37,11 @@
 //#include <sys/time.h>
 //#include <sys/resource.h>
 #include <sys/types.h>
-#include <unistd.h>
+#ifdef ICL_SYSTEM_WINDOWS
+  #include <process.h>
+#else
+  #include <unistd.h>
+#endif
 
 namespace icl{
   namespace utils{
@@ -101,7 +105,11 @@ namespace icl{
   
     ProcessMonitor::~ProcessMonitor(){
       stop();
-      if(m_data->pipe) pclose(m_data->pipe);
+#ifdef ICL_SYSTEM_WINDOWS
+      if(m_data->pipe) _pclose(m_data->pipe);
+#else
+      if (m_data->pipe) pclose(m_data->pipe);
+#endif
       delete m_data;
     }
     

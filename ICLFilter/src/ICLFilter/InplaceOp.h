@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/ImgBase.h>
 
 namespace icl{
@@ -43,7 +44,7 @@ namespace icl{
         @see ArithmeticalInplaceOp 
         @see LogicalInplaceOp
     */
-    class InplaceOp{
+    class ICLFilter_API InplaceOp{
       public:
   
       /// Create a new Inplace op (ROI-only flag is set to true)

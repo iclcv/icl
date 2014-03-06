@@ -30,11 +30,12 @@
 
 #pragma once
 
-#include <bitset>
-
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Point32f.h>
 #include <ICLGeom/GeomDefs.h>
 #include <ICLCV/ImageRegion.h>
+
+#include <bitset>
 
 namespace icl{
   namespace markers{
@@ -52,7 +53,7 @@ namespace icl{
         Therefore, Fiducial instances can simply be copied
         as fast as a pointer-copy.
     */
-    class Fiducial{
+    class ICLMarkers_API Fiducial{
       /// hidden implementation (always managed by the parent MarkerDetector)
       FiducialImpl *impl;
       

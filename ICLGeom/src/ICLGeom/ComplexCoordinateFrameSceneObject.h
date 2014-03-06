@@ -31,10 +31,15 @@
 
 #pragma once
 
-#ifndef HAVE_OPENGL
-#warning "this header must not be included if HAVE_OPENGL is not defined"
+#ifndef ICL_HAVE_OPENGL
+#if WIN32
+#pragma WARNING("this header must not be included if ICL_HAVE_OPENGL is not defined")
+#else
+#warning "this header must not be included if ICL_HAVE_OPENGL is not defined"
+#endif
 #else
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/SceneObject.h>
 #include <ICLUtils/Mutex.h>
 
@@ -62,11 +67,11 @@ namespace icl{
       public:
       
       /// Default constructor with useful default size
-      ComplexCoordinateFrameSceneObject(float axisLength=100,float axisThickness=5, 
+      ICLGeom_API ComplexCoordinateFrameSceneObject(float axisLength=100,float axisThickness=5, 
                                         bool withXYZLabels=true);
   
       /// Dynamic adaption
-      void setParams(float axisLength, float axisThickness, bool withXYZLabels=true);
+      ICLGeom_API void setParams(float axisLength, float axisThickness, bool withXYZLabels = true);
       
       /// returns current length of the axis'
       inline float getAxisLength() const { return axisLength; }

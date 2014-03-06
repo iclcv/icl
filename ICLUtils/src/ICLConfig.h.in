@@ -1,0 +1,74 @@
+/********************************************************************
+**                Image Component Library (ICL)                    **
+**                                                                 **
+** Copyright (C) 2006-2012 CITEC, University of Bielefeld          **
+**                         Neuroinformatics Group                  **
+** Website: www.iclcv.org and                                      **
+**          http://opensource.cit-ec.de/projects/icl               **
+**                                                                 **
+** File   : include/ICLUtils/ICLConfig.h                           **
+** Module : ICLUtils                                               **
+** Authors: Sergius Gaulik                                         **
+**                                                                 **
+**                                                                 **
+** Commercial License                                              **
+** ICL can be used commercially, please refer to our website       **
+** www.iclcv.org for more details.                                 **
+**                                                                 **
+** GNU General Public License Usage                                **
+** Alternatively, this file may be used under the terms of the     **
+** GNU General Public License version 3.0 as published by the      **
+** Free Software Foundation and appearing in the file LICENSE.LGPL **
+** included in the packaging of this file.  Please review the      **
+** following information to ensure the GNU General Public License  **
+** version 3.0 requirements will be met:                           **
+** http://www.gnu.org/copyleft/gpl.html.                           **
+**                                                                 **
+** The development of this software was supported by the           **
+** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
+** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
+** Forschungsgemeinschaft (DFG) in the context of the German       **
+** Excellence Initiative.                                          **
+**                                                                 **
+*********************************************************************/
+
+#pragma once
+
+#cmakedefine ICL_32BIT @ICL_32BIT@
+#cmakedefine ICL_64BIT @ICL_64BIT@
+
+#cmakedefine ICL_MSC_VER @ICL_MSC_VER@
+
+#cmakedefine ICL_SYSTEM_UNIX @ICL_SYSTEM_UNIX@
+#cmakedefine ICL_SYSTEM_WINDOWS @ICL_SYSTEM_WINDOWS@
+#cmakedefine ICL_SYSTEM_APPLE @ICL_SYSTEM_APPLE@
+
+#cmakedefine ICL_HAVE_LIBZ @ICL_HAVE_LIBZ@
+#cmakedefine ICL_HAVE_LIBJPEG @ICL_HAVE_LIBJPEG@
+#cmakedefine ICL_HAVE_LIBPNG @ICL_HAVE_LIBPNG@
+
+#cmakedefine ICL_HAVE_IPP @ICL_HAVE_IPP@
+#cmakedefine ICL_HAVE_MKL @ICL_HAVE_MKL@
+#cmakedefine ICL_HAVE_OPENCL @ICL_HAVE_OPENCL@
+#cmakedefine ICL_HAVE_EIGEN3 @ICL_HAVE_EIGEN3@
+#cmakedefine ICL_HAVE_OPENNI @ICL_HAVE_OPENNI@
+#cmakedefine ICL_HAVE_OPENCV @ICL_HAVE_OPENCV@
+#cmakedefine ICL_HAVE_IMAGEMAGICK @ICL_HAVE_IMAGEMAGICK@
+#cmakedefine ICL_HAVE_LIBMESAR @ICL_HAVE_LIBMESAR@
+#cmakedefine ICL_HAVE_LIBDC @ICL_HAVE_LIBDC@
+#cmakedefine ICL_HAVE_LIBUSB @ICL_HAVE_LIBUSB@
+#cmakedefine ICL_HAVE_VIDEODEV @ICL_HAVE_VIDEODEV@
+#cmakedefine ICL_HAVE_ZMQ @ICL_HAVE_ZMQ@
+#cmakedefine ICL_HAVE_XINE @ICL_HAVE_XINE@
+#cmakedefine ICL_HAVE_QT @ICL_HAVE_QT@
+#cmakedefine ICL_HAVE_OPENGL @ICL_HAVE_OPENGL@
+#cmakedefine ICL_HAVE_GLX @ICL_HAVE_GLX@
+#cmakedefine ICL_HAVE_LIBFREENECT @ICL_HAVE_LIBFREENECT@
+#cmakedefine ICL_HAVE_PYLON @ICL_HAVE_PYLON@
+#cmakedefine ICL_HAVE_PCL @ICL_HAVE_PCL@
+#cmakedefine ICL_HAVE_RSB @ICL_HAVE_RSB@
+#cmakedefine ICL_HAVE_PROTOBUF @ICL_HAVE_PROTOBUF@
+
+#cmakedefine ICL_USE_SSE @ICL_USE_SSE@
+
+#cmakedefine QWT_DLL @QWT_DLL@

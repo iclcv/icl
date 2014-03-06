@@ -31,6 +31,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/ImgBase.h>
 #include <ICLCV/SurfFeature.h>
 #include <string>
@@ -45,7 +46,7 @@ namespace icl{
           The OpenSurf backend needs OpenCV, while the clsurf-backend
           builds on mandatory OpenCL support.
       */
-      class SurfFeatureDetector {
+      class ICLCV_API SurfFeatureDetector {
         struct Data;  //!< hidden implementation
         Data *m_data; //!< hidden data pointer
 

@@ -78,8 +78,7 @@ namespace icl {
     template<class Type>
     Img<Type>::Img(const Size& s, format eFormat):
       // {{{ open
-      ImgBase(icl::core::getDepth<Type>(),ImgParams(s,eFormat)){
-      FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," << translateFormat(eFormat) << ")  this:" << this );
+      ImgBase(icl::core::getDepth<Type>(), ImgParams(s, eFormat)){
     
       for(int i=0;i<getChannels();i++) {
         m_vecChannels.push_back(createChannel());
@@ -93,10 +92,7 @@ namespace icl {
     Img<Type>::Img(const Size &s,int iChannels, format fmt):
       // {{{ open
   
-      ImgBase(icl::core::getDepth<Type>(),ImgParams(s,iChannels,fmt)){
-      FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," << 
-                   iChannels << "," << translateFormat(fmt) << ")  this:" << this );
-    
+      ImgBase(icl::core::getDepth<Type>(), ImgParams(s, iChannels, fmt)){
       for(int i=0;i<getChannels();i++) {
         m_vecChannels.push_back(createChannel());
       }
@@ -127,8 +123,6 @@ namespace icl {
       // {{{ open
       ImgBase(icl::core::getDepth<Type>(),ImgParams(s,channels,fmt)){
       ICLASSERT_THROW (getChannels () <= (int) vptData.size(), InvalidImgParamException("channels"));
-      FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," <<  channels << 
-                   "," << translateFormat(fmt) << ",Type**)  this:" << this);
     
       typename std::vector<Type*>::const_iterator it = vptData.begin();
       for(int i=0; i<getChannels(); ++i, ++it) {
@@ -143,8 +137,7 @@ namespace icl {
     Img<Type>::Img(const Size &s, format eFormat, const std::vector<Type*>& vptData, bool passOwnerShip) :
       // {{{ open
       ImgBase(icl::core::getDepth<Type>(),ImgParams(s,eFormat)){
-      ICLASSERT_THROW (getChannels () <= (int) vptData.size(), InvalidImgParamException("channels"));
-      FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," << translateFormat(eFormat) << ",Type**)  this:" << this);
+      ICLASSERT_THROW(getChannels() <= (int)vptData.size(), InvalidImgParamException("channels"));
      
       typename std::vector<Type*>::const_iterator it = vptData.begin();
       for(int i=0; i<getChannels(); ++i, ++it) {
@@ -639,7 +632,7 @@ namespace icl {
       return dst;
     }
   
-  #ifdef HAVE_IPP  
+  #ifdef ICL_HAVE_IPP  
     template<>
     Img<icl8u> *Img<icl8u>::lut(const icl8u *lut, Img<icl8u> *dst, int bits) const{
       if(!dst){
@@ -831,7 +824,7 @@ namespace icl {
     }
   
   
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
     template <>
     void Img<icl8u>::mirror(axis eAxis, int iChannel, const Point &oOffset, const Size &oSize) {
       ippiMirror_8u_C1IR(getROIData(iChannel,oOffset),getLineStep(), oSize, (IppiAxis) eAxis);
@@ -935,7 +928,7 @@ namespace icl {
         return *it;
       }
     }
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
   #define ICL_INSTANTIATE_DEPTH(T)                                        \
     template<> icl ## T                                                   \
     Img<icl ## T>::getMax(int iChannel,Point *coords) const {             \
@@ -986,7 +979,7 @@ namespace icl {
         return *it;
       }
     }
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
   #define ICL_INSTANTIATE_DEPTH(T)                                        \
     template<> icl##T                                                     \
     Img<icl ## T>::getMin(int iChannel, Point *coords) const {            \
@@ -1064,7 +1057,7 @@ namespace icl {
   
     }
   
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
   
   #define ICL_INSTANTIATE_DEPTH(T)                                        \
     template<> const Range<icl##T>                                        \
@@ -1287,7 +1280,7 @@ namespace icl {
       }
     }
   
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
     template <> void 
     Img<icl32f>::normalize(int iChannel, const Range<icl32f> &srcRange, const Range<icl32f> &dstRange){
       FUNCTION_LOG("");
@@ -1509,15 +1502,15 @@ namespace icl {
               const unsigned int w = src->getWidth();
 
               // rectangle in source image for the destination pixel
-              unsigned int xBegin[dstSize.width];
-              unsigned int xEnd[dstSize.width];
-              unsigned int yBegin[dstSize.height];
-              unsigned int yEnd[dstSize.height];
+              unsigned int *xBegin = new unsigned int[dstSize.width];
+              unsigned int *xEnd = new unsigned int[dstSize.width];
+              unsigned int *yBegin = new unsigned int[dstSize.height];
+              unsigned int *yEnd = new unsigned int[dstSize.height];
               // fill quantity of the rectangle edges
-              float xBMul[dstSize.width];
-              float xEMul[dstSize.width];
-              float yBMul[dstSize.height];
-              float yEMul[dstSize.height];
+              float *xBMul = new float[dstSize.width];
+              float *xEMul = new float[dstSize.width];
+              float *yBMul = new float[dstSize.height];
+              float *yEMul = new float[dstSize.height];
 
               for (int i = 0; i < dstSize.width; ++i) {
                       b = srcOffs.x + i*fSX;
@@ -1575,6 +1568,15 @@ namespace icl {
                       xD = 0;
                   }
               }
+              
+              delete[] xBegin;
+              delete[] xEnd;
+              delete[] yBegin;
+              delete[] yEnd;
+              delete[] xBMul;
+              delete[] xEMul;
+              delete[] yBMul;
+              delete[] yEMul;
           }
 
           return;
@@ -1606,12 +1608,12 @@ namespace icl {
   
     // }}}
   
-  #define ICL_INSTANTIATE_DEPTH(D)  template void scaledCopyChannelROI<icl##D> \
+  #define ICL_INSTANTIATE_DEPTH(D)  template ICLCore_API void scaledCopyChannelROI<icl##D> \
     (const Img<icl##D>*,int,const Point&,const Size&,                     \
      Img<icl##D>*,int,const Point&,const Size&,scalemode); 
   
     /// IPP-OPTIMIZED specialization for icl8u to icl8u ROI sclaing (using ippiResize)
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
     template<> inline void 
     scaledCopyChannelROI<icl8u>(const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
                                 Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
@@ -1622,7 +1624,11 @@ namespace icl {
       CHECK_VALUES_NO_SIZE(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
   
   #if IPP_USE_DEPRICATED_RESIZE
-  #warning "we are aware of the fact that ippiResize is deprecated, however the replacement seems to be buggy in case of LIN interpolation"
+    #if WIN32
+      #pragma WARNING("we are aware of the fact that ippiResize is deprecated, however the replacement seems to be buggy in case of LIN interpolation")
+    #else
+      #warning "we are aware of the fact that ippiResize is deprecated, however the replacement seems to be buggy in case of LIN interpolation"
+    #endif
       //NOTE: this function has become deprecated
       // attention: for source image IPP wants indeed the *image* origin
       ippiResize_8u_C1R(src->getData(srcC),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
@@ -1667,7 +1673,11 @@ namespace icl {
       CHECK_VALUES_NO_SIZE(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
       
   #if IPP_USE_DEPRICATED_RESIZE
-  #warning "we are aware of the fact that ippiResize is deprecated, however the replacement seems to be buggy in case of LIN interpolation"
+    #if WIN32
+      #pragma WARNING("we are aware of the fact that ippiResize is deprecated, however the replacement seems to be buggy in case of LIN interpolation")
+    #else
+      #warning "we are aware of the fact that ippiResize is deprecated, however the replacement seems to be buggy in case of LIN interpolation"
+    #endif
       //NOTE: this function has become deprecated
       // attention: for source image IPP wants indeed the *image* origin
       ippiResize_32f_C1R(src->getData(srcC),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
@@ -1760,14 +1770,14 @@ namespace icl {
     // }}}
   
   
-  #define ICL_INSTANTIATE_DEPTH(D) template void flippedCopyChannelROI<icl##D>(axis eAxis, \
-                                                                               const Img<icl##D> *src, int srcC, const Point &srcOffs, const Size &srcSize, \
-                                                                               Img<icl##D> *dst, int dstC, const Point &dstOffs, const Size &dstSize);
+  #define ICL_INSTANTIATE_DEPTH(D) template ICLCore_API void flippedCopyChannelROI<icl##D>(axis eAxis, \
+                          const Img<icl##D> *src, int srcC, const Point &srcOffs, const Size &srcSize, \
+                          Img<icl##D> *dst, int dstC, const Point &dstOffs, const Size &dstSize);
   
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
     /// IPP-OPTIMIZED specialization for icl8u image flipping
     template <>
-    void flippedCopyChannelROI<icl8u>(axis eAxis, 
+    ICLCore_API void flippedCopyChannelROI<icl8u>(axis eAxis, 
                                       const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
                                       Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize) {
       // {{{ open
@@ -1782,7 +1792,7 @@ namespace icl {
   
     /// IPP-OPTIMIZED specialization for icl8u image flipping
     template <>
-    void flippedCopyChannelROI<icl32f>(axis eAxis, 
+    ICLCore_API void flippedCopyChannelROI<icl32f>(axis eAxis, 
                                        const Img<icl32f> *src, int srcC, const Point &srcOffs, const Size &srcSize,
                                        Img<icl32f> *dst, int dstC, const Point &dstOffs, const Size &dstSize) {
       // {{{ open
@@ -2113,16 +2123,7 @@ namespace icl {
   
     template<class Type>
     const Img<Type> Img<Type>::null;
-  
     
-    // {{{  explicit instantiation of the Img<T> classes 
-  
-  #define ICL_INSTANTIATE_DEPTH(D) template class Img<icl##D>;
-    ICL_INSTANTIATE_ALL_DEPTHS
-  #undef ICL_INSTANTIATE_DEPTH
-  
-    // }}}
-  
     template<class T>
     ImgBasePtrPtr<T>::~ImgBasePtrPtr(){
       // {{{ open
@@ -2184,12 +2185,18 @@ namespace icl {
     }
   
     // }}}
-  
-  
-  
-  #define ICL_INSTANTIATE_DEPTH(D) template struct ImgBasePtrPtr<icl##D>;
+
+
+    // {{{  explicit instantiation of the Img<T> classes 
+
+#define ICL_INSTANTIATE_DEPTH(D)           \
+  template class ICLCore_API Img<icl##D>; \
+  template struct ICLCore_API ImgBasePtrPtr<icl##D>;
     ICL_INSTANTIATE_ALL_DEPTHS
-  #undef ICL_INSTANTIATE_DEPTH
+#undef ICL_INSTANTIATE_DEPTH
+
+      // }}}
+  
   
   
   } // namespace core

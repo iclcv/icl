@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
 #include <ICLUtils/Uncopyable.h>
 
@@ -37,7 +38,7 @@
 namespace icl{
   namespace core{
     
-    class ImageRenderer : public utils::Uncopyable{
+    class ICLCore_API ImageRenderer : public utils::Uncopyable{
       struct Data;
       Data *m_data;
       

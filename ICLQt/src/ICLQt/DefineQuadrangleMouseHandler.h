@@ -30,10 +30,11 @@
 
 #pragma once
 
-#include <ICLQt/MouseHandler.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Lockable.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/VisualizationDescription.h>
+#include <ICLQt/MouseHandler.h>
 
 namespace icl{
   namespace qt{
@@ -42,7 +43,7 @@ namespace icl{
         restricted to be always convex. The quadrangle is initialized as a rectangle
         that is 20 px smaller than the given max-size rectangle.
         */
-    class DefineQuadrangleMouseHandler : public qt::MouseHandler, 
+    class ICLQt_API DefineQuadrangleMouseHandler : public qt::MouseHandler,
           public utils::Uncopyable, public utils::Lockable{
       struct Data;  //!< pimpl type
       Data *m_data; //!< pimpl pointer

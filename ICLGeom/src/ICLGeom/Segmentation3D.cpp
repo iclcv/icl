@@ -29,7 +29,7 @@
  ********************************************************************/
 
 #define __CL_ENABLE_EXCEPTIONS //enables openCL error catching
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 #include <CL/cl.hpp>
 #endif
 
@@ -41,7 +41,7 @@
 namespace icl {
 namespace geom {
 
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 //OpenCL kernel code
 static char segmentationKernel[] =
 "  #pragma OPENCL EXTENSION cl_khr_global_int32_base_atomics : enable                                                           \n"
@@ -225,7 +225,7 @@ normalEdgeImage	.setSize(Size(w, h));
 
 	region = new RegionDetector(25, 4000000, 254, 255, false);
 
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 	try
 	{
 		program = CLProgram("gpu", segmentationKernel);
@@ -260,7 +260,7 @@ Segmentation3D::~Segmentation3D() {
 	delete[] assignmentRemaining;
 	delete[] elementsBlobs;
 	delete[] assignmentBlobs;
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 	delete[] segmentColorImageRArray;
 	delete[] segmentColorImageGArray;
 	delete[] segmentColorImageBArray;
@@ -492,7 +492,7 @@ void Segmentation3D::regionGrow() {
 
 void Segmentation3D::calculatePointAssignmentAndAdjacency() {
 	if (useCL == true && clReady == true) {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 		try {
 			int numFaces=cluster.size();
 			DynMatrix<bool> newMatrix(numFaces,numFaces,false);
@@ -541,15 +541,15 @@ void Segmentation3D::calculatePointAssignmentAndAdjacency() {
 		int numFaces = cluster.size();
 		DynMatrix<bool> newMatrix(numFaces, numFaces, false);
 		neighbours = newMatrix;
-		int assignmentOut[w * h];for
-(		int x=0; x<w; x++) {
+		int *assignmentOut = new int[w * h];
+    for (int x=0; x<w; x++) {
 			for(int y=0; y<h; y++) {
 				int i=x+w*y;
 				float dist=100000;
 				int ass=0;
 				bool assigned=false;
 				if(elements[i]==true && assignment[i]==0) {
-					bool adj[numFaces];
+					bool *adj = new bool[numFaces];
 					for(int a=0; a<numFaces; a++) {
 						adj[a]=false;
 					}
@@ -569,6 +569,7 @@ void Segmentation3D::calculatePointAssignmentAndAdjacency() {
 								}
 							}
 						}
+            delete adj;
 					}
 					for(int a=0; a<numFaces-1; a++) {
 						for (int b=a+1; b<numFaces; b++) {
@@ -596,6 +597,7 @@ void Segmentation3D::calculatePointAssignmentAndAdjacency() {
 			neighbours(i, i) = true;
 		}
 		memcpy(assignment, assignmentOut, sizeof(assignmentOut));
+    delete assignmentOut;
 	}
 }
 
@@ -604,7 +606,7 @@ void Segmentation3D::calculateCutfreeMatrix() {
 	cutfree = newMatrix;
 
 	for (unsigned int a = 0; a < neighbours.rows(); a++) {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
       int numPoints=cluster.at(a).size();
       CLBuffer RANSACpointsBuffer;
       if (useCL == true && clReady == true)
@@ -621,17 +623,17 @@ void Segmentation3D::calculateCutfreeMatrix() {
 				int countNAcc = 0;
 
 				if (useCL == true && clReady == true) {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 
-					Vec n0[RANSACpasses];
-					float dist[RANSACpasses];
-					int cAbove[RANSACpasses];
-					int cBelow[RANSACpasses];
-					int cOn[RANSACpasses];
+					Vec *n0 = new Vec[RANSACpasses];
+					float *dist = new float[RANSACpasses];
+					int *cAbove = new int[RANSACpasses];
+					int *cBelow = new int[RANSACpasses];
+					int *cOn = new int[RANSACpasses];
 
-					int cAboveRead[RANSACpasses];
-					int cBelowRead[RANSACpasses];
-					int cOnRead[RANSACpasses];
+					int *cAboveRead = new int[RANSACpasses];
+					int *cBelowRead = new int[RANSACpasses];
+					int *cOnRead = new int[RANSACpasses];
 
 					for(int i=0; i<RANSACpasses; i++) {
 						cAbove[i]=0;
@@ -704,6 +706,15 @@ void Segmentation3D::calculateCutfreeMatrix() {
 					} else {
 						cutfree(a,b)=false;
 					}
+
+          delete n0;
+          delete dist;
+          delete cAbove;
+          delete cBelow;
+          delete cOn;
+          delete cAboveRead;
+          delete cBelowRead;
+          delete cOnRead;
 #endif
 				} else {
 					for (int p = 0; p < RANSACpasses; p++) {
@@ -880,8 +891,8 @@ void Segmentation3D::greedyComposition() {
 		}
 	}
 
-	bool alrSet[W.cols()];for
-(	unsigned int i=0; i<W.cols(); i++) {
+	bool *alrSet = new bool[W.cols()];
+  for(unsigned int i=0; i<W.cols(); i++) {
 		alrSet[i]=false;
 	}
 	for (unsigned int i = 0; i < blobs.size(); i++) {
@@ -897,7 +908,7 @@ void Segmentation3D::greedyComposition() {
 		}
 	}
 
-	int comp[cluster.size()];
+	int *comp = new int[cluster.size()];
 
 for(	unsigned int x=0; x<blobs.size(); x++) {
 		for(unsigned int y=0; y<blobs.at(x).size(); y++) {
@@ -909,6 +920,9 @@ for(	unsigned int x=0; x<blobs.size(); x++) {
 			assignment[i] = comp[assignment[i] - 1];
 		}
 	}
+
+  delete alrSet;
+  delete comp;
 }
 
 void Segmentation3D::calculateRemainingPoints() {
@@ -1130,7 +1144,8 @@ void Segmentation3D::calculateRemainingPoints() {
 		}
 
 		else if (nb.size() > 1) {
-			int zuws[nb.size()];for(unsigned int a=0; a<blobs.size(); a++) {
+			int *zuws = new int[nb.size()];
+      for(unsigned int a=0; a<blobs.size(); a++) {
 				for(unsigned int b=0; b<blobs.at(a).size(); b++) {
 					for(unsigned int c=0; c<nb.size(); c++) {
 						if(blobs.at(a).at(b)==nb.at(c)-1) {
@@ -1200,6 +1215,7 @@ void Segmentation3D::calculateRemainingPoints() {
 				 }
 				 */
 			}
+      delete zuws;
 		}
 	}
 }
@@ -1214,20 +1230,20 @@ void Segmentation3D::blobSegmentation() {
 		}
 	}
 
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 	int numPoints=cluster.at(maxID).size();
-	int cAbove[RANSACpasses];
-	int cBelow[RANSACpasses];
-	int cOn[RANSACpasses];
-	int cAboveRead[RANSACpasses];
-	int cBelowRead[RANSACpasses];
+	int *cAbove = new int[RANSACpasses];
+	int *cBelow = new int[RANSACpasses];
+  int *cOn = new int[RANSACpasses];
+  int *cAboveRead = new int[RANSACpasses];
+  int *cBelowRead = new int[RANSACpasses];
 #endif
-	Vec n0[RANSACpasses];
-	float dist[RANSACpasses];
-	int cOnRead[RANSACpasses];
+	Vec *n0 = new Vec[RANSACpasses];
+	float *dist = new float[RANSACpasses];
+	int *cOnRead = new int[RANSACpasses];
 
 	for (int i = 0; i < RANSACpasses; i++) {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 		cAbove[i]=0;
 		cBelow[i]=0;
 		cOn[i]=0;
@@ -1260,7 +1276,7 @@ void Segmentation3D::blobSegmentation() {
 	}
 
 	if (useCL == true && clReady == true) {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 		try {
 			CLBuffer RANSACpointsBuffer = program.createBuffer("r", numPoints * sizeof(int), &cluster.at(maxID)[0]);
 			xyzBuffer = program.createBuffer("r", w*h * sizeof(FixedColVector<float, 4>), &xyzData[0]);
@@ -1318,7 +1334,7 @@ void Segmentation3D::blobSegmentation() {
 	}
 
 	if (useCL == true && clReady == true) {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 		try {
 			elementsBlobsBuffer = program.createBuffer("rw", w*h * sizeof(bool), elementsBlobs);
 			assignmentBlobsBuffer = program.createBuffer("r", w*h * sizeof(int), assignmentBlobs);
@@ -1359,11 +1375,16 @@ void Segmentation3D::blobSegmentation() {
 
 	regionGrowBlobs();
   assignment = assignmentBlobs;
+
+  delete n0, dist, cOnRead;
+#ifdef ICL_HAVE_OPENCL
+  delete cAbove, cBelow, cOn, cAboveRead, cBelowRead;
+#endif
 }
 
 void Segmentation3D::colorPointcloud() {
 	if (useCL == true && clReady == true) {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 		try {
 			assignmentBuffer = program.createBuffer("r", w*h * sizeof(int), assignment);
 			kernelSegmentColoring.setArgs(assignmentBuffer,

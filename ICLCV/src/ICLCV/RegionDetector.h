@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/Configurable.h>
 #include <ICLCore/ImgBase.h>
@@ -175,7 +176,7 @@ namespace icl{
         Lastly, all ImageRegionData structures are filtered w.r.t. the given size and
         value constraints.
     */
-    class RegionDetector : public utils::Uncopyable, public utils::Configurable{
+    class ICLCV_API RegionDetector : public utils::Uncopyable, public utils::Configurable{
       
       struct Data;  //!< internal data structure
       Data *m_data; //!< internal data pointer

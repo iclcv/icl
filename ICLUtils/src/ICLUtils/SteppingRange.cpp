@@ -30,6 +30,7 @@
 
 #include <ICLUtils/SteppingRange.h>
 #include <ICLUtils/StringUtils.h>
+
 namespace icl{
   namespace utils{
   
@@ -64,8 +65,8 @@ namespace icl{
     
     
   #define ICL_INSTANTIATE_DEPTH(D)                                        \
-    template std::ostream &operator<<(std::ostream&,const SteppingRange<icl##D>&); \
-    template std::istream &operator>>(std::istream&,SteppingRange<icl##D>&);
+    template ICLUtils_API std::ostream &operator<<(std::ostream&,const SteppingRange<icl##D>&); \
+    template ICLUtils_API std::istream &operator>>(std::istream&, SteppingRange<icl##D>&);
     ICL_INSTANTIATE_ALL_DEPTHS
   #undef ICL_INSTANTIATE_DEPTH
     

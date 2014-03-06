@@ -30,21 +30,22 @@
 
 #pragma once
 
-#include <string>
-
-#ifdef HAVE_OPENCV
-#include <opencv/highgui.h>
-#endif
-
+#include <ICLUtils/CompatMacros.h>
 #include <ICLIO/ImageOutput.h>
 #include <ICLUtils/Uncopyable.h>
+
+#include <string>
+
+#ifdef ICL_HAVE_OPENCV
+#include <opencv/highgui.h>
+#endif
 
 
 
 namespace icl{
   namespace io{
   
-    class OpenCVVideoWriter :public ImageOutput{
+    class ICLIO_API OpenCVVideoWriter :public ImageOutput{
       private:
       ///OpenCV VideoWriter struct
   	CvVideoWriter *writer;

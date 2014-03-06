@@ -30,13 +30,14 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <limits>
 
 namespace icl{
   namespace utils{
     /// clips a value into the range [tMin,tMax] \ingroup GENERAL
     template <class T>
-    inline T clip(T tX, T tMin, T tMax){ 
+    inline T clip(T tX, T tMin, T tMax){
       return tX < tMin ? tMin : tX > tMax ? tMax : tX; 
     }
     
@@ -47,27 +48,27 @@ namespace icl{
     }
     
     /** \cond */
-    template<> inline bool is_float_type<float>() { return true; }  
-    template<> inline bool is_float_type<double>() { return true; }  
+    template<> inline bool is_float_type<float>() { return true; }
+    template<> inline bool is_float_type<double>() { return true; }
     /** \endcond */
     
     /// utility cast function wrapping the standard lib's numerical_limits template
     template<class S, class D> 
     inline D clipped_cast(S src){
       if(is_float_type<D>()){ //hopefully this is const enough for optimize this expresseion out
-        return src < -std::numeric_limits<D>::max() ? -std::numeric_limits<D>::max() : 
-        src > std::numeric_limits<D>::max() ? std::numeric_limits<D>::max() : 
+        return src < -(std::numeric_limits<D>::max)() ? -(std::numeric_limits<D>::max)() : 
+        src > (std::numeric_limits<D>::max)() ? (std::numeric_limits<D>::max)() : 
         static_cast<D>(src);
       }else{
-        return src < std::numeric_limits<D>::min() ? std::numeric_limits<D>::min() : 
-        src > std::numeric_limits<D>::max() ? std::numeric_limits<D>::max() : 
+        return src < (std::numeric_limits<D>::min)() ? (std::numeric_limits<D>::min)() : 
+        src > (std::numeric_limits<D>::max)() ? (std::numeric_limits<D>::max)() : 
         static_cast<D>(src);
       }
     }
     
     /** \cond */
     /// specializations for all buildin data types
-  #define SPECIALISE_CLIPPED_CAST(T) template<> inline T clipped_cast<T,T>(T t) { return t; }
+#define SPECIALISE_CLIPPED_CAST(T) template<> inline T clipped_cast<T,T>(T t) { return t; }
     SPECIALISE_CLIPPED_CAST(int)
     SPECIALISE_CLIPPED_CAST(unsigned int)
     SPECIALISE_CLIPPED_CAST(char)

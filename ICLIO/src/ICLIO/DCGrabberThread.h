@@ -93,16 +93,16 @@ namespace icl{
         friend class icl::io::DCGrabber;
   
         /// the thread function (moved frames) 
-        virtual void run();
+        ICLIO_API virtual void run();
         
         /// resets the dc-camera at the end
-        virtual void finalize();
+        ICLIO_API virtual void finalize();
         
         /// called by the signal handler to stop all grabber threads
-        static void stopAllGrabberThreads();
+        ICLIO_API static void stopAllGrabberThreads();
         
         /// internally calls dc1394_reset_bus (not save!)
-        void resetBus();
+        ICLIO_API void resetBus();
         
         private: 
         /// private constructor )can only be called by icl::DCGrabber

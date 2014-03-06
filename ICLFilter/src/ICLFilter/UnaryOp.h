@@ -30,8 +30,9 @@
 
 #pragma once
 
-#include <ICLFilter/OpROIHandler.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Configurable.h>
+#include <ICLFilter/OpROIHandler.h>
 
 namespace icl{
   /** \cond */
@@ -47,7 +48,7 @@ namespace icl{
     /** A list of unary operators can be found here:\n
         \ref UNARY
     **/
-    class UnaryOp : public utils::Configurable{
+    class ICLFilter_API UnaryOp : public utils::Configurable{
       void initConfigurable();
       
       public:

@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/OctreeObject.h>
 #include <ICLGeom/ViewRay.h>
 #include <vector>
@@ -62,7 +63,7 @@ namespace icl{
         millisecond. This is about 250 times faster than a brute force search.
         
     */
-    class RayCastOctreeObject : public OctreeObject<float,16,1,Vec,1024>{
+    class RayCastOctreeObject : public OctreeObject<float, 16, 1, Vec, 1024>{
       typedef OctreeObject<float,16,1,Vec,1024> Super;
       public:
       /// creates a QuadTree for the given 2D rectangle
@@ -88,13 +89,13 @@ namespace icl{
       public:
       
       /// casts a ray and returns all points that are closer than given distance to ray
-      std::vector<Vec> rayCast(const ViewRay &ray, float maxDist=1) const;
+      ICLGeom_API std::vector<Vec> rayCast(const ViewRay &ray, float maxDist=1) const;
       
       /// as ray cast, but sorts the points by distance to the ray-offset
-      std::vector<Vec> rayCastSort(const ViewRay &ray, float maxDist=1) const;
+      ICLGeom_API std::vector<Vec> rayCastSort(const ViewRay &ray, float maxDist = 1) const;
 
       /// casts a ray and returns the point closest to the ray-offset
-      Vec rayCastClosest(const ViewRay &ray, float maxDist=1) const throw (utils::ICLException);
+      ICLGeom_API Vec rayCastClosest(const ViewRay &ray, float maxDist = 1) const throw (utils::ICLException);
     };
     
   }

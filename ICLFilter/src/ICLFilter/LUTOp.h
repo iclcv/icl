@@ -30,10 +30,11 @@
 
 #pragma once
 
-#include <ICLFilter/UnaryOp.h>
-#include <ICLCore/Img.h>
-#include <vector>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
+#include <ICLCore/Img.h>
+#include <ICLFilter/UnaryOp.h>
+#include <vector>
 
 namespace icl {
   namespace filter{
@@ -65,7 +66,7 @@ namespace icl {
         Yet, only the reduceBits function and therewith the according LUT-objects
         mode with given count of quantization levels is IPP optimized.
     */
-    class LUTOp : public UnaryOp, public utils::Uncopyable{
+    class ICLFilter_API LUTOp : public UnaryOp, public utils::Uncopyable{
      public:
        /// creates a LUT object with given lut (LUT-mode)
        /** @param lut LUT-vector to use */

@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/GeomDefs.h>
 #include <iostream>
 
@@ -41,7 +42,7 @@ namespace icl{
     /** \endcond */
     
     /// utility structure that defines a hit between a ViewRay and SceneObjects
-    struct Hit{
+    struct ICLGeom_API Hit{
       /// constructor (initializes obj with 0 and dist with -1)
       Hit():obj(0),dist(-1){}
       

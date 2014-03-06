@@ -30,9 +30,10 @@
 
 #pragma once
 
-#include <string>
-#include <ICLQt/GUIHandle.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/StringUtils.h>
+#include <ICLQt/GUIHandle.h>
+#include <string>
 
 namespace icl{
   namespace qt{
@@ -46,7 +47,7 @@ namespace icl{
     /** You can add a state component as an alternative std::cout for debugging
         or system state messages
         @see GUI */
-    class StateHandle : public GUIHandle<ThreadedUpdatableTextView>{
+    class ICLQt_API StateHandle : public GUIHandle<ThreadedUpdatableTextView>{
       int maxLen;
       public:
       

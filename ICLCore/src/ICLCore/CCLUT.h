@@ -30,15 +30,16 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
+#include <ICLUtils/ConsoleProgress.h>
 #include <vector>
 #include <string>
-#include <ICLUtils/ConsoleProgress.h>
 
 namespace icl{
   namespace core{
   
-    class CCLUT{
+    class ICLCore_API CCLUT{
       public:
       CCLUT(format srcFmt, format dstFmt);
       void cc(const ImgBase *src, ImgBase *dst, bool roiOnly=false);

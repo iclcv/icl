@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/InplaceOp.h>
 
 namespace icl{
@@ -67,7 +68,7 @@ namespace icl{
         IPP-Optimization is possible, but not yet implemented.
         
     */
-    class InplaceLogicalOp : public InplaceOp{
+    class ICLFilter_API InplaceLogicalOp : public InplaceOp{
       public:
   
       enum optype{

@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLQt/GUIHandle.h>
 #include <ICLQt/ThreadedUpdatableSlider.h>
 
@@ -46,7 +47,7 @@ namespace icl{
     /** \endcond */
    
     /// Handle class for slider componets \ingroup HANDLES
-    class SliderHandle : public GUIHandle<ThreadedUpdatableSlider>{
+    class ICLQt_API SliderHandle : public GUIHandle<ThreadedUpdatableSlider>{
   
       /// associated display
       QLCDNumber *lcd;

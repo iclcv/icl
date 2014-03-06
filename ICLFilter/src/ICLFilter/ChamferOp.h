@@ -30,10 +30,11 @@
 
 #pragma once
 
-#include <ICLFilter/UnaryOp.h>
-#include <ICLCore/Img.h>
-#include <vector>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Point.h>
+#include <ICLCore/Img.h>
+#include <ICLFilter/UnaryOp.h>
+#include <vector>
 
 namespace icl{
   namespace filter{
@@ -185,7 +186,7 @@ namespace icl{
         pass ChampferOp instances to function calls, but this ops share their internal image buffer,
         so in some cases inpredictable behaviour can occur.
     */
-    class ChamferOp : public UnaryOp{
+    class ICLFilter_API ChamferOp : public UnaryOp{
       public:
       /// decides which metric is used to calculate the Hausdorff distance
       enum hausdorffMetric{

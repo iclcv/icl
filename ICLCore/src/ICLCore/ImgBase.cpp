@@ -38,21 +38,13 @@ using namespace icl::math;
 namespace icl {
   namespace core{
     
-    ImgBase::ImgBase(depth d, const ImgParams &params):m_oParams(params),m_eDepth(d) {
-      FUNCTION_LOG("ImgBase(" << getWidth()
-                   << "," << getHeight()
-                   << "," << translateFormat(getFormat()) 
-                   << ", "<< translateDepth(getDepth()) 
-                   << "," << getChannels() << ")  this:" << this); 
-    }
+    ImgBase::ImgBase(depth d, const ImgParams &params):m_oParams(params),m_eDepth(d) { }
     
     ImgBase::~ImgBase(){
       FUNCTION_LOG("");
     }
   
     void ImgBase::print(const std::string title) const{
-      FUNCTION_LOG(sTitle);
-      
       std::cout << " -----------------------------------------" << std::endl
                 << "| image     : " << title  << std::endl
                 << "| timestamp : " << getTime() << std::endl
@@ -321,6 +313,11 @@ namespace icl {
                << image.getROI() << "," << image.getTime() << ")";
     }
 
+#define ICL_INSTANTIATE_DEPTH(D)                  \
+  template ICLCore_API Img<icl##D> *ImgBase::convert<icl##D>(Img<icl##D> *poDst = NULL) const; \
+  template ICLCore_API Img<icl##D> *ImgBase::convertROI<icl##D>(Img<icl##D> *poDst = NULL) const;
+    ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
   } // namespace core
 
 } //namespace icl

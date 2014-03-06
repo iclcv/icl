@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLMarkers/Fiducial.h>
 #include <ICLGeom/Camera.h>
 
@@ -42,7 +43,7 @@ namespace icl{
         mutiple calls to MutiCamFiducial::getPose3D do not entail
         doubled pose estimation.      
     */
-    struct MultiCamFiducialImpl{
+    struct ICLMarkers_API MultiCamFiducialImpl{
       int id;                              //!< associated fiducial ID
       int numFound;                        //!< number of view, this Fiducial was found in
       std::vector<Fiducial> fids;          //!< all 2D fiducials 

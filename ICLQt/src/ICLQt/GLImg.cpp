@@ -45,7 +45,7 @@
 #include <ICLUtils/Lockable.h>
 #include <map>
 
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
 #include <QtCore/QObject>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QMutex>
@@ -161,7 +161,7 @@ namespace icl{
     typedef SmartPtr<TextureElement> TextureElementPtr;
   
     
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
   
     // ipp optimization for 1 channel data
     template<> std::vector<Range64f> TextureElement::findMinMax<icl8u,1>() const{
@@ -651,7 +651,7 @@ namespace icl{
         setup_pixel_transfer(s,s,s,s,b,b,b,b);
         
       }
-  
+
       void uploadTextureData(){
         ICLASSERT_THROW(data.getDim(),ICLException("unable to draw GLImg: no texture data available"));
         if(!isDirty()) return;

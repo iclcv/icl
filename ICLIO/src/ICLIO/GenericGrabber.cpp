@@ -238,7 +238,8 @@ namespace icl{
           m_poGrabber = GrabberInstanceTable::get()->createGrabber(grabbers.at(0));
           m_poDesc = grabbers.at(0);
           break;
-        } catch(ICLException &e){
+        }
+        catch (ICLException &e){
           addError(errStr, id, param, str(e.what()));
         } catch(...){
           addError(errStr, id, param, "unknown exception catched");

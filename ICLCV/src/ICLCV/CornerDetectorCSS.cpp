@@ -33,7 +33,7 @@
 #include <ICLUtils/Point32f.h>
 #include <cstring>
 
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 #include <ICLUtils/CLProgram.h>
 #include <CL/cl.hpp>
 #endif
@@ -44,7 +44,7 @@ using namespace icl::core;
 
 namespace icl{
   namespace cv{
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
     struct CornerDetectorCSS::CLCurvature{
       CLProgram deriveProgram;
       CLKernel deriveAllAndCurvatureKernel;
@@ -77,9 +77,9 @@ namespace icl{
                       float curvature_cutoff, uint length, icl32f *curvature_out){
         // make sure length is dividable by 2 to avoid prime numbers which can cause 
         // weird issues witht the workgroup size and slow down the kernel
-        uint save_length = length + length%2;
-        uint dim = length * sizeof(icl32f);
-        uint save_dim = save_length * sizeof(icl32f);
+        unsigned int save_length = length + length % 2;
+        unsigned int dim = length * sizeof(icl32f);
+        unsigned int save_dim = save_length * sizeof(icl32f);
 
         CLBuffer x = deriveProgram.createBuffer("r",save_dim);
         CLBuffer y = deriveProgram.createBuffer("r",save_dim);
@@ -141,7 +141,7 @@ namespace icl{
     }
 
     void CornerDetectorCSS::convolute(const float *data, int data_length, const float *mask , int mask_length, float *convoluted) {
-#ifdef HAVE_IPP
+#ifdef ICL_HAVE_IPP
       int radius = mask_length / 2;
       float val[data_length + 2 * radius];
       memcpy(val, data + data_length - radius, sizeof(float) * radius);
@@ -231,7 +231,8 @@ namespace icl{
                                                       const int *indices_padded, const float *smoothed_x, 
                                                       const float *smoothed_y, float curvature_cutoff, 
                                                       float *curvature) {
-      float padded_x[array_length + num_boundaries * 4], padded_y[array_length + num_boundaries * 4];
+      float *padded_x = new float[array_length + num_boundaries * 4];
+      float *padded_y = new float[array_length + num_boundaries * 4];
       for(int i = 0; i < num_boundaries; i++) {
         memcpy(&padded_x[indices_padded[i]],&smoothed_x[indices[i]+lengths[i]-2],2 * sizeof(float));
         memcpy(&padded_x[indices_padded[i]+2+lengths[i]],&smoothed_x[indices[i]],2 * sizeof(float));
@@ -245,7 +246,7 @@ namespace icl{
       }
       //calculate curvatures
       bool done = false;
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
       if(useOpenCL){
         if(!clcurvature) clcurvature = new CLCurvature;
         (*clcurvature)(padded_x,padded_y,curvature_cutoff,
@@ -258,6 +259,8 @@ namespace icl{
                              array_length + num_boundaries * 4, 
                              curvature_cutoff, curvature);
       }
+      delete padded_x;
+      delete padded_y;
     }
 
     //returns the offset of the first maxima
@@ -445,18 +448,18 @@ namespace icl{
       int gauss_length = gauss_radius(sigma, 0.0001) * 2 + 1;
       if(gauss_length < length) {
         //create needed arrays
-        float x[length], y[length];
-        float smoothed_x[length], smoothed_y[length];
-        float curvature[length];
-        float gauss[gauss_length];
+        float *x = new float[length], *y = new float[length];
+        float *smoothed_x = new float[length], *smoothed_y = new float[length];
+        float *curvature = new float[length];
+        float *gauss = new float[gauss_length];
 
-        int extrema0[length];
+        int *extrema0 = new int[length];
         int extrema0_sizes;
-        int extrema1[length];
+        int *extrema1 = new int[length];
         int extrema1_sizes;
 
         //copy data into arrays
-        for(uint i = 0; i < boundary.size();i++) {
+        for(unsigned int i = 0; i < boundary.size(); i++) {
           x[i] = boundary[i].x;
           y[i] = boundary[i].y;
         }
@@ -483,26 +486,34 @@ namespace icl{
           int maximum = extrema0[i];
           corners.push_back(Point32f(x[maximum], y[maximum]));
         }
+
+        delete x;
+        delete y;
+        delete smoothed_x, smoothed_y;
+        delete curvature;
+        delete gauss;
+        delete extrema0;
+        delete extrema1;
       }
       return corners;
     }
-    template const vector<Point32f> &CornerDetectorCSS::detectCorners(const vector<Point32f> &boundary);
-    template const vector<Point32f> &CornerDetectorCSS::detectCorners(const vector<Point> &boundary);
+    template ICLCV_API const vector<Point32f> &CornerDetectorCSS::detectCorners(const vector<Point32f> &boundary);
+    template ICLCV_API const vector<Point32f> &CornerDetectorCSS::detectCorners(const vector<Point> &boundary);
 
     template<class T>
     const vector<vector<utils::Point32f> > &CornerDetectorCSS::detectCorners(const vector<vector<T> > &boundaries, const vector<icl32f> &sigmas) {
       corners_list.clear();
       //calculate length of the data
       int array_length = 0;
-      int lengths[boundaries.size()];
-      int indices[boundaries.size()];
-      int indices_padded[boundaries.size()];
+      int *lengths = new int[boundaries.size()];
+      int *indices = new int[boundaries.size()];
+      int *indices_padded = new int[boundaries.size()];
 
       int gauss_length = 0;
-      int gauss_lengths[boundaries.size()];
-      int gauss_indices[boundaries.size()];
+      int *gauss_lengths = new int[boundaries.size()];
+      int *gauss_indices = new int[boundaries.size()];
 
-      for(uint i = 0; i < boundaries.size(); i++) {
+      for(unsigned int i = 0; i < boundaries.size(); i++) {
         indices[i] = array_length;
         indices_padded[i] = array_length + i * 4;
         lengths[i] = boundaries[i].size();
@@ -513,28 +524,28 @@ namespace icl{
         gauss_length += gauss_lengths[i];
       }
       //create needed arrays
-      float x[array_length], y[array_length];
-      float smoothed_x[array_length], smoothed_y[array_length];
-      float curvature[array_length + boundaries.size() * 4];
+      float *x = new float[array_length], *y = new float[array_length];
+      float *smoothed_x = new float[array_length], *smoothed_y = new float[array_length];
+      float *curvature = new float[array_length + boundaries.size() * 4];
 
-      float gauss[gauss_length];
+      float *gauss = new float[gauss_length];
 
-      int extrema0[array_length];
-      int extrema0_sizes[boundaries.size()];
-      int extrema1[array_length];
-      int extrema1_sizes[boundaries.size()];
+      int *extrema0 = new int[array_length];
+      int *extrema0_sizes = new int[boundaries.size()];
+      int *extrema1 = new int[array_length];
+      int *extrema1_sizes = new int[boundaries.size()];
 
       //copy data into arrays
-      for(uint i = 0; i < boundaries.size(); i++) {
+      for(unsigned int i = 0; i < boundaries.size(); i++) {
         if(gauss_lengths[i] < lengths[i]) {
           fill_gauss(&gauss[gauss_indices[i]],sigmas[i],gauss_lengths[i] / 2);
-          for(uint j = 0; j < boundaries[i].size();j++) {
+          for(unsigned int j = 0; j < boundaries[i].size();j++) {
             x[indices[i] + j] = boundaries[i][j].x;
             y[indices[i] + j] = boundaries[i][j].y;
           }
         }
       }
-      for(uint i = 0; i < boundaries.size(); i++) {
+      for(unsigned int i = 0; i < boundaries.size(); i++) {
         if(gauss_lengths[i] < lengths[i]) {
           //copy values into local memory
           int length = lengths[i];
@@ -548,7 +559,7 @@ namespace icl{
       }
       //calculate curvature
       calculate_curvatures_bulk(array_length,boundaries.size(),lengths,indices,indices_padded,smoothed_x,smoothed_y,curvature_cutoff,curvature);
-      for(uint i = 0; i < boundaries.size(); i++) {
+      for(unsigned int i = 0; i < boundaries.size(); i++) {
         if(gauss_lengths[i] < lengths[i]) {
           //copy values into local memory
           int length = lengths[i];
@@ -580,11 +591,28 @@ namespace icl{
           }
         }
       }
+
+      delete x;
+      delete y;
+      delete smoothed_x;
+      delete smoothed_y;
+      delete curvature;
+      delete gauss;
+      delete extrema0;
+      delete extrema0_sizes;
+      delete extrema1;
+      delete extrema1_sizes;
+
+      delete lengths;
+      delete indices;
+      delete indices_padded;
+      delete gauss_indices;
+
       return corners_list;
     }
 
-    template const vector<vector<utils::Point32f> > &CornerDetectorCSS::detectCorners(const vector<vector<Point32f> > &boundaries, const vector<icl32f> &sigmas);
-    template const vector<vector<utils::Point32f> > &CornerDetectorCSS::detectCorners(const vector<vector<Point> > &boundaries, const vector<icl32f> &sigmas);
+    template ICLCV_API const vector<vector<utils::Point32f> > &CornerDetectorCSS::detectCorners(const vector<vector<Point32f> > &boundaries, const vector<icl32f> &sigmas);
+    template ICLCV_API const vector<vector<utils::Point32f> > &CornerDetectorCSS::detectCorners(const vector<vector<Point> > &boundaries, const vector<icl32f> &sigmas);
 
 
     void CornerDetectorCSS::setPropertyValue(const std::string &propertyName, const Any &value) throw (ICLException){

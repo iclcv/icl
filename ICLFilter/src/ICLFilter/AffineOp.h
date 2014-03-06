@@ -30,8 +30,9 @@
 
 #pragma once
 
-#include <ICLFilter/BaseAffineOp.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
+#include <ICLFilter/BaseAffineOp.h>
 
 namespace icl{
   namespace filter{
@@ -81,7 +82,7 @@ namespace icl{
         * linear interpolation 52ms
   
     */
-    class AffineOp : public BaseAffineOp, public utils::Uncopyable {
+    class ICLFilter_API AffineOp : public BaseAffineOp, public utils::Uncopyable {
       public:
       /// Constructor
       AffineOp (core::scalemode eInterpolate=core::interpolateLIN);

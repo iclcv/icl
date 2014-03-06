@@ -30,10 +30,9 @@
 
 #pragma once
 
-
+#include <ICLUtils/Macros.h>
 #include <ICLUtils/Timer.h>
 #include <string>
-#include <ICLUtils/Macros.h>
 #include <cstdio>
 
 namespace icl{

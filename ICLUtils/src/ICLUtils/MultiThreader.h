@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Semaphore.h>
 #include <ICLUtils/Mutex.h>
 #include <ICLUtils/ShallowCopyable.h>
@@ -39,8 +40,8 @@ namespace icl{
   namespace utils{
   
     /** \cond */
-    class MultiThreaderImpl;
-    class MultiThreaderImplDelOp{
+    class ICLUtils_API MultiThreaderImpl;
+    class ICLUtils_API MultiThreaderImplDelOp{
       public: static void delete_func(MultiThreaderImpl *impl);
     };
     /** \endcond */
@@ -61,7 +62,7 @@ namespace icl{
         The following example explains how to parallelize a simple function-call
         \code
         #include <ICLQt/Quick.h>
-        #include <math.h>
+        #include <cmath>
         #include <ICLUtils/MultiThreader.h>
         
         // a simple function calculating the l2 norm on a data array
@@ -157,7 +158,7 @@ namespace icl{
         ICLFilter package, which provides a top level interface for parallelizing
         unary operators (class interface UnaryOp)
     */
-    class MultiThreader : public ShallowCopyable<MultiThreaderImpl,MultiThreaderImplDelOp>{
+    class ICLUtils_API MultiThreader : public ShallowCopyable<MultiThreaderImpl,MultiThreaderImplDelOp>{
       public:
       
       /// plugin class for work packages performed parallel

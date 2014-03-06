@@ -30,9 +30,10 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/SmartPtr.h>
 #include <ICLQt/DrawWidget.h>
 #include <vector>
-#include <ICLUtils/SmartPtr.h>
 
 namespace icl{
   namespace qt{
@@ -47,7 +48,7 @@ namespace icl{
         Most older methods got the deprecated status. They will be removed soon, since
         it turned out, that using ICLGeom's Scene class is much easier and less error-prone.
     */
-    class ICLDrawWidget3D : public ICLDrawWidget {
+    class ICLQt_API ICLDrawWidget3D : public ICLDrawWidget {
       public:
       
       /// internally used callback class type

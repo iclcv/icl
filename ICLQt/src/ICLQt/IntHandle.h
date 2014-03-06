@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLQt/GUIHandle.h>
 
 /** \cond */
@@ -40,7 +41,7 @@ namespace icl{
   namespace qt{
     
     /// Class for handling "int" textfield components \ingroup HANDLES
-    class IntHandle : public GUIHandle<QLineEdit>{
+    class ICLQt_API IntHandle : public GUIHandle<QLineEdit>{
       public:
       
       /// Create an empty handle

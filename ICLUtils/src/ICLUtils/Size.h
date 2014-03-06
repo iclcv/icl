@@ -30,16 +30,17 @@
 
 #pragma once
 
-#ifdef HAVE_IPP
-#include <ipp.h>
-#endif
-
+#include <ICLUtils/CompatMacros.h>
 #include <string>
 #include <iostream>
 
+#ifdef ICL_HAVE_IPP
+#include <ipp.h>
+#endif
+
 namespace icl {
   namespace utils{
-  #ifndef HAVE_IPP
+  #ifndef ICL_HAVE_IPP
     /// fallback implementation for the IppiSize struct, defined in the ippi lib
     struct IppiSize {
       // width
@@ -57,7 +58,7 @@ namespace icl {
     /** \endcond */
     
     /// Size class of the ICL
-    class Size : public IppiSize{
+    class ICLUtils_API Size : public IppiSize{
       public:
       /// null is w=0, h=0
       static const Size null;
@@ -157,9 +158,12 @@ namespace icl {
   
       /// National Television System Commitee res. 640x480 (many other formats are known as NTSC)
       static const Size NTSC;
-  
+
+	    /// default constructor
+	    inline Size(){ this->width = 0; this->height = 0; }
+
       /// deep copy of another Size
-      inline Size(const Size &s=null){ this->width = s.width;this->height = s.height; }
+      inline Size(const Size &s){ this->width = s.width;this->height = s.height; }
       
       /// creates a specified size
       inline Size(int width,int height){ this->width = width; this->height = height; }
@@ -208,11 +212,11 @@ namespace icl {
     };
   
     /// ostream operator WIDTHxHEIGHT
-    std::ostream &operator<<(std::ostream &os, const Size &s);
+    ICLUtils_API std::ostream &operator<<(std::ostream &os, const Size &s);
     
     /// istream operator parses a size from a string
     /** also called in Size::Size(const std::string&)**/
-    std::istream &operator>>(std::istream &is, Size &s);
+    ICLUtils_API std::istream &operator>>(std::istream &is, Size &s);
     
   } // namespace utils
 }// namespace icl

@@ -34,7 +34,7 @@
 
 using namespace icl::utils;
 using namespace icl::math;
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
 using namespace icl::qt;
 #endif
 
@@ -45,7 +45,7 @@ namespace icl{
     
     const double SoftPosit::betaZero = 0.0004;
   
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
     SoftPosit::SoftPosit():dw(0){
       ROT.setBounds(3,3);
       T.setBounds(1,3);
@@ -130,7 +130,7 @@ namespace icl{
       }
       DynMatrix<icl64f> wk = homogeneousWorldPts * temp;
 
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
       //DynMatrix<icl64f> projWorldPts = proj3dto2d(worldPts, rot, trans, focalLength, 1, center);
       if(draw){
         proj3dto2d(worldPts, ROT, T, focalLength,1,center,pts2d);
@@ -336,7 +336,7 @@ namespace icl{
         //	foundPose = 1;
         //else
         //	foundPose = 0;
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
         if(draw){
           proj3dto2d(worldPts, ROT, T, focalLength, 1, center,pts2d);
           //visualize(w,imagePts, imageAdj,	pts2d, worldAdj);
@@ -347,7 +347,7 @@ namespace icl{
       //SHOW(ROT);
       //SHOW(T);
     }
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
     void SoftPosit::softPosit(DynMatrix<icl64f> imagePts, DynMatrix<icl64f> imageAdj, DynMatrix<icl64f> worldPts,
                               DynMatrix<icl64f> worldAdj, double beta0, int noiseStd,	DynMatrix<icl64f> initRot,
                               DynMatrix<icl64f> initTrans, double focalLength, ICLDrawWidget &w,
@@ -375,7 +375,7 @@ namespace icl{
 
       softPosit(imagePt, worldPt, beta0, noiseStd, initRot, initTrans, focalLength, center, draw);
     }
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
     void SoftPosit::softPosit(std::vector<Point32f> imagePts, DynMatrix<icl64f> imageAdj, std::vector<FixedColVector<double,3> > worldPts,
                               DynMatrix<icl64f> worldAdj, double beta0, int noiseStd,	DynMatrix<icl64f> initRot,
                               DynMatrix<icl64f> initTrans, double focalLength, ICLDrawWidget &w, DynMatrix<icl64f> center,bool draw){
@@ -590,7 +590,7 @@ namespace icl{
       return max;
     }
 
-#ifdef HAVE_QT
+#ifdef ICL_HAVE_QT
 
     void SoftPosit::visualize(const DynMatrix<icl64f> & imagePts, const DynMatrix<icl64f> &projWorldPts, unsigned int delay){
       dw->color(255,0,0,1);

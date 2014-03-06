@@ -30,10 +30,11 @@
 
 #pragma once
 
-#include <bitset>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/BasicTypes.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLCore/Img.h>
+#include <bitset>
 
 namespace icl{
   namespace markers{
@@ -68,11 +69,11 @@ namespace icl{
     };
   
     /// ostream-operator for DecodedBCHCode2D::Rotation
-    std::ostream &operator<<(std::ostream &s, const DecodedBCHCode2D::Rotation &r);
+    ICLMarkers_API std::ostream &operator<<(std::ostream &s, const DecodedBCHCode2D::Rotation &r);
   
     /// Main class for BCH encoding/decoding
     /** Due to some internal buffers, this must be implemented as a class */
-    class BCHCoder : public utils::Uncopyable{
+    class ICLMarkers_API BCHCoder : public utils::Uncopyable{
       class Impl; //!< internal implementation structure
       Impl *impl; //!< implementation pointer
       

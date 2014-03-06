@@ -51,15 +51,12 @@ namespace icl{
       icl_from_stream(s,range.maxVal);
       return s >> c;
     }
-  
-    
-    
+
   #define ICL_INSTANTIATE_DEPTH(D)                                        \
-    template std::ostream &operator<<(std::ostream&,const Range<icl##D>&); \
-    template std::istream &operator>>(std::istream&,Range<icl##D>&);
-    ICL_INSTANTIATE_ALL_DEPTHS
+    template ICLUtils_API std::ostream &operator<<(std::ostream&, const Range<icl##D>&); \
+    template ICLUtils_API std::istream &operator>>(std::istream&, Range<icl##D>&);
+      ICL_INSTANTIATE_ALL_DEPTHS
   #undef ICL_INSTANTIATE_DEPTH
-    
-    
+
   } // namespace utils
 }

@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLQt/DrawWidget3D.h>
 #include <ICLGeom/Scene.h>
 #include <ICLUtils/Function.h>
@@ -38,7 +39,7 @@
 namespace icl{
   namespace geom{
 
-    class PlotWidget3D : public qt::ICLDrawWidget3D{
+    class ICLGeom_API PlotWidget3D : public qt::ICLDrawWidget3D{
       struct Data;
       Data *m_data;
 

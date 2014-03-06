@@ -565,7 +565,12 @@ namespace icl {
           int* setSize = (int*) data;
           data += sizeof(int);
           *setSize = 0;
+#ifdef WIN32
+          std::multiset<std::string>::iterator it;
+#else
+          // TODO: is this really necessary?
           std::set<std::string>::iterator it;
+#endif
           unsigned int size = 0;
           for(it = set.begin(); it != set.end(); ++it){
             std::string value = *it;

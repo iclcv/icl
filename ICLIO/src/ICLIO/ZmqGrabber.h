@@ -46,17 +46,17 @@ namespace icl{
       public:
       
       /// Creates a new SharedMemoryGrabber instance (please use the GenericGrabber instead)
-      ZmqGrabber(const std::string &host, int port=44444) throw(utils::ICLException);
+      ICLIO_API ZmqGrabber(const std::string &host, int port=44444) throw(utils::ICLException);
       
       /// Destructor
-      ~ZmqGrabber();
+      ICLIO_API ~ZmqGrabber();
       
       /// returns a list of all available shared-memory image-streams
-      static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
+      ICLIO_API static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
       
       /// grabbing function
       /** \copydoc icl::io::Grabber::grab(core::ImgBase**)  **/
-      virtual const core::ImgBase* acquireImage();
+      ICLIO_API virtual const core::ImgBase* acquireImage();
     };
     
   } // namespace io

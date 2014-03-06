@@ -30,7 +30,9 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/SmartPtr.h>
+
 namespace icl{
   namespace utils{
     

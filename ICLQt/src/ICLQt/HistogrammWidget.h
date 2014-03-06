@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLQt/PlotWidget.h>
 #include <ICLQt/ImageStatistics.h>
 
@@ -38,7 +39,7 @@ namespace icl{
     
     /// Utility class used within the ICLWidget class
     /** The HistogrammWidget is used in the 'info' tab of the ICLWidget's on screen display */
-    struct HistogrammWidget : public PlotWidget{
+    struct ICLQt_API HistogrammWidget : public PlotWidget{
       /// logarithmic mode
       bool logOn;
       

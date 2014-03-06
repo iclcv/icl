@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLMarkers/MultiCamFiducial.h>
 #include <ICLUtils/Configurable.h>
 
@@ -59,7 +60,7 @@ namespace icl{
         @see MultiCamFiducial
         @see FiducialDetector
     */
-    class MultiCamFiducialDetector : public utils::Configurable{
+    class ICLMarkers_API MultiCamFiducialDetector : public utils::Configurable{
       struct Data;  //!< internal data structure
       Data *m_data; //!< internal data pointer
       

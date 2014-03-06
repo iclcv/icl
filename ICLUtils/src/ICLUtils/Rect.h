@@ -30,11 +30,12 @@
 
 #pragma once
 
+#include <ICLUtils/Macros.h>
 #include <ICLUtils/Point.h>
 #include <ICLUtils/Size.h>
 #include <stdio.h>
 #include <algorithm>
-#ifdef HAVE_IPP
+#ifdef ICL_HAVE_IPP
 #include <ipp.h>
 #endif
 
@@ -42,7 +43,7 @@
 namespace icl {
   namespace utils{
     
-  #ifndef HAVE_IPP
+  #ifndef ICL_HAVE_IPP
     /// fallback implementation for the IppiRect struct, defined in the ippi lib \ingroup TYPES
     struct IppiRect {
   
@@ -91,12 +92,20 @@ namespace icl {
     class Rect32f;
     /** \endcond*/
     
-    class Rect : public IppiRect{
+    class ICLUtils_API Rect : public IppiRect{
       public:
       
       /// null Rect is w=0, h=0, x=0, y=0
       static const Rect null;
-      
+
+	    /// default constructor
+	    Rect(){
+		    this->x = 0;
+		    this->y = 0;
+		    this->width = 0;
+		    this->height = 0;
+	    }
+
       /// creates a defined Rect
       Rect(int x, int y, int width, int height){
         this->x = x;
@@ -114,7 +123,7 @@ namespace icl {
       } 
       
       /// create a deep copy of a rect
-      Rect(const Rect &r=null){
+      Rect(const Rect &r){
         this->x = r.x;
         this->y = r.y;
         this->width = r.width;
@@ -206,29 +215,29 @@ namespace icl {
       }
       /// returns width*height
       int getDim() const {return width*height;}
-  
+
       /// intersection of two Rects
       Rect operator&(const Rect &r) const {
-         Point ul (std::max (x, r.x), std::max (y, r.y));
-         Point lr (std::min (right(), r.right()), std::min (bottom(), r.bottom()));
+         Point ul (iclMax(x, r.x), iclMax(y, r.y));
+         Point lr (iclMin(right(), r.right()), iclMin(bottom(), r.bottom()));
          Rect result (ul.x, ul.y, lr.x-ul.x, lr.y-ul.y);
          if (result.width > 0 && result.height > 0) return result;
          else return null;
       }
-      
+
       /// inplace intersection of two rects
       Rect &operator&=(const Rect &r){
         (*this)=(*this)&r;
         return *this;
       }
-      
+
       /// union of two Rects
       Rect operator|(const Rect &r) const {
-         Point ul (std::min (x, r.x), std::min (y, r.y));
-         Point lr (std::max (right(), r.right()), std::max (bottom(), r.bottom()));
+         Point ul (iclMin(x, r.x), iclMin(y, r.y));
+         Point lr (iclMax(right(), r.right()), iclMax(bottom(), r.bottom()));
          return Rect (ul.x, ul.y, lr.x-ul.x, lr.y-ul.y);
       }
-  
+
       /// inplace union of two rects
       Rect &operator|=(const Rect &r){
         (*this)=(*this)|r;
@@ -320,10 +329,10 @@ namespace icl {
     };
   
     /// ostream operator (x,y)wxy
-    std::ostream &operator<<(std::ostream &s, const Rect &r);
+    ICLUtils_API std::ostream &operator<<(std::ostream &s, const Rect &r);
     
     /// istream operator
-    std::istream &operator>>(std::istream &s, Rect &r);
+    ICLUtils_API std::istream &operator>>(std::istream &s, Rect &r);
   
   
   } // namespace utils

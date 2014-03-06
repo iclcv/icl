@@ -314,7 +314,7 @@ namespace icl{
       stream >> m_params;
     }
 
-    template class PolynomialRegression<float>;
-    template class PolynomialRegression<double>;
+    template class ICLMath_API PolynomialRegression<float>;
+    template class ICLMath_API PolynomialRegression<double>;
   }
 }

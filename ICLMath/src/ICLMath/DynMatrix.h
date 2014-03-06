@@ -30,23 +30,22 @@
 
 #pragma once
 
+#include <ICLUtils/Macros.h>
+#include <ICLUtils/Exception.h>
+
 #include <iterator>
 #include <algorithm>
 #include <numeric>
 #include <functional>
-#include <iostream>
 #include <vector>
 #include <cmath>
 
-#include <ICLUtils/Exception.h>
-#include <ICLUtils/Macros.h>
-
-#ifdef HAVE_IPP
+#ifdef ICL_HAVE_IPP
 #include <ipp.h>
 #endif
 
 // Intel Math Kernel Library
-#ifdef HAVE_MKL
+#ifdef ICL_HAVE_MKL
 #include "mkl_cblas.h"
 #endif
 
@@ -64,7 +63,7 @@ namespace icl{
     };
   
     /// Special linear algebra exception type  \ingroup LINALG \ingroup EXCEPT
-    struct  InvalidIndexException : public utils::ICLException{
+    struct InvalidIndexException : public utils::ICLException{
       InvalidIndexException(const std::string &msg):utils::ICLException(msg){}
     };
   
@@ -647,7 +646,7 @@ namespace icl{
       typedef const col_iterator const_col_iterator;
   
       /// Internally used Utility structure referencing a matrix column shallowly
-      class DynMatrixColumn{
+      class ICLMath_API DynMatrixColumn{
         public:
   #ifdef DYN_MATRIX_INDEX_CHECK
   #define DYN_MATRIX_COLUMN_CHECK(C,E) if(C) ERROR_LOG(E)
@@ -844,7 +843,7 @@ namespace icl{
       /// applies LU-decomposition (without using partial pivoting) (only for icl32f and icl64f)
       /** Even though, implementation also works for non-sqared matrices, it's not recommended to
           apply this function on non-sqared matrices */
-      void decompose_LU(DynMatrix &L, DynMatrix &U, T zeroThreshold=1E-16) const;
+      void decompose_LU(DynMatrix &L, DynMatrix &U, T zeroThreshold = 1E-16) const;
   
       /// solves Mx=b for M=*this (only if M is a squared upper triangular matrix) (only for icl32f and icl64f)
       DynMatrix solve_upper_triangular(const DynMatrix &b) const throw(InvalidMatrixDimensionException);
@@ -900,12 +899,12 @@ namespace icl{
             * svd 23.4 ms
           @param zeroThreshold 
       */
-      DynMatrix solve(const DynMatrix &b, const std::string &method="lu",T zeroThreshold=1E-16)
+      DynMatrix solve(const DynMatrix &b, const std::string &method = "lu", T zeroThreshold = 1E-16)
         throw(InvalidMatrixDimensionException,  utils::ICLException, SingularMatrixException);
   
   
       /// invert the matrix (only for icl32f and icl64f)
-      DynMatrix inv() const throw (InvalidMatrixDimensionException,SingularMatrixException);
+      DynMatrix inv() const throw (InvalidMatrixDimensionException, SingularMatrixException);
   
       /// Extracts the matrix's eigenvalues and eigenvectors
       /** This function only works on squared symmetric matrices.
@@ -931,7 +930,7 @@ namespace icl{
           @param V is filled column-wise with the eigenvectors of A'A (in V, V is stored not V')
           @see icl::svd_dyn
       */
-      void svd(DynMatrix &U, DynMatrix &S,  DynMatrix &V) const throw (utils::ICLException);
+      void svd(DynMatrix &U, DynMatrix &S, DynMatrix &V) const throw (utils::ICLException);
   
       /// calculates the Moore-Penrose pseudo-inverse (only implemented for icl32f and icl64f)
       /** Internally, this functions can use either a QR-decomposition based approach, or it can use
@@ -958,7 +957,7 @@ namespace icl{
           return V * S * U.transp();
           </code>
       */
-      DynMatrix pinv(bool useSVD=false, T zeroThreshold=1E-16) const
+      DynMatrix pinv(bool useSVD = false, T zeroThreshold = 1E-16) const
         throw (InvalidMatrixDimensionException,SingularMatrixException,utils::ICLException);
   
       /// calculates the Moore-Penrose pseudo-inverse (specialized for big matrices)
@@ -968,10 +967,10 @@ namespace icl{
       * @param zeroThreshold singular values below threshold are set to zero
       * @return pseudo inverse
       */
-      DynMatrix big_matrix_pinv(T zeroThreshold=1E-16) const
+      DynMatrix big_matrix_pinv(T zeroThreshold = 1E-16) const
         throw (InvalidMatrixDimensionException,SingularMatrixException,utils::ICLException);
   
-  #ifdef HAVE_MKL
+  #ifdef ICL_HAVE_MKL
       typedef void(*GESDD)(const char*, const int*, const int*, T*, const int*, T*, T*, const int*, T*, const int*, T*, const int*, int*, int*);
       typedef void(*CBLAS_GEMM)(CBLAS_ORDER,CBLAS_TRANSPOSE,CBLAS_TRANSPOSE,int,int,int,T,const T*,int,const T*,int,T,T*,int);
       DynMatrix big_matrix_pinv(T zeroThreshold, GESDD gesdd, CBLAS_GEMM cblas_gemm) const
@@ -1138,22 +1137,22 @@ namespace icl{
     /** \cond */
     /// creates a dyn-matrix from given matrix column
     template<class T>
-    DynMatrix<T>::DynMatrix(const DynMatrix<T>::DynMatrixColumn &column):
+    DynMatrix<T>::DynMatrix(const typename DynMatrix<T>::DynMatrixColumn &column) :
     m_rows(column.dim()),m_cols(1),m_data(new T[column.dim()]),m_ownData(true){
       std::copy(column.begin(),column.end(),begin());
     }
     /** \endcond */
 
     /// ostream operator implemented for uchar, short, int, float and double matrices  \ingroup LINALG
-    template<class T>
-    std::ostream &operator<<(std::ostream &s,const DynMatrix<T> &m);
+    template<class T> ICLMath_IMP
+    std::ostream &operator<<(std::ostream &s, const DynMatrix<T> &m);
   
     /// istream operator implemented for uchar, short, int, float and double matrices  \ingroup LINALG
-    template<class T>
-    std::istream &operator>>(std::istream &s,DynMatrix<T> &m);
+    template<class T> ICLMath_IMP
+    std::istream &operator>>(std::istream &s, DynMatrix<T> &m);
+
   
-  
-#ifdef HAVE_IPP
+#ifdef ICL_HAVE_IPP
     /** \cond */
     template<>
     inline float DynMatrix<float>::sqrDistanceTo(const DynMatrix<float> &other) const throw (InvalidMatrixDimensionException){
@@ -1268,7 +1267,7 @@ namespace icl{
   
     /** \endcond */
   
-#endif // HAVE_IPP
+#endif // ICL_HAVE_IPP
    
     /// vertical concatenation of matrices
     /** missing elementes are padded with 0 */

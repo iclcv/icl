@@ -70,7 +70,8 @@ int main(){
   std::cout << gfoo2() << std::endl;
 
   /// Implicit cast from function with return value to function without return value
-  Function<void> gfoo3 = function(global_foo2);
+
+  Function<void> gfoo3 = function((void (*)())global_foo2);
   gfoo3();
 
   /// Global function with parameters
@@ -81,7 +82,7 @@ int main(){
   /// Global function with parameters (ignoring the result of the function)
   /// Functions with non-void return type can always be casted into another
   /// Function type with return type (the return value is simply ignored then)
-  Function<void,int,int> gadd_void = function(global_add); gadd_void(4,5);
+  Function<void, int, int> gadd_void = function((void(*)(int,int))global_add); gadd_void(4, 5);
 
 
   /// create an std::vector
@@ -89,7 +90,7 @@ int main(){
 
   /// void-Member function with one parameter
   /// preserve type-correctness (argument is not int, but const int&)
-  Function<void,const int&> vpush = function(v,&std::vector<int>::push_back);
+  Function<void,const int&> vpush = function(v,(void(std::vector<int>::*)(const int&))&std::vector<int>::push_back);
   vpush(1);  vpush(2);  vpush(3);
 
   /// access elements with this function

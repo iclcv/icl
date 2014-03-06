@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLMath/FixedMatrix.h>
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/Configurable.h>
@@ -89,7 +90,7 @@ namespace icl{
         Simple Pose estimation with 4 points needs about 80 ns on an Intel(R) Xeon(R) E5530
         (2.40GHz). If 9 points are used, it needs about 110 ns.
     */
-    class CoplanarPointPoseEstimator : public utils::Configurable{
+    class ICLGeom_API CoplanarPointPoseEstimator : public utils::Configurable{
   
       /// Internal data structure
       struct Data;
@@ -99,9 +100,11 @@ namespace icl{
   
       /// Internally used to sync property settings with internal data
       void propertyChangedCallback(const Property &p);
-
+      
+#if !(defined ICL_MSC_VER && ICL_MSC_VER < 1800)
       /// Internally used to correct the first transformation matrix using robust pose estimation algorithm
       void robustPoseCorrection(int n, const utils::Point32f *modelPoints, std::vector<utils::Point32f> &ips);
+#endif
       
       public:
   

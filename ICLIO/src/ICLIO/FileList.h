@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/ShallowCopyable.h>
 #include <string>
 #include <vector>
@@ -43,7 +44,7 @@ namespace icl{
     /** \endcond */
   
     /// Utility class implementing a list of files \ingroup UTILS_G
-    class FileList : public utils::ShallowCopyable<FileListImpl,FileListImplDelOp>{
+    class ICLIO_API FileList : public utils::ShallowCopyable<FileListImpl, FileListImplDelOp>{
       public:
   
       /// Create a null file-list

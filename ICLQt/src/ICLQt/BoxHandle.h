@@ -30,10 +30,11 @@
 
 #pragma once
 
-#include <QtGui/QWidget>
-#include <QtGui/QLayout>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLQt/GUIHandle.h>
 #include <ICLQt/ContainerHandle.h>
+#include <QtGui/QWidget>
+#include <QtGui/QLayout>
 
 /** \cond */
 class QScrollArea;

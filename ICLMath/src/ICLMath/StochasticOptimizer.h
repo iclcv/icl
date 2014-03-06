@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+
 namespace icl{
   namespace math{
   
@@ -58,7 +60,7 @@ namespace icl{
         **NEW** now this class is a template (defined for float and double)
     */
     template<class T=float>
-    class StochasticOptimizer {
+    class ICLMath_IMP StochasticOptimizer {
       public:
       /// Result structure
       typedef StochasticOptimizerResult<T> Result;
@@ -102,6 +104,7 @@ namespace icl{
       /// internal data-dimension variable
       int m_dataDim;
     };
+
   } // namespace math
 }
 

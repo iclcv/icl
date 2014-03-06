@@ -28,14 +28,22 @@
 **                                                                 **
 ********************************************************************/
 
+#define ICL_NO_USING_NAMESPACES
+
+#include <ICLCore/OpenCV.h>
 #include <ICLGeom/OpenCVCamCalib.h>
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLQt/Common.h>
-#include <ICLCore/OpenCV.h>
 
 #include <ICLUtils/ConfigFile.h>
 
-using namespace icl;
+using namespace icl::qt;
+using namespace icl::cv;
+using namespace icl::io;
+using namespace icl::utils;
+using namespace icl::geom;
+using namespace icl::math;
+using namespace icl::core;
 
 HSplit gui;
 SmartPtr<GenericGrabber> cg;
@@ -53,8 +61,8 @@ int minSuccesses = 0;
 int framewidth=0;
 int frameheight=0;
 
-DynMatrix<icl64f> *intr;
-DynMatrix<icl64f> *dist;
+DynMatrix<icl::icl64f> *intr;
+DynMatrix<icl::icl64f> *dist;
 
 void save_params(){
   try{

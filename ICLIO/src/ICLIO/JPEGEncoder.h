@@ -30,17 +30,22 @@
 
 #pragma once
 
-#include <ICLCore/ImgBase.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
+#include <ICLCore/ImgBase.h>
 
-#ifndef HAVE_LIBJPEG
-#warning "libjpeg is not available, therefore, this header should not be included"
+#ifndef ICL_HAVE_LIBJPEG
+  #if WIN32
+    #pragma WARNING("libjpeg is not available, therefore, this header should not be included")
+  #else
+    #warning "libjpeg is not available, therefore, this header should not be included"
+  #endif
 #endif
 
 namespace icl{
   namespace io{
     /// encoding class for data-to-data jpeg compression
-    class JPEGEncoder : public utils::Uncopyable{
+    class ICLIO_API JPEGEncoder : public utils::Uncopyable{
       struct Data;  //!< pimpl type
       Data *m_data; //!< pimpl pointer
   

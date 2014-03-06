@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLMarkers/FiducialDetectorPluginForQuads.h>
 
 namespace icl{
@@ -43,7 +44,7 @@ namespace icl{
     /// FiducialDetectorPlugin for ARToolkit+ like markers using BCH coded IDs \ingroup PLUGINS
     /** This is just a plugin class that is used by the FiducialDetector. Please
         refer the icl::markers::FiducialDetector class documentation for more details. */
-    class FiducialDetectorPluginBCH : public FiducialDetectorPluginForQuads{
+    class ICLMarkers_API FiducialDetectorPluginBCH : public FiducialDetectorPluginForQuads{
       struct Data;
       Data *data;
   

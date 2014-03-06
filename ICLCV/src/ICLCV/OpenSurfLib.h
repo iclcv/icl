@@ -66,18 +66,18 @@ namespace icl{
        /** \endcond */
 
 
-       void getMatches(IpVec &ipts1, IpVec &ipts2, IpPairVec &matches);
+       ICLCV_API void getMatches(IpVec &ipts1, IpVec &ipts2, IpPairVec &matches);
   
-       int translateCorners(IpPairVec &matches, const CvPoint src_corners[4], CvPoint dst_corners[4]);
+       ICLCV_API int translateCorners(IpPairVec &matches, const CvPoint src_corners[4], CvPoint dst_corners[4]);
   
        /// Computes the integral image of image img.  Assumes source image to be a 
        /** 32-bit floating point.  Returns IplImage in 32-bit float form. **/
-       IplImage *Integral(IplImage *img);
+       ICLCV_API IplImage *Integral(IplImage *img);
   
   
        /// Computes the sum of pixels within the rectangle 
        /** specified by the top-left start co-ordinate and size */
-       float BoxIntegral(IplImage *img, int row, int col, int rows, int cols);
+       ICLCV_API float BoxIntegral(IplImage *img, int row, int col, int rows, int cols);
 
   
        
@@ -88,7 +88,7 @@ namespace icl{
            - Create Kmeans object and call Run with IpVec.
            - Planned improvements include clustering based on motion 
            and descriptor components. */
-       class Kmeans {
+       class ICLCV_API Kmeans {
          public:
 
          /// Destructor
@@ -124,7 +124,7 @@ namespace icl{
        };
 
        /// Response Layer class
-       class ResponseLayer{
+       class ICLCV_API ResponseLayer{
          public:
 
          int width, height, step, filter;
@@ -200,7 +200,7 @@ namespace icl{
        };
 
        /// Surf Feation class
-       class Surf {
+       class ICLCV_API Surf {
   
          public:
     
@@ -246,7 +246,7 @@ namespace icl{
        static const int INIT_SAMPLE = 2;
 
        /// Library function builds vector of described interest points
-       void surfDetDes(IplImage *img,  /* image to find Ipoints in */
+       ICLCV_API void surfDetDes(IplImage *img,  /* image to find Ipoints in */
                        std::vector<Ipoint> &ipts, /* reference to vector of Ipoints */
                        bool upright = false, /* run in rotation invariant mode? */
                        int octaves = OCTAVES, /* number of octaves to calculate */
@@ -255,7 +255,7 @@ namespace icl{
                        float thres = THRES /* blob response threshold */);
 
        /// Library function builds vector of interest points
-       void surfDet(IplImage *img,  /* image to find Ipoints in */
+       ICLCV_API void surfDet(IplImage *img,  /* image to find Ipoints in */
                     std::vector<Ipoint> &ipts, /* reference to vector of Ipoints */
                     int octaves = OCTAVES, /* number of octaves to calculate */
                     int intervals = INTERVALS, /* number of intervals per octave */
@@ -263,46 +263,46 @@ namespace icl{
                     float thres = THRES /* blob response threshold */);
 
        /// Library function describes interest points in vector
-       void surfDes(IplImage *img,  /* image to find Ipoints in */
+       ICLCV_API void surfDes(IplImage *img,  /* image to find Ipoints in */
                     std::vector<Ipoint> &ipts, /* reference to vector of Ipoints */
                     bool upright = false); /* run in rotation invariant mode? */
 
 
        /// Display error message and terminate program
-       void error(const char *msg);
+       ICLCV_API void error(const char *msg);
 
        /// Show the provided image and wait for keypress
-       void showImage(const IplImage *img);
+       ICLCV_API void showImage(const IplImage *img);
 
        /// Show the provided image in titled window and wait for keypress
-       void showImage(char *title,const IplImage *img);
+       ICLCV_API void showImage(char *title, const IplImage *img);
 
        // Convert image to single channel 32F
-       IplImage* getGray(const IplImage *img);
+       ICLCV_API IplImage* getGray(const IplImage *img);
 
        /// Draw a single feature on the image
-       void drawIpoint(IplImage *img, Ipoint &ipt, int tailSize = 0);
+       ICLCV_API void drawIpoint(IplImage *img, Ipoint &ipt, int tailSize = 0);
 
        /// Draw all the Ipoints in the provided vector
-       void drawIpoints(IplImage *img, std::vector<Ipoint> &ipts, int tailSize = 0);
+       ICLCV_API void drawIpoints(IplImage *img, std::vector<Ipoint> &ipts, int tailSize = 0);
 
        /// Draw descriptor windows around Ipoints in the provided vector
-       void drawWindows(IplImage *img, std::vector<Ipoint> &ipts);
+       ICLCV_API void drawWindows(IplImage *img, std::vector<Ipoint> &ipts);
 
        // Draw the FPS figure on the image (requires at least 2 calls)
-       void drawFPS(IplImage *img);
+       ICLCV_API void drawFPS(IplImage *img);
 
        /// Draw a Point at feature location
-       void drawPoint(IplImage *img, Ipoint &ipt);
+       ICLCV_API void drawPoint(IplImage *img, Ipoint &ipt);
 
        /// Draw a Point at all features
-       void drawPoints(IplImage *img, std::vector<Ipoint> &ipts);
+       ICLCV_API void drawPoints(IplImage *img, std::vector<Ipoint> &ipts);
 
        /// Save the SURF features to file
-       void saveSurf(char *filename, std::vector<Ipoint> &ipts);
+       ICLCV_API void saveSurf(char *filename, std::vector<Ipoint> &ipts);
 
        /// Load the SURF features from file
-       void loadSurf(char *filename, std::vector<Ipoint> &ipts);
+       ICLCV_API void loadSurf(char *filename, std::vector<Ipoint> &ipts);
 
        /// Round float to nearest integer
        inline int fRound(float flt) {  return (int) floor(flt+0.5f); }

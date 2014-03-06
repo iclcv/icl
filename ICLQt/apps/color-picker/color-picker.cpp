@@ -58,7 +58,7 @@ vector<XC> colorbuffer;
   
 void mouse(const MouseEvent &event){
   Mutex::Locker lock(mutex);
-  std::string colormode = gui["colormode"];
+  std::string colormode = gui["colormode"].as<std::string>();
   if(event.isPressEvent()){
     const std::vector<icl64f> &c = event.getColor();
     if(c.size() == 1){

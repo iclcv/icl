@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/SmartArray.h>
 #include <ICLUtils/Size.h>
 #include <ICLUtils/Point.h>

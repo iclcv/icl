@@ -45,16 +45,16 @@ namespace icl{
       public:
 
         /// create a new grabbers instance, with given device name (
-        V4L2Grabber(const std::string &device="/dev/video0");
+        ICLIO_API V4L2Grabber(const std::string &device="/dev/video0");
 
         /// Destruktoer
-        ~V4L2Grabber();
+        ICLIO_API ~V4L2Grabber();
 
         /// obtains the next image
-        virtual const core::ImgBase *acquireImage();
+        ICLIO_API virtual const core::ImgBase *acquireImage();
         
         /// returns a list of all supported video devices
-        static const std::vector<GrabberDeviceDescription> &getDeviceList(std::string hint, bool rescan);
+        ICLIO_API static const std::vector<GrabberDeviceDescription> &getDeviceList(std::string hint, bool rescan);
 
       private:
         /// adds properties to Configurable

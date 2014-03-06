@@ -30,11 +30,12 @@
 
 #pragma once
 
-#include <ICLCore/ImgBase.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
-#include <ICLMath/FixedVector.h>
 #include <ICLUtils/Function.h>
 #include <ICLUtils/Range.h>
+#include <ICLMath/FixedVector.h>
+#include <ICLCore/ImgBase.h>
 #include <ICLQt/ImageStatistics.h>
 
 namespace icl{
@@ -77,7 +78,7 @@ namespace icl{
         the buffered data is automatically uploaded to the graphics hardware <b> if this is
         necessary</b>.
     */
-    class GLImg : public utils::Uncopyable{
+    class ICLQt_API GLImg : public utils::Uncopyable{
       struct Data;  //!< internal data structure
       Data *m_data; //!< internal data pointer
       

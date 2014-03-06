@@ -31,6 +31,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/NeighborhoodOp.h>
 
 namespace icl {
@@ -232,7 +233,7 @@ namespace icl {
       }
       </pre>
     */
-    class MedianOp : public NeighborhoodOp {
+    class ICLFilter_API MedianOp : public NeighborhoodOp {
     public:
   
       /// Constructor that creates a median filter object, with specified mask size

@@ -30,14 +30,16 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Time.h>
 #include <ICLUtils/FPSEstimator.h>
+
 namespace icl{
   namespace utils{
     
     
     /// An fps limiter can be used to limit online applications FPS \ingroup TIME
-    class FPSLimiter : public FPSEstimator{
+    class ICLUtils_API FPSLimiter : public FPSEstimator{
       float m_maxFPS;
       mutable Time m_lastTime;
       mutable bool m_waitOff;

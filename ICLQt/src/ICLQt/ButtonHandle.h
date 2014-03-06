@@ -30,10 +30,11 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/SmartPtr.h>
+#include <ICLQt/GUIHandle.h>
 #include <string>
 #include <vector>
-#include <ICLQt/GUIHandle.h>
-#include <ICLUtils/SmartPtr.h>
 
 /**\cond */
 class QPushButton;
@@ -51,19 +52,19 @@ namespace icl{
       friend class ToggleButtonGUIWidget;
       
       /// creates a n empty button handle
-      ButtonHandle();
+      ICLQt_API ButtonHandle();
   
       /// create a new event with a given button id
-      ButtonHandle(QPushButton *b, GUIWidget *w);
+      ICLQt_API ButtonHandle(QPushButton *b, GUIWidget *w);
   
       /// check if this event/button was triggered
       /** @param reset if set to true the internal boolen variable
                        is set to false, so wasTriggered returns true
                        only if the button was triggered again */
-      bool wasTriggered(bool reset=true);
+      ICLQt_API bool wasTriggered(bool reset = true);
       
       /// trigger this event (sets the internal boolean variable to true)
-      void trigger(bool execCallbacks=true){
+      void trigger(bool execCallbacks = true){
         *m_triggered = true;
         if(execCallbacks){
           cb();
@@ -71,10 +72,10 @@ namespace icl{
       }
       
       /// sets the internal boolean variable to false
-      void reset();
+      ICLQt_API void reset();
       
       /// returns this buttons id (uncommon)
-      const std::string &getID() const ;
+      ICLQt_API const std::string &getID() const;
       
       private:
       

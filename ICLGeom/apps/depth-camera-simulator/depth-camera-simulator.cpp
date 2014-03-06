@@ -76,7 +76,7 @@ void init(){
 
   
   if(cOut || dOut){
-    gui["preview"].registerCallback(function(&prevGUI,&GUI::switchVisibility));
+    gui["preview"].registerCallback(utils::function(&prevGUI,&GUI::switchVisibility));
     if(dOut){
       ImageHandle d = prevGUI["depth"];
       d->setRangeMode(ICLWidget::rmAuto);

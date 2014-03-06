@@ -54,7 +54,7 @@ namespace icl{
         - 12s for  a 500² matrix
         */
     template<class real>
-    class HungarianAlgorithm {
+    class ICLCV_API HungarianAlgorithm {
       /// Internal used cost matrix type
       typedef utils::Array2D<real> mat;
       public:

@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
 #include <ICLFilter/UnaryOp.h>
 
@@ -63,7 +64,7 @@ namespace icl {
          - icl64f: 47ms
          
     **/
-    class WeightedSumOp : public UnaryOp {
+    class ICLFilter_API WeightedSumOp : public UnaryOp {
       public:
       /// creates a new WeightedSumOp object
       WeightedSumOp(){}

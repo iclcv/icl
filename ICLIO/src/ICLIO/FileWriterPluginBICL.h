@@ -30,8 +30,9 @@
 
 #pragma once
 
-#include <ICLIO/FileWriterPlugin.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Mutex.h>
+#include <ICLIO/FileWriterPlugin.h>
 #include <ICLIO/ImageCompressor.h>
 
 namespace icl{
@@ -39,7 +40,7 @@ namespace icl{
     
     /// Writer plugin to write binary icl image (extension bicl / bicl.gz)
     /** The bicl-core::format does also support saving image meta data */
-    class FileWriterPluginBICL : public FileWriterPlugin{
+    class ICLIO_API FileWriterPluginBICL : public FileWriterPlugin{
       public:
       
       FileWriterPluginBICL(const std::string &compressionType="none",

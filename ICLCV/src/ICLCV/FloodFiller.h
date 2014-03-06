@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
 
 namespace icl{
@@ -66,7 +67,7 @@ namespace icl{
         and put into the queue.
         
     */
-    class FloodFiller{
+    class ICLCV_API FloodFiller{
       /// internal list of to-be-processed points
       std::vector<utils::Point> futurePoints;
       
@@ -76,7 +77,7 @@ namespace icl{
       public:
   
       /// result structure, returned by the 'apply' methods
-      struct Result{
+      struct ICLCV_API Result{
         std::vector<utils::Point> pixels; /// list of filled pixels
         core::Img8u ffLUT;               /// binary mask with filled pixels
       } result;

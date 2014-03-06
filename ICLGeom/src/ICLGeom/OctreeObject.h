@@ -30,13 +30,19 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLMath/Octree.h>
 #include <ICLGeom/SceneObject.h>
 
 
-#ifdef ICL_SYSTEM_APPLE
+#ifdef APPLE
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
+#elif WIN32
+#define NOMINMAX
+#include <Windows.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 #else
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -46,8 +52,8 @@ namespace icl{
   namespace geom{
     
     /** \cond */
-    void octree_object_render_box(float x0, float y0, float z0, 
-                                  float x1, float y1, float z1);
+    ICLGeom_API void octree_object_render_box(float x0, float y0, float z0,
+                                              float x1, float y1, float z1);
     
     template<class Scalar, int CAPACITY, int SF, class Pt, int ALLOC_CHUNK_SIZE>
     struct OctreePointRenderer{

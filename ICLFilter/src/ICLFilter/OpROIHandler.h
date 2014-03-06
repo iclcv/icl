@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/ImgBase.h>
 
 namespace icl {
@@ -74,15 +75,15 @@ namespace icl {
         the prepare() methods which checks and adapts the destination image if 
         neccessary.
     */
-    class OpROIHandler {
+    class ICLFilter_API OpROIHandler {
       public:
       /// Destructor
       virtual ~OpROIHandler(){}
   
       
       private:
-      friend class UnaryOp;
-      friend class BinaryOp;
+        friend class UnaryOp;
+        friend class BinaryOp;
       /// change adaption of destination image (see class description)
       void setClipToROI (bool bClipToROI) {this->m_bClipToROI = bClipToROI;}
       void setCheckOnly (bool bCheckOnly) {this->m_bCheckOnly = bCheckOnly;}

@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/ShallowCopyable.h>
 #include <ICLUtils/Mutex.h>
 
@@ -37,8 +38,8 @@ namespace icl{
   namespace utils{
     
     /** \cond */
-    class ThreadImpl;
-    struct ThreadImplDelOp{
+    class ICLUtils_API ThreadImpl;
+    struct ICLUtils_API ThreadImplDelOp{
       static void delete_func( ThreadImpl* impl );
     };
     /** \endcond */
@@ -86,7 +87,7 @@ namespace icl{
         image processing modules as filters and so on.  \n
         <b>TODO:</b> Implement a dedicated class framework for this
     */
-    class Thread : public ShallowCopyable<ThreadImpl,ThreadImplDelOp>{
+    class ICLUtils_API Thread : public ShallowCopyable<ThreadImpl, ThreadImplDelOp>{
       public:
       
       /// Create a new Thread

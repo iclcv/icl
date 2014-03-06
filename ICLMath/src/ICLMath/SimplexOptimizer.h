@@ -30,10 +30,11 @@
 
 #pragma once
 
-#include <ICLMath/DynVector.h>
-#include <ICLMath/FixedVector.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Function.h>
 #include <ICLUtils/Uncopyable.h>
+#include <ICLMath/DynVector.h>
+#include <ICLMath/FixedVector.h>
 
 namespace icl{
   namespace math{
@@ -141,7 +142,7 @@ namespace icl{
         to 2D/3D rendering
     */
     template<class T, class Vector=DynColVector<T> >
-    class SimplexOptimizer : public utils::Uncopyable{
+    class ICLMath_IMP SimplexOptimizer : public utils::Uncopyable{
       struct Data; //!< internal data structure
       Data *m_data;  //!< internal data pointer
   

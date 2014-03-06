@@ -30,8 +30,9 @@
 
 #pragma once
 
-#include <ICLFilter/UnaryOp.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
+#include <ICLFilter/UnaryOp.h>
 
 namespace icl{
   namespace filter{
@@ -88,7 +89,7 @@ namespace icl{
         </pre>
   
      */
-    class WarpOp : public UnaryOp{
+    class ICLFilter_API WarpOp : public UnaryOp{
       public:
       
       /// create a new WarpOp instance

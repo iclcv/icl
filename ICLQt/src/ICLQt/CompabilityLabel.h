@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLQt/ThreadedUpdatableWidget.h>
 #include <QtCore/QString>
 #include <QtCore/QMutex>
@@ -45,7 +46,7 @@ namespace icl{
         original QLabel but this thread-save reimplementation called
         CompabilityLabel.
     */
-    class CompabilityLabel : public ThreadedUpdatableWidget{
+    class ICLQt_API CompabilityLabel : public ThreadedUpdatableWidget{
       public:
       /// Create a new label with given text and given parent widget
       CompabilityLabel(const QString &text, QWidget *parent=0);

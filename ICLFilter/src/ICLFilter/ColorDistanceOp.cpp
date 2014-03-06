@@ -52,7 +52,7 @@ namespace icl{
         }
       }else{
         for(int i=0;i<dim;++i){
-          d[i] = ::sqrt(rgb_dist_sqr<T,D>(ref[0],ref[1],ref[2],r[i],g[i],b[i]));
+          d[i] = ::sqrt((double)rgb_dist_sqr<T,D>(ref[0],ref[1],ref[2],r[i],g[i],b[i]));
         }
       }
     }

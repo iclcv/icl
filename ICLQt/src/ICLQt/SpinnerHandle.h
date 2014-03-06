@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLQt/GUIHandle.h>
 
 /** \cond */
@@ -41,7 +42,7 @@ namespace icl{
   namespace qt{
     
     /// Handle class for spinner components \ingroup HANDLES
-    class SpinnerHandle : public GUIHandle<QSpinBox>{
+    class ICLQt_API SpinnerHandle : public GUIHandle<QSpinBox>{
   
       public:
       

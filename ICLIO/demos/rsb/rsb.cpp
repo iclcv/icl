@@ -54,7 +54,7 @@ void cb_func(const ImgBase *image){
 }
 
 void init(){
-  const std::string t = pa("-t");
+  const std::string t = pa("-t").as<std::string>();
 
   MODE = ( *pa("-what") == "send" ? Send :
            *pa("-what") == "receive" ? Receive :

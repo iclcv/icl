@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/BasicTypes.h>
 #include <ICLMath/FixedVector.h>
 #include <string>
@@ -85,7 +86,7 @@ namespace icl{
         - gray150
         - gray200
     */
-    Color color_from_string(const std::string &name);
+    Color ICLCore_API color_from_string(const std::string &name);
   
   } // namespace core
 }

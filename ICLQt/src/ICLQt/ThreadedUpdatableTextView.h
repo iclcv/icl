@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <QtGui/QTextEdit>
 #include <QtCore/QEvent>
 #include <string>
@@ -37,7 +38,7 @@
 namespace icl{
   namespace qt{
   
-    class ThreadedUpdatableTextView : public QTextEdit{
+    class ICLQt_API ThreadedUpdatableTextView : public QTextEdit{
       static const QEvent::Type ADD_TEXT=(QEvent::Type)(QEvent::User+1);
       static const QEvent::Type CLEAR_TEXT=(QEvent::Type)(QEvent::User+2);
   

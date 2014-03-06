@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/PointCloudObjectBase.h>
 #include <ICLGeom/Camera.h>
 #include <ICLGeom/RGBDMapping.h>
@@ -52,7 +53,7 @@ namespace icl{
         If RGBD-mapping is not performed, the simple point cloud creation is performed in about 6 ms.
         For futher speed optimizations, we plan to add openmp optimization in the future.
     */
-    class PointCloudCreator{
+    class ICLGeom_API PointCloudCreator{
       struct Data;  // !< pimpl type
       Data *m_data; // !< pimpl pointer
       public:

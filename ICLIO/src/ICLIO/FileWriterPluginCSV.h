@@ -30,13 +30,14 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLIO/FileWriterPlugin.h>
 
 namespace icl{
   namespace io{
   
     /// Writer plugins for ".csv"-files (<b>Comma</b>-<b>Separated</b> <b>Values</b>) \ingroup FILEIO_G
-    class FileWriterPluginCSV : public FileWriterPlugin{
+    class ICLIO_API FileWriterPluginCSV : public FileWriterPlugin{
       public:
       
       /// write implementation

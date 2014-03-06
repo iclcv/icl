@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/SceneObject.h>
 #include <ICLGeom/Scene.h>
 
@@ -38,7 +39,7 @@ namespace icl{
     
     /// The scene light object looks like a light bulb and represents an OpenGL light
     /** This class is used by the Scene class to visualize lights in the 3D scene */
-    class SceneLightObject : public SceneObject{
+    class ICLGeom_API SceneLightObject : public SceneObject{
       /// thread of the bulb is implemented as a child object
       class ThreadPart; 
 

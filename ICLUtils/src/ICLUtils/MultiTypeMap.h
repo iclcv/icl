@@ -30,14 +30,15 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/Mutex.h>
+#include <ICLUtils/SmartPtr.h>
+
 #include <string>
 #include <map>
 #include <typeinfo>
 #include <cstdio>
 #include <vector>
-
-#include <ICLUtils/Mutex.h>
-#include <ICLUtils/SmartPtr.h>
 
 namespace icl{
   namespace utils{
@@ -63,7 +64,7 @@ namespace icl{
         To accelerate data access just store a reference to the data element or
         a pointer anywhere and work with that pointer!.
      */
-    class MultiTypeMap{
+    class ICLUtils_API MultiTypeMap{
       public:
       /// Default constructor (create a new MultiTypeMap object)
       MultiTypeMap();
@@ -265,7 +266,7 @@ namespace icl{
   
       
       /// entry struct used in getEntryList function
-      struct Entry{
+      struct ICLUtils_API Entry{
         Entry(){}
         Entry(const std::string &key,const std::string &type, int len):
           key(key),type(type),len(len){}

@@ -41,7 +41,7 @@ namespace icl {
     namespace pylon {
 
       /// This is a helper class for Pylon camera settings \ingroup GIGE_G
-      class PylonCameraOptions : public utils::Configurable{
+      class ICLIO_API PylonCameraOptions : public utils::Configurable{
         public:
           /// Constructor
           /**
@@ -192,7 +192,7 @@ namespace icl {
       }
 
       /// returns a string representation of the value of a parameter of the camera.
-      std::string getParameterValueString(
+      ICLIO_API std::string getParameterValueString(
           Pylon::IPylonDevice* device, std::string parameter);
       
     } //namespace pylon

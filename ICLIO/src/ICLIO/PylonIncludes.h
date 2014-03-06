@@ -31,6 +31,8 @@
 #pragma once
 
 // this is done to prevent gcc from throwing warnings caused in these headers
+#ifndef WIN32
 #pragma GCC system_header
+#endif
 #include <pylon/PylonIncludes.h>
 #include <pylon/gige/BaslerGigEDeviceInfo.h>

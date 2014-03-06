@@ -31,22 +31,22 @@
 
 #pragma once
 
-#include <ICLCore/ImgBase.h>
-#include <ICLCore/ImgIterator.h>
 #include <ICLUtils/SmartPtr.h>
 #include <ICLUtils/Exception.h>
+#include <ICLCore/ImgBase.h>
+#include <ICLCore/ImgIterator.h>
 #include <ICLCore/Channel.h>
 #include <ICLCore/PixelRef.h>
+#include <ICLMath/DynMatrix.h>
 #include <cmath>
 #include <algorithm>
-#include <ICLMath/DynMatrix.h>
 
 
 namespace icl {
   namespace core{
     /// The Img class implements the ImgBase Image interface with type specific functionalities \ingroup IMAGE \ingroup TYPES
     template<class Type>
-    class Img : public ImgBase
+    class ICLCore_API Img : public ImgBase
     {
          
       /* this is declare as fried, because it accesses the private append function */
@@ -1407,12 +1407,12 @@ namespace icl {
   
   
       /// returns the image iterator (equal to getData(channel))
-      iterator begin(int channel){
+      inline iterator begin(int channel){
         return getData(channel);
       }
       
       /// returns the image iterator (equal to getData(channel)) (const)
-      const_iterator begin(int channel) const{
+      inline const_iterator begin(int channel) const{
         return const_cast<Img<Type>*>(this)->begin(channel);
       }
   
@@ -1522,7 +1522,7 @@ namespace icl {
     /** @see bpp(Img<T> &)
         @see bpp(Img<T> *)
     */
-    template<class T> struct ImgBasePtrPtr {
+    template<class T> struct ICLCore_API ImgBasePtrPtr {
       /// 1st private constructor
       ImgBasePtrPtr(Img<T> &i);
       
@@ -1549,7 +1549,7 @@ namespace icl {
       /// Internal image pointers
       ImgBase *o,*r,*rbef;
     };
-  
+
     /// utility function to cast an Img<T> implicitly into an ImgBase **  \ingroup IMAGE
     /** This function may be useful, whenever you are working with
         Img<T> objects are Pointers. As some functions expect ImgBase**
@@ -1642,18 +1642,18 @@ namespace icl {
   
     /// Combine several images using shallow copy. \ingroup IMAGE 
     template<class ImgType>
-    const ImgType* combineImages (const std::vector<const ImgType*>& vec);
+    const ImgType* combineImages(const std::vector<const ImgType*>& vec);
   
     /// Combine several images using shallow copy. Non-const version \ingroup IMAGE
     template<class ImgType>
-    ImgType* combineImages (const std::vector<ImgType*>& vec) {
+    ImgType* combineImages(const std::vector<ImgType*>& vec) {
       return const_cast<ImgType*>(combineImages(reinterpret_cast<const std::vector<const ImgType*>&>(vec)));
     }
   
     /* {{{   deepCopyChannel */
     /// Copies the channel from one image to another \ingroup IMAGE
     template<class T>
-    inline void deepCopyChannel( const Img<T> *src, int srcC, Img<T> *dst, int dstC){
+    inline void deepCopyChannel(const Img<T> *src, int srcC, Img<T> *dst, int dstC){
       FUNCTION_LOG("");
       ICLASSERT_RETURN( src && dst );
       ICLASSERT_RETURN( src->getSize() == dst->getSize() );
@@ -1699,7 +1699,7 @@ namespace icl {
         @param size size of the to-be-cleared region
         */ 
     template<class T>
-    inline void clearChannelROI(Img<T> *im, int c, T clearVal, const utils::Point &offs, 
+    inline void clearChannelROI(Img<T> *im, int c, T clearVal, const utils::Point &offs,
                                 const utils::Size &size) {
       FUNCTION_LOG("");
       ICLASSERT_RETURN( im );
@@ -1712,7 +1712,7 @@ namespace icl {
     }
   
     /** \cond */
-#ifdef HAVE_IPP
+#ifdef ICL_HAVE_IPP
     /// IPP-OPTIMIZED specialization for icl8u clearing (using ippiSet)
     template <>
     inline void clearChannelROI(Img<icl8u> *im, int c, icl8u clearVal, const utils::Point &offs, 
@@ -1780,7 +1780,7 @@ namespace icl {
         @param dstSize destination images ROI size (must be equal to srcSize) 
     **/
     template <class T>
-    inline void deepCopyChannelROI(const Img<T> *src,int srcC, const utils::Point &srcOffs, 
+    inline void deepCopyChannelROI(const Img<T> *src, int srcC, const utils::Point &srcOffs,
                                    const utils::Size &srcSize,
                                    Img<T> *dst,int dstC, const utils::Point &dstOffs, 
                                    const utils::Size &dstSize) {
@@ -1820,7 +1820,7 @@ namespace icl {
         @param dstROISize destination images ROI-size (dst->getROISize() is <b>not</b> regarded)
      **/
     template <class S,class D>
-    inline void convertChannelROI(const Img<S> *src,int srcC, const utils::Point &srcOffs, 
+    inline void convertChannelROI(const Img<S> *src, int srcC, const utils::Point &srcOffs,
                                   const utils::Size &srcROISize,
                                   Img<D> *dst,int dstC, const utils::Point &dstOffs, 
                                   const utils::Size &dstROISize)
@@ -1862,8 +1862,8 @@ namespace icl {
         @param dstSize destination images ROI-size (dst->getROISize() is <b>not</b> regarded)
         @param eScaleMode scaling mode to use (nearest neighbor, linear, or region-average)
      **/
-    template<class T> 
-    void scaledCopyChannelROI(const Img<T> *src,int srcC, 
+    template<class T> ICLCore_API
+    void scaledCopyChannelROI(const Img<T> *src, int srcC,
                               const utils::Point &srcOffs, 
                               const utils::Size &srcSize,
                               Img<T> *dst,int dstC, 
@@ -1888,13 +1888,13 @@ namespace icl {
         @param dstSize destination images ROI-size (dst->getROISize() is <b>not</b> regarded)
         @param dstSize destination images ROI-size (dst->getROISize() is <b>not</b> regarded)
      **/
-    template <class T>
+    template <class T> ICLCore_API
     void flippedCopyChannelROI(axis eAxis,
                                const Img<T> *src,int srcC, const utils::Point &srcOffs,
                                const utils::Size &srcSize,
                                Img<T> *dst,int dstC, const utils::Point &dstOffs, 
                                const utils::Size &dstSize);
-    
+
     
     /// mirror copy of an image from source to destination image (1:1 copy) \ingroup IMAGE
     /** This function creates a flipped instance of this image. Even the ROI is flipped internally.
@@ -1911,7 +1911,7 @@ namespace icl {
                           the source image in depth, size,channels,format,and time
         
      **/
-    void flippedCopy(axis eAxis, const ImgBase *poSrc, ImgBase **ppoDst=0);
+    ICLCore_API void flippedCopy(axis eAxis, const ImgBase *poSrc, ImgBase **ppoDst = 0);
   
     /// mirror copy of an images ROI into a destination images ROI \ingroup IMAGE
     /** Example:
@@ -1931,11 +1931,10 @@ namespace icl {
                       image is created at *ppoDst.
         @return flippedCopy      
     **/
-    void flippedCopyROI(axis eAxis, const ImgBase *poSrc, ImgBase **ppoDst=0);
+    ICLCore_API void flippedCopyROI(axis eAxis, const ImgBase *poSrc, ImgBase **ppoDst = 0);
     /* }}} */
   
-    /* }}} */ 
-  
+    /* }}} */
   } // namespace core
 } //namespace icl
 

@@ -35,10 +35,11 @@
 
 #ifdef HAVE_GTEST
 
-#include <gtest/gtest.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Point32f.h>
 #include <ICLMath/FixedVector.h>
 #include <ICLMath/DynMatrixUtils.h>
+#include <gtest/gtest.h>
 
 namespace icl {
   namespace utils{

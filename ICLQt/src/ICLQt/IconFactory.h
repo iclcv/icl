@@ -30,15 +30,16 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
+#include <ICLCore/Img.h>
 #include <QtGui/QPixmap>
 #include <QtGui/QIcon>
-#include <ICLCore/Img.h>
 
 namespace icl{
   namespace qt{
   
     /// Simple utility class providing static functions to create some icons
-    class IconFactory{
+    class ICLQt_API IconFactory{
       public:
       static const QPixmap &create_icl_window_icon_as_qpixmap();
       static const QIcon &create_icl_window_icon_as_qicon();

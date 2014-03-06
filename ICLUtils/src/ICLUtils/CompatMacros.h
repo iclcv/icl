@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLUtils/src/ICLUtils/CompatMacros.h                   **
 ** Module : ICLUtils                                               **
-** Authors: Christof Elbrechter                                    **
+** Authors: Christof Elbrechter, Sergius Gaulik                    **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -30,14 +30,139 @@
 
 #pragma once
 
-#ifdef SYSTEM_WINDOWS
+#include <ICLUtils/ICLConfig.h>
+
+#ifdef WIN32
+  #define NOMINMAX
+  #define _USE_MATH_DEFINES
+  #define M_PI 3.14159265358979323846
+  //#define __msxml_h__ // icl has its own xml classes
+  //#include <Windows.h>
+  // TODOWW: test with _MSC_VER == 1700
+  #if (defined _MSC_VER && _MSC_VER < 1800)
+    #include <cmath>
+    inline double round(double a)
+    {
+      return floor(a + 0.5f);
+    }
+    inline double log2(double a)  
+    {
+      return log(a) / 0.69314718055994530943;  
+    }
+    inline float pow(int a, int b)  
+    {
+      return pow((float)a, b);  
+    }
+    inline double pow(float a, double b)
+    {
+      return pow((double)a, b);
+    }
+    inline int rint(double a)  
+    {
+      // this is not really what it should do
+      return (int)round(a);  
+    }
+    inline float log(int a)  
+    {
+      return log((float)a);  
+    }
+    inline float exp(int a)  
+    {
+      return exp((float)a);  
+    }
+    inline float sqrt(int a)
+    {
+      return sqrt((float)a);
+    }
+  #endif
+  // in windows use this instead of #warning
+  #define WARNING(msg) message(__FILE__ "(" STRINGSIZE(__LINE__) ") : warning: " #msg)
+#endif
+
+
+#ifdef ICL_SYSTEM_WINDOWS
 #	define IPP_DECL __stdcall
-#	ifndef _USE_MATH_DEFINES
-#	define _USE_MATH_DEFINES
-#	endif
-#	define rint  ::System::Math::Round
-#	define round ::System::Math::Round
 #else
 #	define IPP_DECL
+#endif
+
+
+/// this macros are important for creating dll's
+
+#ifdef WIN32
+
+#ifdef ICLUtils_EXPORTS
+#define ICLUtils_API   __declspec(dllexport)
+#else
+#define ICLUtils_API   __declspec(dllimport)
+#endif
+
+#ifdef ICLMath_EXPORTS
+#define ICLMath_IMP
+#define ICLMath_API   __declspec(dllexport)
+#else
+#define ICLMath_IMP   __declspec(dllimport)
+#define ICLMath_API   __declspec(dllimport)
+#endif
+
+#ifdef ICLCore_EXPORTS
+#define ICLCore_API   __declspec(dllexport)
+#else
+#define ICLCore_API   __declspec(dllimport)
+#endif
+
+#ifdef ICLFilter_EXPORTS
+#define ICLFilter_API   __declspec(dllexport)
+#else
+#define ICLFilter_API   __declspec(dllimport)
+#endif
+
+#ifdef ICLIO_EXPORTS
+#define ICLIO_API   __declspec(dllexport)
+#else
+#define ICLIO_API   __declspec(dllimport)
+#endif
+
+#ifdef ICLIO_EXPORTS
+#define ICLIO_API   __declspec(dllexport)
+#else
+#define ICLIO_API   __declspec(dllimport)
+#endif
+
+#ifdef ICLCV_EXPORTS
+#define ICLCV_API   __declspec(dllexport)
+#else
+#define ICLCV_API   __declspec(dllimport)
+#endif
+
+#ifdef ICLQt_EXPORTS
+#define ICLQt_API   __declspec(dllexport)
+#else
+#define ICLQt_API   __declspec(dllimport)
+#endif
+
+#ifdef ICLGeom_EXPORTS
+#define ICLGeom_API   __declspec(dllexport)
+#else
+#define ICLGeom_API   __declspec(dllimport)
+#endif
+
+#ifdef ICLMarkers_EXPORTS
+#define ICLMarkers_API   __declspec(dllexport)
+#else
+#define ICLMarkers_API   __declspec(dllimport)
+#endif
+
+#else
+#define ICLUtils_API
+#define ICLMath_IMP
+#define ICLMath_API
+#define ICLCore_API
+#define ICLFilter_API
+#define ICLIO_API
+#define ICLCV_API
+#define ICLQt_API
+#define ICLGeom_API
+#define ICLMarkers_API
 #endif
 
