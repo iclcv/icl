@@ -31,8 +31,7 @@
 #pragma once
 
 #include <ICLUtils/ICLConfig.h>
-#undef _MSC_VER
-#define _MSC_VER 1600
+
 #ifdef WIN32
   #define NOMINMAX
   #define _USE_MATH_DEFINES
