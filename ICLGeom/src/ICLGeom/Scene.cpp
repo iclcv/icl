@@ -1706,24 +1706,17 @@ namespace icl{
 
     const Img8u &Scene::render(int camIndex, const ImgBase *background, Img32f *depthBuffer,
       DepthBufferMode mode) {
-      const Camera &cam = this->getCamera(camIndex);
-      int w = cam.getRenderParams().viewport.width;
-      int h = cam.getRenderParams().viewport.height;
-      Size s(w, h);
-      PBufferIndex idx(s);
-      std::map<PBufferIndex, PBuffer*>::iterator it = this->m_pbuffers.find(idx);
-      PBuffer &pbuffer = (it == this->m_pbuffers.end()) ? (*(this->m_pbuffers[idx] = new PBuffer(s))) : (*it->second);
       struct RenderEvent : public ICLApplication::AsynchronousEvent{
         const Scene *scene;
-        PBuffer *pbuffer;
+        std::map<PBufferIndex, PBuffer*> *pbufferMap;
         int camIndex;
         const ImgBase *background;
         Img32f *depthBuffer;
         DepthBufferMode mode;
         Img8u const** out;
-        RenderEvent(const Scene *scene, PBuffer *pbuffer, int camIndex, const ImgBase *background, Img32f *depthBuffer, DepthBufferMode mode, Img8u const** out) :
+        RenderEvent(const Scene *scene, std::map<PBufferIndex, PBuffer*> *pbufferMap, int camIndex, const ImgBase *background, Img32f *depthBuffer, DepthBufferMode mode, Img8u const** out) :
           scene(scene),
-          pbuffer(pbuffer),
+          pbufferMap(pbufferMap),
           camIndex(camIndex),
           background(background),
           depthBuffer(depthBuffer),
@@ -1736,6 +1729,9 @@ namespace icl{
           int w = cam.getResolution().width;
           int h = cam.getResolution().height;
           Size s(w, h);
+          PBufferIndex idx(s);
+          std::map<PBufferIndex, PBuffer*>::iterator it = pbufferMap->find(idx);
+          PBuffer *pbuffer = (it == pbufferMap->end()) ? ((*pbufferMap)[idx] = new PBuffer(s)) : it->second;
           pbuffer->update(cam);
           pbuffer->m_buffer.makeCurrent();
           GeomColor c = scene->getBackgroundColor();
@@ -1804,9 +1800,7 @@ namespace icl{
       };
       Img8u const* img;
       ICLApplication *app = ICLApplication::instance();
-      //app->executeInGUIThread(new RenderEvent(this, &pbuffer, camIndex, background, depthBuffer, mode, &img), true);
-      RenderEvent event(this, &pbuffer, camIndex, background, depthBuffer, mode, &img);
-      event.execute();
+      app->executeInGUIThread(new RenderEvent(this, &m_pbuffers, camIndex, background, depthBuffer, mode, &img), true);
       return *img;
     }
 
