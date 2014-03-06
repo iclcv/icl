@@ -203,7 +203,8 @@ ENDIF()
 
 IF(RSB_FOUND)
   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
-  PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS src/ICLIO/proto/RSBImage.proto)
+  PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS src/ICLIO/proto/RSBImage.proto src/ICLIO/proto/RSBPointCloud.proto)
+#  PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS src/ICLIO/proto/RSBPointCloud.proto)
 
   # the generated files happen to be in build/ICLIO directly, but here, the header file
   # cannot be found by dependent files such as RSBGrabber.cpp. Therefore, we copy the
@@ -223,7 +224,6 @@ IF(RSB_FOUND)
   LIST(APPEND HEADERS src/ICLIO/RSBGrabber.h
                       src/ICLIO/RSBImageOutput.h
 		      ${PROTO_HDRS})
-
 ENDIF()
 
 # ---- Library build instructions ----

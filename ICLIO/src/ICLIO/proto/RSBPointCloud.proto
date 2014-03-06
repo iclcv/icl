@@ -1,0 +1,25 @@
+
+
+package icl.io;
+
+message RSBPointCloud {
+    required uint32 width               = 0;
+    required uint32 height              = 1;
+    required bool organized             = 2;
+    required int64 timestamp            = 3;
+
+    message Field{
+      required string name         = 0;
+      required string compression  = 1;
+      required bytes data          = 2;
+    }
+      
+    repeated Field fields               = 4;
+
+    message MetaDataEntry{
+      required string key          = 0;
+      required string value        = 1;
+    }
+
+    repeated Field fields               = 5;
+};
