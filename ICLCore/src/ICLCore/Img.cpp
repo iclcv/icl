@@ -2134,17 +2134,6 @@ namespace icl {
   
     template<class Type>
     const Img<Type> Img<Type>::null;
-
-
-    // {{{  explicit instantiation of the Img<T> classes 
-
-#define ICL_INSTANTIATE_DEPTH(D)           \
-  template class ICLCore_API Img<icl##D>; \
-  template struct ICLCore_API ImgBasePtrPtr<icl##D>;
-    ICL_INSTANTIATE_ALL_DEPTHS
-#undef ICL_INSTANTIATE_DEPTH
-
-      // }}}
     
     template<class T>
     ImgBasePtrPtr<T>::~ImgBasePtrPtr(){
@@ -2207,6 +2196,17 @@ namespace icl {
     }
   
     // }}}
+
+
+    // {{{  explicit instantiation of the Img<T> classes 
+
+#define ICL_INSTANTIATE_DEPTH(D)           \
+  template class ICLCore_API Img<icl##D>; \
+  template struct ICLCore_API ImgBasePtrPtr<icl##D>;
+    ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
+
+      // }}}
   
   
   

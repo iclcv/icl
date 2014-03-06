@@ -55,7 +55,7 @@
 #include <ICLQt/GUI.h>
 #include <ICLQt/ContainerGUIComponents.h>
 #include <ICLQt/IconFactory.h>
-#include <QGLPixelBuffer.h>
+#include <QtOpenGL/qglpixelbuffer.h>
 #endif
 
 #ifdef ICL_HAVE_GLX
@@ -1671,11 +1671,19 @@ namespace icl{
       Size(size), threadID(pthread_self()){}
 
     bool Scene::PBufferIndex::operator<(const Scene::PBufferIndex &other) const{
+	#ifdef WIN32
       if (other.threadID.p == threadID.p){
+    #else
+      if (other.threadID == threadID){
+	#endif
         if (other.width == width) return other.height < height;
         else return other.width < width;
       }
+	#ifdef WIN32
       else return other.threadID.p < threadID.p;
+    #else
+      else return other.threadID < threadID;
+	#endif
     }
 
     void Scene::freeAllPBuffers(){

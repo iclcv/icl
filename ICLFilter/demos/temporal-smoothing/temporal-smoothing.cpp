@@ -32,7 +32,7 @@
 #include <ICLQt/Common.h>
 #include <ICLFilter/MotionSensitiveTemporalSmoothing.h>
 #include <ICLFilter/ConvolutionOp.h>
-#include <Time.h>
+#include <ICLUtils/Time.h>
 
 VSplit gui;
 

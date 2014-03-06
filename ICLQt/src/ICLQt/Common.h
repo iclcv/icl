@@ -30,7 +30,7 @@
 
 #pragma once
 #ifdef ICL_HAVE_OPENGL
-#include <GL\glew.h>
+#include <GL/glew.h>
 #endif
 #ifdef ICL_HAVE_QT
 #include <ICLQt/Qt.h>

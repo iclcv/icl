@@ -31,7 +31,7 @@
 
 #include <ICLQt/Common.h>
 #include <ICLGeom/PointCloudNormalEstimator.h>
-#include <Time.h>
+#include <ICLUtils/Time.h>
 
 HSplit gui;
 GenericGrabber grabDepth, grabColor;

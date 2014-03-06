@@ -66,12 +66,7 @@ namespace icl{
     
     void GLContext::makeCurrent() const{
       if(isNull()) return;
-#ifdef ICL_SYSTEM_WINDOWS
       ((QGLContext*)handle)->makeCurrent();
-#else
-      if(isGLX) glxMakeCurrent((Display*)display,(GLXPbuffer)pbuffer, (GLXContext) handle);
-      else ((QGLContext*)handle)->makeCurrent();
-#endif
     }
   
     

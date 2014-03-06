@@ -267,7 +267,6 @@ namespace icl{
         DistToCamPlane,  //!< core::depth buffer values define distance to the camera's z=0 plane
         DistToCamCenter  //!< core::depth buffer values define distanct to the camera center
       };
-      struct PBuffer;
       const core::Img8u &render(int camIndx, const core::ImgBase *background = 0, core::Img32f *depthBuffer = 0,
         DepthBufferMode mode = DistToCamCenter);
     
