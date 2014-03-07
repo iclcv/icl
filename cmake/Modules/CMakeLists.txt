@@ -15,10 +15,7 @@ INSTALL(FILES FindEigen3.cmake
 	      FindPylon.cmake
 	      FindV4L.cmake
 	      FindXine.cmake
-        FindWinJpeg.cmake
-        FindWinOpenCV.cmake
-        FindWinPNG.cmake
         FindWinPthreads.cmake
-        FindWinZlib.cmake
+        FindWinProtobuf.cmake
 	      InstallFilesRecursive.cmake
        DESTINATION ${CMAKE_MODULE_PATH})
