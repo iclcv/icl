@@ -89,8 +89,8 @@ ELSE()
   IF(RSB_LIBRARY)
     # new library layout, we need to link against libspread as well
     FIND_LIBRARY(SPREAD_LIBRARY  
-      NAMES libspread
-      PATHS ${RSB_ROOT}/../spread /usr
+      NAMES libspread spread
+      PATHS ${RSB_ROOT}/../spread /usr ${RSB_ROOT}
       PATH_SUFFIXES lib bin
       NO_DEFAULT_PATH)
     MESSAGE(STATUS "resulting spread: ${SPREAD_LIBRARY}")
