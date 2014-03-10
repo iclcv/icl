@@ -99,7 +99,7 @@ ENDFUNCTION()
 # ---- Create pkg-config ----
 #*********************************************************************
 FUNCTION(CREATE_PKGCONFIG)
-#IF(NOT WIN32)
+IF(NOT WIN32)
   SET(oneValueArgs NAME)
   SET(multiValueArgs PKGCONFIG_DEPS LIBRARY_DEPS RPATH_DEPS)
   CMAKE_PARSE_ARGUMENTS(CONFIG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -157,7 +157,7 @@ FUNCTION(CREATE_PKGCONFIG)
   INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/icl.pc
           DESTINATION lib/pkgconfig
           RENAME      "${PKG_NAME}-${SO_VERSION}.pc")
-#ENDIF()
+ENDIF()
 ENDFUNCTION()
 
 #*********************************************************************
