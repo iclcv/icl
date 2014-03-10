@@ -168,6 +168,7 @@ ENDIF()
 OPTION(BUILD_WITH_OPENCV "Link against OpenCL and provide OpenCV image convertion functions" OFF)
 OPTION(BUILD_WITH_GLX "Linked to BUILD_WITH_QT" OFF)
 OPTION(BUILD_WITH_QT "Provides GUI and image visualization framework (needs OPENGL and GLX)" OFF)
+OPTION(BUILD_WITH_QT5 "This option shouldn't be used. It's only for implementing right now." OFF)
 OPTION(BUILD_WITH_OPENGL "Linked to BUILD_WITH_QT" OFF)
 OPTION(BUILD_WITH_RSB "Link against the RSB framework for network-based image transfer (needs PROTOBUF)" OFF)
 OPTION(BUILD_WITH_PROTOBUF "Needed for RSB-based image transfer" OFF)
@@ -363,6 +364,23 @@ IF(BUILD_WITH_QT)
   ENDIF()
 ENDIF()
 
+IF(BUILD_WITH_QT5)
+  FIND_PACKAGE(OpenGL REQUIRED)
+  FIND_PACKAGE(GLEW REQUIRED)
+  FIND_PACKAGE(Qt5Widgets REQUIRED)
+  IF(Qt5Widgets_FOUND)
+    SET(QT4_FOUND TRUE)
+    #set(CMAKE_AUTOMOC ON)
+    #set(CMAKE_INCLUDE_CURRENT_DIR ON)
+    add_definitions(${Qt5Widgets_DEFINITIONS})
+    #set(CMAKE_CXX_FLAGS "${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
+    ADD_ICL_DEFINITIONS(-DICL_HAVE_QT)
+    ADD_ICL_DEFINITIONS(-DICL_HAVE_OPENGL)
+    ADD_ICL_DEFINITIONS(-DICL_HAVE_GLX)
+    ADD_ICL_DEFINITIONS(-DQWT_DLL)
+  ENDIF()
+ENDIF()
+
 IF(BUILD_WITH_LIBFREENECT)
   FIND_PACKAGE(LibFreenect REQUIRED)
   IF(LIBFREENECT_FOUND)
@@ -466,11 +484,12 @@ INCLUDE_DIRECTORIES(${IPP_INCLUDE_DIRS}
                     ${PROTOBUF_INCLUDE_DIRS}
                     ${ZMQ_INCLUDE_DIRS}
                     ${LIBUSB_INCLUDE_DIRS}
+                    ${Qt5Widgets_INCLUDE_DIRS}
                     )
 
 #---- Add src sub directories ----
 IF(WIN32)
-ADD_SUBDIRECTORY(3rdparty)
+  ADD_SUBDIRECTORY(3rdparty)
 ENDIF()
 ADD_SUBDIRECTORY(ICLUtils)
 ADD_SUBDIRECTORY(ICLMath)

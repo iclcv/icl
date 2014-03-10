@@ -266,7 +266,8 @@ TARGET_LINK_LIBRARIES(ICLIO ICLFilter
                             ${BOOST_LIBRARIES}
                             ${PROTOBUF_LIBRARIES}
                             ${ZMQ_LIBRARIES}
-                            ${OpenCV_LIBS})
+                            ${OpenCV_LIBS}
+                            ${Qt5Widgets_LIBRARIES})
 
 # Wo sind die hier :-? (UNICAP XCF QT GENICAM OPENNI RSB PROTOBUF)
 

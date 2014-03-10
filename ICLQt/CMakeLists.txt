@@ -192,14 +192,19 @@ INCLUDE_DIRECTORIES(BEFORE src
                            ${ICL_SOURCE_DIR}/ICLIO/src)
  ENDIF()
 
-QT4_WRAP_CPP(MOC_FILES ${ICL_MOC_HEADERS})
+IF(Qt5Widgets_FOUND)
+  QT5_WRAP_CPP(MOC_FILES ${ICL_MOC_HEADERS})
+ELSE()
+  QT4_WRAP_CPP(MOC_FILES ${ICL_MOC_HEADERS})
+ENDIF()
 
 ADD_LIBRARY(ICLQt SHARED ${SOURCES} ${HEADERS} ${MOC_FILES})
 
 # ---- 3rd party library handling ----
 TARGET_LINK_LIBRARIES(ICLQt ICLCV
                             ${OPENGL_LIBRARIES}
-			    ${GLEW_LIBRARIES})
+			                      ${GLEW_LIBRARIES}
+                            ${Qt5Widgets_LIBRARIES})
 
 SET_TARGET_PROPERTIES(ICLQt
                       PROPERTIES 
