@@ -43,7 +43,7 @@ namespace icl {
     {
     public:
       ICLException(const std::string &msg) throw() : runtime_error(msg){}
-      void report();
+      ICLUtils_API void report();
     };
   
     /// Exception for invalid file formats \ingroup EXCEPT

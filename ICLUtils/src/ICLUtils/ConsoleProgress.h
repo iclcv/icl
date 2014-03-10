@@ -37,14 +37,14 @@ namespace icl{
   namespace utils{
     
     /// static utility function for displaying some progress information in console
-    void ICLUtils_API progress_init(const std::string &text = "Creating LUT");
+    ICLUtils_API void progress_init(const std::string &text = "Creating LUT");
     
     /// static utility function for displaying some progress information in console
-    void ICLUtils_API progress_finish();
+    ICLUtils_API void progress_finish();
   
     /// static utility function for displaying some progress information in console
     /** Extra text is show behind the progress bar */
-    void ICLUtils_API progress(int curr, int max, const std::string &extraText = "");
+    ICLUtils_API void progress(int curr, int max, const std::string &extraText = "");
   
   } // namespace utils
 }

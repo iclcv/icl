@@ -66,13 +66,13 @@ namespace icl{
     
     /** \cond */
     // internal function for program argument explanation
-    void ICLUtils_API pa_explain_internal(const std::string &pa, const std::string &ex);
+    ICLUtils_API void pa_explain_internal(const std::string &pa, const std::string &ex);
     
     // internal sub-argument access function
-    const ICLUtils_API std::string &pa_subarg_internal(const ProgArgData &pa) throw (ProgArgException);
+    ICLUtils_API const std::string &pa_subarg_internal(const ProgArgData &pa) throw (ProgArgException);
   
     // another internal helper function
-    bool ICLUtils_API pa_defined_internal(const ProgArgData &pa) throw (ProgArgException);
+    ICLUtils_API bool pa_defined_internal(const ProgArgData &pa) throw (ProgArgException);
     /** \endcond */
     
     /// Programm argument utility class \ingroup PA

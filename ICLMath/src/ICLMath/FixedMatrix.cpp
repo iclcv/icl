@@ -33,7 +33,7 @@
 #include <ICLUtils/ConfigFile.h>
 #include <cmath>
 #include <string>
-#include <boost/math/tools/precision.hpp>
+#include <limits>
 
 namespace icl{
   namespace math{
@@ -127,7 +127,7 @@ namespace icl{
     FixedMatrix<T,1,3> 
     extract_euler_angles (const FixedMatrix<T,COLS,ROWS> &m,
                           AXES axes) {
-      static const T EPS = 4.0 * boost::math::tools::epsilon<T>();
+      static const T EPS = 4.0 * std::numeric_limits<T>::epsilon();
       T ai, aj, ak;
       
       const unsigned int* const tuple = AXES2TUPLE[axes];

@@ -6,7 +6,7 @@
 #** Website: www.iclcv.org and                                      **
 #**          http://opensource.cit-ec.de/projects/icl               **
 #**                                                                 **
-#** File   : cmake/Modules/FindGLEW.cmake                           **
+#** File   : cmake/Modules/FindDL.cmake                             **
 #** Module : FindDL                                                 **
 #** Authors: Viktor Richter                                         **
 #**                                                                 **

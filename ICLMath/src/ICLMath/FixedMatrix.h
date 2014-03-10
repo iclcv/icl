@@ -1006,7 +1006,7 @@ namespace icl{
                 syxz, syxy, szxy,  szxz, szyx, szyz,
                 rzyx, rxyx, ryzx,  rxzx, rxzy, ryzy,
                 rzxy, ryxy, ryxz,  rzxz, rxyz, rzyz };
-    extern const AXES AXES_DEFAULT; // rxyz
+    extern ICLMath_API const AXES AXES_DEFAULT; // rxyz
 
     /// create 3D rotation matrix from rotation axis and angle (defined for float and double only)
     template<class T> ICLMath_IMP

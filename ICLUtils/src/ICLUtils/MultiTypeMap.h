@@ -266,7 +266,7 @@ namespace icl{
   
       
       /// entry struct used in getEntryList function
-      struct ICLUtils_API Entry{
+      struct Entry{
         Entry(){}
         Entry(const std::string &key,const std::string &type, int len):
           key(key),type(type),len(len){}
