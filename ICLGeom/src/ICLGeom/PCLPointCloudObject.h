@@ -30,8 +30,8 @@
 
 #pragma once
 
-#ifndef HAVE_OPENGL
-#warning "this header must not be included without HAVE_PCL defined"
+#ifndef ICL_HAVE_PCL
+#warning "this header must not be included without ICL_HAVE_PCL defined"
 #endif
 
 #include <ICLGeom/PointCloudObjectBase.h>

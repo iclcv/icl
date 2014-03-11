@@ -123,9 +123,8 @@ namespace icl{
             case 1: case 2: case 4: case 8: // these are now automatically expanded
               std::copy(data.begin(),data.end(),(*dest)->asImg<icl8u>()->begin(0)); break;
             case 16:             
-              std::copy((const icl16s*)&data[0],(const icl16s*)&data[data.size()-1],
+              std::copy((const icl16s*)&data[0],(const icl16s*)&data[data.size()],
                         (*dest)->asImg<icl16s>()->begin(0));
-              (*dest)->print();
               break;
   
             default: throw ICLException("error reading png image unexpected bit depth for 1 channel image");
