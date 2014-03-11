@@ -271,7 +271,7 @@ namespace icl {
 
     #undef MINMAX
 
-  #ifdef HAVE_SSE2
+  #ifdef ICL_HAVE_SSE2
 
       // this one is only faster for images of the type Img8u
       template<class T, class T1>
@@ -762,7 +762,7 @@ namespace icl {
         }
       }
 
-  #ifdef HAVE_SSE2
+  #ifdef ICL_HAVE_SSE2
 
       #define APPLY_MEDIAN(T0, T1, STEP)                                                                                          \
         template<>                                                                                                                \
@@ -861,7 +861,7 @@ namespace icl {
 
   #ifndef ICL_HAVE_IPP
 
-    #ifdef HAVE_SSE2
+    #ifdef ICL_HAVE_SSE2
       APPLY_MEDIAN2(icl8u, icl128i8u, 16);
       APPLY_MEDIAN(icl16s, icl128i16s, 8);
     #else
@@ -871,7 +871,7 @@ namespace icl {
 
   #endif
 
-    #ifdef HAVE_SSE2
+    #ifdef ICL_HAVE_SSE2
       APPLY_MEDIAN(icl32f, icl128, 4);
       #undef APPLY_MEDIAN2
     #else

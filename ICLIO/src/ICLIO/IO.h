@@ -47,7 +47,7 @@
 #include </PWCGrabber.h>
 #endif
 
-#ifdef HAVE_LIBMESASR
+#ifdef ICL_HAVE_LIBMESASR
 #include <ICLIO/SwissRangerGrabber.h>
 #endif
 

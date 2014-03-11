@@ -196,7 +196,7 @@ namespace icl{
       icl8u *d = img.getData(0);
       icl8u *dstEnd = d + img.getDim();
 
-    #ifdef HAVE_SSE2
+    #ifdef ICL_HAVE_SSE2
       icl8u *dstSSEEnd = dstEnd - 15;
 
       for (; d < dstSSEEnd; d += 16) {

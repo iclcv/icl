@@ -303,7 +303,7 @@ namespace icl {
       ippsConvert_64f32s_Sfs(poSrcStart,poDst,(poSrcEnd-poSrcStart),ippRndNear,0);
     }
     /** \endcond */
-  #elif defined HAVE_SSE2
+  #elif defined ICL_HAVE_SSE2
     /** \cond */
 
     /// from icl8u functions

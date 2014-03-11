@@ -35,9 +35,9 @@
 
 #if !defined(HAVE_RSB) || !defined(HAVE_PROTOBUF)
   #if WIN32
-    #pragma WARNING("This header should only be included if HAVE_RSB and HAVE_PROTOBUF are defined and available in ICL")
+    #pragma WARNING("This header should only be included if ICL_HAVE_RSB and ICL_HAVE_PROTOBUF are defined and available in ICL")
   #else
-    #warning "This header should only be included if HAVE_RSB and HAVE_PROTOBUF are defined and available in ICL"
+    #warning "This header should only be included if ICL_HAVE_RSB and ICL_HAVE_PROTOBUF are defined and available in ICL"
   #endif
 #endif
 namespace icl{

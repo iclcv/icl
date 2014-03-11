@@ -212,7 +212,7 @@ namespace icl {
           utils::Size m_Size;
       };
   
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
       /// This ColorConverter uses the icl Yuv422 to Rgb conversion.
       class ICLIO_API Yuv422ToRgb8Icl : public ColorConverter{
         public:

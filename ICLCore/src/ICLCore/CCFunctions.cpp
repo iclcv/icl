@@ -48,7 +48,7 @@ namespace icl{
   #define ADP ccAdapted
 
     static const unsigned int NFMTS = 7;
-  #ifdef HAVE_SSE2
+  #ifdef ICL_HAVE_SSE2
     static const ccimpl g_aeAvailableTable[NFMTS*NFMTS] = {
       /*                      |-------------- dst format ------------------> */ 
       /*  ___                 gray   rgb    hls    yuv    lab  chroma matrix */
@@ -1263,7 +1263,7 @@ namespace icl{
   #endif
 */
 
-  #ifdef HAVE_SSE2
+  #ifdef ICL_HAVE_SSE2
 
     // ++ for-loops ++ // 
 
@@ -4062,7 +4062,7 @@ namespace icl{
       }
     }
 
-  #ifdef HAVE_SSSE3
+  #ifdef ICL_HAVE_SSSE3
 
       template<class S, class D>
       inline void copy_p3c3(const S *src0, const S *src1, const S *src2, D *dst) {
@@ -4581,7 +4581,7 @@ namespace icl{
       }
     }
 
-  #ifdef HAVE_SSSE3
+  #ifdef ICL_HAVE_SSSE3
 
       template<class S, class D>
       inline void copy_c3p3(const S *src, D *dst0, D *dst1, D *dst2) {
@@ -5174,7 +5174,7 @@ namespace icl{
   
     // }}}
 
-  #ifdef HAVE_SSE2
+  #ifdef ICL_HAVE_SSE2
       inline void subSSEYUV420toRGB(const icl8u *y, const icl8u *u, const icl8u *v,
                                     icl8u *r, icl8u *g, icl8u *b) {
         // load YUV values
@@ -5202,7 +5202,7 @@ namespace icl{
 
     void convertYUV420ToRGB8(const unsigned char *pucSrc,const Size &s, Img8u *poDst){
       // {{{ open
-  #ifdef HAVE_SSE2
+  #ifdef ICL_HAVE_SSE2
     const int w = s.width;
     const int w2 = w/2;
     const int h = s.height;

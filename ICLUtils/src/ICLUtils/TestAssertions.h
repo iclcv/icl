@@ -33,7 +33,7 @@
 
 #pragma once
 
-#ifdef HAVE_GTEST
+#ifdef ICL_HAVE_GTEST
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Point32f.h>

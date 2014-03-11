@@ -36,7 +36,7 @@
 namespace icl{
   namespace utils{
 
-    #ifdef HAVE_SSE2
+    #ifdef ICL_HAVE_SSE2
 
       // ++ rounding ++ //
 

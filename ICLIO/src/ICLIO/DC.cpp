@@ -427,7 +427,7 @@ namespace icl{
       namespace{
         void rgb_to_gray_util(const icl8u *src, icl8u *dst, const icl8u *dstEnd, const Size &frameSize){
   
-  #ifdef HAVE_IPP
+  #ifdef ICL_HAVE_IPP
           int step = frameSize.width*sizeof(icl8u);
           ippiRGBToGray_8u_C3C1R(src,step*3,dst,step,frameSize); 
   #else

@@ -47,7 +47,7 @@ namespace icl{
     
     /// Utility class for file handling (reading files is buffered) \ingroup UTILS_G
     /** The File class implements an implicit gzip writing and reading.
-        This feature is enabled if HAVE_LIB_Z is defined during the
+        This feature is enabled if ICL_HAVE_LIB_Z is defined during the
         compilation process.\n
         If the File's given filename has a ".gz" postfix, read and
         write calls are applied using gzread and gzwrite from the libz.\n

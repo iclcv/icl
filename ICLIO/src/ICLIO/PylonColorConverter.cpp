@@ -145,7 +145,7 @@ void PylonColorConverter::resetConversion(
 
 
     case PixelType_YUV422packed:
-    #ifdef HAVE_IPP
+    #ifdef ICL_HAVE_IPP
       m_Converter = new Yuv422ToRgb8Icl(width, height);
     #else
       m_Converter = new PylonColorToRgb(width, height, pixel_type,
@@ -154,7 +154,7 @@ void PylonColorConverter::resetConversion(
       break;
 
     case PixelType_YUV422_YUYV_Packed:
-    #ifdef HAVE_IPP
+    #ifdef ICL_HAVE_IPP
       m_Converter = new Yuv422YUYVToRgb8Icl(width, height);
     #else
       m_Converter = new PylonColorToRgb(width, height, pixel_type,
@@ -462,7 +462,7 @@ void BayerToRgb8Icl::convert(const void *imgBuffer, ConvBuffers* b){
   m_Conv.apply(&tmp, &(b -> m_Image));
 }
 
-#ifdef HAVE_IPP
+#ifdef ICL_HAVE_IPP
 // Constructor initializes conversion
 Yuv422ToRgb8Icl::Yuv422ToRgb8Icl(int width, int height)
   : m_Size(width, height)

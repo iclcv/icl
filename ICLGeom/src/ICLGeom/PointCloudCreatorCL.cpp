@@ -29,7 +29,7 @@
  ********************************************************************/
 
 #define __CL_ENABLE_EXCEPTIONS //enables openCL error catching
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
 #include <CL/cl.hpp>
 #endif
 
@@ -101,7 +101,7 @@ namespace icl {
     PointCloudCreatorCL::PointCloudCreatorCL(Size size, const Array2D<Vec> &dirs) {
       clReady = false;
       this->size = size;
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
       //create openCL context
       //      depthValuesArray=new float[size.width*size.height];
       //      rInArray=new unsigned char[size.width*size.height];
@@ -143,7 +143,7 @@ namespace icl {
     }
 
     PointCloudCreatorCL::~PointCloudCreatorCL() {
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
       //      delete[] depthValuesArray;
       //      delete[] rInArray;
       // delete[] gInArray;
@@ -172,7 +172,7 @@ namespace icl {
         needsMapping = 0;
       }
 
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
       try {
 
 
@@ -239,7 +239,7 @@ namespace icl {
         needsMapping = 0;
       }
 
-#ifdef HAVE_OPENCL
+#ifdef ICL_HAVE_OPENCL
       try {
         //        depthValuesArray = (float*)depthValues->begin(0);
         depthValuesBuffer = program.createBuffer("r", DEPTH_DIM * sizeof(float), depthValues->begin(0));

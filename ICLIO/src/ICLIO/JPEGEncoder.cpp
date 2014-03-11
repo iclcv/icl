@@ -201,7 +201,7 @@ namespace icl{
           * Pass TRUE unless you are very sure of what you're doing. */
       jpeg_start_compress(&jpgCinfo, TRUE);
   
-  #ifdef HAVE_JPEG_MARKERS    
+  #ifdef ICL_HAVE_JPEG_MARKERS    
       // this leads to errors when loading the encoded stuff from data segment
       /* Step 5: Write comments */
       char acBuf[1024];

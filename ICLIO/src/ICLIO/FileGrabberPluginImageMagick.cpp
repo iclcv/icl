@@ -32,7 +32,7 @@
 #include <ICLCore/CCFunctions.h>
 #include <ICLIO/FileWriterPluginImageMagick.h>
 
-#ifdef HAVE_IMAGEMAGICK 
+#ifdef ICL_HAVE_IMAGEMAGICK 
 #define OMP_NUM_THREADS 1 
 #ifndef ICL_SYSTEM_LINUX
 #include <Magick++.h>
@@ -54,7 +54,7 @@ namespace icl{
   namespace io{
   
   
-  #ifdef HAVE_IMAGEMAGICK  
+  #ifdef ICL_HAVE_IMAGEMAGICK  
     struct FileGrabberPluginImageMagick::InternalData{
       std::vector<icl8u> buffer;
   

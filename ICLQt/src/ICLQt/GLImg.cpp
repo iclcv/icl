@@ -73,7 +73,7 @@ namespace icl{
       wt.gli.bind();
     }
   
-  #ifdef HAVE_QT  
+  #ifdef ICL_HAVE_QT  
     void freeTextures(std::vector<GLuint> del, GLContext ctx){
       struct DelEvent : public ICLApplication::AsynchronousEvent{
         std::vector<GLuint> del;

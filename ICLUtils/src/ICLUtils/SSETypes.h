@@ -34,13 +34,13 @@
 #ifdef ICL_USE_SSE
   #if defined __SSE2__ || defined _M_X64  || (defined _M_IX86_FP && _M_IX86_FP >= 2)
     #include "emmintrin.h"
-    #define HAVE_SSE2
+    #define ICL_HAVE_SSE2
     #if defined __SSE3__ || (defined _MSC_VER && _MSC_VER >= 1500)
       #include "pmmintrin.h"
-      #define HAVE_SSE3
+      #define ICL_HAVE_SSE3
       #if defined __SSSE3__ || (defined _MSC_VER && _MSC_VER >= 1500)
         #include "tmmintrin.h"
-        #define HAVE_SSSE3
+        #define ICL_HAVE_SSSE3
       #endif
     #endif
   #endif
@@ -53,7 +53,7 @@
 namespace icl{
   namespace utils{
 
-    #ifdef HAVE_SSE2
+    #ifdef ICL_HAVE_SSE2
 
       // ++ basic SSE types ++ //
 
@@ -1959,7 +1959,7 @@ namespace icl{
 
       // ++ absosulte values ++ //
 
-    #ifdef HAVE_SSE3
+    #ifdef ICL_HAVE_SSE3
 
       inline icl128i abs8(icl128i v) {
         v.v0 = _mm_abs_epi8(v.v0);

@@ -37,7 +37,7 @@
 #include <ICLGeom/PoseEstimator.h>
 #include <ICLCore/CoreFunctions.h>
 
-#ifdef HAVE_EIGEN3
+#ifdef ICL_HAVE_EIGEN3
 // for umeyama-based pose estimation
 #include <Eigen/Geometry>
 #endif
@@ -148,7 +148,7 @@ namespace icl{
       ICLASSERT_THROW(Xs.cols() > 0, IncompatibleMatrixDimensionException("PoseEstimator::map: At least 1 point is needed for relative pose estimation"));
       ICLASSERT_THROW(Xs.cols() > 3 || mode !=Affine, IncompatibleMatrixDimensionException("PoseEstimator::map: for affine mapping, at least 4 points are needed!"));
     
-#ifdef HAVE_EIGEN3
+#ifdef ICL_HAVE_EIGEN3
       if(mode == RigidBody && Xs.rows() == 3){
         typedef Eigen::Map<const Eigen::Matrix<T,3, Eigen::Dynamic,  Eigen::RowMajor> > EigenMapType;
 
