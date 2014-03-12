@@ -135,7 +135,7 @@ namespace icl{
       protected:
       
       /// Internally used utils::Rect structure
-      struct DefinedRect : public utils::Rect{
+      struct ICLQt_API DefinedRect : public utils::Rect{
         /// grant private member access to DefineRectanglesMouseHandler
         friend class DefineRectanglesMouseHandler;
   

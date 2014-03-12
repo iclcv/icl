@@ -36,7 +36,7 @@
 namespace icl{
   namespace math{
     /// Special exception implementation for the FFT package
-    class ICLMath_API FFTException : public utils::ICLException{
+    class FFTException : public utils::ICLException{
       public:
       FFTException(const std::string &msg):utils::ICLException(msg){}
     }; 

@@ -7,8 +7,8 @@ Hello ICL
 #########
 
 Let's start with a very simple example, which visualizes a demo image
-only. The basic Idea for this chapter is to help you to set up all
-you environment variables to easily compile and run your example code.
+only. The basic idea for this chapter is to help you to set up all
+your environment variables to easily compile and run your example code.
 
 +--------------------------------------------+----------------------------------+
 | .. literalinclude:: examples/hello-icl.cpp | .. figure:: images/hello-icl.png |
@@ -20,8 +20,8 @@ In order to make this demo work, you have to apply the following steps (linux/ma
 
 
 * ensure you have all necessary build tools like g++, make and
-  pkg-config installed and available on you system
-* adapt you **PKG_CONFIG_PATH** environment variable by adding
+  pkg-config installed and available on your system
+* adapt your **PKG_CONFIG_PATH** environment variable by adding
   **$ICL_PREFIX/lib/pkgconfig**
 * now, typing **pkg-config --libs --cflags icl-8.0.0** in your bash should
   provide you some useful compiler and linker flags add ICL's

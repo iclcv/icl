@@ -49,10 +49,10 @@ namespace icl{
     class ButtonGroupHandle : public GUIHandle<RadioButtonVec> {
       public:
       /// Create an empty handle
-      ICLQt_API ButtonGroupHandle(){}
+      ButtonGroupHandle(){}
   
       /// Craete a valid handle
-      ICLQt_API ButtonGroupHandle(RadioButtonVec *buttons, GUIWidget *w) : GUIHandle<RadioButtonVec>(buttons, w){ }
+      ButtonGroupHandle(RadioButtonVec *buttons, GUIWidget *w) : GUIHandle<RadioButtonVec>(buttons, w){ }
       
       /// select a button with given index
       ICLQt_API void select(int id);

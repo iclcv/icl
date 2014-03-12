@@ -2037,7 +2037,7 @@ namespace icl{
 #ifdef ICL_HAVE_MKL
 	return mkl_wrapper_function_result_ifft_icl64fc(src,dst,buf);
 #endif
-	return ifft2D(src,dst,buf);
+	return ifft2D_cpp(src,dst,buf);
       }
       template<> ICLMath_API
       DynMatrix<std::complex<icl64f> >&  ifft2D(const DynMatrix<icl32u> &src,

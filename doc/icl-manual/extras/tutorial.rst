@@ -13,6 +13,7 @@ Tutorials
 
    ../tutorials/about
    ../tutorials/hello-icl
+   ../tutorials/hello-icl-win
    ../tutorials/using-images
    ../tutorials/pixel-access
    ../tutorials/gui-apps

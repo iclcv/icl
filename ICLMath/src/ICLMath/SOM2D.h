@@ -44,7 +44,7 @@ namespace icl{
         of x-Cells and y-Cells directly as well as a specialized getNeuron()-
         function.
     */
-    class ICLMath_API SOM2D : public SOM{
+    class SOM2D : public SOM{
   
       /** \cond this function is just used here for an inline vector creation*/
       template<class T>

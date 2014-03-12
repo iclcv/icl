@@ -592,7 +592,6 @@ By adding the directory of the DLL's to the system variable **PATH** you will
 avoid the previous mentioned way. This variable defines directories where
 an application can search for missing libraries.
 
-.. TODO:: link how to build project with icl
 
 .. _install.binary:
    

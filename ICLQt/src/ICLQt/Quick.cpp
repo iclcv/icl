@@ -171,7 +171,7 @@ namespace icl{
                  );
           gui << rest  << Create();
           
-          GUI::ComplexCallback cbf = function(this,&CustomGetTextDialog::cb);
+          GUI::ComplexCallback cbf = utils::function(this,&CustomGetTextDialog::cb);
           gui.registerCallback(cbf,"text,done,cancel");
           
           BoxHandle box = gui.get<BoxHandle>("box");
