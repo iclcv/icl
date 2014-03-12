@@ -112,7 +112,7 @@ namespace icl{
     class ICLCV_API ContourDetector : public utils::Uncopyable{
       
       /// internal data type
-      class Data;
+      struct Data;
 
       /// internal data pointer
       Data *m_data;

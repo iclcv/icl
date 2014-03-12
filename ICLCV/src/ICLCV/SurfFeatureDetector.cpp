@@ -145,7 +145,7 @@ namespace icl{
 
     SurfFeatureDetector::SurfFeatureDetector(int octaves, int intervals, int sampleStep, 
                                              float threshold, const std::string &plugin){
-#if not defined(ICL_HAVE_OPENCV) && not defined(ICL_HAVE_OPENCL)
+#if !defined(ICL_HAVE_OPENCV) && !defined(ICL_HAVE_OPENCL)
       throw ICLException("Unable to create SurfFeatureDetector: no backend available");
 #endif
       

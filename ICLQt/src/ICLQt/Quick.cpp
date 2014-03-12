@@ -926,7 +926,7 @@ namespace icl{
         color(255,0,0);
         fill(0,0,0,0);
 #ifdef ICL_SYSTEM_WINDOWS
-  #pragma NOTE("unable to visualize ROI in show!")
+  #pragma WARNING("unable to visualize ROI in show!")
 #else
   #warning "unable to visualize ROI in show!"
 #endif
@@ -1810,7 +1810,7 @@ namespace icl{
     void polygon(ImgQ &image, const std::vector<Point> &corners){
       ICLASSERT_THROW(corners.size() >= 3, ICLException("qt::polygon needs at least 3 points"));
 #ifdef ICL_SYSTEM_WINDOWS
-  #pragma NOTE("qt::polygon is still buggy")
+  #pragma WARNING("qt::polygon is still buggy")
 #else
   #warning "qt::polygon is still buggy"
 #endif

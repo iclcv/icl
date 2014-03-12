@@ -194,7 +194,7 @@ namespace icl{
         Bytes(icl8u *data=0, int len=0):data(data),len(len){}
         /// copy constructor (also provivate)
         Bytes(const Bytes &other){} 
-        friend class DataSegmentBase; //!< only the DataSegmentBase can create these
+        friend struct DataSegmentBase; //!< only the DataSegmentBase can create these
         public:
         
         /// returns the number of contained byte elements
