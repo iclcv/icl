@@ -114,7 +114,7 @@ namespace icl{
       }
       png_destroy_read_struct(&reader,&info,NULL);
   
-      depth destDepth = bits==16?depth16s:depth8u;
+      depth destDepth = bits==16?depth32s:depth8u;
       
       switch(channels){
         case 1: // gray
@@ -122,11 +122,21 @@ namespace icl{
           switch(bits){
             case 1: case 2: case 4: case 8: // these are now automatically expanded
               std::copy(data.begin(),data.end(),(*dest)->asImg<icl8u>()->begin(0)); break;
-            case 16:             
-              std::copy((const icl16s*)&data[0],(const icl16s*)&data[data.size()],
-                        (*dest)->asImg<icl16s>()->begin(0));
+            case 16:{          
+              /// byte order seems to be inverted!
+              const icl8u *s = &data[0];
+              const int dim = width*height;
+              icl32s *d = (*dest)->as32s()->begin(0);
+              
+              for(int i=0;i<dim;++i){
+                int a = s[2*i];
+                int b = s[2*i+1];
+                d[i] = (255*a + b);
+                //std::copy((const icl16s*)&data[0],(const icl16s*)&data[data.size()],
+                //        (*dest)->asImg<icl32s>()->begin(0));
+              }
               break;
-  
+            }              
             default: throw ICLException("error reading png image unexpected bit depth for 1 channel image");
           }
           break;
@@ -134,7 +144,7 @@ namespace icl{
           ensureCompatible(dest,destDepth, Size(width,height), 2);
           switch(bits){
             case 8: interleavedToPlanar(data.data(), (*dest)->asImg<icl8u>()); break; 
-            case 16: interleavedToPlanar(data.data(), (*dest)->asImg<icl16s>()); break; 
+            case 16: interleavedToPlanar(data.data(), (*dest)->asImg<icl32s>()); break; 
             default: throw ICLException("error reading png image unexpected bit depth for 2 channel image");
           }
           break;
@@ -142,7 +152,7 @@ namespace icl{
           ensureCompatible(dest,destDepth, Size(width,height), formatRGB);
           switch(bits){
             case 8: interleavedToPlanar(data.data(), (*dest)->asImg<icl8u>()); break; 
-            case 16: interleavedToPlanar(data.data(), (*dest)->asImg<icl16s>()); break; 
+            case 16: interleavedToPlanar(data.data(), (*dest)->asImg<icl32s>()); break; 
             default: throw ICLException("error reading png image unexpected bit depth for 3 channel image");
           }
           break;
@@ -150,7 +160,7 @@ namespace icl{
           ensureCompatible(dest,destDepth, Size(width,height), 4);
           switch(bits){
             case 8: interleavedToPlanar(data.data(), (*dest)->asImg<icl8u>()); break; 
-            case 16: interleavedToPlanar(data.data(), (*dest)->asImg<icl16s>()); break; 
+            case 16: interleavedToPlanar(data.data(), (*dest)->asImg<icl32s>()); break; 
             default: throw ICLException("error reading png image unexpected bit depth for 4 channel image");
           }
           break;

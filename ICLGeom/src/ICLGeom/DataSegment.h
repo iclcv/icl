@@ -245,7 +245,7 @@ int main(){
             dst[i] = srcpacked[i];
           }
         }else if(dp){
-          math::FixedColVector<T,N> *dstpacked = &dst[0];
+          math::FixedColVector<OtherT,N> *dstpacked = &dst[0];
           for(int i=0;i<dim;++i){
             dstpacked[i] = src[i];
           }

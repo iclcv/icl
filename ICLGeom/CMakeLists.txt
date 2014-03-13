@@ -38,7 +38,8 @@ SET(SOURCES src/ICLGeom/Camera.cpp
 	    src/ICLGeom/Posit.cpp
 	    src/ICLGeom/SoftPosit.cpp
 	    src/ICLGeom/RansacBasedPoseEstimator.cpp
-	    src/ICLGeom/ViewRay.cpp)
+	    src/ICLGeom/ViewRay.cpp
+            src/ICLGeom/PointCloudSerializer.cpp)
 
 SET(HEADERS src/ICLGeom/Camera.h
 	    src/ICLGeom/PointCloudNormalEstimator.h
@@ -62,7 +63,8 @@ SET(HEADERS src/ICLGeom/Camera.h
             src/ICLGeom/Plot3D.h 
 	    src/ICLGeom/DataSegment.h            
             src/ICLGeom/PlotHandle3D.h
-	    src/ICLGeom/RansacBasedPoseEstimator.h)
+	    src/ICLGeom/RansacBasedPoseEstimator.h
+            src/ICLGeom/PointCloudSerializer.h)
 
 IF(QT_FOUND)
   LIST (APPEND SOURCES src/ICLGeom/Scene.cpp
@@ -118,6 +120,11 @@ ENDIF()
 IF(OPENCL_FOUND)
     LIST (APPEND SOURCES src/ICLGeom/PointCloudCreatorCL.cpp)
     LIST (APPEND HEADERS src/ICLGeom/PointCloudCreatorCL.h)
+ENDIF()
+
+IF(RSB_FOUND)
+    LIST (APPEND SOURCES src/ICLGeom/RSBPointCloudGrabber.h)
+    LIST (APPEND HEADERS src/ICLGeom/RSBPointCloudGrabber.cpp)
 ENDIF()
 
 

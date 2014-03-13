@@ -1016,14 +1016,16 @@ namespace icl{
       //update Sceneinfo
       ((Configurable*)this)->setPropertyValue("info.FPS",m_fps.getFPSString());
 
-      int nObjs = 0, nPrim = 0, nVert = 0;
-      for(size_t i=0;i<m_objects.size();++i){
-        count_objs_recursive(m_objects[i].get(),nObjs,nPrim,nVert);
-      }
-
-      ((Configurable*)this)->setPropertyValue("info.Objects in the Scene",nObjs);
-      ((Configurable*)this)->setPropertyValue("info.Primitives in the Scene",nPrim);
-      ((Configurable*)this)->setPropertyValue("info.Vertices in the Scene",nVert);
+      /* this is not thread save!
+          int nObjs = 0, nPrim = 0, nVert = 0;
+          for(size_t i=0;i<m_objects.size();++i){
+          count_objs_recursive(m_objects[i].get(),nObjs,nPrim,nVert);
+          }
+          
+          ((Configurable*)this)->setPropertyValue("info.Objects in the Scene",nObjs);
+          ((Configurable*)this)->setPropertyValue("info.Primitives in the Scene",nPrim);
+          ((Configurable*)this)->setPropertyValue("info.Vertices in the Scene",nVert);
+      */
 
       ICLASSERT_RETURN(camIndex >= 0 && camIndex < (int)m_cameras.size());
 

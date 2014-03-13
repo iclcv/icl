@@ -143,7 +143,12 @@ namespace icl{
       m_data->hasNewImage = false;
       
       Scope rsbScope(scope);
-      ParticipantConfig rsbCfg = Factory::getInstance().getDefaultParticipantConfig();
+#if 1
+      Factory &factory = rsc::patterns::Singleton<Factory>::getInstance();
+#else 
+      Factory &factory = Factory::getInstance()
+#endif
+      ParticipantConfig rsbCfg = factory.getDefaultParticipantConfig();
       typedef std::set<ParticipantConfig::Transport> TSet;
       typedef std::vector<ParticipantConfig::Transport> TVec;
       
@@ -160,12 +165,13 @@ namespace icl{
         }
       }
       rsbCfg.setTransports(TSet(ts.begin(),ts.end()));
-      m_data->listener = Factory::getInstance().createListener(rsbScope,rsbCfg);
+      m_data->listener = factory
+.createListener(rsbScope,rsbCfg);
       m_data->handler = shared_ptr<Handler>(new Data::Handler(m_data,this));
       m_data->listener->addHandler(m_data->handler);
 
       m_data->propertyScopeName = "/icl/RSBImageOutput/configuration"+scope;
-      m_data->propertyInformer = Factory::getInstance().createInformer<std::string>(Scope(m_data->propertyScopeName),rsbCfg);
+      m_data->propertyInformer = factory.createInformer<std::string>(Scope(m_data->propertyScopeName),rsbCfg);
 
       m_data->receivedJPEGQuality = 90;
       m_data->receivedRLEQuality = 1;
