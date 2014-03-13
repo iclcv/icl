@@ -67,7 +67,7 @@ namespace icl{
       static void visualizeAssignment(const utils::Array2D<real> &cost, const std::vector<int> &assignment);
   
       /// calculates the error made by a given const matrix and assignment vector
-      static real calculateError(const utils::Array2D<real> &cost, const std::vector<int> &assignement);
+      //static real calculateError(const utils::Array2D<real> &cost, const std::vector<int> &assignement);
     };
   
   } // namespace cv

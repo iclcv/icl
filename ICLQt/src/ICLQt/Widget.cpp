@@ -428,7 +428,7 @@ namespace icl{
       ImageInfoIndicator *imageInfoIndicator;
       bool imageInfoIndicatorEnabled;
       bool infoTabVisible; // xxx
-      bool selectedTabIndex;
+      int selectedTabIndex;
       bool embeddedZoomMode;
       bool embeddedZoomModeJustEnabled;
       Rect32f *embeddedZoomRect;
