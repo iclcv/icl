@@ -42,9 +42,8 @@ namespace icl{
 #define CPY(X,D,N)                                                      \
       {                                                                 \
         icl8u *d  = dev.targetFor(#X,dim*sizeof(icl##D)*N);             \
-        DataSegment<icl##D,N> dst((icl##D*)d, 0, dim, o.getSize().width); \
+        DataSegment<icl##D,N> dst((icl##D*)d, N*sizeof(icl##D), dim, o.getSize().width); \
         o.select##X().deepCopy(dst);                                    \
-        DEBUG_LOG("copying" << #X );                                    \
       }
 
 #define CPY_IF(X,T,N) if(o.supports(PointCloudObjectBase::X)) CPY(X,T,N)
@@ -82,9 +81,8 @@ namespace icl{
 #define CPY(X,D,N)                                                      \
         if(f == #X){                                                    \
           if(o.supports(PointCloudObjectBase::X)){                      \
-            DEBUG_LOG("copying" << #X );                                \
             const icl8u *s = dev.sourceFor(f,dim*sizeof(icl##D)*N);     \
-            DataSegment<icl##D,N> src((icl##D*)s, 0, dim, o.getSize().width); \
+            DataSegment<icl##D,N> src((icl##D*)s, N*sizeof(icl##D), dim, o.getSize().width); \
             src.deepCopy(o.select##X());                                \
           }                                                             \
         }
