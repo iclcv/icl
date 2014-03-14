@@ -29,79 +29,79 @@
 #*********************************************************************
 
 SET(SOURCES src/ICLGeom/Camera.cpp
-	    src/ICLGeom/CoplanarPointPoseEstimator.cpp
-	    src/ICLGeom/GeomDefs.cpp
-	    src/ICLGeom/ICP.cpp
-	    src/ICLGeom/PlaneEquation.cpp
-	    src/ICLGeom/PointCloudNormalEstimator.cpp
-	    src/ICLGeom/PoseEstimator.cpp
-	    src/ICLGeom/Posit.cpp
-	    src/ICLGeom/SoftPosit.cpp
-	    src/ICLGeom/RansacBasedPoseEstimator.cpp
-	    src/ICLGeom/ViewRay.cpp
-            src/ICLGeom/PointCloudSerializer.cpp)
+            src/ICLGeom/CoplanarPointPoseEstimator.cpp
+            src/ICLGeom/GeomDefs.cpp
+            src/ICLGeom/ICP.cpp
+            src/ICLGeom/PlaneEquation.cpp
+            src/ICLGeom/PointCloudNormalEstimator.cpp
+            src/ICLGeom/PoseEstimator.cpp
+            src/ICLGeom/Posit.cpp
+            src/ICLGeom/SoftPosit.cpp
+            src/ICLGeom/RansacBasedPoseEstimator.cpp
+            src/ICLGeom/ViewRay.cpp)
 
 SET(HEADERS src/ICLGeom/Camera.h
-	    src/ICLGeom/PointCloudNormalEstimator.h
+            src/ICLGeom/PointCloudNormalEstimator.h
             src/ICLGeom/SoftPosit.h
-	    src/ICLGeom/GeomDefs.h
-	    src/ICLGeom/PoseEstimator.h
-            src/ICLGeom/ViewRay.h	   
+            src/ICLGeom/GeomDefs.h
+            src/ICLGeom/PoseEstimator.h
+            src/ICLGeom/ViewRay.h
             src/ICLGeom/Geom.h
             src/ICLGeom/PCLIncludes.h
-	    src/ICLGeom/Posit.h
-	    src/ICLGeom/CoordinateFrameSceneObject.h  
-	    src/ICLGeom/PointCloudGrabber.h 
-	    src/ICLGeom/CoplanarPointPoseEstimator.h
-	    src/ICLGeom/Hit.h
+            src/ICLGeom/Posit.h
+            src/ICLGeom/CoordinateFrameSceneObject.h  
+            src/ICLGeom/PointCloudGrabber.h 
+            src/ICLGeom/CoplanarPointPoseEstimator.h
+            src/ICLGeom/Hit.h
             src/ICLGeom/PlaneEquation.h
-	    src/ICLGeom/PrimitiveType.h
+            src/ICLGeom/PrimitiveType.h
             src/ICLGeom/SceneObjectBase.h
-	    src/ICLGeom/DataSegmentBase.h  
+            src/ICLGeom/DataSegmentBase.h  
             src/ICLGeom/ICP.h
             src/ICLGeom/RGBDMapping.h
             src/ICLGeom/Plot3D.h 
-	    src/ICLGeom/DataSegment.h            
+            src/ICLGeom/DataSegment.h            
             src/ICLGeom/PlotHandle3D.h
-	    src/ICLGeom/RansacBasedPoseEstimator.h
-            src/ICLGeom/PointCloudSerializer.h)
+            src/ICLGeom/RansacBasedPoseEstimator.h)
 
 IF(QT_FOUND)
   LIST (APPEND SOURCES src/ICLGeom/Scene.cpp
-	               src/ICLGeom/SceneLight.cpp
-		       src/ICLGeom/SceneLightObject.cpp
-		       src/ICLGeom/SceneMouseHandler.cpp
-		       src/ICLGeom/SceneObject.cpp
-		       src/ICLGeom/Primitive.cpp
-		       src/ICLGeom/GridSceneObject.cpp
-		       src/ICLGeom/ComplexCoordinateFrameSceneObject.cpp
-		       src/ICLGeom/Segmentation3D.cpp
-		       src/ICLGeom/DepthCameraPointCloudGrabber.cpp
-		       src/ICLGeom/PointCloudCreator.cpp
-		       src/ICLGeom/PointCloudObjectBase.cpp
-		       src/ICLGeom/PointCloudObject.cpp
-		       src/ICLGeom/OctreeObject.cpp
-		       src/ICLGeom/RayCastOctreeObject.cpp
-		       src/ICLGeom/PlotWidget3D.cpp
-		       src/ICLGeom/ShaderUtil.cpp)
+                       src/ICLGeom/SceneLight.cpp
+                       src/ICLGeom/SceneLightObject.cpp
+                       src/ICLGeom/SceneMouseHandler.cpp
+                       src/ICLGeom/SceneObject.cpp
+                       src/ICLGeom/Primitive.cpp
+                       src/ICLGeom/GridSceneObject.cpp
+                       src/ICLGeom/ComplexCoordinateFrameSceneObject.cpp
+                       src/ICLGeom/Segmentation3D.cpp
+                       src/ICLGeom/DepthCameraPointCloudGrabber.cpp
+                       src/ICLGeom/PointCloudCreator.cpp
+                       src/ICLGeom/PointCloudObjectBase.cpp
+                       src/ICLGeom/PointCloudObject.cpp
+                       src/ICLGeom/PointCloudSerializer.cpp
+                       src/ICLGeom/OctreeObject.cpp
+                       src/ICLGeom/RayCastOctreeObject.cpp
+                       src/ICLGeom/PlotWidget3D.cpp
+                       src/ICLGeom/ShaderUtil.cpp)
 
   LIST (APPEND HEADERS src/ICLGeom/Scene.h
                        src/ICLGeom/SceneLight.h
-		       src/ICLGeom/SceneLightObject.h
-		       src/ICLGeom/SceneMouseHandler.h
-		       src/ICLGeom/SceneObject.h	    
-		       src/ICLGeom/Primitive.h
-		       src/ICLGeom/GridSceneObject.h
-		       src/ICLGeom/ComplexCoordinateFrameSceneObject.h
-		       src/ICLGeom/Segmentation3D.h
-		       src/ICLGeom/DepthCameraPointCloudGrabber.h
-		       src/ICLGeom/PointCloudCreator.h
-		       src/ICLGeom/PointCloudObject.h
-		       src/ICLGeom/PointCloudObjectBase.h
-		       src/ICLGeom/OctreeObject.h 
-		       src/ICLGeom/RayCastOctreeObject.h 
-		       src/ICLGeom/PlotWidget3D.h
-		       src/ICLGeom/ShaderUtil.h)
+                       src/ICLGeom/SceneLightObject.h
+                       src/ICLGeom/SceneMouseHandler.h
+                       src/ICLGeom/SceneObject.h
+                       src/ICLGeom/Primitive.h
+                       src/ICLGeom/GridSceneObject.h
+                       src/ICLGeom/ComplexCoordinateFrameSceneObject.h
+                       src/ICLGeom/Segmentation3D.h
+                       src/ICLGeom/DepthCameraPointCloudGrabber.h
+                       src/ICLGeom/PointCloudCreator.h
+                       src/ICLGeom/PointCloudObject.h
+                       src/ICLGeom/PointCloudObjectBase.h
+                       src/ICLGeom/PointCloudSerializer.h
+                       src/ICLGeom/OctreeObject.h 
+                       src/ICLGeom/RayCastOctreeObject.h 
+                       src/ICLGeom/PlotWidget3D.h
+                       src/ICLGeom/ShaderUtil.h)
 ENDIF()
 
 IF(PCL_FOUND)
