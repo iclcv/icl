@@ -63,7 +63,7 @@
 #include <GL/glx.h>
 #endif
 #include <ICLCore/CCFunctions.h>
-#include <ICLQt/GLContext.h>
+#include <QtOpenGL/QGLContext>
 #include <ICLQt/Application.h>
 #include <ICLGeom/ShaderUtil.h>
 #endif
@@ -246,7 +246,7 @@ namespace icl{
       };
       uint shadow_size;
       uint num_shadows;
-      map<GLContext, Glints> infos;
+      map<const QGLContext*, Glints> infos;
       FBOData():shadow_size(0),num_shadows(0),infos() {}
       private:
       void freeShadowFBO(Glints &g) {
@@ -259,21 +259,21 @@ namespace icl{
       public:
       void freeShadowFBO() {
         if(shadow_size) {
-          GLContext current = GLContext::currentContext();
-          for(map<GLContext, Glints>::iterator it = infos.begin(); it != infos.end(); it++) {
+          QGLContext* current = const_cast<QGLContext*>(QGLContext::currentContext());
+          for(map<const QGLContext*, Glints>::iterator it = infos.begin(); it != infos.end(); it++) {
             if(it->first) {
-              it->first.makeCurrent();
+              const_cast<QGLContext*>(it->first)->makeCurrent();
               freeShadowFBO(it->second);
             }
           }
             shadow_size = 0;
             num_shadows = 0;
-            if(!current)current.makeCurrent();
+            if(!current)current->makeCurrent();
           }
       }
 
       void createShadowFBO() {
-        Glints &glints = infos[GLContext::currentContext()];
+        Glints &glints = infos[QGLContext::currentContext()];
 
         if(glints.created)freeShadowFBO(glints);
         glints.created = true;
@@ -1102,7 +1102,7 @@ namespace icl{
         //bind texture if it has been created
         if(m_fboData->shadow_size>0) {
          glActiveTextureARB(GL_TEXTURE7);
-         glBindTexture(GL_TEXTURE_2D,m_fboData->infos[GLContext::currentContext()].shadowTexture);
+         glBindTexture(GL_TEXTURE_2D,m_fboData->infos[QGLContext::currentContext()].shadowTexture);
         }
 
         //render the shadows and create the projection matrices for the vertex shader
@@ -1255,7 +1255,7 @@ namespace icl{
     }
 
    void Scene::renderShadow(const unsigned int light, const unsigned int shadow, unsigned int size) const{
-      FBOData::Glints &glints = m_fboData->infos[GLContext::currentContext()];
+      FBOData::Glints &glints = m_fboData->infos[QGLContext::currentContext()];
       if(!glints.created)m_fboData->createShadowFBO();
       glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, glints.shadowFBO);
 

@@ -55,7 +55,6 @@ SET(SOURCES src/ICLQt/AbstractPlotWidget.cpp
 	    src/ICLQt/GLPaintEngine.cpp
             src/ICLQt/GLImg.cpp
 	    src/ICLQt/GLFragmentShader.cpp
-	    src/ICLQt/GLContext.cpp
 	    src/ICLQt/GUI.cpp
 	    src/ICLQt/GUIDefinition.cpp
 	    src/ICLQt/GUIWidget.cpp
@@ -114,7 +113,6 @@ SET(HEADERS src/ICLQt/AbstractPlotWidget.h
 	    src/ICLQt/FloatHandle.h
 	    src/ICLQt/FPSHandle.h
 	    src/ICLQt/FSliderHandle.h
-	    src/ICLQt/GLContext.h
 	    src/ICLQt/GLFragmentShader.h
 	    src/ICLQt/GLImg.h
 	    src/ICLQt/GLPaintEngine.h
@@ -156,7 +154,6 @@ SET(HEADERS src/ICLQt/AbstractPlotWidget.h
 	    src/ICLQt/DrawWidget3D.h
 	    src/ICLQt/DrawHandle3D.h
 	    src/ICLQt/GLFragmentShader.h
-	    src/ICLQt/GLContext.h
 	    src/ICLQt/Quick.h)
 
 SET(ICL_MOC_HEADERS src/ICLQt/Widget.h

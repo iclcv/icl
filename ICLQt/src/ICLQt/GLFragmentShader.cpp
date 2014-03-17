@@ -40,9 +40,9 @@
 #include <GL/glu.h>
 #endif
 
+#include <QtOpenGL/QGLContext>
 #include <ICLUtils/Macros.h>
 
-#include <ICLQt/GLContext.h>
 #include <map>
 
 #include <cstring>
@@ -99,13 +99,13 @@ namespace icl{
         GLuint program;
         bool enabled;
       };
-      std::map<GLContext,GLData> lut;
+      std::map<const QGLContext*,GLData> lut;
       };
     
     void GLFragmentShader::create(){
-      GLContext ctx = GLContext::currentContext();
+      const QGLContext* ctx = QGLContext::currentContext();
   
-      if(ctx.isNull() || m_data->lut.find(ctx) != m_data->lut.end()) return;
+      if(!ctx || m_data->lut.find(ctx) != m_data->lut.end()) return;
 
 
       static bool first = true;
@@ -184,9 +184,9 @@ namespace icl{
     }
     
     GLFragmentShader::~GLFragmentShader(){
-      for(std::map<GLContext,Data::GLData>::iterator it = m_data->lut.begin();
+      for(std::map<const QGLContext*,Data::GLData>::iterator it = m_data->lut.begin();
           it != m_data->lut.end(); ++it){
-        it->first.makeCurrent();
+        const_cast<QGLContext*>(it->first)->makeCurrent();
         Data::GLData &d = it->second;
         if(m_data->vertexProgramString.length()){
           glDetachShader(d.program,d.vertexShader);
@@ -201,11 +201,11 @@ namespace icl{
     
         
     void GLFragmentShader::setUniform(const std::string var, const float &val){
-      GLContext ctx = GLContext::currentContext();
-      if(ctx.isNull()){
+      const QGLContext* ctx = QGLContext::currentContext();
+      if(!ctx){
         throw ICLException("tried to deactivate shader program where no GL-Context was active");
       }
-      std::map<GLContext,Data::GLData>::iterator it = m_data->lut.find(ctx);
+      std::map<const QGLContext*,Data::GLData>::iterator it = m_data->lut.find(ctx);
       if(it != m_data->lut.end()){
         GLint loc = glGetUniformLocation(it->second.program, var.c_str());
         if (loc != -1)
@@ -220,11 +220,11 @@ namespace icl{
     }
     
     void GLFragmentShader::setUniform(const std::string var, const math::FixedMatrix<float,4,4> &val){
-      GLContext ctx = GLContext::currentContext();
-      if(ctx.isNull()){
+      const QGLContext* ctx = QGLContext::currentContext();
+      if(!ctx){
         throw ICLException("tried to deactivate shader program where no GL-Context was active");
       }
-      std::map<GLContext,Data::GLData>::iterator it = m_data->lut.find(ctx);
+      std::map<const QGLContext*,Data::GLData>::iterator it = m_data->lut.find(ctx);
       if(it != m_data->lut.end()){
         GLint loc = glGetUniformLocation(it->second.program, var.c_str());
         if (loc != -1)
@@ -239,11 +239,11 @@ namespace icl{
     }
     
     void GLFragmentShader::setUniform(const std::string var, const std::vector<math::FixedMatrix<float,4,4> > &val){
-      GLContext ctx = GLContext::currentContext();
-      if(ctx.isNull()){
+      const QGLContext *ctx = QGLContext::currentContext();
+      if(!ctx){
         throw ICLException("tried to deactivate shader program where no GL-Context was active");
       }
-      std::map<GLContext,Data::GLData>::iterator it = m_data->lut.find(ctx);
+      std::map<const QGLContext*,Data::GLData>::iterator it = m_data->lut.find(ctx);
       if(it != m_data->lut.end()){
         GLint loc = glGetUniformLocation(it->second.program, var.c_str());
         if (loc != -1)
@@ -264,11 +264,11 @@ namespace icl{
     }
     
     void GLFragmentShader::setUniform(const std::string var, const math::FixedColVector<float,4> &val){
-      GLContext ctx = GLContext::currentContext();
-      if(ctx.isNull()){
+      const QGLContext* ctx = QGLContext::currentContext();
+      if(!ctx){
         throw ICLException("tried to deactivate shader program where no GL-Context was active");
       }
-      std::map<GLContext,Data::GLData>::iterator it = m_data->lut.find(ctx);
+      std::map<const QGLContext*,Data::GLData>::iterator it = m_data->lut.find(ctx);
       if(it != m_data->lut.end()){
         GLint loc = glGetUniformLocation(it->second.program, var.c_str());
         if (loc != -1)
@@ -283,11 +283,11 @@ namespace icl{
     }
     
     void GLFragmentShader::setUniform(const std::string var, const int &val){
-      GLContext ctx = GLContext::currentContext();
-      if(ctx.isNull()){
+      const QGLContext* ctx = QGLContext::currentContext();
+      if(!ctx){
         throw ICLException("tried to deactivate shader program where no GL-Context was active");
       }
-      std::map<GLContext,Data::GLData>::iterator it = m_data->lut.find(ctx);
+      std::map<const QGLContext*,Data::GLData>::iterator it = m_data->lut.find(ctx);
       if(it != m_data->lut.end()){
         GLint loc = glGetUniformLocation(it->second.program, var.c_str());
         if (loc != -1)
@@ -303,8 +303,8 @@ namespace icl{
     
     void GLFragmentShader::activate(){
       create();
-      GLContext ctx = GLContext::currentContext();
-      if(ctx.isNull()){
+      const QGLContext* ctx = QGLContext::currentContext();
+      if(!ctx){
         throw ICLException("tried to activate shader program where no GL-Context was active");
       }
       Data::GLData &d = m_data->lut[ctx];
@@ -313,12 +313,12 @@ namespace icl{
     }
   
     void GLFragmentShader::deactivate(){
-      GLContext ctx = GLContext::currentContext();
-      if(ctx.isNull()){
+      const QGLContext* ctx = QGLContext::currentContext();
+      if(!ctx){
         throw ICLException("tried to deactivate shader program where no GL-Context was active");
       }
       
-      std::map<GLContext,Data::GLData>::iterator it = m_data->lut.find(ctx);
+      std::map<const QGLContext*,Data::GLData>::iterator it = m_data->lut.find(ctx);
       if(it != m_data->lut.end()){
         it->second.enabled = false;
         glUseProgram(0);

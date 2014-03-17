@@ -30,7 +30,6 @@
 
 #include <ICLCore/Img.h>
 #include <ICLQt/GLImg.h>
-#include <ICLQt/GLContext.h>
 #include <ICLQt/Application.h>
 #include <ICLCore/CCFunctions.h>
 
@@ -74,18 +73,18 @@ namespace icl{
     }
   
   #ifdef ICL_HAVE_QT  
-    void freeTextures(std::vector<GLuint> del, GLContext ctx){
+    void freeTextures(std::vector<GLuint> del, QGLContext* ctx){
       struct DelEvent : public ICLApplication::AsynchronousEvent{
         std::vector<GLuint> del;
-        GLContext ctx;
-        DelEvent(const std::vector<GLuint> &del,const GLContext &ctx):del(del),ctx(ctx){}
+        QGLContext* ctx;
+        DelEvent(const std::vector<GLuint> &del, QGLContext* ctx):del(del),ctx(ctx){}
         virtual void execute(){
-          GLContext current = GLContext::currentContext();
+          QGLContext* current = const_cast<QGLContext*>(QGLContext::currentContext());
           if(ctx) {
-            ctx.makeCurrent();
+            ctx->makeCurrent();
             glDeleteTextures(del.size(),del.data());
           }
-          if(current)current.makeCurrent();
+          if(current)current->makeCurrent();
         }
       };
       ICLApplication *app = ICLApplication::instance();
@@ -99,24 +98,24 @@ namespace icl{
                       "working thread, which is very prone to seg-fault-like errors\n ");
           first = false;
         }
-        GLContext current = GLContext::currentContext();
+        QGLContext* current = const_cast<QGLContext*>(QGLContext::currentContext());
         if(ctx) {
-          ctx.makeCurrent();
+          ctx->makeCurrent();
           glDeleteTextures(del.size(),del.data());
         }
-        if(current)current.makeCurrent();
+        if(current)current->makeCurrent();
       }else{
         app->executeInGUIThread(new DelEvent(del,ctx));
       }
     }
   #else
-    void freeTextures(std::vector<GLuint> del, GLContext ctx){
-      GLContext current = GLContext::currentContext();
+    void freeTextures(std::vector<GLuint> del, QGLContext* ctx){
+      QGLContext current = const_cast<QGLContext*>(QGLContext::currentContext());
       if(ctx) {
-        ctx.makeCurrent();
+        ctx->makeCurrent();
         glDeleteTextures(del.size(),del.data());
       }
-      if(current)current.makeCurrent();
+      if(current)current->makeCurrent();
     }
   #endif
   
@@ -347,7 +346,7 @@ namespace icl{
         inline TextureInfo():dirty(true){}
       };
         
-      map<GLContext, TextureInfo> infos;
+      map<const QGLContext*, TextureInfo> infos;
       
       Array2D<TextureElementPtr> data;
       mutable ImgBase *extractedImageBuffer;
@@ -372,23 +371,23 @@ namespace icl{
       }
       
       inline bool isDirty(){
-        return infos[GLContext::currentContext()].dirty;
+        return infos[QGLContext::currentContext()].dirty;
       }
       
       inline void setDirty(bool dirty = true){
-        infos[GLContext::currentContext()].dirty = dirty;
+        infos[QGLContext::currentContext()].dirty = dirty;
       }
       
       inline void makeDirty(){
-        for(map<GLContext,TextureInfo>::iterator it = infos.begin(); it != infos.end(); it++) {
+        for(map<const QGLContext*,TextureInfo>::iterator it = infos.begin(); it != infos.end(); it++) {
           it->second.dirty = true;
         }
       }
       
       void releaseTextures(){
-        for(map<GLContext,TextureInfo>::iterator it = infos.begin(); it != infos.end(); it++) {
+        for(map<const QGLContext*,TextureInfo>::iterator it = infos.begin(); it != infos.end(); it++) {
           std::vector<GLuint> &textures = it->second.textures;
-          const GLContext &ctx = it->first;
+          QGLContext *ctx = const_cast<QGLContext*>(it->first);
           freeTextures(textures, ctx);
           textures.clear();
         }
@@ -656,7 +655,7 @@ namespace icl{
         ICLASSERT_THROW(data.getDim(),ICLException("unable to draw GLImg: no texture data available"));
         if(!isDirty()) return;
         setupPixelTransfer();
-        std::vector<GLuint> &textures = infos[GLContext::currentContext()].textures;
+        std::vector<GLuint> &textures = infos[QGLContext::currentContext()].textures;
         if(textures.size()){
           glDeleteTextures(textures.size(),textures.data());
         }
