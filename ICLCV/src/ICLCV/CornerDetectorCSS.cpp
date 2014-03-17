@@ -489,7 +489,8 @@ namespace icl{
 
         delete x;
         delete y;
-        delete smoothed_x, smoothed_y;
+        delete smoothed_x;
+        delete smoothed_y;
         delete curvature;
         delete gauss;
         delete extrema0;

@@ -1376,9 +1376,15 @@ void Segmentation3D::blobSegmentation() {
 	regionGrowBlobs();
   assignment = assignmentBlobs;
 
-  delete n0, dist, cOnRead;
+  delete n0;
+  delete dist;
+  delete cOnRead;
 #ifdef ICL_HAVE_OPENCL
-  delete cAbove, cBelow, cOn, cAboveRead, cBelowRead;
+  delete cAbove;
+  delete cBelow;
+  delete cOn;
+  delete cAboveRead;
+  delete cBelowRead;
 #endif
 }
 
