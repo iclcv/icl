@@ -28,6 +28,7 @@
 **                                                                 **
 ********************************************************************/
 
+#include <GL/glew.h>
 #include <ICLQt/Widget.h>
 #include <ICLCore/Img.h>
 #include <ICLQt/GLImg.h>
@@ -1759,7 +1760,7 @@ namespace icl{
    
     void ICLWidget::paintGL(){
       //    m_data->mutex.lock();
-      
+      glewInit();
       LOCK_SECTION;
       if(! m_data->bcSrc ){
         glClearColor(m_data->backgroundColor[0],m_data->backgroundColor[1],
