@@ -31,6 +31,7 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/Time.h>
 #include <ICLGeom/SceneObject.h>
 #include <ICLGeom/DataSegment.h>
 #include <ICLCore/ImgBase.h>
@@ -95,6 +96,9 @@ namespace icl{
         information about it's actual type and feature dimension.
     */
     class ICLGeom_API PointCloudObjectBase : public SceneObject{
+      /// timestamp associated with the point cloud
+      utils::Time timestamp;
+      
       protected:
       
       /// default color used to render points that have no color information
@@ -122,7 +126,7 @@ namespace icl{
       bool useDrawNormalLines;
       float normalLineLength;
       int normalLineGranularity;
-  
+      
       public:
   
       /// List of well known features
@@ -146,12 +150,18 @@ namespace icl{
   
       /// Default constructor
       /** Enables locking in the wrapped SceneObject class */
-      PointCloudObjectBase(){
+      PointCloudObjectBase():timestamp(utils::Time::null){
         setLockingEnabled(true);
         m_defaultPointColor = GeomColor(0,0.5,1,1);
         useDrawNormalLines=false;
       }
   
+      /// sets the current timestamp
+      virtual void setTime(const utils::Time &t) { this->timestamp = t; }
+      
+      /// returns the current timestamp
+      virtual const utils::Time &getTime() const { return this->timestamp; }
+      
       /// interface for supported features 
       virtual bool supports(FeatureType t) const = 0;
   
@@ -168,7 +178,7 @@ namespace icl{
       /** Implementations of this method should ensure, that the function 
           behaves lazy, i.e. if the object has already the desired size,
           nothing should be done.\n
-          Furthermore, if the given width is 0 or smaller, the point-cloud
+          Furthermore, if the given height is 0 or smaller, the point-cloud
           should be set to the un-organized mode
       */
       virtual void setSize(const utils::Size &size) = 0;

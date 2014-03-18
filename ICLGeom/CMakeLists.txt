@@ -123,8 +123,17 @@ IF(OPENCL_FOUND)
 ENDIF()
 
 IF(RSB_FOUND)
-    LIST (APPEND SOURCES src/ICLGeom/RSBPointCloudGrabber.h)
-    LIST (APPEND HEADERS src/ICLGeom/RSBPointCloudGrabber.cpp)
+    INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
+    PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS src/ICLGeom/proto/RSBPointCloud.proto)
+    INCLUDE_DIRECTORIES(BEFORE ${CMAKE_BINARY_DIR})
+
+    LIST (APPEND SOURCES src/ICLGeom/RSBPointCloudGrabber.cpp
+                         src/ICLGeom/ProtoBufSerializationDevice.cpp
+                         ${PROTO_SRCS})
+
+    LIST (APPEND HEADERS src/ICLGeom/RSBPointCloudGrabber.h
+                         src/ICLGeom/ProtoBufSerializationDevice.h
+                         ${PROTO_HDRS})
 ENDIF()
 
 

@@ -33,8 +33,9 @@
 #include <rsb/converter/Repository.h>
 #include <rsb/converter/ProtocolBufferConverter.h>
 
+
 #include <ICLGeom/RSBPointCloudGrabber.h>
-#include <../ICLIO/RSBPointCloud.pb.h>
+#include <ICLGeom/RSBPointCloud.pb.h>
 #include <ICLUtils/Mutex.h>
 #include <ICLUtils/StringUtils.h>
 

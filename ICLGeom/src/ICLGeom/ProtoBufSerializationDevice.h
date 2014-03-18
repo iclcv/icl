@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLGeom/src/ICLGeom/PointCloudSerializer.h             **
+** File   : ICLGeom/src/ICLGeom/ProtobufSerializationDevice.h      **
 ** Module : ICLGeom                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -30,34 +30,29 @@
 
 #pragma once
 
-#include <ICLGeom/PointCloudObjectBase.h>
-#include <ICLGeom/DataSegmentBase.h>
+#include <ICLGeom/PointCloudSerializer.h>
+#include <ICLGeom/RSBPointCloud.pb.h>
+
+#if !defined(ICL_HAVE_RSB) || !defined(ICL_HAVE_PROTOBUF)
+  #if WIN32
+    #pragma WARNING("This header should only be included if ICL_HAVE_RSB and ICL_HAVE_PROTOBUF are defined and available in ICL")
+  #else
+    #warning "This header should only be included if ICL_HAVE_RSB and ICL_HAVE_PROTOBUF are defined and available in ICL"
+  #endif
+#endif
 
 namespace icl{
   
   namespace geom{
-    struct ICLGeom_API PointCloudSerializer{
-      struct MandatoryInfo{
-        int width;
-        int height;
-        bool organized;
-        icl64s timestamp;
-      };
-      
-      struct SerializationDevice{
-        virtual void initializeSerialization(const MandatoryInfo &info) = 0;
-        virtual icl8u *targetFor(const std::string &featureName, int bytes) = 0;
-      };
-      struct DeserializationDevice{
-        virtual MandatoryInfo getDeserializationInfo() = 0;
-        virtual std::vector<std::string> getFeatures() = 0;
-        virtual const icl8u *sourceFor(const std::string &featureName, int &bytes) = 0;
-      };
-  
-      static void serialize(const PointCloudObjectBase &o, SerializationDevice &d);
-      
-      static void deserialize(PointCloudObjectBase &o, DeserializationDevice &d);
+    struct ICLGeom_API ProtobufSerializationDevice : public PointCloudSerializer::SerializationDevice,  
+                                                     public PointCloudSerializer::DeserializationDevice{
+      io::RSBPointCloud *protoBufObject;
+      ProtobufSerializationDevice(io::RSBPointCloud *protoBufObject);
+      virtual void initialize(const PointCloudObjectBase &o);
+      virtual icl8u *targetFor(const std::string &featureName, int bytes);
+      virtual void prepareTarget(PointCloudObjectBase &dst);
+      virtual std::vector<std::string> getFeatures();
+      virtual const icl8u *sourceFor(const std::string &featureName, int bytes);
     };
-  
   }
 }

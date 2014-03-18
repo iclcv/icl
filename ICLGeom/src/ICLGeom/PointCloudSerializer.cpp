@@ -35,7 +35,18 @@ namespace icl{
   namespace geom{
     
     void PointCloudSerializer::serialize(const PointCloudObjectBase &o, SerializationDevice &dev){
-      dev.initialize(o);
+      MandatoryInfo mi = { 0, 0, 
+                           o.isOrganized(), 
+                           o.getTime().toMicroSeconds() };
+      if(mi.organized){
+        Size s = o.getSize();
+        mi.width = s.width;
+        mi.height = s.height;
+      }else{
+        mi.width = o.getDim();
+        mi.height = 1;
+      }
+      dev.initializeSerialization(mi);
       
       const int dim = o.getDim();
       
@@ -67,24 +78,50 @@ namespace icl{
       }
 #undef CPY
 #undef CPY_IF
-      
+
+      const std::map<std::string,std::string> &m = o.getMetaData();
+      for(std::map<std::string,std::string>::const_iterator it = m.begin(); it != m.end(); ++it){
+        const std::string &key = it->first;
+        const std::string &value = it->second;
+        icl8u *d = dev.targetFor("meta:"+key, value.length());
+        std::copy(value.begin(),value.end(), d);        
+      }      
     }
     
     void PointCloudSerializer::deserialize(PointCloudObjectBase &o, DeserializationDevice &dev){
-      dev.prepareTarget(o);
+      MandatoryInfo mi = dev.getDeserializationInfo();
+      
+      if(mi.organized){
+        o.setSize(Size(mi.width,mi.height));
+      }else{
+        o.setDim(mi.width);
+      }
+      o.setTime(utils::Time(mi.timestamp));
       
       std::vector<std::string> fs = dev.getFeatures();
       const int dim = o.getDim();
+      o.clearAllMetaData();
+      int nBytes = 0;
       for(size_t i=0;i<fs.size();++i){
         const std::string &f = fs[i];
         
+        if(f.length()>=5 && f.substr(0,5) == "meta:"){
+          const icl8u *s = dev.sourceFor(f.substr(5), nBytes);
+          std::string m(nBytes,'\0');
+          std::copy(s,s+nBytes,m.begin());
+          o.setMetaData(f.substr(5),m);
+          continue;
+        }
 #define CPY(X,D,N)                                                      \
         if(f == #X){                                                    \
           if(o.supports(PointCloudObjectBase::X)){                      \
-            const icl8u *s = dev.sourceFor(f,dim*sizeof(icl##D)*N);     \
-            DataSegment<icl##D,N> src((icl##D*)s, N*sizeof(icl##D), dim, o.getSize().width); \
+            const icl8u *s = dev.sourceFor(f,nBytes);                   \
+            DataSegment<icl##D,N> src((icl##D*)s,                       \
+                                      N*sizeof(icl##D),                 \
+                                      dim, o.getSize().width);          \
             src.deepCopy(o.select##X());                                \
           }                                                             \
+          continue;                                                     \
         }
 
         CPY(XYZH,32f,4);
@@ -97,8 +134,8 @@ namespace icl{
         CPY(BGRA,8u,4);
         CPY(BGR,8u,3);
 #undef CPY
-
       }      
+      
     }    
   }
 }

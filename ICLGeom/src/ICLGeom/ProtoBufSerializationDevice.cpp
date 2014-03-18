@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLGeom/src/ICLGeom/PointCloudSerializer.h             **
+** File   : ICLGeom/src/ICLGeom/ProtobufSerializationDevice.cpp    **
 ** Module : ICLGeom                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -30,34 +30,28 @@
 
 #pragma once
 
-#include <ICLGeom/PointCloudObjectBase.h>
-#include <ICLGeom/DataSegmentBase.h>
+#include <ICLGeom/ProtoBufSerializationDevice.h>
 
 namespace icl{
-  
   namespace geom{
-    struct ICLGeom_API PointCloudSerializer{
-      struct MandatoryInfo{
-        int width;
-        int height;
-        bool organized;
-        icl64s timestamp;
-      };
+    ProtobufSerializationDevice::ProtobufSerializationDevice(io::RSBPointCloud *protoBufObject):
+      protoBufObject(protoBufObject){
       
-      struct SerializationDevice{
-        virtual void initializeSerialization(const MandatoryInfo &info) = 0;
-        virtual icl8u *targetFor(const std::string &featureName, int bytes) = 0;
-      };
-      struct DeserializationDevice{
-        virtual MandatoryInfo getDeserializationInfo() = 0;
-        virtual std::vector<std::string> getFeatures() = 0;
-        virtual const icl8u *sourceFor(const std::string &featureName, int &bytes) = 0;
-      };
-  
-      static void serialize(const PointCloudObjectBase &o, SerializationDevice &d);
-      
-      static void deserialize(PointCloudObjectBase &o, DeserializationDevice &d);
-    };
-  
+    }
+    void  ProtobufSerializationDevice::initialize(const PointCloudObjectBase &o){
+    
+    }
+    icl8u *ProtobufSerializationDevice::targetFor(const std::string &featureName, int bytes){
+      return 0;
+    }
+    void  ProtobufSerializationDevice::prepareTarget(PointCloudObjectBase &dst){
+    
+    }
+    std::vector<std::string> ProtobufSerializationDevice::getFeatures(){
+      return std::vector<std::string>();
+    }
+    const icl8u * ProtobufSerializationDevice::sourceFor(const std::string &featureName, int bytes){
+      return 0;
+    }
   }
 }
