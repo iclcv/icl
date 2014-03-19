@@ -49,34 +49,26 @@
 #include <ICLGeom/Scene.h>
 #include <ICLGeom/CoordinateFrameSceneObject.h>
 #include <ICLGeom/ComplexCoordinateFrameSceneObject.h>
+#include <ICLGeom/GeomDefs.h>
+#include <ICLUtils/StringUtils.h>
+#include <ICLUtils/Time.h>
+
 #ifdef ICL_HAVE_QT
+#include <ICLQt/Quick.h>
+#include <ICLQt/QImageConverter.h>
 #include <ICLQt/DrawWidget.h>
 #include <ICLQt/GLImg.h>
 #include <ICLQt/GUI.h>
 #include <ICLQt/ContainerGUIComponents.h>
 #include <ICLQt/IconFactory.h>
-#include <QtOpenGL/qglpixelbuffer.h>
-#endif
-
-#ifdef ICL_HAVE_GLX
-#ifndef ICL_SYSTEM_WINDOWS
-#include <GL/glx.h>
-#endif
-#include <ICLCore/CCFunctions.h>
-#include <QtOpenGL/QGLContext>
 #include <ICLQt/Application.h>
 #include <ICLGeom/ShaderUtil.h>
+#include <QGLPixelBuffer>
+#include <QGLContext>
+#include <ICLCore/CCFunctions.h>
 #endif
 
-#include <ICLQt/Quick.h>
-#include <ICLQt/QImageConverter.h>
-#include <ICLGeom/GeomDefs.h>
-#include <ICLUtils/StringUtils.h>
-
 #include <set>
-#include <ICLUtils/Time.h>
-#include <ICLQt/Quick.h>
-
 #include <vector>
 #include <map>
 #include <sstream>
@@ -396,11 +388,9 @@ namespace icl{
 
     Scene::Scene():Lockable(true),m_fps(10){
 
-      #ifdef ICL_HAVE_GLX
       #ifdef ICL_HAVE_QT
       m_renderSettings = new RenderSettings();
       m_fboData = new FBOData();
-      #endif
       #endif
 
       m_lights[0] = SmartPtr<SceneLight>(new SceneLight(this,0));
@@ -1633,6 +1623,7 @@ namespace icl{
       }
     }
 
+#ifdef ICL_HAVE_QT
     struct Scene::PBuffer{
       QGLPixelBuffer m_buffer;
       QImageConverter conv;
@@ -1827,7 +1818,7 @@ namespace icl{
       app->executeInGUIThread(new RenderEvent(this, &m_pbuffers, camIndex, background, depthBuffer, mode, &img), true);
       return *img;
     }
-
+#endif //QT
 
     REGISTER_CONFIGURABLE(Scene, return new Scene);
 
