@@ -6,9 +6,9 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLGeom/src/ICLGeom/PointCloudGrabber.h                **
+** File   : ICLGeom/src/ICLGeom/GenericPointCloudGrabber.cp        **
 ** Module : ICLGeom                                                **
-** Authors: Christof Elbrechter, Patrick Nobou                     **
+** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -30,57 +30,53 @@
 
 #pragma once
 
-#include <ICLUtils/CompatMacros.h>
-#include <ICLGeom/PointCloudObjectBase.h>
-
-#include <map>
+#include <ICLGeom/GenericPointCloudGrabber.h>
 
 namespace icl{
   namespace geom{
   
-    /// Generic interface for PointCloud sources
-    struct PointCloudGrabber{
-      /// fills the given point cloud with grabbed information
-      virtual void grab(PointCloudObjectBase &dst) = 0;
-      
-      /// virtual, but empty destructor
-      virtual ~PointCloudGrabber(){}
-
-      /// grabber type registration tool
-      class Register{
-        public:
-        typedef utils::Function<PointCloudGrabber*,const std::string&> CreateFunction;
-         struct RegisteredGrabberType{
-          std::string name;
-          std::string description;
-          CreateFunction create;
-        };
-        
-        Register &instance();
-        
-        void registerGrabberType(const std::string &name, CreateFunction create, 
-                                 const std::string &description);
-        
-        PointCloudGrabber *createGrabberInstance(const std::string &name, const std::string &params);
-        
-        std::string getRegisteredInstanceDescription();
-
-        private:
-        Register();
-        
-        std::map<std::string,RegisteredGrabberType> types;
-
-      };
+    struct GenericPointCloudGrabber::Data{
+      PointCloudGrabber *impl;
     };
+    
+    
+    GenericPointCloudGrabber::GenericPointCloudGrabber():m_data(new Data)
+    {
+      m_data->impl = 0;
+    }
 
-
-#define REGISTER_POINT_CLOUD_GRABBER_TYPE(NAME,CREATE_FUNCTION,DESCRIPTION) \
-    struct StaticPointCloudGrabberRegistrationFor_##NAME{               \
-      StaticPointCloudGrabberRegistrationFor_##NAME(){                  \
-        PointCloudGrabber::Register &r = PointCloudGrabber::Register::instance(); \
-        r.registerGrabberType(#NAME,CREATE_FUNCTION,DESCRIPTION);       \
-      }                                                                 \
-    } staticPointCloudGrabberRegistrationFor_##NAME;
-  } // namespace geom
+    GenericPointCloudGrabber::GenericPointCloudGrabber(const std::string &sourceType, 
+                                                       const std::string &srcDescription):m_data(new Data){
+      init(sourceType,srcDescription);
+    }
+    
+    GenericPointCloudGrabber::~GenericPointCloudGrabber(){
+      ICL_DELETE(m_data->impl);
+      delete m_data;
+    }
+    
+    void GenericPointCloudGrabber::init(const std::string &sourceType, const std::string &srcDescription){
+      if(sourceType == "list"){
+        std::cout << PointCloudGrabber::Register::instace().getRegisteredInstanceDescription() << std::endl;
+        throw ICLException("GenericPointCloudGrabber list presented successfully");
+      }
+      ICL_DELETE(m_data->impl);
+      m_data->impl = PointCloudGrabber::Register::instace().createGrabberInstance(sourceType, srcDescription);
+      if(!m_data->impl){
+        throw ICLException("GenericPointCloudGrabber::init::unable to create"
+                           " GenericPointGrabber instance of type" + sourceType);
+      }
+      return m_data->impl;
+    }
+    
+    bool GenericPointCloudGrabber::isNull() const{
+      return !m_data->impl;
+    }
+      
+    void GenericPointCloudGrabber::grab(PointCloudObjectBase &dst){
+      if(isNull()) throw ICLException("GenericPointCloudGrabber::grab: called on a null instance");
+      return m_data->impl->grab(dst);
+    }
+  }
 }
 

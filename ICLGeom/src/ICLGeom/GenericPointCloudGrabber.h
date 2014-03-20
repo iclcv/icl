@@ -6,9 +6,9 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLGeom/src/ICLGeom/PointCloudGrabber.h                **
+** File   : ICLGeom/src/ICLGeom/GenericPointCloudGrabber.h         **
 ** Module : ICLGeom                                                **
-** Authors: Christof Elbrechter, Patrick Nobou                     **
+** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -30,57 +30,44 @@
 
 #pragma once
 
-#include <ICLUtils/CompatMacros.h>
-#include <ICLGeom/PointCloudObjectBase.h>
-
-#include <map>
+#include <ICLGeom/PointCloudGrabber.h>
 
 namespace icl{
   namespace geom{
   
     /// Generic interface for PointCloud sources
-    struct PointCloudGrabber{
-      /// fills the given point cloud with grabbed information
-      virtual void grab(PointCloudObjectBase &dst) = 0;
+    class GenericPointCloudGrabber : public PointCloudGrabber, public utils::Uncopyable{
+      struct Data;
+      Data *m_data;
       
-      /// virtual, but empty destructor
-      virtual ~PointCloudGrabber(){}
+      public:
+      
+      /// Empty constructor (creates a null instance)
+      GenericPointCloudGrabber();
 
-      /// grabber type registration tool
-      class Register{
-        public:
-        typedef utils::Function<PointCloudGrabber*,const std::string&> CreateFunction;
-         struct RegisteredGrabberType{
-          std::string name;
-          std::string description;
-          CreateFunction create;
-        };
-        
-        Register &instance();
-        
-        void registerGrabberType(const std::string &name, CreateFunction create, 
-                                 const std::string &description);
-        
-        PointCloudGrabber *createGrabberInstance(const std::string &name, const std::string &params);
-        
-        std::string getRegisteredInstanceDescription();
-
-        private:
-        Register();
-        
-        std::map<std::string,RegisteredGrabberType> types;
-
-      };
+      /// Constructor with initialization
+      /** Possible plugins: 
+          * <b>cam</b> device description is then: "depth-cam-type:depth-cam-id:depth-cam-file"
+            + optionally ":color-cam-type:color-cam-id:color-cam-file"
+          * <b>file</b> filename pattern (not yet implemented)
+          * <b>rsb</b> rsb-transport-list: rsb-scope-list
+      */
+      GenericPointCloudGrabber(const std::string &sourceType, const std::string &srcDescription);
+      
+      /// destructor
+      ~GenericPointCloudGrabber();
+      
+      /// deferred intialization
+      void init(const std::string &sourceType, const std::string &srcDescription);
+      
+      /// not initialized yet?
+      bool isNull() const;
+      
+      /// fills the given point cloud with grabbed information
+      virtual void grab(PointCloudObjectBase &dst);
+      
+      typedef CreatorPlugin
     };
-
-
-#define REGISTER_POINT_CLOUD_GRABBER_TYPE(NAME,CREATE_FUNCTION,DESCRIPTION) \
-    struct StaticPointCloudGrabberRegistrationFor_##NAME{               \
-      StaticPointCloudGrabberRegistrationFor_##NAME(){                  \
-        PointCloudGrabber::Register &r = PointCloudGrabber::Register::instance(); \
-        r.registerGrabberType(#NAME,CREATE_FUNCTION,DESCRIPTION);       \
-      }                                                                 \
-    } staticPointCloudGrabberRegistrationFor_##NAME;
   } // namespace geom
 }
 

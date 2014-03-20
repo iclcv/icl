@@ -6,9 +6,9 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLGeom/src/ICLGeom/PointCloudGrabber.h                **
+** File   : ICLGeom/src/ICLGeom/PointCloudGrabber.cpp              **
 ** Module : ICLGeom                                                **
-** Authors: Christof Elbrechter, Patrick Nobou                     **
+** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -28,59 +28,46 @@
 **                                                                 **
 ********************************************************************/
 
-#pragma once
-
-#include <ICLUtils/CompatMacros.h>
-#include <ICLGeom/PointCloudObjectBase.h>
-
-#include <map>
+#include <ICLGeom/PointCloudGrabber.h>
+#include <ICLUtils/TextTable.h>
 
 namespace icl{
   namespace geom{
-  
-    /// Generic interface for PointCloud sources
-    struct PointCloudGrabber{
-      /// fills the given point cloud with grabbed information
-      virtual void grab(PointCloudObjectBase &dst) = 0;
+    PointCloudGrabber::Register::Register(){}
+    
+    PointCloudGrabber::Register &PointCloudGrabber::Register::instance(){
+      static Register r;
+      return r;
+    }
+    void PointCloudGrabber::Register::registerGrabberType(const std::string &name, CreateFunction create, 
+                                                          const std::string &description){
       
-      /// virtual, but empty destructor
-      virtual ~PointCloudGrabber(){}
+      RegisteredGrabberType t = { name, description, create };
+      types[name] = t;
+    }
 
-      /// grabber type registration tool
-      class Register{
-        public:
-        typedef utils::Function<PointCloudGrabber*,const std::string&> CreateFunction;
-         struct RegisteredGrabberType{
-          std::string name;
-          std::string description;
-          CreateFunction create;
-        };
-        
-        Register &instance();
-        
-        void registerGrabberType(const std::string &name, CreateFunction create, 
-                                 const std::string &description);
-        
-        PointCloudGrabber *createGrabberInstance(const std::string &name, const std::string &params);
-        
-        std::string getRegisteredInstanceDescription();
+    PointCloudGrabber *PointCloudGrabber::Register::createGrabberInstance(const std::string &name, 
+                                                                          const std::string &params){
+      std::map<std::string,RegisteredGrabberType>::iterator it = types.find(name);
+      if(it == types.end()){
+        ERROR_LOG("unable to create grabber instance of type " + name + "(unknown type!)");
+        return 0;
+      }
+      return it->second.create(params);
+    }
 
-        private:
-        Register();
-        
-        std::map<std::string,RegisteredGrabberType> types;
-
-      };
-    };
-
-
-#define REGISTER_POINT_CLOUD_GRABBER_TYPE(NAME,CREATE_FUNCTION,DESCRIPTION) \
-    struct StaticPointCloudGrabberRegistrationFor_##NAME{               \
-      StaticPointCloudGrabberRegistrationFor_##NAME(){                  \
-        PointCloudGrabber::Register &r = PointCloudGrabber::Register::instance(); \
-        r.registerGrabberType(#NAME,CREATE_FUNCTION,DESCRIPTION);       \
-      }                                                                 \
-    } staticPointCloudGrabberRegistrationFor_##NAME;
-  } // namespace geom
+    std::string PointCloudGrabber::Register::getRegisteredInstanceDescription(){
+      utils::TextTable t(2,types.size()+1,50);
+      t(0,0) = "Grabber ID";
+      t(1,0) = "Description";
+      int i=1;
+      for(std::map<std::string,RegisteredGrabberType>::iterator it = types.begin(); 
+          it != types.end(); ++it){
+        t(0,i) = it->second.name;
+        t(1,i) = it->second.description;
+      }
+      return t.toString();
+    }
+  }
 }
 
