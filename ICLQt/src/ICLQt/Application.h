@@ -42,6 +42,7 @@
 #endif
 
 #include <QtGui/QApplication>
+#include <QGLWidget>
 
 namespace icl{
 
@@ -105,6 +106,7 @@ namespace icl{
       
       public:
       QApplication *app;
+      QGLWidget *sharedWidget;
       
       /// just type definition for convenience a void valued function with no args)
       typedef void (*callback)(void);

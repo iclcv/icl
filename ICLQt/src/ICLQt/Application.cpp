@@ -99,6 +99,7 @@ namespace icl{
       static char *static_ppc[] = { ppc[0], NULL };
       app = new QApplication(static_n, static_ppc);
   #endif
+      sharedWidget = new QGLWidget();
   
       QLocale::setDefault(QLocale::C);
   
@@ -136,6 +137,7 @@ namespace icl{
       s_threads.clear();
       s_inits.clear();
       s_callbacks.clear();
+      delete sharedWidget;
       delete app;
    
       for(unsigned int i=0;i<s_finalizes.size();++i){

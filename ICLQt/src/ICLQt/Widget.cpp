@@ -41,6 +41,7 @@
 #include <ICLUtils/ProgArg.h>
 #include <ICLQt/QImageConverter.h>
 #include <ICLCore/FixedConverter.h>
+#include <ICLQt/Application.h>
 #include <QtGui/QImage>
 
 
@@ -1322,7 +1323,7 @@ namespace icl{
     // ------------ ICLWidget ------------------------------
   
   
-    ICLWidget::ICLWidget(QWidget *parent) : 
+    ICLWidget::ICLWidget(QWidget *parent) : QGLWidget(parent,ICLApplication::instance()->sharedWidget),
       m_data(new ICLWidget::Data(this)){
       
       setMouseTracking(true);

@@ -98,24 +98,21 @@ namespace icl{
         GLuint vertexShader;
         GLuint program;
         bool enabled;
+        bool created;
       };
-      std::map<const QGLContext*,GLData> lut;
+      GLData data;
       };
     
     void GLFragmentShader::create(){
-      const QGLContext* ctx = QGLContext::currentContext();
-  
-      if(!ctx || m_data->lut.find(ctx) != m_data->lut.end()) return;
-
-
       static bool first = true;
       if(first){
         first = false;
         glewInit();
       }
-      
-      Data::GLData & d = m_data->lut[ctx];
-      
+
+      if(m_data->data.created)return;
+
+      Data::GLData & d = m_data->data;
       const bool haveFragmentShader = m_data->fragmentProgramString.length();
       const bool haveVertexShader = m_data->vertexProgramString.length();
 
@@ -162,6 +159,7 @@ namespace icl{
       if(info.length()){
         throw ICLException("unable to link shader program:[ \n" + info + "\n]");
       }
+      m_data->data.created = true;
     }
     
     GLFragmentShader::GLFragmentShader(const std::string &vertexProgram, 
@@ -184,18 +182,14 @@ namespace icl{
     }
     
     GLFragmentShader::~GLFragmentShader(){
-      for(std::map<const QGLContext*,Data::GLData>::iterator it = m_data->lut.begin();
-          it != m_data->lut.end(); ++it){
-        const_cast<QGLContext*>(it->first)->makeCurrent();
-        Data::GLData &d = it->second;
-        if(m_data->vertexProgramString.length()){
-          glDetachShader(d.program,d.vertexShader);
-        }
-        if(m_data->fragmentProgramString.length()){
-          glDeleteShader(d.fragmentShader); 
-        }
-        glDeleteProgram(d.program);
+      Data::GLData &d = m_data->data;
+      if(m_data->vertexProgramString.length()){
+        glDetachShader(d.program,d.vertexShader);
       }
+      if(m_data->fragmentProgramString.length()){
+        glDeleteShader(d.fragmentShader);
+      }
+      glDeleteProgram(d.program);
       delete m_data;
     }
     
@@ -205,17 +199,12 @@ namespace icl{
       if(!ctx){
         throw ICLException("tried to deactivate shader program where no GL-Context was active");
       }
-      std::map<const QGLContext*,Data::GLData>::iterator it = m_data->lut.find(ctx);
-      if(it != m_data->lut.end()){
-        GLint loc = glGetUniformLocation(it->second.program, var.c_str());
-        if (loc != -1)
-        {
-          glUniform1f(loc, val);
-        } else {
-//          throw ICLException("Tried to set a non-existent uniform.");
-        }
+      GLint loc = glGetUniformLocation(m_data->data.program, var.c_str());
+      if (loc != -1)
+      {
+        glUniform1f(loc, val);
       } else {
-        throw ICLException("shader not activated in this context");
+//          throw ICLException("Tried to set a non-existent uniform.");
       }
     }
     
@@ -224,17 +213,12 @@ namespace icl{
       if(!ctx){
         throw ICLException("tried to deactivate shader program where no GL-Context was active");
       }
-      std::map<const QGLContext*,Data::GLData>::iterator it = m_data->lut.find(ctx);
-      if(it != m_data->lut.end()){
-        GLint loc = glGetUniformLocation(it->second.program, var.c_str());
-        if (loc != -1)
-        {
-          glUniformMatrix4fv(loc, 1, true, val.data());
-        } else {
-//          throw ICLException("Tried to set a non-existent uniform.");
-        }
+      GLint loc = glGetUniformLocation(m_data->data.program, var.c_str());
+      if (loc != -1)
+      {
+        glUniformMatrix4fv(loc, 1, true, val.data());
       } else {
-        throw ICLException("shader not activated in this context");
+//          throw ICLException("Tried to set a non-existent uniform.");
       }
     }
     
@@ -243,23 +227,18 @@ namespace icl{
       if(!ctx){
         throw ICLException("tried to deactivate shader program where no GL-Context was active");
       }
-      std::map<const QGLContext*,Data::GLData>::iterator it = m_data->lut.find(ctx);
-      if(it != m_data->lut.end()){
-        GLint loc = glGetUniformLocation(it->second.program, var.c_str());
-        if (loc != -1)
-        {
-          float *matData = new float[16 * val.size()];
-          for(unsigned int i = 0; i < val.size(); i++) {
-            memcpy((matData + 16 * i), val[i].data(), 16 * sizeof(float));
-          }
-          glUniformMatrix4fv(loc, val.size(), true, matData);
-         
-          delete[] matData;
-        } else {
-//          throw ICLException("Tried to set a non-existent uniform.");
+      GLint loc = glGetUniformLocation(m_data->data.program, var.c_str());
+      if (loc != -1)
+      {
+        float *matData = new float[16 * val.size()];
+        for(unsigned int i = 0; i < val.size(); i++) {
+          memcpy((matData + 16 * i), val[i].data(), 16 * sizeof(float));
         }
+        glUniformMatrix4fv(loc, val.size(), true, matData);
+
+        delete[] matData;
       } else {
-        throw ICLException("shader not activated in this context");
+//          throw ICLException("Tried to set a non-existent uniform.");
       }
     }
     
@@ -268,17 +247,12 @@ namespace icl{
       if(!ctx){
         throw ICLException("tried to deactivate shader program where no GL-Context was active");
       }
-      std::map<const QGLContext*,Data::GLData>::iterator it = m_data->lut.find(ctx);
-      if(it != m_data->lut.end()){
-        GLint loc = glGetUniformLocation(it->second.program, var.c_str());
-        if (loc != -1)
-        {
-          glUniform4f(loc, val[0], val[1], val[2], val[3]);
-        } else {
-//          throw ICLException("Tried to set a non-existent uniform.");
-        }
+      GLint loc = glGetUniformLocation(m_data->data.program, var.c_str());
+      if (loc != -1)
+      {
+        glUniform4f(loc, val[0], val[1], val[2], val[3]);
       } else {
-        throw ICLException("shader not activated in this context");
+//          throw ICLException("Tried to set a non-existent uniform.");
       }
     }
     
@@ -287,17 +261,12 @@ namespace icl{
       if(!ctx){
         throw ICLException("tried to deactivate shader program where no GL-Context was active");
       }
-      std::map<const QGLContext*,Data::GLData>::iterator it = m_data->lut.find(ctx);
-      if(it != m_data->lut.end()){
-        GLint loc = glGetUniformLocation(it->second.program, var.c_str());
-        if (loc != -1)
-        {
-          glUniform1i(loc, val);
-        } else {
-//          throw ICLException("Tried to set a non-existent uniform.");
-        }
+      GLint loc = glGetUniformLocation(m_data->data.program, var.c_str());
+      if (loc != -1)
+      {
+        glUniform1i(loc, val);
       } else {
-        throw ICLException("shader not activated in this context");
+//          throw ICLException("Tried to set a non-existent uniform.");
       }
     }
     
@@ -307,7 +276,7 @@ namespace icl{
       if(!ctx){
         throw ICLException("tried to activate shader program where no GL-Context was active");
       }
-      Data::GLData &d = m_data->lut[ctx];
+      Data::GLData &d = m_data->data;
       d.enabled = true;
       glUseProgram(d.program);
     }
@@ -317,12 +286,8 @@ namespace icl{
       if(!ctx){
         throw ICLException("tried to deactivate shader program where no GL-Context was active");
       }
-      
-      std::map<const QGLContext*,Data::GLData>::iterator it = m_data->lut.find(ctx);
-      if(it != m_data->lut.end()){
-        it->second.enabled = false;
-        glUseProgram(0);
-      }
+      m_data->data.enabled = false;
+      glUseProgram(0);
     }
   
     GLFragmentShader *GLFragmentShader::copy() const{

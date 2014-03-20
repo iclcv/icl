@@ -230,7 +230,10 @@ namespace icl{
       
       /// sets whether the light casts two-sided light or not
       void setTwoSidedEnabled(bool on=true);
-      
+
+      /// returns whether the light is activated
+      bool isOn() const;
+
       /// returns whether the light casts shadows or not
       bool getShadowEnabled() const;
       

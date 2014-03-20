@@ -71,7 +71,6 @@
 #include <set>
 #include <vector>
 #include <map>
-#include <sstream>
 
 
 using namespace icl::utils;
@@ -238,36 +237,21 @@ namespace icl{
       };
       uint shadow_size;
       uint num_shadows;
-      map<const QGLContext*, Glints> infos;
-      FBOData():shadow_size(0),num_shadows(0),infos() {}
-      private:
-      void freeShadowFBO(Glints &g) {
-        if(g.created) {
-          glDeleteFramebuffersEXT(1, &g.shadowFBO);
-          glDeleteTextures(1, &g.shadowTexture);
-          g.created = false;
-        }
-      }
+      Glints glints;
+      FBOData():shadow_size(0),num_shadows(0) {}
       public:
       void freeShadowFBO() {
-        if(shadow_size) {
-          QGLContext* current = const_cast<QGLContext*>(QGLContext::currentContext());
-          for(map<const QGLContext*, Glints>::iterator it = infos.begin(); it != infos.end(); it++) {
-            if(it->first) {
-              const_cast<QGLContext*>(it->first)->makeCurrent();
-              freeShadowFBO(it->second);
-            }
-          }
-            shadow_size = 0;
-            num_shadows = 0;
-            if(!current)current->makeCurrent();
-          }
+        if(glints.created) {
+          glDeleteFramebuffersEXT(1, &glints.shadowFBO);
+          glDeleteTextures(1, &glints.shadowTexture);
+          glints.created = false;
+        }
+        shadow_size = 0;
+        num_shadows = 0;
       }
 
       void createShadowFBO() {
-        Glints &glints = infos[QGLContext::currentContext()];
-
-        if(glints.created)freeShadowFBO(glints);
+        if(glints.created)freeShadowFBO();
         glints.created = true;
           GLenum FBOstatus;
 
@@ -586,174 +570,6 @@ namespace icl{
       };
     }
   #ifdef ICL_HAVE_QT
-
-    void Scene::recompilePerPixelShader(int numShadowLights) const {
-      for(unsigned int i = 0; i < ShaderUtil::COUNT; i++) {
-        delete m_shaders[i];
-      }
-      std::stringstream fragmentBuffer;
-      std::stringstream vertexBuffer;
-
-      //creating the vertex shader
-      vertexBuffer
-      <<"varying vec4 V;\n"
-      <<"varying vec3 vertex_normal;\n";
-      if(numShadowLights>0) {
-        vertexBuffer
-        <<"varying vec4 shadow_coord["<<numShadowLights<<"];\n"
-        <<"uniform mat4 shadowMat["<<numShadowLights<<"];\n";
-      }
-      vertexBuffer
-      <<"void main()\n"
-      <<"{\n"
-      <<"  V = gl_ModelViewMatrix * gl_Vertex;\n"
-      <<"  vertex_normal = gl_NormalMatrix * gl_Normal;\n"
-      <<"  gl_FrontColor = gl_Color;\n"
-      <<"  gl_TexCoord[0] = gl_MultiTexCoord0;\n"
-      <<"  gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\n";
-
-      //creating the fragment shader
-      fragmentBuffer
-      <<"varying vec4 V;\n"
-      <<"varying vec3 vertex_normal;\n";
-      if(numShadowLights>0) {
-        fragmentBuffer
-        <<"varying vec4 shadow_coord["<<numShadowLights<<"];\n"
-        <<"const int num_shadow_lights = " <<numShadowLights<<";\n";
-      }
-      fragmentBuffer
-      <<"vec3 N;\n"
-      <<"vec4 texture_Color;\n"
-      <<"uniform sampler2D shadow_map;\n"
-      <<"uniform sampler2D image_map;\n"
-      <<"uniform float bias;\n"
-      <<"void computeColors(int light, out vec3 ambient, out vec3 diffuse, out vec3 specular, out float cos_light){\n"
-      <<"  vec3 L = normalize(gl_LightSource[light].position.xyz - V.xyz);\n"
-      <<"  vec3 E = normalize(-V.xyz);\n"
-      <<"  vec3 R = normalize(-reflect(L, N));\n"
-      <<"  cos_light = max(dot(N,L),0.0);\n"
-      <<"#ifdef USE_TEXTURE\n"
-      <<"  vec3 color = gl_Color.rgb * texture_Color.rgb;\n"
-      <<"#else\n"
-      <<"  vec3 color = gl_Color.rgb;\n"
-      <<"#endif\n"
-      <<"  ambient = gl_LightSource[light].ambient.rgb\n"
-      <<"            * color;\n"
-      <<"  diffuse = gl_LightSource[light].diffuse.rgb\n"
-      <<"            * cos_light\n"
-      <<"            * color;\n"
-      <<"  specular = gl_LightSource[light].specular.rgb\n"
-      <<"             * pow(max(0.0,dot(R,E)),gl_FrontMaterial.shininess)\n"
-      <<"             * gl_FrontMaterial.specular.rgb;\n"
-      <<"}\n";
-
-      fragmentBuffer
-      <<"void computeColorsTwoSided(int light, out vec3 ambient, out vec3 diffuse, out vec3 specular, float cos_light){\n"
-      <<"  vec3 L = normalize(gl_LightSource[light].position.xyz - V.xyz);\n"
-      <<"  vec3 E = normalize(-V.xyz);\n"
-      <<"  vec3 R = normalize(-reflect(L, N));\n"
-      <<"  cos_light = abs(dot(N,L));\n"
-      <<"#ifdef USE_TEXTURE\n"
-      <<"  vec3 color = gl_Color.rgb * texture_Color.rgb;\n"
-      <<"#else\n"
-      <<"  vec3 color = gl_Color.rgb;\n"
-      <<"#endif\n"
-      <<"  ambient = gl_LightSource[light].ambient.rgb\n"
-      <<"            * color;\n"
-      <<"  diffuse = gl_LightSource[light].diffuse.rgb\n"
-      <<"            * cos_light\n"
-      <<"            * color;\n"
-      <<"  specular = gl_LightSource[light].specular.rgb\n"
-      <<"             * pow(abs(dot(R,E)),gl_FrontMaterial.shininess)\n"
-      <<"             * gl_FrontMaterial.specular.rgb;\n"
-      <<"}\n";
-
-      if(numShadowLights>0) {
-        fragmentBuffer
-        <<"vec3 computeLightWithShadow(int light, int shadow, bool isTwoSided){\n"
-        <<"  vec3 ambient, diffuse, specular;\n"
-        <<"  float cos_light = 0.0;\n"
-        <<"  //compute phong lighting\n"
-        <<"  if(isTwoSided)computeColorsTwoSided(light, ambient, diffuse, specular, cos_light);\n"
-        <<"  else computeColors(light, ambient, diffuse, specular, cos_light);\n"
-        <<"  //get screen space coordinates\n"
-        <<"  vec4 shadow_divided = shadow_coord[shadow] / shadow_coord[shadow].w;\n"
-        <<"  //check if the coordinate is out of bounds\n"
-        <<"  if(shadow_divided.s < -1.0 || shadow_divided.s > 1.0) return ambient;\n" //return ambient + diffuse + specular;\n"
-        <<"  if(shadow_divided.t < -1.0 || shadow_divided.t > 1.0) return ambient;\n" //return ambient + diffuse + specular;\n"
-        <<"  //transform to texture space coordinates\n"
-        <<"  shadow_divided = shadow_divided * 0.5 + 0.5;\n"
-        <<"  shadow_divided.s = (float(shadow) + shadow_divided.s) / float(num_shadow_lights);\n"
-        <<"  //get shadow depth + offset\n"
-        <<"  float d = length(gl_LightSource[light].position.xyz - V.xyz);\n"
-        <<"  //normalize bias over distance and try to remove artifacts very acute angles\n"
-        <<"  float normalized_bias = bias * 0.03 / ((d * d - 2.0 * d) * max(cos_light,0.1));\n"
-        <<"  float shadow_depth = texture2D(shadow_map,shadow_divided.st).z + normalized_bias;\n"
-        <<"  //check if fragment is in shadow\n"
-        <<"  if(shadow_coord[shadow].w > 0.0)\n"
-        <<"    if(shadow_divided.z > shadow_depth) return ambient;\n"
-        <<"  return ambient + diffuse + specular;\n"
-        <<"}\n";
-      }
-
-      // celbrech: note, for shadow lights, one-sided lighting is used
-      //           for other lights, GL_LIGHT_MODEL_TWO_SIDE is emulated
-
-      fragmentBuffer
-      <<"vec3 computeLight(int light, bool isTwoSided){\n"
-      <<"  vec3 ambient, diffuse, specular;\n"
-      <<"  float cos_light = 0.0;\n"
-      <<"  //compute phong lighting\n"
-      <<"  if(isTwoSided)computeColorsTwoSided(light, ambient, diffuse, specular, cos_light);\n"
-      <<"  else computeColors(light, ambient, diffuse, specular, cos_light);\n"
-      <<"  return ambient + diffuse + specular;\n"
-      <<"}\n"
-      <<"void main(void){\n"
-      <<"  N = normalize(vertex_normal);\n"
-      <<"  texture_Color = texture2D(image_map, gl_TexCoord[0].st);\n"
-      <<"  vec3 color = vec3(0,0,0);\n";
-
-      int currentShadow = 0;
-      for(unsigned int i = 0; i < 8; i++) {
-        if(m_lights[i] && m_lights[i]->on) {
-          string twoSided;
-          if(m_lights[i]->getTwoSidedEnabled()) {
-            twoSided = "true";
-          }else {
-            twoSided = "false";
-          }
-          if(m_lights[i]->getShadowEnabled()) {
-            vertexBuffer
-            <<"  shadow_coord["<<currentShadow<<"] = shadowMat["<<currentShadow<<"] * V;\n";
-            fragmentBuffer
-            <<"#ifdef RENDER_SHADOW\n"
-            <<"  color += computeLightWithShadow("<<i<<","<<currentShadow<<","<<twoSided<<");\n"
-            <<"#else\n"
-            <<"  color += computeLight("<<i<<");\n"
-            <<"#endif\n";
-            currentShadow++;
-          }else{
-            fragmentBuffer << "  color += computeLight("<<i<<","<<twoSided<<");\n";
-          }
-
-        }
-      }
-      vertexBuffer
-      <<"}\n";
-      fragmentBuffer
-      <<"#ifdef USE_TEXTURE\n"
-      <<"  gl_FragColor =  vec4(color,gl_Color.a * texture_Color.a);\n"
-      <<"#else\n"
-      <<"  gl_FragColor =  vec4(color,gl_Color.a);\n"
-      <<"#endif\n"
-      <<"}\n";
-
-      m_shaders[ShaderUtil::SHADOW] = new GLFragmentShader( vertexBuffer.str(), "#define RENDER_SHADOW\n" + fragmentBuffer.str());
-      m_shaders[ShaderUtil::SHADOW_TEXTURE] = new GLFragmentShader( vertexBuffer.str(), "#define USE_TEXTURE;\n#define RENDER_SHADOW\n" + fragmentBuffer.str());
-      m_shaders[ShaderUtil::NO_SHADOW] = new GLFragmentShader( vertexBuffer.str(), fragmentBuffer.str());
-      m_shaders[ShaderUtil::NO_SHADOW_TEXTURE] = new GLFragmentShader( vertexBuffer.str(), "#define USE_TEXTURE;\n" + fragmentBuffer.str());
-    }
-
     void Scene::renderSceneObjectRecursive(ShaderUtil* util, SceneObject *o) const{
       if(!creatingDisplayList){
         if(o->m_createDisplayListNextTime == 1){
@@ -1078,7 +894,7 @@ namespace icl{
         }
 
         if(lightSetupChanged) {
-          recompilePerPixelShader(numShadowLights);
+          ShaderUtil::recompilePerPixelShader(m_shaders,m_lights,numShadowLights);
           m_shaders[0]->activate();
           m_shaders[0]->deactivate();
         }
@@ -1092,7 +908,7 @@ namespace icl{
         //bind texture if it has been created
         if(m_fboData->shadow_size>0) {
          glActiveTextureARB(GL_TEXTURE7);
-         glBindTexture(GL_TEXTURE_2D,m_fboData->infos[QGLContext::currentContext()].shadowTexture);
+         glBindTexture(GL_TEXTURE_2D,m_fboData->glints.shadowTexture);
         }
 
         //render the shadows and create the projection matrices for the vertex shader
@@ -1245,7 +1061,7 @@ namespace icl{
     }
 
    void Scene::renderShadow(const unsigned int light, const unsigned int shadow, unsigned int size) const{
-      FBOData::Glints &glints = m_fboData->infos[QGLContext::currentContext()];
+      FBOData::Glints &glints = m_fboData->glints;
       if(!glints.created)m_fboData->createShadowFBO();
       glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, glints.shadowFBO);
 
@@ -1628,7 +1444,7 @@ namespace icl{
       QGLPixelBuffer m_buffer;
       QImageConverter conv;
       SmartPtr<GLImg> background;
-      PBuffer(Size s):m_buffer(QSize(s.width,s.height)){}
+      PBuffer(Size s):m_buffer(s.width,s.height, QGLFormat::defaultFormat(), ICLApplication::instance()->sharedWidget){}
       void update(const Camera &cam) {
         depthCorr.update(cam);
       }
@@ -1702,11 +1518,22 @@ namespace icl{
     }
 
     void Scene::freeAllPBuffers(){
-      typedef std::map<PBufferIndex, PBuffer*>::iterator It;
-      for (It it = m_pbuffers.begin(); it != m_pbuffers.end(); ++it){
-        delete it->second;
+      struct DeleteEvent : public ICLApplication::AsynchronousEvent{
+        std::map<PBufferIndex, PBuffer*>& pbuffers;
+        DeleteEvent(std::map<PBufferIndex, PBuffer*>& pbuffers):pbuffers(pbuffers) {}
+
+        void execute() {
+          typedef std::map<PBufferIndex, PBuffer*>::iterator It;
+          for (It it = pbuffers.begin(); it != pbuffers.end(); ++it){
+            delete it->second;
+          }
+          pbuffers.clear();
+        }
+      };
+      ICLApplication *app = ICLApplication::instance();
+      if(app) {
+        app->executeInGUIThread(new DeleteEvent(m_pbuffers),false);
       }
-      m_pbuffers.clear();
     }
 
     void Scene::freePBuffer(const Size &size){

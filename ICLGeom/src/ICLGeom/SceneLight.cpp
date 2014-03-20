@@ -226,7 +226,11 @@ namespace icl{
     void SceneLight::setTwoSidedEnabled(bool on){
       this->twoSidedOn = on;
     }
-      
+
+    bool SceneLight::isOn() const{
+      return this->on;
+    }
+
     bool SceneLight::getShadowEnabled() const{
       return this->shadowOn;
     }

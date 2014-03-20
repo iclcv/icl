@@ -415,9 +415,6 @@ namespace icl{
       /// renders the shadowmap
       void renderShadow(const unsigned int light, const unsigned int shadow, unsigned int size = 512) const;
       
-      /// recompiles the shader for the current light configuration
-      void recompilePerPixelShader(int numShadowLights) const;
-      
       //// internally used rendering method for recursive rendering of the scene graph of shadowcasting objects
       void renderSceneObjectRecursiveShadow(ShaderUtil* util, SceneObject *o) const;
 #endif
