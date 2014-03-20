@@ -28,29 +28,98 @@
 **                                                                 **
 ********************************************************************/
 
-#pragma once
-
 #include <ICLGeom/ProtoBufSerializationDevice.h>
 
 namespace icl{
+  using namespace utils;
+
   namespace geom{
-    ProtobufSerializationDevice::ProtobufSerializationDevice(io::RSBPointCloud *protoBufObject):
+    ProtobufSerializationDevice::ProtobufSerializationDevice(RSBPointCloud *protoBufObject):
       protoBufObject(protoBufObject){
+    }
+
+    void ProtobufSerializationDevice::init(RSBPointCloud *protoBufObject){
+      this->protoBufObject = protoBufObject;
+    }
       
+    bool ProtobufSerializationDevice::isNull() const{
+      return !protoBufObject;
     }
-    void  ProtobufSerializationDevice::initialize(const PointCloudObjectBase &o){
     
+    void ProtobufSerializationDevice::null_check(const std::string &function) throw (ICLException){
+      if(isNull()) throw ICLException(function + ": instance is null");
     }
+    
+
+    void ProtobufSerializationDevice::initializeSerialization(const PointCloudSerializer::MandatoryInfo &info){
+      null_check(__FUNCTION__);
+      protoBufObject->set_width(info.width);
+      protoBufObject->set_height(info.height);
+      protoBufObject->set_organized(info.organized);
+      protoBufObject->set_timestamp(info.timestamp);
+    }
+
+    PointCloudSerializer::MandatoryInfo ProtobufSerializationDevice::getDeserializationInfo(){
+      null_check(__FUNCTION__);
+      PointCloudSerializer::MandatoryInfo mi = {
+        protoBufObject->width(),
+        protoBufObject->height(),
+        protoBufObject->organized(),
+        protoBufObject->timestamp()
+      };
+      return mi;
+    }
+
+
     icl8u *ProtobufSerializationDevice::targetFor(const std::string &featureName, int bytes){
-      return 0;
+      null_check(__FUNCTION__);
+      if(featureName.length() >= 5 && featureName.substr(0,5) == "meta:"){
+        RSBPointCloud_MetaDataEntry *m = protoBufObject->add_metadata();
+        m->set_key(featureName.substr(5));
+        m->set_value(std::string(bytes,'\0'));
+        return (icl8u*) m->mutable_value()->c_str();
+      }else{
+        RSBPointCloud_Field *f = protoBufObject->add_fields();
+        f->set_name(featureName);
+        f->set_compression("none");
+        f->set_data(std::string(bytes,'\0'));
+        return (icl8u*) f->mutable_data()->c_str();
+      }
     }
-    void  ProtobufSerializationDevice::prepareTarget(PointCloudObjectBase &dst){
     
-    }
     std::vector<std::string> ProtobufSerializationDevice::getFeatures(){
-      return std::vector<std::string>();
+      null_check(__FUNCTION__);
+      std::vector<std::string> fs;
+      for(int i=0;i<protoBufObject->fields_size();++i){
+        fs.push_back(protoBufObject->fields(i).name());
+      }
+      for(int i=0;i<protoBufObject->metadata_size(); ++i){
+        fs.push_back("meta:"+protoBufObject->metadata(i).key());
+      }      
+      return fs;
     }
-    const icl8u * ProtobufSerializationDevice::sourceFor(const std::string &featureName, int bytes){
+    
+    const icl8u * ProtobufSerializationDevice::sourceFor(const std::string &featureName, int &bytes){
+      null_check(__FUNCTION__);
+      if(featureName.length() >= 5 && featureName.substr(0,5) == "meta:"){
+        for(int i=0;i<protoBufObject->metadata_size();++i){
+          std::string name = featureName.substr(5);
+          if(protoBufObject->metadata(i).key() == name){
+            const std::string &value = protoBufObject->metadata(i).value();
+            bytes = (int)value.length();
+            return (icl8u*)value.c_str();
+          }
+        }
+      }else{
+        for(int i=0;i<protoBufObject->fields_size();++i){
+          if(protoBufObject->fields(i).name() == featureName){
+            const std::string &data = protoBufObject->fields(i).data();
+            bytes = (int)data.length();
+            return (icl8u*)data.c_str();
+          }
+        }        
+      }
+      throw ICLException("unable get find source for feature with name: " + featureName);
       return 0;
     }
   }

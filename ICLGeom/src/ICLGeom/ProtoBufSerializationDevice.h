@@ -44,15 +44,30 @@
 namespace icl{
   
   namespace geom{
-    struct ICLGeom_API ProtobufSerializationDevice : public PointCloudSerializer::SerializationDevice,  
-                                                     public PointCloudSerializer::DeserializationDevice{
-      io::RSBPointCloud *protoBufObject;
-      ProtobufSerializationDevice(io::RSBPointCloud *protoBufObject);
-      virtual void initialize(const PointCloudObjectBase &o);
+    class ICLGeom_API ProtobufSerializationDevice : public PointCloudSerializer::SerializationDevice,  
+                                                    public PointCloudSerializer::DeserializationDevice{
+      protected:
+      
+      void null_check(const std::string &function) throw (utils::ICLException);
+
+      RSBPointCloud *protoBufObject;
+      
+      public:
+
+      ProtobufSerializationDevice(RSBPointCloud *protoBufObject);
+      
+      void init(RSBPointCloud *protoBufObject);
+      
+      bool isNull() const;
+      
+      // serialization
+      virtual void initializeSerialization(const PointCloudSerializer::MandatoryInfo &info);
       virtual icl8u *targetFor(const std::string &featureName, int bytes);
-      virtual void prepareTarget(PointCloudObjectBase &dst);
+      
+      // deserialization
+      virtual PointCloudSerializer::MandatoryInfo getDeserializationInfo();
       virtual std::vector<std::string> getFeatures();
-      virtual const icl8u *sourceFor(const std::string &featureName, int bytes);
+      virtual const icl8u *sourceFor(const std::string &featureName, int &bytes);
     };
   }
 }

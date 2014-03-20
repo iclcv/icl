@@ -1,6 +1,6 @@
 
 
-package icl.io;
+package icl.geom;
 
 message RSBPointCloud {
     required uint32 width               = 1;
