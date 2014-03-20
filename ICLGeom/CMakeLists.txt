@@ -62,7 +62,8 @@ SET(HEADERS src/ICLGeom/Camera.h
             src/ICLGeom/Plot3D.h 
             src/ICLGeom/DataSegment.h            
             src/ICLGeom/PlotHandle3D.h
-            src/ICLGeom/RansacBasedPoseEstimator.h)
+            src/ICLGeom/RansacBasedPoseEstimator.h
+            src/ICLGeom/PointCloudOutput.h)
 
 IF(QT_FOUND)
   LIST (APPEND SOURCES src/ICLGeom/Scene.cpp
@@ -129,10 +130,12 @@ IF(RSB_FOUND)
 
     LIST (APPEND SOURCES src/ICLGeom/RSBPointCloudGrabber.cpp
                          src/ICLGeom/ProtoBufSerializationDevice.cpp
+                         src/ICLGeom/RSBPointCloudSender.cpp
                          ${PROTO_SRCS})
 
     LIST (APPEND HEADERS src/ICLGeom/RSBPointCloudGrabber.h
                          src/ICLGeom/ProtoBufSerializationDevice.h
+                         src/ICLGeom/RSBPointCloudSender.h
                          ${PROTO_HDRS})
 ENDIF()
 

@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLGeom/src/ICLGeom/ProtobufSerializationDevice.cpp    **
+** File   : ICLGeom/src/ICLGeom/ProtoBufSerializationDevice.cpp    **
 ** Module : ICLGeom                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -34,24 +34,24 @@ namespace icl{
   using namespace utils;
 
   namespace geom{
-    ProtobufSerializationDevice::ProtobufSerializationDevice(RSBPointCloud *protoBufObject):
+    ProtoBufSerializationDevice::ProtoBufSerializationDevice(RSBPointCloud *protoBufObject):
       protoBufObject(protoBufObject){
     }
 
-    void ProtobufSerializationDevice::init(RSBPointCloud *protoBufObject){
+    void ProtoBufSerializationDevice::init(RSBPointCloud *protoBufObject){
       this->protoBufObject = protoBufObject;
     }
       
-    bool ProtobufSerializationDevice::isNull() const{
+    bool ProtoBufSerializationDevice::isNull() const{
       return !protoBufObject;
     }
     
-    void ProtobufSerializationDevice::null_check(const std::string &function) throw (ICLException){
+    void ProtoBufSerializationDevice::null_check(const std::string &function) throw (ICLException){
       if(isNull()) throw ICLException(function + ": instance is null");
     }
     
 
-    void ProtobufSerializationDevice::initializeSerialization(const PointCloudSerializer::MandatoryInfo &info){
+    void ProtoBufSerializationDevice::initializeSerialization(const PointCloudSerializer::MandatoryInfo &info){
       null_check(__FUNCTION__);
       protoBufObject->set_width(info.width);
       protoBufObject->set_height(info.height);
@@ -59,7 +59,7 @@ namespace icl{
       protoBufObject->set_timestamp(info.timestamp);
     }
 
-    PointCloudSerializer::MandatoryInfo ProtobufSerializationDevice::getDeserializationInfo(){
+    PointCloudSerializer::MandatoryInfo ProtoBufSerializationDevice::getDeserializationInfo(){
       null_check(__FUNCTION__);
       PointCloudSerializer::MandatoryInfo mi = {
         protoBufObject->width(),
@@ -71,7 +71,7 @@ namespace icl{
     }
 
 
-    icl8u *ProtobufSerializationDevice::targetFor(const std::string &featureName, int bytes){
+    icl8u *ProtoBufSerializationDevice::targetFor(const std::string &featureName, int bytes){
       null_check(__FUNCTION__);
       if(featureName.length() >= 5 && featureName.substr(0,5) == "meta:"){
         RSBPointCloud_MetaDataEntry *m = protoBufObject->add_metadata();
@@ -87,7 +87,7 @@ namespace icl{
       }
     }
     
-    std::vector<std::string> ProtobufSerializationDevice::getFeatures(){
+    std::vector<std::string> ProtoBufSerializationDevice::getFeatures(){
       null_check(__FUNCTION__);
       std::vector<std::string> fs;
       for(int i=0;i<protoBufObject->fields_size();++i){
@@ -99,7 +99,7 @@ namespace icl{
       return fs;
     }
     
-    const icl8u * ProtobufSerializationDevice::sourceFor(const std::string &featureName, int &bytes){
+    const icl8u * ProtoBufSerializationDevice::sourceFor(const std::string &featureName, int &bytes){
       null_check(__FUNCTION__);
       if(featureName.length() >= 5 && featureName.substr(0,5) == "meta:"){
         for(int i=0;i<protoBufObject->metadata_size();++i){

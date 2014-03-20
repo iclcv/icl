@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLGeom/src/ICLGeom/ProtoBufSerializationDevice.h      **
+** File   : ICLGeom/src/ICLGeom/RSBPointCloudSender.h              **
 ** Module : ICLGeom                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -30,44 +30,36 @@
 
 #pragma once
 
-#include <ICLGeom/PointCloudSerializer.h>
-#include <ICLGeom/RSBPointCloud.pb.h>
-
-#if !defined(ICL_HAVE_RSB) || !defined(ICL_HAVE_PROTOBUF)
-  #if WIN32
-    #pragma WARNING("This header should only be included if ICL_HAVE_RSB and ICL_HAVE_PROTOBUF are defined and available in ICL")
-  #else
-    #warning "This header should only be included if ICL_HAVE_RSB and ICL_HAVE_PROTOBUF are defined and available in ICL"
-  #endif
-#endif
+#include <ICLGeom/PointCloudOutput.h>
+#include <ICLUtils/Uncopyable.h>
 
 namespace icl{
-  
   namespace geom{
-    class ICLGeom_API ProtoBufSerializationDevice : public PointCloudSerializer::SerializationDevice,  
-                                                    public PointCloudSerializer::DeserializationDevice{
-      protected:
-      
-      void null_check(const std::string &function) throw (utils::ICLException);
-
-      RSBPointCloud *protoBufObject;
+  
+    /// RSB-based sendig of point cloud data
+    class RSBPointCloudSender : public PointCloudOutput, public utils::Uncopyable{
+      struct Data;
+      Data *m_data;
       
       public:
+      
+      /// create RSBPointCloudSender sending to given scope via given (comma-sep.) transport List
+      /** If the given scope is empty, now initialization is performed and a "null" instance is
+          created, that must be initalized afterwards using init */
+      RSBPointCloudSender(const std::string &scope="", const std::string &transportList="spread");
+      
+      /// Destructor
+      ~RSBPointCloudSender();
 
-      ProtoBufSerializationDevice(RSBPointCloud *protoBufObject);
+      /// deferred intialization
+      void init(const std::string &scope, const std::string &transportList="spread");
       
-      void init(RSBPointCloud *protoBufObject);
-      
+      /// returns initialization state
       bool isNull() const;
       
-      // serialization
-      virtual void initializeSerialization(const PointCloudSerializer::MandatoryInfo &info);
-      virtual icl8u *targetFor(const std::string &featureName, int bytes);
-      
-      // deserialization
-      virtual PointCloudSerializer::MandatoryInfo getDeserializationInfo();
-      virtual std::vector<std::string> getFeatures();
-      virtual const icl8u *sourceFor(const std::string &featureName, int &bytes);
+      /// actual implementation of the PointCloudOutput interface
+      virtual void send(const PointCloudObjectBase &dst);
     };
-  }
+  } // namespace geom
 }
+

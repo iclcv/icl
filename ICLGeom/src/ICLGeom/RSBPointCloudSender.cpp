@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLGeom/src/ICLGeom/RSBPointCloudGrabber.cpp           **
+** File   : ICLGeom/src/ICLGeom/RSBPointCloudSender.cpp            **
 ** Module : ICLGeom                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -28,72 +28,65 @@
 **                                                                 **
 ********************************************************************/
 
+#include <ICLGeom/RSBPointCloudSender.h>
+#include <ICLGeom/PointCloudSerializer.h>
+#include <ICLGeom/RSBPointCloud.pb.h>
+#include <ICLGeom/ProtoBufSerializationDevice.h>
+
+#include <ICLUtils/StringUtils.h>
+
 #include <rsb/Factory.h>
 #include <rsb/Handler.h>
 #include <rsb/converter/Repository.h>
 #include <rsb/converter/ProtocolBufferConverter.h>
 
-
-#include <ICLGeom/RSBPointCloudGrabber.h>
-#include <ICLGeom/PointCloudSerializer.h>
-#include <ICLGeom/ProtoBufSerializationDevice.h>
-
-#include <ICLUtils/Thread.h>
-#include <ICLUtils/StringUtils.h>
-
 using namespace boost;
 using namespace rsb;
 using namespace rsb::converter;
 
+
 namespace icl{
-  using namespace io;
+
   using namespace utils;
   using namespace core;
 
   namespace geom{
+
+    struct StaticRSBPointCloudTypeRegistration{
+      StaticRSBPointCloudTypeRegistration(){
+        shared_ptr<ProtocolBufferConverter<RSBPointCloud> > p(new ProtocolBufferConverter<RSBPointCloud>());
+        //#if RSB_VERSION_MINOR < 8 && RSB_VERSION_MAJOR < 1
+        //        stringConverterRepository()->registerConverter(p);
+        //#else
+        converterRepository<std::string>()->registerConverter(p);
+        //#endif
   
-    struct RSBPointCloudGrabber::Data{
-      Mutex mutex;
-      bool initialized;
-      RSBPointCloud buffer;
-      ProtoBufSerializationDevice sdev;
-      Data():sdev(&buffer){}
-      
-      struct Handler : public DataHandler<RSBPointCloud>{
-        RSBPointCloudGrabber::Data *data;
-        Handler(RSBPointCloudGrabber::Data *data):data(data){}
-        virtual void notify(shared_ptr<RSBPointCloud> image){
-          Mutex::Locker lock(data->mutex);
-          data->buffer.CopyFrom(*image);
-        }
-      };
-      
-      shared_ptr<rsb::Handler> handler;
-      ListenerPtr listener;
+  
+      }
+    } static_RSBImage_type_registration;
+
+    struct RSBPointCloudSender::Data{
+      //Mutex mutex;
+      Informer<RSBPointCloud>::Ptr informer;
+      Informer<RSBPointCloud>::DataPtr out;
+      SmartPtr<ProtoBufSerializationDevice> sdev;
     };
     
-    
-    RSBPointCloudGrabber::RSBPointCloudGrabber(const std::string &scope, 
-                                               const std::string &trasportList){
-      m_data = new Data;
-      m_data->initialized = false;
-      if(scope.length()) init(scope,trasportList);
+    RSBPointCloudSender::RSBPointCloudSender(const std::string &scope, 
+                                             const std::string &transportList):m_data(new Data){
+      if(scope.length()) init(scope,transportList);
     }
     
-    RSBPointCloudGrabber::~RSBPointCloudGrabber(){
+    RSBPointCloudSender::~RSBPointCloudSender(){
       delete m_data;
     }
-    
-    void RSBPointCloudGrabber::init(const std::string &scope, const std::string &transportList){
-      if(m_data->initialized){
-        m_data->listener->removeHandler(m_data->handler);
-      }
+
+    void RSBPointCloudSender::init(const std::string &scope, 
+                                   const std::string &transportList){
+      if(!scope.length()) throw ICLException("RSBPointCloudSender::init: empty scope string");
+      
       Scope rsbScope(scope);
-#if 1
       Factory &factory = rsc::patterns::Singleton<Factory>::getInstance();
-#else 
-      Factory &factory = Factory::getInstance()
-#endif
       ParticipantConfig rsbCfg = factory.getDefaultParticipantConfig();
       typedef std::set<ParticipantConfig::Transport> TSet;
       typedef std::vector<ParticipantConfig::Transport> TVec;
@@ -111,20 +104,21 @@ namespace icl{
         }
       }
       rsbCfg.setTransports(TSet(ts.begin(),ts.end()));
-      m_data->listener = factory.createListener(rsbScope,rsbCfg);
-      m_data->handler = shared_ptr<Handler>(new Data::Handler(m_data));
-      m_data->listener->addHandler(m_data->handler);
+
+      m_data->informer = factory.createInformer<RSBPointCloud>(rsbScope,rsbCfg);
+      m_data->out = Informer<RSBPointCloud>::DataPtr(new RSBPointCloud);
+      
+      m_data->sdev = new ProtoBufSerializationDevice(&*m_data->out);
     }
       
-    void RSBPointCloudGrabber::grab(PointCloudObjectBase &dst){
-      Mutex::Locker lock(m_data->mutex);
-      while(!m_data->buffer.IsInitialized()){
-        m_data->mutex.unlock();
-        Thread::msleep(10);
-        m_data->mutex.lock();
-      }
-      PointCloudSerializer::deserialize(dst, m_data->sdev);      
+    bool RSBPointCloudSender::isNull() const{
+      return !m_data->informer;
     }
-  } // namespace geom
+      
+    void RSBPointCloudSender::send(const PointCloudObjectBase &dst){
+      PointCloudSerializer::serialize(dst,*m_data->sdev);
+      m_data->informer->publish(m_data->out);
+    }
+  } 
 }
 
