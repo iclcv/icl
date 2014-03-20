@@ -18,3 +18,7 @@ IF(QT4_FOUND)
   ADD_SUBDIRECTORY(texture-cube)
   ADD_SUBDIRECTORY(ray-cast-octree)
 ENDIF()
+
+IF(RSB_FOUND AND PROTOBUF_FOUND)
+  ADD_SUBDIRECTORY(rsb-point-cloud-io)
+ENDIF()

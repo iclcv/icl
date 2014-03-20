@@ -56,7 +56,7 @@ namespace icl{
           CreateFunction create;
         };
         
-        Register &instance();
+        static Register &instance();
         
         void registerGrabberType(const std::string &name, CreateFunction create, 
                                  const std::string &description);

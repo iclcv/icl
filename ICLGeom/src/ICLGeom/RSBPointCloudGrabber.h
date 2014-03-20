@@ -51,6 +51,7 @@ namespace icl{
       struct Data;   //!< internal data type
       Data *m_data;  //!< internal data pointer
       
+      public:
       /// create grabber with given scope
       /** if scope is empty, the grabber is not initialized! */
       RSBPointCloudGrabber(const std::string &scope="", const std::string &transportList="spread");

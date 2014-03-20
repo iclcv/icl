@@ -125,6 +125,19 @@ namespace icl{
       }
       PointCloudSerializer::deserialize(dst, m_data->sdev);      
     }
+    
+    static PointCloudGrabber *create_rsb_point_cloud_grabber(const std::string &params){
+      std::vector<std::string> ts = tok(params,":");
+      if(ts.size() ==  1){
+        return new RSBPointCloudGrabber(ts[0]);
+      }else if(ts.size() == 2){
+        return new RSBPointCloudGrabber(ts[1],ts[0]);
+      }else{
+        throw ICLException("unable to create RSBPointCloudGrabber from given parameter string '"+params+"'");
+      }
+    }
+    
+    REGISTER_POINT_CLOUD_GRABBER_TYPE(rsb,create_rsb_point_cloud_grabber,"RSB based point cloud grabber (syntax: [comma-sep-transport-list:]rsb-scope)");
   } // namespace geom
 }
 

@@ -66,7 +66,6 @@ namespace icl{
       /// fills the given point cloud with grabbed information
       virtual void grab(PointCloudObjectBase &dst);
       
-      typedef CreatorPlugin
     };
   } // namespace geom
 }
