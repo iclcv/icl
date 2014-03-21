@@ -91,8 +91,8 @@ namespace icl{
     };
 
     static const std::string &get_all_algorithms(){
-      static const std::string s = ("HomographyBasedOnly,SamplingCoarse,SamplingMedium,SamplingFine,"
-                                    "SamplingCustom,SimplexSampling");
+      static const std::string s = ("HomographyBasedOnly,SimplexSampling,SamplingCoarse,SamplingMedium,SamplingFine,"
+                                    "SamplingCustom");
       return s;
     }
 
@@ -237,12 +237,11 @@ namespace icl{
                                    int n){
       const float &A = P(0,0), &B = P(1,0), &C = P(2,0), &D = P(1,1), &E = P(2,1);
       const float &rx = r[0], &ry = r[1], &rz = r[2], &tx = t[0], &ty=t[1], &tz = t[2];
-      const float cx = cos(rx), cy = cos(-ry), cz = cos(-rz), sx = sin(rx), sy = sin(-ry), sz = sin(-rz);
-      const float Rx0 = cy*cz-sx*sy*sz, Rx1 = cy*sz+cz*sx*sy, Rx2 = -sy*cx;
-      const float Ry0 = -sz*cx, Ry1 = cz*cx, Ry2 = sx;
+      const float cx = cos(rx), cy = cos(ry), cz = cos(rz), sx = sin(rx), sy = sin(ry), sz = sin(rz);
+      const float Rx0 = cy*cz,  Rx1 = sx*sy*cz+cx*sz, Rx2 = sx*sz-cx*sy*cz;
+      const float Ry0 = -cy*sz, Ry1 = cz*cx-sx*sy*sz, Ry2 = cx*sy*sz+sx*cz;
       const float F = Rx0*A + Rx1*B + Rx2*C;
       const float G = Ry0*A + Ry1*B + Ry2*C;
-
       const float J = Rx1*D + Rx2*E;
       const float K = Ry1*D + Ry2*E;
       const float &N = Rx2;

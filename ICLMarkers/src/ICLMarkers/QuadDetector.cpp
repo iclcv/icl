@@ -539,12 +539,12 @@ namespace icl {
       data->lastBinImage = 0;
 
       // set some default values ...
-      setPropertyValue("css.angle-threshold", 180);
-      setPropertyValue("css.curvature-cutoff", 66);
-      setPropertyValue("css.rc-coefficient", 1);
+      //setPropertyValue("css.angle-threshold", 180);
+      //setPropertyValue("css.curvature-cutoff", 66);
+      //setPropertyValue("css.rc-coefficient", 1);
 
-      setPropertyValue("thresh.global threshold", -10);
-      setPropertyValue("thresh.mask size", 30);
+      //setPropertyValue("thresh.global threshold", -10);
+      //setPropertyValue("thresh.mask size", 30);
     }
 
     QuadDetector::~QuadDetector() {

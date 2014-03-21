@@ -278,7 +278,9 @@ namespace icl {
       public:
 
         std::string getName(){
-          return data_mem.key().toStdString();
+          const QByteArray asc = data_mem.key().toAscii();
+          return std::string(asc.constData(), asc.length());
+          //return data_mem.key().toStdString();
         }
 
         void forceSetMinSize(int minsize){

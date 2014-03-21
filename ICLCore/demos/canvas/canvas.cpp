@@ -52,7 +52,7 @@ struct Canvas : public AbstractCanvas{
   Size size;
   depth d;
   int c;
-  static const float ALPHA_SCALE = 0.00392156862745098039; // 1./255
+  static const float ALPHA_SCALE; // 1./255
   
   struct Functions{
     point_func f_point;
@@ -491,7 +491,7 @@ struct Canvas : public AbstractCanvas{
   
 };
 
-
+const float Canvas::ALPHA_SCALE = 0.00392156862745098039;
 
 
 
