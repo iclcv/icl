@@ -419,7 +419,7 @@ namespace icl{
               }
             }
           }else{ // reuse old device
-            DEBUG_LOG("device " << index << " was used before: using old one. Type" << mode);
+            //            DEBUG_LOG("device " << index << " was used before: using old one. Type" << mode);
             used = it->second;
 
             if(used->size != size){

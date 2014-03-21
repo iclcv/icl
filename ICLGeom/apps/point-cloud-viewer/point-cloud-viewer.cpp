@@ -32,71 +32,47 @@
 #include <ICLGeom/Geom.h>
 
 #include <ICLGeom/PointCloudObject.h>
-#include <ICLGeom/DepthCameraPointCloudGrabber.h>
-
+//#include <ICLGeom/DepthCameraPointCloudGrabber.h>
+#include <ICLGeom/GenericPointCloudGrabber.h>
 HSplit gui;
 Scene scene;
 
 
-SmartPtr<PointCloudObject> obj;
-SmartPtr<DepthCameraPointCloudGrabber> grabber;
+PointCloudObject obj;
+GenericPointCloudGrabber grabber;
 
 void init(){
-  const Camera cam(*pa("-d",2));
-  Size res = cam.getResolution();
-  
+  grabber.init(pa("-pci"));
+  Camera cam;
   if(pa("-c")){
-    grabber = new DepthCameraPointCloudGrabber(*pa("-d",2), *pa("-c",2),
-                                               *pa("-d",0), *pa("-d",1),
-                                               *pa("-c",0), *pa("-c",1) );
-    obj = new PointCloudObject(res.width, res.height);
-  }else{
-    grabber = new DepthCameraPointCloudGrabber(*pa("-d",2), DepthCameraPointCloudGrabber::get_null_color_cam(),
-                                               *pa("-d",0), *pa("-d",1),"","");
-    obj = new PointCloudObject(res.width, res.height, true, false, false);
-  }
-  if(pa("-no-cl")){
-    grabber->setUseCL(false);
+    cam = Camera(*pa("-c"));
   }
 
-  gui << ( VBox()
-           << Image().handle("color").label("color image")
-           << Image().handle("depth").label("depth image")
-           )
-      << Draw3D().handle("scene").label("interactive scene")
+  gui << Draw3D().minSize(32,24).handle("scene")
       << Show();
-
+  
 
   // kinect camera
-  scene.addCamera(*pa("-d",2) );
-  scene.setBounds(-100);
-  //  view camera
-  scene.addCamera(scene.getCamera(0));
-  scene.setDrawCamerasEnabled(false);
-  scene.addObject(obj.get(),false);
+  scene.addCamera(cam);
+  scene.setBounds(1000);
+  scene.addObject(&obj,false);
 
-  gui["scene"].link(scene.getGLCallback(1));
-  gui["scene"].install(scene.getMouseHandler(1));
+  gui["scene"].link(scene.getGLCallback(0));
+  gui["scene"].install(scene.getMouseHandler(0));
 
-  ImageHandle d = gui["depth"];
-  d->setRangeMode(ICLWidget::rmAuto);
-  scene.setDrawCoordinateFrameEnabled(false);
+  obj.setPointSize(3);
+  obj.setPointSmoothingEnabled(false);
 }
 
 
 void run(){
-  grabber->grab(*obj);
-  if(pa("-c")){
-    gui["color"] = grabber->getLastColorImage();
-  }
-  gui["depth"] = grabber->getLastDepthImage();
-
+  grabber.grab(obj);
   gui["scene"].render();
 }
 
 
 int main(int n, char **ppc){
-  return ICLApp(n,ppc,"[m]-depth-cam|-d(device-type,device-ID,calib-filename) "
-                "-color-cam|-c(device-type,device-ID,calib-filename) -disable-open-cl|-no-cl ",init,run).exec();
+  return ICLApp(n,ppc,"[m]-point-cloud-input|-pci(point-cloud-source,descrition) "
+                "-view-camera|-c(filename)",init,run).exec();
 }
 

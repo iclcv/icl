@@ -257,6 +257,8 @@ namespace icl{
         throw ICLException("PointCloudCreator:create: destination point cloud object does not support XYZ data");
       }
   
+      destination.setSize(depthImageMM.getSize());
+
       DataSegment<float,3> xyz = destination.selectXYZ();
   
       if(depthImageMM.getSize() != xyz.getSize()){

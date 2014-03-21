@@ -28,13 +28,15 @@
 **                                                                 **
 ********************************************************************/
 
-#pragma once
-
 #include <ICLGeom/GenericPointCloudGrabber.h>
 
+#include <ICLUtils/PluginRegister.h>
+
 namespace icl{
+  using namespace utils;
+
   namespace geom{
-  
+ 
     struct GenericPointCloudGrabber::Data{
       PointCloudGrabber *impl;
     };
@@ -49,6 +51,10 @@ namespace icl{
                                                        const std::string &srcDescription):m_data(new Data){
       init(sourceType,srcDescription);
     }
+
+    GenericPointCloudGrabber::GenericPointCloudGrabber(const ProgArg &pa){
+      init(pa[0],pa[1]);
+    }
     
     GenericPointCloudGrabber::~GenericPointCloudGrabber(){
       ICL_DELETE(m_data->impl);
@@ -57,17 +63,24 @@ namespace icl{
     
     void GenericPointCloudGrabber::init(const std::string &sourceType, const std::string &srcDescription){
       if(sourceType == "list"){
-        std::cout << PointCloudGrabber::Register::instace().getRegisteredInstanceDescription() << std::endl;
+        std::cout << PluginRegister<PointCloudGrabber>::instance().getRegisteredInstanceDescription() 
+                  << std::endl;
         throw ICLException("GenericPointCloudGrabber list presented successfully");
       }
       ICL_DELETE(m_data->impl);
-      m_data->impl = PointCloudGrabber::Register::instace().createGrabberInstance(sourceType, srcDescription);
+      std::map<std::string,std::string> data;
+      data["creation-string"] = srcDescription;
+      m_data->impl = PluginRegister<PointCloudGrabber>::instance().createInstance(sourceType,data);
       if(!m_data->impl){
         throw ICLException("GenericPointCloudGrabber::init::unable to create"
                            " GenericPointGrabber instance of type" + sourceType);
       }
-      return m_data->impl;
     }
+
+    void GenericPointCloudGrabber::init(const utils::ProgArg &pa){
+      init(pa[0],pa[1]);
+    }
+
     
     bool GenericPointCloudGrabber::isNull() const{
       return !m_data->impl;

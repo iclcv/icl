@@ -31,12 +31,13 @@
 #pragma once
 
 #include <ICLGeom/PointCloudGrabber.h>
+#include <ICLUtils/ProgArg.h>
 
 namespace icl{
   namespace geom{
   
     /// Generic interface for PointCloud sources
-    class GenericPointCloudGrabber : public PointCloudGrabber, public utils::Uncopyable{
+    class ICLGeom_API GenericPointCloudGrabber : public PointCloudGrabber, public utils::Uncopyable{
       struct Data;
       Data *m_data;
       
@@ -53,12 +54,20 @@ namespace icl{
           * <b>rsb</b> rsb-transport-list: rsb-scope-list
       */
       GenericPointCloudGrabber(const std::string &sourceType, const std::string &srcDescription);
+
+      /// direct initialization from program argument
+      /** Prog-arg is assumed to have 2 sub-args */
+      GenericPointCloudGrabber(const utils::ProgArg &pa);
       
       /// destructor
       ~GenericPointCloudGrabber();
       
       /// deferred intialization
       void init(const std::string &sourceType, const std::string &srcDescription);
+      
+      /// deferred initialization from ProgArg (most common perhaps)
+      /** Prog-arg is assumed to have 2 sub-args */
+      void init(const utils::ProgArg &pa);
       
       /// not initialized yet?
       bool isNull() const;
