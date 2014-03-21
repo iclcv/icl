@@ -45,42 +45,7 @@ namespace icl{
       
       /// virtual, but empty destructor
       virtual ~PointCloudGrabber(){}
-
-      /// grabber type registration tool
-      class Register{
-        public:
-        typedef utils::Function<PointCloudGrabber*,const std::string&> CreateFunction;
-         struct RegisteredGrabberType{
-          std::string name;
-          std::string description;
-          CreateFunction create;
-        };
-        
-        static Register &instance();
-        
-        void registerGrabberType(const std::string &name, CreateFunction create, 
-                                 const std::string &description);
-        
-        PointCloudGrabber *createGrabberInstance(const std::string &name, const std::string &params);
-        
-        std::string getRegisteredInstanceDescription();
-
-        private:
-        Register();
-        
-        std::map<std::string,RegisteredGrabberType> types;
-
-      };
     };
-
-
-#define REGISTER_POINT_CLOUD_GRABBER_TYPE(NAME,CREATE_FUNCTION,DESCRIPTION) \
-    struct StaticPointCloudGrabberRegistrationFor_##NAME{               \
-      StaticPointCloudGrabberRegistrationFor_##NAME(){                  \
-        PointCloudGrabber::Register &r = PointCloudGrabber::Register::instance(); \
-        r.registerGrabberType(#NAME,CREATE_FUNCTION,DESCRIPTION);       \
-      }                                                                 \
-    } staticPointCloudGrabberRegistrationFor_##NAME;
-  } // namespace geom
+  }
 }
 

@@ -40,6 +40,7 @@
 
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/StringUtils.h>
+#include <ICLUtils/PluginRegister.h>
 
 using namespace boost;
 using namespace rsb;
@@ -126,7 +127,10 @@ namespace icl{
       PointCloudSerializer::deserialize(dst, m_data->sdev);      
     }
     
-    static PointCloudGrabber *create_rsb_point_cloud_grabber(const std::string &params){
+    static PointCloudGrabber *create_rsb_point_cloud_grabber(const std::map<std::string,std::string> &d){
+      std::map<std::string,std::string>::const_iterator it = d.find("creation-string");
+      if(it == d.end()) return 0;
+      const std::string &params = it->second;
       std::vector<std::string> ts = tok(params,":");
       if(ts.size() ==  1){
         return new RSBPointCloudGrabber(ts[0]);
@@ -135,9 +139,12 @@ namespace icl{
       }else{
         throw ICLException("unable to create RSBPointCloudGrabber from given parameter string '"+params+"'");
       }
+      return 0;
     }
     
-    REGISTER_POINT_CLOUD_GRABBER_TYPE(rsb,create_rsb_point_cloud_grabber,"RSB based point cloud grabber (syntax: [comma-sep-transport-list:]rsb-scope)");
+    REGISTER_PLUGIN(PointCloudGrabber,rsb,create_rsb_point_cloud_grabber,
+                    "RSB based point cloud grabber",
+                    "creation-string: [comma-sep-transport-list:]rsb-scope");
   } // namespace geom
 }
 

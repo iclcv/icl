@@ -38,8 +38,7 @@ SET(SOURCES src/ICLGeom/Camera.cpp
             src/ICLGeom/Posit.cpp
             src/ICLGeom/SoftPosit.cpp
             src/ICLGeom/RansacBasedPoseEstimator.cpp
-            src/ICLGeom/ViewRay.cpp
-            src/ICLGeom/PointCloudGrabber.cpp)
+            src/ICLGeom/ViewRay.cpp)
 
 SET(HEADERS src/ICLGeom/Camera.h
             src/ICLGeom/PointCloudNormalEstimator.h

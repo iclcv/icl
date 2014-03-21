@@ -32,6 +32,7 @@
 #include <ICLGeom/PointCloudCreator.h>
 
 #include <ICLIO/GenericGrabber.h>
+#include <ICLUtils/PluginRegister.h>
 
 using namespace icl::utils;
 using namespace icl::math;
@@ -171,5 +172,31 @@ namespace icl{
       return getCreator().getMapping();
     }
 
+
+    static PointCloudGrabber *create_depth_camera_point_cloud_grabber(const std::map<std::string,std::string> &d){
+      std::map<std::string,std::string>::const_iterator it = d.find("creation-string");
+      if(it == d.end()) return 0;
+      const std::string &params = it->second;
+
+      std::vector<std::string> ts = tok(params,",");
+      Camera dc = ( ts[2] == "DEFAULT" ? DepthCameraPointCloudGrabber::get_default_depth_cam() : 
+                   Camera(ts[2]) );
+      
+      Camera cc = ( ts.size() == 3 ? DepthCameraPointCloudGrabber::get_null_color_cam() :
+                   ts[5] == "DEFAULT" ? DepthCameraPointCloudGrabber::get_default_depth_cam() :
+                   Camera(ts[5]) );
+      
+      if(ts.size() == 3){
+        return new DepthCameraPointCloudGrabber(dc,cc,ts[0],ts[1],"","");
+      }else{
+        return new DepthCameraPointCloudGrabber(dc,cc,ts[0],ts[1],ts[3],ts[4]);
+      }
+    }
+    
+    REGISTER_PLUGIN(PointCloudGrabber,dcam,create_depth_camera_point_cloud_grabber,
+                    "Point cloud grabber based on a depth and an optional color camera",
+                    "creation-string: depth-camera-type,depth-camera-id,depth-camera-calib-file"
+                    "[,depth-camera-type,depth-camera-id,depth-camera-calib-file] use 'DEFAULT'"
+                    "as calib-file name if you dont have a calib file.");
   } // namespace geom
 }

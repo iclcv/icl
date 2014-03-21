@@ -75,6 +75,7 @@ SET(HEADERS src/ICLUtils/Any.h
 	    src/ICLUtils/CLProgram.h 
 	    src/ICLUtils/CompatMacros.h
             src/ICLUtils/ConfigFile.h
+            src/ICLUtils/PluginRegister.h
             src/ICLUtils/Configurable.h
             src/ICLUtils/ConfigurableProxy.h
             src/ICLUtils/FixedArray.h
