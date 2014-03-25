@@ -38,8 +38,7 @@ SET(SOURCES src/ICLGeom/Camera.cpp
             src/ICLGeom/Posit.cpp
             src/ICLGeom/SoftPosit.cpp
             src/ICLGeom/RansacBasedPoseEstimator.cpp
-            src/ICLGeom/ViewRay.cpp
-            src/ICLGeom/GenericPointCloudGrabber.cpp)
+            src/ICLGeom/ViewRay.cpp)
 
 SET(HEADERS src/ICLGeom/Camera.h
             src/ICLGeom/PointCloudNormalEstimator.h
@@ -51,7 +50,6 @@ SET(HEADERS src/ICLGeom/Camera.h
             src/ICLGeom/PCLIncludes.h
             src/ICLGeom/Posit.h
             src/ICLGeom/CoordinateFrameSceneObject.h  
-            src/ICLGeom/PointCloudGrabber.h 
             src/ICLGeom/CoplanarPointPoseEstimator.h
             src/ICLGeom/Hit.h
             src/ICLGeom/PlaneEquation.h
@@ -64,8 +62,7 @@ SET(HEADERS src/ICLGeom/Camera.h
             src/ICLGeom/DataSegment.h            
             src/ICLGeom/PlotHandle3D.h
             src/ICLGeom/RansacBasedPoseEstimator.h
-            src/ICLGeom/PointCloudOutput.h
-            src/ICLGeom/GenericPointCloudGrabber.h)
+            src/ICLGeom/PointCloudOutput.h)
 
 IF(QT_FOUND)
   LIST (APPEND SOURCES src/ICLGeom/Scene.cpp
@@ -74,6 +71,7 @@ IF(QT_FOUND)
                        src/ICLGeom/SceneMouseHandler.cpp
                        src/ICLGeom/SceneObject.cpp
                        src/ICLGeom/Primitive.cpp
+                       src/ICLGeom/GenericPointCloudGrabber.cpp
                        src/ICLGeom/GridSceneObject.cpp
                        src/ICLGeom/ComplexCoordinateFrameSceneObject.cpp
                        src/ICLGeom/Segmentation3D.cpp
@@ -93,11 +91,13 @@ IF(QT_FOUND)
                        src/ICLGeom/SceneMouseHandler.h
                        src/ICLGeom/SceneObject.h
                        src/ICLGeom/Primitive.h
+                       src/ICLGeom/GenericPointCloudGrabber.h
                        src/ICLGeom/GridSceneObject.h
                        src/ICLGeom/ComplexCoordinateFrameSceneObject.h
                        src/ICLGeom/Segmentation3D.h
                        src/ICLGeom/DepthCameraPointCloudGrabber.h
                        src/ICLGeom/PointCloudCreator.h
+                       src/ICLGeom/PointCloudGrabber.h 
                        src/ICLGeom/PointCloudObject.h
                        src/ICLGeom/PointCloudObjectBase.h
                        src/ICLGeom/PointCloudSerializer.h
