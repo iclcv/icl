@@ -29,7 +29,7 @@
 ********************************************************************/
 
 #include <ICLQt/ThreadedUpdatableTextView.h>
-#include <QtGui/QApplication>
+#include <QApplication>
 #include <ICLUtils/Macros.h>
 #include <ICLQt/Application.h>
 

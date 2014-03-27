@@ -33,7 +33,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLQt/GUIHandle.h>
 #include <ICLQt/ContainerHandle.h>
-#include <QtGui/QSplitter>
+#include <QSplitter>
 
 namespace icl{
   namespace qt{

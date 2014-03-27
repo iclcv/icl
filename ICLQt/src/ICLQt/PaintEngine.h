@@ -37,7 +37,7 @@
 #include <ICLCore/Types.h>
 #include <string>
 #include <stdio.h>
-#include <QtGui/QImage>
+#include <QImage>
 
 namespace icl{
   /** \cond */

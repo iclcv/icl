@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include <QtGui/QWidget>
+#include <QWidget>
 #include <QtCore/QString>
 #include <ICLCore/Types.h>
 

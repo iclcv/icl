@@ -64,14 +64,14 @@
 #include <ICLQt/ColorHandle.h>
 #include <ICLQt/BoxHandle.h>
 
-#include <QtGui/QCheckBox>
-#include <QtGui/QComboBox>
-#include <QtGui/QLineEdit>
-#include <QtGui/QSpinBox>
-#include <QtGui/QRadioButton>
-#include <QtGui/QSlider>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QLineEdit>
+#include <QSpinBox>
+#include <QRadioButton>
+#include <QSlider>
 #include <ICLQt/CompabilityLabel.h>
-#include <QtGui/QPushButton>
+#include <QPushButton>
 #include <ICLQt/Widget.h>
 #include <ICLQt/DrawWidget.h>
 #ifdef ICL_HAVE_OPENGL

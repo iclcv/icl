@@ -33,8 +33,8 @@
 
 #include <QtCore/QFile>
 #include <QtCore/QTextStream>
-#include <QtGui/QFileDialog>
-#include <QtGui/QPushButton>
+#include <QFileDialog>
+#include <QPushButton>
 
 #include <ICLQt/ChromaGUI.h>
 

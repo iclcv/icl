@@ -31,7 +31,7 @@
 #pragma once
 
 #include <ICLQt/GUIHandle.h>
-#include <QtGui/QTabBar>
+#include <QTabBar>
 #include <vector>
 #include <map>
 #include <QtCore/QObject>

@@ -30,8 +30,8 @@
 
 #include <ICLQt/Common.h>
 #include <ICLGeom/GeomDefs.h>
-#include <QtGui/QMenu>
-#include <QtGui/QActionEvent>
+#include <QMenu>
+#include <QActionEvent>
 #include <ICLQt/DefineRectanglesMouseHandler.h>
 GUI gui;
 GenericGrabber grabber;

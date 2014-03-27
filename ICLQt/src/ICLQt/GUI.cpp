@@ -45,30 +45,31 @@
 #include <ICLQt/Widget.h>
 #include <ICLUtils/File.h>
 
-#include <QtGui/QColorDialog>
-#include <QtGui/QHBoxLayout>
-#include <QtGui/QVBoxLayout>
-#include <QtGui/QGroupBox>
-#include <QtGui/QRadioButton>
-#include <QtGui/QWidget>
-#include <QtGui/QLayout>
-#include <QtGui/QPushButton>
-#include <QtGui/QLabel>
-#include <QtGui/QSlider>
-#include <QtGui/QLCDNumber>
-#include <QtGui/QLineEdit>
-#include <QtGui/QIntValidator>
-#include <QtGui/QDoubleValidator>
-#include <QtGui/QComboBox>
-#include <QtGui/QSpinBox>
-#include <QtGui/QLabel>
-#include <QtGui/QTabBar>
-#include <QtGui/QMainWindow>
-#include <QtGui/QDockWidget>
-#include <QtGui/QTabWidget>
-#include <QtGui/QApplication>
-#include <QtGui/QSplitter>
-#include <QtGui/QScrollArea>
+#include <QStyleFactory>
+#include <QColorDialog>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QGroupBox>
+#include <QRadioButton>
+#include <QWidget>
+#include <QLayout>
+#include <QPushButton>
+#include <QLabel>
+#include <QSlider>
+#include <QLCDNumber>
+#include <QLineEdit>
+#include <QIntValidator>
+#include <QDoubleValidator>
+#include <QComboBox>
+#include <QSpinBox>
+#include <QLabel>
+#include <QTabBar>
+#include <QMainWindow>
+#include <QDockWidget>
+#include <QTabWidget>
+#include <QApplication>
+#include <QSplitter>
+#include <QScrollArea>
 
 #include <ICLQt/ProxyLayout.h>
 
@@ -98,11 +99,10 @@
 #include <ICLQt/PlotHandle.h>
 #include <ICLQt/PlotWidget.h>
 #include <ICLQt/Quick.h>
-#include <QtGui/QCheckBox>
-#include <QtGui/QCleanlooksStyle>
+#include <QCheckBox>
 #include <QtCore/QTimer>
 
-#include <QtGui/QFileDialog>
+#include <QFileDialog>
 
 #include <ICLQt/CamCfgWidget.h>
 #include <ICLUtils/StringUtils.h>
@@ -118,7 +118,7 @@
 #include <ICLQt/ColorLabel.h>
 #include <ICLUtils/Configurable.h>
 #include <ICLCore/Color.h>
-#include <QtGui/QProgressBar>
+#include <QProgressBar>
 
 #include <map>
 #include <set>
@@ -914,7 +914,7 @@ namespace icl{
         m_poGroupBox = new QGroupBox(def.param(0).c_str(),def.parentWidget());
         m_poGroupBox->setFlat(false);
         //m_poGroupBox->setStyleSheet("QGroupBox{ border: 1px solid gray; border-radius: 3px;}");
-        m_poGroupBox->setStyle(new QCleanlooksStyle());
+        m_poGroupBox->setStyle(QStyleFactory::create("fusion"));
         m_poLayout = new QVBoxLayout;
         m_poLayout->setMargin(def.margin());
         m_poLayout->setSpacing(def.spacing());

@@ -278,7 +278,7 @@ namespace icl {
       public:
 
         std::string getName(){
-          const QByteArray asc = data_mem.key().toAscii();
+          const QByteArray asc = data_mem.key().toLatin1();
           return std::string(asc.constData(), asc.length());
           //return data_mem.key().toStdString();
         }

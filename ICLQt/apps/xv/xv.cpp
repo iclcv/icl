@@ -32,7 +32,7 @@
 #include <iterator>
 #include <ICLIO/FileGrabber.h>
 #include <ICLQt/Common.h>
-#include <QtGui/QDesktopWidget>
+#include <QDesktopWidget>
 
 //#include <QScreen>
 

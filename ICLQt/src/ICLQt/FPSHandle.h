@@ -35,7 +35,7 @@
 #include <ICLQt/GUIHandle.h>
 #include <ICLQt/CompabilityLabel.h>
 #include <QtCore/QString>
-#include <QtGui/QWidget>
+#include <QWidget>
 #include <string>
 
 namespace icl{

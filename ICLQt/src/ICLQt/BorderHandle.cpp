@@ -30,7 +30,7 @@
 
 #include <ICLQt/BorderHandle.h>
 
-#include <QtGui/QGroupBox>
+#include <QGroupBox>
 
 namespace icl{
   namespace qt{

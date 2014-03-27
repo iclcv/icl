@@ -34,7 +34,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLQt/PaintEngine.h>
-#include <QtGui/QFont>
+#include <QFont>
 
 // forward declaration of the parent class
 class QGLWidget;

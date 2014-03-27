@@ -33,8 +33,8 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLQt/GUIHandle.h>
 #include <ICLQt/ContainerHandle.h>
-#include <QtGui/QTabWidget>
-#include <QtGui/QLayout>
+#include <QTabWidget>
+#include <QLayout>
 
 namespace icl{
   namespace qt{

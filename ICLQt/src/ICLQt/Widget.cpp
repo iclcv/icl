@@ -42,31 +42,31 @@
 #include <ICLQt/QImageConverter.h>
 #include <ICLCore/FixedConverter.h>
 #include <ICLQt/Application.h>
-#include <QtGui/QImage>
+#include <QImage>
 
 
 #include <ICLQt/IconFactory.h>
 #include <ICLUtils/Thread.h>
 
-#include <QtGui/QPainter>
+#include <QPainter>
 #include <QtCore/QTimer>
-#include <QtGui/QLabel>
-#include <QtGui/QCheckBox>
-#include <QtGui/QInputDialog>
+#include <QLabel>
+#include <QCheckBox>
+#include <QInputDialog>
 #include <QtCore/QMutexLocker>
-#include <QtGui/QPushButton>
-#include <QtGui/QHBoxLayout>
-#include <QtGui/QComboBox>
-#include <QtGui/QSlider>
-#include <QtGui/QSizePolicy>
-#include <QtGui/QFileDialog>
-#include <QtGui/QSpinBox>
-#include <QtGui/QMouseEvent>
-#include <QtGui/QPaintEvent>
-#include <QtGui/QWheelEvent>
-#include <QtGui/QColorDialog>
-#include <QtGui/QMessageBox>
-#include <QtGui/QTextEdit>
+#include <QPushButton>
+#include <QHBoxLayout>
+#include <QComboBox>
+#include <QSlider>
+#include <QSizePolicy>
+#include <QFileDialog>
+#include <QSpinBox>
+#include <QMouseEvent>
+#include <QPaintEvent>
+#include <QWheelEvent>
+#include <QColorDialog>
+#include <QMessageBox>
+#include <QTextEdit>
 
 
 #include <ICLQt/GUI.h>
@@ -964,12 +964,8 @@ namespace icl{
           parentICLWidget->update();
         }
       }
-      
-  #if QT_VERSION >= 0x040400
-  #define MOUSE_EVENT_POS e->posF()
-  #else
+
   #define MOUSE_EVENT_POS QPointF(e->pos().x(),e->pos().y())
-  #endif
       virtual void mousePressEvent(QMouseEvent *e){
         down(e->button()) = true;
         if(e->button() == Qt::LeftButton){

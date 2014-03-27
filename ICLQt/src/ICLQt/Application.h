@@ -41,8 +41,8 @@
 #include <GL/glew.h>
 #endif
 
-#include <QtGui/QApplication>
-#include <QGLWidget>
+#include <QApplication>
+#include <QtOpenGL/QGLWidget>
 
 namespace icl{
 

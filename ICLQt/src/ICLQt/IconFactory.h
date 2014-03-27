@@ -32,8 +32,8 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
-#include <QtGui/QPixmap>
-#include <QtGui/QIcon>
+#include <QPixmap>
+#include <QIcon>
 
 namespace icl{
   namespace qt{

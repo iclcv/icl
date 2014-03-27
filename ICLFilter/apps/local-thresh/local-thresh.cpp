@@ -36,7 +36,7 @@
 #include <ICLQt/Common.h>
 #include <ICLIO/FileList.h>
 
-#include <QtGui/QInputDialog>
+#include <QInputDialog>
 HBox gui;
 GenericGrabber grabber;
 LocalThresholdOp ltop;

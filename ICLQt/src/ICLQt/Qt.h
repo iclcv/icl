@@ -36,7 +36,7 @@
 #include <ICLQt/GUI.h>
 #include <ICLQt/MouseHandler.h>
 
-#include <QtGui/QApplication>
+#include <QApplication>
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/Mutex.h>
 

@@ -31,8 +31,8 @@
 #include <ICLQt/GLPaintEngine.h>
 #include <QtOpenGL/QGLWidget>
 #include <ICLCore/Img.h>
-#include <QtGui/QFontMetrics>
-#include <QtGui/QPainter>
+#include <QFontMetrics>
+#include <QPainter>
 #include <ICLCore/CCFunctions.h>
 #include <ICLQt/GLImg.h>
 
