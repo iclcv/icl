@@ -63,8 +63,8 @@
 #include <ICLQt/IconFactory.h>
 #include <ICLQt/Application.h>
 #include <ICLGeom/ShaderUtil.h>
-#include <QGLPixelBuffer>
-#include <QGLContext>
+#include <QtOpenGL/QGLPixelBuffer>
+#include <QtOpenGL/QGLContext>
 #include <ICLCore/CCFunctions.h>
 #endif
 
