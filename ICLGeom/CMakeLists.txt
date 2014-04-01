@@ -38,7 +38,10 @@ SET(SOURCES src/ICLGeom/Camera.cpp
             src/ICLGeom/Posit.cpp
             src/ICLGeom/SoftPosit.cpp
             src/ICLGeom/RansacBasedPoseEstimator.cpp
-            src/ICLGeom/ViewRay.cpp)
+            src/ICLGeom/ViewRay.cpp
+            src/ICLGeom/GenericPointCloudGrabber.cpp
+            src/ICLGeom/GenericPointCloudOutput.cpp)
+
 
 SET(HEADERS src/ICLGeom/Camera.h
             src/ICLGeom/PointCloudNormalEstimator.h
@@ -62,7 +65,10 @@ SET(HEADERS src/ICLGeom/Camera.h
             src/ICLGeom/DataSegment.h            
             src/ICLGeom/PlotHandle3D.h
             src/ICLGeom/RansacBasedPoseEstimator.h
-            src/ICLGeom/PointCloudOutput.h)
+            src/ICLGeom/PointCloudOutput.h
+            src/ICLGeom/GenericPointCloudGrabber.h
+            src/ICLGeom/GenericPointCloudOutput.h)
+
 
 IF(QT_FOUND)
   LIST (APPEND SOURCES src/ICLGeom/Scene.cpp

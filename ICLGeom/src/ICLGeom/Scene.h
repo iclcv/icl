@@ -44,6 +44,7 @@
 #include <ICLGeom/Camera.h>
 #include <ICLGeom/SceneLight.h>
 #include <ICLGeom/Primitive.h>
+#include <ICLGeom/PointCloudGrabber.h>
 #include <ICLCore/Img.h>
 #include <ICLUtils/FPSEstimator.h>
 
@@ -134,7 +135,7 @@ namespace icl{
     
         */
 
-    class ICLGeom_API Scene : public utils::Lockable, public utils::Configurable{
+    class ICLGeom_API Scene : public utils::Lockable, public utils::Configurable, public geom::PointCloudGrabber{
       public:
 
       /// make SceneObject friend of Scene
@@ -407,6 +408,12 @@ namespace icl{
 
       /// frees the display list, that is associated with an object
       void freeDisplayList(SceneObject *o) const;
+      
+      
+      /// implements the PointCloudGrabber interface
+      /** Internally uses the camera index that can be defined 
+          by setting the int-property "point cloud grabber cam"*/
+      virtual void grab(PointCloudObjectBase &dst);
 
 #ifdef ICL_HAVE_QT
       /// internally used rendering method

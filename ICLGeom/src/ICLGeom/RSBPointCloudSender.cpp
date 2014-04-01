@@ -34,11 +34,13 @@
 #include <ICLGeom/ProtoBufSerializationDevice.h>
 
 #include <ICLUtils/StringUtils.h>
+#include <ICLUtils/PluginRegister.h>
 
 #include <rsb/Factory.h>
 #include <rsb/Handler.h>
 #include <rsb/converter/Repository.h>
 #include <rsb/converter/ProtocolBufferConverter.h>
+
 
 using namespace boost;
 using namespace rsb;
@@ -119,6 +121,27 @@ namespace icl{
       PointCloudSerializer::serialize(dst,*m_data->sdev);
       m_data->informer->publish(m_data->out);
     }
+
+
+    static PointCloudOutput *create_rsb_point_cloud_sender(const std::map<std::string,std::string> &d){
+      std::map<std::string,std::string>::const_iterator it = d.find("creation-string");
+      if(it == d.end()) return 0;
+      const std::string &params = it->second;
+      std::vector<std::string> ts = tok(params,":");
+      if(ts.size() ==  1){
+        return new RSBPointCloudSender(ts[0]);
+      }else if(ts.size() == 2){
+        return new RSBPointCloudSender(ts[1],ts[0]);
+      }else{
+        throw ICLException("unable to create RSBPointCloudSender from given parameter string '"+params+"'");
+      }
+      return 0;
+    }
+    
+    REGISTER_PLUGIN(PointCloudOutput,rsb,create_rsb_point_cloud_sender,
+                    "RSB based point cloud output",
+                    "creation-string: [comma-sep-transport-list:]rsb-scope");
+
   } 
 }
 

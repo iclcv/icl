@@ -50,8 +50,11 @@
 #include <ICLGeom/CoordinateFrameSceneObject.h>
 #include <ICLGeom/ComplexCoordinateFrameSceneObject.h>
 #include <ICLGeom/GeomDefs.h>
+#include <ICLGeom/PointCloudCreator.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Time.h>
+#include <ICLUtils/File.h>
+#include <ICLUtils/PluginRegister.h>
 
 #ifdef ICL_HAVE_QT
 #include <ICLQt/Quick.h>
@@ -412,6 +415,7 @@ namespace icl{
       addProperty("info.Objects in the Scene","info","",0);
       addProperty("info.Primitives in the Scene","info","",0);
       addProperty("info.Vertices in the Scene","info","",0);
+      addProperty("point cloud grabber cam","range","[0,10000]",0);
     }
     Scene::~Scene(){
   #ifdef ICL_HAVE_QT
@@ -1546,6 +1550,19 @@ namespace icl{
       }
     }
 
+    void Scene::grab(PointCloudObjectBase &dst){
+      int camID = getPropertyValue("point cloud grabber cam");
+      if((int)m_cameras.size() >= camID) {
+        ERROR_LOG("invalid camera id");
+        return;
+      }
+      const Camera &c = m_cameras[camID];
+      Img32f depthBuffer(c.getRenderParams().chipSize,1);
+      const Img8u &image = render(camID,0,&depthBuffer,DistToCamPlane);
+      PointCloudCreator pcc(c,c);
+      pcc.create(depthBuffer,dst,&image);
+    }
+
     const Img8u &Scene::render(int camIndex, const ImgBase *background, Img32f *depthBuffer,
       DepthBufferMode mode) {
       struct RenderEvent : public ICLApplication::AsynchronousEvent{
@@ -1649,6 +1666,45 @@ namespace icl{
 
     REGISTER_CONFIGURABLE(Scene, return new Scene);
 
+
+    static PointCloudGrabber *create_scene_point_cloud_grabber(const std::map<std::string,std::string> &d){
+      std::map<std::string,std::string>::const_iterator it = d.find("creation-string");
+      if(it == d.end()) return 0;
+      const std::string &params = it->second;
+      std::vector<std::string> ts = tok(params,":");
+      
+      Scene *scene = new Scene;
+      if(ts.size() == 1 || ts.size() == 2){
+        scene->addCamera(Camera());
+        SceneObject *obj = 0;
+        if(ts[0] == "cube"){
+          obj = SceneObject::cube(0,0,0,2);
+          obj->rotate(1,2,3);
+        }else if(ts[0] == "sphere"){
+          obj = SceneObject::sphere(0,0,0,2,30,30);
+        }else{
+          if(utils::File(ts[0]).exists()){
+            obj = new SceneObject(ts[0]);
+          }else{
+            ERROR_LOG("file not found: " << ts[0]);
+            return 0;
+          }
+        }
+        scene->addObject(obj);
+        if(ts.size() == 2){
+          scene->addCamera(Camera(ts[1]));
+        }else{
+          scene->addCamera(Camera());
+        }
+        return scene;
+      }
+      ERROR_LOG("invalid parameters: " << params);
+      return 0;
+    }
+    
+    REGISTER_PLUGIN(PointCloudGrabber,scene,create_scene_point_cloud_grabber,
+                    "Simulation based Grabber that renders a point cloud in a virtual scene",
+                    "creation-string: {shape|object-file}[:camera-file] (shape can be sphere or cube)");
 
   } // namespace geom
 }
