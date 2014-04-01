@@ -177,7 +177,7 @@ namespace icl{
                immediately */
     template<class T> ICLQt_API
     core::Img<T> grab(const std::string &dev, const std::string &devSpec, 
-                const utils::Size &size=utils::Size::null, core::format fmt=formatRGB,
+                const utils::Size &size=utils::Size::null, core::format fmt=core::formatRGB,
                 bool releaseGrabber=false);
   
     /** \cond affinity version */
