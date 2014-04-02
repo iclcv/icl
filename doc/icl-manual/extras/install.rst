@@ -356,6 +356,31 @@ for point cloud processing units located in the ICLGeom module
 
 .. _install.dependencies.optional.openni:
 
+Sphinx/Doxygen for generating the API documentation and the Manual
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In order to build ICL's API reference, doxygen needs to be installed. Since
+also generation of inheritance graphs is activated, also 'dot' is needed.
+On ubuntu, you can install these dependendies using::
+  
+  sudo apt-get install doxygen graphviz
+
+This will generate the target 'api' in the build directory.
+
+In additionn to the API reference, the sphinx-based manual can be build. To this
+end, you'll need to have the API dependencies plus the sphinx-build tool, which can 
+be installed on ubuntu systems using::
+  
+  sudo apt-get install python-sphinx python-setuptools
+  sudo easy_install pyparsing
+
+After this, configuring ICL will also create a 'manual' target which generates
+the ICL manual in html-form. Both, manual and api can be triggered by typing::
+
+  make doc
+
+from the build directory
+
 
 
 OpenNI / Nite
