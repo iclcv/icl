@@ -90,7 +90,7 @@ namespace icl{
         t(2,0) = "Creation Syntax";
         int i=1;
         for(typename std::map<std::string,Plugin>::iterator it = plugins.begin(); 
-            it != plugins.end(); ++it){
+            it != plugins.end(); ++it, ++i){
           t(0,i) = it->second.name;
           t(1,i) = it->second.description;
           t(2,i) = it->second.creationSyntax;
@@ -99,7 +99,7 @@ namespace icl{
       }
       
       /// returns a all registered plugins
-      const std::map<std::string,Plugin> getRegisteredPlugins() const{
+      const std::map<std::string,Plugin> &getRegisteredPlugins() const{
         return plugins;
       }
 

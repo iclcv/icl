@@ -38,6 +38,13 @@ using namespace icl::core;
 namespace icl{
   namespace geom{
 
+    PointCloudObject::PointCloudObject(bool withNormals, bool withColors):
+      m_organized(false){
+      m_dim2D = Size(0,0);
+      m_hasNormals = withNormals;
+      m_hasColors = withColors;
+    }
+
     PointCloudObject::PointCloudObject(int numPoints, bool withNormals, bool withColors):
       m_organized(false){
       m_dim2D = Size(numPoints,1);

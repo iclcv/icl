@@ -65,6 +65,8 @@ namespace icl{
       if(sourceType == "list"){
         std::cout << PluginRegister<PointCloudGrabber>::instance().getRegisteredInstanceDescription() 
                   << std::endl;
+        
+
         throw ICLException("GenericPointCloudGrabber list presented successfully");
       }
       ICL_DELETE(m_data->impl);

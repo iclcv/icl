@@ -6,6 +6,7 @@ IF(QT4_FOUND)
   ADD_SUBDIRECTORY(show-scene)
   ADD_SUBDIRECTORY(surf-based-object-tracking)
   ADD_SUBDIRECTORY(point-cloud-viewer)
+  ADD_SUBDIRECTORY(point-cloud-pipe)
 ENDIF()
 
 IF(QT4_FOUND AND OpenCV_FOUND)

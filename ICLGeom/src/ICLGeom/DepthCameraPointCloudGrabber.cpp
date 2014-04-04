@@ -69,6 +69,10 @@ namespace icl{
       m_data(new Data){
       m_data->lastColorImage = 0;
       m_data->lastDepthImage = 0;
+      
+      DEBUG_LOG("depthDeviceType: -" << depthDeviceType << "-");
+      DEBUG_LOG("depthDeviceID: -" << depthDeviceID << "-");
+
       m_data->depthGrabber.init(depthDeviceType,depthDeviceType+"="+depthDeviceID);
       m_data->depthGrabber.useDesired(formatMatrix);
       m_data->depthGrabber.useDesired(depth32f);
@@ -83,6 +87,8 @@ namespace icl{
       }else{
         m_data->creator.init(depthCam);
       }
+      
+      DEBUG_LOG("-- done here --");
     }
     
     DepthCameraPointCloudGrabber::~DepthCameraPointCloudGrabber(){
@@ -185,6 +191,11 @@ namespace icl{
       Camera cc = ( ts.size() == 3 ? DepthCameraPointCloudGrabber::get_null_color_cam() :
                    ts[5] == "DEFAULT" ? DepthCameraPointCloudGrabber::get_default_depth_cam() :
                    Camera(ts[5]) );
+      
+      SHOW(ts.size());
+      for(size_t i=0;i<ts.size();++i){
+        std::cout << "i: " << i << " " << ts[i] << std::endl;
+      }
       
       if(ts.size() == 3){
         return new DepthCameraPointCloudGrabber(dc,cc,ts[0],ts[1],"","");
