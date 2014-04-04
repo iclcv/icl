@@ -77,7 +77,7 @@ void run(){
 
 int main(int n, char **ppc){
   return ICLApp(n,ppc,"[m]-point-cloud-input|-pci(point-cloud-source,descrition) "
-                "[m]-point-cloud-output|-pco(point-cloud-destination,descrition)"
+                "[m]-point-cloud-output|-pco(point-cloud-destination,descrition) "
                 "-view-camera|-c(filename)",init,run).exec();
 }
 

@@ -70,9 +70,6 @@ namespace icl{
       m_data->lastColorImage = 0;
       m_data->lastDepthImage = 0;
       
-      DEBUG_LOG("depthDeviceType: -" << depthDeviceType << "-");
-      DEBUG_LOG("depthDeviceID: -" << depthDeviceID << "-");
-
       m_data->depthGrabber.init(depthDeviceType,depthDeviceType+"="+depthDeviceID);
       m_data->depthGrabber.useDesired(formatMatrix);
       m_data->depthGrabber.useDesired(depth32f);
@@ -87,8 +84,6 @@ namespace icl{
       }else{
         m_data->creator.init(depthCam);
       }
-      
-      DEBUG_LOG("-- done here --");
     }
     
     DepthCameraPointCloudGrabber::~DepthCameraPointCloudGrabber(){
@@ -185,22 +180,28 @@ namespace icl{
       const std::string &params = it->second;
 
       std::vector<std::string> ts = tok(params,",");
-      Camera dc = ( ts[2] == "DEFAULT" ? DepthCameraPointCloudGrabber::get_default_depth_cam() : 
-                   Camera(ts[2]) );
-      
-      Camera cc = ( ts.size() == 3 ? DepthCameraPointCloudGrabber::get_null_color_cam() :
-                   ts[5] == "DEFAULT" ? DepthCameraPointCloudGrabber::get_default_depth_cam() :
-                   Camera(ts[5]) );
-      
-      SHOW(ts.size());
-      for(size_t i=0;i<ts.size();++i){
-        std::cout << "i: " << i << " " << ts[i] << std::endl;
+      const Camera *dc = 0, *cc = 0;
+      Camera dcx,ccx;
+      if(ts[2] == "DEFAULT"){
+        dc = &DepthCameraPointCloudGrabber::get_default_depth_cam();
+      }else{
+        dcx = Camera(ts[2]);
+        dc = &dcx;
       }
       
       if(ts.size() == 3){
-        return new DepthCameraPointCloudGrabber(dc,cc,ts[0],ts[1],"","");
+        cc = &DepthCameraPointCloudGrabber::get_null_color_cam();
+      }else if(ts[5] == "DEFAULT"){
+        cc = &DepthCameraPointCloudGrabber::get_default_depth_cam();
       }else{
-        return new DepthCameraPointCloudGrabber(dc,cc,ts[0],ts[1],ts[3],ts[4]);
+        ccx = Camera(ts[5]);
+        cc = &ccx;
+      }
+      
+      if(ts.size() == 3){
+        return new DepthCameraPointCloudGrabber(*dc,*cc,ts[0],ts[1],"","");
+      }else{
+        return new DepthCameraPointCloudGrabber(*dc,*cc,ts[0],ts[1],ts[3],ts[4]);
       }
     }
     
