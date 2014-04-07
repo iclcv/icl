@@ -40,7 +40,10 @@ SET(SOURCES src/ICLGeom/Camera.cpp
             src/ICLGeom/RansacBasedPoseEstimator.cpp
             src/ICLGeom/ViewRay.cpp
             src/ICLGeom/GenericPointCloudGrabber.cpp
-            src/ICLGeom/GenericPointCloudOutput.cpp)
+            src/ICLGeom/GenericPointCloudOutput.cpp
+            src/ICLGeom/ObjectEdgeDetector.cpp
+            src/ICLGeom/ObjectEdgeDetectorCPU.cpp
+            src/ICLGeom/ObjectEdgeDetectorGPU.cpp)
 
 
 SET(HEADERS src/ICLGeom/Camera.h
@@ -67,7 +70,11 @@ SET(HEADERS src/ICLGeom/Camera.h
             src/ICLGeom/RansacBasedPoseEstimator.h
             src/ICLGeom/PointCloudOutput.h
             src/ICLGeom/GenericPointCloudGrabber.h
-            src/ICLGeom/GenericPointCloudOutput.h)
+            src/ICLGeom/GenericPointCloudOutput.h
+            src/ICLGeom/ObjectEdgeDetector.h
+            src/ICLGeom/ObjectEdgeDetectorCPU.h
+            src/ICLGeom/ObjectEdgeDetectorGPU.h
+            src/ICLGeom/ObjectEdgeDetectorPlugin.h)
 
 
 IF(QT_FOUND)

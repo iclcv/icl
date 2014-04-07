@@ -30,13 +30,13 @@
 
 
 #include <ICLQt/Common.h>
-#include <ICLGeom/PointCloudNormalEstimator.h>
+#include <ICLGeom/ObjectEdgeDetector.h>
 #include <ICLUtils/Time.h>
 
 HSplit gui;
 GenericGrabber grabDepth, grabColor;
 
-PointCloudNormalEstimator *normalEstimator;
+ObjectEdgeDetector *objectEdgeDetector;
 
 ButtonGroupHandle usedFilterHandle;
 ButtonGroupHandle usedSmoothingHandle;
@@ -53,9 +53,18 @@ void init(){
   Size size = pa("-size");
   edgeImage.setSize(size);
   angleImage.setSize(size);
-    
-  normalEstimator = new PointCloudNormalEstimator(size);
   
+  if(pa("-fcpu")){  
+    objectEdgeDetector = new ObjectEdgeDetector(size, CPU);
+    std::cout<<"force CPU"<<std::endl;
+  }else if(pa("-fgpu")){
+    objectEdgeDetector = new ObjectEdgeDetector(size, GPU);
+    std::cout<<"force GPU"<<std::endl;
+  }else{
+    objectEdgeDetector = new ObjectEdgeDetector(size, BEST);
+    std::cout<<"use best"<<std::endl;
+  }
+    
   grabDepth.init("kinectd","kinectd=0");
   grabDepth.setPropertyValue("depth-image-unit","raw");
   grabColor.init("kinectc","kinectc=0");
@@ -70,8 +79,7 @@ void init(){
            << ButtonGroup("linear,gauss").handle("usedSmoothing")
            << Slider(1,15,1).out("avgrange").label("averaging range").handle("avgrangeHandle")
            << ButtonGroup("max,mean").handle("usedAngle")
-           << Slider(1,15,3).out("neighbrange").label("neighborhood range").handle("neighbrangeHandle")
-           << Button("disable CL","enable CL").out("disableCL");
+           << Slider(1,15,3).out("neighbrange").label("neighborhood range").handle("neighbrangeHandle");
   
   gui << Image().handle("depth").minSize(16,12)
       << Image().handle("color").minSize(16,12)
@@ -103,14 +111,7 @@ void run(){
 
   const Img8u &colorImage = *grabColor.grab()->asImg<icl8u>();
   const Img32f &depthImage = *grabDepth.grab()->asImg<icl32f>();
-    
-  if(gui["disableCL"]){
-    normalEstimator->setUseCL(false);
-  }
-  else{
-    normalEstimator->setUseCL(true);
-  }
-  
+      
   int normalrange = gui["normalrange"];
   int neighbrange = gui["neighbrange"];
   float threshold = gui["threshold"];
@@ -121,69 +122,36 @@ void run(){
 
   usedFilterHandle = gui.get<ButtonGroupHandle>("usedFilter");
   if(usedFilterHandle.getSelected()==1){ //median 3x3
-    normalEstimator->setMedianFilterSize(3);
+    objectEdgeDetector->setMedianFilterSize(3);
   }
   else if(usedFilterHandle.getSelected()==2){ //median 5x5
-    normalEstimator->setMedianFilterSize(5);
+    objectEdgeDetector->setMedianFilterSize(5);
   }
 
-  normalEstimator->setNormalCalculationRange(normalrange);	
-  normalEstimator->setNormalAveragingRange(avgrange);	
+  objectEdgeDetector->setNormalCalculationRange(normalrange);	
+  objectEdgeDetector->setNormalAveragingRange(avgrange);	
   
   usedSmoothingHandle = gui.get<ButtonGroupHandle>("usedSmoothing");
   usedAngleHandle = gui.get<ButtonGroupHandle>("usedAngle");
-  if(usedAngleHandle.getSelected()==0){//max
-    normalEstimator->setAngleNeighborhoodMode(0);
-  }
-  else if(usedAngleHandle.getSelected()==1){//mean
-    normalEstimator->setAngleNeighborhoodMode(1);
-  }
-  else{
-    std::cout<<"ANGLE CALCULATION METHOD NOT FOUND"<<std::endl;
-  }
 
-  normalEstimator->setAngleNeighborhoodRange(neighbrange);
-  normalEstimator->setBinarizationThreshold(threshold);
+  objectEdgeDetector->setAngleNeighborhoodMode(usedAngleHandle.getSelected());
+  
+  objectEdgeDetector->setAngleNeighborhoodRange(neighbrange);
+  objectEdgeDetector->setBinarizationThreshold(threshold);
     
-  if(usedFilterHandle.getSelected()==0){//unfiltered
-    if(gui["disableAveraging"]){
-      edgeImage=normalEstimator->calculate(depthImage, false, false, false);
-    }
-    else{//normal averaging
-      if(usedSmoothingHandle.getSelected()==0){//linear
-        edgeImage=normalEstimator->calculate(depthImage, false, true, false);
-      }
-      else if(usedSmoothingHandle.getSelected()==1){//gauss
-        edgeImage=normalEstimator->calculate(depthImage, false, true, true);
-      }
-    }
-  }else{
-    if(gui["disableAveraging"]){//filtered
-      edgeImage=normalEstimator->calculate(depthImage, true, false, false);
-    }else{//normal averaging
-      if(usedSmoothingHandle.getSelected()==0){//linear
-        edgeImage=normalEstimator->calculate(depthImage, true, true, false);
-      }
-      else if(usedSmoothingHandle.getSelected()==1){//gauss
-        edgeImage=normalEstimator->calculate(depthImage, true, true, true);
-      }
-    }
-  }
+  bool disableAveraging = gui["disableAveraging"];
+  edgeImage=objectEdgeDetector->calculate(depthImage, usedFilterHandle.getSelected(),
+                                           !disableAveraging, usedSmoothingHandle.getSelected());
     
   //access interim result
-  angleImage=normalEstimator->getAngleImage();
+  angleImage=objectEdgeDetector->getAngleImage();
   
   if(pa("-cam")){
-    normalEstimator->applyWorldNormalCalculation(cam);
-    normalImage=normalEstimator->getRGBNormalImage();
+    objectEdgeDetector->applyWorldNormalCalculation(cam);
+    normalImage=objectEdgeDetector->getRGBNormalImage();
   }
   end = Time::now();
-  if(normalEstimator->isCLReady()==true && normalEstimator->isCLActive()==true){
-    std::cout<<"Size: "<<size<<" ,Open CL, Runtime: ";
-  }
-  else{ 
-    std::cout<<"Size: "<<size<<" ,CPU, Runtime: ";
-  }
+  std::cout<<"Size: "<<size<<" ,Runtime: ";
   std::cout <<(end-start).toMicroSeconds() <<" ms" << endl;
 
   gui["depth"] = depthImage;
@@ -196,5 +164,5 @@ void run(){
 }
 
 int main(int n, char **ppc){
-  return ICLApp(n,ppc,"-size|-s(Size=QVGA) -cam|-c(file)",init,run).exec();
+  return ICLApp(n,ppc,"-size|-s(Size=QVGA) -cam|-c(file) -fcpu|force-cpu -fgpu|force-gpu",init,run).exec();
 }
