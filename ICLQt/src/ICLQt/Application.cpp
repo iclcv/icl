@@ -130,10 +130,11 @@ namespace icl{
     }
     
     ICLApplication::~ICLApplication(){
+      s_app = 0;
+      app->processEvents();
       for(unsigned int i=0;i<s_threads.size();++i){
         delete s_threads[i];
       }
-      s_app = 0;
       s_threads.clear();
       s_inits.clear();
       s_callbacks.clear();
@@ -196,7 +197,7 @@ namespace icl{
     
     
     void ICLApplication::executeInGUIThread(ICLApplication::AsynchronousEvent *event, bool blocking){
-      if(isGUIThreadActive() && blocking){
+      if(isGUIThreadActive()){
         event->execute();
       }else{
         if(blocking) {

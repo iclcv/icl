@@ -81,12 +81,7 @@ namespace icl{
         }
       };
       ICLApplication *app = ICLApplication::instance();
-      if(!app){
-        DelEvent event(del);
-        event.execute();
-      }else{
-        app->executeInGUIThread(new DelEvent(del));
-      }
+      if(app)app->executeInGUIThread(new DelEvent(del),true);
     }
   
     inline float static winToDraw(float x, float w) { return (2/w) * x -1; }  

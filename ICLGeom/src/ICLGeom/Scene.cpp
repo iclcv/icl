@@ -1523,21 +1523,18 @@ namespace icl{
 
     void Scene::freeAllPBuffers(){
       struct DeleteEvent : public ICLApplication::AsynchronousEvent{
-        std::map<PBufferIndex, PBuffer*>& pbuffers;
-        DeleteEvent(std::map<PBufferIndex, PBuffer*>& pbuffers):pbuffers(pbuffers) {}
+        std::map<PBufferIndex, PBuffer*> pbuffers;
+        DeleteEvent(std::map<PBufferIndex, PBuffer*> pbuffers):pbuffers(pbuffers) {}
 
         void execute() {
           typedef std::map<PBufferIndex, PBuffer*>::iterator It;
           for (It it = pbuffers.begin(); it != pbuffers.end(); ++it){
             delete it->second;
           }
-          pbuffers.clear();
         }
       };
       ICLApplication *app = ICLApplication::instance();
-      if(app) {
-        app->executeInGUIThread(new DeleteEvent(m_pbuffers),false);
-      }
+      if(app)app->executeInGUIThread(new DeleteEvent(m_pbuffers),false);
     }
 
     void Scene::freePBuffer(const Size &size){
@@ -1657,9 +1654,9 @@ namespace icl{
           scene->unlock();
         }
       };
-      Img8u const* img;
+      Img8u const* img = 0;
       ICLApplication *app = ICLApplication::instance();
-      app->executeInGUIThread(new RenderEvent(this, &m_pbuffers, camIndex, background, depthBuffer, mode, &img), true);
+      if(app)app->executeInGUIThread(new RenderEvent(this, &m_pbuffers, camIndex, background, depthBuffer, mode, &img), true);
       return *img;
     }
 #endif //QT
