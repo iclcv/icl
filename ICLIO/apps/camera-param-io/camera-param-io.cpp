@@ -29,7 +29,11 @@
 ********************************************************************/
 
 #include <ICLQt/Common.h>
+#include <ICLUtils/ProgArg.h>
 #include <ICLIO/GenericGrabber.h>
+
+using namespace icl::utils;
+using namespace icl::io;
 
 namespace{
   void write_spaces(int n, char c=' '){

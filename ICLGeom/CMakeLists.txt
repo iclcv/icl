@@ -39,8 +39,6 @@ SET(SOURCES src/ICLGeom/Camera.cpp
             src/ICLGeom/SoftPosit.cpp
             src/ICLGeom/RansacBasedPoseEstimator.cpp
             src/ICLGeom/ViewRay.cpp
-            src/ICLGeom/GenericPointCloudGrabber.cpp
-            src/ICLGeom/GenericPointCloudOutput.cpp
             src/ICLGeom/ObjectEdgeDetector.cpp
             src/ICLGeom/ObjectEdgeDetectorCPU.cpp
             src/ICLGeom/ObjectEdgeDetectorGPU.cpp)
@@ -69,8 +67,6 @@ SET(HEADERS src/ICLGeom/Camera.h
             src/ICLGeom/PlotHandle3D.h
             src/ICLGeom/RansacBasedPoseEstimator.h
             src/ICLGeom/PointCloudOutput.h
-            src/ICLGeom/GenericPointCloudGrabber.h
-            src/ICLGeom/GenericPointCloudOutput.h
             src/ICLGeom/ObjectEdgeDetector.h
             src/ICLGeom/ObjectEdgeDetectorCPU.h
             src/ICLGeom/ObjectEdgeDetectorGPU.h
@@ -85,6 +81,7 @@ IF(QT_FOUND)
                        src/ICLGeom/SceneObject.cpp
                        src/ICLGeom/Primitive.cpp
                        src/ICLGeom/GenericPointCloudGrabber.cpp
+                       src/ICLGeom/GenericPointCloudOutput.cpp
                        src/ICLGeom/GridSceneObject.cpp
                        src/ICLGeom/ComplexCoordinateFrameSceneObject.cpp
                        src/ICLGeom/Segmentation3D.cpp
@@ -105,6 +102,7 @@ IF(QT_FOUND)
                        src/ICLGeom/SceneObject.h
                        src/ICLGeom/Primitive.h
                        src/ICLGeom/GenericPointCloudGrabber.h
+                       src/ICLGeom/GenericPointCloudOutput.h
                        src/ICLGeom/GridSceneObject.h
                        src/ICLGeom/ComplexCoordinateFrameSceneObject.h
                        src/ICLGeom/Segmentation3D.h

@@ -35,6 +35,12 @@
 #include <ICLUtils/Size32f.h>
 #include <ICLFilter/RotateOp.h>
 
+using namespace icl;
+using namespace icl::utils;
+using namespace icl::core;
+using namespace icl::io;
+using namespace icl::filter;
+
 int main(int n, char **ppc){
   pa_explain("-i","specify input file (type by filename extension)\n\t[also as 1st unspecified arg]")
       ("-o","specify output file (type by filename extension)\n\t[also as 2nd unspecified arg]")
