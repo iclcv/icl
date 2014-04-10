@@ -62,14 +62,14 @@ namespace icl{
           @param edgeImg the edge image from the PointNormalEstimation class
           @param depthImg the input depth image
           @return the color image of the segments */
-      core::Img8u segmentation(DataSegment<float,4> xyz, const core::Img8u &edgeImg, const core::Img32f &depthImg);
+      core::Img8u segmentation(core::DataSegment<float,4> xyz, const core::Img8u &edgeImg, const core::Img32f &depthImg);
       
       /// One line call for the simple support plane and blobs segmentation.
       /**       @param xyz the xyzh DataSegment from the PointCloudObject class
           @param edgeImg the edge image from the PointNormalEstimation class
           @param depthImg the input depth image
           @return the color image of the segments */
-      core::Img8u segmentationBlobs(DataSegment<float,4> xyz, const core::Img8u &edgeImg, const core::Img32f &depthImg);
+      core::Img8u segmentationBlobs(core::DataSegment<float,4> xyz, const core::Img8u &edgeImg, const core::Img32f &depthImg);
   	  		
       /// Sets openCL enabled/disabled. Enabling has no effect if no openCL context is available. (default true=enabled)
       /**        @param use enable/disable openCL */
@@ -156,7 +156,7 @@ namespace icl{
       
       /// Sets the xyzh DataSegment from the PointCloudObject class. (Use one line calls)
       /**       @param xyz the xyz DataSegment */
-      void setXYZH(DataSegment<float,4> xyz);
+      void setXYZH(core::DataSegment<float,4> xyz);
       
       /// Sets the edge image from the PointNormalEstimation class. (Use one line calls)
       /**       @param edgeImage the edge image */
@@ -204,7 +204,7 @@ namespace icl{
 		  bool* elementsBlobs;
 		  int* assignmentBlobs;
       
-      DataSegment<float,4> xyzData;
+      core::DataSegment<float,4> xyzData;
       core::Img8u normalEdgeImage;
       core::Img32f depthImage;
       

@@ -59,11 +59,9 @@ SET(HEADERS src/ICLGeom/Camera.h
             src/ICLGeom/PlaneEquation.h
             src/ICLGeom/PrimitiveType.h
             src/ICLGeom/SceneObjectBase.h
-            src/ICLGeom/DataSegmentBase.h  
             src/ICLGeom/ICP.h
             src/ICLGeom/RGBDMapping.h
-            src/ICLGeom/Plot3D.h 
-            src/ICLGeom/DataSegment.h            
+            src/ICLGeom/Plot3D.h          
             src/ICLGeom/PlotHandle3D.h
             src/ICLGeom/RansacBasedPoseEstimator.h
             src/ICLGeom/PointCloudOutput.h

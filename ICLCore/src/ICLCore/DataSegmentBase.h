@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLGeom/src/ICLGeom/DataSegmentBase.h                  **
+** File   : ICLGeom/src/ICLCore/DataSegmentBase.h                  **
 ** Module : ICLGeom                                                **
 ** Authors: Christof Elbrechter, Patrick Nobou                     **
 **                                                                 **
@@ -36,7 +36,11 @@
 #include <algorithm>
 
 namespace icl{
-  namespace geom{
+  //forward declare PointCloudObjectBase to friend later
+  namespace geom {
+  class PointCloudObjectBase;
+  }
+  namespace core{
     
     /** \cond */ 
     template<class T,int N> struct DataSegment;
@@ -94,8 +98,8 @@ namespace icl{
     */
     struct ICLGeom_API DataSegmentBase{
       /// for easier integration with the pointcloud object base class
-      friend class PointCloudObjectBase;
-      
+      friend class geom::PointCloudObjectBase;
+
     protected:
       /// associcates a core::depth values and the (byte)-size of the corresponding type
       static inline int getSizeOf(core::depth d){
@@ -251,7 +255,7 @@ namespace icl{
       }
     };
   
-  } // namespace geom
+  } // namespace core
 }
 
 

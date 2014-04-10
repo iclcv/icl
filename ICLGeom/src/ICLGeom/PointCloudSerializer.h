@@ -31,7 +31,7 @@
 #pragma once
 
 #include <ICLGeom/PointCloudObjectBase.h>
-#include <ICLGeom/DataSegmentBase.h>
+#include <ICLCore/DataSegmentBase.h>
 
 namespace icl{
   

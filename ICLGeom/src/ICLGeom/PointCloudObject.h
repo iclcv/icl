@@ -90,17 +90,17 @@ namespace icl{
       virtual void setSize(const utils::Size &size);
   
       /// returns XYZ data segment
-      virtual DataSegment<float,3> selectXYZ();
+      virtual core::DataSegment<float,3> selectXYZ();
 
       /// returns XYZH data segment
-      virtual DataSegment<float,4> selectXYZH();
+      virtual core::DataSegment<float,4> selectXYZH();
       
       /// returns the RGBA data segment (4-floats)
-      virtual DataSegment<float,4> selectRGBA32f();
+      virtual core::DataSegment<float,4> selectRGBA32f();
 
       /// returns the Normals data segment (4-floats)
       /** Only available if the constructor was called with "withNormals" set to true */
-      virtual DataSegment<float,4> selectNormal();
+      virtual core::DataSegment<float,4> selectNormal();
       
       /// important, this is again, reimplemented in order to NOT draw the stuff manually here
       virtual void customRender();

@@ -33,7 +33,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Time.h>
 #include <ICLGeom/SceneObject.h>
-#include <ICLGeom/DataSegment.h>
+#include <ICLCore/DataSegment.h>
 #include <ICLCore/ImgBase.h>
 #include <map>
 
@@ -109,15 +109,15 @@ namespace icl{
       
       /// internally used utility method that throws verbose exceptions
       template<class T, int N>
-      DataSegment<T,N> &error(const std::string &fname) throw (utils::ICLException){
+      core::DataSegment<T,N> &error(const std::string &fname) throw (utils::ICLException){
         throw utils::ICLException("static feature "+fname+" is not supported by this PointCloudObjectBase instance");
-        static DataSegment<T,N> dummy; return dummy;
+        static core::DataSegment<T,N> dummy; return dummy;
       }
   
       /// internally used utility method that throws verbose exceptions
-      DataSegmentBase &error_dyn(const std::string &featureName) throw (utils::ICLException){
+      core::DataSegmentBase &error_dyn(const std::string &featureName) throw (utils::ICLException){
         throw utils::ICLException("dynamic feature "+featureName+" is not supported by this PointCloudObjectBase instance");
-        static DataSegmentBase dummy; return dummy;
+        static core::DataSegmentBase dummy; return dummy;
       }
       
       /// draw normal lines
@@ -189,69 +189,69 @@ namespace icl{
       }
   
       /// well know features XYZ (three floats, this feature must usually be available)
-      virtual DataSegment<float,3> selectXYZ(){ return error<float,3>(__FUNCTION__);   }
+      virtual core::DataSegment<float,3> selectXYZ(){ return error<float,3>(__FUNCTION__);   }
       
       /// common way to store XYZ-data (4th float define homogeneous part)
-      virtual DataSegment<float,4> selectXYZH(){ return  error<float,4>(__FUNCTION__);   }
+      virtual core::DataSegment<float,4> selectXYZH(){ return  error<float,4>(__FUNCTION__);   }
       
       /// well known feature Intensity (single float values)
-      virtual DataSegment<float,1> selectIntensity(){   return error<float,1>(__FUNCTION__);   }
+      virtual core::DataSegment<float,1> selectIntensity(){   return error<float,1>(__FUNCTION__);   }
   
       /// well known feature Intensity (single 32bit int values)
-      virtual DataSegment<icl32s,1> selectLabel(){      return error<icl32s,1>(__FUNCTION__);  }
+      virtual core::DataSegment<icl32s,1> selectLabel(){      return error<icl32s,1>(__FUNCTION__);  }
   
       /// well known feature Intensity (three byte vectors ordered BGR)
-      virtual DataSegment<icl8u,3> selectBGR(){         return error<icl8u,3>(__FUNCTION__);   }
+      virtual core::DataSegment<icl8u,3> selectBGR(){         return error<icl8u,3>(__FUNCTION__);   }
   
       /// well known feature Intensity (four byte vectors ordered BGRA)
-      virtual DataSegment<icl8u,4> selectBGRA(){        return error<icl8u,4>(__FUNCTION__);   }
+      virtual core::DataSegment<icl8u,4> selectBGRA(){        return error<icl8u,4>(__FUNCTION__);   }
   
       /// well known feature Intensity (single int value encoding byte-wise BGRA)
-      virtual DataSegment<icl32s,1> selectBGRA32s(){    return error<icl32s,1>(__FUNCTION__);   }
+      virtual core::DataSegment<icl32s,1> selectBGRA32s(){    return error<icl32s,1>(__FUNCTION__);   }
   
       /// well known feature Normal (4 float values)
       /** in the PCL, the 4th value is sometimes used to store a local curvature value */
-      virtual DataSegment<float,4> selectNormal(){      return error<float,4>(__FUNCTION__);   }
+      virtual core::DataSegment<float,4> selectNormal(){      return error<float,4>(__FUNCTION__);   }
   
       /// well known feature RGBA (4 float values, ordred RGBA)
-      virtual DataSegment<float,4> selectRGBA32f(){     return error<float,4>(__FUNCTION__);   }
+      virtual core::DataSegment<float,4> selectRGBA32f(){     return error<float,4>(__FUNCTION__);   }
 
       /// dynamic feature selection function
       /** This can be implemented in subclasses to grant access to less common feature types
           such as feature point descriptors */
-      virtual DataSegmentBase select(const std::string &featureName) { return error_dyn(featureName); }
+      virtual core::DataSegmentBase select(const std::string &featureName) { return error_dyn(featureName); }
   
       // const select methds
 
       /// const xyz data
-      const DataSegment<float,3> selectXYZ() const { return const_cast<PointCloudObjectBase*>(this)->selectXYZ(); }
+      const core::DataSegment<float,3> selectXYZ() const { return const_cast<PointCloudObjectBase*>(this)->selectXYZ(); }
       
       /// const xyzh data
-      const DataSegment<float,4> selectXYZH() const { return const_cast<PointCloudObjectBase*>(this)->selectXYZH(); }
+      const core::DataSegment<float,4> selectXYZH() const { return const_cast<PointCloudObjectBase*>(this)->selectXYZH(); }
   
       /// const intensity data
-      const DataSegment<float,1> selectIntensity() const { return const_cast<PointCloudObjectBase*>(this)->selectIntensity(); }
+      const core::DataSegment<float,1> selectIntensity() const { return const_cast<PointCloudObjectBase*>(this)->selectIntensity(); }
       
       /// const label data
-      const DataSegment<icl32s,1> selectLabel() const { return const_cast<PointCloudObjectBase*>(this)->selectLabel(); }
+      const core::DataSegment<icl32s,1> selectLabel() const { return const_cast<PointCloudObjectBase*>(this)->selectLabel(); }
 
       /// const bgr data
-      const DataSegment<icl8u,3> selectBGR() const { return const_cast<PointCloudObjectBase*>(this)->selectBGR(); }
+      const core::DataSegment<icl8u,3> selectBGR() const { return const_cast<PointCloudObjectBase*>(this)->selectBGR(); }
 
       /// const rgba  data
-      const DataSegment<icl8u,4> selectBGRA() const { return const_cast<PointCloudObjectBase*>(this)->selectBGRA(); }
+      const core::DataSegment<icl8u,4> selectBGRA() const { return const_cast<PointCloudObjectBase*>(this)->selectBGRA(); }
   
       /// const bgra32s data
-      const DataSegment<icl32s,1> selectBGRA32s() const { return const_cast<PointCloudObjectBase*>(this)->selectBGRA32s(); }
+      const core::DataSegment<icl32s,1> selectBGRA32s() const { return const_cast<PointCloudObjectBase*>(this)->selectBGRA32s(); }
       
       /// const normals data
-      const DataSegment<float,4> selectNormal() const { return const_cast<PointCloudObjectBase*>(this)->selectNormal(); }
+      const core::DataSegment<float,4> selectNormal() const { return const_cast<PointCloudObjectBase*>(this)->selectNormal(); }
       
       /// const rgba32f data
-      const DataSegment<float,4> selectRGBA32f() const { return const_cast<PointCloudObjectBase*>(this)->selectRGBA32f(); }
+      const core::DataSegment<float,4> selectRGBA32f() const { return const_cast<PointCloudObjectBase*>(this)->selectRGBA32f(); }
   
       /// const dynamic/custom data
-      const DataSegmentBase select(const std::string &featureName) const { 
+      const core::DataSegmentBase select(const std::string &featureName) const {
         return const_cast<PointCloudObjectBase*>(this)->select(featureName); 
       }
       

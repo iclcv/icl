@@ -64,12 +64,12 @@ namespace icl{
       ///Creates a uncolored pointcloud (called from PointCloudCreator)
       ICLGeom_API void create(bool NEEDS_RAW_TO_MM_MAPPING,const core::Img32f *depthValues, 
                         const Vec O, const int DEPTH_DIM, 
-                        DataSegment<float,3> xyz, const utils::Array2D<Vec> &dirs, float depthScaling);
+                        core::DataSegment<float,3> xyz, const utils::Array2D<Vec> &dirs, float depthScaling);
       
       ///Creates a RGBD-mapped pointcloud (called from PointCloudCreator)
       ICLGeom_API void createRGB(bool NEEDS_RAW_TO_MM_MAPPING, const core::Img32f *depthValues, const Mat M,
                            const Vec O, const unsigned int COLOR_W, const unsigned int COLOR_H, const int DEPTH_DIM, 
-                           DataSegment<float,3> xyz, DataSegment<float,4> rgba,
+                           core::DataSegment<float,3> xyz, core::DataSegment<float,4> rgba,
                            const core::Img8u *rgbIn,const utils::Array2D<Vec> &dirs, float depthScaling);
   	
       /// Returns the openCL status (true=openCL context ready, false=no openCL context available)

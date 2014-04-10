@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLGeom/src/ICLGeom/DataSegment.h                      **
+** File   : ICLGeom/src/ICLCore/DataSegment.h                      **
 ** Module : ICLGeom                                                **
 ** Authors: Christof Elbrechter, Patrick Nobou                     **
 **                                                                 **
@@ -33,11 +33,11 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLMath/FixedVector.h>
 #include <ICLCore/CoreFunctions.h>
-#include <ICLGeom/DataSegmentBase.h>
+#include <ICLCore/DataSegmentBase.h>
 #include <ICLUtils/ClippedCast.h>
 
 namespace icl{
-  namespace geom{
+  namespace core{
     
   
     /// The DataSegment class defines a strided data segment (or 1D or 2D ordred array of vectors)
@@ -80,7 +80,7 @@ namespace icl{
         \code
   #include <ICLQt/Common.h>
   #include <ICLGeom/GeomDefs.h>
-  #include <ICLGeom/DataSegment.h>
+  #include <ICLCore/DataSegment.h>
   
   
   int main(){
@@ -110,7 +110,7 @@ namespace icl{
       \code
 #include <ICLQt/Common.h>
 #include <ICLGeom/GeomDefs.h>
-#include <ICLGeom/DataSegment.h>
+#include <ICLCore/DataSegment.h>
 
 // utility structure used for demonstration
 struct DataPoint{
@@ -382,6 +382,6 @@ int main(){
 
 
 
-  } // namespace geom
+  } // namespace core
 }
 

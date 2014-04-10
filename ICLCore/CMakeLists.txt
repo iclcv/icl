@@ -76,7 +76,9 @@ SET(HEADERS src/ICLCore/BayerConverter.h
 	    src/ICLCore/ConvexHull.h
 	    src/ICLCore/AbstractCanvas.h
 	    src/ICLCore/PseudoColorConverter.h
-	    src/ICLCore/Types.h)
+	    src/ICLCore/Types.h
+	    src/ICLCore/DataSegment.h
+	    src/ICLCore/DataSegmentBase.h)
 
 IF(OpenCV_FOUND)
   LIST(APPEND SOURCES src/ICLCore/OpenCV.cpp)
