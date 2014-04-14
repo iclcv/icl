@@ -144,9 +144,11 @@ void run(){
   const bool showMarkerCorners = gui["showMarkerCorners"].as<bool>();
   const bool showAngles = gui["showAngles"];
 
+  static bool use3Dfor1stVisibleMarker = pa("-3D-for-first-visible-marker");
   for(unsigned int i=0;i<fids.size();++i){
     
-    if(enable3D && fids[i].getID() == 0){
+    if((enable3D && fids[i].getID() == 0)
+       || (enable3D && use3Dfor1stVisibleMarker && !i)){
       fids[i].getPose3D();
       fids[i].getPose3D();
       obj->setTransformation(fids[i].getPose3D());
@@ -184,7 +186,8 @@ void run(){
 // default main function
 int main(int n, char **ppc){
   return ICLApp(n,ppc,"[m]-input|-i(2) -camera|-c(camerafile) -size|-s(size=VGA) "
-                "-marker-type|-m(type=bch,whichToLoad=[0-4095],size=30x30) -3D",init,run).exec();
+                "-marker-type|-m(type=bch,whichToLoad=[0-4095],size=30x30) -3D "
+                "-3D-for-first-visible-marker",init,run).exec();
 }
 
 

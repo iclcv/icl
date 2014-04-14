@@ -78,7 +78,7 @@ namespace icl{
   
       /// creates a data segment for a given feature type
       template<class T, int N, FeatureType t>
-      inline DataSegment<T,N> createSegment();
+      inline core::DataSegment<T,N> createSegment();
       
       /// savely delets the pcl_image
       void deletePCL();
@@ -148,22 +148,22 @@ namespace icl{
       bool isNull() const;
   
       // well known fields
-      virtual DataSegment<float,1> selectIntensity();
-      virtual DataSegment<icl32s,1> selectLabel();
-      virtual DataSegment<icl8u,3> selectBGR();
-      virtual DataSegment<icl8u,4> selectBGRA();
-      virtual DataSegment<icl32s,1> selectBGRA32s();
+      virtual core::DataSegment<float,1> selectIntensity();
+      virtual core::DataSegment<icl32s,1> selectLabel();
+      virtual core::DataSegment<icl8u,3> selectBGR();
+      virtual core::DataSegment<icl8u,4> selectBGRA();
+      virtual core::DataSegment<icl32s,1> selectBGRA32s();
   
-      virtual DataSegment<float,3> selectXYZ();
-      virtual DataSegment<float,4> selectXYZH();
-      virtual DataSegment<float,4> selectNormal();
-      virtual DataSegment<float,4> selectRGBA32f();
+      virtual core::DataSegment<float,3> selectXYZ();
+      virtual core::DataSegment<float,4> selectXYZH();
+      virtual core::DataSegment<float,4> selectNormal();
+      virtual core::DataSegment<float,4> selectRGBA32f();
   
       /// selects a dynamic feature
       /** some pcl types support special features that can be selected by a string ID.
           By default, the featureName 'all' can be used to create a DataSegment that
           give access to all data entries as floats */
-      virtual DataSegmentBase select(const std::string &featureName);
+      virtual core::DataSegmentBase select(const std::string &featureName);
   
       /// deep copy interface
       virtual PCLPointCloudObject<PCLPointType> *copy() const;
