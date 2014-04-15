@@ -35,9 +35,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLQt/PaintEngine.h>
 #include <QFont>
-
-// forward declaration of the parent class
-class QGLWidget;
+#include <QtOpenGL/QGLWidget>
 
 namespace icl{
   namespace qt{
@@ -102,6 +100,10 @@ namespace icl{
       virtual float getPointSize() const {
         return m_pointsize;
       }
+      virtual icl::utils::Size getSize() {
+        return icl::utils::Size(m_widget->width(),m_widget->height());
+      }
+
       // estimates the size of a given text
       utils::Size estimateTextBounds(const std::string &text) const;
   
