@@ -329,7 +329,7 @@ namespace icl{
       // {{{ open
       QFontMetrics m(m_font);
       QRectF br = m.boundingRect(text.c_str());
-      QImage img(br.width()+2,br.height()+2,QImage::Format_ARGB32);
+      QImage img(br.width()+4,br.height(),QImage::Format_ARGB32);
       img.fill(0);
       QPainter painter(&img);
       painter.setFont(m_font);
@@ -338,7 +338,7 @@ namespace icl{
                              (int)(m_linecolor[0]*255),
                              min (254, (int)(m_linecolor[3]*255)) ));
      
-      painter.drawText(QPointF(1,img.height()-m.descent()-1),text.c_str());
+      painter.drawText(QRect(0,0,img.width(),img.height()),Qt::AlignHCenter,text.c_str());
       painter.end();
       
       image(r,img,mode,interpolateLIN);
