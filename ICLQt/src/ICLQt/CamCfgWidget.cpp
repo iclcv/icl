@@ -47,7 +47,6 @@
 #include <QScrollArea>
 #include <QFileDialog>
 #include <QMessageBox>
-#include <QtCore/QTimer>
 #include <QtCore/QMutex>
 #include <QPushButton>
 

@@ -49,7 +49,6 @@
 #include <ICLUtils/Thread.h>
 
 #include <QPainter>
-#include <QtCore/QTimer>
 #include <QLabel>
 #include <QCheckBox>
 #include <QInputDialog>

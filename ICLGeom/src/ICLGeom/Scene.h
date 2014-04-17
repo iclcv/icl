@@ -260,8 +260,7 @@ namespace icl{
       /// returns a callback that is used to render the scene into a GL-context
       /** please see ICLQt::ICLDrawWidget3D::callback */
       qt::ICLDrawWidget3D::GLCallback *getGLCallback(int camIndex);
-    
-#ifdef ICL_HAVE_GLX
+
       enum DepthBufferMode{
         RawDepth01,      //!< raw core::depth buffer in range [0,1]
         DistToCamPlane,  //!< core::depth buffer values define distance to the camera's z=0 plane
@@ -270,7 +269,7 @@ namespace icl{
       const core::Img8u &render(int camIndx, const core::ImgBase *background = 0, core::Img32f *depthBuffer = 0,
         DepthBufferMode mode = DistToCamCenter);
     
-      /// renders the current scene using an instance of glx pbuffer
+      /// renders the current scene using an instance of pbuffer
       /** This method is currently only supported on linux systems, since
           the used pbuffer (OpenGL offscreen framebuffer object) 
         
@@ -312,7 +311,6 @@ namespace icl{
       mutable RenderSettings *m_renderSettings;
       struct FBOData;
       mutable FBOData *m_fboData;
-#endif
 #endif
 
       /// sets wheter cameras are also visualized in scenes.
