@@ -303,7 +303,8 @@ Qt Library (libQt4)
 The well known Qt Library is used for ICL's rapid GUI creation toolkit.
 Actually Qt is also a prerequisite for most ICL applications and for
 the whole ICLQt module. We strongly recommend to have at least Qt support
-when building ICL
+when building ICL. The Qt package right now also used the OpenGL extension
+wrangler library libglew-dev and it needs OpenGL headers to be installed
 
 * **Supported Versions:** 4
 * **License Type:** open source
@@ -313,7 +314,7 @@ when building ICL
   * GUI-framework and all dependent applications
   * Shared memory based image-I/O backends
 
-* **Ubuntu packages:**  libqt4-dev
+* **Ubuntu packages:**  libqt4-dev libglew-dev (+open-gl headers)
 
 
 .. _install.dependencies.optional.pylon:
