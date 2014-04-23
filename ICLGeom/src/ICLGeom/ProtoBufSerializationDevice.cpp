@@ -53,6 +53,7 @@ namespace icl{
 
     void ProtoBufSerializationDevice::initializeSerialization(const PointCloudSerializer::MandatoryInfo &info){
       null_check(__FUNCTION__);
+      protoBufObject->Clear();
       protoBufObject->set_width(info.width);
       protoBufObject->set_height(info.height);
       protoBufObject->set_organized(info.organized);
@@ -96,6 +97,11 @@ namespace icl{
       for(int i=0;i<protoBufObject->metadata_size(); ++i){
         fs.push_back("meta:"+protoBufObject->metadata(i).key());
       }      
+      
+      //std::cout << "--" << std::endl;
+      //for(size_t i=0;i<fs.size();++i){
+      //  std::cout << "received feature " << fs[i] << std::endl;
+      //}
       return fs;
     }
     

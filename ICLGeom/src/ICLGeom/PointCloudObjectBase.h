@@ -164,6 +164,19 @@ namespace icl{
       
       /// interface for supported features 
       virtual bool supports(FeatureType t) const = 0;
+      
+      /// interface function for dynamic Point cloud types that can dynamically add features
+      /** For features that are already supported, the output is undefined */
+      virtual bool canAddFeature(FeatureType t) const { return false; }
+      
+      /// interface for adding a feature to an existing point cloud instance
+      /** if the given feature cannot be added, an exception is thrown. To 
+          avoid this, call canAddFeature before using this function. 
+          Implementations of this function are supposed ignore this call
+          in cases where the feature is actually already supported */
+      virtual void addFeature(FeatureType t) throw (utils::ICLException){
+        throw utils::ICLException("unable to add given feature to point cloud");
+      }
   
       /// interface for supported features 
       virtual bool isOrganized() const = 0;

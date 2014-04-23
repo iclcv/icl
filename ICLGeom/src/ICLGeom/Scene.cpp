@@ -415,7 +415,7 @@ namespace icl{
       addProperty("info.Objects in the Scene","info","",0);
       addProperty("info.Primitives in the Scene","info","",0);
       addProperty("info.Vertices in the Scene","info","",0);
-      addProperty("point cloud grabber cam","range","[0,10000]",0);
+      addProperty("point cloud grabber cam","range:spinbox","[0,10000]",0);
     }
     Scene::~Scene(){
   #ifdef ICL_HAVE_QT
@@ -1549,7 +1549,7 @@ namespace icl{
 
     void Scene::grab(PointCloudObjectBase &dst){
       int camID = getPropertyValue("point cloud grabber cam");
-      if((int)m_cameras.size() >= camID) {
+      if((int)m_cameras.size() <= camID) {
         ERROR_LOG("invalid camera id");
         return;
       }
@@ -1668,11 +1668,11 @@ namespace icl{
       std::map<std::string,std::string>::const_iterator it = d.find("creation-string");
       if(it == d.end()) return 0;
       const std::string &params = it->second;
-      std::vector<std::string> ts = tok(params,":");
+      std::vector<std::string> ts = tok(params,",");
       
       Scene *scene = new Scene;
       if(ts.size() == 1 || ts.size() == 2){
-        scene->addCamera(Camera());
+        //scene->addCamera(Camera());
         SceneObject *obj = 0;
         if(ts[0] == "cube"){
           obj = SceneObject::cube(0,0,0,2);

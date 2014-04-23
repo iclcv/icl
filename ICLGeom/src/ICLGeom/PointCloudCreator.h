@@ -94,6 +94,9 @@ namespace icl{
       void init(const Camera &depthCam, const Camera &colorCam, DepthImageMode mode=DistanceToCamPlane);
       
       /// creates a point cloud
+      /** If the PointCloudCreator instance is set up to provide color information and the destionation point cloud
+          does not support color information, the detination point cloud is tried to be adapted using
+          PointCloudObjectBase::canAddFeature and PointCloudObjectBase::addFeature */
       void create(const core::Img32f &depthImage, PointCloudObjectBase &destination, const core::Img8u *rgbImage = 0, float depthScaling=1);
   
       /// returns the current core::depth camera

@@ -651,7 +651,7 @@ namespace icl{
           Note, that explicit locking can be enabled/disabled using setLockingEnabled\n 
           E.g. if an objects data is updated from another thread, you can sub-class 
           this class and implement a locking mechanism for it*/
-      virtual void lock(){
+      virtual void lock() const{
         if(!m_enableLocking) return;
         m_mutex.lock();
       }
@@ -661,7 +661,7 @@ namespace icl{
           Note, that explicit locking can be enabled/disabled using setLockingEnabled\n 
           E.g. if an objects data is updated from another thread, you can sub-class 
           this class and implement a locking mechanism for it*/
-      virtual void unlock(){
+      virtual void unlock() const{
         if(!m_enableLocking) return;
         m_mutex.unlock();
       }
@@ -768,7 +768,7 @@ namespace icl{
       SceneObject *m_parent;
       std::vector<utils::SmartPtr<SceneObject> > m_children;
   
-      utils::Mutex m_mutex; //!< for asynchronous updates
+      mutable utils::Mutex m_mutex; //!< for asynchronous updates
       bool m_enableLocking; //!< can be enabled
   
       bool m_pointSmoothingEnabled;

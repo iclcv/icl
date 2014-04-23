@@ -298,6 +298,22 @@ namespace icl{
       }
   
       //Time t = Time::now();
+      if(rgbImage){
+        const PointCloudObjectBase::FeatureType cf[] = {
+          PointCloudObjectBase::RGBA32f,PointCloudObjectBase::BGRA,
+          PointCloudObjectBase::BGR, PointCloudObjectBase::BGRA32s };
+
+        bool anyColorSupported = (destination.supports(cf[0]) || destination.supports(cf[1]) || 
+                                  destination.supports(cf[2]) || destination.supports(cf[3]) );
+        if(!anyColorSupported){
+          for(int i=0;i<4;++i){
+            if(destination.canAddFeature(cf[i])){
+              destination.addFeature(cf[i]);
+              break;
+            }
+          }
+        }
+      }
       
       if(m_data->mode == KinectRAW11Bit){
         if(destination.supports(PointCloudObjectBase::RGBA32f)){

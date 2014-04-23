@@ -35,6 +35,7 @@
 
 #include <string>
 #include <map>
+#include <sstream>
 
 namespace icl{
   namespace utils{
@@ -76,7 +77,12 @@ namespace icl{
         throw (utils::ICLException){
         typename std::map<std::string,Plugin>::iterator it = plugins.find(name);
         if(it == plugins.end()){
-          throw utils::ICLException("PluginRegister<T>: unknow type: "+ name);
+          std::ostringstream all;
+          for(typename std::map<std::string,Plugin>::iterator jt = plugins.begin(); jt != plugins.end();){
+            all << jt->first;
+            if(++jt != plugins.end()) all << ",";
+          }
+          throw utils::ICLException("PluginRegister<T>: unknow type: '"+ name + "' (registered are: " +all.str() + ")");
           return 0;
         }
         return it->second.create(data);

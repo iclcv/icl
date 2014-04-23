@@ -51,19 +51,20 @@ namespace icl{
      */
     class ICLGeom_API PointCloudObject : public PointCloudObjectBase{
       protected:
-      bool m_organized;       //!< internal 2D organized flag
-      utils::Size m_dim2D;    //!< 2D dimension
-      bool m_hasNormals;      //!< flag whether normals are given
-      bool m_hasColors;       //!< flag whether the point cloud has colors
-      
+      bool m_organized;          //!< internal 2D organized flag
+      utils::Size m_dim2D;       //!< 2D dimension
+      bool m_hasNormals;         //!< flag whether normals are given
+      bool m_hasColors;          //!< flag whether the point cloud has colors
+      bool m_hasLabels;          //!< flag indicating whether labels are supported
+      std::vector<int> m_labels; //!< label mask (activated in constructor)
       public:
       
       
       /// creates an empty point cloud with with optionally initialized featuers
-      PointCloudObject(bool withNormals=false, bool withColors=false);
+      PointCloudObject(bool withNormals=false, bool withColors=false, bool withLabels=false);
       
       /// create an un-organizied point cloud with N points
-      PointCloudObject(int numPoints, bool withNormals=false, bool withColors=true);
+      PointCloudObject(int numPoints, bool withNormals=false, bool withColors=true, bool withLabels=false);
       
       /// creates a new organized or un-organized SimplePointCloudObject instance
       /** @param width number of points per line (if unordered, number of points)
@@ -71,7 +72,8 @@ namespace icl{
           @param organized specifies whether there is a 2D data order or not
           @params withNormals if true, also normals will be created for each point
           */
-      PointCloudObject(int width, int height, bool organized=true, bool withNormals=false, bool withColors=true);
+      PointCloudObject(int width, int height, bool organized=true, bool withNormals=false, 
+                       bool withColors=true, bool withLabels=false);
   
       /// returns which features are supported (only XYZ and RGBA32f)
       virtual bool supports(FeatureType t) const;
@@ -101,9 +103,21 @@ namespace icl{
       /// returns the Normals data segment (4-floats)
       /** Only available if the constructor was called with "withNormals" set to true */
       virtual core::DataSegment<float,4> selectNormal();
+
+      /// returns the label data segment (32-bit signed integer)
+      /** Only available if the the Label feature was explicitly enabled */
+      virtual core::DataSegment<icl32s,1> selectLabel();
       
       /// important, this is again, reimplemented in order to NOT draw the stuff manually here
       virtual void customRender();
+
+      /// only normals and color can be added in hindsight
+      virtual bool canAddFeature(FeatureType t) const;
+      
+      /// adds normals or colors in hindsight 
+      /** If the given feature is already contained, calling this function has no effect.
+          The function calls lock() and unlock() internally */
+      virtual void addFeature(FeatureType t) throw (utils::ICLException);
   
       /// deep copy function
       virtual PointCloudObject *copy() const {
@@ -130,7 +144,7 @@ namespace icl{
       /** @see push_back(const Vec&) */
       void push_back(const Vec &point, const Vec &normal, const GeomColor &color){
         addVertex(point,color);
-        if(m_hasNormals) m_normals.push_back(Vec(0,0,0,1));
+        if(m_hasNormals) m_normals.push_back(normal);
       }
       
       private:

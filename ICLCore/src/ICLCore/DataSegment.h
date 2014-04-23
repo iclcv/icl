@@ -123,7 +123,7 @@ struct DataPoint{
 int main(){
   Array2D<DataPoint> array(4,3);
 
-  DataSegment<float,3> xyz(&array(0,0).xyz[0],sizeof(DataPoint), 12, 4);
+   DataSegment<float,3> xyz(&array(0,0).xyz[0],sizeof(DataPoint), 12, 4);
   DataSegment<float,1> h(&array(0,0).xyz[3],sizeof(DataPoint), 12, 4);
   DataSegment<icl8u,4> rgba(&array(0,0).r,sizeof(DataPoint), 12, 4);
   DataSegment<float,4> n(&array(0,0).normal[0],sizeof(DataPoint), 12, 4);

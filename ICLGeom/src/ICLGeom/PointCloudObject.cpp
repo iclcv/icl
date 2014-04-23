@@ -38,19 +38,25 @@ using namespace icl::core;
 namespace icl{
   namespace geom{
 
-    PointCloudObject::PointCloudObject(bool withNormals, bool withColors):
+    PointCloudObject::PointCloudObject(bool withNormals, bool withColors, bool withLabels):
       m_organized(false){
       m_dim2D = Size(0,0);
       m_hasNormals = withNormals;
       m_hasColors = withColors;
+      m_hasLabels = withLabels;
+      
+      setLockingEnabled(true);
     }
 
-    PointCloudObject::PointCloudObject(int numPoints, bool withNormals, bool withColors):
+    PointCloudObject::PointCloudObject(int numPoints, bool withNormals, bool withColors, bool withLabels):
       m_organized(false){
       m_dim2D = Size(numPoints,1);
       m_vertices.resize(m_dim2D.getDim(),Vec(0,0,0,1));
       m_hasNormals = withNormals;
       m_hasColors = withColors;
+      m_hasLabels = withLabels;
+
+      setLockingEnabled(true);
 
       if(withColors){
         m_vertexColors.resize(m_dim2D.getDim(),Vec(0,0,0,1));
@@ -58,9 +64,12 @@ namespace icl{
       if(withNormals){
         m_normals.resize(m_dim2D.getDim(),Vec(0,0,0,1));
       }
+      if(withLabels){
+        m_labels.resize(m_dim2D.getDim(),0);
+      }
     }
   
-    PointCloudObject::PointCloudObject(int width, int height, bool organized, bool withNormals, bool withColors):
+    PointCloudObject::PointCloudObject(int width, int height, bool organized, bool withNormals, bool withColors, bool withLabels):
       m_organized(organized){
       if(organized){
         m_dim2D = Size(width,height);
@@ -71,6 +80,9 @@ namespace icl{
 
       m_hasNormals = withNormals;
       m_hasColors = withColors;
+      m_hasLabels = withLabels;
+
+      setLockingEnabled(true);
       
       if(m_hasColors){
         m_vertexColors.resize(m_dim2D.getDim(),Vec(0,0,0,1));
@@ -78,13 +90,42 @@ namespace icl{
       if(withNormals){
         m_normals.resize(m_dim2D.getDim(),Vec(0,0,0,1));
       }
+      if(withLabels){
+        m_labels.resize(m_dim2D.getDim(),0);
+      }
+
     }
     
     bool PointCloudObject::supports(FeatureType t) const{
       if(t == Normal && m_hasNormals) return true;
+      else if(t == Label && m_hasLabels) return true;
       else if ( t == RGBA32f && m_hasColors) return true;
       else return (t == XYZ) || (t == XYZH);
     }
+
+    bool PointCloudObject::canAddFeature(FeatureType t) const{
+      return t == Normal || t == RGBA32f || t == Label;
+    }
+    
+    void PointCloudObject::addFeature(FeatureType t) throw (utils::ICLException){
+      if(!canAddFeature(t)){
+        PointCloudObjectBase::addFeature(t);
+        return;
+      }
+      lock();
+      if(t == Normal && ! m_hasNormals){
+        m_hasNormals = true;
+        m_normals.resize(getDim());
+      }else if(t == RGBA32f &&!m_hasColors){
+        m_hasColors = true;
+        m_vertexColors.resize(getDim());
+      }else if(t == Label && !m_hasLabels){
+        m_hasLabels = true;
+        m_labels.resize(getDim());
+      }
+      unlock();
+    }
+    
     
     bool PointCloudObject::isOrganized() const{
       return m_organized;
@@ -122,12 +163,21 @@ namespace icl{
         return error<float,4>(__FUNCTION__);        
       }
     }
+
+    DataSegment<icl32s,1> PointCloudObject::selectLabel(){
+      if(m_hasLabels){
+        return DataSegment<icl32s,1>(&m_labels[0], sizeof(icl32s), m_labels.size(), m_dim2D.width);
+      }else{
+        return error<icl32s,1>(__FUNCTION__);
+      }
+    }
     
     void PointCloudObject::customRender() {
       drawNormalLines();
     }
   
     void PointCloudObject::setSize(const Size &size){
+      lock();
       //      SHOW(size);
       m_organized = (size.height > 0);
       m_dim2D = size;
@@ -140,6 +190,10 @@ namespace icl{
       if(m_hasNormals){
         m_normals.resize(len,Vec(0,0,0,1));
       }
+      if(m_hasLabels){
+        m_labels.resize(len, 0);
+      }
+      unlock();
     }
   
   } // namespace geom
