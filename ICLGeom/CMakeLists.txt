@@ -40,6 +40,7 @@ SET(SOURCES src/ICLGeom/Camera.cpp
             src/ICLGeom/RansacBasedPoseEstimator.cpp
             src/ICLGeom/ViewRay.cpp
             src/ICLGeom/ObjectEdgeDetector.cpp
+            src/ICLGeom/ObjectEdgeDetectorData.cpp
             src/ICLGeom/ObjectEdgeDetectorCPU.cpp
             src/ICLGeom/ObjectEdgeDetectorGPU.cpp)
 
@@ -66,6 +67,7 @@ SET(HEADERS src/ICLGeom/Camera.h
             src/ICLGeom/RansacBasedPoseEstimator.h
             src/ICLGeom/PointCloudOutput.h
             src/ICLGeom/ObjectEdgeDetector.h
+            src/ICLGeom/ObjectEdgeDetectorData.h
             src/ICLGeom/ObjectEdgeDetectorCPU.h
             src/ICLGeom/ObjectEdgeDetectorGPU.h
             src/ICLGeom/ObjectEdgeDetectorPlugin.h)
