@@ -42,39 +42,65 @@ using namespace core;
 using namespace utils;
 namespace geom {
 
-ObjectEdgeDetector::ObjectEdgeDetector(Size size, ObjectEdgeDetectorMode mode){
-    if(mode==GPU){
-        std::cout<<"GPU"<<std::endl;
+struct ObjectEdgeDetector::Data {
+	Data(Mode mode) {
+		//set default values
+		isInitialized = false;
+		currentSize = Size(0,0);
+		selectedMode = mode;
+	}
+	~Data() {
+	}
+
+	Size currentSize;
+	bool isInitialized;
+	Mode selectedMode;
+};
+
+
+ObjectEdgeDetector::ObjectEdgeDetector(Mode mode) :
+        m_data(new Data(mode)) {
+    if(m_data->selectedMode==GPU){
         #ifdef ICL_HAVE_OPENCL
-        objectEdgeDetector = new ObjectEdgeDetectorGPU(size);
+        objectEdgeDetector = new ObjectEdgeDetectorGPU();
         if(objectEdgeDetector->isCLReady()==false){
             std::cout<<"OpenCL is not available"<<std::endl;//End
         }
         #else
         std::cout<<"OpenCL is not available"<<std::endl;//End
         #endif
-    }else if(mode==CPU){
-        std::cout<<"CPU"<<std::endl;
-        objectEdgeDetector = new ObjectEdgeDetectorCPU(size);
+    }else if(m_data->selectedMode==CPU){
+        objectEdgeDetector = new ObjectEdgeDetectorCPU();
     }else{
-        std::cout<<"BEST"<<std::endl;
         #ifdef ICL_HAVE_OPENCL
-        objectEdgeDetector = new ObjectEdgeDetectorGPU(size);
+        objectEdgeDetector = new ObjectEdgeDetectorGPU();
         if(objectEdgeDetector->isCLReady()==false){
-            objectEdgeDetector = new ObjectEdgeDetectorCPU(size);
+            objectEdgeDetector = new ObjectEdgeDetectorCPU();
         }
         #else
-        objectEdgeDetector = new ObjectEdgeDetectorCPU(size);
+        objectEdgeDetector = new ObjectEdgeDetectorCPU();
         #endif
     }
-        
 }
 
 ObjectEdgeDetector::~ObjectEdgeDetector() {
 	delete objectEdgeDetector;
 }
 
+void ObjectEdgeDetector::initialize(Size size){
+    if(m_data->isInitialized==true && size!=m_data->currentSize){
+        m_data->isInitialized=false;
+    }
+    
+    if(m_data->isInitialized==false || size!=m_data->currentSize){
+        objectEdgeDetector->initialize(size);
+        m_data->isInitialized=true;
+        m_data->currentSize=size;
+    }
+}
+
 void ObjectEdgeDetector::setDepthImage(const Img32f &depthImg) {
+    initialize(depthImg.getSize());
     objectEdgeDetector->setDepthImage(depthImg);
 }
 
@@ -87,6 +113,7 @@ const Img32f &ObjectEdgeDetector::getFilteredDepthImage() {
 }
 
 void ObjectEdgeDetector::setFilteredDepthImage(const Img32f &filteredImg) {
+    initialize(filteredImg.getSize());
     objectEdgeDetector->setFilteredDepthImage(filteredImg);
 }
 
@@ -102,7 +129,7 @@ void ObjectEdgeDetector::applyGaussianNormalSmoothing() {
     objectEdgeDetector->applyGaussianNormalSmoothing();
 }
 
-const Vec *ObjectEdgeDetector::getNormals() {
+const DataSegment<float,4> ObjectEdgeDetector::getNormals() {
     return objectEdgeDetector->getNormals();
 }
 
@@ -110,7 +137,7 @@ void ObjectEdgeDetector::applyWorldNormalCalculation(const Camera &cam) {
     objectEdgeDetector->applyWorldNormalCalculation(cam);
 }
 
-const Vec* ObjectEdgeDetector::getWorldNormals() {
+const DataSegment<float,4> ObjectEdgeDetector::getWorldNormals() {
     return objectEdgeDetector->getWorldNormals();
 }
 
@@ -118,7 +145,8 @@ const core::Img8u &ObjectEdgeDetector::getRGBNormalImage() {
     return objectEdgeDetector->getRGBNormalImage();
 }
 
-void ObjectEdgeDetector::setNormals(Vec* pNormals) {
+void ObjectEdgeDetector::setNormals(DataSegment<float,4> pNormals) {
+    initialize(pNormals.getSize());
     objectEdgeDetector->setNormals(pNormals);
 }
 
@@ -131,6 +159,7 @@ const Img32f &ObjectEdgeDetector::getAngleImage() {
 }
 
 void ObjectEdgeDetector::setAngleImage(const Img32f &angleImg) {
+    initialize(angleImg.getSize());
     objectEdgeDetector->setAngleImage(angleImg);
 }
 
@@ -176,6 +205,7 @@ void ObjectEdgeDetector::setUseGaussSmoothing(bool use) {
 
 const Img8u &ObjectEdgeDetector::calculate(const Img32f &depthImage,
                     bool filter, bool average, bool gauss) {
+    initialize(depthImage.getSize());
     return objectEdgeDetector->calculate(depthImage, filter, average, gauss);
 }
 

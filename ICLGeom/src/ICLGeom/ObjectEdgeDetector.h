@@ -35,24 +35,34 @@
 #include <ICLCore/Img.h>
 #include <ICLGeom/Camera.h>
 #include <ICLUtils/Uncopyable.h>
+#include <ICLCore/DataSegment.h>
 
 #include <ICLGeom/ObjectEdgeDetectorPlugin.h>
 
 namespace icl{
   namespace geom{
     
-    enum ObjectEdgeDetectorMode {BEST, GPU, CPU};
-  
+    /**
+     This class calculates an edge image based on angles between normals from an input depth image (e.g. Kinect).
+     The common way to use this class is the calculate() method, getting a depth image and returning an edge image.
+     This method computes the whole pipeline (image filtering, normal calculation and smoothing, angle image calculation
+     and binarization). The performance of this method is optimized with minimal read/write for the underlying OpenCL
+     implementation. The interim results can be accessed with getNormals() and getAngleImage() afterwards. It is also possible
+     to use subparts of the pipeline using the setter methods to set the interim data. */
     class ObjectEdgeDetector{
+     
+     struct Data;  //!< internal data type
+     Data *m_data; //!< internal data pointer
       
      public:
+     
+      enum Mode {BEST, GPU, CPU};
   
-      /// Create new ObjectEdgeDetector with given internal image size
+      /// Create new ObjectEdgeDetector
       /** Constructs an object of this class. All default parameters are set. 
           Use setters for desired values.
-          @param size size of the input depth image
           @param mode selects the implementation (GPU, CPU or BEST)*/
-      ObjectEdgeDetector(utils::Size size, ObjectEdgeDetectorMode mode=BEST); 
+      ObjectEdgeDetector(Mode mode=BEST); 
   	
       ///Destructor
       virtual ~ObjectEdgeDetector();
@@ -106,7 +116,7 @@ namespace icl{
   
       /// Returns the Pointer to the normals
       /** @return the point normals */
-      const Vec* getNormals();
+      const core::DataSegment<float,4> getNormals();
       
       /// Transforms the normals to the world space and calculates normal image.
       /**  @param cam the camera of the depth image */
@@ -114,7 +124,7 @@ namespace icl{
   	  
       /// Returns the point normals in world space.
       /** @return the point normals in world space */
-      const Vec* getWorldNormals();
+      const core::DataSegment<float,4> getWorldNormals();
   	  
       /// Returns the RGB normal image.
       /** @return the RGB normal image */
@@ -123,7 +133,7 @@ namespace icl{
       /// Sets the point normals (input for angle image calculation). 
       /** This call is not necessary if normalCalculation() is executed before.
           @param pNormals the point normals */
-      void setNormals(Vec* pNormals);
+      void setNormals(core::DataSegment<float,4> pNormals);
   	
       /// Calculates the angle image. 
       /** The mode is set by setAngleNeighborhoodMode(int mode).
@@ -189,6 +199,8 @@ namespace icl{
   	
      private:
       ObjectEdgeDetectorPlugin* objectEdgeDetector;
+      
+      void initialize(utils::Size size);
       
     };
   }

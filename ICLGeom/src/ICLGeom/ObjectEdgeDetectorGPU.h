@@ -47,9 +47,8 @@ namespace icl{
   
       /// Create new ObjectEdgeDetectorGPU with given internal image size
       /** Constructs an object of this class. All default parameters are set. 
-          Use setters for desired values.
-          @param size size of the input depth image */
-      ObjectEdgeDetectorGPU(utils::Size size); 
+          Use setters for desired values. */
+      ObjectEdgeDetectorGPU(); 
   	
       ///Destructor
       virtual ~ObjectEdgeDetectorGPU();
@@ -103,7 +102,7 @@ namespace icl{
   
       /// Returns the Pointer to the normals
       /** @return the point normals */
-      const Vec* getNormals();
+      const core::DataSegment<float,4> getNormals();
       
       /// Transforms the normals to the world space and calculates normal image.
       /**  @param cam the camera of the depth image */
@@ -111,7 +110,7 @@ namespace icl{
   	  
       /// Returns the point normals in world space.
       /** @return the point normals in world space */
-      const Vec* getWorldNormals();
+      const core::DataSegment<float,4> getWorldNormals();
   	  
       /// Returns the RGB normal image.
       /** @return the RGB normal image */
@@ -120,7 +119,7 @@ namespace icl{
       /// Sets the point normals (input for angle image calculation). 
       /** This call is not necessary if normalCalculation() is executed before.
           @param pNormals the point normals */
-      void setNormals(Vec* pNormals);
+      void setNormals(core::DataSegment<float,4> pNormals);
   	
       /// Calculates the angle image. 
       /** The mode is set by setAngleNeighborhoodMode(int mode).
@@ -187,7 +186,10 @@ namespace icl{
       /// Returns the openCL status 
       /** (true=openCL context ready, false=no openCL context available)
           @return openCL context ready/unavailable */
-      bool isCLReady();  	
+      bool isCLReady();  
+      
+      void initialize(utils::Size size);
+      	
     };
   }
 }

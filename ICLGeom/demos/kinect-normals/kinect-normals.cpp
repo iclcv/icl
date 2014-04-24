@@ -55,13 +55,13 @@ void init(){
   angleImage.setSize(size);
   
   if(pa("-fcpu")){  
-    objectEdgeDetector = new ObjectEdgeDetector(size, CPU);
+    objectEdgeDetector = new ObjectEdgeDetector(ObjectEdgeDetector::CPU);
     std::cout<<"force CPU"<<std::endl;
   }else if(pa("-fgpu")){
-    objectEdgeDetector = new ObjectEdgeDetector(size, GPU);
+    objectEdgeDetector = new ObjectEdgeDetector(ObjectEdgeDetector::GPU);
     std::cout<<"force GPU"<<std::endl;
   }else{
-    objectEdgeDetector = new ObjectEdgeDetector(size, BEST);
+    objectEdgeDetector = new ObjectEdgeDetector(ObjectEdgeDetector::BEST);
     std::cout<<"use best"<<std::endl;
   }
     

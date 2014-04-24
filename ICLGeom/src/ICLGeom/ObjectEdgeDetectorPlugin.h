@@ -39,6 +39,7 @@
 #include <ICLCore/Img.h>
 #include <ICLGeom/Camera.h>
 #include <ICLUtils/Uncopyable.h>
+#include <ICLCore/DataSegment.h>
 
 namespace icl{
   namespace geom{
@@ -97,7 +98,7 @@ namespace icl{
   
       /// Returns the Pointer to the normals
       /** @return the point normals */
-      virtual const Vec* getNormals()=0;
+      virtual const core::DataSegment<float,4> getNormals()=0;
       
       /// Transforms the normals to the world space and calculates normal image.
       /**  @param cam the camera of the depth image */
@@ -105,7 +106,7 @@ namespace icl{
   	  
       /// Returns the point normals in world space.
       /** @return the point normals in world space */
-      virtual const Vec* getWorldNormals()=0;
+      virtual const core::DataSegment<float,4> getWorldNormals()=0;
   	  
       /// Returns the RGB normal image.
       /** @return the RGB normal image */
@@ -114,7 +115,7 @@ namespace icl{
       /// Sets the point normals (input for angle image calculation). 
       /** This call is not necessary if normalCalculation() is executed before.
           @param pNormals the point normals */
-      virtual void setNormals(Vec* pNormals)=0;
+      virtual void setNormals(core::DataSegment<float,4> pNormals)=0;
   	
       /// Calculates the angle image. 
       /** The mode is set by setAngleNeighborhoodMode(int mode).
@@ -181,7 +182,9 @@ namespace icl{
       /// Returns the openCL status 
       /** (true=openCL context ready, false=no openCL context available)
           @return openCL context ready/unavailable */
-      virtual bool isCLReady()=0;  	
+      virtual bool isCLReady()=0;  
+      
+      virtual void initialize(utils::Size size)=0;	
   	
     };
   }

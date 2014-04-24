@@ -30,6 +30,7 @@
 
 #include <ICLCore/Channel.h>
 #include <ICLGeom/ObjectEdgeDetectorCPU.h>
+#include <ICLGeom/ObjectEdgeDetectorData.h>
 
 #include <ICLFilter/MedianOp.h>
 
@@ -42,98 +43,72 @@ using namespace core;
 namespace geom {
 
 struct ObjectEdgeDetectorCPU::Data {
-	Data(const Size &size) {
+	Data() {
+		oedData = new ObjectEdgeDetectorData();
+		
 		//set default values
-		medianFilterSize = 3;
-		normalRange = 2;
-		normalAveragingRange = 1;
-		neighborhoodMode = 0;
-		neighborhoodRange = 3;
-		binarizationThreshold = 0.89;
-		useNormalAveraging = true;
-		useGaussSmoothing = false;
+		params = oedData->getParameters();
+		isInitialized=false;
 
-		//create arrays and images in given size
-		if (size == Size::QVGA) {
-			std::cout << "Resolution: 320x240" << std::endl;
-			w = 320;
-			h = 240;
-
-		} else if (size == Size::VGA) {
-			std::cout << "Resolution: 640x480" << std::endl;
-			w = 640;
-			h = 480;
-		} else {
-			std::cout << "Unknown Resolution" << std::endl;
-			w = size.width;
-			h = size.height;
-		}
-
-		normals = new Vec4[w * h];
-		avgNormals= new Vec4[w * h];
-		worldNormals= new Vec4[w * h];
-		for(int i=0; i<w*h;i++) {
-			normals[i].x=0;
-			normals[i].y=0;
-			normals[i].z=0;
-			normals[i].w=0;
-			avgNormals[i].x=0;
-			avgNormals[i].y=0;
-			avgNormals[i].z=0;
-			avgNormals[i].w=0;
-			worldNormals[i].x=0;
-			worldNormals[i].y=0;
-			worldNormals[i].z=0;
-			worldNormals[i].w=0;
-		}
-
-		rawImage.setSize(Size(w, h));
-		rawImage.setChannels(1);
-		filteredImage.setSize(Size(w, h));
-		filteredImage.setChannels(1);
-		angleImage.setSize(Size(w, h));
-		angleImage.setChannels(1);
-		binarizedImage.setSize(Size(w, h));
-		binarizedImage.setChannels(1);
-		normalImage.setSize(Size(w, h));
-		normalImage.setChannels(3);
 		medianFilter = new filter::MedianOp(utils::Size(3,3));
 		medianFilter->setClipToROI(false);
-
 	}
 	~Data() {
-		delete[] normals;
-		delete[] avgNormals;
-		delete[] worldNormals;
+		delete medianFilter;
 	}
 	int w, h;
-	int medianFilterSize;
-	int normalRange;
-	int normalAveragingRange;
-	int neighborhoodMode;
-	int neighborhoodRange;
-	float binarizationThreshold;
-	bool useNormalAveraging;
-	bool useGaussSmoothing;
-	Vec4* normals;
-	Vec4* avgNormals;
-	Vec4* worldNormals;
+	DataSegment<float,4> normals;
+	DataSegment<float,4> avgNormals;
+	DataSegment<float,4> worldNormals;
+	Array2D<Vec4> normalsA;
+	Array2D<Vec4> avgNormalsA;
+	Array2D<Vec4> worldNormalsA;
 	core::Img32f rawImage;
 	core::Img32f filteredImage;
 	core::Img32f angleImage;
 	core::Img8u binarizedImage;
 	core::Img8u normalImage;
+	bool isInitialized;
 	
 	filter::MedianOp* medianFilter;
+	ObjectEdgeDetectorData* oedData;
+	ObjectEdgeDetectorData::m_params params;
 
 };
 
-ObjectEdgeDetectorCPU::ObjectEdgeDetectorCPU(Size size) :
-		m_data(new Data(size)) {
+ObjectEdgeDetectorCPU::ObjectEdgeDetectorCPU() :
+		m_data(new Data()) {
 }
 
 ObjectEdgeDetectorCPU::~ObjectEdgeDetectorCPU() {
 	delete m_data;
+}
+
+void ObjectEdgeDetectorCPU::initialize(Size size){
+    if(m_data->isInitialized){
+		m_data->isInitialized=false;  
+    }
+    //create arrays and images in given size
+	m_data->w = size.width;
+	m_data->h = size.height;
+	
+	m_data->normalsA=Array2D<Vec4>(m_data->w,m_data->h);
+	m_data->avgNormalsA=Array2D<Vec4>(m_data->w,m_data->h);
+	m_data->worldNormalsA=Array2D<Vec4>(m_data->w,m_data->h);
+	m_data->normals=DataSegment<float,4>(&m_data->normalsA(0,0).x, sizeof(Vec4), m_data->normalsA.getDim(), m_data->normalsA.getWidth());
+	m_data->avgNormals=DataSegment<float,4>(&m_data->avgNormalsA(0,0).x, sizeof(Vec4), m_data->avgNormalsA.getDim(), m_data->avgNormalsA.getWidth());
+	m_data->worldNormals=DataSegment<float,4>(&m_data->worldNormalsA(0,0).x, sizeof(Vec4), m_data->worldNormalsA.getDim(), m_data->worldNormalsA.getWidth());
+
+	m_data->rawImage.setSize(Size(m_data->w, m_data->h));
+	m_data->rawImage.setChannels(1);
+	m_data->filteredImage.setSize(Size(m_data->w, m_data->h));
+	m_data->filteredImage.setChannels(1);
+	m_data->angleImage.setSize(Size(m_data->w, m_data->h));
+	m_data->angleImage.setChannels(1);
+	m_data->binarizedImage.setSize(Size(m_data->w, m_data->h));
+	m_data->binarizedImage.setChannels(1);
+	m_data->normalImage.setSize(Size(m_data->w, m_data->h));
+	m_data->normalImage.setChannels(3);
 }
 
 void ObjectEdgeDetectorCPU::setDepthImage(const Img32f &depthImg) {
@@ -141,7 +116,7 @@ void ObjectEdgeDetectorCPU::setDepthImage(const Img32f &depthImg) {
 }
 
 void ObjectEdgeDetectorCPU::applyMedianFilter() {
-	m_data->medianFilter->adaptSize(Size(m_data->medianFilterSize,m_data->medianFilterSize));
+	m_data->medianFilter->adaptSize(Size(m_data->params.medianFilterSize,m_data->params.medianFilterSize));
 	m_data->medianFilter->apply(&m_data->rawImage, bpp(m_data->filteredImage));
 }
 
@@ -154,7 +129,7 @@ void ObjectEdgeDetectorCPU::setFilteredDepthImage(const Img32f &filteredImg) {
 }
 
 void ObjectEdgeDetectorCPU::applyNormalCalculation() {
-	const int r = m_data->normalRange;
+	const int r = m_data->params.normalRange;
 	Vec fa1, fb1, n1, n01;
 	Channel32f filteredI = m_data->filteredImage[0];
 	
@@ -192,15 +167,15 @@ void ObjectEdgeDetectorCPU::applyNormalCalculation() {
 		}
 	}
 
-	if (m_data->useNormalAveraging && !m_data->useGaussSmoothing) {
+	if (m_data->params.useNormalAveraging && !m_data->params.useGaussSmoothing) {
 		applyLinearNormalAveraging();
-	} else if (m_data->useNormalAveraging && m_data->useGaussSmoothing) {
+	} else if (m_data->params.useNormalAveraging && m_data->params.useGaussSmoothing) {
 		applyGaussianNormalSmoothing();
 	}
 }
 
 void ObjectEdgeDetectorCPU::applyLinearNormalAveraging() {
-	const int r = m_data->normalAveragingRange;
+	const int r = m_data->params.normalAveragingRange;
 	for (int y = 0; y < m_data->h; y++) {
 		for (int x = 0; x < m_data->w; x++) {
 			int i = x + m_data->w * y;
@@ -224,49 +199,18 @@ void ObjectEdgeDetectorCPU::applyLinearNormalAveraging() {
 				avg.y /= ((1 + 2 * r) * (1 + 2 * r));
 				avg.z /= ((1 + 2 * r) * (1 + 2 * r));
 				avg.w = 1;
-				m_data->avgNormals[i] = avg;
+				m_data->avgNormalsA[i] = avg;
 			}
 		}
 	}
 }
 
 void ObjectEdgeDetectorCPU::applyGaussianNormalSmoothing() {
-	float norm = 1;
-	DynMatrix<float> kernel = DynMatrix<float>(1, 1, 0.0);
-	int l = 0;
-	if (m_data->normalAveragingRange <= 1) {
-		// nothing!
-	} else if (m_data->normalAveragingRange <= 3) {
-		norm = 16.;
-		l = 1;
-		DynMatrix<float> k1 = DynMatrix<float>(1, 3, 0.0);
-		k1(0, 0) = 1.;
-		k1(0, 1) = 2.;
-		k1(0, 2) = 1.;
-		kernel = k1 * k1.transp();
-	} else if (m_data->normalAveragingRange <= 5) {
-		norm = 256.;
-		l = 2;
-		DynMatrix<float> k1 = DynMatrix<float>(1, 5, 0.0);
-		k1(0, 0) = 1.;
-		k1(0, 1) = 4.;
-		k1(0, 2) = 6.;
-		k1(0, 3) = 4.;
-		k1(0, 4) = 1.;
-		kernel = k1 * k1.transp();
-	} else {
-		norm = 4096.;
-		l = 3;
-		DynMatrix<float> k1 = DynMatrix<float>(1, 7, 0.0);
-		k1(0, 0) = 1.;
-		k1(0, 1) = 6.;
-		k1(0, 2) = 15.;
-		k1(0, 3) = 20.;
-		k1(0, 4) = 15.;
-		k1(0, 5) = 6.;
-		k1(0, 6) = 1.;
-		kernel = k1 * k1.transp();
-	}
+	ObjectEdgeDetectorData::m_kernel kernelData = m_data->oedData->getKernel(m_data->params.normalAveragingRange);
+	float norm = kernelData.norm;
+	int l = kernelData.l;
+	DynMatrix<float> kernel = kernelData.kernel;
+	
     for (int y = 0; y < m_data->h; y++) {
 	    for (int x = 0; x < m_data->w; x++) {
 		    int i = x + m_data->w * y;
@@ -293,17 +237,17 @@ void ObjectEdgeDetectorCPU::applyGaussianNormalSmoothing() {
 			    avg.y /= norm;
 			    avg.z /= norm;
 			    avg.w = 1;
-			    m_data->avgNormals[i] = avg;
+			    m_data->avgNormalsA[i] = avg;
 		    }
 	    }
     }
 }
 
-const Vec *ObjectEdgeDetectorCPU::getNormals() {
-	if (m_data->useNormalAveraging == true) {
-		return (const Vec*) m_data->avgNormals;
+const DataSegment<float,4> ObjectEdgeDetectorCPU::getNormals() {
+	if (m_data->params.useNormalAveraging == true) {
+		return m_data->avgNormals;
 	} else {
-		return (const Vec*) m_data->normals;
+		return m_data->normals;
 	}
 }
 
@@ -322,7 +266,7 @@ void ObjectEdgeDetectorCPU::applyWorldNormalCalculation(const Camera &cam) {
 				m_data->normalImage(x, y, 2) = 0;
 			} else {
 				Vec pWN;
-				if (m_data->useNormalAveraging == true) {
+				if (m_data->params.useNormalAveraging == true) {
 					pWN = T2 * (Vec&) m_data->avgNormals[i];
 				} else {
 					pWN = T2 * (Vec&) m_data->normals[i];
@@ -340,25 +284,25 @@ void ObjectEdgeDetectorCPU::applyWorldNormalCalculation(const Camera &cam) {
 	}
 }
 
-const Vec* ObjectEdgeDetectorCPU::getWorldNormals() {
-	return (const Vec*) m_data->worldNormals;
+const DataSegment<float,4> ObjectEdgeDetectorCPU::getWorldNormals() {
+	return m_data->worldNormals;
 }
 
 const core::Img8u &ObjectEdgeDetectorCPU::getRGBNormalImage() {
 	return m_data->normalImage;
 }
 
-void ObjectEdgeDetectorCPU::setNormals(Vec* pNormals) {
-	if (m_data->useNormalAveraging == true) {
-		m_data->avgNormals = (Vec4*) pNormals;
+void ObjectEdgeDetectorCPU::setNormals(DataSegment<float,4> pNormals) {
+	if (m_data->params.useNormalAveraging == true) {
+		pNormals.deepCopy(m_data->avgNormals);
 	} else {
-		m_data->normals = (Vec4*) pNormals;
+		pNormals.deepCopy(m_data->normals);
 	}
 }
 
 void ObjectEdgeDetectorCPU::applyAngleImageCalculation() {
-	Vec4 * norm;
-	if (m_data->useNormalAveraging == true) {
+	DataSegment<float,4> norm;
+	if (m_data->params.useNormalAveraging == true) {
 		norm = m_data->avgNormals;
 	} else {
 		norm = m_data->normals;
@@ -368,10 +312,10 @@ void ObjectEdgeDetectorCPU::applyAngleImageCalculation() {
 	for (int y = 0; y < h; y++) {
 		for (int x = 0; x < w; x++) {
 			int i = x + w * y;
-			if (y < m_data->neighborhoodRange
-					|| y >= h - (m_data->neighborhoodRange)
-					|| x < m_data->neighborhoodRange
-					|| x >= w - (m_data->neighborhoodRange)) {
+			if (y < m_data->params.neighborhoodRange
+					|| y >= h - (m_data->params.neighborhoodRange)
+					|| x < m_data->params.neighborhoodRange
+					|| x >= w - (m_data->params.neighborhoodRange)) {
 				angleI(x, y) = 0;
 			} else {
 				float snr = 0; //sum right
@@ -382,7 +326,7 @@ void ObjectEdgeDetectorCPU::applyAngleImageCalculation() {
 				float sntl = 0; //sum top-left
 				float snbr = 0; //sum bottom-right
 				float snbl = 0; //sum bottom-left
-				for (int z = 1; z <= m_data->neighborhoodRange; z++) {
+				for (int z = 1; z <= m_data->params.neighborhoodRange; z++) {
 					//angle between normals
 					//flip if angle is bigger than 90°
 					snr += scalarAndFlip(norm[i],norm[i + z]);
@@ -394,23 +338,22 @@ void ObjectEdgeDetectorCPU::applyAngleImageCalculation() {
 					snbr += scalarAndFlip(norm[i],norm[i - w * z + z]);
 					snbl += scalarAndFlip(norm[i],norm[i - w * z - z]);					
 				}
-				snr /= m_data->neighborhoodRange;
-				snl /= m_data->neighborhoodRange;
-				snt /= m_data->neighborhoodRange;
-				snb /= m_data->neighborhoodRange;
-				sntr /= m_data->neighborhoodRange;
-				sntl /= m_data->neighborhoodRange;
-				snbr /= m_data->neighborhoodRange;
-				snbl /= m_data->neighborhoodRange;
+				snr /= m_data->params.neighborhoodRange;
+				snl /= m_data->params.neighborhoodRange;
+				snt /= m_data->params.neighborhoodRange;
+				snb /= m_data->params.neighborhoodRange;
+				sntr /= m_data->params.neighborhoodRange;
+				sntl /= m_data->params.neighborhoodRange;
+				snbr /= m_data->params.neighborhoodRange;
+				snbl /= m_data->params.neighborhoodRange;
 
-				if (m_data->neighborhoodMode == 0) {//max
+				if (m_data->params.neighborhoodMode == 0) {//max
 					angleI(x, y) = maxAngle(snr, snl, snt, snb,
                                             snbl, snbr, sntl, sntr);
-				} else if (m_data->neighborhoodMode == 1) {//mean
+				} else if (m_data->params.neighborhoodMode == 1) {//mean
 					angleI(x, y) = (snr + snl + snt + snb
 							+ sntr + sntl + snbr + snbl) / 8;
 				} else {
-					std::cout << "Unknown neighborhood mode" << std::endl;
 				}
 			}
 		}
@@ -429,7 +372,7 @@ void ObjectEdgeDetectorCPU::applyImageBinarization() {
 	for (int y = 0; y < m_data->h; y++) {
 		for (int x = 0; x < m_data->w; x++) {
 			if (m_data->angleImage(x, y, 0)
-					> m_data->binarizationThreshold) {
+					> m_data->params.binarizationThreshold) {
 				m_data->binarizedImage(x, y, 0) = 255;
 			} else {
 				m_data->binarizedImage(x, y, 0) = 0;
@@ -443,35 +386,35 @@ const Img8u &ObjectEdgeDetectorCPU::getBinarizedAngleImage() {
 }
 
 void ObjectEdgeDetectorCPU::setMedianFilterSize(int size) {
-	m_data->medianFilterSize = size;
+	m_data->params.medianFilterSize = size;
 }
 
 void ObjectEdgeDetectorCPU::setNormalCalculationRange(int range) {
-	m_data->normalRange = range;
+	m_data->params.normalRange = range;
 }
 
 void ObjectEdgeDetectorCPU::setNormalAveragingRange(int range) {
-	m_data->normalAveragingRange = range;
+	m_data->params.normalAveragingRange = range;
 }
 
 void ObjectEdgeDetectorCPU::setAngleNeighborhoodMode(int mode) {
-	m_data->neighborhoodMode = mode;
+	m_data->params.neighborhoodMode = mode;
 }
 
 void ObjectEdgeDetectorCPU::setAngleNeighborhoodRange(int range) {
-	m_data->neighborhoodRange = range;
+	m_data->params.neighborhoodRange = range;
 }
 
 void ObjectEdgeDetectorCPU::setBinarizationThreshold(float threshold) {
-	m_data->binarizationThreshold = threshold;
+	m_data->params.binarizationThreshold = threshold;
 }
 
 void ObjectEdgeDetectorCPU::setUseNormalAveraging(bool use) {
-	m_data->useNormalAveraging = use;
+	m_data->params.useNormalAveraging = use;
 }
 
 void ObjectEdgeDetectorCPU::setUseGaussSmoothing(bool use) {
-	m_data->useGaussSmoothing = use;
+	m_data->params.useGaussSmoothing = use;
 }
 
 bool ObjectEdgeDetectorCPU::isCLReady() {
@@ -486,8 +429,8 @@ const Img8u &ObjectEdgeDetectorCPU::calculate(const Img32f &depthImage,
 		setDepthImage(depthImage);
 		applyMedianFilter();
 	}
-	m_data->useNormalAveraging = average;
-	m_data->useGaussSmoothing = gauss;
+	m_data->params.useNormalAveraging = average;
+	m_data->params.useGaussSmoothing = gauss;
 	applyNormalCalculation();
 	applyAngleImageCalculation();
 	applyImageBinarization();
@@ -495,7 +438,7 @@ const Img8u &ObjectEdgeDetectorCPU::calculate(const Img32f &depthImage,
 }
 
 
-float ObjectEdgeDetectorCPU::scalar(Vec4 a, Vec4 b){
+float ObjectEdgeDetectorCPU::scalar(FixedColVector<float,4> &a, FixedColVector<float,4> &b){
     return (a.x * b.x + a.y * b.y + a.z * b.z);
 }
 
@@ -506,7 +449,7 @@ float ObjectEdgeDetectorCPU::flipAngle(float angle){
 	return angle;
 }
 
-float ObjectEdgeDetectorCPU::scalarAndFlip(Vec4 a, Vec4 b){
+float ObjectEdgeDetectorCPU::scalarAndFlip(FixedColVector<float,4> &a, FixedColVector<float,4> &b){
     return flipAngle(scalar(a,b));
 }
 

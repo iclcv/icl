@@ -36,6 +36,7 @@
 
 #include <ICLCore/Channel.h>
 #include <ICLGeom/ObjectEdgeDetectorGPU.h>
+#include <ICLGeom/ObjectEdgeDetectorData.h>
 
 namespace icl {
 
@@ -294,155 +295,60 @@ static char normalEstimationKernel[] =
 typedef FixedColVector<float, 4> Vec4;
 
 struct ObjectEdgeDetectorGPU::Data {
-	Data(const Size &size) {
+	Data() {
+		
+		oedData = new ObjectEdgeDetectorData();
+		
 		//set default values
-		medianFilterSize = 3;
-		normalRange = 2;
-		normalAveragingRange = 1;
-		neighborhoodMode = 0;
-		neighborhoodRange = 3;
-		binarizationThreshold = 0.89;
+		params = oedData->getParameters();
 		clReady = false;
-		useNormalAveraging = true;
-		useGaussSmoothing = false;
-
-		//create arrays and images in given size
-		if (size == Size::QVGA) {
-			std::cout << "Resolution: 320x240" << std::endl;
-			w = 320;
-			h = 240;
-
-		} else if (size == Size::VGA) {
-			std::cout << "Resolution: 640x480" << std::endl;
-			w = 640;
-			h = 480;
-		} else {
-			std::cout << "Unknown Resolution" << std::endl;
-			w = size.width;
-			h = size.height;
-		}
-
-		normals = new Vec4[w * h];avgNormals
-		= new Vec4[w * h];worldNormals
-		= new Vec4[w * h];for
-(		int i=0; i<w*h;i++) {
-			normals[i].x=0;
-			normals[i].y=0;
-			normals[i].z=0;
-			normals[i].w=0;
-			avgNormals[i].x=0;
-			avgNormals[i].y=0;
-			avgNormals[i].z=0;
-			avgNormals[i].w=0;
-			worldNormals[i].x=0;
-			worldNormals[i].y=0;
-			worldNormals[i].z=0;
-			worldNormals[i].w=0;
-		}
-
-		rawImage.setSize(Size(w, h));
-		rawImage.setChannels(1);
-		filteredImage.setSize(Size(w, h));
-		filteredImage.setChannels(1);
-		angleImage.setSize(Size(w, h));
-		angleImage.setChannels(1);
-		binarizedImage.setSize(Size(w, h));
-		binarizedImage.setChannels(1);
-		normalImage.setSize(Size(w, h));
-		normalImage.setChannels(3);
-
-		binarizedImageArray = new unsigned char[w*h];
-		normalImageRArray = new unsigned char[w*h];
-		normalImageGArray = new unsigned char[w*h];
-		normalImageBArray = new unsigned char[w*h];
-
-		outputNormals=new FixedColVector<float, 4>[w*h];
-		outputFilteredImage=new float[w*h];
-		outputAngleImage=new float[w*h];
-		outputBinarizedImage=new unsigned char[w*h];
-		outputWorldNormals=new FixedColVector<float, 4>[w*h];
+		isInitialized=false;
 
 		try {
 			program = CLProgram("gpu", normalEstimationKernel);
 			clReady=true; //and mark CL context as available
-
+			
+			//create kernels
+		    kernelMedianFilter = program.createKernel("medianFilter");
+		    kernelNormalCalculation = program.createKernel("normalCalculation");
+		    kernelNormalAveraging = program.createKernel("normalAveraging");
+		    kernelAngleImageCalculation = program.createKernel("angleImageCalculation");
+		    kernelImageBinarization = program.createKernel("imageBinarization");
+		    kernelWorldNormalCalculation = program.createKernel("worldNormalCalculation");
+		    kernelNormalGaussSmoothing = program.createKernel("normalGaussSmoothing");
+		    
 		} catch (CLException &err) { //catch openCL errors
 			std::cout<< "ERROR: "<< err.what()<< std::endl;
 			clReady = false;
 		}
 
-		if(clReady==true) { //only if CL context is available
-			try {
-				//create buffer for memory access and allocation
-                rawImageBuffer = program.createBuffer("rw", w*h * sizeof(float));//, rawImageArray);
-                filteredImageBuffer = program.createBuffer("rw", w*h * sizeof(float));//, filteredImageArray);
-				normalsBuffer = program.createBuffer("rw", w*h * sizeof(FixedColVector<float, 4>), normals);
-				avgNormalsBuffer = program.createBuffer("rw", w*h * sizeof(FixedColVector<float, 4>), avgNormals);
-				angleImageBuffer = program.createBuffer("rw", w*h * sizeof(float));//, angleImageArray);
-				binarizedImageBuffer = program.createBuffer("rw", w*h * sizeof(unsigned char), binarizedImageArray);
-				normalImageRBuffer = program.createBuffer("rw", w*h * sizeof(unsigned char), normalImageRArray);
-				normalImageGBuffer = program.createBuffer("rw", w*h * sizeof(unsigned char), normalImageGArray);
-				normalImageBBuffer = program.createBuffer("rw", w*h * sizeof(unsigned char), normalImageBArray);
-				worldNormalsBuffer = program.createBuffer("rw", w*h * sizeof(FixedColVector<float, 4>), worldNormals);
-
-				//create kernels
-				kernelMedianFilter = program.createKernel("medianFilter");
-				kernelNormalCalculation = program.createKernel("normalCalculation");
-				kernelNormalAveraging = program.createKernel("normalAveraging");
-				kernelAngleImageCalculation = program.createKernel("angleImageCalculation");
-				kernelImageBinarization = program.createKernel("imageBinarization");
-				kernelWorldNormalCalculation = program.createKernel("worldNormalCalculation");
-				kernelNormalGaussSmoothing = program.createKernel("normalGaussSmoothing");
-			} catch (CLException &err) { //catch openCL errors
-				std::cout<< "ERROR: "<< err.what()<< std::endl;
-				clReady = false;
-			}
-		}
 	}
 	~Data() {
-		delete[] normals;
-		delete[] avgNormals;
-		delete[] worldNormals;
-
-		delete[] binarizedImageArray;
-		delete[] normalImageRArray;
-		delete[] normalImageGArray;
-		delete[] normalImageBArray;
-		delete[] outputNormals;
-		delete[] outputFilteredImage;
-		delete[] outputAngleImage;
-		delete[] outputBinarizedImage;
-		delete[] outputWorldNormals;
 	}
+
 	int w, h;
-	int medianFilterSize;
-	int normalRange;
-	int normalAveragingRange;
-	int neighborhoodMode;
-	int neighborhoodRange;
-	float binarizationThreshold;
 	bool clReady;
-	bool useNormalAveraging;
-	bool useGaussSmoothing;
-	Vec4* normals;
-	Vec4* avgNormals;
-	Vec4* worldNormals;
+	DataSegment<float,4> normals;
+	DataSegment<float,4> avgNormals;
+	DataSegment<float,4> worldNormals;
+	Array2D<Vec4> normalsA;
+	Array2D<Vec4> avgNormalsA;
+	Array2D<Vec4> worldNormalsA;
 	core::Img32f rawImage;
 	core::Img32f filteredImage;
 	core::Img32f angleImage;
 	core::Img8u binarizedImage;
 	core::Img8u normalImage;
+	bool isInitialized;
 
 	//OpenCL data
-	Vec4 * outputNormals;
-	Vec4 * outputWorldNormals;
-	float* outputFilteredImage;//output of kernel for image
-	float* outputAngleImage;
-	unsigned char* outputBinarizedImage;
-	unsigned char* binarizedImageArray;
-	unsigned char* normalImageRArray;
-	unsigned char* normalImageGArray;
-	unsigned char* normalImageBArray;
+	std::vector<float> outputFilteredImage;//output of kernel for image
+	std::vector<float> outputAngleImage;
+	std::vector<unsigned char> outputBinarizedImage;
+	std::vector<unsigned char> binarizedImageArray;
+	std::vector<unsigned char> normalImageRArray;
+	std::vector<unsigned char> normalImageGArray;
+	std::vector<unsigned char> normalImageBArray;
 
 	//OpenCL
 	utils::CLProgram program;
@@ -468,15 +374,75 @@ struct ObjectEdgeDetectorGPU::Data {
 	utils::CLBuffer normalImageBBuffer;
 	utils::CLBuffer camBuffer;
 	utils::CLBuffer gaussKernelBuffer;
+	
+	ObjectEdgeDetectorData* oedData;
+	ObjectEdgeDetectorData::m_params params;
 };
 
-ObjectEdgeDetectorGPU::ObjectEdgeDetectorGPU(Size size) :
-		m_data(new Data(size)) {
+ObjectEdgeDetectorGPU::ObjectEdgeDetectorGPU() :
+		m_data(new Data()) {
 }
 
 ObjectEdgeDetectorGPU::~ObjectEdgeDetectorGPU() {
 	delete m_data;
 }
+
+
+void ObjectEdgeDetectorGPU::initialize(Size size){
+    if(m_data->isInitialized){
+		m_data->isInitialized=false;
+    }
+    
+	m_data->w = size.width;
+	m_data->h = size.height;
+    
+    m_data->normalsA=Array2D<Vec4>(m_data->w,m_data->h);
+	m_data->avgNormalsA=Array2D<Vec4>(m_data->w,m_data->h);
+	m_data->worldNormalsA=Array2D<Vec4>(m_data->w,m_data->h);
+	m_data->normals=DataSegment<float,4>(&m_data->normalsA(0,0)[0], sizeof(Vec4), m_data->normalsA.getDim(), m_data->normalsA.getWidth());
+	m_data->avgNormals=DataSegment<float,4>(&m_data->avgNormalsA(0,0)[0], sizeof(Vec4), m_data->avgNormalsA.getDim(), m_data->avgNormalsA.getWidth());
+	m_data->worldNormals=DataSegment<float,4>(&m_data->worldNormalsA(0,0)[0], sizeof(Vec4), m_data->worldNormalsA.getDim(), m_data->worldNormalsA.getWidth());
+
+	m_data->rawImage.setSize(Size(m_data->w, m_data->h));
+	m_data->rawImage.setChannels(1);
+	m_data->filteredImage.setSize(Size(m_data->w, m_data->h));
+	m_data->filteredImage.setChannels(1);
+	m_data->angleImage.setSize(Size(m_data->w, m_data->h));
+	m_data->angleImage.setChannels(1);
+	m_data->binarizedImage.setSize(Size(m_data->w, m_data->h));
+	m_data->binarizedImage.setChannels(1);
+	m_data->normalImage.setSize(Size(m_data->w, m_data->h));
+	m_data->normalImage.setChannels(3);
+
+	m_data->binarizedImageArray.resize(m_data->w*m_data->h);
+	m_data->normalImageRArray.resize(m_data->w*m_data->h);
+	m_data->normalImageGArray.resize(m_data->w*m_data->h);
+	m_data->normalImageBArray.resize(m_data->w*m_data->h);
+
+	m_data->outputFilteredImage.resize(m_data->w*m_data->h);
+	m_data->outputAngleImage.resize(m_data->w*m_data->h);
+	m_data->outputBinarizedImage.resize(m_data->w*m_data->h);
+	
+	try {
+		//create buffer for memory access and allocation
+        m_data->rawImageBuffer = m_data->program.createBuffer("rw", m_data->w*m_data->h * sizeof(float));
+        m_data->filteredImageBuffer = m_data->program.createBuffer("rw", m_data->w*m_data->h * sizeof(float));
+		m_data->normalsBuffer = m_data->program.createBuffer("rw", m_data->w*m_data->h * sizeof(FixedColVector<float, 4>));
+		m_data->avgNormalsBuffer = m_data->program.createBuffer("rw", m_data->w*m_data->h * sizeof(FixedColVector<float, 4>));
+		m_data->angleImageBuffer = m_data->program.createBuffer("rw", m_data->w*m_data->h * sizeof(float));
+		m_data->binarizedImageBuffer = m_data->program.createBuffer("rw", m_data->w*m_data->h * sizeof(unsigned char));
+		m_data->normalImageRBuffer = m_data->program.createBuffer("rw", m_data->w*m_data->h * sizeof(unsigned char));
+		m_data->normalImageGBuffer = m_data->program.createBuffer("rw", m_data->w*m_data->h * sizeof(unsigned char));
+		m_data->normalImageBBuffer = m_data->program.createBuffer("rw", m_data->w*m_data->h * sizeof(unsigned char));
+		m_data->worldNormalsBuffer = m_data->program.createBuffer("rw", m_data->w*m_data->h * sizeof(FixedColVector<float, 4>));
+
+	} catch (CLException &err) { //catch openCL errors
+		std::cout<< "ERROR: "<< err.what()<< std::endl;
+	}
+	
+	m_data->isInitialized=true;
+}
+
 
 void ObjectEdgeDetectorGPU::setDepthImage(const Img32f &depthImg) {
 	m_data->rawImage = depthImg;
@@ -493,7 +459,7 @@ void ObjectEdgeDetectorGPU::applyMedianFilter() {
 				m_data->filteredImageBuffer,
 				m_data->w,
 				m_data->h,
-				m_data->medianFilterSize);
+				m_data->params.medianFilterSize);
 		
 		m_data->kernelMedianFilter.apply(m_data->w,m_data->h);
 	} catch (CLException &err) { //catch openCL errors
@@ -504,10 +470,10 @@ void ObjectEdgeDetectorGPU::applyMedianFilter() {
 const Img32f &ObjectEdgeDetectorGPU::getFilteredDepthImage() {
 	try {
 		m_data->filteredImageBuffer.read( //read output from kernel
-				(float*) m_data->outputFilteredImage,
+				m_data->outputFilteredImage.data(),
 				m_data->w*m_data->h * sizeof(float));
 
-		m_data->filteredImage = Img32f(Size(m_data->w,m_data->h),1,std::vector<float*>(1,m_data->outputFilteredImage),false);
+		m_data->filteredImage = Img32f(Size(m_data->w,m_data->h),1,std::vector<float*>(1,m_data->outputFilteredImage.data()),false);
 	}
 	catch (CLException &err) { //catch openCL errors
 		std::cout<< "ERROR: "<< err.what()<< std::endl;
@@ -518,9 +484,8 @@ const Img32f &ObjectEdgeDetectorGPU::getFilteredDepthImage() {
 void ObjectEdgeDetectorGPU::setFilteredDepthImage(const Img32f &filteredImg) {
     m_data->filteredImage = filteredImg;
     try {
-      m_data->filteredImageBuffer = m_data->program.createBuffer("r", m_data->w*m_data->h * sizeof(float), 
-                                                                 filteredImg.begin(0));
-		} catch (CLException &err) { //catch openCL errors
+      m_data->filteredImageBuffer.write(filteredImg.begin(0),m_data->w*m_data->h*sizeof(float));
+	} catch (CLException &err) { //catch openCL errors
       std::cout<< "ERROR: "<< err.what()<< std::endl;
     }
 }
@@ -531,15 +496,15 @@ void ObjectEdgeDetectorGPU::applyNormalCalculation() {
 				m_data->normalsBuffer,
 				m_data->w,
 				m_data->h,
-				m_data->normalRange);
+				m_data->params.normalRange);
 		m_data->kernelNormalCalculation.apply(m_data->w,m_data->h);
 	} catch (CLException &err) { //catch openCL errors
 		std::cout<< "ERROR: "<< err.what()<< std::endl;
 	}
 
-	if (m_data->useNormalAveraging && !m_data->useGaussSmoothing) {
+	if (m_data->params.useNormalAveraging && !m_data->params.useGaussSmoothing) {
 		applyLinearNormalAveraging();
-	} else if (m_data->useNormalAveraging && m_data->useGaussSmoothing) {
+	} else if (m_data->params.useNormalAveraging && m_data->params.useGaussSmoothing) {
 		applyGaussianNormalSmoothing();
 	}
 }
@@ -550,7 +515,7 @@ void ObjectEdgeDetectorGPU::applyLinearNormalAveraging() {
 				m_data->avgNormalsBuffer,
 				m_data->w,
 				m_data->h,
-				m_data->normalAveragingRange);
+				m_data->params.normalAveragingRange);
 		m_data->kernelNormalAveraging.apply(m_data->w,m_data->h);
 	} catch (CLException &err) { //catch openCL errors
 		std::cout<< "ERROR: "<< err.what()<< std::endl;
@@ -558,50 +523,13 @@ void ObjectEdgeDetectorGPU::applyLinearNormalAveraging() {
 }
 
 void ObjectEdgeDetectorGPU::applyGaussianNormalSmoothing() {
-	float norm = 1;
-	DynMatrix<float> kernel = DynMatrix<float>(1, 1, 0.0);
-	int l = 0;
-	int kSize = 1;
-	int rowSize = 1;
-	if (m_data->normalAveragingRange <= 1) {
-		// nothing!
-	} else if (m_data->normalAveragingRange <= 3) {
-		norm = 16.;
-		l = 1;
-		kSize = 3 * 3;
-		rowSize = 3;
-		DynMatrix<float> k1 = DynMatrix<float>(1, 3, 0.0);
-		k1(0, 0) = 1.;
-		k1(0, 1) = 2.;
-		k1(0, 2) = 1.;
-		kernel = k1 * k1.transp();
-	} else if (m_data->normalAveragingRange <= 5) {
-		norm = 256.;
-		l = 2;
-		kSize = 5 * 5;
-		rowSize = 5;
-		DynMatrix<float> k1 = DynMatrix<float>(1, 5, 0.0);
-		k1(0, 0) = 1.;
-		k1(0, 1) = 4.;
-		k1(0, 2) = 6.;
-		k1(0, 3) = 4.;
-		k1(0, 4) = 1.;
-		kernel = k1 * k1.transp();
-	} else {
-		norm = 4096.;
-		l = 3;
-		kSize = 7 * 7;
-		rowSize = 7;
-		DynMatrix<float> k1 = DynMatrix<float>(1, 7, 0.0);
-		k1(0, 0) = 1.;
-		k1(0, 1) = 6.;
-		k1(0, 2) = 15.;
-		k1(0, 3) = 20.;
-		k1(0, 4) = 15.;
-		k1(0, 5) = 6.;
-		k1(0, 6) = 1.;
-		kernel = k1 * k1.transp();
-	}
+	ObjectEdgeDetectorData::m_kernel kernelData = m_data->oedData->getKernel(m_data->params.normalAveragingRange);
+	float norm = kernelData.norm;
+	int l = kernelData.l;
+	DynMatrix<float> kernel = kernelData.kernel;
+	int kSize = kernelData.kSize;
+	int rowSize = kernelData.rowSize;
+
 	try {
 
 		m_data->gaussKernelBuffer = m_data->program.createBuffer("rw", kSize * sizeof(float), (void *) &kernel[0]);
@@ -620,23 +548,21 @@ void ObjectEdgeDetectorGPU::applyGaussianNormalSmoothing() {
 	}
 }
 
-const Vec *ObjectEdgeDetectorGPU::getNormals() {
+const DataSegment<float,4> ObjectEdgeDetectorGPU::getNormals() {
 	try {
-		if(m_data->useNormalAveraging==true) {
-			m_data->avgNormalsBuffer.read(m_data->outputNormals, m_data->w*m_data->h * sizeof(FixedColVector<float, 4>));
-			m_data->avgNormals=m_data->outputNormals;
-			return (const Vec*)m_data->avgNormals;
+		if(m_data->params.useNormalAveraging==true) {
+			m_data->avgNormalsBuffer.read((float*) &m_data->avgNormals[0][0], m_data->w*m_data->h * sizeof(FixedColVector<float, 4>));
+			return m_data->avgNormals;
 		} else {
 			m_data->normalsBuffer.read( //read output from kernel
-					m_data->outputNormals,
+					(float*) &m_data->normals[0][0],
 					m_data->w*m_data->h * sizeof(FixedColVector<float, 4>));
-			m_data->normals=m_data->outputNormals;
-			return (const Vec*)m_data->normals;
+			return m_data->normals;
 		}
 	} catch (CLException &err) { //catch openCL errors
 		std::cout<< "ERROR: "<< err.what()<< std::endl;
 	}
-	return (const Vec*) m_data->normals;
+	return m_data->normals;
 }
 
 void ObjectEdgeDetectorGPU::applyWorldNormalCalculation(const Camera &cam) {
@@ -651,7 +577,7 @@ void ObjectEdgeDetectorGPU::applyWorldNormalCalculation(const Camera &cam) {
 				m_data->normalImageRBuffer,
 				m_data->normalImageGBuffer,
 				m_data->normalImageBBuffer); //set parameter for kernel
-		if(m_data->useNormalAveraging==true) {
+		if(m_data->params.useNormalAveraging==true) {
 			m_data->kernelWorldNormalCalculation[4] = m_data->avgNormalsBuffer;
 		} else {
 			m_data->kernelWorldNormalCalculation[4] = m_data->normalsBuffer;
@@ -664,32 +590,31 @@ void ObjectEdgeDetectorGPU::applyWorldNormalCalculation(const Camera &cam) {
 	}
 }
 
-const Vec* ObjectEdgeDetectorGPU::getWorldNormals() {
+const DataSegment<float,4> ObjectEdgeDetectorGPU::getWorldNormals() {
 	try {
-		m_data->worldNormalsBuffer.read(m_data->outputWorldNormals,
+		m_data->worldNormalsBuffer.read((float*) &m_data->worldNormals[0][0],
 				m_data->w*m_data->h * sizeof(FixedColVector<float, 4>));
-		m_data->worldNormals=m_data->outputWorldNormals;
-		return (const Vec*)m_data->worldNormals;
+		return m_data->worldNormals;
 	} catch (CLException &err) { //catch openCL errors
 		std::cout<< "ERROR: "<< err.what()<< std::endl;
 	}
-	return (const Vec*) m_data->worldNormals;
+	return m_data->worldNormals;
 }
 
 const core::Img8u &ObjectEdgeDetectorGPU::getRGBNormalImage() {
 	try {
-		m_data->normalImageRBuffer.read(m_data->normalImageRArray,
+		m_data->normalImageRBuffer.read(m_data->normalImageRArray.data(),
 				m_data->w*m_data->h * sizeof(unsigned char));
 
-		m_data->normalImageGBuffer.read(m_data->normalImageGArray,
+		m_data->normalImageGBuffer.read(m_data->normalImageGArray.data(),
 				m_data->w*m_data->h * sizeof(unsigned char));
-		m_data->normalImageBBuffer.read(m_data->normalImageBArray,
+		m_data->normalImageBBuffer.read(m_data->normalImageBArray.data(),
 				m_data->w*m_data->h * sizeof(unsigned char));
 
 		std::vector<icl8u*> data(3);
-		data[0] = m_data->normalImageRArray;
-		data[1] = m_data->normalImageGArray;
-		data[2] = m_data->normalImageBArray;
+		data[0] = m_data->normalImageRArray.data();
+		data[1] = m_data->normalImageGArray.data();
+		data[2] = m_data->normalImageBArray.data();
 		m_data->normalImage = Img8u(Size(m_data->w,m_data->h),3,data,false);
 
 		return m_data->normalImage;
@@ -700,17 +625,17 @@ const core::Img8u &ObjectEdgeDetectorGPU::getRGBNormalImage() {
 	return m_data->normalImage;
 }
 
-void ObjectEdgeDetectorGPU::setNormals(Vec* pNormals) {
-	if (m_data->useNormalAveraging == true) {
-		m_data->avgNormals = (Vec4*) pNormals;
+void ObjectEdgeDetectorGPU::setNormals(DataSegment<float,4> pNormals) {
+	if (m_data->params.useNormalAveraging == true) {
+		pNormals.deepCopy(m_data->avgNormals);
 	} else {
-		m_data->normals = (Vec4*) pNormals;
+		pNormals.deepCopy(m_data->avgNormals);
 	}
 	try {
-		if(m_data->useNormalAveraging==true) {
-			m_data->avgNormalsBuffer = m_data->program.createBuffer("r", m_data->w*m_data->h * sizeof(FixedColVector<float, 4>), m_data->avgNormals);
+		if(m_data->params.useNormalAveraging==true) {
+			m_data->avgNormalsBuffer.write(&m_data->avgNormals[0][0],m_data->w*m_data->h*sizeof(FixedColVector<float,4>));
 		} else {
-			m_data->normalsBuffer = m_data->program.createBuffer("r", m_data->w*m_data->h * sizeof(FixedColVector<float, 4>), m_data->normals);
+			m_data->normalsBuffer.write(&m_data->normals[0][0],m_data->w*m_data->h*sizeof(FixedColVector<float,4>));
 		}
 	} catch (CLException &err) { //catch openCL errors
 		std::cout<< "ERROR: "<< err.what()<< std::endl;
@@ -719,7 +644,7 @@ void ObjectEdgeDetectorGPU::setNormals(Vec* pNormals) {
 
 void ObjectEdgeDetectorGPU::applyAngleImageCalculation() {
 	try {
-		if(m_data->useNormalAveraging==true) {
+		if(m_data->params.useNormalAveraging==true) {
 			m_data->kernelAngleImageCalculation[0] = m_data->avgNormalsBuffer;
 
 		} else {
@@ -728,8 +653,8 @@ void ObjectEdgeDetectorGPU::applyAngleImageCalculation() {
 		m_data->kernelAngleImageCalculation[1] = m_data->angleImageBuffer;
 		m_data->kernelAngleImageCalculation[2] = m_data->w;
 		m_data->kernelAngleImageCalculation[3] = m_data->h;
-		m_data->kernelAngleImageCalculation[4] = m_data->neighborhoodRange;
-		m_data->kernelAngleImageCalculation[5] = m_data->neighborhoodMode;
+		m_data->kernelAngleImageCalculation[4] = m_data->params.neighborhoodRange;
+		m_data->kernelAngleImageCalculation[5] = m_data->params.neighborhoodMode;
 		m_data->kernelAngleImageCalculation.apply(m_data->w,m_data->h);
 	} catch (CLException &err) { //catch openCL errors
 		std::cout<< "ERROR: "<< err.what()<< std::endl;
@@ -738,8 +663,8 @@ void ObjectEdgeDetectorGPU::applyAngleImageCalculation() {
 
 const Img32f &ObjectEdgeDetectorGPU::getAngleImage() {
 	try {
-		m_data->angleImageBuffer.read(m_data->outputAngleImage, m_data->w*m_data->h * sizeof(float));
-		m_data->angleImage = Img32f(Size(m_data->w,m_data->h),1,std::vector<float*>(1,m_data->outputAngleImage),false);
+		m_data->angleImageBuffer.read(m_data->outputAngleImage.data(), m_data->w*m_data->h * sizeof(float));
+		m_data->angleImage = Img32f(Size(m_data->w,m_data->h),1,std::vector<float*>(1,m_data->outputAngleImage.data()),false);
 	} catch (CLException &err) { //catch openCL errors
 		std::cout<< "ERROR: "<< err.what()<< std::endl;
 	}
@@ -749,8 +674,7 @@ const Img32f &ObjectEdgeDetectorGPU::getAngleImage() {
 void ObjectEdgeDetectorGPU::setAngleImage(const Img32f &angleImg) {
     m_data->angleImage = angleImg;
     try {
-      m_data->angleImageBuffer = m_data->program.createBuffer("r", m_data->w*m_data->h * sizeof(float), 
-                                                              angleImg.begin(0));
+      m_data->angleImageBuffer.write(angleImg.begin(0),m_data->w*m_data->h*sizeof(float));
     } catch (CLException &err) { //catch openCL errors
       std::cout<< "ERROR: "<< err.what()<< std::endl;
     }
@@ -762,7 +686,7 @@ void ObjectEdgeDetectorGPU::applyImageBinarization() {
 				m_data->binarizedImageBuffer,
 				m_data->w,
 				m_data->h,
-				m_data->binarizationThreshold);
+				m_data->params.binarizationThreshold);
 
 		m_data->kernelImageBinarization.apply(m_data->w*m_data->h);
 	} catch (CLException &err) { //catch openCL errors
@@ -772,8 +696,8 @@ void ObjectEdgeDetectorGPU::applyImageBinarization() {
 
 const Img8u &ObjectEdgeDetectorGPU::getBinarizedAngleImage() {
 	try {
-		m_data->binarizedImageBuffer.read(m_data->outputBinarizedImage, m_data->w*m_data->h * sizeof(unsigned char));
-		m_data->binarizedImage = Img8u(Size(m_data->w,m_data->h),1,std::vector<unsigned char*>(1,m_data->outputBinarizedImage),false);
+		m_data->binarizedImageBuffer.read(m_data->outputBinarizedImage.data(), m_data->w*m_data->h * sizeof(unsigned char));
+		m_data->binarizedImage = Img8u(Size(m_data->w,m_data->h),1,std::vector<unsigned char*>(1,m_data->outputBinarizedImage.data()),false);
 
 	} catch (CLException &err) { //catch openCL errors
 		std::cout<< "ERROR: "<< err.what()<< std::endl;
@@ -782,35 +706,35 @@ const Img8u &ObjectEdgeDetectorGPU::getBinarizedAngleImage() {
 }
 
 void ObjectEdgeDetectorGPU::setMedianFilterSize(int size) {
-	m_data->medianFilterSize = size;
+	m_data->params.medianFilterSize = size;
 }
 
 void ObjectEdgeDetectorGPU::setNormalCalculationRange(int range) {
-	m_data->normalRange = range;
+	m_data->params.normalRange = range;
 }
 
 void ObjectEdgeDetectorGPU::setNormalAveragingRange(int range) {
-	m_data->normalAveragingRange = range;
+	m_data->params.normalAveragingRange = range;
 }
 
 void ObjectEdgeDetectorGPU::setAngleNeighborhoodMode(int mode) {
-	m_data->neighborhoodMode = mode;
+	m_data->params.neighborhoodMode = mode;
 }
 
 void ObjectEdgeDetectorGPU::setAngleNeighborhoodRange(int range) {
-	m_data->neighborhoodRange = range;
+	m_data->params.neighborhoodRange = range;
 }
 
 void ObjectEdgeDetectorGPU::setBinarizationThreshold(float threshold) {
-	m_data->binarizationThreshold = threshold;
+	m_data->params.binarizationThreshold = threshold;
 }
 
 void ObjectEdgeDetectorGPU::setUseNormalAveraging(bool use) {
-	m_data->useNormalAveraging = use;
+	m_data->params.useNormalAveraging = use;
 }
 
 void ObjectEdgeDetectorGPU::setUseGaussSmoothing(bool use) {
-	m_data->useGaussSmoothing = use;
+	m_data->params.useGaussSmoothing = use;
 }
 
 bool ObjectEdgeDetectorGPU::isCLReady() {
@@ -826,8 +750,8 @@ const Img8u &ObjectEdgeDetectorGPU::calculate(const Img32f &depthImage,
 		setDepthImage(depthImage);
 		applyMedianFilter();
 	}
-	m_data->useNormalAveraging = average;
-	m_data->useGaussSmoothing = gauss;
+	m_data->params.useNormalAveraging = average;
+	m_data->params.useGaussSmoothing = gauss;
 	applyNormalCalculation();
 	applyAngleImageCalculation();
 	applyImageBinarization();
