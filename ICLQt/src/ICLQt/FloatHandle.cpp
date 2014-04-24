@@ -30,7 +30,7 @@
 
 #include <ICLQt/FloatHandle.h>
 #include <string>
-#include <QtGui/QLineEdit>
+#include <QLineEdit>
 
 
 namespace icl{

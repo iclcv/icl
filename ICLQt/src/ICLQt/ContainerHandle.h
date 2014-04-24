@@ -31,7 +31,7 @@
 #pragma once
 
 #include <ICLUtils/Macros.h>
-#include <QtGui/QWidget>
+#include <QWidget>
 #include <QtCore/QString>
 
 namespace icl{

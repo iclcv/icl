@@ -30,9 +30,9 @@
 
 #include <ICLQt/DoubleSlider.h>
 
-#include <QtGui/QSlider>
-#include <QtGui/QLabel>
-#include <QtGui/QGridLayout>
+#include <QSlider>
+#include <QLabel>
+#include <QGridLayout>
 #include <math.h>
 
 using namespace std;

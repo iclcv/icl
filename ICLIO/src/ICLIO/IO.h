@@ -44,7 +44,7 @@
 #include <ICLIO/IOFunctions.h>
 
 #ifdef ICL_HAVE_VIDEODEV
-#include </PWCGrabber.h>
+#include <PWCGrabber.h>
 #endif
 
 #ifdef ICL_HAVE_LIBMESASR

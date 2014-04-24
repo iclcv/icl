@@ -50,16 +50,16 @@
 
 #ifdef ICL_HAVE_QT
 #include <ICLQt/QImageConverter.h>
-#include <QtGui/QPainter>
-#include <QtGui/QImage>
-#include <QtGui/QFont>
-#include <QtGui/QApplication>
-#include <QtGui/QFileDialog>
-#include <QtGui/QInputDialog>
-#include <QtGui/QGraphicsView>
-#include <QtGui/QGraphicsScene>
-#include <QtGui/QGraphicsPixmapItem>
-#include <QtGui/QWheelEvent>
+#include <QPainter>
+#include <QImage>
+#include <QFont>
+#include <QApplication>
+#include <QFileDialog>
+#include <QInputDialog>
+#include <QGraphicsView>
+#include <QGraphicsScene>
+#include <QGraphicsPixmapItem>
+#include <QWheelEvent>
 #include <ICLQt/Application.h>
 
 #include <ICLQt/GUI.h>
@@ -68,9 +68,9 @@
 #include <ICLQt/ContainerGUIComponents.h>
 #include <ICLQt/GUIWidget.h>
 
-#include <QtGui/QInputDialog>
-#include <QtGui/QVBoxLayout>
-#include <QtGui/QPushButton>
+#include <QInputDialog>
+#include <QVBoxLayout>
+#include <QPushButton>
 #endif
 
 #include <ICLCore/LineSampler.h>

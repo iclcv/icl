@@ -31,8 +31,8 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <QtGui/QGroupBox>
-#include <QtGui/QVBoxLayout>
+#include <QGroupBox>
+#include <QVBoxLayout>
 
 /// The icl namespace
 namespace icl{

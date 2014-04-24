@@ -34,7 +34,7 @@
 #include <ICLCore/ImgBase.h>
 #include <ICLIO/GenericGrabber.h>
 #include <ICLQt/ContainerGUIComponents.h>
-#include <QtGui/QSplitter>
+#include <QSplitter>
 
 namespace icl{
   namespace qt{

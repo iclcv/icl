@@ -29,7 +29,7 @@
 ********************************************************************/
 
 #include <ICLQt/ColorLabel.h>
-#include <QtGui/QPainter>
+#include <QPainter>
 
 using namespace icl::utils;
 using namespace icl::core;

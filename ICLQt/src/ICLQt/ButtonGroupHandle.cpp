@@ -30,7 +30,7 @@
 
 #include <ICLQt/ButtonGroupHandle.h>
 #include <ICLUtils/Macros.h>
-#include <QtGui/QRadioButton>
+#include <QRadioButton>
 
 using namespace std;
 namespace icl{

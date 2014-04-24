@@ -40,9 +40,9 @@
 
 #include <ICLQt/ThreadedUpdatableWidget.h>
 
-#include <QtGui/QPen>
-#include <QtGui/QBrush>
-#include <QtGui/QPainter>
+#include <QPen>
+#include <QBrush>
+#include <QPainter>
 
 namespace icl{
   namespace qt{

@@ -41,15 +41,14 @@
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLUtils/Thread.h>
 
-#include <QtGui/QComboBox>
-#include <QtGui/QCheckBox>
-#include <QtGui/QBoxLayout>
-#include <QtGui/QScrollArea>
-#include <QtGui/QFileDialog>
-#include <QtGui/QMessageBox>
-#include <QtCore/QTimer>
+#include <QComboBox>
+#include <QCheckBox>
+#include <QBoxLayout>
+#include <QScrollArea>
+#include <QFileDialog>
+#include <QMessageBox>
 #include <QtCore/QMutex>
-#include <QtGui/QPushButton>
+#include <QPushButton>
 
 
 using namespace icl::utils;

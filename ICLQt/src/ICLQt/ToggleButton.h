@@ -31,7 +31,7 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <QtGui/QPushButton>
+#include <QPushButton>
 
 namespace icl{
   namespace qt{

@@ -29,7 +29,7 @@
 ********************************************************************/
 
 #include <ICLQt/QImageConverter.h>
-#include <QtGui/QImage>
+#include <QImage>
 #include <QtCore/QVector>
 #include <ICLCore/Img.h>
 #include <ICLCore/CCFunctions.h>

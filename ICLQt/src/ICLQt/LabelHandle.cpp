@@ -29,8 +29,8 @@
 ********************************************************************/
 
 #include <ICLQt/LabelHandle.h>
-#include <QtGui/QPainter>
-#include <QtGui/QLabel>
+#include <QPainter>
+#include <QLabel>
 
 namespace icl{
   namespace qt{

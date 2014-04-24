@@ -201,7 +201,8 @@ ADD_LIBRARY(ICLQt SHARED ${SOURCES} ${HEADERS} ${MOC_FILES})
 TARGET_LINK_LIBRARIES(ICLQt ICLCV
                             ${OPENGL_LIBRARIES}
 			                      ${GLEW_LIBRARIES}
-                            ${Qt5Widgets_LIBRARIES})
+                            ${Qt5Widgets_LIBRARIES}
+                            ${Qt5OpenGL_LIBRARIES})
 
 SET_TARGET_PROPERTIES(ICLQt
                       PROPERTIES 

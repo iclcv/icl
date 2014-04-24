@@ -33,10 +33,10 @@
 #include <ICLQt/GUI.h>
 #include <ICLQt/ProxyLayout.h>
 
-#include <QtGui/QLayout>
-#include <QtGui/QGridLayout>
-#include <QtGui/QHBoxLayout>
-#include <QtGui/QVBoxLayout>
+#include <QLayout>
+#include <QGridLayout>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
 #include <ICLCore/CoreFunctions.h>
 #include <ICLQt/GUISyntaxErrorException.h>
 #include <QtCore/QString>

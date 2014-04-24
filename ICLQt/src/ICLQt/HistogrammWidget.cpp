@@ -31,7 +31,7 @@
 #include <ICLQt/HistogrammWidget.h>
 #include <ICLUtils/Rect32f.h>
 
-#include <QtGui/QPainter>
+#include <QPainter>
 
 using namespace icl::utils;
 using namespace icl::core;

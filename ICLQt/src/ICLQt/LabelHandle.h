@@ -34,7 +34,7 @@
 #include <QtCore/QString>
 #include <ICLQt/GUIHandle.h>
 #include <ICLQt/CompabilityLabel.h>
-#include <QtGui/QWidget>
+#include <QWidget>
 #include <string>
 
 

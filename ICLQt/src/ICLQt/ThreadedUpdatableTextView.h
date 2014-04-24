@@ -31,7 +31,7 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <QtGui/QTextEdit>
+#include <QTextEdit>
 #include <QtCore/QEvent>
 #include <string>
 

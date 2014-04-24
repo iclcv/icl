@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include <QtGui/QWidget>
+#include <QWidget>
 #include <ICLUtils/Size.h>
 #include <ICLQt/GUI.h>
 #include <ICLUtils/Uncopyable.h>

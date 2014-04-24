@@ -42,31 +42,30 @@
 #include <ICLQt/QImageConverter.h>
 #include <ICLCore/FixedConverter.h>
 #include <ICLQt/Application.h>
-#include <QtGui/QImage>
+#include <QImage>
 
 
 #include <ICLQt/IconFactory.h>
 #include <ICLUtils/Thread.h>
 
-#include <QtGui/QPainter>
-#include <QtCore/QTimer>
-#include <QtGui/QLabel>
-#include <QtGui/QCheckBox>
-#include <QtGui/QInputDialog>
+#include <QPainter>
+#include <QLabel>
+#include <QCheckBox>
+#include <QInputDialog>
 #include <QtCore/QMutexLocker>
-#include <QtGui/QPushButton>
-#include <QtGui/QHBoxLayout>
-#include <QtGui/QComboBox>
-#include <QtGui/QSlider>
-#include <QtGui/QSizePolicy>
-#include <QtGui/QFileDialog>
-#include <QtGui/QSpinBox>
-#include <QtGui/QMouseEvent>
-#include <QtGui/QPaintEvent>
-#include <QtGui/QWheelEvent>
-#include <QtGui/QColorDialog>
-#include <QtGui/QMessageBox>
-#include <QtGui/QTextEdit>
+#include <QPushButton>
+#include <QHBoxLayout>
+#include <QComboBox>
+#include <QSlider>
+#include <QSizePolicy>
+#include <QFileDialog>
+#include <QSpinBox>
+#include <QMouseEvent>
+#include <QPaintEvent>
+#include <QWheelEvent>
+#include <QColorDialog>
+#include <QMessageBox>
+#include <QTextEdit>
 
 
 #include <ICLQt/GUI.h>
@@ -281,38 +280,31 @@ namespace icl{
   
   
   
-    struct ImageInfoIndicator : public ThreadedUpdatableWidget{
+    struct ImageInfoIndicator {
       ImgParams p;
       core::depth d;
       Point mousePos;
       Size viewPort;
       bool haveImage;
+      bool isVisible;
       
-      ImageInfoIndicator(QWidget *parent):
-        ThreadedUpdatableWidget(parent),haveImage(false){
+      ImageInfoIndicator(): haveImage(false), isVisible(false){
         d = (core::depth)(-2);
-        setBackgroundRole(QPalette::Window);
-        //#if (QT_VERSION >= QT_VERSION_CHECK(4, 5, 0))
-        //setAttribute(Qt::WA_TranslucentBackground);
-        //#endif
       }
   
       void update(const ImgParams p, core::depth d){
         this->p = p;
         this->d = d;
         haveImage = true;
-        updateFromOtherThread();
       }
       
       void update(const Size &viewPortSize){
         haveImage = false;
         viewPort = viewPortSize;
-        updateFromOtherThread();
       }
       
       void updateMousePos(const Point &mousePos){
         this->mousePos = mousePos;
-        updateFromOtherThread();
       }
   
       inline std::string posstr(){
@@ -339,26 +331,31 @@ namespace icl{
          return str(p.getFormat());
        }
      }
-     virtual void paintEvent(QPaintEvent *e){
-       QWidget::paintEvent(e);
-       QPainter pa(this);
-       
-  
-       pa.setRenderHint(QPainter::Antialiasing);
-  
-       pa.setBrush(QColor(210,210,210));
-       pa.setPen(QColor(50,50,50));
-  
-       pa.drawRect(QRectF(0,0,width(),height()));
+     void show() {
+       isVisible = true;
+     }
+
+     void hide() {
+       isVisible = false;
+     }
+
+     void paint(GLPaintEngine *pe) {
+       if(!isVisible)return;
        static const char D[] = "-";
-       
-       if(!haveImage){
-         std::string info = "no image, viewport:"+str(viewPort);
-         pa.drawText(QRectF(0,0,width(),height()),Qt::AlignCenter,info.c_str());
-       }else{
-         std::string info = posstr()+" "+dstr()+D+str(p.getSize())+D+rstr()+D+fstr();
-         pa.drawText(QRectF(0,0,width(),height()),Qt::AlignCenter,info.c_str());
-       }
+       std::string info_str;
+       if(!haveImage) info_str = "no image, viewport:"+str(viewPort);
+       else info_str = posstr()+" "+dstr()+D+str(p.getSize())+D+rstr()+D+fstr();
+       pe->fontsize(10);
+       Size info_size = pe->estimateTextBounds(info_str);
+       info_size.width += 10;
+       info_size.height += 2;
+       Size widget_size = pe->getSize();
+       Rect32f info_rect(widget_size.width-info_size.width,widget_size.height- info_size.height,info_size.width,info_size.height);
+       pe->fill(210,210,210,255);
+       pe->rect(info_rect);
+       pe->color(50,50,50,255);
+       pe->rect(info_rect);
+       pe->text(info_rect,info_str);
      }
     };
   
@@ -465,12 +462,6 @@ namespace icl{
         }
         callbacks.clear();
       }
-      
-      void updateImageInfoIndicatorGeometry(const QSize &parentSize){
-        static const int W = 290;
-        imageInfoIndicator->setGeometry(QRect(parentSize.width()-(W+2),parentSize.height()-18,W,18));
-      }
-      
   
       void adaptMenuSize(const QSize &parentSize){
         if(!menuptr) return;
@@ -481,7 +472,6 @@ namespace icl{
         
         w = iclMax(menuptr->minimumWidth(),w);
         h = iclMax(menuptr->minimumHeight(),h);
-        updateImageInfoIndicatorGeometry(parentSize);
       }
       void pushScaleModeAndChangeToZoom(){
         fmSave = fm;
@@ -496,7 +486,7 @@ namespace icl{
         if(!parent->isFullScreen()){
           parentBeforeFullScreen = (QWidget*)parent->parent();
           parent->setParent(0);
-          parent->setWindowState(parent->windowState() ^ Qt::WindowFullScreen);
+          parent->showFullScreen();
           parent->show();
           glbuttons[5]->toggled = true;
           for(unsigned int i=0;i<glbuttons.size();++i) glbuttons[i]->over = false;
@@ -505,11 +495,7 @@ namespace icl{
       }
       void leaveFullScreen(){
         if(parent->isFullScreen()){
-#ifdef ICL_SYSTEM_WINDOWS
-          parent->setWindowState((Qt::WindowState)((icl32s)parent->windowState() & !(icl32s)Qt::WindowFullScreen));
-#else
-          parent->setWindowState(parent->windowState() & !Qt::WindowFullScreen);
-#endif
+          parent->showNormal();
           parent->setParent(parentBeforeFullScreen);
           if(parentBeforeFullScreen && parentBeforeFullScreen->layout()){
             parentBeforeFullScreen->layout()->addWidget(parent);
@@ -964,12 +950,8 @@ namespace icl{
           parentICLWidget->update();
         }
       }
-      
-  #if QT_VERSION >= 0x040400
-  #define MOUSE_EVENT_POS e->posF()
-  #else
+
   #define MOUSE_EVENT_POS QPointF(e->pos().x(),e->pos().y())
-  #endif
       virtual void mousePressEvent(QMouseEvent *e){
         down(e->button()) = true;
         if(e->button() == Qt::LeftButton){
@@ -1354,7 +1336,7 @@ namespace icl{
                                                   utils::function(this,&ICLWidget::stopButtonClicked)));
       x+=GL_BUTTON_X_INC;
   
-      m_data->imageInfoIndicator = new ImageInfoIndicator(this);
+      m_data->imageInfoIndicator = new ImageInfoIndicator();
       m_data->imageInfoIndicator->update(m_data->defaultViewPort);
     }
   
@@ -1785,14 +1767,14 @@ namespace icl{
         m_data->image.draw2D(r,getSize());
       }else{
         pe = new GLPaintEngine(this);
-        
+
         if(m_data->showNoImageWarnings){
           pe->color(0,100,255,230);
           pe->fontsize(12);
           pe->text(Rect(0,0,width(),height()),"[null]");
         }
       }
-  
+
       if(!pe) pe = new GLPaintEngine(this);
       pe->color(255,255,255,255);
       pe->fill(255,255,255,255);
@@ -1810,7 +1792,7 @@ namespace icl{
         pe->rect(Rect((int)r.x,(int)r.y,(int)r.width,(int)r.height));
       }
   
-  
+
   
       for(unsigned int i=0;i<m_data->glbuttons.size();++i){
         if(m_data->glbuttons[i]->isToolTipVisible()){
@@ -1839,6 +1821,8 @@ namespace icl{
       }
   
       m_data->event(0,0,OSDGLButton::Draw);
+
+      m_data->imageInfoIndicator->paint(pe);
   
       ICL_DELETE(pe);
     }
@@ -1846,7 +1830,7 @@ namespace icl{
   
   
     void ICLWidget::paintEvent(QPaintEvent *e){
-      QGLWidget::paintEvent(e);    
+      QGLWidget::paintEvent(e);
     }
   
   
@@ -1917,7 +1901,6 @@ namespace icl{
   
   
     void ICLWidget::customPaintEvent(PaintEngine*){
-  
     }
   
     void ICLWidget::hideEvent(QHideEvent *e){
@@ -2040,7 +2023,6 @@ namespace icl{
       }
       if(m_data->imageInfoIndicatorEnabled){
         m_data->imageInfoIndicator->show();
-        m_data->updateImageInfoIndicatorGeometry(size());
       }
       emit mouseEvent(createMouseEvent(MouseEnterEvent));
       update();
@@ -2160,7 +2142,7 @@ namespace icl{
       QGLWidget::setVisible(visible);
       // xxx m_data->showMenuButton->setVisible(false);
       // xxx m_data->embedMenuButton->setVisible(false);
-      m_data->imageInfoIndicator->setVisible(false);
+      m_data->imageInfoIndicator->hide();
       if(m_data->menuptr){
         m_data->menuptr->setVisible(false);
         m_data->adaptMenuSize(size());

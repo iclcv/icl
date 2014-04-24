@@ -33,7 +33,7 @@
 #include <ICLUtils/SmartArray.h>
 #include <ICLUtils/Macros.h>
 
-#include <QtGui/QPainter>
+#include <QPainter>
 
 using namespace icl::utils;
 using namespace icl::math;

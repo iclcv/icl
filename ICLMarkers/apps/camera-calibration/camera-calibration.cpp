@@ -35,7 +35,7 @@
 #include <ICLGeom/GridSceneObject.h>
 #include <ICLMarkers/FiducialDetectorPlugin.h>
 
-#include <QtGui/QMessageBox>
+#include <QMessageBox>
 #include <fstream>
 #include <ICLUtils/ConfigFile.h>
 

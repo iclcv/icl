@@ -35,9 +35,9 @@
 #include <ICLUtils/Function.h>
 #include <ICLQt/DataStore.h>
 #include <ICLQt/GUIComponents.h>
-#include <QtGui/QLayout>
-#include <QtGui/QWidget>
-#include <QtGui/QApplication>
+#include <QLayout>
+#include <QWidget>
+#include <QApplication>
 #include <string>
 #include <vector>
 

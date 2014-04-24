@@ -29,7 +29,7 @@
 ********************************************************************/
 
 #include <ICLQt/SpinnerHandle.h>
-#include <QtGui/QSpinBox>
+#include <QSpinBox>
 
 namespace icl{
   namespace qt{

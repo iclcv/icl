@@ -30,9 +30,9 @@
 
 #pragma once
 
-#include <QtGui/QSlider>
+#include <QSlider>
 #include <QtCore/QThread>
-#include <QtGui/QApplication>
+#include <QApplication>
 #include <ICLQt/SliderUpdateEvent.h>
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/Function.h>

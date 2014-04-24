@@ -41,10 +41,10 @@
 #include <QtCore/QMutex>
 #include <QtCore/QMutexLocker>
 
-#include <QtGui/QPalette>
-#include <QtGui/QPainter>
-#include <QtGui/QMouseEvent>
-#include <QtGui/QMessageBox>
+#include <QPalette>
+#include <QPainter>
+#include <QMouseEvent>
+#include <QMessageBox>
 
 
 using namespace icl::utils;

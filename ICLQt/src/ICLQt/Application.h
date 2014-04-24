@@ -36,8 +36,8 @@
 #include <string>
 #include <vector>
 
-#include <QtGui/QApplication>
-#include <QGLWidget>
+#include <QApplication>
+#include <QtOpenGL/QGLWidget>
 
 namespace icl{
 

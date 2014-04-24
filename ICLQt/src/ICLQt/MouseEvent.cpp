@@ -29,7 +29,7 @@
 ********************************************************************/
 
 #include <ICLQt/MouseEvent.h>
-#include <QtGui/QApplication>
+#include <QApplication>
 
 using namespace icl::utils;
 using namespace icl::core;

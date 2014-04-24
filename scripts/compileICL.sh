@@ -16,6 +16,7 @@ cmake -DBUILD_WITH_IPP=TRUE -DIPP_ROOT=/vol/nivision/share/IPP/7.07 \
       -DBUILD_WITH_LIBFREENECT=TRUE \
       -DBUILD_WITH_MESASR=TRUE \
       -DBUILD_WITH_QT=TRUE \
+      -DQT_ROOT=/vol/nivision/share/qt5/5.2.1/gcc_64 \
       -DBUILD_WITH_OPENCL=TRUE \
       -DBUILD_WITH_LIBDC=TRUE \
       -DBUILD_WITH_IMAGEMAGICK=TRUE \
