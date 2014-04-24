@@ -30,12 +30,12 @@
 #ifdef ICL_HAVE_OPENCL
 
 #define __CL_ENABLE_EXCEPTIONS
+#include <ICLUtils/CLImage2D.h>
+#include <ICLUtils/Macros.h>
 #include <CL/cl.hpp>
 
 #include <iostream>
 #include <sstream>
-#include <ICLUtils/CLImage2D.h>
-#include <ICLUtils/Macros.h>
 
 namespace icl {
     namespace utils {

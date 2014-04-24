@@ -28,25 +28,10 @@
 **                                                                 **
 ********************************************************************/
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/PointCloudObjectBase.h>
 #include <ICLQt/GLFragmentShader.h>
 #include <ICLUtils/StringUtils.h>
-
-#ifdef APPLE
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#include <OpenGL/glew.h>
-#elif WIN32
-#define NOMINMAX
-#include <Windows.h>
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
-#else
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
-#endif
 
 using namespace icl::utils;
 using namespace icl::math;

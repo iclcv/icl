@@ -28,12 +28,12 @@
  **                                                                 **
  ********************************************************************/
 
+#include <ICLGeom/PointCloudCreatorCL.h>
 #define __CL_ENABLE_EXCEPTIONS //enables openCL error catching
 #ifdef ICL_HAVE_OPENCL
 #include <CL/cl.hpp>
 #endif
 
-#include <ICLGeom/PointCloudCreatorCL.h>
 
 using namespace icl::utils;
 using namespace icl::math;

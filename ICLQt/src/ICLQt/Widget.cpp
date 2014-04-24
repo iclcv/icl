@@ -28,7 +28,7 @@
 **                                                                 **
 ********************************************************************/
 
-#include <GL/glew.h>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLQt/Widget.h>
 #include <ICLCore/Img.h>
 #include <ICLQt/GLImg.h>

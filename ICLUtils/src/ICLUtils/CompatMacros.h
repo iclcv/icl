@@ -166,3 +166,19 @@
 #define ICLMarkers_API
 #endif
 
+#ifdef ICL_HAVE_OPENGL
+  #ifdef ICL_SYSTEM_APPLE
+    #include <OpenGL/glew.h>
+    #include <OpenGL/gl.h>
+    #include <OpenGL/glu.h>
+  #elif ICL_SYSTEM_WINDOWS
+    #include <Windows.h>
+    #include <GL/glew.h>
+    #include <GL/gl.h>
+    #include <GL/glu.h>
+  #else
+    #include <GL/glew.h>
+    #include <GL/gl.h>
+    #include <GL/glu.h>
+  #endif
+#endif

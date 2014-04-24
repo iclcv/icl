@@ -36,11 +36,6 @@
 #include <string>
 #include <vector>
 
-#ifdef WIN32
-#include "windows.h"
-#include <GL/glew.h>
-#endif
-
 #include <QtGui/QApplication>
 #include <QGLWidget>
 

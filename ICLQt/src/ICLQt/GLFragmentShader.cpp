@@ -30,16 +30,7 @@
 
 #include <ICLQt/GLFragmentShader.h>
 
-#ifdef ICL_SYSTEM_APPLE
-#include <OpenGL/glew.h>
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#else
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
-#endif
-
+#include <ICLUtils/CompatMacros.h>
 #include <QtOpenGL/QGLContext>
 #include <ICLUtils/Macros.h>
 

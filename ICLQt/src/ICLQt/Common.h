@@ -29,9 +29,7 @@
 ********************************************************************/
 
 #pragma once
-#ifdef ICL_HAVE_OPENGL
-#include <GL/glew.h>
-#endif
+#include <ICLUtils/CompatMacros.h>
 #ifdef ICL_HAVE_QT
 #include <ICLQt/Qt.h>
 #include <ICLQt/Application.h>

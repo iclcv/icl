@@ -30,8 +30,9 @@
 
 #pragma once
 
-#include <QtOpenGL/QGLWidget>
+#include <ICLUtils/CompatMacros.h>
 #include <ICLCore/ImgBase.h>
+#include <QtOpenGL/QGLWidget>
 #include <ICLCore/Types.h>
 #include <ICLQt/ImageStatistics.h>
 #include <ICLQt/MouseHandler.h>

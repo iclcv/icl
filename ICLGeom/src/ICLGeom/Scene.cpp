@@ -29,23 +29,6 @@
 **                                                                 **
 ********************************************************************/
 
-
-#ifdef ICL_SYSTEM_APPLE
-#include <OpenGL/glew.h>
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#elif ICL_SYSTEM_WINDOWS
-#define NOMINMAX
-#include <Windows.h>
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
-#else
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
-#endif
-
 #include <ICLGeom/Scene.h>
 #include <ICLGeom/CoordinateFrameSceneObject.h>
 #include <ICLGeom/ComplexCoordinateFrameSceneObject.h>

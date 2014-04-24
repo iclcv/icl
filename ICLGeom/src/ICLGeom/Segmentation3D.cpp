@@ -28,12 +28,11 @@
  **                                                                 **
  ********************************************************************/
 
-#define __CL_ENABLE_EXCEPTIONS //enables openCL error catching
+#include <ICLGeom/Segmentation3D.h>
 #ifdef ICL_HAVE_OPENCL
+#define __CL_ENABLE_EXCEPTIONS //enables openCL error catching
 #include <CL/cl.hpp>
 #endif
-
-#include <ICLGeom/Segmentation3D.h>
 
 #include <ICLQt/Quick.h>
 #include <ICLGeom/GeomDefs.h>
