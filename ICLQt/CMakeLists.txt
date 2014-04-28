@@ -200,7 +200,7 @@ ADD_LIBRARY(ICLQt SHARED ${SOURCES} ${HEADERS} ${MOC_FILES})
 # ---- 3rd party library handling ----
 TARGET_LINK_LIBRARIES(ICLQt ICLCV
                             ${OPENGL_LIBRARIES}
-			                      ${GLEW_LIBRARIES}
+			    ${GLEW_LIBRARIES}
                             ${Qt5Widgets_LIBRARIES}
                             ${Qt5OpenGL_LIBRARIES})
 
@@ -226,11 +226,32 @@ INSTALL(TARGETS ICLQt
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
+
+get_target_property(ICLQt5CoreLib Qt5::Core IMPORTED_SONAME_RELEASE)
+get_target_property(ICLQt5GuiLib Qt5::Gui IMPORTED_SONAME_RELEASE)
+get_target_property(ICLQt5WidgetsLib Qt5::Widgets IMPORTED_SONAME_RELEASE)
+get_target_property(ICLQt5OpenGLLib Qt5::OpenGL IMPORTED_SONAME_RELEASE)
+
+
+SET(ICLQt5CoreLibAbs "${_qt5Core_install_prefix}/lib/${ICLQt5CoreLib}")
+SET(ICLQt5OpenGLLibAbs "${_qt5OpenGL_install_prefix}/lib/${ICLQt5OpenGLLib}")
+SET(ICLQt5WidgetsLibAbs "${_qt5Widgets_install_prefix}/lib/${ICLQt5WidgetsLib}")
+SET(ICLQt5GuiLibAbs "${_qt5Gui_install_prefix}/lib/${ICLQt5GuiLib}")
+
+#MESSAGE(STATUS "libs: ${ICLQt5CoreLibAbs}")
+#MESSAGE(STATUS "libs: ${ICLQt5GuiLibAbs}")
+#MESSAGE(STATUS "libs: ${ICLQt5OpenGLLibAbs}")
+#MESSAGE(STATUS "libs: ${ICLQt5WidgetsLibAbs}")
+
 INSTALL_FILES_RECURSIVE("include/${INSTALL_PATH_PREFIX}" HEADERS )
 INSTALL_FILES_RECURSIVE("include/${INSTALL_PATH_PREFIX}" ICL_MOC_HEADERS )
 
 # ---- PKG-config ----
 CREATE_PKGCONFIG(NAME ICLQt
                  LIBRARY_DEPS ${OPENGL_LIBRARIES}
- 		              ${GLEW_LIBRARIES}
+ 		              ${GLEW_LIBRARIES} 
+                              ${ICLQt5CoreLibAbs}
+                              ${ICLQt5GuiLibAbs}
+                              ${ICLQt5WidgetsLibAbs}
+                              ${ICLQt5OpenGLLibAbs}
                  PKGCONFIG_DEPS ICLCV-${SO_VERSION})
