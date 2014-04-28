@@ -227,21 +227,16 @@ INSTALL(TARGETS ICLQt
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
 
-get_target_property(ICLQt5CoreLib Qt5::Core IMPORTED_SONAME_RELEASE)
-get_target_property(ICLQt5GuiLib Qt5::Gui IMPORTED_SONAME_RELEASE)
-get_target_property(ICLQt5WidgetsLib Qt5::Widgets IMPORTED_SONAME_RELEASE)
-get_target_property(ICLQt5OpenGLLib Qt5::OpenGL IMPORTED_SONAME_RELEASE)
+get_target_property(ICLQt5CoreLibAbs Qt5::Core IMPORTED_LOCATION_RELEASE)
+get_target_property(ICLQt5GuiLibAbs Qt5::Gui IMPORTED_LOCATION_RELEASE)
+get_target_property(ICLQt5WidgetsLibAbs Qt5::Widgets IMPORTED_LOCATION_RELEASE)
+get_target_property(ICLQt5OpenGLLibAbs Qt5::OpenGL IMPORTED_LOCATION_RELEASE)
 
 
-SET(ICLQt5CoreLibAbs "${_qt5Core_install_prefix}/lib/${ICLQt5CoreLib}")
-SET(ICLQt5OpenGLLibAbs "${_qt5OpenGL_install_prefix}/lib/${ICLQt5OpenGLLib}")
-SET(ICLQt5WidgetsLibAbs "${_qt5Widgets_install_prefix}/lib/${ICLQt5WidgetsLib}")
-SET(ICLQt5GuiLibAbs "${_qt5Gui_install_prefix}/lib/${ICLQt5GuiLib}")
-
-#MESSAGE(STATUS "libs: ${ICLQt5CoreLibAbs}")
-#MESSAGE(STATUS "libs: ${ICLQt5GuiLibAbs}")
-#MESSAGE(STATUS "libs: ${ICLQt5OpenGLLibAbs}")
-#MESSAGE(STATUS "libs: ${ICLQt5WidgetsLibAbs}")
+MESSAGE(STATUS "libs: ${ICLQt5CoreLibAbs}")
+MESSAGE(STATUS "libs: ${ICLQt5GuiLibAbs}")
+MESSAGE(STATUS "libs: ${ICLQt5OpenGLLibAbs}")
+MESSAGE(STATUS "libs: ${ICLQt5WidgetsLibAbs}")
 
 INSTALL_FILES_RECURSIVE("include/${INSTALL_PATH_PREFIX}" HEADERS )
 INSTALL_FILES_RECURSIVE("include/${INSTALL_PATH_PREFIX}" ICL_MOC_HEADERS )

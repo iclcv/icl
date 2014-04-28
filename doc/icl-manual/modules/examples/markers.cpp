@@ -6,11 +6,11 @@ GenericGrabber grabber;
 
 // the global detector class
 // here, using the first 100 "bch"-markers
-icl::FiducialDetector fid("bch","[0-100]","size=30x30");
+FiducialDetector fid("bch","[0-100]","size=30x30");
 
 void init(){
   fid.setConfigurableID("fid");
-  gui << Draw.handle("draw")
+  gui << Draw().handle("draw")
       << Prop("fid").maxSize(18,99)
       << Show();
   grabber.init(pa("-input")); 

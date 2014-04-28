@@ -40,19 +40,13 @@ int main(){
   std::cout << gfoo2() << std::endl;
 
   /// Implicit cast from function with return value to function without return value
-  Function<void> gfoo3 = function(global_foo2);
+  Function<int> gfoo3 = function(global_foo2);
   gfoo3();
 
   /// Global function with parameters
   /// identical to function(global_add)(4,5)
   Function<int,int,int> gadd(global_add);
   std::cout << "global_add(4,5)=" << gadd(4,5) << std::endl;
-
-  /// Global function with parameters (ignoring the result of the function)
-  /// Functions with non-void return type can always be casted into another
-  /// Function type with return type (the return value is simply ignored then)
-  Function<void,int,int> gadd_void = function(global_add); gadd_void(4,5);
-
 
   /// create an std::vector
   std::vector<int> v;
