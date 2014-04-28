@@ -56,7 +56,7 @@ int main (int n, char **ppc){
                    "global icl::show(image) function. Here, the -delete\n"
                    "flag is used in order to delete a temporary image\n"
                    "after loading it.");
-  QApplication app(n,ppc);
+  ICLApplication app(n,ppc);
   pa_explain
   ("-input","define image to read")
   ("-delete","delete image file after reading")
