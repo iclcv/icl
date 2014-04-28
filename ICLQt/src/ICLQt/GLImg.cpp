@@ -221,7 +221,7 @@ namespace icl{
                                   const std::vector<Range64f> &ranges,
                                   std::vector< std::vector<int> > &histos){
       const T * data = reinterpret_cast<const T*>(vdata);
-      double mins[4],ls[4];
+      double mins[4]={0},ls[4]={0};
       for(unsigned int i=0;i<ranges.size();++i){
         mins[i] = ranges[i].minVal;
         ls[i] = ranges[i].getLength();
