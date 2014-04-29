@@ -807,7 +807,8 @@ namespace icl{
         m_layout = new QGridLayout(this);
         m_splitter = new QSplitter(horz ? Qt::Horizontal:Qt::Vertical , this);
         m_layout->addWidget(m_splitter,0,0);
-        m_layout->setContentsMargins(2,2,2,2);
+        m_layout->setContentsMargins(0,0,0,0);//2,2,2,2);
+        //setContentsMargins(0,0,0,0);
   
         if(def.handle() != ""){
           getGUI()->lockData();
@@ -862,7 +863,8 @@ namespace icl{
         m_layout = new QGridLayout(this);
         m_tabWidget = new QTabWidget(this);
         m_layout->addWidget(m_tabWidget,0,0);
-        m_layout->setContentsMargins(2,2,2,2);
+        
+        m_layout->setContentsMargins(0,0,0,0);
         m_nextTabIdx = 0;
         m_tabNames = def.allParams();
   
@@ -1656,6 +1658,7 @@ namespace icl{
         if(def.hasToolTip()) m_poWidget->setInfoText(def.toolTip()); //.c_str());
   
         addToGrid(m_poWidget);
+
         
         if(def.handle() != ""){
           getGUI()->lockData();

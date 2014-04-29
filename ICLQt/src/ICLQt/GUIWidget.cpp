@@ -90,7 +90,8 @@ namespace icl{
         setMinimumSize(QSize(defMinSize.width*GUI::CELLW,defMinSize.height*GUI::CELLH));
         //setMaximumSize(QSize(defSize.width*GUI::CELLW,defSize.height*GUI::CELLH));
       }
-      
+      if(def.parentLayout()) def.parentLayout()->setContentsMargins(0,0,0,0);
+
       if(def.parentLayout()) def.parentLayout()->addWidget(this);
       if(def.getProxyLayout()) def.getProxyLayout()->addWidget(this);
   
@@ -121,6 +122,9 @@ namespace icl{
       setWindowIcon(IconFactory::create_icl_window_icon_as_qicon());
       
       if(def.handle() != "") m_handle = new std::string(def.handle());
+      
+      if(layout()) layout()->setContentsMargins(0,0,0,0);
+      setContentsMargins(0,0,0,0);
     }
   
     QSize GUIWidget::sizeHint () const{

@@ -1307,7 +1307,9 @@ namespace icl{
   
     ICLWidget::ICLWidget(QWidget *parent) : QGLWidget(parent,ICLApplication::instance()->sharedWidget),
       m_data(new ICLWidget::Data(this)){
-      
+
+      setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
+
       setMouseTracking(true);
       setWindowIcon(IconFactory::create_icl_window_icon_as_qicon());
       
