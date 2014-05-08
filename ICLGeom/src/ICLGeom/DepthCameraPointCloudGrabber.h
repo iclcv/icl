@@ -126,6 +126,13 @@ namespace icl{
       /// returns the internal RGBDMapping
       /** only if both color- and depth camera is available */
       RGBDMapping getMapping() const throw (utils::ICLException);
+
+
+      /// returns the last grabbed point cloud's underlying depth image
+      virtual const core::Img32f *getDepthImage() const;
+
+      /// returns the last grabbed point cloud's underlying color image (if available)
+      virtual const core::Img8u *getColorImage() const;
       
     };
   } // namespace geom

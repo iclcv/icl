@@ -45,6 +45,12 @@ namespace icl{
       
       /// virtual, but empty destructor
       virtual ~PointCloudGrabber(){}
+
+      /// returns the last grabbed point cloud's underlying depth image (if available)
+      virtual const core::Img32f *getDepthImage() const { return 0; } 
+
+      /// returns the last grabbed point cloud's underlying depth image (if available)
+      virtual const core::Img8u *getColorImage() const { return 0; } 
     };
   }
 }

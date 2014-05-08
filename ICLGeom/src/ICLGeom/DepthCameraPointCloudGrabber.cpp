@@ -174,6 +174,16 @@ namespace icl{
     }
 
 
+
+    const Img32f *DepthCameraPointCloudGrabber::getDepthImage() const{
+      //DEBUG_LOG("this function was called!!!");
+      return m_data->lastDepthImage;
+    }
+    
+    const Img8u *DepthCameraPointCloudGrabber::getColorImage() const{
+      return m_data->lastColorImage;
+    }
+    
     static PointCloudGrabber *create_depth_camera_point_cloud_grabber(const std::map<std::string,std::string> &d){
       std::map<std::string,std::string>::const_iterator it = d.find("creation-string");
       if(it == d.end()) return 0;
@@ -211,4 +221,6 @@ namespace icl{
                     "[,depth-camera-type,depth-camera-id,depth-camera-calib-file] use 'DEFAULT'"
                     "as calib-file name if you dont have a calib file.");
   } // namespace geom
+
+
 }
