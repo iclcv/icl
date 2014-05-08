@@ -7,4 +7,4 @@ Description: Image component library
 Version: @SO_VERSION@
 Requires: @PKG_DEPENDS_ON@
 Libs: -L${libdir} -Wl,-rpath=${libdir} @PKG_LIB@ @LIB_DEPENDS_ON@
-Cflags: @ICL_DEFINITIONS@ -I${includedir} -I@INCLUDE_DIRS@
+Cflags: @ICL_DEFINITIONS@ -I${includedir} -I@INCLUDE_DIRS@ -fPIC
