@@ -238,6 +238,15 @@ MESSAGE(STATUS "libs: ${ICLQt5GuiLibAbs}")
 MESSAGE(STATUS "libs: ${ICLQt5OpenGLLibAbs}")
 MESSAGE(STATUS "libs: ${ICLQt5WidgetsLibAbs}")
 
+# temporary test here
+#SET(Qt5_LIBRARIES_X "${ICLQt5CoreLibAbs} ${ICLQt5OpenGLLibAbs} ${ICLQtWidgetsLibAbs} ${ICLQt5GuiLibAbs}")
+#MESSAGE(STATUS "qt5libs: ${Qt5_LIBRARIES_X}")
+
+#MESSAGE(STATUS "libs: ${ICLQt5CoreLibAbs}")
+#MESSAGE(STATUS "libs: ${ICLQt5GuiLibAbs}")
+#MESSAGE(STATUS "libs: ${ICLQt5OpenGLLibAbs}")
+#MESSAGE(STATUS "libs: ${ICLQt5WidgetsLibAbs}")
+
 INSTALL_FILES_RECURSIVE("include/${INSTALL_PATH_PREFIX}" HEADERS )
 INSTALL_FILES_RECURSIVE("include/${INSTALL_PATH_PREFIX}" ICL_MOC_HEADERS )
 
@@ -249,4 +258,5 @@ CREATE_PKGCONFIG(NAME ICLQt
                               ${ICLQt5GuiLibAbs}
                               ${ICLQt5WidgetsLibAbs}
                               ${ICLQt5OpenGLLibAbs}
-                 PKGCONFIG_DEPS ICLCV-${SO_VERSION})
+                 PKGCONFIG_DEPS ICLCV-${SO_VERSION}
+                 RPATH_DEPS "-Wl,-rpath=${_qt5Core_install_prefix}/lib")

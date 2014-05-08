@@ -378,7 +378,28 @@ IF(BUILD_WITH_QT)
       #set(CMAKE_INCLUDE_CURRENT_DIR ON)
       add_definitions(${Qt5Widgets_DEFINITIONS})
       SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+      
+
+      # seems to be not workin properly
+      # perhaps, the does not use abs paths
       SET(Qt5_LIBRARIES "${Qt5Widgets_LIBRARIES} ${Qt5OpenGL_LIBRARIES}")
+
+      # this results in the same as the single line above!
+      #get_target_property(ICLQt5CoreLib Qt5::Core IMPORTED_SONAME_RELEASE)
+      #get_target_property(ICLQt5GuiLib Qt5::Gui IMPORTED_SONAME_RELEASE)
+      #get_target_property(ICLQt5WidgetsLib Qt5::Widgets IMPORTED_SONAME_RELEASE)
+      #get_target_property(ICLQt5OpenGLLib Qt5::OpenGL IMPORTED_SONAME_RELEASE)
+
+      #SET(ICLQt5CoreLibAbs "${_qt5Core_install_prefix}/lib/${ICLQt5CoreLib}")
+      #SET(ICLQt5OpenGLLibAbs "${_qt5OpenGL_install_prefix}/lib/${ICLQt5OpenGLLib}")
+      #SET(ICLQt5WidgetsLibAbs "${_qt5Widgets_install_prefix}/lib/${ICLQt5WidgetsLib}")
+      #SET(ICLQt5GuiLibAbs "${_qt5Gui_install_prefix}/lib/${ICLQt5GuiLib}")
+      
+      #SET(Qt5_LIBRARIES "${ICLQt5CoreLibAbs} ${ICLQt5OpenGLLibAbs} ${ICLQtWidgetsLibAbs} ${ICLQt5GuiLibAbs}")
+
+      #MESSAGE(STATUS "qt5libs: ${Qt5_LIBRARIES}")
+
+
       ADD_ICL_DEFINITIONS(-DICL_HAVE_QT)
       ADD_ICL_DEFINITIONS(-DICL_HAVE_OPENGL)
       ADD_ICL_DEFINITIONS(-DQWT_DLL)
