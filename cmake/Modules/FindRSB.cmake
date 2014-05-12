@@ -31,10 +31,10 @@
 INCLUDE(FindPackageHandleStandardArgs)
 
 # Ask the root directory of rsb.
-SET(RSB_ROOT RSB_ROOT CACHE PATH "Root directory of rsb")
+SET(RSB_ROOT "" CACHE PATH "Root directory of rsb")
 
 # Ask the root directory of rsc.
-SET(RSC_ROOT RSC_ROOT CACHE PATH "Root directory of rsc")
+SET(RSC_ROOT "" CACHE PATH "Root directory of rsc")
 
 IF(NOT RSB_ROOT)
   IF(RSB_DIR)
@@ -46,8 +46,12 @@ IF(NOT RSB_ROOT)
   ENDIF()
 ENDIF()
 
+IF(RSB_ROOT AND NOT RSC_ROOT)
+  SET(RSC_ROOT ${RSB_ROOT})
+ENDIF()
+
 FIND_PATH(RSB_INCLUDE_DIR 
-  NAMES rsb/Factory.h rsb/Handler.h rsb/converter/Repository.h rsb/converter/ProtocolBufferConvert.h
+  NAMES rsb/Factory.h rsb/Handler.h rsb/converter/Repository.h rsb/converter/ProtocolBufferConverter.h
   PATHS ${RSB_ROOT}/include ${RSB_ROOT}/include/rsb ${RSB_ROOT}/include/rsb0.9 ${RSB_ROOT}/include/rsb0.10 ${RSB_ROOT}/include/rsb0.11
   DOC "The path to RSB header files"
   NO_DEFAULT_PATH)
@@ -56,7 +60,6 @@ FIND_PATH(RSC_INCLUDE_DIR
   NAMES rsc/logging/Logger.h
   PATHS ${RSC_ROOT}/include ${RSC_ROOT}/include/rsc ${RSC_ROOT}/include/rsc0.9
         ${RSC_ROOT}/include/rsc0.10 ${RSC_ROOT}/include/rsc0.11
-        ${RSB_ROOT}/include ${RSB_ROOT}/include/rsc
   DOC "The path to RSC header files"
   NO_DEFAULT_PATH)
 
@@ -80,7 +83,7 @@ IF(FILE_NAME STREQUAL librsbcore OR FILE_NAME STREQUAL rsbcore)
   MESSAGE(STATUS "resulting rsb-lib(old library layout): ${RSB_LIBRARY}")
 ELSE()
   FIND_LIBRARY(RSB_LIBRARY
-    NAMES rsb
+    NAMES rsb rsb0.9 rsb0.10 rsb0.11
     PATHS ${RSB_ROOT}
     PATH_SUFFIXES lib
     NO_DEFAULT_PATH)
