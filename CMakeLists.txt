@@ -42,12 +42,6 @@ INCLUDE(InstallFilesRecursive)
 SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-IF(WIN32)
-  set(CMAKE_FIND_LIBRARY_SUFFIXES .lib)
-ELSE(WIN32)
-  set(CMAKE_FIND_LIBRARY_SUFFIXES .so)
-ENDIF(WIN32)
-
 # ---- build type (debug/release) and opptions
 IF(WIN32)
   IF(MSVC)
@@ -154,20 +148,10 @@ CURRENT_ARCHITECTURE(ICL_BUILD_ARCH)
 IF(${ICL_BUILD_ARCH} EQUAL "64_BIT_FOUND")
   SET(ICL_64BIT TRUE)
   ADD_ICL_DEFINITIONS(-DICL_64BIT)
-  IF(WIN32)
-    SET(ARCH_DEPENDENT_LIB_DIR "x64")
-  ELSE()
-    SET(ARCH_DEPENDENT_LIB_DIR x86_64-linux-gnu)
-  ENDIF()
   #SET_PROPERTY(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
 ELSE()
   SET(ICL_32BIT TRUE)
   ADD_ICL_DEFINITIONS(-DICL_32BIT)
-  IF(WIN32)
-    SET(ARCH_DEPENDENT_LIB_DIR "x86")
-  ELSE()
-    SET(ARCH_DEPENDENT_LIB_DIR i386-linux-gnu)
-  ENDIF()
 ENDIF()
 
 # --- global compiler flags ---
@@ -211,8 +195,36 @@ OPTION(BUILD_DEMOS "Decide if demos shall be build or not" OFF)
 OPTION(BUILD_APPS "Decide if applications shall be build or not" OFF)
 
 # ---- Dependency handling ----
+INCLUDE(ICLFindPackage)
+
 IF(WIN32)
-    FIND_PACKAGE(WinPthreads REQUIRED)
+  set(CMAKE_FIND_LIBRARY_SUFFIXES .lib)
+ELSE(WIN32)
+  set(CMAKE_FIND_LIBRARY_SUFFIXES .so)
+ENDIF(WIN32)
+
+IF(WIN32)
+  SET(PKG_SEARCH_PATHS "")
+
+  IF(ICL_64BIT)
+    SET(ARCH_DEPENDENT_LIB_PATHS "lib/x64;lib/msvc_x64")
+  ELSE(ICL_64BIT)
+    SET(ARCH_DEPENDENT_LIB_PATHS "lib/x86;lib/msvc")
+  ENDIF(ICL_64BIT)
+ELSE(WIN32)
+  SET(PKG_SEARCH_PATHS "/usr;/usr/local")
+
+  IF(ICL_64BIT)
+    SET(ARCH_DEPENDENT_LIB_PATHS "lib/x86_64-linux-gnu;lib/intel64")
+  ELSE(ICL_64BIT)
+    SET(ARCH_DEPENDENT_LIB_PATHS "lib/i386-linux-gnu;lib/ia32")
+  ENDIF(ICL_64BIT)
+ENDIF(WIN32)
+
+IF(WIN32)
+    ICL_FIND_PACKAGE(NAME Pthreads
+                     HEADERS "pthread.h"
+                     LIBS "pthreadVC2")
     IF(PTHREADS_FOUND)
       LIST(APPEND REQUIRED_LIBRARIES_LIST ${PTHREADS_LIBRARIES})
     ENDIF()
@@ -257,9 +269,8 @@ IF(PNG_FOUND)
 ENDIF()
 
 IF(NOT WIN32)
-  FIND_PACKAGE(DL REQUIRED)
+  ICL_FIND_PACKAGE(NAME DL HEADERS "dlfcn.h" LIBS "dl")
   IF(DL_FOUND)
-    ADD_ICL_DEFINITIONS(-DHAVE_DL)
     LIST(APPEND REQUIRED_LIBRARIES_LIST ${DL_LIBRARIES})
   ENDIF()
 ENDIF()
@@ -272,10 +283,19 @@ IF(BUILD_WITH_IPP)
 ENDIF()
 
 IF(BUILD_WITH_MKL)
-  FIND_PACKAGE(MKL REQUIRED)
-  IF(MKL_FOUND)
-    ADD_ICL_DEFINITIONS(-DICL_HAVE_MKL)
-  ENDIF()
+  IF(ICL_64BIT)
+    SET(_MKL_LIB "mkl_intel_lp64")
+    SET(_MKL_LIB_SUF "lib/intel64")
+  ELSE(ICL_64BIT)
+    SET(_MKL_LIB "mkl_intel")
+    SET(_MKL_LIB_SUF "lib/ia32")
+  ENDIF(ICL_64BIT)
+  ICL_FIND_PACKAGE(NAME MKL
+                   HEADERS "mkl_types.h"
+                   LIBS "${_MKL_LIB};mkl_intel_thread;mkl_core;iomp5"
+                   PATHS "/opt/MKL;/opt/MKL/mkl"
+                   HEADER_PATH_SUFFIXES "mkl/include"
+                   LIB_PATH_SUFFIXES "mkl/${_MKL_LIB_SUF}")
 ENDIF()
 
 IF(BUILD_WITH_OPENCL)
@@ -286,13 +306,17 @@ IF(BUILD_WITH_OPENCL)
 ENDIF()
 
 IF(BUILD_WITH_EIGEN3)
-  FIND_PACKAGE(Eigen3 REQUIRED)
-  IF(EIGEN3_FOUND)
-    ADD_ICL_DEFINITIONS(-DICL_HAVE_EIGEN3)
-  ENDIF()
+  ICL_FIND_PACKAGE(NAME Eigen3
+                   HEADERS "Eigen/Eigen"
+                   HEADER_PATH_SUFFIXES "include/eigen3")
 ENDIF()
 
 IF(BUILD_WITH_OPENNI)
+  #ICL_FIND_PACKAGE(NAME OpenNI
+  #                 HEADERS "XnOpenNI.h"
+  #                 LIBS "OpenNI"
+  #                 HEADER_PATH_SUFFIXES "include/ni")
+  # after testing the above function call the 4 lines below and FindOpenNI.cmake can be removed
   FIND_PACKAGE(OpenNI)
   IF(OpenNI_FOUND)
     ADD_ICL_DEFINITIONS(-DICL_HAVE_OPENNI)
@@ -303,6 +327,12 @@ IF(BUILD_WITH_OPENCV)
   IF(WIN32)
     FIND_PACKAGE(WinOpenCV)
   ELSE()
+    # for new style only and without cmake config
+    #ICL_FIND_PACKAGE(NAME OpenCV
+    #                 HEADERS "opencv/cv.h;opencv/cxcore.h;opencv/highgui.h"
+    #                 LIBS "opencv_core;opencv_highgui;opencv_imgproc;opencv_video;opencv_ml;opencv_calib3d")
+    #SET(OpenCV_INCLUDE_DIRS ${OPENCV_INCLUDE_DIRS})
+    #SET(OpenCV_LIBRARIES ${OPENCV_LIBRARIES})
     FIND_PACKAGE(OpenCV)
   ENDIF()
   IF(OPENCV_FOUND)
@@ -323,6 +353,11 @@ IF(BUILD_WITH_IMAGEMAGICK)
 ENDIF()
 
 IF(BUILD_WITH_MESASR)
+  #ICL_FIND_PACKAGE(NAME MesaSR
+  #                 HEADERS "libMesaSR.h"
+  #                 LIBS "mesasr"
+  #                 PATHS "/opt/MESASR")
+  # after testing the above function call the 4 lines below and FindMesaSR.cmake can be removed
   FIND_PACKAGE(MesaSR REQUIRED)
   IF(MesaSR_FOUND)
     ADD_ICL_DEFINITIONS(-DICL_HAVE_LIBMESAR)
@@ -331,16 +366,25 @@ ENDIF()
 
 IF(BUILD_WITH_LIBDC)
   FIND_PACKAGE(LibDC REQUIRED)
+  #ICL_FIND_PACKAGE(NAME LibDC
+  #                 HEADERS "dc1394/dc1394.h"
+  #                 LIBS "dc1394")
   IF(LIBDC_FOUND)
     ADD_ICL_DEFINITIONS(-DICL_HAVE_LIBDC)
   ENDIF()
 ENDIF()
 
 IF(BUILD_WITH_LIBUSB)
-  FIND_PACKAGE(LIBUSB REQUIRED)
-  IF(LIBUSB_FOUND)
-    ADD_ICL_DEFINITIONS(-DICL_HAVE_LIBUSB)
-  ENDIF()
+  IF(WIN32)
+    ICL_FIND_PACKAGE(NAME LIBUSB
+                     HEADERS "usb.h;lusb0_usb.h"
+                     LIBS "libusb"
+                     PATHS "/opt/MESASR")
+  ELSE(WIN32)
+    ICL_FIND_PACKAGE(NAME LIBUSB
+                     HEADERS "usb.h;lusb0_usb.h"
+                     LIBS "usb")
+  ENDIF(WIN32)
 ENDIF()
 
 IF(BUILD_WITH_V4L)
@@ -351,6 +395,11 @@ IF(BUILD_WITH_V4L)
 ENDIF()
 
 IF(BUILD_WITH_ZMQ)
+  # in addition change GLEW_INCLUDE_DIR in GLEW_INCLUDE_DIRS
+  #ICL_FIND_PACKAGE(NAME ZMQ
+  #                 HEADERS "zmq.hpp"
+  #                 LIBS "zmq")
+  # after testing the above function call the 4 lines below and FindZMQ.cmake can be removed
   FIND_PACKAGE(ZMQ REQUIRED)
   IF(ZMQ_FOUND)
     ADD_ICL_DEFINITIONS(-DICL_HAVE_ZMQ)
@@ -359,14 +408,18 @@ ENDIF()
 
 
 IF(BUILD_WITH_XINE)
-  FIND_PACKAGE(Xine REQUIRED)
-  IF(XINE_FOUND)
-    ADD_ICL_DEFINITIONS(-DICL_HAVE_XINE)
-  ENDIF()
+  ICL_FIND_PACKAGE(NAME Xine
+                   HEADERS "xine.h"
+                   LIBS "xine")
 ENDIF()
 
 IF(BUILD_WITH_QT)
   FIND_PACKAGE(OpenGL REQUIRED)
+  # in addition change GLEW_INCLUDE_DIR in GLEW_INCLUDE_DIRS
+  #ICL_FIND_PACKAGE(NAME GLEW
+  #                 HEADERS "GL/glew.h"
+  #                 LIBS "GLEW")
+  # after testing the above function call the line below and FindGlew.cmake can be removed
   FIND_PACKAGE(GLEW REQUIRED)
   FIND_PACKAGE(Qt5Widgets REQUIRED HINTS ${QT_ROOT})
   FIND_PACKAGE(Qt5OpenGL REQUIRED HINTS ${QT_ROOT})
@@ -408,6 +461,10 @@ IF(BUILD_WITH_QT)
 ENDIF()
 
 IF(BUILD_WITH_LIBFREENECT)
+  #ICL_FIND_PACKAGE(NAME LibFreenect
+  #                 HEADERS "libfreenect.h"
+  #                 LIBS "freenect;freenect_sync")
+  # after testing the above function call the 4 lines below and FindLibFreenect.cmake can be removed
   FIND_PACKAGE(LibFreenect REQUIRED)
   IF(LIBFREENECT_FOUND)
     ADD_ICL_DEFINITIONS(-DICL_HAVE_LIBFREENECT)
@@ -478,7 +535,7 @@ CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/ICLUtils/src/ICLConfig.h.in ${CMAKE_BINARY_
 IF(WIN32)
 INCLUDE_DIRECTORIES(BEFORE SYSTEM ${ZLIB_INCLUDE_DIRS}
                                   ${JPEG_INCLUDE_DIR}
-                                  ${PTHREADS_INCLUDE_DIR}
+                                  ${PTHREADS_INCLUDE_DIRS}
                                   ${PNG_INCLUDE_DIRS}
                                   ${ImageMagick_INCLUDE_DIRS})
 ELSE()
