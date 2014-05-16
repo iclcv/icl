@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLMath/src/ICLMath/LevenbergMarquardtFitter.h         **
 ** Module : ICLMath                                                **
-** Authors: Christof Elbrechter                                    **
+** Authors: Christof Elbrechter, Sergius Gaulik                    **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include <ICLUtils/CompatMacros.h>
 #include <ICLMath/DynVector.h>            
 #include <ICLUtils/Function.h>
 
@@ -62,7 +61,7 @@ namespace icl{
         
         \f[ f(x) = \beta_1 + \beta_2 x + \beta_3 x^2 + beta_4 x^3 \f]
   
-        Then LMA will find find the solution in a single step (depened on the step parameters lambda)
+        Then LMA will find the solution in a single step (depened on the step parameters lambda)
         
         
         \section _J_ What is the Jacobian
@@ -249,7 +248,7 @@ namespace icl{
         \endcode
     */
     template<class Scalar>
-    class ICLMath_IMP LevenbergMarquardtFitter{
+    class ICLMath_API LevenbergMarquardtFitter{
       public:
       
       typedef DynColVector<Scalar> Vector; //!< vector type
@@ -278,10 +277,12 @@ namespace icl{
 
       /// to-be-optimized function type y = f(params, x)
       typedef icl::utils::Function<Vector,const Params&,const Vector&> Function;
+      typedef icl::utils::Function<Matrix,const Params&,const Matrix&> FunctionMat;
     
       /// jacobian of F
       /** \see \ref _J_ */
-      typedef icl::utils::Function<void,const Params&, const Vector&, Vector &> Jacobian;
+      typedef icl::utils::Function<void,const Params&, const Vector&, Vector&> Jacobian;
+      typedef icl::utils::Function<void,const Params&, const Matrix&, Matrix&> JacobianMat;
     
       /// Optionally given debug callback, that is called in every iterations
       typedef icl::utils::Function<void,const Result&> DebugCallback;
@@ -289,13 +290,17 @@ namespace icl{
     
 
       protected:
-      Function f;  //!< Function f
+      Function f;        //!< Function f
+      FunctionMat fMat;  //!< Function f
 
       bool useMultiThreading;   //!< flag whether multithreading is enabled
-      Scalar initialLambda;     //!< initial damping parameter lambda
+      bool useMat;              //!< flag whether matrices in the error function
+      Scalar tau;               //!< used for initial damping parameter lambda
       int maxIterations;        //!< maximum number of iterations
       Scalar minError;          //!< minimum error threshold
       Scalar lambdaMultiplier;  //!< mulitplier that is used to increase/decreas lambda
+      Scalar eps1;              //!< minimum F'(parameters) threshold
+      Scalar eps2    ;          //!< minimum change in parameters threshold
       std::string linSolver;    //!< linear solver that is used @see icl::DynMatrix::solve
 
       Vector dst;        //!< b in Mx=b of linear system solved internally
@@ -304,6 +309,7 @@ namespace icl{
 
       /// output buffers
       std::vector<Jacobian> js;
+      std::vector<JacobianMat> jsMat;
       
       DebugCallback dbg;  //!< debug callback
       Params params_new;  //!< new parameters (after update step)
@@ -316,7 +322,7 @@ namespace icl{
       Scalar error(const Matrix &ys, const Matrix &y_est) const;
 
       public:
-    
+
       /// creates a dummy (null instance)
       LevenbergMarquardtFitter();
     
@@ -330,19 +336,29 @@ namespace icl{
           be called manually to obtain another automatically created numerical
           jacobian.
           
-          @param initialLambda initial damping parameter (usually 1e-6 ist not the worst choice)
+          @param tau used for the initial damping parameter (small values (eg 1e-6) are a good choice
+                 if the first parameters are believed to be a good approximation. Otherwise 1e-3 or 1 should be used)
           @param maxIterations maximum number of iterations (usually, LevenbergMarquardtFitter will converge fast, or not at all.
                  Therefore, the default argument of 200 iterations somehow assumes, that the minError
                  criterion is met much earlier.
           @param minError if the current error gets less than this threshold, the optimization is finished
           @param lambdaMultiplier mulitiplyer used for increasing/decreasing the damping parameter lambda
+          @param eps1 if the F'(parameters) is less than this threshold, the algorithm is finished
+          @param eps2 if the change in parameters is less than this threshold, the algorithm is finished
           @param linSolver linear solver that is used to estimate a local step internally possible values
                  are documented in icl::DynMatrix::solve (we recommend the most-stable method svd)
           */
       LevenbergMarquardtFitter(Function f, int outputDim,
           const std::vector<Jacobian> &js=std::vector<Jacobian>(),
-          Scalar initialLambda=1.e-8, int maxIterations=200,
+          Scalar tau=1.e-3, int maxIterations=200,
           Scalar minError = 1.e-6, Scalar lambdaMultiplier=10,
+          Scalar eps1 = 1.49012e-08, Scalar eps2 = 1.49012e-08,
+          const std::string &linSolver="svd");
+      LevenbergMarquardtFitter(FunctionMat f, int outputDim,
+          const std::vector<JacobianMat> &js=std::vector<JacobianMat>(),
+          Scalar tau=1.e-3, int maxIterations=200,
+          Scalar minError = 1.e-6, Scalar lambdaMultiplier=10,
+          Scalar eps1 = 1.49012e-08, Scalar eps2 = 1.49012e-08,
           const std::string &linSolver="svd");
     
       /// enables openmp based multithreading
@@ -355,8 +371,15 @@ namespace icl{
       /** \copydoc LevenbergMarquardtFitter::LevenbergMarquardtFitter(Function,Jacobian,Scalar,int,Scalar,Scalar,const std::string &)*/
       void init(Function f, int outputDim,
                 const std::vector<Jacobian> &js=std::vector<Jacobian>(),
-                Scalar initialLambda=1.e-8, int maxIterations=1000,
+                Scalar tau=1.e-8, int maxIterations=1000,
                 Scalar minError = 1.e-6, Scalar lambdaMultiplier=10,
+                Scalar eps1 = 1.49012e-08, Scalar eps2 = 1.49012e-08,
+                const std::string &linSolver="svd");
+      void init(FunctionMat f, int outputDim,
+                const std::vector<JacobianMat> &js=std::vector<JacobianMat>(),
+                Scalar tau=1.e-8, int maxIterations=1000,
+                Scalar minError = 1.e-6, Scalar lambdaMultiplier=10,
+                Scalar eps1 = 1.49012e-08, Scalar eps2 = 1.49012e-08,
                 const std::string &linSolver="svd");
     
       /// actual parameter fitting with given data and start parameters
@@ -369,7 +392,7 @@ namespace icl{
           @param initParams initial parameters for starting optimizaiton
           */
       Result fit(const Matrix &xs, const Matrix &ys, Params initParams);
-    
+   
       
     
       /// creates a single numerical Jacobian for a given function f and output dim
@@ -390,9 +413,11 @@ namespace icl{
           \endcode
           */
       static Jacobian create_numerical_jacobian(int o, Function f, float delta=1.E-5);
+      static JacobianMat create_numerical_jacobian(int o, FunctionMat f, float delta=1.E-5);
       
       /// creates a set of numerical jacobians for output dimension n
       static std::vector<Jacobian> create_numerical_jacobians(int n, Function f, float delta=1.e-5);
+      static std::vector<JacobianMat> create_numerical_jacobians(int n, FunctionMat f, float delta=1.e-5);
 
       /// creates test data using a given function
       /** @param p real function parameters
@@ -410,6 +435,12 @@ namespace icl{
       
       /// sets a debug callback method, which is called automatically in every interation
       void setDebugCallback(DebugCallback dbg=default_debug_callback);
+
+    private:
+      /// internal fit function using vectors
+      Result fitVec(const Matrix &xs, const Matrix &ys, Params initParams);
+      /// internal fit function using matrices
+      Result fitMat(const Matrix &xs, const Matrix &ys, Params initParams);
     };
   } // namespace math
 } // namespace icl
