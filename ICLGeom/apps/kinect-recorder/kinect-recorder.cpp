@@ -72,6 +72,28 @@ void init(){
     if(pa("-co")) c_out.init(pa("-co"));
   }
   
+  if(pa("-man")){
+    if(!pa("-co") && !pa("-do")){
+      throw std::logic_error("manual mode '-man' without given "
+                             "either given depth and/or given "
+                             "color output does not make sense!");
+    }
+    if(pa("-drop").as<int>()){
+      throw std::logic_error("naumal mode '-man' and inital drop "
+                             "frames '-drop' cannot be combined");
+    }
+    gui << (VBox()
+            << Button("start","stop",false).handle("man").label("manual recording")
+            .tooltip("icl-kinect-recorder was started in 'manual' mode. Here"
+                     "data is only recorded if this button is pressed")
+            << CheckBox("re-init at start",false).handle("reinit")
+            .tooltip("if this is checked, each time, the start/stop button is"
+                     "toggled, both image outputs are reinitialized. In this"
+                     "case, already recorded frame might be overwritten")
+            << Label("0").handle("nRecorded").label("num recorded frames")
+            );
+  }
+  
   if(pa("-ds")){
     Size s = pa("-ds");
     if(!d_in.isNull()) d_in.useDesired(s);
@@ -87,12 +109,42 @@ void init(){
 
 
 void run(){
+  static int nDrop = pa("-drop");
+  if(nDrop < 0){
+    throw std::logic_error("num drop '-drop' frames must be >= 0");
+  }
+
   const ImgBase *c=0,*d=0;
   if(!c_in.isNull()) c = c_in.grab();
   if(!d_in.isNull()) d = d_in.grab();
-  
-  if(!c_out.isNull() && c) c_out.send(c);
-  if(!d_out.isNull() && d) d_out.send(d);
+
+  if(nDrop){
+    --nDrop;
+  }else{
+    if(pa("-man")){
+      static bool lastMan = false;
+      static int n = 0;
+      bool man = gui["man"];
+      if(man){
+        if(lastMan != man){
+          if(gui["reinit"]){
+            if(pa("-do")) d_out.init(pa("-do"));
+            if(pa("-co")) c_out.init(pa("-co"));
+            n = 0;
+          }
+        }
+        if(!c_out.isNull() && c) c_out.send(c);
+        if(!d_out.isNull() && d) d_out.send(d);
+        ++n;
+        gui["nRecorded"] = n;
+      }
+      lastMan = man;
+        
+    }else{
+      if(!c_out.isNull() && c) c_out.send(c);
+      if(!d_out.isNull() && d) d_out.send(d);
+    }
+  }
   
   if(c) gui["color"] = c;
   if(d) gui["depth"] = d;
@@ -106,7 +158,10 @@ int main(int n, char **args){
   return ICLApp(n,args,"-depth-input|-d(2) -color-input|-c(2) "
                 "-depth-size|-ds(size) -color-size|-cs(size) "
                 "-depth-output|-do(2) -color-output|-co(2) "
-                "-simple-io-params|-s(output-file-base-name)",init,run).exec();
+                "-simple-io-params|-s(output-file-base-name) "
+                "-drop-num-first-frames|-drop(n=0) "
+                "-manually-trigger-start-and-stop|-man"
+                ,init,run).exec();
 }
 
 

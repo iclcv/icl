@@ -165,8 +165,7 @@ namespace icl{
         }
       }
       rsbCfg.setTransports(TSet(ts.begin(),ts.end()));
-      m_data->listener = factory
-.createListener(rsbScope,rsbCfg);
+      m_data->listener = factory.createListener(rsbScope,rsbCfg);
       m_data->handler = shared_ptr<Handler>(new Data::Handler(m_data,this));
       m_data->listener->addHandler(m_data->handler);
 
