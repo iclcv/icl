@@ -59,6 +59,7 @@ SET(HEADERS src/ICLCV/CornerDetectorCSS.h
 	    src/ICLCV/MeanShiftTracker.h
 	    src/ICLCV/PositionTracker.h
 	    src/ICLCV/QuickDocumentation.h
+	    src/ICLCV/RegionGrower.h
 	    src/ICLCV/RegionDetector.h
 	    src/ICLCV/RegionDetectorTools.h
 	    src/ICLCV/RegionPCAInfo.h
