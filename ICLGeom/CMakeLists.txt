@@ -92,6 +92,7 @@ IF(QT_FOUND)
                        src/ICLGeom/PointCloudSerializer.cpp
                        src/ICLGeom/OctreeObject.cpp
                        src/ICLGeom/RayCastOctreeObject.cpp
+                       src/ICLGeom/SQFitter.cpp
                        src/ICLGeom/PlotWidget3D.cpp
                        src/ICLGeom/ShaderUtil.cpp)
 
@@ -113,7 +114,8 @@ IF(QT_FOUND)
                        src/ICLGeom/PointCloudObjectBase.h
                        src/ICLGeom/PointCloudSerializer.h
                        src/ICLGeom/OctreeObject.h 
-                       src/ICLGeom/RayCastOctreeObject.h 
+                       src/ICLGeom/RayCastOctreeObject.h
+                       src/ICLGeom/SQFitter.h
                        src/ICLGeom/PlotWidget3D.h
                        src/ICLGeom/ShaderUtil.h)
 ENDIF()
