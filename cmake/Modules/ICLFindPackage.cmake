@@ -35,6 +35,7 @@
 #   PATHS                - these paths will be used to find the include directory and the libraries
 #   HEADER_PATH_SUFFIXES - path suffixes will be used for the include directory search
 #   LIB_PATH_SUFFIXES    - path suffixex will be used for the libraries search
+#   OPTIONAL             - if set the package is optional and there will be no error message
 # Output:
 #   NAME_FOUND           - shows if the package was found
 #   NAME_INCLUDE_DIRS    - include directory
@@ -43,6 +44,7 @@
 MACRO(ICL_FIND_PACKAGE)
 
   # Get all arguments
+  SET(options OPTIONAL)
   SET(oneValueArgs NAME)
   SET(multiValueArgs HEADERS LIBS PATHS HEADER_PATH_SUFFIXES LIB_PATH_SUFFIXES)
   CMAKE_PARSE_ARGUMENTS(_PKG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -82,15 +84,17 @@ MACRO(ICL_FIND_PACKAGE)
   SET(_PKG_MISSING "")
 
   # Search for the include directory
-  FIND_PATH(${_PKG_NAME_UPPER}_INCLUDE_DIRS
+  FIND_PATH(${_PKG_NAME_UPPER}_INCLUDE_DIR
     NAMES ${_PKG_HEADERS}
     PATHS ${_PKG_SEARCH_PATHS}
     PATH_SUFFIXES "include" ${_PKG_HEADER_PATH_SUFFIXES}
     DOC "The path to ${_PKG_NAME} header files"
     NO_DEFAULT_PATH)
 
-  IF(NOT ${_PKG_NAME_UPPER}_INCLUDE_DIRS)
-      LIST(APPEND _PKG_MISSING ${_PKG_NAME_UPPER}_INCLUDE_DIRS)
+  IF(NOT ${_PKG_NAME_UPPER}_INCLUDE_DIR)
+    LIST(APPEND _PKG_MISSING ${_PKG_NAME_UPPER}_INCLUDE_DIR)
+  ELSE()
+    SET(${_PKG_NAME_UPPER}_INCLUDE_DIRS ${${_PKG_NAME_UPPER}_INCLUDE_DIR}})
   ENDIF()
 
   # Search for all listed libraries
@@ -110,12 +114,16 @@ MACRO(ICL_FIND_PACKAGE)
 
   IF(_PKG_MISSING)
     SET(${_PKG_NAME_UPPER}_FOUND FALSE)
-    MESSAGE(SEND_ERROR "Could NOT find ${_PKG_NAME} (missing: ${_PKG_MISSING})")
+    IF(_PKG_OPTIONAL)
+      MESSAGE(STATUS "Could NOT find ${_PKG_NAME} (optional | missing: ${_PKG_MISSING})")
+    ELSE(_PKG_OPTIONAL)
+      MESSAGE(SEND_ERROR "Could NOT find ${_PKG_NAME} (missing: ${_PKG_MISSING})")
+    ENDIF(_PKG_OPTIONAL)
     # Ask the root directory of the package
     SET(${_PKG_NAME_UPPER}_ROOT ${${_PKG_NAME_UPPER}_ROOT} CACHE PATH "Root directory of ${_PKG_NAME}")
-  ELSE()
+  ELSE(_PKG_MISSING)
     ADD_ICL_DEFINITIONS(-DICL_HAVE_${_PKG_NAME_UPPER})
     MESSAGE(STATUS "Found ${_PKG_NAME}: ${${_PKG_NAME_UPPER}_INCLUDE_DIRS} ${${_PKG_NAME_UPPER}_LIBRARIES}")
-  ENDIF()
+  ENDIF(_PKG_MISSING)
 
 ENDMACRO()
