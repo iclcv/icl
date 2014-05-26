@@ -42,8 +42,8 @@ namespace icl{
   namespace geom{ 
 
     icl::math::FixedMatrix<float,4,4> SQParams::getTransformationMatrix() const {
-	    return icl::math::create_hom_4x4<float>(euler[0], euler[1], euler[2],
-														     pos[0], pos[1], pos[2]);
+      return icl::math::create_hom_4x4<float>(euler[0], euler[1], euler[2],
+                                              pos[0], pos[1], pos[2]);
     }
 
     // Mx already contains the multiplication with the inversed homographic matrix
@@ -108,7 +108,8 @@ namespace icl{
       eulerPosLM = LM(ePErrorFunc,1,std::vector<LM::JacobianMat>(),1.e-3,200,1.e-6,100,1.e-6,1.e-6,"svd");
     }
 
-    void SQFitter::preProcess(LM::Matrix &Mx, Vec3 &viewDir, icl::math::FixedMatrix<float,3,3> &R,
+    void SQFitter::preProcess(LM::Matrix &Mx, Vec3 &viewDir, const std::string& sShapePreference,
+                              icl::math::FixedMatrix<float,3,3> &R,
                               Vec3 &center, Vec3 &size, Vec3 &origin, float &scale) {
       int cols = Mx.cols();
 
@@ -240,20 +241,19 @@ namespace icl{
       for (float *it = A.row_begin(1); it != A.row_end(1); ++it) *it = fabs(*it)*a1;
       for (float *it = A.row_begin(2); it != A.row_end(2); ++it) *it = fabs(*it)*a2;
 
-
       // try to improve the shape paremeter using Levenberg-Marquardt
       LM::Result result = shapeLM.fit(A, LM::Matrix(1,xyzM.cols(),0.0f), p);
 
       return result;
     }
 
-    void SQFitter::fitSQ(LM::Matrix &Mx, Vec3 &viewDir) {
+    void SQFitter::fitSQ(LM::Matrix &Mx, Vec3 &viewDir, const std::string& sShapePreference) {
       icl::math::FixedMatrix<float,3,3> R;
       Vec3 center, size, origin;
       float scale;
 
       // prepare some data
-      preProcess(Mx, viewDir, R, center, size, origin, scale);
+      preProcess(Mx, viewDir, sShapePreference, R, center, size, origin, scale);
 
 
       SQParams tmpParams, bestParams;
@@ -332,50 +332,50 @@ namespace icl{
     }
 
     bool SQFitter::fit(PointCloudObject& pcObj, 
-						     const std::string& sShapePreference,
-						     size_t maxN) {
-	    if (maxN == 0) maxN = pcObj.getDim();
-	    if (maxN < 11) {
-		    ERROR_LOG("SQFitter: too few points: " << maxN);
-		    return false;
-	    }
-          
-	    maxN = iclMin(int(maxN),250);
+                 const std::string& sShapePreference,
+                 size_t maxN) {
+      if (maxN == 0) maxN = pcObj.getDim();
+      if (maxN < 11) {
+        ERROR_LOG("SQFitter: too few points: " << maxN);
+        return false;
+      }
 
-	    Vec3 viewDir(0,0,0);
-          
-	    if (camCenter) {
-		    Vec c = *camCenter;
-		    const core::DataSegment<float,4> xyz = pcObj.selectXYZH();
-		    Vec cpc = std::accumulate(&xyz[0],&xyz[0]+xyz.getDim(), Vec(0,0,0,0));
-		    cpc *= 1./xyz.getDim();
-	
-		    viewDir = (cpc - c).part<0,0,1,3>();
-		    viewDir.normalize();
-	    }
+      maxN = iclMin(int(maxN),250);
 
-	    size_t N = pcObj.getDim();
+      Vec3 viewDir(0,0,0);
+
+      if (camCenter) {
+        Vec c = *camCenter;
+        const core::DataSegment<float,4> xyz = pcObj.selectXYZH();
+        Vec cpc = std::accumulate(&xyz[0],&xyz[0]+xyz.getDim(), Vec(0,0,0,0));
+        cpc *= 1./xyz.getDim();
+
+        viewDir = (cpc - c).part<0,0,1,3>();
+        viewDir.normalize();
+      }
+
+      size_t N = pcObj.getDim();
       LM::Matrix Mx(iclMin(N,maxN),3);
-	    core::DataSegment<float,3> xyz = pcObj.selectXYZ();
+      core::DataSegment<float,3> xyz = pcObj.selectXYZ();
 
       // get points from the point cloud
-	    for (size_t i=0, n=0; i < N; ++i) {
-		    if (i * maxN / N >= n) {
-			    Mx(n,0) = xyz[i][0];
-			    Mx(n,1) = xyz[i][1];
-			    Mx(n,2) = xyz[i][2];
-			    ++n;
-		    }
-	    }
+      for (size_t i=0, n=0; i < N; ++i) {
+        if (i * maxN / N >= n) {
+          Mx(n,0) = xyz[i][0];
+          Mx(n,1) = xyz[i][1];
+          Mx(n,2) = xyz[i][2];
+          ++n;
+        }
+      }
 
       // try to fit a superquadric in the given point cloud
-      fitSQ(Mx, viewDir);
+      fitSQ(Mx, viewDir, sShapePreference);
 
-	    return true;
+      return true;
     }
 
     void SQFitter::setCameraCenter(const Vec &c){
-	    camCenter = new Vec(c);
+      camCenter = new Vec(c);
     }
 
   } // namespace geom

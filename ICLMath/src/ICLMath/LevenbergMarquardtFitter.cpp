@@ -42,7 +42,7 @@ namespace icl{
     LevenbergMarquardtFitter<Scalar>::LevenbergMarquardtFitter(){
 
     }
-    
+
     template<class Scalar>
     LevenbergMarquardtFitter<Scalar>::LevenbergMarquardtFitter(Function f, int outputDim,
                      const std::vector<Jacobian> &js,
@@ -62,7 +62,7 @@ namespace icl{
                      const std::string &linSolver){
       init(f,outputDim,js,tau,maxIterations,minError,lambdaMultiplier,eps1,eps2,linSolver);
     }
-    
+
     template<class Scalar>
     void LevenbergMarquardtFitter<Scalar>::init(Function f,
                            int outputDim,
@@ -112,7 +112,7 @@ namespace icl{
       this->linSolver = linSolver;
       this->useMat = true;
     }
-  
+
     template<class Scalar>
     inline Scalar sqr_dist(const Scalar &a, const Scalar &b){
       return sqr(a-b);
@@ -120,14 +120,14 @@ namespace icl{
 
     template<class Scalar>
     Scalar LevenbergMarquardtFitter<Scalar>::error(const Matrix &ys, const Matrix &y_est) const {
-      return ys.sqrDistanceTo(y_est)/ys.rows();
+      return ys.sqrDistanceTo(y_est)/2.0;
     }
 
     template<class Scalar>
     void LevenbergMarquardtFitter<Scalar>::setUseMultiThreading(bool enable){
       useMultiThreading = enable;
     }
-    
+
     template<class Scalar>
     typename LevenbergMarquardtFitter<Scalar>::Result
     LevenbergMarquardtFitter<Scalar>::fitVec(const Matrix &xs, const Matrix &ys, Params params){
@@ -140,9 +140,9 @@ namespace icl{
       const Scalar MIN_E = minError;
       const Scalar EPS1 = eps1;
       const Scalar EPS2 = eps2;
-      
+
       dst.setDim(P);
-      
+
       J.setBounds(P,D);
       H.setBounds(P,P);
       H.setBounds(P,P);
@@ -151,10 +151,13 @@ namespace icl{
       y_est.setBounds(O,D);
       dy.setBounds(D);
 
+      std::vector<Scalar> v(O,2.0);
+      std::vector<Scalar> lambdas(O,0.0);
+
       std::vector<Vector> xs_rows(D);
       std::vector<Vector> ys_rows(D);
       std::vector<Vector> y_est_rows(D);
-      
+
       for(int i=0;i<D;++i){
         xs_rows[i] = Vector(I, const_cast<Scalar*>(xs.row_begin(i)),false);
         ys_rows[i] = Vector(O, const_cast<Scalar*>(ys.row_begin(i)),false);
@@ -162,55 +165,53 @@ namespace icl{
         y_est_rows[i] = f(params,xs_rows[i]);
       }
 
-      // TODO: use this with the gain ratio
-      //std::vector<Scalar> v(O,2.0);
-
-      std::vector<Scalar> lambdas(O,0.0);
       Scalar e = error(ys,y_est);
       if(e < minError){
         Result r = {-1, e, lambdas, params};
         if(dbg) dbg(r);
         return r;
       }
-      
+
       int it = 0;
-      
+
 #ifdef USE_OPENMP
       bool mt = useMultiThreading;
 #endif
-      
+
       for(;it < MAX_IT; ++it){
         for(int o=0;o<O;++o){
+          if (it == 0 || O > 1) {
 
 #ifdef USE_OPENMP
 #pragma omp parallel for if(mt)
 #endif
-          for(int i=0;i<D;++i){
-            Vector Ji(P,J.row_begin(i),false);
-            js[o](params,xs_rows[i],Ji);
-            dy[i] = f(params, xs_rows[i])[o] - ys(o,i);
-          }
-          
-          matrix_mult_t(J,J,H,SRC1_T);
-          matrix_mult_t(J,dy,dst,SRC1_T); 
-          
-          Scalar maxN = fabs(dst[0]);
-          for (unsigned int i = 1; i < dst.rows(); ++i) {
-            Scalar tmp = fabs(dst[i]);
-            if (tmp > maxN) maxN = tmp;
-          }
-          if (maxN <= EPS1) {
-            Result result = { it, e, lambdas, params};
-            return result;
-          }
-
-          // first guess of lambda
-          if (it == 0) {
-            Scalar H_max = H(0,0);
-            for (unsigned int i = 1; i < H.cols(); ++i) {
-              if (H(i,i) > H_max) H_max = H(i,i);
+            for(int i=0;i<D;++i){
+              Vector Ji(P,J.row_begin(i),false);
+              js[o](params,xs_rows[i],Ji);
+              dy[i] = f(params, xs_rows[i])[o] - ys(o,i);
             }
-            lambdas[o] = tau * H_max;
+
+            matrix_mult_t(J,J,H,SRC1_T);
+            matrix_mult_t(J,dy,dst,SRC1_T);
+
+            Scalar maxN = fabs(dst[0]);
+            for (unsigned int i = 1; i < dst.rows(); ++i) {
+              Scalar tmp = fabs(dst[i]);
+              if (tmp > maxN) maxN = tmp;
+            }
+            if (maxN <= EPS1) {
+              Result result = { it, e, lambdas, params};
+              return result;
+            }
+
+            // first guess of lambda
+            if (it == 0) {
+              Scalar H_max = H(0,0);
+              for (unsigned int i = 1; i < H.cols(); ++i) {
+                if (H(i,i) > H_max) H_max = H(i,i);
+              }
+              lambdas[o] = tau * H_max;
+            }
           }
 
           for(int i=0;i<P;++i){
@@ -218,60 +219,80 @@ namespace icl{
           }
 
           // Creating Mx = b to solve
-          // (H + lambda diag (H)) x = J^T(y-f(beta))
           Params pSolved = H.solve(dst,"svd");
 
-          params_new = params - pSolved;
+          pSolved *= -1.0f;
+          params_new = params + pSolved;
 
 #ifdef USE_OPENMP
 #pragma omp parallel for if(mt)
 #endif
           for(int i=0;i<D;++i){
             y_est_rows[i] = f(params_new,xs_rows[i]); 
-          }          
+          }
           Scalar e_new = error(ys, y_est);
-        
+
+          if(e_new < MIN_E){
+            Result result = { it, e_new, lambdas, params_new};
+            return result;
+          }
+
           // stop if the change is small
           if (pSolved.norm() <= EPS2*(params.norm() + EPS2)) {
             Result result = { it, e_new, lambdas, params_new};
             return result;
           }
 
-/*
-          // TODO: somehow this is much slower for most examples
           // gain ratio
           Scalar delta = 2.0*(e - e_new) / (pSolved.transp() * (pSolved*lambdas[o] - dst))[0];
 
           if (delta > 0.0) {
             v[o] = 2.0;
             params = params_new;
-            lambdas[o] = iclMax(1.0/3.0, 1.0 - pow(2.0*delta - 1.0, 3));
+            e = e_new;
+            lambdas[o] *= iclMax(1.0/3.0, 1.0 - pow(2.0*delta - 1.0, 3));
+
+            if (O == 1) {
+#ifdef USE_OPENMP
+#pragma omp parallel for if(mt)
+#endif
+              for(int i=0;i<D;++i){
+                Vector Ji(P,J.row_begin(i),false);
+                js[o](params,xs_rows[i],Ji);
+                dy[i] = f(params, xs_rows[i])[o] - ys(o,i);
+              }
+
+              matrix_mult_t(J,J,H,SRC1_T);
+              matrix_mult_t(J,dy,dst,SRC1_T);
+
+              Scalar maxN = fabs(dst[0]);
+              for (unsigned int i = 1; i < dst.rows(); ++i) {
+                Scalar tmp = fabs(dst[i]);
+                if (tmp > maxN) maxN = tmp;
+              }
+              if (maxN <= EPS1) {
+                Result result = { it, e, lambdas, params};
+                return result;
+              }
+            }
           } else {
+            if (O == 1) {
+              // change the hessian back to normal
+              for(int i=0;i<P;++i){
+                H(i,i) -= lambdas[o];
+              }
+            }
+
             lambdas[o] *= v[o];
             v[o] *= 2.0;
+
             if (v[o] > 1.e15) {
               Result r = { it, e, lambdas, params };
               if(dbg) dbg(r);
               return r;
             }
           }
-*/
-          if(e_new < e){
-            if(e_new < MIN_E){
-              Result result = { it, e_new, lambdas, params_new};
-              return result;
-            }
-            e = e_new;
-            lambdas[o] /= lambdaMultiplier;
-            params = params_new;
-          }else{
-            lambdas[o] *= lambdaMultiplier;
-            if(lambdas[o] > 10.e30) {
-              Result r = { it, e, lambdas, params };
-              if(dbg) dbg(r);
-              return r;
-            }
-          }
+
           if(dbg){
             Result r = { it, e, lambdas, params};
             dbg(r);
@@ -281,7 +302,7 @@ namespace icl{
       Result result = { it, e, lambdas, params };
       return result;
     }
-  
+
     template<class Scalar>
     typename LevenbergMarquardtFitter<Scalar>::Result
     LevenbergMarquardtFitter<Scalar>::fitMat(const Matrix &xs, const Matrix &ys, Params params){
@@ -295,21 +316,20 @@ namespace icl{
       const Scalar EPS2 = eps2;
 
       dst.setDim(P);
-      
+
       J.setBounds(D,P);
       H.setBounds(P,P);
       H.setBounds(P,P);
-      
+
       params_new.setDim(P); 
       y_est.setBounds(O,D);
       dy.setBounds(D);
 
+      std::vector<Scalar> v(O,2.0);
+      std::vector<Scalar> lambdas(O,0.0);
+
       y_est = fMat(params, xs);
 
-      // TODO: use this with the gain ratio
-      //std::vector<Scalar> v(O,2.0);
-
-      std::vector<Scalar> lambdas(O,0.0);
       Scalar e = error(ys,y_est);
       if(e < minError){
         Result r = {-1, e, lambdas, params};
@@ -318,37 +338,35 @@ namespace icl{
       }
 
       int it = 0;
-      
-#ifdef USE_OPENMP
-      bool mt = useMultiThreading;
-#endif
-      
-      for(;it < MAX_IT; ++it){
+
+      for(; it < MAX_IT; ++it){
         for(int o=0;o<O;++o){
+          if (it == 0 || O > 1) {
+            if (o > 0) y_est = fMat(params, xs);
+            jsMat[o](params, xs, J);
+            dy = y_est.row(o).transp() - ys.transp().row(o).transp();
 
-          jsMat[o](params, xs, J);
-          dy = fMat(params, xs).row(o).transp() - ys.transp().row(o).transp();
-          
-          matrix_mult_t(J.transp(),J.transp(),H,SRC1_T);
-          matrix_mult_t(J.transp(),dy,dst,SRC1_T);
+            matrix_mult_t(J.transp(),J.transp(),H,SRC1_T);
+            matrix_mult_t(J.transp(),dy,dst,SRC1_T);
 
-          Scalar maxN = fabs(dst[0]);
-          for (unsigned int i = 1; i < dst.rows(); ++i) {
-            Scalar tmp = fabs(dst[i]);
-            if (tmp > maxN) maxN = tmp;
-          }
-          if (maxN <= EPS1) {
-            Result result = { it, e, lambdas, params};
-            return result;
-          }
-
-          // first guess of lambda
-          if (it == 0) {
-            Scalar H_max = H(0,0);
-            for (unsigned int i = 1; i < H.cols(); ++i) {
-              if (H(i,i) > H_max) H_max = H(i,i);
+            Scalar maxN = fabs(dst[0]);
+            for (unsigned int i = 1; i < dst.rows(); ++i) {
+              Scalar tmp = fabs(dst[i]);
+              if (tmp > maxN) maxN = tmp;
             }
-            lambdas[o] = tau * H_max;
+            if (maxN <= EPS1) {
+              Result result = { it, e, lambdas, params};
+              return result;
+            }
+
+            // first guess of lambda
+            if (it == 0) {
+              Scalar H_max = H(0,0);
+              for (unsigned int i = 1; i < H.cols(); ++i) {
+                if (H(i,i) > H_max) H_max = H(i,i);
+              }
+              lambdas[o] = tau * H_max;
+            }
           }
 
           for(int i=0;i<P;++i){
@@ -356,13 +374,18 @@ namespace icl{
           }
 
           // Creating Mx = b to solve
-          // (H + lambda diag (H)) x = J^T(y-f(beta))
           Params pSolved = H.solve(dst,"svd");
 
-          params_new = params - pSolved;
+          pSolved *= -1.0f;
+          params_new = params + pSolved;
 
           y_est = fMat(params_new, xs);
           Scalar e_new = error(ys, y_est);
+
+          if(e_new < MIN_E){
+            Result result = { it, e_new, lambdas, params_new};
+            return result;
+          }
 
           // stop if the change is small
           if (pSolved.norm() <= EPS2*(params.norm() + EPS2)) {
@@ -370,41 +393,50 @@ namespace icl{
             return result;
           }
 
-/*
-          // TODO: somehow this is much slower for most examples
           // gain ratio
           Scalar delta = 2.0*(e - e_new) / (pSolved.transp() * (pSolved*lambdas[o] - dst))[0];
 
           if (delta > 0.0) {
             v[o] = 2.0;
             params = params_new;
-            lambdas[o] = iclMax(1.0/3.0, 1.0 - pow(2.0*delta - 1.0, 3));
+            e = e_new;
+            lambdas[o] *= iclMax(1.0/3.0, 1.0 - pow(2.0*delta - 1.0, 3));
+
+            if (O == 1) {
+              jsMat[o](params, xs, J);
+              dy = y_est.row(o).transp() - ys.transp().row(o).transp();
+
+              matrix_mult_t(J.transp(),J.transp(),H,SRC1_T);
+              matrix_mult_t(J.transp(),dy,dst,SRC1_T);
+
+              Scalar maxN = fabs(dst[0]);
+              for (unsigned int i = 1; i < dst.rows(); ++i) {
+                Scalar tmp = fabs(dst[i]);
+                if (tmp > maxN) maxN = tmp;
+              }
+              if (maxN <= EPS1) {
+                Result result = { it, e, lambdas, params};
+                return result;
+              }
+            }
           } else {
+            if (O == 1) {
+              // change the hessian back to normal
+              for(int i=0;i<P;++i){
+                H(i,i) -= lambdas[o];
+              }
+            }
+
             lambdas[o] *= v[o];
             v[o] *= 2.0;
+
             if (v[o] > 1.e15) {
               Result r = { it, e, lambdas, params };
               if(dbg) dbg(r);
               return r;
             }
           }
-*/
-          if(e_new < e){
-            if(e_new < MIN_E){
-              Result result = { it, e_new, lambdas, params_new};
-              return result;
-            }
-            e = e_new;
-            lambdas[o] /= lambdaMultiplier;
-            params = params_new;
-          }else{
-            lambdas[o] *= lambdaMultiplier;
-            if(lambdas[o] > 10.e30) {
-              Result r = { it, e, lambdas, params };
-              if(dbg) dbg(r);
-              return r;
-            }
-          }
+
           if(dbg){
             Result r = { it, e, lambdas, params};
             dbg(r);
@@ -421,7 +453,7 @@ namespace icl{
       if (useMat) return fitMat(xs, ys, params);
       else return fitVec(xs, ys, params);
     }
-    
+
     namespace{
       template<class Scalar>
       struct NumericJacobian : public FunctionImpl<void,const DynColVector<Scalar>&,
@@ -430,14 +462,14 @@ namespace icl{
         typedef typename LevenbergMarquardtFitter<Scalar>::Function Function;
         typedef typename LevenbergMarquardtFitter<Scalar>::Params Params;
         typedef typename LevenbergMarquardtFitter<Scalar>::Vector Vector;
-        
-        int o;      
+
+        int o;
         Function f;
         Scalar delta;
 
         NumericJacobian(int o, Function f, Scalar delta):
           o(o),f(f),delta(delta){}
-        
+
         virtual void operator()(const Params &params, 
                                 const Vector &x,
                                 Vector &target) const{
@@ -453,7 +485,7 @@ namespace icl{
         }
       };
     }
-  
+
     namespace{
       template<class Scalar>
       struct NumericJacobianMat : public FunctionImpl<void,const DynColVector<Scalar>&,
@@ -463,14 +495,14 @@ namespace icl{
         typedef typename LevenbergMarquardtFitter<Scalar>::Params Params;
         typedef typename LevenbergMarquardtFitter<Scalar>::Vector Vector;
         typedef typename LevenbergMarquardtFitter<Scalar>::Matrix Matrix;
-        
-        int o;      
+
+        int o;
         FunctionMat f;
         Scalar delta;
-        
+
         NumericJacobianMat(int o, FunctionMat f, Scalar delta):
           o(o),f(f),delta(delta){}
-        
+
         virtual void operator()(const Params &params, 
                                 const Matrix &x,
                                 Matrix &target) const{

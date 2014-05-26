@@ -38,7 +38,7 @@
 
 namespace icl{
   namespace geom{
-    
+
     /// Utility structure, that represents a superquadric
     struct SQParams {
       Vec3 size;
@@ -70,10 +70,9 @@ namespace icl{
       };
 
     public:
-      
       /// Constructor
       SQFitter(icl::utils::SmartPtr<Vec> camCenter=utils::SmartPtr<Vec>());
-  	
+
       /// fits superquadrics into given point cloud, considering only given number of points
       bool fit(icl::geom::PointCloudObject& pcObj, 
                const std::string& sShapePreference="bsc",
@@ -84,12 +83,13 @@ namespace icl{
 
       /// changes the camera center
       void setCameraCenter(const Vec &c);
-      
+
     private:
       /// internal function, that fits a superquadric into given point cloud
-      void fitSQ(LM::Matrix &Mx, Vec3 &viewDir);
+      void fitSQ(LM::Matrix &Mx, Vec3 &viewDir, const std::string& sShapePreference);
       /// internal function, that prepares some data for fitting of superquadrics
       void preProcess(LM::Matrix &Mx, Vec3 &viewDir,
+                      const std::string& sShapePreference,
                       icl::math::FixedMatrix<float,3,3> &R,
                       Vec3 &center, Vec3 &size, Vec3 &origin,
                       float &scale);
