@@ -95,9 +95,14 @@ namespace icl{
       // For some reason,  passing argv and argc to the QApplication leads
       // to a seg-fault because of reading a NULL string internally ??
       // Therefore we simply pass this static empty parameter list
-      static int static_n = 1;
-      static char *static_ppc[] = { ppc[0], NULL };
-      app = new QApplication(static_n, static_ppc);
+      QCoreApplication *existingApp = QCoreApplication::instance();
+      if(existingApp && dynamic_cast<QApplication*>(existingApp)){
+        app = (QApplication*)existingApp;
+      }else{
+        static int static_n = 1;
+        static char *static_ppc[] = { ppc[0], NULL };
+        app = new QApplication(static_n, static_ppc);
+      }
   #endif
       sharedWidget = new QGLWidget();
   
