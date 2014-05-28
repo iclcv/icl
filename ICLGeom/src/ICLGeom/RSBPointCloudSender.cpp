@@ -95,14 +95,27 @@ namespace icl{
       
       TSet ts2 = rsbCfg.getTransports(true);
       TVec ts(ts2.begin(),ts2.end());
+       
       std::vector<std::string> transports = tok(transportList,",");
-
+      int port = 0;
+      for(size_t i=0;i<transports.size();++i){
+        std::string &t = transports[i];
+        if(t.length() > 7 && t.substr(0,6) == "socket" && t[6] == '@'){
+          port = parse<int>(t.substr(7));
+          t = "socket";
+        }
+      }
+      
       for(TVec::iterator it = ts.begin(); it != ts.end(); ++it){
         ParticipantConfig::Transport &t = *it;
         if( find(transports.begin(), transports.end(), it->getName()) == transports.end() ){
           t.setEnabled(false);
         }else{
           it->setEnabled(true);
+          if(it->getName() == "socket" && port > 0){
+            rsc::runtime::Properties &ps = it->mutableOptions();
+            ps.set<std::string,std::string>("port",str(port));
+          }
         }
       }
       rsbCfg.setTransports(TSet(ts.begin(),ts.end()));

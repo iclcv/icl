@@ -142,6 +142,108 @@ namespace icl{
       }      
       
     }    
+
+
+
+    
+    void PointCloudSerializer::DefaultSerializationDevice::initializeSerialization(const MandatoryInfo &info){
+      this->info = info;
+    }
+
+    icl8u *PointCloudSerializer::DefaultSerializationDevice::targetFor(const std::string &featureName, int bytes){
+      data[featureName].resize(bytes);
+      return data[featureName].data();
+    }
+    
+    /// returns number of bytes when all data is concatenated
+    int PointCloudSerializer::DefaultSerializationDevice::getFullSerializationSize() const{
+      /* data: 
+         byte[sizeof(MandatoryInfo)] mandatory info
+         int num entries
+         block [numEnries]:
+          nameLen, entryLen, nameData, entryData
+
+         note: each strig is stored without explicit \0 delimiter
+     */
+      int n = sizeof(MandatoryInfo) + 4;
+      for(std::map<std::string, std::vector<icl8u> >::const_iterator it = data.begin();
+          it != data.end(); ++it){
+        n += 4 +  4 + it->first.length() + it->second.size();
+      }
+
+      return n;
+    }
+    
+    static void copy_next_bytes(icl8u *&dst,const void *src, int numBytes){
+      memcpy(dst, src, numBytes);
+      dst += numBytes;
+    }
+
+    static void copy_next_bytes_src(void *dst, const icl8u *&src, int numBytes){
+      memcpy(dst, src, numBytes);
+      src += numBytes;
+    }
+
+    
+    /// data needs to be at least getFullSerializationSize bytes long
+    void PointCloudSerializer::DefaultSerializationDevice::copyData(icl8u *dst){
+      copy_next_bytes(dst, &info, sizeof(MandatoryInfo));
+
+      icl32s n = data.size();
+      copy_next_bytes(dst, &n, sizeof(n));
+      
+      for(std::map<std::string, std::vector<icl8u> >::const_iterator it = data.begin();
+          it != data.end(); ++it){
+        icl32s nameLen = it->first.length();
+        icl32s dataLen = it->second.size();
+
+        copy_next_bytes(dst, &nameLen, sizeof(nameLen));
+        copy_next_bytes(dst, &dataLen, sizeof(dataLen));
+        copy_next_bytes(dst, &it->first[0], nameLen);
+        copy_next_bytes(dst, &it->second[0], dataLen);
+      }
+    }
+
+    void PointCloudSerializer::DefaultSerializationDevice::clear(){
+      data.clear();
+    }
+
+    PointCloudSerializer::DefaultDeserializationDevice::DefaultDeserializationDevice(const icl8u *src){
+      //std::map<std::string, std::vector<icl8u> > data;
+      //  std::vector<std::string> features;
+
+      features.clear();
+      
+      copy_next_bytes_src(&info, src, sizeof(MandatoryInfo));
+      icl32s nFeatures = 0;
+      copy_next_bytes_src(&nFeatures, src, sizeof(nFeatures));
+      
+      for(icl32s i=0;i<nFeatures;++i){
+        icl32s nameLen = 0;
+        icl32s dataLen = 0;
+        copy_next_bytes_src(&nameLen, src, sizeof(nameLen));
+        copy_next_bytes_src(&dataLen, src, sizeof(dataLen));
+
+        std::string name(nameLen,'\0');
+        copy_next_bytes_src(&name[0],src, nameLen);
+        
+        features.push_back(name);
+        
+        std::vector<icl8u> &dataVec = data[name];
+        dataVec.resize(dataLen);
+        copy_next_bytes_src(&dataVec[0],src, dataLen);
+      }
+    }
+
+    const icl8u *PointCloudSerializer::DefaultDeserializationDevice::sourceFor(const std::string &featureName, int &bytes){
+      std::map<std::string,std::vector<icl8u> >::const_iterator it = data.find(featureName);
+      if(it == data.end()){
+        bytes = 0;
+        throw ICLException("DefaultDeserializationDevice::sourceFor: no source for feature name '" + featureName + "' found");
+      }
+      return it->second.data();
+    }
+
   }
 }
 
