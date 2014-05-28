@@ -1405,9 +1405,10 @@ namespace icl{
 
     template<>
     ICLMath_API void svd_dyn(const DynMatrix<icl64f> &M, DynMatrix<icl64f> &U, DynMatrix<icl64f> &s, DynMatrix<icl64f> &Vt) throw (ICLException){
-      U.setBounds(M.rows(), M.rows());
-      Vt.setBounds(M.cols(), M.cols());
-      s.setBounds(1,iclMin(M.rows(),M.cols()));
+      unsigned int rows = M.rows(), cols = M.cols();
+      U.setBounds(rows, rows);
+      Vt.setBounds(cols, cols);
+      s.setBounds(1,iclMin(rows,cols));
 
 /*
   #if defined ICL_HAVE_IPP_SVD
@@ -1429,20 +1430,26 @@ namespace icl{
   #ifdef ICL_HAVE_EIGEN3
       svd_eigen(M,U,s,Vt);
   #else
-      DynMatrix<icl64f> _U(iclMax(M.rows(),M.cols()), iclMax(M.rows(),M.cols()));
-      DynMatrix<icl64f> _V(M.cols(), M.cols());
-      icl64f * _s = new icl64f[M.cols()];
+      DynMatrix<icl64f> _U(rows, rows);
+      DynMatrix<icl64f> _V(cols, cols);
+      icl64f * _s = new icl64f[iclMax(rows,cols)];
 
-      int r = svd_internal(M.rows(),M.cols(), 1, 1,
-                           10e-18,10e-18,
-                           M, _s, _U, _V);
+      int r;
+      if (cols > rows)
+        r = svd_internal(cols, rows, 1, 1,
+                         10e-18, 10e-18,
+                         M.transp(), _s, _V, _U);
+      else
+        r = svd_internal(rows, cols, 1, 1,
+                         10e-18, 10e-18,
+                         M, _s, _U, _V);
       if(r) {
         throw ICLException("error in svd (c++): no convergence for singular value '" + str(r) +"'");
       }
 
-      std::vector<SVD_IdxEV> idxlut(iclMax(M.rows(),M.cols()));
-      for(unsigned int i=0;i<iclMax(M.rows(),M.cols());++i){
-        if (i < M.cols())
+      std::vector<SVD_IdxEV> idxlut(iclMax(rows,cols));
+      for(unsigned int i=0;i<iclMax(rows,cols);++i){
+        if (i < cols)
           idxlut[i] = SVD_IdxEV(_s[i],i);
         else idxlut[i] = SVD_IdxEV(0.0,i);
       }

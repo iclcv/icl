@@ -28,7 +28,7 @@
 **                                                                 **
 ********************************************************************/
 
-#include "SQFitter.h"
+#include <ICLGeom/SQFitter.h>
 
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/Function.h>
