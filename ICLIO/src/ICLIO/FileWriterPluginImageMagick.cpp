@@ -32,17 +32,7 @@
 
 #ifdef ICL_HAVE_IMAGEMAGICK
 #define OMP_NUM_THREADS 1
-#ifndef ICL_SYSTEM_LINUX
 #include <Magick++.h>
-#else
-
-//#ifdef ICL_USE_GRAPHICSMAGICK
-//#include <GraphicsMagick/Magick++.h>
-//#else
-#include <ImageMagick/Magick++.h>
-//#endif
-
-#endif
 #endif
 
 #include <ICLCore/CCFunctions.h>
