@@ -132,13 +132,118 @@ parameter **@udist=udist-xml-file**, so using the created file
 
   icl-viewer -input dc800 0@udist=./udist.xml
 
+When using a camera with significant lens distortion, it is strongly
+recommended to acquire undistortion parameters **before** approaching
+the actual camera calibration step, since this assumes undistorted
+images to be used as input.
+
 .. _howtos.calib.object:
 
 The Calibration Object and its XML-based description
 """"""""""""""""""""""""""""""""""""""""""""""""""""
 
-TODO
+Before the actual camera calibration can be performed, a calibration
+object needs to be constructed. The calibration object is then
+augmented with fiducial markers that can be be detected robustly with
+ICL's marker detection toolbox. It is very important to mention that
+the calibration object needs to be a real 3D shape, e.g. the fiducial
+markers must not be located on a coplanar surface only. It is
+recommended to construct *something like a wooden angle with a 90
+degree corner*, but all shapes, with known surface geometry are
+possible. Once the Object is built, fiducial marker can be attached to
+the object. Each fiducial marker will provide 5 image-world point
+correspondances for the calibration step, so the more markers are
+used, the better the calibration result the can be obtained. Each
+marker that is attached to the object later needs to be described
+geometrically w.r.t. an arbitrary, but fixed calibration object
+coordinate frame. For each 2D marker the following properties need to
+be defined:
 
+* marker size in mm
+* marker offset to the object frame
+* the horizontal direction of the marker
+* the vertical direction of the marker
+* the fiducial marker type and ID
+
+In order to facilitate the definition of a calibration object with
+many markers, it is also possible to arrange sub-sets of the markers
+in a regular 2D grid aligned coplanar in the object space. In this case,
+the whole grid of markers can be described at once by:
+
+* marker size is mm
+* grid dimensions W x H
+* offset of the upper left marker's center in object coordinates
+* displacement vector between two marker centers in x-grid-direction
+  (given in object coordinates)
+* the same for the y-grid-direction
+  
+This allows a large set of marker to be defined at once. A single
+calibration object can consist of several grid definitions and also
+several single marker definitions, that are then all used for
+calibration.
+
+In addition to the definition of markers attached to the calibration
+object, a set of suggested object-to-world transforms can be
+provided. Each suggested world transform can then later be selected
+from a combo-box at run-time. For the typical triangularly shaped
+calibration objects these suggestions usually provide an initial
+rotation of the object so that it can be put standing upwards into the
+scene. But also an offset between the object and the desired
+world-frame can be defined here. Alternatively, the object-to-world
+transform can also be defined interactively at run-time, but it is
+recommended to do this only if the desired object-to-world transform
+is not available. The GUI allows for printing the manually defined
+object-to-world transform, so that it can be copy-and-pasted into the
+calibration object file in case the calibration needs to be performed
+again at a later point in time.
+
+Last but not least, the calibration object definition file can contain
+data that defines the geometry of the calibration object in .obj file
+format. This is then read by the calibration application, which allows
+to directly render the calibration object geometry using the
+estimated/calibrated camera parameters as an image overlay in real-time.
+
+.. note::
+
+   Please note that the accuracy of the description/measurement of the marker layout
+   is directly linked to the accuracy of the calibration result.
+
+and 
+
+.. note::
+
+   Due to their outstanding accuracy, it is strongly recommended to
+   use BCH code markers (see :ref:`markers.supported.bch`)
+  
+
+Calibration Object Examples 
+'''''''''''''''''''''''''''' 
+ 
+In order to provide a better understanding of what is mentioned here,
+two examples are presented.
+
++------------------------------------------------+-------------------------------------------------------------------+
+| .. image:: images/calib-obj-large.png          | First calibration object example. The calibration object is built |
+|     :alt: shadow                               | out of two planks of wood, each of size 300 by 430 mm.            |
+|     :scale: 50%                                | (*banana for scale*)                                              |
++------------------------------------------------+-------------------------------------------------------------------+
+|                                                | The calibration object description file uses ICLs config-file     |
+| .. literalinclude:: files/calib-obj-large.xml  | class (see :icl:`ConfigFile` and :ref:`config-file-tutorial`),    |
+|                                                | which uses a special xml-                                         |
+|                                                | based format. Due to its very regular shape, the object's markers |
+|                                                | can well be described by 8 grids of markers -- two for each face  |
+|                                                | (The invisible back-faces are covered with markers as well).      |
+|                                                | the reason why each face is not represented by a single grid is   |
+|                                                | that the markers were printed on A4 self-sticking labels that     |
+|                                                | could we were not able to 100%ly align into a single regular      |
+|                                                | grid of markers.                                                  |
+|                                                |                                                                   |
+|                                                |                                                                   |
+|                                                |                                                                   |
+|                                                |                                                                   |
+|                                                |                                                                   |
+|                                                |                                                                   |
++------------------------------------------------+-------------------------------------------------------------------+
 
 .. _howtos.calib.application:
 

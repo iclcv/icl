@@ -1,0 +1,198 @@
+<config>
+  <!-- top right -->
+  <section id="grid-0">
+    <data id="dim" type="string">4x3</data>
+    <data id="offset" type="string">0,43.3,-47</data>
+    <data id="x-direction" type="string">0,0,-66.87</data>
+    <data id="y-direction" type="string">0,61.5,0</data>
+    <data id="marker-type" type="string">bch</data>
+    <data id="marker-ids" type="string">[0,11]</data>
+    <data id="marker-size" type="string">50x50</data>
+  </section>
+
+  <section id="grid-1">
+    <data id="dim" type="string">4x3</data>
+    <data id="offset" type="string">0,253.5,-47.5</data>
+    <data id="x-direction" type="string">0,0,-66.87</data>
+    <data id="y-direction" type="string">0,61.5,0</data>
+    <data id="marker-type" type="string">bch</data>
+    <data id="marker-ids" type="string">[12,23]</data>
+    <data id="marker-size" type="string">50x50</data>
+  </section>
+
+  <!-- top left -->
+  <section id="grid-2">
+    <data id="dim" type="string">4x3</data>
+    <data id="offset" type="string">43.8,0,-248.8</data>
+    <data id="x-direction" type="string">0,0,66.87</data>
+    <data id="y-direction" type="string">61.5,0,0</data>
+    <data id="marker-type" type="string">bch</data>
+    <data id="marker-ids" type="string">[24,35]</data>
+    <data id="marker-size" type="string">50x50</data>
+  </section>
+  
+  <section id="grid-3">
+    <data id="dim" type="string">4x3</data>
+    <data id="offset" type="string">254,0,-249.3</data>
+    <data id="x-direction" type="string">0,0,66.87</data>
+    <data id="y-direction" type="string">61.5,0,0</data>
+    <data id="marker-type" type="string">bch</data>
+    <data id="marker-ids" type="string">[36,47]</data>
+    <data id="marker-size" type="string">50x50</data>
+  </section>
+
+  <!-- bottom right -->
+  <section id="grid-4">
+    <data id="dim" type="string">4x3</data>
+    <data id="offset" type="string">19,62.2,-249.6</data>
+    <data id="x-direction" type="string">0,0,66.87</data>
+    <data id="y-direction" type="string">0,61.5,0</data>
+    <data id="marker-type" type="string">bch</data>
+    <data id="marker-ids" type="string">[48,59]</data>
+    <data id="marker-size" type="string">50x50</data>
+  </section>
+
+  <section id="grid-5">
+    <data id="dim" type="string">4x3</data>
+    <data id="offset" type="string">19,247.7,-249.9</data>
+    <data id="x-direction" type="string">0,0,66.87</data>
+    <data id="y-direction" type="string">0,61.5,0</data>
+    <data id="marker-type" type="string">bch</data>
+    <data id="marker-ids" type="string">[60,71]</data>
+    <data id="marker-size" type="string">50x50</data>
+  </section>
+
+  <!-- bottom left -->
+  <section id="grid-6">
+    <data id="dim" type="string">4x3</data>
+    <data id="offset" type="string">64.1,19,-49.2</data>
+    <data id="x-direction" type="string">0,0,-66.87</data>
+    <data id="y-direction" type="string">61.5,0,0</data>
+    <data id="marker-type" type="string">bch</data>
+    <data id="marker-ids" type="string">[72,83]</data>
+    <data id="marker-size" type="string">50x50</data>
+  </section>
+
+  <section id="grid-7">
+    <data id="dim" type="string">4x3</data>
+    <data id="offset" type="string">248.1,19,-49.1</data>
+    <data id="x-direction" type="string">0,0,-66.87</data>
+    <data id="y-direction" type="string">61.5,0,0</data>
+    <data id="marker-type" type="string">bch</data>
+    <data id="marker-ids" type="string">[84,95]</data>
+    <data id="marker-size" type="string">50x50</data>
+  </section>
+
+   <section id="world-transform-0" type="string">
+     <data id="name" type="string">Lab default - upwards</data>
+     <data id="transform" type="string">
+       -0.707107 0.707107 0 0
+       0 0 -1 266
+       -0.707107 -0.707107 0 300
+       0 0 0 1
+     </data>
+   </section>
+
+   <section id="world-transform-1" type="string">
+     <data id="name" type="string">Lab - left rotated</data>
+     <data id="transform" type="string">
+       1 0 0 -301.5
+       0 0 -1 266
+       0 1 0 0
+       0 0 0 1
+     </data>
+   </section>
+
+   <section id="world-transform-2" type="string">
+     <data id="name" type="string">Lab - right rotated</data>
+     <data id="transform" type="string">
+       0 -1 0 126.5
+       0 0 -1 266
+       1 0 0 0
+       0 0 0 1
+     </data>
+   </section>
+
+   <section id="world-transform-3" type="string">
+     <data id="name" type="string">identity</data>
+     <data id="transform" type="string">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</data>
+   </section>
+
+   <section id="world-transform-4" type="string">
+     <data id="name" type="string">Lab - kinect QVGA {y+180}</data>
+     <data id="transform" type="string">
+       | 0 0 -1 -302 |
+       | 0 1 0 446 |
+       | 1 0 0 0 |
+       | 0 0 0 1 |
+     </data>
+   </section>
+
+   <section id="world-transform-5" type="string">
+     <data id="name" type="string">Lab 2 - Top camera}</data>
+     <data id="transform" type="string">
+       | 0 0 -1 700 |
+       | 0.707107 -0.707107 0 0 |
+       | -0.707107 -0.707107 0 300 |
+       | 0 0 0 1 |
+     </data>
+   </section>
+
+
+   
+   <data id="obj-file" type="string">
+v 0 0 0
+v 0 0 -300
+v 430 0 -300 
+v 430 0 0
+
+v 0 430 -300 
+v 0 430 0
+
+vn 0 -1 0
+vn -1 0 0
+
+f 1//1 2//1 3//1 4//1
+f 6//2 5//2 2//2 1//2
+
+v 19 19 0
+v 19 19 -300
+v 411 19 -300
+v 411 19 0
+
+v 19 411 -300
+v 19 411 0
+
+vn 0 1 0
+vn 1 0 0
+
+f 10//3 9//3 8//3 7//3
+f 7//4 8//4 11//4 12//4
+
+vn 0 0 1
+vn 0 0 -1
+
+f 4//5 10//5 7//5 1//5
+f 1//5 7//5 12//5 6//5
+
+f 2//6 8//6 9//6 3//6
+f 5//6 11//6 8//6 2//6
+
+vn 0.707107 0.707107 0
+
+f 3//7 9//7 10//7 4//7
+f 11//7 5//7 6//7 12//7
+
+
+l 1 2 3 4 1
+l 1 2 5 6 1
+l 7 8 9 10 7
+l 7 8 11 12 7
+
+l 4 10
+l 3 9
+l 12 6
+l 11 5
+l 7 8
+   </data>
+</config>
