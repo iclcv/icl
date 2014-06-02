@@ -272,7 +272,7 @@ namespace icl{
           }else if(p.first == "info"){
             std::cout << "Property list for " << m_poDesc << std::endl;
             std::vector<std::string> ps = m_poGrabber->getPropertyList();
-            TextTable t(4,ps.size()+1,35);
+            TextTable t(4,ps.size()+2,35);
             t[0] = tok("property,type,allowed values,current value",",");
             for(unsigned int j=0;j<ps.size();++j){
               const std::string &p2 = ps[j];
@@ -285,6 +285,12 @@ namespace icl{
               t(2,j+1) = (isInfo||isCommand) ? str("-") : m_poGrabber->getPropertyInfo(p2);
               t(3,j+1) = isCommand ? "-" : m_poGrabber->getPropertyValue(p2);
             }
+            
+            t(0,ps.size()+1) = str("udist");
+            t(1,ps.size()+1) = str("special");
+            t(2,ps.size()+1) = str("camera undistortion parameter file (to be created with icl-opencv-calib)");
+            t(3,ps.size()+1) = str("-");
+
             std::cout << t << std::endl;
             std::terminate();
           }else if(p.first == "udist"){
