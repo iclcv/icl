@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<config>
+	<data id="model" type="string">MatlabModel5Params</data>
+	<section id="size">
+		<data id="width" type="int">1280</data>
+		<data id="height" type="int">960</data>
+	</section>
+	<section id="intrin">
+		<data id="fx" type="double">983.148</data>
+		<data id="fy" type="double">983.148</data>
+		<data id="ix" type="double">637.959</data>
+		<data id="iy" type="double">492.924</data>
+		<data id="skew" type="double">0</data>
+	</section>
+	<section id="udist">
+		<data id="k1" type="double">-0.0603882</data>
+		<data id="k2" type="double">0.166041</data>
+		<data id="k3" type="double">-0.00242741</data>
+		<data id="k4" type="double">0.000178947</data>
+		<data id="k5" type="double">-0.145061</data>
+	</section>
+</config>

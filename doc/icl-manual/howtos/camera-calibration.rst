@@ -43,13 +43,13 @@ be detected just like in common gray-scale or color images).
 Table of Contents
 """""""""""""""""
 
-* :ref:`calib.distortion`
-* :ref:`calib.object`
-* :ref:`calib.application`
-* :ref:`calib.kinect`
+* :ref:`howtos.calib.distortion`
+* :ref:`howtos.calib.object`
+* :ref:`howtos.calib.application`
+* :ref:`howtos.calib.kinect`
 
 
-.. _calib.distortion:
+.. _howtos.calib.distortion:
 
 Image Undistortion (Lens distortion correction)
 """""""""""""""""""""""""""""""""""""""""""""""
@@ -82,11 +82,57 @@ computer screen, so that it is visible by the camera.
   refer to the amount of inner checkerboard edges, so usually one less
   then the intuitive number of x and y cells.
 
+In order to initiate the tool, just run it with an approriate parameter
+set, e.g.::
+  
+  icl-opencv-calib -i dc800 0 -cbs 6x9 -m 20
 
+This uses the first fire-wire device, a 6 by 9 checkerboard and a set
+of 20 reference images for calibration. Here is a screenshot of the
+application running:
 
+.. image:: images/opencv-calib-screenshot.png
+      :alt: shadow
+      :scale: 50%
 
+Once, enough frames are collected the application will automatically
+start the calibration procedure, resulting in the estimation of both
+intrinsical camera parameters (focal length in x and y direction, and
+principal point offset of the camera). However, it turned out, that
+the estimation of these parameters is more accurate when using a 3D
+calibration object, which is why these parameters are estimated and
+also saved, but not used in the further steps of the processing
+pipeline. By pressing the *save parmeters* button pops up a file
+dialog, which allows the destimation xml file to be selected. The
+resulting file looks like this one:
 
-.. _calib.object:
+.. literalinclude:: files/udist.xml
+    :language: xml
+
+Once an undistortion parameter file is available (e.g. called
+**udist.xml**), it can be passed to all ICL-applications that use the
+:icl:`io::GenericGrabber` (see also :ref:`io.generic-grabber`) for
+images acquistion. Usually ICL applications use the generic grabber in
+combination with ICL's program argument evaluation toolkit (see also
+:ref:`utils.pa` and/or :ref:`this code example<simple-example>`).
+These applications most of the time provide an input argument **-input**
+which allows two additional parameters to be passed e.g.::
+  
+  icl-viewer -input dc800 0
+
+Here, the first *sub-argument* **dc800** selects a grabber backend,
+which is fire-wire-800 in the present example, and the second
+sub-argument selects a device from that backend (here, the 1st one
+found -- at index 0). As explained :ref:`here<io.generic-grabber>`, the second
+sub-argument can be augmented with additional parameters of shape
+**@name=value** that are then passed to the underlying grabber
+implementation. As a generic feature, all backends support the
+parameter **@udist=udist-xml-file**, so using the created file
+**udist.xml** with our **icl-viewer** application would work like::
+
+  icl-viewer -input dc800 0@udist=./udist.xml
+
+.. _howtos.calib.object:
 
 The Calibration Object and its XML-based description
 """"""""""""""""""""""""""""""""""""""""""""""""""""
@@ -94,7 +140,7 @@ The Calibration Object and its XML-based description
 TODO
 
 
-.. _calib.application:
+.. _howtos.calib.application:
 
 ICL's camera calibration application
 """"""""""""""""""""""""""""""""""""
@@ -102,7 +148,7 @@ ICL's camera calibration application
 TODO
 
 
-.. _calib.kinect:
+.. _howtos.calib.kinect:
 
 Calibrating Kinect and Kinect-Like Devices
 """"""""""""""""""""""""""""""""""""""""""

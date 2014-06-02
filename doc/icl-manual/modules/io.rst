@@ -137,21 +137,20 @@ properties can be set from command line. For this, a list of
 
 * set several options at once::
   
-    icl-viewer -input kinectc '0@LED=green@core::format=IR Image (10Bit)'
+    icl-viewer -input kinectc '0@LED=green@format=IR Image (10Bit)'
   
 * enable image undistortion according to undistortion parameters
   stored in an appropriate xml file::
 
     icl-camviewer -input dc 0=my-udist-properties.xml
   
-  .. todo::
+  .. note::
      
-    appropriate means, that the xml-files were created by serializing
-    an icl::ImageUndistortion structure to a file. The tools (fix
-    these names!) **icl-opencvcamcalib-demo**,
-    **icl-intrinsic-camera-calibration** and
-    **icl-intrinsic-calibrator-demo** can be setup to write the
-    calibration results in the correct file format
+    *appropriate* means that the xml-file was created by either serializing
+    an :icl:`io::ImageUndistortion` structure to a file, or by using ICL's tool for
+    the estimation of lens distortion compensation parameters: **icl-opencv-calib**.
+    The use of this tool is explained in detail in :ref:`howtos.calib.distortion`
+
 
 
 .. _io.grabber-backends:
