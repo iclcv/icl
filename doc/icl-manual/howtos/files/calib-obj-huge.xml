@@ -61,7 +61,8 @@
     <data id="marker-size" type="string">80x80</data>
   </section>
 
-  <!-- front single small markers (described as grid in order to use corners aswell) -->
+  <!-- front single small markers (described as grid in order to 
+    use corners aswell) -->
   <section id="grid-4">
     <data id="dim" type="string">1x1</data>
     <data id="offset" type="string">523,23,0</data>
@@ -117,7 +118,8 @@
     <data id="marker-size" type="string">44x44</data>
   </section>
 
-  <!-- back single small markers (described as grid in order to use corners aswell) -->
+  <!-- back single small markers (described as grid in 
+    order to use corners aswell) -->
   <section id="grid-10">
     <data id="dim" type="string">1x1</data>
     <data id="offset" type="string">23,523,-400</data>
@@ -173,22 +175,14 @@
     <data id="marker-size" type="string">44x44</data>
   </section>
 
-
-
    <!-- section id="marker-0">
       <data id="marker-type" type="string">amoeba|bch</data>
       <data id="pos" type="string">x,y,z</data>
       <data id="marker-id" type="int">id</data>
    </section -->
 
-
-   <!-- optional world transform TODO!!-->
-   <!--data id="world-transform" type="string">1 0 0 0
-                                            0 1 0 0
-                                            0 0 1 0
-                                            0 0 0 1</data-->
    <section id="world-transform-0" type="string">
-     <data id="name" type="string">grasplab default</data>
+     <data id="name" type="string">lab default</data>
      <data id="transform" type="string">
        | -0.707107 0.707107 -8.74228e-08 0 |
        | 7.02494e-08 -5.33851e-08 -1 266 |
@@ -198,7 +192,9 @@
    </section>
 
    <section id="world-transform-1" type="string">
-     <data id="name" type="string">grasplab lying pointing towards backside</data>
+     <data id="name" type="string">
+       Lab lying pointing towards backside
+     </data>
      <data id="transform" type="string">
        | -0.707107 0.707107 0 0 |
        | -0.707107 -0.707107 0 697.34 |
@@ -214,26 +210,6 @@
 
    <section id="world-transform-3" type="string">
      <data id="name" type="string">default upwards</data>
-     <data id="transform" type="string">
-| -0.707107 0.707107 -8.74228e-08 0 |
-| 7.02494e-08 -5.33851e-08 -1 0 |
-| -0.707107 -0.707107 -1.19249e-08 431.34 |
-| 0 0 0 1 |
-     </data>
-   </section>
-   
-   <section id="world-transform-4" type="string">
-     <data id="name" type="string">grasplab lying pointing towards backside (with foam)</data>
-     <data id="transform" type="string">
-| -0.707107 0.707107 0 0 |
-| -0.707107 -0.707107 0 697.34 |
-| 0 0 1 422 |
-| 0 0 0 1 |
-     </data>
-   </section>
-
-   <section id="world-transform-5" type="string">
-     <data id="name" type="string">kuka-setup</data>
      <data id="transform" type="string">
 | -0.707107 0.707107 -8.74228e-08 0 |
 | 7.02494e-08 -5.33851e-08 -1 0 |
@@ -292,7 +268,4 @@ l 6 10
 l 7 9
 l 8 10
    </data>
-   <!--
-
--->
 </config>

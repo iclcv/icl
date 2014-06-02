@@ -233,16 +233,88 @@ two examples are presented.
 |                                                | based format. Due to its very regular shape, the object's markers |
 |                                                | can well be described by 8 grids of markers -- two for each face  |
 |                                                | (The invisible back-faces are covered with markers as well).      |
-|                                                | the reason why each face is not represented by a single grid is   |
+|                                                | The reason why each face is not represented by a single grid is   |
 |                                                | that the markers were printed on A4 self-sticking labels that     |
 |                                                | could we were not able to 100%ly align into a single regular      |
 |                                                | grid of markers.                                                  |
 |                                                |                                                                   |
+|                                                | In the first sections, the marker layout is presented; it is      |
+|                                                | important to mention that the grids need to be successively       |
+|                                                | enumerated (**grid-0**, **grid-1**, ...). The marker IDs can      |
+|                                                | either be a continuous range [start,end] or a list of marker IDs  |
+|                                                | {a,b,c, ...}. The IDs are assumed to be distributed in row-major  |
+|                                                | order (row by row, from left to right) to the grid.               |
+|                                                |                                                                   |
+|                                                | The following sections then define a set of suggested object-     |
+|                                                | to world transforms. Each again successively enumerated. Each     |
+|                                                | transformed is also given a unique name, that will later become   |
+|                                                | a combo-box entry in the calibration application's GUI. If no     |
+|                                                | world transforms are given an identity transform is automatically |
+|                                                | provided but if there are suggested transforms, it is usually not |
+|                                                | the worst idea to also provide an identity transform that then    |
+|                                                | can manually be selected in the GUI.                              |
+|                                                |                                                                   |
+|                                                | The last section contains the .obj file description for the       |
+|                                                | object geometry. Even though this is purely optional, it is       |
+|                                                | strongly recommended to use this feature, because it              |
+|                                                | significantly facilitates the manual evaluation of the current    |
+|                                                | calibration results.                                              |
+|                                                |                                                                   |
+|                                                |                                                                   |
++------------------------------------------------+-------------------------------------------------------------------+
+
++------------------------------------------------+-------------------------------------------------------------------+
+| .. image:: images/calib-obj-huge.png           | Second calibration object example. This calibration object was    |
+|     :alt: shadow                               | professionally designed with CAD software and optimized in        |
+|     :scale: 50%                                | several regards in comparison our first calibration object.       |
+|                                                |                                                                   |
+|                                                | The most important difference is the much higher manufacturing    |
+|                                                | accuracy reached by a better design and material (PVC).           |
+|                                                |                                                                   |
+|                                                | * by adding *the sides* of the object, strong angle deformations  |
+|                                                |   are avoided                                                     |
+|                                                |                                                                   |
+|                                                | * an additional supporting bar at the otherwise open bottom       |
+|                                                |   side provides additional stability and shape accuracy and also  |
+|                                                |   works as a handle of the object                                 |
+|                                                |                                                                   |
+|                                                | * the *fields* where the markers are attached are predefined      |
+|                                                |   by using high precision *flutes* added with a CNC milling       |
+|                                                |   cutter                                                          |
+|                                                |                                                                   |
+|                                                | * each marker is still attached manually, but not as part of a    |
+|                                                |   single A4 sheet of self-sticking paper. Instead, each marker    |
+|                                                |   was added separately. By these means, small errors in manually  |
+|                                                |   attaching the markers do not lead to *general drift* (when      |
+|                                                |   sticking a whole grid slightly rotated onto the object, all     |
+|                                                |   markers are wrong into the same direction), but small errors    |
+|                                                |   can be assumed to compensate each other mutatively.             |
 |                                                |                                                                   |
 |                                                |                                                                   |
 |                                                |                                                                   |
++------------------------------------------------+-------------------------------------------------------------------+
+|                                                | The calibration object description file is almost analogous to    |
+| .. literalinclude:: files/calib-obj-huge.xml   | the first one, but it also demonstrate how to add single markers. |
+|                                                | In particular also the side faces are more complex.               |
 |                                                |                                                                   |
+|                                                | Since single markers do not provide a direction, they only        |
+|                                                | provide a single point 2D/3D point correspondence to the          |
+|                                                | calibration procedure. By defining the markers as a 1 by 1        |
+|                                                | marker grid, also a direction can be given allowing to also use   |
+|                                                | the 4 marker corners as point correspondences.                    |
 |                                                |                                                                   |
+|                                                | While the square top faces result in large regular grids, the     |
+|                                                | front and back-face definition required a little hack. Rather     |
+|                                                | than defining the faces by many single markers, they were defined |
+|                                                | by a 5 by 5 marker grid each, where the missing marker IDs are    |
+|                                                | simply not used.                                                  |
+|                                                |                                                                   |
+|                                                | Please note::                                                     |
+|                                                |                                                                   |
+|                                                |   the marker ID order is known to be a bit strange                |
+|                                                |                                                                   |
+|                                                | The file on the left is quite long, it ends                       |
+|                                                | :ref:`here<howtos.calib.application>`                             |          
 +------------------------------------------------+-------------------------------------------------------------------+
 
 .. _howtos.calib.application:
@@ -250,7 +322,7 @@ two examples are presented.
 ICL's camera calibration application
 """"""""""""""""""""""""""""""""""""
 
-TODO
+TODO1
 
 
 .. _howtos.calib.kinect:
