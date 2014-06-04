@@ -192,9 +192,7 @@
    </section>
 
    <section id="world-transform-1" type="string">
-     <data id="name" type="string">
-       Lab lying pointing towards backside
-     </data>
+     <data id="name" type="string">Lab lying pointing towards backside</data>
      <data id="transform" type="string">
        | -0.707107 0.707107 0 0 |
        | -0.707107 -0.707107 0 697.34 |

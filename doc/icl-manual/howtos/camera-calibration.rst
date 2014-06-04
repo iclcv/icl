@@ -91,7 +91,7 @@ This uses the first fire-wire device, a 6 by 9 checkerboard and a set
 of 20 reference images for calibration. Here is a screenshot of the
 application running:
 
-.. image:: images/opencv-calib-screenshot.png
+.. image:: images/opencv-calib-screenshot.jpg
       :alt: shadow
       :scale: 50%
 
@@ -151,18 +151,20 @@ markers must not be located on a coplanar surface only. It is
 recommended to construct *something like a wooden angle with a 90
 degree corner*, but all shapes, with known surface geometry are
 possible. Once the Object is built, fiducial marker can be attached to
-the object. Each fiducial marker will provide 5 image-world point
-correspondances for the calibration step, so the more markers are
-used, the better the calibration result the can be obtained. Each
-marker that is attached to the object later needs to be described
-geometrically w.r.t. an arbitrary, but fixed calibration object
+the object. Each fiducial marker will provide a image-to-world point
+correspondence, needed for the calibration step, so the more markers
+are used, the better the calibration result that can be obtained. As a
+minimum 8 markers are needed, however, it needs to be taken into
+account, that if only 8 markers are attached to the calibration
+object, all markers must be detected. If more markers are used, the
+calibration process will be faster and more accurate. Each marker that
+is attached to the object later needs to be described geometrically
+w.r.t. an arbitrary, but (for all markers) fixed calibration object
 coordinate frame. For each 2D marker the following properties need to
 be defined:
 
 * marker size in mm
 * marker offset to the object frame
-* the horizontal direction of the marker
-* the vertical direction of the marker
 * the fiducial marker type and ID
 
 In order to facilitate the definition of a calibration object with
@@ -177,9 +179,24 @@ the whole grid of markers can be described at once by:
   (given in object coordinates)
 * the same for the y-grid-direction
   
-This allows a large set of marker to be defined at once. A single
-calibration object can consist of several grid definitions and also
-several single marker definitions, that are then all used for
+This allows a large set of marker to be defined at once. Markers
+defined within a grid description also have a large advantages. Due to
+the fact that they have a well defined x and y direction, the given
+size information can be used to derive the object-coordinates of each
+of the markers corners. This then allows the system to not only use
+the marker center as a known object-to-world correspondence, but also
+its four corners, resulting in a much higher key-point density. 
+
+.. note::
+
+  Also single markers can be defined as a 1 by 1 grid. In this case,
+  only the normal direction of the given x and y displacement vectors
+  are used to derive the object coordinates of the marker corners. By
+  these means, the marker corners can also be used for markers that are
+  not part of a larger grid
+
+A single calibration object can consist of several grid definitions
+and also several single marker definitions, that are then all used for
 calibration.
 
 In addition to the definition of markers attached to the calibration
@@ -222,115 +239,196 @@ Calibration Object Examples
 In order to provide a better understanding of what is mentioned here,
 two examples are presented.
 
-+------------------------------------------------+-------------------------------------------------------------------+
-| .. image:: images/calib-obj-large.png          | First calibration object example. The calibration object is built |
-|     :alt: shadow                               | out of two planks of wood, each of size 300 by 430 mm.            |
-|     :scale: 50%                                | (*banana for scale*)                                              |
-+------------------------------------------------+-------------------------------------------------------------------+
-|                                                | The calibration object description file uses ICLs config-file     |
-| .. literalinclude:: files/calib-obj-large.xml  | class (see :icl:`ConfigFile` and :ref:`config-file-tutorial`),    |
-|                                                | which uses a special xml-                                         |
-|                                                | based format. Due to its very regular shape, the object's markers |
-|                                                | can well be described by 8 grids of markers -- two for each face  |
-|                                                | (The invisible back-faces are covered with markers as well).      |
-|                                                | The reason why each face is not represented by a single grid is   |
-|                                                | that the markers were printed on A4 self-sticking labels that     |
-|                                                | could we were not able to 100%ly align into a single regular      |
-|                                                | grid of markers.                                                  |
-|                                                |                                                                   |
-|                                                | In the first sections, the marker layout is presented; it is      |
-|                                                | important to mention that the grids need to be successively       |
-|                                                | enumerated (**grid-0**, **grid-1**, ...). The marker IDs can      |
-|                                                | either be a continuous range [start,end] or a list of marker IDs  |
-|                                                | {a,b,c, ...}. The IDs are assumed to be distributed in row-major  |
-|                                                | order (row by row, from left to right) to the grid.               |
-|                                                |                                                                   |
-|                                                | The following sections then define a set of suggested object-     |
-|                                                | to world transforms. Each again successively enumerated. Each     |
-|                                                | transformed is also given a unique name, that will later become   |
-|                                                | a combo-box entry in the calibration application's GUI. If no     |
-|                                                | world transforms are given an identity transform is automatically |
-|                                                | provided but if there are suggested transforms, it is usually not |
-|                                                | the worst idea to also provide an identity transform that then    |
-|                                                | can manually be selected in the GUI.                              |
-|                                                |                                                                   |
-|                                                | The last section contains the .obj file description for the       |
-|                                                | object geometry. Even though this is purely optional, it is       |
-|                                                | strongly recommended to use this feature, because it              |
-|                                                | significantly facilitates the manual evaluation of the current    |
-|                                                | calibration results.                                              |
-|                                                |                                                                   |
-|                                                |                                                                   |
-+------------------------------------------------+-------------------------------------------------------------------+
++----------------------------------------+----------------------------------------+
+| .. image:: images/calib-obj-large.jpg  | .. image:: images/calib-obj-huge.jpg   |
+|     :alt: shadow                       |     :alt: shadow                       |
+|     :scale: 50%                        |     :scale: 50%                        |
++----------------------------------------+----------------------------------------+
+| Our first calibration object. The      | Second calibration object example.     |
+| object consists of two planks of wood  | The object was professionally designed |
+| attached to each other in a 90 deg     | using CAD software and optimized with  |
+| angle. The faces are 300 by 430 mm     | respect to several regards in          |
+| (*banana for scale*)                   | comparison to our first design.        |
+|                                        |                                        |
++----------------------------------------+----------------------------------------+
 
-+------------------------------------------------+-------------------------------------------------------------------+
-| .. image:: images/calib-obj-huge.png           | Second calibration object example. This calibration object was    |
-|     :alt: shadow                               | professionally designed with CAD software and optimized in        |
-|     :scale: 50%                                | several regards in comparison our first calibration object.       |
-|                                                |                                                                   |
-|                                                | The most important difference is the much higher manufacturing    |
-|                                                | accuracy reached by a better design and material (PVC).           |
-|                                                |                                                                   |
-|                                                | * by adding *the sides* of the object, strong angle deformations  |
-|                                                |   are avoided                                                     |
-|                                                |                                                                   |
-|                                                | * an additional supporting bar at the otherwise open bottom       |
-|                                                |   side provides additional stability and shape accuracy and also  |
-|                                                |   works as a handle of the object                                 |
-|                                                |                                                                   |
-|                                                | * the *fields* where the markers are attached are predefined      |
-|                                                |   by using high precision *flutes* added with a CNC milling       |
-|                                                |   cutter                                                          |
-|                                                |                                                                   |
-|                                                | * each marker is still attached manually, but not as part of a    |
-|                                                |   single A4 sheet of self-sticking paper. Instead, each marker    |
-|                                                |   was added separately. By these means, small errors in manually  |
-|                                                |   attaching the markers do not lead to *general drift* (when      |
-|                                                |   sticking a whole grid slightly rotated onto the object, all     |
-|                                                |   markers are wrong into the same direction), but small errors    |
-|                                                |   can be assumed to compensate each other mutatively.             |
-|                                                |                                                                   |
-|                                                |                                                                   |
-|                                                |                                                                   |
-+------------------------------------------------+-------------------------------------------------------------------+
-|                                                | The calibration object description file is almost analogous to    |
-| .. literalinclude:: files/calib-obj-huge.xml   | the first one, but it also demonstrate how to add single markers. |
-|                                                | In particular also the side faces are more complex.               |
-|                                                |                                                                   |
-|                                                | Since single markers do not provide a direction, they only        |
-|                                                | provide a single point 2D/3D point correspondence to the          |
-|                                                | calibration procedure. By defining the markers as a 1 by 1        |
-|                                                | marker grid, also a direction can be given allowing to also use   |
-|                                                | the 4 marker corners as point correspondences.                    |
-|                                                |                                                                   |
-|                                                | While the square top faces result in large regular grids, the     |
-|                                                | front and back-face definition required a little hack. Rather     |
-|                                                | than defining the faces by many single markers, they were defined |
-|                                                | by a 5 by 5 marker grid each, where the missing marker IDs are    |
-|                                                | simply not used.                                                  |
-|                                                |                                                                   |
-|                                                | Please note::                                                     |
-|                                                |                                                                   |
-|                                                |   the marker ID order is known to be a bit strange                |
-|                                                |                                                                   |
-|                                                | The file on the left is quite long, it ends                       |
-|                                                | :ref:`here<howtos.calib.application>`                             |          
-+------------------------------------------------+-------------------------------------------------------------------+
+
+
+**First Example** (:download:`download xml file here<files/calib-obj-large.xml>`)
+
+The calibration object description file uses ICLs config-file class
+(see :icl:`ConfigFile` and :ref:`config-file-tutorial`), which uses a
+special xml- based format. Due to its very regular shape, the object's
+markers can well be described by 8 grids of markers -- two for each
+face (The invisible back-faces are covered with markers as well).  The
+reason why each face is not represented by a single grid is that the
+markers were printed on A4 self-sticking labels that could we were not
+able to 100%ly align into a single regular grid of markers.
+
+In the first sections, the marker layout is
+presented. It is important to mention that the grids need to be
+successively enumerated (**grid-0**, **grid-1**, ...). The marker IDs
+can either be a continuous range [start,end] or a list of marker IDs
+{a,b,c, ...}. The IDs are assumed to be distributed in row-major order
+(row by row, from left to right) to the grid.
+
+The following sections then define a set of suggested object- to-world
+transforms. Each again successively enumerated. Each transform is also
+given a unique name, that will later become a combo-box entry in the
+calibration application's GUI. If no world transforms are given an
+identity transform is automatically provided but if there are
+suggested transforms, it is usually not the worst idea to also provide
+an identity transform that then can manually be selected in the GUI.
+                                                 
+The last section contains the .obj file description for the object
+geometry. Even though this is purely optional, it is strongly
+recommended to use this feature, because it significantly facilitates
+the manual evaluation of the current calibration results.
+
+
+**Second Example** (:download:`download xml file here<files/calib-obj-huge.xml>`)
+               
+The most important difference is the much higher manufacturing
+accuracy reached by a better design and material (PVC).
+
+* by adding *the sides* of the object, strong angle deformations  
+  are avoided                                                     
+* an additional supporting bar at the otherwise open bottom side
+  provides additional stability and shape accuracy and also works as a
+  handle of the object
+* the *fields* where the markers are attached are predefined by using
+  high precision *flutes* added with a CNC milling cutter
+* each marker is still attached manually, but not as part of a single
+  A4 sheet of self-sticking paper. Instead, each marker was added
+  separately. By these means, small errors in manually attaching the
+  markers do not lead to *general drift* (when sticking a whole grid
+  slightly rotated onto the object, all markers are wrong into the
+  same direction), but small errors can be assumed to compensate each
+  other mutatively.
+                                                                                                          
+The structure of the corresponding description file is comparable to
+the first one, but it also demonstrates how to add single markers
+and also the side faces are more complex to describe.
+
+Since single markers do not provide a direction, they only provide a
+single point 2D/3D point correspondence to the calibration
+procedure. By defining the markers as a 1 by 1 marker grid, also a
+direction can be given allowing to also use the 4 marker corners as
+point correspondences.
+
+While the square top faces result in large regular grids, the front
+and back-face definition required a little hack. Rather than defining
+the faces by many single markers, they were defined by a 5 by 5 marker
+grid each, where the missing marker IDs are simply not used.
+
+.. todo::
+
+  add a helper application that can provide images of an artificial
+  calibration object
+
+.. note::                                                     
+   
+   the marker ID order is known to be a bit strange                
 
 .. _howtos.calib.application:
 
 ICL's camera calibration application
 """"""""""""""""""""""""""""""""""""
 
-TODO1
+Once a calibration object is available, it can be used for fast camera
+calibration. The application we need for this is called
+**icl-camera-calibration**. The application knows several input
+arguments that will be presented in the following. A standard way to start
+the application would look like this::
+
+  icl-camera-calibration -i dc800 0 -c ./calib-obj.xml
+
+This would start the calibration application acquiring images from the
+first firewire 800 device using the calibration object described in
+**./calib-obj.xml**.
+
+.. note::
+
+  In case of the need for a prior lens undistortion (see
+  :ref:`howtos.calib.distortion`) the resulting parameter file (e.g. called
+  **udist.xml**) would have to be passed to the fire-wire backend used by
+  **icl-camera-calibration**. E.g::
+  
+    icl-camera-calibration -i dc800 0@udist=./udist.xml -c calib-obj.xml
+
+However, for this tutorial, a single image (a png version of the one
+shown above) of our more sophisticated calibration object is used. An
+image can also be used as input by selecting the *file grabber* image
+input backend::
+
+  icl-camera-calibration -i file myImage.png -c calib-obj.xml
+  
+When the application starts, the resulting GUI looks like this
+
+.. image:: images/calib-1.jpg
+  :alt: shadow
+  
+The GUI provides several features:
+
+* **visualized image** here, you can select which image of the
+  processing pipeline you want to see in the left images display
+  component. Possible options are *input*, which shows the real input
+  image, *pp*, which shows an intermediate image after the
+  preprocessing step (usually gray) and *binary* which shows a binary
+  version of the input image. The binary image is actually used
+  internally for fiducial marker detection.
+
+* **object-alpha** allows the transparency of the object's geometry
+  overlay to be adapted. For a solid object visualization, the alpha
+  value must be set to 255. 
+
+  .. note:: 
+  
+    setting the alpha value to 0 allows for *looking through the
+    object*, which is sometimes necessary to see a coordinate frame
+    that occurs behind the virtual object. Due to the fact, that the
+    used OpenGL does not support real transparency handling even a
+    partly transparent object would not allow to see through it
+
+* **use corners** defines whether to use marker corners or only marker
+  centers. Actually, it is strongly recommended to always leave this
+  checked. When internally solving the equations for camera
+  calibration, using the corners sometimes lead to worse solutions --
+  most of the time only when already enough marker centers are
+  available. In this case the system will automatically not use the 
+  corners internally
+
+* **more options.plane** here, an artificial plane visualized as a 2D grid)
+  can be added to the rendered scene overlay. An extra dialog that pops up
+  allows for adapting the plane normal, size and color. Once a plane is added,
+  the mouse can be used to point at that plane in order to visualize the
+  estimated 3D coordinate of the intersection between the plane and the
+  view-ray estimated from the current camera calibration result and the mouse
+  pointer. This feature becomes very handy when trying to estimate the real
+  quality of the calibration result.
+
+  .. image:: images/calib-2.jpg
+    :alt: shadow
+
+  The image shows an example of a grid, visualized as an overlay of the
+  *pp* image.
+
+* **more options.markers** This is actually the most complex and
+  sometimes also important set of properties that can be adjusted. The
+  extra GUI that pops up allows for setting all properties necessary
+  for the marker detection. Usually, these parameters are adapted
+  after switching the the *binary* image. The most common parameter
+  that have to be manually tuned here are the parameters in the
+  *thresh* tab, which define the mask size and the global threshold
+  for the used :icl:`filter::LocalThresholdOp` instance. By adapting these
+  parameters, it usually become possible to detect more markers, which 
+  then directly improves the calibration result
+
+
 
 
 .. _howtos.calib.kinect:
 
 Calibrating Kinect and Kinect-Like Devices
 """"""""""""""""""""""""""""""""""""""""""
-
-TODO
-
-
 
