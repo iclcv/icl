@@ -99,7 +99,8 @@ namespace icl {
             // source code
             static const char *k = ("__kernel void convolve(constant float *m,                                \n"
                                     "                        const __global unsigned char *in,                \n"
-                                    "                        __global unsigned char *out){                    \n"
+                                    "                        __global unsigned char *out,                     \n"
+                                    "                        __local float *localMem){     // unused          \n"
                                     "    const int w = get_global_size(0);                                    \n"
                                     "    const int h = get_global_size(1);                                    \n"
                                     "    const int x = get_global_id(0);                                      \n"
@@ -115,16 +116,17 @@ namespace icl {
             program = CLProgram("gpu",k);                          // create program running on CPU-device
             program.listSelectedDevice();                          // show device seledted
             const int dim = s.getDim();                            // get image dimension
-            input = program.createBuffer("w",dim);                 // create input image buffer
-            output = program.createBuffer("r",dim);                // create output image buffer
-            mask = program.createBuffer("w",9*sizeof(float),m);    // create buffer for the 3x3 conv. mask
+            input = program.createBuffer("r",dim);                 // create input image buffer
+            output = program.createBuffer("w",dim);                // create output image buffer
+            mask = program.createBuffer("r",9*sizeof(float),m);    // create buffer for the 3x3 conv. mask
             kernel = program.createKernel("convolve");             // create the OpenCL kernel
           }
           
           void apply(const Img8u &src, Img8u &dst){
             ICLASSERT_THROW(src.getSize() == size && dst.getSize() == size, ICLException("wrong size"));
             input.write(src.begin(0),src.getDim());           // write input image to graphics memory
-            kernel.setArgs(mask, input, output);              // set kernel arguments
+            CLKernel::LocalMemory lMem(9*sizeof(float));      // create local memory (unused example)
+            kernel.setArgs(mask, input, output, lmem);        // set kernel arguments
             kernel.apply(src.getWidth(), src.getHeight(), 0); // apply the kernel (using WxH threads max.
                                                               // i.e. one per pixel)
             output.read(dst.begin(0),dst.getDim());           // read output buffer to destination image

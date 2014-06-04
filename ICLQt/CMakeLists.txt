@@ -227,16 +227,16 @@ INSTALL(TARGETS ICLQt
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
 
-get_target_property(ICLQt5CoreLibAbs Qt5::Core IMPORTED_LOCATION_RELEASE)
-get_target_property(ICLQt5GuiLibAbs Qt5::Gui IMPORTED_LOCATION_RELEASE)
-get_target_property(ICLQt5WidgetsLibAbs Qt5::Widgets IMPORTED_LOCATION_RELEASE)
-get_target_property(ICLQt5OpenGLLibAbs Qt5::OpenGL IMPORTED_LOCATION_RELEASE)
+#get_target_property(ICLQt5CoreLibAbs Qt5::Core IMPORTED_LOCATION_RELEASE)
+#get_target_property(ICLQt5GuiLibAbs Qt5::Gui IMPORTED_LOCATION_RELEASE)
+#get_target_property(ICLQt5WidgetsLibAbs Qt5::Widgets IMPORTED_LOCATION_RELEASE)
+#get_target_property(ICLQt5OpenGLLibAbs Qt5::OpenGL IMPORTED_LOCATION_RELEASE)
 
 
-MESSAGE(STATUS "libs: ${ICLQt5CoreLibAbs}")
-MESSAGE(STATUS "libs: ${ICLQt5GuiLibAbs}")
-MESSAGE(STATUS "libs: ${ICLQt5OpenGLLibAbs}")
-MESSAGE(STATUS "libs: ${ICLQt5WidgetsLibAbs}")
+#MESSAGE(STATUS "libs: ${ICLQt5CoreLibAbs}")
+#MESSAGE(STATUS "libs: ${ICLQt5GuiLibAbs}")
+#MESSAGE(STATUS "libs: ${ICLQt5OpenGLLibAbs}")
+#MESSAGE(STATUS "libs: ${ICLQt5WidgetsLibAbs}")
 
 # temporary test here
 #SET(Qt5_LIBRARIES_X "${ICLQt5CoreLibAbs} ${ICLQt5OpenGLLibAbs} ${ICLQtWidgetsLibAbs} ${ICLQt5GuiLibAbs}")

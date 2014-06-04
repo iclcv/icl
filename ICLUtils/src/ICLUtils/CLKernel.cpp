@@ -109,6 +109,16 @@ namespace icl {
         }
       }
 
+      void setArg(const unsigned idx, const CLKernel::LocalMemory &value)
+        throw (CLKernelException) {
+        try
+          {
+            kernel.setArg(idx, value.size, NULL);
+          } catch (cl::Error& error) {
+          throw CLKernelException(CLException::getMessage(error.err(), error.what()));
+        }
+      }
+
     };
     CLKernel::CLKernel(const string &id, cl::Program & program,
                        cl::CommandQueue& cmdQueue) throw (CLKernelException) {
@@ -171,6 +181,10 @@ namespace icl {
 
     void CLKernel::setArg(const unsigned idx, const CLImage2D &value) throw (CLKernelException){
       impl->setArg(idx, value.getImage2D());
+    }
+
+    void CLKernel::setArg(const unsigned idx, const LocalMemory &value) throw (CLKernelException){
+      impl->setArg(idx, value);
     }
 
     void CLKernel::setArg(const unsigned idx, const FixedArray<float,4> &value) throw (CLKernelException){

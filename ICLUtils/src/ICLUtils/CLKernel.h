@@ -79,6 +79,14 @@ namespace icl {
 
       public:
 
+      /// struct that represents the dynamic local memory for a kernel
+      struct LocalMemory {
+        size_t size; //!< size of the dynamic local memory
+
+        /// constructor
+        LocalMemory(size_t size) : size(size) { }
+      };
+
       /// Default constructor (creates a dummy instance)
       CLKernel();
       
@@ -138,6 +146,9 @@ namespace icl {
       
       /// Overloaded Kernel argument setter for CLImage2D values (aka arrays/pointers)
       void setArg(const unsigned idx, const CLImage2D &value) throw (CLKernelException);
+
+      /// Overloaded Kernel argument setter for dynamic local memory
+      void setArg(const unsigned idx, const LocalMemory &value) throw (CLKernelException);
 
       /// sets mutiple kernel arguments at once
       template<typename A>
