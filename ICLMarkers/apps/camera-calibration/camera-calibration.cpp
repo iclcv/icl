@@ -566,7 +566,7 @@ void init(){
 #endif
   gui << Draw3D().handle("draw").minSize(32,24);
   
-  //markerDetectionOptionGUI = Tab(cat(configurables,","));
+  markerDetectionOptionGUI = Tab(cat(configurables,","));
   for(unsigned int i=0;i<configurables.size();++i){
     markerDetectionOptionGUI << Prop(configurables[i]);
   }
