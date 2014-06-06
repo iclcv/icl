@@ -1,0 +1,132 @@
+#*********************************************************************
+#**                Image Component Library (ICL)                    **
+#**                                                                 **
+#** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
+#**                         Neuroinformatics Group                  **
+#** Website: www.iclcv.org and                                      **
+#**          http://opensource.cit-ec.de/projects/icl               **
+#**                                                                 **
+#** File   : ICLConfig.cmake                                        **
+#** Module :                                                        **
+#** Authors: Sergius Gaulik                                         **
+#**                                                                 **
+#**                                                                 **
+#** GNU LESSER GENERAL PUBLIC LICENSE                               **
+#** This file may be used under the terms of the GNU Lesser General **
+#** Public License version 3.0 as published by the                  **
+#**                                                                 **
+#** Free Software Foundation and appearing in the file LICENSE.LGPL **
+#** included in the packaging of this file.  Please review the      **
+#** following information to ensure the license requirements will   **
+#** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
+#**                                                                 **
+#** The development of this software was supported by the           **
+#** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
+#** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
+#** Forschungsgemeinschaft (DFG) in the context of the German       **
+#** Excellence Initiative.                                          **
+#**                                                                 **
+#*********************************************************************
+
+# The following variables will be set by this file:
+# ICL_FOUND           - will be true if everything is all right
+#                       (in older CMake version the variable will always be true)
+# ICLUtils_FOUND      - will be true if the component Utils was found
+# ICLCore_FOUND       - will be true if the component Core was found
+# ...                 - ...
+# ICL_INSTALL_DIR     - installation directory
+# ICL_EXECUTABLE_DIRS - directory with the binary files
+# ICL_INCLUDE_DIRS    - directory with the include files
+# ICL_LIBRARY_DIRS    - directory with the library files
+# ICL_LIBRARIES       - library files
+# ICL_DEFINITIONS     - definitions used to compile the ICL
+# ICL_VERSION_MAJOR   - major version
+# ICL_VERSION_MINOR   - minor version
+# ICL_VERSION_PATCH   - patch version
+# ICL_LIB_VERSION     - library version
+# ICL_VERSION         - full version
+
+# which CMake version is required to run this file?
+
+# ICL version
+SET(ICL_VERSION_MAJOR "@ICL_VERSION_MAJOR@")
+SET(ICL_VERSION_MINOR "@ICL_VERSION_MINOR@")
+SET(ICL_VERSION_PATCH "@ICL_VERSION_PATCH@")
+SET(ICL_LIB_VERSION "@SO_VERSION@")
+SET(ICL_VERSION "@PROJECT_VERSION@" )
+
+# definitions used in ICL
+SET(ICL_DEFINITIONS "@ICL_DEFINITIONS@")
+
+# all available components
+SET(_ICL_COMPONENTS "@ICL_COMPONENTS@")
+SET(_ICLUtils_COMPONENTS "@ICLUtils_COMPONENTS@")
+SET(_ICLCore_COMPONENTS "@ICLCore_COMPONENTS@")
+SET(_ICLMath_COMPONENTS "@ICLMath_COMPONENTS@")
+SET(_ICLFilter_COMPONENTS "@ICLFilter_COMPONENTS@")
+SET(_ICLIO_COMPONENTS "@ICLIO_COMPONENTS@")
+SET(_ICLCV_COMPONENTS "@ICLCV_COMPONENTS@")
+SET(_ICLQt_COMPONENTS "@ICLQt_COMPONENTS@")
+SET(_ICLGeom_COMPONENTS "@ICLGeom_COMPONENTS@")
+SET(_ICLMarkers_COMPONENTS "@ICLMarkers_COMPONENTS@")
+
+# get all paths
+GET_FILENAME_COMPONENT(ICL_INSTALL_DIR "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+GET_FILENAME_COMPONENT(ICL_EXECUTABLE_DIRS "${CMAKE_CURRENT_LIST_DIR}/../../../bin" ABSOLUTE)
+GET_FILENAME_COMPONENT(ICL_INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/../../../include/icl-@SO_VERSION@" ABSOLUTE)
+GET_FILENAME_COMPONENT(ICL_LIBRARY_DIRS "${CMAKE_CURRENT_LIST_DIR}/../.." ABSOLUTE)
+
+# after running this file older versions of CMake set ICL_FOUND to TRUE automatically
+SET(ICL_FOUND TRUE)
+
+# check if ICL includes are in the correct directory
+IF(NOT EXISTS "${ICL_INCLUDE_DIRS}/ICLUtils/Utils.h")
+  SET(ICL_FOUND FALSE)
+
+  IF(ICL_FIND_REQUIRED)
+    MESSAGE(SEND_ERROR "Could not find ICl includes ${_MODULE} in ${ICL_INCLUDE_DIRS}")
+  ELSEIF(NOT ICL_FIND_QUIETLY)
+    MESSAGE(STATUS "Could not find ICl includes ${_MODULE} in ${ICL_INCLUDE_DIRS}")
+  ENDIF()
+
+  RETURN()
+ENDIF()
+
+SET(ICL_LIBRARIES "")
+
+IF(ICL_FIND_COMPONENTS)
+  SET(_ICL_FIND_COMPONENTS "")
+
+  # add ICL components which are needed for the requested components
+  FOREACH(_MODULE ${ICL_FIND_COMPONENTS})
+    LIST(APPEND _ICL_FIND_COMPONENTS ${_MODULE})
+
+    FOREACH(_SUBMODULE ${_ICL${_MODULE}_COMPONENTS})
+      LIST(APPEND _ICL_FIND_COMPONENTS ${_SUBMODULE})
+    ENDFOREACH()
+  ENDFOREACH()
+
+  LIST(REMOVE_DUPLICATES _ICL_FIND_COMPONENTS)
+ELSE()
+  SET(_ICL_FIND_COMPONENTS ${_ICL_COMPONENTS})
+ENDIF()
+
+# check if all necessary libraries exist
+FOREACH(_MODULE ${_ICL_FIND_COMPONENTS})
+  IF(EXISTS "${ICL_LIBRARY_DIRS}/@LIBRARY_PREFIX@${_MODULE}@LIBRARY_SUFFIX@")
+    SET(ICL${_MODULE}_FOUND TRUE)
+    LIST(APPEND ICL_LIBRARIES ${ICL_LIBRARY_DIRS}/@LIBRARY_PREFIX@${_MODULE}@LIBRARY_SUFFIX@)
+  ELSE()
+    SET(ICL_FOUND FALSE)
+
+    IF(ICL_FIND_REQUIRED)
+      MESSAGE(SEND_ERROR "Could not find ICL component ${_MODULE} in ${ICL_LIBRARY_DIRS}")
+    ELSEIF(NOT ICL_FIND_QUIETLY)
+      MESSAGE(STATUS "Could not find ICL component ${_MODULE} in ${ICL_LIBRARY_DIRS}")
+    ENDIF()
+
+    RETURN()
+  ENDIF()
+ENDFOREACH()
+
+MESSAGE(STATUS "Found ICL ${ICL_VERSION_STRING}: ${ICL_LIBRARIES}")

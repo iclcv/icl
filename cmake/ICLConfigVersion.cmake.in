@@ -6,9 +6,9 @@
 #** Website: www.iclcv.org and                                      **
 #**          http://opensource.cit-ec.de/projects/icl               **
 #**                                                                 **
-#** File   : cmake/CMakeLists.txt                                   **
+#** File   : ICLConfigVersion.cmake                                 **
 #** Module :                                                        **
-#** Authors: Michael Goetting, Sergius Gaulik                       **
+#** Authors: Sergius Gaulik                                         **
 #**                                                                 **
 #**                                                                 **
 #** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -28,40 +28,10 @@
 #**                                                                 **
 #*********************************************************************
 
-ADD_SUBDIRECTORY(Modules)
+SET(PACKAGE_VERSION @PROJECT_VERSION@)
 
-SET(ICL_COMPONENTS "Utils;Core;Math;Filter;IO;CV;Geom;Markers")
-SET(ICLUtils_COMPONENTS "")
-SET(ICLCore_COMPONENTS "Utils")
-SET(ICLMath_COMPONENTS "Utils;Core")
-SET(ICLFilter_COMPONENTS "Utils;Core;Math")
-SET(ICLIO_COMPONENTS "Utils;Core;Math;Filter")
-SET(ICLCV_COMPONENTS "Utils;Core;Math;Filter;IO")
-SET(ICLQt_COMPONENTS "Utils;Core;Math;Filter;IO;CV")
-SET(ICLGeom_COMPONENTS "Utils;Core;Math;Filter;IO;CV")
-SET(ICLMarkers_COMPONENTS "Utils;Core;Math;Filter;IO;CV;Geom")
-
-IF(QT_FOUND)
-  LIST(APPEND ICL_COMPONENTS "Qt")
-  LIST(APPEND ICLGeom_COMPONENTS "Qt")
-  LIST(APPEND ICLMarkers_COMPONENTS "Qt")
-ENDIF(QT_FOUND)
-
-IF(WIN32)
-  set(LIBRARY_PREFIX "ICL")
-  set(LIBRARY_SUFFIX ".lib")
-ELSE(WIN32)
-  set(LIBRARY_PREFIX "libICL")
-  set(LIBRARY_SUFFIX ".so")
-ENDIF(WIN32)
-
-CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/cmake/ICLConfig.cmake.in
-               ${CMAKE_BINARY_DIR}/cmake/ICLConfig.cmake
-               @ONLY)
-CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/cmake/ICLConfigVersion.cmake.in
-               ${CMAKE_BINARY_DIR}/cmake/ICLConfigVersion.cmake
-               @ONLY)
-
-INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/ICLConfig.cmake
-              ${CMAKE_CURRENT_BINARY_DIR}/ICLConfigVersion.cmake
-        DESTINATION lib/cmake/ICL)
+IF("${PACKAGE_VERSION}" VERSION_LESS "${PACKAGE_FIND_VERSION}")
+  SET(PACKAGE_VERSION_COMPATIBLE FALSE)
+ELSE()
+  SET(PACKAGE_VERSION_COMPATIBLE TRUE)
+ENDIF()
