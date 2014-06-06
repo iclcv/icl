@@ -398,6 +398,10 @@ The GUI provides several features:
   available. In this case the system will automatically not use the 
   corners internally
 
+* **show CS** visualized the current world coordinate frame.
+  If the object-to-world transform is *identity* this will be equal
+  to the local calibration object coordinate frame
+
 * **more options.plane** here, an artificial plane visualized as a 2D grid)
   can be added to the rendered scene overlay. An extra dialog that pops up
   allows for adapting the plane normal, size and color. Once a plane is added,
@@ -422,8 +426,97 @@ The GUI provides several features:
   *thresh* tab, which define the mask size and the global threshold
   for the used :icl:`filter::LocalThresholdOp` instance. By adapting these
   parameters, it usually become possible to detect more markers, which 
-  then directly improves the calibration result
+  then directly improves the calibration result.
 
+* **more options.rel. Transf** shows an extra GUI that allows an
+  additional object-to-world transform to be adapted. This is also the
+  tool of your choice to add object-to-world transforms to the object
+  description file. You can either start with an already defined
+  transform (by selecting this in the combo-box below) or you can
+  start with the identity transform. If we call this **T1**, the
+  relative transform **TR** will also be pre-multiplied to get the
+  actually used transform (**TR T1**) that defines the
+  world-coordinates of the object's reference points. Once an
+  appropriate transform is defined, the pop-up GUI allows for printing
+  the current transforms (both, **TR** and **TR T1**), which can then
+  be copy-and-pasted into the object description file and once it is
+  endowed with an appropriate name, it can be selected in the
+  transform selection combo box.
+
+  .. note::
+  
+     for this, the application has to be restarted
+
+* **calibration objects** Here, it becomes clear, that the application
+  can actuall handle an arbitrary number of calibration objects at
+  once (simply pass several calibration object files at once to the
+  **-c** program arguments, but ensure that the used marker sets do
+  not overlap to avoid random behaviour). When each of the calibration
+  objects is a set up with an appropriate (and compatible transform),
+  the union of all reference points it used for calibration.
+
+  .. note::
+  
+    please ensure that the actual relative transform between different
+    calibration objects use is well defined, since little relative
+    displacements will significantly decrease the calibration 
+    quality
+
+  For each selected calibration object (checkbox checked, a predefined
+  object-to-world transfrorm can be defined.
+
+* **error and detection status** This simply shows an average object 
+  detection error. The error is given by the square error of references points
+  (in image space) and their virtual camera projects when using the currently
+  estimated camera parameters. Normalizing the error* will normalize this value
+  by to the number of actually found markers -- otherwise, less detected markers
+  would result in a smaller errro.
+
+
+
+Saving the calibration Result
+'''''''''''''''''''''''''''''
+
+Once an appropriate calibration result is obtained, the resulting
+camera description can be saved using the **save** button. This will
+raise a file-dialog for selecting an output **.xml** file. When
+starting **icl-camera-calibration** with the program argument **-o
+/tmp/myCalib.xml**, the file dialog is suppressed and the passed
+output file is used
+
+.. note::
+
+  When using **-o filename**, the system will not ask before overwriting 
+  files.
+
+
+How can the result be used ?
+''''''''''''''''''''''''''''
+
+The resulting XML file can be used in combination with the
+:ref:`ICLGeom<geom>` module. There are basically two main purposes for
+the :icl:`geom::Camera`: visualization and 3D-vision. As for
+visualization, the Camera class, which can be instantiated from a
+given calibration result **.xml** file, is directly linked to ICL's 
+:ref:`Scene Graph Framework<geom.scene-graph>`. The main goal here was to
+provide a very simple way to 
+
+* calibrate a real camera device **C**
+* obtain the calibration result
+* use the calibration result as a *virtual camera*
+* create a *virtual scene*
+* add the virtual camera to the virtual scene
+* add virtual objects
+* render the virtual scene on top of an image stream acquired from **C**
+ 
+In this case, virtual and real objects should perfectly overlap if
+they are located at the same position (the real object in the real
+world, and the virtual object in the virtual world). ICL's
+visualization framework provides exactly this in a very intuitive
+manner at it even allows for zooming and panning of the view while
+preserving the images' aspect ratio.
+
+Please also see :ref:`geom.overlay`.
 
 
 

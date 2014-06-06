@@ -44,12 +44,10 @@ Table of Contents
 * :ref:`geom.camera`
 * :ref:`geom.camera-calibration`
 
-  * :ref:`geom.image-undistortion`
-  * :ref:`geom.in-ex-campar`
-      
 * :ref:`geom.scene-graph`
 
   * :ref:`geom.scene-object`
+  * :ref:`geom.overlay`
 
 * :ref:`geom.point-cloud-processing`
 
@@ -124,45 +122,15 @@ undistortion and camera parameters, we decided to provide separate
 tools for these tasks in order to keep things as simple as
 possible. Image undistortion is assumed to be performed pixel-wise on
 acquired images. For this, ICL's main image source interface
-:icl:`io::Grabber` provides methods to enable automatic image
+:icl:`io::GenericGrabber` provides methods to enable automatic image
 undistortion. If this is done, the grabber instance will automatically
-return undistorted images. Therefore, image undistortion is not linked
-directly to the camera model. Instead, acquired images are undistorted
-before programs access pixel data. By these means, ICL's
-:icl:`geom::Camera` class as well as other image processing functions
-can assume to work with distortion-free input images.
+return undistorted images. By these means, image undistortion is completely 
+decoupled from the linear/project geometry camera model. 
 
-.. _geom.image-undistortion:
+Since camera calibration is a very important topic for many
+applications, we dedicated a whole *camera calibration How-To* to
+this. Please see :ref:`howto.camcalib`
 
-Image Undistortion
-""""""""""""""""""
-
-ICL's image undistortion functions are right now beeing
-re-developed. The :icl:`io::ImageUndistortion` class can already be
-used, however so far, we have no method to automaticall estimate image
-undistortion parameters for the very common 5-Parameter-Matlab
-model. Instead only a simpler 4 parameter model is supported,
-originally introduce with the `ARToolkit`_. Once full support is provided,
-we will also add a special *Howto* to this manual
-
-.. _ARToolkit: http://www.hitl.washington.edu/artoolkit
-
-.. todo:: Fix Image Undistortion stuff and add Howto
-
-
-.. _geom.in-ex-campar:
-
-Finding Intrinsic and Extrinsic Camera Parameters
-"""""""""""""""""""""""""""""""""""""""""""""""""
-
-ICL's camera calibration toolbox, represented by the application
-**icl-camera-calibration**, is optimized for transparent, easy
-and quick camera calibration. To this ends we use calibration objects
-equipped with fiducial markers that can be detected automatically 
-in real-time.
-
-The whole camera calibration process is described in the
-special Howto :ref:`howto.camcalib`.
 
 .. _geom.scene-graph:
 
@@ -270,7 +238,14 @@ view ray. An exact intersection position is also provided.
 
    `see http://en.wikipedia.org/wiki/Wavefront_.obj_file`
    
+.. _geom.overlay:
 
+Using the SceneGraph to Render an Image Overlay
+"""""""""""""""""""""""""""""""""""""""""""""""
+
+.. todo:: 
+
+   write this !
 
 .. _geom.point-cloud-processing:
 
@@ -314,7 +289,7 @@ interface :icl:`geom::PointCloudGrabber`. In contrast to the
 :icl:`Grabber`, this interface is hold as simple as possible, by
 defining just a single pure virtual image acquisition method
 :icl:`PointCloudGrabber::grab`. The idea of this method differs
-significantly from the :icl:`Grabber::grab` method, by not providing
+significantly from the :icl:`io::Grabber::grab` method, by not providing
 any return value. :icl:`PointCloudGrabber::grab` simply acquires new
 point cloud data using its back-end implementation and then transforms
 all acquired features that are also available in the given destination
