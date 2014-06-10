@@ -525,3 +525,79 @@ Please also see :ref:`geom.overlay`.
 Calibrating Kinect and Kinect-Like Devices
 """"""""""""""""""""""""""""""""""""""""""
 
+When using the Microsoft Kinect Camera, or other comparable devices,
+that consist of a depth and a color camera, an important feature is
+RGB-D calibration, which means to calibrate the used Color and Depth
+camera. The actual issue is the determination of the parameters, that
+provide the pixel-location of a given depth image pixel in the
+corresponding color image. Since the cameras' view axes are not
+identical, a small non-static offset between the the two image spaces
+exists.
+
++-----------------------------------------------+--------------------------------------------------------------------------+
+| .. image:: images/kinect-pc-uncalibrated.jpg  | PointCloud visualization extracted from                                  |
+|   :alt: shadow                                | an uncalibrated kinect device. If you have                               |
+|                                               | a kinect attached to your computer, you can                              |
+|                                               | generate such a visualization e.g. with::                                |
+|                                               |                                                                          |
+|                                               |   icl-point-cloud-viewer -pci dcam kinectd,0,DEFAULT,kinectc,0,DEFAULT   |
+|                                               |                                                                          |
+|                                               | As one can see, the color mapping is not correct. This becomes           |
+|                                               | very obvious for the part with the human hand.                           |
+|                                               |                                                                          |
++-----------------------------------------------+--------------------------------------------------------------------------+
+
+
+Step by step RGB-D calibration of a Kinect device
+'''''''''''''''''''''''''''''''''''''''''''''''''
+
+The mapping between the two cameras can easily be estimated by simply
+calibrating both kinect cameras separately in two calibration steps --
+one for each camera. For this is is very **important** to not move the
+camera or the calibration object between the two calibration steps.
+
+1. Calibrate the color camera (using the calibration object
+   description file, which is here located in the current directory)::
+
+     icl-camera-calibration -input kinectc 0 -c calib-obj-huge.xml -o color.xml
+
+   .. image:: images/kinect-calib-color.jpg
+      :alt: shadow
+      :scale: 60%
+  
+   The result is the xml-file **color.xml** which describes the
+   parameters of the kinect color camera. If you are only interested
+   in the mapping between color and depth camera, the actually used
+   *object-to-world* transform is completely irrelevant, but is must
+   of course be identical in the two calibration steps
+
+2. Calibrate the depth camera. This step is actually a bit more
+   tricky, since the markers on the calibration object can not be
+   detected in the depth image. However, since it is known, that the
+   depth image is computed on the basis of the *IR-intensity image*,
+   which can also be accessed from the kinect camera, this is still
+   possible. The only drawback, when calibrating on the basis of the
+   intensity image, is that the actively emitted *IR speckle pattern*
+   makes marker detection more difficult and potentially less
+   accurate. While this effect becomes negligible in case of using a
+   large calibration object with large markers [#]_, smaller markers
+   can quickly become undetectable by the system::
+
+     icl-camera-calibration -input kinecti 0 -c calib-obj-huge.xml -o color.xml
+    
+   .. image:: images/kinect-calib-intensity.jpg
+      :alt: shadow
+      :scale: 60%
+
+   As one can see, smaller markers are detected much worse in the noisy
+   intensity images.
+
+   .. note:: 
+
+      The speckle pattern can sometimes be 
+
+   .. [#]
+  
+       Due to the minimal viewing distance of kinect of about
+       70cm, smaller objects with smaller markers cannot simply be placed
+       closer to the camera
