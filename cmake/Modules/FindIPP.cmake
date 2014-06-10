@@ -33,20 +33,20 @@ INCLUDE(FindPackageHandleStandardArgs)
 SET(IPP_ROOT "" CACHE PATH "Define IPP root directory if not default")
 
 # ---- Detect IPP version ----
-function(get_ipp_version _ROOT_DIR)
+function(get_ipp_version _INCLUDE_DIR)
   set(_VERSION_STR)
   set(_MAJOR)
   set(_MINOR)
   set(_BUILD)
 
   # read IPP version info from file
-  file(STRINGS ${_ROOT_DIR}/include/ippversion.h STR1 REGEX "IPP_VERSION_MAJOR")
-  file(STRINGS ${_ROOT_DIR}/include/ippversion.h STR2 REGEX "IPP_VERSION_MINOR")
-  file(STRINGS ${_ROOT_DIR}/include/ippversion.h STR3 REGEX "IPP_VERSION_BUILD")
-  file(STRINGS ${_ROOT_DIR}/include/ippversion.h STR4 REGEX "IPP_VERSION_STR")
+  file(STRINGS ${_INCLUDE_DIR}/ippversion.h STR1 REGEX "IPP_VERSION_MAJOR")
+  file(STRINGS ${_INCLUDE_DIR}/ippversion.h STR2 REGEX "IPP_VERSION_MINOR")
+  file(STRINGS ${_INCLUDE_DIR}/ippversion.h STR3 REGEX "IPP_VERSION_BUILD")
+  file(STRINGS ${_INCLUDE_DIR}/ippversion.h STR4 REGEX "IPP_VERSION_STR")
   
   if (NOT STR3)
-    file(STRINGS ${_ROOT_DIR}/include/ippversion.h STR3 REGEX "IPP_VERSION_UPDATE")
+    file(STRINGS ${_INCLUDE_DIR}/ippversion.h STR3 REGEX "IPP_VERSION_UPDATE")
   endif(NOT STR3)
   
   # extract info and assign to variables
@@ -130,7 +130,7 @@ IF(IPP_FOUND)
   ENDFOREACH()
 
   IF(EXISTS "${IPP_INCLUDE_DIR}/ippversion.h")
-    get_ipp_version(${IPP_ROOT})
+    get_ipp_version(${IPP_INCLUDE_DIR})
   ENDIF()
   
   LIST(REMOVE_DUPLICATES _IPP_LIBRARIES_LIST)
