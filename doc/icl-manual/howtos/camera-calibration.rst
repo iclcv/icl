@@ -112,7 +112,7 @@ However, it turned out, that the estimation of these projective
 geometry parameters is more accurate when using a 3D calibration
 object, which is why these parameters are estimated and also saved,
 but not used in the further steps of the processing pipeline.
-Pressing the *save parmeters* button pops up a file dialog, which
+Pressing the *save parameters* button pops up a file dialog, which
 allows the destimation xml file to be selected. The resulting file
 looks like this one:
 
