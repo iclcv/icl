@@ -14,3 +14,4 @@ The ICL HowTo Collection
    ../howtos/generic-grabber-backends
    ../howtos/camera-calibration
    ../howtos/porting-7to8
+   ../howtos/developing-windows
