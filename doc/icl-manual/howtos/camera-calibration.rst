@@ -10,11 +10,12 @@ ICL provides a very intuitive tool for camera calibration. While
 common tools, such as OpenCV's camera calibration tool or the Matlab
 camera calibration tool-box, use a checker-board, that has to be
 presented in many different orientation to the camera, ICL performs
-camera calibration in a one shot manner. By using a 3D calibration
-objects and by assuming lens-distortion correction to be performed
-externally, accurate camera calibration can actually be performed in
-real-time. Given a well described and accurately built calibration 
-object, camera calibration is performed in less then one minute. 
+camera calibration in a *one shot* manner. By using a 3D calibration
+object and by assuming lens-distortion correction to be performed
+independently (see below), accurate camera calibration can actually be
+performed in real-time. Given a well described and accurately built
+calibration object, camera calibration is performed in less then one
+minute.
 
 In order to bypass detection issues, ICL's camera calibration tool
 makes use of ICL's built-in fiducial marker detection toolbox. The
@@ -23,21 +24,25 @@ markers that can be detected with a high reliability and high
 accuracy.
 
 The calibration prodecure produces a camera description xml file,
-which is used to instantiatiate the :icl:`geom::Camera` class. the
+which is used to instantiatiate the :icl:`geom::Camera` class. The
 camera class is used for ICL's 3D computer vision tools located in the
 :icl:`icl::geom` package. 
 
-The calibration toolbox explicitly includes calibration of multi
+The calibration toolbox implicitly includes calibration of multi
 camera environments. To this end, each camera can simply be calibrated
 seperately, each resulting in a portable and human readable xml
 description file. Since Kinect (consisting of a depth and color
 camera) can basically also be seen as a stereo camera system, ICL
 implicitly supports RGB-D calibration allowing to compute the mapping
-between Kinects color and depth image (please note that usually
-Kinects depth-camera is calibrated by exploiting the fact that Kinect
-also allows to grab the camera intensity (IR) image. In contrast to
-the depth image, the intensity images also allows fiducial markers to
-be detected just like in common gray-scale or color images).
+between Kinects color and depth image.
+
+.. note:: 
+
+  Usually Kinects depth-camera is calibrated by
+  exploiting the fact that Kinect also allows to grab the camera's
+  intensity (IR) image. In contrast to the depth image, the intensity
+  images also allows fiducial markers to be detected just like in
+  common gray-scale or color images.
 
 
 Table of Contents
@@ -59,21 +64,18 @@ ICL explicitly distinguishes between *camera calibration* and
 on projective geometry, lens distortion can only be modeled in a
 non-linear manner leading to several issues in former processing
 steps. Therefore, ICL explicitly assumes lens distortion to be
-corrected **before** camera calibration is approached. Unfortunately,
-ICL's support for lens distortion correction is not supported as
-strong as it perhaps could be, which is due to the fact, that most
-camera we used only showed an insignificant amount of lens distortion.
+corrected **before** camera calibration is approached.
 
-However, the ICL application **icl-opencv-calib**, located in the
-**Geom** module provides the necessary functionality to obtain
-appropriate parameters for lens distortion correction. Internally this
-wraps OpenCV's calibration functions, but we plan to provide a native
+The ICL application **icl-opencv-calib**, located in the **Geom**
+module provides the necessary functionality to obtain appropriate
+parameters for lens distortion correction. Internally this wraps
+OpenCV's calibration functions, but we plan to provide a native
 built-in tool for lens distortion correction in the future. For
 **icl-opencv-calib**, a common checkerboard image is needed. In order
 to obtain optimal calibration results, the image of the checkerboard
 must be printed out and attached to a very planar
 surface. Alternatively, the images could also be displayed on another
-computer screen, so that it is visible by the camera. 
+computer screen, so that it is visible by the camera.
 
 
 .. note::
@@ -95,16 +97,24 @@ application running:
       :alt: shadow
       :scale: 50%
 
-Once, enough frames are collected the application will automatically
-start the calibration procedure, resulting in the estimation of both
-intrinsical camera parameters (focal length in x and y direction, and
-principal point offset of the camera). However, it turned out, that
-the estimation of these parameters is more accurate when using a 3D
-calibration object, which is why these parameters are estimated and
-also saved, but not used in the further steps of the processing
-pipeline. By pressing the *save parmeters* button pops up a file
-dialog, which allows the destimation xml file to be selected. The
-resulting file looks like this one:
+Once enough frames are collected, the application will automatically
+start the calibration procedure, resulting in the estimation of 
+intrinsic camera parameters, which can be split into two sets:
+
+1. Parameters describing the projective camera geometry (focal length
+   in x and y direction, and principal point offset of the camera, and
+   skew -- which is always 0 here).
+
+2. Parameters describing the compensation of lens distortion. Here, we use
+   the standard model described by 5 scalar parameters k1, ..., k5
+
+However, it turned out, that the estimation of these projective
+geometry parameters is more accurate when using a 3D calibration
+object, which is why these parameters are estimated and also saved,
+but not used in the further steps of the processing pipeline.
+Pressing the *save parmeters* button pops up a file dialog, which
+allows the destimation xml file to be selected. The resulting file
+looks like this one:
 
 .. literalinclude:: files/udist.xml
     :language: xml
@@ -580,10 +590,12 @@ camera or the calibration object between the two calibration steps.
    intensity image, is that the actively emitted *IR speckle pattern*
    makes marker detection more difficult and potentially less
    accurate. While this effect becomes negligible in case of using a
-   large calibration object with large markers [#]_, smaller markers
-   can quickly become undetectable by the system::
+   large calibration object with large markers (Due to the minimal
+   viewing distance of kinect of about 70cm, smaller objects with
+   smaller markers cannot simply be placed closer to the camera),
+   smaller markers can quickly become undetectable by the system::
 
-     icl-camera-calibration -input kinecti 0 -c calib-obj-huge.xml -o color.xml
+     icl-camera-calibration -input kinecti 0 -c calib-obj-huge.xml -o depth.xml
     
    .. image:: images/kinect-calib-intensity.jpg
       :alt: shadow
@@ -594,10 +606,77 @@ camera or the calibration object between the two calibration steps.
 
    .. note:: 
 
-      The speckle pattern can sometimes be 
+      The speckle pattern can sometimes be too strong for robust
+      marker detection. In this case, adapting the marker detection
+      parameters can lead to acceptable results. In addition, we found
+      out, that temporarily covering the Kinect's IR-speckle pattern
+      emitter with one or even two layers of transparent plastic foil
+      (e.g. from a transparent bag or a clear plastic folder) diffuses
+      the emitted speckle pattern significantly. This can help to
+      strongly increase the marker detection result, which, in turn,
+      also improves the calibration result.
 
-   .. [#]
   
-       Due to the minimal viewing distance of kinect of about
-       70cm, smaller objects with smaller markers cannot simply be placed
-       closer to the camera
++-----------------------------------------------+----------------------------------------------------------------------------+
+| .. image:: images/kinect-pc-calibrated.jpg    | Once the two calibration files (here, **depth.xml** and **color.xml**)     |
+|   :alt: shadow                                | are available, the :icl:`geom::GenericPointCloudGrabber` that is           |
+|                                               | recommended to be used for point cloud input can be set up to use the      |
+|                                               | calibration result.  As an example, we can again use the                   |
+|                                               | **icl-point-cloud-viewer** application, which was already used before to   |
+|                                               | visualize the erroneous RGB-D calibration::                                |
+|                                               |                                                                            |
+|                                               |   icl-point-cloud-viewer -pci dcam kinectd,0,depth.xml,kinectc,0,color.xml |
+|                                               |                                                                            |
+|                                               | As one can see, the color and the depth images are now impressingly well   |
+|                                               | alligned.                                                                  |
+|                                               |                                                                            |
+|                                               | .. note::                                                                  |
+|                                               |                                                                            |
+|                                               |   Please keep in mind, that perfect aligment/mapping from color to depth   |
+|                                               |   image is not always possible. In case of having more than one *object    |
+|                                               |   layer*, the coloring of the back layers/background cannot be 100%        |
+|                                               |   perfect, since the color of object parts that are visible by the depth   |
+|                                               |   camera, but occluded in the color camera image will be taken from the    |
+|                                               |   object that *occludes* the other one                                     |
+|                                               |                                                                            |
++-----------------------------------------------+----------------------------------------------------------------------------+
+       
+Calibrating Kinect with lower Resolution
+''''''''''''''''''''''''''''''''''''''''
+
+In many applications, the Kinect's depth images is not used in its
+maximum resolution (VGA), but only in QVGA resolution (320 by
+240). This is due to the fact, that the additional amount of pixels (4
+times as many) when using full VGA resolution does not scale well to
+the additional amount of information obtained when using VGA rather
+than QVGA. Due to the method that is used to computed Kinect's depth
+image, many sources argue that Kinect internally does not support more
+than QVGA resolution and the VGA image is basically and intelligently
+up-scaled version of this. Only by reducing the resolution to QVGA, many
+point cloud processing applications obtain real-time capabilities. 
+
+However, using ICL's calibration pipeline sketched above for Kinect
+with QVGA resolution usually leads to difficulties when calibrating
+the depth camera from the QVGA-intensity images. Here, often the
+visible speckle pattern becomes too strong leading to an impossible or
+very inaccurate calibration. In order to avoid these issues, the
+camera calibration application provides an option to calibrate a
+camera with a higher images size and then to internally artificially
+downscale the resulting calibrated camera's resolution to a given
+one. In case of the kinect camera, this could be done with::
+  
+
+  icl-camera-calibration -input kinectc 0 -c calib-obj-huge.xml -o color.xml -os QVGA
+  icl-camera-calibration -input kinecti 0 -c calib-obj-huge.xml -o depth.xml -os QVGA
+
+The given output-size (arg **-os**) is then used for the resulting camera
+parameter **.xml** file. This feature can of course also be used for normal cameras.
+
+.. note::
+
+   This only leads to useful results, if the used camera images the
+   one of larger resolution that is used for calibration and the one
+   with the smaller target resolution are actually down-scaled
+   versions of each other. If a camera (e.g. the Point Grey Flea2G)
+   uses only a part of the full image when the image size is adapted,
+   the calibration does not work with the **-os** argument.
