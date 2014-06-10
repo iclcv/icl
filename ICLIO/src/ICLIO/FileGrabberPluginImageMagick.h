@@ -38,7 +38,7 @@ namespace icl{
     /// Interface class for reading images using an ImageMagick++ wrapper  \ingroup FILEIO_G
     /** @copydoc icl::io::FileWriterPluginImageMagick
     */
-    class FileGrabberPluginImageMagick : public FileGrabberPlugin{
+    class ICLIO_API FileGrabberPluginImageMagick : public FileGrabberPlugin{
       public:
       /// Create a new Plugin
       FileGrabberPluginImageMagick();

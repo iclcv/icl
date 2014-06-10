@@ -287,7 +287,11 @@ IF(BUILD_WITH_MKL)
     SET(_MKL_LIB "mkl_intel_lp64")
     SET(_MKL_LIB_SUF "lib/intel64")
   ELSE(ICL_64BIT)
-    SET(_MKL_LIB "mkl_intel")
+    IF(WIN32)
+      SET(_MKL_LIB "mkl_intel_c")
+    ELSE(WIN32)
+      SET(_MKL_LIB "mkl_intel")
+    ENDIF(WIN32)
     SET(_MKL_LIB_SUF "lib/ia32")
   ENDIF(ICL_64BIT)
   ICL_FIND_PACKAGE(NAME MKL
@@ -295,7 +299,7 @@ IF(BUILD_WITH_MKL)
                    LIBS "${_MKL_LIB};mkl_intel_thread;mkl_core;iomp5"
                    PATHS "/opt/MKL;/opt/MKL/mkl"
                    HEADER_PATH_SUFFIXES "mkl/include"
-                   LIB_PATH_SUFFIXES "mkl/${_MKL_LIB_SUF}")
+                   LIB_PATH_SUFFIXES "${_MKL_LIB_SUF};mkl/${_MKL_LIB_SUF}")
 ENDIF()
 
 IF(BUILD_WITH_OPENCL)
@@ -350,12 +354,10 @@ IF(BUILD_WITH_IMAGEMAGICK)
 ENDIF()
 
 IF(BUILD_WITH_MESASR)
-  #ICL_FIND_PACKAGE(NAME MesaSR
-  #                 HEADERS "libMesaSR.h"
-  #                 LIBS "mesasr"
-  #                 PATHS "/opt/MESASR")
-  # after testing the above function call the 4 lines below and FindMesaSR.cmake can be removed
-  FIND_PACKAGE(MesaSR REQUIRED)
+  ICL_FIND_PACKAGE(NAME MesaSR
+                   HEADERS "libMesaSR.h"
+                   LIBS "mesasr"
+                   PATHS "/opt/MESASR")
   IF(MesaSR_FOUND)
     ADD_ICL_DEFINITIONS(-DICL_HAVE_LIBMESAR)
   ENDIF()

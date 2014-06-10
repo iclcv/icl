@@ -40,10 +40,14 @@ function(get_ipp_version _ROOT_DIR)
   set(_BUILD)
 
   # read IPP version info from file
-  file(STRINGS ${_ROOT_DIR}/ipp/include/ippversion.h STR1 REGEX "IPP_VERSION_MAJOR")
-  file(STRINGS ${_ROOT_DIR}/ipp/include/ippversion.h STR2 REGEX "IPP_VERSION_MINOR")
-  file(STRINGS ${_ROOT_DIR}/ipp/include/ippversion.h STR3 REGEX "IPP_VERSION_BUILD")
-  file(STRINGS ${_ROOT_DIR}/ipp/include/ippversion.h STR4 REGEX "IPP_VERSION_STR")
+  file(STRINGS ${_ROOT_DIR}/include/ippversion.h STR1 REGEX "IPP_VERSION_MAJOR")
+  file(STRINGS ${_ROOT_DIR}/include/ippversion.h STR2 REGEX "IPP_VERSION_MINOR")
+  file(STRINGS ${_ROOT_DIR}/include/ippversion.h STR3 REGEX "IPP_VERSION_BUILD")
+  file(STRINGS ${_ROOT_DIR}/include/ippversion.h STR4 REGEX "IPP_VERSION_STR")
+  
+  if (NOT STR3)
+    file(STRINGS ${_ROOT_DIR}/include/ippversion.h STR3 REGEX "IPP_VERSION_UPDATE")
+  endif(NOT STR3)
   
   # extract info and assign to variables
   string(REGEX MATCHALL "[0-9]+" _MAJOR ${STR1})

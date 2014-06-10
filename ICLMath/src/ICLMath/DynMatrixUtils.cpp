@@ -118,31 +118,31 @@ namespace icl{
     // Unary functions ////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
 
-    double reciprocal(const double &x) { return 1.0/x; }
+    template<class T> T reciprocal(const T &x) { return 1.0/x; }
 
   #define ICL_UNARY_HELP_FUNC(name,func)                                  \
     IppStatus ipps##name##_32f_I(float *p, int len){                      \
-      std::transform(p,p+len,p,func);                                     \
+      std::transform(p,p+len,p,func<float>);                              \
       return ippStsNoErr;                                                 \
     }                                                                     \
     IppStatus ipps##name##_64f_I(double *p, int len){                     \
-      std::transform(p,p+len,p,func);                                     \
+      std::transform(p,p+len,p,func<double>);                             \
       return ippStsNoErr;                                                 \
     }                                                                     \
     IppStatus ipps##name##_32f(const float *s, float *d, int len){        \
-      std::transform(s,s+len,d,func);                                     \
+      std::transform(s,s+len,d,func<float>);                              \
       return ippStsNoErr;                                                 \
     }                                                                     \
     IppStatus ipps##name##_64f(const double *s, double *d, int len){      \
-      std::transform(s,s+len,d,func);                                     \
+      std::transform(s,s+len,d,func<double>);                             \
       return ippStsNoErr;                                                 \
     }
 
-    ICL_UNARY_HELP_FUNC(Sin_icl,::sin)
-    ICL_UNARY_HELP_FUNC(Cos_icl,::cos)
-    ICL_UNARY_HELP_FUNC(Tan_icl,::tan)
-    ICL_UNARY_HELP_FUNC(Arcsin_icl,::asin)
-    ICL_UNARY_HELP_FUNC(Arccos_icl,::acos)
+    ICL_UNARY_HELP_FUNC(Sin_icl,std::sin)
+    ICL_UNARY_HELP_FUNC(Cos_icl,std::cos)
+    ICL_UNARY_HELP_FUNC(Tan_icl,std::tan)
+    ICL_UNARY_HELP_FUNC(Arcsin_icl,std::asin)
+    ICL_UNARY_HELP_FUNC(Arccos_icl,std::acos)
     ICL_UNARY_HELP_FUNC(Reciprocal_icl,icl::math::reciprocal)
 
   #undef ICL_UNARY_HELP_FUNC

@@ -40,7 +40,7 @@ namespace icl{
   namespace geom{
 
     /// Utility structure, that represents a superquadric
-    struct SQParams {
+    struct ICLGeom_API SQParams {
       Vec3 size;
       Vec3 pos;
       Vec3 euler;
@@ -50,7 +50,7 @@ namespace icl{
       SQParams () : shape(2, 1.0) {}
     };
 
-    class SQFitter{
+    class ICLGeom_API SQFitter{
     public:
       typedef icl::math::LevenbergMarquardtFitter<float> LM; //!< Levenberg-Marquardt
 
