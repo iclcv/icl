@@ -1,3 +1,5 @@
+.. include:: ../js.rst
+
 Fiducial Marker Detection
 =========================
 

@@ -1,3 +1,5 @@
+.. include:: ../js.rst
+
 .. _tut.interactive-gui-apps:
 
 Interactive GUI Applications

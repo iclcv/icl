@@ -19,6 +19,7 @@ Tutorial
    tutorials/configurables
    tutorials/region-detection
    tutorials/marker-detection
+   tutorials/scene-overlay-and-3D-marker-detection
    tutorials/using-imgbase
    tutorials/imgbase-ptrptrs
    tutorials/using-filters

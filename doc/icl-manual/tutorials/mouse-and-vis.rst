@@ -1,3 +1,5 @@
+.. include:: ../js.rst
+
 .. _tut.mouse-and-vis:
 
 Visualization and Mouse Interaction

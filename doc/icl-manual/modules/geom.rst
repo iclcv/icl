@@ -243,9 +243,32 @@ view ray. An exact intersection position is also provided.
 Using the SceneGraph to Render an Image Overlay
 """""""""""""""""""""""""""""""""""""""""""""""
 
-.. todo:: 
+Together with ICL's camera calibration capabilities (see
+:ref:`howto.camcalib`), it is possible to use the scene graph to
+render a virtual scene as an image overlay (on top of a real
+image). This can be achieved by the following steps:
 
-   write this !
+* Given a real camera device, the camera is calibrated, resulting in an
+  xml-description file of extrinsic and intrinsic camera parameters (e.g. 
+  called **myCalib.xml**).
+* If the camera shows significant lens distortion, it is recommended to
+  also find appropriate lens distortion compensation parameters (see
+  :ref:`howtos.calib.distortion`), also resulting in an xml-file (e.g.
+  called **udist.xml**)
+* In the program, create a :icl:`geom::Scene` instance
+* Add virtual objects to the Scene
+* A add a :icl:`geom::Camera` instance to the scene
+* Create an image display component that can also render 3D stuff
+  (:icl:`qt:Draw3D`)
+* Link the visualization callback of the scene to the GUI component
+* Grab background images and also pass them to the GUI component
+
+In this case, ICL's rendering pipeline will ensure, that virtual and
+real objects align perfectly even when adapting the GUI component's
+geometry or when zooming.
+
+For an example, please refer to this tutorial: :ref:`tut.scene-overlay`
+
 
 .. _geom.point-cloud-processing:
 
