@@ -48,7 +48,13 @@
 
 #include <iostream>
 #include <fstream>
+
+#ifdef ICL_HAVE_OPENCV_OLD_STYLE
 #include <opencv/highgui.h>
+#else
+#include <opencv2/highgui/highgui_c.h>
+#endif
+
 
 namespace icl{
   namespace cv{

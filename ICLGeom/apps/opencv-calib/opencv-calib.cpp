@@ -186,7 +186,7 @@ void run(){
 
   Mutex::Locker lock(mutex);
   static FPSLimiter fps(pa("-fps").as<int>());
-  const ImgBase *img = cg->grab();
+  const ImgBase *img = grabber.grab();
   const ImgBase *img2 = 0;
   framewidth=img->getWidth();
   frameheight=img->getHeight();

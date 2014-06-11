@@ -37,8 +37,13 @@
 #include <ICLUtils/Mutex.h>
 
 #ifdef ICL_HAVE_OPENCV
+#ifdef ICL_HAVE_OPENCV_OLD_STYLE
 #include <opencv/highgui.h>
 #include <opencv/cxcore.h>
+#else
+#include <opencv2/highgui/highgui_c.h>
+#include <opencv/cxcore.h>
+#endif
 #endif
 namespace icl{
   namespace io{

@@ -328,21 +328,21 @@ IF(BUILD_WITH_OPENCV)
   IF(WIN32)
     FIND_PACKAGE(WinOpenCV)
   ELSE()
-    # for new style only and without cmake config
-    #ICL_FIND_PACKAGE(NAME OpenCV
-    #                 HEADERS "opencv/cv.h;opencv/cxcore.h;opencv/highgui.h"
-    #                 LIBS "opencv_core;opencv_highgui;opencv_imgproc;opencv_video;opencv_ml;opencv_calib3d")
-    #SET(OpenCV_INCLUDE_DIRS ${OPENCV_INCLUDE_DIRS})
-    #SET(OpenCV_LIBRARIES ${OPENCV_LIBRARIES})
     FIND_PACKAGE(OpenCV)
   ENDIF()
   IF(OPENCV_FOUND)
-	SET(OpenCV_FOUND TRUE)
+    SET(OpenCV_FOUND TRUE)
     ADD_ICL_DEFINITIONS(-DICL_HAVE_OPENCV)
     ADD_ICL_DEFINITIONS(-DQWT_DLL)
     # don't show it in the GUI
     MARK_AS_ADVANCED(OPENCV_FOUND)
     MARK_AS_ADVANCED(OpenCV_FOUND)
+
+    IF(${OpenCV_OLD_LIBS_NOT_FOUND} STREQUAL "FALSE")
+      ADD_ICL_DEFINITIONS(-DICL_HAVE_OPENCV_OLD_STYLE)
+    ELSE()
+      ADD_ICL_DEFINITIONS(-DICL_HAVE_OPENCV_NEW_STYLE)
+    ENDIF()
   ENDIF()
 ENDIF()
 
