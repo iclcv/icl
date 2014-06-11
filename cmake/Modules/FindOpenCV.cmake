@@ -58,9 +58,9 @@ ELSE()
   SET(GLOBAL OpenCV_LIBRARIES "")
 
   IF(EXISTS ${OpenCV_DIR})
-    SET(OpenCV_LIB_DIR "${OpenCV_DIR}/lib")
+    SET(OpenCV_LIB_DIR "${OpenCV_DIR}")
   ELSE()
-    SET(OpenCV_LIB_DIR "/usr/lib")
+    SET(OpenCV_LIB_DIR "/usr")
   ENDIF()
 
   # strategy: search for old style libraries first
@@ -76,6 +76,7 @@ ELSE()
     FIND_LIBRARY(OpenCV_${L}_LIBRARY
       NAMES "lib${L}" "${L}"
       PATHS "${OpenCV_LIB_DIR}"
+      PATH_SUFFIXES "lib" ${ARCH_DEPENDENT_LIB_PATHS}
       NO_DEFAULT_PATH)
     
     IF(NOT ${OpenCV_${L}_LIBRARY} STREQUAL "OpenCV_${L}_LIBRARY-NOTFOUND")
@@ -95,6 +96,7 @@ ELSE()
       FIND_LIBRARY(OpenCV_${L}_LIBRARY
         NAMES "libopencv_${L}" "opencv_${L}"
         PATHS "${OpenCV_LIB_DIR}"
+        PATH_SUFFIXES "lib" ${ARCH_DEPENDENT_LIB_PATHS}
         NO_DEFAULT_PATH)
       
       IF(NOT ${OpenCV_${L}_LIBRARY} STREQUAL "OpenCV_${L}_LIBRARY-NOTFOUND")

@@ -9,6 +9,8 @@ IF(QT4_FOUND)
   ADD_SUBDIRECTORY(point-cloud-pipe)
 ENDIF()
 
+message(STATUS "opencv: ${OPENCV_FOUND}")
+
 IF(QT4_FOUND AND OpenCV_FOUND)
   ADD_SUBDIRECTORY(opencv-calib)
 ENDIF()

@@ -46,7 +46,7 @@ using namespace icl::math;
 using namespace icl::core;
 
 VBox gui;
-SmartPtr<GenericGrabber> cg;
+GenericGrabber grabber;
 Mutex mutex;
 OpenCVCamCalib *camc = 0;
 
@@ -106,10 +106,9 @@ void init(){
   boardSize = cvSize(width, height);
   corners = new CvPoint2D32f[width*height];
 
-  cg = new GenericGrabber();
-  cg -> init(pa("-i"));
+  grabber.init(pa("-i"));
   if(pa("-s")){
-    cg->setDesiredSizeInternal(pa("-s"));
+    grabber.setDesiredSizeInternal(pa("-s"));
   }
   
 
