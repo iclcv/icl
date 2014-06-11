@@ -46,7 +46,7 @@ namespace icl{
   namespace geom{
     
     /// Cameracalibration using OpenCV functions.
-    class OpenCVCamCalib : public utils::Uncopyable{
+    class ICLGeom_API OpenCVCamCalib : public utils::Uncopyable{
       
       struct Data;
       ///Class for internal params and buffers.

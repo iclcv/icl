@@ -30,7 +30,6 @@
 #include <ICLGeom/OpenCVCamCalib.h>
 
 
-
 using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::core;
