@@ -175,7 +175,7 @@ namespace icl{
     }
   
     std::istream &operator>>(std::istream &is, ImageUndistortion &dest){
-      XMLDocument *doc = new XMLDocument;
+      utils::XMLDocument *doc = new utils::XMLDocument;
       doc->loadNext(is);
       ConfigFile f(doc);
       f.setPrefix("config.");

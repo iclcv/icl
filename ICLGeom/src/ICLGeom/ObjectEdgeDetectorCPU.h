@@ -48,7 +48,7 @@ namespace icl{
 	    float x, y, z, w;
     };
   
-     class ObjectEdgeDetectorCPU : public ObjectEdgeDetectorPlugin{
+     class ICLGeom_API ObjectEdgeDetectorCPU : public ObjectEdgeDetectorPlugin{
     
      struct Data;  //!< internal data type
       Data *m_data; //!< internal data pointer

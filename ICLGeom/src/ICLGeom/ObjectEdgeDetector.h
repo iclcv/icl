@@ -49,7 +49,7 @@ namespace icl{
      and binarization). The performance of this method is optimized with minimal read/write for the underlying OpenCL
      implementation. The interim results can be accessed with getNormals() and getAngleImage() afterwards. It is also possible
      to use subparts of the pipeline using the setter methods to set the interim data. */
-    class ObjectEdgeDetector{
+    class ICLGeom_API ObjectEdgeDetector{
      
      struct Data;  //!< internal data type
      Data *m_data; //!< internal data pointer

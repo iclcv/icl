@@ -37,7 +37,7 @@ namespace icl{
     
     /**
      This class is used in the ObjectEdgeDetector implementations */
-    class ObjectEdgeDetectorData{
+    class ICLGeom_API ObjectEdgeDetectorData{
      
            
      public:

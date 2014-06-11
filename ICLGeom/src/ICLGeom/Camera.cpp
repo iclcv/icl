@@ -427,7 +427,7 @@ namespace icl {
     void Camera::load_camera_from_stream(std::istream &is, const std::string &prefix,
                                            Camera &cam){
       cam = Camera(); // load default values
-      XMLDocument *doc = new XMLDocument;
+      utils::XMLDocument *doc = new utils::XMLDocument;
       doc->loadNext(is);
       
       ConfigFile f(doc);

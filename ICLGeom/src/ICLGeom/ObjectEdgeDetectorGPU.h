@@ -38,7 +38,7 @@
 
 namespace icl{
   namespace geom{
-    class ObjectEdgeDetectorGPU : public ObjectEdgeDetectorPlugin{
+    class ICLGeom_API ObjectEdgeDetectorGPU : public ObjectEdgeDetectorPlugin{
     
      struct Data;  //!< internal data type
       Data *m_data; //!< internal data pointer
