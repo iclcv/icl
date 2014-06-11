@@ -345,13 +345,13 @@ namespace icl {
   
       int N = (int)Xws.size();
   
-      DynMatrix<float> U(1,2*N);
+      DynMatrix<double> U(1,2*N);
       for(int i=0;i<N;++i){
         U[2*i] = xis[i].x;
         U[2*i+1] = xis[i].y;
       }
   
-      DynMatrix<float> B(11,2*N);
+      DynMatrix<double> B(11,2*N);
       for(int i=0;i<N;++i){
         float x=Xws[i][0], y=Xws[i][1],z=Xws[i][2], u=-xis[i].x,v=-xis[i].y;
         float r1[11] = {x,y,z,1,0,0,0,0,u*x,u*y,u*z};
@@ -360,8 +360,8 @@ namespace icl {
         std::copy(r1,r1+11,B.row_begin(2*i));
         std::copy(r2,r2+11,B.row_begin(2*i+1));
       }
-  
-      DynMatrix<float> Cv = B.pinv() * U;
+
+      DynMatrix<double> Cv = B.pinv(true) * U;
       FixedMatrix<float,4,3> Q(Cv[0],Cv[1],Cv[2],Cv[3],
                                Cv[4],Cv[5],Cv[6],Cv[7],
                                Cv[8],Cv[9],Cv[10],1);
