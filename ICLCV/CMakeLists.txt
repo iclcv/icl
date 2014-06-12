@@ -87,11 +87,13 @@ ENDIF()
 IF(OpenCV_FOUND)
   LIST(APPEND SOURCES src/ICLCV/OpenSurfLib.cpp
                       src/ICLCV/LensUndistortionCalibrator.cpp
-                      src/ICLCV/OpenCVCamCalib.cpp)
+                      src/ICLCV/OpenCVCamCalib.cpp
+                      src/ICLCV/CheckerboardDetector.cpp)
 
   LIST(APPEND HEADERS src/ICLCV/OpenSurfLib.h
                       src/ICLCV/LensUndistortionCalibrator.h
-                      src/ICLCV/OpenCVCamCalib.h)
+                      src/ICLCV/OpenCVCamCalib.h
+                      src/ICLCV/CheckerboardDetector.h)
 ENDIF()
 
 
