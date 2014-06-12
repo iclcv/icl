@@ -78,18 +78,44 @@ namespace icl{
     };
       
     LensUndistortionCalibrator::GridDefinition::GridDefinition(const Size &dims){
-      
+      const float nx = 1./(dims.width-1.0f);
+      const float ny = 1./(dims.height-1.0f);
+      for(int y=0;y<dims.height;++y){
+        for(int x=0;x<dims.width;++x){
+          push_back(Point32f(float(x)*nx, float(y)*ny));
+        }
+      }
+    }
+    
+    static void init_grid(std::vector<Point32f> &dst,
+                          const Size &dims, 
+                          const Size32f &markerSize, 
+                          const Size32f &markerSpacing){
+      const float w = markerSize.width*0.5, h = markerSize.height*0.5;
+      const Point32f o(w,h);
+      const float nx = 1./((dims.width-1) * markerSpacing.width + w);
+      const float ny = 1./((dims.height-1) * markerSpacing.height + h);
+      const Point32f ds[4] = { Point32f(-w, -h)+o, Point32f(w, -h)+o, Point32f(w, h)+o, Point32f(-w, h)+o };
+      for(int y=0;y<dims.height;++y){
+        for(int x=0;x<dims.width;++x){
+          const Point32f  c(x * markerSpacing.width,
+                            y * markerSpacing.height);
+          for(int i=0;i<4;++i){
+            dst.push_back( (c+ds[i]).transform(nx,ny) );
+          }
+        }
+      }
     }
     
     LensUndistortionCalibrator::GridDefinition::GridDefinition(const Size &markerGridDims, 
                                                              const Size32f &markerSize, 
                                                              const Size32f &markerSpacing){
-    
+      init_grid(*this, markerGridDims, markerSize, markerSpacing);
     }
     LensUndistortionCalibrator::GridDefinition::GridDefinition(const Size &markerGridDims, 
-                                                             float markerDim, 
-                                                             float markerSpacing){
-    
+                                                               float markerDim, 
+                                                               float markerSpacing){
+      init_grid(*this, markerGridDims, Size32f(markerDim,markerDim), Size32f(markerSpacing,markerSpacing));
     }
 
     LensUndistortionCalibrator::LensUndistortionCalibrator():m_data(0){

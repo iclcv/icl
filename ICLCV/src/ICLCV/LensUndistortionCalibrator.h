@@ -42,43 +42,71 @@ namespace icl{
 
   namespace cv{
     
+    /// Utility class for estimation of compensation parameters of lens-distortion 
+    /** Internally, this is a wrapper class around OpenCV's cvCalibrateCamera2.
+        For the calibration, a set of "grids", each consisting of a set of
+        2D-image to 3D-object coordinates is needed. The 3D object coordinates
+        are assumed to be coplanar and to be normalized to the range [0,1] in 
+        the remaining x and y dimensions. Theses normalized x/y coordinates are
+        defined by the LensUndistortionCalibrator::GridDefinition class.
+        */
     class ICLGeom_API LensUndistortionCalibrator : public utils::Uncopyable{
-      struct Data;
-      Data *m_data;
+      struct Data;  //!< internal data
+      Data *m_data; //!< internal data pointer
       
       public:
       
+      /// Utility data class describing the grid structure that is used
       struct GridDefinition : public std::vector<utils::Point32f>{
+        
+        /// creates an empty grid definition
+        GridDefinition(){}
+        
+        /// creates a uniform grid with given dimensions
         GridDefinition(const utils::Size &dims);
-        GridDefinition(const utils::Size &markerGridDims, const utils::Size32f &markerSize, const utils::Size32f &markerSpacing);
+        
+        /// creates a non-uniform grid resulting from a set of marker corners
+        GridDefinition(const utils::Size &markerGridDims, 
+                       const utils::Size32f &markerSize, 
+                       const utils::Size32f &markerSpacing);
+        
+        /// as above but assuming square markers alligned in a uniform grid
         GridDefinition(const utils::Size &markerGridDims, float markerDim, float markerSpacing);
       };
       
+      /// Internally used info structure (also returned by LensUndistortionCalibrator::getInfo)
       struct Info{
-        utils::Size imageSize;
-        int numPointsAdded;
-        int numPointSetsAdded;
+        utils::Size imageSize;  //!< current camera image size
+        int numPointsAdded;     //!< total number of points added
+        int numPointSetsAdded;  //!< number of sub-sets added
       };
 
 
+      /// empty default constructor (creates a null instance)
       LensUndistortionCalibrator();
       
+      /// constructor with given parameters
       LensUndistortionCalibrator(const utils::Size &imagesSize, const GridDefinition &gridDef);
-
+      
+      /// Destructor
       ~LensUndistortionCalibrator();
       
+      /// for deferred initialization
       void init(const utils::Size &imagesSize, const GridDefinition &gridDef);
 
+      /// returns whether this instance was already initialized
       bool isNull() const;
       
-      /// grid-points are predefined 
+      /// adds new points (the order must correspond to the GridDefinition that was provided)
       void addPoints(const std::vector<utils::Point32f> &imagePoints);
       
       /// removes all points added before
       void clear();
       
+      /// returns current info
       Info getInfo();
       
+      /// computes an image undistortion structure using all points added before
       io::ImageUndistortion computeUndistortion();
       
     };
