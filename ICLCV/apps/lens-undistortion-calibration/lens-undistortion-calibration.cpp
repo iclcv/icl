@@ -31,12 +31,11 @@
 
 #define ICL_NO_USING_NAMESPACES
 
-#include <ICLCore/OpenCV.h>
-#include <ICLCV/OpenCVCamCalib.h>
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLQt/Common.h>
-
-#include <ICLUtils/ConfigFile.h>
+#include <ICLCV/LensUndistortionCalibrator.h>
+#include <ICLCV/CheckerboardDetector.h>
+#include <ICLGeom/Scene.h>
 
 using namespace icl::qt;
 using namespace icl::cv;
@@ -46,11 +45,65 @@ using namespace icl::geom;
 using namespace icl::math;
 using namespace icl::core;
 
+HSplit gui;
+GenericGrabber grabber;
+CheckerboardDetector checker;
+LensUndistortionCalibrator calib;
 
-int main(){
-  DEBUG_LOG("not yet re-implemented");
+void init(){
+  grabber.init(pa("-i"));
+
+  const ImgBase *image = grabber.grab();
+  
+  if(pa("-cb")){
+    grabber.useDesired(depth8u);
+    checker.init(pa("-cb").as<Size>());
+    calib.init(image->getSize(),pa("-cb").as<Size>()); 
+  }else{
+    throw ICLException("other modes than checkerboard "
+                       "detection are not yet supported");
+  }
+
+  gui << Draw().label("image").handle("image")
+      << Draw3D().label("recorded data").handle("3D")
+      << ( VBox().label("controls").minSize(15,1)
+           << Button("capture").handle("capture")
+           << Button("calibrate")
+           << Prop(checker).hideIf(checker.isNull()).label("checker board detection  ")
+         )
+      << Show();
+  
+
+
+
+
+
 
 }
+
+void run(){
+  static ButtonHandle capture = gui["capture"];
+  static DrawHandle draw = gui["image"];
+  
+  const Img8u &image = *grabber.grab()->as8u();
+  draw = image;
+
+  const CheckerboardDetector::Checkerboard &cb = checker.detect(image);
+
+  if(cb.found){
+    draw->draw(cb.visualize());
+    if(capture.wasTriggered()){
+      calib.addPoints(cb.corners);
+    }
+  }
+  draw->render();
+}
+
+int main(int n, char **ppc){
+  return ICLApp(n,ppc,"-input|-i(2) -checkerboard|-cb(WxH)",init,run).exec();
+}
+
+
 #if 0
 VBox gui;
 GenericGrabber grabber;

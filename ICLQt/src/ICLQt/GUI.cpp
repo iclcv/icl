@@ -478,8 +478,12 @@ namespace icl{
           ++i;
         }
         gui = HSplit(this).handle("__the_root__");
-        bool use_tabs = sections.size() > 1;
+        bool use_tabs = sections.size() > 1 || (sections.size() == 1 && sections.begin()->first != "general");
         if(use_tabs){
+          if(sections.find("general") == sections.end()){
+            tablist += ",general";
+            generalIdx = tablist.size()-1;
+          }
           sub_gui = Tab(tablist,this).handle("__the_tab__");
         } else {
           sub_gui = VBox(this).handle("__the_tab__");
@@ -498,6 +502,7 @@ namespace icl{
           gui <<  general_box;
         }
 
+        bool haveGeneral = false;
         for(std::map<std::string,std::vector<StSt> >::iterator it=sections.begin();it != sections.end();++it){
           GUI tab = VScroll();
           for(unsigned int i=0;i<it->second.size();++i){
@@ -506,6 +511,7 @@ namespace icl{
             }
           }
           if(it->first == "general"){
+            haveGeneral = true;
             tab << ( HBox()
                      << Button("load").handle("#X#load")
                      << Button("save").handle("#X#save")
@@ -516,6 +522,18 @@ namespace icl{
           }
           sub_gui << tab;
         }
+        if(!haveGeneral){
+          GUI tab = VScroll();
+            tab << ( HBox()
+                     << Button("load").handle("#X#load")
+                     << Button("save").handle("#X#save")
+                     );
+
+            ostr <<  '\1' << "#X#load";
+            ostr <<  '\1' << "#X#save";
+            sub_gui << tab;
+        }
+        
         gui << sub_gui;
         gui.create();
         

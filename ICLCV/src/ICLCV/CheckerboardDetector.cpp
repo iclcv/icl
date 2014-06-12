@@ -31,58 +31,71 @@
 #include <ICLCV/CheckerboardDetector.h>
 #include <ICLCore/OpenCV.h>
 #include <ICLCore/CCFunctions.h>
+#include <ICLCore/Color.h>
 
 #ifdef ICL_HAVE_OPENCV
 #include <opencv/cv.h>
 #endif
 
 namespace icl{
-  
+
+  using namespace core;
+  using namespace utils;
+
   namespace cv{
     
-    struct CheckerBoardDetector::Data{
-      CheckerBoardDetector::CheckerBoard cb;
-      bool optSubPix;
+    struct CheckerboardDetector::Data{
+      CheckerboardDetector::Checkerboard cb;
       IplImage *ipl;
-      core::Img8u grayBuf;
+      Img8u grayBuf;
     };
 
-    CheckerBoardDetector::CheckerBoardDetector():m_data(0){}
-
-    CheckerBoardDetector::CheckerBoardDetector(const utils::Size &size, bool optSubPix):
-      m_data(0){
-      init(size,optSubPix);
+    CheckerboardDetector::CheckerboardDetector():m_data(0){
+      init_properties();
     }
 
-    CheckerBoardDetector::~CheckerBoardDetector(){
+    CheckerboardDetector::CheckerboardDetector(const Size &size):
+      m_data(0){
+      init_properties();
+      init(size);
+    }
+
+    void CheckerboardDetector::init_properties(){
+      addProperty("subpixel opt.enabled","flag","",true);
+      addProperty("subpixel opt.radius","range","[1,15]:1",3);
+      addProperty("subpixel opt.inner radius","range","[-1,15]:1",-1);
+      addProperty("subpixel opt.max iterations","range","[10,100]:1",30);
+      addProperty("subpixel opt.min error","range","[0.0001,1]",0.1);
+    }
+
+    CheckerboardDetector::~CheckerboardDetector(){
       if(m_data) delete m_data;
     }
       
-    void CheckerBoardDetector::init(const utils::Size &size, bool optSubPix){
+    void CheckerboardDetector::init(const Size &size){
       if(!m_data){ 
         m_data = new Data;
         m_data->ipl = 0;
       }
       m_data->cb.size = size;
-      m_data->optSubPix = optSubPix;
     }
    
-    bool CheckerBoardDetector::isNull() const{
+    bool CheckerboardDetector::isNull() const{
       return !m_data;
     }
 
-    const CheckerBoardDetector::CheckerBoard &
-    CheckerBoardDetector::detect(const core::Img8u &image){
-      const core::Img8u *useImage = &image;
-      if(image.getFormat() != core::formatGray && image.getChannels() != 1){
-        m_data->grayBuf.setFormat(core::formatGray);
+    const CheckerboardDetector::Checkerboard &
+    CheckerboardDetector::detect(const Img8u &image){
+      const Img8u *useImage = &image;
+      if(image.getFormat() != formatGray && image.getChannels() != 1){
+        m_data->grayBuf.setFormat(formatGray);
         m_data->grayBuf.setSize(image.getSize());
         
         cc(&image, &m_data->grayBuf);
         
         useImage = &m_data->grayBuf;
       }
-      core::img_to_ipl(useImage, &m_data->ipl);
+      img_to_ipl(useImage, &m_data->ipl);
       std::vector<CvPoint2D32f> corners(m_data->cb.size.getDim());
 
       CvSize s = {m_data->cb.size.width, m_data->cb.size.height };
@@ -91,21 +104,56 @@ namespace icl{
       m_data->cb.found = cvFindChessboardCorners(m_data->ipl, s, corners.data(), &n,
                                                   CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
       
-      if(m_data->cb.found && m_data->optSubPix){
-        cvFindCornerSubPix(m_data->ipl, corners.data(), corners.size(), cvSize(3,3),
-                           cvSize(-1, -1), cvTermCriteria(CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1));
+      bool optSubPix = getPropertyValue("subpixel opt.enabled");
+      int radius = getPropertyValue("subpixel opt.radius");
+      int innerR = getPropertyValue("subpixel opt.inner radius");
+      if(innerR >= radius) innerR = radius -1;
+      if(innerR == 0) innerR = -1;
+      int maxIter = getPropertyValue("subpixel opt.max iterations");
+      float minErr = getPropertyValue("subpixel opt.min error");
+      
+      if(m_data->cb.found && optSubPix){
+        cvFindCornerSubPix(m_data->ipl, corners.data(), corners.size(), cvSize(radius,radius),
+                           cvSize(innerR, innerR), 
+                           cvTermCriteria(CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, maxIter, minErr));
       }
       
       if(m_data->cb.found){
         m_data->cb.corners.resize(corners.size());
         for(size_t i=0;i<corners.size();++i){
-          m_data->cb.corners[i] = utils::Point32f(corners[i].x, corners[i].y);
+          m_data->cb.corners[i] = Point32f(corners[i].x, corners[i].y);
         }
       }else{
         m_data->cb.corners.clear();
       }
 
       return m_data->cb;
+    }
+
+    VisualizationDescription CheckerboardDetector::Checkerboard::visualize() const{
+      VisualizationDescription vis;
+      static const Color cs[5] = { 
+        Color(255,0,0), 
+        Color(255,255,0),
+        Color(0,255,255),
+        Color(0,0,255),
+        Color(255,0,255)
+      };
+      vis.fill(0,0,0,0);
+      for(int y=0, idx=0;y<size.height;++y){
+        const Color &c = cs[y%5];
+        vis.color(c[0],c[1],c[2],255);
+        for(int x=0;x<size.width;++x,++idx){
+          const Point32f &p = corners[idx];
+          vis.circle(p.x+.5,p.y+.5,2);
+          vis.line(p.x-1,p.y-1,p.x+1,p.y+1);
+          vis.line(p.x+1,p.y-1,p.x-1,p.y+1);
+          if(x || y){
+            vis.line(p.x,p.y,corners[idx-1].x, corners[idx-1].y);
+          }
+        }
+      }
+      return vis;
     }
   } // namespace cv
 } // namespace icl
