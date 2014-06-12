@@ -128,13 +128,6 @@ IF(PCL_FOUND)
   # src/ICLGeom/PCDFileGrabber.h
 ENDIF()
 
-IF(OpenCV_FOUND)
-  LIST (APPEND SOURCES src/ICLGeom/OpenCVCamCalib.cpp
-                       src/ICLGeom/ImageUndistortionToolkit.cpp)
-  LIST (APPEND HEADRES src/ICLGeom/OpenCVCamCalib.h
-                       src/ICLGeom/ImageUndistortionToolkit.h)
-ENDIF()
-
 IF(OPENCL_FOUND)
     LIST (APPEND SOURCES src/ICLGeom/PointCloudCreatorCL.cpp)
     LIST (APPEND HEADERS src/ICLGeom/PointCloudCreatorCL.h)

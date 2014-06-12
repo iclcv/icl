@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLGeom/src/ICLGeom/ImageUndistortionToolkit.cpp       **
+** File   : ICLGeom/src/ICLGeom/LensUndistortionCalibrator.cpp       **
 ** Module : ICLGeom                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -28,7 +28,7 @@
 **                                                                 **
 ********************************************************************/
 
-#include <ICLGeom/ImageUndistortionToolkit.h>
+#include <ICLCV/LensUndistortionCalibrator.h>
 
 #ifdef ICL_HAVE_OPENCV
 #include <opencv/cv.h>
@@ -40,7 +40,7 @@ namespace icl{
   using namespace utils;
   using namespace math;
 
-  namespace geom{
+  namespace cv{
     
     
     namespace {
@@ -70,65 +70,65 @@ namespace icl{
 
     }
     
-    struct ImageUndistortionToolkit::Data{
+    struct LensUndistortionCalibrator::Data{
       std::vector<Point32f> points;
       int nSubSets;
       std::vector<Point32f> gridDef;
       Size imageSize;
     };
       
-    ImageUndistortionToolkit::GridDefinition::GridDefinition(const Size &dims){
+    LensUndistortionCalibrator::GridDefinition::GridDefinition(const Size &dims){
       
     }
     
-    ImageUndistortionToolkit::GridDefinition::GridDefinition(const Size &markerGridDims, 
+    LensUndistortionCalibrator::GridDefinition::GridDefinition(const Size &markerGridDims, 
                                                              const Size32f &markerSize, 
                                                              const Size32f &markerSpacing){
     
     }
-    ImageUndistortionToolkit::GridDefinition::GridDefinition(const Size &markerGridDims, 
+    LensUndistortionCalibrator::GridDefinition::GridDefinition(const Size &markerGridDims, 
                                                              float markerDim, 
                                                              float markerSpacing){
     
     }
 
-    ImageUndistortionToolkit::ImageUndistortionToolkit():m_data(0){
+    LensUndistortionCalibrator::LensUndistortionCalibrator():m_data(0){
     
     }
     
-    ImageUndistortionToolkit::ImageUndistortionToolkit(const Size &imageSize, const GridDefinition &gridDef):m_data(0){
+    LensUndistortionCalibrator::LensUndistortionCalibrator(const Size &imageSize, const GridDefinition &gridDef):m_data(0){
       init(imageSize,gridDef);
     }
     
-    ImageUndistortionToolkit::~ImageUndistortionToolkit(){
+    LensUndistortionCalibrator::~LensUndistortionCalibrator(){
       if(m_data) delete m_data;
     }
 
-    void ImageUndistortionToolkit::init(const Size &imageSize, const GridDefinition &gridDef){
+    void LensUndistortionCalibrator::init(const Size &imageSize, const GridDefinition &gridDef){
       if(!m_data) m_data = new Data;
       m_data->gridDef = gridDef; // implicitly sliced here!
       m_data->imageSize = imageSize;
       clear();
     }
 
-    bool ImageUndistortionToolkit::isNull() const{
+    bool LensUndistortionCalibrator::isNull() const{
       return !m_data;
     }
       
-    void ImageUndistortionToolkit::addPoints(const std::vector<Point32f> &imagePoints){
-      ICLASSERT_THROW(m_data,ICLException("ImageUndistortionToolkit::addPoints: instance is null"));
+    void LensUndistortionCalibrator::addPoints(const std::vector<Point32f> &imagePoints){
+      ICLASSERT_THROW(m_data,ICLException("LensUndistortionCalibrator::addPoints: instance is null"));
       std::copy(imagePoints.begin(),imagePoints.end(), std::back_inserter(m_data->points));
       ++m_data->nSubSets;
     }
     
-    void ImageUndistortionToolkit::clear(){
-      ICLASSERT_THROW(m_data,ICLException("ImageUndistortionToolkit::clear: instance is null"));
+    void LensUndistortionCalibrator::clear(){
+      ICLASSERT_THROW(m_data,ICLException("LensUndistortionCalibrator::clear: instance is null"));
       m_data->points.clear();
       m_data->nSubSets = 0;
     }
     
-    io::ImageUndistortion ImageUndistortionToolkit::computeUndistortion(){
-      ICLASSERT_THROW(m_data,ICLException("ImageUndistortionToolkit::computeUndistortion: instance is null"));
+    io::ImageUndistortion LensUndistortionCalibrator::computeUndistortion(){
+      ICLASSERT_THROW(m_data,ICLException("LensUndistortionCalibrator::computeUndistortion: instance is null"));
       
       const std::vector<Point32f> &ps = m_data->points;
       
@@ -164,8 +164,8 @@ namespace icl{
                                    m_data->imageSize);
     }
 
-    ImageUndistortionToolkit::Info ImageUndistortionToolkit::getInfo(){
-      ICLASSERT_THROW(m_data,ICLException("ImageUndistortionToolkit::getInfo: instance is null"));
+    LensUndistortionCalibrator::Info LensUndistortionCalibrator::getInfo(){
+      ICLASSERT_THROW(m_data,ICLException("LensUndistortionCalibrator::getInfo: instance is null"));
       Info info = { m_data->imageSize, (int)m_data->points.size(), m_data->nSubSets };
       return info;
     }

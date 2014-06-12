@@ -6,10 +6,11 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLGeom/apps/opencv-calib/opencv-calib.cpp             **
+** File   : ICLGeom/apps/lens-undistortion-calibration/            **
+**          lens-undistortion-calibration.cpp                      **
 ** Module : ICLGeom                                                **
-** Authors: Christian Groszewski, Andre Ueckermann                 **
-**                                                                 **
+** Authors: Christof Elbrechter, Christian Groszewski              **
+**          Andre Ueckermann                                       **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
 ** This file may be used under the terms of the GNU Lesser General **
@@ -31,7 +32,7 @@
 #define ICL_NO_USING_NAMESPACES
 
 #include <ICLCore/OpenCV.h>
-#include <ICLGeom/OpenCVCamCalib.h>
+#include <ICLCV/OpenCVCamCalib.h>
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLQt/Common.h>
 
@@ -45,6 +46,12 @@ using namespace icl::geom;
 using namespace icl::math;
 using namespace icl::core;
 
+
+int main(){
+  DEBUG_LOG("not yet re-implemented");
+
+}
+#if 0
 VBox gui;
 GenericGrabber grabber;
 Mutex mutex;
@@ -286,3 +293,4 @@ int main(int n, char **args){
   return app.exec();
 }
 
+#endif

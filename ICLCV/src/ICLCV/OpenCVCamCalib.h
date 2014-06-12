@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLGeom/src/ICLGeom/OpenCVCamCalib.h                   **
+** File   : ICLGeom/src/ICLCV/OpenCVCamCalib.h                     **
 ** Module : ICLGeom                                                **
 ** Authors: Christian Groszewski                                   **
 **                                                                 **
@@ -39,11 +39,9 @@
 
 #include <ICLCore/OpenCV.h>
 
-#ifdef ICL_HAVE_OPENCV
-#include <opencv/cv.h>
-#endif
+
 namespace icl{
-  namespace geom{
+  namespace cv{
     
     /// Cameracalibration using OpenCV functions.
     class ICLGeom_API OpenCVCamCalib : public utils::Uncopyable{
@@ -91,10 +89,10 @@ namespace icl{
       /*@return distortion params*/
       ICLCV_API math::DynMatrix<icl64f> *getDistortion();
   
-      ///loads intrinsic params from file
+      ///loads intrinsic params from file (in OpenCV format)
       ICLCV_API void loadParams(const char* xmlfilename);
   
-      ///saves intrinsic params to file
+      ///saves intrinsic params to file (from OpenCV format)
       ICLCV_API void saveParams(const char* xmlfilename);
   
     };

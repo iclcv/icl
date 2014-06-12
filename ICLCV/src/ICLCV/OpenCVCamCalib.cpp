@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLGeom/src/ICLGeom/OpenCVCamCalib.cpp                 **
+** File   : ICLGeom/src/ICLCV/OpenCVCamCalib.cpp                   **
 ** Module : ICLGeom                                                **
 ** Authors: Christian Groszewski                                   **
 **                                                                 **
@@ -27,7 +27,11 @@
 ** Excellence Initiative.                                          **
 **                                                                 **
 ********************************************************************/
-#include <ICLGeom/OpenCVCamCalib.h>
+#include <ICLCV/OpenCVCamCalib.h>
+
+#ifdef ICL_HAVE_OPENCV
+#include <opencv/cv.h>
+#endif
 
 
 using namespace icl::utils;
@@ -35,7 +39,7 @@ using namespace icl::math;
 using namespace icl::core;
 
 namespace icl{
-  namespace geom{
+  namespace cv{
   
     struct OpenCVCamCalib::Data{
       int bWidth;

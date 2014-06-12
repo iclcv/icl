@@ -85,8 +85,13 @@ IF(IPP_FOUND)
 ENDIF()
 
 IF(OpenCV_FOUND)
-  LIST(APPEND SOURCES src/ICLCV/OpenSurfLib.cpp)
-  LIST(APPEND HEADERS src/ICLCV/OpenSurfLib.h)
+  LIST(APPEND SOURCES src/ICLCV/OpenSurfLib.cpp
+                      src/ICLCV/LensUndistortionCalibrator.cpp
+                      src/ICLCV/OpenCVCamCalib.cpp)
+
+  LIST(APPEND HEADERS src/ICLCV/OpenSurfLib.h
+                      src/ICLCV/LensUndistortionCalibrator.h
+                      src/ICLCV/OpenCVCamCalib.h)
 ENDIF()
 
 

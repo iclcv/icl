@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLGeom/src/ICLGeom/ImageUndistortionToolkit.h         **
+** File   : ICLGeom/src/ICLGeom/LensUndistortionCalibrator.h       **
 ** Module : ICLGeom                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -27,6 +27,7 @@
 ** Excellence Initiative.                                          **
 **                                                                 **
 ********************************************************************/
+#pragma once
 
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/Uncopyable.h>
@@ -39,9 +40,9 @@
 
 namespace icl{
 
-  namespace geom{
+  namespace cv{
     
-    class ICLGeom_API ImageUndistortionToolkit : public utils::Uncopyable{
+    class ICLGeom_API LensUndistortionCalibrator : public utils::Uncopyable{
       struct Data;
       Data *m_data;
       
@@ -60,11 +61,11 @@ namespace icl{
       };
 
 
-      ImageUndistortionToolkit();
+      LensUndistortionCalibrator();
       
-      ImageUndistortionToolkit(const utils::Size &imagesSize, const GridDefinition &gridDef);
+      LensUndistortionCalibrator(const utils::Size &imagesSize, const GridDefinition &gridDef);
 
-      ~ImageUndistortionToolkit();
+      ~LensUndistortionCalibrator();
       
       void init(const utils::Size &imagesSize, const GridDefinition &gridDef);
 
