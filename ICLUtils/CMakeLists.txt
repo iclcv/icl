@@ -146,11 +146,7 @@ ENDIF()
 ADD_LIBRARY(ICLUtils SHARED ${SOURCES} ${HEADERS})
 
 # ---- 3rd party library handling ----
-LIST(REMOVE_DUPLICATES REQUIRED_LIBRARIES_LIST)
-TARGET_LINK_LIBRARIES(ICLUtils ${REQUIRED_LIBRARIES_LIST}
-                               ${IPP_LIBRARIES}
-			                         ${OPENCL_LIBRARIES}
-                               ${DL_LIBRARIES})
+TARGET_LINK_LIBRARIES(ICLUtils ${ICLUtils_3RDPARTY_LIBRARIES})
 
 SET_TARGET_PROPERTIES(ICLUtils
                       PROPERTIES 

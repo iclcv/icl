@@ -184,7 +184,7 @@ IF(QT4_FOUND)
                         ${PCL_LIBRARIES})
 ELSE()
   TARGET_LINK_LIBRARIES(ICLGeom ICLCV
-                        ${PCL_LIBRARIES})
+                        ${ICLGeom_3RDPARTY_LIBRARIES})
 ENDIF()
 
 SET_TARGET_PROPERTIES(ICLGeom

@@ -250,23 +250,7 @@ ADD_LIBRARY(ICLIO SHARED ${SOURCES} ${HEADERS})
 
 # ---- 3rd party library handling ----
 TARGET_LINK_LIBRARIES(ICLIO ICLFilter
-                            ${MESASR_LIBRARIES}
-                            ${ImageMagick_LIBRARIES}
-                            ${LIBDC_LIBRARIES}
-                            ${V4L_LIBRARIES}
-                            ${XINE_LIBRARIES}
-                            ${LIBUSB_LIBRARIES}
-                            ${OPENGL_LIBRARIES}
-                            ${LIBFREENECT_LIBRARIES}
-                            ${PYLON_LIBRARIES}
-                            ${OPENNI_LIBRARIES}
-                            ${QT_LIBRARIES}
-                            ${RSB_LIBRARIES}
-                            ${BOOST_LIBRARIES}
-                            ${PROTOBUF_LIBRARIES}
-                            ${ZMQ_LIBRARIES}
-                            ${OpenCV_LIBS}
-                            ${Qt5Widgets_LIBRARIES})
+                            ${ICLIO_3RDPARTY_LIBRARIES})
 
 # Wo sind die hier :-? (UNICAP XCF QT GENICAM OPENNI RSB PROTOBUF)
 

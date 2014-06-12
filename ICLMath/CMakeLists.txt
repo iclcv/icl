@@ -90,7 +90,7 @@ ADD_LIBRARY(ICLMath SHARED ${SOURCES} ${HEADERS})
 
 # ---- Linker commands ----
 TARGET_LINK_LIBRARIES(ICLMath ICLUtils
-                              ${MKL_LIBRARIES})
+                              ${ICLMath_3RDPARTY_LIBRARIES})
 
 SET_TARGET_PROPERTIES(ICLMath
                       PROPERTIES 

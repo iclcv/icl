@@ -105,7 +105,7 @@ ADD_LIBRARY(ICLCore SHARED ${SOURCES} ${HEADERS})
 
 # ---- 3rd party library handling ----
 TARGET_LINK_LIBRARIES(ICLCore ICLMath
-                              ${OpenCV_LIBRARIES})
+                              ${ICLCore_3RDPARTY_LIBRARIES})
 
 SET_TARGET_PROPERTIES(ICLCore
                       PROPERTIES 
