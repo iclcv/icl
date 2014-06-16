@@ -34,52 +34,13 @@ INCLUDE(FindPackageHandleStandardArgs)
 # Start main part here
 # ---------------------------------------------------------------------
 
-IF(WIN32)
-  # Ask the root directory of OpenCL.
-  IF(NOT OPENCL_ROOT)
-    SET(OPENCL_ROOT $ENV{CUDA_PATH} CACHE PATH "Root directory of OpenCL")
-  ELSE()
-    SET(OPENCL_ROOT OPENCL_ROOT CACHE PATH "Root directory of OpenCL")
-  ENDIF()
+SET(_CUDA_PATH $ENV{CUDA_PATH} PATH)
 
-  # Look for the header files
-  FIND_PATH(OPENCL_INCLUDE_DIR 
-            NAMES CL/cl.hpp CL/cl.h CL/opencl.h      
-            PATHS ${OPENCL_ROOT}
-            PATH_SUFFIXES "include"
-            DOC "The path to OPENCL header files"
-            NO_DEFAULT_PATH)
-
-  IF(ICL_64BIT)
-    FIND_LIBRARY(OPENCL_LIBRARIES  
-                 NAMES OpenCL
-                 PATHS ${OPENCL_ROOT}
-                 PATH_SUFFIXES "/lib" "/lib/x64"
-                 NO_DEFAULT_PATH)
-  ELSE()
-    FIND_LIBRARY(OPENCL_LIBRARIES  
-                 NAMES OpenCL
-                 PATHS ${OPENCL_ROOT}
-                 PATH_SUFFIXES "/lib" "/lib/Win32"
-                 NO_DEFAULT_PATH)
-  ENDIF()
-
-  # Handle the QUIETLY and REQUIRED arguments and set OPENCL_FOUND to TRUE if 
-  # all listed variables are TRUE
-  FIND_PACKAGE_HANDLE_STANDARD_ARGS(OPENCL REQUIRED_VARS 
-                                    OPENCL_LIBRARIES
-                                    OPENCL_INCLUDE_DIRS)
-
-  IF(OPENCL_FOUND)
-    ADD_ICL_DEFINITIONS(-DICL_HAVE_OPENCL)# -DCL_USE_DEPRECATED_OPENCL_1_1_APIS)
-  ENDIF()
-
-ELSE(WIN32)
-  ICL_FIND_PACKAGE(NAME OpenCL
-                   HEADERS "CL/cl.hpp;CL/cl.h;CL/opencl.h"
-                   LIBS "OpenCL"
-                   OPTIONAL)
-ENDIF(WIN32)
+ICL_FIND_PACKAGE(NAME OpenCL
+                 HEADERS "CL/cl.hpp;CL/cl.h;CL/opencl.h"
+                 LIBS "OpenCL"
+                 PATHS _CUDA_PATH
+                 OPTIONAL)
 
 IF(OPENCL_FOUND)
   FILE(STRINGS ${OPENCL_INCLUDE_DIRS}/CL/cl.h HAVE_CL_1_0 REGEX "CL_VERSION_1_0")

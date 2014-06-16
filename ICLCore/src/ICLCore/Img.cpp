@@ -1060,7 +1060,7 @@ namespace icl {
   #ifdef ICL_HAVE_IPP
   
   #define ICL_INSTANTIATE_DEPTH(T)                                        \
-    template<> const Range<icl##T>                                        \
+    template<> ICLCore_API const Range<icl##T>                                        \
     Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const { \
       ICLASSERT_RETURN_VAL( validChannel(iChannel) ,Range<icl##T>());     \
       if((minCoords && !maxCoords) || (maxCoords && !minCoords)){         \

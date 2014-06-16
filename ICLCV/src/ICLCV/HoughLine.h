@@ -45,7 +45,7 @@ namespace icl{
         
         This class provides both information.
      */
-    struct HoughLine{
+    struct ICLCV_API HoughLine{
       /// empty constructor (all line values are set to 0)
       HoughLine();
       

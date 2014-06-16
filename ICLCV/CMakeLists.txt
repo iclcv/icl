@@ -29,59 +29,59 @@
 #*********************************************************************
 
 SET(SOURCES src/ICLCV/CornerDetectorCSS.cpp
-	    src/ICLCV/CV.cpp
-	    src/ICLCV/Extrapolator.cpp
-	    src/ICLCV/FloodFiller.cpp
-	    src/ICLCV/HungarianAlgorithm.cpp
-	    src/ICLCV/ImageRegion.cpp
-	    src/ICLCV/ImageRegionData.cpp
-	    src/ICLCV/MeanShiftTracker.cpp
-	    src/ICLCV/PositionTracker.cpp
-	    src/ICLCV/RegionDetector.cpp
-	    src/ICLCV/RegionPCAInfo.cpp
-	    src/ICLCV/RunLengthEncoder.cpp
-	    src/ICLCV/SimpleBlobSearcher.cpp
-	    src/ICLCV/SurfFeature.cpp
-	    src/ICLCV/SurfFeatureDetector.cpp
-	    src/ICLCV/VectorTracker.cpp
-	    src/ICLCV/ContourDetector.cpp
-	    src/ICLCV/RDPApproximation.cpp)
+            src/ICLCV/CV.cpp
+            src/ICLCV/Extrapolator.cpp
+            src/ICLCV/FloodFiller.cpp
+            src/ICLCV/HoughLine.cpp
+            src/ICLCV/HoughLineDetector.cpp
+            src/ICLCV/HungarianAlgorithm.cpp
+            src/ICLCV/ImageRegion.cpp
+            src/ICLCV/ImageRegionData.cpp
+            src/ICLCV/MeanShiftTracker.cpp
+            src/ICLCV/PositionTracker.cpp
+            src/ICLCV/RegionDetector.cpp
+            src/ICLCV/RegionPCAInfo.cpp
+            src/ICLCV/RunLengthEncoder.cpp
+            src/ICLCV/SimpleBlobSearcher.cpp
+            src/ICLCV/SurfFeature.cpp
+            src/ICLCV/SurfFeatureDetector.cpp
+            src/ICLCV/VectorTracker.cpp
+            src/ICLCV/ContourDetector.cpp
+            src/ICLCV/RDPApproximation.cpp)
 
 SET(HEADERS src/ICLCV/CornerDetectorCSS.h
-	    src/ICLCV/CV.h
-	    src/ICLCV/Extrapolator.h
-	    src/ICLCV/FloodFiller.h
-	    src/ICLCV/HungarianAlgorithm.h
-	    src/ICLCV/ImageRegionData.h
-	    src/ICLCV/ImageRegion.h
-	    src/ICLCV/ImageRegionPart.h
-	    src/ICLCV/LineSegment.h
-	    src/ICLCV/MeanShiftTracker.h
-	    src/ICLCV/PositionTracker.h
-	    src/ICLCV/QuickDocumentation.h
-	    src/ICLCV/RegionGrower.h
-	    src/ICLCV/RegionDetector.h
-	    src/ICLCV/RegionDetectorTools.h
-	    src/ICLCV/RegionPCAInfo.h
-	    src/ICLCV/RunLengthEncoder.h
-	    src/ICLCV/SimpleBlobSearcher.h
-	    src/ICLCV/VectorTracker.h
-	    src/ICLCV/SurfFeature.h
-	    src/ICLCV/SurfFeatureDetector.h
-	    src/ICLCV/WorkingLineSegment.h
-	    src/ICLCV/ContourDetector.h
-	    src/ICLCV/RDPApproximation.h)
-	  
+            src/ICLCV/CV.h
+            src/ICLCV/Extrapolator.h
+            src/ICLCV/FloodFiller.h
+            src/ICLCV/HoughLine.h
+            src/ICLCV/HoughLineDetector.h
+            src/ICLCV/HungarianAlgorithm.h
+            src/ICLCV/ImageRegionData.h
+            src/ICLCV/ImageRegion.h
+            src/ICLCV/ImageRegionPart.h
+            src/ICLCV/LineSegment.h
+            src/ICLCV/MeanShiftTracker.h
+            src/ICLCV/PositionTracker.h
+            src/ICLCV/QuickDocumentation.h
+            src/ICLCV/RegionGrower.h
+            src/ICLCV/RegionDetector.h
+            src/ICLCV/RegionDetectorTools.h
+            src/ICLCV/RegionPCAInfo.h
+            src/ICLCV/RunLengthEncoder.h
+            src/ICLCV/SimpleBlobSearcher.h
+            src/ICLCV/VectorTracker.h
+            src/ICLCV/SurfFeature.h
+            src/ICLCV/SurfFeatureDetector.h
+            src/ICLCV/WorkingLineSegment.h
+            src/ICLCV/ContourDetector.h
+            src/ICLCV/RDPApproximation.h)
+
 IF(IPP_FOUND)
   LIST(APPEND SOURCES src/ICLCV/ViewBasedTemplateMatcher.cpp
-		      src/ICLCV/HoughLineDetector.cpp
-		      src/ICLCV/HoughLine.cpp
-		      src/ICLCV/TemplateTracker.cpp)
-		    
+                      src/ICLCV/TemplateTracker.cpp)
+
   LIST(APPEND HEADERS src/ICLCV/ViewBasedTemplateMatcher.h
-		      src/ICLCV/HoughLineDetector.h
-		      src/ICLCV/HoughLine.h
-		      src/ICLCV/TemplateTracker.h)
+                      src/ICLCV/TemplateTracker.h)
 ENDIF()
 
 IF(OpenCV_FOUND)
@@ -135,7 +135,7 @@ TARGET_LINK_LIBRARIES(ICLCV ICLIO)
 
 SET_TARGET_PROPERTIES(ICLCV
                       PROPERTIES 
-		      VERSION ${SO_VERSION})
+                      VERSION ${SO_VERSION})
 
 # ---- Build examples/ demos/ apps ----
 #IF(BUILD_EXAMPLES) no examples yet
@@ -160,4 +160,3 @@ INSTALL_FILES_RECURSIVE("include/${INSTALL_PATH_PREFIX}" HEADERS)
 # ---- PKG-config ----
 CREATE_PKGCONFIG(NAME ICLCV
                  PKGCONFIG_DEPS ICLIO-${SO_VERSION})
-

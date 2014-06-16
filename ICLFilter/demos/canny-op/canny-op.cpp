@@ -54,7 +54,7 @@ void init(){
 
   grabber.init(pa("-i"));
   
-  gui.registerCallback(function(update),"low-handle,high-handle,pre-gauss-handle");
+  gui.registerCallback(update,"low-handle,high-handle,pre-gauss-handle");
   
   update();
 }

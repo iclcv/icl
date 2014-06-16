@@ -37,7 +37,7 @@ namespace icl{
   namespace cv{
     
     /// TemplateMatching class (wrapping UsefulFunctions::matchTemplate)
-    class ViewBasedTemplateMatcher{
+    class ICLCV_API ViewBasedTemplateMatcher{
       public:
       
       /// internally use matching mode

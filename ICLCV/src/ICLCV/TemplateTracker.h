@@ -39,7 +39,7 @@ namespace icl{
   
     /// Utility class vor viewbased template tracking
     /** TODO: add more documentation! */
-    class TemplateTracker : public utils::Configurable, public utils::Uncopyable{
+    class ICLCV_API TemplateTracker : public utils::Configurable, public utils::Uncopyable{
       struct Data; //!< internal data storage
       Data *data;  //!< internal data pointer
       

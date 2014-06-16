@@ -74,7 +74,7 @@ namespace icl{
       }
 
       void operator()(const icl32f *in_x, const icl32f *in_y, 
-                      float curvature_cutoff, uint length, icl32f *curvature_out){
+                      float curvature_cutoff, unsigned int length, icl32f *curvature_out){
         // make sure length is dividable by 2 to avoid prime numbers which can cause 
         // weird issues witht the workgroup size and slow down the kernel
         unsigned int save_length = length + length % 2;
