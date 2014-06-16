@@ -33,22 +33,39 @@ INCLUDE(FindPackageHandleStandardArgs)
 # ---------------------------------------------------------------------
 # Start main part here
 # ---------------------------------------------------------------------
+
+# Ask the root directory of OpenCV.
+SET(OPENCV_ROOT OPENCV_ROOT CACHE PATH "Root directory of OpenCV")
+
 IF(EXISTS "${OPENCV_ROOT}")
   SET(OpenCV_DIR ${OPENCV_ROOT})
 ENDIF()
 
-if(EXISTS "${OpenCV_DIR}/OpenCVConfig.cmake")  
+IF(EXISTS "${OpenCV_DIR}/OpenCVConfig.cmake")  
   # Include the standard CMake script
   INCLUDE("${OpenCV_DIR}/OpenCVConfig.cmake")
   
+  # somehow OpenCV writes two times the path to the libraries in the OpenCV_LIB_DIR variable
+  LIST(REMOVE_DUPLICATES OpenCV_LIB_DIR)
+
   # Search for a specific version
   SET(CVLIB_SUFFIX "${OpenCV_VERSION_MAJOR}${OpenCV_VERSION_MINOR}${OpenCV_VERSION_PATCH}")
-  
+
   SET(OpenCV_LIBRARIES "")
-  FOREACH(L ${OpenCV_LIBS})
-    LIST(APPEND OpenCV_LIBRARIES "${OpenCV_LIB_DIR}/lib${L}.so")
-  ENDFOREACH()
+
+  IF(WIN32)
+    FOREACH(L ${OpenCV_LIBS})
+      LIST(APPEND OpenCV_LIBRARIES "${OpenCV_LIB_DIR}/${L}${CVLIB_SUFFIX}.lib")
+    ENDFOREACH()
+  ELSE(WIN32)
+    FOREACH(L ${OpenCV_LIBS})
+      LIST(APPEND OpenCV_LIBRARIES "${OpenCV_LIB_DIR}/lib${L}.so")
+    ENDFOREACH()
+  ENDIF(WIN32)
+
+  SET(OpenCV_OLD_LIBS_NOT_FOUND "TRUE")
 ELSE()
+  IF(NOT WIN32)
   # find headers
   FIND_PATH(OpenCV_INCLUDE_DIRS "cv.h" "cxcore.h" "highgui.h"
             PATHS "${OpenCV_DIR}"
@@ -117,7 +134,7 @@ ELSE()
    MESSAGE(CRITICAL_ERROR "Not Found OpenCV Libraries (neither old- nor new-style)")
   ENDIF()
       
-
+  ENDIF(NOT WIN32)
 ENDIF()
 
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(OpenCV REQUIRED_VARS

@@ -77,7 +77,7 @@ namespace icl{
         bool found;        //!< waes it found (i.e. all of the corners)
         utils::Size size;  //!< used size (see init)
         std::vector<utils::Point32f> corners; //!< found corners
-        utils::VisualizationDescription visualize() const;
+        ICLCV_API utils::VisualizationDescription visualize() const;
       };
       
       /// returns whether this instance has been initilialized yet
