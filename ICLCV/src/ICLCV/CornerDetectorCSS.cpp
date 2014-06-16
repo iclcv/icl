@@ -143,13 +143,15 @@ namespace icl{
     void CornerDetectorCSS::convolute(const float *data, int data_length, const float *mask , int mask_length, float *convoluted) {
 #ifdef ICL_HAVE_IPP
       int radius = mask_length / 2;
-      float val[data_length + 2 * radius];
+      float *val = new float[data_length + 2 * radius];
       memcpy(val, data + data_length - radius, sizeof(float) * radius);
       memcpy(val + radius, data, sizeof(float) * data_length);
       memcpy(val + radius + data_length, data, sizeof(float) * radius);
-      float con[data_length + 2 * radius + mask_length - 1];
+      float *con = new float[data_length + 2 * radius + mask_length - 1];
       ippsConv_32f(val, data_length + 2 * radius, mask, mask_length, con);
       memcpy(convoluted,con+radius * 2,data_length * sizeof(float));
+      delete val;
+      delete con;
 #else
       int radius = mask_length / 2;
       for(int i = 0; i < data_length; i++) {

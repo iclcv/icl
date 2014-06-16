@@ -633,7 +633,7 @@ namespace icl {
     }
   
   #ifdef ICL_HAVE_IPP  
-    template<>
+    template<> ICLCore_API
     Img<icl8u> *Img<icl8u>::lut(const icl8u *lut, Img<icl8u> *dst, int bits) const{
       if(!dst){
         dst = new Img<icl8u>(getSize(),getChannels(),getFormat());

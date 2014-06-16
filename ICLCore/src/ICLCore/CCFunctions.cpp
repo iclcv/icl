@@ -5062,7 +5062,7 @@ namespace icl{
    // {{{ PLANAR_2_INTERLEAVED_IPP
   
   #define PLANAR_2_INTERLEAVED_IPP(DEPTH)                                                                       \
-    template<> void planarToInterleaved(const Img<icl##DEPTH>*src, icl##DEPTH *dst, int dstLineStep){           \
+    template<> ICLCore_API void planarToInterleaved(const Img<icl##DEPTH>*src, icl##DEPTH *dst, int dstLineStep){ \
       ICLASSERT_RETURN( src );                                                                                  \
       ICLASSERT_RETURN( dst );                                                                                  \
       ICLASSERT_RETURN( src->getChannels() );                                                                   \
@@ -5095,7 +5095,7 @@ namespace icl{
     // {{{ INTERLEAVED_2_PLANAR_IPP
   
   #define INTERLEAVED_2_PLANAR_IPP(DEPTH)                                                                               \
-    template<> void interleavedToPlanar(const icl##DEPTH *src, Img<icl##DEPTH> *dst, int srcLineStep){                  \
+    template<> ICLCore_API void interleavedToPlanar(const icl##DEPTH *src, Img<icl##DEPTH> *dst, int srcLineStep){      \
       ICLASSERT_RETURN( src );                                                                                          \
       ICLASSERT_RETURN( dst );                                                                                          \
       int c = dst->getChannels();                                                                                       \
